@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dora</string>
+    <string name="stage00_label">Stage 00</string>
+    <string name="bootstrap_title">Навигационный bootstrap готов</string>
+    <string name="bootstrap_body">Это только исходная оболочка приложения. Продуктовая функциональность появится после соответствующих решений, PoC и отдельных этапов.</string>
+    <string name="nav_home">Главная</string>
+    <string name="nav_history">История</string>
+    <string name="nav_tasks">Задачи</string>
+    <string name="nav_settings">Настройки</string>
+    <string name="nav_destination_description">Раздел %1$s</string>
+    <string name="placeholder_home">Здесь появится утверждённая главная Dora. Сейчас доступны только проверка навигации, темы и адаптивного layout.</string>
+    <string name="placeholder_history">История разговоров не реализована в Stage 00. Экран не читает и не создаёт пользовательские данные.</string>
+    <string name="placeholder_tasks">Задачи не реализованы в Stage 00. Экран не содержит базы данных, извлечения или синхронизации.</string>
+    <string name="placeholder_settings">Настройки продукта не реализованы в Stage 00. Облачная обработка и production-конфигурация отсутствуют.</string>
+    <string name="record_action_label">Запись</string>
+    <string name="record_action_description">Запись недоступна в Stage 00</string>
+    <string name="record_action_state">Заглушка. Микрофон не используется</string>
+    <string name="record_unavailable_message">Запись пока недоступна: Stage 00 не запрашивает доступ к микрофону.</string>
+</resources>

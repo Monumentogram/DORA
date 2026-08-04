@@ -1,0 +1,2 @@
+# basename|Maven coordinate|version|license|admission reason
+libandroidx.graphics.path.so|androidx.graphics:graphics-path|1.0.1|Apache-2.0|Transitive Compose UI rendering dependency
