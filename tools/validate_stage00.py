@@ -115,6 +115,58 @@ def validate_readiness() -> None:
         fail("Traceability matrix heading is missing")
 
 
+def validate_test_strategy() -> None:
+    text = read_text("docs/DORA_MVP1_TEST_STRATEGY.md")
+    required_headings = (
+        "## 1. Назначение и границы",
+        "## 2. Уровни тестирования",
+        "## 3. CI и execution tiers",
+        "## 4. Fixtures, данные и воспроизводимость",
+        "## 5. Physical device matrix",
+        "## 6. Stage 00 commands",
+        "## 7. Release gate ownership",
+    )
+    missing_headings = [heading for heading in required_headings if heading not in text]
+    if missing_headings:
+        fail(f"Test Strategy is missing headings: {missing_headings}")
+
+    expected_levels = {
+        "TS-UNIT": "Unit",
+        "TS-INTEGRATION": "Integration",
+        "TS-INSTRUMENTATION": "Android instrumentation",
+        "TS-COMPOSE": "Compose UI",
+        "TS-DB-MIGRATION": "Database migration",
+        "TS-LIFECYCLE": "Lifecycle и process death",
+        "TS-FGS": "Foreground service",
+        "TS-OFFLINE": "Offline",
+        "TS-STORAGE": "Storage",
+        "TS-BATTERY": "Battery/thermal",
+        "TS-ASR": "ASR",
+        "TS-DIARIZATION": "Diarization",
+        "TS-PRIVACY": "Privacy",
+        "TS-ACCESSIBILITY": "Accessibility",
+        "TS-CI": "CI",
+        "TS-DEVICE": "Physical device matrix",
+        "TS-RELEASE": "Release gates",
+    }
+    strategy_rows = re.findall(
+        r"^\| (TS-[A-Z-]+) \| ([^|]+) \|", text, flags=re.MULTILINE
+    )
+    actual_levels = {level_id: name.strip() for level_id, name in strategy_rows}
+    if actual_levels != expected_levels:
+        fail(
+            "Unexpected Test Strategy levels: "
+            f"expected {expected_levels}, found {actual_levels}"
+        )
+
+    table_header = (
+        "| ID | Уровень | Цель | Этап внедрения | Среда запуска | "
+        "Критерий прохождения |"
+    )
+    if table_header not in text:
+        fail("Test Strategy level table heading is missing")
+
+
 def validate_governance() -> None:
     required_files = (
         "AGENTS.md",
@@ -157,6 +209,7 @@ def main() -> int:
         validate_screen_inventory,
         validate_decisions,
         validate_readiness,
+        validate_test_strategy,
         validate_governance,
         validate_android_bootstrap,
     )

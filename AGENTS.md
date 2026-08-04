@@ -10,8 +10,9 @@ Read the relevant source completely before changing its area. Requirement preced
 2. `docs/DORA_MVP1_DESIGN_SPEC.md`
 3. `docs/DORA_MVP1_PRODUCT_DECISIONS.md`
 4. accepted files in `docs/adr/`
-5. `docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md`
-6. `docs/DORA_MVP1_STAGE_STATUS.md`
+5. `docs/DORA_MVP1_TEST_STRATEGY.md`
+6. `docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md`
+7. `docs/DORA_MVP1_STAGE_STATUS.md`
 
 The token JSON and screen inventory are normative handoff artifacts under their parent design specification. If sources conflict, stop only the affected code, record the conflict, and request/land a DEC or ADR. Never choose silently.
 
@@ -54,7 +55,7 @@ The token JSON and screen inventory are normative handoff artifacts under their 
 
 ## Required checks
 
-From `android/`, run the repository-documented Gradle verification tasks. For changes that add native code, recording, storage, data schema, UI or backend, add the relevant tests from the readiness/backlog gate; a green bootstrap build alone is never sufficient evidence.
+From `android/`, run the repository-documented Gradle verification tasks. The required levels, environments and release gates are defined in `docs/DORA_MVP1_TEST_STRATEGY.md`. For changes that add native code, recording, storage, data schema, UI or backend, add the relevant tests from the readiness/backlog gate; a green bootstrap build alone is never sufficient evidence.
 
 ## Handoff
 

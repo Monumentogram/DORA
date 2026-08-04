@@ -10,8 +10,9 @@ Repository visibility is temporarily public so GitHub Free can enforce server-si
 2. [`docs/DORA_MVP1_DESIGN_SPEC.md`](docs/DORA_MVP1_DESIGN_SPEC.md)
 3. [`docs/DORA_MVP1_PRODUCT_DECISIONS.md`](docs/DORA_MVP1_PRODUCT_DECISIONS.md)
 4. [`docs/adr/`](docs/adr/)
-5. [`docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md`](docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md)
-6. [`docs/DORA_MVP1_STAGE_STATUS.md`](docs/DORA_MVP1_STAGE_STATUS.md)
+5. [`docs/DORA_MVP1_TEST_STRATEGY.md`](docs/DORA_MVP1_TEST_STRATEGY.md)
+6. [`docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md`](docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md)
+7. [`docs/DORA_MVP1_STAGE_STATUS.md`](docs/DORA_MVP1_STAGE_STATUS.md)
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`AGENTS.md`](AGENTS.md) before making changes.
 

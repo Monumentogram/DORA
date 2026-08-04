@@ -15,7 +15,7 @@ Stage state: **READY FOR REVIEW — NOT MERGED**
 - baseline published to `origin/main` and verified by exact SHA;
 - Stage 00 branch created from the baseline;
 - technical plan, design spec, token JSON and screen inventory read completely;
-- readiness, product decision and executable backlog records created.
+- readiness, product decision, executable backlog and cross-stage Test Strategy records created;
 - minimal JVM 17/API 28–36 Android bootstrap created with pinned dependencies and lockfiles;
 - local handoff validation, four module unit-test suites, lint and debug APK assembly passed;
 - transitive native inventory allowlisted; ELF and APK 16-KiB alignment checks passed;

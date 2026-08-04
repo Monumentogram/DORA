@@ -24,6 +24,7 @@
 | S00-DOC-001 | DONE | Полностью прочитать и cross-check четыре baseline artifacts | S00-GIT-003 | readiness review with P0/P1/P2 and traceability |
 | S00-DOC-002 | DONE | Создать Product Decisions registry | S00-DOC-001 | DEC-001–DEC-042; no silent `Approved` decisions |
 | S00-DOC-003 | DONE | Зафиксировать backlog, status, ADR и Codex rules | S00-DOC-001 | root `AGENTS.md`, contributing/status/backlog/ADR linked |
+| S00-TEST-001 | DONE | Создать сквозную Test Strategy | S00-DOC-001 | уровни unit→release, environment/pass gates, CI tiers и physical matrix закреплены в `DORA_MVP1_TEST_STRATEGY.md` |
 | S00-ANDROID-001 | DONE | Создать минимальный Android skeleton | DEC-005/006/015; ADR-0001 | wrapper/JVM 17/min 28/compile-target 36; placeholder only; four unit-test modules green |
 | S00-CI-001 | DONE | Добавить GitHub Actions CI | S00-ANDROID-001 | pinned least-privilege workflow validates wrapper/docs, locks, test/lint/assemble and native alignment |
 | S00-VERIFY-001 | DONE | Локально проверить clean checkout commands | S00-CI-001 | 186-task test/lint/assemble graph green; Stage 00 validator and 16-KiB ELF/APK gates green; generated artifacts ignored |
