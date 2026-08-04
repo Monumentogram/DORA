@@ -6,7 +6,7 @@ Repository: private `Monumentogram/DORA`\
 Default branch: `main`\
 Active stage: `Stage 00 — GitHub, Implementation Readiness & Bootstrap`\
 Active branch: `stage/00-readiness-bootstrap`\
-Stage state: **LOCAL COMPLETE — REMOTE REVIEW PENDING**
+Stage state: **READY FOR REVIEW — NOT MERGED**
 
 ## Completed evidence
 
@@ -20,13 +20,15 @@ Stage state: **LOCAL COMPLETE — REMOTE REVIEW PENDING**
 - local handoff validation, four module unit-test suites, lint and debug APK assembly passed;
 - transitive native inventory allowlisted; ELF and APK 16-KiB alignment checks passed;
 - least-privilege, commit-SHA-pinned GitHub Actions workflow created.
+- Stage 00 branch published and draft Pull Request #1 opened against `main` without merge;
+- PR-triggered `android-bootstrap` workflow completed successfully;
+- private visibility/default `main` reverified; squash-only/manual merge policy and repository labels configured.
 
 ## Remaining Stage 00 exit checks
 
-- intentional commit/push and Pull Request to `main`;
-- green GitHub Actions run for the published branch/PR;
-- branch protection/rules where the GitHub plan supports it;
-- no merge of the Stage 00 PR.
+- Owner: upgrade the account/repository to GitHub Pro before protection can be enforced on this private repository. GitHub returned `403`; making Dora public is prohibited.
+- After upgrade, require PR + GitHub Actions app `15368` check `android-bootstrap`, linear history and conversation resolution; disable force-push and deletion for `main`.
+- Owner/reviewer handles any later approval and merge. Stage 00 leaves Pull Request #1 unmerged.
 
 ## Current gates
 

@@ -27,9 +27,9 @@
 | S00-ANDROID-001 | DONE | Создать минимальный Android skeleton | DEC-005/006/015; ADR-0001 | wrapper/JVM 17/min 28/compile-target 36; placeholder only; four unit-test modules green |
 | S00-CI-001 | DONE | Добавить GitHub Actions CI | S00-ANDROID-001 | pinned least-privilege workflow validates wrapper/docs, locks, test/lint/assemble and native alignment |
 | S00-VERIFY-001 | DONE | Локально проверить clean checkout commands | S00-CI-001 | 186-task test/lint/assemble graph green; Stage 00 validator and 16-KiB ELF/APK gates green; generated artifacts ignored |
-| S00-PR-001 | TODO | Commit/push/open PR without merge | S00-VERIFY-001 | explicit staged scope; branch on origin; draft PR to main |
-| S00-CI-002 | TODO | Проверить/исправить GitHub Actions | S00-PR-001 | required Stage 00 checks green or exact external blocker recorded |
-| S00-GIT-004 | TODO | Защитить `main` после появления stable check name | S00-CI-002 | require PR, no force/deletion, require green CI when GitHub plan permits |
+| S00-PR-001 | DONE | Commit/push/open PR without merge | S00-VERIFY-001 | checked Stage 00 commit/branch published; draft PR #1 targets `main`; no merge |
+| S00-CI-002 | DONE | Проверить/исправить GitHub Actions | S00-PR-001 | PR-triggered `android-bootstrap` completed successfully, including test/lint/assemble and native gates |
+| S00-GIT-004 | BLOCKED | Защитить `main` после появления stable check name | S00-CI-002 | GitHub API returned `403 Upgrade to GitHub Pro or make this repository public`; public is forbidden. Private repo remains procedural PR-only; owner must upgrade, then require GitHub Actions app `15368` check `android-bootstrap`, PR, linear history and conversation resolution, with force-push/delete disabled |
 
 ## 3. Stage 0 — обязательные governance и PoC
 
