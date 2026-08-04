@@ -1,6 +1,6 @@
 # Dora MVP 1 — Executable Backlog
 
-Версия: Stage 00\
+Версия: Stage 0A\
 Дата: 4 августа 2026 года\
 Источник порядка: Technical Plan §37/§39, Design Spec §36/§39 и readiness gates.
 
@@ -43,13 +43,13 @@
 | ID | State | Size | Задача | Depends on | Deliverable | Acceptance / fallback |
 |---|---|---:|---|---|---|---|
 | GOV-001 | BLOCKED | M | Markets/legal/consent decision pack | DEC-001/002/027 | counsel/product memo, versioned copy scopes | recording beta and cloud stay off until approved |
-| GOV-PRIVACY-001 | READY | M | Privacy/data-flow/threat assumptions v1 | DEC-009/014/015 | data inventory, forbidden telemetry, retention owners | no raw content in logs/analytics; unresolved flows explicitly blocked |
+| GOV-PRIVACY-001 | DONE | M | Privacy/data-flow/threat assumptions v1 | DEC-009/014/015 | `docs/stage0/DORA_MVP1_PRIVACY_DATA_FLOW_THREAT_MODEL.md` | data inventory, forbidden telemetry, trust boundaries, deletion and local/corporate modes documented; unresolved cloud/legal flows explicitly blocked |
 | GOV-TRADEMARK-001 | TODO | S | Name/package/trademark availability | DEC-025 | evidence + approved production identifier candidate | no registration/store asset before approval |
-| GOV-IP-001 | READY | S | Reference/font/model asset IP rules | DEC-024/042 | controlled-reference policy and notices checklist | no unlicensed reference bitmap in repo/product |
+| GOV-IP-001 | DONE | S | Reference/font/model asset IP rules | DEC-024/042 | `docs/stage0/DORA_MVP1_IP_ASSET_POLICY.md` | artifact-level provenance, license, attribution and admission rules documented; no model/binary/reference asset admitted |
 | GOV-REPO-001 | TODO | S | Long-term repository visibility, account plan and licensing/contribution terms | ADR-0002, owner | explicit decision and, only if approved, matching license/contribution updates | before merging an external contribution or returning the repository to private visibility |
-| POC-GATES-001 | BLOCKED | M | Approve versioned gates and result schema | DEC-020 | `benchmark-result.schema.json`, owner-approved thresholds | no PoC pass/fail without named gate/fallback |
-| POC-DEVICE-001 | READY | M | Device/firmware matrix D1–D7 | DEC-005/006/018 | `device-matrix.yaml`, procurement and OTA policy | API/OEM/RAM/route/16-KБ coverage recorded |
-| POC-DATA-001 | BLOCKED | L | RU/EN/mixed corpus governance and manifest | DEC-001/014 | consent/access/retention/annotation process; immutable split | no private audio in Git; no participant leakage across split |
+| POC-GATES-001 | BLOCKED | M | Approve versioned gates and result schema | DEC-020 | `docs/stage0/DORA_MVP1_POC_GATES.md`, `docs/stage0/benchmark-result.schema.json`; owner-approved thresholds pending | no PoC pass/fail without named approved gate/fallback |
+| POC-DEVICE-001 | READY | M | Device/firmware matrix D1–D7 | DEC-005/006/018 | preparatory `docs/stage0/device-matrix.yaml`; physical inventory/procurement confirmation pending | API/OEM/RAM/route/16-KБ requirements recorded without claiming device availability |
+| POC-DATA-001 | BLOCKED | L | RU/EN/mixed corpus governance and manifest | DEC-001/014 | foundation in `docs/stage0/DORA_MVP1_DATASET_GOVERNANCE.md`; consent/custodian/retention and actual manifest pending | no private audio in Git; no participant leakage across split; no dataset created yet |
 | POC-CAPTURE-001 | BLOCKED | XL | 1 h/1–3–8 h AudioRecord microphone FGS | GOV-001, POC-GATES-001, POC-DEVICE-001 | isolated capture app/harness + traces | start/finalize/data-loss/energy gates; fallback narrows supported matrix |
 | POC-RECOVERY-001 | BLOCKED | XL | Encrypted writer kill/recovery | POC-GATES-001, POC-DEVICE-001, ADR-AUDIO-001 | ≥100 injected kill points, authenticated prefix report | Tink only if all committed prefix recoverable; otherwise sealed microfiles |
 | POC-VAD-001 | BLOCKED | L | 90 s silence/max-cap deterministic replay | POC-GATES-001, POC-DATA-001 | fake monotonic replay and acoustic matrix | 89.5/90/90.5, resume 89.9, noise, >10 min; documented profile |
@@ -120,4 +120,4 @@ These are not Ready until their stage dependencies pass.
 - no secrets/private datasets/unapproved binaries;
 - status/backlog/DEC/ADR updated when outcome changes truth;
 - user/manual truth is never overwritten by a model result;
-- no merge to `main` from the Stage 00 task itself.
+- no merge to `main` from the current task unless the owner explicitly scopes that merge.

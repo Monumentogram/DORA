@@ -1,0 +1,180 @@
+# Dora MVP 1 — PoC Gates and Result Contract
+
+Task: `POC-GATES-001`
+Gate set: `stage0-v0.1`
+Schema: `benchmark-result.schema.json`
+Date: 4 August 2026
+Status: **Proposed — owner approval required before authoritative pass/fail**
+
+## 1. Purpose
+
+Every Stage 0 PoC must answer one bounded hypothesis with reproducible evidence. This document supplies a common result shape and a proposed gate set. It does not run a PoC, admit a dependency, approve a production feature or create a product claim.
+
+All thresholds in this version are `Proposed`, including values quoted from Technical Plan sections 35 and 39. They become `Approved` only after a direct owner decision is recorded in Product Decisions or a superseding ADR/decision record.
+
+## 2. Gate rules
+
+1. Define the hypothesis, success gate, failure gate and fallback before the first measured run.
+2. Record exact commit, application/harness version, device profile, OS/API/ABI, fixture digest and environment.
+3. Do not average away a failing mandatory device/language/noise slice.
+4. A missing required device, fixture, license or metric makes the result `INCONCLUSIVE`, not `PASS`.
+5. A triggered approved failure gate makes the result `FAIL`, even when the mean looks good.
+6. `PASS` is allowed only when every mandatory gate used for the verdict is `Approved`, every required slice ran, all success predicates passed and no failure predicate triggered.
+7. Comparison against a `Proposed` gate is reported as observation only. Use `INCONCLUSIVE` until approval.
+8. Failed or inconclusive PoC evidence is retained and linked; do not rerun silently until green.
+9. Every result names a fallback or scope reduction.
+10. Passing a PoC does not admit its code, native library, model or dataset to production. Admission needs a separate ADR and artifact gates.
+
+## 3. Result statuses
+
+| Status | Meaning |
+|---|---|
+| `NOT_RUN` | Result shell exists but no valid execution completed. |
+| `INCONCLUSIVE` | Evidence exists, but a required gate/device/input/approval is missing or invalid. |
+| `PASS` | All mandatory approved gates pass and no approved failure gate triggers. |
+| `FAIL` | At least one approved failure gate triggers or a critical invariant is violated. |
+
+Recommendation is separate from result:
+
+- `GO` — proceed to the next bounded experiment or admission review;
+- `ITERATE` — change harness/implementation and repeat without changing the gate after seeing results;
+- `FALLBACK` — use the documented alternate design or narrow support;
+- `NO_GO` — stop the candidate/path;
+- `BLOCKED` — obtain a missing owner/legal/license/device decision first.
+
+## 4. Preconditions for every run
+
+- clean, named PoC branch and exact 40-character commit SHA;
+- no production application ID/signing or unrelated feature code;
+- input is synthetic or referenced by an approved consent-governed manifest;
+- no real meeting/private audio in Git, LFS or Actions artifacts;
+- device availability is confirmed for the run, without serial/account/private path in the report;
+- power, battery, thermal, storage and network starting state are recorded where relevant;
+- third-party artifacts have exact version/digest and at least `EVALUATION_APPROVED` rights;
+- success/failure gates are frozen for the campaign;
+- evidence destination and cleanup/retention are known;
+- forbidden logging/content assertions are enabled.
+
+## 5. Machine-readable result fields
+
+The JSON Schema requires the following top-level areas:
+
+| Required area | Content |
+|---|---|
+| `pocId` | Backlog ID such as `POC-CAPTURE-001`. |
+| `applicationVersion` | PoC harness/application version; not a production version claim. |
+| `commit` | Exact lowercase Git SHA-1 currently used by the repository. |
+| `device` | D-profile, sanitized model, physical/emulator, ABI, RAM and firmware/build. |
+| `androidApi` | Integer API level used for the run. |
+| `duration` | Planned and actual seconds plus whether the duration completed. |
+| `inputData` | Classification, manifest/fixture IDs, digests, language/acoustic slices and consent reference when needed. |
+| `metrics` | Typed measurement name/value/unit/method/slice/sample count. |
+| `successGates` | Predicates that must pass, each with `Proposed` or `Approved`. |
+| `failureGates` | Predicates that trigger failure, each with status and observed outcome. |
+| `result` | `NOT_RUN`, `INCONCLUSIVE`, `PASS` or `FAIL`, with rationale and evaluated gate-set version. |
+| `errors` | Stable redacted error code, stage, count and retryability; never content. |
+| `battery` | Start/end charge, mWh when available, baseline ratio, power state and source. |
+| `temperature` | Start/end/max temperature when safely available and Android thermal states. |
+| `memory` | Peak PSS/RSS/native heap and OOM/trim facts. |
+| `fileSizes` | Named output bytes and optional digest; no private absolute path. |
+| `licenses` | Exact evaluated code/model/data artifact, digest, license and review state. |
+| `limitations` | Unsupported slices, missing evidence and threats to validity. |
+| `recommendation` | Decision, rationale, fallback and owner action. |
+| `evidenceFiles` | Sanitized repository path or opaque controlled-store locator, digest, classification and retention. |
+
+Optional measurements stay optional because not every PoC has audio, battery or native artifacts. The area itself remains required and uses `notApplicableReason` when a measurement is genuinely not applicable.
+
+## 6. Proposed gate set v0.1
+
+Every row below has status **Proposed**.
+
+| PoC | Proposed success gate | Proposed failure gate | Required fallback |
+|---|---|---|---|
+| `POC-CAPTURE-001` | Valid-state Start and Stop/finalize success ≥99.5% across the planned campaign; expected/written sample integrity within the harness tolerance; zero corruption or whole-session loss; recording remains visible; required one-hour D1–D5 slices complete. | Any whole-session loss, reproducible corruption/unexplained sample gap, hidden recording state, OS/OEM termination on an intended supported class, or energy above the approved capture gate. | Change buffer/checkpoint design or narrow the tested support matrix; never use a hidden workaround. |
+| `POC-VAD-001` | Boundary error ≤±0.5 s after the VAD silence decision; 100% timer cancellation when speech resumes before 90 s; onset preserved by pre-roll; physical part ≤600 s plus one frame with 1.5–2.0 s overlap. | False boundaries on required fixtures, wall-clock timer, resume-at-89.9 failure, onset loss, cap failure or missed real-time frame deadline on D1. | Version/tune profiles; compare another VAD/rules while preserving the 90-s product rule. |
+| `POC-RECOVERY-001` | 100% authenticated committed-prefix recovery over at least 100 injected kill points; target lost tail ≤5 s; zero duplicate/missing jobs; microphone never restarts automatically. | Any committed prefix becomes unreadable, unknown/orphan data is silently deleted, DB/file split-brain is unrecoverable, unauthenticated bytes accepted or mic auto-restarts. | Use independent sealed 15–30 s AEAD microfiles plus manifest; adjust checkpoint only after battery measurement. |
+| `POC-ASR-001` | Normalized WER: RU ≤20%, EN ≤18%, mixed ≤28%, noisy/speakerphone ≤35% or explicit low-confidence behavior; timestamp median error ≤500 ms and p95 ≤1.5 s; exact artifact loads/runs in required 16-KiB environment; no OOM/severe thermal. RTF/tier numeric threshold remains unresolved until baseline approval. | Required slice exceeds quality gate without honest fallback, artifact fails license/digest/ABI/16-KiB gate, repeated OOM/severe thermal, or no D1 fallback completes reliably. | Lighter Vosk/sherpa candidate, process while charging, or separately consented faster-whisper route. |
+| `POC-DIAR-001` | Clean 2–4 speaker DER ≤20%; noisy/remote/overlap DER ≤35% or review-flag recall ≥90%; speaker-count MAE ≤0.5 clean/≤1.0 noisy; corrections persist; exact weights have approved evaluation/redistribution path for the chosen route. | DER/correction burden exceeds gate, overlap is forced to a wrong speaker, correction is lost on rerun, or weight terms/provenance remain unclear. | Server route with consent, local speaker-change hints plus manual labels, or omit exact speaker assignment. |
+| `POC-BATTERY-001` | Capture-only overhead ≤1.25× minimal AudioRecord+FGS baseline on each supported physical profile; zero dropped frames and no `SEVERE` thermal state; ≥3 controlled repeats per required slice. | Sustained severe thermal, capture gap, unacceptable drain relative to baseline, invalid uncontrolled comparison or heavy processing compromises capture. | Never run heavy ML during capture; defer to charging; tune fsync/buffer; narrow supported matrix. |
+| `POC-DECISION-001` | Final-decision precision ≥0.90 and recall ≥0.80; revision-link precision ≥0.85 and recall ≥0.75; ≥99% auto items have valid source and unsupported factual claims <1%; manual truth survives rerun. | Wrong confirmed task crosses precision gate, unconfirmed late phrase routinely overrides final, invalid source is applied, or user-owned fields are overwritten. | Require review for all decision/task candidates; use rules-only chronology or server only for ambiguity. |
+| `POC-SEARCH-001` | p95 <200 ms and p99 <500 ms on the 10k-conversation/1M-transcript reference DB; correct filters/source, safe adversarial query handling and deterministic rebuild. | Latency/storage/update gate fails, query operator injection/crash occurs, index loses canonical mapping or migration/rebuild is non-deterministic. | Per-entity FTS, pagination/ranking changes; FTS5 only with migration evidence; no vector DB by default. |
+| `POC-OFFLINE-001` | Zero forbidden network attempts; approved local capture/storage/history/search/tasks/copy/export flows work without account/GMS/network; installed local model works; queued cloud work resumes exactly once. | Login, GMS, DNS, remote config or provider availability blocks local core; retry loop drains battery; reconnect duplicates/corrupts state. | Remove dependency; ship safe local defaults/catalog snapshot and an approved side-load path. |
+| `POC-VPN-001` | Eventual completion after valid connectivity; zero duplicate job/result/billing; exact checksum; no automatic region/provider switch; local flow unaffected. | Duplicate cost/result, corrupted upload, consent/region bypass, data sent to wrong endpoint or infinite retry. | Restart under same idempotency key after explicit user action, provider circuit breaker or local-only processing. |
+
+## 7. Unresolved thresholds
+
+The following are deliberately not invented in v0.1 and therefore make the affected verdict `INCONCLUSIVE` unless the owner approves a baseline-measurement rule:
+
+- exact acceptable RTF by D1/D2/D3 ASR tier;
+- maximum peak PSS/native heap by device profile;
+- acceptable diarization correction operations per minute;
+- acceptable absolute battery drain when mWh is unavailable;
+- capture sample-gap tolerance beyond the invariant that unexplained dropped intervals are unacceptable;
+- minimum evidence-store retention for raw performance traces.
+
+The first campaign may measure these as baseline, but a threshold created after seeing the same result cannot retrospectively turn it into `PASS`. Freeze a new version and rerun.
+
+## 8. Evidence requirements
+
+### 8.1 Public evidence
+
+Allowed in Git:
+
+- completed JSON result conforming to the schema;
+- Markdown summary with aggregate metrics and categorical errors;
+- deterministic synthetic fixture manifest/generator source when in scope;
+- sanitized charts/tables with no raw content or personal/device identifiers;
+- exact code/model/license metadata already approved for public disclosure.
+
+### 8.2 Controlled evidence
+
+Keep outside public Git:
+
+- raw audio, real/purpose-recorded transcript or consent evidence;
+- raw Perfetto/Batterystats/crash dump before privacy review;
+- device serial, local path, account identifier and network address;
+- gated model terms, private artifact, provider credentials or presigned URL.
+
+The JSON report references controlled evidence with an opaque locator and SHA-256. A public evidence entry must set `containsPersonalData` and `containsSecret` to `false`.
+
+## 9. Measurement discipline
+
+- Use a fixed fixture/manifest digest and predeclared slices.
+- Use monotonic time for durations and boundaries; wall time only labels the run.
+- Record warm-up, number of repetitions, aggregation and measurement source.
+- Battery comparison uses the same device, brightness, radio, starting temperature and signal; report all repeats.
+- Report p50/p95/p99 only with sample count and method.
+- Report WER normalization, DER collar/overlap policy and protected evaluation split.
+- Preserve failed trials and error categories; do not drop an outlier without a predeclared invalidation reason.
+- If instrumentation itself changes the metric materially, record the limitation and rerun with a validated method.
+
+## 10. Error and limitation rules
+
+- Error messages are stable codes plus redacted summaries; no transcript/audio/path/token.
+- A harness crash is not an application failure unless the root cause is in the candidate, but it invalidates the run until classified.
+- Missing metrics use `null` plus `notApplicableReason`/limitation; do not use zero.
+- A device that was unavailable remains a limitation and blocks a full matrix verdict.
+- A proposed threshold remains visibly `Proposed` in both success and failure gate arrays.
+- Any manual deviation from the protocol is listed under limitations and cannot be hidden in free text.
+
+## 11. License reporting
+
+Every external artifact used by the run appears in `licenses`, including runtime code, native library, model weight, dataset and conversion tool where relevant. An empty array is valid only when the PoC uses repository-owned code and fully synthetic inputs with no external runtime artifact.
+
+`licenseReviewState` values are `PROPOSED`, `EVALUATION_APPROVED`, `ADMISSION_REVIEW`, `ADMITTED`, `REJECTED` and `REVOKED`. Stage 0 execution requires at least `EVALUATION_APPROVED`; this Stage 0A document approves none.
+
+## 12. Approval and versioning
+
+Owner approval should use the exact response in OD-05. After approval:
+
+1. change the gate-set status through a decision PR;
+2. record owner, date and rationale;
+3. copy the approved status into each applicable gate instance;
+4. never edit a completed result in place—issue a new result/version;
+5. create `stage0-v0.2` for threshold changes and state whether a rerun is required.
+
+Critical zero-loss, source-validity, consent and no-silent-overwrite invariants cannot be weakened merely to make a candidate pass.
+
+## 13. Stage 0A exit
+
+The common format and proposed thresholds are ready for owner review. `POC-GATES-001` remains blocked for authoritative verdicts until OD-05 is explicitly approved. No PoC was run by this change.
