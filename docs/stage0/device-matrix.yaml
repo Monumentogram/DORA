@@ -1,0 +1,372 @@
+schema_version: 1
+matrix_id: dora-mvp1-stage0-device-matrix
+updated: "2026-08-05"
+stage: "Stage 0A"
+owner_task: "POC-DEVICE-001"
+inventory_confirmed: false
+production_support_claims_allowed: false
+
+owner_decision:
+  id: OD-06
+  status: Approved
+  approved_on: "2026-08-04"
+  owner: "Project owner"
+  choice: B
+  scope: "One owner-provided physical Android phone for the first exploratory run."
+  additional_device_procurement: false
+
+first_exploratory_campaign:
+  mode: single_owner_physical_phone
+  status: blocked_pending_connection_and_automatic_inventory
+  measured_run_allowed: false
+  unblock_condition: >-
+    Connect the phone and automatically record its sanitized model, Android API,
+    firmware/build, ABI and RAM before the first measured run.
+  required_automatic_fields:
+    - sanitized_device_model
+    - android_api
+    - os_build_or_firmware
+    - abi
+    - ram_mb
+  discovery_method: >-
+    Use Android platform diagnostics such as adb/getprop and /proc/meminfo; do not
+    copy device serial, account data or private local paths into public evidence.
+  profile_assignment: >-
+    Assign the phone to a D1-D7 profile only after measured characteristics are
+    known. If no profile matches, record the mismatch as a limitation.
+  matrix_support_verdict: INCONCLUSIVE
+  measured_run_result_rule: >-
+    FAIL is allowed when an approved failure gate triggers; otherwise missing D1-D7
+    coverage requires INCONCLUSIVE. PASS is forbidden for this campaign.
+  forbidden_claims:
+    - "Global PASS for D1-D7"
+    - "Supported Android devices"
+    - "Eight-hour behavior beyond the discovered device and recorded conditions"
+
+status_vocabulary:
+  - available
+  - required
+  - optional
+  - unknown
+
+status_semantics:
+  available: "A specific device and firmware were confirmed by the owner and recorded as evidence."
+  required: "Coverage is required, but this value does not claim that hardware is available."
+  optional: "Useful supplemental coverage that does not block the named PoC gate."
+  unknown: "Requirement or availability is not yet resolved."
+
+inventory:
+  confirmed_physical_devices: []
+  confirmed_emulator_images: []
+  note: >-
+    The owner intends to provide one physical Android phone, but it is not connected
+    or identified in this Stage 0A change. All D1-D7 availability values remain unknown.
+
+abi_policy:
+  required_physical:
+    - arm64-v8a
+  required_emulator:
+    - x86_64
+  optional_not_claimed:
+    - armeabi-v7a
+  rule: "Every admitted native artifact must declare its ABI set and pass packaging plus runtime checks on every claimed ABI."
+
+known_source_conflicts:
+  - id: DEVICE-ID-MAPPING-001
+    status: unknown
+    description: >-
+      Technical Plan section 34.2 names D6 as audio routes and D7 as the 16-KiB profile,
+      while Test Strategy section 5 names D6 as 16-KiB and D7 as the next-API profile.
+    stage0_interpretation: >-
+      Follow the higher-precedence Technical Plan for D6 audio routes; combine 16-KiB and
+      next-API runtime coverage in D7 until the baseline identifiers are reconciled by a
+      dedicated documentation decision.
+    blocked_until_resolved:
+      - "Final cross-document device-ID traceability"
+      - "Release support claim for D6/D7"
+    does_not_block:
+      - "An exploratory D2-only capture harness"
+      - "D1-D5 capture evidence once physical inventory is confirmed"
+
+evidence_required_per_execution:
+  - profile_id
+  - sanitized_device_model
+  - manufacturer
+  - android_api
+  - os_build_or_firmware
+  - security_patch
+  - abi
+  - ram_mb
+  - free_storage_mb
+  - battery_health_or_state
+  - power_state
+  - thermal_start_and_end
+  - emulator_or_physical
+  - commit
+  - fixture_digest
+  - run_timestamp_utc
+
+privacy_rules:
+  forbidden_fields:
+    - device_serial
+    - advertising_id
+    - account_name
+    - local_user_path
+    - wifi_ssid
+    - public_ip_address
+    - raw_audio_or_transcript
+  public_report_rule: "Use profile ID and sanitized characteristics; keep raw traces outside public GitHub."
+
+profiles:
+  - id: D1
+    name_ru: "Слабое поддерживаемое устройство"
+    purpose: "Нижняя граница capture, storage, recovery, memory, battery and usable fallback."
+    mandatory: true
+    status: required
+    availability: unknown
+    execution:
+      physical_required: true
+      emulator_allowed: true
+      emulator_role: "Supplemental API and deterministic fault checks only; not battery, thermal, microphone or OEM evidence."
+    minimum:
+      android_api_min: 28
+      android_api_max: 30
+      ram_mb_min: 4096
+      abi:
+        - arm64-v8a
+      storage_class: "slow_or_budget_flash"
+      free_storage_mb_at_start: 4096
+      gms_required: false
+    verifies:
+      - "Audio deadline and sample integrity at the support floor"
+      - "Low-memory behavior and graceful fallback"
+      - "Slow-storage checkpoint and recovery behavior"
+      - "Capture-only energy and thermal behavior"
+      - "FTS scale baseline on a weak device"
+    pocs:
+      - POC-CAPTURE-001
+      - POC-RECOVERY-001
+      - POC-VAD-001
+      - POC-ASR-001
+      - POC-BATTERY-001
+      - POC-SEARCH-001
+      - POC-OFFLINE-001
+
+  - id: D2
+    name_ru: "Среднее основное устройство"
+    purpose: "Primary reference for local processing, UX and one-hour capture baseline."
+    mandatory: true
+    status: required
+    availability: unknown
+    execution:
+      physical_required: true
+      emulator_allowed: true
+      emulator_role: "Supplemental deterministic/API checks; physical results remain authoritative for performance and capture."
+    minimum:
+      android_api_min: 33
+      android_api_max: 36
+      ram_mb_min: 6144
+      ram_mb_preferred: 8192
+      abi:
+        - arm64-v8a
+      storage_class: "mainstream_flash"
+      free_storage_mb_at_start: 8192
+      gms_required: false
+    verifies:
+      - "Primary capture start/finalize and screen-off behavior"
+      - "Local ASR and diarization feasibility baseline"
+      - "Memory, battery, thermal and file-size measurements"
+      - "Mainstream search and offline behavior"
+      - "VPN and route-change client behavior when that PoC is reached"
+    pocs:
+      - POC-CAPTURE-001
+      - POC-RECOVERY-001
+      - POC-VAD-001
+      - POC-ASR-001
+      - POC-DIAR-001
+      - POC-BATTERY-001
+      - POC-DECISION-001
+      - POC-SEARCH-001
+      - POC-OFFLINE-001
+      - POC-VPN-001
+
+  - id: D3
+    name_ru: "Производительное устройство"
+    purpose: "Upper local-capability tier without relaxing correctness or thermal gates."
+    mandatory: true
+    status: required
+    availability: unknown
+    execution:
+      physical_required: true
+      emulator_allowed: true
+      emulator_role: "Functional/API supplement only; not proof of high-end accelerator, energy or thermal behavior."
+    minimum:
+      android_api_min: 36
+      android_api_max: 37
+      ram_mb_min: 12288
+      abi:
+        - arm64-v8a
+      storage_class: "fast_flash"
+      free_storage_mb_at_start: 16384
+      accelerator: "modern_cpu_required; vulkan_or_npu_optional_and_measured"
+      gms_required: false
+    verifies:
+      - "Enhanced local ASR/diarization candidates"
+      - "Peak memory and sustained thermal behavior"
+      - "No correctness regression on a faster tier"
+      - "Next-API behavior when a matching physical device is available"
+    pocs:
+      - POC-CAPTURE-001
+      - POC-RECOVERY-001
+      - POC-VAD-001
+      - POC-ASR-001
+      - POC-DIAR-001
+      - POC-BATTERY-001
+      - POC-DECISION-001
+      - POC-SEARCH-001
+
+  - id: D4
+    name_ru: "Устройство без Google Mobile Services"
+    purpose: "Prove that local core and model paths do not depend on GMS, account or network."
+    mandatory: true
+    status: required
+    availability: unknown
+    execution:
+      physical_required: true
+      emulator_allowed: true
+      emulator_role: "An AOSP image may supplement network/GMS-denial checks but does not replace a retail no-GMS device."
+    minimum:
+      android_api_min: 30
+      android_api_max: 36
+      ram_mb_min: 4096
+      abi:
+        - arm64-v8a
+      gms_present: false
+      network_test_modes:
+        - airplane_mode
+        - os_level_network_denied
+        - reconnect
+    verifies:
+      - "No login, GMS, DNS, remote config or cloud dependency in local mode"
+      - "Model-side-load/catalog fallback design when scoped"
+      - "Queued cloud work does not block local state"
+      - "Reconnect remains idempotent"
+    pocs:
+      - POC-ASR-001
+      - POC-OFFLINE-001
+      - POC-VPN-001
+
+  - id: D5
+    name_ru: "OEM с агрессивным энергосбережением"
+    purpose: "Measure screen-off/background endurance and vendor-specific process restrictions."
+    mandatory: true
+    status: required
+    availability: unknown
+    execution:
+      physical_required: true
+      emulator_allowed: false
+      emulator_role: "Not applicable for OEM firmware behavior."
+    minimum:
+      android_api_min: 31
+      android_api_max: 36
+      ram_mb_min: 4096
+      abi:
+        - arm64-v8a
+      oem_requirement: "Samsung preferred; another documented restrictive OEM is acceptable only with rationale."
+      firmware_requirement: "Exact firmware/build and battery restriction state must be recorded."
+      control_requirement: "Compare with a D2 or AOSP/Pixel control where available."
+    verifies:
+      - "Screen-off and background capture survival"
+      - "Battery Saver and restricted-battery behavior"
+      - "Task Manager/user stop and exit reason"
+      - "Honest OEM guidance without unsupported whitelist workarounds"
+    pocs:
+      - POC-CAPTURE-001
+      - POC-RECOVERY-001
+      - POC-BATTERY-001
+      - POC-OFFLINE-001
+      - POC-VPN-001
+
+  - id: D6
+    name_ru: "Физические аудиомаршруты"
+    purpose: "Cover built-in, wired and Bluetooth input transitions using the Technical Plan D6 mapping."
+    mandatory: true
+    status: required
+    availability: unknown
+    execution:
+      physical_required: true
+      emulator_allowed: false
+      emulator_role: "Synthetic route callbacks may test reducers, but they are not route-quality or interruption evidence."
+    minimum:
+      android_api_min: 28
+      android_api_max: 36
+      ram_mb_min: 4096
+      abi:
+        - arm64-v8a
+      routes_required:
+        - built_in_microphone
+        - wired_headset_when_hardware_supports_it
+        - bluetooth_sco_or_supported_bluetooth_input
+      routes_optional:
+        - bluetooth_le_audio
+        - usb_microphone
+    verifies:
+      - "Route preflight and user-visible source label"
+      - "Format/sample-rate change starts a new physical part"
+      - "Disconnect, incoming interruption and dead-object recovery"
+      - "No mixed-format corruption across route changes"
+    pocs:
+      - POC-CAPTURE-001
+      - POC-RECOVERY-001
+      - POC-ASR-001
+      - POC-BATTERY-001
+
+  - id: D7
+    name_ru: "16-KiB и следующий Android API"
+    purpose: "Combine the Technical Plan 16-KiB gate with Test Strategy next-API coverage pending ID reconciliation."
+    mandatory: true
+    status: required
+    availability: unknown
+    execution:
+      physical_required: false
+      physical_required_for_final_native_claim: true
+      emulator_allowed: true
+      emulator_role: "A confirmed Android 15+ 16-KiB x86_64 image is required for the first packaging/load gate."
+    minimum:
+      android_api_min: 35
+      android_api_target_check: 37
+      ram_mb_min: 4096
+      page_size_bytes: 16384
+      abi_by_environment:
+        physical:
+          - arm64-v8a
+        emulator:
+          - x86_64
+      toolchain_expectation: "AGP and NDK baseline are checked separately; no native artifact is admitted by this matrix."
+    verifies:
+      - "APK ZIP and ELF alignment for every admitted native library"
+      - "Install, load and inference/runtime behavior on a 16-KiB image"
+      - "API-next foreground/background, job quota and memory regressions"
+      - "Runtime behavior is not inferred from static alignment alone"
+    pocs:
+      - POC-RECOVERY-001
+      - POC-VAD-001
+      - POC-ASR-001
+      - POC-DIAR-001
+      - POC-OFFLINE-001
+
+execution_rules:
+  - "A required profile with availability=unknown blocks a final matrix verdict but may allow an explicitly exploratory run."
+  - "The first exploratory run is blocked until the owner's physical phone is connected and automatically inventoried."
+  - "One discovered phone may satisfy only its matching execution slice; it never produces a global D1-D7 PASS or a device-support claim."
+  - "An emulator never substitutes for physical microphone, battery, thermal, flash or OEM evidence."
+  - "A physical device never substitutes for the required 16-KiB emulator/image when its page size is not verified."
+  - "Exact model, firmware, security patch and OTA date are added only after owner confirmation."
+  - "After an OTA, rerun the critical capture/recovery/endurance subset before retaining support."
+  - "Pass/fail and support claims are scoped to profiles that actually produced valid evidence."
+
+procurement_and_ota:
+  owner: "Project owner"
+  procurement_decision: "Approved choice B: do not procure additional devices for the first exploratory run."
+  ota_policy: "Record current firmware; do not auto-update during a benchmark campaign; rerun critical gates after update."
+  battery_health_policy: "Record health/state where available and exclude materially degraded batteries from comparative energy claims."

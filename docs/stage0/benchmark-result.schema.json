@@ -1,0 +1,1256 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Monumentogram/DORA/blob/main/docs/stage0/benchmark-result.schema.json",
+  "title": "Dora MVP 1 Stage 0 PoC benchmark result",
+  "description": "Machine-readable result for one bounded Dora Stage 0 PoC execution or aggregated campaign.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "gateSetVersion",
+    "generatedAt",
+    "pocId",
+    "applicationVersion",
+    "commit",
+    "device",
+    "androidApi",
+    "duration",
+    "inputData",
+    "metrics",
+    "successGates",
+    "failureGates",
+    "result",
+    "errors",
+    "battery",
+    "temperature",
+    "memory",
+    "fileSizes",
+    "licenses",
+    "limitations",
+    "recommendation",
+    "evidenceFiles",
+    "privacyReview"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "gateSetVersion": {
+      "type": "string",
+      "pattern": "^stage0-v[0-9]+\\.[0-9]+$"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "pocId": {
+      "type": "string",
+      "pattern": "^POC-[A-Z0-9-]+-[0-9]{3}$"
+    },
+    "applicationVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "device": {
+      "$ref": "#/$defs/device"
+    },
+    "androidApi": {
+      "type": "integer",
+      "minimum": 28,
+      "maximum": 100
+    },
+    "duration": {
+      "$ref": "#/$defs/duration"
+    },
+    "inputData": {
+      "$ref": "#/$defs/inputData"
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/metric"
+      }
+    },
+    "successGates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/successGate"
+      }
+    },
+    "failureGates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/failureGate"
+      }
+    },
+    "result": {
+      "$ref": "#/$defs/result"
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/error"
+      }
+    },
+    "battery": {
+      "$ref": "#/$defs/battery"
+    },
+    "temperature": {
+      "$ref": "#/$defs/temperature"
+    },
+    "memory": {
+      "$ref": "#/$defs/memory"
+    },
+    "fileSizes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/fileSize"
+      }
+    },
+    "licenses": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/license"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/limitation"
+      }
+    },
+    "recommendation": {
+      "$ref": "#/$defs/recommendation"
+    },
+    "evidenceFiles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/evidenceFile"
+      }
+    },
+    "privacyReview": {
+      "$ref": "#/$defs/privacyReview"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "result": {
+            "properties": {
+              "status": {
+                "const": "PASS"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "result": {
+            "properties": {
+              "gateSetStatus": {
+                "const": "Approved"
+              },
+              "requiredSlicesCompleted": {
+                "const": true
+              }
+            }
+          },
+          "privacyReview": {
+            "properties": {
+              "publicEvidenceSafe": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "nullableSha256": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/sha256"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "device": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profileId",
+        "kind",
+        "manufacturer",
+        "model",
+        "firmwareOrBuild",
+        "abi",
+        "ramMb",
+        "pageSizeBytes",
+        "inventoryStatus",
+        "uniqueHardwareIdentifierRecorded"
+      ],
+      "properties": {
+        "profileId": {
+          "enum": [
+            "D1",
+            "D2",
+            "D3",
+            "D4",
+            "D5",
+            "D6",
+            "D7"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "physical",
+            "remote_physical",
+            "emulator"
+          ]
+        },
+        "manufacturer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "firmwareOrBuild": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "securityPatch": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        },
+        "abi": {
+          "enum": [
+            "arm64-v8a",
+            "armeabi-v7a",
+            "x86_64",
+            "x86"
+          ]
+        },
+        "ramMb": {
+          "type": "integer",
+          "minimum": 512
+        },
+        "pageSizeBytes": {
+          "enum": [
+            4096,
+            16384
+          ]
+        },
+        "inventoryStatus": {
+          "const": "available"
+        },
+        "uniqueHardwareIdentifierRecorded": {
+          "const": false
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    },
+    "duration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plannedSeconds",
+        "actualSeconds",
+        "completed"
+      ],
+      "properties": {
+        "plannedSeconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "actualSeconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "completed": {
+          "type": "boolean"
+        },
+        "monotonicClockUsed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "inputData": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "classification",
+        "manifestId",
+        "manifestSha256",
+        "fixtureIds",
+        "languages",
+        "acousticConditions",
+        "consentReference",
+        "containsRealMeetingData"
+      ],
+      "properties": {
+        "classification": {
+          "enum": [
+            "synthetic",
+            "generated_text",
+            "purpose_recorded_consented",
+            "public_licensed",
+            "none"
+          ]
+        },
+        "manifestId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "manifestSha256": {
+          "$ref": "#/$defs/nullableSha256"
+        },
+        "fixtureIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "uniqueItems": true
+        },
+        "languages": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "ru",
+              "en",
+              "mixed-ru-en",
+              "non-speech",
+              "not-applicable"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "acousticConditions": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "clean",
+              "noise",
+              "near-field",
+              "far-field",
+              "overlap",
+              "speakerphone",
+              "tv-negative",
+              "silence",
+              "not-applicable"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "speakerCountMin": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "speakerCountMax": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "consentReference": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "containsRealMeetingData": {
+          "const": false
+        },
+        "generatorVersion": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 160
+        }
+      }
+    },
+    "metric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "value",
+        "unit",
+        "aggregation",
+        "slice",
+        "sampleCount",
+        "measurementSource"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_.-]{1,99}$"
+        },
+        "value": {
+          "type": [
+            "number",
+            "integer",
+            "boolean",
+            "string"
+          ]
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "aggregation": {
+          "enum": [
+            "raw",
+            "count",
+            "sum",
+            "mean",
+            "median",
+            "min",
+            "max",
+            "p50",
+            "p95",
+            "p99",
+            "ratio",
+            "categorical"
+          ]
+        },
+        "slice": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "sampleCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "measurementSource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 500
+        }
+      }
+    },
+    "gateBase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "approvalStatus",
+        "source",
+        "metric",
+        "operator",
+        "threshold",
+        "unit",
+        "observed",
+        "outcome",
+        "mandatory",
+        "scope"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^GATE-[A-Z0-9-]+$"
+        },
+        "kind": {
+          "enum": [
+            "success",
+            "failure"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "approvalStatus": {
+          "enum": [
+            "Proposed",
+            "Approved"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "metric": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "operator": {
+          "enum": [
+            "<",
+            "<=",
+            "=",
+            ">=",
+            ">",
+            "between",
+            "contains",
+            "not_contains",
+            "all",
+            "none",
+            "custom"
+          ]
+        },
+        "threshold": {
+          "type": [
+            "number",
+            "integer",
+            "boolean",
+            "string",
+            "null"
+          ]
+        },
+        "unit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 40
+        },
+        "observed": {
+          "type": [
+            "number",
+            "integer",
+            "boolean",
+            "string",
+            "null"
+          ]
+        },
+        "outcome": {
+          "enum": [
+            "met",
+            "not_met",
+            "triggered",
+            "not_triggered",
+            "not_evaluated"
+          ]
+        },
+        "mandatory": {
+          "type": "boolean"
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 1000
+        }
+      }
+    },
+    "successGate": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/gateBase"
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "success"
+            },
+            "outcome": {
+              "enum": [
+                "met",
+                "not_met",
+                "not_evaluated"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "failureGate": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/gateBase"
+        },
+        {
+          "properties": {
+            "kind": {
+              "const": "failure"
+            },
+            "outcome": {
+              "enum": [
+                "triggered",
+                "not_triggered",
+                "not_evaluated"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "gateSetStatus",
+        "requiredSlicesCompleted",
+        "rationale",
+        "invalidatedRunCount"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "NOT_RUN",
+            "INCONCLUSIVE",
+            "PASS",
+            "FAIL"
+          ]
+        },
+        "gateSetStatus": {
+          "enum": [
+            "Proposed",
+            "Approved",
+            "Mixed"
+          ]
+        },
+        "requiredSlicesCompleted": {
+          "type": "boolean"
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "invalidatedRunCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "stage",
+        "count",
+        "retryable",
+        "redactedSummary",
+        "sensitiveContentPresent"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{2,79}$"
+        },
+        "stage": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "redactedSummary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "sensitiveContentPresent": {
+          "const": false
+        }
+      }
+    },
+    "battery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "applicable",
+        "startPercent",
+        "endPercent",
+        "energyMwh",
+        "baselineRatio",
+        "chargerState",
+        "screenState",
+        "measurementSource",
+        "notApplicableReason"
+      ],
+      "properties": {
+        "applicable": {
+          "type": "boolean"
+        },
+        "startPercent": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
+        },
+        "endPercent": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 100
+        },
+        "energyMwh": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "baselineRatio": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "chargerState": {
+          "enum": [
+            "unplugged",
+            "charging",
+            "full",
+            "unknown",
+            "not-applicable"
+          ]
+        },
+        "screenState": {
+          "enum": [
+            "on",
+            "off",
+            "mixed",
+            "not-applicable"
+          ]
+        },
+        "measurementSource": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 160
+        },
+        "notApplicableReason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 500
+        }
+      }
+    },
+    "temperature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "applicable",
+        "startCelsius",
+        "endCelsius",
+        "maxCelsius",
+        "startThermalStatus",
+        "maxThermalStatus",
+        "measurementSource",
+        "notApplicableReason"
+      ],
+      "properties": {
+        "applicable": {
+          "type": "boolean"
+        },
+        "startCelsius": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": -50,
+          "maximum": 150
+        },
+        "endCelsius": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": -50,
+          "maximum": 150
+        },
+        "maxCelsius": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": -50,
+          "maximum": 150
+        },
+        "startThermalStatus": {
+          "$ref": "#/$defs/nullableThermalStatus"
+        },
+        "maxThermalStatus": {
+          "$ref": "#/$defs/nullableThermalStatus"
+        },
+        "measurementSource": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 160
+        },
+        "notApplicableReason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 500
+        }
+      }
+    },
+    "nullableThermalStatus": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "NONE",
+        "LIGHT",
+        "MODERATE",
+        "SEVERE",
+        "CRITICAL",
+        "EMERGENCY",
+        "SHUTDOWN",
+        "UNKNOWN",
+        null
+      ]
+    },
+    "memory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "applicable",
+        "peakPssMb",
+        "peakRssMb",
+        "peakNativeHeapMb",
+        "oomCount",
+        "trimOrPressureObserved",
+        "measurementSource",
+        "notApplicableReason"
+      ],
+      "properties": {
+        "applicable": {
+          "type": "boolean"
+        },
+        "peakPssMb": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "peakRssMb": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "peakNativeHeapMb": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "oomCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "trimOrPressureObserved": {
+          "type": "boolean"
+        },
+        "measurementSource": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 160
+        },
+        "notApplicableReason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 500
+        }
+      }
+    },
+    "fileSize": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact",
+        "bytes",
+        "sha256",
+        "classification"
+      ],
+      "properties": {
+        "artifact": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sha256": {
+          "$ref": "#/$defs/nullableSha256"
+        },
+        "classification": {
+          "enum": [
+            "synthetic",
+            "public-sanitized",
+            "internal-sensitive",
+            "restricted"
+          ]
+        }
+      }
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifactId",
+        "category",
+        "version",
+        "sha256",
+        "licenseId",
+        "licenseReviewState",
+        "evaluationRightsConfirmed",
+        "redistributionRights",
+        "evidenceLocator"
+      ],
+      "properties": {
+        "artifactId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "category": {
+          "enum": [
+            "source-code",
+            "native-binary",
+            "model-definition",
+            "model-weight",
+            "dataset",
+            "font",
+            "icon",
+            "tool",
+            "other"
+          ]
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "sha256": {
+          "$ref": "#/$defs/nullableSha256"
+        },
+        "licenseId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "licenseReviewState": {
+          "enum": [
+            "PROPOSED",
+            "EVALUATION_APPROVED",
+            "ADMISSION_REVIEW",
+            "ADMITTED",
+            "REJECTED",
+            "REVOKED"
+          ]
+        },
+        "evaluationRightsConfirmed": {
+          "type": "boolean"
+        },
+        "redistributionRights": {
+          "enum": [
+            "allowed",
+            "restricted",
+            "forbidden",
+            "unknown",
+            "not-applicable"
+          ]
+        },
+        "evidenceLocator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      }
+    },
+    "limitation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "severity",
+        "description",
+        "blocksVerdict"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^LIMIT-[A-Z0-9-]+$"
+        },
+        "severity": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "blocksVerdict": {
+          "type": "boolean"
+        }
+      }
+    },
+    "recommendation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision",
+        "rationale",
+        "fallback",
+        "ownerAction"
+      ],
+      "properties": {
+        "decision": {
+          "enum": [
+            "GO",
+            "ITERATE",
+            "FALLBACK",
+            "NO_GO",
+            "BLOCKED"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        },
+        "fallback": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1000
+        },
+        "ownerAction": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 1000
+        }
+      }
+    },
+    "evidenceFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "storage",
+        "locator",
+        "sha256",
+        "classification",
+        "containsPersonalData",
+        "containsSecret",
+        "containsRawAudio",
+        "retentionUntil",
+        "verified"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "kind": {
+          "enum": [
+            "json-result",
+            "markdown-report",
+            "trace",
+            "metrics",
+            "log",
+            "chart",
+            "fixture-manifest",
+            "license-evidence",
+            "other"
+          ]
+        },
+        "storage": {
+          "enum": [
+            "repository",
+            "controlled-local",
+            "controlled-private"
+          ]
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "classification": {
+          "enum": [
+            "public-sanitized",
+            "internal-sensitive",
+            "restricted"
+          ]
+        },
+        "containsPersonalData": {
+          "type": "boolean"
+        },
+        "containsSecret": {
+          "type": "boolean"
+        },
+        "containsRawAudio": {
+          "type": "boolean"
+        },
+        "retentionUntil": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "verified": {
+          "type": "boolean"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "storage": {
+                "const": "repository"
+              }
+            },
+            "required": [
+              "storage"
+            ]
+          },
+          "then": {
+            "properties": {
+              "classification": {
+                "const": "public-sanitized"
+              },
+              "containsPersonalData": {
+                "const": false
+              },
+              "containsSecret": {
+                "const": false
+              },
+              "containsRawAudio": {
+                "const": false
+              }
+            }
+          }
+        }
+      ]
+    },
+    "privacyReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "publicEvidenceSafe",
+        "secretScanPassed",
+        "personalDataScanPassed",
+        "forbiddenContentLoggingCheckPassed",
+        "reviewerRole",
+        "notes"
+      ],
+      "properties": {
+        "publicEvidenceSafe": {
+          "type": "boolean"
+        },
+        "secretScanPassed": {
+          "type": "boolean"
+        },
+        "personalDataScanPassed": {
+          "type": "boolean"
+        },
+        "forbiddenContentLoggingCheckPassed": {
+          "type": "boolean"
+        },
+        "reviewerRole": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 1000
+        }
+      }
+    }
+  }
+}
