@@ -19,6 +19,9 @@ dependencyResolutionManagement {
 rootProject.name = "Dora"
 
 include(":app")
+
 include(":core:common")
+
 include(":core:model")
+
 include(":core:testing")

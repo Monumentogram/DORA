@@ -5,22 +5,23 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 
 class DoraAndroidApplicationPlugin : Plugin<Project> {
-    override fun apply(target: Project) = with(target) {
-        pluginManager.apply("com.android.application")
+    override fun apply(target: Project) =
+        with(target) {
+            pluginManager.apply("com.android.application")
 
-        extensions.configure<ApplicationExtension> {
-            compileSdk = 36
+            extensions.configure<ApplicationExtension> {
+                compileSdk = DoraAndroidSdk.COMPILE
 
-            defaultConfig {
-                minSdk = 28
-                targetSdk = 36
-                testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-            }
+                defaultConfig {
+                    minSdk = DoraAndroidSdk.MIN
+                    targetSdk = DoraAndroidSdk.TARGET
+                    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+                }
 
-            compileOptions {
-                sourceCompatibility = JavaVersion.VERSION_17
-                targetCompatibility = JavaVersion.VERSION_17
+                compileOptions {
+                    sourceCompatibility = JavaVersion.VERSION_17
+                    targetCompatibility = JavaVersion.VERSION_17
+                }
             }
         }
-    }
 }

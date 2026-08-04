@@ -1,22 +1,15 @@
 package com.monumentogram.dora.bootstrap
 
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import com.monumentogram.dora.bootstrap.ui.BootstrapNavigationLayout
+import com.monumentogram.dora.bootstrap.ui.DoraBootstrapApp
+import com.monumentogram.dora.bootstrap.ui.theme.DoraBootstrapTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,41 +17,29 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             DoraBootstrapTheme {
-                BootstrapScreen()
+                DoraBootstrapApp()
             }
         }
     }
 }
 
+@Preview(name = "Compact light", widthDp = 360, heightDp = 800, showBackground = true)
 @Composable
-private fun DoraBootstrapTheme(content: @Composable () -> Unit) {
-    MaterialTheme(content = content)
-}
+private fun CompactLightPreview() = DoraBootstrapTheme(darkTheme = false) { DoraBootstrapApp() }
 
+@Preview(
+    name = "Compact dark",
+    widthDp = 360,
+    heightDp = 800,
+    uiMode = Configuration.UI_MODE_NIGHT_YES,
+    showBackground = true,
+)
 @Composable
-private fun BootstrapScreen(modifier: Modifier = Modifier) {
-    Surface(modifier = modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier.padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Text(
-                text = stringResource(R.string.app_name),
-                style = MaterialTheme.typography.headlineLarge,
-            )
-            Text(
-                text = stringResource(R.string.bootstrap_message),
-                style = MaterialTheme.typography.bodyLarge,
-            )
-        }
-    }
-}
+private fun CompactDarkPreview() = DoraBootstrapTheme(darkTheme = true) { DoraBootstrapApp() }
 
-@Preview(showBackground = true)
+@Preview(name = "Wide light", widthDp = 840, heightDp = 900, showBackground = true)
 @Composable
-private fun BootstrapScreenPreview() {
-    DoraBootstrapTheme {
-        BootstrapScreen()
+private fun WideLightPreview() =
+    DoraBootstrapTheme(darkTheme = false) {
+        DoraBootstrapApp(forcedLayout = BootstrapNavigationLayout.WIDE_RAIL)
     }
-}
