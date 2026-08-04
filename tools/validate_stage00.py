@@ -1,0 +1,175 @@
+#!/usr/bin/env python3
+"""Validate the immutable handoff inputs and Stage 00 governance artifacts."""
+
+from __future__ import annotations
+
+import csv
+import json
+import re
+import sys
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def fail(message: str) -> None:
+    raise ValueError(message)
+
+
+def read_text(relative_path: str) -> str:
+    path = ROOT / relative_path
+    if not path.is_file():
+        fail(f"Missing required file: {relative_path}")
+    return path.read_text(encoding="utf-8")
+
+
+def validate_tokens() -> None:
+    relative_path = "docs/design/DORA_MVP1_DESIGN_TOKENS.json"
+    tokens = json.loads(read_text(relative_path))
+    expected_sections = {
+        "meta",
+        "color",
+        "typography",
+        "spacing",
+        "radius",
+        "size",
+        "motion",
+        "waveform",
+        "layout",
+    }
+    missing = expected_sections.difference(tokens)
+    if missing:
+        fail(f"Design tokens are missing sections: {sorted(missing)}")
+
+
+def validate_screen_inventory() -> None:
+    relative_path = "docs/design/DORA_MVP1_SCREEN_INVENTORY.csv"
+    path = ROOT / relative_path
+    if not path.is_file():
+        fail(f"Missing required file: {relative_path}")
+
+    with path.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+
+    required_columns = {
+        "screen_id",
+        "area",
+        "name_ru",
+        "mvp_priority",
+        "compact_pattern",
+        "expanded_pattern",
+        "primary_action",
+        "key_states",
+    }
+    columns = set(rows[0].keys()) if rows else set()
+    if columns != required_columns:
+        fail(f"Unexpected screen inventory columns: {sorted(columns)}")
+
+    screen_ids = [row["screen_id"] for row in rows]
+    if len(screen_ids) != 42:
+        fail(f"Expected 42 screen inventory rows, found {len(screen_ids)}")
+    if len(screen_ids) != len(set(screen_ids)):
+        fail("Screen inventory contains duplicate screen_id values")
+    if any(not value.strip() for row in rows for value in row.values()):
+        fail("Screen inventory contains empty required values")
+
+
+def validate_decisions() -> None:
+    text = read_text("docs/DORA_MVP1_PRODUCT_DECISIONS.md")
+    ids = re.findall(r"^## (DEC-\d{3})\.", text, flags=re.MULTILINE)
+    if len(ids) != 42 or len(ids) != len(set(ids)):
+        fail(f"Expected 42 unique product decisions, found {len(ids)}")
+
+    required_labels = (
+        "Статус:",
+        "Приоритет:",
+        "Источник:",
+        "Срок принятия:",
+        "Варианты:",
+        "Рекомендуемый вариант:",
+        "Обоснование:",
+        "Влияние на архитектуру:",
+        "Влияние на UX:",
+        "Обратимость:",
+        "Связанные задачи:",
+    )
+    sections = re.split(r"(?=^## DEC-\d{3}\.)", text, flags=re.MULTILINE)[1:]
+    for section, decision_id in zip(sections, ids, strict=True):
+        missing = [label for label in required_labels if label not in section]
+        if missing:
+            fail(f"{decision_id} is missing fields: {missing}")
+
+
+def validate_readiness() -> None:
+    text = read_text("docs/DORA_MVP1_IMPLEMENTATION_READINESS.md")
+    ids = re.findall(r"^\| (RDY-\d{3}) \|", text, flags=re.MULTILINE)
+    if len(ids) != 30 or len(ids) != len(set(ids)):
+        fail(f"Expected 30 unique readiness findings, found {len(ids)}")
+    if "READY WITH CONDITIONS" not in text:
+        fail("Implementation readiness status is missing")
+    traceability_header = (
+        "| Требование | Модуль/порт | Экран | Данные | Ключевой тест | Этап |"
+    )
+    if traceability_header not in text:
+        fail("Traceability matrix heading is missing")
+
+
+def validate_governance() -> None:
+    required_files = (
+        "AGENTS.md",
+        "CONTRIBUTING.md",
+        "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+        "docs/DORA_MVP1_STAGE_STATUS.md",
+        "docs/adr/ADR-0001-android-bootstrap.md",
+    )
+    for relative_path in required_files:
+        read_text(relative_path)
+
+
+def validate_android_bootstrap() -> None:
+    catalog = read_text("android/gradle/libs.versions.toml")
+    build_logic = read_text("android/build-logic/build.gradle.kts")
+    wrapper = read_text("android/gradle/wrapper/gradle-wrapper.properties")
+    app_build = read_text("android/app/build.gradle.kts")
+
+    catalog_agp = re.search(r'^agp = "([^"]+)"$', catalog, flags=re.MULTILINE)
+    build_logic_agp = re.search(
+        r'com\.android\.tools\.build:gradle:([^"]+)', build_logic
+    )
+    if not catalog_agp or not build_logic_agp:
+        fail("Unable to locate both Android Gradle plugin pins")
+    if catalog_agp.group(1) != build_logic_agp.group(1):
+        fail("Android Gradle plugin pins drifted between catalog and build-logic")
+
+    if "gradle-9.5.0-bin.zip" not in wrapper:
+        fail("Unexpected Gradle wrapper distribution")
+    if not re.search(r"^distributionSha256Sum=[0-9a-f]{64}$", wrapper, re.MULTILINE):
+        fail("Gradle wrapper SHA-256 pin is missing")
+    if 'applicationId = "com.monumentogram.dora.bootstrap"' not in app_build:
+        fail("Stage 00 non-release application ID changed without an ADR update")
+    read_text("android/native-libs-allowlist.txt")
+
+
+def main() -> int:
+    checks = (
+        validate_tokens,
+        validate_screen_inventory,
+        validate_decisions,
+        validate_readiness,
+        validate_governance,
+        validate_android_bootstrap,
+    )
+    for check in checks:
+        check()
+        print(f"PASS {check.__name__}")
+    print("Stage 00 artifact validation passed")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except (OSError, ValueError, json.JSONDecodeError) as error:
+        print(f"FAIL {error}", file=sys.stderr)
+        sys.exit(1)
