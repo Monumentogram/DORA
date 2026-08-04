@@ -1,0 +1,228 @@
+{
+  "meta": {
+    "name": "Dora MVP 1 Design Tokens",
+    "version": "1.0.0-proposal",
+    "checkedAt": "2026-08-04",
+    "status": "design-handoff-not-production-code",
+    "sourceSpec": "../DORA_MVP1_DESIGN_SPEC.md",
+    "format": "Dora token handoff v1",
+    "notes": [
+      "Semantic component tokens must be used instead of raw brand colors.",
+      "All final color pairs require contrast verification in their real component state.",
+      "DP and SP values are logical Android design units, not pixels."
+    ]
+  },
+  "color": {
+    "brand": {
+      "ocean950": { "$type": "color", "$value": "#031126" },
+      "ocean900": { "$type": "color", "$value": "#061A35" },
+      "ocean800": { "$type": "color", "$value": "#08294E" },
+      "ocean700": { "$type": "color", "$value": "#0B3B6F" },
+      "ocean600": { "$type": "color", "$value": "#0C5193" },
+      "ocean500": { "$type": "color", "$value": "#0E6FBF" },
+      "ocean400": { "$type": "color", "$value": "#24A3E6" },
+      "ocean300": { "$type": "color", "$value": "#66C6F0" },
+      "ocean200": { "$type": "color", "$value": "#A8DFF6" },
+      "ocean100": { "$type": "color", "$value": "#D8F1FC" },
+      "ocean50": { "$type": "color", "$value": "#F1FAFE" },
+      "referenceApproxAverage": { "$type": "color", "$value": "#091A37" },
+      "referenceDominantBucket": { "$type": "color", "$value": "#001030" }
+    },
+    "semantic": {
+      "light": {
+        "background": { "$type": "color", "$value": "#F5F8FC" },
+        "surface": { "$type": "color", "$value": "#FFFFFF" },
+        "surfaceAlt": { "$type": "color", "$value": "#E9EFF6" },
+        "surfaceElevated": { "$type": "color", "$value": "#FFFFFF" },
+        "surfaceDeep": { "$type": "color", "$value": "#061A35" },
+        "textPrimary": { "$type": "color", "$value": "#0B1525" },
+        "textSecondary": { "$type": "color", "$value": "#536176" },
+        "textDisabled": { "$type": "color", "$value": "#8895A7" },
+        "textOnDeep": { "$type": "color", "$value": "#F7FBFF" },
+        "outline": { "$type": "color", "$value": "#C7D1DE" },
+        "outlineStrong": { "$type": "color", "$value": "#8796A9" },
+        "primary": { "$type": "color", "$value": "#0C5193" },
+        "onPrimary": { "$type": "color", "$value": "#FFFFFF" },
+        "primaryContainer": { "$type": "color", "$value": "#D8F1FC" },
+        "onPrimaryContainer": { "$type": "color", "$value": "#031126" },
+        "success": { "$type": "color", "$value": "#2E7D5B" },
+        "successContainer": { "$type": "color", "$value": "#DDF3E8" },
+        "warning": { "$type": "color", "$value": "#A55B00" },
+        "warningContainer": { "$type": "color", "$value": "#FFF0D8" },
+        "error": { "$type": "color", "$value": "#B3261E" },
+        "errorContainer": { "$type": "color", "$value": "#F9DEDC" },
+        "review": { "$type": "color", "$value": "#6E56CF" },
+        "reviewContainer": { "$type": "color", "$value": "#EEE8FF" },
+        "waveActive": { "$type": "color", "$value": "#66C6F0" },
+        "waveQuiet": { "$type": "color", "$value": "#2C709D" },
+        "wavePaused": { "$type": "color", "$value": "#7F91A9" },
+        "recordIndicator": { "$type": "color", "$value": "#E45C54" },
+        "scrim": { "$type": "color", "$value": "#031126B8" }
+      },
+      "dark": {
+        "background": { "$type": "color", "$value": "#020A15" },
+        "surface": { "$type": "color", "$value": "#071426" },
+        "surfaceAlt": { "$type": "color", "$value": "#0E2037" },
+        "surfaceElevated": { "$type": "color", "$value": "#122A47" },
+        "surfaceDeep": { "$type": "color", "$value": "#061A35" },
+        "textPrimary": { "$type": "color", "$value": "#F2F6FB" },
+        "textSecondary": { "$type": "color", "$value": "#A8B6C9" },
+        "textDisabled": { "$type": "color", "$value": "#6F8198" },
+        "textOnDeep": { "$type": "color", "$value": "#F7FBFF" },
+        "outline": { "$type": "color", "$value": "#2F425C" },
+        "outlineStrong": { "$type": "color", "$value": "#7890AD" },
+        "primary": { "$type": "color", "$value": "#66C6F0" },
+        "onPrimary": { "$type": "color", "$value": "#031126" },
+        "primaryContainer": { "$type": "color", "$value": "#0B3B6F" },
+        "onPrimaryContainer": { "$type": "color", "$value": "#D8F1FC" },
+        "success": { "$type": "color", "$value": "#7BE0AD" },
+        "successContainer": { "$type": "color", "$value": "#123B2B" },
+        "warning": { "$type": "color", "$value": "#FFC56B" },
+        "warningContainer": { "$type": "color", "$value": "#4A2C00" },
+        "error": { "$type": "color", "$value": "#FFB4AB" },
+        "errorContainer": { "$type": "color", "$value": "#601410" },
+        "review": { "$type": "color", "$value": "#C9B8FF" },
+        "reviewContainer": { "$type": "color", "$value": "#30265D" },
+        "waveActive": { "$type": "color", "$value": "#66C6F0" },
+        "waveQuiet": { "$type": "color", "$value": "#2C709D" },
+        "wavePaused": { "$type": "color", "$value": "#7F91A9" },
+        "recordIndicator": { "$type": "color", "$value": "#FF8A82" },
+        "scrim": { "$type": "color", "$value": "#000000B8" }
+      }
+    },
+    "speaker": {
+      "speaker1": { "accent": "#1A73E8", "container": "#E8F0FE" },
+      "speaker2": { "accent": "#7C4DFF", "container": "#EEE8FF" },
+      "speaker3": { "accent": "#00897B", "container": "#E0F4F0" },
+      "speaker4": { "accent": "#A45C00", "container": "#FFF0DB" },
+      "speaker5": { "accent": "#B83280", "container": "#FBE4F1" },
+      "speaker6": { "accent": "#2E7D32", "container": "#E6F4E7" }
+    }
+  },
+  "typography": {
+    "fontFamilyPrimary": { "$type": "fontFamily", "$value": "Manrope" },
+    "fontFamilyFallback": { "$type": "fontFamily", "$value": "Roboto, sans-serif" },
+    "fontFamilyNumericFallback": { "$type": "fontFamily", "$value": "Roboto Mono" },
+    "styles": {
+      "displayLarge": { "fontSizeSp": 40, "lineHeightSp": 44, "fontWeight": 600 },
+      "headlineLarge": { "fontSizeSp": 32, "lineHeightSp": 38, "fontWeight": 600 },
+      "headlineMedium": { "fontSizeSp": 28, "lineHeightSp": 34, "fontWeight": 600 },
+      "headlineSmall": { "fontSizeSp": 24, "lineHeightSp": 30, "fontWeight": 600 },
+      "titleLarge": { "fontSizeSp": 20, "lineHeightSp": 26, "fontWeight": 600 },
+      "titleMedium": { "fontSizeSp": 18, "lineHeightSp": 24, "fontWeight": 600 },
+      "bodyLarge": { "fontSizeSp": 16, "lineHeightSp": 24, "fontWeight": 400 },
+      "bodyMedium": { "fontSizeSp": 14, "lineHeightSp": 20, "fontWeight": 400 },
+      "labelLarge": { "fontSizeSp": 14, "lineHeightSp": 20, "fontWeight": 600 },
+      "labelMedium": { "fontSizeSp": 12, "lineHeightSp": 16, "fontWeight": 600 },
+      "caption": { "fontSizeSp": 11, "lineHeightSp": 16, "fontWeight": 500 }
+    }
+  },
+  "spacing": {
+    "space0": { "$type": "dimension", "$value": { "value": 0, "unit": "dp" } },
+    "space1": { "$type": "dimension", "$value": { "value": 4, "unit": "dp" } },
+    "space2": { "$type": "dimension", "$value": { "value": 8, "unit": "dp" } },
+    "space3": { "$type": "dimension", "$value": { "value": 12, "unit": "dp" } },
+    "space4": { "$type": "dimension", "$value": { "value": 16, "unit": "dp" } },
+    "space5": { "$type": "dimension", "$value": { "value": 20, "unit": "dp" } },
+    "space6": { "$type": "dimension", "$value": { "value": 24, "unit": "dp" } },
+    "space8": { "$type": "dimension", "$value": { "value": 32, "unit": "dp" } },
+    "space10": { "$type": "dimension", "$value": { "value": 40, "unit": "dp" } },
+    "space12": { "$type": "dimension", "$value": { "value": 48, "unit": "dp" } },
+    "space16": { "$type": "dimension", "$value": { "value": 64, "unit": "dp" } }
+  },
+  "radius": {
+    "xs": { "$type": "dimension", "$value": { "value": 8, "unit": "dp" } },
+    "sm": { "$type": "dimension", "$value": { "value": 12, "unit": "dp" } },
+    "md": { "$type": "dimension", "$value": { "value": 16, "unit": "dp" } },
+    "lg": { "$type": "dimension", "$value": { "value": 20, "unit": "dp" } },
+    "xl": { "$type": "dimension", "$value": { "value": 28, "unit": "dp" } },
+    "full": { "$type": "dimension", "$value": { "value": 999, "unit": "dp" } }
+  },
+  "size": {
+    "touchMinimum": { "$type": "dimension", "$value": { "value": 48, "unit": "dp" } },
+    "buttonPrimaryHeight": { "$type": "dimension", "$value": { "value": 52, "unit": "dp" } },
+    "recordControl": { "$type": "dimension", "$value": { "value": 68, "unit": "dp" } },
+    "listRowMinimum": { "$type": "dimension", "$value": { "value": 64, "unit": "dp" } },
+    "dockVisibleHeight": { "$type": "dimension", "$value": { "value": 72, "unit": "dp" } },
+    "readingColumnMaximum": { "$type": "dimension", "$value": { "value": 720, "unit": "dp" } },
+    "transcriptColumnMaximum": { "$type": "dimension", "$value": { "value": 680, "unit": "dp" } }
+  },
+  "motion": {
+    "durationMs": {
+      "instant": 100,
+      "component": 180,
+      "container": 280,
+      "completion": 400
+    },
+    "waveform": {
+      "targetFps": 20,
+      "weakDeviceFps": 10,
+      "reducedMotionFps": 4,
+      "backgroundFps": 0
+    },
+    "principles": [
+      "Respect system animator scale.",
+      "No decorative infinite rotation.",
+      "No more than three flashes per second.",
+      "State meaning must remain when motion is disabled."
+    ]
+  },
+  "waveform": {
+    "componentName": "DoraWave",
+    "compactPortrait": {
+      "containerDp": 264,
+      "innerDiscDp": 136,
+      "barCount": 72,
+      "barWidthDp": 3,
+      "barMinLengthDp": 6,
+      "barMaxLengthDp": 40,
+      "outerArcWidthDp": 2
+    },
+    "compactLandscape": {
+      "containerDp": 216,
+      "innerDiscDp": 112,
+      "barCount": 60,
+      "barWidthDp": 2.5,
+      "barMinLengthDp": 5,
+      "barMaxLengthDp": 30,
+      "outerArcWidthDp": 2
+    },
+    "expanded": {
+      "containerDp": 320,
+      "innerDiscDp": 160,
+      "barCount": 72,
+      "barWidthDp": 3,
+      "barMinLengthDp": 8,
+      "barMaxLengthDp": 48,
+      "outerArcWidthDp": 3
+    },
+    "dataContract": {
+      "audioFrameMs": 20,
+      "displayRange": "0..1 normalized amplitude",
+      "historyDirection": "newest at 12 o'clock, older clockwise",
+      "silenceBoundarySeconds": 90,
+      "semantics": "one merged node; announce state changes only"
+    }
+  },
+  "layout": {
+    "marginsDp": {
+      "compact": 16,
+      "medium": 24,
+      "expanded": 32
+    },
+    "referenceFramesDp": {
+      "minimumCompact": [320, 568],
+      "compactBaseline": [360, 800],
+      "largePhone": [412, 915],
+      "compactLandscape": [800, 360],
+      "medium": [600, 960],
+      "expanded": [840, 900],
+      "largeWindow": [1280, 800]
+    },
+    "navigation": {
+      "compact": "four destinations plus separate central record action",
+      "medium": "navigation rail or bottom bar for compact height/tabletop",
+      "expanded": "navigation rail with list-detail panes"
+    }
+  }
+}

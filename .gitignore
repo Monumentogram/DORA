@@ -1,0 +1,66 @@
+# Operating systems
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editors and IDEs
+.idea/
+.vscode/
+*.iml
+*.code-workspace
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+local.properties
+keystore.properties
+secrets.properties
+google-services.json
+service-account*.json
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
+
+# Build systems and generated artifacts
+.gradle/
+**/build/
+out/
+captures/
+.externalNativeBuild/
+.cxx/
+.kotlin/
+.ksp/
+*.apk
+*.aab
+*.ap_
+*.aar
+*.dex
+*.class
+*.so
+*.hprof
+*.prof
+*.log
+
+# Temporary files and caches
+tmp/
+temp/
+.cache/
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+
+# Local Codex/agent state
+.codex/
+.agents/
