@@ -6,7 +6,7 @@ Repository: public `Monumentogram/DORA` by temporary owner-approved decision (AD
 Default branch: `main`\
 Active stage: `Stage 00 — GitHub, Implementation Readiness & Bootstrap`\
 Active branch: `stage/00-readiness-bootstrap`\
-Stage state: **READY FOR REVIEW — NOT MERGED**
+Stage state: **READY FOR OWNER REVIEW — STAGE 00 COMPLETE — NOT MERGED**
 
 ## Completed evidence
 
@@ -16,10 +16,13 @@ Stage state: **READY FOR REVIEW — NOT MERGED**
 - Stage 00 branch created from the baseline;
 - technical plan, design spec, token JSON and screen inventory read completely;
 - readiness, product decision, executable backlog and cross-stage Test Strategy records created;
-- minimal JVM 17/API 28–36 Android bootstrap created with pinned dependencies and lockfiles;
-- local handoff validation, four module unit-test suites, lint and debug APK assembly passed;
+- minimal JVM 17/API 28–36 Android bootstrap created with pinned dependencies and reviewed lockfiles;
+- adaptive Stage 00 shell exposes exactly four placeholder destinations in a compact dock or wide rail, plus a separate honest non-recording action; it has light/dark themes, edge-to-edge layout, accessibility semantics and one documented Kotlin mapping from the normative design-token JSON;
+- meaningful model/layout/theme unit tests and Compose instrumentation infrastructure cover navigation selection and the recording stub without requesting microphone permission;
+- local handoff validation, Spotless/ktfmt formatting, Detekt static analysis, four module unit-test suites, instrumentation-test compilation, lint and debug APK assembly passed;
+- the `androidx.core` catalog pin and dependency locks now consistently resolve `core-ktx:1.18.0`;
 - transitive native inventory allowlisted; ELF and APK 16-KiB alignment checks passed;
-- least-privilege, commit-SHA-pinned GitHub Actions workflow created.
+- least-privilege, commit-SHA-pinned GitHub Actions workflow validates the expanded gates and retains the debug bootstrap APK artifact for seven days;
 - Stage 00 branch published and ready-for-review Pull Request #1 opened against `main` without merge;
 - PR-triggered `android-bootstrap` workflow completed successfully;
 - pre-public audit covered all refs/full Git history, every commit tree, tracked filenames/binaries, commit identities, PR text, Actions configuration and all existing Actions logs; checksum-verified Gitleaks 8.30.1 produced one manually verified natural-language false positive and no real secret;

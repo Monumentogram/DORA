@@ -1,6 +1,6 @@
 # Dora
 
-Dora is an Android local-first meeting assistant. This repository currently contains the approved MVP 1 technical/design baseline and the Stage 00 implementation bootstrap. Product features are intentionally not implemented yet.
+Dora is an Android local-first meeting assistant. This repository currently contains the approved MVP 1 technical/design baseline and the Stage 00 implementation bootstrap. The Android shell exposes four placeholder destinations and a clearly unavailable recording action; microphone permission and product features are intentionally not implemented yet.
 
 Repository visibility is temporarily public so GitHub Free can enforce server-side protection of `main`; see [`ADR-0002`](docs/adr/ADR-0002-public-repository-for-branch-protection.md). This is not a product release or approval to store private data, credentials, signing material or production configuration in the repository.
 
@@ -28,11 +28,21 @@ On macOS/Linux:
 
 ```bash
 cd android
+./gradlew spotlessCheck detekt
 ./gradlew :app:testDebugUnitTest :core:common:testDebugUnitTest :core:model:testDebugUnitTest :core:testing:testDebugUnitTest
+./gradlew :app:compileDebugAndroidTestKotlin
 ./gradlew :app:lintDebug :core:common:lintDebug :core:model:lintDebug :core:testing:lintDebug :app:assembleDebug
 ```
 
 On Windows, use the same tasks through `gradlew.bat`.
+
+With an emulator or physical device connected, run the Compose UI suite:
+
+```bash
+./gradlew :app:connectedDebugAndroidTest
+```
+
+The test levels, required environments and future physical/release gates are defined in [`docs/DORA_MVP1_TEST_STRATEGY.md`](docs/DORA_MVP1_TEST_STRATEGY.md). Stage 00 requires instrumentation tests to compile in CI; device execution becomes mandatory only with a scoped Android behavior task.
 
 Validate the handoff and governance artifacts from the repository root:
 
@@ -47,3 +57,5 @@ python3 tools/verify_apk_native_alignment.py android/app/build/outputs/apk/debug
 ```
 
 Dependency lockfiles are generated artifacts but are committed. Update them only in an intentional dependency PR by running the canonical Gradle tasks with `--write-locks`, reviewing every resolved version, and rerunning the normal CI command without that flag.
+
+The CI job uploads `dora-stage00-debug-apk` for seven days. It contains only the debug bootstrap application ID and no production signing credentials or configuration.

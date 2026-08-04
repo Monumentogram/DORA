@@ -184,6 +184,7 @@ def validate_android_bootstrap() -> None:
     build_logic = read_text("android/build-logic/build.gradle.kts")
     wrapper = read_text("android/gradle/wrapper/gradle-wrapper.properties")
     app_build = read_text("android/app/build.gradle.kts")
+    app_manifest = read_text("android/app/src/main/AndroidManifest.xml")
 
     catalog_agp = re.search(r'^agp = "([^"]+)"$', catalog, flags=re.MULTILINE)
     build_logic_agp = re.search(
@@ -200,6 +201,12 @@ def validate_android_bootstrap() -> None:
         fail("Gradle wrapper SHA-256 pin is missing")
     if 'applicationId = "com.monumentogram.dora.bootstrap"' not in app_build:
         fail("Stage 00 non-release application ID changed without an ADR update")
+    if "android.permission.RECORD_AUDIO" in app_manifest:
+        fail("Stage 00 bootstrap must not request microphone permission")
+    read_text(
+        "android/app/src/androidTest/kotlin/com/monumentogram/dora/bootstrap/"
+        "DoraBootstrapAppTest.kt"
+    )
     read_text("android/native-libs-allowlist.txt")
 
 
