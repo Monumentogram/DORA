@@ -1,10 +1,11 @@
 # Dora MVP 1 — Privacy Data Flow and Threat Model
 
 Task: `GOV-PRIVACY-001`
-Version: 1.0
-Date: 4 August 2026
+Version: 1.1
+Date: 5 August 2026
+Owner decisions effective: 4 August 2026 (`OD-01`–`OD-04`, `OD-08`–`OD-10`)
 Status: governance baseline; **not** a production security approval or legal opinion
-Data rule for this stage: synthetic data first; no real meeting or personal data
+Data rule for this stage: synthetic data only until controlled non-public storage is configured; no real meeting data
 
 ## 1. Purpose and scope
 
@@ -209,6 +210,8 @@ Flash wear levelling prevents a guaranteed physical overwrite claim. The approve
 
 - every collected item has `expiresAt`, custodian and deletion method before collection;
 - withdrawal and purpose completion are deletion triggers;
+- under `OD-09`, raw purpose-recorded audio is deleted no later than 90 days after PoC closure, annotations no later than 180 days, and consent-withdrawal deletion completes no later than 30 days;
+- a shorter mandatory consent or Legal period always takes precedence;
 - participant mapping and raw content are deleted from every controlled copy and backup according to the approved period;
 - a public hash/reference is removed when it creates linkability, even though immutable Git history may make full retraction impossible; therefore such identifiers must not be published initially;
 - deletion evidence contains opaque sample IDs and timestamps, not names or content.
@@ -217,7 +220,8 @@ Flash wear levelling prevents a guaranteed physical overwrite claim. The approve
 
 - Synthetic signal, generated text and staged non-personal fixtures are the default.
 - No real meeting is recorded or committed during Stage 0 preparation.
-- Purpose-recorded speech requires adult informed consent for recording, named PoC evaluation, human access if any, retention and deletion.
+- Purpose-recorded adult volunteer speech is allowed in principle by `OD-03`, but requires informed consent for recording, named PoC evaluation, human access if any, approved retention/deletion, a named custodian and controlled non-public storage.
+- Until controlled non-public storage is configured, only synthetic data may be used and no raw trace/audio may be retained.
 - Consent for evaluation does not permit training, commercial redistribution or a public dataset.
 - Corpus split is immutable and participant/meeting isolated as defined in Dataset Governance.
 - RU, EN and mixed-language slices include clean/noisy, near/far, multiple speakers and overlap without using personal names or confidential topics.
@@ -256,15 +260,16 @@ Before any production or cloud path, this document must be extended with the act
 
 ## 15. Unresolved blockers
 
+Owner decisions `OD-01`–`OD-10` are resolved. In particular, `OD-09` fixes the Stage 0 maximum retention periods; it does not replace the operational controls below.
+
 | Blocker | Owner action | Until resolved |
 |---|---|---|
-| Markets, legal roles and final consent wording | Product owner + Legal approve DEC-001/002/027 | no production recording beta or real meeting collection |
-| PoC evidence store and custodian | owner names controlled location/custodian | raw traces and purpose-recorded audio are not retained |
-| Purpose-recorded retention | owner approves OD-09 or shorter Legal rule | synthetic data only |
+| Markets, legal roles and final production consent wording | Product owner + Legal resolve DEC-001 and production lawful-basis/copy review | no production recording beta; real meeting collection remains prohibited by `OD-03` |
+| PoC evidence store and custodian | owner names controlled non-public location/custodian and verifies access/deletion | synthetic data only; raw traces/audio and purpose-recorded speech are not retained |
 | Cloud provider/region/key custody | Security/Legal/Product ADR | no outbound content path |
 | Exact model/native artifacts | IP/Security/Engineering admission | no download, mirror, commit or runtime use |
 | Production deletion topology | Data/Security/Backend design and tests | no production deletion claim |
 
 ## 16. Exit statement for GOV-PRIVACY-001
 
-The governance baseline now identifies data, locations, forbidden logging/publication, local and optional cloud flows, trust boundaries, threats, mitigations, deletion, test-data controls and corporate local-mode requirements. It does **not** authorize real data, cloud processing or production implementation; those remain blocked by the owner, legal, artifact and technical gates above.
+The owner-approved Stage 0 baseline now identifies data, locations, forbidden logging/publication, local and optional cloud flows, trust boundaries, threats, mitigations, deletion, test-data controls and corporate local-mode requirements. It does **not** authorize real meetings, cloud processing or production implementation; those remain blocked by the legal, storage, artifact and technical gates above.

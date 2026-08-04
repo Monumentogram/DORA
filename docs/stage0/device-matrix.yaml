@@ -1,10 +1,47 @@
 schema_version: 1
 matrix_id: dora-mvp1-stage0-device-matrix
-updated: "2026-08-04"
+updated: "2026-08-05"
 stage: "Stage 0A"
 owner_task: "POC-DEVICE-001"
 inventory_confirmed: false
 production_support_claims_allowed: false
+
+owner_decision:
+  id: OD-06
+  status: Approved
+  approved_on: "2026-08-04"
+  owner: "Project owner"
+  choice: B
+  scope: "One owner-provided physical Android phone for the first exploratory run."
+  additional_device_procurement: false
+
+first_exploratory_campaign:
+  mode: single_owner_physical_phone
+  status: blocked_pending_connection_and_automatic_inventory
+  measured_run_allowed: false
+  unblock_condition: >-
+    Connect the phone and automatically record its sanitized model, Android API,
+    firmware/build, ABI and RAM before the first measured run.
+  required_automatic_fields:
+    - sanitized_device_model
+    - android_api
+    - os_build_or_firmware
+    - abi
+    - ram_mb
+  discovery_method: >-
+    Use Android platform diagnostics such as adb/getprop and /proc/meminfo; do not
+    copy device serial, account data or private local paths into public evidence.
+  profile_assignment: >-
+    Assign the phone to a D1-D7 profile only after measured characteristics are
+    known. If no profile matches, record the mismatch as a limitation.
+  matrix_support_verdict: INCONCLUSIVE
+  measured_run_result_rule: >-
+    FAIL is allowed when an approved failure gate triggers; otherwise missing D1-D7
+    coverage requires INCONCLUSIVE. PASS is forbidden for this campaign.
+  forbidden_claims:
+    - "Global PASS for D1-D7"
+    - "Supported Android devices"
+    - "Eight-hour behavior beyond the discovered device and recorded conditions"
 
 status_vocabulary:
   - available
@@ -21,7 +58,9 @@ status_semantics:
 inventory:
   confirmed_physical_devices: []
   confirmed_emulator_images: []
-  note: "No physical device or emulator image has been confirmed in this Stage 0A change."
+  note: >-
+    The owner intends to provide one physical Android phone, but it is not connected
+    or identified in this Stage 0A change. All D1-D7 availability values remain unknown.
 
 abi_policy:
   required_physical:
@@ -318,6 +357,8 @@ profiles:
 
 execution_rules:
   - "A required profile with availability=unknown blocks a final matrix verdict but may allow an explicitly exploratory run."
+  - "The first exploratory run is blocked until the owner's physical phone is connected and automatically inventoried."
+  - "One discovered phone may satisfy only its matching execution slice; it never produces a global D1-D7 PASS or a device-support claim."
   - "An emulator never substitutes for physical microphone, battery, thermal, flash or OEM evidence."
   - "A physical device never substitutes for the required 16-KiB emulator/image when its page size is not verified."
   - "Exact model, firmware, security patch and OTA date are added only after owner confirmation."
@@ -325,7 +366,7 @@ execution_rules:
   - "Pass/fail and support claims are scoped to profiles that actually produced valid evidence."
 
 procurement_and_ota:
-  owner: unknown
-  procurement_decision: required
+  owner: "Project owner"
+  procurement_decision: "Approved choice B: do not procure additional devices for the first exploratory run."
   ota_policy: "Record current firmware; do not auto-update during a benchmark campaign; rerun critical gates after update."
   battery_health_policy: "Record health/state where available and exclude materially degraded batteries from comparative energy claims."

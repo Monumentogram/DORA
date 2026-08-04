@@ -1,7 +1,8 @@
 # Dora MVP 1 — Executable Backlog
 
 Версия: Stage 0A\
-Дата: 4 августа 2026 года\
+Дата: 5 августа 2026 года\
+Owner approvals effective: 4 августа 2026 года (`OD-01`–`OD-10`)\
 Источник порядка: Technical Plan §37/§39, Design Spec §36/§39 и readiness gates.
 
 ## 1. Правила выполнения
@@ -22,7 +23,7 @@
 | S00-GIT-002 | DONE | Создать initial private `Monumentogram/DORA` и опубликовать baseline `main` | S00-GIT-001 | repository created without an extra initial commit; remote `main` указывает на exact baseline; later visibility change governed by ADR-0002 |
 | S00-GIT-003 | DONE | Создать `stage/00-readiness-bootstrap` | S00-GIT-002 | branch fork point = baseline; `main` unchanged |
 | S00-DOC-001 | DONE | Полностью прочитать и cross-check четыре baseline artifacts | S00-GIT-003 | readiness review with P0/P1/P2 and traceability |
-| S00-DOC-002 | DONE | Создать Product Decisions registry | S00-DOC-001 | DEC-001–DEC-042; no silent `Approved` decisions |
+| S00-DOC-002 | DONE | Создать Product Decisions registry | S00-DOC-001 | стабильный namespace DEC-001–DEC-042 и scoped Stage 0A owner approval record; каждый `Approved` status имеет прямой owner/date/scope record |
 | S00-DOC-003 | DONE | Зафиксировать backlog, status, ADR и Codex rules | S00-DOC-001 | root `AGENTS.md`, contributing/status/backlog/ADR linked |
 | S00-TEST-001 | DONE | Создать сквозную Test Strategy | S00-DOC-001 | уровни unit→release, environment/pass gates, CI tiers и physical matrix закреплены в `DORA_MVP1_TEST_STRATEGY.md` |
 | S00-ANDROID-001 | DONE | Создать минимальный Android skeleton | DEC-005/006/015; ADR-0001 | wrapper/JVM 17/min 28/compile-target 36; adaptive four-destination placeholder shell; separate non-recording action; light/dark semantic token mapping; no microphone permission/product behavior |
@@ -42,15 +43,15 @@
 
 | ID | State | Size | Задача | Depends on | Deliverable | Acceptance / fallback |
 |---|---|---:|---|---|---|---|
-| GOV-001 | BLOCKED | M | Markets/legal/consent decision pack | DEC-001/002/027 | counsel/product memo, versioned copy scopes | recording beta and cloud stay off until approved |
+| GOV-001 | BLOCKED | M | Markets/legal/consent decision pack | DEC-001; production Legal review | counsel/product memo, market-specific lawful-basis and versioned copy scopes | `OD-02` approves only Stage 0 reminder checkbox; recording beta and production consent claims stay off |
 | GOV-PRIVACY-001 | DONE | M | Privacy/data-flow/threat assumptions v1 | DEC-009/014/015 | `docs/stage0/DORA_MVP1_PRIVACY_DATA_FLOW_THREAT_MODEL.md` | data inventory, forbidden telemetry, trust boundaries, deletion and local/corporate modes documented; unresolved cloud/legal flows explicitly blocked |
 | GOV-TRADEMARK-001 | TODO | S | Name/package/trademark availability | DEC-025 | evidence + approved production identifier candidate | no registration/store asset before approval |
 | GOV-IP-001 | DONE | S | Reference/font/model asset IP rules | DEC-024/042 | `docs/stage0/DORA_MVP1_IP_ASSET_POLICY.md` | artifact-level provenance, license, attribution and admission rules documented; no model/binary/reference asset admitted |
 | GOV-REPO-001 | TODO | S | Long-term repository visibility, account plan and licensing/contribution terms | ADR-0002, owner | explicit decision and, only if approved, matching license/contribution updates | before merging an external contribution or returning the repository to private visibility |
-| POC-GATES-001 | BLOCKED | M | Approve versioned gates and result schema | DEC-020 | `docs/stage0/DORA_MVP1_POC_GATES.md`, `docs/stage0/benchmark-result.schema.json`; owner-approved thresholds pending | no PoC pass/fail without named approved gate/fallback |
-| POC-DEVICE-001 | READY | M | Device/firmware matrix D1–D7 | DEC-005/006/018 | preparatory `docs/stage0/device-matrix.yaml`; physical inventory/procurement confirmation pending | API/OEM/RAM/route/16-KБ requirements recorded without claiming device availability |
-| POC-DATA-001 | BLOCKED | L | RU/EN/mixed corpus governance and manifest | DEC-001/014 | foundation in `docs/stage0/DORA_MVP1_DATASET_GOVERNANCE.md`; consent/custodian/retention and actual manifest pending | no private audio in Git; no participant leakage across split; no dataset created yet |
-| POC-CAPTURE-001 | BLOCKED | XL | 1 h/1–3–8 h AudioRecord microphone FGS | GOV-001, POC-GATES-001, POC-DEVICE-001 | isolated capture app/harness + traces | start/finalize/data-loss/energy gates; fallback narrows supported matrix |
+| POC-GATES-001 | DONE | M | Approve versioned gates and result schema | DEC-020 / `OD-05` | `docs/stage0/DORA_MVP1_POC_GATES.md`, `docs/stage0/benchmark-result.schema.json`; defined `stage0-v0.1` gates Approved for Stage 0 | six undefined section 7 thresholds remain `Proposed`; affected verdict stays `INCONCLUSIVE` until pre-run approval |
+| POC-DEVICE-001 | READY | M | Device/firmware matrix D1–D7 and first-run inventory | DEC-005/006/018; `OD-06` | `docs/stage0/device-matrix.yaml`; one owner phone selected but not connected or identified | before first measured run auto-discover model/API/firmware/ABI/RAM; all availability remains `unknown`; no D1–D7 PASS/support claim |
+| POC-DATA-001 | BLOCKED | L | RU/EN/mixed corpus governance and manifest | `OD-03`/`OD-04`/`OD-08`/`OD-09`; controlled storage/custodian/consent process | foundation in `docs/stage0/DORA_MVP1_DATASET_GOVERNANCE.md`; owner purpose/retention rules approved, actual manifest absent | synthetic-first; purpose-recorded data blocked until consent/private store/access/deletion controls; real meetings and training prohibited |
+| POC-CAPTURE-001 | BLOCKED | XL | Exploratory physical-microphone capture, then 1 h/1–3–8 h matrix | DEC-002/003/004/018/020; `OD-01`/`OD-06`/`OD-08`; POC-DEVICE-001 | isolated capture app/harness + sanitized report; no raw trace/audio in Git | first measured run waits for phone connection/automatic inventory and synthetic fixture/evidence plan; one-phone result is not D1–D7 PASS |
 | POC-RECOVERY-001 | BLOCKED | XL | Encrypted writer kill/recovery | POC-GATES-001, POC-DEVICE-001, ADR-AUDIO-001 | ≥100 injected kill points, authenticated prefix report | Tink only if all committed prefix recoverable; otherwise sealed microfiles |
 | POC-VAD-001 | BLOCKED | L | 90 s silence/max-cap deterministic replay | POC-GATES-001, POC-DATA-001 | fake monotonic replay and acoustic matrix | 89.5/90/90.5, resume 89.9, noise, >10 min; documented profile |
 | POC-ASR-001 | BLOCKED | XL | Local RU/EN/mixed ASR benchmark | POC-GATES-001, POC-DATA-001, POC-DEVICE-001 | pinned artifacts/digests + WER/RTF/PSS/thermal report | select tier or Vosk/hybrid fallback; 16-КБ runtime evidence |

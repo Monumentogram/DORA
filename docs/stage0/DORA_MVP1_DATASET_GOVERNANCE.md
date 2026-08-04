@@ -1,9 +1,10 @@
 # Dora MVP 1 — Dataset Governance
 
 Task: `POC-DATA-001` foundation
-Version: 1.0
-Date: 4 August 2026
-Status: governance draft; owner/Legal decisions pending; **no audio dataset is created by this change**
+Version: 1.1
+Date: 5 August 2026
+Owner decisions effective: 4 August 2026 (`OD-03`, `OD-04`, `OD-08`, `OD-09`)
+Status: owner Stage 0 policy approved; consent process, custodian and controlled storage pending; **no audio dataset is created by this change**
 
 ## 1. Scope
 
@@ -22,7 +23,7 @@ The default order is:
 |---|---|---|---|
 | `SYNTHETIC_SIGNAL` | generated silence, tones, bounded noise, deterministic PCM frames | allowed in a scoped task after generator/seed manifest | small non-personal fixtures or generator source may be committed; large audio stays outside Git |
 | `GENERATED_TEXT` | scripted RU/EN/mixed transcripts and labels with no real person/organization | allowed | may be committed after secret/PII/copyright review |
-| `PURPOSE_RECORDED` | adults read or enact approved scripts specifically for Dora evaluation | blocked until consent, custodian, access and retention are approved | raw audio/transcript never Git/LFS/Actions |
+| `PURPOSE_RECORDED` | adults read or enact approved scripts specifically for Dora evaluation | owner-authorized in principle by `OD-03`, but blocked until consent, custodian, controlled storage, access and deletion controls are operational | raw audio/transcript never Git/LFS/Actions |
 | `PUBLIC_LICENSED` | external dataset with exact version and compatible terms | blocked until IP/data review | manifest metadata only unless redistribution is explicitly approved |
 | `REAL_MEETING` | authentic workplace/private meeting or call | prohibited in Stage 0 preparation and public repository | never Git/LFS/Actions; future collection needs separate owner/Legal/research approval |
 | `DERIVED_SENSITIVE` | transcript, speaker intervals/embeddings, errors, annotations from a person | follows the source’s restrictions | never public merely because audio was removed |
@@ -214,11 +215,11 @@ The Git-safe manifest is a redacted projection. It omits participant mapping, co
 
 Until a custodian and controlled storage are named, purpose-recorded collection is blocked.
 
+Under `OD-08`, controlled non-public storage is also a hard boundary for retained raw traces and audio. Until it is configured, Stage 0 uses only synthetic data; local ad hoc folders, GitHub Actions artifacts and personal cloud storage are not substitutes.
+
 ## 11. Retention
 
-Retention must be set before collection. Indefinite storage and “until useful” are prohibited.
-
-Proposed Stage 0 default pending OD-09:
+Retention must be set before collection. Indefinite storage and “until useful” are prohibited. The following maximums were approved by the Project owner in `OD-09` on 4 August 2026:
 
 - raw purpose-recorded audio: delete no later than 90 days after the named PoC closes;
 - derived transcript/annotations: delete no later than 180 days after the named PoC closes;
@@ -227,7 +228,7 @@ Proposed Stage 0 default pending OD-09:
 - synthetic generators/source: may be retained with the repository when original, non-personal and license-safe;
 - consent/deletion evidence: retain only for the period approved by Legal, separate from research content.
 
-The shorter applicable period wins. If OD-09 is not approved and Legal has not supplied another exact period, only synthetic data may be used.
+The shorter applicable mandatory period wins. These maximums do not authorize collection: purpose-recorded data still requires the controls in sections 4, 5, 10 and 16.
 
 ## 12. Deletion and withdrawal
 
@@ -295,7 +296,7 @@ If unconsented speech, personal data, a secret, scope drift or unauthorized acce
 
 A PoC using anything beyond synthetic data is `READY` only when:
 
-- OD-03, OD-04, OD-08 and OD-09 are approved or replaced by stricter decisions;
+- owner policy `OD-03`, `OD-04`, `OD-08` and `OD-09` is approved — **satisfied 4 August 2026**;
 - exact hypothesis, slices and sample counts are frozen;
 - consent form/process and collection script are approved;
 - custodian, controlled storage and access roles are named;
@@ -307,4 +308,4 @@ A PoC using anything beyond synthetic data is `READY` only when:
 
 ## 17. Stage 0A exit
 
-The governance foundation now defines allowed data, consent, purpose, language/acoustic coverage, immutable development/test/evaluation separation, access, retention, deletion, public reporting and the training prohibition. The actual corpus remains uncreated and `POC-DATA-001` remains blocked until the owner/custodian/legal prerequisites are satisfied.
+The owner-approved governance foundation defines allowed data, consent, purpose, language/acoustic coverage, immutable development/test/evaluation separation, access, retention, deletion, public reporting and the training prohibition. The actual corpus remains uncreated. `POC-DATA-001` remains blocked on consent-process approval, a named custodian, controlled non-public storage, access/deletion dry-run and an immutable manifest—not on `OD-03`/`OD-04`/`OD-08`/`OD-09`.

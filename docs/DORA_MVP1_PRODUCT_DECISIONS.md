@@ -2,9 +2,10 @@
 
 Статус документа: единый реестр решений владельца продукта\
 Дата: 4 августа 2026 года\
-Основание: Technical Plan §40 P1–P20 и Design Spec §40.2 D-P1–D-P22.
+Последнее изменение: прямое утверждение владельцем решений Stage 0 `OD-01`–`OD-10`\
+Основание: Technical Plan §40 P1–P20, Design Spec §40.2 D-P1–D-P22 и owner approval record Stage 0A.
 
-`Provisional` означает, что рекомендуемый baseline можно использовать для обратимого PoC/bootstrap, но это не заменяет явное решение владельца. `Proposed` запрещает необратимые или пользовательские действия до утверждения. Ни один статус ниже не повышен до `Approved` молча.
+`Provisional` означает, что рекомендуемый baseline можно использовать для обратимого PoC/bootstrap, но это не заменяет явное решение владельца. `Proposed` запрещает необратимые или пользовательские действия до утверждения. `Approved` означает прямое решение владельца в указанной области; оно не расширяет scope на production, Legal или release без явной формулировки. Статусы, повышенные этим изменением, ссылаются на `OD-01`–`OD-10`, владельца и дату.
 
 ## DEC-001. Рынки, юрлицо и B2C/B2B
 
@@ -22,12 +23,15 @@
 
 ## DEC-002. Подтверждение согласия участников
 
-Статус: Provisional\
+Статус: Approved\
 Приоритет: P0\
 Источник: Technical P2; Design D-P7\
+Дата решения: 4 августа 2026 года\
+Владелец решения: Project owner\
+Область утверждения: Stage 0 capture PoC; production legal wording остаётся отдельным gate\
 Срок принятия: до production recording flow\
 Варианты: checkbox каждую встречу; one-tap acknowledgement; enterprise-configured text\
-Рекомендуемый вариант: явный compact checkbox перед каждой записью до legal/usability evidence\
+Рекомендуемый вариант: утверждён владельцем — отдельный checkbox перед каждым тестовым запуском; это напоминание, а не юридическое разрешение (`OD-02`)\
 Обоснование: напоминает обязанность пользователя, не выдавая действие за юридическое разрешение.\
 Влияние на архитектуру: versioned acknowledgement/consent audit отдельно от Android permission.\
 Влияние на UX: friction preflight, market-specific copy, accessibility.\
@@ -36,12 +40,15 @@
 
 ## DEC-003. Mic-only scope
 
-Статус: Provisional\
+Статус: Approved\
 Приоритет: P0\
 Источник: Technical P3\
+Дата решения: 4 августа 2026 года\
+Владелец решения: Project owner\
+Область утверждения: Stage 0 capture PoC; production scope требует отдельного admission/Legal gate\
 Срок принятия: до capture PoC и публичного scope\
 Варианты: физический microphone only; system/playback capture; call recording\
-Рекомендуемый вариант: только microphone input; system/call recording исключены\
+Рекомендуемый вариант: утверждён владельцем — только физический microphone input; system/call recording исключены (`OD-01`)\
 Обоснование: обычное Android-приложение не может надёжно обещать downlink/uplink capture.\
 Влияние на архитектуру: `AudioRecord`/route diagnostics без privileged APIs.\
 Влияние на UX: честные source labels и ограничения speakerphone.\
@@ -50,12 +57,15 @@
 
 ## DEC-004. Только ручной Start
 
-Статус: Provisional\
+Статус: Approved\
 Приоритет: P0\
 Источник: Technical P4\
+Дата решения: 4 августа 2026 года\
+Владелец решения: Project owner\
+Область утверждения: Stage 0 capture PoC; production flow требует отдельного admission/Legal gate\
 Срок принятия: до capture implementation\
 Варианты: explicit Start; speech-triggered; passive always-on\
-Рекомендуемый вариант: user-visible explicit Start, без hidden/passive auto-record\
+Рекомендуемый вариант: утверждён владельцем — user-visible explicit Start/Stop, без hidden/passive auto-record (`OD-01`)\
 Обоснование: соответствует Android FGS, Play policy и privacy expectation.\
 Влияние на архитектуру: mic FGS создаётся из visible Activity/user action; reboot только recovery notification.\
 Влияние на UX: preflight, persistent notification/banner, explicit Resume.\
@@ -120,12 +130,15 @@
 
 ## DEC-009. Cloud по умолчанию выключено
 
-Статус: Provisional\
+Статус: Approved\
 Приоритет: P0\
 Источник: Technical P9; Design OB-02/05\
+Дата решения: 4 августа 2026 года\
+Владелец решения: Project owner\
+Область утверждения: local-first baseline; cloud требует отдельного будущего consent\
 Срок принятия: до любого outbound network path\
 Варианты: Local default; Hybrid default; Cloud default\
-Рекомендуемый вариант: Local; cloud только после отдельного scope consent\
+Рекомендуемый вариант: утверждён владельцем — Local; cloud выключено до отдельного явного scope consent (`OD-10`)\
 Обоснование: local-first core и отсутствие silent upload.\
 Влияние на архитектуру: safe local defaults, zero-call test, consent gate/outbox.\
 Влияние на UX: Local не визуально хуже cloud; clear location labels.\
@@ -190,12 +203,15 @@
 
 ## DEC-014. Использование встреч для улучшения моделей
 
-Статус: Provisional\
+Статус: Approved\
 Приоритет: P0\
 Источник: Technical P14\
+Дата решения: 4 августа 2026 года\
+Владелец решения: Project owner\
+Область утверждения: все Stage 0 данные\
 Срок принятия: до corpus collection/telemetry\
 Варианты: never; separate research opt-in; bundled processing consent\
-Рекомендуемый вариант: нет по умолчанию; только отдельный research consent/process\
+Рекомендуемый вариант: утверждён владельцем — обучение и улучшение моделей запрещены без отдельного будущего research consent (`OD-04`)\
 Обоснование: training/human review не является необходимой обработкой.\
 Влияние на архитектуру: isolated research store, access/retention/license manifest.\
 Влияние на UX: отдельное добровольное согласие без dark patterns.\
@@ -204,12 +220,15 @@
 
 ## DEC-015. Account requirement
 
-Статус: Provisional\
+Статус: Approved\
 Приоритет: P0\
 Источник: Technical P15\
+Дата решения: 4 августа 2026 года\
+Владелец решения: Project owner\
+Область утверждения: local mode\
 Срок принятия: Stage 00/1 architecture\
 Варианты: account required; local anonymous + optional cloud account\
-Рекомендуемый вариант: local mode без account; OIDC only for cloud/portability\
+Рекомендуемый вариант: утверждён владельцем — local mode работает без account, network и GMS; OIDC возможен только для отдельно согласованного cloud (`OD-10`)\
 Обоснование: сеть/auth не должны блокировать capture/history.\
 Влияние на архитектуру: local canonical IDs and optional OIDC subject.\
 Влияние на UX: no login wall; account shell deferred.\
@@ -246,12 +265,15 @@
 
 ## DEC-018. Восьмичасовая запись
 
-Статус: Provisional\
+Статус: Approved\
 Приоритет: P0\
 Источник: Technical P18\
+Дата решения: 4 августа 2026 года\
+Владелец решения: Project owner\
+Область утверждения: Stage 0 evidence и будущие claims только на tested matrix\
 Срок принятия: до claims и capture acceptance\
 Варианты: guaranteed all devices; best effort tested matrix; out of scope\
-Рекомендуемый вариант: supported only on tested device/power/storage conditions\
+Рекомендуемый вариант: утверждён владельцем — восемь часов являются best effort только для проверенных устройств, firmware, питания, температуры и свободного места (`OD-07`)\
 Обоснование: OEM, battery, thermal and storage prevent universal guarantee.\
 Влияние на архитектуру: rotation/checkpoint/guard/endurance suite.\
 Влияние на UX: preflight budget and honest supported-device guidance.\
@@ -274,12 +296,15 @@
 
 ## DEC-020. Quality and reliability gates
 
-Статус: Proposed\
+Статус: Approved\
 Приоритет: P0\
 Источник: Technical P20/§35\
+Дата решения: 4 августа 2026 года\
+Владелец решения: Project owner\
+Область утверждения: Gate Set `stage0-v0.1` только для Stage 0; undefined thresholds не утверждены\
 Срок принятия: до Stage 0 go/no-go review\
 Варианты: approve proposed gates; approve versioned changes with rationale\
-Рекомендуемый вариант: утвердить после baseline measurements, без снижения critical data-loss/source gates\
+Рекомендуемый вариант: утверждён владельцем — явно определённые gates `stage0-v0.1` утверждены; critical data-loss/source/consent gates нельзя снижать после просмотра результата; §7 `Unresolved thresholds` остаётся `Proposed` (`OD-05`)\
 Обоснование: PoC needs an objective exit criterion.\
 Влияние на архитектуру: tier/fallback/support matrix.\
 Влияние на UX: low-confidence and unsupported-device behavior.\
@@ -372,12 +397,15 @@
 
 ## DEC-027. Per-session acknowledgement pattern
 
-Статус: Proposed\
+Статус: Approved\
 Приоритет: P0\
 Источник: Design D-P7; Technical P2\
+Дата решения: 4 августа 2026 года\
+Владелец решения: Project owner\
+Область утверждения: Stage 0 capture PoC; production Legal/usability evidence остаётся обязательным\
 Срок принятия: before production preflight\
 Варианты: checkbox; one-tap; enterprise policy\
-Рекомендуемый вариант: checkbox pending Legal + prototype D2\
+Рекомендуемый вариант: утверждён владельцем — required compact checkbox перед каждым тестовым запуском (`OD-02`)\
 Обоснование: clarity must be balanced with habituation.\
 Влияние на архитектуру: versioned acknowledgement record.\
 Влияние на UX: time-to-start and comprehension.\
@@ -593,6 +621,89 @@
 Влияние на UX: subtle atmosphere only.\
 Обратимость: high.\
 Связанные задачи: `DES-FOUND-001`, `GOV-IP-001`.
+
+## Stage 0A owner approval record
+
+Дата решений: 4 августа 2026 года\
+Владелец решений: Project owner\
+Статус: `OD-01`–`OD-10` — Approved только в указанной Stage 0 scope. Этот раздел не расширяет стабильный namespace `DEC-001`–`DEC-042` и не разрешает production implementation.
+
+Crosswalk: `OD-01` → `DEC-003`/`DEC-004`; `OD-02` → `DEC-002`/`DEC-027`; `OD-03`/`OD-04` → `DEC-014` и Dataset Governance; `OD-05` → `DEC-020`; `OD-06`/`OD-07` → `DEC-018` и device matrix; `OD-08` → `DEC-009`/`DEC-014` и Privacy policy; `OD-09` → Stage 0 research retention, без изменения production `DEC-013`; `OD-10` → `DEC-009`/`DEC-015`.
+
+### OD-01. Первый технический PoC Stage 0
+
+Статус: Approved\
+Приоритет: P0\
+Источник: прямое решение Owner `OD-01`; Technical §39\
+Дата решения: 4 августа 2026 года\
+Владелец решения: Project owner\
+Область утверждения: только изолированный Stage 0 PoC\
+Утверждённое решение: первым выполняется `POC-CAPTURE-001`; только физический микрофон и явный Start/Stop, без звонков, system audio и passive recording\
+Обоснование: capture reliability — первый технический риск; PoC должен оставаться disposable evidence harness, а не production implementation.\
+Влияние на архитектуру: отдельная PoC-ветка/модуль, no admission without ADR; никаких production identity/signing/backend/storage/ML dependencies.\
+Влияние на UX: явный Start, видимое recording state и отдельный acknowledgement.\
+Обратимость: высокая до production admission.\
+Связанные задачи: `POC-CAPTURE-001`, `POC-BATTERY-001`.
+
+### OD-03 и OD-04. Разрешённые данные Stage 0
+
+Статус: Approved\
+Приоритет: P0\
+Источник: Owner `OD-03`/`OD-04`; Dataset Governance\
+Дата решения: 4 августа 2026 года\
+Владелец решения: Project owner\
+Область утверждения: Stage 0 evaluation data\
+Утверждённое решение: synthetic data first; специально записанные тестовые фразы взрослых добровольцев — только с отдельным consent; реальные совещания запрещены; training/model improvement требует нового research consent\
+Обоснование: evaluation purpose не даёт прав на реальные meetings, public data release или training.\
+Влияние на архитектуру: immutable manifest/splits, `trainingAllowed=false`, local/cloud boundary and deletion metadata.\
+Влияние на UX: recording/evaluation consent раздельны; отказ не влияет на account/product.\
+Обратимость: низкая после collection, поэтому scope фиксируется заранее.\
+Связанные задачи: `POC-DATA-001`, `POC-VAD-001`, `POC-ASR-001`, `POC-DIAR-001`.
+
+### OD-06. Охват устройств первого exploratory run
+
+Статус: Approved\
+Приоритет: P0\
+Источник: Owner `OD-06`; Technical §34.2/§39\
+Дата решения: 4 августа 2026 года\
+Владелец решения: Project owner\
+Область утверждения: первый exploratory run `POC-CAPTURE-001`\
+Утверждённое решение: использовать один физический Android-смартфон владельца; до первого измеряемого запуска автоматически определить model, Android API, firmware/build, ABI и RAM после подключения; до discovery availability=`unknown`; остальные устройства не закупать\
+Обоснование: один телефон позволяет настроить и измерить harness, но не доказывает D1–D7 coverage.\
+Влияние на архитектуру: pre-run device inventory gate; serial/account/private paths не входят в public evidence.\
+Влияние на UX: никаких support claims; первый результат ограничен конкретным discovered device.\
+Обратимость: высокая; matrix расширяется только новым evidence/owner decision.\
+Связанные задачи: `POC-DEVICE-001`, `POC-CAPTURE-001`.
+
+### OD-08. Хранение evidence Stage 0
+
+Статус: Approved\
+Приоритет: P0\
+Источник: Owner `OD-08`; Privacy Data Flow and Threat Model\
+Дата решения: 4 августа 2026 года\
+Владелец решения: Project owner\
+Область утверждения: Stage 0 PoC evidence\
+Утверждённое решение: GitHub содержит только sanitized reports и aggregate metrics; raw traces/audio — только controlled non-public storage; до его настройки разрешены только synthetic data\
+Обоснование: Git, PR и Actions публичны и не являются хранилищем чувствительного evidence.\
+Влияние на архитектуру: evidence classification, opaque locator/digest, redaction and cleanup gate before publication.\
+Влияние на UX: отсутствует.\
+Обратимость: низкая после public disclosure.\
+Связанные задачи: `GOV-PRIVACY-001`, `POC-DATA-001`, all `POC-*`.
+
+### OD-09. Retention тестовых данных Stage 0
+
+Статус: Approved\
+Приоритет: P0\
+Источник: Owner `OD-09`; Dataset Governance\
+Дата решения: 4 августа 2026 года\
+Владелец решения: Project owner\
+Область утверждения: purpose-recorded Stage 0 data; shorter mandatory term wins\
+Утверждённое решение: raw audio ≤90 дней после закрытия PoC; annotations ≤180 дней; withdrawal deletion ≤30 дней; более короткий обязательный срок имеет приоритет\
+Обоснование: indefinite retention запрещён; срок известен до collection.\
+Влияние на архитектуру: `expiresAt`, deletion state/receipt and custodian checklist.\
+Влияние на UX: срок и withdrawal path раскрываются до consent.\
+Обратимость: низкая после collection.\
+Связанные задачи: `POC-DATA-001`, `GOV-PRIVACY-001`.
 
 ## Decision update rule
 
