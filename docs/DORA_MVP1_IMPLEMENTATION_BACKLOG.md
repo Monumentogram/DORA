@@ -19,7 +19,7 @@
 | ID | Состояние | Задача | Зависимости | Результат / acceptance |
 |---|---|---|---|---|
 | S00-GIT-001 | DONE | Проверить baseline/local Git | — | root/branch/status/history/remote проверены; SHA `1be83e…` подтверждён |
-| S00-GIT-002 | DONE | Создать private `Monumentogram/DORA` и опубликовать baseline `main` | S00-GIT-001 | private repo; no extra initial commit; remote `main` указывает на exact baseline |
+| S00-GIT-002 | DONE | Создать initial private `Monumentogram/DORA` и опубликовать baseline `main` | S00-GIT-001 | repository created without an extra initial commit; remote `main` указывает на exact baseline; later visibility change governed by ADR-0002 |
 | S00-GIT-003 | DONE | Создать `stage/00-readiness-bootstrap` | S00-GIT-002 | branch fork point = baseline; `main` unchanged |
 | S00-DOC-001 | DONE | Полностью прочитать и cross-check четыре baseline artifacts | S00-GIT-003 | readiness review with P0/P1/P2 and traceability |
 | S00-DOC-002 | DONE | Создать Product Decisions registry | S00-DOC-001 | DEC-001–DEC-042; no silent `Approved` decisions |
@@ -27,9 +27,10 @@
 | S00-ANDROID-001 | DONE | Создать минимальный Android skeleton | DEC-005/006/015; ADR-0001 | wrapper/JVM 17/min 28/compile-target 36; placeholder only; four unit-test modules green |
 | S00-CI-001 | DONE | Добавить GitHub Actions CI | S00-ANDROID-001 | pinned least-privilege workflow validates wrapper/docs, locks, test/lint/assemble and native alignment |
 | S00-VERIFY-001 | DONE | Локально проверить clean checkout commands | S00-CI-001 | 186-task test/lint/assemble graph green; Stage 00 validator and 16-KiB ELF/APK gates green; generated artifacts ignored |
-| S00-PR-001 | DONE | Commit/push/open PR without merge | S00-VERIFY-001 | checked Stage 00 commit/branch published; draft PR #1 targets `main`; no merge |
+| S00-PR-001 | DONE | Commit/push/open PR without merge | S00-VERIFY-001 | checked Stage 00 commit/branch published; ready-for-review PR #1 targets `main`; no merge |
 | S00-CI-002 | DONE | Проверить/исправить GitHub Actions | S00-PR-001 | PR-triggered `android-bootstrap` completed successfully, including test/lint/assemble and native gates |
-| S00-GIT-004 | BLOCKED | Защитить `main` после появления stable check name | S00-CI-002 | GitHub API returned `403 Upgrade to GitHub Pro or make this repository public`; public is forbidden. Private repo remains procedural PR-only; owner must upgrade, then require GitHub Actions app `15368` check `android-bootstrap`, PR, linear history and conversation resolution, with force-push/delete disabled |
+| S00-SEC-001 | DONE | Провести pre-public secret/privacy audit | S00-CI-002 | checksum-verified Gitleaks 8.30.1 scanned all refs/full history and both branch trees; all three commit trees, filenames, identities, Actions configuration/logs and GitHub secret metadata were independently checked; no real secret, PII, private path or accidental artifact found |
+| S00-GIT-004 | DONE | Защитить `main` после появления stable check name | S00-SEC-001 | owner explicitly approved temporary public visibility; existing repository changed in place and API-verified public; `main` requires up-to-date GitHub Actions app `15368` check `android-bootstrap`, PR, linear history and conversation resolution; admin enforcement on, force-push/delete off; secret scanning and push protection enabled; ADR-0002 |
 
 ## 3. Stage 0 — обязательные governance и PoC
 
@@ -41,6 +42,7 @@
 | GOV-PRIVACY-001 | READY | M | Privacy/data-flow/threat assumptions v1 | DEC-009/014/015 | data inventory, forbidden telemetry, retention owners | no raw content in logs/analytics; unresolved flows explicitly blocked |
 | GOV-TRADEMARK-001 | TODO | S | Name/package/trademark availability | DEC-025 | evidence + approved production identifier candidate | no registration/store asset before approval |
 | GOV-IP-001 | READY | S | Reference/font/model asset IP rules | DEC-024/042 | controlled-reference policy and notices checklist | no unlicensed reference bitmap in repo/product |
+| GOV-REPO-001 | TODO | S | Long-term repository visibility, account plan and licensing/contribution terms | ADR-0002, owner | explicit decision and, only if approved, matching license/contribution updates | before merging an external contribution or returning the repository to private visibility |
 | POC-GATES-001 | BLOCKED | M | Approve versioned gates and result schema | DEC-020 | `benchmark-result.schema.json`, owner-approved thresholds | no PoC pass/fail without named gate/fallback |
 | POC-DEVICE-001 | READY | M | Device/firmware matrix D1–D7 | DEC-005/006/018 | `device-matrix.yaml`, procurement and OTA policy | API/OEM/RAM/route/16-KБ coverage recorded |
 | POC-DATA-001 | BLOCKED | L | RU/EN/mixed corpus governance and manifest | DEC-001/014 | consent/access/retention/annotation process; immutable split | no private audio in Git; no participant leakage across split |

@@ -28,7 +28,7 @@
 
 ### Можно делать сейчас
 
-- GitHub/private repository, branch/PR workflow и CI;
+- GitHub repository visibility/protection, branch/PR workflow и CI;
 - Gradle/Kotlin/Compose skeleton под JVM 17, `minSdk 28`, `compileSdk/targetSdk 36`;
 - version catalog, convention plugins, статические проверки и JVM smoke tests;
 - документацию, ADR, backlog, test schemas и полностью искусственные fixtures;

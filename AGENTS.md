@@ -31,7 +31,8 @@ The token JSON and screen inventory are normative handoff artifacts under their 
 - Never force-push, hard-reset, clean unknown files, delete user work or rewrite shared history.
 - Inspect `git status`, diff and staged diff. Stage only files belonging to the task.
 - Do not merge a PR unless the user explicitly scopes a later task to that merge.
-- Keep repository visibility private. Do not put secrets, signing material, private audio, credentials, tokens or unapproved model weights in Git, LFS, logs or Actions artifacts.
+- Repository visibility is temporarily public by the explicit owner decision recorded in `docs/adr/ADR-0002-public-repository-for-branch-protection.md`. Do not change visibility again without explicit owner scope, a fresh secret/privacy audit and verification that `main` protection remains enforceable.
+- Treat tracked content, Git history, Pull Requests and Actions logs as public. Do not put secrets, signing material, private audio, credentials, tokens or unapproved model weights in Git, LFS, logs or Actions artifacts.
 
 ## Change discipline
 

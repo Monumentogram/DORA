@@ -1,6 +1,6 @@
 # Contributing to Dora
 
-Dora uses a private, pull-request-only development workflow after the initial baseline publication.
+Dora currently uses a public, pull-request-only development workflow. Public visibility is the temporary owner-approved governance decision in `docs/adr/ADR-0002-public-repository-for-branch-protection.md`; it is not permission to publish private data, credentials or production configuration.
 
 ## Before starting
 
@@ -25,6 +25,8 @@ Suggested branch names:
 - Prefer squash merge only after review if repository policy later approves it; never force-push shared work.
 
 ## Repository safety
+
+Treat committed history, Pull Request content and GitHub Actions logs as publicly readable. Run an appropriate secret scan before publishing changes and investigate every finding without copying a suspected secret into an issue, PR or log.
 
 Never commit:
 
