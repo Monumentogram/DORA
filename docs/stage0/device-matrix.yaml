@@ -17,12 +17,12 @@ owner_decision:
 
 first_exploratory_campaign:
   mode: single_owner_physical_phone
-  status: replacement_build_install_pending
-  measured_run_allowed: false
+  status: ready_for_run_a_retry
+  measured_run_allowed: true
   unblock_condition: >-
-    Uninstall the differently signed f351695 test application, install prerelease
-    poc-capture-001-build-56fe23a, then repeat device preparation and the readable
-    in-app preflight. Only a successful replacement-build preflight can reopen Run A.
+    Satisfied on 2026-08-05 by an owner-provided replacement-build preflight after the
+    prescribed clean-install workflow. Only Run A is reopened; Run B and Run C remain
+    sequence-gated on review of the preceding valid sanitized run evidence.
   required_automatic_fields:
     - sanitized_device_model
     - android_api
@@ -35,9 +35,9 @@ first_exploratory_campaign:
     data or private local paths into public evidence.
   profile_assignment: >-
     owner-phone-001 is closest to D2 by Android API, primary ABI and RAM. Record D2 as
-    available inventory. Its refreshed free app storage satisfies the D2 threshold, but
-    measured execution is currently blocked on replacement-build installation and preflight.
-    Do not infer any other profile or matrix coverage.
+    available inventory. Its refreshed free app storage satisfies the D2 threshold, and
+    the replacement-build preflight reopens only the explicit Run A retry. Do not infer
+    any other profile or matrix coverage.
   matrix_support_verdict: INCONCLUSIVE
   measured_run_result_rule: >-
     FAIL is allowed when an approved failure gate triggers; otherwise missing D1-D7
@@ -73,6 +73,25 @@ first_exploratory_campaign:
     replaces_commit: f351695e0297aa550034d7dfdd70146fab0b10db
     replacement_reason: "Harden capture start against unsupported OEM telemetry and correct dark-theme content colors."
     install_rule: "Preserve any required exports, uninstall the old debug-signed app, then install this APK cleanly."
+    device_preflight_status: passed_ready_for_run_a_retry
+  replacement_preflight:
+    observed_on: "2026-08-05"
+    intended_run: run-a
+    prescribed_build_commit: 56fe23ad11970522a46a5bced3480ddcd5155da2
+    target_duration_ms: 180000
+    battery_percent: 80
+    power_state: unplugged
+    free_storage_mb: 36252
+    thermal_status: NONE
+    synthetic_signal_enabled: false
+    reminder_acknowledged: false
+    start_enabled: false
+    dark_theme_required_text_readable: true
+    result: ready_for_explicit_run_a_start
+    source: "Sanitized owner-reported UI observation; source screenshot is not committed."
+    limitations:
+      - "The preflight UI does not display a commit identifier; build association relies on the prescribed clean-install workflow and replacement-only corrected UI behavior."
+      - "The reminder was deliberately unchecked and Start disabled in the observation; both are expected before explicit per-run acknowledgment."
 
 status_vocabulary:
   - available
@@ -448,7 +467,8 @@ profiles:
 
 execution_rules:
   - "A required profile with availability=unknown blocks a final matrix verdict but may allow an explicitly exploratory run."
-  - "The refreshed owner-phone-001 profile reports 36432 MiB free app storage, but Run A is blocked until replacement build 56fe23a is clean-installed and passes a fresh in-app preflight."
+  - "The replacement-build preflight reports 36252 MiB free app storage and passes the readable start gate; only Run A may now be started explicitly with the synthetic signal disabled."
+  - "Run B remains blocked until valid Run A sanitized evidence and deletion confirmation are returned and reviewed; Run C is gated in the same way by Run B."
   - "One discovered phone may satisfy only its matching execution slice; it never produces a global D1-D7 PASS or a device-support claim."
   - "An emulator never substitutes for physical microphone, battery, thermal, flash or OEM evidence."
   - "A physical device never substitutes for the required 16-KiB emulator/image when its page size is not verified."
