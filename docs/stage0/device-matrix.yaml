@@ -17,11 +17,12 @@ owner_decision:
 
 first_exploratory_campaign:
   mode: single_owner_physical_phone
-  status: ready_for_run_a
-  measured_run_allowed: true
+  status: replacement_build_install_pending
+  measured_run_allowed: false
   unblock_condition: >-
-    Satisfied by the 2026-08-05T09:39:35.997123Z sanitized profile reporting
-    36432 MiB free app storage; repeat preflight before every measured run.
+    Uninstall the differently signed f351695 test application, install prerelease
+    poc-capture-001-build-56fe23a, then repeat device preparation and the readable
+    in-app preflight. Only a successful replacement-build preflight can reopen Run A.
   required_automatic_fields:
     - sanitized_device_model
     - android_api
@@ -34,8 +35,9 @@ first_exploratory_campaign:
     data or private local paths into public evidence.
   profile_assignment: >-
     owner-phone-001 is closest to D2 by Android API, primary ABI and RAM. Record D2 as
-    available inventory, but block measured execution while current free app storage
-    remains below the D2 start threshold. Do not infer any other profile or matrix coverage.
+    available inventory. Its refreshed free app storage satisfies the D2 threshold, but
+    measured execution is currently blocked on replacement-build installation and preflight.
+    Do not infer any other profile or matrix coverage.
   matrix_support_verdict: INCONCLUSIVE
   measured_run_result_rule: >-
     FAIL is allowed when an approved failure gate triggers; otherwise missing D1-D7
@@ -44,6 +46,33 @@ first_exploratory_campaign:
     - "Global PASS for D1-D7"
     - "Supported Android devices"
     - "Eight-hour behavior beyond the discovered device and recorded conditions"
+  run_attempts:
+    - attempt_id: run-a-attempt-001
+      observed_on: "2026-08-05"
+      intended_run: run-a
+      installed_commit: f351695e0297aa550034d7dfdd70146fab0b10db
+      result: invalid_start_failure
+      recording_started: false
+      sanitized_run_archive_created: false
+      observed_error_class: IllegalArgumentException
+      observed_boundary: legacy_unclassified_begin_service_capture
+      source: "Sanitized owner-reported UI observation; source screenshot is not committed."
+      disposition: replacement_build_required
+      limitations:
+        - "No run-result ZIP or deletion receipt was produced, so this attempt is not benchmark evidence."
+        - "The failure predates stable capture-start stage codes and cannot be assigned to a narrower stage from the screenshot alone."
+        - "A dark-theme content-color propagation defect was also visible before Start."
+  current_test_build:
+    commit: 56fe23ad11970522a46a5bced3480ddcd5155da2
+    release_tag: poc-capture-001-build-56fe23a
+    release_url: "https://github.com/Monumentogram/DORA/releases/tag/poc-capture-001-build-56fe23a"
+    successful_push_run: 30998441856
+    successful_pull_request_run: 30998446205
+    apk_sha256: 67ec07aaa1be317e58d05c6c6bf882884487de1b12e5c1aad2b8adf60d1d5c97
+    debug_certificate_sha256: dd28877de57327a9733c26da853ddaecae7ef14607a4ff37df428b79ee95de10
+    replaces_commit: f351695e0297aa550034d7dfdd70146fab0b10db
+    replacement_reason: "Harden capture start against unsupported OEM telemetry and correct dark-theme content colors."
+    install_rule: "Preserve any required exports, uninstall the old debug-signed app, then install this APK cleanly."
 
 status_vocabulary:
   - available
@@ -419,7 +448,7 @@ profiles:
 
 execution_rules:
   - "A required profile with availability=unknown blocks a final matrix verdict but may allow an explicitly exploratory run."
-  - "The refreshed owner-phone-001 profile reports 36432 MiB free app storage; Run A is allowed after its in-app preflight and explicit user Start."
+  - "The refreshed owner-phone-001 profile reports 36432 MiB free app storage, but Run A is blocked until replacement build 56fe23a is clean-installed and passes a fresh in-app preflight."
   - "One discovered phone may satisfy only its matching execution slice; it never produces a global D1-D7 PASS or a device-support claim."
   - "An emulator never substitutes for physical microphone, battery, thermal, flash or OEM evidence."
   - "A physical device never substitutes for the required 16-KiB emulator/image when its page size is not verified."
