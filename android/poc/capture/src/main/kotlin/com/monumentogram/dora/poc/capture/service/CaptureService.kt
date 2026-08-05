@@ -87,19 +87,19 @@ class CaptureService : Service() {
                 )
             )
             stopSelf()
-            return
-        }
-        startJob = serviceScope.launch {
-            runCatching { controller.beginServiceCapture(run, runId, fixtureEnabled) }
-                .onSuccess { captureStarted = true }
-                .onFailure {
-                    controller.serviceFailure(captureStartFailureMessage(it))
-                    ServiceCompat.stopForeground(
-                        this@CaptureService,
-                        ServiceCompat.STOP_FOREGROUND_REMOVE,
-                    )
-                    stopSelf()
-                }
+        } else {
+            startJob = serviceScope.launch {
+                runCatching { controller.beginServiceCapture(run, runId, fixtureEnabled) }
+                    .onSuccess { captureStarted = true }
+                    .onFailure {
+                        controller.serviceFailure(captureStartFailureMessage(it))
+                        ServiceCompat.stopForeground(
+                            this@CaptureService,
+                            ServiceCompat.STOP_FOREGROUND_REMOVE,
+                        )
+                        stopSelf()
+                    }
+            }
         }
     }
 
