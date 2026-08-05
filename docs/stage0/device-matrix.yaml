@@ -17,12 +17,12 @@ owner_decision:
 
 first_exploratory_campaign:
   mode: single_owner_physical_phone
-  status: replacement_build_install_pending
-  measured_run_allowed: false
+  status: ready_for_run_a_retry
+  measured_run_allowed: true
   unblock_condition: >-
-    Preserve any required sanitized exports, uninstall build 56fe23a, clean-install
-    prerelease poc-capture-001-build-5d9a8ac, then repeat device preparation and the
-    readable in-app preflight. Only a successful new-build preflight can reopen Run A.
+    Satisfied on 2026-08-05 by an owner-provided build 5d9a8ac preflight after the
+    prescribed clean-install workflow. Only Run A is reopened; Run B and Run C remain
+    sequence-gated on review of the preceding valid sanitized run evidence.
   required_automatic_fields:
     - sanitized_device_model
     - android_api
@@ -35,9 +35,9 @@ first_exploratory_campaign:
     data or private local paths into public evidence.
   profile_assignment: >-
     owner-phone-001 is closest to D2 by Android API, primary ABI and RAM. Record D2 as
-    available inventory. Its refreshed free app storage satisfies the D2 threshold, but
-    measured execution is blocked again pending clean installation and preflight of build
-    5d9a8ac. Do not infer any other profile or matrix coverage.
+    available inventory. Its refreshed free app storage satisfies the D2 threshold, and
+    the build 5d9a8ac preflight reopens only the explicit Run A retry. Do not infer any
+    other profile or matrix coverage.
   matrix_support_verdict: INCONCLUSIVE
   measured_run_result_rule: >-
     FAIL is allowed when an approved failure gate triggers; otherwise missing D1-D7
@@ -91,7 +91,7 @@ first_exploratory_campaign:
     replaces_commit: 56fe23ad11970522a46a5bced3480ddcd5155da2
     replacement_reason: "Accept the app-generated uppercase UTC delimiters in safe private WAV basenames while retaining traversal and suffix rejection."
     install_rule: "Preserve any required exports, uninstall the old debug-signed app, then install this APK cleanly."
-    device_preflight_status: pending_clean_install
+    device_preflight_status: passed_ready_for_run_a_retry
   previous_replacement_preflight:
     observed_on: "2026-08-05"
     intended_run: run-a
@@ -110,6 +110,24 @@ first_exploratory_campaign:
     source: "Sanitized owner-reported UI observation; source screenshot is not committed."
     limitations:
       - "The preflight UI does not display a commit identifier; build association relies on the prescribed clean-install workflow and replacement-only corrected UI behavior."
+      - "The reminder was deliberately unchecked and Start disabled in the observation; both are expected before explicit per-run acknowledgment."
+  replacement_preflight:
+    observed_on: "2026-08-05"
+    intended_run: run-a
+    prescribed_build_commit: 5d9a8aceebaa7175a7a5cbaa139e8295df87d632
+    target_duration_ms: 180000
+    battery_percent: 72
+    power_state: unplugged
+    free_storage_mb: 35945
+    thermal_status: NONE
+    synthetic_signal_enabled: false
+    reminder_acknowledged: false
+    start_enabled: false
+    dark_theme_required_text_readable: true
+    result: ready_for_explicit_run_a_start
+    source: "Sanitized owner-reported UI observation; source screenshot is not committed."
+    limitations:
+      - "The preflight UI does not display a commit identifier; build association relies on the prescribed clean-install workflow for the differently signed replacement APK."
       - "The reminder was deliberately unchecked and Start disabled in the observation; both are expected before explicit per-run acknowledgment."
 
 status_vocabulary:
@@ -486,7 +504,7 @@ profiles:
 
 execution_rules:
   - "A required profile with availability=unknown blocks a final matrix verdict but may allow an explicitly exploratory run."
-  - "Run A is blocked until build 5d9a8ac is clean-installed and passes a fresh readable in-app preflight; the previous 56fe23a preflight was followed by an invalid private-file start failure."
+  - "The build 5d9a8ac replacement preflight reports 35945 MiB free app storage and passes the readable start gate; only Run A may now be started explicitly with the synthetic signal disabled."
   - "Run B remains blocked until valid Run A sanitized evidence and deletion confirmation are returned and reviewed; Run C is gated in the same way by Run B."
   - "One discovered phone may satisfy only its matching execution slice; it never produces a global D1-D7 PASS or a device-support claim."
   - "An emulator never substitutes for physical microphone, battery, thermal, flash or OEM evidence."

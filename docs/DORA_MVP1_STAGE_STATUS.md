@@ -9,7 +9,7 @@ Default branch: `main`
 Active stage: `Stage 0B — POC-CAPTURE-001`
 Active branch: `stage/0b-poc-capture-001`
 Active PoC: `POC-CAPTURE-001`
-Stage state: **SECOND RUN A INVALID — REPLACEMENT APK PUBLISHED, CLEAN INSTALL/PREFLIGHT PENDING**
+Stage state: **BUILD 5D9A8AC PREFLIGHT PASSED — RUN A RETRY READY**
 
 ## Stage 00 closure
 
@@ -64,7 +64,8 @@ No valid phone run has completed. The first Run A attempt on test build `f351695
 - The subsequent Run A attempt on `56fe23a` is invalid: recording did not start, no raw audio/Run ZIP/deletion receipt was created, and the visible stable code localizes the failure to `CAPTURE_START_PRIVATE_FILE`.
 - Root cause is deterministic: generated Run IDs contain safe uppercase UTC delimiters `T`/`Z`, while the private WAV basename validator accidentally allowed only lowercase ASCII. Fix `5d9a8ac` accepts ASCII case consistently while retaining traversal, nested-path and unsupported-suffix rejection.
 - Prerelease `poc-capture-001-build-5d9a8ac` targets exact commit `5d9a8aceebaa7175a7a5cbaa139e8295df87d632`; push run `31006645902` and PR run `31006649411` are successful. APK SHA-256 is `dc7c01b8fd0f6f66c2674a8542595aab8817d60c4435d2f1c26ef8b1c4d2ddb9`.
-- The new CI debug certificate `4052ae88…` differs from build `56fe23a` (`dd28877d…`), so Run A is blocked until the installed app is removed, the new APK is clean-installed and a fresh readable preflight succeeds.
+- The new CI debug certificate `4052ae88…` differs from build `56fe23a` (`dd28877d…`). The owner-provided post-install preflight now shows readable build `5d9a8ac` Run A UI with target `00:03:00`, 35945 MiB free storage, 72% battery, unplugged power, thermal status `NONE` and synthetic signal disabled. This reopens only the explicit Run A retry.
+- The new preflight screenshot does not display a commit identifier; association with `5d9a8ac` relies on the prescribed clean-install workflow for the differently signed replacement APK. The source screenshot is not committed.
 - One-device evidence cannot `PASS` the matrix and remains `INCONCLUSIVE` unless an approved failure gate produces `FAIL`.
 - No controlled non-public evidence store or custodian has been configured. Until then, only synthetic data and sanitized aggregate/public evidence are allowed; raw traces/audio and purpose-recorded volunteer phrases remain blocked.
 - Production markets/lawful basis/copy under `DEC-001` and Legal review remain unresolved. The Stage 0 reminder checkbox does not resolve production consent legality.
@@ -73,7 +74,7 @@ No valid phone run has completed. The first Run A attempt on test build `f351695
 
 ## Next safe action
 
-Do not start a measured run. Preserve any required sanitized exports, uninstall the currently installed debug-signed PoC application, clean-install prerelease `poc-capture-001-build-5d9a8ac`, prepare the device and return a fresh readable Run A preflight screenshot. Only after that confirmation may Run A be reopened. Run B remains blocked until valid Run A evidence and deletion confirmation are reviewed; real meetings remain prohibited.
+Execute only `Run A — 3 минуты` in a quiet room with no nearby conversations, keep the screen on and the synthetic signal disabled, acknowledge the per-run reminder and start once. At timer `00:03:00`, stop/finalize, analyze and delete raw audio in the app, complete the five manual observations and return only the sanitized Run ZIP. Stop immediately and report a screenshot if capture start fails. Run B remains blocked until valid Run A evidence and deletion confirmation are reviewed; real meetings remain prohibited.
 
 ## Update protocol
 
