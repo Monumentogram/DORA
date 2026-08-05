@@ -1,9 +1,9 @@
 schema_version: 1
 matrix_id: dora-mvp1-stage0-device-matrix
 updated: "2026-08-05"
-stage: "Stage 0A"
+stage: "Stage 0B"
 owner_task: "POC-DEVICE-001"
-inventory_confirmed: false
+inventory_confirmed: true
 production_support_claims_allowed: false
 
 owner_decision:
@@ -17,11 +17,11 @@ owner_decision:
 
 first_exploratory_campaign:
   mode: single_owner_physical_phone
-  status: blocked_pending_connection_and_automatic_inventory
+  status: blocked_pending_d2_free_storage_preflight
   measured_run_allowed: false
   unblock_condition: >-
-    Connect the phone and automatically record its sanitized model, Android API,
-    firmware/build, ABI and RAM before the first measured run.
+    Free app storage until a new sanitized profile reports at least 8192 MiB,
+    then repeat device preparation and export before Run A.
   required_automatic_fields:
     - sanitized_device_model
     - android_api
@@ -29,11 +29,13 @@ first_exploratory_campaign:
     - abi
     - ram_mb
   discovery_method: >-
-    Use Android platform diagnostics such as adb/getprop and /proc/meminfo; do not
-    copy device serial, account data or private local paths into public evidence.
+    Use the Dora Capture PoC sanitized device-profile export in the remote manual-device
+    workflow; do not transcribe characteristics manually or copy device serial, account
+    data or private local paths into public evidence.
   profile_assignment: >-
-    Assign the phone to a D1-D7 profile only after measured characteristics are
-    known. If no profile matches, record the mismatch as a limitation.
+    owner-phone-001 is closest to D2 by Android API, primary ABI and RAM. Record D2 as
+    available inventory, but block measured execution while current free app storage
+    remains below the D2 start threshold. Do not infer any other profile or matrix coverage.
   matrix_support_verdict: INCONCLUSIVE
   measured_run_result_rule: >-
     FAIL is allowed when an approved failure gate triggers; otherwise missing D1-D7
@@ -56,11 +58,60 @@ status_semantics:
   unknown: "Requirement or availability is not yet resolved."
 
 inventory:
-  confirmed_physical_devices: []
+  confirmed_physical_devices:
+    - inventory_id: owner-phone-001
+      source_artifact: dora-capture-poc-device-profile.json
+      source_sha256: cc73233605c71872a5612cbb0091db615d33c58ddc5d3ceab8d49c185736b574
+      captured_at_utc: "2026-08-05T09:19:46.627123Z"
+      application_version: 0.1.0-poc-capture-001
+      commit: f351695e0297aa550034d7dfdd70146fab0b10db
+      kind: remote_physical
+      manufacturer: samsung
+      sanitized_device_model: SM-S908B
+      android_version: "16"
+      android_api: 36
+      os_build_or_firmware: BP2A.250605.031.A3
+      security_patch: "2026-05-05"
+      primary_abi: arm64-v8a
+      supported_abis:
+        - arm64-v8a
+        - armeabi-v7a
+        - x86
+      ram_mb: 10515
+      free_storage_mb: 1995
+      battery_percent: 74
+      power_state: unplugged
+      thermal_status: NONE
+      page_size_bytes: 4096
+      audio_input_types:
+        - "Аудиовход типа 25"
+        - "Встроенный микрофон"
+        - "Телефонный аудиомаршрут"
+      supported_mono_pcm16_sample_rates:
+        - 16000
+        - 48000
+        - 44100
+        - 32000
+        - 22050
+        - 8000
+      network_required: false
+      account_required: false
+      gms_required: false
+      unique_hardware_identifier_recorded: false
+      assigned_profile_id: D2
+      assignment_status: hardware_match_available_measured_run_blocked
+      assignment_rationale: >-
+        API 36 is within D2 API 33-36, primary ABI is arm64-v8a, and 10515 MiB RAM
+        exceeds the D2 preferred 8192 MiB while remaining below the D3 12288 MiB minimum.
+      limitations:
+        - "1995 MiB free app storage is below the D2 8192 MiB start threshold."
+        - "The OS-reported x86 supported ABI is inventory only; primary physical runtime evidence remains arm64-v8a."
+        - "GMS presence, battery health and OEM battery-restriction state were not collected; D4/D5 are not assigned."
+        - "A 4096-byte runtime page size does not satisfy D7."
   confirmed_emulator_images: []
   note: >-
-    The owner intends to provide one physical Android phone, but it is not connected
-    or identified in this Stage 0A change. All D1-D7 availability values remain unknown.
+    One owner-provided physical phone has a sanitized automatic inventory. Only D2
+    availability changes; D1 and D3-D7 remain unknown, and no global coverage claim is made.
 
 abi_policy:
   required_physical:
@@ -157,7 +208,7 @@ profiles:
     purpose: "Primary reference for local processing, UX and one-hour capture baseline."
     mandatory: true
     status: required
-    availability: unknown
+    availability: available
     execution:
       physical_required: true
       emulator_allowed: true
@@ -357,7 +408,7 @@ profiles:
 
 execution_rules:
   - "A required profile with availability=unknown blocks a final matrix verdict but may allow an explicitly exploratory run."
-  - "The first exploratory run is blocked until the owner's physical phone is connected and automatically inventoried."
+  - "The owner phone inventory is confirmed; Run A remains blocked until a fresh export reports at least 8192 MiB free app storage."
   - "One discovered phone may satisfy only its matching execution slice; it never produces a global D1-D7 PASS or a device-support claim."
   - "An emulator never substitutes for physical microphone, battery, thermal, flash or OEM evidence."
   - "A physical device never substitutes for the required 16-KiB emulator/image when its page size is not verified."

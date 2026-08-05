@@ -9,7 +9,7 @@ Default branch: `main`
 Active stage: `Stage 0B — POC-CAPTURE-001`
 Active branch: `stage/0b-poc-capture-001`
 Active PoC: `POC-CAPTURE-001`
-Stage state: **REMOTE MANUAL-DEVICE HARNESS IN DEVELOPMENT — PHONE RUNS NOT STARTED**
+Stage state: **D2 DEVICE PROFILE CONFIRMED — RUN A BLOCKED BY FREE-STORAGE PREFLIGHT**
 
 ## Stage 00 closure
 
@@ -55,8 +55,9 @@ No phone run has started. Production capture, storage, ML, backend, account, pro
 ## Current gates and blockers
 
 - The fully specified predicates in Gate Set `stage0-v0.1` are **Approved for Stage 0**. Exact ASR RTF by tier, maximum PSS/native heap, diarization corrections/minute, absolute battery drain without mWh, numeric capture sample-gap tolerance and minimum raw-trace retention remain **Proposed**.
-- The owner's physical Android phone has not been identified. Availability for every D1–D7 profile remains `unknown`.
-- Before the first measured run, the installed PoC must export its sanitized model, Android API, firmware/build, ABI and RAM. The phone is then mapped to the matching profile; one-device evidence cannot `PASS` the matrix and is `INCONCLUSIVE` unless an approved failure gate produces `FAIL`.
+- The owner's physical phone is sanitized as Samsung `SM-S908B`, Android 16 / API 36, build `BP2A.250605.031.A3`, primary ABI `arm64-v8a` and 10515 MiB RAM. It is assigned to D2 as the closest hardware profile; D1 and D3-D7 availability remains `unknown`.
+- The profile reports 1995 MiB free app storage, below the D2 start threshold of 8192 MiB. Run A remains blocked until the owner frees space and uploads a fresh sanitized profile meeting that threshold.
+- One-device evidence cannot `PASS` the matrix and remains `INCONCLUSIVE` unless an approved failure gate produces `FAIL`.
 - No controlled non-public evidence store or custodian has been configured. Until then, only synthetic data and sanitized aggregate/public evidence are allowed; raw traces/audio and purpose-recorded volunteer phrases remain blocked.
 - Production markets/lawful basis/copy under `DEC-001` and Legal review remain unresolved. The Stage 0 reminder checkbox does not resolve production consent legality.
 - No PoC result admits a production dependency. Native code or model admission later requires an ADR plus license, provenance, ABI, 16-KiB and runtime evidence.
@@ -64,7 +65,7 @@ No phone run has started. Production capture, storage, ML, backend, account, pro
 
 ## Next safe action
 
-Build, validate and publish the isolated `POC-CAPTURE-001` APK through a Draft Pull Request, then stop before any recording and wait for the owner to confirm installation. The first device profile and all measured inputs follow the remote manual-device workflow above. Real meetings remain prohibited.
+Free app storage until the PoC reports at least 8192 MiB, repeat `Подготовить устройство`, and upload a fresh sanitized device profile. Do not start Run A before that preflight passes. Real meetings remain prohibited.
 
 ## Update protocol
 

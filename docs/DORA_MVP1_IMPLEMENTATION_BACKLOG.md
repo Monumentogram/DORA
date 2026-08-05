@@ -1,6 +1,6 @@
 # Dora MVP 1 — Executable Backlog
 
-Версия: Stage 0A\
+Версия: Stage 0B\
 Дата: 5 августа 2026 года\
 Owner approvals effective: 4 августа 2026 года (`OD-01`–`OD-10`)\
 Источник порядка: Technical Plan §37/§39, Design Spec §36/§39 и readiness gates.
@@ -49,9 +49,9 @@ Owner approvals effective: 4 августа 2026 года (`OD-01`–`OD-10`)\
 | GOV-IP-001 | DONE | S | Reference/font/model asset IP rules | DEC-024/042 | `docs/stage0/DORA_MVP1_IP_ASSET_POLICY.md` | artifact-level provenance, license, attribution and admission rules documented; no model/binary/reference asset admitted |
 | GOV-REPO-001 | TODO | S | Long-term repository visibility, account plan and licensing/contribution terms | ADR-0002, owner | explicit decision and, only if approved, matching license/contribution updates | before merging an external contribution or returning the repository to private visibility |
 | POC-GATES-001 | DONE | M | Approve versioned gates and result schema | DEC-020 / `OD-05` | `docs/stage0/DORA_MVP1_POC_GATES.md`, `docs/stage0/benchmark-result.schema.json`; defined `stage0-v0.1` gates Approved for Stage 0 | six undefined section 7 thresholds remain `Proposed`; affected verdict stays `INCONCLUSIVE` until pre-run approval |
-| POC-DEVICE-001 | READY | M | Device/firmware matrix D1–D7 and first-run inventory | DEC-005/006/018; `OD-06` | `docs/stage0/device-matrix.yaml`; one owner phone selected but not connected or identified | before first measured run auto-discover model/API/firmware/ABI/RAM; all availability remains `unknown`; no D1–D7 PASS/support claim |
+| POC-DEVICE-001 | DONE | M | Device/firmware matrix D1–D7 and first-run inventory | DEC-005/006/018; `OD-06` | `docs/stage0/device-matrix.yaml`; sanitized owner-phone-001 inventory assigned to D2 hardware profile | API/firmware/ABI/RAM inventory is recorded without a unique hardware ID; current 1995 MiB free storage blocks measured execution until a new profile reports at least 8192 MiB; verdict remains `INCONCLUSIVE` |
 | POC-DATA-001 | BLOCKED | L | RU/EN/mixed corpus governance and manifest | `OD-03`/`OD-04`/`OD-08`/`OD-09`; controlled storage/custodian/consent process | foundation in `docs/stage0/DORA_MVP1_DATASET_GOVERNANCE.md`; owner purpose/retention rules approved, actual manifest absent | synthetic-first; purpose-recorded data blocked until consent/private store/access/deletion controls; real meetings and training prohibited |
-| POC-CAPTURE-001 | BLOCKED | XL | Exploratory physical-microphone capture, then 1 h/1–3–8 h matrix | DEC-002/003/004/018/020; `OD-01`/`OD-06`/`OD-08`; POC-DEVICE-001 | isolated capture app/harness + sanitized report; no raw trace/audio in Git | first measured run waits for phone connection/automatic inventory and synthetic fixture/evidence plan; one-phone result is not D1–D7 PASS |
+| POC-CAPTURE-001 | BLOCKED | XL | Exploratory physical-microphone capture: 3 min, 15 min screen-off, then 60 min screen-off | DEC-002/003/004/018/020; `OD-01`/`OD-06`/`OD-08`; POC-DEVICE-001 | isolated capture app/harness in Draft PR #8 + sanitized report; no raw trace/audio in Git | Run A waits for a refreshed profile with at least 8192 MiB free app storage; 3 h/8 h runs are outside this PR; one-phone result is not D1–D7 PASS |
 | POC-RECOVERY-001 | BLOCKED | XL | Encrypted writer kill/recovery | POC-GATES-001, POC-DEVICE-001, ADR-AUDIO-001 | ≥100 injected kill points, authenticated prefix report | Tink only if all committed prefix recoverable; otherwise sealed microfiles |
 | POC-VAD-001 | BLOCKED | L | 90 s silence/max-cap deterministic replay | POC-GATES-001, POC-DATA-001 | fake monotonic replay and acoustic matrix | 89.5/90/90.5, resume 89.9, noise, >10 min; documented profile |
 | POC-ASR-001 | BLOCKED | XL | Local RU/EN/mixed ASR benchmark | POC-GATES-001, POC-DATA-001, POC-DEVICE-001 | pinned artifacts/digests + WER/RTF/PSS/thermal report | select tier or Vosk/hybrid fallback; 16-КБ runtime evidence |
