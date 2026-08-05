@@ -9,7 +9,7 @@ Default branch: `main`
 Active stage: `Stage 0B — POC-CAPTURE-001`
 Active branch: `stage/0b-poc-capture-001`
 Active PoC: `POC-CAPTURE-001`
-Stage state: **REPLACEMENT PREFLIGHT PASSED — RUN A RETRY READY**
+Stage state: **SECOND RUN A INVALID — REPLACEMENT APK PUBLISHED, CLEAN INSTALL/PREFLIGHT PENDING**
 
 ## Stage 00 closure
 
@@ -39,7 +39,7 @@ The owner phone cannot be attached to the remote development workstation. Stage 
 4. Raw audio is analyzed and deleted in app-private storage before export is enabled.
 5. The owner returns only the sanitized exported profile/report to Codex.
 
-No valid phone run has completed. The first Run A attempt on test build `f351695…` failed at the capture-start boundary with a user-visible `IllegalArgumentException` before recording began; it produced no sanitized Run ZIP and is not benchmark evidence. Production capture, storage, ML, backend, account, production identity/signing and model weights remain outside this stage. The bootstrap `:app` must not receive microphone permission.
+No valid phone run has completed. The first Run A attempt on test build `f351695…` failed at the capture-start boundary with a legacy unscoped `IllegalArgumentException`. The second attempt on `56fe23a` failed before app-private WAV creation with the stable stage code `CAPTURE_START_PRIVATE_FILE (IllegalArgumentException)`. Neither attempt began recording or produced a sanitized Run ZIP/deletion receipt, so neither is benchmark evidence. Production capture, storage, ML, backend, account, production identity/signing and model weights remain outside this stage. The bootstrap `:app` must not receive microphone permission.
 
 ## Owner decisions effective 4 August 2026
 
@@ -59,8 +59,12 @@ No valid phone run has completed. The first Run A attempt on test build `f351695
 - The refreshed profile reports 36432 MiB free app storage, above the D2 start threshold of 8192 MiB, with 72% battery, unplugged power and thermal status `NONE`; the D2 hardware inventory remains valid.
 - The first Run A attempt on build `f351695…` is invalid: recording did not start, no sanitized Run ZIP or deletion receipt was produced, and the screenshot-era error can only be classified as a legacy unscoped `IllegalArgumentException` at `beginServiceCapture`.
 - Replacement build `56fe23a` is published as prerelease `poc-capture-001-build-56fe23a` after successful push and PR CI. It makes optional battery/AudioRecord telemetry best-effort, adds sanitized capture-start stage codes, hardens recorder/player cleanup and propagates semantic dark-theme content colors.
-- The replacement CI debug certificate differs from build `f351695`. The owner-provided post-install preflight shows the replacement-only corrected dark-theme UI, Run A target `00:03:00`, 36252 MiB free storage, 80% battery, unplugged power, thermal status `NONE` and synthetic signal disabled. The fresh readable preflight therefore reopens only the explicit Run A retry.
+- The replacement CI debug certificate differs from build `f351695`. The owner-provided post-install preflight showed the replacement-only corrected dark-theme UI, Run A target `00:03:00`, 36252 MiB free storage, 80% battery, unplugged power, thermal status `NONE` and synthetic signal disabled.
 - The preflight screenshot does not display a commit identifier; association with `56fe23a` relies on the prescribed clean-install workflow and replacement-only corrected UI behavior. The source screenshot is not committed.
+- The subsequent Run A attempt on `56fe23a` is invalid: recording did not start, no raw audio/Run ZIP/deletion receipt was created, and the visible stable code localizes the failure to `CAPTURE_START_PRIVATE_FILE`.
+- Root cause is deterministic: generated Run IDs contain safe uppercase UTC delimiters `T`/`Z`, while the private WAV basename validator accidentally allowed only lowercase ASCII. Fix `5d9a8ac` accepts ASCII case consistently while retaining traversal, nested-path and unsupported-suffix rejection.
+- Prerelease `poc-capture-001-build-5d9a8ac` targets exact commit `5d9a8aceebaa7175a7a5cbaa139e8295df87d632`; push run `31006645902` and PR run `31006649411` are successful. APK SHA-256 is `dc7c01b8fd0f6f66c2674a8542595aab8817d60c4435d2f1c26ef8b1c4d2ddb9`.
+- The new CI debug certificate `4052ae88…` differs from build `56fe23a` (`dd28877d…`), so Run A is blocked until the installed app is removed, the new APK is clean-installed and a fresh readable preflight succeeds.
 - One-device evidence cannot `PASS` the matrix and remains `INCONCLUSIVE` unless an approved failure gate produces `FAIL`.
 - No controlled non-public evidence store or custodian has been configured. Until then, only synthetic data and sanitized aggregate/public evidence are allowed; raw traces/audio and purpose-recorded volunteer phrases remain blocked.
 - Production markets/lawful basis/copy under `DEC-001` and Legal review remain unresolved. The Stage 0 reminder checkbox does not resolve production consent legality.
@@ -69,7 +73,7 @@ No valid phone run has completed. The first Run A attempt on test build `f351695
 
 ## Next safe action
 
-Execute only `Run A — 3 минуты` in a quiet room with no nearby conversations, keep the synthetic signal disabled, acknowledge the per-run reminder and start once. After the target duration, stop/finalize, analyze and delete raw audio in the app, complete the five manual observations and return only the sanitized Run ZIP. Stop immediately and report a screenshot if capture start fails. Run B remains blocked until valid Run A evidence and deletion confirmation are reviewed; real meetings remain prohibited.
+Do not start a measured run. Preserve any required sanitized exports, uninstall the currently installed debug-signed PoC application, clean-install prerelease `poc-capture-001-build-5d9a8ac`, prepare the device and return a fresh readable Run A preflight screenshot. Only after that confirmation may Run A be reopened. Run B remains blocked until valid Run A evidence and deletion confirmation are reviewed; real meetings remain prohibited.
 
 ## Update protocol
 
