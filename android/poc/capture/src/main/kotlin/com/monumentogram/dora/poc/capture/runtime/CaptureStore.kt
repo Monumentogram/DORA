@@ -37,7 +37,7 @@ class CaptureStore(context: Context) {
     }
 
     fun captureFile(fileName: String): File {
-        require(SAFE_FILE_NAME.matches(fileName)) { "Unsafe capture file name" }
+        require(CaptureFileNamePolicy.accepts(fileName)) { "Unsafe capture file name" }
         return File(captureDirectory, fileName)
     }
 
@@ -47,6 +47,11 @@ class CaptureStore(context: Context) {
     companion object {
         private const val KEY_COMPLETED = "completed_runs"
         private const val KEY_CRITICAL = "critical_runs"
-        private val SAFE_FILE_NAME = Regex("^[a-z0-9-]+\\.wav(?:\\.part)?$")
     }
+}
+
+internal object CaptureFileNamePolicy {
+    private val safeFileName = Regex("^[A-Za-z0-9-]+\\.wav(?:\\.part)?$")
+
+    fun accepts(fileName: String): Boolean = safeFileName.matches(fileName)
 }
