@@ -17,11 +17,11 @@ owner_decision:
 
 first_exploratory_campaign:
   mode: single_owner_physical_phone
-  status: blocked_pending_d2_free_storage_preflight
-  measured_run_allowed: false
+  status: ready_for_run_a
+  measured_run_allowed: true
   unblock_condition: >-
-    Free app storage until a new sanitized profile reports at least 8192 MiB,
-    then repeat device preparation and export before Run A.
+    Satisfied by the 2026-08-05T09:39:35.997123Z sanitized profile reporting
+    36432 MiB free app storage; repeat preflight before every measured run.
   required_automatic_fields:
     - sanitized_device_model
     - android_api
@@ -61,8 +61,8 @@ inventory:
   confirmed_physical_devices:
     - inventory_id: owner-phone-001
       source_artifact: dora-capture-poc-device-profile.json
-      source_sha256: cc73233605c71872a5612cbb0091db615d33c58ddc5d3ceab8d49c185736b574
-      captured_at_utc: "2026-08-05T09:19:46.627123Z"
+      source_sha256: d36edd485c641f41cd2151c815e623fd190795a4a9180f7379cc27310005fbf4
+      captured_at_utc: "2026-08-05T09:39:35.997123Z"
       application_version: 0.1.0-poc-capture-001
       commit: f351695e0297aa550034d7dfdd70146fab0b10db
       kind: remote_physical
@@ -78,8 +78,8 @@ inventory:
         - armeabi-v7a
         - x86
       ram_mb: 10515
-      free_storage_mb: 1995
-      battery_percent: 74
+      free_storage_mb: 36432
+      battery_percent: 72
       power_state: unplugged
       thermal_status: NONE
       page_size_bytes: 4096
@@ -99,12 +99,23 @@ inventory:
       gms_required: false
       unique_hardware_identifier_recorded: false
       assigned_profile_id: D2
-      assignment_status: hardware_match_available_measured_run_blocked
+      assignment_status: hardware_match_available_run_a_ready
       assignment_rationale: >-
         API 36 is within D2 API 33-36, primary ABI is arm64-v8a, and 10515 MiB RAM
-        exceeds the D2 preferred 8192 MiB while remaining below the D3 12288 MiB minimum.
+        exceeds the D2 preferred 8192 MiB while remaining below the D3 12288 MiB minimum;
+        the refreshed 36432 MiB free-storage reading exceeds the D2 8192 MiB start threshold.
+      preflight_history:
+        - captured_at_utc: "2026-08-05T09:19:46.627123Z"
+          source_sha256: cc73233605c71872a5612cbb0091db615d33c58ddc5d3ceab8d49c185736b574
+          free_storage_mb: 1995
+          battery_percent: 74
+          result: blocked_below_d2_free_storage_threshold
+        - captured_at_utc: "2026-08-05T09:39:35.997123Z"
+          source_sha256: d36edd485c641f41cd2151c815e623fd190795a4a9180f7379cc27310005fbf4
+          free_storage_mb: 36432
+          battery_percent: 72
+          result: ready_for_run_a
       limitations:
-        - "1995 MiB free app storage is below the D2 8192 MiB start threshold."
         - "The OS-reported x86 supported ABI is inventory only; primary physical runtime evidence remains arm64-v8a."
         - "GMS presence, battery health and OEM battery-restriction state were not collected; D4/D5 are not assigned."
         - "A 4096-byte runtime page size does not satisfy D7."
@@ -408,7 +419,7 @@ profiles:
 
 execution_rules:
   - "A required profile with availability=unknown blocks a final matrix verdict but may allow an explicitly exploratory run."
-  - "The owner phone inventory is confirmed; Run A remains blocked until a fresh export reports at least 8192 MiB free app storage."
+  - "The refreshed owner-phone-001 profile reports 36432 MiB free app storage; Run A is allowed after its in-app preflight and explicit user Start."
   - "One discovered phone may satisfy only its matching execution slice; it never produces a global D1-D7 PASS or a device-support claim."
   - "An emulator never substitutes for physical microphone, battery, thermal, flash or OEM evidence."
   - "A physical device never substitutes for the required 16-KiB emulator/image when its page size is not verified."
