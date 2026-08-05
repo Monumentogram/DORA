@@ -55,6 +55,9 @@ jobs:
       - name: Validate Stage 00 artifacts
         run: python3 tools/validate_stage00.py
 
+      - name: Validate isolated capture PoC contracts
+        run: python3 tools/validate_poc_capture.py
+
       - name: Check formatting and Kotlin static analysis
         working-directory: android
         run: >-
@@ -70,17 +73,26 @@ jobs:
           :core:common:testDebugUnitTest
           :core:model:testDebugUnitTest
           :core:testing:testDebugUnitTest
+          :poc:capture:testDebugUnitTest
           :app:compileDebugAndroidTestKotlin
+          :poc:capture:compileDebugAndroidTestKotlin
           :app:lintDebug
           :core:common:lintDebug
           :core:model:lintDebug
           :core:testing:lintDebug
+          :poc:capture:lintDebug
           :app:assembleDebug
+          :poc:capture:assembleDebug
 
       - name: Verify native library admission and ELF alignment
         run: >-
           python3 tools/verify_apk_native_alignment.py
           android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Verify capture PoC native library admission and ELF alignment
+        run: >-
+          python3 tools/verify_apk_native_alignment.py
+          android/poc/capture/build/outputs/apk/debug/capture-debug.apk
 
       - name: Verify 16 KiB APK zip alignment
         run: >-
@@ -88,10 +100,24 @@ jobs:
           -c -P 16 -v 4
           android/app/build/outputs/apk/debug/app-debug.apk
 
+      - name: Verify capture PoC 16 KiB APK zip alignment
+        run: >-
+          "${ANDROID_HOME}/build-tools/36.0.0/zipalign"
+          -c -P 16 -v 4
+          android/poc/capture/build/outputs/apk/debug/capture-debug.apk
+
       - name: Upload Stage 00 debug APK
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: dora-stage00-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload capture PoC debug APK
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dora-poc-capture-debug-apk
+          path: android/poc/capture/build/outputs/apk/debug/capture-debug.apk
           if-no-files-found: error
           retention-days: 7

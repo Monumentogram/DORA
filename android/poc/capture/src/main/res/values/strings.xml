@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Dora Capture PoC</string>
+    <string name="notification_channel_name">Техническая запись Dora</string>
+    <string name="notification_channel_description">Постоянное уведомление только во время ручного теста микрофона.</string>
+    <string name="notification_title">Dora Capture PoC записывает</string>
+    <string name="notification_text">Технический тест микрофона · нажмите «Стоп», чтобы завершить</string>
+    <string name="notification_stop">Стоп</string>
+</resources>
