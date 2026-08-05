@@ -139,39 +139,50 @@ class FixturePlayer {
     fun start(fixture: FixtureData = SyntheticFixture.generate()) {
         stop()
         val bytes = SyntheticFixture.pcmBytes(fixture.samples)
-        val track =
-            AudioTrack.Builder()
-                .setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                        .build()
-                )
-                .setAudioFormat(
-                    AudioFormat.Builder()
-                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                        .setSampleRate(fixture.sampleRate)
-                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                        .build()
-                )
-                .setBufferSizeInBytes(bytes.size)
-                .setTransferMode(AudioTrack.MODE_STATIC)
-                .build()
-        check(track.state == AudioTrack.STATE_INITIALIZED) { "Тестовый сигнал не подготовлен" }
-        val written = track.write(bytes, 0, bytes.size)
-        check(written == bytes.size) { "Тестовый сигнал загружен не полностью" }
-        check(track.setLoopPoints(0, fixture.samples.size, -1) == AudioTrack.SUCCESS) {
-            "Цикл тестового сигнала не настроен"
+        var candidate: AudioTrack? = null
+        try {
+            val track =
+                AudioTrack.Builder()
+                    .setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                            .build()
+                    )
+                    .setAudioFormat(
+                        AudioFormat.Builder()
+                            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                            .setSampleRate(fixture.sampleRate)
+                            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                            .build()
+                    )
+                    .setBufferSizeInBytes(bytes.size)
+                    .setTransferMode(AudioTrack.MODE_STATIC)
+                    .build()
+            candidate = track
+            check(track.state == AudioTrack.STATE_INITIALIZED) { "Тестовый сигнал не подготовлен" }
+            val written = track.write(bytes, 0, bytes.size)
+            check(written == bytes.size) { "Тестовый сигнал загружен не полностью" }
+            check(track.setLoopPoints(0, fixture.samples.size, -1) == AudioTrack.SUCCESS) {
+                "Цикл тестового сигнала не настроен"
+            }
+            track.setVolume(AudioTrack.getMaxVolume().coerceAtMost(0.55f))
+            track.play()
+            audioTrack = track
+            candidate = null
+        } finally {
+            candidate?.let(::releaseTrack)
         }
-        track.setVolume(AudioTrack.getMaxVolume().coerceAtMost(0.55f))
-        track.play()
-        audioTrack = track
     }
 
     fun stop() {
         val track = audioTrack ?: return
         audioTrack = null
+        releaseTrack(track)
+    }
+
+    private fun releaseTrack(track: AudioTrack) {
         runCatching { track.stop() }
-        track.release()
+        runCatching { track.release() }
     }
 }

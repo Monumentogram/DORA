@@ -169,11 +169,21 @@ class CaptureController(context: Context) {
     suspend fun beginServiceCapture(run: RunKind, runId: String, fixtureEnabled: Boolean) {
         check(stateMachine.state.phase == FlowPhase.STARTING) { "Unexpected service start state" }
         check(stateMachine.state.selectedRun == run) { "Run mismatch" }
-        val startSnapshot = withContext(Dispatchers.Default) { inspector.snapshot() }
-        val partFile = store.captureFile("capture-${run.id}-$runId.wav.part")
+        var stage = CaptureStartStage.SYSTEM_SNAPSHOT
+        var partFile: File? = null
         try {
-            val audioStart = withContext(Dispatchers.IO) { engine.start(partFile) }
-            if (fixtureEnabled) withContext(Dispatchers.Default) { fixturePlayer.start() }
+            val startSnapshot = withContext(Dispatchers.Default) { inspector.snapshot() }
+            stage = CaptureStartStage.PRIVATE_FILE
+            val targetPartFile = store.captureFile("capture-${run.id}-$runId.wav.part")
+            partFile = targetPartFile
+            stage = CaptureStartStage.AUDIO_RECORD
+            val audioStart = withContext(Dispatchers.IO) { engine.start(targetPartFile) }
+            if (fixtureEnabled) {
+                stage = CaptureStartStage.FIXTURE_PLAYBACK
+                withContext(Dispatchers.Default) { fixturePlayer.start() }
+            }
+            stage = CaptureStartStage.INITIAL_STATE
+            val initialCounters = engine.currentCounters()
             val session =
                 ActiveSession(
                     run = run,
@@ -187,7 +197,7 @@ class CaptureController(context: Context) {
                     peakPssMb = startSnapshot.processPssMb,
                     peakRssMb = startSnapshot.processRssMb,
                     peakNativeHeapMb = startSnapshot.nativeHeapMb,
-                    lastRoute = engine.currentCounters().route,
+                    lastRoute = initialCounters.route,
                     lastThermalStatus = startSnapshot.thermalStatus,
                 )
             activeSession = session
@@ -202,10 +212,11 @@ class CaptureController(context: Context) {
                     runCatching { engine.stop() }.getOrNull()?.finalizedFile?.delete()
                 }
             }
-            withContext(Dispatchers.IO) { runCatching { if (partFile.exists()) partFile.delete() } }
+            partFile?.let { file ->
+                withContext(Dispatchers.IO) { runCatching { if (file.exists()) file.delete() } }
+            }
             activeSession = null
-            publish(stateMachine.fail("AudioRecord не запущен: ${safeError(error)}"))
-            throw error
+            throw CaptureStartException(stage, error)
         }
     }
 

@@ -28,6 +28,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -73,27 +74,29 @@ fun CaptureApp(controller: CaptureController, onExplicitStart: () -> Unit) {
             else -> Unit
         }
     }
-    Column(
-        modifier =
-            Modifier.fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .statusBarsPadding()
-                .navigationBarsPadding()
-                .imePadding()
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.onBackground,
     ) {
-        AppHeader()
-        Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-            when (state.phase) {
-                FlowPhase.DEVICE -> DeviceScreen(state, controller)
-                FlowPhase.RUN_SELECTION -> RunSelectionScreen(state, controller)
-                FlowPhase.PREFLIGHT -> PreflightScreen(state, controller, onExplicitStart)
-                FlowPhase.STARTING -> StartingScreen(controller)
-                FlowPhase.RECORDING -> RecordingScreen(state, controller)
-                FlowPhase.REVIEW -> ReviewScreen(state, controller)
-                FlowPhase.QUESTIONNAIRE -> QuestionnaireScreen(state, controller)
-                FlowPhase.READY_TO_EXPORT -> ReadyToExportScreen(state, controller)
-                FlowPhase.RECOVERY -> RecoveryScreen(state, controller)
-                FlowPhase.ERROR -> ErrorScreen(state, controller)
+        Column(
+            modifier =
+                Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().imePadding()
+        ) {
+            AppHeader()
+            Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                when (state.phase) {
+                    FlowPhase.DEVICE -> DeviceScreen(state, controller)
+                    FlowPhase.RUN_SELECTION -> RunSelectionScreen(state, controller)
+                    FlowPhase.PREFLIGHT -> PreflightScreen(state, controller, onExplicitStart)
+                    FlowPhase.STARTING -> StartingScreen(controller)
+                    FlowPhase.RECORDING -> RecordingScreen(state, controller)
+                    FlowPhase.REVIEW -> ReviewScreen(state, controller)
+                    FlowPhase.QUESTIONNAIRE -> QuestionnaireScreen(state, controller)
+                    FlowPhase.READY_TO_EXPORT -> ReadyToExportScreen(state, controller)
+                    FlowPhase.RECOVERY -> RecoveryScreen(state, controller)
+                    FlowPhase.ERROR -> ErrorScreen(state, controller)
+                }
             }
         }
     }
@@ -111,6 +114,7 @@ private fun AppHeader() {
             text = "Dora Capture PoC",
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onPrimaryContainer,
         )
         Text(
             text = "Технический тест. Не является готовой Dora.",

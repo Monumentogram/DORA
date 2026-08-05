@@ -29,19 +29,25 @@ class DeviceInspector(private val context: Context) {
         context.getSystemService(ActivityManager::class.java).getMemoryInfo(memoryInfo)
         val battery = batteryReading()
         val supportedRates = SAMPLE_RATES.filter { rate ->
-            AudioRecord.getMinBufferSize(
-                rate,
-                AudioFormat.CHANNEL_IN_MONO,
-                AudioFormat.ENCODING_PCM_16BIT,
-            ) > 0
+            optionalMetric {
+                    AudioRecord.getMinBufferSize(
+                        rate,
+                        AudioFormat.CHANNEL_IN_MONO,
+                        AudioFormat.ENCODING_PCM_16BIT,
+                    )
+                }
+                ?.let { it > 0 } == true
         }
         val audioManager = context.getSystemService(AudioManager::class.java)
         val inputTypes =
-            audioManager
-                .getDevices(AudioManager.GET_DEVICES_INPUTS)
-                .map { audioRouteLabel(it.type) }
-                .distinct()
-                .sorted()
+            optionalMetric {
+                    audioManager
+                        .getDevices(AudioManager.GET_DEVICES_INPUTS)
+                        .map { audioRouteLabel(it.type) }
+                        .distinct()
+                        .sorted()
+                }
+                .orEmpty()
         val pageSize = pageSizeBytes()
         val ramMb = memoryInfo.totalMem / BYTES_PER_MIB
         val api = Build.VERSION.SDK_INT
@@ -68,9 +74,12 @@ class DeviceInspector(private val context: Context) {
     }
 
     fun snapshot(): SystemSnapshot {
-        val battery = batteryReading()
-        val memoryInfo = Debug.MemoryInfo()
-        Debug.getMemoryInfo(memoryInfo)
+        val battery = optionalMetric(::batteryReading) ?: BatteryReading(null, "unknown")
+        val processPssMb = optionalMetric {
+            val memoryInfo = Debug.MemoryInfo()
+            Debug.getMemoryInfo(memoryInfo)
+            memoryInfo.totalPss.toDouble() / KIB_PER_MIB
+        }
         return SystemSnapshot(
             elapsedRealtimeMs = SystemClock.elapsedRealtime(),
             batteryPercent = battery.percent,
@@ -80,17 +89,24 @@ class DeviceInspector(private val context: Context) {
             energyCounterNanoWh =
                 batteryLongProperty(BatteryManager.BATTERY_PROPERTY_ENERGY_COUNTER),
             thermalStatus = thermalStatus(),
-            processPssMb = memoryInfo.totalPss.toDouble() / KIB_PER_MIB,
+            processPssMb = processPssMb,
             processRssMb = null,
-            nativeHeapMb = Debug.getNativeHeapAllocatedSize().toDouble() / BYTES_PER_MIB,
+            nativeHeapMb =
+                optionalMetric {
+                    Debug.getNativeHeapAllocatedSize().toDouble() / BYTES_PER_MIB
+                },
             freeStorageMb = freeStorageMb(),
-            screenInteractive = context.getSystemService(PowerManager::class.java).isInteractive,
+            screenInteractive =
+                optionalMetric {
+                    context.getSystemService(PowerManager::class.java).isInteractive
+                } ?: true,
         )
     }
 
     private fun batteryReading(): BatteryReading {
-        val statusIntent =
+        val statusIntent = optionalMetric {
             context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        }
         if (statusIntent == null) return BatteryReading(null, "unknown")
         val level = statusIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
         val scale = statusIntent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
@@ -112,20 +128,27 @@ class DeviceInspector(private val context: Context) {
     }
 
     private fun batteryProperty(id: Int): Long? {
-        val value = context.getSystemService(BatteryManager::class.java).getIntProperty(id)
+        val value =
+            optionalMetric {
+                context.getSystemService(BatteryManager::class.java).getIntProperty(id)
+            } ?: return null
         return value.takeUnless { it == Int.MIN_VALUE }?.toLong()
     }
 
     private fun batteryLongProperty(id: Int): Long? {
-        val value = context.getSystemService(BatteryManager::class.java).getLongProperty(id)
+        val value =
+            optionalMetric {
+                context.getSystemService(BatteryManager::class.java).getLongProperty(id)
+            } ?: return null
         return value.takeUnless { it == Long.MIN_VALUE }
     }
 
     private fun thermalStatus(): String? =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            thermalStatusLabel(
-                context.getSystemService(PowerManager::class.java).currentThermalStatus
-            )
+            optionalMetric {
+                    context.getSystemService(PowerManager::class.java).currentThermalStatus
+                }
+                ?.let(::thermalStatusLabel)
         } else {
             null
         }
@@ -211,3 +234,5 @@ class DeviceInspector(private val context: Context) {
         }
     }
 }
+
+internal fun <T> optionalMetric(block: () -> T): T? = runCatching(block).getOrNull()

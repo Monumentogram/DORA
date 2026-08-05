@@ -53,65 +53,80 @@ class AudioCaptureEngine {
         cachedStopResult = null
         val (created, selected) = createInitializedRecorder()
         val wavWriter =
-            WavWriter(
-                targetPartFile,
-                WavFormat(selected.sampleRate, selected.channelCount, selected.bitsPerSample),
-            )
+            try {
+                WavWriter(
+                    targetPartFile,
+                    WavFormat(selected.sampleRate, selected.channelCount, selected.bitsPerSample),
+                )
+            } catch (error: Throwable) {
+                runCatching { created.release() }
+                throw error
+            }
         recorder = created
         writer = wavWriter
         partFile = targetPartFile
         running.set(true)
         val requestAt = SystemClock.elapsedRealtime()
-        try {
+        return try {
             created.startRecording()
             check(created.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
                 "AudioRecord не перешёл в состояние записи"
             }
+            val startedAt = SystemClock.elapsedRealtime()
+            val thread =
+                Thread({ captureLoop(created, wavWriter, selected.bufferBytes) }, "dora-poc-audio")
+            audioThread = thread
+            thread.start()
+            AudioStartResult(
+                configuration = selected,
+                startElapsedMs = startedAt,
+                startLatencyMs = startedAt - requestAt,
+            )
         } catch (error: Throwable) {
             running.set(false)
-            wavWriter.closeLeavingPartial()
-            created.release()
+            runCatching {
+                if (created.recordingState == AudioRecord.RECORDSTATE_RECORDING) created.stop()
+            }
+            runCatching { wavWriter.closeLeavingPartial() }
+            runCatching { created.release() }
             recorder = null
+            writer = null
+            audioThread = null
+            partFile = null
             throw error
         }
-        val startedAt = SystemClock.elapsedRealtime()
-        audioThread =
-            Thread({ captureLoop(created, wavWriter, selected.bufferBytes) }, "dora-poc-audio")
-                .also {
-                    it.start()
-                }
-        return AudioStartResult(
-            configuration = selected,
-            startElapsedMs = startedAt,
-            startLatencyMs = startedAt - requestAt,
-        )
     }
 
     fun currentCounters(): AudioCounters {
         val record = recorder
-        var timestampFrames: Long? = null
-        var timestampNanos: Long? = null
-        if (record != null) {
-            val timestamp = AudioTimestamp()
-            if (
-                record.getTimestamp(timestamp, AudioTimestamp.TIMEBASE_MONOTONIC) ==
-                    AudioRecord.SUCCESS
-            ) {
-                timestampFrames = timestamp.framePosition
-                timestampNanos = timestamp.nanoTime
-            }
+        val timestamp = record?.let { current ->
+            runCatching {
+                    val candidate = AudioTimestamp()
+                    if (
+                        current.getTimestamp(candidate, AudioTimestamp.TIMEBASE_MONOTONIC) ==
+                            AudioRecord.SUCCESS
+                    ) {
+                        candidate
+                    } else {
+                        null
+                    }
+                }
+                .getOrNull()
         }
         val route =
-            record?.routedDevice?.let { DeviceInspector.audioRouteLabel(it.type) } ?: "Не определён"
+            runCatching {
+                    record?.routedDevice?.let { DeviceInspector.audioRouteLabel(it.type) }
+                }
+                .getOrNull() ?: "Не определён"
         return AudioCounters(
             samples = samples.get(),
             bytes = bytes.get(),
-            fileBytes = partFile?.length() ?: 0L,
+            fileBytes = partFile?.let { runCatching { it.length() }.getOrDefault(0L) } ?: 0L,
             shortReads = shortReads.get(),
             errors = errors.toSortedMap(),
             route = route,
-            audioTimestampFrames = timestampFrames,
-            audioTimestampNanos = timestampNanos,
+            audioTimestampFrames = timestamp?.framePosition,
+            audioTimestampNanos = timestamp?.nanoTime,
         )
     }
 
@@ -158,9 +173,9 @@ class AudioCaptureEngine {
     fun isRecording(): Boolean = running.get()
 
     private fun captureLoop(record: AudioRecord, wavWriter: WavWriter, bufferBytes: Int) {
-        Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)
         val buffer = ByteArray(bufferBytes)
         try {
+            runCatching { Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO) }
             while (running.get()) {
                 val count = record.read(buffer, 0, buffer.size, AudioRecord.READ_BLOCKING)
                 if (count > 0) {
@@ -185,14 +200,14 @@ class AudioCaptureEngine {
     @SuppressLint("MissingPermission")
     private fun createInitializedRecorder(): Pair<AudioRecord, AudioConfiguration> {
         configurations().forEach { candidate ->
-            val audioFormat =
-                AudioFormat.Builder()
-                    .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                    .setSampleRate(candidate.sampleRate)
-                    .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
-                    .build()
             val created =
                 runCatching {
+                        val audioFormat =
+                            AudioFormat.Builder()
+                                .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                                .setSampleRate(candidate.sampleRate)
+                                .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
+                                .build()
                         AudioRecord.Builder()
                             .setAudioSource(MediaRecorder.AudioSource.MIC)
                             .setAudioFormat(audioFormat)
@@ -200,8 +215,12 @@ class AudioCaptureEngine {
                             .build()
                     }
                     .getOrNull()
-            if (created?.state == AudioRecord.STATE_INITIALIZED) return created to candidate
-            created?.release()
+            val initialized =
+                created?.let {
+                    runCatching { it.state == AudioRecord.STATE_INITIALIZED }.getOrDefault(false)
+                } == true
+            if (initialized) return checkNotNull(created) to candidate
+            created?.let { runCatching { it.release() } }
         }
         error("Не найдена безопасная mono PCM16 конфигурация")
     }
@@ -209,12 +228,15 @@ class AudioCaptureEngine {
     private fun configurations(): List<AudioConfiguration> =
         DeviceInspector.SAMPLE_RATES.mapNotNull { sampleRate ->
             val minimum =
-                AudioRecord.getMinBufferSize(
-                    sampleRate,
-                    AudioFormat.CHANNEL_IN_MONO,
-                    AudioFormat.ENCODING_PCM_16BIT,
-                )
-            if (minimum <= 0) {
+                runCatching {
+                        AudioRecord.getMinBufferSize(
+                            sampleRate,
+                            AudioFormat.CHANNEL_IN_MONO,
+                            AudioFormat.ENCODING_PCM_16BIT,
+                        )
+                    }
+                    .getOrNull()
+            if (minimum == null || minimum <= 0) {
                 null
             } else {
                 val quarterSecond = sampleRate * PCM16_BYTES_PER_SAMPLE / 4

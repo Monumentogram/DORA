@@ -94,6 +94,14 @@ def validate_runtime_policy() -> None:
         "android/poc/capture/src/main/kotlin/com/monumentogram/dora/poc/capture/ui/"
         "CaptureApp.kt"
     )
+    inspector = read_text(
+        "android/poc/capture/src/main/kotlin/com/monumentogram/dora/poc/capture/device/"
+        "DeviceInspector.kt"
+    )
+    start_failure = read_text(
+        "android/poc/capture/src/main/kotlin/com/monumentogram/dora/poc/capture/runtime/"
+        "CaptureStartFailure.kt"
+    )
     export = read_text(
         "android/poc/capture/src/main/kotlin/com/monumentogram/dora/poc/capture/"
         "report/SafeExportArchive.kt"
@@ -134,6 +142,12 @@ def validate_runtime_policy() -> None:
         not in ui
     ):
         fail("Required preflight reminder is missing")
+    if "contentColor = MaterialTheme.colorScheme.onBackground" not in ui:
+        fail("Root surface must propagate semantic dark-theme content color")
+    if "optionalMetric" not in inspector:
+        fail("Unsupported optional device telemetry must not abort capture")
+    if "CAPTURE_START_SYSTEM_SNAPSHOT" not in start_failure:
+        fail("Capture-start failures must expose a stable sanitized stage code")
     required_export_entries = {
         "device-profile.json",
         "run-result.json",
@@ -159,6 +173,12 @@ def validate_tests_present() -> None:
         "audio/SyntheticFixtureTest.kt",
         "android/poc/capture/src/test/kotlin/com/monumentogram/dora/poc/capture/"
         "report/SafeExportPolicyTest.kt",
+        "android/poc/capture/src/test/kotlin/com/monumentogram/dora/poc/capture/"
+        "device/OptionalMetricTest.kt",
+        "android/poc/capture/src/test/kotlin/com/monumentogram/dora/poc/capture/"
+        "runtime/CaptureStartFailureTest.kt",
+        "android/poc/capture/src/test/kotlin/com/monumentogram/dora/poc/capture/"
+        "ui/CaptureThemeContrastTest.kt",
         "android/poc/capture/src/androidTest/kotlin/com/monumentogram/dora/poc/capture/"
         "CaptureFlowTest.kt",
     )

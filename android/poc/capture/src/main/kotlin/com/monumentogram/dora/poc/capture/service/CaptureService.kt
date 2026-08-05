@@ -18,7 +18,10 @@ import com.monumentogram.dora.poc.capture.CaptureApplication
 import com.monumentogram.dora.poc.capture.MainActivity
 import com.monumentogram.dora.poc.capture.R
 import com.monumentogram.dora.poc.capture.model.RunKind
+import com.monumentogram.dora.poc.capture.runtime.CaptureStartException
+import com.monumentogram.dora.poc.capture.runtime.CaptureStartStage
 import com.monumentogram.dora.poc.capture.runtime.IdempotentStopGate
+import com.monumentogram.dora.poc.capture.runtime.captureStartFailureMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -72,14 +75,25 @@ class CaptureService : Service() {
             stopSelf()
             return
         }
-        startMicrophoneForeground(buildNotification(run))
+        val foregroundFailure =
+            runCatching { startMicrophoneForeground(buildNotification(run)) }.exceptionOrNull()
+        if (foregroundFailure != null) {
+            controller.serviceFailure(
+                captureStartFailureMessage(
+                    CaptureStartException(
+                        CaptureStartStage.FOREGROUND_SERVICE,
+                        foregroundFailure,
+                    )
+                )
+            )
+            stopSelf()
+            return
+        }
         startJob = serviceScope.launch {
             runCatching { controller.beginServiceCapture(run, runId, fixtureEnabled) }
                 .onSuccess { captureStarted = true }
                 .onFailure {
-                    controller.serviceFailure(
-                        "Microphone foreground service не начал запись: ${it.javaClass.simpleName}"
-                    )
+                    controller.serviceFailure(captureStartFailureMessage(it))
                     ServiceCompat.stopForeground(
                         this@CaptureService,
                         ServiceCompat.STOP_FOREGROUND_REMOVE,
