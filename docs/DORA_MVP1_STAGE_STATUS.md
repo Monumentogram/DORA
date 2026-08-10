@@ -6,10 +6,11 @@ Stage 00 merge commit: `a4aae302f9033e5471f6759f513e7e351c375a72`
 Stage 0A merge commit: `91b9916b01ff70f63d82412bafbed0d72307dbe1`
 Repository: public `Monumentogram/DORA` by temporary owner-approved decision (ADR-0002)
 Default branch: `main`
-Active stage: `Stage 0B — POC-CAPTURE-001 closure`
-Active branch: `stage/0b-poc-capture-001`
-Active PoC: `POC-CAPTURE-001` (exploratory campaign complete; next PoC not started)
-Stage state: **EXPLORATORY COMPLETE — INCONCLUSIVE — READY FOR REVIEW**
+Stage 0B merge commit: `5e748469b22c6e7303fe6eb5f95394ea40088d84`
+Active stage: `Stage 0C — POC-SEARCH-001`
+Active branch: `stage/0c-poc-search-001`
+Active PoC: `POC-SEARCH-001`
+Stage state: **IN PROGRESS — PRE-RUN CONTRACT FREEZE**
 
 ## Stage 00 closure
 
@@ -27,11 +28,34 @@ Stage state: **EXPLORATORY COMPLETE — INCONCLUSIVE — READY FOR REVIEW**
 - Owner decisions `OD-01`–`OD-10`, privacy/IP/data governance, the device matrix, Gate Set `stage0-v0.1`, benchmark schema and PoC execution order are present on `main`.
 - No technical PoC or production functionality was started in Stage 0A.
 
-## Active Stage 0B scope
+## Stage 0B closure
 
-Stage 0B implements only the disposable `POC-CAPTURE-001` evidence harness selected by `OD-01`. It may add a separate Android application module with physical-microphone permission, a user-initiated microphone foreground service, synthetic signal playback, local WAV analysis/deletion and sanitized report export. It does not admit this implementation into production Dora.
+- Stage 0B is complete and merged.
+- Pull Request #8 was merged into `main`.
+- The merge commit is `5e748469b22c6e7303fe6eb5f95394ea40088d84`.
+- The formal `POC-CAPTURE-001` result remains `INCONCLUSIVE` and is not reinterpreted by Stage 0C.
+- No production capture, storage, ML, backend, account or cloud functionality was admitted.
 
-The owner phone cannot be attached to the remote development workstation. Stage 0B therefore uses a remote manual-device workflow without ADB:
+## Active Stage 0C scope
+
+Stage 0C executes only `POC-SEARCH-001` in the isolated `:poc:search` contour. It uses a
+versioned deterministic generator and fully synthetic text to evaluate Room 2.8.4 with
+SQLite FTS4 at 10,000 conversations and exactly 1,000,000 transcript segments. The
+pre-run dataset, query, mutation, warm-up, repetition, metric and Gate Set contracts are
+frozen before the first full run. The generated database is temporary and must not enter
+Git or Actions artifacts.
+
+Host/emulator evidence is sufficient for generated-scale correctness, schema, mapping,
+mutation and logical rebuild checks. It is only exploratory latency evidence. A formal
+`PASS` and device latency/support claim remain unavailable until the required physical
+D1-D3 search slices exist. FTS4 and the PoC schema are not production-admitted by this
+stage.
+
+## Closed Stage 0B evidence record
+
+Stage 0B implemented only the disposable `POC-CAPTURE-001` evidence harness selected by `OD-01`. It did not admit that implementation into production Dora.
+
+The owner phone could not be attached to the remote development workstation. Stage 0B therefore used a remote manual-device workflow without ADB:
 
 1. GitHub Actions builds and publishes a debug-signed PoC APK.
 2. The owner installs it manually and starts each test explicitly.
@@ -87,11 +111,11 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - No controlled non-public evidence store or custodian has been configured. Until then, only synthetic data and sanitized aggregate/public evidence are allowed; raw traces/audio and purpose-recorded volunteer phrases remain blocked.
 - Production markets/lawful basis/copy under `DEC-001` and Legal review remain unresolved. The Stage 0 reminder checkbox does not resolve production consent legality.
 - No PoC result admits a production dependency. Native code or model admission later requires an ADR plus license, provenance, ABI, 16-KiB and runtime evidence.
-- `main` remains the protected integration branch. Stage 0B work stays on `stage/0b-poc-capture-001`; PR #8 may move from Draft to Ready for review only after the closure commit passes CI. This task does not merge it.
+- `main` remains the protected integration branch. Active Stage 0C development stays on `stage/0c-poc-search-001`; its PR must remain unmerged in this task.
 
 ## Next safe action
 
-After Stage 0B review, the next recommended technical experiment is `POC-SEARCH-001` on generated data in a separate branch and task. It is already `READY`, does not require the owner's primary phone or private audio and does not reinterpret the capture result. Do not start it in this Stage 0B task. A future clean 60-minute capture baseline remains a separately scoped deferred campaign on a dedicated test device.
+Complete the frozen `POC-SEARCH-001` smoke and full reference campaigns, validate the sanitized evidence, and keep the Stage 0C Pull Request unmerged for review. Do not start another PoC inside this stage. A future clean 60-minute capture baseline remains a separately scoped deferred campaign on a dedicated test device.
 
 ## Update protocol
 
