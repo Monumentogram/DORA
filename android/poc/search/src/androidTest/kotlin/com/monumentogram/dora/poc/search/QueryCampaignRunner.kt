@@ -78,7 +78,18 @@ class QueryCampaignRunner(
     fun runCorrectness(label: String): CorrectnessSummary {
         val conversationsBefore = dao.conversationCount()
         val canonicalRowsBefore = dao.transcriptCount()
-        val observations = campaign.cases.map(::evaluateCase)
+        val observations =
+            campaign.cases.mapIndexed { index, queryCase ->
+                BenchmarkProgress.report(
+                    "$label correctness: ${index + 1}/${campaign.cases.size} ${queryCase.id} started"
+                )
+                evaluateCase(queryCase).also {
+                    BenchmarkProgress.report(
+                        "$label correctness: ${index + 1}/${campaign.cases.size} " +
+                            "${queryCase.id} complete"
+                    )
+                }
+            }
         val conversationsAfter = dao.conversationCount()
         val canonicalRowsAfter = dao.transcriptCount()
         val digest = MessageDigest.getInstance("SHA-256")

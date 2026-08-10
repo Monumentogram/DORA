@@ -50,3 +50,12 @@ Any harness defect invalidates that run. Its fact must be preserved in this READ
   both required full-scale 1M-row rebuilds and the independent second 1M-row build, moves the
   scale-independent corruption/recovery boundary to a separate 10-conversation/1,000-row fully
   generated index, emits phase progress, and gives the reproducible workflow sufficient runtime.
+- Full workflow run `31406399307` at commit `2838481cb1b0e2eb1c348f2cd6b25c29cf75c893`
+  is `INVALID`: the job reached GitHub's 360-minute hosted-job ceiling after both required
+  full-scale rebuilds, before the harness could write observations. The phase log proved that
+  database generation, initial indexing, both rebuilds and the 1,020-operation latency campaign
+  completed, but each correctness pass spent about 115 minutes executing count queries that
+  redundantly joined common FTS matches through both canonical tables. No partial timing or gate
+  outcome is admitted. The correction retains the frozen manifests, query mix, repetitions,
+  percentile definition and gates, while using the FTS doclist directly for semantically
+  equivalent unfiltered MATCH counts and adding per-query phase diagnostics.

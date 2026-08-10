@@ -39,7 +39,7 @@ class SearchRepository(private val dao: SearchPocDao) {
         }
 
         return try {
-            val statement = buildStatement(request, compiled, countOnly = true)
+            val statement = buildCountStatement(request, compiled)
             CountExecution.Success(dao.rawCount(statement), compiled)
         } catch (_: SQLiteException) {
             CountExecution.Failure("SQLITE_QUERY_FAILED", compiled)
@@ -50,6 +50,23 @@ class SearchRepository(private val dao: SearchPocDao) {
 
     fun compile(request: SearchRequest): CompiledUserQuery =
         SafeFtsQueryCompiler.compile(request.rawQuery, request.mode, !request.filters.isEmpty())
+
+    private fun buildCountStatement(
+        request: SearchRequest,
+        compiled: CompiledUserQuery,
+    ): SimpleSQLiteQuery {
+        // A count-only MATCH without metadata filters is fully answered by the FTS doclist.
+        // Joining every matching row back through the canonical tables is logically redundant
+        // and turns common-term oracle checks into multi-hour scans at the 1M-row reference scale.
+        if (compiled.status == QueryStatus.READY && request.filters.isEmpty()) {
+            return SimpleSQLiteQuery(
+                "SELECT COUNT(*) FROM transcript_segments_fts " +
+                    "WHERE transcript_segments_fts MATCH ?",
+                arrayOf(compiled.matchExpression),
+            )
+        }
+        return buildStatement(request, compiled, countOnly = true)
+    }
 
     private fun buildStatement(
         request: SearchRequest,

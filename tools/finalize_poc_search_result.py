@@ -505,7 +505,7 @@ def build_result(
             "gateSetStatus": "Approved",
             "requiredSlicesCompleted": False,
             "rationale": rationale,
-            "invalidatedRunCount": 0,
+            "invalidatedRunCount": 2,
         },
         "errors": errors,
         "battery": {
