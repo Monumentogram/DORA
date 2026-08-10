@@ -30,6 +30,20 @@
       "containsAudio": false,
       "rawAudioRetained": false,
       "failureReason": null
+    },
+    {
+      "runId": "run-c-20260810T082734Z-d6abea38",
+      "sourceArchiveSha256": "sha256:7f8b71182b1fa1ea015f8251a2d872005e8a3f47897f1c95e9062a5353bfdc69",
+      "sourceDeletionReceiptSha256": "sha256:4caa2c390d0c42f40e0f32e1511056cc1058bb989ac6c4e6f5d059f807a5005b",
+      "verifiedAt": "2026-08-10T09:31:32.315911Z",
+      "deletedWavSha256": "sha256:50502a92a48825cf666057191b847d32d0b80aaeed010ec7e99abd604717d6ce",
+      "wavWasValid": true,
+      "bytesBeforeDeletion": 122175332,
+      "deletionSucceeded": true,
+      "absenceVerified": true,
+      "containsAudio": false,
+      "rawAudioRetained": false,
+      "failureReason": null
     }
   ]
 }

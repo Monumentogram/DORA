@@ -1,0 +1,422 @@
+{
+  "schemaVersion": 1,
+  "gateSetVersion": "stage0-v0.1",
+  "generatedAt": "2026-08-10T09:31:32.315911Z",
+  "pocId": "POC-CAPTURE-001",
+  "applicationVersion": "0.1.0-poc-capture-001",
+  "commit": "5d9a8aceebaa7175a7a5cbaa139e8295df87d632",
+  "device": {
+    "profileId": "D2",
+    "kind": "remote_physical",
+    "manufacturer": "samsung",
+    "model": "SM-S908B",
+    "firmwareOrBuild": "BP2A.250605.031.A3",
+    "securityPatch": "2026-05-05",
+    "abi": "arm64-v8a",
+    "ramMb": 10515,
+    "pageSizeBytes": 4096,
+    "inventoryStatus": "available",
+    "uniqueHardwareIdentifierRecorded": false,
+    "notes": "Profile is an in-app candidate pending Codex review; one phone cannot cover D1-D7."
+  },
+  "androidApi": 36,
+  "duration": {
+    "plannedSeconds": 3600,
+    "actualSeconds": 3829.05,
+    "completed": true,
+    "monotonicClockUsed": true
+  },
+  "inputData": {
+    "classification": "none",
+    "manifestId": null,
+    "manifestSha256": null,
+    "fixtureIds": [],
+    "languages": [
+      "not-applicable"
+    ],
+    "acousticConditions": [
+      "silence"
+    ],
+    "consentReference": null,
+    "containsRealMeetingData": false,
+    "generatorVersion": null
+  },
+  "metrics": [
+    {
+      "name": "capture.actual_samples",
+      "value": 61087644,
+      "unit": "samples",
+      "aggregation": "count",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "Dora Capture PoC in-app measurement"
+    },
+    {
+      "name": "capture.expected_samples",
+      "value": 61264800,
+      "unit": "samples",
+      "aggregation": "raw",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "Dora Capture PoC in-app measurement"
+    },
+    {
+      "name": "capture.sample_delta",
+      "value": -177156,
+      "unit": "samples",
+      "aggregation": "raw",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "Dora Capture PoC in-app measurement"
+    },
+    {
+      "name": "capture.recorded_bytes",
+      "value": 122175288,
+      "unit": "bytes",
+      "aggregation": "sum",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "Dora Capture PoC in-app measurement"
+    },
+    {
+      "name": "capture.short_reads",
+      "value": 1,
+      "unit": "reads",
+      "aggregation": "count",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "Dora Capture PoC in-app measurement"
+    },
+    {
+      "name": "capture.audiorecord_errors",
+      "value": 0,
+      "unit": "errors",
+      "aggregation": "count",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "Dora Capture PoC in-app measurement"
+    },
+    {
+      "name": "capture.screen_off_seconds",
+      "value": 1558.004,
+      "unit": "seconds",
+      "aggregation": "sum",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "Dora Capture PoC in-app measurement"
+    },
+    {
+      "name": "capture.start_latency_ms",
+      "value": 24,
+      "unit": "ms",
+      "aggregation": "raw",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "Dora Capture PoC in-app measurement"
+    },
+    {
+      "name": "capture.finalization_latency_ms",
+      "value": 68,
+      "unit": "ms",
+      "aggregation": "raw",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "Dora Capture PoC in-app measurement"
+    },
+    {
+      "name": "capture.route_changes",
+      "value": 0,
+      "unit": "changes",
+      "aggregation": "count",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "Dora Capture PoC in-app measurement"
+    },
+    {
+      "name": "capture.interruptions",
+      "value": 0,
+      "unit": "interruptions",
+      "aggregation": "count",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "Dora Capture PoC in-app measurement"
+    },
+    {
+      "name": "capture.wav_valid",
+      "value": true,
+      "unit": "boolean",
+      "aggregation": "categorical",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "Dora Capture PoC in-app measurement"
+    },
+    {
+      "name": "capture.audio_deleted",
+      "value": true,
+      "unit": "boolean",
+      "aggregation": "categorical",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "Dora Capture PoC in-app measurement"
+    },
+    {
+      "name": "manual.notification_visible",
+      "value": "yes",
+      "unit": "answer",
+      "aggregation": "categorical",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "manual-owner-observation"
+    },
+    {
+      "name": "manual.screen_mostly_off",
+      "value": "yes",
+      "unit": "answer",
+      "aggregation": "categorical",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "manual-owner-observation"
+    },
+    {
+      "name": "manual.call_or_interruption",
+      "value": "yes",
+      "unit": "answer",
+      "aggregation": "categorical",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "manual-owner-observation"
+    },
+    {
+      "name": "manual.phone_charging",
+      "value": "no",
+      "unit": "answer",
+      "aggregation": "categorical",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "manual-owner-observation"
+    },
+    {
+      "name": "manual.overheat_or_unexpected_stop",
+      "value": "no",
+      "unit": "answer",
+      "aggregation": "categorical",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "manual-owner-observation"
+    },
+    {
+      "name": "battery.start_charge_counter",
+      "value": 3180060,
+      "unit": "microampere-hours",
+      "aggregation": "raw",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "Dora Capture PoC in-app measurement"
+    },
+    {
+      "name": "battery.end_charge_counter",
+      "value": 3932040,
+      "unit": "microampere-hours",
+      "aggregation": "raw",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "Dora Capture PoC in-app measurement"
+    },
+    {
+      "name": "battery.end_current_now",
+      "value": -712,
+      "unit": "microamperes",
+      "aggregation": "raw",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "Dora Capture PoC in-app measurement"
+    },
+    {
+      "name": "storage.free_app_space_mb",
+      "value": 33507,
+      "unit": "MiB",
+      "aggregation": "raw",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "Dora Capture PoC in-app measurement"
+    }
+  ],
+  "successGates": [
+    {
+      "id": "GATE-CAPTURE-START-STOP",
+      "kind": "success",
+      "title": "Ручной Start и Stop с валидной финализацией",
+      "approvalStatus": "Approved",
+      "source": "docs\/stage0\/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "metric": "capture.wav_valid",
+      "operator": "=",
+      "threshold": true,
+      "unit": null,
+      "observed": true,
+      "outcome": "met",
+      "mandatory": true,
+      "scope": "POC-CAPTURE-001 single owner phone exploratory run"
+    },
+    {
+      "id": "GATE-CAPTURE-SAMPLE-INTEGRITY",
+      "kind": "success",
+      "title": "Непрерывность сэмплов",
+      "approvalStatus": "Proposed",
+      "source": "docs\/stage0\/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "metric": "capture.sample_delta",
+      "operator": "custom",
+      "threshold": null,
+      "unit": null,
+      "observed": -177156,
+      "outcome": "not_evaluated",
+      "mandatory": true,
+      "scope": "POC-CAPTURE-001 single owner phone exploratory run",
+      "notes": "Numeric sample-gap tolerance remains Proposed in Gate Set stage0-v0.1."
+    }
+  ],
+  "failureGates": [
+    {
+      "id": "GATE-CAPTURE-WHOLE-SESSION-LOSS",
+      "kind": "failure",
+      "title": "Whole-session loss",
+      "approvalStatus": "Approved",
+      "source": "docs\/stage0\/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "metric": "capture.actual_samples",
+      "operator": "=",
+      "threshold": 0,
+      "unit": "count",
+      "observed": 61087644,
+      "outcome": "not_triggered",
+      "mandatory": true,
+      "scope": "POC-CAPTURE-001 single owner phone exploratory run"
+    },
+    {
+      "id": "GATE-CAPTURE-CORRUPTION",
+      "kind": "failure",
+      "title": "WAV corruption",
+      "approvalStatus": "Approved",
+      "source": "docs\/stage0\/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "metric": "capture.wav_valid",
+      "operator": "=",
+      "threshold": false,
+      "unit": null,
+      "observed": true,
+      "outcome": "not_triggered",
+      "mandatory": true,
+      "scope": "POC-CAPTURE-001 single owner phone exploratory run"
+    },
+    {
+      "id": "GATE-CAPTURE-HIDDEN-STATE",
+      "kind": "failure",
+      "title": "Recording notification not visible",
+      "approvalStatus": "Approved",
+      "source": "docs\/stage0\/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "metric": "manual.notification_visible",
+      "operator": "=",
+      "threshold": "no",
+      "unit": "count",
+      "observed": "yes",
+      "outcome": "not_triggered",
+      "mandatory": true,
+      "scope": "POC-CAPTURE-001 single owner phone exploratory run"
+    },
+    {
+      "id": "GATE-CAPTURE-RAW-DELETION",
+      "kind": "failure",
+      "title": "Raw audio deletion failed",
+      "approvalStatus": "Approved",
+      "source": "docs\/stage0\/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "metric": "capture.audio_deleted",
+      "operator": "=",
+      "threshold": false,
+      "unit": null,
+      "observed": true,
+      "outcome": "not_triggered",
+      "mandatory": true,
+      "scope": "POC-CAPTURE-001 single owner phone exploratory run"
+    }
+  ],
+  "result": {
+    "status": "INCONCLUSIVE",
+    "gateSetStatus": "Mixed",
+    "requiredSlicesCompleted": false,
+    "rationale": "One remote physical phone and one run cannot satisfy D1-D7 coverage or the 99.5% campaign gate; no approved failure gate was observed.",
+    "invalidatedRunCount": 0
+  },
+  "errors": [],
+  "battery": {
+    "applicable": true,
+    "startPercent": 70,
+    "endPercent": 86,
+    "energyMwh": null,
+    "baselineRatio": null,
+    "chargerState": "unplugged",
+    "screenState": "mixed",
+    "measurementSource": "Android BatteryManager",
+    "notApplicableReason": "Energy counter unavailable; percent still reported."
+  },
+  "temperature": {
+    "applicable": true,
+    "startCelsius": null,
+    "endCelsius": null,
+    "maxCelsius": null,
+    "startThermalStatus": "NONE",
+    "maxThermalStatus": "NONE",
+    "measurementSource": "Android PowerManager thermal status",
+    "notApplicableReason": "Android exposes a thermal severity status, not a Celsius sensor value."
+  },
+  "memory": {
+    "applicable": true,
+    "peakPssMb": 135.7119140625,
+    "peakRssMb": null,
+    "peakNativeHeapMb": 17.601821899414062,
+    "oomCount": 0,
+    "trimOrPressureObserved": false,
+    "measurementSource": "android.os.Debug.MemoryInfo",
+    "notApplicableReason": "RSS is not exposed reliably by the selected public API; PSS and native heap are reported."
+  },
+  "fileSizes": [
+    {
+      "artifact": "deleted-wav-technical-record",
+      "bytes": 122175332,
+      "sha256": "sha256:50502a92a48825cf666057191b847d32d0b80aaeed010ec7e99abd604717d6ce",
+      "classification": "internal-sensitive"
+    }
+  ],
+  "licenses": [],
+  "limitations": [
+    {
+      "id": "LIMIT-SINGLE-DEVICE",
+      "severity": "high",
+      "description": "One physical phone cannot establish D1-D7 coverage.",
+      "blocksVerdict": true
+    },
+    {
+      "id": "LIMIT-SAMPLE-GAP-THRESHOLD",
+      "severity": "high",
+      "description": "Exact numeric capture sample-gap tolerance remains Proposed.",
+      "blocksVerdict": true
+    },
+    {
+      "id": "LIMIT-CAMPAIGN-INCOMPLETE",
+      "severity": "high",
+      "description": "This result is one bounded run and cannot prove 99.5% start\/stop reliability.",
+      "blocksVerdict": true
+    }
+  ],
+  "recommendation": {
+    "decision": "ITERATE",
+    "rationale": "Review this sanitized run before allowing the next bounded test.",
+    "fallback": null,
+    "ownerAction": "Upload this ZIP to the existing Codex task; never upload raw audio."
+  },
+  "evidenceFiles": [],
+  "privacyReview": {
+    "publicEvidenceSafe": false,
+    "secretScanPassed": true,
+    "personalDataScanPassed": true,
+    "forbiddenContentLoggingCheckPassed": true,
+    "reviewerRole": "in-app allowlist export guard",
+    "notes": "Archive is safe for private Codex review after raw deletion; public Git admission still requires human review."
+  }
+}

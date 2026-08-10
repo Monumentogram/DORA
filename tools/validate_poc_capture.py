@@ -371,6 +371,7 @@ def validate_public_capture_evidence() -> None:
         "device-profile.json",
         "run-a-result.json",
         "run-b-result.json",
+        "run-c-result.json",
         "deletion-summary.json",
     }
     if not evidence_root.is_dir():
@@ -445,6 +446,7 @@ def validate_public_capture_evidence() -> None:
     runs = {
         "Run A": read_json("docs/evidence/poc-capture-001/run-a-result.json"),
         "Run B": read_json("docs/evidence/poc-capture-001/run-b-result.json"),
+        "Run C": read_json("docs/evidence/poc-capture-001/run-c-result.json"),
     }
     profile = read_json("docs/evidence/poc-capture-001/device-profile.json")
     deletion = read_json("docs/evidence/poc-capture-001/deletion-summary.json")
@@ -453,6 +455,7 @@ def validate_public_capture_evidence() -> None:
     expected_run_ids = {
         "Run A": "run-a-20260805T133208Z-349c5e0c",
         "Run B": "run-b-20260810T054638Z-0b71124a",
+        "Run C": "run-c-20260810T082734Z-d6abea38",
     }
     required_metrics = {
         "capture.actual_samples",
@@ -522,6 +525,29 @@ def validate_public_capture_evidence() -> None:
     if run_b_metrics.get("capture.route_changes") != 2:
         fail("Run B audio-route transition evidence drifted")
 
+    run_c = runs["Run C"]
+    run_c_metrics = {metric["name"]: metric["value"] for metric in run_c["metrics"]}
+    if run_c["duration"]["plannedSeconds"] != 3600:
+        fail("Run C planned duration drifted")
+    if run_c["duration"]["actualSeconds"] != 3829.05:
+        fail("Run C actual duration drifted")
+    if run_c_metrics.get("capture.screen_off_seconds") != 1558.004:
+        fail("Run C measured screen-off duration drifted")
+    if run_c_metrics["manual.notification_visible"] != "yes":
+        fail("Run C must retain the positive persistent-notification observation")
+    if run_c_metrics.get("manual.call_or_interruption") != "yes":
+        fail("Run C source intervention observation drifted")
+    if run_c_metrics.get("manual.screen_mostly_off") != "yes":
+        fail("Run C immutable source screen answer drifted")
+    if run_c_metrics.get("manual.phone_charging") != "no":
+        fail("Run C immutable source charging answer drifted")
+    if run_c_metrics.get("capture.route_changes") != 0:
+        fail("Run C route-change observation drifted")
+    if run_c["battery"]["startPercent"] != 70 or run_c["battery"]["endPercent"] != 86:
+        fail("Run C source battery observation drifted")
+    if run_c["result"]["requiredSlicesCompleted"] is not False:
+        fail("Run C must not claim completion of required campaign slices")
+
     if profile["commit"] != expected_commit:
         fail("Run A device profile commit drifted")
     if profile["device"]["uniqueHardwareIdentifierRecorded"]:
@@ -530,7 +556,7 @@ def validate_public_capture_evidence() -> None:
     if deletion["reviewDisposition"] != "public_aggregate_only":
         fail("Deletion summary public-review disposition drifted")
     if deletion.get("schemaVersion") != 2 or not isinstance(deletion.get("runs"), list):
-        fail("Deletion summary must contain the reviewed Run A and Run B records")
+        fail("Deletion summary must contain the reviewed Run A, Run B and Run C records")
     if len(deletion["runs"]) != len(expected_run_ids):
         fail("Deletion summary must contain exactly one record per reviewed run")
     deletion_by_run_id = {item["runId"]: item for item in deletion["runs"]}
@@ -550,20 +576,26 @@ def validate_public_capture_evidence() -> None:
     readme = read_text("docs/evidence/poc-capture-001/README.md")
     required_readme_facts = (
         "overall result INCONCLUSIVE",
-        "Run C may proceed",
+        "invalidated exploratory attempt",
         "manual.notification_visible=yes",
         "manual.call_or_interruption=yes",
         "Bluetooth SCO",
         "`0, 16, 180189, 180367, 180258`",
         "`0, 6, 1092599, 1099075, 1316577, 1316829, 1316644`",
+        "`0, 5, 3828946, 3829455, 3829050`",
         "known non-fatal measurement-telemetry defect",
         "The source ZIPs are not committed",
-        "three-hour and eight-hour runs remain",
-        "Bluetooth must be fully disabled before Run C Start",
+        "Bluetooth was fully disabled",
+        "TrueConf call",
+        "phone was charging",
+        "excluded from battery evidence",
+        "clean 60-minute screen-off baseline remains deferred evidence",
+        "No approved critical capture failure was observed on the tested Samsung device during Run A, Run B and the interrupted Run C campaign.",
+        "three-hour/eight-hour endurance behavior",
     )
     missing_facts = [fact for fact in required_readme_facts if fact not in readme]
     if missing_facts:
-        fail(f"Run A/Run B evidence review is missing required facts: {missing_facts}")
+        fail(f"Run A/Run B/Run C evidence review is missing required facts: {missing_facts}")
 
 
 def main() -> int:

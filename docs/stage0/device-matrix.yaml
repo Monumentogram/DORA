@@ -17,13 +17,13 @@ owner_decision:
 
 first_exploratory_campaign:
   mode: single_owner_physical_phone
-  status: ready_for_run_c
-  measured_run_allowed: true
+  status: completed_exploratory_inconclusive
+  measured_run_allowed: false
   unblock_condition: >-
-    Run A and Run B on build 5d9a8ac completed and their sanitized ZIP/deletion receipts
-    were reviewed on 2026-08-05 and 2026-08-10. No approved critical failure was observed,
-    so only Run C is now opened. Run B's intervention and audio-route transition remain a
-    documented limitation and do not establish clean uninterrupted sample integrity.
+    Run A and Run B completed, and Run C was returned as an invalidated exploratory
+    attempt. The owner accepted closure on 2026-08-10 without repeating the clean
+    60-minute screen-off slice on the primary work phone. No approved critical capture
+    failure was observed; the formal campaign verdict remains INCONCLUSIVE.
   required_automatic_fields:
     - sanitized_device_model
     - android_api
@@ -37,8 +37,9 @@ first_exploratory_campaign:
   profile_assignment: >-
     owner-phone-001 is closest to D2 by Android API, primary ABI and RAM. Record D2 as
     available inventory. Its refreshed free app storage satisfies the D2 threshold, and
-    the reviewed build 5d9a8ac Run A/Run B evidence opens only Run C. Do not infer any
-    other profile or matrix coverage.
+    the reviewed build 5d9a8ac Run A/Run B/Run C evidence closes only the bounded
+    exploratory campaign. Do not infer a clean one-hour baseline, any other profile or
+    matrix coverage.
   matrix_support_verdict: INCONCLUSIVE
   measured_run_result_rule: >-
     FAIL is allowed when an approved failure gate triggers; otherwise missing D1-D7
@@ -175,6 +176,76 @@ first_exploratory_campaign:
         - "The owner marked a call or other intervention, and the sanitized log records Bluetooth SCO for 6.476 seconds after the nominal 15-minute target; frame-level continuity through that transition is not proven."
         - "The numeric sample-gap threshold remains Proposed; the observed -33990 sample delta is retained without a retrospective pass/fail threshold."
         - "The sanitized event log has the same known non-monotonic deletion timestamp defect; the independent deletion receipt remains authoritative."
+    - attempt_id: run-c-attempt-005
+      observed_on: "2026-08-10"
+      intended_run: run-c
+      installed_commit: 5d9a8aceebaa7175a7a5cbaa139e8295df87d632
+      run_id: run-c-20260810T082734Z-d6abea38
+      result: invalidated_exploratory_attempt
+      formal_verdict: INCONCLUSIVE
+      recording_started: true
+      sanitized_run_archive_created: true
+      source_archive_sha256: 7f8b71182b1fa1ea015f8251a2d872005e8a3f47897f1c95e9062a5353bfdc69
+      source_archive_size_bytes: 5319
+      benchmark_schema_valid: true
+      synthetic_signal_enabled: false
+      planned_duration_ms: 3600000
+      actual_duration_ms: 3829050
+      screen_off_duration_ms: 1558004
+      screen_off_ratio: 0.40689
+      clean_60_minute_screen_off_baseline_completed: false
+      actual_samples: 61087644
+      expected_samples: 61264800
+      sample_delta: -177156
+      recorded_pcm_bytes: 122175288
+      finalized_wav_bytes: 122175332
+      short_reads: 1
+      audiorecord_errors: 0
+      start_latency_ms: 24
+      finalization_latency_ms: 68
+      wav_valid: true
+      route_changes: 0
+      automated_interruptions: 0
+      source_manual_notification_visible: "yes"
+      source_manual_screen_mostly_off: "yes"
+      source_manual_call_or_interruption: "yes"
+      source_manual_phone_charging: "no"
+      source_manual_overheat_or_unexpected_stop: "no"
+      owner_review:
+        bluetooth_fully_disabled_before_start: true
+        screen_off_telemetry_confirmed_correct: true
+        external_intervention: trueconf_call
+        phone_charging: true
+        battery_result_usable: false
+        repeat_current_run_declined: true
+        repeat_reason: "The phone is the owner's primary work device; an uninterrupted one-hour run is currently impractical."
+      battery_start_percent: 70
+      battery_end_percent: 86
+      thermal_start: NONE
+      thermal_max: NONE
+      peak_pss_mb: 135.7119140625
+      peak_native_heap_mb: 17.601821899414062
+      critical_failure_observed: false
+      deletion_succeeded: true
+      deletion_absence_verified: true
+      raw_audio_retained: false
+      public_evidence:
+        - docs/evidence/poc-capture-001/README.md
+        - docs/evidence/poc-capture-001/device-profile.json
+        - docs/evidence/poc-capture-001/run-a-result.json
+        - docs/evidence/poc-capture-001/run-b-result.json
+        - docs/evidence/poc-capture-001/run-c-result.json
+        - docs/evidence/poc-capture-001/deletion-summary.json
+      disposition: exploratory_campaign_closed_inconclusive
+      deferred_evidence: clean_60_minute_screen_off_baseline_on_dedicated_test_device
+      exploratory_conclusion: "No approved critical capture failure was observed on the tested Samsung device during Run A, Run B and the interrupted Run C campaign."
+      limitations:
+        - "The attempt is neither PASS nor FAIL; owner review invalidated it for the intended clean one-hour screen-off slice."
+        - "Only 1558.004 of 3829.050 seconds were screen-off, and a TrueConf call occurred."
+        - "The phone was charging; the 70%-to-86% battery result is excluded from battery evidence."
+        - "The numeric sample-gap threshold remains Proposed; the observed -177156 sample delta is retained without a retrospective pass/fail threshold."
+        - "The sanitized event log has the known non-monotonic deletion timestamp defect; the independent deletion receipt remains authoritative."
+        - "One phone and this interrupted campaign cannot establish D1-D7, eight-hour behavior, clean one-hour stability or all-device support."
   current_test_build:
     commit: 5d9a8aceebaa7175a7a5cbaa139e8295df87d632
     release_tag: poc-capture-001-build-5d9a8ac
@@ -186,7 +257,7 @@ first_exploratory_campaign:
     replaces_commit: 56fe23ad11970522a46a5bced3480ddcd5155da2
     replacement_reason: "Accept the app-generated uppercase UTC delimiters in safe private WAV basenames while retaining traversal and suffix rejection."
     install_rule: "Preserve any required exports, uninstall the old debug-signed app, then install this APK cleanly."
-    device_preflight_status: run_b_reviewed_ready_for_run_c
+    device_preflight_status: exploratory_capture_campaign_closed_inconclusive
   previous_replacement_preflight:
     observed_on: "2026-08-05"
     intended_run: run-a
@@ -279,11 +350,13 @@ inventory:
       gms_required: false
       unique_hardware_identifier_recorded: false
       assigned_profile_id: D2
-      assignment_status: hardware_match_available_run_c_ready
+      assignment_status: hardware_match_available_exploratory_capture_closed
       assignment_rationale: >-
         API 36 is within D2 API 33-36, primary ABI is arm64-v8a, and 10515 MiB RAM
         exceeds the D2 preferred 8192 MiB while remaining below the D3 12288 MiB minimum;
         the refreshed 36432 MiB free-storage reading exceeds the D2 8192 MiB start threshold.
+        The completed exploratory campaign remains INCONCLUSIVE and does not establish the
+        clean one-hour D2 baseline.
       preflight_history:
         - captured_at_utc: "2026-08-05T09:19:46.627123Z"
           source_sha256: cc73233605c71872a5612cbb0091db615d33c58ddc5d3ceab8d49c185736b574
@@ -300,6 +373,12 @@ inventory:
           free_storage_mb: 33707
           battery_percent: 80
           result: run_b_reviewed_ready_for_run_c
+        - captured_at_utc: "2026-08-10T09:31:32.315911Z"
+          source_sha256: f4dbba4d466656964f22d9668894da3290f46087a5fe3a21d23b8415a48981b0
+          free_storage_mb: 33645
+          battery_percent: 70
+          power_state: charging
+          result: run_c_invalidated_exploratory_campaign_closed
       limitations:
         - "The OS-reported x86 supported ABI is inventory only; primary physical runtime evidence remains arm64-v8a."
         - "GMS presence, battery health and OEM battery-restriction state were not collected; D4/D5 are not assigned."
@@ -604,9 +683,10 @@ profiles:
 
 execution_rules:
   - "A required profile with availability=unknown blocks a final matrix verdict but may allow an explicitly exploratory run."
-  - "Run A and Run B on build 5d9a8ac completed with valid WAVs, zero AudioRecord errors, no observed approved critical failure and verified raw-audio deletion; the formal one-phone result remains INCONCLUSIVE."
-  - "Run B positively verified the persistent notification and exceeded 15 minutes of screen-off capture, but its duration overshoot, manual intervention and Bluetooth SCO transition prevent a clean continuity claim."
-  - "Only Run C may now start on the same build/device with airplane mode, Bluetooth fully disabled before Start, synthetic signal disabled, a visible persistent notification and the screen off for about 60 minutes; three-hour and eight-hour runs remain prohibited in this PR."
+  - "Run A and Run B completed; Run C is an invalidated exploratory attempt because only 25:58 was screen-off, a TrueConf call occurred and the phone was charging."
+  - "Run C had Bluetooth fully disabled before Start and zero route changes, but it does not establish a clean 60-minute screen-off or battery baseline."
+  - "No approved critical capture failure was observed on the tested Samsung device during Run A, Run B and the interrupted Run C campaign; the formal one-phone result remains INCONCLUSIVE."
+  - "The owner closed the current campaign without a repeat. A clean 60-minute screen-off baseline is deferred to a separately scoped campaign on a dedicated test device; three-hour and eight-hour evidence was not collected."
   - "One discovered phone may satisfy only its matching execution slice; it never produces a global D1-D7 PASS or a device-support claim."
   - "An emulator never substitutes for physical microphone, battery, thermal, flash or OEM evidence."
   - "A physical device never substitutes for the required 16-KiB emulator/image when its page size is not verified."
