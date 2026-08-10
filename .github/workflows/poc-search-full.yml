@@ -18,8 +18,6 @@ jobs:
     name: full-search-benchmark
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    env:
-      ANDROID_AVD_HOME: ${{ runner.temp }}/dora-search-full-avd
 
     steps:
       - name: Check out exact benchmark commit
@@ -62,6 +60,8 @@ jobs:
           :poc:search:lintDebug
 
       - name: Create API 36 full benchmark AVD
+        env:
+          ANDROID_AVD_HOME: ${{ runner.temp }}/dora-search-full-avd
         run: |
           mkdir -p "${ANDROID_AVD_HOME}"
           printf 'no\n' |
@@ -72,6 +72,8 @@ jobs:
               --device pixel_6
 
       - name: Start isolated full benchmark emulator
+        env:
+          ANDROID_AVD_HOME: ${{ runner.temp }}/dora-search-full-avd
         run: |
           sudo chmod 666 /dev/kvm
           nohup "${ANDROID_HOME}/emulator/emulator" @dora_search_full \
