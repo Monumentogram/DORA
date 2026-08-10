@@ -18,6 +18,8 @@ jobs:
     name: full-search-benchmark
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    env:
+      ANDROID_AVD_HOME: ${{ runner.temp }}/dora-search-full-avd
 
     steps:
       - name: Check out exact benchmark commit
@@ -60,14 +62,14 @@ jobs:
           :poc:search:lintDebug
 
       - name: Create API 36 full benchmark AVD
-        run: >-
+        run: |
+          mkdir -p "${ANDROID_AVD_HOME}"
           printf 'no\n' |
-          "${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager"
-          create avd
-          --force
-          --name dora_search_full
-          --package "system-images;android-36;google_apis;x86_64"
-          --device pixel_6
+            "${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager" create avd \
+              --force \
+              --name dora_search_full \
+              --package "system-images;android-36;google_apis;x86_64" \
+              --device pixel_6
 
       - name: Start isolated full benchmark emulator
         run: |

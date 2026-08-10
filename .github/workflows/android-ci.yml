@@ -133,6 +133,8 @@ jobs:
     name: search-smoke
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      ANDROID_AVD_HOME: ${{ runner.temp }}/dora-search-smoke-avd
 
     steps:
       - name: Check out repository
@@ -164,14 +166,14 @@ jobs:
           "system-images;android-36;google_apis;x86_64"
 
       - name: Create API 36 search smoke AVD
-        run: >-
+        run: |
+          mkdir -p "${ANDROID_AVD_HOME}"
           printf 'no\n' |
-          "${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager"
-          create avd
-          --force
-          --name dora_search_smoke
-          --package "system-images;android-36;google_apis;x86_64"
-          --device pixel_6
+            "${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager" create avd \
+              --force \
+              --name dora_search_smoke \
+              --package "system-images;android-36;google_apis;x86_64" \
+              --device pixel_6
 
       - name: Start API 36 emulator
         run: |
