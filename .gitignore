@@ -51,10 +51,16 @@ captures/
 *.prof
 *.log
 
+# Disposable Stage 0 search benchmark databases and pulled raw harness output
+android/poc/search/benchmark-output/
+android/poc/search/poc-search-reference-*.db*
+
 # Temporary files and caches
 tmp/
 temp/
 .cache/
+__pycache__/
+*.py[cod]
 *.tmp
 *.temp
 *.bak
