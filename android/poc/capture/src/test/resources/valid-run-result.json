@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "gateSetVersion": "stage0-v0.1",
+  "generatedAt": "2026-08-05T00:00:00Z",
+  "pocId": "POC-CAPTURE-001",
+  "applicationVersion": "0.1.0-poc-capture-001",
+  "commit": "0000000000000000000000000000000000000000",
+  "device": {
+    "profileId": "D2",
+    "kind": "remote_physical",
+    "manufacturer": "Dora Test",
+    "model": "Synthetic Phone",
+    "firmwareOrBuild": "TEST.2026.001",
+    "securityPatch": "2026-07-01",
+    "abi": "arm64-v8a",
+    "ramMb": 8192,
+    "pageSizeBytes": 4096,
+    "inventoryStatus": "available",
+    "uniqueHardwareIdentifierRecorded": false,
+    "notes": "Synthetic schema fixture; not physical-phone evidence."
+  },
+  "androidApi": 36,
+  "duration": {
+    "plannedSeconds": 180,
+    "actualSeconds": 180.0,
+    "completed": true,
+    "monotonicClockUsed": true
+  },
+  "inputData": {
+    "classification": "synthetic",
+    "manifestId": "dora-capture-non-speech-v1",
+    "manifestSha256": "sha256:f77826d52cd0fde219c4e4f98f9db11a9cd66708b36614debabf5720315f2013",
+    "fixtureIds": [
+      "dora-capture-non-speech-v1"
+    ],
+    "languages": [
+      "non-speech"
+    ],
+    "acousticConditions": [
+      "speakerphone"
+    ],
+    "consentReference": null,
+    "containsRealMeetingData": false,
+    "generatorVersion": "1.0.0"
+  },
+  "metrics": [
+    {
+      "name": "capture.actual_samples",
+      "value": 2880000,
+      "unit": "samples",
+      "aggregation": "count",
+      "slice": "single-owner-remote-physical-phone",
+      "sampleCount": 1,
+      "measurementSource": "Dora Capture PoC in-app measurement"
+    }
+  ],
+  "successGates": [
+    {
+      "id": "GATE-CAPTURE-START-STOP",
+      "kind": "success",
+      "title": "Manual start and stop",
+      "approvalStatus": "Approved",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "metric": "capture.wav_valid",
+      "operator": "=",
+      "threshold": true,
+      "unit": null,
+      "observed": true,
+      "outcome": "met",
+      "mandatory": true,
+      "scope": "POC-CAPTURE-001 single owner phone exploratory run"
+    }
+  ],
+  "failureGates": [
+    {
+      "id": "GATE-CAPTURE-WHOLE-SESSION-LOSS",
+      "kind": "failure",
+      "title": "Whole-session loss",
+      "approvalStatus": "Approved",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "metric": "capture.actual_samples",
+      "operator": "=",
+      "threshold": 0,
+      "unit": "samples",
+      "observed": 2880000,
+      "outcome": "not_triggered",
+      "mandatory": true,
+      "scope": "POC-CAPTURE-001 single owner phone exploratory run"
+    }
+  ],
+  "result": {
+    "status": "INCONCLUSIVE",
+    "gateSetStatus": "Mixed",
+    "requiredSlicesCompleted": false,
+    "rationale": "One phone cannot establish D1-D7 coverage or campaign reliability.",
+    "invalidatedRunCount": 0
+  },
+  "errors": [],
+  "battery": {
+    "applicable": false,
+    "startPercent": null,
+    "endPercent": null,
+    "energyMwh": null,
+    "baselineRatio": null,
+    "chargerState": "not-applicable",
+    "screenState": "not-applicable",
+    "measurementSource": null,
+    "notApplicableReason": "Synthetic schema fixture."
+  },
+  "temperature": {
+    "applicable": false,
+    "startCelsius": null,
+    "endCelsius": null,
+    "maxCelsius": null,
+    "startThermalStatus": null,
+    "maxThermalStatus": null,
+    "measurementSource": null,
+    "notApplicableReason": "Synthetic schema fixture."
+  },
+  "memory": {
+    "applicable": false,
+    "peakPssMb": null,
+    "peakRssMb": null,
+    "peakNativeHeapMb": null,
+    "oomCount": 0,
+    "trimOrPressureObserved": false,
+    "measurementSource": null,
+    "notApplicableReason": "Synthetic schema fixture."
+  },
+  "fileSizes": [],
+  "licenses": [],
+  "limitations": [
+    {
+      "id": "LIMIT-SINGLE-DEVICE",
+      "severity": "high",
+      "description": "One physical phone cannot establish D1-D7 coverage.",
+      "blocksVerdict": true
+    }
+  ],
+  "recommendation": {
+    "decision": "ITERATE",
+    "rationale": "Validate one bounded run at a time.",
+    "fallback": null,
+    "ownerAction": "Upload only the sanitized ZIP to Codex."
+  },
+  "evidenceFiles": [],
+  "privacyReview": {
+    "publicEvidenceSafe": true,
+    "secretScanPassed": true,
+    "personalDataScanPassed": true,
+    "forbiddenContentLoggingCheckPassed": true,
+    "reviewerRole": "automated schema fixture validator",
+    "notes": "No phone data or raw audio is present."
+  }
+}

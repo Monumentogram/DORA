@@ -20,6 +20,8 @@ rootProject.name = "Dora"
 
 include(":app")
 
+include(":poc:capture")
+
 include(":core:common")
 
 include(":core:model")

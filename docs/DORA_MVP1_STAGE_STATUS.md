@@ -1,13 +1,15 @@
 # Dora MVP 1 — Stage Status
 
-Updated: 5 August 2026
+Updated: 10 August 2026
 Baseline: `1be83e2940a09f7b23e33b4cdf3827de2690f3fd`
 Stage 00 merge commit: `a4aae302f9033e5471f6759f513e7e351c375a72`
+Stage 0A merge commit: `91b9916b01ff70f63d82412bafbed0d72307dbe1`
 Repository: public `Monumentogram/DORA` by temporary owner-approved decision (ADR-0002)
 Default branch: `main`
-Active stage: `Stage 0A — Governance and PoC Preparation`
-Active branch: `stage/0a-poc-governance`
-Stage state: **OWNER DECISIONS APPROVED — FIRST DEVICE DISCOVERY PENDING**
+Active stage: `Stage 0B — POC-CAPTURE-001 closure`
+Active branch: `stage/0b-poc-capture-001`
+Active PoC: `POC-CAPTURE-001` (exploratory campaign complete; next PoC not started)
+Stage state: **EXPLORATORY COMPLETE — INCONCLUSIVE — READY FOR REVIEW**
 
 ## Stage 00 closure
 
@@ -17,21 +19,27 @@ Stage state: **OWNER DECISIONS APPROVED — FIRST DEVICE DISCOVERY PENDING**
 - The Stage 00 Android bootstrap, CI, governance baseline and validation tooling are present on `main`.
 - Production functionality was not started in Stage 00.
 
-## Active Stage 0A scope
+## Stage 0A closure
 
-Stage 0A prepares governance and reproducible evidence contracts for isolated Stage 0 PoC work. On 4 August 2026, the Project owner explicitly approved `OD-01`–`OD-10`; the approvals are recorded with scope in Product Decisions. The working branch contains documentation only:
+- Stage 0A is complete.
+- Pull Request #7 was merged into `main`.
+- The merge commit is `91b9916b01ff70f63d82412bafbed0d72307dbe1`.
+- Owner decisions `OD-01`–`OD-10`, privacy/IP/data governance, the device matrix, Gate Set `stage0-v0.1`, benchmark schema and PoC execution order are present on `main`.
+- No technical PoC or production functionality was started in Stage 0A.
 
-- the approved owner-decision pack for the nearest PoC blockers;
-- privacy/data-flow/threat assumptions for `GOV-PRIVACY-001`;
-- an IP and asset provenance policy for `GOV-IP-001`;
-- the preparatory D1–D7 device matrix for `POC-DEVICE-001`;
-- the Stage 0-approved gate set plus explicitly Proposed unresolved thresholds and a machine-readable benchmark-result schema for `POC-GATES-001`;
-- dataset governance foundations for `POC-DATA-001`;
-- a dependency-aware execution order that selects one next technical PoC.
+## Active Stage 0B scope
 
-This stage does not implement or admit recording, microphone permission, foreground services, VAD, ASR, diarization, database, backend, accounts, production identity/signing or model weights.
+Stage 0B implements only the disposable `POC-CAPTURE-001` evidence harness selected by `OD-01`. It may add a separate Android application module with physical-microphone permission, a user-initiated microphone foreground service, synthetic signal playback, local WAV analysis/deletion and sanitized report export. It does not admit this implementation into production Dora.
 
-No technical PoC has been launched in Stage 0A. Production functionality has not started.
+The owner phone cannot be attached to the remote development workstation. Stage 0B therefore uses a remote manual-device workflow without ADB:
+
+1. GitHub Actions builds and publishes a debug-signed PoC APK.
+2. The owner installs it manually and starts each test explicitly.
+3. The PoC discovers sanitized device characteristics and records technical metrics locally.
+4. Raw audio is analyzed and deleted in app-private storage before export is enabled.
+5. The owner returns only the sanitized exported profile/report to Codex.
+
+Three bounded phone runs were returned after two invalid pre-recording starts. Run A attempt 003 and Run B attempt 004 on `5d9a8ac` recorded, stopped and finalized successfully. Run C attempt 005 recorded for 63:49 but is classified by the owner as an `invalidated exploratory attempt`: only 25:58 was screen-off, a TrueConf call occurred and the phone was charging. Bluetooth was fully disabled before Run C and no route change was reported. All three completed recordings produced valid WAVs, zero AudioRecord errors and verified raw-audio deletion/absence; no approved critical capture failure was observed on the tested Samsung device. The formal result remains `INCONCLUSIVE`, and the owner accepts exploratory closure without repeating Run C on the primary work phone. Production capture, storage, ML, backend, account, production identity/signing and model weights remain outside this stage. The bootstrap `:app` must not receive microphone permission.
 
 ## Owner decisions effective 4 August 2026
 
@@ -47,16 +55,43 @@ No technical PoC has been launched in Stage 0A. Production functionality has not
 ## Current gates and blockers
 
 - The fully specified predicates in Gate Set `stage0-v0.1` are **Approved for Stage 0**. Exact ASR RTF by tier, maximum PSS/native heap, diarization corrections/minute, absolute battery drain without mWh, numeric capture sample-gap tolerance and minimum raw-trace retention remain **Proposed**.
-- The owner's physical Android phone has not been connected or identified. Availability for every D1–D7 profile remains `unknown`.
-- Before the first measured run, that phone must be connected and its sanitized model, Android API, firmware/build, ABI and RAM automatically discovered. The phone is then mapped to the matching profile; one-device evidence cannot `PASS` the matrix and is `INCONCLUSIVE` unless an approved failure gate produces `FAIL`.
+- The owner's physical phone is sanitized as Samsung `SM-S908B`, Android 16 / API 36, build `BP2A.250605.031.A3`, primary ABI `arm64-v8a` and 10515 MiB RAM. It is assigned to D2 as the closest hardware profile; D1 and D3-D7 availability remains `unknown`.
+- The refreshed pre-Run-A profile reports 36432 MiB free app storage, above the D2 start threshold of 8192 MiB, with 72% battery, unplugged power and thermal status `NONE`; the Run B export refreshed this to 33707 MiB and 80% with the same unplugged/`NONE` state. The Run C profile reports 33645 MiB, 70%, charging and `NONE`. The D2 hardware inventory remains valid; Run C battery data is not comparative evidence.
+- The first Run A attempt on build `f351695…` is invalid: recording did not start, no sanitized Run ZIP or deletion receipt was produced, and the screenshot-era error can only be classified as a legacy unscoped `IllegalArgumentException` at `beginServiceCapture`.
+- Replacement build `56fe23a` is published as prerelease `poc-capture-001-build-56fe23a` after successful push and PR CI. It makes optional battery/AudioRecord telemetry best-effort, adds sanitized capture-start stage codes, hardens recorder/player cleanup and propagates semantic dark-theme content colors.
+- The replacement CI debug certificate differs from build `f351695`. The owner-provided post-install preflight showed the replacement-only corrected dark-theme UI, Run A target `00:03:00`, 36252 MiB free storage, 80% battery, unplugged power, thermal status `NONE` and synthetic signal disabled.
+- The preflight screenshot does not display a commit identifier; association with `56fe23a` relies on the prescribed clean-install workflow and replacement-only corrected UI behavior. The source screenshot is not committed.
+- The subsequent Run A attempt on `56fe23a` is invalid: recording did not start, no raw audio/Run ZIP/deletion receipt was created, and the visible stable code localizes the failure to `CAPTURE_START_PRIVATE_FILE`.
+- Root cause is deterministic: generated Run IDs contain safe uppercase UTC delimiters `T`/`Z`, while the private WAV basename validator accidentally allowed only lowercase ASCII. Fix `5d9a8ac` accepts ASCII case consistently while retaining traversal, nested-path and unsupported-suffix rejection.
+- Prerelease `poc-capture-001-build-5d9a8ac` targets exact commit `5d9a8aceebaa7175a7a5cbaa139e8295df87d632`; push run `31006645902` and PR run `31006649411` are successful. APK SHA-256 is `dc7c01b8fd0f6f66c2674a8542595aab8817d60c4435d2f1c26ef8b1c4d2ddb9`.
+- The new CI debug certificate `4052ae88…` differs from build `56fe23a` (`dd28877d…`). The owner-provided post-install preflight showed readable build `5d9a8ac` Run A UI with target `00:03:00`, 35945 MiB free storage, 72% battery, unplugged power, thermal status `NONE` and synthetic signal disabled; this was the accepted preflight for Run A attempt 003.
+- The new preflight screenshot does not display a commit identifier; association with `5d9a8ac` relies on the prescribed clean-install workflow for the differently signed replacement APK. The source screenshot is not committed.
+- Run A attempt 003 (`run-a-20260805T133208Z-349c5e0c`) targets exact commit `5d9a8aceebaa7175a7a5cbaa139e8295df87d632`. The returned 5294-byte source ZIP has SHA-256 `f7d00a3675de539908641b513254e7fb8161f82b20685b64f27a4f080fdd05b1`; it passed CRC, allowlist, JSON parse, benchmark schema and sanitization review and is not committed.
+- Run A completed 180.258 s with 2881600 actual versus 2884128 expected samples, 5763200 PCM bytes, one short read, zero AudioRecord errors, a valid 5763244-byte WAV, 20 ms start latency, 44 ms finalization latency, zero route changes/interruptions, 67%→67% battery, thermal `NONE`→`NONE`, 132.299 MiB peak PSS and 21.863 MiB peak native heap.
+- The deletion receipt reports `deletionSucceeded=true`, `absenceVerified=true` and `containsAudio=false`; no raw audio is retained or committed. Public evidence is under `docs/evidence/poc-capture-001/`.
+- Run A notification visibility is `unknown`, not a positive visibility proof and not evidence of a hidden recording. Run B positively records `manual.notification_visible=yes`, so the approved hidden-state failure predicate was not triggered.
+- Run B attempt 004 (`run-b-20260810T054638Z-0b71124a`) targets exact commit `5d9a8aceebaa7175a7a5cbaa139e8295df87d632`. The returned 5423-byte source ZIP has SHA-256 `8d8161a57478f13036e3b23ec3c7abc7642b85594f9cd4e38f48a0872a841647`; it passed CRC, flat allowlist, JSON parse, benchmark schema and sanitization review and is not committed.
+- Run B completed 1316.644 s against a 900 s plan and accumulated 1020.154 s screen-off. It recorded 21032314 actual versus 21066304 expected samples, 42064628 PCM bytes, one short read, zero AudioRecord errors, a valid 42064672-byte WAV, 15 ms start latency, 31 ms finalization latency, 80%→78% battery, thermal `NONE`→`NONE`, 136.281 MiB peak PSS and 18.496 MiB peak native heap.
+- Run B's deletion receipt reports `deletionSucceeded=true`, `absenceVerified=true` and `containsAudio=false`; deleted-WAV SHA-256 is `9f24052322b2ead6f3d528b8d69f8f06a25c4e6eb97a975b77a2394be13b6486`. No raw audio or source ZIP is retained or committed.
+- Run B is not treated as a clean uninterrupted protocol execution: it overshot the planned duration by 416.644 s, the owner marked a call or other intervention, and the event log records a 6.476 s route transition to Bluetooth SCO and back after the nominal 15-minute target. The aggregate report has no frame-level timing to prove continuity through that transition, and the -33990 sample observation has no retrospectively approved tolerance.
+- Run C attempt 005 (`run-c-20260810T082734Z-d6abea38`) targets exact commit `5d9a8aceebaa7175a7a5cbaa139e8295df87d632`. The returned 5319-byte source ZIP has SHA-256 `7f8b71182b1fa1ea015f8251a2d872005e8a3f47897f1c95e9062a5353bfdc69`; it passed CRC, flat allowlist, JSON parse, benchmark schema and sanitization review and is not committed.
+- Run C recorded 3829.050 s (63:49.050) against a 3600 s plan but only 1558.004 s (25:58.004) was screen-off. It recorded 61087644 actual versus 61264800 expected samples, 122175288 PCM bytes, one short read, zero AudioRecord errors, a valid 122175332-byte WAV, 24 ms start latency, 68 ms finalization latency, zero route changes/automated interruptions, thermal maximum `NONE`, 135.712 MiB peak PSS and 17.602 MiB peak native heap.
+- Owner review confirms Bluetooth was fully disabled before Start, the 25:58 screen-off telemetry is correct, a TrueConf call occurred and the phone was charging. These corrections override the source questionnaire for campaign interpretation without rewriting the immutable machine report. The 70%→86% battery result is excluded from battery evidence.
+- Run C raw-audio deletion succeeded, absence was verified and deleted-WAV SHA-256 is `50502a92a48825cf666057191b847d32d0b80aaeed010ec7e99abd604717d6ce`; no source ZIP, raw audio or raw event log is committed.
+- Run C is an `invalidated exploratory attempt`, neither PASS nor FAIL. It did not complete the required clean 60-minute screen-off slice, but no approved critical failure gate was observed. Its -177156 sample delta is retained only as an observation because the numeric threshold remains Proposed.
+- All three sanitized event logs are non-monotonic at raw deletion because the deletion event is labeled with `outcome.actualDurationMs`; the independent receipts/export guard prove deletion happened only after finalized-file analysis. This is a known non-fatal measurement-telemetry defect, and event timing is not used as pass evidence.
+- The owner accepts closure of the current exploratory campaign without repeating Run C on the primary work phone. The clean 60-minute screen-off baseline remains deferred evidence for a separately scoped campaign on a dedicated test device.
+- Exploratory conclusion: `No approved critical capture failure was observed on the tested Samsung device during Run A, Run B and the interrupted Run C campaign.`
+- The formal result remains `INCONCLUSIVE`: one phone/three completed recordings cannot prove D1-D7, 99.5%, an eight-hour run, clean one-hour screen-off stability, an approved sample-gap threshold or support for all Android devices.
+- One-device evidence cannot `PASS` the matrix and remains `INCONCLUSIVE` unless an approved failure gate produces `FAIL`.
 - No controlled non-public evidence store or custodian has been configured. Until then, only synthetic data and sanitized aggregate/public evidence are allowed; raw traces/audio and purpose-recorded volunteer phrases remain blocked.
 - Production markets/lawful basis/copy under `DEC-001` and Legal review remain unresolved. The Stage 0 reminder checkbox does not resolve production consent legality.
 - No PoC result admits a production dependency. Native code or model admission later requires an ADR plus license, provenance, ABI, 16-KiB and runtime evidence.
-- `main` remains the protected integration branch. This Stage 0A work is reviewed in Pull Request #7 and is not merged by this task.
+- `main` remains the protected integration branch. Stage 0B work stays on `stage/0b-poc-capture-001`; PR #8 may move from Draft to Ready for review only after the closure commit passes CI. This task does not merge it.
 
 ## Next safe action
 
-After Pull Request #7 review and after the owner's phone is connected and automatically identified, the recommended first isolated technical experiment is `POC-CAPTURE-001`. Its measured input must be synthetic until controlled storage is configured. It must run in a dedicated PoC branch/harness and must not be treated as production capture code.
+After Stage 0B review, the next recommended technical experiment is `POC-SEARCH-001` on generated data in a separate branch and task. It is already `READY`, does not require the owner's primary phone or private audio and does not reinterpret the capture result. Do not start it in this Stage 0B task. A future clean 60-minute capture baseline remains a separately scoped deferred campaign on a dedicated test device.
 
 ## Update protocol
 
