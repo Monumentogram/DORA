@@ -29,6 +29,13 @@ def read_text(relative_path: str) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def read_json(relative_path: str) -> dict[str, Any]:
+    value = json.loads(read_text(relative_path))
+    if not isinstance(value, dict):
+        fail(f"Expected a JSON object: {relative_path}")
+    return value
+
+
 def validate_module_and_manifests() -> None:
     settings = read_text("android/settings.gradle.kts")
     build = read_text("android/poc/capture/build.gradle.kts")
@@ -357,6 +364,152 @@ def validate_benchmark_schema() -> None:
     SchemaValidator(schema).validate(fixture, schema)
 
 
+def validate_public_capture_evidence() -> None:
+    evidence_root = ROOT / "docs/evidence/poc-capture-001"
+    required_files = {
+        "README.md",
+        "device-profile.json",
+        "run-a-result.json",
+        "deletion-summary.json",
+    }
+    if not evidence_root.is_dir():
+        fail("Missing public POC-CAPTURE-001 evidence directory")
+    present_files = {
+        path.relative_to(evidence_root).as_posix()
+        for path in evidence_root.rglob("*")
+        if path.is_file()
+    }
+    missing = sorted(required_files - present_files)
+    if missing:
+        fail(f"Missing public capture evidence files: {missing}")
+
+    forbidden_suffixes = {
+        ".zip",
+        ".wav",
+        ".pcm",
+        ".m4a",
+        ".aac",
+        ".mp3",
+        ".flac",
+        ".ogg",
+        ".raw",
+        ".trace",
+    }
+    forbidden_keys = {
+        "serialnumber",
+        "androidid",
+        "imei",
+        "macaddress",
+        "ipaddress",
+        "accountname",
+        "phonenumber",
+        "localpath",
+        "usbidentifier",
+        "advertisingid",
+        "transcript",
+        "waveformbytes",
+        "rawaudiobytes",
+    }
+    forbidden_text_patterns = (
+        re.compile(r"[A-Za-z]:\\"),
+        re.compile(r"/(?:data|storage|sdcard|home)/", re.IGNORECASE),
+        re.compile(r"-----BEGIN [A-Z ]+PRIVATE KEY-----"),
+        re.compile(r"(?:ghp_|github_pat_|AIza)[A-Za-z0-9_-]+"),
+    )
+
+    def inspect_json_keys(value: Any, path: str = "$") -> None:
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if key.lower() in forbidden_keys:
+                    fail(f"{path}: forbidden public evidence field {key}")
+                inspect_json_keys(child, f"{path}.{key}")
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                inspect_json_keys(child, f"{path}[{index}]")
+
+    for relative_path in sorted(present_files):
+        path = evidence_root / relative_path
+        if path.suffix.lower() in forbidden_suffixes:
+            fail(f"Forbidden binary/raw evidence file: {relative_path}")
+        if path.stat().st_size > 512 * 1024:
+            fail(f"Public evidence file is unexpectedly large: {relative_path}")
+        text = path.read_text(encoding="utf-8")
+        for pattern in forbidden_text_patterns:
+            if pattern.search(text):
+                fail(f"Forbidden public evidence text pattern: {relative_path}")
+        if path.suffix.lower() == ".json":
+            inspect_json_keys(json.loads(text))
+
+    schema = read_json("docs/stage0/benchmark-result.schema.json")
+    run = read_json("docs/evidence/poc-capture-001/run-a-result.json")
+    profile = read_json("docs/evidence/poc-capture-001/device-profile.json")
+    deletion = read_json("docs/evidence/poc-capture-001/deletion-summary.json")
+    SchemaValidator(schema).validate(run, schema)
+
+    expected_commit = "5d9a8aceebaa7175a7a5cbaa139e8295df87d632"
+    expected_run_id = "run-a-20260805T133208Z-349c5e0c"
+    if run["pocId"] != "POC-CAPTURE-001" or run["commit"] != expected_commit:
+        fail("Run A evidence identity or commit drifted")
+    if run["result"]["status"] != "INCONCLUSIVE":
+        fail("One-phone Run A evidence must remain INCONCLUSIVE")
+    if run["inputData"]["containsRealMeetingData"]:
+        fail("Run A public evidence must not contain real meeting data")
+    if run["device"]["uniqueHardwareIdentifierRecorded"]:
+        fail("Run A evidence records a unique hardware identifier")
+    if profile["commit"] != expected_commit:
+        fail("Run A device profile commit drifted")
+    if profile["device"]["uniqueHardwareIdentifierRecorded"]:
+        fail("Public device profile records a unique hardware identifier")
+
+    metrics = {metric["name"]: metric["value"] for metric in run["metrics"]}
+    required_metrics = {
+        "capture.actual_samples",
+        "capture.expected_samples",
+        "capture.sample_delta",
+        "capture.recorded_bytes",
+        "capture.audiorecord_errors",
+        "capture.wav_valid",
+        "capture.audio_deleted",
+        "manual.notification_visible",
+    }
+    missing_metrics = sorted(required_metrics - metrics.keys())
+    if missing_metrics:
+        fail(f"Run A evidence is missing required metrics: {missing_metrics}")
+    if metrics["capture.actual_samples"] * 2 != metrics["capture.recorded_bytes"]:
+        fail("Run A PCM16 sample and byte counts do not reconcile")
+    if metrics["capture.audiorecord_errors"] != 0:
+        fail("Run A public evidence unexpectedly contains AudioRecord errors")
+    if metrics["capture.wav_valid"] is not True:
+        fail("Run A WAV validity evidence drifted")
+    if metrics["capture.audio_deleted"] is not True:
+        fail("Run A deletion metric drifted")
+    if any(gate["outcome"] == "triggered" for gate in run["failureGates"]):
+        fail("Run A evidence contains a triggered approved failure gate")
+
+    if deletion["runId"] != expected_run_id:
+        fail("Deletion summary Run ID drifted")
+    if not deletion["deletionSucceeded"] or not deletion["absenceVerified"]:
+        fail("Deletion summary does not prove raw-audio absence")
+    if deletion["containsAudio"] or deletion["rawAudioRetained"]:
+        fail("Public deletion summary claims retained audio")
+    if deletion["bytesBeforeDeletion"] != run["fileSizes"][0]["bytes"]:
+        fail("Deletion summary byte count does not match Run A result")
+    if deletion["reviewDisposition"] != "public_aggregate_only":
+        fail("Deletion summary public-review disposition drifted")
+
+    readme = read_text("docs/evidence/poc-capture-001/README.md")
+    required_readme_facts = (
+        "overall result INCONCLUSIVE",
+        "Run B may proceed",
+        "notification visibility `unknown`",
+        "`0, 16, 180189, 180367, 180258`",
+        "source ZIP is not committed",
+    )
+    missing_facts = [fact for fact in required_readme_facts if fact not in readme]
+    if missing_facts:
+        fail(f"Run A evidence review is missing required facts: {missing_facts}")
+
+
 def main() -> int:
     checks = (
         validate_module_and_manifests,
@@ -364,6 +517,7 @@ def main() -> int:
         validate_tests_present,
         validate_fixture_digest,
         validate_benchmark_schema,
+        validate_public_capture_evidence,
     )
     for check in checks:
         check()

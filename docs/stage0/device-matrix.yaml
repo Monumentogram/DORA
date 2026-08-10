@@ -17,12 +17,12 @@ owner_decision:
 
 first_exploratory_campaign:
   mode: single_owner_physical_phone
-  status: ready_for_run_a_retry
+  status: ready_for_run_b
   measured_run_allowed: true
   unblock_condition: >-
-    Satisfied on 2026-08-05 by an owner-provided build 5d9a8ac preflight after the
-    prescribed clean-install workflow. Only Run A is reopened; Run B and Run C remain
-    sequence-gated on review of the preceding valid sanitized run evidence.
+    Run A on build 5d9a8ac completed and its sanitized ZIP/deletion receipt were reviewed
+    on 2026-08-05. No critical failure was observed, so only Run B is now opened; Run C
+    remains sequence-gated on review of valid Run B sanitized evidence.
   required_automatic_fields:
     - sanitized_device_model
     - android_api
@@ -36,8 +36,8 @@ first_exploratory_campaign:
   profile_assignment: >-
     owner-phone-001 is closest to D2 by Android API, primary ABI and RAM. Record D2 as
     available inventory. Its refreshed free app storage satisfies the D2 threshold, and
-    the build 5d9a8ac preflight reopens only the explicit Run A retry. Do not infer any
-    other profile or matrix coverage.
+    the reviewed build 5d9a8ac Run A evidence opens only Run B. Do not infer any other
+    profile or matrix coverage.
   matrix_support_verdict: INCONCLUSIVE
   measured_run_result_rule: >-
     FAIL is allowed when an approved failure gate triggers; otherwise missing D1-D7
@@ -80,6 +80,44 @@ first_exploratory_campaign:
       limitations:
         - "Recording failed before app-private WAV creation, so this attempt is not benchmark evidence."
         - "No raw audio, run-result ZIP or deletion receipt was created."
+    - attempt_id: run-a-attempt-003
+      observed_on: "2026-08-05"
+      intended_run: run-a
+      installed_commit: 5d9a8aceebaa7175a7a5cbaa139e8295df87d632
+      run_id: run-a-20260805T133208Z-349c5e0c
+      result: valid_exploratory_inconclusive
+      formal_verdict: INCONCLUSIVE
+      recording_started: true
+      sanitized_run_archive_created: true
+      source_archive_sha256: f7d00a3675de539908641b513254e7fb8161f82b20685b64f27a4f080fdd05b1
+      source_archive_size_bytes: 5294
+      benchmark_schema_valid: true
+      synthetic_signal_enabled: false
+      actual_duration_ms: 180258
+      actual_samples: 2881600
+      expected_samples: 2884128
+      sample_delta: -2528
+      recorded_pcm_bytes: 5763200
+      finalized_wav_bytes: 5763244
+      short_reads: 1
+      audiorecord_errors: 0
+      wav_valid: true
+      critical_failure_observed: false
+      deletion_succeeded: true
+      deletion_absence_verified: true
+      raw_audio_retained: false
+      manual_notification_visible: unknown
+      public_evidence:
+        - docs/evidence/poc-capture-001/README.md
+        - docs/evidence/poc-capture-001/device-profile.json
+        - docs/evidence/poc-capture-001/run-a-result.json
+        - docs/evidence/poc-capture-001/deletion-summary.json
+      disposition: run_b_ready
+      limitations:
+        - "One phone and one run cannot satisfy D1-D7 or the 99.5% campaign gate; the formal result remains INCONCLUSIVE."
+        - "Notification visibility was answered unknown, so Run B must positively verify the persistent notification before screen-off."
+        - "The numeric sample-gap threshold remains Proposed; the observed -2528 sample delta is retained without a retrospective pass/fail threshold."
+        - "The sanitized event log is non-monotonic because the deletion event uses outcome.actualDurationMs; it is not used as pass evidence and does not contradict the independent deletion receipt."
   current_test_build:
     commit: 5d9a8aceebaa7175a7a5cbaa139e8295df87d632
     release_tag: poc-capture-001-build-5d9a8ac
@@ -91,7 +129,7 @@ first_exploratory_campaign:
     replaces_commit: 56fe23ad11970522a46a5bced3480ddcd5155da2
     replacement_reason: "Accept the app-generated uppercase UTC delimiters in safe private WAV basenames while retaining traversal and suffix rejection."
     install_rule: "Preserve any required exports, uninstall the old debug-signed app, then install this APK cleanly."
-    device_preflight_status: passed_ready_for_run_a_retry
+    device_preflight_status: run_a_reviewed_ready_for_run_b
   previous_replacement_preflight:
     observed_on: "2026-08-05"
     intended_run: run-a
@@ -184,7 +222,7 @@ inventory:
       gms_required: false
       unique_hardware_identifier_recorded: false
       assigned_profile_id: D2
-      assignment_status: hardware_match_available_run_a_ready
+      assignment_status: hardware_match_available_run_b_ready
       assignment_rationale: >-
         API 36 is within D2 API 33-36, primary ABI is arm64-v8a, and 10515 MiB RAM
         exceeds the D2 preferred 8192 MiB while remaining below the D3 12288 MiB minimum;
@@ -250,7 +288,7 @@ evidence_required_per_execution:
   - thermal_start_and_end
   - emulator_or_physical
   - commit
-  - fixture_digest
+  - fixture_digest_when_fixture_used
   - run_timestamp_utc
 
 privacy_rules:
@@ -504,8 +542,9 @@ profiles:
 
 execution_rules:
   - "A required profile with availability=unknown blocks a final matrix verdict but may allow an explicitly exploratory run."
-  - "The build 5d9a8ac replacement preflight reports 35945 MiB free app storage and passes the readable start gate; only Run A may now be started explicitly with the synthetic signal disabled."
-  - "Run B remains blocked until valid Run A sanitized evidence and deletion confirmation are returned and reviewed; Run C is gated in the same way by Run B."
+  - "Run A on build 5d9a8ac completed for 180.258 seconds with a valid WAV, zero AudioRecord errors, no observed critical failure and verified raw-audio deletion; the formal one-phone result remains INCONCLUSIVE."
+  - "Only Run B may now start on the same build/device with airplane mode, synthetic signal disabled, an explicit persistent-notification check and the screen off for the intended interval."
+  - "Run C remains blocked until valid Run B sanitized evidence and deletion confirmation are returned and reviewed."
   - "One discovered phone may satisfy only its matching execution slice; it never produces a global D1-D7 PASS or a device-support claim."
   - "An emulator never substitutes for physical microphone, battery, thermal, flash or OEM evidence."
   - "A physical device never substitutes for the required 16-KiB emulator/image when its page size is not verified."

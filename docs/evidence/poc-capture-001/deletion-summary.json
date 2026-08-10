@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "pocId": "POC-CAPTURE-001",
+  "runId": "run-a-20260805T133208Z-349c5e0c",
+  "sourceArchiveSha256": "sha256:f7d00a3675de539908641b513254e7fb8161f82b20685b64f27a4f080fdd05b1",
+  "sourceDeletionReceiptSha256": "sha256:cb8451afe5b869d0d8a5de1722f487c8c4854b288f09ef9c73f3b1fcc00c8788",
+  "verifiedAt": "2026-08-05T13:35:36.214687Z",
+  "wavWasValid": true,
+  "bytesBeforeDeletion": 5763244,
+  "deletionSucceeded": true,
+  "absenceVerified": true,
+  "containsAudio": false,
+  "rawAudioRetained": false,
+  "failureReason": null,
+  "reviewDisposition": "public_aggregate_only"
+}

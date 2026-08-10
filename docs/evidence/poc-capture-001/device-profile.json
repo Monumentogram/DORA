@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-05T13:35:36.214687Z",
+  "applicationVersion": "0.1.0-poc-capture-001",
+  "commit": "5d9a8aceebaa7175a7a5cbaa139e8295df87d632",
+  "device": {
+    "candidateProfileId": "D2",
+    "profileAssignmentStatus": "candidate_pending_codex_review",
+    "kind": "remote_physical",
+    "manufacturer": "samsung",
+    "model": "SM-S908B",
+    "androidVersion": "16",
+    "androidApi": 36,
+    "buildId": "BP2A.250605.031.A3",
+    "securityPatch": "2026-05-05",
+    "primaryAbi": "arm64-v8a",
+    "supportedAbis": [
+      "arm64-v8a",
+      "armeabi-v7a",
+      "x86"
+    ],
+    "totalRamMb": 10515,
+    "freeAppStorageMb": 35945,
+    "batteryPercent": 72,
+    "chargingState": "unplugged",
+    "thermalStatus": "NONE",
+    "pageSizeBytes": 4096,
+    "audioInputTypes": [
+      "Bluetooth SCO",
+      "Аудиовход типа 25",
+      "Встроенный микрофон",
+      "Телефонный аудиомаршрут"
+    ],
+    "supportedMonoPcm16SampleRates": [
+      16000,
+      48000,
+      44100,
+      32000,
+      22050,
+      8000
+    ],
+    "uniqueHardwareIdentifierRecorded": false
+  },
+  "networkRequired": false,
+  "accountRequired": false,
+  "gmsRequired": false
+}
