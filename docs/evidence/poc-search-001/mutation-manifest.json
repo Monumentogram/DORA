@@ -1,0 +1,74 @@
+{
+  "contract": {
+    "correctnessPolicy": "After every operation verify canonical row, FTS result, filters, mapping and stale-result invariants.",
+    "datasetManifestId": "poc-search-001-reference-dataset-v1",
+    "latencyPolicy": "Record each deterministic operation as an observation; no numeric mutation threshold is approved.",
+    "operations": [
+      {
+        "conversationId": 10001,
+        "expectedAfter": {
+          "conversationCount": 10001,
+          "markerCount": 5,
+          "transcriptRowCount": 1000005
+        },
+        "id": "MUT-ADD-CONVERSATION",
+        "marker": "newconversationmarker",
+        "segmentIds": [
+          1000001,
+          1000002,
+          1000003,
+          1000004,
+          1000005
+        ],
+        "type": "ADD_CONVERSATION_WITH_SEGMENTS"
+      },
+      {
+        "expectedAfter": {
+          "newMarkerCount": 1,
+          "oldMarkerCount": 0
+        },
+        "id": "MUT-UPDATE-SEGMENT",
+        "newMarker": "mutationaftermarker",
+        "oldMarker": "mutationbeforemarker",
+        "segmentId": 123456,
+        "type": "UPDATE_SEGMENT_TEXT"
+      },
+      {
+        "conversationId": 42,
+        "expectedAfter": {
+          "newSourceRows": 100,
+          "oldSourceRows": 0
+        },
+        "id": "MUT-UPDATE-METADATA",
+        "newSourceType": "IN_PERSON",
+        "oldSourceType": "WORKSHOP",
+        "type": "UPDATE_CONVERSATION_SOURCE"
+      },
+      {
+        "expectedAfter": {
+          "markerCount": 0,
+          "transcriptRowCount": 1000004
+        },
+        "id": "MUT-DELETE-SEGMENT",
+        "marker": "segmentdeletemarker",
+        "segmentId": 234567,
+        "type": "DELETE_SEGMENT"
+      },
+      {
+        "conversationId": 7777,
+        "deletedSegmentCount": 100,
+        "expectedAfter": {
+          "conversationCount": 10000,
+          "markerCount": 0,
+          "transcriptRowCount": 999904
+        },
+        "id": "MUT-DELETE-CONVERSATION",
+        "marker": "conversationdeletemarker",
+        "type": "DELETE_CONVERSATION_CASCADE"
+      }
+    ]
+  },
+  "contractSha256": "sha256:eb44813fb26c5d2f3c0b14f498f2dbf54dca91fe26e3226266f749bfab681bf2",
+  "manifestId": "poc-search-001-mutations-v1",
+  "schemaVersion": 1
+}

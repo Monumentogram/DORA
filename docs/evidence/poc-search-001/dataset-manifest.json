@@ -1,0 +1,69 @@
+{
+  "contentCoverage": [
+    "ru",
+    "en",
+    "mixed-ru-en",
+    "numbers",
+    "dates",
+    "synthetic-company-labels",
+    "synthetic-participant-labels",
+    "task-labels",
+    "technical-terms",
+    "variable-length",
+    "repeated-words",
+    "rare-words",
+    "punctuation",
+    "unicode",
+    "cyrillic",
+    "latin",
+    "emoji"
+  ],
+  "contract": {
+    "baseStartedAtEpochMs": 1735689600000,
+    "batchContract": {
+      "allRowsInMemoryForbidden": true,
+      "conversationBatchSize": 1000,
+      "transcriptBatchSize": 5000
+    },
+    "conversationCount": 10000,
+    "conversationIntervalMs": 3600000,
+    "datasetVersion": "poc-search-synthetic-v1",
+    "generatorVersion": "search-generator-1.0.0",
+    "idContract": "conversationId=1..10000; segmentId=(conversationId-1)*100+sequence+1",
+    "languages": [
+      "ru",
+      "en",
+      "mixed-ru-en"
+    ],
+    "seed": 2026081001,
+    "segmentsPerConversation": 100,
+    "sourceTypes": [
+      "IN_PERSON",
+      "VIDEO",
+      "VOICE_NOTE",
+      "WORKSHOP"
+    ],
+    "textContract": "repository-owned formulas in tools/poc_search_contract.py and SyntheticDatasetGenerator.kt",
+    "transcriptRowCount": 1000000
+  },
+  "expected": {
+    "conversationCount": 10000,
+    "logicalDatasetSha256": "sha256:a3ad26892fc9f3abfcce26c3338a44a27dbe55e5048148f49edfc36c8fb8310a",
+    "transcriptRowCount": 1000000
+  },
+  "generatedDatabasePolicy": {
+    "deletedAfterBenchmark": true,
+    "retainedAsActionsArtifact": false,
+    "trackedInGit": false
+  },
+  "generationContractSha256": "sha256:1b2ad8ece6d85a8245989ffef15ccbd191d50a4e708c22091c698aba8c693ab2",
+  "manifestId": "poc-search-001-reference-dataset-v1",
+  "privacy": {
+    "classification": "generated_text",
+    "containsCopyrightCorpus": false,
+    "containsPersonalData": false,
+    "containsRealMeetingData": false,
+    "networkRequired": false
+  },
+  "schemaVersion": 1
+}

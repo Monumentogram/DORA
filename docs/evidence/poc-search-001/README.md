@@ -1,0 +1,41 @@
+# POC-SEARCH-001 evidence
+
+Status: `PRE-RUN CONTRACT FROZEN`
+
+This directory contains the public-safe evidence contract for the isolated Stage 0C Room + SQLite FTS4 experiment. The generated database and the one-million-row transcript corpus are never committed or retained as workflow artifacts. Only generator source, deterministic manifests, canonical identifiers, aggregate measurements, and sanitized result files are eligible for Git.
+
+## Frozen before the first full run
+
+- Dataset: `poc-search-synthetic-v1`, generator `search-generator-1.0.0`, seed `2026081001`.
+- Scale: exactly 10,000 conversations and 1,000,000 transcript segments (100 per conversation).
+- Logical dataset digest: `sha256:a3ad26892fc9f3abfcce26c3338a44a27dbe55e5048148f49edfc36c8fb8310a`.
+- Query campaign: 61 fixed cases, 34 latency-eligible cases, five warmups per eligible case, 30 measured repetitions, and 1,020 measured operations in the combined gate campaign.
+- Percentiles: nearest-rank over the fixed combined campaign; timing uses `SystemClock.elapsedRealtimeNanos`.
+- Mutation campaign: five fixed add/update/filter/delete operations; mutation latency is observation-only because the approved Gate Set has no numeric mutation-latency threshold.
+- Logical rebuild determinism: equal canonical counts, generated dataset digest, ordered logical FTS row/text digest, and frozen query results. Byte-for-byte SQLite file equality is explicitly not required.
+
+The manifests were generated before any full SQLite benchmark result was observed:
+
+- `dataset-manifest.json`: file SHA-256 `e7ffaa57a731ba347d791fd3bbe33a031a5c7538e923c2b55602ece5822a3db6`.
+- `query-manifest.json`: file SHA-256 `69f9448d5b6585061d5aae83686da423fd58d2a2639bc7ab7779d592ade576b4`.
+- `mutation-manifest.json`: file SHA-256 `7c75a0962ab7a60a83ea27aefa4630f54e198c1362c72edaf1ac1360e86c3b83`.
+
+## Measurement boundary
+
+Mandatory CI runs a small generated-data Room/FTS4 smoke suite. The full reference campaign runs only through the separate commit-bound workflow and records the runner, Android API, ABI, emulator build, CPU/RAM information, build type, database sizes, preparation phases, sampled memory, correctness, latency, mutation behavior, and rebuild behavior.
+
+Host/emulator measurements can establish generated-scale correctness and exploratory feasibility. They cannot establish real-phone latency or a supported-device claim. Unless an approved failure gate is triggered, the formal result therefore remains `INCONCLUSIVE` until a future physical D1–D3 campaign exists.
+
+The Room/FTS4 schema in `:poc:search` is PoC-only. It is not a production schema, architecture admission, migration commitment, or permission to start production functionality.
+
+## Result files
+
+The full workflow will produce and schema-validate these sanitized files before they are admitted here:
+
+- `benchmark-result.json` against `docs/stage0/benchmark-result.schema.json`;
+- `environment.json`;
+- `query-result.json`;
+- `mutation-result.json`;
+- `rebuild-result.json`.
+
+Any harness defect invalidates that run. Its fact must be preserved in this README before a corrected, unchanged-contract campaign is used for a verdict.
