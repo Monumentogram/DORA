@@ -370,6 +370,7 @@ def validate_public_capture_evidence() -> None:
         "README.md",
         "device-profile.json",
         "run-a-result.json",
+        "run-b-result.json",
         "deletion-summary.json",
     }
     if not evidence_root.is_dir():
@@ -441,27 +442,18 @@ def validate_public_capture_evidence() -> None:
             inspect_json_keys(json.loads(text))
 
     schema = read_json("docs/stage0/benchmark-result.schema.json")
-    run = read_json("docs/evidence/poc-capture-001/run-a-result.json")
+    runs = {
+        "Run A": read_json("docs/evidence/poc-capture-001/run-a-result.json"),
+        "Run B": read_json("docs/evidence/poc-capture-001/run-b-result.json"),
+    }
     profile = read_json("docs/evidence/poc-capture-001/device-profile.json")
     deletion = read_json("docs/evidence/poc-capture-001/deletion-summary.json")
-    SchemaValidator(schema).validate(run, schema)
 
     expected_commit = "5d9a8aceebaa7175a7a5cbaa139e8295df87d632"
-    expected_run_id = "run-a-20260805T133208Z-349c5e0c"
-    if run["pocId"] != "POC-CAPTURE-001" or run["commit"] != expected_commit:
-        fail("Run A evidence identity or commit drifted")
-    if run["result"]["status"] != "INCONCLUSIVE":
-        fail("One-phone Run A evidence must remain INCONCLUSIVE")
-    if run["inputData"]["containsRealMeetingData"]:
-        fail("Run A public evidence must not contain real meeting data")
-    if run["device"]["uniqueHardwareIdentifierRecorded"]:
-        fail("Run A evidence records a unique hardware identifier")
-    if profile["commit"] != expected_commit:
-        fail("Run A device profile commit drifted")
-    if profile["device"]["uniqueHardwareIdentifierRecorded"]:
-        fail("Public device profile records a unique hardware identifier")
-
-    metrics = {metric["name"]: metric["value"] for metric in run["metrics"]}
+    expected_run_ids = {
+        "Run A": "run-a-20260805T133208Z-349c5e0c",
+        "Run B": "run-b-20260810T054638Z-0b71124a",
+    }
     required_metrics = {
         "capture.actual_samples",
         "capture.expected_samples",
@@ -472,42 +464,106 @@ def validate_public_capture_evidence() -> None:
         "capture.audio_deleted",
         "manual.notification_visible",
     }
-    missing_metrics = sorted(required_metrics - metrics.keys())
-    if missing_metrics:
-        fail(f"Run A evidence is missing required metrics: {missing_metrics}")
-    if metrics["capture.actual_samples"] * 2 != metrics["capture.recorded_bytes"]:
-        fail("Run A PCM16 sample and byte counts do not reconcile")
-    if metrics["capture.audiorecord_errors"] != 0:
-        fail("Run A public evidence unexpectedly contains AudioRecord errors")
-    if metrics["capture.wav_valid"] is not True:
-        fail("Run A WAV validity evidence drifted")
-    if metrics["capture.audio_deleted"] is not True:
-        fail("Run A deletion metric drifted")
-    if any(gate["outcome"] == "triggered" for gate in run["failureGates"]):
-        fail("Run A evidence contains a triggered approved failure gate")
 
-    if deletion["runId"] != expected_run_id:
-        fail("Deletion summary Run ID drifted")
-    if not deletion["deletionSucceeded"] or not deletion["absenceVerified"]:
-        fail("Deletion summary does not prove raw-audio absence")
-    if deletion["containsAudio"] or deletion["rawAudioRetained"]:
-        fail("Public deletion summary claims retained audio")
-    if deletion["bytesBeforeDeletion"] != run["fileSizes"][0]["bytes"]:
-        fail("Deletion summary byte count does not match Run A result")
+    for label, run in runs.items():
+        SchemaValidator(schema).validate(run, schema)
+        if (
+            run["pocId"] != "POC-CAPTURE-001"
+            or run["commit"] != expected_commit
+            or run["result"]["status"] != "INCONCLUSIVE"
+        ):
+            fail(f"{label} evidence identity, commit or formal verdict drifted")
+        if run["inputData"]["containsRealMeetingData"]:
+            fail(f"{label} public evidence must not contain real meeting data")
+        if run["device"]["uniqueHardwareIdentifierRecorded"]:
+            fail(f"{label} evidence records a unique hardware identifier")
+
+        metrics = {metric["name"]: metric["value"] for metric in run["metrics"]}
+        missing_metrics = sorted(required_metrics - metrics.keys())
+        if missing_metrics:
+            fail(f"{label} evidence is missing required metrics: {missing_metrics}")
+        if metrics["capture.actual_samples"] * 2 != metrics["capture.recorded_bytes"]:
+            fail(f"{label} PCM16 sample and byte counts do not reconcile")
+        if (
+            metrics["capture.actual_samples"]
+            - metrics["capture.expected_samples"]
+            != metrics["capture.sample_delta"]
+        ):
+            fail(f"{label} sample delta does not reconcile")
+        if run["fileSizes"][0]["bytes"] != metrics["capture.recorded_bytes"] + 44:
+            fail(f"{label} WAV size does not reconcile with PCM bytes")
+        if metrics["capture.audiorecord_errors"] != 0:
+            fail(f"{label} public evidence unexpectedly contains AudioRecord errors")
+        if metrics["capture.wav_valid"] is not True:
+            fail(f"{label} WAV validity evidence drifted")
+        if metrics["capture.audio_deleted"] is not True:
+            fail(f"{label} deletion metric drifted")
+        if any(gate["outcome"] == "triggered" for gate in run["failureGates"]):
+            fail(f"{label} evidence contains a triggered approved failure gate")
+
+    run_a_metrics = {
+        metric["name"]: metric["value"] for metric in runs["Run A"]["metrics"]
+    }
+    if run_a_metrics["manual.notification_visible"] != "unknown":
+        fail("Run A notification observation must remain unknown")
+
+    run_b = runs["Run B"]
+    run_b_metrics = {metric["name"]: metric["value"] for metric in run_b["metrics"]}
+    if run_b["duration"]["plannedSeconds"] != 900:
+        fail("Run B planned duration drifted")
+    if run_b["duration"]["actualSeconds"] < 900:
+        fail("Run B did not reach the intended capture duration")
+    if run_b_metrics.get("capture.screen_off_seconds", 0) < 900:
+        fail("Run B did not prove at least 15 minutes of cumulative screen-off time")
+    if run_b_metrics["manual.notification_visible"] != "yes":
+        fail("Run B must retain the positive persistent-notification observation")
+    if run_b_metrics.get("manual.call_or_interruption") != "yes":
+        fail("Run B protocol-deviation observation drifted")
+    if run_b_metrics.get("capture.route_changes") != 2:
+        fail("Run B audio-route transition evidence drifted")
+
+    if profile["commit"] != expected_commit:
+        fail("Run A device profile commit drifted")
+    if profile["device"]["uniqueHardwareIdentifierRecorded"]:
+        fail("Public device profile records a unique hardware identifier")
+
     if deletion["reviewDisposition"] != "public_aggregate_only":
         fail("Deletion summary public-review disposition drifted")
+    if deletion.get("schemaVersion") != 2 or not isinstance(deletion.get("runs"), list):
+        fail("Deletion summary must contain the reviewed Run A and Run B records")
+    if len(deletion["runs"]) != len(expected_run_ids):
+        fail("Deletion summary must contain exactly one record per reviewed run")
+    deletion_by_run_id = {item["runId"]: item for item in deletion["runs"]}
+    if set(deletion_by_run_id) != set(expected_run_ids.values()):
+        fail("Deletion summary run set drifted")
+    for label, run in runs.items():
+        receipt = deletion_by_run_id[expected_run_ids[label]]
+        if not receipt["deletionSucceeded"] or not receipt["absenceVerified"]:
+            fail(f"{label} deletion summary does not prove raw-audio absence")
+        if receipt["containsAudio"] or receipt["rawAudioRetained"]:
+            fail(f"{label} public deletion summary claims retained audio")
+        if receipt["bytesBeforeDeletion"] != run["fileSizes"][0]["bytes"]:
+            fail(f"{label} deletion summary byte count does not match run result")
+        if receipt["deletedWavSha256"] != run["fileSizes"][0]["sha256"]:
+            fail(f"{label} deleted-WAV digest does not match run result")
 
     readme = read_text("docs/evidence/poc-capture-001/README.md")
     required_readme_facts = (
         "overall result INCONCLUSIVE",
-        "Run B may proceed",
-        "notification visibility `unknown`",
+        "Run C may proceed",
+        "manual.notification_visible=yes",
+        "manual.call_or_interruption=yes",
+        "Bluetooth SCO",
         "`0, 16, 180189, 180367, 180258`",
-        "source ZIP is not committed",
+        "`0, 6, 1092599, 1099075, 1316577, 1316829, 1316644`",
+        "known non-fatal measurement-telemetry defect",
+        "The source ZIPs are not committed",
+        "three-hour and eight-hour runs remain",
+        "Bluetooth must be fully disabled before Run C Start",
     )
     missing_facts = [fact for fact in required_readme_facts if fact not in readme]
     if missing_facts:
-        fail(f"Run A evidence review is missing required facts: {missing_facts}")
+        fail(f"Run A/Run B evidence review is missing required facts: {missing_facts}")
 
 
 def main() -> int:

@@ -1,16 +1,35 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "pocId": "POC-CAPTURE-001",
-  "runId": "run-a-20260805T133208Z-349c5e0c",
-  "sourceArchiveSha256": "sha256:f7d00a3675de539908641b513254e7fb8161f82b20685b64f27a4f080fdd05b1",
-  "sourceDeletionReceiptSha256": "sha256:cb8451afe5b869d0d8a5de1722f487c8c4854b288f09ef9c73f3b1fcc00c8788",
-  "verifiedAt": "2026-08-05T13:35:36.214687Z",
-  "wavWasValid": true,
-  "bytesBeforeDeletion": 5763244,
-  "deletionSucceeded": true,
-  "absenceVerified": true,
-  "containsAudio": false,
-  "rawAudioRetained": false,
-  "failureReason": null,
-  "reviewDisposition": "public_aggregate_only"
+  "reviewDisposition": "public_aggregate_only",
+  "runs": [
+    {
+      "runId": "run-a-20260805T133208Z-349c5e0c",
+      "sourceArchiveSha256": "sha256:f7d00a3675de539908641b513254e7fb8161f82b20685b64f27a4f080fdd05b1",
+      "sourceDeletionReceiptSha256": "sha256:cb8451afe5b869d0d8a5de1722f487c8c4854b288f09ef9c73f3b1fcc00c8788",
+      "verifiedAt": "2026-08-05T13:35:36.214687Z",
+      "deletedWavSha256": "sha256:69b99dee79ec2f909173bc305650f3c9ea6dffbebdd6deb994fa4f6912ba7f20",
+      "wavWasValid": true,
+      "bytesBeforeDeletion": 5763244,
+      "deletionSucceeded": true,
+      "absenceVerified": true,
+      "containsAudio": false,
+      "rawAudioRetained": false,
+      "failureReason": null
+    },
+    {
+      "runId": "run-b-20260810T054638Z-0b71124a",
+      "sourceArchiveSha256": "sha256:8d8161a57478f13036e3b23ec3c7abc7642b85594f9cd4e38f48a0872a841647",
+      "sourceDeletionReceiptSha256": "sha256:ff060f9ee04b534ef6513368165376c5987131d733755c92a05be6aa8248d4fa",
+      "verifiedAt": "2026-08-10T06:08:49.500465Z",
+      "deletedWavSha256": "sha256:9f24052322b2ead6f3d528b8d69f8f06a25c4e6eb97a975b77a2394be13b6486",
+      "wavWasValid": true,
+      "bytesBeforeDeletion": 42064672,
+      "deletionSucceeded": true,
+      "absenceVerified": true,
+      "containsAudio": false,
+      "rawAudioRetained": false,
+      "failureReason": null
+    }
+  ]
 }
