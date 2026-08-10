@@ -16,6 +16,7 @@ class ReferenceDatabaseBuilder(
     fun build(databaseName: String): OpenReferenceDatabase {
         verifyContract()
         context.deleteDatabase(databaseName)
+        BenchmarkProgress.report("$databaseName: empty database creation started")
         val totalStarted = android.os.SystemClock.elapsedRealtimeNanos()
 
         val (database, emptyDatabaseCreationMs) =
@@ -27,6 +28,7 @@ class ReferenceDatabaseBuilder(
         val dao = database.searchDao()
         val generatorDigest = MessageDigest.getInstance("SHA-256")
         memorySampler.sample()
+        BenchmarkProgress.report("$databaseName: conversation insertion started")
 
         val (_, conversationInsertMs) =
             BenchmarkClock.measure {
@@ -52,7 +54,9 @@ class ReferenceDatabaseBuilder(
                     firstId = endExclusive
                 }
             }
+        BenchmarkProgress.report("$databaseName: conversation insertion complete")
 
+        BenchmarkProgress.report("$databaseName: transcript insertion started")
         val (_, transcriptInsertMs) =
             BenchmarkClock.measure {
                 var firstId = 1L
@@ -74,21 +78,33 @@ class ReferenceDatabaseBuilder(
                     dao.insertSegments(batch)
                     memorySampler.sample()
                     firstId = endExclusive
+                    if ((firstId - 1L) % TRANSCRIPT_PROGRESS_INTERVAL == 0L) {
+                        BenchmarkProgress.report(
+                            "$databaseName: ${firstId - 1L}/${contract.transcriptRowCount} transcripts inserted"
+                        )
+                    }
                 }
             }
+        BenchmarkProgress.report("$databaseName: transcript insertion complete")
 
         val indexManager = FtsIndexManager(database)
+        BenchmarkProgress.report("$databaseName: initial FTS4 index build started")
         val (_, indexBuildMs) = BenchmarkClock.measure(indexManager::rebuildFromCanonicalRows)
+        BenchmarkProgress.report("$databaseName: initial FTS4 index build complete")
         memorySampler.sample()
         val beforeCompact = DatabaseFiles.snapshot(context, databaseName)
+        BenchmarkProgress.report("$databaseName: checkpoint and compact started")
         val (_, checkpointCompactMs) = BenchmarkClock.measure(indexManager::checkpointAndCompact)
+        BenchmarkProgress.report("$databaseName: checkpoint and compact complete")
         val afterCompact = DatabaseFiles.snapshot(context, databaseName)
         val afterCompactDatabaseSha256 =
             BenchmarkDigests.sha256(context.getDatabasePath(databaseName))
         memorySampler.sample()
 
+        BenchmarkProgress.report("$databaseName: logical dataset digest started")
         val (databaseDigest, logicalDigestReadMs) =
             BenchmarkClock.measure { logicalDatabaseDigest(database) }
+        BenchmarkProgress.report("$databaseName: logical dataset digest complete")
         val totalPreparationMs =
             (android.os.SystemClock.elapsedRealtimeNanos() - totalStarted) / 1_000_000.0
         val expectedDigest = BenchmarkDigests.toSha256(generatorDigest)
@@ -161,5 +177,9 @@ class ReferenceDatabaseBuilder(
                 }
             }
         return BenchmarkDigests.toSha256(digest)
+    }
+
+    companion object {
+        private const val TRANSCRIPT_PROGRESS_INTERVAL = 100_000L
     }
 }

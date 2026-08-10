@@ -38,10 +38,12 @@ class FullSearchBenchmarkInstrumentedTest {
 
         try {
             memorySampler.sample()
+            BenchmarkProgress.report("full campaign: primary reference build started")
             val primaryOpen =
                 ReferenceDatabaseBuilder(context, dataset, memorySampler).build(PRIMARY_DATABASE)
             primary = primaryOpen
             verifyPreparation(primaryOpen.preparation, dataset)
+            BenchmarkProgress.report("full campaign: primary reference build verified")
             val primaryRepository = SearchRepository(primaryOpen.database.searchDao())
             val sqliteVersion = scalar(primaryOpen.database, "SELECT sqlite_version()")
             val ftsCreateSql =
@@ -53,14 +55,21 @@ class FullSearchBenchmarkInstrumentedTest {
 
             val campaignRunner =
                 QueryCampaignRunner(primaryRepository, primaryOpen.database.searchDao(), queries)
+            BenchmarkProgress.report("full campaign: baseline correctness started")
             val baselineCorrectness = campaignRunner.runCorrectness("reference-before-measurement")
+            BenchmarkProgress.report("full campaign: baseline correctness complete")
             memorySampler.sample()
+            BenchmarkProgress.report("full campaign: latency campaign started")
             val latency = campaignRunner.runLatency()
+            BenchmarkProgress.report("full campaign: latency campaign complete")
             memorySampler.sample()
+            BenchmarkProgress.report("full campaign: two full-scale rebuilds started")
             val rebuild =
-                RebuildRunner(primaryOpen.database, primaryRepository, queries)
+                RebuildRunner(context, primaryOpen.database, primaryRepository, queries)
                     .run(baselineCorrectness)
+            BenchmarkProgress.report("full campaign: rebuild and recovery checks complete")
             memorySampler.sample()
+            BenchmarkProgress.report("full campaign: mutation campaign started")
             val mutation =
                 MutationRunner(
                         primaryOpen.database,
@@ -69,12 +78,15 @@ class FullSearchBenchmarkInstrumentedTest {
                         mutations,
                     )
                     .run()
+            BenchmarkProgress.report("full campaign: mutation campaign complete")
             memorySampler.sample()
 
+            BenchmarkProgress.report("full campaign: independent secondary build started")
             val secondaryOpen =
                 ReferenceDatabaseBuilder(context, dataset, memorySampler).build(SECONDARY_DATABASE)
             secondary = secondaryOpen
             verifyPreparation(secondaryOpen.preparation, dataset)
+            BenchmarkProgress.report("full campaign: independent secondary build verified")
             val secondaryRepository = SearchRepository(secondaryOpen.database.searchDao())
             val secondaryCorrectness =
                 QueryCampaignRunner(
@@ -83,7 +95,9 @@ class FullSearchBenchmarkInstrumentedTest {
                         queries,
                     )
                     .runCorrectness("independent-second-build")
+            BenchmarkProgress.report("full campaign: secondary correctness complete")
             val secondaryIndexDigest = RebuildRunner.logicalIndexDigest(secondaryOpen.database)
+            BenchmarkProgress.report("full campaign: secondary logical index digest complete")
             val crossBuild =
                 CrossBuildDeterminism(
                     primaryDatasetLogicalSha256 = primaryOpen.preparation.databaseLogicalDigest,
@@ -145,6 +159,7 @@ class FullSearchBenchmarkInstrumentedTest {
                     temporaryDatabasesDeleted = databasesDeleted,
                 )
             val output = BenchmarkObservationWriter.write(outputContext, run)
+            BenchmarkProgress.report("full campaign: sanitized observations written")
             instrumentation.sendStatus(
                 0,
                 Bundle().apply { putString("pocSearchOutput", output.absolutePath) },

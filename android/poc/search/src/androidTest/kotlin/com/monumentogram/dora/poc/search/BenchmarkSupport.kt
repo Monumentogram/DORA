@@ -3,6 +3,7 @@ package com.monumentogram.dora.poc.search
 import android.content.Context
 import android.os.Debug
 import android.os.SystemClock
+import android.util.Log
 import com.monumentogram.dora.poc.search.db.SearchPocDatabase
 import java.io.File
 import java.security.MessageDigest
@@ -64,6 +65,14 @@ data class OpenReferenceDatabase(
     val database: SearchPocDatabase,
     val preparation: DatabasePreparation,
 )
+
+object BenchmarkProgress {
+    private const val TAG = "POC_SEARCH"
+
+    fun report(message: String) {
+        Log.i(TAG, message)
+    }
+}
 
 object BenchmarkClock {
     inline fun <T> measure(block: () -> T): Pair<T, Double> {

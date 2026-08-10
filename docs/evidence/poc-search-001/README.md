@@ -39,3 +39,14 @@ The full workflow will produce and schema-validate these sanitized files before 
 - `rebuild-result.json`.
 
 Any harness defect invalidates that run. Its fact must be preserved in this README before a corrected, unchanged-contract campaign is used for a verdict.
+
+## Invalid runs
+
+- Full workflow run `31393093186` at commit `98c4de021e18dc8823be4d1028622b38e2ecc1f5`
+  is `INVALID`: the job reached the harness's original 120-minute ceiling while the single
+  instrumentation test was still running, before any observation or result artifact was written.
+  No gate was evaluated from this run. The frozen dataset, query/mutation manifests, repetition
+  plan, percentile definition, and approved gates were not changed. The harness correction keeps
+  both required full-scale 1M-row rebuilds and the independent second 1M-row build, moves the
+  scale-independent corruption/recovery boundary to a separate 10-conversation/1,000-row fully
+  generated index, emits phase progress, and gives the reproducible workflow sufficient runtime.

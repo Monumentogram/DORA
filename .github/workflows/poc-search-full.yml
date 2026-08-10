@@ -17,7 +17,7 @@ jobs:
   full-search-benchmark:
     name: full-search-benchmark
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 360
 
     steps:
       - name: Check out exact benchmark commit
@@ -100,11 +100,15 @@ jobs:
 
       - name: Run frozen 10k conversation and 1M row campaign
         working-directory: android
-        run: >-
-          ./gradlew --no-daemon --stacktrace
-          :poc:search:connectedDebugAndroidTest
-          -Pandroid.testInstrumentationRunnerArguments.class=com.monumentogram.dora.poc.search.FullSearchBenchmarkInstrumentedTest
-          -Pandroid.testInstrumentationRunnerArguments.pocSearchFull=true
+        run: |
+          "${ANDROID_HOME}/platform-tools/adb" logcat -c
+          "${ANDROID_HOME}/platform-tools/adb" logcat -v time 'POC_SEARCH:I' '*:S' &
+          logcat_pid=$!
+          trap 'kill "${logcat_pid}" 2>/dev/null || true' EXIT
+          ./gradlew --no-daemon --stacktrace \
+            :poc:search:connectedDebugAndroidTest \
+            -Pandroid.testInstrumentationRunnerArguments.class=com.monumentogram.dora.poc.search.FullSearchBenchmarkInstrumentedTest \
+            -Pandroid.testInstrumentationRunnerArguments.pocSearchFull=true
 
       - name: Pull sanitized observations and verify no database was retained
         run: |

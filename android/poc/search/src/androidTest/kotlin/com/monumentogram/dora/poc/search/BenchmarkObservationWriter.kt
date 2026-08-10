@@ -247,6 +247,8 @@ object BenchmarkObservationWriter {
             .put(
                 "recovery",
                 JSONObject()
+                    .put("conversationCount", value.recovery.conversationCount)
+                    .put("transcriptCount", value.recovery.transcriptCount)
                     .put(
                         "droppedIndexReturnedControlledFailure",
                         value.recovery.droppedIndexReturnedControlledFailure,
@@ -263,7 +265,8 @@ object BenchmarkObservationWriter {
                         "missingIndexRowAffectedSearch",
                         value.recovery.missingIndexRowAffectedSearch,
                     )
-                    .put("missingIndexRowRecovered", value.recovery.missingIndexRowRecovered),
+                    .put("missingIndexRowRecovered", value.recovery.missingIndexRowRecovered)
+                    .put("temporaryDatabaseDeleted", value.recovery.temporaryDatabaseDeleted),
             )
             .put("finalCorrectness", correctness(value.finalCorrectness))
             .put("deterministic", value.deterministic)
