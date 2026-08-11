@@ -1,6 +1,7 @@
 package com.monumentogram.dora.poc.search
 
-import com.monumentogram.dora.poc.search.db.QueryPlanRow
+import androidx.sqlite.db.SupportSQLiteQuery
+import com.monumentogram.dora.poc.search.db.SearchPocDatabase
 
 data class FtsQueryPlanObservation(
     val details: List<String>,
@@ -15,8 +16,19 @@ data class FtsQueryPlanObservation(
 }
 
 object FtsQueryPlanPolicy {
-    fun inspect(rows: List<QueryPlanRow>): FtsQueryPlanObservation {
-        val details = rows.map(QueryPlanRow::detail)
+    fun inspect(
+        database: SearchPocDatabase,
+        query: SupportSQLiteQuery,
+    ): FtsQueryPlanObservation {
+        val details =
+            database.openHelper.readableDatabase.query(query).use { cursor ->
+                val detailIndex = cursor.getColumnIndexOrThrow("detail")
+                buildList {
+                    while (cursor.moveToNext()) {
+                        add(cursor.getString(detailIndex))
+                    }
+                }
+            }
         val ftsLoop = details.indexOfFirst { detail ->
             detail.contains("transcript_segments_fts") &&
                 detail.contains("VIRTUAL TABLE", ignoreCase = true)

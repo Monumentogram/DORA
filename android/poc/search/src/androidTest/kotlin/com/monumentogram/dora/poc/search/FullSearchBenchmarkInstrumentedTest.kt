@@ -49,7 +49,11 @@ class FullSearchBenchmarkInstrumentedTest {
             val repository = SearchRepository(primary.database.searchDao())
             val sourceCase = campaign.queries.cases.single { it.id == SOURCE_QUERY_ID }
             val sourceRequest = request(sourceCase, campaign.queries.resultLimit)
-            val queryPlan = FtsQueryPlanPolicy.inspect(repository.explainCountPlan(sourceRequest))
+            val queryPlan =
+                FtsQueryPlanPolicy.inspect(
+                    primary.database,
+                    repository.explainCountQuery(sourceRequest),
+                )
             queryPlan.details.forEach { detail ->
                 BenchmarkProgress.report("query checkpoint: EXPLAIN $detail")
             }

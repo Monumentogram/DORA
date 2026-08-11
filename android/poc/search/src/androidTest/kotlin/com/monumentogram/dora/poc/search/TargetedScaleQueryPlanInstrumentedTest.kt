@@ -91,7 +91,11 @@ class TargetedScaleQueryPlanInstrumentedTest {
         contract: TargetedContract,
     ): TargetedExecution {
         val repository = SearchRepository(reference.database.searchDao())
-        val plan = FtsQueryPlanPolicy.inspect(repository.explainCountPlan(contract.request))
+        val plan =
+            FtsQueryPlanPolicy.inspect(
+                reference.database,
+                repository.explainCountQuery(contract.request),
+            )
         plan.details.forEach { detail ->
             BenchmarkProgress.report("targeted scale: EXPLAIN $detail")
         }

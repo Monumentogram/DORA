@@ -135,6 +135,11 @@ def validate_module_wiring() -> None:
     source_root = ROOT / "android/poc/search/src/androidTest/kotlin/com/monumentogram/dora/poc/search"
     for name in required_files:
         require((source_root / name).is_file(), f"Missing benchmark source {name}")
+    plan_policy = (source_root / "FtsQueryPlanPolicy.kt").read_text(encoding="utf-8")
+    require(
+        "readableDatabase.query(query)" in plan_policy,
+        "EXPLAIN must use the cursor query path rather than Room statement execution",
+    )
     require(
         (ROOT / "tools/combine_poc_search_checkpoints.py").is_file(),
         "Missing checkpoint combiner",

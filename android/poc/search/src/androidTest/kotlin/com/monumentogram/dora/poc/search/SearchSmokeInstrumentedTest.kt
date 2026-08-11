@@ -104,7 +104,8 @@ class SearchSmokeInstrumentedTest {
                 limit = manifest.resultLimit,
             )
 
-        val observation = FtsQueryPlanPolicy.inspect(repository.explainCountPlan(request))
+        val observation =
+            FtsQueryPlanPolicy.inspect(database, repository.explainCountQuery(request))
 
         assertTrue(observation.details.joinToString(" | "), observation.accepted)
         val count = repository.count(request)

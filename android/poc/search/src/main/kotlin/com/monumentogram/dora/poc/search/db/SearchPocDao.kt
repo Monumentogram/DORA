@@ -33,8 +33,6 @@ interface SearchPocDao {
     )
     fun rawCount(query: SupportSQLiteQuery): Long
 
-    @RawQuery fun rawQueryPlan(query: SupportSQLiteQuery): List<QueryPlanRow>
-
     @Query("SELECT COUNT(*) FROM conversations") fun conversationCount(): Long
 
     @Query("SELECT COUNT(*) FROM transcript_segments") fun transcriptCount(): Long
@@ -95,10 +93,3 @@ interface SearchPocDao {
         check(deleteConversationCanonical(conversationId) == 1)
     }
 }
-
-data class QueryPlanRow(
-    val id: Int,
-    val parent: Int,
-    val notused: Int,
-    val detail: String,
-)

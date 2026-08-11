@@ -5,7 +5,6 @@ package com.monumentogram.dora.poc.search.query
 import android.database.sqlite.SQLiteException
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
-import com.monumentogram.dora.poc.search.db.QueryPlanRow
 import com.monumentogram.dora.poc.search.db.SearchPocDao
 
 class SearchRepository(private val dao: SearchPocDao) {
@@ -53,10 +52,10 @@ class SearchRepository(private val dao: SearchPocDao) {
     fun compile(request: SearchRequest): CompiledUserQuery =
         SafeFtsQueryCompiler.compile(request.rawQuery, request.mode, !request.filters.isEmpty())
 
-    fun explainCountPlan(request: SearchRequest): List<QueryPlanRow> {
+    fun explainCountQuery(request: SearchRequest): SupportSQLiteQuery {
         val compiled = compile(request)
         require(compiled.status == QueryStatus.READY || compiled.status == QueryStatus.FILTER_ONLY)
-        return dao.rawQueryPlan(buildCountStatement(request, compiled).asExplainQuery())
+        return buildCountStatement(request, compiled).asExplainQuery()
     }
 
     private fun buildCountStatement(
