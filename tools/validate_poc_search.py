@@ -9,6 +9,7 @@ import re
 import sqlite3
 import sys
 import tempfile
+from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -19,6 +20,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 import poc_search_contract as contract  # noqa: E402
 import combine_poc_search_checkpoints as checkpoint_combiner  # noqa: E402
+import combine_poc_search_gate_v02 as gate_v02_combiner  # noqa: E402
 import check_poc_search_run_readiness as run_readiness  # noqa: E402
 import finalize_poc_search_result as finalizer  # noqa: E402
 import poc_search_evidence_ledger as evidence_ledger  # noqa: E402
@@ -219,6 +221,61 @@ def validate_gate_v02_draft() -> None:
     require(actual_thresholds == expected_thresholds, "Gate v0.2 option predicates drift")
     require(gate_set["draftEngineeringPreference"] == "B", "Draft preference must remain non-selected Option B")
 
+    approved_decision_path = ROOT / "docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES.md"
+    approved_document_path = ROOT / "docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2.md"
+    approved_machine_path = ROOT / "docs/stage0/poc-search-gate-set-stage0-v0.2.json"
+    for path in (approved_decision_path, approved_document_path, approved_machine_path):
+        require(path.is_file(), f"Missing approved prospective gate artifact: {path.name}")
+    approved_decision = approved_decision_path.read_text(encoding="utf-8")
+    approved_document = approved_document_path.read_text(encoding="utf-8")
+    approved = read_json(approved_machine_path)
+    require("Status: **Approved" in approved_decision, "DEC-043 approval state missing")
+    require("Selected option: **B**" in approved_document, "Gate Set does not name Option B")
+    require(
+        "Measured execution allowed: **no**" in approved_document,
+        "Contract approval was confused with execution authorization",
+    )
+    require(
+        approved["status"] == "APPROVED"
+        and approved["selectedOptionId"] == "B"
+        and approved["approvedBy"] == "Project owner"
+        and approved["approvedOn"] == "2026-08-11"
+        and approved["benchmarkExecutionAllowed"] is False,
+        "Approved Option B or its execution hold drifted",
+    )
+    require(
+        approved["selectedOption"]["thresholds"] == expected_thresholds["B"],
+        "Approved Option B predicates differ from the prospective draft",
+    )
+    require(
+        approved["executionAuthorization"]
+        == {
+            "status": "WITHHELD_BY_PROJECT_OWNER",
+            "authorizedBy": None,
+            "authorizedOn": None,
+            "requiresLaterRecordedOwnerAuthorization": True,
+            "blockers": [
+                "EXACT_COMPONENT_LICENSE_NOTICE_REVIEW_NOT_APPROVED",
+                "GATE_V02_PAIRED_HARNESS_NOT_VERIFIED",
+                "PHYSICAL_D1_D2_D3_AVAILABILITY_NOT_CONFIRMED",
+            ],
+        },
+        "Measured-execution blocker set drift",
+    )
+    require(
+        approved["independence"]["historicalDoraMeasurementsUsedToSetThresholds"] is False
+        and approved["historicalResultsAffected"] is False,
+        "Approved prospective decision is not independent of historical results",
+    )
+    approved_text = approved_decision + approved_document + approved_machine_path.read_text(encoding="utf-8")
+    for value in forbidden_historical_values:
+        require(value not in approved_text, f"Approved prospective contract references historical result {value}")
+    require(
+        file_digest(approved_machine_path)
+        == "sha256:7898293eae8d896b72b04dddc222a0cf2e726afd41375ae8a8402b996ef70858",
+        "Approved gate-set digest drift",
+    )
+
 
 def validate_module_wiring() -> None:
     settings = (ROOT / "android" / "settings.gradle.kts").read_text(encoding="utf-8")
@@ -267,6 +324,10 @@ def validate_module_wiring() -> None:
         "BenchmarkCheckpointWriter.kt",
         "FtsQueryPlanPolicy.kt",
         "TargetedScaleQueryPlanInstrumentedTest.kt",
+        "StorageUpdateGateV02Contract.kt",
+        "StorageUpdateGateV02Harness.kt",
+        "StorageUpdateGateV02Writer.kt",
+        "StorageUpdateGateV02InstrumentedTest.kt",
     )
     source_root = ROOT / "android/poc/search/src/androidTest/kotlin/com/monumentogram/dora/poc/search"
     for name in required_files:
@@ -301,6 +362,10 @@ def validate_module_wiring() -> None:
         "Missing checkpoint combiner",
     )
     require(
+        (ROOT / "tools/combine_poc_search_gate_v02.py").is_file(),
+        "Missing stage0-v0.2 paired-checkpoint combiner",
+    )
+    require(
         "TargetedScaleQueryPlanInstrumentedTest" in workflow
         and "timeout-minutes: 10" in workflow,
         "Full-scale source-filter preflight is not hard-bounded",
@@ -319,6 +384,35 @@ def validate_module_wiring() -> None:
     require(
         "check_poc_search_run_readiness.py" in workflow,
         "Measured workflow does not fail closed on gate/IP readiness",
+    )
+    gate_test = (source_root / "StorageUpdateGateV02InstrumentedTest.kt").read_text(encoding="utf-8")
+    gate_writer = (source_root / "StorageUpdateGateV02Writer.kt").read_text(encoding="utf-8")
+    gate_harness = (source_root / "StorageUpdateGateV02Harness.kt").read_text(encoding="utf-8")
+    require(
+        'buildConfigField("boolean", "GATE_V02_EXECUTION_ALLOWED", "false")' in build
+        and 'create("benchmark")' in build
+        and 'initWith(getByName("release"))' in build,
+        "Option B build binding or release-like benchmark variant drift",
+    )
+    require(
+        "check(BuildConfig.GATE_V02_EXECUTION_ALLOWED)" in gate_test
+        and gate_test.index("check(BuildConfig.GATE_V02_EXECUTION_ALLOWED)")
+        < gate_test.index("StorageUpdateGateV02Harness(targetContext).run(config)"),
+        "Formal harness does not fail before database work when execution is withheld",
+    )
+    require(
+        "writeFailure" in gate_test
+        and 'put("checkpointStatus", "FAIL")' in gate_writer
+        and "warmupSamples" in gate_writer
+        and "measuredSamples" in gate_writer,
+        "FAIL or raw paired samples are not durably checkpointed",
+    )
+    require(
+        "GateV02DatabaseKind.CONTROL" in gate_harness
+        and "GateV02DatabaseKind.INDEXED" in gate_harness
+        and "PRAGMA wal_checkpoint(TRUNCATE)" in gate_harness
+        and 'database.execSQL("VACUUM")' in gate_harness,
+        "Paired control/indexed storage normalization is incomplete",
     )
     require(
         "ubuntu-latest" not in workflow
@@ -340,24 +434,42 @@ def validate_module_wiring() -> None:
         and "poc_search_dependency_inventory.py --check" in android_ci,
         "Resolved dependency artifact digests are not verified in CI",
     )
-
-
-def validate_draft_blocks_measured_run() -> None:
-    expected = (
-        "Draft stage0-v0.2 options exist, but the Project owner has selected none. "
-        "No measured campaign is authorized."
+    require(
+        "poc_search_license_notice_inventory.py --check" in workflow
+        and "poc_search_license_notice_inventory.py --check" in android_ci,
+        "Exact license/NOTICE inventory is not verified in CI",
     )
+
+
+def validate_approved_contract_still_blocks_measured_run() -> None:
+    expected = run_readiness.EXECUTION_WITHHELD_MESSAGE
     try:
         run_readiness.main()
     except ValueError as error:
         require(str(error) == expected, "Measured-run readiness blocker drift")
     else:
-        fail("Draft stage0-v0.2 gate set must block measured execution")
+        fail("Approved Option B must still block execution without later owner authorization")
+    future_authorized = deepcopy(
+        read_json(ROOT / "docs/stage0/poc-search-gate-set-stage0-v0.2.json")
+    )
+    future_authorized["benchmarkExecutionAllowed"] = True
+    future_authorized["executionAuthorization"].update(
+        {
+            "status": "AUTHORIZED_BY_PROJECT_OWNER",
+            "authorizedBy": "Project owner",
+            "authorizedOn": "2099-01-01",
+            "blockers": [],
+        }
+    )
+    run_readiness.validate_gate_set(future_authorized)
 
 
 def locked_components(lock_path: Path) -> dict[str, list[str]]:
     selected_configurations = {
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath",
     }
@@ -393,7 +505,10 @@ def validate_dependency_and_ip_inventory() -> None:
     require(
         set(inventory["lock"]["configurations"])
         == {
+            "_agp_internal_benchmark_kspClasspath",
             "_agp_internal_debug_kspClasspath",
+            "benchmarkAndroidTestRuntimeClasspath",
+            "benchmarkRuntimeClasspath",
             "debugAndroidTestRuntimeClasspath",
             "debugRuntimeClasspath",
         },
@@ -429,24 +544,116 @@ def validate_dependency_and_ip_inventory() -> None:
         ip_evaluation["dependencyInventory"]["componentCount"] == len(expected),
         "IP assessment dependency count mismatch",
     )
-    unresolved = {
-        coordinate
-        for coordinate, component in components.items()
-        if not any(
-            isinstance(value.get("name"), str) and value["name"]
-            for value in component["declaredLicenses"]
-        )
-    }
+    license_path = EVIDENCE / "license-notice-inventory.json"
+    require(license_path.is_file(), "Exact license/NOTICE inventory is missing")
+    license_inventory = read_json(license_path)
     require(
-        set(ip_evaluation["unresolvedLicenseCoordinates"]) == unresolved,
-        "IP assessment does not enumerate every missing declared license",
+        license_inventory["pocId"] == "POC-SEARCH-001"
+        and license_inventory["reviewStatus"] == "EVIDENCE_COMPLETE",
+        "License/NOTICE evidence status drift",
     )
     require(
-        ip_evaluation["evaluationStatus"] == "REVIEWERS_ASSIGNED_REVIEW_PENDING"
+        license_inventory["sourceDependencyInventory"]
+        == {
+            "locator": "docs/evidence/poc-search-001/dependency-inventory.json",
+            "sha256": file_digest(inventory_path).removeprefix("sha256:"),
+            "componentCount": 66,
+        },
+        "License/NOTICE evidence is not bound to the exact dependency inventory",
+    )
+    reviewed_components = {
+        component["coordinate"]: component for component in license_inventory["components"]
+    }
+    require(set(reviewed_components) == set(components), "License review graph is incomplete")
+    for coordinate, reviewed in reviewed_components.items():
+        require(reviewed["scopes"] == expected[coordinate], f"Reviewed scope drift: {coordinate}")
+        require(bool(reviewed["effectiveSpdx"]), f"Effective license missing: {coordinate}")
+        require(bool(reviewed["licenseEvidence"]), f"License evidence missing: {coordinate}")
+        expected_artifacts = {
+            value["filename"]: value["sha256"] for value in components[coordinate]["artifacts"]
+        }
+        require(
+            reviewed["artifactSha256"] == expected_artifacts,
+            f"License review artifact digest drift: {coordinate}",
+        )
+        require(
+            reviewed["stage0EvaluationDisposition"] == "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+            and reviewed["productionAdmission"] == "NOT_REVIEWED",
+            f"License evidence invented approval: {coordinate}",
+        )
+        for archive in reviewed["embeddedLicenseNoticeEntries"]:
+            for entry in archive["entries"]:
+                if entry["kind"] == "license":
+                    require(bool(entry.get("spdx")), f"Embedded license unclassified: {coordinate}")
+                    require(
+                        entry["spdx"] in reviewed["effectiveSpdx"],
+                        f"Embedded license omitted from effective set: {coordinate}",
+                    )
+    require(
+        license_inventory["summary"]
+        == {
+            "componentCount": 66,
+            "componentsWithEffectiveLicense": 66,
+            "effectiveLicenseCounts": {
+                "Apache-2.0": 62,
+                "BSD-2-Clause": 1,
+                "BSD-3-Clause": 2,
+                "EPL-1.0": 1,
+                "MIT": 1,
+            },
+            "embeddedLicenseEntryCount": 19,
+            "embeddedNoticeEntryCount": 3,
+            "unresolvedLicenseCoordinates": [],
+            "unresolvedLicenseFiles": [],
+            "unresolvedNoticeFiles": [],
+        },
+        "Exact license/NOTICE summary drift",
+    )
+    require(
+        reviewed_components[
+            "org.xerial:sqlite-jdbc:3.41.2.2"
+        ]["effectiveSpdx"]
+        == ["Apache-2.0", "BSD-2-Clause"],
+        "sqlite-jdbc embedded BSD-2-Clause evidence was lost",
+    )
+    auto_value_evidence = reviewed_components[
+        "com.google.auto.value:auto-value-annotations:1.6.3"
+    ]["licenseEvidence"]
+    require(
+        any(
+            item.get("kind") == "upstream-release-tag-license"
+            and item.get("tag") == "auto-value-1.6.3"
+            and item.get("sha256")
+            == "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+            for item in auto_value_evidence
+        ),
+        "Auto Value exact tagged upstream license evidence is missing",
+    )
+    require(
+        ip_evaluation["unresolvedLicenseCoordinates"] == [],
+        "Resolved effective-license gaps remain marked unresolved",
+    )
+    require(
+        ip_evaluation["evaluationStatus"]
+        == "EXACT_EVIDENCE_COMPLETE_OWNER_APPROVAL_PENDING"
         and ip_evaluation["historicalExecutionPrecondition"] == "NOT_PROVEN"
         and ip_evaluation["futureMeasuredExecution"]
-        == "BLOCKED_PENDING_GATE_AND_ARTIFACT_REVIEW",
-        "Pending dependency review and gate decision must block measured execution",
+        == "BLOCKED_PENDING_OWNER_ARTIFACT_APPROVAL_AND_EXECUTION_PREREQUISITES",
+        "Evidence completeness must not invent owner artifact approval or execution rights",
+    )
+    require(
+        ip_evaluation["dependencyInventory"]["status"]
+        == "EVIDENCE_COMPLETE_OWNER_APPROVAL_PENDING"
+        and ip_evaluation["dependencyInventory"]["licenseNoticeInventory"]
+        == {
+            "locator": "docs/evidence/poc-search-001/license-notice-inventory.json",
+            "sha256": file_digest(license_path),
+            "componentsWithEffectiveLicense": 66,
+            "unresolvedLicenseCoordinates": 0,
+            "unresolvedLicenseFiles": 0,
+            "unresolvedNoticeFiles": 0,
+        },
+        "IP assessment does not bind the exact license/NOTICE evidence",
     )
     require(ip_evaluation["ownerDecision"] == {"id": "OD-11", "approvedOn": "2026-08-11", "scope": "Stage 0 evaluation only"}, "OD-11 IP scope drift")
     assignments = ip_evaluation["reviewAssignments"]
@@ -550,6 +757,67 @@ def validate_dependency_and_ip_inventory() -> None:
         },
         "SQLite Stage 0 runtime identity is incomplete",
     )
+
+
+def validate_gate_v02_readiness_evidence() -> None:
+    gate_path = ROOT / "docs/stage0/poc-search-gate-set-stage0-v0.2.json"
+    gate_digest = file_digest(gate_path)
+    devices = read_json(EVIDENCE / "device-availability-stage0-v0.2.json")
+    require(
+        devices["gateSetVersion"] == "stage0-v0.2"
+        and devices["status"] == "BLOCKED_MISSING_D1_D3"
+        and devices["allRequiredPhysicalProfilesAvailable"] is False
+        and devices["benchmarkExecutionEligible"] is False,
+        "Physical D1-D3 availability blocker drift",
+    )
+    profiles = {value["profileId"]: value for value in devices["profiles"]}
+    require(set(profiles) == {"D1", "D2", "D3"}, "D1-D3 availability inventory incomplete")
+    require(
+        profiles["D1"]["availability"] == "unknown"
+        and profiles["D3"]["availability"] == "unknown"
+        and profiles["D2"]["availability"] == "available"
+        and profiles["D2"]["inventoryId"] == "owner-phone-001"
+        and profiles["D2"]["sanitizedDevice"]["model"] == "SM-S908B",
+        "Physical availability was invented or known D2 was omitted",
+    )
+    require(
+        all(value["gateExecutionEligible"] is False for value in profiles.values()),
+        "A device was marked gate-ready before the fresh authorized preflight",
+    )
+
+    harness = read_json(EVIDENCE / "gate-v02-harness-readiness.json")
+    require(
+        harness["gateSetVersion"] == "stage0-v0.2"
+        and harness["gateSetSha256"] == gate_digest
+        and harness["selectedOptionId"] == "B"
+        and harness["formalBenchmarkExecuted"] is False
+        and harness["formalCheckpointCount"] == 0
+        and harness["benchmarkExecutionAllowed"] is False,
+        "Harness readiness evidence overstates formal execution",
+    )
+    require(
+        harness["status"]
+        in {"IMPLEMENTED_COMPILE_VERIFIED_RUNTIME_SMOKE_PENDING", "VERIFIED"},
+        "Unknown harness verification state",
+    )
+    checks = {value["id"]: value for value in harness["checks"]}
+    require(
+        checks["debug-androidtest-compile"]["outcome"] == "PASS"
+        and checks["benchmark-androidtest-compile"]["outcome"] == "PASS",
+        "Committed harness compilation evidence is incomplete",
+    )
+    if harness["status"] == "VERIFIED":
+        require(
+            bool(re.fullmatch(r"[0-9a-f]{40}", harness["implementationCommit"]))
+            and checks["paired-harness-runtime-smoke"]["outcome"] == "PASS",
+            "VERIFIED harness lacks commit-bound runtime smoke evidence",
+        )
+    else:
+        require(
+            harness["implementationCommit"] is None
+            and checks["paired-harness-runtime-smoke"]["outcome"] == "PENDING_CI",
+            "Pending harness evidence invented a committed runtime result",
+        )
 
 
 def validate_durable_evidence_ledger() -> None:
@@ -754,6 +1022,246 @@ def host_sqlite_smoke() -> None:
             connection.close()
 
 
+def gate_v02_checkpoint_fixture(profile: str, build: int, gate_digest: str) -> dict[str, Any]:
+    def sample(commit_nanos: int, visibility_nanos: int | None) -> dict[str, Any]:
+        return {
+            "commitNanos": commit_nanos,
+            "visibilityNanos": visibility_nanos,
+            "correctnessPassed": True,
+            "staleSuccessfulResponse": False,
+            "crashed": False,
+        }
+
+    def operations(indexed: bool) -> list[dict[str, Any]]:
+        return [
+            {
+                "operationClass": operation_id,
+                "group": group,
+                "cardinality": 100 if group == "bulk-100" else 1,
+                "warmupSamples": [
+                    sample(20_000_000 if indexed else 10_000_000, 5_000_000 if indexed else None)
+                    for _ in range(10)
+                ],
+                "measuredSamples": [
+                    sample(20_000_000 if indexed else 10_000_000, 5_000_000 if indexed else None)
+                    for _ in range(100)
+                ],
+            }
+            for operation_id, group in gate_v02_combiner.OPERATION_CLASSES.items()
+        ]
+
+    def observation(indexed: bool) -> dict[str, Any]:
+        return {
+            "kind": "INDEXED" if indexed else "CONTROL",
+            "storage": {
+                "mainDatabaseBytes": 1_342_177_280 if indexed else 1_073_741_824,
+                "pageCount": 327_680 if indexed else 262_144,
+                "pageSizeBytes": 4096,
+                "walBytesAfterClose": 0,
+                "shmBytesAfterClose": 0,
+                "integrityCheck": "ok",
+                "conversationCount": 10_000,
+                "transcriptSegmentCount": 1_000_000,
+                "ftsRowCount": 1_000_000 if indexed else None,
+                "canonicalLogicalSha256": "sha256:" + "b" * 64,
+                "missingCanonicalMappings": 0 if indexed else None,
+                "missingIndexRows": 0 if indexed else None,
+                "firstCheckpointBusy": 0,
+                "secondCheckpointBusy": 0,
+                "mainFileMatchesPageGeometry": True,
+                "transientFilesCleared": True,
+                "freeStorageBytesAfterNormalization": 10_000_000_000,
+            },
+            "operations": operations(indexed),
+            "sqliteVersion": "3.44.3",
+            "compileOptions": ["ENABLE_FTS3", "ENABLE_FTS4"],
+            "finalIntegrityCheck": "ok",
+            "finalConversationCount": 10_000,
+            "finalTranscriptSegmentCount": 999_890,
+            "finalFtsRowCount": 999_890 if indexed else None,
+            "finalMissingCanonicalMappings": 0 if indexed else None,
+            "finalMissingIndexRows": 0 if indexed else None,
+            "deletedAfterRun": True,
+        }
+
+    control = observation(False)
+    indexed = observation(True)
+    return {
+        "checkpointSchemaVersion": 2,
+        "pocId": "POC-SEARCH-001",
+        "gateSetVersion": "stage0-v0.2",
+        "gateSetSha256": gate_digest,
+        "selectedOptionId": "B",
+        "benchmarkExecutionAllowedAtBuild": True,
+        "harnessVersion": "0.2.0-poc-search-001",
+        "commit": "a" * 40,
+        "generatedAt": "2026-08-11T00:00:00Z",
+        "formalGateEvidence": True,
+        "config": {
+            "profileId": profile,
+            "freshBuildOrdinal": build,
+            "conversationCount": 10_000,
+            "transcriptSegmentCount": 1_000_000,
+            "segmentsPerConversation": 100,
+            "warmupsPerClass": 10,
+            "measuredOperationsPerClass": 100,
+            "smokeOnly": False,
+            "compilationMode": "full_aot_recorded",
+            "cooldownMinutesBeforeFreshBuild": 10,
+        },
+        "environment": {
+            "kind": "physical",
+            "buildType": "benchmark",
+            "applicationDebuggable": False,
+            "profileableByShellDeclared": True,
+            "compilationMode": "full_aot_recorded",
+            "abi": "arm64-v8a",
+            "airplaneMode": True,
+            "screenInteractive": True,
+            "plugged": False,
+            "batteryPercent": 60.0,
+            "thermalStatus": 0,
+            "screenBrightnessRaw": 51,
+            "windowAnimationScale": 0.0,
+            "transitionAnimationScale": 0.0,
+            "animatorDurationScale": 0.0,
+            "buildFingerprint": f"synthetic/{profile}/{build}",
+            "sqliteVersion": "3.44.3",
+            "sqliteCompileOptions": ["ENABLE_FTS3", "ENABLE_FTS4"],
+        },
+        "checkpointStatus": "COMPLETE",
+        "complete": True,
+        "pairOrder": gate_v02_combiner.PAIR_ORDERS[build],
+        "control": control,
+        "indexed": indexed,
+        "storageDelta": {
+            "indexIncrementalBytes": 268_435_456,
+            "indexOverheadRatio": 0.25,
+            "indexOverheadBytesPerSegment": 268.435456,
+        },
+        "storageAndPairingCorrect": True,
+        "allCorrect": True,
+    }
+
+
+def validate_gate_v02_combiner() -> None:
+    gate_path = ROOT / "docs/stage0/poc-search-gate-set-stage0-v0.2.json"
+    gate = read_json(gate_path)
+    gate_digest = file_digest(gate_path)
+    require(
+        gate_v02_combiner.nearest_rank([float(value) for value in range(1, 101)], 0.95)
+        == 95.0
+        and gate_v02_combiner.nearest_rank(
+            [float(value) for value in range(1, 101)], 0.99
+        )
+        == 99.0,
+        "Nearest-rank implementation drift",
+    )
+    try:
+        gate_v02_combiner.validate_gate_set(gate, require_execution_authorized=True)
+    except ValueError as error:
+        require(
+            str(error) == "Measured execution is not authorized by the Project owner",
+            "Combiner execution guard drift",
+        )
+    else:
+        fail("CLI combiner accepted the currently withheld gate set")
+
+    checkpoints = [
+        gate_v02_checkpoint_fixture(profile, build, gate_digest)
+        for profile in gate_v02_combiner.PROFILES
+        for build in gate_v02_combiner.BUILDS
+    ]
+    passing = gate_v02_combiner.evaluate_checkpoints(
+        checkpoints,
+        gate,
+        gate_digest,
+        "a" * 40,
+        require_execution_authorized=False,
+    )
+    require(passing["result"]["status"] == "PASS", "Valid paired fixture did not pass")
+    require(
+        passing["aggregate"]["maximumNoAveraging"]["singleRowMaintenanceDeltaP95Ms"]
+        == 10.0,
+        "Paired maintenance delta aggregation drift",
+    )
+    inconclusive = gate_v02_combiner.evaluate_checkpoints(
+        checkpoints[:-3],
+        gate,
+        gate_digest,
+        "a" * 40,
+        require_execution_authorized=False,
+    )
+    require(
+        inconclusive["result"]["status"] == "INCONCLUSIVE"
+        and len(inconclusive["missingProfileBuilds"]) == 3,
+        "Missing physical profile did not remain INCONCLUSIVE",
+    )
+    failing_checkpoints = deepcopy(checkpoints)
+    failing_sample = failing_checkpoints[0]["indexed"]["operations"][0]["measuredSamples"][0]
+    failing_sample["correctnessPassed"] = False
+    failing_sample["staleSuccessfulResponse"] = True
+    failed = gate_v02_combiner.evaluate_checkpoints(
+        failing_checkpoints,
+        gate,
+        gate_digest,
+        "a" * 40,
+        require_execution_authorized=False,
+    )
+    require(
+        failed["result"]["status"] == "FAIL"
+        and failed["failureCounts"]["staleSuccessfulResponses"] == 1,
+        "Stale successful response was not retained as FAIL",
+    )
+    incomplete_checkpoints = deepcopy(checkpoints)
+    incomplete_checkpoints[0] = {
+        key: value
+        for key, value in incomplete_checkpoints[0].items()
+        if key not in {"control", "indexed", "storageDelta", "storageAndPairingCorrect", "allCorrect"}
+    }
+    incomplete_checkpoints[0].update(
+        {
+            "checkpointStatus": "FAIL",
+            "complete": False,
+            "failure": {
+                "code": "GATE_V02_HARNESS_EXCEPTION",
+                "type": "java.lang.IllegalStateException",
+                "messageSha256": "c" * 64,
+            },
+        }
+    )
+    incomplete = gate_v02_combiner.evaluate_checkpoints(
+        incomplete_checkpoints,
+        gate,
+        gate_digest,
+        "a" * 40,
+        require_execution_authorized=False,
+    )
+    require(
+        incomplete["result"]["status"] == "FAIL"
+        and incomplete["failureCounts"]["incompleteCheckpoints"] == 1
+        and incomplete["failureCounts"]["candidateCrashes"] == 1,
+        "Durable incomplete harness exception was not retained as FAIL",
+    )
+    unavailable_thermal = deepcopy(checkpoints)
+    unavailable_thermal[0]["environment"]["thermalStatus"] = -1
+    try:
+        gate_v02_combiner.evaluate_checkpoints(
+            unavailable_thermal,
+            gate,
+            gate_digest,
+            "a" * 40,
+            require_execution_authorized=False,
+        )
+    except ValueError as error:
+        require(
+            "thermal status is unavailable or exceeded LIGHT" in str(error),
+            "Thermal evidence rejection reason drift",
+        )
+    else:
+        fail("Unavailable API 28 thermal evidence was accepted silently")
+
+
 def validate_result_if_present() -> None:
     index_path = EVIDENCE / "evidence-index.json"
     require(index_path.is_file(), "Evidence index is missing")
@@ -762,36 +1270,49 @@ def validate_result_if_present() -> None:
     require(evidence_index["schemaVersion"] == 2, "Evidence index governance version drift")
     gate_contract = evidence_index["gateContract"]
     require(
-        gate_contract["version"] == "stage0-v0.1"
-        and gate_contract["status"] == "INCOMPLETE_HISTORICAL_CONTRACT"
-        and gate_contract["complete"] is False,
-        "Gate contract approval was invented",
+        gate_contract["version"] == "stage0-v0.2"
+        and gate_contract["status"] == "APPROVED"
+        and gate_contract["complete"] is True
+        and gate_contract["selectedOptionId"] == "B"
+        and gate_contract["approvedBy"] == "Project owner"
+        and gate_contract["approvedOn"] == "2026-08-11"
+        and gate_contract["benchmarkExecutionAllowed"] is False,
+        "Approved contract or separate execution hold drift",
     )
     require(
-        gate_contract["candidate"]
+        gate_contract["historicalAssessment"]
         == {
-            "version": "stage0-v0.2",
-            "status": "DRAFT_UNAPPROVED",
-            "documentLocator": (
-                "docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2_DRAFT.md"
-            ),
-            "machineLocator": "docs/stage0/poc-search-gate-set-stage0-v0.2.draft.json",
-            "selectedOptionId": None,
-            "benchmarkExecutionAllowed": False,
+            "version": "stage0-v0.1",
+            "status": "INCOMPLETE_HISTORICAL_CONTRACT",
+            "reclassified": False,
         },
-        "Evidence index does not expose the unselected v0.2 draft exactly",
+        "Historical v0.1 assessment was reclassified",
     )
     require(
-        evidence_index["currentAssessment"]["assessmentId"] == "review-2026-08-11-v3"
+        gate_contract["blocker"] == run_readiness.EXECUTION_WITHHELD_MESSAGE,
+        "Evidence-index execution blocker drift",
+    )
+    require(
+        evidence_index["currentAssessment"]["assessmentId"] == "review-2026-08-11-v4"
         and evidence_index["currentAssessment"]["newMeasurementRun"] is False,
         "Review reassessment must not claim a new benchmark run",
     )
     require(
         evidence_index["ipEvaluation"]["status"]
-        == "REVIEWERS_ASSIGNED_REVIEW_PENDING"
+        == "EXACT_EVIDENCE_COMPLETE_OWNER_APPROVAL_PENDING"
         and evidence_index["ipEvaluation"]["futureMeasuredExecution"]
-        == "BLOCKED_PENDING_GATE_AND_ARTIFACT_REVIEW",
+        == "BLOCKED_PENDING_OWNER_ARTIFACT_APPROVAL_AND_EXECUTION_PREREQUISITES",
         "Evidence index IP review status drift",
+    )
+    require(
+        evidence_index["executionPrerequisites"]
+        == {
+            "licenseNoticeApproval": "PENDING_PROJECT_OWNER",
+            "pairedHarness": read_json(EVIDENCE / "gate-v02-harness-readiness.json")["status"],
+            "physicalD1D2D3": "BLOCKED_MISSING_D1_D3",
+            "laterOwnerExecutionAuthorization": "WITHHELD",
+        },
+        "Evidence index execution prerequisites drift",
     )
     result_path = ROOT / evidence_index["currentAssessment"]["locator"]
     require(result_path.is_file(), "Current versioned assessment is missing")
@@ -872,12 +1393,15 @@ def validate_result_if_present() -> None:
     evidence_locators = {evidence["locator"] for evidence in result["evidenceFiles"]}
     require(
         {
-            "docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES-DRAFT.md",
-            "docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2_DRAFT.md",
-            "docs/stage0/poc-search-gate-set-stage0-v0.2.draft.json",
+            "docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES.md",
+            "docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2.md",
+            "docs/stage0/poc-search-gate-set-stage0-v0.2.json",
+            "docs/evidence/poc-search-001/license-notice-inventory.json",
+            "docs/evidence/poc-search-001/device-availability-stage0-v0.2.json",
+            "docs/evidence/poc-search-001/gate-v02-harness-readiness.json",
             "docs/evidence/poc-search-001/ip-stage0-evaluation-review.md",
         }.issubset(evidence_locators),
-        "Current assessment omits prospective gate or assigned IP-review governance evidence",
+        "Current assessment omits approved-gate or readiness governance evidence",
     )
     environment_locator = next(
         evidence["locator"]
@@ -1180,10 +1704,12 @@ def main() -> int:
         validate_manifests,
         validate_gate_v02_draft,
         validate_module_wiring,
-        validate_draft_blocks_measured_run,
+        validate_approved_contract_still_blocks_measured_run,
         validate_dependency_and_ip_inventory,
+        validate_gate_v02_readiness_evidence,
         validate_durable_evidence_ledger,
         host_sqlite_smoke,
+        validate_gate_v02_combiner,
         validate_finalizer_contract,
         validate_result_if_present,
         validate_no_generated_database,

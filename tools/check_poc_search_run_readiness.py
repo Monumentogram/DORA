@@ -11,6 +11,11 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "docs" / "evidence" / "poc-search-001"
+EXECUTION_WITHHELD_MESSAGE = (
+    "Option B is approved, but measured execution is withheld pending explicit Stage 0 "
+    "component/license/NOTICE approval, verified paired-harness evidence, confirmed physical "
+    "D1-D3 availability, and a later Project owner execution authorization."
+)
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -20,6 +25,40 @@ def read_json(path: Path) -> dict[str, Any]:
 def require(condition: bool, message: str) -> None:
     if not condition:
         raise ValueError(message)
+
+
+def validate_gate_set(gate_set: dict[str, Any]) -> None:
+    require(gate_set["gateSetVersion"] == "stage0-v0.2", "Gate-set version drift")
+    require(gate_set["status"] == "APPROVED", "The machine-readable gate set is still a draft")
+    require(gate_set["selectedOptionId"] == "B", "The approved prospective option is not B")
+    require(gate_set["benchmarkExecutionAllowed"] is True, EXECUTION_WITHHELD_MESSAGE)
+    require(
+        gate_set["executionAuthorization"]["status"] == "AUTHORIZED_BY_PROJECT_OWNER",
+        "The Project owner has not recorded a measured-execution authorization",
+    )
+    require(
+        gate_set["executionAuthorization"]["authorizedBy"] == "Project owner"
+        and isinstance(gate_set["executionAuthorization"]["authorizedOn"], str)
+        and bool(gate_set["executionAuthorization"]["authorizedOn"])
+        and gate_set["executionAuthorization"]["blockers"] == [],
+        "Measured-execution authorization record is incomplete or still lists blockers",
+    )
+    require(
+        gate_set["selectedOptionId"] == gate_set["selectedOption"]["id"] == "B",
+        "Selected gate option does not match the frozen approved Option B contract",
+    )
+    require(
+        isinstance(gate_set["approvedBy"], str) and bool(gate_set["approvedBy"]),
+        "Gate-set approver is missing",
+    )
+    require(
+        isinstance(gate_set["approvedOn"], str) and bool(gate_set["approvedOn"]),
+        "Gate-set approval date is missing",
+    )
+    require(
+        gate_set["historicalResultsAffected"] is False,
+        "A prospective gate cannot reclassify historical runs",
+    )
 
 
 def main() -> int:
@@ -34,23 +73,7 @@ def main() -> int:
     require(gate_contract["status"] == "APPROVED", "The prospective gate contract is not approved")
     gate_set_path = ROOT / gate_contract["machineLocator"]
     gate_set = read_json(gate_set_path)
-    require(gate_set["gateSetVersion"] == "stage0-v0.2", "Gate-set version drift")
-    require(gate_set["status"] == "APPROVED", "The machine-readable gate set is still a draft")
-    require(gate_set["benchmarkExecutionAllowed"] is True, "The selected gate set does not authorize execution")
-    selected_option = gate_set["selectedOptionId"]
-    require(
-        selected_option in {option["id"] for option in gate_set["options"]},
-        "Exactly one complete gate option must be selected",
-    )
-    require(
-        isinstance(gate_set["approvedBy"], str) and bool(gate_set["approvedBy"]),
-        "Gate-set approver is missing",
-    )
-    require(
-        isinstance(gate_set["approvedOn"], str) and bool(gate_set["approvedOn"]),
-        "Gate-set approval date is missing",
-    )
-    require(gate_set["historicalResultsAffected"] is False, "A prospective gate cannot reclassify historical runs")
+    validate_gate_set(gate_set)
     require(
         ip_evaluation["evaluationStatus"] == "EVALUATION_APPROVED",
         "Exact dependency and platform evaluation rights are not approved",
@@ -62,6 +85,24 @@ def main() -> int:
     require(
         ip_evaluation["dependencyInventory"]["status"] == "EVALUATION_APPROVED_STAGE0",
         "The exact locked dependency inventory has no completed Stage 0 review",
+    )
+    license_notice = read_json(EVIDENCE / "license-notice-inventory.json")
+    require(
+        license_notice["reviewStatus"] == "EVIDENCE_COMPLETE"
+        and not license_notice["summary"]["unresolvedLicenseCoordinates"]
+        and not license_notice["summary"]["unresolvedLicenseFiles"]
+        and not license_notice["summary"]["unresolvedNoticeFiles"],
+        "The exact license/NOTICE evidence is incomplete",
+    )
+    harness = read_json(EVIDENCE / "gate-v02-harness-readiness.json")
+    require(
+        harness["status"] == "VERIFIED" and harness["formalBenchmarkExecuted"] is False,
+        "The stage0-v0.2 paired harness has not completed non-measurement verification",
+    )
+    devices = read_json(EVIDENCE / "device-availability-stage0-v0.2.json")
+    require(
+        devices["allRequiredPhysicalProfilesAvailable"] is True,
+        "Physical D1, D2, and D3 availability is not confirmed",
     )
     assignments = ip_evaluation["reviewAssignments"]
     for role in ("product", "ipPolicy", "engineeringSecurity"):

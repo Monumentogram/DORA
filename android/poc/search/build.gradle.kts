@@ -18,7 +18,14 @@ android {
 
     defaultConfig {
         buildConfigField("String", "GIT_COMMIT", "\"${pocCommit.get()}\"")
-        buildConfigField("String", "POC_VERSION", "\"0.1.0-poc-search-001\"")
+        buildConfigField("String", "POC_VERSION", "\"0.2.0-poc-search-001\"")
+        buildConfigField("String", "GATE_V02_SELECTED_OPTION", "\"B\"")
+        buildConfigField(
+            "String",
+            "GATE_V02_SHA256",
+            "\"7898293eae8d896b72b04dddc222a0cf2e726afd41375ae8a8402b996ef70858\"",
+        )
+        buildConfigField("boolean", "GATE_V02_EXECUTION_ALLOWED", "false")
         buildConfigField(
             "String",
             "SYSTEM_IMAGE_PACKAGE",
@@ -35,6 +42,20 @@ android {
     buildFeatures {
         buildConfig = true
     }
+
+    buildTypes {
+        create("benchmark") {
+            initWith(getByName("release"))
+            matchingFallbacks += listOf("release")
+        }
+    }
+
+    testBuildType =
+        if (providers.gradleProperty("pocSearchGateV02BenchmarkBuild").orNull == "true") {
+            "benchmark"
+        } else {
+            "debug"
+        }
 
     sourceSets {
         getByName("androidTest")

@@ -94,6 +94,9 @@ jobs:
       - name: Verify locked search dependency artifact inventory
         run: python3 tools/poc_search_dependency_inventory.py --check
 
+      - name: Verify exact search license and NOTICE inventory
+        run: python3 tools/poc_search_license_notice_inventory.py --check
+
       - name: Verify native library admission and ELF alignment
         run: >-
           python3 tools/verify_apk_native_alignment.py

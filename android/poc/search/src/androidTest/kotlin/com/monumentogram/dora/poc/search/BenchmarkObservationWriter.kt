@@ -143,7 +143,7 @@ object BenchmarkObservationWriter {
             .put("systemImageRevision", BuildConfig.SYSTEM_IMAGE_REVISION)
             .put("systemImageArchiveSha256", BuildConfig.SYSTEM_IMAGE_ARCHIVE_SHA256)
             .put("ftsCreateSql", ftsCreateSql)
-            .put("buildType", "debug-androidTest")
+            .put("buildType", "${BuildConfig.BUILD_TYPE}-androidTest")
             .put("monotonicClock", "SystemClock.elapsedRealtimeNanos")
     }
 

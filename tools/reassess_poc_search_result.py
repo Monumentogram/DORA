@@ -17,8 +17,8 @@ from poc_search_environment import classify_android_runtime
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "docs" / "evidence" / "poc-search-001"
 SOURCE_RUN_ID = "31487775567"
-ASSESSMENT_ID = "review-2026-08-11-v3"
-ASSESSMENT_ISSUED_AT = "2026-08-11T16:30:09Z"
+ASSESSMENT_ID = "review-2026-08-11-v4"
+ASSESSMENT_ISSUED_AT = "2026-08-11T17:48:30Z"
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -36,7 +36,7 @@ def corrected_environment(source: dict[str, Any], system_image: dict[str, Any]) 
     android["systemImagePackage"] = system_image["package"]
     android["systemImageRevision"] = system_image["revision"]
     android["systemImageArchiveSha256"] = system_image["archive"]["sha256"]
-    value["evidenceRevision"] = 3
+    value["evidenceRevision"] = 4
     value["sourceEvidence"] = (
         f"docs/evidence/poc-search-001/runs/{SOURCE_RUN_ID}/environment.json"
     )
@@ -116,7 +116,7 @@ def render_assessment(repo_root: Path, output_dir: Path) -> dict[Path, dict[str,
     values[result_path] = result
     finalizer.validate_schema(result)
     finalizer.write_json(result_path, result)
-    gate_set_locator = "docs/stage0/poc-search-gate-set-stage0-v0.2.draft.json"
+    gate_set_locator = "docs/stage0/poc-search-gate-set-stage0-v0.2.json"
     gate_set = read_json(repo_root / gate_set_locator)
     index = {
         "schemaVersion": 2,
@@ -132,25 +132,30 @@ def render_assessment(repo_root: Path, output_dir: Path) -> dict[Path, dict[str,
             "sourceActionsRunId": SOURCE_RUN_ID,
         },
         "gateContract": {
-            "version": "stage0-v0.1",
-            "status": "INCOMPLETE_HISTORICAL_CONTRACT",
-            "complete": False,
+            "version": gate_set["gateSetVersion"],
+            "status": gate_set["status"],
+            "complete": True,
             "blocker": (
-                "Draft stage0-v0.2 options exist, but the Project owner has selected none. "
-                "No measured campaign is authorized."
+                "Option B is approved, but measured execution is withheld pending explicit "
+                "Stage 0 component/license/NOTICE approval, verified paired-harness evidence, "
+                "confirmed physical D1-D3 availability, and a later Project owner execution "
+                "authorization."
             ),
             "decisionLocator": (
-                "docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES-DRAFT.md"
+                "docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES.md"
             ),
-            "candidate": {
-                "version": gate_set["gateSetVersion"],
-                "status": gate_set["status"],
-                "documentLocator": (
-                    "docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2_DRAFT.md"
-                ),
-                "machineLocator": gate_set_locator,
-                "selectedOptionId": gate_set["selectedOptionId"],
-                "benchmarkExecutionAllowed": gate_set["benchmarkExecutionAllowed"],
+            "documentLocator": (
+                "docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2.md"
+            ),
+            "machineLocator": gate_set_locator,
+            "selectedOptionId": gate_set["selectedOptionId"],
+            "approvedBy": gate_set["approvedBy"],
+            "approvedOn": gate_set["approvedOn"],
+            "benchmarkExecutionAllowed": gate_set["benchmarkExecutionAllowed"],
+            "historicalAssessment": {
+                "version": "stage0-v0.1",
+                "status": "INCOMPLETE_HISTORICAL_CONTRACT",
+                "reclassified": False,
             },
         },
         "ipEvaluation": {
@@ -162,6 +167,16 @@ def render_assessment(repo_root: Path, output_dir: Path) -> dict[Path, dict[str,
             "immutableRunsLocator": "docs/evidence/poc-search-001/runs",
             "ledgerLocator": "docs/evidence/poc-search-001/evidence-ledger.json",
             "rootV1FilesSuperseded": True,
+        },
+        "executionPrerequisites": {
+            "licenseNoticeApproval": "PENDING_PROJECT_OWNER",
+            "pairedHarness": read_json(
+                evidence / "gate-v02-harness-readiness.json"
+            )["status"],
+            "physicalD1D2D3": read_json(
+                evidence / "device-availability-stage0-v0.2.json"
+            )["status"],
+            "laterOwnerExecutionAuthorization": "WITHHELD",
         },
     }
     index_path = evidence / "evidence-index.json"

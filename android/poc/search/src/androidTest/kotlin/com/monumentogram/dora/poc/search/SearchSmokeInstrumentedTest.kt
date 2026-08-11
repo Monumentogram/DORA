@@ -222,6 +222,36 @@ class SearchSmokeInstrumentedTest {
         assertNotNull(repository.search(SearchRequest("project", SearchMode.EXACT)))
     }
 
+    @Test
+    fun stage0V02PairedHarnessSmokeChecksMechanicsWithoutProducingGateEvidence() {
+        val config = StorageUpdateGateV02Contract.smokeConfig()
+        val checkpoint = StorageUpdateGateV02Harness(context).run(config)
+
+        assertTrue(config.smokeOnly)
+        assertFalse(BuildConfig.GATE_V02_EXECUTION_ALLOWED)
+        assertEquals(
+            listOf(GateV02DatabaseKind.CONTROL, GateV02DatabaseKind.INDEXED),
+            config.pairOrder,
+        )
+        assertTrue(checkpoint.storageAndPairingCorrect)
+        assertTrue(checkpoint.allCorrect)
+        assertTrue(checkpoint.control.deletedAfterRun)
+        assertTrue(checkpoint.indexed.deletedAfterRun)
+        assertEquals(config.transcriptSegmentCount.toLong(), checkpoint.indexed.storage.ftsRowCount)
+        assertEquals(0L, checkpoint.indexed.storage.missingCanonicalMappings)
+        assertEquals(0L, checkpoint.indexed.storage.missingIndexRows)
+        checkpoint.control.operations.forEach { samples ->
+            assertEquals(config.warmupsPerClass, samples.warmupSamples.size)
+            assertEquals(config.measuredOperationsPerClass, samples.measuredSamples.size)
+            assertTrue(samples.measuredSamples.all { it.visibilityNanos == null })
+        }
+        checkpoint.indexed.operations.forEach { samples ->
+            assertEquals(config.warmupsPerClass, samples.warmupSamples.size)
+            assertEquals(config.measuredOperationsPerClass, samples.measuredSamples.size)
+            assertTrue(samples.measuredSamples.all { it.visibilityNanos != null })
+        }
+    }
+
     private fun populateSmallDataset() {
         val dao = database.searchDao()
         dao.insertConversations(

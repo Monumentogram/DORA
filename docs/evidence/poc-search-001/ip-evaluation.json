@@ -4,13 +4,21 @@
   "assessmentDate": "2026-08-11",
   "dependencyInventory": {
     "locator": "docs/evidence/poc-search-001/dependency-inventory.json",
-    "sha256": "sha256:ae182e42e773b4dd8c45f1cd77e2713ae113ba9873f69cfbfe78a7419d948fed",
+    "sha256": "sha256:63a2a3dadfbfe072770d914a74cbd40d6adbd517548bda4ba0331dd314ca6a98",
     "componentCount": 66,
-    "status": "COMPLETE_UNREVIEWED"
+    "status": "EVIDENCE_COMPLETE_OWNER_APPROVAL_PENDING",
+    "licenseNoticeInventory": {
+      "locator": "docs/evidence/poc-search-001/license-notice-inventory.json",
+      "sha256": "sha256:8b80fa573a2674cb32fe08446683f5b3d05ce4721b6bcb018edec51cf9fbeb50",
+      "componentsWithEffectiveLicense": 66,
+      "unresolvedLicenseCoordinates": 0,
+      "unresolvedLicenseFiles": 0,
+      "unresolvedNoticeFiles": 0
+    }
   },
-  "evaluationStatus": "REVIEWERS_ASSIGNED_REVIEW_PENDING",
+  "evaluationStatus": "EXACT_EVIDENCE_COMPLETE_OWNER_APPROVAL_PENDING",
   "historicalExecutionPrecondition": "NOT_PROVEN",
-  "futureMeasuredExecution": "BLOCKED_PENDING_GATE_AND_ARTIFACT_REVIEW",
+  "futureMeasuredExecution": "BLOCKED_PENDING_OWNER_ARTIFACT_APPROVAL_AND_EXECUTION_PREREQUISITES",
   "ownerDecision": {
     "id": "OD-11",
     "approvedOn": "2026-08-11",
@@ -45,19 +53,10 @@
   },
   "reviewEvidenceLocator": "docs/evidence/poc-search-001/ip-stage0-evaluation-review.md",
   "dependencyReviewBlockers": [
-    "Assigned Stage 0 reviewers have not yet recorded an EVALUATION_APPROVED decision for the exact 66-component locked graph.",
-    "Seven locked components have no declared license entry in their cached Maven POM and require upstream license evidence: com.google.auto.value:auto-value-annotations:1.6.3, com.google.guava:failureaccess:1.0.2, com.google.guava:guava:33.2.1-jre, com.google.guava:listenablefuture:1.0, com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava, commons-codec:commons-codec:1.15, org.hamcrest:hamcrest-core:1.3.",
-    "Canonical license text digests and applicable NOTICE obligations have not been reviewed."
+    "Exact component/license/NOTICE evidence is complete, but the assigned Project owner has not recorded EVALUATION_APPROVED for the exact 66-component graph and pinned platform image.",
+    "The Project owner must explicitly accept the recorded Stage 0 obligations or record component-specific restrictions and fallback."
   ],
-  "unresolvedLicenseCoordinates": [
-    "com.google.auto.value:auto-value-annotations:1.6.3",
-    "com.google.guava:failureaccess:1.0.2",
-    "com.google.guava:guava:33.2.1-jre",
-    "com.google.guava:listenablefuture:1.0",
-    "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
-    "commons-codec:commons-codec:1.15",
-    "org.hamcrest:hamcrest-core:1.3"
-  ],
+  "unresolvedLicenseCoordinates": [],
   "platformArtifacts": [
     {
       "artifactId": "android-system-image-google-apis-x86_64-api36",
@@ -92,9 +91,9 @@
     }
   ],
   "remainingStage0Actions": [
-    "Complete the assigned exact dependency/platform evaluation review and record its decision in docs/evidence/poc-search-001/ip-stage0-evaluation-review.md.",
-    "Resolve missing license/NOTICE evidence before changing any artifact to EVALUATION_APPROVED.",
-    "Select and approve a complete prospective stage0-v0.2 gate option before a measured campaign."
+    "The assigned Project owner must record EVALUATION_APPROVED or REJECTED in docs/evidence/poc-search-001/ip-stage0-evaluation-review.md for the exact evidence packet.",
+    "Keep every artifact PROPOSED until that explicit decision; evidence completeness alone does not confirm evaluation rights.",
+    "Option B is approved prospectively, but measured execution remains separately withheld pending the paired-harness verification, physical D1-D3 availability, and a later owner authorization."
   ],
   "productionBlockers": [
     "Production Legal reviewer and approval are unassigned.",

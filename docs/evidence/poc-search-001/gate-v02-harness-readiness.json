@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "pocId": "POC-SEARCH-001",
+  "gateSetVersion": "stage0-v0.2",
+  "gateSetSha256": "sha256:7898293eae8d896b72b04dddc222a0cf2e726afd41375ae8a8402b996ef70858",
+  "selectedOptionId": "B",
+  "status": "IMPLEMENTED_COMPILE_VERIFIED_RUNTIME_SMOKE_PENDING",
+  "implementationCommit": null,
+  "recordedAtUtc": "2026-08-11T17:42:29Z",
+  "checks": [
+    {
+      "id": "debug-androidtest-compile",
+      "command": ".\\gradlew.bat --no-daemon --stacktrace :poc:search:compileDebugAndroidTestKotlin",
+      "outcome": "PASS",
+      "scope": "uncommitted local source tree"
+    },
+    {
+      "id": "benchmark-androidtest-compile",
+      "command": ".\\gradlew.bat --no-daemon --stacktrace :poc:search:compileBenchmarkAndroidTestKotlin -PpocSearchGateV02BenchmarkBuild=true",
+      "outcome": "PASS",
+      "scope": "uncommitted local source tree"
+    },
+    {
+      "id": "paired-harness-runtime-smoke",
+      "command": ":poc:search:connectedDebugAndroidTest SearchSmokeInstrumentedTest",
+      "outcome": "PENDING_CI",
+      "scope": "small synthetic mechanics only; never formal gate evidence",
+      "localLimitation": "No Android SDK/adb runtime was available in the local shell."
+    }
+  ],
+  "formalBenchmarkExecuted": false,
+  "formalCheckpointCount": 0,
+  "benchmarkExecutionAllowed": false,
+  "verificationRequiredBeforeExecution": [
+    "Commit the exact harness and bind BuildConfig to that commit.",
+    "Pass debug and benchmark instrumentation compilation for the committed tree.",
+    "Pass the small paired-harness runtime smoke on the pinned emulator without treating its timings as gate evidence.",
+    "Validate the host combiner with synthetic checkpoints, including FAIL, INCONCLUSIVE, and nearest-rank boundary cases."
+  ],
+  "nonClaims": [
+    "Compilation does not establish D1-D3 performance.",
+    "The smoke dataset is not the 10k/1M gate dataset.",
+    "No measured stage0-v0.2 workflow was run.",
+    "Android API 28 lacks the app-level PowerManager thermal-status API; the current combiner rejects an unavailable value, so an API 28 D1 would require an owner-reviewed external thermal-evidence method before execution rather than a relaxed predicate."
+  ]
+}

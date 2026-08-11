@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "pocId": "POC-SEARCH-001",
+  "gateSetVersion": "stage0-v0.2",
+  "observedOn": "2026-08-11",
+  "source": {
+    "locator": "docs/stage0/device-matrix.yaml",
+    "sha256": "sha256:42282245b05c91b9c12c5b8c40f568e65085bdde9e0641c6c50d8122e120e75d"
+  },
+  "status": "BLOCKED_MISSING_D1_D3",
+  "requiredPhysicalProfiles": [
+    "D1",
+    "D2",
+    "D3"
+  ],
+  "profiles": [
+    {
+      "profileId": "D1",
+      "physicalRequired": true,
+      "availability": "unknown",
+      "inventoryId": null,
+      "gateExecutionEligible": false,
+      "blocker": "No physical API 28-30 arm64-v8a weak/slow-storage D1 device is recorded. If the eventual D1 is API 28, the app runtime cannot supply PowerManager thermal status; an owner-reviewed external thermal-evidence method would be required before execution, while an API 29-30 D1 can use the current harness path."
+    },
+    {
+      "profileId": "D2",
+      "physicalRequired": true,
+      "availability": "available",
+      "inventoryId": "owner-phone-001",
+      "sanitizedDevice": {
+        "manufacturer": "samsung",
+        "model": "SM-S908B",
+        "androidApi": 36,
+        "firmware": "BP2A.250605.031.A3",
+        "securityPatch": "2026-05-05",
+        "primaryAbi": "arm64-v8a",
+        "ramMb": 10515,
+        "lastRecordedFreeStorageMb": 33645,
+        "pageSizeBytes": 4096
+      },
+      "gateExecutionEligible": false,
+      "blocker": "Physical availability is confirmed, but a fresh gate-v0.2 preflight and later execution authorization are still required."
+    },
+    {
+      "profileId": "D3",
+      "physicalRequired": true,
+      "availability": "unknown",
+      "inventoryId": null,
+      "gateExecutionEligible": false,
+      "blocker": "No physical API 36-37 arm64-v8a device with at least 12288 MiB RAM and fast storage is recorded."
+    }
+  ],
+  "allRequiredPhysicalProfilesAvailable": false,
+  "benchmarkExecutionEligible": false,
+  "ownerAction": "Provide and inventory matching physical D1 and D3 hardware, resolve the thermal-evidence method if D1 is API 28 without changing the approved predicates, then record a fresh D1-D3 preflight for the exact authorized commit.",
+  "nonClaims": [
+    "The D2 inventory does not substitute for D1 or D3.",
+    "An emulator cannot satisfy the physical storage/update performance gate.",
+    "No stage0-v0.2 measured workflow was run for this availability assessment."
+  ]
+}

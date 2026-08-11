@@ -75,6 +75,9 @@ jobs:
       - name: Verify locked dependency artifact inventory
         run: python3 tools/poc_search_dependency_inventory.py --check
 
+      - name: Verify exact license and NOTICE inventory
+        run: python3 tools/poc_search_license_notice_inventory.py --check
+
   targeted-scale-query-plan:
     name: targeted-scale-query-plan
     needs: validate-harness

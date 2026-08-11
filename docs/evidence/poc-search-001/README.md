@@ -6,24 +6,28 @@ This directory contains public-safe evidence for the isolated Stage 0C Room + SQ
 
 ## Current authoritative assessment
 
-`evidence-index.json` is the entry point. It identifies the versioned `review-2026-08-11-v3` assessment derived from immutable Actions run `31487775567`. The v3 governance assessment records draft Gate Set `stage0-v0.2`, reviewer assignments and the Stage 0 SQLite provenance decision. It did not edit a completed result in place and did not perform a new measurement run.
+`evidence-index.json` is the entry point. It identifies the versioned `review-2026-08-11-v4` assessment derived from immutable Actions run `31487775567`. The v4 governance assessment records approved prospective Option B, the separate execution hold, exact review evidence, harness readiness and physical-device availability. It did not edit a completed result in place and did not perform a new measurement run.
 
 The current assessment is `INCONCLUSIVE` with recommendation `BLOCKED`, for three independent reasons:
 
-1. The Stage 0 v0.1 search row makes a failed storage/update gate a mandatory failure condition and lists no status exception, but no numeric storage or update-overhead threshold was frozen. Draft `DEC-043` and Gate Set `stage0-v0.2` now define three prospective options, but the owner has selected none. `GATE-SEARCH-STORAGE-UPDATE-OVERHEAD` therefore remains mandatory and `not_evaluated` for the historical campaign.
-2. The exact dependency and platform-artifact evaluation precondition was not proven. `OD-11` assigns Stage 0 reviewers and resolves the nested SQLite provenance method, but the exact 66-component artifact/license/NOTICE review has not recorded `EVALUATION_APPROVED`.
-3. No physical D1–D3 latency campaign exists, so no supported-device or physical latency claim is available.
+1. The historical campaign ran under Stage 0 v0.1, whose mandatory storage/update failure prose had no numeric predicate. The owner has now approved Option B only prospectively in `stage0-v0.2`; it was not measured and cannot reclassify the historical campaign. `GATE-SEARCH-STORAGE-UPDATE-OVERHEAD` remains `not_evaluated` for that campaign.
+2. The exact 66-component license/NOTICE evidence is complete, but the assigned Project owner has not recorded `EVALUATION_APPROVED` for the dependency graph and pinned Android platform image. Evidence completeness is not evaluation-rights approval.
+3. Only physical D2 is recorded. Physical D1 and D3 are unavailable, the commit-bound runtime smoke for the new paired harness is not yet recorded, and the Project owner has explicitly withheld measured execution.
 
 The evaluated emulator latency, correctness, safety, update-integrity, mapping, rebuild, and cleanup observations remain useful measurements. They do not produce a gate-complete host `PASS` or a `GO` recommendation.
 
-## Decisions required before another measured campaign
+## Preconditions before another measured campaign
 
-No new targeted or full benchmark may run until both remaining decisions are recorded prospectively:
+Option B is approved as the prospective contract, but no new targeted or full benchmark may run until all four remaining conditions are recorded:
 
-- The Project owner must select and approve one complete option from draft `DEC-043` / `stage0-v0.2`, or record a fully specified modification. A threshold created now cannot change any historical result.
-- The assigned Stage 0 Product/IP and Engineering/Security reviewers must complete the exact inventory review and fill the decision block in `ip-stage0-evaluation-review.md`. Assignment alone is not approval.
+- the assigned Project owner explicitly approves or rejects the exact Stage 0 component/license/NOTICE packet in `ip-stage0-evaluation-review.md`;
+- the committed paired control/indexed harness passes compile, runtime smoke and synthetic combiner checks without using smoke timings as gate evidence;
+- matching physical D1, D2 and D3 availability plus a fresh exact-commit preflight are recorded;
+- after those prerequisites, the Project owner separately authorizes measured execution and `benchmarkExecutionAllowed` changes from `false` to `true` in a reviewed commit.
 
 `OD-11` records Project owner as Product and Stage 0 IP policy reviewer and as Engineering/Security reviewer only for Stage 0 evaluation. It explicitly does not replace independent production Security; production Legal is unassigned and blocked.
+
+`OD-12` records the prospective Option B selection and its independent local-MVP rationale. It also records that contract approval is not benchmark authorization and does not use prior Dora measurements to set the threshold.
 
 `tools/check_poc_search_run_readiness.py` enforces these preconditions in the measured workflow. It currently fails closed by design.
 
@@ -55,7 +59,8 @@ The repository now retains:
 - `runs/31486943815/`: the standalone targeted plan evidence;
 - `runs/31487775567/`: the original finalizer output, raw combined observations, detail files, and targeted observation;
 - `assessments/review-2026-08-11-v2/`: the superseded first P1 non-measurement assessment;
-- `assessments/review-2026-08-11-v3/`: the current non-measurement governance assessment;
+- `assessments/review-2026-08-11-v3/`: the superseded pre-selection governance assessment;
+- `assessments/review-2026-08-11-v4/`: the current non-measurement governance assessment;
 - `evidence-ledger.json`: immutable locators, file sizes, SHA-256 values, Actions artifact IDs, classifications, and environment corrections.
 
 The root v1 result files are retained as superseded historical output. They are not the current assessment. Validators follow `evidence-index.json`, verify every repository locator and digest, and require both the valid FAIL and targeted evidence to remain present.
@@ -66,13 +71,13 @@ Generated database files and the one-million-row corpus are never committed. The
 
 The raw Android observations from all retained runs recorded `kind: physical`, while the same records identify `sdk_gphone64_x86_64`, device `emu64xa`, a `google/sdk_gphone64_x86_64/...` fingerprint, and `Android virtual processor`. The original one-token classifier only looked for `generic` in the fingerprint.
 
-Raw files remain immutable. `evidence-ledger.json` records the correction, and the v2/v3 environment assessments report `emulator` without changing any metric. The harness now classifies multiple independent build fields and records brand and hardware. Kotlin tests cover Google/AOSP emulators and physical Google/Samsung devices. Python finalization and validation independently derive the kind and reject a mismatch.
+Raw files remain immutable. `evidence-ledger.json` records the correction, and the v2/v3/v4 environment assessments report `emulator` without changing any metric. The harness now classifies multiple independent build fields and records brand and hardware. Kotlin tests cover Google/AOSP emulators and physical Google/Samsung devices. Python finalization and validation independently derive the kind and reject a mismatch.
 
 ## Dependency lock and IP inventory
 
-`android/poc/search/gradle.lockfile` pins the complete PoC dependency graph. `dependency-inventory.json` covers exactly 66 components from `debugRuntimeClasspath`, `debugAndroidTestRuntimeClasspath`, and the Room KSP build classpath, with 52 binary AAR/JAR digests and 66 Maven POM digests/source URLs. CI regenerates and compares this inventory after resolving the build.
+`android/poc/search/gradle.lockfile` pins the complete PoC dependency graph. `dependency-inventory.json` covers exactly 66 components from both debug and formal benchmark runtime/AndroidTest/Room-KSP configurations, with 52 binary AAR/JAR digests and 66 Maven POM digests/source URLs. CI regenerates and compares this inventory after resolving the build.
 
-`ip-evaluation.json` is intentionally `REVIEWERS_ASSIGNED_REVIEW_PENDING`, not an approval. It records seven components whose POMs omit a declared license plus missing reviewed license-text/NOTICE evidence. `ip-stage0-evaluation-review.md` records the assigned roles and leaves its approval block incomplete.
+`license-notice-inventory.json` resolves effective license evidence for all 66 coordinates (62 Apache-2.0, one BSD-2-Clause, two BSD-3-Clause, one EPL-1.0 and one MIT; one component carries two identifiers), classifies and hashes all 19 discovered embedded license entries, and records three NOTICE entries. No license coordinate, embedded license file, or discovered NOTICE file remains unresolved. `ip-evaluation.json` is intentionally `EXACT_EVIDENCE_COMPLETE_OWNER_APPROVAL_PENDING`, not an approval; `ip-stage0-evaluation-review.md` leaves the owner decision block incomplete.
 
 The API 36 Google APIs x86_64 r07 archive is pinned by byte length, official SHA-1 and independently computed SHA-256. Under `OD-11`, embedded platform SQLite 3.44.3 uses that containing-system-image digest together with exact image ID/revision, fingerprint, API and ABI; no extracted SQLite-binary digest is required for Stage 0. This provenance method must be reconsidered before production admission and grants no evaluation or redistribution rights by itself.
 

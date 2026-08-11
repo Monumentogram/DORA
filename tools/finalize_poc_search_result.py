@@ -33,6 +33,11 @@ def parse_args() -> argparse.Namespace:
         default=EVIDENCE / "dependency-inventory.json",
     )
     parser.add_argument(
+        "--license-notice-inventory",
+        type=Path,
+        default=EVIDENCE / "license-notice-inventory.json",
+    )
+    parser.add_argument(
         "--ip-evaluation",
         type=Path,
         default=EVIDENCE / "ip-evaluation.json",
@@ -212,8 +217,9 @@ def evaluate(observations: dict[str, Any]) -> dict[str, Any]:
     )
     if evaluated_metrics_pass:
         architectural_outcome = (
-            "Evaluated metrics passed, but no architectural GO is available while the mandatory "
-            "storage/update gate option and assigned external-artifact review remain unresolved"
+            "Evaluated historical metrics passed, but no architectural GO is available because "
+            "the prospective Option B storage/update contract was not measured, exact Stage 0 "
+            "artifact approval is pending, and physical D1-D3 evidence is incomplete"
         )
     elif safety_pass and mapping_pass and rebuild_pass:
         architectural_outcome = "FTS4 suitable with changes"
@@ -434,6 +440,7 @@ def build_metrics(observations: dict[str, Any]) -> list[dict[str, Any]]:
 
 def build_license_entries(
     dependency_inventory: dict[str, Any],
+    license_notice_inventory: dict[str, Any],
     ip_evaluation: dict[str, Any],
 ) -> list[dict[str, Any]]:
     require(dependency_inventory.get("pocId") == "POC-SEARCH-001", "Wrong dependency inventory PoC id")
@@ -443,8 +450,25 @@ def build_license_entries(
     )
     require(
         ip_evaluation.get("evaluationStatus")
-        in {"NOT_ESTABLISHED", "REVIEWERS_ASSIGNED_REVIEW_PENDING"},
+        in {
+            "NOT_ESTABLISHED",
+            "REVIEWERS_ASSIGNED_REVIEW_PENDING",
+            "EXACT_EVIDENCE_COMPLETE_OWNER_APPROVAL_PENDING",
+        },
         "Unsupported IP evaluation state; record reviewed per-artifact decisions before approval",
+    )
+    require(
+        license_notice_inventory.get("reviewStatus") == "EVIDENCE_COMPLETE",
+        "Exact license/NOTICE evidence must be complete before result finalization",
+    )
+    license_reviews = {
+        component["coordinate"]: component
+        for component in license_notice_inventory["components"]
+    }
+    require(
+        set(license_reviews)
+        == {component["coordinate"] for component in dependency_inventory["components"]},
+        "License/NOTICE component graph does not match the dependency inventory",
     )
     entries: list[dict[str, Any]] = []
     for component in dependency_inventory["components"]:
@@ -457,15 +481,15 @@ def build_license_entries(
         ]
         require(len(binaries) <= 1, f"Ambiguous primary artifacts for {coordinate}")
         primary_sha = f"sha256:{binaries[0]['sha256']}" if binaries else None
-        declared_names = sorted(
+        effective_spdx = license_reviews[coordinate]["effectiveSpdx"]
+        require(bool(effective_spdx), f"Effective license evidence missing for {coordinate}")
+        license_id = " AND ".join(effective_spdx)
+        only_build_tool = set(component["scopes"]).issubset(
             {
-                license_value["name"]
-                for license_value in component["declaredLicenses"]
-                if isinstance(license_value.get("name"), str) and license_value["name"]
+                "_agp_internal_benchmark_kspClasspath",
+                "_agp_internal_debug_kspClasspath",
             }
         )
-        license_id = " / ".join(declared_names) if declared_names else "UNDECLARED-REVIEW-REQUIRED"
-        only_build_tool = set(component["scopes"]) == {"_agp_internal_debug_kspClasspath"}
         entries.append(
             {
                 "artifactId": coordinate,
@@ -477,7 +501,7 @@ def build_license_entries(
                 "evaluationRightsConfirmed": False,
                 "redistributionRights": "unknown",
                 "evidenceLocator": (
-                    "docs/evidence/poc-search-001/dependency-inventory.json#" + coordinate
+                    "docs/evidence/poc-search-001/license-notice-inventory.json#" + coordinate
                 ),
             }
         )
@@ -504,11 +528,14 @@ def build_result(
     output_dir: Path,
     detail_paths: list[tuple[Path, str]],
     dependency_inventory: dict[str, Any] | None = None,
+    license_notice_inventory: dict[str, Any] | None = None,
     ip_evaluation: dict[str, Any] | None = None,
     invalidated_run_count: int = 0,
 ) -> dict[str, Any]:
     if dependency_inventory is None:
         dependency_inventory = read_json(EVIDENCE / "dependency-inventory.json")
+    if license_notice_inventory is None:
+        license_notice_inventory = read_json(EVIDENCE / "license-notice-inventory.json")
     if ip_evaluation is None:
         ip_evaluation = read_json(EVIDENCE / "ip-evaluation.json")
     android = observations["androidEnvironment"]
@@ -560,7 +587,7 @@ def build_result(
         gate("GATE-SEARCH-MAPPING-LOSS", "failure", "Canonical mapping loss", "search.correctness.mapping_errors", ">", 0, "count", mapping_error_count, "triggered" if mapping_error_count > 0 else "not_triggered"),
         gate("GATE-SEARCH-NONDETERMINISTIC", "failure", "Non-deterministic rebuild or index recovery", "search.rebuild.nondeterministic", "=", True, None, not deterministic, "triggered" if not deterministic else "not_triggered"),
         gate("GATE-SEARCH-UPDATE-INTEGRITY", "failure", "Update leaves stale results, mapping loss, or a crash", "search.update.integrity_errors", ">", 0, "count", update_error_count, "triggered" if update_error_count > 0 else "not_triggered"),
-        gate("GATE-SEARCH-STORAGE-UPDATE-OVERHEAD", "failure", "Unresolved storage/update overhead predicate", "search.storage_update.numeric_gate", "custom", None, None, None, "not_evaluated", "The approved v0.1 prose makes storage/update failure mandatory but defines no numeric storage, build, or update-latency threshold. It requires prospective owner clarification and cannot be passed from this campaign."),
+        gate("GATE-SEARCH-STORAGE-UPDATE-OVERHEAD", "failure", "Storage/update overhead was not measured under the prospective contract", "search.storage_update.numeric_gate", "custom", None, None, None, "not_evaluated", "The historical campaign used v0.1, whose mandatory prose had no numeric predicate. Option B is now approved prospectively in v0.2, but it was not and may not be applied retrospectively to this campaign."),
     ]
     errors: list[dict[str, Any]] = []
     if injection_crash_count:
@@ -576,9 +603,12 @@ def build_result(
         evidence.append(evidence_entry(EVIDENCE / name, output_dir, "fixture-manifest"))
     for name in (
         "dependency-inventory.json",
+        "license-notice-inventory.json",
         "ip-evaluation.json",
         "ip-stage0-evaluation-review.md",
         "android-system-image-provenance.json",
+        "device-availability-stage0-v0.2.json",
+        "gate-v02-harness-readiness.json",
         "evidence-ledger.json",
     ):
         evidence.append(evidence_entry(EVIDENCE / name, output_dir, "license-evidence"))
@@ -586,6 +616,9 @@ def build_result(
         ROOT / "docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES-DRAFT.md",
         ROOT / "docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2_DRAFT.md",
         ROOT / "docs/stage0/poc-search-gate-set-stage0-v0.2.draft.json",
+        ROOT / "docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES.md",
+        ROOT / "docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2.md",
+        ROOT / "docs/stage0/poc-search-gate-set-stage0-v0.2.json",
     ):
         evidence.append(evidence_entry(path, output_dir, "other"))
     for path, kind in detail_paths:
@@ -593,10 +626,10 @@ def build_result(
     status = evaluation["formalVerdict"]
     host_outcome = evaluation["hostEmulatorExploratoryOutcome"]
     rationale = (
-        "The evaluated host/emulator metrics met their predicates, but the mandatory storage/update "
-        "failure gate has no owner-selected numeric option, the assigned external-artifact review "
-        "has not granted evaluation approval, and physical D1-D3 evidence is absent. The campaign "
-        "is INCONCLUSIVE."
+        "The evaluated historical host/emulator metrics met their evaluated predicates, but the "
+        "newly approved prospective Option B was not measured, the assigned external-artifact "
+        "review has not granted evaluation approval, and physical D1-D3 evidence is incomplete. "
+        "The historical campaign remains INCONCLUSIVE."
         if host_outcome == "INCONCLUSIVE"
         else "At least one approved search correctness, safety, latency, mutation, mapping, or rebuild gate failed in the frozen reference campaign."
     )
@@ -612,12 +645,17 @@ def build_result(
         else "Per-entity FTS, pagination/ranking, or query normalization; FTS5 only as a separately documented experiment."
     )
     owner_action = (
-        "Select and approve one complete prospective storage/update option and complete the assigned "
-        "Stage 0 Product/IP plus Engineering/Security artifact review before a new measured campaign."
+        "Explicitly approve or reject the exact Stage 0 component/license/NOTICE packet, provide "
+        "physical D1 and D3 hardware, finish commit-bound harness verification, and separately "
+        "authorize execution before a new measured campaign."
         if host_outcome == "INCONCLUSIVE"
         else None
     )
-    license_entries = build_license_entries(dependency_inventory, ip_evaluation)
+    license_entries = build_license_entries(
+        dependency_inventory,
+        license_notice_inventory,
+        ip_evaluation,
+    )
     return {
         "schemaVersion": 1,
         "gateSetVersion": "stage0-v0.1",
@@ -727,8 +765,8 @@ def build_result(
         "limitations": [
             {"id": "LIMIT-SEARCH-NO-PHYSICAL-D1-D3", "severity": "high", "description": "No physical D1-D3 latency campaign was run; emulator percentiles cannot establish a device-support claim.", "blocksVerdict": True},
             {"id": "LIMIT-SEARCH-EMULATOR-LATENCY", "severity": "high", "description": "Host scheduling and virtualized storage make latency exploratory rather than representative of a real phone.", "blocksVerdict": True},
-            {"id": "LIMIT-SEARCH-OBSERVATION-ONLY-METRICS", "severity": "medium", "description": "Database size, build time, memory, and mutation latency have no pre-approved numeric threshold and remain observations only.", "blocksVerdict": False},
-            {"id": "LIMIT-SEARCH-INCOMPLETE-STORAGE-UPDATE-GATE", "severity": "critical", "description": "The approved v0.1 prose makes storage/update failure mandatory. Draft v0.2 offers prospective options, but the owner has selected none; no historical campaign can be reclassified.", "blocksVerdict": True},
+            {"id": "LIMIT-SEARCH-OBSERVATION-ONLY-METRICS", "severity": "medium", "description": "For the historical v0.1 campaign, database size, build time, memory, and mutation latency had no pre-approved numeric predicate and remain observations only. Prospective v0.2 thresholds cannot be applied retrospectively.", "blocksVerdict": False},
+            {"id": "LIMIT-SEARCH-INCOMPLETE-STORAGE-UPDATE-GATE", "severity": "critical", "description": "The historical v0.1 contract made storage/update failure mandatory without numeric predicates. Option B is now approved prospectively in v0.2, but it was not measured and cannot reclassify that campaign.", "blocksVerdict": True},
             {"id": "LIMIT-SEARCH-IP-EVALUATION-NOT-ESTABLISHED", "severity": "critical", "description": "Stage 0 reviewer roles and the nested SQLite provenance method are recorded, but the exact locked dependency/platform review has not granted EVALUATION_APPROVED.", "blocksVerdict": True},
             {"id": "LIMIT-SEARCH-POC-NOT-ADMISSION", "severity": "medium", "description": "The isolated Room/FTS4 schema and harness are PoC evidence, not a production schema or dependency admission.", "blocksVerdict": False},
         ],
@@ -808,6 +846,7 @@ def main() -> int:
     require(args.invalidated_run_count >= 0, "Invalidated run count cannot be negative")
     observations = read_json(args.observations)
     dependency_inventory = read_json(args.dependency_inventory)
+    license_notice_inventory = read_json(args.license_notice_inventory)
     ip_evaluation = read_json(args.ip_evaluation)
     validate_observations(observations, args.expected_commit)
     evaluation = evaluate(observations)
@@ -831,6 +870,7 @@ def main() -> int:
             (rebuild_path, "metrics"),
         ],
         dependency_inventory=dependency_inventory,
+        license_notice_inventory=license_notice_inventory,
         ip_evaluation=ip_evaluation,
         invalidated_run_count=args.invalidated_run_count,
     )

@@ -29,6 +29,8 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -61,7 +63,10 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -87,7 +92,10 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -120,6 +128,8 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -152,6 +162,8 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -184,6 +196,8 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -209,6 +223,8 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -241,6 +257,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -272,6 +289,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -303,6 +321,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -334,7 +353,10 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -360,7 +382,10 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -393,6 +418,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -424,6 +450,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -455,6 +482,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -486,7 +514,9 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -511,7 +541,9 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -543,6 +575,8 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -568,6 +602,8 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -600,6 +636,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -624,6 +661,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -655,6 +693,8 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -687,6 +727,8 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -712,6 +754,8 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -737,6 +781,8 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -769,6 +815,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -800,6 +847,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -831,6 +879,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -862,6 +911,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -893,6 +943,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -924,6 +975,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://dl.google.com/dl/android/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -949,6 +1001,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -980,6 +1033,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -1011,6 +1065,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -1042,6 +1097,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -1073,6 +1129,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -1098,6 +1155,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -1123,6 +1181,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -1148,6 +1207,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -1173,6 +1233,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -1204,6 +1265,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -1235,6 +1297,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -1266,6 +1329,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -1297,6 +1361,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -1321,6 +1386,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -1346,6 +1412,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -1377,6 +1444,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -1408,6 +1476,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -1433,6 +1502,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -1464,6 +1534,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -1495,6 +1566,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -1526,6 +1598,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -1557,6 +1630,8 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -1589,6 +1664,8 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -1614,6 +1691,8 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -1646,6 +1725,8 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -1671,6 +1752,8 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -1696,7 +1779,9 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -1728,7 +1813,9 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -1753,7 +1840,9 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -1785,7 +1874,9 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -1810,7 +1901,9 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath"
       ]
     },
@@ -1842,6 +1935,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     },
@@ -1873,6 +1967,8 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -1905,7 +2001,10 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
         "debugAndroidTestRuntimeClasspath",
         "debugRuntimeClasspath"
       ]
@@ -1938,6 +2037,7 @@
       "licenseMetadataStatus": "PRESENT",
       "repository": "https://repo1.maven.org/maven2",
       "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
         "_agp_internal_debug_kspClasspath"
       ]
     }
@@ -1946,12 +2046,15 @@
   "inventoryStatus": "COMPLETE_UNREVIEWED",
   "lock": {
     "configurations": [
+      "_agp_internal_benchmark_kspClasspath",
       "_agp_internal_debug_kspClasspath",
+      "benchmarkAndroidTestRuntimeClasspath",
+      "benchmarkRuntimeClasspath",
       "debugAndroidTestRuntimeClasspath",
       "debugRuntimeClasspath"
     ],
     "path": "android/poc/search/gradle.lockfile",
-    "sha256": "0d7f44d663f6d603ee095d457c4e8fa849f2da4ffd1ad2441bcb8c5937568315"
+    "sha256": "d912e782f3f01452f9f785b6cf0971d1a76a6c6a984c5ea5e03ba1b311049704"
   },
   "pocId": "POC-SEARCH-001",
   "review": {

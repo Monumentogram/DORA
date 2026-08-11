@@ -10,7 +10,7 @@ Stage 0B merge commit: `5e748469b22c6e7303fe6eb5f95394ea40088d84`
 Active stage: `Stage 0C — POC-SEARCH-001`
 Active branch: `stage/0c-poc-search-001`
 Active PoC: `POC-SEARCH-001`
-Stage state: **P1 REMEDIATION — GATE SELECTION AND ARTIFACT REVIEW REQUIRED; FORMAL INCONCLUSIVE**
+Stage state: **P1 REMEDIATION — OPTION B APPROVED; EXECUTION WITHHELD; FORMAL INCONCLUSIVE**
 
 ## Stage 00 closure
 
@@ -47,8 +47,9 @@ Git or Actions artifacts.
 
 Host/emulator evidence records generated-scale correctness, schema, mapping, mutation,
 logical rebuild and exploratory latency observations. It does not establish a gate-complete
-host `PASS`: draft `stage0-v0.2` defines three prospective storage/update options, but the owner
-has selected none, and the exact external-artifact evaluation precondition was not proven. A formal
+host `PASS`: prospective `stage0-v0.2` now contains owner-approved Option B, but it was not measured
+and cannot reclassify the historical campaign. The exact external-artifact evidence packet is
+complete, but its owner approval is still pending. A formal
 `PASS` and device latency/support claim also remain unavailable until the required physical
 D1-D3 search slices exist. FTS4 and the PoC schema are not production-admitted by this stage.
 
@@ -85,6 +86,7 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - `OD-08`/`OD-09`: GitHub receives only sanitized reports and aggregate metrics; raw evidence requires controlled private storage and the approved 90/180/30-day maximum deletion rules.
 - `OD-10`: local mode works without account, network or GMS; cloud remains off until separate explicit consent.
 - `OD-11`: Project owner is Product and IP policy reviewer and acts as Engineering/Security reviewer only for Stage 0 evaluation. This does not replace production Legal or independent production Security. Embedded platform SQLite may use the containing system-image digest plus exact image/runtime identity for Stage 0; that boundary must be reconsidered before production admission.
+- `OD-12`: Project owner prospectively approves Option B for `stage0-v0.2`, based on the local-MVP storage/update/one-second visibility balance and not on prior Dora results. Benchmark execution remains separately withheld.
 
 ## Current gates and blockers
 
@@ -94,20 +96,24 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
   Frozen manifests, parameter binding, repetitions, percentile definition and historical gates
   were not weakened.
 - The Stage 0 v0.1 search row says that a storage/update gate failure is mandatory and lists no
-  status exception, but no numeric overhead threshold was frozen. Draft `DEC-043` / Gate Set
-  `stage0-v0.2` supplies Options A/B/C with exact paired metrics, scale, repetitions, aggregation,
-  physical environment and fallbacks. None is selected or Approved; the historical gate remains
-  `not_evaluated` and no rerun is authorized.
-- The PoC module now has a dependency lock and exact 66-component artifact/POM inventory. The IP
-  assessment is `REVIEWERS_ASSIGNED_REVIEW_PENDING`: `OD-11` records the Stage 0 Product/IP and
-  Engineering/Security roles, but exact component evaluation rights plus missing license/NOTICE
-  evidence still require a recorded decision. The Android API 36 Google APIs x86_64 r07 archive is
+  status exception, but no numeric overhead threshold was frozen. `DEC-043` / Gate Set
+  `stage0-v0.2` now prospectively approves Option B with exact paired metrics, scale, repetitions,
+  aggregation, physical environment and fallbacks. The historical gate remains `not_evaluated`;
+  `benchmarkExecutionAllowed=false`, so no rerun is authorized.
+- The PoC module now has a dependency lock and exact 66-component artifact/POM inventory covering
+  both debug and formal benchmark configurations. All 66 effective licenses and discovered
+  license/NOTICE entries are inventoried; the IP assessment is
+  `EXACT_EVIDENCE_COMPLETE_OWNER_APPROVAL_PENDING`. `OD-11` records the Stage 0 Product/IP and
+  Engineering/Security roles, but the owner has not recorded `EVALUATION_APPROVED`. The Android API 36 Google APIs x86_64 r07 archive is
   pinned by official SHA-1 and independently computed SHA-256. Embedded SQLite 3.44.3 uses that
   containing-image digest with exact image ID/revision, fingerprint, API and ABI for Stage 0; no
   extracted binary digest is required. Production Legal is unassigned and independent production
   Security remains mandatory.
-- Physical D1-D3 search latency evidence remains an additional blocker to a formal search `PASS`
-  or supported-device claim.
+- The new paired control/indexed harness and nearest-rank combiner are implemented; local debug and
+  benchmark compilation pass, while commit-bound emulator runtime smoke remains pending CI. No
+  formal 10k/1M v0.2 benchmark was executed.
+- Physical availability is now explicit: D2 (`owner-phone-001`) exists, while D1 and D3 remain
+  `unknown`. Missing D1/D3 blocks execution and any formal search `PASS` or support claim.
 - The fully specified predicates in Gate Set `stage0-v0.1` are **Approved for Stage 0**. Exact ASR RTF by tier, maximum PSS/native heap, diarization corrections/minute, absolute battery drain without mWh, numeric capture sample-gap tolerance and minimum raw-trace retention remain **Proposed**.
 - The owner's physical phone is sanitized as Samsung `SM-S908B`, Android 16 / API 36, build `BP2A.250605.031.A3`, primary ABI `arm64-v8a` and 10515 MiB RAM. It is assigned to D2 as the closest hardware profile; D1 and D3-D7 availability remains `unknown`.
 - The refreshed pre-Run-A profile reports 36432 MiB free app storage, above the D2 start threshold of 8192 MiB, with 72% battery, unplugged power and thermal status `NONE`; the Run B export refreshed this to 33707 MiB and 80% with the same unplugged/`NONE` state. The Run C profile reports 33645 MiB, 70%, charging and `NONE`. The D2 hardware inventory remains valid; Run C battery data is not comparative evidence.
@@ -145,7 +151,7 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 
 ## Next safe action
 
-Keep the Stage 0C Pull Request Draft and unmerged. The next safe action is owner review/selection of one complete draft `stage0-v0.2` option plus completion of the assigned exact dependency/platform Stage 0 evaluation review. `tools/check_poc_search_run_readiness.py` blocks a new targeted or full campaign while either record is incomplete. No benchmark is authorized by the draft. Physical D1-D3 search work, production admission, or the next PoC still requires separate explicit scope.
+Keep the Stage 0C Pull Request Draft and unmerged. The next safe actions are commit-bound harness runtime-smoke verification, explicit Project-owner approval or rejection of the exact Stage 0 component/license/NOTICE packet, and inventory of matching physical D1 and D3 devices. Even after those prerequisites, a later explicit owner execution authorization is required. `tools/check_poc_search_run_readiness.py` fails closed while `benchmarkExecutionAllowed=false`; no benchmark is authorized. Production admission or the next PoC still requires separate explicit scope.
 
 ## Update protocol
 

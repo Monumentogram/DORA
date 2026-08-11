@@ -16,7 +16,10 @@ from typing import Any
 POC_ID = "POC-SEARCH-001"
 SCHEMA_VERSION = 1
 LOCK_CONFIGURATIONS = (
+    "_agp_internal_benchmark_kspClasspath",
     "_agp_internal_debug_kspClasspath",
+    "benchmarkAndroidTestRuntimeClasspath",
+    "benchmarkRuntimeClasspath",
     "debugAndroidTestRuntimeClasspath",
     "debugRuntimeClasspath",
 )

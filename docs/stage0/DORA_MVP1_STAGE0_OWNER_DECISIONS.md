@@ -1,12 +1,12 @@
 # Dora MVP 1 — решения владельца для ближайших PoC
 
-Статус: **Approved owner records; numeric search predicates remain unapproved**\
+Статус: **Approved owner records; Option B approved, benchmark execution withheld**\
 Даты решений: **4 и 11 августа 2026 года**\
 Владелец решения: **Project owner**\
 Область: только Stage 0 PoC; эти решения не разрешают production-функциональность, реальные совещания или публичные support claims\
-Связанные записи: `DEC-002`–`DEC-004`, `DEC-009`, `DEC-014`, `DEC-015`, `DEC-018`, `DEC-020`, `DEC-027`, draft `DEC-043` и Stage 0A owner approval record в Product Decisions
+Связанные записи: `DEC-002`–`DEC-004`, `DEC-009`, `DEC-014`, `DEC-015`, `DEC-018`, `DEC-020`, `DEC-027`, Approved `DEC-043` и Stage 0A owner approval record в Product Decisions
 
-Этот сокращённый реестр содержит одиннадцать решений для ближайших PoC. Все ответы ниже прямо утверждены владельцем в указанной области. Утверждение числовых критериев ограничено уже определёнными gates `stage0-v0.1`: draft `stage0-v0.2` и его storage/update predicates остаются `Proposed`.
+Этот сокращённый реестр содержит двенадцать решений для ближайших PoC. Все ответы ниже прямо утверждены владельцем в указанной области. `OD-12` утверждает только prospective Option B contract; измерительное исполнение остаётся отдельно запрещено.
 
 ## OD-01. Какой технический PoC запускать первым и что он вправе записывать?
 
@@ -276,14 +276,43 @@ admission, production Legal approval или независимым production se
 - production use, redistribution, SBOM/notices или shipping dependency admission.
 
 **Следствие:** reviewer assignment и достаточность SQLite provenance method больше не являются
-неопределёнными. Measured execution всё ещё заблокирован до выбора Gate Set и формального
-`EVALUATION_APPROVED` результата exact Stage 0 artifact review.
+неопределёнными. `OD-12` позднее выбрал Gate Set Option B; measured execution остаётся
+заблокирован до formal artifact approval, harness verification, physical D1–D3 и отдельной
+execution authorization.
+
+## OD-12. Какой storage/update contract утверждён и разрешён ли benchmark?
+
+**Статус решения:** `Approved` — 11 августа 2026 года.
+
+**Область:** prospective Gate Set `stage0-v0.2` для `POC-SEARCH-001`; historical v0.1 evidence
+остаётся неизменным.
+
+**Зафиксированный ответ владельца:** выбран Option B.
+
+- Index incremental bytes ≤512 MiB, overhead ratio ≤1.00 и ≤512 bytes/segment.
+- Worst single-row/bulk-100 maintenance delta p95 ≤50/250 ms; indexed commit p99 ≤500 ms.
+- Search visibility p95/p99 ≤250/1000 ms; stale successful responses запрещены.
+- Обоснование: одна дополнительная копия исходного объёма, умеренная стоимость обновления и
+  one-second visibility — приемлемый локальный MVP balance. Выбор не основан на прежних
+  результатах Dora.
+
+**Execution decision:** benchmark **не разрешён**. До любого measured workflow обязательны:
+
+1. explicit `EVALUATION_APPROVED` exact component/license/NOTICE review;
+2. implementation и verification нового paired storage/update harness;
+3. подтверждённая availability/preflight физических D1, D2 и D3;
+4. последующая recorded owner authorization, меняющая `benchmarkExecutionAllowed` на `true`.
+
+**Что это решение не утверждает:** historical reclassification, artifact rights, physical device
+availability, production schema/dependency admission, production Legal или independent production
+Security approval.
 
 ## Итог утверждения
 
-- `OD-01`–`OD-10` имеют статус `Approved` с датой 4 августа 2026 года; `OD-11` имеет статус
-  `Approved` с датой 11 августа 2026 года и только Stage 0 evaluation scope.
+- `OD-01`–`OD-10` имеют статус `Approved` с датой 4 августа 2026 года; `OD-11`/`OD-12` имеют статус
+  `Approved` с датой 11 августа 2026 года и только указанную Stage 0 scope.
 - Первым остаётся `POC-CAPTURE-001`, но этот PoC в Stage 0A не запускался.
 - До первого измеряемого запуска один физический телефон владельца должен быть подключён и автоматически идентифицирован.
 - До настройки controlled non-public storage используются только synthetic data.
-- Неопределённые пороги и draft `stage0-v0.2` остаются `Proposed`; один телефон не даёт общий PASS D1–D7 и не подтверждает поддержку устройств.
+- Option B в `stage0-v0.2` Approved prospectively, но benchmark execution withheld; один телефон не
+  даёт общий PASS D1–D7 и не подтверждает D1–D3 availability.

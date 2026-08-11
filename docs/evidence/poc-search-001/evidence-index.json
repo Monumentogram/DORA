@@ -5,34 +5,43 @@
     "rootV1FilesSuperseded": true
   },
   "currentAssessment": {
-    "assessmentId": "review-2026-08-11-v3",
-    "issuedAt": "2026-08-11T16:30:09Z",
-    "locator": "docs/evidence/poc-search-001/assessments/review-2026-08-11-v3/benchmark-result.json",
+    "assessmentId": "review-2026-08-11-v4",
+    "issuedAt": "2026-08-11T17:48:30Z",
+    "locator": "docs/evidence/poc-search-001/assessments/review-2026-08-11-v4/benchmark-result.json",
     "newMeasurementRun": false,
     "recommendation": "BLOCKED",
     "resultStatus": "INCONCLUSIVE",
-    "sha256": "sha256:4db9a6faed52af8fc9cf740f34f75ec6cc8c82972e084ca812deae1b6dc2190f",
+    "sha256": "sha256:99dfbe8be5c149f8759e5aff8a52a14de8e122fb928147a12491e660dad86aa8",
     "sourceActionsRunId": "31487775567"
   },
+  "executionPrerequisites": {
+    "laterOwnerExecutionAuthorization": "WITHHELD",
+    "licenseNoticeApproval": "PENDING_PROJECT_OWNER",
+    "pairedHarness": "IMPLEMENTED_COMPILE_VERIFIED_RUNTIME_SMOKE_PENDING",
+    "physicalD1D2D3": "BLOCKED_MISSING_D1_D3"
+  },
   "gateContract": {
-    "blocker": "Draft stage0-v0.2 options exist, but the Project owner has selected none. No measured campaign is authorized.",
-    "candidate": {
-      "benchmarkExecutionAllowed": false,
-      "documentLocator": "docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2_DRAFT.md",
-      "machineLocator": "docs/stage0/poc-search-gate-set-stage0-v0.2.draft.json",
-      "selectedOptionId": null,
-      "status": "DRAFT_UNAPPROVED",
-      "version": "stage0-v0.2"
+    "approvedBy": "Project owner",
+    "approvedOn": "2026-08-11",
+    "benchmarkExecutionAllowed": false,
+    "blocker": "Option B is approved, but measured execution is withheld pending explicit Stage 0 component/license/NOTICE approval, verified paired-harness evidence, confirmed physical D1-D3 availability, and a later Project owner execution authorization.",
+    "complete": true,
+    "decisionLocator": "docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES.md",
+    "documentLocator": "docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2.md",
+    "historicalAssessment": {
+      "reclassified": false,
+      "status": "INCOMPLETE_HISTORICAL_CONTRACT",
+      "version": "stage0-v0.1"
     },
-    "complete": false,
-    "decisionLocator": "docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES-DRAFT.md",
-    "status": "INCOMPLETE_HISTORICAL_CONTRACT",
-    "version": "stage0-v0.1"
+    "machineLocator": "docs/stage0/poc-search-gate-set-stage0-v0.2.json",
+    "selectedOptionId": "B",
+    "status": "APPROVED",
+    "version": "stage0-v0.2"
   },
   "ipEvaluation": {
-    "futureMeasuredExecution": "BLOCKED_PENDING_GATE_AND_ARTIFACT_REVIEW",
+    "futureMeasuredExecution": "BLOCKED_PENDING_OWNER_ARTIFACT_APPROVAL_AND_EXECUTION_PREREQUISITES",
     "locator": "docs/evidence/poc-search-001/ip-evaluation.json",
-    "status": "REVIEWERS_ASSIGNED_REVIEW_PENDING"
+    "status": "EXACT_EVIDENCE_COMPLETE_OWNER_APPROVAL_PENDING"
   },
   "pocId": "POC-SEARCH-001",
   "schemaVersion": 2
