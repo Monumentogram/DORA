@@ -1,0 +1,29 @@
+{
+  "completedEvidencePolicy": {
+    "immutableRunsLocator": "docs/evidence/poc-search-001/runs",
+    "ledgerLocator": "docs/evidence/poc-search-001/evidence-ledger.json",
+    "rootV1FilesSuperseded": true
+  },
+  "currentAssessment": {
+    "assessmentId": "review-2026-08-11-v2",
+    "issuedAt": "2026-08-11T15:11:53Z",
+    "locator": "docs/evidence/poc-search-001/assessments/review-2026-08-11-v2/benchmark-result.json",
+    "newMeasurementRun": false,
+    "recommendation": "BLOCKED",
+    "resultStatus": "INCONCLUSIVE",
+    "sha256": "sha256:778a8c7c74cdf97be2c7ed0ae4b31d279c492b786fc674d30298bc1d2daaccf3",
+    "sourceActionsRunId": "31487775567"
+  },
+  "gateContract": {
+    "blocker": "Storage/update is an approved mandatory failure category, but no prospective numeric threshold exists. Owner-approved normative clarification is required.",
+    "complete": false,
+    "version": "stage0-v0.1"
+  },
+  "ipEvaluation": {
+    "futureMeasuredExecution": "BLOCKED_PENDING_REVIEW",
+    "locator": "docs/evidence/poc-search-001/ip-evaluation.json",
+    "status": "NOT_ESTABLISHED"
+  },
+  "pocId": "POC-SEARCH-001",
+  "schemaVersion": 1
+}

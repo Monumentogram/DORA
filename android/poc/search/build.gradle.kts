@@ -19,6 +19,17 @@ android {
     defaultConfig {
         buildConfigField("String", "GIT_COMMIT", "\"${pocCommit.get()}\"")
         buildConfigField("String", "POC_VERSION", "\"0.1.0-poc-search-001\"")
+        buildConfigField(
+            "String",
+            "SYSTEM_IMAGE_PACKAGE",
+            "\"system-images;android-36;google_apis;x86_64\"",
+        )
+        buildConfigField("int", "SYSTEM_IMAGE_REVISION", "7")
+        buildConfigField(
+            "String",
+            "SYSTEM_IMAGE_ARCHIVE_SHA256",
+            "\"b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160\"",
+        )
     }
 
     buildFeatures {

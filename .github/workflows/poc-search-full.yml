@@ -29,7 +29,7 @@ env:
 jobs:
   validate-harness:
     name: validate-harness
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
 
     steps:
@@ -43,7 +43,7 @@ jobs:
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "17.0.19+10"
           check-latest: false
 
       - name: Set up Gradle and validate wrapper
@@ -61,6 +61,9 @@ jobs:
       - name: Validate frozen contracts and checkpoint combiner
         run: python3 tools/validate_poc_search.py
 
+      - name: Enforce prospective gate and IP readiness
+        run: python3 tools/check_poc_search_run_readiness.py
+
       - name: Compile the exact benchmark harness
         working-directory: android
         run: >-
@@ -69,10 +72,13 @@ jobs:
           :poc:search:compileDebugAndroidTestKotlin
           :poc:search:lintDebug
 
+      - name: Verify locked dependency artifact inventory
+        run: python3 tools/poc_search_dependency_inventory.py --check
+
   targeted-scale-query-plan:
     name: targeted-scale-query-plan
     needs: validate-harness
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
 
     steps:
@@ -86,7 +92,7 @@ jobs:
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "17.0.19+10"
           check-latest: false
 
       - name: Set up Gradle and validate wrapper
@@ -103,6 +109,9 @@ jobs:
           "platforms;android-36"
           "build-tools;36.0.0"
           "system-images;android-36;google_apis;x86_64"
+
+      - name: Verify pinned Android system image revision
+        run: python3 tools/verify_poc_search_android_sdk.py
 
       - name: Create API 36 targeted AVD
         env:
@@ -184,7 +193,7 @@ jobs:
           name: poc-search-001-targeted-${{ github.sha }}
           path: ${{ runner.temp }}/poc-search-targeted/targeted-scale-observations.json
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 90
 
       - name: Print targeted emulator log on failure
         if: failure()
@@ -196,7 +205,7 @@ jobs:
       startsWith(github.ref, 'refs/tags/poc-search-001-full-') ||
       (github.event_name == 'workflow_dispatch' && inputs.scope == 'full')
     needs: targeted-scale-query-plan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 50
     strategy:
       fail-fast: false
@@ -220,7 +229,7 @@ jobs:
         uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "17.0.19+10"
           check-latest: false
 
       - name: Set up Gradle and validate wrapper
@@ -237,6 +246,9 @@ jobs:
           "platforms;android-36"
           "build-tools;36.0.0"
           "system-images;android-36;google_apis;x86_64"
+
+      - name: Verify pinned Android system image revision
+        run: python3 tools/verify_poc_search_android_sdk.py
 
       - name: Create API 36 phase AVD
         env:
@@ -317,7 +329,7 @@ jobs:
           name: poc-search-001-checkpoint-${{ matrix.phase }}-${{ github.sha }}
           path: ${{ runner.temp }}/poc-search-checkpoint/benchmark-${{ matrix.phase }}-checkpoint.json
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 90
 
       - name: Print phase emulator log on failure
         if: failure()
@@ -329,7 +341,7 @@ jobs:
       startsWith(github.ref, 'refs/tags/poc-search-001-full-') ||
       (github.event_name == 'workflow_dispatch' && inputs.scope == 'full')
     needs: full-search-benchmark-phase
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
 
     steps:
@@ -370,4 +382,4 @@ jobs:
             ${{ runner.temp }}/poc-search-evidence
             ${{ runner.temp }}/poc-search-observations/benchmark-observations.json
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 90

@@ -10,9 +10,10 @@ import os
 import platform
 import re
 import sys
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+from poc_search_environment import require_consistent_android_runtime
 
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "docs" / "evidence" / "poc-search-001"
@@ -25,6 +26,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--observations", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, default=EVIDENCE)
     parser.add_argument("--expected-commit")
+    parser.add_argument("--invalidated-run-count", type=int, default=0)
+    parser.add_argument(
+        "--dependency-inventory",
+        type=Path,
+        default=EVIDENCE / "dependency-inventory.json",
+    )
+    parser.add_argument(
+        "--ip-evaluation",
+        type=Path,
+        default=EVIDENCE / "ip-evaluation.json",
+    )
     return parser.parse_args()
 
 
@@ -129,6 +141,11 @@ def host_environment() -> dict[str, Any]:
         "ramMb": ram_mb,
         "runnerName": os.environ.get("RUNNER_NAME"),
         "runnerEnvironment": os.environ.get("RUNNER_ENVIRONMENT"),
+        "runnerOs": os.environ.get("RUNNER_OS"),
+        "runnerArch": os.environ.get("RUNNER_ARCH"),
+        "runnerImageOs": os.environ.get("ImageOS"),
+        "runnerImageVersion": os.environ.get("ImageVersion"),
+        "actionsRunnerVersion": os.environ.get("ACTIONS_RUNNER_VERSION"),
         "githubWorkflow": os.environ.get("GITHUB_WORKFLOW"),
         "githubRunId": os.environ.get("GITHUB_RUN_ID"),
         "githubRunAttempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
@@ -138,16 +155,18 @@ def host_environment() -> dict[str, Any]:
 
 
 def environment_result(observations: dict[str, Any]) -> dict[str, Any]:
+    android = observations["androidEnvironment"]
+    runtime_kind = require_consistent_android_runtime(android)
     return {
         "schemaVersion": 1,
         "pocId": "POC-SEARCH-001",
         "generatedAt": observations["generatedAt"],
         "commit": observations["commit"],
         "host": host_environment(),
-        "android": observations["androidEnvironment"],
+        "android": android,
         "measurementScope": {
-            "correctness": "reference-scale Android emulator",
-            "latency": "host/emulator exploratory only",
+            "correctness": f"reference-scale Android {runtime_kind}",
+            "latency": f"Android {runtime_kind}; support verdict still requires the approved matrix",
             "physicalDeviceClaim": False,
             "requiredFuturePhysicalProfiles": ["D1", "D2", "D3"],
         },
@@ -168,21 +187,34 @@ def evaluate(observations: dict[str, Any]) -> dict[str, Any]:
         and baseline["specialCharacterFailures"] == 0
         and baseline["failureExecutions"] == 0
         and baseline["crashes"] == 0
+        and secondary["adversarialFailures"] == 0
+        and secondary["specialCharacterFailures"] == 0
+        and secondary["failureExecutions"] == 0
+        and secondary["crashes"] == 0
     )
     mapping_pass = (
         baseline["mappingErrors"] == 0
         and baseline["duplicateResultErrors"] == 0
+        and secondary["mappingErrors"] == 0
+        and secondary["duplicateResultErrors"] == 0
         and observations["primaryPreparation"]["missingCanonicalMappings"] == 0
         and observations["primaryPreparation"]["missingIndexRows"] == 0
+        and observations["primaryPreparation"]["duplicateCanonicalRows"] == 0
+        and observations["secondaryPreparation"]["missingCanonicalMappings"] == 0
+        and observations["secondaryPreparation"]["missingIndexRows"] == 0
+        and observations["secondaryPreparation"]["duplicateCanonicalRows"] == 0
         and mutation["mappingErrors"] == 0
     )
     rebuild_pass = bool(rebuild["deterministic"] and cross["deterministic"])
     mutation_pass = bool(mutation["allCorrect"])
-    host_pass = all(
+    evaluated_metrics_pass = all(
         [latency_pass, correctness_pass, safety_pass, mapping_pass, rebuild_pass, mutation_pass]
     )
-    if host_pass:
-        architectural_outcome = "FTS4 suitable for continued MVP development"
+    if evaluated_metrics_pass:
+        architectural_outcome = (
+            "Evaluated metrics passed, but no architectural GO is available while the mandatory "
+            "storage/update gate and external-artifact review remain unresolved"
+        )
     elif safety_pass and mapping_pass and rebuild_pass:
         architectural_outcome = "FTS4 suitable with changes"
     else:
@@ -194,8 +226,9 @@ def evaluate(observations: dict[str, Any]) -> dict[str, Any]:
         "mappingPass": mapping_pass,
         "rebuildPass": rebuild_pass,
         "mutationPass": mutation_pass,
-        "hostEmulatorExploratoryOutcome": "PASS" if host_pass else "FAIL",
-        "formalVerdict": "INCONCLUSIVE" if host_pass else "FAIL",
+        "evaluatedMetricsOutcome": "PASS" if evaluated_metrics_pass else "FAIL",
+        "hostEmulatorExploratoryOutcome": "INCONCLUSIVE" if evaluated_metrics_pass else "FAIL",
+        "formalVerdict": "INCONCLUSIVE" if evaluated_metrics_pass else "FAIL",
         "architecturalOutcome": architectural_outcome,
     }
 
@@ -251,8 +284,10 @@ def rebuild_result(observations: dict[str, Any], evaluation: dict[str, Any]) -> 
 
 
 def evidence_entry(path: Path, output_dir: Path, kind: str) -> dict[str, Any]:
-    del output_dir
-    locator = f"docs/evidence/poc-search-001/{path.name}"
+    try:
+        locator = path.resolve().relative_to(ROOT.resolve()).as_posix()
+    except ValueError:
+        locator = f"docs/evidence/poc-search-001/{path.relative_to(output_dir).as_posix()}"
     return {
         "id": path.stem,
         "kind": kind,
@@ -397,14 +432,87 @@ def build_metrics(observations: dict[str, Any]) -> list[dict[str, Any]]:
     return metrics
 
 
+def build_license_entries(
+    dependency_inventory: dict[str, Any],
+    ip_evaluation: dict[str, Any],
+) -> list[dict[str, Any]]:
+    require(dependency_inventory.get("pocId") == "POC-SEARCH-001", "Wrong dependency inventory PoC id")
+    require(
+        dependency_inventory.get("inventoryStatus") == "COMPLETE_UNREVIEWED",
+        "Dependency inventory must remain explicitly unreviewed until the named IP review",
+    )
+    require(
+        ip_evaluation.get("evaluationStatus") == "NOT_ESTABLISHED",
+        "Unsupported IP evaluation state; record reviewed per-artifact decisions before approval",
+    )
+    entries: list[dict[str, Any]] = []
+    for component in dependency_inventory["components"]:
+        coordinate = component["coordinate"]
+        version = coordinate.rsplit(":", 1)[1]
+        binaries = [
+            artifact
+            for artifact in component["artifacts"]
+            if artifact["kind"] in ("aar", "jar", "klib")
+        ]
+        require(len(binaries) <= 1, f"Ambiguous primary artifacts for {coordinate}")
+        primary_sha = f"sha256:{binaries[0]['sha256']}" if binaries else None
+        declared_names = sorted(
+            {
+                license_value["name"]
+                for license_value in component["declaredLicenses"]
+                if isinstance(license_value.get("name"), str) and license_value["name"]
+            }
+        )
+        license_id = " / ".join(declared_names) if declared_names else "UNDECLARED-REVIEW-REQUIRED"
+        only_build_tool = set(component["scopes"]) == {"_agp_internal_debug_kspClasspath"}
+        entries.append(
+            {
+                "artifactId": coordinate,
+                "category": "tool" if only_build_tool else "source-code",
+                "version": version,
+                "sha256": primary_sha,
+                "licenseId": license_id[:160],
+                "licenseReviewState": "PROPOSED",
+                "evaluationRightsConfirmed": False,
+                "redistributionRights": "unknown",
+                "evidenceLocator": (
+                    "docs/evidence/poc-search-001/dependency-inventory.json#" + coordinate
+                ),
+            }
+        )
+    for platform_artifact in ip_evaluation["platformArtifacts"]:
+        entries.append(
+            {
+                "artifactId": platform_artifact["artifactId"],
+                "category": "other",
+                "version": platform_artifact["observedVersion"],
+                "sha256": platform_artifact["sha256"],
+                "licenseId": "UNREVIEWED-PLATFORM-COMPONENT",
+                "licenseReviewState": platform_artifact["licenseReviewState"],
+                "evaluationRightsConfirmed": platform_artifact["evaluationRightsConfirmed"],
+                "redistributionRights": "unknown",
+                "evidenceLocator": platform_artifact["evidenceLocator"],
+            }
+        )
+    return entries
+
+
 def build_result(
     observations: dict[str, Any],
     evaluation: dict[str, Any],
     output_dir: Path,
     detail_paths: list[tuple[Path, str]],
+    dependency_inventory: dict[str, Any] | None = None,
+    ip_evaluation: dict[str, Any] | None = None,
+    invalidated_run_count: int = 0,
 ) -> dict[str, Any]:
+    if dependency_inventory is None:
+        dependency_inventory = read_json(EVIDENCE / "dependency-inventory.json")
+    if ip_evaluation is None:
+        ip_evaluation = read_json(EVIDENCE / "ip-evaluation.json")
     android = observations["androidEnvironment"]
     baseline = observations["baselineCorrectness"]
+    secondary = observations["secondaryCorrectness"]
     latency = observations["latency"]["overall"]
     mutation = observations["mutation"]
     injection_crash_count = (
@@ -412,8 +520,30 @@ def build_result(
         + baseline["specialCharacterFailures"]
         + baseline["failureExecutions"]
         + baseline["crashes"]
+        + secondary["adversarialFailures"]
+        + secondary["specialCharacterFailures"]
+        + secondary["failureExecutions"]
+        + secondary["crashes"]
     )
-    mapping_error_count = baseline["mappingErrors"] + mutation["mappingErrors"]
+    mapping_error_count = (
+        baseline["mappingErrors"]
+        + baseline["duplicateResultErrors"]
+        + secondary["mappingErrors"]
+        + secondary["duplicateResultErrors"]
+        + observations["primaryPreparation"]["missingCanonicalMappings"]
+        + observations["primaryPreparation"]["missingIndexRows"]
+        + observations["primaryPreparation"]["duplicateCanonicalRows"]
+        + observations["secondaryPreparation"]["missingCanonicalMappings"]
+        + observations["secondaryPreparation"]["missingIndexRows"]
+        + observations["secondaryPreparation"]["duplicateCanonicalRows"]
+        + mutation["mappingErrors"]
+    )
+    update_error_count = (
+        mutation["staleResultErrors"]
+        + mutation["mappingErrors"]
+        + mutation["crashes"]
+        + sum(1 for operation in mutation["operations"] if not operation["correctnessPassed"])
+    )
     latency_failure = not evaluation["latencyPass"]
     deterministic = evaluation["rebuildPass"]
     success_gates = [
@@ -428,7 +558,8 @@ def build_result(
         gate("GATE-SEARCH-INJECTION-CRASH", "failure", "Query operator injection or query crash", "search.correctness.adversarial_failures", ">", 0, "count", injection_crash_count, "triggered" if injection_crash_count > 0 else "not_triggered"),
         gate("GATE-SEARCH-MAPPING-LOSS", "failure", "Canonical mapping loss", "search.correctness.mapping_errors", ">", 0, "count", mapping_error_count, "triggered" if mapping_error_count > 0 else "not_triggered"),
         gate("GATE-SEARCH-NONDETERMINISTIC", "failure", "Non-deterministic rebuild or index recovery", "search.rebuild.nondeterministic", "=", True, None, not deterministic, "triggered" if not deterministic else "not_triggered"),
-        gate("GATE-SEARCH-STORAGE-UPDATE", "failure", "Storage or update numeric gate", "search.storage_update.numeric_gate", "custom", None, None, None, "not_evaluated", "The approved Gate Set defines no numeric storage, memory, build, or mutation-latency threshold; all are observations only."),
+        gate("GATE-SEARCH-UPDATE-INTEGRITY", "failure", "Update leaves stale results, mapping loss, or a crash", "search.update.integrity_errors", ">", 0, "count", update_error_count, "triggered" if update_error_count > 0 else "not_triggered"),
+        gate("GATE-SEARCH-STORAGE-UPDATE-OVERHEAD", "failure", "Unresolved storage/update overhead predicate", "search.storage_update.numeric_gate", "custom", None, None, None, "not_evaluated", "The approved v0.1 prose makes storage/update failure mandatory but defines no numeric storage, build, or update-latency threshold. It requires prospective owner clarification and cannot be passed from this campaign."),
     ]
     errors: list[dict[str, Any]] = []
     if injection_crash_count:
@@ -438,26 +569,46 @@ def build_result(
     if not deterministic:
         errors.append({"code": "SEARCH_REBUILD_NONDETERMINISTIC", "stage": "rebuild", "count": 1, "retryable": False, "redactedSummary": "Logical rebuild or independent second build did not reproduce the frozen result contract.", "sensitiveContentPresent": False})
     if not evaluation["mutationPass"]:
-        errors.append({"code": "SEARCH_MUTATION_INCONSISTENT", "stage": "mutation", "count": max(1, mutation["staleResultErrors"]), "retryable": False, "redactedSummary": "At least one frozen mutation correctness invariant failed.", "sensitiveContentPresent": False})
+        errors.append({"code": "SEARCH_MUTATION_INCONSISTENT", "stage": "mutation", "count": max(1, update_error_count), "retryable": False, "redactedSummary": "At least one frozen mutation correctness invariant failed.", "sensitiveContentPresent": False})
     evidence = []
     for name in ("dataset-manifest.json", "query-manifest.json", "mutation-manifest.json"):
         evidence.append(evidence_entry(EVIDENCE / name, output_dir, "fixture-manifest"))
+    for name in (
+        "dependency-inventory.json",
+        "ip-evaluation.json",
+        "android-system-image-provenance.json",
+        "evidence-ledger.json",
+    ):
+        evidence.append(evidence_entry(EVIDENCE / name, output_dir, "license-evidence"))
     for path, kind in detail_paths:
         evidence.append(evidence_entry(path, output_dir, kind))
     status = evaluation["formalVerdict"]
     host_outcome = evaluation["hostEmulatorExploratoryOutcome"]
     rationale = (
-        "The frozen host/emulator reference campaign passed all approved search gates, but formal "
-        "PASS remains unavailable without future physical D1-D3 latency evidence."
-        if host_outcome == "PASS"
+        "The evaluated host/emulator metrics met their predicates, but the mandatory storage/update "
+        "failure gate has no frozen numeric threshold, external-artifact evaluation approval is not "
+        "established, and physical D1-D3 evidence is absent. The campaign is INCONCLUSIVE."
+        if host_outcome == "INCONCLUSIVE"
         else "At least one approved search correctness, safety, latency, mutation, mapping, or rebuild gate failed in the frozen reference campaign."
     )
     security_patch = android.get("securityPatch") or None
+    runtime_kind = android["kind"]
     page_size = int(android["pageSizeBytes"])
     require(page_size in (4096, 16384), f"Unsupported schema page size {page_size}")
     main_db = observations["primaryPreparation"]
-    recommendation_decision = "GO" if host_outcome == "PASS" else "FALLBACK"
-    fallback = None if host_outcome == "PASS" else "Per-entity FTS, pagination/ranking, or query normalization; FTS5 only as a separately documented experiment."
+    recommendation_decision = "BLOCKED" if host_outcome == "INCONCLUSIVE" else "FALLBACK"
+    fallback = (
+        "Do not use the PoC for production integration; retain per-entity FTS or another separately evaluated fallback."
+        if host_outcome == "INCONCLUSIVE"
+        else "Per-entity FTS, pagination/ranking, or query normalization; FTS5 only as a separately documented experiment."
+    )
+    owner_action = (
+        "Approve a prospective storage/update gate contract and complete the named Product/Legal/IP "
+        "plus Engineering/Security evaluation review before a new measured campaign."
+        if host_outcome == "INCONCLUSIVE"
+        else None
+    )
+    license_entries = build_license_entries(dependency_inventory, ip_evaluation)
     return {
         "schemaVersion": 1,
         "gateSetVersion": "stage0-v0.1",
@@ -467,7 +618,7 @@ def build_result(
         "commit": observations["commit"],
         "device": {
             "profileId": "D2",
-            "kind": "emulator",
+            "kind": android["kind"],
             "manufacturer": android["manufacturer"],
             "model": android["model"],
             "firmwareOrBuild": android["buildFingerprint"],
@@ -477,7 +628,11 @@ def build_result(
             "pageSizeBytes": page_size,
             "inventoryStatus": "available",
             "uniqueHardwareIdentifierRecorded": False,
-            "notes": "API 36 x86_64 emulator shaped as a D2 exploratory profile; it is not physical D2 evidence.",
+            "notes": (
+                "API 36 x86_64 emulator shaped as a D2 exploratory profile; it is not physical D2 evidence."
+                if runtime_kind == "emulator"
+                else "Automatically inventoried physical runtime; one device cannot establish D1-D3 support."
+            ),
         },
         "androidApi": int(android["androidApi"]),
         "duration": {
@@ -505,7 +660,7 @@ def build_result(
             "gateSetStatus": "Approved",
             "requiredSlicesCompleted": False,
             "rationale": rationale,
-            "invalidatedRunCount": 3,
+            "invalidatedRunCount": invalidated_run_count,
         },
         "errors": errors,
         "battery": {
@@ -517,7 +672,7 @@ def build_result(
             "chargerState": "not-applicable",
             "screenState": "not-applicable",
             "measurementSource": None,
-            "notApplicableReason": "Battery is outside this emulator search PoC and no physical-device energy claim is made.",
+            "notApplicableReason": "Battery is outside this search PoC and no energy claim is made.",
         },
         "temperature": {
             "applicable": False,
@@ -527,7 +682,7 @@ def build_result(
             "startThermalStatus": None,
             "maxThermalStatus": None,
             "measurementSource": None,
-            "notApplicableReason": "Emulator thermal readings are not physical-device evidence.",
+            "notApplicableReason": "Thermal behavior is outside this search PoC verdict.",
         },
         "memory": {
             "applicable": True,
@@ -559,21 +714,20 @@ def build_result(
                 "classification": "synthetic",
             },
         ],
-        "licenses": [
-            {"artifactId": "androidx.room", "category": "source-code", "version": android["roomVersion"], "sha256": None, "licenseId": "Apache-2.0", "licenseReviewState": "EVALUATION_APPROVED", "evaluationRightsConfirmed": True, "redistributionRights": "allowed", "evidenceLocator": "https://developer.android.com/jetpack/androidx/releases/room"},
-            {"artifactId": "android-platform-sqlite", "category": "other", "version": android["sqliteVersion"], "sha256": None, "licenseId": "Android-platform-component", "licenseReviewState": "EVALUATION_APPROVED", "evaluationRightsConfirmed": True, "redistributionRights": "not-applicable", "evidenceLocator": "Runtime SELECT sqlite_version() recorded in environment.json"},
-        ],
+        "licenses": license_entries,
         "limitations": [
             {"id": "LIMIT-SEARCH-NO-PHYSICAL-D1-D3", "severity": "high", "description": "No physical D1-D3 latency campaign was run; emulator percentiles cannot establish a device-support claim.", "blocksVerdict": True},
             {"id": "LIMIT-SEARCH-EMULATOR-LATENCY", "severity": "high", "description": "Host scheduling and virtualized storage make latency exploratory rather than representative of a real phone.", "blocksVerdict": True},
             {"id": "LIMIT-SEARCH-OBSERVATION-ONLY-METRICS", "severity": "medium", "description": "Database size, build time, memory, and mutation latency have no pre-approved numeric threshold and remain observations only.", "blocksVerdict": False},
+            {"id": "LIMIT-SEARCH-INCOMPLETE-STORAGE-UPDATE-GATE", "severity": "critical", "description": "The approved v0.1 prose makes storage/update failure mandatory but supplies no numeric threshold; it cannot be marked passed after observing this campaign.", "blocksVerdict": True},
+            {"id": "LIMIT-SEARCH-IP-EVALUATION-NOT-ESTABLISHED", "severity": "critical", "description": "The exact locked dependency and Android platform artifacts do not yet have the named evaluation review required before execution.", "blocksVerdict": True},
             {"id": "LIMIT-SEARCH-POC-NOT-ADMISSION", "severity": "medium", "description": "The isolated Room/FTS4 schema and harness are PoC evidence, not a production schema or dependency admission.", "blocksVerdict": False},
         ],
         "recommendation": {
             "decision": recommendation_decision,
             "rationale": evaluation["architecturalOutcome"] + "; this does not admit the PoC schema into production.",
             "fallback": fallback,
-            "ownerAction": None,
+            "ownerAction": owner_action,
         },
         "evidenceFiles": evidence,
         "privacyReview": {
@@ -594,6 +748,21 @@ def validate_observations(observations: dict[str, Any], expected_commit: str | N
     require(bool(re.fullmatch(r"[0-9a-f]{40}", commit)), "Observation commit must be a full SHA")
     if expected_commit:
         require(commit == expected_commit, f"Observation commit {commit} != {expected_commit}")
+    android_environment = observations["androidEnvironment"]
+    require_consistent_android_runtime(android_environment)
+    system_image = read_json(EVIDENCE / "android-system-image-provenance.json")
+    require(
+        android_environment["systemImagePackage"] == system_image["package"],
+        "Observation system-image package drift",
+    )
+    require(
+        android_environment["systemImageRevision"] == system_image["revision"],
+        "Observation system-image revision drift",
+    )
+    require(
+        android_environment["systemImageArchiveSha256"] == system_image["archive"]["sha256"],
+        "Observation system-image archive SHA drift",
+    )
     require(observations["campaign"]["latencyEligibleQueryCount"] == 34, "Frozen query count drift")
     require(observations["latency"]["measuredOperations"] == 1020, "Frozen measured count drift")
     require(observations["queryPlan"]["accepted"] is True, "FTS4-driving query plan not verified")
@@ -627,7 +796,10 @@ def validate_schema(result: dict[str, Any]) -> None:
 
 def main() -> int:
     args = parse_args()
+    require(args.invalidated_run_count >= 0, "Invalidated run count cannot be negative")
     observations = read_json(args.observations)
+    dependency_inventory = read_json(args.dependency_inventory)
+    ip_evaluation = read_json(args.ip_evaluation)
     validate_observations(observations, args.expected_commit)
     evaluation = evaluate(observations)
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -649,6 +821,9 @@ def main() -> int:
             (mutation_path, "metrics"),
             (rebuild_path, "metrics"),
         ],
+        dependency_inventory=dependency_inventory,
+        ip_evaluation=ip_evaluation,
+        invalidated_run_count=args.invalidated_run_count,
     )
     validate_schema(result)
     result_path = args.output_dir / "benchmark-result.json"

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sqlite3
 import sys
 import tempfile
@@ -19,6 +20,11 @@ sys.path.insert(0, str(ROOT / "tools"))
 import poc_search_contract as contract  # noqa: E402
 import combine_poc_search_checkpoints as checkpoint_combiner  # noqa: E402
 import finalize_poc_search_result as finalizer  # noqa: E402
+import poc_search_evidence_ledger as evidence_ledger  # noqa: E402
+from poc_search_environment import (  # noqa: E402
+    classify_android_runtime,
+    require_consistent_android_runtime,
+)
 from validate_poc_capture import SchemaValidator  # noqa: E402
 
 
@@ -103,6 +109,7 @@ def validate_module_wiring() -> None:
         / "android/poc/search/src/main/kotlin/com/monumentogram/dora/poc/search/query/SafeFtsQueryCompiler.kt"
     ).read_text(encoding="utf-8")
     workflow = (ROOT / ".github/workflows/poc-search-full.yml").read_text(encoding="utf-8")
+    android_ci = (ROOT / ".github/workflows/android-ci.yml").read_text(encoding="utf-8")
     require('include(":poc:search")' in settings, "Search PoC module not included")
     require('room = "2.8.4"' in catalog, "Room version is not pinned")
     require("androidx.room.runtime" in build and "androidx.room.compiler" in build, "Room dependencies missing")
@@ -185,6 +192,174 @@ def validate_module_wiring() -> None:
         and "timeout-minutes: 360" not in workflow,
         "Checkpoint finalization or bounded runtime policy missing",
     )
+    require(
+        "check_poc_search_run_readiness.py" in workflow,
+        "Measured workflow does not fail closed on gate/IP readiness",
+    )
+    require(
+        "ubuntu-latest" not in workflow
+        and workflow.count("runs-on: ubuntu-24.04") == 4
+        and workflow.count('java-version: "17.0.19+10"') == 3,
+        "Measured workflow host/JDK environment is not pinned",
+    )
+    require(
+        workflow.count("verify_poc_search_android_sdk.py") == 2
+        and "SYSTEM_IMAGE_ARCHIVE_SHA256" in build,
+        "Measured workflow does not verify the pinned system-image provenance",
+    )
+    require(
+        workflow.count("retention-days: 90") >= 3,
+        "Actions evidence buffer is shorter than the durable-import review window",
+    )
+    require(
+        "poc_search_dependency_inventory.py --check" in workflow
+        and "poc_search_dependency_inventory.py --check" in android_ci,
+        "Resolved dependency artifact digests are not verified in CI",
+    )
+
+
+def locked_components(lock_path: Path) -> dict[str, list[str]]:
+    selected_configurations = {
+        "_agp_internal_debug_kspClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath",
+    }
+    components: dict[str, list[str]] = {}
+    for raw_line in lock_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        coordinate, raw_configurations = line.split("=", 1)
+        scopes = sorted(selected_configurations.intersection(raw_configurations.split(",")))
+        if scopes:
+            components[coordinate] = scopes
+    return components
+
+
+def validate_dependency_and_ip_inventory() -> None:
+    lock_path = ROOT / "android/poc/search/gradle.lockfile"
+    inventory_path = EVIDENCE / "dependency-inventory.json"
+    ip_path = EVIDENCE / "ip-evaluation.json"
+    require(lock_path.is_file(), "POC-SEARCH-001 dependency lock is missing")
+    require(inventory_path.is_file(), "POC-SEARCH-001 dependency inventory is missing")
+    require(ip_path.is_file(), "POC-SEARCH-001 IP assessment is missing")
+    expected = locked_components(lock_path)
+    require(bool(expected), "Search dependency lock has no measured-run configurations")
+    inventory = read_json(inventory_path)
+    require(inventory["pocId"] == "POC-SEARCH-001", "Dependency inventory PoC id mismatch")
+    require(
+        inventory["inventoryStatus"] == "COMPLETE_UNREVIEWED",
+        "Dependency inventory must not claim an unrecorded review",
+    )
+    lock_sha = hashlib.sha256(lock_path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+    require(inventory["lock"]["sha256"] == lock_sha, "Dependency inventory lock SHA mismatch")
+    require(
+        set(inventory["lock"]["configurations"])
+        == {
+            "_agp_internal_debug_kspClasspath",
+            "debugAndroidTestRuntimeClasspath",
+            "debugRuntimeClasspath",
+        },
+        "Dependency inventory configuration scope drift",
+    )
+    components = {component["coordinate"]: component for component in inventory["components"]}
+    require(len(components) == inventory["componentCount"], "Dependency inventory count mismatch")
+    require(set(components) == set(expected), "Dependency inventory does not exactly cover the lock")
+    sha_pattern = re.compile(r"^[0-9a-f]{64}$")
+    for coordinate, scopes in expected.items():
+        component = components[coordinate]
+        require(component["scopes"] == scopes, f"Dependency scope mismatch: {coordinate}")
+        require(component["licenseMetadataStatus"] == "PRESENT", f"Missing POM metadata: {coordinate}")
+        require(bool(component["artifacts"]), f"Missing artifact digests: {coordinate}")
+        filenames: set[str] = set()
+        for artifact in component["artifacts"]:
+            require(artifact["filename"] not in filenames, f"Duplicate artifact filename: {coordinate}")
+            filenames.add(artifact["filename"])
+            require(bool(sha_pattern.fullmatch(artifact["sha256"])), f"Bad artifact SHA: {coordinate}")
+            require(artifact["bytes"] > 0, f"Empty dependency artifact: {coordinate}")
+            require(
+                artifact["sourceUrl"].startswith("https://")
+                and "latest" not in artifact["sourceUrl"].lower(),
+                f"Unpinned dependency source: {coordinate}",
+            )
+    ip_evaluation = read_json(ip_path)
+    require(ip_evaluation["pocId"] == "POC-SEARCH-001", "IP assessment PoC id mismatch")
+    require(
+        ip_evaluation["dependencyInventory"]["sha256"] == file_digest(inventory_path),
+        "IP assessment references the wrong dependency inventory",
+    )
+    require(
+        ip_evaluation["dependencyInventory"]["componentCount"] == len(expected),
+        "IP assessment dependency count mismatch",
+    )
+    unresolved = {
+        coordinate
+        for coordinate, component in components.items()
+        if not any(
+            isinstance(value.get("name"), str) and value["name"]
+            for value in component["declaredLicenses"]
+        )
+    }
+    require(
+        set(ip_evaluation["unresolvedLicenseCoordinates"]) == unresolved,
+        "IP assessment does not enumerate every missing declared license",
+    )
+    require(
+        ip_evaluation["evaluationStatus"] == "NOT_ESTABLISHED"
+        and ip_evaluation["historicalExecutionPrecondition"] == "NOT_PROVEN"
+        and ip_evaluation["futureMeasuredExecution"] == "BLOCKED_PENDING_REVIEW",
+        "Unreviewed dependency inventory must block measured execution",
+    )
+    require(
+        all(value is None for value in ip_evaluation["reviewers"].values()),
+        "Reviewer names must not be invented",
+    )
+    platform_artifacts = {artifact["artifactId"]: artifact for artifact in ip_evaluation["platformArtifacts"]}
+    system_image = platform_artifacts["android-system-image-google-apis-x86_64-api36"]
+    provenance = read_json(EVIDENCE / "android-system-image-provenance.json")
+    require(provenance["package"] == "system-images;android-36;google_apis;x86_64", "System image package drift")
+    require(provenance["revision"] == 7, "System image revision drift")
+    require(provenance["archive"]["bytes"] == 1_895_447_397, "System image archive size drift")
+    require(
+        provenance["archive"]["officialSha1"] == "c6bf44bdcd885bb902b4ba752d111a073ad7a817",
+        "System image official SHA-1 drift",
+    )
+    require(
+        provenance["archive"]["sha256"]
+        == "b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160",
+        "System image SHA-256 drift",
+    )
+    require(
+        system_image["sha256"] == "sha256:" + provenance["archive"]["sha256"],
+        "IP assessment system-image digest mismatch",
+    )
+    require(
+        system_image["evidenceLocator"]
+        == "docs/evidence/poc-search-001/android-system-image-provenance.json",
+        "IP assessment system-image provenance locator mismatch",
+    )
+    for artifact in platform_artifacts.values():
+        require(artifact["licenseReviewState"] == "PROPOSED", "Platform artifact approval is unsupported")
+        require(artifact["evaluationRightsConfirmed"] is False, "Platform evaluation rights are unsupported")
+    require(
+        platform_artifacts["android-platform-sqlite"]["sha256"] is None,
+        "Unexpected SQLite binary digest without captured provenance record",
+    )
+
+
+def validate_durable_evidence_ledger() -> None:
+    ledger_path = EVIDENCE / "evidence-ledger.json"
+    require(ledger_path.is_file(), "Durable evidence ledger is missing")
+    expected = evidence_ledger.build_ledger(ROOT)
+    require(read_json(ledger_path) == expected, "Durable evidence ledger is stale or incomplete")
+    records = expected["records"]
+    require(any(record["classification"] == "VALID_FAIL" for record in records), "Valid FAIL not retained")
+    require(any(record["classification"] == "TARGETED_PASS" for record in records), "Targeted PASS not retained")
+    for record in records:
+        audit = record.get("environmentAudit")
+        if audit and audit["correctionRequired"]:
+            require(audit["derivedKinds"] == ["emulator"], "Historical environment correction drift")
+            require(audit["recordedKinds"] == ["physical"], "Historical raw kind unexpectedly changed")
 
 
 def index_digest(connection: sqlite3.Connection) -> str:
@@ -375,9 +550,21 @@ def host_sqlite_smoke() -> None:
 
 
 def validate_result_if_present() -> None:
-    result_path = EVIDENCE / "benchmark-result.json"
-    if not result_path.is_file():
-        return
+    index_path = EVIDENCE / "evidence-index.json"
+    require(index_path.is_file(), "Evidence index is missing")
+    evidence_index = read_json(index_path)
+    require(evidence_index["pocId"] == "POC-SEARCH-001", "Evidence index PoC id mismatch")
+    require(evidence_index["gateContract"]["complete"] is False, "Gate contract approval was invented")
+    require(
+        evidence_index["currentAssessment"]["newMeasurementRun"] is False,
+        "Review reassessment must not claim a new benchmark run",
+    )
+    result_path = ROOT / evidence_index["currentAssessment"]["locator"]
+    require(result_path.is_file(), "Current versioned assessment is missing")
+    require(
+        file_digest(result_path) == evidence_index["currentAssessment"]["sha256"],
+        "Evidence index assessment SHA mismatch",
+    )
     schema = read_json(ROOT / "docs/stage0/benchmark-result.schema.json")
     result = read_json(result_path)
     SchemaValidator(schema).validate(result, schema)
@@ -385,6 +572,81 @@ def validate_result_if_present() -> None:
     require(result["result"]["status"] in ("INCONCLUSIVE", "FAIL"), "Emulator evidence cannot be PASS")
     require(result["device"]["kind"] == "emulator", "Search result must disclose emulator environment")
     require(result["inputData"]["containsRealMeetingData"] is False, "Real meeting data is forbidden")
+    gate_ids = [gate["id"] for gate in result["successGates"] + result["failureGates"]]
+    require(len(gate_ids) == len(set(gate_ids)), "Duplicate result gate ids")
+    required_gate_ids = {
+        "GATE-SEARCH-P95",
+        "GATE-SEARCH-P99",
+        "GATE-SEARCH-CORRECTNESS",
+        "GATE-SEARCH-ADVERSARIAL",
+        "GATE-SEARCH-REBUILD",
+        "GATE-SEARCH-LATENCY-FAILURE",
+        "GATE-SEARCH-INJECTION-CRASH",
+        "GATE-SEARCH-MAPPING-LOSS",
+        "GATE-SEARCH-NONDETERMINISTIC",
+        "GATE-SEARCH-UPDATE-INTEGRITY",
+        "GATE-SEARCH-STORAGE-UPDATE-OVERHEAD",
+    }
+    require(set(gate_ids) == required_gate_ids, "Search gate inventory is incomplete or drifted")
+    mandatory_gates = [
+        gate
+        for gate in result["successGates"] + result["failureGates"]
+        if gate["mandatory"] and gate["approvalStatus"] == "Approved"
+    ]
+    triggered = [gate for gate in result["failureGates"] if gate["outcome"] == "triggered"]
+    not_evaluated = [gate for gate in mandatory_gates if gate["outcome"] == "not_evaluated"]
+    if triggered:
+        require(result["result"]["status"] == "FAIL", "Triggered approved failure gate must yield FAIL")
+    elif not_evaluated:
+        require(
+            result["result"]["status"] == "INCONCLUSIVE",
+            "Unevaluated mandatory approved gate must yield INCONCLUSIVE",
+        )
+        require(
+            result["recommendation"]["decision"] == "BLOCKED"
+            and bool(result["recommendation"]["ownerAction"]),
+            "Unevaluated mandatory gate cannot produce GO or omit owner action",
+        )
+    require(
+        [gate["id"] for gate in not_evaluated] == ["GATE-SEARCH-STORAGE-UPDATE-OVERHEAD"],
+        "Exactly the unresolved storage/update overhead predicate must remain unevaluated",
+    )
+    update_gate = next(gate for gate in result["failureGates"] if gate["id"] == "GATE-SEARCH-UPDATE-INTEGRITY")
+    mutation_errors = sum(
+        error["count"] for error in result["errors"] if error["code"] == "SEARCH_MUTATION_INCONSISTENT"
+    )
+    require(
+        (update_gate["outcome"] == "triggered") == (mutation_errors > 0),
+        "Mutation correctness failure is not reflected in the update failure gate",
+    )
+    inventory = read_json(EVIDENCE / "dependency-inventory.json")
+    ip_evaluation = read_json(EVIDENCE / "ip-evaluation.json")
+    expected_license_ids = {component["coordinate"] for component in inventory["components"]} | {
+        artifact["artifactId"] for artifact in ip_evaluation["platformArtifacts"]
+    }
+    actual_license_ids = {license_value["artifactId"] for license_value in result["licenses"]}
+    require(actual_license_ids == expected_license_ids, "Result license inventory is incomplete")
+    require(
+        all(
+            license_value["licenseReviewState"] == "PROPOSED"
+            and license_value["evaluationRightsConfirmed"] is False
+            for license_value in result["licenses"]
+        ),
+        "Result invents external-artifact evaluation approval",
+    )
+    environment_locator = next(
+        evidence["locator"]
+        for evidence in result["evidenceFiles"]
+        if evidence["id"] == "environment"
+    )
+    environment = read_json(ROOT / environment_locator)
+    require_consistent_android_runtime(environment["android"])
+    require(environment["correction"]["metricsChanged"] is False, "Environment correction changed metrics")
+    require(result["device"]["kind"] == environment["android"]["kind"], "Result/environment kind mismatch")
+    require(
+        result["device"]["firmwareOrBuild"] == environment["android"]["buildFingerprint"],
+        "Result/environment fingerprint mismatch",
+    )
     for evidence in result["evidenceFiles"]:
         if evidence["storage"] != "repository":
             continue
@@ -549,8 +811,10 @@ def validate_finalizer_contract() -> None:
             "kind": "emulator",
             "manufacturer": "Google",
             "model": "sdk_gphone64_x86_64",
+            "brand": "google",
             "device": "emu64xa",
             "product": "sdk_gphone64_x86_64",
+            "hardware": "ranchu",
             "buildFingerprint": "google/sdk_gphone64_x86_64/test:userdebug/test-keys",
             "securityPatch": "2026-01-01",
             "androidApi": 36,
@@ -560,6 +824,9 @@ def validate_finalizer_contract() -> None:
             "cpuSummary": "synthetic fixture",
             "sqliteVersion": "3.50.0",
             "roomVersion": "2.8.4",
+            "systemImagePackage": "system-images;android-36;google_apis;x86_64",
+            "systemImageRevision": 7,
+            "systemImageArchiveSha256": "b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160",
             "ftsCreateSql": "CREATE VIRTUAL TABLE transcript_segments_fts USING FTS4(text)",
             "buildType": "debug-androidTest",
             "monotonicClock": "SystemClock.elapsedRealtimeNanos",
@@ -605,6 +872,17 @@ def validate_finalizer_contract() -> None:
         "memory": {"peakPssMb": 100.0, "peakNativeHeapMb": 20.0, "peakManagedHeapMb": 30.0, "peakRssMb": 120.0, "sampleCount": 10},
         "temporaryDatabasesDeleted": True,
     }
+    require(
+        classify_android_runtime(observations["androidEnvironment"]) == "emulator",
+        "Google sdk_gphone environment must classify as emulator",
+    )
+    misclassified_environment = {**observations["androidEnvironment"], "kind": "physical"}
+    try:
+        require_consistent_android_runtime(misclassified_environment)
+    except ValueError:
+        pass
+    else:
+        fail("Environment cross-check accepted an emulator reported as physical")
     observations = combine_checkpoint_fixture(observations)
     finalizer.validate_observations(observations, "a" * 40)
     evaluation = finalizer.evaluate(observations)
@@ -627,6 +905,20 @@ def validate_finalizer_contract() -> None:
         schema = read_json(ROOT / "docs/stage0/benchmark-result.schema.json")
         SchemaValidator(schema).validate(result, schema)
         require(result["result"]["status"] == "INCONCLUSIVE", "Passing emulator fixture must remain INCONCLUSIVE")
+        require(result["recommendation"]["decision"] == "BLOCKED", "Incomplete gate fixture cannot recommend GO")
+        require(
+            any(
+                gate["id"] == "GATE-SEARCH-STORAGE-UPDATE-OVERHEAD"
+                and gate["outcome"] == "not_evaluated"
+                for gate in result["failureGates"]
+            ),
+            "Finalizer omitted the unresolved mandatory storage/update overhead gate",
+        )
+        require(len(result["licenses"]) == 68, "Finalizer did not emit the exact dependency/platform inventory")
+        require(
+            all(value["licenseReviewState"] == "PROPOSED" for value in result["licenses"]),
+            "Finalizer invented evaluation approval",
+        )
 
 
 def validate_no_generated_database() -> None:
@@ -642,6 +934,8 @@ def main() -> int:
     checks = (
         validate_manifests,
         validate_module_wiring,
+        validate_dependency_and_ip_inventory,
+        validate_durable_evidence_ledger,
         host_sqlite_smoke,
         validate_finalizer_contract,
         validate_result_if_present,

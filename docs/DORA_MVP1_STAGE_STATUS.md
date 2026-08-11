@@ -10,7 +10,7 @@ Stage 0B merge commit: `5e748469b22c6e7303fe6eb5f95394ea40088d84`
 Active stage: `Stage 0C — POC-SEARCH-001`
 Active branch: `stage/0c-poc-search-001`
 Active PoC: `POC-SEARCH-001`
-Stage state: **EVIDENCE COMPLETE — REVIEW PENDING; FORMAL INCONCLUSIVE**
+Stage state: **P1 REMEDIATION — OWNER DECISIONS REQUIRED; FORMAL INCONCLUSIVE**
 
 ## Stage 00 closure
 
@@ -45,19 +45,20 @@ pre-run dataset, query, mutation, warm-up, repetition, metric and Gate Set contr
 frozen before the first full run. The generated database is temporary and must not enter
 Git or Actions artifacts.
 
-Host/emulator evidence is sufficient for generated-scale correctness, schema, mapping,
-mutation and logical rebuild checks. It is only exploratory latency evidence. A formal
-`PASS` and device latency/support claim remain unavailable until the required physical
-D1-D3 search slices exist. FTS4 and the PoC schema are not production-admitted by this
-stage.
+Host/emulator evidence records generated-scale correctness, schema, mapping, mutation,
+logical rebuild and exploratory latency observations. It does not establish a gate-complete
+host `PASS`: the mandatory storage/update overhead predicate has no prospective numeric
+threshold, and the exact external-artifact evaluation precondition was not proven. A formal
+`PASS` and device latency/support claim also remain unavailable until the required physical
+D1-D3 search slices exist. FTS4 and the PoC schema are not production-admitted by this stage.
 
-The final checkpointed host/emulator campaign completed the frozen 10k/1M contract without a
+The final checkpointed host/emulator campaign completed the frozen 10k/1M measurements without a
 repeat of the multi-hour query-plan failure. Exploratory p95 is `97.537984 ms` and p99 is
 `144.481302 ms`; both independent builds passed all `61/61` correctness cases, the FTS4-driven
 count and page plans were accepted without temporary page sorting, and mutation, deterministic
-rebuild and cleanup checks passed. The generated-scale host/emulator outcome is `PASS` with a
-`GO` feasibility recommendation, while the formal result remains `INCONCLUSIVE` pending physical
-D1-D3 latency evidence.
+rebuild and cleanup checks passed. The original `PASS`/`GO` host conclusion is superseded by the
+versioned 11 August review assessment. The current result is `INCONCLUSIVE` with recommendation
+`BLOCKED`; no measurement was changed or rerun.
 
 ## Closed Stage 0B evidence record
 
@@ -86,13 +87,21 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 
 ## Current gates and blockers
 
-- `POC-SEARCH-001` has completed its frozen generated-scale evidence contract. The retained
-  earlier valid full result failed the latency gate; the corrected streaming rowid page plan then
-  passed the targeted scale guard before the final full campaign passed. Frozen manifests,
-  parameter binding, repetitions, percentile definition and approved gates were not weakened.
-- Physical D1-D3 search latency evidence remains the only blocker to a formal search `PASS` or a
-  supported-device claim. It is deferred to a separately scoped campaign and does not block
-  review of the completed host/emulator PoC evidence.
+- `POC-SEARCH-001` retains its frozen generated-scale observations. The earlier valid full result
+  failed the latency gate; the corrected streaming rowid page plan passed the targeted scale guard
+  before the final full measurement campaign met the evaluated latency/correctness predicates.
+  Frozen manifests, parameter binding, repetitions, percentile definition and historical gates
+  were not weakened.
+- The Stage 0 v0.1 search row says that a storage/update gate failure is mandatory and lists no
+  status exception, but no numeric overhead threshold was frozen. The review leaves that gate
+  `not_evaluated`; an owner-approved prospective normative version is required before any rerun.
+- The PoC module now has a dependency lock and exact 66-component artifact/POM inventory. The IP
+  assessment remains `NOT_ESTABLISHED`: named Product/Legal/IP and Engineering/Security review,
+  missing license/NOTICE evidence, and exact platform SQLite binary provenance are required. The
+  Android API 36 Google APIs x86_64 r07 system-image archive is pinned by official SHA-1 and an
+  independently computed SHA-256, but remains `PROPOSED` pending the named review.
+- Physical D1-D3 search latency evidence remains an additional blocker to a formal search `PASS`
+  or supported-device claim.
 - The fully specified predicates in Gate Set `stage0-v0.1` are **Approved for Stage 0**. Exact ASR RTF by tier, maximum PSS/native heap, diarization corrections/minute, absolute battery drain without mWh, numeric capture sample-gap tolerance and minimum raw-trace retention remain **Proposed**.
 - The owner's physical phone is sanitized as Samsung `SM-S908B`, Android 16 / API 36, build `BP2A.250605.031.A3`, primary ABI `arm64-v8a` and 10515 MiB RAM. It is assigned to D2 as the closest hardware profile; D1 and D3-D7 availability remains `unknown`.
 - The refreshed pre-Run-A profile reports 36432 MiB free app storage, above the D2 start threshold of 8192 MiB, with 72% battery, unplugged power and thermal status `NONE`; the Run B export refreshed this to 33707 MiB and 80% with the same unplugged/`NONE` state. The Run C profile reports 33645 MiB, 70%, charging and `NONE`. The D2 hardware inventory remains valid; Run C battery data is not comparative evidence.
@@ -130,7 +139,7 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 
 ## Next safe action
 
-Review the completed `POC-SEARCH-001` sanitized evidence in the Stage 0C Draft Pull Request and keep it unmerged in this task. Any physical D1-D3 search campaign, clean 60-minute capture baseline, production admission decision or next PoC requires separate explicit scope.
+Keep the Stage 0C Pull Request Draft and unmerged. The next safe action is owner resolution of the prospective storage/update gate contract plus the named dependency/platform evaluation review. `tools/check_poc_search_run_readiness.py` blocks a new targeted or full campaign until both records are complete. Physical D1-D3 search work, production admission, or the next PoC still requires separate explicit scope.
 
 ## Update protocol
 

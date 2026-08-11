@@ -5,6 +5,8 @@ import android.content.Context
 import android.os.Build
 import android.system.Os
 import android.system.OsConstants
+import com.monumentogram.dora.poc.search.evidence.AndroidBuildIdentity
+import com.monumentogram.dora.poc.search.evidence.AndroidRuntimeClassifier
 import java.io.File
 import org.json.JSONArray
 import org.json.JSONObject
@@ -108,11 +110,26 @@ object BenchmarkObservationWriter {
                 }
                 .getOrNull()
         return JSONObject()
-            .put("kind", if (Build.FINGERPRINT.contains("generic")) "emulator" else "physical")
+            .put(
+                "kind",
+                AndroidRuntimeClassifier.classify(
+                    AndroidBuildIdentity(
+                        fingerprint = Build.FINGERPRINT,
+                        manufacturer = Build.MANUFACTURER,
+                        model = Build.MODEL,
+                        brand = Build.BRAND,
+                        device = Build.DEVICE,
+                        product = Build.PRODUCT,
+                        hardware = Build.HARDWARE,
+                    )
+                ),
+            )
             .put("manufacturer", Build.MANUFACTURER)
             .put("model", Build.MODEL)
+            .put("brand", Build.BRAND)
             .put("device", Build.DEVICE)
             .put("product", Build.PRODUCT)
+            .put("hardware", Build.HARDWARE)
             .put("buildFingerprint", Build.FINGERPRINT)
             .put("securityPatch", Build.VERSION.SECURITY_PATCH)
             .put("androidApi", Build.VERSION.SDK_INT)
@@ -122,6 +139,9 @@ object BenchmarkObservationWriter {
             .put("cpuSummary", cpuSummary ?: JSONObject.NULL)
             .put("sqliteVersion", sqliteVersion)
             .put("roomVersion", "2.8.4")
+            .put("systemImagePackage", BuildConfig.SYSTEM_IMAGE_PACKAGE)
+            .put("systemImageRevision", BuildConfig.SYSTEM_IMAGE_REVISION)
+            .put("systemImageArchiveSha256", BuildConfig.SYSTEM_IMAGE_ARCHIVE_SHA256)
             .put("ftsCreateSql", ftsCreateSql)
             .put("buildType", "debug-androidTest")
             .put("monotonicClock", "SystemClock.elapsedRealtimeNanos")
