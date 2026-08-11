@@ -1,16 +1,17 @@
 # Dora MVP 1 — Stage Status
 
-Updated: 11 August 2026
+Updated: 12 August 2026
 Baseline: `1be83e2940a09f7b23e33b4cdf3827de2690f3fd`
 Stage 00 merge commit: `a4aae302f9033e5471f6759f513e7e351c375a72`
 Stage 0A merge commit: `91b9916b01ff70f63d82412bafbed0d72307dbe1`
 Repository: public `Monumentogram/DORA` by temporary owner-approved decision (ADR-0002)
 Default branch: `main`
 Stage 0B merge commit: `5e748469b22c6e7303fe6eb5f95394ea40088d84`
-Active stage: `Stage 0C — closed INCONCLUSIVE in Draft PR #10`
-Active branch: `stage/0c-poc-search-001`
-Active PoC: `POC-SEARCH-001`
-Stage state: **COMPLETE INCONCLUSIVE — STAGE 0 IP APPROVED; BENCHMARK DEFERRED; FINAL REVIEW PENDING**
+Stage 0C merge commit: `849d9d0406a619b334c9b707a4b6b42b34885b4b`
+Active stage: `Stage 0D — POC-RECOVERY-001 governance/readiness package`
+Active branch: `stage/0d-poc-recovery-governance`
+Active PoC: `POC-RECOVERY-001`
+Stage state: **PACKAGE READY FOR REVIEW — IMPLEMENTATION AND EXECUTION BLOCKED**
 
 ## Stage 00 closure
 
@@ -38,6 +39,10 @@ Stage state: **COMPLETE INCONCLUSIVE — STAGE 0 IP APPROVED; BENCHMARK DEFERRED
 
 ## Stage 0C closure scope
 
+Stage 0C is complete and Pull Request #10 was merged into `main` at
+`849d9d0406a619b334c9b707a4b6b42b34885b4b`. The historical search evidence and verdict below are
+closure context only; Stage 0D does not modify or rerun that PoC.
+
 Stage 0C evaluated only `POC-SEARCH-001` in the isolated `:poc:search` contour. It uses a
 versioned deterministic generator and fully synthetic text to evaluate Room 2.8.4 with
 SQLite FTS4 at 10,000 conversations and exactly 1,000,000 transcript segments. The
@@ -62,6 +67,30 @@ versioned 11 August review assessment. The current v5 closure result is `INCONCL
 recommendation `BLOCKED`; no measurement was changed or rerun. D1/D3 and the measured v0.2
 campaign are deferred to separately authorized future scope.
 
+## Stage 0D governance/readiness scope
+
+Stage 0D prepares and publishes only the governance/readiness package for `POC-RECOVERY-001`.
+Proposed `DEC-044`, the exact recovery Gate Set and machine protocol freeze the owner constraints:
+public Tink Streaming AEAD versus sealed five-second Tink AEAD microfiles with authenticated
+manifest, zero committed-byte loss, per-valid-kill tail loss no more than five seconds, 120 base
+hard kills/candidate and at least 100 valid. Fifteen/30-second microfiles are non-PASS observations
+or post-failure fallbacks.
+
+The exact `tink-android:1.23.0` published JAR/POM/transitive closure, SHA-256 values,
+license/NOTICE/patent evidence, relevant advisory history, non-native composition and shaded
+protobuf 4.33.6 are recorded under `docs/evidence/poc-recovery-001/`. This is package preparation,
+not dependency admission. No Tink coordinate was added to Gradle.
+
+Phase A is permitted in principle on the pinned emulator and available physical D2, but actual
+execution is withheld. Without D1/D5 Phase A can produce only `FAIL` or `INCONCLUSIVE`. A full
+physical verdict requires D1/D2/D5; D1/D5 procurement is deferred. The Project owner is assigned as
+Stage 0 Product/IP reviewer, while the independent recovery Engineering/Security reviewer is
+unassigned and blocking. Production Legal is unassigned and Production Security remains separate.
+
+No `:poc:recovery`, recovery harness, production schema, `:app` change, kill campaign, device run,
+benchmark or recovery measurement exists. The fail-closed readiness record remains
+`executionAllowed=false`.
+
 ## Closed Stage 0B evidence record
 
 Stage 0B implemented only the disposable `POC-CAPTURE-001` evidence harness selected by `OD-01`. It did not admit that implementation into production Dora.
@@ -76,7 +105,7 @@ The owner phone could not be attached to the remote development workstation. Sta
 
 Three bounded phone runs were returned after two invalid pre-recording starts. Run A attempt 003 and Run B attempt 004 on `5d9a8ac` recorded, stopped and finalized successfully. Run C attempt 005 recorded for 63:49 but is classified by the owner as an `invalidated exploratory attempt`: only 25:58 was screen-off, a TrueConf call occurred and the phone was charging. Bluetooth was fully disabled before Run C and no route change was reported. All three completed recordings produced valid WAVs, zero AudioRecord errors and verified raw-audio deletion/absence; no approved critical capture failure was observed on the tested Samsung device. The formal result remains `INCONCLUSIVE`, and the owner accepts exploratory closure without repeating Run C on the primary work phone. Production capture, storage, ML, backend, account, production identity/signing and model weights remain outside this stage. The bootstrap `:app` must not receive microphone permission.
 
-## Owner decisions effective 4 and 11 August 2026
+## Owner decisions effective 4, 11 and 12 August 2026
 
 - `OD-01`: first experiment is `POC-CAPTURE-001`, limited to a physical microphone and explicit Start/Stop; call, system-audio and passive recording are prohibited.
 - `OD-02`: every test run requires a separate reminder checkbox; it is not legal permission.
@@ -89,9 +118,21 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - `OD-11`: Project owner is Product and IP policy reviewer and acts as Engineering/Security reviewer only for Stage 0 evaluation. This does not replace production Legal or independent production Security. Embedded platform SQLite may use the containing system-image digest plus exact image/runtime identity for Stage 0; that boundary must be reconsidered before production admission.
 - `OD-12`: Project owner prospectively approves Option B for `stage0-v0.2`, based on the local-MVP storage/update/one-second visibility balance and not on prior Dora results. Benchmark execution remains separately withheld.
 - `OD-13`: Project owner approves the exact 66-component/license/NOTICE/platform package only for internal synthetic Stage 0 evaluation and accepts formal `INCONCLUSIVE` closure without a new benchmark. This is not production Legal/Security approval, does not admit FTS4 automatically, is not retroactive, and leaves D1/D3 plus measured execution deferred.
+- `OD-14`: Project owner freezes the recovery governance constraints and authorizes only preparation of the exact Stage 0 package. Proposed template/protocol review, independent recovery Engineering/Security approval and a later separate owner execution authorization remain mandatory; `executionAllowed=false`.
 
 ## Current gates and blockers
 
+- `POC-RECOVERY-001` remains `BLOCKED`, not READY. Proposed `DEC-044`, Gate Set
+  `poc-recovery-stage0-v0.1`, exact machine protocol and evidence package exist, but package review
+  and independent recovery Engineering/Security approval are absent.
+- The exact published Tink closure is inventoried without Gradle wiring. A future harness-resolved
+  graph remains a P0 pre-execution check because repository Kotlin alignment may differ from the
+  publisher POM closure. No runtime dependency or production admission exists.
+- Phase A execution is separately withheld. D2 hardware exists, but its recovery SQLite runtime
+  preflight is pending. D1/D5 are unavailable, so Phase A PASS is structurally forbidden and the
+  full physical verdict is deferred.
+- `tools/check_poc_recovery_run_readiness.py` must fail closed while
+  `executionAllowed=false`; completion of any prerequisite cannot silently authorize execution.
 - `POC-SEARCH-001` retains its frozen generated-scale observations. The earlier valid full result
   failed the latency gate; the corrected streaming rowid page plan passed the targeted scale guard
   before the final full measurement campaign met the evaluated latency/correctness predicates.
@@ -150,16 +191,19 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - No controlled non-public evidence store or custodian has been configured. Until then, only synthetic data and sanitized aggregate/public evidence are allowed; raw traces/audio and purpose-recorded volunteer phrases remain blocked.
 - Production markets/lawful basis/copy under `DEC-001` and Legal review remain unresolved. The Stage 0 reminder checkbox does not resolve production consent legality.
 - No PoC result admits a production dependency. Native code or model admission later requires an ADR plus license, provenance, ABI, 16-KiB and runtime evidence.
-- `main` remains the protected integration branch. Stage 0C evidence closure stays on `stage/0c-poc-search-001`; its Draft PR must remain unmerged in this task.
+- `main` remains the protected integration branch. Stage 0C/PR #10 is already merged at the recorded
+  commit. Stage 0D stays on `stage/0d-poc-recovery-governance`; its new Draft PR must remain unmerged.
 
 ## Next safe action
 
-Keep Stage 0C Pull Request #10 Draft and unmerged for final review. There is no authorized benchmark
-or in-scope D1/D3 action. A future measured `stage0-v0.2` campaign requires separate scope, matching
-physical D1–D3, a fresh exact-commit preflight and a later explicit Project-owner execution
-authorization. `tools/check_poc_search_run_readiness.py` fails closed while
-`benchmarkExecutionAllowed=false`. Production admission or the next PoC also requires separate
-explicit scope.
+Review the Stage 0D recovery package without starting implementation or execution. The Project
+owner must record the Product/IP disposition and assign an independent recovery
+Engineering/Security reviewer. That reviewer must approve or revise the crypto template, public
+Streaming AEAD checkpoint proof, microfile manifest/key protocol, SQLite durability and complete
+kill/fault state machine. Only a later, separately scoped task may implement the isolated harness;
+only after safe verification, exact resolved-graph/device preflight and a still later explicit
+Project-owner authorization may `executionAllowed` become true. The Draft PR must not be merged in
+this task.
 
 ## Update protocol
 

@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "pocId": "POC-RECOVERY-001",
+  "status": "RECOVERY_STAGE0_PLATFORM_BOUNDARY_PROPOSED_PREFLIGHT_INCOMPLETE",
+  "decisionId": "OD-14",
+  "policyLocator": "docs/stage0/DORA_MVP1_IP_ASSET_POLICY.md#582-stage-0-recovery-platform-sqlite-boundary-od-14",
+  "scope": "PoC-local DB/file split-brain and reconciliation journal only",
+  "platformApi": "android.database.sqlite",
+  "separateSQLiteLibraryDownloadedBundledOrRedistributed": false,
+  "roomAllowed": false,
+  "sqlCipherAllowed": false,
+  "workManagerAllowed": false,
+  "productionSchemaAllowed": false,
+  "productionAdmission": false,
+  "phaseA": {
+    "executionAllowed": false,
+    "environments": [
+      {
+        "id": "PINNED_API36_X86_64_EMULATOR",
+        "availability": "PROVENANCE_PINNED_LIVE_PREFLIGHT_REQUIRED",
+        "provenanceClass": "CONTAINING_SYSTEM_IMAGE",
+        "package": "system-images;android-36;google_apis;x86_64",
+        "revision": 7,
+        "displayName": "Google APIs Intel x86_64 Atom System Image",
+        "archive": {
+          "filename": "x86_64-36_r07.zip",
+          "bytes": 1895447397,
+          "sourceUrl": "https://dl.google.com/android/repository/sys-img/google_apis/x86_64-36_r07.zip",
+          "officialRepositoryMetadata": "https://dl.google.com/android/repository/sys-img/google_apis/sys-img2-3.xml",
+          "officialSha1": "c6bf44bdcd885bb902b4ba752d111a073ad7a817",
+          "sha256": "b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160",
+          "digestScope": "containing-system-image"
+        },
+        "runtimeIdentity": {
+          "buildFingerprint": "google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+          "androidApi": 36,
+          "abi": "x86_64",
+          "sqliteVersionObservedPreviously": "3.44.3",
+          "freshRecoveryPreflightRequired": true
+        },
+        "sourceEvidenceLocator": "docs/evidence/poc-search-001/android-system-image-provenance.json",
+        "reuseBoundary": "Only the immutable platform provenance is reused; no POC-SEARCH-001 harness, result or benchmark is reused."
+      },
+      {
+        "id": "PHYSICAL_D2",
+        "availability": "AVAILABLE_HARDWARE_RECOVERY_SQLITE_PREFLIGHT_REQUIRED",
+        "provenanceClass": "CONTAINING_PHYSICAL_FIRMWARE_IDENTITY",
+        "deviceProfileId": "D2",
+        "sanitizedKnownIdentity": {
+          "manufacturer": "samsung",
+          "model": "SM-S908B",
+          "androidVersion": "16",
+          "androidApi": 36,
+          "buildId": "BP2A.250605.031.A3",
+          "securityPatch": "2026-05-05",
+          "primaryAbi": "arm64-v8a",
+          "pageSizeBytes": 4096,
+          "uniqueHardwareIdentifierRecorded": false
+        },
+        "requiredFreshRuntimeEvidence": {
+          "fullSanitizedBuildFingerprint": null,
+          "sqliteVersion": null,
+          "sqliteCompileOptionsDigest": null,
+          "effectiveJournalMode": null,
+          "effectiveSynchronousMode": null,
+          "verifiedBootStateSanitized": null,
+          "collectedAtUtc": null,
+          "exactAuthorizedCommit": null
+        },
+        "individualSQLiteBinaryDigestRequiredForStage0Recovery": false,
+        "reason": "An unrooted owner device does not expose a canonical redistributable firmware archive or stable nested SQLite binary for hashing; the recovery-only Stage 0 boundary uses exact sanitized firmware/runtime identity and runtime SQLite facts.",
+        "sourceEvidenceLocator": "docs/evidence/poc-capture-001/device-profile.json"
+      }
+    ]
+  },
+  "fullPhysicalVerdict": {
+    "requiredProfiles": [
+      "D1",
+      "D2",
+      "D5"
+    ],
+    "D1": "UNAVAILABLE_PROVENANCE_UNKNOWN",
+    "D2": "AVAILABLE_RUNTIME_PREFLIGHT_PENDING",
+    "D5": "UNAVAILABLE_PROVENANCE_UNKNOWN",
+    "procurementRequiredNow": false,
+    "verdictDeferred": true
+  },
+  "preExecutionRules": [
+    "Record fresh exact-commit runtime SQLite identity for every participating environment.",
+    "Record SELECT sqlite_version(), compile_options digest, effective journal_mode and synchronous mode.",
+    "Record no separate SQLite, Room or SQLCipher artifact in the future resolved graph.",
+    "Any system image, firmware/build, API, ABI or SQLite drift requires a new provenance record and package delta review.",
+    "Do not infer production support or admission from this Stage 0 platform boundary."
+  ],
+  "productionReconsiderationRequired": true,
+  "productionLegalStatus": "UNASSIGNED",
+  "productionSecurityStatus": "SEPARATE_APPROVAL_REQUIRED"
+}

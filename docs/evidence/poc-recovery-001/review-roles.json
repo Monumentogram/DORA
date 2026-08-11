@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "pocId": "POC-RECOVERY-001",
+  "recordedOn": "2026-08-12",
+  "roles": {
+    "packageAuthor": {
+      "role": "Governance package preparer",
+      "reviewer": "Codex",
+      "mayApproveOwnPackage": false,
+      "mayAuthorizeExecution": false
+    },
+    "stage0ProductIp": {
+      "role": "Stage 0 Product/IP reviewer",
+      "reviewer": "Project owner",
+      "status": "ASSIGNED_REVIEW_PENDING",
+      "authority": [
+        "approve or reject exact Stage 0 evaluation scope",
+        "approve or reject license, NOTICE, provenance and Product/IP compatibility for internal Stage 0 evaluation"
+      ],
+      "doesNotAuthorize": [
+        "crypto Engineering/Security correctness",
+        "production Legal",
+        "production Security",
+        "redistribution",
+        "dependency admission",
+        "execution without a later separate owner record"
+      ]
+    },
+    "independentRecoveryEngineeringSecurity": {
+      "role": "Independent recovery-scoped Engineering/Security reviewer",
+      "reviewer": null,
+      "status": "UNASSIGNED_BLOCKING",
+      "independence": "Must not be the package author; review is separate from Project-owner Product/IP review and separate from Production Security.",
+      "requiredApprovals": [
+        "public StreamingAead checkpoint and truncated-prefix proof",
+        "AES128_GCM_HKDF_4KB public construction and parameter suitability",
+        "microfile AEAD template, authenticated manifest encoding and anti-rollback rules",
+        "Android Keystore wrapping, run/segment key hierarchy, AAD and key-loss behavior",
+        "commit point, SQLite durability profile and DB/file reconciliation state machine",
+        "hard-kill barriers, invalidation and replacement rules",
+        "fault, quarantine, idempotency and cleanup matrix"
+      ],
+      "mayRejectOrRequireProtocolRevision": true,
+      "mayAuthorizeExecution": false,
+      "replacesProductionSecurity": false
+    },
+    "executionAuthorizer": {
+      "role": "Stage 0 execution authorizer",
+      "reviewer": "Project owner",
+      "status": "AUTHORIZATION_WITHHELD",
+      "precondition": "Package review and independent Engineering/Security approval complete, exact future resolved graph and device preflights reviewed, harness separately implemented and safely verified.",
+      "explicitLaterRecordRequired": true,
+      "implicitAuthorizationAllowed": false
+    },
+    "productionLegal": {
+      "role": "Production Legal",
+      "reviewer": null,
+      "status": "UNASSIGNED_PRODUCTION_BLOCKED",
+      "requiredForStage0PackagePreparation": false,
+      "requiredForProductionOrRedistribution": true
+    },
+    "productionSecurity": {
+      "role": "Production Security",
+      "reviewer": null,
+      "status": "SEPARATE_FUTURE_APPROVAL_REQUIRED",
+      "replacedByRecoveryReview": false,
+      "requiredForStage0PackagePreparation": false,
+      "requiredForProductionAdmission": true
+    }
+  }
+}

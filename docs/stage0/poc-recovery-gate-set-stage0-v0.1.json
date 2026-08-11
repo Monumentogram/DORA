@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "pocId": "POC-RECOVERY-001",
+  "gateSetVersion": "poc-recovery-stage0-v0.1",
+  "status": "PROPOSED_REVIEW_REQUIRED",
+  "ownerConstraintsFrozen": true,
+  "decisionIds": [
+    "DEC-044",
+    "OD-14"
+  ],
+  "normativeMarkdown": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_1.md",
+  "protocolLocator": "docs/stage0/poc-recovery-protocol-stage0-v0.1.json",
+  "executionAllowed": false,
+  "executionAuthorization": {
+    "status": "WITHHELD_PENDING_REVIEW_AND_SEPARATE_OWNER_AUTHORIZATION",
+    "authorizedBy": null,
+    "authorizedOn": null,
+    "authorizationRecord": null,
+    "implicitFlipForbidden": true,
+    "blockers": [
+      "REC-RDY-01-PACKAGE-REVIEW",
+      "REC-RDY-02-INDEPENDENT-ENGINEERING-SECURITY",
+      "REC-RDY-03-STREAMING-CHECKPOINT-PROOF",
+      "REC-RDY-04-MICROFILE-CRYPTO-PROTOCOL",
+      "REC-RDY-05-FUTURE-RESOLVED-GRAPH",
+      "REC-RDY-06-DEVICE-SQLITE-PREFLIGHT",
+      "REC-RDY-07-HARNESS-ABSENT",
+      "REC-RDY-08-OWNER-EXECUTION-AUTHORIZATION"
+    ]
+  },
+  "scope": {
+    "stage": "Stage 0D governance/readiness only",
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "finalAdrAudio001": false,
+    "implementationAllowed": false,
+    "measurementAllowed": false,
+    "gradleRuntimeDependencyAllowed": false,
+    "recoveryModuleAllowed": false,
+    "productionAppChangeAllowed": false
+  },
+  "candidates": [
+    {
+      "id": "REC-STREAM-TINK",
+      "primitive": "Tink StreamingAead public API",
+      "artifact": "com.google.crypto.tink:tink-android:1.23.0",
+      "template": "AES128_GCM_HKDF_4KB",
+      "templateStatus": "PROPOSED_PENDING_INDEPENDENT_ENGINEERING_SECURITY_REVIEW",
+      "passEligibleCadencesSeconds": null,
+      "internalApiAllowed": false
+    },
+    {
+      "id": "REC-MICROFILE-TINK",
+      "primitive": "Tink Aead sealed microfiles plus authenticated manifest",
+      "artifact": "com.google.crypto.tink:tink-android:1.23.0",
+      "template": null,
+      "templateStatus": "UNSELECTED_PENDING_INDEPENDENT_ENGINEERING_SECURITY_REVIEW",
+      "passEligibleCadencesSeconds": [
+        5
+      ],
+      "observationOnlyCadencesSeconds": [
+        15,
+        30
+      ],
+      "internalApiAllowed": false
+    }
+  ],
+  "thresholds": {
+    "fixture": {
+      "encoding": "PCM_S16LE",
+      "sampleRateHz": 16000,
+      "channels": 1,
+      "bytesPerSample": 2,
+      "bytesPerSecond": 32000
+    },
+    "committedLossBytesMaximum": 0,
+    "tailLossSecondsMaximum": 5.0,
+    "tailLossBytesMaximum": 160000,
+    "authenticatedRecoveredBytesPercentMinimum": 100.0,
+    "baseHardKillAttemptsPerCandidate": 120,
+    "validHardKillsPerCandidateMinimum": 100,
+    "strataCount": 12,
+    "baseAttemptsPerStratumPerCandidate": 10,
+    "validHardKillsPerStratumMinimum": 8,
+    "replacementAttemptsPerCandidateMaximum": 20,
+    "duplicateProcessingIntentMaximum": 0,
+    "missingProcessingIntentMaximum": 0,
+    "automaticMicrophoneStartsMaximum": 0
+  },
+  "phaseA": {
+    "status": "PERMITTED_IN_PRINCIPLE_BUT_EXECUTION_WITHHELD",
+    "environments": [
+      "PINNED_API36_X86_64_EMULATOR",
+      "PHYSICAL_D2"
+    ],
+    "plannedBaseAttemptsPerCandidate": {
+      "PINNED_API36_X86_64_EMULATOR": 72,
+      "PHYSICAL_D2": 48
+    },
+    "validMinimumPerCandidate": {
+      "total": 100,
+      "PINNED_API36_X86_64_EMULATOR": 60,
+      "PHYSICAL_D2": 40,
+      "perStratumTotal": 8,
+      "perStratumEmulator": 4,
+      "perStratumD2": 2
+    },
+    "allowedVerdicts": [
+      "FAIL",
+      "INCONCLUSIVE"
+    ],
+    "passAllowed": false,
+    "passForbiddenReason": "Physical D1 and D5 are unavailable and cannot be substituted by emulator or D2 evidence."
+  },
+  "fullPhysicalVerdict": {
+    "status": "DEFERRED_D1_D5_NOT_PROCURED",
+    "requiredPhysicalProfiles": [
+      "D1",
+      "D2",
+      "D5"
+    ],
+    "plannedBaseAttemptsPerCandidate": {
+      "D1": 48,
+      "D2": 36,
+      "D5": 36
+    },
+    "validMinimumPerCandidate": {
+      "total": 100,
+      "D1": 40,
+      "D2": 30,
+      "D5": 30,
+      "perStratumTotal": 8,
+      "perStratumPerPhysicalProfile": 2
+    },
+    "phaseAAttemptsReusable": false,
+    "procurementRequiredNow": false,
+    "passAllowedOnlyAfterSeparateAuthorization": true
+  },
+  "gates": [
+    {
+      "id": "REC-G01-COMMITTED",
+      "predicate": "committedLossBytes == 0 for every valid hard kill and applicable fault case",
+      "critical": true
+    },
+    {
+      "id": "REC-G02-AUTH-PREFIX",
+      "predicate": "all returned bytes authenticate with exact associated data and form one gap-free prefix",
+      "critical": true
+    },
+    {
+      "id": "REC-G03-TAIL",
+      "predicate": "tailLossBytes <= 160000 and tailLossSeconds <= 5.000 for every valid hard kill",
+      "critical": true
+    },
+    {
+      "id": "REC-G04-KILL-COVERAGE",
+      "predicate": "120 base dispositions, at least 100 valid hard kills, all stratum and environment minima, all invalids explicit",
+      "critical": false
+    },
+    {
+      "id": "REC-G05-IDEMPOTENCY",
+      "predicate": "repeated recovery has stable prefix/classification and exactly-once processing-intent IDs",
+      "critical": true
+    },
+    {
+      "id": "REC-G06-FAIL-CLOSED",
+      "predicate": "corruption, truncation, key loss and split-brain are distinguished and no ambiguous state is silently deleted",
+      "critical": true
+    },
+    {
+      "id": "REC-G07-KEYS",
+      "predicate": "Keystore wrapping, unique run/segment key separation, mandatory key-loss coverage and zero secret export/logging",
+      "critical": true
+    },
+    {
+      "id": "REC-G08-QUARANTINE-CLEANUP",
+      "predicate": "quarantine and cleanup converge inside the allowlisted PoC-private root without committed-data loss",
+      "critical": true
+    },
+    {
+      "id": "REC-G09-NO-AUTO-CAPTURE",
+      "predicate": "zero microphone opens/restarts and no recording permission in the PoC",
+      "critical": true
+    },
+    {
+      "id": "REC-G10-DEVICE-VERDICT",
+      "predicate": "full PASS requires separately authorized physical D1, D2 and D5 coverage",
+      "critical": false
+    }
+  ],
+  "verdictAlgorithm": {
+    "criticalFailure": "FAIL",
+    "missingNoncriticalEvidence": "INCONCLUSIVE",
+    "phaseAAllGatesSatisfied": "INCONCLUSIVE",
+    "microfile15Or30SecondsAllObservedCasesSatisfied": "NOT_PASS_ELIGIBLE",
+    "fullPassRequires": [
+      "all applicable gates satisfied",
+      "separately authorized fresh physical D1/D2/D5 campaign",
+      "approved independent recovery Engineering/Security review",
+      "approved package review",
+      "recorded Project-owner execution authorization"
+    ],
+    "winnerSelectionIncluded": false,
+    "finalAdrIncluded": false
+  }
+}

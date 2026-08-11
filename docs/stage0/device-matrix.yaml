@@ -1,7 +1,7 @@
 schema_version: 1
 matrix_id: dora-mvp1-stage0-device-matrix
-updated: "2026-08-10"
-stage: "Stage 0B"
+updated: "2026-08-12"
+stage: "Stage 0D governance/readiness"
 owner_task: "POC-DEVICE-001"
 inventory_confirmed: true
 production_support_claims_allowed: false
@@ -14,6 +14,50 @@ owner_decision:
   choice: B
   scope: "One owner-provided physical Android phone for the first exploratory run."
   additional_device_procurement: false
+
+recovery_owner_decision:
+  id: OD-14
+  status: Approved_owner_constraints_proposed_experiment
+  approved_on: "2026-08-12"
+  owner: "Project owner"
+  poc_id: POC-RECOVERY-001
+  governance_package_only: true
+  implementation_allowed: false
+  execution_allowed: false
+  phase_a:
+    status: permitted_in_principle_execution_withheld
+    environments:
+      - PINNED_API36_X86_64_EMULATOR
+      - D2
+    emulator_provenance: docs/evidence/poc-recovery-001/sqlite-platform-provenance.json
+    physical_d2_availability: available
+    physical_d2_runtime_sqlite_preflight: pending
+    allowed_verdicts:
+      - FAIL
+      - INCONCLUSIVE
+    pass_allowed: false
+    reason_pass_forbidden: "D1 and D5 are unavailable; emulator and D2 cannot substitute for the full physical matrix."
+  full_physical_verdict:
+    required_profiles:
+      - D1
+      - D2
+      - D5
+    D1_availability: unknown
+    D2_availability: available
+    D5_availability: unknown
+    status: deferred
+    additional_device_procurement_required_now: false
+  kill_contract:
+    base_attempts_per_candidate: 120
+    valid_hard_kills_minimum_per_candidate: 100
+    invalid_attempts_must_remain_explicit: true
+    silent_restart_or_replacement_allowed: false
+  authority:
+    product_ip_reviewer: Project owner
+    independent_recovery_engineering_security_reviewer: unassigned_blocking
+    separate_owner_execution_authorization_required: true
+    production_legal: unassigned
+    production_security_replaced: false
 
 first_exploratory_campaign:
   mode: single_owner_physical_phone

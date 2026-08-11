@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "pocId": "POC-RECOVERY-001",
+  "assessedOn": "2026-08-12",
+  "status": "BLOCKED_PACKAGE_REVIEW_PENDING",
+  "executionAllowed": false,
+  "implementationAllowedByThisPackage": false,
+  "measuredExecutionAllowed": false,
+  "runtimeDependencyAdded": false,
+  "recoveryModuleExists": false,
+  "harnessImplemented": false,
+  "killCampaignExecuted": false,
+  "deviceTestsExecuted": false,
+  "benchmarksExecuted": false,
+  "productionAppChanged": false,
+  "packageArtifacts": {
+    "proposedDecisionPresent": true,
+    "exactGateSetPresent": true,
+    "machineProtocolPresent": true,
+    "dependencyInventoryPresent": true,
+    "licenseNoticeInventoryPresent": true,
+    "securityInventoryPresent": true,
+    "sqliteProvenanceExtensionPresent": true,
+    "reviewRolesPresent": true
+  },
+  "blockers": [
+    {
+      "id": "REC-RDY-01-PACKAGE-REVIEW",
+      "priority": "P0",
+      "status": "OPEN",
+      "owner": "Project owner",
+      "condition": "Review and explicitly approve or reject the exact governance and Product/IP package for Stage 0 evaluation."
+    },
+    {
+      "id": "REC-RDY-02-INDEPENDENT-ENGINEERING-SECURITY",
+      "priority": "P0",
+      "status": "OPEN_UNASSIGNED",
+      "owner": "Project owner",
+      "condition": "Assign an independent recovery Engineering/Security reviewer and record approval or required changes."
+    },
+    {
+      "id": "REC-RDY-03-STREAMING-CHECKPOINT-PROOF",
+      "priority": "P0",
+      "status": "OPEN",
+      "owner": "Independent recovery Engineering/Security reviewer",
+      "condition": "Approve a public-API-only StreamingAead commit/checkpoint and truncated-prefix proof including EOF versus authentication-failure handling."
+    },
+    {
+      "id": "REC-RDY-04-MICROFILE-CRYPTO-PROTOCOL",
+      "priority": "P0",
+      "status": "OPEN",
+      "owner": "Independent recovery Engineering/Security reviewer",
+      "condition": "Approve the exact microfile AEAD template, authenticated manifest encoding, key hierarchy, AAD and anti-rollback rules."
+    },
+    {
+      "id": "REC-RDY-05-FUTURE-RESOLVED-GRAPH",
+      "priority": "P0",
+      "status": "OPEN_BY_DESIGN",
+      "owner": "Future recovery implementation task",
+      "condition": "After separately authorized harness scaffolding, capture and review the exact Gradle-resolved graph and any Kotlin alignment delta without admitting it to production."
+    },
+    {
+      "id": "REC-RDY-06-DEVICE-SQLITE-PREFLIGHT",
+      "priority": "P0",
+      "status": "OPEN",
+      "owner": "Future authorized preflight task",
+      "condition": "Record exact-commit emulator and D2 runtime SQLite/provenance facts and approve the journal mode/durability profile."
+    },
+    {
+      "id": "REC-RDY-07-HARNESS-ABSENT",
+      "priority": "P0",
+      "status": "OPEN_BY_OWNER_INSTRUCTION",
+      "owner": "Future separately scoped implementation task",
+      "condition": "Implement and safely verify an isolated common harness only after package/review approval."
+    },
+    {
+      "id": "REC-RDY-08-OWNER-EXECUTION-AUTHORIZATION",
+      "priority": "P0",
+      "status": "WITHHELD",
+      "owner": "Project owner",
+      "condition": "After all other Phase A prerequisites, record a separate authorization that explicitly changes executionAllowed to true."
+    },
+    {
+      "id": "REC-RDY-09-D1-D5-FULL-VERDICT",
+      "priority": "P1",
+      "status": "DEFERRED",
+      "owner": "Project owner",
+      "condition": "Provide physical D1 and D5 only when a full D1/D2/D5 verdict is later desired; no purchase is required now."
+    },
+    {
+      "id": "REC-RDY-10-PRODUCTION-LEGAL-SECURITY",
+      "priority": "P1",
+      "status": "OUTSIDE_STAGE0_UNASSIGNED",
+      "owner": "Project owner",
+      "condition": "Assign Production Legal and Production Security before any production admission or redistribution; recovery-scoped approval does not satisfy this."
+    }
+  ],
+  "phaseA": {
+    "allowedInPrinciple": true,
+    "executionAllowedNow": false,
+    "environments": [
+      "PINNED_API36_X86_64_EMULATOR",
+      "PHYSICAL_D2"
+    ],
+    "possibleVerdicts": [
+      "FAIL",
+      "INCONCLUSIVE"
+    ],
+    "passAllowed": false
+  },
+  "fullVerdict": {
+    "requiredPhysicalProfiles": [
+      "D1",
+      "D2",
+      "D5"
+    ],
+    "availableNow": false,
+    "deferred": true
+  }
+}

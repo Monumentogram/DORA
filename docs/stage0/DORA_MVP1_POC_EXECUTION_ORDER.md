@@ -1,9 +1,9 @@
 # Dora MVP 1 — Stage 0 PoC Execution Order
 
-Version: 1.1
-Date: 5 August 2026
-Owner decisions effective: 4 August 2026 (`OD-01`–`OD-10`)
-Status: owner-approved first-PoC order; device discovery pending; no technical PoC has been started
+Version: 1.2
+Date: 12 August 2026
+Owner decisions effective: 4, 11 and 12 August 2026 (`OD-01`–`OD-14`)
+Status: owner-approved ordering with recovery governance addendum; recovery implementation/execution blocked
 Scope: all ten Technical Plan PoCs mapped to the executable backlog
 
 ## 1. Decision summary
@@ -33,7 +33,7 @@ It is selected by `OD-01` because the higher-precedence Technical Plan puts capt
 
 ```mermaid
 flowchart TD
-    O["Approved owner decisions OD-01..OD-10"] --> G["Defined Stage 0 gates Approved; unresolved thresholds Proposed"]
+    O["Approved owner constraints OD-01..OD-14"] --> G["Defined Stage 0 gates Approved; recovery exact contract Proposed/review-blocked"]
     O --> D["Connect and auto-identify one physical phone"]
     O --> C["Synthetic-only until controlled evidence storage"]
     G --> CAP["POC-CAPTURE-001"]
@@ -73,7 +73,7 @@ Common blockers:
 | PoC | Direct dependencies | What it blocks | Safe parallel work | Physical phone | Audio/data requirement | Owner decisions |
 |---|---|---|---|---|---|---|
 | `POC-CAPTURE-001` | approved defined gates; one owner phone connected and automatically inventoried; synthetic fixture and evidence/deletion plan | `POC-BATTERY-001`; production Stage 2; informs recovery writer timing and offline capture harness | Search harness and synthetic decision corpus preparation | **First exploratory run:** exactly one physical owner phone. **Full gate later:** required D1/D2/D3/D5 and applicable D4–D7 slices; emulator only supplements API/fault checks | Reproducible synthetic acoustic speech/silence first; purpose-recorded only after consent and controlled-store gate | OD-01, OD-02, OD-03, OD-05, OD-06, OD-07, OD-08 |
-| `POC-RECOVERY-001` | gates, D1–D5, a scoped pre-PoC audio/container hypothesis record; capture frame/file contract | production Stage 3 and `ADR-AUDIO-001` final storage choice; contributes to offline/process-death evidence | VAD deterministic replay; ASR/search benchmark work | **Required:** physical D1/D2/D5; emulator for ≥100 kill/fault points | Deterministic one-hour mixed signal; no real speech required for crypto correctness | OD-03, OD-05, OD-06, OD-08; checkpoint window under OD-05 |
+| `POC-RECOVERY-001` | Proposed `DEC-044`; exact recovery Gate Set/protocol; reviewed exact Tink package; independent recovery Engineering/Security approval; separate owner execution authorization; future isolated harness and exact resolved graph | production Stage 3 and later `ADR-AUDIO-001` final storage choice; contributes to offline/process-death evidence | governance review only until separately scoped implementation | **Phase A:** pinned emulator + available physical D2, but only `FAIL`/`INCONCLUSIVE`. **Full verdict:** fresh physical D1/D2/D5; D1/D5 procurement deferred | Deterministic synthetic PCM16 byte oracle only; no microphone/real speech. 120 base hard kills/candidate, ≥100 valid | OD-05, OD-08, OD-11, OD-14 |
 | `POC-VAD-001` | gates, data governance; deterministic clock/frame contract | production Stage 3 segmentation profile; stable physical-segment inputs for later pipeline | Recovery and search; acoustic part can wait while deterministic part runs | Physical D1–D3 for real-time/acoustic evidence; emulator/JVM suitable for deterministic boundary cases | Synthetic 89.5/90/90.5, resume 89.9, noise and >10 min speech-like fixtures; governed real speech only later | OD-03, OD-04, OD-05, OD-06, OD-08, OD-09 if purpose-recorded |
 | `POC-ASR-001` | gates, governed immutable corpus, D1–D4/D7, artifact license/digest/ABI/16-KiB approval | production Stage 4; timestamp contract and quality baseline for diarization/offline local ML | Search and decision benchmarks; runtime candidates may be compared independently after common normalization freezes | **Required:** D1–D4 for tier claims; D7 emulator/physical for native gate | Blind RU/EN/mixed clean/noisy/speakerphone corpus; participant-isolated evaluation | OD-03–OD-06, OD-08–OD-10 plus named IP/Legal artifact approval |
 | `POC-DIAR-001` | gates, governed 1–6 speaker corpus, ASR/reference timestamp contract, exact weight license | production Stage 5 and correction UX scope | Battery repeats and decision/search work after shared corpus freezes | **Required:** D2/D3; D7 for native path; server reference may run separately | Clean/noisy/overlap/fast-turn/returning-speaker/speakerphone/negative corpus | OD-03–OD-06, OD-08–OD-10 plus weight terms approval |
@@ -127,7 +127,11 @@ Execute only `POC-CAPTURE-001` in the next chat:
 
 After capture evidence is understood:
 
-- `POC-RECOVERY-001` and `POC-VAD-001` may run in parallel on separate branches/harnesses;
+- `POC-RECOVERY-001` may proceed only in three separate scopes: governance review, then authorized
+  isolated harness implementation, then separately authorized execution. The current scope stops
+  after governance/readiness publication with `executionAllowed=false`;
+- a later authorized recovery Phase A may use emulator+D2 but cannot PASS without D1/D5;
+- `POC-VAD-001` remains a separate branch/harness and is not admitted by recovery work;
 - `POC-BATTERY-001` may begin with capture-only modes once the capture harness is stable;
 - no final crypto/container ADR is accepted before recovery evidence.
 
@@ -207,6 +211,12 @@ Technical Plan section 34.2 maps D6 to audio routes and D7 to 16-KiB. Test Strat
 ### RECOVERY-ADR-ORDER-001
 
 The backlog lists `ADR-AUDIO-001` as a dependency of `POC-RECOVERY-001`, while the Technical Plan expects the recovery PoC to choose Tink streaming versus sealed microfiles and then support a go/no-go ADR. Before recovery starts, create only a scoped **Proposed experiment decision** that freezes the compared formats and safety invariants. Accept the final audio/container ADR only after PoC evidence. This prevents a PoC from being forced to prove a choice already declared final.
+
+`DEC-044` now supplies that Proposed record and freezes the owner constraints without selecting a
+winner. Its exact Gate Set compares public Tink Streaming AEAD with five-second sealed Tink AEAD
+microfiles/authenticated manifest; 15/30-second microfiles are not PASS-eligible. The package is
+review-pending and explicitly does not start implementation or execution. A future final
+`ADR-AUDIO-001` remains evidence-dependent.
 
 ## 11. First PoC Definition of Ready
 

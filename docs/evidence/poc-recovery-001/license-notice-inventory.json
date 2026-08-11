@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "pocId": "POC-RECOVERY-001",
+  "generatedAtUtc": "2026-08-11T21:31:21.7154872Z",
+  "reviewStatus": "EVIDENCE_COMPLETE_PACKAGE_REVIEW_PENDING",
+  "evaluationApproved": false,
+  "redistributionApproved": false,
+  "productionLegalApproved": false,
+  "reviewer": "Project owner",
+  "reviewerRole": "Stage 0 Product/IP",
+  "reviewCompletedOn": null,
+  "scope": "Exact tink-android 1.23.0 publisher closure and shaded component for Stage 0 package review only",
+  "summary": {
+    "externalCoordinates": 8,
+    "externalCoordinatesWithPomLicenseDeclaration": 8,
+    "externalJarLicenseEntries": 0,
+    "externalJarNoticeEntries": 0,
+    "embeddedComponents": 1,
+    "unresolvedPomLicenseDeclarations": [],
+    "noticeFilesRequiringPreservationFound": [],
+    "packageReviewRequired": true,
+    "productionLegalUnassigned": true
+  },
+  "canonicalLicenseTexts": [
+    {
+      "spdx": "Apache-2.0",
+      "sourceComponent": "tink-java v1.23.0",
+      "sourceUrl": "https://raw.githubusercontent.com/tink-crypto/tink-java/v1.23.0/LICENSE",
+      "sourceRepositoryUrl": "https://github.com/tink-crypto/tink-java/blob/v1.23.0/LICENSE",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "gitBlobSha1": "d645695673349e3947e8e5ae42332d0ac3164cd7",
+      "noticeAtTaggedRepositoryRoot": "ABSENT"
+    },
+    {
+      "spdx": "BSD-3-Clause",
+      "sourceComponent": "protobuf v33.6 / protobuf-java 4.33.6",
+      "sourceUrl": "https://raw.githubusercontent.com/protocolbuffers/protobuf/v33.6/LICENSE",
+      "sourceRepositoryUrl": "https://github.com/protocolbuffers/protobuf/blob/v33.6/LICENSE",
+      "bytes": 1732,
+      "sha256": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d",
+      "gitBlobSha1": "19b305b00060a774a9180fb916c14b49edb2008f",
+      "noticeAtTaggedRepositoryRoot": "ABSENT"
+    }
+  ],
+  "components": [
+    {
+      "coordinate": "com.google.crypto.tink:tink-android:1.23.0",
+      "licenseSpdx": "Apache-2.0",
+      "pomLicenseName": "Apache License, Version 2.0",
+      "pomLicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.txt",
+      "pomSha256": "a2d27e7207e6a25764859b62924fc7b972f41884ce272cead9b946c15a1f410f",
+      "jarSha256": "c656918451b01c45ce5b20c7b6d4c388f956f61b3a3528e769048c8944c42f9e",
+      "embeddedLicenseEntries": [],
+      "embeddedNoticeEntries": [],
+      "distributionReview": "PENDING"
+    },
+    {
+      "coordinate": "androidx.annotation:annotation-jvm:1.8.2",
+      "licenseSpdx": "Apache-2.0",
+      "pomLicenseName": "The Apache Software License, Version 2.0",
+      "pomLicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.txt",
+      "pomSha256": "7d3b2860ea36511153a9713559dab60d77f72167fadc9c1c3198c23035fbc480",
+      "jarSha256": "9aab326d9492800991854360ac248f493ce7f7c3183519309b78ace9e240f6f6",
+      "embeddedLicenseEntries": [],
+      "embeddedNoticeEntries": [],
+      "distributionReview": "PENDING"
+    },
+    {
+      "coordinate": "com.google.code.findbugs:jsr305:3.0.2",
+      "licenseSpdx": "Apache-2.0",
+      "pomLicenseName": "The Apache Software License, Version 2.0",
+      "pomLicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.txt",
+      "pomSha256": "19889dbdf1b254b2601a5ee645b8147a974644882297684c798afe5d63d78dfe",
+      "jarSha256": "766ad2a0783f2687962c8ad74ceecc38a28b9f72a2d085ee438b7813e928d0c7",
+      "embeddedLicenseEntries": [],
+      "embeddedNoticeEntries": [],
+      "distributionReview": "PENDING"
+    },
+    {
+      "coordinate": "com.google.code.gson:gson:2.13.2",
+      "licenseSpdx": "Apache-2.0",
+      "pomLicenseName": "Apache-2.0",
+      "pomLicenseUrl": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+      "pomSha256": "3aa06aa7c0f9af092961a42d09578e4324be146348a0ee6ed47857f7c2677b76",
+      "jarSha256": "dd0ce1b55a3ed2080cb70f9c655850cda86c206862310009dcb5e5c95265a5e0",
+      "embeddedLicenseEntries": [],
+      "embeddedNoticeEntries": [],
+      "distributionReview": "PENDING"
+    },
+    {
+      "coordinate": "com.google.errorprone:error_prone_annotations:2.41.0",
+      "licenseSpdx": "Apache-2.0",
+      "pomLicenseName": "Apache 2.0",
+      "pomLicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.txt",
+      "pomSha256": "a151df1e2e0b48618d8b06a180748a29b3abb39b1b2396f6a1c879a727488c6e",
+      "jarSha256": "a56e782b5b50811ac204073a355a21d915a2107fce13ec711331ad036f660fcc",
+      "embeddedLicenseEntries": [],
+      "embeddedNoticeEntries": [],
+      "distributionReview": "PENDING"
+    },
+    {
+      "coordinate": "org.jetbrains.kotlin:kotlin-stdlib:1.7.10",
+      "licenseSpdx": "Apache-2.0",
+      "pomLicenseName": "The Apache License, Version 2.0",
+      "pomLicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.txt",
+      "pomSha256": "6cc0cf5a2bc02dee060ebb90c3535fc3ddbd7a3bab210ace3e142aaf81764d81",
+      "jarSha256": "e771fe74250a943e8f6346713201ff1d8cb95c3a5d1a91a22b65a9e04f6a8901",
+      "embeddedLicenseEntries": [],
+      "embeddedNoticeEntries": [],
+      "distributionReview": "PENDING"
+    },
+    {
+      "coordinate": "org.jetbrains.kotlin:kotlin-stdlib-common:1.7.10",
+      "licenseSpdx": "Apache-2.0",
+      "pomLicenseName": "The Apache License, Version 2.0",
+      "pomLicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.txt",
+      "pomSha256": "1011c63b88ee94cdff5d596937307559bc55037b733cc00ce63cda3cfae0a8eb",
+      "jarSha256": "19f102efe9629f8eabc63853ad15c533e47c47f91fca09285c5bde86e59f91d4",
+      "embeddedLicenseEntries": [],
+      "embeddedNoticeEntries": [],
+      "distributionReview": "PENDING"
+    },
+    {
+      "coordinate": "org.jetbrains:annotations:13.0",
+      "licenseSpdx": "Apache-2.0",
+      "pomLicenseName": "The Apache Software License, Version 2.0",
+      "pomLicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.txt",
+      "pomSha256": "965aeb2bedff369819bdde1bf7a0b3b89b8247dd69c88b86375d76163bb8c397",
+      "jarSha256": "ace2a10dc8e2d5fd34925ecac03e4988b2c0f851650c94b8cef49ba1bd111478",
+      "embeddedLicenseEntries": [],
+      "embeddedNoticeEntries": [],
+      "distributionReview": "PENDING"
+    },
+    {
+      "coordinate": "embedded:protobuf-java:4.33.6",
+      "licenseSpdx": "BSD-3-Clause",
+      "embedding": "shaded inside tink-android-1.23.0.jar",
+      "sourceTag": "v33.6",
+      "sourceLicenseSha256": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d",
+      "embeddedLicenseEntries": [],
+      "embeddedNoticeEntries": [],
+      "distributionReview": "PENDING"
+    }
+  ],
+  "patentTerms": [
+    {
+      "licenseSpdx": "Apache-2.0",
+      "assessment": "Section 3 grants a contributor patent license for contributed work and terminates that patent license for a work when the licensee initiates specified patent litigation over that work.",
+      "scope": "Engineering summary for Stage 0 Product/IP review; not legal advice or production approval."
+    },
+    {
+      "licenseSpdx": "BSD-3-Clause",
+      "assessment": "The reviewed text has no express patent-license section comparable to Apache-2.0 Section 3.",
+      "scope": "Production redistribution and patent risk require assigned Production Legal; currently unassigned."
+    }
+  ],
+  "noticeAssessment": {
+    "tinkTaggedRootNotice": "ABSENT",
+    "protobufTaggedRootNotice": "ABSENT",
+    "allReviewedJarNoticeEntries": "ABSENT",
+    "absenceDoesNotWaiveLicenseCopyObligations": true,
+    "futureApkLicenseSurfaceRequiredIfAdmitted": true,
+    "futureResolvedGraphMustBeRescanned": true
+  }
+}

@@ -2,6 +2,7 @@
 
 **Статус:** архитектурное решение для утверждения<br>
 **Дата проверки источников:** 4 августа 2026 года<br>
+**Recovery governance amendment:** 12 августа 2026 года — `DEC-044`/`OD-14`; Gate Set exact, implementation/execution withheld<br>
 **Область:** Android MVP 1; production-код в документ не входит<br>
 **Правовая оговорка:** раздел 25 — инженерный чек-лист, а не юридическая консультация.
 
@@ -498,7 +499,7 @@ Kafka, service mesh, отдельный vector DB, Kubernetes, event sourcing в
 6. Enqueue unique work `segment:{uuid}:pipeline:{version}` только после durable commit.
 7. Original удалять лишь по явной retention policy и только когда существует локальный подтверждённый результат/export; cloud success сам по себе не разрешает удалить единственную копию.
 
-**PoC-гейт:** проверить, удаётся ли Tink Streaming AEAD безопасно прочитать все полностью аутентифицированные blocks из оборванного файла. Если текущая реализация не даёт надёжной salvage semantics, fallback — последовательность sealed 15–30-секундных Tink AEAD microfiles + manifest. Нельзя изобретать собственный GCM container без crypto review.
+**PoC-гейт (`DEC-044` / `OD-14`):** проверить, удаётся ли Tink Streaming AEAD через public API безопасно прочитать весь полностью аутентифицированный committed prefix из оборванного файла, и сравнить его в одном isolated harness с sealed Tink AEAD microfiles + authenticated manifest. Loss committed bytes всегда равен нулю, tail loss — не более 5 секунд на каждом valid hard kill. Поэтому основной gate-compatible microfile cadence — 5 секунд; 15/30 секунд допустимы только как observations или fallbacks после FAIL и не могут получить PASS текущего gate. `AES128_GCM_HKDF_4KB` остаётся Proposed evaluation template до независимого recovery Engineering/Security review. Нельзя изобретать собственный GCM container или начинать implementation/execution до review и отдельного разрешения владельца.
 
 ### 14.4. Recovery
 
@@ -1781,12 +1782,12 @@ Raw meeting audio, production secrets, signing keys, unapproved model weights an
 ### Прототип 3 — восстановление после завершения процесса
 
 - **Гипотеза:** checkpointed encrypted writer восстанавливает весь committed prefix; после kill теряется не более выбранного окна.
-- **Реализация:** inject `kill -9`, low-memory/process stop and simulated crash at random writer/finalize/rename/DB points; reboot reconciliation; 100+ runs.
-- **Устройства / данные:** D1–D5; 1h mixed signal; Tink stream corruption/truncation fixtures.
-- **Показатели:** recovered samples, lost tail, duplicate/missing segments/jobs, auth failures, recovery latency, user message correctness.
-- **Успех:** 100% valid committed prefix; ≤5 с target tail loss; no duplicate processing; mic never restarts automatically.
-- **Провал:** one truncated tail makes all prior ciphertext unreadable, orphan deleted, DB/file split-brain unrecoverable.
-- **Резерв:** independent sealed 15–30-s microfiles + manifest; accept/document smaller checkpoint only after battery measurement.
+- **Реализация:** после отдельного review/authorization один isolated harness сравнивает public Tink Streaming AEAD и sealed Tink AEAD microfiles/authenticated manifest; 12 frozen hard-kill strata, 120 base attempts на кандидата, минимум 100 valid, invalid attempts не скрываются и не перезапускаются молча.
+- **Устройства / данные:** exploratory Phase A — pinned emulator + доступный D2 и только `FAIL`/`INCONCLUSIVE`; полный verdict — физические D1/D2/D5. Используется deterministic synthetic PCM16 byte oracle; real audio не требуется.
+- **Показатели:** authenticated committed/recovered offsets, committed loss bytes, tail loss bytes/seconds, duplicate/missing processing intents, auth/key-loss/split-brain/quarantine/idempotency/cleanup outcomes; recovery latency не является gate в текущем package.
+- **Успех:** 100% authenticated contiguous committed prefix; committed loss = 0; tail loss ≤5.000 с на каждом valid hard kill; no duplicate/missing processing intent; mic never restarts automatically. Phase A PASS запрещён без D1/D5.
+- **Провал:** любой committed byte потерян/не аутентифицирован, valid tail >5 с, orphan silently deleted, DB/file split-brain unrecoverable, key loss назван corruption, candidate failure скрыт как invalid или microphone автоматически перезапущен.
+- **Резерв:** основной gate-compatible fallback — sealed 5-s Tink AEAD microfiles + authenticated manifest. 15/30-s варианты — только observations/post-FAIL fallbacks и не имеют права PASS по текущему gate.
 
 ### Прототип 4 — локальная RU/EN транскрибация
 

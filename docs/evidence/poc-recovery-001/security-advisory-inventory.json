@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "pocId": "POC-RECOVERY-001",
+  "checkedAtUtc": "2026-08-11T21:34:01.0255427Z",
+  "status": "SNAPSHOT_COMPLETE_INDEPENDENT_REVIEW_PENDING",
+  "source": {
+    "name": "GitHub Global Security Advisories REST API",
+    "documentation": "https://docs.github.com/en/rest/security-advisories/global-advisories",
+    "querySemantics": "Maven package@version for exact affected checks; package without version for relevant history"
+  },
+  "exactVersionQueries": [
+    {
+      "coordinate": "com.google.crypto.tink:tink-android@1.23.0",
+      "affectedPublishedAdvisories": []
+    },
+    {
+      "coordinate": "androidx.annotation:annotation-jvm@1.8.2",
+      "affectedPublishedAdvisories": []
+    },
+    {
+      "coordinate": "com.google.code.findbugs:jsr305@3.0.2",
+      "affectedPublishedAdvisories": []
+    },
+    {
+      "coordinate": "com.google.code.gson:gson@2.13.2",
+      "affectedPublishedAdvisories": []
+    },
+    {
+      "coordinate": "com.google.errorprone:error_prone_annotations@2.41.0",
+      "affectedPublishedAdvisories": []
+    },
+    {
+      "coordinate": "org.jetbrains.kotlin:kotlin-stdlib@1.7.10",
+      "affectedPublishedAdvisories": []
+    },
+    {
+      "coordinate": "org.jetbrains.kotlin:kotlin-stdlib-common@1.7.10",
+      "affectedPublishedAdvisories": []
+    },
+    {
+      "coordinate": "org.jetbrains:annotations@13.0",
+      "affectedPublishedAdvisories": []
+    }
+  ],
+  "relevantHistoricalAdvisories": [
+    {
+      "package": "com.google.crypto.tink:tink",
+      "ghsaId": "GHSA-g5vf-v6wf-7w2r",
+      "cveId": "CVE-2020-8929",
+      "severity": "medium",
+      "summary": "Ciphertext Malleability Issue in Tink Java",
+      "vulnerableRange": "< 1.5.0",
+      "firstPatchedVersion": "1.5.0",
+      "exactCandidateAssessment": "NOT_AFFECTED_BY_RECORDED_RANGE; v1.23.0 is later, but the advisory maps the generic tink coordinate and does not replace candidate review.",
+      "url": "https://github.com/advisories/GHSA-g5vf-v6wf-7w2r"
+    },
+    {
+      "package": "com.google.code.gson:gson",
+      "ghsaId": "GHSA-4jrv-ppp4-jm57",
+      "cveId": "CVE-2022-25647",
+      "severity": "high",
+      "summary": "Deserialization of Untrusted Data in Gson",
+      "vulnerableRange": "< 2.8.9",
+      "firstPatchedVersion": "2.8.9",
+      "exactCandidateAssessment": "NOT_AFFECTED; exact transitive is 2.13.2.",
+      "url": "https://github.com/advisories/GHSA-4jrv-ppp4-jm57"
+    },
+    {
+      "package": "org.jetbrains.kotlin:kotlin-stdlib",
+      "ghsaId": "GHSA-cqj8-47ch-rvvq",
+      "cveId": "CVE-2020-29582",
+      "severity": "medium",
+      "summary": "Incorrect Default Permissions in JetBrains Kotlin",
+      "vulnerableRange": "<= 1.4.20",
+      "firstPatchedVersion": "1.4.21",
+      "exactCandidateAssessment": "NOT_AFFECTED; publisher closure declares 1.7.10.",
+      "url": "https://github.com/advisories/GHSA-cqj8-47ch-rvvq"
+    },
+    {
+      "package": "org.jetbrains.kotlin:kotlin-stdlib",
+      "ghsaId": "GHSA-2qp4-g3q3-f92w",
+      "cveId": "CVE-2022-24329",
+      "severity": "medium",
+      "summary": "Improper Locking in JetBrains Kotlin",
+      "vulnerableRange": "<= 1.5.32",
+      "firstPatchedVersion": "1.6.0",
+      "exactCandidateAssessment": "NOT_AFFECTED; publisher closure declares 1.7.10.",
+      "url": "https://github.com/advisories/GHSA-2qp4-g3q3-f92w"
+    }
+  ],
+  "upstreamMaintenanceAndSecurityNotes": [
+    {
+      "source": "https://github.com/tink-crypto/tink/releases/tag/v1.4.0",
+      "note": "Tink 1.4.0 fixed a potential AES-GCM-HKDF Streaming segment-counter overflow after more than 2^32 segments in Java and Go.",
+      "candidateAssessment": "v1.23.0 postdates the fix; protocol caps and reviewer analysis still required."
+    },
+    {
+      "source": "https://github.com/tink-crypto/tink-java/releases/tag/v1.17.0",
+      "note": "Tink Java 1.17.0 fixed excessive memory use in HKDF caused by asynchronously cleaned direct buffers.",
+      "candidateAssessment": "v1.23.0 postdates the fix; memory behavior is not benchmarked by this package."
+    },
+    {
+      "source": "https://github.com/tink-crypto/tink-java/releases/tag/v1.18.0",
+      "note": "Tink Java 1.18.0 changed AndroidKeystore AEAD behavior on API 28 and older for inputs larger than 128 KiB from producing invalid ciphertext to throwing.",
+      "candidateAssessment": "v1.23.0 postdates the fix; the planned design wraps small key material rather than bulk recovery data and requires key-loss tests."
+    }
+  ],
+  "templateAndProtocolRisks": [
+    {
+      "id": "SEC-REC-01",
+      "risk": "Streaming EOF can be confused with authentication/truncation failure if the recovery API contract is handled incorrectly.",
+      "source": "https://developers.google.com/tink/streaming-aead/aes_gcm_hkdf_streaming",
+      "mitigationState": "PENDING_PUBLIC_API_CHECKPOINT_PROOF"
+    },
+    {
+      "id": "SEC-REC-02",
+      "risk": "AES-GCM streaming security requires unique key and nonce-prefix combinations and no rewrite at the same segment position under the same key.",
+      "source": "https://developers.google.com/tink/encrypt-large-files-or-data-streams",
+      "mitigationState": "PROPOSED_UNIQUE_RUN_AND_SEGMENT_KEY_PROTOCOL_PENDING_REVIEW"
+    },
+    {
+      "id": "SEC-REC-03",
+      "risk": "StreamingAeadKeyTemplates is deprecated in v1.23.0 and its static helper pulls in broad protobuf/key-type code.",
+      "source": "https://github.com/tink-crypto/tink-java/blob/v1.23.0/src/main/java/com/google/crypto/tink/streamingaead/StreamingAeadKeyTemplates.java",
+      "mitigationState": "PROPOSED_TEMPLATE_NAME_ONLY; CURRENT_PUBLIC_CONSTRUCTION_PATH_UNAPPROVED"
+    },
+    {
+      "id": "SEC-REC-04",
+      "risk": "Authenticated manifest encoding, anti-rollback generation binding and microfile AEAD template are not yet selected.",
+      "source": "DEC-044",
+      "mitigationState": "PENDING_INDEPENDENT_ENGINEERING_SECURITY_REVIEW"
+    }
+  ],
+  "composition": {
+    "rootArtifact": "JAVA_JAR",
+    "rootNativeEntries": 0,
+    "allExternalJarNativeEntries": 0,
+    "shadedProtobufVersion": "4.33.6",
+    "shadedProtobufEntries": 540,
+    "shadedProtobufClassEntries": 539,
+    "usesPlatformJceAndAndroidKeystoreAtRuntimeIfImplemented": true,
+    "nativeCompositionAdmission": false
+  },
+  "limitations": [
+    "An empty exact-version advisory query is not proof of absence of vulnerabilities.",
+    "GitHub advisory package mapping does not list historical Android-coordinate issues consistently; upstream release notes were reviewed separately.",
+    "The snapshot does not approve the crypto template, recovery protocol, dependency or production use.",
+    "A fresh advisory scan and exact future resolved-graph review are required immediately before any authorized execution."
+  ]
+}
