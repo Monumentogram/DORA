@@ -1,0 +1,4357 @@
+{
+  "contract": {
+    "campaign": {
+      "clock": "SystemClock.elapsedRealtimeNanos monotonic",
+      "expectedMappingPrefix": 10,
+      "gateCampaign": "all and only latencyEligible=true query cases",
+      "measuredRepetitionsPerLatencyEligibleQuery": 30,
+      "percentileDefinition": "nearest-rank: sorted[ceil(p*N)-1]",
+      "resultLimit": 25,
+      "safetyRepetitionsPerNonLatencyQuery": 3,
+      "schedule": "deterministic seeded rotation over manifest order",
+      "scheduleSeed": 42420017,
+      "standardDeviation": "population",
+      "warmupPerLatencyEligibleQuery": 5
+    },
+    "datasetManifestId": "poc-search-001-reference-dataset-v1",
+    "normalization": {
+      "bindingPolicy": "MATCH expression and every filter value are bound parameters",
+      "maxRawLength": 512,
+      "maxTokenLength": 64,
+      "maxTokens": 12,
+      "minimumPrefixLength": 2,
+      "operatorPolicy": "Unicode letter/digit tokens only; every token is quoted; operators are literals"
+    },
+    "oracleVersion": "search-oracle-1.0.0",
+    "queries": [
+      {
+        "category": "exact-common",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-EXACT-RU-COMMON",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"проект\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "проект"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 400060,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1,
+              "endMs": 8500,
+              "segmentId": 1,
+              "startMs": 0,
+              "textSha256": "sha256:21291d176b44d779103855c248f0171277a55b123afdedd4110d8747c19b754a"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 145750,
+              "segmentId": 4,
+              "startMs": 135000,
+              "textSha256": "sha256:677901e1325dea21ad996349d9f68142c6a1a734c8d598884fb159212bc44ff6"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 274000,
+              "segmentId": 7,
+              "startMs": 270000,
+              "textSha256": "sha256:acd8a9e044b558616ab93a1353db7569c3fe16431700e20234edba1b607dd847"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 411250,
+              "segmentId": 10,
+              "startMs": 405000,
+              "textSha256": "sha256:6488f0c3da17cd51e88af990411e04584263d42d603eab613d78a243b7db769e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 548500,
+              "segmentId": 13,
+              "startMs": 540000,
+              "textSha256": "sha256:47aaad728b49c164fe24aa8937b65204ec57869182fa79e6a4eacbca6e68a875"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 685750,
+              "segmentId": 16,
+              "startMs": 675000,
+              "textSha256": "sha256:0c61ffd28cb08b1edc0408f2daf5ac2dec22784474f244f9eeca5515b16bf0b0"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 814000,
+              "segmentId": 19,
+              "startMs": 810000,
+              "textSha256": "sha256:0c030fde43b17da235ec53333538833b1467a285e3516a225af1aa7d92ac97a7"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 859750,
+              "segmentId": 20,
+              "startMs": 855000,
+              "textSha256": "sha256:b387e3d8b783c1eff21d9901ffbccdc9a9a89acd57fdd8e4df1693dc3e452883"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 951250,
+              "segmentId": 22,
+              "startMs": 945000,
+              "textSha256": "sha256:e14a7bb2c49b60c78e4a083a1fa8fb36db3dd645a04e68b38532a7f2c8028541"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 1088500,
+              "segmentId": 25,
+              "startMs": 1080000,
+              "textSha256": "sha256:c091143a3ac87c4b5df8e2dc03e347eedf4939b222eae72450c5d5a687af83ca"
+            }
+          ]
+        },
+        "rawQuery": "проект"
+      },
+      {
+        "category": "exact-common",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-EXACT-EN-COMMON",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"project\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "project"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 700000,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1,
+              "endMs": 54250,
+              "segmentId": 2,
+              "startMs": 45000,
+              "textSha256": "sha256:f040afa02243b34e3e5cb6765503497fa7173c41c4ab236a671e83ef0088e108"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 100000,
+              "segmentId": 3,
+              "startMs": 90000,
+              "textSha256": "sha256:46bb682ea2544b632ad181ba017f1a493e0e036edc410173e88051a61cf40b3c"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 191500,
+              "segmentId": 5,
+              "startMs": 180000,
+              "textSha256": "sha256:f10a7073ce91b52838f3ab7ca79da0f4e76ac57be4133bfc314133dc18bb3393"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 237250,
+              "segmentId": 6,
+              "startMs": 225000,
+              "textSha256": "sha256:5866866a9ddfb79708a7b7381237d0009e2311b9da32c8c67bbea8a1f94e77b8"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 319750,
+              "segmentId": 8,
+              "startMs": 315000,
+              "textSha256": "sha256:abb596f24bbec33eb9e3468906f23e818d1ee95bd2fb3920a160be28d0307e87"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 365500,
+              "segmentId": 9,
+              "startMs": 360000,
+              "textSha256": "sha256:9c9c47663c643ce47dfb6fe7f0b559dd8fcbb3eec1c650fa61234408d42f2985"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 411250,
+              "segmentId": 10,
+              "startMs": 405000,
+              "textSha256": "sha256:6488f0c3da17cd51e88af990411e04584263d42d603eab613d78a243b7db769e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 457000,
+              "segmentId": 11,
+              "startMs": 450000,
+              "textSha256": "sha256:44f83182f4f1f58a71b1e9d9ac3ae6bea7a1cbf8a762b6c709adf1f250ca4e8b"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 502750,
+              "segmentId": 12,
+              "startMs": 495000,
+              "textSha256": "sha256:3d957dba3d1b6a51f43542b65318f40370fb84df7f15044bc61c0e701753682e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 594250,
+              "segmentId": 14,
+              "startMs": 585000,
+              "textSha256": "sha256:8693aa35477dd1b9782648d1c7380671c4032925d16d050c96d2a30ea9fffaf6"
+            }
+          ]
+        },
+        "rawQuery": "project"
+      },
+      {
+        "category": "exact-common",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-EXACT-RU-TASK",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"задача\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "задача"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 333334,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1,
+              "endMs": 8500,
+              "segmentId": 1,
+              "startMs": 0,
+              "textSha256": "sha256:21291d176b44d779103855c248f0171277a55b123afdedd4110d8747c19b754a"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 145750,
+              "segmentId": 4,
+              "startMs": 135000,
+              "textSha256": "sha256:677901e1325dea21ad996349d9f68142c6a1a734c8d598884fb159212bc44ff6"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 274000,
+              "segmentId": 7,
+              "startMs": 270000,
+              "textSha256": "sha256:acd8a9e044b558616ab93a1353db7569c3fe16431700e20234edba1b607dd847"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 411250,
+              "segmentId": 10,
+              "startMs": 405000,
+              "textSha256": "sha256:6488f0c3da17cd51e88af990411e04584263d42d603eab613d78a243b7db769e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 548500,
+              "segmentId": 13,
+              "startMs": 540000,
+              "textSha256": "sha256:47aaad728b49c164fe24aa8937b65204ec57869182fa79e6a4eacbca6e68a875"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 685750,
+              "segmentId": 16,
+              "startMs": 675000,
+              "textSha256": "sha256:0c61ffd28cb08b1edc0408f2daf5ac2dec22784474f244f9eeca5515b16bf0b0"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 814000,
+              "segmentId": 19,
+              "startMs": 810000,
+              "textSha256": "sha256:0c030fde43b17da235ec53333538833b1467a285e3516a225af1aa7d92ac97a7"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 951250,
+              "segmentId": 22,
+              "startMs": 945000,
+              "textSha256": "sha256:e14a7bb2c49b60c78e4a083a1fa8fb36db3dd645a04e68b38532a7f2c8028541"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 1088500,
+              "segmentId": 25,
+              "startMs": 1080000,
+              "textSha256": "sha256:c091143a3ac87c4b5df8e2dc03e347eedf4939b222eae72450c5d5a687af83ca"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 1225750,
+              "segmentId": 28,
+              "startMs": 1215000,
+              "textSha256": "sha256:1a7929a8b733125d025522061e1808dd5cbd7307f1665df6c6699d0946e24dd8"
+            }
+          ]
+        },
+        "rawQuery": "задача"
+      },
+      {
+        "category": "exact-common",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-EXACT-EN-DEADLINE",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"deadline\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "deadline"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 666666,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1,
+              "endMs": 54250,
+              "segmentId": 2,
+              "startMs": 45000,
+              "textSha256": "sha256:f040afa02243b34e3e5cb6765503497fa7173c41c4ab236a671e83ef0088e108"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 100000,
+              "segmentId": 3,
+              "startMs": 90000,
+              "textSha256": "sha256:46bb682ea2544b632ad181ba017f1a493e0e036edc410173e88051a61cf40b3c"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 191500,
+              "segmentId": 5,
+              "startMs": 180000,
+              "textSha256": "sha256:f10a7073ce91b52838f3ab7ca79da0f4e76ac57be4133bfc314133dc18bb3393"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 237250,
+              "segmentId": 6,
+              "startMs": 225000,
+              "textSha256": "sha256:5866866a9ddfb79708a7b7381237d0009e2311b9da32c8c67bbea8a1f94e77b8"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 319750,
+              "segmentId": 8,
+              "startMs": 315000,
+              "textSha256": "sha256:abb596f24bbec33eb9e3468906f23e818d1ee95bd2fb3920a160be28d0307e87"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 365500,
+              "segmentId": 9,
+              "startMs": 360000,
+              "textSha256": "sha256:9c9c47663c643ce47dfb6fe7f0b559dd8fcbb3eec1c650fa61234408d42f2985"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 457000,
+              "segmentId": 11,
+              "startMs": 450000,
+              "textSha256": "sha256:44f83182f4f1f58a71b1e9d9ac3ae6bea7a1cbf8a762b6c709adf1f250ca4e8b"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 502750,
+              "segmentId": 12,
+              "startMs": 495000,
+              "textSha256": "sha256:3d957dba3d1b6a51f43542b65318f40370fb84df7f15044bc61c0e701753682e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 594250,
+              "segmentId": 14,
+              "startMs": 585000,
+              "textSha256": "sha256:8693aa35477dd1b9782648d1c7380671c4032925d16d050c96d2a30ea9fffaf6"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 640000,
+              "segmentId": 15,
+              "startMs": 630000,
+              "textSha256": "sha256:a15013e293517e277b0fc5b746301fd5e68426d3b38aab250a69880461db884a"
+            }
+          ]
+        },
+        "rawQuery": "deadline"
+      },
+      {
+        "category": "exact-common",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-EXACT-ROOM",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"room\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "room"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 166667,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1,
+              "endMs": 54250,
+              "segmentId": 2,
+              "startMs": 45000,
+              "textSha256": "sha256:f040afa02243b34e3e5cb6765503497fa7173c41c4ab236a671e83ef0088e108"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 319750,
+              "segmentId": 8,
+              "startMs": 315000,
+              "textSha256": "sha256:abb596f24bbec33eb9e3468906f23e818d1ee95bd2fb3920a160be28d0307e87"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 594250,
+              "segmentId": 14,
+              "startMs": 585000,
+              "textSha256": "sha256:8693aa35477dd1b9782648d1c7380671c4032925d16d050c96d2a30ea9fffaf6"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 859750,
+              "segmentId": 20,
+              "startMs": 855000,
+              "textSha256": "sha256:b387e3d8b783c1eff21d9901ffbccdc9a9a89acd57fdd8e4df1693dc3e452883"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 1134250,
+              "segmentId": 26,
+              "startMs": 1125000,
+              "textSha256": "sha256:7ed34fc48bf5248c3d447186bd7fb60878c0d9db7e39611fc6f391c80605c32e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 1399750,
+              "segmentId": 32,
+              "startMs": 1395000,
+              "textSha256": "sha256:8cbe91c836c5f3ee78384ece5f5ee5ea604c116e14ceb96c1b4042a7c7f4e227"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 1674250,
+              "segmentId": 38,
+              "startMs": 1665000,
+              "textSha256": "sha256:01af7a5ac3ad1c1f3817a15832adc915b6b3e693e4c9c14bbf4e39af266744b6"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 1939750,
+              "segmentId": 44,
+              "startMs": 1935000,
+              "textSha256": "sha256:1029eb98821cafbe2cca282d4ca993890a5a34a40fb780dde05b59e927eeca10"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 2214250,
+              "segmentId": 50,
+              "startMs": 2205000,
+              "textSha256": "sha256:e6a842ed044e4081c7bf23234c96c780ad042d929d0c4c6c8a72b35d90df3ba0"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 2479750,
+              "segmentId": 56,
+              "startMs": 2475000,
+              "textSha256": "sha256:91fb64c2c52613f5f2d23447dc6136dbbffdca987792d9f09e673653e9ed356b"
+            }
+          ]
+        },
+        "rawQuery": "room"
+      },
+      {
+        "category": "exact-common",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-EXACT-NUMBER",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"number042\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "number042"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 667,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 9,
+              "endMs": 4151500,
+              "segmentId": 893,
+              "startMs": 4140000,
+              "textSha256": "sha256:1b37dd46e55a95208517a8c58d9175d36019d38875ee00ebf925f2b92506416d"
+            },
+            {
+              "conversationId": 19,
+              "endMs": 4145500,
+              "segmentId": 1893,
+              "startMs": 4140000,
+              "textSha256": "sha256:8b8e1b0cce9c6f7008672b646c3c4e43b3e9a04ddf5498f07b07185df32b0cbb"
+            },
+            {
+              "conversationId": 39,
+              "endMs": 4151500,
+              "segmentId": 3893,
+              "startMs": 4140000,
+              "textSha256": "sha256:5ec858d943c76d471a9780fa43436b892a0970e8612be4b0fac5f0cddc642cb3"
+            },
+            {
+              "conversationId": 49,
+              "endMs": 4145500,
+              "segmentId": 4893,
+              "startMs": 4140000,
+              "textSha256": "sha256:8c5f308067d24e5e1207f8c43cf2810cf82c678047736ef828a777ad984b66db"
+            },
+            {
+              "conversationId": 69,
+              "endMs": 4151500,
+              "segmentId": 6893,
+              "startMs": 4140000,
+              "textSha256": "sha256:1b2d2200fa61148b76b73d856ded5f1466f8039e0fddbb74ebd10816c8c4703e"
+            },
+            {
+              "conversationId": 79,
+              "endMs": 4145500,
+              "segmentId": 7893,
+              "startMs": 4140000,
+              "textSha256": "sha256:bf4269e8c4328e5a03c7f3b49098e7daf2d525de35c85eec603fe0540b539afa"
+            },
+            {
+              "conversationId": 99,
+              "endMs": 4151500,
+              "segmentId": 9893,
+              "startMs": 4140000,
+              "textSha256": "sha256:c1410913236caaa714f83dedc1ef66124f4bef856632b1a23f6103fb53d465cd"
+            },
+            {
+              "conversationId": 109,
+              "endMs": 4145500,
+              "segmentId": 10893,
+              "startMs": 4140000,
+              "textSha256": "sha256:3b81507e320f429efaf4f1bce95313dd30ec48d06cf4148254a08fa8d9690748"
+            },
+            {
+              "conversationId": 129,
+              "endMs": 4151500,
+              "segmentId": 12893,
+              "startMs": 4140000,
+              "textSha256": "sha256:97ff31e69f6704f4310957f0bf31825f9178f5e8a763179db763170a989243cd"
+            },
+            {
+              "conversationId": 139,
+              "endMs": 4145500,
+              "segmentId": 13893,
+              "startMs": 4140000,
+              "textSha256": "sha256:f131fd0c88e23db95617f4eb3f6806a0566740a66953fc3a2713e7f710a2ebf9"
+            }
+          ]
+        },
+        "rawQuery": "number042"
+      },
+      {
+        "category": "exact-rare",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-RARE-HYPERGRAPH",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"hypergraphdelta\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "hypergraphdelta"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 15,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 656,
+              "endMs": 1631500,
+              "segmentId": 65537,
+              "startMs": 1620000,
+              "textSha256": "sha256:2a8687e2d3e47256b906180c28d77c258282620ffb328a15233ecbc9136e06fd"
+            },
+            {
+              "conversationId": 1311,
+              "endMs": 3291250,
+              "segmentId": 131074,
+              "startMs": 3285000,
+              "textSha256": "sha256:a47d6641046bca982b5c74cead9b3f7f20f9ffb4768b139fe6a72480341b26de"
+            },
+            {
+              "conversationId": 1967,
+              "endMs": 460000,
+              "segmentId": 196611,
+              "startMs": 450000,
+              "textSha256": "sha256:f6bca7838ce99ea47c809e92a56502015d4dac73e0c7276aaea4ae2f0e7d775e"
+            },
+            {
+              "conversationId": 2622,
+              "endMs": 2119750,
+              "segmentId": 262148,
+              "startMs": 2115000,
+              "textSha256": "sha256:4e75663a94449650ad74d2b7814068b706f3a3f764a28d45884cff1da0482bf1"
+            },
+            {
+              "conversationId": 3277,
+              "endMs": 3788500,
+              "segmentId": 327685,
+              "startMs": 3780000,
+              "textSha256": "sha256:d215ce67cf75fc5f613e9dd2a29b439dd5c0b33e75cb7497e6d310b28f79eb4c"
+            },
+            {
+              "conversationId": 3933,
+              "endMs": 957250,
+              "segmentId": 393222,
+              "startMs": 945000,
+              "textSha256": "sha256:2bfa76d375ce2913c885355f9c0450440c5f81bc74a9525c77b97e12f6fb6120"
+            },
+            {
+              "conversationId": 4588,
+              "endMs": 2617000,
+              "segmentId": 458759,
+              "startMs": 2610000,
+              "textSha256": "sha256:609b6d7dd4753fca34862ec3244ce9b0c2a6b35bc3e190c9844b60922cde255c"
+            },
+            {
+              "conversationId": 5243,
+              "endMs": 4285750,
+              "segmentId": 524296,
+              "startMs": 4275000,
+              "textSha256": "sha256:287ae68f767b6555324aefcb523ac394a31939018c02053417b3f2df0e3e69ca"
+            },
+            {
+              "conversationId": 5899,
+              "endMs": 1445500,
+              "segmentId": 589833,
+              "startMs": 1440000,
+              "textSha256": "sha256:2dac5410757b6e00d6b497e5db4afc24aae5a1bbd689d1ad92930edd7532b60f"
+            },
+            {
+              "conversationId": 6554,
+              "endMs": 3114250,
+              "segmentId": 655370,
+              "startMs": 3105000,
+              "textSha256": "sha256:55cc6c90afbeffe1418aaf3ad0b2c1c99d25ed281fb79b2cc6798635b0048070"
+            }
+          ]
+        },
+        "rawQuery": "hypergraphdelta"
+      },
+      {
+        "category": "exact-rare",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-RARE-RU",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"редкословоаврора\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "редкословоаврора"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 10,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1000,
+              "endMs": 4054000,
+              "segmentId": 99991,
+              "startMs": 4050000,
+              "textSha256": "sha256:d8183dbc1596b94350829729c2e27d665d0dd2600721cdd2dc366af8306ae7d0"
+            },
+            {
+              "conversationId": 2000,
+              "endMs": 3654250,
+              "segmentId": 199982,
+              "startMs": 3645000,
+              "textSha256": "sha256:b2bcae1f0dd07ba8e62634493b24f4291f3ed0d2e2753dbb59e0c2b41d4301fd"
+            },
+            {
+              "conversationId": 3000,
+              "endMs": 3245500,
+              "segmentId": 299973,
+              "startMs": 3240000,
+              "textSha256": "sha256:0ca6f442e7254d240cef8059765ce62d57a2a014e5424423fc44c8f800caf179"
+            },
+            {
+              "conversationId": 4000,
+              "endMs": 2845750,
+              "segmentId": 399964,
+              "startMs": 2835000,
+              "textSha256": "sha256:7472c6f6a02753c9621ceec13e7a24e51fd5e54ecf7d14fd79962b0b2433bc38"
+            },
+            {
+              "conversationId": 5000,
+              "endMs": 2437000,
+              "segmentId": 499955,
+              "startMs": 2430000,
+              "textSha256": "sha256:921500edea4e10bdddc995e3cdd6a4d1f50c65fda4e83a2b574d85f90529a7bb"
+            },
+            {
+              "conversationId": 6000,
+              "endMs": 2037250,
+              "segmentId": 599946,
+              "startMs": 2025000,
+              "textSha256": "sha256:1af159c55ab6756dc0765b8dfcee796ff5e074d27bc8b055ec47e34dd8007645"
+            },
+            {
+              "conversationId": 7000,
+              "endMs": 1628500,
+              "segmentId": 699937,
+              "startMs": 1620000,
+              "textSha256": "sha256:989aa75c5fa941c8c5185e7cbc352a620f9055632a866889a0322182007707e5"
+            },
+            {
+              "conversationId": 8000,
+              "endMs": 1219750,
+              "segmentId": 799928,
+              "startMs": 1215000,
+              "textSha256": "sha256:dad8b65375b9a69a74a8e1bc952914ac686cefaac966fb3e9f3e7a23eb7cdf53"
+            },
+            {
+              "conversationId": 9000,
+              "endMs": 820000,
+              "segmentId": 899919,
+              "startMs": 810000,
+              "textSha256": "sha256:f49bc1243f268825b825913f17726640fce927b16c210d42ec5d28bb9e220ab3"
+            },
+            {
+              "conversationId": 10000,
+              "endMs": 411250,
+              "segmentId": 999910,
+              "startMs": 405000,
+              "textSha256": "sha256:bb815577109dd0cd79f1d60eae0167d92946f242895b78162f0849e662e90f52"
+            }
+          ]
+        },
+        "rawQuery": "редкословоаврора"
+      },
+      {
+        "category": "exact-rare",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-RARE-UNIQUE",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"uniquemarkerquasar\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "uniquemarkerquasar"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 1,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 4243,
+              "endMs": 1857250,
+              "segmentId": 424242,
+              "startMs": 1845000,
+              "textSha256": "sha256:d610a938b342af29d918450f37a6e7d880d8da2bd34a11731f7fef3106e467af"
+            }
+          ]
+        },
+        "rawQuery": "uniquemarkerquasar"
+      },
+      {
+        "category": "exact-rare",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-RARE-RU-PARTICIPANT",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"синтимя17\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "синтимя17"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 6867,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 60,
+              "endMs": 5500,
+              "segmentId": 5901,
+              "startMs": 0,
+              "textSha256": "sha256:7ec430fff03aec891185bffdf51781ab6d4a7b5e8339db34159f8e630f4c4d01"
+            },
+            {
+              "conversationId": 60,
+              "endMs": 51250,
+              "segmentId": 5902,
+              "startMs": 45000,
+              "textSha256": "sha256:017e6de63752b8fdc3abdf5b3e3e4b8d30cc4be247445f29e9d51878021dce2b"
+            },
+            {
+              "conversationId": 60,
+              "endMs": 142750,
+              "segmentId": 5904,
+              "startMs": 135000,
+              "textSha256": "sha256:e4732b6bd4c1ee15259c5beec6449c7c1566a7ccc3b7dd5e08b93957121e9500"
+            },
+            {
+              "conversationId": 60,
+              "endMs": 188500,
+              "segmentId": 5905,
+              "startMs": 180000,
+              "textSha256": "sha256:2d6feb9dddf20e4e5ab8eaf91850996ca16aff71e8a7886973fa3b214aa77a52"
+            },
+            {
+              "conversationId": 60,
+              "endMs": 280000,
+              "segmentId": 5907,
+              "startMs": 270000,
+              "textSha256": "sha256:b286d74641128149ed81b6e60b11815c43b75d3bbec42998e15cec4b6624dedd"
+            },
+            {
+              "conversationId": 60,
+              "endMs": 325750,
+              "segmentId": 5908,
+              "startMs": 315000,
+              "textSha256": "sha256:705bbef4013a55df22a32978cf2bdecafb93b84f68d305ed6e016304cad196a1"
+            },
+            {
+              "conversationId": 60,
+              "endMs": 417250,
+              "segmentId": 5910,
+              "startMs": 405000,
+              "textSha256": "sha256:82bf26821302e1e433d7b63519d171da3c5f4361e5679ad0f389ded51357e247"
+            },
+            {
+              "conversationId": 60,
+              "endMs": 454000,
+              "segmentId": 5911,
+              "startMs": 450000,
+              "textSha256": "sha256:ac80fb0e0c9b3d0a8e7ce4d7a8c8859aaf3733db6d454dbbc4ebf58dc6e34eb6"
+            },
+            {
+              "conversationId": 60,
+              "endMs": 545500,
+              "segmentId": 5913,
+              "startMs": 540000,
+              "textSha256": "sha256:3c814e1f56ad38c7108a4c14c295b2abf3a459368ad6ae990dcb799616e0cfed"
+            },
+            {
+              "conversationId": 60,
+              "endMs": 591250,
+              "segmentId": 5914,
+              "startMs": 585000,
+              "textSha256": "sha256:33c258a1aec8c949913c5ffcef4e2709cbb408da31d81b0c82beb716a049e2d2"
+            }
+          ]
+        },
+        "rawQuery": "синтимя17"
+      },
+      {
+        "category": "exact-rare",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-RARE-EN-PARTICIPANT",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"synthname23\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "synthname23"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 7533,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1,
+              "endMs": 54250,
+              "segmentId": 2,
+              "startMs": 45000,
+              "textSha256": "sha256:f040afa02243b34e3e5cb6765503497fa7173c41c4ab236a671e83ef0088e108"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 100000,
+              "segmentId": 3,
+              "startMs": 90000,
+              "textSha256": "sha256:46bb682ea2544b632ad181ba017f1a493e0e036edc410173e88051a61cf40b3c"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 191500,
+              "segmentId": 5,
+              "startMs": 180000,
+              "textSha256": "sha256:f10a7073ce91b52838f3ab7ca79da0f4e76ac57be4133bfc314133dc18bb3393"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 237250,
+              "segmentId": 6,
+              "startMs": 225000,
+              "textSha256": "sha256:5866866a9ddfb79708a7b7381237d0009e2311b9da32c8c67bbea8a1f94e77b8"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 319750,
+              "segmentId": 8,
+              "startMs": 315000,
+              "textSha256": "sha256:abb596f24bbec33eb9e3468906f23e818d1ee95bd2fb3920a160be28d0307e87"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 365500,
+              "segmentId": 9,
+              "startMs": 360000,
+              "textSha256": "sha256:9c9c47663c643ce47dfb6fe7f0b559dd8fcbb3eec1c650fa61234408d42f2985"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 457000,
+              "segmentId": 11,
+              "startMs": 450000,
+              "textSha256": "sha256:44f83182f4f1f58a71b1e9d9ac3ae6bea7a1cbf8a762b6c709adf1f250ca4e8b"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 502750,
+              "segmentId": 12,
+              "startMs": 495000,
+              "textSha256": "sha256:3d957dba3d1b6a51f43542b65318f40370fb84df7f15044bc61c0e701753682e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 594250,
+              "segmentId": 14,
+              "startMs": 585000,
+              "textSha256": "sha256:8693aa35477dd1b9782648d1c7380671c4032925d16d050c96d2a30ea9fffaf6"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 640000,
+              "segmentId": 15,
+              "startMs": 630000,
+              "textSha256": "sha256:a15013e293517e277b0fc5b746301fd5e68426d3b38aab250a69880461db884a"
+            }
+          ]
+        },
+        "rawQuery": "synthname23"
+      },
+      {
+        "category": "phrase",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-PHRASE-RU-MARKER",
+        "latencyEligible": true,
+        "mode": "PHRASE",
+        "normalization": {
+          "compiledMatch": "\"красный спутник\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "красный",
+            "спутник"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 99,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 101,
+              "endMs": 277000,
+              "segmentId": 10007,
+              "startMs": 270000,
+              "textSha256": "sha256:9a8e609550392579ce036fccc3fa651a14fcf3dba77b606d2a21d2b8322fb9a2"
+            },
+            {
+              "conversationId": 201,
+              "endMs": 591250,
+              "segmentId": 20014,
+              "startMs": 585000,
+              "textSha256": "sha256:cf6d47da355a46a34ae472cb2cf773ba3945b4a119029ce27d362fc297952750"
+            },
+            {
+              "conversationId": 301,
+              "endMs": 905500,
+              "segmentId": 30021,
+              "startMs": 900000,
+              "textSha256": "sha256:2adab3873704e36ad96256b529c9548d08febc432ebcfd64dbc870fee78a6dd4"
+            },
+            {
+              "conversationId": 401,
+              "endMs": 1219750,
+              "segmentId": 40028,
+              "startMs": 1215000,
+              "textSha256": "sha256:942f32dc8d7c5574afcf44ab403da170fec7144efcffbce001d47595a4f17431"
+            },
+            {
+              "conversationId": 501,
+              "endMs": 1534000,
+              "segmentId": 50035,
+              "startMs": 1530000,
+              "textSha256": "sha256:2070112abd3b034ef1d5e64b6051ef0b477b443f9ceffd80787b76ca7f9d04ce"
+            },
+            {
+              "conversationId": 601,
+              "endMs": 1857250,
+              "segmentId": 60042,
+              "startMs": 1845000,
+              "textSha256": "sha256:64c8ee7766cc1d798877176157daa758c64c960139502e2d644271e815547402"
+            },
+            {
+              "conversationId": 701,
+              "endMs": 2171500,
+              "segmentId": 70049,
+              "startMs": 2160000,
+              "textSha256": "sha256:4221773ec678176bf559d5f371b65a6133e64e278139d31459734c90292a1c68"
+            },
+            {
+              "conversationId": 801,
+              "endMs": 2485750,
+              "segmentId": 80056,
+              "startMs": 2475000,
+              "textSha256": "sha256:764bcaaa0f838020c33f99919b56304cf6e42c859e6fac08a76ccd982188dc0f"
+            },
+            {
+              "conversationId": 901,
+              "endMs": 2800000,
+              "segmentId": 90063,
+              "startMs": 2790000,
+              "textSha256": "sha256:86aef706b2be0940017acd4886d3a76890a918b5f57fb46ff96cff29780606f3"
+            },
+            {
+              "conversationId": 1001,
+              "endMs": 3114250,
+              "segmentId": 100070,
+              "startMs": 3105000,
+              "textSha256": "sha256:b236c4a6645600d1d3b8b09d2df889a4567f19e986a994d8e780c4ce479d6f07"
+            }
+          ]
+        },
+        "rawQuery": "красный спутник"
+      },
+      {
+        "category": "phrase",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-PHRASE-EN-MARKER",
+        "latencyEligible": true,
+        "mode": "PHRASE",
+        "normalization": {
+          "compiledMatch": "\"silent harbor\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "silent",
+            "harbor"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 99,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 101,
+              "endMs": 368500,
+              "segmentId": 10009,
+              "startMs": 360000,
+              "textSha256": "sha256:97f407b5787e0f595af2967263a827ef6848d31917bc9b4df20c39efc2b1db09"
+            },
+            {
+              "conversationId": 201,
+              "endMs": 774250,
+              "segmentId": 20018,
+              "startMs": 765000,
+              "textSha256": "sha256:93e4e8cdce2cd5d24277c2f76df236580866b7a13b8faf6d06a5493887501431"
+            },
+            {
+              "conversationId": 301,
+              "endMs": 1180000,
+              "segmentId": 30027,
+              "startMs": 1170000,
+              "textSha256": "sha256:ecd8f2af7013c3c2c318680c691ca8898dbc36874118627a7be153f7daaea53d"
+            },
+            {
+              "conversationId": 401,
+              "endMs": 1585750,
+              "segmentId": 40036,
+              "startMs": 1575000,
+              "textSha256": "sha256:1ccc6cac066502de45e455c206c7afd9ed6a6fce140fc3a6f24b43f2e0cf01bc"
+            },
+            {
+              "conversationId": 501,
+              "endMs": 1991500,
+              "segmentId": 50045,
+              "startMs": 1980000,
+              "textSha256": "sha256:2d148e86d5b94d759f3868d402c205f643730c936d4847fadf80da6ec7953e4e"
+            },
+            {
+              "conversationId": 601,
+              "endMs": 2397250,
+              "segmentId": 60054,
+              "startMs": 2385000,
+              "textSha256": "sha256:60b86d2b14bbe6d5e601740254bcc07fb9f98dfa51f61e3db1810fe2956b0524"
+            },
+            {
+              "conversationId": 701,
+              "endMs": 2794000,
+              "segmentId": 70063,
+              "startMs": 2790000,
+              "textSha256": "sha256:6de12281f94106bf9b6b30a59edc3ddeb3226236daf054ee1473fffdc000b170"
+            },
+            {
+              "conversationId": 801,
+              "endMs": 3199750,
+              "segmentId": 80072,
+              "startMs": 3195000,
+              "textSha256": "sha256:3dde3ffa4fe6cd45578858b62e6fb109a2a414b3a6c3111fc744accc0d5adaab"
+            },
+            {
+              "conversationId": 901,
+              "endMs": 3605500,
+              "segmentId": 90081,
+              "startMs": 3600000,
+              "textSha256": "sha256:3016373a9fd79e0ab86ad6176199017af9514b6c220a76a8d1a9b56662d967a0"
+            },
+            {
+              "conversationId": 1001,
+              "endMs": 4011250,
+              "segmentId": 100090,
+              "startMs": 4005000,
+              "textSha256": "sha256:83041d574df9a89b9c0238c31b5da7f0eae50b153e1a35a2f870f40fbdd23b9b"
+            }
+          ]
+        },
+        "rawQuery": "silent harbor"
+      },
+      {
+        "category": "phrase",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-PHRASE-MIXED-MARKER",
+        "latencyEligible": true,
+        "mode": "PHRASE",
+        "normalization": {
+          "compiledMatch": "\"проект nebula\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "проект",
+            "nebula"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 99,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 101,
+              "endMs": 1631500,
+              "segmentId": 10037,
+              "startMs": 1620000,
+              "textSha256": "sha256:ef96e9881561c018e2e2a155bc1616ae6e5ff117b464d69080a5c66c94adb675"
+            },
+            {
+              "conversationId": 201,
+              "endMs": 3291250,
+              "segmentId": 20074,
+              "startMs": 3285000,
+              "textSha256": "sha256:4dd994f04660c6b563cc738f44ba020e35d2859b9620fb4d8e2e31474b2eb105"
+            },
+            {
+              "conversationId": 302,
+              "endMs": 460000,
+              "segmentId": 30111,
+              "startMs": 450000,
+              "textSha256": "sha256:d398162598a666605808facc3df301b9bccc7d28eb8284f08f4ec42e272f45e6"
+            },
+            {
+              "conversationId": 402,
+              "endMs": 2119750,
+              "segmentId": 40148,
+              "startMs": 2115000,
+              "textSha256": "sha256:df4c9ca7b00649f4ae84df436e9d77b4048a45d7dee4862280ea3d7da081875d"
+            },
+            {
+              "conversationId": 502,
+              "endMs": 3788500,
+              "segmentId": 50185,
+              "startMs": 3780000,
+              "textSha256": "sha256:45a65855bc94a1d974678b5d17f30ddd4bb8cc651943a5057264abd414e26c1e"
+            },
+            {
+              "conversationId": 603,
+              "endMs": 957250,
+              "segmentId": 60222,
+              "startMs": 945000,
+              "textSha256": "sha256:571696a0c8d8090627e388b39a6e7ed40f4d1ad9337af4dd469406a816717606"
+            },
+            {
+              "conversationId": 703,
+              "endMs": 2617000,
+              "segmentId": 70259,
+              "startMs": 2610000,
+              "textSha256": "sha256:f3cb5e6089e316f8c29860ce0639529f5e5e92bb14e10876bfc3883804e54ebb"
+            },
+            {
+              "conversationId": 803,
+              "endMs": 4285750,
+              "segmentId": 80296,
+              "startMs": 4275000,
+              "textSha256": "sha256:b90ccfd16a646e56140f096342634b4e77ff26351d8f624378cf1435e9604928"
+            },
+            {
+              "conversationId": 904,
+              "endMs": 1445500,
+              "segmentId": 90333,
+              "startMs": 1440000,
+              "textSha256": "sha256:fbc8cdfe382aa0b6818d66d3d8abaaca75fb91b90d83d5e4aa76ae363f15c1d6"
+            },
+            {
+              "conversationId": 1004,
+              "endMs": 3114250,
+              "segmentId": 100370,
+              "startMs": 3105000,
+              "textSha256": "sha256:3a7004206bf8917cd71798f88dc43e0fc7a6c8feb8e68633491e96d1038a5779"
+            }
+          ]
+        },
+        "rawQuery": "проект nebula"
+      },
+      {
+        "category": "phrase",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-PHRASE-RU-COMMON",
+        "latencyEligible": true,
+        "mode": "PHRASE",
+        "normalization": {
+          "compiledMatch": "\"команда обсуждает\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "команда",
+            "обсуждает"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 333334,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1,
+              "endMs": 8500,
+              "segmentId": 1,
+              "startMs": 0,
+              "textSha256": "sha256:21291d176b44d779103855c248f0171277a55b123afdedd4110d8747c19b754a"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 145750,
+              "segmentId": 4,
+              "startMs": 135000,
+              "textSha256": "sha256:677901e1325dea21ad996349d9f68142c6a1a734c8d598884fb159212bc44ff6"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 274000,
+              "segmentId": 7,
+              "startMs": 270000,
+              "textSha256": "sha256:acd8a9e044b558616ab93a1353db7569c3fe16431700e20234edba1b607dd847"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 411250,
+              "segmentId": 10,
+              "startMs": 405000,
+              "textSha256": "sha256:6488f0c3da17cd51e88af990411e04584263d42d603eab613d78a243b7db769e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 548500,
+              "segmentId": 13,
+              "startMs": 540000,
+              "textSha256": "sha256:47aaad728b49c164fe24aa8937b65204ec57869182fa79e6a4eacbca6e68a875"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 685750,
+              "segmentId": 16,
+              "startMs": 675000,
+              "textSha256": "sha256:0c61ffd28cb08b1edc0408f2daf5ac2dec22784474f244f9eeca5515b16bf0b0"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 814000,
+              "segmentId": 19,
+              "startMs": 810000,
+              "textSha256": "sha256:0c030fde43b17da235ec53333538833b1467a285e3516a225af1aa7d92ac97a7"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 951250,
+              "segmentId": 22,
+              "startMs": 945000,
+              "textSha256": "sha256:e14a7bb2c49b60c78e4a083a1fa8fb36db3dd645a04e68b38532a7f2c8028541"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 1088500,
+              "segmentId": 25,
+              "startMs": 1080000,
+              "textSha256": "sha256:c091143a3ac87c4b5df8e2dc03e347eedf4939b222eae72450c5d5a687af83ca"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 1225750,
+              "segmentId": 28,
+              "startMs": 1215000,
+              "textSha256": "sha256:1a7929a8b733125d025522061e1808dd5cbd7307f1665df6c6699d0946e24dd8"
+            }
+          ]
+        },
+        "rawQuery": "команда обсуждает"
+      },
+      {
+        "category": "phrase",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-PHRASE-EN-COMMON",
+        "latencyEligible": true,
+        "mode": "PHRASE",
+        "normalization": {
+          "compiledMatch": "\"team discusses\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "team",
+            "discusses"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 333333,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1,
+              "endMs": 54250,
+              "segmentId": 2,
+              "startMs": 45000,
+              "textSha256": "sha256:f040afa02243b34e3e5cb6765503497fa7173c41c4ab236a671e83ef0088e108"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 191500,
+              "segmentId": 5,
+              "startMs": 180000,
+              "textSha256": "sha256:f10a7073ce91b52838f3ab7ca79da0f4e76ac57be4133bfc314133dc18bb3393"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 319750,
+              "segmentId": 8,
+              "startMs": 315000,
+              "textSha256": "sha256:abb596f24bbec33eb9e3468906f23e818d1ee95bd2fb3920a160be28d0307e87"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 457000,
+              "segmentId": 11,
+              "startMs": 450000,
+              "textSha256": "sha256:44f83182f4f1f58a71b1e9d9ac3ae6bea7a1cbf8a762b6c709adf1f250ca4e8b"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 594250,
+              "segmentId": 14,
+              "startMs": 585000,
+              "textSha256": "sha256:8693aa35477dd1b9782648d1c7380671c4032925d16d050c96d2a30ea9fffaf6"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 731500,
+              "segmentId": 17,
+              "startMs": 720000,
+              "textSha256": "sha256:466c376b8f8b71bcc018d81ba97302109f107ff6c2fd7ad7a8e446d71664a6c0"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 859750,
+              "segmentId": 20,
+              "startMs": 855000,
+              "textSha256": "sha256:b387e3d8b783c1eff21d9901ffbccdc9a9a89acd57fdd8e4df1693dc3e452883"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 997000,
+              "segmentId": 23,
+              "startMs": 990000,
+              "textSha256": "sha256:4c020af0a7fb45ab73b6497c9beb5739396571fff6f40a6e4aa4978f3c4843cb"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 1134250,
+              "segmentId": 26,
+              "startMs": 1125000,
+              "textSha256": "sha256:7ed34fc48bf5248c3d447186bd7fb60878c0d9db7e39611fc6f391c80605c32e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 1271500,
+              "segmentId": 29,
+              "startMs": 1260000,
+              "textSha256": "sha256:f83177c131a5c14f683b0474db7c82bd70470a99ddc83723f5be6267a8ba941e"
+            }
+          ]
+        },
+        "rawQuery": "team discusses"
+      },
+      {
+        "category": "phrase",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-PHRASE-MIXED-COMMON",
+        "latencyEligible": true,
+        "mode": "PHRASE",
+        "normalization": {
+          "compiledMatch": "\"команда project\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "команда",
+            "project"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 333333,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1,
+              "endMs": 100000,
+              "segmentId": 3,
+              "startMs": 90000,
+              "textSha256": "sha256:46bb682ea2544b632ad181ba017f1a493e0e036edc410173e88051a61cf40b3c"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 237250,
+              "segmentId": 6,
+              "startMs": 225000,
+              "textSha256": "sha256:5866866a9ddfb79708a7b7381237d0009e2311b9da32c8c67bbea8a1f94e77b8"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 365500,
+              "segmentId": 9,
+              "startMs": 360000,
+              "textSha256": "sha256:9c9c47663c643ce47dfb6fe7f0b559dd8fcbb3eec1c650fa61234408d42f2985"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 502750,
+              "segmentId": 12,
+              "startMs": 495000,
+              "textSha256": "sha256:3d957dba3d1b6a51f43542b65318f40370fb84df7f15044bc61c0e701753682e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 640000,
+              "segmentId": 15,
+              "startMs": 630000,
+              "textSha256": "sha256:a15013e293517e277b0fc5b746301fd5e68426d3b38aab250a69880461db884a"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 777250,
+              "segmentId": 18,
+              "startMs": 765000,
+              "textSha256": "sha256:a6f6c9421ce24c87fe4a4bec588bbc7c0e4843fdc26e2c25169906dc889a9cf4"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 905500,
+              "segmentId": 21,
+              "startMs": 900000,
+              "textSha256": "sha256:2a4055ce63fee9b5957af1969a9c0b9ae3de15e06e8d4599a3da46cc01f89c07"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 1042750,
+              "segmentId": 24,
+              "startMs": 1035000,
+              "textSha256": "sha256:3c3953369215561cb314a62b75148ad610295e28a84b63c6098d78f4a457a6a2"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 1180000,
+              "segmentId": 27,
+              "startMs": 1170000,
+              "textSha256": "sha256:cc2da5159875fd26e03557adc6488b29ef43cd4313e1a112db0e2d52644e01ed"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 1317250,
+              "segmentId": 30,
+              "startMs": 1305000,
+              "textSha256": "sha256:cb3d13f1a0efa7906acc140a683579c2c12eb8bc6a504334f006a33e06260f19"
+            }
+          ]
+        },
+        "rawQuery": "команда project"
+      },
+      {
+        "category": "prefix",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-PREFIX-RU-QUANT",
+        "latencyEligible": true,
+        "mode": "PREFIX",
+        "normalization": {
+          "compiledMatch": "\"квант\"*",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "квант"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 1003,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 10,
+              "endMs": 4328500,
+              "segmentId": 997,
+              "startMs": 4320000,
+              "textSha256": "sha256:6c8b2490f91a426fe97a0c3747c3ffb9250d3122900bb7fea18a28dba64cbcf3"
+            },
+            {
+              "conversationId": 20,
+              "endMs": 4194250,
+              "segmentId": 1994,
+              "startMs": 4185000,
+              "textSha256": "sha256:3e115d30a3bac2b63c0c282c8941cc22e472a02aae24bb9b6febac7ad00a8d4b"
+            },
+            {
+              "conversationId": 30,
+              "endMs": 4060000,
+              "segmentId": 2991,
+              "startMs": 4050000,
+              "textSha256": "sha256:63614074d0392112cad6522584b9ebbc00d06656027f54e898a674a1f3a15e7e"
+            },
+            {
+              "conversationId": 40,
+              "endMs": 3925750,
+              "segmentId": 3988,
+              "startMs": 3915000,
+              "textSha256": "sha256:2548150981981c2e00a5d652c69bf0f8efb263ec060d4b1b2728082db4d0d9a8"
+            },
+            {
+              "conversationId": 50,
+              "endMs": 3791500,
+              "segmentId": 4985,
+              "startMs": 3780000,
+              "textSha256": "sha256:3bb0a81d30e9715da3b98912ccccf41581354b7fd904d8acdbd566e717e13981"
+            },
+            {
+              "conversationId": 60,
+              "endMs": 3657250,
+              "segmentId": 5982,
+              "startMs": 3645000,
+              "textSha256": "sha256:073eacbbb3fb20bd934ad0ed539d478717bee7b17bd755c390cbf1768366cb24"
+            },
+            {
+              "conversationId": 70,
+              "endMs": 3514000,
+              "segmentId": 6979,
+              "startMs": 3510000,
+              "textSha256": "sha256:41c1e534fb80c39c4235195c86629b8ffc0c6e4c9fa3f3f18b80173c3b2e84de"
+            },
+            {
+              "conversationId": 80,
+              "endMs": 3379750,
+              "segmentId": 7976,
+              "startMs": 3375000,
+              "textSha256": "sha256:db1b4a901779eb056f3e9f85a54b1a4d8cb374ecd3c92656366ff40482343cd2"
+            },
+            {
+              "conversationId": 90,
+              "endMs": 3245500,
+              "segmentId": 8973,
+              "startMs": 3240000,
+              "textSha256": "sha256:fc0a258d88f5e1e3ee8cd4448f373e4a535e123311a380cebd5292b1ccbf51dd"
+            },
+            {
+              "conversationId": 100,
+              "endMs": 3111250,
+              "segmentId": 9970,
+              "startMs": 3105000,
+              "textSha256": "sha256:a636f96054835e1c4404910b53ca4f67c4c374a0bb29c5d575850f70958c81eb"
+            }
+          ]
+        },
+        "rawQuery": "квант"
+      },
+      {
+        "category": "prefix",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-PREFIX-EN-HYPER",
+        "latencyEligible": true,
+        "mode": "PREFIX",
+        "normalization": {
+          "compiledMatch": "\"hyperpro\"*",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "hyperpro"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 1009,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 10,
+              "endMs": 4054000,
+              "segmentId": 991,
+              "startMs": 4050000,
+              "textSha256": "sha256:f27aa4a5863d0aaf67272ca8a0bb300d3fe2251634b8569c98b3b8e0b8c340f6"
+            },
+            {
+              "conversationId": 20,
+              "endMs": 3654250,
+              "segmentId": 1982,
+              "startMs": 3645000,
+              "textSha256": "sha256:d059bd50cf702fb582edd56ac9a6c17aeee683c55dd1e53bc0f75e57b26fced7"
+            },
+            {
+              "conversationId": 30,
+              "endMs": 3245500,
+              "segmentId": 2973,
+              "startMs": 3240000,
+              "textSha256": "sha256:0b2ed6068da0344ddf15ad64f960ea50111196f74a2f3b31c0f2c8b9856e24f5"
+            },
+            {
+              "conversationId": 40,
+              "endMs": 2845750,
+              "segmentId": 3964,
+              "startMs": 2835000,
+              "textSha256": "sha256:1d1ebb8e9368b12d72cb026413c18d5beee0fe9d0e072bc7fcace36d119d8fbe"
+            },
+            {
+              "conversationId": 50,
+              "endMs": 2437000,
+              "segmentId": 4955,
+              "startMs": 2430000,
+              "textSha256": "sha256:de5ed60aee4962463c60e7254f4d063d3cc7779c246a19bcfef625ed1978b377"
+            },
+            {
+              "conversationId": 60,
+              "endMs": 2037250,
+              "segmentId": 5946,
+              "startMs": 2025000,
+              "textSha256": "sha256:ae626cadfc89e54d9e8f4e42a3d11e888b745fa6fecc83d72f80cb1a120eb466"
+            },
+            {
+              "conversationId": 70,
+              "endMs": 1628500,
+              "segmentId": 6937,
+              "startMs": 1620000,
+              "textSha256": "sha256:7c307cbcef266ebac0463383d34c19f68181631cffd7b221ffcaf51461407185"
+            },
+            {
+              "conversationId": 80,
+              "endMs": 1219750,
+              "segmentId": 7928,
+              "startMs": 1215000,
+              "textSha256": "sha256:a2e8a06ccda8b9f22a8787c4635bfcb29cb5a91d32a742c469474128247a1e35"
+            },
+            {
+              "conversationId": 90,
+              "endMs": 820000,
+              "segmentId": 8919,
+              "startMs": 810000,
+              "textSha256": "sha256:76629e42495bd988a4d225cb46abd2ed370b43b916b1f2771582584a8c328e90"
+            },
+            {
+              "conversationId": 100,
+              "endMs": 411250,
+              "segmentId": 9910,
+              "startMs": 405000,
+              "textSha256": "sha256:da141385d9a4bbfe00164fdde80a48ba0e45296ba3b51699087fe64d8eb990af"
+            }
+          ]
+        },
+        "rawQuery": "hyperpro"
+      },
+      {
+        "category": "prefix",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-PREFIX-RU-RARE",
+        "latencyEligible": true,
+        "mode": "PREFIX",
+        "normalization": {
+          "compiledMatch": "\"редкослово\"*",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "редкослово"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 10,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1000,
+              "endMs": 4054000,
+              "segmentId": 99991,
+              "startMs": 4050000,
+              "textSha256": "sha256:d8183dbc1596b94350829729c2e27d665d0dd2600721cdd2dc366af8306ae7d0"
+            },
+            {
+              "conversationId": 2000,
+              "endMs": 3654250,
+              "segmentId": 199982,
+              "startMs": 3645000,
+              "textSha256": "sha256:b2bcae1f0dd07ba8e62634493b24f4291f3ed0d2e2753dbb59e0c2b41d4301fd"
+            },
+            {
+              "conversationId": 3000,
+              "endMs": 3245500,
+              "segmentId": 299973,
+              "startMs": 3240000,
+              "textSha256": "sha256:0ca6f442e7254d240cef8059765ce62d57a2a014e5424423fc44c8f800caf179"
+            },
+            {
+              "conversationId": 4000,
+              "endMs": 2845750,
+              "segmentId": 399964,
+              "startMs": 2835000,
+              "textSha256": "sha256:7472c6f6a02753c9621ceec13e7a24e51fd5e54ecf7d14fd79962b0b2433bc38"
+            },
+            {
+              "conversationId": 5000,
+              "endMs": 2437000,
+              "segmentId": 499955,
+              "startMs": 2430000,
+              "textSha256": "sha256:921500edea4e10bdddc995e3cdd6a4d1f50c65fda4e83a2b574d85f90529a7bb"
+            },
+            {
+              "conversationId": 6000,
+              "endMs": 2037250,
+              "segmentId": 599946,
+              "startMs": 2025000,
+              "textSha256": "sha256:1af159c55ab6756dc0765b8dfcee796ff5e074d27bc8b055ec47e34dd8007645"
+            },
+            {
+              "conversationId": 7000,
+              "endMs": 1628500,
+              "segmentId": 699937,
+              "startMs": 1620000,
+              "textSha256": "sha256:989aa75c5fa941c8c5185e7cbc352a620f9055632a866889a0322182007707e5"
+            },
+            {
+              "conversationId": 8000,
+              "endMs": 1219750,
+              "segmentId": 799928,
+              "startMs": 1215000,
+              "textSha256": "sha256:dad8b65375b9a69a74a8e1bc952914ac686cefaac966fb3e9f3e7a23eb7cdf53"
+            },
+            {
+              "conversationId": 9000,
+              "endMs": 820000,
+              "segmentId": 899919,
+              "startMs": 810000,
+              "textSha256": "sha256:f49bc1243f268825b825913f17726640fce927b16c210d42ec5d28bb9e220ab3"
+            },
+            {
+              "conversationId": 10000,
+              "endMs": 411250,
+              "segmentId": 999910,
+              "startMs": 405000,
+              "textSha256": "sha256:bb815577109dd0cd79f1d60eae0167d92946f242895b78162f0849e662e90f52"
+            }
+          ]
+        },
+        "rawQuery": "редкослово"
+      },
+      {
+        "category": "prefix",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-PREFIX-EN-SYNTH",
+        "latencyEligible": true,
+        "mode": "PREFIX",
+        "normalization": {
+          "compiledMatch": "\"synth\"*",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "synth"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 666666,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1,
+              "endMs": 54250,
+              "segmentId": 2,
+              "startMs": 45000,
+              "textSha256": "sha256:f040afa02243b34e3e5cb6765503497fa7173c41c4ab236a671e83ef0088e108"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 100000,
+              "segmentId": 3,
+              "startMs": 90000,
+              "textSha256": "sha256:46bb682ea2544b632ad181ba017f1a493e0e036edc410173e88051a61cf40b3c"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 191500,
+              "segmentId": 5,
+              "startMs": 180000,
+              "textSha256": "sha256:f10a7073ce91b52838f3ab7ca79da0f4e76ac57be4133bfc314133dc18bb3393"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 237250,
+              "segmentId": 6,
+              "startMs": 225000,
+              "textSha256": "sha256:5866866a9ddfb79708a7b7381237d0009e2311b9da32c8c67bbea8a1f94e77b8"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 319750,
+              "segmentId": 8,
+              "startMs": 315000,
+              "textSha256": "sha256:abb596f24bbec33eb9e3468906f23e818d1ee95bd2fb3920a160be28d0307e87"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 365500,
+              "segmentId": 9,
+              "startMs": 360000,
+              "textSha256": "sha256:9c9c47663c643ce47dfb6fe7f0b559dd8fcbb3eec1c650fa61234408d42f2985"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 457000,
+              "segmentId": 11,
+              "startMs": 450000,
+              "textSha256": "sha256:44f83182f4f1f58a71b1e9d9ac3ae6bea7a1cbf8a762b6c709adf1f250ca4e8b"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 502750,
+              "segmentId": 12,
+              "startMs": 495000,
+              "textSha256": "sha256:3d957dba3d1b6a51f43542b65318f40370fb84df7f15044bc61c0e701753682e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 594250,
+              "segmentId": 14,
+              "startMs": 585000,
+              "textSha256": "sha256:8693aa35477dd1b9782648d1c7380671c4032925d16d050c96d2a30ea9fffaf6"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 640000,
+              "segmentId": 15,
+              "startMs": 630000,
+              "textSha256": "sha256:a15013e293517e277b0fc5b746301fd5e68426d3b38aab250a69880461db884a"
+            }
+          ]
+        },
+        "rawQuery": "synth"
+      },
+      {
+        "category": "prefix",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-PREFIX-RU-PROJECT",
+        "latencyEligible": true,
+        "mode": "PREFIX",
+        "normalization": {
+          "compiledMatch": "\"проек\"*",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "проек"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 400060,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1,
+              "endMs": 8500,
+              "segmentId": 1,
+              "startMs": 0,
+              "textSha256": "sha256:21291d176b44d779103855c248f0171277a55b123afdedd4110d8747c19b754a"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 145750,
+              "segmentId": 4,
+              "startMs": 135000,
+              "textSha256": "sha256:677901e1325dea21ad996349d9f68142c6a1a734c8d598884fb159212bc44ff6"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 274000,
+              "segmentId": 7,
+              "startMs": 270000,
+              "textSha256": "sha256:acd8a9e044b558616ab93a1353db7569c3fe16431700e20234edba1b607dd847"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 411250,
+              "segmentId": 10,
+              "startMs": 405000,
+              "textSha256": "sha256:6488f0c3da17cd51e88af990411e04584263d42d603eab613d78a243b7db769e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 548500,
+              "segmentId": 13,
+              "startMs": 540000,
+              "textSha256": "sha256:47aaad728b49c164fe24aa8937b65204ec57869182fa79e6a4eacbca6e68a875"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 685750,
+              "segmentId": 16,
+              "startMs": 675000,
+              "textSha256": "sha256:0c61ffd28cb08b1edc0408f2daf5ac2dec22784474f244f9eeca5515b16bf0b0"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 814000,
+              "segmentId": 19,
+              "startMs": 810000,
+              "textSha256": "sha256:0c030fde43b17da235ec53333538833b1467a285e3516a225af1aa7d92ac97a7"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 859750,
+              "segmentId": 20,
+              "startMs": 855000,
+              "textSha256": "sha256:b387e3d8b783c1eff21d9901ffbccdc9a9a89acd57fdd8e4df1693dc3e452883"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 951250,
+              "segmentId": 22,
+              "startMs": 945000,
+              "textSha256": "sha256:e14a7bb2c49b60c78e4a083a1fa8fb36db3dd645a04e68b38532a7f2c8028541"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 1088500,
+              "segmentId": 25,
+              "startMs": 1080000,
+              "textSha256": "sha256:c091143a3ac87c4b5df8e2dc03e347eedf4939b222eae72450c5d5a687af83ca"
+            }
+          ]
+        },
+        "rawQuery": "проек"
+      },
+      {
+        "category": "filters",
+        "filters": {
+          "conversationId": 42,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-FILTER-CONVERSATION",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": null,
+          "rejectionCode": null,
+          "status": "FILTER_ONLY",
+          "tokens": []
+        },
+        "oracle": {
+          "expectedCount": 100,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 42,
+              "endMs": 5500,
+              "segmentId": 4101,
+              "startMs": 0,
+              "textSha256": "sha256:5a5c4b7a80a737c89093acac836ec424625131f95741d3933f6807fcf52cbb07"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 51250,
+              "segmentId": 4102,
+              "startMs": 45000,
+              "textSha256": "sha256:f8cb87f9f12ec7a978112242f970a0e2463530f79a62536557becd558865ab77"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 97000,
+              "segmentId": 4103,
+              "startMs": 90000,
+              "textSha256": "sha256:252b60a9fe61b08fd61a46e9adf7737ffe7d99770968b12f34ab24c0e16f1cfe"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 142750,
+              "segmentId": 4104,
+              "startMs": 135000,
+              "textSha256": "sha256:919ac0c8f0541d56ae2a21ddbf5d6173953c5d851650f7e5e0c80701726b8b7e"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 188500,
+              "segmentId": 4105,
+              "startMs": 180000,
+              "textSha256": "sha256:9a5b521ff0ac703b876bf306126829fc34e4a53f8fe4c13f39445955951f2a44"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 234250,
+              "segmentId": 4106,
+              "startMs": 225000,
+              "textSha256": "sha256:bf38094cda16f4910b2b61608ee6d0c3850a682fda0b8826713234622f158453"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 280000,
+              "segmentId": 4107,
+              "startMs": 270000,
+              "textSha256": "sha256:495a309ba45b044c8c35d82e51cf73b9779d5b87c42bb51dd1f652175f1694dd"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 325750,
+              "segmentId": 4108,
+              "startMs": 315000,
+              "textSha256": "sha256:85c49e78328448b26d5ed2d6b2e1c40193ad780d400ee6ce22fc63c912d95bef"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 371500,
+              "segmentId": 4109,
+              "startMs": 360000,
+              "textSha256": "sha256:fe034e6ce15a7b372ce5eaa3347c5599652fb81a94dbbafc65cda3075718a022"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 417250,
+              "segmentId": 4110,
+              "startMs": 405000,
+              "textSha256": "sha256:5481fd1a728cf759f3e426e183561d4296ae022b3a3c3a87c4d319828de91c9a"
+            }
+          ]
+        },
+        "rawQuery": ""
+      },
+      {
+        "category": "filters",
+        "filters": {
+          "conversationId": null,
+          "sourceType": "VIDEO",
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-FILTER-SOURCE",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": null,
+          "rejectionCode": null,
+          "status": "FILTER_ONLY",
+          "tokens": []
+        },
+        "oracle": {
+          "expectedCount": 250000,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 4,
+              "endMs": 8500,
+              "segmentId": 301,
+              "startMs": 0,
+              "textSha256": "sha256:a4504a38d70504f39bf8e507be7acde2c5bba213fd9451636316c8c82f856cd3"
+            },
+            {
+              "conversationId": 4,
+              "endMs": 54250,
+              "segmentId": 302,
+              "startMs": 45000,
+              "textSha256": "sha256:3558164baa6809003b0fcef1a5b49904215c25e552ee780b1c17151003baa491"
+            },
+            {
+              "conversationId": 4,
+              "endMs": 100000,
+              "segmentId": 303,
+              "startMs": 90000,
+              "textSha256": "sha256:b03f062717d71f22597cc611dd5ca9a2c21afe0ff08d8894341ca93d458aa21a"
+            },
+            {
+              "conversationId": 4,
+              "endMs": 145750,
+              "segmentId": 304,
+              "startMs": 135000,
+              "textSha256": "sha256:84b1431aff255d736d2ab4e882cf32c4d9d8b44df6c1189984542456fa16ec9a"
+            },
+            {
+              "conversationId": 4,
+              "endMs": 191500,
+              "segmentId": 305,
+              "startMs": 180000,
+              "textSha256": "sha256:3749cb36e6bfa9823c920a83a84ff60bcce90a5412cbae0375f97bad8dafe448"
+            },
+            {
+              "conversationId": 4,
+              "endMs": 237250,
+              "segmentId": 306,
+              "startMs": 225000,
+              "textSha256": "sha256:9f027d817a304e69cb1b37f27b5d7918ff13f4a855b66fb38a0bb1f0c5b86771"
+            },
+            {
+              "conversationId": 4,
+              "endMs": 274000,
+              "segmentId": 307,
+              "startMs": 270000,
+              "textSha256": "sha256:71db4b729b0e7f04ca18d2b92abba1598b51f92e938ce124fd38497ab57d757b"
+            },
+            {
+              "conversationId": 4,
+              "endMs": 319750,
+              "segmentId": 308,
+              "startMs": 315000,
+              "textSha256": "sha256:2927953b09fb6b99324f393575117630d7c179f130cc78aae925d2834d2afbdc"
+            },
+            {
+              "conversationId": 4,
+              "endMs": 365500,
+              "segmentId": 309,
+              "startMs": 360000,
+              "textSha256": "sha256:99c11e9dddc56aec5257f4d9fb6ac9e07838b01ab1687dfd6f0443da760434b5"
+            },
+            {
+              "conversationId": 4,
+              "endMs": 411250,
+              "segmentId": 310,
+              "startMs": 405000,
+              "textSha256": "sha256:5b9fa13cd8162f4d9e5f82d119430442968397a1f432cbdc1bf45d9d8d03a944"
+            }
+          ]
+        },
+        "rawQuery": ""
+      },
+      {
+        "category": "filters",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": 1739286000000,
+          "startedAtToMs": 1739646000000
+        },
+        "id": "Q-FILTER-DATE",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": null,
+          "rejectionCode": null,
+          "status": "FILTER_ONLY",
+          "tokens": []
+        },
+        "oracle": {
+          "expectedCount": 10000,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1000,
+              "endMs": 8500,
+              "segmentId": 99901,
+              "startMs": 0,
+              "textSha256": "sha256:0ffe0bc5e4146e3029b33f78538b985c5688071294d58ce93a11a6439c70764b"
+            },
+            {
+              "conversationId": 1000,
+              "endMs": 54250,
+              "segmentId": 99902,
+              "startMs": 45000,
+              "textSha256": "sha256:93923a6d970b00dba5d2f85c238b2d500ed8fdb3f32ea9ffb7d749badd4a20f1"
+            },
+            {
+              "conversationId": 1000,
+              "endMs": 100000,
+              "segmentId": 99903,
+              "startMs": 90000,
+              "textSha256": "sha256:92f0a6cdf316ea7f323384a5f03d5d8f52d4b4834299acc8f9faa78e96ab0860"
+            },
+            {
+              "conversationId": 1000,
+              "endMs": 145750,
+              "segmentId": 99904,
+              "startMs": 135000,
+              "textSha256": "sha256:fe859ef616035458a8ad6c4ecad96cbc94deaa2ea4fc8449f74e45e3c47cd391"
+            },
+            {
+              "conversationId": 1000,
+              "endMs": 191500,
+              "segmentId": 99905,
+              "startMs": 180000,
+              "textSha256": "sha256:51ffd28bc864724d8fc2153583b4366fe4bbf516e65d991cd8321eb7af76be82"
+            },
+            {
+              "conversationId": 1000,
+              "endMs": 237250,
+              "segmentId": 99906,
+              "startMs": 225000,
+              "textSha256": "sha256:f6a68d59d26d7fc8fc7c94755ab13259f5a21159f4fe8d851ab315b67fc21893"
+            },
+            {
+              "conversationId": 1000,
+              "endMs": 274000,
+              "segmentId": 99907,
+              "startMs": 270000,
+              "textSha256": "sha256:d606753f4b374a51335657290dfc263feb8a8f1d08e6ebc9d2043a6c666e9d24"
+            },
+            {
+              "conversationId": 1000,
+              "endMs": 319750,
+              "segmentId": 99908,
+              "startMs": 315000,
+              "textSha256": "sha256:7b05335f9d4228e4d6dd483508c2560b42e0b90e1c9eb5e3a2a4b4d3df5f9570"
+            },
+            {
+              "conversationId": 1000,
+              "endMs": 365500,
+              "segmentId": 99909,
+              "startMs": 360000,
+              "textSha256": "sha256:9bb825157392bc5f48ad8ee8d4dd2f79fe4566f213ec13597e8697a4c436eecc"
+            },
+            {
+              "conversationId": 1000,
+              "endMs": 411250,
+              "segmentId": 99910,
+              "startMs": 405000,
+              "textSha256": "sha256:9722bb4baf83737229a01d56828c724a17eac6e9441b4d3547134d7cf529e854"
+            }
+          ]
+        },
+        "rawQuery": ""
+      },
+      {
+        "category": "filters",
+        "filters": {
+          "conversationId": 42,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-SEARCH-CONVERSATION",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"project\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "project"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 70,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 42,
+              "endMs": 5500,
+              "segmentId": 4101,
+              "startMs": 0,
+              "textSha256": "sha256:5a5c4b7a80a737c89093acac836ec424625131f95741d3933f6807fcf52cbb07"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 97000,
+              "segmentId": 4103,
+              "startMs": 90000,
+              "textSha256": "sha256:252b60a9fe61b08fd61a46e9adf7737ffe7d99770968b12f34ab24c0e16f1cfe"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 142750,
+              "segmentId": 4104,
+              "startMs": 135000,
+              "textSha256": "sha256:919ac0c8f0541d56ae2a21ddbf5d6173953c5d851650f7e5e0c80701726b8b7e"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 234250,
+              "segmentId": 4106,
+              "startMs": 225000,
+              "textSha256": "sha256:bf38094cda16f4910b2b61608ee6d0c3850a682fda0b8826713234622f158453"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 280000,
+              "segmentId": 4107,
+              "startMs": 270000,
+              "textSha256": "sha256:495a309ba45b044c8c35d82e51cf73b9779d5b87c42bb51dd1f652175f1694dd"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 371500,
+              "segmentId": 4109,
+              "startMs": 360000,
+              "textSha256": "sha256:fe034e6ce15a7b372ce5eaa3347c5599652fb81a94dbbafc65cda3075718a022"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 417250,
+              "segmentId": 4110,
+              "startMs": 405000,
+              "textSha256": "sha256:5481fd1a728cf759f3e426e183561d4296ae022b3a3c3a87c4d319828de91c9a"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 499750,
+              "segmentId": 4112,
+              "startMs": 495000,
+              "textSha256": "sha256:88b112eb599574107abdaa8fda00c76d572cee51468d8e81a45fa502911b902e"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 545500,
+              "segmentId": 4113,
+              "startMs": 540000,
+              "textSha256": "sha256:0aa33526794d13c2b8a4dc0e60bd9a0d0b0e7ce399cf9bbbf708a774d6ddc79f"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 637000,
+              "segmentId": 4115,
+              "startMs": 630000,
+              "textSha256": "sha256:69801e6cdddcd02e393c5e0c70672713e7c492f334320b001a3c5404b72b9444"
+            }
+          ]
+        },
+        "rawQuery": "project"
+      },
+      {
+        "category": "filters",
+        "filters": {
+          "conversationId": null,
+          "sourceType": "WORKSHOP",
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-SEARCH-SOURCE",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"project\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "project"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 175000,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 2,
+              "endMs": 11500,
+              "segmentId": 101,
+              "startMs": 0,
+              "textSha256": "sha256:e68f30a72c1148749b98729b64bb0b6ed3f78088472a03be1b16ee7ee09b427e"
+            },
+            {
+              "conversationId": 2,
+              "endMs": 57250,
+              "segmentId": 102,
+              "startMs": 45000,
+              "textSha256": "sha256:ea21f4ef2c9d1a73b538f350d72542037898fa46003c6122772f45d7a08dfb48"
+            },
+            {
+              "conversationId": 2,
+              "endMs": 139750,
+              "segmentId": 104,
+              "startMs": 135000,
+              "textSha256": "sha256:32050224bfc4e48b9817121165611d6aacf4687d461a1db885b0f016918ac8ef"
+            },
+            {
+              "conversationId": 2,
+              "endMs": 185500,
+              "segmentId": 105,
+              "startMs": 180000,
+              "textSha256": "sha256:a1c3017efea7c2fa292dad17d0aa3cd7532005e41ddd5a60bb41b71d2807f583"
+            },
+            {
+              "conversationId": 2,
+              "endMs": 277000,
+              "segmentId": 107,
+              "startMs": 270000,
+              "textSha256": "sha256:580a7a2946839533484e8dd2ea5cd1fb149d340e26cdb0d55211ee3fffea2368"
+            },
+            {
+              "conversationId": 2,
+              "endMs": 322750,
+              "segmentId": 108,
+              "startMs": 315000,
+              "textSha256": "sha256:799fedbdad7672d8cceb2fc1d420195fa77a24e42ad506101f0db52453c956b0"
+            },
+            {
+              "conversationId": 2,
+              "endMs": 414250,
+              "segmentId": 110,
+              "startMs": 405000,
+              "textSha256": "sha256:e64c42e574c6818a4844b5fd8ac587d174e6518c6e2268268cb3bb1130da9d39"
+            },
+            {
+              "conversationId": 2,
+              "endMs": 460000,
+              "segmentId": 111,
+              "startMs": 450000,
+              "textSha256": "sha256:daec028a5db672faf0c3a96c94d6d0d92845a816d6c1d3be00d89bc6c8e860a4"
+            },
+            {
+              "conversationId": 2,
+              "endMs": 551500,
+              "segmentId": 113,
+              "startMs": 540000,
+              "textSha256": "sha256:c9d19d2b180ce05bb74a4fa029ebb3526679cf187535cc90e515141d31b885d2"
+            },
+            {
+              "conversationId": 2,
+              "endMs": 597250,
+              "segmentId": 114,
+              "startMs": 585000,
+              "textSha256": "sha256:faa04c6c337974785759d9328f6f181f926056381411edc8b6a82ec60f5e4a0b"
+            }
+          ]
+        },
+        "rawQuery": "project"
+      },
+      {
+        "category": "filters",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": 1739286000000,
+          "startedAtToMs": 1739646000000
+        },
+        "id": "Q-SEARCH-DATE",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"проект\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "проект"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 4000,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1000,
+              "endMs": 8500,
+              "segmentId": 99901,
+              "startMs": 0,
+              "textSha256": "sha256:0ffe0bc5e4146e3029b33f78538b985c5688071294d58ce93a11a6439c70764b"
+            },
+            {
+              "conversationId": 1000,
+              "endMs": 145750,
+              "segmentId": 99904,
+              "startMs": 135000,
+              "textSha256": "sha256:fe859ef616035458a8ad6c4ecad96cbc94deaa2ea4fc8449f74e45e3c47cd391"
+            },
+            {
+              "conversationId": 1000,
+              "endMs": 274000,
+              "segmentId": 99907,
+              "startMs": 270000,
+              "textSha256": "sha256:d606753f4b374a51335657290dfc263feb8a8f1d08e6ebc9d2043a6c666e9d24"
+            },
+            {
+              "conversationId": 1000,
+              "endMs": 411250,
+              "segmentId": 99910,
+              "startMs": 405000,
+              "textSha256": "sha256:9722bb4baf83737229a01d56828c724a17eac6e9441b4d3547134d7cf529e854"
+            },
+            {
+              "conversationId": 1000,
+              "endMs": 548500,
+              "segmentId": 99913,
+              "startMs": 540000,
+              "textSha256": "sha256:95a3643b5bc621de88f98fd6ab411b8e4d9d5c6783db559fe9e1a69d97fb8c63"
+            },
+            {
+              "conversationId": 1000,
+              "endMs": 685750,
+              "segmentId": 99916,
+              "startMs": 675000,
+              "textSha256": "sha256:d9b7e3e8d95cc39975ddd17b4c4e9aef89921b11f172054398af7798b9570b41"
+            },
+            {
+              "conversationId": 1000,
+              "endMs": 814000,
+              "segmentId": 99919,
+              "startMs": 810000,
+              "textSha256": "sha256:341046430d6cad3173f3eed62e0c4987564f5175d39be5d3914cfa2f07892a53"
+            },
+            {
+              "conversationId": 1000,
+              "endMs": 859750,
+              "segmentId": 99920,
+              "startMs": 855000,
+              "textSha256": "sha256:ad45111799d22043961c6e87334913e5fdaa44098ee47082c6875a0b5c17f54b"
+            },
+            {
+              "conversationId": 1000,
+              "endMs": 951250,
+              "segmentId": 99922,
+              "startMs": 945000,
+              "textSha256": "sha256:89050b3e7156b0265efa5e06b5a41e4754d68abba43c079372e541ff81f6b370"
+            },
+            {
+              "conversationId": 1000,
+              "endMs": 1088500,
+              "segmentId": 99925,
+              "startMs": 1080000,
+              "textSha256": "sha256:6c0060d8ee0373f36649bf53dcae1103247d21fc3d316c4bdceb6db7351112cf"
+            }
+          ]
+        },
+        "rawQuery": "проект"
+      },
+      {
+        "category": "filters",
+        "filters": {
+          "conversationId": null,
+          "sourceType": "VIDEO",
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-SEARCH-PHRASE-SOURCE",
+        "latencyEligible": true,
+        "mode": "PHRASE",
+        "normalization": {
+          "compiledMatch": "\"silent harbor\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "silent",
+            "harbor"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 22,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 3404,
+              "endMs": 231250,
+              "segmentId": 340306,
+              "startMs": 225000,
+              "textSha256": "sha256:d9cb902d28940eeea3ab019b31b1983a3d2aec6053318530d4a4759675f0798d"
+            },
+            {
+              "conversationId": 3504,
+              "endMs": 637000,
+              "segmentId": 350315,
+              "startMs": 630000,
+              "textSha256": "sha256:8641168234d228a083108f195cdd2153beb8a24d14cf349fa995a1b96bc9fb8b"
+            },
+            {
+              "conversationId": 3604,
+              "endMs": 1042750,
+              "segmentId": 360324,
+              "startMs": 1035000,
+              "textSha256": "sha256:2b5de6f1d0274929a89756b57ad505ab45a162464e86aabb81cb98b52efaf455"
+            },
+            {
+              "conversationId": 3704,
+              "endMs": 1448500,
+              "segmentId": 370333,
+              "startMs": 1440000,
+              "textSha256": "sha256:996c56c53618762a52638603a42e6bb785340f8b743def4d6100c798b61d0f5e"
+            },
+            {
+              "conversationId": 3804,
+              "endMs": 1854250,
+              "segmentId": 380342,
+              "startMs": 1845000,
+              "textSha256": "sha256:5cd483e9860b2bda6c08a7b31241d145599e84f9ca7a44c3d6572721b0b2f33e"
+            },
+            {
+              "conversationId": 3904,
+              "endMs": 2260000,
+              "segmentId": 390351,
+              "startMs": 2250000,
+              "textSha256": "sha256:2356377733f1faa0dfe0d68adef6f819c712779d417b78798821453eb53ba4ad"
+            },
+            {
+              "conversationId": 4004,
+              "endMs": 2665750,
+              "segmentId": 400360,
+              "startMs": 2655000,
+              "textSha256": "sha256:bbfbf0868c6f63a1b7b0158cdc3e41ddb0266eddec4dfa31babd8315e25b4d70"
+            },
+            {
+              "conversationId": 4104,
+              "endMs": 3071500,
+              "segmentId": 410369,
+              "startMs": 3060000,
+              "textSha256": "sha256:a998227fa95930295798e6f57ff0c652aa2f52f7e87f0602ec431c6f5023738e"
+            },
+            {
+              "conversationId": 4204,
+              "endMs": 3477250,
+              "segmentId": 420378,
+              "startMs": 3465000,
+              "textSha256": "sha256:412571534a7902d0ae9d667b4453192a244f115bd418e088725a5d87c617e46f"
+            },
+            {
+              "conversationId": 4304,
+              "endMs": 3874000,
+              "segmentId": 430387,
+              "startMs": 3870000,
+              "textSha256": "sha256:98fb5f720fad91cb2c4fe6972f88e0c3ee12d5e12734f30afd8487c5f775ff8c"
+            }
+          ]
+        },
+        "rawQuery": "silent harbor"
+      },
+      {
+        "category": "filters",
+        "filters": {
+          "conversationId": 42,
+          "sourceType": "WORKSHOP",
+          "startedAtFromMs": 1735837200000,
+          "startedAtToMs": 1735840800000
+        },
+        "id": "Q-SEARCH-MULTI-FILTER",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"проект\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "проект"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 40,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 42,
+              "endMs": 51250,
+              "segmentId": 4102,
+              "startMs": 45000,
+              "textSha256": "sha256:f8cb87f9f12ec7a978112242f970a0e2463530f79a62536557becd558865ab77"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 188500,
+              "segmentId": 4105,
+              "startMs": 180000,
+              "textSha256": "sha256:9a5b521ff0ac703b876bf306126829fc34e4a53f8fe4c13f39445955951f2a44"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 325750,
+              "segmentId": 4108,
+              "startMs": 315000,
+              "textSha256": "sha256:85c49e78328448b26d5ed2d6b2e1c40193ad780d400ee6ce22fc63c912d95bef"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 417250,
+              "segmentId": 4110,
+              "startMs": 405000,
+              "textSha256": "sha256:5481fd1a728cf759f3e426e183561d4296ae022b3a3c3a87c4d319828de91c9a"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 454000,
+              "segmentId": 4111,
+              "startMs": 450000,
+              "textSha256": "sha256:e74e3455886b9459c06451156fa3164a90e0af0607937c95e638413819ed4fd0"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 591250,
+              "segmentId": 4114,
+              "startMs": 585000,
+              "textSha256": "sha256:5d0e4cebe55d63b5d214eb3823f9a28987e631ce2d2a2b1e31c0e4fa66952986"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 728500,
+              "segmentId": 4117,
+              "startMs": 720000,
+              "textSha256": "sha256:81cbde09ba12cee91bc24dd70ce4d65f9f73f1f783cf9ec64fd60b60a10ab651"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 865750,
+              "segmentId": 4120,
+              "startMs": 855000,
+              "textSha256": "sha256:4ae7296bf2e54f0704b9d8417c883d22fdcac15818d593ab6e8fd1ab3b1e44c5"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 994000,
+              "segmentId": 4123,
+              "startMs": 990000,
+              "textSha256": "sha256:c43b7c39f00a00778e32ffb424a1d1d40c688ac187d0d13f50a39d4abcdfa21e"
+            },
+            {
+              "conversationId": 42,
+              "endMs": 1131250,
+              "segmentId": 4126,
+              "startMs": 1125000,
+              "textSha256": "sha256:9fcdbc5b42a3273931656705f8c20e9c0b698b498199fc435adf2a4852f5a822"
+            }
+          ]
+        },
+        "rawQuery": "проект"
+      },
+      {
+        "category": "filters",
+        "filters": {
+          "conversationId": 42,
+          "sourceType": "IN_PERSON",
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-SEARCH-MULTI-FILTER-NO-MATCH",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"проект\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "проект"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "проект"
+      },
+      {
+        "category": "negative",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-NEGATIVE-WORD",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"wordthatdoesnotexist\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "wordthatdoesnotexist"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "wordthatdoesnotexist"
+      },
+      {
+        "category": "negative",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-NEGATIVE-PHRASE",
+        "latencyEligible": true,
+        "mode": "PHRASE",
+        "normalization": {
+          "compiledMatch": "\"missing synthetic phrase\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "missing",
+            "synthetic",
+            "phrase"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "missing synthetic phrase"
+      },
+      {
+        "category": "negative",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-NEGATIVE-NUMBER",
+        "latencyEligible": true,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"number9999\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "number9999"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "number9999"
+      },
+      {
+        "category": "negative",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-EMPTY",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": null,
+          "rejectionCode": null,
+          "status": "EMPTY",
+          "tokens": []
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": ""
+      },
+      {
+        "category": "negative",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-WHITESPACE",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": null,
+          "rejectionCode": null,
+          "status": "EMPTY",
+          "tokens": []
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "   \t\n  "
+      },
+      {
+        "category": "special-characters",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-SPECIAL-QUOTES",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"project\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "project"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 700000,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1,
+              "endMs": 54250,
+              "segmentId": 2,
+              "startMs": 45000,
+              "textSha256": "sha256:f040afa02243b34e3e5cb6765503497fa7173c41c4ab236a671e83ef0088e108"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 100000,
+              "segmentId": 3,
+              "startMs": 90000,
+              "textSha256": "sha256:46bb682ea2544b632ad181ba017f1a493e0e036edc410173e88051a61cf40b3c"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 191500,
+              "segmentId": 5,
+              "startMs": 180000,
+              "textSha256": "sha256:f10a7073ce91b52838f3ab7ca79da0f4e76ac57be4133bfc314133dc18bb3393"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 237250,
+              "segmentId": 6,
+              "startMs": 225000,
+              "textSha256": "sha256:5866866a9ddfb79708a7b7381237d0009e2311b9da32c8c67bbea8a1f94e77b8"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 319750,
+              "segmentId": 8,
+              "startMs": 315000,
+              "textSha256": "sha256:abb596f24bbec33eb9e3468906f23e818d1ee95bd2fb3920a160be28d0307e87"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 365500,
+              "segmentId": 9,
+              "startMs": 360000,
+              "textSha256": "sha256:9c9c47663c643ce47dfb6fe7f0b559dd8fcbb3eec1c650fa61234408d42f2985"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 411250,
+              "segmentId": 10,
+              "startMs": 405000,
+              "textSha256": "sha256:6488f0c3da17cd51e88af990411e04584263d42d603eab613d78a243b7db769e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 457000,
+              "segmentId": 11,
+              "startMs": 450000,
+              "textSha256": "sha256:44f83182f4f1f58a71b1e9d9ac3ae6bea7a1cbf8a762b6c709adf1f250ca4e8b"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 502750,
+              "segmentId": 12,
+              "startMs": 495000,
+              "textSha256": "sha256:3d957dba3d1b6a51f43542b65318f40370fb84df7f15044bc61c0e701753682e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 594250,
+              "segmentId": 14,
+              "startMs": 585000,
+              "textSha256": "sha256:8693aa35477dd1b9782648d1c7380671c4032925d16d050c96d2a30ea9fffaf6"
+            }
+          ]
+        },
+        "rawQuery": "\"project\""
+      },
+      {
+        "category": "special-characters",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-SPECIAL-APOSTROPHE",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"apostrophe\" AND \"token\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "apostrophe",
+            "token"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 199,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 51,
+              "endMs": 97000,
+              "segmentId": 5003,
+              "startMs": 90000,
+              "textSha256": "sha256:e4436ed661baaf099fcf219f8e87cf942038ed0adb17c903c488fee5958c3b6b"
+            },
+            {
+              "conversationId": 101,
+              "endMs": 231250,
+              "segmentId": 10006,
+              "startMs": 225000,
+              "textSha256": "sha256:ade67967666516489e506b7fef29b3036c322433d72dbdc61545cba426035ca9"
+            },
+            {
+              "conversationId": 151,
+              "endMs": 365500,
+              "segmentId": 15009,
+              "startMs": 360000,
+              "textSha256": "sha256:e7c1872bfbb239fa68e31d33229e3f5572df4e75f78a6c5c4297886408c6fc14"
+            },
+            {
+              "conversationId": 201,
+              "endMs": 499750,
+              "segmentId": 20012,
+              "startMs": 495000,
+              "textSha256": "sha256:b08cd6eb849ea320f369f88937f4095036bd282553d64ff43447df85ce9cb9c2"
+            },
+            {
+              "conversationId": 251,
+              "endMs": 634000,
+              "segmentId": 25015,
+              "startMs": 630000,
+              "textSha256": "sha256:f283203345505a56fa161737c38d16b014ef498b2a1052d78c988f6b45f6f289"
+            },
+            {
+              "conversationId": 301,
+              "endMs": 777250,
+              "segmentId": 30018,
+              "startMs": 765000,
+              "textSha256": "sha256:50aecac05ed5062fe0933c39eb24af722bbd051791a423816ee9721c5491f9c2"
+            },
+            {
+              "conversationId": 351,
+              "endMs": 911500,
+              "segmentId": 35021,
+              "startMs": 900000,
+              "textSha256": "sha256:b17cf42f7bbcf6b9557f66ac67a2c136837a931ecc5fd1b1c7ed2d9d316ccbff"
+            },
+            {
+              "conversationId": 401,
+              "endMs": 1045750,
+              "segmentId": 40024,
+              "startMs": 1035000,
+              "textSha256": "sha256:d59c7773aafe23f5cc28ec3a21d8fdc7c9c258f85971efd3f0dd9bdb2d5eb8d1"
+            },
+            {
+              "conversationId": 451,
+              "endMs": 1180000,
+              "segmentId": 45027,
+              "startMs": 1170000,
+              "textSha256": "sha256:d2647cf7e3e4621bd8701c592570721567c4c27d1e12a5641895faa75887769a"
+            },
+            {
+              "conversationId": 501,
+              "endMs": 1314250,
+              "segmentId": 50030,
+              "startMs": 1305000,
+              "textSha256": "sha256:8e87316e61b857e06fddb6815557ccfb4fe8d3d7bff163f40cd38b21731e435a"
+            }
+          ]
+        },
+        "rawQuery": "apostrophe'token"
+      },
+      {
+        "category": "special-characters",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-SPECIAL-PARENS",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"project\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "project"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 700000,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1,
+              "endMs": 54250,
+              "segmentId": 2,
+              "startMs": 45000,
+              "textSha256": "sha256:f040afa02243b34e3e5cb6765503497fa7173c41c4ab236a671e83ef0088e108"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 100000,
+              "segmentId": 3,
+              "startMs": 90000,
+              "textSha256": "sha256:46bb682ea2544b632ad181ba017f1a493e0e036edc410173e88051a61cf40b3c"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 191500,
+              "segmentId": 5,
+              "startMs": 180000,
+              "textSha256": "sha256:f10a7073ce91b52838f3ab7ca79da0f4e76ac57be4133bfc314133dc18bb3393"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 237250,
+              "segmentId": 6,
+              "startMs": 225000,
+              "textSha256": "sha256:5866866a9ddfb79708a7b7381237d0009e2311b9da32c8c67bbea8a1f94e77b8"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 319750,
+              "segmentId": 8,
+              "startMs": 315000,
+              "textSha256": "sha256:abb596f24bbec33eb9e3468906f23e818d1ee95bd2fb3920a160be28d0307e87"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 365500,
+              "segmentId": 9,
+              "startMs": 360000,
+              "textSha256": "sha256:9c9c47663c643ce47dfb6fe7f0b559dd8fcbb3eec1c650fa61234408d42f2985"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 411250,
+              "segmentId": 10,
+              "startMs": 405000,
+              "textSha256": "sha256:6488f0c3da17cd51e88af990411e04584263d42d603eab613d78a243b7db769e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 457000,
+              "segmentId": 11,
+              "startMs": 450000,
+              "textSha256": "sha256:44f83182f4f1f58a71b1e9d9ac3ae6bea7a1cbf8a762b6c709adf1f250ca4e8b"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 502750,
+              "segmentId": 12,
+              "startMs": 495000,
+              "textSha256": "sha256:3d957dba3d1b6a51f43542b65318f40370fb84df7f15044bc61c0e701753682e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 594250,
+              "segmentId": 14,
+              "startMs": 585000,
+              "textSha256": "sha256:8693aa35477dd1b9782648d1c7380671c4032925d16d050c96d2a30ea9fffaf6"
+            }
+          ]
+        },
+        "rawQuery": "(project)"
+      },
+      {
+        "category": "special-characters",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-SPECIAL-COLON",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"colon\" AND \"value\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "colon",
+            "value"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 199,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 51,
+              "endMs": 97000,
+              "segmentId": 5003,
+              "startMs": 90000,
+              "textSha256": "sha256:e4436ed661baaf099fcf219f8e87cf942038ed0adb17c903c488fee5958c3b6b"
+            },
+            {
+              "conversationId": 101,
+              "endMs": 231250,
+              "segmentId": 10006,
+              "startMs": 225000,
+              "textSha256": "sha256:ade67967666516489e506b7fef29b3036c322433d72dbdc61545cba426035ca9"
+            },
+            {
+              "conversationId": 151,
+              "endMs": 365500,
+              "segmentId": 15009,
+              "startMs": 360000,
+              "textSha256": "sha256:e7c1872bfbb239fa68e31d33229e3f5572df4e75f78a6c5c4297886408c6fc14"
+            },
+            {
+              "conversationId": 201,
+              "endMs": 499750,
+              "segmentId": 20012,
+              "startMs": 495000,
+              "textSha256": "sha256:b08cd6eb849ea320f369f88937f4095036bd282553d64ff43447df85ce9cb9c2"
+            },
+            {
+              "conversationId": 251,
+              "endMs": 634000,
+              "segmentId": 25015,
+              "startMs": 630000,
+              "textSha256": "sha256:f283203345505a56fa161737c38d16b014ef498b2a1052d78c988f6b45f6f289"
+            },
+            {
+              "conversationId": 301,
+              "endMs": 777250,
+              "segmentId": 30018,
+              "startMs": 765000,
+              "textSha256": "sha256:50aecac05ed5062fe0933c39eb24af722bbd051791a423816ee9721c5491f9c2"
+            },
+            {
+              "conversationId": 351,
+              "endMs": 911500,
+              "segmentId": 35021,
+              "startMs": 900000,
+              "textSha256": "sha256:b17cf42f7bbcf6b9557f66ac67a2c136837a931ecc5fd1b1c7ed2d9d316ccbff"
+            },
+            {
+              "conversationId": 401,
+              "endMs": 1045750,
+              "segmentId": 40024,
+              "startMs": 1035000,
+              "textSha256": "sha256:d59c7773aafe23f5cc28ec3a21d8fdc7c9c258f85971efd3f0dd9bdb2d5eb8d1"
+            },
+            {
+              "conversationId": 451,
+              "endMs": 1180000,
+              "segmentId": 45027,
+              "startMs": 1170000,
+              "textSha256": "sha256:d2647cf7e3e4621bd8701c592570721567c4c27d1e12a5641895faa75887769a"
+            },
+            {
+              "conversationId": 501,
+              "endMs": 1314250,
+              "segmentId": 50030,
+              "startMs": 1305000,
+              "textSha256": "sha256:8e87316e61b857e06fddb6815557ccfb4fe8d3d7bff163f40cd38b21731e435a"
+            }
+          ]
+        },
+        "rawQuery": "colon:value"
+      },
+      {
+        "category": "special-characters",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-SPECIAL-HYPHEN",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"alpha\" AND \"beta\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "alpha",
+            "beta"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 199,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 51,
+              "endMs": 97000,
+              "segmentId": 5003,
+              "startMs": 90000,
+              "textSha256": "sha256:e4436ed661baaf099fcf219f8e87cf942038ed0adb17c903c488fee5958c3b6b"
+            },
+            {
+              "conversationId": 101,
+              "endMs": 231250,
+              "segmentId": 10006,
+              "startMs": 225000,
+              "textSha256": "sha256:ade67967666516489e506b7fef29b3036c322433d72dbdc61545cba426035ca9"
+            },
+            {
+              "conversationId": 151,
+              "endMs": 365500,
+              "segmentId": 15009,
+              "startMs": 360000,
+              "textSha256": "sha256:e7c1872bfbb239fa68e31d33229e3f5572df4e75f78a6c5c4297886408c6fc14"
+            },
+            {
+              "conversationId": 201,
+              "endMs": 499750,
+              "segmentId": 20012,
+              "startMs": 495000,
+              "textSha256": "sha256:b08cd6eb849ea320f369f88937f4095036bd282553d64ff43447df85ce9cb9c2"
+            },
+            {
+              "conversationId": 251,
+              "endMs": 634000,
+              "segmentId": 25015,
+              "startMs": 630000,
+              "textSha256": "sha256:f283203345505a56fa161737c38d16b014ef498b2a1052d78c988f6b45f6f289"
+            },
+            {
+              "conversationId": 301,
+              "endMs": 777250,
+              "segmentId": 30018,
+              "startMs": 765000,
+              "textSha256": "sha256:50aecac05ed5062fe0933c39eb24af722bbd051791a423816ee9721c5491f9c2"
+            },
+            {
+              "conversationId": 351,
+              "endMs": 911500,
+              "segmentId": 35021,
+              "startMs": 900000,
+              "textSha256": "sha256:b17cf42f7bbcf6b9557f66ac67a2c136837a931ecc5fd1b1c7ed2d9d316ccbff"
+            },
+            {
+              "conversationId": 401,
+              "endMs": 1045750,
+              "segmentId": 40024,
+              "startMs": 1035000,
+              "textSha256": "sha256:d59c7773aafe23f5cc28ec3a21d8fdc7c9c258f85971efd3f0dd9bdb2d5eb8d1"
+            },
+            {
+              "conversationId": 451,
+              "endMs": 1180000,
+              "segmentId": 45027,
+              "startMs": 1170000,
+              "textSha256": "sha256:d2647cf7e3e4621bd8701c592570721567c4c27d1e12a5641895faa75887769a"
+            },
+            {
+              "conversationId": 501,
+              "endMs": 1314250,
+              "segmentId": 50030,
+              "startMs": 1305000,
+              "textSha256": "sha256:8e87316e61b857e06fddb6815557ccfb4fe8d3d7bff163f40cd38b21731e435a"
+            }
+          ]
+        },
+        "rawQuery": "alpha-beta"
+      },
+      {
+        "category": "special-characters",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-SPECIAL-STAR",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"project\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "project"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 700000,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1,
+              "endMs": 54250,
+              "segmentId": 2,
+              "startMs": 45000,
+              "textSha256": "sha256:f040afa02243b34e3e5cb6765503497fa7173c41c4ab236a671e83ef0088e108"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 100000,
+              "segmentId": 3,
+              "startMs": 90000,
+              "textSha256": "sha256:46bb682ea2544b632ad181ba017f1a493e0e036edc410173e88051a61cf40b3c"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 191500,
+              "segmentId": 5,
+              "startMs": 180000,
+              "textSha256": "sha256:f10a7073ce91b52838f3ab7ca79da0f4e76ac57be4133bfc314133dc18bb3393"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 237250,
+              "segmentId": 6,
+              "startMs": 225000,
+              "textSha256": "sha256:5866866a9ddfb79708a7b7381237d0009e2311b9da32c8c67bbea8a1f94e77b8"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 319750,
+              "segmentId": 8,
+              "startMs": 315000,
+              "textSha256": "sha256:abb596f24bbec33eb9e3468906f23e818d1ee95bd2fb3920a160be28d0307e87"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 365500,
+              "segmentId": 9,
+              "startMs": 360000,
+              "textSha256": "sha256:9c9c47663c643ce47dfb6fe7f0b559dd8fcbb3eec1c650fa61234408d42f2985"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 411250,
+              "segmentId": 10,
+              "startMs": 405000,
+              "textSha256": "sha256:6488f0c3da17cd51e88af990411e04584263d42d603eab613d78a243b7db769e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 457000,
+              "segmentId": 11,
+              "startMs": 450000,
+              "textSha256": "sha256:44f83182f4f1f58a71b1e9d9ac3ae6bea7a1cbf8a762b6c709adf1f250ca4e8b"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 502750,
+              "segmentId": 12,
+              "startMs": 495000,
+              "textSha256": "sha256:3d957dba3d1b6a51f43542b65318f40370fb84df7f15044bc61c0e701753682e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 594250,
+              "segmentId": 14,
+              "startMs": 585000,
+              "textSha256": "sha256:8693aa35477dd1b9782648d1c7380671c4032925d16d050c96d2a30ea9fffaf6"
+            }
+          ]
+        },
+        "rawQuery": "project*"
+      },
+      {
+        "category": "special-characters",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-SPECIAL-QUESTION",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"project\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "project"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 700000,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1,
+              "endMs": 54250,
+              "segmentId": 2,
+              "startMs": 45000,
+              "textSha256": "sha256:f040afa02243b34e3e5cb6765503497fa7173c41c4ab236a671e83ef0088e108"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 100000,
+              "segmentId": 3,
+              "startMs": 90000,
+              "textSha256": "sha256:46bb682ea2544b632ad181ba017f1a493e0e036edc410173e88051a61cf40b3c"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 191500,
+              "segmentId": 5,
+              "startMs": 180000,
+              "textSha256": "sha256:f10a7073ce91b52838f3ab7ca79da0f4e76ac57be4133bfc314133dc18bb3393"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 237250,
+              "segmentId": 6,
+              "startMs": 225000,
+              "textSha256": "sha256:5866866a9ddfb79708a7b7381237d0009e2311b9da32c8c67bbea8a1f94e77b8"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 319750,
+              "segmentId": 8,
+              "startMs": 315000,
+              "textSha256": "sha256:abb596f24bbec33eb9e3468906f23e818d1ee95bd2fb3920a160be28d0307e87"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 365500,
+              "segmentId": 9,
+              "startMs": 360000,
+              "textSha256": "sha256:9c9c47663c643ce47dfb6fe7f0b559dd8fcbb3eec1c650fa61234408d42f2985"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 411250,
+              "segmentId": 10,
+              "startMs": 405000,
+              "textSha256": "sha256:6488f0c3da17cd51e88af990411e04584263d42d603eab613d78a243b7db769e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 457000,
+              "segmentId": 11,
+              "startMs": 450000,
+              "textSha256": "sha256:44f83182f4f1f58a71b1e9d9ac3ae6bea7a1cbf8a762b6c709adf1f250ca4e8b"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 502750,
+              "segmentId": 12,
+              "startMs": 495000,
+              "textSha256": "sha256:3d957dba3d1b6a51f43542b65318f40370fb84df7f15044bc61c0e701753682e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 594250,
+              "segmentId": 14,
+              "startMs": 585000,
+              "textSha256": "sha256:8693aa35477dd1b9782648d1c7380671c4032925d16d050c96d2a30ea9fffaf6"
+            }
+          ]
+        },
+        "rawQuery": "project?"
+      },
+      {
+        "category": "special-characters",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-SPECIAL-UNICODE",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"ёжик\" AND \"café\" AND \"東京\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "ёжик",
+            "café",
+            "東京"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 80,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 124,
+              "endMs": 2077000,
+              "segmentId": 12347,
+              "startMs": 2070000,
+              "textSha256": "sha256:964ae539fceec879586b3ad22b711ac364a8daf2c374614334ab8cc3df886290"
+            },
+            {
+              "conversationId": 247,
+              "endMs": 4191250,
+              "segmentId": 24694,
+              "startMs": 4185000,
+              "textSha256": "sha256:e3870f042e495604ba39b82b9ee131540d37e1aefd39c51f0b15697bd842e520"
+            },
+            {
+              "conversationId": 371,
+              "endMs": 1805500,
+              "segmentId": 37041,
+              "startMs": 1800000,
+              "textSha256": "sha256:e74ab368dc054c42c5ebef10efb9a4ef8e57223110c46d5baaa01948cb9bbdbd"
+            },
+            {
+              "conversationId": 494,
+              "endMs": 3919750,
+              "segmentId": 49388,
+              "startMs": 3915000,
+              "textSha256": "sha256:7a55bd6c2a6ace952087bab1b0b1ddd3251c87c34ec7623083ec761b829fb52e"
+            },
+            {
+              "conversationId": 618,
+              "endMs": 1534000,
+              "segmentId": 61735,
+              "startMs": 1530000,
+              "textSha256": "sha256:54d45cb43c4aa929a3ef873cdd9754d8e8f6e0fa963e11e9d1fca262393ba193"
+            },
+            {
+              "conversationId": 741,
+              "endMs": 3657250,
+              "segmentId": 74082,
+              "startMs": 3645000,
+              "textSha256": "sha256:7c243fb5787d1a0069658555d7e7c8218531068d111966bdfbebbcd0a577b12e"
+            },
+            {
+              "conversationId": 865,
+              "endMs": 1271500,
+              "segmentId": 86429,
+              "startMs": 1260000,
+              "textSha256": "sha256:4c5c0bd5303f2bb3c55e2ae7deb59949dc263e8922640ddebe0098acd9041da5"
+            },
+            {
+              "conversationId": 988,
+              "endMs": 3385750,
+              "segmentId": 98776,
+              "startMs": 3375000,
+              "textSha256": "sha256:4dc2d64f2f216732ea94d3d43627212d3e05677af4f97267369a351c7ad5afe2"
+            },
+            {
+              "conversationId": 1112,
+              "endMs": 1000000,
+              "segmentId": 111123,
+              "startMs": 990000,
+              "textSha256": "sha256:9c5b020cfcb1d7ba40348e3a2589602c98c7d8159e403d3ff71097a9cd8a2b32"
+            },
+            {
+              "conversationId": 1235,
+              "endMs": 3114250,
+              "segmentId": 123470,
+              "startMs": 3105000,
+              "textSha256": "sha256:63335ce89840a4a69e5b0750bf9c9d0ebd7aacb56bb8af37bd501bf55429eb10"
+            }
+          ]
+        },
+        "rawQuery": "ёжик café 東京"
+      },
+      {
+        "category": "special-characters",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-SPECIAL-EMOJI",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": null,
+          "rejectionCode": null,
+          "status": "EMPTY",
+          "tokens": []
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "🚀"
+      },
+      {
+        "category": "special-characters",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-SPECIAL-LONG",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": null,
+          "rejectionCode": "QUERY_TOO_LONG",
+          "status": "REJECTED",
+          "tokens": []
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      },
+      {
+        "category": "adversarial",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-ADVERSARIAL-OPERATORS",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"or\" AND \"and\" AND \"not\" AND \"near\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "or",
+            "and",
+            "not",
+            "near"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "OR AND NOT NEAR"
+      },
+      {
+        "category": "adversarial",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-ADVERSARIAL-OR",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"project\" AND \"or\" AND \"synthetic\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "project",
+            "or",
+            "synthetic"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "project OR synthetic"
+      },
+      {
+        "category": "adversarial",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-ADVERSARIAL-AND",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"project\" AND \"and\" AND \"synthetic\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "project",
+            "and",
+            "synthetic"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "project AND synthetic"
+      },
+      {
+        "category": "adversarial",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-ADVERSARIAL-NOT",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"project\" AND \"not\" AND \"synthetic\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "project",
+            "not",
+            "synthetic"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "project NOT synthetic"
+      },
+      {
+        "category": "adversarial",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-ADVERSARIAL-NEAR",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"project\" AND \"near\" AND \"synthetic\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "project",
+            "near",
+            "synthetic"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "project NEAR synthetic"
+      },
+      {
+        "category": "adversarial",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-ADVERSARIAL-MALFORMED",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"project\" AND \"or\" AND \"synthetic\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "project",
+            "or",
+            "synthetic"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "project\" OR \"synthetic"
+      },
+      {
+        "category": "adversarial",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-ADVERSARIAL-DROP",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"drop\" AND \"table\" AND \"transcript\" AND \"segments\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "drop",
+            "table",
+            "transcript",
+            "segments"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "'); DROP TABLE transcript_segments; --"
+      },
+      {
+        "category": "adversarial",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-ADVERSARIAL-UNION",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"project\" AND \"union\" AND \"select\" AND \"text\" AND \"from\" AND \"transcript\" AND \"segments\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "project",
+            "union",
+            "select",
+            "text",
+            "from",
+            "transcript",
+            "segments"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "project UNION SELECT text FROM transcript_segments"
+      },
+      {
+        "category": "adversarial",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-ADVERSARIAL-WILDCARD",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"project\" AND \"or\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "project",
+            "or"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "project**************** OR *"
+      },
+      {
+        "category": "adversarial",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-ADVERSARIAL-COMMENT",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"project\" AND \"synthetic\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "project",
+            "synthetic"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 666666,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1,
+              "endMs": 54250,
+              "segmentId": 2,
+              "startMs": 45000,
+              "textSha256": "sha256:f040afa02243b34e3e5cb6765503497fa7173c41c4ab236a671e83ef0088e108"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 100000,
+              "segmentId": 3,
+              "startMs": 90000,
+              "textSha256": "sha256:46bb682ea2544b632ad181ba017f1a493e0e036edc410173e88051a61cf40b3c"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 191500,
+              "segmentId": 5,
+              "startMs": 180000,
+              "textSha256": "sha256:f10a7073ce91b52838f3ab7ca79da0f4e76ac57be4133bfc314133dc18bb3393"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 237250,
+              "segmentId": 6,
+              "startMs": 225000,
+              "textSha256": "sha256:5866866a9ddfb79708a7b7381237d0009e2311b9da32c8c67bbea8a1f94e77b8"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 319750,
+              "segmentId": 8,
+              "startMs": 315000,
+              "textSha256": "sha256:abb596f24bbec33eb9e3468906f23e818d1ee95bd2fb3920a160be28d0307e87"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 365500,
+              "segmentId": 9,
+              "startMs": 360000,
+              "textSha256": "sha256:9c9c47663c643ce47dfb6fe7f0b559dd8fcbb3eec1c650fa61234408d42f2985"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 457000,
+              "segmentId": 11,
+              "startMs": 450000,
+              "textSha256": "sha256:44f83182f4f1f58a71b1e9d9ac3ae6bea7a1cbf8a762b6c709adf1f250ca4e8b"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 502750,
+              "segmentId": 12,
+              "startMs": 495000,
+              "textSha256": "sha256:3d957dba3d1b6a51f43542b65318f40370fb84df7f15044bc61c0e701753682e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 594250,
+              "segmentId": 14,
+              "startMs": 585000,
+              "textSha256": "sha256:8693aa35477dd1b9782648d1c7380671c4032925d16d050c96d2a30ea9fffaf6"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 640000,
+              "segmentId": 15,
+              "startMs": 630000,
+              "textSha256": "sha256:a15013e293517e277b0fc5b746301fd5e68426d3b38aab250a69880461db884a"
+            }
+          ]
+        },
+        "rawQuery": "project -- synthetic"
+      },
+      {
+        "category": "adversarial",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-ADVERSARIAL-SEMICOLON",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"project\" AND \"delete\" AND \"from\" AND \"conversations\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "project",
+            "delete",
+            "from",
+            "conversations"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "project; DELETE FROM conversations"
+      },
+      {
+        "category": "adversarial",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-ADVERSARIAL-MANY-TOKENS",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": null,
+          "rejectionCode": "TOO_MANY_TOKENS",
+          "status": "REJECTED",
+          "tokens": []
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "token0 token1 token2 token3 token4 token5 token6 token7 token8 token9 token10 token11 token12"
+      },
+      {
+        "category": "adversarial",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-ADVERSARIAL-LONG-TOKEN",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": null,
+          "rejectionCode": "TOKEN_TOO_LONG",
+          "status": "REJECTED",
+          "tokens": []
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz"
+      },
+      {
+        "category": "adversarial",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-ADVERSARIAL-PREFIX-ONE",
+        "latencyEligible": false,
+        "mode": "PREFIX",
+        "normalization": {
+          "compiledMatch": null,
+          "rejectionCode": "PREFIX_TOO_SHORT",
+          "status": "REJECTED",
+          "tokens": []
+        },
+        "oracle": {
+          "expectedCount": 0,
+          "expectedFirstMappings": []
+        },
+        "rawQuery": "x"
+      },
+      {
+        "category": "adversarial",
+        "filters": {
+          "conversationId": null,
+          "sourceType": null,
+          "startedAtFromMs": null,
+          "startedAtToMs": null
+        },
+        "id": "Q-ADVERSARIAL-CONTROL",
+        "latencyEligible": false,
+        "mode": "EXACT",
+        "normalization": {
+          "compiledMatch": "\"project\" AND \"synthetic\"",
+          "rejectionCode": null,
+          "status": "READY",
+          "tokens": [
+            "project",
+            "synthetic"
+          ]
+        },
+        "oracle": {
+          "expectedCount": 666666,
+          "expectedFirstMappings": [
+            {
+              "conversationId": 1,
+              "endMs": 54250,
+              "segmentId": 2,
+              "startMs": 45000,
+              "textSha256": "sha256:f040afa02243b34e3e5cb6765503497fa7173c41c4ab236a671e83ef0088e108"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 100000,
+              "segmentId": 3,
+              "startMs": 90000,
+              "textSha256": "sha256:46bb682ea2544b632ad181ba017f1a493e0e036edc410173e88051a61cf40b3c"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 191500,
+              "segmentId": 5,
+              "startMs": 180000,
+              "textSha256": "sha256:f10a7073ce91b52838f3ab7ca79da0f4e76ac57be4133bfc314133dc18bb3393"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 237250,
+              "segmentId": 6,
+              "startMs": 225000,
+              "textSha256": "sha256:5866866a9ddfb79708a7b7381237d0009e2311b9da32c8c67bbea8a1f94e77b8"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 319750,
+              "segmentId": 8,
+              "startMs": 315000,
+              "textSha256": "sha256:abb596f24bbec33eb9e3468906f23e818d1ee95bd2fb3920a160be28d0307e87"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 365500,
+              "segmentId": 9,
+              "startMs": 360000,
+              "textSha256": "sha256:9c9c47663c643ce47dfb6fe7f0b559dd8fcbb3eec1c650fa61234408d42f2985"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 457000,
+              "segmentId": 11,
+              "startMs": 450000,
+              "textSha256": "sha256:44f83182f4f1f58a71b1e9d9ac3ae6bea7a1cbf8a762b6c709adf1f250ca4e8b"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 502750,
+              "segmentId": 12,
+              "startMs": 495000,
+              "textSha256": "sha256:3d957dba3d1b6a51f43542b65318f40370fb84df7f15044bc61c0e701753682e"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 594250,
+              "segmentId": 14,
+              "startMs": 585000,
+              "textSha256": "sha256:8693aa35477dd1b9782648d1c7380671c4032925d16d050c96d2a30ea9fffaf6"
+            },
+            {
+              "conversationId": 1,
+              "endMs": 640000,
+              "segmentId": 15,
+              "startMs": 630000,
+              "textSha256": "sha256:a15013e293517e277b0fc5b746301fd5e68426d3b38aab250a69880461db884a"
+            }
+          ]
+        },
+        "rawQuery": "project\u0000synthetic"
+      }
+    ]
+  },
+  "contractSha256": "sha256:d77a44988d6e587ebd0f78fccecbd24120b1e00fc6389ac836ad5344404bdb18",
+  "integrityRule": "Query mix, eligibility, ordering, repetitions, percentiles and gates are frozen before the first full run.",
+  "manifestId": "poc-search-001-query-campaign-v1",
+  "schemaVersion": 1
+}

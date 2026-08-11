@@ -1,0 +1,49 @@
+{
+  "android": {
+    "abi": "x86_64",
+    "androidApi": 36,
+    "buildFingerprint": "google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+    "buildType": "debug-androidTest",
+    "cpuSummary": "Android virtual processor",
+    "device": "emu64xa",
+    "ftsCreateSql": "CREATE VIRTUAL TABLE `transcript_segments_fts` USING FTS4(`text` TEXT NOT NULL, tokenize=unicode61 `remove_diacritics=0`)",
+    "kind": "physical",
+    "manufacturer": "Google",
+    "model": "sdk_gphone64_x86_64",
+    "monotonicClock": "SystemClock.elapsedRealtimeNanos",
+    "pageSizeBytes": 4096,
+    "product": "sdk_gphone64_x86_64",
+    "ramMb": 3920,
+    "roomVersion": "2.8.4",
+    "securityPatch": "2025-07-05",
+    "sqliteVersion": "3.44.3"
+  },
+  "commit": "b74aa4f0cc42f65c15502d1018aa68ee3b7b293f",
+  "generatedAt": "2026-08-11T11:17:13.123119Z",
+  "host": {
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "githubRef": "refs/tags/poc-search-001-full-b74aa4f",
+    "githubRunAttempt": "1",
+    "githubRunId": "31484440781",
+    "githubSha": "b74aa4f0cc42f65c15502d1018aa68ee3b7b293f",
+    "githubWorkflow": "POC Search Scale Benchmark",
+    "logicalCpuCount": 4,
+    "machine": "x86_64",
+    "os": "Linux-6.17.0-1020-azure-x86_64-with-glibc2.39",
+    "ramMb": 15989,
+    "runnerEnvironment": "github-hosted",
+    "runnerName": "GitHub Actions 1000000540"
+  },
+  "measurementScope": {
+    "correctness": "reference-scale Android emulator",
+    "latency": "host/emulator exploratory only",
+    "physicalDeviceClaim": false,
+    "requiredFuturePhysicalProfiles": [
+      "D1",
+      "D2",
+      "D3"
+    ]
+  },
+  "pocId": "POC-SEARCH-001",
+  "schemaVersion": 1
+}

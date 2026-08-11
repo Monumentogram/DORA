@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 2,
+  "gateSetVersion": "stage0-v0.2",
+  "status": "APPROVED",
+  "pocId": "POC-SEARCH-001",
+  "scope": "Prospective Stage 0 evaluation only",
+  "decisionId": "DEC-043",
+  "selectedOptionId": "B",
+  "approvedBy": "Project owner",
+  "approvedOn": "2026-08-11",
+  "selectionRationale": "Option B limits the index to one additional copy of canonical data, keeps update cost moderate, and requires search visibility within one second. This is an acceptable local-MVP balance and was not selected from prior Dora results.",
+  "benchmarkExecutionAllowed": false,
+  "historicalResultsAffected": false,
+  "inheritsUnchangedGatesFrom": "stage0-v0.1",
+  "executionAuthorization": {
+    "status": "WITHHELD_BY_PROJECT_OWNER",
+    "authorizedBy": null,
+    "authorizedOn": null,
+    "requiresLaterRecordedOwnerAuthorization": true,
+    "blockers": [
+      "EXACT_COMPONENT_LICENSE_NOTICE_REVIEW_NOT_APPROVED",
+      "GATE_V02_PAIRED_HARNESS_NOT_VERIFIED",
+      "PHYSICAL_D1_D2_D3_AVAILABILITY_NOT_CONFIRMED"
+    ]
+  },
+  "independence": {
+    "historicalDoraMeasurementsUsedToSetThresholds": false,
+    "historicalDoraResultsMayBeReclassified": false,
+    "ownerRationaleRecordedProspectively": true,
+    "sources": [
+      "https://www.sqlite.org/fts3.html#the_content_option",
+      "https://www.sqlite.org/lang_vacuum.html",
+      "https://www.sqlite.org/pragma.html#pragma_wal_checkpoint",
+      "https://developer.android.com/topic/performance/benchmarking/benchmarking-in-ci#use-real-devices",
+      "https://developer.android.com/topic/performance/vitals/render"
+    ]
+  },
+  "protocol": {
+    "scale": {
+      "conversationCount": 10000,
+      "transcriptSegmentCount": 1000000,
+      "segmentsPerConversation": 100,
+      "inputClassification": "deterministic_synthetic_text"
+    },
+    "requiredPhysicalProfiles": [
+      "D1",
+      "D2",
+      "D3"
+    ],
+    "emulatorRole": {
+      "purpose": "harness_and_provenance_validation_only",
+      "maySatisfyPhysicalPerformanceGate": false
+    },
+    "databasePair": {
+      "control": "canonical schema and fixture with FTS table and FTS maintenance omitted",
+      "candidate": "same canonical schema and fixture with candidate FTS enabled",
+      "journalMode": "WAL",
+      "synchronous": "FULL",
+      "walAutoCheckpointPages": 1000,
+      "foreignKeys": true,
+      "tempStore": "DEFAULT"
+    },
+    "build": {
+      "freshPairedBuildsPerProfile": 3,
+      "variant": "release-like nondebuggable profileable benchmark APK",
+      "compilationMode": "full_aot_recorded",
+      "pairOrder": [
+        "control_then_candidate",
+        "candidate_then_control",
+        "control_then_candidate"
+      ]
+    },
+    "deviceState": {
+      "network": "airplane_mode",
+      "screen": "on_fixed_20_percent_brightness",
+      "animations": "disabled",
+      "power": "unplugged",
+      "batteryPercentMin": 40,
+      "batteryPercentMax": 80,
+      "thermalStart": "NONE",
+      "thermalMaximum": "LIGHT",
+      "cooldownMinutesBeforeFreshBuild": 10
+    },
+    "storageNormalization": [
+      "wal_checkpoint_truncate_success",
+      "vacuum",
+      "second_wal_checkpoint_truncate_success",
+      "close_all_connections",
+      "wal_and_shm_absent_or_zero",
+      "main_file_bytes_equals_page_count_times_page_size"
+    ],
+    "operationClasses": [
+      {
+        "id": "ADD_CONVERSATION_100",
+        "cardinality": 100,
+        "group": "bulk-100"
+      },
+      {
+        "id": "UPDATE_SEGMENT_TEXT_1",
+        "cardinality": 1,
+        "group": "single-row"
+      },
+      {
+        "id": "UPDATE_CONVERSATION_FILTER_1",
+        "cardinality": 1,
+        "group": "single-row"
+      },
+      {
+        "id": "DELETE_SEGMENT_1",
+        "cardinality": 1,
+        "group": "single-row"
+      },
+      {
+        "id": "DELETE_CONVERSATION_100",
+        "cardinality": 100,
+        "group": "bulk-100"
+      }
+    ],
+    "warmupsPerClassDatabaseBuild": 10,
+    "measuredOperationsPerClassDatabaseBuild": 100,
+    "measuredSamplesPerClassProfile": 300,
+    "visibilityPollIntervalMs": 10,
+    "clock": "SystemClock.elapsedRealtimeNanos",
+    "aggregation": {
+      "percentileMethod": "nearest_rank_ceil_p_times_n",
+      "withinProfileAndClass": [
+        "p95",
+        "p99"
+      ],
+      "acrossProfilesAndClasses": "maximum_no_averaging",
+      "storageAcrossBuildsAndProfiles": "maximum",
+      "outlierRemovalAllowed": false
+    }
+  },
+  "metrics": {
+    "indexIncrementalBytes": "indexed_main_db_bytes - canonical_only_main_db_bytes",
+    "indexOverheadRatio": "index_incremental_bytes / canonical_only_main_db_bytes",
+    "indexOverheadBytesPerSegment": "index_incremental_bytes / 1000000",
+    "maintenanceDeltaMs": "indexed_commit_ms - canonical_only_commit_ms",
+    "visibilityLatencyMs": "first_expected_search_response_end - indexed_commit_return",
+    "staleSuccessfulResponsesAllowed": 0,
+    "mappingErrorsAllowed": 0,
+    "candidateCrashesAllowed": 0
+  },
+  "selectedOption": {
+    "id": "B",
+    "name": "balanced-local-baseline",
+    "thresholds": {
+      "maxIndexIncrementalBytes": 536870912,
+      "maxIndexOverheadRatio": 1.0,
+      "maxIndexOverheadBytesPerSegment": 512,
+      "maxSingleRowMaintenanceDeltaP95Ms": 50,
+      "maxBulk100MaintenanceDeltaP95Ms": 250,
+      "maxIndexedCommitP99Ms": 500,
+      "maxVisibilityP95Ms": 250,
+      "maxVisibilityP99Ms": 1000
+    },
+    "fallback": "Remove duplicated content or split by entity; otherwise use a durable visible pending queue bounded to one second."
+  },
+  "unselectedOptionIds": [
+    "A",
+    "C"
+  ],
+  "fallbackIfRequiredPhysicalProfileUnavailable": "INCONCLUSIVE; retain harness or available-profile observations without a support claim"
+}

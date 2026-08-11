@@ -1,0 +1,164 @@
+{
+  "generator": "tools/poc_search_evidence_ledger.py",
+  "pocId": "POC-SEARCH-001",
+  "policy": {
+    "completedResultsAreImmutable": true,
+    "ephemeralActionsArtifactsAreNotTheDurableRecord": true,
+    "supersededEvidenceRemainsRetained": true
+  },
+  "records": [
+    {
+      "actionsRunId": "31484440781",
+      "actionsRunUrl": "https://github.com/Monumentogram/DORA/actions/runs/31484440781",
+      "artifactId": "9099098018",
+      "artifactName": "poc-search-001-evidence-b74aa4f0cc42f65c15502d1018aa68ee3b7b293f",
+      "classification": "VALID_FAIL",
+      "commit": "b74aa4f0cc42f65c15502d1018aa68ee3b7b293f",
+      "environmentAudit": {
+        "correction": "The immutable raw files recorded physical, but sdk_gphone/emu64xa, the Google SDK fingerprint, and Android virtual processor identify an emulator. No metric changed.",
+        "correctionRequired": true,
+        "derivedKinds": [
+          "emulator"
+        ],
+        "recordedKinds": [
+          "physical"
+        ]
+      },
+      "files": [
+        {
+          "bytes": 116415,
+          "locator": "docs/evidence/poc-search-001/runs/31484440781/benchmark-observations.json",
+          "sha256": "sha256:f82d07333410c6513cea080ec3e01d4822d658d1317cc79d17f2d036fe175549"
+        },
+        {
+          "bytes": 32900,
+          "locator": "docs/evidence/poc-search-001/runs/31484440781/benchmark-result.json",
+          "sha256": "sha256:a11e91834a2521053f368e1c20f3b5378994b31b1130700bde106a8d67e649e6"
+        },
+        {
+          "bytes": 1676,
+          "locator": "docs/evidence/poc-search-001/runs/31484440781/environment.json",
+          "sha256": "sha256:78471a44c9afa1fb1731b36e0077eb356a0bd0c04ba0665b8866cbfd38761168"
+        },
+        {
+          "bytes": 2111,
+          "locator": "docs/evidence/poc-search-001/runs/31484440781/mutation-result.json",
+          "sha256": "sha256:cf4529b98ca67f0797d78737976f61316084ad65f25e2aaa0ef18aad1a2d9094"
+        },
+        {
+          "bytes": 71592,
+          "locator": "docs/evidence/poc-search-001/runs/31484440781/query-result.json",
+          "sha256": "sha256:d06b28ddb69978506b8e4bde4e96f31b47244644ce351815e2bc327dd34649a8"
+        },
+        {
+          "bytes": 42025,
+          "locator": "docs/evidence/poc-search-001/runs/31484440781/rebuild-result.json",
+          "sha256": "sha256:40e24dc4fdf9ffe7c0bd67031a773753ecefe50aabb1c58d905ac859bb4e3063"
+        },
+        {
+          "bytes": 2568,
+          "locator": "docs/evidence/poc-search-001/runs/31484440781/targeted-scale-observations.json",
+          "sha256": "sha256:ca0cfe40851daa9b54783286037c203aebc64915ca42bbdd0e30bc920679ef0a"
+        }
+      ],
+      "resultStatus": "FAIL",
+      "retention": "repository-history",
+      "targetedArtifactId": "9098780070",
+      "targetedArtifactName": "poc-search-001-targeted-b74aa4f0cc42f65c15502d1018aa68ee3b7b293f",
+      "targetedPassed": true
+    },
+    {
+      "actionsRunId": "31486943815",
+      "actionsRunUrl": "https://github.com/Monumentogram/DORA/actions/runs/31486943815",
+      "artifactId": "9099733854",
+      "artifactName": "poc-search-001-targeted-9571e5f2e7cceeab95b52f1e1167770518a3e475",
+      "classification": "TARGETED_PASS",
+      "commit": "9571e5f2e7cceeab95b52f1e1167770518a3e475",
+      "environmentAudit": {
+        "correction": "The immutable raw files recorded physical, but sdk_gphone/emu64xa, the Google SDK fingerprint, and Android virtual processor identify an emulator. No metric changed.",
+        "correctionRequired": true,
+        "derivedKinds": [
+          "emulator"
+        ],
+        "recordedKinds": [
+          "physical"
+        ]
+      },
+      "files": [
+        {
+          "bytes": 2982,
+          "locator": "docs/evidence/poc-search-001/runs/31486943815/targeted-scale-observations.json",
+          "sha256": "sha256:9d80d8ff9c8d102f82944b21f9dd7d62f3b0ec5546fc94976d4976561ec06e74"
+        }
+      ],
+      "retention": "repository-history",
+      "targetedPassed": true
+    },
+    {
+      "actionsRunId": "31487775567",
+      "actionsRunUrl": "https://github.com/Monumentogram/DORA/actions/runs/31487775567",
+      "artifactId": "9100353133",
+      "artifactName": "poc-search-001-evidence-9571e5f2e7cceeab95b52f1e1167770518a3e475",
+      "classification": "SUPERSEDED_REVIEW_DEFECTIVE",
+      "commit": "9571e5f2e7cceeab95b52f1e1167770518a3e475",
+      "environmentAudit": {
+        "correction": "The immutable raw files recorded physical, but sdk_gphone/emu64xa, the Google SDK fingerprint, and Android virtual processor identify an emulator. No metric changed.",
+        "correctionRequired": true,
+        "derivedKinds": [
+          "emulator"
+        ],
+        "recordedKinds": [
+          "physical"
+        ]
+      },
+      "files": [
+        {
+          "bytes": 116421,
+          "locator": "docs/evidence/poc-search-001/runs/31487775567/benchmark-observations.json",
+          "sha256": "sha256:2062b8b45444badb7b5e4769853ceff7207682e723081461d393d89a7e696114"
+        },
+        {
+          "bytes": 32823,
+          "locator": "docs/evidence/poc-search-001/runs/31487775567/benchmark-result.json",
+          "sha256": "sha256:41c86f2d74730d238df60a13762a626a0e4f53214e782b30828938ddf5e06d27"
+        },
+        {
+          "bytes": 1676,
+          "locator": "docs/evidence/poc-search-001/runs/31487775567/environment.json",
+          "sha256": "sha256:af9886fe06526640fd90def3593e2b892437307781da49d2494a2d65e4d9153a"
+        },
+        {
+          "bytes": 2113,
+          "locator": "docs/evidence/poc-search-001/runs/31487775567/mutation-result.json",
+          "sha256": "sha256:acff45fdee7ef89f11ad68ed1719e44307ade7b76fad57609eac553e8dfc2373"
+        },
+        {
+          "bytes": 71604,
+          "locator": "docs/evidence/poc-search-001/runs/31487775567/query-result.json",
+          "sha256": "sha256:18615f3f00d5d64da4eed47684fa255b4b6f0d74797a8f5e2cf47f18c1c11eb7"
+        },
+        {
+          "bytes": 42021,
+          "locator": "docs/evidence/poc-search-001/runs/31487775567/rebuild-result.json",
+          "sha256": "sha256:84d67560545a198967471334a2e52e096452827f5458267536500a5a421dbb91"
+        },
+        {
+          "bytes": 2984,
+          "locator": "docs/evidence/poc-search-001/runs/31487775567/targeted-scale-observations.json",
+          "sha256": "sha256:971701887374e557ea606995e5a6f4297ee7e01c7e0fe8128e26bdb20e27c68f"
+        }
+      ],
+      "resultStatus": "INCONCLUSIVE",
+      "retention": "repository-history",
+      "supersededReasons": [
+        "mandatory storage/update gate was not evaluated while the recommendation claimed GO",
+        "raw environment kind contradicted recorded emulator identifiers",
+        "dependency evaluation approval was asserted without a complete reviewed inventory"
+      ],
+      "targetedArtifactId": "9100040873",
+      "targetedArtifactName": "poc-search-001-targeted-9571e5f2e7cceeab95b52f1e1167770518a3e475",
+      "targetedPassed": true
+    }
+  ],
+  "schemaVersion": 1
+}

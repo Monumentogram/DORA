@@ -1,12 +1,12 @@
 # Dora MVP 1 — решения владельца для ближайших PoC
 
-Статус: **Approved**\
-Дата решения: **4 августа 2026 года**\
+Статус: **Approved owner records; Option B approved, benchmark execution withheld**\
+Даты решений: **4 и 11 августа 2026 года**\
 Владелец решения: **Project owner**\
 Область: только Stage 0 PoC; эти решения не разрешают production-функциональность, реальные совещания или публичные support claims\
-Связанные записи: `DEC-002`–`DEC-004`, `DEC-009`, `DEC-014`, `DEC-015`, `DEC-018`, `DEC-020`, `DEC-027` и Stage 0A owner approval record в Product Decisions
+Связанные записи: `DEC-002`–`DEC-004`, `DEC-009`, `DEC-014`, `DEC-015`, `DEC-018`, `DEC-020`, `DEC-027`, Approved `DEC-043` и Stage 0A owner approval record в Product Decisions
 
-Этот сокращённый реестр содержит только десять решений, блокировавших ближайшие PoC. Все ответы ниже прямо утверждены владельцем. Утверждение числовых критериев ограничено уже определёнными gates `stage0-v0.1`: неопределённые пороги из раздела `Unresolved thresholds` остаются `Proposed`.
+Этот сокращённый реестр содержит тринадцать решений для ближайших PoC. Все ответы ниже прямо утверждены владельцем в указанной области. `OD-12` утверждает только prospective Option B contract, а `OD-13` — точный Stage 0 IP evaluation package и честное `INCONCLUSIVE`-закрытие; измерительное исполнение остаётся отдельно запрещено.
 
 ## OD-01. Какой технический PoC запускать первым и что он вправе записывать?
 
@@ -248,10 +248,99 @@
 
 `OD-10: выбираю A — local mode должен работать без account, сети и Google Mobile Services; cloud выключен до отдельного явного согласия.`
 
+## OD-11. Кто выполняет Stage 0 artifact review и какая SQLite provenance достаточна?
+
+**Статус решения:** `Approved` — 11 августа 2026 года.
+
+**Область:** только evaluation `POC-SEARCH-001` в Stage 0. Решение не является production
+admission, production Legal approval или независимым production security review.
+
+**Зафиксированный ответ владельца:**
+
+- Product reviewer — `Project owner`.
+- Project owner принимает роль IP policy reviewer для Stage 0 evaluation.
+- Project owner принимает объединённую роль Engineering/Security reviewer только для Stage 0
+  evaluation. Независимый production security review этим не заменяется.
+- Production Legal reviewer/approval не назначен и остаётся `BLOCKED`.
+- Для встроенного Android platform SQLite в Stage 0 достаточно digest точного system-image archive
+  вместе с package/image ID, revision, runtime build fingerprint, API, ABI и `sqlite_version()`.
+  Отдельный digest SQLite binary не требуется, если PoC не загружает и не распространяет отдельную
+  SQLite library.
+- Перед production admission эта nested-platform provenance boundary обязательно пересматривается;
+  отдельный SQLCipher/custom SQLite/prebuilt всегда требует собственного artifact digest.
+
+**Что это решение не утверждает:**
+
+- ни один вариант численных predicates draft `stage0-v0.2`;
+- evaluation rights всех 66 locked components без завершённого component/license/NOTICE review;
+- production use, redistribution, SBOM/notices или shipping dependency admission.
+
+**Следствие:** reviewer assignment и достаточность SQLite provenance method больше не являются
+неопределёнными. `OD-12` позднее выбрал Gate Set Option B, а `OD-13` утвердил точный Stage 0 IP
+evaluation package. Measured execution остаётся заблокирован до physical D1–D3 и отдельной
+execution authorization.
+
+## OD-12. Какой storage/update contract утверждён и разрешён ли benchmark?
+
+**Статус решения:** `Approved` — 11 августа 2026 года.
+
+**Область:** prospective Gate Set `stage0-v0.2` для `POC-SEARCH-001`; historical v0.1 evidence
+остаётся неизменным.
+
+**Зафиксированный ответ владельца:** выбран Option B.
+
+- Index incremental bytes ≤512 MiB, overhead ratio ≤1.00 и ≤512 bytes/segment.
+- Worst single-row/bulk-100 maintenance delta p95 ≤50/250 ms; indexed commit p99 ≤500 ms.
+- Search visibility p95/p99 ≤250/1000 ms; stale successful responses запрещены.
+- Обоснование: одна дополнительная копия исходного объёма, умеренная стоимость обновления и
+  one-second visibility — приемлемый локальный MVP balance. Выбор не основан на прежних
+  результатах Dora.
+
+**Execution decision:** benchmark **не разрешён**. До любого measured workflow обязательны:
+
+1. explicit `EVALUATION_APPROVED` exact component/license/NOTICE review;
+2. implementation и verification нового paired storage/update harness;
+3. подтверждённая availability/preflight физических D1, D2 и D3;
+4. последующая recorded owner authorization, меняющая `benchmarkExecutionAllowed` на `true`.
+
+**Что это решение не утверждает:** historical reclassification, artifact rights, physical device
+availability, production schema/dependency admission, production Legal или independent production
+Security approval.
+
+## OD-13. Утверждён ли точный Stage 0 IP package и как закрывается Stage 0C?
+
+**Статус решения:** `Approved` — 11 августа 2026 года.
+
+**Область:** только internal synthetic research/evaluation `POC-SEARCH-001` в Stage 0.
+
+**Зафиксированный ответ владельца:**
+
+- exact Stage 0 IP evaluation package имеет статус `EVALUATION_APPROVED`;
+- утверждены dependency inventory из 66 компонентов с digest
+  `sha256:63a2a3dadfbfe072770d914a74cbd40d6adbd517548bda4ba0331dd314ca6a98`,
+  license/NOTICE inventory с digest
+  `sha256:8b80fa573a2674cb32fe08446683f5b3d05ce4721b6bcb018edec51cf9fbeb50`
+  и Android system-image archive с digest
+  `sha256:b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160`;
+- Stage 0 IP precondition выполнен только для этого ограниченного evaluation scope;
+- D1/D3 и measured benchmark отложены. Benchmark не разрешён, `benchmarkExecutionAllowed`
+  остаётся `false`, а будущий запуск потребует физические D1–D3, fresh exact-commit preflight и
+  отдельную последующую authorization владельца;
+- Stage 0C завершается с формальным результатом `INCONCLUSIVE` и recommendation `BLOCKED` без
+  нового измерительного запуска; Draft PR #10 остаётся без merge до final review.
+
+**Что это решение не утверждает:** production Legal approval, независимый production Security
+review, redistribution, production schema/dependency admission или автоматический допуск FTS4 в
+production. Принятие `OD-13` также не доказывает задним числом выполнение IP precondition для
+исторической v0.1 кампании и не меняет её метрики, gates или verdict.
+
 ## Итог утверждения
 
-- Все `OD-01`–`OD-10` имеют статус `Approved` с датой 4 августа 2026 года.
+- `OD-01`–`OD-10` имеют статус `Approved` с датой 4 августа 2026 года; `OD-11`–`OD-13` имеют статус
+  `Approved` с датой 11 августа 2026 года и только указанную Stage 0 scope.
 - Первым остаётся `POC-CAPTURE-001`, но этот PoC в Stage 0A не запускался.
 - До первого измеряемого запуска один физический телефон владельца должен быть подключён и автоматически идентифицирован.
 - До настройки controlled non-public storage используются только synthetic data.
-- Неопределённые пороги остаются `Proposed`; один телефон не даёт общий PASS D1–D7 и не подтверждает поддержку устройств.
+- Option B в `stage0-v0.2` Approved prospectively, Stage 0 IP package Approved только для research,
+  но benchmark execution withheld; один телефон не даёт общий PASS D1–D7 и не подтверждает D1–D3
+  availability.

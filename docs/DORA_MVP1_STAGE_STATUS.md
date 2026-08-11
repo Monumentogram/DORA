@@ -1,15 +1,16 @@
 # Dora MVP 1 — Stage Status
 
-Updated: 10 August 2026
+Updated: 11 August 2026
 Baseline: `1be83e2940a09f7b23e33b4cdf3827de2690f3fd`
 Stage 00 merge commit: `a4aae302f9033e5471f6759f513e7e351c375a72`
 Stage 0A merge commit: `91b9916b01ff70f63d82412bafbed0d72307dbe1`
 Repository: public `Monumentogram/DORA` by temporary owner-approved decision (ADR-0002)
 Default branch: `main`
-Active stage: `Stage 0B — POC-CAPTURE-001 closure`
-Active branch: `stage/0b-poc-capture-001`
-Active PoC: `POC-CAPTURE-001` (exploratory campaign complete; next PoC not started)
-Stage state: **EXPLORATORY COMPLETE — INCONCLUSIVE — READY FOR REVIEW**
+Stage 0B merge commit: `5e748469b22c6e7303fe6eb5f95394ea40088d84`
+Active stage: `Stage 0C — closed INCONCLUSIVE in Draft PR #10`
+Active branch: `stage/0c-poc-search-001`
+Active PoC: `POC-SEARCH-001`
+Stage state: **COMPLETE INCONCLUSIVE — STAGE 0 IP APPROVED; BENCHMARK DEFERRED; FINAL REVIEW PENDING**
 
 ## Stage 00 closure
 
@@ -27,11 +28,45 @@ Stage state: **EXPLORATORY COMPLETE — INCONCLUSIVE — READY FOR REVIEW**
 - Owner decisions `OD-01`–`OD-10`, privacy/IP/data governance, the device matrix, Gate Set `stage0-v0.1`, benchmark schema and PoC execution order are present on `main`.
 - No technical PoC or production functionality was started in Stage 0A.
 
-## Active Stage 0B scope
+## Stage 0B closure
 
-Stage 0B implements only the disposable `POC-CAPTURE-001` evidence harness selected by `OD-01`. It may add a separate Android application module with physical-microphone permission, a user-initiated microphone foreground service, synthetic signal playback, local WAV analysis/deletion and sanitized report export. It does not admit this implementation into production Dora.
+- Stage 0B is complete and merged.
+- Pull Request #8 was merged into `main`.
+- The merge commit is `5e748469b22c6e7303fe6eb5f95394ea40088d84`.
+- The formal `POC-CAPTURE-001` result remains `INCONCLUSIVE` and is not reinterpreted by Stage 0C.
+- No production capture, storage, ML, backend, account or cloud functionality was admitted.
 
-The owner phone cannot be attached to the remote development workstation. Stage 0B therefore uses a remote manual-device workflow without ADB:
+## Stage 0C closure scope
+
+Stage 0C evaluated only `POC-SEARCH-001` in the isolated `:poc:search` contour. It uses a
+versioned deterministic generator and fully synthetic text to evaluate Room 2.8.4 with
+SQLite FTS4 at 10,000 conversations and exactly 1,000,000 transcript segments. The
+pre-run dataset, query, mutation, warm-up, repetition, metric and Gate Set contracts are
+frozen before the first full run. The generated database is temporary and must not enter
+Git or Actions artifacts.
+
+Host/emulator evidence records generated-scale correctness, schema, mapping, mutation,
+logical rebuild and exploratory latency observations. It does not establish a gate-complete
+host `PASS`: prospective `stage0-v0.2` now contains owner-approved Option B, but it was not measured
+and cannot reclassify the historical campaign. Under `OD-13`, the exact external-artifact evidence
+packet is `EVALUATION_APPROVED` only for internal synthetic Stage 0 research. A formal
+`PASS` and device latency/support claim also remain unavailable until the required physical
+D1-D3 search slices exist. FTS4 and the PoC schema are not production-admitted by this stage.
+
+The final checkpointed host/emulator campaign completed the frozen 10k/1M measurements without a
+repeat of the multi-hour query-plan failure. Exploratory p95 is `97.537984 ms` and p99 is
+`144.481302 ms`; both independent builds passed all `61/61` correctness cases, the FTS4-driven
+count and page plans were accepted without temporary page sorting, and mutation, deterministic
+rebuild and cleanup checks passed. The original `PASS`/`GO` host conclusion is superseded by the
+versioned 11 August review assessment. The current v5 closure result is `INCONCLUSIVE` with
+recommendation `BLOCKED`; no measurement was changed or rerun. D1/D3 and the measured v0.2
+campaign are deferred to separately authorized future scope.
+
+## Closed Stage 0B evidence record
+
+Stage 0B implemented only the disposable `POC-CAPTURE-001` evidence harness selected by `OD-01`. It did not admit that implementation into production Dora.
+
+The owner phone could not be attached to the remote development workstation. Stage 0B therefore used a remote manual-device workflow without ADB:
 
 1. GitHub Actions builds and publishes a debug-signed PoC APK.
 2. The owner installs it manually and starts each test explicitly.
@@ -41,7 +76,7 @@ The owner phone cannot be attached to the remote development workstation. Stage 
 
 Three bounded phone runs were returned after two invalid pre-recording starts. Run A attempt 003 and Run B attempt 004 on `5d9a8ac` recorded, stopped and finalized successfully. Run C attempt 005 recorded for 63:49 but is classified by the owner as an `invalidated exploratory attempt`: only 25:58 was screen-off, a TrueConf call occurred and the phone was charging. Bluetooth was fully disabled before Run C and no route change was reported. All three completed recordings produced valid WAVs, zero AudioRecord errors and verified raw-audio deletion/absence; no approved critical capture failure was observed on the tested Samsung device. The formal result remains `INCONCLUSIVE`, and the owner accepts exploratory closure without repeating Run C on the primary work phone. Production capture, storage, ML, backend, account, production identity/signing and model weights remain outside this stage. The bootstrap `:app` must not receive microphone permission.
 
-## Owner decisions effective 4 August 2026
+## Owner decisions effective 4 and 11 August 2026
 
 - `OD-01`: first experiment is `POC-CAPTURE-001`, limited to a physical microphone and explicit Start/Stop; call, system-audio and passive recording are prohibited.
 - `OD-02`: every test run requires a separate reminder checkbox; it is not legal permission.
@@ -51,9 +86,37 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - `OD-07`: eight hours is best effort only for the exact tested device, firmware, power, temperature and free-space conditions.
 - `OD-08`/`OD-09`: GitHub receives only sanitized reports and aggregate metrics; raw evidence requires controlled private storage and the approved 90/180/30-day maximum deletion rules.
 - `OD-10`: local mode works without account, network or GMS; cloud remains off until separate explicit consent.
+- `OD-11`: Project owner is Product and IP policy reviewer and acts as Engineering/Security reviewer only for Stage 0 evaluation. This does not replace production Legal or independent production Security. Embedded platform SQLite may use the containing system-image digest plus exact image/runtime identity for Stage 0; that boundary must be reconsidered before production admission.
+- `OD-12`: Project owner prospectively approves Option B for `stage0-v0.2`, based on the local-MVP storage/update/one-second visibility balance and not on prior Dora results. Benchmark execution remains separately withheld.
+- `OD-13`: Project owner approves the exact 66-component/license/NOTICE/platform package only for internal synthetic Stage 0 evaluation and accepts formal `INCONCLUSIVE` closure without a new benchmark. This is not production Legal/Security approval, does not admit FTS4 automatically, is not retroactive, and leaves D1/D3 plus measured execution deferred.
 
 ## Current gates and blockers
 
+- `POC-SEARCH-001` retains its frozen generated-scale observations. The earlier valid full result
+  failed the latency gate; the corrected streaming rowid page plan passed the targeted scale guard
+  before the final full measurement campaign met the evaluated latency/correctness predicates.
+  Frozen manifests, parameter binding, repetitions, percentile definition and historical gates
+  were not weakened.
+- The Stage 0 v0.1 search row says that a storage/update gate failure is mandatory and lists no
+  status exception, but no numeric overhead threshold was frozen. `DEC-043` / Gate Set
+  `stage0-v0.2` now prospectively approves Option B with exact paired metrics, scale, repetitions,
+  aggregation, physical environment and fallbacks. The historical gate remains `not_evaluated`;
+  `benchmarkExecutionAllowed=false`, so no rerun is authorized.
+- The PoC module now has a dependency lock and exact 66-component artifact/POM inventory covering
+  both debug and formal benchmark configurations. All 66 effective licenses and discovered
+  license/NOTICE entries are inventoried; `OD-13` makes the exact packet
+  `EVALUATION_APPROVED` only for Stage 0 evaluation. `OD-11` records the Stage 0 Product/IP and
+  Engineering/Security roles. The Android API 36 Google APIs x86_64 r07 archive is
+  pinned by official SHA-1 and independently computed SHA-256. Embedded SQLite 3.44.3 uses that
+  containing-image digest with exact image ID/revision, fingerprint, API and ABI for Stage 0; no
+  extracted binary digest is required. This boundary must be reconsidered before production;
+  production Legal is unassigned and independent production Security remains mandatory.
+- The new paired control/indexed harness and nearest-rank combiner are implemented and bound to
+  commit `b5bcf0951f3cb16d3fec65174395e7715c49a7d7`; debug and benchmark compilation, synthetic
+  combiner tests and API 36 emulator runtime smoke pass. Smoke timings are not gate evidence. No
+  formal 10k/1M v0.2 benchmark was executed.
+- Physical availability is now explicit: D2 (`owner-phone-001`) exists, while D1 and D3 remain
+  `unknown`. Missing D1/D3 blocks execution and any formal search `PASS` or support claim.
 - The fully specified predicates in Gate Set `stage0-v0.1` are **Approved for Stage 0**. Exact ASR RTF by tier, maximum PSS/native heap, diarization corrections/minute, absolute battery drain without mWh, numeric capture sample-gap tolerance and minimum raw-trace retention remain **Proposed**.
 - The owner's physical phone is sanitized as Samsung `SM-S908B`, Android 16 / API 36, build `BP2A.250605.031.A3`, primary ABI `arm64-v8a` and 10515 MiB RAM. It is assigned to D2 as the closest hardware profile; D1 and D3-D7 availability remains `unknown`.
 - The refreshed pre-Run-A profile reports 36432 MiB free app storage, above the D2 start threshold of 8192 MiB, with 72% battery, unplugged power and thermal status `NONE`; the Run B export refreshed this to 33707 MiB and 80% with the same unplugged/`NONE` state. The Run C profile reports 33645 MiB, 70%, charging and `NONE`. The D2 hardware inventory remains valid; Run C battery data is not comparative evidence.
@@ -87,11 +150,16 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - No controlled non-public evidence store or custodian has been configured. Until then, only synthetic data and sanitized aggregate/public evidence are allowed; raw traces/audio and purpose-recorded volunteer phrases remain blocked.
 - Production markets/lawful basis/copy under `DEC-001` and Legal review remain unresolved. The Stage 0 reminder checkbox does not resolve production consent legality.
 - No PoC result admits a production dependency. Native code or model admission later requires an ADR plus license, provenance, ABI, 16-KiB and runtime evidence.
-- `main` remains the protected integration branch. Stage 0B work stays on `stage/0b-poc-capture-001`; PR #8 may move from Draft to Ready for review only after the closure commit passes CI. This task does not merge it.
+- `main` remains the protected integration branch. Stage 0C evidence closure stays on `stage/0c-poc-search-001`; its Draft PR must remain unmerged in this task.
 
 ## Next safe action
 
-After Stage 0B review, the next recommended technical experiment is `POC-SEARCH-001` on generated data in a separate branch and task. It is already `READY`, does not require the owner's primary phone or private audio and does not reinterpret the capture result. Do not start it in this Stage 0B task. A future clean 60-minute capture baseline remains a separately scoped deferred campaign on a dedicated test device.
+Keep Stage 0C Pull Request #10 Draft and unmerged for final review. There is no authorized benchmark
+or in-scope D1/D3 action. A future measured `stage0-v0.2` campaign requires separate scope, matching
+physical D1–D3, a fresh exact-commit preflight and a later explicit Project-owner execution
+authorization. `tools/check_poc_search_run_readiness.py` fails closed while
+`benchmarkExecutionAllowed=false`. Production admission or the next PoC also requires separate
+explicit scope.
 
 ## Update protocol
 

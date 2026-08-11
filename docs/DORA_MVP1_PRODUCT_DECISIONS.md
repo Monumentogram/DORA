@@ -1,11 +1,11 @@
 # Dora MVP 1 — Product Decisions
 
 Статус документа: единый реестр решений владельца продукта\
-Дата: 4 августа 2026 года\
-Последнее изменение: прямое утверждение владельцем решений Stage 0 `OD-01`–`OD-10`\
+Дата: 11 августа 2026 года\
+Последнее изменение: прямое Stage 0 решение `OD-13` утверждает точный IP evaluation package и `INCONCLUSIVE`-закрытие Stage 0C; benchmark execution не разрешён\
 Основание: Technical Plan §40 P1–P20, Design Spec §40.2 D-P1–D-P22 и owner approval record Stage 0A.
 
-`Provisional` означает, что рекомендуемый baseline можно использовать для обратимого PoC/bootstrap, но это не заменяет явное решение владельца. `Proposed` запрещает необратимые или пользовательские действия до утверждения. `Approved` означает прямое решение владельца в указанной области; оно не расширяет scope на production, Legal или release без явной формулировки. Статусы, повышенные этим изменением, ссылаются на `OD-01`–`OD-10`, владельца и дату.
+`Provisional` означает, что рекомендуемый baseline можно использовать для обратимого PoC/bootstrap, но это не заменяет явное решение владельца. `Proposed` запрещает необратимые или пользовательские действия до утверждения. `Approved` означает прямое решение владельца в указанной области; оно не расширяет scope на production, Legal или release без явной формулировки. Статусы, повышенные owner-решением, ссылаются на соответствующий `OD-*`, владельца и дату.
 
 ## DEC-001. Рынки, юрлицо и B2C/B2B
 
@@ -622,13 +622,34 @@
 Обратимость: high.\
 Связанные задачи: `DES-FOUND-001`, `GOV-IP-001`.
 
+## DEC-043. POC-SEARCH-001 storage/update gates
+
+Статус: Approved — Option B; measured execution separately withheld\
+Приоритет: P1\
+Источник: Technical Plan §39 `POC-SEARCH-001`; final review PR #10; Gate Set v0.1 pre-run rule\
+Дата решения: 11 августа 2026 года\
+Срок принятия: принято 11 августа 2026 года до любой новой измерительной кампании\
+Владелец решения: Project owner\
+Область решения: prospective Stage 0 search campaign only; historical v0.1 results immutable\
+Варианты: A — strict; B — balanced local baseline; C — bounded one-second async fallback; полные prospective predicates сохранены в superseded draft artifacts.\
+Рекомендуемый вариант: B, теперь утверждён владельцем\
+Утверждённый вариант: Option B — balanced local baseline; ≤512 MiB, ratio ≤1.00, ≤512 bytes/segment; single-row/bulk-100 maintenance delta p95 ≤50/250 ms; indexed commit p99 ≤500 ms; visibility p95/p99 ≤250/1000 ms.\
+Обоснование владельца: одна дополнительная копия объёма исходных данных, умеренная стоимость обновления и появление изменений в поиске не позднее одной секунды дают приемлемый баланс размера, скорости и сложности для локального MVP. Выбор не основан на прежних результатах Dora.\
+Влияние на архитектуру: paired canonical-only/indexed harness, compacted incremental footprint, matched mutation overhead, visible non-stale indexing state and physical D1–D3 evidence.\
+Влияние на UX: stale success запрещён; asynchronous fallback показывает явное `INDEXING` и обязан уложиться в one-second p99 visibility.\
+Execution authorization: withheld; exact component/license/NOTICE package и новый harness теперь завершены для Stage 0, но confirmed physical D1–D3, fresh exact-commit preflight и отдельная recorded owner authorization обязательны до запуска.\
+Обратимость: thresholds frozen для следующей кампании и не меняют historical v0.1; дальнейшее изменение требует новой prospective версии.\
+Fallback: external/contentless or per-entity FTS, durable visible pending queue, or `INCONCLUSIVE` when required physical profiles are unavailable.\
+Decision record: `docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES.md`; Gate Set: `docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2.md`; machine companion: `docs/stage0/poc-search-gate-set-stage0-v0.2.json`; superseded proposal artifacts retain `-DRAFT`/`.draft`.\
+Связанные задачи: `POC-GATES-001`, `POC-SEARCH-001`.
+
 ## Stage 0A owner approval record
 
 Дата решений: 4 августа 2026 года\
 Владелец решений: Project owner\
-Статус: `OD-01`–`OD-10` — Approved только в указанной Stage 0 scope. Этот раздел не расширяет стабильный namespace `DEC-001`–`DEC-042` и не разрешает production implementation.
+Статус: `OD-01`–`OD-10` — Approved только в указанной Stage 0A scope. Поздние `OD-11`–`OD-13` записаны отдельно в Stage 0 owner registry; `DEC-043` Approved как prospective contract, а exact IP package — только для Stage 0 evaluation. Ни одно из этих решений не разрешает measured execution или production implementation.
 
-Crosswalk: `OD-01` → `DEC-003`/`DEC-004`; `OD-02` → `DEC-002`/`DEC-027`; `OD-03`/`OD-04` → `DEC-014` и Dataset Governance; `OD-05` → `DEC-020`; `OD-06`/`OD-07` → `DEC-018` и device matrix; `OD-08` → `DEC-009`/`DEC-014` и Privacy policy; `OD-09` → Stage 0 research retention, без изменения production `DEC-013`; `OD-10` → `DEC-009`/`DEC-015`.
+Crosswalk: `OD-01` → `DEC-003`/`DEC-004`; `OD-02` → `DEC-002`/`DEC-027`; `OD-03`/`OD-04` → `DEC-014` и Dataset Governance; `OD-05` → `DEC-020`; `OD-06`/`OD-07` → `DEC-018` и device matrix; `OD-08` → `DEC-009`/`DEC-014` и Privacy policy; `OD-09` → Stage 0 research retention, без изменения production `DEC-013`; `OD-10` → `DEC-009`/`DEC-015`; `OD-11` → `DEC-020` и IP policy Stage 0 SQLite/reviewer boundary; `OD-12` → Approved `DEC-043`/Gate Set `stage0-v0.2` with execution withheld; `OD-13` → exact Stage 0 IP evaluation package, non-production boundary и formal `INCONCLUSIVE` closure без нового benchmark.
 
 ### OD-01. Первый технический PoC Stage 0
 

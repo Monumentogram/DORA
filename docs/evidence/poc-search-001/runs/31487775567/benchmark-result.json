@@ -1,0 +1,991 @@
+{
+  "androidApi": 36,
+  "applicationVersion": "0.1.0-poc-search-001",
+  "battery": {
+    "applicable": false,
+    "baselineRatio": null,
+    "chargerState": "not-applicable",
+    "endPercent": null,
+    "energyMwh": null,
+    "measurementSource": null,
+    "notApplicableReason": "Battery is outside this emulator search PoC and no physical-device energy claim is made.",
+    "screenState": "not-applicable",
+    "startPercent": null
+  },
+  "commit": "9571e5f2e7cceeab95b52f1e1167770518a3e475",
+  "device": {
+    "abi": "x86_64",
+    "firmwareOrBuild": "google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+    "inventoryStatus": "available",
+    "kind": "emulator",
+    "manufacturer": "Google",
+    "model": "sdk_gphone64_x86_64",
+    "notes": "API 36 x86_64 emulator shaped as a D2 exploratory profile; it is not physical D2 evidence.",
+    "pageSizeBytes": 4096,
+    "profileId": "D2",
+    "ramMb": 3920,
+    "securityPatch": "2025-07-05",
+    "uniqueHardwareIdentifierRecorded": false
+  },
+  "duration": {
+    "actualSeconds": 525.82291096,
+    "completed": true,
+    "monotonicClockUsed": true,
+    "plannedSeconds": 7200
+  },
+  "errors": [],
+  "evidenceFiles": [
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "dataset-manifest",
+      "kind": "fixture-manifest",
+      "locator": "docs/evidence/poc-search-001/dataset-manifest.json",
+      "retentionUntil": null,
+      "sha256": "sha256:d36b48a4cf9bcf3c435e122e6232c4431e45fcc726ad422a6c113f6c5bc09c1a",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "query-manifest",
+      "kind": "fixture-manifest",
+      "locator": "docs/evidence/poc-search-001/query-manifest.json",
+      "retentionUntil": null,
+      "sha256": "sha256:9b40b55cf673940efbcfbe04d568819b590eb9494862c94ccae16018c730f60a",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "mutation-manifest",
+      "kind": "fixture-manifest",
+      "locator": "docs/evidence/poc-search-001/mutation-manifest.json",
+      "retentionUntil": null,
+      "sha256": "sha256:1fa3ef45617d43ba980dd32dd571d7a25e3ef98e2520d0feb892c4a366cb389e",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "environment",
+      "kind": "other",
+      "locator": "docs/evidence/poc-search-001/environment.json",
+      "retentionUntil": null,
+      "sha256": "sha256:af9886fe06526640fd90def3593e2b892437307781da49d2494a2d65e4d9153a",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "query-result",
+      "kind": "metrics",
+      "locator": "docs/evidence/poc-search-001/query-result.json",
+      "retentionUntil": null,
+      "sha256": "sha256:18615f3f00d5d64da4eed47684fa255b4b6f0d74797a8f5e2cf47f18c1c11eb7",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "mutation-result",
+      "kind": "metrics",
+      "locator": "docs/evidence/poc-search-001/mutation-result.json",
+      "retentionUntil": null,
+      "sha256": "sha256:acff45fdee7ef89f11ad68ed1719e44307ade7b76fad57609eac553e8dfc2373",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "rebuild-result",
+      "kind": "metrics",
+      "locator": "docs/evidence/poc-search-001/rebuild-result.json",
+      "retentionUntil": null,
+      "sha256": "sha256:84d67560545a198967471334a2e52e096452827f5458267536500a5a421dbb91",
+      "storage": "repository",
+      "verified": true
+    }
+  ],
+  "failureGates": [
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-LATENCY-FAILURE",
+      "kind": "failure",
+      "mandatory": true,
+      "metric": "search.latency.gate_failed",
+      "observed": false,
+      "operator": "=",
+      "outcome": "not_triggered",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": true,
+      "title": "Approved latency gate violation",
+      "unit": null
+    },
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-INJECTION-CRASH",
+      "kind": "failure",
+      "mandatory": true,
+      "metric": "search.correctness.adversarial_failures",
+      "observed": 0,
+      "operator": ">",
+      "outcome": "not_triggered",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": 0,
+      "title": "Query operator injection or query crash",
+      "unit": "count"
+    },
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-MAPPING-LOSS",
+      "kind": "failure",
+      "mandatory": true,
+      "metric": "search.correctness.mapping_errors",
+      "observed": 0,
+      "operator": ">",
+      "outcome": "not_triggered",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": 0,
+      "title": "Canonical mapping loss",
+      "unit": "count"
+    },
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-NONDETERMINISTIC",
+      "kind": "failure",
+      "mandatory": true,
+      "metric": "search.rebuild.nondeterministic",
+      "observed": false,
+      "operator": "=",
+      "outcome": "not_triggered",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": true,
+      "title": "Non-deterministic rebuild or index recovery",
+      "unit": null
+    },
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-STORAGE-UPDATE",
+      "kind": "failure",
+      "mandatory": true,
+      "metric": "search.storage_update.numeric_gate",
+      "notes": "The approved Gate Set defines no numeric storage, memory, build, or mutation-latency threshold; all are observations only.",
+      "observed": null,
+      "operator": "custom",
+      "outcome": "not_evaluated",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": null,
+      "title": "Storage or update numeric gate",
+      "unit": null
+    }
+  ],
+  "fileSizes": [
+    {
+      "artifact": "reference-database-after-checkpoint-compact",
+      "bytes": 593092608,
+      "classification": "synthetic",
+      "sha256": "sha256:35fc05532bfd7159825b84890cbe02495668128da5b8f0e404e8b012fb16b217"
+    },
+    {
+      "artifact": "reference-wal-after-checkpoint-compact",
+      "bytes": 596567792,
+      "classification": "synthetic",
+      "sha256": null
+    },
+    {
+      "artifact": "reference-shm-after-checkpoint-compact",
+      "bytes": 1179648,
+      "classification": "synthetic",
+      "sha256": null
+    }
+  ],
+  "gateSetVersion": "stage0-v0.1",
+  "generatedAt": "2026-08-11T12:01:40.732216Z",
+  "inputData": {
+    "acousticConditions": [
+      "not-applicable"
+    ],
+    "classification": "generated_text",
+    "consentReference": null,
+    "containsRealMeetingData": false,
+    "fixtureIds": [
+      "poc-search-synthetic-v1"
+    ],
+    "generatorVersion": "search-generator-1.0.0",
+    "languages": [
+      "ru",
+      "en",
+      "mixed-ru-en"
+    ],
+    "manifestId": "poc-search-001-reference-dataset-v1",
+    "manifestSha256": "sha256:d36b48a4cf9bcf3c435e122e6232c4431e45fcc726ad422a6c113f6c5bc09c1a"
+  },
+  "licenses": [
+    {
+      "artifactId": "androidx.room",
+      "category": "source-code",
+      "evaluationRightsConfirmed": true,
+      "evidenceLocator": "https://developer.android.com/jetpack/androidx/releases/room",
+      "licenseId": "Apache-2.0",
+      "licenseReviewState": "EVALUATION_APPROVED",
+      "redistributionRights": "allowed",
+      "sha256": null,
+      "version": "2.8.4"
+    },
+    {
+      "artifactId": "android-platform-sqlite",
+      "category": "other",
+      "evaluationRightsConfirmed": true,
+      "evidenceLocator": "Runtime SELECT sqlite_version() recorded in environment.json",
+      "licenseId": "Android-platform-component",
+      "licenseReviewState": "EVALUATION_APPROVED",
+      "redistributionRights": "not-applicable",
+      "sha256": null,
+      "version": "3.44.3"
+    }
+  ],
+  "limitations": [
+    {
+      "blocksVerdict": true,
+      "description": "No physical D1-D3 latency campaign was run; emulator percentiles cannot establish a device-support claim.",
+      "id": "LIMIT-SEARCH-NO-PHYSICAL-D1-D3",
+      "severity": "high"
+    },
+    {
+      "blocksVerdict": true,
+      "description": "Host scheduling and virtualized storage make latency exploratory rather than representative of a real phone.",
+      "id": "LIMIT-SEARCH-EMULATOR-LATENCY",
+      "severity": "high"
+    },
+    {
+      "blocksVerdict": false,
+      "description": "Database size, build time, memory, and mutation latency have no pre-approved numeric threshold and remain observations only.",
+      "id": "LIMIT-SEARCH-OBSERVATION-ONLY-METRICS",
+      "severity": "medium"
+    },
+    {
+      "blocksVerdict": false,
+      "description": "The isolated Room/FTS4 schema and harness are PoC evidence, not a production schema or dependency admission.",
+      "id": "LIMIT-SEARCH-POC-NOT-ADMISSION",
+      "severity": "medium"
+    }
+  ],
+  "memory": {
+    "applicable": true,
+    "measurementSource": "android.os.Debug at fixed benchmark phase boundaries",
+    "notApplicableReason": "No approved numeric memory threshold; reported as an observation.",
+    "oomCount": 0,
+    "peakNativeHeapMb": 8.039337158203125,
+    "peakPssMb": 944.41796875,
+    "peakRssMb": 1057.8125,
+    "trimOrPressureObserved": false
+  },
+  "metrics": [
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.dataset.conversations",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "rows",
+      "value": 10000
+    },
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.dataset.transcript_rows",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "rows",
+      "value": 1000000
+    },
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.dataset.fts_rows",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "rows",
+      "value": 1000000
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.build.empty_database_ms",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 31.216714
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.build.conversations_ms",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 628.543724
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.build.transcripts_ms",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 33077.474919
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.build.index_ms",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 6568.286224
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.build.checkpoint_compact_ms",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 4791.911404
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.build.total_ms",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 74866.593338
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.storage.database_bytes",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "bytes",
+      "value": 593092608
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.storage.wal_bytes",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "bytes",
+      "value": 596567792
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.storage.shm_bytes",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "bytes",
+      "value": 1179648
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.storage.total_bytes",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "bytes",
+      "value": 1190840048
+    },
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.latency.count",
+      "sampleCount": 1020,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "queries",
+      "value": 1020
+    },
+    {
+      "aggregation": "min",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.latency.min_ms",
+      "sampleCount": 1020,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.326255
+    },
+    {
+      "aggregation": "p50",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.latency.p50_ms",
+      "notes": "Predeclared nearest-rank percentile",
+      "sampleCount": 1020,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.82043
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.latency.p90_ms",
+      "notes": "Predeclared nearest-rank percentile",
+      "sampleCount": 1020,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 16.059272
+    },
+    {
+      "aggregation": "p95",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.latency.p95_ms",
+      "notes": "Predeclared nearest-rank percentile",
+      "sampleCount": 1020,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 97.537984
+    },
+    {
+      "aggregation": "p99",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.latency.p99_ms",
+      "notes": "Predeclared nearest-rank percentile",
+      "sampleCount": 1020,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 144.481302
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.latency.max_ms",
+      "sampleCount": 1020,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 153.8007
+    },
+    {
+      "aggregation": "mean",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.latency.mean_ms",
+      "sampleCount": 1020,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 9.987147913725488
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.latency.standard_deviation_ms",
+      "sampleCount": 1020,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 28.787441381928915
+    },
+    {
+      "aggregation": "p50",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.exact-common.p50_ms",
+      "sampleCount": 180,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.850945
+    },
+    {
+      "aggregation": "p95",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.exact-common.p95_ms",
+      "sampleCount": 180,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 1.176149
+    },
+    {
+      "aggregation": "p99",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.exact-common.p99_ms",
+      "sampleCount": 180,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 1.314734
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.exact-common.max_ms",
+      "sampleCount": 180,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 1.388244
+    },
+    {
+      "aggregation": "p50",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.exact-rare.p50_ms",
+      "sampleCount": 150,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.507775
+    },
+    {
+      "aggregation": "p95",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.exact-rare.p95_ms",
+      "sampleCount": 150,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.7062
+    },
+    {
+      "aggregation": "p99",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.exact-rare.p99_ms",
+      "sampleCount": 150,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.938335
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.exact-rare.max_ms",
+      "sampleCount": 150,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 1.469935
+    },
+    {
+      "aggregation": "p50",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.filters.p50_ms",
+      "sampleCount": 270,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 1.596133
+    },
+    {
+      "aggregation": "p95",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.filters.p95_ms",
+      "sampleCount": 270,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 143.273261
+    },
+    {
+      "aggregation": "p99",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.filters.p99_ms",
+      "sampleCount": 270,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 146.848886
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.filters.max_ms",
+      "sampleCount": 270,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 153.8007
+    },
+    {
+      "aggregation": "p50",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.negative.p50_ms",
+      "sampleCount": 90,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.627563
+    },
+    {
+      "aggregation": "p95",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.negative.p95_ms",
+      "sampleCount": 90,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.848171
+    },
+    {
+      "aggregation": "p99",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.negative.p99_ms",
+      "sampleCount": 90,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.908621
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.negative.max_ms",
+      "sampleCount": 90,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.908621
+    },
+    {
+      "aggregation": "p50",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.phrase.p50_ms",
+      "sampleCount": 180,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 2.501208
+    },
+    {
+      "aggregation": "p95",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.phrase.p95_ms",
+      "sampleCount": 180,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 13.646316
+    },
+    {
+      "aggregation": "p99",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.phrase.p99_ms",
+      "sampleCount": 180,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 13.898912
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.phrase.max_ms",
+      "sampleCount": 180,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 14.69135
+    },
+    {
+      "aggregation": "p50",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.prefix.p50_ms",
+      "sampleCount": 150,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.655084
+    },
+    {
+      "aggregation": "p95",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.prefix.p95_ms",
+      "sampleCount": 150,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 98.539213
+    },
+    {
+      "aggregation": "p99",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.prefix.p99_ms",
+      "sampleCount": 150,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 101.781933
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.prefix.max_ms",
+      "sampleCount": 150,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 129.291096
+    },
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.correctness.expected_cases",
+      "sampleCount": 61,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "count",
+      "value": 61
+    },
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.correctness.matched_cases",
+      "sampleCount": 61,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "count",
+      "value": 61
+    },
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.correctness.mapping_errors",
+      "sampleCount": 61,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "count",
+      "value": 0
+    },
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.correctness.duplicate_errors",
+      "sampleCount": 61,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "count",
+      "value": 0
+    },
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.correctness.adversarial_failures",
+      "sampleCount": 61,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "count",
+      "value": 0
+    },
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.correctness.crashes",
+      "sampleCount": 61,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "count",
+      "value": 0
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.mutation.add_conversation_ms",
+      "notes": "Observation only; no approved numeric mutation-latency threshold.",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 35.398158
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.mutation.update_segment_ms",
+      "notes": "Observation only; no approved numeric mutation-latency threshold.",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 1.509616
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.mutation.update_metadata_ms",
+      "notes": "Observation only; no approved numeric mutation-latency threshold.",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.693513
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.mutation.delete_segment_ms",
+      "notes": "Observation only; no approved numeric mutation-latency threshold.",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 1.584406
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.mutation.delete_conversation_ms",
+      "notes": "Observation only; no approved numeric mutation-latency threshold.",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 3.200891
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.rebuild_1_ms",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 41455.138044
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.rebuild_2_ms",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 29301.147992
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "android.os.Debug sampled at fixed phase boundaries",
+      "name": "search.memory.peak_pss_mb",
+      "notes": "Observation only; no approved numeric memory threshold.",
+      "sampleCount": 645,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "MiB",
+      "value": 944.41796875
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "android.os.Debug sampled at fixed phase boundaries",
+      "name": "search.memory.peak_native_heap_mb",
+      "notes": "Observation only; no approved numeric memory threshold.",
+      "sampleCount": 645,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "MiB",
+      "value": 8.039337158203125
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "android.os.Debug sampled at fixed phase boundaries",
+      "name": "search.memory.peak_managed_heap_mb",
+      "notes": "Observation only; no approved numeric memory threshold.",
+      "sampleCount": 645,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "MiB",
+      "value": 183.55995178222656
+    }
+  ],
+  "pocId": "POC-SEARCH-001",
+  "privacyReview": {
+    "forbiddenContentLoggingCheckPassed": true,
+    "notes": "Only generated text identifiers, aggregate metrics, deterministic mappings, and public runner metadata are retained; database files are deleted.",
+    "personalDataScanPassed": true,
+    "publicEvidenceSafe": true,
+    "reviewerRole": "deterministic generator and evidence allowlist validator",
+    "secretScanPassed": true
+  },
+  "recommendation": {
+    "decision": "GO",
+    "fallback": null,
+    "ownerAction": null,
+    "rationale": "FTS4 suitable for continued MVP development; this does not admit the PoC schema into production."
+  },
+  "result": {
+    "gateSetStatus": "Approved",
+    "invalidatedRunCount": 3,
+    "rationale": "The frozen host/emulator reference campaign passed all approved search gates, but formal PASS remains unavailable without future physical D1-D3 latency evidence.",
+    "requiredSlicesCompleted": false,
+    "status": "INCONCLUSIVE"
+  },
+  "schemaVersion": 1,
+  "successGates": [
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-P95",
+      "kind": "success",
+      "mandatory": true,
+      "metric": "search.latency.p95_ms",
+      "observed": 97.537984,
+      "operator": "<",
+      "outcome": "met",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": 200,
+      "title": "Reference search p95 below 200 ms",
+      "unit": "ms"
+    },
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-P99",
+      "kind": "success",
+      "mandatory": true,
+      "metric": "search.latency.p99_ms",
+      "observed": 144.481302,
+      "operator": "<",
+      "outcome": "met",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": 500,
+      "title": "Reference search p99 below 500 ms",
+      "unit": "ms"
+    },
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-CORRECTNESS",
+      "kind": "success",
+      "mandatory": true,
+      "metric": "search.correctness.all_matched",
+      "observed": true,
+      "operator": "=",
+      "outcome": "met",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": true,
+      "title": "Correct filters and canonical source mappings",
+      "unit": null
+    },
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-ADVERSARIAL",
+      "kind": "success",
+      "mandatory": true,
+      "metric": "search.correctness.adversarial_failures",
+      "observed": 0,
+      "operator": "=",
+      "outcome": "met",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": 0,
+      "title": "Safe adversarial query handling",
+      "unit": "count"
+    },
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-REBUILD",
+      "kind": "success",
+      "mandatory": true,
+      "metric": "search.rebuild.deterministic",
+      "observed": true,
+      "operator": "=",
+      "outcome": "met",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": true,
+      "title": "Deterministic logical rebuild",
+      "unit": null
+    }
+  ],
+  "temperature": {
+    "applicable": false,
+    "endCelsius": null,
+    "maxCelsius": null,
+    "maxThermalStatus": null,
+    "measurementSource": null,
+    "notApplicableReason": "Emulator thermal readings are not physical-device evidence.",
+    "startCelsius": null,
+    "startThermalStatus": null
+  }
+}

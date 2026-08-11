@@ -22,6 +22,8 @@ include(":app")
 
 include(":poc:capture")
 
+include(":poc:search")
+
 include(":core:common")
 
 include(":core:model")

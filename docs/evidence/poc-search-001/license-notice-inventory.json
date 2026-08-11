@@ -1,0 +1,2259 @@
+{
+  "components": [
+    {
+      "artifactSha256": {
+        "annotation-experimental-1.5.0.aar": "02b0a4256618f85386c92e5cec166dc7f300820888a290227a3c0c65b82cbb36",
+        "annotation-experimental-1.5.0.pom": "7a94595399931c25a49f9af93daa4e977dc2d375458e4e74bb8d35ebcb51848d"
+      },
+      "coordinate": "androidx.annotation:annotation-experimental:1.5.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 10175,
+              "entry": "META-INF/androidx/annotation/annotation-experimental/LICENSE.txt",
+              "kind": "license",
+              "sha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "filename": "annotation-experimental-1.5.0.aar",
+          "sha256": "02b0a4256618f85386c92e5cec166dc7f300820888a290227a3c0c65b82cbb36"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "annotation-experimental-1.5.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "7a94595399931c25a49f9af93daa4e977dc2d375458e4e74bb8d35ebcb51848d",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-experimental/1.5.0/annotation-experimental-1.5.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "annotation-jvm-1.9.1.jar": "1e343917ebf27ba96fe4dc52b1cad7fd32b738fbc6355bb6cd5b3b305d7212d0",
+        "annotation-jvm-1.9.1.pom": "89b99c218d60019316b50aab79816707bc21696c896a030e1b1ae038961bcb8e"
+      },
+      "coordinate": "androidx.annotation:annotation-jvm:1.9.1",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 10175,
+              "entry": "META-INF/androidx/annotation/annotation/LICENSE.txt",
+              "kind": "license",
+              "sha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "filename": "annotation-jvm-1.9.1.jar",
+          "sha256": "1e343917ebf27ba96fe4dc52b1cad7fd32b738fbc6355bb6cd5b3b305d7212d0"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "annotation-jvm-1.9.1.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "89b99c218d60019316b50aab79816707bc21696c896a030e1b1ae038961bcb8e",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-jvm/1.9.1/annotation-jvm-1.9.1.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "annotation-1.9.1.pom": "c733881c2e17d5f7c8661cc02a9159cb160b7b2094a27d593916c87d3e250636"
+      },
+      "coordinate": "androidx.annotation:annotation:1.9.1",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [],
+      "licenseEvidence": [
+        {
+          "filename": "annotation-1.9.1.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "c733881c2e17d5f7c8661cc02a9159cb160b7b2094a27d593916c87d3e250636",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation/1.9.1/annotation-1.9.1.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "core-common-2.2.0.jar": "65308a06b1c00ee186cb9e19321383f043b993813f1522c47f4a3e3303bdba41",
+        "core-common-2.2.0.pom": "1e17d4af8d6425be2a69f8af4d654a87e0456259a9eef1542869bcb023547e28"
+      },
+      "coordinate": "androidx.arch.core:core-common:2.2.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "core-common-2.2.0.jar",
+          "sha256": "65308a06b1c00ee186cb9e19321383f043b993813f1522c47f4a3e3303bdba41"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "core-common-2.2.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "1e17d4af8d6425be2a69f8af4d654a87e0456259a9eef1542869bcb023547e28",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/arch/core/core-common/2.2.0/core-common-2.2.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "core-runtime-2.2.0.aar": "a1be5e0caa2b07623862af6ae21b3ab0718123245184d0e30dea81b53f990a47",
+        "core-runtime-2.2.0.pom": "0f953706598140d9d8735cdd5aeb1fa35933f4e2f31c0bf3eb81a053a4c8c1a5"
+      },
+      "coordinate": "androidx.arch.core:core-runtime:2.2.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "core-runtime-2.2.0.aar",
+          "sha256": "a1be5e0caa2b07623862af6ae21b3ab0718123245184d0e30dea81b53f990a47"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "core-runtime-2.2.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "0f953706598140d9d8735cdd5aeb1fa35933f4e2f31c0bf3eb81a053a4c8c1a5",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/arch/core/core-runtime/2.2.0/core-runtime-2.2.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "collection-jvm-1.5.0.jar": "70b35924e4babcdffa37d0e575ee039c56a2d97123342624c48b603233704341",
+        "collection-jvm-1.5.0.pom": "11c415864d3402f61d426e67210158dce1b04680412526a994f1823ecd3cb388"
+      },
+      "coordinate": "androidx.collection:collection-jvm:1.5.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 10175,
+              "entry": "META-INF/androidx/collection/collection/LICENSE.txt",
+              "kind": "license",
+              "sha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "filename": "collection-jvm-1.5.0.jar",
+          "sha256": "70b35924e4babcdffa37d0e575ee039c56a2d97123342624c48b603233704341"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "collection-jvm-1.5.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "11c415864d3402f61d426e67210158dce1b04680412526a994f1823ecd3cb388",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/collection/collection-jvm/1.5.0/collection-jvm-1.5.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "collection-1.5.0.pom": "2d65c8d0b36d4b4faadc44aff9bade23d871d7159eedf2b3f02d802b34b77a57"
+      },
+      "coordinate": "androidx.collection:collection:1.5.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [],
+      "licenseEvidence": [
+        {
+          "filename": "collection-1.5.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "2d65c8d0b36d4b4faadc44aff9bade23d871d7159eedf2b3f02d802b34b77a57",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/collection/collection/1.5.0/collection-1.5.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "concurrent-futures-ktx-1.2.0.jar": "e1f3e17bb4358ccd6c77ca45f70635c9aba237261f19eaa4f64a0218c00e2a3e",
+        "concurrent-futures-ktx-1.2.0.pom": "7869d39aa7a7754a4f311771abfd9d95ccbd7ffb27e970f8cb15fdf5b5355b6d"
+      },
+      "coordinate": "androidx.concurrent:concurrent-futures-ktx:1.2.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 12024,
+              "entry": "META-INF/NOTICE.txt",
+              "kind": "notice",
+              "sha256": "bbc5cb91e1d3001b0ae4516809602e7698d3694afd6683b29effa8b80ec01de2"
+            }
+          ],
+          "filename": "concurrent-futures-ktx-1.2.0.jar",
+          "sha256": "e1f3e17bb4358ccd6c77ca45f70635c9aba237261f19eaa4f64a0218c00e2a3e"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "concurrent-futures-ktx-1.2.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "7869d39aa7a7754a4f311771abfd9d95ccbd7ffb27e970f8cb15fdf5b5355b6d",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/concurrent/concurrent-futures-ktx/1.2.0/concurrent-futures-ktx-1.2.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "concurrent-futures-1.2.0.jar": "4810315a798690b5d3bb40c92bcd41c045fd2c36bbfc50b27cbac3d6a0eda190",
+        "concurrent-futures-1.2.0.pom": "6be9a98d6cd75a787eeae2a1a0a3440ebe1ab4639740df9ec028094ab59b622f"
+      },
+      "coordinate": "androidx.concurrent:concurrent-futures:1.2.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "concurrent-futures-1.2.0.jar",
+          "sha256": "4810315a798690b5d3bb40c92bcd41c045fd2c36bbfc50b27cbac3d6a0eda190"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "concurrent-futures-1.2.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "6be9a98d6cd75a787eeae2a1a0a3440ebe1ab4639740df9ec028094ab59b622f",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/concurrent/concurrent-futures/1.2.0/concurrent-futures-1.2.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "lifecycle-common-2.3.1.jar": "15848fb56db32f4c7cdc72b324003183d52a4884d6bf09be708ac7f587d139b5",
+        "lifecycle-common-2.3.1.pom": "8cd23d889a14095c6ce16840d29b1a6388fa5e115144c1309d4d6d469c1bc351"
+      },
+      "coordinate": "androidx.lifecycle:lifecycle-common:2.3.1",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "lifecycle-common-2.3.1.jar",
+          "sha256": "15848fb56db32f4c7cdc72b324003183d52a4884d6bf09be708ac7f587d139b5"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "lifecycle-common-2.3.1.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "8cd23d889a14095c6ce16840d29b1a6388fa5e115144c1309d4d6d469c1bc351",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/lifecycle/lifecycle-common/2.3.1/lifecycle-common-2.3.1.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "room-common-jvm-2.8.4.jar": "dc7b4e1a75a790f29c97afd5516b8bf8002d9b6e83e295bc569b33566f3b1ec0",
+        "room-common-jvm-2.8.4.pom": "1c8f5bd00eacfc4be791390ad0d953aaee07644a91425490de790245d36a73b7"
+      },
+      "coordinate": "androidx.room:room-common-jvm:2.8.4",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 10175,
+              "entry": "META-INF/androidx/room/room-common/LICENSE.txt",
+              "kind": "license",
+              "sha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "filename": "room-common-jvm-2.8.4.jar",
+          "sha256": "dc7b4e1a75a790f29c97afd5516b8bf8002d9b6e83e295bc569b33566f3b1ec0"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "room-common-jvm-2.8.4.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "1c8f5bd00eacfc4be791390ad0d953aaee07644a91425490de790245d36a73b7",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-common-jvm/2.8.4/room-common-jvm-2.8.4.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "room-common-2.8.4.pom": "681e3f6fd5308843aefbbb474dd3638ffd685d1ad8f7fa96b8559e5ea5ef202c"
+      },
+      "coordinate": "androidx.room:room-common:2.8.4",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [],
+      "licenseEvidence": [
+        {
+          "filename": "room-common-2.8.4.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "681e3f6fd5308843aefbbb474dd3638ffd685d1ad8f7fa96b8559e5ea5ef202c",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-common/2.8.4/room-common-2.8.4.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "room-compiler-processing-2.8.4.jar": "a4282eceb6720a712f15cff50747f160a7efe6ac3974e86d514c45e3f416085f",
+        "room-compiler-processing-2.8.4.pom": "100a0d58497d490bc6e05ca6dea0a2510150150fd173a108e08a4dc450f564c5"
+      },
+      "coordinate": "androidx.room:room-compiler-processing:2.8.4",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 10175,
+              "entry": "META-INF/androidx/room/room-compiler-processing/LICENSE.txt",
+              "kind": "license",
+              "sha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "filename": "room-compiler-processing-2.8.4.jar",
+          "sha256": "a4282eceb6720a712f15cff50747f160a7efe6ac3974e86d514c45e3f416085f"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "room-compiler-processing-2.8.4.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "100a0d58497d490bc6e05ca6dea0a2510150150fd173a108e08a4dc450f564c5",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-compiler-processing/2.8.4/room-compiler-processing-2.8.4.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "room-compiler-2.8.4.jar": "9c253ed45e1b0cbfde8a62ff0bd7a2405fb9099176e0f0f9d11a57135cce95bb",
+        "room-compiler-2.8.4.pom": "c0b03da62eb6295fd88508db541d1ac9de6099b216de9a586846da0825fd5b06"
+      },
+      "coordinate": "androidx.room:room-compiler:2.8.4",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 98104,
+              "entry": "META-INF/NOTICE.txt",
+              "kind": "notice",
+              "sha256": "8fd9818130aa4f195e6d12ab38143d75d8736ac168f572efa0db6d1beafcd682"
+            },
+            {
+              "bytes": 10175,
+              "entry": "META-INF/androidx/room/room-compiler/LICENSE.txt",
+              "kind": "license",
+              "sha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "filename": "room-compiler-2.8.4.jar",
+          "sha256": "9c253ed45e1b0cbfde8a62ff0bd7a2405fb9099176e0f0f9d11a57135cce95bb"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "room-compiler-2.8.4.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "c0b03da62eb6295fd88508db541d1ac9de6099b216de9a586846da0825fd5b06",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-compiler/2.8.4/room-compiler-2.8.4.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "room-external-antlr-2.8.4.jar": "6bf794bffe8de263826502511b4c7df0570312b6cc99312ca7fc6bdb0880ca1e",
+        "room-external-antlr-2.8.4.pom": "a37906f2556db6b30aedc6de4755f6fb74dc5292f1363c7082a8afb39e73479e"
+      },
+      "coordinate": "androidx.room:room-external-antlr:2.8.4",
+      "effectiveSpdx": [
+        "BSD-3-Clause"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 1434,
+              "entry": "META-INF/androidx/room/room-external-antlr/LICENSE.txt",
+              "kind": "license",
+              "sha256": "a01b712fbb30f80b86851468b6fa58e80eab68f69f325e88bbc7ddf47cf1b063",
+              "spdx": "BSD-3-Clause"
+            }
+          ],
+          "filename": "room-external-antlr-2.8.4.jar",
+          "sha256": "6bf794bffe8de263826502511b4c7df0570312b6cc99312ca7fc6bdb0880ca1e"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "room-external-antlr-2.8.4.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "a37906f2556db6b30aedc6de4755f6fb74dc5292f1363c7082a8afb39e73479e",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-external-antlr/2.8.4/room-external-antlr-2.8.4.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "room-migration-jvm-2.8.4.jar": "18e63f4ec289cf3f4545face849c6bbdd33eea9596eebe0b7293d49c00c511e2",
+        "room-migration-jvm-2.8.4.pom": "5879e4ee8629e22aa0fa344676c2efa605f6838abb48af8ef20d5570705a6afa"
+      },
+      "coordinate": "androidx.room:room-migration-jvm:2.8.4",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 10175,
+              "entry": "META-INF/androidx/room/room-migration/LICENSE.txt",
+              "kind": "license",
+              "sha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "filename": "room-migration-jvm-2.8.4.jar",
+          "sha256": "18e63f4ec289cf3f4545face849c6bbdd33eea9596eebe0b7293d49c00c511e2"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "room-migration-jvm-2.8.4.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "5879e4ee8629e22aa0fa344676c2efa605f6838abb48af8ef20d5570705a6afa",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-migration-jvm/2.8.4/room-migration-jvm-2.8.4.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "room-migration-2.8.4.pom": "82b0aea3543674608a919358348c314f0d2a70984fd9823f041a2bbb7d418ae6"
+      },
+      "coordinate": "androidx.room:room-migration:2.8.4",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [],
+      "licenseEvidence": [
+        {
+          "filename": "room-migration-2.8.4.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "82b0aea3543674608a919358348c314f0d2a70984fd9823f041a2bbb7d418ae6",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-migration/2.8.4/room-migration-2.8.4.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "room-runtime-android-2.8.4.pom": "80a198f43bb65bd7b0edfa19ee2c26e144bf379141c30be3a071a47a157b65e7",
+        "room-runtime.aar": "3293575082024fa0a92b081c4e2d0609f14b5c109635ec227bc509db141a4e20"
+      },
+      "coordinate": "androidx.room:room-runtime-android:2.8.4",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 10175,
+              "entry": "META-INF/androidx/room/room-runtime/LICENSE.txt",
+              "kind": "license",
+              "sha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "filename": "room-runtime.aar",
+          "sha256": "3293575082024fa0a92b081c4e2d0609f14b5c109635ec227bc509db141a4e20"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "room-runtime-android-2.8.4.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "80a198f43bb65bd7b0edfa19ee2c26e144bf379141c30be3a071a47a157b65e7",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-runtime-android/2.8.4/room-runtime-android-2.8.4.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "room-runtime-2.8.4.pom": "61b13fd132369dd7c3fb9d0b3076ceefa8e57ec699a8e03fb87aecb81cedd99b"
+      },
+      "coordinate": "androidx.room:room-runtime:2.8.4",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [],
+      "licenseEvidence": [
+        {
+          "filename": "room-runtime-2.8.4.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "61b13fd132369dd7c3fb9d0b3076ceefa8e57ec699a8e03fb87aecb81cedd99b",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-runtime/2.8.4/room-runtime-2.8.4.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "room-testing-android-2.8.4.pom": "7e0b899f27071d42d0214b9d6d43e87eaec041d1d625260a88dbe2644ee11888",
+        "room-testing.aar": "41e048f802d2016e285a5ea0a4eee54e49da07758b86c5a20ed0ca376a0c7b81"
+      },
+      "coordinate": "androidx.room:room-testing-android:2.8.4",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 10175,
+              "entry": "META-INF/androidx/room/room-testing/LICENSE.txt",
+              "kind": "license",
+              "sha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "filename": "room-testing.aar",
+          "sha256": "41e048f802d2016e285a5ea0a4eee54e49da07758b86c5a20ed0ca376a0c7b81"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "room-testing-android-2.8.4.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "7e0b899f27071d42d0214b9d6d43e87eaec041d1d625260a88dbe2644ee11888",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-testing-android/2.8.4/room-testing-android-2.8.4.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "room-testing-2.8.4.pom": "a29e99b9fd4637a893d0803ea9a524e91bd237e6da14e292cbfd904e3bfde395"
+      },
+      "coordinate": "androidx.room:room-testing:2.8.4",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [],
+      "licenseEvidence": [
+        {
+          "filename": "room-testing-2.8.4.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "a29e99b9fd4637a893d0803ea9a524e91bd237e6da14e292cbfd904e3bfde395",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-testing/2.8.4/room-testing-2.8.4.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "sqlite-android-2.6.2.pom": "1407cf53cb40a813434903fee252420f32c109f88560ac8adc771858260d7a3c",
+        "sqlite.aar": "514f8de4f7bdba2fa8d748d2b22fdcdfb623bd3770a667bf0adc0ad259f03ed2"
+      },
+      "coordinate": "androidx.sqlite:sqlite-android:2.6.2",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 10175,
+              "entry": "META-INF/androidx/sqlite/sqlite/LICENSE.txt",
+              "kind": "license",
+              "sha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "filename": "sqlite.aar",
+          "sha256": "514f8de4f7bdba2fa8d748d2b22fdcdfb623bd3770a667bf0adc0ad259f03ed2"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "sqlite-android-2.6.2.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "1407cf53cb40a813434903fee252420f32c109f88560ac8adc771858260d7a3c",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/sqlite/sqlite-android/2.6.2/sqlite-android-2.6.2.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "sqlite-framework-android-2.6.2.pom": "2618a352ec57009a207575830c11bd6013cd5548df472a0dba678c64821c0446",
+        "sqlite-framework.aar": "b19125c7fff34222e0f380361fc179ab214e4d82e1a50b0c068ca26c851a6231"
+      },
+      "coordinate": "androidx.sqlite:sqlite-framework-android:2.6.2",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 10175,
+              "entry": "META-INF/androidx/sqlite/sqlite-framework/LICENSE.txt",
+              "kind": "license",
+              "sha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "filename": "sqlite-framework.aar",
+          "sha256": "b19125c7fff34222e0f380361fc179ab214e4d82e1a50b0c068ca26c851a6231"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "sqlite-framework-android-2.6.2.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "2618a352ec57009a207575830c11bd6013cd5548df472a0dba678c64821c0446",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/sqlite/sqlite-framework-android/2.6.2/sqlite-framework-android-2.6.2.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "sqlite-framework-2.6.2.pom": "90fbc4507a16d2969558d9e9f14f1a11898c6eda789b703f49a79d77b5a297b2"
+      },
+      "coordinate": "androidx.sqlite:sqlite-framework:2.6.2",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [],
+      "licenseEvidence": [
+        {
+          "filename": "sqlite-framework-2.6.2.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "90fbc4507a16d2969558d9e9f14f1a11898c6eda789b703f49a79d77b5a297b2",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/sqlite/sqlite-framework/2.6.2/sqlite-framework-2.6.2.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "sqlite-2.6.2.pom": "ed8ff01ea1ae7c9903126a8217e6b0d849cfc2cdf198d0ee93513d96b700f41c"
+      },
+      "coordinate": "androidx.sqlite:sqlite:2.6.2",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [],
+      "licenseEvidence": [
+        {
+          "filename": "sqlite-2.6.2.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "ed8ff01ea1ae7c9903126a8217e6b0d849cfc2cdf198d0ee93513d96b700f41c",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/sqlite/sqlite/2.6.2/sqlite-2.6.2.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "junit-1.3.0.aar": "3363df84da4540ba8daff02c3f7cd65471037a6a5370591a7e6deba377b36e7f",
+        "junit-1.3.0.pom": "92af7f253e5eabe2caec5c56f308312653d123042b22754d6ff664e1752dcf3f"
+      },
+      "coordinate": "androidx.test.ext:junit:1.3.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "junit-1.3.0.aar",
+          "sha256": "3363df84da4540ba8daff02c3f7cd65471037a6a5370591a7e6deba377b36e7f"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "junit-1.3.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "92af7f253e5eabe2caec5c56f308312653d123042b22754d6ff664e1752dcf3f",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/test/ext/junit/1.3.0/junit-1.3.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "storage-1.6.0.aar": "f97e3cf6aaf4e3fb97ef219d37a9c0a0720183c1f6db87b37642521e26fb6d30",
+        "storage-1.6.0.pom": "8e5d72e2bceef6ef807bc38834dbc7aa53177fd20da349f53dce5a4f2a028bbf"
+      },
+      "coordinate": "androidx.test.services:storage:1.6.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "storage-1.6.0.aar",
+          "sha256": "f97e3cf6aaf4e3fb97ef219d37a9c0a0720183c1f6db87b37642521e26fb6d30"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "storage-1.6.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "8e5d72e2bceef6ef807bc38834dbc7aa53177fd20da349f53dce5a4f2a028bbf",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/test/services/storage/1.6.0/storage-1.6.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "core-1.7.0.aar": "f4dacd8edceeec48e0c76ecf28339b28f4b4f6b74f8e34e9e59b472c27d9eb81",
+        "core-1.7.0.pom": "b97dd112cd684ad3686f5ccf581b92b106ca76565cf02ccfece060af3bc50743"
+      },
+      "coordinate": "androidx.test:core:1.7.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "core-1.7.0.aar",
+          "sha256": "f4dacd8edceeec48e0c76ecf28339b28f4b4f6b74f8e34e9e59b472c27d9eb81"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "core-1.7.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "b97dd112cd684ad3686f5ccf581b92b106ca76565cf02ccfece060af3bc50743",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/test/core/1.7.0/core-1.7.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "monitor-1.8.0.aar": "56cb7496a06d9f2dca7d3ff76c50a8a30bd18e00a24a3b267d5a31437b278e67",
+        "monitor-1.8.0.pom": "681cf08c41700c73b146953867c0ac826da9c2a810bd2a4a8f878ea11c64d40c"
+      },
+      "coordinate": "androidx.test:monitor:1.8.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "monitor-1.8.0.aar",
+          "sha256": "56cb7496a06d9f2dca7d3ff76c50a8a30bd18e00a24a3b267d5a31437b278e67"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "monitor-1.8.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "681cf08c41700c73b146953867c0ac826da9c2a810bd2a4a8f878ea11c64d40c",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/test/monitor/1.8.0/monitor-1.8.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "runner-1.7.0.aar": "970311c47119928a2e406a88892a3d270387cc5a49a181a1c44511105b41b818",
+        "runner-1.7.0.pom": "622831c6d31666fb3438cb0d2ee1fbbbc78cabcd49717699578d92550062207f"
+      },
+      "coordinate": "androidx.test:runner:1.7.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "runner-1.7.0.aar",
+          "sha256": "970311c47119928a2e406a88892a3d270387cc5a49a181a1c44511105b41b818"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "runner-1.7.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "622831c6d31666fb3438cb0d2ee1fbbbc78cabcd49717699578d92550062207f",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/test/runner/1.7.0/runner-1.7.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "tracing-1.1.0.aar": "5b78e2c618fc10b3d14decc01df76158f15954ad746aacf0607766721da081f6",
+        "tracing-1.1.0.pom": "f1db502b5d539d94dfb6c659deb76872b1e9d8266d7aa4083868a29c33c22917"
+      },
+      "coordinate": "androidx.tracing:tracing:1.1.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "tracing-1.1.0.aar",
+          "sha256": "5b78e2c618fc10b3d14decc01df76158f15954ad746aacf0607766721da081f6"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "tracing-1.1.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "f1db502b5d539d94dfb6c659deb76872b1e9d8266d7aa4083868a29c33c22917",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/tracing/tracing/1.1.0/tracing-1.1.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "auto-value-annotations-1.6.3.jar": "0e951fee8c31f60270bc46553a8586001b7b93dbb12aec06373aa99a150392c0",
+        "auto-value-annotations-1.6.3.pom": "e1fc780f7ee025e662b3da72723dbe2ac8dac0a2f8920f265315c4e1be3d765c"
+      },
+      "coordinate": "com.google.auto.value:auto-value-annotations:1.6.3",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "auto-value-annotations-1.6.3.jar",
+          "sha256": "0e951fee8c31f60270bc46553a8586001b7b93dbb12aec06373aa99a150392c0"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "auto-value-annotations-1.6.3.pom",
+          "kind": "exact-module-pom-license-header",
+          "sha256": "e1fc780f7ee025e662b3da72723dbe2ac8dac0a2f8920f265315c4e1be3d765c",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/auto/value/auto-value-annotations/1.6.3/auto-value-annotations-1.6.3.pom"
+        },
+        {
+          "filename": "LICENSE.txt",
+          "kind": "upstream-release-tag-license",
+          "repository": "google/auto",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "sourceUrl": "https://raw.githubusercontent.com/google/auto/auto-value-1.6.3/LICENSE.txt",
+          "tag": "auto-value-1.6.3"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "auto-common-1.2.1.jar": "f43f29fe2a6ebaf04b2598cdeec32a4e346d49a9404e990f5fc19c19f3a28d0e",
+        "auto-common-1.2.1.pom": "13b4b50062949f8b1343927c581536d3bb051b8afea509aa6f902f4de28bc1b2"
+      },
+      "coordinate": "com.google.auto:auto-common:1.2.1",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "auto-common-1.2.1.jar",
+          "sha256": "f43f29fe2a6ebaf04b2598cdeec32a4e346d49a9404e990f5fc19c19f3a28d0e"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "auto-common-1.2.1.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "13b4b50062949f8b1343927c581536d3bb051b8afea509aa6f902f4de28bc1b2",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/auto/auto-common/1.2.1/auto-common-1.2.1.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "jsr305-3.0.2.jar": "766ad2a0783f2687962c8ad74ceecc38a28b9f72a2d085ee438b7813e928d0c7",
+        "jsr305-3.0.2.pom": "19889dbdf1b254b2601a5ee645b8147a974644882297684c798afe5d63d78dfe"
+      },
+      "coordinate": "com.google.code.findbugs:jsr305:3.0.2",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "jsr305-3.0.2.jar",
+          "sha256": "766ad2a0783f2687962c8ad74ceecc38a28b9f72a2d085ee438b7813e928d0c7"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "jsr305-3.0.2.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "19889dbdf1b254b2601a5ee645b8147a974644882297684c798afe5d63d78dfe",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "symbol-processing-api-2.0.10-1.0.24.jar": "dd7dde070be54de66c7bdd4de04c43fb429e0c62bb132a6448cfa33653afb229",
+        "symbol-processing-api-2.0.10-1.0.24.pom": "4528fe798fefeec095a73e861c1206fa825496a0e7b652272f40ffc960814e62"
+      },
+      "coordinate": "com.google.devtools.ksp:symbol-processing-api:2.0.10-1.0.24",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "symbol-processing-api-2.0.10-1.0.24.jar",
+          "sha256": "dd7dde070be54de66c7bdd4de04c43fb429e0c62bb132a6448cfa33653afb229"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "symbol-processing-api-2.0.10-1.0.24.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "4528fe798fefeec095a73e861c1206fa825496a0e7b652272f40ffc960814e62",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/devtools/ksp/symbol-processing-api/2.0.10-1.0.24/symbol-processing-api-2.0.10-1.0.24.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "error_prone_annotations-2.26.1.jar": "de25f2d9a2156529bd765f51d8efdfc0dfa7301e04efb9cc75b7f10cf5d0e0fb",
+        "error_prone_annotations-2.26.1.pom": "aea7e991e2dfdcb47f5fbd508587535f7802bcb9e2fc2d4ebb50be41b684da9f"
+      },
+      "coordinate": "com.google.errorprone:error_prone_annotations:2.26.1",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "error_prone_annotations-2.26.1.jar",
+          "sha256": "de25f2d9a2156529bd765f51d8efdfc0dfa7301e04efb9cc75b7f10cf5d0e0fb"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "error_prone_annotations-2.26.1.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "aea7e991e2dfdcb47f5fbd508587535f7802bcb9e2fc2d4ebb50be41b684da9f",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.26.1/error_prone_annotations-2.26.1.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "failureaccess-1.0.2.jar": "8a8f81cf9b359e3f6dfa691a1e776985c061ef2f223c9b2c80753e1b458e8064",
+        "failureaccess-1.0.2.pom": "19ebc6f4bdb4edbb3d07b6ee994f846b54ef295582a9b5634719ffa9f31d03b2"
+      },
+      "coordinate": "com.google.guava:failureaccess:1.0.2",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "failureaccess-1.0.2.jar",
+          "sha256": "8a8f81cf9b359e3f6dfa691a1e776985c061ef2f223c9b2c80753e1b458e8064"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "coordinate": "com.google.guava:guava-parent:26.0-android",
+          "filename": "guava-parent-26.0-android.pom",
+          "kind": "parent-pom-declaration",
+          "sha256": "f8698ab46ca996ce889c1afc8ca4f25eb8ac6b034dc898d4583742360016cc04",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/guava/guava-parent/26.0-android/guava-parent-26.0-android.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "guava-33.2.1-jre.jar": "452b2d9787b7d366fa8cf5ed9a1c40404542d05effa7a598da03bbbbb76d9f31",
+        "guava-33.2.1-jre.pom": "42817bdc1c0c8c737d6b411cfaf4a84769e7d271e879b016fd0850248a06dab5"
+      },
+      "coordinate": "com.google.guava:guava:33.2.1-jre",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 11358,
+              "entry": "META-INF/LICENSE",
+              "kind": "license",
+              "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+              "spdx": "Apache-2.0"
+            }
+          ],
+          "filename": "guava-33.2.1-jre.jar",
+          "sha256": "452b2d9787b7d366fa8cf5ed9a1c40404542d05effa7a598da03bbbbb76d9f31"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "coordinate": "com.google.guava:guava-parent:33.2.1-jre",
+          "filename": "guava-parent-33.2.1-jre.pom",
+          "kind": "parent-pom-declaration",
+          "sha256": "9095f6d8ee3765950207510785830cc2280e781067915fa99cfe1740d4865c14",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/guava/guava-parent/33.2.1-jre/guava-parent-33.2.1-jre.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "listenablefuture-1.0.jar": "e4ad7607e5c0477c6f890ef26a49cb8d1bb4dffb650bab4502afee64644e3069",
+        "listenablefuture-1.0.pom": "53873caf26bc1ed8a567ea6c939ab2aaa3f47a5e32d5cade95ddf5080d23238a"
+      },
+      "coordinate": "com.google.guava:listenablefuture:1.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "listenablefuture-1.0.jar",
+          "sha256": "e4ad7607e5c0477c6f890ef26a49cb8d1bb4dffb650bab4502afee64644e3069"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "coordinate": "com.google.guava:guava-parent:26.0-android",
+          "filename": "guava-parent-26.0-android.pom",
+          "kind": "parent-pom-declaration",
+          "sha256": "f8698ab46ca996ce889c1afc8ca4f25eb8ac6b034dc898d4583742360016cc04",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/guava/guava-parent/26.0-android/guava-parent-26.0-android.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar": "b372a037d4230aa57fbeffdef30fd6123f9c0c2db85d0aced00c91b974f33f99",
+        "listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.pom": "18d4b1db26153d4e55079ce1f76bb1fe05cdb862ef9954a88cbcc4ff38b8679b"
+      },
+      "coordinate": "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar",
+          "sha256": "b372a037d4230aa57fbeffdef30fd6123f9c0c2db85d0aced00c91b974f33f99"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "coordinate": "com.google.guava:guava-parent:26.0-android",
+          "filename": "guava-parent-26.0-android.pom",
+          "kind": "parent-pom-declaration",
+          "sha256": "f8698ab46ca996ce889c1afc8ca4f25eb8ac6b034dc898d4583742360016cc04",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/guava/guava-parent/26.0-android/guava-parent-26.0-android.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "annotations-12.0.jar": "f8ab13b14be080fe2f617f90e55599760e4a1b4deeea5c595df63d0d6375ed6d",
+        "annotations-12.0.pom": "faf82de0dc02e0c0ae327cd653f37255496b2e53fce280b3ab4cb34553a89086"
+      },
+      "coordinate": "com.intellij:annotations:12.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "annotations-12.0.jar",
+          "sha256": "f8ab13b14be080fe2f617f90e55599760e4a1b4deeea5c595df63d0d6375ed6d"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "annotations-12.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "faf82de0dc02e0c0ae327cd653f37255496b2e53fce280b3ab4cb34553a89086",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/intellij/annotations/12.0/annotations-12.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "javapoet-1.13.0.jar": "4c7517e848a71b36d069d12bb3bf46a70fd4cda3105d822b0ed2e19c00b69291",
+        "javapoet-1.13.0.pom": "54a34fa8502a46bc90efdb49262600591fa80bf9a34f5a4c798311aec16ca977"
+      },
+      "coordinate": "com.squareup:javapoet:1.13.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "javapoet-1.13.0.jar",
+          "sha256": "4c7517e848a71b36d069d12bb3bf46a70fd4cda3105d822b0ed2e19c00b69291"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "javapoet-1.13.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "54a34fa8502a46bc90efdb49262600591fa80bf9a34f5a4c798311aec16ca977",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/squareup/javapoet/1.13.0/javapoet-1.13.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "kotlinpoet-javapoet-2.0.0.jar": "2929f3b9a8d739d0aea40bf3c7bd01fad3a7cd2d0fb56f2de248ebb9b46774a4",
+        "kotlinpoet-javapoet-2.0.0.pom": "aeef5a7b10ef2a5a868e5d7f94b7f45931070b8c85d6ff350e393d526aa8bc44"
+      },
+      "coordinate": "com.squareup:kotlinpoet-javapoet:2.0.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "kotlinpoet-javapoet-2.0.0.jar",
+          "sha256": "2929f3b9a8d739d0aea40bf3c7bd01fad3a7cd2d0fb56f2de248ebb9b46774a4"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "kotlinpoet-javapoet-2.0.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "aeef5a7b10ef2a5a868e5d7f94b7f45931070b8c85d6ff350e393d526aa8bc44",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/squareup/kotlinpoet-javapoet/2.0.0/kotlinpoet-javapoet-2.0.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "kotlinpoet-jvm-2.0.0.jar": "65e2d5e1c7844861d134635692791f7dbac808adb060da7329c18c4bd88d2acb",
+        "kotlinpoet-jvm-2.0.0.pom": "4f743a117b2969aaa4bdff734ebd53d605976cc98e69e7f0662b45adb1fbcaed"
+      },
+      "coordinate": "com.squareup:kotlinpoet-jvm:2.0.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "kotlinpoet-jvm-2.0.0.jar",
+          "sha256": "65e2d5e1c7844861d134635692791f7dbac808adb060da7329c18c4bd88d2acb"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "kotlinpoet-jvm-2.0.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "4f743a117b2969aaa4bdff734ebd53d605976cc98e69e7f0662b45adb1fbcaed",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/squareup/kotlinpoet-jvm/2.0.0/kotlinpoet-jvm-2.0.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "kotlinpoet-2.0.0.pom": "10c3349a6c859576e5b83a64a939c37cecebbcc469bf5c166ada5a5904e35c3a"
+      },
+      "coordinate": "com.squareup:kotlinpoet:2.0.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [],
+      "licenseEvidence": [
+        {
+          "filename": "kotlinpoet-2.0.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "10c3349a6c859576e5b83a64a939c37cecebbcc469bf5c166ada5a5904e35c3a",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/squareup/kotlinpoet/2.0.0/kotlinpoet-2.0.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "commons-codec-1.15.jar": "b3e9f6d63a790109bf0d056611fbed1cf69055826defeb9894a71369d246ed63",
+        "commons-codec-1.15.pom": "c86ee198a35a3715487860f419cbf642e7e4d9e8714777947dbe6a4e3a20ab58"
+      },
+      "coordinate": "commons-codec:commons-codec:1.15",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 11358,
+              "entry": "META-INF/LICENSE.txt",
+              "kind": "license",
+              "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+              "spdx": "Apache-2.0"
+            },
+            {
+              "bytes": 733,
+              "entry": "META-INF/NOTICE.txt",
+              "kind": "notice",
+              "sha256": "0e529f7dd092a0c4675485e14c3f79b0c2855fc84830a5b2d79564ba89f71ee6"
+            }
+          ],
+          "filename": "commons-codec-1.15.jar",
+          "sha256": "b3e9f6d63a790109bf0d056611fbed1cf69055826defeb9894a71369d246ed63"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "commons-codec-1.15.pom",
+          "kind": "exact-module-pom-license-header",
+          "sha256": "c86ee198a35a3715487860f419cbf642e7e4d9e8714777947dbe6a4e3a20ab58",
+          "sourceUrl": "https://repo1.maven.org/maven2/commons-codec/commons-codec/1.15/commons-codec-1.15.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "junit-4.13.2.jar": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3",
+        "junit-4.13.2.pom": "569b6977ee4603c965c1c46c3058fa6e969291b0160eb6964dd092cd89eadd94"
+      },
+      "coordinate": "junit:junit:4.13.2",
+      "effectiveSpdx": [
+        "EPL-1.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 11376,
+              "entry": "LICENSE-junit.txt",
+              "kind": "license",
+              "sha256": "9648bb2891b9813970bddb68d4be8a5e6ec8280d0180a53dfb29236b579c55bb",
+              "spdx": "EPL-1.0"
+            }
+          ],
+          "filename": "junit-4.13.2.jar",
+          "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "junit-4.13.2.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "569b6977ee4603c965c1c46c3058fa6e969291b0160eb6964dd092cd89eadd94",
+          "sourceUrl": "https://repo1.maven.org/maven2/junit/junit/4.13.2/junit-4.13.2.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "checker-qual-3.42.0.jar": "ccaedd33af0b7894d9f2f3b644f4d19e43928e32902e61ac4d10777830f5aac7",
+        "checker-qual-3.42.0.pom": "bf5fcaab272f54cbcf1bbe77c3bd963c821c9abad2058708bf0bed3c875494ca"
+      },
+      "coordinate": "org.checkerframework:checker-qual:3.42.0",
+      "effectiveSpdx": [
+        "MIT"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 1126,
+              "entry": "META-INF/LICENSE.txt",
+              "kind": "license",
+              "sha256": "e90eaa08dea089df10f2bf7f9dba63a5f6237c01562c4741e2e86773e78582d5",
+              "spdx": "MIT"
+            }
+          ],
+          "filename": "checker-qual-3.42.0.jar",
+          "sha256": "ccaedd33af0b7894d9f2f3b644f4d19e43928e32902e61ac4d10777830f5aac7"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "checker-qual-3.42.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "bf5fcaab272f54cbcf1bbe77c3bd963c821c9abad2058708bf0bed3c875494ca",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.42.0/checker-qual-3.42.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "hamcrest-core-1.3.jar": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9",
+        "hamcrest-core-1.3.pom": "fde386a7905173a1b103de6ab820727584b50d0e32282e2797787c20a64ffa93"
+      },
+      "coordinate": "org.hamcrest:hamcrest-core:1.3",
+      "effectiveSpdx": [
+        "BSD-3-Clause"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 1509,
+              "entry": "LICENSE.txt",
+              "kind": "license",
+              "sha256": "1cde867cab5c8e842929da5391cef98b4017314822270e934e8e2eef3767c666",
+              "spdx": "BSD-3-Clause"
+            }
+          ],
+          "filename": "hamcrest-core-1.3.jar",
+          "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "coordinate": "org.hamcrest:hamcrest-parent:1.3",
+          "filename": "hamcrest-parent-1.3.pom",
+          "kind": "parent-pom-declaration",
+          "sha256": "6d535f94efb663bdb682c9f27a50335394688009642ba7a9677504bc1be4129b",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/hamcrest/hamcrest-parent/1.3/hamcrest-parent-1.3.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "kotlin-metadata-jvm-2.2.0.jar": "501222ae7d63527e55f2e5e645f18d4eff2c19074c85b9bc055866e3ed2b17bf",
+        "kotlin-metadata-jvm-2.2.0.pom": "55abfa46dacefa103160cc04e0c51e560aba0ca232003fdbcfb4ed8cdd399b45"
+      },
+      "coordinate": "org.jetbrains.kotlin:kotlin-metadata-jvm:2.2.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "kotlin-metadata-jvm-2.2.0.jar",
+          "sha256": "501222ae7d63527e55f2e5e645f18d4eff2c19074c85b9bc055866e3ed2b17bf"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "kotlin-metadata-jvm-2.2.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "55abfa46dacefa103160cc04e0c51e560aba0ca232003fdbcfb4ed8cdd399b45",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-metadata-jvm/2.2.0/kotlin-metadata-jvm-2.2.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "kotlin-reflect-2.0.10.jar": "77ff5b0a597ba697c97556d661f68991a019ca71d40c49e8ccb6991f4f93e308",
+        "kotlin-reflect-2.0.10.pom": "3666cd411f81ef8e2764bd971e1cf1e5b7622a60c8353013bb54c9759255f75d"
+      },
+      "coordinate": "org.jetbrains.kotlin:kotlin-reflect:2.0.10",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "kotlin-reflect-2.0.10.jar",
+          "sha256": "77ff5b0a597ba697c97556d661f68991a019ca71d40c49e8ccb6991f4f93e308"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "kotlin-reflect-2.0.10.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "3666cd411f81ef8e2764bd971e1cf1e5b7622a60c8353013bb54c9759255f75d",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-reflect/2.0.10/kotlin-reflect-2.0.10.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "kotlin-stdlib-2.2.0.jar": "65d12d85a3b865c160db9147851712a64b10dadd68b22eea22a95bf8a8670dca",
+        "kotlin-stdlib-2.2.0.pom": "8c3c821007c13411558739b9f3d5382eb81551db3895cffb89561e56c0f4dc16"
+      },
+      "coordinate": "org.jetbrains.kotlin:kotlin-stdlib:2.2.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "kotlin-stdlib-2.2.0.jar",
+          "sha256": "65d12d85a3b865c160db9147851712a64b10dadd68b22eea22a95bf8a8670dca"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "kotlin-stdlib-2.2.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "8c3c821007c13411558739b9f3d5382eb81551db3895cffb89561e56c0f4dc16",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/2.2.0/kotlin-stdlib-2.2.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "kotlin-stdlib-2.2.10.jar": "9c67cc79efd6b9215b49d2a4308f5f3433537376c7c88e89bdd6729bd096e61a",
+        "kotlin-stdlib-2.2.10.pom": "454ba507a3d36b4ac253df6df96f8739bd26ea19df3f332b10b13f2c5715f787"
+      },
+      "coordinate": "org.jetbrains.kotlin:kotlin-stdlib:2.2.10",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "kotlin-stdlib-2.2.10.jar",
+          "sha256": "9c67cc79efd6b9215b49d2a4308f5f3433537376c7c88e89bdd6729bd096e61a"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "kotlin-stdlib-2.2.10.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "454ba507a3d36b4ac253df6df96f8739bd26ea19df3f332b10b13f2c5715f787",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/2.2.10/kotlin-stdlib-2.2.10.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "kotlinx-coroutines-android-1.8.1.jar": "a134dacf4e6578b29b32e97aa50548d09cb45e3cb3551ce77ac27e55e265d8f5",
+        "kotlinx-coroutines-android-1.8.1.pom": "88e8c7ede4d29b8027a2da6ea9e3ce550c556a4213633f8f6de28bb9fb201c90"
+      },
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "kotlinx-coroutines-android-1.8.1.jar",
+          "sha256": "a134dacf4e6578b29b32e97aa50548d09cb45e3cb3551ce77ac27e55e265d8f5"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "kotlinx-coroutines-android-1.8.1.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "88e8c7ede4d29b8027a2da6ea9e3ce550c556a4213633f8f6de28bb9fb201c90",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-android/1.8.1/kotlinx-coroutines-android-1.8.1.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "kotlinx-coroutines-bom-1.8.1.pom": "563e4aa29fa8fe09a6e1746d0a5b51308f7c7dedc468dc5a0ca810a485877030"
+      },
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.8.1",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [],
+      "licenseEvidence": [
+        {
+          "filename": "kotlinx-coroutines-bom-1.8.1.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "563e4aa29fa8fe09a6e1746d0a5b51308f7c7dedc468dc5a0ca810a485877030",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-bom/1.8.1/kotlinx-coroutines-bom-1.8.1.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "kotlinx-coroutines-core-jvm-1.8.1.jar": "f3d4f5de1c391bbcc20f3b3435ccbac013521e76b6902d7d59635ec15c1f797e",
+        "kotlinx-coroutines-core-jvm-1.8.1.pom": "47c6a50b14151e8faf7f350a95235c37d12abc38bfb055b668974293172daf2c"
+      },
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.1",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "kotlinx-coroutines-core-jvm-1.8.1.jar",
+          "sha256": "f3d4f5de1c391bbcc20f3b3435ccbac013521e76b6902d7d59635ec15c1f797e"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "kotlinx-coroutines-core-jvm-1.8.1.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "47c6a50b14151e8faf7f350a95235c37d12abc38bfb055b668974293172daf2c",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.8.1/kotlinx-coroutines-core-jvm-1.8.1.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "kotlinx-coroutines-core-1.8.1.pom": "f88918dbfa8787c4d171ab02553a14ad1def8aa9b0c5c2c20cc99455d3241e22"
+      },
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [],
+      "licenseEvidence": [
+        {
+          "filename": "kotlinx-coroutines-core-1.8.1.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "f88918dbfa8787c4d171ab02553a14ad1def8aa9b0c5c2c20cc99455d3241e22",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core/1.8.1/kotlinx-coroutines-core-1.8.1.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "kotlinx-serialization-bom-1.8.1.pom": "00f3555ae7624851c67db12c308bc9ce26ae327cf0d724766a401e5ba00608c7"
+      },
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-bom:1.8.1",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [],
+      "licenseEvidence": [
+        {
+          "filename": "kotlinx-serialization-bom-1.8.1.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "00f3555ae7624851c67db12c308bc9ce26ae327cf0d724766a401e5ba00608c7",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-bom/1.8.1/kotlinx-serialization-bom-1.8.1.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "kotlinx-serialization-core-jvm-1.8.1.jar": "3565b6d4d789bf70683c45566944287fc1d8dc75c23d98bd87d01059cc76f2b3",
+        "kotlinx-serialization-core-jvm-1.8.1.pom": "446655e8d43828bfbb387ce9d151a9371a3092b48b909e80606b53fc58979e28"
+      },
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.8.1",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "kotlinx-serialization-core-jvm-1.8.1.jar",
+          "sha256": "3565b6d4d789bf70683c45566944287fc1d8dc75c23d98bd87d01059cc76f2b3"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "kotlinx-serialization-core-jvm-1.8.1.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "446655e8d43828bfbb387ce9d151a9371a3092b48b909e80606b53fc58979e28",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core-jvm/1.8.1/kotlinx-serialization-core-jvm-1.8.1.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "kotlinx-serialization-core-1.8.1.pom": "473f0aa3e4a17aab7860dca490dc42eabb6124f1d2953e6a995a08717e50c714"
+      },
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [],
+      "licenseEvidence": [
+        {
+          "filename": "kotlinx-serialization-core-1.8.1.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "473f0aa3e4a17aab7860dca490dc42eabb6124f1d2953e6a995a08717e50c714",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core/1.8.1/kotlinx-serialization-core-1.8.1.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "kotlinx-serialization-json-jvm-1.8.1.jar": "8769e5647557e3700919c32d508f5c5dad53c5d8234cd10846354fbcff14aa24",
+        "kotlinx-serialization-json-jvm-1.8.1.pom": "d665d6b41fe058f666a6f386ad2e49cc101ef8fd2eefefefcbc111e91ee82436"
+      },
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.8.1",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "kotlinx-serialization-json-jvm-1.8.1.jar",
+          "sha256": "8769e5647557e3700919c32d508f5c5dad53c5d8234cd10846354fbcff14aa24"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "kotlinx-serialization-json-jvm-1.8.1.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "d665d6b41fe058f666a6f386ad2e49cc101ef8fd2eefefefcbc111e91ee82436",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json-jvm/1.8.1/kotlinx-serialization-json-jvm-1.8.1.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "kotlinx-serialization-json-1.8.1.pom": "c7700c99c83de02b46541a3d7e4b69b388749b7c0f57dceb454d143f2cd87a7b"
+      },
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [],
+      "licenseEvidence": [
+        {
+          "filename": "kotlinx-serialization-json-1.8.1.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "c7700c99c83de02b46541a3d7e4b69b388749b7c0f57dceb454d143f2cd87a7b",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json/1.8.1/kotlinx-serialization-json-1.8.1.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "annotations-13.0.jar": "ace2a10dc8e2d5fd34925ecac03e4988b2c0f851650c94b8cef49ba1bd111478",
+        "annotations-13.0.pom": "965aeb2bedff369819bdde1bf7a0b3b89b8247dd69c88b86375d76163bb8c397"
+      },
+      "coordinate": "org.jetbrains:annotations:13.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "annotations-13.0.jar",
+          "sha256": "ace2a10dc8e2d5fd34925ecac03e4988b2c0f851650c94b8cef49ba1bd111478"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "annotations-13.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "965aeb2bedff369819bdde1bf7a0b3b89b8247dd69c88b86375d76163bb8c397",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "annotations-23.0.0.jar": "7b0f19724082cbfcbc66e5abea2b9bc92cf08a1ea11e191933ed43801eb3cd05",
+        "annotations-23.0.0.pom": "c9490f655132328df2cfbcfdf743f53fc3916d6c1d10437175a6ca6e3a67771c"
+      },
+      "coordinate": "org.jetbrains:annotations:23.0.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "annotations-23.0.0.jar",
+          "sha256": "7b0f19724082cbfcbc66e5abea2b9bc92cf08a1ea11e191933ed43801eb3cd05"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "annotations-23.0.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "c9490f655132328df2cfbcfdf743f53fc3916d6c1d10437175a6ca6e3a67771c",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/annotations/23.0.0/annotations-23.0.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "jspecify-1.0.0.jar": "1fad6e6be7557781e4d33729d49ae1cdc8fdda6fe477bb0cc68ce351eafdfbab",
+        "jspecify-1.0.0.pom": "cdab929a3b95211f43d2090c5e2d0dfe8465960e378bc32b35841dab324433a6"
+      },
+      "coordinate": "org.jspecify:jspecify:1.0.0",
+      "effectiveSpdx": [
+        "Apache-2.0"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [],
+          "filename": "jspecify-1.0.0.jar",
+          "sha256": "1fad6e6be7557781e4d33729d49ae1cdc8fdda6fe477bb0cc68ce351eafdfbab"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "jspecify-1.0.0.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "cdab929a3b95211f43d2090c5e2d0dfe8465960e378bc32b35841dab324433a6",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    },
+    {
+      "artifactSha256": {
+        "sqlite-jdbc-3.41.2.2.jar": "0cdab410947e04b6743df99cf1543267ddd107357d6f76948d145be590fd497d",
+        "sqlite-jdbc-3.41.2.2.pom": "ae11a3b11dcbac1b6403689e3fd8d82b2ceea55e82dbfc4bb32aededf8ccac8e"
+      },
+      "coordinate": "org.xerial:sqlite-jdbc:3.41.2.2",
+      "effectiveSpdx": [
+        "Apache-2.0",
+        "BSD-2-Clause"
+      ],
+      "embeddedLicenseNoticeEntries": [
+        {
+          "entries": [
+            {
+              "bytes": 11560,
+              "entry": "META-INF/maven/org.xerial/sqlite-jdbc/LICENSE",
+              "kind": "license",
+              "sha256": "3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5",
+              "spdx": "Apache-2.0"
+            },
+            {
+              "bytes": 1312,
+              "entry": "META-INF/maven/org.xerial/sqlite-jdbc/LICENSE.zentus",
+              "kind": "license",
+              "sha256": "89167dab92289c7e5e2b65b044f0856b703d05e5d5e35c3548e73d9c7d2f5048",
+              "spdx": "BSD-2-Clause"
+            }
+          ],
+          "filename": "sqlite-jdbc-3.41.2.2.jar",
+          "sha256": "0cdab410947e04b6743df99cf1543267ddd107357d6f76948d145be590fd497d"
+        }
+      ],
+      "licenseEvidence": [
+        {
+          "filename": "sqlite-jdbc-3.41.2.2.pom",
+          "kind": "module-pom-declaration",
+          "sha256": "ae11a3b11dcbac1b6403689e3fd8d82b2ceea55e82dbfc4bb32aededf8ccac8e",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.41.2.2/sqlite-jdbc-3.41.2.2.pom"
+        }
+      ],
+      "productionAdmission": "NOT_REVIEWED",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ],
+      "stage0EvaluationDisposition": "ACCEPTABLE_PENDING_OWNER_APPROVAL"
+    }
+  ],
+  "nonClaims": [
+    "This engineering inventory is not legal advice.",
+    "Owner approval is still required before EVALUATION_APPROVED.",
+    "Production Legal and independent production Security review remain separate.",
+    "No production redistribution or dependency admission is approved."
+  ],
+  "obligations": {
+    "Apache-2.0": {
+      "distributionReview": "Retain the license; preserve attributable NOTICE content when supplied; mark modified files when applicable; no trademark permission is inferred.",
+      "evaluationDisposition": "compatible_with_internal_stage0_evaluation"
+    },
+    "BSD-2-Clause": {
+      "distributionReview": "Retain copyright, conditions, and disclaimer.",
+      "evaluationDisposition": "compatible_with_internal_stage0_evaluation"
+    },
+    "BSD-3-Clause": {
+      "distributionReview": "Retain copyright, conditions, and disclaimer; do not imply endorsement.",
+      "evaluationDisposition": "compatible_with_internal_stage0_evaluation"
+    },
+    "EPL-1.0": {
+      "distributionReview": "Production Legal must review source-availability and modification obligations before any distribution.",
+      "evaluationDisposition": "test_scope_only_reviewed_for_stage0"
+    },
+    "MIT": {
+      "distributionReview": "Retain the copyright and license notice in distributed copies.",
+      "evaluationDisposition": "compatible_with_internal_stage0_evaluation"
+    }
+  },
+  "pocId": "POC-SEARCH-001",
+  "productionLegal": "UNASSIGNED_BLOCKED",
+  "reviewStatus": "EVIDENCE_COMPLETE",
+  "schemaVersion": 1,
+  "scope": "Exact locked Stage 0 evaluation graph; no production admission",
+  "sourceDependencyInventory": {
+    "componentCount": 66,
+    "locator": "docs/evidence/poc-search-001/dependency-inventory.json",
+    "sha256": "63a2a3dadfbfe072770d914a74cbd40d6adbd517548bda4ba0331dd314ca6a98"
+  },
+  "stage0Use": "internal synthetic evaluation only",
+  "summary": {
+    "componentCount": 66,
+    "componentsWithEffectiveLicense": 66,
+    "effectiveLicenseCounts": {
+      "Apache-2.0": 62,
+      "BSD-2-Clause": 1,
+      "BSD-3-Clause": 2,
+      "EPL-1.0": 1,
+      "MIT": 1
+    },
+    "embeddedLicenseEntryCount": 19,
+    "embeddedNoticeEntryCount": 3,
+    "unresolvedLicenseCoordinates": [],
+    "unresolvedLicenseFiles": [],
+    "unresolvedNoticeFiles": []
+  }
+}

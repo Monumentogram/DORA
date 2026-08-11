@@ -1,0 +1,2065 @@
+{
+  "componentCount": 66,
+  "components": [
+    {
+      "artifacts": [
+        {
+          "bytes": 45139,
+          "filename": "annotation-experimental-1.5.0.aar",
+          "kind": "aar",
+          "sha256": "02b0a4256618f85386c92e5cec166dc7f300820888a290227a3c0c65b82cbb36",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-experimental/1.5.0/annotation-experimental-1.5.0.aar"
+        },
+        {
+          "bytes": 2257,
+          "filename": "annotation-experimental-1.5.0.pom",
+          "kind": "pom",
+          "sha256": "7a94595399931c25a49f9af93daa4e977dc2d375458e4e74bb8d35ebcb51848d",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-experimental/1.5.0/annotation-experimental-1.5.0.pom"
+        }
+      ],
+      "coordinate": "androidx.annotation:annotation-experimental:1.5.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 60577,
+          "filename": "annotation-jvm-1.9.1.jar",
+          "kind": "jar",
+          "sha256": "1e343917ebf27ba96fe4dc52b1cad7fd32b738fbc6355bb6cd5b3b305d7212d0",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-jvm/1.9.1/annotation-jvm-1.9.1.jar"
+        },
+        {
+          "bytes": 1826,
+          "filename": "annotation-jvm-1.9.1.pom",
+          "kind": "pom",
+          "sha256": "89b99c218d60019316b50aab79816707bc21696c896a030e1b1ae038961bcb8e",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-jvm/1.9.1/annotation-jvm-1.9.1.pom"
+        }
+      ],
+      "coordinate": "androidx.annotation:annotation-jvm:1.9.1",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 2008,
+          "filename": "annotation-1.9.1.pom",
+          "kind": "pom",
+          "sha256": "c733881c2e17d5f7c8661cc02a9159cb160b7b2094a27d593916c87d3e250636",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation/1.9.1/annotation-1.9.1.pom"
+        }
+      ],
+      "coordinate": "androidx.annotation:annotation:1.9.1",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 11657,
+          "filename": "core-common-2.2.0.jar",
+          "kind": "jar",
+          "sha256": "65308a06b1c00ee186cb9e19321383f043b993813f1522c47f4a3e3303bdba41",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/arch/core/core-common/2.2.0/core-common-2.2.0.jar"
+        },
+        {
+          "bytes": 1704,
+          "filename": "core-common-2.2.0.pom",
+          "kind": "pom",
+          "sha256": "1e17d4af8d6425be2a69f8af4d654a87e0456259a9eef1542869bcb023547e28",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/arch/core/core-common/2.2.0/core-common-2.2.0.pom"
+        }
+      ],
+      "coordinate": "androidx.arch.core:core-common:2.2.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 7577,
+          "filename": "core-runtime-2.2.0.aar",
+          "kind": "aar",
+          "sha256": "a1be5e0caa2b07623862af6ae21b3ab0718123245184d0e30dea81b53f990a47",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/arch/core/core-runtime/2.2.0/core-runtime-2.2.0.aar"
+        },
+        {
+          "bytes": 1920,
+          "filename": "core-runtime-2.2.0.pom",
+          "kind": "pom",
+          "sha256": "0f953706598140d9d8735cdd5aeb1fa35933f4e2f31c0bf3eb81a053a4c8c1a5",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/arch/core/core-runtime/2.2.0/core-runtime-2.2.0.pom"
+        }
+      ],
+      "coordinate": "androidx.arch.core:core-runtime:2.2.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 877998,
+          "filename": "collection-jvm-1.5.0.jar",
+          "kind": "jar",
+          "sha256": "70b35924e4babcdffa37d0e575ee039c56a2d97123342624c48b603233704341",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/collection/collection-jvm/1.5.0/collection-jvm-1.5.0.jar"
+        },
+        {
+          "bytes": 2383,
+          "filename": "collection-jvm-1.5.0.pom",
+          "kind": "pom",
+          "sha256": "11c415864d3402f61d426e67210158dce1b04680412526a994f1823ecd3cb388",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/collection/collection-jvm/1.5.0/collection-jvm-1.5.0.pom"
+        }
+      ],
+      "coordinate": "androidx.collection:collection-jvm:1.5.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 2561,
+          "filename": "collection-1.5.0.pom",
+          "kind": "pom",
+          "sha256": "2d65c8d0b36d4b4faadc44aff9bade23d871d7159eedf2b3f02d802b34b77a57",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/collection/collection/1.5.0/collection-1.5.0.pom"
+        }
+      ],
+      "coordinate": "androidx.collection:collection:1.5.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 15903,
+          "filename": "concurrent-futures-ktx-1.2.0.jar",
+          "kind": "jar",
+          "sha256": "e1f3e17bb4358ccd6c77ca45f70635c9aba237261f19eaa4f64a0218c00e2a3e",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/concurrent/concurrent-futures-ktx/1.2.0/concurrent-futures-ktx-1.2.0.jar"
+        },
+        {
+          "bytes": 2516,
+          "filename": "concurrent-futures-ktx-1.2.0.pom",
+          "kind": "pom",
+          "sha256": "7869d39aa7a7754a4f311771abfd9d95ccbd7ffb27e970f8cb15fdf5b5355b6d",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/concurrent/concurrent-futures-ktx/1.2.0/concurrent-futures-ktx-1.2.0.pom"
+        }
+      ],
+      "coordinate": "androidx.concurrent:concurrent-futures-ktx:1.2.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 26311,
+          "filename": "concurrent-futures-1.2.0.jar",
+          "kind": "jar",
+          "sha256": "4810315a798690b5d3bb40c92bcd41c045fd2c36bbfc50b27cbac3d6a0eda190",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/concurrent/concurrent-futures/1.2.0/concurrent-futures-1.2.0.jar"
+        },
+        {
+          "bytes": 2265,
+          "filename": "concurrent-futures-1.2.0.pom",
+          "kind": "pom",
+          "sha256": "6be9a98d6cd75a787eeae2a1a0a3440ebe1ab4639740df9ec028094ab59b622f",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/concurrent/concurrent-futures/1.2.0/concurrent-futures-1.2.0.pom"
+        }
+      ],
+      "coordinate": "androidx.concurrent:concurrent-futures:1.2.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 23505,
+          "filename": "lifecycle-common-2.3.1.jar",
+          "kind": "jar",
+          "sha256": "15848fb56db32f4c7cdc72b324003183d52a4884d6bf09be708ac7f587d139b5",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/lifecycle/lifecycle-common/2.3.1/lifecycle-common-2.3.1.jar"
+        },
+        {
+          "bytes": 1719,
+          "filename": "lifecycle-common-2.3.1.pom",
+          "kind": "pom",
+          "sha256": "8cd23d889a14095c6ce16840d29b1a6388fa5e115144c1309d4d6d469c1bc351",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/lifecycle/lifecycle-common/2.3.1/lifecycle-common-2.3.1.pom"
+        }
+      ],
+      "coordinate": "androidx.lifecycle:lifecycle-common:2.3.1",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 62722,
+          "filename": "room-common-jvm-2.8.4.jar",
+          "kind": "jar",
+          "sha256": "dc7b4e1a75a790f29c97afd5516b8bf8002d9b6e83e295bc569b33566f3b1ec0",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-common-jvm/2.8.4/room-common-jvm-2.8.4.jar"
+        },
+        {
+          "bytes": 4961,
+          "filename": "room-common-jvm-2.8.4.pom",
+          "kind": "pom",
+          "sha256": "1c8f5bd00eacfc4be791390ad0d953aaee07644a91425490de790245d36a73b7",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-common-jvm/2.8.4/room-common-jvm-2.8.4.pom"
+        }
+      ],
+      "coordinate": "androidx.room:room-common-jvm:2.8.4",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5134,
+          "filename": "room-common-2.8.4.pom",
+          "kind": "pom",
+          "sha256": "681e3f6fd5308843aefbbb474dd3638ffd685d1ad8f7fa96b8559e5ea5ef202c",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-common/2.8.4/room-common-2.8.4.pom"
+        }
+      ],
+      "coordinate": "androidx.room:room-common:2.8.4",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 938919,
+          "filename": "room-compiler-processing-2.8.4.jar",
+          "kind": "jar",
+          "sha256": "a4282eceb6720a712f15cff50747f160a7efe6ac3974e86d514c45e3f416085f",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-compiler-processing/2.8.4/room-compiler-processing-2.8.4.jar"
+        },
+        {
+          "bytes": 6468,
+          "filename": "room-compiler-processing-2.8.4.pom",
+          "kind": "pom",
+          "sha256": "100a0d58497d490bc6e05ca6dea0a2510150150fd173a108e08a4dc450f564c5",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-compiler-processing/2.8.4/room-compiler-processing-2.8.4.pom"
+        }
+      ],
+      "coordinate": "androidx.room:room-compiler-processing:2.8.4",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 1670310,
+          "filename": "room-compiler-2.8.4.jar",
+          "kind": "jar",
+          "sha256": "9c253ed45e1b0cbfde8a62ff0bd7a2405fb9099176e0f0f9d11a57135cce95bb",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-compiler/2.8.4/room-compiler-2.8.4.jar"
+        },
+        {
+          "bytes": 7181,
+          "filename": "room-compiler-2.8.4.pom",
+          "kind": "pom",
+          "sha256": "c0b03da62eb6295fd88508db541d1ac9de6099b216de9a586846da0825fd5b06",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-compiler/2.8.4/room-compiler-2.8.4.pom"
+        }
+      ],
+      "coordinate": "androidx.room:room-compiler:2.8.4",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 2179203,
+          "filename": "room-external-antlr-2.8.4.jar",
+          "kind": "jar",
+          "sha256": "6bf794bffe8de263826502511b4c7df0570312b6cc99312ca7fc6bdb0880ca1e",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-external-antlr/2.8.4/room-external-antlr-2.8.4.jar"
+        },
+        {
+          "bytes": 4415,
+          "filename": "room-external-antlr-2.8.4.pom",
+          "kind": "pom",
+          "sha256": "a37906f2556db6b30aedc6de4755f6fb74dc5292f1363c7082a8afb39e73479e",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-external-antlr/2.8.4/room-external-antlr-2.8.4.pom"
+        }
+      ],
+      "coordinate": "androidx.room:room-external-antlr:2.8.4",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "BSD-3-Clause",
+          "url": "https://opensource.org/licenses/BSD-3-Clause"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 92446,
+          "filename": "room-migration-jvm-2.8.4.jar",
+          "kind": "jar",
+          "sha256": "18e63f4ec289cf3f4545face849c6bbdd33eea9596eebe0b7293d49c00c511e2",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-migration-jvm/2.8.4/room-migration-jvm-2.8.4.jar"
+        },
+        {
+          "bytes": 5168,
+          "filename": "room-migration-jvm-2.8.4.pom",
+          "kind": "pom",
+          "sha256": "5879e4ee8629e22aa0fa344676c2efa605f6838abb48af8ef20d5570705a6afa",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-migration-jvm/2.8.4/room-migration-jvm-2.8.4.pom"
+        }
+      ],
+      "coordinate": "androidx.room:room-migration-jvm:2.8.4",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5719,
+          "filename": "room-migration-2.8.4.pom",
+          "kind": "pom",
+          "sha256": "82b0aea3543674608a919358348c314f0d2a70984fd9823f041a2bbb7d418ae6",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-migration/2.8.4/room-migration-2.8.4.pom"
+        }
+      ],
+      "coordinate": "androidx.room:room-migration:2.8.4",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 6756,
+          "filename": "room-runtime-android-2.8.4.pom",
+          "kind": "pom",
+          "sha256": "80a198f43bb65bd7b0edfa19ee2c26e144bf379141c30be3a071a47a157b65e7",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-runtime-android/2.8.4/room-runtime-android-2.8.4.pom"
+        },
+        {
+          "bytes": 568456,
+          "filename": "room-runtime.aar",
+          "kind": "aar",
+          "sha256": "3293575082024fa0a92b081c4e2d0609f14b5c109635ec227bc509db141a4e20",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-runtime-android/2.8.4/room-runtime.aar"
+        }
+      ],
+      "coordinate": "androidx.room:room-runtime-android:2.8.4",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 6292,
+          "filename": "room-runtime-2.8.4.pom",
+          "kind": "pom",
+          "sha256": "61b13fd132369dd7c3fb9d0b3076ceefa8e57ec699a8e03fb87aecb81cedd99b",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-runtime/2.8.4/room-runtime-2.8.4.pom"
+        }
+      ],
+      "coordinate": "androidx.room:room-runtime:2.8.4",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 6157,
+          "filename": "room-testing-android-2.8.4.pom",
+          "kind": "pom",
+          "sha256": "7e0b899f27071d42d0214b9d6d43e87eaec041d1d625260a88dbe2644ee11888",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-testing-android/2.8.4/room-testing-android-2.8.4.pom"
+        },
+        {
+          "bytes": 46541,
+          "filename": "room-testing.aar",
+          "kind": "aar",
+          "sha256": "41e048f802d2016e285a5ea0a4eee54e49da07758b86c5a20ed0ca376a0c7b81",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-testing-android/2.8.4/room-testing.aar"
+        }
+      ],
+      "coordinate": "androidx.room:room-testing-android:2.8.4",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5900,
+          "filename": "room-testing-2.8.4.pom",
+          "kind": "pom",
+          "sha256": "a29e99b9fd4637a893d0803ea9a524e91bd237e6da14e292cbfd904e3bfde395",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/room/room-testing/2.8.4/room-testing-2.8.4.pom"
+        }
+      ],
+      "coordinate": "androidx.room:room-testing:2.8.4",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 2696,
+          "filename": "sqlite-android-2.6.2.pom",
+          "kind": "pom",
+          "sha256": "1407cf53cb40a813434903fee252420f32c109f88560ac8adc771858260d7a3c",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/sqlite/sqlite-android/2.6.2/sqlite-android-2.6.2.pom"
+        },
+        {
+          "bytes": 38190,
+          "filename": "sqlite.aar",
+          "kind": "aar",
+          "sha256": "514f8de4f7bdba2fa8d748d2b22fdcdfb623bd3770a667bf0adc0ad259f03ed2",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/sqlite/sqlite-android/2.6.2/sqlite.aar"
+        }
+      ],
+      "coordinate": "androidx.sqlite:sqlite-android:2.6.2",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 2977,
+          "filename": "sqlite-framework-android-2.6.2.pom",
+          "kind": "pom",
+          "sha256": "2618a352ec57009a207575830c11bd6013cd5548df472a0dba678c64821c0446",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/sqlite/sqlite-framework-android/2.6.2/sqlite-framework-android-2.6.2.pom"
+        },
+        {
+          "bytes": 60894,
+          "filename": "sqlite-framework.aar",
+          "kind": "aar",
+          "sha256": "b19125c7fff34222e0f380361fc179ab214e4d82e1a50b0c068ca26c851a6231",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/sqlite/sqlite-framework-android/2.6.2/sqlite-framework.aar"
+        }
+      ],
+      "coordinate": "androidx.sqlite:sqlite-framework-android:2.6.2",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 3149,
+          "filename": "sqlite-framework-2.6.2.pom",
+          "kind": "pom",
+          "sha256": "90fbc4507a16d2969558d9e9f14f1a11898c6eda789b703f49a79d77b5a297b2",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/sqlite/sqlite-framework/2.6.2/sqlite-framework-2.6.2.pom"
+        }
+      ],
+      "coordinate": "androidx.sqlite:sqlite-framework:2.6.2",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 2889,
+          "filename": "sqlite-2.6.2.pom",
+          "kind": "pom",
+          "sha256": "ed8ff01ea1ae7c9903126a8217e6b0d849cfc2cdf198d0ee93513d96b700f41c",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/sqlite/sqlite/2.6.2/sqlite-2.6.2.pom"
+        }
+      ],
+      "coordinate": "androidx.sqlite:sqlite:2.6.2",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 10493,
+          "filename": "junit-1.3.0.aar",
+          "kind": "aar",
+          "sha256": "3363df84da4540ba8daff02c3f7cd65471037a6a5370591a7e6deba377b36e7f",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/test/ext/junit/1.3.0/junit-1.3.0.aar"
+        },
+        {
+          "bytes": 2100,
+          "filename": "junit-1.3.0.pom",
+          "kind": "pom",
+          "sha256": "92af7f253e5eabe2caec5c56f308312653d123042b22754d6ff664e1752dcf3f",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/test/ext/junit/1.3.0/junit-1.3.0.pom"
+        }
+      ],
+      "coordinate": "androidx.test.ext:junit:1.3.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 17607,
+          "filename": "storage-1.6.0.aar",
+          "kind": "aar",
+          "sha256": "f97e3cf6aaf4e3fb97ef219d37a9c0a0720183c1f6db87b37642521e26fb6d30",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/test/services/storage/1.6.0/storage-1.6.0.aar"
+        },
+        {
+          "bytes": 1400,
+          "filename": "storage-1.6.0.pom",
+          "kind": "pom",
+          "sha256": "8e5d72e2bceef6ef807bc38834dbc7aa53177fd20da349f53dce5a4f2a028bbf",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/test/services/storage/1.6.0/storage-1.6.0.pom"
+        }
+      ],
+      "coordinate": "androidx.test.services:storage:1.6.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 83477,
+          "filename": "core-1.7.0.aar",
+          "kind": "aar",
+          "sha256": "f4dacd8edceeec48e0c76ecf28339b28f4b4f6b74f8e34e9e59b472c27d9eb81",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/test/core/1.7.0/core-1.7.0.aar"
+        },
+        {
+          "bytes": 2522,
+          "filename": "core-1.7.0.pom",
+          "kind": "pom",
+          "sha256": "b97dd112cd684ad3686f5ccf581b92b106ca76565cf02ccfece060af3bc50743",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/test/core/1.7.0/core-1.7.0.pom"
+        }
+      ],
+      "coordinate": "androidx.test:core:1.7.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 103877,
+          "filename": "monitor-1.8.0.aar",
+          "kind": "aar",
+          "sha256": "56cb7496a06d9f2dca7d3ff76c50a8a30bd18e00a24a3b267d5a31437b278e67",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/test/monitor/1.8.0/monitor-1.8.0.aar"
+        },
+        {
+          "bytes": 1582,
+          "filename": "monitor-1.8.0.pom",
+          "kind": "pom",
+          "sha256": "681cf08c41700c73b146953867c0ac826da9c2a810bd2a4a8f878ea11c64d40c",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/test/monitor/1.8.0/monitor-1.8.0.pom"
+        }
+      ],
+      "coordinate": "androidx.test:monitor:1.8.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 288955,
+          "filename": "runner-1.7.0.aar",
+          "kind": "aar",
+          "sha256": "970311c47119928a2e406a88892a3d270387cc5a49a181a1c44511105b41b818",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/test/runner/1.7.0/runner-1.7.0.aar"
+        },
+        {
+          "bytes": 1915,
+          "filename": "runner-1.7.0.pom",
+          "kind": "pom",
+          "sha256": "622831c6d31666fb3438cb0d2ee1fbbbc78cabcd49717699578d92550062207f",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/test/runner/1.7.0/runner-1.7.0.pom"
+        }
+      ],
+      "coordinate": "androidx.test:runner:1.7.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5149,
+          "filename": "tracing-1.1.0.aar",
+          "kind": "aar",
+          "sha256": "5b78e2c618fc10b3d14decc01df76158f15954ad746aacf0607766721da081f6",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/tracing/tracing/1.1.0/tracing-1.1.0.aar"
+        },
+        {
+          "bytes": 1717,
+          "filename": "tracing-1.1.0.pom",
+          "kind": "pom",
+          "sha256": "f1db502b5d539d94dfb6c659deb76872b1e9d8266d7aa4083868a29c33c22917",
+          "sourceUrl": "https://dl.google.com/dl/android/maven2/androidx/tracing/tracing/1.1.0/tracing-1.1.0.pom"
+        }
+      ],
+      "coordinate": "androidx.tracing:tracing:1.1.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://dl.google.com/dl/android/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 5906,
+          "filename": "auto-value-annotations-1.6.3.jar",
+          "kind": "jar",
+          "sha256": "0e951fee8c31f60270bc46553a8586001b7b93dbb12aec06373aa99a150392c0",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/auto/value/auto-value-annotations/1.6.3/auto-value-annotations-1.6.3.jar"
+        },
+        {
+          "bytes": 2574,
+          "filename": "auto-value-annotations-1.6.3.pom",
+          "kind": "pom",
+          "sha256": "e1fc780f7ee025e662b3da72723dbe2ac8dac0a2f8920f265315c4e1be3d765c",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/auto/value/auto-value-annotations/1.6.3/auto-value-annotations-1.6.3.pom"
+        }
+      ],
+      "coordinate": "com.google.auto.value:auto-value-annotations:1.6.3",
+      "declaredLicenses": [],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 111326,
+          "filename": "auto-common-1.2.1.jar",
+          "kind": "jar",
+          "sha256": "f43f29fe2a6ebaf04b2598cdeec32a4e346d49a9404e990f5fc19c19f3a28d0e",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/auto/auto-common/1.2.1/auto-common-1.2.1.jar"
+        },
+        {
+          "bytes": 4419,
+          "filename": "auto-common-1.2.1.pom",
+          "kind": "pom",
+          "sha256": "13b4b50062949f8b1343927c581536d3bb051b8afea509aa6f902f4de28bc1b2",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/auto/auto-common/1.2.1/auto-common-1.2.1.pom"
+        }
+      ],
+      "coordinate": "com.google.auto:auto-common:1.2.1",
+      "declaredLicenses": [
+        {
+          "distribution": null,
+          "name": "Apache 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 19936,
+          "filename": "jsr305-3.0.2.jar",
+          "kind": "jar",
+          "sha256": "766ad2a0783f2687962c8ad74ceecc38a28b9f72a2d085ee438b7813e928d0c7",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar"
+        },
+        {
+          "bytes": 4286,
+          "filename": "jsr305-3.0.2.pom",
+          "kind": "pom",
+          "sha256": "19889dbdf1b254b2601a5ee645b8147a974644882297684c798afe5d63d78dfe",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.pom"
+        }
+      ],
+      "coordinate": "com.google.code.findbugs:jsr305:3.0.2",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 123041,
+          "filename": "symbol-processing-api-2.0.10-1.0.24.jar",
+          "kind": "jar",
+          "sha256": "dd7dde070be54de66c7bdd4de04c43fb429e0c62bb132a6448cfa33653afb229",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/devtools/ksp/symbol-processing-api/2.0.10-1.0.24/symbol-processing-api-2.0.10-1.0.24.jar"
+        },
+        {
+          "bytes": 1638,
+          "filename": "symbol-processing-api-2.0.10-1.0.24.pom",
+          "kind": "pom",
+          "sha256": "4528fe798fefeec095a73e861c1206fa825496a0e7b652272f40ffc960814e62",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/devtools/ksp/symbol-processing-api/2.0.10-1.0.24/symbol-processing-api-2.0.10-1.0.24.pom"
+        }
+      ],
+      "coordinate": "com.google.devtools.ksp:symbol-processing-api:2.0.10-1.0.24",
+      "declaredLicenses": [
+        {
+          "distribution": null,
+          "name": "The Apache License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 19373,
+          "filename": "error_prone_annotations-2.26.1.jar",
+          "kind": "jar",
+          "sha256": "de25f2d9a2156529bd765f51d8efdfc0dfa7301e04efb9cc75b7f10cf5d0e0fb",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.26.1/error_prone_annotations-2.26.1.jar"
+        },
+        {
+          "bytes": 4252,
+          "filename": "error_prone_annotations-2.26.1.pom",
+          "kind": "pom",
+          "sha256": "aea7e991e2dfdcb47f5fbd508587535f7802bcb9e2fc2d4ebb50be41b684da9f",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.26.1/error_prone_annotations-2.26.1.pom"
+        }
+      ],
+      "coordinate": "com.google.errorprone:error_prone_annotations:2.26.1",
+      "declaredLicenses": [
+        {
+          "distribution": null,
+          "name": "Apache 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 4740,
+          "filename": "failureaccess-1.0.2.jar",
+          "kind": "jar",
+          "sha256": "8a8f81cf9b359e3f6dfa691a1e776985c061ef2f223c9b2c80753e1b458e8064",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/guava/failureaccess/1.0.2/failureaccess-1.0.2.jar"
+        },
+        {
+          "bytes": 3339,
+          "filename": "failureaccess-1.0.2.pom",
+          "kind": "pom",
+          "sha256": "19ebc6f4bdb4edbb3d07b6ee994f846b54ef295582a9b5634719ffa9f31d03b2",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/guava/failureaccess/1.0.2/failureaccess-1.0.2.pom"
+        }
+      ],
+      "coordinate": "com.google.guava:failureaccess:1.0.2",
+      "declaredLicenses": [],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 3051356,
+          "filename": "guava-33.2.1-jre.jar",
+          "kind": "jar",
+          "sha256": "452b2d9787b7d366fa8cf5ed9a1c40404542d05effa7a598da03bbbbb76d9f31",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/guava/guava/33.2.1-jre/guava-33.2.1-jre.jar"
+        },
+        {
+          "bytes": 9087,
+          "filename": "guava-33.2.1-jre.pom",
+          "kind": "pom",
+          "sha256": "42817bdc1c0c8c737d6b411cfaf4a84769e7d271e879b016fd0850248a06dab5",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/guava/guava/33.2.1-jre/guava-33.2.1-jre.pom"
+        }
+      ],
+      "coordinate": "com.google.guava:guava:33.2.1-jre",
+      "declaredLicenses": [],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 3149,
+          "filename": "listenablefuture-1.0.jar",
+          "kind": "jar",
+          "sha256": "e4ad7607e5c0477c6f890ef26a49cb8d1bb4dffb650bab4502afee64644e3069",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/guava/listenablefuture/1.0/listenablefuture-1.0.jar"
+        },
+        {
+          "bytes": 2226,
+          "filename": "listenablefuture-1.0.pom",
+          "kind": "pom",
+          "sha256": "53873caf26bc1ed8a567ea6c939ab2aaa3f47a5e32d5cade95ddf5080d23238a",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/guava/listenablefuture/1.0/listenablefuture-1.0.pom"
+        }
+      ],
+      "coordinate": "com.google.guava:listenablefuture:1.0",
+      "declaredLicenses": [],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 2199,
+          "filename": "listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar",
+          "kind": "jar",
+          "sha256": "b372a037d4230aa57fbeffdef30fd6123f9c0c2db85d0aced00c91b974f33f99",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar"
+        },
+        {
+          "bytes": 2278,
+          "filename": "listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.pom",
+          "kind": "pom",
+          "sha256": "18d4b1db26153d4e55079ce1f76bb1fe05cdb862ef9954a88cbcc4ff38b8679b",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/google/guava/listenablefuture/9999.0-empty-to-avoid-conflict-with-guava/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.pom"
+        }
+      ],
+      "coordinate": "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
+      "declaredLicenses": [],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 20195,
+          "filename": "annotations-12.0.jar",
+          "kind": "jar",
+          "sha256": "f8ab13b14be080fe2f617f90e55599760e4a1b4deeea5c595df63d0d6375ed6d",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/intellij/annotations/12.0/annotations-12.0.jar"
+        },
+        {
+          "bytes": 1571,
+          "filename": "annotations-12.0.pom",
+          "kind": "pom",
+          "sha256": "faf82de0dc02e0c0ae327cd653f37255496b2e53fce280b3ab4cb34553a89086",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/intellij/annotations/12.0/annotations-12.0.pom"
+        }
+      ],
+      "coordinate": "com.intellij:annotations:12.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "Apache License 2",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 106068,
+          "filename": "javapoet-1.13.0.jar",
+          "kind": "jar",
+          "sha256": "4c7517e848a71b36d069d12bb3bf46a70fd4cda3105d822b0ed2e19c00b69291",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/squareup/javapoet/1.13.0/javapoet-1.13.0.jar"
+        },
+        {
+          "bytes": 4849,
+          "filename": "javapoet-1.13.0.pom",
+          "kind": "pom",
+          "sha256": "54a34fa8502a46bc90efdb49262600591fa80bf9a34f5a4c798311aec16ca977",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/squareup/javapoet/1.13.0/javapoet-1.13.0.pom"
+        }
+      ],
+      "coordinate": "com.squareup:javapoet:1.13.0",
+      "declaredLicenses": [
+        {
+          "distribution": null,
+          "name": "Apache 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 13957,
+          "filename": "kotlinpoet-javapoet-2.0.0.jar",
+          "kind": "jar",
+          "sha256": "2929f3b9a8d739d0aea40bf3c7bd01fad3a7cd2d0fb56f2de248ebb9b46774a4",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/squareup/kotlinpoet-javapoet/2.0.0/kotlinpoet-javapoet-2.0.0.jar"
+        },
+        {
+          "bytes": 2079,
+          "filename": "kotlinpoet-javapoet-2.0.0.pom",
+          "kind": "pom",
+          "sha256": "aeef5a7b10ef2a5a868e5d7f94b7f45931070b8c85d6ff350e393d526aa8bc44",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/squareup/kotlinpoet-javapoet/2.0.0/kotlinpoet-javapoet-2.0.0.pom"
+        }
+      ],
+      "coordinate": "com.squareup:kotlinpoet-javapoet:2.0.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 342913,
+          "filename": "kotlinpoet-jvm-2.0.0.jar",
+          "kind": "jar",
+          "sha256": "65e2d5e1c7844861d134635692791f7dbac808adb060da7329c18c4bd88d2acb",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/squareup/kotlinpoet-jvm/2.0.0/kotlinpoet-jvm-2.0.0.jar"
+        },
+        {
+          "bytes": 1913,
+          "filename": "kotlinpoet-jvm-2.0.0.pom",
+          "kind": "pom",
+          "sha256": "4f743a117b2969aaa4bdff734ebd53d605976cc98e69e7f0662b45adb1fbcaed",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/squareup/kotlinpoet-jvm/2.0.0/kotlinpoet-jvm-2.0.0.pom"
+        }
+      ],
+      "coordinate": "com.squareup:kotlinpoet-jvm:2.0.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 1725,
+          "filename": "kotlinpoet-2.0.0.pom",
+          "kind": "pom",
+          "sha256": "10c3349a6c859576e5b83a64a939c37cecebbcc469bf5c166ada5a5904e35c3a",
+          "sourceUrl": "https://repo1.maven.org/maven2/com/squareup/kotlinpoet/2.0.0/kotlinpoet-2.0.0.pom"
+        }
+      ],
+      "coordinate": "com.squareup:kotlinpoet:2.0.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 353793,
+          "filename": "commons-codec-1.15.jar",
+          "kind": "jar",
+          "sha256": "b3e9f6d63a790109bf0d056611fbed1cf69055826defeb9894a71369d246ed63",
+          "sourceUrl": "https://repo1.maven.org/maven2/commons-codec/commons-codec/1.15/commons-codec-1.15.jar"
+        },
+        {
+          "bytes": 15443,
+          "filename": "commons-codec-1.15.pom",
+          "kind": "pom",
+          "sha256": "c86ee198a35a3715487860f419cbf642e7e4d9e8714777947dbe6a4e3a20ab58",
+          "sourceUrl": "https://repo1.maven.org/maven2/commons-codec/commons-codec/1.15/commons-codec-1.15.pom"
+        }
+      ],
+      "coordinate": "commons-codec:commons-codec:1.15",
+      "declaredLicenses": [],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 384581,
+          "filename": "junit-4.13.2.jar",
+          "kind": "jar",
+          "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3",
+          "sourceUrl": "https://repo1.maven.org/maven2/junit/junit/4.13.2/junit-4.13.2.jar"
+        },
+        {
+          "bytes": 27018,
+          "filename": "junit-4.13.2.pom",
+          "kind": "pom",
+          "sha256": "569b6977ee4603c965c1c46c3058fa6e969291b0160eb6964dd092cd89eadd94",
+          "sourceUrl": "https://repo1.maven.org/maven2/junit/junit/4.13.2/junit-4.13.2.pom"
+        }
+      ],
+      "coordinate": "junit:junit:4.13.2",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "Eclipse Public License 1.0",
+          "url": "http://www.eclipse.org/legal/epl-v10.html"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 230830,
+          "filename": "checker-qual-3.42.0.jar",
+          "kind": "jar",
+          "sha256": "ccaedd33af0b7894d9f2f3b644f4d19e43928e32902e61ac4d10777830f5aac7",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.42.0/checker-qual-3.42.0.jar"
+        },
+        {
+          "bytes": 2096,
+          "filename": "checker-qual-3.42.0.pom",
+          "kind": "pom",
+          "sha256": "bf5fcaab272f54cbcf1bbe77c3bd963c821c9abad2058708bf0bed3c875494ca",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/checkerframework/checker-qual/3.42.0/checker-qual-3.42.0.pom"
+        }
+      ],
+      "coordinate": "org.checkerframework:checker-qual:3.42.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The MIT License",
+          "url": "http://opensource.org/licenses/MIT"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 45024,
+          "filename": "hamcrest-core-1.3.jar",
+          "kind": "jar",
+          "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"
+        },
+        {
+          "bytes": 766,
+          "filename": "hamcrest-core-1.3.pom",
+          "kind": "pom",
+          "sha256": "fde386a7905173a1b103de6ab820727584b50d0e32282e2797787c20a64ffa93",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.pom"
+        }
+      ],
+      "coordinate": "org.hamcrest:hamcrest-core:1.3",
+      "declaredLicenses": [],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 1015502,
+          "filename": "kotlin-metadata-jvm-2.2.0.jar",
+          "kind": "jar",
+          "sha256": "501222ae7d63527e55f2e5e645f18d4eff2c19074c85b9bc055866e3ed2b17bf",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-metadata-jvm/2.2.0/kotlin-metadata-jvm-2.2.0.jar"
+        },
+        {
+          "bytes": 1390,
+          "filename": "kotlin-metadata-jvm-2.2.0.pom",
+          "kind": "pom",
+          "sha256": "55abfa46dacefa103160cc04e0c51e560aba0ca232003fdbcfb4ed8cdd399b45",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-metadata-jvm/2.2.0/kotlin-metadata-jvm-2.2.0.pom"
+        }
+      ],
+      "coordinate": "org.jetbrains.kotlin:kotlin-metadata-jvm:2.2.0",
+      "declaredLicenses": [
+        {
+          "distribution": null,
+          "name": "The Apache License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 3065230,
+          "filename": "kotlin-reflect-2.0.10.jar",
+          "kind": "jar",
+          "sha256": "77ff5b0a597ba697c97556d661f68991a019ca71d40c49e8ccb6991f4f93e308",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-reflect/2.0.10/kotlin-reflect-2.0.10.jar"
+        },
+        {
+          "bytes": 1376,
+          "filename": "kotlin-reflect-2.0.10.pom",
+          "kind": "pom",
+          "sha256": "3666cd411f81ef8e2764bd971e1cf1e5b7622a60c8353013bb54c9759255f75d",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-reflect/2.0.10/kotlin-reflect-2.0.10.pom"
+        }
+      ],
+      "coordinate": "org.jetbrains.kotlin:kotlin-reflect:2.0.10",
+      "declaredLicenses": [
+        {
+          "distribution": null,
+          "name": "The Apache License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 1750373,
+          "filename": "kotlin-stdlib-2.2.0.jar",
+          "kind": "jar",
+          "sha256": "65d12d85a3b865c160db9147851712a64b10dadd68b22eea22a95bf8a8670dca",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/2.2.0/kotlin-stdlib-2.2.0.jar"
+        },
+        {
+          "bytes": 2320,
+          "filename": "kotlin-stdlib-2.2.0.pom",
+          "kind": "pom",
+          "sha256": "8c3c821007c13411558739b9f3d5382eb81551db3895cffb89561e56c0f4dc16",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/2.2.0/kotlin-stdlib-2.2.0.pom"
+        }
+      ],
+      "coordinate": "org.jetbrains.kotlin:kotlin-stdlib:2.2.0",
+      "declaredLicenses": [
+        {
+          "distribution": null,
+          "name": "The Apache License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 1750374,
+          "filename": "kotlin-stdlib-2.2.10.jar",
+          "kind": "jar",
+          "sha256": "9c67cc79efd6b9215b49d2a4308f5f3433537376c7c88e89bdd6729bd096e61a",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/2.2.10/kotlin-stdlib-2.2.10.jar"
+        },
+        {
+          "bytes": 2322,
+          "filename": "kotlin-stdlib-2.2.10.pom",
+          "kind": "pom",
+          "sha256": "454ba507a3d36b4ac253df6df96f8739bd26ea19df3f332b10b13f2c5715f787",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/2.2.10/kotlin-stdlib-2.2.10.pom"
+        }
+      ],
+      "coordinate": "org.jetbrains.kotlin:kotlin-stdlib:2.2.10",
+      "declaredLicenses": [
+        {
+          "distribution": null,
+          "name": "The Apache License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 20466,
+          "filename": "kotlinx-coroutines-android-1.8.1.jar",
+          "kind": "jar",
+          "sha256": "a134dacf4e6578b29b32e97aa50548d09cb45e3cb3551ce77ac27e55e265d8f5",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-android/1.8.1/kotlinx-coroutines-android-1.8.1.jar"
+        },
+        {
+          "bytes": 2221,
+          "filename": "kotlinx-coroutines-android-1.8.1.pom",
+          "kind": "pom",
+          "sha256": "88e8c7ede4d29b8027a2da6ea9e3ce550c556a4213633f8f6de28bb9fb201c90",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-android/1.8.1/kotlinx-coroutines-android-1.8.1.pom"
+        }
+      ],
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 4291,
+          "filename": "kotlinx-coroutines-bom-1.8.1.pom",
+          "kind": "pom",
+          "sha256": "563e4aa29fa8fe09a6e1746d0a5b51308f7c7dedc468dc5a0ca810a485877030",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-bom/1.8.1/kotlinx-coroutines-bom-1.8.1.pom"
+        }
+      ],
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.8.1",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 1546991,
+          "filename": "kotlinx-coroutines-core-jvm-1.8.1.jar",
+          "kind": "jar",
+          "sha256": "f3d4f5de1c391bbcc20f3b3435ccbac013521e76b6902d7d59635ec15c1f797e",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.8.1/kotlinx-coroutines-core-jvm-1.8.1.jar"
+        },
+        {
+          "bytes": 2196,
+          "filename": "kotlinx-coroutines-core-jvm-1.8.1.pom",
+          "kind": "pom",
+          "sha256": "47c6a50b14151e8faf7f350a95235c37d12abc38bfb055b668974293172daf2c",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.8.1/kotlinx-coroutines-core-jvm-1.8.1.pom"
+        }
+      ],
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.1",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 2057,
+          "filename": "kotlinx-coroutines-core-1.8.1.pom",
+          "kind": "pom",
+          "sha256": "f88918dbfa8787c4d171ab02553a14ad1def8aa9b0c5c2c20cc99455d3241e22",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core/1.8.1/kotlinx-coroutines-core-1.8.1.pom"
+        }
+      ],
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 4116,
+          "filename": "kotlinx-serialization-bom-1.8.1.pom",
+          "kind": "pom",
+          "sha256": "00f3555ae7624851c67db12c308bc9ce26ae327cf0d724766a401e5ba00608c7",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-bom/1.8.1/kotlinx-serialization-bom-1.8.1.pom"
+        }
+      ],
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-bom:1.8.1",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 391821,
+          "filename": "kotlinx-serialization-core-jvm-1.8.1.jar",
+          "kind": "jar",
+          "sha256": "3565b6d4d789bf70683c45566944287fc1d8dc75c23d98bd87d01059cc76f2b3",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core-jvm/1.8.1/kotlinx-serialization-core-jvm-1.8.1.jar"
+        },
+        {
+          "bytes": 2066,
+          "filename": "kotlinx-serialization-core-jvm-1.8.1.pom",
+          "kind": "pom",
+          "sha256": "446655e8d43828bfbb387ce9d151a9371a3092b48b909e80606b53fc58979e28",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core-jvm/1.8.1/kotlinx-serialization-core-jvm-1.8.1.pom"
+        }
+      ],
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.8.1",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 2109,
+          "filename": "kotlinx-serialization-core-1.8.1.pom",
+          "kind": "pom",
+          "sha256": "473f0aa3e4a17aab7860dca490dc42eabb6124f1d2953e6a995a08717e50c714",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-core/1.8.1/kotlinx-serialization-core-1.8.1.pom"
+        }
+      ],
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 276969,
+          "filename": "kotlinx-serialization-json-jvm-1.8.1.jar",
+          "kind": "jar",
+          "sha256": "8769e5647557e3700919c32d508f5c5dad53c5d8234cd10846354fbcff14aa24",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json-jvm/1.8.1/kotlinx-serialization-json-jvm-1.8.1.jar"
+        },
+        {
+          "bytes": 2276,
+          "filename": "kotlinx-serialization-json-jvm-1.8.1.pom",
+          "kind": "pom",
+          "sha256": "d665d6b41fe058f666a6f386ad2e49cc101ef8fd2eefefefcbc111e91ee82436",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json-jvm/1.8.1/kotlinx-serialization-json-jvm-1.8.1.pom"
+        }
+      ],
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.8.1",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 2109,
+          "filename": "kotlinx-serialization-json-1.8.1.pom",
+          "kind": "pom",
+          "sha256": "c7700c99c83de02b46541a3d7e4b69b388749b7c0f57dceb454d143f2cd87a7b",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/kotlinx/kotlinx-serialization-json/1.8.1/kotlinx-serialization-json-1.8.1.pom"
+        }
+      ],
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 17536,
+          "filename": "annotations-13.0.jar",
+          "kind": "jar",
+          "sha256": "ace2a10dc8e2d5fd34925ecac03e4988b2c0f851650c94b8cef49ba1bd111478",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0.jar"
+        },
+        {
+          "bytes": 4930,
+          "filename": "annotations-13.0.pom",
+          "kind": "pom",
+          "sha256": "965aeb2bedff369819bdde1bf7a0b3b89b8247dd69c88b86375d76163bb8c397",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0.pom"
+        }
+      ],
+      "coordinate": "org.jetbrains:annotations:13.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 29371,
+          "filename": "annotations-23.0.0.jar",
+          "kind": "jar",
+          "sha256": "7b0f19724082cbfcbc66e5abea2b9bc92cf08a1ea11e191933ed43801eb3cd05",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/annotations/23.0.0/annotations-23.0.0.jar"
+        },
+        {
+          "bytes": 1354,
+          "filename": "annotations-23.0.0.pom",
+          "kind": "pom",
+          "sha256": "c9490f655132328df2cfbcfdf743f53fc3916d6c1d10437175a6ca6e3a67771c",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jetbrains/annotations/23.0.0/annotations-23.0.0.pom"
+        }
+      ],
+      "coordinate": "org.jetbrains:annotations:23.0.0",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 3819,
+          "filename": "jspecify-1.0.0.jar",
+          "kind": "jar",
+          "sha256": "1fad6e6be7557781e4d33729d49ae1cdc8fdda6fe477bb0cc68ce351eafdfbab",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.jar"
+        },
+        {
+          "bytes": 1511,
+          "filename": "jspecify-1.0.0.pom",
+          "kind": "pom",
+          "sha256": "cdab929a3b95211f43d2090c5e2d0dfe8465960e378bc32b35841dab324433a6",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/jspecify/jspecify/1.0.0/jspecify-1.0.0.pom"
+        }
+      ],
+      "coordinate": "org.jspecify:jspecify:1.0.0",
+      "declaredLicenses": [
+        {
+          "distribution": null,
+          "name": "The Apache License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath",
+        "benchmarkAndroidTestRuntimeClasspath",
+        "benchmarkRuntimeClasspath",
+        "debugAndroidTestRuntimeClasspath",
+        "debugRuntimeClasspath"
+      ]
+    },
+    {
+      "artifacts": [
+        {
+          "bytes": 12851127,
+          "filename": "sqlite-jdbc-3.41.2.2.jar",
+          "kind": "jar",
+          "sha256": "0cdab410947e04b6743df99cf1543267ddd107357d6f76948d145be590fd497d",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.41.2.2/sqlite-jdbc-3.41.2.2.jar"
+        },
+        {
+          "bytes": 18148,
+          "filename": "sqlite-jdbc-3.41.2.2.pom",
+          "kind": "pom",
+          "sha256": "ae11a3b11dcbac1b6403689e3fd8d82b2ceea55e82dbfc4bb32aededf8ccac8e",
+          "sourceUrl": "https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/3.41.2.2/sqlite-jdbc-3.41.2.2.pom"
+        }
+      ],
+      "coordinate": "org.xerial:sqlite-jdbc:3.41.2.2",
+      "declaredLicenses": [
+        {
+          "distribution": "repo",
+          "name": "The Apache Software License, Version 2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "licenseMetadataStatus": "PRESENT",
+      "repository": "https://repo1.maven.org/maven2",
+      "scopes": [
+        "_agp_internal_benchmark_kspClasspath",
+        "_agp_internal_debug_kspClasspath"
+      ]
+    }
+  ],
+  "generator": "tools/poc_search_dependency_inventory.py",
+  "inventoryStatus": "COMPLETE_UNREVIEWED",
+  "lock": {
+    "configurations": [
+      "_agp_internal_benchmark_kspClasspath",
+      "_agp_internal_debug_kspClasspath",
+      "benchmarkAndroidTestRuntimeClasspath",
+      "benchmarkRuntimeClasspath",
+      "debugAndroidTestRuntimeClasspath",
+      "debugRuntimeClasspath"
+    ],
+    "path": "android/poc/search/gradle.lockfile",
+    "sha256": "d912e782f3f01452f9f785b6cf0971d1a76a6c6a984c5ea5e03ba1b311049704"
+  },
+  "pocId": "POC-SEARCH-001",
+  "review": {
+    "evaluationApproval": "NOT_ESTABLISHED",
+    "note": "This file records resolved provenance and declared Maven metadata only. It is not a Product/Legal/IP or Engineering/Security approval."
+  },
+  "schemaVersion": 1
+}

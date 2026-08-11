@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 3,
+  "pocId": "POC-SEARCH-001",
+  "assessmentDate": "2026-08-11",
+  "dependencyInventory": {
+    "locator": "docs/evidence/poc-search-001/dependency-inventory.json",
+    "sha256": "sha256:63a2a3dadfbfe072770d914a74cbd40d6adbd517548bda4ba0331dd314ca6a98",
+    "componentCount": 66,
+    "status": "EVALUATION_APPROVED_STAGE0",
+    "licenseNoticeInventory": {
+      "locator": "docs/evidence/poc-search-001/license-notice-inventory.json",
+      "sha256": "sha256:8b80fa573a2674cb32fe08446683f5b3d05ce4721b6bcb018edec51cf9fbeb50",
+      "componentsWithEffectiveLicense": 66,
+      "unresolvedLicenseCoordinates": 0,
+      "unresolvedLicenseFiles": 0,
+      "unresolvedNoticeFiles": 0
+    }
+  },
+  "evaluationStatus": "EVALUATION_APPROVED",
+  "ipPrecondition": "SATISFIED_FOR_STAGE0",
+  "historicalExecutionPrecondition": "NOT_PROVEN_NOT_RETROACTIVE",
+  "futureMeasuredExecution": "BLOCKED_PENDING_PHYSICAL_D1_D3_AND_OWNER_EXECUTION_AUTHORIZATION",
+  "ownerDecision": {
+    "id": "OD-13",
+    "approvedOn": "2026-08-11",
+    "approvedBy": "Project owner",
+    "scope": "Stage 0 evaluation only"
+  },
+  "roleAssignmentDecision": {
+    "id": "OD-11",
+    "approvedOn": "2026-08-11",
+    "scope": "Stage 0 evaluation only"
+  },
+  "stage0Approval": {
+    "status": "EVALUATION_APPROVED",
+    "approvedBy": "Project owner",
+    "approvedOn": "2026-08-11",
+    "componentCount": 66,
+    "reviewedDependencyInventorySha256": "sha256:63a2a3dadfbfe072770d914a74cbd40d6adbd517548bda4ba0331dd314ca6a98",
+    "reviewedLicenseNoticeInventorySha256": "sha256:8b80fa573a2674cb32fe08446683f5b3d05ce4721b6bcb018edec51cf9fbeb50",
+    "reviewedSystemImageSha256": "sha256:b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160",
+    "restrictions": [
+      "Internal synthetic POC-SEARCH-001 research in Stage 0 only.",
+      "This decision does not authorize a measured benchmark; physical D1/D3 and later owner execution authorization remain required.",
+      "This decision is not production Legal or independent production Security approval.",
+      "FTS4, the PoC schema, and every reviewed dependency remain outside production admission."
+    ]
+  },
+  "reviewAssignments": {
+    "product": {
+      "reviewer": "Project owner",
+      "status": "ASSIGNED",
+      "scope": "Stage 0 evaluation only"
+    },
+    "ipPolicy": {
+      "reviewer": "Project owner",
+      "status": "ASSIGNED",
+      "scope": "Stage 0 evaluation only",
+      "replacesProductionLegal": false
+    },
+    "engineeringSecurity": {
+      "reviewer": "Project owner",
+      "status": "ASSIGNED",
+      "scope": "Stage 0 evaluation only",
+      "replacesIndependentProductionSecurityReview": false
+    },
+    "productionLegal": {
+      "reviewer": null,
+      "status": "UNASSIGNED_PRODUCTION_BLOCKED"
+    },
+    "productionSecurity": {
+      "reviewer": null,
+      "status": "INDEPENDENT_REVIEW_REQUIRED_BEFORE_PRODUCTION"
+    }
+  },
+  "reviewEvidenceLocator": "docs/evidence/poc-search-001/ip-stage0-evaluation-review.md",
+  "dependencyReviewBlockers": [],
+  "unresolvedLicenseCoordinates": [],
+  "platformArtifacts": [
+    {
+      "artifactId": "android-system-image-google-apis-x86_64-api36",
+      "observedVersion": "r07 / google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+      "sha256": "sha256:b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160",
+      "digestScope": "exact-system-image-archive",
+      "licenseReviewState": "EVALUATION_APPROVED",
+      "evaluationRightsConfirmed": true,
+      "evidenceLocator": "docs/evidence/poc-search-001/android-system-image-provenance.json",
+      "approvalDecisionId": "OD-13",
+      "restriction": "Stage 0 internal synthetic evaluation only; no production distribution or admission."
+    },
+    {
+      "artifactId": "android-platform-sqlite",
+      "observedVersion": "3.44.3",
+      "sha256": "sha256:b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160",
+      "digestScope": "containing-system-image",
+      "separateBinaryDigestRequiredForStage0": false,
+      "runtimeIdentity": {
+        "imageId": "system-images;android-36;google_apis;x86_64",
+        "imageRevision": 7,
+        "buildFingerprint": "google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+        "androidApi": 36,
+        "abi": "x86_64",
+        "sqliteVersion": "3.44.3"
+      },
+      "licenseReviewState": "EVALUATION_APPROVED",
+      "evaluationRightsConfirmed": true,
+      "evidenceLocator": "docs/evidence/poc-search-001/android-system-image-provenance.json",
+      "provenanceMethodDecision": "APPROVED_FOR_STAGE0_BY_OD_11",
+      "approvalDecisionId": "OD-13",
+      "productionReconsiderationRequired": true,
+      "restriction": "Stage 0 internal synthetic evaluation only; the containing-image boundary and all production obligations require fresh review."
+    }
+  ],
+  "remainingStage0Actions": [
+    "Physical D1 and D3 availability and exact-commit preflight remain deferred and unrecorded.",
+    "Measured execution remains separately withheld until a later explicit Project owner authorization changes benchmarkExecutionAllowed to true.",
+    "Stage 0C closes INCONCLUSIVE without a new measured stage0-v0.2 campaign."
+  ],
+  "productionBlockers": [
+    "Production Legal reviewer and approval are unassigned.",
+    "Independent production Security review is required and is not replaced by the Stage 0 Engineering/Security reviewer role.",
+    "The containing-system-image SQLite provenance boundary must be reconsidered for the actual production platform and distribution scope.",
+    "Production admission still requires ADR, SBOM/notices, security, ABI/runtime, migration/removal and release evidence."
+  ],
+  "nonClaims": [
+    "EVALUATION_APPROVED is limited to internal synthetic Stage 0 research and is not production Legal or Security approval.",
+    "The Stage 0 SQLite containing-system-image provenance method and this approval do not authorize production distribution.",
+    "This assessment does not admit FTS4, any dependency, or any schema into production.",
+    "The later OD-13 approval does not retroactively prove that the external-artifact precondition was satisfied by the historical benchmark."
+  ]
+}

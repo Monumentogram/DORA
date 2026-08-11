@@ -1,0 +1,75 @@
+{
+  "commit": "9571e5f2e7cceeab95b52f1e1167770518a3e475",
+  "correctnessPassed": true,
+  "generatedAt": "2026-08-11T12:01:40.732216Z",
+  "latencyClassification": "observation-only-no-approved-numeric-threshold",
+  "mutationManifestId": "poc-search-001-mutations-v1",
+  "pocId": "POC-SEARCH-001",
+  "result": {
+    "allCorrect": true,
+    "crashes": 0,
+    "finalConversationCount": 10000,
+    "finalFtsCount": 999904,
+    "finalTranscriptCount": 999904,
+    "manifestId": "poc-search-001-mutations-v1",
+    "mappingErrors": 0,
+    "operations": [
+      {
+        "correctnessPassed": true,
+        "id": "MUT-ADD-CONVERSATION",
+        "latencyMs": 35.398158,
+        "observations": {
+          "conversationCount": 10001,
+          "mappedSegmentIds": "1000001,1000002,1000003,1000004,1000005",
+          "markerCount": 5,
+          "transcriptCount": 1000005
+        },
+        "type": "ADD_CONVERSATION_WITH_SEGMENTS"
+      },
+      {
+        "correctnessPassed": true,
+        "id": "MUT-UPDATE-SEGMENT",
+        "latencyMs": 1.509616,
+        "observations": {
+          "mappedSegmentIds": "123456",
+          "newMarkerCount": 1,
+          "oldMarkerCount": 0
+        },
+        "type": "UPDATE_SEGMENT_TEXT"
+      },
+      {
+        "correctnessPassed": true,
+        "id": "MUT-UPDATE-METADATA",
+        "latencyMs": 0.693513,
+        "observations": {
+          "newSourceRows": 100,
+          "oldSourceRows": 0
+        },
+        "type": "UPDATE_CONVERSATION_SOURCE"
+      },
+      {
+        "correctnessPassed": true,
+        "id": "MUT-DELETE-SEGMENT",
+        "latencyMs": 1.584406,
+        "observations": {
+          "markerCount": 0,
+          "transcriptCount": 1000004
+        },
+        "type": "DELETE_SEGMENT"
+      },
+      {
+        "correctnessPassed": true,
+        "id": "MUT-DELETE-CONVERSATION",
+        "latencyMs": 3.200891,
+        "observations": {
+          "conversationCount": 10000,
+          "markerCount": 0,
+          "transcriptCount": 999904
+        },
+        "type": "DELETE_CONVERSATION_CASCADE"
+      }
+    ],
+    "staleResultErrors": 0
+  },
+  "schemaVersion": 1
+}
