@@ -1,0 +1,1887 @@
+{
+  "androidApi": 36,
+  "applicationVersion": "0.1.0-poc-search-001",
+  "battery": {
+    "applicable": false,
+    "baselineRatio": null,
+    "chargerState": "not-applicable",
+    "endPercent": null,
+    "energyMwh": null,
+    "measurementSource": null,
+    "notApplicableReason": "Battery is outside this search PoC and no energy claim is made.",
+    "screenState": "not-applicable",
+    "startPercent": null
+  },
+  "commit": "9571e5f2e7cceeab95b52f1e1167770518a3e475",
+  "device": {
+    "abi": "x86_64",
+    "firmwareOrBuild": "google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+    "inventoryStatus": "available",
+    "kind": "emulator",
+    "manufacturer": "Google",
+    "model": "sdk_gphone64_x86_64",
+    "notes": "API 36 x86_64 emulator shaped as a D2 exploratory profile; it is not physical D2 evidence.",
+    "pageSizeBytes": 4096,
+    "profileId": "D2",
+    "ramMb": 3920,
+    "securityPatch": "2025-07-05",
+    "uniqueHardwareIdentifierRecorded": false
+  },
+  "duration": {
+    "actualSeconds": 525.82291096,
+    "completed": true,
+    "monotonicClockUsed": true,
+    "plannedSeconds": 7200
+  },
+  "errors": [],
+  "evidenceFiles": [
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "dataset-manifest",
+      "kind": "fixture-manifest",
+      "locator": "docs/evidence/poc-search-001/dataset-manifest.json",
+      "retentionUntil": null,
+      "sha256": "sha256:d36b48a4cf9bcf3c435e122e6232c4431e45fcc726ad422a6c113f6c5bc09c1a",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "query-manifest",
+      "kind": "fixture-manifest",
+      "locator": "docs/evidence/poc-search-001/query-manifest.json",
+      "retentionUntil": null,
+      "sha256": "sha256:9b40b55cf673940efbcfbe04d568819b590eb9494862c94ccae16018c730f60a",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "mutation-manifest",
+      "kind": "fixture-manifest",
+      "locator": "docs/evidence/poc-search-001/mutation-manifest.json",
+      "retentionUntil": null,
+      "sha256": "sha256:1fa3ef45617d43ba980dd32dd571d7a25e3ef98e2520d0feb892c4a366cb389e",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "dependency-inventory",
+      "kind": "license-evidence",
+      "locator": "docs/evidence/poc-search-001/dependency-inventory.json",
+      "retentionUntil": null,
+      "sha256": "sha256:ae182e42e773b4dd8c45f1cd77e2713ae113ba9873f69cfbfe78a7419d948fed",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "ip-evaluation",
+      "kind": "license-evidence",
+      "locator": "docs/evidence/poc-search-001/ip-evaluation.json",
+      "retentionUntil": null,
+      "sha256": "sha256:2e03992e82d39e8abb74e98dad8c501bc6dac5b8d365bbe68f8e691def327cc4",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "ip-stage0-evaluation-review",
+      "kind": "license-evidence",
+      "locator": "docs/evidence/poc-search-001/ip-stage0-evaluation-review.md",
+      "retentionUntil": null,
+      "sha256": "sha256:f9e382e670f7584ec98b383fbe341629827322934258f1664d7782901d06d088",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "android-system-image-provenance",
+      "kind": "license-evidence",
+      "locator": "docs/evidence/poc-search-001/android-system-image-provenance.json",
+      "retentionUntil": null,
+      "sha256": "sha256:7e2dc79b4a3ce193eda13c1f11cde55b7715ea674d5f7c0705722693977465ae",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "evidence-ledger",
+      "kind": "license-evidence",
+      "locator": "docs/evidence/poc-search-001/evidence-ledger.json",
+      "retentionUntil": null,
+      "sha256": "sha256:cc6b338fc387804cd35a8c65352dfca4a4ee3854f19ad06d95a06a000f0f7ae1",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES-DRAFT",
+      "kind": "other",
+      "locator": "docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES-DRAFT.md",
+      "retentionUntil": null,
+      "sha256": "sha256:13f1ccbf693e5d7c62e784e6a769dabdaf2c1c8ab87af2130e89706e9861e357",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2_DRAFT",
+      "kind": "other",
+      "locator": "docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2_DRAFT.md",
+      "retentionUntil": null,
+      "sha256": "sha256:041de544ba5e023f282248dc7716d23e74ce9d0f75ac9755f3c7275fad7d0f10",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "poc-search-gate-set-stage0-v0.2.draft",
+      "kind": "other",
+      "locator": "docs/stage0/poc-search-gate-set-stage0-v0.2.draft.json",
+      "retentionUntil": null,
+      "sha256": "sha256:3d06f265f96ac468c9776953cc4ed380c25970198de37358c074070bce769f95",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "environment",
+      "kind": "other",
+      "locator": "docs/evidence/poc-search-001/assessments/review-2026-08-11-v3/environment.json",
+      "retentionUntil": null,
+      "sha256": "sha256:4446e4dc08ea0f1a2943f5df4096dc0c441e11278e6bd16103ce73d9e2584eb6",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "query-result",
+      "kind": "metrics",
+      "locator": "docs/evidence/poc-search-001/assessments/review-2026-08-11-v3/query-result.json",
+      "retentionUntil": null,
+      "sha256": "sha256:b2edcdab8feb8eaefb79d82b5f42b3eb6e6b8bb61cddd77e9bdf80411f01be9c",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "mutation-result",
+      "kind": "metrics",
+      "locator": "docs/evidence/poc-search-001/assessments/review-2026-08-11-v3/mutation-result.json",
+      "retentionUntil": null,
+      "sha256": "sha256:acff45fdee7ef89f11ad68ed1719e44307ade7b76fad57609eac553e8dfc2373",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "rebuild-result",
+      "kind": "metrics",
+      "locator": "docs/evidence/poc-search-001/assessments/review-2026-08-11-v3/rebuild-result.json",
+      "retentionUntil": null,
+      "sha256": "sha256:84d67560545a198967471334a2e52e096452827f5458267536500a5a421dbb91",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "benchmark-observations",
+      "kind": "metrics",
+      "locator": "docs/evidence/poc-search-001/runs/31487775567/benchmark-observations.json",
+      "retentionUntil": null,
+      "sha256": "sha256:2062b8b45444badb7b5e4769853ceff7207682e723081461d393d89a7e696114",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "targeted-scale-observations",
+      "kind": "metrics",
+      "locator": "docs/evidence/poc-search-001/runs/31487775567/targeted-scale-observations.json",
+      "retentionUntil": null,
+      "sha256": "sha256:971701887374e557ea606995e5a6f4297ee7e01c7e0fe8128e26bdb20e27c68f",
+      "storage": "repository",
+      "verified": true
+    },
+    {
+      "classification": "public-sanitized",
+      "containsPersonalData": false,
+      "containsRawAudio": false,
+      "containsSecret": false,
+      "id": "benchmark-result",
+      "kind": "json-result",
+      "locator": "docs/evidence/poc-search-001/runs/31487775567/benchmark-result.json",
+      "retentionUntil": null,
+      "sha256": "sha256:41c86f2d74730d238df60a13762a626a0e4f53214e782b30828938ddf5e06d27",
+      "storage": "repository",
+      "verified": true
+    }
+  ],
+  "failureGates": [
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-LATENCY-FAILURE",
+      "kind": "failure",
+      "mandatory": true,
+      "metric": "search.latency.gate_failed",
+      "observed": false,
+      "operator": "=",
+      "outcome": "not_triggered",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": true,
+      "title": "Approved latency gate violation",
+      "unit": null
+    },
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-INJECTION-CRASH",
+      "kind": "failure",
+      "mandatory": true,
+      "metric": "search.correctness.adversarial_failures",
+      "observed": 0,
+      "operator": ">",
+      "outcome": "not_triggered",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": 0,
+      "title": "Query operator injection or query crash",
+      "unit": "count"
+    },
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-MAPPING-LOSS",
+      "kind": "failure",
+      "mandatory": true,
+      "metric": "search.correctness.mapping_errors",
+      "observed": 0,
+      "operator": ">",
+      "outcome": "not_triggered",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": 0,
+      "title": "Canonical mapping loss",
+      "unit": "count"
+    },
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-NONDETERMINISTIC",
+      "kind": "failure",
+      "mandatory": true,
+      "metric": "search.rebuild.nondeterministic",
+      "observed": false,
+      "operator": "=",
+      "outcome": "not_triggered",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": true,
+      "title": "Non-deterministic rebuild or index recovery",
+      "unit": null
+    },
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-UPDATE-INTEGRITY",
+      "kind": "failure",
+      "mandatory": true,
+      "metric": "search.update.integrity_errors",
+      "observed": 0,
+      "operator": ">",
+      "outcome": "not_triggered",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": 0,
+      "title": "Update leaves stale results, mapping loss, or a crash",
+      "unit": "count"
+    },
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-STORAGE-UPDATE-OVERHEAD",
+      "kind": "failure",
+      "mandatory": true,
+      "metric": "search.storage_update.numeric_gate",
+      "notes": "The approved v0.1 prose makes storage/update failure mandatory but defines no numeric storage, build, or update-latency threshold. It requires prospective owner clarification and cannot be passed from this campaign.",
+      "observed": null,
+      "operator": "custom",
+      "outcome": "not_evaluated",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": null,
+      "title": "Unresolved storage/update overhead predicate",
+      "unit": null
+    }
+  ],
+  "fileSizes": [
+    {
+      "artifact": "reference-database-after-checkpoint-compact",
+      "bytes": 593092608,
+      "classification": "synthetic",
+      "sha256": "sha256:35fc05532bfd7159825b84890cbe02495668128da5b8f0e404e8b012fb16b217"
+    },
+    {
+      "artifact": "reference-wal-after-checkpoint-compact",
+      "bytes": 596567792,
+      "classification": "synthetic",
+      "sha256": null
+    },
+    {
+      "artifact": "reference-shm-after-checkpoint-compact",
+      "bytes": 1179648,
+      "classification": "synthetic",
+      "sha256": null
+    }
+  ],
+  "gateSetVersion": "stage0-v0.1",
+  "generatedAt": "2026-08-11T16:30:09Z",
+  "inputData": {
+    "acousticConditions": [
+      "not-applicable"
+    ],
+    "classification": "generated_text",
+    "consentReference": null,
+    "containsRealMeetingData": false,
+    "fixtureIds": [
+      "poc-search-synthetic-v1"
+    ],
+    "generatorVersion": "search-generator-1.0.0",
+    "languages": [
+      "ru",
+      "en",
+      "mixed-ru-en"
+    ],
+    "manifestId": "poc-search-001-reference-dataset-v1",
+    "manifestSha256": "sha256:d36b48a4cf9bcf3c435e122e6232c4431e45fcc726ad422a6c113f6c5bc09c1a"
+  },
+  "licenses": [
+    {
+      "artifactId": "androidx.annotation:annotation-experimental:1.5.0",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.annotation:annotation-experimental:1.5.0",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:02b0a4256618f85386c92e5cec166dc7f300820888a290227a3c0c65b82cbb36",
+      "version": "1.5.0"
+    },
+    {
+      "artifactId": "androidx.annotation:annotation-jvm:1.9.1",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.annotation:annotation-jvm:1.9.1",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:1e343917ebf27ba96fe4dc52b1cad7fd32b738fbc6355bb6cd5b3b305d7212d0",
+      "version": "1.9.1"
+    },
+    {
+      "artifactId": "androidx.annotation:annotation:1.9.1",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.annotation:annotation:1.9.1",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": null,
+      "version": "1.9.1"
+    },
+    {
+      "artifactId": "androidx.arch.core:core-common:2.2.0",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.arch.core:core-common:2.2.0",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:65308a06b1c00ee186cb9e19321383f043b993813f1522c47f4a3e3303bdba41",
+      "version": "2.2.0"
+    },
+    {
+      "artifactId": "androidx.arch.core:core-runtime:2.2.0",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.arch.core:core-runtime:2.2.0",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:a1be5e0caa2b07623862af6ae21b3ab0718123245184d0e30dea81b53f990a47",
+      "version": "2.2.0"
+    },
+    {
+      "artifactId": "androidx.collection:collection-jvm:1.5.0",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.collection:collection-jvm:1.5.0",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:70b35924e4babcdffa37d0e575ee039c56a2d97123342624c48b603233704341",
+      "version": "1.5.0"
+    },
+    {
+      "artifactId": "androidx.collection:collection:1.5.0",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.collection:collection:1.5.0",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": null,
+      "version": "1.5.0"
+    },
+    {
+      "artifactId": "androidx.concurrent:concurrent-futures-ktx:1.2.0",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.concurrent:concurrent-futures-ktx:1.2.0",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:e1f3e17bb4358ccd6c77ca45f70635c9aba237261f19eaa4f64a0218c00e2a3e",
+      "version": "1.2.0"
+    },
+    {
+      "artifactId": "androidx.concurrent:concurrent-futures:1.2.0",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.concurrent:concurrent-futures:1.2.0",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:4810315a798690b5d3bb40c92bcd41c045fd2c36bbfc50b27cbac3d6a0eda190",
+      "version": "1.2.0"
+    },
+    {
+      "artifactId": "androidx.lifecycle:lifecycle-common:2.3.1",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.lifecycle:lifecycle-common:2.3.1",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:15848fb56db32f4c7cdc72b324003183d52a4884d6bf09be708ac7f587d139b5",
+      "version": "2.3.1"
+    },
+    {
+      "artifactId": "androidx.room:room-common-jvm:2.8.4",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.room:room-common-jvm:2.8.4",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:dc7b4e1a75a790f29c97afd5516b8bf8002d9b6e83e295bc569b33566f3b1ec0",
+      "version": "2.8.4"
+    },
+    {
+      "artifactId": "androidx.room:room-common:2.8.4",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.room:room-common:2.8.4",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": null,
+      "version": "2.8.4"
+    },
+    {
+      "artifactId": "androidx.room:room-compiler-processing:2.8.4",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.room:room-compiler-processing:2.8.4",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:a4282eceb6720a712f15cff50747f160a7efe6ac3974e86d514c45e3f416085f",
+      "version": "2.8.4"
+    },
+    {
+      "artifactId": "androidx.room:room-compiler:2.8.4",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.room:room-compiler:2.8.4",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:9c253ed45e1b0cbfde8a62ff0bd7a2405fb9099176e0f0f9d11a57135cce95bb",
+      "version": "2.8.4"
+    },
+    {
+      "artifactId": "androidx.room:room-external-antlr:2.8.4",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.room:room-external-antlr:2.8.4",
+      "licenseId": "BSD-3-Clause",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:6bf794bffe8de263826502511b4c7df0570312b6cc99312ca7fc6bdb0880ca1e",
+      "version": "2.8.4"
+    },
+    {
+      "artifactId": "androidx.room:room-migration-jvm:2.8.4",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.room:room-migration-jvm:2.8.4",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:18e63f4ec289cf3f4545face849c6bbdd33eea9596eebe0b7293d49c00c511e2",
+      "version": "2.8.4"
+    },
+    {
+      "artifactId": "androidx.room:room-migration:2.8.4",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.room:room-migration:2.8.4",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": null,
+      "version": "2.8.4"
+    },
+    {
+      "artifactId": "androidx.room:room-runtime-android:2.8.4",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.room:room-runtime-android:2.8.4",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:3293575082024fa0a92b081c4e2d0609f14b5c109635ec227bc509db141a4e20",
+      "version": "2.8.4"
+    },
+    {
+      "artifactId": "androidx.room:room-runtime:2.8.4",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.room:room-runtime:2.8.4",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": null,
+      "version": "2.8.4"
+    },
+    {
+      "artifactId": "androidx.room:room-testing-android:2.8.4",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.room:room-testing-android:2.8.4",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:41e048f802d2016e285a5ea0a4eee54e49da07758b86c5a20ed0ca376a0c7b81",
+      "version": "2.8.4"
+    },
+    {
+      "artifactId": "androidx.room:room-testing:2.8.4",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.room:room-testing:2.8.4",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": null,
+      "version": "2.8.4"
+    },
+    {
+      "artifactId": "androidx.sqlite:sqlite-android:2.6.2",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.sqlite:sqlite-android:2.6.2",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:514f8de4f7bdba2fa8d748d2b22fdcdfb623bd3770a667bf0adc0ad259f03ed2",
+      "version": "2.6.2"
+    },
+    {
+      "artifactId": "androidx.sqlite:sqlite-framework-android:2.6.2",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.sqlite:sqlite-framework-android:2.6.2",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:b19125c7fff34222e0f380361fc179ab214e4d82e1a50b0c068ca26c851a6231",
+      "version": "2.6.2"
+    },
+    {
+      "artifactId": "androidx.sqlite:sqlite-framework:2.6.2",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.sqlite:sqlite-framework:2.6.2",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": null,
+      "version": "2.6.2"
+    },
+    {
+      "artifactId": "androidx.sqlite:sqlite:2.6.2",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.sqlite:sqlite:2.6.2",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": null,
+      "version": "2.6.2"
+    },
+    {
+      "artifactId": "androidx.test.ext:junit:1.3.0",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.test.ext:junit:1.3.0",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:3363df84da4540ba8daff02c3f7cd65471037a6a5370591a7e6deba377b36e7f",
+      "version": "1.3.0"
+    },
+    {
+      "artifactId": "androidx.test.services:storage:1.6.0",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.test.services:storage:1.6.0",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:f97e3cf6aaf4e3fb97ef219d37a9c0a0720183c1f6db87b37642521e26fb6d30",
+      "version": "1.6.0"
+    },
+    {
+      "artifactId": "androidx.test:core:1.7.0",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.test:core:1.7.0",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:f4dacd8edceeec48e0c76ecf28339b28f4b4f6b74f8e34e9e59b472c27d9eb81",
+      "version": "1.7.0"
+    },
+    {
+      "artifactId": "androidx.test:monitor:1.8.0",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.test:monitor:1.8.0",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:56cb7496a06d9f2dca7d3ff76c50a8a30bd18e00a24a3b267d5a31437b278e67",
+      "version": "1.8.0"
+    },
+    {
+      "artifactId": "androidx.test:runner:1.7.0",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.test:runner:1.7.0",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:970311c47119928a2e406a88892a3d270387cc5a49a181a1c44511105b41b818",
+      "version": "1.7.0"
+    },
+    {
+      "artifactId": "androidx.tracing:tracing:1.1.0",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#androidx.tracing:tracing:1.1.0",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:5b78e2c618fc10b3d14decc01df76158f15954ad746aacf0607766721da081f6",
+      "version": "1.1.0"
+    },
+    {
+      "artifactId": "com.google.auto.value:auto-value-annotations:1.6.3",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#com.google.auto.value:auto-value-annotations:1.6.3",
+      "licenseId": "UNDECLARED-REVIEW-REQUIRED",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:0e951fee8c31f60270bc46553a8586001b7b93dbb12aec06373aa99a150392c0",
+      "version": "1.6.3"
+    },
+    {
+      "artifactId": "com.google.auto:auto-common:1.2.1",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#com.google.auto:auto-common:1.2.1",
+      "licenseId": "Apache 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:f43f29fe2a6ebaf04b2598cdeec32a4e346d49a9404e990f5fc19c19f3a28d0e",
+      "version": "1.2.1"
+    },
+    {
+      "artifactId": "com.google.code.findbugs:jsr305:3.0.2",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#com.google.code.findbugs:jsr305:3.0.2",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:766ad2a0783f2687962c8ad74ceecc38a28b9f72a2d085ee438b7813e928d0c7",
+      "version": "3.0.2"
+    },
+    {
+      "artifactId": "com.google.devtools.ksp:symbol-processing-api:2.0.10-1.0.24",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#com.google.devtools.ksp:symbol-processing-api:2.0.10-1.0.24",
+      "licenseId": "The Apache License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:dd7dde070be54de66c7bdd4de04c43fb429e0c62bb132a6448cfa33653afb229",
+      "version": "2.0.10-1.0.24"
+    },
+    {
+      "artifactId": "com.google.errorprone:error_prone_annotations:2.26.1",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#com.google.errorprone:error_prone_annotations:2.26.1",
+      "licenseId": "Apache 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:de25f2d9a2156529bd765f51d8efdfc0dfa7301e04efb9cc75b7f10cf5d0e0fb",
+      "version": "2.26.1"
+    },
+    {
+      "artifactId": "com.google.guava:failureaccess:1.0.2",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#com.google.guava:failureaccess:1.0.2",
+      "licenseId": "UNDECLARED-REVIEW-REQUIRED",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:8a8f81cf9b359e3f6dfa691a1e776985c061ef2f223c9b2c80753e1b458e8064",
+      "version": "1.0.2"
+    },
+    {
+      "artifactId": "com.google.guava:guava:33.2.1-jre",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#com.google.guava:guava:33.2.1-jre",
+      "licenseId": "UNDECLARED-REVIEW-REQUIRED",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:452b2d9787b7d366fa8cf5ed9a1c40404542d05effa7a598da03bbbbb76d9f31",
+      "version": "33.2.1-jre"
+    },
+    {
+      "artifactId": "com.google.guava:listenablefuture:1.0",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#com.google.guava:listenablefuture:1.0",
+      "licenseId": "UNDECLARED-REVIEW-REQUIRED",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:e4ad7607e5c0477c6f890ef26a49cb8d1bb4dffb650bab4502afee64644e3069",
+      "version": "1.0"
+    },
+    {
+      "artifactId": "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
+      "licenseId": "UNDECLARED-REVIEW-REQUIRED",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:b372a037d4230aa57fbeffdef30fd6123f9c0c2db85d0aced00c91b974f33f99",
+      "version": "9999.0-empty-to-avoid-conflict-with-guava"
+    },
+    {
+      "artifactId": "com.intellij:annotations:12.0",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#com.intellij:annotations:12.0",
+      "licenseId": "Apache License 2",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:f8ab13b14be080fe2f617f90e55599760e4a1b4deeea5c595df63d0d6375ed6d",
+      "version": "12.0"
+    },
+    {
+      "artifactId": "com.squareup:javapoet:1.13.0",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#com.squareup:javapoet:1.13.0",
+      "licenseId": "Apache 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:4c7517e848a71b36d069d12bb3bf46a70fd4cda3105d822b0ed2e19c00b69291",
+      "version": "1.13.0"
+    },
+    {
+      "artifactId": "com.squareup:kotlinpoet-javapoet:2.0.0",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#com.squareup:kotlinpoet-javapoet:2.0.0",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:2929f3b9a8d739d0aea40bf3c7bd01fad3a7cd2d0fb56f2de248ebb9b46774a4",
+      "version": "2.0.0"
+    },
+    {
+      "artifactId": "com.squareup:kotlinpoet-jvm:2.0.0",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#com.squareup:kotlinpoet-jvm:2.0.0",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:65e2d5e1c7844861d134635692791f7dbac808adb060da7329c18c4bd88d2acb",
+      "version": "2.0.0"
+    },
+    {
+      "artifactId": "com.squareup:kotlinpoet:2.0.0",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#com.squareup:kotlinpoet:2.0.0",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": null,
+      "version": "2.0.0"
+    },
+    {
+      "artifactId": "commons-codec:commons-codec:1.15",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#commons-codec:commons-codec:1.15",
+      "licenseId": "UNDECLARED-REVIEW-REQUIRED",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:b3e9f6d63a790109bf0d056611fbed1cf69055826defeb9894a71369d246ed63",
+      "version": "1.15"
+    },
+    {
+      "artifactId": "junit:junit:4.13.2",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#junit:junit:4.13.2",
+      "licenseId": "Eclipse Public License 1.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3",
+      "version": "4.13.2"
+    },
+    {
+      "artifactId": "org.checkerframework:checker-qual:3.42.0",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.checkerframework:checker-qual:3.42.0",
+      "licenseId": "The MIT License",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:ccaedd33af0b7894d9f2f3b644f4d19e43928e32902e61ac4d10777830f5aac7",
+      "version": "3.42.0"
+    },
+    {
+      "artifactId": "org.hamcrest:hamcrest-core:1.3",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.hamcrest:hamcrest-core:1.3",
+      "licenseId": "UNDECLARED-REVIEW-REQUIRED",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9",
+      "version": "1.3"
+    },
+    {
+      "artifactId": "org.jetbrains.kotlin:kotlin-metadata-jvm:2.2.0",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.jetbrains.kotlin:kotlin-metadata-jvm:2.2.0",
+      "licenseId": "The Apache License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:501222ae7d63527e55f2e5e645f18d4eff2c19074c85b9bc055866e3ed2b17bf",
+      "version": "2.2.0"
+    },
+    {
+      "artifactId": "org.jetbrains.kotlin:kotlin-reflect:2.0.10",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.jetbrains.kotlin:kotlin-reflect:2.0.10",
+      "licenseId": "The Apache License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:77ff5b0a597ba697c97556d661f68991a019ca71d40c49e8ccb6991f4f93e308",
+      "version": "2.0.10"
+    },
+    {
+      "artifactId": "org.jetbrains.kotlin:kotlin-stdlib:2.2.0",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.jetbrains.kotlin:kotlin-stdlib:2.2.0",
+      "licenseId": "The Apache License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:65d12d85a3b865c160db9147851712a64b10dadd68b22eea22a95bf8a8670dca",
+      "version": "2.2.0"
+    },
+    {
+      "artifactId": "org.jetbrains.kotlin:kotlin-stdlib:2.2.10",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.jetbrains.kotlin:kotlin-stdlib:2.2.10",
+      "licenseId": "The Apache License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:9c67cc79efd6b9215b49d2a4308f5f3433537376c7c88e89bdd6729bd096e61a",
+      "version": "2.2.10"
+    },
+    {
+      "artifactId": "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:a134dacf4e6578b29b32e97aa50548d09cb45e3cb3551ce77ac27e55e265d8f5",
+      "version": "1.8.1"
+    },
+    {
+      "artifactId": "org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.8.1",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.8.1",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": null,
+      "version": "1.8.1"
+    },
+    {
+      "artifactId": "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.1",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.1",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:f3d4f5de1c391bbcc20f3b3435ccbac013521e76b6902d7d59635ec15c1f797e",
+      "version": "1.8.1"
+    },
+    {
+      "artifactId": "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": null,
+      "version": "1.8.1"
+    },
+    {
+      "artifactId": "org.jetbrains.kotlinx:kotlinx-serialization-bom:1.8.1",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.jetbrains.kotlinx:kotlinx-serialization-bom:1.8.1",
+      "licenseId": "Apache-2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": null,
+      "version": "1.8.1"
+    },
+    {
+      "artifactId": "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.8.1",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.8.1",
+      "licenseId": "Apache-2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:3565b6d4d789bf70683c45566944287fc1d8dc75c23d98bd87d01059cc76f2b3",
+      "version": "1.8.1"
+    },
+    {
+      "artifactId": "org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1",
+      "licenseId": "Apache-2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": null,
+      "version": "1.8.1"
+    },
+    {
+      "artifactId": "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.8.1",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.8.1",
+      "licenseId": "Apache-2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:8769e5647557e3700919c32d508f5c5dad53c5d8234cd10846354fbcff14aa24",
+      "version": "1.8.1"
+    },
+    {
+      "artifactId": "org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1",
+      "licenseId": "Apache-2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": null,
+      "version": "1.8.1"
+    },
+    {
+      "artifactId": "org.jetbrains:annotations:13.0",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.jetbrains:annotations:13.0",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:ace2a10dc8e2d5fd34925ecac03e4988b2c0f851650c94b8cef49ba1bd111478",
+      "version": "13.0"
+    },
+    {
+      "artifactId": "org.jetbrains:annotations:23.0.0",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.jetbrains:annotations:23.0.0",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:7b0f19724082cbfcbc66e5abea2b9bc92cf08a1ea11e191933ed43801eb3cd05",
+      "version": "23.0.0"
+    },
+    {
+      "artifactId": "org.jspecify:jspecify:1.0.0",
+      "category": "source-code",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.jspecify:jspecify:1.0.0",
+      "licenseId": "The Apache License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:1fad6e6be7557781e4d33729d49ae1cdc8fdda6fe477bb0cc68ce351eafdfbab",
+      "version": "1.0.0"
+    },
+    {
+      "artifactId": "org.xerial:sqlite-jdbc:3.41.2.2",
+      "category": "tool",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/dependency-inventory.json#org.xerial:sqlite-jdbc:3.41.2.2",
+      "licenseId": "The Apache Software License, Version 2.0",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:0cdab410947e04b6743df99cf1543267ddd107357d6f76948d145be590fd497d",
+      "version": "3.41.2.2"
+    },
+    {
+      "artifactId": "android-system-image-google-apis-x86_64-api36",
+      "category": "other",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/android-system-image-provenance.json",
+      "licenseId": "UNREVIEWED-PLATFORM-COMPONENT",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160",
+      "version": "r07 / google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys"
+    },
+    {
+      "artifactId": "android-platform-sqlite",
+      "category": "other",
+      "evaluationRightsConfirmed": false,
+      "evidenceLocator": "docs/evidence/poc-search-001/android-system-image-provenance.json",
+      "licenseId": "UNREVIEWED-PLATFORM-COMPONENT",
+      "licenseReviewState": "PROPOSED",
+      "redistributionRights": "unknown",
+      "sha256": "sha256:b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160",
+      "version": "3.44.3"
+    }
+  ],
+  "limitations": [
+    {
+      "blocksVerdict": true,
+      "description": "No physical D1-D3 latency campaign was run; emulator percentiles cannot establish a device-support claim.",
+      "id": "LIMIT-SEARCH-NO-PHYSICAL-D1-D3",
+      "severity": "high"
+    },
+    {
+      "blocksVerdict": true,
+      "description": "Host scheduling and virtualized storage make latency exploratory rather than representative of a real phone.",
+      "id": "LIMIT-SEARCH-EMULATOR-LATENCY",
+      "severity": "high"
+    },
+    {
+      "blocksVerdict": false,
+      "description": "Database size, build time, memory, and mutation latency have no pre-approved numeric threshold and remain observations only.",
+      "id": "LIMIT-SEARCH-OBSERVATION-ONLY-METRICS",
+      "severity": "medium"
+    },
+    {
+      "blocksVerdict": true,
+      "description": "The approved v0.1 prose makes storage/update failure mandatory. Draft v0.2 offers prospective options, but the owner has selected none; no historical campaign can be reclassified.",
+      "id": "LIMIT-SEARCH-INCOMPLETE-STORAGE-UPDATE-GATE",
+      "severity": "critical"
+    },
+    {
+      "blocksVerdict": true,
+      "description": "Stage 0 reviewer roles and the nested SQLite provenance method are recorded, but the exact locked dependency/platform review has not granted EVALUATION_APPROVED.",
+      "id": "LIMIT-SEARCH-IP-EVALUATION-NOT-ESTABLISHED",
+      "severity": "critical"
+    },
+    {
+      "blocksVerdict": false,
+      "description": "The isolated Room/FTS4 schema and harness are PoC evidence, not a production schema or dependency admission.",
+      "id": "LIMIT-SEARCH-POC-NOT-ADMISSION",
+      "severity": "medium"
+    }
+  ],
+  "memory": {
+    "applicable": true,
+    "measurementSource": "android.os.Debug at fixed benchmark phase boundaries",
+    "notApplicableReason": "No approved numeric memory threshold; reported as an observation.",
+    "oomCount": 0,
+    "peakNativeHeapMb": 8.039337158203125,
+    "peakPssMb": 944.41796875,
+    "peakRssMb": 1057.8125,
+    "trimOrPressureObserved": false
+  },
+  "metrics": [
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.dataset.conversations",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "rows",
+      "value": 10000
+    },
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.dataset.transcript_rows",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "rows",
+      "value": 1000000
+    },
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.dataset.fts_rows",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "rows",
+      "value": 1000000
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.build.empty_database_ms",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 31.216714
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.build.conversations_ms",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 628.543724
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.build.transcripts_ms",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 33077.474919
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.build.index_ms",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 6568.286224
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.build.checkpoint_compact_ms",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 4791.911404
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.build.total_ms",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 74866.593338
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.storage.database_bytes",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "bytes",
+      "value": 593092608
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.storage.wal_bytes",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "bytes",
+      "value": 596567792
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.storage.shm_bytes",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "bytes",
+      "value": 1179648
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.storage.total_bytes",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "bytes",
+      "value": 1190840048
+    },
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.latency.count",
+      "sampleCount": 1020,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "queries",
+      "value": 1020
+    },
+    {
+      "aggregation": "min",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.latency.min_ms",
+      "sampleCount": 1020,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.326255
+    },
+    {
+      "aggregation": "p50",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.latency.p50_ms",
+      "notes": "Predeclared nearest-rank percentile",
+      "sampleCount": 1020,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.82043
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.latency.p90_ms",
+      "notes": "Predeclared nearest-rank percentile",
+      "sampleCount": 1020,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 16.059272
+    },
+    {
+      "aggregation": "p95",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.latency.p95_ms",
+      "notes": "Predeclared nearest-rank percentile",
+      "sampleCount": 1020,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 97.537984
+    },
+    {
+      "aggregation": "p99",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.latency.p99_ms",
+      "notes": "Predeclared nearest-rank percentile",
+      "sampleCount": 1020,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 144.481302
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.latency.max_ms",
+      "sampleCount": 1020,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 153.8007
+    },
+    {
+      "aggregation": "mean",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.latency.mean_ms",
+      "sampleCount": 1020,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 9.987147913725488
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.latency.standard_deviation_ms",
+      "sampleCount": 1020,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 28.787441381928915
+    },
+    {
+      "aggregation": "p50",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.exact-common.p50_ms",
+      "sampleCount": 180,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.850945
+    },
+    {
+      "aggregation": "p95",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.exact-common.p95_ms",
+      "sampleCount": 180,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 1.176149
+    },
+    {
+      "aggregation": "p99",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.exact-common.p99_ms",
+      "sampleCount": 180,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 1.314734
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.exact-common.max_ms",
+      "sampleCount": 180,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 1.388244
+    },
+    {
+      "aggregation": "p50",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.exact-rare.p50_ms",
+      "sampleCount": 150,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.507775
+    },
+    {
+      "aggregation": "p95",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.exact-rare.p95_ms",
+      "sampleCount": 150,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.7062
+    },
+    {
+      "aggregation": "p99",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.exact-rare.p99_ms",
+      "sampleCount": 150,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.938335
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.exact-rare.max_ms",
+      "sampleCount": 150,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 1.469935
+    },
+    {
+      "aggregation": "p50",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.filters.p50_ms",
+      "sampleCount": 270,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 1.596133
+    },
+    {
+      "aggregation": "p95",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.filters.p95_ms",
+      "sampleCount": 270,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 143.273261
+    },
+    {
+      "aggregation": "p99",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.filters.p99_ms",
+      "sampleCount": 270,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 146.848886
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.filters.max_ms",
+      "sampleCount": 270,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 153.8007
+    },
+    {
+      "aggregation": "p50",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.negative.p50_ms",
+      "sampleCount": 90,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.627563
+    },
+    {
+      "aggregation": "p95",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.negative.p95_ms",
+      "sampleCount": 90,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.848171
+    },
+    {
+      "aggregation": "p99",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.negative.p99_ms",
+      "sampleCount": 90,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.908621
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.negative.max_ms",
+      "sampleCount": 90,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.908621
+    },
+    {
+      "aggregation": "p50",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.phrase.p50_ms",
+      "sampleCount": 180,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 2.501208
+    },
+    {
+      "aggregation": "p95",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.phrase.p95_ms",
+      "sampleCount": 180,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 13.646316
+    },
+    {
+      "aggregation": "p99",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.phrase.p99_ms",
+      "sampleCount": 180,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 13.898912
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.phrase.max_ms",
+      "sampleCount": 180,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 14.69135
+    },
+    {
+      "aggregation": "p50",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.prefix.p50_ms",
+      "sampleCount": 150,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.655084
+    },
+    {
+      "aggregation": "p95",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.prefix.p95_ms",
+      "sampleCount": 150,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 98.539213
+    },
+    {
+      "aggregation": "p99",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.prefix.p99_ms",
+      "sampleCount": 150,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 101.781933
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.category.prefix.max_ms",
+      "sampleCount": 150,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 129.291096
+    },
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.correctness.expected_cases",
+      "sampleCount": 61,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "count",
+      "value": 61
+    },
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.correctness.matched_cases",
+      "sampleCount": 61,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "count",
+      "value": 61
+    },
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.correctness.mapping_errors",
+      "sampleCount": 61,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "count",
+      "value": 0
+    },
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.correctness.duplicate_errors",
+      "sampleCount": 61,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "count",
+      "value": 0
+    },
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.correctness.adversarial_failures",
+      "sampleCount": 61,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "count",
+      "value": 0
+    },
+    {
+      "aggregation": "count",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.correctness.crashes",
+      "sampleCount": 61,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "count",
+      "value": 0
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.mutation.add_conversation_ms",
+      "notes": "Observation only; no approved numeric mutation-latency threshold.",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 35.398158
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.mutation.update_segment_ms",
+      "notes": "Observation only; no approved numeric mutation-latency threshold.",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 1.509616
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.mutation.update_metadata_ms",
+      "notes": "Observation only; no approved numeric mutation-latency threshold.",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 0.693513
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.mutation.delete_segment_ms",
+      "notes": "Observation only; no approved numeric mutation-latency threshold.",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 1.584406
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.mutation.delete_conversation_ms",
+      "notes": "Observation only; no approved numeric mutation-latency threshold.",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 3.200891
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.rebuild_1_ms",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 41455.138044
+    },
+    {
+      "aggregation": "raw",
+      "measurementSource": "POC-SEARCH-001 Android instrumentation",
+      "name": "search.rebuild_2_ms",
+      "sampleCount": 1,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "ms",
+      "value": 29301.147992
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "android.os.Debug sampled at fixed phase boundaries",
+      "name": "search.memory.peak_pss_mb",
+      "notes": "Observation only; no approved numeric memory threshold.",
+      "sampleCount": 645,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "MiB",
+      "value": 944.41796875
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "android.os.Debug sampled at fixed phase boundaries",
+      "name": "search.memory.peak_native_heap_mb",
+      "notes": "Observation only; no approved numeric memory threshold.",
+      "sampleCount": 645,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "MiB",
+      "value": 8.039337158203125
+    },
+    {
+      "aggregation": "max",
+      "measurementSource": "android.os.Debug sampled at fixed phase boundaries",
+      "name": "search.memory.peak_managed_heap_mb",
+      "notes": "Observation only; no approved numeric memory threshold.",
+      "sampleCount": 645,
+      "slice": "api36-x86_64-emulator-reference-db",
+      "unit": "MiB",
+      "value": 183.55995178222656
+    }
+  ],
+  "pocId": "POC-SEARCH-001",
+  "privacyReview": {
+    "forbiddenContentLoggingCheckPassed": true,
+    "notes": "Only generated text identifiers, aggregate metrics, deterministic mappings, and public runner metadata are retained; database files are deleted.",
+    "personalDataScanPassed": true,
+    "publicEvidenceSafe": true,
+    "reviewerRole": "deterministic generator and evidence allowlist validator",
+    "secretScanPassed": true
+  },
+  "recommendation": {
+    "decision": "BLOCKED",
+    "fallback": "Do not use the PoC for production integration; retain per-entity FTS or another separately evaluated fallback.",
+    "ownerAction": "Select and approve one complete prospective storage/update option and complete the assigned Stage 0 Product/IP plus Engineering/Security artifact review before a new measured campaign.",
+    "rationale": "Evaluated metrics passed, but no architectural GO is available while the mandatory storage/update gate option and assigned external-artifact review remain unresolved; this does not admit the PoC schema into production."
+  },
+  "result": {
+    "gateSetStatus": "Approved",
+    "invalidatedRunCount": 3,
+    "rationale": "The evaluated host/emulator metrics met their predicates, but the mandatory storage/update failure gate has no owner-selected numeric option, the assigned external-artifact review has not granted evaluation approval, and physical D1-D3 evidence is absent. The campaign is INCONCLUSIVE.",
+    "requiredSlicesCompleted": false,
+    "status": "INCONCLUSIVE"
+  },
+  "schemaVersion": 1,
+  "successGates": [
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-P95",
+      "kind": "success",
+      "mandatory": true,
+      "metric": "search.latency.p95_ms",
+      "observed": 97.537984,
+      "operator": "<",
+      "outcome": "met",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": 200,
+      "title": "Reference search p95 below 200 ms",
+      "unit": "ms"
+    },
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-P99",
+      "kind": "success",
+      "mandatory": true,
+      "metric": "search.latency.p99_ms",
+      "observed": 144.481302,
+      "operator": "<",
+      "outcome": "met",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": 500,
+      "title": "Reference search p99 below 500 ms",
+      "unit": "ms"
+    },
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-CORRECTNESS",
+      "kind": "success",
+      "mandatory": true,
+      "metric": "search.correctness.all_matched",
+      "observed": true,
+      "operator": "=",
+      "outcome": "met",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": true,
+      "title": "Correct filters and canonical source mappings",
+      "unit": null
+    },
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-ADVERSARIAL",
+      "kind": "success",
+      "mandatory": true,
+      "metric": "search.correctness.adversarial_failures",
+      "observed": 0,
+      "operator": "=",
+      "outcome": "met",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": 0,
+      "title": "Safe adversarial query handling",
+      "unit": "count"
+    },
+    {
+      "approvalStatus": "Approved",
+      "id": "GATE-SEARCH-REBUILD",
+      "kind": "success",
+      "mandatory": true,
+      "metric": "search.rebuild.deterministic",
+      "observed": true,
+      "operator": "=",
+      "outcome": "met",
+      "scope": "POC-SEARCH-001 10k conversations / 1M rows reference campaign",
+      "source": "docs/stage0/DORA_MVP1_POC_GATES.md Gate Set stage0-v0.1",
+      "threshold": true,
+      "title": "Deterministic logical rebuild",
+      "unit": null
+    }
+  ],
+  "temperature": {
+    "applicable": false,
+    "endCelsius": null,
+    "maxCelsius": null,
+    "maxThermalStatus": null,
+    "measurementSource": null,
+    "notApplicableReason": "Thermal behavior is outside this search PoC verdict.",
+    "startCelsius": null,
+    "startThermalStatus": null
+  }
+}

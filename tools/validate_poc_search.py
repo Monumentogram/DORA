@@ -19,6 +19,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 import poc_search_contract as contract  # noqa: E402
 import combine_poc_search_checkpoints as checkpoint_combiner  # noqa: E402
+import check_poc_search_run_readiness as run_readiness  # noqa: E402
 import finalize_poc_search_result as finalizer  # noqa: E402
 import poc_search_evidence_ledger as evidence_ledger  # noqa: E402
 from poc_search_environment import (  # noqa: E402
@@ -94,6 +95,129 @@ def validate_manifests() -> None:
         == "d610a938b342af29d918450f37a6e7d880d8da2bd34a11731f7fef3106e467af",
         "Independent sample digest drift",
     )
+
+
+def validate_gate_v02_draft() -> None:
+    decision_path = ROOT / "docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES-DRAFT.md"
+    document_path = ROOT / "docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2_DRAFT.md"
+    machine_path = ROOT / "docs/stage0/poc-search-gate-set-stage0-v0.2.draft.json"
+    for path in (decision_path, document_path, machine_path):
+        require(path.is_file(), f"Missing prospective gate artifact: {path.name}")
+    decision_text = decision_path.read_text(encoding="utf-8")
+    document_text = document_path.read_text(encoding="utf-8")
+    require("Draft / Proposed" in decision_text, "DEC-043 must remain an unapproved draft")
+    require("Owner decision record — intentionally blank" in decision_text, "DEC-043 decision block is missing")
+    require("Status: **DRAFT_UNAPPROVED**" in document_text, "Gate Set v0.2 is not marked draft")
+    require("Measured execution allowed: **no**" in document_text, "Draft gate set appears to allow execution")
+    forbidden_historical_values = {
+        "97.537984",
+        "144.481302",
+        "247.435677",
+        "270.842256",
+        "31484440781",
+        "31486943815",
+        "31487775567",
+    }
+    combined_draft = decision_text + document_text + machine_path.read_text(encoding="utf-8")
+    for value in forbidden_historical_values:
+        require(value not in combined_draft, f"Prospective draft references historical result value {value}")
+    gate_set = read_json(machine_path)
+    require(gate_set["gateSetVersion"] == "stage0-v0.2", "Draft gate-set version drift")
+    require(
+        gate_set["status"] == "DRAFT_UNAPPROVED"
+        and gate_set["selectedOptionId"] is None
+        and gate_set["approvedBy"] is None
+        and gate_set["approvedOn"] is None
+        and gate_set["benchmarkExecutionAllowed"] is False,
+        "An owner selection or benchmark authorization was invented",
+    )
+    require(gate_set["historicalResultsAffected"] is False, "Draft gate set changes historical results")
+    require(
+        gate_set["independence"]["historicalDoraMeasurementsUsedToSetThresholds"] is False
+        and gate_set["independence"]["historicalDoraResultsMayBeReclassified"] is False,
+        "Prospective threshold independence is not explicit",
+    )
+    sources = gate_set["independence"]["sources"]
+    require(
+        len(sources) == 5
+        and all(source.startswith(("https://www.sqlite.org/", "https://developer.android.com/")) for source in sources),
+        "Draft rationale must use only primary SQLite/Android sources",
+    )
+    protocol = gate_set["protocol"]
+    require(
+        protocol["scale"]
+        == {
+            "conversationCount": 10_000,
+            "transcriptSegmentCount": 1_000_000,
+            "segmentsPerConversation": 100,
+            "inputClassification": "deterministic_synthetic_text",
+        },
+        "Gate v0.2 reference scale drift",
+    )
+    require(protocol["requiredPhysicalProfiles"] == ["D1", "D2", "D3"], "Physical profile scope drift")
+    require(
+        protocol["emulatorRole"]["maySatisfyPhysicalPerformanceGate"] is False,
+        "Emulator cannot satisfy the physical storage/update performance gate",
+    )
+    require(
+        protocol["build"]["freshPairedBuildsPerProfile"] == 3
+        and protocol["warmupsPerClassDatabaseBuild"] == 10
+        and protocol["measuredOperationsPerClassDatabaseBuild"] == 100
+        and protocol["measuredSamplesPerClassProfile"] == 300,
+        "Gate v0.2 repetition contract drift",
+    )
+    require(
+        protocol["aggregation"]["percentileMethod"] == "nearest_rank_ceil_p_times_n"
+        and protocol["aggregation"]["acrossProfilesAndClasses"] == "maximum_no_averaging"
+        and protocol["aggregation"]["outlierRemovalAllowed"] is False,
+        "Gate v0.2 aggregation contract drift",
+    )
+    require(
+        [operation["id"] for operation in protocol["operationClasses"]]
+        == [
+            "ADD_CONVERSATION_100",
+            "UPDATE_SEGMENT_TEXT_1",
+            "UPDATE_CONVERSATION_FILTER_1",
+            "DELETE_SEGMENT_1",
+            "DELETE_CONVERSATION_100",
+        ],
+        "Gate v0.2 operation-class inventory drift",
+    )
+    expected_thresholds = {
+        "A": {
+            "maxIndexIncrementalBytes": 268_435_456,
+            "maxIndexOverheadRatio": 0.5,
+            "maxIndexOverheadBytesPerSegment": 256,
+            "maxSingleRowMaintenanceDeltaP95Ms": 16,
+            "maxBulk100MaintenanceDeltaP95Ms": 100,
+            "maxIndexedCommitP99Ms": 250,
+            "maxVisibilityP95Ms": 100,
+            "maxVisibilityP99Ms": 250,
+        },
+        "B": {
+            "maxIndexIncrementalBytes": 536_870_912,
+            "maxIndexOverheadRatio": 1.0,
+            "maxIndexOverheadBytesPerSegment": 512,
+            "maxSingleRowMaintenanceDeltaP95Ms": 50,
+            "maxBulk100MaintenanceDeltaP95Ms": 250,
+            "maxIndexedCommitP99Ms": 500,
+            "maxVisibilityP95Ms": 250,
+            "maxVisibilityP99Ms": 1000,
+        },
+        "C": {
+            "maxIndexIncrementalBytes": 805_306_368,
+            "maxIndexOverheadRatio": 1.5,
+            "maxIndexOverheadBytesPerSegment": 768,
+            "maxSingleRowMaintenanceDeltaP95Ms": 100,
+            "maxBulk100MaintenanceDeltaP95Ms": 500,
+            "maxIndexedCommitP99Ms": 700,
+            "maxVisibilityP95Ms": 1000,
+            "maxVisibilityP99Ms": 5000,
+        },
+    }
+    actual_thresholds = {option["id"]: option["thresholds"] for option in gate_set["options"]}
+    require(actual_thresholds == expected_thresholds, "Gate v0.2 option predicates drift")
+    require(gate_set["draftEngineeringPreference"] == "B", "Draft preference must remain non-selected Option B")
 
 
 def validate_module_wiring() -> None:
@@ -218,6 +342,19 @@ def validate_module_wiring() -> None:
     )
 
 
+def validate_draft_blocks_measured_run() -> None:
+    expected = (
+        "Draft stage0-v0.2 options exist, but the Project owner has selected none. "
+        "No measured campaign is authorized."
+    )
+    try:
+        run_readiness.main()
+    except ValueError as error:
+        require(str(error) == expected, "Measured-run readiness blocker drift")
+    else:
+        fail("Draft stage0-v0.2 gate set must block measured execution")
+
+
 def locked_components(lock_path: Path) -> dict[str, list[str]]:
     selected_configurations = {
         "_agp_internal_debug_kspClasspath",
@@ -305,14 +442,42 @@ def validate_dependency_and_ip_inventory() -> None:
         "IP assessment does not enumerate every missing declared license",
     )
     require(
-        ip_evaluation["evaluationStatus"] == "NOT_ESTABLISHED"
+        ip_evaluation["evaluationStatus"] == "REVIEWERS_ASSIGNED_REVIEW_PENDING"
         and ip_evaluation["historicalExecutionPrecondition"] == "NOT_PROVEN"
-        and ip_evaluation["futureMeasuredExecution"] == "BLOCKED_PENDING_REVIEW",
-        "Unreviewed dependency inventory must block measured execution",
+        and ip_evaluation["futureMeasuredExecution"]
+        == "BLOCKED_PENDING_GATE_AND_ARTIFACT_REVIEW",
+        "Pending dependency review and gate decision must block measured execution",
+    )
+    require(ip_evaluation["ownerDecision"] == {"id": "OD-11", "approvedOn": "2026-08-11", "scope": "Stage 0 evaluation only"}, "OD-11 IP scope drift")
+    assignments = ip_evaluation["reviewAssignments"]
+    for role in ("product", "ipPolicy", "engineeringSecurity"):
+        require(
+            assignments[role]["reviewer"] == "Project owner"
+            and assignments[role]["status"] == "ASSIGNED"
+            and assignments[role]["scope"] == "Stage 0 evaluation only",
+            f"Stage 0 reviewer assignment drift: {role}",
+        )
+    require(
+        assignments["ipPolicy"]["replacesProductionLegal"] is False
+        and assignments["productionLegal"]
+        == {"reviewer": None, "status": "UNASSIGNED_PRODUCTION_BLOCKED"},
+        "Stage 0 IP role must not imply production Legal approval",
     )
     require(
-        all(value is None for value in ip_evaluation["reviewers"].values()),
-        "Reviewer names must not be invented",
+        assignments["engineeringSecurity"]["replacesIndependentProductionSecurityReview"]
+        is False
+        and assignments["productionSecurity"]
+        == {
+            "reviewer": None,
+            "status": "INDEPENDENT_REVIEW_REQUIRED_BEFORE_PRODUCTION",
+        },
+        "Stage 0 Engineering/Security role must not replace production review",
+    )
+    review_locator = ip_evaluation["reviewEvidenceLocator"]
+    require(
+        review_locator == "docs/evidence/poc-search-001/ip-stage0-evaluation-review.md"
+        and (ROOT / review_locator).is_file(),
+        "Stage 0 IP review record is missing",
     )
     platform_artifacts = {artifact["artifactId"]: artifact for artifact in ip_evaluation["platformArtifacts"]}
     system_image = platform_artifacts["android-system-image-google-apis-x86_64-api36"]
@@ -338,12 +503,52 @@ def validate_dependency_and_ip_inventory() -> None:
         == "docs/evidence/poc-search-001/android-system-image-provenance.json",
         "IP assessment system-image provenance locator mismatch",
     )
+    runtime_identity = provenance["runtimeIdentity"]
+    require(
+        runtime_identity
+        == {
+            "imageId": "system-images;android-36;google_apis;x86_64",
+            "buildFingerprint": (
+                "google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/"
+                "13894323:userdebug/dev-keys"
+            ),
+            "androidApi": 36,
+            "abi": "x86_64",
+            "sqliteVersion": "3.44.3",
+            "digestScope": "containing-system-image",
+            "separateSQLiteLibraryDownloadedOrRedistributed": False,
+            "separateSQLiteBinaryDigestRequiredForStage0": False,
+            "decisionId": "OD-11",
+            "productionReconsiderationRequired": True,
+            "runtimeEvidenceLocator": (
+                "docs/evidence/poc-search-001/runs/31487775567/environment.json"
+            ),
+        },
+        "Pinned system-image runtime identity or SQLite boundary drift",
+    )
     for artifact in platform_artifacts.values():
         require(artifact["licenseReviewState"] == "PROPOSED", "Platform artifact approval is unsupported")
         require(artifact["evaluationRightsConfirmed"] is False, "Platform evaluation rights are unsupported")
+    sqlite_artifact = platform_artifacts["android-platform-sqlite"]
     require(
-        platform_artifacts["android-platform-sqlite"]["sha256"] is None,
-        "Unexpected SQLite binary digest without captured provenance record",
+        sqlite_artifact["sha256"] == system_image["sha256"]
+        and sqlite_artifact["digestScope"] == "containing-system-image"
+        and sqlite_artifact["separateBinaryDigestRequiredForStage0"] is False
+        and sqlite_artifact["provenanceMethodDecision"] == "APPROVED_FOR_STAGE0_BY_OD_11"
+        and sqlite_artifact["productionReconsiderationRequired"] is True,
+        "SQLite must use the owner-approved Stage 0 containing-system-image provenance boundary",
+    )
+    require(
+        sqlite_artifact["runtimeIdentity"]
+        == {
+            "imageId": runtime_identity["imageId"],
+            "imageRevision": 7,
+            "buildFingerprint": runtime_identity["buildFingerprint"],
+            "androidApi": runtime_identity["androidApi"],
+            "abi": runtime_identity["abi"],
+            "sqliteVersion": runtime_identity["sqliteVersion"],
+        },
+        "SQLite Stage 0 runtime identity is incomplete",
     )
 
 
@@ -554,10 +759,39 @@ def validate_result_if_present() -> None:
     require(index_path.is_file(), "Evidence index is missing")
     evidence_index = read_json(index_path)
     require(evidence_index["pocId"] == "POC-SEARCH-001", "Evidence index PoC id mismatch")
-    require(evidence_index["gateContract"]["complete"] is False, "Gate contract approval was invented")
+    require(evidence_index["schemaVersion"] == 2, "Evidence index governance version drift")
+    gate_contract = evidence_index["gateContract"]
     require(
-        evidence_index["currentAssessment"]["newMeasurementRun"] is False,
+        gate_contract["version"] == "stage0-v0.1"
+        and gate_contract["status"] == "INCOMPLETE_HISTORICAL_CONTRACT"
+        and gate_contract["complete"] is False,
+        "Gate contract approval was invented",
+    )
+    require(
+        gate_contract["candidate"]
+        == {
+            "version": "stage0-v0.2",
+            "status": "DRAFT_UNAPPROVED",
+            "documentLocator": (
+                "docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2_DRAFT.md"
+            ),
+            "machineLocator": "docs/stage0/poc-search-gate-set-stage0-v0.2.draft.json",
+            "selectedOptionId": None,
+            "benchmarkExecutionAllowed": False,
+        },
+        "Evidence index does not expose the unselected v0.2 draft exactly",
+    )
+    require(
+        evidence_index["currentAssessment"]["assessmentId"] == "review-2026-08-11-v3"
+        and evidence_index["currentAssessment"]["newMeasurementRun"] is False,
         "Review reassessment must not claim a new benchmark run",
+    )
+    require(
+        evidence_index["ipEvaluation"]["status"]
+        == "REVIEWERS_ASSIGNED_REVIEW_PENDING"
+        and evidence_index["ipEvaluation"]["futureMeasuredExecution"]
+        == "BLOCKED_PENDING_GATE_AND_ARTIFACT_REVIEW",
+        "Evidence index IP review status drift",
     )
     result_path = ROOT / evidence_index["currentAssessment"]["locator"]
     require(result_path.is_file(), "Current versioned assessment is missing")
@@ -569,6 +803,7 @@ def validate_result_if_present() -> None:
     result = read_json(result_path)
     SchemaValidator(schema).validate(result, schema)
     require(result["pocId"] == "POC-SEARCH-001", "Wrong PoC result id")
+    require(result["gateSetVersion"] == "stage0-v0.1", "Historical assessment must retain its gate version")
     require(result["result"]["status"] in ("INCONCLUSIVE", "FAIL"), "Emulator evidence cannot be PASS")
     require(result["device"]["kind"] == "emulator", "Search result must disclose emulator environment")
     require(result["inputData"]["containsRealMeetingData"] is False, "Real meeting data is forbidden")
@@ -633,6 +868,16 @@ def validate_result_if_present() -> None:
             for license_value in result["licenses"]
         ),
         "Result invents external-artifact evaluation approval",
+    )
+    evidence_locators = {evidence["locator"] for evidence in result["evidenceFiles"]}
+    require(
+        {
+            "docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES-DRAFT.md",
+            "docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2_DRAFT.md",
+            "docs/stage0/poc-search-gate-set-stage0-v0.2.draft.json",
+            "docs/evidence/poc-search-001/ip-stage0-evaluation-review.md",
+        }.issubset(evidence_locators),
+        "Current assessment omits prospective gate or assigned IP-review governance evidence",
     )
     environment_locator = next(
         evidence["locator"]
@@ -933,7 +1178,9 @@ def validate_no_generated_database() -> None:
 def main() -> int:
     checks = (
         validate_manifests,
+        validate_gate_v02_draft,
         validate_module_wiring,
+        validate_draft_blocks_measured_run,
         validate_dependency_and_ip_inventory,
         validate_durable_evidence_ledger,
         host_sqlite_smoke,

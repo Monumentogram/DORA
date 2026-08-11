@@ -25,11 +25,32 @@ def require(condition: bool, message: str) -> None:
 def main() -> int:
     index = read_json(EVIDENCE / "evidence-index.json")
     ip_evaluation = read_json(EVIDENCE / "ip-evaluation.json")
-    require(index["gateContract"]["complete"] is True, index["gateContract"]["blocker"])
+    gate_contract = index["gateContract"]
+    require(gate_contract["complete"] is True, gate_contract["blocker"])
     require(
-        index["gateContract"]["version"] != "stage0-v0.1",
-        "A new run cannot reuse the incomplete stage0-v0.1 storage/update contract",
+        gate_contract["version"] == "stage0-v0.2",
+        "A new run requires the approved stage0-v0.2 storage/update contract",
     )
+    require(gate_contract["status"] == "APPROVED", "The prospective gate contract is not approved")
+    gate_set_path = ROOT / gate_contract["machineLocator"]
+    gate_set = read_json(gate_set_path)
+    require(gate_set["gateSetVersion"] == "stage0-v0.2", "Gate-set version drift")
+    require(gate_set["status"] == "APPROVED", "The machine-readable gate set is still a draft")
+    require(gate_set["benchmarkExecutionAllowed"] is True, "The selected gate set does not authorize execution")
+    selected_option = gate_set["selectedOptionId"]
+    require(
+        selected_option in {option["id"] for option in gate_set["options"]},
+        "Exactly one complete gate option must be selected",
+    )
+    require(
+        isinstance(gate_set["approvedBy"], str) and bool(gate_set["approvedBy"]),
+        "Gate-set approver is missing",
+    )
+    require(
+        isinstance(gate_set["approvedOn"], str) and bool(gate_set["approvedOn"]),
+        "Gate-set approval date is missing",
+    )
+    require(gate_set["historicalResultsAffected"] is False, "A prospective gate cannot reclassify historical runs")
     require(
         ip_evaluation["evaluationStatus"] == "EVALUATION_APPROVED",
         "Exact dependency and platform evaluation rights are not approved",
@@ -39,14 +60,59 @@ def main() -> int:
         "IP assessment still blocks measured execution",
     )
     require(
-        all(isinstance(value, str) and value for value in ip_evaluation["reviewers"].values()),
-        "Named Product/Legal/IP and Engineering/Security reviewers are required",
+        ip_evaluation["dependencyInventory"]["status"] == "EVALUATION_APPROVED_STAGE0",
+        "The exact locked dependency inventory has no completed Stage 0 review",
     )
-    require(bool(ip_evaluation["reviewEvidenceLocator"]), "IP review evidence locator is required")
+    assignments = ip_evaluation["reviewAssignments"]
+    for role in ("product", "ipPolicy", "engineeringSecurity"):
+        assignment = assignments[role]
+        require(
+            assignment["status"] == "ASSIGNED"
+            and isinstance(assignment["reviewer"], str)
+            and bool(assignment["reviewer"]),
+            f"Named {role} Stage 0 reviewer is required",
+        )
+    require(
+        assignments["ipPolicy"]["replacesProductionLegal"] is False
+        and assignments["productionLegal"]["status"] == "UNASSIGNED_PRODUCTION_BLOCKED",
+        "Stage 0 IP review must not claim production Legal approval",
+    )
+    require(
+        assignments["engineeringSecurity"]["replacesIndependentProductionSecurityReview"] is False
+        and assignments["productionSecurity"]["status"]
+        == "INDEPENDENT_REVIEW_REQUIRED_BEFORE_PRODUCTION",
+        "Stage 0 Engineering/Security review must not replace production Security review",
+    )
+    review_evidence = ROOT / ip_evaluation["reviewEvidenceLocator"]
+    require(review_evidence.is_file(), "IP review evidence locator is missing")
     for artifact in ip_evaluation["platformArtifacts"]:
         require(artifact["licenseReviewState"] == "EVALUATION_APPROVED", f"{artifact['artifactId']} is not approved")
         require(artifact["evaluationRightsConfirmed"] is True, f"{artifact['artifactId']} rights are unconfirmed")
         require(isinstance(artifact["sha256"], str), f"{artifact['artifactId']} digest is missing")
+    platform = {artifact["artifactId"]: artifact for artifact in ip_evaluation["platformArtifacts"]}
+    system_image = platform["android-system-image-google-apis-x86_64-api36"]
+    sqlite = platform["android-platform-sqlite"]
+    require(
+        sqlite["sha256"] == system_image["sha256"]
+        and sqlite["digestScope"] == "containing-system-image"
+        and sqlite["separateBinaryDigestRequiredForStage0"] is False,
+        "Stage 0 SQLite provenance must use the approved containing-system-image boundary",
+    )
+    require(
+        sqlite["runtimeIdentity"]
+        == {
+            "imageId": "system-images;android-36;google_apis;x86_64",
+            "imageRevision": 7,
+            "buildFingerprint": (
+                "google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/"
+                "13894323:userdebug/dev-keys"
+            ),
+            "androidApi": 36,
+            "abi": "x86_64",
+            "sqliteVersion": "3.44.3",
+        },
+        "Stage 0 SQLite runtime identity is incomplete",
+    )
     print("POC-SEARCH-001 measured-run readiness passed")
     return 0
 

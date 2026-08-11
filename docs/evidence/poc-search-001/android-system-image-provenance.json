@@ -18,7 +18,20 @@
     "historicalActionsRun": "https://github.com/Monumentogram/DORA/actions/runs/31487775567",
     "historicalLogObservation": "sdkmanager downloaded x86_64-36_r07.zip in each retained benchmark phase"
   },
+  "runtimeIdentity": {
+    "imageId": "system-images;android-36;google_apis;x86_64",
+    "buildFingerprint": "google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+    "androidApi": 36,
+    "abi": "x86_64",
+    "sqliteVersion": "3.44.3",
+    "digestScope": "containing-system-image",
+    "separateSQLiteLibraryDownloadedOrRedistributed": false,
+    "separateSQLiteBinaryDigestRequiredForStage0": false,
+    "decisionId": "OD-11",
+    "productionReconsiderationRequired": true,
+    "runtimeEvidenceLocator": "docs/evidence/poc-search-001/runs/31487775567/environment.json"
+  },
   "licenseReviewState": "PROPOSED",
   "evaluationRightsConfirmed": false,
-  "reviewEvidenceLocator": null
+  "reviewEvidenceLocator": "docs/evidence/poc-search-001/ip-stage0-evaluation-review.md"
 }

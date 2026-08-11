@@ -213,7 +213,7 @@ def evaluate(observations: dict[str, Any]) -> dict[str, Any]:
     if evaluated_metrics_pass:
         architectural_outcome = (
             "Evaluated metrics passed, but no architectural GO is available while the mandatory "
-            "storage/update gate and external-artifact review remain unresolved"
+            "storage/update gate option and assigned external-artifact review remain unresolved"
         )
     elif safety_pass and mapping_pass and rebuild_pass:
         architectural_outcome = "FTS4 suitable with changes"
@@ -439,10 +439,11 @@ def build_license_entries(
     require(dependency_inventory.get("pocId") == "POC-SEARCH-001", "Wrong dependency inventory PoC id")
     require(
         dependency_inventory.get("inventoryStatus") == "COMPLETE_UNREVIEWED",
-        "Dependency inventory must remain explicitly unreviewed until the named IP review",
+        "Dependency inventory must remain explicitly unreviewed until the assigned IP review",
     )
     require(
-        ip_evaluation.get("evaluationStatus") == "NOT_ESTABLISHED",
+        ip_evaluation.get("evaluationStatus")
+        in {"NOT_ESTABLISHED", "REVIEWERS_ASSIGNED_REVIEW_PENDING"},
         "Unsupported IP evaluation state; record reviewed per-artifact decisions before approval",
     )
     entries: list[dict[str, Any]] = []
@@ -576,18 +577,26 @@ def build_result(
     for name in (
         "dependency-inventory.json",
         "ip-evaluation.json",
+        "ip-stage0-evaluation-review.md",
         "android-system-image-provenance.json",
         "evidence-ledger.json",
     ):
         evidence.append(evidence_entry(EVIDENCE / name, output_dir, "license-evidence"))
+    for path in (
+        ROOT / "docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES-DRAFT.md",
+        ROOT / "docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2_DRAFT.md",
+        ROOT / "docs/stage0/poc-search-gate-set-stage0-v0.2.draft.json",
+    ):
+        evidence.append(evidence_entry(path, output_dir, "other"))
     for path, kind in detail_paths:
         evidence.append(evidence_entry(path, output_dir, kind))
     status = evaluation["formalVerdict"]
     host_outcome = evaluation["hostEmulatorExploratoryOutcome"]
     rationale = (
         "The evaluated host/emulator metrics met their predicates, but the mandatory storage/update "
-        "failure gate has no frozen numeric threshold, external-artifact evaluation approval is not "
-        "established, and physical D1-D3 evidence is absent. The campaign is INCONCLUSIVE."
+        "failure gate has no owner-selected numeric option, the assigned external-artifact review "
+        "has not granted evaluation approval, and physical D1-D3 evidence is absent. The campaign "
+        "is INCONCLUSIVE."
         if host_outcome == "INCONCLUSIVE"
         else "At least one approved search correctness, safety, latency, mutation, mapping, or rebuild gate failed in the frozen reference campaign."
     )
@@ -603,8 +612,8 @@ def build_result(
         else "Per-entity FTS, pagination/ranking, or query normalization; FTS5 only as a separately documented experiment."
     )
     owner_action = (
-        "Approve a prospective storage/update gate contract and complete the named Product/Legal/IP "
-        "plus Engineering/Security evaluation review before a new measured campaign."
+        "Select and approve one complete prospective storage/update option and complete the assigned "
+        "Stage 0 Product/IP plus Engineering/Security artifact review before a new measured campaign."
         if host_outcome == "INCONCLUSIVE"
         else None
     )
@@ -719,8 +728,8 @@ def build_result(
             {"id": "LIMIT-SEARCH-NO-PHYSICAL-D1-D3", "severity": "high", "description": "No physical D1-D3 latency campaign was run; emulator percentiles cannot establish a device-support claim.", "blocksVerdict": True},
             {"id": "LIMIT-SEARCH-EMULATOR-LATENCY", "severity": "high", "description": "Host scheduling and virtualized storage make latency exploratory rather than representative of a real phone.", "blocksVerdict": True},
             {"id": "LIMIT-SEARCH-OBSERVATION-ONLY-METRICS", "severity": "medium", "description": "Database size, build time, memory, and mutation latency have no pre-approved numeric threshold and remain observations only.", "blocksVerdict": False},
-            {"id": "LIMIT-SEARCH-INCOMPLETE-STORAGE-UPDATE-GATE", "severity": "critical", "description": "The approved v0.1 prose makes storage/update failure mandatory but supplies no numeric threshold; it cannot be marked passed after observing this campaign.", "blocksVerdict": True},
-            {"id": "LIMIT-SEARCH-IP-EVALUATION-NOT-ESTABLISHED", "severity": "critical", "description": "The exact locked dependency and Android platform artifacts do not yet have the named evaluation review required before execution.", "blocksVerdict": True},
+            {"id": "LIMIT-SEARCH-INCOMPLETE-STORAGE-UPDATE-GATE", "severity": "critical", "description": "The approved v0.1 prose makes storage/update failure mandatory. Draft v0.2 offers prospective options, but the owner has selected none; no historical campaign can be reclassified.", "blocksVerdict": True},
+            {"id": "LIMIT-SEARCH-IP-EVALUATION-NOT-ESTABLISHED", "severity": "critical", "description": "Stage 0 reviewer roles and the nested SQLite provenance method are recorded, but the exact locked dependency/platform review has not granted EVALUATION_APPROVED.", "blocksVerdict": True},
             {"id": "LIMIT-SEARCH-POC-NOT-ADMISSION", "severity": "medium", "description": "The isolated Room/FTS4 schema and harness are PoC evidence, not a production schema or dependency admission.", "blocksVerdict": False},
         ],
         "recommendation": {

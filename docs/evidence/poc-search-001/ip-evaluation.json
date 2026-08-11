@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "pocId": "POC-SEARCH-001",
   "assessmentDate": "2026-08-11",
   "dependencyInventory": {
@@ -8,17 +8,44 @@
     "componentCount": 66,
     "status": "COMPLETE_UNREVIEWED"
   },
-  "evaluationStatus": "NOT_ESTABLISHED",
+  "evaluationStatus": "REVIEWERS_ASSIGNED_REVIEW_PENDING",
   "historicalExecutionPrecondition": "NOT_PROVEN",
-  "futureMeasuredExecution": "BLOCKED_PENDING_REVIEW",
-  "reviewers": {
-    "productLegalIp": null,
-    "engineeringSecurity": null
+  "futureMeasuredExecution": "BLOCKED_PENDING_GATE_AND_ARTIFACT_REVIEW",
+  "ownerDecision": {
+    "id": "OD-11",
+    "approvedOn": "2026-08-11",
+    "scope": "Stage 0 evaluation only"
   },
-  "reviewEvidenceLocator": null,
+  "reviewAssignments": {
+    "product": {
+      "reviewer": "Project owner",
+      "status": "ASSIGNED",
+      "scope": "Stage 0 evaluation only"
+    },
+    "ipPolicy": {
+      "reviewer": "Project owner",
+      "status": "ASSIGNED",
+      "scope": "Stage 0 evaluation only",
+      "replacesProductionLegal": false
+    },
+    "engineeringSecurity": {
+      "reviewer": "Project owner",
+      "status": "ASSIGNED",
+      "scope": "Stage 0 evaluation only",
+      "replacesIndependentProductionSecurityReview": false
+    },
+    "productionLegal": {
+      "reviewer": null,
+      "status": "UNASSIGNED_PRODUCTION_BLOCKED"
+    },
+    "productionSecurity": {
+      "reviewer": null,
+      "status": "INDEPENDENT_REVIEW_REQUIRED_BEFORE_PRODUCTION"
+    }
+  },
+  "reviewEvidenceLocator": "docs/evidence/poc-search-001/ip-stage0-evaluation-review.md",
   "dependencyReviewBlockers": [
-    "No Product/Legal/IP reviewer has confirmed evaluation rights for the exact 66-component locked graph.",
-    "No Engineering/Security reviewer has confirmed the artifact digests and transitive inventory.",
+    "Assigned Stage 0 reviewers have not yet recorded an EVALUATION_APPROVED decision for the exact 66-component locked graph.",
     "Seven locked components have no declared license entry in their cached Maven POM and require upstream license evidence: com.google.auto.value:auto-value-annotations:1.6.3, com.google.guava:failureaccess:1.0.2, com.google.guava:guava:33.2.1-jre, com.google.guava:listenablefuture:1.0, com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava, commons-codec:commons-codec:1.15, org.hamcrest:hamcrest-core:1.3.",
     "Canonical license text digests and applicable NOTICE obligations have not been reviewed."
   ],
@@ -36,29 +63,49 @@
       "artifactId": "android-system-image-google-apis-x86_64-api36",
       "observedVersion": "r07 / google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
       "sha256": "sha256:b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160",
+      "digestScope": "exact-system-image-archive",
       "licenseReviewState": "PROPOSED",
       "evaluationRightsConfirmed": false,
       "evidenceLocator": "docs/evidence/poc-search-001/android-system-image-provenance.json",
-      "blocker": "Exact archive provenance is now recorded, but the named evaluation-rights review has not occurred."
+      "blocker": "Exact archive provenance and reviewers are recorded, but the Stage 0 evaluation-rights decision is pending."
     },
     {
       "artifactId": "android-platform-sqlite",
       "observedVersion": "3.44.3",
-      "sha256": null,
+      "sha256": "sha256:b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160",
+      "digestScope": "containing-system-image",
+      "separateBinaryDigestRequiredForStage0": false,
+      "runtimeIdentity": {
+        "imageId": "system-images;android-36;google_apis;x86_64",
+        "imageRevision": 7,
+        "buildFingerprint": "google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+        "androidApi": 36,
+        "abi": "x86_64",
+        "sqliteVersion": "3.44.3"
+      },
       "licenseReviewState": "PROPOSED",
       "evaluationRightsConfirmed": false,
-      "evidenceLocator": "docs/evidence/poc-search-001/runs/31487775567/environment.json",
-      "blocker": "The runtime version was observed, but the platform binary digest and reviewed rights evidence were not captured."
+      "evidenceLocator": "docs/evidence/poc-search-001/android-system-image-provenance.json",
+      "provenanceMethodDecision": "APPROVED_FOR_STAGE0_BY_OD_11",
+      "productionReconsiderationRequired": true,
+      "blocker": "The Stage 0 provenance method is resolved; evaluation rights remain pending and production review is explicitly separate."
     }
   ],
-  "requiredOwnerActions": [
-    "Assign the Product/Legal/IP and Engineering/Security reviewers named by docs/stage0/DORA_MVP1_IP_ASSET_POLICY.md.",
-    "Review the exact dependency inventory, close missing license/NOTICE evidence, and record an evidence locator before changing any artifact to EVALUATION_APPROVED.",
-    "Complete reviewed platform SQLite provenance and verify the pinned system-image revision before a new measured campaign."
+  "remainingStage0Actions": [
+    "Complete the assigned exact dependency/platform evaluation review and record its decision in docs/evidence/poc-search-001/ip-stage0-evaluation-review.md.",
+    "Resolve missing license/NOTICE evidence before changing any artifact to EVALUATION_APPROVED.",
+    "Select and approve a complete prospective stage0-v0.2 gate option before a measured campaign."
+  ],
+  "productionBlockers": [
+    "Production Legal reviewer and approval are unassigned.",
+    "Independent production Security review is required and is not replaced by the Stage 0 Engineering/Security reviewer role.",
+    "The containing-system-image SQLite provenance boundary must be reconsidered for the actual production platform and distribution scope.",
+    "Production admission still requires ADR, SBOM/notices, security, ABI/runtime, migration/removal and release evidence."
   ],
   "nonClaims": [
-    "This assessment does not reject or admit any dependency.",
-    "This assessment does not grant evaluation or redistribution rights.",
-    "The prior benchmark cannot be used as proof that the external-artifact execution precondition was satisfied."
+    "Reviewer assignment is not EVALUATION_APPROVED.",
+    "The Stage 0 SQLite provenance method does not grant evaluation, commercial-use or redistribution rights.",
+    "This assessment does not admit any dependency or production schema.",
+    "The prior benchmark cannot prove that the external-artifact execution precondition was satisfied."
   ]
 }

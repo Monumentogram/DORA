@@ -1,11 +1,11 @@
 # Dora MVP 1 — Product Decisions
 
 Статус документа: единый реестр решений владельца продукта\
-Дата: 4 августа 2026 года\
-Последнее изменение: прямое утверждение владельцем решений Stage 0 `OD-01`–`OD-10`\
+Дата: 11 августа 2026 года\
+Последнее изменение: draft `DEC-043` и прямое Stage 0 governance-решение `OD-11`; численные predicates не утверждены\
 Основание: Technical Plan §40 P1–P20, Design Spec §40.2 D-P1–D-P22 и owner approval record Stage 0A.
 
-`Provisional` означает, что рекомендуемый baseline можно использовать для обратимого PoC/bootstrap, но это не заменяет явное решение владельца. `Proposed` запрещает необратимые или пользовательские действия до утверждения. `Approved` означает прямое решение владельца в указанной области; оно не расширяет scope на production, Legal или release без явной формулировки. Статусы, повышенные этим изменением, ссылаются на `OD-01`–`OD-10`, владельца и дату.
+`Provisional` означает, что рекомендуемый baseline можно использовать для обратимого PoC/bootstrap, но это не заменяет явное решение владельца. `Proposed` запрещает необратимые или пользовательские действия до утверждения. `Approved` означает прямое решение владельца в указанной области; оно не расширяет scope на production, Legal или release без явной формулировки. Статусы, повышенные owner-решением, ссылаются на соответствующий `OD-*`, владельца и дату.
 
 ## DEC-001. Рынки, юрлицо и B2C/B2B
 
@@ -622,13 +622,32 @@
 Обратимость: high.\
 Связанные задачи: `DES-FOUND-001`, `GOV-IP-001`.
 
+## DEC-043. POC-SEARCH-001 storage/update gates
+
+Статус: Proposed — detailed draft; owner option not selected\
+Приоритет: P1\
+Источник: Technical Plan §39 `POC-SEARCH-001`; final review PR #10; Gate Set v0.1 pre-run rule\
+Дата draft: 11 августа 2026 года\
+Владелец решения: Project owner\
+Область решения: prospective Stage 0 search campaign only; historical v0.1 results immutable\
+Срок принятия: до любого нового targeted/full `POC-SEARCH-001` benchmark\
+Варианты: A — duplication-averse/immediate; B — balanced local baseline; C — capacity-first with explicit pending state\
+Рекомендуемый вариант: Option B — только non-normative engineering preference; владелец численные predicates не утвердил\
+Обоснование: v0.1 делает storage/update failure обязательным, но не определяет numeric predicate. Порог должен быть выбран из независимого storage/UX/freshness budget до нового измерения, а не подогнан к сохранённым результатам.\
+Влияние на архитектуру: paired canonical-only/indexed harness, compacted incremental footprint, matched mutation overhead, visible non-stale indexing state and physical D1–D3 evidence.\
+Влияние на UX: выбранный freshness bound определяет immediate result или явное `INDEXING`; stale success запрещён во всех вариантах.\
+Обратимость: высокая до owner approval и measured run; после запуска threshold не меняет verdict этой кампании.\
+Fallback: external/contentless or per-entity FTS, durable visible pending queue, or `INCONCLUSIVE` when required physical profiles are unavailable.\
+Detailed draft: `docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES-DRAFT.md`; Gate Set: `docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2_DRAFT.md`; machine companion: `docs/stage0/poc-search-gate-set-stage0-v0.2.draft.json`.\
+Связанные задачи: `POC-GATES-001`, `POC-SEARCH-001`.
+
 ## Stage 0A owner approval record
 
 Дата решений: 4 августа 2026 года\
 Владелец решений: Project owner\
-Статус: `OD-01`–`OD-10` — Approved только в указанной Stage 0 scope. Этот раздел не расширяет стабильный namespace `DEC-001`–`DEC-042` и не разрешает production implementation.
+Статус: `OD-01`–`OD-10` — Approved только в указанной Stage 0A scope. Позднее `OD-11` записано отдельно в Stage 0 owner registry; draft `DEC-043` расширяет namespace, но не является Approved и не разрешает measured execution или production implementation.
 
-Crosswalk: `OD-01` → `DEC-003`/`DEC-004`; `OD-02` → `DEC-002`/`DEC-027`; `OD-03`/`OD-04` → `DEC-014` и Dataset Governance; `OD-05` → `DEC-020`; `OD-06`/`OD-07` → `DEC-018` и device matrix; `OD-08` → `DEC-009`/`DEC-014` и Privacy policy; `OD-09` → Stage 0 research retention, без изменения production `DEC-013`; `OD-10` → `DEC-009`/`DEC-015`.
+Crosswalk: `OD-01` → `DEC-003`/`DEC-004`; `OD-02` → `DEC-002`/`DEC-027`; `OD-03`/`OD-04` → `DEC-014` и Dataset Governance; `OD-05` → `DEC-020`; `OD-06`/`OD-07` → `DEC-018` и device matrix; `OD-08` → `DEC-009`/`DEC-014` и Privacy policy; `OD-09` → Stage 0 research retention, без изменения production `DEC-013`; `OD-10` → `DEC-009`/`DEC-015`; `OD-11` → `DEC-020`/draft `DEC-043` и IP policy Stage 0 SQLite/reviewer boundary.
 
 ### OD-01. Первый технический PoC Stage 0
 

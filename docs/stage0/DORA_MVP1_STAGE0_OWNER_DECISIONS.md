@@ -1,12 +1,12 @@
 # Dora MVP 1 — решения владельца для ближайших PoC
 
-Статус: **Approved**\
-Дата решения: **4 августа 2026 года**\
+Статус: **Approved owner records; numeric search predicates remain unapproved**\
+Даты решений: **4 и 11 августа 2026 года**\
 Владелец решения: **Project owner**\
 Область: только Stage 0 PoC; эти решения не разрешают production-функциональность, реальные совещания или публичные support claims\
-Связанные записи: `DEC-002`–`DEC-004`, `DEC-009`, `DEC-014`, `DEC-015`, `DEC-018`, `DEC-020`, `DEC-027` и Stage 0A owner approval record в Product Decisions
+Связанные записи: `DEC-002`–`DEC-004`, `DEC-009`, `DEC-014`, `DEC-015`, `DEC-018`, `DEC-020`, `DEC-027`, draft `DEC-043` и Stage 0A owner approval record в Product Decisions
 
-Этот сокращённый реестр содержит только десять решений, блокировавших ближайшие PoC. Все ответы ниже прямо утверждены владельцем. Утверждение числовых критериев ограничено уже определёнными gates `stage0-v0.1`: неопределённые пороги из раздела `Unresolved thresholds` остаются `Proposed`.
+Этот сокращённый реестр содержит одиннадцать решений для ближайших PoC. Все ответы ниже прямо утверждены владельцем в указанной области. Утверждение числовых критериев ограничено уже определёнными gates `stage0-v0.1`: draft `stage0-v0.2` и его storage/update predicates остаются `Proposed`.
 
 ## OD-01. Какой технический PoC запускать первым и что он вправе записывать?
 
@@ -248,10 +248,42 @@
 
 `OD-10: выбираю A — local mode должен работать без account, сети и Google Mobile Services; cloud выключен до отдельного явного согласия.`
 
+## OD-11. Кто выполняет Stage 0 artifact review и какая SQLite provenance достаточна?
+
+**Статус решения:** `Approved` — 11 августа 2026 года.
+
+**Область:** только evaluation `POC-SEARCH-001` в Stage 0. Решение не является production
+admission, production Legal approval или независимым production security review.
+
+**Зафиксированный ответ владельца:**
+
+- Product reviewer — `Project owner`.
+- Project owner принимает роль IP policy reviewer для Stage 0 evaluation.
+- Project owner принимает объединённую роль Engineering/Security reviewer только для Stage 0
+  evaluation. Независимый production security review этим не заменяется.
+- Production Legal reviewer/approval не назначен и остаётся `BLOCKED`.
+- Для встроенного Android platform SQLite в Stage 0 достаточно digest точного system-image archive
+  вместе с package/image ID, revision, runtime build fingerprint, API, ABI и `sqlite_version()`.
+  Отдельный digest SQLite binary не требуется, если PoC не загружает и не распространяет отдельную
+  SQLite library.
+- Перед production admission эта nested-platform provenance boundary обязательно пересматривается;
+  отдельный SQLCipher/custom SQLite/prebuilt всегда требует собственного artifact digest.
+
+**Что это решение не утверждает:**
+
+- ни один вариант численных predicates draft `stage0-v0.2`;
+- evaluation rights всех 66 locked components без завершённого component/license/NOTICE review;
+- production use, redistribution, SBOM/notices или shipping dependency admission.
+
+**Следствие:** reviewer assignment и достаточность SQLite provenance method больше не являются
+неопределёнными. Measured execution всё ещё заблокирован до выбора Gate Set и формального
+`EVALUATION_APPROVED` результата exact Stage 0 artifact review.
+
 ## Итог утверждения
 
-- Все `OD-01`–`OD-10` имеют статус `Approved` с датой 4 августа 2026 года.
+- `OD-01`–`OD-10` имеют статус `Approved` с датой 4 августа 2026 года; `OD-11` имеет статус
+  `Approved` с датой 11 августа 2026 года и только Stage 0 evaluation scope.
 - Первым остаётся `POC-CAPTURE-001`, но этот PoC в Stage 0A не запускался.
 - До первого измеряемого запуска один физический телефон владельца должен быть подключён и автоматически идентифицирован.
 - До настройки controlled non-public storage используются только synthetic data.
-- Неопределённые пороги остаются `Proposed`; один телефон не даёт общий PASS D1–D7 и не подтверждает поддержку устройств.
+- Неопределённые пороги и draft `stage0-v0.2` остаются `Proposed`; один телефон не даёт общий PASS D1–D7 и не подтверждает поддержку устройств.

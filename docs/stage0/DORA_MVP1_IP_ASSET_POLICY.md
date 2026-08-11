@@ -1,8 +1,8 @@
 # Dora MVP 1 — IP and Asset Policy
 
 Task: `GOV-IP-001`
-Version: 1.0
-Date: 4 August 2026
+Version: 1.1
+Date: 11 August 2026
 Status: active governance policy; no third-party model, weight or binary is admitted by this document
 Legal note: this is an engineering control, not legal advice
 
@@ -139,6 +139,30 @@ A family-level statement such as “Whisper is MIT” cannot replace a record fo
 - Native prebuilts are rejected unless provenance, exact digest, symbols/build details, ABI/API and 16-KiB evidence are complete.
 - Security/CVE and maintenance review is independent of license approval.
 - Development tools that do not ship still require license/provenance, but distribution obligations are assessed separately.
+
+#### 5.8.1 Stage 0 Android platform SQLite boundary (`OD-11`)
+
+For `POC-SEARCH-001` Stage 0 evaluation only, SQLite supplied inside a pinned Android system image
+is a nested platform component rather than a separately downloaded or redistributed Dora artifact.
+Its technical provenance is sufficient without extracting and hashing an individual SQLite binary
+only when all of the following are recorded together:
+
+- exact Android system-image package/image ID and revision;
+- immutable system-image archive digest from the canonical publisher;
+- runtime Android build fingerprint, API and primary ABI;
+- runtime `sqlite_version()` result;
+- confirmation that no separate SQLite/SQLCipher library is downloaded, bundled or redistributed.
+
+The digest scope must be labeled `containing-system-image`; it must not be represented as a digest
+of the nested SQLite file. This Stage 0 exception resolves provenance method only. Evaluation rights
+and the exact dependency/license/NOTICE review still require the assigned reviewers and an
+`EVALUATION_APPROVED` decision.
+
+This boundary does not apply to production admission. Before any production schema or dependency
+admission, an independent production Security review and production Legal review must reconsider
+the actual shipping platform/device matrix, SBOM/notices and distribution scope. Production Legal
+is currently unassigned and blocked. A separately bundled SQLCipher, custom SQLite build or native
+prebuilt always requires its own exact artifact digest and normal admission evidence.
 
 ### 5.9 Datasets and audio fixtures
 
