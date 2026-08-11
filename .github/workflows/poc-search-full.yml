@@ -169,7 +169,7 @@ jobs:
           mkdir -p "${RUNNER_TEMP}/poc-search-targeted"
           "${ANDROID_HOME}/platform-tools/adb" exec-out \
             run-as "${POC_SEARCH_TEST_PACKAGE}" \
-            cat files/poc-search-benchmark/targeted-scale-observations.json \
+            cat files/poc-search-001/targeted-scale-observations.json \
             > "${RUNNER_TEMP}/poc-search-targeted/targeted-scale-observations.json"
           test -s "${RUNNER_TEMP}/poc-search-targeted/targeted-scale-observations.json"
           python3 -c 'import json,sys; value=json.load(open(sys.argv[1], encoding="utf-8")); assert value["commit"] == sys.argv[2]; assert value["passed"] is True; assert value["plan"]["accepted"] is True; assert value["observedCount"] == value["expectedCount"]' \
@@ -304,7 +304,7 @@ jobs:
           mkdir -p "${RUNNER_TEMP}/poc-search-checkpoint"
           "${ANDROID_HOME}/platform-tools/adb" exec-out \
             run-as "${POC_SEARCH_TEST_PACKAGE}" \
-            cat files/poc-search-benchmark/benchmark-${{ matrix.phase }}-checkpoint.json \
+            cat files/poc-search-001/benchmark-${{ matrix.phase }}-checkpoint.json \
             > "${RUNNER_TEMP}/poc-search-checkpoint/benchmark-${{ matrix.phase }}-checkpoint.json"
           test -s "${RUNNER_TEMP}/poc-search-checkpoint/benchmark-${{ matrix.phase }}-checkpoint.json"
           database_listing=$("${ANDROID_HOME}/platform-tools/adb" shell \

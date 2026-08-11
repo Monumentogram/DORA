@@ -150,6 +150,8 @@ def validate_module_wiring() -> None:
         and 'run-as "${POC_SEARCH_TEST_PACKAGE}"' in workflow
         and ":poc:search:assembleDebugAndroidTest" in workflow
         and "shell am instrument -w -r" in workflow
+        and "files/poc-search-001/" in workflow
+        and "files/poc-search-benchmark/" not in workflow
         and ":poc:search:connectedDebugAndroidTest" not in workflow,
         "Sanitized checkpoints must survive instrumentation for run-as extraction",
     )
