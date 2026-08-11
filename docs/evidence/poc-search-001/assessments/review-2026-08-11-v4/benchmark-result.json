@@ -161,7 +161,7 @@
       "kind": "license-evidence",
       "locator": "docs/evidence/poc-search-001/gate-v02-harness-readiness.json",
       "retentionUntil": null,
-      "sha256": "sha256:0e8981865de620639daed9719e5701e83ae556b112d7a0a26784e58d543eb83e",
+      "sha256": "sha256:b23ae6d7992cda513e432d87384f7d52e099b746e4eae7e72674c2b87cbefe6e",
       "storage": "repository",
       "verified": true
     },

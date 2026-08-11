@@ -4,28 +4,41 @@
   "gateSetVersion": "stage0-v0.2",
   "gateSetSha256": "sha256:7898293eae8d896b72b04dddc222a0cf2e726afd41375ae8a8402b996ef70858",
   "selectedOptionId": "B",
-  "status": "IMPLEMENTED_COMPILE_VERIFIED_RUNTIME_SMOKE_PENDING",
-  "implementationCommit": null,
-  "recordedAtUtc": "2026-08-11T17:42:29Z",
+  "status": "VERIFIED",
+  "implementationCommit": "b5bcf0951f3cb16d3fec65174395e7715c49a7d7",
+  "recordedAtUtc": "2026-08-11T19:06:05Z",
   "checks": [
     {
       "id": "debug-androidtest-compile",
       "command": ".\\gradlew.bat --no-daemon --stacktrace :poc:search:compileDebugAndroidTestKotlin",
       "outcome": "PASS",
-      "scope": "uncommitted local source tree"
+      "scope": "exact commit b5bcf0951f3cb16d3fec65174395e7715c49a7d7; local compile-only PASS and GitHub Actions android-bootstrap PASS",
+      "evidenceUrls": [
+        "https://github.com/Monumentogram/DORA/actions/runs/31525303627/job/93892022866",
+        "https://github.com/Monumentogram/DORA/actions/runs/31525307657/job/93892051509"
+      ]
     },
     {
       "id": "benchmark-androidtest-compile",
       "command": ".\\gradlew.bat --no-daemon --stacktrace :poc:search:compileBenchmarkAndroidTestKotlin -PpocSearchGateV02BenchmarkBuild=true",
       "outcome": "PASS",
-      "scope": "uncommitted local source tree"
+      "scope": "exact commit b5bcf0951f3cb16d3fec65174395e7715c49a7d7; local compile-only PASS; no instrumentation or benchmark executed"
     },
     {
       "id": "paired-harness-runtime-smoke",
       "command": ":poc:search:connectedDebugAndroidTest SearchSmokeInstrumentedTest",
-      "outcome": "PENDING_CI",
-      "scope": "small synthetic mechanics only; never formal gate evidence",
-      "localLimitation": "No Android SDK/adb runtime was available in the local shell."
+      "outcome": "PASS",
+      "scope": "exact commit b5bcf0951f3cb16d3fec65174395e7715c49a7d7; API 36 Google APIs x86_64 emulator; small synthetic mechanics only; never formal gate evidence",
+      "evidenceUrls": [
+        "https://github.com/Monumentogram/DORA/actions/runs/31525303627/job/93892022723",
+        "https://github.com/Monumentogram/DORA/actions/runs/31525307657/job/93892052174"
+      ]
+    },
+    {
+      "id": "host-combiner-synthetic-tests",
+      "command": ".\\gradlew.bat --no-daemon --stacktrace :poc:search:testDebugUnitTest",
+      "outcome": "PASS",
+      "scope": "exact commit b5bcf0951f3cb16d3fec65174395e7715c49a7d7; local and GitHub Actions synthetic unit tests; no measured workflow"
     }
   ],
   "formalBenchmarkExecuted": false,

@@ -12,16 +12,17 @@ The current assessment is `INCONCLUSIVE` with recommendation `BLOCKED`, for thre
 
 1. The historical campaign ran under Stage 0 v0.1, whose mandatory storage/update failure prose had no numeric predicate. The owner has now approved Option B only prospectively in `stage0-v0.2`; it was not measured and cannot reclassify the historical campaign. `GATE-SEARCH-STORAGE-UPDATE-OVERHEAD` remains `not_evaluated` for that campaign.
 2. The exact 66-component license/NOTICE evidence is complete, but the assigned Project owner has not recorded `EVALUATION_APPROVED` for the dependency graph and pinned Android platform image. Evidence completeness is not evaluation-rights approval.
-3. Only physical D2 is recorded. Physical D1 and D3 are unavailable, the commit-bound runtime smoke for the new paired harness is not yet recorded, and the Project owner has explicitly withheld measured execution.
+3. Only physical D2 is recorded. Physical D1 and D3 are not recorded, and the Project owner has explicitly withheld measured execution.
 
 The evaluated emulator latency, correctness, safety, update-integrity, mapping, rebuild, and cleanup observations remain useful measurements. They do not produce a gate-complete host `PASS` or a `GO` recommendation.
 
 ## Preconditions before another measured campaign
 
-Option B is approved as the prospective contract, but no new targeted or full benchmark may run until all four remaining conditions are recorded:
+The paired control/indexed harness prerequisite is complete at commit `b5bcf0951f3cb16d3fec65174395e7715c49a7d7`: debug and benchmark source sets compile, synthetic combiner tests pass, and both push and pull-request API 36 emulator runtime-smoke jobs pass. Those smoke timings are not gate evidence, and no measured workflow ran.
+
+Option B is approved as the prospective contract, but no new targeted or full benchmark may run until all three remaining conditions are recorded:
 
 - the assigned Project owner explicitly approves or rejects the exact Stage 0 component/license/NOTICE packet in `ip-stage0-evaluation-review.md`;
-- the committed paired control/indexed harness passes compile, runtime smoke and synthetic combiner checks without using smoke timings as gate evidence;
 - matching physical D1, D2 and D3 availability plus a fresh exact-commit preflight are recorded;
 - after those prerequisites, the Project owner separately authorizes measured execution and `benchmarkExecutionAllowed` changes from `false` to `true` in a reviewed commit.
 

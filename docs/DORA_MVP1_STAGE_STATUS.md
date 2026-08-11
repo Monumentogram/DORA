@@ -109,8 +109,9 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
   containing-image digest with exact image ID/revision, fingerprint, API and ABI for Stage 0; no
   extracted binary digest is required. Production Legal is unassigned and independent production
   Security remains mandatory.
-- The new paired control/indexed harness and nearest-rank combiner are implemented; local debug and
-  benchmark compilation pass, while commit-bound emulator runtime smoke remains pending CI. No
+- The new paired control/indexed harness and nearest-rank combiner are implemented and bound to
+  commit `b5bcf0951f3cb16d3fec65174395e7715c49a7d7`; debug and benchmark compilation, synthetic
+  combiner tests and API 36 emulator runtime smoke pass. Smoke timings are not gate evidence. No
   formal 10k/1M v0.2 benchmark was executed.
 - Physical availability is now explicit: D2 (`owner-phone-001`) exists, while D1 and D3 remain
   `unknown`. Missing D1/D3 blocks execution and any formal search `PASS` or support claim.
@@ -151,7 +152,7 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 
 ## Next safe action
 
-Keep the Stage 0C Pull Request Draft and unmerged. The next safe actions are commit-bound harness runtime-smoke verification, explicit Project-owner approval or rejection of the exact Stage 0 component/license/NOTICE packet, and inventory of matching physical D1 and D3 devices. Even after those prerequisites, a later explicit owner execution authorization is required. `tools/check_poc_search_run_readiness.py` fails closed while `benchmarkExecutionAllowed=false`; no benchmark is authorized. Production admission or the next PoC still requires separate explicit scope.
+Keep the Stage 0C Pull Request Draft and unmerged. The next safe actions are explicit Project-owner approval or rejection of the exact Stage 0 component/license/NOTICE packet and inventory of matching physical D1 and D3 devices. Even after those prerequisites, a later explicit owner execution authorization is required. `tools/check_poc_search_run_readiness.py` fails closed while `benchmarkExecutionAllowed=false`; no benchmark is authorized. Production admission or the next PoC still requires separate explicit scope.
 
 ## Update protocol
 

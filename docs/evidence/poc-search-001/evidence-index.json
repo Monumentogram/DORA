@@ -11,13 +11,13 @@
     "newMeasurementRun": false,
     "recommendation": "BLOCKED",
     "resultStatus": "INCONCLUSIVE",
-    "sha256": "sha256:1413815d3ba49d7035cf7ed14f3ec96a7e31f78bc8aee0c0f2c3bcb562da606b",
+    "sha256": "sha256:5fc5bd2d8340d11bbaf7b88fe3c26e1859d57ef84409f2c580158d2a3609a6b2",
     "sourceActionsRunId": "31487775567"
   },
   "executionPrerequisites": {
     "laterOwnerExecutionAuthorization": "WITHHELD",
     "licenseNoticeApproval": "PENDING_PROJECT_OWNER",
-    "pairedHarness": "IMPLEMENTED_COMPILE_VERIFIED_RUNTIME_SMOKE_PENDING",
+    "pairedHarness": "VERIFIED",
     "physicalD1D2D3": "BLOCKED_MISSING_D1_D3"
   },
   "gateContract": {
