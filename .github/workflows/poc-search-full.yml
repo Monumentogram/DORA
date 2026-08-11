@@ -147,14 +147,22 @@ jobs:
         timeout-minutes: 10
         working-directory: android
         run: |
+          set -o pipefail
           "${ANDROID_HOME}/platform-tools/adb" logcat -c
           "${ANDROID_HOME}/platform-tools/adb" logcat -v time 'POC_SEARCH:I' '*:S' &
           logcat_pid=$!
           trap 'kill "${logcat_pid}" 2>/dev/null || true' EXIT
           ./gradlew --no-daemon --stacktrace \
-            :poc:search:connectedDebugAndroidTest \
-            -Pandroid.testInstrumentationRunnerArguments.class=com.monumentogram.dora.poc.search.TargetedScaleQueryPlanInstrumentedTest \
-            -Pandroid.testInstrumentationRunnerArguments.pocSearchTargeted=true
+            :poc:search:assembleDebugAndroidTest
+          "${ANDROID_HOME}/platform-tools/adb" install -r \
+            poc/search/build/outputs/apk/androidTest/debug/search-debug-androidTest.apk
+          "${ANDROID_HOME}/platform-tools/adb" shell am instrument -w -r \
+            -e class com.monumentogram.dora.poc.search.TargetedScaleQueryPlanInstrumentedTest \
+            -e pocSearchTargeted true \
+            "${POC_SEARCH_TEST_PACKAGE}/androidx.test.runner.AndroidJUnitRunner" \
+            | tee "${RUNNER_TEMP}/poc-search-targeted-instrumentation.txt"
+          grep -Fq 'OK (1 test)' "${RUNNER_TEMP}/poc-search-targeted-instrumentation.txt"
+          test -z "$(grep -F 'FAILURES!!!' "${RUNNER_TEMP}/poc-search-targeted-instrumentation.txt" || true)"
 
       - name: Pull sanitized targeted observation
         run: |
@@ -164,6 +172,8 @@ jobs:
             cat files/poc-search-benchmark/targeted-scale-observations.json \
             > "${RUNNER_TEMP}/poc-search-targeted/targeted-scale-observations.json"
           test -s "${RUNNER_TEMP}/poc-search-targeted/targeted-scale-observations.json"
+          python3 -c 'import json,sys; value=json.load(open(sys.argv[1], encoding="utf-8")); assert value["commit"] == sys.argv[2]; assert value["passed"] is True; assert value["plan"]["accepted"] is True; assert value["observedCount"] == value["expectedCount"]' \
+            "${RUNNER_TEMP}/poc-search-targeted/targeted-scale-observations.json" "${GITHUB_SHA}"
           database_listing=$("${ANDROID_HOME}/platform-tools/adb" shell \
             run-as "${POC_SEARCH_TEST_PACKAGE}" find databases -type f 2>/dev/null | tr -d '\r' || true)
           test -z "$(printf '%s\n' "${database_listing}" | grep 'poc-search-targeted-scale.db' || true)"
@@ -271,15 +281,23 @@ jobs:
         timeout-minutes: 25
         working-directory: android
         run: |
+          set -o pipefail
           "${ANDROID_HOME}/platform-tools/adb" logcat -c
           "${ANDROID_HOME}/platform-tools/adb" logcat -v time 'POC_SEARCH:I' '*:S' &
           logcat_pid=$!
           trap 'kill "${logcat_pid}" 2>/dev/null || true' EXIT
           ./gradlew --no-daemon --stacktrace \
-            :poc:search:connectedDebugAndroidTest \
-            "-Pandroid.testInstrumentationRunnerArguments.class=com.monumentogram.dora.poc.search.FullSearchBenchmarkInstrumentedTest#${{ matrix.method }}" \
-            -Pandroid.testInstrumentationRunnerArguments.pocSearchFull=true \
-            -Pandroid.testInstrumentationRunnerArguments.pocSearchPhase=${{ matrix.phase }}
+            :poc:search:assembleDebugAndroidTest
+          "${ANDROID_HOME}/platform-tools/adb" install -r \
+            poc/search/build/outputs/apk/androidTest/debug/search-debug-androidTest.apk
+          "${ANDROID_HOME}/platform-tools/adb" shell am instrument -w -r \
+            -e class "com.monumentogram.dora.poc.search.FullSearchBenchmarkInstrumentedTest#${{ matrix.method }}" \
+            -e pocSearchFull true \
+            -e pocSearchPhase "${{ matrix.phase }}" \
+            "${POC_SEARCH_TEST_PACKAGE}/androidx.test.runner.AndroidJUnitRunner" \
+            | tee "${RUNNER_TEMP}/poc-search-${{ matrix.phase }}-instrumentation.txt"
+          grep -Fq 'OK (1 test)' "${RUNNER_TEMP}/poc-search-${{ matrix.phase }}-instrumentation.txt"
+          test -z "$(grep -F 'FAILURES!!!' "${RUNNER_TEMP}/poc-search-${{ matrix.phase }}-instrumentation.txt" || true)"
 
       - name: Pull sanitized ${{ matrix.phase }} checkpoint
         run: |

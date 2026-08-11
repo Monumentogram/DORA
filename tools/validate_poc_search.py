@@ -147,8 +147,16 @@ def validate_module_wiring() -> None:
     require(
         "context.filesDir" in checkpoint_writer
         and "context.filesDir" in targeted_test
-        and 'run-as "${POC_SEARCH_TEST_PACKAGE}"' in workflow,
+        and 'run-as "${POC_SEARCH_TEST_PACKAGE}"' in workflow
+        and ":poc:search:assembleDebugAndroidTest" in workflow
+        and "shell am instrument -w -r" in workflow
+        and ":poc:search:connectedDebugAndroidTest" not in workflow,
         "Sanitized checkpoints must survive instrumentation for run-as extraction",
+    )
+    require(
+        'json.load(open(sys.argv[1], encoding="utf-8"))' in workflow
+        and 'assert value["passed"] is True' in workflow,
+        "Targeted observation is not parsed and validated before artifact upload",
     )
     require(
         (ROOT / "tools/combine_poc_search_checkpoints.py").is_file(),
