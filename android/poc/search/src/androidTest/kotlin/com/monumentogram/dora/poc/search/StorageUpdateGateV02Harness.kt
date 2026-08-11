@@ -102,7 +102,7 @@ class StorageUpdateGateV02Harness(private val context: Context) {
             val journalMode = scalarString(it, "PRAGMA journal_mode=WAL")
             check(journalMode.equals("wal", ignoreCase = true))
             it.execSQL("PRAGMA synchronous=FULL")
-            it.execSQL("PRAGMA wal_autocheckpoint=1000")
+            check(scalarLong(it, "PRAGMA wal_autocheckpoint=1000") == 1_000L)
             it.execSQL("PRAGMA foreign_keys=ON")
             it.execSQL("PRAGMA temp_store=DEFAULT")
             check(scalarLong(it, "PRAGMA foreign_keys") == 1L)

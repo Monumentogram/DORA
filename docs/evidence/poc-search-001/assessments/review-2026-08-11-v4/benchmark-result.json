@@ -226,7 +226,7 @@
       "kind": "other",
       "locator": "docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES.md",
       "retentionUntil": null,
-      "sha256": "sha256:802c41c733074f47f3e806ee57eadd22db059ca1b35774c555083750a4872ae9",
+      "sha256": "sha256:2de9385ac0958684e2767eb927a45617d303bd842090fe1b99940c97c36034ac",
       "storage": "repository",
       "verified": true
     },
@@ -239,7 +239,7 @@
       "kind": "other",
       "locator": "docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2.md",
       "retentionUntil": null,
-      "sha256": "sha256:e295fab4ff8bbda0b69f097ec5ee0431ee32c1a85f65987c3992847ac7f4edc9",
+      "sha256": "sha256:5d1e1889022d2aca536ae737bd889592f4a846f629f6552b9712148f9a42c7c8",
       "storage": "repository",
       "verified": true
     },
