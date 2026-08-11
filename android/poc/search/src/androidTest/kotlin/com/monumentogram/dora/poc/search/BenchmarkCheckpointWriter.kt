@@ -31,9 +31,7 @@ data class BenchmarkCheckpointRun(
 object BenchmarkCheckpointWriter {
     fun write(context: Context, run: BenchmarkCheckpointRun): File {
         require(run.phase in PHASES)
-        val outputDirectory =
-            requireNotNull(context.getExternalFilesDir(null))
-                .resolve(BenchmarkObservationWriter.OUTPUT_DIRECTORY)
+        val outputDirectory = context.filesDir.resolve(BenchmarkObservationWriter.OUTPUT_DIRECTORY)
         check(outputDirectory.exists() || outputDirectory.mkdirs())
         val output = outputDirectory.resolve("benchmark-${run.phase}-checkpoint.json")
         output.writeText(toJson(context, run).toString(2) + "\n", Charsets.UTF_8)

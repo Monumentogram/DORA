@@ -65,7 +65,7 @@ class TargetedScaleQueryPlanInstrumentedTest {
             val deleted = deleteAndVerify(context)
             val output =
                 writeObservation(
-                    instrumentation.context,
+                    context,
                     contract,
                     preparation,
                     execution,
@@ -138,9 +138,7 @@ class TargetedScaleQueryPlanInstrumentedTest {
         databaseDeleted: Boolean,
         durationSeconds: Double,
     ): File {
-        val outputDirectory =
-            requireNotNull(context.getExternalFilesDir(null))
-                .resolve(BenchmarkObservationWriter.OUTPUT_DIRECTORY)
+        val outputDirectory = context.filesDir.resolve(BenchmarkObservationWriter.OUTPUT_DIRECTORY)
         check(outputDirectory.exists() || outputDirectory.mkdirs())
         val output = outputDirectory.resolve(OUTPUT_FILE)
         output.writeText(

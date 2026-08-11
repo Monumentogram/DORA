@@ -23,6 +23,9 @@ concurrency:
   group: poc-search-scale-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  POC_SEARCH_TEST_PACKAGE: com.monumentogram.dora.poc.search.test
+
 jobs:
   validate-harness:
     name: validate-harness
@@ -155,12 +158,15 @@ jobs:
 
       - name: Pull sanitized targeted observation
         run: |
-          observation_path=$("${ANDROID_HOME}/platform-tools/adb" shell find /sdcard/Android/data -type f -name targeted-scale-observations.json | tr -d '\r' | head -n 1)
-          test -n "${observation_path}"
           mkdir -p "${RUNNER_TEMP}/poc-search-targeted"
-          "${ANDROID_HOME}/platform-tools/adb" pull "${observation_path}" "${RUNNER_TEMP}/poc-search-targeted/targeted-scale-observations.json"
-          retained_database=$("${ANDROID_HOME}/platform-tools/adb" shell find /data/user/0 -type f -name 'poc-search-targeted-scale.db*' 2>/dev/null | tr -d '\r')
-          test -z "${retained_database}"
+          "${ANDROID_HOME}/platform-tools/adb" exec-out \
+            run-as "${POC_SEARCH_TEST_PACKAGE}" \
+            cat files/poc-search-benchmark/targeted-scale-observations.json \
+            > "${RUNNER_TEMP}/poc-search-targeted/targeted-scale-observations.json"
+          test -s "${RUNNER_TEMP}/poc-search-targeted/targeted-scale-observations.json"
+          database_listing=$("${ANDROID_HOME}/platform-tools/adb" shell \
+            run-as "${POC_SEARCH_TEST_PACKAGE}" find databases -type f 2>/dev/null | tr -d '\r' || true)
+          test -z "$(printf '%s\n' "${database_listing}" | grep 'poc-search-targeted-scale.db' || true)"
 
       - name: Upload commit-bound targeted observation
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -277,12 +283,15 @@ jobs:
 
       - name: Pull sanitized ${{ matrix.phase }} checkpoint
         run: |
-          checkpoint_path=$("${ANDROID_HOME}/platform-tools/adb" shell find /sdcard/Android/data -type f -name 'benchmark-${{ matrix.phase }}-checkpoint.json' | tr -d '\r' | head -n 1)
-          test -n "${checkpoint_path}"
           mkdir -p "${RUNNER_TEMP}/poc-search-checkpoint"
-          "${ANDROID_HOME}/platform-tools/adb" pull "${checkpoint_path}" "${RUNNER_TEMP}/poc-search-checkpoint/benchmark-${{ matrix.phase }}-checkpoint.json"
-          retained_database=$("${ANDROID_HOME}/platform-tools/adb" shell find /data/user/0 -type f -name 'poc-search-reference-*.db*' 2>/dev/null | tr -d '\r')
-          test -z "${retained_database}"
+          "${ANDROID_HOME}/platform-tools/adb" exec-out \
+            run-as "${POC_SEARCH_TEST_PACKAGE}" \
+            cat files/poc-search-benchmark/benchmark-${{ matrix.phase }}-checkpoint.json \
+            > "${RUNNER_TEMP}/poc-search-checkpoint/benchmark-${{ matrix.phase }}-checkpoint.json"
+          test -s "${RUNNER_TEMP}/poc-search-checkpoint/benchmark-${{ matrix.phase }}-checkpoint.json"
+          database_listing=$("${ANDROID_HOME}/platform-tools/adb" shell \
+            run-as "${POC_SEARCH_TEST_PACKAGE}" find databases -type f 2>/dev/null | tr -d '\r' || true)
+          test -z "$(printf '%s\n' "${database_listing}" | grep 'poc-search-reference-' || true)"
 
       - name: Upload independently retained ${{ matrix.phase }} checkpoint
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

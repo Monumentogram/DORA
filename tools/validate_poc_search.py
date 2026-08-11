@@ -136,9 +136,19 @@ def validate_module_wiring() -> None:
     for name in required_files:
         require((source_root / name).is_file(), f"Missing benchmark source {name}")
     plan_policy = (source_root / "FtsQueryPlanPolicy.kt").read_text(encoding="utf-8")
+    checkpoint_writer = (source_root / "BenchmarkCheckpointWriter.kt").read_text(encoding="utf-8")
+    targeted_test = (source_root / "TargetedScaleQueryPlanInstrumentedTest.kt").read_text(
+        encoding="utf-8"
+    )
     require(
         "readableDatabase.query(query)" in plan_policy,
         "EXPLAIN must use the cursor query path rather than Room statement execution",
+    )
+    require(
+        "context.filesDir" in checkpoint_writer
+        and "context.filesDir" in targeted_test
+        and 'run-as "${POC_SEARCH_TEST_PACKAGE}"' in workflow,
+        "Sanitized checkpoints must survive instrumentation for run-as extraction",
     )
     require(
         (ROOT / "tools/combine_poc_search_checkpoints.py").is_file(),
