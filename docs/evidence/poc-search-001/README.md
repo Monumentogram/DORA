@@ -24,6 +24,14 @@ The manifests were generated before any full SQLite benchmark result was observe
 
 Mandatory CI runs a small generated-data Room/FTS4 smoke suite. The full reference campaign runs only through the separate commit-bound workflow and records the runner, Android API, ABI, emulator build, CPU/RAM information, build type, database sizes, preparation phases, sampled memory, correctness, latency, mutation behavior, and rebuild behavior.
 
+Before the full campaign can start, a targeted 10k/1M preflight executes the exact bound
+`Q-SEARCH-SOURCE` plan and requires FTS4 to drive canonical rowid lookups. Its 30-second
+per-operation guard and 10-minute CI-step timeout exist only to stop a pathological plan quickly;
+they are not approved product gates and do not contribute a verdict. A passing full campaign runs
+query, rebuild/mutation, and independent-secondary phases as separate jobs, retains each completed
+sanitized checkpoint, and combines them only after commit, manifest, environment, count, digest,
+correctness, and query-plan consistency checks pass.
+
 Host/emulator measurements can establish generated-scale correctness and exploratory feasibility. They cannot establish real-phone latency or a supported-device claim. Unless an approved failure gate is triggered, the formal result therefore remains `INCONCLUSIVE` until a future physical D1–D3 campaign exists.
 
 The Room/FTS4 schema in `:poc:search` is PoC-only. It is not a production schema, architecture admission, migration commitment, or permission to start production functionality.
@@ -59,3 +67,15 @@ Any harness defect invalidates that run. Its fact must be preserved in this READ
   outcome is admitted. The correction retains the frozen manifests, query mix, repetitions,
   percentile definition and gates, while using the FTS doclist directly for semantically
   equivalent unfiltered MATCH counts and adding per-query phase diagnostics.
+- Full workflow run `31438814885` at commit `1db7a97f0d36b4d2dfacdc395f9ac7cef1390c32`
+  is `INVALID`: the job was cancelled after approximately 356 minutes while the second rebuild
+  correctness pass was still executing `Q-SEARCH-SOURCE`, before observations or result evidence
+  could be written. Phase diagnostics isolate the defect to the `FTS MATCH + source_type + COUNT`
+  query: the baseline execution took about 140 minutes, the first-rebuild execution took about
+  141 minutes, and the second-rebuild execution was still running after about 67 minutes when the
+  job ended. Database preparation completed in about 88 seconds, the frozen 1,020-operation
+  latency campaign completed in about 132 seconds, and each full-scale rebuild itself completed
+  in 24–31 seconds. No partial metric or gate outcome is admitted. The correction preserves
+  parameter binding and all frozen manifests, repetitions, percentile definitions and approved
+  gates; it makes FTS4 the driving table, verifies the full-scale query plan before another full
+  campaign, and splits the campaign into independently retained phase checkpoints.

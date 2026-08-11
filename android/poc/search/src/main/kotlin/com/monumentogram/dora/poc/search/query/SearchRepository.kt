@@ -4,6 +4,8 @@ package com.monumentogram.dora.poc.search.query
 
 import android.database.sqlite.SQLiteException
 import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.sqlite.db.SupportSQLiteQuery
+import com.monumentogram.dora.poc.search.db.QueryPlanRow
 import com.monumentogram.dora.poc.search.db.SearchPocDao
 
 class SearchRepository(private val dao: SearchPocDao) {
@@ -21,7 +23,7 @@ class SearchRepository(private val dao: SearchPocDao) {
 
         return try {
             val statement = buildStatement(request, compiled, countOnly = false)
-            SearchExecution.Success(dao.rawSearch(statement), compiled)
+            SearchExecution.Success(dao.rawSearch(statement.asQuery()), compiled)
         } catch (_: SQLiteException) {
             SearchExecution.Failure("SQLITE_QUERY_FAILED", compiled)
         } catch (_: IllegalStateException) {
@@ -40,7 +42,7 @@ class SearchRepository(private val dao: SearchPocDao) {
 
         return try {
             val statement = buildCountStatement(request, compiled)
-            CountExecution.Success(dao.rawCount(statement), compiled)
+            CountExecution.Success(dao.rawCount(statement.asQuery()), compiled)
         } catch (_: SQLiteException) {
             CountExecution.Failure("SQLITE_QUERY_FAILED", compiled)
         } catch (_: IllegalStateException) {
@@ -51,15 +53,21 @@ class SearchRepository(private val dao: SearchPocDao) {
     fun compile(request: SearchRequest): CompiledUserQuery =
         SafeFtsQueryCompiler.compile(request.rawQuery, request.mode, !request.filters.isEmpty())
 
+    fun explainCountPlan(request: SearchRequest): List<QueryPlanRow> {
+        val compiled = compile(request)
+        require(compiled.status == QueryStatus.READY || compiled.status == QueryStatus.FILTER_ONLY)
+        return dao.rawQueryPlan(buildCountStatement(request, compiled).asExplainQuery())
+    }
+
     private fun buildCountStatement(
         request: SearchRequest,
         compiled: CompiledUserQuery,
-    ): SimpleSQLiteQuery {
+    ): BoundQuery {
         // A count-only MATCH without metadata filters is fully answered by the FTS doclist.
         // Joining every matching row back through the canonical tables is logically redundant
         // and turns common-term oracle checks into multi-hour scans at the 1M-row reference scale.
         if (compiled.status == QueryStatus.READY && request.filters.isEmpty()) {
-            return SimpleSQLiteQuery(
+            return BoundQuery(
                 "SELECT COUNT(*) FROM transcript_segments_fts " +
                     "WHERE transcript_segments_fts MATCH ?",
                 arrayOf(compiled.matchExpression),
@@ -72,7 +80,7 @@ class SearchRepository(private val dao: SearchPocDao) {
         request: SearchRequest,
         compiled: CompiledUserQuery,
         countOnly: Boolean,
-    ): SimpleSQLiteQuery {
+    ): BoundQuery {
         val sql = StringBuilder()
         if (countOnly) {
             sql.append("SELECT COUNT(*) ")
@@ -84,11 +92,19 @@ class SearchRepository(private val dao: SearchPocDao) {
                     "c.started_at_ms AS conversationStartedAtMs "
             )
         }
-        sql.append("FROM transcript_segments AS s ")
-        sql.append("JOIN conversations AS c ON c.conversation_id = s.conversation_id ")
         if (compiled.status == QueryStatus.READY) {
             sql.append(
-                "JOIN transcript_segments_fts ON transcript_segments_fts.rowid = s.segment_id "
+                "FROM transcript_segments_fts " +
+                    "CROSS JOIN transcript_segments AS s " +
+                    "ON s.segment_id = transcript_segments_fts.rowid " +
+                    "CROSS JOIN conversations AS c " +
+                    "ON c.conversation_id = s.conversation_id "
+            )
+        } else {
+            sql.append(
+                "FROM conversations AS c " +
+                    "CROSS JOIN transcript_segments AS s " +
+                    "ON s.conversation_id = c.conversation_id "
             )
         }
 
@@ -122,6 +138,13 @@ class SearchRepository(private val dao: SearchPocDao) {
             arguments += request.limit
             arguments += request.offset
         }
-        return SimpleSQLiteQuery(sql.toString(), arguments.toTypedArray())
+        return BoundQuery(sql.toString(), arguments.toTypedArray())
+    }
+
+    private data class BoundQuery(val sql: String, val arguments: Array<out Any?>) {
+        fun asQuery(): SupportSQLiteQuery = SimpleSQLiteQuery(sql, arguments)
+
+        fun asExplainQuery(): SupportSQLiteQuery =
+            SimpleSQLiteQuery("EXPLAIN QUERY PLAN $sql", arguments)
     }
 }

@@ -212,6 +212,8 @@ def query_result(observations: dict[str, Any], evaluation: dict[str, Any]) -> di
         "baselineCorrectness": observations["baselineCorrectness"],
         "secondaryCorrectness": observations["secondaryCorrectness"],
         "latency": observations["latency"],
+        "queryPlan": observations["queryPlan"],
+        "checkpointExecution": observations["checkpointExecution"],
         "hostEmulatorExploratoryOutcome": evaluation["hostEmulatorExploratoryOutcome"],
         "physicalDeviceLatencyClaim": False,
     }
@@ -505,7 +507,7 @@ def build_result(
             "gateSetStatus": "Approved",
             "requiredSlicesCompleted": False,
             "rationale": rationale,
-            "invalidatedRunCount": 2,
+            "invalidatedRunCount": 3,
         },
         "errors": errors,
         "battery": {
@@ -596,6 +598,17 @@ def validate_observations(observations: dict[str, Any], expected_commit: str | N
         require(commit == expected_commit, f"Observation commit {commit} != {expected_commit}")
     require(observations["campaign"]["latencyEligibleQueryCount"] == 34, "Frozen query count drift")
     require(observations["latency"]["measuredOperations"] == 1020, "Frozen measured count drift")
+    require(observations["queryPlan"]["accepted"] is True, "FTS4-driving query plan not verified")
+    require(
+        observations["queryPlan"]["ftsIsDrivingTable"] is True
+        and observations["queryPlan"]["canonicalLookupsUseRowId"] is True,
+        "Q-SEARCH-SOURCE plan does not use FTS4 then canonical rowid lookups",
+    )
+    require(
+        observations["checkpointExecution"]["completedPhases"]
+        == ["query", "rebuild", "secondary"],
+        "Full benchmark phase checkpoints are incomplete",
+    )
     require(observations["temporaryDatabasesDeleted"] is True, "Temporary benchmark databases were not deleted")
     for name, key in (
         ("dataset-manifest.json", "datasetSha256"),

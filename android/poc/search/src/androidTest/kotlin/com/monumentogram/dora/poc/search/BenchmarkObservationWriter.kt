@@ -73,7 +73,10 @@ object BenchmarkObservationWriter {
                         run.queryCampaign.cases.count { it.latencyEligible },
                     ),
             )
-            .put("androidEnvironment", androidEnvironment(context, run))
+            .put(
+                "androidEnvironment",
+                androidEnvironment(context, run.sqliteVersion, run.ftsCreateSql),
+            )
             .put("primaryPreparation", preparation(run.primaryPreparation))
             .put("secondaryPreparation", preparation(run.secondaryPreparation))
             .put("baselineCorrectness", correctness(run.baselineCorrectness))
@@ -85,7 +88,11 @@ object BenchmarkObservationWriter {
             .put("memory", memory(run.memory))
             .put("temporaryDatabasesDeleted", run.temporaryDatabasesDeleted)
 
-    private fun androidEnvironment(context: Context, run: FullBenchmarkRun): JSONObject {
+    internal fun androidEnvironment(
+        context: Context,
+        sqliteVersion: String,
+        ftsCreateSql: String,
+    ): JSONObject {
         val activityManager = context.getSystemService(ActivityManager::class.java)
         val memoryInfo = ActivityManager.MemoryInfo().also(activityManager::getMemoryInfo)
         val cpuSummary =
@@ -113,14 +120,14 @@ object BenchmarkObservationWriter {
             .put("ramMb", memoryInfo.totalMem / (1024L * 1024L))
             .put("pageSizeBytes", Os.sysconf(OsConstants._SC_PAGESIZE))
             .put("cpuSummary", cpuSummary ?: JSONObject.NULL)
-            .put("sqliteVersion", run.sqliteVersion)
+            .put("sqliteVersion", sqliteVersion)
             .put("roomVersion", "2.8.4")
-            .put("ftsCreateSql", run.ftsCreateSql)
+            .put("ftsCreateSql", ftsCreateSql)
             .put("buildType", "debug-androidTest")
             .put("monotonicClock", "SystemClock.elapsedRealtimeNanos")
     }
 
-    private fun preparation(value: DatabasePreparation): JSONObject =
+    internal fun preparation(value: DatabasePreparation): JSONObject =
         JSONObject()
             .put("emptyDatabaseCreationMs", value.emptyDatabaseCreationMs)
             .put("conversationInsertMs", value.conversationInsertMs)
@@ -149,7 +156,7 @@ object BenchmarkObservationWriter {
             .put("shmBytes", value.shmBytes)
             .put("totalBytes", value.totalBytes)
 
-    private fun correctness(value: CorrectnessSummary): JSONObject =
+    internal fun correctness(value: CorrectnessSummary): JSONObject =
         JSONObject()
             .put("label", value.label)
             .put("expectedCases", value.expectedCases)
@@ -193,7 +200,7 @@ object BenchmarkObservationWriter {
             .put("observedSegmentIds", JSONArray(value.observedSegmentIds))
             .put("errorCode", value.errorCode ?: JSONObject.NULL)
 
-    private fun latency(value: LatencySummary): JSONObject =
+    internal fun latency(value: LatencySummary): JSONObject =
         JSONObject()
             .put("warmupOperations", value.warmupOperations)
             .put("measuredOperations", value.measuredOperations)
@@ -221,7 +228,7 @@ object BenchmarkObservationWriter {
             .put("meanMs", value.meanMs)
             .put("standardDeviationMs", value.standardDeviationMs)
 
-    private fun rebuild(value: RebuildSummary): JSONObject =
+    internal fun rebuild(value: RebuildSummary): JSONObject =
         JSONObject()
             .put("baselineIndexLogicalSha256", value.baselineIndexLogicalSha256)
             .put("baselineQueryResultSha256", value.baselineQueryResultSha256)
@@ -271,7 +278,7 @@ object BenchmarkObservationWriter {
             .put("finalCorrectness", correctness(value.finalCorrectness))
             .put("deterministic", value.deterministic)
 
-    private fun mutation(value: MutationSummary): JSONObject =
+    internal fun mutation(value: MutationSummary): JSONObject =
         JSONObject()
             .put("manifestId", value.manifestId)
             .put(
@@ -297,7 +304,7 @@ object BenchmarkObservationWriter {
             .put("finalFtsCount", value.finalFtsCount)
             .put("allCorrect", value.allCorrect)
 
-    private fun crossBuild(value: CrossBuildDeterminism): JSONObject =
+    internal fun crossBuild(value: CrossBuildDeterminism): JSONObject =
         JSONObject()
             .put("primaryDatasetLogicalSha256", value.primaryDatasetLogicalSha256)
             .put("secondaryDatasetLogicalSha256", value.secondaryDatasetLogicalSha256)
@@ -311,7 +318,7 @@ object BenchmarkObservationWriter {
             .put("queryResultsMatched", value.queryResultsMatched)
             .put("deterministic", value.deterministic)
 
-    private fun memory(value: MemoryObservation): JSONObject =
+    internal fun memory(value: MemoryObservation): JSONObject =
         JSONObject()
             .put("peakPssMb", value.peakPssMb)
             .put("peakNativeHeapMb", value.peakNativeHeapMb)

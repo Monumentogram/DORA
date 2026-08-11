@@ -93,6 +93,29 @@ class SearchSmokeInstrumentedTest {
     }
 
     @Test
+    fun matchAndSourceCountUsesFts4AsTheDrivingTable() {
+        val manifest = BenchmarkContracts.readQueries(context)
+        val queryCase = manifest.cases.single { it.id == "Q-SEARCH-SOURCE" }
+        val request =
+            SearchRequest(
+                rawQuery = queryCase.rawQuery,
+                mode = queryCase.mode,
+                filters = queryCase.filters,
+                limit = manifest.resultLimit,
+            )
+
+        val observation = FtsQueryPlanPolicy.inspect(repository.explainCountPlan(request))
+
+        assertTrue(observation.details.joinToString(" | "), observation.accepted)
+        val count = repository.count(request)
+        assertTrue(count is CountExecution.Success)
+        assertEquals(
+            expectedSmallDatasetSourceCount(queryCase),
+            (count as CountExecution.Success).count,
+        )
+    }
+
+    @Test
     fun frozenQueryManifestAndAdversarialHandlingMatchCompilerContract() {
         val manifest = BenchmarkContracts.readQueries(context)
         assertTrue(manifest.cases.size >= 50)
@@ -168,6 +191,17 @@ class SearchSmokeInstrumentedTest {
         assertTrue(result is CountExecution.Success)
         return (result as CountExecution.Success).count
     }
+
+    private fun expectedSmallDatasetSourceCount(queryCase: QueryCase): Long =
+        (1L..SMOKE_SEGMENTS)
+            .count { segmentId ->
+                val segment = SyntheticDatasetGenerator.segment(segmentId)
+                val conversation = SyntheticDatasetGenerator.conversation(segment.conversationId)
+                queryCase.expectedTokens.all { token ->
+                    token in SafeFtsQueryCompiler.tokenize(segment.text)
+                } && conversation.sourceType == queryCase.filters.sourceType
+            }
+            .toLong()
 
     companion object {
         private const val DATABASE_NAME = "poc-search-smoke.db"

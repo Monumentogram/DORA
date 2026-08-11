@@ -17,6 +17,7 @@ EVIDENCE = ROOT / "docs" / "evidence" / "poc-search-001"
 sys.path.insert(0, str(ROOT / "tools"))
 
 import poc_search_contract as contract  # noqa: E402
+import combine_poc_search_checkpoints as checkpoint_combiner  # noqa: E402
 import finalize_poc_search_result as finalizer  # noqa: E402
 from validate_poc_capture import SchemaValidator  # noqa: E402
 
@@ -96,11 +97,22 @@ def validate_module_wiring() -> None:
         ROOT
         / "android/poc/search/src/main/kotlin/com/monumentogram/dora/poc/search/query/SafeFtsQueryCompiler.kt"
     ).read_text(encoding="utf-8")
+    workflow = (ROOT / ".github/workflows/poc-search-full.yml").read_text(encoding="utf-8")
     require('include(":poc:search")' in settings, "Search PoC module not included")
     require('room = "2.8.4"' in catalog, "Room version is not pinned")
     require("androidx.room.runtime" in build and "androidx.room.compiler" in build, "Room dependencies missing")
     require("SimpleSQLiteQuery" in repository and "MATCH ?" in repository, "MATCH is not parameter-bound")
     require("arguments += it" in repository, "Compiled MATCH argument is not bound")
+    require(
+        "FROM transcript_segments_fts" in repository
+        and "CROSS JOIN transcript_segments AS s" in repository
+        and "CROSS JOIN conversations AS c" in repository,
+        "Filtered MATCH queries must keep FTS4 as the driving table",
+    )
+    require(
+        'SimpleSQLiteQuery("EXPLAIN QUERY PLAN $sql", arguments)' in repository,
+        "Bound EXPLAIN QUERY PLAN support is missing",
+    )
     require(
         'SearchMode.EXACT -> tokens.joinToString(" AND ")' in compiler
         and 'SearchMode.PREFIX -> tokens.joinToString(" AND ")' in compiler,
@@ -116,10 +128,33 @@ def validate_module_wiring() -> None:
         "MutationRunner.kt",
         "RebuildRunner.kt",
         "FullSearchBenchmarkInstrumentedTest.kt",
+        "BenchmarkCheckpointWriter.kt",
+        "FtsQueryPlanPolicy.kt",
+        "TargetedScaleQueryPlanInstrumentedTest.kt",
     )
     source_root = ROOT / "android/poc/search/src/androidTest/kotlin/com/monumentogram/dora/poc/search"
     for name in required_files:
         require((source_root / name).is_file(), f"Missing benchmark source {name}")
+    require(
+        (ROOT / "tools/combine_poc_search_checkpoints.py").is_file(),
+        "Missing checkpoint combiner",
+    )
+    require(
+        "TargetedScaleQueryPlanInstrumentedTest" in workflow
+        and "timeout-minutes: 10" in workflow,
+        "Full-scale source-filter preflight is not hard-bounded",
+    )
+    require(
+        "needs: targeted-scale-query-plan" in workflow
+        and "fail-fast: false" in workflow
+        and all(f"phase: {phase}" in workflow for phase in ("query", "rebuild", "secondary")),
+        "Full benchmark is not gated and checkpointed as three independent jobs",
+    )
+    require(
+        "combine_poc_search_checkpoints.py" in workflow
+        and "timeout-minutes: 360" not in workflow,
+        "Checkpoint finalization or bounded runtime policy missing",
+    )
 
 
 def index_digest(connection: sqlite3.Connection) -> str:
@@ -155,6 +190,8 @@ def host_sqlite_smoke() -> None:
                     language TEXT NOT NULL,
                     text TEXT NOT NULL
                 );
+                CREATE INDEX index_conversations_source_type ON conversations(source_type);
+                CREATE INDEX index_transcript_segments_conversation_id ON transcript_segments(conversation_id);
                 CREATE VIRTUAL TABLE transcript_segments_fts USING fts4(text, tokenize=unicode61 "remove_diacritics=0");
                 """
             )
@@ -203,6 +240,58 @@ def host_sqlite_smoke() -> None:
                 if contract.query_matches(contract.tokenize(row["text"]), compiled, "EXACT")
             ]
             require(actual == expected, "Host FTS4 search differs from independent small-dataset oracle")
+            source_query = next(
+                case
+                for case in read_json(EVIDENCE / "query-manifest.json")["contract"]["queries"]
+                if case["id"] == "Q-SEARCH-SOURCE"
+            )
+            source_compiled = contract.compile_query(
+                source_query["rawQuery"], source_query["mode"], True
+            )
+            source_sql = (
+                "SELECT COUNT(*) FROM transcript_segments_fts "
+                "CROSS JOIN transcript_segments AS s "
+                "ON s.segment_id = transcript_segments_fts.rowid "
+                "CROSS JOIN conversations AS c "
+                "ON c.conversation_id = s.conversation_id "
+                "WHERE transcript_segments_fts MATCH ? AND c.source_type = ?"
+            )
+            source_arguments = (
+                source_compiled.compiled_match,
+                source_query["filters"]["sourceType"],
+            )
+            plan = [
+                row[3]
+                for row in connection.execute(
+                    "EXPLAIN QUERY PLAN " + source_sql,
+                    source_arguments,
+                )
+            ]
+            require(
+                len(plan) >= 3
+                and "transcript_segments_fts" in plan[0]
+                and "VIRTUAL TABLE" in plan[0].upper(),
+                f"Host plan is not FTS4-driving: {plan}",
+            )
+            require(
+                "SEARCH S USING INTEGER PRIMARY KEY" in plan[1].upper()
+                and "SEARCH C USING INTEGER PRIMARY KEY" in plan[2].upper(),
+                f"Host plan lost canonical rowid lookups: {plan}",
+            )
+            expected_source_count = sum(
+                1
+                for row in segments
+                if contract.query_matches(
+                    contract.tokenize(row["text"]), source_compiled, source_query["mode"]
+                )
+                and contract.conversation_source(row["conversationId"])
+                == source_query["filters"]["sourceType"]
+            )
+            require(
+                connection.execute(source_sql, source_arguments).fetchone()[0]
+                == expected_source_count,
+                "FTS4-driving source-filter count differs from the independent oracle",
+            )
             query_manifest = read_json(EVIDENCE / "query-manifest.json")
             for case in query_manifest["contract"]["queries"]:
                 if case["category"] not in ("adversarial", "special-characters"):
@@ -272,6 +361,81 @@ def validate_result_if_present() -> None:
         path = ROOT / evidence["locator"]
         require(path.is_file(), f"Missing result evidence {evidence['locator']}")
         require(file_digest(path) == evidence["sha256"], f"Evidence SHA mismatch: {evidence['locator']}")
+
+
+def combine_checkpoint_fixture(observations: dict[str, Any]) -> dict[str, Any]:
+    common = {
+        "checkpointSchemaVersion": 1,
+        "pocId": observations["pocId"],
+        "harnessVersion": observations["harnessVersion"],
+        "commit": observations["commit"],
+        "generatedAt": observations["generatedAt"],
+        "durationSeconds": observations["durationSeconds"] / 3,
+        "manifests": observations["manifests"],
+        "campaign": observations["campaign"],
+        "androidEnvironment": observations["androidEnvironment"],
+        "memory": observations["memory"],
+        "temporaryDatabaseDeleted": True,
+    }
+    query = {
+        **common,
+        "checkpoint": "query",
+        "completedPhases": ["query"],
+        "primaryPreparation": observations["primaryPreparation"],
+        "baselineCorrectness": observations["baselineCorrectness"],
+        "latency": observations["latency"],
+        "primaryIndexLogicalSha256": observations["rebuild"]["baselineIndexLogicalSha256"],
+        "queryPlan": {
+            "queryId": "Q-SEARCH-SOURCE",
+            "details": [
+                "SCAN transcript_segments_fts VIRTUAL TABLE INDEX 4:",
+                "SEARCH s USING INTEGER PRIMARY KEY (rowid=?)",
+                "SEARCH c USING INTEGER PRIMARY KEY (rowid=?)",
+            ],
+            "ftsLoopIndex": 0,
+            "segmentLoopIndex": 1,
+            "conversationLoopIndex": 2,
+            "ftsIsDrivingTable": True,
+            "canonicalLookupsUseRowId": True,
+            "sourceIndexIsNotDriving": True,
+            "accepted": True,
+        },
+    }
+    rebuild = {
+        **common,
+        "checkpoint": "rebuild",
+        "completedPhases": ["rebuild"],
+        "rebuildPreparation": observations["primaryPreparation"],
+        "rebuildBaselineCorrectness": observations["baselineCorrectness"],
+        "rebuildBaselineIndexLogicalSha256": observations["rebuild"][
+            "baselineIndexLogicalSha256"
+        ],
+        "rebuild": observations["rebuild"],
+        "mutation": observations["mutation"],
+    }
+    secondary = {
+        **common,
+        "checkpoint": "secondary",
+        "completedPhases": ["secondary"],
+        "secondaryPreparation": observations["secondaryPreparation"],
+        "secondaryCorrectness": observations["secondaryCorrectness"],
+        "secondaryIndexLogicalSha256": observations["rebuild"][
+            "baselineIndexLogicalSha256"
+        ],
+    }
+    combined = checkpoint_combiner.combine_checkpoints(
+        query,
+        rebuild,
+        secondary,
+        observations["commit"],
+    )
+    require(
+        combined["checkpointExecution"]["completedPhases"]
+        == ["query", "rebuild", "secondary"],
+        "Checkpoint completion contract drift",
+    )
+    require(combined["crossBuildDeterminism"]["deterministic"], "Checkpoint digest drift")
+    return combined
 
 
 def validate_finalizer_contract() -> None:
@@ -411,6 +575,8 @@ def validate_finalizer_contract() -> None:
         "memory": {"peakPssMb": 100.0, "peakNativeHeapMb": 20.0, "peakManagedHeapMb": 30.0, "peakRssMb": 120.0, "sampleCount": 10},
         "temporaryDatabasesDeleted": True,
     }
+    observations = combine_checkpoint_fixture(observations)
+    finalizer.validate_observations(observations, "a" * 40)
     evaluation = finalizer.evaluate(observations)
     with tempfile.TemporaryDirectory(prefix="dora-search-finalizer-") as temporary:
         output = Path(temporary)

@@ -1,23 +1,76 @@
-name: POC Search Full Benchmark
+name: POC Search Scale Benchmark
 
 on:
   workflow_dispatch:
+    inputs:
+      scope:
+        description: Run only the targeted preflight or the gated full campaign
+        required: true
+        default: targeted
+        type: choice
+        options:
+          - targeted
+          - full
   push:
     tags:
+      - "poc-search-001-targeted-*"
       - "poc-search-001-full-*"
 
 permissions:
   contents: read
 
 concurrency:
-  group: poc-search-full-${{ github.sha }}
+  group: poc-search-scale-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  full-search-benchmark:
-    name: full-search-benchmark
+  validate-harness:
+    name: validate-harness
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 25
+
+    steps:
+      - name: Check out exact benchmark commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: temurin
+          java-version: "17"
+          check-latest: false
+
+      - name: Set up Gradle and validate wrapper
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          cache-provider: basic
+          validate-wrappers: true
+
+      - name: Install Android SDK 36
+        run: >-
+          "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          "platforms;android-36"
+          "build-tools;36.0.0"
+
+      - name: Validate frozen contracts and checkpoint combiner
+        run: python3 tools/validate_poc_search.py
+
+      - name: Compile the exact benchmark harness
+        working-directory: android
+        run: >-
+          ./gradlew --no-daemon --stacktrace
+          :poc:search:testDebugUnitTest
+          :poc:search:compileDebugAndroidTestKotlin
+          :poc:search:lintDebug
+
+  targeted-scale-query-plan:
+    name: targeted-scale-query-plan
+    needs: validate-harness
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
 
     steps:
       - name: Check out exact benchmark commit
@@ -48,42 +101,31 @@ jobs:
           "build-tools;36.0.0"
           "system-images;android-36;google_apis;x86_64"
 
-      - name: Validate frozen contracts before execution
-        run: python3 tools/validate_poc_search.py
-
-      - name: Compile the exact benchmark harness
-        working-directory: android
-        run: >-
-          ./gradlew --no-daemon --stacktrace
-          :poc:search:testDebugUnitTest
-          :poc:search:compileDebugAndroidTestKotlin
-          :poc:search:lintDebug
-
-      - name: Create API 36 full benchmark AVD
+      - name: Create API 36 targeted AVD
         env:
-          ANDROID_AVD_HOME: ${{ runner.temp }}/dora-search-full-avd
+          ANDROID_AVD_HOME: ${{ runner.temp }}/dora-search-targeted-avd
         run: |
           mkdir -p "${ANDROID_AVD_HOME}"
           printf 'no\n' |
             "${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager" create avd \
               --force \
-              --name dora_search_full \
+              --name dora_search_targeted \
               --package "system-images;android-36;google_apis;x86_64" \
               --device pixel_6
 
-      - name: Start isolated full benchmark emulator
+      - name: Start isolated targeted emulator
         env:
-          ANDROID_AVD_HOME: ${{ runner.temp }}/dora-search-full-avd
+          ANDROID_AVD_HOME: ${{ runner.temp }}/dora-search-targeted-avd
         run: |
           sudo chmod 666 /dev/kvm
-          nohup "${ANDROID_HOME}/emulator/emulator" @dora_search_full \
+          nohup "${ANDROID_HOME}/emulator/emulator" @dora_search_targeted \
             -no-window -noaudio -no-boot-anim -no-snapshot \
             -no-metrics -gpu swiftshader_indirect -accel on -memory 4096 \
-            > "${RUNNER_TEMP}/dora-search-full-emulator.log" 2>&1 &
+            > "${RUNNER_TEMP}/dora-search-targeted-emulator.log" 2>&1 &
           emulator_pid=$!
           for attempt in $(seq 1 120); do
             if ! kill -0 "${emulator_pid}" 2>/dev/null; then
-              tail -n 500 "${RUNNER_TEMP}/dora-search-full-emulator.log"
+              tail -n 500 "${RUNNER_TEMP}/dora-search-targeted-emulator.log"
               exit 1
             fi
             boot_completed=$("${ANDROID_HOME}/platform-tools/adb" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
@@ -95,10 +137,11 @@ jobs:
             fi
             sleep 5
           done
-          tail -n 500 "${RUNNER_TEMP}/dora-search-full-emulator.log"
+          tail -n 500 "${RUNNER_TEMP}/dora-search-targeted-emulator.log"
           exit 1
 
-      - name: Run frozen 10k conversation and 1M row campaign
+      - name: Run exact Q-SEARCH-SOURCE plan and count at 10k/1M scale
+        timeout-minutes: 10
         working-directory: android
         run: |
           "${ANDROID_HOME}/platform-tools/adb" logcat -c
@@ -107,17 +150,183 @@ jobs:
           trap 'kill "${logcat_pid}" 2>/dev/null || true' EXIT
           ./gradlew --no-daemon --stacktrace \
             :poc:search:connectedDebugAndroidTest \
-            -Pandroid.testInstrumentationRunnerArguments.class=com.monumentogram.dora.poc.search.FullSearchBenchmarkInstrumentedTest \
-            -Pandroid.testInstrumentationRunnerArguments.pocSearchFull=true
+            -Pandroid.testInstrumentationRunnerArguments.class=com.monumentogram.dora.poc.search.TargetedScaleQueryPlanInstrumentedTest \
+            -Pandroid.testInstrumentationRunnerArguments.pocSearchTargeted=true
 
-      - name: Pull sanitized observations and verify no database was retained
+      - name: Pull sanitized targeted observation
         run: |
-          observation_path=$("${ANDROID_HOME}/platform-tools/adb" shell find /sdcard/Android/data -type f -name benchmark-observations.json | tr -d '\r' | head -n 1)
+          observation_path=$("${ANDROID_HOME}/platform-tools/adb" shell find /sdcard/Android/data -type f -name targeted-scale-observations.json | tr -d '\r' | head -n 1)
           test -n "${observation_path}"
-          mkdir -p "${RUNNER_TEMP}/poc-search-observations"
-          "${ANDROID_HOME}/platform-tools/adb" pull "${observation_path}" "${RUNNER_TEMP}/poc-search-observations/benchmark-observations.json"
-          retained_database=$("${ANDROID_HOME}/platform-tools/adb" shell find /data/user/0 -type f \( -name 'poc-search-reference-primary.db' -o -name 'poc-search-reference-secondary.db' \) 2>/dev/null | tr -d '\r')
+          mkdir -p "${RUNNER_TEMP}/poc-search-targeted"
+          "${ANDROID_HOME}/platform-tools/adb" pull "${observation_path}" "${RUNNER_TEMP}/poc-search-targeted/targeted-scale-observations.json"
+          retained_database=$("${ANDROID_HOME}/platform-tools/adb" shell find /data/user/0 -type f -name 'poc-search-targeted-scale.db*' 2>/dev/null | tr -d '\r')
           test -z "${retained_database}"
+
+      - name: Upload commit-bound targeted observation
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: poc-search-001-targeted-${{ github.sha }}
+          path: ${{ runner.temp }}/poc-search-targeted/targeted-scale-observations.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Print targeted emulator log on failure
+        if: failure()
+        run: tail -n 500 "${RUNNER_TEMP}/dora-search-targeted-emulator.log"
+
+  full-search-benchmark-phase:
+    name: full-${{ matrix.phase }}-checkpoint
+    if: >-
+      startsWith(github.ref, 'refs/tags/poc-search-001-full-') ||
+      (github.event_name == 'workflow_dispatch' && inputs.scope == 'full')
+    needs: targeted-scale-query-plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - phase: query
+            method: runFrozenQueryPhase
+          - phase: rebuild
+            method: runFrozenRebuildMutationPhase
+          - phase: secondary
+            method: runFrozenSecondaryPhase
+
+    steps:
+      - name: Check out exact benchmark commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: temurin
+          java-version: "17"
+          check-latest: false
+
+      - name: Set up Gradle and validate wrapper
+        uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb # v6.3.0
+        with:
+          cache-provider: basic
+          validate-wrappers: true
+
+      - name: Install Android API 36 emulator
+        run: >-
+          "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+          "platform-tools"
+          "emulator"
+          "platforms;android-36"
+          "build-tools;36.0.0"
+          "system-images;android-36;google_apis;x86_64"
+
+      - name: Create API 36 phase AVD
+        env:
+          ANDROID_AVD_HOME: ${{ runner.temp }}/dora-search-${{ matrix.phase }}-avd
+        run: |
+          mkdir -p "${ANDROID_AVD_HOME}"
+          printf 'no\n' |
+            "${ANDROID_HOME}/cmdline-tools/latest/bin/avdmanager" create avd \
+              --force \
+              --name dora_search_${{ matrix.phase }} \
+              --package "system-images;android-36;google_apis;x86_64" \
+              --device pixel_6
+
+      - name: Start isolated phase emulator
+        env:
+          ANDROID_AVD_HOME: ${{ runner.temp }}/dora-search-${{ matrix.phase }}-avd
+        run: |
+          sudo chmod 666 /dev/kvm
+          nohup "${ANDROID_HOME}/emulator/emulator" @dora_search_${{ matrix.phase }} \
+            -no-window -noaudio -no-boot-anim -no-snapshot \
+            -no-metrics -gpu swiftshader_indirect -accel on -memory 4096 \
+            > "${RUNNER_TEMP}/dora-search-${{ matrix.phase }}-emulator.log" 2>&1 &
+          emulator_pid=$!
+          for attempt in $(seq 1 120); do
+            if ! kill -0 "${emulator_pid}" 2>/dev/null; then
+              tail -n 500 "${RUNNER_TEMP}/dora-search-${{ matrix.phase }}-emulator.log"
+              exit 1
+            fi
+            boot_completed=$("${ANDROID_HOME}/platform-tools/adb" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || true)
+            if [ "${boot_completed}" = "1" ]; then
+              "${ANDROID_HOME}/platform-tools/adb" shell settings put global window_animation_scale 0
+              "${ANDROID_HOME}/platform-tools/adb" shell settings put global transition_animation_scale 0
+              "${ANDROID_HOME}/platform-tools/adb" shell settings put global animator_duration_scale 0
+              exit 0
+            fi
+            sleep 5
+          done
+          tail -n 500 "${RUNNER_TEMP}/dora-search-${{ matrix.phase }}-emulator.log"
+          exit 1
+
+      - name: Run frozen ${{ matrix.phase }} phase
+        timeout-minutes: 25
+        working-directory: android
+        run: |
+          "${ANDROID_HOME}/platform-tools/adb" logcat -c
+          "${ANDROID_HOME}/platform-tools/adb" logcat -v time 'POC_SEARCH:I' '*:S' &
+          logcat_pid=$!
+          trap 'kill "${logcat_pid}" 2>/dev/null || true' EXIT
+          ./gradlew --no-daemon --stacktrace \
+            :poc:search:connectedDebugAndroidTest \
+            "-Pandroid.testInstrumentationRunnerArguments.class=com.monumentogram.dora.poc.search.FullSearchBenchmarkInstrumentedTest#${{ matrix.method }}" \
+            -Pandroid.testInstrumentationRunnerArguments.pocSearchFull=true \
+            -Pandroid.testInstrumentationRunnerArguments.pocSearchPhase=${{ matrix.phase }}
+
+      - name: Pull sanitized ${{ matrix.phase }} checkpoint
+        run: |
+          checkpoint_path=$("${ANDROID_HOME}/platform-tools/adb" shell find /sdcard/Android/data -type f -name 'benchmark-${{ matrix.phase }}-checkpoint.json' | tr -d '\r' | head -n 1)
+          test -n "${checkpoint_path}"
+          mkdir -p "${RUNNER_TEMP}/poc-search-checkpoint"
+          "${ANDROID_HOME}/platform-tools/adb" pull "${checkpoint_path}" "${RUNNER_TEMP}/poc-search-checkpoint/benchmark-${{ matrix.phase }}-checkpoint.json"
+          retained_database=$("${ANDROID_HOME}/platform-tools/adb" shell find /data/user/0 -type f -name 'poc-search-reference-*.db*' 2>/dev/null | tr -d '\r')
+          test -z "${retained_database}"
+
+      - name: Upload independently retained ${{ matrix.phase }} checkpoint
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: poc-search-001-checkpoint-${{ matrix.phase }}-${{ github.sha }}
+          path: ${{ runner.temp }}/poc-search-checkpoint/benchmark-${{ matrix.phase }}-checkpoint.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Print phase emulator log on failure
+        if: failure()
+        run: tail -n 500 "${RUNNER_TEMP}/dora-search-${{ matrix.phase }}-emulator.log"
+
+  finalize-full-benchmark:
+    name: finalize-full-benchmark
+    if: >-
+      startsWith(github.ref, 'refs/tags/poc-search-001-full-') ||
+      (github.event_name == 'workflow_dispatch' && inputs.scope == 'full')
+    needs: full-search-benchmark-phase
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out exact benchmark commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download all retained phase checkpoints
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: poc-search-001-checkpoint-*-${{ github.sha }}
+          path: ${{ runner.temp }}/poc-search-checkpoints
+          merge-multiple: true
+
+      - name: Validate and combine phase checkpoints
+        run: >-
+          python3 tools/combine_poc_search_checkpoints.py
+          --query "${RUNNER_TEMP}/poc-search-checkpoints/benchmark-query-checkpoint.json"
+          --rebuild "${RUNNER_TEMP}/poc-search-checkpoints/benchmark-rebuild-checkpoint.json"
+          --secondary "${RUNNER_TEMP}/poc-search-checkpoints/benchmark-secondary-checkpoint.json"
+          --output "${RUNNER_TEMP}/poc-search-observations/benchmark-observations.json"
+          --expected-commit "${GITHUB_SHA}"
 
       - name: Finalize and schema-validate sanitized evidence
         run: >-
@@ -135,7 +344,3 @@ jobs:
             ${{ runner.temp }}/poc-search-observations/benchmark-observations.json
           if-no-files-found: error
           retention-days: 14
-
-      - name: Print emulator log on failure
-        if: failure()
-        run: tail -n 500 "${RUNNER_TEMP}/dora-search-full-emulator.log"
