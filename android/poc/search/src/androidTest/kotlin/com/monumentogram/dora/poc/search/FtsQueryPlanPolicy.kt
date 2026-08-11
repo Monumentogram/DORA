@@ -11,8 +11,13 @@ data class FtsQueryPlanObservation(
     val ftsIsDrivingTable: Boolean,
     val canonicalLookupsUseRowId: Boolean,
     val sourceIndexIsNotDriving: Boolean,
+    val avoidsTemporaryOrderBy: Boolean,
 ) {
-    val accepted: Boolean = ftsIsDrivingTable && canonicalLookupsUseRowId && sourceIndexIsNotDriving
+    val accepted: Boolean =
+        ftsIsDrivingTable &&
+            canonicalLookupsUseRowId &&
+            sourceIndexIsNotDriving &&
+            avoidsTemporaryOrderBy
 }
 
 object FtsQueryPlanPolicy {
@@ -51,6 +56,10 @@ object FtsQueryPlanPolicy {
                 ftsLoop == 0 && segmentLoop > ftsLoop && conversationLoop > segmentLoop,
             canonicalLookupsUseRowId = segmentLoop >= 0 && conversationLoop >= 0,
             sourceIndexIsNotDriving = sourceIndexLoop < 0 || sourceIndexLoop > ftsLoop,
+            avoidsTemporaryOrderBy =
+                details.none { detail ->
+                    detail.contains("USE TEMP B-TREE FOR ORDER BY", ignoreCase = true)
+                },
         )
     }
 }

@@ -58,6 +58,12 @@ class SearchRepository(private val dao: SearchPocDao) {
         return buildCountStatement(request, compiled).asExplainQuery()
     }
 
+    fun explainSearchQuery(request: SearchRequest): SupportSQLiteQuery {
+        val compiled = compile(request)
+        require(compiled.status == QueryStatus.READY || compiled.status == QueryStatus.FILTER_ONLY)
+        return buildStatement(request, compiled, countOnly = false).asExplainQuery()
+    }
+
     private fun buildCountStatement(
         request: SearchRequest,
         compiled: CompiledUserQuery,
@@ -133,12 +139,16 @@ class SearchRepository(private val dao: SearchPocDao) {
             sql.append("WHERE ").append(predicates.joinToString(" AND ")).append(' ')
         }
         if (!countOnly) {
-            sql.append("ORDER BY s.segment_id ASC LIMIT ? OFFSET ?")
+            sql.append("ORDER BY ${orderByColumn(compiled)} ASC LIMIT ? OFFSET ?")
             arguments += request.limit
             arguments += request.offset
         }
         return BoundQuery(sql.toString(), arguments.toTypedArray())
     }
+
+    private fun orderByColumn(compiled: CompiledUserQuery): String =
+        if (compiled.status == QueryStatus.READY) "transcript_segments_fts.rowid"
+        else "s.segment_id"
 
     private data class BoundQuery(val sql: String, val arguments: Array<out Any?>) {
         fun asQuery(): SupportSQLiteQuery = SimpleSQLiteQuery(sql, arguments)

@@ -138,6 +138,7 @@ object BenchmarkCheckpointWriter {
             .put("ftsIsDrivingTable", value.ftsIsDrivingTable)
             .put("canonicalLookupsUseRowId", value.canonicalLookupsUseRowId)
             .put("sourceIndexIsNotDriving", value.sourceIndexIsNotDriving)
+            .put("avoidsTemporaryOrderBy", value.avoidsTemporaryOrderBy)
             .put("accepted", value.accepted)
 
     private val PHASES = setOf("query", "rebuild", "secondary")

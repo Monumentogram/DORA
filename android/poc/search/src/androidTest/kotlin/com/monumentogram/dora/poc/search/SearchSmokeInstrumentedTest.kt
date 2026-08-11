@@ -93,7 +93,7 @@ class SearchSmokeInstrumentedTest {
     }
 
     @Test
-    fun matchAndSourceCountUsesFts4AsTheDrivingTable() {
+    fun matchAndSourceCountAndPageUseStreamingFts4Plans() {
         val manifest = BenchmarkContracts.readQueries(context)
         val queryCase = manifest.cases.single { it.id == "Q-SEARCH-SOURCE" }
         val request =
@@ -104,10 +104,13 @@ class SearchSmokeInstrumentedTest {
                 limit = manifest.resultLimit,
             )
 
-        val observation =
+        val countObservation =
             FtsQueryPlanPolicy.inspect(database, repository.explainCountQuery(request))
+        val pageObservation =
+            FtsQueryPlanPolicy.inspect(database, repository.explainSearchQuery(request))
 
-        assertTrue(observation.details.joinToString(" | "), observation.accepted)
+        assertTrue(countObservation.details.joinToString(" | "), countObservation.accepted)
+        assertTrue(pageObservation.details.joinToString(" | "), pageObservation.accepted)
         val count = repository.count(request)
         assertTrue(count is CountExecution.Success)
         assertEquals(

@@ -28,6 +28,7 @@ private data class TargetedContract(
 
 private data class TargetedExecution(
     val plan: FtsQueryPlanObservation,
+    val pagePlan: FtsQueryPlanObservation,
     val observedCount: Long,
     val countMs: Double,
     val searchMs: Double,
@@ -103,6 +104,18 @@ class TargetedScaleQueryPlanInstrumentedTest {
             "Refusing to execute targeted count with non-FTS-driving plan: " +
                 plan.details.joinToString(" | ")
         }
+        val pagePlan =
+            FtsQueryPlanPolicy.inspect(
+                reference.database,
+                repository.explainSearchQuery(contract.request),
+            )
+        pagePlan.details.forEach { detail ->
+            BenchmarkProgress.report("targeted scale: page EXPLAIN $detail")
+        }
+        check(pagePlan.accepted) {
+            "Refusing to execute targeted page with non-streaming FTS plan: " +
+                pagePlan.details.joinToString(" | ")
+        }
         BenchmarkProgress.report("targeted scale: Q-SEARCH-SOURCE count started")
         val (countExecution, countMs) =
             BenchmarkClock.measure { repository.count(contract.request) }
@@ -119,6 +132,7 @@ class TargetedScaleQueryPlanInstrumentedTest {
         check(observedIds.take(expectedIds.size) == expectedIds)
         return TargetedExecution(
             plan = plan,
+            pagePlan = pagePlan,
             observedCount = countExecution.count,
             countMs = countMs,
             searchMs = searchMs,
@@ -189,6 +203,7 @@ class TargetedScaleQueryPlanInstrumentedTest {
             .put("operationGuardMs", TARGET_OPERATION_MAX_MS)
             .put("observedSegmentIds", JSONArray(execution.observedIds))
             .put("plan", queryPlan(execution.plan))
+            .put("pagePlan", queryPlan(execution.pagePlan))
             .put("binding", parameterBinding())
             .put(
                 "androidEnvironment",
@@ -203,6 +218,7 @@ class TargetedScaleQueryPlanInstrumentedTest {
             .put(
                 "passed",
                 execution.plan.accepted &&
+                    execution.pagePlan.accepted &&
                     execution.observedCount == contract.queryCase.expectedCount &&
                     execution.countMs < TARGET_OPERATION_MAX_MS &&
                     execution.searchMs < TARGET_OPERATION_MAX_MS &&
@@ -215,6 +231,7 @@ class TargetedScaleQueryPlanInstrumentedTest {
             .put("ftsIsDrivingTable", plan.ftsIsDrivingTable)
             .put("canonicalLookupsUseRowId", plan.canonicalLookupsUseRowId)
             .put("sourceIndexIsNotDriving", plan.sourceIndexIsNotDriving)
+            .put("avoidsTemporaryOrderBy", plan.avoidsTemporaryOrderBy)
             .put("accepted", plan.accepted)
 
     private fun parameterBinding(): JSONObject =
