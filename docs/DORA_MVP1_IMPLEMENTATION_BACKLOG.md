@@ -1,8 +1,8 @@
 # Dora MVP 1 — Executable Backlog
 
-Версия: Stage 0C POC-SEARCH-001 approved Gate Set v0.2 / execution hold\
+Версия: Stage 0C POC-SEARCH-001 formal INCONCLUSIVE closure / execution hold\
 Дата: 11 августа 2026 года\
-Owner approvals effective: 4 августа 2026 года (`OD-01`–`OD-10`) и 11 августа 2026 года (`OD-11`–`OD-12`, Stage 0 evaluation scope only)\
+Owner approvals effective: 4 августа 2026 года (`OD-01`–`OD-10`) и 11 августа 2026 года (`OD-11`–`OD-13`, Stage 0 evaluation scope only)\
 Источник порядка: Technical Plan §37/§39, Design Spec §36/§39 и readiness gates.
 
 ## 1. Правила выполнения
@@ -59,7 +59,7 @@ Owner approvals effective: 4 августа 2026 года (`OD-01`–`OD-10`) и
 | POC-DIAR-001 | BLOCKED | XL | Local/server diarization and correction load | POC-GATES-001, POC-DATA-001 | DER/JER/MAE/correction report + exact weight license | no forced speaker if gate/license fail |
 | POC-BATTERY-001 | BLOCKED | L | Capture/VAD/ML energy and thermal matrix | POC-CAPTURE-001 | controlled baseline/repeats/batterystats/thermal policy | capture ≤ approved overhead; heavy ML deferred if unsafe |
 | POC-DECISION-001 | BLOCKED | XL | Decision revision graph benchmark | POC-GATES-001, POC-DATA-001 | ≥100 adjudicated cases, source validator, scoring | no auto-final if precision/source gate fails |
-| POC-SEARCH-001 | BLOCKED | M | Room FTS4 10k/1M benchmark | POC-GATES-001; POC-SEARCH-GATES-002; explicit Stage 0 artifact approval; verified paired harness; physical D1–D3; later owner execution authorization | immutable valid FAIL/targeted/final observations, benchmark+debug dependency lock/IP inventory, v4 governance assessment, paired harness/combiner and fail-closed readiness evidence under `docs/evidence/poc-search-001/` | Historical emulator measurements remain unchanged and `INCONCLUSIVE`. Option B is approved prospectively but unmeasured. Exact license/NOTICE evidence covers all 66 components, while Project-owner `EVALUATION_APPROVED` is pending; D2 exists but D1/D3 are unknown; the commit-bound paired harness, synthetic combiner and API 36 emulator runtime smoke are verified at `b5bcf0951f3cb16d3fec65174395e7715c49a7d7`; `benchmarkExecutionAllowed=false`. No benchmark or production admission is authorized. |
+| POC-SEARCH-001 | DONE | M | Room FTS4 10k/1M Stage 0 evaluation | POC-GATES-001; POC-SEARCH-GATES-002; `OD-11`–`OD-13` | immutable valid FAIL/targeted/final observations, benchmark+debug dependency lock/IP inventory, v5 non-measurement closure assessment, paired harness/combiner and fail-closed readiness evidence under `docs/evidence/poc-search-001/` | Stage 0C is closed honestly as formal `INCONCLUSIVE` with recommendation `BLOCKED`. Historical emulator measurements remain unchanged; approved prospective Option B is unmeasured. The exact 66-component/package review is `EVALUATION_APPROVED` only for Stage 0 research, and the paired harness is verified. Physical D1/D3, fresh exact-commit preflight and the measured v0.2 campaign are deferred to separate future scope; `benchmarkExecutionAllowed=false`. This does not admit FTS4, the PoC schema, dependencies, production Legal or production Security. |
 | POC-OFFLINE-001 | TODO | L | Airplane/no-GMS core dependency audit | selected local harnesses | OS-blocked network run, call ledger | zero core network/login/GMS dependency |
 | POC-VPN-001 | TODO | L | VPN/route/idempotent multipart harness | BE-API-001 synthetic server contract | failure-injection report | one job/result, no region switch or duplicate billing |
 

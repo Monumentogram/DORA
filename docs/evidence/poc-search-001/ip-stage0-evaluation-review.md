@@ -1,13 +1,16 @@
 # POC-SEARCH-001 Stage 0 artifact evaluation review
 
-Status: **EXACT EVIDENCE COMPLETE — OWNER APPROVAL PENDING**\
+Status: **EVALUATION_APPROVED — STAGE 0 ONLY**\
 Date opened: 11 August 2026\
+Decision date: 11 August 2026\
 Scope: Stage 0 evaluation only\
-Owner decision: `OD-11`
+Role/provenance decision: `OD-11`\
+Artifact approval decision: `OD-13`
 
 This record is the public-safe review surface for the exact dependency and Android platform
-inventory. Assignment of a reviewer is not an approval. No artifact changes to
-`EVALUATION_APPROVED` until the decision block at the end is completed.
+inventory. `OD-13` completes the decision block for internal synthetic Stage 0 evaluation only.
+It does not authorize a measured benchmark, production use, redistribution, or dependency/schema
+admission.
 
 ## Assigned roles
 
@@ -91,31 +94,32 @@ entries with exact digests. There are no unresolved license coordinates, embedde
 or discovered NOTICE files. The obligation map is review-scope-specific: Apache NOTICE
 preservation, BSD/MIT notice retention, and an explicit production-Legal review requirement for
 EPL-1.0 distribution are recorded. This is engineering evidence, not legal advice and not an
-approval.
+approval by itself; the bounded owner decision is recorded below.
 
-## Remaining Stage 0 reviewer action
+## Recorded Stage 0 reviewer decision
 
-1. The assigned Project owner must explicitly confirm or reject internal Stage 0 evaluation use
-   for the exact 66-component graph and pinned Android platform image.
-2. The owner must accept the recorded license/NOTICE obligations or record a component-specific
-   restriction and fallback.
-3. Only that explicit decision may change artifact state to `EVALUATION_APPROVED` and unblock the
-   IP precondition for a future measured run.
+1. The Project owner approves internal synthetic Stage 0 evaluation use for the exact
+   66-component graph and pinned Android platform image.
+2. The recorded Apache/BSD/EPL/MIT license and NOTICE obligations are accepted for that bounded
+   research scope; no component-specific exception was recorded.
+3. The IP precondition is satisfied for Stage 0 only. Physical D1/D3, a fresh exact-commit
+   preflight, and a later explicit measured-execution authorization remain separate blockers.
 
-## Decision block — intentionally incomplete
+## Decision block — completed by `OD-13`
 
 ```text
-Review decision: <EVALUATION_APPROVED | REJECTED | REMAINS_PROPOSED>
+Review decision: EVALUATION_APPROVED
 Product reviewer: Project owner
 IP policy reviewer: Project owner
 Engineering/Security reviewer: Project owner (Stage 0 only)
-Decision date: <UTC date>
+Decision date: 2026-08-11
 Reviewed inventory digest: sha256:63a2a3dadfbfe072770d914a74cbd40d6adbd517548bda4ba0331dd314ca6a98
 License/NOTICE evidence locator: docs/evidence/poc-search-001/license-notice-inventory.json
 License/NOTICE evidence digest: sha256:8b80fa573a2674cb32fe08446683f5b3d05ce4721b6bcb018edec51cf9fbeb50
-Restrictions/fallback: <text>
+Reviewed system-image digest: sha256:b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160
+Restrictions/fallback: internal synthetic POC-SEARCH-001 Stage 0 research only; no measured execution by this decision; no production Legal/Security approval; no automatic FTS4, schema, or dependency admission; retain per-entity FTS or another separately reviewed fallback.
 ```
 
-Until this block is complete, measured execution remains blocked. Even after a Stage 0
-`EVALUATION_APPROVED` decision, production Legal, independent production Security, SBOM/notices,
-ADR and admission evidence remain separate blockers.
+This completed block removes only the Stage 0 IP precondition. Measured execution remains blocked
+and deferred because physical D1/D3 and a later owner authorization are absent. Production Legal,
+independent production Security, SBOM/notices, ADR and admission evidence remain separate blockers.

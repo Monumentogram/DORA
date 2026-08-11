@@ -7,10 +7,10 @@ Stage 0A merge commit: `91b9916b01ff70f63d82412bafbed0d72307dbe1`
 Repository: public `Monumentogram/DORA` by temporary owner-approved decision (ADR-0002)
 Default branch: `main`
 Stage 0B merge commit: `5e748469b22c6e7303fe6eb5f95394ea40088d84`
-Active stage: `Stage 0C — POC-SEARCH-001`
+Active stage: `Stage 0C — closed INCONCLUSIVE in Draft PR #10`
 Active branch: `stage/0c-poc-search-001`
 Active PoC: `POC-SEARCH-001`
-Stage state: **P1 REMEDIATION — OPTION B APPROVED; EXECUTION WITHHELD; FORMAL INCONCLUSIVE**
+Stage state: **COMPLETE INCONCLUSIVE — STAGE 0 IP APPROVED; BENCHMARK DEFERRED; FINAL REVIEW PENDING**
 
 ## Stage 00 closure
 
@@ -36,9 +36,9 @@ Stage state: **P1 REMEDIATION — OPTION B APPROVED; EXECUTION WITHHELD; FORMAL 
 - The formal `POC-CAPTURE-001` result remains `INCONCLUSIVE` and is not reinterpreted by Stage 0C.
 - No production capture, storage, ML, backend, account or cloud functionality was admitted.
 
-## Active Stage 0C scope
+## Stage 0C closure scope
 
-Stage 0C executes only `POC-SEARCH-001` in the isolated `:poc:search` contour. It uses a
+Stage 0C evaluated only `POC-SEARCH-001` in the isolated `:poc:search` contour. It uses a
 versioned deterministic generator and fully synthetic text to evaluate Room 2.8.4 with
 SQLite FTS4 at 10,000 conversations and exactly 1,000,000 transcript segments. The
 pre-run dataset, query, mutation, warm-up, repetition, metric and Gate Set contracts are
@@ -48,8 +48,8 @@ Git or Actions artifacts.
 Host/emulator evidence records generated-scale correctness, schema, mapping, mutation,
 logical rebuild and exploratory latency observations. It does not establish a gate-complete
 host `PASS`: prospective `stage0-v0.2` now contains owner-approved Option B, but it was not measured
-and cannot reclassify the historical campaign. The exact external-artifact evidence packet is
-complete, but its owner approval is still pending. A formal
+and cannot reclassify the historical campaign. Under `OD-13`, the exact external-artifact evidence
+packet is `EVALUATION_APPROVED` only for internal synthetic Stage 0 research. A formal
 `PASS` and device latency/support claim also remain unavailable until the required physical
 D1-D3 search slices exist. FTS4 and the PoC schema are not production-admitted by this stage.
 
@@ -58,8 +58,9 @@ repeat of the multi-hour query-plan failure. Exploratory p95 is `97.537984 ms` a
 `144.481302 ms`; both independent builds passed all `61/61` correctness cases, the FTS4-driven
 count and page plans were accepted without temporary page sorting, and mutation, deterministic
 rebuild and cleanup checks passed. The original `PASS`/`GO` host conclusion is superseded by the
-versioned 11 August review assessment. The current result is `INCONCLUSIVE` with recommendation
-`BLOCKED`; no measurement was changed or rerun.
+versioned 11 August review assessment. The current v5 closure result is `INCONCLUSIVE` with
+recommendation `BLOCKED`; no measurement was changed or rerun. D1/D3 and the measured v0.2
+campaign are deferred to separately authorized future scope.
 
 ## Closed Stage 0B evidence record
 
@@ -87,6 +88,7 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - `OD-10`: local mode works without account, network or GMS; cloud remains off until separate explicit consent.
 - `OD-11`: Project owner is Product and IP policy reviewer and acts as Engineering/Security reviewer only for Stage 0 evaluation. This does not replace production Legal or independent production Security. Embedded platform SQLite may use the containing system-image digest plus exact image/runtime identity for Stage 0; that boundary must be reconsidered before production admission.
 - `OD-12`: Project owner prospectively approves Option B for `stage0-v0.2`, based on the local-MVP storage/update/one-second visibility balance and not on prior Dora results. Benchmark execution remains separately withheld.
+- `OD-13`: Project owner approves the exact 66-component/license/NOTICE/platform package only for internal synthetic Stage 0 evaluation and accepts formal `INCONCLUSIVE` closure without a new benchmark. This is not production Legal/Security approval, does not admit FTS4 automatically, is not retroactive, and leaves D1/D3 plus measured execution deferred.
 
 ## Current gates and blockers
 
@@ -102,13 +104,13 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
   `benchmarkExecutionAllowed=false`, so no rerun is authorized.
 - The PoC module now has a dependency lock and exact 66-component artifact/POM inventory covering
   both debug and formal benchmark configurations. All 66 effective licenses and discovered
-  license/NOTICE entries are inventoried; the IP assessment is
-  `EXACT_EVIDENCE_COMPLETE_OWNER_APPROVAL_PENDING`. `OD-11` records the Stage 0 Product/IP and
-  Engineering/Security roles, but the owner has not recorded `EVALUATION_APPROVED`. The Android API 36 Google APIs x86_64 r07 archive is
+  license/NOTICE entries are inventoried; `OD-13` makes the exact packet
+  `EVALUATION_APPROVED` only for Stage 0 evaluation. `OD-11` records the Stage 0 Product/IP and
+  Engineering/Security roles. The Android API 36 Google APIs x86_64 r07 archive is
   pinned by official SHA-1 and independently computed SHA-256. Embedded SQLite 3.44.3 uses that
   containing-image digest with exact image ID/revision, fingerprint, API and ABI for Stage 0; no
-  extracted binary digest is required. Production Legal is unassigned and independent production
-  Security remains mandatory.
+  extracted binary digest is required. This boundary must be reconsidered before production;
+  production Legal is unassigned and independent production Security remains mandatory.
 - The new paired control/indexed harness and nearest-rank combiner are implemented and bound to
   commit `b5bcf0951f3cb16d3fec65174395e7715c49a7d7`; debug and benchmark compilation, synthetic
   combiner tests and API 36 emulator runtime smoke pass. Smoke timings are not gate evidence. No
@@ -152,7 +154,12 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 
 ## Next safe action
 
-Keep the Stage 0C Pull Request Draft and unmerged. The next safe actions are explicit Project-owner approval or rejection of the exact Stage 0 component/license/NOTICE packet and inventory of matching physical D1 and D3 devices. Even after those prerequisites, a later explicit owner execution authorization is required. `tools/check_poc_search_run_readiness.py` fails closed while `benchmarkExecutionAllowed=false`; no benchmark is authorized. Production admission or the next PoC still requires separate explicit scope.
+Keep Stage 0C Pull Request #10 Draft and unmerged for final review. There is no authorized benchmark
+or in-scope D1/D3 action. A future measured `stage0-v0.2` campaign requires separate scope, matching
+physical D1–D3, a fresh exact-commit preflight and a later explicit Project-owner execution
+authorization. `tools/check_poc_search_run_readiness.py` fails closed while
+`benchmarkExecutionAllowed=false`. Production admission or the next PoC also requires separate
+explicit scope.
 
 ## Update protocol
 

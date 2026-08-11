@@ -12,9 +12,9 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "docs" / "evidence" / "poc-search-001"
 EXECUTION_WITHHELD_MESSAGE = (
-    "Option B is approved, but measured execution is withheld pending explicit Stage 0 "
-    "component/license/NOTICE approval, verified paired-harness evidence, confirmed physical "
-    "D1-D3 availability, and a later Project owner execution authorization."
+    "Option B and the Stage 0 IP package are approved and the paired harness is verified, but "
+    "measured execution is withheld because physical D1-D3 availability is not confirmed and "
+    "the Project owner has not issued a later execution authorization."
 )
 
 
@@ -77,6 +77,10 @@ def main() -> int:
     require(
         ip_evaluation["evaluationStatus"] == "EVALUATION_APPROVED",
         "Exact dependency and platform evaluation rights are not approved",
+    )
+    require(
+        ip_evaluation["ipPrecondition"] == "SATISFIED_FOR_STAGE0",
+        "The IP precondition is not satisfied for Stage 0",
     )
     require(
         ip_evaluation["futureMeasuredExecution"] == "ALLOWED",

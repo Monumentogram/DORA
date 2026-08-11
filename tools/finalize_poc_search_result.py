@@ -218,8 +218,8 @@ def evaluate(observations: dict[str, Any]) -> dict[str, Any]:
     if evaluated_metrics_pass:
         architectural_outcome = (
             "Evaluated historical metrics passed, but no architectural GO is available because "
-            "the prospective Option B storage/update contract was not measured, exact Stage 0 "
-            "artifact approval is pending, and physical D1-D3 evidence is incomplete"
+            "the prospective Option B storage/update contract was not measured and physical "
+            "D1-D3 evidence is incomplete"
         )
     elif safety_pass and mapping_pass and rebuild_pass:
         architectural_outcome = "FTS4 suitable with changes"
@@ -446,7 +446,7 @@ def build_license_entries(
     require(dependency_inventory.get("pocId") == "POC-SEARCH-001", "Wrong dependency inventory PoC id")
     require(
         dependency_inventory.get("inventoryStatus") == "COMPLETE_UNREVIEWED",
-        "Dependency inventory must remain explicitly unreviewed until the assigned IP review",
+        "The immutable dependency evidence packet must retain its generation-time inventory state",
     )
     require(
         ip_evaluation.get("evaluationStatus")
@@ -454,9 +454,18 @@ def build_license_entries(
             "NOT_ESTABLISHED",
             "REVIEWERS_ASSIGNED_REVIEW_PENDING",
             "EXACT_EVIDENCE_COMPLETE_OWNER_APPROVAL_PENDING",
+            "EVALUATION_APPROVED",
         },
-        "Unsupported IP evaluation state; record reviewed per-artifact decisions before approval",
+        "Unsupported IP evaluation state",
     )
+    evaluation_approved = ip_evaluation.get("evaluationStatus") == "EVALUATION_APPROVED"
+    if evaluation_approved:
+        require(
+            ip_evaluation.get("ipPrecondition") == "SATISFIED_FOR_STAGE0"
+            and ip_evaluation.get("stage0Approval", {}).get("status")
+            == "EVALUATION_APPROVED",
+            "Stage 0 IP approval record is incomplete",
+        )
     require(
         license_notice_inventory.get("reviewStatus") == "EVIDENCE_COMPLETE",
         "Exact license/NOTICE evidence must be complete before result finalization",
@@ -497,8 +506,10 @@ def build_license_entries(
                 "version": version,
                 "sha256": primary_sha,
                 "licenseId": license_id[:160],
-                "licenseReviewState": "PROPOSED",
-                "evaluationRightsConfirmed": False,
+                "licenseReviewState": (
+                    "EVALUATION_APPROVED" if evaluation_approved else "PROPOSED"
+                ),
+                "evaluationRightsConfirmed": evaluation_approved,
                 "redistributionRights": "unknown",
                 "evidenceLocator": (
                     "docs/evidence/poc-search-001/license-notice-inventory.json#" + coordinate
@@ -512,7 +523,11 @@ def build_license_entries(
                 "category": "other",
                 "version": platform_artifact["observedVersion"],
                 "sha256": platform_artifact["sha256"],
-                "licenseId": "UNREVIEWED-PLATFORM-COMPONENT",
+                "licenseId": (
+                    "NOASSERTION"
+                    if platform_artifact["licenseReviewState"] == "EVALUATION_APPROVED"
+                    else "UNREVIEWED-PLATFORM-COMPONENT"
+                ),
                 "licenseReviewState": platform_artifact["licenseReviewState"],
                 "evaluationRightsConfirmed": platform_artifact["evaluationRightsConfirmed"],
                 "redistributionRights": "unknown",
@@ -619,6 +634,7 @@ def build_result(
         ROOT / "docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES.md",
         ROOT / "docs/stage0/DORA_MVP1_POC_SEARCH_GATE_SET_STAGE0_V0_2.md",
         ROOT / "docs/stage0/poc-search-gate-set-stage0-v0.2.json",
+        ROOT / "docs/stage0/DORA_MVP1_STAGE0_OWNER_DECISIONS.md",
     ):
         evidence.append(evidence_entry(path, output_dir, "other"))
     for path, kind in detail_paths:
@@ -627,9 +643,9 @@ def build_result(
     host_outcome = evaluation["hostEmulatorExploratoryOutcome"]
     rationale = (
         "The evaluated historical host/emulator metrics met their evaluated predicates, but the "
-        "newly approved prospective Option B was not measured, the assigned external-artifact "
-        "review has not granted evaluation approval, and physical D1-D3 evidence is incomplete. "
-        "The historical campaign remains INCONCLUSIVE."
+        "newly approved prospective Option B was not measured and physical D1-D3 evidence is "
+        "incomplete. The exact IP package is approved only for Stage 0 evaluation and does not "
+        "change the historical campaign, which remains INCONCLUSIVE."
         if host_outcome == "INCONCLUSIVE"
         else "At least one approved search correctness, safety, latency, mutation, mapping, or rebuild gate failed in the frozen reference campaign."
     )
@@ -645,9 +661,8 @@ def build_result(
         else "Per-entity FTS, pagination/ranking, or query normalization; FTS5 only as a separately documented experiment."
     )
     owner_action = (
-        "Explicitly approve or reject the exact Stage 0 component/license/NOTICE packet, provide "
-        "physical D1 and D3 hardware, finish commit-bound harness verification, and separately "
-        "authorize execution before a new measured campaign."
+        "If a later measured stage0-v0.2 campaign is scoped, provide physical D1 and D3 hardware, "
+        "record a fresh exact-commit preflight, and separately authorize measured execution."
         if host_outcome == "INCONCLUSIVE"
         else None
     )
@@ -767,7 +782,6 @@ def build_result(
             {"id": "LIMIT-SEARCH-EMULATOR-LATENCY", "severity": "high", "description": "Host scheduling and virtualized storage make latency exploratory rather than representative of a real phone.", "blocksVerdict": True},
             {"id": "LIMIT-SEARCH-OBSERVATION-ONLY-METRICS", "severity": "medium", "description": "For the historical v0.1 campaign, database size, build time, memory, and mutation latency had no pre-approved numeric predicate and remain observations only. Prospective v0.2 thresholds cannot be applied retrospectively.", "blocksVerdict": False},
             {"id": "LIMIT-SEARCH-INCOMPLETE-STORAGE-UPDATE-GATE", "severity": "critical", "description": "The historical v0.1 contract made storage/update failure mandatory without numeric predicates. Option B is now approved prospectively in v0.2, but it was not measured and cannot reclassify that campaign.", "blocksVerdict": True},
-            {"id": "LIMIT-SEARCH-IP-EVALUATION-NOT-ESTABLISHED", "severity": "critical", "description": "Stage 0 reviewer roles and the nested SQLite provenance method are recorded, but the exact locked dependency/platform review has not granted EVALUATION_APPROVED.", "blocksVerdict": True},
             {"id": "LIMIT-SEARCH-POC-NOT-ADMISSION", "severity": "medium", "description": "The isolated Room/FTS4 schema and harness are PoC evidence, not a production schema or dependency admission.", "blocksVerdict": False},
         ],
         "recommendation": {

@@ -1,12 +1,12 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "pocId": "POC-SEARCH-001",
   "assessmentDate": "2026-08-11",
   "dependencyInventory": {
     "locator": "docs/evidence/poc-search-001/dependency-inventory.json",
     "sha256": "sha256:63a2a3dadfbfe072770d914a74cbd40d6adbd517548bda4ba0331dd314ca6a98",
     "componentCount": 66,
-    "status": "EVIDENCE_COMPLETE_OWNER_APPROVAL_PENDING",
+    "status": "EVALUATION_APPROVED_STAGE0",
     "licenseNoticeInventory": {
       "locator": "docs/evidence/poc-search-001/license-notice-inventory.json",
       "sha256": "sha256:8b80fa573a2674cb32fe08446683f5b3d05ce4721b6bcb018edec51cf9fbeb50",
@@ -16,13 +16,35 @@
       "unresolvedNoticeFiles": 0
     }
   },
-  "evaluationStatus": "EXACT_EVIDENCE_COMPLETE_OWNER_APPROVAL_PENDING",
-  "historicalExecutionPrecondition": "NOT_PROVEN",
-  "futureMeasuredExecution": "BLOCKED_PENDING_OWNER_ARTIFACT_APPROVAL_AND_EXECUTION_PREREQUISITES",
+  "evaluationStatus": "EVALUATION_APPROVED",
+  "ipPrecondition": "SATISFIED_FOR_STAGE0",
+  "historicalExecutionPrecondition": "NOT_PROVEN_NOT_RETROACTIVE",
+  "futureMeasuredExecution": "BLOCKED_PENDING_PHYSICAL_D1_D3_AND_OWNER_EXECUTION_AUTHORIZATION",
   "ownerDecision": {
+    "id": "OD-13",
+    "approvedOn": "2026-08-11",
+    "approvedBy": "Project owner",
+    "scope": "Stage 0 evaluation only"
+  },
+  "roleAssignmentDecision": {
     "id": "OD-11",
     "approvedOn": "2026-08-11",
     "scope": "Stage 0 evaluation only"
+  },
+  "stage0Approval": {
+    "status": "EVALUATION_APPROVED",
+    "approvedBy": "Project owner",
+    "approvedOn": "2026-08-11",
+    "componentCount": 66,
+    "reviewedDependencyInventorySha256": "sha256:63a2a3dadfbfe072770d914a74cbd40d6adbd517548bda4ba0331dd314ca6a98",
+    "reviewedLicenseNoticeInventorySha256": "sha256:8b80fa573a2674cb32fe08446683f5b3d05ce4721b6bcb018edec51cf9fbeb50",
+    "reviewedSystemImageSha256": "sha256:b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160",
+    "restrictions": [
+      "Internal synthetic POC-SEARCH-001 research in Stage 0 only.",
+      "This decision does not authorize a measured benchmark; physical D1/D3 and later owner execution authorization remain required.",
+      "This decision is not production Legal or independent production Security approval.",
+      "FTS4, the PoC schema, and every reviewed dependency remain outside production admission."
+    ]
   },
   "reviewAssignments": {
     "product": {
@@ -52,10 +74,7 @@
     }
   },
   "reviewEvidenceLocator": "docs/evidence/poc-search-001/ip-stage0-evaluation-review.md",
-  "dependencyReviewBlockers": [
-    "Exact component/license/NOTICE evidence is complete, but the assigned Project owner has not recorded EVALUATION_APPROVED for the exact 66-component graph and pinned platform image.",
-    "The Project owner must explicitly accept the recorded Stage 0 obligations or record component-specific restrictions and fallback."
-  ],
+  "dependencyReviewBlockers": [],
   "unresolvedLicenseCoordinates": [],
   "platformArtifacts": [
     {
@@ -63,10 +82,11 @@
       "observedVersion": "r07 / google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
       "sha256": "sha256:b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160",
       "digestScope": "exact-system-image-archive",
-      "licenseReviewState": "PROPOSED",
-      "evaluationRightsConfirmed": false,
+      "licenseReviewState": "EVALUATION_APPROVED",
+      "evaluationRightsConfirmed": true,
       "evidenceLocator": "docs/evidence/poc-search-001/android-system-image-provenance.json",
-      "blocker": "Exact archive provenance and reviewers are recorded, but the Stage 0 evaluation-rights decision is pending."
+      "approvalDecisionId": "OD-13",
+      "restriction": "Stage 0 internal synthetic evaluation only; no production distribution or admission."
     },
     {
       "artifactId": "android-platform-sqlite",
@@ -82,18 +102,19 @@
         "abi": "x86_64",
         "sqliteVersion": "3.44.3"
       },
-      "licenseReviewState": "PROPOSED",
-      "evaluationRightsConfirmed": false,
+      "licenseReviewState": "EVALUATION_APPROVED",
+      "evaluationRightsConfirmed": true,
       "evidenceLocator": "docs/evidence/poc-search-001/android-system-image-provenance.json",
       "provenanceMethodDecision": "APPROVED_FOR_STAGE0_BY_OD_11",
+      "approvalDecisionId": "OD-13",
       "productionReconsiderationRequired": true,
-      "blocker": "The Stage 0 provenance method is resolved; evaluation rights remain pending and production review is explicitly separate."
+      "restriction": "Stage 0 internal synthetic evaluation only; the containing-image boundary and all production obligations require fresh review."
     }
   ],
   "remainingStage0Actions": [
-    "The assigned Project owner must record EVALUATION_APPROVED or REJECTED in docs/evidence/poc-search-001/ip-stage0-evaluation-review.md for the exact evidence packet.",
-    "Keep every artifact PROPOSED until that explicit decision; evidence completeness alone does not confirm evaluation rights.",
-    "Option B is approved prospectively, but measured execution remains separately withheld pending the paired-harness verification, physical D1-D3 availability, and a later owner authorization."
+    "Physical D1 and D3 availability and exact-commit preflight remain deferred and unrecorded.",
+    "Measured execution remains separately withheld until a later explicit Project owner authorization changes benchmarkExecutionAllowed to true.",
+    "Stage 0C closes INCONCLUSIVE without a new measured stage0-v0.2 campaign."
   ],
   "productionBlockers": [
     "Production Legal reviewer and approval are unassigned.",
@@ -102,9 +123,9 @@
     "Production admission still requires ADR, SBOM/notices, security, ABI/runtime, migration/removal and release evidence."
   ],
   "nonClaims": [
-    "Reviewer assignment is not EVALUATION_APPROVED.",
-    "The Stage 0 SQLite provenance method does not grant evaluation, commercial-use or redistribution rights.",
-    "This assessment does not admit any dependency or production schema.",
-    "The prior benchmark cannot prove that the external-artifact execution precondition was satisfied."
+    "EVALUATION_APPROVED is limited to internal synthetic Stage 0 research and is not production Legal or Security approval.",
+    "The Stage 0 SQLite containing-system-image provenance method and this approval do not authorize production distribution.",
+    "This assessment does not admit FTS4, any dependency, or any schema into production.",
+    "The later OD-13 approval does not retroactively prove that the external-artifact precondition was satisfied by the historical benchmark."
   ]
 }

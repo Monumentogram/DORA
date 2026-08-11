@@ -579,7 +579,7 @@ def validate_dependency_and_ip_inventory() -> None:
         require(
             reviewed["stage0EvaluationDisposition"] == "ACCEPTABLE_PENDING_OWNER_APPROVAL"
             and reviewed["productionAdmission"] == "NOT_REVIEWED",
-            f"License evidence invented approval: {coordinate}",
+            f"Immutable license packet generation state drift: {coordinate}",
         )
         for archive in reviewed["embeddedLicenseNoticeEntries"]:
             for entry in archive["entries"]:
@@ -634,16 +634,18 @@ def validate_dependency_and_ip_inventory() -> None:
         "Resolved effective-license gaps remain marked unresolved",
     )
     require(
-        ip_evaluation["evaluationStatus"]
-        == "EXACT_EVIDENCE_COMPLETE_OWNER_APPROVAL_PENDING"
-        and ip_evaluation["historicalExecutionPrecondition"] == "NOT_PROVEN"
+        ip_evaluation["schemaVersion"] == 3
+        and ip_evaluation["evaluationStatus"] == "EVALUATION_APPROVED"
+        and ip_evaluation["ipPrecondition"] == "SATISFIED_FOR_STAGE0"
+        and ip_evaluation["historicalExecutionPrecondition"]
+        == "NOT_PROVEN_NOT_RETROACTIVE"
         and ip_evaluation["futureMeasuredExecution"]
-        == "BLOCKED_PENDING_OWNER_ARTIFACT_APPROVAL_AND_EXECUTION_PREREQUISITES",
-        "Evidence completeness must not invent owner artifact approval or execution rights",
+        == "BLOCKED_PENDING_PHYSICAL_D1_D3_AND_OWNER_EXECUTION_AUTHORIZATION",
+        "Stage 0 IP approval or its non-retroactive execution boundary drift",
     )
     require(
         ip_evaluation["dependencyInventory"]["status"]
-        == "EVIDENCE_COMPLETE_OWNER_APPROVAL_PENDING"
+        == "EVALUATION_APPROVED_STAGE0"
         and ip_evaluation["dependencyInventory"]["licenseNoticeInventory"]
         == {
             "locator": "docs/evidence/poc-search-001/license-notice-inventory.json",
@@ -655,7 +657,46 @@ def validate_dependency_and_ip_inventory() -> None:
         },
         "IP assessment does not bind the exact license/NOTICE evidence",
     )
-    require(ip_evaluation["ownerDecision"] == {"id": "OD-11", "approvedOn": "2026-08-11", "scope": "Stage 0 evaluation only"}, "OD-11 IP scope drift")
+    require(
+        ip_evaluation["ownerDecision"]
+        == {
+            "id": "OD-13",
+            "approvedOn": "2026-08-11",
+            "approvedBy": "Project owner",
+            "scope": "Stage 0 evaluation only",
+        },
+        "OD-13 Stage 0 IP approval scope drift",
+    )
+    require(
+        ip_evaluation["roleAssignmentDecision"]
+        == {"id": "OD-11", "approvedOn": "2026-08-11", "scope": "Stage 0 evaluation only"},
+        "OD-11 reviewer/provenance scope drift",
+    )
+    require(
+        ip_evaluation["stage0Approval"]
+        == {
+            "status": "EVALUATION_APPROVED",
+            "approvedBy": "Project owner",
+            "approvedOn": "2026-08-11",
+            "componentCount": 66,
+            "reviewedDependencyInventorySha256": file_digest(inventory_path),
+            "reviewedLicenseNoticeInventorySha256": file_digest(license_path),
+            "reviewedSystemImageSha256": (
+                "sha256:b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160"
+            ),
+            "restrictions": [
+                "Internal synthetic POC-SEARCH-001 research in Stage 0 only.",
+                "This decision does not authorize a measured benchmark; physical D1/D3 and later owner execution authorization remain required.",
+                "This decision is not production Legal or independent production Security approval.",
+                "FTS4, the PoC schema, and every reviewed dependency remain outside production admission.",
+            ],
+        },
+        "Exact OD-13 review object or restriction set drift",
+    )
+    require(
+        ip_evaluation["dependencyReviewBlockers"] == [],
+        "Completed Stage 0 IP review still carries an artifact-approval blocker",
+    )
     assignments = ip_evaluation["reviewAssignments"]
     for role in ("product", "ipPolicy", "engineeringSecurity"):
         require(
@@ -685,6 +726,24 @@ def validate_dependency_and_ip_inventory() -> None:
         review_locator == "docs/evidence/poc-search-001/ip-stage0-evaluation-review.md"
         and (ROOT / review_locator).is_file(),
         "Stage 0 IP review record is missing",
+    )
+    review_text = (ROOT / review_locator).read_text(encoding="utf-8")
+    require(
+        "EVALUATION_APPROVED — STAGE 0 ONLY" in review_text
+        and "Artifact approval decision: `OD-13`" in review_text
+        and "This completed block removes only the Stage 0 IP precondition" in review_text,
+        "Completed Stage 0 IP review wording drift",
+    )
+    owner_registry_text = (
+        ROOT / "docs/stage0/DORA_MVP1_STAGE0_OWNER_DECISIONS.md"
+    ).read_text(encoding="utf-8")
+    require(
+        "## OD-13." in owner_registry_text
+        and file_digest(inventory_path) in owner_registry_text
+        and file_digest(license_path) in owner_registry_text
+        and "sha256:b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160"
+        in owner_registry_text,
+        "OD-13 owner registry record is missing or not bound to the exact package",
     )
     platform_artifacts = {artifact["artifactId"]: artifact for artifact in ip_evaluation["platformArtifacts"]}
     system_image = platform_artifacts["android-system-image-google-apis-x86_64-api36"]
@@ -734,8 +793,12 @@ def validate_dependency_and_ip_inventory() -> None:
         "Pinned system-image runtime identity or SQLite boundary drift",
     )
     for artifact in platform_artifacts.values():
-        require(artifact["licenseReviewState"] == "PROPOSED", "Platform artifact approval is unsupported")
-        require(artifact["evaluationRightsConfirmed"] is False, "Platform evaluation rights are unsupported")
+        require(
+            artifact["licenseReviewState"] == "EVALUATION_APPROVED"
+            and artifact["evaluationRightsConfirmed"] is True
+            and artifact["approvalDecisionId"] == "OD-13",
+            "Platform artifact is not bound to the Stage 0-only OD-13 approval",
+        )
     sqlite_artifact = platform_artifacts["android-platform-sqlite"]
     require(
         sqlite_artifact["sha256"] == system_image["sha256"]
@@ -1293,26 +1356,67 @@ def validate_result_if_present() -> None:
         "Evidence-index execution blocker drift",
     )
     require(
-        evidence_index["currentAssessment"]["assessmentId"] == "review-2026-08-11-v4"
-        and evidence_index["currentAssessment"]["newMeasurementRun"] is False,
+        evidence_index["currentAssessment"]["assessmentId"] == "review-2026-08-11-v5"
+        and evidence_index["currentAssessment"]["newMeasurementRun"] is False
+        and evidence_index["currentAssessment"]["supersedes"]
+        == {
+            "assessmentId": "review-2026-08-11-v4",
+            "locator": (
+                "docs/evidence/poc-search-001/assessments/"
+                "review-2026-08-11-v4/benchmark-result.json"
+            ),
+            "sha256": (
+                "sha256:5fc5bd2d8340d11bbaf7b88fe3c26e1859d57ef84409f2c580158d2a3609a6b2"
+            ),
+            "reason": (
+                "Stage 0 IP approval and owner-accepted INCONCLUSIVE closure; no measurements changed."
+            ),
+        },
         "Review reassessment must not claim a new benchmark run",
+    )
+    prior_result_path = (
+        EVIDENCE
+        / "assessments"
+        / "review-2026-08-11-v4"
+        / "benchmark-result.json"
+    )
+    require(
+        file_digest(prior_result_path)
+        == "sha256:5fc5bd2d8340d11bbaf7b88fe3c26e1859d57ef84409f2c580158d2a3609a6b2",
+        "Immutable v4 assessment was altered while recording the closure",
     )
     require(
         evidence_index["ipEvaluation"]["status"]
-        == "EXACT_EVIDENCE_COMPLETE_OWNER_APPROVAL_PENDING"
+        == "EVALUATION_APPROVED"
+        and evidence_index["ipEvaluation"]["ipPrecondition"]
+        == "SATISFIED_FOR_STAGE0"
         and evidence_index["ipEvaluation"]["futureMeasuredExecution"]
-        == "BLOCKED_PENDING_OWNER_ARTIFACT_APPROVAL_AND_EXECUTION_PREREQUISITES",
+        == "BLOCKED_PENDING_PHYSICAL_D1_D3_AND_OWNER_EXECUTION_AUTHORIZATION",
         "Evidence index IP review status drift",
     )
     require(
         evidence_index["executionPrerequisites"]
         == {
-            "licenseNoticeApproval": "PENDING_PROJECT_OWNER",
+            "licenseNoticeApproval": "EVALUATION_APPROVED_STAGE0",
             "pairedHarness": read_json(EVIDENCE / "gate-v02-harness-readiness.json")["status"],
             "physicalD1D2D3": "BLOCKED_MISSING_D1_D3",
             "laterOwnerExecutionAuthorization": "WITHHELD",
         },
         "Evidence index execution prerequisites drift",
+    )
+    require(
+        evidence_index["stageClosure"]
+        == {
+            "status": "COMPLETE_INCONCLUSIVE",
+            "acceptedBy": "Project owner",
+            "acceptedOn": "2026-08-11",
+            "newMeasurementRun": False,
+            "measuredBenchmark": "DEFERRED_NOT_AUTHORIZED",
+            "physicalD1D3": "DEFERRED_UNRECORDED",
+            "productionAdmission": False,
+            "pullRequestDisposition": "DRAFT_PENDING_FINAL_REVIEW",
+        },
+        "Stage 0C INCONCLUSIVE closure record drift",
     )
     result_path = ROOT / evidence_index["currentAssessment"]["locator"]
     require(result_path.is_file(), "Current versioned assessment is missing")
@@ -1323,9 +1427,53 @@ def validate_result_if_present() -> None:
     schema = read_json(ROOT / "docs/stage0/benchmark-result.schema.json")
     result = read_json(result_path)
     SchemaValidator(schema).validate(result, schema)
+    prior_result = read_json(prior_result_path)
+    for measurement_field in (
+        "commit",
+        "device",
+        "androidApi",
+        "duration",
+        "inputData",
+        "metrics",
+        "successGates",
+        "failureGates",
+        "errors",
+        "battery",
+        "temperature",
+        "memory",
+        "fileSizes",
+    ):
+        require(
+            result[measurement_field] == prior_result[measurement_field],
+            f"Non-measurement closure changed frozen field {measurement_field}",
+        )
+    prior_assessment_dir = prior_result_path.parent
+    current_assessment_dir = result_path.parent
+    for detail_name in (
+        "query-result.json",
+        "mutation-result.json",
+        "rebuild-result.json",
+    ):
+        require(
+            read_json(current_assessment_dir / detail_name)
+            == read_json(prior_assessment_dir / detail_name),
+            f"Non-measurement closure changed frozen detail {detail_name}",
+        )
+    current_environment = read_json(current_assessment_dir / "environment.json")
+    prior_environment = read_json(prior_assessment_dir / "environment.json")
+    current_environment.pop("evidenceRevision")
+    prior_environment.pop("evidenceRevision")
+    require(
+        current_environment == prior_environment,
+        "Non-measurement closure changed the corrected environment evidence",
+    )
     require(result["pocId"] == "POC-SEARCH-001", "Wrong PoC result id")
     require(result["gateSetVersion"] == "stage0-v0.1", "Historical assessment must retain its gate version")
-    require(result["result"]["status"] in ("INCONCLUSIVE", "FAIL"), "Emulator evidence cannot be PASS")
+    require(result["result"]["status"] == "INCONCLUSIVE", "Stage 0C closure must remain INCONCLUSIVE")
+    require(
+        result["recommendation"]["decision"] == "BLOCKED",
+        "INCONCLUSIVE Stage 0C closure cannot recommend production GO",
+    )
     require(result["device"]["kind"] == "emulator", "Search result must disclose emulator environment")
     require(result["inputData"]["containsRealMeetingData"] is False, "Real meeting data is forbidden")
     gate_ids = [gate["id"] for gate in result["successGates"] + result["failureGates"]]
@@ -1384,11 +1532,35 @@ def validate_result_if_present() -> None:
     require(actual_license_ids == expected_license_ids, "Result license inventory is incomplete")
     require(
         all(
-            license_value["licenseReviewState"] == "PROPOSED"
-            and license_value["evaluationRightsConfirmed"] is False
+            license_value["licenseReviewState"] == "EVALUATION_APPROVED"
+            and license_value["evaluationRightsConfirmed"] is True
+            and license_value["redistributionRights"] == "unknown"
             for license_value in result["licenses"]
         ),
-        "Result invents external-artifact evaluation approval",
+        "Result does not preserve the Stage 0-only evaluation approval boundary",
+    )
+    require(
+        all(
+            license_value["licenseId"] == "NOASSERTION"
+            for license_value in result["licenses"]
+            if license_value["artifactId"]
+            in {"android-system-image-google-apis-x86_64-api36", "android-platform-sqlite"}
+        ),
+        "Platform evaluation approval must not invent an SPDX license identifier",
+    )
+    limitation_ids = {limitation["id"] for limitation in result["limitations"]}
+    require(
+        "LIMIT-SEARCH-IP-EVALUATION-NOT-ESTABLISHED" not in limitation_ids
+        and "LIMIT-SEARCH-NO-PHYSICAL-D1-D3" in limitation_ids
+        and "LIMIT-SEARCH-INCOMPLETE-STORAGE-UPDATE-GATE" in limitation_ids,
+        "Current assessment carries a resolved IP blocker or hides an unresolved measurement blocker",
+    )
+    require(
+        "physical D1 and D3" in result["recommendation"]["ownerAction"]
+        and "separately authorize measured execution" in result["recommendation"]["ownerAction"]
+        and "approve or reject" not in result["recommendation"]["ownerAction"]
+        and "harness verification" not in result["recommendation"]["ownerAction"],
+        "Owner action still requests completed IP/harness work or omits deferred execution prerequisites",
     )
     evidence_locators = {evidence["locator"] for evidence in result["evidenceFiles"]}
     require(
@@ -1400,6 +1572,7 @@ def validate_result_if_present() -> None:
             "docs/evidence/poc-search-001/device-availability-stage0-v0.2.json",
             "docs/evidence/poc-search-001/gate-v02-harness-readiness.json",
             "docs/evidence/poc-search-001/ip-stage0-evaluation-review.md",
+            "docs/stage0/DORA_MVP1_STAGE0_OWNER_DECISIONS.md",
         }.issubset(evidence_locators),
         "Current assessment omits approved-gate or readiness governance evidence",
     )
@@ -1410,6 +1583,7 @@ def validate_result_if_present() -> None:
     )
     environment = read_json(ROOT / environment_locator)
     require_consistent_android_runtime(environment["android"])
+    require(environment["evidenceRevision"] == 5, "Current assessment evidence revision drift")
     require(environment["correction"]["metricsChanged"] is False, "Environment correction changed metrics")
     require(result["device"]["kind"] == environment["android"]["kind"], "Result/environment kind mismatch")
     require(
@@ -1685,8 +1859,22 @@ def validate_finalizer_contract() -> None:
         )
         require(len(result["licenses"]) == 68, "Finalizer did not emit the exact dependency/platform inventory")
         require(
-            all(value["licenseReviewState"] == "PROPOSED" for value in result["licenses"]),
-            "Finalizer invented evaluation approval",
+            all(
+                value["licenseReviewState"] == "EVALUATION_APPROVED"
+                and value["evaluationRightsConfirmed"] is True
+                and value["redistributionRights"] == "unknown"
+                for value in result["licenses"]
+            ),
+            "Finalizer lost the Stage 0-only IP approval boundary",
+        )
+        require(
+            all(
+                value["licenseId"] == "NOASSERTION"
+                for value in result["licenses"]
+                if value["artifactId"]
+                in {"android-system-image-google-apis-x86_64-api36", "android-platform-sqlite"}
+            ),
+            "Finalizer invented a platform SPDX license identifier",
         )
 
 

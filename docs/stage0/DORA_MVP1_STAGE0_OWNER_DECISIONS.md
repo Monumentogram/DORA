@@ -6,7 +6,7 @@
 Область: только Stage 0 PoC; эти решения не разрешают production-функциональность, реальные совещания или публичные support claims\
 Связанные записи: `DEC-002`–`DEC-004`, `DEC-009`, `DEC-014`, `DEC-015`, `DEC-018`, `DEC-020`, `DEC-027`, Approved `DEC-043` и Stage 0A owner approval record в Product Decisions
 
-Этот сокращённый реестр содержит двенадцать решений для ближайших PoC. Все ответы ниже прямо утверждены владельцем в указанной области. `OD-12` утверждает только prospective Option B contract; измерительное исполнение остаётся отдельно запрещено.
+Этот сокращённый реестр содержит тринадцать решений для ближайших PoC. Все ответы ниже прямо утверждены владельцем в указанной области. `OD-12` утверждает только prospective Option B contract, а `OD-13` — точный Stage 0 IP evaluation package и честное `INCONCLUSIVE`-закрытие; измерительное исполнение остаётся отдельно запрещено.
 
 ## OD-01. Какой технический PoC запускать первым и что он вправе записывать?
 
@@ -276,8 +276,8 @@ admission, production Legal approval или независимым production se
 - production use, redistribution, SBOM/notices или shipping dependency admission.
 
 **Следствие:** reviewer assignment и достаточность SQLite provenance method больше не являются
-неопределёнными. `OD-12` позднее выбрал Gate Set Option B; measured execution остаётся
-заблокирован до formal artifact approval, harness verification, physical D1–D3 и отдельной
+неопределёнными. `OD-12` позднее выбрал Gate Set Option B, а `OD-13` утвердил точный Stage 0 IP
+evaluation package. Measured execution остаётся заблокирован до physical D1–D3 и отдельной
 execution authorization.
 
 ## OD-12. Какой storage/update contract утверждён и разрешён ли benchmark?
@@ -307,12 +307,40 @@ execution authorization.
 availability, production schema/dependency admission, production Legal или independent production
 Security approval.
 
+## OD-13. Утверждён ли точный Stage 0 IP package и как закрывается Stage 0C?
+
+**Статус решения:** `Approved` — 11 августа 2026 года.
+
+**Область:** только internal synthetic research/evaluation `POC-SEARCH-001` в Stage 0.
+
+**Зафиксированный ответ владельца:**
+
+- exact Stage 0 IP evaluation package имеет статус `EVALUATION_APPROVED`;
+- утверждены dependency inventory из 66 компонентов с digest
+  `sha256:63a2a3dadfbfe072770d914a74cbd40d6adbd517548bda4ba0331dd314ca6a98`,
+  license/NOTICE inventory с digest
+  `sha256:8b80fa573a2674cb32fe08446683f5b3d05ce4721b6bcb018edec51cf9fbeb50`
+  и Android system-image archive с digest
+  `sha256:b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160`;
+- Stage 0 IP precondition выполнен только для этого ограниченного evaluation scope;
+- D1/D3 и measured benchmark отложены. Benchmark не разрешён, `benchmarkExecutionAllowed`
+  остаётся `false`, а будущий запуск потребует физические D1–D3, fresh exact-commit preflight и
+  отдельную последующую authorization владельца;
+- Stage 0C завершается с формальным результатом `INCONCLUSIVE` и recommendation `BLOCKED` без
+  нового измерительного запуска; Draft PR #10 остаётся без merge до final review.
+
+**Что это решение не утверждает:** production Legal approval, независимый production Security
+review, redistribution, production schema/dependency admission или автоматический допуск FTS4 в
+production. Принятие `OD-13` также не доказывает задним числом выполнение IP precondition для
+исторической v0.1 кампании и не меняет её метрики, gates или verdict.
+
 ## Итог утверждения
 
-- `OD-01`–`OD-10` имеют статус `Approved` с датой 4 августа 2026 года; `OD-11`/`OD-12` имеют статус
+- `OD-01`–`OD-10` имеют статус `Approved` с датой 4 августа 2026 года; `OD-11`–`OD-13` имеют статус
   `Approved` с датой 11 августа 2026 года и только указанную Stage 0 scope.
 - Первым остаётся `POC-CAPTURE-001`, но этот PoC в Stage 0A не запускался.
 - До первого измеряемого запуска один физический телефон владельца должен быть подключён и автоматически идентифицирован.
 - До настройки controlled non-public storage используются только synthetic data.
-- Option B в `stage0-v0.2` Approved prospectively, но benchmark execution withheld; один телефон не
-  даёт общий PASS D1–D7 и не подтверждает D1–D3 availability.
+- Option B в `stage0-v0.2` Approved prospectively, Stage 0 IP package Approved только для research,
+  но benchmark execution withheld; один телефон не даёт общий PASS D1–D7 и не подтверждает D1–D3
+  availability.

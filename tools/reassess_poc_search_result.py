@@ -10,6 +10,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import check_poc_search_run_readiness as run_readiness
 import finalize_poc_search_result as finalizer
 from poc_search_environment import classify_android_runtime
 
@@ -17,8 +18,9 @@ from poc_search_environment import classify_android_runtime
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "docs" / "evidence" / "poc-search-001"
 SOURCE_RUN_ID = "31487775567"
-ASSESSMENT_ID = "review-2026-08-11-v4"
-ASSESSMENT_ISSUED_AT = "2026-08-11T17:48:30Z"
+ASSESSMENT_ID = "review-2026-08-11-v5"
+ASSESSMENT_ISSUED_AT = "2026-08-11T19:26:46Z"
+PRIOR_ASSESSMENT_ID = "review-2026-08-11-v4"
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -36,7 +38,7 @@ def corrected_environment(source: dict[str, Any], system_image: dict[str, Any]) 
     android["systemImagePackage"] = system_image["package"]
     android["systemImageRevision"] = system_image["revision"]
     android["systemImageArchiveSha256"] = system_image["archive"]["sha256"]
-    value["evidenceRevision"] = 4
+    value["evidenceRevision"] = 5
     value["sourceEvidence"] = (
         f"docs/evidence/poc-search-001/runs/{SOURCE_RUN_ID}/environment.json"
     )
@@ -118,6 +120,7 @@ def render_assessment(repo_root: Path, output_dir: Path) -> dict[Path, dict[str,
     finalizer.write_json(result_path, result)
     gate_set_locator = "docs/stage0/poc-search-gate-set-stage0-v0.2.json"
     gate_set = read_json(repo_root / gate_set_locator)
+    prior_result_path = evidence / "assessments" / PRIOR_ASSESSMENT_ID / "benchmark-result.json"
     index = {
         "schemaVersion": 2,
         "pocId": "POC-SEARCH-001",
@@ -130,17 +133,20 @@ def render_assessment(repo_root: Path, output_dir: Path) -> dict[Path, dict[str,
             "recommendation": result["recommendation"]["decision"],
             "newMeasurementRun": False,
             "sourceActionsRunId": SOURCE_RUN_ID,
+            "supersedes": {
+                "assessmentId": PRIOR_ASSESSMENT_ID,
+                "locator": prior_result_path.relative_to(repo_root).as_posix(),
+                "sha256": finalizer.sha256(prior_result_path),
+                "reason": (
+                    "Stage 0 IP approval and owner-accepted INCONCLUSIVE closure; no measurements changed."
+                ),
+            },
         },
         "gateContract": {
             "version": gate_set["gateSetVersion"],
             "status": gate_set["status"],
             "complete": True,
-            "blocker": (
-                "Option B is approved, but measured execution is withheld pending explicit "
-                "Stage 0 component/license/NOTICE approval, verified paired-harness evidence, "
-                "confirmed physical D1-D3 availability, and a later Project owner execution "
-                "authorization."
-            ),
+            "blocker": run_readiness.EXECUTION_WITHHELD_MESSAGE,
             "decisionLocator": (
                 "docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES.md"
             ),
@@ -161,6 +167,7 @@ def render_assessment(repo_root: Path, output_dir: Path) -> dict[Path, dict[str,
         "ipEvaluation": {
             "locator": "docs/evidence/poc-search-001/ip-evaluation.json",
             "status": ip_evaluation["evaluationStatus"],
+            "ipPrecondition": ip_evaluation["ipPrecondition"],
             "futureMeasuredExecution": ip_evaluation["futureMeasuredExecution"],
         },
         "completedEvidencePolicy": {
@@ -169,7 +176,7 @@ def render_assessment(repo_root: Path, output_dir: Path) -> dict[Path, dict[str,
             "rootV1FilesSuperseded": True,
         },
         "executionPrerequisites": {
-            "licenseNoticeApproval": "PENDING_PROJECT_OWNER",
+            "licenseNoticeApproval": "EVALUATION_APPROVED_STAGE0",
             "pairedHarness": read_json(
                 evidence / "gate-v02-harness-readiness.json"
             )["status"],
@@ -177,6 +184,16 @@ def render_assessment(repo_root: Path, output_dir: Path) -> dict[Path, dict[str,
                 evidence / "device-availability-stage0-v0.2.json"
             )["status"],
             "laterOwnerExecutionAuthorization": "WITHHELD",
+        },
+        "stageClosure": {
+            "status": "COMPLETE_INCONCLUSIVE",
+            "acceptedBy": "Project owner",
+            "acceptedOn": "2026-08-11",
+            "newMeasurementRun": False,
+            "measuredBenchmark": "DEFERRED_NOT_AUTHORIZED",
+            "physicalD1D3": "DEFERRED_UNRECORDED",
+            "productionAdmission": False,
+            "pullRequestDisposition": "DRAFT_PENDING_FINAL_REVIEW",
         },
     }
     index_path = evidence / "evidence-index.json"

@@ -1,0 +1,67 @@
+{
+  "android": {
+    "abi": "x86_64",
+    "androidApi": 36,
+    "buildFingerprint": "google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+    "buildType": "debug-androidTest",
+    "cpuSummary": "Android virtual processor",
+    "device": "emu64xa",
+    "ftsCreateSql": "CREATE VIRTUAL TABLE `transcript_segments_fts` USING FTS4(`text` TEXT NOT NULL, tokenize=unicode61 `remove_diacritics=0`)",
+    "kind": "emulator",
+    "manufacturer": "Google",
+    "model": "sdk_gphone64_x86_64",
+    "monotonicClock": "SystemClock.elapsedRealtimeNanos",
+    "pageSizeBytes": 4096,
+    "product": "sdk_gphone64_x86_64",
+    "ramMb": 3920,
+    "roomVersion": "2.8.4",
+    "securityPatch": "2025-07-05",
+    "sqliteVersion": "3.44.3",
+    "systemImageArchiveSha256": "b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160",
+    "systemImagePackage": "system-images;android-36;google_apis;x86_64",
+    "systemImageRevision": 7
+  },
+  "commit": "9571e5f2e7cceeab95b52f1e1167770518a3e475",
+  "correction": {
+    "basis": [
+      "google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+      "sdk_gphone64_x86_64",
+      "emu64xa",
+      "sdk_gphone64_x86_64",
+      "Android virtual processor"
+    ],
+    "corrected": "emulator",
+    "field": "android.kind",
+    "metricsChanged": false,
+    "recorded": "physical"
+  },
+  "evidenceRevision": 5,
+  "generatedAt": "2026-08-11T12:01:40.732216Z",
+  "host": {
+    "cpu": "AMD EPYC 7763 64-Core Processor",
+    "githubRef": "refs/tags/poc-search-001-full-9571e5f",
+    "githubRunAttempt": "1",
+    "githubRunId": "31487775567",
+    "githubSha": "9571e5f2e7cceeab95b52f1e1167770518a3e475",
+    "githubWorkflow": "POC Search Scale Benchmark",
+    "logicalCpuCount": 4,
+    "machine": "x86_64",
+    "os": "Linux-6.17.0-1020-azure-x86_64-with-glibc2.39",
+    "ramMb": 15989,
+    "runnerEnvironment": "github-hosted",
+    "runnerName": "GitHub Actions 1000000552"
+  },
+  "measurementScope": {
+    "correctness": "reference-scale Android emulator",
+    "latency": "Android emulator exploratory evidence only",
+    "physicalDeviceClaim": false,
+    "requiredFuturePhysicalProfiles": [
+      "D1",
+      "D2",
+      "D3"
+    ]
+  },
+  "pocId": "POC-SEARCH-001",
+  "schemaVersion": 1,
+  "sourceEvidence": "docs/evidence/poc-search-001/runs/31487775567/environment.json"
+}
