@@ -1,6 +1,6 @@
 # Dora MVP 1 — Stage Status
 
-Updated: 10 August 2026
+Updated: 11 August 2026
 Baseline: `1be83e2940a09f7b23e33b4cdf3827de2690f3fd`
 Stage 00 merge commit: `a4aae302f9033e5471f6759f513e7e351c375a72`
 Stage 0A merge commit: `91b9916b01ff70f63d82412bafbed0d72307dbe1`
@@ -10,7 +10,7 @@ Stage 0B merge commit: `5e748469b22c6e7303fe6eb5f95394ea40088d84`
 Active stage: `Stage 0C — POC-SEARCH-001`
 Active branch: `stage/0c-poc-search-001`
 Active PoC: `POC-SEARCH-001`
-Stage state: **IN PROGRESS — PRE-RUN CONTRACT FREEZE**
+Stage state: **EVIDENCE COMPLETE — REVIEW PENDING; FORMAL INCONCLUSIVE**
 
 ## Stage 00 closure
 
@@ -51,6 +51,14 @@ mutation and logical rebuild checks. It is only exploratory latency evidence. A 
 D1-D3 search slices exist. FTS4 and the PoC schema are not production-admitted by this
 stage.
 
+The final checkpointed host/emulator campaign completed the frozen 10k/1M contract without a
+repeat of the multi-hour query-plan failure. Exploratory p95 is `97.537984 ms` and p99 is
+`144.481302 ms`; both independent builds passed all `61/61` correctness cases, the FTS4-driven
+count and page plans were accepted without temporary page sorting, and mutation, deterministic
+rebuild and cleanup checks passed. The generated-scale host/emulator outcome is `PASS` with a
+`GO` feasibility recommendation, while the formal result remains `INCONCLUSIVE` pending physical
+D1-D3 latency evidence.
+
 ## Closed Stage 0B evidence record
 
 Stage 0B implemented only the disposable `POC-CAPTURE-001` evidence harness selected by `OD-01`. It did not admit that implementation into production Dora.
@@ -78,6 +86,13 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 
 ## Current gates and blockers
 
+- `POC-SEARCH-001` has completed its frozen generated-scale evidence contract. The retained
+  earlier valid full result failed the latency gate; the corrected streaming rowid page plan then
+  passed the targeted scale guard before the final full campaign passed. Frozen manifests,
+  parameter binding, repetitions, percentile definition and approved gates were not weakened.
+- Physical D1-D3 search latency evidence remains the only blocker to a formal search `PASS` or a
+  supported-device claim. It is deferred to a separately scoped campaign and does not block
+  review of the completed host/emulator PoC evidence.
 - The fully specified predicates in Gate Set `stage0-v0.1` are **Approved for Stage 0**. Exact ASR RTF by tier, maximum PSS/native heap, diarization corrections/minute, absolute battery drain without mWh, numeric capture sample-gap tolerance and minimum raw-trace retention remain **Proposed**.
 - The owner's physical phone is sanitized as Samsung `SM-S908B`, Android 16 / API 36, build `BP2A.250605.031.A3`, primary ABI `arm64-v8a` and 10515 MiB RAM. It is assigned to D2 as the closest hardware profile; D1 and D3-D7 availability remains `unknown`.
 - The refreshed pre-Run-A profile reports 36432 MiB free app storage, above the D2 start threshold of 8192 MiB, with 72% battery, unplugged power and thermal status `NONE`; the Run B export refreshed this to 33707 MiB and 80% with the same unplugged/`NONE` state. The Run C profile reports 33645 MiB, 70%, charging and `NONE`. The D2 hardware inventory remains valid; Run C battery data is not comparative evidence.
@@ -111,11 +126,11 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - No controlled non-public evidence store or custodian has been configured. Until then, only synthetic data and sanitized aggregate/public evidence are allowed; raw traces/audio and purpose-recorded volunteer phrases remain blocked.
 - Production markets/lawful basis/copy under `DEC-001` and Legal review remain unresolved. The Stage 0 reminder checkbox does not resolve production consent legality.
 - No PoC result admits a production dependency. Native code or model admission later requires an ADR plus license, provenance, ABI, 16-KiB and runtime evidence.
-- `main` remains the protected integration branch. Active Stage 0C development stays on `stage/0c-poc-search-001`; its PR must remain unmerged in this task.
+- `main` remains the protected integration branch. Stage 0C evidence closure stays on `stage/0c-poc-search-001`; its Draft PR must remain unmerged in this task.
 
 ## Next safe action
 
-Complete the frozen `POC-SEARCH-001` smoke and full reference campaigns, validate the sanitized evidence, and keep the Stage 0C Pull Request unmerged for review. Do not start another PoC inside this stage. A future clean 60-minute capture baseline remains a separately scoped deferred campaign on a dedicated test device.
+Review the completed `POC-SEARCH-001` sanitized evidence in the Stage 0C Draft Pull Request and keep it unmerged in this task. Any physical D1-D3 search campaign, clean 60-minute capture baseline, production admission decision or next PoC requires separate explicit scope.
 
 ## Update protocol
 

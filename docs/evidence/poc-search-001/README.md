@@ -1,6 +1,6 @@
 # POC-SEARCH-001 evidence
 
-Status: `PRE-RUN CONTRACT FROZEN`
+Status: `HOST/EMULATOR GATES PASS — FORMAL INCONCLUSIVE`
 
 This directory contains the public-safe evidence contract for the isolated Stage 0C Room + SQLite FTS4 experiment. The generated database and the one-million-row transcript corpus are never committed or retained as workflow artifacts. Only generator source, deterministic manifests, canonical identifiers, aggregate measurements, and sanitized result files are eligible for Git.
 
@@ -38,13 +38,20 @@ The Room/FTS4 schema in `:poc:search` is PoC-only. It is not a production schema
 
 ## Result files
 
-The full workflow will produce and schema-validate these sanitized files before they are admitted here:
+Full workflow run `31487775567` produced and schema-validated these sanitized files before they were admitted here:
 
 - `benchmark-result.json` against `docs/stage0/benchmark-result.schema.json`;
 - `environment.json`;
 - `query-result.json`;
 - `mutation-result.json`;
 - `rebuild-result.json`.
+
+The five generated result files match the final workflow artifact byte-for-byte. The frozen
+dataset, query and mutation manifest file SHA-256 values above remain the original pre-run
+Windows-worktree provenance values. Machine evidence locators verify the canonical LF Git blobs
+required by `.gitattributes`; the validator normalizes CRLF only for that cross-platform byte
+comparison. Manifest JSON content, the 61-case campaign, repetitions, percentile definition and
+approved gates were not changed after any observed result.
 
 Any harness defect invalidates that run. Its fact must be preserved in this README before a corrected, unchanged-contract campaign is used for a verdict.
 
@@ -79,3 +86,29 @@ Any harness defect invalidates that run. Its fact must be preserved in this READ
   parameter binding and all frozen manifests, repetitions, percentile definitions and approved
   gates; it makes FTS4 the driving table, verifies the full-scale query plan before another full
   campaign, and splits the campaign into independently retained phase checkpoints.
+
+## Valid runs and outcome
+
+- Full workflow run `31484440781` at commit `b74aa4f0cc42f65c15502d1018aa68ee3b7b293f`
+  is a valid implementation `FAIL`, not an invalid run. Both generated 10k/1M builds passed all
+  61 correctness cases, query-plan safety, mutation, deterministic rebuild and cleanup checks,
+  but exploratory emulator p95 was `247.435677 ms`, above the approved `200 ms` failure gate;
+  p99 was `270.842256 ms`. Evidence isolated the latency to a temporary B-tree sort performed
+  before the limited result page was returned. This result remains part of the evidence history.
+- Targeted full-scale run `31486943815` at commit
+  `9571e5f2e7cceeab95b52f1e1167770518a3e475` validated the corrected page plan before another
+  full campaign. `Q-SEARCH-SOURCE` returned the expected count of `175000`; its bound count query
+  took `190.605659 ms`, while the result page fell from about `190 ms` to `3.432928 ms`. Both
+  EXPLAIN plans are FTS4-driven and the page plan contains no temporary order-by B-tree.
+- Final full workflow run `31487775567` at the same commit completed every checkpointed job and
+  finalizer. The host/emulator exploratory outcome is `PASS` with recommendation `GO`: p50
+  `0.820430 ms`, p95 `97.537984 ms`, p99 `144.481302 ms`, and maximum `153.800700 ms` over the
+  frozen 1,020-operation campaign. Both independent 10k/1M builds passed all `61/61` correctness
+  cases; parameter binding, accepted count/page plans, mutation correctness, deterministic
+  rebuild, checkpoint consistency and temporary-database cleanup all passed. Summed benchmark
+  phase time was `525.82291096 s`; the complete workflow finished in about 20 minutes rather than
+  hours.
+
+The formal result remains `INCONCLUSIVE`, not `PASS`, solely because no physical D1–D3 latency
+campaign was run. This is sufficient evidence to close the isolated PoC as generated-scale
+host/emulator feasibility; it does not admit FTS4, the PoC schema, or any production dependency.

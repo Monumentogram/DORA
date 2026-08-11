@@ -34,18 +34,16 @@ def read_json(path: Path) -> dict[str, Any]:
 
 def write_json(path: Path, value: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    with path.open("w", encoding="utf-8", newline="\n") as target:
+        target.write(json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
 
 
 def sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as source:
-        for block in iter(lambda: source.read(1024 * 1024), b""):
-            digest.update(block)
-    return "sha256:" + digest.hexdigest()
+    # Every caller supplies repository JSON, whose canonical `.gitattributes` form is LF.
+    # Normalize a stale Windows CRLF worktree so finalization and later verification produce
+    # the same evidence locator hashes as GitHub Actions and the committed blobs.
+    canonical_bytes = path.read_bytes().replace(b"\r\n", b"\n")
+    return "sha256:" + hashlib.sha256(canonical_bytes).hexdigest()
 
 
 def require(condition: bool, message: str) -> None:

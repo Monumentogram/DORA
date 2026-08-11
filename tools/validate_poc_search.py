@@ -46,7 +46,12 @@ def canonical_digest(value: Any) -> str:
 
 
 def file_digest(path: Path) -> str:
-    return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+    # Evidence JSON is committed with `.gitattributes` `eol=lf`. A pre-existing Windows
+    # worktree can still contain CRLF bytes until Git refreshes it, while Actions and the
+    # Android asset copy use the canonical LF blob. Verify the repository representation so
+    # the same immutable evidence hashes validate on every checkout.
+    canonical_bytes = path.read_bytes().replace(b"\r\n", b"\n")
+    return "sha256:" + hashlib.sha256(canonical_bytes).hexdigest()
 
 
 def validate_manifests() -> None:

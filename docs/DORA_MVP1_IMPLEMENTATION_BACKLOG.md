@@ -1,7 +1,7 @@
 # Dora MVP 1 — Executable Backlog
 
-Версия: Stage 0B closure\
-Дата: 10 августа 2026 года\
+Версия: Stage 0C POC-SEARCH-001 evidence result\
+Дата: 11 августа 2026 года\
 Owner approvals effective: 4 августа 2026 года (`OD-01`–`OD-10`)\
 Источник порядка: Technical Plan §37/§39, Design Spec §36/§39 и readiness gates.
 
@@ -58,7 +58,7 @@ Owner approvals effective: 4 августа 2026 года (`OD-01`–`OD-10`)\
 | POC-DIAR-001 | BLOCKED | XL | Local/server diarization and correction load | POC-GATES-001, POC-DATA-001 | DER/JER/MAE/correction report + exact weight license | no forced speaker if gate/license fail |
 | POC-BATTERY-001 | BLOCKED | L | Capture/VAD/ML energy and thermal matrix | POC-CAPTURE-001 | controlled baseline/repeats/batterystats/thermal policy | capture ≤ approved overhead; heavy ML deferred if unsafe |
 | POC-DECISION-001 | BLOCKED | XL | Decision revision graph benchmark | POC-GATES-001, POC-DATA-001 | ≥100 adjudicated cases, source validator, scoring | no auto-final if precision/source gate fails |
-| POC-SEARCH-001 | READY | M | Room FTS4 10k/1M benchmark | POC-GATES-001 | generated data, migration/rebuild/query harness | p95/gate, no operator injection; FTS4 or documented fallback |
+| POC-SEARCH-001 | DONE | M | Room FTS4 10k/1M benchmark | POC-GATES-001 | deterministic generated data, checkpointed query/mutation/rebuild harness and sanitized evidence under `docs/evidence/poc-search-001/` | Final host/emulator campaign passed the frozen generated-scale gates: p95 `97.537984 ms`, p99 `144.481302 ms`, `61/61` correctness on both independent builds, accepted FTS4-driven count/page plans without temporary page sorting, correct mutations, deterministic rebuild and verified cleanup. Formal verdict remains `INCONCLUSIVE` until physical D1–D3 latency evidence exists; this PoC does not admit a production schema or dependency. |
 | POC-OFFLINE-001 | TODO | L | Airplane/no-GMS core dependency audit | selected local harnesses | OS-blocked network run, call ledger | zero core network/login/GMS dependency |
 | POC-VPN-001 | TODO | L | VPN/route/idempotent multipart harness | BE-API-001 synthetic server contract | failure-injection report | one job/result, no region switch or duplicate billing |
 
