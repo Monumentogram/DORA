@@ -145,6 +145,51 @@ class SearchSmokeInstrumentedTest {
     }
 
     @Test
+    fun portableFts4DialectMatchesFrozenPrefixAndLiteralTokenOracles() {
+        val dao = database.searchDao()
+        val generatedRows =
+            (1L..SMOKE_SEGMENTS).associateWith(SyntheticDatasetGenerator::segment).toMutableMap()
+        val unicodeRow = generatedRows.getValue(1L)
+        val rarePrefixRow = generatedRows.getValue(2L)
+        generatedRows[1L] = unicodeRow.copy(text = "${unicodeRow.text} ёжик café 東京")
+        generatedRows[2L] = rarePrefixRow.copy(text = "${rarePrefixRow.text} редкословоаврора")
+        dao.updateSegmentText(1L, generatedRows.getValue(1L).text)
+        dao.updateSegmentText(2L, generatedRows.getValue(2L).text)
+
+        val manifest = BenchmarkContracts.readQueries(context)
+        val regressionCases = manifest.cases.filter { it.id in FTS4_DIALECT_REGRESSION_IDS }
+        assertEquals(FTS4_DIALECT_REGRESSION_IDS.size, regressionCases.size)
+
+        regressionCases.forEach { queryCase ->
+            val expectedRows =
+                generatedRows.values.filter { matchesFrozenTokens(queryCase, it.text) }
+            assertTrue(queryCase.id, expectedRows.isNotEmpty())
+
+            val request =
+                SearchRequest(
+                    rawQuery = queryCase.rawQuery,
+                    mode = queryCase.mode,
+                    filters = queryCase.filters,
+                    limit = manifest.resultLimit,
+                )
+            val count = repository.count(request)
+            val search = repository.search(request)
+            assertTrue(queryCase.id, count is CountExecution.Success)
+            assertTrue(queryCase.id, search is SearchExecution.Success)
+            assertEquals(
+                queryCase.id,
+                expectedRows.size.toLong(),
+                (count as CountExecution.Success).count,
+            )
+            assertEquals(
+                queryCase.id,
+                expectedRows.take(manifest.resultLimit).map { it.segmentId },
+                (search as SearchExecution.Success).hits.map { it.segmentId },
+            )
+        }
+    }
+
+    @Test
     fun updateDeleteAndIndexRebuildDoNotLeaveStaleMappings() {
         val dao = database.searchDao()
         val updateId = 1_234L
@@ -204,9 +249,33 @@ class SearchSmokeInstrumentedTest {
             }
             .toLong()
 
+    private fun matchesFrozenTokens(queryCase: QueryCase, text: String): Boolean {
+        val textTokens = SafeFtsQueryCompiler.tokenize(text)
+        return when (queryCase.mode) {
+            SearchMode.PREFIX ->
+                queryCase.expectedTokens.all { prefix -> textTokens.any { it.startsWith(prefix) } }
+            SearchMode.EXACT -> queryCase.expectedTokens.all { token -> token in textTokens }
+            SearchMode.PHRASE -> error("No phrase case in FTS4 dialect regression set")
+        }
+    }
+
     companion object {
         private const val DATABASE_NAME = "poc-search-smoke.db"
         private const val SMOKE_CONVERSATIONS = 100
         private const val SMOKE_SEGMENTS = 10_000L
+        private val FTS4_DIALECT_REGRESSION_IDS =
+            setOf(
+                "Q-PREFIX-RU-QUANT",
+                "Q-PREFIX-EN-HYPER",
+                "Q-PREFIX-RU-RARE",
+                "Q-PREFIX-EN-SYNTH",
+                "Q-PREFIX-RU-PROJECT",
+                "Q-SPECIAL-APOSTROPHE",
+                "Q-SPECIAL-COLON",
+                "Q-SPECIAL-HYPHEN",
+                "Q-SPECIAL-UNICODE",
+                "Q-ADVERSARIAL-COMMENT",
+                "Q-ADVERSARIAL-CONTROL",
+            )
     }
 }

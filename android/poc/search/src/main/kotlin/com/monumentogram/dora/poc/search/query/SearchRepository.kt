@@ -69,7 +69,7 @@ class SearchRepository(private val dao: SearchPocDao) {
             return BoundQuery(
                 "SELECT COUNT(*) FROM transcript_segments_fts " +
                     "WHERE transcript_segments_fts MATCH ?",
-                arrayOf(compiled.matchExpression),
+                arrayOf(Fts4MatchExpressionRenderer.render(compiled, request.mode)),
             )
         }
         return buildStatement(request, compiled, countOnly = true)
@@ -109,7 +109,7 @@ class SearchRepository(private val dao: SearchPocDao) {
 
         val predicates = mutableListOf<String>()
         val arguments = mutableListOf<Any>()
-        compiled.matchExpression?.let {
+        Fts4MatchExpressionRenderer.render(compiled, request.mode)?.let {
             predicates += "transcript_segments_fts MATCH ?"
             arguments += it
         }

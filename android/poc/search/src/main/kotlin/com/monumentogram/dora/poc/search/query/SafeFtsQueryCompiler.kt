@@ -85,3 +85,28 @@ object SafeFtsQueryCompiler {
             rejectionCode = code,
         )
 }
+
+/**
+ * Renders the frozen, safely tokenized compiler result for Android's portable FTS4 syntax.
+ *
+ * The frozen normalization contract deliberately records every literal token in quotes and uses an
+ * explicit AND. Android SQLite may expose the FTS4 standard query syntax, where explicit AND is
+ * parsed as another search term. FTS4 also requires the prefix marker to be part of the quoted
+ * phrase instead of following its closing quote. Whitespace is implicit AND in both standard and
+ * enhanced FTS4 syntax, so this renderer preserves the frozen token semantics without accepting any
+ * raw user syntax.
+ */
+object Fts4MatchExpressionRenderer {
+    fun render(compiled: CompiledUserQuery, mode: SearchMode): String? {
+        if (compiled.status != QueryStatus.READY) return null
+        check(compiled.tokens.isNotEmpty())
+        check(compiled.matchExpression != null)
+
+        return when (mode) {
+            SearchMode.EXACT -> compiled.tokens.joinToString(" ") { "\"$it\"" }
+            SearchMode.PHRASE ->
+                compiled.tokens.joinToString(separator = " ", prefix = "\"", postfix = "\"")
+            SearchMode.PREFIX -> compiled.tokens.joinToString(" ") { "\"$it*\"" }
+        }
+    }
+}

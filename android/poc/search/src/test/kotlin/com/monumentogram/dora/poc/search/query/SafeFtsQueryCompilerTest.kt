@@ -40,6 +40,30 @@ class SafeFtsQueryCompilerTest {
     }
 
     @Test
+    fun `fts4 execution renderer uses syntax portable across standard and enhanced parsers`() {
+        val exact = SafeFtsQueryCompiler.compile("project -- synthetic", SearchMode.EXACT, false)
+        val phrase = SafeFtsQueryCompiler.compile("silent harbor", SearchMode.PHRASE, false)
+        val prefix = SafeFtsQueryCompiler.compile("hyperpro", SearchMode.PREFIX, false)
+
+        assertEquals(
+            "\"project\" \"synthetic\"",
+            Fts4MatchExpressionRenderer.render(exact, SearchMode.EXACT),
+        )
+        assertEquals(
+            "\"silent harbor\"",
+            Fts4MatchExpressionRenderer.render(phrase, SearchMode.PHRASE),
+        )
+        assertEquals(
+            "\"hyperpro*\"",
+            Fts4MatchExpressionRenderer.render(prefix, SearchMode.PREFIX),
+        )
+
+        // The separately frozen normalization output remains byte-for-byte unchanged.
+        assertEquals("\"project\" AND \"synthetic\"", exact.matchExpression)
+        assertEquals("\"hyperpro\"*", prefix.matchExpression)
+    }
+
+    @Test
     fun `empty input is distinct from filter only search`() {
         val empty = SafeFtsQueryCompiler.compile(" \t\n", SearchMode.EXACT, false)
         val filtered = SafeFtsQueryCompiler.compile("", SearchMode.EXACT, true)
