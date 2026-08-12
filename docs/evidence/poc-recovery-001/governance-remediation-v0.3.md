@@ -1,6 +1,6 @@
 # POC-RECOVERY-001 governance remediation v0.3
 
-Status: **F-01–F-05 CLOSED; F-06 PARTIALLY CLOSED / AUTHENTICITY PENDING; EXECUTION BLOCKED**\
+Status: **F-01–F-06 CLOSED; JSR305 LICENSE / PRODUCT-IP AND EXECUTION BLOCKED**\
 Date: 12 August 2026\
 Reviewed v0.2 commit: `70cf26125dbecbb347311ca0bb9ce1ad5c637e18`\
 Decision linkage: Proposed `DEC-044` / owner record `OD-14`\
@@ -26,25 +26,30 @@ superseded, non-executable audit artifacts. v0.3 is the only active prospective 
 | `F-03` | `CLOSED` | exact `final + ".tmp"` mapping, exclusive create/collision block, no overwrite, five reconciliation states, and 8 final + 8 temp path-validation coverage |
 | `F-04` | `CLOSED` | five-level key precedence and unambiguous `KEY-01`–`KEY-07`; mandatory fault count is 33 |
 | `F-05` | `CLOSED` | sanitized machine ledgers `review-findings-v0.1.json` and `review-findings-v0.2.json`; every entry records `formalReviewer=false` |
-| `F-06` | `PARTIALLY_CLOSED_AUTHENTICITY_PENDING` | eight per-coordinate license/copyright/NOTICE/source records; 16 publisher checksum matches and 16 cryptographically verified detached signatures; six coordinates still lack authoritative upstream signer trust and/or exact source correspondence |
+| `F-06` | `CLOSED` | all eight coordinates have complete per-coordinate license/copyright/NOTICE and allowed verified authenticity evidence; 16 JAR/POM publisher checksums and 16 detached signatures are cryptographically verified with full fingerprints; the evidence conclusion records that the signed published `jsr305:3.0.2` POM says Apache-2.0 while the exact release-source POM/LICENSE says BSD-3-Clause |
 
 ## Supply-chain boundary
 
 All exact JAR and POM bytes continue to match the SHA-256 inventory. Online verification on
 2026-08-12 additionally matched 16 publisher-hosted SHA-256/SHA-1 checksums and cryptographically
-verified all 16 detached OpenPGP signatures using BouncyCastle 1.84. AndroidX and Error Prone have
-coordinate-specific upstream signer trust evidence. Tink, JSR-305, Gson, both Kotlin coordinates
-and JetBrains annotations remain `AUTHENTICITY_PENDING`; the exact closure paths are recorded in
-`dependency-ip-authenticity-v0.3.json`.
+verified all 16 detached OpenPGP signatures using SHA-256-pinned Bouncy Castle 1.83. The stronger
+validator verifies signature math over artifact bytes and requires full primary/signing
+fingerprints. AndroidX and Error Prone use publisher-bound signatures. Tink, JSR-305, Gson, both
+Kotlin coordinates and JetBrains annotations use signed-source-JAR plus exact upstream-source
+multisource correspondence. No coordinate remains `AUTHENTICITY_PENDING`.
 
-Accordingly the former `EVIDENCE_COMPLETE_PACKAGE_REVIEW_PENDING` wording is withdrawn. Overall
-status is `AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED`; Product/IP final approval remains
-false, `approvedReviewer=null`, and `approvedOn=null`.
+F-06 closes because the required evidence is complete and all six previously pending coordinates
+now have an allowed verified authenticity classification. That evidence also exposes a separate
+Product/IP blocker: the immutable signed Maven POM for `jsr305:3.0.2` declares Apache-2.0 while its
+exact release-source POM/LICENSE declares BSD-3-Clause. Overall status is
+`AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED`; Product/IP final approval
+remains false, `approvedReviewer=null`, and `approvedOn=null`.
 
 ## Remaining blockers
 
-- `P0`: close six coordinate-specific signer trust/source-correspondence paths and obtain final
-  Stage 0 Product/IP disposition.
+- `P0`: obtain authoritative publisher/rightsholder clarification for the `jsr305:3.0.2`
+  Apache-2.0/BSD-3-Clause conflict, use a counsel-approved compliance path, or keep/replace the
+  coordinate outside any admitted graph; then obtain final Stage 0 Product/IP disposition.
 - `P0`: assign a distinct accountable recovery Engineering/Security reviewer; this Codex
   remediation is not formal independent review.
 - `P0`: separately scope implementation and non-metric verification of the exact v0.3 contract,

@@ -1,6 +1,6 @@
 # POC-RECOVERY-001 governance/readiness evidence
 
-Status: **OWNER-REMEDIATED PROTOCOL v0.3 READY FOR RE-REVIEW — AUTHENTICITY AND EXECUTION BLOCKED**\
+Status: **OWNER-REMEDIATED PROTOCOL v0.3 — AUTHENTICITY VERIFIED; LICENSE REVIEW AND EXECUTION BLOCKED**\
 Date: 12 August 2026\
 Branch: `stage/0d-poc-recovery-governance`\
 Measured execution: **none**
@@ -18,16 +18,17 @@ benchmark, key, keyset, ciphertext, plaintext, audio or database.
 |---|---|---|
 | `evidence-index.json` | machine-readable active/superseded artifact index and immutable v0.1/v0.2 SHA-256 pins | v0.3 active; execution blocked |
 | `governance-remediation-v0.2.md` | retained first remediation record | superseded audit evidence; unchanged |
-| `governance-remediation-v0.3.md` | F-01–F-06 disposition and remaining blockers | F-01–F-05 closed; F-06 partial/authenticity pending |
+| `governance-remediation-v0.3.md` | F-01–F-06 disposition and remaining blockers | F-01–F-06 closed; jsr305 license/Product-IP blocker remains |
 | `review-findings-v0.1.json` / `review-findings-v0.2.json` | sanitized stable finding ledgers | `formalReviewer=false`; accountable reviewer still unassigned |
-| `dependency-inventory.json` | exact published JAR/POM/metadata closure for `tink-android:1.23.0`, hashes, edges and composition | verified publisher closure; authenticity pending; not runtime admission |
-| `dependency-ip-authenticity-v0.3.json` | per-coordinate license/copyright/NOTICE, checksums, PGP, signer trust and source correspondence | 16 checksums + signatures verified; six coordinates authenticity pending |
-| `license-notice-inventory.json` | exact POM declarations, upstream LICENSE/NOTICE evidence, shaded protobuf terms and patent notes | authenticity pending; Product/IP approval blocked |
+| `dependency-inventory.json` | exact published JAR/POM/metadata closure for `tink-android:1.23.0`, hashes, edges and composition | verified publisher closure; all eight authenticity classifications verified; not runtime admission |
+| `dependency-ip-authenticity-v0.3.json` | per-coordinate license/copyright/NOTICE, checksums, PGP, signer trust and source correspondence | 16 JAR/POM checksums + signatures verified; six exact multisource and two publisher-bound classifications |
+| `dependency-ip-authenticity-verification-2026-08-12.md` | commands, full fingerprints, exact source comparisons, conclusions and limitations | authenticity verified; jsr305 Apache/BSD conflict recorded |
+| `license-notice-inventory.json` | exact POM declarations, upstream LICENSE/NOTICE evidence, shaded protobuf terms and patent notes | jsr305 signed-POM/exact-source license conflict; Product/IP approval blocked |
 | `security-advisory-inventory.json` | exact-version and historical advisory snapshot, upstream maintenance notes and crypto-review risks | snapshot complete; independent review pending |
 | `sqlite-platform-provenance.json` | recovery-only emulator/D2 platform SQLite provenance boundary | emulator pinned; D2 runtime preflight pending |
 | `review-roles.json` | reviewer assignment, null approval fields and authority boundaries | Product/IP assigned but not finally approved; accountable Engineering/Security unassigned |
 | `readiness.json` | fail-closed readiness record | `executionAllowed=false` |
-| `ip-stage0-evaluation-review.md` | human-readable supply-chain and Product/IP package assessment | protocol v0.3/authenticity review blocked |
+| `ip-stage0-evaluation-review.md` | human-readable supply-chain and Product/IP package assessment | protocol v0.3 license/Product-IP review blocked |
 | `independent-engineering-security-review-task.md` | ready-to-send read-only v0.3 review assignment | distinct accountable reviewer unassigned; no implementation/execution |
 
 The normative experiment decision, Gate Set and protocol are:
@@ -51,9 +52,15 @@ The v1.23.0 source tag resolves to commit
 `1bedd75ae7161017c5f45b020395a72bbd40645d`.
 
 All eight exact JAR and POM pairs matched publisher-hosted checksums and their detached OpenPGP
-signatures verified cryptographically. Only AndroidX and Error Prone currently have an authoritative
-coordinate-specific upstream signer trust source. The other six records are
-`AUTHENTICITY_PENDING`; successful cryptography alone is not treated as publisher identity proof.
+signatures verified cryptographically over artifact bytes with full primary/signing fingerprints.
+AndroidX and Error Prone use publisher-bound signatures. The other six use signed source JARs plus
+exact upstream source correspondence; every generated transformation is enumerated and no source
+entry is unexplained. All eight coordinate authenticity classifications are verified.
+
+F-06 is closed because the exact per-coordinate evidence is complete. Its conclusion nevertheless
+records that the signed published `jsr305:3.0.2` POM declares Apache-2.0, while the exact
+release-source POM/LICENSE declares BSD-3-Clause. That separate conflict keeps Product/IP approval
+blocked; the record does not choose which terms govern or issue approval.
 
 The root artifact is a Java JAR with 1,878 class entries, no `.so`/JNI/native entry and 540 shaded
 protobuf entries. `RuntimeVersion` identifies the embedded protobuf runtime as 4.33.6. The
@@ -66,7 +73,7 @@ task.
 ## Review state
 
 - The Project owner is assigned as Stage 0 Product/IP reviewer, but final approval fields remain
-  null and approval is blocked by the six authenticity/source-correspondence gaps.
+  null and approval is blocked by the `jsr305:3.0.2` Apache-2.0/BSD-3-Clause conflict.
 - A distinct accountable recovery Engineering/Security reviewer is unassigned. The current Codex
   remediation does not claim formal independence. That reviewer must verify or revise the selected
   streaming/microfile construction, lookahead proof, exact parsers/AAD/key path, commit/durability,

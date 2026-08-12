@@ -1,9 +1,9 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "pocId": "POC-RECOVERY-001",
   "generatedAtUtc": "2026-08-11T21:31:21.7154872Z",
-  "reviewStatus": "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED",
-  "amendedAtUtc": "2026-08-12T08:31:09Z",
+  "reviewStatus": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED",
+  "amendedAtUtc": "2026-08-12T10:09:05Z",
   "coordinateEvidenceLocator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json",
   "evaluationApproved": false,
   "approvedReviewer": null,
@@ -22,11 +22,18 @@
     "embeddedComponents": 1,
     "externalCoordinatesWithPerCoordinateLicenseCopyrightNoticeAndAuthenticityRecords": 8,
     "externalCoordinatesWithCryptographicallyVerifiedJarAndPomSignatures": 8,
-    "externalCoordinatesWithAuthenticityPending": 6,
+    "externalCoordinatesAuthenticityVerified": 8,
+    "externalCoordinatesWithAuthenticityPending": 0,
     "unresolvedPomLicenseDeclarations": [],
-    "noticeFilesRequiringPreservationFound": [],
+    "unresolvedLicenseConflicts": [
+      "com.google.code.findbugs:jsr305:3.0.2"
+    ],
+    "noticeFilesRequiringPreservationFound": [
+      "com.google.code.findbugs:jsr305:3.0.2 BSD-3-Clause copyright/license/disclaimer if Product/IP selects or accepts those terms"
+    ],
     "packageReviewRequired": true,
-    "authenticityMustCloseBeforeProductIpApproval": true,
+    "authenticityMustCloseBeforeProductIpApproval": false,
+    "licenseConflictMustCloseBeforeProductIpApproval": true,
     "productionLegalUnassigned": true
   },
   "canonicalLicenseTexts": [
@@ -49,6 +56,16 @@
       "sha256": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d",
       "gitBlobSha1": "19b305b00060a774a9180fb916c14b49edb2008f",
       "noticeAtTaggedRepositoryRoot": "ABSENT"
+    },
+    {
+      "spdx": "BSD-3-Clause",
+      "sourceComponent": "jsr305 3.0.2 exact release source",
+      "sourceUrl": "https://raw.githubusercontent.com/amaembo/jsr-305/d7734b13c61492982784560ed5b4f4bd6cf9bb2c/ri/LICENSE",
+      "sourceRepositoryUrl": "https://github.com/amaembo/jsr-305/blob/d7734b13c61492982784560ed5b4f4bd6cf9bb2c/ri/LICENSE",
+      "bytes": 1596,
+      "sha256": "f1aaf45844a32fefb9cf7eca8088bc4fe8ee3c4518ec944c89627ef4881d073b",
+      "gitBlobSha1": "9147c7d00a7d7e000172304d89bf38242650ddac",
+      "noticeAtExactSourceRoot": "ABSENT"
     }
   ],
   "components": [
@@ -76,14 +93,27 @@
     },
     {
       "coordinate": "com.google.code.findbugs:jsr305:3.0.2",
-      "licenseSpdx": "Apache-2.0",
+      "licenseSpdx": "NOASSERTION",
       "pomLicenseName": "The Apache Software License, Version 2.0",
       "pomLicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.txt",
       "pomSha256": "19889dbdf1b254b2601a5ee645b8147a974644882297684c798afe5d63d78dfe",
       "jarSha256": "766ad2a0783f2687962c8ad74ceecc38a28b9f72a2d085ee438b7813e928d0c7",
       "embeddedLicenseEntries": [],
       "embeddedNoticeEntries": [],
-      "distributionReview": "PENDING"
+      "distributionReview": "BLOCKED_LICENSE_CONFLICT",
+      "publishedPomLicenseSpdx": "Apache-2.0",
+      "exactReleaseSourceLicenseSpdx": "BSD-3-Clause",
+      "exactReleaseSourceLicenseUrl": "https://github.com/amaembo/jsr-305/blob/d7734b13c61492982784560ed5b4f4bd6cf9bb2c/ri/LICENSE",
+      "exactReleaseSourceLicenseSha256": "f1aaf45844a32fefb9cf7eca8088bc4fe8ee3c4518ec944c89627ef4881d073b",
+      "exactReleaseSourcePomUrl": "https://github.com/amaembo/jsr-305/blob/d7734b13c61492982784560ed5b4f4bd6cf9bb2c/ri/pom.xml",
+      "exactReleaseSourcePomSha256": "5389748594bba388b874a9e12bdeaf456154daffb5f0f1f0de00c4d400604edf",
+      "copyrightStatement": "Copyright (c) 2007-2009, JSR305 expert group",
+      "licenseConflictStatus": "UNRESOLVED_SIGNED_PUBLISHED_POM_VS_EXACT_RELEASE_SOURCE",
+      "safeOwnerChoices": [
+        "Obtain written publisher/rightsholder clarification and record Stage 0 Product/IP disposition.",
+        "Keep this coordinate unadmitted and use a future exact dependency graph that excludes or replaces it.",
+        "Ask qualified Product/IP counsel whether documented compliance with both term sets is acceptable."
+      ]
     },
     {
       "coordinate": "com.google.code.gson:gson:2.13.2",
@@ -169,6 +199,8 @@
     "allReviewedJarNoticeEntries": "ABSENT",
     "absenceDoesNotWaiveLicenseCopyObligations": true,
     "futureApkLicenseSurfaceRequiredIfAdmitted": true,
-    "futureResolvedGraphMustBeRescanned": true
+    "futureResolvedGraphMustBeRescanned": true,
+    "jsr305ExactSourceNotice": "ABSENT",
+    "jsr305BsdTextPreservationRequiredIfSelectedOrAcceptedByProductIp": true
   }
 }

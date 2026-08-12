@@ -438,7 +438,7 @@ def validate_evidence() -> None:
     evidence_index = read_json(EVIDENCE / "evidence-index.json")
 
     require(inventory["schemaVersion"] == 2, "Dependency inventory schema drift")
-    require(inventory["inventoryStatus"] == "VERIFIED_PUBLISHER_CLOSURE_AUTHENTICITY_PENDING_PACKAGE_REVIEW_ONLY", "Dependency inventory authenticity state drift")
+    require(inventory["inventoryStatus"] == "VERIFIED_PUBLISHER_CLOSURE_AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PACKAGE_REVIEW_ONLY", "Dependency inventory authenticity/license state drift")
     require(inventory["rootCoordinate"] == "com.google.crypto.tink:tink-android:1.23.0", "Inventory root drift")
     require(inventory["dependencyAdmission"] is False and inventory["runtimeGraphModified"] is False, "Dependency/runtime graph was modified")
     require(inventory["resolution"]["externalCoordinateCountIncludingRoot"] == 8 and len(inventory["artifacts"]) == 8, "Tink closure count drift")
@@ -450,16 +450,18 @@ def validate_evidence() -> None:
     require(inventory["sourceRelease"]["commit"] == "1bedd75ae7161017c5f45b020395a72bbd40645d", "Tink source commit drift")
 
     require(inventory["authenticityEvidence"]["locator"] == "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json", "Dependency authenticity locator drift")
-    require(inventory["authenticityEvidence"]["status"] == "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED", "Dependency authenticity summary drift")
+    require(inventory["authenticityEvidence"]["status"] == "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED", "Dependency authenticity summary drift")
+    require(inventory["authenticityEvidence"]["coordinatesAuthenticityVerified"] == 8 and inventory["authenticityEvidence"]["coordinatesAuthenticityPending"] == 0 and inventory["authenticityEvidence"]["coordinatesWithLicenseConflict"] == 1, "Dependency authenticity/license counts drift")
 
-    require(license_notice["schemaVersion"] == 2 and license_notice["reviewStatus"] == "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED", "License package state drift")
+    require(license_notice["schemaVersion"] == 3 and license_notice["reviewStatus"] == "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED", "License package state drift")
     require(license_notice["coordinateEvidenceLocator"] == "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json", "License coordinate-evidence locator drift")
     require(license_notice["evaluationApproved"] is False and license_notice["redistributionApproved"] is False and license_notice["productionLegalApproved"] is False, "License/Product-IP approval was prematurely recorded")
     require(license_notice["approvedReviewer"] is None and license_notice["approvedOn"] is None, "License/Product-IP approval identity/date must remain null")
     require(license_notice["summary"]["externalCoordinates"] == 8 and len(license_notice["components"]) == 9, "License component count drift")
-    require(license_notice["summary"]["externalCoordinatesWithAuthenticityPending"] == 6 and license_notice["summary"]["authenticityMustCloseBeforeProductIpApproval"] is True, "License authenticity blocker drift")
+    require(license_notice["summary"]["externalCoordinatesAuthenticityVerified"] == 8 and license_notice["summary"]["externalCoordinatesWithAuthenticityPending"] == 0, "License authenticity counts drift")
+    require(license_notice["summary"]["unresolvedLicenseConflicts"] == ["com.google.code.findbugs:jsr305:3.0.2"] and license_notice["summary"]["authenticityMustCloseBeforeProductIpApproval"] is False and license_notice["summary"]["licenseConflictMustCloseBeforeProductIpApproval"] is True, "License-conflict blocker drift")
 
-    require(authenticity["schemaVersion"] == 1 and authenticity["overallStatus"] == "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED", "Coordinate authenticity state drift")
+    require(authenticity["schemaVersion"] == 2 and authenticity["overallStatus"] == "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED", "Coordinate authenticity state drift")
     require(authenticity["summary"] == {
         "coordinates": 8,
         "jarSha256Verified": 8,
@@ -468,7 +470,10 @@ def validate_evidence() -> None:
         "detachedSignaturesPresent": 16,
         "detachedSignaturesCryptographicallyVerified": 16,
         "coordinatesWithUpstreamSignerTrustConfirmed": 2,
-        "coordinatesAuthenticityPending": 6,
+        "coordinatesWithExactSourceCorrespondenceConfirmed": 6,
+        "coordinatesAuthenticityVerified": 8,
+        "coordinatesAuthenticityPending": 0,
+        "coordinatesWithLicenseConflict": 1,
         "dependencyAdmission": False,
         "productionAdmission": False,
     }, "Coordinate authenticity summary drift")
@@ -487,16 +492,31 @@ def validate_evidence() -> None:
             checksum = item["publisherChecksum"]
             signature = item["detachedSignature"]
             require(checksum["locator"].startswith("https://") and checksum["result"] == "MATCH" and checksum["value"], f"{coordinate} {kind} publisher checksum incomplete")
-            require(signature["locator"].startswith("https://") and signature["result"] == "CRYPTOGRAPHICALLY_VERIFIED" and re.fullmatch(r"[0-9A-F]{40}", signature["signerFingerprint"]), f"{coordinate} {kind} detached-signature evidence incomplete")
+            require(signature["locator"].startswith("https://") and signature["result"] == "CRYPTOGRAPHICALLY_VERIFIED" and re.fullmatch(r"[0-9A-F]{40}", signature["signerFingerprint"]) and re.fullmatch(r"[0-9A-F]{40}", signature["primaryKeyFingerprint"]), f"{coordinate} {kind} detached-signature evidence incomplete")
+            require(signature["signatureCreatedUtc"].endswith("Z") and signature["hashAlgorithm"] in {"SHA1", "SHA256", "SHA512"}, f"{coordinate} {kind} signature metadata incomplete")
         require(component["jar"]["detachedSignature"]["signerFingerprint"] == component["pom"]["detachedSignature"]["signerFingerprint"], f"{coordinate} JAR/POM signer mismatch")
-        require(component["signerIdentity"] and component["signerTrustStatus"] in {"CONFIRMED_BY_UPSTREAM_PUBLISHER_DOCUMENTATION", "CONFIRMED_BY_UPSTREAM_TAGGED_KEY_PUBLICATION", "UNCONFIRMED_BY_COORDINATE_SPECIFIC_UPSTREAM_KEY_PUBLICATION"}, f"{coordinate} signer-trust evidence drift")
+        require(component["signerIdentity"] and component["signerTrustStatus"] in {"CONFIRMED_BY_UPSTREAM_PUBLISHER_DOCUMENTATION", "CONFIRMED_BY_UPSTREAM_TAGGED_KEY_PUBLICATION", "NOT_CLAIMED_SOURCE_CORRESPONDENCE_ROUTE_USED"}, f"{coordinate} signer-trust evidence drift")
         require(component["sourceCorrespondence"]["repository"].startswith("https://") and component["sourceCorrespondence"]["evidenceLocator"].startswith("https://") and component["sourceCorrespondence"]["status"], f"{coordinate} source-correspondence evidence incomplete")
-        if component["authenticityStatus"] == "AUTHENTICITY_PENDING":
-            require(component["closurePath"] and component["signerTrustStatus"] == "UNCONFIRMED_BY_COORDINATE_SPECIFIC_UPSTREAM_KEY_PUBLICATION", f"{coordinate} missing exact authenticity closure path")
+        require(component["authenticityStatus"] in {"AUTHENTICITY_VERIFIED_PUBLISHER_BOUND_SIGNATURE", "AUTHENTICITY_VERIFIED_EXACT_REPRODUCIBLE_SOURCE", "AUTHENTICITY_VERIFIED_MULTISOURCE_CORRESPONDENCE", "AUTHENTICITY_PENDING", "AUTHENTICITY_REJECTED"}, f"{coordinate} authenticity classification outside closed enum")
+        if component["authenticityStatus"] == "AUTHENTICITY_VERIFIED_MULTISOURCE_CORRESPONDENCE":
+            source_jar = component["sourceCorrespondence"]["sourceJar"]
+            comparison = component["sourceCorrespondence"]["comparison"]
+            reproducible = component["sourceCorrespondence"]["reproducibleBuild"]
+            require(component["closurePath"] is None and component["signerTrustSource"] is None and component["signerTrustStatus"] == "NOT_CLAIMED_SOURCE_CORRESPONDENCE_ROUTE_USED", f"{coordinate} multisource trust boundary drift")
+            require(source_jar["locator"].startswith("https://") and len(source_jar["sha256"]) == 64 and source_jar["signatureResult"] == "CRYPTOGRAPHICALLY_VERIFIED", f"{coordinate} source-JAR evidence incomplete")
+            require(comparison["sourceEntries"] == comparison["exactCommitBlobMatches"] + comparison["declaredGeneratedEntries"] and comparison["unexplainedEntries"] == 0, f"{coordinate} source correspondence is not exhaustive")
+            require(reproducible["byteForByteBinaryRebuildAttempted"] is False and reproducible["status"] == "NOT_CLAIMED" and reproducible["limitation"], f"{coordinate} reproducibility limitation missing")
         else:
-            require(component["authenticityStatus"] == "VERIFIED_FOR_PACKAGE_REVIEW" and component["closurePath"] is None and component["signerTrustSource"].startswith("https://"), f"{coordinate} verified trust evidence drift")
-    require(sum(component["authenticityStatus"] == "AUTHENTICITY_PENDING" for component in authentic_components.values()) == 6, "Exactly six coordinates must remain authenticity-pending")
+            require(component["authenticityStatus"] == "AUTHENTICITY_VERIFIED_PUBLISHER_BOUND_SIGNATURE" and component["closurePath"] is None and component["signerTrustSource"].startswith("https://"), f"{coordinate} verified publisher-bound trust evidence drift")
+    require(sum(component["authenticityStatus"] == "AUTHENTICITY_VERIFIED_MULTISOURCE_CORRESPONDENCE" for component in authentic_components.values()) == 6, "Exactly six coordinates must use multisource correspondence")
+    require(sum(component["authenticityStatus"] == "AUTHENTICITY_VERIFIED_PUBLISHER_BOUND_SIGNATURE" for component in authentic_components.values()) == 2, "Exactly two coordinates must use publisher-bound signatures")
+    require(not any(component["authenticityStatus"] in {"AUTHENTICITY_PENDING", "AUTHENTICITY_REJECTED"} for component in authentic_components.values()), "No coordinate may remain authenticity-pending/rejected")
+    jsr305 = authentic_components["com.google.code.findbugs:jsr305:3.0.2"]
+    require(jsr305["licenseId"] == "NOASSERTION" and jsr305["licenseEvidence"]["status"] == "LICENSE_CONFLICT_PRODUCT_IP_DECISION_REQUIRED", "JSR305 license-conflict state drift")
+    require(jsr305["licenseEvidence"]["publishedSignedPom"]["declaredSpdx"] == "Apache-2.0" and jsr305["licenseEvidence"]["exactReleaseSource"]["declaredSpdx"] == "BSD-3-Clause", "JSR305 conflicting license declarations drift")
+    require(jsr305["licenseEvidence"]["exactMissingExternalFact"] and len(jsr305["licenseEvidence"]["safeOwnerChoices"]) == 3, "JSR305 Product/IP closure boundary incomplete")
     require(authenticity["approvalBoundary"]["productIpApprovalAllowedWhileAnyCoordinatePending"] is False, "Product/IP approval must be blocked while authenticity is pending")
+    require(authenticity["approvalBoundary"]["productIpApprovalAllowedWhileLicenseConflict"] is False and authenticity["approvalBoundary"]["productIpFinalApproval"] is False, "Product/IP approval must remain blocked by the license conflict")
 
     require(len(security["exactVersionQueries"]) == 8, "Security exact-version query count drift")
     require(all(not query["affectedPublishedAdvisories"] for query in security["exactVersionQueries"]), "Recorded exact version has a published affected advisory")
@@ -517,7 +537,7 @@ def validate_evidence() -> None:
     require(all(value is None for value in environments["PHYSICAL_D2"]["requiredFreshRuntimeEvidence"].values()), "D2 fresh preflight must remain pending")
 
     role_map = roles["roles"]
-    require(role_map["stage0ProductIp"]["status"] == "ASSIGNED_FINAL_APPROVAL_BLOCKED_AUTHENTICITY_PENDING" and role_map["stage0ProductIp"]["finalApproved"] is False, "Product/IP final review state drift")
+    require(role_map["stage0ProductIp"]["status"] == "ASSIGNED_FINAL_APPROVAL_BLOCKED_LICENSE_CONFLICT" and role_map["stage0ProductIp"]["finalApproved"] is False, "Product/IP final review state drift")
     require(role_map["stage0ProductIp"]["approvedReviewer"] is None and role_map["stage0ProductIp"]["approvedOn"] is None, "Product/IP approval identity/date must remain null")
     independent = role_map["independentRecoveryEngineeringSecurity"]
     require(independent["reviewer"] is None and independent["status"] == "UNASSIGNED_BLOCKING", "Accountable independent review blocker drift")
@@ -525,7 +545,7 @@ def validate_evidence() -> None:
     require(role_map["executionAuthorizer"]["status"] == "AUTHORIZATION_WITHHELD", "Execution authorization must remain withheld")
     require(role_map["productionLegal"]["reviewer"] is None and role_map["productionSecurity"]["reviewer"] is None, "Production reviewers must remain unassigned")
 
-    require(readiness["schemaVersion"] == 3 and readiness["status"] == "BLOCKED_REMEDIATED_PROTOCOL_V0_3_REVIEW_AUTHENTICITY_AND_IMPLEMENTATION_PENDING", "Readiness status drift")
+    require(readiness["schemaVersion"] == 3 and readiness["status"] == "BLOCKED_REMEDIATED_PROTOCOL_V0_3_LICENSE_PRODUCT_IP_REVIEW_AND_IMPLEMENTATION_PENDING", "Readiness status drift")
     require(readiness["executionAllowed"] is False, "Readiness unexpectedly allows execution")
     for key in (
         "implementationAllowedByThisPackage", "measuredExecutionAllowed", "runtimeDependencyAdded",
@@ -536,7 +556,7 @@ def validate_evidence() -> None:
     require(readiness["packageArtifacts"]["activeGateSetVersion"] == GATE_V03 and readiness["packageArtifacts"]["activeProtocolId"] == PROTOCOL_V03, "Readiness active protocol locator drift")
     require(readiness["packageArtifacts"]["v01RetainedAsSupersededAuditArtifact"] is True and readiness["packageArtifacts"]["v01Executable"] is False, "v0.1 audit disposition drift")
     require(readiness["packageArtifacts"]["v02RetainedAsSupersededAuditArtifact"] is True and readiness["packageArtifacts"]["v02Executable"] is False, "v0.2 audit disposition drift")
-    require(readiness["packageArtifacts"]["supplyChainAuthenticityStatus"] == "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED", "Readiness authenticity state drift")
+    require(readiness["packageArtifacts"]["supplyChainAuthenticityStatus"] == "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED", "Readiness authenticity state drift")
     expected_blockers = {
         "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
         "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
@@ -551,6 +571,8 @@ def validate_evidence() -> None:
         "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY",
     }
     require({blocker["id"] for blocker in readiness["blockers"]} == expected_blockers, "Readiness blocker set drift")
+    supply_chain_blocker = next(blocker for blocker in readiness["blockers"] if blocker["id"] == "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY")
+    require(supply_chain_blocker["status"] == "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_OPEN" and "jsr305:3.0.2" in supply_chain_blocker["condition"] and "Apache-2.0" in supply_chain_blocker["condition"] and "BSD-3-Clause" in supply_chain_blocker["condition"], "Supply-chain blocker disposition drift")
 
     require(findings_v01["schemaVersion"] == 2 and findings_v01["reviewedCommit"] == REVIEWED_V01_HEAD and findings_v01["reviewedGateSetVersion"] == "poc-recovery-stage0-v0.1", "First-review findings ledger identity drift")
     require(findings_v01["sanitized"] is True and findings_v01["reviewerIdentity"] is None and findings_v01["formalReviewer"] is False, "First-review findings ledger must remain sanitized and non-formal")
@@ -560,8 +582,10 @@ def validate_evidence() -> None:
     require(findings_v02["schemaVersion"] == 2 and findings_v02["reviewedCommit"] == REVIEWED_V02_HEAD and findings_v02["reviewedGateSetVersion"] == "poc-recovery-stage0-v0.2", "Current findings ledger identity drift")
     require(findings_v02["sanitized"] is True and findings_v02["reviewerIdentity"] is None and findings_v02["formalReviewer"] is False, "Current findings ledger must remain sanitized and non-formal")
     require([finding["id"] for finding in findings_v02["findings"]] == [f"F-{index:02d}" for index in range(1, 7)], "Current stable finding IDs drift")
-    expected_current_statuses = ["CLOSED"] * 5 + ["PARTIALLY_CLOSED"]
+    expected_current_statuses = ["CLOSED"] * 6
     require([finding["status"] for finding in findings_v02["findings"]] == expected_current_statuses and all(finding["formalReviewer"] is False for finding in findings_v02["findings"]), "Current findings disposition drift")
+    f06 = findings_v02["findings"][-1]
+    require(f06["authenticityDisposition"] == "ALL_EIGHT_COORDINATES_VERIFIED" and f06["closureBasis"] and "jsr305:3.0.2" in f06["postClosureProductIpBlocker"] and "Apache-2.0" in f06["postClosureProductIpBlocker"] and "BSD-3-Clause" in f06["postClosureProductIpBlocker"], "F-06 closure/Product-IP boundary drift")
     for ledger in (findings_v01, findings_v02):
         require(ledger["remediationCommitSemantics"].startswith("SELF means"), "Ledger remediation-commit semantics missing")
         for finding in ledger["findings"]:
@@ -570,6 +594,11 @@ def validate_evidence() -> None:
             require(finding["status"] in {"CLOSED", "PARTIALLY_CLOSED", "OPEN"} and finding["evidenceLocator"], f"{finding['id']} disposition/evidence fields incomplete")
 
     require(evidence_index["activeGateSetVersion"] == GATE_V03 and evidence_index["activeProtocolId"] == PROTOCOL_V03 and evidence_index["executionAllowed"] is False, "Evidence index active protocol drift")
+    require(evidence_index["status"] == "GOVERNANCE_V0_3_AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_EXECUTION_BLOCKED", "Evidence-index status drift")
+    indexed_artifacts = {item["id"]: item for item in evidence_index["artifacts"]}
+    require(indexed_artifacts["REC-V03-REMEDIATION"]["status"] == "F01_F06_CLOSED_LICENSE_CONFLICT_PRODUCT_IP_BLOCKED", "Remediation indexed state drift")
+    require(indexed_artifacts["REC-DEPENDENCY-IP-AUTHENTICITY-VERIFICATION-20260812"]["status"] == "CRYPTOGRAPHIC_AND_SOURCE_CORRESPONDENCE_EVIDENCE_RECORDED_NO_APPROVAL", "Authenticity verification report is not indexed")
+    require(indexed_artifacts["REC-IP-REVIEW"]["status"] == "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_REVIEW_BLOCKED", "IP-review indexed state drift")
     indexed_hashes = {Path(item["locator"]).name: item["sha256"] for item in evidence_index["supersededAuditArtifacts"]}
     require(indexed_hashes == IMMUTABLE_AUDIT_HASHES, "Evidence index immutable audit hashes drift")
 
@@ -592,7 +621,7 @@ def validate_documents_and_no_implementation() -> None:
     ):
         require(required in gate_markdown, f"Recovery Gate Set v0.3 is missing: {required}")
     require(REVIEWED_V02_HEAD in remediation and "executionAllowed=false" in remediation, "Remediation traceability/boundary missing")
-    require("OWNER-REMEDIATED PROTOCOL v0.3" in review and "AUTHENTICITY PENDING" in review, "Product/IP final review/authenticity state drift")
+    require("owner-remediated protocol v0.3" in review.lower() and "AUTHENTICITY VERIFIED" in review and "LICENSE CONFLICT" in review, "Product/IP final review/authenticity-license state drift")
 
     recovery_module = ROOT / "android" / "poc" / "recovery"
     require(not recovery_module.exists(), "android/poc/recovery must not exist in governance package")

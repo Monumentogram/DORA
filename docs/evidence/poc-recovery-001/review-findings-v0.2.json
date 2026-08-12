@@ -78,8 +78,11 @@
       "finding": "Per-coordinate license and supply-chain authenticity evidence was incomplete.",
       "remediationCommit": "SELF",
       "remediationVersion": "poc-recovery-protocol-stage0-v0.3",
-      "status": "PARTIALLY_CLOSED",
+      "status": "CLOSED",
       "evidenceLocator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json",
+      "authenticityDisposition": "ALL_EIGHT_COORDINATES_VERIFIED",
+      "closureBasis": "Per-coordinate license, copyright, NOTICE, artifact/POM hash, publisher checksum, cryptographic signature, full fingerprint, signer/source trust, exact source correspondence, command/tool/date, conclusion and limitation evidence is complete for all eight coordinates. The recorded JSR305 license conflict is an evidence conclusion, not missing F-06 evidence.",
+      "postClosureProductIpBlocker": "The signed Maven Central jsr305:3.0.2 POM declares Apache-2.0 while the exact release-source POM/LICENSE declares BSD-3-Clause; Stage 0 Product/IP must obtain authoritative clarification, accept a qualified-counsel compliance path, or keep/replace the coordinate outside any admitted graph.",
       "formalReviewer": false
     }
   ]

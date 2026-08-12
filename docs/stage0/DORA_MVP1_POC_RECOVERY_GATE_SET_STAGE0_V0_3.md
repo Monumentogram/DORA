@@ -521,8 +521,10 @@ always `FAIL` or `INCONCLUSIVE`; PASS is forbidden. Candidate selection and fina
 - The exact future Gradle-resolved harness graph does not exist and remains a pre-execution gate.
 - Fresh emulator and D2 runtime/SQLite preflight facts remain null; D1/D5 remain unavailable.
 - Production Legal and Production Security remain unassigned and are not replaced.
-- Supply-chain PGP/checksum verification is recorded, but unresolved signer trust/source
-  correspondence leaves the overall package `AUTHENTICITY_PENDING` and blocks Product/IP approval.
+- All eight coordinate authenticity classifications are verified, but the signed published
+  `jsr305:3.0.2` POM declares Apache-2.0 while its exact release-source POM/LICENSE declares
+  BSD-3-Clause. That unresolved license conflict retains `REC-RDY-11` and blocks Product/IP
+  approval; it does not reopen protocol semantics.
 - Project-owner execution authorization is absent.
 
 Therefore `executionAllowed=false`. Completion of any blocker cannot change it implicitly.

@@ -2,7 +2,7 @@
 
 Статус документа: единый реестр решений владельца продукта\
 Дата: 12 августа 2026 года\
-Последнее изменение: governance-only remediation `POC-RECOVERY-001` v0.3 закрывает F-01–F-05 и частично F-06 в рамках `OD-14`; решение эксперимента остаётся `Proposed`, authenticity/Product-IP, implementation и execution заблокированы, v0.1/v0.2 сохранены как superseded audit artifacts\
+Последнее изменение: governance-only remediation `POC-RECOVERY-001` v0.3 закрывает evidence findings F-01–F-06 в рамках `OD-14`; решение эксперимента остаётся `Proposed`, authenticity подтверждена, а exact `jsr305:3.0.2` license conflict/Product-IP, implementation и execution заблокированы, v0.1/v0.2 сохранены как superseded audit artifacts\
 Основание: Technical Plan §40 P1–P20, Design Spec §40.2 D-P1–D-P22 и owner approval record Stage 0A.
 
 `Provisional` означает, что рекомендуемый baseline можно использовать для обратимого PoC/bootstrap, но это не заменяет явное решение владельца. `Proposed` запрещает необратимые или пользовательские действия до утверждения. `Approved` означает прямое решение владельца в указанной области; оно не расширяет scope на production, Legal или release без явной формулировки. Статусы, повышенные owner-решением, ссылаются на соответствующий `OD-*`, владельца и дату.
@@ -645,7 +645,7 @@ Decision record: `docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES.md`; Gate 
 
 ## DEC-044. POC-RECOVERY-001 pre-PoC experiment contract
 
-Статус: Proposed — owner-remediated protocol v0.3 selected; authenticity, implementation verification/review and execution withheld\
+Статус: Proposed — owner-remediated protocol v0.3 selected; authenticity verified; exact license conflict/Product-IP, implementation verification/review and execution withheld\
 Приоритет: P0\
 Источник: direct Project-owner decision of 12 August 2026 / `OD-14`; owner-supplied review disposition `CHANGES_REQUIRED`; Technical Plan recovery gate; `RECOVERY-ADR-ORDER-001`\
 Срок принятия: Product/IP final disposition, distinct accountable recovery Engineering/Security review, separately scoped implementation verification and Project-owner authorization before execution\
@@ -655,7 +655,7 @@ Decision record: `docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES.md`; Gate 
 Влияние на архитектуру: design-selected public Tink parameters with implementation verification required; one derived AES key per streaming ciphertext stream rather than per segment; exact non-deprecated Android Keystore Builder/encrypted-keyset/AAD/key-confirmation rules; authenticated big-endian manifest/checkpoint; `final + ".tmp"`, collision/no-overwrite and five reconciliation states; PoC-local WAL/FULL platform SQLite journal and deterministic UNIQUE processing intents. No Gradle dependency, `:poc:recovery`, production schema or `:app` change is authorized.\
 Влияние на UX: any future recovery UI must distinguish authenticated recovery, key unavailability, corruption and quarantined state; microphone must never restart automatically.\
 Обратимость: high before execution and final ADR; any template/protocol change requires a prospective version and review, while measured evidence remains bound to its exact contract.\
-Reviewer boundary: Project owner is assigned Stage 0 Product/IP reviewer and later execution authorizer, but six coordinate authenticity/source paths block final approval and approval fields remain null. A distinct accountable recovery Engineering/Security reviewer is unassigned; this Codex remediation does not claim formal independence. Production Legal and Production Security remain null/separate.\
+Reviewer boundary: Project owner is assigned Stage 0 Product/IP reviewer and later execution authorizer. All eight coordinate authenticity classifications are verified, but the signed `jsr305:3.0.2` POM Apache-2.0 versus exact release-source BSD-3-Clause conflict blocks final approval; approval fields remain null. A distinct accountable recovery Engineering/Security reviewer is unassigned; this Codex remediation does not claim formal independence. Production Legal and Production Security remain null/separate.\
 Execution authorization: withheld; `executionAllowed=false` until Product/IP and accountable review, implementation/non-metric verification, exact future resolved graph, fresh emulator/D2 preflight and a later explicit owner authorization.\
 Decision record: `docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md`; Gate Set: `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md`; machine contract: `docs/stage0/poc-recovery-gate-set-stage0-v0.3.json` and `docs/stage0/poc-recovery-protocol-stage0-v0.3.json`; v0.1/v0.2 files remain unchanged superseded audit artifacts and are non-executable.\
 Связанные задачи: `POC-GATES-001`, `POC-DEVICE-001`, `POC-RECOVERY-001`, future final `ADR-AUDIO-001`.

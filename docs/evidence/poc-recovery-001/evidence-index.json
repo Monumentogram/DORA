@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "pocId": "POC-RECOVERY-001",
-  "status": "GOVERNANCE_V0_3_AUTHENTICITY_PENDING_EXECUTION_BLOCKED",
+  "status": "GOVERNANCE_V0_3_AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_EXECUTION_BLOCKED",
   "activeGateSetVersion": "poc-recovery-stage0-v0.3",
   "activeProtocolId": "poc-recovery-protocol-stage0-v0.3",
   "executionAllowed": false,
@@ -50,7 +50,7 @@
     {
       "id": "REC-V03-REMEDIATION",
       "locator": "docs/evidence/poc-recovery-001/governance-remediation-v0.3.md",
-      "status": "F01_F05_CLOSED_F06_PARTIAL"
+      "status": "F01_F06_CLOSED_LICENSE_CONFLICT_PRODUCT_IP_BLOCKED"
     },
     {
       "id": "REC-REVIEW-V01-LEDGER",
@@ -65,17 +65,22 @@
     {
       "id": "REC-DEPENDENCY-INVENTORY",
       "locator": "docs/evidence/poc-recovery-001/dependency-inventory.json",
-      "status": "EXACT_CLOSURE_AUTHENTICITY_PENDING_NO_ADMISSION"
+      "status": "EXACT_CLOSURE_AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_NO_ADMISSION"
     },
     {
       "id": "REC-DEPENDENCY-IP-AUTHENTICITY-V03",
       "locator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json",
-      "status": "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED"
+      "status": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED"
+    },
+    {
+      "id": "REC-DEPENDENCY-IP-AUTHENTICITY-VERIFICATION-20260812",
+      "locator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-verification-2026-08-12.md",
+      "status": "CRYPTOGRAPHIC_AND_SOURCE_CORRESPONDENCE_EVIDENCE_RECORDED_NO_APPROVAL"
     },
     {
       "id": "REC-LICENSE-NOTICE",
       "locator": "docs/evidence/poc-recovery-001/license-notice-inventory.json",
-      "status": "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED"
+      "status": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED"
     },
     {
       "id": "REC-SECURITY-INVENTORY",
@@ -100,7 +105,7 @@
     {
       "id": "REC-IP-REVIEW",
       "locator": "docs/evidence/poc-recovery-001/ip-stage0-evaluation-review.md",
-      "status": "AUTHENTICITY_PENDING_REVIEW_BLOCKED"
+      "status": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_REVIEW_BLOCKED"
     },
     {
       "id": "REC-INDEPENDENT-REVIEW-TASK",

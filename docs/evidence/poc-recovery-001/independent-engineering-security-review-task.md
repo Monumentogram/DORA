@@ -71,7 +71,10 @@ remediation не заявляет формальную независимост�
 11. Проверь exact JAR/POM/transitive hashes, publisher checksums, detached PGP verification,
    fingerprint и upstream trust source по каждой координате, source tag/commit correspondence,
    per-coordinate LICENSE/copyright/NOTICE, shaded protobuf 4.33.6, advisory snapshot и отсутствие
-   native payload. Не закрывай `AUTHENTICITY_PENDING` по keyserver UID без upstream binding.
+   native payload. Не считай keyserver UID самостоятельным upstream binding: проверь full-fingerprint
+   cryptographic result и publisher-bound либо exact multisource source correspondence. Отдельно
+   вынеси disposition по конфликту signed Maven POM Apache-2.0 и exact release-source BSD-3-Clause
+   для `com.google.code.findbugs:jsr305:3.0.2`; не подменяй его Product/IP approval.
 12. Проверь, что Phase A без D1/D5 не может PASS, recovery SQLite provenance preflight достаточен
     только для Stage 0, а review не создаёт dependency/production admission.
 

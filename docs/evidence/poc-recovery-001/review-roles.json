@@ -13,7 +13,7 @@
     "stage0ProductIp": {
       "role": "Stage 0 Product/IP reviewer",
       "reviewer": "Project owner",
-      "status": "ASSIGNED_FINAL_APPROVAL_BLOCKED_AUTHENTICITY_PENDING",
+      "status": "ASSIGNED_FINAL_APPROVAL_BLOCKED_LICENSE_CONFLICT",
       "finalApproved": false,
       "approvedReviewer": null,
       "approvedOn": null,

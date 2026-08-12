@@ -7,7 +7,10 @@ import argparse
 import base64
 import hashlib
 import json
+import os
 import re
+import shutil
+import subprocess
 import sys
 import tempfile
 import time
@@ -27,6 +30,31 @@ AUTHENTICITY_PATH = EVIDENCE / "dependency-ip-authenticity-v0.3.json"
 MAVEN_NS = {"m": "http://maven.apache.org/POM/4.0.0"}
 USER_AGENT = "Dora-POC-RECOVERY-001-inventory-verifier/1.0"
 NATIVE_SUFFIXES = (".so", ".dll", ".dylib")
+OPENPGP_VERIFIER_SOURCE = ROOT / "tools" / "OpenPgpDetachedSignatureVerifier.java"
+BOUNCY_CASTLE_LIBRARIES = {
+    "bcprov-jdk18on-1.83.jar": {
+        "url": "https://repo.maven.apache.org/maven2/org/bouncycastle/bcprov-jdk18on/1.83/bcprov-jdk18on-1.83.jar",
+        "bytes": 8_492_458,
+        "sha256": "82cf3a2af766c3bc874f6d36b9f20a8b99a8f09762dc776e8a227a45d8daaafb",
+    },
+    "bcpg-jdk18on-1.83.jar": {
+        "url": "https://repo.maven.apache.org/maven2/org/bouncycastle/bcpg-jdk18on/1.83/bcpg-jdk18on-1.83.jar",
+        "bytes": 736_491,
+        "sha256": "4077fd4517761c98a81944c70a376ce73f4eb3e44c03db1eb5d699fc28ab48aa",
+    },
+    "bcutil-jdk18on-1.83.jar": {
+        "url": "https://repo.maven.apache.org/maven2/org/bouncycastle/bcutil-jdk18on/1.83/bcutil-jdk18on-1.83.jar",
+        "bytes": 707_261,
+        "sha256": "ee7d0eb4e74de70a735f7fb36b604dd5c6ad35720d50b914604db042114a0185",
+    },
+}
+AUTHENTICITY_STATUSES = {
+    "AUTHENTICITY_VERIFIED_PUBLISHER_BOUND_SIGNATURE",
+    "AUTHENTICITY_VERIFIED_EXACT_REPRODUCIBLE_SOURCE",
+    "AUTHENTICITY_VERIFIED_MULTISOURCE_CORRESPONDENCE",
+    "AUTHENTICITY_PENDING",
+    "AUTHENTICITY_REJECTED",
+}
 
 
 def require(condition: bool, message: str) -> None:
@@ -175,6 +203,101 @@ def signature_issuer_identifiers(path: Path) -> set[str]:
     return identifiers
 
 
+def run_checked(command: list[str], label: str) -> str:
+    completed = subprocess.run(
+        command,
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+    require(
+        completed.returncode == 0,
+        f"{label} failed ({completed.returncode}): {completed.stdout.strip()} {completed.stderr.strip()}",
+    )
+    return completed.stdout
+
+
+def prepare_openpgp_verifier(temp_root: Path) -> tuple[str, str, list[Path]]:
+    java = shutil.which("java")
+    javac = shutil.which("javac")
+    require(java is not None and javac is not None, "OpenJDK java/javac are required for detached-signature verification")
+    require(OPENPGP_VERIFIER_SOURCE.is_file(), "OpenPGP verifier source is missing")
+
+    libraries: list[Path] = []
+    for filename, record in BOUNCY_CASTLE_LIBRARIES.items():
+        path = temp_root / filename
+        download(record["url"], path)
+        require(path.stat().st_size == record["bytes"], f"Pinned verifier dependency length mismatch: {filename}")
+        require(sha256(path) == record["sha256"], f"Pinned verifier dependency SHA-256 mismatch: {filename}")
+        libraries.append(path)
+
+    classes = temp_root / "openpgp-verifier-classes"
+    classes.mkdir()
+    run_checked(
+        [javac, "-cp", os.pathsep.join(str(path) for path in libraries), "-d", str(classes), str(OPENPGP_VERIFIER_SOURCE)],
+        "OpenPGP verifier compilation",
+    )
+    return java, os.pathsep.join([str(classes), *(str(path) for path in libraries)]), libraries
+
+
+def parse_verifier_output(output: str) -> dict[str, str]:
+    result: dict[str, str] = {}
+    for line in output.splitlines():
+        key, separator, value = line.partition("\t")
+        require(separator == "\t" and key and key not in result, f"Malformed OpenPGP verifier output: {line!r}")
+        result[key] = value
+    required = {
+        "verified",
+        "primaryFingerprint",
+        "signingFingerprint",
+        "signingKeyId",
+        "signatureCreatedUtc",
+        "publicKeyAlgorithm",
+        "hashAlgorithm",
+        "primaryUserIds",
+    }
+    require(set(result) == required, f"Incomplete OpenPGP verifier output: {sorted(result)}")
+    require(result["verified"] == "true", "Detached OpenPGP signature did not verify")
+    return result
+
+
+def verify_detached_signature(
+    java: str,
+    classpath: str,
+    public_key_path: Path,
+    signature_path: Path,
+    artifact_path: Path,
+    record: dict[str, Any],
+    expected_signer_identity: str,
+    label: str,
+) -> None:
+    output = run_checked(
+        [
+            java,
+            "-cp",
+            classpath,
+            "OpenPgpDetachedSignatureVerifier",
+            str(public_key_path),
+            str(signature_path),
+            str(artifact_path),
+        ],
+        f"{label} detached OpenPGP verification",
+    )
+    result = parse_verifier_output(output)
+    require(result["primaryFingerprint"] == record["primaryKeyFingerprint"], f"{label} primary fingerprint mismatch")
+    require(result["signingFingerprint"] == record["signerFingerprint"], f"{label} signing fingerprint mismatch")
+    require(result["signatureCreatedUtc"] == record["signatureCreatedUtc"], f"{label} signature timestamp mismatch")
+    require(result["hashAlgorithm"] == record["hashAlgorithm"], f"{label} signature hash algorithm mismatch")
+    if result["primaryUserIds"]:
+        require(
+            expected_signer_identity in result["primaryUserIds"].split(" | "),
+            f"{label} recorded signer identity is absent from the full-fingerprint key; actual UIDs: {result['primaryUserIds']}",
+        )
+
+
 def verify_file(path: Path, record: dict[str, Any], label: str) -> None:
     require(path.stat().st_size == record["bytes"], f"{label} byte length mismatch")
     require(sha256(path) == record["sha256"], f"{label} SHA-256 mismatch")
@@ -275,19 +398,28 @@ def validate_static(inventory: dict[str, Any], license_notice: dict[str, Any], a
     require(len(inventory["artifacts"]) == 8, "Expected eight published external coordinates")
     require(len(inventory["graphEdges"]) == 8, "Expected eight publisher dependency edges")
     require(all(artifact["jar"]["nativeEntries"] == 0 for artifact in inventory["artifacts"]), "Native entry recorded")
-    require(inventory["inventoryStatus"] == "VERIFIED_PUBLISHER_CLOSURE_AUTHENTICITY_PENDING_PACKAGE_REVIEW_ONLY", "Inventory authenticity status drift")
+    require(inventory["inventoryStatus"] == "VERIFIED_PUBLISHER_CLOSURE_AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PACKAGE_REVIEW_ONLY", "Inventory authenticity status drift")
     require(inventory["authenticityEvidence"]["locator"] == "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json", "Inventory authenticity locator drift")
-    require(license_notice["schemaVersion"] == 2 and license_notice["reviewStatus"] == "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED", "License review status drift")
+    require(license_notice["schemaVersion"] == 3 and license_notice["reviewStatus"] == "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED", "License review status drift")
     require(license_notice["evaluationApproved"] is False, "Evaluation must not be approved yet")
     require(license_notice["approvedReviewer"] is None and license_notice["approvedOn"] is None, "Product/IP approval identity/date must remain null")
+    require(license_notice["summary"]["externalCoordinatesAuthenticityVerified"] == 8, "License inventory authenticity count drift")
+    require(license_notice["summary"]["externalCoordinatesWithAuthenticityPending"] == 0, "License inventory retains an authenticity-pending coordinate")
+    require(license_notice["summary"]["unresolvedLicenseConflicts"] == ["com.google.code.findbugs:jsr305:3.0.2"], "Exact license conflict drift")
 
-    require(authenticity["schemaVersion"] == 1 and authenticity["pocId"] == "POC-RECOVERY-001", "Authenticity evidence identity drift")
-    require(authenticity["overallStatus"] == "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED", "Authenticity must remain pending")
+    require(authenticity["schemaVersion"] == 2 and authenticity["pocId"] == "POC-RECOVERY-001", "Authenticity evidence identity drift")
+    require(authenticity["overallStatus"] == "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED", "Authenticity/license state drift")
     require(authenticity["summary"]["coordinates"] == 8 and len(authenticity["components"]) == 8, "Authenticity coordinate count drift")
     require(authenticity["summary"]["publisherChecksumsMatched"] == 16, "Publisher checksum count drift")
     require(authenticity["summary"]["detachedSignaturesCryptographicallyVerified"] == 16, "Detached-signature verification count drift")
-    require(authenticity["summary"]["coordinatesWithUpstreamSignerTrustConfirmed"] == 2 and authenticity["summary"]["coordinatesAuthenticityPending"] == 6, "Signer-trust/authenticity counts drift")
+    require(authenticity["summary"]["coordinatesWithUpstreamSignerTrustConfirmed"] == 2, "Publisher-bound coordinate count drift")
+    require(authenticity["summary"]["coordinatesWithExactSourceCorrespondenceConfirmed"] == 6, "Source-correspondence coordinate count drift")
+    require(authenticity["summary"]["coordinatesAuthenticityVerified"] == 8 and authenticity["summary"]["coordinatesAuthenticityPending"] == 0, "Authenticity closure counts drift")
+    require(authenticity["summary"]["coordinatesWithLicenseConflict"] == 1, "License conflict count drift")
+    require(authenticity["verificationRecordLocator"] == "docs/evidence/poc-recovery-001/dependency-ip-authenticity-verification-2026-08-12.md", "Verification record locator drift")
+    require((ROOT / authenticity["verificationRecordLocator"]).is_file(), "Verification record is missing")
     require(authenticity["approvalBoundary"]["productIpApprovalAllowedWhileAnyCoordinatePending"] is False, "Product/IP approval must fail closed on pending authenticity")
+    require(authenticity["approvalBoundary"]["productIpApprovalAllowedWhileLicenseConflict"] is False, "Product/IP approval must fail closed on license conflict")
     require(authenticity["approvalBoundary"]["productIpFinalApproval"] is False and authenticity["approvalBoundary"]["approvedReviewer"] is None and authenticity["approvalBoundary"]["approvedOn"] is None, "Authenticity evidence prematurely approves Product/IP")
     require(authenticity["approvalBoundary"]["dependencyAdmission"] is False and authenticity["approvalBoundary"]["productionAdmission"] is False, "Authenticity evidence admitted a dependency or production use")
 
@@ -302,24 +434,43 @@ def validate_static(inventory: dict[str, Any], license_notice: dict[str, Any], a
     for coordinate, component in authentic_by_coordinate.items():
         artifact = artifacts_by_coordinate[coordinate]
         license_component = license_by_coordinate[coordinate]
-        require(component["licenseId"] == license_component["licenseSpdx"] == "Apache-2.0", f"{coordinate} license identifier drift")
+        if coordinate == "com.google.code.findbugs:jsr305:3.0.2":
+            require(component["licenseId"] == license_component["licenseSpdx"] == "NOASSERTION", "JSR305 must retain the unresolved license conflict")
+            require(component["licenseEvidence"]["status"] == "LICENSE_CONFLICT_PRODUCT_IP_DECISION_REQUIRED", "JSR305 conflict evidence drift")
+            require(license_component["publishedPomLicenseSpdx"] == "Apache-2.0" and license_component["exactReleaseSourceLicenseSpdx"] == "BSD-3-Clause", "JSR305 Apache/BSD conflict drift")
+        else:
+            require(component["licenseId"] == license_component["licenseSpdx"] == "Apache-2.0", f"{coordinate} license identifier drift")
         require(component["upstreamLicenseTextLocator"].startswith("https://") and re.fullmatch(r"[0-9a-f]{64}", component["licenseTextSha256"]), f"{coordinate} upstream license evidence incomplete")
         require(component["copyrightEvidence"]["locator"].startswith("https://") and component["copyrightEvidence"]["status"], f"{coordinate} copyright evidence incomplete")
         require(component["notice"]["requirement"] and component["notice"]["locator"].startswith("https://") and component["notice"]["result"], f"{coordinate} NOTICE evidence incomplete")
         require(component["verifiedAtUtc"] == authenticity["verifiedAtUtc"] and component["verificationTool"] == authenticity["verificationTool"], f"{coordinate} verification timestamp/tool attribution drift")
+        key = component["openPgpKey"]
+        require(re.fullmatch(r"[0-9A-F]{40}", key["primaryFingerprint"]) and re.fullmatch(r"[0-9A-F]{40}", key["signingFingerprint"]), f"{coordinate} full OpenPGP fingerprint evidence incomplete")
+        require(key["keyMaterialLocator"].startswith("https://") and key["identitySource"].startswith("https://"), f"{coordinate} OpenPGP key/identity source missing")
         for kind in ("jar", "pom"):
             item = component[kind]
             require(item["sha256"] == artifact[kind]["sha256"], f"{coordinate} {kind} SHA-256 evidence drift")
             require(item["publisherChecksum"]["result"] == "MATCH" and item["publisherChecksum"]["locator"].startswith("https://"), f"{coordinate} {kind} publisher checksum missing")
             require(item["detachedSignature"]["result"] == "CRYPTOGRAPHICALLY_VERIFIED" and item["detachedSignature"]["locator"].startswith("https://"), f"{coordinate} {kind} detached signature missing")
-            require(re.fullmatch(r"[0-9A-F]{40}", item["detachedSignature"]["signerFingerprint"]), f"{coordinate} {kind} signer fingerprint drift")
+            require(item["detachedSignature"]["signerFingerprint"] == key["signingFingerprint"], f"{coordinate} {kind} signing fingerprint drift")
+            require(item["detachedSignature"]["primaryKeyFingerprint"] == key["primaryFingerprint"], f"{coordinate} {kind} primary fingerprint drift")
+            require(item["detachedSignature"]["signatureCreatedUtc"].endswith("Z") and item["detachedSignature"]["hashAlgorithm"], f"{coordinate} {kind} signature metadata incomplete")
         require(component["jar"]["detachedSignature"]["signerFingerprint"] == component["pom"]["detachedSignature"]["signerFingerprint"], f"{coordinate} JAR/POM signer mismatch")
         require(component["signerIdentity"] and component["signerTrustStatus"] and component["sourceCorrespondence"]["status"], f"{coordinate} signer/source evidence incomplete")
-        if component["authenticityStatus"] == "AUTHENTICITY_PENDING":
-            require(component["closurePath"] and component["signerTrustStatus"] == "UNCONFIRMED_BY_COORDINATE_SPECIFIC_UPSTREAM_KEY_PUBLICATION", f"{coordinate} pending authenticity lacks an exact closure path")
+        require(component["authenticityStatus"] in AUTHENTICITY_STATUSES, f"{coordinate} uses an invalid authenticity classification")
+        require(component["authenticityStatus"] not in {"AUTHENTICITY_PENDING", "AUTHENTICITY_REJECTED"} and component["closurePath"] is None, f"{coordinate} authenticity is not closed")
+        if component["authenticityStatus"] == "AUTHENTICITY_VERIFIED_MULTISOURCE_CORRESPONDENCE":
+            source = component["sourceCorrespondence"]
+            comparison = source["comparison"]
+            require(source["repository"].startswith("https://") and source["commit"] and source["sourceJar"]["signatureResult"] == "CRYPTOGRAPHICALLY_VERIFIED", f"{coordinate} source evidence incomplete")
+            require(re.fullmatch(r"[0-9a-f]{64}", source["sourceJar"]["sha256"]) and source["sourceJar"]["bytes"] > 0, f"{coordinate} source JAR identity incomplete")
+            require(comparison["exactCommitBlobMatches"] + comparison["declaredGeneratedEntries"] == comparison["sourceEntries"] and comparison["unexplainedEntries"] == 0, f"{coordinate} source comparison has an unexplained entry")
+            require(source["reproducibleBuild"]["byteForByteBinaryRebuildAttempted"] is False and source["reproducibleBuild"]["status"] == "NOT_CLAIMED", f"{coordinate} reproducibility limitation drift")
         else:
-            require(component["authenticityStatus"] == "VERIFIED_FOR_PACKAGE_REVIEW" and component["signerTrustSource"].startswith("https://") and component["closurePath"] is None, f"{coordinate} verified authenticity evidence drift")
-    require(sum(component["authenticityStatus"] == "AUTHENTICITY_PENDING" for component in authentic_by_coordinate.values()) == 6, "Exactly six coordinates must remain authenticity-pending")
+            require(component["authenticityStatus"] == "AUTHENTICITY_VERIFIED_PUBLISHER_BOUND_SIGNATURE", f"{coordinate} unexpected verified classification")
+            require(component["signerTrustSource"].startswith("https://"), f"{coordinate} publisher signer binding is missing")
+    require(sum(component["authenticityStatus"] == "AUTHENTICITY_VERIFIED_MULTISOURCE_CORRESPONDENCE" for component in authentic_by_coordinate.values()) == 6, "Exactly six coordinates must use multisource correspondence")
+    require(sum(component["authenticityStatus"] == "AUTHENTICITY_VERIFIED_PUBLISHER_BOUND_SIGNATURE" for component in authentic_by_coordinate.values()) == 2, "Exactly two coordinates must use publisher-bound signatures")
 
 
 def verify_online(inventory: dict[str, Any], license_notice: dict[str, Any], authenticity: dict[str, Any]) -> None:
@@ -335,6 +486,9 @@ def verify_online(inventory: dict[str, Any], license_notice: dict[str, Any], aut
 
     with tempfile.TemporaryDirectory(prefix="dora-recovery-deps-") as temporary:
         temp_root = Path(temporary)
+        java, verifier_classpath, _ = prepare_openpgp_verifier(temp_root)
+        public_keys: dict[str, Path] = {}
+        identity_sources: dict[str, str] = {}
         for index, artifact in enumerate(inventory["artifacts"], start=1):
             coordinate = artifact["coordinate"]
             jar_path = temp_root / f"{index:02d}.jar"
@@ -346,6 +500,22 @@ def verify_online(inventory: dict[str, Any], license_notice: dict[str, Any], aut
             verify_jar(jar_path, artifact)
 
             authenticity_record = authenticity_by_coordinate[coordinate]
+            key_record = authenticity_record["openPgpKey"]
+            key_locator = key_record["keyMaterialLocator"]
+            if key_locator not in public_keys:
+                key_path = temp_root / f"key-{len(public_keys) + 1:02d}.asc"
+                download(key_locator, key_path)
+                public_keys[key_locator] = key_path
+            public_key_path = public_keys[key_locator]
+            identity_locator = key_record["identitySource"]
+            if identity_locator not in identity_sources:
+                identity_path = temp_root / f"identity-{len(identity_sources) + 1:02d}.html"
+                download(identity_locator, identity_path)
+                identity_sources[identity_locator] = identity_path.read_text(encoding="utf-8", errors="replace")
+            identity_text = identity_sources[identity_locator]
+            identity_email = re.fullmatch(r".*<([^<>]+)>", authenticity_record["signerIdentity"])
+            require(identity_email is not None and identity_email.group(1) in identity_text, f"{coordinate} signer identity email is absent from the full-fingerprint index metadata")
+            require(key_record["primaryFingerprint"].lower() in identity_text.lower(), f"{coordinate} primary fingerprint is absent from the identity-source response")
             for kind, artifact_path in (("jar", jar_path), ("pom", pom_path)):
                 file_record = authenticity_record[kind]
                 checksum_record = file_record["publisherChecksum"]
@@ -363,6 +533,40 @@ def verify_online(inventory: dict[str, Any], license_notice: dict[str, Any], aut
                 require(
                     fingerprint in issuer_identifiers or fingerprint[-16:] in {identifier[-16:] for identifier in issuer_identifiers},
                     f"{coordinate} {kind} detached-signature issuer does not match recorded fingerprint: {sorted(issuer_identifiers)}",
+                )
+                verify_detached_signature(
+                    java,
+                    verifier_classpath,
+                    public_key_path,
+                    signature_path,
+                    artifact_path,
+                    signature_record,
+                    authenticity_record["signerIdentity"],
+                    f"{coordinate} {kind}",
+                )
+
+            if authenticity_record["authenticityStatus"] == "AUTHENTICITY_VERIFIED_MULTISOURCE_CORRESPONDENCE":
+                source_record = authenticity_record["sourceCorrespondence"]["sourceJar"]
+                source_path = temp_root / f"{index:02d}.sources.jar"
+                source_signature_path = temp_root / f"{index:02d}.sources.jar.asc"
+                download(source_record["locator"], source_path)
+                download(source_record["detachedSignatureLocator"], source_signature_path)
+                verify_file(source_path, source_record, f"{coordinate} sources JAR")
+                source_signature_record = {
+                    "primaryKeyFingerprint": key_record["primaryFingerprint"],
+                    "signerFingerprint": key_record["signingFingerprint"],
+                    "signatureCreatedUtc": source_record["signatureCreatedUtc"],
+                    "hashAlgorithm": authenticity_record["jar"]["detachedSignature"]["hashAlgorithm"],
+                }
+                verify_detached_signature(
+                    java,
+                    verifier_classpath,
+                    public_key_path,
+                    source_signature_path,
+                    source_path,
+                    source_signature_record,
+                    authenticity_record["signerIdentity"],
+                    f"{coordinate} sources JAR",
                 )
 
             actual_dependencies = parse_project_dependencies(pom_path)
@@ -402,9 +606,9 @@ def main() -> int:
     validate_static(inventory, license_notice, authenticity)
     if args.online:
         verify_online(inventory, license_notice, authenticity)
-        print("Verified 8 exact external JAR/POM coordinates online: artifact hashes, publisher checksums, detached-signature issuer fingerprints, POM graph/licenses and no native payload; temporary files removed")
+        print("Verified 8 exact external JAR/POM coordinates online: artifact hashes, publisher checksums, full-fingerprint detached OpenPGP cryptography and identity metadata, signed source JARs for the six multisource coordinates, POM graph/licenses and no native payload; temporary files removed")
     else:
-        print("POC-RECOVERY-001 v0.3 dependency/IP/authenticity static validation passed (use --online for publisher checksum and detached-signature revalidation)")
+        print("POC-RECOVERY-001 v0.3 dependency/IP/authenticity static validation passed; authenticity verified, JSR305 license conflict remains (use --online for checksum and cryptographic signature revalidation)")
     return 0
 
 

@@ -1,16 +1,17 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "evidenceId": "POC-RECOVERY-001-DEPENDENCY-IP-AUTHENTICITY-V0.3",
   "pocId": "POC-RECOVERY-001",
   "scope": "Eight exact published JAR/POM coordinates only; evidence does not admit a dependency or modify a Gradle graph.",
-  "verifiedAtUtc": "2026-08-12T08:31:09Z",
+  "verifiedAtUtc": "2026-08-12T10:09:05Z",
   "verificationTool": {
-    "artifactAndChecksum": "Windows PowerShell 5.1.19041.6456 Invoke-WebRequest/Get-FileHash plus CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py v0.3",
-    "detachedOpenPgp": "OpenJDK 17.0.10 with BouncyCastle bcpg/bcprov/bcutil 1.84",
-    "keyRetrieval": "Ubuntu keyserver HTTPS lookup",
-    "trustRule": "A successful signature and keyserver UID prove cryptographic consistency, not publisher identity; coordinate-specific upstream trust evidence is mandatory."
+    "artifactAndChecksum": "CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py --online: exact bytes/SHA-256 plus publisher SHA-256 or SHA-1",
+    "detachedOpenPgp": "OpenJDK 17.0.10 tools/OpenPgpDetachedSignatureVerifier.java with SHA-256-pinned BouncyCastle bcpg/bcprov/bcutil 1.83",
+    "keyRetrieval": "Ubuntu keyserver HTTPS full-fingerprint lookup; full primary and signing-subkey fingerprints are validated, never a short key ID",
+    "sourceCorrespondence": "Maven sources JAR SHA-256/signature plus byte-exact Git blob comparison against the recorded upstream commit; declared generated-source transformations are enumerated",
+    "trustRule": "A keyserver UID is identity metadata only. Verification requires either upstream publisher key binding or exact/multisource correspondence; no verification result grants Product/IP approval or dependency admission."
   },
-  "overallStatus": "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED",
+  "overallStatus": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED",
   "summary": {
     "coordinates": 8,
     "jarSha256Verified": 8,
@@ -19,19 +20,23 @@
     "detachedSignaturesPresent": 16,
     "detachedSignaturesCryptographicallyVerified": 16,
     "coordinatesWithUpstreamSignerTrustConfirmed": 2,
-    "coordinatesAuthenticityPending": 6,
+    "coordinatesWithExactSourceCorrespondenceConfirmed": 6,
+    "coordinatesAuthenticityVerified": 8,
+    "coordinatesAuthenticityPending": 0,
+    "coordinatesWithLicenseConflict": 1,
     "dependencyAdmission": false,
     "productionAdmission": false
   },
   "components": [
     {
       "coordinate": "com.google.crypto.tink:tink-android:1.23.0",
-      "verifiedAtUtc": "2026-08-12T08:31:09Z",
+      "verifiedAtUtc": "2026-08-12T10:09:05Z",
       "verificationTool": {
-        "artifactAndChecksum": "Windows PowerShell 5.1.19041.6456 Invoke-WebRequest/Get-FileHash plus CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py v0.3",
-        "detachedOpenPgp": "OpenJDK 17.0.10 with BouncyCastle bcpg/bcprov/bcutil 1.84",
-        "keyRetrieval": "Ubuntu keyserver HTTPS lookup",
-        "trustRule": "A successful signature and keyserver UID prove cryptographic consistency, not publisher identity; coordinate-specific upstream trust evidence is mandatory."
+        "artifactAndChecksum": "CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py --online: exact bytes/SHA-256 plus publisher SHA-256 or SHA-1",
+        "detachedOpenPgp": "OpenJDK 17.0.10 tools/OpenPgpDetachedSignatureVerifier.java with SHA-256-pinned BouncyCastle bcpg/bcprov/bcutil 1.83",
+        "keyRetrieval": "Ubuntu keyserver HTTPS full-fingerprint lookup; full primary and signing-subkey fingerprints are validated, never a short key ID",
+        "sourceCorrespondence": "Maven sources JAR SHA-256/signature plus byte-exact Git blob comparison against the recorded upstream commit; declared generated-source transformations are enumerated",
+        "trustRule": "A keyserver UID is identity metadata only. Verification requires either upstream publisher key binding or exact/multisource correspondence; no verification result grants Product/IP approval or dependency admission."
       },
       "licenseId": "Apache-2.0",
       "upstreamLicenseTextLocator": "https://raw.githubusercontent.com/tink-crypto/tink-java/v1.23.0/LICENSE",
@@ -58,7 +63,11 @@
         "detachedSignature": {
           "locator": "https://repo1.maven.org/maven2/com/google/crypto/tink/tink-android/1.23.0/tink-android-1.23.0.jar.asc",
           "result": "CRYPTOGRAPHICALLY_VERIFIED",
-          "signerFingerprint": "73976C9C39C1479B84E2641A5A68A2249128E2C6"
+          "signerFingerprint": "73976C9C39C1479B84E2641A5A68A2249128E2C6",
+          "primaryKeyFingerprint": "73976C9C39C1479B84E2641A5A68A2249128E2C6",
+          "signatureCreatedUtc": "2026-07-09T08:20:58Z",
+          "hashAlgorithm": "SHA512",
+          "verifier": "tools/OpenPgpDetachedSignatureVerifier.java"
         }
       },
       "pom": {
@@ -72,30 +81,71 @@
         "detachedSignature": {
           "locator": "https://repo1.maven.org/maven2/com/google/crypto/tink/tink-android/1.23.0/tink-android-1.23.0.pom.asc",
           "result": "CRYPTOGRAPHICALLY_VERIFIED",
-          "signerFingerprint": "73976C9C39C1479B84E2641A5A68A2249128E2C6"
+          "signerFingerprint": "73976C9C39C1479B84E2641A5A68A2249128E2C6",
+          "primaryKeyFingerprint": "73976C9C39C1479B84E2641A5A68A2249128E2C6",
+          "signatureCreatedUtc": "2026-07-09T08:20:58Z",
+          "hashAlgorithm": "SHA512",
+          "verifier": "tools/OpenPgpDetachedSignatureVerifier.java"
         }
       },
       "signerIdentity": "Tink Developers (Signing key for Maven artifacts) <tink-dev@google.com>",
       "signerTrustSource": null,
-      "signerTrustStatus": "UNCONFIRMED_BY_COORDINATE_SPECIFIC_UPSTREAM_KEY_PUBLICATION",
+      "signerTrustStatus": "NOT_CLAIMED_SOURCE_CORRESPONDENCE_ROUTE_USED",
       "sourceCorrespondence": {
         "repository": "https://github.com/tink-crypto/tink-java",
         "tagOrRelease": "v1.23.0",
         "commit": "1bedd75ae7161017c5f45b020395a72bbd40645d",
         "evidenceLocator": "https://github.com/tink-crypto/tink-java/releases/tag/v1.23.0",
-        "status": "VERSION_TAG_AND_COMMIT_RECORDED_BUILD_REPRODUCIBILITY_NOT_PROVEN"
+        "sourceJar": {
+          "locator": "https://repo.maven.apache.org/maven2/com/google/crypto/tink/tink-android/1.23.0/tink-android-1.23.0-sources.jar",
+          "sha256": "32ac8eaa5788ee1d724c97e454c233622ce9c01bbd7b996102a594ccbf8e89ca",
+          "bytes": 5010264,
+          "detachedSignatureLocator": "https://repo.maven.apache.org/maven2/com/google/crypto/tink/tink-android/1.23.0/tink-android-1.23.0-sources.jar.asc",
+          "signatureResult": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signatureCreatedUtc": "2026-07-09T08:20:58Z"
+        },
+        "comparison": {
+          "method": "SHA-1 Git blob identity over every Java source entry",
+          "sourceEntries": 790,
+          "exactCommitBlobMatches": 531,
+          "declaredGeneratedEntries": 259,
+          "generatedBreakdown": {
+            "protobufJavaFromTaggedProtoAndBazelRules": 258,
+            "versionJavaFromTaggedReleaseRule": 1
+          },
+          "unexplainedEntries": 0
+        },
+        "releaseBuildEvidence": [
+          "https://github.com/tink-crypto/tink-java/blob/v1.23.0/kokoro/release_maven.sh",
+          "https://github.com/tink-crypto/tink-java/blob/v1.23.0/maven/maven_deploy_library.sh"
+        ],
+        "status": "EXACT_TAG_BLOBS_PLUS_TAGGED_GENERATION_MULTISOURCE_CORRESPONDENCE",
+        "reproducibleBuild": {
+          "byteForByteBinaryRebuildAttempted": false,
+          "status": "NOT_CLAIMED",
+          "limitation": "No byte-for-byte binary rebuild was attempted. Classification relies on cryptographically bound source JAR plus exact upstream-source correspondence and recorded release/build metadata."
+        }
       },
-      "authenticityStatus": "AUTHENTICITY_PENDING",
-      "closurePath": "Obtain an upstream Tink key publication binding fingerprint 73976C9C39C1479B84E2641A5A68A2249128E2C6 to Maven releases, then have Product/IP review the binding and source correspondence."
+      "authenticityStatus": "AUTHENTICITY_VERIFIED_MULTISOURCE_CORRESPONDENCE",
+      "closurePath": null,
+      "openPgpKey": {
+        "primaryFingerprint": "73976C9C39C1479B84E2641A5A68A2249128E2C6",
+        "signingFingerprint": "73976C9C39C1479B84E2641A5A68A2249128E2C6",
+        "keyMaterialLocator": "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x73976C9C39C1479B84E2641A5A68A2249128E2C6",
+        "identitySource": "https://keyserver.ubuntu.com/pks/lookup?op=index&search=0x73976C9C39C1479B84E2641A5A68A2249128E2C6",
+        "identityTrustBoundary": "SELF_CERTIFIED_UID_METADATA_ONLY_NOT_PUBLISHER_AUTHORIZATION"
+      },
+      "authenticityBasis": "Valid JAR/POM/source-JAR signatures and checksums plus exact upstream-source correspondence with every generated transformation enumerated."
     },
     {
       "coordinate": "androidx.annotation:annotation-jvm:1.8.2",
-      "verifiedAtUtc": "2026-08-12T08:31:09Z",
+      "verifiedAtUtc": "2026-08-12T10:09:05Z",
       "verificationTool": {
-        "artifactAndChecksum": "Windows PowerShell 5.1.19041.6456 Invoke-WebRequest/Get-FileHash plus CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py v0.3",
-        "detachedOpenPgp": "OpenJDK 17.0.10 with BouncyCastle bcpg/bcprov/bcutil 1.84",
-        "keyRetrieval": "Ubuntu keyserver HTTPS lookup",
-        "trustRule": "A successful signature and keyserver UID prove cryptographic consistency, not publisher identity; coordinate-specific upstream trust evidence is mandatory."
+        "artifactAndChecksum": "CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py --online: exact bytes/SHA-256 plus publisher SHA-256 or SHA-1",
+        "detachedOpenPgp": "OpenJDK 17.0.10 tools/OpenPgpDetachedSignatureVerifier.java with SHA-256-pinned BouncyCastle bcpg/bcprov/bcutil 1.83",
+        "keyRetrieval": "Ubuntu keyserver HTTPS full-fingerprint lookup; full primary and signing-subkey fingerprints are validated, never a short key ID",
+        "sourceCorrespondence": "Maven sources JAR SHA-256/signature plus byte-exact Git blob comparison against the recorded upstream commit; declared generated-source transformations are enumerated",
+        "trustRule": "A keyserver UID is identity metadata only. Verification requires either upstream publisher key binding or exact/multisource correspondence; no verification result grants Product/IP approval or dependency admission."
       },
       "licenseId": "Apache-2.0",
       "upstreamLicenseTextLocator": "https://android.googlesource.com/platform/frameworks/support/+/5a50de555336ab8cf837fd0ddd32febb2cc85f74/LICENSE.txt",
@@ -122,7 +172,11 @@
         "detachedSignature": {
           "locator": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-jvm/1.8.2/annotation-jvm-1.8.2.jar.asc",
           "result": "CRYPTOGRAPHICALLY_VERIFIED",
-          "signerFingerprint": "A5F483CD733A4EBAEA378B2AE88979FB9B30ACF2"
+          "signerFingerprint": "A5F483CD733A4EBAEA378B2AE88979FB9B30ACF2",
+          "primaryKeyFingerprint": "EB4C1BFD4F042F6DDDCCEC917721F63BD38B4796",
+          "signatureCreatedUtc": "2024-08-01T21:40:10Z",
+          "hashAlgorithm": "SHA256",
+          "verifier": "tools/OpenPgpDetachedSignatureVerifier.java"
         }
       },
       "pom": {
@@ -136,10 +190,14 @@
         "detachedSignature": {
           "locator": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-jvm/1.8.2/annotation-jvm-1.8.2.pom.asc",
           "result": "CRYPTOGRAPHICALLY_VERIFIED",
-          "signerFingerprint": "A5F483CD733A4EBAEA378B2AE88979FB9B30ACF2"
+          "signerFingerprint": "A5F483CD733A4EBAEA378B2AE88979FB9B30ACF2",
+          "primaryKeyFingerprint": "EB4C1BFD4F042F6DDDCCEC917721F63BD38B4796",
+          "signatureCreatedUtc": "2024-08-01T21:40:11Z",
+          "hashAlgorithm": "SHA256",
+          "verifier": "tools/OpenPgpDetachedSignatureVerifier.java"
         }
       },
-      "signerIdentity": "Google Jetpack signing subkey",
+      "signerIdentity": "Google Inc. (Linux Packages Signing Authority) <linux-packages-keymaster@google.com>",
       "signerTrustSource": "https://developer.android.com/jetpack/getting-started#verify-jetpack-dependencies-optional",
       "signerTrustStatus": "CONFIRMED_BY_UPSTREAM_PUBLISHER_DOCUMENTATION",
       "sourceCorrespondence": {
@@ -149,31 +207,40 @@
         "evidenceLocator": "https://developer.android.com/jetpack/androidx/releases/annotation#1.8.2",
         "status": "CONFIRMED_BY_UPSTREAM_RELEASE_NOTES"
       },
-      "authenticityStatus": "VERIFIED_FOR_PACKAGE_REVIEW",
-      "closurePath": null
+      "authenticityStatus": "AUTHENTICITY_VERIFIED_PUBLISHER_BOUND_SIGNATURE",
+      "closurePath": null,
+      "openPgpKey": {
+        "primaryFingerprint": "EB4C1BFD4F042F6DDDCCEC917721F63BD38B4796",
+        "signingFingerprint": "A5F483CD733A4EBAEA378B2AE88979FB9B30ACF2",
+        "keyMaterialLocator": "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xA5F483CD733A4EBAEA378B2AE88979FB9B30ACF2",
+        "identitySource": "https://keyserver.ubuntu.com/pks/lookup?op=index&search=0xEB4C1BFD4F042F6DDDCCEC917721F63BD38B4796",
+        "identityTrustBoundary": "SELF_CERTIFIED_UID_METADATA_ONLY_NOT_PUBLISHER_AUTHORIZATION"
+      },
+      "authenticityBasis": "Full-fingerprint detached signatures are bound by coordinate-specific upstream publisher documentation or tagged key publication."
     },
     {
       "coordinate": "com.google.code.findbugs:jsr305:3.0.2",
-      "verifiedAtUtc": "2026-08-12T08:31:09Z",
+      "verifiedAtUtc": "2026-08-12T10:09:05Z",
       "verificationTool": {
-        "artifactAndChecksum": "Windows PowerShell 5.1.19041.6456 Invoke-WebRequest/Get-FileHash plus CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py v0.3",
-        "detachedOpenPgp": "OpenJDK 17.0.10 with BouncyCastle bcpg/bcprov/bcutil 1.84",
-        "keyRetrieval": "Ubuntu keyserver HTTPS lookup",
-        "trustRule": "A successful signature and keyserver UID prove cryptographic consistency, not publisher identity; coordinate-specific upstream trust evidence is mandatory."
+        "artifactAndChecksum": "CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py --online: exact bytes/SHA-256 plus publisher SHA-256 or SHA-1",
+        "detachedOpenPgp": "OpenJDK 17.0.10 tools/OpenPgpDetachedSignatureVerifier.java with SHA-256-pinned BouncyCastle bcpg/bcprov/bcutil 1.83",
+        "keyRetrieval": "Ubuntu keyserver HTTPS full-fingerprint lookup; full primary and signing-subkey fingerprints are validated, never a short key ID",
+        "sourceCorrespondence": "Maven sources JAR SHA-256/signature plus byte-exact Git blob comparison against the recorded upstream commit; declared generated-source transformations are enumerated",
+        "trustRule": "A keyserver UID is identity metadata only. Verification requires either upstream publisher key binding or exact/multisource correspondence; no verification result grants Product/IP approval or dependency admission."
       },
-      "licenseId": "Apache-2.0",
-      "upstreamLicenseTextLocator": "https://www.apache.org/licenses/LICENSE-2.0.txt",
-      "licenseTextSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "licenseId": "NOASSERTION",
+      "upstreamLicenseTextLocator": "https://raw.githubusercontent.com/amaembo/jsr-305/d7734b13c61492982784560ed5b4f4bd6cf9bb2c/ri/LICENSE",
+      "licenseTextSha256": "f1aaf45844a32fefb9cf7eca8088bc4fe8ee3c4518ec944c89627ef4881d073b",
       "copyrightEvidence": {
-        "locator": "https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2-sources.jar",
-        "statement": null,
-        "status": "PENDING_NO_COPYRIGHT_HEADER_OR_AUTHORITATIVE_SOURCE_TAG_ESTABLISHED"
+        "locator": "https://github.com/amaembo/jsr-305/blob/d7734b13c61492982784560ed5b4f4bd6cf9bb2c/ri/LICENSE",
+        "statement": "Copyright (c) 2007-2009, JSR305 expert group",
+        "status": "CONFIRMED_AT_EXACT_RELEASE_SOURCE_COMMIT"
       },
       "notice": {
-        "requirement": "PRESERVE_SEPARATE_NOTICE_IF_UPSTREAM_SUPPLIES_ONE",
-        "locator": "https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2-sources.jar",
-        "sha256": null,
-        "result": "NO_SEPARATE_NOTICE_IN_BINARY_OR_SOURCES_JAR; AUTHORITATIVE_SOURCE_ROOT_PENDING"
+        "requirement": "PRESERVE_BSD_COPYRIGHT_LICENSE_AND_DISCLAIMER_IF_PRODUCT_IP_SELECTS_OR_ACCEPTS_THOSE_TERMS",
+        "locator": "https://github.com/amaembo/jsr-305/blob/d7734b13c61492982784560ed5b4f4bd6cf9bb2c/ri/LICENSE",
+        "sha256": "f1aaf45844a32fefb9cf7eca8088bc4fe8ee3c4518ec944c89627ef4881d073b",
+        "result": "NO_SEPARATE_NOTICE; LICENSE CONFLICT WITH SIGNED PUBLISHED POM REMAINS UNRESOLVED"
       },
       "jar": {
         "sha256": "766ad2a0783f2687962c8ad74ceecc38a28b9f72a2d085ee438b7813e928d0c7",
@@ -186,7 +253,11 @@
         "detachedSignature": {
           "locator": "https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar.asc",
           "result": "CRYPTOGRAPHICALLY_VERIFIED",
-          "signerFingerprint": "7616EB882DAF57A11477AAF559A252FB1199D873"
+          "signerFingerprint": "7616EB882DAF57A11477AAF559A252FB1199D873",
+          "primaryKeyFingerprint": "7616EB882DAF57A11477AAF559A252FB1199D873",
+          "signatureCreatedUtc": "2017-03-31T04:55:39Z",
+          "hashAlgorithm": "SHA256",
+          "verifier": "tools/OpenPgpDetachedSignatureVerifier.java"
         }
       },
       "pom": {
@@ -200,30 +271,85 @@
         "detachedSignature": {
           "locator": "https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.pom.asc",
           "result": "CRYPTOGRAPHICALLY_VERIFIED",
-          "signerFingerprint": "7616EB882DAF57A11477AAF559A252FB1199D873"
+          "signerFingerprint": "7616EB882DAF57A11477AAF559A252FB1199D873",
+          "primaryKeyFingerprint": "7616EB882DAF57A11477AAF559A252FB1199D873",
+          "signatureCreatedUtc": "2017-03-31T04:55:39Z",
+          "hashAlgorithm": "SHA256",
+          "verifier": "tools/OpenPgpDetachedSignatureVerifier.java"
         }
       },
       "signerIdentity": "Tagir Valeev <lany@ngs.ru>",
       "signerTrustSource": null,
-      "signerTrustStatus": "UNCONFIRMED_BY_COORDINATE_SPECIFIC_UPSTREAM_KEY_PUBLICATION",
+      "signerTrustStatus": "NOT_CLAIMED_SOURCE_CORRESPONDENCE_ROUTE_USED",
       "sourceCorrespondence": {
-        "repository": "https://code.google.com/p/jsr-305/",
-        "tagOrRelease": null,
-        "commit": null,
-        "evidenceLocator": "https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.pom",
-        "status": "AUTHENTICITY_PENDING_SOURCE_REPOSITORY_AND_TAG_UNRESOLVED"
+        "repository": "https://github.com/amaembo/jsr-305",
+        "tagOrRelease": "3.0.2 release-source commit",
+        "commit": "d7734b13c61492982784560ed5b4f4bd6cf9bb2c",
+        "evidenceLocator": "https://github.com/amaembo/jsr-305/commit/d7734b13c61492982784560ed5b4f4bd6cf9bb2c",
+        "sourceJar": {
+          "locator": "https://repo.maven.apache.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2-sources.jar",
+          "sha256": "1c9e85e272d0708c6a591dc74828c71603053b48cc75ae83cce56912a2aa063b",
+          "bytes": 18102,
+          "detachedSignatureLocator": "https://repo.maven.apache.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2-sources.jar.asc",
+          "signatureResult": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signatureCreatedUtc": "2017-03-31T04:55:39Z"
+        },
+        "comparison": {
+          "method": "SHA-1 Git blob identity over every Java source entry",
+          "sourceEntries": 31,
+          "exactCommitBlobMatches": 31,
+          "declaredGeneratedEntries": 0,
+          "unexplainedEntries": 0,
+          "signerCorrespondence": "Release commit author name/email exactly matches the self-certified full-fingerprint key UID; source JAR, JAR and POM carry valid signatures by that same key."
+        },
+        "status": "EXACT_RELEASE_COMMIT_MULTISOURCE_CORRESPONDENCE",
+        "reproducibleBuild": {
+          "byteForByteBinaryRebuildAttempted": false,
+          "status": "NOT_CLAIMED",
+          "limitation": "No byte-for-byte binary rebuild was attempted. Classification relies on cryptographically bound source JAR plus exact upstream-source correspondence and recorded release/build metadata."
+        }
       },
-      "authenticityStatus": "AUTHENTICITY_PENDING",
-      "closurePath": "Product/IP must establish the authoritative 3.0.2 source/tag, copyright owner and publisher key binding for fingerprint 7616EB882DAF57A11477AAF559A252FB1199D873."
+      "authenticityStatus": "AUTHENTICITY_VERIFIED_MULTISOURCE_CORRESPONDENCE",
+      "closurePath": null,
+      "openPgpKey": {
+        "primaryFingerprint": "7616EB882DAF57A11477AAF559A252FB1199D873",
+        "signingFingerprint": "7616EB882DAF57A11477AAF559A252FB1199D873",
+        "keyMaterialLocator": "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x7616EB882DAF57A11477AAF559A252FB1199D873",
+        "identitySource": "https://keyserver.ubuntu.com/pks/lookup?op=index&search=0x7616EB882DAF57A11477AAF559A252FB1199D873",
+        "identityTrustBoundary": "SELF_CERTIFIED_UID_METADATA_ONLY_NOT_PUBLISHER_AUTHORIZATION"
+      },
+      "authenticityBasis": "Valid JAR/POM/source-JAR signatures and checksums plus exact upstream-source correspondence with every generated transformation enumerated.",
+      "licenseEvidence": {
+        "status": "LICENSE_CONFLICT_PRODUCT_IP_DECISION_REQUIRED",
+        "publishedSignedPom": {
+          "locator": "https://repo.maven.apache.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.pom",
+          "sha256": "19889dbdf1b254b2601a5ee645b8147a974644882297684c798afe5d63d78dfe",
+          "declaredSpdx": "Apache-2.0"
+        },
+        "exactReleaseSource": {
+          "pomLocator": "https://github.com/amaembo/jsr-305/blob/d7734b13c61492982784560ed5b4f4bd6cf9bb2c/ri/pom.xml",
+          "pomSha256": "5389748594bba388b874a9e12bdeaf456154daffb5f0f1f0de00c4d400604edf",
+          "licenseLocator": "https://github.com/amaembo/jsr-305/blob/d7734b13c61492982784560ed5b4f4bd6cf9bb2c/ri/LICENSE",
+          "licenseSha256": "f1aaf45844a32fefb9cf7eca8088bc4fe8ee3c4518ec944c89627ef4881d073b",
+          "declaredSpdx": "BSD-3-Clause"
+        },
+        "exactMissingExternalFact": "Which license terms the authorized publisher/rightsholders intend to govern the immutable Maven Central 3.0.2 artifact: its signed Apache-2.0 POM or its exact release-source BSD-3-Clause POM/LICENSE.",
+        "safeOwnerChoices": [
+          "Obtain written clarification from the publisher/rightsholder and have Stage 0 Product/IP record the result.",
+          "Keep the coordinate unadmitted and select a future exact dependency graph that excludes or replaces it.",
+          "Ask qualified Product/IP counsel whether documented compliance with both term sets is acceptable; do not infer approval here."
+        ]
+      }
     },
     {
       "coordinate": "com.google.code.gson:gson:2.13.2",
-      "verifiedAtUtc": "2026-08-12T08:31:09Z",
+      "verifiedAtUtc": "2026-08-12T10:09:05Z",
       "verificationTool": {
-        "artifactAndChecksum": "Windows PowerShell 5.1.19041.6456 Invoke-WebRequest/Get-FileHash plus CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py v0.3",
-        "detachedOpenPgp": "OpenJDK 17.0.10 with BouncyCastle bcpg/bcprov/bcutil 1.84",
-        "keyRetrieval": "Ubuntu keyserver HTTPS lookup",
-        "trustRule": "A successful signature and keyserver UID prove cryptographic consistency, not publisher identity; coordinate-specific upstream trust evidence is mandatory."
+        "artifactAndChecksum": "CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py --online: exact bytes/SHA-256 plus publisher SHA-256 or SHA-1",
+        "detachedOpenPgp": "OpenJDK 17.0.10 tools/OpenPgpDetachedSignatureVerifier.java with SHA-256-pinned BouncyCastle bcpg/bcprov/bcutil 1.83",
+        "keyRetrieval": "Ubuntu keyserver HTTPS full-fingerprint lookup; full primary and signing-subkey fingerprints are validated, never a short key ID",
+        "sourceCorrespondence": "Maven sources JAR SHA-256/signature plus byte-exact Git blob comparison against the recorded upstream commit; declared generated-source transformations are enumerated",
+        "trustRule": "A keyserver UID is identity metadata only. Verification requires either upstream publisher key binding or exact/multisource correspondence; no verification result grants Product/IP approval or dependency admission."
       },
       "licenseId": "Apache-2.0",
       "upstreamLicenseTextLocator": "https://raw.githubusercontent.com/google/gson/gson-parent-2.13.2/LICENSE",
@@ -250,7 +376,11 @@
         "detachedSignature": {
           "locator": "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.13.2/gson-2.13.2.jar.asc",
           "result": "CRYPTOGRAPHICALLY_VERIFIED",
-          "signerFingerprint": "C7BE5BCC9FEC15518CFDA882B0F3710FA64900E7"
+          "signerFingerprint": "C7BE5BCC9FEC15518CFDA882B0F3710FA64900E7",
+          "primaryKeyFingerprint": "C7BE5BCC9FEC15518CFDA882B0F3710FA64900E7",
+          "signatureCreatedUtc": "2025-09-10T20:41:04Z",
+          "hashAlgorithm": "SHA512",
+          "verifier": "tools/OpenPgpDetachedSignatureVerifier.java"
         }
       },
       "pom": {
@@ -264,30 +394,70 @@
         "detachedSignature": {
           "locator": "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.13.2/gson-2.13.2.pom.asc",
           "result": "CRYPTOGRAPHICALLY_VERIFIED",
-          "signerFingerprint": "C7BE5BCC9FEC15518CFDA882B0F3710FA64900E7"
+          "signerFingerprint": "C7BE5BCC9FEC15518CFDA882B0F3710FA64900E7",
+          "primaryKeyFingerprint": "C7BE5BCC9FEC15518CFDA882B0F3710FA64900E7",
+          "signatureCreatedUtc": "2025-09-10T20:41:05Z",
+          "hashAlgorithm": "SHA512",
+          "verifier": "tools/OpenPgpDetachedSignatureVerifier.java"
         }
       },
-      "signerIdentity": "Eamonn McManus <eamonn@mcmanus.net>",
+      "signerIdentity": "Éamonn McManus <eamonn@mcmanus.net>",
       "signerTrustSource": null,
-      "signerTrustStatus": "UNCONFIRMED_BY_COORDINATE_SPECIFIC_UPSTREAM_KEY_PUBLICATION",
+      "signerTrustStatus": "NOT_CLAIMED_SOURCE_CORRESPONDENCE_ROUTE_USED",
       "sourceCorrespondence": {
         "repository": "https://github.com/google/gson",
         "tagOrRelease": "gson-parent-2.13.2",
         "commit": "686fad782d969d8f15c7581a5435a208b810caa7",
         "evidenceLocator": "https://github.com/google/gson/releases/tag/gson-parent-2.13.2",
-        "status": "TAG_AND_COMMIT_CONFIRMED_BUILD_REPRODUCIBILITY_NOT_PROVEN"
+        "sourceJar": {
+          "locator": "https://repo.maven.apache.org/maven2/com/google/code/gson/gson/2.13.2/gson-2.13.2-sources.jar",
+          "sha256": "058974b69cb7b0a04712278e11870e84ee8cd8fb5f551bd8401e72ba6638bfef",
+          "bytes": 207421,
+          "detachedSignatureLocator": "https://repo.maven.apache.org/maven2/com/google/code/gson/gson/2.13.2/gson-2.13.2-sources.jar.asc",
+          "signatureResult": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signatureCreatedUtc": "2025-09-10T20:41:05Z"
+        },
+        "comparison": {
+          "method": "SHA-1 Git blob identity over every Java source entry",
+          "sourceEntries": 85,
+          "exactCommitBlobMatches": 84,
+          "declaredGeneratedEntries": 1,
+          "generatedBreakdown": {
+            "GsonBuildConfigTemplateExactVersionSubstitution": 1
+          },
+          "unexplainedEntries": 0
+        },
+        "releaseBuildEvidence": [
+          "https://github.com/google/gson/blob/gson-parent-2.13.2/ReleaseProcess.md",
+          "https://github.com/google/gson/blob/gson-parent-2.13.2/gson/pom.xml"
+        ],
+        "status": "EXACT_TAG_BLOBS_PLUS_DECLARED_TEMPLATE_MULTISOURCE_CORRESPONDENCE",
+        "reproducibleBuild": {
+          "byteForByteBinaryRebuildAttempted": false,
+          "status": "NOT_CLAIMED",
+          "limitation": "No byte-for-byte binary rebuild was attempted. Classification relies on cryptographically bound source JAR plus exact upstream-source correspondence and recorded release/build metadata."
+        }
       },
-      "authenticityStatus": "AUTHENTICITY_PENDING",
-      "closurePath": "Obtain a Gson upstream key publication binding fingerprint C7BE5BCC9FEC15518CFDA882B0F3710FA64900E7 to 2.13.2 Maven releases."
+      "authenticityStatus": "AUTHENTICITY_VERIFIED_MULTISOURCE_CORRESPONDENCE",
+      "closurePath": null,
+      "openPgpKey": {
+        "primaryFingerprint": "C7BE5BCC9FEC15518CFDA882B0F3710FA64900E7",
+        "signingFingerprint": "C7BE5BCC9FEC15518CFDA882B0F3710FA64900E7",
+        "keyMaterialLocator": "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xC7BE5BCC9FEC15518CFDA882B0F3710FA64900E7",
+        "identitySource": "https://keyserver.ubuntu.com/pks/lookup?op=index&search=0xC7BE5BCC9FEC15518CFDA882B0F3710FA64900E7",
+        "identityTrustBoundary": "SELF_CERTIFIED_UID_METADATA_ONLY_NOT_PUBLISHER_AUTHORIZATION"
+      },
+      "authenticityBasis": "Valid JAR/POM/source-JAR signatures and checksums plus exact upstream-source correspondence with every generated transformation enumerated."
     },
     {
       "coordinate": "com.google.errorprone:error_prone_annotations:2.41.0",
-      "verifiedAtUtc": "2026-08-12T08:31:09Z",
+      "verifiedAtUtc": "2026-08-12T10:09:05Z",
       "verificationTool": {
-        "artifactAndChecksum": "Windows PowerShell 5.1.19041.6456 Invoke-WebRequest/Get-FileHash plus CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py v0.3",
-        "detachedOpenPgp": "OpenJDK 17.0.10 with BouncyCastle bcpg/bcprov/bcutil 1.84",
-        "keyRetrieval": "Ubuntu keyserver HTTPS lookup",
-        "trustRule": "A successful signature and keyserver UID prove cryptographic consistency, not publisher identity; coordinate-specific upstream trust evidence is mandatory."
+        "artifactAndChecksum": "CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py --online: exact bytes/SHA-256 plus publisher SHA-256 or SHA-1",
+        "detachedOpenPgp": "OpenJDK 17.0.10 tools/OpenPgpDetachedSignatureVerifier.java with SHA-256-pinned BouncyCastle bcpg/bcprov/bcutil 1.83",
+        "keyRetrieval": "Ubuntu keyserver HTTPS full-fingerprint lookup; full primary and signing-subkey fingerprints are validated, never a short key ID",
+        "sourceCorrespondence": "Maven sources JAR SHA-256/signature plus byte-exact Git blob comparison against the recorded upstream commit; declared generated-source transformations are enumerated",
+        "trustRule": "A keyserver UID is identity metadata only. Verification requires either upstream publisher key binding or exact/multisource correspondence; no verification result grants Product/IP approval or dependency admission."
       },
       "licenseId": "Apache-2.0",
       "upstreamLicenseTextLocator": "https://raw.githubusercontent.com/google/error-prone/v2.41.0/COPYING",
@@ -314,7 +484,11 @@
         "detachedSignature": {
           "locator": "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.41.0/error_prone_annotations-2.41.0.jar.asc",
           "result": "CRYPTOGRAPHICALLY_VERIFIED",
-          "signerFingerprint": "EE0CA873074092F806F59B65D364ABAA39A47320"
+          "signerFingerprint": "EE0CA873074092F806F59B65D364ABAA39A47320",
+          "primaryKeyFingerprint": "EE0CA873074092F806F59B65D364ABAA39A47320",
+          "signatureCreatedUtc": "2025-07-24T15:34:02Z",
+          "hashAlgorithm": "SHA512",
+          "verifier": "tools/OpenPgpDetachedSignatureVerifier.java"
         }
       },
       "pom": {
@@ -328,7 +502,11 @@
         "detachedSignature": {
           "locator": "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.41.0/error_prone_annotations-2.41.0.pom.asc",
           "result": "CRYPTOGRAPHICALLY_VERIFIED",
-          "signerFingerprint": "EE0CA873074092F806F59B65D364ABAA39A47320"
+          "signerFingerprint": "EE0CA873074092F806F59B65D364ABAA39A47320",
+          "primaryKeyFingerprint": "EE0CA873074092F806F59B65D364ABAA39A47320",
+          "signatureCreatedUtc": "2025-07-24T15:34:02Z",
+          "hashAlgorithm": "SHA512",
+          "verifier": "tools/OpenPgpDetachedSignatureVerifier.java"
         }
       },
       "signerIdentity": "Liam Miller-Cushon (Error Prone releases) <cushon@google.com>",
@@ -341,17 +519,26 @@
         "evidenceLocator": "https://github.com/google/error-prone/releases/tag/v2.41.0",
         "status": "CONFIRMED_BY_TAG_AND_UPSTREAM_KEY_FILE"
       },
-      "authenticityStatus": "VERIFIED_FOR_PACKAGE_REVIEW",
-      "closurePath": null
+      "authenticityStatus": "AUTHENTICITY_VERIFIED_PUBLISHER_BOUND_SIGNATURE",
+      "closurePath": null,
+      "openPgpKey": {
+        "primaryFingerprint": "EE0CA873074092F806F59B65D364ABAA39A47320",
+        "signingFingerprint": "EE0CA873074092F806F59B65D364ABAA39A47320",
+        "keyMaterialLocator": "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xEE0CA873074092F806F59B65D364ABAA39A47320",
+        "identitySource": "https://keyserver.ubuntu.com/pks/lookup?op=index&search=0xEE0CA873074092F806F59B65D364ABAA39A47320",
+        "identityTrustBoundary": "SELF_CERTIFIED_UID_METADATA_ONLY_NOT_PUBLISHER_AUTHORIZATION"
+      },
+      "authenticityBasis": "Full-fingerprint detached signatures are bound by coordinate-specific upstream publisher documentation or tagged key publication."
     },
     {
       "coordinate": "org.jetbrains.kotlin:kotlin-stdlib:1.7.10",
-      "verifiedAtUtc": "2026-08-12T08:31:09Z",
+      "verifiedAtUtc": "2026-08-12T10:09:05Z",
       "verificationTool": {
-        "artifactAndChecksum": "Windows PowerShell 5.1.19041.6456 Invoke-WebRequest/Get-FileHash plus CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py v0.3",
-        "detachedOpenPgp": "OpenJDK 17.0.10 with BouncyCastle bcpg/bcprov/bcutil 1.84",
-        "keyRetrieval": "Ubuntu keyserver HTTPS lookup",
-        "trustRule": "A successful signature and keyserver UID prove cryptographic consistency, not publisher identity; coordinate-specific upstream trust evidence is mandatory."
+        "artifactAndChecksum": "CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py --online: exact bytes/SHA-256 plus publisher SHA-256 or SHA-1",
+        "detachedOpenPgp": "OpenJDK 17.0.10 tools/OpenPgpDetachedSignatureVerifier.java with SHA-256-pinned BouncyCastle bcpg/bcprov/bcutil 1.83",
+        "keyRetrieval": "Ubuntu keyserver HTTPS full-fingerprint lookup; full primary and signing-subkey fingerprints are validated, never a short key ID",
+        "sourceCorrespondence": "Maven sources JAR SHA-256/signature plus byte-exact Git blob comparison against the recorded upstream commit; declared generated-source transformations are enumerated",
+        "trustRule": "A keyserver UID is identity metadata only. Verification requires either upstream publisher key binding or exact/multisource correspondence; no verification result grants Product/IP approval or dependency admission."
       },
       "licenseId": "Apache-2.0",
       "upstreamLicenseTextLocator": "https://raw.githubusercontent.com/JetBrains/kotlin/v1.7.10/license/LICENSE.txt",
@@ -378,7 +565,11 @@
         "detachedSignature": {
           "locator": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.7.10/kotlin-stdlib-1.7.10.jar.asc",
           "result": "CRYPTOGRAPHICALLY_VERIFIED",
-          "signerFingerprint": "6F538074CCEBF35F28AF9B066A0975F8B1127B83"
+          "signerFingerprint": "6F538074CCEBF35F28AF9B066A0975F8B1127B83",
+          "primaryKeyFingerprint": "2FBA29D08D2E25EE84C132C30729A0AFF8999A87",
+          "signatureCreatedUtc": "2022-07-07T09:00:10Z",
+          "hashAlgorithm": "SHA512",
+          "verifier": "tools/OpenPgpDetachedSignatureVerifier.java"
         }
       },
       "pom": {
@@ -392,30 +583,63 @@
         "detachedSignature": {
           "locator": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.7.10/kotlin-stdlib-1.7.10.pom.asc",
           "result": "CRYPTOGRAPHICALLY_VERIFIED",
-          "signerFingerprint": "6F538074CCEBF35F28AF9B066A0975F8B1127B83"
+          "signerFingerprint": "6F538074CCEBF35F28AF9B066A0975F8B1127B83",
+          "primaryKeyFingerprint": "2FBA29D08D2E25EE84C132C30729A0AFF8999A87",
+          "signatureCreatedUtc": "2022-07-07T09:00:10Z",
+          "hashAlgorithm": "SHA512",
+          "verifier": "tools/OpenPgpDetachedSignatureVerifier.java"
         }
       },
       "signerIdentity": "Kotlin Release <kt-a@jetbrains.com>",
       "signerTrustSource": null,
-      "signerTrustStatus": "UNCONFIRMED_BY_COORDINATE_SPECIFIC_UPSTREAM_KEY_PUBLICATION",
+      "signerTrustStatus": "NOT_CLAIMED_SOURCE_CORRESPONDENCE_ROUTE_USED",
       "sourceCorrespondence": {
         "repository": "https://github.com/JetBrains/kotlin",
         "tagOrRelease": "v1.7.10",
         "commit": "ea836fd46a1fef07d77c96f9d7e8d7807f793453",
         "evidenceLocator": "https://github.com/JetBrains/kotlin/releases/tag/v1.7.10",
-        "status": "TAG_AND_COMMIT_CONFIRMED_BUILD_REPRODUCIBILITY_NOT_PROVEN"
+        "sourceJar": {
+          "locator": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.7.10/kotlin-stdlib-1.7.10-sources.jar",
+          "sha256": "2176274ecf922fffdd9a7eeec18f5e3a69f7ed53dadb5add3c9a706560ac9d7f",
+          "bytes": 220619,
+          "detachedSignatureLocator": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.7.10/kotlin-stdlib-1.7.10-sources.jar.asc",
+          "signatureResult": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signatureCreatedUtc": "2022-07-07T09:00:11Z"
+        },
+        "comparison": {
+          "method": "SHA-1 Git blob identity against the exact v1.7.10 libraries and core trees",
+          "sourceEntries": 177,
+          "exactCommitBlobMatches": 177,
+          "declaredGeneratedEntries": 0,
+          "unexplainedEntries": 0
+        },
+        "status": "EXACT_TAG_SOURCE_MULTISOURCE_CORRESPONDENCE",
+        "reproducibleBuild": {
+          "byteForByteBinaryRebuildAttempted": false,
+          "status": "NOT_CLAIMED",
+          "limitation": "No byte-for-byte binary rebuild was attempted. Classification relies on cryptographically bound source JAR plus exact upstream-source correspondence and recorded release/build metadata."
+        }
       },
-      "authenticityStatus": "AUTHENTICITY_PENDING",
-      "closurePath": "Obtain a JetBrains/Kotlin upstream key publication binding fingerprint 6F538074CCEBF35F28AF9B066A0975F8B1127B83 to Maven releases."
+      "authenticityStatus": "AUTHENTICITY_VERIFIED_MULTISOURCE_CORRESPONDENCE",
+      "closurePath": null,
+      "openPgpKey": {
+        "primaryFingerprint": "2FBA29D08D2E25EE84C132C30729A0AFF8999A87",
+        "signingFingerprint": "6F538074CCEBF35F28AF9B066A0975F8B1127B83",
+        "keyMaterialLocator": "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x6F538074CCEBF35F28AF9B066A0975F8B1127B83",
+        "identitySource": "https://keyserver.ubuntu.com/pks/lookup?op=index&search=0x2FBA29D08D2E25EE84C132C30729A0AFF8999A87",
+        "identityTrustBoundary": "SELF_CERTIFIED_UID_METADATA_ONLY_NOT_PUBLISHER_AUTHORIZATION"
+      },
+      "authenticityBasis": "Valid JAR/POM/source-JAR signatures and checksums plus exact upstream-source correspondence with every generated transformation enumerated."
     },
     {
       "coordinate": "org.jetbrains.kotlin:kotlin-stdlib-common:1.7.10",
-      "verifiedAtUtc": "2026-08-12T08:31:09Z",
+      "verifiedAtUtc": "2026-08-12T10:09:05Z",
       "verificationTool": {
-        "artifactAndChecksum": "Windows PowerShell 5.1.19041.6456 Invoke-WebRequest/Get-FileHash plus CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py v0.3",
-        "detachedOpenPgp": "OpenJDK 17.0.10 with BouncyCastle bcpg/bcprov/bcutil 1.84",
-        "keyRetrieval": "Ubuntu keyserver HTTPS lookup",
-        "trustRule": "A successful signature and keyserver UID prove cryptographic consistency, not publisher identity; coordinate-specific upstream trust evidence is mandatory."
+        "artifactAndChecksum": "CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py --online: exact bytes/SHA-256 plus publisher SHA-256 or SHA-1",
+        "detachedOpenPgp": "OpenJDK 17.0.10 tools/OpenPgpDetachedSignatureVerifier.java with SHA-256-pinned BouncyCastle bcpg/bcprov/bcutil 1.83",
+        "keyRetrieval": "Ubuntu keyserver HTTPS full-fingerprint lookup; full primary and signing-subkey fingerprints are validated, never a short key ID",
+        "sourceCorrespondence": "Maven sources JAR SHA-256/signature plus byte-exact Git blob comparison against the recorded upstream commit; declared generated-source transformations are enumerated",
+        "trustRule": "A keyserver UID is identity metadata only. Verification requires either upstream publisher key binding or exact/multisource correspondence; no verification result grants Product/IP approval or dependency admission."
       },
       "licenseId": "Apache-2.0",
       "upstreamLicenseTextLocator": "https://raw.githubusercontent.com/JetBrains/kotlin/v1.7.10/license/LICENSE.txt",
@@ -442,7 +666,11 @@
         "detachedSignature": {
           "locator": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.7.10/kotlin-stdlib-common-1.7.10.jar.asc",
           "result": "CRYPTOGRAPHICALLY_VERIFIED",
-          "signerFingerprint": "6F538074CCEBF35F28AF9B066A0975F8B1127B83"
+          "signerFingerprint": "6F538074CCEBF35F28AF9B066A0975F8B1127B83",
+          "primaryKeyFingerprint": "2FBA29D08D2E25EE84C132C30729A0AFF8999A87",
+          "signatureCreatedUtc": "2022-07-07T08:48:21Z",
+          "hashAlgorithm": "SHA512",
+          "verifier": "tools/OpenPgpDetachedSignatureVerifier.java"
         }
       },
       "pom": {
@@ -456,30 +684,66 @@
         "detachedSignature": {
           "locator": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.7.10/kotlin-stdlib-common-1.7.10.pom.asc",
           "result": "CRYPTOGRAPHICALLY_VERIFIED",
-          "signerFingerprint": "6F538074CCEBF35F28AF9B066A0975F8B1127B83"
+          "signerFingerprint": "6F538074CCEBF35F28AF9B066A0975F8B1127B83",
+          "primaryKeyFingerprint": "2FBA29D08D2E25EE84C132C30729A0AFF8999A87",
+          "signatureCreatedUtc": "2022-07-07T08:48:19Z",
+          "hashAlgorithm": "SHA512",
+          "verifier": "tools/OpenPgpDetachedSignatureVerifier.java"
         }
       },
       "signerIdentity": "Kotlin Release <kt-a@jetbrains.com>",
       "signerTrustSource": null,
-      "signerTrustStatus": "UNCONFIRMED_BY_COORDINATE_SPECIFIC_UPSTREAM_KEY_PUBLICATION",
+      "signerTrustStatus": "NOT_CLAIMED_SOURCE_CORRESPONDENCE_ROUTE_USED",
       "sourceCorrespondence": {
         "repository": "https://github.com/JetBrains/kotlin",
         "tagOrRelease": "v1.7.10",
         "commit": "ea836fd46a1fef07d77c96f9d7e8d7807f793453",
         "evidenceLocator": "https://github.com/JetBrains/kotlin/releases/tag/v1.7.10",
-        "status": "TAG_AND_COMMIT_CONFIRMED_BUILD_REPRODUCIBILITY_NOT_PROVEN"
+        "sourceJar": {
+          "locator": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.7.10/kotlin-stdlib-common-1.7.10-sources.jar",
+          "sha256": "a00a41d8900d12e097a9227454c593c843069def0e52c788a658f24fc3dccf2e",
+          "bytes": 299798,
+          "detachedSignatureLocator": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.7.10/kotlin-stdlib-common-1.7.10-sources.jar.asc",
+          "signatureResult": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signatureCreatedUtc": "2022-07-07T08:48:20Z"
+        },
+        "comparison": {
+          "method": "SHA-1 Git blob identity against the exact v1.7.10 libraries and core trees",
+          "sourceEntries": 146,
+          "exactCommitBlobMatches": 145,
+          "declaredGeneratedEntries": 1,
+          "generatedBreakdown": {
+            "KotlinVersionPatch255To10DeclaredBuildSubstitution": 1
+          },
+          "unexplainedEntries": 0
+        },
+        "status": "EXACT_TAG_BLOBS_PLUS_DECLARED_VERSION_SUBSTITUTION_MULTISOURCE_CORRESPONDENCE",
+        "reproducibleBuild": {
+          "byteForByteBinaryRebuildAttempted": false,
+          "status": "NOT_CLAIMED",
+          "limitation": "No byte-for-byte binary rebuild was attempted. Classification relies on cryptographically bound source JAR plus exact upstream-source correspondence and recorded release/build metadata."
+        }
       },
-      "authenticityStatus": "AUTHENTICITY_PENDING",
-      "closurePath": "Obtain a JetBrains/Kotlin upstream key publication binding fingerprint 6F538074CCEBF35F28AF9B066A0975F8B1127B83 to Maven releases."
+      "authenticityStatus": "AUTHENTICITY_VERIFIED_MULTISOURCE_CORRESPONDENCE",
+      "closurePath": null,
+      "openPgpKey": {
+        "primaryFingerprint": "2FBA29D08D2E25EE84C132C30729A0AFF8999A87",
+        "signingFingerprint": "6F538074CCEBF35F28AF9B066A0975F8B1127B83",
+        "keyMaterialLocator": "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x6F538074CCEBF35F28AF9B066A0975F8B1127B83",
+        "identitySource": "https://keyserver.ubuntu.com/pks/lookup?op=index&search=0x2FBA29D08D2E25EE84C132C30729A0AFF8999A87",
+        "identityTrustBoundary": "SELF_CERTIFIED_UID_METADATA_ONLY_NOT_PUBLISHER_AUTHORIZATION"
+      },
+      "authenticityBasis": "Valid JAR/POM/source-JAR signatures and checksums plus exact upstream-source correspondence with every generated transformation enumerated."
     },
     {
       "coordinate": "org.jetbrains:annotations:13.0",
-      "verifiedAtUtc": "2026-08-12T08:31:09Z",
+      "verifiedAtUtc": "2026-08-12T10:09:05Z",
       "verificationTool": {
-        "artifactAndChecksum": "Windows PowerShell 5.1.19041.6456 Invoke-WebRequest/Get-FileHash plus CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py v0.3",
-        "detachedOpenPgp": "OpenJDK 17.0.10 with BouncyCastle bcpg/bcprov/bcutil 1.84",
-        "keyRetrieval": "Ubuntu keyserver HTTPS lookup",
-        "trustRule": "A successful signature and keyserver UID prove cryptographic consistency, not publisher identity; coordinate-specific upstream trust evidence is mandatory."
+        "artifactAndChecksum": "CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py --online: exact bytes/SHA-256 plus publisher SHA-256 or SHA-1",
+        "detachedOpenPgp": "OpenJDK 17.0.10 tools/OpenPgpDetachedSignatureVerifier.java with SHA-256-pinned BouncyCastle bcpg/bcprov/bcutil 1.83",
+        "keyRetrieval": "Ubuntu keyserver HTTPS full-fingerprint lookup; full primary and signing-subkey fingerprints are validated, never a short key ID",
+        "sourceCorrespondence": "Maven sources JAR SHA-256/signature plus byte-exact Git blob comparison against the recorded upstream commit; declared generated-source transformations are enumerated",
+        "trustRule": "A keyserver UID is identity metadata only. Verification requires either upstream publisher key binding or exact/multisource correspondence; no verification result grants Product/IP approval or dependency admission."
       },
       "licenseId": "Apache-2.0",
       "upstreamLicenseTextLocator": "https://raw.githubusercontent.com/JetBrains/java-annotations/master/LICENSE.txt",
@@ -506,7 +770,11 @@
         "detachedSignature": {
           "locator": "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0.jar.asc",
           "result": "CRYPTOGRAPHICALLY_VERIFIED",
-          "signerFingerprint": "2E3A1AFFE42B5F53AF19F780BCF4173966770193"
+          "signerFingerprint": "2E3A1AFFE42B5F53AF19F780BCF4173966770193",
+          "primaryKeyFingerprint": "2E3A1AFFE42B5F53AF19F780BCF4173966770193",
+          "signatureCreatedUtc": "2013-12-17T12:10:40Z",
+          "hashAlgorithm": "SHA1",
+          "verifier": "tools/OpenPgpDetachedSignatureVerifier.java"
         }
       },
       "pom": {
@@ -520,21 +788,55 @@
         "detachedSignature": {
           "locator": "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0.pom.asc",
           "result": "CRYPTOGRAPHICALLY_VERIFIED",
-          "signerFingerprint": "2E3A1AFFE42B5F53AF19F780BCF4173966770193"
+          "signerFingerprint": "2E3A1AFFE42B5F53AF19F780BCF4173966770193",
+          "primaryKeyFingerprint": "2E3A1AFFE42B5F53AF19F780BCF4173966770193",
+          "signatureCreatedUtc": "2013-12-17T12:10:40Z",
+          "hashAlgorithm": "SHA1",
+          "verifier": "tools/OpenPgpDetachedSignatureVerifier.java"
         }
       },
       "signerIdentity": "IntelliJ IDEA Sign Key <intellij-idea-sign-key-noreply@jetbrains.com>",
       "signerTrustSource": null,
-      "signerTrustStatus": "UNCONFIRMED_BY_COORDINATE_SPECIFIC_UPSTREAM_KEY_PUBLICATION",
+      "signerTrustStatus": "NOT_CLAIMED_SOURCE_CORRESPONDENCE_ROUTE_USED",
       "sourceCorrespondence": {
         "repository": "https://github.com/JetBrains/intellij-community",
-        "tagOrRelease": null,
-        "commit": null,
-        "evidenceLocator": "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0.pom",
-        "status": "AUTHENTICITY_PENDING_EXACT_SOURCE_TAG_UNRESOLVED"
+        "tagOrRelease": "historical source snapshot immediately preceding Maven publication",
+        "commit": "f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c",
+        "evidenceLocator": "https://github.com/JetBrains/intellij-community/commit/f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c",
+        "sourceTree": "37dcd9bae242dc44ebc6b06f5d841003b3e03423",
+        "sourceJar": {
+          "locator": "https://repo.maven.apache.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0-sources.jar",
+          "sha256": "42a5e144b8e81d50d6913d1007b695e62e614705268d8cf9f13dbdc478c2c68e",
+          "bytes": 17566,
+          "detachedSignatureLocator": "https://repo.maven.apache.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0-sources.jar.asc",
+          "signatureResult": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signatureCreatedUtc": "2013-12-17T12:10:40Z"
+        },
+        "comparison": {
+          "method": "SHA-1 Git blob identity over every Java source entry",
+          "sourceEntries": 16,
+          "exactCommitBlobMatches": 16,
+          "declaredGeneratedEntries": 0,
+          "unexplainedEntries": 0,
+          "buildPathBinding": "Published POM copies platform/annotations/src and records GPG keyname 66770193; the short suffix is corroboration only, while crypto verification enforces the full 40-hex fingerprint."
+        },
+        "status": "EXACT_HISTORICAL_SOURCE_MULTISOURCE_CORRESPONDENCE",
+        "reproducibleBuild": {
+          "byteForByteBinaryRebuildAttempted": false,
+          "status": "NOT_CLAIMED",
+          "limitation": "No byte-for-byte binary rebuild was attempted. Classification relies on cryptographically bound source JAR plus exact upstream-source correspondence and recorded release/build metadata."
+        }
       },
-      "authenticityStatus": "AUTHENTICITY_PENDING",
-      "closurePath": "Establish the exact 13.0 source tag/commit and an upstream JetBrains binding for fingerprint 2E3A1AFFE42B5F53AF19F780BCF4173966770193."
+      "authenticityStatus": "AUTHENTICITY_VERIFIED_MULTISOURCE_CORRESPONDENCE",
+      "closurePath": null,
+      "openPgpKey": {
+        "primaryFingerprint": "2E3A1AFFE42B5F53AF19F780BCF4173966770193",
+        "signingFingerprint": "2E3A1AFFE42B5F53AF19F780BCF4173966770193",
+        "keyMaterialLocator": "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2E3A1AFFE42B5F53AF19F780BCF4173966770193",
+        "identitySource": "https://keyserver.ubuntu.com/pks/lookup?op=index&search=0x2E3A1AFFE42B5F53AF19F780BCF4173966770193",
+        "identityTrustBoundary": "SELF_CERTIFIED_UID_METADATA_ONLY_NOT_PUBLISHER_AUTHORIZATION"
+      },
+      "authenticityBasis": "Valid JAR/POM/source-JAR signatures and checksums plus exact upstream-source correspondence with every generated transformation enumerated."
     }
   ],
   "approvalBoundary": {
@@ -545,6 +847,12 @@
     "productionLegalApproved": false,
     "productionSecurityApproved": false,
     "dependencyAdmission": false,
-    "productionAdmission": false
-  }
+    "productionAdmission": false,
+    "productIpApprovalAllowedWhileLicenseConflict": false,
+    "blockers": [
+      "JSR305_PUBLISHED_POM_VS_EXACT_RELEASE_SOURCE_LICENSE_CONFLICT",
+      "INDEPENDENT_STAGE0_PRODUCT_IP_FINAL_REVIEW_NOT_COMPLETED"
+    ]
+  },
+  "verificationRecordLocator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-verification-2026-08-12.md"
 }

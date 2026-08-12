@@ -59,9 +59,15 @@ def main() -> int:
     require(bool(approvals["approvedReviewer"]) and bool(approvals["approvedOn"]), "Product/IP approval identity/date absent")
     require(bool(approvals["accountableIndependentEngineeringSecurityReviewer"]), "Accountable recovery Engineering/Security reviewer absent")
     require(approvals["currentCodexReviewClaimedFormallyIndependent"] is False, "Codex remediation cannot satisfy independent review")
-    require(authenticity["overallStatus"] == "AUTHENTICITY_VERIFIED_FOR_PRODUCT_IP_APPROVAL", "Supply-chain authenticity remains pending")
-    require(all(component["authenticityStatus"] == "VERIFIED_FOR_PACKAGE_REVIEW" for component in authenticity["components"]), "At least one coordinate remains authenticity-pending")
+    require(authenticity["overallStatus"] == "AUTHENTICITY_VERIFIED_FOR_PRODUCT_IP_APPROVAL", "Supply-chain authenticity/license package is not cleared for Product/IP approval")
+    verified_authenticity_states = {
+        "AUTHENTICITY_VERIFIED_PUBLISHER_BOUND_SIGNATURE",
+        "AUTHENTICITY_VERIFIED_EXACT_REPRODUCIBLE_SOURCE",
+        "AUTHENTICITY_VERIFIED_MULTISOURCE_CORRESPONDENCE",
+    }
+    require(all(component["authenticityStatus"] in verified_authenticity_states for component in authenticity["components"]), "At least one coordinate is not authenticity-verified")
     require(authenticity["approvalBoundary"]["productIpFinalApproval"] is True, "Authenticity evidence lacks Product/IP approval linkage")
+    require(authenticity["approvalBoundary"].get("productIpApprovalAllowedWhileLicenseConflict") is False and not authenticity["approvalBoundary"].get("blockers"), "License conflict or other Product/IP blocker remains")
     require(license_notice["evaluationApproved"] is True, "Exact Stage 0 Product/IP evaluation approval absent")
 
     product_ip = roles["stage0ProductIp"]

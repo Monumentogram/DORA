@@ -2,14 +2,16 @@
   "schemaVersion": 2,
   "pocId": "POC-RECOVERY-001",
   "generatedAtUtc": "2026-08-11T21:31:21.7154872Z",
-  "inventoryStatus": "VERIFIED_PUBLISHER_CLOSURE_AUTHENTICITY_PENDING_PACKAGE_REVIEW_ONLY",
+  "inventoryStatus": "VERIFIED_PUBLISHER_CLOSURE_AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PACKAGE_REVIEW_ONLY",
   "authenticityEvidence": {
     "locator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json",
-    "status": "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED",
-    "verifiedAtUtc": "2026-08-12T08:31:09Z",
+    "status": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED",
+    "verifiedAtUtc": "2026-08-12T10:09:05Z",
     "publisherChecksumsMatched": 16,
     "detachedSignaturesCryptographicallyVerified": 16,
-    "coordinatesWithUnconfirmedSignerTrustOrSourceCorrespondence": 6
+    "coordinatesAuthenticityVerified": 8,
+    "coordinatesAuthenticityPending": 0,
+    "coordinatesWithLicenseConflict": 1
   },
   "evaluationPermission": "STAGE0_PACKAGE_PREPARATION_ONLY",
   "dependencyAdmission": false,

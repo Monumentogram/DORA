@@ -2,7 +2,7 @@
   "schemaVersion": 3,
   "pocId": "POC-RECOVERY-001",
   "assessedOn": "2026-08-12",
-  "status": "BLOCKED_REMEDIATED_PROTOCOL_V0_3_REVIEW_AUTHENTICITY_AND_IMPLEMENTATION_PENDING",
+  "status": "BLOCKED_REMEDIATED_PROTOCOL_V0_3_LICENSE_PRODUCT_IP_REVIEW_AND_IMPLEMENTATION_PENDING",
   "executionAllowed": false,
   "implementationAllowedByThisPackage": false,
   "measuredExecutionAllowed": false,
@@ -33,7 +33,7 @@
     "reviewFindingsV01LedgerPresent": true,
     "reviewFindingsV02LedgerPresent": true,
     "dependencyIpAuthenticityV03Present": true,
-    "supplyChainAuthenticityStatus": "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED"
+    "supplyChainAuthenticityStatus": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED"
   },
   "approvals": {
     "productIpFinalApproved": false,
@@ -120,9 +120,9 @@
     {
       "id": "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY",
       "priority": "P0",
-      "status": "AUTHENTICITY_PENDING",
+      "status": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_OPEN",
       "owner": "Project owner / Stage 0 Product-IP",
-      "condition": "Close every coordinate-specific signer trust and source-correspondence path in dependency-ip-authenticity-v0.3.json; successful PGP/checksum verification alone does not authorize approval."
+      "condition": "All eight coordinate authenticity classifications are verified. Resolve the signed Maven POM Apache-2.0 versus exact release-source BSD-3-Clause conflict for com.google.code.findbugs:jsr305:3.0.2 and record independent Stage 0 Product/IP disposition; no approval or admission is implied."
     }
   ],
   "phaseA": {

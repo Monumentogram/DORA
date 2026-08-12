@@ -1,13 +1,15 @@
 # POC-RECOVERY-001 exact Stage 0 evaluation package review
 
-Status: **AUTHENTICITY PENDING — OWNER-REMEDIATED PROTOCOL v0.3 RE-REVIEW BLOCKED**\
+Status: **AUTHENTICITY VERIFIED — JSR305 LICENSE CONFLICT / PRODUCT-IP RE-REVIEW BLOCKED**\
 Prepared: 12 August 2026\
 Evaluation candidate: `com.google.crypto.tink:tink-android:1.23.0`\
 Execution allowed: **no**
 
 ## Review conclusion
 
-The supply-chain packet is more exact but remains `AUTHENTICITY_PENDING`; it is not approved for
+The supply-chain packet now verifies all eight coordinate authenticity classifications and closes
+F-06's evidence-completeness finding. An unresolved `jsr305:3.0.2` license conflict independently
+blocks Product/IP approval. The package is not approved for
 evaluation execution, dependency admission, redistribution or production. Protocol v0.2 at
 reviewed commit `70cf26125dbecbb347311ca0bb9ce1ad5c637e18` received `CHANGES_REQUIRED` findings
 F-01–F-06; owner-remediated protocol v0.3 requires repeat review. This document does not identify a
@@ -15,12 +17,14 @@ sanitized prior reviewer or claim formal independence for Codex.
 
 The exact root JAR/POM and seven external transitive coordinates are hashed and inventoried. The
 root is a Java JAR with no native/JNI entries and contains a shaded protobuf-java 4.33.6 runtime.
-All eight external POMs declare Apache-2.0; the embedded protobuf runtime uses BSD-3-Clause. Exact
-per-coordinate license text, copyright, NOTICE, signer and source-correspondence records are in
-`dependency-ip-authenticity-v0.3.json`. All 16 publisher checksums matched and all 16 detached
-OpenPGP signatures verified cryptographically. AndroidX and Error Prone have authoritative
-upstream signer trust; six coordinates remain pending because keyserver identity alone is not an
-upstream trust binding and/or exact source correspondence is unresolved.
+All eight signed published external POMs declare Apache-2.0; the embedded protobuf runtime uses
+BSD-3-Clause. However, the exact release-source POM/LICENSE corresponding byte-for-byte to the
+signed `jsr305:3.0.2` source JAR declares BSD-3-Clause, not Apache-2.0. Exact per-coordinate
+license text, copyright, NOTICE, full primary/signing fingerprints and source-correspondence
+records are in `dependency-ip-authenticity-v0.3.json`. All 16 publisher checksums matched and all
+16 detached OpenPGP signatures verified cryptographically over artifact bytes. AndroidX and Error
+Prone use publisher-bound signatures; the other six use signed source JARs plus exact upstream
+source correspondence. No coordinate remains `AUTHENTICITY_PENDING`.
 
 This absence does not waive future distribution obligations. If a dependency is ever admitted,
 the resolved APK graph must be rescanned and the applicable full license texts/attributions must be
@@ -38,8 +42,9 @@ provided in the distribution and license surface. Production Legal is unassigned
 | Shaded protobuf | 4.33.6; 540 entries; BSD-3-Clause |
 | Native/JNI/shared libraries | none in root or inventoried external JARs |
 | Publisher checksums | 16/16 JAR/POM checksum files matched |
-| Detached OpenPGP signatures | 16/16 cryptographically verified with BouncyCastle 1.84 |
-| Upstream signer trust | 2/8 confirmed; 6/8 `AUTHENTICITY_PENDING` |
+| Detached OpenPGP signatures | 16/16 cryptographically verified with SHA-256-pinned Bouncy Castle 1.83 and full primary/signing fingerprints |
+| Authenticity classification | 2/8 publisher-bound signatures; 6/8 exact multisource correspondence; 0 pending |
+| License conflict | signed published `jsr305:3.0.2` POM Apache-2.0 vs exact release-source POM/LICENSE BSD-3-Clause |
 | Gradle/runtime graph | not created; prohibited in this task |
 
 Because the repository pins Kotlin 2.2.10 while AndroidX annotation metadata declares Kotlin
@@ -98,7 +103,7 @@ recovery-only platform boundary does not admit a production schema or component.
 
 | Reviewer | Requested disposition | Current state |
 |---|---|---|
-| Project owner / Stage 0 Product/IP | close or reject each authenticity/source path, then approve/reject the exact v0.3 package | assigned; authenticity blocked; final approval fields null |
+| Project owner / Stage 0 Product/IP | obtain authoritative `jsr305:3.0.2` license clarification, accept a qualified-counsel compliance path, or keep/replace the coordinate outside any admitted graph; then approve/reject the exact v0.3 package | assigned; license conflict blocked; final approval fields null |
 | Distinct accountable recovery Engineering/Security | verify, reject or revise selected v0.3 construction/key/commit/recovery/barrier/fault protocol; later verify implementation evidence | unassigned, blocking; current Codex remediation not claimed independent |
 | Project owner / execution | after all other prerequisites, separately set `executionAllowed=true` for a named phase/commit | withheld |
 | Production Legal | production/redistribution assessment | unassigned; not required for package preparation, required before production |
