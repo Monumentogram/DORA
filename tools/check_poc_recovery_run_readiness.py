@@ -39,9 +39,11 @@ def complete_runtime_evidence(evidence: dict[str, Any]) -> bool:
 def validate_jsr305_exclusion_policy(
     readiness: dict[str, Any], analysis: dict[str, Any]
 ) -> bool:
+    require(readiness["schemaVersion"] == 4, "Recovery readiness schema is not current")
+    require(analysis["schemaVersion"] == 2, "JSR305 exclusion analysis schema is not current")
     require(
         analysis["status"]
-        == "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_PRODUCT_IP_DECISION_PENDING",
+        == "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_OWNER_PRODUCT_IP_POLICY_APPROVED",
         "JSR305 technical exclusion analysis is missing or stale",
     )
     require(
@@ -52,6 +54,13 @@ def validate_jsr305_exclusion_policy(
     analysis_policy = analysis["prospectivePolicy"]
     policy = readiness["dependencyExclusionPolicy"]
     require(policy["policyId"] == analysis_policy["policyId"] == JSR305_POLICY_ID, "JSR305 policy ID drift")
+    require(
+        policy["status"] == analysis_policy["status"] == "APPROVED_PROSPECTIVE_POLICY_ONLY"
+        and policy["productIpAccepted"] is True
+        and policy["acceptedBy"] == analysis_policy["acceptedBy"] == "Project owner"
+        and policy["acceptedOn"] == analysis_policy["acceptedOn"] == "2026-08-12",
+        "Owner/Product-IP prospective JSR305 policy disposition is absent or stale",
+    )
     require(
         policy["rootCoordinate"] == analysis_policy["rootCoordinate"]
         == "com.google.crypto.tink:tink-android:1.23.0",
@@ -79,14 +88,31 @@ def validate_jsr305_exclusion_policy(
         "JSR305 policy does not cover every resolvable configuration and consumer",
     )
     require(
+        policy["coveredConfigurationFamilies"]
+        == ["compile", "runtime", "benchmark", "test", "packaging"],
+        "JSR305 policy does not cover compile/runtime/benchmark/test/packaging configurations",
+    )
+    require(
         policy["exactNarrowR8RuleRequired"] is True
+        and policy["requiredR8Rules"] == JSR305_R8_RULES
         and analysis_policy["requiredR8Rules"] == JSR305_R8_RULES
+        and policy["broaderDontwarnAllowed"] is False
         and analysis_policy["broaderJavaxAnnotationDontwarnAllowed"] is False,
         "JSR305 exact narrow R8 rule policy drift",
     )
     require(
         policy["unresolvedR8MissingClassesAllowed"] is False,
         "Recovery readiness policy allows unresolved R8 missing classes",
+    )
+    require(
+        policy["independentModifierResolutionRequired"] is True
+        and policy["recurrenceBlocksImplementationVerificationAndExecution"] is True,
+        "Recovery readiness policy weakened the Modifier or fail-closed recurrence requirement",
+    )
+    require(
+        policy["underlyingArtifactLicenseConflictResolved"] is False
+        and policy["jsr305UseOrDistributionApproved"] is False,
+        "Recovery readiness policy overclaims JSR305 license/use approval",
     )
 
     report_locator = policy["futureResolvedGraphReportLocator"]
@@ -109,6 +135,10 @@ def validate_jsr305_exclusion_policy(
     require(isinstance(report["exactCommit"], str) and len(report["exactCommit"]) == 40, "Future recovery graph report lacks exact commit")
     require(report["allResolvableConfigurationsEnumerated"] is True, "Not every resolvable recovery configuration was enumerated")
     require(report["allRecoveryConsumersEnumerated"] is True, "Not every recovery consumer was enumerated")
+    require(
+        report["coveredConfigurationFamilies"] == policy["coveredConfigurationFamilies"],
+        "Future graph report lacks exact compile/runtime/benchmark/test/packaging coverage",
+    )
     require(isinstance(report["coveredModules"], list) and report["coveredModules"], "Future graph report covers no modules")
     configurations = report["configurations"]
     require(isinstance(configurations, list) and configurations, "Future graph report covers no configurations")
@@ -128,10 +158,23 @@ def validate_jsr305_exclusion_policy(
     require(report["jsr305ResolvedComponentCount"] == 0, "JSR305 resolved component count is nonzero")
     require(report["scopedExcludeVerified"] is True, "Scoped Tink JSR305 exclusion was not verified")
     shrinker = report["narrowR8Rule"]
-    require(shrinker["rules"] == JSR305_R8_RULES and shrinker["status"] == "PASSED", "Exact narrow JSR305 R8 rule was not verified")
+    require(
+        shrinker["rules"] == JSR305_R8_RULES
+        and shrinker["broaderDontwarnRules"] == []
+        and shrinker["status"] == "PASSED",
+        "Exact narrow JSR305 R8 rule was not verified or a broader dontwarn was used",
+    )
     require(report["nonMetricDebugBuildPassed"] is True, "Future non-metric debug build did not pass")
     require(report["nonMetricReleaseR8BuildPassed"] is True, "Future non-metric release/R8 build did not pass")
     require(report["unresolvedR8MissingClasses"] == [], "Future release/R8 report contains unresolved missing classes")
+    modifier = report["modifierResolution"]
+    require(
+        modifier["sourceArtifact"] == "com.google.errorprone:error_prone_annotations:2.41.0"
+        and modifier["missingClass"] == "javax.lang.model.element.Modifier"
+        and modifier["status"] == "RESOLVED_AND_VERIFIED"
+        and modifier["broadDontwarnUsed"] is False,
+        "Independent error_prone_annotations Modifier condition was not narrowly resolved and verified",
+    )
     require(report["packagedJsr305ClassDefinitionCount"] == 0, "Packaged output contains JSR305 class definitions")
     return True
 

@@ -30,6 +30,10 @@ LICENSE_PATH = EVIDENCE / "license-notice-inventory.json"
 AUTHENTICITY_PATH = EVIDENCE / "dependency-ip-authenticity-v0.3.json"
 JSR305_EXCLUSION_PATH = EVIDENCE / "jsr305-exclusion-analysis-2026-08-12.json"
 JSR305_CLASS_LIST_PATH = EVIDENCE / "jsr305-reference-classes-2026-08-12.txt"
+READINESS_PATH = EVIDENCE / "readiness.json"
+REVIEW_ROLES_PATH = EVIDENCE / "review-roles.json"
+OWNER_DECISION_PATH = ROOT / "docs" / "stage0" / "DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md"
+OWNER_DECISION_INPUT_HEAD = "eb312feb2a0d5e5b24b45fcd045bacca94e8c9da"
 MAVEN_NS = {"m": "http://maven.apache.org/POM/4.0.0"}
 USER_AGENT = "Dora-POC-RECOVERY-001-inventory-verifier/1.0"
 NATIVE_SUFFIXES = (".so", ".dll", ".dylib")
@@ -564,25 +568,30 @@ def validate_static(
     license_notice: dict[str, Any],
     authenticity: dict[str, Any],
     jsr305_exclusion: dict[str, Any],
+    readiness: dict[str, Any],
+    review_roles: dict[str, Any],
 ) -> None:
-    require(inventory["schemaVersion"] == 2, "Dependency inventory schema drift")
+    require(inventory["schemaVersion"] == 3, "Dependency inventory schema drift")
     require(inventory["rootCoordinate"] == "com.google.crypto.tink:tink-android:1.23.0", "Root coordinate drift")
     require(inventory["dependencyAdmission"] is False, "Inventory must not admit the dependency")
     require(inventory["runtimeGraphModified"] is False, "Inventory must not claim a runtime graph")
     require(inventory["prospectiveExclusionAnalysis"] == {
         "locator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.json",
-        "status": "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_PRODUCT_IP_DECISION_PENDING",
+        "status": "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_OWNER_PRODUCT_IP_POLICY_APPROVED",
         "publishedClosureStillIncludesJsr305": True,
         "futureProjectGraphClaimed": False,
         "recommendedTreatment": "A_CONDITIONED_COMPLETE_EXCLUSION",
         "requiredFutureResolvedJsr305ComponentCount": 0,
-        "productIpAccepted": False,
+        "productIpAccepted": True,
+        "acceptedBy": "Project owner",
+        "acceptedOn": "2026-08-12",
+        "acceptanceScope": "PROSPECTIVE_POLICY_AND_REVIEWED_GOVERNANCE_PACKAGE_ONLY",
     }, "Dependency inventory prospective JSR305 boundary drift")
     require(len(inventory["artifacts"]) == 8, "Expected eight published external coordinates")
     require(len(inventory["graphEdges"]) == 8, "Expected eight publisher dependency edges")
     require(all(artifact["jar"]["nativeEntries"] == 0 for artifact in inventory["artifacts"]), "Native entry recorded")
-    require(jsr305_exclusion["schemaVersion"] == 1 and jsr305_exclusion["pocId"] == "POC-RECOVERY-001", "JSR305 exclusion evidence identity drift")
-    require(jsr305_exclusion["status"] == "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_PRODUCT_IP_DECISION_PENDING", "JSR305 exclusion evidence status drift")
+    require(jsr305_exclusion["schemaVersion"] == 2 and jsr305_exclusion["pocId"] == "POC-RECOVERY-001", "JSR305 exclusion evidence identity drift")
+    require(jsr305_exclusion["status"] == "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_OWNER_PRODUCT_IP_POLICY_APPROVED", "JSR305 exclusion evidence/current policy status drift")
     upstream = jsr305_exclusion["upstreamDependencyReason"]
     require(upstream["directFromRootPom"] is True and upstream["viaCoordinate"] is None and upstream["mavenScope"] == "compile-default" and upstream["optional"] is False, "JSR305 direct compile/non-optional edge evidence drift")
     bytecode = jsr305_exclusion["bytecodeAndSourceEvidence"]
@@ -599,9 +608,36 @@ def validate_static(
     require(probes["kotlinConsumerCompile"]["exitCode"] == 0 and probes["jvmLoadAndReflection"]["failures"] == 0 and probes["d8"]["exitCode"] == 0, "JSR305 no-artifact compile/load/D8 probe drift")
     require(probes["r8BareExclusion"]["exitCode"] == 1 and probes["r8NarrowRule"]["exitCode"] == 0 and probes["r8NarrowRule"]["rules"] == exact_rules, "JSR305 R8 conditioned-exclusion evidence drift")
     policy = jsr305_exclusion["prospectivePolicy"]
-    require(policy["policyId"] == "REC-JSR305-EXCLUDE-001" and policy["forbiddenResolvedCoordinate"] == "com.google.code.findbugs:jsr305:3.0.2" and policy["requiredResolvedComponentCount"] == 0, "JSR305 zero-component policy drift")
+    require(policy["policyId"] == "REC-JSR305-EXCLUDE-001" and policy["status"] == "APPROVED_PROSPECTIVE_POLICY_ONLY" and policy["forbiddenResolvedCoordinate"] == "com.google.code.findbugs:jsr305:3.0.2" and policy["requiredResolvedComponentCount"] == 0, "JSR305 zero-component policy drift")
+    require(policy["acceptedBy"] == "Project owner" and policy["acceptedOn"] == "2026-08-12" and policy["decisionInputGovernanceHead"] == OWNER_DECISION_INPUT_HEAD, "JSR305 owner policy acceptance record drift")
     require(policy["compileOnlyOrAlternatePathToForbiddenCoordinateAllowed"] is False and policy["requiredR8Rules"] == exact_rules and policy["futureResolvedGraphReportPresent"] is False, "JSR305 prospective policy weakened")
-    require(jsr305_exclusion["licenseDisposition"]["underlyingArtifactConflictResolved"] is False and jsr305_exclusion["licenseDisposition"]["stage0ProductIpFinalApproval"] is False, "JSR305 evidence overclaims license/Product-IP closure")
+    license_disposition = jsr305_exclusion["licenseDisposition"]
+    require(license_disposition["underlyingArtifactConflictResolved"] is False and license_disposition["stage0ProductIpFinalApproval"] is False, "JSR305 evidence overclaims actual graph/Product-IP closure")
+    require(license_disposition["prospectivePolicyApproved"] is True and license_disposition["prospectivePolicyApprovedBy"] == "Project owner" and license_disposition["jsr305UseOrDistributionApproved"] is False and license_disposition["ownerDecisionRequired"] is False, "JSR305 scoped owner policy/license boundary drift")
+    current_policy = readiness["dependencyExclusionPolicy"]
+    require(readiness["schemaVersion"] == 4 and readiness["executionAllowed"] is False, "Current owner disposition/readiness boundary drift")
+    require(current_policy["policyId"] == policy["policyId"] == "REC-JSR305-EXCLUDE-001", "Current JSR305 owner policy identity drift")
+    require(current_policy["status"] == "APPROVED_PROSPECTIVE_POLICY_ONLY" and current_policy["productIpAccepted"] is True, "Owner/Product-IP prospective JSR305 policy approval is absent")
+    require(current_policy["acceptedBy"] == "Project owner" and current_policy["acceptedOn"] == "2026-08-12", "Owner/Product-IP prospective policy identity/date drift")
+    require(current_policy["rootCoordinate"] == policy["rootCoordinate"] == "com.google.crypto.tink:tink-android:1.23.0", "Current policy root coordinate drift")
+    require(current_policy["forbiddenResolvedCoordinate"] == policy["forbiddenResolvedCoordinate"] == "com.google.code.findbugs:jsr305:3.0.2", "Current policy excluded coordinate drift")
+    require(current_policy["requiredResolvedComponentCount"] == 0 and current_policy["compileOnlyOrAlternatePathAllowed"] is False, "Current policy no longer requires complete exclusion")
+    require(current_policy["coveredConfigurationFamilies"] == ["compile", "runtime", "benchmark", "test", "packaging"], "Current policy Gradle configuration coverage drift")
+    require(current_policy["requiredR8Rules"] == exact_rules and current_policy["broaderDontwarnAllowed"] is False, "Current policy exact R8 rules were weakened")
+    require(current_policy["unresolvedR8MissingClassesAllowed"] is False and current_policy["independentModifierResolutionRequired"] is True, "Current policy release R8/Modifier boundary drift")
+    require(current_policy["recurrenceBlocksImplementationVerificationAndExecution"] is True, "Current policy is not fail-closed on JSR305 recurrence")
+    require(current_policy["underlyingArtifactLicenseConflictResolved"] is False and current_policy["jsr305UseOrDistributionApproved"] is False, "Current policy overclaims JSR305 license/use approval")
+    require(current_policy["futureResolvedGraphReportPresent"] is False and not (ROOT / current_policy["futureResolvedGraphReportLocator"]).exists(), "Future resolved graph appeared without separate implementation scope")
+    require(review_roles["schemaVersion"] == 4, "Current review-role schema drift")
+    product_ip = review_roles["roles"]["stage0ProductIp"]
+    disposition = product_ip["approvedProspectiveDisposition"]
+    require(product_ip["status"] == "PROSPECTIVE_POLICY_AND_REVIEWED_GOVERNANCE_PACKAGE_APPROVED_ONLY" and product_ip["finalApproved"] is False, "Scoped Product/IP role disposition drift")
+    require(disposition["accepted"] is True and disposition["acceptedBy"] == "Project owner" and disposition["acceptedOn"] == "2026-08-12", "Scoped Product/IP acceptance record incomplete")
+    require(disposition["decisionInputGovernanceHead"] == OWNER_DECISION_INPUT_HEAD and disposition["conflictingArtifactTreatment"] == "EXCLUDED_TERMS_NOT_INTERPRETED" and disposition["jsr305UseOrDistributionApproved"] is False, "Scoped Product/IP conflict treatment drift")
+    owner_decision = OWNER_DECISION_PATH.read_text(encoding="utf-8")
+    require(OWNER_DECISION_INPUT_HEAD in owner_decision and all(rule in owner_decision for rule in exact_rules), "Owner decision lacks exact input HEAD or narrow R8 rules")
+    require(all(family in owner_decision for family in ("compile", "runtime", "benchmark", "test", "packaging")) and "fails closed" in owner_decision, "Owner decision lacks configuration coverage or fail-closed recurrence rule")
+    require("does not approve use or distribution of JSR-305" in owner_decision, "Owner decision overclaims JSR305 use/distribution approval")
     require(inventory["inventoryStatus"] == "VERIFIED_PUBLISHER_CLOSURE_AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PACKAGE_REVIEW_ONLY", "Inventory authenticity status drift")
     require(inventory["authenticityEvidence"]["locator"] == "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json", "Inventory authenticity locator drift")
     require(license_notice["schemaVersion"] == 3 and license_notice["reviewStatus"] == "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED", "License review status drift")
@@ -817,12 +853,14 @@ def main() -> int:
     license_notice = read_json(LICENSE_PATH)
     authenticity = read_json(AUTHENTICITY_PATH)
     jsr305_exclusion = read_json(JSR305_EXCLUSION_PATH)
-    validate_static(inventory, license_notice, authenticity, jsr305_exclusion)
+    readiness = read_json(READINESS_PATH)
+    review_roles = read_json(REVIEW_ROLES_PATH)
+    validate_static(inventory, license_notice, authenticity, jsr305_exclusion, readiness, review_roles)
     if args.online:
         verify_online(inventory, license_notice, authenticity, jsr305_exclusion)
         print("Verified 8 exact external JAR/POM coordinates online: artifact hashes, publisher checksums, full-fingerprint detached OpenPGP cryptography and identity metadata, signed source JARs for the six multisource coordinates, POM graph/licenses, no native payload, and exact Tink JSR305 annotation-only bytecode/source classification; temporary files removed")
     else:
-        print("POC-RECOVERY-001 v0.3 dependency/IP/authenticity static validation passed; authenticity verified, conditioned JSR305 exclusion evidence valid, underlying license conflict and Product/IP decision remain open (use --online for checksum and cryptographic signature revalidation)")
+        print("POC-RECOVERY-001 v0.3 dependency/IP/authenticity static validation passed; authenticity and conditioned JSR305 exclusion evidence are valid, owner/Stage 0 Product-IP approved only REC-JSR305-EXCLUDE-001 prospective policy, underlying artifact license terms remain uninterpreted and use/distribution unapproved (use --online for checksum and cryptographic signature revalidation)")
     return 0
 
 

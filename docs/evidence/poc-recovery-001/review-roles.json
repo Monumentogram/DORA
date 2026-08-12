@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "pocId": "POC-RECOVERY-001",
   "recordedOn": "2026-08-12",
   "roles": {
@@ -13,18 +13,31 @@
     "stage0ProductIp": {
       "role": "Stage 0 Product/IP reviewer",
       "reviewer": "Project owner",
-      "status": "ASSIGNED_FINAL_APPROVAL_PENDING_JSR305_EXCLUSION_DISPOSITION",
+      "status": "PROSPECTIVE_POLICY_AND_REVIEWED_GOVERNANCE_PACKAGE_APPROVED_ONLY",
       "finalApproved": false,
       "approvedReviewer": null,
       "approvedOn": null,
-      "pendingDisposition": {
+      "approvedProspectiveDisposition": {
         "policyId": "REC-JSR305-EXCLUDE-001",
         "analysisLocator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.md",
         "technicalRecommendation": "A_CONDITIONED_COMPLETE_EXCLUSION",
         "underlyingArtifactLicenseConflictResolved": false,
-        "accepted": false,
-        "acceptedBy": null,
-        "acceptedOn": null
+        "conflictingArtifactTreatment": "EXCLUDED_TERMS_NOT_INTERPRETED",
+        "jsr305UseOrDistributionApproved": false,
+        "accepted": true,
+        "acceptedBy": "Project owner",
+        "acceptedOn": "2026-08-12",
+        "decisionInputGovernanceHead": "eb312feb2a0d5e5b24b45fcd045bacca94e8c9da",
+        "ownerDecisionLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md",
+        "scope": "PROSPECTIVE_POLICY_AND_REVIEWED_GOVERNANCE_PACKAGE_FOR_FUTURE_EXACT_EXCLUDED_STAGE0_GRAPH_ONLY"
+      },
+      "futureExactGraphDisposition": {
+        "actualGraphApproved": false,
+        "dependencyAdmission": false,
+        "implementationAuthorized": false,
+        "executionAuthorized": false,
+        "separateImplementationScopeRequired": true,
+        "exactResolvedGraphEvidenceRequired": true
       },
       "authority": [
         "approve or reject exact Stage 0 evaluation scope",
@@ -69,7 +82,7 @@
       "status": "AUTHORIZATION_WITHHELD",
       "authorizedBy": null,
       "authorizedOn": null,
-      "precondition": "Product/IP has accepted an exact dependency disposition, package and independent Engineering/Security review are complete, the future graph proves zero forbidden jsr305 components under REC-JSR305-EXCLUDE-001, device preflights are reviewed, and the harness is separately implemented and safely verified.",
+      "precondition": "The prospective Product/IP policy is already accepted; repeat exact-HEAD package review and independent Engineering/Security review must complete, implementation must be separately authorized and safely verified, the future graph must prove zero forbidden jsr305 components under REC-JSR305-EXCLUDE-001, and device preflights must be reviewed.",
       "explicitLaterRecordRequired": true,
       "implicitAuthorizationAllowed": false
     },

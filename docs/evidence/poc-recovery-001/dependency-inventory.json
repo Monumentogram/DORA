@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "pocId": "POC-RECOVERY-001",
   "generatedAtUtc": "2026-08-11T21:31:21.7154872Z",
   "inventoryStatus": "VERIFIED_PUBLISHER_CLOSURE_AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PACKAGE_REVIEW_ONLY",
@@ -19,12 +19,15 @@
   "rootCoordinate": "com.google.crypto.tink:tink-android:1.23.0",
   "prospectiveExclusionAnalysis": {
     "locator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.json",
-    "status": "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_PRODUCT_IP_DECISION_PENDING",
+    "status": "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_OWNER_PRODUCT_IP_POLICY_APPROVED",
     "publishedClosureStillIncludesJsr305": true,
     "futureProjectGraphClaimed": false,
     "recommendedTreatment": "A_CONDITIONED_COMPLETE_EXCLUSION",
     "requiredFutureResolvedJsr305ComponentCount": 0,
-    "productIpAccepted": false
+    "productIpAccepted": true,
+    "acceptedBy": "Project owner",
+    "acceptedOn": "2026-08-12",
+    "acceptanceScope": "PROSPECTIVE_POLICY_AND_REVIEWED_GOVERNANCE_PACKAGE_ONLY"
   },
   "resolution": {
     "kind": "PUBLISHED_POM_AND_GRADLE_MODULE_METADATA_CLOSURE",

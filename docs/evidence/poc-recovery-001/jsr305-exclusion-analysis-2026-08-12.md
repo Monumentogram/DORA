@@ -1,6 +1,6 @@
 # POC-RECOVERY-001 — `jsr305:3.0.2` exclusion decision analysis
 
-Status: **TECHNICAL EXCLUSION PATH PROVEN WITH A NARROW R8 RULE — PRODUCT/IP DECISION PENDING**\
+Status: **TECHNICAL EXCLUSION PATH PROVEN — OWNER/STAGE 0 PRODUCT-IP PROSPECTIVE POLICY APPROVED**\
 Date: 12 August 2026\
 Exact root: `com.google.crypto.tink:tink-android:1.23.0`\
 Execution allowed: **no**
@@ -11,8 +11,9 @@ authorize implementation or execution.
 
 ## Decision summary
 
-Recommend **Option A, conditioned complete exclusion** for a later separately authorized recovery
-harness:
+The Project owner / Stage 0 Product-IP reviewer accepted **Option A, conditioned complete
+exclusion**, only as prospective policy `REC-JSR305-EXCLUDE-001` for a later separately authorized
+recovery harness:
 
 1. exclude only the `com.google.code.findbugs:jsr305` edge on the exact Tink declaration;
 2. require zero resolved `jsr305` components in every resolvable configuration of the isolated
@@ -166,20 +167,25 @@ classes; in particular, the separate `javax.lang.model.element.Modifier` observa
 waived by expanding `dontwarn`. `tools/check_poc_recovery_run_readiness.py` fails closed on a
 present nonconforming report and cannot pass while the report is absent.
 
-## Copyable owner disposition if Option A is accepted
+## Recorded owner disposition
 
-> For POC-RECOVERY-001 Stage 0 evaluation only, I accept proposed policy
+> For POC-RECOVERY-001 Stage 0 evaluation only, I approve policy
 > REC-JSR305-EXCLUDE-001: a future separately scoped harness may declare exact
-> `tink-android:1.23.0` only with a Tink-local exclusion of
-> `com.google.code.findbugs:jsr305`, zero resolved JSR-305 components in every covered
-> configuration, and the exact three narrow R8 `-dontwarn` rules recorded in
-> `jsr305-exclusion-analysis-2026-08-12.md`. This treats the conflicted artifact as excluded; it
-> does not decide whether Apache-2.0 or BSD-3-Clause governs it and does not approve that artifact.
-> Product/IP approval remains limited to the exact excluded Stage 0 graph. This decision does not
-> admit Tink to production, authorize redistribution, assign Production Legal/Security, authorize
-> implementation by itself, or change `executionAllowed=false`. Exact graph/build/package evidence,
-> including an R8 release build with no unresolved missing classes, accountable
-> Engineering/Security review and a later separate execution authorization remain mandatory.
+> `com.google.crypto.tink:tink-android:1.23.0` only with a Tink-local exclusion of exact
+> `com.google.code.findbugs:jsr305:3.0.2`, zero resolved JSR-305 components in every covered
+> compile/runtime/benchmark/test/packaging configuration, and only the exact three narrow R8
+> `-dontwarn` rules recorded above. Broader suppression is forbidden; any recurrence fails closed
+> for implementation verification and execution. This treats the conflicted artifact as excluded;
+> it does not decide whether Apache-2.0 or BSD-3-Clause governs it and does not approve its use or
+> distribution. Approval remains limited to the prospective policy and reviewed governance package
+> for a future exact excluded Stage 0 graph. This decision does not admit Tink to production,
+> authorize redistribution, assign Production Legal/Security, authorize implementation by itself,
+> or change `executionAllowed=false`. Exact graph evidence and a release R8 build with no unresolved
+> missing classes remain mandatory; any `javax.lang.model.element.Modifier` condition from
+> `error_prone_annotations:2.41.0` must be resolved separately without a broad `dontwarn`, followed
+> by accountable Engineering/Security review and a later separate execution authorization.
 
-Until the Project owner records that disposition (or selects D/E), the Product/IP gate remains
-pending and no implementation or execution may start.
+The disposition is recorded in
+`docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md` against decision-input governance HEAD
+`eb312feb2a0d5e5b24b45fcd045bacca94e8c9da`. It approves neither an actual graph nor implementation
+or execution; all later fail-closed gates remain.

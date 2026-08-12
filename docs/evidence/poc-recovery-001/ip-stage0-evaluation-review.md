@@ -1,6 +1,6 @@
 # POC-RECOVERY-001 exact Stage 0 evaluation package review
 
-Status: **AUTHENTICITY VERIFIED — JSR305 EXCLUSION PATH PROVEN / PRODUCT-IP DECISION BLOCKED**\
+Status: **AUTHENTICITY VERIFIED — PROSPECTIVE JSR305 EXCLUSION POLICY APPROVED / IMPLEMENTATION AND EXECUTION BLOCKED**\
 Prepared: 12 August 2026\
 Evaluation candidate: `com.google.crypto.tink:tink-android:1.23.0`\
 Execution allowed: **no**
@@ -10,10 +10,13 @@ Execution allowed: **no**
 The supply-chain packet verifies all eight publisher-closure coordinate authenticity
 classifications and closes F-06's evidence-completeness finding. The exact
 `jsr305:3.0.2` license conflict remains unresolved, while a separate bytecode/compiler/D8/R8
-analysis proves a conditioned path that keeps the artifact out of a future graph. Project-owner /
-Stage 0 Product/IP acceptance of that avoidance treatment is still pending. The package is not approved for
-evaluation execution, dependency admission, redistribution or production. Protocol v0.2 at
-reviewed commit `70cf26125dbecbb347311ca0bb9ce1ad5c637e18` received `CHANGES_REQUIRED` findings
+analysis proves a conditioned path that keeps the artifact out of a future graph. At input
+governance HEAD `eb312feb2a0d5e5b24b45fcd045bacca94e8c9da`, the Project owner acting as Stage 0
+Product/IP reviewer approved only prospective policy `REC-JSR305-EXCLUDE-001` and the reviewed
+governance package for a future exact excluded Stage 0 graph. The package is not approved for
+implementation, evaluation execution, dependency admission, redistribution or production.
+Protocol v0.2 at reviewed commit `70cf26125dbecbb347311ca0bb9ce1ad5c637e18` received
+`CHANGES_REQUIRED` findings
 F-01–F-06; owner-remediated protocol v0.3 requires repeat review. This document does not identify a
 sanitized prior reviewer or claim formal independence for Codex.
 
@@ -77,11 +80,33 @@ R8 program inputs, the three-rule probe emits no JSR-305 missing class but fails
 and release build must resolve any such independent condition separately and report no unresolved
 missing classes; broader `dontwarn` is not an accepted remediation.
 
-The recommendation is conditioned Option A. This is technical avoidance, not an interpretation of
-the conflicting terms. `compileOnly` still resolves and uses the disputed artifact and therefore
-does not close the governance issue. No vetted binary-compatible replacement exists in the reviewed
-closure. Retaining the artifact and seeking Legal/IP clarification is the fallback if the owner
-rejects exclusion; abandoning Tink requires a new prospective decision/Gate Set/protocol.
+The recorded disposition is conditioned Option A under policy `REC-JSR305-EXCLUDE-001`. This is
+technical avoidance, not an interpretation of the conflicting terms. `compileOnly` still resolves
+and uses the disputed artifact and is forbidden. No vetted binary-compatible replacement exists in
+the reviewed closure. Retaining the artifact would require a new owner/Product-IP disposition and
+Legal/IP clarification; abandoning Tink would require a new prospective decision/Gate Set/protocol.
+
+## Recorded owner / Stage 0 Product-IP disposition
+
+The future separately scoped harness may declare only exact
+`com.google.crypto.tink:tink-android:1.23.0` with the scoped exclusion of exact
+`com.google.code.findbugs:jsr305:3.0.2`. Every covered compile, runtime, benchmark, test and
+packaging configuration must resolve zero JSR-305 components. The only allowed suppression is the
+three-line rule for `javax.annotation.Nullable`, `javax.annotation.concurrent.GuardedBy` and
+`javax.annotation.concurrent.ThreadSafe`; broader `dontwarn` is forbidden. Reappearance by any
+path fails closed and blocks implementation verification and execution.
+
+The exact implementation graph must be separately verified and retained. Its release R8 build must
+have no unresolved missing classes, including a separate, narrow resolution and verification of any
+`javax.lang.model.element.Modifier` condition from
+`com.google.errorprone:error_prone_annotations:2.41.0`. This approval does not create that graph or
+authorize the implementation task that would create it.
+
+The JSR-305 conflict disposition is **excluded artifact / terms not interpreted**. Neither
+Apache-2.0 nor BSD-3-Clause is selected. Use or distribution of JSR-305 is not approved. The
+disposition does not admit Tink to production, permit redistribution, constitute Production Legal
+or Production Security approval, replace distinct accountable Engineering/Security review, or
+authorize a harness, device execution, kill campaign, benchmark or measurement.
 
 ## Security snapshot
 
@@ -134,11 +159,13 @@ recovery-only platform boundary does not admit a production schema or component.
 
 | Reviewer | Requested disposition | Current state |
 |---|---|---|
-| Project owner / Stage 0 Product/IP | accept/reject conditioned exclusion policy `REC-JSR305-EXCLUDE-001`, or select the retain-and-clarify / abandon-Tink fallback; then approve/reject the exact v0.3 package | assigned; technical path prepared; underlying license conflict unresolved; final approval fields null |
+| Project owner / Stage 0 Product/IP | prospective policy `REC-JSR305-EXCLUDE-001` and reviewed governance package only | approved 2026-08-12 by Project owner for a future exact excluded Stage 0 graph; underlying license conflict remains uninterpreted; no artifact use/distribution or dependency admission |
 | Distinct accountable recovery Engineering/Security | verify, reject or revise selected v0.3 construction/key/commit/recovery/barrier/fault protocol; later verify implementation evidence | unassigned, blocking; current Codex remediation not claimed independent |
 | Project owner / execution | after all other prerequisites, separately set `executionAllowed=true` for a named phase/commit | withheld |
 | Production Legal | production/redistribution assessment | unassigned; not required for package preparation, required before production |
 | Production Security | production admission assessment | separate future gate; not replaced |
 
-Until those dispositions and later implementation/preflight evidence exist,
+Until repeat exact-HEAD read-only review, distinct accountable review, separate implementation
+authorization, exact graph/release-R8/non-metric implementation evidence, scoped Product/IP
+disposition of the actual graph, fresh preflight and a later owner execution authorization exist,
 `tools/check_poc_recovery_run_readiness.py` must fail closed.

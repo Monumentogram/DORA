@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "pocId": "POC-RECOVERY-001",
   "analyzedOn": "2026-08-12",
-  "status": "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_PRODUCT_IP_DECISION_PENDING",
+  "status": "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_OWNER_PRODUCT_IP_POLICY_APPROVED",
   "scope": {
     "governanceOnly": true,
     "dependencyAdmission": false,
@@ -206,7 +206,11 @@
   },
   "prospectivePolicy": {
     "policyId": "REC-JSR305-EXCLUDE-001",
-    "status": "PROPOSED_PRODUCT_IP_OWNER_DECISION_REQUIRED",
+    "status": "APPROVED_PROSPECTIVE_POLICY_ONLY",
+    "acceptedBy": "Project owner",
+    "acceptedOn": "2026-08-12",
+    "decisionInputGovernanceHead": "eb312feb2a0d5e5b24b45fcd045bacca94e8c9da",
+    "ownerDecisionLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md",
     "rootCoordinate": "com.google.crypto.tink:tink-android:1.23.0",
     "forbiddenResolvedCoordinate": "com.google.code.findbugs:jsr305:3.0.2",
     "gradleScopedExclude": "implementation(\"com.google.crypto.tink:tink-android:1.23.0\") { exclude(group = \"com.google.code.findbugs\", module = \"jsr305\") }",
@@ -251,7 +255,11 @@
     "stage0ProductIpFinalApproval": false,
     "approvedReviewer": null,
     "approvedOn": null,
-    "ownerDecisionRequired": true,
+    "prospectivePolicyApproved": true,
+    "prospectivePolicyApprovedBy": "Project owner",
+    "prospectivePolicyApprovedOn": "2026-08-12",
+    "jsr305UseOrDistributionApproved": false,
+    "ownerDecisionRequired": false,
     "productionLegalApproved": false,
     "productionSecurityApproved": false
   }

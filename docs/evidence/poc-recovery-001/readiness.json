@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "pocId": "POC-RECOVERY-001",
   "assessedOn": "2026-08-12",
-  "status": "BLOCKED_REMEDIATED_PROTOCOL_V0_3_JSR305_EXCLUSION_PRODUCT_IP_DECISION_AND_IMPLEMENTATION_PENDING",
+  "status": "BLOCKED_OWNER_PRODUCT_IP_POLICY_APPROVED_IMPLEMENTATION_REVIEW_GRAPH_PREFLIGHT_EXECUTION_PENDING",
   "executionAllowed": false,
   "implementationAllowedByThisPackage": false,
   "measuredExecutionAllowed": false,
@@ -35,12 +35,20 @@
     "reviewFindingsV01LedgerPresent": true,
     "reviewFindingsV02LedgerPresent": true,
     "dependencyIpAuthenticityV03Present": true,
-    "supplyChainAuthenticityStatus": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED",
+    "ownerProductIpDecisionPresent": true,
+    "ownerProductIpDecisionLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md",
+    "supplyChainAuthenticityStatus": "AUTHENTICITY_VERIFIED_JSR305_EXCLUDED_BY_OWNER_POLICY_ARTIFACT_LICENSE_CONFLICT_UNRESOLVED_NO_ADMISSION",
     "jsr305ExclusionAnalysisPresent": true,
-    "jsr305ExclusionTechnicalStatus": "PROVEN_WITH_NARROW_R8_RULE_BARE_EXCLUDE_REJECTED_PRODUCT_IP_DECISION_PENDING"
+    "jsr305ExclusionTechnicalStatus": "PROVEN_WITH_NARROW_R8_RULE_BARE_EXCLUDE_REJECTED_OWNER_POLICY_ACCEPTED"
   },
   "approvals": {
+    "prospectivePolicyProductIpApproved": true,
+    "reviewedGovernancePackageProductIpApproved": true,
+    "policyApprovedReviewer": "Project owner",
+    "policyApprovedOn": "2026-08-12",
+    "decisionInputGovernanceHead": "eb312feb2a0d5e5b24b45fcd045bacca94e8c9da",
     "productIpFinalApproved": false,
+    "productIpFinalApprovalReservedForActualFutureGraphAndImplementationPackage": true,
     "approvedReviewer": null,
     "approvedOn": null,
     "accountableEngineeringSecurityReviewer": null,
@@ -53,27 +61,45 @@
   "dependencyExclusionPolicy": {
     "policyId": "REC-JSR305-EXCLUDE-001",
     "analysisLocator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.json",
-    "status": "PROPOSED_PRODUCT_IP_OWNER_DECISION_REQUIRED",
+    "ownerDecisionLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md",
+    "status": "APPROVED_PROSPECTIVE_POLICY_ONLY",
     "rootCoordinate": "com.google.crypto.tink:tink-android:1.23.0",
     "forbiddenResolvedCoordinate": "com.google.code.findbugs:jsr305:3.0.2",
     "requiredResolvedComponentCount": 0,
     "compileOnlyOrAlternatePathAllowed": false,
     "allResolvableConfigurationsAndConsumersRequired": true,
+    "coveredConfigurationFamilies": [
+      "compile",
+      "runtime",
+      "benchmark",
+      "test",
+      "packaging"
+    ],
     "exactNarrowR8RuleRequired": true,
+    "requiredR8Rules": [
+      "-dontwarn javax.annotation.Nullable",
+      "-dontwarn javax.annotation.concurrent.GuardedBy",
+      "-dontwarn javax.annotation.concurrent.ThreadSafe"
+    ],
+    "broaderDontwarnAllowed": false,
     "unresolvedR8MissingClassesAllowed": false,
+    "independentModifierResolutionRequired": true,
+    "recurrenceBlocksImplementationVerificationAndExecution": true,
+    "underlyingArtifactLicenseConflictResolved": false,
+    "jsr305UseOrDistributionApproved": false,
     "futureResolvedGraphReportLocator": "docs/evidence/poc-recovery-001/future-resolved-graph.json",
     "futureResolvedGraphReportPresent": false,
-    "productIpAccepted": false,
-    "acceptedBy": null,
-    "acceptedOn": null
+    "productIpAccepted": true,
+    "acceptedBy": "Project owner",
+    "acceptedOn": "2026-08-12"
   },
   "blockers": [
     {
       "id": "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
       "priority": "P0",
-      "status": "OPEN",
+      "status": "PROSPECTIVE_POLICY_AND_GOVERNANCE_PACKAGE_APPROVED_ACTUAL_GRAPH_FINAL_APPROVAL_PENDING",
       "owner": "Project owner",
-      "condition": "Accept or reject REC-JSR305-EXCLUDE-001 (or select the Legal/IP or abandon-Tink fallback), then record final Product/IP disposition for the exact remediation commit; approvedReviewer and approvedOn remain null."
+      "condition": "Project owner / Stage 0 Product-IP approved REC-JSR305-EXCLUDE-001 and the reviewed governance package at input HEAD eb312feb2a0d5e5b24b45fcd045bacca94e8c9da. This closes only the prospective policy disposition; final Product/IP approval of the future exact graph/implementation package remains pending, and dependency admission, JSR-305 use/distribution, implementation and execution remain unapproved."
     },
     {
       "id": "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
@@ -101,21 +127,21 @@
       "priority": "P0",
       "status": "OPEN_BY_DESIGN",
       "owner": "Future recovery implementation task",
-      "condition": "After separately authorized harness scaffolding, enumerate every resolvable configuration and consumer, prove zero resolved com.google.code.findbugs:jsr305:3.0.2 components, verify the scoped Tink exclusion and exact three-line R8 rule, capture any Kotlin alignment delta, pass non-metric debug/release builds with no unresolved missing classes, independently resolve the observed error_prone_annotations reference to javax.lang.model.element.Modifier if it occurs in the real graph, and prove zero packaged JSR-305 class definitions."
+      "condition": "After separately authorized harness scaffolding, enumerate every resolvable configuration and consumer across compile, runtime, benchmark, test and packaging, prove zero resolved com.google.code.findbugs:jsr305:3.0.2 components, verify the scoped Tink exclusion and exact three-line R8 rule with no broader dontwarn, capture any Kotlin alignment delta, pass non-metric debug/release builds with no unresolved missing classes, independently resolve the observed error_prone_annotations reference to javax.lang.model.element.Modifier if it occurs in the real graph, and prove zero packaged JSR-305 class definitions. Any recurrence fails closed and blocks implementation verification and execution."
     },
     {
       "id": "REC-RDY-06-DEVICE-SQLITE-PREFLIGHT",
       "priority": "P0",
       "status": "OPEN",
       "owner": "Future authorized preflight task",
-      "condition": "Record exact-commit emulator and D2 effective WAL/FULL/zero-autocheckpoint/foreign-key values, sqlite_version(), sqlite_source_id() and canonical compile-options digest; any mismatch blocks execution."
+      "condition": "Record exact-commit emulator and D2 SQLite, Keystore and filesystem preflight evidence, including effective WAL/FULL/zero-autocheckpoint/foreign-key values, sqlite_version(), sqlite_source_id() and canonical compile-options digest; any mismatch blocks execution."
     },
     {
       "id": "REC-RDY-07-HARNESS-ABSENT",
       "priority": "P0",
       "status": "OPEN_BY_OWNER_INSTRUCTION",
       "owner": "Future separately scoped implementation task",
-      "condition": "Implement and safely non-metrically verify an isolated common harness only after Product/IP and accountable v0.3 review."
+      "condition": "Obtain separate owner implementation scope, then implement and safely non-metrically verify an isolated common harness only after repeat exact-HEAD read-only review and accountable v0.3 Engineering/Security review."
     },
     {
       "id": "REC-RDY-08-OWNER-EXECUTION-AUTHORIZATION",
@@ -141,9 +167,9 @@
     {
       "id": "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY",
       "priority": "P0",
-      "status": "TECHNICAL_EXCLUSION_PROVEN_PRODUCT_IP_DISPOSITION_PENDING",
+      "status": "CLOSED_FOR_PROSPECTIVE_EXCLUDED_GRAPH_POLICY_ARTIFACT_NOT_APPROVED",
       "owner": "Project owner / Stage 0 Product-IP",
-      "condition": "All eight publisher-closure coordinate authenticity classifications are verified. The signed Maven POM Apache-2.0 versus exact release-source BSD-3-Clause conflict for com.google.code.findbugs:jsr305:3.0.2 remains legally unresolved. A technically safe exclusion path is proven only with a scoped Tink exclusion, zero resolved components and the exact narrow R8 rule; record Stage 0 Product/IP acceptance/rejection of that avoidance treatment. No approval or admission is implied."
+      "condition": "All eight publisher-closure coordinate authenticity classifications are verified. The signed Maven POM Apache-2.0 versus exact release-source BSD-3-Clause conflict for com.google.code.findbugs:jsr305:3.0.2 remains uninterpreted; owner policy treats that artifact as excluded and does not approve its use or distribution. REC-JSR305-EXCLUDE-001 requires a scoped Tink exclusion, zero resolved components, the exact three-line R8 rule and fail-closed recurrence handling. No dependency or production admission is implied."
     }
   ],
   "phaseA": {

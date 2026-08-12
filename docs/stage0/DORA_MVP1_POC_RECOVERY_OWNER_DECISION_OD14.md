@@ -1,11 +1,12 @@
 # Dora MVP 1 — OD-14 recovery governance owner record
 
 Decision ID: `OD-14`\
-Status: **Approved owner constraints; governance remediation v0.3 linked / Proposed experiment decision**\
+Status: **Approved owner constraints and prospective policy `REC-JSR305-EXCLUDE-001`; implementation and execution withheld**\
 Date: **12 August 2026**\
 Owner: **Project owner**\
 Scope: governance/readiness and exact Stage 0 evaluation-package preparation for
-`POC-RECOVERY-001` only
+`POC-RECOVERY-001` only\
+Decision input governance HEAD: `eb312feb2a0d5e5b24b45fcd045bacca94e8c9da`
 
 This record is intentionally separate from the immutable `OD-01`–`OD-13` registry referenced by
 the closed `POC-SEARCH-001` evidence ledger. It does not modify or re-hash that historical evidence.
@@ -54,10 +55,55 @@ the closed `POC-SEARCH-001` evidence ledger. It does not modify or re-hash that 
   `processingIntentId`, 12 candidate-specific barriers and 33-row fault matrix are normative in
   v0.3. These F-01–F-06 remediations refine governance detail without changing the two candidates,
   thresholds, authority or owner product choice.
-- Per-coordinate checksum and OpenPGP verification is recorded, but six signer/source trust paths
-  remain `AUTHENTICITY_PENDING`; Product/IP final approval stays blocked.
+- Per-coordinate checksum, OpenPGP and source-correspondence verification closes authenticity for
+  all eight publisher-closure coordinates. The `jsr305:3.0.2` signed-POM/exact-source license
+  conflict remains uninterpreted and the artifact is handled only by the prospective exclusion
+  policy below.
 - Each candidate has 120 base hard-kill executions and requires at least 100 confirmed valid hard
   kills. Invalid attempts remain explicit and are never restarted or replaced silently.
+
+## Owner / Stage 0 Product-IP disposition: `REC-JSR305-EXCLUDE-001`
+
+For `POC-RECOVERY-001` Stage 0 evaluation only, the Project owner acting as Stage 0 Product/IP
+reviewer approves prospective policy `REC-JSR305-EXCLUDE-001` and the reviewed governance package
+for a future exact excluded Stage 0 graph. A future, separately scoped recovery harness may declare
+only exact `com.google.crypto.tink:tink-android:1.23.0`, and only when all of these conditions are
+met:
+
+1. the Tink dependency edge has the scoped exclusion of exact
+   `com.google.code.findbugs:jsr305:3.0.2`;
+2. every covered Gradle configuration resolves zero JSR-305 components;
+3. R8 uses only these three narrow rules:
+
+   ```text
+   -dontwarn javax.annotation.Nullable
+   -dontwarn javax.annotation.concurrent.GuardedBy
+   -dontwarn javax.annotation.concurrent.ThreadSafe
+   ```
+
+4. broader `dontwarn` rules are forbidden;
+5. the exact implementation graph is separately verified and retained as evidence;
+6. the release R8 build completes with no unresolved missing classes, and any
+   `javax.lang.model.element.Modifier` condition from
+   `com.google.errorprone:error_prone_annotations:2.41.0` is separately resolved and verified
+   without a broad `dontwarn`; and
+7. any reappearance of JSR-305 in a compile, runtime, benchmark, test or packaging configuration
+   fails closed and blocks both implementation verification and execution.
+
+This disposition treats the conflicting JSR-305 artifact as **excluded**. It does not decide
+whether Apache-2.0 or BSD-3-Clause applies and does not approve use or distribution of JSR-305.
+It approves only the prospective evaluation policy and reviewed governance package; it does not
+add Tink or JSR-305 to a graph, admit Tink to production, authorize redistribution, satisfy
+Production Legal or Production Security, replace a distinct accountable Engineering/Security
+review, authorize a harness or implementation, or authorize device execution, a kill campaign,
+a benchmark or any measured execution.
+
+The resulting governance commit still requires a repeat read-only review at its exact 40-character
+HEAD. A separate owner scope must authorize implementation. The future exact Gradle-resolved graph,
+release R8 result, non-metric implementation verification, scoped Product/IP disposition of the
+actual graph and fresh emulator/D2 SQLite, Keystore and filesystem preflight remain mandatory. A
+later, separate owner record must authorize execution; D1/D5 remain required for a full physical
+`PASS`.
 
 ## Normative package
 
@@ -75,7 +121,8 @@ the closed `POC-SEARCH-001` evidence ledger. It does not modify or re-hash that 
 ## Not approved
 
 This record does not approve a winner/final format, final `ADR-AUDIO-001`, implementation
-correctness, Gradle/runtime dependency, recovery module, production schema, redistribution,
-Product/IP final disposition, Production Legal/Security, physical D1/D5 availability or execution.
-`approvedReviewer`, `approvedOn`, execution authorization and emulator/D2 runtime facts remain
-null. `executionAllowed=false` and cannot change implicitly when a prerequisite is completed.
+correctness, an actual Gradle/runtime dependency graph, a recovery module, production schema,
+redistribution, JSR-305 use, Production Legal/Security, physical D1/D5 availability or execution.
+The formal Engineering/Security reviewer, Production Legal reviewer, Production Security reviewer,
+execution authorization and emulator/D2 runtime facts remain null. `executionAllowed=false` and
+cannot change implicitly when a prerequisite is completed.

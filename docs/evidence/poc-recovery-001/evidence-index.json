@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "pocId": "POC-RECOVERY-001",
-  "status": "GOVERNANCE_V0_3_JSR305_EXCLUSION_PROVEN_PRODUCT_IP_DECISION_EXECUTION_BLOCKED",
+  "status": "GOVERNANCE_V0_3_OWNER_PRODUCT_IP_POLICY_APPROVED_IMPLEMENTATION_EXECUTION_BLOCKED",
   "activeGateSetVersion": "poc-recovery-stage0-v0.3",
   "activeProtocolId": "poc-recovery-protocol-stage0-v0.3",
   "executionAllowed": false,
@@ -48,6 +48,11 @@
       "status": "ACTIVE_PROSPECTIVE_NON_EXECUTABLE"
     },
     {
+      "id": "REC-OWNER-PRODUCT-IP-POLICY-DISPOSITION-20260812",
+      "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md",
+      "status": "REC_JSR305_EXCLUDE_001_APPROVED_PROSPECTIVE_POLICY_ONLY_EXECUTION_BLOCKED"
+    },
+    {
       "id": "REC-V03-REMEDIATION",
       "locator": "docs/evidence/poc-recovery-001/governance-remediation-v0.3.md",
       "status": "F01_F06_CLOSED_LICENSE_CONFLICT_PRODUCT_IP_BLOCKED"
@@ -70,12 +75,12 @@
     {
       "id": "REC-JSR305-EXCLUSION-ANALYSIS-20260812",
       "locator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.json",
-      "status": "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_PRODUCT_IP_DECISION_PENDING"
+      "status": "TECHNICAL_EXCLUSION_PROVEN_OWNER_PRODUCT_IP_PROSPECTIVE_POLICY_APPROVED"
     },
     {
       "id": "REC-JSR305-EXCLUSION-DECISION-20260812",
       "locator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.md",
-      "status": "OPTION_A_CONDITIONED_RECOMMENDED_NO_OWNER_APPROVAL"
+      "status": "OPTION_A_OWNER_DISPOSITION_RECORDED_PROSPECTIVE_POLICY_ONLY"
     },
     {
       "id": "REC-JSR305-REFERENCE-CLASSES-20260812",
@@ -110,7 +115,7 @@
     {
       "id": "REC-REVIEW-ROLES",
       "locator": "docs/evidence/poc-recovery-001/review-roles.json",
-      "status": "FORMAL_REVIEWER_UNASSIGNED_APPROVALS_NULL"
+      "status": "OWNER_POLICY_APPROVED_FORMAL_ENGINEERING_SECURITY_REVIEWER_UNASSIGNED"
     },
     {
       "id": "REC-READINESS",
@@ -120,7 +125,7 @@
     {
       "id": "REC-IP-REVIEW",
       "locator": "docs/evidence/poc-recovery-001/ip-stage0-evaluation-review.md",
-      "status": "TECHNICAL_EXCLUSION_PATH_PREPARED_PRODUCT_IP_DECISION_BLOCKED"
+      "status": "PROSPECTIVE_EXCLUSION_POLICY_APPROVED_ARTIFACT_USE_IMPLEMENTATION_EXECUTION_BLOCKED"
     },
     {
       "id": "REC-INDEPENDENT-REVIEW-TASK",

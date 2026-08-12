@@ -11,7 +11,7 @@ Stage 0C merge commit: `849d9d0406a619b334c9b707a4b6b42b34885b4b`
 Active stage: `Stage 0D — POC-RECOVERY-001 governance/readiness package`
 Active branch: `stage/0d-poc-recovery-governance`
 Active PoC: `POC-RECOVERY-001`
-Stage state: **GOVERNANCE REMEDIATION v0.3 — JSR305 EXCLUSION PROVEN; PRODUCT-IP DECISION, IMPLEMENTATION AND EXECUTION BLOCKED**
+Stage state: **GOVERNANCE REMEDIATION v0.3 — PROSPECTIVE JSR305 EXCLUSION POLICY APPROVED; IMPLEMENTATION AND EXECUTION BLOCKED**
 
 ## Stage 00 closure
 
@@ -102,14 +102,17 @@ With all seven remaining closure JARs as program inputs, that exact rule removes
 diagnostics but R8 then fails independently on `javax.lang.model.element.Modifier` from
 `error_prone_annotations:2.41.0`; the future real graph/release build must resolve any such issue
 without broadening the rule.
-Project-owner / Stage 0 Product/IP acceptance of `REC-JSR305-EXCLUDE-001` remains pending. This is
-package preparation, not dependency admission. No Tink coordinate or rule was added to Gradle.
+The Project owner / Stage 0 Product-IP reviewer approved only prospective
+`REC-JSR305-EXCLUDE-001` and the reviewed governance package for a future exact excluded Stage 0
+graph. The disposition treats JSR-305 as excluded without selecting Apache-2.0 or BSD-3-Clause and
+does not approve its use/distribution. This remains package preparation, not dependency admission.
+No Tink coordinate or rule was added to Gradle.
 
 Phase A is described only prospectively for the pinned emulator and available physical D2; actual
 execution is withheld. Without D1/D5 it can produce only `FAIL` or `INCONCLUSIVE`. A full physical
-verdict requires D1/D2/D5; D1/D5 procurement is deferred. The Project owner is assigned as Stage 0
-Product/IP reviewer, but acceptance/rejection of the exclusion policy and final approval remain
-null. A distinct accountable recovery
+verdict requires D1/D2/D5; D1/D5 procurement is deferred. The scoped owner/Stage 0 Product-IP
+prospective policy disposition is recorded, while an actual future graph, dependency admission,
+implementation and execution remain unapproved. A distinct accountable recovery
 Engineering/Security reviewer is unassigned and blocking; the current Codex remediation does not
 claim formal independence. Production Legal and Production Security remain null and separate.
 
@@ -144,16 +147,18 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - `OD-11`: Project owner is Product and IP policy reviewer and acts as Engineering/Security reviewer only for Stage 0 evaluation. This does not replace production Legal or independent production Security. Embedded platform SQLite may use the containing system-image digest plus exact image/runtime identity for Stage 0; that boundary must be reconsidered before production admission.
 - `OD-12`: Project owner prospectively approves Option B for `stage0-v0.2`, based on the local-MVP storage/update/one-second visibility balance and not on prior Dora results. Benchmark execution remains separately withheld.
 - `OD-13`: Project owner approves the exact 66-component/license/NOTICE/platform package only for internal synthetic Stage 0 evaluation and accepts formal `INCONCLUSIVE` closure without a new benchmark. This is not production Legal/Security approval, does not admit FTS4 automatically, is not retroactive, and leaves D1/D3 plus measured execution deferred.
-- `OD-14`: Project owner constraints now link governance protocol v0.3 after F-01–F-06 `CHANGES_REQUIRED` and authorize only documentary/static remediation. The selected construction remains `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`; authenticity is verified and a conditioned exclusion path is now technically proven, while owner Product/IP acceptance/final approval, the uninterpreted `jsr305:3.0.2` license conflict, distinct accountable Engineering/Security review, implementation verification and later separate owner execution authorization remain mandatory; `executionAllowed=false`.
+- `OD-14`: Project owner constraints link governance protocol v0.3 after F-01–F-06 `CHANGES_REQUIRED` and approve only prospective `REC-JSR305-EXCLUDE-001` plus the reviewed governance package. The selected construction remains `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`; authenticity is verified, the `jsr305:3.0.2` artifact is excluded without interpreting its license conflict or approving use/distribution, and repeat exact-HEAD review, distinct accountable Engineering/Security review, separate implementation authorization/verification and later owner execution authorization remain mandatory; `executionAllowed=false`.
 
 ## Current gates and blockers
 
 - `POC-RECOVERY-001` remains `BLOCKED`, not READY. Proposed `DEC-044`, Gate Set
   `poc-recovery-stage0-v0.3`, exact machine protocol and remediation evidence exist. v0.1/v0.2 are
   unchanged superseded audit artifacts. Coordinate authenticity and conditioned JSR-305 exclusion
-  are technically verified, but the owner has not accepted/rejected `REC-JSR305-EXCLUDE-001`, the
-  underlying license conflict is not interpreted, Product/IP final approval is null, and a distinct
-  accountable recovery Engineering/Security reviewer/approval remains unresolved.
+  are technically verified, and the owner accepted `REC-JSR305-EXCLUDE-001` only as prospective
+  policy for the reviewed governance package. The underlying license conflict is not interpreted,
+  JSR-305 use/distribution is not approved, and repeat exact-HEAD review, a distinct accountable
+  recovery Engineering/Security reviewer/approval and separate implementation authorization remain
+  unresolved.
 - The exact published Tink closure is inventoried without Gradle wiring. A future harness-resolved
   graph remains a P0 pre-execution check because repository Kotlin alignment may differ from the
   publisher POM closure. It must enumerate every resolvable recovery/consumer configuration, prove
@@ -230,13 +235,15 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 
 ## Next safe action
 
-Perform a repeat read-only review of the exact remediation commit without implementation or
-execution. The Project owner must record the Product/IP final disposition and assign a distinct
-accountable recovery Engineering/Security reviewer. That reviewer must verify or require revision
+Perform a repeat read-only review of the exact resulting governance commit without implementation
+or execution. The prospective owner/Stage 0 Product-IP policy disposition is recorded; the Project
+owner must assign a distinct accountable recovery Engineering/Security reviewer. That reviewer
+must verify or require revision
 of the selected v0.3 Streaming/microfile construction, manifest/key/AAD contract, publication/temp-state/commit/durability,
 SQLite profile, public barriers and complete fault/recovery state machine. Only a later separately
-scoped task may implement and non-metrically verify the isolated harness; only after exact resolved
-Gradle graph and fresh device/SQLite preflight may a still later owner record change
+scoped owner task may authorize implementation and non-metrically verify the isolated harness;
+only after exact excluded Gradle graph/release R8, scoped Product/IP disposition of the actual graph
+and fresh device SQLite/Keystore/filesystem preflight may a still later owner record change
 `executionAllowed`. Draft PR #11 must remain unmerged.
 
 ## Update protocol

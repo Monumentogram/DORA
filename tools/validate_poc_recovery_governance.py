@@ -22,6 +22,8 @@ JSR305_POLICY_ID = "REC-JSR305-EXCLUDE-001"
 JSR305_COORDINATE = "com.google.code.findbugs:jsr305:3.0.2"
 JSR305_ANALYSIS_LOCATOR = "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.json"
 JSR305_CLASS_LIST_LOCATOR = "docs/evidence/poc-recovery-001/jsr305-reference-classes-2026-08-12.txt"
+OWNER_DECISION_LOCATOR = "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md"
+OWNER_DECISION_INPUT_HEAD = "eb312feb2a0d5e5b24b45fcd045bacca94e8c9da"
 JSR305_R8_RULES = [
     "-dontwarn javax.annotation.Nullable",
     "-dontwarn javax.annotation.concurrent.GuardedBy",
@@ -53,8 +55,8 @@ def read_text(path: Path) -> str:
 
 
 def validate_jsr305_exclusion(analysis: dict[str, Any]) -> None:
-    require(analysis["schemaVersion"] == 1 and analysis["pocId"] == "POC-RECOVERY-001", "JSR305 exclusion analysis identity drift")
-    require(analysis["status"] == "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_PRODUCT_IP_DECISION_PENDING", "JSR305 exclusion analysis status drift")
+    require(analysis["schemaVersion"] == 2 and analysis["pocId"] == "POC-RECOVERY-001", "JSR305 exclusion analysis identity drift")
+    require(analysis["status"] == "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_OWNER_PRODUCT_IP_POLICY_APPROVED", "JSR305 exclusion analysis/current policy status drift")
     scope = analysis["scope"]
     require(scope == {
         "governanceOnly": True,
@@ -121,7 +123,8 @@ def validate_jsr305_exclusion(analysis: dict[str, Any]) -> None:
     require(analysis["optionRecommendation"]["recommendedOption"] == "A_CONDITIONED_COMPLETE_EXCLUSION", "JSR305 option recommendation drift")
 
     policy = analysis["prospectivePolicy"]
-    require(policy["policyId"] == JSR305_POLICY_ID and policy["status"] == "PROPOSED_PRODUCT_IP_OWNER_DECISION_REQUIRED", "JSR305 prospective policy identity/status drift")
+    require(policy["policyId"] == JSR305_POLICY_ID and policy["status"] == "APPROVED_PROSPECTIVE_POLICY_ONLY", "JSR305 prospective policy identity/status drift")
+    require(policy["acceptedBy"] == "Project owner" and policy["acceptedOn"] == "2026-08-12" and policy["decisionInputGovernanceHead"] == OWNER_DECISION_INPUT_HEAD and policy["ownerDecisionLocator"] == OWNER_DECISION_LOCATOR, "JSR305 owner/Product-IP policy acceptance record drift")
     require(policy["forbiddenResolvedCoordinate"] == JSR305_COORDINATE and policy["requiredResolvedComponentCount"] == 0, "JSR305 zero-component policy drift")
     require(policy["compileOnlyOrAlternatePathToForbiddenCoordinateAllowed"] is False and policy["requiredR8Rules"] == JSR305_R8_RULES and policy["broaderJavaxAnnotationDontwarnAllowed"] is False, "JSR305 path/R8 policy weakened")
     require(policy["futureReportRequirements"]["unresolvedR8MissingClasses"] == [], "Future release evidence allows unresolved R8 missing classes")
@@ -130,7 +133,8 @@ def validate_jsr305_exclusion(analysis: dict[str, Any]) -> None:
 
     license_disposition = analysis["licenseDisposition"]
     require(license_disposition["underlyingArtifactConflictResolved"] is False and license_disposition["prospectiveGraphTreatment"] == "EXCLUDE_ARTIFACT_DO_NOT_INTERPRET_OR_ACCEPT_CONFLICTING_TERMS", "JSR305 license disposition overclaims closure")
-    require(license_disposition["stage0ProductIpFinalApproval"] is False and license_disposition["approvedReviewer"] is None and license_disposition["approvedOn"] is None and license_disposition["ownerDecisionRequired"] is True, "JSR305 analysis prematurely records Product/IP approval")
+    require(license_disposition["stage0ProductIpFinalApproval"] is False and license_disposition["approvedReviewer"] is None and license_disposition["approvedOn"] is None, "JSR305 analysis overclaims actual graph/Product-IP approval")
+    require(license_disposition["prospectivePolicyApproved"] is True and license_disposition["prospectivePolicyApprovedBy"] == "Project owner" and license_disposition["prospectivePolicyApprovedOn"] == "2026-08-12" and license_disposition["jsr305UseOrDistributionApproved"] is False and license_disposition["ownerDecisionRequired"] is False, "JSR305 scoped owner policy/license boundary drift")
 
 
 def validate_supersession(gate: dict[str, Any], protocol: dict[str, Any]) -> None:
@@ -530,18 +534,21 @@ def validate_evidence() -> None:
 
     validate_jsr305_exclusion(jsr305_exclusion)
 
-    require(inventory["schemaVersion"] == 2, "Dependency inventory schema drift")
+    require(inventory["schemaVersion"] == 3, "Dependency inventory schema drift")
     require(inventory["inventoryStatus"] == "VERIFIED_PUBLISHER_CLOSURE_AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PACKAGE_REVIEW_ONLY", "Dependency inventory authenticity/license state drift")
     require(inventory["rootCoordinate"] == "com.google.crypto.tink:tink-android:1.23.0", "Inventory root drift")
     require(inventory["dependencyAdmission"] is False and inventory["runtimeGraphModified"] is False, "Dependency/runtime graph was modified")
     require(inventory["prospectiveExclusionAnalysis"] == {
         "locator": JSR305_ANALYSIS_LOCATOR,
-        "status": "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_PRODUCT_IP_DECISION_PENDING",
+        "status": "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_OWNER_PRODUCT_IP_POLICY_APPROVED",
         "publishedClosureStillIncludesJsr305": True,
         "futureProjectGraphClaimed": False,
         "recommendedTreatment": "A_CONDITIONED_COMPLETE_EXCLUSION",
         "requiredFutureResolvedJsr305ComponentCount": 0,
-        "productIpAccepted": False,
+        "productIpAccepted": True,
+        "acceptedBy": "Project owner",
+        "acceptedOn": "2026-08-12",
+        "acceptanceScope": "PROSPECTIVE_POLICY_AND_REVIEWED_GOVERNANCE_PACKAGE_ONLY",
     }, "Dependency inventory prospective JSR305 boundary drift")
     require(inventory["resolution"]["externalCoordinateCountIncludingRoot"] == 8 and len(inventory["artifacts"]) == 8, "Tink closure count drift")
     require(inventory["resolution"]["projectGradleResolvedGraph"] is False and inventory["resolution"]["futureExactResolutionRequired"] is True, "Future Gradle graph boundary drift")
@@ -639,25 +646,39 @@ def validate_evidence() -> None:
     require(all(value is None for value in environments["PHYSICAL_D2"]["requiredFreshRuntimeEvidence"].values()), "D2 fresh preflight must remain pending")
 
     role_map = roles["roles"]
+    require(roles["schemaVersion"] == 4, "Review-role schema drift")
     product_ip_role = role_map["stage0ProductIp"]
-    require(product_ip_role["status"] == "ASSIGNED_FINAL_APPROVAL_PENDING_JSR305_EXCLUSION_DISPOSITION" and product_ip_role["finalApproved"] is False, "Product/IP final review state drift")
-    require(product_ip_role["pendingDisposition"] == {
+    require(product_ip_role["status"] == "PROSPECTIVE_POLICY_AND_REVIEWED_GOVERNANCE_PACKAGE_APPROVED_ONLY" and product_ip_role["finalApproved"] is False, "Product/IP scoped policy/package disposition drift")
+    require(product_ip_role["approvedProspectiveDisposition"] == {
         "policyId": JSR305_POLICY_ID,
         "analysisLocator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.md",
         "technicalRecommendation": "A_CONDITIONED_COMPLETE_EXCLUSION",
         "underlyingArtifactLicenseConflictResolved": False,
-        "accepted": False,
-        "acceptedBy": None,
-        "acceptedOn": None,
-    }, "Product/IP pending JSR305 disposition drift")
-    require(role_map["stage0ProductIp"]["approvedReviewer"] is None and role_map["stage0ProductIp"]["approvedOn"] is None, "Product/IP approval identity/date must remain null")
+        "conflictingArtifactTreatment": "EXCLUDED_TERMS_NOT_INTERPRETED",
+        "jsr305UseOrDistributionApproved": False,
+        "accepted": True,
+        "acceptedBy": "Project owner",
+        "acceptedOn": "2026-08-12",
+        "decisionInputGovernanceHead": OWNER_DECISION_INPUT_HEAD,
+        "ownerDecisionLocator": OWNER_DECISION_LOCATOR,
+        "scope": "PROSPECTIVE_POLICY_AND_REVIEWED_GOVERNANCE_PACKAGE_FOR_FUTURE_EXACT_EXCLUDED_STAGE0_GRAPH_ONLY",
+    }, "Product/IP approved prospective JSR305 disposition drift")
+    require(product_ip_role["futureExactGraphDisposition"] == {
+        "actualGraphApproved": False,
+        "dependencyAdmission": False,
+        "implementationAuthorized": False,
+        "executionAuthorized": False,
+        "separateImplementationScopeRequired": True,
+        "exactResolvedGraphEvidenceRequired": True,
+    }, "Product/IP disposition exceeded the prospective governance scope")
+    require(product_ip_role["approvedReviewer"] is None and product_ip_role["approvedOn"] is None, "Actual future graph Product/IP approval identity/date must remain null")
     independent = role_map["independentRecoveryEngineeringSecurity"]
     require(independent["reviewer"] is None and independent["status"] == "UNASSIGNED_BLOCKING", "Accountable independent review blocker drift")
     require(independent["currentCodexRemediationClaimedFormallyIndependent"] is False and independent["replacesProductionSecurity"] is False, "Review independence boundary drift")
     require(role_map["executionAuthorizer"]["status"] == "AUTHORIZATION_WITHHELD", "Execution authorization must remain withheld")
     require(role_map["productionLegal"]["reviewer"] is None and role_map["productionSecurity"]["reviewer"] is None, "Production reviewers must remain unassigned")
 
-    require(readiness["schemaVersion"] == 3 and readiness["status"] == "BLOCKED_REMEDIATED_PROTOCOL_V0_3_JSR305_EXCLUSION_PRODUCT_IP_DECISION_AND_IMPLEMENTATION_PENDING", "Readiness status drift")
+    require(readiness["schemaVersion"] == 4 and readiness["status"] == "BLOCKED_OWNER_PRODUCT_IP_POLICY_APPROVED_IMPLEMENTATION_REVIEW_GRAPH_PREFLIGHT_EXECUTION_PENDING", "Readiness status drift")
     require(readiness["executionAllowed"] is False, "Readiness unexpectedly allows execution")
     for key in (
         "implementationAllowedByThisPackage", "measuredExecutionAllowed", "runtimeDependencyAdded",
@@ -669,25 +690,51 @@ def validate_evidence() -> None:
     require(readiness["packageArtifacts"]["activeGateSetVersion"] == GATE_V03 and readiness["packageArtifacts"]["activeProtocolId"] == PROTOCOL_V03, "Readiness active protocol locator drift")
     require(readiness["packageArtifacts"]["v01RetainedAsSupersededAuditArtifact"] is True and readiness["packageArtifacts"]["v01Executable"] is False, "v0.1 audit disposition drift")
     require(readiness["packageArtifacts"]["v02RetainedAsSupersededAuditArtifact"] is True and readiness["packageArtifacts"]["v02Executable"] is False, "v0.2 audit disposition drift")
-    require(readiness["packageArtifacts"]["supplyChainAuthenticityStatus"] == "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED", "Readiness authenticity state drift")
-    require(readiness["packageArtifacts"]["jsr305ExclusionAnalysisPresent"] is True and readiness["packageArtifacts"]["jsr305ExclusionTechnicalStatus"] == "PROVEN_WITH_NARROW_R8_RULE_BARE_EXCLUDE_REJECTED_PRODUCT_IP_DECISION_PENDING", "Readiness JSR305 analysis state drift")
+    require(readiness["packageArtifacts"]["ownerProductIpDecisionPresent"] is True and readiness["packageArtifacts"]["ownerProductIpDecisionLocator"] == OWNER_DECISION_LOCATOR, "Readiness owner/Product-IP decision locator drift")
+    require(readiness["packageArtifacts"]["supplyChainAuthenticityStatus"] == "AUTHENTICITY_VERIFIED_JSR305_EXCLUDED_BY_OWNER_POLICY_ARTIFACT_LICENSE_CONFLICT_UNRESOLVED_NO_ADMISSION", "Readiness authenticity/exclusion state drift")
+    require(readiness["packageArtifacts"]["jsr305ExclusionAnalysisPresent"] is True and readiness["packageArtifacts"]["jsr305ExclusionTechnicalStatus"] == "PROVEN_WITH_NARROW_R8_RULE_BARE_EXCLUDE_REJECTED_OWNER_POLICY_ACCEPTED", "Readiness JSR305 analysis/policy state drift")
+    require(readiness["approvals"] == {
+        "prospectivePolicyProductIpApproved": True,
+        "reviewedGovernancePackageProductIpApproved": True,
+        "policyApprovedReviewer": "Project owner",
+        "policyApprovedOn": "2026-08-12",
+        "decisionInputGovernanceHead": OWNER_DECISION_INPUT_HEAD,
+        "productIpFinalApproved": False,
+        "productIpFinalApprovalReservedForActualFutureGraphAndImplementationPackage": True,
+        "approvedReviewer": None,
+        "approvedOn": None,
+        "accountableEngineeringSecurityReviewer": None,
+        "currentCodexReviewClaimedFormallyIndependent": False,
+        "executionAuthorizedBy": None,
+        "executionAuthorizedOn": None,
+        "productionLegalReviewer": None,
+        "productionSecurityReviewer": None,
+    }, "Readiness approval boundary drift")
     readiness_policy = readiness["dependencyExclusionPolicy"]
     require(readiness_policy == {
         "policyId": JSR305_POLICY_ID,
         "analysisLocator": JSR305_ANALYSIS_LOCATOR,
-        "status": "PROPOSED_PRODUCT_IP_OWNER_DECISION_REQUIRED",
+        "ownerDecisionLocator": OWNER_DECISION_LOCATOR,
+        "status": "APPROVED_PROSPECTIVE_POLICY_ONLY",
         "rootCoordinate": "com.google.crypto.tink:tink-android:1.23.0",
         "forbiddenResolvedCoordinate": JSR305_COORDINATE,
         "requiredResolvedComponentCount": 0,
         "compileOnlyOrAlternatePathAllowed": False,
         "allResolvableConfigurationsAndConsumersRequired": True,
+        "coveredConfigurationFamilies": ["compile", "runtime", "benchmark", "test", "packaging"],
         "exactNarrowR8RuleRequired": True,
+        "requiredR8Rules": JSR305_R8_RULES,
+        "broaderDontwarnAllowed": False,
         "unresolvedR8MissingClassesAllowed": False,
+        "independentModifierResolutionRequired": True,
+        "recurrenceBlocksImplementationVerificationAndExecution": True,
+        "underlyingArtifactLicenseConflictResolved": False,
+        "jsr305UseOrDistributionApproved": False,
         "futureResolvedGraphReportLocator": "docs/evidence/poc-recovery-001/future-resolved-graph.json",
         "futureResolvedGraphReportPresent": False,
-        "productIpAccepted": False,
-        "acceptedBy": None,
-        "acceptedOn": None,
+        "productIpAccepted": True,
+        "acceptedBy": "Project owner",
+        "acceptedOn": "2026-08-12",
     }, "Readiness JSR305 exclusion policy drift")
     expected_blockers = {
         "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
@@ -703,8 +750,33 @@ def validate_evidence() -> None:
         "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY",
     }
     require({blocker["id"] for blocker in readiness["blockers"]} == expected_blockers, "Readiness blocker set drift")
+    product_ip_blocker = next(blocker for blocker in readiness["blockers"] if blocker["id"] == "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL")
+    require(
+        product_ip_blocker["status"] == "PROSPECTIVE_POLICY_AND_GOVERNANCE_PACKAGE_APPROVED_ACTUAL_GRAPH_FINAL_APPROVAL_PENDING"
+        and JSR305_POLICY_ID in product_ip_blocker["condition"]
+        and OWNER_DECISION_INPUT_HEAD in product_ip_blocker["condition"]
+        and "final Product/IP approval" in product_ip_blocker["condition"]
+        and "use/distribution" in product_ip_blocker["condition"],
+        "Scoped owner/Product-IP closure drift",
+    )
+    graph_blocker = next(blocker for blocker in readiness["blockers"] if blocker["id"] == "REC-RDY-05-FUTURE-RESOLVED-GRAPH")
+    require(
+        all(family in graph_blocker["condition"] for family in ("compile", "runtime", "benchmark", "test", "packaging"))
+        and "no broader dontwarn" in graph_blocker["condition"]
+        and "javax.lang.model.element.Modifier" in graph_blocker["condition"]
+        and "fails closed" in graph_blocker["condition"],
+        "Future graph/R8 fail-closed blocker drift",
+    )
     supply_chain_blocker = next(blocker for blocker in readiness["blockers"] if blocker["id"] == "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY")
-    require(supply_chain_blocker["status"] == "TECHNICAL_EXCLUSION_PROVEN_PRODUCT_IP_DISPOSITION_PENDING" and "jsr305:3.0.2" in supply_chain_blocker["condition"] and "Apache-2.0" in supply_chain_blocker["condition"] and "BSD-3-Clause" in supply_chain_blocker["condition"] and "scoped Tink exclusion" in supply_chain_blocker["condition"], "Supply-chain blocker disposition drift")
+    require(
+        supply_chain_blocker["status"] == "CLOSED_FOR_PROSPECTIVE_EXCLUDED_GRAPH_POLICY_ARTIFACT_NOT_APPROVED"
+        and "jsr305:3.0.2" in supply_chain_blocker["condition"]
+        and "Apache-2.0" in supply_chain_blocker["condition"]
+        and "BSD-3-Clause" in supply_chain_blocker["condition"]
+        and "excluded" in supply_chain_blocker["condition"]
+        and "does not approve its use or distribution" in supply_chain_blocker["condition"],
+        "Supply-chain owner policy disposition drift",
+    )
 
     require(findings_v01["schemaVersion"] == 2 and findings_v01["reviewedCommit"] == REVIEWED_V01_HEAD and findings_v01["reviewedGateSetVersion"] == "poc-recovery-stage0-v0.1", "First-review findings ledger identity drift")
     require(findings_v01["sanitized"] is True and findings_v01["reviewerIdentity"] is None and findings_v01["formalReviewer"] is False, "First-review findings ledger must remain sanitized and non-formal")
@@ -726,18 +798,24 @@ def validate_evidence() -> None:
             require(finding["status"] in {"CLOSED", "PARTIALLY_CLOSED", "OPEN"} and finding["evidenceLocator"], f"{finding['id']} disposition/evidence fields incomplete")
 
     require(evidence_index["activeGateSetVersion"] == GATE_V03 and evidence_index["activeProtocolId"] == PROTOCOL_V03 and evidence_index["executionAllowed"] is False, "Evidence index active protocol drift")
-    require(evidence_index["status"] == "GOVERNANCE_V0_3_JSR305_EXCLUSION_PROVEN_PRODUCT_IP_DECISION_EXECUTION_BLOCKED", "Evidence-index status drift")
+    require(evidence_index["status"] == "GOVERNANCE_V0_3_OWNER_PRODUCT_IP_POLICY_APPROVED_IMPLEMENTATION_EXECUTION_BLOCKED", "Evidence-index status drift")
     indexed_artifacts = {item["id"]: item for item in evidence_index["artifacts"]}
+    require(indexed_artifacts["REC-OWNER-PRODUCT-IP-POLICY-DISPOSITION-20260812"] == {
+        "id": "REC-OWNER-PRODUCT-IP-POLICY-DISPOSITION-20260812",
+        "locator": OWNER_DECISION_LOCATOR,
+        "status": "REC_JSR305_EXCLUDE_001_APPROVED_PROSPECTIVE_POLICY_ONLY_EXECUTION_BLOCKED",
+    }, "Owner/Product-IP policy disposition is not indexed")
     require(indexed_artifacts["REC-V03-REMEDIATION"]["status"] == "F01_F06_CLOSED_LICENSE_CONFLICT_PRODUCT_IP_BLOCKED", "Remediation indexed state drift")
     require(indexed_artifacts["REC-DEPENDENCY-IP-AUTHENTICITY-VERIFICATION-20260812"]["status"] == "CRYPTOGRAPHIC_AND_SOURCE_CORRESPONDENCE_EVIDENCE_RECORDED_NO_APPROVAL", "Authenticity verification report is not indexed")
     require(indexed_artifacts["REC-JSR305-EXCLUSION-ANALYSIS-20260812"] == {
         "id": "REC-JSR305-EXCLUSION-ANALYSIS-20260812",
         "locator": JSR305_ANALYSIS_LOCATOR,
-        "status": "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_PRODUCT_IP_DECISION_PENDING",
+        "status": "TECHNICAL_EXCLUSION_PROVEN_OWNER_PRODUCT_IP_PROSPECTIVE_POLICY_APPROVED",
     }, "JSR305 machine analysis is not indexed")
-    require(indexed_artifacts["REC-JSR305-EXCLUSION-DECISION-20260812"]["status"] == "OPTION_A_CONDITIONED_RECOMMENDED_NO_OWNER_APPROVAL", "JSR305 decision analysis indexed state drift")
+    require(indexed_artifacts["REC-JSR305-EXCLUSION-DECISION-20260812"]["status"] == "OPTION_A_OWNER_DISPOSITION_RECORDED_PROSPECTIVE_POLICY_ONLY", "JSR305 decision analysis indexed state drift")
     require(indexed_artifacts["REC-JSR305-REFERENCE-CLASSES-20260812"]["status"] == "EXACT_182_CLASS_LIST_SHA256_PINNED", "JSR305 exact class list is not indexed")
-    require(indexed_artifacts["REC-IP-REVIEW"]["status"] == "TECHNICAL_EXCLUSION_PATH_PREPARED_PRODUCT_IP_DECISION_BLOCKED", "IP-review indexed state drift")
+    require(indexed_artifacts["REC-REVIEW-ROLES"]["status"] == "OWNER_POLICY_APPROVED_FORMAL_ENGINEERING_SECURITY_REVIEWER_UNASSIGNED", "Review-role indexed state drift")
+    require(indexed_artifacts["REC-IP-REVIEW"]["status"] == "PROSPECTIVE_EXCLUSION_POLICY_APPROVED_ARTIFACT_USE_IMPLEMENTATION_EXECUTION_BLOCKED", "IP-review indexed state drift")
     indexed_hashes = {Path(item["locator"]).name: item["sha256"] for item in evidence_index["supersededAuditArtifacts"]}
     require(indexed_hashes == IMMUTABLE_AUDIT_HASHES, "Evidence index immutable audit hashes drift")
 
@@ -748,9 +826,23 @@ def validate_documents_and_no_implementation() -> None:
     gate_markdown = read_text(STAGE0 / "DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md")
     remediation = read_text(EVIDENCE / "governance-remediation-v0.3.md")
     review = read_text(EVIDENCE / "ip-stage0-evaluation-review.md")
-    require("Decision ID: `OD-14`" in owner_record and "executionAllowed=false" in owner_record and "v0.3" in owner_record, "OD-14 v0.3 boundary missing")
+    require(
+        "Decision ID: `OD-14`" in owner_record
+        and "executionAllowed=false" in owner_record
+        and "v0.3" in owner_record
+        and JSR305_POLICY_ID in owner_record
+        and OWNER_DECISION_INPUT_HEAD in owner_record
+        and "com.google.crypto.tink:tink-android:1.23.0" in owner_record
+        and JSR305_COORDINATE in owner_record
+        and all(rule in owner_record for rule in JSR305_R8_RULES)
+        and all(family in owner_record for family in ("compile", "runtime", "benchmark", "test", "packaging"))
+        and "javax.lang.model.element.Modifier" in owner_record
+        and "fails closed" in owner_record
+        and "does not approve use or distribution of JSR-305" in owner_record,
+        "OD-14 owner/Product-IP prospective exclusion policy boundary missing",
+    )
     require("Status: **Proposed" in decision and "executionAllowed=false" in decision, "DEC-044 must remain Proposed and non-executable")
-    require(JSR305_POLICY_ID in decision and "bare exclusion fails" in decision and "zero resolved JSR-305 components" in decision, "DEC-044 JSR305 proposed disposition missing")
+    require(JSR305_POLICY_ID in decision and "bare exclusion fails" in decision and "zero resolved" in decision and "JSR-305 components" in decision, "DEC-044 approved prospective JSR305 disposition missing")
     for required in (
         "DURABLE_ONE_SEGMENT_LOOKAHEAD", "DORA_RECOVERY_MANIFEST_V1_BINARY_BE",
         "DORASA01", "DORAMA01", "DORACP01", "DORAKE01",
@@ -761,7 +853,16 @@ def validate_documents_and_no_implementation() -> None:
     ):
         require(required in gate_markdown, f"Recovery Gate Set v0.3 is missing: {required}")
     require(REVIEWED_V02_HEAD in remediation and "executionAllowed=false" in remediation, "Remediation traceability/boundary missing")
-    require("owner-remediated protocol v0.3" in review.lower() and "AUTHENTICITY VERIFIED" in review and "license conflict remains unresolved" in review and "conditioned Option A" in review, "Product/IP final review/authenticity-license state drift")
+    require(
+        "owner-remediated protocol v0.3" in review.lower()
+        and "AUTHENTICITY VERIFIED" in review
+        and "license conflict remains unresolved" in review
+        and JSR305_POLICY_ID in review
+        and "approved only prospective policy" in review
+        and "excluded artifact / terms not interpreted" in review
+        and "implementation and execution blocked" in review.lower(),
+        "Product/IP prospective policy review/authenticity-license state drift",
+    )
 
     recovery_module = ROOT / "android" / "poc" / "recovery"
     require(not recovery_module.exists(), "android/poc/recovery must not exist in governance package")
@@ -790,7 +891,7 @@ def main() -> int:
     validate_protocol(protocol)
     validate_evidence()
     validate_documents_and_no_implementation()
-    print("POC-RECOVERY-001 governance v0.3 validation passed; conditioned JSR305 exclusion recorded with Product/IP decision pending; v0.1/v0.2 immutable and retained; executionAllowed=false")
+    print("POC-RECOVERY-001 governance v0.3 validation passed; owner/Stage 0 Product-IP prospective REC-JSR305-EXCLUDE-001 policy recorded, artifact terms uninterpreted and use/distribution unapproved; v0.1/v0.2 immutable and retained; executionAllowed=false")
     return 0
 
 
