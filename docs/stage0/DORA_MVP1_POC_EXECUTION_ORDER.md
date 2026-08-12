@@ -33,7 +33,7 @@ It is selected by `OD-01` because the higher-precedence Technical Plan puts capt
 
 ```mermaid
 flowchart TD
-    O["Approved owner constraints OD-01..OD-14"] --> G["Defined Stage 0 gates Approved; recovery v0.3 design selected, authenticity verified, license/verification/review blocked"]
+    O["Approved owner constraints OD-01..OD-14"] --> G["Defined Stage 0 gates Approved; recovery v0.4 governance selected, exact packet evidence verified, implementation/actual graph/review blocked"]
     O --> D["Connect and auto-identify one physical phone"]
     O --> C["Synthetic-only until controlled evidence storage"]
     G --> CAP["POC-CAPTURE-001"]
@@ -73,7 +73,7 @@ Common blockers:
 | PoC | Direct dependencies | What it blocks | Safe parallel work | Physical phone | Audio/data requirement | Owner decisions |
 |---|---|---|---|---|---|---|
 | `POC-CAPTURE-001` | approved defined gates; one owner phone connected and automatically inventoried; synthetic fixture and evidence/deletion plan | `POC-BATTERY-001`; production Stage 2; informs recovery writer timing and offline capture harness | Search harness and synthetic decision corpus preparation | **First exploratory run:** exactly one physical owner phone. **Full gate later:** required D1/D2/D3/D5 and applicable D4–D7 slices; emulator only supplements API/fault checks | Reproducible synthetic acoustic speech/silence first; purpose-recorded only after consent and controlled-store gate | OD-01, OD-02, OD-03, OD-05, OD-06, OD-07, OD-08 |
-| `POC-RECOVERY-001` | Proposed `DEC-044`; owner-remediated Gate Set/protocol `stage0-v0.3`; resolution of the exact `jsr305:3.0.2` license conflict; Product/IP final disposition; distinct accountable recovery Engineering/Security review; separately scoped implementation/non-metric verification; exact resolved Gradle graph and fresh emulator/D2 preflight; separate owner execution authorization | production Stage 3 and later `ADR-AUDIO-001` final storage choice; contributes to offline/process-death evidence | repeat read-only governance review only in the current scope | **Phase A:** pinned emulator + available physical D2, but only `FAIL`/`INCONCLUSIVE`. **Full verdict:** fresh physical D1/D2/D5; D1/D5 procurement deferred | Deterministic synthetic PCM16 byte oracle only; no microphone/real speech. 12 strata, 120 base hard kills/candidate, ≥100 valid and ≥8/stratum; 33 fault rows | OD-05, OD-08, OD-11, OD-14 |
+| `POC-RECOVERY-001` | Proposed `DEC-044`; prospective Gate Set/protocol `stage0-v0.4`; repeat exact-commit read-only review; distinct accountable recovery Engineering/Security review; separately scoped implementation/non-metric verification; exact recovery-only zero-JSR305 graph/package/R8 evidence and scoped Product/IP disposition of that actual graph; fresh emulator/D2 preflight; separate owner execution authorization | production Stage 3 and later `ADR-AUDIO-001` final storage choice; contributes to offline/process-death evidence | repeat read-only governance review only in the current scope | **Phase A:** pinned emulator + available physical D2, but only `FAIL`/`INCONCLUSIVE`. **Full verdict:** fresh physical D1/D2/D5; D1/D5 procurement deferred | Deterministic synthetic PCM16 byte oracle only; no microphone/real speech. 12 strata, 120 base hard kills/candidate, ≥100 valid and ≥8/stratum; 45 fault rows (33 inherited + 12 key-confirmation/bootstrap) | OD-05, OD-08, OD-11, OD-14 |
 | `POC-VAD-001` | gates, data governance; deterministic clock/frame contract | production Stage 3 segmentation profile; stable physical-segment inputs for later pipeline | Recovery and search; acoustic part can wait while deterministic part runs | Physical D1–D3 for real-time/acoustic evidence; emulator/JVM suitable for deterministic boundary cases | Synthetic 89.5/90/90.5, resume 89.9, noise and >10 min speech-like fixtures; governed real speech only later | OD-03, OD-04, OD-05, OD-06, OD-08, OD-09 if purpose-recorded |
 | `POC-ASR-001` | gates, governed immutable corpus, D1–D4/D7, artifact license/digest/ABI/16-KiB approval | production Stage 4; timestamp contract and quality baseline for diarization/offline local ML | Search and decision benchmarks; runtime candidates may be compared independently after common normalization freezes | **Required:** D1–D4 for tier claims; D7 emulator/physical for native gate | Blind RU/EN/mixed clean/noisy/speakerphone corpus; participant-isolated evaluation | OD-03–OD-06, OD-08–OD-10 plus named IP/Legal artifact approval |
 | `POC-DIAR-001` | gates, governed 1–6 speaker corpus, ASR/reference timestamp contract, exact weight license | production Stage 5 and correction UX scope | Battery repeats and decision/search work after shared corpus freezes | **Required:** D2/D3; D7 for native path; server reference may run separately | Clean/noisy/overlap/fast-turn/returning-speaker/speakerphone/negative corpus | OD-03–OD-06, OD-08–OD-10 plus weight terms approval |
@@ -129,10 +129,16 @@ After capture evidence is understood:
 
 - `POC-RECOVERY-001` may proceed only in three separate scopes: governance review, then authorized
   isolated harness implementation, then separately authorized execution. The current scope stops
-  after owner-remediated governance/readiness v0.3 publication with `executionAllowed=false`;
-- v0.1/v0.2 remain unchanged superseded audit artifacts and cannot govern implementation or execution;
-- before implementation, resolution of the exact `jsr305:3.0.2` license conflict, Product/IP final disposition and a distinct accountable recovery
-  Engineering/Security review of the v0.3 design remain mandatory; this Codex remediation does not
+  after prospective governance/readiness v0.4 publication with `implementationAllowed=false` and
+  `executionAllowed=false`;
+- v0.1/v0.2/v0.3 remain unchanged SHA-256-pinned superseded audit artifacts and cannot govern
+  implementation or execution;
+- prospective `REC-JSR305-EXCLUDE-001` and exact governance packet authenticity/LICENSE/NOTICE
+  evidence are closed. Before implementation/execution, a distinct accountable recovery
+  Engineering/Security review of the v0.4 design remains mandatory; after separately authorized
+  implementation, exact recovery-only graph/package/R8 evidence and scoped Product/IP disposition
+  of that actual graph are mandatory. Approval to use the excluded JSR-305 artifact is not required
+  or granted; this Codex remediation does not
   claim formal independence;
 - a later authorized recovery Phase A may use emulator+D2 but cannot PASS without D1/D5;
 - `POC-VAD-001` remains a separate branch/harness and is not admitted by recovery work;
@@ -216,13 +222,15 @@ Technical Plan section 34.2 maps D6 to audio routes and D7 to 16-KiB. Test Strat
 
 The backlog lists `ADR-AUDIO-001` as a dependency of `POC-RECOVERY-001`, while the Technical Plan expects the recovery PoC to choose Tink streaming versus sealed microfiles and then support a go/no-go ADR. Before recovery starts, create only a scoped **Proposed experiment decision** that freezes the compared formats and safety invariants. Accept the final audio/container ADR only after PoC evidence. This prevents a PoC from being forced to prove a choice already declared final.
 
-`DEC-044` now supplies that Proposed record and freezes owner-remediated governance protocol v0.3
-without selecting a winner. Its exact Gate Set compares durable-one-segment-lookahead public Tink
+`DEC-044` now supplies that Proposed record and freezes prospective governance protocol v0.4
+without selecting a winner. It inherits exact SHA-256-pinned v0.3 semantics and adds durable
+run-key confirmation. Its exact Gate Set compares durable-one-segment-lookahead public Tink
 Streaming AEAD with five-second `AES256_GCM_TINK_IV12_TAG16` microfiles and the exact authenticated
 binary manifest; 15/30-second microfiles are not PASS-eligible. Design selection does not prove an
-implementation. Product/IP final disposition, distinct accountable Engineering/Security review,
-implementation verification and execution authorization remain absent. v0.1/v0.2 are retained only as
-unchanged superseded audit artifacts. A future final `ADR-AUDIO-001` remains evidence-dependent.
+implementation. Prospective policy and exact governance packet evidence are closed; future actual
+graph Product/IP disposition, distinct accountable Engineering/Security review, implementation
+verification and execution authorization remain absent. v0.1/v0.2/v0.3 are retained only as
+unchanged SHA-256-pinned superseded audit artifacts. A future final `ADR-AUDIO-001` remains evidence-dependent.
 
 ## 11. First PoC Definition of Ready
 

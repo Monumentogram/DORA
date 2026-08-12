@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the exact published Tink closure and v0.3 IP/authenticity evidence without Gradle changes."""
+"""Verify the exact published Tink closure and v0.4 governance/IP boundary without Gradle changes."""
 
 from __future__ import annotations
 
@@ -36,6 +36,16 @@ OWNER_DECISION_PATH = ROOT / "docs" / "stage0" / "DORA_MVP1_POC_RECOVERY_OWNER_D
 OWNER_DECISION_INPUT_HEAD = "eb312feb2a0d5e5b24b45fcd045bacca94e8c9da"
 MAVEN_NS = {"m": "http://maven.apache.org/POM/4.0.0"}
 USER_AGENT = "Dora-POC-RECOVERY-001-inventory-verifier/1.0"
+JETBRAINS_COMMIT = "f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c"
+JETBRAINS_LICENSE_URL = f"https://github.com/JetBrains/intellij-community/blob/{JETBRAINS_COMMIT}/LICENSE.txt"
+JETBRAINS_NOTICE_URL = f"https://github.com/JetBrains/intellij-community/blob/{JETBRAINS_COMMIT}/NOTICE.txt"
+JETBRAINS_LICENSE_SHA256 = "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+JETBRAINS_NOTICE_SHA256 = "0479f6a86003002dec1da1667f2f8320253c7225c6ffffc05cf7e0988bd8c72c"
+R8_RULES = [
+    "-dontwarn javax.annotation.Nullable",
+    "-dontwarn javax.annotation.concurrent.GuardedBy",
+    "-dontwarn javax.annotation.concurrent.ThreadSafe",
+]
 NATIVE_SUFFIXES = (".so", ".dll", ".dylib")
 OPENPGP_VERIFIER_SOURCE = ROOT / "tools" / "OpenPgpDetachedSignatureVerifier.java"
 BOUNCY_CASTLE_LIBRARIES = {
@@ -89,6 +99,17 @@ def download(url: str, target: Path) -> None:
             if attempt < 2:
                 time.sleep(attempt + 1)
     raise OSError(f"Failed to download {url}: {last_error}")
+
+
+def github_content_bytes(repository: str, path: str, commit: str) -> bytes:
+    url = f"https://raw.githubusercontent.com/{repository}/{commit}/{path}"
+    request = urllib.request.Request(
+        url,
+        headers={"User-Agent": USER_AGENT},
+    )
+    with urllib.request.urlopen(request, timeout=90) as response:
+        require(response.status == 200, f"Unexpected HTTP {response.status} for {url}")
+        return response.read()
 
 
 def sha256(path: Path) -> str:
@@ -563,7 +584,7 @@ def parse_pom_license(path: Path) -> tuple[str, str]:
     return name, url
 
 
-def validate_static(
+def _validate_static_v03_superseded(
     inventory: dict[str, Any],
     license_notice: dict[str, Any],
     authenticity: dict[str, Any],
@@ -713,6 +734,180 @@ def validate_static(
     require(sum(component["authenticityStatus"] == "AUTHENTICITY_VERIFIED_PUBLISHER_BOUND_SIGNATURE" for component in authentic_by_coordinate.values()) == 2, "Exactly two coordinates must use publisher-bound signatures")
 
 
+def validate_static(
+    inventory: dict[str, Any],
+    license_notice: dict[str, Any],
+    authenticity: dict[str, Any],
+    jsr305_exclusion: dict[str, Any],
+    readiness: dict[str, Any],
+    review_roles: dict[str, Any],
+) -> None:
+    """Validate the active v0.4 packet and its exact recovery-only boundary."""
+
+    require(inventory["schemaVersion"] == 3, "Dependency inventory schema drift")
+    require(inventory["rootCoordinate"] == "com.google.crypto.tink:tink-android:1.23.0", "Root coordinate drift")
+    require(inventory["dependencyAdmission"] is False and inventory["runtimeGraphModified"] is False, "Inventory admitted a runtime graph")
+    require(len(inventory["artifacts"]) == 8 and len(inventory["graphEdges"]) == 8, "Published closure count drift")
+    require(all(artifact["jar"]["nativeEntries"] == 0 for artifact in inventory["artifacts"]), "Native entry recorded")
+    boundary = inventory["recoveryBoundary"]
+    require(
+        boundary["boundaryId"] == "REC-JSR305-EXCLUDE-001"
+        and boundary["currentTinkAndroid123Wired"] is False
+        and boundary["currentRecoveryModuleExists"] is False
+        and boundary["repositoryWideAbsenceClaimed"] is False
+        and boundary["baseOtherModuleToolingOccurrencesAreRecoveryAdmissionEvidence"] is False
+        and boundary["futureActualRecoveryGraphStatus"].startswith("OPEN_BLOCKED"),
+        "Dependency inventory recovery-only boundary drift",
+    )
+    require((ROOT / boundary["baseInventoryLocator"]).is_file(), "Base lockfile/tooling inventory missing")
+
+    require(jsr305_exclusion["schemaVersion"] == 3 and jsr305_exclusion["pocId"] == "POC-RECOVERY-001", "JSR305 analysis identity drift")
+    current = jsr305_exclusion["currentRepositoryBoundary"]
+    require(
+        current["boundaryId"] == "REC-JSR305-EXCLUDE-001"
+        and current["tinkAndroid123Wired"] is False
+        and current["recoveryModuleExists"] is False
+        and current["repositoryWideAbsenceClaimed"] is False
+        and current["pullRequest11ChangedLockfiles"] is False
+        and current["baseOtherModuleToolingOccurrencesAreRecoveryAdmissionEvidence"] is False,
+        "JSR305 current-repository boundary overclaim",
+    )
+    policy = jsr305_exclusion["prospectivePolicy"]
+    require(
+        policy["policyId"] == "REC-JSR305-EXCLUDE-001"
+        and policy["status"] == "APPROVED_PROSPECTIVE_POLICY_ONLY"
+        and policy["rootCoordinate"] == "com.google.crypto.tink:tink-android:1.23.0"
+        and policy["forbiddenResolvedCoordinate"] == "com.google.code.findbugs:jsr305:3.0.2"
+        and policy["coveredFutureModule"] == ":poc:recovery"
+        and policy["requiredResolvedComponentCount"] == 0
+        and policy["compileOnlyOrAlternatePathToForbiddenCoordinateAllowed"] is False
+        and policy["requiredR8Rules"] == R8_RULES
+        and policy["broaderJavaxAnnotationDontwarnAllowed"] is False
+        and policy["futureResolvedGraphReportPresent"] is False,
+        "JSR305 prospective exclusion policy drift",
+    )
+    require(policy["excludedCurrentInputsAreRecoveryAdmissionEvidence"] is False, "Existing tooling paths were treated as recovery admission")
+    require(not (ROOT / policy["futureResolvedGraphReportLocator"]).exists(), "Future resolved graph appeared before authorized implementation")
+    bytecode = jsr305_exclusion["bytecodeAndSourceEvidence"]
+    require(bytecode["classesContainingAnyJsr305Descriptor"] == 182, "Tink JSR305 descriptor class count drift")
+    require(JSR305_CLASS_LIST_PATH.is_file() and sha256(JSR305_CLASS_LIST_PATH) == bytecode["classListSha256"], "JSR305 class-list hash drift")
+    require(
+        bytecode["constantClassReferencesToJsr305"] == 0
+        and bytecode["fieldOrMethodDefinitionDescriptorsToJsr305"] == 0
+        and bytecode["symbolicNameAndTypeOrMethodTypeDescriptorsToJsr305"] == 0
+        and bytecode["tinkReflectionOrClassForNameCallsTargetingJsr305"] == 0,
+        "JSR305 is no longer annotation-metadata-only",
+    )
+    probes = jsr305_exclusion["nonRepositoryProbes"]
+    require(probes["r8BareExclusion"]["exitCode"] == 1, "Bare exclusion unexpectedly accepted")
+    require(probes["r8NarrowRule"]["exitCode"] == 0 and probes["r8NarrowRule"]["rules"] == R8_RULES, "Exact narrow R8 proof drift")
+    states = jsr305_exclusion["licenseDisposition"]
+    require(
+        states["stateAProspectivePolicy"] == "CLOSED_APPROVED"
+        and states["stateBGovernanceAuthenticityLicenseEvidence"].startswith("CLOSED_VERIFIED")
+        and states["stateCFutureActualGraphProductIpDisposition"].startswith("OPEN_BLOCKED")
+        and states["underlyingArtifactConflictResolved"] is False
+        and states["jsr305UseOrDistributionApproved"] is False,
+        "JSR305 three-state license disposition drift",
+    )
+
+    require(authenticity["schemaVersion"] == 3 and authenticity["pocId"] == "POC-RECOVERY-001", "Authenticity evidence identity drift")
+    require(
+        authenticity["overallStatus"]
+        == "EXACT_GOVERNANCE_PACKET_AUTHENTICITY_LICENSE_NOTICE_VERIFIED_FUTURE_ACTUAL_GRAPH_PRODUCT_IP_BLOCKED",
+        "Authenticity packet/actual-graph state drift",
+    )
+    require(authenticity["summary"]["coordinates"] == 8 and len(authenticity["components"]) == 8, "Authenticity coordinate count drift")
+    require(authenticity["summary"]["publisherChecksumsMatched"] == 16, "Publisher checksum count drift")
+    require(authenticity["summary"]["detachedSignaturesCryptographicallyVerified"] == 16, "Detached signature count drift")
+    require(authenticity["summary"]["coordinatesAuthenticityVerified"] == 8 and authenticity["summary"]["coordinatesAuthenticityPending"] == 0, "Authenticity closure count drift")
+    approval = authenticity["approvalBoundary"]
+    require(
+        approval["prospectivePolicyStatus"] == "CLOSED_APPROVED"
+        and approval["governancePacketEvidenceStatus"] == "CLOSED_VERIFIED"
+        and approval["futureActualGraphProductIpDisposition"] == "OPEN_BLOCKED"
+        and approval["productIpFinalApproval"] is False
+        and approval["jsr305UseOrDistributionApproved"] is False
+        and approval["dependencyAdmission"] is False
+        and approval["productionAdmission"] is False,
+        "Authenticity approval boundary drift",
+    )
+
+    artifacts_by_coordinate = {artifact["coordinate"]: artifact for artifact in inventory["artifacts"]}
+    authentic_by_coordinate = {component["coordinate"]: component for component in authenticity["components"]}
+    require(set(artifacts_by_coordinate) == set(authentic_by_coordinate), "Authenticity coverage drift")
+    for coordinate, component in authentic_by_coordinate.items():
+        artifact = artifacts_by_coordinate[coordinate]
+        require(component["authenticityStatus"] in AUTHENTICITY_STATUSES - {"AUTHENTICITY_PENDING", "AUTHENTICITY_REJECTED"}, f"{coordinate} authenticity is not verified")
+        require(component["jar"]["sha256"] == artifact["jar"]["sha256"] and component["pom"]["sha256"] == artifact["pom"]["sha256"], f"{coordinate} inventory/authenticity hash drift")
+        for kind in ("jar", "pom"):
+            require(component[kind]["publisherChecksum"]["result"] == "MATCH", f"{coordinate} {kind} checksum not matched")
+            require(component[kind]["detachedSignature"]["result"] == "CRYPTOGRAPHICALLY_VERIFIED", f"{coordinate} {kind} signature not verified")
+
+    jetbrains = authentic_by_coordinate["org.jetbrains:annotations:13.0"]
+    require(jetbrains["upstreamLicenseTextLocator"] == JETBRAINS_LICENSE_URL, "JetBrains LICENSE locator is not immutable")
+    require(jetbrains["licenseTextSha256"] == JETBRAINS_LICENSE_SHA256, "JetBrains LICENSE digest drift")
+    require(
+        jetbrains["notice"]["locator"] == JETBRAINS_NOTICE_URL
+        and jetbrains["notice"]["sha256"] == JETBRAINS_NOTICE_SHA256
+        and jetbrains["notice"]["result"] == "IMMUTABLE_NOTICE_VERIFIED_AND_PRESERVATION_REQUIRED"
+        and "PRESERVE" in jetbrains["notice"]["requirement"],
+        "JetBrains NOTICE evidence/preservation drift",
+    )
+    verification = jetbrains["licenseAndNoticeVerification"]
+    require(
+        verification["verifiedAtUtc"] == "2026-08-12T14:38:33Z"
+        and verification["verificationTool"] == "gh api GitHub Contents API + System.Security.Cryptography.SHA256"
+        and verification["licenseBytes"] == 11358
+        and verification["noticeBytes"] == 127
+        and verification["governancePacketEvidenceAccepted"] is True
+        and verification["futureActualGraphApproved"] is False
+        and verification["redistributionApproved"] is False,
+        "JetBrains immutable verification record drift",
+    )
+    forbidden = re.compile(r"EXACT_SOURCE[^\n\"]*PENDING|JetBrains/java-annotations/master|raw\.githubusercontent\.com/JetBrains/[^\s\"]*/master")
+    require(forbidden.search(json.dumps(authenticity)) is None, "Mutable/PENDING JetBrains evidence remains")
+
+    require(license_notice["schemaVersion"] == 4, "License/NOTICE inventory schema drift")
+    require(license_notice["summary"]["jetbrainsAnnotationsImmutableLicenseNoticeVerified"] is True, "License/NOTICE inventory lacks JetBrains closure")
+    license_jetbrains = next(item for item in license_notice["components"] if item["coordinate"] == "org.jetbrains:annotations:13.0")
+    require(
+        license_jetbrains["immutableLicenseLocator"] == JETBRAINS_LICENSE_URL
+        and license_jetbrains["immutableLicenseSha256"] == JETBRAINS_LICENSE_SHA256
+        and license_jetbrains["immutableNoticeLocator"] == JETBRAINS_NOTICE_URL
+        and license_jetbrains["immutableNoticeSha256"] == JETBRAINS_NOTICE_SHA256
+        and license_jetbrains["governancePacketEvidenceAccepted"] is True
+        and license_jetbrains["futureActualGraphApproved"] is False
+        and "PRESERVE" in license_jetbrains["noticePreservationRequirement"],
+        "License/NOTICE inventory JetBrains record drift",
+    )
+
+    require(readiness["schemaVersion"] == 5 and readiness["executionAllowed"] is False and readiness["implementationAllowedByThisPackage"] is False, "Readiness authority boundary drift")
+    readiness_policy = readiness["dependencyExclusionPolicy"]
+    require(
+        readiness_policy["policyId"] == "REC-JSR305-EXCLUDE-001"
+        and readiness_policy["coveredFutureModule"] == ":poc:recovery"
+        and readiness_policy["allCoveredRecoveryInputsRequired"] is True
+        and readiness_policy["repositoryWideAbsenceClaimed"] is False
+        and readiness_policy["requiredResolvedComponentCount"] == 0
+        and readiness_policy["requiredR8Rules"] == R8_RULES
+        and readiness_policy["broaderDontwarnAllowed"] is False
+        and readiness_policy["unresolvedR8MissingClassesAllowed"] is False
+        and readiness_policy["futureResolvedGraphReportPresent"] is False,
+        "Readiness recovery-only graph/R8 policy drift",
+    )
+    require(review_roles["schemaVersion"] == 5, "Review-role schema drift")
+    product_ip = review_roles["roles"]["stage0ProductIp"]
+    require(
+        product_ip["governancePacketEvidenceDisposition"]["status"] == "CLOSED_VERIFIED"
+        and product_ip["futureExactGraphDisposition"]["status"] == "OPEN_BLOCKED"
+        and product_ip["finalApproved"] is False
+        and product_ip["approvedReviewer"] is None,
+        "Product/IP packet/actual-graph role split drift",
+    )
+    require(review_roles["roles"]["independentRecoveryEngineeringSecurity"]["reviewer"] is None, "Accountable reviewer was assigned by remediation")
+
+
 def verify_online(
     inventory: dict[str, Any],
     license_notice: dict[str, Any],
@@ -836,6 +1031,23 @@ def verify_online(
                 download(module["url"], module_path)
                 verify_file(module_path, module, f"{coordinate} Gradle module metadata")
 
+        jetbrains_license = github_content_bytes(
+            "JetBrains/intellij-community", "LICENSE.txt", JETBRAINS_COMMIT
+        )
+        jetbrains_notice = github_content_bytes(
+            "JetBrains/intellij-community", "NOTICE.txt", JETBRAINS_COMMIT
+        )
+        require(len(jetbrains_license) == 11358, "JetBrains immutable LICENSE byte length mismatch")
+        require(len(jetbrains_notice) == 127, "JetBrains immutable NOTICE byte length mismatch")
+        require(
+            hashlib.sha256(jetbrains_license).hexdigest() == JETBRAINS_LICENSE_SHA256,
+            "JetBrains immutable LICENSE SHA-256 mismatch",
+        )
+        require(
+            hashlib.sha256(jetbrains_notice).hexdigest() == JETBRAINS_NOTICE_SHA256,
+            "JetBrains immutable NOTICE SHA-256 mismatch",
+        )
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
@@ -858,9 +1070,9 @@ def main() -> int:
     validate_static(inventory, license_notice, authenticity, jsr305_exclusion, readiness, review_roles)
     if args.online:
         verify_online(inventory, license_notice, authenticity, jsr305_exclusion)
-        print("Verified 8 exact external JAR/POM coordinates online: artifact hashes, publisher checksums, full-fingerprint detached OpenPGP cryptography and identity metadata, signed source JARs for the six multisource coordinates, POM graph/licenses, no native payload, and exact Tink JSR305 annotation-only bytecode/source classification; temporary files removed")
+        print("Verified 8 exact external JAR/POM coordinates online plus immutable JetBrains LICENSE/NOTICE bytes: artifact hashes, publisher checksums, full-fingerprint detached OpenPGP cryptography and identity metadata, signed source JARs for the six multisource coordinates, POM graph/licenses, no native payload, exact Tink JSR305 annotation-only classification, and exact-commit LICENSE/NOTICE SHA-256; temporary files removed")
     else:
-        print("POC-RECOVERY-001 v0.3 dependency/IP/authenticity static validation passed; authenticity and conditioned JSR305 exclusion evidence are valid, owner/Stage 0 Product-IP approved only REC-JSR305-EXCLUDE-001 prospective policy, underlying artifact license terms remain uninterpreted and use/distribution unapproved (use --online for checksum and cryptographic signature revalidation)")
+        print("POC-RECOVERY-001 v0.4 dependency/IP static validation passed; exact governance packet authenticity/LICENSE/NOTICE evidence and prospective REC-JSR305-EXCLUDE-001 are closed, future actual :poc:recovery graph/Product-IP disposition remains blocked, repository-wide absence is not claimed, and excluded JSR305 use/distribution is unapproved (use --online for artifact/signature and immutable LICENSE/NOTICE revalidation)")
     return 0
 
 

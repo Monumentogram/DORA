@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "pocId": "POC-RECOVERY-001",
   "generatedAtUtc": "2026-08-11T21:31:21.7154872Z",
-  "reviewStatus": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED",
+  "reviewStatus": "GOVERNANCE_PACKET_AUTHENTICITY_LICENSE_NOTICE_VERIFIED_FUTURE_ACTUAL_GRAPH_PRODUCT_IP_BLOCKED",
   "amendedAtUtc": "2026-08-12T10:09:05Z",
   "coordinateEvidenceLocator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json",
   "evaluationApproved": false,
@@ -29,8 +29,12 @@
       "com.google.code.findbugs:jsr305:3.0.2"
     ],
     "noticeFilesRequiringPreservationFound": [
+      "org.jetbrains:annotations:13.0 immutable NOTICE.txt if the artifact enters a separately approved future Stage 0 resolved graph",
       "com.google.code.findbugs:jsr305:3.0.2 BSD-3-Clause copyright/license/disclaimer if Product/IP selects or accepts those terms"
     ],
+    "jetbrainsAnnotationsImmutableLicenseNoticeVerified": true,
+    "governancePacketAuthenticityLicenseEvidenceVerified": true,
+    "futureActualGraphProductIpDisposition": "OPEN_BLOCKED",
     "packageReviewRequired": true,
     "authenticityMustCloseBeforeProductIpApproval": false,
     "licenseConflictMustCloseBeforeProductIpApproval": true,
@@ -168,7 +172,14 @@
       "jarSha256": "ace2a10dc8e2d5fd34925ecac03e4988b2c0f851650c94b8cef49ba1bd111478",
       "embeddedLicenseEntries": [],
       "embeddedNoticeEntries": [],
-      "distributionReview": "PENDING"
+      "immutableLicenseLocator": "https://github.com/JetBrains/intellij-community/blob/f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c/LICENSE.txt",
+      "immutableLicenseSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "immutableNoticeLocator": "https://github.com/JetBrains/intellij-community/blob/f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c/NOTICE.txt",
+      "immutableNoticeSha256": "0479f6a86003002dec1da1667f2f8320253c7225c6ffffc05cf7e0988bd8c72c",
+      "noticePreservationRequirement": "PRESERVE_IN_FUTURE_STAGE0_NOTICES_PACKET_IF_ARTIFACT_ENTERS_SEPARATELY_APPROVED_RESOLVED_GRAPH",
+      "governancePacketEvidenceAccepted": true,
+      "futureActualGraphApproved": false,
+      "distributionReview": "NOT_APPROVED"
     },
     {
       "coordinate": "embedded:protobuf-java:4.33.6",

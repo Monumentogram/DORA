@@ -1,6 +1,6 @@
 # POC-RECOVERY-001 exact Stage 0 evaluation package review
 
-Status: **AUTHENTICITY VERIFIED — PROSPECTIVE JSR305 EXCLUSION POLICY APPROVED / IMPLEMENTATION AND EXECUTION BLOCKED**\
+Status: **POLICY AND EXACT GOVERNANCE AUTHENTICITY/LICENSE/NOTICE EVIDENCE CLOSED — ACTUAL GRAPH, IMPLEMENTATION AND EXECUTION BLOCKED**\
 Prepared: 12 August 2026\
 Evaluation candidate: `com.google.crypto.tink:tink-android:1.23.0`\
 Execution allowed: **no**
@@ -8,16 +8,17 @@ Execution allowed: **no**
 ## Review conclusion
 
 The supply-chain packet verifies all eight publisher-closure coordinate authenticity
-classifications and closes F-06's evidence-completeness finding. The exact
+classifications and closes F-06's evidence-completeness finding only after immutable JetBrains
+LICENSE/NOTICE byte verification. The exact
 `jsr305:3.0.2` license conflict remains unresolved, while a separate bytecode/compiler/D8/R8
 analysis proves a conditioned path that keeps the artifact out of a future graph. At input
 governance HEAD `eb312feb2a0d5e5b24b45fcd045bacca94e8c9da`, the Project owner acting as Stage 0
 Product/IP reviewer approved only prospective policy `REC-JSR305-EXCLUDE-001` and the reviewed
 governance package for a future exact excluded Stage 0 graph. The package is not approved for
 implementation, evaluation execution, dependency admission, redistribution or production.
-Protocol v0.2 at reviewed commit `70cf26125dbecbb347311ca0bb9ce1ad5c637e18` received
-`CHANGES_REQUIRED` findings
-F-01–F-06; owner-remediated protocol v0.3 requires repeat review. This document does not identify a
+Protocol v0.3 at reviewed commit `c61603d30c01c72347aa205c247729ad534c2882` received four final
+advisory findings; prospective protocol v0.4 remediates them and requires repeat exact-commit
+review. This document does not identify a
 sanitized prior reviewer or claim formal independence for Codex.
 
 The exact root JAR/POM and seven external transitive coordinates are hashed and inventoried. The
@@ -49,9 +50,10 @@ provided in the distribution and license surface. Production Legal is unassigned
 | Publisher checksums | 16/16 JAR/POM checksum files matched |
 | Detached OpenPGP signatures | 16/16 cryptographically verified with SHA-256-pinned Bouncy Castle 1.83 and full primary/signing fingerprints |
 | Authenticity classification | 2/8 publisher-bound signatures; 6/8 exact multisource correspondence; 0 pending |
+| JetBrains annotations LICENSE/NOTICE | immutable commit `f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c`; LICENSE SHA-256 `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30`; NOTICE SHA-256 `0479f6a86003002dec1da1667f2f8320253c7225c6ffffc05cf7e0988bd8c72c`; future Stage 0 notice preservation required if admitted to a separately approved graph |
 | License conflict | signed published `jsr305:3.0.2` POM Apache-2.0 vs exact release-source POM/LICENSE BSD-3-Clause |
 | Exclusion analysis | Option A technically feasible only with a scoped Tink edge exclusion, zero resolved JSR-305 components and three exact R8 `-dontwarn` rules; bare exclusion fails R8 9.3.16 |
-| Gradle/runtime graph | not created; prohibited in this task |
+| Recovery Gradle/runtime graph | not created; prohibited in this task; unrelated base tooling/test/lint/UTP occurrences are inventoried and not claimed absent |
 
 Because the repository pins Kotlin 2.2.10 while AndroidX annotation metadata declares Kotlin
 stdlib 1.7.10, the future recovery configuration may resolve a different Kotlin version than the
@@ -90,8 +92,12 @@ Legal/IP clarification; abandoning Tink would require a new prospective decision
 
 The future separately scoped harness may declare only exact
 `com.google.crypto.tink:tink-android:1.23.0` with the scoped exclusion of exact
-`com.google.code.findbugs:jsr305:3.0.2`. Every covered compile, runtime, benchmark, test and
-packaging configuration must resolve zero JSR-305 components. The only allowed suppression is the
+`com.google.code.findbugs:jsr305:3.0.2`. The boundary is only future `:poc:recovery`: every
+resolvable compile, runtime, unit-test, `androidTest`, benchmark and release configuration,
+packaging/runtime-artifact input, lock and verification-metadata input must resolve zero JSR-305
+components and package zero JSR-305 `javax.annotation` definitions. Existing other-module
+buildscript/AGP/UTP/lint/tooling and app/capture/search lockfiles are outside the boundary and do
+not constitute recovery admission evidence. The only allowed suppression is the
 three-line rule for `javax.annotation.Nullable`, `javax.annotation.concurrent.GuardedBy` and
 `javax.annotation.concurrent.ThreadSafe`; broader `dontwarn` is forbidden. Reappearance by any
 path fails closed and blocks implementation verification and execution.
@@ -123,9 +129,9 @@ old Streaming AEAD segment-counter overflow fix, an HKDF direct-buffer memory fi
 Keystore large-input fix, all predating v1.23.0. These checks reduce known-version uncertainty; an
 empty query is not proof of security and does not approve the recovery protocol.
 
-## Owner-remediated crypto/protocol design remains verification-blocking
+## Prospective crypto/protocol design remains verification-blocking
 
-Protocol v0.3 selects, but does not implement or prove:
+Protocol v0.4 inherits the exact SHA-256-pinned v0.3 contract and selects, but does not implement or prove:
 
 1. public AES-GCM-HKDF `StreamingAead` with 16-byte input/derived key, SHA-256, 4096-byte segments,
    one derived AES key per stream and `DURABLE_ONE_SEGMENT_LOOKAHEAD`;
@@ -133,16 +139,18 @@ Protocol v0.3 selects, but does not implement or prove:
    `read()==-1` EOF semantics;
 3. `AES256_GCM_TINK_IV12_TAG16` five-second microfiles and exact
    `DORA_RECOVERY_MANIFEST_V1_BINARY_BE`;
-4. four exact big-endian/LP16 AAD schemas, the non-deprecated Keystore Builder access path,
-   key-confirmation ciphertext and five-level error precedence;
+4. four inherited AAD schemas plus exact separate `DORAKC01` plaintext / `DORAKA01` AAD schemas,
+   the non-deprecated Keystore Builder access path, durable ninth-family key-confirmation
+   ciphertext and v0.4 error precedence;
 5. exact 9/13/21 publication sequences, `final + ".tmp"` namespace, five reconciliation states,
    collision/no-overwrite and all final/temp containment/lstat/regular/no-symlink checks;
 6. successful SQLite `endTransaction()` return as semantic commit, WAL/FULL SQLite, deterministic
    UNIQUE processing intents and controller-ledger rollback scope; and
-7. candidate-specific K01–K12 barriers and the 33-row matrix including exact KEY-01–KEY-07.
+7. candidate-specific K01–K12 barriers with durable bootstrap prerequisite and the 45-row matrix:
+   33 inherited rows plus exact `KCB-01..06` and `KCF-01..06`.
 
 Each selected item has status `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`. A distinct
-accountable recovery Engineering/Security reviewer must verify or revise the exact v0.3 contract
+accountable recovery Engineering/Security reviewer must verify or revise the exact v0.4 contract
 and later implementation evidence before execution.
 
 ## SQLite provenance boundary
@@ -159,8 +167,8 @@ recovery-only platform boundary does not admit a production schema or component.
 
 | Reviewer | Requested disposition | Current state |
 |---|---|---|
-| Project owner / Stage 0 Product/IP | prospective policy `REC-JSR305-EXCLUDE-001` and reviewed governance package only | approved 2026-08-12 by Project owner for a future exact excluded Stage 0 graph; underlying license conflict remains uninterpreted; no artifact use/distribution or dependency admission |
-| Distinct accountable recovery Engineering/Security | verify, reject or revise selected v0.3 construction/key/commit/recovery/barrier/fault protocol; later verify implementation evidence | unassigned, blocking; current Codex remediation not claimed independent |
+| Project owner / Stage 0 Product/IP | prospective policy and exact governance authenticity/LICENSE/NOTICE evidence | policy closed/approved and packet evidence closed/verified; future actual graph/package/R8 disposition open/blocking; excluded JSR-305 terms uninterpreted and use/distribution unapproved |
+| Distinct accountable recovery Engineering/Security | verify, reject or revise selected v0.4 construction/key-confirmation/commit/recovery/barrier/fault protocol; later verify implementation evidence | unassigned, blocking; current Codex remediation not claimed independent |
 | Project owner / execution | after all other prerequisites, separately set `executionAllowed=true` for a named phase/commit | withheld |
 | Production Legal | production/redistribution assessment | unassigned; not required for package preparation, required before production |
 | Production Security | production admission assessment | separate future gate; not replaced |

@@ -17,13 +17,15 @@ owner_decision:
 
 recovery_owner_decision:
   id: OD-14
-  status: Owner_remediated_governance_protocol_v0_3_proposed_experiment
+  status: Prospective_governance_protocol_v0_4_proposed_experiment
   approved_on: "2026-08-12"
   owner: "Project owner"
   poc_id: POC-RECOVERY-001
-  gate_set: poc-recovery-stage0-v0.3
-  protocol: poc-recovery-protocol-stage0-v0.3
+  gate_set: poc-recovery-stage0-v0.4
+  protocol: poc-recovery-protocol-stage0-v0.4
   v0_1_disposition: superseded_audit_artifact_non_executable
+  v0_2_disposition: superseded_audit_artifact_non_executable
+  v0_3_disposition: superseded_sha256_pinned_audit_artifact_non_executable
   design_status: DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED
   governance_package_only: true
   implementation_allowed: false

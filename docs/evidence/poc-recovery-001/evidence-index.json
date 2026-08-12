@@ -1,9 +1,9 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "pocId": "POC-RECOVERY-001",
-  "status": "GOVERNANCE_V0_3_OWNER_PRODUCT_IP_POLICY_APPROVED_IMPLEMENTATION_EXECUTION_BLOCKED",
-  "activeGateSetVersion": "poc-recovery-stage0-v0.3",
-  "activeProtocolId": "poc-recovery-protocol-stage0-v0.3",
+  "status": "GOVERNANCE_V0_4_POLICY_AND_EXACT_PACKET_EVIDENCE_CLOSED_ACTUAL_GRAPH_IMPLEMENTATION_EXECUTION_BLOCKED",
+  "activeGateSetVersion": "poc-recovery-stage0-v0.4",
+  "activeProtocolId": "poc-recovery-protocol-stage0-v0.4",
   "executionAllowed": false,
   "supersededAuditArtifacts": [
     {
@@ -29,22 +29,49 @@
     {
       "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.2.json",
       "sha256": "cfa06e624cbc0da37b68188d7b1739cdfb5ca12beeedc21f408897dc41b2081f"
+    },
+    {
+      "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md",
+      "sha256": "7d24e5aa0c2dd0c65ef8def12e687d39f5d0bfc30a222be51f29bffd02c772a9"
+    },
+    {
+      "locator": "docs/stage0/poc-recovery-gate-set-stage0-v0.3.json",
+      "sha256": "25a05a4d136f90e6b62005943585a27161517ea337573b71b5b1aaeca16bb80f"
+    },
+    {
+      "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.3.json",
+      "sha256": "376c6bec9d6632ff0824465ee890f953445c0843716b8a1b3a044f322d03a0c9"
     }
   ],
   "artifacts": [
     {
       "id": "REC-V03-GATE-MARKDOWN",
       "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md",
-      "status": "ACTIVE_PROSPECTIVE_NON_EXECUTABLE"
+      "status": "SUPERSEDED_SHA256_PINNED_AUDIT_ARTIFACT_NON_EXECUTABLE"
     },
     {
       "id": "REC-V03-GATE-JSON",
       "locator": "docs/stage0/poc-recovery-gate-set-stage0-v0.3.json",
-      "status": "ACTIVE_PROSPECTIVE_NON_EXECUTABLE"
+      "status": "SUPERSEDED_SHA256_PINNED_AUDIT_ARTIFACT_NON_EXECUTABLE"
     },
     {
       "id": "REC-V03-PROTOCOL-JSON",
       "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.3.json",
+      "status": "SUPERSEDED_SHA256_PINNED_AUDIT_ARTIFACT_NON_EXECUTABLE"
+    },
+    {
+      "id": "REC-V04-GATE-MARKDOWN",
+      "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_4.md",
+      "status": "ACTIVE_PROSPECTIVE_NON_EXECUTABLE"
+    },
+    {
+      "id": "REC-V04-GATE-JSON",
+      "locator": "docs/stage0/poc-recovery-gate-set-stage0-v0.4.json",
+      "status": "ACTIVE_PROSPECTIVE_NON_EXECUTABLE"
+    },
+    {
+      "id": "REC-V04-PROTOCOL-JSON",
+      "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.4.json",
       "status": "ACTIVE_PROSPECTIVE_NON_EXECUTABLE"
     },
     {
@@ -55,7 +82,12 @@
     {
       "id": "REC-V03-REMEDIATION",
       "locator": "docs/evidence/poc-recovery-001/governance-remediation-v0.3.md",
-      "status": "F01_F06_CLOSED_LICENSE_CONFLICT_PRODUCT_IP_BLOCKED"
+      "status": "SUPERSEDED_AUDIT_EVIDENCE"
+    },
+    {
+      "id": "REC-V04-REMEDIATION",
+      "locator": "docs/evidence/poc-recovery-001/governance-remediation-v0.4.md",
+      "status": "REC_GOV_V03_001_004_CLOSED_GOVERNANCE_ONLY"
     },
     {
       "id": "REC-REVIEW-V01-LEDGER",
@@ -66,6 +98,11 @@
       "id": "REC-REVIEW-V02-LEDGER",
       "locator": "docs/evidence/poc-recovery-001/review-findings-v0.2.json",
       "status": "SANITIZED_FORMAL_REVIEWER_FALSE"
+    },
+    {
+      "id": "REC-REVIEW-V03-LEDGER",
+      "locator": "docs/evidence/poc-recovery-001/review-findings-v0.3.json",
+      "status": "FOUR_FINAL_ADVISORY_FINDINGS_CLOSED_FORMAL_REVIEWER_FALSE"
     },
     {
       "id": "REC-DEPENDENCY-INVENTORY",
@@ -90,17 +127,27 @@
     {
       "id": "REC-DEPENDENCY-IP-AUTHENTICITY-V03",
       "locator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json",
-      "status": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED"
+      "status": "EXACT_GOVERNANCE_PACKET_AUTHENTICITY_LICENSE_NOTICE_VERIFIED_FUTURE_ACTUAL_GRAPH_BLOCKED"
     },
     {
       "id": "REC-DEPENDENCY-IP-AUTHENTICITY-VERIFICATION-20260812",
       "locator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-verification-2026-08-12.md",
-      "status": "CRYPTOGRAPHIC_AND_SOURCE_CORRESPONDENCE_EVIDENCE_RECORDED_NO_APPROVAL"
+      "status": "CRYPTOGRAPHIC_SOURCE_LICENSE_NOTICE_EVIDENCE_RECORDED_PACKET_ONLY"
+    },
+    {
+      "id": "REC-JETBRAINS-ANNOTATIONS-LICENSE-NOTICE-VERIFICATION-20260812",
+      "locator": "docs/evidence/poc-recovery-001/jetbrains-annotations-license-notice-verification-2026-08-12.md",
+      "status": "IMMUTABLE_LICENSE_AND_NOTICE_BYTES_SHA256_VERIFIED"
+    },
+    {
+      "id": "REC-BASE-LOCKFILE-TOOLING-INVENTORY-20260812",
+      "locator": "docs/evidence/poc-recovery-001/base-lockfile-tooling-inventory-2026-08-12.json",
+      "status": "EXISTING_OTHER_MODULE_TOOLING_PATHS_INVENTORIED_NOT_RECOVERY_ADMISSION"
     },
     {
       "id": "REC-LICENSE-NOTICE",
       "locator": "docs/evidence/poc-recovery-001/license-notice-inventory.json",
-      "status": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED"
+      "status": "GOVERNANCE_PACKET_LICENSE_NOTICE_VERIFIED_FUTURE_ACTUAL_GRAPH_BLOCKED"
     },
     {
       "id": "REC-SECURITY-INVENTORY",

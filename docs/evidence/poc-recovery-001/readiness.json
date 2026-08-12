@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "pocId": "POC-RECOVERY-001",
   "assessedOn": "2026-08-12",
-  "status": "BLOCKED_OWNER_PRODUCT_IP_POLICY_APPROVED_IMPLEMENTATION_REVIEW_GRAPH_PREFLIGHT_EXECUTION_PENDING",
+  "status": "BLOCKED_POLICY_AND_EXACT_PACKET_EVIDENCE_CLOSED_ACTUAL_GRAPH_IMPLEMENTATION_REVIEW_PREFLIGHT_EXECUTION_PENDING",
   "executionAllowed": false,
   "implementationAllowedByThisPackage": false,
   "measuredExecutionAllowed": false,
@@ -19,14 +19,17 @@
     "proposedDecisionPresent": true,
     "exactGateSetPresent": true,
     "machineProtocolPresent": true,
-    "activeGateSetVersion": "poc-recovery-stage0-v0.3",
-    "activeProtocolId": "poc-recovery-protocol-stage0-v0.3",
+    "activeGateSetVersion": "poc-recovery-stage0-v0.4",
+    "activeProtocolId": "poc-recovery-protocol-stage0-v0.4",
+    "governanceRemediationV04Present": true,
     "governanceRemediationV03Present": true,
     "governanceRemediationV02Present": true,
     "v01RetainedAsSupersededAuditArtifact": true,
     "v01Executable": false,
     "v02RetainedAsSupersededAuditArtifact": true,
     "v02Executable": false,
+    "v03RetainedAsSupersededAuditArtifact": true,
+    "v03Executable": false,
     "dependencyInventoryPresent": true,
     "licenseNoticeInventoryPresent": true,
     "securityInventoryPresent": true,
@@ -34,21 +37,26 @@
     "reviewRolesPresent": true,
     "reviewFindingsV01LedgerPresent": true,
     "reviewFindingsV02LedgerPresent": true,
+    "reviewFindingsV03LedgerPresent": true,
     "dependencyIpAuthenticityV03Present": true,
     "ownerProductIpDecisionPresent": true,
     "ownerProductIpDecisionLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md",
-    "supplyChainAuthenticityStatus": "AUTHENTICITY_VERIFIED_JSR305_EXCLUDED_BY_OWNER_POLICY_ARTIFACT_LICENSE_CONFLICT_UNRESOLVED_NO_ADMISSION",
+    "supplyChainAuthenticityStatus": "EXACT_GOVERNANCE_PACKET_AUTHENTICITY_LICENSE_NOTICE_VERIFIED_JSR305_EXCLUDED_TERMS_UNINTERPRETED_NO_ADMISSION",
+    "jetbrainsAnnotationsImmutableLicenseNoticeVerified": true,
+    "baseLockfileToolingInventoryPresent": true,
     "jsr305ExclusionAnalysisPresent": true,
-    "jsr305ExclusionTechnicalStatus": "PROVEN_WITH_NARROW_R8_RULE_BARE_EXCLUDE_REJECTED_OWNER_POLICY_ACCEPTED"
+    "jsr305ExclusionTechnicalStatus": "PROVEN_WITH_NARROW_R8_RULE_BARE_EXCLUDE_REJECTED_OWNER_POLICY_ACCEPTED_EXACT_RECOVERY_BOUNDARY"
   },
   "approvals": {
     "prospectivePolicyProductIpApproved": true,
     "reviewedGovernancePackageProductIpApproved": true,
+    "governanceAuthenticityLicenseEvidenceVerified": true,
     "policyApprovedReviewer": "Project owner",
     "policyApprovedOn": "2026-08-12",
     "decisionInputGovernanceHead": "eb312feb2a0d5e5b24b45fcd045bacca94e8c9da",
     "productIpFinalApproved": false,
     "productIpFinalApprovalReservedForActualFutureGraphAndImplementationPackage": true,
+    "futureActualGraphProductIpDisposition": "OPEN_BLOCKED",
     "approvedReviewer": null,
     "approvedOn": null,
     "accountableEngineeringSecurityReviewer": null,
@@ -67,14 +75,26 @@
     "forbiddenResolvedCoordinate": "com.google.code.findbugs:jsr305:3.0.2",
     "requiredResolvedComponentCount": 0,
     "compileOnlyOrAlternatePathAllowed": false,
-    "allResolvableConfigurationsAndConsumersRequired": true,
+    "allCoveredRecoveryInputsRequired": true,
+    "coveredFutureModule": ":poc:recovery",
     "coveredConfigurationFamilies": [
-      "compile",
-      "runtime",
-      "benchmark",
-      "test",
-      "packaging"
+      "all resolvable compile",
+      "all resolvable runtime",
+      "all resolvable unit-test",
+      "all resolvable androidTest",
+      "all resolvable benchmark",
+      "all resolvable release",
+      "all packaging/runtime artifact inputs",
+      "dependency locks and dependency verification metadata"
     ],
+    "repositoryWideAbsenceClaimed": false,
+    "currentTinkAndroid123Wired": false,
+    "currentRecoveryModuleExists": false,
+    "excludedCurrentInputs": [
+      "buildscript, AGP, UTP, lint and tooling configurations of other existing modules",
+      "existing app, capture and search lockfiles"
+    ],
+    "excludedCurrentInputsAreRecoveryAdmissionEvidence": false,
     "exactNarrowR8RuleRequired": true,
     "requiredR8Rules": [
       "-dontwarn javax.annotation.Nullable",
@@ -97,16 +117,16 @@
     {
       "id": "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
       "priority": "P0",
-      "status": "PROSPECTIVE_POLICY_AND_GOVERNANCE_PACKAGE_APPROVED_ACTUAL_GRAPH_FINAL_APPROVAL_PENDING",
+      "status": "PROSPECTIVE_POLICY_AND_EXACT_PACKET_EVIDENCE_CLOSED_ACTUAL_GRAPH_FINAL_DISPOSITION_PENDING",
       "owner": "Project owner",
-      "condition": "Project owner / Stage 0 Product-IP approved REC-JSR305-EXCLUDE-001 and the reviewed governance package at input HEAD eb312feb2a0d5e5b24b45fcd045bacca94e8c9da. This closes only the prospective policy disposition; final Product/IP approval of the future exact graph/implementation package remains pending, and dependency admission, JSR-305 use/distribution, implementation and execution remain unapproved."
+      "condition": "Project owner / Stage 0 Product-IP approved REC-JSR305-EXCLUDE-001 and the exact governance packet evidence is verified. The future actual recovery graph/package/R8 evidence and its scoped Product/IP disposition remain open; dependency admission, excluded JSR-305 use/distribution, implementation and execution remain unapproved."
     },
     {
       "id": "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
       "priority": "P0",
       "status": "OPEN_UNASSIGNED",
       "owner": "Project owner",
-      "condition": "Assign a distinct accountable recovery Engineering/Security reviewer and record a read-only v0.3 disposition; current Codex remediation is not claimed formally independent."
+      "condition": "Assign a distinct accountable recovery Engineering/Security reviewer and record a read-only v0.4 disposition including durable key confirmation; current Codex remediation is not claimed formally independent."
     },
     {
       "id": "REC-RDY-03-STREAMING-IMPLEMENTATION-VERIFICATION",
@@ -120,14 +140,14 @@
       "priority": "P0",
       "status": "OPEN_BY_DESIGN",
       "owner": "Future recovery implementation and accountable review tasks",
-      "condition": "Implement and non-metrically verify exact microfile parameters, manifest/AAD parsers, Keystore envelopes, durability, SQLite, path, quarantine and fault contracts."
+      "condition": "Implement and non-metrically verify exact microfile parameters, manifest/AAD parsers, 13-step durable key-confirmation bootstrap, Keystore envelopes, durability, SQLite, path, quarantine and 45-row fault contracts."
     },
     {
       "id": "REC-RDY-05-FUTURE-RESOLVED-GRAPH",
       "priority": "P0",
       "status": "OPEN_BY_DESIGN",
       "owner": "Future recovery implementation task",
-      "condition": "After separately authorized harness scaffolding, enumerate every resolvable configuration and consumer across compile, runtime, benchmark, test and packaging, prove zero resolved com.google.code.findbugs:jsr305:3.0.2 components, verify the scoped Tink exclusion and exact three-line R8 rule with no broader dontwarn, capture any Kotlin alignment delta, pass non-metric debug/release builds with no unresolved missing classes, independently resolve the observed error_prone_annotations reference to javax.lang.model.element.Modifier if it occurs in the real graph, and prove zero packaged JSR-305 class definitions. Any recurrence fails closed and blocks implementation verification and execution."
+      "condition": "After separately authorized :poc:recovery scaffolding, enumerate all resolvable compile, runtime, unit-test, androidTest, benchmark and release configurations, packaging/runtime-artifact inputs, dependency locks and verification metadata owned by that module; prove zero resolved com.google.code.findbugs:jsr305:3.0.2 components and zero packaged JSR-305 javax.annotation definitions; verify the Tink-local exclude and exact three-line R8 rule with no broader dontwarn; pass release R8 with no unresolved missing classes and independently resolve javax.lang.model.element.Modifier if present. Existing other-module buildscript/AGP/UTP/lint/tooling and app/capture/search lockfile occurrences are outside this boundary and alone do not block recovery. Any occurrence inside recovery scope fails closed."
     },
     {
       "id": "REC-RDY-06-DEVICE-SQLITE-PREFLIGHT",
@@ -141,7 +161,7 @@
       "priority": "P0",
       "status": "OPEN_BY_OWNER_INSTRUCTION",
       "owner": "Future separately scoped implementation task",
-      "condition": "Obtain separate owner implementation scope, then implement and safely non-metrically verify an isolated common harness only after repeat exact-HEAD read-only review and accountable v0.3 Engineering/Security review."
+      "condition": "Obtain separate owner implementation scope, then implement and safely non-metrically verify an isolated common harness only after repeat exact-HEAD read-only review and accountable v0.4 Engineering/Security review."
     },
     {
       "id": "REC-RDY-08-OWNER-EXECUTION-AUTHORIZATION",
@@ -167,9 +187,9 @@
     {
       "id": "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY",
       "priority": "P0",
-      "status": "CLOSED_FOR_PROSPECTIVE_EXCLUDED_GRAPH_POLICY_ARTIFACT_NOT_APPROVED",
+      "status": "POLICY_CLOSED_PACKET_EVIDENCE_CLOSED_ACTUAL_FUTURE_GRAPH_OPEN_BLOCKED",
       "owner": "Project owner / Stage 0 Product-IP",
-      "condition": "All eight publisher-closure coordinate authenticity classifications are verified. The signed Maven POM Apache-2.0 versus exact release-source BSD-3-Clause conflict for com.google.code.findbugs:jsr305:3.0.2 remains uninterpreted; owner policy treats that artifact as excluded and does not approve its use or distribution. REC-JSR305-EXCLUDE-001 requires a scoped Tink exclusion, zero resolved components, the exact three-line R8 rule and fail-closed recurrence handling. No dependency or production admission is implied."
+      "condition": "State A prospective REC-JSR305-EXCLUDE-001 is CLOSED/APPROVED. State B exact governance authenticity/LICENSE/NOTICE evidence is CLOSED/VERIFIED, including immutable JetBrains annotations LICENSE/NOTICE; excluded jsr305:3.0.2 terms remain uninterpreted and use/distribution unapproved. State C future actual :poc:recovery graph/package/R8 evidence and scoped Product/IP disposition is OPEN/BLOCKED. Readiness requires absence in recovery scope, not approval to use the excluded artifact; no dependency or production admission is implied."
     }
   ],
   "phaseA": {

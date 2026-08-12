@@ -26,7 +26,7 @@ the closed `POC-SEARCH-001` evidence ledger. It does not modify or re-hash that 
   or post-FAIL fallbacks and cannot receive PASS under the current gate.
 - The exact package candidate is `com.google.crypto.tink:tink-android:1.23.0`. Permission covers
   Stage 0 evaluation-package preparation only, not dependency admission or runtime-graph wiring.
-- Governance protocol v0.3 retains the v0.2 owner selection of public AES-GCM-HKDF Streaming
+- Governance protocol v0.4 incorporates the exact SHA-256-pinned v0.3 contract and retains the v0.2 owner selection of public AES-GCM-HKDF Streaming
   parameters (16-byte input key,
   one 16-byte HKDF-SHA256-derived AES-GCM key per stream and 4096-byte ciphertext segments) with
   `DURABLE_ONE_SEGMENT_LOOKAHEAD`. The design is
@@ -53,12 +53,19 @@ the closed `POC-SEARCH-001` evidence ledger. It does not modify or re-hash that 
 - The exact non-deprecated Keystore Builder path, 9/13/21 publication sequences,
   `final + ".tmp"` namespace/five-state reconciliation, WAL/FULL SQLite profile, deterministic
   `processingIntentId`, 12 candidate-specific barriers and 33-row fault matrix are normative in
-  v0.3. These F-01–F-06 remediations refine governance detail without changing the two candidates,
-  thresholds, authority or owner product choice.
+  the inherited v0.3 base. v0.4 adds durable `key-confirmation/run.kc` as the ninth family, an exact
+  13-step alias/confirmation/SQLite bootstrap before every candidate publication, a fail-closed
+  confirmation taxonomy and 12 mandatory confirmation/bootstrap fault rows, for 45 total. These
+  remediations do not change the two candidates, thresholds, authority or owner product choice.
 - Per-coordinate checksum, OpenPGP and source-correspondence verification closes authenticity for
   all eight publisher-closure coordinates. The `jsr305:3.0.2` signed-POM/exact-source license
   conflict remains uninterpreted and the artifact is handled only by the prospective exclusion
   policy below.
+- Exact immutable JetBrains annotations LICENSE and NOTICE bytes at commit
+  `f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c` are verified and accepted only for this Stage 0
+  governance packet. If that artifact enters a separately approved future graph, its NOTICE must
+  be preserved in the future Stage 0 notices packet. This is not Production Legal, redistribution
+  or dependency/production admission.
 - Each candidate has 120 base hard-kill executions and requires at least 100 confirmed valid hard
   kills. Invalid attempts remain explicit and are never restarted or replaced silently.
 
@@ -68,11 +75,16 @@ For `POC-RECOVERY-001` Stage 0 evaluation only, the Project owner acting as Stag
 reviewer approves prospective policy `REC-JSR305-EXCLUDE-001` and the reviewed governance package
 for a future exact excluded Stage 0 graph. A future, separately scoped recovery harness may declare
 only exact `com.google.crypto.tink:tink-android:1.23.0`, and only when all of these conditions are
-met:
+met. This policy is bounded to the future `:poc:recovery` module and does not claim Tink or JSR-305
+absent from the entire repository; existing other-module buildscript/AGP/UTP/lint/tooling/test
+lockfile paths are outside this recovery boundary and are not recovery admission evidence:
 
 1. the Tink dependency edge has the scoped exclusion of exact
    `com.google.code.findbugs:jsr305:3.0.2`;
-2. every covered Gradle configuration resolves zero JSR-305 components;
+2. every resolvable compile, runtime, unit-test, `androidTest`, benchmark and release configuration,
+   every packaging/runtime-artifact input, and the dependency locks/verification metadata owned by
+   future `:poc:recovery` resolve zero JSR-305 components and package zero JSR-305
+   `javax.annotation` class definitions;
 3. R8 uses only these three narrow rules:
 
    ```text
@@ -87,8 +99,9 @@ met:
    `javax.lang.model.element.Modifier` condition from
    `com.google.errorprone:error_prone_annotations:2.41.0` is separately resolved and verified
    without a broad `dontwarn`; and
-7. any reappearance of JSR-305 in a compile, runtime, benchmark, test or packaging configuration
-   fails closed and blocks both implementation verification and execution.
+7. any reappearance of JSR-305 inside that exact recovery boundary fails closed and blocks both
+   implementation verification and execution; unrelated pre-existing tooling occurrences alone do
+   not.
 
 This disposition treats the conflicting JSR-305 artifact as **excluded**. It does not decide
 whether Apache-2.0 or BSD-3-Clause applies and does not approve use or distribution of JSR-305.
@@ -97,6 +110,10 @@ add Tink or JSR-305 to a graph, admit Tink to production, authorize redistributi
 Production Legal or Production Security, replace a distinct accountable Engineering/Security
 review, authorize a harness or implementation, or authorize device execution, a kill campaign,
 a benchmark or any measured execution.
+
+The prospective policy and exact governance authenticity/LICENSE/NOTICE evidence are closed. The
+future actual graph/package/R8 verification and its scoped Product/IP disposition are separate,
+open and blocking; approving use of the excluded JSR-305 artifact is neither required nor granted.
 
 The resulting governance commit still requires a repeat read-only review at its exact 40-character
 HEAD. A separate owner scope must authorize implementation. The future exact Gradle-resolved graph,
@@ -108,13 +125,14 @@ later, separate owner record must authorize execution; D1/D5 remain required for
 ## Normative package
 
 - Proposed decision: `docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md`;
-- exact Gate Set: `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md`;
-- machine contracts: `docs/stage0/poc-recovery-gate-set-stage0-v0.3.json` and
-  `docs/stage0/poc-recovery-protocol-stage0-v0.3.json`;
+- exact Gate Set: `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_4.md`;
+- machine contracts: `docs/stage0/poc-recovery-gate-set-stage0-v0.4.json` and
+  `docs/stage0/poc-recovery-protocol-stage0-v0.4.json`;
 - superseded audit artifacts, prohibited for future execution:
   `DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_1.md`,
   `poc-recovery-gate-set-stage0-v0.1.json` and
-  `poc-recovery-protocol-stage0-v0.1.json`, plus all corresponding v0.2 Gate Set/protocol files;
+  `poc-recovery-protocol-stage0-v0.1.json`, plus all corresponding v0.2 and v0.3 Gate Set/protocol
+  files, whose SHA-256 values are pinned by v0.4;
 - exact evidence: `docs/evidence/poc-recovery-001/`; and
 - fail-closed checker: `tools/check_poc_recovery_run_readiness.py`.
 

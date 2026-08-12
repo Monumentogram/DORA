@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "pocId": "POC-RECOVERY-001",
+  "boundaryId": "REC-JSR305-EXCLUDE-001",
+  "inventoriedAtUtc": "2026-08-12T14:38:33Z",
+  "baseCommit": "849d9d0406a619b334c9b707a4b6b42b34885b4b",
+  "reviewedHead": "c61603d30c01c72347aa205c247729ad534c2882",
+  "pullRequest": 11,
+  "facts": {
+    "tinkAndroid123Wired": false,
+    "recoveryModuleExists": false,
+    "recoveryModuleIncludedInSettings": false,
+    "pullRequestChangedLockfiles": false,
+    "repositoryWideTinkOrJsr305AbsenceClaimed": false,
+    "baseOtherModuleOccurrencesAreRecoveryAdmissionEvidence": false
+  },
+  "existingBaseLockfileOccurrences": [
+    {
+      "lockfile": "android/app/gradle.lockfile",
+      "coordinate": "com.google.code.findbugs:jsr305:2.0.2",
+      "configurationFamilies": ["debugAndroidTestRuntimeClasspath"]
+    },
+    {
+      "lockfile": "android/app/gradle.lockfile",
+      "coordinate": "com.google.code.findbugs:jsr305:3.0.2",
+      "configurationFamilies": ["androidLintTool"]
+    },
+    {
+      "lockfile": "android/core/common/gradle.lockfile",
+      "coordinate": "com.google.code.findbugs:jsr305:3.0.2",
+      "configurationFamilies": ["androidLintTool"]
+    },
+    {
+      "lockfile": "android/core/model/gradle.lockfile",
+      "coordinate": "com.google.code.findbugs:jsr305:3.0.2",
+      "configurationFamilies": ["androidLintTool"]
+    },
+    {
+      "lockfile": "android/core/testing/gradle.lockfile",
+      "coordinate": "com.google.code.findbugs:jsr305:3.0.2",
+      "configurationFamilies": ["androidLintTool"]
+    },
+    {
+      "lockfile": "android/poc/capture/gradle.lockfile",
+      "coordinate": "com.google.code.findbugs:jsr305:2.0.2",
+      "configurationFamilies": ["debugAndroidTestLintChecksClasspath", "debugAndroidTestRuntimeClasspath"]
+    },
+    {
+      "lockfile": "android/poc/capture/gradle.lockfile",
+      "coordinate": "com.google.code.findbugs:jsr305:3.0.2",
+      "configurationFamilies": ["androidLintTool", "unified-test-platform"]
+    },
+    {
+      "lockfile": "android/poc/capture/gradle.lockfile",
+      "coordinate": "com.google.crypto.tink:tink:1.18.0",
+      "configurationFamilies": ["unified-test-platform-android-test-plugin-host-emulator-control", "unified-test-platform-gradle-work-action"]
+    },
+    {
+      "lockfile": "android/poc/search/gradle.lockfile",
+      "coordinate": "com.google.code.findbugs:jsr305:3.0.2",
+      "configurationFamilies": ["androidLintTool", "ksp", "unified-test-platform"]
+    },
+    {
+      "lockfile": "android/poc/search/gradle.lockfile",
+      "coordinate": "com.google.crypto.tink:tink:1.18.0",
+      "configurationFamilies": ["unified-test-platform-android-test-plugin-host-emulator-control", "unified-test-platform-gradle-work-action"]
+    }
+  ],
+  "futureRecoveryCoveredInputs": [
+    "all resolvable compile configurations of :poc:recovery",
+    "all resolvable runtime configurations of :poc:recovery",
+    "all resolvable unit-test configurations of :poc:recovery",
+    "all resolvable androidTest configurations of :poc:recovery",
+    "all resolvable benchmark configurations of :poc:recovery",
+    "all resolvable release configurations of :poc:recovery",
+    "all packaging and runtime artifact inputs of :poc:recovery",
+    ":poc:recovery dependency locks and dependency verification metadata"
+  ],
+  "excludedCurrentInputs": [
+    "buildscript, AGP, UTP, lint and tooling configurations of other existing modules",
+    "existing app, capture and search lockfiles"
+  ],
+  "readinessRule": "Before authorized implementation, absence of :poc:recovery and tink-android:1.23.0 is a preimplementation fact only. After the module is separately authorized, any JSR305 component in a covered recovery input blocks readiness; unrelated pre-existing tooling occurrences alone do not."
+}

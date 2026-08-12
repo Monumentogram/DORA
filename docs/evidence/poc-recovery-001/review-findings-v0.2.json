@@ -77,11 +77,11 @@
       "affectedArtifact": "docs/evidence/poc-recovery-001/license-notice-inventory.json",
       "finding": "Per-coordinate license and supply-chain authenticity evidence was incomplete.",
       "remediationCommit": "SELF",
-      "remediationVersion": "poc-recovery-protocol-stage0-v0.3",
-      "status": "CLOSED",
-      "evidenceLocator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json",
+      "remediationVersion": "poc-recovery-protocol-stage0-v0.4",
+      "status": "CLOSED_AT_V0_4_AFTER_IMMUTABLE_LICENSE_NOTICE_VERIFICATION",
+      "evidenceLocator": "docs/evidence/poc-recovery-001/jetbrains-annotations-license-notice-verification-2026-08-12.md",
       "authenticityDisposition": "ALL_EIGHT_COORDINATES_VERIFIED",
-      "closureBasis": "Per-coordinate license, copyright, NOTICE, artifact/POM hash, publisher checksum, cryptographic signature, full fingerprint, signer/source trust, exact source correspondence, command/tool/date, conclusion and limitation evidence is complete for all eight coordinates. The recorded JSR305 license conflict is an evidence conclusion, not missing F-06 evidence.",
+      "closureBasis": "Per-coordinate authenticity evidence is complete for all eight coordinates, and exact JetBrains annotations LICENSE/NOTICE bytes at immutable commit f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c were independently verified at 2026-08-12T14:38:33Z: LICENSE SHA-256 cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30 and NOTICE SHA-256 0479f6a86003002dec1da1667f2f8320253c7225c6ffffc05cf7e0988bd8c72c. F-06 is closed only on this v0.4 immutable evidence; the JSR305 license conflict remains an evidence conclusion, not missing authenticity evidence.",
       "postClosureProductIpBlocker": "The signed Maven Central jsr305:3.0.2 POM declares Apache-2.0 while the exact release-source POM/LICENSE declares BSD-3-Clause; Stage 0 Product/IP must obtain authoritative clarification, accept a qualified-counsel compliance path, or keep/replace the coordinate outside any admitted graph.",
       "formalReviewer": false
     }

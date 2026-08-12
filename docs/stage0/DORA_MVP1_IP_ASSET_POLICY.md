@@ -198,13 +198,28 @@ behavior being evaluated. The digest scope/identity must never be described as a
 itself. Any firmware, API, ABI or runtime SQLite drift creates a new environment record and requires
 a package delta review.
 
-The Project owner is the assigned Stage 0 Product/IP reviewer for this package; final approval
-fields remain null and coordinate authenticity gaps block final approval. Unlike the search-specific `OD-11` boundary, recovery protocol v0.3 and
+The Project owner is the assigned Stage 0 Product/IP reviewer for this package. Under recovery
+protocol v0.4, prospective `REC-JSR305-EXCLUDE-001` policy is closed/approved and exact governance
+packet authenticity plus LICENSE/NOTICE evidence is closed/verified. The future actual recovery
+graph/package/R8 evidence and its scoped Product/IP disposition remain open/blocking; their final
+approval identity/date fields remain null. Unlike the search-specific `OD-11` boundary, recovery protocol v0.4 and
 platform durability require a distinct accountable Engineering/Security reviewer plus
 implementation verification before execution. The current Codex remediation does not claim
 formal independence. That future review does not replace Production Security. Production Legal
 and Production Security remain null, and both plus normal SBOM/distribution review are required
 before any production admission.
+
+The exact future boundary is only `:poc:recovery`: all resolvable compile, runtime, unit-test,
+`androidTest`, benchmark and release configurations, packaging/runtime-artifact inputs, and its
+dependency locks/verification metadata. Existing buildscript/AGP/UTP/lint/tooling paths of other
+modules and app/capture/search lockfiles are outside the boundary and are not recovery admission
+evidence. No repository-wide Tink/JSR-305 absence is claimed.
+
+For `org.jetbrains:annotations:13.0`, immutable `LICENSE.txt` and `NOTICE.txt` at exact upstream
+commit `f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c` are verified for this governance packet. If that
+artifact enters a separately approved future Stage 0 graph, its NOTICE must be preserved in that
+future notices packet. This packet-level disposition is not Production Legal, production
+admission, redistribution approval or permission to use/distribute excluded JSR-305.
 
 This exception is invalid if the PoC adds Room, SQLCipher, WorkManager, a custom SQLite build,
 production tables/migrations or another bundled database. Such a change requires a new scoped

@@ -70,20 +70,21 @@ campaign are deferred to separately authorized future scope.
 ## Stage 0D governance/readiness scope
 
 Stage 0D prepares and remediates only the governance/readiness package for `POC-RECOVERY-001`.
-The v0.2 package at reviewed commit `70cf26125dbecbb347311ca0bb9ce1ad5c637e18` received findings
-F-01–F-06 with `CHANGES_REQUIRED`. Proposed `DEC-044` and owner-linked Gate Set/protocol `stage0-v0.3` now fix the
-prospective design semantics: public AES-GCM-HKDF Streaming AEAD with
+The v0.3 package at reviewed commit `c61603d30c01c72347aa205c247729ad534c2882` received four final
+advisory findings. Proposed `DEC-044` and owner-linked Gate Set/protocol `stage0-v0.4` now fix the
+prospective design semantics: exact SHA-256-pinned v0.3 public AES-GCM-HKDF Streaming AEAD with
 `DURABLE_ONE_SEGMENT_LOOKAHEAD` versus sealed five-second `AES256_GCM_TINK_IV12_TAG16` microfiles
-and exact authenticated binary manifest. Gate Set/protocol v0.1 and v0.2 remain unchanged superseded audit artifacts
+and exact authenticated binary manifest plus durable run-key confirmation. Gate Set/protocol v0.1, v0.2 and v0.3 remain unchanged SHA-256-pinned superseded audit artifacts
 and cannot govern future execution.
 
-The v0.3 contract fixes one derived AES key per streaming ciphertext stream, exact lookahead/read
+The inherited v0.3 contract fixes one derived AES key per streaming ciphertext stream, exact lookahead/read
 math and 8160-byte/0.255-second streaming design bound; deterministic big-endian AAD and manifest;
 the exact non-deprecated Keystore Builder/key-confirmation/classification path; 9/13/21 candidate
 publication sequences; `final + ".tmp"`, collision/no-overwrite and five reconciliation states;
 successful SQLite `endTransaction()` as semantic commit; WAL/FULL rows with exact identities and
-UNIQUE deterministic processing intents; candidate-specific K01–K12 barriers; and 33 mandatory
-replay/rollback/key/parser/path/quarantine/event fault rows. The
+UNIQUE deterministic processing intents and candidate-specific K01–K12 barriers. v0.4 adds ninth-family
+`key-confirmation/run.kc`, separate bounded plaintext/AAD schemas, exact 13-step durable bootstrap,
+confirmation taxonomy/reconciliation and 12 mandatory bootstrap/confirmation rows, for 45 total. The
 original safety gates remain zero committed-byte loss, no more than five seconds tail per valid
 kill, 12 strata, 120 base kills/candidate, at least 100 valid and at least eight valid/stratum.
 Fifteen/30-second microfiles remain non-PASS observations or post-failure fallbacks.
@@ -147,23 +148,29 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - `OD-11`: Project owner is Product and IP policy reviewer and acts as Engineering/Security reviewer only for Stage 0 evaluation. This does not replace production Legal or independent production Security. Embedded platform SQLite may use the containing system-image digest plus exact image/runtime identity for Stage 0; that boundary must be reconsidered before production admission.
 - `OD-12`: Project owner prospectively approves Option B for `stage0-v0.2`, based on the local-MVP storage/update/one-second visibility balance and not on prior Dora results. Benchmark execution remains separately withheld.
 - `OD-13`: Project owner approves the exact 66-component/license/NOTICE/platform package only for internal synthetic Stage 0 evaluation and accepts formal `INCONCLUSIVE` closure without a new benchmark. This is not production Legal/Security approval, does not admit FTS4 automatically, is not retroactive, and leaves D1/D3 plus measured execution deferred.
-- `OD-14`: Project owner constraints link governance protocol v0.3 after F-01–F-06 `CHANGES_REQUIRED` and approve only prospective `REC-JSR305-EXCLUDE-001` plus the reviewed governance package. The selected construction remains `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`; authenticity is verified, the `jsr305:3.0.2` artifact is excluded without interpreting its license conflict or approving use/distribution, and repeat exact-HEAD review, distinct accountable Engineering/Security review, separate implementation authorization/verification and later owner execution authorization remain mandatory; `executionAllowed=false`.
+- `OD-14`: Project owner constraints link prospective governance protocol v0.4, which inherits exact SHA-256-pinned v0.3 semantics and adds durable key confirmation. Prospective `REC-JSR305-EXCLUDE-001` and exact governance authenticity/LICENSE/NOTICE evidence are closed; the future actual recovery graph/package/R8 evidence and its Product/IP disposition remain open/blocking. The selected construction remains `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`; excluded JSR-305 terms are not interpreted and use/distribution is not approved. Repeat exact-HEAD review, distinct accountable Engineering/Security review, separate implementation authorization/verification and later owner execution authorization remain mandatory; `implementationAllowed=false`; `executionAllowed=false`.
 
 ## Current gates and blockers
 
 - `POC-RECOVERY-001` remains `BLOCKED`, not READY. Proposed `DEC-044`, Gate Set
-  `poc-recovery-stage0-v0.3`, exact machine protocol and remediation evidence exist. v0.1/v0.2 are
-  unchanged superseded audit artifacts. Coordinate authenticity and conditioned JSR-305 exclusion
-  are technically verified, and the owner accepted `REC-JSR305-EXCLUDE-001` only as prospective
-  policy for the reviewed governance package. The underlying license conflict is not interpreted,
+  `poc-recovery-stage0-v0.4`, exact machine protocol and remediation evidence exist. v0.1/v0.2/v0.3 are
+  unchanged SHA-256-pinned superseded audit artifacts. The ninth-family
+  `key-confirmation/run.kc`, separate bounded plaintext/AAD schemas, 13-step durable bootstrap,
+  v0.4 taxonomy/reconciliation/K01–K12 prerequisite and 45-row fault contract are prospective.
+  Coordinate authenticity, immutable JetBrains LICENSE/NOTICE and conditioned JSR-305 exclusion
+  are verified; the owner accepted `REC-JSR305-EXCLUDE-001` as prospective policy for the reviewed
+  governance package. The underlying excluded-artifact conflict is not interpreted,
   JSR-305 use/distribution is not approved, and repeat exact-HEAD review, a distinct accountable
   recovery Engineering/Security reviewer/approval and separate implementation authorization remain
   unresolved.
 - The exact published Tink closure is inventoried without Gradle wiring. A future harness-resolved
   graph remains a P0 pre-execution check because repository Kotlin alignment may differ from the
-  publisher POM closure. It must enumerate every resolvable recovery/consumer configuration, prove
-  zero `com.google.code.findbugs:jsr305:3.0.2` components, verify the scoped exclude/exact narrow
-  R8 rule and pass debug/release/package checks with no unresolved R8 missing classes. No runtime
+  publisher POM closure. It must enumerate every resolvable compile/runtime/unit-test/`androidTest`/
+  benchmark/release configuration, packaging/runtime input, lock and verification-metadata input
+  owned by future `:poc:recovery`; prove zero `com.google.code.findbugs:jsr305:3.0.2` components and
+  zero packaged JSR-305 definitions; verify the scoped exclude/exact narrow R8 rule; and pass
+  release R8 with no unresolved missing classes. Existing other-module tooling/lint/UTP/test
+  lockfile occurrences are inventoried, not claimed absent, and are not recovery admission. No runtime
   dependency or production admission exists.
 - No recovery implementation or non-metric implementation verification exists. Phase A execution
   is separately withheld. Fresh emulator and D2 recovery preflight must record effective WAL/FULL,
@@ -239,7 +246,8 @@ Perform a repeat read-only review of the exact resulting governance commit witho
 or execution. The prospective owner/Stage 0 Product-IP policy disposition is recorded; the Project
 owner must assign a distinct accountable recovery Engineering/Security reviewer. That reviewer
 must verify or require revision
-of the selected v0.3 Streaming/microfile construction, manifest/key/AAD contract, publication/temp-state/commit/durability,
+of the selected v0.4 Streaming/microfile construction, durable key-confirmation bootstrap,
+manifest/key/AAD contract, publication/temp-state/commit/durability,
 SQLite profile, public barriers and complete fault/recovery state machine. Only a later separately
 scoped owner task may authorize implementation and non-metrically verify the isolated harness;
 only after exact excluded Gradle graph/release R8, scoped Product/IP disposition of the actual graph

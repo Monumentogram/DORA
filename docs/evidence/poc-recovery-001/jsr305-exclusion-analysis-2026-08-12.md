@@ -16,8 +16,8 @@ exclusion**, only as prospective policy `REC-JSR305-EXCLUDE-001` for a later sep
 recovery harness:
 
 1. exclude only the `com.google.code.findbugs:jsr305` edge on the exact Tink declaration;
-2. require zero resolved `jsr305` components in every resolvable configuration of the isolated
-   recovery module and every consuming module;
+2. require zero resolved `jsr305` components in every covered resolvable configuration and
+   packaging/runtime/lock/verification input owned by future `:poc:recovery`;
 3. add only the three exact R8 diagnostics suppressions recorded below; and
 4. fail readiness until the future exact graph, debug/D8 build, release/R8 build and package scan
    prove those invariants.
@@ -35,9 +35,11 @@ diagnostic after the narrow rule, but still failed on the independent
 release-build issue. It must be resolved on its own evidence and must not be hidden by broadening
 the JSR-305 rule.
 
-The underlying Apache-2.0/BSD-3-Clause evidence conflict remains unresolved. The proposed treatment
-is to keep that artifact out of the future graph, not to interpret its terms. Project-owner / Stage
-0 Product/IP acceptance of that treatment is still required; approval identity/date remain null.
+The underlying Apache-2.0/BSD-3-Clause evidence conflict remains unresolved. The approved
+prospective treatment is to keep that artifact out of the future recovery graph, not to interpret
+its terms. Project-owner / Stage 0 Product-IP acceptance of prospective policy
+`REC-JSR305-EXCLUDE-001` is recorded in `OD-14`. Approval identity/date for a future actual graph
+remain null because that graph does not exist and is a separate blocked disposition.
 
 ## Why the coordinate is upstream
 
@@ -53,6 +55,22 @@ sets `jsr305.version` to `3.0.2`. It declares neither `<scope>` nor `<optional>`
 Without an exclusion, Gradle consumes that Maven compile dependency on the normal compile and
 runtime graph. The published closure remains recorded unchanged in `dependency-inventory.json`;
 that evidence describes the publisher closure, not a repository Gradle graph.
+
+## Exact repository and future recovery boundary
+
+No repository-wide Tink/JSR-305 absence is claimed. At the reviewed PR #11 head,
+`tink-android:1.23.0` is not wired and `:poc:recovery` does not exist, but base lockfiles of existing
+modules contain Tink 1.18.0 and JSR-305 2.0.2/3.0.2 on tooling, lint, UTP, androidTest and other test
+paths. PR #11 did not add or change those lockfiles. The exact inventory is
+`base-lockfile-tooling-inventory-2026-08-12.json`; those unrelated existing paths are context, not
+recovery admission evidence.
+
+After separately authorized implementation, boundary `REC-JSR305-EXCLUDE-001` covers only the
+future `:poc:recovery` module: every resolvable compile, runtime, unit-test, `androidTest`, benchmark
+and release configuration, all packaging/runtime-artifact inputs, and that module's dependency
+locks and dependency-verification metadata. It excludes buildscript/AGP/UTP/lint/tooling paths of
+other existing modules and the existing app/capture/search lockfiles. A JSR-305 occurrence within
+the covered recovery scope blocks readiness; unrelated base tooling occurrences alone do not.
 
 ## Exact use inside Tink
 
@@ -82,7 +100,7 @@ The bytecode scan found:
 - no JSR-305 reference in Tink's only consumer rule, `META-INF/proguard/protobuf.pro`.
 
 The references are therefore annotation attributes, not executable type dependencies or API member
-types. Classes directly relevant to protocol v0.3 that appear in the exact 182-class list include
+types. Classes directly relevant to the exact v0.3 base inherited by protocol v0.4 that appear in the exact 182-class list include
 `KeysetHandle` and its builder classes, the two internal `RegistryConfiguration` classes,
 `AesGcmParameters$Builder`, `AesGcmKey`/builder/manager,
 `AesGcmHkdfStreamingParameters$Builder`, `AesGcmHkdfStreamingKeyManager`, `StreamingAeadKey` and

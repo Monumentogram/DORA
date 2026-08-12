@@ -1,9 +1,9 @@
 # DEC-044 — POC-RECOVERY-001 pre-PoC experiment decision
 
-Status: **Proposed experiment — protocol v0.3 and owner-approved prospective JSR-305 exclusion policy; implementation verification, accountable review and execution pending**\
+Status: **Proposed experiment — protocol v0.4 and owner-approved prospective JSR-305 exclusion policy; implementation verification, accountable review and execution pending**\
 Recorded for: **Project owner**\
 Recorded on: **2026-08-12**\
-Gate Set: `poc-recovery-stage0-v0.3`\
+Gate Set: `poc-recovery-stage0-v0.4`\
 Scope: governance-only remediation and readiness for `POC-RECOVERY-001` only\
 Execution authorized: **no**
 
@@ -14,11 +14,11 @@ committed prefix after abrupt process death without losing any committed byte an
 uncommitted tail loss to five seconds. The Technical Plan names Tink Streaming AEAD and sealed
 AEAD microfiles as candidates, but evidence must precede a final audio/container decision.
 
-The v0.2 package at reviewed commit `70cf26125dbecbb347311ca0bb9ce1ad5c637e18` received
-`CHANGES_REQUIRED` findings F-01–F-06. The Project owner has now scoped the prospective v0.3
-governance remediation below. This record remains a **Proposed experiment decision**, not `ADR-AUDIO-001`, a
+The v0.3 package at reviewed commit `c61603d30c01c72347aa205c247729ad534c2882` received four
+final advisory findings `REC-GOV-V03-001`–`004`. The Project owner has now scoped the prospective
+v0.4 governance remediation below. This record remains a **Proposed experiment decision**, not `ADR-AUDIO-001`, a
 production architecture decision, dependency admission, or permission to implement or execute a
-harness. Gate Set/protocol v0.1 and v0.2 remain unchanged superseded audit artifacts and are
+harness. Gate Set/protocol v0.1, v0.2 and v0.3 remain unchanged SHA-256-pinned superseded audit artifacts and are
 non-executable.
 
 ## Approved prospective dependency policy; no artifact admission
@@ -51,6 +51,18 @@ future exact implementation graph/build/package report remains mandatory and mus
 if the forbidden coordinate appears by any path, a broad `dontwarn` is used or any R8 missing class
 remains unresolved.
 
+The policy boundary is only the future `:poc:recovery` module: all its resolvable compile, runtime,
+unit-test, `androidTest`, benchmark and release configurations, packaging/runtime-artifact inputs,
+dependency locks and dependency-verification metadata. Existing buildscript/AGP/UTP/lint/tooling
+and app/capture/search lockfiles are outside that boundary. They contain base tooling/test Tink and
+JSR-305 paths, so this decision makes no repository-wide absence claim and does not treat those
+paths as recovery admission evidence.
+
+Exact JetBrains annotations LICENSE and NOTICE bytes at immutable commit
+`f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c` are verified for the governance packet. The NOTICE must
+be preserved in a future Stage 0 notices packet if the artifact enters a separately approved actual
+graph. This is not Production Legal, redistribution or production/dependency admission.
+
 ## Proposed experiment
 
 One future isolated recovery harness would compare exactly two candidates against the same
@@ -74,7 +86,7 @@ The authenticated manifest encoding is selected as
 `DORA_RECOVERY_MANIFEST_V1_BINARY_BE`: magic `DORARM01`, schema 1, LP16 ASCII protocol/candidate,
 raw 16-byte run ID, monotonic generation/previous-ciphertext digest, committed end and at most 721
 strictly ordered gap-free entries, with a 512 KiB plaintext cap and no trailing bytes. Exact field
-order is normative in Gate Set/protocol v0.3.
+order is normative in the exact v0.3 base inherited by Gate Set/protocol v0.4.
 
 No candidate is preferred in advance. A final `ADR-AUDIO-001` may be proposed only after valid
 evidence and cannot infer production admission from a Stage 0 result.
@@ -111,9 +123,15 @@ evidence and cannot infer production admission from a Stage 0 result.
 - Separate deterministic big-endian LP16-ASCII AAD schemas bind stream, microfile,
   manifest/checkpoint and key-envelope objects to protocol, candidate, run, applicable
   generation/unit/range and previous publication digest.
-- Required key classifications follow the exact collision → unavailable → corrupt-envelope →
-  envelope-auth-failure → key-confirmation-mismatch precedence. `KEY-01`–`KEY-07` each have one
-  expected classification; “or” outcomes are forbidden.
+- Before every encrypted keyset/ciphertext/checkpoint/manifest publication, the run alias must
+  create durable ninth-family ciphertext `key-confirmation/run.kc` through the exact Builder AEAD
+  path, exclusive temp/write/file-fsync/rename/directory-fsync and SQLite run-row commit. The
+  plaintext/AAD use separate `DORAKC01`/`DORAKA01` bounded big-endian schemas. Publication is
+  forbidden until the 13-step bootstrap's successful `endTransaction()` return.
+- Required v0.4 key classifications distinguish `INCOMPLETE_KEY_BOOTSTRAP`,
+  `KEY_CONFIRMATION_MISSING`, `CORRUPT_KEY_CONFIRMATION`,
+  `KEY_UNAVAILABLE_KEY_MISMATCH` and later `KEY_ENVELOPE_AUTH_FAILURE`. Existing temp/final paths
+  are never overwritten; “or” outcomes are forbidden.
 - A PoC-local platform `android.database.sqlite` journal is allowed only for DB/file split-brain
   and reconciliation tests. Room, SQLCipher, WorkManager, production schema and production
   migrations are prohibited.
@@ -136,12 +154,13 @@ barriers. In particular, microfile K02 is
 `MICROFILE_AFTER_AEAD_RETURN_BEFORE_TEMP_WRITE`; streaming K02 uses the harness-owned downstream
 ciphertext `OutputStream` callback; K04–K11 fix exact publication boundaries; and K12 uses an
 immutable seed plus canonical expected recovery result. The mandatory matrix now includes
-33 rows including `COR-04..06`, `KEY-01..07`, `RBK-01..02`, `PAR-01`, `QUA-03` and `EVT-01` with
-Phase A repetitions.
+45 rows: the 33 inherited rows plus six `KCB-01..06` bootstrap kill points and six `KCF-01..06`
+missing/corrupt/swap/replacement/collision rows. Every row has exactly three emulator and one D2
+repetition, 180 prospective injections total, separate from the hard-kill denominator.
 
 The normative definitions, encodings, predicates, strata, invalidation rules and fault matrix are
-in `DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md` and machine-readable
-`poc-recovery-gate-set-stage0-v0.3.json` / `poc-recovery-protocol-stage0-v0.3.json`.
+in `DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_4.md` and machine-readable
+`poc-recovery-gate-set-stage0-v0.4.json` / `poc-recovery-protocol-stage0-v0.4.json`.
 
 ## Device and verdict contract
 
@@ -159,7 +178,7 @@ physical profile.
 - The Project owner is the Stage 0 Product/IP reviewer and the only person who may later authorize
   execution. Product/IP approval does not approve crypto engineering or security.
 - A distinct accountable Engineering/Security reviewer, not the package author and not acting as
-  Production Security, must verify the selected v0.3 construction, key hierarchy/AAD,
+  Production Security, must verify the selected v0.4 construction, key confirmation/hierarchy/AAD,
   checkpoint/commit semantics, parsers, barriers, durability and recovery state machine before
   execution. That reviewer is currently unassigned. This Codex remediation does not claim formal
   independence.
@@ -185,7 +204,12 @@ physical profile.
 
 ## Readiness state
 
-`executionAllowed=false`. A repeat read-only review of the exact resulting governance HEAD, a
+Prospective `REC-JSR305-EXCLUDE-001` policy is closed/approved and the exact governance packet's
+authenticity/LICENSE/NOTICE evidence is closed/verified. The future actual graph/package/R8
+verification and its scoped Product/IP disposition remain open/blocking. The readiness checker
+requires absence of excluded JSR-305 in recovery scope, not approval to use that artifact.
+
+`executionAllowed=false` and `implementationAllowed=false`. A repeat read-only review of the exact resulting governance HEAD, a
 distinct accountable Engineering/Security reviewer, separate implementation authorization,
 implementation and non-metric implementation verification, an exact future Gradle graph with zero
 forbidden components, a release R8 build with no unresolved missing classes, scoped Product/IP

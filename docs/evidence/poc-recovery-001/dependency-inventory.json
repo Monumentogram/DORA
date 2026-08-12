@@ -2,11 +2,11 @@
   "schemaVersion": 3,
   "pocId": "POC-RECOVERY-001",
   "generatedAtUtc": "2026-08-11T21:31:21.7154872Z",
-  "inventoryStatus": "VERIFIED_PUBLISHER_CLOSURE_AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PACKAGE_REVIEW_ONLY",
+  "inventoryStatus": "VERIFIED_PUBLISHER_CLOSURE_GOVERNANCE_PACKET_EVIDENCE_VERIFIED_NO_RUNTIME_OR_PRODUCTION_ADMISSION",
   "authenticityEvidence": {
     "locator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json",
-    "status": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED",
-    "verifiedAtUtc": "2026-08-12T10:09:05Z",
+    "status": "AUTHENTICITY_LICENSE_NOTICE_VERIFIED_FOR_EXACT_GOVERNANCE_PACKET_FUTURE_ACTUAL_GRAPH_PRODUCT_IP_BLOCKED",
+    "verifiedAtUtc": "2026-08-12T14:38:33Z",
     "publisherChecksumsMatched": 16,
     "detachedSignaturesCryptographicallyVerified": 16,
     "coordinatesAuthenticityVerified": 8,
@@ -29,6 +29,15 @@
     "acceptedOn": "2026-08-12",
     "acceptanceScope": "PROSPECTIVE_POLICY_AND_REVIEWED_GOVERNANCE_PACKAGE_ONLY"
   },
+  "recoveryBoundary": {
+    "boundaryId": "REC-JSR305-EXCLUDE-001",
+    "currentTinkAndroid123Wired": false,
+    "currentRecoveryModuleExists": false,
+    "repositoryWideAbsenceClaimed": false,
+    "baseOtherModuleToolingOccurrencesAreRecoveryAdmissionEvidence": false,
+    "baseInventoryLocator": "docs/evidence/poc-recovery-001/base-lockfile-tooling-inventory-2026-08-12.json",
+    "futureActualRecoveryGraphStatus": "OPEN_BLOCKED_UNTIL_SEPARATELY_AUTHORIZED_IMPLEMENTATION"
+  },
   "resolution": {
     "kind": "PUBLISHED_POM_AND_GRADLE_MODULE_METADATA_CLOSURE",
     "repositories": [
@@ -38,7 +47,7 @@
     "externalCoordinateCountIncludingRoot": 8,
     "allPublishedRuntimeArtifactsInventoried": true,
     "projectGradleResolvedGraph": false,
-    "projectGradleResolvedGraphReason": "Creating or wiring a recovery Gradle configuration is prohibited in this governance-only task.",
+    "projectGradleResolvedGraphReason": "Creating or wiring a recovery Gradle configuration is prohibited in this governance-only task. Existing other-module tooling, lint, UTP and test lockfile paths are inventoried separately and are not claimed absent or treated as recovery admission evidence.",
     "futureExactResolutionRequired": true,
     "futureResolutionRisk": "The repository pins Kotlin 2.2.10; annotation-jvm metadata declares kotlin-stdlib 1.7.10, so a future Gradle configuration may align the Kotlin artifacts and must receive an exact delta review before execution."
   },

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Validate the governance-only POC-RECOVERY-001 v0.3 package without executing a PoC."""
+"""Fail-closed validation for the governance-only POC-RECOVERY-001 v0.4 package."""
 
 from __future__ import annotations
 
 import hashlib
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -14,28 +15,57 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 STAGE0 = ROOT / "docs" / "stage0"
 EVIDENCE = ROOT / "docs" / "evidence" / "poc-recovery-001"
-REVIEWED_V01_HEAD = "87f8c00c6afce0f658678a7a09b1a394b89a2454"
-REVIEWED_V02_HEAD = "70cf26125dbecbb347311ca0bb9ce1ad5c637e18"
-GATE_V03 = "poc-recovery-stage0-v0.3"
-PROTOCOL_V03 = "poc-recovery-protocol-stage0-v0.3"
-JSR305_POLICY_ID = "REC-JSR305-EXCLUDE-001"
-JSR305_COORDINATE = "com.google.code.findbugs:jsr305:3.0.2"
-JSR305_ANALYSIS_LOCATOR = "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.json"
-JSR305_CLASS_LIST_LOCATOR = "docs/evidence/poc-recovery-001/jsr305-reference-classes-2026-08-12.txt"
-OWNER_DECISION_LOCATOR = "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md"
-OWNER_DECISION_INPUT_HEAD = "eb312feb2a0d5e5b24b45fcd045bacca94e8c9da"
-JSR305_R8_RULES = [
+GATE_ID = "poc-recovery-stage0-v0.4"
+PROTOCOL_ID = "poc-recovery-protocol-stage0-v0.4"
+REVIEWED_V03_HEAD = "c61603d30c01c72347aa205c247729ad534c2882"
+BASE_HEAD = "849d9d0406a619b334c9b707a4b6b42b34885b4b"
+JSR_POLICY_ID = "REC-JSR305-EXCLUDE-001"
+JSR_COORDINATE = "com.google.code.findbugs:jsr305:3.0.2"
+TINK_COORDINATE = "com.google.crypto.tink:tink-android:1.23.0"
+JETBRAINS_COMMIT = "f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c"
+JETBRAINS_LICENSE_URL = (
+    "https://github.com/JetBrains/intellij-community/blob/"
+    f"{JETBRAINS_COMMIT}/LICENSE.txt"
+)
+JETBRAINS_NOTICE_URL = (
+    "https://github.com/JetBrains/intellij-community/blob/"
+    f"{JETBRAINS_COMMIT}/NOTICE.txt"
+)
+JETBRAINS_LICENSE_SHA256 = (
+    "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+)
+JETBRAINS_NOTICE_SHA256 = (
+    "0479f6a86003002dec1da1667f2f8320253c7225c6ffffc05cf7e0988bd8c72c"
+)
+R8_RULES = [
     "-dontwarn javax.annotation.Nullable",
     "-dontwarn javax.annotation.concurrent.GuardedBy",
     "-dontwarn javax.annotation.concurrent.ThreadSafe",
 ]
 IMMUTABLE_AUDIT_HASHES = {
-    "DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_1.md": "d891e033e3e58455dbafd03be5a41ca64cafda93182424357035c37d769ae46e",
-    "poc-recovery-gate-set-stage0-v0.1.json": "78c1a8289f90b51a376b023673dc00b6cb35386b5b0a2dda9432b50b20216e11",
-    "poc-recovery-protocol-stage0-v0.1.json": "b853295e6c66815c61566e930d30dafa0dfc72e805bb5ba38158688e084ead81",
-    "DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_2.md": "d4fab2f47872f0b6c1c04c5b0b1022b047ae8782eb0130cd2f66825294455180",
-    "poc-recovery-gate-set-stage0-v0.2.json": "f6384c7b1d4d493218a600722ddf0116f454e8356e7e247da74f03256cc69110",
-    "poc-recovery-protocol-stage0-v0.2.json": "cfa06e624cbc0da37b68188d7b1739cdfb5ca12beeedc21f408897dc41b2081f",
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_1.md": "d891e033e3e58455dbafd03be5a41ca64cafda93182424357035c37d769ae46e",
+    "docs/stage0/poc-recovery-gate-set-stage0-v0.1.json": "78c1a8289f90b51a376b023673dc00b6cb35386b5b0a2dda9432b50b20216e11",
+    "docs/stage0/poc-recovery-protocol-stage0-v0.1.json": "b853295e6c66815c61566e930d30dafa0dfc72e805bb5ba38158688e084ead81",
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_2.md": "d4fab2f47872f0b6c1c04c5b0b1022b047ae8782eb0130cd2f66825294455180",
+    "docs/stage0/poc-recovery-gate-set-stage0-v0.2.json": "f6384c7b1d4d493218a600722ddf0116f454e8356e7e247da74f03256cc69110",
+    "docs/stage0/poc-recovery-protocol-stage0-v0.2.json": "cfa06e624cbc0da37b68188d7b1739cdfb5ca12beeedc21f408897dc41b2081f",
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md": "7d24e5aa0c2dd0c65ef8def12e687d39f5d0bfc30a222be51f29bffd02c772a9",
+    "docs/stage0/poc-recovery-gate-set-stage0-v0.3.json": "25a05a4d136f90e6b62005943585a27161517ea337573b71b5b1aaeca16bb80f",
+    "docs/stage0/poc-recovery-protocol-stage0-v0.3.json": "376c6bec9d6632ff0824465ee890f953445c0843716b8a1b3a044f322d03a0c9",
+}
+INHERITED_FAULT_IDS = {
+    *(f"COR-{index:02d}" for index in range(1, 7)),
+    *(f"TRU-{index:02d}" for index in range(1, 4)),
+    *(f"KEY-{index:02d}" for index in range(1, 8)),
+    *(f"SPL-{index:02d}" for index in range(1, 6)),
+    "RBK-01", "RBK-02", "PAR-01",
+    "QUA-01", "QUA-02", "QUA-03",
+    "IDE-01", "IDE-02", "EVT-01",
+    "CLN-01", "CLN-02", "CLN-03",
+}
+ADDED_FAULT_IDS = {
+    *(f"KCB-{index:02d}" for index in range(1, 7)),
+    *(f"KCF-{index:02d}" for index in range(1, 7)),
 }
 
 
@@ -44,860 +74,615 @@ def require(condition: bool, message: str) -> None:
         raise ValueError(message)
 
 
-def read_json(path: Path) -> dict[str, Any]:
-    require(path.is_file(), f"Missing required JSON: {path.relative_to(ROOT)}")
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def read_text(path: Path) -> str:
-    require(path.is_file(), f"Missing required document: {path.relative_to(ROOT)}")
+def read_text(relative: str) -> str:
+    path = ROOT / relative
+    require(path.is_file(), f"Missing required file: {relative}")
     return path.read_text(encoding="utf-8")
 
 
-def validate_jsr305_exclusion(analysis: dict[str, Any]) -> None:
-    require(analysis["schemaVersion"] == 2 and analysis["pocId"] == "POC-RECOVERY-001", "JSR305 exclusion analysis identity drift")
-    require(analysis["status"] == "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_OWNER_PRODUCT_IP_POLICY_APPROVED", "JSR305 exclusion analysis/current policy status drift")
-    scope = analysis["scope"]
-    require(scope == {
-        "governanceOnly": True,
-        "dependencyAdmission": False,
-        "runtimeGraphModified": False,
-        "recoveryModuleCreated": False,
-        "harnessImplemented": False,
-        "measuredExecutionPerformed": False,
-        "deviceExecutionPerformed": False,
-        "executionAllowed": False,
-    }, "JSR305 analysis exceeded governance-only scope")
-
-    artifacts = analysis["exactArtifacts"]
-    require(artifacts["tinkCoordinate"] == "com.google.crypto.tink:tink-android:1.23.0", "JSR305 analysis Tink coordinate drift")
-    require(artifacts["tinkJarSha256"] == "c656918451b01c45ce5b20c7b6d4c388f956f61b3a3528e769048c8944c42f9e", "JSR305 analysis Tink JAR drift")
-    require(artifacts["tinkPomSha256"] == "a2d27e7207e6a25764859b62924fc7b972f41884ce272cead9b946c15a1f410f", "JSR305 analysis Tink POM drift")
-    require(artifacts["jsr305Coordinate"] == JSR305_COORDINATE, "JSR305 analysis coordinate drift")
-
-    upstream = analysis["upstreamDependencyReason"]
-    require(upstream["directFromRootPom"] is True and upstream["viaCoordinate"] is None, "JSR305 must remain a direct Tink POM edge")
-    require(upstream["pomVersionProperty"] == "jsr305.version=3.0.2" and upstream["mavenScope"] == "compile-default" and upstream["optional"] is False, "JSR305 POM scope/optional evidence drift")
-
-    bytecode = analysis["bytecodeAndSourceEvidence"]
-    require(bytecode["tinkClassEntries"] == 1878 and bytecode["classesContainingAnyJsr305Descriptor"] == 182, "JSR305 bytecode class counts drift")
-    require(bytecode["classListLocator"] == JSR305_CLASS_LIST_LOCATOR, "JSR305 class-list locator drift")
-    class_list_path = ROOT / JSR305_CLASS_LIST_LOCATOR
-    require(class_list_path.is_file(), "JSR305 exact class list is missing")
-    class_list_bytes = class_list_path.read_bytes()
-    require(hashlib.sha256(class_list_bytes).hexdigest() == bytecode["classListSha256"] == "325211cef459ba96a3c5721e5d754bff3464d15461e0c9f6da4a66a1f7ee2045", "JSR305 exact class-list hash drift")
-    class_names = class_list_path.read_text(encoding="utf-8").splitlines()
-    require(len(class_names) == 182 and len(set(class_names)) == 182 and class_names == sorted(class_names), "JSR305 exact class list must contain 182 unique sorted names")
-    require(bytecode["descriptorPresenceByClassConstantPool"] == {
-        "javax.annotation.Nullable": 174,
-        "javax.annotation.concurrent.GuardedBy": 8,
-        "javax.annotation.concurrent.ThreadSafe": 1,
-    }, "JSR305 descriptor counts drift")
-    require(bytecode["sourceFilesImportingAnyJsr305Type"] == 157, "JSR305 source import count drift")
-    require(bytecode["constantClassReferencesToJsr305"] == 0 and bytecode["fieldOrMethodDefinitionDescriptorsToJsr305"] == 0 and bytecode["symbolicNameAndTypeOrMethodTypeDescriptorsToJsr305"] == 0 and bytecode["tinkReflectionOrClassForNameCallsTargetingJsr305"] == 0, "JSR305 is no longer annotation-metadata-only")
-    require(bytecode["tinkClassForNameCallSites"] == 2 and bytecode["tinkClassForNameCalls"] == ["org.conscrypt.Conscrypt"], "Tink Class.forName target evidence drift")
-    require(bytecode["tinkConsumerRules"]["jsr305OrJavaxAnnotationReferences"] == 0, "Tink consumer rules unexpectedly reference JSR305")
-    require(bytecode["classification"] == "ANNOTATION_METADATA_ONLY_NO_EXECUTABLE_OR_MEMBER_TYPE_REFERENCE", "JSR305 bytecode classification drift")
-
-    probes = analysis["nonRepositoryProbes"]
-    require(probes["toolchain"]["kotlinCompiler"]["sha256"] == "79628fd5d64b4692a62f98962baab00e9076a37e2cffd6ace33cd0b7be7d1cdf", "Kotlin probe compiler digest drift")
-    require(probes["toolchain"]["androidBuildToolsD8"]["sha256"] == "4097ff9c46c185c6e7214da7fe9b1befb5adeea5cc9ca349270e0249904f9240", "D8 probe tool digest drift")
-    require(probes["toolchain"]["agpBuilderR8"]["sha256"] == "873e0e9feda8762ead0ff1ce60c30cc2bf1c0859e139245a723248d998b009fa", "AGP R8 probe tool digest drift")
-    require(probes["kotlinConsumerCompile"]["compiler"] == "Kotlin 2.2.10 K2JVMCompiler" and probes["kotlinConsumerCompile"]["mode"].startswith("-Xjsr305=strict") and probes["kotlinConsumerCompile"]["jsr305OnClasspath"] is False and probes["kotlinConsumerCompile"]["exitCode"] == 0, "Kotlin no-JSR305 compile probe drift")
-    require(probes["jvmLoadAndReflection"]["classesLoadedWithoutInitialization"] == 182 and probes["jvmLoadAndReflection"]["classesInspectedForDeclaredAnnotationsFieldsConstructorsAndMethods"] == 182 and probes["jvmLoadAndReflection"]["failures"] == 0, "JVM no-JSR305 load/reflection probe drift")
-    require(probes["d8"]["minApi"] == 28 and probes["d8"]["jsr305OnProgramOrLibraryClasspath"] is False and probes["d8"]["exitCode"] == 0, "D8 no-JSR305 probe drift")
-    require(probes["r8BareExclusion"]["tool"].startswith("R8 9.3.16") and probes["r8BareExclusion"]["treeShaking"] is False and probes["r8BareExclusion"]["minification"] is False and probes["r8BareExclusion"]["exitCode"] == 1, "Bare-exclusion R8 failure evidence drift")
-    require(probes["r8BareExclusion"]["missingClasses"] == [rule.removeprefix("-dontwarn ") for rule in JSR305_R8_RULES], "Bare-exclusion R8 missing-class set drift")
-    require(probes["r8NarrowRule"]["tool"].startswith("R8 9.3.16") and probes["r8NarrowRule"]["rules"] == JSR305_R8_RULES and probes["r8NarrowRule"]["exitCode"] == 0, "Narrow-rule R8 success evidence drift")
-    full_r8 = probes["r8FullSevenArtifactProgramObservation"]
-    require(full_r8["tool"].startswith("R8 9.3.16") and full_r8["minApi"] == 28 and full_r8["treeShaking"] is False and full_r8["minification"] is False, "Full-closure R8 observation tool/mode drift")
-    require(full_r8["rules"] == JSR305_R8_RULES and full_r8["jsr305MissingClassesAfterNarrowRule"] == [], "Full-closure R8 observation no longer proves the narrow JSR305 rule")
-    require(full_r8["exitCode"] == 1 and full_r8["independentMissingClasses"] == ["javax.lang.model.element.Modifier"] and full_r8["sourceArtifact"] == "com.google.errorprone:error_prone_annotations:2.41.0", "Independent full-closure R8 boundary drift")
-    runtime_sources = probes["androidRuntimeSourceReview"]["locators"]
-    require([(item["androidApi"], item["tag"]) for item in runtime_sources] == [(28, "android-9.0.0_r1"), (36, "android-16.0.0_r2")] and all(item["locator"].startswith("https://android.googlesource.com/platform/art/") for item in runtime_sources), "Android 28/36 ART annotation-resolution evidence drift")
-
-    conclusion = analysis["technicalConclusion"]
-    require(conclusion["binaryConsumerCompileRequiresJsr305"] is False and conclusion["runtimeBehaviorRequiresJsr305"] is False, "JSR305 binary/runtime requirement conclusion drift")
-    require(conclusion["compileOnlyJsr305Required"] is False and conclusion["replacementAnnotationArtifactRequired"] is False, "JSR305 replacement was unexpectedly required")
-    require(conclusion["bareExcludeAloneAccepted"] is False and conclusion["completeArtifactExclusionFeasible"] is True, "Conditioned-exclusion conclusion drift")
-    require(analysis["optionRecommendation"]["recommendedOption"] == "A_CONDITIONED_COMPLETE_EXCLUSION", "JSR305 option recommendation drift")
-
-    policy = analysis["prospectivePolicy"]
-    require(policy["policyId"] == JSR305_POLICY_ID and policy["status"] == "APPROVED_PROSPECTIVE_POLICY_ONLY", "JSR305 prospective policy identity/status drift")
-    require(policy["acceptedBy"] == "Project owner" and policy["acceptedOn"] == "2026-08-12" and policy["decisionInputGovernanceHead"] == OWNER_DECISION_INPUT_HEAD and policy["ownerDecisionLocator"] == OWNER_DECISION_LOCATOR, "JSR305 owner/Product-IP policy acceptance record drift")
-    require(policy["forbiddenResolvedCoordinate"] == JSR305_COORDINATE and policy["requiredResolvedComponentCount"] == 0, "JSR305 zero-component policy drift")
-    require(policy["compileOnlyOrAlternatePathToForbiddenCoordinateAllowed"] is False and policy["requiredR8Rules"] == JSR305_R8_RULES and policy["broaderJavaxAnnotationDontwarnAllowed"] is False, "JSR305 path/R8 policy weakened")
-    require(policy["futureReportRequirements"]["unresolvedR8MissingClasses"] == [], "Future release evidence allows unresolved R8 missing classes")
-    require(policy["futureResolvedGraphReportPresent"] is False, "Governance package must not claim a future resolved graph")
-    require(not (ROOT / policy["futureResolvedGraphReportLocator"]).exists(), "Future recovery graph report appeared before authorized harness scope")
-
-    license_disposition = analysis["licenseDisposition"]
-    require(license_disposition["underlyingArtifactConflictResolved"] is False and license_disposition["prospectiveGraphTreatment"] == "EXCLUDE_ARTIFACT_DO_NOT_INTERPRET_OR_ACCEPT_CONFLICTING_TERMS", "JSR305 license disposition overclaims closure")
-    require(license_disposition["stage0ProductIpFinalApproval"] is False and license_disposition["approvedReviewer"] is None and license_disposition["approvedOn"] is None, "JSR305 analysis overclaims actual graph/Product-IP approval")
-    require(license_disposition["prospectivePolicyApproved"] is True and license_disposition["prospectivePolicyApprovedBy"] == "Project owner" and license_disposition["prospectivePolicyApprovedOn"] == "2026-08-12" and license_disposition["jsr305UseOrDistributionApproved"] is False and license_disposition["ownerDecisionRequired"] is False, "JSR305 scoped owner policy/license boundary drift")
+def read_json(relative: str) -> dict[str, Any]:
+    return json.loads(read_text(relative))
 
 
-def validate_supersession(gate: dict[str, Any], protocol: dict[str, Any]) -> None:
-    for filename, expected_sha256 in IMMUTABLE_AUDIT_HASHES.items():
-        path = STAGE0 / filename
-        require(path.is_file(), f"Superseded audit artifact missing: {filename}")
-        actual_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
-        require(actual_sha256 == expected_sha256, f"Superseded audit artifact changed: {filename}")
+def sha256(relative: str) -> str:
+    return hashlib.sha256((ROOT / relative).read_bytes()).hexdigest()
 
-    require(gate["supersedes"] == {
-        "gateSetVersion": "poc-recovery-stage0-v0.2",
-        "disposition": "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE",
-        "reviewedCommit": REVIEWED_V02_HEAD,
-    }, "Gate Set v0.2 supersession record drift")
-    require(protocol["supersedes"] == {
-        "protocolId": "poc-recovery-protocol-stage0-v0.2",
-        "disposition": "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE",
-        "reviewedCommit": REVIEWED_V02_HEAD,
-    }, "Protocol v0.2 supersession record drift")
 
-    expected_gate_history = [
-        {
-            "gateSetVersion": "poc-recovery-stage0-v0.1",
-            "disposition": "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE",
-            "reviewedCommit": REVIEWED_V01_HEAD,
+def validate_immutable_history(gate: dict[str, Any], protocol: dict[str, Any]) -> None:
+    for relative, expected in IMMUTABLE_AUDIT_HASHES.items():
+        require(sha256(relative) == expected, f"Superseded audit artifact changed: {relative}")
+
+    retained = gate["retainedAuditArtifacts"]
+    require([item["version"] for item in retained] == [
+        "poc-recovery-stage0-v0.1",
+        "poc-recovery-stage0-v0.2",
+        "poc-recovery-stage0-v0.3",
+    ], "Gate Set v0.1-v0.3 retained history drift")
+    recorded: dict[str, str] = {}
+    for item in retained:
+        require(
+            item["disposition"] == "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE",
+            "A retained recovery version became executable",
+        )
+        for locator_key, digest_key in (
+            ("markdownLocator", "markdownSha256"),
+            ("gateLocator", "gateSha256"),
+            ("protocolLocator", "protocolSha256"),
+        ):
+            recorded[item[locator_key]] = item[digest_key]
+    require(recorded == IMMUTABLE_AUDIT_HASHES, "Gate Set immutable history hashes drift")
+    inherited = protocol["inheritsExactV03Contract"]
+    require(
+        inherited == {
+            "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.3.json",
+            "sha256": IMMUTABLE_AUDIT_HASHES[
+                "docs/stage0/poc-recovery-protocol-stage0-v0.3.json"
+            ],
+            "allUnchangedSemanticsInherited": True,
+            "disposition": "INCORPORATED_BY_IMMUTABLE_REFERENCE_AND_SUPERSEDED_AS_STANDALONE_EXECUTION_INPUT",
         },
-        gate["supersedes"],
-    ]
-    expected_protocol_history = [
-        {
-            "protocolId": "poc-recovery-protocol-stage0-v0.1",
-            "disposition": "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE",
-            "reviewedCommit": REVIEWED_V01_HEAD,
-        },
-        protocol["supersedes"],
-    ]
-    require(gate["retainedAuditArtifacts"] == expected_gate_history, "Gate Set audit history drift")
-    require(protocol["retainedAuditArtifacts"] == expected_protocol_history, "Protocol audit history drift")
+        "v0.4 exact v0.3 inheritance record drift",
+    )
 
 
 def validate_gate(gate: dict[str, Any]) -> None:
-    require(gate["schemaVersion"] == 3, "Gate Set schema drift")
-    require(gate["pocId"] == "POC-RECOVERY-001", "PoC ID drift")
-    require(gate["gateSetVersion"] == GATE_V03, "Active Gate Set must be v0.3")
-    require(gate["protocolLocator"] == "docs/stage0/poc-recovery-protocol-stage0-v0.3.json", "Protocol locator drift")
-    require(gate["findingsLedgers"] == [
-        "docs/evidence/poc-recovery-001/review-findings-v0.1.json",
-        "docs/evidence/poc-recovery-001/review-findings-v0.2.json",
-    ], "Findings ledger locator drift")
-    require(
-        gate["status"] == "PROPOSED_OWNER_REMEDIATED_IMPLEMENTATION_VERIFICATION_REQUIRED",
-        "Gate Set remediation state drift",
-    )
-    require(gate["ownerProtocolSemanticsFrozen"] is True, "Owner protocol semantics must be frozen")
-    require(gate["executionAllowed"] is False, "Recovery execution must remain disabled")
+    require(gate["schemaVersion"] == 4, "Recovery Gate Set schema drift")
+    require(gate["pocId"] == "POC-RECOVERY-001", "Recovery Gate Set PoC identity drift")
+    require(gate["gateSetVersion"] == GATE_ID, "Active recovery Gate Set is not v0.4")
+    require(gate["protocolId"] == PROTOCOL_ID, "Active recovery protocol link drift")
+    require(gate["executionAllowed"] is False, "Recovery Gate Set authorized execution")
+    require(gate["implementationAllowed"] is False, "Recovery Gate Set authorized implementation")
+    require(gate["supersedes"] == {
+        "gateSetVersion": "poc-recovery-stage0-v0.3",
+        "disposition": "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE",
+        "reviewedCommit": REVIEWED_V03_HEAD,
+    }, "v0.3 supersession record drift")
+    require(gate["findingsLedgers"][-1].endswith("review-findings-v0.3.json"), "Final advisory ledger missing")
+    require(all(value is False for value in gate["scope"].values() if isinstance(value, bool)), "Governance-only scope widened")
     authorization = gate["executionAuthorization"]
-    require(authorization["status"] == "WITHHELD_PENDING_SEPARATE_OWNER_AUTHORIZATION", "Execution authorization drift")
     require(
-        authorization["authorizedBy"] is None
+        authorization["status"] == "WITHHELD_PENDING_SEPARATE_OWNER_AUTHORIZATION"
+        and authorization["authorizedBy"] is None
         and authorization["authorizedOn"] is None
-        and authorization["authorizationRecord"] is None,
-        "No execution authority may be populated",
+        and authorization["authorizationRecord"] is None
+        and authorization["implicitFlipForbidden"] is True,
+        "Execution authorization boundary drift",
     )
-    require(authorization["implicitFlipForbidden"] is True, "Implicit execution authorization must be forbidden")
     approvals = gate["approvalState"]
-    require(approvals["productIpFinalApproval"] is False, "Product/IP approval was prematurely recorded")
-    require(approvals["approvedReviewer"] is None and approvals["approvedOn"] is None, "Product/IP approval identity/date must remain null")
-    require(approvals["accountableIndependentEngineeringSecurityReviewer"] is None, "Independent reviewer was prematurely assigned")
-    require(approvals["currentCodexReviewClaimedFormallyIndependent"] is False, "Codex remediation cannot claim formal independence")
-    require(approvals["productionLegalReviewer"] is None and approvals["productionSecurityReviewer"] is None, "Production reviewers must remain unassigned")
-
+    require(
+        approvals["prospectivePolicyApproved"] is True
+        and approvals["governanceAuthenticityAndLicenseEvidenceVerified"] is True
+        and approvals["actualFutureGraphProductIpDisposition"]
+        == "OPEN_BLOCKED_UNTIL_AUTHORIZED_IMPLEMENTATION_GRAPH_EXISTS",
+        "Three-state Product/IP model drift",
+    )
     for key in (
-        "dependencyAdmission",
-        "productionAdmission",
-        "finalAdrAudio001",
-        "implementationAllowed",
-        "measurementAllowed",
-        "deviceExecutionAllowed",
-        "gradleRuntimeDependencyAllowed",
-        "recoveryModuleAllowed",
-        "productionAppChangeAllowed",
+        "productIpFinalApproval",
+        "currentCodexReviewClaimedFormallyIndependent",
     ):
-        require(gate["scope"][key] is False, f"Forbidden recovery scope enabled: {key}")
+        require(approvals[key] is False, f"Approval boundary widened: {key}")
+    for key in (
+        "approvedReviewer",
+        "approvedOn",
+        "accountableIndependentEngineeringSecurityReviewer",
+        "productionLegalReviewer",
+        "productionSecurityReviewer",
+    ):
+        require(approvals[key] is None, f"Unassigned reviewer field populated: {key}")
 
-    thresholds = gate["thresholds"]
-    expected_thresholds = {
-        "committedLossBytesMaximum": 0,
-        "tailLossSecondsMaximum": 5.0,
-        "tailLossBytesMaximum": 160000,
-        "returnedBytesAuthenticatedPercentMinimum": 100.0,
-        "baseHardKillAttemptsPerCandidate": 120,
-        "validHardKillsPerCandidateMinimum": 100,
-        "strataCount": 12,
-        "baseAttemptsPerStratumPerCandidate": 10,
-        "validHardKillsPerStratumMinimum": 8,
-        "replacementAttemptsPerCandidateMaximum": 20,
-        "duplicateProcessingIntentMaximum": 0,
-        "missingProcessingIntentMaximum": 0,
-        "automaticMicrophoneStartsMaximum": 0,
-    }
-    for key, expected in expected_thresholds.items():
-        require(thresholds[key] == expected, f"Threshold drift: {key}")
-    require("authenticatedRecoveredBytesPercentMinimum" not in thresholds, "Ambiguous legacy authentication threshold returned")
-    require(thresholds["fixture"]["maxPlaintextBytesPerRun"] == 115200000, "Maximum run size drift")
+    key_gate = gate["keyConfirmationGate"]
+    require(key_gate == {
+        "fileFamilyCount": 9,
+        "requiredFinalRelativeName": "key-confirmation/run.kc",
+        "requiredTemporaryRelativeName": "key-confirmation/run.kc.tmp",
+        "runBootstrapStepCount": 13,
+        "publicationBeforeDurableBootstrapCommitAllowed": False,
+        "existingTemporaryOrFinalMayBeOverwritten": False,
+        "mandatoryFaultRowsAdded": 12,
+    }, "Key-confirmation Gate Set summary drift")
+    boundary = gate["dependencyBoundary"]
+    require(boundary["policyId"] == JSR_POLICY_ID, "Recovery exclusion policy ID drift")
+    require(boundary["rootCoordinate"] == TINK_COORDINATE, "Recovery Tink coordinate drift")
+    require(boundary["forbiddenResolvedCoordinate"] == JSR_COORDINATE, "Recovery JSR305 coordinate drift")
+    require(boundary["currentRecoveryGraphClaimed"] is False, "A current recovery graph was claimed")
+    require(boundary["currentRepositoryWideAbsenceClaimed"] is False, "Repository-wide absence was claimed")
+    require(boundary["futureRecoveryResolvedComponentCountRequired"] == 0, "Future JSR305 zero-count rule weakened")
+    require(boundary["futurePackagedJsr305ClassDefinitionCountRequired"] == 0, "Future package-zero rule weakened")
+    require(boundary["requiredR8Rules"] == R8_RULES and boundary["broaderDontwarnAllowed"] is False, "Exact R8 rule drift")
+    require(boundary["releaseR8UnresolvedMissingClassesAllowed"] is False, "Unresolved release R8 missing classes allowed")
 
-    candidates = {candidate["id"]: candidate for candidate in gate["candidates"]}
-    require(set(candidates) == {"REC-STREAM-TINK", "REC-MICROFILE-TINK"}, "Candidate set drift")
-    stream = candidates["REC-STREAM-TINK"]
-    require(stream["construction"] == "AES_GCM_HKDF_STREAMING_PARAMETERS", "Streaming construction drift")
-    require((stream["inputKeyBytes"], stream["derivedAesGcmKeyBytes"], stream["hkdfHash"], stream["ciphertextSegmentBytes"]) == (16, 16, "SHA256", 4096), "Streaming parameter drift")
-    require(stream["checkpointModel"] == "DURABLE_ONE_SEGMENT_LOOKAHEAD", "Streaming checkpoint model drift")
-    require(stream["passEligibleCadencesSeconds"] == [], "Streaming cadence must not exist")
-    require((stream["maximumBoundedTailBytes"], stream["maximumBoundedTailSeconds"]) == (8160, 0.255), "Streaming bounded-tail proof drift")
-    require((stream["maxPlaintextBytesPerRun"], stream["maxSegmentsPerRun"]) == (115200000, 28236), "Streaming size/segment bound drift")
-    require(stream["deprecatedStreamingAeadKeyTemplatesAllowed"] is False and stream["registryConfigurationRequired"] is True, "Streaming public API boundary drift")
-
-    micro = candidates["REC-MICROFILE-TINK"]
-    require(micro["template"] == "AES256_GCM_TINK_IV12_TAG16", "Microfile template drift")
-    require((micro["aesKeyBytes"], micro["ivBytes"], micro["tagBytes"], micro["variant"]) == (32, 12, 16, "TINK"), "Microfile parameters drift")
-    require(micro["freshKeysetPerMicrofile"] is True, "Each microfile requires a fresh keyset")
-    require(micro["passEligibleCadencesSeconds"] == [5] and micro["observationOnlyCadencesSeconds"] == [15, 30], "Microfile cadence contract drift")
-    require((micro["fullUnitPlaintextBytes"], micro["fullUnitCiphertextBytes"]) == (160000, 160033), "Five-second unit sizing drift")
-
-    require(gate["phaseA"]["passAllowed"] is False, "Phase A PASS must remain forbidden")
-    require(gate["phaseA"]["allowedVerdicts"] == ["FAIL", "INCONCLUSIVE"], "Phase A verdict drift")
-    require(gate["phaseA"]["plannedBaseAttemptsPerCandidate"] == {"PINNED_API36_X86_64_EMULATOR": 72, "PHYSICAL_D2": 48}, "Phase A allocation drift")
-    require(gate["fullPhysicalVerdict"]["requiredPhysicalProfiles"] == ["D1", "D2", "D5"], "Full physical profile contract drift")
-    require(gate["fullPhysicalVerdict"]["phaseAAttemptsReusable"] is False, "Phase A cannot substitute for the physical campaign")
-    require(gate["fullPhysicalVerdict"]["procurementRequiredNow"] is False, "D1/D5 procurement was prematurely required")
-    require(gate["mandatoryFaultRowCount"] == 33, "Mandatory fault row count must be 33")
-    require(len(gate["mandatoryFaultIds"]) == 33 and len(set(gate["mandatoryFaultIds"])) == 33, "Mandatory fault set must contain 33 unique cases")
-    require([fault for fault in gate["mandatoryFaultIds"] if fault.startswith("KEY-")] == [f"KEY-{index:02d}" for index in range(1, 8)], "Gate Set key-fault range must be KEY-01 through KEY-07")
-    require("REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY" in gate["blockers"], "Supply-chain authenticity blocker missing")
+    expected_faults = INHERITED_FAULT_IDS | ADDED_FAULT_IDS
+    require(gate["mandatoryFaultRowCount"] == 45, "Gate Set fault row total must be 45")
+    require(set(gate["mandatoryFaultIds"]) == expected_faults and len(gate["mandatoryFaultIds"]) == 45, "Gate Set fault IDs drift")
+    require(gate["faultRepetitions"] == {
+        "perRow": {"PINNED_API36_X86_64_EMULATOR": 3, "PHYSICAL_D2": 1},
+        "rows": 45,
+        "emulatorInjections": 135,
+        "physicalD2Injections": 45,
+        "totalInjections": 180,
+        "separateFromHardKillDenominator": True,
+    }, "Fault repetition totals drift")
+    ready11 = gate["readinessStates"]["REC-RDY-11"]
+    require(
+        ready11["prospectivePolicy"] == "CLOSED_APPROVED"
+        and ready11["governanceAuthenticityLicenseEvidence"] == "CLOSED_VERIFIED_FOR_EXACT_PACKET"
+        and ready11["actualFutureGraphVerificationAndProductIpDisposition"] == "OPEN_BLOCKED"
+        and ready11["jsr305UseOrDistributionApproved"] is False,
+        "REC-RDY-11 three-state contract drift",
+    )
 
 
 def validate_protocol(protocol: dict[str, Any]) -> None:
-    require(protocol["schemaVersion"] == 3 and protocol["protocolId"] == PROTOCOL_V03, "Protocol v0.3 identity drift")
-    require(protocol["pocId"] == "POC-RECOVERY-001", "Protocol PoC ID drift")
-    require(protocol["executionAllowed"] is False, "Protocol execution must remain disabled")
-    require(protocol["dependencyCandidate"]["runtimeGraphAdmission"] is False, "Tink was prematurely admitted")
-    definitions = protocol["definitions"]
-    require(definitions["semanticCommitPoint"].startswith("successful return of SQLite endTransaction()"), "Semantic commit point drift")
-    require("not part of commit definition" in definitions["controllerCommitEvent"], "Controller event was folded into semantic commit")
-    require(definitions["mandatoryOrderingInvariant"] == "0 <= C <= R <= A", "C/R/A invariant drift")
-    require(definitions["committedLossBytesRequired"] == 0 and definitions["returnedBytesAuthenticatedPercentMinimum"] == 100.0, "Authentication/loss invariant drift")
-    require("authenticated manifest/checkpoint" in definitions["committedPrefix"], "C must derive from SQLite and authenticated publication")
+    require(protocol["schemaVersion"] == 4 and protocol["protocolId"] == PROTOCOL_ID, "Protocol v0.4 identity drift")
+    require(protocol["executionAllowed"] is False and protocol["implementationAllowed"] is False, "Protocol authorized implementation/execution")
+    primitives = protocol["binaryEncodingPrimitives"]
+    require(primitives["unsignedIntegers"] == "network byte order / big-endian", "Binary endianness drift")
+    require(primitives["LP16"].startswith("u16be byteLength"), "LP16 definition drift")
+    require(primitives["trailingBytesAllowed"] is False, "Protocol allows trailing bytes")
 
-    candidates = {candidate["id"]: candidate for candidate in protocol["candidates"]}
-    stream = candidates["REC-STREAM-TINK"]
-    construction = stream["construction"]
-    require(construction["parametersClass"].endswith("AesGcmHkdfStreamingParameters"), "Streaming parameters class drift")
-    require((construction["inputKeyBytes"], construction["derivedAesGcmKeyBytes"], construction["ciphertextSegmentBytes"]) == (16, 16, 4096), "Streaming construction size drift")
-    require(construction["hkdfHash"].endswith(".SHA256"), "Streaming HKDF drift")
-    require("generateEntryFromParameters" in construction["keysetConstruction"] and "withRandomId()" in construction["keysetConstruction"] and "makePrimary()" in construction["keysetConstruction"], "Streaming public keyset construction drift")
-    require(construction["primitiveConstruction"] == "keysetHandle.getPrimitive(RegistryConfiguration.get(), StreamingAead.class)", "Streaming primitive construction drift")
-    key_model = stream["keyModel"]
-    require(key_model["freshKeysetPerRun"] is True and key_model["separateDerivedKeyPerSegmentClaimed"] is False, "Streaming key model drift")
-    require(key_model["segmentUniqueness"] == ["nonce prefix", "segment index", "last flag"], "Streaming nonce/segment model drift")
-    require(key_model["associatedDataSetOnceForWholeStream"] is True, "Streaming AAD must be set once")
-    checkpoint_model = stream["checkpointModel"]
-    require(checkpoint_model["qDefinition"].startswith("count of fully output non-final 4096-byte"), "q definition drift")
-    require(checkpoint_model["ciphertextPrefixBytesFormula"] == "q * 4096", "Ciphertext prefix formula drift")
-    require(checkpoint_model["recoveredEndFormula"] == {"qLessThan2": 0, "qAtLeast2": "4056 + (q - 2) * 4080"}, "Recovered-end formula drift")
-    require(checkpoint_model["durableLastNonFinalSegmentIsSacrificial"] is True and checkpoint_model["sacrificialSegmentIncludedInCommittedPrefix"] is False, "Sacrificial segment rule drift")
-    require(checkpoint_model["passEligibleCadencesSeconds"] == [] and (checkpoint_model["maximumBoundedTailBytes"], checkpoint_model["maximumBoundedTailSeconds"]) == (8160, 0.255), "Streaming tail contract drift")
-    reads = stream["recoveryReads"]
-    require((reads["firstRequestedPlaintextBytes"], reads["subsequentRequestedPlaintextBytes"]) == (4056, 4080), "Recovery read sizes drift")
-    require(reads["countOnlySuccessfullyCompletedReadReturnBytes"] is True and reads["discardEntireCallerBufferOnReadException"] is True, "Recovery read accounting drift")
-    require(reads["minusOneMeaning"] == "AUTHENTICATED_NORMAL_EOF", "-1 EOF classification drift")
-    require("ANY_OTHER_EXCEPTION" in reads["exceptionsNeverMeaningEof"], "Exception-as-EOF prohibition drift")
-    require(stream["checkpoint"]["exactEncoding"] == "DORA_RECOVERY_STREAM_CHECKPOINT_V1_BINARY_BE" and stream["checkpoint"]["magicAscii"] == "DORARC01", "Checkpoint encoding drift")
-    require(stream["checkpoint"]["aeadTemplate"] == "AES256_GCM_TINK_IV12_TAG16" and stream["checkpoint"]["freshKeysetPerGeneration"] is True, "Checkpoint publication AEAD drift")
-
-    micro = candidates["REC-MICROFILE-TINK"]
-    aead = micro["aeadTemplate"]
-    require(aead["name"] == "AES256_GCM_TINK_IV12_TAG16", "Microfile template drift")
-    require((aead["aesKeyBytes"], aead["ivBytes"], aead["tagBytes"], aead["variant"]) == (32, 12, 16, "AesGcmParameters.Variant.TINK"), "Microfile AEAD parameters drift")
-    require(micro["freshKeysetPerMicrofile"] is True, "Fresh keyset per microfile required")
-    require([(item["seconds"], item["passEligible"]) for item in micro["cadences"]] == [(5, True), (15, False), (30, False)], "Microfile cadence eligibility drift")
-    require((micro["cadences"][0]["fullUnitPlaintextBytes"], micro["cadences"][0]["fullUnitCiphertextBytes"]) == (160000, 160033), "Microfile exact size drift")
-    manifest = micro["manifest"]
-    require(manifest["authenticatedAndEncrypted"] is True and manifest["exactEncoding"] == "DORA_RECOVERY_MANIFEST_V1_BINARY_BE", "Manifest encoding drift")
-    require(manifest["aeadTemplate"] == "AES256_GCM_TINK_IV12_TAG16" and manifest["freshKeysetPerGeneration"] is True, "Manifest publication AEAD drift")
-    require((manifest["magicAscii"], manifest["schemaVersion"], manifest["maximumEntries"], manifest["maximumPlaintextBytes"]) == ("DORARM01", 1, 721, 524288), "Manifest bounds drift")
-    require(manifest["trailingBytesAllowed"] is False, "Manifest trailing bytes must be rejected")
-    rules = manifest["entryRules"]
-    require(rules["unitIndicesStrictlyIncreasingByOne"] is True and rules["plaintextRangesContiguous"] is True, "Manifest continuity/order drift")
-    require(all(rules[key] is False for key in ("gapsAllowed", "duplicatesAllowed", "reorderingAllowed", "removalAllowed")), "Manifest mutation rule weakened")
-
-    aad = protocol["associatedDataSchemas"]
-    expected_aad = {
-        "streaming": ("DORA_RECOVERY_STREAM_AAD_V1_BINARY_BE", "DORASA01"),
-        "microfile": ("DORA_RECOVERY_MICROFILE_AAD_V1_BINARY_BE", "DORAMA01"),
-        "manifestOrCheckpoint": ("DORA_RECOVERY_PUBLICATION_AAD_V1_BINARY_BE", "DORACP01"),
-        "keyEnvelope": ("DORA_RECOVERY_KEY_ENVELOPE_AAD_V1_BINARY_BE", "DORAKE01"),
-    }
-    for name, (encoding, magic) in expected_aad.items():
-        require((aad[name]["exactEncoding"], aad[name]["magicAscii"]) == (encoding, magic), f"{name} AAD schema drift")
-
-    keys = protocol["keyProtocol"]
-    require(keys["freshKeysetScopes"] == {"streaming": "one per run", "microfile": "one per microfile", "manifest": "one per manifest generation", "checkpoint": "one per checkpoint generation"}, "Fresh keyset scope drift")
-    require(keys["aliasFormat"] == "android-keystore://dora.poc.recovery.v1.<lowercase-run-uuid>", "Keystore alias drift")
-    require(keys["newRunCreationApi"] == "AndroidKeystoreKmsClient.generateNewAeadKey(alias)", "Keystore creation API drift")
-    exact_access = "new AndroidKeystoreKmsClient.Builder().setKeyUri(alias).build().getAead(alias)"
-    require(keys["keystoreClientConstruction"] == "new AndroidKeystoreKmsClient.Builder().setKeyUri(alias).build()", "Keystore Builder construction drift")
-    require(keys["newRunAccessApi"] == exact_access and keys["recoveryAccessApi"] == exact_access, "Keystore access path must use the exact non-deprecated Builder chain")
-    require(keys["newRunSequence"] == [
-        "fail with KEY_REF_COLLISION if the alias or key-reference namespace is occupied",
-        "AndroidKeystoreKmsClient.generateNewAeadKey(alias)",
-        exact_access,
-    ], "New-run Keystore sequence drift")
-    require(keys["recoveryMayCallGenerateNewAeadKey"] is False and keys["recoveryMayCreateOrReplaceAlias"] is False, "Recovery must never generate or replace a Keystore key")
-    require(keys["androidKeysetManagerAllowed"] is False and keys["getOrGenerateNewAeadKeyAllowed"] is False, "Forbidden key API enabled")
-    require(keys["replacementKeyDuringRecoveryAllowed"] is False and keys["cleartextSecretKeysetSerializationAllowed"] is False, "Replacement/cleartext key handling enabled")
-    require(keys["encryptedKeysetSerialization"].endswith("RegistryConfiguration.get())"), "Non-deprecated encrypted-keyset serialization drift")
-    require(keys["encryptedKeysetParsing"].endswith("RegistryConfiguration.get())"), "Non-deprecated encrypted-keyset parsing drift")
-    require(set(keys["classifications"]) == {"KEY_UNAVAILABLE", "KEY_UNAVAILABLE_KEY_MISMATCH", "CORRUPT_KEY_ENVELOPE", "KEY_ENVELOPE_AUTH_FAILURE", "KEY_REF_COLLISION"}, "Key classification drift")
-    expected_precedence = [
-        (1, "new run finds an existing alias or occupied key-reference namespace", "KEY_REF_COLLISION"),
-        (2, "expected alias, key reference or key envelope is absent", "KEY_UNAVAILABLE"),
-        (3, "key envelope is present but its expected length, SHA-256, binary encoding or parser validation fails", "CORRUPT_KEY_ENVELOPE"),
-        (4, "alias is available, key confirmation succeeds and the structurally valid expected envelope fails AEAD, AAD or tag authentication", "KEY_ENVELOPE_AUTH_FAILURE"),
-        (5, "alias resolves and the stored length/hash-valid key-confirmation ciphertext proves replacement or mismatch", "KEY_UNAVAILABLE_KEY_MISMATCH"),
-    ]
+    confirmation = protocol["keyConfirmation"]
+    require(confirmation["required"] is True and confirmation["fileFamilyOrdinal"] == 9, "Ninth key-confirmation family missing")
     require(
-        [(item["priority"], item["condition"], item["classification"]) for item in keys["classificationPrecedence"]] == expected_precedence,
-        "Five-level key-classification precedence drift",
+        confirmation["finalRelativeName"] == "key-confirmation/run.kc"
+        and confirmation["temporaryRelativeName"] == "key-confirmation/run.kc.tmp",
+        "Key-confirmation name mapping drift",
     )
-    confirmation = keys["keyConfirmation"]
-    require(confirmation["required"] is True and confirmation["ciphertextIdentityRecordedInSQLite"] is True and confirmation["ciphertextLengthAndSha256CheckedBeforeDecrypt"] is True, "Key-confirmation evidence contract drift")
-    require(keys["ambiguousExpectedOutcomeAllowed"] is False, "Ambiguous key-fault outcomes are forbidden")
-    for key in ("keyBytesAllowedInGit", "keysetsAllowedInGit", "keyBytesAllowedInLogs", "keyBytesAllowedInActionsArtifacts", "rawDatabaseAllowedInGitOrActions"):
-        require(keys[key] is False, f"Secret/public-evidence boundary weakened: {key}")
+    alias = confirmation["canonicalAlias"]
+    require(
+        alias["format"] == "android-keystore://dora.poc.recovery.v1.<lowercase-run-uuid>"
+        and alias["asciiOnly"] is True
+        and alias["minimumUtf8Bytes"] == alias["maximumUtf8Bytes"] == 76
+        and alias["digest"] == "SHA-256 over the exact canonical alias UTF-8 bytes",
+        "Canonical alias/digest contract drift",
+    )
+    plaintext = confirmation["plaintextSchema"]
+    aad = confirmation["associatedDataSchema"]
+    require(
+        plaintext["name"] == "DORA_RECOVERY_KEY_CONFIRMATION_PLAINTEXT_V1_BINARY_BE"
+        and plaintext["magicAscii"] == "DORAKC01"
+        and plaintext["schemaVersionU16be"] == 1,
+        "Key-confirmation plaintext schema drift",
+    )
+    require(
+        aad["name"] == "DORA_RECOVERY_KEY_CONFIRMATION_AAD_V1_BINARY_BE"
+        and aad["magicAscii"] == "DORAKA01"
+        and aad["schemaVersionU16be"] == 1,
+        "Key-confirmation AAD schema drift",
+    )
+    expected_encoding = "magic[8] || u16be(1) || LP16(protocolId) || LP16(candidateId) || runId[16] || canonicalAliasSha256[32]"
+    for schema in (plaintext, aad):
+        require(
+            schema["exactEncoding"] == expected_encoding
+            and schema["protocolIdUtf8MaximumBytes"] == 96
+            and schema["candidateIdUtf8MaximumBytes"] == 64
+            and schema["encodedBytesMaximum"] == 222
+            and schema["trailingBytesAllowed"] is False,
+            "Key-confirmation bounded encoding drift",
+        )
+    require(plaintext["magicAscii"] != aad["magicAscii"], "Plaintext and AAD magic must be separate")
+    identifiers = confirmation["identifierRules"]
+    require(
+        identifiers["candidateId"].endswith("REC-MICROFILE-TINK")
+        and identifiers["crossRunOrCrossCandidateReuseAllowed"] is False,
+        "Key-confirmation run/candidate binding drift",
+    )
+    sequence = confirmation["runBootstrapSequence"]
+    require(len(sequence) == 13, "Key-confirmation bootstrap must contain exactly 13 steps")
+    require([item.split(" ", 1)[0] for item in sequence] == [f"KC-{index:02d}" for index in range(1, 14)], "Key-confirmation bootstrap step IDs drift")
+    for fragment in (
+        "generateNewAeadKey(alias)",
+        "new AndroidKeystoreKmsClient.Builder().setKeyUri(alias).build().getAead(alias)",
+        "O_CREAT|O_EXCL|O_WRONLY|O_CLOEXEC",
+        "fsync the temp file descriptor",
+        "rename key-confirmation/run.kc.tmp to key-confirmation/run.kc without overwrite",
+        "fsync the key-confirmation parent directory",
+        "canonical alias SHA-256 and confirmation state",
+        "successful endTransaction() return",
+        "encrypted keyset, ciphertext, checkpoint or manifest publication begin",
+    ):
+        require(any(fragment in item for item in sequence), f"Bootstrap contract missing: {fragment}")
+    order = confirmation["newRunOrder"]
+    require(all(order.values()), "Key confirmation is not ordered before every publication family")
+    require(confirmation["existingTemporaryOrFinalMayBeOverwritten"] is False, "Key confirmation overwrite enabled")
+    require(confirmation["recoveryMayGenerateOrReplaceAlias"] is False, "Recovery alias replacement enabled")
 
-    storage = protocol["storageProtocol"]
-    require(storage["activeRoot"] == "context.noBackupFilesDir/poc-recovery/v1/runs/<runId>/" and storage["quarantineRoot"] == "context.noBackupFilesDir/poc-recovery/v1/quarantine/<runId>/", "Storage root drift")
-    require(storage["canonicalContainmentRequired"] is True and storage["lstatEveryExistingComponentRequired"] is True and storage["regularFilesOnly"] is True, "Path containment/lstat contract drift")
-    require(storage["symlinksAllowed"] is False and storage["existingFinalPathsOverwritten"] is False, "Unsafe path overwrite/symlink rule enabled")
-    require(storage["publicAndroidSystemOsDurabilityCallsOnly"] == ["android.system.Os.open", "android.system.Os.fsync", "android.system.Os.rename", "android.system.Os.close"], "Filesystem durability API boundary drift")
-    require("publicationOrder" not in storage, "Generic publication order must not replace candidate-specific sequences")
-    require(storage["temporaryNameMapping"] == "finalRelativeName + '.tmp'", "Temporary-name mapping drift")
-    require(storage["temporaryNamespaceAllowsOnlyMappedFinalNames"] is True, "Temporary namespace must be derived only from allowlisted final names")
-    require(storage["exclusiveCreateFlagsForEveryNewTempOrFinalFile"] == "O_CREAT|O_EXCL|O_WRONLY|O_CLOEXEC", "Exclusive-create flags drift")
-    require(storage["finalCollisionCheckRequiredImmediatelyBeforeRename"] is True, "Final collision check is required before rename")
-    require(storage["collisionOrExistingTargetBlocksPublication"] is True and storage["renameMayOverwriteExistingTarget"] is False, "Collision/no-overwrite contract drift")
-    require(storage["recoveryTempPromotionByNameAllowed"] is False, "Recovery must never promote a temp based on its name alone")
-    final_patterns = storage["finalNamePatterns"]
-    require("temporaryNamePatterns" not in storage, "Use the exact tempNamePatterns field name")
-    temporary_patterns = storage["tempNamePatterns"]
-    require(set(final_patterns) == set(temporary_patterns) and all(temporary_patterns[key] == final_patterns[key] + ".tmp" for key in final_patterns), "Every temp pattern must equal its allowlisted final pattern plus .tmp")
-    path_coverage = storage["pathValidationCoverage"]
-    require(set(path_coverage["finalPatternKeys"]) == set(final_patterns), "Final-name path-validator coverage drift")
-    require(set(path_coverage["temporaryPatternKeys"]) == set(temporary_patterns), "Temporary-name path-validator coverage drift")
-    require(path_coverage["requiredForEveryFinalAndTemporaryPattern"] == [
-        "canonical containment beneath the active run root",
-        "lstat every existing path component",
-        "regular file at the leaf",
-        "no symlink at any component or leaf",
-    ], "Final/temp path-validator checks drift")
-    expected_reconciliation_states = {
-        "TEMP_ONLY": "uncommitted artifact; not published; not committed; after canonical containment, lstat, regular-file and no-symlink validation move it through the quarantine transaction",
-        "TEMP_AND_FINAL": "collision; never overwrite the final; after canonical containment, lstat, regular-file and no-symlink validation move the temp through the quarantine transaction",
-        "FINAL_ONLY": "validate against the authenticated manifest/checkpoint and exact SQLite identity after canonical containment, lstat, regular-file and no-symlink validation",
-        "SQLITE_POINTS_TO_TEMP": "split-brain failure; the temp is not committed; never rename, relabel, publish or promote it by name",
-        "UNKNOWN_OR_NON_ALLOWLISTED_NAME": "fail closed; after canonical containment, lstat, regular-file and no-symlink validation move a regular object through the quarantine transaction; unsafe path/type is an error",
-    }
-    require(storage["reconciliationStates"] == expected_reconciliation_states, "Exact reconciliation-state contract drift")
+    storage = protocol["storageAmendment"]
+    require(storage["fileFamilyCount"] == 9, "Storage family count drift")
+    require(storage["addedFinalNamePattern"] == {"keyConfirmation": "key-confirmation/run.kc"}, "Final key-confirmation pattern drift")
+    require(storage["addedTempNamePattern"] == {"keyConfirmation": "key-confirmation/run.kc.tmp"}, "Temp key-confirmation pattern drift")
+    require(storage["temporaryNameMapping"] == "finalRelativeName + '.tmp'", "Temp mapping drift")
+    require(len(storage["allowlistedFinalFamilies"]) == 9 and storage["allowlistedFinalFamilies"][-1] == "keyConfirmation", "Nine-family allowlist drift")
+    require(len(storage["pathValidationRequired"]) == 5, "Key-confirmation path validation coverage drift")
+    require("KC-01 through KC-12" in storage["publicationSequences"]["runBootstrapPrefix"], "Publication sequence lacks durable bootstrap prefix")
 
-    expected_sequences = {
-        "streamingSetup": [
-            "SSET-01 exclusive-create and write stream key-envelope temp",
-            "SSET-02 fsync stream key-envelope temp file",
-            "SSET-03 collision-check then rename stream key-envelope temp to immutable final",
-            "SSET-04 fsync stream key-envelope parent directory",
-            "SSET-05 exclusive-create and write initial stream ciphertext temp",
-            "SSET-06 fsync initial stream ciphertext temp file",
-            "SSET-07 collision-check then rename stream ciphertext temp to immutable final",
-            "SSET-08 fsync stream ciphertext parent directory",
-            "SSET-09 continue all later writes through the append-only stream ciphertext descriptor that remained open across the temp-to-final rename",
-        ],
-        "streamingCheckpointGeneration": [
-            "SCHK-01 fsync the open append-only stream ciphertext descriptor",
-            "SCHK-02 create a fresh checkpoint keyset and serialize its encrypted envelope in memory",
-            "SCHK-03 exclusive-create and write checkpoint key-envelope temp",
-            "SCHK-04 fsync checkpoint key-envelope temp file",
-            "SCHK-05 collision-check then rename checkpoint key-envelope temp to immutable final",
-            "SCHK-06 fsync checkpoint key-envelope parent directory",
-            "SCHK-07 encrypt checkpoint then exclusive-create and write checkpoint ciphertext temp",
-            "SCHK-08 fsync checkpoint ciphertext temp file",
-            "SCHK-09 collision-check then rename checkpoint ciphertext temp to immutable final",
-            "SCHK-10 fsync checkpoint ciphertext parent directory",
-            "SCHK-11 write exact final identities in the SQLite non-exclusive durable transaction",
-            "SCHK-12 successful SQLite endTransaction return is the semantic commit",
-            "SCHK-13 emit the controller evidence event after semantic commit",
-        ],
-        "microfileGeneration": [
-            "MICRO-P01 create a fresh microfile keyset and serialize its encrypted envelope in memory",
-            "MICRO-P02 exclusive-create and write microfile key-envelope temp",
-            "MICRO-P03 fsync microfile key-envelope temp file",
-            "MICRO-P04 collision-check then rename microfile key-envelope temp to immutable final",
-            "MICRO-P05 fsync microfile key-envelope parent directory",
-            "MICRO-P06 Aead.encrypt returns then exclusive-create and write microfile ciphertext temp",
-            "MICRO-P07 fsync microfile ciphertext temp file",
-            "MICRO-P08 collision-check then rename microfile ciphertext temp to immutable final",
-            "MICRO-P09 fsync microfile ciphertext parent directory",
-            "MICRO-P10 create a fresh manifest keyset and serialize its encrypted envelope in memory",
-            "MICRO-P11 exclusive-create and write manifest key-envelope temp",
-            "MICRO-P12 fsync manifest key-envelope temp file",
-            "MICRO-P13 collision-check then rename manifest key-envelope temp to immutable final",
-            "MICRO-P14 fsync manifest key-envelope parent directory",
-            "MICRO-P15 encrypt manifest then exclusive-create and write manifest ciphertext temp",
-            "MICRO-P16 fsync manifest ciphertext temp file",
-            "MICRO-P17 collision-check then rename manifest ciphertext temp to immutable final",
-            "MICRO-P18 fsync manifest ciphertext parent directory",
-            "MICRO-P19 write both key envelopes, both ciphertext finals and exact hashes in the SQLite non-exclusive durable transaction",
-            "MICRO-P20 successful SQLite endTransaction return is the semantic commit",
-            "MICRO-P21 emit the controller evidence event after semantic commit",
-        ],
-    }
-    require(storage["publicationSequences"] == expected_sequences, "Candidate-specific 9/13/21 publication sequences drift")
-    require(storage["quarantineOrder"] == ["SQLite intent commit", "rename", "fsync source directory", "fsync destination directory", "SQLite completion commit"], "Quarantine order drift")
+    sqlite = protocol["sqliteAmendment"]
+    require(sqlite["requiredRunRowFields"] == [
+        "runId", "candidateId", "keyConfirmationRelativeName", "keyConfirmationBytes",
+        "keyConfirmationSha256", "canonicalAliasSha256", "keyConfirmationState",
+    ], "SQLite key-confirmation row identity drift")
+    require(sqlite["abstractFileIdentityAllowed"] is False, "Abstract SQLite file identity enabled")
+    require(sqlite["semanticCommitApi"] == "endTransaction() successful return" and sqlite["controllerEventPartOfSemanticCommit"] is False, "Bootstrap semantic commit drift")
 
-    sqlite = protocol["sqliteJournal"]
-    require((sqlite["api"], sqlite["journalMode"], sqlite["synchronous"], sqlite["walAutocheckpoint"], sqlite["foreignKeys"]) == ("android.database.sqlite", "WAL", "FULL", 0, True), "SQLite durability profile drift")
-    require(sqlite["transactionApi"] == "beginTransactionNonExclusive()" and sqlite["semanticCommitApi"] == "endTransaction() successful return", "SQLite transaction contract drift")
-    require(sqlite["singleWriter"] is True and sqlite["controllerEventPartOfSemanticCommit"] is False, "SQLite writer/semantic commit drift")
-    for key in ("roomAllowed", "sqlCipherAllowed", "workManagerAllowed", "bundledSQLiteAllowed", "productionSchemaAllowed", "productionMigrationAllowed", "abstractFileIdentityAllowed"):
-        require(sqlite[key] is False, f"Forbidden SQLite scope enabled: {key}")
-    require(set(sqlite["requiredUnitRowFields"]) >= {"ciphertextRelativeName", "ciphertextBytes", "ciphertextSha256", "keyEnvelopeRelativeName", "keyEnvelopeBytes", "keyEnvelopeSha256"}, "Exact unit file identity fields drift")
-    require(set(sqlite["requiredPublicationRowFields"]) >= {"publicationRelativeName", "publicationBytes", "publicationSha256", "keyEnvelopeRelativeName", "keyEnvelopeBytes", "keyEnvelopeSha256", "previousPublicationCiphertextSha256"}, "Exact publication file identity fields drift")
-    require(sqlite["processingIntentId"]["inputEncoding"].startswith("LP16(protocolId) || LP16(candidateId)"), "processingIntentId encoding drift")
-    require(sqlite["processingIntentId"]["uniqueConstraintRequired"] is True, "processingIntentId must be UNIQUE")
-    require(sqlite["freshPreflight"]["compileOptionsCanonicalization"] == "exact rows sorted lexicographically, UTF-8 encoded, joined by LF and terminated by one LF", "SQLite compile-options canonicalization drift")
-    require(sqlite["freshPreflight"]["mismatchBlocksExecution"] is True, "SQLite preflight mismatch must block")
+    expected_taxonomy = [
+        "KEY_REF_COLLISION", "INCOMPLETE_KEY_BOOTSTRAP", "KEY_CONFIRMATION_MISSING",
+        "CORRUPT_KEY_CONFIRMATION", "KEY_UNAVAILABLE_KEY_MISMATCH", "KEY_UNAVAILABLE",
+        "CORRUPT_KEY_ENVELOPE", "KEY_ENVELOPE_AUTH_FAILURE",
+    ]
+    taxonomy = protocol["recoveryTaxonomyV04"]
+    require(
+        [item["priority"] for item in taxonomy["classificationPrecedence"]] == list(range(1, 9))
+        and [item["classification"] for item in taxonomy["classificationPrecedence"]] == expected_taxonomy
+        and taxonomy["ambiguousExpectedOutcomeAllowed"] is False,
+        "v0.4 key taxonomy precedence drift",
+    )
+    reconciliation = protocol["reconciliationAmendment"]
+    require(set(reconciliation) == {
+        "ALIAS_NO_CONFIRMATION_NO_DURABLE_ROW",
+        "KEY_CONFIRMATION_TEMP_ONLY",
+        "KEY_CONFIRMATION_FINAL_NO_ROW",
+        "KEY_CONFIRMATION_ROW_MISSING_FINAL",
+        "KEY_CONFIRMATION_ROW_LENGTH_HASH_OR_PARSER_MISMATCH",
+        "KEY_CONFIRMATION_AUTHENTICATION_MISMATCH",
+        "VALID_CONFIRMATION_LATER_ENVELOPE_AUTH_FAILURE",
+        "TEMP_AND_FINAL_COLLISION",
+    }, "Key-confirmation reconciliation states drift")
+    require("never replace" in reconciliation["ALIAS_NO_CONFIRMATION_NO_DURABLE_ROW"], "Incomplete bootstrap replacement prohibition missing")
+    require("authenticated-orphan" in reconciliation["KEY_CONFIRMATION_FINAL_NO_ROW"], "Authenticated-orphan handling missing")
 
-    campaign = protocol["hardKillCampaign"]
-    require((campaign["signal"], campaign["gracefulStopAllowed"], campaign["baseAttemptsPerCandidate"], campaign["validHardKillsMinimumPerCandidate"]) == ("SIGKILL", False, 120, 100), "Hard-kill campaign drift")
-    require([item["id"] for item in campaign["strata"]] == [f"K{index:02d}" for index in range(1, 13)], "K01-K12 strata drift")
-    strata = {item["id"]: item for item in campaign["strata"]}
-    expected_barrier_markers = {
-        "K01": ("SCHK-01", "MICRO-P06"),
-        "K02": ("SCHK-01", "MICRO-P06"),
-        "K03": ("SCHK-01", "MICRO-P07"),
-        "K04": ("SCHK-01", "MICRO-P07"),
-        "K05": ("SCHK-06", "MICRO-P09"),
-        "K06": ("SCHK-07", "MICRO-P14"),
-        "K07": ("SCHK-08", "MICRO-P16"),
-        "K08": ("SCHK-10", "MICRO-P18"),
-        "K09": ("SCHK-11", "MICRO-P19"),
-        "K10": ("SCHK-12 endTransaction() returned; SCHK-13 controller event not emitted", "MICRO-P20 endTransaction() returned; MICRO-P21 controller event not emitted"),
-        "K11": ("SCHK-13 controller event durably acknowledged", "MICRO-P21 controller event durably acknowledged"),
-        "K12": ("K12-STREAM-V0.3", "K12-MICROFILE-V0.3"),
-    }
-    for stratum_id, (stream_marker, micro_marker) in expected_barrier_markers.items():
-        require(stream_marker in strata[stratum_id]["REC-STREAM-TINK"], f"{stratum_id} streaming barrier does not align to the v0.3 sequence")
-        require(micro_marker in strata[stratum_id]["REC-MICROFILE-TINK"], f"{stratum_id} microfile barrier does not align to the v0.3 sequence")
-    require("downstream ciphertext OutputStream callback" in strata["K02"]["REC-STREAM-TINK"] and strata["K02"]["REC-MICROFILE-TINK"].startswith("MICROFILE_AFTER_AEAD_RETURN_BEFORE_TEMP_WRITE:"), "Candidate-specific K02 barrier drift")
-    stream_seed = campaign["k12Seeds"]["REC-STREAM-TINK"]
-    micro_seed = campaign["k12Seeds"]["REC-MICROFILE-TINK"]
-    require((stream_seed["seedId"], stream_seed["q"], stream_seed["A"], stream_seed["C"], stream_seed["R"]) == ("K12-STREAM-V0.3", 3, 12216, 8136, 8136), "Streaming K12 seed drift")
-    require((micro_seed["seedId"], micro_seed["committedFullUnits"], micro_seed["A"], micro_seed["C"], micro_seed["R"]) == ("K12-MICROFILE-V0.3", 2, 360000, 320000, 320000), "Microfile K12 seed drift")
-    require("one stable processing intent" in stream_seed["canonicalExpected"] and "two stable processing intents" in micro_seed["canonicalExpected"], "K12 canonical result drift")
-    require(campaign["replacement"]["automaticReplacementAllowed"] is False and campaign["replacement"]["candidateFailureReplaceable"] is False, "Hard-kill replacement rule weakened")
+    barriers = protocol["hardKillBarrierAmendment"]
+    require(barriers["barrierIds"] == [f"K{index:02d}" for index in range(1, 13)], "K01-K12 coverage drift")
+    require("KC-12" in barriers["requiredBeforeEveryBarrierCanArm"], "K01-K12 lack durable bootstrap prerequisite")
+    require(barriers["controllerBootstrapEventRequiredForSemanticCommit"] is False, "Controller event folded into bootstrap commit")
 
     faults = protocol["faultCampaign"]
-    expected_fault_ids = {
-        "COR-01", "COR-02", "COR-03", "COR-04", "COR-05", "COR-06",
-        "TRU-01", "TRU-02", "TRU-03",
-        "KEY-01", "KEY-02", "KEY-03", "KEY-04", "KEY-05", "KEY-06", "KEY-07",
-        "SPL-01", "SPL-02", "SPL-03", "SPL-04", "SPL-05",
-        "RBK-01", "RBK-02", "PAR-01",
-        "QUA-01", "QUA-02", "QUA-03",
-        "IDE-01", "IDE-02", "EVT-01",
-        "CLN-01", "CLN-02", "CLN-03",
+    require((faults["inheritedV03MandatoryRows"], faults["addedV04MandatoryRows"], faults["mandatoryFaultRowCount"]) == (33, 12, 45), "Protocol fault totals drift")
+    require(faults["repetitionProfile"] == {"PINNED_API36_X86_64_EMULATOR": 3, "PHYSICAL_D2": 1}, "Protocol fault repetitions drift")
+    require(faults["totalInjections"] == 180 and faults["separateFromHardKillDenominator"] is True, "Protocol fault injection total drift")
+    cases = faults["addedCases"]
+    require({item["id"] for item in cases} == ADDED_FAULT_IDS and len(cases) == 12, "Added key-confirmation fault IDs drift")
+    require(all(item["repetitions"] == faults["repetitionProfile"] for item in cases), "Added fault repetition drift")
+    expected_prefixes = {
+        "KCB-01": "INCOMPLETE_KEY_BOOTSTRAP",
+        "KCB-02": "KEY_CONFIRMATION_TEMP_ONLY",
+        "KCB-03": "KEY_CONFIRMATION_TEMP_ONLY",
+        "KCB-04": "fail-closed final-or-absent reconciliation",
+        "KCB-05": "KEY_CONFIRMATION_FINAL_NO_ROW",
+        "KCB-06": "durable bootstrap remains committed",
+        "KCF-01": "KEY_CONFIRMATION_MISSING",
+        "KCF-02": "CORRUPT_KEY_CONFIRMATION",
+        "KCF-03": "CORRUPT_KEY_CONFIRMATION",
+        "KCF-04": "KEY_UNAVAILABLE_KEY_MISMATCH",
+        "KCF-05": "KEY_UNAVAILABLE_KEY_MISMATCH",
+        "KCF-06": "KEY_REF_COLLISION",
     }
-    require(faults["mandatoryFaultRowCount"] == 33, "Protocol mandatory fault row count must be 33")
-    require({case["id"] for case in faults["cases"]} == expected_fault_ids and len(faults["cases"]) == 33, "Fault matrix ID drift")
-    require(all(" or " not in case["expected"].lower() for case in faults["cases"]), "Fault expected outcomes must be singular and unambiguous")
-    require(all(case["phaseARepetitionProfile"] == "PHASE_A_STANDARD" for case in faults["cases"]), "Every fault requires the standard Phase A repetition profile")
-    require(faults["repetitionProfiles"]["PHASE_A_STANDARD"] == {"PINNED_API36_X86_64_EMULATOR": 3, "PHYSICAL_D2": 1}, "Phase A fault repetitions drift")
-    rollback = protocol["rollbackModel"]
-    require(rollback["externalPhaseAControllerLedgerIsRollbackAnchor"] is True and rollback["globalCryptographicAntiRollbackClaimAllowedWithoutExternalLedger"] is False, "Rollback claim boundary drift")
+    require(
+        all(item["expected"].startswith(expected_prefixes[item["id"]]) for item in cases),
+        "Added fault expected classification/state drift",
+    )
+    require(any("alias creation" in item["injection"] and "temp creation" in item["injection"] for item in cases), "Alias-before-temp kill missing")
+    require(any("controller event" in item["injection"] for item in cases), "Commit-before-controller-event kill missing")
+    require(any("bit-flip" in item["injection"] for item in cases), "Bit-flip fault missing")
+    require(any("truncate" in item["injection"] for item in cases), "Truncation fault missing")
+    require(any("another run or candidate" in item["injection"] for item in cases), "Cross-run swap fault missing")
+    require(any("replace the run alias" in item["injection"] for item in cases), "Alias-replacement fault missing")
+    require(any("precreate key-confirmation temp, final or both" in item["injection"] for item in cases), "Temp/final collision fault missing")
+
+    cleanup = protocol["cleanupAndQuarantine"]
+    require(cleanup["quarantineOrder"] == [
+        "SQLite intent commit", "rename without overwrite", "fsync source directory",
+        "fsync destination directory", "SQLite completion commit",
+    ], "Quarantine transaction drift")
+    require(cleanup["silentDeletionAllowed"] is False and cleanup["aliasDeletionDuringReconciliationAllowed"] is False and cleanup["replacementAliasDuringRecoveryAllowed"] is False, "Cleanup/key safety boundary weakened")
+
+    dependency = protocol["dependencyBoundary"]
+    require(dependency["policyId"] == JSR_POLICY_ID, "Protocol dependency policy drift")
+    require(dependency["prospectivePolicyState"] == "CLOSED_APPROVED", "Prospective policy is not closed")
+    require(dependency["governanceAuthenticityLicenseEvidenceState"] == "CLOSED_VERIFIED_FOR_EXACT_PACKET", "Packet evidence is not closed")
+    require(dependency["actualFutureRecoveryGraphState"].startswith("OPEN_BLOCKED"), "Future actual graph is not blocked")
+    require(dependency["currentTinkAndroid123Wired"] is False and dependency["currentRecoveryModuleExists"] is False, "Current recovery graph/module overclaim")
+    require(dependency["repositoryWideAbsenceClaimed"] is False, "Protocol claims repository-wide absence")
+    require(dependency["coveredFutureModule"] == ":poc:recovery" and len(dependency["coveredFutureInputs"]) == 8, "Exact future recovery coverage drift")
+    require(dependency["requiredResolvedJsr305ComponentCount"] == 0 and dependency["requiredPackagedJsr305ClassDefinitionCount"] == 0, "Recovery zero-JSR305 rule weakened")
+    require(dependency["requiredR8Rules"] == R8_RULES and dependency["broaderDontwarnAllowed"] is False and dependency["releaseR8UnresolvedMissingClassesAllowed"] is False, "Recovery R8 boundary drift")
+    require(dependency["jsr305UseOrDistributionApproved"] is False, "Excluded JSR305 use/distribution was approved")
 
 
-def validate_evidence() -> None:
-    inventory = read_json(EVIDENCE / "dependency-inventory.json")
-    license_notice = read_json(EVIDENCE / "license-notice-inventory.json")
-    authenticity = read_json(EVIDENCE / "dependency-ip-authenticity-v0.3.json")
-    security = read_json(EVIDENCE / "security-advisory-inventory.json")
-    sqlite = read_json(EVIDENCE / "sqlite-platform-provenance.json")
-    roles = read_json(EVIDENCE / "review-roles.json")
-    readiness = read_json(EVIDENCE / "readiness.json")
-    jsr305_exclusion = read_json(EVIDENCE / "jsr305-exclusion-analysis-2026-08-12.json")
-    findings_v01 = read_json(EVIDENCE / "review-findings-v0.1.json")
-    findings_v02 = read_json(EVIDENCE / "review-findings-v0.2.json")
-    evidence_index = read_json(EVIDENCE / "evidence-index.json")
+def validate_license_notice() -> None:
+    authenticity = read_json("docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json")
+    license_notice = read_json("docs/evidence/poc-recovery-001/license-notice-inventory.json")
+    inventory = read_json("docs/evidence/poc-recovery-001/dependency-inventory.json")
+    require(authenticity["schemaVersion"] == 3, "Active authenticity evidence schema drift")
+    require(
+        authenticity["overallStatus"]
+        == "EXACT_GOVERNANCE_PACKET_AUTHENTICITY_LICENSE_NOTICE_VERIFIED_FUTURE_ACTUAL_GRAPH_PRODUCT_IP_BLOCKED",
+        "Authenticity three-state status drift",
+    )
+    jetbrains = next(item for item in authenticity["components"] if item["coordinate"] == "org.jetbrains:annotations:13.0")
+    require(jetbrains["upstreamLicenseTextLocator"] == JETBRAINS_LICENSE_URL, "JetBrains immutable LICENSE locator drift")
+    require(jetbrains["licenseTextSha256"] == JETBRAINS_LICENSE_SHA256, "JetBrains LICENSE SHA-256 drift")
+    require(jetbrains["notice"] == {
+        "requirement": "PRESERVE_IMMUTABLE_UPSTREAM_NOTICE_IN_FUTURE_STAGE0_NOTICES_PACKET_IF_ARTIFACT_ENTERS_A_SEPARATELY_APPROVED_RESOLVED_GRAPH",
+        "locator": JETBRAINS_NOTICE_URL,
+        "sha256": JETBRAINS_NOTICE_SHA256,
+        "result": "IMMUTABLE_NOTICE_VERIFIED_AND_PRESERVATION_REQUIRED",
+    }, "JetBrains immutable NOTICE evidence drift")
+    verification = jetbrains["licenseAndNoticeVerification"]
+    require(
+        verification["verifiedAtUtc"] == "2026-08-12T14:38:33Z"
+        and verification["verificationTool"] == "gh api GitHub Contents API + System.Security.Cryptography.SHA256"
+        and verification["licenseBytes"] == 11358
+        and verification["noticeBytes"] == 127
+        and verification["governancePacketEvidenceAccepted"] is True
+        and verification["futureActualGraphApproved"] is False
+        and verification["dependencyAdmission"] is False
+        and verification["redistributionApproved"] is False
+        and verification["productionLegalApproved"] is False,
+        "JetBrains verification timestamp/tool/scope drift",
+    )
+    boundary = authenticity["approvalBoundary"]
+    require(
+        boundary["prospectivePolicyStatus"] == "CLOSED_APPROVED"
+        and boundary["governancePacketEvidenceStatus"] == "CLOSED_VERIFIED"
+        and boundary["futureActualGraphProductIpDisposition"] == "OPEN_BLOCKED"
+        and boundary["jsr305UseOrDistributionApproved"] is False
+        and boundary["dependencyAdmission"] is False
+        and boundary["productionAdmission"] is False,
+        "Authenticity approval boundary drift",
+    )
+    require(license_notice["schemaVersion"] == 4, "License/NOTICE inventory schema drift")
+    require(license_notice["summary"]["jetbrainsAnnotationsImmutableLicenseNoticeVerified"] is True, "License inventory lacks immutable JetBrains closure")
+    license_component = next(item for item in license_notice["components"] if item["coordinate"] == "org.jetbrains:annotations:13.0")
+    require(
+        license_component["immutableLicenseLocator"] == JETBRAINS_LICENSE_URL
+        and license_component["immutableLicenseSha256"] == JETBRAINS_LICENSE_SHA256
+        and license_component["immutableNoticeLocator"] == JETBRAINS_NOTICE_URL
+        and license_component["immutableNoticeSha256"] == JETBRAINS_NOTICE_SHA256
+        and license_component["governancePacketEvidenceAccepted"] is True
+        and license_component["futureActualGraphApproved"] is False
+        and "PRESERVE" in license_component["noticePreservationRequirement"],
+        "License inventory JetBrains evidence/preservation drift",
+    )
+    require(inventory["dependencyAdmission"] is False and inventory["runtimeGraphModified"] is False, "Dependency inventory admitted a runtime graph")
+    require(inventory["recoveryBoundary"]["repositoryWideAbsenceClaimed"] is False, "Dependency inventory claims repository-wide absence")
 
-    validate_jsr305_exclusion(jsr305_exclusion)
+    forbidden = re.compile(r"EXACT_SOURCE[^\n\"]*PENDING|JetBrains/java-annotations/master|raw\.githubusercontent\.com/JetBrains/[^\s\"]*/master")
+    active_files = [
+        EVIDENCE / "dependency-ip-authenticity-v0.3.json",
+        EVIDENCE / "license-notice-inventory.json",
+        EVIDENCE / "dependency-ip-authenticity-verification-2026-08-12.md",
+        EVIDENCE / "jetbrains-annotations-license-notice-verification-2026-08-12.md",
+    ]
+    for path in active_files:
+        require(forbidden.search(path.read_text(encoding="utf-8")) is None, f"Mutable or pending JetBrains evidence remains: {path.name}")
 
-    require(inventory["schemaVersion"] == 3, "Dependency inventory schema drift")
-    require(inventory["inventoryStatus"] == "VERIFIED_PUBLISHER_CLOSURE_AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PACKAGE_REVIEW_ONLY", "Dependency inventory authenticity/license state drift")
-    require(inventory["rootCoordinate"] == "com.google.crypto.tink:tink-android:1.23.0", "Inventory root drift")
-    require(inventory["dependencyAdmission"] is False and inventory["runtimeGraphModified"] is False, "Dependency/runtime graph was modified")
-    require(inventory["prospectiveExclusionAnalysis"] == {
-        "locator": JSR305_ANALYSIS_LOCATOR,
-        "status": "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_OWNER_PRODUCT_IP_POLICY_APPROVED",
-        "publishedClosureStillIncludesJsr305": True,
-        "futureProjectGraphClaimed": False,
-        "recommendedTreatment": "A_CONDITIONED_COMPLETE_EXCLUSION",
-        "requiredFutureResolvedJsr305ComponentCount": 0,
-        "productIpAccepted": True,
-        "acceptedBy": "Project owner",
-        "acceptedOn": "2026-08-12",
-        "acceptanceScope": "PROSPECTIVE_POLICY_AND_REVIEWED_GOVERNANCE_PACKAGE_ONLY",
-    }, "Dependency inventory prospective JSR305 boundary drift")
-    require(inventory["resolution"]["externalCoordinateCountIncludingRoot"] == 8 and len(inventory["artifacts"]) == 8, "Tink closure count drift")
-    require(inventory["resolution"]["projectGradleResolvedGraph"] is False and inventory["resolution"]["futureExactResolutionRequired"] is True, "Future Gradle graph boundary drift")
-    require(all(artifact["jar"]["nativeEntries"] == 0 for artifact in inventory["artifacts"]), "Native payload found")
-    root = next(artifact for artifact in inventory["artifacts"] if artifact["coordinate"] == inventory["rootCoordinate"])
-    require(root["jar"]["sha256"] == "c656918451b01c45ce5b20c7b6d4c388f956f61b3a3528e769048c8944c42f9e", "Tink JAR digest drift")
-    require(root["pom"]["sha256"] == "a2d27e7207e6a25764859b62924fc7b972f41884ce272cead9b946c15a1f410f", "Tink POM digest drift")
-    require(inventory["sourceRelease"]["commit"] == "1bedd75ae7161017c5f45b020395a72bbd40645d", "Tink source commit drift")
 
-    require(inventory["authenticityEvidence"]["locator"] == "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json", "Dependency authenticity locator drift")
-    require(inventory["authenticityEvidence"]["status"] == "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED", "Dependency authenticity summary drift")
-    require(inventory["authenticityEvidence"]["coordinatesAuthenticityVerified"] == 8 and inventory["authenticityEvidence"]["coordinatesAuthenticityPending"] == 0 and inventory["authenticityEvidence"]["coordinatesWithLicenseConflict"] == 1, "Dependency authenticity/license counts drift")
+def current_lockfile_occurrences() -> set[tuple[str, str]]:
+    result: set[tuple[str, str]] = set()
+    pattern = re.compile(r"^(com\.google\.(?:code\.findbugs:jsr305|crypto\.tink:tink):[^=]+)=")
+    for path in (ROOT / "android").rglob("gradle.lockfile"):
+        for line in path.read_text(encoding="utf-8").splitlines():
+            match = pattern.match(line)
+            if match:
+                result.add((path.relative_to(ROOT).as_posix(), match.group(1)))
+    return result
 
-    require(license_notice["schemaVersion"] == 3 and license_notice["reviewStatus"] == "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED", "License package state drift")
-    require(license_notice["coordinateEvidenceLocator"] == "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json", "License coordinate-evidence locator drift")
-    require(license_notice["evaluationApproved"] is False and license_notice["redistributionApproved"] is False and license_notice["productionLegalApproved"] is False, "License/Product-IP approval was prematurely recorded")
-    require(license_notice["approvedReviewer"] is None and license_notice["approvedOn"] is None, "License/Product-IP approval identity/date must remain null")
-    require(license_notice["summary"]["externalCoordinates"] == 8 and len(license_notice["components"]) == 9, "License component count drift")
-    require(license_notice["summary"]["externalCoordinatesAuthenticityVerified"] == 8 and license_notice["summary"]["externalCoordinatesWithAuthenticityPending"] == 0, "License authenticity counts drift")
-    require(license_notice["summary"]["unresolvedLicenseConflicts"] == ["com.google.code.findbugs:jsr305:3.0.2"] and license_notice["summary"]["authenticityMustCloseBeforeProductIpApproval"] is False and license_notice["summary"]["licenseConflictMustCloseBeforeProductIpApproval"] is True, "License-conflict blocker drift")
 
-    require(authenticity["schemaVersion"] == 2 and authenticity["overallStatus"] == "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED", "Coordinate authenticity state drift")
-    require(authenticity["summary"] == {
-        "coordinates": 8,
-        "jarSha256Verified": 8,
-        "pomSha256Verified": 8,
-        "publisherChecksumsMatched": 16,
-        "detachedSignaturesPresent": 16,
-        "detachedSignaturesCryptographicallyVerified": 16,
-        "coordinatesWithUpstreamSignerTrustConfirmed": 2,
-        "coordinatesWithExactSourceCorrespondenceConfirmed": 6,
-        "coordinatesAuthenticityVerified": 8,
-        "coordinatesAuthenticityPending": 0,
-        "coordinatesWithLicenseConflict": 1,
-        "dependencyAdmission": False,
-        "productionAdmission": False,
-    }, "Coordinate authenticity summary drift")
-    artifacts_by_coordinate = {artifact["coordinate"]: artifact for artifact in inventory["artifacts"]}
-    authentic_components = {component["coordinate"]: component for component in authenticity["components"]}
-    require(set(authentic_components) == set(artifacts_by_coordinate), "Coordinate authenticity coverage drift")
-    for coordinate, component in authentic_components.items():
-        artifact = artifacts_by_coordinate[coordinate]
-        require(component["licenseId"] and component["upstreamLicenseTextLocator"].startswith("https://") and len(component["licenseTextSha256"]) == 64, f"{coordinate} license evidence incomplete")
-        require(component["copyrightEvidence"]["locator"].startswith("https://") and component["copyrightEvidence"]["status"], f"{coordinate} copyright evidence incomplete")
-        require(component["notice"]["requirement"] and component["notice"]["locator"].startswith("https://") and component["notice"]["result"], f"{coordinate} NOTICE evidence incomplete")
-        require(component["verifiedAtUtc"] == authenticity["verifiedAtUtc"] and component["verificationTool"] == authenticity["verificationTool"], f"{coordinate} timestamp/tool attribution drift")
-        for kind in ("jar", "pom"):
-            item = component[kind]
-            require(item["sha256"] == artifact[kind]["sha256"], f"{coordinate} {kind} inventory/authenticity hash mismatch")
-            checksum = item["publisherChecksum"]
-            signature = item["detachedSignature"]
-            require(checksum["locator"].startswith("https://") and checksum["result"] == "MATCH" and checksum["value"], f"{coordinate} {kind} publisher checksum incomplete")
-            require(signature["locator"].startswith("https://") and signature["result"] == "CRYPTOGRAPHICALLY_VERIFIED" and re.fullmatch(r"[0-9A-F]{40}", signature["signerFingerprint"]) and re.fullmatch(r"[0-9A-F]{40}", signature["primaryKeyFingerprint"]), f"{coordinate} {kind} detached-signature evidence incomplete")
-            require(signature["signatureCreatedUtc"].endswith("Z") and signature["hashAlgorithm"] in {"SHA1", "SHA256", "SHA512"}, f"{coordinate} {kind} signature metadata incomplete")
-        require(component["jar"]["detachedSignature"]["signerFingerprint"] == component["pom"]["detachedSignature"]["signerFingerprint"], f"{coordinate} JAR/POM signer mismatch")
-        require(component["signerIdentity"] and component["signerTrustStatus"] in {"CONFIRMED_BY_UPSTREAM_PUBLISHER_DOCUMENTATION", "CONFIRMED_BY_UPSTREAM_TAGGED_KEY_PUBLICATION", "NOT_CLAIMED_SOURCE_CORRESPONDENCE_ROUTE_USED"}, f"{coordinate} signer-trust evidence drift")
-        require(component["sourceCorrespondence"]["repository"].startswith("https://") and component["sourceCorrespondence"]["evidenceLocator"].startswith("https://") and component["sourceCorrespondence"]["status"], f"{coordinate} source-correspondence evidence incomplete")
-        require(component["authenticityStatus"] in {"AUTHENTICITY_VERIFIED_PUBLISHER_BOUND_SIGNATURE", "AUTHENTICITY_VERIFIED_EXACT_REPRODUCIBLE_SOURCE", "AUTHENTICITY_VERIFIED_MULTISOURCE_CORRESPONDENCE", "AUTHENTICITY_PENDING", "AUTHENTICITY_REJECTED"}, f"{coordinate} authenticity classification outside closed enum")
-        if component["authenticityStatus"] == "AUTHENTICITY_VERIFIED_MULTISOURCE_CORRESPONDENCE":
-            source_jar = component["sourceCorrespondence"]["sourceJar"]
-            comparison = component["sourceCorrespondence"]["comparison"]
-            reproducible = component["sourceCorrespondence"]["reproducibleBuild"]
-            require(component["closurePath"] is None and component["signerTrustSource"] is None and component["signerTrustStatus"] == "NOT_CLAIMED_SOURCE_CORRESPONDENCE_ROUTE_USED", f"{coordinate} multisource trust boundary drift")
-            require(source_jar["locator"].startswith("https://") and len(source_jar["sha256"]) == 64 and source_jar["signatureResult"] == "CRYPTOGRAPHICALLY_VERIFIED", f"{coordinate} source-JAR evidence incomplete")
-            require(comparison["sourceEntries"] == comparison["exactCommitBlobMatches"] + comparison["declaredGeneratedEntries"] and comparison["unexplainedEntries"] == 0, f"{coordinate} source correspondence is not exhaustive")
-            require(reproducible["byteForByteBinaryRebuildAttempted"] is False and reproducible["status"] == "NOT_CLAIMED" and reproducible["limitation"], f"{coordinate} reproducibility limitation missing")
-        else:
-            require(component["authenticityStatus"] == "AUTHENTICITY_VERIFIED_PUBLISHER_BOUND_SIGNATURE" and component["closurePath"] is None and component["signerTrustSource"].startswith("https://"), f"{coordinate} verified publisher-bound trust evidence drift")
-    require(sum(component["authenticityStatus"] == "AUTHENTICITY_VERIFIED_MULTISOURCE_CORRESPONDENCE" for component in authentic_components.values()) == 6, "Exactly six coordinates must use multisource correspondence")
-    require(sum(component["authenticityStatus"] == "AUTHENTICITY_VERIFIED_PUBLISHER_BOUND_SIGNATURE" for component in authentic_components.values()) == 2, "Exactly two coordinates must use publisher-bound signatures")
-    require(not any(component["authenticityStatus"] in {"AUTHENTICITY_PENDING", "AUTHENTICITY_REJECTED"} for component in authentic_components.values()), "No coordinate may remain authenticity-pending/rejected")
-    jsr305 = authentic_components["com.google.code.findbugs:jsr305:3.0.2"]
-    require(jsr305["licenseId"] == "NOASSERTION" and jsr305["licenseEvidence"]["status"] == "LICENSE_CONFLICT_PRODUCT_IP_DECISION_REQUIRED", "JSR305 license-conflict state drift")
-    require(jsr305["licenseEvidence"]["publishedSignedPom"]["declaredSpdx"] == "Apache-2.0" and jsr305["licenseEvidence"]["exactReleaseSource"]["declaredSpdx"] == "BSD-3-Clause", "JSR305 conflicting license declarations drift")
-    require(jsr305["licenseEvidence"]["exactMissingExternalFact"] and len(jsr305["licenseEvidence"]["safeOwnerChoices"]) == 3, "JSR305 Product/IP closure boundary incomplete")
-    require(authenticity["approvalBoundary"]["productIpApprovalAllowedWhileAnyCoordinatePending"] is False, "Product/IP approval must be blocked while authenticity is pending")
-    require(authenticity["approvalBoundary"]["productIpApprovalAllowedWhileLicenseConflict"] is False and authenticity["approvalBoundary"]["productIpFinalApproval"] is False, "Product/IP approval must remain blocked by the license conflict")
+def validate_recovery_boundary() -> None:
+    base = read_json("docs/evidence/poc-recovery-001/base-lockfile-tooling-inventory-2026-08-12.json")
+    require(base["schemaVersion"] == 1 and base["boundaryId"] == JSR_POLICY_ID, "Base lockfile inventory identity drift")
+    require(base["baseCommit"] == BASE_HEAD and base["reviewedHead"] == REVIEWED_V03_HEAD and base["pullRequest"] == 11, "Base lockfile inventory commit/PR drift")
+    facts = base["facts"]
+    require(
+        facts == {
+            "tinkAndroid123Wired": False,
+            "recoveryModuleExists": False,
+            "recoveryModuleIncludedInSettings": False,
+            "pullRequestChangedLockfiles": False,
+            "repositoryWideTinkOrJsr305AbsenceClaimed": False,
+            "baseOtherModuleOccurrencesAreRecoveryAdmissionEvidence": False,
+        },
+        "Base recovery boundary facts drift",
+    )
+    recorded = {(item["lockfile"], item["coordinate"]) for item in base["existingBaseLockfileOccurrences"]}
+    require(recorded == current_lockfile_occurrences(), "Base Tink/JSR305 lockfile occurrence inventory drift")
+    require(len(recorded) == 10, "Expected ten exact base lockfile coordinate occurrences")
+    require(len(base["futureRecoveryCoveredInputs"]) == 8, "Future recovery configuration coverage drift")
+    require(base["excludedCurrentInputs"] == [
+        "buildscript, AGP, UTP, lint and tooling configurations of other existing modules",
+        "existing app, capture and search lockfiles",
+    ], "Excluded current tooling boundary drift")
 
-    require(len(security["exactVersionQueries"]) == 8, "Security exact-version query count drift")
-    require(all(not query["affectedPublishedAdvisories"] for query in security["exactVersionQueries"]), "Recorded exact version has a published affected advisory")
-    require(security["status"] == "SNAPSHOT_COMPLETE_INDEPENDENT_REVIEW_PENDING", "Security inventory review state drift")
-    risk_states = {item["id"]: item["mitigationState"] for item in security["templateAndProtocolRisks"]}
-    require(set(risk_states) == {"SEC-REC-01", "SEC-REC-02", "SEC-REC-03", "SEC-REC-04"}, "Security protocol-risk set drift")
-    require(all("V0_3_" in state and "REQUIRED" in state for state in risk_states.values()), "Security risk remediation state must target v0.3 without claiming implementation approval")
+    require(not (ROOT / "android" / "poc" / "recovery").exists(), "android/poc/recovery exists in governance-only package")
+    settings = read_text("android/settings.gradle.kts")
+    require(":poc:recovery" not in settings, "Recovery module is included in Gradle settings")
+    gradle_inputs = [
+        *(ROOT / "android").rglob("*.gradle"),
+        *(ROOT / "android").rglob("*.gradle.kts"),
+        ROOT / "android" / "gradle" / "libs.versions.toml",
+    ]
+    contaminated = [
+        path.relative_to(ROOT).as_posix()
+        for path in gradle_inputs
+        if path.is_file() and re.search(r"tink-android\s*[:=]?\s*1\.23\.0|com\.google\.crypto\.tink:tink-android:1\.23\.0", path.read_text(encoding="utf-8"), re.IGNORECASE)
+    ]
+    require(not contaminated, f"tink-android:1.23.0 was wired: {contaminated}")
+    diff = subprocess.run(
+        ["git", "diff", "--name-only", BASE_HEAD, "--", "android"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+    require(diff.returncode == 0, f"Unable to compare base lockfiles: {diff.stderr.strip()}")
+    changed_lockfiles = [line for line in diff.stdout.splitlines() if line.endswith("gradle.lockfile")]
+    require(not changed_lockfiles, f"PR/worktree changed lockfiles: {changed_lockfiles}")
 
-    require(sqlite["schemaVersion"] == 2 and sqlite["platformApi"] == "android.database.sqlite", "SQLite provenance schema/API drift")
-    require(sqlite["phaseA"]["executionAllowed"] is False, "SQLite provenance cannot authorize execution")
-    require(sqlite["separateSQLiteLibraryDownloadedBundledOrRedistributed"] is False, "Separate SQLite is forbidden")
-    for key in ("roomAllowed", "sqlCipherAllowed", "workManagerAllowed", "productionSchemaAllowed", "productionAdmission"):
-        require(sqlite[key] is False, f"Forbidden platform SQLite scope enabled: {key}")
-    environments = {item["id"]: item for item in sqlite["phaseA"]["environments"]}
-    require(set(environments) == {"PINNED_API36_X86_64_EMULATOR", "PHYSICAL_D2"}, "Phase A provenance environment drift")
-    require(environments["PINNED_API36_X86_64_EMULATOR"]["archive"]["sha256"] == "b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160", "Emulator image digest drift")
-    require(all(value is None for value in environments["PINNED_API36_X86_64_EMULATOR"]["requiredFreshRuntimeEvidence"].values()), "Emulator fresh preflight must remain pending")
-    require(all(value is None for value in environments["PHYSICAL_D2"]["requiredFreshRuntimeEvidence"].values()), "D2 fresh preflight must remain pending")
+    analysis = read_json("docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.json")
+    require(analysis["schemaVersion"] == 3, "JSR305 analysis schema drift")
+    current = analysis["currentRepositoryBoundary"]
+    require(current["boundaryId"] == JSR_POLICY_ID and current["repositoryWideAbsenceClaimed"] is False and current["baseOtherModuleToolingOccurrencesAreRecoveryAdmissionEvidence"] is False, "JSR305 current boundary overclaim")
+    policy = analysis["prospectivePolicy"]
+    require(policy["status"] == "APPROVED_PROSPECTIVE_POLICY_ONLY" and policy["coveredFutureModule"] == ":poc:recovery", "JSR305 prospective policy state drift")
+    require(policy["requiredResolvedComponentCount"] == 0 and policy["requiredR8Rules"] == R8_RULES and policy["broaderJavaxAnnotationDontwarnAllowed"] is False, "JSR305 exclusion/R8 policy drift")
+    states = analysis["licenseDisposition"]
+    require(
+        states["stateAProspectivePolicy"] == "CLOSED_APPROVED"
+        and states["stateBGovernanceAuthenticityLicenseEvidence"].startswith("CLOSED_VERIFIED")
+        and states["stateCFutureActualGraphProductIpDisposition"].startswith("OPEN_BLOCKED")
+        and states["jsr305UseOrDistributionApproved"] is False,
+        "JSR305 three-state license disposition drift",
+    )
 
-    role_map = roles["roles"]
-    require(roles["schemaVersion"] == 4, "Review-role schema drift")
-    product_ip_role = role_map["stage0ProductIp"]
-    require(product_ip_role["status"] == "PROSPECTIVE_POLICY_AND_REVIEWED_GOVERNANCE_PACKAGE_APPROVED_ONLY" and product_ip_role["finalApproved"] is False, "Product/IP scoped policy/package disposition drift")
-    require(product_ip_role["approvedProspectiveDisposition"] == {
-        "policyId": JSR305_POLICY_ID,
-        "analysisLocator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.md",
-        "technicalRecommendation": "A_CONDITIONED_COMPLETE_EXCLUSION",
-        "underlyingArtifactLicenseConflictResolved": False,
-        "conflictingArtifactTreatment": "EXCLUDED_TERMS_NOT_INTERPRETED",
-        "jsr305UseOrDistributionApproved": False,
-        "accepted": True,
-        "acceptedBy": "Project owner",
-        "acceptedOn": "2026-08-12",
-        "decisionInputGovernanceHead": OWNER_DECISION_INPUT_HEAD,
-        "ownerDecisionLocator": OWNER_DECISION_LOCATOR,
-        "scope": "PROSPECTIVE_POLICY_AND_REVIEWED_GOVERNANCE_PACKAGE_FOR_FUTURE_EXACT_EXCLUDED_STAGE0_GRAPH_ONLY",
-    }, "Product/IP approved prospective JSR305 disposition drift")
-    require(product_ip_role["futureExactGraphDisposition"] == {
-        "actualGraphApproved": False,
-        "dependencyAdmission": False,
-        "implementationAuthorized": False,
-        "executionAuthorized": False,
-        "separateImplementationScopeRequired": True,
-        "exactResolvedGraphEvidenceRequired": True,
-    }, "Product/IP disposition exceeded the prospective governance scope")
-    require(product_ip_role["approvedReviewer"] is None and product_ip_role["approvedOn"] is None, "Actual future graph Product/IP approval identity/date must remain null")
-    independent = role_map["independentRecoveryEngineeringSecurity"]
-    require(independent["reviewer"] is None and independent["status"] == "UNASSIGNED_BLOCKING", "Accountable independent review blocker drift")
-    require(independent["currentCodexRemediationClaimedFormallyIndependent"] is False and independent["replacesProductionSecurity"] is False, "Review independence boundary drift")
-    require(role_map["executionAuthorizer"]["status"] == "AUTHORIZATION_WITHHELD", "Execution authorization must remain withheld")
-    require(role_map["productionLegal"]["reviewer"] is None and role_map["productionSecurity"]["reviewer"] is None, "Production reviewers must remain unassigned")
 
-    require(readiness["schemaVersion"] == 4 and readiness["status"] == "BLOCKED_OWNER_PRODUCT_IP_POLICY_APPROVED_IMPLEMENTATION_REVIEW_GRAPH_PREFLIGHT_EXECUTION_PENDING", "Readiness status drift")
-    require(readiness["executionAllowed"] is False, "Readiness unexpectedly allows execution")
+def validate_readiness_roles_and_traceability() -> None:
+    readiness = read_json("docs/evidence/poc-recovery-001/readiness.json")
+    roles = read_json("docs/evidence/poc-recovery-001/review-roles.json")
+    ledger = read_json("docs/evidence/poc-recovery-001/review-findings-v0.3.json")
+    index = read_json("docs/evidence/poc-recovery-001/evidence-index.json")
+
+    require(readiness["schemaVersion"] == 5 and readiness["status"].startswith("BLOCKED_"), "Readiness v0.4 status drift")
     for key in (
-        "implementationAllowedByThisPackage", "measuredExecutionAllowed", "runtimeDependencyAdded",
-        "recoveryModuleExists", "harnessImplemented", "nonMetricImplementationVerificationPassed",
-        "exactFutureResolvedGraphReviewed", "killCampaignExecuted",
-        "deviceTestsExecuted", "benchmarksExecuted", "productionAppChanged",
+        "executionAllowed", "implementationAllowedByThisPackage", "measuredExecutionAllowed",
+        "runtimeDependencyAdded", "recoveryModuleExists", "harnessImplemented",
+        "nonMetricImplementationVerificationPassed", "exactFutureResolvedGraphReviewed",
+        "killCampaignExecuted", "deviceTestsExecuted", "benchmarksExecuted", "productionAppChanged",
     ):
-        require(readiness[key] is False, f"Governance-only invariant violated: {key}")
-    require(readiness["packageArtifacts"]["activeGateSetVersion"] == GATE_V03 and readiness["packageArtifacts"]["activeProtocolId"] == PROTOCOL_V03, "Readiness active protocol locator drift")
-    require(readiness["packageArtifacts"]["v01RetainedAsSupersededAuditArtifact"] is True and readiness["packageArtifacts"]["v01Executable"] is False, "v0.1 audit disposition drift")
-    require(readiness["packageArtifacts"]["v02RetainedAsSupersededAuditArtifact"] is True and readiness["packageArtifacts"]["v02Executable"] is False, "v0.2 audit disposition drift")
-    require(readiness["packageArtifacts"]["ownerProductIpDecisionPresent"] is True and readiness["packageArtifacts"]["ownerProductIpDecisionLocator"] == OWNER_DECISION_LOCATOR, "Readiness owner/Product-IP decision locator drift")
-    require(readiness["packageArtifacts"]["supplyChainAuthenticityStatus"] == "AUTHENTICITY_VERIFIED_JSR305_EXCLUDED_BY_OWNER_POLICY_ARTIFACT_LICENSE_CONFLICT_UNRESOLVED_NO_ADMISSION", "Readiness authenticity/exclusion state drift")
-    require(readiness["packageArtifacts"]["jsr305ExclusionAnalysisPresent"] is True and readiness["packageArtifacts"]["jsr305ExclusionTechnicalStatus"] == "PROVEN_WITH_NARROW_R8_RULE_BARE_EXCLUDE_REJECTED_OWNER_POLICY_ACCEPTED", "Readiness JSR305 analysis/policy state drift")
-    require(readiness["approvals"] == {
-        "prospectivePolicyProductIpApproved": True,
-        "reviewedGovernancePackageProductIpApproved": True,
-        "policyApprovedReviewer": "Project owner",
-        "policyApprovedOn": "2026-08-12",
-        "decisionInputGovernanceHead": OWNER_DECISION_INPUT_HEAD,
-        "productIpFinalApproved": False,
-        "productIpFinalApprovalReservedForActualFutureGraphAndImplementationPackage": True,
-        "approvedReviewer": None,
-        "approvedOn": None,
-        "accountableEngineeringSecurityReviewer": None,
-        "currentCodexReviewClaimedFormallyIndependent": False,
-        "executionAuthorizedBy": None,
-        "executionAuthorizedOn": None,
-        "productionLegalReviewer": None,
-        "productionSecurityReviewer": None,
-    }, "Readiness approval boundary drift")
-    readiness_policy = readiness["dependencyExclusionPolicy"]
-    require(readiness_policy == {
-        "policyId": JSR305_POLICY_ID,
-        "analysisLocator": JSR305_ANALYSIS_LOCATOR,
-        "ownerDecisionLocator": OWNER_DECISION_LOCATOR,
-        "status": "APPROVED_PROSPECTIVE_POLICY_ONLY",
-        "rootCoordinate": "com.google.crypto.tink:tink-android:1.23.0",
-        "forbiddenResolvedCoordinate": JSR305_COORDINATE,
-        "requiredResolvedComponentCount": 0,
-        "compileOnlyOrAlternatePathAllowed": False,
-        "allResolvableConfigurationsAndConsumersRequired": True,
-        "coveredConfigurationFamilies": ["compile", "runtime", "benchmark", "test", "packaging"],
-        "exactNarrowR8RuleRequired": True,
-        "requiredR8Rules": JSR305_R8_RULES,
-        "broaderDontwarnAllowed": False,
-        "unresolvedR8MissingClassesAllowed": False,
-        "independentModifierResolutionRequired": True,
-        "recurrenceBlocksImplementationVerificationAndExecution": True,
-        "underlyingArtifactLicenseConflictResolved": False,
-        "jsr305UseOrDistributionApproved": False,
-        "futureResolvedGraphReportLocator": "docs/evidence/poc-recovery-001/future-resolved-graph.json",
-        "futureResolvedGraphReportPresent": False,
-        "productIpAccepted": True,
-        "acceptedBy": "Project owner",
-        "acceptedOn": "2026-08-12",
-    }, "Readiness JSR305 exclusion policy drift")
-    expected_blockers = {
-        "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
-        "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
-        "REC-RDY-03-STREAMING-IMPLEMENTATION-VERIFICATION",
-        "REC-RDY-04-MICROFILE-IMPLEMENTATION-VERIFICATION",
-        "REC-RDY-05-FUTURE-RESOLVED-GRAPH",
-        "REC-RDY-06-DEVICE-SQLITE-PREFLIGHT",
-        "REC-RDY-07-HARNESS-ABSENT",
-        "REC-RDY-08-OWNER-EXECUTION-AUTHORIZATION",
-        "REC-RDY-09-D1-D5-FULL-VERDICT",
-        "REC-RDY-10-PRODUCTION-LEGAL-SECURITY",
-        "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY",
-    }
-    require({blocker["id"] for blocker in readiness["blockers"]} == expected_blockers, "Readiness blocker set drift")
-    product_ip_blocker = next(blocker for blocker in readiness["blockers"] if blocker["id"] == "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL")
+        require(readiness[key] is False, f"Governance-only readiness invariant violated: {key}")
+    package = readiness["packageArtifacts"]
+    require(package["activeGateSetVersion"] == GATE_ID and package["activeProtocolId"] == PROTOCOL_ID, "Readiness active v0.4 locator drift")
+    require(package["v03RetainedAsSupersededAuditArtifact"] is True and package["v03Executable"] is False, "Readiness v0.3 audit disposition drift")
+    require(package["jetbrainsAnnotationsImmutableLicenseNoticeVerified"] is True and package["baseLockfileToolingInventoryPresent"] is True, "Readiness immutable license/base inventory evidence missing")
+    approvals = readiness["approvals"]
     require(
-        product_ip_blocker["status"] == "PROSPECTIVE_POLICY_AND_GOVERNANCE_PACKAGE_APPROVED_ACTUAL_GRAPH_FINAL_APPROVAL_PENDING"
-        and JSR305_POLICY_ID in product_ip_blocker["condition"]
-        and OWNER_DECISION_INPUT_HEAD in product_ip_blocker["condition"]
-        and "final Product/IP approval" in product_ip_blocker["condition"]
-        and "use/distribution" in product_ip_blocker["condition"],
-        "Scoped owner/Product-IP closure drift",
+        approvals["prospectivePolicyProductIpApproved"] is True
+        and approvals["governanceAuthenticityLicenseEvidenceVerified"] is True
+        and approvals["futureActualGraphProductIpDisposition"] == "OPEN_BLOCKED"
+        and approvals["productIpFinalApproved"] is False
+        and approvals["approvedReviewer"] is None
+        and approvals["accountableEngineeringSecurityReviewer"] is None
+        and approvals["currentCodexReviewClaimedFormallyIndependent"] is False,
+        "Readiness approval state drift",
     )
-    graph_blocker = next(blocker for blocker in readiness["blockers"] if blocker["id"] == "REC-RDY-05-FUTURE-RESOLVED-GRAPH")
-    require(
-        all(family in graph_blocker["condition"] for family in ("compile", "runtime", "benchmark", "test", "packaging"))
-        and "no broader dontwarn" in graph_blocker["condition"]
-        and "javax.lang.model.element.Modifier" in graph_blocker["condition"]
-        and "fails closed" in graph_blocker["condition"],
-        "Future graph/R8 fail-closed blocker drift",
-    )
-    supply_chain_blocker = next(blocker for blocker in readiness["blockers"] if blocker["id"] == "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY")
-    require(
-        supply_chain_blocker["status"] == "CLOSED_FOR_PROSPECTIVE_EXCLUDED_GRAPH_POLICY_ARTIFACT_NOT_APPROVED"
-        and "jsr305:3.0.2" in supply_chain_blocker["condition"]
-        and "Apache-2.0" in supply_chain_blocker["condition"]
-        and "BSD-3-Clause" in supply_chain_blocker["condition"]
-        and "excluded" in supply_chain_blocker["condition"]
-        and "does not approve its use or distribution" in supply_chain_blocker["condition"],
-        "Supply-chain owner policy disposition drift",
-    )
+    policy = readiness["dependencyExclusionPolicy"]
+    require(policy["policyId"] == JSR_POLICY_ID and policy["coveredFutureModule"] == ":poc:recovery", "Readiness recovery boundary ID/module drift")
+    require(policy["allCoveredRecoveryInputsRequired"] is True, "Readiness does not require all covered recovery inputs")
+    require(policy["repositoryWideAbsenceClaimed"] is False and policy["excludedCurrentInputsAreRecoveryAdmissionEvidence"] is False, "Readiness repository-wide absence/admission overclaim")
+    require(policy["requiredResolvedComponentCount"] == 0 and policy["requiredR8Rules"] == R8_RULES and policy["broaderDontwarnAllowed"] is False and policy["unresolvedR8MissingClassesAllowed"] is False, "Readiness zero-JSR305/R8 rule drift")
+    ready11 = next(item for item in readiness["blockers"] if item["id"] == "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY")
+    require(ready11["status"] == "POLICY_CLOSED_PACKET_EVIDENCE_CLOSED_ACTUAL_FUTURE_GRAPH_OPEN_BLOCKED", "REC-RDY-11 state drift")
+    require(all(fragment in ready11["condition"] for fragment in ("CLOSED/APPROVED", "CLOSED/VERIFIED", "OPEN/BLOCKED", "not approval to use")), "REC-RDY-11 three-state explanation incomplete")
 
-    require(findings_v01["schemaVersion"] == 2 and findings_v01["reviewedCommit"] == REVIEWED_V01_HEAD and findings_v01["reviewedGateSetVersion"] == "poc-recovery-stage0-v0.1", "First-review findings ledger identity drift")
-    require(findings_v01["sanitized"] is True and findings_v01["reviewerIdentity"] is None and findings_v01["formalReviewer"] is False, "First-review findings ledger must remain sanitized and non-formal")
-    require([finding["id"] for finding in findings_v01["findings"]] == [f"REC-GOV-V01-{index:03d}" for index in range(1, 12)], "First-review stable finding IDs drift")
-    require([finding["severity"] for finding in findings_v01["findings"]] == ["P0"] * 7 + ["P1", "P1", "P1", "P2"], "First-review severity mapping drift")
-    require(all(finding["formalReviewer"] is False for finding in findings_v01["findings"]), "First-review findings must not claim a formal reviewer")
-    require(findings_v02["schemaVersion"] == 2 and findings_v02["reviewedCommit"] == REVIEWED_V02_HEAD and findings_v02["reviewedGateSetVersion"] == "poc-recovery-stage0-v0.2", "Current findings ledger identity drift")
-    require(findings_v02["sanitized"] is True and findings_v02["reviewerIdentity"] is None and findings_v02["formalReviewer"] is False, "Current findings ledger must remain sanitized and non-formal")
-    require([finding["id"] for finding in findings_v02["findings"]] == [f"F-{index:02d}" for index in range(1, 7)], "Current stable finding IDs drift")
-    expected_current_statuses = ["CLOSED"] * 6
-    require([finding["status"] for finding in findings_v02["findings"]] == expected_current_statuses and all(finding["formalReviewer"] is False for finding in findings_v02["findings"]), "Current findings disposition drift")
-    f06 = findings_v02["findings"][-1]
-    require(f06["authenticityDisposition"] == "ALL_EIGHT_COORDINATES_VERIFIED" and f06["closureBasis"] and "jsr305:3.0.2" in f06["postClosureProductIpBlocker"] and "Apache-2.0" in f06["postClosureProductIpBlocker"] and "BSD-3-Clause" in f06["postClosureProductIpBlocker"], "F-06 closure/Product-IP boundary drift")
-    for ledger in (findings_v01, findings_v02):
-        require(ledger["remediationCommitSemantics"].startswith("SELF means"), "Ledger remediation-commit semantics missing")
-        for finding in ledger["findings"]:
-            require(finding["sourceReviewDate"] == "2026-08-12", f"{finding['id']} source review date drift")
-            require(finding["affectedArtifact"] and finding["finding"] and finding["remediationCommit"] == "SELF" and finding["remediationVersion"] == PROTOCOL_V03, f"{finding['id']} traceability fields incomplete")
-            require(finding["status"] in {"CLOSED", "PARTIALLY_CLOSED", "OPEN"} and finding["evidenceLocator"], f"{finding['id']} disposition/evidence fields incomplete")
+    require(roles["schemaVersion"] == 5, "Review-role schema drift")
+    role_map = roles["roles"]
+    require(role_map["packageAuthor"]["claimedFormallyIndependentReviewer"] is False, "Codex claimed formal independence")
+    product_ip = role_map["stage0ProductIp"]
+    require(product_ip["status"] == "PROSPECTIVE_POLICY_AND_EXACT_GOVERNANCE_PACKET_EVIDENCE_APPROVED_ONLY" and product_ip["finalApproved"] is False, "Product/IP role state drift")
+    require(product_ip["governancePacketEvidenceDisposition"]["status"] == "CLOSED_VERIFIED" and product_ip["futureExactGraphDisposition"]["status"] == "OPEN_BLOCKED", "Role three-state split drift")
+    require(product_ip["approvedReviewer"] is None and product_ip["approvedOn"] is None, "Future graph Product/IP approval populated")
+    independent = role_map["independentRecoveryEngineeringSecurity"]
+    require(independent["reviewer"] is None and independent["status"] == "UNASSIGNED_BLOCKING" and independent["currentCodexRemediationClaimedFormallyIndependent"] is False, "Accountable reviewer boundary drift")
+    require(role_map["executionAuthorizer"]["status"] == "AUTHORIZATION_WITHHELD", "Execution authorizer state drift")
+    require(role_map["productionLegal"]["reviewer"] is None and role_map["productionSecurity"]["reviewer"] is None, "Production reviewer unexpectedly assigned")
 
-    require(evidence_index["activeGateSetVersion"] == GATE_V03 and evidence_index["activeProtocolId"] == PROTOCOL_V03 and evidence_index["executionAllowed"] is False, "Evidence index active protocol drift")
-    require(evidence_index["status"] == "GOVERNANCE_V0_3_OWNER_PRODUCT_IP_POLICY_APPROVED_IMPLEMENTATION_EXECUTION_BLOCKED", "Evidence-index status drift")
-    indexed_artifacts = {item["id"]: item for item in evidence_index["artifacts"]}
-    require(indexed_artifacts["REC-OWNER-PRODUCT-IP-POLICY-DISPOSITION-20260812"] == {
-        "id": "REC-OWNER-PRODUCT-IP-POLICY-DISPOSITION-20260812",
-        "locator": OWNER_DECISION_LOCATOR,
-        "status": "REC_JSR305_EXCLUDE_001_APPROVED_PROSPECTIVE_POLICY_ONLY_EXECUTION_BLOCKED",
-    }, "Owner/Product-IP policy disposition is not indexed")
-    require(indexed_artifacts["REC-V03-REMEDIATION"]["status"] == "F01_F06_CLOSED_LICENSE_CONFLICT_PRODUCT_IP_BLOCKED", "Remediation indexed state drift")
-    require(indexed_artifacts["REC-DEPENDENCY-IP-AUTHENTICITY-VERIFICATION-20260812"]["status"] == "CRYPTOGRAPHIC_AND_SOURCE_CORRESPONDENCE_EVIDENCE_RECORDED_NO_APPROVAL", "Authenticity verification report is not indexed")
-    require(indexed_artifacts["REC-JSR305-EXCLUSION-ANALYSIS-20260812"] == {
-        "id": "REC-JSR305-EXCLUSION-ANALYSIS-20260812",
-        "locator": JSR305_ANALYSIS_LOCATOR,
-        "status": "TECHNICAL_EXCLUSION_PROVEN_OWNER_PRODUCT_IP_PROSPECTIVE_POLICY_APPROVED",
-    }, "JSR305 machine analysis is not indexed")
-    require(indexed_artifacts["REC-JSR305-EXCLUSION-DECISION-20260812"]["status"] == "OPTION_A_OWNER_DISPOSITION_RECORDED_PROSPECTIVE_POLICY_ONLY", "JSR305 decision analysis indexed state drift")
-    require(indexed_artifacts["REC-JSR305-REFERENCE-CLASSES-20260812"]["status"] == "EXACT_182_CLASS_LIST_SHA256_PINNED", "JSR305 exact class list is not indexed")
-    require(indexed_artifacts["REC-REVIEW-ROLES"]["status"] == "OWNER_POLICY_APPROVED_FORMAL_ENGINEERING_SECURITY_REVIEWER_UNASSIGNED", "Review-role indexed state drift")
-    require(indexed_artifacts["REC-IP-REVIEW"]["status"] == "PROSPECTIVE_EXCLUSION_POLICY_APPROVED_ARTIFACT_USE_IMPLEMENTATION_EXECUTION_BLOCKED", "IP-review indexed state drift")
-    indexed_hashes = {Path(item["locator"]).name: item["sha256"] for item in evidence_index["supersededAuditArtifacts"]}
-    require(indexed_hashes == IMMUTABLE_AUDIT_HASHES, "Evidence index immutable audit hashes drift")
+    require(ledger["schemaVersion"] == 3 and ledger["reviewedCommit"] == REVIEWED_V03_HEAD, "Final advisory ledger identity drift")
+    require(ledger["reviewedGateSetVersion"] == "poc-recovery-stage0-v0.3" and ledger["remediationVersion"] == PROTOCOL_ID, "Final advisory ledger version drift")
+    require(ledger["sanitized"] is True and ledger["reviewerIdentity"] is None and ledger["formalReviewer"] is False, "Final advisory ledger claimed formal reviewer")
+    findings = ledger["findings"]
+    require([item["id"] for item in findings] == [f"REC-GOV-V03-{index:03d}" for index in range(1, 5)], "Final advisory stable finding IDs drift")
+    require([item["severity"] for item in findings] == ["P0", "P0", "P1", "P1"], "Final advisory severity mapping drift")
+    require(all(item["remediationVersion"] == PROTOCOL_ID and item["remediationCommit"] == "SELF" and item["formalReviewer"] is False and item["disposition"].startswith("CLOSED") for item in findings), "Final advisory remediation traceability incomplete")
+    f2 = findings[1]
+    require("F_06" in f2["disposition"] and "IMMUTABLE" in f2["disposition"], "F-06 immutable closure linkage missing")
+
+    require(index["schemaVersion"] == 2 and index["activeGateSetVersion"] == GATE_ID and index["activeProtocolId"] == PROTOCOL_ID and index["executionAllowed"] is False, "Evidence index active v0.4 state drift")
+    indexed_hashes = {item["locator"]: item["sha256"] for item in index["supersededAuditArtifacts"]}
+    require(indexed_hashes == IMMUTABLE_AUDIT_HASHES, "Evidence index immutable v0.1-v0.3 hashes drift")
+    artifact_ids = {item["id"] for item in index["artifacts"]}
+    require({
+        "REC-V04-GATE-MARKDOWN", "REC-V04-GATE-JSON", "REC-V04-PROTOCOL-JSON",
+        "REC-V04-REMEDIATION", "REC-REVIEW-V03-LEDGER",
+        "REC-JETBRAINS-ANNOTATIONS-LICENSE-NOTICE-VERIFICATION-20260812",
+        "REC-BASE-LOCKFILE-TOOLING-INVENTORY-20260812",
+    }.issubset(artifact_ids), "Evidence index lacks v0.4 artifacts")
 
 
 def validate_documents_and_no_implementation() -> None:
-    owner_record = read_text(STAGE0 / "DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md")
-    decision = read_text(STAGE0 / "DEC-044-POC-RECOVERY-EXPERIMENT.md")
-    gate_markdown = read_text(STAGE0 / "DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md")
-    remediation = read_text(EVIDENCE / "governance-remediation-v0.3.md")
-    review = read_text(EVIDENCE / "ip-stage0-evaluation-review.md")
-    require(
-        "Decision ID: `OD-14`" in owner_record
-        and "executionAllowed=false" in owner_record
-        and "v0.3" in owner_record
-        and JSR305_POLICY_ID in owner_record
-        and OWNER_DECISION_INPUT_HEAD in owner_record
-        and "com.google.crypto.tink:tink-android:1.23.0" in owner_record
-        and JSR305_COORDINATE in owner_record
-        and all(rule in owner_record for rule in JSR305_R8_RULES)
-        and all(family in owner_record for family in ("compile", "runtime", "benchmark", "test", "packaging"))
-        and "javax.lang.model.element.Modifier" in owner_record
-        and "fails closed" in owner_record
-        and "does not approve use or distribution of JSR-305" in owner_record,
-        "OD-14 owner/Product-IP prospective exclusion policy boundary missing",
-    )
-    require("Status: **Proposed" in decision and "executionAllowed=false" in decision, "DEC-044 must remain Proposed and non-executable")
-    require(JSR305_POLICY_ID in decision and "bare exclusion fails" in decision and "zero resolved" in decision and "JSR-305 components" in decision, "DEC-044 approved prospective JSR305 disposition missing")
-    for required in (
-        "DURABLE_ONE_SEGMENT_LOOKAHEAD", "DORA_RECOVERY_MANIFEST_V1_BINARY_BE",
-        "DORASA01", "DORAMA01", "DORACP01", "DORAKE01",
-        "0 <= C <= R <= A", "K12-STREAM-V0.3", "K12-MICROFILE-V0.3",
-        "AndroidKeystoreKmsClient.Builder", "finalRelativeName + \".tmp\"",
-        "TEMP_ONLY", "TEMP_AND_FINAL", "FINAL_ONLY", "SQLITE_POINTS_TO_TEMP", "UNKNOWN_OR_NON_ALLOWLISTED_NAME",
-        "KEY-01", "KEY-07", "33",
-    ):
-        require(required in gate_markdown, f"Recovery Gate Set v0.3 is missing: {required}")
-    require(REVIEWED_V02_HEAD in remediation and "executionAllowed=false" in remediation, "Remediation traceability/boundary missing")
-    require(
-        "owner-remediated protocol v0.3" in review.lower()
-        and "AUTHENTICITY VERIFIED" in review
-        and "license conflict remains unresolved" in review
-        and JSR305_POLICY_ID in review
-        and "approved only prospective policy" in review
-        and "excluded artifact / terms not interpreted" in review
-        and "implementation and execution blocked" in review.lower(),
-        "Product/IP prospective policy review/authenticity-license state drift",
-    )
+    required_fragments = {
+        "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_4.md": [
+            "key-confirmation/run.kc", "DORAKC01", "DORAKA01", "KC-13", "45 rows",
+            "REC-GOV-V03-001", "REC-GOV-V03-004", "implementationAllowed=false",
+            "future actual graph", "formal accountable reviewer",
+        ],
+        "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md": [
+            "protocol v0.4", "future `:poc:recovery`", "NOTICE", "open and blocking",
+            "executionAllowed=false",
+        ],
+        "docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md": [
+            "protocol v0.4", REVIEWED_V03_HEAD, "key-confirmation/run.kc", "45 rows",
+            "implementationAllowed=false",
+        ],
+        "docs/stage0/DORA_MVP1_IP_ASSET_POLICY.md": [
+            "protocol v0.4", "No repository-wide Tink/JSR-305 absence is claimed", JETBRAINS_COMMIT,
+        ],
+        "docs/stage0/DORA_MVP1_POC_EXECUTION_ORDER.md": [
+            "stage0-v0.4", "45 fault rows", "actual graph are mandatory",
+        ],
+        "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md": [
+            "stage0-v0.4", "key-confirmation/run.kc", "Existing other-module",
+        ],
+        "docs/DORA_MVP1_STAGE_STATUS.md": [
+            "poc-recovery-stage0-v0.4", "v0.1/v0.2/v0.3", "45-row fault contract",
+        ],
+        "docs/evidence/poc-recovery-001/README.md": [
+            "PROTOCOL v0.4", "base-lockfile-tooling-inventory-2026-08-12.json", "no repository-wide",
+        ],
+        "docs/evidence/poc-recovery-001/governance-remediation-v0.4.md": [
+            "REC-GOV-V03-001", "REC-GOV-V03-004", "implementationAllowed=false", "executionAllowed=false",
+        ],
+    }
+    for relative, fragments in required_fragments.items():
+        text = read_text(relative)
+        for fragment in fragments:
+            require(fragment in text, f"{relative} is missing aligned v0.4 text: {fragment}")
 
-    recovery_module = ROOT / "android" / "poc" / "recovery"
-    require(not recovery_module.exists(), "android/poc/recovery must not exist in governance package")
-    gradle_files = list((ROOT / "android").rglob("*.gradle")) + list((ROOT / "android").rglob("*.gradle.kts"))
-    gradle_files += [ROOT / "android" / "gradle" / "libs.versions.toml"]
-    tink_pattern = re.compile(r"com\.google\.crypto\.tink|tink-android", flags=re.IGNORECASE)
-    contaminated = [str(path.relative_to(ROOT)) for path in gradle_files if path.is_file() and tink_pattern.search(path.read_text(encoding="utf-8"))]
-    require(not contaminated, f"Tink appeared in Android Gradle/runtime configuration: {contaminated}")
-    require(":poc:recovery" not in read_text(ROOT / "android" / "settings.gradle.kts"), "Recovery module was included in Gradle settings")
-    app_manifest = read_text(ROOT / "android" / "app" / "src" / "main" / "AndroidManifest.xml")
-    require("android.permission.RECORD_AUDIO" not in app_manifest, "Production :app microphone permission is forbidden")
-
-    device_matrix = read_text(STAGE0 / "device-matrix.yaml")
-    require("protocol: poc-recovery-protocol-stage0-v0.3" in device_matrix, "Recovery device contract must target v0.3")
-    require("execution_allowed: false" in device_matrix, "Device contract must withhold execution")
-    backlog = read_text(ROOT / "docs" / "DORA_MVP1_IMPLEMENTATION_BACKLOG.md")
-    recovery_row = next(line for line in backlog.splitlines() if line.startswith("| POC-RECOVERY-001 |"))
-    require("| BLOCKED |" in recovery_row and "executionAllowed=false" in recovery_row, "Recovery backlog must remain BLOCKED")
+    require(not (ROOT / "android" / "poc" / "recovery").exists(), "Recovery module exists")
+    require(":poc:recovery" not in read_text("android/settings.gradle.kts"), "Recovery module included")
+    app_manifest = read_text("android/app/src/main/AndroidManifest.xml")
+    require("android.permission.RECORD_AUDIO" not in app_manifest, "Production :app microphone permission appeared")
+    device_matrix = read_text("docs/stage0/device-matrix.yaml")
+    require(f"protocol: {PROTOCOL_ID}" in device_matrix and "execution_allowed: false" in device_matrix, "Device matrix v0.4/execution boundary drift")
 
 
 def main() -> int:
-    gate = read_json(STAGE0 / "poc-recovery-gate-set-stage0-v0.3.json")
-    protocol = read_json(STAGE0 / "poc-recovery-protocol-stage0-v0.3.json")
-    validate_supersession(gate, protocol)
+    gate = read_json("docs/stage0/poc-recovery-gate-set-stage0-v0.4.json")
+    protocol = read_json("docs/stage0/poc-recovery-protocol-stage0-v0.4.json")
+    validate_immutable_history(gate, protocol)
     validate_gate(gate)
     validate_protocol(protocol)
-    validate_evidence()
+    validate_license_notice()
+    validate_recovery_boundary()
+    validate_readiness_roles_and_traceability()
     validate_documents_and_no_implementation()
-    print("POC-RECOVERY-001 governance v0.3 validation passed; owner/Stage 0 Product-IP prospective REC-JSR305-EXCLUDE-001 policy recorded, artifact terms uninterpreted and use/distribution unapproved; v0.1/v0.2 immutable and retained; executionAllowed=false")
+    print(
+        "POC-RECOVERY-001 governance v0.4 validation passed; v0.1-v0.3 immutable, "
+        "durable key-confirmation contract closed prospectively, exact JetBrains LICENSE/NOTICE "
+        "verified, REC-JSR305-EXCLUDE-001 bounded to future :poc:recovery, "
+        "implementationAllowed=false, executionAllowed=false"
+    )
     return 0
 
 
 if __name__ == "__main__":
     try:
         raise SystemExit(main())
-    except (OSError, ValueError, KeyError, StopIteration, json.JSONDecodeError) as error:
+    except (
+        OSError,
+        ValueError,
+        KeyError,
+        StopIteration,
+        json.JSONDecodeError,
+    ) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         raise SystemExit(1)

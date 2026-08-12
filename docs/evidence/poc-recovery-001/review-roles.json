@@ -1,10 +1,10 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "pocId": "POC-RECOVERY-001",
   "recordedOn": "2026-08-12",
   "roles": {
     "packageAuthor": {
-      "role": "Governance package preparer and v0.3 remediation recorder",
+      "role": "Governance package preparer and v0.4 remediation recorder",
       "reviewer": "Codex",
       "mayApproveOwnPackage": false,
       "mayAuthorizeExecution": false,
@@ -13,7 +13,7 @@
     "stage0ProductIp": {
       "role": "Stage 0 Product/IP reviewer",
       "reviewer": "Project owner",
-      "status": "PROSPECTIVE_POLICY_AND_REVIEWED_GOVERNANCE_PACKAGE_APPROVED_ONLY",
+      "status": "PROSPECTIVE_POLICY_AND_EXACT_GOVERNANCE_PACKET_EVIDENCE_APPROVED_ONLY",
       "finalApproved": false,
       "approvedReviewer": null,
       "approvedOn": null,
@@ -32,12 +32,21 @@
         "scope": "PROSPECTIVE_POLICY_AND_REVIEWED_GOVERNANCE_PACKAGE_FOR_FUTURE_EXACT_EXCLUDED_STAGE0_GRAPH_ONLY"
       },
       "futureExactGraphDisposition": {
+        "status": "OPEN_BLOCKED",
         "actualGraphApproved": false,
         "dependencyAdmission": false,
         "implementationAuthorized": false,
         "executionAuthorized": false,
         "separateImplementationScopeRequired": true,
         "exactResolvedGraphEvidenceRequired": true
+      },
+      "governancePacketEvidenceDisposition": {
+        "status": "CLOSED_VERIFIED",
+        "jetbrainsAnnotationsImmutableLicenseNoticeVerified": true,
+        "excludedJsr305TermsInterpreted": false,
+        "jsr305UseOrDistributionApproved": false,
+        "productionLegalApproved": false,
+        "dependencyAdmission": false
       },
       "authority": [
         "approve or reject exact Stage 0 evaluation scope",
@@ -66,10 +75,11 @@
         "non-deprecated 16/16-byte HKDF-SHA256 4096-byte streaming construction and one-derived-key-per-stream model",
         "AES256_GCM_TINK_IV12_TAG16 microfiles and exact DORA_RECOVERY_MANIFEST_V1_BINARY_BE parser",
         "four exact big-endian LP16 AAD schemas, non-deprecated AndroidKeystoreKmsClient Builder path and five-level key classification precedence",
-        "candidate-specific 9/13/21 publication sequences, semantic endTransaction commit, WAL/FULL SQLite and deterministic UNIQUE processing intent",
-        "all final and final+'.tmp' path patterns, five reconciliation states, collision/no-overwrite behavior and no name-only temp promotion",
-        "candidate-specific K01-K12 public barriers and immutable v0.3 K12 seeds",
-        "33-row corruption, replay, rollback, KEY-01..KEY-07, parser/path, quarantine, event and cleanup matrix",
+        "13-step durable key-confirmation bootstrap, separate DORAKC01/DORAKA01 schemas and v0.4 key taxonomy",
+        "candidate-specific inherited 9/13/21 publication sequences after bootstrap, semantic endTransaction commit, WAL/FULL SQLite and deterministic UNIQUE processing intent",
+        "all nine final and final+'.tmp' path families, key-confirmation reconciliation states, collision/no-overwrite behavior and no name-only temp promotion",
+        "candidate-specific K01-K12 public barriers with durable bootstrap prerequisite and immutable v0.3 K12 seeds",
+        "45-row corruption, replay, rollback, KEY-01..KEY-07, KCB-01..06, KCF-01..06, parser/path, quarantine, event and cleanup matrix",
         "later separately scoped implementation and non-metric implementation-verification evidence"
       ],
       "mayRejectOrRequireProtocolRevision": true,

@@ -1,6 +1,6 @@
 # POC-RECOVERY-001 dependency authenticity verification — 2026-08-12
 
-Status: **AUTHENTICITY VERIFIED; F-06 CLOSED; JSR305 LICENSE / PRODUCT-IP BLOCKED**
+Status: **EXACT GOVERNANCE PACKET AUTHENTICITY/LICENSE/NOTICE VERIFIED; F-06 CLOSED ON IMMUTABLE EVIDENCE; FUTURE ACTUAL GRAPH BLOCKED**
 Scope: governance evidence only. No Gradle dependency, recovery module, harness, device run,
 measurement, dependency admission or production admission was created.
 
@@ -62,6 +62,20 @@ For `annotations:13.0`, the published POM's `66770193` keyname is recorded only 
 suffix evidence. Crypto verification requires the complete
 `2E3A1AFFE42B5F53AF19F780BCF4173966770193` fingerprint.
 
+Its applicable LICENSE and NOTICE were independently fetched at exact historical-source commit
+`f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c` and hashed at `2026-08-12T14:38:33Z` using `gh api`
+GitHub Contents API plus `System.Security.Cryptography.SHA256`:
+
+| object | immutable locator | bytes | SHA-256 |
+|---|---|---:|---|
+| LICENSE | `https://github.com/JetBrains/intellij-community/blob/f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c/LICENSE.txt` | 11,358 | `cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30` |
+| NOTICE | `https://github.com/JetBrains/intellij-community/blob/f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c/NOTICE.txt` | 127 | `0479f6a86003002dec1da1667f2f8320253c7225c6ffffc05cf7e0988bd8c72c` |
+
+The exact JetBrains evidence is accepted for this Stage 0 governance packet. If the artifact later
+enters a separately approved resolved graph, the NOTICE must be preserved in the future Stage 0
+notices packet. This is not Production Legal, production/dependency admission or redistribution
+approval.
+
 ## Source comparison commands
 
 Release tree data came from the official/signer-owned GitHub API objects, for example:
@@ -81,8 +95,9 @@ Each source entry was compared with Git's exact blob identity
 
 ## Unresolved license conflict
 
-Authenticity is no longer pending and F-06 closes because its required evidence is complete. The
-evidence conclusion nevertheless identifies an independent Product/IP blocker. The immutable,
+Authenticity is no longer pending and F-06 closes only after the immutable JetBrains
+LICENSE/NOTICE verification above completed. The evidence conclusion nevertheless identifies an
+independent boundary for the excluded JSR-305 artifact. The immutable,
 signed Maven Central POM for `com.google.code.findbugs:jsr305:3.0.2` (SHA-256
 `19889dbdf1b254b2601a5ee645b8147a974644882297684c798afe5d63d78dfe`) declares
 Apache-2.0. The exact release-source POM (SHA-256
@@ -99,7 +114,11 @@ the immutable 3.0.2 artifact. Safe owner choices are:
 3. ask qualified Product/IP counsel whether explicitly complying with both term sets is
    acceptable.
 
-This record does not choose among those options and does not issue Product/IP or legal approval.
+Prospective `REC-JSR305-EXCLUDE-001` policy is already closed/approved: it keeps this coordinate
+outside the future recovery graph without interpreting the conflicting terms or approving use or
+distribution. Exact governance packet evidence is closed/verified. The future actual
+`:poc:recovery` graph/package/R8 evidence and its scoped Product/IP disposition remain open and
+blocked. This record does not issue Production Legal or production/dependency admission.
 
 ## Limitations and boundary
 

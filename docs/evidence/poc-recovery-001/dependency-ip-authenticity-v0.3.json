@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "evidenceId": "POC-RECOVERY-001-DEPENDENCY-IP-AUTHENTICITY-V0.3",
   "pocId": "POC-RECOVERY-001",
   "scope": "Eight exact published JAR/POM coordinates only; evidence does not admit a dependency or modify a Gradle graph.",
@@ -11,7 +11,7 @@
     "sourceCorrespondence": "Maven sources JAR SHA-256/signature plus byte-exact Git blob comparison against the recorded upstream commit; declared generated-source transformations are enumerated",
     "trustRule": "A keyserver UID is identity metadata only. Verification requires either upstream publisher key binding or exact/multisource correspondence; no verification result grants Product/IP approval or dependency admission."
   },
-  "overallStatus": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED",
+  "overallStatus": "EXACT_GOVERNANCE_PACKET_AUTHENTICITY_LICENSE_NOTICE_VERIFIED_FUTURE_ACTUAL_GRAPH_PRODUCT_IP_BLOCKED",
   "summary": {
     "coordinates": 8,
     "jarSha256Verified": 8,
@@ -746,18 +746,30 @@
         "trustRule": "A keyserver UID is identity metadata only. Verification requires either upstream publisher key binding or exact/multisource correspondence; no verification result grants Product/IP approval or dependency admission."
       },
       "licenseId": "Apache-2.0",
-      "upstreamLicenseTextLocator": "https://raw.githubusercontent.com/JetBrains/java-annotations/master/LICENSE.txt",
-      "licenseTextSha256": "8c1e966c7855fb54027bcaf6ebe7a43abe4785791e8cf9148c363761d493d097",
+      "upstreamLicenseTextLocator": "https://github.com/JetBrains/intellij-community/blob/f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c/LICENSE.txt",
+      "licenseTextSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
       "copyrightEvidence": {
-        "locator": "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0-sources.jar!/org/intellij/lang/annotations/Flow.java",
-        "statement": "Copyright 2000-2013 JetBrains s.r.o.",
-        "status": "RECORDED_FROM_PUBLISHER_SOURCES_JAR_EXACT_SOURCE_TAG_PENDING"
+        "locator": "https://github.com/JetBrains/intellij-community/blob/f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c/NOTICE.txt",
+        "statement": "Copyright and attribution are preserved by the immutable upstream NOTICE evidence for the exact historical source commit.",
+        "status": "RECORDED_FROM_IMMUTABLE_EXACT_SOURCE_COMMIT"
       },
       "notice": {
-        "requirement": "PRESERVE_SEPARATE_NOTICE_IF_UPSTREAM_SUPPLIES_ONE",
-        "locator": "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0-sources.jar",
-        "sha256": null,
-        "result": "NO_SEPARATE_NOTICE_IN_BINARY_OR_SOURCES_JAR; EXACT_SOURCE_ROOT_PENDING"
+        "requirement": "PRESERVE_IMMUTABLE_UPSTREAM_NOTICE_IN_FUTURE_STAGE0_NOTICES_PACKET_IF_ARTIFACT_ENTERS_A_SEPARATELY_APPROVED_RESOLVED_GRAPH",
+        "locator": "https://github.com/JetBrains/intellij-community/blob/f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c/NOTICE.txt",
+        "sha256": "0479f6a86003002dec1da1667f2f8320253c7225c6ffffc05cf7e0988bd8c72c",
+        "result": "IMMUTABLE_NOTICE_VERIFIED_AND_PRESERVATION_REQUIRED"
+      },
+      "licenseAndNoticeVerification": {
+        "verifiedAtUtc": "2026-08-12T14:38:33Z",
+        "verificationTool": "gh api GitHub Contents API + System.Security.Cryptography.SHA256",
+        "licenseBytes": 11358,
+        "noticeBytes": 127,
+        "governancePacketEvidenceAccepted": true,
+        "futureActualGraphApproved": false,
+        "dependencyAdmission": false,
+        "redistributionApproved": false,
+        "productionLegalApproved": false,
+        "recordLocator": "docs/evidence/poc-recovery-001/jetbrains-annotations-license-notice-verification-2026-08-12.md"
       },
       "jar": {
         "sha256": "ace2a10dc8e2d5fd34925ecac03e4988b2c0f851650c94b8cef49ba1bd111478",
@@ -840,6 +852,9 @@
     }
   ],
   "approvalBoundary": {
+    "prospectivePolicyStatus": "CLOSED_APPROVED",
+    "governancePacketEvidenceStatus": "CLOSED_VERIFIED",
+    "futureActualGraphProductIpDisposition": "OPEN_BLOCKED",
     "productIpApprovalAllowedWhileAnyCoordinatePending": false,
     "productIpFinalApproval": false,
     "approvedReviewer": null,
@@ -849,9 +864,11 @@
     "dependencyAdmission": false,
     "productionAdmission": false,
     "productIpApprovalAllowedWhileLicenseConflict": false,
+    "excludedJsr305ConflictDoesNotBlockProspectivePolicy": true,
+    "jsr305UseOrDistributionApproved": false,
     "blockers": [
-      "JSR305_PUBLISHED_POM_VS_EXACT_RELEASE_SOURCE_LICENSE_CONFLICT",
-      "INDEPENDENT_STAGE0_PRODUCT_IP_FINAL_REVIEW_NOT_COMPLETED"
+      "FUTURE_ACTUAL_RECOVERY_GRAPH_PACKAGE_R8_EVIDENCE_ABSENT",
+      "FUTURE_ACTUAL_GRAPH_PRODUCT_IP_DISPOSITION_NOT_COMPLETED"
     ]
   },
   "verificationRecordLocator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-verification-2026-08-12.md"

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "pocId": "POC-RECOVERY-001",
   "analyzedOn": "2026-08-12",
   "status": "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_OWNER_PRODUCT_IP_POLICY_APPROVED",
@@ -12,6 +12,15 @@
     "measuredExecutionPerformed": false,
     "deviceExecutionPerformed": false,
     "executionAllowed": false
+  },
+  "currentRepositoryBoundary": {
+    "boundaryId": "REC-JSR305-EXCLUDE-001",
+    "tinkAndroid123Wired": false,
+    "recoveryModuleExists": false,
+    "repositoryWideAbsenceClaimed": false,
+    "pullRequest11ChangedLockfiles": false,
+    "baseOtherModuleToolingOccurrencesAreRecoveryAdmissionEvidence": false,
+    "baseInventoryLocator": "docs/evidence/poc-recovery-001/base-lockfile-tooling-inventory-2026-08-12.json"
   },
   "exactArtifacts": {
     "tinkCoordinate": "com.google.crypto.tink:tink-android:1.23.0",
@@ -216,7 +225,13 @@
     "gradleScopedExclude": "implementation(\"com.google.crypto.tink:tink-android:1.23.0\") { exclude(group = \"com.google.code.findbugs\", module = \"jsr305\") }",
     "compileOnlyOrAlternatePathToForbiddenCoordinateAllowed": false,
     "requiredResolvedComponentCount": 0,
-    "configurationCoverage": "Every resolvable configuration in the future isolated recovery module and every consuming module, including compile, runtime, unit-test, instrumented-test, lint, D8/R8 and packaging inputs for every variant.",
+    "coveredFutureModule": ":poc:recovery",
+    "configurationCoverage": "Every resolvable compile, runtime, unit-test, androidTest, benchmark and release configuration plus every packaging/runtime-artifact input, dependency lock and dependency-verification input owned by the future :poc:recovery module.",
+    "excludedCurrentInputs": [
+      "buildscript, AGP, UTP, lint and tooling configurations of other existing modules",
+      "existing app, capture and search lockfiles"
+    ],
+    "excludedCurrentInputsAreRecoveryAdmissionEvidence": false,
     "requiredR8Rules": [
       "-dontwarn javax.annotation.Nullable",
       "-dontwarn javax.annotation.concurrent.GuardedBy",
@@ -228,7 +243,7 @@
     "futureReportRequirements": {
       "exactCommitRecorded": true,
       "allResolvableConfigurationsEnumerated": true,
-      "allRecoveryConsumersEnumerated": true,
+      "allCoveredRecoveryInputsEnumerated": true,
       "jsr305ResolvedComponentCount": 0,
       "scopedExcludeVerified": true,
       "narrowR8RuleVerified": true,
@@ -239,7 +254,7 @@
     },
     "readinessFailureConditions": [
       "the forbidden coordinate appears in any covered resolved configuration",
-      "configuration or consumer coverage is incomplete",
+      "covered recovery-input enumeration is incomplete",
       "a compileOnly or alternate dependency path reintroduces the forbidden coordinate",
       "the scoped exclude or exact three-line R8 rule is absent or broadened",
       "debug/D8 or release/R8 non-metric verification fails",
@@ -261,6 +276,9 @@
     "jsr305UseOrDistributionApproved": false,
     "ownerDecisionRequired": false,
     "productionLegalApproved": false,
-    "productionSecurityApproved": false
+    "productionSecurityApproved": false,
+    "stateAProspectivePolicy": "CLOSED_APPROVED",
+    "stateBGovernanceAuthenticityLicenseEvidence": "CLOSED_VERIFIED_FOR_EXACT_PACKET_EXCLUDED_JSR305_TERMS_NOT_INTERPRETED",
+    "stateCFutureActualGraphProductIpDisposition": "OPEN_BLOCKED_UNTIL_AUTHORIZED_IMPLEMENTATION_PRODUCES_EXACT_GRAPH_PACKAGE_AND_R8_EVIDENCE"
   }
 }

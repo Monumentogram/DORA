@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 3,
+  "pocId": "POC-RECOVERY-001",
+  "reviewedCommit": "c61603d30c01c72347aa205c247729ad534c2882",
+  "reviewedGateSetVersion": "poc-recovery-stage0-v0.3",
+  "sourceReview": "final advisory review supplied by the project owner for PR #11",
+  "sourceReviewDate": "2026-08-12",
+  "sanitized": true,
+  "reviewerIdentity": null,
+  "formalReviewer": false,
+  "remediationVersion": "poc-recovery-protocol-stage0-v0.4",
+  "remediationCommitSemantics": "SELF means the single governance-only remediation commit containing this ledger; replace SELF only with that exact commit in an immutable post-commit attestation, never with a mutable branch name.",
+  "findings": [
+    {
+      "id": "REC-GOV-V03-001",
+      "severity": "P0",
+      "title": "Missing durable run-key confirmation bootstrap",
+      "affectedArtifacts": [
+        "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md",
+        "docs/stage0/poc-recovery-protocol-stage0-v0.3.json",
+        "docs/evidence/poc-recovery-001/readiness.json"
+      ],
+      "remediationVersion": "poc-recovery-protocol-stage0-v0.4",
+      "remediationCommit": "SELF",
+      "disposition": "CLOSED_BY_PROSPECTIVE_V0_4_GOVERNANCE_CONTRACT",
+      "evidenceLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_4.md",
+      "formalReviewer": false
+    },
+    {
+      "id": "REC-GOV-V03-002",
+      "severity": "P0",
+      "title": "Incomplete immutable JetBrains annotations LICENSE/NOTICE evidence",
+      "affectedArtifacts": [
+        "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json",
+        "docs/evidence/poc-recovery-001/license-notice-inventory.json",
+        "docs/evidence/poc-recovery-001/dependency-ip-authenticity-verification-2026-08-12.md"
+      ],
+      "remediationVersion": "poc-recovery-protocol-stage0-v0.4",
+      "remediationCommit": "SELF",
+      "disposition": "CLOSED_AFTER_INDEPENDENT_IMMUTABLE_BYTE_VERIFICATION; HISTORICAL_F_06_CLOSURE_CONFIRMED_ONLY_ON_THIS_BASIS",
+      "evidenceLocator": "docs/evidence/poc-recovery-001/jetbrains-annotations-license-notice-verification-2026-08-12.md",
+      "formalReviewer": false
+    },
+    {
+      "id": "REC-GOV-V03-003",
+      "severity": "P1",
+      "title": "Overbroad repository-wide Gradle graph absence claim",
+      "affectedArtifacts": [
+        "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.md",
+        "docs/evidence/poc-recovery-001/readiness.json",
+        "tools/check_poc_recovery_run_readiness.py"
+      ],
+      "remediationVersion": "poc-recovery-protocol-stage0-v0.4",
+      "remediationCommit": "SELF",
+      "disposition": "CLOSED_WITH_EXACT_RECOVERY_ONLY_BOUNDARY_REC_JSR305_EXCLUDE_001",
+      "evidenceLocator": "docs/evidence/poc-recovery-001/base-lockfile-tooling-inventory-2026-08-12.json",
+      "formalReviewer": false
+    },
+    {
+      "id": "REC-GOV-V03-004",
+      "severity": "P1",
+      "title": "OD-14, JSR analysis and readiness state inconsistency",
+      "affectedArtifacts": [
+        "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md",
+        "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.json",
+        "docs/evidence/poc-recovery-001/readiness.json",
+        "docs/evidence/poc-recovery-001/review-roles.json"
+      ],
+      "remediationVersion": "poc-recovery-protocol-stage0-v0.4",
+      "remediationCommit": "SELF",
+      "disposition": "CLOSED_BY_THREE_STATE_PROSPECTIVE_POLICY_GOVERNANCE_EVIDENCE_ACTUAL_GRAPH_MODEL",
+      "evidenceLocator": "docs/evidence/poc-recovery-001/governance-remediation-v0.4.md",
+      "formalReviewer": false
+    }
+  ]
+}
