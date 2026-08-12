@@ -6,7 +6,9 @@ Date: **12 August 2026**\
 Owner: **Project owner**\
 Scope: governance/readiness and exact Stage 0 evaluation-package preparation for
 `POC-RECOVERY-001` only\
-Decision input governance HEAD: `eb312feb2a0d5e5b24b45fcd045bacca94e8c9da`
+Decision input governance HEAD: `eb312feb2a0d5e5b24b45fcd045bacca94e8c9da`\
+Active Gate Set: `poc-recovery-stage0-v0.5`\
+Active protocol: `poc-recovery-protocol-stage0-v0.5`
 
 This record is intentionally separate from the immutable `OD-01`–`OD-13` registry referenced by
 the closed `POC-SEARCH-001` evidence ledger. It does not modify or re-hash that historical evidence.
@@ -26,7 +28,7 @@ the closed `POC-SEARCH-001` evidence ledger. It does not modify or re-hash that 
   or post-FAIL fallbacks and cannot receive PASS under the current gate.
 - The exact package candidate is `com.google.crypto.tink:tink-android:1.23.0`. Permission covers
   Stage 0 evaluation-package preparation only, not dependency admission or runtime-graph wiring.
-- Governance protocol v0.4 incorporates the exact SHA-256-pinned v0.3 contract and retains the v0.2 owner selection of public AES-GCM-HKDF Streaming
+- Active governance protocol v0.5 incorporates the exact SHA-256-pinned v0.4 amendment and, through it, the v0.3 contract; it retains the v0.2 owner selection of public AES-GCM-HKDF Streaming
   parameters (16-byte input key,
   one 16-byte HKDF-SHA256-derived AES-GCM key per stream and 4096-byte ciphertext segments) with
   `DURABLE_ONE_SEGMENT_LOOKAHEAD`. The design is
@@ -53,9 +55,15 @@ the closed `POC-SEARCH-001` evidence ledger. It does not modify or re-hash that 
 - The exact non-deprecated Keystore Builder path, 9/13/21 publication sequences,
   `final + ".tmp"` namespace/five-state reconciliation, WAL/FULL SQLite profile, deterministic
   `processingIntentId`, 12 candidate-specific barriers and 33-row fault matrix are normative in
-  the inherited v0.3 base. v0.4 adds durable `key-confirmation/run.kc` as the ninth family, an exact
+  the inherited v0.3 base. Historical v0.4 adds durable `key-confirmation/run.kc` as the ninth family, an exact
   13-step alias/confirmation/SQLite bootstrap before every candidate publication, a fail-closed
-  confirmation taxonomy and 12 mandatory confirmation/bootstrap fault rows, for 45 total. These
+  confirmation taxonomy and 12 mandatory confirmation/bootstrap fault rows, for 45 total. Active
+  v0.5 replaces only the ambiguous taxonomy/reconciliation/fault-profile portions: it defines the
+  exact ordered eight-class KEY taxonomy with plaintext validation only after successful decrypt,
+  adds `KCF-07` for 46 total rows, and separates Phase A (184 injections) from the full physical
+  D1/D2/D5 campaign (138 injections). A Phase A D2 repetition is reusable only when commit,
+  protocol/Gate Set, fixture, injection, device identity/profile, fresh preflight and validity
+  criteria all match; otherwise D2 repeats. Valid reuse leaves 92 D1/D5 injections. These
   remediations do not change the two candidates, thresholds, authority or owner product choice.
 - Per-coordinate checksum, OpenPGP and source-correspondence verification closes authenticity for
   all eight publisher-closure coordinates. The `jsr305:3.0.2` signed-POM/exact-source license
@@ -125,14 +133,14 @@ later, separate owner record must authorize execution; D1/D5 remain required for
 ## Normative package
 
 - Proposed decision: `docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md`;
-- exact Gate Set: `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_4.md`;
-- machine contracts: `docs/stage0/poc-recovery-gate-set-stage0-v0.4.json` and
-  `docs/stage0/poc-recovery-protocol-stage0-v0.4.json`;
+- exact Gate Set: `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_5.md`;
+- machine contracts: `docs/stage0/poc-recovery-gate-set-stage0-v0.5.json` and
+  `docs/stage0/poc-recovery-protocol-stage0-v0.5.json`;
 - superseded audit artifacts, prohibited for future execution:
   `DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_1.md`,
   `poc-recovery-gate-set-stage0-v0.1.json` and
-  `poc-recovery-protocol-stage0-v0.1.json`, plus all corresponding v0.2 and v0.3 Gate Set/protocol
-  files, whose SHA-256 values are pinned by v0.4;
+  `poc-recovery-protocol-stage0-v0.1.json`, plus all corresponding v0.2, v0.3 and v0.4 Gate
+  Set/protocol files, whose 12 SHA-256 values are pinned by v0.5;
 - exact evidence: `docs/evidence/poc-recovery-001/`; and
 - fail-closed checker: `tools/check_poc_recovery_run_readiness.py`.
 

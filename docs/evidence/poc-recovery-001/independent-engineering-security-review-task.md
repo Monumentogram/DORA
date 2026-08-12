@@ -1,4 +1,4 @@
-# Задание: повторный read-only Engineering/Security review POC-RECOVERY-001 v0.4
+# Задание: повторный exact-HEAD read-only Engineering/Security review POC-RECOVERY-001 v0.5
 
 Проведи recovery-scoped Engineering/Security review только exact remediation commit
 governance/readiness package `POC-RECOVERY-001` после disposition `CHANGES_REQUIRED`. Не реализуй
@@ -16,11 +16,11 @@ remediation не заявляет формальную независимост�
 3. релевантные recovery/error-state разделы `docs/DORA_MVP1_DESIGN_SPEC.md`;
 4. `DEC-044` в `docs/DORA_MVP1_PRODUCT_DECISIONS.md` и
    `docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md`;
-5. `docs/evidence/poc-recovery-001/governance-remediation-v0.4.md` и все три findings ledgers;
-6. `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_4.md`;
-7. `docs/stage0/poc-recovery-gate-set-stage0-v0.4.json` и
-   `docs/stage0/poc-recovery-protocol-stage0-v0.4.json`;
-8. v0.1/v0.2/v0.3 Gate Set/protocol только как SHA-256-pinned superseded audit artifacts;
+5. `docs/evidence/poc-recovery-001/governance-remediation-v0.5.md` и все четыре findings ledgers;
+6. `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_5.md`;
+7. `docs/stage0/poc-recovery-gate-set-stage0-v0.5.json` и
+   `docs/stage0/poc-recovery-protocol-stage0-v0.5.json`;
+8. v0.1/v0.2/v0.3/v0.4 Gate Set Markdown/Gate JSON/protocol JSON только как 12 SHA-256-pinned superseded audit artifacts;
 9. все остальные файлы `docs/evidence/poc-recovery-001/`, кроме этого задания.
 
 Укажи distinct accountable reviewer/роль, дату, exact 40-character remediation commit и подтверди,
@@ -46,8 +46,17 @@ remediation не заявляет формальную независимост�
 5. Проверь Android Keystore path: exact lowercase UUID alias; при новом run только
    `generateNewAeadKey(alias)`, а получение `Aead` при создании/recovery только через
    `new AndroidKeystoreKmsClient.Builder().setKeyUri(alias).build().getAead(alias)`; recovery не
-   генерирует и не заменяет key. Проверь key-confirmation ciphertext и exact пятиуровневый
-   classification precedence без expected outcome с «or». Побайтно проверь separate
+   генерирует и не заменяет key. Проверь key-confirmation ciphertext и exact ordered canonical
+   eight-class taxonomy. Для new-run любое занятое alias/key-reference/temp/final namespace
+   обязано дать `KEY_REF_COLLISION`. Для recovery проверь строгий порядок: no row + bootstrap remainder
+   → `INCOMPLETE_KEY_BOOTSTRAP`; row + missing final → `KEY_CONFIRMATION_MISSING`; path/type/recorded
+   ciphertext length/SHA mismatch → `CORRUPT_KEY_CONFIRMATION` без decrypt; alias absent/invalidated/
+   unusable → `KEY_UNAVAILABLE`; exact-AAD decrypt auth failure →
+   `KEY_UNAVAILABLE_KEY_MISMATCH` без replacement; post-decrypt plaintext parser/magic/schema/
+   no-trailing/protocol/candidate/run/alias-digest mismatch → `CORRUPT_KEY_CONFIRMATION`; missing later
+   key reference/envelope → `KEY_UNAVAILABLE`; envelope length/hash/encoding/parser failure →
+   `CORRUPT_KEY_ENVELOPE`; structurally valid envelope auth failure →
+   `KEY_ENVELOPE_AUTH_FAILURE`. Побайтно проверь separate
    `DORAKC01` plaintext / `DORAKA01` AAD schemas и exact 13-step exclusive-create/write/file-fsync/
    rename/directory-fsync/SQLite bootstrap до любой publication.
 6. Проверь semantic commit: successful SQLite `endTransaction()` return после durable data и
@@ -68,9 +77,11 @@ remediation не заявляет формальную независимост�
    `MICROFILE_AFTER_AEAD_RETURN_BEFORE_TEMP_WRITE`, exact K04–K11 publication boundaries, K12
    immutable seeds/canonical result, plus unchanged 120/100/8 counts, allocations and replacement
    rules.
-10. Проверь все 45 строк mandatory fault matrix: 33 inherited rows плюс KCB-01..06 и KCF-01..06 с
-    exact three-emulator/one-D2 repetitions, symlink/path traversal, snapshot rollback,
-    alias replacement, envelope swap и SQLite-commit/controller-event gap.
+10. Проверь все 46 строк mandatory fault matrix: 33 inherited rows плюс KCB-01..06, KCF-01..06 и
+    `KCF-07`. Для `KCF-07` malformed plaintext должен быть encrypted правильным alias и AAD с
+    обновлёнными outer length/SHA; decrypt проходит, а post-decrypt exact plaintext validation даёт
+    только `CORRUPT_KEY_CONFIRMATION`. Проверь symlink/path traversal, snapshot rollback, alias
+    replacement, envelope swap и SQLite-commit/controller-event gap.
 11. Проверь exact JAR/POM/transitive hashes, publisher checksums, detached PGP verification,
    fingerprint и upstream trust source по каждой координате, source tag/commit correspondence,
    per-coordinate LICENSE/copyright/NOTICE, shaded protobuf 4.33.6, advisory snapshot и отсутствие
@@ -81,8 +92,15 @@ remediation не заявляет формальную независимост�
    immutable JetBrains LICENSE/NOTICE locators/digests/preservation rule и honest recovery-only
    `REC-JSR305-EXCLUDE-001` boundary: unrelated existing tooling/lint/UTP/test paths не считать ни
    отсутствующими, ни recovery admission.
-12. Проверь, что Phase A без D1/D5 не может PASS, recovery SQLite provenance preflight достаточен
-    только для Stage 0, а review не создаёт dependency/production admission.
+12. Независимо проверь два профиля. Phase A: 46 строк × (3 pinned emulator + 1 D2) = 184,
+    допустимы только `FAIL`/`INCONCLUSIVE`. Full physical: 46 × (D1 + D2 + D5) = 138. D2 из Phase A
+    reuse допустим только при exact match commit, protocol/Gate Set, fixture digest, injection,
+    device identity/profile, fresh preflight и validity criteria; иначе D2 повторяется. При reuse
+    остаются 92 D1/D5 injections. D1/D5 deferred, без полного профиля PASS запрещён. 120 hard-kill
+    attempts/candidate — отдельный denominator. Проверь также exact ordered equality 11 canonical
+    blocker IDs Gate Set и readiness, отсутствие альтернативных IDs и exact status/priority/owner/
+    condition. Recovery SQLite provenance достаточен только для Stage 0, а review не создаёт
+    dependency/production admission.
 
 ## Требуемый результат review
 
@@ -90,7 +108,7 @@ remediation не заявляет формальную независимост�
 
 - disposition `APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW`, `CHANGES_REQUIRED` или `REJECT`;
 - таблицей по каждому вопросу: evidence, conclusion, required change и blocking/non-blocking level;
-- verdict по каждому owner-selected v0.4 design field: `VERIFIED`, `CHANGES_REQUIRED` или
+- verdict по каждому owner-selected v0.5 design field: `VERIFIED`, `CHANGES_REQUIRED` или
   `REJECTED`; не заполняй implementation/runtime facts без реального отдельного evidence;
 - списком остаточных P0/P1, владельцем и условием закрытия;
 - подтверждением, что никакие implementation/execution/measurement не выполнялись;

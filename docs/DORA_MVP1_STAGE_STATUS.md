@@ -11,7 +11,7 @@ Stage 0C merge commit: `849d9d0406a619b334c9b707a4b6b42b34885b4b`
 Active stage: `Stage 0D — POC-RECOVERY-001 governance/readiness package`
 Active branch: `stage/0d-poc-recovery-governance`
 Active PoC: `POC-RECOVERY-001`
-Stage state: **GOVERNANCE REMEDIATION v0.3 — PROSPECTIVE JSR305 EXCLUSION POLICY APPROVED; IMPLEMENTATION AND EXECUTION BLOCKED**
+Stage state: **GOVERNANCE REMEDIATION v0.5 — PROSPECTIVE KEY TAXONOMY/CAMPAIGN/BLOCKER/METADATA REMEDIATION; IMPLEMENTATION AND EXECUTION BLOCKED**
 
 ## Stage 00 closure
 
@@ -71,10 +71,12 @@ campaign are deferred to separately authorized future scope.
 
 Stage 0D prepares and remediates only the governance/readiness package for `POC-RECOVERY-001`.
 The v0.3 package at reviewed commit `c61603d30c01c72347aa205c247729ad534c2882` received four final
-advisory findings. Proposed `DEC-044` and owner-linked Gate Set/protocol `stage0-v0.4` now fix the
-prospective design semantics: exact SHA-256-pinned v0.3 public AES-GCM-HKDF Streaming AEAD with
+advisory findings, closed by historical v0.4. The v0.4 package at reviewed commit
+`c3eae5c3fbe5cba6a96ad827441cfe4e3f1bfc55` received `REC-ADV-V04-001..004`. Proposed `DEC-044`
+and owner-linked Gate Set/protocol `stage0-v0.5` now fix the prospective design semantics: exact
+SHA-256-pinned v0.3/v0.4 public AES-GCM-HKDF Streaming AEAD and durable key confirmation with
 `DURABLE_ONE_SEGMENT_LOOKAHEAD` versus sealed five-second `AES256_GCM_TINK_IV12_TAG16` microfiles
-and exact authenticated binary manifest plus durable run-key confirmation. Gate Set/protocol v0.1, v0.2 and v0.3 remain unchanged SHA-256-pinned superseded audit artifacts
+and exact authenticated binary manifest plus durable run-key confirmation. Gate Set/protocol v0.1, v0.2, v0.3 and v0.4 remain unchanged SHA-256-pinned superseded audit artifacts
 and cannot govern future execution.
 
 The inherited v0.3 contract fixes one derived AES key per streaming ciphertext stream, exact lookahead/read
@@ -82,9 +84,13 @@ math and 8160-byte/0.255-second streaming design bound; deterministic big-endian
 the exact non-deprecated Keystore Builder/key-confirmation/classification path; 9/13/21 candidate
 publication sequences; `final + ".tmp"`, collision/no-overwrite and five reconciliation states;
 successful SQLite `endTransaction()` as semantic commit; WAL/FULL rows with exact identities and
-UNIQUE deterministic processing intents and candidate-specific K01–K12 barriers. v0.4 adds ninth-family
+UNIQUE deterministic processing intents and candidate-specific K01–K12 barriers. Historical v0.4 adds ninth-family
 `key-confirmation/run.kc`, separate bounded plaintext/AAD schemas, exact 13-step durable bootstrap,
-confirmation taxonomy/reconciliation and 12 mandatory bootstrap/confirmation rows, for 45 total. The
+confirmation taxonomy/reconciliation and 12 mandatory bootstrap/confirmation rows, for 45 total.
+Active v0.5 defines one strict eight-class KEY taxonomy, moves plaintext parser/magic/schema/
+no-trailing/identity checks to post-decrypt only, adds KCF-07 for 46 total rows, separates Phase A
+184 injections from the full physical 138-injection campaign, and freezes exact D2 reuse and 11
+canonical readiness blocker IDs. The
 original safety gates remain zero committed-byte loss, no more than five seconds tail per valid
 kill, 12 strata, 120 base kills/candidate, at least 100 valid and at least eight valid/stratum.
 Fifteen/30-second microfiles remain non-PASS observations or post-failure fallbacks.
@@ -148,15 +154,15 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - `OD-11`: Project owner is Product and IP policy reviewer and acts as Engineering/Security reviewer only for Stage 0 evaluation. This does not replace production Legal or independent production Security. Embedded platform SQLite may use the containing system-image digest plus exact image/runtime identity for Stage 0; that boundary must be reconsidered before production admission.
 - `OD-12`: Project owner prospectively approves Option B for `stage0-v0.2`, based on the local-MVP storage/update/one-second visibility balance and not on prior Dora results. Benchmark execution remains separately withheld.
 - `OD-13`: Project owner approves the exact 66-component/license/NOTICE/platform package only for internal synthetic Stage 0 evaluation and accepts formal `INCONCLUSIVE` closure without a new benchmark. This is not production Legal/Security approval, does not admit FTS4 automatically, is not retroactive, and leaves D1/D3 plus measured execution deferred.
-- `OD-14`: Project owner constraints link prospective governance protocol v0.4, which inherits exact SHA-256-pinned v0.3 semantics and adds durable key confirmation. Prospective `REC-JSR305-EXCLUDE-001` and exact governance authenticity/LICENSE/NOTICE evidence are closed; the future actual recovery graph/package/R8 evidence and its Product/IP disposition remain open/blocking. The selected construction remains `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`; excluded JSR-305 terms are not interpreted and use/distribution is not approved. Repeat exact-HEAD review, distinct accountable Engineering/Security review, separate implementation authorization/verification and later owner execution authorization remain mandatory; `implementationAllowed=false`; `executionAllowed=false`.
+- `OD-14`: Project owner constraints link active prospective governance protocol v0.5, which inherits exact SHA-256-pinned v0.4/v0.3 semantics and fixes the KEY taxonomy, 46-row Phase A/full-campaign profiles and canonical blocker IDs. Prospective `REC-JSR305-EXCLUDE-001` and exact governance authenticity/LICENSE/NOTICE evidence are closed; the future actual recovery graph/package/R8 evidence and its Product/IP disposition remain open/blocking. The selected construction remains `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`; excluded JSR-305 terms are not interpreted and use/distribution is not approved. Repeat exact-HEAD review, distinct accountable Engineering/Security review, separate implementation authorization/verification and later owner execution authorization remain mandatory; `implementationAllowed=false`; `executionAllowed=false`.
 
 ## Current gates and blockers
 
 - `POC-RECOVERY-001` remains `BLOCKED`, not READY. Proposed `DEC-044`, Gate Set
-  `poc-recovery-stage0-v0.4`, exact machine protocol and remediation evidence exist. v0.1/v0.2/v0.3 are
+  `poc-recovery-stage0-v0.5`, protocol `poc-recovery-protocol-stage0-v0.5` and remediation evidence exist. All 12 v0.1–v0.4 Markdown/Gate JSON/protocol JSON artifacts are
   unchanged SHA-256-pinned superseded audit artifacts. The ninth-family
   `key-confirmation/run.kc`, separate bounded plaintext/AAD schemas, 13-step durable bootstrap,
-  v0.4 taxonomy/reconciliation/K01–K12 prerequisite and 45-row fault contract are prospective.
+  v0.5 canonical taxonomy/reconciliation/K01–K12 prerequisite and 46-row fault contract are prospective.
   Coordinate authenticity, immutable JetBrains LICENSE/NOTICE and conditioned JSR-305 exclusion
   are verified; the owner accepted `REC-JSR305-EXCLUDE-001` as prospective policy for the reviewed
   governance package. The underlying excluded-artifact conflict is not interpreted,
@@ -175,8 +181,9 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - No recovery implementation or non-metric implementation verification exists. Phase A execution
   is separately withheld. Fresh emulator and D2 recovery preflight must record effective WAL/FULL,
   `wal_autocheckpoint=0`, `foreign_keys=ON`, `sqlite_version()`, `sqlite_source_id()` and canonical
-  compile-options digest; all runtime fields remain null. D1/D5 are unavailable, so Phase A PASS is
-  structurally forbidden and the full physical verdict is deferred.
+  compile-options digest; all runtime fields remain null. Phase A is 184 fault injections and can
+  return only FAIL/INCONCLUSIVE. The full physical campaign is 138 injections; D1/D5 are deferred,
+  so PASS is structurally forbidden. The 120-attempt hard-kill campaign/candidate is separate.
 - `tools/check_poc_recovery_run_readiness.py` must fail closed while
   `executionAllowed=false`; completion of any prerequisite cannot silently authorize execution.
 - `POC-SEARCH-001` retains its frozen generated-scale observations. The earlier valid full result
@@ -246,7 +253,7 @@ Perform a repeat read-only review of the exact resulting governance commit witho
 or execution. The prospective owner/Stage 0 Product-IP policy disposition is recorded; the Project
 owner must assign a distinct accountable recovery Engineering/Security reviewer. That reviewer
 must verify or require revision
-of the selected v0.4 Streaming/microfile construction, durable key-confirmation bootstrap,
+of the selected v0.5 Streaming/microfile construction, durable key-confirmation bootstrap,
 manifest/key/AAD contract, publication/temp-state/commit/durability,
 SQLite profile, public barriers and complete fault/recovery state machine. Only a later separately
 scoped owner task may authorize implementation and non-metrically verify the isolated harness;

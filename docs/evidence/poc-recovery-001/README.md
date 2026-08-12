@@ -1,6 +1,6 @@
 # POC-RECOVERY-001 governance/readiness evidence
 
-Status: **PROSPECTIVE PROTOCOL v0.4 — POLICY AND EXACT GOVERNANCE EVIDENCE CLOSED; ACTUAL GRAPH, IMPLEMENTATION AND EXECUTION BLOCKED**\
+Status: **PROSPECTIVE PROTOCOL v0.5 — POLICY AND EXACT GOVERNANCE EVIDENCE CLOSED; ACTUAL GRAPH, IMPLEMENTATION AND EXECUTION BLOCKED**\
 Date: 12 August 2026\
 Branch: `stage/0d-poc-recovery-governance`\
 Measured execution: **none**
@@ -9,7 +9,8 @@ This directory contains only public governance, provenance and review evidence f
 Stage 0 recovery experiment. The first package received the owner-supplied disposition
 `CHANGES_REQUIRED`; `governance-remediation-v0.2.md` preserves the first response and
 `governance-remediation-v0.3.md` records the F-01–F-06 response and
-`governance-remediation-v0.4.md` records the four final advisory remediations.
+`governance-remediation-v0.4.md` records the retained v0.4 advisory remediations, and
+`governance-remediation-v0.5.md` records `REC-ADV-V04-001..004`.
 It contains no harness, recovery module, dependency lock from a runtime graph, device result,
 benchmark, key, keyset, ciphertext, plaintext, audio or database.
 
@@ -17,11 +18,12 @@ benchmark, key, keyset, ciphertext, plaintext, audio or database.
 
 | Artifact | Purpose | Current state |
 |---|---|---|
-| `evidence-index.json` | machine-readable active/superseded artifact index and immutable v0.1/v0.2/v0.3 SHA-256 pins | v0.4 active; implementation/execution blocked |
+| `evidence-index.json` | machine-readable active/superseded artifact index and immutable v0.1–v0.4 SHA-256 pins | v0.5 active; implementation/execution blocked |
 | `governance-remediation-v0.2.md` | retained first remediation record | superseded audit evidence; unchanged |
 | `governance-remediation-v0.3.md` | F-01–F-06 disposition and remaining blockers at the reviewed remediation point | F-01–F-06 closed; retained evidence of the underlying jsr305 license conflict |
 | `governance-remediation-v0.4.md` | final four-finding remediation and three-state readiness model | governance findings closed; future actual graph remains blocked |
-| `review-findings-v0.1.json` / `review-findings-v0.2.json` / `review-findings-v0.3.json` | sanitized stable finding ledgers | `formalReviewer=false`; accountable reviewer still unassigned |
+| `governance-remediation-v0.5.md` | canonical KEY taxonomy, separate campaign profiles, blocker IDs and active metadata remediation | `REC-ADV-V04-001..004` closed prospectively; implementation/execution blocked |
+| `review-findings-v0.1.json` / `review-findings-v0.2.json` / `review-findings-v0.3.json` / `review-findings-v0.4.json` | sanitized stable finding ledgers | `formalReviewer=false`; accountable reviewer still unassigned |
 | `dependency-inventory.json` | exact published JAR/POM/metadata closure for `tink-android:1.23.0`, hashes, edges and composition | verified publisher closure; all eight authenticity classifications verified; not runtime admission |
 | `jsr305-exclusion-analysis-2026-08-12.json` / `.md` | exact POM, source, bytecode, compiler, loader, D8/R8 and A–E decision analysis | conditioned complete exclusion technically proven; bare exclude rejected; Option A accepted prospectively by `OD-14` |
 | `jsr305-reference-classes-2026-08-12.txt` | complete sorted Tink class list containing JSR-305 descriptors | 182 classes; SHA-256 pinned by the analysis JSON |
@@ -41,11 +43,11 @@ The normative experiment decision, Gate Set and protocol are:
 
 - `docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md`;
 - `docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md`;
-- `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_4.md`;
-- `docs/stage0/poc-recovery-gate-set-stage0-v0.4.json`; and
-- `docs/stage0/poc-recovery-protocol-stage0-v0.4.json`.
+- `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_5.md`;
+- `docs/stage0/poc-recovery-gate-set-stage0-v0.5.json`; and
+- `docs/stage0/poc-recovery-protocol-stage0-v0.5.json`.
 
-The v0.1, v0.2 and v0.3 Markdown/Gate Set/protocol files remain unchanged and SHA-256-pinned as superseded audit artifacts.
+The v0.1, v0.2, v0.3 and v0.4 Markdown/Gate Set/protocol files remain unchanged and SHA-256-pinned as superseded audit artifacts.
 They are not valid inputs for future implementation or execution.
 
 ## Exact external candidate boundary

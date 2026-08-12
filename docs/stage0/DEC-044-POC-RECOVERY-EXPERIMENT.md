@@ -1,9 +1,10 @@
 # DEC-044 — POC-RECOVERY-001 pre-PoC experiment decision
 
-Status: **Proposed experiment — protocol v0.4 and owner-approved prospective JSR-305 exclusion policy; implementation verification, accountable review and execution pending**\
+Status: **Proposed experiment — active protocol v0.5 governance remediation and owner-approved prospective JSR-305 exclusion policy; implementation verification, accountable review and execution pending**\
 Recorded for: **Project owner**\
 Recorded on: **2026-08-12**\
-Gate Set: `poc-recovery-stage0-v0.4`\
+Gate Set: `poc-recovery-stage0-v0.5`\
+Protocol: `poc-recovery-protocol-stage0-v0.5`\
 Scope: governance-only remediation and readiness for `POC-RECOVERY-001` only\
 Execution authorized: **no**
 
@@ -15,10 +16,12 @@ uncommitted tail loss to five seconds. The Technical Plan names Tink Streaming A
 AEAD microfiles as candidates, but evidence must precede a final audio/container decision.
 
 The v0.3 package at reviewed commit `c61603d30c01c72347aa205c247729ad534c2882` received four
-final advisory findings `REC-GOV-V03-001`–`004`. The Project owner has now scoped the prospective
-v0.4 governance remediation below. This record remains a **Proposed experiment decision**, not `ADR-AUDIO-001`, a
+final advisory findings `REC-GOV-V03-001`–`004`; historical v0.4 closed them. The v0.4 package at
+reviewed commit `c3eae5c3fbe5cba6a96ad827441cfe4e3f1bfc55` then received
+`REC-ADV-V04-001..004`; active v0.5 closes those findings prospectively without changing authority.
+This record remains a **Proposed experiment decision**, not `ADR-AUDIO-001`, a
 production architecture decision, dependency admission, or permission to implement or execute a
-harness. Gate Set/protocol v0.1, v0.2 and v0.3 remain unchanged SHA-256-pinned superseded audit artifacts and are
+harness. Gate Set/protocol v0.1, v0.2, v0.3 and v0.4 remain unchanged SHA-256-pinned superseded audit artifacts and are
 non-executable.
 
 ## Approved prospective dependency policy; no artifact admission
@@ -86,7 +89,7 @@ The authenticated manifest encoding is selected as
 `DORA_RECOVERY_MANIFEST_V1_BINARY_BE`: magic `DORARM01`, schema 1, LP16 ASCII protocol/candidate,
 raw 16-byte run ID, monotonic generation/previous-ciphertext digest, committed end and at most 721
 strictly ordered gap-free entries, with a 512 KiB plaintext cap and no trailing bytes. Exact field
-order is normative in the exact v0.3 base inherited by Gate Set/protocol v0.4.
+order is normative in the exact v0.3 base inherited through the immutable v0.4 contract by active Gate Set/protocol v0.5.
 
 No candidate is preferred in advance. A final `ADR-AUDIO-001` may be proposed only after valid
 evidence and cannot infer production admission from a Stage 0 result.
@@ -128,10 +131,13 @@ evidence and cannot infer production admission from a Stage 0 result.
   path, exclusive temp/write/file-fsync/rename/directory-fsync and SQLite run-row commit. The
   plaintext/AAD use separate `DORAKC01`/`DORAKA01` bounded big-endian schemas. Publication is
   forbidden until the 13-step bootstrap's successful `endTransaction()` return.
-- Required v0.4 key classifications distinguish `INCOMPLETE_KEY_BOOTSTRAP`,
-  `KEY_CONFIRMATION_MISSING`, `CORRUPT_KEY_CONFIRMATION`,
-  `KEY_UNAVAILABLE_KEY_MISMATCH` and later `KEY_ENVELOPE_AUTH_FAILURE`. Existing temp/final paths
-  are never overwritten; “or” outcomes are forbidden.
+- Active v0.5 has exactly eight unique KEY classifications: `KEY_REF_COLLISION`,
+  `INCOMPLETE_KEY_BOOTSTRAP`, `KEY_CONFIRMATION_MISSING`, `CORRUPT_KEY_CONFIRMATION`,
+  `KEY_UNAVAILABLE`, `KEY_UNAVAILABLE_KEY_MISMATCH`, `CORRUPT_KEY_ENVELOPE` and
+  `KEY_ENVELOPE_AUTH_FAILURE`. New-run collision checks precede creation. Recovery uses the exact
+  ordered nine-step algorithm in the v0.5 Gate Set: stored path/type/ciphertext length/SHA checks
+  precede decrypt; plaintext parser/magic/schema/no-trailing and exact identity checks occur only
+  after successful decrypt; no replacement alias/key is permitted.
 - A PoC-local platform `android.database.sqlite` journal is allowed only for DB/file split-brain
   and reconciliation tests. Room, SQLCipher, WorkManager, production schema and production
   migrations are prohibited.
@@ -153,14 +159,18 @@ The 12 strata retain 120 base attempts/candidate and now have exact candidate-sp
 barriers. In particular, microfile K02 is
 `MICROFILE_AFTER_AEAD_RETURN_BEFORE_TEMP_WRITE`; streaming K02 uses the harness-owned downstream
 ciphertext `OutputStream` callback; K04–K11 fix exact publication boundaries; and K12 uses an
-immutable seed plus canonical expected recovery result. The mandatory matrix now includes
-45 rows: the 33 inherited rows plus six `KCB-01..06` bootstrap kill points and six `KCF-01..06`
-missing/corrupt/swap/replacement/collision rows. Every row has exactly three emulator and one D2
-repetition, 180 prospective injections total, separate from the hard-kill denominator.
+immutable seed plus canonical expected recovery result. The mandatory matrix now includes 46 rows:
+the 33 inherited rows, six `KCB-01..06` bootstrap kill points, six `KCF-01..06` inherited
+confirmation rows and new `KCF-07`, whose correctly encrypted malformed plaintext must decrypt
+successfully and then classify `CORRUPT_KEY_CONFIRMATION` during post-decrypt exact plaintext
+validation. Phase A has three emulator plus one physical D2 repetition per row,
+`46 × 4 = 184` injections. The full physical campaign has one D1, D2 and D5 repetition per row,
+`46 × 3 = 138` injections. Both are separate from the 120-attempt hard-kill denominator per
+candidate.
 
 The normative definitions, encodings, predicates, strata, invalidation rules and fault matrix are
-in `DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_4.md` and machine-readable
-`poc-recovery-gate-set-stage0-v0.4.json` / `poc-recovery-protocol-stage0-v0.4.json`.
+in `DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_5.md` and machine-readable
+`poc-recovery-gate-set-stage0-v0.5.json` / `poc-recovery-protocol-stage0-v0.5.json`.
 
 ## Device and verdict contract
 
@@ -171,14 +181,17 @@ a later, explicit Project-owner authorization. Phase A can produce only `FAIL` o
 
 A full physical verdict requires a separately authorized campaign on physical D1, D2 and D5.
 Purchasing D1 or D5 is not required now. Emulator evidence never substitutes for a required
-physical profile.
+physical profile. A Phase A D2 result may count as the full-campaign D2 repetition only when exact
+commit, protocol/Gate Set version, fixture digest, injection definition, device identity/profile,
+fresh preflight and validity criteria all match; otherwise D2 repeats. Valid reuse leaves 92 D1/D5
+injections. PASS remains forbidden without the complete D1/D2/D5 profile.
 
 ## Review and authority boundary
 
 - The Project owner is the Stage 0 Product/IP reviewer and the only person who may later authorize
   execution. Product/IP approval does not approve crypto engineering or security.
 - A distinct accountable Engineering/Security reviewer, not the package author and not acting as
-  Production Security, must verify the selected v0.4 construction, key confirmation/hierarchy/AAD,
+  Production Security, must verify the selected v0.5 construction, key confirmation/hierarchy/AAD,
   checkpoint/commit semantics, parsers, barriers, durability and recovery state machine before
   execution. That reviewer is currently unassigned. This Codex remediation does not claim formal
   independence.

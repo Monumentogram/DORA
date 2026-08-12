@@ -17,15 +17,16 @@ owner_decision:
 
 recovery_owner_decision:
   id: OD-14
-  status: Prospective_governance_protocol_v0_4_proposed_experiment
+  status: Prospective_governance_protocol_v0_5_proposed_experiment
   approved_on: "2026-08-12"
   owner: "Project owner"
   poc_id: POC-RECOVERY-001
-  gate_set: poc-recovery-stage0-v0.4
-  protocol: poc-recovery-protocol-stage0-v0.4
+  gate_set: poc-recovery-stage0-v0.5
+  protocol: poc-recovery-protocol-stage0-v0.5
   v0_1_disposition: superseded_audit_artifact_non_executable
   v0_2_disposition: superseded_audit_artifact_non_executable
   v0_3_disposition: superseded_sha256_pinned_audit_artifact_non_executable
+  v0_4_disposition: superseded_sha256_pinned_audit_artifact_non_executable
   design_status: DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED
   governance_package_only: true
   implementation_allowed: false
@@ -37,6 +38,12 @@ recovery_owner_decision:
       - D2
     emulator_provenance: docs/evidence/poc-recovery-001/sqlite-platform-provenance.json
     physical_d2_availability: available
+    mandatory_fault_rows: 46
+    emulator_repetitions_per_row: 3
+    physical_d2_repetitions_per_row: 1
+    emulator_injections: 138
+    physical_d2_injections: 46
+    total_injections: 184
     emulator_runtime_sqlite_preflight: pending
     physical_d2_runtime_sqlite_preflight: pending
     required_runtime_sqlite_facts:
@@ -60,6 +67,20 @@ recovery_owner_decision:
     D1_availability: unknown
     D2_availability: available
     D5_availability: unknown
+    mandatory_fault_rows: 46
+    repetitions_per_profile_per_row: 1
+    total_injections: 138
+    phase_a_d2_reuse_requires_exact_match:
+      - exact_commit
+      - protocol_and_gate_set_version
+      - fixture_digest
+      - injection_definition
+      - device_identity_and_profile
+      - fresh_preflight
+      - validity_criteria
+    repeat_d2_on_any_mismatch: true
+    additional_d1_d5_injections_with_valid_d2_reuse: 92
+    pass_requires_complete_d1_d2_d5_profile: true
     status: deferred
     additional_device_procurement_required_now: false
   kill_contract:

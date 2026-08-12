@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "ledgerId": "POC-RECOVERY-001-REC-ADV-V04",
+  "pocId": "POC-RECOVERY-001",
+  "sanitized": true,
+  "sourceReviewedCommit": "c3eae5c3fbe5cba6a96ad827441cfe4e3f1bfc55",
+  "reviewedGateSetVersion": "poc-recovery-stage0-v0.4",
+  "activeRemediationProtocolId": "poc-recovery-protocol-stage0-v0.5",
+  "remediationVersion": "v0.5",
+  "reviewerIdentity": null,
+  "formalReviewer": false,
+  "findings": [
+    {
+      "id": "REC-ADV-V04-001",
+      "title": "taxonomy ambiguity",
+      "severity": "P0",
+      "sourceReviewedCommit": "c3eae5c3fbe5cba6a96ad827441cfe4e3f1bfc55",
+      "affectedArtifacts": [
+        "Gate Set",
+        "protocol",
+        "reconciliation",
+        "fault oracles",
+        "review task and roles",
+        "DEC-044 and OD-14 linkage",
+        "static validators"
+      ],
+      "remediationVersion": "v0.5",
+      "disposition": "CLOSED_BY_CANONICAL_EIGHT_CLASS_ORDERED_POST_DECRYPT_AWARE_TAXONOMY_AND_KCF_07",
+      "evidenceLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_5.md#2-canonical-eight-class-key-taxonomy",
+      "formalReviewer": false
+    },
+    {
+      "id": "REC-ADV-V04-002",
+      "title": "Phase A/full campaign ambiguity",
+      "severity": "P1",
+      "sourceReviewedCommit": "c3eae5c3fbe5cba6a96ad827441cfe4e3f1bfc55",
+      "affectedArtifacts": [
+        "Gate Set",
+        "protocol",
+        "fault campaign",
+        "device matrix",
+        "DEC-044 and OD-14 linkage",
+        "static validators"
+      ],
+      "remediationVersion": "v0.5",
+      "disposition": "CLOSED_BY_SEPARATE_184_INJECTION_PHASE_A_AND_138_INJECTION_FULL_PHYSICAL_PROFILES_WITH_EXACT_D2_REUSE_RULE",
+      "evidenceLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_5.md#3-fault-oracles-and-denominators",
+      "formalReviewer": false
+    },
+    {
+      "id": "REC-ADV-V04-003",
+      "title": "blocker ID mismatch",
+      "severity": "P1",
+      "sourceReviewedCommit": "c3eae5c3fbe5cba6a96ad827441cfe4e3f1bfc55",
+      "affectedArtifacts": [
+        "Gate Set",
+        "readiness.json",
+        "readiness checker",
+        "review task and roles",
+        "static validators"
+      ],
+      "remediationVersion": "v0.5",
+      "disposition": "CLOSED_BY_EXACT_ORDERED_ELEVEN_ID_CANONICAL_BLOCKER_CONTRACT_AND_NEGATIVE_VALIDATION",
+      "evidenceLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_5.md#4-canonical-readiness-blockers",
+      "formalReviewer": false
+    },
+    {
+      "id": "REC-ADV-V04-004",
+      "title": "stale active metadata",
+      "severity": "P2",
+      "sourceReviewedCommit": "c3eae5c3fbe5cba6a96ad827441cfe4e3f1bfc55",
+      "affectedArtifacts": [
+        "Stage Status",
+        "DEC-044",
+        "OD-14",
+        "backlog and implementation readiness",
+        "evidence README/index",
+        "review roles",
+        "device matrix",
+        "SQLite provenance",
+        "readiness.json",
+        "static validators"
+      ],
+      "remediationVersion": "v0.5",
+      "disposition": "CLOSED_BY_EXACT_ACTIVE_V0_5_METADATA_FIELDS_WITH_HISTORICAL_V0_1_TO_V0_4_REFERENCES_RETAINED",
+      "evidenceLocator": "docs/evidence/poc-recovery-001/governance-remediation-v0.5.md#active-metadata",
+      "formalReviewer": false
+    }
+  ]
+}

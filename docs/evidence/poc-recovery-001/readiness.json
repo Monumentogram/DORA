@@ -1,9 +1,10 @@
 {
-  "schemaVersion": 5,
+  "schemaVersion": 6,
   "pocId": "POC-RECOVERY-001",
   "assessedOn": "2026-08-12",
   "status": "BLOCKED_POLICY_AND_EXACT_PACKET_EVIDENCE_CLOSED_ACTUAL_GRAPH_IMPLEMENTATION_REVIEW_PREFLIGHT_EXECUTION_PENDING",
   "executionAllowed": false,
+  "implementationAllowed": false,
   "implementationAllowedByThisPackage": false,
   "measuredExecutionAllowed": false,
   "runtimeDependencyAdded": false,
@@ -19,8 +20,9 @@
     "proposedDecisionPresent": true,
     "exactGateSetPresent": true,
     "machineProtocolPresent": true,
-    "activeGateSetVersion": "poc-recovery-stage0-v0.4",
-    "activeProtocolId": "poc-recovery-protocol-stage0-v0.4",
+    "activeGateSetVersion": "poc-recovery-stage0-v0.5",
+    "activeProtocolId": "poc-recovery-protocol-stage0-v0.5",
+    "governanceRemediationV05Present": true,
     "governanceRemediationV04Present": true,
     "governanceRemediationV03Present": true,
     "governanceRemediationV02Present": true,
@@ -30,6 +32,8 @@
     "v02Executable": false,
     "v03RetainedAsSupersededAuditArtifact": true,
     "v03Executable": false,
+    "v04RetainedAsSupersededAuditArtifact": true,
+    "v04Executable": false,
     "dependencyInventoryPresent": true,
     "licenseNoticeInventoryPresent": true,
     "securityInventoryPresent": true,
@@ -38,6 +42,7 @@
     "reviewFindingsV01LedgerPresent": true,
     "reviewFindingsV02LedgerPresent": true,
     "reviewFindingsV03LedgerPresent": true,
+    "reviewFindingsV04LedgerPresent": true,
     "dependencyIpAuthenticityV03Present": true,
     "ownerProductIpDecisionPresent": true,
     "ownerProductIpDecisionLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md",
@@ -126,7 +131,7 @@
       "priority": "P0",
       "status": "OPEN_UNASSIGNED",
       "owner": "Project owner",
-      "condition": "Assign a distinct accountable recovery Engineering/Security reviewer and record a read-only v0.4 disposition including durable key confirmation; current Codex remediation is not claimed formally independent."
+      "condition": "Assign a distinct accountable recovery Engineering/Security reviewer and record a read-only v0.5 disposition including the canonical eight-class KEY algorithm and separate campaign profiles; current Codex remediation is not claimed formally independent."
     },
     {
       "id": "REC-RDY-03-STREAMING-IMPLEMENTATION-VERIFICATION",
@@ -140,7 +145,7 @@
       "priority": "P0",
       "status": "OPEN_BY_DESIGN",
       "owner": "Future recovery implementation and accountable review tasks",
-      "condition": "Implement and non-metrically verify exact microfile parameters, manifest/AAD parsers, 13-step durable key-confirmation bootstrap, Keystore envelopes, durability, SQLite, path, quarantine and 45-row fault contracts."
+      "condition": "Implement and non-metrically verify exact microfile parameters, manifest/AAD parsers, 13-step durable key-confirmation bootstrap, canonical post-decrypt-aware KEY reconciliation, Keystore envelopes, durability, SQLite, path, quarantine and 46-row fault contracts."
     },
     {
       "id": "REC-RDY-05-FUTURE-RESOLVED-GRAPH",
@@ -161,7 +166,7 @@
       "priority": "P0",
       "status": "OPEN_BY_OWNER_INSTRUCTION",
       "owner": "Future separately scoped implementation task",
-      "condition": "Obtain separate owner implementation scope, then implement and safely non-metrically verify an isolated common harness only after repeat exact-HEAD read-only review and accountable v0.4 Engineering/Security review."
+      "condition": "Obtain separate owner implementation scope, then implement and safely non-metrically verify an isolated common harness only after repeat exact-HEAD read-only review and accountable v0.5 Engineering/Security review."
     },
     {
       "id": "REC-RDY-08-OWNER-EXECUTION-AUTHORIZATION",
@@ -175,7 +180,7 @@
       "priority": "P1",
       "status": "DEFERRED",
       "owner": "Project owner",
-      "condition": "Provide physical D1 and D5 only when a full D1/D2/D5 verdict is later desired; no purchase is required now."
+      "condition": "Provide physical D1 and D5 only when a full 138-injection D1/D2/D5 fault profile is later desired; no purchase is required now, and PASS is forbidden while D1/D5 are deferred."
     },
     {
       "id": "REC-RDY-10-PRODUCTION-LEGAL-SECURITY",
@@ -203,7 +208,13 @@
       "FAIL",
       "INCONCLUSIVE"
     ],
-    "passAllowed": false
+    "passAllowed": false,
+    "faultRows": 46,
+    "emulatorRepetitionsPerRow": 3,
+    "physicalD2RepetitionsPerRow": 1,
+    "phaseATotalInjections": 184,
+    "hardKillAttemptsPerCandidate": 120,
+    "hardKillDenominatorSeparate": true
   },
   "fullVerdict": {
     "requiredPhysicalProfiles": [
@@ -212,6 +223,21 @@
       "D5"
     ],
     "availableNow": false,
-    "deferred": true
+    "deferred": true,
+    "faultRows": 46,
+    "repetitionsPerPhysicalProfilePerRow": 1,
+    "fullPhysicalTotalInjections": 138,
+    "phaseAD2ReuseAllowedOnlyOnExactMatch": [
+      "exact commit",
+      "protocol and Gate Set version",
+      "fixture digest",
+      "injection definition",
+      "device identity and profile",
+      "fresh preflight",
+      "validity criteria"
+    ],
+    "otherwiseRepeatD2": true,
+    "additionalD1D5InjectionsWithValidD2Reuse": 92,
+    "passAllowedWithoutCompleteD1D2D5Profile": false
   }
 }

@@ -1,6 +1,8 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "pocId": "POC-RECOVERY-001",
+  "activeGateSetVersion": "poc-recovery-stage0-v0.5",
+  "activeProtocolId": "poc-recovery-protocol-stage0-v0.5",
   "checkedAtUtc": "2026-08-11T21:34:01.0255427Z",
   "status": "SNAPSHOT_COMPLETE_INDEPENDENT_REVIEW_PENDING",
   "source": {
@@ -110,25 +112,25 @@
       "id": "SEC-REC-01",
       "risk": "Streaming EOF can be confused with authentication/truncation failure if the recovery API contract is handled incorrectly.",
       "source": "https://developers.google.com/tink/streaming-aead/aes_gcm_hkdf_streaming",
-      "mitigationState": "V0_4_INHERITED_DURABLE_ONE_SEGMENT_LOOKAHEAD_AND_EXACT_READ_EOF_RULES_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED"
+      "mitigationState": "V0_5_INHERITED_DURABLE_ONE_SEGMENT_LOOKAHEAD_AND_EXACT_READ_EOF_RULES_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED"
     },
     {
       "id": "SEC-REC-02",
       "risk": "AES-GCM streaming security requires unique key and nonce-prefix combinations and no rewrite at the same segment position under the same key.",
       "source": "https://developers.google.com/tink/encrypt-large-files-or-data-streams",
-      "mitigationState": "V0_4_DURABLE_RUN_KEY_CONFIRMATION_PLUS_INHERITED_FRESH_RUN_KEYSET_ONE_DERIVED_KEY_PER_STREAM_MODEL_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED"
+      "mitigationState": "V0_5_DURABLE_RUN_KEY_CONFIRMATION_PLUS_INHERITED_FRESH_RUN_KEYSET_ONE_DERIVED_KEY_PER_STREAM_MODEL_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED"
     },
     {
       "id": "SEC-REC-03",
       "risk": "StreamingAeadKeyTemplates is deprecated in v1.23.0 and its static helper pulls in broad protobuf/key-type code.",
       "source": "https://github.com/tink-crypto/tink-java/blob/v1.23.0/src/main/java/com/google/crypto/tink/streamingaead/StreamingAeadKeyTemplates.java",
-      "mitigationState": "V0_4_NON_DEPRECATED_KEYSTORE_BUILDER_EXACT_13_STEP_KEY_CONFIRMATION_BOOTSTRAP_AND_REGISTRY_CONFIGURATION_PATH_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED"
+      "mitigationState": "V0_5_NON_DEPRECATED_KEYSTORE_BUILDER_EXACT_13_STEP_KEY_CONFIRMATION_BOOTSTRAP_AND_REGISTRY_CONFIGURATION_PATH_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED"
     },
     {
       "id": "SEC-REC-04",
       "risk": "Implementation could diverge from the selected exact authenticated manifest/AAD/microfile encoding or overclaim anti-rollback without the external controller ledger.",
       "source": "DEC-044",
-      "mitigationState": "V0_4_EXACT_MANIFEST_AAD_KEY_CONFIRMATION_PUBLICATION_TEMP_STATE_AND_LIMITED_ROLLBACK_MODEL_SELECTED_IMPLEMENTATION_VERIFICATION_AND_ACCOUNTABLE_REVIEW_REQUIRED"
+      "mitigationState": "V0_5_EXACT_MANIFEST_AAD_KEY_CONFIRMATION_PUBLICATION_TEMP_STATE_AND_LIMITED_ROLLBACK_MODEL_SELECTED_IMPLEMENTATION_VERIFICATION_AND_ACCOUNTABLE_REVIEW_REQUIRED"
     }
   ],
   "composition": {

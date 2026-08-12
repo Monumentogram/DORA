@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the exact published Tink closure and v0.4 governance/IP boundary without Gradle changes."""
+"""Verify the exact published Tink closure and v0.5 governance/IP boundary without Gradle changes."""
 
 from __future__ import annotations
 
@@ -34,6 +34,8 @@ READINESS_PATH = EVIDENCE / "readiness.json"
 REVIEW_ROLES_PATH = EVIDENCE / "review-roles.json"
 OWNER_DECISION_PATH = ROOT / "docs" / "stage0" / "DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md"
 OWNER_DECISION_INPUT_HEAD = "eb312feb2a0d5e5b24b45fcd045bacca94e8c9da"
+GATE_ID = "poc-recovery-stage0-v0.5"
+PROTOCOL_ID = "poc-recovery-protocol-stage0-v0.5"
 MAVEN_NS = {"m": "http://maven.apache.org/POM/4.0.0"}
 USER_AGENT = "Dora-POC-RECOVERY-001-inventory-verifier/1.0"
 JETBRAINS_COMMIT = "f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c"
@@ -742,7 +744,7 @@ def validate_static(
     readiness: dict[str, Any],
     review_roles: dict[str, Any],
 ) -> None:
-    """Validate the active v0.4 packet and its exact recovery-only boundary."""
+    """Validate the active v0.5 packet and its exact recovery-only boundary."""
 
     require(inventory["schemaVersion"] == 3, "Dependency inventory schema drift")
     require(inventory["rootCoordinate"] == "com.google.crypto.tink:tink-android:1.23.0", "Root coordinate drift")
@@ -882,7 +884,12 @@ def validate_static(
         "License/NOTICE inventory JetBrains record drift",
     )
 
-    require(readiness["schemaVersion"] == 5 and readiness["executionAllowed"] is False and readiness["implementationAllowedByThisPackage"] is False, "Readiness authority boundary drift")
+    require(readiness["schemaVersion"] == 6 and readiness["executionAllowed"] is False and readiness["implementationAllowed"] is False and readiness["implementationAllowedByThisPackage"] is False, "Readiness authority boundary drift")
+    require(
+        readiness["packageArtifacts"]["activeGateSetVersion"] == GATE_ID
+        and readiness["packageArtifacts"]["activeProtocolId"] == PROTOCOL_ID,
+        "Readiness active v0.5 metadata drift",
+    )
     readiness_policy = readiness["dependencyExclusionPolicy"]
     require(
         readiness_policy["policyId"] == "REC-JSR305-EXCLUDE-001"
@@ -896,7 +903,12 @@ def validate_static(
         and readiness_policy["futureResolvedGraphReportPresent"] is False,
         "Readiness recovery-only graph/R8 policy drift",
     )
-    require(review_roles["schemaVersion"] == 5, "Review-role schema drift")
+    require(
+        review_roles["schemaVersion"] == 6
+        and review_roles["activeGateSetVersion"] == GATE_ID
+        and review_roles["activeProtocolId"] == PROTOCOL_ID,
+        "Review-role active v0.5 metadata drift",
+    )
     product_ip = review_roles["roles"]["stage0ProductIp"]
     require(
         product_ip["governancePacketEvidenceDisposition"]["status"] == "CLOSED_VERIFIED"
@@ -1072,7 +1084,7 @@ def main() -> int:
         verify_online(inventory, license_notice, authenticity, jsr305_exclusion)
         print("Verified 8 exact external JAR/POM coordinates online plus immutable JetBrains LICENSE/NOTICE bytes: artifact hashes, publisher checksums, full-fingerprint detached OpenPGP cryptography and identity metadata, signed source JARs for the six multisource coordinates, POM graph/licenses, no native payload, exact Tink JSR305 annotation-only classification, and exact-commit LICENSE/NOTICE SHA-256; temporary files removed")
     else:
-        print("POC-RECOVERY-001 v0.4 dependency/IP static validation passed; exact governance packet authenticity/LICENSE/NOTICE evidence and prospective REC-JSR305-EXCLUDE-001 are closed, future actual :poc:recovery graph/Product-IP disposition remains blocked, repository-wide absence is not claimed, and excluded JSR305 use/distribution is unapproved (use --online for artifact/signature and immutable LICENSE/NOTICE revalidation)")
+        print("POC-RECOVERY-001 v0.5 dependency/IP static validation passed; exact governance packet authenticity/LICENSE/NOTICE evidence and prospective REC-JSR305-EXCLUDE-001 are closed, future actual :poc:recovery graph/Product-IP disposition remains blocked, repository-wide absence is not claimed, and excluded JSR305 use/distribution is unapproved (use --online for artifact/signature and immutable LICENSE/NOTICE revalidation)")
     return 0
 
 

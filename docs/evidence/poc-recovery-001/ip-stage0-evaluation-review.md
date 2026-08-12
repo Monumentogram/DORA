@@ -3,6 +3,8 @@
 Status: **POLICY AND EXACT GOVERNANCE AUTHENTICITY/LICENSE/NOTICE EVIDENCE CLOSED — ACTUAL GRAPH, IMPLEMENTATION AND EXECUTION BLOCKED**\
 Prepared: 12 August 2026\
 Evaluation candidate: `com.google.crypto.tink:tink-android:1.23.0`\
+Active Gate Set: `poc-recovery-stage0-v0.5`\
+Active protocol: `poc-recovery-protocol-stage0-v0.5`\
 Execution allowed: **no**
 
 ## Review conclusion
@@ -17,7 +19,9 @@ Product/IP reviewer approved only prospective policy `REC-JSR305-EXCLUDE-001` an
 governance package for a future exact excluded Stage 0 graph. The package is not approved for
 implementation, evaluation execution, dependency admission, redistribution or production.
 Protocol v0.3 at reviewed commit `c61603d30c01c72347aa205c247729ad534c2882` received four final
-advisory findings; prospective protocol v0.4 remediates them and requires repeat exact-commit
+advisory findings; historical protocol v0.4 remediated them. Active prospective protocol v0.5
+remediates `REC-ADV-V04-001..004` from source commit
+`c3eae5c3fbe5cba6a96ad827441cfe4e3f1bfc55` and requires repeat exact-commit
 review. This document does not identify a
 sanitized prior reviewer or claim formal independence for Codex.
 
@@ -131,7 +135,7 @@ empty query is not proof of security and does not approve the recovery protocol.
 
 ## Prospective crypto/protocol design remains verification-blocking
 
-Protocol v0.4 inherits the exact SHA-256-pinned v0.3 contract and selects, but does not implement or prove:
+Protocol v0.5 inherits the exact SHA-256-pinned v0.4/v0.3 contract and selects, but does not implement or prove:
 
 1. public AES-GCM-HKDF `StreamingAead` with 16-byte input/derived key, SHA-256, 4096-byte segments,
    one derived AES key per stream and `DURABLE_ONE_SEGMENT_LOOKAHEAD`;
@@ -141,16 +145,18 @@ Protocol v0.4 inherits the exact SHA-256-pinned v0.3 contract and selects, but d
    `DORA_RECOVERY_MANIFEST_V1_BINARY_BE`;
 4. four inherited AAD schemas plus exact separate `DORAKC01` plaintext / `DORAKA01` AAD schemas,
    the non-deprecated Keystore Builder access path, durable ninth-family key-confirmation
-   ciphertext and v0.4 error precedence;
+   ciphertext and the v0.5 canonical eight-class ordered KEY algorithm with plaintext validation only after decrypt;
 5. exact 9/13/21 publication sequences, `final + ".tmp"` namespace, five reconciliation states,
    collision/no-overwrite and all final/temp containment/lstat/regular/no-symlink checks;
 6. successful SQLite `endTransaction()` return as semantic commit, WAL/FULL SQLite, deterministic
    UNIQUE processing intents and controller-ledger rollback scope; and
-7. candidate-specific K01–K12 barriers with durable bootstrap prerequisite and the 45-row matrix:
-   33 inherited rows plus exact `KCB-01..06` and `KCF-01..06`.
+7. candidate-specific K01–K12 barriers with durable bootstrap prerequisite and the 46-row matrix:
+   33 inherited rows plus exact `KCB-01..06`, `KCF-01..06` and post-decrypt malformed-plaintext
+   `KCF-07`; separate Phase A 184-injection and full physical 138-injection profiles remain outside
+   the 120-attempt hard-kill denominator.
 
 Each selected item has status `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`. A distinct
-accountable recovery Engineering/Security reviewer must verify or revise the exact v0.4 contract
+accountable recovery Engineering/Security reviewer must verify or revise the exact v0.5 contract
 and later implementation evidence before execution.
 
 ## SQLite provenance boundary
@@ -168,7 +174,7 @@ recovery-only platform boundary does not admit a production schema or component.
 | Reviewer | Requested disposition | Current state |
 |---|---|---|
 | Project owner / Stage 0 Product/IP | prospective policy and exact governance authenticity/LICENSE/NOTICE evidence | policy closed/approved and packet evidence closed/verified; future actual graph/package/R8 disposition open/blocking; excluded JSR-305 terms uninterpreted and use/distribution unapproved |
-| Distinct accountable recovery Engineering/Security | verify, reject or revise selected v0.4 construction/key-confirmation/commit/recovery/barrier/fault protocol; later verify implementation evidence | unassigned, blocking; current Codex remediation not claimed independent |
+| Distinct accountable recovery Engineering/Security | verify, reject or revise selected v0.5 construction/key-confirmation/commit/recovery/barrier/fault/campaign protocol; later verify implementation evidence | unassigned, blocking; current Codex remediation not claimed independent |
 | Project owner / execution | after all other prerequisites, separately set `executionAllowed=true` for a named phase/commit | withheld |
 | Production Legal | production/redistribution assessment | unassigned; not required for package preparation, required before production |
 | Production Security | production admission assessment | separate future gate; not replaced |

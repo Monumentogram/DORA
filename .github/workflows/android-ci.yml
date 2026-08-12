@@ -62,7 +62,7 @@ jobs:
         run: python3 tools/validate_poc_search.py
 
       - name: Validate recovery governance package
-        run: python3 tools/validate_poc_recovery_governance.py
+        run: python3 tools/validate_poc_recovery_governance.py --self-test
 
       - name: Verify exact recovery dependency inventory
         run: python3 tools/verify_poc_recovery_dependency_inventory.py --online

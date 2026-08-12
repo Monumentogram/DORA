@@ -199,10 +199,10 @@ itself. Any firmware, API, ABI or runtime SQLite drift creates a new environment
 a package delta review.
 
 The Project owner is the assigned Stage 0 Product/IP reviewer for this package. Under recovery
-protocol v0.4, prospective `REC-JSR305-EXCLUDE-001` policy is closed/approved and exact governance
+active protocol v0.5, prospective `REC-JSR305-EXCLUDE-001` policy is closed/approved and exact governance
 packet authenticity plus LICENSE/NOTICE evidence is closed/verified. The future actual recovery
 graph/package/R8 evidence and its scoped Product/IP disposition remain open/blocking; their final
-approval identity/date fields remain null. Unlike the search-specific `OD-11` boundary, recovery protocol v0.4 and
+approval identity/date fields remain null. Unlike the search-specific `OD-11` boundary, recovery protocol v0.5 and
 platform durability require a distinct accountable Engineering/Security reviewer plus
 implementation verification before execution. The current Codex remediation does not claim
 formal independence. That future review does not replace Production Security. Production Legal
