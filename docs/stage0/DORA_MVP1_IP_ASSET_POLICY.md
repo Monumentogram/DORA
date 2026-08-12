@@ -184,8 +184,10 @@ stable nested SQLite binary is exposed, the recovery-only Stage 0 provenance cla
 - manufacturer/model and assigned D-profile, without serial or unique hardware identifier;
 - Android version/API, full sanitized build fingerprint or build ID, security patch and primary ABI;
 - page size and sanitized verified-boot state when publicly queryable without privilege;
-- runtime `sqlite_version()`, a deterministic digest of sorted `PRAGMA compile_options`, and the
-  effective `journal_mode` and `synchronous` values;
+- runtime `sqlite_version()` and `sqlite_source_id()`; a SHA-256 of exact
+  `PRAGMA compile_options` rows sorted lexicographically, UTF-8 encoded, LF-joined and terminated by
+  one LF; and the effective `journal_mode=WAL`, `synchronous=FULL`, `wal_autocheckpoint=0` and
+  `foreign_keys=ON` values;
 - exact authorized Dora commit/protocol and collection timestamp; and
 - confirmation that no separate SQLite, Room or SQLCipher artifact is downloaded, bundled or
   redistributed.
@@ -196,11 +198,13 @@ behavior being evaluated. The digest scope/identity must never be described as a
 itself. Any firmware, API, ABI or runtime SQLite drift creates a new environment record and requires
 a package delta review.
 
-The Project owner is the Stage 0 Product/IP reviewer for this package. Unlike the search-specific
-`OD-11` boundary, recovery crypto/template/protocol and platform durability require a separately
-assigned independent Engineering/Security reviewer before execution. That review does not replace
-Production Security. Production Legal remains unassigned, and both production Legal/Security plus
-normal SBOM/distribution review are required before any production admission.
+The Project owner is the assigned Stage 0 Product/IP reviewer for this package; final approval
+fields remain null. Unlike the search-specific `OD-11` boundary, recovery protocol v0.2 and
+platform durability require a distinct accountable Engineering/Security reviewer plus
+implementation verification before execution. The current Codex remediation does not claim
+formal independence. That future review does not replace Production Security. Production Legal
+and Production Security remain null, and both plus normal SBOM/distribution review are required
+before any production admission.
 
 This exception is invalid if the PoC adds Room, SQLCipher, WorkManager, a custom SQLite build,
 production tables/migrations or another bundled database. Such a change requires a new scoped

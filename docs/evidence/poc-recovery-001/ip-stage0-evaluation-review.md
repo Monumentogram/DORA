@@ -1,15 +1,17 @@
 # POC-RECOVERY-001 exact Stage 0 evaluation package review
 
-Status: **PACKAGE READY — PRODUCT/IP AND INDEPENDENT ENGINEERING/SECURITY REVIEW PENDING**\
+Status: **SUPPLY-CHAIN EVIDENCE RETAINED — OWNER-REMEDIATED PROTOCOL v0.2 RE-REVIEW PENDING**\
 Prepared: 12 August 2026\
 Evaluation candidate: `com.google.crypto.tink:tink-android:1.23.0`\
 Execution allowed: **no**
 
 ## Review conclusion
 
-The evidence packet is sufficiently exact to present for review, but it is not approved for
-evaluation execution, dependency admission, redistribution or production. The owner authorized
-preparation of this package only.
+The supply-chain evidence packet remains sufficiently exact to present for review, but it is not
+approved for evaluation execution, dependency admission, redistribution or production. Protocol
+v0.1 at reviewed commit `87f8c00c6afce0f658678a7a09b1a394b89a2454` received the owner-supplied
+disposition `CHANGES_REQUIRED`; owner-remediated protocol v0.2 now requires repeat review. This
+document does not identify the prior reviewer or claim formal independence for Codex.
 
 The exact root JAR/POM and seven external transitive coordinates are hashed and inventoried. The
 root is a Java JAR with no native/JNI entries and contains a shaded protobuf-java 4.33.6 runtime.
@@ -55,37 +57,42 @@ old Streaming AEAD segment-counter overflow fix, an HKDF direct-buffer memory fi
 Keystore large-input fix, all predating v1.23.0. These checks reduce known-version uncertainty; an
 empty query is not proof of security and does not approve the recovery protocol.
 
-## Crypto/protocol review remains blocking
+## Owner-remediated crypto/protocol design remains verification-blocking
 
-The independent reviewer must resolve at least these questions before execution:
+Protocol v0.2 selects, but does not implement or prove:
 
-1. Can public `StreamingAead` v1.23.0 expose an authenticatable committed prefix after abrupt
-   truncation without internal APIs, and how is EOF distinguished from authentication failure?
-2. Is the Proposed `AES128_GCM_HKDF_4KB` parameter set appropriate for this experiment, and which
-   non-deprecated public construction path freezes those exact parameters?
-3. What exact Tink `Aead` template, manifest encoding, generation/AAD binding and anti-rollback
-   rule are used for microfiles?
-4. Does the Android Keystore wrapping and run/segment key hierarchy prevent reuse, replacement of
-   a missing key and key material leakage while making key loss distinguishable from corruption?
-5. Are data/manifest/SQLite ordering, filesystem sync/rename semantics and all 12 hard-kill
-   barriers sufficient to support the normative commit point on API 28+ devices?
-6. Do quarantine, idempotency and cleanup remain fail-closed under every matrix case?
+1. public AES-GCM-HKDF `StreamingAead` with 16-byte input/derived key, SHA-256, 4096-byte segments,
+   one derived AES key per stream and `DURABLE_ONE_SEGMENT_LOOKAHEAD`;
+2. exact 4056/4080 read accounting, `q`/`R` equations, exception-buffer discard and authenticated
+   `read()==-1` EOF semantics;
+3. `AES256_GCM_TINK_IV12_TAG16` five-second microfiles and exact
+   `DORA_RECOVERY_MANIFEST_V1_BINARY_BE`;
+4. four exact big-endian/LP16 AAD schemas and Android Keystore encrypted-keyset/error contract;
+5. successful SQLite `endTransaction()` return as semantic commit, immutable file publication,
+   WAL/FULL SQLite, deterministic UNIQUE processing intents and controller-ledger rollback scope;
+6. candidate-specific K01–K12 barriers and expanded replay/rollback/key/parser/path/quarantine/event
+   fault matrix.
+
+Each selected item has status `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`. A distinct
+accountable recovery Engineering/Security reviewer must verify or revise the exact v0.2 contract
+and later implementation evidence before execution.
 
 ## SQLite provenance boundary
 
 The future journal may use only platform `android.database.sqlite` for PoC-local split-brain
 tests. The API 36 Google APIs x86_64 r07 emulator archive is pinned by official SHA-1 and computed
 SHA-256 and reuses only the existing immutable system-image provenance. Physical D2 has exact
-sanitized firmware identity, but its runtime SQLite version, compile-options digest, effective
-journal/synchronous modes and fresh exact-commit preflight are not yet recorded. D1/D5 are
-unavailable. This recovery-only platform boundary does not admit a production schema or component.
+sanitized firmware identity, but fresh emulator and D2 runtime `sqlite_version()`,
+`sqlite_source_id()`, canonical compile-options digest and effective
+WAL/FULL/zero-autocheckpoint/foreign-key values are not recorded. D1/D5 are unavailable. This
+recovery-only platform boundary does not admit a production schema or component.
 
 ## Requested reviewer dispositions
 
 | Reviewer | Requested disposition | Current state |
 |---|---|---|
-| Project owner / Stage 0 Product/IP | approve, reject or request changes to exact evaluation scope, license/NOTICE/provenance package | pending |
-| Independent recovery Engineering/Security | approve, reject or revise template/key/commit/recovery/kill/fault protocol | unassigned, blocking |
+| Project owner / Stage 0 Product/IP | approve, reject or request changes to exact remediated evaluation scope and license/NOTICE/provenance package | assigned; final approval fields null |
+| Distinct accountable recovery Engineering/Security | verify, reject or revise selected v0.2 construction/key/commit/recovery/barrier/fault protocol; later verify implementation evidence | unassigned, blocking; current Codex remediation not claimed independent |
 | Project owner / execution | after all other prerequisites, separately set `executionAllowed=true` for a named phase/commit | withheld |
 | Production Legal | production/redistribution assessment | unassigned; not required for package preparation, required before production |
 | Production Security | production admission assessment | separate future gate; not replaced |

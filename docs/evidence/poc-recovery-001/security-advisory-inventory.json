@@ -110,25 +110,25 @@
       "id": "SEC-REC-01",
       "risk": "Streaming EOF can be confused with authentication/truncation failure if the recovery API contract is handled incorrectly.",
       "source": "https://developers.google.com/tink/streaming-aead/aes_gcm_hkdf_streaming",
-      "mitigationState": "PENDING_PUBLIC_API_CHECKPOINT_PROOF"
+      "mitigationState": "V0_2_DURABLE_ONE_SEGMENT_LOOKAHEAD_AND_EXACT_READ_EOF_RULES_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED"
     },
     {
       "id": "SEC-REC-02",
       "risk": "AES-GCM streaming security requires unique key and nonce-prefix combinations and no rewrite at the same segment position under the same key.",
       "source": "https://developers.google.com/tink/encrypt-large-files-or-data-streams",
-      "mitigationState": "PROPOSED_UNIQUE_RUN_AND_SEGMENT_KEY_PROTOCOL_PENDING_REVIEW"
+      "mitigationState": "V0_2_FRESH_RUN_KEYSET_ONE_DERIVED_KEY_PER_STREAM_AND_NONCE_PREFIX_INDEX_LAST_FLAG_MODEL_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED"
     },
     {
       "id": "SEC-REC-03",
       "risk": "StreamingAeadKeyTemplates is deprecated in v1.23.0 and its static helper pulls in broad protobuf/key-type code.",
       "source": "https://github.com/tink-crypto/tink-java/blob/v1.23.0/src/main/java/com/google/crypto/tink/streamingaead/StreamingAeadKeyTemplates.java",
-      "mitigationState": "PROPOSED_TEMPLATE_NAME_ONLY; CURRENT_PUBLIC_CONSTRUCTION_PATH_UNAPPROVED"
+      "mitigationState": "V0_2_NON_DEPRECATED_PARAMETERS_KEYSET_HANDLE_AND_REGISTRY_CONFIGURATION_PATH_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED"
     },
     {
       "id": "SEC-REC-04",
-      "risk": "Authenticated manifest encoding, anti-rollback generation binding and microfile AEAD template are not yet selected.",
+      "risk": "Implementation could diverge from the selected exact authenticated manifest/AAD/microfile encoding or overclaim anti-rollback without the external controller ledger.",
       "source": "DEC-044",
-      "mitigationState": "PENDING_INDEPENDENT_ENGINEERING_SECURITY_REVIEW"
+      "mitigationState": "V0_2_EXACT_MANIFEST_AAD_MICROFILE_AND_LIMITED_ROLLBACK_MODEL_SELECTED_IMPLEMENTATION_VERIFICATION_AND_ACCOUNTABLE_REVIEW_REQUIRED"
     }
   ],
   "composition": {

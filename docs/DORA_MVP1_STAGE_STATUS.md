@@ -11,7 +11,7 @@ Stage 0C merge commit: `849d9d0406a619b334c9b707a4b6b42b34885b4b`
 Active stage: `Stage 0D — POC-RECOVERY-001 governance/readiness package`
 Active branch: `stage/0d-poc-recovery-governance`
 Active PoC: `POC-RECOVERY-001`
-Stage state: **PACKAGE READY FOR REVIEW — IMPLEMENTATION AND EXECUTION BLOCKED**
+Stage state: **GOVERNANCE REMEDIATION v0.2 READY FOR RE-REVIEW — IMPLEMENTATION AND EXECUTION BLOCKED**
 
 ## Stage 00 closure
 
@@ -69,23 +69,35 @@ campaign are deferred to separately authorized future scope.
 
 ## Stage 0D governance/readiness scope
 
-Stage 0D prepares and publishes only the governance/readiness package for `POC-RECOVERY-001`.
-Proposed `DEC-044`, the exact recovery Gate Set and machine protocol freeze the owner constraints:
-public Tink Streaming AEAD versus sealed five-second Tink AEAD microfiles with authenticated
-manifest, zero committed-byte loss, per-valid-kill tail loss no more than five seconds, 120 base
-hard kills/candidate and at least 100 valid. Fifteen/30-second microfiles are non-PASS observations
-or post-failure fallbacks.
+Stage 0D prepares and remediates only the governance/readiness package for `POC-RECOVERY-001`.
+The first package at reviewed commit `87f8c00c6afce0f658678a7a09b1a394b89a2454` received
+`CHANGES_REQUIRED`. Proposed `DEC-044` and owner-linked Gate Set/protocol `stage0-v0.2` now fix the
+prospective design semantics: public AES-GCM-HKDF Streaming AEAD with
+`DURABLE_ONE_SEGMENT_LOOKAHEAD` versus sealed five-second `AES256_GCM_TINK_IV12_TAG16` microfiles
+and exact authenticated binary manifest. Gate Set/protocol v0.1 remain superseded audit artifacts
+and cannot govern future execution.
+
+The v0.2 contract fixes one derived AES key per streaming ciphertext stream, exact lookahead/read
+math and 8160-byte/0.255-second streaming design bound; deterministic big-endian AAD and manifest;
+Android Keystore encrypted-keyset/error rules; successful SQLite `endTransaction()` as semantic
+commit; immutable file publication, containment and quarantine; WAL/FULL SQLite rows with exact
+names/lengths/digests and UNIQUE deterministic processing intents; candidate-specific K01–K12
+barriers; and the expanded replay/rollback/key/parser/path/quarantine/event fault matrix. The
+original safety gates remain zero committed-byte loss, no more than five seconds tail per valid
+kill, 12 strata, 120 base kills/candidate, at least 100 valid and at least eight valid/stratum.
+Fifteen/30-second microfiles remain non-PASS observations or post-failure fallbacks.
 
 The exact `tink-android:1.23.0` published JAR/POM/transitive closure, SHA-256 values,
 license/NOTICE/patent evidence, relevant advisory history, non-native composition and shaded
 protobuf 4.33.6 are recorded under `docs/evidence/poc-recovery-001/`. This is package preparation,
 not dependency admission. No Tink coordinate was added to Gradle.
 
-Phase A is permitted in principle on the pinned emulator and available physical D2, but actual
-execution is withheld. Without D1/D5 Phase A can produce only `FAIL` or `INCONCLUSIVE`. A full
-physical verdict requires D1/D2/D5; D1/D5 procurement is deferred. The Project owner is assigned as
-Stage 0 Product/IP reviewer, while the independent recovery Engineering/Security reviewer is
-unassigned and blocking. Production Legal is unassigned and Production Security remains separate.
+Phase A is described only prospectively for the pinned emulator and available physical D2; actual
+execution is withheld. Without D1/D5 it can produce only `FAIL` or `INCONCLUSIVE`. A full physical
+verdict requires D1/D2/D5; D1/D5 procurement is deferred. The Project owner is assigned as Stage 0
+Product/IP reviewer, but final approval remains null. A distinct accountable recovery
+Engineering/Security reviewer is unassigned and blocking; the current Codex remediation does not
+claim formal independence. Production Legal and Production Security remain null and separate.
 
 No `:poc:recovery`, recovery harness, production schema, `:app` change, kill campaign, device run,
 benchmark or recovery measurement exists. The fail-closed readiness record remains
@@ -118,19 +130,22 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - `OD-11`: Project owner is Product and IP policy reviewer and acts as Engineering/Security reviewer only for Stage 0 evaluation. This does not replace production Legal or independent production Security. Embedded platform SQLite may use the containing system-image digest plus exact image/runtime identity for Stage 0; that boundary must be reconsidered before production admission.
 - `OD-12`: Project owner prospectively approves Option B for `stage0-v0.2`, based on the local-MVP storage/update/one-second visibility balance and not on prior Dora results. Benchmark execution remains separately withheld.
 - `OD-13`: Project owner approves the exact 66-component/license/NOTICE/platform package only for internal synthetic Stage 0 evaluation and accepts formal `INCONCLUSIVE` closure without a new benchmark. This is not production Legal/Security approval, does not admit FTS4 automatically, is not retroactive, and leaves D1/D3 plus measured execution deferred.
-- `OD-14`: Project owner freezes the recovery governance constraints and authorizes only preparation of the exact Stage 0 package. Proposed template/protocol review, independent recovery Engineering/Security approval and a later separate owner execution authorization remain mandatory; `executionAllowed=false`.
+- `OD-14`: Project owner freezes recovery governance protocol v0.2 after `CHANGES_REQUIRED` and authorizes only documentary/static remediation. The selected construction remains `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`; Product/IP final approval, distinct accountable Engineering/Security review, implementation verification and later separate owner execution authorization remain mandatory; `executionAllowed=false`.
 
 ## Current gates and blockers
 
 - `POC-RECOVERY-001` remains `BLOCKED`, not READY. Proposed `DEC-044`, Gate Set
-  `poc-recovery-stage0-v0.1`, exact machine protocol and evidence package exist, but package review
-  and independent recovery Engineering/Security approval are absent.
+  `poc-recovery-stage0-v0.2`, exact machine protocol and remediation evidence exist. v0.1 is a
+  superseded audit artifact. Product/IP final approval and a distinct accountable recovery
+  Engineering/Security reviewer/approval are absent.
 - The exact published Tink closure is inventoried without Gradle wiring. A future harness-resolved
   graph remains a P0 pre-execution check because repository Kotlin alignment may differ from the
   publisher POM closure. No runtime dependency or production admission exists.
-- Phase A execution is separately withheld. D2 hardware exists, but its recovery SQLite runtime
-  preflight is pending. D1/D5 are unavailable, so Phase A PASS is structurally forbidden and the
-  full physical verdict is deferred.
+- No recovery implementation or non-metric implementation verification exists. Phase A execution
+  is separately withheld. Fresh emulator and D2 recovery preflight must record effective WAL/FULL,
+  `wal_autocheckpoint=0`, `foreign_keys=ON`, `sqlite_version()`, `sqlite_source_id()` and canonical
+  compile-options digest; all runtime fields remain null. D1/D5 are unavailable, so Phase A PASS is
+  structurally forbidden and the full physical verdict is deferred.
 - `tools/check_poc_recovery_run_readiness.py` must fail closed while
   `executionAllowed=false`; completion of any prerequisite cannot silently authorize execution.
 - `POC-SEARCH-001` retains its frozen generated-scale observations. The earlier valid full result
@@ -196,14 +211,14 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 
 ## Next safe action
 
-Review the Stage 0D recovery package without starting implementation or execution. The Project
-owner must record the Product/IP disposition and assign an independent recovery
-Engineering/Security reviewer. That reviewer must approve or revise the crypto template, public
-Streaming AEAD checkpoint proof, microfile manifest/key protocol, SQLite durability and complete
-kill/fault state machine. Only a later, separately scoped task may implement the isolated harness;
-only after safe verification, exact resolved-graph/device preflight and a still later explicit
-Project-owner authorization may `executionAllowed` become true. The Draft PR must not be merged in
-this task.
+Perform a repeat read-only review of the exact remediation commit without implementation or
+execution. The Project owner must record the Product/IP final disposition and assign a distinct
+accountable recovery Engineering/Security reviewer. That reviewer must verify or require revision
+of the selected v0.2 Streaming/microfile construction, manifest/key/AAD contract, commit/durability,
+SQLite profile, public barriers and complete fault/recovery state machine. Only a later separately
+scoped task may implement and non-metrically verify the isolated harness; only after exact resolved
+Gradle graph and fresh device/SQLite preflight may a still later owner record change
+`executionAllowed`. Draft PR #11 must remain unmerged.
 
 ## Update protocol
 

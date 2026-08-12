@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "pocId": "POC-RECOVERY-001",
-  "status": "RECOVERY_STAGE0_PLATFORM_BOUNDARY_PROPOSED_PREFLIGHT_INCOMPLETE",
+  "status": "RECOVERY_STAGE0_V0_2_SQLITE_PROFILE_SELECTED_FRESH_PREFLIGHT_INCOMPLETE",
   "decisionId": "OD-14",
   "policyLocator": "docs/stage0/DORA_MVP1_IP_ASSET_POLICY.md#582-stage-0-recovery-platform-sqlite-boundary-od-14",
   "scope": "PoC-local DB/file split-brain and reconciliation journal only",
@@ -38,6 +38,19 @@
           "sqliteVersionObservedPreviously": "3.44.3",
           "freshRecoveryPreflightRequired": true
         },
+        "requiredFreshRuntimeEvidence": {
+          "sqliteVersion": null,
+          "sqliteSourceId": null,
+          "sqliteCompileOptionsCount": null,
+          "sqliteCompileOptionsCanonicalSha256": null,
+          "effectiveJournalMode": null,
+          "effectiveSynchronousMode": null,
+          "effectiveWalAutocheckpoint": null,
+          "effectiveForeignKeys": null,
+          "collectedAtUtc": null,
+          "exactAuthorizedCommit": null,
+          "protocolId": null
+        },
         "sourceEvidenceLocator": "docs/evidence/poc-search-001/android-system-image-provenance.json",
         "reuseBoundary": "Only the immutable platform provenance is reused; no POC-SEARCH-001 harness, result or benchmark is reused."
       },
@@ -60,12 +73,17 @@
         "requiredFreshRuntimeEvidence": {
           "fullSanitizedBuildFingerprint": null,
           "sqliteVersion": null,
-          "sqliteCompileOptionsDigest": null,
+          "sqliteSourceId": null,
+          "sqliteCompileOptionsCount": null,
+          "sqliteCompileOptionsCanonicalSha256": null,
           "effectiveJournalMode": null,
           "effectiveSynchronousMode": null,
+          "effectiveWalAutocheckpoint": null,
+          "effectiveForeignKeys": null,
           "verifiedBootStateSanitized": null,
           "collectedAtUtc": null,
-          "exactAuthorizedCommit": null
+          "exactAuthorizedCommit": null,
+          "protocolId": null
         },
         "individualSQLiteBinaryDigestRequiredForStage0Recovery": false,
         "reason": "An unrooted owner device does not expose a canonical redistributable firmware archive or stable nested SQLite binary for hashing; the recovery-only Stage 0 boundary uses exact sanitized firmware/runtime identity and runtime SQLite facts.",
@@ -87,7 +105,9 @@
   },
   "preExecutionRules": [
     "Record fresh exact-commit runtime SQLite identity for every participating environment.",
-    "Record SELECT sqlite_version(), compile_options digest, effective journal_mode and synchronous mode.",
+    "Record sqlite_version(), sqlite_source_id(), compile-options count and canonical SHA-256, and effective journal_mode, synchronous, wal_autocheckpoint and foreign_keys values.",
+    "Require effective journal_mode=WAL, synchronous=FULL, wal_autocheckpoint=0 and foreign_keys=ON; any mismatch blocks execution.",
+    "Canonicalize compile options as exact rows sorted lexicographically, UTF-8 encoded, joined by LF and terminated by one LF.",
     "Record no separate SQLite, Room or SQLCipher artifact in the future resolved graph.",
     "Any system image, firmware/build, API, ABI or SQLite drift requires a new provenance record and package delta review.",
     "Do not infer production support or admission from this Stage 0 platform boundary."

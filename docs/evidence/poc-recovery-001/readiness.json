@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "pocId": "POC-RECOVERY-001",
   "assessedOn": "2026-08-12",
-  "status": "BLOCKED_PACKAGE_REVIEW_PENDING",
+  "status": "BLOCKED_REMEDIATED_PROTOCOL_V0_2_REVIEW_AND_IMPLEMENTATION_PENDING",
   "executionAllowed": false,
   "implementationAllowedByThisPackage": false,
   "measuredExecutionAllowed": false,
@@ -17,40 +17,56 @@
     "proposedDecisionPresent": true,
     "exactGateSetPresent": true,
     "machineProtocolPresent": true,
+    "activeGateSetVersion": "poc-recovery-stage0-v0.2",
+    "activeProtocolId": "poc-recovery-protocol-stage0-v0.2",
+    "governanceRemediationV02Present": true,
+    "v01RetainedAsSupersededAuditArtifact": true,
+    "v01Executable": false,
     "dependencyInventoryPresent": true,
     "licenseNoticeInventoryPresent": true,
     "securityInventoryPresent": true,
     "sqliteProvenanceExtensionPresent": true,
     "reviewRolesPresent": true
   },
+  "approvals": {
+    "productIpFinalApproved": false,
+    "approvedReviewer": null,
+    "approvedOn": null,
+    "accountableEngineeringSecurityReviewer": null,
+    "currentCodexReviewClaimedFormallyIndependent": false,
+    "executionAuthorizedBy": null,
+    "executionAuthorizedOn": null,
+    "productionLegalReviewer": null,
+    "productionSecurityReviewer": null
+  },
   "blockers": [
     {
-      "id": "REC-RDY-01-PACKAGE-REVIEW",
+      "id": "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
       "priority": "P0",
       "status": "OPEN",
       "owner": "Project owner",
-      "condition": "Review and explicitly approve or reject the exact governance and Product/IP package for Stage 0 evaluation."
+      "condition": "Record final Product/IP approval or rejection for the exact remediation commit; approvedReviewer and approvedOn remain null."
     },
     {
-      "id": "REC-RDY-02-INDEPENDENT-ENGINEERING-SECURITY",
+      "id": "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
       "priority": "P0",
       "status": "OPEN_UNASSIGNED",
       "owner": "Project owner",
-      "condition": "Assign an independent recovery Engineering/Security reviewer and record approval or required changes."
+      "condition": "Assign a distinct accountable recovery Engineering/Security reviewer and record a read-only v0.2 disposition; current Codex remediation is not claimed formally independent."
     },
     {
-      "id": "REC-RDY-03-STREAMING-CHECKPOINT-PROOF",
+      "id": "REC-RDY-03-STREAMING-IMPLEMENTATION-VERIFICATION",
       "priority": "P0",
-      "status": "OPEN",
-      "owner": "Independent recovery Engineering/Security reviewer",
-      "condition": "Approve a public-API-only StreamingAead commit/checkpoint and truncated-prefix proof including EOF versus authentication-failure handling."
+      "status": "OPEN_BY_DESIGN",
+      "owner": "Future recovery implementation and accountable review tasks",
+      "condition": "Implement and non-metrically verify exact public construction, DURABLE_ONE_SEGMENT_LOOKAHEAD, q/R math, read accounting, EOF handling and public barriers."
     },
     {
-      "id": "REC-RDY-04-MICROFILE-CRYPTO-PROTOCOL",
+      "id": "REC-RDY-04-MICROFILE-IMPLEMENTATION-VERIFICATION",
       "priority": "P0",
-      "status": "OPEN",
-      "owner": "Independent recovery Engineering/Security reviewer",
-      "condition": "Approve the exact microfile AEAD template, authenticated manifest encoding, key hierarchy, AAD and anti-rollback rules."
+      "status": "OPEN_BY_DESIGN",
+      "owner": "Future recovery implementation and accountable review tasks",
+      "condition": "Implement and non-metrically verify exact microfile parameters, manifest/AAD parsers, Keystore envelopes, durability, SQLite, path, quarantine and fault contracts."
     },
     {
       "id": "REC-RDY-05-FUTURE-RESOLVED-GRAPH",
@@ -64,14 +80,14 @@
       "priority": "P0",
       "status": "OPEN",
       "owner": "Future authorized preflight task",
-      "condition": "Record exact-commit emulator and D2 runtime SQLite/provenance facts and approve the journal mode/durability profile."
+      "condition": "Record exact-commit emulator and D2 effective WAL/FULL/zero-autocheckpoint/foreign-key values, sqlite_version(), sqlite_source_id() and canonical compile-options digest; any mismatch blocks execution."
     },
     {
       "id": "REC-RDY-07-HARNESS-ABSENT",
       "priority": "P0",
       "status": "OPEN_BY_OWNER_INSTRUCTION",
       "owner": "Future separately scoped implementation task",
-      "condition": "Implement and safely verify an isolated common harness only after package/review approval."
+      "condition": "Implement and safely non-metrically verify an isolated common harness only after Product/IP and accountable v0.2 review."
     },
     {
       "id": "REC-RDY-08-OWNER-EXECUTION-AUTHORIZATION",

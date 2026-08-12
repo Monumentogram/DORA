@@ -1,34 +1,40 @@
 # POC-RECOVERY-001 governance/readiness evidence
 
-Status: **PACKAGE READY FOR REVIEW — EXECUTION BLOCKED**\
+Status: **OWNER-REMEDIATED PROTOCOL v0.2 READY FOR RE-REVIEW — EXECUTION BLOCKED**\
 Date: 12 August 2026\
 Branch: `stage/0d-poc-recovery-governance`\
 Measured execution: **none**
 
 This directory contains only public governance, provenance and review evidence for the proposed
-Stage 0 recovery experiment. It contains no harness, recovery module, dependency lock from a
-runtime graph, device result, benchmark, key, keyset, ciphertext, plaintext, audio or database.
+Stage 0 recovery experiment. The first package received the owner-supplied disposition
+`CHANGES_REQUIRED`; `governance-remediation-v0.2.md` records the owner-approved protocol response.
+It contains no harness, recovery module, dependency lock from a runtime graph, device result,
+benchmark, key, keyset, ciphertext, plaintext, audio or database.
 
 ## Package index
 
 | Artifact | Purpose | Current state |
 |---|---|---|
+| `governance-remediation-v0.2.md` | trace reviewed v0.1 commit, owner-approved v0.2 design selections, fixed and remaining blockers | remediation recorded; repeat accountable review required |
 | `dependency-inventory.json` | exact published JAR/POM/metadata closure for `tink-android:1.23.0`, hashes, edges and composition | verified publisher closure; not runtime admission |
 | `license-notice-inventory.json` | exact POM declarations, upstream LICENSE/NOTICE evidence, shaded protobuf terms and patent notes | evidence complete; Project-owner Product/IP review pending |
 | `security-advisory-inventory.json` | exact-version and historical advisory snapshot, upstream maintenance notes and crypto-review risks | snapshot complete; independent review pending |
 | `sqlite-platform-provenance.json` | recovery-only emulator/D2 platform SQLite provenance boundary | emulator pinned; D2 runtime preflight pending |
-| `review-roles.json` | reviewer assignment and authority boundaries | Product/IP assigned; independent Engineering/Security unassigned |
+| `review-roles.json` | reviewer assignment, null approval fields and authority boundaries | Product/IP assigned but not finally approved; accountable Engineering/Security unassigned |
 | `readiness.json` | fail-closed readiness record | `executionAllowed=false` |
-| `ip-stage0-evaluation-review.md` | human-readable Product/IP/security package assessment | package ready; not approved for execution |
-| `independent-engineering-security-review-task.md` | ready-to-send independent review assignment | unassigned; review only, no implementation/execution |
+| `ip-stage0-evaluation-review.md` | human-readable supply-chain and Product/IP package assessment | supply-chain evidence retained; protocol v0.2 re-review pending |
+| `independent-engineering-security-review-task.md` | ready-to-send read-only v0.2 review assignment | distinct accountable reviewer unassigned; no implementation/execution |
 
 The normative experiment decision, Gate Set and protocol are:
 
 - `docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md`;
 - `docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md`;
-- `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_1.md`;
-- `docs/stage0/poc-recovery-gate-set-stage0-v0.1.json`; and
-- `docs/stage0/poc-recovery-protocol-stage0-v0.1.json`.
+- `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_2.md`;
+- `docs/stage0/poc-recovery-gate-set-stage0-v0.2.json`; and
+- `docs/stage0/poc-recovery-protocol-stage0-v0.2.json`.
+
+The v0.1 Markdown/Gate Set/protocol files remain unchanged as superseded audit artifacts. They are
+not valid inputs for future implementation or execution.
 
 ## Exact external candidate boundary
 
@@ -49,12 +55,13 @@ task.
 
 ## Review state
 
-- The Project owner is assigned as Stage 0 Product/IP reviewer but has not yet reviewed this newly
-  produced exact package.
-- The independent recovery Engineering/Security reviewer is unassigned. That review must approve
-  the Proposed streaming template, public-API checkpoint proof, microfile template and manifest,
-  key hierarchy/AAD, SQLite durability profile, kill mappings and failure state machine.
-- Production Legal is unassigned. Production Security remains a separate future approval.
+- The Project owner is assigned as Stage 0 Product/IP reviewer, but final approval fields remain
+  null for the remediated package.
+- A distinct accountable recovery Engineering/Security reviewer is unassigned. The current Codex
+  remediation does not claim formal independence. That reviewer must verify or revise the selected
+  streaming/microfile construction, lookahead proof, exact parsers/AAD/key path, commit/durability,
+  SQLite profile, public barriers and fault/recovery state machine.
+- Production Legal and Production Security remain null and separate future approvals.
 - A later owner authorization is required even after all package/reviewer conditions are met.
 
 No state in this directory admits Tink, SQLite schema, Room, SQLCipher, WorkManager or any recovery

@@ -2,7 +2,7 @@
 
 Статус документа: единый реестр решений владельца продукта\
 Дата: 12 августа 2026 года\
-Последнее изменение: прямое Stage 0 решение `OD-14` фиксирует governance/readiness contract для `POC-RECOVERY-001`; решение эксперимента остаётся `Proposed`, а implementation и execution запрещены\
+Последнее изменение: owner-approved remediation `OD-14` фиксирует governance protocol v0.2 для `POC-RECOVERY-001`; решение эксперимента остаётся `Proposed`, implementation/execution запрещены, v0.1 сохранён как superseded audit artifact\
 Основание: Technical Plan §40 P1–P20, Design Spec §40.2 D-P1–D-P22 и owner approval record Stage 0A.
 
 `Provisional` означает, что рекомендуемый baseline можно использовать для обратимого PoC/bootstrap, но это не заменяет явное решение владельца. `Proposed` запрещает необратимые или пользовательские действия до утверждения. `Approved` означает прямое решение владельца в указанной области; оно не расширяет scope на production, Legal или release без явной формулировки. Статусы, повышенные owner-решением, ссылаются на соответствующий `OD-*`, владельца и дату.
@@ -645,19 +645,19 @@ Decision record: `docs/stage0/DEC-043-POC-SEARCH-STORAGE-UPDATE-GATES.md`; Gate 
 
 ## DEC-044. POC-RECOVERY-001 pre-PoC experiment contract
 
-Статус: Proposed — exact governance package prepared for review; implementation/execution withheld\
+Статус: Proposed — owner-remediated protocol v0.2 selected; implementation verification/review and execution withheld\
 Приоритет: P0\
-Источник: direct Project-owner decision of 12 August 2026 / `OD-14`; Technical Plan recovery gate; `RECOVERY-ADR-ORDER-001`\
-Срок принятия: independent recovery Engineering/Security review and Project-owner package review before any harness implementation or execution\
-Варианты: Tink `StreamingAead` through public API with Proposed `AES128_GCM_HKDF_4KB`; Tink `Aead` five-second sealed microfiles with authenticated manifest; 15/30-second microfiles only as non-PASS observations or post-failure fallbacks.\
-Рекомендуемый вариант: no winner before evidence; compare exactly the two candidates in one future isolated harness after review, with five seconds as the only gate-compatible microfile cadence.\
-Обоснование: the experiment must test zero committed-byte loss and at most five seconds of tail loss without pre-accepting the final format; 120 scheduled hard kills/candidate and at least 100 valid kills prevent anecdotal recovery claims. Phase A on emulator+D2 can only be `FAIL` or `INCONCLUSIVE`; full PASS requires physical D1/D2/D5.\
-Влияние на архитектуру: Proposed public-Tink boundary, Android Keystore wrapping, unique run/segment keys, authenticated manifest/checkpoint, PoC-local platform SQLite split-brain journal only; no Gradle dependency, `:poc:recovery`, production schema or `:app` change is authorized.\
+Источник: direct Project-owner decision of 12 August 2026 / `OD-14`; owner-supplied review disposition `CHANGES_REQUIRED`; Technical Plan recovery gate; `RECOVERY-ADR-ORDER-001`\
+Срок принятия: Product/IP final disposition, distinct accountable recovery Engineering/Security review, separately scoped implementation verification and Project-owner authorization before execution\
+Варианты: public Tink `StreamingAead` AES-GCM-HKDF with `DURABLE_ONE_SEGMENT_LOOKAHEAD`; public Tink `Aead` five-second `AES256_GCM_TINK_IV12_TAG16` microfiles with exact authenticated manifest; 15/30-second microfiles only as non-PASS observations or post-failure fallbacks.\
+Рекомендуемый вариант: no winner before evidence; protocol v0.2 compares exactly the two selected candidate designs in one future isolated harness. Streaming uses 16-byte input/derived AES key, HKDF-SHA256, 4096-byte ciphertext segments and at most 8160-byte/0.255-second bounded tail; microfiles use five-second 160000-byte plaintext / 160033-byte ciphertext units.\
+Обоснование: exact v0.2 commit/oracle, key/AAD/manifest, durability/SQLite, barrier and fault contracts remove design ambiguity while preserving zero committed-byte loss, per-kill tail ≤5 seconds, 12 strata, 120 base kills/candidate and ≥100 valid. Phase A emulator+D2 remains `FAIL`/`INCONCLUSIVE`; physical D1/D2/D5 is required for PASS.\
+Влияние на архитектуру: design-selected public Tink parameters with implementation verification required; one derived AES key per streaming ciphertext stream rather than per segment; exact Android Keystore/encrypted-keyset/AAD rules; authenticated big-endian manifest/checkpoint; immutable contained paths; PoC-local WAL/FULL platform SQLite journal and deterministic UNIQUE processing intents. No Gradle dependency, `:poc:recovery`, production schema or `:app` change is authorized.\
 Влияние на UX: any future recovery UI must distinguish authenticated recovery, key unavailability, corruption and quarantined state; microphone must never restart automatically.\
 Обратимость: high before execution and final ADR; any template/protocol change requires a prospective version and review, while measured evidence remains bound to its exact contract.\
-Reviewer boundary: Project owner is Stage 0 Product/IP reviewer and later execution authorizer; an independent recovery Engineering/Security reviewer is currently unassigned and mandatory; Production Legal is unassigned and Production Security remains separate.\
-Execution authorization: withheld; `executionAllowed=false` until reviews, exact future resolved graph, device/SQLite preflight, separately scoped harness verification and a later explicit owner authorization.\
-Decision record: `docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md`; Gate Set: `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_1.md`; machine contract: `docs/stage0/poc-recovery-gate-set-stage0-v0.1.json` and `docs/stage0/poc-recovery-protocol-stage0-v0.1.json`.\
+Reviewer boundary: Project owner is assigned Stage 0 Product/IP reviewer and later execution authorizer, but Product/IP final approval fields remain null. A distinct accountable recovery Engineering/Security reviewer is unassigned; this Codex remediation does not claim formal independence. Production Legal and Production Security remain null/separate.\
+Execution authorization: withheld; `executionAllowed=false` until Product/IP and accountable review, implementation/non-metric verification, exact future resolved graph, fresh emulator/D2 preflight and a later explicit owner authorization.\
+Decision record: `docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md`; Gate Set: `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_2.md`; machine contract: `docs/stage0/poc-recovery-gate-set-stage0-v0.2.json` and `docs/stage0/poc-recovery-protocol-stage0-v0.2.json`; v0.1 files remain superseded audit artifacts and are non-executable.\
 Связанные задачи: `POC-GATES-001`, `POC-DEVICE-001`, `POC-RECOVERY-001`, future final `ADR-AUDIO-001`.
 
 ## Stage 0A owner approval record
@@ -666,7 +666,7 @@ Decision record: `docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md`; Gate Set: `do
 Владелец решений: Project owner\
 Статус: `OD-01`–`OD-10` — Approved только в указанной Stage 0A scope. `OD-11`–`OD-13` записаны в Stage 0 owner registry; `OD-14` вынесен в отдельный recovery owner record, чтобы не изменять хэшированное historical search evidence. `DEC-043` Approved как prospective search contract, а `DEC-044` остаётся Proposed recovery experiment contract. Ни одно из этих решений не разрешает recovery implementation, measured execution или production implementation.
 
-Crosswalk: `OD-01` → `DEC-003`/`DEC-004`; `OD-02` → `DEC-002`/`DEC-027`; `OD-03`/`OD-04` → `DEC-014` и Dataset Governance; `OD-05` → `DEC-020`; `OD-06`/`OD-07` → `DEC-018` и device matrix; `OD-08` → `DEC-009`/`DEC-014` и Privacy policy; `OD-09` → Stage 0 research retention, без изменения production `DEC-013`; `OD-10` → `DEC-009`/`DEC-015`; `OD-11` → `DEC-020` и IP policy Stage 0 SQLite/reviewer boundary; `OD-12` → Approved `DEC-043`/Gate Set `stage0-v0.2` with execution withheld; `OD-13` → exact Stage 0 search IP evaluation package и formal `INCONCLUSIVE` closure; отдельный `docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md` → Proposed `DEC-044`, exact recovery Gate Set/protocol, reviewer/device/key/cadence contract и `executionAllowed=false`.
+Crosswalk: `OD-01` → `DEC-003`/`DEC-004`; `OD-02` → `DEC-002`/`DEC-027`; `OD-03`/`OD-04` → `DEC-014` и Dataset Governance; `OD-05` → `DEC-020`; `OD-06`/`OD-07` → `DEC-018` и device matrix; `OD-08` → `DEC-009`/`DEC-014` и Privacy policy; `OD-09` → Stage 0 research retention, без изменения production `DEC-013`; `OD-10` → `DEC-009`/`DEC-015`; `OD-11` → `DEC-020` и IP policy Stage 0 SQLite/reviewer boundary; `OD-12` → Approved `DEC-043`/Gate Set `stage0-v0.2` with execution withheld; `OD-13` → exact Stage 0 search IP evaluation package и formal `INCONCLUSIVE` closure; отдельный `docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md` → Proposed `DEC-044`, owner-remediated recovery Gate Set/protocol `stage0-v0.2`, retained superseded v0.1 audit artifacts, reviewer/device/key/cadence contract и `executionAllowed=false`.
 
 ### OD-01. Первый технический PoC Stage 0
 
