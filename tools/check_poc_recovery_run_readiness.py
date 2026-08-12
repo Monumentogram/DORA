@@ -14,6 +14,13 @@ STAGE0 = ROOT / "docs" / "stage0"
 EVIDENCE = ROOT / "docs" / "evidence" / "poc-recovery-001"
 GATE_V03 = "poc-recovery-stage0-v0.3"
 PROTOCOL_V03 = "poc-recovery-protocol-stage0-v0.3"
+JSR305_POLICY_ID = "REC-JSR305-EXCLUDE-001"
+JSR305_COORDINATE = "com.google.code.findbugs:jsr305:3.0.2"
+JSR305_R8_RULES = [
+    "-dontwarn javax.annotation.Nullable",
+    "-dontwarn javax.annotation.concurrent.GuardedBy",
+    "-dontwarn javax.annotation.concurrent.ThreadSafe",
+]
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -29,6 +36,106 @@ def complete_runtime_evidence(evidence: dict[str, Any]) -> bool:
     return bool(evidence) and all(value is not None for value in evidence.values())
 
 
+def validate_jsr305_exclusion_policy(
+    readiness: dict[str, Any], analysis: dict[str, Any]
+) -> bool:
+    require(
+        analysis["status"]
+        == "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_PRODUCT_IP_DECISION_PENDING",
+        "JSR305 technical exclusion analysis is missing or stale",
+    )
+    require(
+        analysis["technicalConclusion"]["bareExcludeAloneAccepted"] is False
+        and analysis["technicalConclusion"]["completeArtifactExclusionFeasible"] is True,
+        "JSR305 conditioned-exclusion conclusion is not intact",
+    )
+    analysis_policy = analysis["prospectivePolicy"]
+    policy = readiness["dependencyExclusionPolicy"]
+    require(policy["policyId"] == analysis_policy["policyId"] == JSR305_POLICY_ID, "JSR305 policy ID drift")
+    require(
+        policy["rootCoordinate"] == analysis_policy["rootCoordinate"]
+        == "com.google.crypto.tink:tink-android:1.23.0",
+        "JSR305 policy root coordinate drift",
+    )
+    require(
+        policy["forbiddenResolvedCoordinate"]
+        == analysis_policy["forbiddenResolvedCoordinate"]
+        == JSR305_COORDINATE,
+        "JSR305 forbidden coordinate drift",
+    )
+    require(
+        policy["requiredResolvedComponentCount"]
+        == analysis_policy["requiredResolvedComponentCount"]
+        == 0,
+        "JSR305 policy no longer requires a zero component count",
+    )
+    require(
+        policy["compileOnlyOrAlternatePathAllowed"] is False
+        and analysis_policy["compileOnlyOrAlternatePathToForbiddenCoordinateAllowed"] is False,
+        "JSR305 compileOnly or alternate dependency path was allowed",
+    )
+    require(
+        policy["allResolvableConfigurationsAndConsumersRequired"] is True,
+        "JSR305 policy does not cover every resolvable configuration and consumer",
+    )
+    require(
+        policy["exactNarrowR8RuleRequired"] is True
+        and analysis_policy["requiredR8Rules"] == JSR305_R8_RULES
+        and analysis_policy["broaderJavaxAnnotationDontwarnAllowed"] is False,
+        "JSR305 exact narrow R8 rule policy drift",
+    )
+    require(
+        policy["unresolvedR8MissingClassesAllowed"] is False,
+        "Recovery readiness policy allows unresolved R8 missing classes",
+    )
+
+    report_locator = policy["futureResolvedGraphReportLocator"]
+    require(
+        report_locator == analysis_policy["futureResolvedGraphReportLocator"],
+        "JSR305 future graph report locator drift",
+    )
+    report_path = ROOT / report_locator
+    report_present = report_path.is_file()
+    require(
+        policy["futureResolvedGraphReportPresent"] is report_present,
+        "JSR305 future graph report presence claim does not match the repository",
+    )
+    if not report_present:
+        return False
+
+    report = read_json(report_path)
+    require(report["schemaVersion"] == 1 and report["pocId"] == "POC-RECOVERY-001", "Future recovery graph report identity drift")
+    require(report["policyId"] == JSR305_POLICY_ID, "Future recovery graph report policy drift")
+    require(isinstance(report["exactCommit"], str) and len(report["exactCommit"]) == 40, "Future recovery graph report lacks exact commit")
+    require(report["allResolvableConfigurationsEnumerated"] is True, "Not every resolvable recovery configuration was enumerated")
+    require(report["allRecoveryConsumersEnumerated"] is True, "Not every recovery consumer was enumerated")
+    require(isinstance(report["coveredModules"], list) and report["coveredModules"], "Future graph report covers no modules")
+    configurations = report["configurations"]
+    require(isinstance(configurations, list) and configurations, "Future graph report covers no configurations")
+    require(report["configurationCount"] == len(configurations), "Future graph report configuration count drift")
+    require(
+        all(
+            item["canBeResolved"] is True
+            and isinstance(item["module"], str)
+            and bool(item["module"])
+            and isinstance(item["name"], str)
+            and bool(item["name"])
+            and item["jsr305Components"] == []
+            for item in configurations
+        ),
+        "JSR305 appears in a covered configuration or configuration evidence is incomplete",
+    )
+    require(report["jsr305ResolvedComponentCount"] == 0, "JSR305 resolved component count is nonzero")
+    require(report["scopedExcludeVerified"] is True, "Scoped Tink JSR305 exclusion was not verified")
+    shrinker = report["narrowR8Rule"]
+    require(shrinker["rules"] == JSR305_R8_RULES and shrinker["status"] == "PASSED", "Exact narrow JSR305 R8 rule was not verified")
+    require(report["nonMetricDebugBuildPassed"] is True, "Future non-metric debug build did not pass")
+    require(report["nonMetricReleaseR8BuildPassed"] is True, "Future non-metric release/R8 build did not pass")
+    require(report["unresolvedR8MissingClasses"] == [], "Future release/R8 report contains unresolved missing classes")
+    require(report["packagedJsr305ClassDefinitionCount"] == 0, "Packaged output contains JSR305 class definitions")
+    return True
+
+
 def main() -> int:
     gate = read_json(STAGE0 / "poc-recovery-gate-set-stage0-v0.3.json")
     protocol = read_json(STAGE0 / "poc-recovery-protocol-stage0-v0.3.json")
@@ -37,6 +144,9 @@ def main() -> int:
     provenance = read_json(EVIDENCE / "sqlite-platform-provenance.json")
     license_notice = read_json(EVIDENCE / "license-notice-inventory.json")
     authenticity = read_json(EVIDENCE / "dependency-ip-authenticity-v0.3.json")
+    jsr305_exclusion = read_json(EVIDENCE / "jsr305-exclusion-analysis-2026-08-12.json")
+
+    future_graph_present = validate_jsr305_exclusion_policy(readiness, jsr305_exclusion)
 
     require(gate["gateSetVersion"] == GATE_V03, "Active recovery Gate Set is not v0.3")
     require(protocol["protocolId"] == PROTOCOL_V03, "Active recovery protocol is not v0.3")
@@ -69,6 +179,9 @@ def main() -> int:
     require(authenticity["approvalBoundary"]["productIpFinalApproval"] is True, "Authenticity evidence lacks Product/IP approval linkage")
     require(authenticity["approvalBoundary"].get("productIpApprovalAllowedWhileLicenseConflict") is False and not authenticity["approvalBoundary"].get("blockers"), "License conflict or other Product/IP blocker remains")
     require(license_notice["evaluationApproved"] is True, "Exact Stage 0 Product/IP evaluation approval absent")
+    exclusion_policy = readiness["dependencyExclusionPolicy"]
+    require(exclusion_policy["productIpAccepted"] is True, "Project-owner / Product-IP acceptance of REC-JSR305-EXCLUDE-001 absent")
+    require(bool(exclusion_policy["acceptedBy"]) and bool(exclusion_policy["acceptedOn"]), "JSR305 exclusion acceptance identity/date absent")
 
     product_ip = roles["stage0ProductIp"]
     require(product_ip["status"] == "APPROVED_FOR_EXACT_STAGE0_EVALUATION" and product_ip["finalApproved"] is True, "Product/IP role approval absent")
@@ -85,7 +198,7 @@ def main() -> int:
     require(readiness["runtimeDependencyAdded"] is True, "Separately scoped recovery dependency is absent")
     require(readiness["recoveryModuleExists"] is True and readiness["harnessImplemented"] is True, "Separately scoped recovery harness is absent")
     require(readiness.get("nonMetricImplementationVerificationPassed") is True, "Non-metric v0.3 implementation verification absent")
-    require(readiness.get("exactFutureResolvedGraphReviewed") is True, "Exact future Gradle-resolved graph review absent")
+    require(readiness.get("exactFutureResolvedGraphReviewed") is True and future_graph_present, "Exact zero-JSR305 future Gradle-resolved graph review absent")
     require(readiness["killCampaignExecuted"] is False and readiness["deviceTestsExecuted"] is False and readiness["benchmarksExecuted"] is False, "Readiness evidence must precede measured/device execution")
     require(readiness["productionAppChanged"] is False, "Production :app must remain unchanged")
     require(provenance["phaseA"]["executionAllowed"] is True, "SQLite/device provenance still withholds Phase A execution")

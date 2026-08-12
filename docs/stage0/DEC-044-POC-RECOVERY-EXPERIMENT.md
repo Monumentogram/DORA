@@ -1,6 +1,6 @@
 # DEC-044 — POC-RECOVERY-001 pre-PoC experiment decision
 
-Status: **Proposed — owner-remediated protocol v0.3 selected; authenticity, implementation verification and accountable review pending**\
+Status: **Proposed — protocol v0.3 selected; conditioned jsr305 exclusion proven; Product/IP decision, implementation verification and accountable review pending**\
 Recorded for: **Project owner**\
 Recorded on: **2026-08-12**\
 Gate Set: `poc-recovery-stage0-v0.3`\
@@ -20,6 +20,30 @@ governance remediation below. This record remains a **Proposed experiment decisi
 production architecture decision, dependency admission, or permission to implement or execute a
 harness. Gate Set/protocol v0.1 and v0.2 remain unchanged superseded audit artifacts and are
 non-executable.
+
+## Proposed dependency disposition
+
+All eight publisher-closure coordinates are authenticity-verified. The signed published
+`com.google.code.findbugs:jsr305:3.0.2` POM declares Apache-2.0 while its exact release-source
+POM/LICENSE declares BSD-3-Clause. The conflict remains unresolved and this decision does not
+interpret either declaration.
+
+Governance evidence recommends `REC-JSR305-EXCLUDE-001`, conditioned Option A, for a later
+separately scoped harness: exclude the JSR-305 edge only on exact `tink-android:1.23.0`, require
+zero resolved JSR-305 components in every recovery/consumer configuration, and use exactly three
+R8 `-dontwarn` rules for `Nullable`, `GuardedBy` and `ThreadSafe`. Kotlin/JVM/D8 probes pass without
+the artifact; a bare exclusion fails the repository-pinned AGP R8, while the exact narrow rule
+passes with all Tink classes preserved. No `compileOnly` or replacement artifact is required.
+
+The narrow-rule result is not a full-closure release claim. When all seven remaining closure JARs
+are R8 program inputs, no JSR-305 missing class remains but the probe fails independently on
+`javax.lang.model.element.Modifier` from `error_prone_annotations:2.41.0`. A later exact AGP graph
+must resolve any such independent missing class without broadening this policy before readiness.
+
+This remains a proposal until the Project owner records Product/IP acceptance or rejection. The
+analysis does not add a dependency, create a graph or authorize implementation/execution. A future
+exact graph/build/package report remains mandatory and must fail readiness if the forbidden
+coordinate appears by any path or any R8 missing class remains unresolved.
 
 ## Proposed experiment
 
@@ -135,9 +159,10 @@ physical profile.
   independence.
 - Production Legal is unassigned. Stage 0 evaluation review does not grant redistribution or
   production rights.
-- Supply-chain authenticity remains pending for six exact coordinates despite successful
-  publisher checksum and PGP verification; Product/IP final approval is blocked until their
-  upstream signer/source correspondence paths close.
+- Supply-chain authenticity is verified for all eight publisher-closure coordinates. The
+  underlying `jsr305:3.0.2` Apache-2.0/BSD-3-Clause conflict remains unresolved; conditioned
+  exclusion is technically proven, but Product/IP acceptance/rejection and final approval remain
+  pending with approval identity/date null.
 - Production Security approval remains a separate future gate and is not replaced by the
   recovery-scoped review.
 
@@ -153,8 +178,9 @@ physical profile.
 
 ## Readiness state
 
-`executionAllowed=false`. Product/IP final approval, a distinct accountable Engineering/Security
-reviewer, implementation and non-metric implementation verification, exact future Gradle graph,
+`executionAllowed=false`. Product/IP disposition for `REC-JSR305-EXCLUDE-001`, final approval, a
+distinct accountable Engineering/Security reviewer, implementation and non-metric implementation
+verification, an exact future Gradle graph with zero forbidden components,
 fresh emulator/D2 preflight and a separate Project-owner execution authorization remain absent.
 Runtime emulator/D2 facts, `approvedReviewer`, `approvedOn`, Production Legal and Production
 Security remain null. Completing a prerequisite never flips the flag implicitly.

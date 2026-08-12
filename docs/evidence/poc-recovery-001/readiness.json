@@ -2,13 +2,15 @@
   "schemaVersion": 3,
   "pocId": "POC-RECOVERY-001",
   "assessedOn": "2026-08-12",
-  "status": "BLOCKED_REMEDIATED_PROTOCOL_V0_3_LICENSE_PRODUCT_IP_REVIEW_AND_IMPLEMENTATION_PENDING",
+  "status": "BLOCKED_REMEDIATED_PROTOCOL_V0_3_JSR305_EXCLUSION_PRODUCT_IP_DECISION_AND_IMPLEMENTATION_PENDING",
   "executionAllowed": false,
   "implementationAllowedByThisPackage": false,
   "measuredExecutionAllowed": false,
   "runtimeDependencyAdded": false,
   "recoveryModuleExists": false,
   "harnessImplemented": false,
+  "nonMetricImplementationVerificationPassed": false,
+  "exactFutureResolvedGraphReviewed": false,
   "killCampaignExecuted": false,
   "deviceTestsExecuted": false,
   "benchmarksExecuted": false,
@@ -33,7 +35,9 @@
     "reviewFindingsV01LedgerPresent": true,
     "reviewFindingsV02LedgerPresent": true,
     "dependencyIpAuthenticityV03Present": true,
-    "supplyChainAuthenticityStatus": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED"
+    "supplyChainAuthenticityStatus": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED",
+    "jsr305ExclusionAnalysisPresent": true,
+    "jsr305ExclusionTechnicalStatus": "PROVEN_WITH_NARROW_R8_RULE_BARE_EXCLUDE_REJECTED_PRODUCT_IP_DECISION_PENDING"
   },
   "approvals": {
     "productIpFinalApproved": false,
@@ -46,13 +50,30 @@
     "productionLegalReviewer": null,
     "productionSecurityReviewer": null
   },
+  "dependencyExclusionPolicy": {
+    "policyId": "REC-JSR305-EXCLUDE-001",
+    "analysisLocator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.json",
+    "status": "PROPOSED_PRODUCT_IP_OWNER_DECISION_REQUIRED",
+    "rootCoordinate": "com.google.crypto.tink:tink-android:1.23.0",
+    "forbiddenResolvedCoordinate": "com.google.code.findbugs:jsr305:3.0.2",
+    "requiredResolvedComponentCount": 0,
+    "compileOnlyOrAlternatePathAllowed": false,
+    "allResolvableConfigurationsAndConsumersRequired": true,
+    "exactNarrowR8RuleRequired": true,
+    "unresolvedR8MissingClassesAllowed": false,
+    "futureResolvedGraphReportLocator": "docs/evidence/poc-recovery-001/future-resolved-graph.json",
+    "futureResolvedGraphReportPresent": false,
+    "productIpAccepted": false,
+    "acceptedBy": null,
+    "acceptedOn": null
+  },
   "blockers": [
     {
       "id": "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
       "priority": "P0",
       "status": "OPEN",
       "owner": "Project owner",
-      "condition": "Record final Product/IP approval or rejection for the exact remediation commit; approvedReviewer and approvedOn remain null."
+      "condition": "Accept or reject REC-JSR305-EXCLUDE-001 (or select the Legal/IP or abandon-Tink fallback), then record final Product/IP disposition for the exact remediation commit; approvedReviewer and approvedOn remain null."
     },
     {
       "id": "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
@@ -80,7 +101,7 @@
       "priority": "P0",
       "status": "OPEN_BY_DESIGN",
       "owner": "Future recovery implementation task",
-      "condition": "After separately authorized harness scaffolding, capture and review the exact Gradle-resolved graph and any Kotlin alignment delta without admitting it to production."
+      "condition": "After separately authorized harness scaffolding, enumerate every resolvable configuration and consumer, prove zero resolved com.google.code.findbugs:jsr305:3.0.2 components, verify the scoped Tink exclusion and exact three-line R8 rule, capture any Kotlin alignment delta, pass non-metric debug/release builds with no unresolved missing classes, independently resolve the observed error_prone_annotations reference to javax.lang.model.element.Modifier if it occurs in the real graph, and prove zero packaged JSR-305 class definitions."
     },
     {
       "id": "REC-RDY-06-DEVICE-SQLITE-PREFLIGHT",
@@ -120,9 +141,9 @@
     {
       "id": "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY",
       "priority": "P0",
-      "status": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_OPEN",
+      "status": "TECHNICAL_EXCLUSION_PROVEN_PRODUCT_IP_DISPOSITION_PENDING",
       "owner": "Project owner / Stage 0 Product-IP",
-      "condition": "All eight coordinate authenticity classifications are verified. Resolve the signed Maven POM Apache-2.0 versus exact release-source BSD-3-Clause conflict for com.google.code.findbugs:jsr305:3.0.2 and record independent Stage 0 Product/IP disposition; no approval or admission is implied."
+      "condition": "All eight publisher-closure coordinate authenticity classifications are verified. The signed Maven POM Apache-2.0 versus exact release-source BSD-3-Clause conflict for com.google.code.findbugs:jsr305:3.0.2 remains legally unresolved. A technically safe exclusion path is proven only with a scoped Tink exclusion, zero resolved components and the exact narrow R8 rule; record Stage 0 Product/IP acceptance/rejection of that avoidance treatment. No approval or admission is implied."
     }
   ],
   "phaseA": {

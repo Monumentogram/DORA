@@ -1,15 +1,17 @@
 # POC-RECOVERY-001 exact Stage 0 evaluation package review
 
-Status: **AUTHENTICITY VERIFIED — JSR305 LICENSE CONFLICT / PRODUCT-IP RE-REVIEW BLOCKED**\
+Status: **AUTHENTICITY VERIFIED — JSR305 EXCLUSION PATH PROVEN / PRODUCT-IP DECISION BLOCKED**\
 Prepared: 12 August 2026\
 Evaluation candidate: `com.google.crypto.tink:tink-android:1.23.0`\
 Execution allowed: **no**
 
 ## Review conclusion
 
-The supply-chain packet now verifies all eight coordinate authenticity classifications and closes
-F-06's evidence-completeness finding. An unresolved `jsr305:3.0.2` license conflict independently
-blocks Product/IP approval. The package is not approved for
+The supply-chain packet verifies all eight publisher-closure coordinate authenticity
+classifications and closes F-06's evidence-completeness finding. The exact
+`jsr305:3.0.2` license conflict remains unresolved, while a separate bytecode/compiler/D8/R8
+analysis proves a conditioned path that keeps the artifact out of a future graph. Project-owner /
+Stage 0 Product/IP acceptance of that avoidance treatment is still pending. The package is not approved for
 evaluation execution, dependency admission, redistribution or production. Protocol v0.2 at
 reviewed commit `70cf26125dbecbb347311ca0bb9ce1ad5c637e18` received `CHANGES_REQUIRED` findings
 F-01–F-06; owner-remediated protocol v0.3 requires repeat review. This document does not identify a
@@ -45,12 +47,41 @@ provided in the distribution and license surface. Production Legal is unassigned
 | Detached OpenPGP signatures | 16/16 cryptographically verified with SHA-256-pinned Bouncy Castle 1.83 and full primary/signing fingerprints |
 | Authenticity classification | 2/8 publisher-bound signatures; 6/8 exact multisource correspondence; 0 pending |
 | License conflict | signed published `jsr305:3.0.2` POM Apache-2.0 vs exact release-source POM/LICENSE BSD-3-Clause |
+| Exclusion analysis | Option A technically feasible only with a scoped Tink edge exclusion, zero resolved JSR-305 components and three exact R8 `-dontwarn` rules; bare exclusion fails R8 9.3.16 |
 | Gradle/runtime graph | not created; prohibited in this task |
 
 Because the repository pins Kotlin 2.2.10 while AndroidX annotation metadata declares Kotlin
 stdlib 1.7.10, the future recovery configuration may resolve a different Kotlin version than the
 publisher POM closure. This is not silently normalized. A future exact lock and delta review is a
 pre-execution blocker.
+
+## JSR-305 technical avoidance disposition
+
+The root POM declares `jsr305:3.0.2` directly with default Maven `compile` scope and default
+`optional=false`; it is not introduced through another transitive dependency. The exact Tink JAR
+contains 182 classes with `Nullable`, `GuardedBy` or `ThreadSafe` annotation descriptors, but zero
+JSR-305 `CONSTANT_Class`, field/method type-descriptor or reflection references. The complete class
+list and hashes are recorded in `jsr305-exclusion-analysis-2026-08-12.json` and
+`jsr305-reference-classes-2026-08-12.txt`.
+
+Kotlin 2.2.10 strict-JSR305 consumer compilation of the exact v0.3 public construction, JVM
+load/reflection of all 182 classes and D8 all pass without the JSR-305 JAR. R8 9.3.16 embedded in
+AGP 9.3.1 rejects a bare exclusion for the three missing annotation definitions, then passes with
+tree-shaking/minification disabled when warning suppression is limited to exactly those three
+types. No replacement or `compileOnly` dependency is required. Removing the definitions also
+removes Kotlin nullability enhancement, so later implementation must use explicit null handling.
+
+That success is scoped to the JSR-305 condition. With all seven remaining closure JARs supplied as
+R8 program inputs, the three-rule probe emits no JSR-305 missing class but fails independently on
+`javax.lang.model.element.Modifier` from `error_prone_annotations:2.41.0`. The future real AGP graph
+and release build must resolve any such independent condition separately and report no unresolved
+missing classes; broader `dontwarn` is not an accepted remediation.
+
+The recommendation is conditioned Option A. This is technical avoidance, not an interpretation of
+the conflicting terms. `compileOnly` still resolves and uses the disputed artifact and therefore
+does not close the governance issue. No vetted binary-compatible replacement exists in the reviewed
+closure. Retaining the artifact and seeking Legal/IP clarification is the fallback if the owner
+rejects exclusion; abandoning Tink requires a new prospective decision/Gate Set/protocol.
 
 ## Security snapshot
 
@@ -103,7 +134,7 @@ recovery-only platform boundary does not admit a production schema or component.
 
 | Reviewer | Requested disposition | Current state |
 |---|---|---|
-| Project owner / Stage 0 Product/IP | obtain authoritative `jsr305:3.0.2` license clarification, accept a qualified-counsel compliance path, or keep/replace the coordinate outside any admitted graph; then approve/reject the exact v0.3 package | assigned; license conflict blocked; final approval fields null |
+| Project owner / Stage 0 Product/IP | accept/reject conditioned exclusion policy `REC-JSR305-EXCLUDE-001`, or select the retain-and-clarify / abandon-Tink fallback; then approve/reject the exact v0.3 package | assigned; technical path prepared; underlying license conflict unresolved; final approval fields null |
 | Distinct accountable recovery Engineering/Security | verify, reject or revise selected v0.3 construction/key/commit/recovery/barrier/fault protocol; later verify implementation evidence | unassigned, blocking; current Codex remediation not claimed independent |
 | Project owner / execution | after all other prerequisites, separately set `executionAllowed=true` for a named phase/commit | withheld |
 | Production Legal | production/redistribution assessment | unassigned; not required for package preparation, required before production |

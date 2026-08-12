@@ -1,6 +1,6 @@
 # POC-RECOVERY-001 governance/readiness evidence
 
-Status: **OWNER-REMEDIATED PROTOCOL v0.3 — AUTHENTICITY VERIFIED; LICENSE REVIEW AND EXECUTION BLOCKED**\
+Status: **OWNER-REMEDIATED PROTOCOL v0.3 — JSR305 EXCLUSION PATH PROVEN; PRODUCT/IP DECISION AND EXECUTION BLOCKED**\
 Date: 12 August 2026\
 Branch: `stage/0d-poc-recovery-governance`\
 Measured execution: **none**
@@ -18,9 +18,11 @@ benchmark, key, keyset, ciphertext, plaintext, audio or database.
 |---|---|---|
 | `evidence-index.json` | machine-readable active/superseded artifact index and immutable v0.1/v0.2 SHA-256 pins | v0.3 active; execution blocked |
 | `governance-remediation-v0.2.md` | retained first remediation record | superseded audit evidence; unchanged |
-| `governance-remediation-v0.3.md` | F-01–F-06 disposition and remaining blockers | F-01–F-06 closed; jsr305 license/Product-IP blocker remains |
+| `governance-remediation-v0.3.md` | F-01–F-06 disposition and remaining blockers at the reviewed remediation point | F-01–F-06 closed; retained evidence of the underlying jsr305 license conflict |
 | `review-findings-v0.1.json` / `review-findings-v0.2.json` | sanitized stable finding ledgers | `formalReviewer=false`; accountable reviewer still unassigned |
 | `dependency-inventory.json` | exact published JAR/POM/metadata closure for `tink-android:1.23.0`, hashes, edges and composition | verified publisher closure; all eight authenticity classifications verified; not runtime admission |
+| `jsr305-exclusion-analysis-2026-08-12.json` / `.md` | exact POM, source, bytecode, compiler, loader, D8/R8 and A–E decision analysis | conditioned complete exclusion technically proven; bare exclude rejected; Product/IP decision pending |
+| `jsr305-reference-classes-2026-08-12.txt` | complete sorted Tink class list containing JSR-305 descriptors | 182 classes; SHA-256 pinned by the analysis JSON |
 | `dependency-ip-authenticity-v0.3.json` | per-coordinate license/copyright/NOTICE, checksums, PGP, signer trust and source correspondence | 16 JAR/POM checksums + signatures verified; six exact multisource and two publisher-bound classifications |
 | `dependency-ip-authenticity-verification-2026-08-12.md` | commands, full fingerprints, exact source comparisons, conclusions and limitations | authenticity verified; jsr305 Apache/BSD conflict recorded |
 | `license-notice-inventory.json` | exact POM declarations, upstream LICENSE/NOTICE evidence, shaded protobuf terms and patent notes | jsr305 signed-POM/exact-source license conflict; Product/IP approval blocked |
@@ -59,8 +61,22 @@ entry is unexplained. All eight coordinate authenticity classifications are veri
 
 F-06 is closed because the exact per-coordinate evidence is complete. Its conclusion nevertheless
 records that the signed published `jsr305:3.0.2` POM declares Apache-2.0, while the exact
-release-source POM/LICENSE declares BSD-3-Clause. That separate conflict keeps Product/IP approval
-blocked; the record does not choose which terms govern or issue approval.
+release-source POM/LICENSE declares BSD-3-Clause. The new exclusion analysis does not choose which
+terms govern. It proves that a future binary-consuming harness can keep the artifact out of every
+resolved configuration without a replacement, provided it uses both a Tink-local Gradle exclusion
+and three exact R8 `-dontwarn` rules. A bare exclusion fails the repository-pinned AGP R8 probe.
+The narrow rule removes every JSR-305 diagnostic in a seven-program-artifact observation, but that
+observation then fails independently on `javax.lang.model.element.Modifier` from
+`error_prone_annotations:2.41.0`; the future exact release build must resolve that condition without
+broadening the JSR-305 `dontwarn` policy.
+
+The recommended owner choice is conditioned Option A: accept that technical avoidance for the
+exact Stage 0 graph. The underlying artifact conflict remains unresolved and the owner has not yet
+accepted the avoidance treatment, so Product/IP approval fields remain null. If accepted, a future
+graph must contain zero `com.google.code.findbugs:jsr305:3.0.2` components across every resolvable
+recovery/consumer configuration; `compileOnly` and alternate paths are forbidden. The readiness
+checker fails closed on a present nonconforming report and cannot pass while exact future graph,
+build and package evidence is absent or while any R8 missing class remains unresolved.
 
 The root artifact is a Java JAR with 1,878 class entries, no `.so`/JNI/native entry and 540 shaded
 protobuf entries. `RuntimeVersion` identifies the embedded protobuf runtime as 4.33.6. The
@@ -73,7 +89,9 @@ task.
 ## Review state
 
 - The Project owner is assigned as Stage 0 Product/IP reviewer, but final approval fields remain
-  null and approval is blocked by the `jsr305:3.0.2` Apache-2.0/BSD-3-Clause conflict.
+  null. The pending decision is whether to accept `REC-JSR305-EXCLUDE-001`, retain the coordinate
+  while seeking Legal/IP clarification, or abandon Tink. Technical evidence recommends conditioned
+  exclusion and does not resolve the Apache-2.0/BSD-3-Clause conflict itself.
 - A distinct accountable recovery Engineering/Security reviewer is unassigned. The current Codex
   remediation does not claim formal independence. That reviewer must verify or revise the selected
   streaming/microfile construction, lookahead proof, exact parsers/AAD/key path, commit/durability,

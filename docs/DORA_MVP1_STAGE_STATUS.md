@@ -11,7 +11,7 @@ Stage 0C merge commit: `849d9d0406a619b334c9b707a4b6b42b34885b4b`
 Active stage: `Stage 0D — POC-RECOVERY-001 governance/readiness package`
 Active branch: `stage/0d-poc-recovery-governance`
 Active PoC: `POC-RECOVERY-001`
-Stage state: **GOVERNANCE REMEDIATION v0.3 — AUTHENTICITY VERIFIED; LICENSE/PRODUCT-IP, IMPLEMENTATION AND EXECUTION BLOCKED**
+Stage state: **GOVERNANCE REMEDIATION v0.3 — JSR305 EXCLUSION PROVEN; PRODUCT-IP DECISION, IMPLEMENTATION AND EXECUTION BLOCKED**
 
 ## Stage 00 closure
 
@@ -94,14 +94,22 @@ OpenPGP signatures, relevant advisory history, non-native composition and shaded
 are recorded under `docs/evidence/poc-recovery-001/`. All eight coordinate authenticity
 classifications are verified through publisher-bound signatures or exact multisource source
 correspondence. The signed `jsr305:3.0.2` Maven POM declares Apache-2.0 while the exact release
-source POM/LICENSE declares BSD-3-Clause. F-06 closes because the exact evidence is now complete,
-but Product/IP approval/admission remains blocked by the recorded conflict. This is package
-preparation, not dependency admission. No Tink coordinate was added to Gradle.
+source POM/LICENSE declares BSD-3-Clause. F-06 closes because the exact evidence is complete; the
+underlying conflict remains uninterpreted. Governance-only source/bytecode/Kotlin/JVM/D8/R8
+analysis proves conditioned exclusion: a Tink-local Gradle edge exclusion, zero resolved JSR-305
+components and three exact R8 warning rules. A bare exclusion fails the exact AGP 9.3.1 R8 probe.
+With all seven remaining closure JARs as program inputs, that exact rule removes the JSR-305
+diagnostics but R8 then fails independently on `javax.lang.model.element.Modifier` from
+`error_prone_annotations:2.41.0`; the future real graph/release build must resolve any such issue
+without broadening the rule.
+Project-owner / Stage 0 Product/IP acceptance of `REC-JSR305-EXCLUDE-001` remains pending. This is
+package preparation, not dependency admission. No Tink coordinate or rule was added to Gradle.
 
 Phase A is described only prospectively for the pinned emulator and available physical D2; actual
 execution is withheld. Without D1/D5 it can produce only `FAIL` or `INCONCLUSIVE`. A full physical
 verdict requires D1/D2/D5; D1/D5 procurement is deferred. The Project owner is assigned as Stage 0
-Product/IP reviewer, but final approval remains null. A distinct accountable recovery
+Product/IP reviewer, but acceptance/rejection of the exclusion policy and final approval remain
+null. A distinct accountable recovery
 Engineering/Security reviewer is unassigned and blocking; the current Codex remediation does not
 claim formal independence. Production Legal and Production Security remain null and separate.
 
@@ -136,18 +144,22 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - `OD-11`: Project owner is Product and IP policy reviewer and acts as Engineering/Security reviewer only for Stage 0 evaluation. This does not replace production Legal or independent production Security. Embedded platform SQLite may use the containing system-image digest plus exact image/runtime identity for Stage 0; that boundary must be reconsidered before production admission.
 - `OD-12`: Project owner prospectively approves Option B for `stage0-v0.2`, based on the local-MVP storage/update/one-second visibility balance and not on prior Dora results. Benchmark execution remains separately withheld.
 - `OD-13`: Project owner approves the exact 66-component/license/NOTICE/platform package only for internal synthetic Stage 0 evaluation and accepts formal `INCONCLUSIVE` closure without a new benchmark. This is not production Legal/Security approval, does not admit FTS4 automatically, is not retroactive, and leaves D1/D3 plus measured execution deferred.
-- `OD-14`: Project owner constraints now link governance protocol v0.3 after F-01–F-06 `CHANGES_REQUIRED` and authorize only documentary/static remediation. The selected construction remains `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`; authenticity is now verified, while the exact `jsr305:3.0.2` license conflict/Product-IP final approval, distinct accountable Engineering/Security review, implementation verification and later separate owner execution authorization remain mandatory; `executionAllowed=false`.
+- `OD-14`: Project owner constraints now link governance protocol v0.3 after F-01–F-06 `CHANGES_REQUIRED` and authorize only documentary/static remediation. The selected construction remains `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`; authenticity is verified and a conditioned exclusion path is now technically proven, while owner Product/IP acceptance/final approval, the uninterpreted `jsr305:3.0.2` license conflict, distinct accountable Engineering/Security review, implementation verification and later separate owner execution authorization remain mandatory; `executionAllowed=false`.
 
 ## Current gates and blockers
 
 - `POC-RECOVERY-001` remains `BLOCKED`, not READY. Proposed `DEC-044`, Gate Set
   `poc-recovery-stage0-v0.3`, exact machine protocol and remediation evidence exist. v0.1/v0.2 are
-  unchanged superseded audit artifacts. Coordinate authenticity is verified, but the exact
-  `jsr305:3.0.2` license conflict, Product/IP final approval and a distinct accountable recovery
-  Engineering/Security reviewer/approval remain unresolved.
+  unchanged superseded audit artifacts. Coordinate authenticity and conditioned JSR-305 exclusion
+  are technically verified, but the owner has not accepted/rejected `REC-JSR305-EXCLUDE-001`, the
+  underlying license conflict is not interpreted, Product/IP final approval is null, and a distinct
+  accountable recovery Engineering/Security reviewer/approval remains unresolved.
 - The exact published Tink closure is inventoried without Gradle wiring. A future harness-resolved
   graph remains a P0 pre-execution check because repository Kotlin alignment may differ from the
-  publisher POM closure. No runtime dependency or production admission exists.
+  publisher POM closure. It must enumerate every resolvable recovery/consumer configuration, prove
+  zero `com.google.code.findbugs:jsr305:3.0.2` components, verify the scoped exclude/exact narrow
+  R8 rule and pass debug/release/package checks with no unresolved R8 missing classes. No runtime
+  dependency or production admission exists.
 - No recovery implementation or non-metric implementation verification exists. Phase A execution
   is separately withheld. Fresh emulator and D2 recovery preflight must record effective WAL/FULL,
   `wal_autocheckpoint=0`, `foreign_keys=ON`, `sqlite_version()`, `sqlite_source_id()` and canonical

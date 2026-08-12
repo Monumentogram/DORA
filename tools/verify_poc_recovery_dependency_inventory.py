@@ -10,6 +10,7 @@ import json
 import os
 import re
 import shutil
+import struct
 import subprocess
 import sys
 import tempfile
@@ -27,6 +28,8 @@ EVIDENCE = ROOT / "docs" / "evidence" / "poc-recovery-001"
 INVENTORY_PATH = EVIDENCE / "dependency-inventory.json"
 LICENSE_PATH = EVIDENCE / "license-notice-inventory.json"
 AUTHENTICITY_PATH = EVIDENCE / "dependency-ip-authenticity-v0.3.json"
+JSR305_EXCLUSION_PATH = EVIDENCE / "jsr305-exclusion-analysis-2026-08-12.json"
+JSR305_CLASS_LIST_PATH = EVIDENCE / "jsr305-reference-classes-2026-08-12.txt"
 MAVEN_NS = {"m": "http://maven.apache.org/POM/4.0.0"}
 USER_AGENT = "Dora-POC-RECOVERY-001-inventory-verifier/1.0"
 NATIVE_SUFFIXES = (".so", ".dll", ".dylib")
@@ -342,6 +345,172 @@ def verify_jar(path: Path, artifact: dict[str, Any]) -> None:
         require(len(shaded_classes) == 539, "Tink shaded protobuf class count mismatch")
 
 
+def scan_class_jsr305_metadata(data: bytes) -> tuple[list[str], list[str], list[str], list[str]]:
+    require(data[:4] == b"\xca\xfe\xba\xbe", "Malformed Java class magic")
+    position = 8
+
+    def read_u2() -> int:
+        nonlocal position
+        value = struct.unpack_from(">H", data, position)[0]
+        position += 2
+        return value
+
+    def read_u4() -> int:
+        nonlocal position
+        value = struct.unpack_from(">I", data, position)[0]
+        position += 4
+        return value
+
+    constant_pool_count = read_u2()
+    values: list[Any] = [None] * constant_pool_count
+    tags = [0] * constant_pool_count
+    index = 1
+    while index < constant_pool_count:
+        tag = data[position]
+        position += 1
+        tags[index] = tag
+        if tag == 1:
+            length = read_u2()
+            values[index] = data[position:position + length].decode("utf-8", errors="replace")
+            position += length
+        elif tag in {3, 4}:
+            position += 4
+        elif tag in {5, 6}:
+            position += 8
+            index += 1
+        elif tag in {7, 8, 16, 19, 20}:
+            values[index] = read_u2()
+        elif tag in {9, 10, 11, 12, 17, 18}:
+            values[index] = (read_u2(), read_u2())
+        elif tag == 15:
+            values[index] = (data[position], struct.unpack_from(">H", data, position + 1)[0])
+            position += 3
+        else:
+            raise ValueError(f"Unsupported Java class constant-pool tag: {tag}")
+        index += 1
+
+    annotation_descriptors = [
+        value
+        for value in values
+        if isinstance(value, str) and "javax/annotation" in value
+    ]
+    class_references = [
+        values[values[index]]
+        for index, tag in enumerate(tags)
+        if tag == 7
+        and isinstance(values[index], int)
+        and "javax/annotation" in values[values[index]]
+    ]
+    symbolic_descriptors: list[str] = []
+    for index, tag in enumerate(tags):
+        if tag == 12 and isinstance(values[index], tuple):
+            descriptor_index = values[index][1]
+            if "javax/annotation" in values[descriptor_index]:
+                symbolic_descriptors.append(values[descriptor_index])
+        elif tag == 16 and isinstance(values[index], int):
+            if "javax/annotation" in values[values[index]]:
+                symbolic_descriptors.append(values[values[index]])
+
+    position += 6  # access_flags, this_class, super_class
+    interface_count = read_u2()
+    position += 2 * interface_count
+    definition_descriptors: list[str] = []
+    for _ in range(2):  # fields, methods
+        member_count = read_u2()
+        for _ in range(member_count):
+            position += 2  # access_flags
+            read_u2()  # name_index
+            descriptor = values[read_u2()]
+            if "javax/annotation" in descriptor:
+                definition_descriptors.append(descriptor)
+            attribute_count = read_u2()
+            for _ in range(attribute_count):
+                read_u2()  # attribute_name_index
+                attribute_length = read_u4()
+                position += attribute_length
+
+    return annotation_descriptors, class_references, definition_descriptors, symbolic_descriptors
+
+
+def verify_tink_jsr305_bytecode(path: Path, analysis: dict[str, Any]) -> None:
+    evidence = analysis["bytecodeAndSourceEvidence"]
+    expected_descriptors = {
+        "Ljavax/annotation/Nullable;": "javax.annotation.Nullable",
+        "Ljavax/annotation/concurrent/GuardedBy;": "javax.annotation.concurrent.GuardedBy",
+        "Ljavax/annotation/concurrent/ThreadSafe;": "javax.annotation.concurrent.ThreadSafe",
+    }
+    classes: list[str] = []
+    descriptor_classes: dict[str, list[str]] = {name: [] for name in expected_descriptors.values()}
+    class_references: list[tuple[str, str]] = []
+    definition_descriptors: list[tuple[str, str]] = []
+    symbolic_descriptors: list[tuple[str, str]] = []
+    with zipfile.ZipFile(path) as archive:
+        names = archive.namelist()
+        for name in names:
+            if not name.endswith(".class"):
+                continue
+            descriptors, class_refs, definition_refs, symbolic_refs = scan_class_jsr305_metadata(archive.read(name))
+            require(set(descriptors).issubset(expected_descriptors), f"Unexpected JSR305 descriptor in {name}: {descriptors}")
+            if not descriptors:
+                continue
+            class_name = name.removesuffix(".class").replace("/", ".")
+            classes.append(class_name)
+            for descriptor in descriptors:
+                descriptor_classes[expected_descriptors[descriptor]].append(class_name)
+            class_references.extend((class_name, value) for value in class_refs)
+            definition_descriptors.extend((class_name, value) for value in definition_refs)
+            symbolic_descriptors.extend((class_name, value) for value in symbolic_refs)
+
+        consumer_rule_files = sorted(
+            name
+            for name in names
+            if name.startswith("META-INF/proguard/") and not name.endswith("/")
+        )
+        require(consumer_rule_files == evidence["tinkConsumerRules"]["files"], "Tink consumer-rule file set drift")
+        for name in consumer_rule_files:
+            content = archive.read(name).lower()
+            require(b"jsr305" not in content and b"javax.annotation" not in content and b"javax/annotation" not in content, f"Tink consumer rule references JSR305: {name}")
+
+    classes.sort()
+    expected_classes = JSR305_CLASS_LIST_PATH.read_text(encoding="utf-8").splitlines()
+    require(classes == expected_classes, "Tink JSR305 descriptor class list drift")
+    require(len(classes) == evidence["classesContainingAnyJsr305Descriptor"] == 182, "Tink JSR305 descriptor class count drift")
+    require(
+        {name: len(values) for name, values in descriptor_classes.items()}
+        == evidence["descriptorPresenceByClassConstantPool"],
+        "Tink JSR305 descriptor-type counts drift",
+    )
+    require(len(class_references) == evidence["constantClassReferencesToJsr305"] == 0, f"Tink JSR305 CONSTANT_Class references found: {class_references}")
+    require(len(definition_descriptors) == evidence["fieldOrMethodDefinitionDescriptorsToJsr305"] == 0, f"Tink JSR305 field/method descriptors found: {definition_descriptors}")
+    require(len(symbolic_descriptors) == evidence["symbolicNameAndTypeOrMethodTypeDescriptorsToJsr305"] == 0, f"Tink JSR305 symbolic member descriptors found: {symbolic_descriptors}")
+
+
+def verify_tink_jsr305_sources(path: Path, analysis: dict[str, Any]) -> None:
+    evidence = analysis["bytecodeAndSourceEvidence"]
+    imports = {
+        "javax.annotation.Nullable": set(),
+        "javax.annotation.concurrent.GuardedBy": set(),
+        "javax.annotation.concurrent.ThreadSafe": set(),
+    }
+    class_for_name_targets: list[str] = []
+    with zipfile.ZipFile(path) as archive:
+        for name in archive.namelist():
+            if not name.endswith(".java"):
+                continue
+            source = archive.read(name).decode("utf-8", errors="replace")
+            for annotation in imports:
+                if f"import {annotation};" in source:
+                    imports[annotation].add(name)
+            class_for_name_targets.extend(re.findall(r'Class\.forName\("([^"]+)"\)', source))
+            require('Class.forName("javax.annotation' not in source, f"Tink source reflectively loads JSR305: {name}")
+            require(not re.search(r"get(?:Declared)?Annotation\s*\([^)]*javax\.annotation", source), f"Tink source reflectively queries JSR305: {name}")
+
+    require({name: len(files) for name, files in imports.items()} == evidence["sourceImportFileCounts"], "Tink JSR305 source import counts drift")
+    require(len(set().union(*imports.values())) == evidence["sourceFilesImportingAnyJsr305Type"] == 157, "Tink JSR305 source import union drift")
+    require(len(class_for_name_targets) == evidence["tinkClassForNameCallSites"] == 2, "Tink Class.forName call-site count drift")
+    require(sorted(set(class_for_name_targets)) == evidence["tinkClassForNameCalls"] == ["org.conscrypt.Conscrypt"], "Tink Class.forName target drift")
+
+
 def pom_properties(root: ET.Element) -> dict[str, str]:
     properties = root.find("m:properties", MAVEN_NS)
     if properties is None:
@@ -390,14 +559,49 @@ def parse_pom_license(path: Path) -> tuple[str, str]:
     return name, url
 
 
-def validate_static(inventory: dict[str, Any], license_notice: dict[str, Any], authenticity: dict[str, Any]) -> None:
+def validate_static(
+    inventory: dict[str, Any],
+    license_notice: dict[str, Any],
+    authenticity: dict[str, Any],
+    jsr305_exclusion: dict[str, Any],
+) -> None:
     require(inventory["schemaVersion"] == 2, "Dependency inventory schema drift")
     require(inventory["rootCoordinate"] == "com.google.crypto.tink:tink-android:1.23.0", "Root coordinate drift")
     require(inventory["dependencyAdmission"] is False, "Inventory must not admit the dependency")
     require(inventory["runtimeGraphModified"] is False, "Inventory must not claim a runtime graph")
+    require(inventory["prospectiveExclusionAnalysis"] == {
+        "locator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.json",
+        "status": "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_PRODUCT_IP_DECISION_PENDING",
+        "publishedClosureStillIncludesJsr305": True,
+        "futureProjectGraphClaimed": False,
+        "recommendedTreatment": "A_CONDITIONED_COMPLETE_EXCLUSION",
+        "requiredFutureResolvedJsr305ComponentCount": 0,
+        "productIpAccepted": False,
+    }, "Dependency inventory prospective JSR305 boundary drift")
     require(len(inventory["artifacts"]) == 8, "Expected eight published external coordinates")
     require(len(inventory["graphEdges"]) == 8, "Expected eight publisher dependency edges")
     require(all(artifact["jar"]["nativeEntries"] == 0 for artifact in inventory["artifacts"]), "Native entry recorded")
+    require(jsr305_exclusion["schemaVersion"] == 1 and jsr305_exclusion["pocId"] == "POC-RECOVERY-001", "JSR305 exclusion evidence identity drift")
+    require(jsr305_exclusion["status"] == "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_PRODUCT_IP_DECISION_PENDING", "JSR305 exclusion evidence status drift")
+    upstream = jsr305_exclusion["upstreamDependencyReason"]
+    require(upstream["directFromRootPom"] is True and upstream["viaCoordinate"] is None and upstream["mavenScope"] == "compile-default" and upstream["optional"] is False, "JSR305 direct compile/non-optional edge evidence drift")
+    bytecode = jsr305_exclusion["bytecodeAndSourceEvidence"]
+    require(bytecode["classesContainingAnyJsr305Descriptor"] == 182 and bytecode["constantClassReferencesToJsr305"] == 0 and bytecode["fieldOrMethodDefinitionDescriptorsToJsr305"] == 0 and bytecode["symbolicNameAndTypeOrMethodTypeDescriptorsToJsr305"] == 0 and bytecode["tinkReflectionOrClassForNameCallsTargetingJsr305"] == 0, "JSR305 annotation-only bytecode evidence drift")
+    require(JSR305_CLASS_LIST_PATH.is_file() and sha256(JSR305_CLASS_LIST_PATH) == bytecode["classListSha256"] == "325211cef459ba96a3c5721e5d754bff3464d15461e0c9f6da4a66a1f7ee2045", "JSR305 exact class-list evidence drift")
+    class_names = JSR305_CLASS_LIST_PATH.read_text(encoding="utf-8").splitlines()
+    require(len(class_names) == 182 and len(set(class_names)) == 182 and class_names == sorted(class_names), "JSR305 exact class list is incomplete or unsorted")
+    probes = jsr305_exclusion["nonRepositoryProbes"]
+    exact_rules = [
+        "-dontwarn javax.annotation.Nullable",
+        "-dontwarn javax.annotation.concurrent.GuardedBy",
+        "-dontwarn javax.annotation.concurrent.ThreadSafe",
+    ]
+    require(probes["kotlinConsumerCompile"]["exitCode"] == 0 and probes["jvmLoadAndReflection"]["failures"] == 0 and probes["d8"]["exitCode"] == 0, "JSR305 no-artifact compile/load/D8 probe drift")
+    require(probes["r8BareExclusion"]["exitCode"] == 1 and probes["r8NarrowRule"]["exitCode"] == 0 and probes["r8NarrowRule"]["rules"] == exact_rules, "JSR305 R8 conditioned-exclusion evidence drift")
+    policy = jsr305_exclusion["prospectivePolicy"]
+    require(policy["policyId"] == "REC-JSR305-EXCLUDE-001" and policy["forbiddenResolvedCoordinate"] == "com.google.code.findbugs:jsr305:3.0.2" and policy["requiredResolvedComponentCount"] == 0, "JSR305 zero-component policy drift")
+    require(policy["compileOnlyOrAlternatePathToForbiddenCoordinateAllowed"] is False and policy["requiredR8Rules"] == exact_rules and policy["futureResolvedGraphReportPresent"] is False, "JSR305 prospective policy weakened")
+    require(jsr305_exclusion["licenseDisposition"]["underlyingArtifactConflictResolved"] is False and jsr305_exclusion["licenseDisposition"]["stage0ProductIpFinalApproval"] is False, "JSR305 evidence overclaims license/Product-IP closure")
     require(inventory["inventoryStatus"] == "VERIFIED_PUBLISHER_CLOSURE_AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PACKAGE_REVIEW_ONLY", "Inventory authenticity status drift")
     require(inventory["authenticityEvidence"]["locator"] == "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json", "Inventory authenticity locator drift")
     require(license_notice["schemaVersion"] == 3 and license_notice["reviewStatus"] == "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED", "License review status drift")
@@ -473,7 +677,12 @@ def validate_static(inventory: dict[str, Any], license_notice: dict[str, Any], a
     require(sum(component["authenticityStatus"] == "AUTHENTICITY_VERIFIED_PUBLISHER_BOUND_SIGNATURE" for component in authentic_by_coordinate.values()) == 2, "Exactly two coordinates must use publisher-bound signatures")
 
 
-def verify_online(inventory: dict[str, Any], license_notice: dict[str, Any], authenticity: dict[str, Any]) -> None:
+def verify_online(
+    inventory: dict[str, Any],
+    license_notice: dict[str, Any],
+    authenticity: dict[str, Any],
+    jsr305_exclusion: dict[str, Any],
+) -> None:
     expected_edges: dict[str, set[tuple[str, str]]] = {}
     for edge in inventory["graphEdges"]:
         expected_edges.setdefault(edge["from"], set()).add((edge["to"], edge["scope"]))
@@ -498,6 +707,8 @@ def verify_online(inventory: dict[str, Any], license_notice: dict[str, Any], aut
             verify_file(jar_path, artifact["jar"], f"{coordinate} JAR")
             verify_file(pom_path, artifact["pom"], f"{coordinate} POM")
             verify_jar(jar_path, artifact)
+            if coordinate == "com.google.crypto.tink:tink-android:1.23.0":
+                verify_tink_jsr305_bytecode(jar_path, jsr305_exclusion)
 
             authenticity_record = authenticity_by_coordinate[coordinate]
             key_record = authenticity_record["openPgpKey"]
@@ -568,6 +779,8 @@ def verify_online(inventory: dict[str, Any], license_notice: dict[str, Any], aut
                     authenticity_record["signerIdentity"],
                     f"{coordinate} sources JAR",
                 )
+                if coordinate == "com.google.crypto.tink:tink-android:1.23.0":
+                    verify_tink_jsr305_sources(source_path, jsr305_exclusion)
 
             actual_dependencies = parse_project_dependencies(pom_path)
             require(
@@ -603,18 +816,19 @@ def main() -> int:
     inventory = read_json(INVENTORY_PATH)
     license_notice = read_json(LICENSE_PATH)
     authenticity = read_json(AUTHENTICITY_PATH)
-    validate_static(inventory, license_notice, authenticity)
+    jsr305_exclusion = read_json(JSR305_EXCLUSION_PATH)
+    validate_static(inventory, license_notice, authenticity, jsr305_exclusion)
     if args.online:
-        verify_online(inventory, license_notice, authenticity)
-        print("Verified 8 exact external JAR/POM coordinates online: artifact hashes, publisher checksums, full-fingerprint detached OpenPGP cryptography and identity metadata, signed source JARs for the six multisource coordinates, POM graph/licenses and no native payload; temporary files removed")
+        verify_online(inventory, license_notice, authenticity, jsr305_exclusion)
+        print("Verified 8 exact external JAR/POM coordinates online: artifact hashes, publisher checksums, full-fingerprint detached OpenPGP cryptography and identity metadata, signed source JARs for the six multisource coordinates, POM graph/licenses, no native payload, and exact Tink JSR305 annotation-only bytecode/source classification; temporary files removed")
     else:
-        print("POC-RECOVERY-001 v0.3 dependency/IP/authenticity static validation passed; authenticity verified, JSR305 license conflict remains (use --online for checksum and cryptographic signature revalidation)")
+        print("POC-RECOVERY-001 v0.3 dependency/IP/authenticity static validation passed; authenticity verified, conditioned JSR305 exclusion evidence valid, underlying license conflict and Product/IP decision remain open (use --online for checksum and cryptographic signature revalidation)")
     return 0
 
 
 if __name__ == "__main__":
     try:
         raise SystemExit(main())
-    except (OSError, ValueError, KeyError, ET.ParseError, zipfile.BadZipFile, json.JSONDecodeError) as error:
+    except (OSError, ValueError, KeyError, ET.ParseError, zipfile.BadZipFile, struct.error, json.JSONDecodeError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         raise SystemExit(1)

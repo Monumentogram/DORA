@@ -13,10 +13,19 @@
     "stage0ProductIp": {
       "role": "Stage 0 Product/IP reviewer",
       "reviewer": "Project owner",
-      "status": "ASSIGNED_FINAL_APPROVAL_BLOCKED_LICENSE_CONFLICT",
+      "status": "ASSIGNED_FINAL_APPROVAL_PENDING_JSR305_EXCLUSION_DISPOSITION",
       "finalApproved": false,
       "approvedReviewer": null,
       "approvedOn": null,
+      "pendingDisposition": {
+        "policyId": "REC-JSR305-EXCLUDE-001",
+        "analysisLocator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.md",
+        "technicalRecommendation": "A_CONDITIONED_COMPLETE_EXCLUSION",
+        "underlyingArtifactLicenseConflictResolved": false,
+        "accepted": false,
+        "acceptedBy": null,
+        "acceptedOn": null
+      },
       "authority": [
         "approve or reject exact Stage 0 evaluation scope",
         "approve or reject license, NOTICE, provenance and Product/IP compatibility for internal Stage 0 evaluation"
@@ -60,7 +69,7 @@
       "status": "AUTHORIZATION_WITHHELD",
       "authorizedBy": null,
       "authorizedOn": null,
-      "precondition": "Package review and independent Engineering/Security approval complete, exact future resolved graph and device preflights reviewed, harness separately implemented and safely verified.",
+      "precondition": "Product/IP has accepted an exact dependency disposition, package and independent Engineering/Security review are complete, the future graph proves zero forbidden jsr305 components under REC-JSR305-EXCLUDE-001, device preflights are reviewed, and the harness is separately implemented and safely verified.",
       "explicitLaterRecordRequired": true,
       "implicitAuthorizationAllowed": false
     },

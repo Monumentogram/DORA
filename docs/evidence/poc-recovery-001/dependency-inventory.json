@@ -17,6 +17,15 @@
   "dependencyAdmission": false,
   "runtimeGraphModified": false,
   "rootCoordinate": "com.google.crypto.tink:tink-android:1.23.0",
+  "prospectiveExclusionAnalysis": {
+    "locator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.json",
+    "status": "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_PRODUCT_IP_DECISION_PENDING",
+    "publishedClosureStillIncludesJsr305": true,
+    "futureProjectGraphClaimed": false,
+    "recommendedTreatment": "A_CONDITIONED_COMPLETE_EXCLUSION",
+    "requiredFutureResolvedJsr305ComponentCount": 0,
+    "productIpAccepted": false
+  },
   "resolution": {
     "kind": "PUBLISHED_POM_AND_GRADLE_MODULE_METADATA_CLOSURE",
     "repositories": [

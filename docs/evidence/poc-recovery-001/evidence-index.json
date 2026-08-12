@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "pocId": "POC-RECOVERY-001",
-  "status": "GOVERNANCE_V0_3_AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_EXECUTION_BLOCKED",
+  "status": "GOVERNANCE_V0_3_JSR305_EXCLUSION_PROVEN_PRODUCT_IP_DECISION_EXECUTION_BLOCKED",
   "activeGateSetVersion": "poc-recovery-stage0-v0.3",
   "activeProtocolId": "poc-recovery-protocol-stage0-v0.3",
   "executionAllowed": false,
@@ -68,6 +68,21 @@
       "status": "EXACT_CLOSURE_AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_NO_ADMISSION"
     },
     {
+      "id": "REC-JSR305-EXCLUSION-ANALYSIS-20260812",
+      "locator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.json",
+      "status": "TECHNICAL_EXCLUSION_PROVEN_WITH_NARROW_R8_RULE_PRODUCT_IP_DECISION_PENDING"
+    },
+    {
+      "id": "REC-JSR305-EXCLUSION-DECISION-20260812",
+      "locator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.md",
+      "status": "OPTION_A_CONDITIONED_RECOMMENDED_NO_OWNER_APPROVAL"
+    },
+    {
+      "id": "REC-JSR305-REFERENCE-CLASSES-20260812",
+      "locator": "docs/evidence/poc-recovery-001/jsr305-reference-classes-2026-08-12.txt",
+      "status": "EXACT_182_CLASS_LIST_SHA256_PINNED"
+    },
+    {
       "id": "REC-DEPENDENCY-IP-AUTHENTICITY-V03",
       "locator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json",
       "status": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_PRODUCT_IP_APPROVAL_BLOCKED"
@@ -105,7 +120,7 @@
     {
       "id": "REC-IP-REVIEW",
       "locator": "docs/evidence/poc-recovery-001/ip-stage0-evaluation-review.md",
-      "status": "AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_REVIEW_BLOCKED"
+      "status": "TECHNICAL_EXCLUSION_PATH_PREPARED_PRODUCT_IP_DECISION_BLOCKED"
     },
     {
       "id": "REC-INDEPENDENT-REVIEW-TASK",
