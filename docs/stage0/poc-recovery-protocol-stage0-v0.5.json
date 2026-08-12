@@ -1,0 +1,247 @@
+{
+  "schemaVersion": 5,
+  "protocolId": "poc-recovery-protocol-stage0-v0.5",
+  "pocId": "POC-RECOVERY-001",
+  "status": "PROSPECTIVE_GOVERNANCE_ONLY_IMPLEMENTATION_AND_EXECUTION_BLOCKED",
+  "gateSetLocator": "docs/stage0/poc-recovery-gate-set-stage0-v0.5.json",
+  "normativeMarkdown": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_5.md",
+  "executionAllowed": false,
+  "implementationAllowed": false,
+  "inheritsExactV04Contract": {
+    "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.4.json",
+    "sha256": "cfe9d19e7b0e409c1be6a33c4cd240ebdc03e014f0b1abe1b0776aae1ede5eaa",
+    "allUnchangedSemanticsInherited": true,
+    "overriddenSections": [
+      "recoveryTaxonomyV04",
+      "reconciliationAmendment",
+      "faultCampaign"
+    ],
+    "disposition": "INCORPORATED_BY_IMMUTABLE_REFERENCE_AND_SUPERSEDED_AS_STANDALONE_EXECUTION_INPUT"
+  },
+  "canonicalKeyTaxonomyV05": {
+    "uniqueClassifications": [
+      "KEY_REF_COLLISION",
+      "INCOMPLETE_KEY_BOOTSTRAP",
+      "KEY_CONFIRMATION_MISSING",
+      "CORRUPT_KEY_CONFIRMATION",
+      "KEY_UNAVAILABLE",
+      "KEY_UNAVAILABLE_KEY_MISMATCH",
+      "CORRUPT_KEY_ENVELOPE",
+      "KEY_ENVELOPE_AUTH_FAILURE"
+    ],
+    "uniqueClassificationCount": 8,
+    "newRunCreation": {
+      "mustExecuteBeforeCreatingRun": true,
+      "occupiedNamespacesChecked": [
+        "canonical Android Keystore alias",
+        "mandatory key-reference namespace",
+        "key-confirmation/run.kc.tmp",
+        "key-confirmation/run.kc"
+      ],
+      "anyOccupiedClassification": "KEY_REF_COLLISION",
+      "overwriteOrReplacementAllowed": false
+    },
+    "recoveryReconciliationAlgorithm": [
+      {
+        "step": 1,
+        "condition": "durable run row is absent and an alias and/or key-confirmation temp/final remains after interrupted bootstrap",
+        "classification": "INCOMPLETE_KEY_BOOTSTRAP",
+        "evidenceRule": "record exact absent, temp-only or final-orphan state as subtype/evidence without changing the classification"
+      },
+      {
+        "step": 2,
+        "condition": "durable run row exists but key-confirmation final is absent",
+        "classification": "KEY_CONFIRMATION_MISSING"
+      },
+      {
+        "step": 3,
+        "condition": "key-confirmation final exists but exact path, type, recorded ciphertext length or recorded ciphertext SHA-256 does not match",
+        "classification": "CORRUPT_KEY_CONFIRMATION",
+        "decryptAllowed": false
+      },
+      {
+        "step": 4,
+        "condition": "exact stored ciphertext identity passed but the Android Keystore alias is absent, invalidated or unusable",
+        "classification": "KEY_UNAVAILABLE"
+      },
+      {
+        "step": 5,
+        "condition": "alias is available, exact AAD is computed and Aead.decrypt() ends in authentication or AAD failure",
+        "classification": "KEY_UNAVAILABLE_KEY_MISMATCH",
+        "replacementKeyAllowed": false
+      },
+      {
+        "step": 6,
+        "condition": "decrypt succeeds but bounded plaintext parser, magic, schema, no-trailing-bytes, protocolId, candidateId, runId or canonicalAliasSha256 validation fails",
+        "classification": "CORRUPT_KEY_CONFIRMATION",
+        "validationPhase": "POST_DECRYPT_ONLY"
+      },
+      {
+        "step": 7,
+        "condition": "confirmation is fully valid but a mandatory subsequent key reference or key envelope is absent",
+        "classification": "KEY_UNAVAILABLE"
+      },
+      {
+        "step": 8,
+        "condition": "subsequent envelope exists but its length, SHA-256, encoding or parser validation fails",
+        "classification": "CORRUPT_KEY_ENVELOPE"
+      },
+      {
+        "step": 9,
+        "condition": "subsequent envelope is structurally valid but AEAD, AAD or tag verification fails",
+        "classification": "KEY_ENVELOPE_AUTH_FAILURE"
+      }
+    ],
+    "plaintextMagicSchemaParserOrTrailingValidationBeforeDecryptAllowed": false,
+    "ambiguousExpectedOutcomeAllowed": false
+  },
+  "reconciliationV05": {
+    "NO_DURABLE_ROW_WITH_BOOTSTRAP_REMAINDER": "INCOMPLETE_KEY_BOOTSTRAP; retain exact absent/temp-only/final-orphan subtype and evidence; never infer commit or replace the alias",
+    "DURABLE_ROW_MISSING_CONFIRMATION_FINAL": "KEY_CONFIRMATION_MISSING; fail closed and retain evidence",
+    "CONFIRMATION_STORED_IDENTITY_MISMATCH": "CORRUPT_KEY_CONFIRMATION; path/type/recorded ciphertext length/SHA-256 checks precede decrypt and a failure forbids decrypt",
+    "CONFIRMATION_ALIAS_ABSENT_INVALIDATED_OR_UNUSABLE": "KEY_UNAVAILABLE; never generate or replace an alias during recovery",
+    "CONFIRMATION_DECRYPT_AUTH_OR_AAD_FAILURE": "KEY_UNAVAILABLE_KEY_MISMATCH; never create a replacement key",
+    "CONFIRMATION_DECRYPTED_PLAINTEXT_INVALID": "CORRUPT_KEY_CONFIRMATION; bounded parser, magic, schema, no-trailing-bytes and all exact identity fields are validated only after successful decrypt",
+    "VALID_CONFIRMATION_MISSING_LATER_KEY_REFERENCE_OR_ENVELOPE": "KEY_UNAVAILABLE",
+    "LATER_ENVELOPE_LENGTH_HASH_ENCODING_OR_PARSER_INVALID": "CORRUPT_KEY_ENVELOPE",
+    "STRUCTURALLY_VALID_LATER_ENVELOPE_AUTH_FAILURE": "KEY_ENVELOPE_AUTH_FAILURE",
+    "TEMP_OR_FINAL_NAMESPACE_COLLISION_DURING_NEW_RUN": "KEY_REF_COLLISION; never overwrite, promote by name or continue publication"
+  },
+  "faultCampaign": {
+    "inheritedV03MandatoryRows": 33,
+    "addedV04KeyConfirmationRows": 12,
+    "addedV05MandatoryRows": 1,
+    "mandatoryFaultRowCount": 46,
+    "newV05Case": {
+      "id": "KCF-07",
+      "injection": "encrypt malformed key-confirmation plaintext with the correct current alias and exact AAD, then update the recorded outer ciphertext length and SHA-256",
+      "requiredObservation": "exact stored ciphertext identity passes and Aead.decrypt() succeeds",
+      "expected": "post-decrypt exact plaintext validation returns CORRUPT_KEY_CONFIRMATION",
+      "replacementKeyAllowed": false
+    },
+    "inheritedV04CaseOracleOverrides": [
+      {
+        "id": "KCB-01",
+        "expected": "INCOMPLETE_KEY_BOOTSTRAP with alias-only subtype/evidence; no replacement alias or publication"
+      },
+      {
+        "id": "KCB-02",
+        "expected": "INCOMPLETE_KEY_BOOTSTRAP with temp-only subtype/evidence; quarantine transaction; never promote by name"
+      },
+      {
+        "id": "KCB-03",
+        "expected": "INCOMPLETE_KEY_BOOTSTRAP with temp-only subtype/evidence; quarantine transaction; never promote by name"
+      },
+      {
+        "id": "KCB-04",
+        "expected": "INCOMPLETE_KEY_BOOTSTRAP with exact absent or final-orphan subtype/evidence; no durable row means no commit or publication"
+      },
+      {
+        "id": "KCB-05",
+        "expected": "INCOMPLETE_KEY_BOOTSTRAP with final-orphan subtype/evidence; fail closed and quarantine; no publication"
+      },
+      {
+        "id": "KCB-06",
+        "expected": "VALID_DURABLE_BOOTSTRAP; restart validates confirmation and emits at most one idempotent evidence event"
+      },
+      {
+        "id": "KCF-01",
+        "expected": "KEY_CONFIRMATION_MISSING; fail closed; artifacts retained"
+      },
+      {
+        "id": "KCF-02",
+        "expected": "CORRUPT_KEY_CONFIRMATION at pre-decrypt stored ciphertext identity step; decrypt forbidden"
+      },
+      {
+        "id": "KCF-03",
+        "expected": "CORRUPT_KEY_CONFIRMATION at pre-decrypt stored ciphertext identity step; decrypt forbidden"
+      },
+      {
+        "id": "KCF-04",
+        "expected": "KEY_UNAVAILABLE_KEY_MISMATCH only from Aead.decrypt authentication/AAD failure; no exact-plaintext alternative and no replacement key"
+      },
+      {
+        "id": "KCF-05",
+        "expected": "KEY_UNAVAILABLE_KEY_MISMATCH from Aead.decrypt authentication/AAD failure; replacement alias is never accepted"
+      },
+      {
+        "id": "KCF-06",
+        "expected": "KEY_REF_COLLISION before new-run creation; no overwrite or publication"
+      }
+    ],
+    "phaseA": {
+      "rows": 46,
+      "perRow": {
+        "PINNED_API36_X86_64_EMULATOR": 3,
+        "PHYSICAL_D2": 1
+      },
+      "emulatorInjections": 138,
+      "physicalD2Injections": 46,
+      "phaseATotalInjections": 184,
+      "allowedVerdicts": [
+        "FAIL",
+        "INCONCLUSIVE"
+      ],
+      "passAllowed": false
+    },
+    "fullPhysicalCampaign": {
+      "rows": 46,
+      "perRow": {
+        "PHYSICAL_D1": 1,
+        "PHYSICAL_D2": 1,
+        "PHYSICAL_D5": 1
+      },
+      "fullPhysicalTotalInjections": 138,
+      "D1Status": "DEFERRED",
+      "D2Status": "AVAILABLE_PREFLIGHT_PENDING",
+      "D5Status": "DEFERRED",
+      "passRequiresCompleteD1D2D5Profile": true
+    },
+    "phaseAD2ReuseForFullPhysicalCampaign": {
+      "allowedOnlyWhenAllMatch": [
+        "exact commit",
+        "protocol and Gate Set version",
+        "fixture digest",
+        "injection definition",
+        "device identity and profile",
+        "fresh preflight",
+        "validity criteria"
+      ],
+      "otherwiseRepeatD2": true,
+      "additionalD1D5InjectionsWhenReuseAllowed": 92
+    },
+    "hardKillCampaign": {
+      "attemptsPerCandidate": 120,
+      "separateFromFaultInjectionDenominators": true
+    },
+    "existingRepetitionsValidityCriteriaAndFailureGatesWeakened": false
+  },
+  "canonicalBlockerIds": [
+    "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
+    "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
+    "REC-RDY-03-STREAMING-IMPLEMENTATION-VERIFICATION",
+    "REC-RDY-04-MICROFILE-IMPLEMENTATION-VERIFICATION",
+    "REC-RDY-05-FUTURE-RESOLVED-GRAPH",
+    "REC-RDY-06-DEVICE-SQLITE-PREFLIGHT",
+    "REC-RDY-07-HARNESS-ABSENT",
+    "REC-RDY-08-OWNER-EXECUTION-AUTHORIZATION",
+    "REC-RDY-09-D1-D5-FULL-VERDICT",
+    "REC-RDY-10-PRODUCTION-LEGAL-SECURITY",
+    "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY"
+  ],
+  "productIpStates": {
+    "stateAProspectivePolicy": "CLOSED_APPROVED",
+    "stateBGovernanceEvidence": "CLOSED_VERIFIED",
+    "stateCFutureActualGraphPackageR8Disposition": "OPEN_BLOCKED",
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "jsr305UseOrDistributionApproved": false
+  },
+  "evidencePolicy": {
+    "formalReviewer": false,
+    "accountableEngineeringSecurityReviewer": null,
+    "productionLegalReviewer": null,
+    "productionSecurityReviewer": null,
+    "futureExecutionEvidenceAllowedByThisProtocol": false
+  }
+}

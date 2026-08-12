@@ -78,9 +78,9 @@ def validate_screen_inventory() -> None:
 def validate_decisions() -> None:
     text = read_text("docs/DORA_MVP1_PRODUCT_DECISIONS.md")
     ids = re.findall(r"^## (DEC-\d{3})\.", text, flags=re.MULTILINE)
-    expected_ids = [f"DEC-{index:03d}" for index in range(1, 44)]
+    expected_ids = [f"DEC-{index:03d}" for index in range(1, 45)]
     if ids != expected_ids:
-        fail(f"Expected ordered product decisions DEC-001 through DEC-043, found {ids}")
+        fail(f"Expected ordered product decisions DEC-001 through DEC-044, found {ids}")
 
     required_labels = (
         "Статус:",
@@ -175,6 +175,25 @@ def validate_governance() -> None:
         "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
         "docs/DORA_MVP1_STAGE_STATUS.md",
         "docs/adr/ADR-0001-android-bootstrap.md",
+        "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md",
+        "docs/stage0/poc-recovery-gate-set-stage0-v0.3.json",
+        "docs/stage0/poc-recovery-protocol-stage0-v0.3.json",
+        "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_4.md",
+        "docs/stage0/poc-recovery-gate-set-stage0-v0.4.json",
+        "docs/stage0/poc-recovery-protocol-stage0-v0.4.json",
+        "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_5.md",
+        "docs/stage0/poc-recovery-gate-set-stage0-v0.5.json",
+        "docs/stage0/poc-recovery-protocol-stage0-v0.5.json",
+        "docs/evidence/poc-recovery-001/evidence-index.json",
+        "docs/evidence/poc-recovery-001/review-findings-v0.1.json",
+        "docs/evidence/poc-recovery-001/review-findings-v0.2.json",
+        "docs/evidence/poc-recovery-001/review-findings-v0.3.json",
+        "docs/evidence/poc-recovery-001/review-findings-v0.4.json",
+        "docs/evidence/poc-recovery-001/governance-remediation-v0.4.md",
+        "docs/evidence/poc-recovery-001/governance-remediation-v0.5.md",
+        "docs/evidence/poc-recovery-001/base-lockfile-tooling-inventory-2026-08-12.json",
+        "docs/evidence/poc-recovery-001/jetbrains-annotations-license-notice-verification-2026-08-12.md",
+        "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json",
     )
     for relative_path in required_files:
         read_text(relative_path)

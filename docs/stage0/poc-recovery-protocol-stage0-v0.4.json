@@ -1,0 +1,346 @@
+{
+  "schemaVersion": 4,
+  "protocolId": "poc-recovery-protocol-stage0-v0.4",
+  "pocId": "POC-RECOVERY-001",
+  "status": "PROSPECTIVE_GOVERNANCE_ONLY_IMPLEMENTATION_AND_EXECUTION_BLOCKED",
+  "gateSetLocator": "docs/stage0/poc-recovery-gate-set-stage0-v0.4.json",
+  "normativeMarkdown": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_4.md",
+  "executionAllowed": false,
+  "implementationAllowed": false,
+  "inheritsExactV03Contract": {
+    "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.3.json",
+    "sha256": "376c6bec9d6632ff0824465ee890f953445c0843716b8a1b3a044f322d03a0c9",
+    "allUnchangedSemanticsInherited": true,
+    "disposition": "INCORPORATED_BY_IMMUTABLE_REFERENCE_AND_SUPERSEDED_AS_STANDALONE_EXECUTION_INPUT"
+  },
+  "binaryEncodingPrimitives": {
+    "unsignedIntegers": "network byte order / big-endian",
+    "LP16": "u16be byteLength followed by exactly byteLength UTF-8 bytes",
+    "uuid": "exactly 16 RFC 4122 network-order bytes",
+    "sha256": "exactly 32 raw digest bytes",
+    "strings": "UTF-8 without BOM; Unicode normalization is forbidden because all identifiers are restricted to canonical ASCII",
+    "trailingBytesAllowed": false
+  },
+  "keyConfirmation": {
+    "required": true,
+    "fileFamilyOrdinal": 9,
+    "finalRelativeName": "key-confirmation/run.kc",
+    "temporaryRelativeName": "key-confirmation/run.kc.tmp",
+    "aead": "the run Android Keystore AEAD returned by the exact Builder path",
+    "canonicalAlias": {
+      "format": "android-keystore://dora.poc.recovery.v1.<lowercase-run-uuid>",
+      "asciiOnly": true,
+      "minimumUtf8Bytes": 76,
+      "maximumUtf8Bytes": 76,
+      "digest": "SHA-256 over the exact canonical alias UTF-8 bytes"
+    },
+    "plaintextSchema": {
+      "name": "DORA_RECOVERY_KEY_CONFIRMATION_PLAINTEXT_V1_BINARY_BE",
+      "magicAscii": "DORAKC01",
+      "schemaVersionU16be": 1,
+      "exactEncoding": "magic[8] || u16be(1) || LP16(protocolId) || LP16(candidateId) || runId[16] || canonicalAliasSha256[32]",
+      "protocolIdUtf8MaximumBytes": 96,
+      "candidateIdUtf8MaximumBytes": 64,
+      "encodedBytesMaximum": 222,
+      "trailingBytesAllowed": false
+    },
+    "associatedDataSchema": {
+      "name": "DORA_RECOVERY_KEY_CONFIRMATION_AAD_V1_BINARY_BE",
+      "magicAscii": "DORAKA01",
+      "schemaVersionU16be": 1,
+      "exactEncoding": "magic[8] || u16be(1) || LP16(protocolId) || LP16(candidateId) || runId[16] || canonicalAliasSha256[32]",
+      "protocolIdUtf8MaximumBytes": 96,
+      "candidateIdUtf8MaximumBytes": 64,
+      "encodedBytesMaximum": 222,
+      "trailingBytesAllowed": false
+    },
+    "identifierRules": {
+      "protocolId": "exact ASCII protocolId from the active protocol",
+      "candidateId": "exact ASCII candidate ID REC-STREAM-TINK or REC-MICROFILE-TINK",
+      "runId": "same lowercase canonical UUID represented as 16 network-order bytes",
+      "crossRunOrCrossCandidateReuseAllowed": false
+    },
+    "runBootstrapSequence": [
+      "KC-01 prove the canonical run alias and key-reference namespace are absent; otherwise KEY_REF_COLLISION",
+      "KC-02 call AndroidKeystoreKmsClient.generateNewAeadKey(alias)",
+      "KC-03 obtain the run AEAD only through new AndroidKeystoreKmsClient.Builder().setKeyUri(alias).build().getAead(alias)",
+      "KC-04 encode the exact bounded plaintext and AAD and call Aead.encrypt(plaintext, aad)",
+      "KC-05 exclusive-create key-confirmation/run.kc.tmp with O_CREAT|O_EXCL|O_WRONLY|O_CLOEXEC; existing temp or final is never overwritten",
+      "KC-06 write the complete ciphertext to the temp descriptor",
+      "KC-07 fsync the temp file descriptor",
+      "KC-08 collision-check the final and rename key-confirmation/run.kc.tmp to key-confirmation/run.kc without overwrite",
+      "KC-09 fsync the key-confirmation parent directory",
+      "KC-10 write one SQLite run row containing exact relative name, byte length, SHA-256, canonical alias SHA-256 and confirmation state",
+      "KC-11 mark the non-exclusive SQLite transaction successful",
+      "KC-12 successful endTransaction() return is the durable semantic bootstrap commit",
+      "KC-13 only after KC-12 may the controller bootstrap event be emitted and any encrypted keyset, ciphertext, checkpoint or manifest publication begin"
+    ],
+    "newRunOrder": {
+      "immediatelyAfterAliasCreation": true,
+      "beforeAnyEncryptedKeyset": true,
+      "beforeAnyCiphertext": true,
+      "beforeAnyCheckpoint": true,
+      "beforeAnyManifest": true
+    },
+    "existingTemporaryOrFinalMayBeOverwritten": false,
+    "recoveryMayGenerateOrReplaceAlias": false
+  },
+  "storageAmendment": {
+    "fileFamilyCount": 9,
+    "addedFinalNamePattern": {
+      "keyConfirmation": "key-confirmation/run.kc"
+    },
+    "addedTempNamePattern": {
+      "keyConfirmation": "key-confirmation/run.kc.tmp"
+    },
+    "temporaryNameMapping": "finalRelativeName + '.tmp'",
+    "allowlistedFinalFamilies": [
+      "streamCiphertext",
+      "streamKeyEnvelope",
+      "streamCheckpointCiphertext",
+      "streamCheckpointKeyEnvelope",
+      "microfileCiphertext",
+      "microfileKeyEnvelope",
+      "manifestCiphertext",
+      "manifestKeyEnvelope",
+      "keyConfirmation"
+    ],
+    "pathValidationRequired": [
+      "canonical containment beneath the active run root",
+      "lstat every existing path component",
+      "regular file at the leaf",
+      "no symlink at any component or leaf",
+      "exclusive create and no-overwrite collision check"
+    ],
+    "publicationSequences": {
+      "runBootstrapPrefix": "KC-01 through KC-12 must complete before any v0.3 9-step streaming setup, 13-step checkpoint or 21-step microfile/manifest sequence; KC-13 is evidence only and is not semantic commit",
+      "streamingSetup": "inherited exact v0.3 9-step sequence after durable key-confirmation bootstrap",
+      "streamingCheckpointGeneration": "inherited exact v0.3 13-step sequence after durable key-confirmation bootstrap",
+      "microfileGeneration": "inherited exact v0.3 21-step sequence after durable key-confirmation bootstrap"
+    }
+  },
+  "sqliteAmendment": {
+    "requiredRunRowFields": [
+      "runId",
+      "candidateId",
+      "keyConfirmationRelativeName",
+      "keyConfirmationBytes",
+      "keyConfirmationSha256",
+      "canonicalAliasSha256",
+      "keyConfirmationState"
+    ],
+    "keyConfirmationStateAllowedValues": [
+      "VALID",
+      "QUARANTINE_PENDING",
+      "QUARANTINED"
+    ],
+    "abstractFileIdentityAllowed": false,
+    "semanticCommitApi": "endTransaction() successful return",
+    "controllerEventPartOfSemanticCommit": false
+  },
+  "recoveryTaxonomyV04": {
+    "classificationPrecedence": [
+      {
+        "priority": 1,
+        "condition": "new run finds the alias, key-reference namespace, key-confirmation temp or key-confirmation final already occupied",
+        "classification": "KEY_REF_COLLISION"
+      },
+      {
+        "priority": 2,
+        "condition": "alias exists but neither confirmation artifact nor durable SQLite run row exists after interrupted bootstrap",
+        "classification": "INCOMPLETE_KEY_BOOTSTRAP"
+      },
+      {
+        "priority": 3,
+        "condition": "durable SQLite run row points to a missing key-confirmation final",
+        "classification": "KEY_CONFIRMATION_MISSING"
+      },
+      {
+        "priority": 4,
+        "condition": "key-confirmation length, SHA-256, bounded binary parser, magic, schema or no-trailing-byte check fails",
+        "classification": "CORRUPT_KEY_CONFIRMATION"
+      },
+      {
+        "priority": 5,
+        "condition": "key-confirmation bytes and hash pass but decrypt, AAD or exact known-plaintext comparison fails",
+        "classification": "KEY_UNAVAILABLE_KEY_MISMATCH"
+      },
+      {
+        "priority": 6,
+        "condition": "validated confirmation exists but a later required alias, key reference or key envelope is absent",
+        "classification": "KEY_UNAVAILABLE"
+      },
+      {
+        "priority": 7,
+        "condition": "validated confirmation exists but a later envelope length, SHA-256 or parser check fails",
+        "classification": "CORRUPT_KEY_ENVELOPE"
+      },
+      {
+        "priority": 8,
+        "condition": "confirmation is valid and the structurally valid later envelope fails AEAD, AAD or tag authentication",
+        "classification": "KEY_ENVELOPE_AUTH_FAILURE"
+      }
+    ],
+    "ambiguousExpectedOutcomeAllowed": false
+  },
+  "reconciliationAmendment": {
+    "ALIAS_NO_CONFIRMATION_NO_DURABLE_ROW": "INCOMPLETE_KEY_BOOTSTRAP; never replace or regenerate the alias; run is not execution-eligible; explicit retained/quarantine disposition required",
+    "KEY_CONFIRMATION_TEMP_ONLY": "uncommitted temp; after path/type validation move through the quarantine transaction; never promote by name",
+    "KEY_CONFIRMATION_FINAL_NO_ROW": "authenticated-orphan candidate; verify bytes and authentication fail closed, then move through the quarantine transaction; never infer commit",
+    "KEY_CONFIRMATION_ROW_MISSING_FINAL": "KEY_CONFIRMATION_MISSING; split-brain; fail committed readiness and retain evidence",
+    "KEY_CONFIRMATION_ROW_LENGTH_HASH_OR_PARSER_MISMATCH": "CORRUPT_KEY_CONFIRMATION; do not decrypt when structural identity fails",
+    "KEY_CONFIRMATION_AUTHENTICATION_MISMATCH": "KEY_UNAVAILABLE_KEY_MISMATCH; never generate, replace or accept another alias",
+    "VALID_CONFIRMATION_LATER_ENVELOPE_AUTH_FAILURE": "KEY_ENVELOPE_AUTH_FAILURE",
+    "TEMP_AND_FINAL_COLLISION": "KEY_REF_COLLISION for new bootstrap; never overwrite either object; quarantine only through the durable transaction"
+  },
+  "hardKillBarrierAmendment": {
+    "barrierIds": ["K01", "K02", "K03", "K04", "K05", "K06", "K07", "K08", "K09", "K10", "K11", "K12"],
+    "requiredBeforeEveryBarrierCanArm": "KC-12 durable SQLite bootstrap commit returned successfully and key-confirmation final/row identity validates",
+    "controllerBootstrapEventRequiredForSemanticCommit": false,
+    "candidateSpecificBarrierText": "inherited exact v0.3 K01-K12 markers; v0.4 adds the common durable key-confirmation prerequisite without changing the 120 hard-kill campaign denominator"
+  },
+  "faultCampaign": {
+    "inheritedV03MandatoryRows": 33,
+    "addedV04MandatoryRows": 12,
+    "mandatoryFaultRowCount": 45,
+    "repetitionProfile": {
+      "PINNED_API36_X86_64_EMULATOR": 3,
+      "PHYSICAL_D2": 1
+    },
+    "totalInjections": 180,
+    "separateFromHardKillDenominator": true,
+    "addedCases": [
+      {
+        "id": "KCB-01",
+        "injection": "kill after KC-02 alias creation and before KC-05 temp creation",
+        "expected": "INCOMPLETE_KEY_BOOTSTRAP; no replacement alias; no publication; retained or quarantined by explicit reconciliation",
+        "repetitions": {"PINNED_API36_X86_64_EMULATOR": 3, "PHYSICAL_D2": 1}
+      },
+      {
+        "id": "KCB-02",
+        "injection": "kill after KC-06 temp write and before KC-07 file fsync",
+        "expected": "KEY_CONFIRMATION_TEMP_ONLY; quarantine transaction; never promote by name",
+        "repetitions": {"PINNED_API36_X86_64_EMULATOR": 3, "PHYSICAL_D2": 1}
+      },
+      {
+        "id": "KCB-03",
+        "injection": "kill after KC-07 file fsync and before KC-08 rename",
+        "expected": "KEY_CONFIRMATION_TEMP_ONLY; quarantine transaction; never promote by name",
+        "repetitions": {"PINNED_API36_X86_64_EMULATOR": 3, "PHYSICAL_D2": 1}
+      },
+      {
+        "id": "KCB-04",
+        "injection": "kill after KC-08 rename and before KC-09 directory fsync",
+        "expected": "fail-closed final-or-absent reconciliation; no durable row means no commit and no publication",
+        "repetitions": {"PINNED_API36_X86_64_EMULATOR": 3, "PHYSICAL_D2": 1}
+      },
+      {
+        "id": "KCB-05",
+        "injection": "kill after KC-09 directory fsync and before KC-12 SQLite commit",
+        "expected": "KEY_CONFIRMATION_FINAL_NO_ROW authenticated orphan; fail-closed verification then quarantine; no publication",
+        "repetitions": {"PINNED_API36_X86_64_EMULATOR": 3, "PHYSICAL_D2": 1}
+      },
+      {
+        "id": "KCB-06",
+        "injection": "kill after KC-12 SQLite commit and before KC-13 controller event",
+        "expected": "durable bootstrap remains committed; restart validates confirmation and emits at most one idempotent evidence event",
+        "repetitions": {"PINNED_API36_X86_64_EMULATOR": 3, "PHYSICAL_D2": 1}
+      },
+      {
+        "id": "KCF-01",
+        "injection": "delete key-confirmation final while durable run row remains",
+        "expected": "KEY_CONFIRMATION_MISSING; fail closed; artifacts retained",
+        "repetitions": {"PINNED_API36_X86_64_EMULATOR": 3, "PHYSICAL_D2": 1}
+      },
+      {
+        "id": "KCF-02",
+        "injection": "bit-flip key-confirmation ciphertext without updating recorded SHA-256",
+        "expected": "CORRUPT_KEY_CONFIRMATION before decryption",
+        "repetitions": {"PINNED_API36_X86_64_EMULATOR": 3, "PHYSICAL_D2": 1}
+      },
+      {
+        "id": "KCF-03",
+        "injection": "truncate key-confirmation ciphertext and update neither recorded length nor SHA-256",
+        "expected": "CORRUPT_KEY_CONFIRMATION before decryption",
+        "repetitions": {"PINNED_API36_X86_64_EMULATOR": 3, "PHYSICAL_D2": 1}
+      },
+      {
+        "id": "KCF-04",
+        "injection": "copy another run or candidate confirmation and update recorded length/SHA-256",
+        "expected": "KEY_UNAVAILABLE_KEY_MISMATCH from AAD or exact known-plaintext mismatch",
+        "repetitions": {"PINNED_API36_X86_64_EMULATOR": 3, "PHYSICAL_D2": 1}
+      },
+      {
+        "id": "KCF-05",
+        "injection": "replace the run alias while leaving the confirmation and its recorded identity unchanged",
+        "expected": "KEY_UNAVAILABLE_KEY_MISMATCH; replacement is never accepted and regeneration is forbidden",
+        "repetitions": {"PINNED_API36_X86_64_EMULATOR": 3, "PHYSICAL_D2": 1}
+      },
+      {
+        "id": "KCF-06",
+        "injection": "precreate key-confirmation temp, final or both before new-run exclusive create/rename",
+        "expected": "KEY_REF_COLLISION; no overwrite, no publication and durable quarantine-only reconciliation",
+        "repetitions": {"PINNED_API36_X86_64_EMULATOR": 3, "PHYSICAL_D2": 1}
+      }
+    ]
+  },
+  "cleanupAndQuarantine": {
+    "quarantineOrder": [
+      "SQLite intent commit",
+      "rename without overwrite",
+      "fsync source directory",
+      "fsync destination directory",
+      "SQLite completion commit"
+    ],
+    "confirmationMovesWithRunEvidence": true,
+    "silentDeletionAllowed": false,
+    "aliasDeletionDuringReconciliationAllowed": false,
+    "aliasDeletionAfterExplicitRetentionAndCleanupReceiptOnly": true,
+    "replacementAliasDuringRecoveryAllowed": false
+  },
+  "dependencyBoundary": {
+    "policyId": "REC-JSR305-EXCLUDE-001",
+    "prospectivePolicyState": "CLOSED_APPROVED",
+    "governanceAuthenticityLicenseEvidenceState": "CLOSED_VERIFIED_FOR_EXACT_PACKET",
+    "actualFutureRecoveryGraphState": "OPEN_BLOCKED_UNTIL_SEPARATELY_AUTHORIZED_IMPLEMENTATION",
+    "currentTinkAndroid123Wired": false,
+    "currentRecoveryModuleExists": false,
+    "repositoryWideAbsenceClaimed": false,
+    "coveredFutureModule": ":poc:recovery",
+    "coveredFutureInputs": [
+      "all resolvable compile configurations",
+      "all resolvable runtime configurations",
+      "all resolvable unit-test configurations",
+      "all resolvable androidTest configurations",
+      "all resolvable benchmark configurations",
+      "all resolvable release configurations",
+      "all packaging and runtime artifact inputs",
+      ":poc:recovery dependency locks and dependency verification metadata"
+    ],
+    "excludedCurrentInputs": [
+      "buildscript, AGP, UTP, lint and tooling configurations of other existing modules",
+      "existing app, capture and search lockfiles"
+    ],
+    "excludedCurrentInputsAreRecoveryAdmissionEvidence": false,
+    "requiredRootDeclaration": "exact com.google.crypto.tink:tink-android:1.23.0 with a Tink-local exclude of com.google.code.findbugs:jsr305:3.0.2",
+    "requiredResolvedJsr305ComponentCount": 0,
+    "requiredPackagedJsr305ClassDefinitionCount": 0,
+    "requiredR8Rules": [
+      "-dontwarn javax.annotation.Nullable",
+      "-dontwarn javax.annotation.concurrent.GuardedBy",
+      "-dontwarn javax.annotation.concurrent.ThreadSafe"
+    ],
+    "broaderDontwarnAllowed": false,
+    "releaseR8UnresolvedMissingClassesAllowed": false,
+    "actualGraphProductIpDispositionRequired": true,
+    "jsr305UseOrDistributionApprovalRequired": false,
+    "jsr305UseOrDistributionApproved": false
+  },
+  "evidencePolicy": {
+    "formalReviewer": false,
+    "approvedReviewer": null,
+    "accountableEngineeringSecurityReviewer": null,
+    "rawKeysKeysetsCiphertextDatabasesOrAudioAllowedInGitOrActions": false,
+    "futureExecutionEvidenceAllowedByThisProtocol": false
+  }
+}

@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 5,
+  "pocId": "POC-RECOVERY-001",
+  "gateSetVersion": "poc-recovery-stage0-v0.5",
+  "protocolId": "poc-recovery-protocol-stage0-v0.5",
+  "status": "PROPOSED_GOVERNANCE_V0_5_IMPLEMENTATION_VERIFICATION_REQUIRED",
+  "normativeMarkdown": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_5.md",
+  "protocolLocator": "docs/stage0/poc-recovery-protocol-stage0-v0.5.json",
+  "executionAllowed": false,
+  "implementationAllowed": false,
+  "ownerProtocolSemanticsFrozen": true,
+  "supersedes": {
+    "gateSetVersion": "poc-recovery-stage0-v0.4",
+    "disposition": "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE",
+    "reviewedCommit": "c3eae5c3fbe5cba6a96ad827441cfe4e3f1bfc55"
+  },
+  "inheritsExactV04GateSet": {
+    "locator": "docs/stage0/poc-recovery-gate-set-stage0-v0.4.json",
+    "sha256": "f89d5dff7bcfdcc7f96efd4d1c195b0054e262976db3b722b384c50e4440804c",
+    "allUnchangedSemanticsInherited": true,
+    "overriddenSections": [
+      "active identity and metadata",
+      "retained audit artifacts and findings ledgers",
+      "key-confirmation taxonomy summary",
+      "mandatory fault rows and campaign profiles",
+      "canonical blocker IDs"
+    ],
+    "disposition": "INCORPORATED_BY_IMMUTABLE_REFERENCE_AND_SUPERSEDED_AS_STANDALONE_EXECUTION_INPUT"
+  },
+  "retainedAuditArtifacts": [
+    {
+      "version": "poc-recovery-stage0-v0.1",
+      "markdownLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_1.md",
+      "markdownSha256": "d891e033e3e58455dbafd03be5a41ca64cafda93182424357035c37d769ae46e",
+      "gateLocator": "docs/stage0/poc-recovery-gate-set-stage0-v0.1.json",
+      "gateSha256": "78c1a8289f90b51a376b023673dc00b6cb35386b5b0a2dda9432b50b20216e11",
+      "protocolLocator": "docs/stage0/poc-recovery-protocol-stage0-v0.1.json",
+      "protocolSha256": "b853295e6c66815c61566e930d30dafa0dfc72e805bb5ba38158688e084ead81",
+      "disposition": "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE"
+    },
+    {
+      "version": "poc-recovery-stage0-v0.2",
+      "markdownLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_2.md",
+      "markdownSha256": "d4fab2f47872f0b6c1c04c5b0b1022b047ae8782eb0130cd2f66825294455180",
+      "gateLocator": "docs/stage0/poc-recovery-gate-set-stage0-v0.2.json",
+      "gateSha256": "f6384c7b1d4d493218a600722ddf0116f454e8356e7e247da74f03256cc69110",
+      "protocolLocator": "docs/stage0/poc-recovery-protocol-stage0-v0.2.json",
+      "protocolSha256": "cfa06e624cbc0da37b68188d7b1739cdfb5ca12beeedc21f408897dc41b2081f",
+      "disposition": "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE"
+    },
+    {
+      "version": "poc-recovery-stage0-v0.3",
+      "markdownLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md",
+      "markdownSha256": "7d24e5aa0c2dd0c65ef8def12e687d39f5d0bfc30a222be51f29bffd02c772a9",
+      "gateLocator": "docs/stage0/poc-recovery-gate-set-stage0-v0.3.json",
+      "gateSha256": "25a05a4d136f90e6b62005943585a27161517ea337573b71b5b1aaeca16bb80f",
+      "protocolLocator": "docs/stage0/poc-recovery-protocol-stage0-v0.3.json",
+      "protocolSha256": "376c6bec9d6632ff0824465ee890f953445c0843716b8a1b3a044f322d03a0c9",
+      "disposition": "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE"
+    },
+    {
+      "version": "poc-recovery-stage0-v0.4",
+      "markdownLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_4.md",
+      "markdownSha256": "03521bce76d123d463c86980f1db10b43667b39cea5114810977c8d4940dad0f",
+      "gateLocator": "docs/stage0/poc-recovery-gate-set-stage0-v0.4.json",
+      "gateSha256": "f89d5dff7bcfdcc7f96efd4d1c195b0054e262976db3b722b384c50e4440804c",
+      "protocolLocator": "docs/stage0/poc-recovery-protocol-stage0-v0.4.json",
+      "protocolSha256": "cfe9d19e7b0e409c1be6a33c4cd240ebdc03e014f0b1abe1b0776aae1ede5eaa",
+      "disposition": "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE"
+    }
+  ],
+  "findingsLedgers": [
+    "docs/evidence/poc-recovery-001/review-findings-v0.1.json",
+    "docs/evidence/poc-recovery-001/review-findings-v0.2.json",
+    "docs/evidence/poc-recovery-001/review-findings-v0.3.json",
+    "docs/evidence/poc-recovery-001/review-findings-v0.4.json"
+  ],
+  "remediationLocator": "docs/evidence/poc-recovery-001/governance-remediation-v0.5.md",
+  "scope": {
+    "stage": "Stage 0D governance-only remediation",
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "implementationAllowed": false,
+    "measurementAllowed": false,
+    "deviceExecutionAllowed": false,
+    "gradleRuntimeDependencyAllowed": false,
+    "recoveryModuleAllowed": false,
+    "productionAppChangeAllowed": false
+  },
+  "executionAuthorization": {
+    "status": "WITHHELD_PENDING_SEPARATE_OWNER_AUTHORIZATION",
+    "authorizedBy": null,
+    "authorizedOn": null,
+    "authorizationRecord": null,
+    "implicitFlipForbidden": true
+  },
+  "approvalState": {
+    "prospectivePolicyApproved": true,
+    "governanceAuthenticityAndLicenseEvidenceVerified": true,
+    "actualFutureGraphProductIpDisposition": "OPEN_BLOCKED_UNTIL_AUTHORIZED_IMPLEMENTATION_GRAPH_EXISTS",
+    "productIpFinalApproval": false,
+    "approvedReviewer": null,
+    "approvedOn": null,
+    "accountableIndependentEngineeringSecurityReviewer": null,
+    "currentCodexReviewClaimedFormallyIndependent": false,
+    "productionLegalReviewer": null,
+    "productionSecurityReviewer": null
+  },
+  "keyConfirmationGate": {
+    "fileFamilyCount": 9,
+    "requiredFinalRelativeName": "key-confirmation/run.kc",
+    "requiredTemporaryRelativeName": "key-confirmation/run.kc.tmp",
+    "runBootstrapStepCount": 13,
+    "canonicalUniqueClassificationCount": 8,
+    "recoveryDecisionStepCount": 9,
+    "plaintextValidationPhase": "POST_DECRYPT_ONLY",
+    "publicationBeforeDurableBootstrapCommitAllowed": false,
+    "existingTemporaryOrFinalMayBeOverwritten": false,
+    "inheritedV04MandatoryFaultRows": 12,
+    "mandatoryFaultRowsAddedV05": 1
+  },
+  "mandatoryFaultRowCount": 46,
+  "mandatoryFaultIds": [
+    "COR-01", "COR-02", "COR-03", "COR-04", "COR-05", "COR-06",
+    "TRU-01", "TRU-02", "TRU-03",
+    "KEY-01", "KEY-02", "KEY-03", "KEY-04", "KEY-05", "KEY-06", "KEY-07",
+    "SPL-01", "SPL-02", "SPL-03", "SPL-04", "SPL-05",
+    "RBK-01", "RBK-02", "PAR-01",
+    "QUA-01", "QUA-02", "QUA-03",
+    "IDE-01", "IDE-02", "EVT-01",
+    "CLN-01", "CLN-02", "CLN-03",
+    "KCB-01", "KCB-02", "KCB-03", "KCB-04", "KCB-05", "KCB-06",
+    "KCF-01", "KCF-02", "KCF-03", "KCF-04", "KCF-05", "KCF-06", "KCF-07"
+  ],
+  "faultCampaignProfiles": {
+    "phaseA": {
+      "perRow": {
+        "PINNED_API36_X86_64_EMULATOR": 3,
+        "PHYSICAL_D2": 1
+      },
+      "rows": 46,
+      "emulatorInjections": 138,
+      "physicalD2Injections": 46,
+      "phaseATotalInjections": 184,
+      "allowedVerdicts": ["FAIL", "INCONCLUSIVE"],
+      "passAllowed": false
+    },
+    "fullPhysicalCampaign": {
+      "perRow": {
+        "PHYSICAL_D1": 1,
+        "PHYSICAL_D2": 1,
+        "PHYSICAL_D5": 1
+      },
+      "rows": 46,
+      "fullPhysicalTotalInjections": 138,
+      "passRequiresCompleteD1D2D5Profile": true,
+      "D1AndD5Deferred": true
+    },
+    "d2Reuse": {
+      "allowedOnlyIfExactCommitMatches": true,
+      "allowedOnlyIfProtocolAndGateSetVersionMatch": true,
+      "allowedOnlyIfFixtureDigestMatches": true,
+      "allowedOnlyIfInjectionDefinitionMatches": true,
+      "allowedOnlyIfDeviceIdentityAndProfileMatch": true,
+      "allowedOnlyIfFreshPreflightMatches": true,
+      "allowedOnlyIfValidityCriteriaMatch": true,
+      "otherwiseRepeatD2": true,
+      "additionalD1D5InjectionsWithValidReuse": 92
+    },
+    "hardKillAttemptsPerCandidate": 120,
+    "separateFromHardKillDenominator": true,
+    "existingRepetitionsValidityCriteriaAndFailureGatesWeakened": false
+  },
+  "productIpStates": {
+    "stateAProspectivePolicy": "CLOSED_APPROVED",
+    "stateBGovernanceEvidence": "CLOSED_VERIFIED",
+    "stateCFutureActualGraphPackageR8Disposition": "OPEN_BLOCKED",
+    "jsr305UseOrDistributionApproved": false,
+    "dependencyAdmission": false,
+    "productionAdmission": false
+  },
+  "blockerStateSource": "docs/evidence/poc-recovery-001/readiness.json",
+  "blockers": [
+    "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
+    "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
+    "REC-RDY-03-STREAMING-IMPLEMENTATION-VERIFICATION",
+    "REC-RDY-04-MICROFILE-IMPLEMENTATION-VERIFICATION",
+    "REC-RDY-05-FUTURE-RESOLVED-GRAPH",
+    "REC-RDY-06-DEVICE-SQLITE-PREFLIGHT",
+    "REC-RDY-07-HARNESS-ABSENT",
+    "REC-RDY-08-OWNER-EXECUTION-AUTHORIZATION",
+    "REC-RDY-09-D1-D5-FULL-VERDICT",
+    "REC-RDY-10-PRODUCTION-LEGAL-SECURITY",
+    "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY"
+  ]
+}

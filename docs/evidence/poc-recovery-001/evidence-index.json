@@ -1,0 +1,221 @@
+{
+  "schemaVersion": 3,
+  "pocId": "POC-RECOVERY-001",
+  "status": "GOVERNANCE_V0_5_POLICY_AND_EXACT_PACKET_EVIDENCE_CLOSED_ACTUAL_GRAPH_IMPLEMENTATION_EXECUTION_BLOCKED",
+  "activeGateSetVersion": "poc-recovery-stage0-v0.5",
+  "activeProtocolId": "poc-recovery-protocol-stage0-v0.5",
+  "implementationAllowed": false,
+  "executionAllowed": false,
+  "supersededAuditArtifacts": [
+    {
+      "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_1.md",
+      "sha256": "d891e033e3e58455dbafd03be5a41ca64cafda93182424357035c37d769ae46e"
+    },
+    {
+      "locator": "docs/stage0/poc-recovery-gate-set-stage0-v0.1.json",
+      "sha256": "78c1a8289f90b51a376b023673dc00b6cb35386b5b0a2dda9432b50b20216e11"
+    },
+    {
+      "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.1.json",
+      "sha256": "b853295e6c66815c61566e930d30dafa0dfc72e805bb5ba38158688e084ead81"
+    },
+    {
+      "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_2.md",
+      "sha256": "d4fab2f47872f0b6c1c04c5b0b1022b047ae8782eb0130cd2f66825294455180"
+    },
+    {
+      "locator": "docs/stage0/poc-recovery-gate-set-stage0-v0.2.json",
+      "sha256": "f6384c7b1d4d493218a600722ddf0116f454e8356e7e247da74f03256cc69110"
+    },
+    {
+      "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.2.json",
+      "sha256": "cfa06e624cbc0da37b68188d7b1739cdfb5ca12beeedc21f408897dc41b2081f"
+    },
+    {
+      "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md",
+      "sha256": "7d24e5aa0c2dd0c65ef8def12e687d39f5d0bfc30a222be51f29bffd02c772a9"
+    },
+    {
+      "locator": "docs/stage0/poc-recovery-gate-set-stage0-v0.3.json",
+      "sha256": "25a05a4d136f90e6b62005943585a27161517ea337573b71b5b1aaeca16bb80f"
+    },
+    {
+      "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.3.json",
+      "sha256": "376c6bec9d6632ff0824465ee890f953445c0843716b8a1b3a044f322d03a0c9"
+    },
+    {
+      "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_4.md",
+      "sha256": "03521bce76d123d463c86980f1db10b43667b39cea5114810977c8d4940dad0f"
+    },
+    {
+      "locator": "docs/stage0/poc-recovery-gate-set-stage0-v0.4.json",
+      "sha256": "f89d5dff7bcfdcc7f96efd4d1c195b0054e262976db3b722b384c50e4440804c"
+    },
+    {
+      "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.4.json",
+      "sha256": "cfe9d19e7b0e409c1be6a33c4cd240ebdc03e014f0b1abe1b0776aae1ede5eaa"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "REC-V03-GATE-MARKDOWN",
+      "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md",
+      "status": "SUPERSEDED_SHA256_PINNED_AUDIT_ARTIFACT_NON_EXECUTABLE"
+    },
+    {
+      "id": "REC-V03-GATE-JSON",
+      "locator": "docs/stage0/poc-recovery-gate-set-stage0-v0.3.json",
+      "status": "SUPERSEDED_SHA256_PINNED_AUDIT_ARTIFACT_NON_EXECUTABLE"
+    },
+    {
+      "id": "REC-V03-PROTOCOL-JSON",
+      "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.3.json",
+      "status": "SUPERSEDED_SHA256_PINNED_AUDIT_ARTIFACT_NON_EXECUTABLE"
+    },
+    {
+      "id": "REC-V04-GATE-MARKDOWN",
+      "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_4.md",
+      "status": "SUPERSEDED_SHA256_PINNED_AUDIT_ARTIFACT_NON_EXECUTABLE"
+    },
+    {
+      "id": "REC-V04-GATE-JSON",
+      "locator": "docs/stage0/poc-recovery-gate-set-stage0-v0.4.json",
+      "status": "SUPERSEDED_SHA256_PINNED_AUDIT_ARTIFACT_NON_EXECUTABLE"
+    },
+    {
+      "id": "REC-V04-PROTOCOL-JSON",
+      "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.4.json",
+      "status": "SUPERSEDED_SHA256_PINNED_AUDIT_ARTIFACT_NON_EXECUTABLE"
+    },
+    {
+      "id": "REC-V05-GATE-MARKDOWN",
+      "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_5.md",
+      "status": "ACTIVE_PROSPECTIVE_NON_EXECUTABLE"
+    },
+    {
+      "id": "REC-V05-GATE-JSON",
+      "locator": "docs/stage0/poc-recovery-gate-set-stage0-v0.5.json",
+      "status": "ACTIVE_PROSPECTIVE_NON_EXECUTABLE"
+    },
+    {
+      "id": "REC-V05-PROTOCOL-JSON",
+      "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.5.json",
+      "status": "ACTIVE_PROSPECTIVE_NON_EXECUTABLE"
+    },
+    {
+      "id": "REC-OWNER-PRODUCT-IP-POLICY-DISPOSITION-20260812",
+      "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md",
+      "status": "REC_JSR305_EXCLUDE_001_APPROVED_PROSPECTIVE_POLICY_ONLY_EXECUTION_BLOCKED"
+    },
+    {
+      "id": "REC-V03-REMEDIATION",
+      "locator": "docs/evidence/poc-recovery-001/governance-remediation-v0.3.md",
+      "status": "SUPERSEDED_AUDIT_EVIDENCE"
+    },
+    {
+      "id": "REC-V04-REMEDIATION",
+      "locator": "docs/evidence/poc-recovery-001/governance-remediation-v0.4.md",
+      "status": "SUPERSEDED_AUDIT_EVIDENCE_REC_GOV_V03_001_004_CLOSED"
+    },
+    {
+      "id": "REC-V05-REMEDIATION",
+      "locator": "docs/evidence/poc-recovery-001/governance-remediation-v0.5.md",
+      "status": "REC_ADV_V04_001_004_CLOSED_GOVERNANCE_ONLY"
+    },
+    {
+      "id": "REC-REVIEW-V01-LEDGER",
+      "locator": "docs/evidence/poc-recovery-001/review-findings-v0.1.json",
+      "status": "SANITIZED_FORMAL_REVIEWER_FALSE"
+    },
+    {
+      "id": "REC-REVIEW-V02-LEDGER",
+      "locator": "docs/evidence/poc-recovery-001/review-findings-v0.2.json",
+      "status": "SANITIZED_FORMAL_REVIEWER_FALSE"
+    },
+    {
+      "id": "REC-REVIEW-V03-LEDGER",
+      "locator": "docs/evidence/poc-recovery-001/review-findings-v0.3.json",
+      "status": "FOUR_FINAL_ADVISORY_FINDINGS_CLOSED_FORMAL_REVIEWER_FALSE"
+    },
+    {
+      "id": "REC-REVIEW-V04-LEDGER",
+      "locator": "docs/evidence/poc-recovery-001/review-findings-v0.4.json",
+      "status": "FOUR_SANITIZED_ADVISORY_FINDINGS_CLOSED_FORMAL_REVIEWER_FALSE"
+    },
+    {
+      "id": "REC-DEPENDENCY-INVENTORY",
+      "locator": "docs/evidence/poc-recovery-001/dependency-inventory.json",
+      "status": "EXACT_CLOSURE_AUTHENTICITY_VERIFIED_LICENSE_CONFLICT_NO_ADMISSION"
+    },
+    {
+      "id": "REC-JSR305-EXCLUSION-ANALYSIS-20260812",
+      "locator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.json",
+      "status": "TECHNICAL_EXCLUSION_PROVEN_OWNER_PRODUCT_IP_PROSPECTIVE_POLICY_APPROVED"
+    },
+    {
+      "id": "REC-JSR305-EXCLUSION-DECISION-20260812",
+      "locator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.md",
+      "status": "OPTION_A_OWNER_DISPOSITION_RECORDED_PROSPECTIVE_POLICY_ONLY"
+    },
+    {
+      "id": "REC-JSR305-REFERENCE-CLASSES-20260812",
+      "locator": "docs/evidence/poc-recovery-001/jsr305-reference-classes-2026-08-12.txt",
+      "status": "EXACT_182_CLASS_LIST_SHA256_PINNED"
+    },
+    {
+      "id": "REC-DEPENDENCY-IP-AUTHENTICITY-V03",
+      "locator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json",
+      "status": "EXACT_GOVERNANCE_PACKET_AUTHENTICITY_LICENSE_NOTICE_VERIFIED_FUTURE_ACTUAL_GRAPH_BLOCKED"
+    },
+    {
+      "id": "REC-DEPENDENCY-IP-AUTHENTICITY-VERIFICATION-20260812",
+      "locator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-verification-2026-08-12.md",
+      "status": "CRYPTOGRAPHIC_SOURCE_LICENSE_NOTICE_EVIDENCE_RECORDED_PACKET_ONLY"
+    },
+    {
+      "id": "REC-JETBRAINS-ANNOTATIONS-LICENSE-NOTICE-VERIFICATION-20260812",
+      "locator": "docs/evidence/poc-recovery-001/jetbrains-annotations-license-notice-verification-2026-08-12.md",
+      "status": "IMMUTABLE_LICENSE_AND_NOTICE_BYTES_SHA256_VERIFIED"
+    },
+    {
+      "id": "REC-BASE-LOCKFILE-TOOLING-INVENTORY-20260812",
+      "locator": "docs/evidence/poc-recovery-001/base-lockfile-tooling-inventory-2026-08-12.json",
+      "status": "EXISTING_OTHER_MODULE_TOOLING_PATHS_INVENTORIED_NOT_RECOVERY_ADMISSION"
+    },
+    {
+      "id": "REC-LICENSE-NOTICE",
+      "locator": "docs/evidence/poc-recovery-001/license-notice-inventory.json",
+      "status": "GOVERNANCE_PACKET_LICENSE_NOTICE_VERIFIED_FUTURE_ACTUAL_GRAPH_BLOCKED"
+    },
+    {
+      "id": "REC-SECURITY-INVENTORY",
+      "locator": "docs/evidence/poc-recovery-001/security-advisory-inventory.json",
+      "status": "SNAPSHOT_COMPLETE_INDEPENDENT_REVIEW_PENDING"
+    },
+    {
+      "id": "REC-SQLITE-PROVENANCE",
+      "locator": "docs/evidence/poc-recovery-001/sqlite-platform-provenance.json",
+      "status": "PREFLIGHT_PENDING_EXECUTION_BLOCKED"
+    },
+    {
+      "id": "REC-REVIEW-ROLES",
+      "locator": "docs/evidence/poc-recovery-001/review-roles.json",
+      "status": "OWNER_POLICY_APPROVED_FORMAL_ENGINEERING_SECURITY_REVIEWER_UNASSIGNED"
+    },
+    {
+      "id": "REC-READINESS",
+      "locator": "docs/evidence/poc-recovery-001/readiness.json",
+      "status": "BLOCKED"
+    },
+    {
+      "id": "REC-IP-REVIEW",
+      "locator": "docs/evidence/poc-recovery-001/ip-stage0-evaluation-review.md",
+      "status": "PROSPECTIVE_EXCLUSION_POLICY_APPROVED_ARTIFACT_USE_IMPLEMENTATION_EXECUTION_BLOCKED"
+    },
+    {
+      "id": "REC-INDEPENDENT-REVIEW-TASK",
+      "locator": "docs/evidence/poc-recovery-001/independent-engineering-security-review-task.md",
+      "status": "READY_TO_COPY_REVIEWER_UNASSIGNED"
+    }
+  ]
+}

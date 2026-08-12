@@ -1,0 +1,502 @@
+{
+  "schemaVersion": 1,
+  "protocolId": "poc-recovery-protocol-stage0-v0.1",
+  "pocId": "POC-RECOVERY-001",
+  "status": "PROPOSED_REVIEW_REQUIRED_EXECUTION_BLOCKED",
+  "gateSetLocator": "docs/stage0/poc-recovery-gate-set-stage0-v0.1.json",
+  "executionAllowed": false,
+  "fixture": {
+    "kind": "deterministic-synthetic-pcm",
+    "containsRealAudio": false,
+    "encoding": "PCM_S16LE",
+    "sampleRateHz": 16000,
+    "channels": 1,
+    "bytesPerSample": 2,
+    "bytesPerSecond": 32000,
+    "tailGateSeconds": 5.0,
+    "tailGateBytes": 160000,
+    "byteOracle": "monotonic deterministic frame and byte intervals recorded by the external controller",
+    "acceptedWatermark": "exclusive end of complete bounded writer calls that returned before SIGKILL; in-progress calls excluded",
+    "ackDelayUntilCommitForbidden": true
+  },
+  "definitions": {
+    "commitPoint": {
+      "dataCiphertextComplete": true,
+      "ciphertextFileDescriptorSynced": true,
+      "requiredRenameAndParentDurabilityComplete": true,
+      "authenticatedPublicationCompleteWhenApplicable": true,
+      "sqliteTransactionCommittedWithSynchronousFull": true,
+      "publicApiCheckpointProofApproved": true,
+      "candidateCommitEventObservedByExternalController": true,
+      "intermediateStateIsCommitted": false
+    },
+    "committedPrefix": "longest gap-free plaintext interval [0,C) made only of units whose commit points occurred before the kill",
+    "recoveredAuthenticatedPrefix": "longest gap-free interval [0,R) returned only after Tink authentication, exact AAD validation and journal/manifest reconciliation",
+    "committedLossBytesFormula": "max(0, C - min(C, R))",
+    "tailLossBytesFormula": "max(0, A - R)",
+    "tailLossSecondsFormula": "tailLossBytes / 32000.0"
+  },
+  "dependencyCandidate": {
+    "coordinate": "com.google.crypto.tink:tink-android:1.23.0",
+    "permission": "STAGE0_EVALUATION_PACKAGE_PREPARATION_ONLY",
+    "runtimeGraphAdmission": false,
+    "inventoryLocator": "docs/evidence/poc-recovery-001/dependency-inventory.json",
+    "securityLocator": "docs/evidence/poc-recovery-001/security-advisory-inventory.json"
+  },
+  "candidates": [
+    {
+      "id": "REC-STREAM-TINK",
+      "primitive": "com.google.crypto.tink.StreamingAead",
+      "apiBoundary": "PUBLIC_ONLY",
+      "proposedTemplate": {
+        "name": "AES128_GCM_HKDF_4KB",
+        "status": "PROPOSED",
+        "mainKeyBytes": 16,
+        "hkdf": "HMAC_SHA256",
+        "derivedAesGcmKeyBytes": 16,
+        "ciphertextSegmentBytes": 4096,
+        "sourceTag": "v1.23.0",
+        "sourceCommit": "1bedd75ae7161017c5f45b020395a72bbd40645d",
+        "helperClassDeprecated": true,
+        "approvedConstructionPath": null
+      },
+      "streamingCheckpointProof": {
+        "status": "PENDING_INDEPENDENT_ENGINEERING_SECURITY_REVIEW",
+        "publicApiOnly": true,
+        "eofVsAuthenticationFailureAnalysis": null,
+        "approvedReviewer": null,
+        "approvedOn": null
+      },
+      "keySeparation": {
+        "runKeyUniquePerRun": true,
+        "segmentKeys": "unique derived segment keys within the reviewed streaming construction",
+        "keystoreWrappingRequired": true
+      }
+    },
+    {
+      "id": "REC-MICROFILE-TINK",
+      "primitive": "com.google.crypto.tink.Aead",
+      "apiBoundary": "PUBLIC_ONLY",
+      "aeadTemplate": {
+        "name": null,
+        "status": "UNSELECTED_PENDING_INDEPENDENT_ENGINEERING_SECURITY_REVIEW"
+      },
+      "manifest": {
+        "authenticated": true,
+        "generationNumbered": true,
+        "monotonic": true,
+        "exactEncoding": null,
+        "status": "PROPOSED_PENDING_INDEPENDENT_ENGINEERING_SECURITY_REVIEW"
+      },
+      "cadences": [
+        {
+          "seconds": 5,
+          "fullUnitPlaintextBytes": 160000,
+          "role": "PRIMARY_GATE_COMPATIBLE",
+          "passEligible": true
+        },
+        {
+          "seconds": 15,
+          "fullUnitPlaintextBytes": 480000,
+          "role": "OBSERVATION_OR_POST_FAILURE_FALLBACK",
+          "passEligible": false
+        },
+        {
+          "seconds": 30,
+          "fullUnitPlaintextBytes": 960000,
+          "role": "OBSERVATION_OR_POST_FAILURE_FALLBACK",
+          "passEligible": false
+        }
+      ],
+      "keySeparation": {
+        "runKeyUniquePerRun": true,
+        "segmentKeyUniquePerMicrofile": true,
+        "keystoreWrappingRequired": true
+      }
+    }
+  ],
+  "keyProtocol": {
+    "status": "PROPOSED_PENDING_INDEPENDENT_ENGINEERING_SECURITY_REVIEW",
+    "androidKeystoreWrapping": true,
+    "keystoreKeyNonExportable": true,
+    "runKeyUniquePerRun": true,
+    "segmentKeySeparationRequired": true,
+    "keyBytesAllowedInGit": false,
+    "keysetsAllowedInGit": false,
+    "keyBytesAllowedInLogs": false,
+    "keyBytesAllowedInActionsArtifacts": false,
+    "rawDatabaseAllowedInGitOrActions": false,
+    "keyLossTestMandatory": true,
+    "missingKeyClassification": "KEY_UNAVAILABLE",
+    "missingKeyMayBeClassifiedAsCorruption": false,
+    "automaticReplacementKeyForExistingReferenceAllowed": false,
+    "associatedDataRequiredFields": [
+      "protocolId",
+      "candidateId",
+      "runId",
+      "unitIndex",
+      "plaintextStartExclusiveOrInclusiveConvention",
+      "plaintextEndExclusive",
+      "cadenceSeconds",
+      "manifestOrCheckpointGeneration"
+    ]
+  },
+  "hardKillCampaign": {
+    "signal": "SIGKILL",
+    "gracefulStopAllowed": false,
+    "baseAttemptsPerCandidate": 120,
+    "validHardKillsMinimumPerCandidate": 100,
+    "strataCount": 12,
+    "baseAttemptsPerStratumPerCandidate": 10,
+    "validHardKillsMinimumPerStratum": 8,
+    "attemptIdPattern": "<phase>-<candidate>-<stratum>-<environment>-<slot-01..10>",
+    "phaseAAllocationPerStratum": {
+      "PINNED_API36_X86_64_EMULATOR": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "PHYSICAL_D2": [
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    "fullPhysicalAllocationPerStratum": {
+      "D1": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "D2": [
+        5,
+        6,
+        7
+      ],
+      "D5": [
+        8,
+        9,
+        10
+      ]
+    },
+    "strata": [
+      {
+        "id": "K01",
+        "barrier": "accepted plaintext buffered; no authenticated unit complete"
+      },
+      {
+        "id": "K02",
+        "barrier": "public crypto primitive actively producing next authenticated unit"
+      },
+      {
+        "id": "K03",
+        "barrier": "authenticated unit complete or public close/flush returned; file not synced"
+      },
+      {
+        "id": "K04",
+        "barrier": "ciphertext file sync returned; final publication not started"
+      },
+      {
+        "id": "K05",
+        "barrier": "final ciphertext publication complete; metadata publication pending"
+      },
+      {
+        "id": "K06",
+        "barrier": "authenticated manifest/checkpoint temporary generation written; not synced"
+      },
+      {
+        "id": "K07",
+        "barrier": "manifest/checkpoint temporary generation synced; atomic publication pending"
+      },
+      {
+        "id": "K08",
+        "barrier": "manifest/checkpoint published; SQLite transaction pending"
+      },
+      {
+        "id": "K09",
+        "barrier": "SQLite transaction open before commit return"
+      },
+      {
+        "id": "K10",
+        "barrier": "candidate commit point externally observed; next input not accepted"
+      },
+      {
+        "id": "K11",
+        "barrier": "next unit active after at least one prior commit point"
+      },
+      {
+        "id": "K12",
+        "barrier": "recovery reconciliation or quarantine active; recovery PID receives SIGKILL"
+      }
+    ],
+    "candidateBarrierMappings": {
+      "REC-STREAM-TINK": {
+        "status": "PENDING_INDEPENDENT_REVIEW",
+        "internalHooksAllowed": false,
+        "reflectionAllowed": false,
+        "timingOnlySleepAllowed": false
+      },
+      "REC-MICROFILE-TINK": {
+        "status": "PENDING_INDEPENDENT_REVIEW",
+        "internalHooksAllowed": false,
+        "reflectionAllowed": false,
+        "timingOnlySleepAllowed": false
+      }
+    },
+    "validHardKillRequirements": [
+      "attempt scheduled before execution",
+      "exact candidate/build/artifact/protocol and sanitized preflight match authorization",
+      "target PID alive and assigned stratum barrier observed",
+      "external controller issued SIGKILL to the target PID",
+      "process death independently confirmed before recovery",
+      "no graceful finalize completed after kill trigger",
+      "external schedule, preflight, controller and kill evidence envelope complete and schema-valid; candidate recovery-output absence is an outcome",
+      "no enumerated external invalidator"
+    ],
+    "invalidators": [
+      "WRONG_PID",
+      "STRATUM_BARRIER_NOT_REACHED",
+      "CONTROLLER_DISCONNECTED_BEFORE_SIGNAL_CONFIRMATION",
+      "DEVICE_REBOOT_OR_POWER_LOSS_OUTSIDE_ASSIGNED_FAULT",
+      "PREFLIGHT_OR_PROTOCOL_IDENTITY_MISMATCH",
+      "FIXTURE_DRIFT",
+      "OPERATOR_INTERVENTION",
+      "EXTERNAL_CONTROLLER_OR_PREFLIGHT_EVIDENCE_ENVELOPE_INCOMPLETE_OR_SCHEMA_INVALID"
+    ],
+    "neverInvalid": [
+      "CANDIDATE_CRASH",
+      "AUTHENTICATION_FAILURE",
+      "COMMITTED_BYTE_LOSS",
+      "TAIL_LOSS_GATE_FAILURE",
+      "UNRECOVERABLE_SPLIT_BRAIN",
+      "DUPLICATE_OR_MISSING_PROCESSING_INTENT",
+      "CANDIDATE_TIMEOUT_OR_DEADLOCK",
+      "CANDIDATE_RECOVERY_OUTPUT_MISSING_OR_SCHEMA_INVALID_AFTER_CONFIRMED_KILL"
+    ],
+    "replacement": {
+      "automaticReplacementAllowed": false,
+      "eligibleInvalidBaseAttemptOnly": true,
+      "candidateFailureReplaceable": false,
+      "maximumPerCandidate": 20,
+      "maximumPerBaseAttempt": 1,
+      "suffix": "-R1",
+      "sameCandidateEnvironmentAndStratumRequired": true,
+      "originalRetained": true,
+      "replacementReducesInvalidCount": false,
+      "replacementRequiresExplicitLedgerEntry": true
+    }
+  },
+  "faultCampaign": {
+    "separateFromHardKillDenominator": true,
+    "phaseARepetitionsPerApplicableCandidate": {
+      "PINNED_API36_X86_64_EMULATOR": 3,
+      "PHYSICAL_D2": 1
+    },
+    "fullPhysicalRepetitionsPerApplicableCandidate": {
+      "D1": 1,
+      "D2": 1,
+      "D5": 1
+    },
+    "cases": [
+      {
+        "id": "COR-01",
+        "category": "corruption",
+        "appliesTo": "BOTH",
+        "injection": "flip bit in committed ciphertext",
+        "expected": "authentication failure at affected unit; earlier prefix preserved; affected and later state quarantined"
+      },
+      {
+        "id": "COR-02",
+        "category": "corruption",
+        "appliesTo": "BOTH_WHEN_AUTHENTICATED_PUBLICATION_EXISTS",
+        "injection": "alter authenticated manifest/checkpoint bytes or tag",
+        "expected": "generation rejected; no unauthenticated fallback; last valid prefix or explicit corruption"
+      },
+      {
+        "id": "COR-03",
+        "category": "corruption",
+        "appliesTo": "BOTH",
+        "injection": "alter SQLite offset, hash or file identity",
+        "expected": "split-brain classification; data not relabeled committed; no deletion"
+      },
+      {
+        "id": "TRU-01",
+        "category": "truncation",
+        "appliesTo": "BOTH",
+        "injection": "truncate inside uncommitted tail",
+        "expected": "committed prefix preserved and tail explicitly classified"
+      },
+      {
+        "id": "TRU-02",
+        "category": "truncation",
+        "appliesTo": "BOTH",
+        "injection": "truncate inside committed unit",
+        "expected": "FAIL with committed loss detected; no shorter healthy relabel"
+      },
+      {
+        "id": "TRU-03",
+        "category": "truncation",
+        "appliesTo": "BOTH",
+        "injection": "append unauthenticated bytes",
+        "expected": "appended bytes rejected and quarantined; prefix unchanged"
+      },
+      {
+        "id": "KEY-01",
+        "category": "key-loss",
+        "appliesTo": "BOTH",
+        "injection": "remove or invalidate Android Keystore wrapping key",
+        "expected": "KEY_UNAVAILABLE, not CORRUPT; ciphertext and metadata retained"
+      },
+      {
+        "id": "KEY-02",
+        "category": "key-loss",
+        "appliesTo": "BOTH",
+        "injection": "remove run-key envelope or reference",
+        "expected": "run-level KEY_UNAVAILABLE; no replacement key generated under old reference"
+      },
+      {
+        "id": "KEY-03",
+        "category": "key-loss",
+        "appliesTo": "BOTH_WITH_REVIEWED_CANDIDATE_MAPPING",
+        "injection": "remove one microfile segment key or make reviewed streaming key or derivation unavailable",
+        "expected": "key-scoped loss identified; earlier prefix remains; no skip across hole"
+      },
+      {
+        "id": "SPL-01",
+        "category": "split-brain",
+        "appliesTo": "BOTH",
+        "injection": "file durable and SQLite record absent",
+        "expected": "uncommitted orphan classified; no promotion without authenticated reconciliation"
+      },
+      {
+        "id": "SPL-02",
+        "category": "split-brain",
+        "appliesTo": "BOTH",
+        "injection": "SQLite record present and file missing",
+        "expected": "explicit split-brain and FAIL if record was committed; no fabricated bytes"
+      },
+      {
+        "id": "SPL-03",
+        "category": "split-brain",
+        "appliesTo": "BOTH_WHEN_AUTHENTICATED_PUBLICATION_EXISTS",
+        "injection": "manifest or checkpoint ahead of SQLite",
+        "expected": "authenticated generation retained for reconciliation or quarantine; no implicit commit"
+      },
+      {
+        "id": "SPL-04",
+        "category": "split-brain",
+        "appliesTo": "BOTH_WHEN_AUTHENTICATED_PUBLICATION_EXISTS",
+        "injection": "SQLite ahead of manifest or checkpoint",
+        "expected": "explicit split-brain; last jointly durable prefix only"
+      },
+      {
+        "id": "SPL-05",
+        "category": "split-brain",
+        "appliesTo": "BOTH",
+        "injection": "temporary file or generation remains",
+        "expected": "deterministic temp classification; final namespace not overwritten blindly"
+      },
+      {
+        "id": "QUA-01",
+        "category": "quarantine",
+        "appliesTo": "BOTH",
+        "injection": "unknown or orphan file in allowlisted run directory",
+        "expected": "hash, size and reason recorded; app-private quarantine; never opened as healthy"
+      },
+      {
+        "id": "QUA-02",
+        "category": "quarantine",
+        "appliesTo": "BOTH",
+        "injection": "hard kill during quarantine move",
+        "expected": "next recovery converges to one item without loss or duplicate record"
+      },
+      {
+        "id": "IDE-01",
+        "category": "idempotency",
+        "appliesTo": "BOTH",
+        "injection": "run recovery twice without mutation",
+        "expected": "byte-identical prefix and stable classifications and processing-intent IDs"
+      },
+      {
+        "id": "IDE-02",
+        "category": "idempotency",
+        "appliesTo": "BOTH",
+        "injection": "hard kill during recovery and recover again",
+        "expected": "same canonical result as uninterrupted recovery; no duplicate processing intent"
+      },
+      {
+        "id": "CLN-01",
+        "category": "cleanup",
+        "appliesTo": "BOTH",
+        "injection": "hard kill during explicit cleanup",
+        "expected": "cleanup rerun converges without silent committed or quarantined evidence loss"
+      },
+      {
+        "id": "CLN-02",
+        "category": "cleanup",
+        "appliesTo": "BOTH",
+        "injection": "deny cleanup deletion",
+        "expected": "explicit retryable cleanup state with verdict and evidence retained"
+      },
+      {
+        "id": "CLN-03",
+        "category": "cleanup",
+        "appliesTo": "BOTH",
+        "injection": "explicitly delete test keys after evidence retention",
+        "expected": "subsequent access reports key loss; cleanup receipt has references only"
+      }
+    ]
+  },
+  "sqliteJournal": {
+    "scope": "POC_LOCAL_SPLIT_BRAIN_AND_RECONCILIATION_ONLY",
+    "api": "android.database.sqlite",
+    "roomAllowed": false,
+    "sqlCipherAllowed": false,
+    "workManagerAllowed": false,
+    "productionSchemaAllowed": false,
+    "productionMigrationAllowed": false,
+    "synchronousPragma": "FULL",
+    "journalMode": null,
+    "journalModeStatus": "PENDING_INDEPENDENT_ENGINEERING_SECURITY_REVIEW",
+    "allowedFields": [
+      "runId",
+      "candidateId",
+      "unitIndex",
+      "plaintextStart",
+      "plaintextEndExclusive",
+      "fileIdentity",
+      "manifestOrCheckpointGeneration",
+      "state",
+      "processingIntentId"
+    ],
+    "provenanceLocator": "docs/evidence/poc-recovery-001/sqlite-platform-provenance.json"
+  },
+  "evidencePolicy": {
+    "publicEvidenceAllowlist": [
+      "sanitized JSON contract and result records",
+      "artifact and POM hashes",
+      "sanitized device and system-image identity",
+      "ciphertext hashes and sizes without ciphertext bytes",
+      "classification, count and verdict summaries"
+    ],
+    "publicEvidenceDenylist": [
+      "plaintext or audio",
+      "ciphertext files",
+      "key bytes or keysets",
+      "Android Keystore material",
+      "SQLite database, WAL or journal files",
+      "device serials or unique identifiers",
+      "private local paths"
+    ],
+    "silentDeletionAllowed": false,
+    "quarantineRoot": "future exact app-private PoC root pending harness review",
+    "pathContainmentRequired": true,
+    "cleanupRequiresExplicitCommand": true,
+    "cleanupReceiptRequired": true
+  }
+}

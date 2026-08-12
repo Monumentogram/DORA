@@ -1,0 +1,308 @@
+{
+  "schemaVersion": 3,
+  "pocId": "POC-RECOVERY-001",
+  "gateSetVersion": "poc-recovery-stage0-v0.3",
+  "status": "PROPOSED_OWNER_REMEDIATED_IMPLEMENTATION_VERIFICATION_REQUIRED",
+  "ownerProtocolSemanticsFrozen": true,
+  "supersedes": {
+    "gateSetVersion": "poc-recovery-stage0-v0.2",
+    "disposition": "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE",
+    "reviewedCommit": "70cf26125dbecbb347311ca0bb9ce1ad5c637e18"
+  },
+  "retainedAuditArtifacts": [
+    {
+      "gateSetVersion": "poc-recovery-stage0-v0.1",
+      "disposition": "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE",
+      "reviewedCommit": "87f8c00c6afce0f658678a7a09b1a394b89a2454"
+    },
+    {
+      "gateSetVersion": "poc-recovery-stage0-v0.2",
+      "disposition": "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE",
+      "reviewedCommit": "70cf26125dbecbb347311ca0bb9ce1ad5c637e18"
+    }
+  ],
+  "decisionIds": [
+    "DEC-044",
+    "OD-14"
+  ],
+  "normativeMarkdown": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md",
+  "protocolLocator": "docs/stage0/poc-recovery-protocol-stage0-v0.3.json",
+  "findingsLedgers": [
+    "docs/evidence/poc-recovery-001/review-findings-v0.1.json",
+    "docs/evidence/poc-recovery-001/review-findings-v0.2.json"
+  ],
+  "executionAllowed": false,
+  "executionAuthorization": {
+    "status": "WITHHELD_PENDING_SEPARATE_OWNER_AUTHORIZATION",
+    "authorizedBy": null,
+    "authorizedOn": null,
+    "authorizationRecord": null,
+    "implicitFlipForbidden": true
+  },
+  "approvalState": {
+    "productIpFinalApproval": false,
+    "approvedReviewer": null,
+    "approvedOn": null,
+    "accountableIndependentEngineeringSecurityReviewer": null,
+    "currentCodexReviewClaimedFormallyIndependent": false,
+    "productionLegalReviewer": null,
+    "productionSecurityReviewer": null
+  },
+  "scope": {
+    "stage": "Stage 0D governance-only remediation",
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "finalAdrAudio001": false,
+    "implementationAllowed": false,
+    "measurementAllowed": false,
+    "deviceExecutionAllowed": false,
+    "gradleRuntimeDependencyAllowed": false,
+    "recoveryModuleAllowed": false,
+    "productionAppChangeAllowed": false
+  },
+  "candidates": [
+    {
+      "id": "REC-STREAM-TINK",
+      "primitive": "com.google.crypto.tink.StreamingAead",
+      "apiBoundary": "PUBLIC_ONLY",
+      "artifact": "com.google.crypto.tink:tink-android:1.23.0",
+      "construction": "AES_GCM_HKDF_STREAMING_PARAMETERS",
+      "constructionStatus": "DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED",
+      "inputKeyBytes": 16,
+      "derivedAesGcmKeyBytes": 16,
+      "hkdfHash": "SHA256",
+      "ciphertextSegmentBytes": 4096,
+      "checkpointModel": "DURABLE_ONE_SEGMENT_LOOKAHEAD",
+      "passEligibleCadencesSeconds": [],
+      "maximumBoundedTailBytes": 8160,
+      "maximumBoundedTailSeconds": 0.255,
+      "maxPlaintextBytesPerRun": 115200000,
+      "maxSegmentsPerRun": 28236,
+      "deprecatedStreamingAeadKeyTemplatesAllowed": false,
+      "registryConfigurationRequired": true,
+      "internalApiAllowed": false
+    },
+    {
+      "id": "REC-MICROFILE-TINK",
+      "primitive": "com.google.crypto.tink.Aead",
+      "apiBoundary": "PUBLIC_ONLY",
+      "artifact": "com.google.crypto.tink:tink-android:1.23.0",
+      "template": "AES256_GCM_TINK_IV12_TAG16",
+      "templateStatus": "DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED",
+      "aesKeyBytes": 32,
+      "ivBytes": 12,
+      "tagBytes": 16,
+      "variant": "TINK",
+      "freshKeysetPerMicrofile": true,
+      "passEligibleCadencesSeconds": [
+        5
+      ],
+      "observationOnlyCadencesSeconds": [
+        15,
+        30
+      ],
+      "fullUnitPlaintextBytes": 160000,
+      "fullUnitCiphertextBytes": 160033,
+      "registryConfigurationRequired": true,
+      "internalApiAllowed": false
+    }
+  ],
+  "thresholds": {
+    "fixture": {
+      "encoding": "PCM_S16LE",
+      "sampleRateHz": 16000,
+      "channels": 1,
+      "bytesPerSample": 2,
+      "bytesPerSecond": 32000,
+      "maxPlaintextBytesPerRun": 115200000
+    },
+    "committedLossBytesMaximum": 0,
+    "tailLossSecondsMaximum": 5.0,
+    "tailLossBytesMaximum": 160000,
+    "returnedBytesAuthenticatedPercentMinimum": 100.0,
+    "baseHardKillAttemptsPerCandidate": 120,
+    "validHardKillsPerCandidateMinimum": 100,
+    "strataCount": 12,
+    "baseAttemptsPerStratumPerCandidate": 10,
+    "validHardKillsPerStratumMinimum": 8,
+    "replacementAttemptsPerCandidateMaximum": 20,
+    "duplicateProcessingIntentMaximum": 0,
+    "missingProcessingIntentMaximum": 0,
+    "automaticMicrophoneStartsMaximum": 0
+  },
+  "mandatoryInvariants": [
+    "0 <= C <= R <= A",
+    "committedLossBytes == 0",
+    "bytes [0,R) equal the synthetic controller oracle byte-for-byte",
+    "C is reconstructed from durable SQLite and authenticated manifest/checkpoint",
+    "controller ledger is an independent cross-check and not part of semantic commit"
+  ],
+  "phaseA": {
+    "status": "EXECUTION_WITHHELD",
+    "environments": [
+      "PINNED_API36_X86_64_EMULATOR",
+      "PHYSICAL_D2"
+    ],
+    "plannedBaseAttemptsPerCandidate": {
+      "PINNED_API36_X86_64_EMULATOR": 72,
+      "PHYSICAL_D2": 48
+    },
+    "validMinimumPerCandidate": {
+      "total": 100,
+      "PINNED_API36_X86_64_EMULATOR": 60,
+      "PHYSICAL_D2": 40,
+      "perStratumTotal": 8,
+      "perStratumEmulator": 4,
+      "perStratumD2": 2
+    },
+    "allowedVerdicts": [
+      "FAIL",
+      "INCONCLUSIVE"
+    ],
+    "passAllowed": false,
+    "passForbiddenReason": "Physical D1 and D5 are unavailable and cannot be substituted by emulator or D2 evidence."
+  },
+  "fullPhysicalVerdict": {
+    "status": "DEFERRED_D1_D5_NOT_PROCURED",
+    "requiredPhysicalProfiles": [
+      "D1",
+      "D2",
+      "D5"
+    ],
+    "plannedBaseAttemptsPerCandidate": {
+      "D1": 48,
+      "D2": 36,
+      "D5": 36
+    },
+    "validMinimumPerCandidate": {
+      "total": 100,
+      "D1": 40,
+      "D2": 30,
+      "D5": 30,
+      "perStratumTotal": 8,
+      "perStratumPerPhysicalProfile": 2
+    },
+    "phaseAAttemptsReusable": false,
+    "procurementRequiredNow": false,
+    "passAllowedOnlyAfterSeparateAuthorization": true
+  },
+  "gates": [
+    {
+      "id": "REC-G01-COMMITTED",
+      "predicate": "committedLossBytes == 0 for every valid hard kill and applicable fault case",
+      "critical": true
+    },
+    {
+      "id": "REC-G02-AUTH-PREFIX",
+      "predicate": "100 percent of bytes returned by successfully completed reads authenticate, equal the oracle and form one gap-free prefix",
+      "critical": true
+    },
+    {
+      "id": "REC-G03-TAIL",
+      "predicate": "tailLossBytes <= 160000 and tailLossSeconds <= 5.000 for every valid hard kill; streaming design bound <= 8160 bytes",
+      "critical": true
+    },
+    {
+      "id": "REC-G04-KILL-COVERAGE",
+      "predicate": "120 base dispositions, at least 100 valid kills, at least 8 valid per stratum and all environment minima",
+      "critical": false
+    },
+    {
+      "id": "REC-G05-IDEMPOTENCY",
+      "predicate": "stable recovery and UNIQUE deterministic processingIntentId with zero duplicate or missing intents",
+      "critical": true
+    },
+    {
+      "id": "REC-G06-FAIL-CLOSED",
+      "predicate": "corruption, truncation, the exact five-level key-classification precedence, rollback, temp/final states and split-brain are unambiguously classified without silent deletion",
+      "critical": true
+    },
+    {
+      "id": "REC-G07-KEYS",
+      "predicate": "exact Keystore, encrypted-keyset and AAD contract plus mandatory key faults; no secret export or logging",
+      "critical": true
+    },
+    {
+      "id": "REC-G08-PATH-QUARANTINE",
+      "predicate": "every allowlisted final and final+'.tmp' pattern receives containment, lstat, regular-file and no-symlink validation; collisions never overwrite and reconciliation never promotes a temp by name",
+      "critical": true
+    },
+    {
+      "id": "REC-G09-NO-AUTO-CAPTURE",
+      "predicate": "zero microphone permissions, opens and restarts",
+      "critical": true
+    },
+    {
+      "id": "REC-G10-DEVICE-VERDICT",
+      "predicate": "full PASS requires separately authorized physical D1, D2 and D5 coverage",
+      "critical": false
+    }
+  ],
+  "mandatoryFaultIds": [
+    "COR-01",
+    "COR-02",
+    "COR-03",
+    "COR-04",
+    "COR-05",
+    "COR-06",
+    "TRU-01",
+    "TRU-02",
+    "TRU-03",
+    "KEY-01",
+    "KEY-02",
+    "KEY-03",
+    "KEY-04",
+    "KEY-05",
+    "KEY-06",
+    "KEY-07",
+    "SPL-01",
+    "SPL-02",
+    "SPL-03",
+    "SPL-04",
+    "SPL-05",
+    "RBK-01",
+    "RBK-02",
+    "PAR-01",
+    "QUA-01",
+    "QUA-02",
+    "QUA-03",
+    "IDE-01",
+    "IDE-02",
+    "EVT-01",
+    "CLN-01",
+    "CLN-02",
+    "CLN-03"
+  ],
+  "mandatoryFaultRowCount": 33,
+  "verdictAlgorithm": {
+    "criticalFailure": "FAIL",
+    "missingNoncriticalEvidence": "INCONCLUSIVE",
+    "phaseAAllGatesSatisfied": "INCONCLUSIVE",
+    "microfile15Or30SecondsAllObservedCasesSatisfied": "NOT_PASS_ELIGIBLE",
+    "fullPassRequires": [
+      "all applicable gates satisfied",
+      "separately authorized fresh physical D1/D2/D5 campaign",
+      "Product/IP final approval",
+      "distinct accountable recovery Engineering/Security approval",
+      "implementation and non-metric implementation verification",
+      "exact future Gradle-resolved graph review",
+      "fresh emulator and D2 runtime preflight",
+      "recorded Project-owner execution authorization"
+    ],
+    "winnerSelectionIncluded": false,
+    "finalAdrIncluded": false
+  },
+  "blockers": [
+    "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
+    "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
+    "REC-RDY-03-STREAMING-IMPLEMENTATION-VERIFICATION",
+    "REC-RDY-04-MICROFILE-IMPLEMENTATION-VERIFICATION",
+    "REC-RDY-05-FUTURE-RESOLVED-GRAPH",
+    "REC-RDY-06-DEVICE-SQLITE-PREFLIGHT",
+    "REC-RDY-07-HARNESS-ABSENT",
+    "REC-RDY-08-OWNER-EXECUTION-AUTHORIZATION",
+    "REC-RDY-09-D1-D5-FULL-VERDICT",
+    "REC-RDY-10-PRODUCTION-LEGAL-SECURITY",
+    "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY"
+  ]
+}

@@ -1,16 +1,17 @@
 # Dora MVP 1 — Stage Status
 
-Updated: 11 August 2026
+Updated: 12 August 2026
 Baseline: `1be83e2940a09f7b23e33b4cdf3827de2690f3fd`
 Stage 00 merge commit: `a4aae302f9033e5471f6759f513e7e351c375a72`
 Stage 0A merge commit: `91b9916b01ff70f63d82412bafbed0d72307dbe1`
 Repository: public `Monumentogram/DORA` by temporary owner-approved decision (ADR-0002)
 Default branch: `main`
 Stage 0B merge commit: `5e748469b22c6e7303fe6eb5f95394ea40088d84`
-Active stage: `Stage 0C — closed INCONCLUSIVE in Draft PR #10`
-Active branch: `stage/0c-poc-search-001`
-Active PoC: `POC-SEARCH-001`
-Stage state: **COMPLETE INCONCLUSIVE — STAGE 0 IP APPROVED; BENCHMARK DEFERRED; FINAL REVIEW PENDING**
+Stage 0C merge commit: `849d9d0406a619b334c9b707a4b6b42b34885b4b`
+Active stage: `Stage 0D — POC-RECOVERY-001 governance/readiness package`
+Active branch: `stage/0d-poc-recovery-governance`
+Active PoC: `POC-RECOVERY-001`
+Stage state: **GOVERNANCE REMEDIATION v0.5 — PROSPECTIVE KEY TAXONOMY/CAMPAIGN/BLOCKER/METADATA REMEDIATION; IMPLEMENTATION AND EXECUTION BLOCKED**
 
 ## Stage 00 closure
 
@@ -38,6 +39,10 @@ Stage state: **COMPLETE INCONCLUSIVE — STAGE 0 IP APPROVED; BENCHMARK DEFERRED
 
 ## Stage 0C closure scope
 
+Stage 0C is complete and Pull Request #10 was merged into `main` at
+`849d9d0406a619b334c9b707a4b6b42b34885b4b`. The historical search evidence and verdict below are
+closure context only; Stage 0D does not modify or rerun that PoC.
+
 Stage 0C evaluated only `POC-SEARCH-001` in the isolated `:poc:search` contour. It uses a
 versioned deterministic generator and fully synthetic text to evaluate Room 2.8.4 with
 SQLite FTS4 at 10,000 conversations and exactly 1,000,000 transcript segments. The
@@ -62,6 +67,66 @@ versioned 11 August review assessment. The current v5 closure result is `INCONCL
 recommendation `BLOCKED`; no measurement was changed or rerun. D1/D3 and the measured v0.2
 campaign are deferred to separately authorized future scope.
 
+## Stage 0D governance/readiness scope
+
+Stage 0D prepares and remediates only the governance/readiness package for `POC-RECOVERY-001`.
+The v0.3 package at reviewed commit `c61603d30c01c72347aa205c247729ad534c2882` received four final
+advisory findings, closed by historical v0.4. The v0.4 package at reviewed commit
+`c3eae5c3fbe5cba6a96ad827441cfe4e3f1bfc55` received `REC-ADV-V04-001..004`. Proposed `DEC-044`
+and owner-linked Gate Set/protocol `stage0-v0.5` now fix the prospective design semantics: exact
+SHA-256-pinned v0.3/v0.4 public AES-GCM-HKDF Streaming AEAD and durable key confirmation with
+`DURABLE_ONE_SEGMENT_LOOKAHEAD` versus sealed five-second `AES256_GCM_TINK_IV12_TAG16` microfiles
+and exact authenticated binary manifest plus durable run-key confirmation. Gate Set/protocol v0.1, v0.2, v0.3 and v0.4 remain unchanged SHA-256-pinned superseded audit artifacts
+and cannot govern future execution.
+
+The inherited v0.3 contract fixes one derived AES key per streaming ciphertext stream, exact lookahead/read
+math and 8160-byte/0.255-second streaming design bound; deterministic big-endian AAD and manifest;
+the exact non-deprecated Keystore Builder/key-confirmation/classification path; 9/13/21 candidate
+publication sequences; `final + ".tmp"`, collision/no-overwrite and five reconciliation states;
+successful SQLite `endTransaction()` as semantic commit; WAL/FULL rows with exact identities and
+UNIQUE deterministic processing intents and candidate-specific K01–K12 barriers. Historical v0.4 adds ninth-family
+`key-confirmation/run.kc`, separate bounded plaintext/AAD schemas, exact 13-step durable bootstrap,
+confirmation taxonomy/reconciliation and 12 mandatory bootstrap/confirmation rows, for 45 total.
+Active v0.5 defines one strict eight-class KEY taxonomy, moves plaintext parser/magic/schema/
+no-trailing/identity checks to post-decrypt only, adds KCF-07 for 46 total rows, separates Phase A
+184 injections from the full physical 138-injection campaign, and freezes exact D2 reuse and 11
+canonical readiness blocker IDs. The
+original safety gates remain zero committed-byte loss, no more than five seconds tail per valid
+kill, 12 strata, 120 base kills/candidate, at least 100 valid and at least eight valid/stratum.
+Fifteen/30-second microfiles remain non-PASS observations or post-failure fallbacks.
+
+The exact `tink-android:1.23.0` published JAR/POM/transitive closure, SHA-256 values,
+per-coordinate license/copyright/NOTICE evidence, 16 publisher checksum matches and 16 verified
+OpenPGP signatures, relevant advisory history, non-native composition and shaded protobuf 4.33.6
+are recorded under `docs/evidence/poc-recovery-001/`. All eight coordinate authenticity
+classifications are verified through publisher-bound signatures or exact multisource source
+correspondence. The signed `jsr305:3.0.2` Maven POM declares Apache-2.0 while the exact release
+source POM/LICENSE declares BSD-3-Clause. F-06 closes because the exact evidence is complete; the
+underlying conflict remains uninterpreted. Governance-only source/bytecode/Kotlin/JVM/D8/R8
+analysis proves conditioned exclusion: a Tink-local Gradle edge exclusion, zero resolved JSR-305
+components and three exact R8 warning rules. A bare exclusion fails the exact AGP 9.3.1 R8 probe.
+With all seven remaining closure JARs as program inputs, that exact rule removes the JSR-305
+diagnostics but R8 then fails independently on `javax.lang.model.element.Modifier` from
+`error_prone_annotations:2.41.0`; the future real graph/release build must resolve any such issue
+without broadening the rule.
+The Project owner / Stage 0 Product-IP reviewer approved only prospective
+`REC-JSR305-EXCLUDE-001` and the reviewed governance package for a future exact excluded Stage 0
+graph. The disposition treats JSR-305 as excluded without selecting Apache-2.0 or BSD-3-Clause and
+does not approve its use/distribution. This remains package preparation, not dependency admission.
+No Tink coordinate or rule was added to Gradle.
+
+Phase A is described only prospectively for the pinned emulator and available physical D2; actual
+execution is withheld. Without D1/D5 it can produce only `FAIL` or `INCONCLUSIVE`. A full physical
+verdict requires D1/D2/D5; D1/D5 procurement is deferred. The scoped owner/Stage 0 Product-IP
+prospective policy disposition is recorded, while an actual future graph, dependency admission,
+implementation and execution remain unapproved. A distinct accountable recovery
+Engineering/Security reviewer is unassigned and blocking; the current Codex remediation does not
+claim formal independence. Production Legal and Production Security remain null and separate.
+
+No `:poc:recovery`, recovery harness, production schema, `:app` change, kill campaign, device run,
+benchmark or recovery measurement exists. The fail-closed readiness record remains
+`executionAllowed=false`.
+
 ## Closed Stage 0B evidence record
 
 Stage 0B implemented only the disposable `POC-CAPTURE-001` evidence harness selected by `OD-01`. It did not admit that implementation into production Dora.
@@ -76,7 +141,7 @@ The owner phone could not be attached to the remote development workstation. Sta
 
 Three bounded phone runs were returned after two invalid pre-recording starts. Run A attempt 003 and Run B attempt 004 on `5d9a8ac` recorded, stopped and finalized successfully. Run C attempt 005 recorded for 63:49 but is classified by the owner as an `invalidated exploratory attempt`: only 25:58 was screen-off, a TrueConf call occurred and the phone was charging. Bluetooth was fully disabled before Run C and no route change was reported. All three completed recordings produced valid WAVs, zero AudioRecord errors and verified raw-audio deletion/absence; no approved critical capture failure was observed on the tested Samsung device. The formal result remains `INCONCLUSIVE`, and the owner accepts exploratory closure without repeating Run C on the primary work phone. Production capture, storage, ML, backend, account, production identity/signing and model weights remain outside this stage. The bootstrap `:app` must not receive microphone permission.
 
-## Owner decisions effective 4 and 11 August 2026
+## Owner decisions effective 4, 11 and 12 August 2026
 
 - `OD-01`: first experiment is `POC-CAPTURE-001`, limited to a physical microphone and explicit Start/Stop; call, system-audio and passive recording are prohibited.
 - `OD-02`: every test run requires a separate reminder checkbox; it is not legal permission.
@@ -89,9 +154,38 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - `OD-11`: Project owner is Product and IP policy reviewer and acts as Engineering/Security reviewer only for Stage 0 evaluation. This does not replace production Legal or independent production Security. Embedded platform SQLite may use the containing system-image digest plus exact image/runtime identity for Stage 0; that boundary must be reconsidered before production admission.
 - `OD-12`: Project owner prospectively approves Option B for `stage0-v0.2`, based on the local-MVP storage/update/one-second visibility balance and not on prior Dora results. Benchmark execution remains separately withheld.
 - `OD-13`: Project owner approves the exact 66-component/license/NOTICE/platform package only for internal synthetic Stage 0 evaluation and accepts formal `INCONCLUSIVE` closure without a new benchmark. This is not production Legal/Security approval, does not admit FTS4 automatically, is not retroactive, and leaves D1/D3 plus measured execution deferred.
+- `OD-14`: Project owner constraints link active prospective governance protocol v0.5, which inherits exact SHA-256-pinned v0.4/v0.3 semantics and fixes the KEY taxonomy, 46-row Phase A/full-campaign profiles and canonical blocker IDs. Prospective `REC-JSR305-EXCLUDE-001` and exact governance authenticity/LICENSE/NOTICE evidence are closed; the future actual recovery graph/package/R8 evidence and its Product/IP disposition remain open/blocking. The selected construction remains `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`; excluded JSR-305 terms are not interpreted and use/distribution is not approved. Repeat exact-HEAD review, distinct accountable Engineering/Security review, separate implementation authorization/verification and later owner execution authorization remain mandatory; `implementationAllowed=false`; `executionAllowed=false`.
 
 ## Current gates and blockers
 
+- `POC-RECOVERY-001` remains `BLOCKED`, not READY. Proposed `DEC-044`, Gate Set
+  `poc-recovery-stage0-v0.5`, protocol `poc-recovery-protocol-stage0-v0.5` and remediation evidence exist. All 12 v0.1–v0.4 Markdown/Gate JSON/protocol JSON artifacts are
+  unchanged SHA-256-pinned superseded audit artifacts. The ninth-family
+  `key-confirmation/run.kc`, separate bounded plaintext/AAD schemas, 13-step durable bootstrap,
+  v0.5 canonical taxonomy/reconciliation/K01–K12 prerequisite and 46-row fault contract are prospective.
+  Coordinate authenticity, immutable JetBrains LICENSE/NOTICE and conditioned JSR-305 exclusion
+  are verified; the owner accepted `REC-JSR305-EXCLUDE-001` as prospective policy for the reviewed
+  governance package. The underlying excluded-artifact conflict is not interpreted,
+  JSR-305 use/distribution is not approved, and repeat exact-HEAD review, a distinct accountable
+  recovery Engineering/Security reviewer/approval and separate implementation authorization remain
+  unresolved.
+- The exact published Tink closure is inventoried without Gradle wiring. A future harness-resolved
+  graph remains a P0 pre-execution check because repository Kotlin alignment may differ from the
+  publisher POM closure. It must enumerate every resolvable compile/runtime/unit-test/`androidTest`/
+  benchmark/release configuration, packaging/runtime input, lock and verification-metadata input
+  owned by future `:poc:recovery`; prove zero `com.google.code.findbugs:jsr305:3.0.2` components and
+  zero packaged JSR-305 definitions; verify the scoped exclude/exact narrow R8 rule; and pass
+  release R8 with no unresolved missing classes. Existing other-module tooling/lint/UTP/test
+  lockfile occurrences are inventoried, not claimed absent, and are not recovery admission. No runtime
+  dependency or production admission exists.
+- No recovery implementation or non-metric implementation verification exists. Phase A execution
+  is separately withheld. Fresh emulator and D2 recovery preflight must record effective WAL/FULL,
+  `wal_autocheckpoint=0`, `foreign_keys=ON`, `sqlite_version()`, `sqlite_source_id()` and canonical
+  compile-options digest; all runtime fields remain null. Phase A is 184 fault injections and can
+  return only FAIL/INCONCLUSIVE. The full physical campaign is 138 injections; D1/D5 are deferred,
+  so PASS is structurally forbidden. The 120-attempt hard-kill campaign/candidate is separate.
+- `tools/check_poc_recovery_run_readiness.py` must fail closed while
+  `executionAllowed=false`; completion of any prerequisite cannot silently authorize execution.
 - `POC-SEARCH-001` retains its frozen generated-scale observations. The earlier valid full result
   failed the latency gate; the corrected streaming rowid page plan passed the targeted scale guard
   before the final full measurement campaign met the evaluated latency/correctness predicates.
@@ -150,16 +244,22 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - No controlled non-public evidence store or custodian has been configured. Until then, only synthetic data and sanitized aggregate/public evidence are allowed; raw traces/audio and purpose-recorded volunteer phrases remain blocked.
 - Production markets/lawful basis/copy under `DEC-001` and Legal review remain unresolved. The Stage 0 reminder checkbox does not resolve production consent legality.
 - No PoC result admits a production dependency. Native code or model admission later requires an ADR plus license, provenance, ABI, 16-KiB and runtime evidence.
-- `main` remains the protected integration branch. Stage 0C evidence closure stays on `stage/0c-poc-search-001`; its Draft PR must remain unmerged in this task.
+- `main` remains the protected integration branch. Stage 0C/PR #10 is already merged at the recorded
+  commit. Stage 0D stays on `stage/0d-poc-recovery-governance`; its new Draft PR must remain unmerged.
 
 ## Next safe action
 
-Keep Stage 0C Pull Request #10 Draft and unmerged for final review. There is no authorized benchmark
-or in-scope D1/D3 action. A future measured `stage0-v0.2` campaign requires separate scope, matching
-physical D1–D3, a fresh exact-commit preflight and a later explicit Project-owner execution
-authorization. `tools/check_poc_search_run_readiness.py` fails closed while
-`benchmarkExecutionAllowed=false`. Production admission or the next PoC also requires separate
-explicit scope.
+Perform a repeat read-only review of the exact resulting governance commit without implementation
+or execution. The prospective owner/Stage 0 Product-IP policy disposition is recorded; the Project
+owner must assign a distinct accountable recovery Engineering/Security reviewer. That reviewer
+must verify or require revision
+of the selected v0.5 Streaming/microfile construction, durable key-confirmation bootstrap,
+manifest/key/AAD contract, publication/temp-state/commit/durability,
+SQLite profile, public barriers and complete fault/recovery state machine. Only a later separately
+scoped owner task may authorize implementation and non-metrically verify the isolated harness;
+only after exact excluded Gradle graph/release R8, scoped Product/IP disposition of the actual graph
+and fresh device SQLite/Keystore/filesystem preflight may a still later owner record change
+`executionAllowed`. Draft PR #11 must remain unmerged.
 
 ## Update protocol
 

@@ -1,8 +1,8 @@
 # Dora MVP 1 — IP and Asset Policy
 
 Task: `GOV-IP-001`
-Version: 1.1
-Date: 11 August 2026
+Version: 1.2
+Date: 12 August 2026
 Status: active governance policy; no third-party model, weight or binary is admitted by this document
 Legal note: this is an engineering control, not legal advice
 
@@ -163,6 +163,67 @@ admission, an independent production Security review and production Legal review
 the actual shipping platform/device matrix, SBOM/notices and distribution scope. Production Legal
 is currently unassigned and blocked. A separately bundled SQLCipher, custom SQLite build or native
 prebuilt always requires its own exact artifact digest and normal admission evidence.
+
+#### 5.8.2 Stage 0 recovery platform SQLite boundary (`OD-14`)
+
+For `POC-RECOVERY-001` only, a PoC-local journal may use the SQLite implementation supplied by
+the participating Android platform through `android.database.sqlite`. Its sole permitted purpose
+is deterministic DB/file split-brain injection and the associated reconciliation assertions,
+including whether recovery/quarantine/cleanup creates duplicate or missing processing-intent
+records. It is not a general job queue, a production database or a schema decision.
+
+The emulator provenance class follows section 5.8.1: exact system-image package/revision, immutable
+containing-archive digest, runtime build fingerprint/API/ABI and fresh runtime SQLite identity are
+recorded together. Existing immutable system-image provenance may be referenced rather than
+redownloaded, but every recovery run still needs a fresh exact-commit runtime preflight.
+
+For an unrooted physical D1/D2/D5 device where no canonical redistributable firmware archive or
+stable nested SQLite binary is exposed, the recovery-only Stage 0 provenance class is
+`containing-physical-firmware-identity`. It requires all of the following sanitized facts:
+
+- manufacturer/model and assigned D-profile, without serial or unique hardware identifier;
+- Android version/API, full sanitized build fingerprint or build ID, security patch and primary ABI;
+- page size and sanitized verified-boot state when publicly queryable without privilege;
+- runtime `sqlite_version()` and `sqlite_source_id()`; a SHA-256 of exact
+  `PRAGMA compile_options` rows sorted lexicographically, UTF-8 encoded, LF-joined and terminated by
+  one LF; and the effective `journal_mode=WAL`, `synchronous=FULL`, `wal_autocheckpoint=0` and
+  `foreign_keys=ON` values;
+- exact authorized Dora commit/protocol and collection timestamp; and
+- confirmation that no separate SQLite, Room or SQLCipher artifact is downloaded, bundled or
+  redistributed.
+
+An individual nested SQLite-binary digest is not required for this narrow physical Stage 0 class,
+because it would imply privileged extraction and would not identify the complete OEM platform
+behavior being evaluated. The digest scope/identity must never be described as a digest of SQLite
+itself. Any firmware, API, ABI or runtime SQLite drift creates a new environment record and requires
+a package delta review.
+
+The Project owner is the assigned Stage 0 Product/IP reviewer for this package. Under recovery
+active protocol v0.5, prospective `REC-JSR305-EXCLUDE-001` policy is closed/approved and exact governance
+packet authenticity plus LICENSE/NOTICE evidence is closed/verified. The future actual recovery
+graph/package/R8 evidence and its scoped Product/IP disposition remain open/blocking; their final
+approval identity/date fields remain null. Unlike the search-specific `OD-11` boundary, recovery protocol v0.5 and
+platform durability require a distinct accountable Engineering/Security reviewer plus
+implementation verification before execution. The current Codex remediation does not claim
+formal independence. That future review does not replace Production Security. Production Legal
+and Production Security remain null, and both plus normal SBOM/distribution review are required
+before any production admission.
+
+The exact future boundary is only `:poc:recovery`: all resolvable compile, runtime, unit-test,
+`androidTest`, benchmark and release configurations, packaging/runtime-artifact inputs, and its
+dependency locks/verification metadata. Existing buildscript/AGP/UTP/lint/tooling paths of other
+modules and app/capture/search lockfiles are outside the boundary and are not recovery admission
+evidence. No repository-wide Tink/JSR-305 absence is claimed.
+
+For `org.jetbrains:annotations:13.0`, immutable `LICENSE.txt` and `NOTICE.txt` at exact upstream
+commit `f92ce9af0629ee8dcc8743dcc2c1ca297aaacc7c` are verified for this governance packet. If that
+artifact enters a separately approved future Stage 0 graph, its NOTICE must be preserved in that
+future notices packet. This packet-level disposition is not Production Legal, production
+admission, redistribution approval or permission to use/distribute excluded JSR-305.
+
+This exception is invalid if the PoC adds Room, SQLCipher, WorkManager, a custom SQLite build,
+production tables/migrations or another bundled database. Such a change requires a new scoped
+decision and normal exact-artifact review; it cannot inherit this recovery exception.
 
 ### 5.9 Datasets and audio fixtures
 

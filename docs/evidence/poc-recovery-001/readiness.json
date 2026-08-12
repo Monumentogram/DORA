@@ -1,0 +1,243 @@
+{
+  "schemaVersion": 6,
+  "pocId": "POC-RECOVERY-001",
+  "assessedOn": "2026-08-12",
+  "status": "BLOCKED_POLICY_AND_EXACT_PACKET_EVIDENCE_CLOSED_ACTUAL_GRAPH_IMPLEMENTATION_REVIEW_PREFLIGHT_EXECUTION_PENDING",
+  "executionAllowed": false,
+  "implementationAllowed": false,
+  "implementationAllowedByThisPackage": false,
+  "measuredExecutionAllowed": false,
+  "runtimeDependencyAdded": false,
+  "recoveryModuleExists": false,
+  "harnessImplemented": false,
+  "nonMetricImplementationVerificationPassed": false,
+  "exactFutureResolvedGraphReviewed": false,
+  "killCampaignExecuted": false,
+  "deviceTestsExecuted": false,
+  "benchmarksExecuted": false,
+  "productionAppChanged": false,
+  "packageArtifacts": {
+    "proposedDecisionPresent": true,
+    "exactGateSetPresent": true,
+    "machineProtocolPresent": true,
+    "activeGateSetVersion": "poc-recovery-stage0-v0.5",
+    "activeProtocolId": "poc-recovery-protocol-stage0-v0.5",
+    "governanceRemediationV05Present": true,
+    "governanceRemediationV04Present": true,
+    "governanceRemediationV03Present": true,
+    "governanceRemediationV02Present": true,
+    "v01RetainedAsSupersededAuditArtifact": true,
+    "v01Executable": false,
+    "v02RetainedAsSupersededAuditArtifact": true,
+    "v02Executable": false,
+    "v03RetainedAsSupersededAuditArtifact": true,
+    "v03Executable": false,
+    "v04RetainedAsSupersededAuditArtifact": true,
+    "v04Executable": false,
+    "dependencyInventoryPresent": true,
+    "licenseNoticeInventoryPresent": true,
+    "securityInventoryPresent": true,
+    "sqliteProvenanceExtensionPresent": true,
+    "reviewRolesPresent": true,
+    "reviewFindingsV01LedgerPresent": true,
+    "reviewFindingsV02LedgerPresent": true,
+    "reviewFindingsV03LedgerPresent": true,
+    "reviewFindingsV04LedgerPresent": true,
+    "dependencyIpAuthenticityV03Present": true,
+    "ownerProductIpDecisionPresent": true,
+    "ownerProductIpDecisionLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md",
+    "supplyChainAuthenticityStatus": "EXACT_GOVERNANCE_PACKET_AUTHENTICITY_LICENSE_NOTICE_VERIFIED_JSR305_EXCLUDED_TERMS_UNINTERPRETED_NO_ADMISSION",
+    "jetbrainsAnnotationsImmutableLicenseNoticeVerified": true,
+    "baseLockfileToolingInventoryPresent": true,
+    "jsr305ExclusionAnalysisPresent": true,
+    "jsr305ExclusionTechnicalStatus": "PROVEN_WITH_NARROW_R8_RULE_BARE_EXCLUDE_REJECTED_OWNER_POLICY_ACCEPTED_EXACT_RECOVERY_BOUNDARY"
+  },
+  "approvals": {
+    "prospectivePolicyProductIpApproved": true,
+    "reviewedGovernancePackageProductIpApproved": true,
+    "governanceAuthenticityLicenseEvidenceVerified": true,
+    "policyApprovedReviewer": "Project owner",
+    "policyApprovedOn": "2026-08-12",
+    "decisionInputGovernanceHead": "eb312feb2a0d5e5b24b45fcd045bacca94e8c9da",
+    "productIpFinalApproved": false,
+    "productIpFinalApprovalReservedForActualFutureGraphAndImplementationPackage": true,
+    "futureActualGraphProductIpDisposition": "OPEN_BLOCKED",
+    "approvedReviewer": null,
+    "approvedOn": null,
+    "accountableEngineeringSecurityReviewer": null,
+    "currentCodexReviewClaimedFormallyIndependent": false,
+    "executionAuthorizedBy": null,
+    "executionAuthorizedOn": null,
+    "productionLegalReviewer": null,
+    "productionSecurityReviewer": null
+  },
+  "dependencyExclusionPolicy": {
+    "policyId": "REC-JSR305-EXCLUDE-001",
+    "analysisLocator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.json",
+    "ownerDecisionLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md",
+    "status": "APPROVED_PROSPECTIVE_POLICY_ONLY",
+    "rootCoordinate": "com.google.crypto.tink:tink-android:1.23.0",
+    "forbiddenResolvedCoordinate": "com.google.code.findbugs:jsr305:3.0.2",
+    "requiredResolvedComponentCount": 0,
+    "compileOnlyOrAlternatePathAllowed": false,
+    "allCoveredRecoveryInputsRequired": true,
+    "coveredFutureModule": ":poc:recovery",
+    "coveredConfigurationFamilies": [
+      "all resolvable compile",
+      "all resolvable runtime",
+      "all resolvable unit-test",
+      "all resolvable androidTest",
+      "all resolvable benchmark",
+      "all resolvable release",
+      "all packaging/runtime artifact inputs",
+      "dependency locks and dependency verification metadata"
+    ],
+    "repositoryWideAbsenceClaimed": false,
+    "currentTinkAndroid123Wired": false,
+    "currentRecoveryModuleExists": false,
+    "excludedCurrentInputs": [
+      "buildscript, AGP, UTP, lint and tooling configurations of other existing modules",
+      "existing app, capture and search lockfiles"
+    ],
+    "excludedCurrentInputsAreRecoveryAdmissionEvidence": false,
+    "exactNarrowR8RuleRequired": true,
+    "requiredR8Rules": [
+      "-dontwarn javax.annotation.Nullable",
+      "-dontwarn javax.annotation.concurrent.GuardedBy",
+      "-dontwarn javax.annotation.concurrent.ThreadSafe"
+    ],
+    "broaderDontwarnAllowed": false,
+    "unresolvedR8MissingClassesAllowed": false,
+    "independentModifierResolutionRequired": true,
+    "recurrenceBlocksImplementationVerificationAndExecution": true,
+    "underlyingArtifactLicenseConflictResolved": false,
+    "jsr305UseOrDistributionApproved": false,
+    "futureResolvedGraphReportLocator": "docs/evidence/poc-recovery-001/future-resolved-graph.json",
+    "futureResolvedGraphReportPresent": false,
+    "productIpAccepted": true,
+    "acceptedBy": "Project owner",
+    "acceptedOn": "2026-08-12"
+  },
+  "blockers": [
+    {
+      "id": "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
+      "priority": "P0",
+      "status": "PROSPECTIVE_POLICY_AND_EXACT_PACKET_EVIDENCE_CLOSED_ACTUAL_GRAPH_FINAL_DISPOSITION_PENDING",
+      "owner": "Project owner",
+      "condition": "Project owner / Stage 0 Product-IP approved REC-JSR305-EXCLUDE-001 and the exact governance packet evidence is verified. The future actual recovery graph/package/R8 evidence and its scoped Product/IP disposition remain open; dependency admission, excluded JSR-305 use/distribution, implementation and execution remain unapproved."
+    },
+    {
+      "id": "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
+      "priority": "P0",
+      "status": "OPEN_UNASSIGNED",
+      "owner": "Project owner",
+      "condition": "Assign a distinct accountable recovery Engineering/Security reviewer and record a read-only v0.5 disposition including the canonical eight-class KEY algorithm and separate campaign profiles; current Codex remediation is not claimed formally independent."
+    },
+    {
+      "id": "REC-RDY-03-STREAMING-IMPLEMENTATION-VERIFICATION",
+      "priority": "P0",
+      "status": "OPEN_BY_DESIGN",
+      "owner": "Future recovery implementation and accountable review tasks",
+      "condition": "Implement and non-metrically verify exact public construction, DURABLE_ONE_SEGMENT_LOOKAHEAD, q/R math, read accounting, EOF handling and public barriers."
+    },
+    {
+      "id": "REC-RDY-04-MICROFILE-IMPLEMENTATION-VERIFICATION",
+      "priority": "P0",
+      "status": "OPEN_BY_DESIGN",
+      "owner": "Future recovery implementation and accountable review tasks",
+      "condition": "Implement and non-metrically verify exact microfile parameters, manifest/AAD parsers, 13-step durable key-confirmation bootstrap, canonical post-decrypt-aware KEY reconciliation, Keystore envelopes, durability, SQLite, path, quarantine and 46-row fault contracts."
+    },
+    {
+      "id": "REC-RDY-05-FUTURE-RESOLVED-GRAPH",
+      "priority": "P0",
+      "status": "OPEN_BY_DESIGN",
+      "owner": "Future recovery implementation task",
+      "condition": "After separately authorized :poc:recovery scaffolding, enumerate all resolvable compile, runtime, unit-test, androidTest, benchmark and release configurations, packaging/runtime-artifact inputs, dependency locks and verification metadata owned by that module; prove zero resolved com.google.code.findbugs:jsr305:3.0.2 components and zero packaged JSR-305 javax.annotation definitions; verify the Tink-local exclude and exact three-line R8 rule with no broader dontwarn; pass release R8 with no unresolved missing classes and independently resolve javax.lang.model.element.Modifier if present. Existing other-module buildscript/AGP/UTP/lint/tooling and app/capture/search lockfile occurrences are outside this boundary and alone do not block recovery. Any occurrence inside recovery scope fails closed."
+    },
+    {
+      "id": "REC-RDY-06-DEVICE-SQLITE-PREFLIGHT",
+      "priority": "P0",
+      "status": "OPEN",
+      "owner": "Future authorized preflight task",
+      "condition": "Record exact-commit emulator and D2 SQLite, Keystore and filesystem preflight evidence, including effective WAL/FULL/zero-autocheckpoint/foreign-key values, sqlite_version(), sqlite_source_id() and canonical compile-options digest; any mismatch blocks execution."
+    },
+    {
+      "id": "REC-RDY-07-HARNESS-ABSENT",
+      "priority": "P0",
+      "status": "OPEN_BY_OWNER_INSTRUCTION",
+      "owner": "Future separately scoped implementation task",
+      "condition": "Obtain separate owner implementation scope, then implement and safely non-metrically verify an isolated common harness only after repeat exact-HEAD read-only review and accountable v0.5 Engineering/Security review."
+    },
+    {
+      "id": "REC-RDY-08-OWNER-EXECUTION-AUTHORIZATION",
+      "priority": "P0",
+      "status": "WITHHELD",
+      "owner": "Project owner",
+      "condition": "After all other Phase A prerequisites, record a separate authorization that explicitly changes executionAllowed to true."
+    },
+    {
+      "id": "REC-RDY-09-D1-D5-FULL-VERDICT",
+      "priority": "P1",
+      "status": "DEFERRED",
+      "owner": "Project owner",
+      "condition": "Provide physical D1 and D5 only when a full 138-injection D1/D2/D5 fault profile is later desired; no purchase is required now, and PASS is forbidden while D1/D5 are deferred."
+    },
+    {
+      "id": "REC-RDY-10-PRODUCTION-LEGAL-SECURITY",
+      "priority": "P1",
+      "status": "OUTSIDE_STAGE0_UNASSIGNED",
+      "owner": "Project owner",
+      "condition": "Assign Production Legal and Production Security before any production admission or redistribution; recovery-scoped approval does not satisfy this."
+    },
+    {
+      "id": "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY",
+      "priority": "P0",
+      "status": "POLICY_CLOSED_PACKET_EVIDENCE_CLOSED_ACTUAL_FUTURE_GRAPH_OPEN_BLOCKED",
+      "owner": "Project owner / Stage 0 Product-IP",
+      "condition": "State A prospective REC-JSR305-EXCLUDE-001 is CLOSED/APPROVED. State B exact governance authenticity/LICENSE/NOTICE evidence is CLOSED/VERIFIED, including immutable JetBrains annotations LICENSE/NOTICE; excluded jsr305:3.0.2 terms remain uninterpreted and use/distribution unapproved. State C future actual :poc:recovery graph/package/R8 evidence and scoped Product/IP disposition is OPEN/BLOCKED. Readiness requires absence in recovery scope, not approval to use the excluded artifact; no dependency or production admission is implied."
+    }
+  ],
+  "phaseA": {
+    "allowedInPrinciple": true,
+    "executionAllowedNow": false,
+    "environments": [
+      "PINNED_API36_X86_64_EMULATOR",
+      "PHYSICAL_D2"
+    ],
+    "possibleVerdicts": [
+      "FAIL",
+      "INCONCLUSIVE"
+    ],
+    "passAllowed": false,
+    "faultRows": 46,
+    "emulatorRepetitionsPerRow": 3,
+    "physicalD2RepetitionsPerRow": 1,
+    "phaseATotalInjections": 184,
+    "hardKillAttemptsPerCandidate": 120,
+    "hardKillDenominatorSeparate": true
+  },
+  "fullVerdict": {
+    "requiredPhysicalProfiles": [
+      "D1",
+      "D2",
+      "D5"
+    ],
+    "availableNow": false,
+    "deferred": true,
+    "faultRows": 46,
+    "repetitionsPerPhysicalProfilePerRow": 1,
+    "fullPhysicalTotalInjections": 138,
+    "phaseAD2ReuseAllowedOnlyOnExactMatch": [
+      "exact commit",
+      "protocol and Gate Set version",
+      "fixture digest",
+      "injection definition",
+      "device identity and profile",
+      "fresh preflight",
+      "validity criteria"
+    ],
+    "otherwiseRepeatD2": true,
+    "additionalD1D5InjectionsWithValidD2Reuse": 92,
+    "passAllowedWithoutCompleteD1D2D5Profile": false
+  }
+}

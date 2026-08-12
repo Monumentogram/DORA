@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 6,
+  "pocId": "POC-RECOVERY-001",
+  "recordedOn": "2026-08-12",
+  "activeGateSetVersion": "poc-recovery-stage0-v0.5",
+  "activeProtocolId": "poc-recovery-protocol-stage0-v0.5",
+  "canonicalBlockerIds": [
+    "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
+    "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
+    "REC-RDY-03-STREAMING-IMPLEMENTATION-VERIFICATION",
+    "REC-RDY-04-MICROFILE-IMPLEMENTATION-VERIFICATION",
+    "REC-RDY-05-FUTURE-RESOLVED-GRAPH",
+    "REC-RDY-06-DEVICE-SQLITE-PREFLIGHT",
+    "REC-RDY-07-HARNESS-ABSENT",
+    "REC-RDY-08-OWNER-EXECUTION-AUTHORIZATION",
+    "REC-RDY-09-D1-D5-FULL-VERDICT",
+    "REC-RDY-10-PRODUCTION-LEGAL-SECURITY",
+    "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY"
+  ],
+  "roles": {
+    "packageAuthor": {
+      "role": "Governance package preparer and v0.5 remediation recorder",
+      "reviewer": "Codex",
+      "mayApproveOwnPackage": false,
+      "mayAuthorizeExecution": false,
+      "claimedFormallyIndependentReviewer": false
+    },
+    "stage0ProductIp": {
+      "role": "Stage 0 Product/IP reviewer",
+      "reviewer": "Project owner",
+      "status": "PROSPECTIVE_POLICY_AND_EXACT_GOVERNANCE_PACKET_EVIDENCE_APPROVED_ONLY",
+      "finalApproved": false,
+      "approvedReviewer": null,
+      "approvedOn": null,
+      "approvedProspectiveDisposition": {
+        "policyId": "REC-JSR305-EXCLUDE-001",
+        "analysisLocator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.md",
+        "technicalRecommendation": "A_CONDITIONED_COMPLETE_EXCLUSION",
+        "underlyingArtifactLicenseConflictResolved": false,
+        "conflictingArtifactTreatment": "EXCLUDED_TERMS_NOT_INTERPRETED",
+        "jsr305UseOrDistributionApproved": false,
+        "accepted": true,
+        "acceptedBy": "Project owner",
+        "acceptedOn": "2026-08-12",
+        "decisionInputGovernanceHead": "eb312feb2a0d5e5b24b45fcd045bacca94e8c9da",
+        "ownerDecisionLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md",
+        "scope": "PROSPECTIVE_POLICY_AND_REVIEWED_GOVERNANCE_PACKAGE_FOR_FUTURE_EXACT_EXCLUDED_STAGE0_GRAPH_ONLY"
+      },
+      "futureExactGraphDisposition": {
+        "status": "OPEN_BLOCKED",
+        "actualGraphApproved": false,
+        "dependencyAdmission": false,
+        "implementationAuthorized": false,
+        "executionAuthorized": false,
+        "separateImplementationScopeRequired": true,
+        "exactResolvedGraphEvidenceRequired": true
+      },
+      "governancePacketEvidenceDisposition": {
+        "status": "CLOSED_VERIFIED",
+        "jetbrainsAnnotationsImmutableLicenseNoticeVerified": true,
+        "excludedJsr305TermsInterpreted": false,
+        "jsr305UseOrDistributionApproved": false,
+        "productionLegalApproved": false,
+        "dependencyAdmission": false
+      },
+      "authority": [
+        "approve or reject exact Stage 0 evaluation scope",
+        "approve or reject license, NOTICE, provenance and Product/IP compatibility for internal Stage 0 evaluation"
+      ],
+      "doesNotAuthorize": [
+        "crypto Engineering/Security correctness",
+        "production Legal",
+        "production Security",
+        "redistribution",
+        "dependency admission",
+        "execution without a later separate owner record"
+      ]
+    },
+    "independentRecoveryEngineeringSecurity": {
+      "role": "Distinct accountable recovery-scoped Engineering/Security reviewer",
+      "reviewer": null,
+      "status": "UNASSIGNED_BLOCKING",
+      "approvedReviewer": null,
+      "approvedOn": null,
+      "accountabilityRequired": true,
+      "currentCodexRemediationClaimedFormallyIndependent": false,
+      "independence": "Must be distinct from the package author; review is separate from Project-owner Product/IP review and separate from Production Security.",
+      "requiredApprovals": [
+        "DURABLE_ONE_SEGMENT_LOOKAHEAD q/R/read/EOF proof using public StreamingAead only",
+        "non-deprecated 16/16-byte HKDF-SHA256 4096-byte streaming construction and one-derived-key-per-stream model",
+        "AES256_GCM_TINK_IV12_TAG16 microfiles and exact DORA_RECOVERY_MANIFEST_V1_BINARY_BE parser",
+        "four exact big-endian LP16 AAD schemas and the non-deprecated AndroidKeystoreKmsClient Builder path",
+        "13-step durable key-confirmation bootstrap, separate DORAKC01/DORAKA01 schemas and the v0.5 exact ordered eight-class KEY taxonomy with plaintext validation only after decrypt",
+        "candidate-specific inherited 9/13/21 publication sequences after bootstrap, semantic endTransaction commit, WAL/FULL SQLite and deterministic UNIQUE processing intent",
+        "all nine final and final+'.tmp' path families, key-confirmation reconciliation states, collision/no-overwrite behavior and no name-only temp promotion",
+        "candidate-specific K01-K12 public barriers with durable bootstrap prerequisite and immutable v0.3 K12 seeds",
+        "46-row corruption, replay, rollback, KEY-01..KEY-07, KCB-01..06, KCF-01..07, parser/path, quarantine, event and cleanup matrix",
+        "separate Phase A 184-injection and full physical 138-injection profiles, exact D2 reuse criteria, and a separate 120-attempt hard-kill denominator",
+        "exact ordered canonical REC-RDY-01 through REC-RDY-11 blocker IDs and fail-closed states",
+        "later separately scoped implementation and non-metric implementation-verification evidence"
+      ],
+      "mayRejectOrRequireProtocolRevision": true,
+      "mayAuthorizeExecution": false,
+      "replacesProductionSecurity": false
+    },
+    "executionAuthorizer": {
+      "role": "Stage 0 execution authorizer",
+      "reviewer": "Project owner",
+      "status": "AUTHORIZATION_WITHHELD",
+      "authorizedBy": null,
+      "authorizedOn": null,
+      "precondition": "The prospective Product/IP policy is already accepted; repeat exact-HEAD package review and independent Engineering/Security review must complete, implementation must be separately authorized and safely verified, the future graph must prove zero forbidden jsr305 components under REC-JSR305-EXCLUDE-001, and device preflights must be reviewed.",
+      "explicitLaterRecordRequired": true,
+      "implicitAuthorizationAllowed": false
+    },
+    "productionLegal": {
+      "role": "Production Legal",
+      "reviewer": null,
+      "status": "UNASSIGNED_PRODUCTION_BLOCKED",
+      "requiredForStage0PackagePreparation": false,
+      "requiredForProductionOrRedistribution": true
+    },
+    "productionSecurity": {
+      "role": "Production Security",
+      "reviewer": null,
+      "status": "SEPARATE_FUTURE_APPROVAL_REQUIRED",
+      "replacedByRecoveryReview": false,
+      "requiredForStage0PackagePreparation": false,
+      "requiredForProductionAdmission": true
+    }
+  }
+}

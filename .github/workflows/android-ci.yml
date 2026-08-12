@@ -61,6 +61,21 @@ jobs:
       - name: Validate isolated search PoC contracts
         run: python3 tools/validate_poc_search.py
 
+      - name: Validate recovery governance package
+        run: python3 tools/validate_poc_recovery_governance.py --self-test
+
+      - name: Verify exact recovery dependency inventory
+        run: python3 tools/verify_poc_recovery_dependency_inventory.py --online
+
+      - name: Verify recovery execution remains fail-closed
+        shell: bash
+        run: |
+          if python3 tools/check_poc_recovery_run_readiness.py; then
+            echo "Recovery execution unexpectedly became allowed" >&2
+            exit 1
+          fi
+          echo "Recovery execution is correctly blocked"
+
       - name: Check formatting and Kotlin static analysis
         working-directory: android
         run: >-

@@ -2,6 +2,7 @@
 
 **Статус:** архитектурное решение для утверждения<br>
 **Дата проверки источников:** 4 августа 2026 года<br>
+**Recovery governance amendment:** 12 августа 2026 года — `DEC-044`/`OD-14`; Gate Set exact, implementation/execution withheld<br>
 **Область:** Android MVP 1; production-код в документ не входит<br>
 **Правовая оговорка:** раздел 25 — инженерный чек-лист, а не юридическая консультация.
 
@@ -498,7 +499,7 @@ Kafka, service mesh, отдельный vector DB, Kubernetes, event sourcing в
 6. Enqueue unique work `segment:{uuid}:pipeline:{version}` только после durable commit.
 7. Original удалять лишь по явной retention policy и только когда существует локальный подтверждённый результат/export; cloud success сам по себе не разрешает удалить единственную копию.
 
-**PoC-гейт:** проверить, удаётся ли Tink Streaming AEAD безопасно прочитать все полностью аутентифицированные blocks из оборванного файла. Если текущая реализация не даёт надёжной salvage semantics, fallback — последовательность sealed 15–30-секундных Tink AEAD microfiles + manifest. Нельзя изобретать собственный GCM container без crypto review.
+**PoC-гейт (`DEC-044` / `OD-14`):** проверить, удаётся ли выбранной в prospective protocol v0.5 конструкции Tink Streaming AEAD (точные v0.3 candidate semantics и v0.4 durable key-confirmation contract наследуются по SHA-256) безопасно прочитать полностью аутентифицированный committed prefix по `DURABLE_ONE_SEGMENT_LOOKAHEAD` и сравнить её с sealed five-second Tink AEAD microfiles + exact authenticated manifest. v0.5 фиксирует exact ordered eight-class KEY taxonomy: path/type/recorded ciphertext length/SHA-256 проверяются до decrypt, plaintext parser/magic/schema/no-trailing и identity — только после успешного decrypt; новый `KCF-07` доводит fault matrix до 46 rows. Phase A — 184 injections (3 emulator + 1 D2 на row), full physical D1/D2/D5 — 138; 120 hard kills/candidate остаются отдельным denominator, а PASS без complete D1/D2/D5 запрещён. Loss committed bytes всегда равен нулю, tail loss — не более 5 секунд. `REC-JSR305-EXCLUDE-001` ограничен будущим `:poc:recovery`; existing other-module tooling paths не считаются recovery admission. Нельзя добавлять зависимость/модуль либо начинать implementation/execution до отдельного scope, accountable review, exact actual-graph/package/R8 Product/IP disposition, preflight и отдельного разрешения владельца; `implementationAllowed=false`; `executionAllowed=false`.
 
 ### 14.4. Recovery
 
@@ -841,7 +842,7 @@ VPN treated как обычная смена сети. Dora не пытаетс�
 ### 24.2. Local controls
 
 - Room DB полностью шифруется SQLCipher. Случайный 256-bit DB passphrase обёрнут KEK в Android Keystore; не выводится из PIN/пароля пользователя.
-- Audio — per-segment keyset + Tink Streaming AEAD; metadata/AAD привязывает ciphertext к session/segment/version. [Tink Streaming AEAD](https://developers.google.com/tink/streaming-aead) предназначен для больших потоков и защищает порядок/подмену segments.
+- Audio-кандидат — fresh keyset на физический `AudioSegment`/PoC run + Tink Streaming AEAD; внутри одного ciphertext stream используется один HKDF-derived AES key, а уникальность внутренних streaming segments обеспечивают nonce prefix, segment index и last flag. Metadata/AAD привязывает ciphertext к session/физическому segment/version. [Tink Streaming AEAD](https://developers.google.com/tink/streaming-aead) предназначен для больших потоков и защищает порядок/подмену segments. Это описание prospective PoC design, а не dependency/production admission; точный статус задаёт `DEC-044`/Gate Set v0.5.
 - Keystore keys non-exportable; hardware-backed/StrongBox используются при наличии, но не гарантируются на каждом устройстве ([Android Keystore](https://developer.android.com/privacy-and-security/keystore)).
 - Auto Backup/device transfer исключают encrypted DB/audio/keysets/models with private metadata; иначе restored ciphertext может быть недешифруемым.
 - App switcher preview скрывается на чувствительных экранах опциональным privacy setting; clipboard предупреждает/очищает только в допустимых Android пределах.
@@ -1781,12 +1782,12 @@ Raw meeting audio, production secrets, signing keys, unapproved model weights an
 ### Прототип 3 — восстановление после завершения процесса
 
 - **Гипотеза:** checkpointed encrypted writer восстанавливает весь committed prefix; после kill теряется не более выбранного окна.
-- **Реализация:** inject `kill -9`, low-memory/process stop and simulated crash at random writer/finalize/rename/DB points; reboot reconciliation; 100+ runs.
-- **Устройства / данные:** D1–D5; 1h mixed signal; Tink stream corruption/truncation fixtures.
-- **Показатели:** recovered samples, lost tail, duplicate/missing segments/jobs, auth failures, recovery latency, user message correctness.
-- **Успех:** 100% valid committed prefix; ≤5 с target tail loss; no duplicate processing; mic never restarts automatically.
-- **Провал:** one truncated tail makes all prior ciphertext unreadable, orphan deleted, DB/file split-brain unrecoverable.
-- **Резерв:** independent sealed 15–30-s microfiles + manifest; accept/document smaller checkpoint only after battery measurement.
+- **Реализация:** после отдельного review/authorization один isolated harness сравнивает public Tink Streaming AEAD и sealed Tink AEAD microfiles/authenticated manifest; 12 frozen hard-kill strata, 120 base attempts на кандидата, минимум 100 valid, invalid attempts не скрываются и не перезапускаются молча.
+- **Устройства / данные:** exploratory Phase A — pinned emulator + доступный D2 и только `FAIL`/`INCONCLUSIVE`; полный verdict — физические D1/D2/D5. Используется deterministic synthetic PCM16 byte oracle; real audio не требуется.
+- **Показатели:** authenticated committed/recovered offsets, committed loss bytes, tail loss bytes/seconds, duplicate/missing processing intents, auth/key-loss/split-brain/quarantine/idempotency/cleanup outcomes; recovery latency не является gate в текущем package.
+- **Успех:** 100% authenticated contiguous committed prefix; committed loss = 0; tail loss ≤5.000 с на каждом valid hard kill; no duplicate/missing processing intent; mic never restarts automatically. Phase A PASS запрещён без D1/D5.
+- **Провал:** любой committed byte потерян/не аутентифицирован, valid tail >5 с, orphan silently deleted, DB/file split-brain unrecoverable, key loss назван corruption, candidate failure скрыт как invalid или microphone автоматически перезапущен.
+- **Резерв:** основной gate-compatible fallback — sealed 5-s Tink AEAD microfiles + authenticated manifest. 15/30-s варианты — только observations/post-FAIL fallbacks и не имеют права PASS по текущему gate.
 
 ### Прототип 4 — локальная RU/EN транскрибация
 

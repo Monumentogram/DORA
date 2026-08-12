@@ -1,0 +1,1084 @@
+{
+  "schemaVersion": 3,
+  "protocolId": "poc-recovery-protocol-stage0-v0.3",
+  "pocId": "POC-RECOVERY-001",
+  "status": "PROPOSED_OWNER_REMEDIATED_IMPLEMENTATION_VERIFICATION_REQUIRED_EXECUTION_BLOCKED",
+  "gateSetLocator": "docs/stage0/poc-recovery-gate-set-stage0-v0.3.json",
+  "normativeMarkdown": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md",
+  "executionAllowed": false,
+  "supersedes": {
+    "protocolId": "poc-recovery-protocol-stage0-v0.2",
+    "disposition": "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE",
+    "reviewedCommit": "70cf26125dbecbb347311ca0bb9ce1ad5c637e18"
+  },
+  "retainedAuditArtifacts": [
+    {
+      "protocolId": "poc-recovery-protocol-stage0-v0.1",
+      "disposition": "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE",
+      "reviewedCommit": "87f8c00c6afce0f658678a7a09b1a394b89a2454"
+    },
+    {
+      "protocolId": "poc-recovery-protocol-stage0-v0.2",
+      "disposition": "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE",
+      "reviewedCommit": "70cf26125dbecbb347311ca0bb9ce1ad5c637e18"
+    }
+  ],
+  "fixture": {
+    "kind": "deterministic-synthetic-pcm",
+    "containsRealAudio": false,
+    "encoding": "PCM_S16LE",
+    "sampleRateHz": 16000,
+    "channels": 1,
+    "bytesPerSample": 2,
+    "bytesPerSecond": 32000,
+    "tailGateSeconds": 5.0,
+    "tailGateBytes": 160000,
+    "maxPlaintextBytesPerRun": 115200000,
+    "byteOracle": "monotonic deterministic frame and byte intervals recorded by the external controller",
+    "acceptedWatermark": "exclusive end A of complete bounded writer calls that returned before SIGKILL; an in-progress call is excluded",
+    "ackDelayUntilCommitForbidden": true
+  },
+  "binaryEncodingPrimitives": {
+    "integerByteOrder": "BIG_ENDIAN",
+    "unsignedIntegers": [
+      "U16BE",
+      "U32BE",
+      "U64BE"
+    ],
+    "lp16Ascii": "U16BE byte length followed by exactly that many 7-bit ASCII bytes",
+    "runId": "16 raw RFC4122 UUID bytes",
+    "sha256": "32 raw bytes",
+    "nonAsciiAllowed": false,
+    "embeddedNulAllowed": false,
+    "trailingBytesAllowed": false
+  },
+  "definitions": {
+    "semanticCommitPoint": "successful return of SQLite endTransaction() after durable data, key-envelope and authenticated manifest/checkpoint publication",
+    "controllerCommitEvent": "evidence emitted only after semantic commit; not part of commit definition",
+    "committedPrefix": "longest gap-free plaintext interval [0,C) reconstructed from the intersection of durable SQLite rows and authenticated manifest/checkpoint",
+    "recoveredAuthenticatedPrefix": "longest gap-free oracle-equal interval [0,R) composed only of bytes returned by successfully completed authenticated reads",
+    "mandatoryOrderingInvariant": "0 <= C <= R <= A",
+    "committedLossBytesFormula": "C - min(C,R)",
+    "committedLossBytesRequired": 0,
+    "tailLossBytesFormula": "A - R",
+    "tailLossSecondsFormula": "tailLossBytes / 32000.0",
+    "returnedBytesAuthenticatedPercentMinimum": 100.0,
+    "controllerLedgerRole": "independent cross-check and external rollback anchor"
+  },
+  "dependencyCandidate": {
+    "coordinate": "com.google.crypto.tink:tink-android:1.23.0",
+    "permission": "STAGE0_EVALUATION_PACKAGE_PREPARATION_ONLY",
+    "runtimeGraphAdmission": false,
+    "inventoryLocator": "docs/evidence/poc-recovery-001/dependency-inventory.json",
+    "securityLocator": "docs/evidence/poc-recovery-001/security-advisory-inventory.json"
+  },
+  "candidates": [
+    {
+      "id": "REC-STREAM-TINK",
+      "primitive": "com.google.crypto.tink.StreamingAead",
+      "apiBoundary": "PUBLIC_ONLY",
+      "construction": {
+        "status": "DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED",
+        "parametersClass": "com.google.crypto.tink.streamingaead.AesGcmHkdfStreamingParameters",
+        "builder": "AesGcmHkdfStreamingParameters.builder()",
+        "inputKeyBytes": 16,
+        "derivedAesGcmKeyBytes": 16,
+        "hkdfHash": "AesGcmHkdfStreamingParameters.HashType.SHA256",
+        "ciphertextSegmentBytes": 4096,
+        "keysetConstruction": "KeysetHandle.newBuilder().addEntry(KeysetHandle.generateEntryFromParameters(parameters).withRandomId().makePrimary()).build()",
+        "primitiveConstruction": "keysetHandle.getPrimitive(RegistryConfiguration.get(), StreamingAead.class)",
+        "deprecatedStreamingAeadKeyTemplatesAllowed": false
+      },
+      "keyModel": {
+        "freshKeysetPerRun": true,
+        "inputKeyPerRun": "one fresh 16-byte input key",
+        "derivedKeyPerStream": "one HKDF-derived 16-byte AES-GCM key for the ciphertext stream",
+        "separateDerivedKeyPerSegmentClaimed": false,
+        "segmentUniqueness": [
+          "nonce prefix",
+          "segment index",
+          "last flag"
+        ],
+        "associatedDataSetOnceForWholeStream": true
+      },
+      "checkpointModel": {
+        "name": "DURABLE_ONE_SEGMENT_LOOKAHEAD",
+        "status": "DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED",
+        "qDefinition": "count of fully output non-final 4096-byte ciphertext segments durably present in the prefix",
+        "ciphertextPrefixBytesFormula": "q * 4096",
+        "recoveredEndFormula": {
+          "qLessThan2": 0,
+          "qAtLeast2": "4056 + (q - 2) * 4080"
+        },
+        "durableLastNonFinalSegmentIsSacrificial": true,
+        "sacrificialSegmentIncludedInCommittedPrefix": false,
+        "maximumBoundedTailBytes": 8160,
+        "maximumBoundedTailSeconds": 0.255,
+        "passEligibleCadencesSeconds": [],
+        "maxPlaintextBytesPerRun": 115200000,
+        "maxSegmentsPerRun": 28236
+      },
+      "recoveryReads": {
+        "firstRequestedPlaintextBytes": 4056,
+        "subsequentRequestedPlaintextBytes": 4080,
+        "countOnlySuccessfullyCompletedReadReturnBytes": true,
+        "discardEntireCallerBufferOnReadException": true,
+        "minusOneMeaning": "AUTHENTICATED_NORMAL_EOF",
+        "exceptionsNeverMeaningEof": [
+          "IOException",
+          "GeneralSecurityException",
+          "TRUNCATION",
+          "AUTHENTICATION_FAILURE",
+          "ANY_OTHER_EXCEPTION"
+        ]
+      },
+      "checkpoint": {
+        "exactEncoding": "DORA_RECOVERY_STREAM_CHECKPOINT_V1_BINARY_BE",
+        "status": "DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED",
+        "aeadTemplate": "AES256_GCM_TINK_IV12_TAG16",
+        "freshKeysetPerGeneration": true,
+        "magicAscii": "DORARC01",
+        "schemaVersion": 1,
+        "generationStartsAt": 1,
+        "generationIncrement": 1,
+        "genesisPreviousCiphertextSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "fieldsInOrder": [
+          "magic[8]",
+          "schemaVersion:U16BE",
+          "protocolId:LP16_ASCII",
+          "candidateId:LP16_ASCII",
+          "runId[16]",
+          "generation:U64BE",
+          "previousCheckpointCiphertextSha256[32]",
+          "q:U32BE",
+          "ciphertextPrefixBytes:U64BE",
+          "committedEndExclusive:U64BE",
+          "streamKeyEnvelopeBytes:U64BE",
+          "streamKeyEnvelopeSha256[32]",
+          "streamCiphertextRelativeName:LP16_ASCII",
+          "streamKeyEnvelopeRelativeName:LP16_ASCII"
+        ],
+        "trailingBytesAllowed": false
+      }
+    },
+    {
+      "id": "REC-MICROFILE-TINK",
+      "primitive": "com.google.crypto.tink.Aead",
+      "apiBoundary": "PUBLIC_ONLY",
+      "aeadTemplate": {
+        "name": "AES256_GCM_TINK_IV12_TAG16",
+        "status": "DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED",
+        "parametersClass": "com.google.crypto.tink.aead.AesGcmParameters",
+        "builder": "AesGcmParameters.builder()",
+        "aesKeyBytes": 32,
+        "ivBytes": 12,
+        "tagBytes": 16,
+        "variant": "AesGcmParameters.Variant.TINK",
+        "keysetConstruction": "KeysetHandle.newBuilder().addEntry(KeysetHandle.generateEntryFromParameters(parameters).withRandomId().makePrimary()).build()",
+        "primitiveConstruction": "keysetHandle.getPrimitive(RegistryConfiguration.get(), Aead.class)"
+      },
+      "freshKeysetPerMicrofile": true,
+      "cadences": [
+        {
+          "seconds": 5,
+          "fullUnitPlaintextBytes": 160000,
+          "fullUnitCiphertextBytes": 160033,
+          "role": "PRIMARY_GATE_COMPATIBLE",
+          "passEligible": true
+        },
+        {
+          "seconds": 15,
+          "role": "OBSERVATION_OR_POST_FAILURE_FALLBACK",
+          "passEligible": false
+        },
+        {
+          "seconds": 30,
+          "role": "OBSERVATION_OR_POST_FAILURE_FALLBACK",
+          "passEligible": false
+        }
+      ],
+      "manifest": {
+        "authenticatedAndEncrypted": true,
+        "exactEncoding": "DORA_RECOVERY_MANIFEST_V1_BINARY_BE",
+        "status": "DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED",
+        "aeadTemplate": "AES256_GCM_TINK_IV12_TAG16",
+        "freshKeysetPerGeneration": true,
+        "magicAscii": "DORARM01",
+        "schemaVersion": 1,
+        "generationStartsAt": 1,
+        "generationIncrement": 1,
+        "genesisPreviousCiphertextSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "maximumEntries": 721,
+        "maximumPlaintextBytes": 524288,
+        "trailingBytesAllowed": false,
+        "headerFieldsInOrder": [
+          "magic[8]",
+          "schemaVersion:U16BE",
+          "protocolId:LP16_ASCII",
+          "candidateId:LP16_ASCII",
+          "runId[16]",
+          "generation:U64BE",
+          "previousManifestCiphertextSha256[32]",
+          "committedEndExclusive:U64BE",
+          "entryCount:U32BE"
+        ],
+        "entryFieldsInOrder": [
+          "unitIndex:U32BE",
+          "plaintextStartInclusive:U64BE",
+          "plaintextEndExclusive:U64BE",
+          "cadenceSeconds:U32BE",
+          "ciphertextBytes:U64BE",
+          "ciphertextSha256[32]",
+          "keyEnvelopeBytes:U64BE",
+          "keyEnvelopeSha256[32]",
+          "ciphertextRelativeName:LP16_ASCII",
+          "keyEnvelopeRelativeName:LP16_ASCII"
+        ],
+        "entryRules": {
+          "firstUnitIndex": 0,
+          "unitIndicesStrictlyIncreasingByOne": true,
+          "plaintextStartsAtZero": true,
+          "plaintextRangesContiguous": true,
+          "gapsAllowed": false,
+          "duplicatesAllowed": false,
+          "reorderingAllowed": false,
+          "removalAllowed": false,
+          "committedEndEqualsLastEntryEndOrZero": true
+        }
+      }
+    }
+  ],
+  "associatedDataSchemas": {
+    "streaming": {
+      "exactEncoding": "DORA_RECOVERY_STREAM_AAD_V1_BINARY_BE",
+      "magicAscii": "DORASA01",
+      "fieldsInOrder": [
+        "magic[8]",
+        "schemaVersion:U16BE=1",
+        "protocolId:LP16_ASCII",
+        "candidateId:LP16_ASCII",
+        "runId[16]",
+        "streamGeneration:U64BE=1",
+        "plaintextStartInclusive:U64BE=0",
+        "plaintextEndExclusive:U64BE=115200000",
+        "genesisPreviousCheckpointCiphertextSha256[32]=ZERO"
+      ],
+      "setOnceForWholeStream": true
+    },
+    "microfile": {
+      "exactEncoding": "DORA_RECOVERY_MICROFILE_AAD_V1_BINARY_BE",
+      "magicAscii": "DORAMA01",
+      "fieldsInOrder": [
+        "magic[8]",
+        "schemaVersion:U16BE=1",
+        "protocolId:LP16_ASCII",
+        "candidateId:LP16_ASCII",
+        "runId[16]",
+        "manifestGeneration:U64BE",
+        "unitIndex:U32BE",
+        "plaintextStartInclusive:U64BE",
+        "plaintextEndExclusive:U64BE",
+        "cadenceSeconds:U32BE",
+        "previousManifestCiphertextSha256[32]"
+      ]
+    },
+    "manifestOrCheckpoint": {
+      "exactEncoding": "DORA_RECOVERY_PUBLICATION_AAD_V1_BINARY_BE",
+      "magicAscii": "DORACP01",
+      "publicationKindValues": [
+        "MANIFEST",
+        "CHECKPOINT"
+      ],
+      "emptyTerminalUnitIndex": 4294967295,
+      "fieldsInOrder": [
+        "magic[8]",
+        "schemaVersion:U16BE=1",
+        "protocolId:LP16_ASCII",
+        "candidateId:LP16_ASCII",
+        "runId[16]",
+        "publicationKind:LP16_ASCII",
+        "generation:U64BE",
+        "terminalUnitIndex:U32BE",
+        "plaintextStartInclusive:U64BE=0",
+        "plaintextEndExclusive:U64BE",
+        "previousManifestOrCheckpointCiphertextSha256[32]"
+      ]
+    },
+    "keyEnvelope": {
+      "exactEncoding": "DORA_RECOVERY_KEY_ENVELOPE_AAD_V1_BINARY_BE",
+      "magicAscii": "DORAKE01",
+      "targetKindValues": [
+        "STREAM",
+        "MICROFILE",
+        "MANIFEST",
+        "CHECKPOINT"
+      ],
+      "notApplicableUnitIndex": 4294967295,
+      "fieldsInOrder": [
+        "magic[8]",
+        "schemaVersion:U16BE=1",
+        "protocolId:LP16_ASCII",
+        "candidateId:LP16_ASCII",
+        "runId[16]",
+        "targetKind:LP16_ASCII",
+        "generation:U64BE",
+        "unitIndex:U32BE",
+        "plaintextStartInclusive:U64BE",
+        "plaintextEndExclusive:U64BE",
+        "cadenceSeconds:U32BE",
+        "previousManifestOrCheckpointCiphertextSha256[32]"
+      ]
+    }
+  },
+  "keyProtocol": {
+    "status": "DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED",
+    "freshKeysetScopes": {
+      "streaming": "one per run",
+      "microfile": "one per microfile",
+      "manifest": "one per manifest generation",
+      "checkpoint": "one per checkpoint generation"
+    },
+    "androidKeysetManagerAllowed": false,
+    "getOrGenerateNewAeadKeyAllowed": false,
+    "aliasFormat": "android-keystore://dora.poc.recovery.v1.<lowercase-run-uuid>",
+    "newRunCreationApi": "AndroidKeystoreKmsClient.generateNewAeadKey(alias)",
+    "keystoreClientConstruction": "new AndroidKeystoreKmsClient.Builder().setKeyUri(alias).build()",
+    "newRunAccessApi": "new AndroidKeystoreKmsClient.Builder().setKeyUri(alias).build().getAead(alias)",
+    "recoveryAccessApi": "new AndroidKeystoreKmsClient.Builder().setKeyUri(alias).build().getAead(alias)",
+    "newRunSequence": [
+      "fail with KEY_REF_COLLISION if the alias or key-reference namespace is occupied",
+      "AndroidKeystoreKmsClient.generateNewAeadKey(alias)",
+      "new AndroidKeystoreKmsClient.Builder().setKeyUri(alias).build().getAead(alias)"
+    ],
+    "recoveryMayCallGenerateNewAeadKey": false,
+    "recoveryMayCreateOrReplaceAlias": false,
+    "existingAliasOnNewRunClassification": "KEY_REF_COLLISION",
+    "missingInvalidatedOrUnusableAliasClassification": "KEY_UNAVAILABLE",
+    "replacementKeyDuringRecoveryAllowed": false,
+    "encryptedKeysetSerialization": "TinkProtoKeysetFormat.serializeEncryptedKeyset(keysetHandle, keysetEncryptionAead, keyEnvelopeAad, RegistryConfiguration.get())",
+    "encryptedKeysetParsing": "TinkProtoKeysetFormat.parseEncryptedKeyset(serializedEncryptedKeyset, keysetEncryptionAead, keyEnvelopeAad, RegistryConfiguration.get())",
+    "cleartextSecretKeysetSerializationAllowed": false,
+    "keyEnvelopeAssociatedDataRequired": true,
+    "keyConfirmation": {
+      "required": true,
+      "ciphertextIdentityRecordedInSQLite": true,
+      "ciphertextLengthAndSha256CheckedBeforeDecrypt": true,
+      "plaintextEncoding": "LP16('DORA_RECOVERY_KEY_CONFIRM_V1') || runId[16]",
+      "associatedDataEncoding": "LP16(protocolId) || runId[16] || LP16(alias)",
+      "purpose": "distinguish a resolved-but-replaced alias from an intact alias followed by target-envelope authentication failure"
+    },
+    "classificationPrecedence": [
+      {
+        "priority": 1,
+        "condition": "new run finds an existing alias or occupied key-reference namespace",
+        "classification": "KEY_REF_COLLISION"
+      },
+      {
+        "priority": 2,
+        "condition": "expected alias, key reference or key envelope is absent",
+        "classification": "KEY_UNAVAILABLE"
+      },
+      {
+        "priority": 3,
+        "condition": "key envelope is present but its expected length, SHA-256, binary encoding or parser validation fails",
+        "classification": "CORRUPT_KEY_ENVELOPE"
+      },
+      {
+        "priority": 4,
+        "condition": "alias is available, key confirmation succeeds and the structurally valid expected envelope fails AEAD, AAD or tag authentication",
+        "classification": "KEY_ENVELOPE_AUTH_FAILURE"
+      },
+      {
+        "priority": 5,
+        "condition": "alias resolves and the stored length/hash-valid key-confirmation ciphertext proves replacement or mismatch",
+        "classification": "KEY_UNAVAILABLE_KEY_MISMATCH"
+      }
+    ],
+    "ambiguousExpectedOutcomeAllowed": false,
+    "classifications": [
+      "KEY_UNAVAILABLE",
+      "KEY_UNAVAILABLE_KEY_MISMATCH",
+      "CORRUPT_KEY_ENVELOPE",
+      "KEY_ENVELOPE_AUTH_FAILURE",
+      "KEY_REF_COLLISION"
+    ],
+    "keyBytesAllowedInGit": false,
+    "keysetsAllowedInGit": false,
+    "keyBytesAllowedInLogs": false,
+    "keyBytesAllowedInActionsArtifacts": false,
+    "rawDatabaseAllowedInGitOrActions": false,
+    "keyFaultTestsMandatory": true
+  },
+  "storageProtocol": {
+    "activeRoot": "context.noBackupFilesDir/poc-recovery/v1/runs/<runId>/",
+    "quarantineRoot": "context.noBackupFilesDir/poc-recovery/v1/quarantine/<runId>/",
+    "runIdDirectoryFormat": "canonical lowercase UUID",
+    "canonicalContainmentRequired": true,
+    "lstatEveryExistingComponentRequired": true,
+    "regularFilesOnly": true,
+    "symlinksAllowed": false,
+    "existingFinalPathsOverwritten": false,
+    "temporaryNameMapping": "finalRelativeName + '.tmp'",
+    "temporaryNamespaceAllowsOnlyMappedFinalNames": true,
+    "exclusiveCreateFlagsForEveryNewTempOrFinalFile": "O_CREAT|O_EXCL|O_WRONLY|O_CLOEXEC",
+    "finalCollisionCheckRequiredImmediatelyBeforeRename": true,
+    "collisionOrExistingTargetBlocksPublication": true,
+    "renameMayOverwriteExistingTarget": false,
+    "recoveryTempPromotionByNameAllowed": false,
+    "singleWriter": true,
+    "publicAndroidSystemOsDurabilityCallsOnly": [
+      "android.system.Os.open",
+      "android.system.Os.fsync",
+      "android.system.Os.rename",
+      "android.system.Os.close"
+    ],
+    "finalNamePatterns": {
+      "streamCiphertext": "stream/stream.ct",
+      "streamKeyEnvelope": "key-envelopes/stream.ks",
+      "streamCheckpointCiphertext": "checkpoints/g-<20-digit-generation>.ct",
+      "streamCheckpointKeyEnvelope": "key-envelopes/checkpoint-g-<20-digit-generation>.ks",
+      "microfileCiphertext": "units/u-<10-digit-unitIndex>.ct",
+      "microfileKeyEnvelope": "key-envelopes/u-<10-digit-unitIndex>.ks",
+      "manifestCiphertext": "manifests/g-<20-digit-generation>.ct",
+      "manifestKeyEnvelope": "key-envelopes/manifest-g-<20-digit-generation>.ks"
+    },
+    "tempNamePatterns": {
+      "streamCiphertext": "stream/stream.ct.tmp",
+      "streamKeyEnvelope": "key-envelopes/stream.ks.tmp",
+      "streamCheckpointCiphertext": "checkpoints/g-<20-digit-generation>.ct.tmp",
+      "streamCheckpointKeyEnvelope": "key-envelopes/checkpoint-g-<20-digit-generation>.ks.tmp",
+      "microfileCiphertext": "units/u-<10-digit-unitIndex>.ct.tmp",
+      "microfileKeyEnvelope": "key-envelopes/u-<10-digit-unitIndex>.ks.tmp",
+      "manifestCiphertext": "manifests/g-<20-digit-generation>.ct.tmp",
+      "manifestKeyEnvelope": "key-envelopes/manifest-g-<20-digit-generation>.ks.tmp"
+    },
+    "pathValidationCoverage": {
+      "requiredForEveryFinalAndTemporaryPattern": [
+        "canonical containment beneath the active run root",
+        "lstat every existing path component",
+        "regular file at the leaf",
+        "no symlink at any component or leaf"
+      ],
+      "finalPatternKeys": [
+        "streamCiphertext",
+        "streamKeyEnvelope",
+        "streamCheckpointCiphertext",
+        "streamCheckpointKeyEnvelope",
+        "microfileCiphertext",
+        "microfileKeyEnvelope",
+        "manifestCiphertext",
+        "manifestKeyEnvelope"
+      ],
+      "temporaryPatternKeys": [
+        "streamCiphertext",
+        "streamKeyEnvelope",
+        "streamCheckpointCiphertext",
+        "streamCheckpointKeyEnvelope",
+        "microfileCiphertext",
+        "microfileKeyEnvelope",
+        "manifestCiphertext",
+        "manifestKeyEnvelope"
+      ]
+    },
+    "reconciliationStates": {
+      "TEMP_ONLY": "uncommitted artifact; not published; not committed; after canonical containment, lstat, regular-file and no-symlink validation move it through the quarantine transaction",
+      "TEMP_AND_FINAL": "collision; never overwrite the final; after canonical containment, lstat, regular-file and no-symlink validation move the temp through the quarantine transaction",
+      "FINAL_ONLY": "validate against the authenticated manifest/checkpoint and exact SQLite identity after canonical containment, lstat, regular-file and no-symlink validation",
+      "SQLITE_POINTS_TO_TEMP": "split-brain failure; the temp is not committed; never rename, relabel, publish or promote it by name",
+      "UNKNOWN_OR_NON_ALLOWLISTED_NAME": "fail closed; after canonical containment, lstat, regular-file and no-symlink validation move a regular object through the quarantine transaction; unsafe path/type is an error"
+    },
+    "publicationSequences": {
+      "streamingSetup": [
+        "SSET-01 exclusive-create and write stream key-envelope temp",
+        "SSET-02 fsync stream key-envelope temp file",
+        "SSET-03 collision-check then rename stream key-envelope temp to immutable final",
+        "SSET-04 fsync stream key-envelope parent directory",
+        "SSET-05 exclusive-create and write initial stream ciphertext temp",
+        "SSET-06 fsync initial stream ciphertext temp file",
+        "SSET-07 collision-check then rename stream ciphertext temp to immutable final",
+        "SSET-08 fsync stream ciphertext parent directory",
+        "SSET-09 continue all later writes through the append-only stream ciphertext descriptor that remained open across the temp-to-final rename"
+      ],
+      "streamingCheckpointGeneration": [
+        "SCHK-01 fsync the open append-only stream ciphertext descriptor",
+        "SCHK-02 create a fresh checkpoint keyset and serialize its encrypted envelope in memory",
+        "SCHK-03 exclusive-create and write checkpoint key-envelope temp",
+        "SCHK-04 fsync checkpoint key-envelope temp file",
+        "SCHK-05 collision-check then rename checkpoint key-envelope temp to immutable final",
+        "SCHK-06 fsync checkpoint key-envelope parent directory",
+        "SCHK-07 encrypt checkpoint then exclusive-create and write checkpoint ciphertext temp",
+        "SCHK-08 fsync checkpoint ciphertext temp file",
+        "SCHK-09 collision-check then rename checkpoint ciphertext temp to immutable final",
+        "SCHK-10 fsync checkpoint ciphertext parent directory",
+        "SCHK-11 write exact final identities in the SQLite non-exclusive durable transaction",
+        "SCHK-12 successful SQLite endTransaction return is the semantic commit",
+        "SCHK-13 emit the controller evidence event after semantic commit"
+      ],
+      "microfileGeneration": [
+        "MICRO-P01 create a fresh microfile keyset and serialize its encrypted envelope in memory",
+        "MICRO-P02 exclusive-create and write microfile key-envelope temp",
+        "MICRO-P03 fsync microfile key-envelope temp file",
+        "MICRO-P04 collision-check then rename microfile key-envelope temp to immutable final",
+        "MICRO-P05 fsync microfile key-envelope parent directory",
+        "MICRO-P06 Aead.encrypt returns then exclusive-create and write microfile ciphertext temp",
+        "MICRO-P07 fsync microfile ciphertext temp file",
+        "MICRO-P08 collision-check then rename microfile ciphertext temp to immutable final",
+        "MICRO-P09 fsync microfile ciphertext parent directory",
+        "MICRO-P10 create a fresh manifest keyset and serialize its encrypted envelope in memory",
+        "MICRO-P11 exclusive-create and write manifest key-envelope temp",
+        "MICRO-P12 fsync manifest key-envelope temp file",
+        "MICRO-P13 collision-check then rename manifest key-envelope temp to immutable final",
+        "MICRO-P14 fsync manifest key-envelope parent directory",
+        "MICRO-P15 encrypt manifest then exclusive-create and write manifest ciphertext temp",
+        "MICRO-P16 fsync manifest ciphertext temp file",
+        "MICRO-P17 collision-check then rename manifest ciphertext temp to immutable final",
+        "MICRO-P18 fsync manifest ciphertext parent directory",
+        "MICRO-P19 write both key envelopes, both ciphertext finals and exact hashes in the SQLite non-exclusive durable transaction",
+        "MICRO-P20 successful SQLite endTransaction return is the semantic commit",
+        "MICRO-P21 emit the controller evidence event after semantic commit"
+      ]
+    },
+    "streamSpecialization": "stream ciphertext is initially published under the immutable final name while its descriptor remains open; later append checkpoints fsync that append-only descriptor before immutable checkpoint publication",
+    "quarantineOrder": [
+      "SQLite intent commit",
+      "rename",
+      "fsync source directory",
+      "fsync destination directory",
+      "SQLite completion commit"
+    ]
+  },
+  "sqliteJournal": {
+    "scope": "POC_LOCAL_SPLIT_BRAIN_AND_RECONCILIATION_ONLY",
+    "api": "android.database.sqlite",
+    "roomAllowed": false,
+    "sqlCipherAllowed": false,
+    "workManagerAllowed": false,
+    "bundledSQLiteAllowed": false,
+    "productionSchemaAllowed": false,
+    "productionMigrationAllowed": false,
+    "journalMode": "WAL",
+    "synchronous": "FULL",
+    "walAutocheckpoint": 0,
+    "foreignKeys": true,
+    "singleWriter": true,
+    "transactionApi": "beginTransactionNonExclusive()",
+    "semanticCommitApi": "endTransaction() successful return",
+    "controllerEventPartOfSemanticCommit": false,
+    "requiredUnitRowFields": [
+      "runId",
+      "candidateId",
+      "unitIndex",
+      "plaintextStartInclusive",
+      "plaintextEndExclusive",
+      "cadenceSeconds",
+      "ciphertextRelativeName",
+      "ciphertextBytes",
+      "ciphertextSha256",
+      "keyEnvelopeRelativeName",
+      "keyEnvelopeBytes",
+      "keyEnvelopeSha256",
+      "manifestOrCheckpointGeneration",
+      "state",
+      "processingIntentId"
+    ],
+    "requiredPublicationRowFields": [
+      "runId",
+      "candidateId",
+      "publicationKind",
+      "generation",
+      "committedEndExclusive",
+      "publicationRelativeName",
+      "publicationBytes",
+      "publicationSha256",
+      "keyEnvelopeRelativeName",
+      "keyEnvelopeBytes",
+      "keyEnvelopeSha256",
+      "previousPublicationCiphertextSha256",
+      "state"
+    ],
+    "abstractFileIdentityAllowed": false,
+    "processingIntentId": {
+      "algorithm": "SHA-256",
+      "inputEncoding": "LP16(protocolId) || LP16(candidateId) || runId[16] || U32BE(unitIndex) || U64BE(plaintextStartInclusive) || U64BE(plaintextEndExclusive) || ciphertextSha256[32]",
+      "databaseEncoding": "BLOB(32)",
+      "uniqueConstraintRequired": true,
+      "publicEvidenceEncoding": "lowercase hexadecimal"
+    },
+    "freshPreflight": {
+      "requiredEnvironments": [
+        "PINNED_API36_X86_64_EMULATOR",
+        "PHYSICAL_D2"
+      ],
+      "record": [
+        "effective PRAGMA journal_mode",
+        "effective PRAGMA synchronous",
+        "effective PRAGMA wal_autocheckpoint",
+        "effective PRAGMA foreign_keys",
+        "sqlite_version()",
+        "sqlite_source_id()",
+        "PRAGMA compile_options count",
+        "PRAGMA compile_options canonical SHA-256",
+        "exact authorized commit",
+        "protocolId",
+        "collectedAtUtc"
+      ],
+      "compileOptionsCanonicalization": "exact rows sorted lexicographically, UTF-8 encoded, joined by LF and terminated by one LF",
+      "mismatchBlocksExecution": true
+    },
+    "provenanceLocator": "docs/evidence/poc-recovery-001/sqlite-platform-provenance.json"
+  },
+  "hardKillCampaign": {
+    "signal": "SIGKILL",
+    "gracefulStopAllowed": false,
+    "baseAttemptsPerCandidate": 120,
+    "validHardKillsMinimumPerCandidate": 100,
+    "strataCount": 12,
+    "baseAttemptsPerStratumPerCandidate": 10,
+    "validHardKillsMinimumPerStratum": 8,
+    "attemptIdPattern": "<phase>-<candidate>-<stratum>-<environment>-<slot-01..10>",
+    "phaseAAllocationPerStratum": {
+      "PINNED_API36_X86_64_EMULATOR": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "PHYSICAL_D2": [
+        7,
+        8,
+        9,
+        10
+      ]
+    },
+    "fullPhysicalAllocationPerStratum": {
+      "D1": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "D2": [
+        5,
+        6,
+        7
+      ],
+      "D5": [
+        8,
+        9,
+        10
+      ]
+    },
+    "barrierObservation": {
+      "publicApiOrHarnessOwnedCallbackOnly": true,
+      "internalTinkHooksAllowed": false,
+      "reflectionAllowed": false,
+      "timingOnlySleepAllowed": false,
+      "status": "DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED"
+    },
+    "strata": [
+      {
+        "id": "K01",
+        "REC-STREAM-TINK": "bounded plaintext write returned; no complete downstream 4096-byte ciphertext segment callback yet and no checkpoint sequence step SCHK-01 started",
+        "REC-MICROFILE-TINK": "bounded plaintext accepted into unit buffer; MICRO-P06 Aead.encrypt() not called"
+      },
+      {
+        "id": "K02",
+        "REC-STREAM-TINK": "harness-owned downstream ciphertext OutputStream callback received next segment bytes and pauses before delegate write; SCHK-01 not started",
+        "REC-MICROFILE-TINK": "MICROFILE_AFTER_AEAD_RETURN_BEFORE_TEMP_WRITE: MICRO-P06 Aead.encrypt() returned complete ciphertext in harness memory; mapped temp ciphertext does not exist and has not been written"
+      },
+      {
+        "id": "K03",
+        "REC-STREAM-TINK": "downstream full-segment write and public plaintext write returned; SCHK-01 stream-descriptor fsync not started",
+        "REC-MICROFILE-TINK": "MICRO-P06 mapped temp ciphertext write completed; MICRO-P07 fsync not started"
+      },
+      {
+        "id": "K04",
+        "REC-STREAM-TINK": "SCHK-01 append-only ciphertext fsync returned for q; SCHK-02 checkpoint keyset creation not started",
+        "REC-MICROFILE-TINK": "MICRO-P07 temp ciphertext fsync returned; MICRO-P08 collision-check/rename not started"
+      },
+      {
+        "id": "K05",
+        "REC-STREAM-TINK": "SCHK-06 checkpoint key envelope is immutable and directory-durable; SCHK-07 checkpoint ciphertext encryption/temp write not started",
+        "REC-MICROFILE-TINK": "MICRO-P09 microfile ciphertext final and parent directory are durable; MICRO-P10 manifest keyset creation not started"
+      },
+      {
+        "id": "K06",
+        "REC-STREAM-TINK": "SCHK-07 checkpoint ciphertext temp write returned; SCHK-08 file fsync not started",
+        "REC-MICROFILE-TINK": "MICRO-P14 manifest key envelope is immutable and directory-durable; MICRO-P15 manifest encryption/temp write not started"
+      },
+      {
+        "id": "K07",
+        "REC-STREAM-TINK": "SCHK-08 checkpoint temp fsync returned; SCHK-09 collision-check/rename not started",
+        "REC-MICROFILE-TINK": "MICRO-P16 manifest ciphertext temp fsync returned; MICRO-P17 collision-check/rename not started"
+      },
+      {
+        "id": "K08",
+        "REC-STREAM-TINK": "SCHK-10 checkpoint ciphertext final and parent directory are durable; SCHK-11 SQLite transaction not begun",
+        "REC-MICROFILE-TINK": "MICRO-P18 manifest ciphertext final and parent directory are durable; MICRO-P19 SQLite transaction not begun"
+      },
+      {
+        "id": "K09",
+        "REC-STREAM-TINK": "SCHK-11 exact final identities written in open non-exclusive SQLite transaction; SCHK-12 endTransaction() not called",
+        "REC-MICROFILE-TINK": "MICRO-P19 both key envelopes and both ciphertext finals written in open non-exclusive SQLite transaction; MICRO-P20 endTransaction() not called"
+      },
+      {
+        "id": "K10",
+        "REC-STREAM-TINK": "SCHK-12 endTransaction() returned; SCHK-13 controller event not emitted",
+        "REC-MICROFILE-TINK": "MICRO-P20 endTransaction() returned; MICRO-P21 controller event not emitted"
+      },
+      {
+        "id": "K11",
+        "REC-STREAM-TINK": "SCHK-13 controller event durably acknowledged and next bounded plaintext call active after at least one semantic commit",
+        "REC-MICROFILE-TINK": "MICRO-P21 controller event durably acknowledged and next microfile unit active after at least one semantic commit"
+      },
+      {
+        "id": "K12",
+        "REC-STREAM-TINK": "immutable K12-STREAM-V0.3 seed; recovery paused after quarantine intent commit and before rename",
+        "REC-MICROFILE-TINK": "immutable K12-MICROFILE-V0.3 seed; recovery paused after quarantine intent commit and before rename"
+      }
+    ],
+    "k12Seeds": {
+      "REC-STREAM-TINK": {
+        "seedId": "K12-STREAM-V0.3",
+        "snapshotDigestRecordedBeforeRecovery": true,
+        "controllerMutationAfterSnapshot": false,
+        "q": 3,
+        "A": 12216,
+        "C": 8136,
+        "R": 8136,
+        "additionalState": "one unauthenticated appended object",
+        "canonicalExpected": "prefix [0,8136), one stable processing intent, one completed quarantine item, no duplicate row or file"
+      },
+      "REC-MICROFILE-TINK": {
+        "seedId": "K12-MICROFILE-V0.3",
+        "snapshotDigestRecordedBeforeRecovery": true,
+        "controllerMutationAfterSnapshot": false,
+        "committedFullUnits": 2,
+        "A": 360000,
+        "C": 320000,
+        "R": 320000,
+        "additionalState": "one 40000-byte uncommitted temp unit",
+        "canonicalExpected": "prefix [0,320000), two stable processing intents, one completed quarantine item, no duplicate row or file"
+      }
+    },
+    "validHardKillRequirements": [
+      "attempt scheduled before execution",
+      "exact candidate, build, artifact, Gate Set, protocol and sanitized preflight match authorization",
+      "target PID alive and candidate-specific public barrier observed",
+      "external controller issued SIGKILL to target PID",
+      "process death independently confirmed before recovery",
+      "no graceful finalize completed after kill trigger",
+      "external evidence envelope complete and schema-valid; missing candidate recovery output remains a candidate outcome",
+      "no enumerated external invalidator"
+    ],
+    "invalidators": [
+      "WRONG_PID",
+      "STRATUM_BARRIER_NOT_REACHED",
+      "CONTROLLER_DISCONNECTED_BEFORE_SIGNAL_CONFIRMATION",
+      "DEVICE_REBOOT_OR_POWER_LOSS_OUTSIDE_ASSIGNED_FAULT",
+      "PREFLIGHT_OR_PROTOCOL_IDENTITY_MISMATCH",
+      "FIXTURE_DRIFT",
+      "OPERATOR_INTERVENTION",
+      "EXTERNAL_CONTROLLER_OR_PREFLIGHT_EVIDENCE_ENVELOPE_INCOMPLETE_OR_SCHEMA_INVALID"
+    ],
+    "neverInvalid": [
+      "CANDIDATE_CRASH",
+      "AUTHENTICATION_FAILURE",
+      "COMMITTED_BYTE_LOSS",
+      "TAIL_LOSS_GATE_FAILURE",
+      "UNRECOVERABLE_SPLIT_BRAIN",
+      "DUPLICATE_OR_MISSING_PROCESSING_INTENT",
+      "CANDIDATE_TIMEOUT_OR_DEADLOCK",
+      "CANDIDATE_RECOVERY_OUTPUT_MISSING_OR_SCHEMA_INVALID_AFTER_CONFIRMED_KILL"
+    ],
+    "replacement": {
+      "automaticReplacementAllowed": false,
+      "eligibleInvalidBaseAttemptOnly": true,
+      "candidateFailureReplaceable": false,
+      "maximumPerCandidate": 20,
+      "maximumPerBaseAttempt": 1,
+      "suffix": "-R1",
+      "sameCandidateEnvironmentAndStratumRequired": true,
+      "originalRetained": true,
+      "replacementReducesInvalidCount": false,
+      "replacementRequiresExplicitLedgerEntry": true
+    }
+  },
+  "faultCampaign": {
+    "separateFromHardKillDenominator": true,
+    "mandatoryFaultRowCount": 33,
+    "repetitionProfiles": {
+      "PHASE_A_STANDARD": {
+        "PINNED_API36_X86_64_EMULATOR": 3,
+        "PHYSICAL_D2": 1
+      },
+      "FULL_PHYSICAL_STANDARD": {
+        "D1": 1,
+        "D2": 1,
+        "D5": 1
+      }
+    },
+    "cases": [
+      {
+        "id": "COR-01",
+        "appliesTo": "BOTH",
+        "injection": "bit flip in committed ciphertext",
+        "expected": "authentication failure at affected unit; earlier prefix preserved; affected and later state quarantined",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "COR-02",
+        "appliesTo": "BOTH",
+        "injection": "alter manifest or checkpoint ciphertext or tag",
+        "expected": "generation rejected; last valid jointly durable prefix retained; affected generation classified as explicit corruption",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "COR-03",
+        "appliesTo": "BOTH",
+        "injection": "alter SQLite filename, length, digest or range",
+        "expected": "split-brain; data not relabeled committed; no deletion",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "COR-04",
+        "appliesTo": "REC-MICROFILE-TINK",
+        "injection": "swap microfile ciphertext with another entry or key reference",
+        "expected": "digest/AAD/envelope binding rejects swap; no cross-unit decrypt; no skip",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "COR-05",
+        "appliesTo": "REC-MICROFILE-TINK",
+        "injection": "duplicate, gap, reorder or remove manifest entry or unit",
+        "expected": "strict parser rejects generation; no implicit sorting; no compaction; no later-unit promotion",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "COR-06",
+        "appliesTo": "BOTH",
+        "injection": "cross-run or cross-generation replay",
+        "expected": "run, generation, range and previous-digest AAD rejects replay",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "TRU-01",
+        "appliesTo": "BOTH",
+        "injection": "truncate uncommitted tail",
+        "expected": "committed prefix preserved; tail explicitly classified",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "TRU-02",
+        "appliesTo": "BOTH",
+        "injection": "truncate committed unit",
+        "expected": "FAIL for committed loss; no shorter healthy relabel",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "TRU-03",
+        "appliesTo": "BOTH",
+        "injection": "append unauthenticated bytes",
+        "expected": "appended bytes rejected and quarantined; prefix unchanged",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "KEY-01",
+        "appliesTo": "BOTH",
+        "injection": "missing, invalidated or unusable run alias",
+        "expected": "KEY_UNAVAILABLE; artifacts retained",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "KEY-02",
+        "appliesTo": "BOTH",
+        "injection": "missing expected run key reference or run-level key envelope",
+        "expected": "KEY_UNAVAILABLE; no replacement key",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "KEY-03",
+        "appliesTo": "BOTH",
+        "injection": "missing candidate data key envelope",
+        "expected": "KEY_UNAVAILABLE; no skip across a hole and no replacement key",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "KEY-04",
+        "appliesTo": "BOTH",
+        "injection": "alias resolves but stored length/hash-valid key-confirmation ciphertext proves replacement or mismatch",
+        "expected": "KEY_UNAVAILABLE_KEY_MISMATCH; replacement is never accepted; regeneration is forbidden",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "KEY-05",
+        "appliesTo": "BOTH",
+        "injection": "present expected key envelope with wrong length, wrong recorded SHA-256, invalid binary encoding or parser-invalid bytes",
+        "expected": "CORRUPT_KEY_ENVELOPE; no AEAD attempt and no keyset use",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "KEY-06",
+        "appliesTo": "BOTH",
+        "injection": "copy a structurally valid envelope from another target, update the expected length and SHA-256, and retain the wrong target-bound AAD",
+        "expected": "KEY_ENVELOPE_AUTH_FAILURE; key confirmation succeeds and no keyset is used",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "KEY-07",
+        "appliesTo": "BOTH",
+        "injection": "start a new run with a preexisting alias or occupied key-reference namespace",
+        "expected": "KEY_REF_COLLISION; publication does not start and no existing key/reference is overwritten",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "SPL-01",
+        "appliesTo": "BOTH",
+        "injection": "file durable and SQLite row absent",
+        "expected": "authenticated orphan remains uncommitted; deterministic reconciliation moves it through the quarantine transaction",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "SPL-02",
+        "appliesTo": "BOTH",
+        "injection": "SQLite committed row and file missing",
+        "expected": "explicit split-brain and FAIL for committed loss",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "SPL-03",
+        "appliesTo": "BOTH",
+        "injection": "manifest or checkpoint ahead of SQLite",
+        "expected": "generation retained for reconciliation; never implicit commit",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "SPL-04",
+        "appliesTo": "BOTH",
+        "injection": "SQLite ahead of authenticated publication",
+        "expected": "explicit split-brain; last jointly durable prefix only",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "SPL-05",
+        "appliesTo": "BOTH",
+        "injection": "temp file or generation remains",
+        "expected": "deterministic temp classification; no final-path overwrite",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "RBK-01",
+        "appliesTo": "BOTH",
+        "injection": "replace current manifest or checkpoint with older valid generation",
+        "expected": "external ledger detects rollback; no global anti-rollback claim without ledger",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "RBK-02",
+        "appliesTo": "BOTH",
+        "injection": "restore full older valid app snapshot",
+        "expected": "external ledger detects full-snapshot rollback; local chain alone explicitly insufficient",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "PAR-01",
+        "appliesTo": "BOTH",
+        "injection": "malformed, oversized or trailing-byte manifest or unsafe, symlink or path-traversal relative name",
+        "expected": "malformed input maps to MALFORMED_MANIFEST; oversized input maps to OVERSIZED_MANIFEST; an unsafe/symlink/traversal name maps to UNSAFE_PATH; no unsafe object opened",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "QUA-01",
+        "appliesTo": "BOTH",
+        "injection": "unknown or orphan regular file",
+        "expected": "intent and hashes recorded; move only to contained app-private quarantine",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "QUA-02",
+        "appliesTo": "BOTH",
+        "injection": "hard kill during quarantine move",
+        "expected": "next recovery converges to exactly one item; zero loss; zero duplicates",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "QUA-03",
+        "appliesTo": "BOTH",
+        "injection": "interrupt each intent, rename, directory-fsync and completion boundary",
+        "expected": "deterministic reconciliation maps the observed durable state to exactly one named terminal state selected from [COMPLETED, RETRY_REQUIRED]",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "IDE-01",
+        "appliesTo": "BOTH",
+        "injection": "run recovery twice without mutation",
+        "expected": "byte-identical prefix and stable classifications and intent IDs",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "IDE-02",
+        "appliesTo": "BOTH",
+        "injection": "hard kill recovery and recover again",
+        "expected": "canonical uninterrupted result; zero duplicate intents; zero missing intents",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "EVT-01",
+        "appliesTo": "BOTH",
+        "injection": "kill after successful SQLite endTransaction return and before controller event",
+        "expected": "local C remains committed and reconstructible; ledger reports event gap and never downgrades commit",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "CLN-01",
+        "appliesTo": "BOTH",
+        "injection": "hard kill during explicit cleanup",
+        "expected": "rerun converges; zero silent committed-evidence loss; zero silent quarantine-evidence loss",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "CLN-02",
+        "appliesTo": "BOTH",
+        "injection": "deny cleanup deletion",
+        "expected": "retryable cleanup state; verdict and evidence retained",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      },
+      {
+        "id": "CLN-03",
+        "appliesTo": "BOTH",
+        "injection": "explicitly delete test keys after retention",
+        "expected": "subsequent access reports key unavailability; receipt contains references only",
+        "phaseARepetitionProfile": "PHASE_A_STANDARD"
+      }
+    ]
+  },
+  "rollbackModel": {
+    "manifestAndCheckpointDigestChainRequired": true,
+    "externalPhaseAControllerLedgerIsRollbackAnchor": true,
+    "globalCryptographicAntiRollbackClaimAllowedWithoutExternalLedger": false,
+    "allowedClaimWithoutExternalLedger": "crash and split-brain rollback detection only"
+  },
+  "evidencePolicy": {
+    "publicEvidenceAllowlist": [
+      "sanitized JSON contract and result records",
+      "artifact and POM hashes",
+      "sanitized device and system-image identity",
+      "ciphertext, key-envelope and publication hashes and sizes without bytes",
+      "classification, count and verdict summaries"
+    ],
+    "publicEvidenceDenylist": [
+      "plaintext or audio",
+      "ciphertext files",
+      "key bytes or keysets",
+      "Android Keystore material",
+      "SQLite database, WAL or journal files",
+      "device serials or unique identifiers",
+      "private local paths"
+    ],
+    "silentDeletionAllowed": false,
+    "cleanupRequiresExplicitCommand": true,
+    "cleanupReceiptRequired": true
+  }
+}
