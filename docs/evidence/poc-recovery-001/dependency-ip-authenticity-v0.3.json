@@ -1,0 +1,550 @@
+{
+  "schemaVersion": 1,
+  "evidenceId": "POC-RECOVERY-001-DEPENDENCY-IP-AUTHENTICITY-V0.3",
+  "pocId": "POC-RECOVERY-001",
+  "scope": "Eight exact published JAR/POM coordinates only; evidence does not admit a dependency or modify a Gradle graph.",
+  "verifiedAtUtc": "2026-08-12T08:31:09Z",
+  "verificationTool": {
+    "artifactAndChecksum": "Windows PowerShell 5.1.19041.6456 Invoke-WebRequest/Get-FileHash plus CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py v0.3",
+    "detachedOpenPgp": "OpenJDK 17.0.10 with BouncyCastle bcpg/bcprov/bcutil 1.84",
+    "keyRetrieval": "Ubuntu keyserver HTTPS lookup",
+    "trustRule": "A successful signature and keyserver UID prove cryptographic consistency, not publisher identity; coordinate-specific upstream trust evidence is mandatory."
+  },
+  "overallStatus": "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED",
+  "summary": {
+    "coordinates": 8,
+    "jarSha256Verified": 8,
+    "pomSha256Verified": 8,
+    "publisherChecksumsMatched": 16,
+    "detachedSignaturesPresent": 16,
+    "detachedSignaturesCryptographicallyVerified": 16,
+    "coordinatesWithUpstreamSignerTrustConfirmed": 2,
+    "coordinatesAuthenticityPending": 6,
+    "dependencyAdmission": false,
+    "productionAdmission": false
+  },
+  "components": [
+    {
+      "coordinate": "com.google.crypto.tink:tink-android:1.23.0",
+      "verifiedAtUtc": "2026-08-12T08:31:09Z",
+      "verificationTool": {
+        "artifactAndChecksum": "Windows PowerShell 5.1.19041.6456 Invoke-WebRequest/Get-FileHash plus CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py v0.3",
+        "detachedOpenPgp": "OpenJDK 17.0.10 with BouncyCastle bcpg/bcprov/bcutil 1.84",
+        "keyRetrieval": "Ubuntu keyserver HTTPS lookup",
+        "trustRule": "A successful signature and keyserver UID prove cryptographic consistency, not publisher identity; coordinate-specific upstream trust evidence is mandatory."
+      },
+      "licenseId": "Apache-2.0",
+      "upstreamLicenseTextLocator": "https://raw.githubusercontent.com/tink-crypto/tink-java/v1.23.0/LICENSE",
+      "licenseTextSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "copyrightEvidence": {
+        "locator": "https://repo1.maven.org/maven2/com/google/crypto/tink/tink-android/1.23.0/tink-android-1.23.0-sources.jar!/com/google/crypto/tink/AccessesPartialKey.java",
+        "statement": "Copyright 2022 Google LLC",
+        "status": "RECORDED_FROM_PUBLISHER_SOURCES_JAR"
+      },
+      "notice": {
+        "requirement": "PRESERVE_SEPARATE_NOTICE_IF_UPSTREAM_SUPPLIES_ONE",
+        "locator": "https://github.com/tink-crypto/tink-java/tree/v1.23.0",
+        "sha256": null,
+        "result": "NO_SEPARATE_NOTICE_AT_TAGGED_REPOSITORY_ROOT_OR_IN_BINARY_JAR"
+      },
+      "jar": {
+        "sha256": "c656918451b01c45ce5b20c7b6d4c388f956f61b3a3528e769048c8944c42f9e",
+        "publisherChecksum": {
+          "algorithm": "SHA-256",
+          "locator": "https://repo1.maven.org/maven2/com/google/crypto/tink/tink-android/1.23.0/tink-android-1.23.0.jar.sha256",
+          "value": "c656918451b01c45ce5b20c7b6d4c388f956f61b3a3528e769048c8944c42f9e",
+          "result": "MATCH"
+        },
+        "detachedSignature": {
+          "locator": "https://repo1.maven.org/maven2/com/google/crypto/tink/tink-android/1.23.0/tink-android-1.23.0.jar.asc",
+          "result": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signerFingerprint": "73976C9C39C1479B84E2641A5A68A2249128E2C6"
+        }
+      },
+      "pom": {
+        "sha256": "a2d27e7207e6a25764859b62924fc7b972f41884ce272cead9b946c15a1f410f",
+        "publisherChecksum": {
+          "algorithm": "SHA-256",
+          "locator": "https://repo1.maven.org/maven2/com/google/crypto/tink/tink-android/1.23.0/tink-android-1.23.0.pom.sha256",
+          "value": "a2d27e7207e6a25764859b62924fc7b972f41884ce272cead9b946c15a1f410f",
+          "result": "MATCH"
+        },
+        "detachedSignature": {
+          "locator": "https://repo1.maven.org/maven2/com/google/crypto/tink/tink-android/1.23.0/tink-android-1.23.0.pom.asc",
+          "result": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signerFingerprint": "73976C9C39C1479B84E2641A5A68A2249128E2C6"
+        }
+      },
+      "signerIdentity": "Tink Developers (Signing key for Maven artifacts) <tink-dev@google.com>",
+      "signerTrustSource": null,
+      "signerTrustStatus": "UNCONFIRMED_BY_COORDINATE_SPECIFIC_UPSTREAM_KEY_PUBLICATION",
+      "sourceCorrespondence": {
+        "repository": "https://github.com/tink-crypto/tink-java",
+        "tagOrRelease": "v1.23.0",
+        "commit": "1bedd75ae7161017c5f45b020395a72bbd40645d",
+        "evidenceLocator": "https://github.com/tink-crypto/tink-java/releases/tag/v1.23.0",
+        "status": "VERSION_TAG_AND_COMMIT_RECORDED_BUILD_REPRODUCIBILITY_NOT_PROVEN"
+      },
+      "authenticityStatus": "AUTHENTICITY_PENDING",
+      "closurePath": "Obtain an upstream Tink key publication binding fingerprint 73976C9C39C1479B84E2641A5A68A2249128E2C6 to Maven releases, then have Product/IP review the binding and source correspondence."
+    },
+    {
+      "coordinate": "androidx.annotation:annotation-jvm:1.8.2",
+      "verifiedAtUtc": "2026-08-12T08:31:09Z",
+      "verificationTool": {
+        "artifactAndChecksum": "Windows PowerShell 5.1.19041.6456 Invoke-WebRequest/Get-FileHash plus CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py v0.3",
+        "detachedOpenPgp": "OpenJDK 17.0.10 with BouncyCastle bcpg/bcprov/bcutil 1.84",
+        "keyRetrieval": "Ubuntu keyserver HTTPS lookup",
+        "trustRule": "A successful signature and keyserver UID prove cryptographic consistency, not publisher identity; coordinate-specific upstream trust evidence is mandatory."
+      },
+      "licenseId": "Apache-2.0",
+      "upstreamLicenseTextLocator": "https://android.googlesource.com/platform/frameworks/support/+/5a50de555336ab8cf837fd0ddd32febb2cc85f74/LICENSE.txt",
+      "licenseTextSha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+      "copyrightEvidence": {
+        "locator": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-jvm/1.8.2/annotation-jvm-1.8.2-sources.jar!/jvmMain/androidx/annotation/AnimRes.jvm.kt",
+        "statement": "Copyright (C) 2014 The Android Open Source Project",
+        "status": "RECORDED_FROM_PUBLISHER_SOURCES_JAR"
+      },
+      "notice": {
+        "requirement": "PRESERVE_SEPARATE_NOTICE_IF_UPSTREAM_SUPPLIES_ONE",
+        "locator": "https://android.googlesource.com/platform/frameworks/support/+/5a50de555336ab8cf837fd0ddd32febb2cc85f74/NOTICE",
+        "sha256": null,
+        "result": "NO_SEPARATE_NOTICE_AT_REVIEWED_SOURCE_ROOT_OR_IN_BINARY_JAR"
+      },
+      "jar": {
+        "sha256": "9aab326d9492800991854360ac248f493ce7f7c3183519309b78ace9e240f6f6",
+        "publisherChecksum": {
+          "algorithm": "SHA-256",
+          "locator": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-jvm/1.8.2/annotation-jvm-1.8.2.jar.sha256",
+          "value": "9aab326d9492800991854360ac248f493ce7f7c3183519309b78ace9e240f6f6",
+          "result": "MATCH"
+        },
+        "detachedSignature": {
+          "locator": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-jvm/1.8.2/annotation-jvm-1.8.2.jar.asc",
+          "result": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signerFingerprint": "A5F483CD733A4EBAEA378B2AE88979FB9B30ACF2"
+        }
+      },
+      "pom": {
+        "sha256": "7d3b2860ea36511153a9713559dab60d77f72167fadc9c1c3198c23035fbc480",
+        "publisherChecksum": {
+          "algorithm": "SHA-256",
+          "locator": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-jvm/1.8.2/annotation-jvm-1.8.2.pom.sha256",
+          "value": "7d3b2860ea36511153a9713559dab60d77f72167fadc9c1c3198c23035fbc480",
+          "result": "MATCH"
+        },
+        "detachedSignature": {
+          "locator": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-jvm/1.8.2/annotation-jvm-1.8.2.pom.asc",
+          "result": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signerFingerprint": "A5F483CD733A4EBAEA378B2AE88979FB9B30ACF2"
+        }
+      },
+      "signerIdentity": "Google Jetpack signing subkey",
+      "signerTrustSource": "https://developer.android.com/jetpack/getting-started#verify-jetpack-dependencies-optional",
+      "signerTrustStatus": "CONFIRMED_BY_UPSTREAM_PUBLISHER_DOCUMENTATION",
+      "sourceCorrespondence": {
+        "repository": "https://android.googlesource.com/platform/frameworks/support",
+        "tagOrRelease": "Annotation 1.8.2 release range end",
+        "commit": "5a50de555336ab8cf837fd0ddd32febb2cc85f74",
+        "evidenceLocator": "https://developer.android.com/jetpack/androidx/releases/annotation#1.8.2",
+        "status": "CONFIRMED_BY_UPSTREAM_RELEASE_NOTES"
+      },
+      "authenticityStatus": "VERIFIED_FOR_PACKAGE_REVIEW",
+      "closurePath": null
+    },
+    {
+      "coordinate": "com.google.code.findbugs:jsr305:3.0.2",
+      "verifiedAtUtc": "2026-08-12T08:31:09Z",
+      "verificationTool": {
+        "artifactAndChecksum": "Windows PowerShell 5.1.19041.6456 Invoke-WebRequest/Get-FileHash plus CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py v0.3",
+        "detachedOpenPgp": "OpenJDK 17.0.10 with BouncyCastle bcpg/bcprov/bcutil 1.84",
+        "keyRetrieval": "Ubuntu keyserver HTTPS lookup",
+        "trustRule": "A successful signature and keyserver UID prove cryptographic consistency, not publisher identity; coordinate-specific upstream trust evidence is mandatory."
+      },
+      "licenseId": "Apache-2.0",
+      "upstreamLicenseTextLocator": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+      "licenseTextSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "copyrightEvidence": {
+        "locator": "https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2-sources.jar",
+        "statement": null,
+        "status": "PENDING_NO_COPYRIGHT_HEADER_OR_AUTHORITATIVE_SOURCE_TAG_ESTABLISHED"
+      },
+      "notice": {
+        "requirement": "PRESERVE_SEPARATE_NOTICE_IF_UPSTREAM_SUPPLIES_ONE",
+        "locator": "https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2-sources.jar",
+        "sha256": null,
+        "result": "NO_SEPARATE_NOTICE_IN_BINARY_OR_SOURCES_JAR; AUTHORITATIVE_SOURCE_ROOT_PENDING"
+      },
+      "jar": {
+        "sha256": "766ad2a0783f2687962c8ad74ceecc38a28b9f72a2d085ee438b7813e928d0c7",
+        "publisherChecksum": {
+          "algorithm": "SHA-1",
+          "locator": "https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar.sha1",
+          "value": "25ea2e8b0c338a877313bd4672d3fe056ea78f0d",
+          "result": "MATCH"
+        },
+        "detachedSignature": {
+          "locator": "https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar.asc",
+          "result": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signerFingerprint": "7616EB882DAF57A11477AAF559A252FB1199D873"
+        }
+      },
+      "pom": {
+        "sha256": "19889dbdf1b254b2601a5ee645b8147a974644882297684c798afe5d63d78dfe",
+        "publisherChecksum": {
+          "algorithm": "SHA-1",
+          "locator": "https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.pom.sha1",
+          "value": "8d93cdf4d84d7e1de736df607945c6df0730a10f",
+          "result": "MATCH"
+        },
+        "detachedSignature": {
+          "locator": "https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.pom.asc",
+          "result": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signerFingerprint": "7616EB882DAF57A11477AAF559A252FB1199D873"
+        }
+      },
+      "signerIdentity": "Tagir Valeev <lany@ngs.ru>",
+      "signerTrustSource": null,
+      "signerTrustStatus": "UNCONFIRMED_BY_COORDINATE_SPECIFIC_UPSTREAM_KEY_PUBLICATION",
+      "sourceCorrespondence": {
+        "repository": "https://code.google.com/p/jsr-305/",
+        "tagOrRelease": null,
+        "commit": null,
+        "evidenceLocator": "https://repo1.maven.org/maven2/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.pom",
+        "status": "AUTHENTICITY_PENDING_SOURCE_REPOSITORY_AND_TAG_UNRESOLVED"
+      },
+      "authenticityStatus": "AUTHENTICITY_PENDING",
+      "closurePath": "Product/IP must establish the authoritative 3.0.2 source/tag, copyright owner and publisher key binding for fingerprint 7616EB882DAF57A11477AAF559A252FB1199D873."
+    },
+    {
+      "coordinate": "com.google.code.gson:gson:2.13.2",
+      "verifiedAtUtc": "2026-08-12T08:31:09Z",
+      "verificationTool": {
+        "artifactAndChecksum": "Windows PowerShell 5.1.19041.6456 Invoke-WebRequest/Get-FileHash plus CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py v0.3",
+        "detachedOpenPgp": "OpenJDK 17.0.10 with BouncyCastle bcpg/bcprov/bcutil 1.84",
+        "keyRetrieval": "Ubuntu keyserver HTTPS lookup",
+        "trustRule": "A successful signature and keyserver UID prove cryptographic consistency, not publisher identity; coordinate-specific upstream trust evidence is mandatory."
+      },
+      "licenseId": "Apache-2.0",
+      "upstreamLicenseTextLocator": "https://raw.githubusercontent.com/google/gson/gson-parent-2.13.2/LICENSE",
+      "licenseTextSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "copyrightEvidence": {
+        "locator": "https://github.com/google/gson/blob/gson-parent-2.13.2/gson/src/main/java/com/google/gson/Gson.java",
+        "statement": "Copyright (C) 2008 Google Inc.",
+        "status": "CONFIRMED_AT_TAG"
+      },
+      "notice": {
+        "requirement": "PRESERVE_SEPARATE_NOTICE_IF_UPSTREAM_SUPPLIES_ONE",
+        "locator": "https://github.com/google/gson/tree/gson-parent-2.13.2",
+        "sha256": null,
+        "result": "NO_SEPARATE_NOTICE_AT_TAGGED_REPOSITORY_ROOT_OR_IN_BINARY_JAR"
+      },
+      "jar": {
+        "sha256": "dd0ce1b55a3ed2080cb70f9c655850cda86c206862310009dcb5e5c95265a5e0",
+        "publisherChecksum": {
+          "algorithm": "SHA-256",
+          "locator": "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.13.2/gson-2.13.2.jar.sha256",
+          "value": "dd0ce1b55a3ed2080cb70f9c655850cda86c206862310009dcb5e5c95265a5e0",
+          "result": "MATCH"
+        },
+        "detachedSignature": {
+          "locator": "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.13.2/gson-2.13.2.jar.asc",
+          "result": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signerFingerprint": "C7BE5BCC9FEC15518CFDA882B0F3710FA64900E7"
+        }
+      },
+      "pom": {
+        "sha256": "3aa06aa7c0f9af092961a42d09578e4324be146348a0ee6ed47857f7c2677b76",
+        "publisherChecksum": {
+          "algorithm": "SHA-256",
+          "locator": "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.13.2/gson-2.13.2.pom.sha256",
+          "value": "3aa06aa7c0f9af092961a42d09578e4324be146348a0ee6ed47857f7c2677b76",
+          "result": "MATCH"
+        },
+        "detachedSignature": {
+          "locator": "https://repo1.maven.org/maven2/com/google/code/gson/gson/2.13.2/gson-2.13.2.pom.asc",
+          "result": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signerFingerprint": "C7BE5BCC9FEC15518CFDA882B0F3710FA64900E7"
+        }
+      },
+      "signerIdentity": "Eamonn McManus <eamonn@mcmanus.net>",
+      "signerTrustSource": null,
+      "signerTrustStatus": "UNCONFIRMED_BY_COORDINATE_SPECIFIC_UPSTREAM_KEY_PUBLICATION",
+      "sourceCorrespondence": {
+        "repository": "https://github.com/google/gson",
+        "tagOrRelease": "gson-parent-2.13.2",
+        "commit": "686fad782d969d8f15c7581a5435a208b810caa7",
+        "evidenceLocator": "https://github.com/google/gson/releases/tag/gson-parent-2.13.2",
+        "status": "TAG_AND_COMMIT_CONFIRMED_BUILD_REPRODUCIBILITY_NOT_PROVEN"
+      },
+      "authenticityStatus": "AUTHENTICITY_PENDING",
+      "closurePath": "Obtain a Gson upstream key publication binding fingerprint C7BE5BCC9FEC15518CFDA882B0F3710FA64900E7 to 2.13.2 Maven releases."
+    },
+    {
+      "coordinate": "com.google.errorprone:error_prone_annotations:2.41.0",
+      "verifiedAtUtc": "2026-08-12T08:31:09Z",
+      "verificationTool": {
+        "artifactAndChecksum": "Windows PowerShell 5.1.19041.6456 Invoke-WebRequest/Get-FileHash plus CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py v0.3",
+        "detachedOpenPgp": "OpenJDK 17.0.10 with BouncyCastle bcpg/bcprov/bcutil 1.84",
+        "keyRetrieval": "Ubuntu keyserver HTTPS lookup",
+        "trustRule": "A successful signature and keyserver UID prove cryptographic consistency, not publisher identity; coordinate-specific upstream trust evidence is mandatory."
+      },
+      "licenseId": "Apache-2.0",
+      "upstreamLicenseTextLocator": "https://raw.githubusercontent.com/google/error-prone/v2.41.0/COPYING",
+      "licenseTextSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "copyrightEvidence": {
+        "locator": "https://github.com/google/error-prone/blob/v2.41.0/annotations/src/main/java/com/google/errorprone/annotations/CanIgnoreReturnValue.java",
+        "statement": "Copyright 2015 The Error Prone Authors.",
+        "status": "CONFIRMED_AT_TAG"
+      },
+      "notice": {
+        "requirement": "PRESERVE_SEPARATE_NOTICE_IF_UPSTREAM_SUPPLIES_ONE",
+        "locator": "https://github.com/google/error-prone/tree/v2.41.0",
+        "sha256": null,
+        "result": "NO_SEPARATE_NOTICE_AT_TAGGED_REPOSITORY_ROOT_OR_IN_BINARY_JAR"
+      },
+      "jar": {
+        "sha256": "a56e782b5b50811ac204073a355a21d915a2107fce13ec711331ad036f660fcc",
+        "publisherChecksum": {
+          "algorithm": "SHA-256",
+          "locator": "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.41.0/error_prone_annotations-2.41.0.jar.sha256",
+          "value": "a56e782b5b50811ac204073a355a21d915a2107fce13ec711331ad036f660fcc",
+          "result": "MATCH"
+        },
+        "detachedSignature": {
+          "locator": "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.41.0/error_prone_annotations-2.41.0.jar.asc",
+          "result": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signerFingerprint": "EE0CA873074092F806F59B65D364ABAA39A47320"
+        }
+      },
+      "pom": {
+        "sha256": "a151df1e2e0b48618d8b06a180748a29b3abb39b1b2396f6a1c879a727488c6e",
+        "publisherChecksum": {
+          "algorithm": "SHA-256",
+          "locator": "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.41.0/error_prone_annotations-2.41.0.pom.sha256",
+          "value": "a151df1e2e0b48618d8b06a180748a29b3abb39b1b2396f6a1c879a727488c6e",
+          "result": "MATCH"
+        },
+        "detachedSignature": {
+          "locator": "https://repo1.maven.org/maven2/com/google/errorprone/error_prone_annotations/2.41.0/error_prone_annotations-2.41.0.pom.asc",
+          "result": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signerFingerprint": "EE0CA873074092F806F59B65D364ABAA39A47320"
+        }
+      },
+      "signerIdentity": "Liam Miller-Cushon (Error Prone releases) <cushon@google.com>",
+      "signerTrustSource": "https://github.com/google/error-prone/blob/v2.41.0/KEYS.txt",
+      "signerTrustStatus": "CONFIRMED_BY_UPSTREAM_TAGGED_KEY_PUBLICATION",
+      "sourceCorrespondence": {
+        "repository": "https://github.com/google/error-prone",
+        "tagOrRelease": "v2.41.0",
+        "commit": "d6539d63084b7f366a58bdcafbb889cf897b5297",
+        "evidenceLocator": "https://github.com/google/error-prone/releases/tag/v2.41.0",
+        "status": "CONFIRMED_BY_TAG_AND_UPSTREAM_KEY_FILE"
+      },
+      "authenticityStatus": "VERIFIED_FOR_PACKAGE_REVIEW",
+      "closurePath": null
+    },
+    {
+      "coordinate": "org.jetbrains.kotlin:kotlin-stdlib:1.7.10",
+      "verifiedAtUtc": "2026-08-12T08:31:09Z",
+      "verificationTool": {
+        "artifactAndChecksum": "Windows PowerShell 5.1.19041.6456 Invoke-WebRequest/Get-FileHash plus CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py v0.3",
+        "detachedOpenPgp": "OpenJDK 17.0.10 with BouncyCastle bcpg/bcprov/bcutil 1.84",
+        "keyRetrieval": "Ubuntu keyserver HTTPS lookup",
+        "trustRule": "A successful signature and keyserver UID prove cryptographic consistency, not publisher identity; coordinate-specific upstream trust evidence is mandatory."
+      },
+      "licenseId": "Apache-2.0",
+      "upstreamLicenseTextLocator": "https://raw.githubusercontent.com/JetBrains/kotlin/v1.7.10/license/LICENSE.txt",
+      "licenseTextSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "copyrightEvidence": {
+        "locator": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.7.10/kotlin-stdlib-1.7.10-sources.jar!/kotlin/Annotations.kt",
+        "statement": "Copyright 2010-2019 JetBrains s.r.o. and Kotlin Programming Language contributors.",
+        "status": "RECORDED_FROM_PUBLISHER_SOURCES_JAR"
+      },
+      "notice": {
+        "requirement": "PRESERVE_SEPARATE_NOTICE_IF_UPSTREAM_SUPPLIES_ONE",
+        "locator": "https://github.com/JetBrains/kotlin/tree/v1.7.10",
+        "sha256": null,
+        "result": "NO_SEPARATE_NOTICE_AT_TAGGED_REPOSITORY_ROOT_OR_IN_BINARY_JAR"
+      },
+      "jar": {
+        "sha256": "e771fe74250a943e8f6346713201ff1d8cb95c3a5d1a91a22b65a9e04f6a8901",
+        "publisherChecksum": {
+          "algorithm": "SHA-1",
+          "locator": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.7.10/kotlin-stdlib-1.7.10.jar.sha1",
+          "value": "d2abf9e77736acc4450dc4a3f707fa2c10f5099d",
+          "result": "MATCH"
+        },
+        "detachedSignature": {
+          "locator": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.7.10/kotlin-stdlib-1.7.10.jar.asc",
+          "result": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signerFingerprint": "6F538074CCEBF35F28AF9B066A0975F8B1127B83"
+        }
+      },
+      "pom": {
+        "sha256": "6cc0cf5a2bc02dee060ebb90c3535fc3ddbd7a3bab210ace3e142aaf81764d81",
+        "publisherChecksum": {
+          "algorithm": "SHA-1",
+          "locator": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.7.10/kotlin-stdlib-1.7.10.pom.sha1",
+          "value": "257059438321a19e567a4593e9fed8a76814c6da",
+          "result": "MATCH"
+        },
+        "detachedSignature": {
+          "locator": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/1.7.10/kotlin-stdlib-1.7.10.pom.asc",
+          "result": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signerFingerprint": "6F538074CCEBF35F28AF9B066A0975F8B1127B83"
+        }
+      },
+      "signerIdentity": "Kotlin Release <kt-a@jetbrains.com>",
+      "signerTrustSource": null,
+      "signerTrustStatus": "UNCONFIRMED_BY_COORDINATE_SPECIFIC_UPSTREAM_KEY_PUBLICATION",
+      "sourceCorrespondence": {
+        "repository": "https://github.com/JetBrains/kotlin",
+        "tagOrRelease": "v1.7.10",
+        "commit": "ea836fd46a1fef07d77c96f9d7e8d7807f793453",
+        "evidenceLocator": "https://github.com/JetBrains/kotlin/releases/tag/v1.7.10",
+        "status": "TAG_AND_COMMIT_CONFIRMED_BUILD_REPRODUCIBILITY_NOT_PROVEN"
+      },
+      "authenticityStatus": "AUTHENTICITY_PENDING",
+      "closurePath": "Obtain a JetBrains/Kotlin upstream key publication binding fingerprint 6F538074CCEBF35F28AF9B066A0975F8B1127B83 to Maven releases."
+    },
+    {
+      "coordinate": "org.jetbrains.kotlin:kotlin-stdlib-common:1.7.10",
+      "verifiedAtUtc": "2026-08-12T08:31:09Z",
+      "verificationTool": {
+        "artifactAndChecksum": "Windows PowerShell 5.1.19041.6456 Invoke-WebRequest/Get-FileHash plus CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py v0.3",
+        "detachedOpenPgp": "OpenJDK 17.0.10 with BouncyCastle bcpg/bcprov/bcutil 1.84",
+        "keyRetrieval": "Ubuntu keyserver HTTPS lookup",
+        "trustRule": "A successful signature and keyserver UID prove cryptographic consistency, not publisher identity; coordinate-specific upstream trust evidence is mandatory."
+      },
+      "licenseId": "Apache-2.0",
+      "upstreamLicenseTextLocator": "https://raw.githubusercontent.com/JetBrains/kotlin/v1.7.10/license/LICENSE.txt",
+      "licenseTextSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "copyrightEvidence": {
+        "locator": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.7.10/kotlin-stdlib-common-1.7.10-sources.jar!/generated/_Arrays.kt",
+        "statement": "Copyright 2010-2022 JetBrains s.r.o. and Kotlin Programming Language contributors.",
+        "status": "RECORDED_FROM_PUBLISHER_SOURCES_JAR"
+      },
+      "notice": {
+        "requirement": "PRESERVE_SEPARATE_NOTICE_IF_UPSTREAM_SUPPLIES_ONE",
+        "locator": "https://github.com/JetBrains/kotlin/tree/v1.7.10",
+        "sha256": null,
+        "result": "NO_SEPARATE_NOTICE_AT_TAGGED_REPOSITORY_ROOT_OR_IN_BINARY_JAR"
+      },
+      "jar": {
+        "sha256": "19f102efe9629f8eabc63853ad15c533e47c47f91fca09285c5bde86e59f91d4",
+        "publisherChecksum": {
+          "algorithm": "SHA-1",
+          "locator": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.7.10/kotlin-stdlib-common-1.7.10.jar.sha1",
+          "value": "bac80c520d0a9e3f3673bc2658c6ed02ef45a76a",
+          "result": "MATCH"
+        },
+        "detachedSignature": {
+          "locator": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.7.10/kotlin-stdlib-common-1.7.10.jar.asc",
+          "result": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signerFingerprint": "6F538074CCEBF35F28AF9B066A0975F8B1127B83"
+        }
+      },
+      "pom": {
+        "sha256": "1011c63b88ee94cdff5d596937307559bc55037b733cc00ce63cda3cfae0a8eb",
+        "publisherChecksum": {
+          "algorithm": "SHA-1",
+          "locator": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.7.10/kotlin-stdlib-common-1.7.10.pom.sha1",
+          "value": "38af1ac562fefcc5e920fc7c1290b480251c5163",
+          "result": "MATCH"
+        },
+        "detachedSignature": {
+          "locator": "https://repo1.maven.org/maven2/org/jetbrains/kotlin/kotlin-stdlib-common/1.7.10/kotlin-stdlib-common-1.7.10.pom.asc",
+          "result": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signerFingerprint": "6F538074CCEBF35F28AF9B066A0975F8B1127B83"
+        }
+      },
+      "signerIdentity": "Kotlin Release <kt-a@jetbrains.com>",
+      "signerTrustSource": null,
+      "signerTrustStatus": "UNCONFIRMED_BY_COORDINATE_SPECIFIC_UPSTREAM_KEY_PUBLICATION",
+      "sourceCorrespondence": {
+        "repository": "https://github.com/JetBrains/kotlin",
+        "tagOrRelease": "v1.7.10",
+        "commit": "ea836fd46a1fef07d77c96f9d7e8d7807f793453",
+        "evidenceLocator": "https://github.com/JetBrains/kotlin/releases/tag/v1.7.10",
+        "status": "TAG_AND_COMMIT_CONFIRMED_BUILD_REPRODUCIBILITY_NOT_PROVEN"
+      },
+      "authenticityStatus": "AUTHENTICITY_PENDING",
+      "closurePath": "Obtain a JetBrains/Kotlin upstream key publication binding fingerprint 6F538074CCEBF35F28AF9B066A0975F8B1127B83 to Maven releases."
+    },
+    {
+      "coordinate": "org.jetbrains:annotations:13.0",
+      "verifiedAtUtc": "2026-08-12T08:31:09Z",
+      "verificationTool": {
+        "artifactAndChecksum": "Windows PowerShell 5.1.19041.6456 Invoke-WebRequest/Get-FileHash plus CPython 3.12.13 tools/verify_poc_recovery_dependency_inventory.py v0.3",
+        "detachedOpenPgp": "OpenJDK 17.0.10 with BouncyCastle bcpg/bcprov/bcutil 1.84",
+        "keyRetrieval": "Ubuntu keyserver HTTPS lookup",
+        "trustRule": "A successful signature and keyserver UID prove cryptographic consistency, not publisher identity; coordinate-specific upstream trust evidence is mandatory."
+      },
+      "licenseId": "Apache-2.0",
+      "upstreamLicenseTextLocator": "https://raw.githubusercontent.com/JetBrains/java-annotations/master/LICENSE.txt",
+      "licenseTextSha256": "8c1e966c7855fb54027bcaf6ebe7a43abe4785791e8cf9148c363761d493d097",
+      "copyrightEvidence": {
+        "locator": "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0-sources.jar!/org/intellij/lang/annotations/Flow.java",
+        "statement": "Copyright 2000-2013 JetBrains s.r.o.",
+        "status": "RECORDED_FROM_PUBLISHER_SOURCES_JAR_EXACT_SOURCE_TAG_PENDING"
+      },
+      "notice": {
+        "requirement": "PRESERVE_SEPARATE_NOTICE_IF_UPSTREAM_SUPPLIES_ONE",
+        "locator": "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0-sources.jar",
+        "sha256": null,
+        "result": "NO_SEPARATE_NOTICE_IN_BINARY_OR_SOURCES_JAR; EXACT_SOURCE_ROOT_PENDING"
+      },
+      "jar": {
+        "sha256": "ace2a10dc8e2d5fd34925ecac03e4988b2c0f851650c94b8cef49ba1bd111478",
+        "publisherChecksum": {
+          "algorithm": "SHA-1",
+          "locator": "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0.jar.sha1",
+          "value": "919f0dfe192fb4e063e7dacadee7f8bb9a2672a9",
+          "result": "MATCH"
+        },
+        "detachedSignature": {
+          "locator": "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0.jar.asc",
+          "result": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signerFingerprint": "2E3A1AFFE42B5F53AF19F780BCF4173966770193"
+        }
+      },
+      "pom": {
+        "sha256": "965aeb2bedff369819bdde1bf7a0b3b89b8247dd69c88b86375d76163bb8c397",
+        "publisherChecksum": {
+          "algorithm": "SHA-1",
+          "locator": "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0.pom.sha1",
+          "value": "fa7d3d07cc80547e2d15bf4839d3267c637c642f",
+          "result": "MATCH"
+        },
+        "detachedSignature": {
+          "locator": "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0.pom.asc",
+          "result": "CRYPTOGRAPHICALLY_VERIFIED",
+          "signerFingerprint": "2E3A1AFFE42B5F53AF19F780BCF4173966770193"
+        }
+      },
+      "signerIdentity": "IntelliJ IDEA Sign Key <intellij-idea-sign-key-noreply@jetbrains.com>",
+      "signerTrustSource": null,
+      "signerTrustStatus": "UNCONFIRMED_BY_COORDINATE_SPECIFIC_UPSTREAM_KEY_PUBLICATION",
+      "sourceCorrespondence": {
+        "repository": "https://github.com/JetBrains/intellij-community",
+        "tagOrRelease": null,
+        "commit": null,
+        "evidenceLocator": "https://repo1.maven.org/maven2/org/jetbrains/annotations/13.0/annotations-13.0.pom",
+        "status": "AUTHENTICITY_PENDING_EXACT_SOURCE_TAG_UNRESOLVED"
+      },
+      "authenticityStatus": "AUTHENTICITY_PENDING",
+      "closurePath": "Establish the exact 13.0 source tag/commit and an upstream JetBrains binding for fingerprint 2E3A1AFFE42B5F53AF19F780BCF4173966770193."
+    }
+  ],
+  "approvalBoundary": {
+    "productIpApprovalAllowedWhileAnyCoordinatePending": false,
+    "productIpFinalApproval": false,
+    "approvedReviewer": null,
+    "approvedOn": null,
+    "productionLegalApproved": false,
+    "productionSecurityApproved": false,
+    "dependencyAdmission": false,
+    "productionAdmission": false
+  }
+}

@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "pocId": "POC-RECOVERY-001",
   "assessedOn": "2026-08-12",
-  "status": "BLOCKED_REMEDIATED_PROTOCOL_V0_2_REVIEW_AND_IMPLEMENTATION_PENDING",
+  "status": "BLOCKED_REMEDIATED_PROTOCOL_V0_3_REVIEW_AUTHENTICITY_AND_IMPLEMENTATION_PENDING",
   "executionAllowed": false,
   "implementationAllowedByThisPackage": false,
   "measuredExecutionAllowed": false,
@@ -17,16 +17,23 @@
     "proposedDecisionPresent": true,
     "exactGateSetPresent": true,
     "machineProtocolPresent": true,
-    "activeGateSetVersion": "poc-recovery-stage0-v0.2",
-    "activeProtocolId": "poc-recovery-protocol-stage0-v0.2",
+    "activeGateSetVersion": "poc-recovery-stage0-v0.3",
+    "activeProtocolId": "poc-recovery-protocol-stage0-v0.3",
+    "governanceRemediationV03Present": true,
     "governanceRemediationV02Present": true,
     "v01RetainedAsSupersededAuditArtifact": true,
     "v01Executable": false,
+    "v02RetainedAsSupersededAuditArtifact": true,
+    "v02Executable": false,
     "dependencyInventoryPresent": true,
     "licenseNoticeInventoryPresent": true,
     "securityInventoryPresent": true,
     "sqliteProvenanceExtensionPresent": true,
-    "reviewRolesPresent": true
+    "reviewRolesPresent": true,
+    "reviewFindingsV01LedgerPresent": true,
+    "reviewFindingsV02LedgerPresent": true,
+    "dependencyIpAuthenticityV03Present": true,
+    "supplyChainAuthenticityStatus": "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED"
   },
   "approvals": {
     "productIpFinalApproved": false,
@@ -52,7 +59,7 @@
       "priority": "P0",
       "status": "OPEN_UNASSIGNED",
       "owner": "Project owner",
-      "condition": "Assign a distinct accountable recovery Engineering/Security reviewer and record a read-only v0.2 disposition; current Codex remediation is not claimed formally independent."
+      "condition": "Assign a distinct accountable recovery Engineering/Security reviewer and record a read-only v0.3 disposition; current Codex remediation is not claimed formally independent."
     },
     {
       "id": "REC-RDY-03-STREAMING-IMPLEMENTATION-VERIFICATION",
@@ -87,7 +94,7 @@
       "priority": "P0",
       "status": "OPEN_BY_OWNER_INSTRUCTION",
       "owner": "Future separately scoped implementation task",
-      "condition": "Implement and safely non-metrically verify an isolated common harness only after Product/IP and accountable v0.2 review."
+      "condition": "Implement and safely non-metrically verify an isolated common harness only after Product/IP and accountable v0.3 review."
     },
     {
       "id": "REC-RDY-08-OWNER-EXECUTION-AUTHORIZATION",
@@ -109,6 +116,13 @@
       "status": "OUTSIDE_STAGE0_UNASSIGNED",
       "owner": "Project owner",
       "condition": "Assign Production Legal and Production Security before any production admission or redistribution; recovery-scoped approval does not satisfy this."
+    },
+    {
+      "id": "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY",
+      "priority": "P0",
+      "status": "AUTHENTICITY_PENDING",
+      "owner": "Project owner / Stage 0 Product-IP",
+      "condition": "Close every coordinate-specific signer trust and source-correspondence path in dependency-ip-authenticity-v0.3.json; successful PGP/checksum verification alone does not authorize approval."
     }
   ],
   "phaseA": {

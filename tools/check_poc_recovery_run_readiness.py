@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail closed unless POC-RECOVERY-001 v0.2 has complete, explicit execution authority."""
+"""Fail closed unless POC-RECOVERY-001 v0.3 has complete, explicit execution authority."""
 
 from __future__ import annotations
 
@@ -12,8 +12,8 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 STAGE0 = ROOT / "docs" / "stage0"
 EVIDENCE = ROOT / "docs" / "evidence" / "poc-recovery-001"
-GATE_V02 = "poc-recovery-stage0-v0.2"
-PROTOCOL_V02 = "poc-recovery-protocol-stage0-v0.2"
+GATE_V03 = "poc-recovery-stage0-v0.3"
+PROTOCOL_V03 = "poc-recovery-protocol-stage0-v0.3"
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -30,20 +30,23 @@ def complete_runtime_evidence(evidence: dict[str, Any]) -> bool:
 
 
 def main() -> int:
-    gate = read_json(STAGE0 / "poc-recovery-gate-set-stage0-v0.2.json")
-    protocol = read_json(STAGE0 / "poc-recovery-protocol-stage0-v0.2.json")
+    gate = read_json(STAGE0 / "poc-recovery-gate-set-stage0-v0.3.json")
+    protocol = read_json(STAGE0 / "poc-recovery-protocol-stage0-v0.3.json")
     readiness = read_json(EVIDENCE / "readiness.json")
     roles = read_json(EVIDENCE / "review-roles.json")["roles"]
     provenance = read_json(EVIDENCE / "sqlite-platform-provenance.json")
     license_notice = read_json(EVIDENCE / "license-notice-inventory.json")
+    authenticity = read_json(EVIDENCE / "dependency-ip-authenticity-v0.3.json")
 
-    require(gate["gateSetVersion"] == GATE_V02, "Active recovery Gate Set is not v0.2")
-    require(protocol["protocolId"] == PROTOCOL_V02, "Active recovery protocol is not v0.2")
-    require(gate["supersedes"]["disposition"] == "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE", "v0.1 supersession record absent")
-    require(protocol["supersedes"]["disposition"] == "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE", "v0.1 protocol supersession record absent")
+    require(gate["gateSetVersion"] == GATE_V03, "Active recovery Gate Set is not v0.3")
+    require(protocol["protocolId"] == PROTOCOL_V03, "Active recovery protocol is not v0.3")
+    require(gate["supersedes"]["gateSetVersion"] == "poc-recovery-stage0-v0.2" and gate["supersedes"]["disposition"] == "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE", "v0.2 Gate Set supersession record absent")
+    require(protocol["supersedes"]["protocolId"] == "poc-recovery-protocol-stage0-v0.2" and protocol["supersedes"]["disposition"] == "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE", "v0.2 protocol supersession record absent")
+    require([item["gateSetVersion"] for item in gate["retainedAuditArtifacts"]] == ["poc-recovery-stage0-v0.1", "poc-recovery-stage0-v0.2"], "v0.1/v0.2 Gate Set audit history absent")
+    require([item["protocolId"] for item in protocol["retainedAuditArtifacts"]] == ["poc-recovery-protocol-stage0-v0.1", "poc-recovery-protocol-stage0-v0.2"], "v0.1/v0.2 protocol audit history absent")
 
-    require(gate["executionAllowed"] is True, "executionAllowed=false in the recovery Gate Set v0.2")
-    require(protocol["executionAllowed"] is True, "executionAllowed=false in the recovery protocol v0.2")
+    require(gate["executionAllowed"] is True, "executionAllowed=false in the recovery Gate Set v0.3")
+    require(protocol["executionAllowed"] is True, "executionAllowed=false in the recovery protocol v0.3")
     require(readiness["executionAllowed"] is True, "executionAllowed=false in readiness evidence")
     require(gate["status"] == "APPROVED_FOR_AUTHORIZED_EXECUTION", "Gate Set lacks approved execution status")
     authorization = gate["executionAuthorization"]
@@ -56,13 +59,16 @@ def main() -> int:
     require(bool(approvals["approvedReviewer"]) and bool(approvals["approvedOn"]), "Product/IP approval identity/date absent")
     require(bool(approvals["accountableIndependentEngineeringSecurityReviewer"]), "Accountable recovery Engineering/Security reviewer absent")
     require(approvals["currentCodexReviewClaimedFormallyIndependent"] is False, "Codex remediation cannot satisfy independent review")
+    require(authenticity["overallStatus"] == "AUTHENTICITY_VERIFIED_FOR_PRODUCT_IP_APPROVAL", "Supply-chain authenticity remains pending")
+    require(all(component["authenticityStatus"] == "VERIFIED_FOR_PACKAGE_REVIEW" for component in authenticity["components"]), "At least one coordinate remains authenticity-pending")
+    require(authenticity["approvalBoundary"]["productIpFinalApproval"] is True, "Authenticity evidence lacks Product/IP approval linkage")
     require(license_notice["evaluationApproved"] is True, "Exact Stage 0 Product/IP evaluation approval absent")
 
     product_ip = roles["stage0ProductIp"]
     require(product_ip["status"] == "APPROVED_FOR_EXACT_STAGE0_EVALUATION" and product_ip["finalApproved"] is True, "Product/IP role approval absent")
     require(bool(product_ip["approvedReviewer"]) and bool(product_ip["approvedOn"]), "Product/IP approval record incomplete")
     independent = roles["independentRecoveryEngineeringSecurity"]
-    require(independent["status"] == "APPROVED_FOR_EXACT_RECOVERY_V0_2_IMPLEMENTATION_AND_PHASE_A", "Accountable recovery Engineering/Security approval absent")
+    require(independent["status"] == "APPROVED_FOR_EXACT_RECOVERY_V0_3_IMPLEMENTATION_AND_PHASE_A", "Accountable recovery Engineering/Security approval absent")
     require(isinstance(independent["reviewer"], str) and bool(independent["reviewer"]), "Independent reviewer unassigned")
     require(bool(independent["approvedReviewer"]) and bool(independent["approvedOn"]), "Independent review record incomplete")
     require(independent["currentCodexRemediationClaimedFormallyIndependent"] is False, "Codex remediation cannot claim formal independence")
@@ -72,7 +78,7 @@ def main() -> int:
     require(readiness["blockers"] == [], "Readiness blockers remain")
     require(readiness["runtimeDependencyAdded"] is True, "Separately scoped recovery dependency is absent")
     require(readiness["recoveryModuleExists"] is True and readiness["harnessImplemented"] is True, "Separately scoped recovery harness is absent")
-    require(readiness.get("nonMetricImplementationVerificationPassed") is True, "Non-metric v0.2 implementation verification absent")
+    require(readiness.get("nonMetricImplementationVerificationPassed") is True, "Non-metric v0.3 implementation verification absent")
     require(readiness.get("exactFutureResolvedGraphReviewed") is True, "Exact future Gradle-resolved graph review absent")
     require(readiness["killCampaignExecuted"] is False and readiness["deviceTestsExecuted"] is False and readiness["benchmarksExecuted"] is False, "Readiness evidence must precede measured/device execution")
     require(readiness["productionAppChanged"] is False, "Production :app must remain unchanged")
@@ -95,9 +101,9 @@ def main() -> int:
         require(evidence["effectiveSynchronousMode"] == "FULL", f"{environment_id} synchronous is not FULL")
         require(evidence["effectiveWalAutocheckpoint"] == 0, f"{environment_id} wal_autocheckpoint is not zero")
         require(evidence["effectiveForeignKeys"] is True, f"{environment_id} foreign_keys is not ON")
-        require(evidence["protocolId"] == PROTOCOL_V02, f"{environment_id} preflight protocol drift")
+        require(evidence["protocolId"] == PROTOCOL_V03, f"{environment_id} preflight protocol drift")
 
-    print("POC-RECOVERY-001 v0.2 execution readiness passed")
+    print("POC-RECOVERY-001 v0.3 execution readiness passed")
     return 0
 
 

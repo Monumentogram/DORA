@@ -1,7 +1,7 @@
 # Dora MVP 1 — OD-14 recovery governance owner record
 
 Decision ID: `OD-14`\
-Status: **Approved owner constraints and governance protocol v0.2 / Proposed experiment decision**\
+Status: **Approved owner constraints; governance remediation v0.3 linked / Proposed experiment decision**\
 Date: **12 August 2026**\
 Owner: **Project owner**\
 Scope: governance/readiness and exact Stage 0 evaluation-package preparation for
@@ -25,7 +25,8 @@ the closed `POC-SEARCH-001` evidence ledger. It does not modify or re-hash that 
   or post-FAIL fallbacks and cannot receive PASS under the current gate.
 - The exact package candidate is `com.google.crypto.tink:tink-android:1.23.0`. Permission covers
   Stage 0 evaluation-package preparation only, not dependency admission or runtime-graph wiring.
-- Governance protocol v0.2 selects public AES-GCM-HKDF Streaming parameters (16-byte input key,
+- Governance protocol v0.3 retains the v0.2 owner selection of public AES-GCM-HKDF Streaming
+  parameters (16-byte input key,
   one 16-byte HKDF-SHA256-derived AES-GCM key per stream and 4096-byte ciphertext segments) with
   `DURABLE_ONE_SEGMENT_LOOKAHEAD`. The design is
   `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`; deprecated
@@ -48,22 +49,26 @@ the closed `POC-SEARCH-001` evidence ledger. It does not modify or re-hash that 
   authenticated publication. The controller event follows commit and is evidence only. The
   external Phase A ledger is the rollback anchor; without it only crash/split-brain rollback
   detection may be claimed.
-- The exact file/directory durability, WAL/FULL SQLite profile, deterministic
-  `processingIntentId`, 12 candidate-specific barriers and expanded fault matrix are normative in
-  v0.2.
+- The exact non-deprecated Keystore Builder path, 9/13/21 publication sequences,
+  `final + ".tmp"` namespace/five-state reconciliation, WAL/FULL SQLite profile, deterministic
+  `processingIntentId`, 12 candidate-specific barriers and 33-row fault matrix are normative in
+  v0.3. These F-01–F-06 remediations refine governance detail without changing the two candidates,
+  thresholds, authority or owner product choice.
+- Per-coordinate checksum and OpenPGP verification is recorded, but six signer/source trust paths
+  remain `AUTHENTICITY_PENDING`; Product/IP final approval stays blocked.
 - Each candidate has 120 base hard-kill executions and requires at least 100 confirmed valid hard
   kills. Invalid attempts remain explicit and are never restarted or replaced silently.
 
 ## Normative package
 
 - Proposed decision: `docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md`;
-- exact Gate Set: `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_2.md`;
-- machine contracts: `docs/stage0/poc-recovery-gate-set-stage0-v0.2.json` and
-  `docs/stage0/poc-recovery-protocol-stage0-v0.2.json`;
+- exact Gate Set: `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md`;
+- machine contracts: `docs/stage0/poc-recovery-gate-set-stage0-v0.3.json` and
+  `docs/stage0/poc-recovery-protocol-stage0-v0.3.json`;
 - superseded audit artifacts, prohibited for future execution:
   `DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_1.md`,
   `poc-recovery-gate-set-stage0-v0.1.json` and
-  `poc-recovery-protocol-stage0-v0.1.json`;
+  `poc-recovery-protocol-stage0-v0.1.json`, plus all corresponding v0.2 Gate Set/protocol files;
 - exact evidence: `docs/evidence/poc-recovery-001/`; and
 - fail-closed checker: `tools/check_poc_recovery_run_readiness.py`.
 

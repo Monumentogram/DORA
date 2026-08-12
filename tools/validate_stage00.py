@@ -175,6 +175,13 @@ def validate_governance() -> None:
         "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
         "docs/DORA_MVP1_STAGE_STATUS.md",
         "docs/adr/ADR-0001-android-bootstrap.md",
+        "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md",
+        "docs/stage0/poc-recovery-gate-set-stage0-v0.3.json",
+        "docs/stage0/poc-recovery-protocol-stage0-v0.3.json",
+        "docs/evidence/poc-recovery-001/evidence-index.json",
+        "docs/evidence/poc-recovery-001/review-findings-v0.1.json",
+        "docs/evidence/poc-recovery-001/review-findings-v0.2.json",
+        "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json",
     )
     for relative_path in required_files:
         read_text(relative_path)

@@ -1,8 +1,10 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "pocId": "POC-RECOVERY-001",
   "generatedAtUtc": "2026-08-11T21:31:21.7154872Z",
-  "reviewStatus": "EVIDENCE_COMPLETE_PACKAGE_REVIEW_PENDING",
+  "reviewStatus": "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED",
+  "amendedAtUtc": "2026-08-12T08:31:09Z",
+  "coordinateEvidenceLocator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json",
   "evaluationApproved": false,
   "approvedReviewer": null,
   "approvedOn": null,
@@ -18,9 +20,13 @@
     "externalJarLicenseEntries": 0,
     "externalJarNoticeEntries": 0,
     "embeddedComponents": 1,
+    "externalCoordinatesWithPerCoordinateLicenseCopyrightNoticeAndAuthenticityRecords": 8,
+    "externalCoordinatesWithCryptographicallyVerifiedJarAndPomSignatures": 8,
+    "externalCoordinatesWithAuthenticityPending": 6,
     "unresolvedPomLicenseDeclarations": [],
     "noticeFilesRequiringPreservationFound": [],
     "packageReviewRequired": true,
+    "authenticityMustCloseBeforeProductIpApproval": true,
     "productionLegalUnassigned": true
   },
   "canonicalLicenseTexts": [

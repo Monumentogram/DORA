@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "pocId": "POC-RECOVERY-001",
-  "status": "RECOVERY_STAGE0_V0_2_SQLITE_PROFILE_SELECTED_FRESH_PREFLIGHT_INCOMPLETE",
+  "status": "RECOVERY_STAGE0_V0_3_SQLITE_PROFILE_SELECTED_FRESH_PREFLIGHT_INCOMPLETE",
   "decisionId": "OD-14",
   "policyLocator": "docs/stage0/DORA_MVP1_IP_ASSET_POLICY.md#582-stage-0-recovery-platform-sqlite-boundary-od-14",
   "scope": "PoC-local DB/file split-brain and reconciliation journal only",

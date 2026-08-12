@@ -199,7 +199,7 @@ itself. Any firmware, API, ABI or runtime SQLite drift creates a new environment
 a package delta review.
 
 The Project owner is the assigned Stage 0 Product/IP reviewer for this package; final approval
-fields remain null. Unlike the search-specific `OD-11` boundary, recovery protocol v0.2 and
+fields remain null and coordinate authenticity gaps block final approval. Unlike the search-specific `OD-11` boundary, recovery protocol v0.3 and
 platform durability require a distinct accountable Engineering/Security reviewer plus
 implementation verification before execution. The current Codex remediation does not claim
 formal independence. That future review does not replace Production Security. Production Legal

@@ -1,24 +1,26 @@
 # POC-RECOVERY-001 exact Stage 0 evaluation package review
 
-Status: **SUPPLY-CHAIN EVIDENCE RETAINED — OWNER-REMEDIATED PROTOCOL v0.2 RE-REVIEW PENDING**\
+Status: **AUTHENTICITY PENDING — OWNER-REMEDIATED PROTOCOL v0.3 RE-REVIEW BLOCKED**\
 Prepared: 12 August 2026\
 Evaluation candidate: `com.google.crypto.tink:tink-android:1.23.0`\
 Execution allowed: **no**
 
 ## Review conclusion
 
-The supply-chain evidence packet remains sufficiently exact to present for review, but it is not
-approved for evaluation execution, dependency admission, redistribution or production. Protocol
-v0.1 at reviewed commit `87f8c00c6afce0f658678a7a09b1a394b89a2454` received the owner-supplied
-disposition `CHANGES_REQUIRED`; owner-remediated protocol v0.2 now requires repeat review. This
-document does not identify the prior reviewer or claim formal independence for Codex.
+The supply-chain packet is more exact but remains `AUTHENTICITY_PENDING`; it is not approved for
+evaluation execution, dependency admission, redistribution or production. Protocol v0.2 at
+reviewed commit `70cf26125dbecbb347311ca0bb9ce1ad5c637e18` received `CHANGES_REQUIRED` findings
+F-01–F-06; owner-remediated protocol v0.3 requires repeat review. This document does not identify a
+sanitized prior reviewer or claim formal independence for Codex.
 
 The exact root JAR/POM and seven external transitive coordinates are hashed and inventoried. The
 root is a Java JAR with no native/JNI entries and contains a shaded protobuf-java 4.33.6 runtime.
-All eight external POMs declare Apache-2.0; the embedded protobuf runtime uses BSD-3-Clause. No
-LICENSE or NOTICE entry was found inside any reviewed JAR, and no NOTICE file exists at the
-reviewed Tink or protobuf tagged repository root. The exact tagged license texts and hashes are in
-`license-notice-inventory.json`.
+All eight external POMs declare Apache-2.0; the embedded protobuf runtime uses BSD-3-Clause. Exact
+per-coordinate license text, copyright, NOTICE, signer and source-correspondence records are in
+`dependency-ip-authenticity-v0.3.json`. All 16 publisher checksums matched and all 16 detached
+OpenPGP signatures verified cryptographically. AndroidX and Error Prone have authoritative
+upstream signer trust; six coordinates remain pending because keyserver identity alone is not an
+upstream trust binding and/or exact source correspondence is unresolved.
 
 This absence does not waive future distribution obligations. If a dependency is ever admitted,
 the resolved APK graph must be rescanned and the applicable full license texts/attributions must be
@@ -35,6 +37,9 @@ provided in the distribution and license surface. Production Legal is unassigned
 | Root class entries | 1,878 |
 | Shaded protobuf | 4.33.6; 540 entries; BSD-3-Clause |
 | Native/JNI/shared libraries | none in root or inventoried external JARs |
+| Publisher checksums | 16/16 JAR/POM checksum files matched |
+| Detached OpenPGP signatures | 16/16 cryptographically verified with BouncyCastle 1.84 |
+| Upstream signer trust | 2/8 confirmed; 6/8 `AUTHENTICITY_PENDING` |
 | Gradle/runtime graph | not created; prohibited in this task |
 
 Because the repository pins Kotlin 2.2.10 while AndroidX annotation metadata declares Kotlin
@@ -59,7 +64,7 @@ empty query is not proof of security and does not approve the recovery protocol.
 
 ## Owner-remediated crypto/protocol design remains verification-blocking
 
-Protocol v0.2 selects, but does not implement or prove:
+Protocol v0.3 selects, but does not implement or prove:
 
 1. public AES-GCM-HKDF `StreamingAead` with 16-byte input/derived key, SHA-256, 4096-byte segments,
    one derived AES key per stream and `DURABLE_ONE_SEGMENT_LOOKAHEAD`;
@@ -67,14 +72,16 @@ Protocol v0.2 selects, but does not implement or prove:
    `read()==-1` EOF semantics;
 3. `AES256_GCM_TINK_IV12_TAG16` five-second microfiles and exact
    `DORA_RECOVERY_MANIFEST_V1_BINARY_BE`;
-4. four exact big-endian/LP16 AAD schemas and Android Keystore encrypted-keyset/error contract;
-5. successful SQLite `endTransaction()` return as semantic commit, immutable file publication,
-   WAL/FULL SQLite, deterministic UNIQUE processing intents and controller-ledger rollback scope;
-6. candidate-specific K01–K12 barriers and expanded replay/rollback/key/parser/path/quarantine/event
-   fault matrix.
+4. four exact big-endian/LP16 AAD schemas, the non-deprecated Keystore Builder access path,
+   key-confirmation ciphertext and five-level error precedence;
+5. exact 9/13/21 publication sequences, `final + ".tmp"` namespace, five reconciliation states,
+   collision/no-overwrite and all final/temp containment/lstat/regular/no-symlink checks;
+6. successful SQLite `endTransaction()` return as semantic commit, WAL/FULL SQLite, deterministic
+   UNIQUE processing intents and controller-ledger rollback scope; and
+7. candidate-specific K01–K12 barriers and the 33-row matrix including exact KEY-01–KEY-07.
 
 Each selected item has status `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`. A distinct
-accountable recovery Engineering/Security reviewer must verify or revise the exact v0.2 contract
+accountable recovery Engineering/Security reviewer must verify or revise the exact v0.3 contract
 and later implementation evidence before execution.
 
 ## SQLite provenance boundary
@@ -91,8 +98,8 @@ recovery-only platform boundary does not admit a production schema or component.
 
 | Reviewer | Requested disposition | Current state |
 |---|---|---|
-| Project owner / Stage 0 Product/IP | approve, reject or request changes to exact remediated evaluation scope and license/NOTICE/provenance package | assigned; final approval fields null |
-| Distinct accountable recovery Engineering/Security | verify, reject or revise selected v0.2 construction/key/commit/recovery/barrier/fault protocol; later verify implementation evidence | unassigned, blocking; current Codex remediation not claimed independent |
+| Project owner / Stage 0 Product/IP | close or reject each authenticity/source path, then approve/reject the exact v0.3 package | assigned; authenticity blocked; final approval fields null |
+| Distinct accountable recovery Engineering/Security | verify, reject or revise selected v0.3 construction/key/commit/recovery/barrier/fault protocol; later verify implementation evidence | unassigned, blocking; current Codex remediation not claimed independent |
 | Project owner / execution | after all other prerequisites, separately set `executionAllowed=true` for a named phase/commit | withheld |
 | Production Legal | production/redistribution assessment | unassigned; not required for package preparation, required before production |
 | Production Security | production admission assessment | separate future gate; not replaced |

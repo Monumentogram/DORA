@@ -1,10 +1,10 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "pocId": "POC-RECOVERY-001",
   "recordedOn": "2026-08-12",
   "roles": {
     "packageAuthor": {
-      "role": "Governance package preparer and v0.2 remediation recorder",
+      "role": "Governance package preparer and v0.3 remediation recorder",
       "reviewer": "Codex",
       "mayApproveOwnPackage": false,
       "mayAuthorizeExecution": false,
@@ -13,7 +13,7 @@
     "stage0ProductIp": {
       "role": "Stage 0 Product/IP reviewer",
       "reviewer": "Project owner",
-      "status": "ASSIGNED_FINAL_APPROVAL_PENDING",
+      "status": "ASSIGNED_FINAL_APPROVAL_BLOCKED_AUTHENTICITY_PENDING",
       "finalApproved": false,
       "approvedReviewer": null,
       "approvedOn": null,
@@ -43,10 +43,11 @@
         "DURABLE_ONE_SEGMENT_LOOKAHEAD q/R/read/EOF proof using public StreamingAead only",
         "non-deprecated 16/16-byte HKDF-SHA256 4096-byte streaming construction and one-derived-key-per-stream model",
         "AES256_GCM_TINK_IV12_TAG16 microfiles and exact DORA_RECOVERY_MANIFEST_V1_BINARY_BE parser",
-        "four exact big-endian LP16 AAD schemas and Android Keystore encrypted-keyset classifications",
-        "semantic endTransaction commit, filesystem order, WAL/FULL SQLite and deterministic UNIQUE processing intent",
-        "candidate-specific K01-K12 public barriers and immutable K12 seeds",
-        "expanded corruption, replay, rollback, key, parser/path, quarantine, event and cleanup matrix",
+        "four exact big-endian LP16 AAD schemas, non-deprecated AndroidKeystoreKmsClient Builder path and five-level key classification precedence",
+        "candidate-specific 9/13/21 publication sequences, semantic endTransaction commit, WAL/FULL SQLite and deterministic UNIQUE processing intent",
+        "all final and final+'.tmp' path patterns, five reconciliation states, collision/no-overwrite behavior and no name-only temp promotion",
+        "candidate-specific K01-K12 public barriers and immutable v0.3 K12 seeds",
+        "33-row corruption, replay, rollback, KEY-01..KEY-07, parser/path, quarantine, event and cleanup matrix",
         "later separately scoped implementation and non-metric implementation-verification evidence"
       ],
       "mayRejectOrRequireProtocolRevision": true,

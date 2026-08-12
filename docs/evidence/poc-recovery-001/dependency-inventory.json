@@ -1,8 +1,16 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "pocId": "POC-RECOVERY-001",
   "generatedAtUtc": "2026-08-11T21:31:21.7154872Z",
-  "inventoryStatus": "VERIFIED_PUBLISHER_CLOSURE_PACKAGE_REVIEW_ONLY",
+  "inventoryStatus": "VERIFIED_PUBLISHER_CLOSURE_AUTHENTICITY_PENDING_PACKAGE_REVIEW_ONLY",
+  "authenticityEvidence": {
+    "locator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json",
+    "status": "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED",
+    "verifiedAtUtc": "2026-08-12T08:31:09Z",
+    "publisherChecksumsMatched": 16,
+    "detachedSignaturesCryptographicallyVerified": 16,
+    "coordinatesWithUnconfirmedSignerTrustOrSourceCorrespondence": 6
+  },
   "evaluationPermission": "STAGE0_PACKAGE_PREPARATION_ONLY",
   "dependencyAdmission": false,
   "runtimeGraphModified": false,

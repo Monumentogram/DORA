@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 2,
+  "ledgerId": "POC-RECOVERY-001-REVIEW-V0.2",
+  "pocId": "POC-RECOVERY-001",
+  "reviewedCommit": "70cf26125dbecbb347311ca0bb9ce1ad5c637e18",
+  "reviewedGateSetVersion": "poc-recovery-stage0-v0.2",
+  "reviewDisposition": "CHANGES_REQUIRED",
+  "sanitized": true,
+  "reviewerIdentity": null,
+  "formalReviewer": false,
+  "remediationCommitSemantics": "SELF means the immutable Git commit containing this ledger; its exact SHA is supplied by the PR head and handoff because a Git object cannot contain its own digest.",
+  "findings": [
+    {
+      "id": "F-01",
+      "severity": "P0",
+      "sourceReviewDate": "2026-08-12",
+      "affectedArtifact": "docs/stage0/poc-recovery-protocol-stage0-v0.2.json#/keyProtocol",
+      "finding": "AndroidKeystoreKmsClient recovery construction was not the exact non-deprecated Builder instance path.",
+      "remediationCommit": "SELF",
+      "remediationVersion": "poc-recovery-protocol-stage0-v0.3",
+      "status": "CLOSED",
+      "evidenceLocator": "docs/stage0/poc-recovery-protocol-stage0-v0.3.json#/keyProtocol",
+      "formalReviewer": false
+    },
+    {
+      "id": "F-02",
+      "severity": "P0",
+      "sourceReviewDate": "2026-08-12",
+      "affectedArtifact": "docs/stage0/poc-recovery-protocol-stage0-v0.2.json#/storageProtocol/publicationOrder",
+      "finding": "The publication order was generic instead of complete and candidate-specific.",
+      "remediationCommit": "SELF",
+      "remediationVersion": "poc-recovery-protocol-stage0-v0.3",
+      "status": "CLOSED",
+      "evidenceLocator": "docs/stage0/poc-recovery-protocol-stage0-v0.3.json#/storageProtocol/publicationSequences",
+      "formalReviewer": false
+    },
+    {
+      "id": "F-03",
+      "severity": "P0",
+      "sourceReviewDate": "2026-08-12",
+      "affectedArtifact": "docs/stage0/poc-recovery-protocol-stage0-v0.2.json#/storageProtocol",
+      "finding": "The temporary namespace and reconciliation contract were incomplete.",
+      "remediationCommit": "SELF",
+      "remediationVersion": "poc-recovery-protocol-stage0-v0.3",
+      "status": "CLOSED",
+      "evidenceLocator": "docs/stage0/poc-recovery-protocol-stage0-v0.3.json#/storageProtocol",
+      "formalReviewer": false
+    },
+    {
+      "id": "F-04",
+      "severity": "P0",
+      "sourceReviewDate": "2026-08-12",
+      "affectedArtifact": "docs/stage0/poc-recovery-protocol-stage0-v0.2.json#/keyProtocol",
+      "finding": "The KEY taxonomy and mandatory fault oracles were ambiguous and incomplete.",
+      "remediationCommit": "SELF",
+      "remediationVersion": "poc-recovery-protocol-stage0-v0.3",
+      "status": "CLOSED",
+      "evidenceLocator": "docs/stage0/poc-recovery-protocol-stage0-v0.3.json#/faultCampaign",
+      "formalReviewer": false
+    },
+    {
+      "id": "F-05",
+      "severity": "P1",
+      "sourceReviewDate": "2026-08-12",
+      "affectedArtifact": "docs/evidence/poc-recovery-001/",
+      "finding": "Sanitized machine-readable ledgers for both reviews were absent.",
+      "remediationCommit": "SELF",
+      "remediationVersion": "poc-recovery-protocol-stage0-v0.3",
+      "status": "CLOSED",
+      "evidenceLocator": "docs/evidence/poc-recovery-001/review-findings-v0.1.json",
+      "formalReviewer": false
+    },
+    {
+      "id": "F-06",
+      "severity": "P0",
+      "sourceReviewDate": "2026-08-12",
+      "affectedArtifact": "docs/evidence/poc-recovery-001/license-notice-inventory.json",
+      "finding": "Per-coordinate license and supply-chain authenticity evidence was incomplete.",
+      "remediationCommit": "SELF",
+      "remediationVersion": "poc-recovery-protocol-stage0-v0.3",
+      "status": "PARTIALLY_CLOSED",
+      "evidenceLocator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json",
+      "formalReviewer": false
+    }
+  ]
+}

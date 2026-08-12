@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "pocId": "POC-RECOVERY-001",
+  "status": "GOVERNANCE_V0_3_AUTHENTICITY_PENDING_EXECUTION_BLOCKED",
+  "activeGateSetVersion": "poc-recovery-stage0-v0.3",
+  "activeProtocolId": "poc-recovery-protocol-stage0-v0.3",
+  "executionAllowed": false,
+  "supersededAuditArtifacts": [
+    {
+      "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_1.md",
+      "sha256": "d891e033e3e58455dbafd03be5a41ca64cafda93182424357035c37d769ae46e"
+    },
+    {
+      "locator": "docs/stage0/poc-recovery-gate-set-stage0-v0.1.json",
+      "sha256": "78c1a8289f90b51a376b023673dc00b6cb35386b5b0a2dda9432b50b20216e11"
+    },
+    {
+      "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.1.json",
+      "sha256": "b853295e6c66815c61566e930d30dafa0dfc72e805bb5ba38158688e084ead81"
+    },
+    {
+      "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_2.md",
+      "sha256": "d4fab2f47872f0b6c1c04c5b0b1022b047ae8782eb0130cd2f66825294455180"
+    },
+    {
+      "locator": "docs/stage0/poc-recovery-gate-set-stage0-v0.2.json",
+      "sha256": "f6384c7b1d4d493218a600722ddf0116f454e8356e7e247da74f03256cc69110"
+    },
+    {
+      "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.2.json",
+      "sha256": "cfa06e624cbc0da37b68188d7b1739cdfb5ca12beeedc21f408897dc41b2081f"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "REC-V03-GATE-MARKDOWN",
+      "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md",
+      "status": "ACTIVE_PROSPECTIVE_NON_EXECUTABLE"
+    },
+    {
+      "id": "REC-V03-GATE-JSON",
+      "locator": "docs/stage0/poc-recovery-gate-set-stage0-v0.3.json",
+      "status": "ACTIVE_PROSPECTIVE_NON_EXECUTABLE"
+    },
+    {
+      "id": "REC-V03-PROTOCOL-JSON",
+      "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.3.json",
+      "status": "ACTIVE_PROSPECTIVE_NON_EXECUTABLE"
+    },
+    {
+      "id": "REC-V03-REMEDIATION",
+      "locator": "docs/evidence/poc-recovery-001/governance-remediation-v0.3.md",
+      "status": "F01_F05_CLOSED_F06_PARTIAL"
+    },
+    {
+      "id": "REC-REVIEW-V01-LEDGER",
+      "locator": "docs/evidence/poc-recovery-001/review-findings-v0.1.json",
+      "status": "SANITIZED_FORMAL_REVIEWER_FALSE"
+    },
+    {
+      "id": "REC-REVIEW-V02-LEDGER",
+      "locator": "docs/evidence/poc-recovery-001/review-findings-v0.2.json",
+      "status": "SANITIZED_FORMAL_REVIEWER_FALSE"
+    },
+    {
+      "id": "REC-DEPENDENCY-INVENTORY",
+      "locator": "docs/evidence/poc-recovery-001/dependency-inventory.json",
+      "status": "EXACT_CLOSURE_AUTHENTICITY_PENDING_NO_ADMISSION"
+    },
+    {
+      "id": "REC-DEPENDENCY-IP-AUTHENTICITY-V03",
+      "locator": "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json",
+      "status": "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED"
+    },
+    {
+      "id": "REC-LICENSE-NOTICE",
+      "locator": "docs/evidence/poc-recovery-001/license-notice-inventory.json",
+      "status": "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED"
+    },
+    {
+      "id": "REC-SECURITY-INVENTORY",
+      "locator": "docs/evidence/poc-recovery-001/security-advisory-inventory.json",
+      "status": "SNAPSHOT_COMPLETE_INDEPENDENT_REVIEW_PENDING"
+    },
+    {
+      "id": "REC-SQLITE-PROVENANCE",
+      "locator": "docs/evidence/poc-recovery-001/sqlite-platform-provenance.json",
+      "status": "PREFLIGHT_PENDING_EXECUTION_BLOCKED"
+    },
+    {
+      "id": "REC-REVIEW-ROLES",
+      "locator": "docs/evidence/poc-recovery-001/review-roles.json",
+      "status": "FORMAL_REVIEWER_UNASSIGNED_APPROVALS_NULL"
+    },
+    {
+      "id": "REC-READINESS",
+      "locator": "docs/evidence/poc-recovery-001/readiness.json",
+      "status": "BLOCKED"
+    },
+    {
+      "id": "REC-IP-REVIEW",
+      "locator": "docs/evidence/poc-recovery-001/ip-stage0-evaluation-review.md",
+      "status": "AUTHENTICITY_PENDING_REVIEW_BLOCKED"
+    },
+    {
+      "id": "REC-INDEPENDENT-REVIEW-TASK",
+      "locator": "docs/evidence/poc-recovery-001/independent-engineering-security-review-task.md",
+      "status": "READY_TO_COPY_REVIEWER_UNASSIGNED"
+    }
+  ]
+}

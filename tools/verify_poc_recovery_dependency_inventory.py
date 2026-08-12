@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Verify the exact published Tink candidate closure without changing a Gradle graph."""
+"""Verify the exact published Tink closure and v0.3 IP/authenticity evidence without Gradle changes."""
 
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import re
@@ -22,6 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "docs" / "evidence" / "poc-recovery-001"
 INVENTORY_PATH = EVIDENCE / "dependency-inventory.json"
 LICENSE_PATH = EVIDENCE / "license-notice-inventory.json"
+AUTHENTICITY_PATH = EVIDENCE / "dependency-ip-authenticity-v0.3.json"
 MAVEN_NS = {"m": "http://maven.apache.org/POM/4.0.0"}
 USER_AGENT = "Dora-POC-RECOVERY-001-inventory-verifier/1.0"
 NATIVE_SUFFIXES = (".so", ".dll", ".dylib")
@@ -60,6 +62,117 @@ def sha256(path: Path) -> str:
         while chunk := handle.read(1024 * 1024):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def file_digest(path: Path, algorithm: str) -> str:
+    normalized = algorithm.lower().replace("-", "")
+    require(normalized in {"sha1", "sha256"}, f"Unsupported publisher checksum algorithm: {algorithm}")
+    digest = hashlib.new(normalized)
+    with path.open("rb") as handle:
+        while chunk := handle.read(1024 * 1024):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def parse_publisher_checksum(path: Path, algorithm: str) -> str:
+    length = 40 if algorithm.upper() == "SHA-1" else 64
+    matches = re.findall(rf"(?i)(?<![0-9a-f])[0-9a-f]{{{length}}}(?![0-9a-f])", path.read_text(encoding="ascii"))
+    require(len(set(value.lower() for value in matches)) == 1, f"Publisher checksum file is ambiguous: {path.name}")
+    return matches[0].lower()
+
+
+def read_packet_length(data: bytes, offset: int, new_format: bool, old_length_type: int = 0) -> tuple[int, int]:
+    first = data[offset]
+    if not new_format:
+        if old_length_type == 0:
+            return first, offset + 1
+        if old_length_type == 1:
+            return int.from_bytes(data[offset:offset + 2], "big"), offset + 2
+        if old_length_type == 2:
+            return int.from_bytes(data[offset:offset + 4], "big"), offset + 4
+        raise ValueError("Indeterminate-length OpenPGP packets are forbidden")
+    if first < 192:
+        return first, offset + 1
+    if first < 224:
+        return ((first - 192) << 8) + data[offset + 1] + 192, offset + 2
+    if first == 255:
+        return int.from_bytes(data[offset + 1:offset + 5], "big"), offset + 5
+    raise ValueError("Partial-length OpenPGP packets are unsupported")
+
+
+def openpgp_packets(data: bytes) -> list[tuple[int, bytes]]:
+    packets: list[tuple[int, bytes]] = []
+    offset = 0
+    while offset < len(data):
+        header = data[offset]
+        require(header & 0x80 != 0, "Malformed OpenPGP packet header")
+        offset += 1
+        new_format = header & 0x40 != 0
+        if new_format:
+            tag = header & 0x3F
+            length, offset = read_packet_length(data, offset, True)
+        else:
+            tag = (header >> 2) & 0x0F
+            length, offset = read_packet_length(data, offset, False, header & 0x03)
+        require(offset + length <= len(data), "Truncated OpenPGP packet")
+        packets.append((tag, data[offset:offset + length]))
+        offset += length
+    return packets
+
+
+def dearmor_signature(path: Path) -> bytes:
+    text = path.read_text(encoding="ascii")
+    require("-----BEGIN PGP SIGNATURE-----" in text and "-----END PGP SIGNATURE-----" in text, f"Detached signature armor missing: {path.name}")
+    body = text.split("-----BEGIN PGP SIGNATURE-----", 1)[1].split("-----END PGP SIGNATURE-----", 1)[0]
+    lines = [line.strip() for line in body.replace("\r", "").split("\n")]
+    encoded: list[str] = []
+    for line in lines:
+        if not line or line.startswith("=") or ":" in line:
+            continue
+        encoded.append(line)
+    require(encoded, f"Detached signature payload missing: {path.name}")
+    return base64.b64decode("".join(encoded), validate=True)
+
+
+def subpacket_length(data: bytes, offset: int) -> tuple[int, int]:
+    first = data[offset]
+    if first < 192:
+        return first, offset + 1
+    if first < 255:
+        return ((first - 192) << 8) + data[offset + 1] + 192, offset + 2
+    return int.from_bytes(data[offset + 1:offset + 5], "big"), offset + 5
+
+
+def signature_issuer_identifiers(path: Path) -> set[str]:
+    identifiers: set[str] = set()
+    signature_packets = [payload for tag, payload in openpgp_packets(dearmor_signature(path)) if tag == 2]
+    require(len(signature_packets) == 1, f"Expected exactly one OpenPGP signature packet: {path.name}")
+    payload = signature_packets[0]
+    if payload[0] == 3:
+        require(len(payload) >= 15, f"Truncated v3 signature packet: {path.name}")
+        identifiers.add(payload[7:15].hex().upper())
+        return identifiers
+    require(payload[0] in {4, 5}, f"Unsupported OpenPGP signature version in {path.name}: {payload[0]}")
+    hashed_length = int.from_bytes(payload[4:6], "big")
+    hashed = payload[6:6 + hashed_length]
+    unhashed_start = 6 + hashed_length
+    require(unhashed_start + 2 <= len(payload), f"Truncated signature subpacket area: {path.name}")
+    unhashed_length = int.from_bytes(payload[unhashed_start:unhashed_start + 2], "big")
+    unhashed = payload[unhashed_start + 2:unhashed_start + 2 + unhashed_length]
+    for area in (hashed, unhashed):
+        offset = 0
+        while offset < len(area):
+            length, body_start = subpacket_length(area, offset)
+            require(length > 0 and body_start + length <= len(area), f"Malformed signature subpacket: {path.name}")
+            body = area[body_start:body_start + length]
+            packet_type = body[0] & 0x7F
+            if packet_type == 16 and len(body) == 9:
+                identifiers.add(body[1:].hex().upper())
+            elif packet_type == 33 and len(body) >= 22:
+                identifiers.add(body[2:].hex().upper())
+            offset = body_start + length
+    require(identifiers, f"Detached signature has no issuer identifier: {path.name}")
+    return identifiers
 
 
 def verify_file(path: Path, record: dict[str, Any], label: str) -> None:
@@ -154,18 +267,62 @@ def parse_pom_license(path: Path) -> tuple[str, str]:
     return name, url
 
 
-def validate_static(inventory: dict[str, Any], license_notice: dict[str, Any]) -> None:
+def validate_static(inventory: dict[str, Any], license_notice: dict[str, Any], authenticity: dict[str, Any]) -> None:
+    require(inventory["schemaVersion"] == 2, "Dependency inventory schema drift")
     require(inventory["rootCoordinate"] == "com.google.crypto.tink:tink-android:1.23.0", "Root coordinate drift")
     require(inventory["dependencyAdmission"] is False, "Inventory must not admit the dependency")
     require(inventory["runtimeGraphModified"] is False, "Inventory must not claim a runtime graph")
     require(len(inventory["artifacts"]) == 8, "Expected eight published external coordinates")
     require(len(inventory["graphEdges"]) == 8, "Expected eight publisher dependency edges")
     require(all(artifact["jar"]["nativeEntries"] == 0 for artifact in inventory["artifacts"]), "Native entry recorded")
-    require(license_notice["reviewStatus"] == "EVIDENCE_COMPLETE_PACKAGE_REVIEW_PENDING", "License review status drift")
+    require(inventory["inventoryStatus"] == "VERIFIED_PUBLISHER_CLOSURE_AUTHENTICITY_PENDING_PACKAGE_REVIEW_ONLY", "Inventory authenticity status drift")
+    require(inventory["authenticityEvidence"]["locator"] == "docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json", "Inventory authenticity locator drift")
+    require(license_notice["schemaVersion"] == 2 and license_notice["reviewStatus"] == "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED", "License review status drift")
     require(license_notice["evaluationApproved"] is False, "Evaluation must not be approved yet")
+    require(license_notice["approvedReviewer"] is None and license_notice["approvedOn"] is None, "Product/IP approval identity/date must remain null")
+
+    require(authenticity["schemaVersion"] == 1 and authenticity["pocId"] == "POC-RECOVERY-001", "Authenticity evidence identity drift")
+    require(authenticity["overallStatus"] == "AUTHENTICITY_PENDING_PRODUCT_IP_APPROVAL_BLOCKED", "Authenticity must remain pending")
+    require(authenticity["summary"]["coordinates"] == 8 and len(authenticity["components"]) == 8, "Authenticity coordinate count drift")
+    require(authenticity["summary"]["publisherChecksumsMatched"] == 16, "Publisher checksum count drift")
+    require(authenticity["summary"]["detachedSignaturesCryptographicallyVerified"] == 16, "Detached-signature verification count drift")
+    require(authenticity["summary"]["coordinatesWithUpstreamSignerTrustConfirmed"] == 2 and authenticity["summary"]["coordinatesAuthenticityPending"] == 6, "Signer-trust/authenticity counts drift")
+    require(authenticity["approvalBoundary"]["productIpApprovalAllowedWhileAnyCoordinatePending"] is False, "Product/IP approval must fail closed on pending authenticity")
+    require(authenticity["approvalBoundary"]["productIpFinalApproval"] is False and authenticity["approvalBoundary"]["approvedReviewer"] is None and authenticity["approvalBoundary"]["approvedOn"] is None, "Authenticity evidence prematurely approves Product/IP")
+    require(authenticity["approvalBoundary"]["dependencyAdmission"] is False and authenticity["approvalBoundary"]["productionAdmission"] is False, "Authenticity evidence admitted a dependency or production use")
+
+    artifacts_by_coordinate = {artifact["coordinate"]: artifact for artifact in inventory["artifacts"]}
+    license_by_coordinate = {
+        component["coordinate"]: component
+        for component in license_notice["components"]
+        if not component["coordinate"].startswith("embedded:")
+    }
+    authentic_by_coordinate = {component["coordinate"]: component for component in authenticity["components"]}
+    require(set(artifacts_by_coordinate) == set(license_by_coordinate) == set(authentic_by_coordinate), "Per-coordinate evidence coverage drift")
+    for coordinate, component in authentic_by_coordinate.items():
+        artifact = artifacts_by_coordinate[coordinate]
+        license_component = license_by_coordinate[coordinate]
+        require(component["licenseId"] == license_component["licenseSpdx"] == "Apache-2.0", f"{coordinate} license identifier drift")
+        require(component["upstreamLicenseTextLocator"].startswith("https://") and re.fullmatch(r"[0-9a-f]{64}", component["licenseTextSha256"]), f"{coordinate} upstream license evidence incomplete")
+        require(component["copyrightEvidence"]["locator"].startswith("https://") and component["copyrightEvidence"]["status"], f"{coordinate} copyright evidence incomplete")
+        require(component["notice"]["requirement"] and component["notice"]["locator"].startswith("https://") and component["notice"]["result"], f"{coordinate} NOTICE evidence incomplete")
+        require(component["verifiedAtUtc"] == authenticity["verifiedAtUtc"] and component["verificationTool"] == authenticity["verificationTool"], f"{coordinate} verification timestamp/tool attribution drift")
+        for kind in ("jar", "pom"):
+            item = component[kind]
+            require(item["sha256"] == artifact[kind]["sha256"], f"{coordinate} {kind} SHA-256 evidence drift")
+            require(item["publisherChecksum"]["result"] == "MATCH" and item["publisherChecksum"]["locator"].startswith("https://"), f"{coordinate} {kind} publisher checksum missing")
+            require(item["detachedSignature"]["result"] == "CRYPTOGRAPHICALLY_VERIFIED" and item["detachedSignature"]["locator"].startswith("https://"), f"{coordinate} {kind} detached signature missing")
+            require(re.fullmatch(r"[0-9A-F]{40}", item["detachedSignature"]["signerFingerprint"]), f"{coordinate} {kind} signer fingerprint drift")
+        require(component["jar"]["detachedSignature"]["signerFingerprint"] == component["pom"]["detachedSignature"]["signerFingerprint"], f"{coordinate} JAR/POM signer mismatch")
+        require(component["signerIdentity"] and component["signerTrustStatus"] and component["sourceCorrespondence"]["status"], f"{coordinate} signer/source evidence incomplete")
+        if component["authenticityStatus"] == "AUTHENTICITY_PENDING":
+            require(component["closurePath"] and component["signerTrustStatus"] == "UNCONFIRMED_BY_COORDINATE_SPECIFIC_UPSTREAM_KEY_PUBLICATION", f"{coordinate} pending authenticity lacks an exact closure path")
+        else:
+            require(component["authenticityStatus"] == "VERIFIED_FOR_PACKAGE_REVIEW" and component["signerTrustSource"].startswith("https://") and component["closurePath"] is None, f"{coordinate} verified authenticity evidence drift")
+    require(sum(component["authenticityStatus"] == "AUTHENTICITY_PENDING" for component in authentic_by_coordinate.values()) == 6, "Exactly six coordinates must remain authenticity-pending")
 
 
-def verify_online(inventory: dict[str, Any], license_notice: dict[str, Any]) -> None:
+def verify_online(inventory: dict[str, Any], license_notice: dict[str, Any], authenticity: dict[str, Any]) -> None:
     expected_edges: dict[str, set[tuple[str, str]]] = {}
     for edge in inventory["graphEdges"]:
         expected_edges.setdefault(edge["from"], set()).add((edge["to"], edge["scope"]))
@@ -174,6 +331,7 @@ def verify_online(inventory: dict[str, Any], license_notice: dict[str, Any]) -> 
         for component in license_notice["components"]
         if not component["coordinate"].startswith("embedded:")
     }
+    authenticity_by_coordinate = {component["coordinate"]: component for component in authenticity["components"]}
 
     with tempfile.TemporaryDirectory(prefix="dora-recovery-deps-") as temporary:
         temp_root = Path(temporary)
@@ -186,6 +344,26 @@ def verify_online(inventory: dict[str, Any], license_notice: dict[str, Any]) -> 
             verify_file(jar_path, artifact["jar"], f"{coordinate} JAR")
             verify_file(pom_path, artifact["pom"], f"{coordinate} POM")
             verify_jar(jar_path, artifact)
+
+            authenticity_record = authenticity_by_coordinate[coordinate]
+            for kind, artifact_path in (("jar", jar_path), ("pom", pom_path)):
+                file_record = authenticity_record[kind]
+                checksum_record = file_record["publisherChecksum"]
+                checksum_path = temp_root / f"{index:02d}.{kind}.checksum"
+                download(checksum_record["locator"], checksum_path)
+                publisher_value = parse_publisher_checksum(checksum_path, checksum_record["algorithm"])
+                require(publisher_value == checksum_record["value"].lower(), f"{coordinate} {kind} publisher checksum evidence drift")
+                require(file_digest(artifact_path, checksum_record["algorithm"]) == publisher_value, f"{coordinate} {kind} publisher checksum mismatch")
+
+                signature_record = file_record["detachedSignature"]
+                signature_path = temp_root / f"{index:02d}.{kind}.asc"
+                download(signature_record["locator"], signature_path)
+                issuer_identifiers = signature_issuer_identifiers(signature_path)
+                fingerprint = signature_record["signerFingerprint"]
+                require(
+                    fingerprint in issuer_identifiers or fingerprint[-16:] in {identifier[-16:] for identifier in issuer_identifiers},
+                    f"{coordinate} {kind} detached-signature issuer does not match recorded fingerprint: {sorted(issuer_identifiers)}",
+                )
 
             actual_dependencies = parse_project_dependencies(pom_path)
             require(
@@ -220,12 +398,13 @@ def main() -> int:
     args = parse_args()
     inventory = read_json(INVENTORY_PATH)
     license_notice = read_json(LICENSE_PATH)
-    validate_static(inventory, license_notice)
+    authenticity = read_json(AUTHENTICITY_PATH)
+    validate_static(inventory, license_notice, authenticity)
     if args.online:
-        verify_online(inventory, license_notice)
-        print("Verified 8 exact external JAR/POM coordinates online; no native payload; temporary files removed")
+        verify_online(inventory, license_notice, authenticity)
+        print("Verified 8 exact external JAR/POM coordinates online: artifact hashes, publisher checksums, detached-signature issuer fingerprints, POM graph/licenses and no native payload; temporary files removed")
     else:
-        print("POC-RECOVERY-001 dependency inventory static validation passed (use --online for artifact download verification)")
+        print("POC-RECOVERY-001 v0.3 dependency/IP/authenticity static validation passed (use --online for publisher checksum and detached-signature revalidation)")
     return 0
 
 
