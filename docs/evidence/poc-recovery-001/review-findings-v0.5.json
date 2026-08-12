@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "ledgerId": "POC-RECOVERY-001-REC-REV-20260812",
+  "pocId": "POC-RECOVERY-001",
+  "sanitized": true,
+  "sourceReviewedCommit": "eca48ba62acd79007884710395cc40ea21a02611",
+  "reviewedGateSetVersion": "poc-recovery-stage0-v0.5",
+  "activeRemediationProtocolId": "poc-recovery-protocol-stage0-v0.6",
+  "remediationVersion": "v0.6",
+  "review": {
+    "reviewer": "GPT-5.6 Sol",
+    "organization": "OpenAI",
+    "role": "AI documentary advisory reviewer",
+    "reviewDate": "2026-08-12",
+    "formalReviewer": false,
+    "disposition": "CHANGES_REQUIRED"
+  },
+  "closesRecRdy02": false,
+  "findings": [
+    {
+      "id": "REC-REV-20260812-01",
+      "title": "ambiguous inherited KEY-04 oracle",
+      "severity": "P1",
+      "sourceReviewedCommit": "eca48ba62acd79007884710395cc40ea21a02611",
+      "affectedArtifacts": [
+        "Gate Set",
+        "protocol",
+        "active fault matrix",
+        "KEY taxonomy and routing",
+        "static validators"
+      ],
+      "remediationVersion": "v0.6",
+      "disposition": "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE",
+      "evidenceLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_6.md#4-effective-key-04",
+      "formalReviewer": false
+    },
+    {
+      "id": "REC-REV-20260812-02",
+      "title": "accountable Engineering/Security reviewer unassigned",
+      "severity": "P0",
+      "category": "governance",
+      "sourceReviewedCommit": "eca48ba62acd79007884710395cc40ea21a02611",
+      "affectedArtifacts": [
+        "readiness",
+        "review roles",
+        "independent review task",
+        "implementation and execution authority"
+      ],
+      "remediationVersion": "v0.6",
+      "disposition": "OPEN_BLOCKING",
+      "evidenceLocator": "docs/evidence/poc-recovery-001/readiness.json",
+      "formalReviewer": false,
+      "requiredClosure": "Assign a distinct accountable recovery Engineering/Security reviewer and obtain a formal exact-HEAD disposition; an AI documentary advisory review cannot close REC-RDY-02."
+    }
+  ]
+}
