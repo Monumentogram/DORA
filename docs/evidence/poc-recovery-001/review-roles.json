@@ -1,9 +1,9 @@
 {
-  "schemaVersion": 6,
+  "schemaVersion": 7,
   "pocId": "POC-RECOVERY-001",
   "recordedOn": "2026-08-12",
-  "activeGateSetVersion": "poc-recovery-stage0-v0.5",
-  "activeProtocolId": "poc-recovery-protocol-stage0-v0.5",
+  "activeGateSetVersion": "poc-recovery-stage0-v0.6",
+  "activeProtocolId": "poc-recovery-protocol-stage0-v0.6",
   "canonicalBlockerIds": [
     "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
     "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
@@ -19,11 +19,27 @@
   ],
   "roles": {
     "packageAuthor": {
-      "role": "Governance package preparer and v0.5 remediation recorder",
+      "role": "Governance package preparer and v0.6 remediation recorder",
       "reviewer": "Codex",
       "mayApproveOwnPackage": false,
       "mayAuthorizeExecution": false,
       "claimedFormallyIndependentReviewer": false
+    },
+    "advisoryDocumentaryReviewer": {
+      "reviewer": "GPT-5.6 Sol",
+      "organization": "OpenAI",
+      "role": "AI documentary advisory reviewer",
+      "reviewDate": "2026-08-12",
+      "reviewedCommit": "eca48ba62acd79007884710395cc40ea21a02611",
+      "formalReviewer": false,
+      "disposition": "CHANGES_REQUIRED",
+      "mayApproveImplementation": false,
+      "mayAuthorizeExecution": false,
+      "closesRecRdy02": false,
+      "findingDispositions": {
+        "REC-REV-20260812-01": "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE",
+        "REC-REV-20260812-02": "OPEN_BLOCKING"
+      }
     },
     "stage0ProductIp": {
       "role": "Stage 0 Product/IP reviewer",
@@ -90,11 +106,13 @@
         "non-deprecated 16/16-byte HKDF-SHA256 4096-byte streaming construction and one-derived-key-per-stream model",
         "AES256_GCM_TINK_IV12_TAG16 microfiles and exact DORA_RECOVERY_MANIFEST_V1_BINARY_BE parser",
         "four exact big-endian LP16 AAD schemas and the non-deprecated AndroidKeystoreKmsClient Builder path",
-        "13-step durable key-confirmation bootstrap, separate DORAKC01/DORAKA01 schemas and the v0.5 exact ordered eight-class KEY taxonomy with plaintext validation only after decrypt",
+        "13-step durable key-confirmation bootstrap, separate DORAKC01/DORAKA01 schemas and the v0.6 exact ordered eight-class KEY taxonomy with plaintext validation only after decrypt",
+        "the single effective KEY-04 row: all eight preconditions, authentication/AAD failure only, successful decrypt and post-decrypt plaintext mismatch forbidden, and only KEY_UNAVAILABLE_KEY_MISMATCH",
+        "preserved KCF-07 successful-decrypt malformed/wrong-plaintext route returning CORRUPT_KEY_CONFIRMATION, plus pre-decrypt corruption, unusable-alias and later-envelope routing",
         "candidate-specific inherited 9/13/21 publication sequences after bootstrap, semantic endTransaction commit, WAL/FULL SQLite and deterministic UNIQUE processing intent",
         "all nine final and final+'.tmp' path families, key-confirmation reconciliation states, collision/no-overwrite behavior and no name-only temp promotion",
         "candidate-specific K01-K12 public barriers with durable bootstrap prerequisite and immutable v0.3 K12 seeds",
-        "46-row corruption, replay, rollback, KEY-01..KEY-07, KCB-01..06, KCF-01..07, parser/path, quarantine, event and cleanup matrix",
+        "46 unique active effective corruption, replay, rollback, KEY-01..KEY-07, KCB-01..06, KCF-01..07, parser/path, quarantine, event and cleanup rows, with KEY-04 occurring exactly once",
         "separate Phase A 184-injection and full physical 138-injection profiles, exact D2 reuse criteria, and a separate 120-attempt hard-kill denominator",
         "exact ordered canonical REC-RDY-01 through REC-RDY-11 blocker IDs and fail-closed states",
         "later separately scoped implementation and non-metric implementation-verification evidence"

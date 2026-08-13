@@ -1,10 +1,16 @@
-# Задание: повторный exact-HEAD read-only Engineering/Security review POC-RECOVERY-001 v0.5
+# Задание: повторный exact-HEAD read-only Engineering/Security review POC-RECOVERY-001 v0.6
 
 Проведи recovery-scoped Engineering/Security review только exact remediation commit
 governance/readiness package `POC-RECOVERY-001` после disposition `CHANGES_REQUIRED`. Не реализуй
 harness, не добавляй зависимости, не запускай device tests, kill campaign или benchmarks и не
 меняй production `:app`. Reviewer должен быть distinct accountable reviewer; текущая Codex
 remediation не заявляет формальную независимость.
+
+Предыдущий non-formal evidence review: GPT-5.6 Sol, OpenAI, роль `AI documentary advisory
+reviewer`, дата 2026-08-12, reviewed commit
+`eca48ba62acd79007884710395cc40ea21a02611`, `formalReviewer=false`, disposition
+`CHANGES_REQUIRED`. Active v0.6 remediation закрывает только documentary finding
+`REC-REV-20260812-01`; `REC-REV-20260812-02` и `REC-RDY-02` остаются `OPEN_BLOCKING`.
 
 ## Обязательные входы
 
@@ -16,11 +22,11 @@ remediation не заявляет формальную независимост�
 3. релевантные recovery/error-state разделы `docs/DORA_MVP1_DESIGN_SPEC.md`;
 4. `DEC-044` в `docs/DORA_MVP1_PRODUCT_DECISIONS.md` и
    `docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md`;
-5. `docs/evidence/poc-recovery-001/governance-remediation-v0.5.md` и все четыре findings ledgers;
-6. `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_5.md`;
-7. `docs/stage0/poc-recovery-gate-set-stage0-v0.5.json` и
-   `docs/stage0/poc-recovery-protocol-stage0-v0.5.json`;
-8. v0.1/v0.2/v0.3/v0.4 Gate Set Markdown/Gate JSON/protocol JSON только как 12 SHA-256-pinned superseded audit artifacts;
+5. `docs/evidence/poc-recovery-001/governance-remediation-v0.6.md` и все пять findings ledgers;
+6. `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_6.md`;
+7. `docs/stage0/poc-recovery-gate-set-stage0-v0.6.json` и
+   `docs/stage0/poc-recovery-protocol-stage0-v0.6.json`;
+8. v0.1/v0.2/v0.3/v0.4/v0.5 Gate Set Markdown/Gate JSON/protocol JSON только как 15 SHA-256-pinned superseded audit artifacts;
 9. все остальные файлы `docs/evidence/poc-recovery-001/`, кроме этого задания.
 
 Укажи distinct accountable reviewer/роль, дату, exact 40-character remediation commit и подтверди,
@@ -56,7 +62,15 @@ remediation не заявляет формальную независимост�
    no-trailing/protocol/candidate/run/alias-digest mismatch → `CORRUPT_KEY_CONFIRMATION`; missing later
    key reference/envelope → `KEY_UNAVAILABLE`; envelope length/hash/encoding/parser failure →
    `CORRUPT_KEY_ENVELOPE`; structurally valid envelope auth failure →
-   `KEY_ENVELOPE_AUTH_FAILURE`. Побайтно проверь separate
+   `KEY_ENVELOPE_AUTH_FAILURE`. Для единственного effective `KEY-04` отдельно докажи все восемь
+   предусловий v0.6: durable run row; final confirmation; совпавшие path/type/recorded ciphertext
+   length/SHA-256; существующий и доступный через Builder/`getAead` alias; exact active-protocol AAD;
+   controller replacement underlying alias key другим valid AEAD key до recovery при сохранении
+   прежних ciphertext bytes и recorded length/SHA-256; отсутствие создания/замены key recovery;
+   `Aead.decrypt(existingConfirmationCiphertext, exactAad)` authentication/AAD failure. Единственный
+   oracle — `KEY_UNAVAILABLE_KEY_MISMATCH`. Successful decrypt, post-decrypt malformed/wrong
+   plaintext, ciphertext identity corruption и missing/invalidated/unusable alias для `KEY-04`
+   запрещены. Побайтно проверь separate
    `DORAKC01` plaintext / `DORAKA01` AAD schemas и exact 13-step exclusive-create/write/file-fsync/
    rename/directory-fsync/SQLite bootstrap до любой publication.
 6. Проверь semantic commit: successful SQLite `endTransaction()` return после durable data и
@@ -77,10 +91,16 @@ remediation не заявляет формальную независимост�
    `MICROFILE_AFTER_AEAD_RETURN_BEFORE_TEMP_WRITE`, exact K04–K11 publication boundaries, K12
    immutable seeds/canonical result, plus unchanged 120/100/8 counts, allocations and replacement
    rules.
-10. Проверь все 46 строк mandatory fault matrix: 33 inherited rows плюс KCB-01..06, KCF-01..06 и
-    `KCF-07`. Для `KCF-07` malformed plaintext должен быть encrypted правильным alias и AAD с
+10. Проверь ровно 46 unique active effective строк mandatory fault matrix, `KEY-04` ровно один раз:
+    33 исторически inherited ID с v0.6 effective override для `KEY-04`, плюс KCB-01..06,
+    KCF-01..06 и `KCF-07`. Исторический v0.3 `KEY-04` остаётся только immutable superseded audit
+    row и не считается второй active row. Для `KCF-07` malformed/wrong plaintext должен быть
+    encrypted правильным alias и AAD с
     обновлёнными outer length/SHA; decrypt проходит, а post-decrypt exact plaintext validation даёт
-    только `CORRUPT_KEY_CONFIRMATION`. Проверь symlink/path traversal, snapshot rollback, alias
+    только `CORRUPT_KEY_CONFIRMATION`. Проверь, что KCF-07 не смешан с KEY-04, а pre-decrypt
+    path/type/length/hash mismatch даёт `CORRUPT_KEY_CONFIRMATION`, unusable alias —
+    `KEY_UNAVAILABLE`, structurally valid later envelope auth failure —
+    `KEY_ENVELOPE_AUTH_FAILURE`. Проверь symlink/path traversal, snapshot rollback, alias
     replacement, envelope swap и SQLite-commit/controller-event gap.
 11. Проверь exact JAR/POM/transitive hashes, publisher checksums, detached PGP verification,
    fingerprint и upstream trust source по каждой координате, source tag/commit correspondence,
@@ -108,7 +128,7 @@ remediation не заявляет формальную независимост�
 
 - disposition `APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW`, `CHANGES_REQUIRED` или `REJECT`;
 - таблицей по каждому вопросу: evidence, conclusion, required change и blocking/non-blocking level;
-- verdict по каждому owner-selected v0.5 design field: `VERIFIED`, `CHANGES_REQUIRED` или
+- verdict по каждому owner-selected v0.6 design field: `VERIFIED`, `CHANGES_REQUIRED` или
   `REJECTED`; не заполняй implementation/runtime facts без реального отдельного evidence;
 - списком остаточных P0/P1, владельцем и условием закрытия;
 - подтверждением, что никакие implementation/execution/measurement не выполнялись;

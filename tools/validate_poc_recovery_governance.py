@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Fail-closed validation for the governance-only POC-RECOVERY-001 v0.5 package."""
+"""Fail-closed validation for the governance-only POC-RECOVERY-001 v0.6 package."""
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -13,19 +13,13 @@ from typing import Any, Callable
 
 
 ROOT = Path(__file__).resolve().parents[1]
-GATE_ID = "poc-recovery-stage0-v0.5"
-PROTOCOL_ID = "poc-recovery-protocol-stage0-v0.5"
-REVIEWED_V04_HEAD = "c3eae5c3fbe5cba6a96ad827441cfe4e3f1bfc55"
-BASE_HEAD = "849d9d0406a619b334c9b707a4b6b42b34885b4b"
-SQLITE_STATUS = "RECOVERY_STAGE0_V0_5_SQLITE_PROFILE_SELECTED_FRESH_PREFLIGHT_INCOMPLETE"
-JSR_POLICY_ID = "REC-JSR305-EXCLUDE-001"
-TINK_COORDINATE = "com.google.crypto.tink:tink-android:1.23.0"
-JSR_COORDINATE = "com.google.code.findbugs:jsr305:3.0.2"
-R8_RULES = [
-    "-dontwarn javax.annotation.Nullable",
-    "-dontwarn javax.annotation.concurrent.GuardedBy",
-    "-dontwarn javax.annotation.concurrent.ThreadSafe",
-]
+GATE_PATH = "docs/stage0/poc-recovery-gate-set-stage0-v0.6.json"
+PROTOCOL_PATH = "docs/stage0/poc-recovery-protocol-stage0-v0.6.json"
+GATE_ID = "poc-recovery-stage0-v0.6"
+PROTOCOL_ID = "poc-recovery-protocol-stage0-v0.6"
+REVIEWED_V05_HEAD = "eca48ba62acd79007884710395cc40ea21a02611"
+BASE_HEAD = REVIEWED_V05_HEAD
+SQLITE_STATUS = "RECOVERY_STAGE0_V0_6_SQLITE_PROFILE_SELECTED_FRESH_PREFLIGHT_INCOMPLETE"
 
 IMMUTABLE_AUDIT_HASHES = {
     "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_1.md": "d891e033e3e58455dbafd03be5a41ca64cafda93182424357035c37d769ae46e",
@@ -40,6 +34,9 @@ IMMUTABLE_AUDIT_HASHES = {
     "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_4.md": "03521bce76d123d463c86980f1db10b43667b39cea5114810977c8d4940dad0f",
     "docs/stage0/poc-recovery-gate-set-stage0-v0.4.json": "f89d5dff7bcfdcc7f96efd4d1c195b0054e262976db3b722b384c50e4440804c",
     "docs/stage0/poc-recovery-protocol-stage0-v0.4.json": "cfe9d19e7b0e409c1be6a33c4cd240ebdc03e014f0b1abe1b0776aae1ede5eaa",
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_5.md": "ce4980468bfeb7bddadfa58b3ba71b702de4562cc8e264908d19f92fa7638f9c",
+    "docs/stage0/poc-recovery-gate-set-stage0-v0.5.json": "3d1051c85076dda1d8b0c20812c08b7343a7c611ad8c6381d9e80d41724bef93",
+    "docs/stage0/poc-recovery-protocol-stage0-v0.5.json": "9b469562aa8deff2f94402b6fe5093fb832d76ec48f5ef0fd081b76b322c3e9c",
 }
 
 CANONICAL_TAXONOMY = [
@@ -67,87 +64,7 @@ CANONICAL_BLOCKERS = [
     "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY",
 ]
 
-EXPECTED_BLOCKER_OBJECTS = [
-    {
-        "id": "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
-        "priority": "P0",
-        "status": "PROSPECTIVE_POLICY_AND_EXACT_PACKET_EVIDENCE_CLOSED_ACTUAL_GRAPH_FINAL_DISPOSITION_PENDING",
-        "owner": "Project owner",
-        "condition": "Project owner / Stage 0 Product-IP approved REC-JSR305-EXCLUDE-001 and the exact governance packet evidence is verified. The future actual recovery graph/package/R8 evidence and its scoped Product/IP disposition remain open; dependency admission, excluded JSR-305 use/distribution, implementation and execution remain unapproved.",
-    },
-    {
-        "id": "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
-        "priority": "P0",
-        "status": "OPEN_UNASSIGNED",
-        "owner": "Project owner",
-        "condition": "Assign a distinct accountable recovery Engineering/Security reviewer and record a read-only v0.5 disposition including the canonical eight-class KEY algorithm and separate campaign profiles; current Codex remediation is not claimed formally independent.",
-    },
-    {
-        "id": "REC-RDY-03-STREAMING-IMPLEMENTATION-VERIFICATION",
-        "priority": "P0",
-        "status": "OPEN_BY_DESIGN",
-        "owner": "Future recovery implementation and accountable review tasks",
-        "condition": "Implement and non-metrically verify exact public construction, DURABLE_ONE_SEGMENT_LOOKAHEAD, q/R math, read accounting, EOF handling and public barriers.",
-    },
-    {
-        "id": "REC-RDY-04-MICROFILE-IMPLEMENTATION-VERIFICATION",
-        "priority": "P0",
-        "status": "OPEN_BY_DESIGN",
-        "owner": "Future recovery implementation and accountable review tasks",
-        "condition": "Implement and non-metrically verify exact microfile parameters, manifest/AAD parsers, 13-step durable key-confirmation bootstrap, canonical post-decrypt-aware KEY reconciliation, Keystore envelopes, durability, SQLite, path, quarantine and 46-row fault contracts.",
-    },
-    {
-        "id": "REC-RDY-05-FUTURE-RESOLVED-GRAPH",
-        "priority": "P0",
-        "status": "OPEN_BY_DESIGN",
-        "owner": "Future recovery implementation task",
-        "condition": "After separately authorized :poc:recovery scaffolding, enumerate all resolvable compile, runtime, unit-test, androidTest, benchmark and release configurations, packaging/runtime-artifact inputs, dependency locks and verification metadata owned by that module; prove zero resolved com.google.code.findbugs:jsr305:3.0.2 components and zero packaged JSR-305 javax.annotation definitions; verify the Tink-local exclude and exact three-line R8 rule with no broader dontwarn; pass release R8 with no unresolved missing classes and independently resolve javax.lang.model.element.Modifier if present. Existing other-module buildscript/AGP/UTP/lint/tooling and app/capture/search lockfile occurrences are outside this boundary and alone do not block recovery. Any occurrence inside recovery scope fails closed.",
-    },
-    {
-        "id": "REC-RDY-06-DEVICE-SQLITE-PREFLIGHT",
-        "priority": "P0",
-        "status": "OPEN",
-        "owner": "Future authorized preflight task",
-        "condition": "Record exact-commit emulator and D2 SQLite, Keystore and filesystem preflight evidence, including effective WAL/FULL/zero-autocheckpoint/foreign-key values, sqlite_version(), sqlite_source_id() and canonical compile-options digest; any mismatch blocks execution.",
-    },
-    {
-        "id": "REC-RDY-07-HARNESS-ABSENT",
-        "priority": "P0",
-        "status": "OPEN_BY_OWNER_INSTRUCTION",
-        "owner": "Future separately scoped implementation task",
-        "condition": "Obtain separate owner implementation scope, then implement and safely non-metrically verify an isolated common harness only after repeat exact-HEAD read-only review and accountable v0.5 Engineering/Security review.",
-    },
-    {
-        "id": "REC-RDY-08-OWNER-EXECUTION-AUTHORIZATION",
-        "priority": "P0",
-        "status": "WITHHELD",
-        "owner": "Project owner",
-        "condition": "After all other Phase A prerequisites, record a separate authorization that explicitly changes executionAllowed to true.",
-    },
-    {
-        "id": "REC-RDY-09-D1-D5-FULL-VERDICT",
-        "priority": "P1",
-        "status": "DEFERRED",
-        "owner": "Project owner",
-        "condition": "Provide physical D1 and D5 only when a full 138-injection D1/D2/D5 fault profile is later desired; no purchase is required now, and PASS is forbidden while D1/D5 are deferred.",
-    },
-    {
-        "id": "REC-RDY-10-PRODUCTION-LEGAL-SECURITY",
-        "priority": "P1",
-        "status": "OUTSIDE_STAGE0_UNASSIGNED",
-        "owner": "Project owner",
-        "condition": "Assign Production Legal and Production Security before any production admission or redistribution; recovery-scoped approval does not satisfy this.",
-    },
-    {
-        "id": "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY",
-        "priority": "P0",
-        "status": "POLICY_CLOSED_PACKET_EVIDENCE_CLOSED_ACTUAL_FUTURE_GRAPH_OPEN_BLOCKED",
-        "owner": "Project owner / Stage 0 Product-IP",
-        "condition": "State A prospective REC-JSR305-EXCLUDE-001 is CLOSED/APPROVED. State B exact governance authenticity/LICENSE/NOTICE evidence is CLOSED/VERIFIED, including immutable JetBrains annotations LICENSE/NOTICE; excluded jsr305:3.0.2 terms remain uninterpreted and use/distribution unapproved. State C future actual :poc:recovery graph/package/R8 evidence and scoped Product/IP disposition is OPEN/BLOCKED. Readiness requires absence in recovery scope, not approval to use the excluded artifact; no dependency or production admission is implied.",
-    },
-]
-
-INHERITED_FAULT_IDS = {
+EXPECTED_FAULT_IDS = [
     *(f"COR-{index:02d}" for index in range(1, 7)),
     *(f"TRU-{index:02d}" for index in range(1, 4)),
     *(f"KEY-{index:02d}" for index in range(1, 8)),
@@ -156,12 +73,48 @@ INHERITED_FAULT_IDS = {
     "QUA-01", "QUA-02", "QUA-03",
     "IDE-01", "IDE-02", "EVT-01",
     "CLN-01", "CLN-02", "CLN-03",
-}
-V04_FAULT_IDS = {
     *(f"KCB-{index:02d}" for index in range(1, 7)),
-    *(f"KCF-{index:02d}" for index in range(1, 7)),
+    *(f"KCF-{index:02d}" for index in range(1, 8)),
+]
+
+KEY04_PRECONDITIONS = [
+    "A durable run row exists.",
+    "The key-confirmation final exists.",
+    "The key-confirmation path, type, recorded ciphertext length and recorded ciphertext SHA-256 fully match.",
+    "The Android Keystore alias exists and is available through the approved Builder/getAead path.",
+    "The exact confirmation AAD is computed under the active protocol.",
+    "Before recovery, the fault controller replaces the underlying alias key with another valid AEAD key while preserving the previous confirmation ciphertext bytes and their recorded length and SHA-256.",
+    "Recovery does not create or replace the key.",
+    "Aead.decrypt(existingConfirmationCiphertext, exactAad) terminates with an authentication/AAD failure.",
+]
+
+KEY04_FORBIDDEN = {
+    "SUCCESSFUL_DECRYPT",
+    "MALFORMED_DECRYPTED_PLAINTEXT",
+    "WRONG_MAGIC_AFTER_SUCCESSFUL_DECRYPT",
+    "WRONG_SCHEMA_AFTER_SUCCESSFUL_DECRYPT",
+    "WRONG_PROTOCOL_ID_AFTER_SUCCESSFUL_DECRYPT",
+    "WRONG_CANDIDATE_ID_AFTER_SUCCESSFUL_DECRYPT",
+    "WRONG_RUN_ID_AFTER_SUCCESSFUL_DECRYPT",
+    "WRONG_CANONICAL_ALIAS_SHA256_AFTER_SUCCESSFUL_DECRYPT",
+    "CIPHERTEXT_PATH_CORRUPTION",
+    "CIPHERTEXT_TYPE_CORRUPTION",
+    "CIPHERTEXT_RECORDED_LENGTH_CORRUPTION",
+    "CIPHERTEXT_RECORDED_SHA256_CORRUPTION",
+    "MISSING_ALIAS",
+    "INVALIDATED_ALIAS",
+    "UNUSABLE_ALIAS",
 }
-EXPECTED_FAULT_IDS = INHERITED_FAULT_IDS | V04_FAULT_IDS | {"KCF-07"}
+
+KCF07_POST_DECRYPT_FAILURES = [
+    "malformed plaintext",
+    "wrong magic",
+    "wrong schema",
+    "wrong protocolId",
+    "wrong candidateId",
+    "wrong runId",
+    "wrong canonicalAliasSha256",
+]
 
 
 def require(condition: bool, message: str) -> None:
@@ -184,811 +137,464 @@ def sha256(relative: str) -> str:
 
 
 def validate_immutable_history(gate: dict[str, Any], protocol: dict[str, Any]) -> None:
+    require(len(IMMUTABLE_AUDIT_HASHES) == 15, "Historical hash registry must contain 15 artifacts")
     for relative, expected in IMMUTABLE_AUDIT_HASHES.items():
         require(sha256(relative) == expected, f"Superseded audit artifact changed: {relative}")
 
     retained = gate["retainedAuditArtifacts"]
     require(
         [item["version"] for item in retained]
-        == [f"poc-recovery-stage0-v0.{version}" for version in range(1, 5)],
-        "Gate Set v0.1-v0.4 retained history drift",
+        == [f"poc-recovery-stage0-v0.{version}" for version in range(1, 6)],
+        "Gate Set v0.1-v0.5 retained history drift",
     )
     recorded: dict[str, str] = {}
     for item in retained:
-        require(
-            item["disposition"] == "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE",
-            "A retained recovery version became executable",
-        )
-        for locator_key, digest_key in (
-            ("markdownLocator", "markdownSha256"),
-            ("gateLocator", "gateSha256"),
-            ("protocolLocator", "protocolSha256"),
-        ):
-            recorded[item[locator_key]] = item[digest_key]
-    require(recorded == IMMUTABLE_AUDIT_HASHES, "Gate Set immutable v0.1-v0.4 hashes drift")
+        require(item["disposition"] == "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE", "Historical version became executable")
+        recorded[item["markdownLocator"]] = item["markdownSha256"]
+        recorded[item["gateLocator"]] = item["gateSha256"]
+        recorded[item["protocolLocator"]] = item["protocolSha256"]
+    require(recorded == IMMUTABLE_AUDIT_HASHES, "Recorded v0.1-v0.5 SHA-256 pins drift")
 
-    inherited_gate = gate["inheritsExactV04GateSet"]
+    gate_parent = gate["inheritsExactV05GateSet"]
     require(
-        inherited_gate["locator"] == "docs/stage0/poc-recovery-gate-set-stage0-v0.4.json"
-        and inherited_gate["sha256"] == IMMUTABLE_AUDIT_HASHES[inherited_gate["locator"]]
-        and inherited_gate["allUnchangedSemanticsInherited"] is True
-        and inherited_gate["overriddenSections"]
-        == [
-            "active identity and metadata",
-            "retained audit artifacts and findings ledgers",
-            "key-confirmation taxonomy summary",
-            "mandatory fault rows and campaign profiles",
-            "canonical blocker IDs",
-        ],
-        "v0.5 exact v0.4 Gate Set inheritance boundary drift",
+        gate_parent["locator"] == "docs/stage0/poc-recovery-gate-set-stage0-v0.5.json"
+        and gate_parent["sha256"] == IMMUTABLE_AUDIT_HASHES[gate_parent["locator"]]
+        and gate_parent["allUnchangedSemanticsInherited"] is True,
+        "v0.6 Gate Set inheritance drift",
     )
-
-    inherited = protocol["inheritsExactV04Contract"]
+    protocol_parent = protocol["inheritsExactV05Contract"]
     require(
-        inherited["locator"] == "docs/stage0/poc-recovery-protocol-stage0-v0.4.json"
-        and inherited["sha256"] == IMMUTABLE_AUDIT_HASHES[inherited["locator"]]
-        and inherited["allUnchangedSemanticsInherited"] is True
-        and inherited["overriddenSections"]
-        == ["recoveryTaxonomyV04", "reconciliationAmendment", "faultCampaign"],
-        "v0.5 exact v0.4 inheritance boundary drift",
+        protocol_parent["locator"] == "docs/stage0/poc-recovery-protocol-stage0-v0.5.json"
+        and protocol_parent["sha256"] == IMMUTABLE_AUDIT_HASHES[protocol_parent["locator"]]
+        and protocol_parent["allUnchangedSemanticsInherited"] is True,
+        "v0.6 protocol inheritance drift",
     )
-
-
-def validate_blockers(gate: dict[str, Any], readiness: dict[str, Any]) -> None:
-    gate_ids = gate["blockers"]
-    readiness_ids = [item["id"] for item in readiness["blockers"]]
-    require(len(gate_ids) == len(set(gate_ids)), "Duplicate Gate Set blocker ID")
-    require(len(readiness_ids) == len(set(readiness_ids)), "Duplicate readiness blocker ID")
-    require(gate_ids == CANONICAL_BLOCKERS, "Gate Set blocker IDs are not exact canonical order")
-    require(readiness_ids == CANONICAL_BLOCKERS, "Gate Set/readiness blocker ID lists differ")
+    historical = protocol["historicalProtocolV03"]
     require(
-        set(gate_ids) == set(CANONICAL_BLOCKERS),
-        "Unknown, extra or missing blocker ID",
-    )
-    require(
-        gate["blockerStateSource"] == "docs/evidence/poc-recovery-001/readiness.json",
-        "Gate Set blocker state source drift",
-    )
-    require(
-        readiness["blockers"] == EXPECTED_BLOCKER_OBJECTS,
-        "Readiness blocker status/priority/owner/condition objects drift",
-    )
-
-
-def validate_gate(gate: dict[str, Any]) -> None:
-    require(
-        gate["schemaVersion"] == 5
-        and gate["pocId"] == "POC-RECOVERY-001"
-        and gate["gateSetVersion"] == GATE_ID
-        and gate["protocolId"] == PROTOCOL_ID,
-        "Active v0.5 Gate Set identity drift",
-    )
-    require(
-        gate["executionAllowed"] is False and gate["implementationAllowed"] is False,
-        "Gate Set authorized implementation/execution",
-    )
-    require(
-        gate["supersedes"]
-        == {
-            "gateSetVersion": "poc-recovery-stage0-v0.4",
-            "disposition": "SUPERSEDED_AUDIT_ARTIFACT_NON_EXECUTABLE",
-            "reviewedCommit": REVIEWED_V04_HEAD,
-        },
-        "v0.4 supersession record drift",
-    )
-    require(
-        gate["findingsLedgers"][-1].endswith("review-findings-v0.4.json"),
-        "v0.4 advisory ledger missing",
-    )
-    require(
-        all(value is False for value in gate["scope"].values() if isinstance(value, bool)),
-        "Governance-only scope widened",
-    )
-    authorization = gate["executionAuthorization"]
-    require(
-        authorization
-        == {
-            "status": "WITHHELD_PENDING_SEPARATE_OWNER_AUTHORIZATION",
-            "authorizedBy": None,
-            "authorizedOn": None,
-            "authorizationRecord": None,
-            "implicitFlipForbidden": True,
-        },
-        "Execution authorization boundary drift",
-    )
-    approvals = gate["approvalState"]
-    require(
-        approvals["prospectivePolicyApproved"] is True
-        and approvals["governanceAuthenticityAndLicenseEvidenceVerified"] is True
-        and approvals["actualFutureGraphProductIpDisposition"]
-        == "OPEN_BLOCKED_UNTIL_AUTHORIZED_IMPLEMENTATION_GRAPH_EXISTS"
-        and approvals["productIpFinalApproval"] is False
-        and approvals["accountableIndependentEngineeringSecurityReviewer"] is None
-        and approvals["currentCodexReviewClaimedFormallyIndependent"] is False
-        and approvals["productionLegalReviewer"] is None
-        and approvals["productionSecurityReviewer"] is None,
-        "Approval/reviewer fail-closed state drift",
-    )
-    product = gate["productIpStates"]
-    require(
-        product
-        == {
-            "stateAProspectivePolicy": "CLOSED_APPROVED",
-            "stateBGovernanceEvidence": "CLOSED_VERIFIED",
-            "stateCFutureActualGraphPackageR8Disposition": "OPEN_BLOCKED",
-            "jsr305UseOrDistributionApproved": False,
-            "dependencyAdmission": False,
-            "productionAdmission": False,
-        },
-        "Three-state Product/IP contract drift",
-    )
-    key_gate = gate["keyConfirmationGate"]
-    require(
-        key_gate["canonicalUniqueClassificationCount"] == 8
-        and key_gate["recoveryDecisionStepCount"] == 9
-        and key_gate["plaintextValidationPhase"] == "POST_DECRYPT_ONLY"
-        and key_gate["inheritedV04MandatoryFaultRows"] == 12
-        and key_gate["mandatoryFaultRowsAddedV05"] == 1,
-        "Key-confirmation Gate Set summary drift",
-    )
-    require(
-        gate["mandatoryFaultRowCount"] == 46
-        and len(gate["mandatoryFaultIds"]) == 46
-        and set(gate["mandatoryFaultIds"]) == EXPECTED_FAULT_IDS,
-        "Gate Set mandatory 46-row fault IDs drift",
-    )
-    validate_campaigns(gate["faultCampaignProfiles"])
-
-
-def validate_taxonomy(protocol: dict[str, Any]) -> None:
-    taxonomy = protocol["canonicalKeyTaxonomyV05"]
-    classifications = taxonomy["uniqueClassifications"]
-    require(classifications == CANONICAL_TAXONOMY, "Canonical KEY taxonomy order drift")
-    require(len(classifications) == len(set(classifications)) == 8, "Canonical taxonomy must have exactly eight unique classifications")
-    require(taxonomy["uniqueClassificationCount"] == 8, "Canonical classification count drift")
-    new_run = taxonomy["newRunCreation"]
-    require(
-        new_run["mustExecuteBeforeCreatingRun"] is True
-        and len(new_run["occupiedNamespacesChecked"]) == 4
-        and new_run["anyOccupiedClassification"] == "KEY_REF_COLLISION"
-        and new_run["overwriteOrReplacementAllowed"] is False,
-        "New-run collision algorithm drift",
-    )
-    algorithm = taxonomy["recoveryReconciliationAlgorithm"]
-    require([item["step"] for item in algorithm] == list(range(1, 10)), "Recovery algorithm step order drift")
-    require(
-        [item["classification"] for item in algorithm]
-        == [
-            "INCOMPLETE_KEY_BOOTSTRAP",
-            "KEY_CONFIRMATION_MISSING",
-            "CORRUPT_KEY_CONFIRMATION",
-            "KEY_UNAVAILABLE",
-            "KEY_UNAVAILABLE_KEY_MISMATCH",
-            "CORRUPT_KEY_CONFIRMATION",
-            "KEY_UNAVAILABLE",
-            "CORRUPT_KEY_ENVELOPE",
-            "KEY_ENVELOPE_AUTH_FAILURE",
-        ],
-        "Recovery algorithm classification order drift",
-    )
-    require(algorithm[2]["decryptAllowed"] is False, "Stored-identity mismatch must forbid decrypt")
-    require(algorithm[4]["replacementKeyAllowed"] is False, "Decrypt mismatch must forbid replacement key")
-    require(algorithm[5]["validationPhase"] == "POST_DECRYPT_ONLY", "Plaintext validation moved before decrypt")
-    require(
-        taxonomy["plaintextMagicSchemaParserOrTrailingValidationBeforeDecryptAllowed"] is False
-        and taxonomy["ambiguousExpectedOutcomeAllowed"] is False,
-        "Taxonomy allows pre-decrypt plaintext validation or ambiguity",
-    )
-    conditions = " ".join(item["condition"] for item in algorithm)
-    for fragment in (
-        "durable run row is absent",
-        "recorded ciphertext length",
-        "alias is absent, invalidated or unusable",
-        "Aead.decrypt() ends in authentication or AAD failure",
-        "bounded plaintext parser, magic, schema, no-trailing-bytes",
-        "mandatory subsequent key reference or key envelope is absent",
-        "length, SHA-256, encoding or parser validation fails",
-        "AEAD, AAD or tag verification fails",
-    ):
-        require(fragment in conditions, f"Recovery algorithm is missing: {fragment}")
-
-    reconciliation = protocol["reconciliationV05"]
-    require(len(reconciliation) == 10, "Reconciliation state coverage drift")
-    require("POST_DECRYPT" not in " ".join(reconciliation).upper(), "Reconciliation key names must remain state-oriented")
-    require(
-        "only after successful decrypt" in reconciliation["CONFIRMATION_DECRYPTED_PLAINTEXT_INVALID"],
-        "Post-decrypt reconciliation boundary missing",
+        historical["sha256"] == IMMUTABLE_AUDIT_HASHES[historical["locator"]]
+        and historical["immutable"] is True
+        and historical["historicalKey04Changed"] is False
+        and historical["historicalRowsParticipateAsAdditionalActiveRows"] is False,
+        "Historical v0.3/KEY-04 boundary drift",
     )
 
 
 def validate_campaigns(campaigns: dict[str, Any]) -> None:
     phase = campaigns["phaseA"]
-    full = campaigns["fullPhysicalCampaign"]
-    reuse = campaigns["d2Reuse"]
     require(
         phase["rows"] == 46
         and phase["perRow"] == {"PINNED_API36_X86_64_EMULATOR": 3, "PHYSICAL_D2": 1}
-        and phase["emulatorInjections"] == 46 * 3 == 138
+        and phase["emulatorInjections"] == 138
         and phase["physicalD2Injections"] == 46
-        and phase["phaseATotalInjections"] == 46 * 4 == 184
+        and phase["phaseATotalInjections"] == 184
         and phase["allowedVerdicts"] == ["FAIL", "INCONCLUSIVE"]
         and phase["passAllowed"] is False,
-        "Phase A profile/arithmetic drift",
+        "Phase A count/verdict drift",
     )
+    full = campaigns["fullPhysicalCampaign"]
     require(
         full["rows"] == 46
         and full["perRow"] == {"PHYSICAL_D1": 1, "PHYSICAL_D2": 1, "PHYSICAL_D5": 1}
-        and full["fullPhysicalTotalInjections"] == 46 * 3 == 138
-        and full["passRequiresCompleteD1D2D5Profile"] is True
-        and full["D1AndD5Deferred"] is True,
-        "Full physical campaign profile/arithmetic drift",
+        and full["fullPhysicalTotalInjections"] == 138
+        and full["passRequiresCompleteD1D2D5Profile"] is True,
+        "Full physical count/profile drift",
     )
     require(
-        all(value is True for key, value in reuse.items() if key.startswith("allowedOnlyIf"))
-        and reuse["otherwiseRepeatD2"] is True
-        and reuse["additionalD1D5InjectionsWithValidReuse"] == 46 * 2 == 92,
-        "D2 reuse criteria/arithmetic drift",
+        campaigns.get("hardKillAttemptsPerCandidate", campaigns.get("hardKillCampaign", {}).get("attemptsPerCandidate")) == 120,
+        "Hard-kill attempts/candidate drift",
+    )
+    separate = campaigns.get("separateFromHardKillDenominator")
+    if separate is None:
+        separate = campaigns["hardKillCampaign"]["separateFromFaultInjectionDenominators"]
+    require(separate is True, "Hard-kill denominator was merged with fault injections")
+
+
+def validate_gate(gate: dict[str, Any]) -> None:
+    require(
+        gate["schemaVersion"] == 6
+        and gate["pocId"] == "POC-RECOVERY-001"
+        and gate["gateSetVersion"] == GATE_ID
+        and gate["protocolId"] == PROTOCOL_ID,
+        "Active v0.6 Gate Set identity drift",
+    )
+    require(gate["implementationAllowed"] is False and gate["executionAllowed"] is False, "Gate Set authorized work")
+    require(all(value is False for value in gate["scope"].values() if isinstance(value, bool)), "Governance-only scope widened")
+    require(
+        gate["supersedes"] == {
+            "gateSetVersion": "poc-recovery-stage0-v0.5",
+            "disposition": "SUPERSEDED_SHA256_PINNED_AUDIT_ARTIFACT_NON_EXECUTABLE",
+            "reviewedCommit": REVIEWED_V05_HEAD,
+        },
+        "v0.5 supersession record drift",
+    )
+    require(gate["findingsLedgers"][-1].endswith("review-findings-v0.5.json"), "v0.5 review ledger missing")
+    approval = gate["approvalState"]
+    require(
+        approval["actualFutureGraphProductIpDisposition"].startswith("OPEN_BLOCKED")
+        and approval["productIpFinalApproval"] is False
+        and approval["accountableIndependentEngineeringSecurityReviewer"] is None
+        and approval["advisoryDocumentaryReviewIsFormal"] is False
+        and approval["currentCodexReviewClaimedFormallyIndependent"] is False
+        and approval["productionLegalReviewer"] is None
+        and approval["productionSecurityReviewer"] is None,
+        "Approval/reviewer boundary drift",
+    )
+    advisory = gate["advisoryReviewEvidence"]
+    require(
+        advisory == {
+            "reviewer": "GPT-5.6 Sol",
+            "organization": "OpenAI",
+            "role": "AI documentary advisory reviewer",
+            "reviewDate": "2026-08-12",
+            "reviewedCommit": REVIEWED_V05_HEAD,
+            "formalReviewer": False,
+            "disposition": "CHANGES_REQUIRED",
+            "closesRecRdy02": False,
+        },
+        "Advisory review evidence drift",
     )
     require(
-        campaigns["hardKillAttemptsPerCandidate"] == 120
-        and campaigns["separateFromHardKillDenominator"] is True
-        and campaigns["existingRepetitionsValidityCriteriaAndFailureGatesWeakened"] is False,
-        "Hard-kill denominator or inherited gates drift",
+        gate["reviewFindings"] == {
+            "REC-REV-20260812-01": "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE",
+            "REC-REV-20260812-02": "OPEN_BLOCKING",
+        },
+        "Review finding dispositions drift",
+    )
+    ids = gate["mandatoryFaultIds"]
+    require(gate["mandatoryFaultRowCount"] == 46 and ids == EXPECTED_FAULT_IDS, "Gate fault ID order/count drift")
+    require(len(ids) == len(set(ids)) == 46 and ids.count("KEY-04") == 1, "Gate fault IDs are not 46 unique/one KEY-04")
+    key_gate = gate["keyConfirmationGate"]
+    require(
+        key_gate["mandatoryFaultRowsAddedV06"] == 0
+        and key_gate["effectiveFaultRowsOverriddenV06"] == 1
+        and key_gate["effectiveKey04ExpectedClassification"] == "KEY_UNAVAILABLE_KEY_MISMATCH"
+        and key_gate["effectiveKey04SuccessfulDecryptAllowed"] is False
+        and key_gate["effectiveKey04PostDecryptPlaintextMismatchAllowed"] is False,
+        "Gate KEY-04 summary drift",
+    )
+    matrix = gate["activeEffectiveFaultMatrix"]
+    require(
+        matrix["requiredUniqueRowCount"] == 46
+        and matrix["key04RequiredOccurrenceCount"] == 1
+        and matrix["historicalRowsAreAdditionalActiveRows"] is False,
+        "Gate active matrix contract drift",
+    )
+    validate_campaigns(gate["faultCampaignProfiles"])
+    require(gate["blockers"] == CANONICAL_BLOCKERS, "Gate blocker order drift")
+
+
+def effective_rows(protocol: dict[str, Any]) -> list[dict[str, Any]]:
+    return protocol["faultCampaign"]["activeEffectiveFaultMatrixV06"]["rows"]
+
+
+def validate_key04_and_kcf07(protocol: dict[str, Any]) -> None:
+    rows = effective_rows(protocol)
+    ids = [row["id"] for row in rows]
+    require(len(rows) == len(set(ids)) == 46 and ids == EXPECTED_FAULT_IDS, "Active matrix must have 46 unique canonical IDs")
+    require(all(row["effective"] is True for row in rows), "Active matrix contains a non-effective row")
+    require(ids.count("KEY-04") == 1, "Active matrix must contain KEY-04 exactly once")
+    key04 = next(row for row in rows if row["id"] == "KEY-04")
+    require(key04["effectiveSource"] == "V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE", "KEY-04 is not the v0.6 override")
+    require(key04["preconditions"] == KEY04_PRECONDITIONS, "KEY-04 exact preconditions drift")
+    require(key04["decryptOutcome"] == "AUTHENTICATION_OR_AAD_FAILURE_ONLY", "KEY-04 permits a non-auth decrypt outcome")
+    require(key04["successfulDecryptAllowed"] is False, "KEY-04 permits successful decrypt")
+    require(key04["postDecryptParserOrPlaintextMismatchAllowed"] is False, "KEY-04 permits post-decrypt mismatch")
+    require(
+        key04["expectedClassification"] == "KEY_UNAVAILABLE_KEY_MISMATCH"
+        and key04["expectedClassificationAlternativesAllowed"] is False,
+        "KEY-04 expected classification is not strict",
+    )
+    require(set(key04["forbiddenInterpretations"]) == KEY04_FORBIDDEN, "KEY-04 forbidden interpretations drift")
+    replacement = key04["replacesInheritedHistoricalRow"]
+    require(
+        replacement["historicalRowModified"] is False
+        and replacement["historicalRowActiveInAdditionToThisRow"] is False
+        and replacement["sha256"] == IMMUTABLE_AUDIT_HASHES[replacement["locator"]],
+        "KEY-04 historical replacement boundary drift",
+    )
+
+    kcf07 = next(row for row in rows if row["id"] == "KCF-07")
+    require(
+        kcf07["effectiveSource"] == "V0_5_CASE_INHERITED_UNCHANGED"
+        and "Aead.decrypt() succeeds" in kcf07["requiredObservation"]
+        and kcf07["coveredPostDecryptFailures"] == KCF07_POST_DECRYPT_FAILURES
+        and kcf07["expectedClassification"] == "CORRUPT_KEY_CONFIRMATION",
+        "KCF-07 successful-decrypt malformed-plaintext oracle drift",
+    )
+    routing = protocol["faultCampaign"]["effectiveKey04Routing"]
+    require(
+        routing["successfulDecryptWithMalformedOrWrongPlaintext"] == {"faultRow": "KCF-07", "classification": "CORRUPT_KEY_CONFIRMATION"}
+        and routing["ciphertextPathTypeLengthOrHashMismatch"] == {"stage": "PRE_DECRYPT", "classification": "CORRUPT_KEY_CONFIRMATION"}
+        and routing["missingInvalidatedOrUnusableAlias"] == {"classification": "KEY_UNAVAILABLE"}
+        and routing["structurallyValidLaterKeyEnvelopeAeadAadOrTagFailureAfterValidConfirmation"] == {"classification": "KEY_ENVELOPE_AUTH_FAILURE"},
+        "KEY-04 neighboring failure routing drift",
     )
 
 
 def validate_protocol(protocol: dict[str, Any]) -> None:
     require(
-        protocol["schemaVersion"] == 5
+        protocol["schemaVersion"] == 6
         and protocol["protocolId"] == PROTOCOL_ID
-        and protocol["pocId"] == "POC-RECOVERY-001",
-        "Active v0.5 protocol identity drift",
+        and protocol["pocId"] == "POC-RECOVERY-001"
+        and protocol["implementationAllowed"] is False
+        and protocol["executionAllowed"] is False,
+        "Active v0.6 protocol identity/authority drift",
     )
+    taxonomy = protocol["canonicalKeyTaxonomyV06"]
     require(
-        protocol["implementationAllowed"] is False and protocol["executionAllowed"] is False,
-        "Protocol authorized implementation/execution",
+        taxonomy["uniqueClassifications"] == CANONICAL_TAXONOMY
+        and taxonomy["uniqueClassificationCount"] == 8
+        and taxonomy["plaintextMagicSchemaParserOrTrailingValidationBeforeDecryptAllowed"] is False
+        and taxonomy["ambiguousExpectedOutcomeAllowed"] is False,
+        "Canonical taxonomy drift",
     )
-    validate_taxonomy(protocol)
+    algorithm = taxonomy["recoveryReconciliationAlgorithm"]
+    require([step["step"] for step in algorithm] == list(range(1, 10)), "Recovery algorithm order drift")
+    require([step["classification"] for step in algorithm] == [
+        "INCOMPLETE_KEY_BOOTSTRAP", "KEY_CONFIRMATION_MISSING", "CORRUPT_KEY_CONFIRMATION",
+        "KEY_UNAVAILABLE", "KEY_UNAVAILABLE_KEY_MISMATCH", "CORRUPT_KEY_CONFIRMATION",
+        "KEY_UNAVAILABLE", "CORRUPT_KEY_ENVELOPE", "KEY_ENVELOPE_AUTH_FAILURE",
+    ], "Recovery algorithm classification drift")
+    validate_key04_and_kcf07(protocol)
     fault = protocol["faultCampaign"]
     require(
-        (fault["inheritedV03MandatoryRows"], fault["addedV04KeyConfirmationRows"], fault["addedV05MandatoryRows"], fault["mandatoryFaultRowCount"])
-        == (33, 12, 1, 46),
-        "Protocol fault row totals drift",
+        fault["mandatoryFaultRowCount"] == 46
+        and fault["addedV06MandatoryRows"] == 0
+        and fault["overriddenV06EffectiveRows"] == 1,
+        "Protocol fault count/override drift",
     )
-    case = fault["newV05Case"]
+    matrix_meta = fault["activeEffectiveFaultMatrixV06"]
     require(
-        case["id"] == "KCF-07"
-        and "malformed key-confirmation plaintext" in case["injection"]
-        and "correct current alias and exact AAD" in case["injection"]
-        and "outer ciphertext length and SHA-256" in case["injection"]
-        and "Aead.decrypt() succeeds" in case["requiredObservation"]
-        and case["expected"] == "post-decrypt exact plaintext validation returns CORRUPT_KEY_CONFIRMATION"
-        and case["replacementKeyAllowed"] is False,
-        "KCF-07 fault oracle drift",
+        matrix_meta["rowCount"] == 46
+        and matrix_meta["uniqueIdsRequired"] is True
+        and matrix_meta["key04OccurrenceCountRequired"] == 1
+        and matrix_meta["historicalRowsAreAdditionalActiveRows"] is False,
+        "Active matrix metadata drift",
     )
-    overrides = fault["inheritedV04CaseOracleOverrides"]
+    validate_campaigns(fault)
+    require(protocol["canonicalBlockerIds"] == CANONICAL_BLOCKERS, "Protocol blocker IDs drift")
+    evidence = protocol["reviewEvidence"]
     require(
-        [item["id"] for item in overrides]
-        == [*(f"KCB-{index:02d}" for index in range(1, 7)), *(f"KCF-{index:02d}" for index in range(1, 7))],
-        "Inherited v0.4 fault-oracle override IDs drift",
-    )
-    override_map = {item["id"]: item["expected"] for item in overrides}
-    require(
-        all(override_map[f"KCB-{index:02d}"].startswith("INCOMPLETE_KEY_BOOTSTRAP") for index in range(1, 6))
-        and override_map["KCB-06"].startswith("VALID_DURABLE_BOOTSTRAP")
-        and override_map["KCF-01"].startswith("KEY_CONFIRMATION_MISSING")
-        and all("decrypt forbidden" in override_map[f"KCF-{index:02d}"] for index in (2, 3))
-        and all(override_map[f"KCF-{index:02d}"].startswith("KEY_UNAVAILABLE_KEY_MISMATCH") for index in (4, 5))
-        and "no exact-plaintext alternative" in override_map["KCF-04"]
-        and override_map["KCF-06"].startswith("KEY_REF_COLLISION"),
-        "Inherited v0.4 fault-oracle classifications drift",
-    )
-    validate_protocol_campaigns(fault)
-    require(protocol["canonicalBlockerIds"] == CANONICAL_BLOCKERS, "Protocol canonical blockers drift")
-    require(
-        protocol["evidencePolicy"]
-        == {
-            "formalReviewer": False,
-            "accountableEngineeringSecurityReviewer": None,
-            "productionLegalReviewer": None,
-            "productionSecurityReviewer": None,
-            "futureExecutionEvidenceAllowedByThisProtocol": False,
-        },
-        "Protocol reviewer/evidence boundary drift",
+        evidence["reviewer"] == "GPT-5.6 Sol"
+        and evidence["organization"] == "OpenAI"
+        and evidence["formalReviewer"] is False
+        and evidence["disposition"] == "CHANGES_REQUIRED"
+        and evidence["closesRecRdy02"] is False
+        and evidence["recRev2026081201Disposition"] == "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE"
+        and evidence["recRev2026081202Disposition"] == "OPEN_BLOCKING",
+        "Protocol review evidence drift",
     )
 
 
-def validate_protocol_campaigns(fault: dict[str, Any]) -> None:
-    phase = fault["phaseA"]
-    full = fault["fullPhysicalCampaign"]
-    reuse = fault["phaseAD2ReuseForFullPhysicalCampaign"]
-    require(
-        phase["rows"] == 46
-        and phase["perRow"] == {"PINNED_API36_X86_64_EMULATOR": 3, "PHYSICAL_D2": 1}
-        and phase["phaseATotalInjections"] == 184
-        and phase["allowedVerdicts"] == ["FAIL", "INCONCLUSIVE"]
-        and phase["passAllowed"] is False,
-        "Protocol Phase A drift",
-    )
-    require(
-        full["rows"] == 46
-        and full["perRow"] == {"PHYSICAL_D1": 1, "PHYSICAL_D2": 1, "PHYSICAL_D5": 1}
-        and full["fullPhysicalTotalInjections"] == 138
-        and full["D1Status"] == full["D5Status"] == "DEFERRED"
-        and full["passRequiresCompleteD1D2D5Profile"] is True,
-        "Protocol full physical profile drift",
-    )
-    require(
-        reuse["allowedOnlyWhenAllMatch"]
-        == [
-            "exact commit",
-            "protocol and Gate Set version",
-            "fixture digest",
-            "injection definition",
-            "device identity and profile",
-            "fresh preflight",
-            "validity criteria",
-        ]
-        and reuse["otherwiseRepeatD2"] is True
-        and reuse["additionalD1D5InjectionsWhenReuseAllowed"] == 92,
-        "Protocol D2 reuse contract drift",
-    )
-    require(
-        fault["hardKillCampaign"] == {
-            "attemptsPerCandidate": 120,
-            "separateFromFaultInjectionDenominators": True,
-        }
-        and fault["existingRepetitionsValidityCriteriaAndFailureGatesWeakened"] is False,
-        "Protocol hard-kill/inherited fault gates drift",
-    )
-
-
-def current_lockfile_occurrences() -> set[tuple[str, str]]:
-    result: set[tuple[str, str]] = set()
-    pattern = re.compile(r"^(com\.google\.(?:code\.findbugs:jsr305|crypto\.tink:tink):[^=]+)=")
-    for path in (ROOT / "android").rglob("gradle.lockfile"):
-        for line in path.read_text(encoding="utf-8").splitlines():
-            match = pattern.match(line)
-            if match:
-                result.add((path.relative_to(ROOT).as_posix(), match.group(1)))
-    return result
-
-
-def validate_dependency_boundary() -> None:
-    inventory = read_json("docs/evidence/poc-recovery-001/dependency-inventory.json")
-    base = read_json("docs/evidence/poc-recovery-001/base-lockfile-tooling-inventory-2026-08-12.json")
-    analysis = read_json("docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.json")
-    authenticity = read_json("docs/evidence/poc-recovery-001/dependency-ip-authenticity-v0.3.json")
-    require(inventory["dependencyAdmission"] is False and inventory["runtimeGraphModified"] is False, "Dependency inventory admitted a runtime graph")
-    require(base["boundaryId"] == JSR_POLICY_ID and base["baseCommit"] == BASE_HEAD, "Base recovery boundary identity drift")
-    require(
-        {(item["lockfile"], item["coordinate"]) for item in base["existingBaseLockfileOccurrences"]}
-        == current_lockfile_occurrences(),
-        "Base Tink/JSR305 lockfile occurrence inventory drift",
-    )
-    require(
-        analysis["prospectivePolicy"]["status"] == "APPROVED_PROSPECTIVE_POLICY_ONLY"
-        and analysis["prospectivePolicy"]["requiredResolvedComponentCount"] == 0
-        and analysis["prospectivePolicy"]["requiredR8Rules"] == R8_RULES,
-        "Prospective JSR305 exclusion policy drift",
-    )
-    require(
-        authenticity["approvalBoundary"]["futureActualGraphProductIpDisposition"] == "OPEN_BLOCKED"
-        and authenticity["approvalBoundary"]["dependencyAdmission"] is False
-        and authenticity["approvalBoundary"]["productionAdmission"] is False,
-        "Authenticity approval boundary drift",
-    )
-    require(not (ROOT / "android" / "poc" / "recovery").exists(), "android/poc/recovery exists in governance-only package")
-    require(":poc:recovery" not in read_text("android/settings.gradle.kts"), "Recovery module is included in settings")
-    gradle_inputs = [
-        *(ROOT / "android").rglob("*.gradle"),
-        *(ROOT / "android").rglob("*.gradle.kts"),
-        ROOT / "android" / "gradle" / "libs.versions.toml",
-    ]
-    contaminated = [
-        path.relative_to(ROOT).as_posix()
-        for path in gradle_inputs
-        if path.is_file()
-        and TINK_COORDINATE in path.read_text(encoding="utf-8")
-    ]
-    require(not contaminated, f"tink-android:1.23.0 was wired: {contaminated}")
-    diff = subprocess.run(
-        ["git", "diff", "--name-only", BASE_HEAD, "--", "android"],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        check=False,
-    )
-    require(diff.returncode == 0, f"Unable to compare Android scope: {diff.stderr.strip()}")
-    require(not diff.stdout.strip(), f"Governance PR changed Android scope: {diff.stdout.splitlines()}")
-
-
-def validate_readiness_roles_and_traceability(gate: dict[str, Any]) -> None:
+def validate_readiness_and_evidence(gate: dict[str, Any]) -> None:
     readiness = read_json("docs/evidence/poc-recovery-001/readiness.json")
     roles = read_json("docs/evidence/poc-recovery-001/review-roles.json")
-    ledger = read_json("docs/evidence/poc-recovery-001/review-findings-v0.4.json")
+    ledger = read_json("docs/evidence/poc-recovery-001/review-findings-v0.5.json")
     index = read_json("docs/evidence/poc-recovery-001/evidence-index.json")
     provenance = read_json("docs/evidence/poc-recovery-001/sqlite-platform-provenance.json")
     security = read_json("docs/evidence/poc-recovery-001/security-advisory-inventory.json")
 
-    require(readiness["schemaVersion"] == 6 and readiness["status"].startswith("BLOCKED_"), "Readiness v0.5 status drift")
-    for key in (
-        "executionAllowed", "implementationAllowed", "implementationAllowedByThisPackage", "measuredExecutionAllowed",
-        "runtimeDependencyAdded", "recoveryModuleExists", "harnessImplemented",
-        "nonMetricImplementationVerificationPassed", "exactFutureResolvedGraphReviewed",
-        "killCampaignExecuted", "deviceTestsExecuted", "benchmarksExecuted", "productionAppChanged",
-    ):
-        require(readiness[key] is False, f"Governance-only readiness invariant violated: {key}")
+    require(
+        readiness["schemaVersion"] == 7
+        and readiness["status"].startswith("BLOCKED_")
+        and all(readiness[field] is False for field in (
+            "executionAllowed", "implementationAllowed", "implementationAllowedByThisPackage",
+            "measuredExecutionAllowed", "runtimeDependencyAdded", "recoveryModuleExists",
+            "harnessImplemented", "nonMetricImplementationVerificationPassed",
+            "exactFutureResolvedGraphReviewed", "killCampaignExecuted", "deviceTestsExecuted",
+            "benchmarksExecuted", "productionAppChanged",
+        )),
+        "Readiness authority/evidence boundary drift",
+    )
     package = readiness["packageArtifacts"]
     require(
         package["activeGateSetVersion"] == GATE_ID
         and package["activeProtocolId"] == PROTOCOL_ID
-        and package["governanceRemediationV05Present"] is True
-        and package["v04RetainedAsSupersededAuditArtifact"] is True
-        and package["v04Executable"] is False,
-        "Readiness active v0.5 package metadata drift",
+        and package["governanceRemediationV06Present"] is True
+        and package["v05RetainedAsSupersededAuditArtifact"] is True
+        and package["v05Executable"] is False
+        and package["reviewFindingsV05LedgerPresent"] is True,
+        "Readiness active package metadata drift",
     )
-    validate_blockers(gate, readiness)
-    phase = readiness["phaseA"]
-    full = readiness["fullVerdict"]
-    require(
-        phase["faultRows"] == 46
-        and phase["phaseATotalInjections"] == 184
-        and phase["possibleVerdicts"] == ["FAIL", "INCONCLUSIVE"]
-        and phase["passAllowed"] is False
-        and phase["hardKillAttemptsPerCandidate"] == 120
-        and phase["hardKillDenominatorSeparate"] is True,
-        "Readiness Phase A state drift",
-    )
-    require(
-        full["requiredPhysicalProfiles"] == ["D1", "D2", "D5"]
-        and full["fullPhysicalTotalInjections"] == 138
-        and full["additionalD1D5InjectionsWithValidD2Reuse"] == 92
-        and full["otherwiseRepeatD2"] is True
-        and full["passAllowedWithoutCompleteD1D2D5Profile"] is False
-        and full["deferred"] is True,
-        "Readiness full physical state drift",
-    )
+    advisory = readiness["advisoryDocumentaryReview"]
+    require(advisory["formalReviewer"] is False and advisory["closesRecRdy02"] is False, "Readiness treats advisory review as formal")
+    blocker_ids = [item["id"] for item in readiness["blockers"]]
+    require(gate["blockers"] == blocker_ids == CANONICAL_BLOCKERS and len(set(blocker_ids)) == 11, "Readiness blocker contract drift")
+    rec02 = readiness["blockers"][1]
+    require(rec02["status"] == "OPEN_UNASSIGNED" and "does not close REC-RDY-02" in rec02["condition"], "REC-RDY-02 was closed by advisory review")
+    require(readiness["phaseA"]["phaseATotalInjections"] == 184 and readiness["phaseA"]["hardKillDenominatorSeparate"] is True, "Readiness Phase A drift")
+    require(readiness["fullVerdict"]["fullPhysicalTotalInjections"] == 138 and readiness["fullVerdict"]["deferred"] is True, "Readiness full physical drift")
 
-    require(
-        roles["schemaVersion"] == 6
-        and roles["activeGateSetVersion"] == GATE_ID
-        and roles["activeProtocolId"] == PROTOCOL_ID
-        and roles["canonicalBlockerIds"] == CANONICAL_BLOCKERS,
-        "Review-role active metadata/blocker list drift",
-    )
+    require(roles["schemaVersion"] == 7 and roles["activeGateSetVersion"] == GATE_ID and roles["activeProtocolId"] == PROTOCOL_ID, "Review role metadata drift")
     role_map = roles["roles"]
     require(role_map["packageAuthor"]["claimedFormallyIndependentReviewer"] is False, "Codex claimed formal independence")
+    require(role_map["advisoryDocumentaryReviewer"]["formalReviewer"] is False and role_map["advisoryDocumentaryReviewer"]["closesRecRdy02"] is False, "AI advisory reviewer gained formal authority")
     independent = role_map["independentRecoveryEngineeringSecurity"]
-    require(
-        independent["reviewer"] is None
-        and independent["status"] == "UNASSIGNED_BLOCKING"
-        and independent["currentCodexRemediationClaimedFormallyIndependent"] is False,
-        "Accountable Engineering/Security reviewer boundary drift",
-    )
-    require(
-        role_map["stage0ProductIp"]["futureExactGraphDisposition"]["status"] == "OPEN_BLOCKED"
-        and role_map["productionLegal"]["reviewer"] is None
-        and role_map["productionSecurity"]["reviewer"] is None
-        and role_map["executionAuthorizer"]["status"] == "AUTHORIZATION_WITHHELD",
-        "Role fail-closed states drift",
-    )
+    require(independent["reviewer"] is None and independent["status"] == "UNASSIGNED_BLOCKING", "Accountable reviewer assignment drift")
+    require(role_map["stage0ProductIp"]["futureExactGraphDisposition"]["status"] == "OPEN_BLOCKED", "Future Product/IP graph disposition closed")
+    require(role_map["productionLegal"]["reviewer"] is None and role_map["productionSecurity"]["reviewer"] is None, "Production review prematurely assigned")
 
     require(
-        ledger["schemaVersion"] == 1
-        and ledger["sourceReviewedCommit"] == REVIEWED_V04_HEAD
-        and ledger["reviewedGateSetVersion"] == "poc-recovery-stage0-v0.4"
+        ledger["sourceReviewedCommit"] == REVIEWED_V05_HEAD
+        and ledger["reviewedGateSetVersion"] == "poc-recovery-stage0-v0.5"
         and ledger["activeRemediationProtocolId"] == PROTOCOL_ID
-        and ledger["remediationVersion"] == "v0.5"
-        and ledger["sanitized"] is True
-        and ledger["formalReviewer"] is False,
-        "REC-ADV-V04 ledger identity drift",
+        and ledger["review"]["reviewer"] == "GPT-5.6 Sol"
+        and ledger["review"]["organization"] == "OpenAI"
+        and ledger["review"]["formalReviewer"] is False
+        and ledger["review"]["disposition"] == "CHANGES_REQUIRED"
+        and ledger["closesRecRdy02"] is False,
+        "Review findings ledger identity drift",
     )
-    findings = ledger["findings"]
-    require([item["id"] for item in findings] == [f"REC-ADV-V04-{index:03d}" for index in range(1, 5)], "REC-ADV finding IDs drift")
-    require([item["severity"] for item in findings] == ["P0", "P1", "P1", "P2"], "REC-ADV severity mapping drift")
+    findings = {item["id"]: item for item in ledger["findings"]}
     require(
-        all(
-            item["sourceReviewedCommit"] == REVIEWED_V04_HEAD
-            and item["remediationVersion"] == "v0.5"
-            and item["disposition"].startswith("CLOSED")
-            and item["evidenceLocator"]
-            and item["affectedArtifacts"]
-            and item["formalReviewer"] is False
-            for item in findings
-        ),
-        "REC-ADV remediation traceability incomplete",
+        findings["REC-REV-20260812-01"]["severity"] == "P1"
+        and findings["REC-REV-20260812-01"]["disposition"] == "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE"
+        and findings["REC-REV-20260812-02"]["severity"] == "P0"
+        and findings["REC-REV-20260812-02"]["category"] == "governance"
+        and findings["REC-REV-20260812-02"]["disposition"] == "OPEN_BLOCKING",
+        "Finding severity/disposition drift",
     )
 
-    require(
-        index["schemaVersion"] == 3
-        and index["activeGateSetVersion"] == GATE_ID
-        and index["activeProtocolId"] == PROTOCOL_ID
-        and index["implementationAllowed"] is False
-        and index["executionAllowed"] is False,
-        "Evidence index active metadata drift",
-    )
-    require(
-        {item["locator"]: item["sha256"] for item in index["supersededAuditArtifacts"]}
-        == IMMUTABLE_AUDIT_HASHES,
-        "Evidence index immutable v0.1-v0.4 hashes drift",
-    )
+    require(index["schemaVersion"] == 4 and index["activeGateSetVersion"] == GATE_ID and index["activeProtocolId"] == PROTOCOL_ID, "Evidence index metadata drift")
+    require({item["locator"]: item["sha256"] for item in index["supersededAuditArtifacts"]} == IMMUTABLE_AUDIT_HASHES, "Evidence index historical hashes drift")
     artifact_ids = {item["id"] for item in index["artifacts"]}
-    require(
-        {
-            "REC-V05-GATE-MARKDOWN", "REC-V05-GATE-JSON", "REC-V05-PROTOCOL-JSON",
-            "REC-V05-REMEDIATION", "REC-REVIEW-V04-LEDGER",
-        }.issubset(artifact_ids),
-        "Evidence index lacks v0.5 artifacts",
-    )
-    require(
-        provenance["schemaVersion"] == 3
-        and provenance["status"] == SQLITE_STATUS
-        and provenance["activeGateSetVersion"] == GATE_ID
-        and provenance["activeProtocolId"] == PROTOCOL_ID
-        and provenance["phaseA"]["executionAllowed"] is False
-        and provenance["fullPhysicalVerdict"]["D1"] == "UNAVAILABLE_PROVENANCE_UNKNOWN"
-        and provenance["fullPhysicalVerdict"]["D5"] == "UNAVAILABLE_PROVENANCE_UNKNOWN",
-        "SQLite provenance active/fail-closed state drift",
-    )
-    require(
-        security["schemaVersion"] == 2
-        and security["activeGateSetVersion"] == GATE_ID
-        and security["activeProtocolId"] == PROTOCOL_ID
-        and security["status"] == "SNAPSHOT_COMPLETE_INDEPENDENT_REVIEW_PENDING"
-        and all(item["mitigationState"].startswith("V0_5_") for item in security["templateAndProtocolRisks"]),
-        "Security evidence active v0.5 metadata drift",
-    )
+    require({"REC-V06-GATE-MARKDOWN", "REC-V06-GATE-JSON", "REC-V06-PROTOCOL-JSON", "REC-V06-REMEDIATION", "REC-REVIEW-V05-LEDGER"}.issubset(artifact_ids), "Evidence index lacks v0.6 artifacts")
+
+    require(provenance["status"] == SQLITE_STATUS and provenance["activeGateSetVersion"] == GATE_ID and provenance["activeProtocolId"] == PROTOCOL_ID and provenance["phaseA"]["executionAllowed"] is False, "SQLite provenance metadata drift")
+    require(provenance["fullPhysicalVerdict"]["D1"].startswith("UNAVAILABLE") and provenance["fullPhysicalVerdict"]["D5"].startswith("UNAVAILABLE"), "D1/D5 no longer deferred")
+    require(security["activeGateSetVersion"] == GATE_ID and security["activeProtocolId"] == PROTOCOL_ID and all(item["mitigationState"].startswith("V0_6_") for item in security["templateAndProtocolRisks"]), "Security metadata drift")
+
+
+def validate_dependency_and_scope_boundary() -> None:
+    inventory = read_json("docs/evidence/poc-recovery-001/dependency-inventory.json")
+    require(inventory["dependencyAdmission"] is False and inventory["runtimeGraphModified"] is False, "Dependency inventory admitted runtime wiring")
+    boundary = inventory["recoveryBoundary"]
+    require(boundary["currentTinkAndroid123Wired"] is False and boundary["currentRecoveryModuleExists"] is False and boundary["futureActualRecoveryGraphStatus"].startswith("OPEN_BLOCKED"), "Recovery dependency boundary drift")
+    require(not (ROOT / "android" / "poc" / "recovery").exists(), "Recovery module exists")
+    require(":poc:recovery" not in read_text("android/settings.gradle.kts"), "Recovery module included")
+    changed_android = subprocess.run(
+        ["git", "diff", "--name-only", BASE_HEAD, "--", "android"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    ).stdout.splitlines()
+    require(not changed_android, f"Android/dependency surface changed: {changed_android}")
 
 
 def validate_active_metadata() -> None:
-    exact_active_lines = {
-        "docs/DORA_MVP1_STAGE_STATUS.md": [
-            "Stage state: **GOVERNANCE REMEDIATION v0.5 — PROSPECTIVE KEY TAXONOMY/CAMPAIGN/BLOCKER/METADATA REMEDIATION; IMPLEMENTATION AND EXECUTION BLOCKED**",
+    fragments = {
+        "docs/DORA_MVP1_TECHNICAL_PLAN.md": ["prospective protocol v0.6", "KEY_UNAVAILABLE_KEY_MISMATCH", "REC-RDY-02"],
+        "docs/DORA_MVP1_PRODUCT_DECISIONS.md": [GATE_ID, PROTOCOL_ID, "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE"],
+        "docs/DORA_MVP1_TEST_STRATEGY.md": ["POC-RECOVERY-001` v0.6", "46 unique active fault rows", "KCF-07"],
+        "docs/DORA_MVP1_STAGE_STATUS.md": ["GOVERNANCE REMEDIATION v0.6", GATE_ID, PROTOCOL_ID, "REC-REV-20260812-02"],
+        "docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md": [GATE_ID, PROTOCOL_ID, "KEY_UNAVAILABLE_KEY_MISMATCH", "KCF-07"],
+        "docs/stage0/DORA_MVP1_POC_GATES.md": ["stage0-v0.6", "46 unique IDs", "KEY_UNAVAILABLE_KEY_MISMATCH"],
+        "docs/stage0/DORA_MVP1_POC_EXECUTION_ORDER.md": ["stage0-v0.6", "46 unique active rows", "REC-RDY-02"],
+        "docs/stage0/DORA_MVP1_IP_ASSET_POLICY.md": ["active protocol v0.6", "future actual recovery", "Engineering/Security reviewer"],
+        "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md": [GATE_ID, PROTOCOL_ID, "15 SHA-256 values", "formalReviewer=false"],
+        "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_6.md": [
+            *KEY04_PRECONDITIONS,
+            "KEY_UNAVAILABLE_KEY_MISMATCH",
+            "successful confirmation decrypt followed by malformed plaintext",
+            "exactly 46 unique IDs",
+            "46 × (3 pinned emulator + 1 D2)",
+            "184 injections",
+            "46 × (D1 + D2 + D5)",
+            "138 injections",
+            "120 attempts per candidate",
         ],
-        "docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md": [
-            "Gate Set: `poc-recovery-stage0-v0.5`\\",
-            "Protocol: `poc-recovery-protocol-stage0-v0.5`\\",
-        ],
-        "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md": [
-            "Active Gate Set: `poc-recovery-stage0-v0.5`\\",
-            "Active protocol: `poc-recovery-protocol-stage0-v0.5`",
-        ],
-        "docs/evidence/poc-recovery-001/README.md": [
-            "Status: **PROSPECTIVE PROTOCOL v0.5 — POLICY AND EXACT GOVERNANCE EVIDENCE CLOSED; ACTUAL GRAPH, IMPLEMENTATION AND EXECUTION BLOCKED**\\",
-        ],
+        "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md": [GATE_ID, PROTOCOL_ID, "REC-REV-20260812-01", "implementationAllowed=false"],
+        "docs/DORA_MVP1_IMPLEMENTATION_READINESS.md": [GATE_ID, PROTOCOL_ID, "REC-RDY-02", "executionAllowed=false"],
+        "docs/evidence/poc-recovery-001/README.md": ["PROSPECTIVE PROTOCOL v0.6", "15 superseded audit artifacts", "GPT-5.6 Sol", "KCF-07"],
+        "docs/evidence/poc-recovery-001/governance-remediation-v0.6.md": [REVIEWED_V05_HEAD, "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE", "OPEN_BLOCKING"],
+        "docs/evidence/poc-recovery-001/independent-engineering-security-review-task.md": ["POC-RECOVERY-001 v0.6", "KEY-04", "formalReviewer=false"],
+        "docs/evidence/poc-recovery-001/ip-stage0-evaluation-review.md": [GATE_ID, PROTOCOL_ID, "does not\nclose `REC-RDY-02`"],
     }
-    for relative, expected_lines in exact_active_lines.items():
-        lines = read_text(relative).splitlines()
-        for expected_line in expected_lines:
-            require(expected_line in lines, f"{relative} exact active metadata line drift: {expected_line}")
-
-    exact_fragments = {
-        "docs/DORA_MVP1_STAGE_STATUS.md": [
-            "Stage state: **GOVERNANCE REMEDIATION v0.5",
-            "poc-recovery-stage0-v0.5",
-            "46-row fault contract",
-        ],
-        "docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md": [
-            "Gate Set: `poc-recovery-stage0-v0.5`",
-            "Protocol: `poc-recovery-protocol-stage0-v0.5`",
-            "46 × 4 = 184",
-            "46 × 3 = 138",
-        ],
-        "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md": [
-            "Active Gate Set: `poc-recovery-stage0-v0.5`",
-            "Active protocol: `poc-recovery-protocol-stage0-v0.5`",
-            "Valid reuse leaves 92 D1/D5 injections",
-        ],
-        "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md": [
-            "Gate Set `poc-recovery-stage0-v0.5` / protocol `poc-recovery-protocol-stage0-v0.5`",
-            "Phase A 184 injections",
-            "full physical 138 injections",
-        ],
-        "docs/DORA_MVP1_IMPLEMENTATION_READINESS.md": [
-            "Active recovery Gate Set: `poc-recovery-stage0-v0.5`; active recovery protocol: `poc-recovery-protocol-stage0-v0.5`",
-            "46 corruption/replay/rollback",
-            "Phase A 184, full physical 138",
-        ],
-        "docs/evidence/poc-recovery-001/README.md": [
-            "PROSPECTIVE PROTOCOL v0.5",
-            "immutable v0.1–v0.4 SHA-256 pins",
-            "poc-recovery-gate-set-stage0-v0.5.json",
-            "poc-recovery-protocol-stage0-v0.5.json",
-        ],
-        "docs/evidence/poc-recovery-001/governance-remediation-v0.5.md": [
-            REVIEWED_V04_HEAD,
-            "formalReviewer=false",
-            SQLITE_STATUS,
-        ],
-        "docs/evidence/poc-recovery-001/independent-engineering-security-review-task.md": [
-            "POC-RECOVERY-001 v0.5",
-            "все 46 строк",
-            "Full physical: 46 × (D1 + D2 + D5) = 138",
-        ],
-        "docs/evidence/poc-recovery-001/ip-stage0-evaluation-review.md": [
-            "Active Gate Set: `poc-recovery-stage0-v0.5`",
-            "Active protocol: `poc-recovery-protocol-stage0-v0.5`",
-        ],
-    }
-    for relative, fragments in exact_fragments.items():
+    for relative, required in fragments.items():
         content = read_text(relative)
-        for fragment in fragments:
-            require(fragment in content, f"{relative} active v0.5 metadata missing: {fragment}")
+        normalized_content = " ".join(content.replace("`", "").split())
+        for fragment in required:
+            require(
+                fragment in content or " ".join(fragment.replace("`", "").split()) in normalized_content,
+                f"{relative} active v0.6 metadata missing: {fragment}",
+            )
     matrix = read_text("docs/stage0/device-matrix.yaml")
-    require(
-        f"gate_set: {GATE_ID}" in matrix
-        and f"protocol: {PROTOCOL_ID}" in matrix
-        and "total_injections: 184" in matrix
-        and "total_injections: 138" in matrix
-        and "additional_d1_d5_injections_with_valid_d2_reuse: 92" in matrix
-        and "implementation_allowed: false" in matrix
-        and "execution_allowed: false" in matrix,
-        "Device matrix active v0.5 campaign metadata drift",
-    )
+    for fragment in (f"gate_set: {GATE_ID}", f"protocol: {PROTOCOL_ID}", "mandatory_fault_rows: 46", "total_injections: 184", "total_injections: 138", "implementation_allowed: false", "execution_allowed: false"):
+        require(fragment in matrix, f"Device matrix active metadata missing: {fragment}")
 
 
-def validate_no_implementation() -> None:
-    require(not (ROOT / "android" / "poc" / "recovery").exists(), "Recovery module exists")
-    require(":poc:recovery" not in read_text("android/settings.gradle.kts"), "Recovery module included")
-    require("android.permission.RECORD_AUDIO" not in read_text("android/app/src/main/AndroidManifest.xml"), "Production :app microphone permission appeared")
+def validate_all(gate: dict[str, Any], protocol: dict[str, Any], include_filesystem_hashes: bool = True) -> None:
+    if include_filesystem_hashes:
+        validate_immutable_history(gate, protocol)
+    validate_gate(gate)
+    validate_protocol(protocol)
 
 
-def expect_negative(name: str, mutation: Callable[[dict[str, Any], dict[str, Any], dict[str, Any]], None]) -> None:
-    gate = read_json("docs/stage0/poc-recovery-gate-set-stage0-v0.5.json")
-    protocol = read_json("docs/stage0/poc-recovery-protocol-stage0-v0.5.json")
-    readiness = read_json("docs/evidence/poc-recovery-001/readiness.json")
-    mutation(gate, protocol, readiness)
+def expect_negative(name: str, mutation: Callable[[dict[str, Any], dict[str, Any]], None], validate_history: bool = False) -> None:
+    gate = read_json(GATE_PATH)
+    protocol = read_json(PROTOCOL_PATH)
+    mutation(gate, protocol)
     try:
-        validate_gate(gate)
-        validate_protocol(protocol)
-        validate_blockers(gate, readiness)
-    except (ValueError, KeyError):
+        validate_all(gate, protocol, include_filesystem_hashes=validate_history)
+    except (ValueError, KeyError, StopIteration):
         print(f"PASS negative {name}")
         return
     raise ValueError(f"Negative test unexpectedly passed: {name}")
 
 
 def run_negative_tests() -> None:
-    def duplicate_blocker(gate: dict[str, Any], _protocol: dict[str, Any], _readiness: dict[str, Any]) -> None:
-        gate["blockers"][1] = gate["blockers"][0]
+    def key04(protocol: dict[str, Any]) -> dict[str, Any]:
+        return next(row for row in effective_rows(protocol) if row["id"] == "KEY-04")
 
-    def unknown_blocker(_gate: dict[str, Any], _protocol: dict[str, Any], readiness: dict[str, Any]) -> None:
-        readiness["blockers"][10]["id"] = "REC-RDY-11-UNKNOWN"
+    def kcf07(protocol: dict[str, Any]) -> dict[str, Any]:
+        return next(row for row in effective_rows(protocol) if row["id"] == "KCF-07")
 
-    def missing_blocker(gate: dict[str, Any], _protocol: dict[str, Any], _readiness: dict[str, Any]) -> None:
-        gate["blockers"].pop()
-
-    def extra_blocker(_gate: dict[str, Any], _protocol: dict[str, Any], readiness: dict[str, Any]) -> None:
-        readiness["blockers"].append(
-            {
-                "id": "REC-RDY-12-UNKNOWN",
-                "priority": "P0",
-                "status": "OPEN",
-                "owner": "Nobody",
-                "condition": "Invalid mutation",
-            }
-        )
-
-    def blocker_state(_gate: dict[str, Any], _protocol: dict[str, Any], readiness: dict[str, Any]) -> None:
-        readiness["blockers"][8]["status"] = "OPEN"
-
-    def blocker_priority(_gate: dict[str, Any], _protocol: dict[str, Any], readiness: dict[str, Any]) -> None:
-        readiness["blockers"][8]["priority"] = "P0"
-
-    def blocker_owner(_gate: dict[str, Any], _protocol: dict[str, Any], readiness: dict[str, Any]) -> None:
-        readiness["blockers"][5]["owner"] = "Unknown"
-
-    def blocker_condition(_gate: dict[str, Any], _protocol: dict[str, Any], readiness: dict[str, Any]) -> None:
-        readiness["blockers"][0]["condition"] += " Mutated."
-
-    def taxonomy_duplicate(_gate: dict[str, Any], protocol: dict[str, Any], _readiness: dict[str, Any]) -> None:
-        protocol["canonicalKeyTaxonomyV05"]["uniqueClassifications"][7] = "KEY_UNAVAILABLE"
-
-    def taxonomy_order(_gate: dict[str, Any], protocol: dict[str, Any], _readiness: dict[str, Any]) -> None:
-        algorithm = protocol["canonicalKeyTaxonomyV05"]["recoveryReconciliationAlgorithm"]
-        algorithm[2], algorithm[5] = algorithm[5], algorithm[2]
-
-    def taxonomy_classification(_gate: dict[str, Any], protocol: dict[str, Any], _readiness: dict[str, Any]) -> None:
-        protocol["canonicalKeyTaxonomyV05"]["recoveryReconciliationAlgorithm"][3]["classification"] = "KEY_UNAVAILABLE_KEY_MISMATCH"
-
-    def predecrypt_plaintext(_gate: dict[str, Any], protocol: dict[str, Any], _readiness: dict[str, Any]) -> None:
-        protocol["canonicalKeyTaxonomyV05"]["plaintextMagicSchemaParserOrTrailingValidationBeforeDecryptAllowed"] = True
-
-    def phase_arithmetic(gate: dict[str, Any], _protocol: dict[str, Any], _readiness: dict[str, Any]) -> None:
-        gate["faultCampaignProfiles"]["phaseA"]["phaseATotalInjections"] = 183
-
-    def full_arithmetic(gate: dict[str, Any], _protocol: dict[str, Any], _readiness: dict[str, Any]) -> None:
-        gate["faultCampaignProfiles"]["fullPhysicalCampaign"]["fullPhysicalTotalInjections"] = 137
-
-    def reuse_arithmetic(gate: dict[str, Any], _protocol: dict[str, Any], _readiness: dict[str, Any]) -> None:
-        gate["faultCampaignProfiles"]["d2Reuse"]["additionalD1D5InjectionsWithValidReuse"] = 91
-
-    tests = {
-        "duplicate-blocker-id": duplicate_blocker,
-        "unknown-blocker-id": unknown_blocker,
-        "missing-blocker-id": missing_blocker,
-        "extra-blocker-id": extra_blocker,
-        "blocker-state": blocker_state,
-        "blocker-priority": blocker_priority,
-        "blocker-owner": blocker_owner,
-        "blocker-condition": blocker_condition,
-        "taxonomy-duplicate": taxonomy_duplicate,
-        "taxonomy-order": taxonomy_order,
-        "taxonomy-classification": taxonomy_classification,
-        "predecrypt-plaintext-validation": predecrypt_plaintext,
-        "phase-a-arithmetic": phase_arithmetic,
-        "full-physical-arithmetic": full_arithmetic,
-        "d2-reuse-arithmetic": reuse_arithmetic,
-    }
-    for name, mutation in tests.items():
+    tests: list[tuple[str, Callable[[dict[str, Any], dict[str, Any]], None]]] = [
+        ("key04-successful-decrypt", lambda _g, p: key04(p).__setitem__("successfulDecryptAllowed", True)),
+        ("key04-post-decrypt-parser-mismatch", lambda _g, p: key04(p).__setitem__("postDecryptParserOrPlaintextMismatchAllowed", True)),
+        ("key04-non-auth-decrypt-outcome", lambda _g, p: key04(p).__setitem__("decryptOutcome", "SUCCESS_OR_AUTH_FAILURE")),
+        ("key04-classification-alternative", lambda _g, p: key04(p).__setitem__("expectedClassification", "CORRUPT_KEY_CONFIRMATION")),
+        ("kcf07-malformed-plaintext-classification", lambda _g, p: kcf07(p).__setitem__("expectedClassification", "KEY_UNAVAILABLE_KEY_MISMATCH")),
+        ("kcf07-requires-successful-decrypt", lambda _g, p: kcf07(p).__setitem__("requiredObservation", "decrypt fails")),
+        ("kcf07-malformed-plaintext-coverage", lambda _g, p: kcf07(p)["coveredPostDecryptFailures"].pop(0)),
+        ("active-matrix-count", lambda _g, p: effective_rows(p).pop()),
+        ("active-matrix-unique-ids", lambda _g, p: effective_rows(p)[1].__setitem__("id", "COR-01")),
+        ("active-matrix-key04-once", lambda _g, p: effective_rows(p)[13].__setitem__("id", "KEY-04")),
+        ("active-matrix-effective-rows", lambda _g, p: effective_rows(p)[0].__setitem__("effective", False)),
+        ("phase-a-count", lambda g, _p: g["faultCampaignProfiles"]["phaseA"].__setitem__("phaseATotalInjections", 183)),
+        ("full-physical-count", lambda g, _p: g["faultCampaignProfiles"]["fullPhysicalCampaign"].__setitem__("fullPhysicalTotalInjections", 137)),
+    ]
+    for name, mutation in tests:
         expect_negative(name, mutation)
 
-    metadata = read_json("docs/evidence/poc-recovery-001/readiness.json")
-    metadata["packageArtifacts"]["activeProtocolId"] = "poc-recovery-protocol-stage0-v0.4"
+    gate = read_json(GATE_PATH)
+    protocol = read_json(PROTOCOL_PATH)
+    mutated = copy.deepcopy(gate)
+    mutated["retainedAuditArtifacts"][4]["protocolSha256"] = "0" * 64
     try:
-        gate = read_json("docs/stage0/poc-recovery-gate-set-stage0-v0.5.json")
-        validate_readiness_metadata_only(gate, metadata)
+        validate_immutable_history(mutated, protocol)
     except ValueError:
-        print("PASS negative active-version-metadata")
+        print("PASS negative historical-v0.1-v0.5-hash-pin")
     else:
-        raise ValueError("Negative test unexpectedly passed: active-version-metadata")
-
-    gate_metadata = read_json("docs/stage0/poc-recovery-gate-set-stage0-v0.5.json")
-    readiness_metadata = read_json("docs/evidence/poc-recovery-001/readiness.json")
-    gate_metadata["gateSetVersion"] = "poc-recovery-stage0-v0.4"
-    try:
-        validate_readiness_metadata_only(gate_metadata, readiness_metadata)
-    except ValueError:
-        print("PASS negative active-gate-metadata")
-    else:
-        raise ValueError("Negative test unexpectedly passed: active-gate-metadata")
-
-    provenance_metadata = read_json("docs/evidence/poc-recovery-001/sqlite-platform-provenance.json")
-    provenance_metadata["status"] = "RECOVERY_STAGE0_V0_4_SQLITE_PROFILE_SELECTED_FRESH_PREFLIGHT_INCOMPLETE"
-    try:
-        validate_provenance_metadata_only(provenance_metadata)
-    except ValueError:
-        print("PASS negative sqlite-status-metadata")
-    else:
-        raise ValueError("Negative test unexpectedly passed: sqlite-status-metadata")
-
-
-def validate_readiness_metadata_only(gate: dict[str, Any], readiness: dict[str, Any]) -> None:
-    package = readiness["packageArtifacts"]
-    require(
-        package["activeGateSetVersion"] == gate["gateSetVersion"] == GATE_ID
-        and package["activeProtocolId"] == gate["protocolId"] == PROTOCOL_ID,
-        "Active readiness metadata mismatch",
-    )
-
-
-def validate_provenance_metadata_only(provenance: dict[str, Any]) -> None:
-    require(
-        provenance["status"] == SQLITE_STATUS
-        and provenance["activeGateSetVersion"] == GATE_ID
-        and provenance["activeProtocolId"] == PROTOCOL_ID,
-        "Active SQLite provenance metadata mismatch",
-    )
+        raise ValueError("Negative test unexpectedly passed: historical-v0.1-v0.5-hash-pin")
 
 
 def main() -> int:
-    gate = read_json("docs/stage0/poc-recovery-gate-set-stage0-v0.5.json")
-    protocol = read_json("docs/stage0/poc-recovery-protocol-stage0-v0.5.json")
-    validate_immutable_history(gate, protocol)
-    validate_gate(gate)
-    validate_protocol(protocol)
-    validate_dependency_boundary()
-    validate_readiness_roles_and_traceability(gate)
+    gate = read_json(GATE_PATH)
+    protocol = read_json(PROTOCOL_PATH)
+    validate_all(gate, protocol)
+    validate_readiness_and_evidence(gate)
+    validate_dependency_and_scope_boundary()
     validate_active_metadata()
-    validate_no_implementation()
     if "--self-test" in sys.argv[1:]:
         run_negative_tests()
     print(
-        "POC-RECOVERY-001 governance v0.5 validation passed; 12 v0.1-v0.4 audit artifacts immutable, "
-        "eight-class KEY algorithm and 46 fault rows exact, Phase A=184, full physical=138, "
+        "POC-RECOVERY-001 governance v0.6 validation passed; 15 v0.1-v0.5 audit artifacts immutable, "
+        "46 unique effective rows with one KEY-04, KEY-04 authentication/AAD failure only -> "
+        "KEY_UNAVAILABLE_KEY_MISMATCH, KCF-07 successful-decrypt malformed plaintext -> "
+        "CORRUPT_KEY_CONFIRMATION, Phase A=184, full physical=138, hard kills=120/candidate separate, "
         "implementationAllowed=false, executionAllowed=false"
     )
     return 0
@@ -997,6 +603,6 @@ def main() -> int:
 if __name__ == "__main__":
     try:
         raise SystemExit(main())
-    except (OSError, ValueError, KeyError, StopIteration, json.JSONDecodeError) as error:
+    except (OSError, ValueError, KeyError, StopIteration, json.JSONDecodeError, subprocess.CalledProcessError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         raise SystemExit(1)

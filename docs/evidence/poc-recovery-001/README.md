@@ -1,8 +1,8 @@
 # POC-RECOVERY-001 governance/readiness evidence
 
-Status: **PROSPECTIVE PROTOCOL v0.5 — POLICY AND EXACT GOVERNANCE EVIDENCE CLOSED; ACTUAL GRAPH, IMPLEMENTATION AND EXECUTION BLOCKED**\
+Status: **PROSPECTIVE PROTOCOL v0.6 — KEY-04 DOCUMENTARY FINDING CLOSED; ACCOUNTABLE REVIEW, ACTUAL GRAPH, IMPLEMENTATION AND EXECUTION BLOCKED**\
 Date: 12 August 2026\
-Branch: `stage/0d-poc-recovery-governance`\
+Branch: `stage/0d-poc-recovery-key04-v06`\
 Measured execution: **none**
 
 This directory contains only public governance, provenance and review evidence for the proposed
@@ -10,7 +10,9 @@ Stage 0 recovery experiment. The first package received the owner-supplied dispo
 `CHANGES_REQUIRED`; `governance-remediation-v0.2.md` preserves the first response and
 `governance-remediation-v0.3.md` records the F-01–F-06 response and
 `governance-remediation-v0.4.md` records the retained v0.4 advisory remediations, and
-`governance-remediation-v0.5.md` records `REC-ADV-V04-001..004`.
+`governance-remediation-v0.5.md` records `REC-ADV-V04-001..004`, and
+`governance-remediation-v0.6.md` records `REC-REV-20260812-01..02` from the non-formal GPT-5.6 Sol
+documentary advisory review of commit `eca48ba62acd79007884710395cc40ea21a02611`.
 It contains no harness, recovery module, dependency lock from a runtime graph, device result,
 benchmark, key, keyset, ciphertext, plaintext, audio or database.
 
@@ -18,12 +20,13 @@ benchmark, key, keyset, ciphertext, plaintext, audio or database.
 
 | Artifact | Purpose | Current state |
 |---|---|---|
-| `evidence-index.json` | machine-readable active/superseded artifact index and immutable v0.1–v0.4 SHA-256 pins | v0.5 active; implementation/execution blocked |
+| `evidence-index.json` | machine-readable active/superseded artifact index and immutable v0.1–v0.5 SHA-256 pins | v0.6 active; implementation/execution blocked |
 | `governance-remediation-v0.2.md` | retained first remediation record | superseded audit evidence; unchanged |
 | `governance-remediation-v0.3.md` | F-01–F-06 disposition and remaining blockers at the reviewed remediation point | F-01–F-06 closed; retained evidence of the underlying jsr305 license conflict |
 | `governance-remediation-v0.4.md` | final four-finding remediation and three-state readiness model | governance findings closed; future actual graph remains blocked |
 | `governance-remediation-v0.5.md` | canonical KEY taxonomy, separate campaign profiles, blocker IDs and active metadata remediation | `REC-ADV-V04-001..004` closed prospectively; implementation/execution blocked |
-| `review-findings-v0.1.json` / `review-findings-v0.2.json` / `review-findings-v0.3.json` / `review-findings-v0.4.json` | sanitized stable finding ledgers | `formalReviewer=false`; accountable reviewer still unassigned |
+| `governance-remediation-v0.6.md` | exact effective KEY-04 decrypt-failure-only override and 46-row active matrix | `REC-REV-20260812-01` closed; `REC-REV-20260812-02` open/blocking |
+| `review-findings-v0.1.json` through `review-findings-v0.5.json` | sanitized stable finding ledgers | v0.5 ledger records GPT-5.6 Sol/OpenAI advisory `CHANGES_REQUIRED`; `formalReviewer=false`; accountable reviewer unassigned |
 | `dependency-inventory.json` | exact published JAR/POM/metadata closure for `tink-android:1.23.0`, hashes, edges and composition | verified publisher closure; all eight authenticity classifications verified; not runtime admission |
 | `jsr305-exclusion-analysis-2026-08-12.json` / `.md` | exact POM, source, bytecode, compiler, loader, D8/R8 and A–E decision analysis | conditioned complete exclusion technically proven; bare exclude rejected; Option A accepted prospectively by `OD-14` |
 | `jsr305-reference-classes-2026-08-12.txt` | complete sorted Tink class list containing JSR-305 descriptors | 182 classes; SHA-256 pinned by the analysis JSON |
@@ -43,12 +46,20 @@ The normative experiment decision, Gate Set and protocol are:
 
 - `docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md`;
 - `docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md`;
-- `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_5.md`;
-- `docs/stage0/poc-recovery-gate-set-stage0-v0.5.json`; and
-- `docs/stage0/poc-recovery-protocol-stage0-v0.5.json`.
+- `docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_6.md`;
+- `docs/stage0/poc-recovery-gate-set-stage0-v0.6.json`; and
+- `docs/stage0/poc-recovery-protocol-stage0-v0.6.json`.
 
-The v0.1, v0.2, v0.3 and v0.4 Markdown/Gate Set/protocol files remain unchanged and SHA-256-pinned as superseded audit artifacts.
+The v0.1, v0.2, v0.3, v0.4 and v0.5 Markdown/Gate Set/protocol files remain unchanged and SHA-256-pinned as 15 superseded audit artifacts.
 They are not valid inputs for future implementation or execution.
+
+Active v0.6 contains exactly one effective `KEY-04`: all eight preconditions culminate in
+`Aead.decrypt(existingConfirmationCiphertext, exactAad)` authentication/AAD failure, and the only
+classification is `KEY_UNAVAILABLE_KEY_MISMATCH`. Successful decrypt is forbidden for `KEY-04`;
+successful decrypt with malformed or wrong plaintext remains `KCF-07` and returns
+`CORRUPT_KEY_CONFIRMATION`. The active matrix remains exactly 46 unique IDs. Phase A remains 184
+injections, full physical remains 138 and the separate hard-kill denominator remains 120 attempts
+per candidate.
 
 ## Exact external candidate boundary
 
@@ -103,6 +114,10 @@ task.
 
 ## Review state
 
+- GPT-5.6 Sol, OpenAI, reviewed commit `eca48ba62acd79007884710395cc40ea21a02611` on
+  12 August 2026 as an AI documentary advisory reviewer. Its disposition is `CHANGES_REQUIRED` and
+  `formalReviewer=false`. v0.6 closes documentary finding `REC-REV-20260812-01`; governance finding
+  `REC-REV-20260812-02` remains `OPEN_BLOCKING`. This evidence does not close `REC-RDY-02`.
 - The Project owner, acting as Stage 0 Product/IP reviewer, approved prospective policy
   `REC-JSR305-EXCLUDE-001` and the reviewed governance package at input HEAD
   `eb312feb2a0d5e5b24b45fcd045bacca94e8c9da`; exact governance authenticity/LICENSE/NOTICE evidence

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail closed unless POC-RECOVERY-001 v0.5 has explicit implementation/execution authority."""
+"""Fail closed unless POC-RECOVERY-001 v0.6 has explicit implementation/execution authority."""
 
 from __future__ import annotations
 
@@ -12,8 +12,8 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 STAGE0 = ROOT / "docs" / "stage0"
 EVIDENCE = ROOT / "docs" / "evidence" / "poc-recovery-001"
-GATE_ID = "poc-recovery-stage0-v0.5"
-PROTOCOL_ID = "poc-recovery-protocol-stage0-v0.5"
+GATE_ID = "poc-recovery-stage0-v0.6"
+PROTOCOL_ID = "poc-recovery-protocol-stage0-v0.6"
 POLICY_ID = "REC-JSR305-EXCLUDE-001"
 TINK_COORDINATE = "com.google.crypto.tink:tink-android:1.23.0"
 JSR_COORDINATE = "com.google.code.findbugs:jsr305:3.0.2"
@@ -64,23 +64,49 @@ def validate_static_contract(
     analysis: dict[str, Any],
     roles: dict[str, Any],
 ) -> None:
-    require(gate["schemaVersion"] == 5 and gate["gateSetVersion"] == GATE_ID, "Active Gate Set is not v0.5")
-    require(protocol["schemaVersion"] == 5 and protocol["protocolId"] == PROTOCOL_ID, "Active protocol is not v0.5")
-    require(readiness["schemaVersion"] == 6, "Recovery readiness schema is stale")
+    require(gate["schemaVersion"] == 6 and gate["gateSetVersion"] == GATE_ID, "Active Gate Set is not v0.6")
+    require(protocol["schemaVersion"] == 6 and protocol["protocolId"] == PROTOCOL_ID, "Active protocol is not v0.6")
+    require(readiness["schemaVersion"] == 7, "Recovery readiness schema is stale")
     require(analysis["schemaVersion"] == 3, "JSR305 exclusion analysis schema is stale")
-    require(roles["schemaVersion"] == 6, "Recovery review-role schema is stale")
+    require(roles["schemaVersion"] == 7, "Recovery review-role schema is stale")
     require(
         readiness["packageArtifacts"]["activeGateSetVersion"] == GATE_ID
         and readiness["packageArtifacts"]["activeProtocolId"] == PROTOCOL_ID
         and roles["activeGateSetVersion"] == GATE_ID
         and roles["activeProtocolId"] == PROTOCOL_ID,
-        "Active v0.5 metadata mismatch",
+        "Active v0.6 metadata mismatch",
     )
     gate_ids = gate["blockers"]
     readiness_ids = [item["id"] for item in readiness["blockers"]]
     require(len(gate_ids) == len(set(gate_ids)), "Gate Set contains duplicate blocker IDs")
     require(len(readiness_ids) == len(set(readiness_ids)), "Readiness contains duplicate blocker IDs")
     require(gate_ids == readiness_ids == roles["canonicalBlockerIds"] == CANONICAL_BLOCKERS, "Canonical blocker list mismatch")
+    require(
+        readiness["advisoryDocumentaryReview"]["formalReviewer"] is False
+        and readiness["advisoryDocumentaryReview"]["closesRecRdy02"] is False
+        and roles["roles"]["advisoryDocumentaryReviewer"]["formalReviewer"] is False
+        and roles["roles"]["independentRecoveryEngineeringSecurity"]["reviewer"] is None,
+        "Advisory review acquired formal/accountable authority",
+    )
+    rows = protocol["faultCampaign"]["activeEffectiveFaultMatrixV06"]["rows"]
+    ids = [row["id"] for row in rows]
+    require(
+        len(rows) == len(set(ids)) == 46
+        and ids.count("KEY-04") == 1
+        and all(row["effective"] is True for row in rows),
+        "Active fault matrix is not 46 unique effective rows with one KEY-04",
+    )
+    key04 = next(row for row in rows if row["id"] == "KEY-04")
+    require(
+        key04["decryptOutcome"] == "AUTHENTICATION_OR_AAD_FAILURE_ONLY"
+        and key04["successfulDecryptAllowed"] is False
+        and key04["postDecryptParserOrPlaintextMismatchAllowed"] is False
+        and key04["expectedClassification"] == "KEY_UNAVAILABLE_KEY_MISMATCH"
+        and key04["expectedClassificationAlternativesAllowed"] is False,
+        "Effective KEY-04 oracle drift",
+    )
+    kcf07 = next(row for row in rows if row["id"] == "KCF-07")
+    require("Aead.decrypt() succeeds" in kcf07["requiredObservation"] and kcf07["expectedClassification"] == "CORRUPT_KEY_CONFIRMATION", "KCF-07 oracle drift")
 
     policy = readiness["dependencyExclusionPolicy"]
     analysis_policy = analysis["prospectivePolicy"]
@@ -165,8 +191,8 @@ def complete_runtime_evidence(evidence: dict[str, Any]) -> bool:
 
 
 def main() -> int:
-    gate = read_json(STAGE0 / "poc-recovery-gate-set-stage0-v0.5.json")
-    protocol = read_json(STAGE0 / "poc-recovery-protocol-stage0-v0.5.json")
+    gate = read_json(STAGE0 / "poc-recovery-gate-set-stage0-v0.6.json")
+    protocol = read_json(STAGE0 / "poc-recovery-protocol-stage0-v0.6.json")
     readiness = read_json(EVIDENCE / "readiness.json")
     analysis = read_json(EVIDENCE / "jsr305-exclusion-analysis-2026-08-12.json")
     roles = read_json(EVIDENCE / "review-roles.json")
@@ -188,7 +214,7 @@ def main() -> int:
     independent = roles["roles"]["independentRecoveryEngineeringSecurity"]
     if approvals["futureActualGraphProductIpDisposition"] != "APPROVED" or product_ip["futureExactGraphDisposition"]["actualGraphApproved"] is not True:
         blockers.append(CANONICAL_BLOCKERS[0])
-    if independent["status"] != "APPROVED_FOR_EXACT_RECOVERY_V0_5_IMPLEMENTATION_AND_PHASE_A" or not isinstance(independent["reviewer"], str) or not independent["reviewer"]:
+    if independent["status"] != "APPROVED_FOR_EXACT_RECOVERY_V0_6_IMPLEMENTATION_AND_PHASE_A" or not isinstance(independent["reviewer"], str) or not independent["reviewer"]:
         blockers.append(CANONICAL_BLOCKERS[1])
     if readiness["runtimeDependencyAdded"] is not True or readiness["nonMetricImplementationVerificationPassed"] is not True:
         blockers.append(CANONICAL_BLOCKERS[2])
@@ -233,7 +259,7 @@ def main() -> int:
     ordered = [blocker_id for blocker_id in CANONICAL_BLOCKERS if blocker_id in set(blockers)]
     require(all(blocker_id in active_blockers for blocker_id in ordered), "Readiness checker emitted unknown blocker ID")
     require(not ordered, ", ".join(ordered))
-    print("POC-RECOVERY-001 v0.5 execution readiness passed")
+    print("POC-RECOVERY-001 v0.6 execution readiness passed")
     return 0
 
 

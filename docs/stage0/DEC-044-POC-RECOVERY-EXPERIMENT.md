@@ -1,10 +1,10 @@
 # DEC-044 — POC-RECOVERY-001 pre-PoC experiment decision
 
-Status: **Proposed experiment — active protocol v0.5 governance remediation and owner-approved prospective JSR-305 exclusion policy; implementation verification, accountable review and execution pending**\
+Status: **Proposed experiment — active protocol v0.6 exact KEY-04 governance remediation and owner-approved prospective JSR-305 exclusion policy; implementation verification, accountable review and execution pending**\
 Recorded for: **Project owner**\
 Recorded on: **2026-08-12**\
-Gate Set: `poc-recovery-stage0-v0.5`\
-Protocol: `poc-recovery-protocol-stage0-v0.5`\
+Gate Set: `poc-recovery-stage0-v0.6`\
+Protocol: `poc-recovery-protocol-stage0-v0.6`\
 Scope: governance-only remediation and readiness for `POC-RECOVERY-001` only\
 Execution authorized: **no**
 
@@ -18,10 +18,15 @@ AEAD microfiles as candidates, but evidence must precede a final audio/container
 The v0.3 package at reviewed commit `c61603d30c01c72347aa205c247729ad534c2882` received four
 final advisory findings `REC-GOV-V03-001`–`004`; historical v0.4 closed them. The v0.4 package at
 reviewed commit `c3eae5c3fbe5cba6a96ad827441cfe4e3f1bfc55` then received
-`REC-ADV-V04-001..004`; active v0.5 closes those findings prospectively without changing authority.
+`REC-ADV-V04-001..004`; historical v0.5 closed those findings prospectively. GPT-5.6 Sol,
+OpenAI, then returned non-formal documentary advisory disposition `CHANGES_REQUIRED` on commit
+`eca48ba62acd79007884710395cc40ea21a02611`: `REC-REV-20260812-01` identified an ambiguous
+inherited `KEY-04` oracle and `REC-REV-20260812-02` recorded the unassigned accountable reviewer.
+Active v0.6 closes only the former by an exact decrypt-failure override; the latter remains
+`OPEN_BLOCKING` and the AI review does not close `REC-RDY-02`.
 This record remains a **Proposed experiment decision**, not `ADR-AUDIO-001`, a
 production architecture decision, dependency admission, or permission to implement or execute a
-harness. Gate Set/protocol v0.1, v0.2, v0.3 and v0.4 remain unchanged SHA-256-pinned superseded audit artifacts and are
+harness. Gate Set/protocol v0.1, v0.2, v0.3, v0.4 and v0.5 remain unchanged SHA-256-pinned superseded audit artifacts and are
 non-executable.
 
 ## Approved prospective dependency policy; no artifact admission
@@ -89,7 +94,7 @@ The authenticated manifest encoding is selected as
 `DORA_RECOVERY_MANIFEST_V1_BINARY_BE`: magic `DORARM01`, schema 1, LP16 ASCII protocol/candidate,
 raw 16-byte run ID, monotonic generation/previous-ciphertext digest, committed end and at most 721
 strictly ordered gap-free entries, with a 512 KiB plaintext cap and no trailing bytes. Exact field
-order is normative in the exact v0.3 base inherited through the immutable v0.4 contract by active Gate Set/protocol v0.5.
+order is normative in the exact v0.3 base inherited through immutable v0.4/v0.5 contracts by active Gate Set/protocol v0.6.
 
 No candidate is preferred in advance. A final `ADR-AUDIO-001` may be proposed only after valid
 evidence and cannot infer production admission from a Stage 0 result.
@@ -131,13 +136,25 @@ evidence and cannot infer production admission from a Stage 0 result.
   path, exclusive temp/write/file-fsync/rename/directory-fsync and SQLite run-row commit. The
   plaintext/AAD use separate `DORAKC01`/`DORAKA01` bounded big-endian schemas. Publication is
   forbidden until the 13-step bootstrap's successful `endTransaction()` return.
-- Active v0.5 has exactly eight unique KEY classifications: `KEY_REF_COLLISION`,
+- Active v0.6 has exactly eight unique KEY classifications: `KEY_REF_COLLISION`,
   `INCOMPLETE_KEY_BOOTSTRAP`, `KEY_CONFIRMATION_MISSING`, `CORRUPT_KEY_CONFIRMATION`,
   `KEY_UNAVAILABLE`, `KEY_UNAVAILABLE_KEY_MISMATCH`, `CORRUPT_KEY_ENVELOPE` and
   `KEY_ENVELOPE_AUTH_FAILURE`. New-run collision checks precede creation. Recovery uses the exact
-  ordered nine-step algorithm in the v0.5 Gate Set: stored path/type/ciphertext length/SHA checks
+  ordered nine-step algorithm in the v0.6 Gate Set: stored path/type/ciphertext length/SHA checks
   precede decrypt; plaintext parser/magic/schema/no-trailing and exact identity checks occur only
   after successful decrypt; no replacement alias/key is permitted.
+- The active matrix contains exactly one effective `KEY-04`. It requires an existing durable run row
+  and final confirmation; exact matching path/type/recorded ciphertext length/SHA-256; an existing
+  usable alias obtained through the approved Builder/`getAead` path; exact active-protocol AAD;
+  controller replacement of the underlying alias key with another valid AEAD key before recovery
+  while preserving the old confirmation ciphertext bytes and recorded identity; no recovery key
+  creation/replacement; and `Aead.decrypt(existingConfirmationCiphertext, exactAad)` ending only in
+  authentication/AAD failure. Its sole classification is `KEY_UNAVAILABLE_KEY_MISMATCH`.
+  Successful decrypt and post-decrypt plaintext/parser/identity mismatch are forbidden `KEY-04`
+  interpretations. They remain `KCF-07` and `CORRUPT_KEY_CONFIRMATION`; pre-decrypt confirmation
+  identity corruption, unusable aliases and structurally valid later-envelope auth failure remain
+  routed respectively to `CORRUPT_KEY_CONFIRMATION`, `KEY_UNAVAILABLE` and
+  `KEY_ENVELOPE_AUTH_FAILURE`.
 - A PoC-local platform `android.database.sqlite` journal is allowed only for DB/file split-brain
   and reconciliation tests. Room, SQLCipher, WorkManager, production schema and production
   migrations are prohibited.
@@ -159,8 +176,9 @@ The 12 strata retain 120 base attempts/candidate and now have exact candidate-sp
 barriers. In particular, microfile K02 is
 `MICROFILE_AFTER_AEAD_RETURN_BEFORE_TEMP_WRITE`; streaming K02 uses the harness-owned downstream
 ciphertext `OutputStream` callback; K04–K11 fix exact publication boundaries; and K12 uses an
-immutable seed plus canonical expected recovery result. The mandatory matrix now includes 46 rows:
-the 33 inherited rows, six `KCB-01..06` bootstrap kill points, six `KCF-01..06` inherited
+immutable seed plus canonical expected recovery result. The mandatory active effective matrix now
+includes exactly 46 unique rows and exactly one `KEY-04`: the 33 inherited IDs (with `KEY-04`
+semantics replaced only by the v0.6 override), six `KCB-01..06` bootstrap kill points, six `KCF-01..06` inherited
 confirmation rows and new `KCF-07`, whose correctly encrypted malformed plaintext must decrypt
 successfully and then classify `CORRUPT_KEY_CONFIRMATION` during post-decrypt exact plaintext
 validation. Phase A has three emulator plus one physical D2 repetition per row,
@@ -169,8 +187,8 @@ validation. Phase A has three emulator plus one physical D2 repetition per row,
 candidate.
 
 The normative definitions, encodings, predicates, strata, invalidation rules and fault matrix are
-in `DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_5.md` and machine-readable
-`poc-recovery-gate-set-stage0-v0.5.json` / `poc-recovery-protocol-stage0-v0.5.json`.
+in `DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_6.md` and machine-readable
+`poc-recovery-gate-set-stage0-v0.6.json` / `poc-recovery-protocol-stage0-v0.6.json`.
 
 ## Device and verdict contract
 
@@ -191,10 +209,14 @@ injections. PASS remains forbidden without the complete D1/D2/D5 profile.
 - The Project owner is the Stage 0 Product/IP reviewer and the only person who may later authorize
   execution. Product/IP approval does not approve crypto engineering or security.
 - A distinct accountable Engineering/Security reviewer, not the package author and not acting as
-  Production Security, must verify the selected v0.5 construction, key confirmation/hierarchy/AAD,
+  Production Security, must verify the selected v0.6 construction, effective KEY-04/KCF-07 routing,
+  key confirmation/hierarchy/AAD,
   checkpoint/commit semantics, parsers, barriers, durability and recovery state machine before
   execution. That reviewer is currently unassigned. This Codex remediation does not claim formal
   independence.
+- The recorded GPT-5.6 Sol/OpenAI review is AI documentary advisory evidence with
+  `formalReviewer=false` and disposition `CHANGES_REQUIRED`; it cannot serve as the distinct
+  accountable reviewer or close `REC-RDY-02`.
 - Production Legal is unassigned. Stage 0 evaluation review does not grant redistribution or
   production rights.
 - Supply-chain authenticity is verified for all eight publisher-closure coordinates. The

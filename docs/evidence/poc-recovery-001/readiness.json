@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 6,
+  "schemaVersion": 7,
   "pocId": "POC-RECOVERY-001",
   "assessedOn": "2026-08-12",
-  "status": "BLOCKED_POLICY_AND_EXACT_PACKET_EVIDENCE_CLOSED_ACTUAL_GRAPH_IMPLEMENTATION_REVIEW_PREFLIGHT_EXECUTION_PENDING",
+  "status": "BLOCKED_V0_6_KEY04_FINDING_CLOSED_ACCOUNTABLE_REVIEW_ACTUAL_GRAPH_IMPLEMENTATION_PREFLIGHT_EXECUTION_PENDING",
   "executionAllowed": false,
   "implementationAllowed": false,
   "implementationAllowedByThisPackage": false,
@@ -20,8 +20,9 @@
     "proposedDecisionPresent": true,
     "exactGateSetPresent": true,
     "machineProtocolPresent": true,
-    "activeGateSetVersion": "poc-recovery-stage0-v0.5",
-    "activeProtocolId": "poc-recovery-protocol-stage0-v0.5",
+    "activeGateSetVersion": "poc-recovery-stage0-v0.6",
+    "activeProtocolId": "poc-recovery-protocol-stage0-v0.6",
+    "governanceRemediationV06Present": true,
     "governanceRemediationV05Present": true,
     "governanceRemediationV04Present": true,
     "governanceRemediationV03Present": true,
@@ -34,6 +35,8 @@
     "v03Executable": false,
     "v04RetainedAsSupersededAuditArtifact": true,
     "v04Executable": false,
+    "v05RetainedAsSupersededAuditArtifact": true,
+    "v05Executable": false,
     "dependencyInventoryPresent": true,
     "licenseNoticeInventoryPresent": true,
     "securityInventoryPresent": true,
@@ -43,6 +46,7 @@
     "reviewFindingsV02LedgerPresent": true,
     "reviewFindingsV03LedgerPresent": true,
     "reviewFindingsV04LedgerPresent": true,
+    "reviewFindingsV05LedgerPresent": true,
     "dependencyIpAuthenticityV03Present": true,
     "ownerProductIpDecisionPresent": true,
     "ownerProductIpDecisionLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md",
@@ -70,6 +74,27 @@
     "executionAuthorizedOn": null,
     "productionLegalReviewer": null,
     "productionSecurityReviewer": null
+  },
+  "advisoryDocumentaryReview": {
+    "reviewer": "GPT-5.6 Sol",
+    "organization": "OpenAI",
+    "role": "AI documentary advisory reviewer",
+    "reviewDate": "2026-08-12",
+    "reviewedCommit": "eca48ba62acd79007884710395cc40ea21a02611",
+    "formalReviewer": false,
+    "disposition": "CHANGES_REQUIRED",
+    "recRev2026081201Disposition": "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE",
+    "recRev2026081202Disposition": "OPEN_BLOCKING",
+    "closesRecRdy02": false
+  },
+  "effectiveKey04": {
+    "activeOccurrenceCount": 1,
+    "decryptOutcome": "AUTHENTICATION_OR_AAD_FAILURE_ONLY",
+    "successfulDecryptAllowed": false,
+    "postDecryptParserOrPlaintextMismatchAllowed": false,
+    "expectedClassification": "KEY_UNAVAILABLE_KEY_MISMATCH",
+    "kcf07Preserved": true,
+    "kcf07ExpectedClassification": "CORRUPT_KEY_CONFIRMATION"
   },
   "dependencyExclusionPolicy": {
     "policyId": "REC-JSR305-EXCLUDE-001",
@@ -131,7 +156,7 @@
       "priority": "P0",
       "status": "OPEN_UNASSIGNED",
       "owner": "Project owner",
-      "condition": "Assign a distinct accountable recovery Engineering/Security reviewer and record a read-only v0.5 disposition including the canonical eight-class KEY algorithm and separate campaign profiles; current Codex remediation is not claimed formally independent."
+      "condition": "Assign a distinct accountable recovery Engineering/Security reviewer and record a formal read-only exact-HEAD v0.6 disposition including the exact effective KEY-04 decrypt-failure-only oracle, preserved KCF-07 route, canonical eight-class KEY algorithm and separate campaign profiles. The GPT-5.6 Sol/OpenAI documentary review is advisory only, formalReviewer=false, and does not close REC-RDY-02; Codex is not the accountable reviewer."
     },
     {
       "id": "REC-RDY-03-STREAMING-IMPLEMENTATION-VERIFICATION",
@@ -145,7 +170,7 @@
       "priority": "P0",
       "status": "OPEN_BY_DESIGN",
       "owner": "Future recovery implementation and accountable review tasks",
-      "condition": "Implement and non-metrically verify exact microfile parameters, manifest/AAD parsers, 13-step durable key-confirmation bootstrap, canonical post-decrypt-aware KEY reconciliation, Keystore envelopes, durability, SQLite, path, quarantine and 46-row fault contracts."
+      "condition": "Implement and non-metrically verify exact microfile parameters, manifest/AAD parsers, 13-step durable key-confirmation bootstrap, canonical post-decrypt-aware KEY reconciliation, exact v0.6 KEY-04 decrypt authentication/AAD failure-only oracle, preserved KCF-07 successful-decrypt malformed-plaintext route, Keystore envelopes, durability, SQLite, path, quarantine and 46 unique active fault rows."
     },
     {
       "id": "REC-RDY-05-FUTURE-RESOLVED-GRAPH",
@@ -166,7 +191,7 @@
       "priority": "P0",
       "status": "OPEN_BY_OWNER_INSTRUCTION",
       "owner": "Future separately scoped implementation task",
-      "condition": "Obtain separate owner implementation scope, then implement and safely non-metrically verify an isolated common harness only after repeat exact-HEAD read-only review and accountable v0.5 Engineering/Security review."
+      "condition": "Obtain separate owner implementation scope, then implement and safely non-metrically verify an isolated common harness only after repeat exact-HEAD read-only review and accountable v0.6 Engineering/Security review."
     },
     {
       "id": "REC-RDY-08-OWNER-EXECUTION-AUTHORIZATION",

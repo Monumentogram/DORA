@@ -17,16 +17,22 @@ owner_decision:
 
 recovery_owner_decision:
   id: OD-14
-  status: Prospective_governance_protocol_v0_5_proposed_experiment
+  status: Prospective_governance_protocol_v0_6_key04_override_proposed_experiment
   approved_on: "2026-08-12"
   owner: "Project owner"
   poc_id: POC-RECOVERY-001
-  gate_set: poc-recovery-stage0-v0.5
-  protocol: poc-recovery-protocol-stage0-v0.5
+  gate_set: poc-recovery-stage0-v0.6
+  protocol: poc-recovery-protocol-stage0-v0.6
   v0_1_disposition: superseded_audit_artifact_non_executable
   v0_2_disposition: superseded_audit_artifact_non_executable
   v0_3_disposition: superseded_sha256_pinned_audit_artifact_non_executable
   v0_4_disposition: superseded_sha256_pinned_audit_artifact_non_executable
+  v0_5_disposition: superseded_sha256_pinned_audit_artifact_non_executable
+  historical_artifact_count: 15
+  active_effective_fault_id_count: 46
+  active_effective_key04_count: 1
+  key04_expected_classification: KEY_UNAVAILABLE_KEY_MISMATCH
+  kcf07_expected_classification: CORRUPT_KEY_CONFIRMATION
   design_status: DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED
   governance_package_only: true
   implementation_allowed: false
@@ -93,6 +99,11 @@ recovery_owner_decision:
     product_ip_final_approved_reviewer: null
     product_ip_final_approved_on: null
     accountable_recovery_engineering_security_reviewer: null
+    advisory_documentary_reviewer: GPT-5.6 Sol, OpenAI
+    advisory_documentary_formal_reviewer: false
+    advisory_documentary_disposition: CHANGES_REQUIRED
+    rec_rev_20260812_01: CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE
+    rec_rev_20260812_02: OPEN_BLOCKING
     current_codex_review_claimed_formally_independent: false
     separate_owner_execution_authorization_required: true
     execution_authorized_by: null
