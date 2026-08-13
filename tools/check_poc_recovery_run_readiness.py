@@ -14,6 +14,8 @@ STAGE0 = ROOT / "docs" / "stage0"
 EVIDENCE = ROOT / "docs" / "evidence" / "poc-recovery-001"
 GATE_ID = "poc-recovery-stage0-v0.6"
 PROTOCOL_ID = "poc-recovery-protocol-stage0-v0.6"
+REVIEWED_V06_HEAD = "b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd"
+POST_MERGE_EVIDENCE = EVIDENCE / "post-merge-advisory-rereview-2026-08-13.json"
 POLICY_ID = "REC-JSR305-EXCLUDE-001"
 TINK_COORDINATE = "com.google.crypto.tink:tink-android:1.23.0"
 JSR_COORDINATE = "com.google.code.findbugs:jsr305:3.0.2"
@@ -63,12 +65,13 @@ def validate_static_contract(
     readiness: dict[str, Any],
     analysis: dict[str, Any],
     roles: dict[str, Any],
+    rereview: dict[str, Any],
 ) -> None:
     require(gate["schemaVersion"] == 6 and gate["gateSetVersion"] == GATE_ID, "Active Gate Set is not v0.6")
     require(protocol["schemaVersion"] == 6 and protocol["protocolId"] == PROTOCOL_ID, "Active protocol is not v0.6")
-    require(readiness["schemaVersion"] == 7, "Recovery readiness schema is stale")
+    require(readiness["schemaVersion"] == 8, "Recovery readiness schema is stale")
     require(analysis["schemaVersion"] == 3, "JSR305 exclusion analysis schema is stale")
-    require(roles["schemaVersion"] == 7, "Recovery review-role schema is stale")
+    require(roles["schemaVersion"] == 8, "Recovery review-role schema is stale")
     require(
         readiness["packageArtifacts"]["activeGateSetVersion"] == GATE_ID
         and readiness["packageArtifacts"]["activeProtocolId"] == PROTOCOL_ID
@@ -87,6 +90,24 @@ def validate_static_contract(
         and roles["roles"]["advisoryDocumentaryReviewer"]["formalReviewer"] is False
         and roles["roles"]["independentRecoveryEngineeringSecurity"]["reviewer"] is None,
         "Advisory review acquired formal/accountable authority",
+    )
+    rereview_summary = readiness["advisoryDocumentaryReReviewEvidence"]
+    rereview_record = rereview["advisoryReReview"]
+    require(
+        rereview["schemaVersion"] == 1
+        and rereview["scope"] == "GOVERNANCE_ONLY_POST_MERGE_RECONCILIATION"
+        and rereview_summary["locator"] == "docs/evidence/poc-recovery-001/post-merge-advisory-rereview-2026-08-13.json"
+        and rereview_summary["reviewedCommit"] == rereview_record["reviewedCommit"] == REVIEWED_V06_HEAD
+        and rereview_summary["formalReviewer"] is rereview_record["formalReviewer"] is False
+        and rereview_summary["disposition"] == rereview_record["disposition"] == "NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED"
+        and rereview_summary["actionableFindings"] == rereview_record["actionableFindings"] == []
+        and rereview_summary["repeatAdvisoryReviewComplete"] is rereview_record["repeatAdvisoryReviewComplete"] is True
+        and rereview_summary["closesRecRev2026081202"] is rereview_record["closesRecRev2026081202"] is False
+        and rereview_summary["closesRecRdy02"] is rereview_record["closesRecRdy02"] is False
+        and rereview["findingState"]["REC-REV-20260812-02"] == "OPEN_BLOCKING"
+        and rereview["readinessBoundary"]["recRdy02Status"] == "OPEN_UNASSIGNED"
+        and rereview["readinessBoundary"]["accountableEngineeringSecurityReviewer"] is None,
+        "Post-merge advisory re-review acquired authority or closed a blocking finding",
     )
     rows = protocol["faultCampaign"]["activeEffectiveFaultMatrixV06"]["rows"]
     ids = [row["id"] for row in rows]
@@ -196,8 +217,9 @@ def main() -> int:
     readiness = read_json(EVIDENCE / "readiness.json")
     analysis = read_json(EVIDENCE / "jsr305-exclusion-analysis-2026-08-12.json")
     roles = read_json(EVIDENCE / "review-roles.json")
+    rereview = read_json(POST_MERGE_EVIDENCE)
     provenance = read_json(EVIDENCE / "sqlite-platform-provenance.json")
-    validate_static_contract(gate, protocol, readiness, analysis, roles)
+    validate_static_contract(gate, protocol, readiness, analysis, roles, rereview)
 
     active_blockers = {item["id"]: item for item in readiness["blockers"]}
     blockers: list[str] = []

@@ -1,7 +1,8 @@
-# Задание: повторный exact-HEAD read-only Engineering/Security review POC-RECOVERY-001 v0.6
+# Задание: accountable exact-package read-only Engineering/Security review POC-RECOVERY-001 v0.6
 
-Проведи recovery-scoped Engineering/Security review только exact remediation commit
-governance/readiness package `POC-RECOVERY-001` после disposition `CHANGES_REQUIRED`. Не реализуй
+Проведи recovery-scoped Engineering/Security review exact v0.6 package at PR #12 HEAD
+`b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd`, whose tree was squash-merged to `main` as
+`f14c6f37d7acb37590be875f176653c100f0ae20`. Не реализуй
 harness, не добавляй зависимости, не запускай device tests, kill campaign или benchmarks и не
 меняй production `:app`. Reviewer должен быть distinct accountable reviewer; текущая Codex
 remediation не заявляет формальную независимость.
@@ -11,6 +12,12 @@ reviewer`, дата 2026-08-12, reviewed commit
 `eca48ba62acd79007884710395cc40ea21a02611`, `formalReviewer=false`, disposition
 `CHANGES_REQUIRED`. Active v0.6 remediation закрывает только documentary finding
 `REC-REV-20260812-01`; `REC-REV-20260812-02` и `REC-RDY-02` остаются `OPEN_BLOCKING`.
+
+Последующий non-formal evidence re-review: OpenAI Codex (GPT-5), OpenAI, роль
+`AI documentary advisory reviewer`, дата 2026-08-13, reviewed commit
+`b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd`, `formalReviewer=false`, disposition
+`NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED`, actionable findings отсутствуют. Review не
+публиковался как formal GitHub review и не закрывает `REC-REV-20260812-02` или `REC-RDY-02`.
 
 ## Обязательные входы
 
@@ -141,4 +148,5 @@ packet evidence закрыты; Product/IP disposition будущего actual r
 решением. Затем нужны
 separately scoped harness implementation/non-metric verification, exact future resolved graph и
 fresh emulator/D2 preflight. Только после этого Project owner может отдельной записью разрешить
-Phase A. Не переводить PR из Draft и не merge.
+Phase A. Не считать merge PR #12 формальным review или authorization; не переводить текущий
+post-merge reconciliation PR из Draft и не merge.

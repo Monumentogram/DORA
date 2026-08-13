@@ -1,6 +1,6 @@
 # Dora MVP 1 — Stage Status
 
-Updated: 12 August 2026
+Updated: 13 August 2026
 Baseline: `1be83e2940a09f7b23e33b4cdf3827de2690f3fd`
 Stage 00 merge commit: `a4aae302f9033e5471f6759f513e7e351c375a72`
 Stage 0A merge commit: `91b9916b01ff70f63d82412bafbed0d72307dbe1`
@@ -9,9 +9,9 @@ Default branch: `main`
 Stage 0B merge commit: `5e748469b22c6e7303fe6eb5f95394ea40088d84`
 Stage 0C merge commit: `849d9d0406a619b334c9b707a4b6b42b34885b4b`
 Active stage: `Stage 0D — POC-RECOVERY-001 governance/readiness package`
-Active branch: `stage/0d-poc-recovery-key04-v06`
+Active branch: `agent/stage-0d-post-merge-reconciliation`
 Active PoC: `POC-RECOVERY-001`
-Stage state: **GOVERNANCE REMEDIATION v0.6 — EXACT EFFECTIVE KEY-04 ORACLE FIXED; ACCOUNTABLE REVIEW, IMPLEMENTATION AND EXECUTION BLOCKED**
+Stage state: **PR #12 MERGED; ADVISORY RE-REVIEW COMPLETE WITHOUT DOCUMENTARY FINDINGS; ACCOUNTABLE REVIEW, IMPLEMENTATION AND EXECUTION BLOCKED**
 
 ## Stage 00 closure
 
@@ -161,7 +161,7 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - `OD-11`: Project owner is Product and IP policy reviewer and acts as Engineering/Security reviewer only for Stage 0 evaluation. This does not replace production Legal or independent production Security. Embedded platform SQLite may use the containing system-image digest plus exact image/runtime identity for Stage 0; that boundary must be reconsidered before production admission.
 - `OD-12`: Project owner prospectively approves Option B for `stage0-v0.2`, based on the local-MVP storage/update/one-second visibility balance and not on prior Dora results. Benchmark execution remains separately withheld.
 - `OD-13`: Project owner approves the exact 66-component/license/NOTICE/platform package only for internal synthetic Stage 0 evaluation and accepts formal `INCONCLUSIVE` closure without a new benchmark. This is not production Legal/Security approval, does not admit FTS4 automatically, is not retroactive, and leaves D1/D3 plus measured execution deferred.
-- `OD-14`: Project owner constraints link active prospective governance protocol v0.6, which inherits all unchanged SHA-256-pinned v0.5/v0.4/v0.3 semantics and replaces only effective KEY-04 while preserving the 46-row campaign profiles and canonical blocker IDs. `REC-REV-20260812-01` is `CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE`; advisory `formalReviewer=false` does not close `REC-REV-20260812-02` or `REC-RDY-02`, both still blocking accountable review. Prospective `REC-JSR305-EXCLUDE-001` and exact governance authenticity/LICENSE/NOTICE evidence are closed; the future actual recovery graph/package/R8 evidence and its Product/IP disposition remain open/blocking. The selected construction remains `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`; excluded JSR-305 terms are not interpreted and use/distribution is not approved. Repeat exact-HEAD review, distinct accountable Engineering/Security review, separate implementation authorization/verification and later owner execution authorization remain mandatory; `implementationAllowed=false`; `executionAllowed=false`.
+- `OD-14`: Project owner constraints link active prospective governance protocol v0.6, which inherits all unchanged SHA-256-pinned v0.5/v0.4/v0.3 semantics and replaces only effective KEY-04 while preserving the 46-row campaign profiles and canonical blocker IDs. `REC-REV-20260812-01` is `CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE`; advisory `formalReviewer=false` does not close `REC-REV-20260812-02` or `REC-RDY-02`, both still blocking accountable review. Prospective `REC-JSR305-EXCLUDE-001` and exact governance authenticity/LICENSE/NOTICE evidence are closed; the future actual recovery graph/package/R8 evidence and its Product/IP disposition remain open/blocking. The selected construction remains `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`; excluded JSR-305 terms are not interpreted and use/distribution is not approved. PR #12 merged the v0.6 package, and the repeat AI documentary re-review completed without actionable findings; distinct accountable Engineering/Security review, separate implementation authorization/verification and later owner execution authorization remain mandatory. `implementationAllowed=false`; `executionAllowed=false`.
 
 ## Current gates and blockers
 
@@ -173,9 +173,9 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
   Coordinate authenticity, immutable JetBrains LICENSE/NOTICE and conditioned JSR-305 exclusion
   are verified; the owner accepted `REC-JSR305-EXCLUDE-001` as prospective policy for the reviewed
   governance package. The underlying excluded-artifact conflict is not interpreted,
-  JSR-305 use/distribution is not approved, and repeat exact-HEAD review, a distinct accountable
-  recovery Engineering/Security reviewer/approval and separate implementation authorization remain
-  unresolved.
+  JSR-305 use/distribution is not approved. The repeat AI documentary exact-HEAD re-review is
+  complete without actionable findings; a distinct accountable recovery Engineering/Security
+  reviewer/approval and separate implementation authorization remain unresolved.
 - The exact published Tink closure is inventoried without Gradle wiring. A future harness-resolved
   graph remains a P0 pre-execution check because repository Kotlin alignment may differ from the
   publisher POM closure. It must enumerate every resolvable compile/runtime/unit-test/`androidTest`/
@@ -251,15 +251,21 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - No controlled non-public evidence store or custodian has been configured. Until then, only synthetic data and sanitized aggregate/public evidence are allowed; raw traces/audio and purpose-recorded volunteer phrases remain blocked.
 - Production markets/lawful basis/copy under `DEC-001` and Legal review remain unresolved. The Stage 0 reminder checkbox does not resolve production consent legality.
 - No PoC result admits a production dependency. Native code or model admission later requires an ADR plus license, provenance, ABI, 16-KiB and runtime evidence.
-- `main` remains the protected integration branch. Stage 0C/PR #10 is already merged at the recorded
-  commit. PR #11 is already merged and untouched. Stage 0D governance correction stays on
-  `stage/0d-poc-recovery-key04-v06`; its new Draft PR must remain unmerged.
+- `main` remains the protected integration branch. Stage 0C/PR #10 and PR #11 are already merged and
+  untouched. Protected GitHub squash merge PR #12 closed at 06:03:14 Europe/Moscow on 13 August
+  2026 as `main` commit `f14c6f37d7acb37590be875f176653c100f0ae20`; that commit has parent
+  `eca48ba62acd79007884710395cc40ea21a02611` and the same tree as PR HEAD
+  `b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd`. Post-merge `android-bootstrap` and
+  `search-smoke` succeeded, and the source head branch is preserved.
 
 ## Next safe action
 
-Perform a repeat read-only review of the exact resulting governance commit without implementation
-or execution. The prospective owner/Stage 0 Product-IP policy disposition is recorded; the Project
-owner must assign a distinct accountable recovery Engineering/Security reviewer. That reviewer
+The repeat OpenAI Codex (GPT-5) documentary advisory review of exact PR HEAD `b5371f…` completed
+with `NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED`, no actionable findings and
+`formalReviewer=false`; it was not published as a formal GitHub review and does not close
+`REC-REV-20260812-02` or `REC-RDY-02`. The prospective owner/Stage 0 Product-IP policy disposition
+is recorded. The next gate is for the Project owner to assign a distinct accountable recovery
+Engineering/Security reviewer. That reviewer
 must verify or require revision
 of the selected v0.6 Streaming/microfile construction, exact effective KEY-04/KCF-07 routing,
 durable key-confirmation bootstrap,
@@ -268,7 +274,8 @@ SQLite profile, public barriers and complete fault/recovery state machine. Only 
 scoped owner task may authorize implementation and non-metrically verify the isolated harness;
 only after exact excluded Gradle graph/release R8, scoped Product/IP disposition of the actual graph
 and fresh device SQLite/Keystore/filesystem preflight may a still later owner record change
-`executionAllowed`. The new v0.6 Draft PR must remain unmerged.
+`executionAllowed`. The post-merge reconciliation PR is governance-only and must remain Draft and
+unmerged.
 
 ## Update protocol
 

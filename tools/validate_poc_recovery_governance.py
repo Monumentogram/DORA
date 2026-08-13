@@ -18,6 +18,11 @@ PROTOCOL_PATH = "docs/stage0/poc-recovery-protocol-stage0-v0.6.json"
 GATE_ID = "poc-recovery-stage0-v0.6"
 PROTOCOL_ID = "poc-recovery-protocol-stage0-v0.6"
 REVIEWED_V05_HEAD = "eca48ba62acd79007884710395cc40ea21a02611"
+REVIEWED_V06_HEAD = "b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd"
+MERGED_V06_MAIN = "f14c6f37d7acb37590be875f176653c100f0ae20"
+MERGED_V06_TREE = "1fd03fd489836c65f7ee043298f8f6d32df00c55"
+POST_MERGE_EVIDENCE_PATH = "docs/evidence/poc-recovery-001/post-merge-advisory-rereview-2026-08-13.json"
+POST_MERGE_EVIDENCE_SHA256 = "f9165ec41d6bd5a5f6286a8f95223802a7bc91272103da8da05937e4fa4b7d91"
 BASE_HEAD = REVIEWED_V05_HEAD
 SQLITE_STATUS = "RECOVERY_STAGE0_V0_6_SQLITE_PROFILE_SELECTED_FRESH_PREFLIGHT_INCOMPLETE"
 
@@ -386,6 +391,94 @@ def validate_protocol(protocol: dict[str, Any]) -> None:
     )
 
 
+def validate_post_merge_evidence(record: dict[str, Any]) -> None:
+    require(
+        record["schemaVersion"] == 1
+        and record["evidenceId"] == "POC-RECOVERY-001-POST-MERGE-ADVISORY-REREVIEW-20260813"
+        and record["pocId"] == "POC-RECOVERY-001"
+        and record["recordedOn"] == "2026-08-13"
+        and record["scope"] == "GOVERNANCE_ONLY_POST_MERGE_RECONCILIATION",
+        "Post-merge evidence identity drift",
+    )
+    merge = record["mergeEvidence"]
+    require(
+        merge["repository"] == "Monumentogram/DORA"
+        and merge["pullRequest"] == 12
+        and merge["url"] == "https://github.com/Monumentogram/DORA/pull/12"
+        and merge["state"] == "CLOSED"
+        and merge["merged"] is True
+        and merge["draft"] is False
+        and merge["mergedAt"] == "2026-08-13T06:03:14+03:00"
+        and merge["timezone"] == "Europe/Moscow"
+        and merge["mergeMethod"] == "PROTECTED_GITHUB_SQUASH_MERGE"
+        and merge["previousMainCommit"] == REVIEWED_V05_HEAD
+        and merge["pullRequestHeadCommit"] == REVIEWED_V06_HEAD
+        and merge["mergedMainCommit"] == MERGED_V06_MAIN
+        and merge["mergeCommitParents"] == [REVIEWED_V05_HEAD]
+        and merge["mergeCommitTreeObjectId"] == MERGED_V06_TREE
+        and merge["pullRequestHeadTreeObjectId"] == MERGED_V06_TREE
+        and merge["mergeTreeMatchesPullRequestHeadTree"] is True
+        and merge["sourceHeadBranch"] == "stage/0d-poc-recovery-key04-v06"
+        and merge["sourceHeadBranchPreserved"] is True,
+        "PR #12 merge evidence drift",
+    )
+    actions = record["postMergeActions"]
+    require(
+        actions["workflow"] == "Android CI"
+        and actions["runId"] == 31662723278
+        and actions["event"] == "push"
+        and actions["headCommit"] == MERGED_V06_MAIN
+        and actions["status"] == "COMPLETED"
+        and actions["conclusion"] == "SUCCESS"
+        and actions["jobs"] == [
+            {"name": "android-bootstrap", "conclusion": "SUCCESS"},
+            {"name": "search-smoke", "conclusion": "SUCCESS"},
+        ],
+        "PR #12 post-merge Actions evidence drift",
+    )
+    review = record["advisoryReReview"]
+    require(
+        review["reviewer"] == "OpenAI Codex (GPT-5)"
+        and review["organization"] == "OpenAI"
+        and review["role"] == "AI documentary advisory reviewer"
+        and review["reviewDate"] == "2026-08-13"
+        and review["timezone"] == "Europe/Moscow"
+        and review["reviewedCommit"] == REVIEWED_V06_HEAD
+        and review["reviewedTreeObjectId"] == MERGED_V06_TREE
+        and review["formalReviewer"] is False
+        and review["disposition"] == "NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED"
+        and review["actionableFindings"] == []
+        and review["publishedAsFormalGitHubReview"] is False
+        and review["repeatAdvisoryReviewComplete"] is True
+        and review["closesRecRev2026081202"] is False
+        and review["closesRecRdy02"] is False,
+        "Post-merge advisory re-review authority or disposition drift",
+    )
+    require(
+        record["findingState"] == {
+            "REC-REV-20260812-01": "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE",
+            "REC-REV-20260812-02": "OPEN_BLOCKING",
+        },
+        "Post-merge finding state drift",
+    )
+    boundary = record["readinessBoundary"]
+    require(
+        boundary["nextGate"] == "ASSIGN_DISTINCT_ACCOUNTABLE_RECOVERY_ENGINEERING_SECURITY_REVIEWER"
+        and boundary["recRdy02Priority"] == "P0"
+        and boundary["recRdy02Status"] == "OPEN_UNASSIGNED"
+        and boundary["recRdy02Blocking"] is True
+        and boundary["accountableEngineeringSecurityReviewer"] is None
+        and all(boundary[field] is False for field in (
+            "implementationAllowed", "implementationAllowedByThisPackage", "executionAllowed",
+            "measuredExecutionAllowed", "recoveryDependencyWiringPresent", "recoveryModuleExists",
+            "harnessExists", "recoveryOrDeviceTestsExecuted", "killCampaignExecuted",
+            "benchmarkExecuted", "measuredExecutionPerformed", "dependencyAdmission",
+            "productionAdmission",
+        )),
+        "Post-merge fail-closed readiness boundary drift",
+    )
+
+
 def validate_readiness_and_evidence(gate: dict[str, Any]) -> None:
     readiness = read_json("docs/evidence/poc-recovery-001/readiness.json")
     roles = read_json("docs/evidence/poc-recovery-001/review-roles.json")
@@ -393,9 +486,13 @@ def validate_readiness_and_evidence(gate: dict[str, Any]) -> None:
     index = read_json("docs/evidence/poc-recovery-001/evidence-index.json")
     provenance = read_json("docs/evidence/poc-recovery-001/sqlite-platform-provenance.json")
     security = read_json("docs/evidence/poc-recovery-001/security-advisory-inventory.json")
+    post_merge = read_json(POST_MERGE_EVIDENCE_PATH)
+
+    require(sha256(POST_MERGE_EVIDENCE_PATH) == POST_MERGE_EVIDENCE_SHA256, "Post-merge evidence SHA-256 drift")
+    validate_post_merge_evidence(post_merge)
 
     require(
-        readiness["schemaVersion"] == 7
+        readiness["schemaVersion"] == 8
         and readiness["status"].startswith("BLOCKED_")
         and all(readiness[field] is False for field in (
             "executionAllowed", "implementationAllowed", "implementationAllowedByThisPackage",
@@ -416,16 +513,42 @@ def validate_readiness_and_evidence(gate: dict[str, Any]) -> None:
         and package["reviewFindingsV05LedgerPresent"] is True,
         "Readiness active package metadata drift",
     )
+    require(
+        package["postMergeAdvisoryReReviewEvidencePresent"] is True
+        and package["postMergeAdvisoryReReviewEvidenceLocator"] == POST_MERGE_EVIDENCE_PATH,
+        "Readiness lacks post-merge advisory re-review evidence",
+    )
     advisory = readiness["advisoryDocumentaryReview"]
     require(advisory["formalReviewer"] is False and advisory["closesRecRdy02"] is False, "Readiness treats advisory review as formal")
+    rereview = readiness["advisoryDocumentaryReReviewEvidence"]
+    require(
+        rereview["locator"] == POST_MERGE_EVIDENCE_PATH
+        and rereview["reviewer"] == post_merge["advisoryReReview"]["reviewer"]
+        and rereview["reviewedCommit"] == REVIEWED_V06_HEAD
+        and rereview["formalReviewer"] is False
+        and rereview["disposition"] == "NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED"
+        and rereview["actionableFindings"] == []
+        and rereview["publishedAsFormalGitHubReview"] is False
+        and rereview["repeatAdvisoryReviewComplete"] is True
+        and rereview["closesRecRev2026081202"] is False
+        and rereview["closesRecRdy02"] is False,
+        "Readiness post-merge advisory re-review drift",
+    )
     blocker_ids = [item["id"] for item in readiness["blockers"]]
     require(gate["blockers"] == blocker_ids == CANONICAL_BLOCKERS and len(set(blocker_ids)) == 11, "Readiness blocker contract drift")
     rec02 = readiness["blockers"][1]
-    require(rec02["status"] == "OPEN_UNASSIGNED" and "does not close REC-RDY-02" in rec02["condition"], "REC-RDY-02 was closed by advisory review")
+    require(rec02["priority"] == "P0" and rec02["status"] == "OPEN_UNASSIGNED", "REC-RDY-02 was closed by advisory review")
     require(readiness["phaseA"]["phaseATotalInjections"] == 184 and readiness["phaseA"]["hardKillDenominatorSeparate"] is True, "Readiness Phase A drift")
     require(readiness["fullVerdict"]["fullPhysicalTotalInjections"] == 138 and readiness["fullVerdict"]["deferred"] is True, "Readiness full physical drift")
 
-    require(roles["schemaVersion"] == 7 and roles["activeGateSetVersion"] == GATE_ID and roles["activeProtocolId"] == PROTOCOL_ID, "Review role metadata drift")
+    require(roles["schemaVersion"] == 8 and roles["activeGateSetVersion"] == GATE_ID and roles["activeProtocolId"] == PROTOCOL_ID, "Review role metadata drift")
+    require(
+        roles["advisoryReviewEvidenceLocators"] == [
+            "docs/evidence/poc-recovery-001/review-findings-v0.5.json",
+            POST_MERGE_EVIDENCE_PATH,
+        ],
+        "Review role advisory evidence history drift",
+    )
     role_map = roles["roles"]
     require(role_map["packageAuthor"]["claimedFormallyIndependentReviewer"] is False, "Codex claimed formal independence")
     require(role_map["advisoryDocumentaryReviewer"]["formalReviewer"] is False and role_map["advisoryDocumentaryReviewer"]["closesRecRdy02"] is False, "AI advisory reviewer gained formal authority")
@@ -455,10 +578,18 @@ def validate_readiness_and_evidence(gate: dict[str, Any]) -> None:
         "Finding severity/disposition drift",
     )
 
-    require(index["schemaVersion"] == 4 and index["activeGateSetVersion"] == GATE_ID and index["activeProtocolId"] == PROTOCOL_ID, "Evidence index metadata drift")
+    require(index["schemaVersion"] == 5 and index["activeGateSetVersion"] == GATE_ID and index["activeProtocolId"] == PROTOCOL_ID, "Evidence index metadata drift")
     require({item["locator"]: item["sha256"] for item in index["supersededAuditArtifacts"]} == IMMUTABLE_AUDIT_HASHES, "Evidence index historical hashes drift")
     artifact_ids = {item["id"] for item in index["artifacts"]}
     require({"REC-V06-GATE-MARKDOWN", "REC-V06-GATE-JSON", "REC-V06-PROTOCOL-JSON", "REC-V06-REMEDIATION", "REC-REVIEW-V05-LEDGER"}.issubset(artifact_ids), "Evidence index lacks v0.6 artifacts")
+    post_merge_index = next(item for item in index["artifacts"] if item["id"] == "REC-POST-MERGE-ADVISORY-REREVIEW-20260813")
+    require(
+        post_merge_index["locator"] == POST_MERGE_EVIDENCE_PATH
+        and post_merge_index["sha256"] == POST_MERGE_EVIDENCE_SHA256
+        and post_merge_index["sha256"] == sha256(post_merge_index["locator"])
+        and post_merge_index["status"] == "PR12_SQUASH_MERGED_ADVISORY_REREVIEW_NO_FURTHER_DOCUMENTARY_CHANGES_FORMAL_REVIEWER_FALSE_REC_RDY_02_OPEN",
+        "Evidence index post-merge advisory re-review pin drift",
+    )
 
     require(provenance["status"] == SQLITE_STATUS and provenance["activeGateSetVersion"] == GATE_ID and provenance["activeProtocolId"] == PROTOCOL_ID and provenance["phaseA"]["executionAllowed"] is False, "SQLite provenance metadata drift")
     require(provenance["fullPhysicalVerdict"]["D1"].startswith("UNAVAILABLE") and provenance["fullPhysicalVerdict"]["D5"].startswith("UNAVAILABLE"), "D1/D5 no longer deferred")
@@ -488,7 +619,7 @@ def validate_active_metadata() -> None:
         "docs/DORA_MVP1_TECHNICAL_PLAN.md": ["prospective protocol v0.6", "KEY_UNAVAILABLE_KEY_MISMATCH", "REC-RDY-02"],
         "docs/DORA_MVP1_PRODUCT_DECISIONS.md": [GATE_ID, PROTOCOL_ID, "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE"],
         "docs/DORA_MVP1_TEST_STRATEGY.md": ["POC-RECOVERY-001` v0.6", "46 unique active fault rows", "KCF-07"],
-        "docs/DORA_MVP1_STAGE_STATUS.md": ["GOVERNANCE REMEDIATION v0.6", GATE_ID, PROTOCOL_ID, "REC-REV-20260812-02"],
+        "docs/DORA_MVP1_STAGE_STATUS.md": ["PR #12 MERGED", GATE_ID, PROTOCOL_ID, "REC-REV-20260812-02", "NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED"],
         "docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md": [GATE_ID, PROTOCOL_ID, "KEY_UNAVAILABLE_KEY_MISMATCH", "KCF-07"],
         "docs/stage0/DORA_MVP1_POC_GATES.md": ["stage0-v0.6", "46 unique IDs", "KEY_UNAVAILABLE_KEY_MISMATCH"],
         "docs/stage0/DORA_MVP1_POC_EXECUTION_ORDER.md": ["stage0-v0.6", "46 unique active rows", "REC-RDY-02"],
@@ -507,7 +638,7 @@ def validate_active_metadata() -> None:
         ],
         "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md": [GATE_ID, PROTOCOL_ID, "REC-REV-20260812-01", "implementationAllowed=false"],
         "docs/DORA_MVP1_IMPLEMENTATION_READINESS.md": [GATE_ID, PROTOCOL_ID, "REC-RDY-02", "executionAllowed=false"],
-        "docs/evidence/poc-recovery-001/README.md": ["PROSPECTIVE PROTOCOL v0.6", "15 superseded audit artifacts", "GPT-5.6 Sol", "KCF-07"],
+        "docs/evidence/poc-recovery-001/README.md": ["PR #12 MERGED", "15 superseded audit artifacts", "GPT-5.6 Sol", "KCF-07", "NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED"],
         "docs/evidence/poc-recovery-001/governance-remediation-v0.6.md": [REVIEWED_V05_HEAD, "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE", "OPEN_BLOCKING"],
         "docs/evidence/poc-recovery-001/independent-engineering-security-review-task.md": ["POC-RECOVERY-001 v0.6", "KEY-04", "formalReviewer=false"],
         "docs/evidence/poc-recovery-001/ip-stage0-evaluation-review.md": [GATE_ID, PROTOCOL_ID, "does not\nclose `REC-RDY-02`"],
@@ -579,6 +710,21 @@ def run_negative_tests() -> None:
         print("PASS negative historical-v0.1-v0.5-hash-pin")
     else:
         raise ValueError("Negative test unexpectedly passed: historical-v0.1-v0.5-hash-pin")
+
+    post_merge_tests: list[tuple[str, Callable[[dict[str, Any]], None]]] = [
+        ("post-merge-rereview-formal-authority", lambda record: record["advisoryReReview"].__setitem__("formalReviewer", True)),
+        ("post-merge-rereview-closes-rec-rdy-02", lambda record: record["advisoryReReview"].__setitem__("closesRecRdy02", True)),
+        ("post-merge-implementation-authority", lambda record: record["readinessBoundary"].__setitem__("implementationAllowed", True)),
+    ]
+    for name, mutation in post_merge_tests:
+        record = read_json(POST_MERGE_EVIDENCE_PATH)
+        mutation(record)
+        try:
+            validate_post_merge_evidence(record)
+        except (ValueError, KeyError):
+            print(f"PASS negative {name}")
+        else:
+            raise ValueError(f"Negative test unexpectedly passed: {name}")
 
 
 def main() -> int:

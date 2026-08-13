@@ -1,8 +1,8 @@
 # POC-RECOVERY-001 governance/readiness evidence
 
-Status: **PROSPECTIVE PROTOCOL v0.6 — KEY-04 DOCUMENTARY FINDING CLOSED; ACCOUNTABLE REVIEW, ACTUAL GRAPH, IMPLEMENTATION AND EXECUTION BLOCKED**\
-Date: 12 August 2026\
-Branch: `stage/0d-poc-recovery-key04-v06`\
+Status: **PR #12 MERGED; ADVISORY RE-REVIEW COMPLETE WITHOUT DOCUMENTARY FINDINGS; ACCOUNTABLE REVIEW, ACTUAL GRAPH, IMPLEMENTATION AND EXECUTION BLOCKED**\
+Date: 13 August 2026\
+Branch: `agent/stage-0d-post-merge-reconciliation`\
 Measured execution: **none**
 
 This directory contains only public governance, provenance and review evidence for the proposed
@@ -13,6 +13,11 @@ Stage 0 recovery experiment. The first package received the owner-supplied dispo
 `governance-remediation-v0.5.md` records `REC-ADV-V04-001..004`, and
 `governance-remediation-v0.6.md` records `REC-REV-20260812-01..02` from the non-formal GPT-5.6 Sol
 documentary advisory review of commit `eca48ba62acd79007884710395cc40ea21a02611`.
+PR #12 subsequently squash-merged that v0.6 package to `main` as
+`f14c6f37d7acb37590be875f176653c100f0ae20`; its tree is identical to PR HEAD
+`b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd`. A separate 13 August OpenAI Codex (GPT-5)
+documentary advisory re-review of that PR HEAD recorded
+`NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED`, no actionable findings and `formalReviewer=false`.
 It contains no harness, recovery module, dependency lock from a runtime graph, device result,
 benchmark, key, keyset, ciphertext, plaintext, audio or database.
 
@@ -27,6 +32,7 @@ benchmark, key, keyset, ciphertext, plaintext, audio or database.
 | `governance-remediation-v0.5.md` | canonical KEY taxonomy, separate campaign profiles, blocker IDs and active metadata remediation | `REC-ADV-V04-001..004` closed prospectively; implementation/execution blocked |
 | `governance-remediation-v0.6.md` | exact effective KEY-04 decrypt-failure-only override and 46-row active matrix | `REC-REV-20260812-01` closed; `REC-REV-20260812-02` open/blocking |
 | `review-findings-v0.1.json` through `review-findings-v0.5.json` | sanitized stable finding ledgers | v0.5 ledger records GPT-5.6 Sol/OpenAI advisory `CHANGES_REQUIRED`; `formalReviewer=false`; accountable reviewer unassigned |
+| `post-merge-advisory-rereview-2026-08-13.json` | SHA-256-pinned PR #12 merge facts, post-merge Actions and separate advisory re-review | no further documentary changes; `formalReviewer=false`; `REC-REV-20260812-02` / `REC-RDY-02` remain blocking |
 | `dependency-inventory.json` | exact published JAR/POM/metadata closure for `tink-android:1.23.0`, hashes, edges and composition | verified publisher closure; all eight authenticity classifications verified; not runtime admission |
 | `jsr305-exclusion-analysis-2026-08-12.json` / `.md` | exact POM, source, bytecode, compiler, loader, D8/R8 and A–E decision analysis | conditioned complete exclusion technically proven; bare exclude rejected; Option A accepted prospectively by `OD-14` |
 | `jsr305-reference-classes-2026-08-12.txt` | complete sorted Tink class list containing JSR-305 descriptors | 182 classes; SHA-256 pinned by the analysis JSON |
@@ -118,12 +124,21 @@ task.
   12 August 2026 as an AI documentary advisory reviewer. Its disposition is `CHANGES_REQUIRED` and
   `formalReviewer=false`. v0.6 closes documentary finding `REC-REV-20260812-01`; governance finding
   `REC-REV-20260812-02` remains `OPEN_BLOCKING`. This evidence does not close `REC-RDY-02`.
+- PR #12 was closed by protected GitHub squash merge at 06:03:14 Europe/Moscow on 13 August 2026.
+  New `main` `f14c6f37d7acb37590be875f176653c100f0ae20` has one parent (`eca48ba…`) and the
+  same tree as PR HEAD `b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd`; post-merge
+  `android-bootstrap` and `search-smoke` succeeded and the source head branch remains preserved.
+- OpenAI Codex (GPT-5), OpenAI, separately re-reviewed PR HEAD `b5371f…` on 13 August 2026 as an
+  AI documentary advisory reviewer. The disposition is `NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED`,
+  actionable findings are absent, the review was not published as a formal GitHub review and
+  `formalReviewer=false`. It does not close `REC-REV-20260812-02` or `REC-RDY-02`.
 - The Project owner, acting as Stage 0 Product/IP reviewer, approved prospective policy
   `REC-JSR305-EXCLUDE-001` and the reviewed governance package at input HEAD
   `eb312feb2a0d5e5b24b45fcd045bacca94e8c9da`; exact governance authenticity/LICENSE/NOTICE evidence
   is verified. An actual dependency graph, dependency admission,
-  JSR-305 use/distribution, implementation and execution remain unapproved. The resulting exact
-  governance HEAD still requires repeat read-only review.
+  JSR-305 use/distribution, implementation and execution remain unapproved. The repeat AI
+  documentary re-review is complete; the next gate is assignment of a distinct accountable
+  recovery Engineering/Security reviewer.
 - A distinct accountable recovery Engineering/Security reviewer is unassigned. The current Codex
   remediation does not claim formal independence. That reviewer must verify or revise the selected
   streaming/microfile construction, lookahead proof, exact parsers/AAD/key path, commit/durability,

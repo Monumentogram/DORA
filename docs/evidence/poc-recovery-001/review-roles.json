@@ -1,9 +1,13 @@
 {
-  "schemaVersion": 7,
+  "schemaVersion": 8,
   "pocId": "POC-RECOVERY-001",
-  "recordedOn": "2026-08-12",
+  "recordedOn": "2026-08-13",
   "activeGateSetVersion": "poc-recovery-stage0-v0.6",
   "activeProtocolId": "poc-recovery-protocol-stage0-v0.6",
+  "advisoryReviewEvidenceLocators": [
+    "docs/evidence/poc-recovery-001/review-findings-v0.5.json",
+    "docs/evidence/poc-recovery-001/post-merge-advisory-rereview-2026-08-13.json"
+  ],
   "canonicalBlockerIds": [
     "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
     "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
@@ -127,7 +131,7 @@
       "status": "AUTHORIZATION_WITHHELD",
       "authorizedBy": null,
       "authorizedOn": null,
-      "precondition": "The prospective Product/IP policy is already accepted; repeat exact-HEAD package review and independent Engineering/Security review must complete, implementation must be separately authorized and safely verified, the future graph must prove zero forbidden jsr305 components under REC-JSR305-EXCLUDE-001, and device preflights must be reviewed.",
+      "precondition": "The prospective Product/IP policy is already accepted and the repeat AI documentary exact-HEAD re-review completed without actionable documentary findings; the distinct accountable Engineering/Security review must still complete, implementation must be separately authorized and safely verified, the future graph must prove zero forbidden jsr305 components under REC-JSR305-EXCLUDE-001, and device preflights must be reviewed.",
       "explicitLaterRecordRequired": true,
       "implicitAuthorizationAllowed": false
     },

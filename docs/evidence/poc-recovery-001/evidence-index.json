@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "pocId": "POC-RECOVERY-001",
-  "status": "GOVERNANCE_V0_6_KEY04_FINDING_CLOSED_ACCOUNTABLE_REVIEW_ACTUAL_GRAPH_IMPLEMENTATION_EXECUTION_BLOCKED",
+  "status": "PR12_MERGED_ADVISORY_REREVIEW_COMPLETE_NO_DOCUMENTARY_FINDINGS_ACCOUNTABLE_REVIEW_ACTUAL_GRAPH_IMPLEMENTATION_EXECUTION_BLOCKED",
   "activeGateSetVersion": "poc-recovery-stage0-v0.6",
   "activeProtocolId": "poc-recovery-protocol-stage0-v0.6",
   "implementationAllowed": false,
@@ -178,6 +178,12 @@
       "id": "REC-REVIEW-V05-LEDGER",
       "locator": "docs/evidence/poc-recovery-001/review-findings-v0.5.json",
       "status": "GPT_5_6_SOL_OPENAI_ADVISORY_CHANGES_REQUIRED_FORMAL_REVIEWER_FALSE_REC_RDY_02_OPEN"
+    },
+    {
+      "id": "REC-POST-MERGE-ADVISORY-REREVIEW-20260813",
+      "locator": "docs/evidence/poc-recovery-001/post-merge-advisory-rereview-2026-08-13.json",
+      "sha256": "f9165ec41d6bd5a5f6286a8f95223802a7bc91272103da8da05937e4fa4b7d91",
+      "status": "PR12_SQUASH_MERGED_ADVISORY_REREVIEW_NO_FURTHER_DOCUMENTARY_CHANGES_FORMAL_REVIEWER_FALSE_REC_RDY_02_OPEN"
     },
     {
       "id": "REC-DEPENDENCY-INVENTORY",

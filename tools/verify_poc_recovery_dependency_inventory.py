@@ -884,7 +884,7 @@ def validate_static(
         "License/NOTICE inventory JetBrains record drift",
     )
 
-    require(readiness["schemaVersion"] == 7 and readiness["executionAllowed"] is False and readiness["implementationAllowed"] is False and readiness["implementationAllowedByThisPackage"] is False, "Readiness authority boundary drift")
+    require(readiness["schemaVersion"] == 8 and readiness["executionAllowed"] is False and readiness["implementationAllowed"] is False and readiness["implementationAllowedByThisPackage"] is False, "Readiness authority boundary drift")
     require(
         readiness["packageArtifacts"]["activeGateSetVersion"] == GATE_ID
         and readiness["packageArtifacts"]["activeProtocolId"] == PROTOCOL_ID,
@@ -904,7 +904,7 @@ def validate_static(
         "Readiness recovery-only graph/R8 policy drift",
     )
     require(
-        review_roles["schemaVersion"] == 7
+        review_roles["schemaVersion"] == 8
         and review_roles["activeGateSetVersion"] == GATE_ID
         and review_roles["activeProtocolId"] == PROTOCOL_ID,
         "Review-role active v0.6 metadata drift",
@@ -922,6 +922,15 @@ def validate_static(
         review_roles["roles"]["advisoryDocumentaryReviewer"]["formalReviewer"] is False
         and review_roles["roles"]["advisoryDocumentaryReviewer"]["closesRecRdy02"] is False,
         "AI advisory review acquired formal/accountable authority",
+    )
+    rereview = readiness["advisoryDocumentaryReReviewEvidence"]
+    require(
+        rereview["formalReviewer"] is False
+        and rereview["disposition"] == "NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED"
+        and rereview["actionableFindings"] == []
+        and rereview["closesRecRev2026081202"] is False
+        and rereview["closesRecRdy02"] is False,
+        "AI advisory re-review acquired formal/accountable authority",
     )
 
 
