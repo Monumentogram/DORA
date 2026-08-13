@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "evidenceId": "POC-RECOVERY-001-FORMAL-HUMAN-ENGINEERING-SECURITY-REVIEW-20260813",
+  "pocId": "POC-RECOVERY-001",
+  "reviewType": "FORMAL_DISTINCT_ACCOUNTABLE_STAGE0_RECOVERY_ENGINEERING_SECURITY_REVIEW",
+  "formalReviewer": true,
+  "reviewMode": "READ_ONLY_DOCUMENTARY_STATIC",
+  "reviewDate": "2026-08-13",
+  "reviewer": {
+    "name": "Novikova Katerina",
+    "affiliation": "Rambus",
+    "affiliationOnly": true,
+    "capacity": "individual professional capacity; Rambus listed only as affiliation",
+    "projectRole": "Distinct accountable Stage 0 Recovery Engineering/Security reviewer",
+    "distinctFromPackageAuthor": true,
+    "packageAuthor": "Codex",
+    "rambusCorporateApprovalClaimed": false
+  },
+  "reviewedTarget": {
+    "packageCommit": "b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd",
+    "packageTree": "1fd03fd489836c65f7ee043298f8f6d32df00c55",
+    "gateSetVersion": "poc-recovery-stage0-v0.6",
+    "protocolId": "poc-recovery-protocol-stage0-v0.6"
+  },
+  "writtenConfirmationMethod": "Verbatim written response of Novikova Katerina, relayed by the Project owner in this Codex task on 2026-08-13.",
+  "publicRecordConsent": {
+    "consented": true,
+    "statement": "Я согласна на публичное размещение моего имени, affiliation, project role, review date и formal disposition в публичном репозитории DORA."
+  },
+  "advisoryDossier": {
+    "locator": "docs/evidence/poc-recovery-001/advisory-engineering-security-dossier-2026-08-13.md",
+    "sourceAttachmentSha256": "3cf168080a6733c0afb33ab618ddca8e724533b599ce72634e3cbe12bbb12f95",
+    "formalReviewer": false,
+    "isNovikovaKaterinaDecision": false,
+    "closesRecRdy02": false
+  },
+  "responses": [
+    {"id": "Q01", "subject": "DURABLE_ONE_SEGMENT_LOOKAHEAD, q/R, reads and EOF", "response": "ACCEPT"},
+    {"id": "Q02", "subject": "public non-deprecated streaming construction", "response": "ACCEPT"},
+    {"id": "Q03", "subject": "five-second AES256_GCM_TINK_IV12_TAG16 microfiles", "response": "ACCEPT"},
+    {"id": "Q04", "subject": "manifest, four exact AAD schemas and bounded rollback claim", "response": "ACCEPT"},
+    {"id": "Q05", "subject": "Android Keystore, key confirmation, ordered KEY taxonomy and KEY-04", "response": "ACCEPT"},
+    {"id": "Q06", "subject": "semantic commit and C/R/A accounting", "response": "ACCEPT"},
+    {"id": "Q07", "subject": "publication sequences, path families, reconciliation and quarantine", "response": "ACCEPT"},
+    {"id": "Q08", "subject": "SQLite contract and fresh preflight contract", "response": "ACCEPT"},
+    {"id": "Q09", "subject": "candidate-specific K01 through K12 barriers", "response": "ACCEPT"},
+    {"id": "Q10", "subject": "46 effective rows, KEY-04, KCF-07 and fault routing", "response": "ACCEPT"},
+    {"id": "Q11", "subject": "dependency, IP, authenticity and narrow R8 boundary", "response": "ACCEPT"},
+    {"id": "Q12", "subject": "separate campaign profiles, reuse criteria and canonical blockers", "response": "ACCEPT"}
+  ],
+  "requiredChanges": "not stated in the verbatim response",
+  "nonBlockingObservations": "not stated in the verbatim response",
+  "disposition": "APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW",
+  "confirmations": {
+    "personallyReadAdvisoryDossierAndReferencedEvidence": true,
+    "consciouslyAcceptedOrCorrectedEachOfTwelveResponses": true,
+    "acceptsAccountabilityForThisDisposition": true,
+    "reviewWasReadOnly": true,
+    "implementationPerformed": false,
+    "executionPerformed": false,
+    "measurementPerformed": false,
+    "isProductionSecurityApproval": false,
+    "isProductionLegalApproval": false,
+    "isDependencyAdmission": false,
+    "isExecutionAuthorization": false,
+    "isImplementationAuthorization": false,
+    "dispositionChangesAuthorityFlags": false
+  },
+  "findingClosures": {
+    "REC-REV-20260812-02": "CLOSED_BY_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW",
+    "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW": "CLOSED_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW"
+  },
+  "authorityBoundary": {
+    "implementationAllowed": false,
+    "implementationAllowedByThisPackage": false,
+    "executionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "phaseAAuthorized": false,
+    "dependencyAdmission": false,
+    "productionSecurityApproval": false,
+    "productionLegalApproval": false,
+    "formalGitHubReviewClaimed": false,
+    "separateImplementationReviewRequired": true,
+    "separateOwnerImplementationAuthorizationRequired": true,
+    "separateOwnerExecutionAuthorizationRequired": true
+  }
+}

@@ -1,8 +1,8 @@
 # POC-RECOVERY-001 governance/readiness evidence
 
-Status: **PR #12 MERGED; ADVISORY RE-REVIEW COMPLETE WITHOUT DOCUMENTARY FINDINGS; ACCOUNTABLE REVIEW, ACTUAL GRAPH, IMPLEMENTATION AND EXECUTION BLOCKED**\
+Status: **DISTINCT ACCOUNTABLE FORMAL HUMAN REVIEW COMPLETE; SEPARATE IMPLEMENTATION REVIEW/AUTHORIZATION, ACTUAL GRAPH, IMPLEMENTATION AND EXECUTION BLOCKED**\
 Date: 13 August 2026\
-Branch: `agent/stage-0d-post-merge-reconciliation`\
+Repository lifecycle: live Git/GitHub state is authoritative; no mutable branch or Pull Request state is a package invariant\
 Measured execution: **none**
 
 This directory contains only public governance, provenance and review evidence for the proposed
@@ -18,6 +18,13 @@ PR #12 subsequently squash-merged that v0.6 package to `main` as
 `b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd`. A separate 13 August OpenAI Codex (GPT-5)
 documentary advisory re-review of that PR HEAD recorded
 `NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED`, no actionable findings and `formalReviewer=false`.
+The separate AI-prepared Engineering/Security dossier is also advisory (`formalReviewer=false`) and
+is not Novikova Katerina's decision. Novikova Katerina, acting in individual professional capacity
+with Rambus listed only as affiliation, then returned the formal read-only disposition
+`APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW` for the exact PR #12 HEAD/tree. This closes
+`REC-REV-20260812-02` and `REC-RDY-02` without authorizing implementation, Phase A, execution,
+measurement, dependency admission, Production Security or Production Legal. No Rambus corporate
+approval is claimed.
 It contains no harness, recovery module, dependency lock from a runtime graph, device result,
 benchmark, key, keyset, ciphertext, plaintext, audio or database.
 
@@ -30,9 +37,12 @@ benchmark, key, keyset, ciphertext, plaintext, audio or database.
 | `governance-remediation-v0.3.md` | F-01–F-06 disposition and remaining blockers at the reviewed remediation point | F-01–F-06 closed; retained evidence of the underlying jsr305 license conflict |
 | `governance-remediation-v0.4.md` | final four-finding remediation and three-state readiness model | governance findings closed; future actual graph remains blocked |
 | `governance-remediation-v0.5.md` | canonical KEY taxonomy, separate campaign profiles, blocker IDs and active metadata remediation | `REC-ADV-V04-001..004` closed prospectively; implementation/execution blocked |
-| `governance-remediation-v0.6.md` | exact effective KEY-04 decrypt-failure-only override and 46-row active matrix | `REC-REV-20260812-01` closed; `REC-REV-20260812-02` open/blocking |
-| `review-findings-v0.1.json` through `review-findings-v0.5.json` | sanitized stable finding ledgers | v0.5 ledger records GPT-5.6 Sol/OpenAI advisory `CHANGES_REQUIRED`; `formalReviewer=false`; accountable reviewer unassigned |
-| `post-merge-advisory-rereview-2026-08-13.json` | SHA-256-pinned PR #12 merge facts, post-merge Actions and separate advisory re-review | no further documentary changes; `formalReviewer=false`; `REC-REV-20260812-02` / `REC-RDY-02` remain blocking |
+| `governance-remediation-v0.6.md` | exact effective KEY-04 decrypt-failure-only override and 46-row active matrix | historical remediation state: `REC-REV-20260812-01` closed; `REC-REV-20260812-02` was open/blocking |
+| `review-findings-v0.1.json` through `review-findings-v0.5.json` | sanitized stable historical advisory finding ledgers | unchanged; v0.5 records GPT-5.6 Sol/OpenAI `CHANGES_REQUIRED` with `formalReviewer=false` |
+| `post-merge-advisory-rereview-2026-08-13.json` | SHA-256-pinned PR #12 merge facts, post-merge Actions and separate advisory re-review | unchanged historical advisory evidence; `formalReviewer=false`; did not close either finding |
+| `advisory-engineering-security-dossier-2026-08-13.md` | separate AI-prepared technical review dossier | advisory only; `formalReviewer=false`; not Novikova Katerina's decision; does not close `REC-RDY-02` |
+| `formal-engineering-security-review-2026-08-13.json` | distinct accountable human review record and authority boundary | Novikova Katerina; `APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW`; no implementation/execution authority |
+| `review-findings-v0.6.json` | additive formal closure ledger preserving v0.1–v0.5 | `REC-REV-20260812-02` and `REC-RDY-02` closed by the formal human record |
 | `dependency-inventory.json` | exact published JAR/POM/metadata closure for `tink-android:1.23.0`, hashes, edges and composition | verified publisher closure; all eight authenticity classifications verified; not runtime admission |
 | `jsr305-exclusion-analysis-2026-08-12.json` / `.md` | exact POM, source, bytecode, compiler, loader, D8/R8 and A–E decision analysis | conditioned complete exclusion technically proven; bare exclude rejected; Option A accepted prospectively by `OD-14` |
 | `jsr305-reference-classes-2026-08-12.txt` | complete sorted Tink class list containing JSR-305 descriptors | 182 classes; SHA-256 pinned by the analysis JSON |
@@ -41,12 +51,12 @@ benchmark, key, keyset, ciphertext, plaintext, audio or database.
 | `jetbrains-annotations-license-notice-verification-2026-08-12.md` | immutable exact-commit JetBrains LICENSE/NOTICE bytes and independent SHA-256 verification | exact governance packet evidence verified; future NOTICE preservation required |
 | `base-lockfile-tooling-inventory-2026-08-12.json` | honest base lockfile Tink/JSR-305 tooling/test/lint/UTP inventory and exact recovery boundary | no repository-wide absence claim; unrelated paths are not recovery admission |
 | `license-notice-inventory.json` | exact POM declarations, upstream LICENSE/NOTICE evidence, shaded protobuf terms and patent notes | jsr305 signed-POM/exact-source conflict remains; artifact evaluation approval blocked and owner policy excludes it |
-| `security-advisory-inventory.json` | exact-version and historical advisory snapshot, upstream maintenance notes and crypto-review risks | snapshot complete; independent review pending |
+| `security-advisory-inventory.json` | exact-version and historical advisory snapshot, upstream maintenance notes and crypto-review risks | retained historical snapshot; later accountable review recorded separately |
 | `sqlite-platform-provenance.json` | recovery-only emulator/D2 platform SQLite provenance boundary | emulator pinned; D2 runtime preflight pending |
-| `review-roles.json` | reviewer assignment, scoped owner disposition and authority boundaries | prospective policy/governance package approved only; accountable Engineering/Security unassigned |
+| `review-roles.json` | reviewer assignment, scoped owner disposition and authority boundaries | accountable formal review complete; implementation and execution authority withheld |
 | `readiness.json` | fail-closed readiness record | `executionAllowed=false` |
 | `ip-stage0-evaluation-review.md` | human-readable supply-chain and Product/IP package assessment | prospective exclusion policy approved; artifact use, implementation and execution blocked |
-| `independent-engineering-security-review-task.md` | ready-to-send read-only review assignment | distinct accountable reviewer unassigned; no implementation/execution |
+| `independent-engineering-security-review-task.md` | retained read-only review assignment and question set | assignment completed 2026-08-13; no implementation/execution |
 
 The normative experiment decision, Gate Set and protocol are:
 
@@ -123,7 +133,8 @@ task.
 - GPT-5.6 Sol, OpenAI, reviewed commit `eca48ba62acd79007884710395cc40ea21a02611` on
   12 August 2026 as an AI documentary advisory reviewer. Its disposition is `CHANGES_REQUIRED` and
   `formalReviewer=false`. v0.6 closes documentary finding `REC-REV-20260812-01`; governance finding
-  `REC-REV-20260812-02` remains `OPEN_BLOCKING`. This evidence does not close `REC-RDY-02`.
+  `REC-REV-20260812-02` was `OPEN_BLOCKING` at the time of that historical record. This advisory
+  evidence did not close `REC-RDY-02` and remains unchanged.
 - PR #12 was closed by protected GitHub squash merge at 06:03:14 Europe/Moscow on 13 August 2026.
   New `main` `f14c6f37d7acb37590be875f176653c100f0ae20` has one parent (`eca48ba…`) and the
   same tree as PR HEAD `b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd`; post-merge
@@ -131,18 +142,25 @@ task.
 - OpenAI Codex (GPT-5), OpenAI, separately re-reviewed PR HEAD `b5371f…` on 13 August 2026 as an
   AI documentary advisory reviewer. The disposition is `NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED`,
   actionable findings are absent, the review was not published as a formal GitHub review and
-  `formalReviewer=false`. It does not close `REC-REV-20260812-02` or `REC-RDY-02`.
+  `formalReviewer=false`. It did not close `REC-REV-20260812-02` or `REC-RDY-02` and remains unchanged.
+- The AI-prepared `advisory-engineering-security-dossier-2026-08-13.md` is separate advisory
+  evidence with `formalReviewer=false`. It is not Novikova Katerina's decision and cannot close
+  `REC-RDY-02`.
+- Novikova Katerina, affiliation Rambus, acting in capacity exactly `individual professional
+  capacity; Rambus listed only as affiliation`, personally accepted the 12 review questions and
+  recorded `APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW` on 13 August 2026 for exact commit
+  `b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd` and tree
+  `1fd03fd489836c65f7ee043298f8f6d32df00c55`. The formal record closes
+  `REC-REV-20260812-02` and `REC-RDY-02`. It is read-only, was not published as a formal GitHub
+  review, claims no Rambus corporate approval, and does not authorize implementation, Phase A,
+  execution, measurement, dependency admission, Production Security or Production Legal.
 - The Project owner, acting as Stage 0 Product/IP reviewer, approved prospective policy
   `REC-JSR305-EXCLUDE-001` and the reviewed governance package at input HEAD
   `eb312feb2a0d5e5b24b45fcd045bacca94e8c9da`; exact governance authenticity/LICENSE/NOTICE evidence
   is verified. An actual dependency graph, dependency admission,
-  JSR-305 use/distribution, implementation and execution remain unapproved. The repeat AI
-  documentary re-review is complete; the next gate is assignment of a distinct accountable
-  recovery Engineering/Security reviewer.
-- A distinct accountable recovery Engineering/Security reviewer is unassigned. The current Codex
-  remediation does not claim formal independence. That reviewer must verify or revise the selected
-  streaming/microfile construction, lookahead proof, exact parsers/AAD/key path, commit/durability,
-  SQLite profile, public barriers and fault/recovery state machine.
+  JSR-305 use/distribution, implementation and execution remain unapproved. Accountable review is
+  complete; a separately scoped implementation review and separate owner implementation
+  authorization remain required before any implementation or non-metric verification.
 - Production Legal and Production Security remain null and separate future approvals.
 - A later owner authorization is required even after all package/reviewer conditions are met.
 

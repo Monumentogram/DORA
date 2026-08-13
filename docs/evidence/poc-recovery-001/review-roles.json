@@ -1,12 +1,17 @@
 {
-  "schemaVersion": 8,
+  "schemaVersion": 9,
   "pocId": "POC-RECOVERY-001",
   "recordedOn": "2026-08-13",
   "activeGateSetVersion": "poc-recovery-stage0-v0.6",
   "activeProtocolId": "poc-recovery-protocol-stage0-v0.6",
   "advisoryReviewEvidenceLocators": [
     "docs/evidence/poc-recovery-001/review-findings-v0.5.json",
-    "docs/evidence/poc-recovery-001/post-merge-advisory-rereview-2026-08-13.json"
+    "docs/evidence/poc-recovery-001/post-merge-advisory-rereview-2026-08-13.json",
+    "docs/evidence/poc-recovery-001/advisory-engineering-security-dossier-2026-08-13.md"
+  ],
+  "formalReviewEvidenceLocators": [
+    "docs/evidence/poc-recovery-001/formal-engineering-security-review-2026-08-13.json",
+    "docs/evidence/poc-recovery-001/review-findings-v0.6.json"
   ],
   "canonicalBlockerIds": [
     "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
@@ -98,13 +103,23 @@
     },
     "independentRecoveryEngineeringSecurity": {
       "role": "Distinct accountable recovery-scoped Engineering/Security reviewer",
-      "reviewer": null,
-      "status": "UNASSIGNED_BLOCKING",
-      "approvedReviewer": null,
-      "approvedOn": null,
+      "reviewer": "Novikova Katerina",
+      "affiliation": "Rambus",
+      "affiliationOnly": true,
+      "capacity": "individual professional capacity; Rambus listed only as affiliation",
+      "status": "APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW",
+      "approvedReviewer": "Novikova Katerina",
+      "approvedOn": "2026-08-13",
+      "formalReviewer": true,
+      "formalReviewEvidenceLocator": "docs/evidence/poc-recovery-001/formal-engineering-security-review-2026-08-13.json",
+      "reviewedCommit": "b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd",
+      "reviewedTree": "1fd03fd489836c65f7ee043298f8f6d32df00c55",
+      "recRev2026081202Disposition": "CLOSED_BY_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW",
+      "recRdy02Status": "CLOSED_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW",
+      "closesRecRdy02": true,
       "accountabilityRequired": true,
       "currentCodexRemediationClaimedFormallyIndependent": false,
-      "independence": "Must be distinct from the package author; review is separate from Project-owner Product/IP review and separate from Production Security.",
+      "independence": "Satisfied for this review by a reviewer distinct from package author Codex; the disposition is separate from Project-owner Product/IP review and separate from Production Security.",
       "requiredApprovals": [
         "DURABLE_ONE_SEGMENT_LOOKAHEAD q/R/read/EOF proof using public StreamingAead only",
         "non-deprecated 16/16-byte HKDF-SHA256 4096-byte streaming construction and one-derived-key-per-stream model",
@@ -122,8 +137,16 @@
         "later separately scoped implementation and non-metric implementation-verification evidence"
       ],
       "mayRejectOrRequireProtocolRevision": true,
+      "mayApproveImplementation": false,
       "mayAuthorizeExecution": false,
-      "replacesProductionSecurity": false
+      "replacesProductionSecurity": false,
+      "rambusCorporateApprovalClaimed": false,
+      "formalGitHubReviewClaimed": false,
+      "implementationAllowed": false,
+      "implementationAllowedByThisPackage": false,
+      "executionAllowed": false,
+      "measuredExecutionAllowed": false,
+      "phaseAAuthorized": false
     },
     "executionAuthorizer": {
       "role": "Stage 0 execution authorizer",
@@ -131,7 +154,7 @@
       "status": "AUTHORIZATION_WITHHELD",
       "authorizedBy": null,
       "authorizedOn": null,
-      "precondition": "The prospective Product/IP policy is already accepted and the repeat AI documentary exact-HEAD re-review completed without actionable documentary findings; the distinct accountable Engineering/Security review must still complete, implementation must be separately authorized and safely verified, the future graph must prove zero forbidden jsr305 components under REC-JSR305-EXCLUDE-001, and device preflights must be reviewed.",
+      "precondition": "The prospective Product/IP policy, repeat AI documentary re-review and distinct accountable Engineering/Security review are complete. Implementation must still be separately authorized and safely verified, the future graph must prove zero forbidden jsr305 components under REC-JSR305-EXCLUDE-001, and device preflights must be reviewed before a separate owner execution authorization.",
       "explicitLaterRecordRequired": true,
       "implicitAuthorizationAllowed": false
     },

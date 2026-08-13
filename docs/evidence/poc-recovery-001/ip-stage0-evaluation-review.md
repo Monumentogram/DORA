@@ -24,9 +24,12 @@ remediates `REC-ADV-V04-001..004` from source commit
 `c3eae5c3fbe5cba6a96ad827441cfe4e3f1bfc55` and requires repeat exact-commit
 review. GPT-5.6 Sol/OpenAI then provided non-formal AI documentary advisory disposition
 `CHANGES_REQUIRED` for commit `eca48ba62acd79007884710395cc40ea21a02611`. Active v0.6 closes
-`REC-REV-20260812-01` by the exact KEY-04 decrypt-failure-only override; accountable-review finding
-`REC-REV-20260812-02` remains `OPEN_BLOCKING`. `formalReviewer=false`, and this evidence does not
-close `REC-RDY-02` or claim formal independence for Codex.
+`REC-REV-20260812-01` by the exact KEY-04 decrypt-failure-only override. That historical advisory
+record remains `formalReviewer=false` and did not close `REC-RDY-02` or claim formal independence
+for Codex. Novikova Katerina later completed the distinct accountable read-only formal human review
+for exact `b5371f…`/tree `1fd03f…` with `APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW`, closing
+`REC-REV-20260812-02` and `REC-RDY-02`. Rambus is affiliation only; no corporate approval,
+implementation authority, dependency admission or execution authority is claimed.
 
 The exact root JAR/POM and seven external transitive coordinates are hashed and inventoried. The
 root is a Java JAR with no native/JNI entries and contains a shaded protobuf-java 4.33.6 runtime.
@@ -181,12 +184,12 @@ recovery-only platform boundary does not admit a production schema or component.
 | Reviewer | Requested disposition | Current state |
 |---|---|---|
 | Project owner / Stage 0 Product/IP | prospective policy and exact governance authenticity/LICENSE/NOTICE evidence | policy closed/approved and packet evidence closed/verified; future actual graph/package/R8 disposition open/blocking; excluded JSR-305 terms uninterpreted and use/distribution unapproved |
-| Distinct accountable recovery Engineering/Security | verify, reject or revise selected v0.6 construction/key-confirmation/effective KEY-04/KCF-07/commit/recovery/barrier/fault/campaign protocol; later verify implementation evidence | unassigned, blocking; GPT-5.6 Sol/OpenAI advisory is non-formal and current Codex remediation is not claimed independent |
+| Distinct accountable recovery Engineering/Security | verify, reject or revise selected v0.6 construction/key-confirmation/effective KEY-04/KCF-07/commit/recovery/barrier/fault/campaign protocol; later separately review implementation evidence | Novikova Katerina completed formal read-only package review in individual professional capacity, Rambus affiliation only, with `APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW`; implementation review/authorization remains separate and blocked |
 | Project owner / execution | after all other prerequisites, separately set `executionAllowed=true` for a named phase/commit | withheld |
 | Production Legal | production/redistribution assessment | unassigned; not required for package preparation, required before production |
 | Production Security | production admission assessment | separate future gate; not replaced |
 
-Until repeat exact-HEAD read-only review, distinct accountable review, separate implementation
-authorization, exact graph/release-R8/non-metric implementation evidence, scoped Product/IP
+The repeat advisory and distinct accountable exact-package reviews are complete. Until separate
+implementation review/authorization, exact graph/release-R8/non-metric implementation evidence, scoped Product/IP
 disposition of the actual graph, fresh preflight and a later owner execution authorization exist,
 `tools/check_poc_recovery_run_readiness.py` must fail closed.

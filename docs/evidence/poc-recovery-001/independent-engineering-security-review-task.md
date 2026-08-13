@@ -1,5 +1,11 @@
 # Задание: accountable exact-package read-only Engineering/Security review POC-RECOVERY-001 v0.6
 
+Assignment status: **COMPLETED 2026-08-13**. The retained question set below is the scope answered
+by Novikova Katerina in the distinct accountable formal human record at
+`docs/evidence/poc-recovery-001/formal-engineering-security-review-2026-08-13.json`. Rambus is
+listed only as affiliation; no Rambus corporate approval is claimed. This task remains a historical
+assignment artifact and is not an implementation, Phase A or execution authorization.
+
 Проведи recovery-scoped Engineering/Security review exact v0.6 package at PR #12 HEAD
 `b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd`, whose tree was squash-merged to `main` as
 `f14c6f37d7acb37590be875f176653c100f0ae20`. Не реализуй
@@ -10,14 +16,17 @@ remediation не заявляет формальную независимост�
 Предыдущий non-formal evidence review: GPT-5.6 Sol, OpenAI, роль `AI documentary advisory
 reviewer`, дата 2026-08-12, reviewed commit
 `eca48ba62acd79007884710395cc40ea21a02611`, `formalReviewer=false`, disposition
-`CHANGES_REQUIRED`. Active v0.6 remediation закрывает только documentary finding
-`REC-REV-20260812-01`; `REC-REV-20260812-02` и `REC-RDY-02` остаются `OPEN_BLOCKING`.
+`CHANGES_REQUIRED`. Active v0.6 remediation закрыла только documentary finding
+`REC-REV-20260812-01`; в момент этой assignment-записи `REC-REV-20260812-02` и `REC-RDY-02`
+оставались `OPEN_BLOCKING`. Позднейший formal human-review record закрыл их, не переписывая этот
+исторический advisory state.
 
 Последующий non-formal evidence re-review: OpenAI Codex (GPT-5), OpenAI, роль
 `AI documentary advisory reviewer`, дата 2026-08-13, reviewed commit
 `b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd`, `formalReviewer=false`, disposition
 `NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED`, actionable findings отсутствуют. Review не
-публиковался как formal GitHub review и не закрывает `REC-REV-20260812-02` или `REC-RDY-02`.
+публиковался как formal GitHub review и сам по себе не закрыл `REC-REV-20260812-02` или
+`REC-RDY-02`.
 
 ## Обязательные входы
 
@@ -148,5 +157,6 @@ packet evidence закрыты; Product/IP disposition будущего actual r
 решением. Затем нужны
 separately scoped harness implementation/non-metric verification, exact future resolved graph и
 fresh emulator/D2 preflight. Только после этого Project owner может отдельной записью разрешить
-Phase A. Не считать merge PR #12 формальным review или authorization; не переводить текущий
-post-merge reconciliation PR из Draft и не merge.
+Phase A. Не считать merge PR #12 формальным review или authorization. Состояние любого Pull
+Request проверяется по live GitHub metadata и не является неизменяемым инвариантом этого задания;
+PR #13 впоследствии был merged как governance-only reconciliation.
