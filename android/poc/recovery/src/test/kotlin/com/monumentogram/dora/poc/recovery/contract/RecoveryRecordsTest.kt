@@ -13,7 +13,7 @@ class RecoveryRecordsTest {
                 candidate = RecoveryCandidate.STREAM,
                 runId = RUN_ID,
                 generation = 1UL,
-                previousCheckpointCiphertextSha256 = DIGEST_00_1F,
+                previousCheckpointCiphertextSha256 = Sha256Value.ZERO,
                 durableNonFinalSegmentCount = 3UL,
                 ciphertextPrefixBytes = 12_288UL,
                 committedEndExclusive = 8_136UL,
@@ -41,6 +41,50 @@ class RecoveryRecordsTest {
         }
         assertThrows(RecoveryContractException::class.java) {
             checkpoint(streamCiphertextRelativeName = "")
+        }
+    }
+
+    @Test
+    fun `checkpoint and manifest reject invalid genesis and post-genesis digests`() {
+        assertThrows(RecoveryContractException::class.java) {
+            checkpoint(previousDigest = DIGEST_00_1F)
+        }
+        assertThrows(RecoveryContractException::class.java) {
+            checkpoint(generation = 2UL, previousDigest = Sha256Value.ZERO)
+        }
+        assertThrows(RecoveryContractException::class.java) {
+            manifest(
+                entries = emptyList(),
+                committedEndExclusive = 0UL,
+                previousDigest = DIGEST_00_1F,
+            )
+        }
+        assertThrows(RecoveryContractException::class.java) {
+            manifest(
+                entries = emptyList(),
+                committedEndExclusive = 0UL,
+                generation = 2UL,
+                previousDigest = Sha256Value.ZERO,
+            )
+        }
+    }
+
+    @Test
+    fun `checkpoint and manifest decode reject invalid generation digest semantics`() {
+        val checkpointGenesisWithNonZeroDigest = hex(CHECKPOINT_GOLDEN_HEX)
+        checkpointGenesisWithNonZeroDigest[CHECKPOINT_PREVIOUS_DIGEST_OFFSET] = 1
+        assertThrows(RecoveryContractException::class.java) {
+            RecoveryCheckpointCodec.decode(checkpointGenesisWithNonZeroDigest)
+        }
+
+        val manifestPostGenesisWithZeroDigest = hex(MANIFEST_GOLDEN_HEX)
+        manifestPostGenesisWithZeroDigest.fill(
+            0,
+            MANIFEST_PREVIOUS_DIGEST_OFFSET,
+            MANIFEST_PREVIOUS_DIGEST_OFFSET + Sha256Value.SIZE_BYTES,
+        )
+        assertThrows(RecoveryContractException::class.java) {
+            RecoveryManifestCodec.decode(manifestPostGenesisWithZeroDigest)
         }
     }
 
@@ -147,45 +191,32 @@ class RecoveryRecordsTest {
     }
 
     @Test
-    fun `manifest enforces the exact encoded plaintext boundary`() {
-        val baseEntries = sizedManifestEntries(List(NAME_FIELD_COUNT) { 1 })
-        val base = manifest(entries = baseEntries, committedEndExclusive = ENTRY_COUNT.toULong())
-        val remaining =
-            RecoveryContract.MAX_MANIFEST_PLAINTEXT_BYTES - RecoveryManifestCodec.encode(base).size
-        val lengths = MutableList(NAME_FIELD_COUNT) { 1 }
-        var bytesToAllocate = remaining
-        lengths.indices.forEach { index ->
-            val addition = minOf(bytesToAllocate, RecoveryContract.MAX_LP16_ASCII_BYTES - 1)
-            lengths[index] += addition
-            bytesToAllocate -= addition
-        }
-        assertEquals(0, bytesToAllocate)
-
-        val exact =
+    fun `manifest encoding remains bounded and oversized plaintext is rejected`() {
+        val entries =
+            List(RecoveryContract.MAX_MANIFEST_ENTRIES) { index ->
+                manifestEntry(
+                    unitIndex = index.toULong(),
+                    start = index.toULong(),
+                    end = index.toULong() + 1UL,
+                )
+            }
+        val maximum =
             manifest(
-                entries = sizedManifestEntries(lengths),
-                committedEndExclusive = ENTRY_COUNT.toULong(),
+                entries = entries,
+                committedEndExclusive = RecoveryContract.MAX_MANIFEST_ENTRIES.toULong(),
             )
-        assertEquals(
-            RecoveryContract.MAX_MANIFEST_PLAINTEXT_BYTES,
-            RecoveryManifestCodec.encode(exact).size,
-        )
-
-        val expandableIndex = lengths.indexOfLast { it < RecoveryContract.MAX_LP16_ASCII_BYTES }
-        val oversizedLengths = lengths.toMutableList()
-        oversizedLengths[expandableIndex] += 1
-        val oversized =
-            manifest(
-                entries = sizedManifestEntries(oversizedLengths),
-                committedEndExclusive = ENTRY_COUNT.toULong(),
-            )
+        val encoded = RecoveryManifestCodec.encode(maximum)
+        assertEquals(true, encoded.size <= RecoveryContract.MAX_MANIFEST_PLAINTEXT_BYTES)
         assertThrows(RecoveryContractException::class.java) {
-            RecoveryManifestCodec.encode(oversized)
+            RecoveryManifestCodec.decode(
+                ByteArray(RecoveryContract.MAX_MANIFEST_PLAINTEXT_BYTES + 1)
+            )
         }
     }
 
     private fun checkpoint(
         generation: ULong = 1UL,
+        previousDigest: Sha256Value = if (generation == 1UL) Sha256Value.ZERO else DIGEST_00_1F,
         ciphertextPrefixBytes: ULong = 12_288UL,
         committedEndExclusive: ULong = 8_136UL,
         streamCiphertextRelativeName: String = "stream/stream.ct",
@@ -194,7 +225,7 @@ class RecoveryRecordsTest {
             candidate = RecoveryCandidate.STREAM,
             runId = RUN_ID,
             generation = generation,
-            previousCheckpointCiphertextSha256 = DIGEST_00_1F,
+            previousCheckpointCiphertextSha256 = previousDigest,
             durableNonFinalSegmentCount = 3UL,
             ciphertextPrefixBytes = ciphertextPrefixBytes,
             committedEndExclusive = committedEndExclusive,
@@ -207,12 +238,14 @@ class RecoveryRecordsTest {
     private fun manifest(
         entries: List<RecoveryManifestEntry>,
         committedEndExclusive: ULong,
+        generation: ULong = 1UL,
+        previousDigest: Sha256Value = if (generation == 1UL) Sha256Value.ZERO else DIGEST_00_1F,
     ): RecoveryManifest =
         RecoveryManifest.create(
             candidate = RecoveryCandidate.MICROFILE,
             runId = RUN_ID,
-            generation = 1UL,
-            previousManifestCiphertextSha256 = DIGEST_00_1F,
+            generation = generation,
+            previousManifestCiphertextSha256 = previousDigest,
             committedEndExclusive = committedEndExclusive,
             entries = entries,
         )
@@ -224,8 +257,8 @@ class RecoveryRecordsTest {
         end: ULong,
         ciphertextBytes: ULong = 1UL,
         keyEnvelopeBytes: ULong = 1UL,
-        ciphertextRelativeName: String = "c",
-        keyEnvelopeRelativeName: String = "k",
+        ciphertextRelativeName: String = RecoveryRelativeNames.microfileCiphertext(unitIndex),
+        keyEnvelopeRelativeName: String = RecoveryRelativeNames.microfileKeyEnvelope(unitIndex),
     ): RecoveryManifestEntry =
         RecoveryManifestEntry(
             unitIndex = unitIndex,
@@ -240,31 +273,18 @@ class RecoveryRecordsTest {
             keyEnvelopeRelativeName = keyEnvelopeRelativeName,
         )
 
-    private fun sizedManifestEntries(nameLengths: List<Int>): List<RecoveryManifestEntry> {
-        require(nameLengths.size == NAME_FIELD_COUNT)
-        return List(ENTRY_COUNT) { index ->
-            manifestEntry(
-                unitIndex = index.toULong(),
-                start = index.toULong(),
-                end = index.toULong() + 1UL,
-                ciphertextRelativeName = "c".repeat(nameLengths[index * 2]),
-                keyEnvelopeRelativeName = "k".repeat(nameLengths[index * 2 + 1]),
-            )
-        }
-    }
-
     companion object {
         val RUN_ID = RunId.fromCanonicalString("00112233-4455-6677-8899-aabbccddeeff")
         val DIGEST_00_1F = Sha256Value.fromBytes(ByteArray(32) { it.toByte() })
         val DIGEST_20_3F = Sha256Value.fromBytes(ByteArray(32) { (it + 32).toByte() })
 
-        const val ENTRY_COUNT = 4
-        const val NAME_FIELD_COUNT = ENTRY_COUNT * 2
+        private const val CHECKPOINT_PREVIOUS_DIGEST_OFFSET = 86
+        private const val MANIFEST_PREVIOUS_DIGEST_OFFSET = 89
 
         const val CHECKPOINT_GOLDEN_HEX =
             "444f52415243303100010021706f632d7265636f766572792d70726f746f636f6c2d7374616765302d76302e36" +
                 "000f5245432d53545245414d2d54494e4b00112233445566778899aabbccddeeff0000000000000001" +
-                "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f000000030000000000003000" +
+                "0000000000000000000000000000000000000000000000000000000000000000000000030000000000003000" +
                 "0000000000001fc800000000000004d2202122232425262728292a2b2c2d2e2f303132333435363738393a3b" +
                 "3c3d3e3f001073747265616d2f73747265616d2e637400176b65792d656e76656c6f7065732f73747265616d" +
                 "2e6b73"

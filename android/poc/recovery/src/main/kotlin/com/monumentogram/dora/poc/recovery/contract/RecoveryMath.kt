@@ -97,12 +97,18 @@ data class StreamingReadAccounting(
     val authenticatedEof: Boolean,
 )
 
+enum class StreamingReadPhase(val exactRequestedBytes: Int) {
+    FIRST(RecoveryStreamingMath.FIRST_REQUESTED_PLAINTEXT_READ_BYTES),
+    SUBSEQUENT(RecoveryStreamingMath.LATER_REQUESTED_PLAINTEXT_READ_BYTES),
+}
+
 object StreamingReadContract {
     fun successfulReturn(
+        phase: StreamingReadPhase,
         requestedBytes: Int,
         returnedBytes: Int,
     ): StreamingReadAccounting {
-        contractRequire(requestedBytes >= 0) { "Requested byte count must not be negative" }
+        validateRequestedBytes(phase, requestedBytes)
         contractRequire(returnedBytes in 0..requestedBytes) {
             "Successful read byte count must fit the caller buffer"
         }
@@ -113,8 +119,11 @@ object StreamingReadContract {
         )
     }
 
-    fun readException(callerBufferBytes: Int): StreamingReadAccounting {
-        contractRequire(callerBufferBytes >= 0) { "Caller buffer byte count must not be negative" }
+    fun readException(
+        phase: StreamingReadPhase,
+        callerBufferBytes: Int,
+    ): StreamingReadAccounting {
+        validateRequestedBytes(phase, callerBufferBytes)
         return StreamingReadAccounting(
             countedAuthenticatedBytes = 0,
             discardedCallerBufferBytes = callerBufferBytes,
@@ -122,7 +131,12 @@ object StreamingReadContract {
         )
     }
 
-    fun returnedStatus(value: Int): StreamingReadAccounting {
+    fun returnedStatus(
+        phase: StreamingReadPhase,
+        requestedBytes: Int,
+        value: Int,
+    ): StreamingReadAccounting {
+        validateRequestedBytes(phase, requestedBytes)
         contractRequire(value == AUTHENTICATED_EOF) {
             "Only -1 represents authenticated normal EOF"
         }
@@ -131,6 +145,15 @@ object StreamingReadContract {
             discardedCallerBufferBytes = 0,
             authenticatedEof = true,
         )
+    }
+
+    private fun validateRequestedBytes(
+        phase: StreamingReadPhase,
+        requestedBytes: Int,
+    ) {
+        contractRequire(requestedBytes == phase.exactRequestedBytes) {
+            "Requested byte count does not match the Recovery read phase"
+        }
     }
 
     private const val AUTHENTICATED_EOF = -1

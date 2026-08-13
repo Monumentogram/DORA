@@ -1,5 +1,7 @@
 package com.monumentogram.dora.poc.recovery.contract
 
+import java.util.Collections
+
 data class KeyConfirmationValue(
     val candidate: RecoveryCandidate,
     val runId: RunId,
@@ -175,7 +177,7 @@ object KeyConfirmationRouting {
 }
 
 object RecoveryFaultCatalog {
-    val orderedIds: List<String> =
+    private val orderedIdsBacking: List<String> =
         listOf(
             "COR-01",
             "COR-02",
@@ -225,19 +227,22 @@ object RecoveryFaultCatalog {
             "KCF-07",
         )
 
+    val orderedIds: List<String>
+        get() = Collections.unmodifiableList(ArrayList(orderedIdsBacking))
+
     const val EXPECTED_ROW_COUNT = 46
     const val PHASE_A_INJECTIONS = 184
     const val FULL_PHYSICAL_INJECTIONS = 138
     const val BASE_HARD_KILLS_PER_CANDIDATE = 120
 
     init {
-        contractRequire(orderedIds.size == EXPECTED_ROW_COUNT) {
+        contractRequire(orderedIdsBacking.size == EXPECTED_ROW_COUNT) {
             "Recovery fault catalog must contain 46 rows"
         }
-        contractRequire(orderedIds.toSet().size == EXPECTED_ROW_COUNT) {
+        contractRequire(orderedIdsBacking.toSet().size == EXPECTED_ROW_COUNT) {
             "Recovery fault IDs must be unique"
         }
-        contractRequire(orderedIds.count { it == KEY_04_ID } == 1) {
+        contractRequire(orderedIdsBacking.count { it == KEY_04_ID } == 1) {
             "Recovery fault catalog must contain one KEY-04"
         }
     }

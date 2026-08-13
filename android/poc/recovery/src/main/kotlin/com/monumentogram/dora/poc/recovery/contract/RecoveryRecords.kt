@@ -16,9 +16,12 @@ data class RecoveryCheckpoint(
     val streamKeyEnvelopeRelativeName: String,
 ) {
     init {
-        contractRequire(generation >= FIRST_GENERATION) {
-            "Checkpoint generation must start at one"
-        }
+        validateCandidateBinding(candidate, RecoveryCandidate.STREAM, "Recovery checkpoint")
+        validateGenerationAndPreviousDigest(
+            generation,
+            previousCheckpointCiphertextSha256,
+            "Checkpoint",
+        )
         contractRequire(durableNonFinalSegmentCount <= RecoveryContract.U32_MAX) {
             "Checkpoint q does not fit U32"
         }
@@ -34,12 +37,9 @@ data class RecoveryCheckpoint(
         ) {
             "Checkpoint committed end does not match the one-segment-lookahead contract"
         }
-        validateRelativeName(streamCiphertextRelativeName)
-        validateRelativeName(streamKeyEnvelopeRelativeName)
-    }
-
-    private companion object {
-        const val FIRST_GENERATION = 1UL
+        validatePlaintextEnd(committedEndExclusive, "Checkpoint committed end")
+        RecoveryRelativeNames.validateStreamCiphertext(streamCiphertextRelativeName)
+        RecoveryRelativeNames.validateStreamKeyEnvelope(streamKeyEnvelopeRelativeName)
     }
 }
 
@@ -107,11 +107,13 @@ data class RecoveryManifestEntry(
         contractRequire(cadenceSeconds <= RecoveryContract.U32_MAX) {
             "Manifest cadence does not fit U32"
         }
+        RecoveryCadenceContract.requireDeclaredMicrofileCadence(cadenceSeconds)
         contractRequire(plaintextEndExclusive > plaintextStartInclusive) {
             "Manifest ranges must be non-empty"
         }
-        validateRelativeName(ciphertextRelativeName)
-        validateRelativeName(keyEnvelopeRelativeName)
+        validatePlaintextEnd(plaintextEndExclusive, "Manifest entry plaintext end")
+        RecoveryRelativeNames.validateMicrofileCiphertext(ciphertextRelativeName, unitIndex)
+        RecoveryRelativeNames.validateMicrofileKeyEnvelope(keyEnvelopeRelativeName, unitIndex)
     }
 }
 
@@ -127,7 +129,13 @@ private constructor(
     val entries: List<RecoveryManifestEntry> = Collections.unmodifiableList(ArrayList(entries))
 
     init {
-        contractRequire(generation >= FIRST_GENERATION) { "Manifest generation must start at one" }
+        validateCandidateBinding(candidate, RecoveryCandidate.MICROFILE, "Recovery manifest")
+        validateGenerationAndPreviousDigest(
+            generation,
+            previousManifestCiphertextSha256,
+            "Manifest",
+        )
+        validatePlaintextEnd(committedEndExclusive, "Manifest committed end")
         validateEntries(this.entries, committedEndExclusive)
     }
 
@@ -191,7 +199,6 @@ private constructor(
             }
         }
 
-        private const val FIRST_GENERATION = 1UL
         private const val HASH_FACTOR = 31
     }
 }
@@ -264,10 +271,3 @@ object RecoveryManifestCodec {
 
     const val MAGIC = "DORARM01"
 }
-
-internal fun validateRelativeName(value: String) {
-    val encoded = RecoveryBinaryPrimitives.encodeLp16Ascii(value)
-    contractRequire(encoded.size > LP16_PREFIX_BYTES) { "Relative names must not be empty" }
-}
-
-private const val LP16_PREFIX_BYTES = 2

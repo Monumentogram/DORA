@@ -3,7 +3,11 @@ package com.monumentogram.dora.poc.recovery.contract
 data class StreamingAad(
     val candidate: RecoveryCandidate,
     val runId: RunId,
-)
+) {
+    init {
+        validateCandidateBinding(candidate, RecoveryCandidate.STREAM, "Streaming AAD")
+    }
+}
 
 object StreamingAadCodec {
     fun encode(value: StreamingAad): ByteArray =
@@ -56,6 +60,7 @@ data class MicrofileAad(
     val previousManifestCiphertextSha256: Sha256Value,
 ) {
     init {
+        validateCandidateBinding(candidate, RecoveryCandidate.MICROFILE, "Microfile AAD")
         validateGenerationRangeAndU32(
             GenerationRange(
                 generation = manifestGeneration,
@@ -65,6 +70,15 @@ data class MicrofileAad(
                 cadenceSeconds = cadenceSeconds,
             )
         )
+        validateGenerationAndPreviousDigest(
+            manifestGeneration,
+            previousManifestCiphertextSha256,
+            "Microfile AAD manifest",
+        )
+        contractRequire(unitIndex != RecoveryContract.U32_MAX) {
+            "Microfile AAD requires a concrete unit index"
+        }
+        RecoveryCadenceContract.requireDeclaredMicrofileCadence(cadenceSeconds)
     }
 }
 
@@ -107,9 +121,12 @@ object MicrofileAadCodec {
     const val MAGIC = "DORAMA01"
 }
 
-enum class PublicationKind(val contractId: String) {
-    MANIFEST("MANIFEST"),
-    CHECKPOINT("CHECKPOINT");
+enum class PublicationKind(
+    val contractId: String,
+    val expectedCandidate: RecoveryCandidate,
+) {
+    MANIFEST("MANIFEST", RecoveryCandidate.MICROFILE),
+    CHECKPOINT("CHECKPOINT", RecoveryCandidate.STREAM);
 
     companion object {
         fun fromContractId(value: String): PublicationKind =
@@ -128,15 +145,16 @@ data class PublicationAad(
     val previousPublicationCiphertextSha256: Sha256Value,
 ) {
     init {
-        contractRequire(generation >= FIRST_GENERATION) {
-            "Publication generation must start at one"
-        }
+        validateCandidateBinding(candidate, publicationKind.expectedCandidate, "Publication AAD")
+        validateGenerationAndPreviousDigest(
+            generation,
+            previousPublicationCiphertextSha256,
+            "Publication AAD",
+        )
         contractRequire(terminalUnitIndex <= RecoveryContract.U32_MAX) {
             "Terminal unit index does not fit U32"
         }
-        contractRequire(plaintextEndExclusive <= RecoveryContract.MAX_PLAINTEXT_BYTES_PER_RUN) {
-            "Publication plaintext end exceeds the bounded run maximum"
-        }
+        validatePlaintextEnd(plaintextEndExclusive, "Publication plaintext end")
         contractRequire(
             (plaintextEndExclusive == EMPTY_END) == (terminalUnitIndex == EMPTY_TERMINAL_UNIT_INDEX)
         ) {
@@ -146,7 +164,6 @@ data class PublicationAad(
 
     companion object {
         const val EMPTY_TERMINAL_UNIT_INDEX = RecoveryContract.U32_MAX
-        private const val FIRST_GENERATION = 1UL
         private const val EMPTY_END = 0UL
     }
 }
@@ -196,11 +213,14 @@ object PublicationAadCodec {
     private const val PLAINTEXT_START = 0UL
 }
 
-enum class KeyEnvelopeTargetKind(val contractId: String) {
-    STREAM("STREAM"),
-    MICROFILE("MICROFILE"),
-    MANIFEST("MANIFEST"),
-    CHECKPOINT("CHECKPOINT");
+enum class KeyEnvelopeTargetKind(
+    val contractId: String,
+    val expectedCandidate: RecoveryCandidate,
+) {
+    STREAM("STREAM", RecoveryCandidate.STREAM),
+    MICROFILE("MICROFILE", RecoveryCandidate.MICROFILE),
+    MANIFEST("MANIFEST", RecoveryCandidate.MICROFILE),
+    CHECKPOINT("CHECKPOINT", RecoveryCandidate.STREAM);
 
     companion object {
         fun fromContractId(value: String): KeyEnvelopeTargetKind =
@@ -221,6 +241,7 @@ data class KeyEnvelopeAad(
     val previousPublicationCiphertextSha256: Sha256Value,
 ) {
     init {
+        validateCandidateBinding(candidate, targetKind.expectedCandidate, "Key-envelope AAD")
         validateGenerationRangeAndU32(
             value =
                 GenerationRange(
@@ -230,13 +251,23 @@ data class KeyEnvelopeAad(
                     plaintextEndExclusive = plaintextEndExclusive,
                     cadenceSeconds = cadenceSeconds,
                 ),
-            allowEmptyRange = true,
+            allowEmptyRange = targetKind != KeyEnvelopeTargetKind.MICROFILE,
+        )
+        validateGenerationAndPreviousDigest(
+            generation,
+            previousPublicationCiphertextSha256,
+            "Key-envelope AAD",
         )
         val unitIndexIsNotApplicable = unitIndex == NOT_APPLICABLE_UNIT_INDEX
         contractRequire(
             (targetKind == KeyEnvelopeTargetKind.MICROFILE) != unitIndexIsNotApplicable
         ) {
             "Only a microfile key envelope uses a concrete unit index"
+        }
+        if (targetKind == KeyEnvelopeTargetKind.MICROFILE) {
+            RecoveryCadenceContract.requireDeclaredMicrofileCadence(cadenceSeconds)
+        } else {
+            RecoveryCadenceContract.requireNotApplicableCadence(cadenceSeconds)
         }
     }
 
@@ -309,9 +340,7 @@ private fun validateGenerationRangeAndU32(
     ) {
         "Plaintext range is invalid"
     }
-    contractRequire(value.plaintextEndExclusive <= RecoveryContract.MAX_PLAINTEXT_BYTES_PER_RUN) {
-        "Plaintext end exceeds the bounded run maximum"
-    }
+    validatePlaintextEnd(value.plaintextEndExclusive, "Plaintext end")
 }
 
 private const val MAX_AAD_BYTES = 512

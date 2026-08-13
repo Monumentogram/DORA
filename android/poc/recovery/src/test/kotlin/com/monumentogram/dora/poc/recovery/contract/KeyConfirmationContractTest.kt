@@ -154,6 +154,33 @@ class KeyConfirmationContractTest {
     }
 
     @Test
+    @Suppress("UNCHECKED_CAST", "PLATFORM_CLASS_MAPPED_TO_KOTLIN")
+    fun `fault catalog rejects Kotlin and Java mutation attempts without changing invariants`() {
+        val before = RecoveryFaultCatalog.orderedIds
+        val kotlinMutable = RecoveryFaultCatalog.orderedIds as MutableList<String>
+        assertThrows(UnsupportedOperationException::class.java) {
+            kotlinMutable.add("MUT-01")
+        }
+        assertThrows(UnsupportedOperationException::class.java) {
+            kotlinMutable[0] = "MUT-02"
+        }
+
+        val javaMutable = RecoveryFaultCatalog.orderedIds as java.util.List<String>
+        assertThrows(UnsupportedOperationException::class.java) {
+            javaMutable.remove("KEY-04")
+        }
+        assertThrows(UnsupportedOperationException::class.java) {
+            javaMutable.clear()
+        }
+
+        val after = RecoveryFaultCatalog.orderedIds
+        assertEquals(before, after)
+        assertEquals(RecoveryFaultCatalog.EXPECTED_ROW_COUNT, after.size)
+        assertEquals(RecoveryFaultCatalog.EXPECTED_ROW_COUNT, after.toSet().size)
+        assertEquals(1, after.count { it == "KEY-04" })
+    }
+
+    @Test
     fun `KEY-04 routes only the exact eight-precondition authentication failure`() {
         val valid = validKey04()
         assertEquals(

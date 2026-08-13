@@ -83,24 +83,80 @@ class RecoveryMathTest {
     @Test
     fun `read accounting counts only successful bytes discards exception buffers and reserves minus one for EOF`() {
         val successful =
-            StreamingReadContract.successfulReturn(requestedBytes = 4_056, returnedBytes = 123)
+            StreamingReadContract.successfulReturn(
+                phase = StreamingReadPhase.FIRST,
+                requestedBytes = 4_056,
+                returnedBytes = 123,
+            )
         assertEquals(123, successful.countedAuthenticatedBytes)
         assertEquals(0, successful.discardedCallerBufferBytes)
         assertFalse(successful.authenticatedEof)
 
-        val failed = StreamingReadContract.readException(callerBufferBytes = 4_080)
+        val failed =
+            StreamingReadContract.readException(
+                phase = StreamingReadPhase.SUBSEQUENT,
+                callerBufferBytes = 4_080,
+            )
         assertEquals(0, failed.countedAuthenticatedBytes)
         assertEquals(4_080, failed.discardedCallerBufferBytes)
         assertFalse(failed.authenticatedEof)
 
-        val eof = StreamingReadContract.returnedStatus(-1)
+        val eof =
+            StreamingReadContract.returnedStatus(
+                phase = StreamingReadPhase.SUBSEQUENT,
+                requestedBytes = 4_080,
+                value = -1,
+            )
         assertTrue(eof.authenticatedEof)
         assertEquals(0, eof.countedAuthenticatedBytes)
         assertThrows(RecoveryContractException::class.java) {
-            StreamingReadContract.returnedStatus(-2)
+            StreamingReadContract.returnedStatus(
+                phase = StreamingReadPhase.FIRST,
+                requestedBytes = 4_056,
+                value = -2,
+            )
         }
         assertThrows(RecoveryContractException::class.java) {
-            StreamingReadContract.successfulReturn(requestedBytes = 4_056, returnedBytes = 4_057)
+            StreamingReadContract.successfulReturn(
+                phase = StreamingReadPhase.FIRST,
+                requestedBytes = 4_056,
+                returnedBytes = 4_057,
+            )
+        }
+    }
+
+    @Test
+    fun `read phases reject every non-exact request size`() {
+        listOf(0, 4_055, 4_057, 4_080).forEach { requestedBytes ->
+            assertThrows(RecoveryContractException::class.java) {
+                StreamingReadContract.successfulReturn(
+                    phase = StreamingReadPhase.FIRST,
+                    requestedBytes = requestedBytes,
+                    returnedBytes = 0,
+                )
+            }
+        }
+        listOf(0, 4_056, 4_079, 4_081).forEach { requestedBytes ->
+            assertThrows(RecoveryContractException::class.java) {
+                StreamingReadContract.successfulReturn(
+                    phase = StreamingReadPhase.SUBSEQUENT,
+                    requestedBytes = requestedBytes,
+                    returnedBytes = 0,
+                )
+            }
+        }
+        assertThrows(RecoveryContractException::class.java) {
+            StreamingReadContract.readException(
+                phase = StreamingReadPhase.FIRST,
+                callerBufferBytes = 4_080,
+            )
+        }
+        assertThrows(RecoveryContractException::class.java) {
+            StreamingReadContract.returnedStatus(
+                phase = StreamingReadPhase.SUBSEQUENT,
+                requestedBytes = 4_056,
+                value = -1,
+            )
         }
     }
 
