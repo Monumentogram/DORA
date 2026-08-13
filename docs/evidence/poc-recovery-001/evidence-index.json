@@ -1,13 +1,20 @@
 {
-  "schemaVersion": 6,
+  "schemaVersion": 7,
   "pocId": "POC-RECOVERY-001",
-  "status": "ACCOUNTABLE_FORMAL_HUMAN_REVIEW_COMPLETE_SEPARATE_IMPLEMENTATION_REVIEW_AND_AUTHORIZATION_ACTUAL_GRAPH_IMPLEMENTATION_EXECUTION_BLOCKED",
+  "status": "REC_I1_TASK_SCOPED_CONTRACT_FOUNDATION_PRESENT_RUNTIME_IMPLEMENTATION_AND_EXECUTION_BLOCKED",
   "activeGateSetVersion": "poc-recovery-stage0-v0.6",
   "activeProtocolId": "poc-recovery-protocol-stage0-v0.6",
   "implementationAllowed": false,
   "implementationAllowedByThisPackage": false,
   "executionAllowed": false,
   "measuredExecutionAllowed": false,
+  "taskScopedImplementationAuthorized": true,
+  "authorizationId": "REC-I1-AUTH-20260813-01",
+  "recoveryModuleExists": true,
+  "runtimeDependencyAdded": false,
+  "harnessImplemented": false,
+  "recI1NonMetricVerificationStatus": "PASSED_LOCAL_NON_METRIC_CHECKS",
+  "globalNonMetricImplementationVerificationPassed": false,
   "supersededAuditArtifacts": [
     {
       "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_1.md",
@@ -71,6 +78,16 @@
     }
   ],
   "artifacts": [
+    {
+      "id": "REC-I1-IMPLEMENTATION-AUTHORIZATION-20260813-01",
+      "locator": "docs/evidence/poc-recovery-001/implementation-authorization-rec-i1-20260813-01.json",
+      "status": "AUTHORIZED_EXACT_SCOPE_ONLY_NO_RUNTIME_CRYPTO_NO_EXECUTION_NO_MERGE"
+    },
+    {
+      "id": "REC-I1-PURE-CONTRACT-KERNEL",
+      "locator": "android/poc/recovery",
+      "status": "PRESENT_NON_METRIC_VERIFICATION_PASSED_NO_RUNTIME_CRYPTO_NO_HARNESS"
+    },
     {
       "id": "REC-V03-GATE-MARKDOWN",
       "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_3.md",

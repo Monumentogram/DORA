@@ -1,6 +1,6 @@
 # POC-RECOVERY-001 governance/readiness evidence
 
-Status: **DISTINCT ACCOUNTABLE FORMAL HUMAN REVIEW COMPLETE; SEPARATE IMPLEMENTATION REVIEW/AUTHORIZATION, ACTUAL GRAPH, IMPLEMENTATION AND EXECUTION BLOCKED**\
+Status: **REC-I1 TASK-SCOPED PURE CONTRACT FOUNDATION PRESENT; RUNTIME IMPLEMENTATION, ACTUAL GRAPH AND EXECUTION BLOCKED**\
 Date: 13 August 2026\
 Repository lifecycle: live Git/GitHub state is authoritative; no mutable branch or Pull Request state is a package invariant\
 Measured execution: **none**
@@ -25,13 +25,18 @@ with Rambus listed only as affiliation, then returned the formal read-only dispo
 `REC-REV-20260812-02` and `REC-RDY-02` without authorizing implementation, Phase A, execution,
 measurement, dependency admission, Production Security or Production Legal. No Rambus corporate
 approval is claimed.
-It contains no harness, recovery module, dependency lock from a runtime graph, device result,
-benchmark, key, keyset, ciphertext, plaintext, audio or database.
+Owner authorization `REC-I1-AUTH-20260813-01` permits only the isolated pure, non-metric
+`:poc:recovery` contract foundation. The module contains no runtime crypto, Tink/JSR-305 wiring,
+Keystore bootstrap, SQLite/filesystem implementation, harness or production edge. This package
+contains no runtime-graph dependency lock, device result, benchmark, key, keyset, ciphertext,
+plaintext, audio or database. Global `implementationAllowed`, execution and measurement authority
+remain false.
 
 ## Package index
 
 | Artifact | Purpose | Current state |
 |---|---|---|
+| `implementation-authorization-rec-i1-20260813-01.json` | exact owner authorization for Recovery I1 | task-scoped pure contract implementation only; no runtime crypto, execution, Ready state or merge authority |
 | `evidence-index.json` | machine-readable active/superseded artifact index and immutable v0.1–v0.5 SHA-256 pins | v0.6 active; implementation/execution blocked |
 | `governance-remediation-v0.2.md` | retained first remediation record | superseded audit evidence; unchanged |
 | `governance-remediation-v0.3.md` | F-01–F-06 disposition and remaining blockers at the reviewed remediation point | F-01–F-06 closed; retained evidence of the underlying jsr305 license conflict |
@@ -43,7 +48,7 @@ benchmark, key, keyset, ciphertext, plaintext, audio or database.
 | `advisory-engineering-security-dossier-2026-08-13.md` | separate AI-prepared technical review dossier | advisory only; `formalReviewer=false`; not Novikova Katerina's decision; does not close `REC-RDY-02` |
 | `formal-engineering-security-review-2026-08-13.json` | distinct accountable human review record and authority boundary | Novikova Katerina; `APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW`; no implementation/execution authority |
 | `review-findings-v0.6.json` | additive formal closure ledger preserving v0.1–v0.5 | `REC-REV-20260812-02` and `REC-RDY-02` closed by the formal human record |
-| `dependency-inventory.json` | exact published JAR/POM/metadata closure for `tink-android:1.23.0`, hashes, edges and composition | verified publisher closure; all eight authenticity classifications verified; not runtime admission |
+| `dependency-inventory.json` | exact published JAR/POM/metadata closure plus current I1 boundary | pure module present with existing JUnit alias only; no Tink/runtime wiring; all eight packet authenticity classifications verified; no runtime admission |
 | `jsr305-exclusion-analysis-2026-08-12.json` / `.md` | exact POM, source, bytecode, compiler, loader, D8/R8 and A–E decision analysis | conditioned complete exclusion technically proven; bare exclude rejected; Option A accepted prospectively by `OD-14` |
 | `jsr305-reference-classes-2026-08-12.txt` | complete sorted Tink class list containing JSR-305 descriptors | 182 classes; SHA-256 pinned by the analysis JSON |
 | `dependency-ip-authenticity-v0.3.json` | per-coordinate license/copyright/NOTICE, checksums, PGP, signer trust and source correspondence | 16 JAR/POM checksums + signatures verified; six exact multisource and two publisher-bound classifications |
@@ -54,7 +59,7 @@ benchmark, key, keyset, ciphertext, plaintext, audio or database.
 | `security-advisory-inventory.json` | exact-version and historical advisory snapshot, upstream maintenance notes and crypto-review risks | retained historical snapshot; later accountable review recorded separately |
 | `sqlite-platform-provenance.json` | recovery-only emulator/D2 platform SQLite provenance boundary | emulator pinned; D2 runtime preflight pending |
 | `review-roles.json` | reviewer assignment, scoped owner disposition and authority boundaries | accountable formal review complete; implementation and execution authority withheld |
-| `readiness.json` | fail-closed readiness record | `executionAllowed=false` |
+| `readiness.json` | fail-closed current readiness and narrow I1 verification record | ten active blockers; global implementation/execution flags remain false |
 | `ip-stage0-evaluation-review.md` | human-readable supply-chain and Product/IP package assessment | prospective exclusion policy approved; artifact use, implementation and execution blocked |
 | `independent-engineering-security-review-task.md` | retained read-only review assignment and question set | assignment completed 2026-08-13; no implementation/execution |
 
@@ -114,19 +119,19 @@ forbidden. The readiness checker fails closed on any recurrence and cannot pass 
 graph, release R8, non-metric implementation and package evidence is absent or while any R8 missing
 class remains unresolved.
 
-This policy covers only a future separately authorized `:poc:recovery` module: its resolvable
-compile/runtime/unit-test/`androidTest`/benchmark/release configurations, packaging/runtime inputs,
-locks and verification metadata. Existing buildscript/AGP/UTP/lint/tooling paths of other modules
-and app/capture/search lockfiles are excluded from that boundary. They are inventoried rather than
-hidden, so no repository-wide Tink/JSR-305 absence is claimed.
+The authorized I1 `:poc:recovery` module is pure and adds no Tink/runtime-crypto dependency. The
+prospective exclusion policy applies to a future separately authorized runtime graph and every one
+of its compile/runtime/unit-test/`androidTest`/benchmark/release configurations,
+packaging/runtime inputs, locks and verification metadata. Existing buildscript/AGP/UTP/lint/tooling
+paths of other modules and app/capture/search lockfiles remain outside that boundary. They are
+inventoried rather than hidden, so no repository-wide Tink/JSR-305 absence is claimed.
 
 The root artifact is a Java JAR with 1,878 class entries, no `.so`/JNI/native entry and 540 shaded
 protobuf entries. `RuntimeVersion` identifies the embedded protobuf runtime as 4.33.6. The
-publisher-declared external closure has eight coordinates including the root. This is not a future
-Gradle-resolved harness graph: the repository currently uses Kotlin 2.2.10 while AndroidX metadata
-declares Kotlin stdlib 1.7.10. An exact future configuration lock and delta review are therefore a
-pre-execution blocker and cannot be manufactured without the Gradle wiring prohibited in this
-task.
+publisher-declared external closure has eight coordinates including the root. The pure I1 module is
+not that candidate runtime graph and does not resolve Tink. The repository currently uses Kotlin
+2.2.10 while AndroidX metadata declares Kotlin stdlib 1.7.10. An exact future runtime configuration
+lock and delta review therefore remain pre-execution blockers and require separate authorization.
 
 ## Review state
 
@@ -157,10 +162,10 @@ task.
 - The Project owner, acting as Stage 0 Product/IP reviewer, approved prospective policy
   `REC-JSR305-EXCLUDE-001` and the reviewed governance package at input HEAD
   `eb312feb2a0d5e5b24b45fcd045bacca94e8c9da`; exact governance authenticity/LICENSE/NOTICE evidence
-  is verified. An actual dependency graph, dependency admission,
-  JSR-305 use/distribution, implementation and execution remain unapproved. Accountable review is
-  complete; a separately scoped implementation review and separate owner implementation
-  authorization remain required before any implementation or non-metric verification.
+  is verified. `REC-I1-AUTH-20260813-01` now authorizes only the pure contract foundation on its
+  exact base. An actual candidate runtime graph, dependency admission, JSR-305 use/distribution,
+  runtime implementation, harness and execution remain unapproved. Independent review of the
+  frozen I1 PR head is still required and is not performed by this implementation task.
 - Production Legal and Production Security remain null and separate future approvals.
 - A later owner authorization is required even after all package/reviewer conditions are met.
 

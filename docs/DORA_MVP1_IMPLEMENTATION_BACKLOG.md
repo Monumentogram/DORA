@@ -1,9 +1,17 @@
 # Dora MVP 1 — Executable Backlog
 
-Версия: Stage 0D POC-RECOVERY-001 governance/readiness package / execution hold\
-Дата: 12 августа 2026 года\
-Owner approvals effective: 4 августа 2026 года (`OD-01`–`OD-10`), 11 августа 2026 года (`OD-11`–`OD-13`) и recovery constraints / prospective `REC-JSR305-EXCLUDE-001` 12 августа 2026 года (`OD-14`; governance package only, no implementation/execution)\
+Версия: Stage 0D POC-RECOVERY-001 authorized I1 contract foundation / execution hold\
+Дата: 13 августа 2026 года\
+Owner approvals effective: 4 августа 2026 года (`OD-01`–`OD-10`), 11 августа 2026 года (`OD-11`–`OD-13`), recovery constraints / prospective `REC-JSR305-EXCLUDE-001` 12 августа 2026 года (`OD-14`; governance package only), and exact task-scoped `REC-I1-AUTH-20260813-01` on 13 августа 2026 года (pure contract foundation only; no runtime crypto/execution/merge)\
 Источник порядка: Technical Plan §37/§39, Design Spec §36/§39 и readiness gates.
+
+Current `POC-RECOVERY-001` delta: the isolated `:poc:recovery` module now supplies only the
+owner-authorized pure REC-I1 identities, bounded codecs, algebra/taxonomy/catalog rules and host-JVM
+tests. It adds no Tink/JSR-305/runtime dependency, Android runtime API, harness or product edge.
+`implementationAllowed=false`, `implementationAllowedByThisPackage=false`, `executionAllowed=false`
+and all ten still-open `REC-RDY` blockers remain authoritative. The backlog row below retains the
+full runtime/campaign Definition of Ready; references there to module or task authorization absence
+are superseded only for this narrow I1 foundation.
 
 ## 1. Правила выполнения
 

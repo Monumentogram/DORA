@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "recordType": "DORA_RECOVERY_TASK_SCOPED_IMPLEMENTATION_AUTHORIZATION",
+  "authorizationId": "REC-I1-AUTH-20260813-01",
+  "status": "AUTHORIZED_EXACT_SCOPE_ONLY",
+  "authorizedBy": {
+    "role": "Project owner"
+  },
+  "authorizedOn": "2026-08-13",
+  "authorizationEvidence": {
+    "kind": "owner_message",
+    "contentSha256": "d931960a1c4179b1c9c5a7fef901435ba58700007607d860d74f474ca87512af"
+  },
+  "repository": "Monumentogram/DORA",
+  "base": {
+    "commit": "9c4a798aa3c95877ff3f9aa66f18f94849b25cce",
+    "tree": "e562dbd783eb17d59c8f94f43a728dd5c62e6e5b",
+    "mustMatchLiveProtectedMain": true
+  },
+  "reviewedTechnicalTarget": {
+    "commit": "b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd",
+    "tree": "1fd03fd489836c65f7ee043298f8f6d32df00c55"
+  },
+  "contract": {
+    "gateSetId": "poc-recovery-stage0-v0.6",
+    "gateSetJsonSha256": "6a5f1f994e5084836527fded9bdf762ac1ed982cb5022b6da64090a283717755",
+    "protocolId": "poc-recovery-protocol-stage0-v0.6",
+    "protocolJsonSha256": "9108cbffc3dc74a0e2a45868bf0c82b3827cb1e9023e1f0f12c53e7374c07a3d",
+    "normativeMarkdownSha256": "5ab6d105fe6c94868d77c25d1be065a1688ccb083fcbdc0c3f43096e73909063",
+    "immutableInheritedAuditArtifactCount": 15
+  },
+  "task": {
+    "id": "REC-I1",
+    "name": "Recovery isolated common contract foundation",
+    "allowedBranch": "codex/poc-recovery-contract-kernel",
+    "module": ":poc:recovery",
+    "modulePath": "android/poc/recovery",
+    "applicationId": "com.monumentogram.dora.poc.recovery",
+    "scopeKind": "PURE_NON_METRIC_NO_RUNTIME_CRYPTO"
+  },
+  "allowedPaths": [
+    "android/poc/recovery/**",
+    "android/settings.gradle.kts",
+    ".github/workflows/android-ci.yml",
+    "docs/evidence/poc-recovery-001/implementation-authorization-rec-i1-20260813-01.json",
+    "docs/evidence/poc-recovery-001/readiness.json",
+    "docs/evidence/poc-recovery-001/dependency-inventory.json",
+    "docs/evidence/poc-recovery-001/evidence-index.json",
+    "docs/evidence/poc-recovery-001/README.md",
+    "docs/DORA_MVP1_IMPLEMENTATION_READINESS.md",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    "docs/stage0/DORA_MVP1_POC_EXECUTION_ORDER.md",
+    "docs/stage0/device-matrix.yaml",
+    "tools/validate_poc_recovery_governance.py",
+    "tools/verify_poc_recovery_dependency_inventory.py",
+    "tools/check_poc_recovery_run_readiness.py"
+  ],
+  "allowedImplementationScope": [
+    "immutable contract identities and hashes",
+    "bounded big-endian U16 U32 U64 codecs",
+    "LP16 canonical ASCII",
+    "RFC4122 network-order UUID16",
+    "raw SHA-256 32-byte values",
+    "DORARM01 DORARC01 DORASA01 DORAMA01 DORACP01 DORAKE01 DORAKC01 DORAKA01 pure codecs",
+    "pure C R A algebra",
+    "pure Streaming one-segment-lookahead arithmetic",
+    "canonical eight-class key taxonomy",
+    "exact 46-row active fault catalog invariants",
+    "host JVM unit tests and deterministic test fixtures"
+  ],
+  "allowedNonMetricChecks": [
+    "formatting",
+    "detekt and static analysis",
+    "host JVM unit tests",
+    "Kotlin compilation",
+    "lint",
+    "debug assembly",
+    "repository validators",
+    "JSON and Python parsing or compilation",
+    "git diff --check",
+    "scoped secret scan",
+    "existing required GitHub CI"
+  ],
+  "authorityBoundary": {
+    "taskScopedImplementationAuthorized": true,
+    "implementationAllowed": false,
+    "implementationAllowedByThisPackage": false,
+    "executionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "phaseAAuthorized": false,
+    "deviceExecutionAuthorized": false,
+    "mergeAuthorized": false
+  },
+  "forbiddenScope": [
+    "new dependency coordinates or version changes",
+    "Tink or JSR-305 wiring",
+    "Keystore key generation or key-confirmation runtime bootstrap",
+    "SQLite filesystem durability publication or quarantine",
+    "StreamingAead or microfile runtime candidates",
+    "recovery orchestration controller or runnable harness",
+    "recovery instrumentation emulator device preflight kill campaign benchmark or measurement",
+    "production app or product-module integration",
+    "winner selection ADR-AUDIO-001 or Production Legal or Security claims"
+  ],
+  "delivery": {
+    "taskScopedCommitsAllowed": true,
+    "pushAuthorizedBranchAllowed": true,
+    "draftPullRequestAllowed": true,
+    "markReadyAllowed": false,
+    "mergeAllowed": false,
+    "independentReviewRequiredAfterExactHeadFreeze": true
+  },
+  "invalidation": {
+    "expiresOnBaseMismatch": true,
+    "expiresOnTechnicalTargetMismatch": true,
+    "expiresOnGateOrProtocolHashMismatch": true,
+    "expiresOnScopeExpansion": true
+  }
+}

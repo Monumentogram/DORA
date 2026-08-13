@@ -8,10 +8,10 @@ Repository: public `Monumentogram/DORA` by temporary owner-approved decision (AD
 Default branch: `main`
 Stage 0B merge commit: `5e748469b22c6e7303fe6eb5f95394ea40088d84`
 Stage 0C merge commit: `849d9d0406a619b334c9b707a4b6b42b34885b4b`
-Active stage: `Stage 0D — POC-RECOVERY-001 governance/readiness package`
+Active stage: `Stage 0D — POC-RECOVERY-001 authorized I1 contract foundation`
 Work branch: task-scoped; live Git/GitHub metadata is authoritative and no branch name is a stage invariant
 Active PoC: `POC-RECOVERY-001`
-Stage state: **DISTINCT ACCOUNTABLE FORMAL HUMAN REVIEW COMPLETE; SEPARATE IMPLEMENTATION REVIEW/AUTHORIZATION, ACTUAL GRAPH, IMPLEMENTATION AND EXECUTION BLOCKED**
+Stage state: **REC-I1 TASK-SCOPED PURE CONTRACT FOUNDATION PRESENT; RUNTIME IMPLEMENTATION, ACTUAL GRAPH AND EXECUTION BLOCKED**
 
 ## Stage 00 closure
 
@@ -67,9 +67,11 @@ versioned 11 August review assessment. The current v5 closure result is `INCONCL
 recommendation `BLOCKED`; no measurement was changed or rerun. D1/D3 and the measured v0.2
 campaign are deferred to separately authorized future scope.
 
-## Stage 0D governance/readiness scope
+## Stage 0D governance/readiness and authorized I1 scope
 
-Stage 0D prepares and remediates only the governance/readiness package for `POC-RECOVERY-001`.
+Stage 0D first prepared the governance/readiness package for `POC-RECOVERY-001`. Owner record
+`REC-I1-AUTH-20260813-01` now additionally permits only the isolated pure, non-metric common
+contract foundation on exact base `9c4a798aa3c95877ff3f9aa66f18f94849b25cce`.
 The v0.3 package at reviewed commit `c61603d30c01c72347aa205c247729ad534c2882` received four final
 advisory findings, closed by historical v0.4. The v0.4 package at reviewed commit
 `c3eae5c3fbe5cba6a96ad827441cfe4e3f1bfc55` received `REC-ADV-V04-001..004`, closed by historical
@@ -125,17 +127,20 @@ No Tink coordinate or rule was added to Gradle.
 Phase A is described only prospectively for the pinned emulator and available physical D2; actual
 execution is withheld. Without D1/D5 it can produce only `FAIL` or `INCONCLUSIVE`. A full physical
 verdict requires D1/D2/D5; D1/D5 procurement is deferred. The scoped owner/Stage 0 Product-IP
-prospective policy disposition is recorded, while an actual future graph, dependency admission,
-implementation and execution remain unapproved. Novikova Katerina completed the distinct
+prospective policy disposition is recorded, while an actual future runtime graph, dependency
+admission, runtime implementation and execution remain unapproved. The pure I1 foundation is the
+only task-scoped implementation currently authorized. Novikova Katerina completed the distinct
 accountable recovery Engineering/Security formal read-only review in individual professional
 capacity with Rambus listed only as affiliation; no Rambus corporate approval is claimed. The
 disposition closes only the accountable-review gate and grants no implementation or execution
 authority. Codex does not claim formal independence. Production Legal and Production Security
 remain null and separate.
 
-No `:poc:recovery`, recovery harness, production schema, `:app` change, kill campaign, device run,
-benchmark or recovery measurement exists. The fail-closed readiness record remains
-`executionAllowed=false`.
+The isolated `:poc:recovery` application module now contains only defensively copied identities,
+bounded codecs, pure algebra/catalog rules and host-JVM tests. It has no runtime crypto dependency,
+Android runtime API use, harness, production schema, product-module edge, kill campaign, device run,
+benchmark or recovery measurement. The fail-closed readiness record remains
+`implementationAllowed=false`, `implementationAllowedByThisPackage=false` and `executionAllowed=false`.
 
 ## Closed Stage 0B evidence record
 
@@ -178,19 +183,23 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
   governance package. The underlying excluded-artifact conflict is not interpreted,
   JSR-305 use/distribution is not approved. The repeat AI documentary exact-HEAD re-review remains
   historical non-formal evidence. The distinct accountable recovery Engineering/Security formal
-  review is complete; separate implementation review/owner authorization remains unresolved and
-  the disposition does not authorize Phase A or execution.
+  review is complete. Exact owner authorization `REC-I1-AUTH-20260813-01` covers only the pure I1
+  foundation; independent review of the frozen I1 PR head, runtime implementation authority, Phase A
+  and execution remain separate.
 - The exact published Tink closure is inventoried without Gradle wiring. A future harness-resolved
   graph remains a P0 pre-execution check because repository Kotlin alignment may differ from the
   publisher POM closure. It must enumerate every resolvable compile/runtime/unit-test/`androidTest`/
   benchmark/release configuration, packaging/runtime input, lock and verification-metadata input
-  owned by future `:poc:recovery`; prove zero `com.google.code.findbugs:jsr305:3.0.2` components and
+  owned by a future authorized runtime graph for `:poc:recovery`; prove zero
+  `com.google.code.findbugs:jsr305:3.0.2` components and
   zero packaged JSR-305 definitions; verify the scoped exclude/exact narrow R8 rule; and pass
   release R8 with no unresolved missing classes. Existing other-module tooling/lint/UTP/test
   lockfile occurrences are inventoried, not claimed absent, and are not recovery admission. No runtime
   dependency or production admission exists.
-- No recovery implementation or non-metric implementation verification exists. Phase A execution
-  is separately withheld. Fresh emulator and D2 recovery preflight must record effective WAL/FULL,
+- Only the narrow, pure REC-I1 contract implementation and its separate non-metric verification
+  exist; global non-metric implementation verification remains false. Runtime candidates, durable
+  storage and the harness remain absent. Phase A execution is separately withheld. Fresh emulator
+  and D2 recovery preflight must record effective WAL/FULL,
   `wal_autocheckpoint=0`, `foreign_keys=ON`, `sqlite_version()`, `sqlite_source_id()` and canonical
   compile-options digest; all runtime fields remain null. Phase A is 184 fault injections and can
   return only FAIL/INCONCLUSIVE. The full physical campaign is 138 injections; D1/D5 are deferred,
@@ -273,10 +282,12 @@ listed only as affiliation. This closes `REC-REV-20260812-02` and `REC-RDY-02`, 
 corporate approval, formal GitHub review, implementation authorization, Phase A authorization,
 execution authorization, dependency admission, Production Security or Production Legal.
 
-The next safe gate is a separately scoped implementation review and separate Project-owner
-implementation authorization. Only after non-metric implementation verification, exact excluded
-Gradle graph/release R8, scoped Product/IP disposition of the actual graph and fresh device
-SQLite/Keystore/filesystem preflight may a still later owner record change `executionAllowed`.
+`REC-I1-AUTH-20260813-01` authorizes the pure contract foundation but not independent review or
+merge. The next safe gate is an independent review of the exact frozen I1 PR head. Any runtime
+crypto/storage/harness work needs a new owner scope. Only after complete non-metric implementation
+verification, exact excluded runtime Gradle graph/release R8, scoped Product/IP disposition and
+fresh device SQLite/Keystore/filesystem preflight may a still later owner record change
+`executionAllowed`.
 Current Pull Request state is never a static document invariant; use live GitHub metadata.
 
 ## Update protocol

@@ -92,6 +92,7 @@ jobs:
           :core:model:testDebugUnitTest
           :core:testing:testDebugUnitTest
           :poc:capture:testDebugUnitTest
+          :poc:recovery:testDebugUnitTest
           :poc:search:testDebugUnitTest
           :app:compileDebugAndroidTestKotlin
           :poc:capture:compileDebugAndroidTestKotlin
@@ -101,9 +102,11 @@ jobs:
           :core:model:lintDebug
           :core:testing:lintDebug
           :poc:capture:lintDebug
+          :poc:recovery:lintDebug
           :poc:search:lintDebug
           :app:assembleDebug
           :poc:capture:assembleDebug
+          :poc:recovery:assembleDebug
           :poc:search:assembleDebug
 
       - name: Verify locked search dependency artifact inventory

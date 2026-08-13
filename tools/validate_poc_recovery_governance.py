@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
-"""Fail-closed validation for the governance-only POC-RECOVERY-001 v0.6 package."""
+"""Fail-closed validation for v0.6 governance plus authorized pure Recovery I1."""
 
 from __future__ import annotations
 
 import copy
+import fnmatch
 import hashlib
 import json
+import os
+import re
 import subprocess
 import sys
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any, Callable
 
@@ -56,6 +60,32 @@ FORMAL_QUESTION_SUBJECTS = [
 ]
 BASE_HEAD = FORMAL_REVIEW_BASE_MAIN
 SQLITE_STATUS = "RECOVERY_STAGE0_V0_6_SQLITE_PROFILE_SELECTED_FRESH_PREFLIGHT_INCOMPLETE"
+AUTHORIZATION_PATH = "docs/evidence/poc-recovery-001/implementation-authorization-rec-i1-20260813-01.json"
+AUTHORIZATION_ID = "REC-I1-AUTH-20260813-01"
+AUTHORIZATION_SEMANTIC_SHA256 = "251e56db1b7046646ef55cf498fa54a1d1955201d4e24459aa470d89d50fa3be"
+AUTHORIZED_BASE_HEAD = "9c4a798aa3c95877ff3f9aa66f18f94849b25cce"
+AUTHORIZED_BASE_TREE = "e562dbd783eb17d59c8f94f43a728dd5c62e6e5b"
+AUTHORIZED_BRANCH = "codex/poc-recovery-contract-kernel"
+AUTHORIZED_REVIEWED_TREE = "1fd03fd489836c65f7ee043298f8f6d32df00c55"
+RECOVERY_MODULE = ROOT / "android" / "poc" / "recovery"
+AUTHORIZED_PATHS = [
+    "android/poc/recovery/**",
+    "android/settings.gradle.kts",
+    ".github/workflows/android-ci.yml",
+    AUTHORIZATION_PATH,
+    "docs/evidence/poc-recovery-001/readiness.json",
+    "docs/evidence/poc-recovery-001/dependency-inventory.json",
+    "docs/evidence/poc-recovery-001/evidence-index.json",
+    "docs/evidence/poc-recovery-001/README.md",
+    "docs/DORA_MVP1_IMPLEMENTATION_READINESS.md",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    "docs/stage0/DORA_MVP1_POC_EXECUTION_ORDER.md",
+    "docs/stage0/device-matrix.yaml",
+    "tools/validate_poc_recovery_governance.py",
+    "tools/verify_poc_recovery_dependency_inventory.py",
+    "tools/check_poc_recovery_run_readiness.py",
+]
 
 NORMATIVE_V06_HASHES = {
     "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_6.md": "5ab6d105fe6c94868d77c25d1be065a1688ccb083fcbdc0c3f43096e73909063",
@@ -176,6 +206,187 @@ def read_json(relative: str) -> dict[str, Any]:
 
 def sha256(relative: str) -> str:
     return hashlib.sha256((ROOT / relative).read_bytes()).hexdigest()
+
+
+def semantic_sha256(record: dict[str, Any]) -> str:
+    canonical = json.dumps(record, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    return hashlib.sha256(canonical).hexdigest()
+
+
+def git_output(*arguments: str) -> str:
+    return subprocess.run(
+        ["git", *arguments],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    ).stdout.strip()
+
+
+def validate_authorization_record(record: dict[str, Any] | None) -> None:
+    require(record is not None, "Missing REC-I1 authorization")
+    require(semantic_sha256(record) == AUTHORIZATION_SEMANTIC_SHA256, "REC-I1 authorization semantic contract drift")
+    require(
+        record["authorizationId"] == AUTHORIZATION_ID
+        and record["status"] == "AUTHORIZED_EXACT_SCOPE_ONLY"
+        and record["authorizedBy"] == {"role": "Project owner"}
+        and record["repository"] == "Monumentogram/DORA",
+        "REC-I1 authorization identity drift",
+    )
+    require(
+        record["base"] == {
+            "commit": AUTHORIZED_BASE_HEAD,
+            "tree": AUTHORIZED_BASE_TREE,
+            "mustMatchLiveProtectedMain": True,
+        }
+        and record["reviewedTechnicalTarget"] == {
+            "commit": REVIEWED_V06_HEAD,
+            "tree": AUTHORIZED_REVIEWED_TREE,
+        },
+        "REC-I1 base or reviewed technical target drift",
+    )
+    contract = record["contract"]
+    require(
+        contract["gateSetId"] == GATE_ID
+        and contract["gateSetJsonSha256"] == NORMATIVE_V06_HASHES[GATE_PATH]
+        and contract["protocolId"] == PROTOCOL_ID
+        and contract["protocolJsonSha256"] == NORMATIVE_V06_HASHES[PROTOCOL_PATH]
+        and contract["normativeMarkdownSha256"]
+        == NORMATIVE_V06_HASHES["docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_6.md"]
+        and contract["immutableInheritedAuditArtifactCount"] == 15,
+        "REC-I1 contract hash boundary drift",
+    )
+    task = record["task"]
+    require(
+        task["id"] == "REC-I1"
+        and task["allowedBranch"] == AUTHORIZED_BRANCH
+        and task["module"] == ":poc:recovery"
+        and task["modulePath"] == "android/poc/recovery"
+        and task["applicationId"] == "com.monumentogram.dora.poc.recovery"
+        and task["scopeKind"] == "PURE_NON_METRIC_NO_RUNTIME_CRYPTO"
+        and record["allowedPaths"] == AUTHORIZED_PATHS,
+        "REC-I1 task or path allowlist drift",
+    )
+    authority = record["authorityBoundary"]
+    require(authority["taskScopedImplementationAuthorized"] is True, "REC-I1 task authorization missing")
+    require(
+        all(
+            authority[field] is False
+            for field in (
+                "implementationAllowed",
+                "implementationAllowedByThisPackage",
+                "executionAllowed",
+                "measuredExecutionAllowed",
+                "dependencyAdmission",
+                "productionAdmission",
+                "phaseAAuthorized",
+                "deviceExecutionAuthorized",
+                "mergeAuthorized",
+            )
+        ),
+        "REC-I1 authority escalated",
+    )
+    require(
+        record["delivery"]["draftPullRequestAllowed"] is True
+        and record["delivery"]["markReadyAllowed"] is False
+        and record["delivery"]["mergeAllowed"] is False,
+        "REC-I1 delivery boundary drift",
+    )
+
+
+def path_is_authorized(relative: str) -> bool:
+    normalized = relative.replace("\\", "/")
+    return any(
+        normalized.startswith(pattern[:-3] + "/") if pattern.endswith("/**") else fnmatch.fnmatchcase(normalized, pattern)
+        for pattern in AUTHORIZED_PATHS
+    )
+
+
+def validate_changed_paths(paths: list[str]) -> None:
+    forbidden = sorted(path for path in paths if not path_is_authorized(path))
+    require(not forbidden, f"REC-I1 tracked/untracked diff escapes authorization allowlist: {forbidden}")
+
+
+def validate_recovery_build_text(content: str) -> None:
+    require(content.count('id("dora.android.application")') == 1, "Recovery module must use the application convention")
+    require("dora.android.library" not in content and "alias(libs.plugins" not in content, "Recovery module added another plugin")
+    for fragment in (
+        'namespace = "com.monumentogram.dora.poc.recovery"',
+        'applicationId = "com.monumentogram.dora.poc.recovery"',
+        "versionCode = 1",
+        'versionName = "0.1.0-poc-recovery-i1"',
+        "testImplementation(libs.junit4)",
+    ):
+        require(fragment in content, f"Recovery build contract missing: {fragment}")
+    dependency_lines = [
+        line.strip()
+        for line in content.splitlines()
+        if re.search(r"\b(?:api|implementation|compileOnly|runtimeOnly|testImplementation|androidTestImplementation|debugImplementation)\s*\(", line)
+    ]
+    require(dependency_lines == ["testImplementation(libs.junit4)"], f"Forbidden Recovery dependency declaration: {dependency_lines}")
+    forbidden = ("tink", "jsr305", "project(", "files(", "fileTree(", "ksp(", "androidTestImplementation(")
+    require(not any(value.lower() in content.lower() for value in forbidden), "Recovery build contains forbidden runtime/project dependency wiring")
+
+
+def validate_manifest_text(content: str) -> None:
+    root = ET.fromstring(content)
+    require(root.tag == "manifest", "Recovery manifest root drift")
+    children = list(root)
+    require(len(children) == 1 and children[0].tag == "application", "Recovery manifest must contain only one application node")
+    application = children[0]
+    require(not application.attrib and not list(application), "Recovery manifest declares a component or runtime attribute")
+
+
+def validate_ci_text(content: str) -> None:
+    expected_tasks = [
+        ":poc:recovery:testDebugUnitTest",
+        ":poc:recovery:lintDebug",
+        ":poc:recovery:assembleDebug",
+    ]
+    recovery_tasks = re.findall(r":poc:recovery:[A-Za-z][A-Za-z0-9]*", content)
+    require(recovery_tasks == expected_tasks, f"Recovery CI task scope drift: {recovery_tasks}")
+
+
+def validate_production_source_text(content: str, relative: str) -> None:
+    forbidden_patterns = {
+        r"(?m)^\s*import\s+android\.": "Android runtime import",
+        r"(?m)^\s*import\s+com\.google\.crypto\.tink": "Tink import",
+        r"\bjava\.(?:io|nio\.file)\.": "filesystem-capable Java API",
+        r"\bkotlin\.io\.": "filesystem-capable Kotlin API",
+        r"\bjavax\.crypto\.": "runtime crypto API",
+        r"\bAndroidKeystoreKmsClient\b|\bKeyStore\b": "Keystore runtime API",
+        r"\bSQLite(?:Database|OpenHelper)?\b|android\.database": "SQLite runtime API",
+        r"\bStreamingAead\b|com\.google\.crypto": "runtime crypto API",
+        r"(?i)\b(?:class|object|interface)\s+\w*(?:Harness|Controller|Benchmark|Instrumentation)\b": "harness or execution entry point",
+    }
+    for pattern, label in forbidden_patterns.items():
+        require(re.search(pattern, content) is None, f"{relative} contains forbidden {label}")
+    security_imports = [
+        line.strip()
+        for line in content.splitlines()
+        if line.strip().startswith("import java.security.")
+    ]
+    require(
+        all(line == "import java.security.MessageDigest" for line in security_imports),
+        f"{relative} imports a forbidden java.security key or encryption API",
+    )
+    lowered_parts = [part.lower() for part in Path(relative).parts]
+    require(
+        not any(
+            token in part
+            for part in lowered_parts
+            for token in ("harness", "controller", "benchmark", "instrumentation")
+        ),
+        f"{relative} introduces a forbidden harness or execution source path",
+    )
+    if "MessageDigest" in content:
+        require(
+            'MessageDigest.getInstance("SHA-256").digest(bytes)' in content
+            and "Cipher" not in content
+            and "KeyGenerator" not in content,
+            f"{relative} uses MessageDigest outside exact SHA-256 identity calculation",
+        )
 
 
 def validate_immutable_history(gate: dict[str, Any], protocol: dict[str, Any]) -> None:
@@ -708,15 +919,19 @@ def validate_readiness_and_evidence(gate: dict[str, Any]) -> None:
     )
 
     require(
-        readiness["schemaVersion"] == 9
+        readiness["schemaVersion"] == 10
         and readiness["status"].startswith("BLOCKED_")
         and all(readiness[field] is False for field in (
             "executionAllowed", "implementationAllowed", "implementationAllowedByThisPackage",
-            "measuredExecutionAllowed", "runtimeDependencyAdded", "recoveryModuleExists",
-            "harnessImplemented", "nonMetricImplementationVerificationPassed",
+            "measuredExecutionAllowed", "runtimeDependencyAdded", "harnessImplemented",
+            "nonMetricImplementationVerificationPassed",
             "exactFutureResolvedGraphReviewed", "killCampaignExecuted", "deviceTestsExecuted",
             "benchmarksExecuted", "productionAppChanged",
-        )),
+        ))
+        and readiness["taskScopedImplementationAuthorized"] is True
+        and readiness["authorizationId"] == AUTHORIZATION_ID
+        and readiness["authorizationRecord"] == AUTHORIZATION_PATH
+        and readiness["recoveryModuleExists"] is True,
         "Readiness authority/evidence boundary drift",
     )
     package = readiness["packageArtifacts"]
@@ -729,8 +944,21 @@ def validate_readiness_and_evidence(gate: dict[str, Any]) -> None:
         and package["reviewFindingsV05LedgerPresent"] is True
         and package["reviewFindingsV06LedgerPresent"] is True
         and package["advisoryEngineeringSecurityDossierPresent"] is True
-        and package["formalAccountableEngineeringSecurityReviewPresent"] is True,
+        and package["formalAccountableEngineeringSecurityReviewPresent"] is True
+        and package["recI1AuthorizationPresent"] is True
+        and package["recI1ContractKernelPresent"] is True,
         "Readiness active package metadata drift",
+    )
+    narrow_i1 = readiness["recI1NonMetricVerification"]
+    require(
+        narrow_i1["scope"] == "PURE_NON_METRIC_NO_RUNTIME_CRYPTO"
+        and narrow_i1["status"] in {"PENDING_REQUIRED_CHECKS", "PASSED_LOCAL_NON_METRIC_CHECKS"}
+        and narrow_i1["passed"] is (narrow_i1["status"] == "PASSED_LOCAL_NON_METRIC_CHECKS")
+        and narrow_i1["globalNonMetricImplementationVerificationSatisfied"] is False
+        and narrow_i1["runtimeCryptoVerified"] is False
+        and narrow_i1["harnessVerified"] is False
+        and narrow_i1["executionEvidenceProduced"] is False,
+        "Narrow I1 verification overclaims global/runtime evidence",
     )
     require(
         package["postMergeAdvisoryReReviewEvidencePresent"] is True
@@ -777,13 +1005,15 @@ def validate_readiness_and_evidence(gate: dict[str, Any]) -> None:
         "Readiness formal accountable review summary drift",
     )
     blocker_ids = [item["id"] for item in readiness["blockers"]]
-    require(gate["blockers"] == blocker_ids == CANONICAL_BLOCKERS and len(set(blocker_ids)) == 11, "Readiness blocker contract drift")
-    rec02 = readiness["blockers"][1]
+    active_blockers = [item for item in CANONICAL_BLOCKERS if item != "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW"]
+    require(gate["blockers"] == CANONICAL_BLOCKERS, "Immutable Gate blocker history drift")
+    require(blocker_ids == active_blockers and len(set(blocker_ids)) == 10, "Current readiness blocker contract drift")
+    require(len(readiness["closedBlockers"]) == 1, "Closed Recovery blocker ledger drift")
+    rec02 = readiness["closedBlockers"][0]
     require(
-        rec02["priority"] == "P0"
+        rec02["id"] == "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW"
         and rec02["status"] == REC_RDY_02_CLOSURE
-        and rec02["owner"] == "Novikova Katerina, individual professional capacity"
-        and "Closure does not authorize implementation, Phase A" in rec02["condition"],
+        and rec02["evidenceLocator"] == FORMAL_REVIEW_PATH,
         "REC-RDY-02 distinct accountable human-review closure drift",
     )
     require(
@@ -840,13 +1070,19 @@ def validate_readiness_and_evidence(gate: dict[str, Any]) -> None:
     require(role_map["productionLegal"]["reviewer"] is None and role_map["productionSecurity"]["reviewer"] is None, "Production review prematurely assigned")
 
     require(
-        index["schemaVersion"] == 6
+        index["schemaVersion"] == 7
         and index["activeGateSetVersion"] == GATE_ID
         and index["activeProtocolId"] == PROTOCOL_ID
         and all(index[field] is False for field in (
             "implementationAllowed", "implementationAllowedByThisPackage", "executionAllowed",
             "measuredExecutionAllowed",
-        )),
+        ))
+        and index["taskScopedImplementationAuthorized"] is True
+        and index["authorizationId"] == AUTHORIZATION_ID
+        and index["recoveryModuleExists"] is True
+        and index["runtimeDependencyAdded"] is False
+        and index["harnessImplemented"] is False
+        and index["globalNonMetricImplementationVerificationPassed"] is False,
         "Evidence index metadata/authority drift",
     )
     require({item["locator"]: item["sha256"] for item in index["supersededAuditArtifacts"]} == IMMUTABLE_AUDIT_HASHES, "Evidence index historical hashes drift")
@@ -857,6 +1093,8 @@ def validate_readiness_and_evidence(gate: dict[str, Any]) -> None:
         "REC-ADVISORY-ENGINEERING-SECURITY-DOSSIER-20260813",
         "REC-FORMAL-HUMAN-ENGINEERING-SECURITY-REVIEW-20260813",
         "REC-REVIEW-V06-FORMAL-CLOSURE-LEDGER",
+        "REC-I1-IMPLEMENTATION-AUTHORIZATION-20260813-01",
+        "REC-I1-PURE-CONTRACT-KERNEL",
     }.issubset(artifact_ids), "Evidence index lacks formal-review artifacts")
     post_merge_index = next(item for item in index["artifacts"] if item["id"] == "REC-POST-MERGE-ADVISORY-REREVIEW-20260813")
     require(
@@ -907,32 +1145,115 @@ def validate_readiness_and_evidence(gate: dict[str, Any]) -> None:
 
 
 def validate_dependency_and_scope_boundary() -> None:
+    authorization = read_json(AUTHORIZATION_PATH)
+    validate_authorization_record(authorization)
     inventory = read_json("docs/evidence/poc-recovery-001/dependency-inventory.json")
-    require(inventory["dependencyAdmission"] is False and inventory["runtimeGraphModified"] is False, "Dependency inventory admitted runtime wiring")
-    boundary = inventory["recoveryBoundary"]
-    require(boundary["currentTinkAndroid123Wired"] is False and boundary["currentRecoveryModuleExists"] is False and boundary["futureActualRecoveryGraphStatus"].startswith("OPEN_BLOCKED"), "Recovery dependency boundary drift")
-    require(not (ROOT / "android" / "poc" / "recovery").exists(), "Recovery module exists")
-    require(":poc:recovery" not in read_text("android/settings.gradle.kts"), "Recovery module included")
+    require(
+        inventory["schemaVersion"] == 4
+        and inventory["dependencyAdmission"] is False
+        and inventory["runtimeGraphModified"] is False,
+        "Dependency inventory admitted runtime wiring",
+    )
+    current = inventory["currentImplementationState"]
+    require(
+        current["authorizationId"] == AUTHORIZATION_ID
+        and current["taskScopedImplementationAuthorized"] is True
+        and current["recoveryModuleExists"] is True
+        and current["module"] == ":poc:recovery"
+        and current["moduleKind"] == "PURE_NON_METRIC_NO_RUNTIME_CRYPTO"
+        and current["tinkAndroid123Wired"] is False
+        and current["runtimeCryptoDependencyAdded"] is False
+        and current["newExternalDependencyCoordinateAdded"] is False
+        and current["actualRecoveryRuntimeGraphReviewed"] is False
+        and current["dependencyAdmission"] is False
+        and current["productionAdmission"] is False,
+        "Current REC-I1 dependency boundary drift",
+    )
+    historical_boundary = inventory["recoveryBoundary"]
+    require(
+        historical_boundary["historicalSnapshot"] is True
+        and historical_boundary["snapshotAssessedOn"] == "2026-08-12"
+        and historical_boundary["currentTinkAndroid123Wired"] is False
+        and historical_boundary["currentRecoveryModuleExists"] is False
+        and historical_boundary["futureActualRecoveryGraphStatus"].startswith("OPEN_BLOCKED"),
+        "Historical dependency-absence snapshot drift",
+    )
+
     for relative, expected in NORMATIVE_V06_HASHES.items():
         require(sha256(relative) == expected, f"Normative v0.6 contract changed: {relative}")
-    changed_normative = subprocess.run(
-        ["git", "diff", "--name-only", BASE_HEAD, "--", *NORMATIVE_V06_HASHES],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-    ).stdout.splitlines()
+    changed_normative = git_output("diff", "--name-only", AUTHORIZED_BASE_HEAD, "--", *NORMATIVE_V06_HASHES).splitlines()
     require(not changed_normative, f"Normative v0.6 contract differs from formal-review base: {changed_normative}")
-    changed_android = subprocess.run(
-        ["git", "diff", "--name-only", BASE_HEAD, "--", "android"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-    ).stdout.splitlines()
-    require(not changed_android, f"Android/dependency surface changed: {changed_android}")
+
+    require(git_output("rev-parse", f"{AUTHORIZED_BASE_HEAD}^{{tree}}") == AUTHORIZED_BASE_TREE, "Authorized base tree mismatch")
+    require(git_output("rev-parse", f"{REVIEWED_V06_HEAD}^{{tree}}") == AUTHORIZED_REVIEWED_TREE, "Reviewed technical target tree mismatch")
+    require(git_output("merge-base", AUTHORIZED_BASE_HEAD, "HEAD") == AUTHORIZED_BASE_HEAD, "HEAD is not based on the exact authorized base")
+    current_branch = os.environ.get("GITHUB_HEAD_REF") or git_output("branch", "--show-current")
+    require(current_branch == AUTHORIZED_BRANCH, f"REC-I1 is running on unauthorized branch: {current_branch}")
+
+    for historical_commit in (AUTHORIZED_BASE_HEAD, REVIEWED_V06_HEAD):
+        module_snapshot = git_output("ls-tree", "-r", "--name-only", historical_commit, "--", "android/poc/recovery")
+        require(not module_snapshot, f"Historical snapshot unexpectedly contains Recovery module: {historical_commit}")
+        settings_snapshot = git_output("show", f"{historical_commit}:android/settings.gradle.kts")
+        require(":poc:recovery" not in settings_snapshot, f"Historical snapshot unexpectedly includes Recovery: {historical_commit}")
+
+    changed_paths = set(git_output("diff", "--name-only", AUTHORIZED_BASE_HEAD).splitlines())
+    untracked = git_output("ls-files", "--others", "--exclude-standard").splitlines()
+    changed_paths.update(path for path in untracked if not path.startswith(".codex-remote-attachments/"))
+    validate_changed_paths(sorted(path for path in changed_paths if path))
+
+    require(RECOVERY_MODULE.is_dir(), "Authorized Recovery module is missing")
+    build_text = read_text("android/poc/recovery/build.gradle.kts")
+    validate_recovery_build_text(build_text)
+    settings = read_text("android/settings.gradle.kts")
+    require(settings.count('include(":poc:recovery")') == 1, "Recovery module include missing or duplicated")
+    validate_ci_text(read_text(".github/workflows/android-ci.yml"))
+    validate_manifest_text(read_text("android/poc/recovery/src/main/AndroidManifest.xml"))
+    require(not (RECOVERY_MODULE / "src" / "androidTest").exists(), "REC-I1 must not contain androidTest sources")
+    require(not (RECOVERY_MODULE / "src" / "main" / "res").exists(), "REC-I1 must not contain UI/resources")
+
+    production_sources = sorted((RECOVERY_MODULE / "src" / "main" / "kotlin").rglob("*.kt"))
+    require(production_sources, "REC-I1 production contract sources are missing")
+    production_text = "\n".join(path.read_text(encoding="utf-8") for path in production_sources)
+    for source in production_sources:
+        validate_production_source_text(source.read_text(encoding="utf-8"), source.relative_to(ROOT).as_posix())
+    for magic in ("DORARM01", "DORARC01", "DORASA01", "DORAMA01", "DORACP01", "DORAKE01", "DORAKC01", "DORAKA01"):
+        require(magic in production_text, f"REC-I1 source lacks codec magic {magic}")
+    for classification in CANONICAL_TAXONOMY:
+        require(classification in production_text, f"REC-I1 source lacks taxonomy value {classification}")
+    for fault_id in EXPECTED_FAULT_IDS:
+        require(f'"{fault_id}"' in production_text, f"REC-I1 source lacks fault ID {fault_id}")
+
+    test_sources = sorted((RECOVERY_MODULE / "src" / "test" / "kotlin").rglob("*Test.kt"))
+    require(len(test_sources) >= 5, "REC-I1 host-JVM test coverage is incomplete")
+    test_text = "\n".join(path.read_text(encoding="utf-8") for path in test_sources)
+    require("GOLDEN_HEX" in test_text and "Random(" in test_text, "REC-I1 lacks fixed golden and deterministic seeded coverage")
+
+    for build_file in (ROOT / "android").rglob("build.gradle.kts"):
+        if build_file == RECOVERY_MODULE / "build.gradle.kts":
+            continue
+        require(":poc:recovery" not in build_file.read_text(encoding="utf-8"), f"Production/module edge into Recovery: {build_file}")
+
+    lockfile = RECOVERY_MODULE / "gradle.lockfile"
+    require(current["moduleLockfilePresent"] is lockfile.is_file(), "Recovery lockfile presence claim mismatch")
+    if lockfile.is_file():
+        lock_text = lockfile.read_text(encoding="utf-8")
+        require("tink" not in lock_text.lower() and "jsr305" not in lock_text.lower(), "Recovery lockfile contains forbidden runtime dependency")
+        base_lock_coordinates: set[str] = set()
+        base_lockfiles = git_output("ls-tree", "-r", "--name-only", AUTHORIZED_BASE_HEAD, "--", "android").splitlines()
+        for relative in base_lockfiles:
+            if relative.endswith("gradle.lockfile"):
+                snapshot = git_output("show", f"{AUTHORIZED_BASE_HEAD}:{relative}")
+                base_lock_coordinates.update(
+                    line.split("=", 1)[0]
+                    for line in snapshot.splitlines()
+                    if line and not line.startswith("#") and "=" in line
+                )
+        current_lock_coordinates = {
+            line.split("=", 1)[0]
+            for line in lock_text.splitlines()
+            if line and not line.startswith("#") and "=" in line
+        }
+        require(current_lock_coordinates <= base_lock_coordinates, "Recovery lockfile contains a new coordinate")
 
 
 def validate_active_metadata() -> None:
@@ -940,10 +1261,10 @@ def validate_active_metadata() -> None:
         "docs/DORA_MVP1_TECHNICAL_PLAN.md": ["prospective protocol v0.6", "KEY_UNAVAILABLE_KEY_MISMATCH", "REC-RDY-02"],
         "docs/DORA_MVP1_PRODUCT_DECISIONS.md": [GATE_ID, PROTOCOL_ID, REC_REV_02_CLOSURE, REC_RDY_02_CLOSURE, REVIEWER_NAME],
         "docs/DORA_MVP1_TEST_STRATEGY.md": ["POC-RECOVERY-001` v0.6", "46 unique active fault rows", "KCF-07"],
-        "docs/DORA_MVP1_STAGE_STATUS.md": [GATE_ID, PROTOCOL_ID, REC_RDY_02_CLOSURE, REVIEWER_NAME, "Current Pull Request state is never a static document invariant"],
+        "docs/DORA_MVP1_STAGE_STATUS.md": [GATE_ID, PROTOCOL_ID, REC_RDY_02_CLOSURE, REVIEWER_NAME, AUTHORIZATION_ID, "Current Pull Request state is never a static document invariant"],
         "docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md": [GATE_ID, PROTOCOL_ID, "KEY_UNAVAILABLE_KEY_MISMATCH", "KCF-07", FORMAL_DISPOSITION, REVIEWER_CAPACITY],
         "docs/stage0/DORA_MVP1_POC_GATES.md": ["stage0-v0.6", "46 unique IDs", "KEY_UNAVAILABLE_KEY_MISMATCH"],
-        "docs/stage0/DORA_MVP1_POC_EXECUTION_ORDER.md": ["stage0-v0.6", "46 unique active rows", "accountable formal review complete"],
+        "docs/stage0/DORA_MVP1_POC_EXECUTION_ORDER.md": ["stage0-v0.6", "46 unique active rows", "accountable formal review complete", AUTHORIZATION_ID],
         "docs/stage0/DORA_MVP1_IP_ASSET_POLICY.md": ["active protocol v0.6", "future actual recovery", "Engineering/Security reviewer"],
         "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md": [GATE_ID, PROTOCOL_ID, "15 SHA-256 values", "formalReviewer=false", FORMAL_DISPOSITION, REVIEWER_NAME],
         "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_6.md": [
@@ -957,9 +1278,9 @@ def validate_active_metadata() -> None:
             "138 injections",
             "120 attempts per candidate",
         ],
-        "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md": [GATE_ID, PROTOCOL_ID, "REC-REV-20260812-01", FORMAL_DISPOSITION, "implementationAllowed=false"],
-        "docs/DORA_MVP1_IMPLEMENTATION_READINESS.md": [GATE_ID, PROTOCOL_ID, REC_RDY_02_CLOSURE, FORMAL_DISPOSITION, "executionAllowed=false"],
-        "docs/evidence/poc-recovery-001/README.md": ["15 superseded audit artifacts", "GPT-5.6 Sol", "KCF-07", "NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED", FORMAL_DISPOSITION, REVIEWER_NAME],
+        "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md": [GATE_ID, PROTOCOL_ID, "REC-REV-20260812-01", FORMAL_DISPOSITION, "implementationAllowed=false", AUTHORIZATION_ID],
+        "docs/DORA_MVP1_IMPLEMENTATION_READINESS.md": [GATE_ID, PROTOCOL_ID, REC_RDY_02_CLOSURE, FORMAL_DISPOSITION, "executionAllowed=false", AUTHORIZATION_ID],
+        "docs/evidence/poc-recovery-001/README.md": ["15 superseded audit artifacts", "GPT-5.6 Sol", "KCF-07", "NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED", FORMAL_DISPOSITION, REVIEWER_NAME, AUTHORIZATION_ID],
         "docs/evidence/poc-recovery-001/governance-remediation-v0.6.md": [REVIEWED_V05_HEAD, "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE", "OPEN_BLOCKING"],
         "docs/evidence/poc-recovery-001/independent-engineering-security-review-task.md": ["POC-RECOVERY-001 v0.6", "KEY-04", "formalReviewer=false", "COMPLETED 2026-08-13"],
         "docs/evidence/poc-recovery-001/ip-stage0-evaluation-review.md": [GATE_ID, PROTOCOL_ID, FORMAL_DISPOSITION, REVIEWER_NAME],
@@ -973,7 +1294,7 @@ def validate_active_metadata() -> None:
                 f"{relative} active v0.6 metadata missing: {fragment}",
             )
     matrix = read_text("docs/stage0/device-matrix.yaml")
-    for fragment in (f"gate_set: {GATE_ID}", f"protocol: {PROTOCOL_ID}", "mandatory_fault_rows: 46", "total_injections: 184", "total_injections: 138", "implementation_allowed: false", "execution_allowed: false"):
+    for fragment in (f"gate_set: {GATE_ID}", f"protocol: {PROTOCOL_ID}", "mandatory_fault_rows: 46", "total_injections: 184", "total_injections: 138", f"authorization_id: {AUTHORIZATION_ID}", "recovery_module_exists: true", "implementation_allowed: false", "execution_allowed: false"):
         require(fragment in matrix, f"Device matrix active metadata missing: {fragment}")
 
 
@@ -1089,6 +1410,60 @@ def run_negative_tests() -> None:
     else:
         raise ValueError("Negative test unexpectedly passed: historical-advisory-source-rewritten")
 
+    authorization_negative_tests: list[tuple[str, Callable[[dict[str, Any]], None]]] = [
+        ("authorization-tampered", lambda record: record.__setitem__("status", "AUTHORIZED")),
+        ("authorization-base-mismatch", lambda record: record["base"].__setitem__("commit", "0" * 40)),
+        ("authorization-hash-mismatch", lambda record: record["contract"].__setitem__("protocolJsonSha256", "0" * 64)),
+        ("authorization-flag-escalation", lambda record: record["authorityBoundary"].__setitem__("executionAllowed", True)),
+    ]
+    try:
+        validate_authorization_record(None)
+    except ValueError:
+        print("PASS negative authorization-missing")
+    else:
+        raise ValueError("Negative test unexpectedly passed: authorization-missing")
+    for name, mutation in authorization_negative_tests:
+        record = read_json(AUTHORIZATION_PATH)
+        mutation(record)
+        try:
+            validate_authorization_record(record)
+        except (ValueError, KeyError):
+            print(f"PASS negative {name}")
+        else:
+            raise ValueError(f"Negative test unexpectedly passed: {name}")
+
+    pure_boundary_negative_tests: list[tuple[str, Callable[[], None]]] = [
+        (
+            "authorization-forbidden-dependency",
+            lambda: validate_recovery_build_text(
+                read_text("android/poc/recovery/build.gradle.kts")
+                + '\ndependencies { implementation("com.google.crypto.tink:tink-android:1.23.0") }\n'
+            ),
+        ),
+        (
+            "authorization-forbidden-component",
+            lambda: validate_manifest_text(
+                '<?xml version="1.0" encoding="utf-8"?><manifest><application><activity /></application></manifest>'
+            ),
+        ),
+        ("authorization-forbidden-path", lambda: validate_changed_paths(["android/app/build.gradle.kts"])),
+        (
+            "authorization-forbidden-android-import",
+            lambda: validate_production_source_text("package invalid\nimport android.content.Context\n", "synthetic.kt"),
+        ),
+        (
+            "authorization-forbidden-harness",
+            lambda: validate_production_source_text("package invalid\nobject RecoveryHarness\n", "synthetic.kt"),
+        ),
+    ]
+    for name, operation in pure_boundary_negative_tests:
+        try:
+            operation()
+        except (ValueError, ET.ParseError):
+            print(f"PASS negative {name}")
+        else:
+            raise ValueError(f"Negative test unexpectedly passed: {name}")
+
 
 def main() -> int:
     gate = read_json(GATE_PATH)
@@ -1104,7 +1479,8 @@ def main() -> int:
         "46 unique effective rows with one KEY-04, KEY-04 authentication/AAD failure only -> "
         "KEY_UNAVAILABLE_KEY_MISMATCH, KCF-07 successful-decrypt malformed plaintext -> "
         "CORRUPT_KEY_CONFIRMATION, Phase A=184, full physical=138, hard kills=120/candidate separate, "
-        "formal accountable review complete with REC-RDY-02 closed, implementationAllowed=false, "
+        "formal accountable review complete with REC-RDY-02 closed, exact REC-I1 authorization and pure module valid, "
+        "10 current blockers remain, implementationAllowed=false, "
         "implementationAllowedByThisPackage=false, executionAllowed=false, measuredExecutionAllowed=false"
     )
     return 0
