@@ -12,6 +12,7 @@ import re
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Callable
 
@@ -67,6 +68,10 @@ AUTHORIZED_BASE_HEAD = "9c4a798aa3c95877ff3f9aa66f18f94849b25cce"
 AUTHORIZED_BASE_TREE = "e562dbd783eb17d59c8f94f43a728dd5c62e6e5b"
 AUTHORIZED_BRANCH = "codex/poc-recovery-contract-kernel"
 AUTHORIZED_REVIEWED_TREE = "1fd03fd489836c65f7ee043298f8f6d32df00c55"
+REC_I1_REVIEWED_HEAD = "ee7bb00b09a282df7a8fb3b4d3481a5abd4d0177"
+REC_I1_MERGED_ANCHOR = "f2bc8c95bbe8af0d010968fff2ca175851728bf2"
+REC_I1_MERGED_TREE = "ac3dcf273fd447623fa8dbc5c71087acd6315830"
+REC_I1_MERGED_PARENT = AUTHORIZED_BASE_HEAD
 RECOVERY_MODULE = ROOT / "android" / "poc" / "recovery"
 AUTHORIZED_PATHS = [
     "android/poc/recovery/**",
@@ -86,6 +91,26 @@ AUTHORIZED_PATHS = [
     "tools/verify_poc_recovery_dependency_inventory.py",
     "tools/check_poc_recovery_run_readiness.py",
 ]
+
+# The whole REC-I1 Android module is the implementation payload admitted by the
+# reviewed/squash-merged tree. Post-merge descendants may change unrelated files,
+# including this validator, but no file below this module may differ from the
+# merged anchor in a commit, index, worktree, or relevant untracked state.
+POST_MERGE_PROTECTED_PATHS = ["android/poc/recovery/**"]
+
+
+@dataclass(frozen=True)
+class RecoveryLifecycleIdentity:
+    head: str
+    branch: str
+    authorized_base_tree: str | None
+    authorized_merge_base: str | None
+    merged_anchor_commit: str | None
+    merged_anchor_tree: str | None
+    merged_anchor_parents: tuple[str, ...]
+    reviewed_implementation_commit: str | None
+    reviewed_implementation_tree: str | None
+    merged_anchor_is_ancestor: bool
 
 NORMATIVE_V06_HASHES = {
     "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_6.md": "5ab6d105fe6c94868d77c25d1be065a1688ccb083fcbdc0c3f43096e73909063",
@@ -224,6 +249,32 @@ def git_output(*arguments: str) -> str:
     ).stdout.strip()
 
 
+def git_optional_output(*arguments: str) -> str | None:
+    try:
+        return git_output(*arguments)
+    except subprocess.CalledProcessError:
+        return None
+
+
+def git_is_ancestor(ancestor: str, descendant: str) -> bool:
+    result = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", ancestor, descendant],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    )
+    if result.returncode not in (0, 1):
+        raise subprocess.CalledProcessError(
+            result.returncode,
+            result.args,
+            output=result.stdout,
+            stderr=result.stderr,
+        )
+    return result.returncode == 0
+
+
 def validate_authorization_record(record: dict[str, Any] | None) -> None:
     require(record is not None, "Missing REC-I1 authorization")
     require(semantic_sha256(record) == AUTHORIZATION_SEMANTIC_SHA256, "REC-I1 authorization semantic contract drift")
@@ -306,6 +357,136 @@ def path_is_authorized(relative: str) -> bool:
 def validate_changed_paths(paths: list[str]) -> None:
     forbidden = sorted(path for path in paths if not path_is_authorized(path))
     require(not forbidden, f"REC-I1 tracked/untracked diff escapes authorization allowlist: {forbidden}")
+
+
+def path_is_post_merge_protected(relative: str) -> bool:
+    normalized = relative.replace("\\", "/")
+    return any(
+        normalized.startswith(pattern[:-3] + "/") if pattern.endswith("/**") else fnmatch.fnmatchcase(normalized, pattern)
+        for pattern in POST_MERGE_PROTECTED_PATHS
+    )
+
+
+def validate_post_merge_protected_paths(changes: dict[str, list[str]]) -> None:
+    expected_layers = {"committed", "staged", "unstaged", "untracked"}
+    require(set(changes) == expected_layers, "Incomplete post-merge Recovery payload change inventory")
+    protected_changes = {
+        layer: sorted({path for path in paths if path_is_post_merge_protected(path)})
+        for layer, paths in changes.items()
+    }
+    protected_changes = {layer: paths for layer, paths in protected_changes.items() if paths}
+    require(
+        not protected_changes,
+        f"REC-I1 post-merge protected payload differs from merged anchor: {protected_changes}",
+    )
+
+
+def select_lifecycle_branch(checked_out_branch: str, github_head_ref: str) -> str:
+    require(
+        not checked_out_branch or not github_head_ref or checked_out_branch == github_head_ref,
+        "Checked-out branch conflicts with GITHUB_HEAD_REF",
+    )
+    return checked_out_branch or github_head_ref
+
+
+def validate_recovery_lifecycle(
+    identity: RecoveryLifecycleIdentity,
+    pre_merge_changed_paths: list[str],
+    post_merge_changes: dict[str, list[str]],
+) -> str:
+    post_merge_candidate = identity.head == REC_I1_MERGED_ANCHOR or identity.merged_anchor_is_ancestor
+    if post_merge_candidate:
+        require(
+            identity.merged_anchor_commit == REC_I1_MERGED_ANCHOR,
+            "REC-I1 merged anchor is missing or resolves to the wrong commit",
+        )
+        require(identity.merged_anchor_tree == REC_I1_MERGED_TREE, "REC-I1 merged anchor tree mismatch")
+        require(
+            identity.merged_anchor_parents == (REC_I1_MERGED_PARENT,),
+            "REC-I1 merged anchor parent mismatch",
+        )
+        require(
+            identity.reviewed_implementation_commit == REC_I1_REVIEWED_HEAD,
+            "REC-I1 reviewed implementation head is missing or resolves to the wrong commit",
+        )
+        require(
+            identity.reviewed_implementation_tree == REC_I1_MERGED_TREE,
+            "REC-I1 reviewed implementation tree does not match the merged anchor tree",
+        )
+        require(
+            identity.head == REC_I1_MERGED_ANCHOR or identity.merged_anchor_is_ancestor,
+            "HEAD is neither the REC-I1 merged anchor nor its descendant",
+        )
+        validate_post_merge_protected_paths(post_merge_changes)
+        return "post-merge"
+
+    require(identity.authorized_base_tree == AUTHORIZED_BASE_TREE, "Authorized base tree mismatch")
+    require(
+        identity.authorized_merge_base == AUTHORIZED_BASE_HEAD,
+        "HEAD is not based on the exact authorized base",
+    )
+    require(identity.branch == AUTHORIZED_BRANCH, f"REC-I1 is running on unauthorized branch: {identity.branch}")
+    validate_changed_paths(pre_merge_changed_paths)
+    return "pre-merge"
+
+
+def collect_recovery_lifecycle_identity() -> RecoveryLifecycleIdentity:
+    head = git_output("rev-parse", "HEAD")
+    checked_out_branch = git_output("branch", "--show-current")
+    github_head_ref = os.environ.get("GITHUB_HEAD_REF", "")
+    branch = select_lifecycle_branch(checked_out_branch, github_head_ref)
+
+    merged_anchor_commit = git_optional_output("rev-parse", "--verify", f"{REC_I1_MERGED_ANCHOR}^{{commit}}")
+    merged_anchor_tree = None
+    merged_anchor_parents: tuple[str, ...] = ()
+    if merged_anchor_commit is not None:
+        merged_anchor_tree = git_optional_output("rev-parse", f"{REC_I1_MERGED_ANCHOR}^{{tree}}")
+        parents = git_optional_output("show", "-s", "--format=%P", REC_I1_MERGED_ANCHOR)
+        merged_anchor_parents = tuple(parents.split()) if parents is not None else ()
+
+    reviewed_implementation_commit = git_optional_output(
+        "rev-parse", "--verify", f"{REC_I1_REVIEWED_HEAD}^{{commit}}"
+    )
+    reviewed_implementation_tree = None
+    if reviewed_implementation_commit is not None:
+        reviewed_implementation_tree = git_optional_output("rev-parse", f"{REC_I1_REVIEWED_HEAD}^{{tree}}")
+
+    return RecoveryLifecycleIdentity(
+        head=head,
+        branch=branch,
+        authorized_base_tree=git_optional_output("rev-parse", f"{AUTHORIZED_BASE_HEAD}^{{tree}}"),
+        authorized_merge_base=git_optional_output("merge-base", AUTHORIZED_BASE_HEAD, "HEAD"),
+        merged_anchor_commit=merged_anchor_commit,
+        merged_anchor_tree=merged_anchor_tree,
+        merged_anchor_parents=merged_anchor_parents,
+        reviewed_implementation_commit=reviewed_implementation_commit,
+        reviewed_implementation_tree=reviewed_implementation_tree,
+        merged_anchor_is_ancestor=(
+            merged_anchor_commit is not None and git_is_ancestor(REC_I1_MERGED_ANCHOR, head)
+        ),
+    )
+
+
+def collect_pre_merge_changed_paths() -> list[str]:
+    changed_paths = set(git_output("diff", "--name-only", AUTHORIZED_BASE_HEAD).splitlines())
+    untracked = git_output("ls-files", "--others", "--exclude-standard").splitlines()
+    changed_paths.update(path for path in untracked if not path.startswith(".codex-remote-attachments/"))
+    return sorted(path for path in changed_paths if path)
+
+
+def collect_post_merge_changes() -> dict[str, list[str]]:
+    committed_tree_delta = git_output(
+        "diff", "--name-only", "--no-renames", REC_I1_MERGED_ANCHOR, "HEAD", "--"
+    ).splitlines()
+    committed_history = git_output(
+        "log", "--format=", "--name-only", "--no-renames", f"{REC_I1_MERGED_ANCHOR}..HEAD", "--"
+    ).splitlines()
+    return {
+        "committed": sorted({path for path in (*committed_tree_delta, *committed_history) if path}),
+        "staged": git_output("diff", "--cached", "--name-only", "--no-renames", "HEAD", "--").splitlines(),
+        "unstaged": git_output("diff", "--name-only", "--no-renames", "--").splitlines(),
+        "untracked": git_output("ls-files", "--others", "--exclude-standard").splitlines(),
+    }
 
 
 def validate_recovery_build_text(content: str) -> None:
@@ -1184,22 +1365,25 @@ def validate_dependency_and_scope_boundary() -> None:
     changed_normative = git_output("diff", "--name-only", AUTHORIZED_BASE_HEAD, "--", *NORMATIVE_V06_HASHES).splitlines()
     require(not changed_normative, f"Normative v0.6 contract differs from formal-review base: {changed_normative}")
 
-    require(git_output("rev-parse", f"{AUTHORIZED_BASE_HEAD}^{{tree}}") == AUTHORIZED_BASE_TREE, "Authorized base tree mismatch")
     require(git_output("rev-parse", f"{REVIEWED_V06_HEAD}^{{tree}}") == AUTHORIZED_REVIEWED_TREE, "Reviewed technical target tree mismatch")
-    require(git_output("merge-base", AUTHORIZED_BASE_HEAD, "HEAD") == AUTHORIZED_BASE_HEAD, "HEAD is not based on the exact authorized base")
-    current_branch = os.environ.get("GITHUB_HEAD_REF") or git_output("branch", "--show-current")
-    require(current_branch == AUTHORIZED_BRANCH, f"REC-I1 is running on unauthorized branch: {current_branch}")
+
+    lifecycle_identity = collect_recovery_lifecycle_identity()
+    post_merge_candidate = (
+        lifecycle_identity.head == REC_I1_MERGED_ANCHOR or lifecycle_identity.merged_anchor_is_ancestor
+    )
+    lifecycle_mode = validate_recovery_lifecycle(
+        lifecycle_identity,
+        [] if post_merge_candidate else collect_pre_merge_changed_paths(),
+        collect_post_merge_changes()
+        if post_merge_candidate
+        else {"committed": [], "staged": [], "unstaged": [], "untracked": []},
+    )
 
     for historical_commit in (AUTHORIZED_BASE_HEAD, REVIEWED_V06_HEAD):
         module_snapshot = git_output("ls-tree", "-r", "--name-only", historical_commit, "--", "android/poc/recovery")
         require(not module_snapshot, f"Historical snapshot unexpectedly contains Recovery module: {historical_commit}")
         settings_snapshot = git_output("show", f"{historical_commit}:android/settings.gradle.kts")
         require(":poc:recovery" not in settings_snapshot, f"Historical snapshot unexpectedly includes Recovery: {historical_commit}")
-
-    changed_paths = set(git_output("diff", "--name-only", AUTHORIZED_BASE_HEAD).splitlines())
-    untracked = git_output("ls-files", "--others", "--exclude-standard").splitlines()
-    changed_paths.update(path for path in untracked if not path.startswith(".codex-remote-attachments/"))
-    validate_changed_paths(sorted(path for path in changed_paths if path))
 
     require(RECOVERY_MODULE.is_dir(), "Authorized Recovery module is missing")
     build_text = read_text("android/poc/recovery/build.gradle.kts")
@@ -1254,6 +1438,11 @@ def validate_dependency_and_scope_boundary() -> None:
             if line and not line.startswith("#") and "=" in line
         }
         require(current_lock_coordinates <= base_lock_coordinates, "Recovery lockfile contains a new coordinate")
+
+    print(
+        f"PASS REC-I1 {lifecycle_mode} lifecycle; post-merge protected paths: "
+        f"{', '.join(POST_MERGE_PROTECTED_PATHS)}"
+    )
 
 
 def validate_active_metadata() -> None:
@@ -1315,6 +1504,160 @@ def expect_negative(name: str, mutation: Callable[[dict[str, Any], dict[str, Any
         print(f"PASS negative {name}")
         return
     raise ValueError(f"Negative test unexpectedly passed: {name}")
+
+
+def run_lifecycle_tests() -> None:
+    def changes(**overrides: list[str]) -> dict[str, list[str]]:
+        result = {"committed": [], "staged": [], "unstaged": [], "untracked": []}
+        result.update(overrides)
+        return result
+
+    def expect_positive(
+        name: str,
+        identity: RecoveryLifecycleIdentity,
+        expected_mode: str,
+        pre_merge_paths: list[str] | None = None,
+        post_merge_changes: dict[str, list[str]] | None = None,
+    ) -> None:
+        mode = validate_recovery_lifecycle(
+            identity,
+            pre_merge_paths or [],
+            post_merge_changes or changes(),
+        )
+        require(mode == expected_mode, f"Lifecycle positive test selected the wrong mode: {name}")
+        print(f"PASS positive lifecycle-{name}")
+
+    def expect_lifecycle_negative(
+        name: str,
+        identity: RecoveryLifecycleIdentity,
+        pre_merge_paths: list[str] | None = None,
+        post_merge_changes: dict[str, list[str]] | None = None,
+    ) -> None:
+        try:
+            validate_recovery_lifecycle(
+                identity,
+                pre_merge_paths or [],
+                post_merge_changes or changes(),
+            )
+        except ValueError:
+            print(f"PASS negative lifecycle-{name}")
+            return
+        raise ValueError(f"Negative lifecycle test unexpectedly passed: {name}")
+
+    historical = RecoveryLifecycleIdentity(
+        head=REC_I1_REVIEWED_HEAD,
+        branch=AUTHORIZED_BRANCH,
+        authorized_base_tree=AUTHORIZED_BASE_TREE,
+        authorized_merge_base=AUTHORIZED_BASE_HEAD,
+        merged_anchor_commit=None,
+        merged_anchor_tree=None,
+        merged_anchor_parents=(),
+        reviewed_implementation_commit=None,
+        reviewed_implementation_tree=None,
+        merged_anchor_is_ancestor=False,
+    )
+    historical_paths = [
+        "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/RecoveryContract.kt",
+        "tools/validate_poc_recovery_governance.py",
+    ]
+    expect_positive("historical-authorized-branch", historical, "pre-merge", historical_paths)
+
+    anchor = RecoveryLifecycleIdentity(
+        head=REC_I1_MERGED_ANCHOR,
+        branch="main",
+        authorized_base_tree=AUTHORIZED_BASE_TREE,
+        authorized_merge_base=AUTHORIZED_BASE_HEAD,
+        merged_anchor_commit=REC_I1_MERGED_ANCHOR,
+        merged_anchor_tree=REC_I1_MERGED_TREE,
+        merged_anchor_parents=(REC_I1_MERGED_PARENT,),
+        reviewed_implementation_commit=REC_I1_REVIEWED_HEAD,
+        reviewed_implementation_tree=REC_I1_MERGED_TREE,
+        merged_anchor_is_ancestor=True,
+    )
+    expect_positive("exact-merged-anchor-main", anchor, "post-merge")
+
+    descendant = replace(
+        anchor,
+        head="d" * 40,
+        branch="codex/unrelated-descendant",
+    )
+    expect_positive(
+        "unrelated-descendant",
+        descendant,
+        "post-merge",
+        post_merge_changes=changes(committed=["docs/unrelated.md"]),
+    )
+    expect_positive(
+        "validator-only-remediation-descendant",
+        replace(descendant, branch="codex/recovery-i1-post-merge-validator-remediation"),
+        "post-merge",
+        post_merge_changes=changes(committed=["tools/validate_poc_recovery_governance.py"]),
+    )
+
+    expect_lifecycle_negative(
+        "historical-wrong-branch",
+        replace(historical, branch="main"),
+        historical_paths,
+    )
+    expect_lifecycle_negative(
+        "historical-wrong-base-tree",
+        replace(historical, authorized_base_tree="0" * 40),
+        historical_paths,
+    )
+    expect_lifecycle_negative(
+        "historical-wrong-merge-base",
+        replace(historical, authorized_merge_base="0" * 40),
+        historical_paths,
+    )
+    expect_lifecycle_negative(
+        "non-descendant-post-merge-spoof",
+        replace(anchor, head="e" * 40, merged_anchor_is_ancestor=False),
+    )
+    expect_lifecycle_negative("missing-anchor", replace(descendant, merged_anchor_commit=None))
+    expect_lifecycle_negative("wrong-anchor-commit", replace(descendant, merged_anchor_commit="0" * 40))
+    expect_lifecycle_negative("wrong-anchor-tree", replace(descendant, merged_anchor_tree="0" * 40))
+    expect_lifecycle_negative("wrong-anchor-parent", replace(descendant, merged_anchor_parents=("0" * 40,)))
+    expect_lifecycle_negative(
+        "wrong-reviewed-implementation-head",
+        replace(descendant, reviewed_implementation_commit="0" * 40),
+    )
+    expect_lifecycle_negative(
+        "reviewed-tree-does-not-match-anchor",
+        replace(descendant, reviewed_implementation_tree="0" * 40),
+    )
+
+    protected_kotlin = (
+        "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/RecoveryContract.kt"
+    )
+    expect_lifecycle_negative(
+        "descendant-committed-protected-kotlin-mutation",
+        descendant,
+        post_merge_changes=changes(committed=[protected_kotlin]),
+    )
+    for layer, relative in (
+        ("staged", protected_kotlin),
+        ("unstaged", protected_kotlin),
+        (
+            "untracked",
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/Injected.kt",
+        ),
+    ):
+        expect_lifecycle_negative(
+            f"descendant-{layer}-protected-mutation",
+            descendant,
+            post_merge_changes=changes(**{layer: [relative]}),
+        )
+    expect_lifecycle_negative(
+        "branch-spoof-cannot-bypass-protected-mutation",
+        replace(descendant, branch=AUTHORIZED_BRANCH),
+        post_merge_changes=changes(committed=[protected_kotlin]),
+    )
+    try:
+        select_lifecycle_branch("codex/wrong-branch", AUTHORIZED_BRANCH)
+    except ValueError:
+        print("PASS negative lifecycle-environment-branch-spoof")
+    else:
+        raise ValueError("Negative lifecycle test unexpectedly passed: environment-branch-spoof")
 
 
 def run_negative_tests() -> None:
@@ -1473,6 +1816,7 @@ def main() -> int:
     validate_dependency_and_scope_boundary()
     validate_active_metadata()
     if "--self-test" in sys.argv[1:]:
+        run_lifecycle_tests()
         run_negative_tests()
     print(
         "POC-RECOVERY-001 governance v0.6 validation passed; 15 v0.1-v0.5 audit artifacts immutable, "
