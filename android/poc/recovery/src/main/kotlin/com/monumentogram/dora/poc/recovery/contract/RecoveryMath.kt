@@ -97,21 +97,25 @@ data class StreamingReadAccounting(
     val authenticatedEof: Boolean,
 )
 
-enum class StreamingReadPhase(val exactRequestedBytes: Int) {
-    FIRST(RecoveryStreamingMath.FIRST_REQUESTED_PLAINTEXT_READ_BYTES),
-    SUBSEQUENT(RecoveryStreamingMath.LATER_REQUESTED_PLAINTEXT_READ_BYTES),
+object StreamingReadContract {
+    fun newSession(): StreamingReadSession = StreamingReadSession.create()
 }
 
-object StreamingReadContract {
+class StreamingReadSession private constructor() {
+    private var state = State.FIRST
+
+    val nextRequestedBytes: Int
+        get() = currentRequestedBytes()
+
     fun successfulReturn(
-        phase: StreamingReadPhase,
         requestedBytes: Int,
         returnedBytes: Int,
     ): StreamingReadAccounting {
-        validateRequestedBytes(phase, requestedBytes)
+        validateRequestedBytes(requestedBytes)
         contractRequire(returnedBytes in 0..requestedBytes) {
             "Successful read byte count must fit the caller buffer"
         }
+        state = State.SUBSEQUENT
         return StreamingReadAccounting(
             countedAuthenticatedBytes = returnedBytes,
             discardedCallerBufferBytes = 0,
@@ -119,11 +123,9 @@ object StreamingReadContract {
         )
     }
 
-    fun readException(
-        phase: StreamingReadPhase,
-        callerBufferBytes: Int,
-    ): StreamingReadAccounting {
-        validateRequestedBytes(phase, callerBufferBytes)
+    fun readException(callerBufferBytes: Int): StreamingReadAccounting {
+        validateRequestedBytes(callerBufferBytes)
+        state = State.TERMINAL
         return StreamingReadAccounting(
             countedAuthenticatedBytes = 0,
             discardedCallerBufferBytes = callerBufferBytes,
@@ -132,14 +134,14 @@ object StreamingReadContract {
     }
 
     fun returnedStatus(
-        phase: StreamingReadPhase,
         requestedBytes: Int,
         value: Int,
     ): StreamingReadAccounting {
-        validateRequestedBytes(phase, requestedBytes)
+        validateRequestedBytes(requestedBytes)
         contractRequire(value == AUTHENTICATED_EOF) {
             "Only -1 represents authenticated normal EOF"
         }
+        state = State.TERMINAL
         return StreamingReadAccounting(
             countedAuthenticatedBytes = 0,
             discardedCallerBufferBytes = 0,
@@ -147,14 +149,28 @@ object StreamingReadContract {
         )
     }
 
-    private fun validateRequestedBytes(
-        phase: StreamingReadPhase,
-        requestedBytes: Int,
-    ) {
-        contractRequire(requestedBytes == phase.exactRequestedBytes) {
-            "Requested byte count does not match the Recovery read phase"
+    private fun validateRequestedBytes(requestedBytes: Int) {
+        contractRequire(requestedBytes == currentRequestedBytes()) {
+            "Requested byte count does not match the current Recovery read state"
         }
     }
 
-    private const val AUTHENTICATED_EOF = -1
+    private fun currentRequestedBytes(): Int =
+        when (state) {
+            State.FIRST -> RecoveryStreamingMath.FIRST_REQUESTED_PLAINTEXT_READ_BYTES
+            State.SUBSEQUENT -> RecoveryStreamingMath.LATER_REQUESTED_PLAINTEXT_READ_BYTES
+            State.TERMINAL -> throw RecoveryContractException("Recovery read session is terminal")
+        }
+
+    private enum class State {
+        FIRST,
+        SUBSEQUENT,
+        TERMINAL,
+    }
+
+    companion object {
+        private const val AUTHENTICATED_EOF = -1
+
+        internal fun create(): StreamingReadSession = StreamingReadSession()
+    }
 }

@@ -81,82 +81,258 @@ class RecoveryMathTest {
     }
 
     @Test
-    fun `read accounting counts only successful bytes discards exception buffers and reserves minus one for EOF`() {
-        val successful =
-            StreamingReadContract.successfulReturn(
-                phase = StreamingReadPhase.FIRST,
-                requestedBytes = 4_056,
-                returnedBytes = 123,
-            )
-        assertEquals(123, successful.countedAuthenticatedBytes)
-        assertEquals(0, successful.discardedCallerBufferBytes)
-        assertFalse(successful.authenticatedEof)
+    fun `new read session expects the exact first request size`() {
+        val session = StreamingReadContract.newSession()
 
-        val failed =
-            StreamingReadContract.readException(
-                phase = StreamingReadPhase.SUBSEQUENT,
-                callerBufferBytes = 4_080,
-            )
-        assertEquals(0, failed.countedAuthenticatedBytes)
-        assertEquals(4_080, failed.discardedCallerBufferBytes)
-        assertFalse(failed.authenticatedEof)
+        assertEquals(4_056, session.nextRequestedBytes)
+    }
 
-        val eof =
-            StreamingReadContract.returnedStatus(
-                phase = StreamingReadPhase.SUBSEQUENT,
-                requestedBytes = 4_080,
-                value = -1,
-            )
-        assertTrue(eof.authenticatedEof)
-        assertEquals(0, eof.countedAuthenticatedBytes)
+    @Test
+    fun `successful returns advance once then retain the subsequent request size`() {
+        val session = StreamingReadContract.newSession()
+
+        val first = session.successfulReturn(requestedBytes = 4_056, returnedBytes = 4_056)
+        assertEquals(4_056, first.countedAuthenticatedBytes)
+        assertEquals(0, first.discardedCallerBufferBytes)
+        assertFalse(first.authenticatedEof)
+        assertEquals(4_080, session.nextRequestedBytes)
+
+        val second = session.successfulReturn(requestedBytes = 4_080, returnedBytes = 1)
+        assertEquals(1, second.countedAuthenticatedBytes)
+        assertEquals(4_080, session.nextRequestedBytes)
+
+        val third = session.successfulReturn(requestedBytes = 4_080, returnedBytes = 0)
+        assertEquals(0, third.countedAuthenticatedBytes)
+        assertEquals(4_080, session.nextRequestedBytes)
+    }
+
+    @Test
+    fun `first request cannot skip directly to the subsequent size`() {
+        val session = StreamingReadContract.newSession()
+
         assertThrows(RecoveryContractException::class.java) {
-            StreamingReadContract.returnedStatus(
-                phase = StreamingReadPhase.FIRST,
-                requestedBytes = 4_056,
-                value = -2,
-            )
+            session.successfulReturn(requestedBytes = 4_080, returnedBytes = 1)
         }
         assertThrows(RecoveryContractException::class.java) {
-            StreamingReadContract.successfulReturn(
-                phase = StreamingReadPhase.FIRST,
-                requestedBytes = 4_056,
-                returnedBytes = 4_057,
-            )
+            session.readException(callerBufferBytes = 4_080)
+        }
+        assertThrows(RecoveryContractException::class.java) {
+            session.returnedStatus(requestedBytes = 4_080, value = -1)
+        }
+        assertEquals(4_056, session.nextRequestedBytes)
+    }
+
+    @Test
+    fun `first request size cannot be repeated after its successful return`() {
+        val session = StreamingReadContract.newSession()
+        session.successfulReturn(requestedBytes = 4_056, returnedBytes = 1)
+
+        assertThrows(RecoveryContractException::class.java) {
+            session.successfulReturn(requestedBytes = 4_056, returnedBytes = 1)
+        }
+        assertThrows(RecoveryContractException::class.java) {
+            session.readException(callerBufferBytes = 4_056)
+        }
+        assertThrows(RecoveryContractException::class.java) {
+            session.returnedStatus(requestedBytes = 4_056, value = -1)
+        }
+        assertEquals(4_080, session.nextRequestedBytes)
+    }
+
+    @Test
+    fun `each active state rejects every non-exact request size`() {
+        val first = StreamingReadContract.newSession()
+        listOf(0, 4_055, 4_057, 4_079, 4_081).forEach { requestedBytes ->
+            assertThrows(RecoveryContractException::class.java) {
+                first.successfulReturn(
+                    requestedBytes = requestedBytes,
+                    returnedBytes = 0,
+                )
+            }
+            assertThrows(RecoveryContractException::class.java) {
+                first.readException(callerBufferBytes = requestedBytes)
+            }
+            assertThrows(RecoveryContractException::class.java) {
+                first.returnedStatus(requestedBytes = requestedBytes, value = -1)
+            }
+        }
+        assertEquals(4_056, first.nextRequestedBytes)
+
+        val subsequent = StreamingReadContract.newSession()
+        subsequent.successfulReturn(requestedBytes = 4_056, returnedBytes = 0)
+        listOf(0, 4_055, 4_057, 4_079, 4_081).forEach { requestedBytes ->
+            assertThrows(RecoveryContractException::class.java) {
+                subsequent.successfulReturn(
+                    requestedBytes = requestedBytes,
+                    returnedBytes = 0,
+                )
+            }
+            assertThrows(RecoveryContractException::class.java) {
+                subsequent.readException(callerBufferBytes = requestedBytes)
+            }
+            assertThrows(RecoveryContractException::class.java) {
+                subsequent.returnedStatus(requestedBytes = requestedBytes, value = -1)
+            }
+        }
+        assertEquals(4_080, subsequent.nextRequestedBytes)
+    }
+
+    @Test
+    fun `successful returned byte count must stay inside the caller buffer`() {
+        val session = StreamingReadContract.newSession()
+
+        assertThrows(RecoveryContractException::class.java) {
+            session.successfulReturn(requestedBytes = 4_056, returnedBytes = -1)
+        }
+        assertThrows(RecoveryContractException::class.java) {
+            session.successfulReturn(requestedBytes = 4_056, returnedBytes = 4_057)
+        }
+        assertEquals(4_056, session.nextRequestedBytes)
+
+        session.successfulReturn(requestedBytes = 4_056, returnedBytes = 1)
+        assertThrows(RecoveryContractException::class.java) {
+            session.successfulReturn(requestedBytes = 4_080, returnedBytes = 4_081)
+        }
+        assertEquals(4_080, session.nextRequestedBytes)
+    }
+
+    @Test
+    fun `read exception discards the exact current caller buffer and counts no bytes`() {
+        val first = StreamingReadContract.newSession().readException(callerBufferBytes = 4_056)
+        assertEquals(0, first.countedAuthenticatedBytes)
+        assertEquals(4_056, first.discardedCallerBufferBytes)
+        assertFalse(first.authenticatedEof)
+
+        val subsequentSession = StreamingReadContract.newSession()
+        subsequentSession.successfulReturn(requestedBytes = 4_056, returnedBytes = 1)
+        val subsequent = subsequentSession.readException(callerBufferBytes = 4_080)
+        assertEquals(0, subsequent.countedAuthenticatedBytes)
+        assertEquals(4_080, subsequent.discardedCallerBufferBytes)
+        assertFalse(subsequent.authenticatedEof)
+    }
+
+    @Test
+    fun `read exception makes the session terminal for every later event`() {
+        val session = StreamingReadContract.newSession()
+        session.readException(callerBufferBytes = 4_056)
+
+        assertTerminal(session)
+    }
+
+    @Test
+    fun `only minus one creates authenticated normal EOF`() {
+        val session = StreamingReadContract.newSession()
+        listOf(-2, 0, 1).forEach { status ->
+            assertThrows(RecoveryContractException::class.java) {
+                session.returnedStatus(requestedBytes = 4_056, value = status)
+            }
+        }
+        assertEquals(4_056, session.nextRequestedBytes)
+
+        val eof = session.returnedStatus(requestedBytes = 4_056, value = -1)
+        assertEquals(0, eof.countedAuthenticatedBytes)
+        assertEquals(0, eof.discardedCallerBufferBytes)
+        assertTrue(eof.authenticatedEof)
+    }
+
+    @Test
+    fun `authenticated EOF makes the session terminal for every later event`() {
+        val session = StreamingReadContract.newSession()
+        session.successfulReturn(requestedBytes = 4_056, returnedBytes = 1)
+        session.returnedStatus(requestedBytes = 4_080, value = -1)
+
+        assertTerminal(session)
+    }
+
+    @Test
+    fun `two read sessions preserve independent first states`() {
+        val left = StreamingReadContract.newSession()
+        val right = StreamingReadContract.newSession()
+
+        assertEquals(4_056, left.nextRequestedBytes)
+        assertEquals(4_056, right.nextRequestedBytes)
+        left.successfulReturn(requestedBytes = 4_056, returnedBytes = 1)
+        assertEquals(4_080, left.nextRequestedBytes)
+        assertEquals(4_056, right.nextRequestedBytes)
+    }
+
+    @Test
+    fun `caller-facing read API exposes neither a phase argument nor a state reset`() {
+        val sessionClass = StreamingReadSession::class.java
+        val eventMethods =
+            sessionClass.methods.filter {
+                it.declaringClass == sessionClass &&
+                    it.name in setOf("successfulReturn", "readException", "returnedStatus")
+            }
+
+        assertEquals(3, eventMethods.size)
+        assertTrue(
+            eventMethods.all { method ->
+                method.parameterTypes.all { parameter -> parameter == Int::class.javaPrimitiveType }
+            }
+        )
+        assertFalse(sessionClass.constructors.any { it.parameterCount == 0 })
+        assertFalse(sessionClass.methods.any { it.name.contains("phase", ignoreCase = true) })
+        assertFalse(sessionClass.methods.any { it.name.contains("reset", ignoreCase = true) })
+        assertFalse(
+            StreamingReadContract::class.java.declaredMethods.any {
+                it.name in setOf("successfulReturn", "readException", "returnedStatus")
+            }
+        )
+    }
+
+    @Test
+    fun `legacy phase-order probes are impossible through the stateful API`() {
+        val skippedFirst = StreamingReadContract.newSession()
+        assertThrows(RecoveryContractException::class.java) {
+            skippedFirst.successfulReturn(requestedBytes = 4_080, returnedBytes = 1)
+        }
+
+        val repeatedFirst = StreamingReadContract.newSession()
+        repeatedFirst.successfulReturn(requestedBytes = 4_056, returnedBytes = 1)
+        assertThrows(RecoveryContractException::class.java) {
+            repeatedFirst.successfulReturn(requestedBytes = 4_056, returnedBytes = 1)
         }
     }
 
     @Test
-    fun `read phases reject every non-exact request size`() {
-        listOf(0, 4_055, 4_057, 4_080).forEach { requestedBytes ->
-            assertThrows(RecoveryContractException::class.java) {
-                StreamingReadContract.successfulReturn(
-                    phase = StreamingReadPhase.FIRST,
-                    requestedBytes = requestedBytes,
-                    returnedBytes = 0,
-                )
-            }
-        }
-        listOf(0, 4_056, 4_079, 4_081).forEach { requestedBytes ->
-            assertThrows(RecoveryContractException::class.java) {
-                StreamingReadContract.successfulReturn(
-                    phase = StreamingReadPhase.SUBSEQUENT,
-                    requestedBytes = requestedBytes,
-                    returnedBytes = 0,
-                )
-            }
-        }
+    fun `closed predecessor binding and immutable catalog findings remain enforced`() {
         assertThrows(RecoveryContractException::class.java) {
-            StreamingReadContract.readException(
-                phase = StreamingReadPhase.FIRST,
-                callerBufferBytes = 4_080,
+            validateGenerationAndPreviousDigest(
+                generation = 1UL,
+                previousCiphertextSha256 =
+                    Sha256Value.fromBytes(ByteArray(Sha256Value.SIZE_BYTES) { 1 }),
+                subject = "Regression predecessor",
             )
         }
         assertThrows(RecoveryContractException::class.java) {
-            StreamingReadContract.returnedStatus(
-                phase = StreamingReadPhase.SUBSEQUENT,
-                requestedBytes = 4_056,
-                value = -1,
+            validateCandidateBinding(
+                actual = RecoveryCandidate.MICROFILE,
+                expected = RecoveryCandidate.STREAM,
+                subject = "Regression binding",
             )
+        }
+
+        val before = RecoveryFaultCatalog.orderedIds
+        val mutable = before as MutableList<String>
+        assertThrows(UnsupportedOperationException::class.java) { mutable.add("MUTATED") }
+        val after = RecoveryFaultCatalog.orderedIds
+        assertEquals(before, after)
+        assertEquals(RecoveryFaultCatalog.EXPECTED_ROW_COUNT, after.size)
+        assertEquals(RecoveryFaultCatalog.EXPECTED_ROW_COUNT, after.toSet().size)
+        assertEquals(1, after.count { it == "KEY-04" })
+    }
+
+    private fun assertTerminal(session: StreamingReadSession) {
+        assertThrows(RecoveryContractException::class.java) { session.nextRequestedBytes }
+        assertThrows(RecoveryContractException::class.java) {
+            session.successfulReturn(requestedBytes = 4_080, returnedBytes = 0)
+        }
+        assertThrows(RecoveryContractException::class.java) {
+            session.readException(callerBufferBytes = 4_080)
+        }
+        assertThrows(RecoveryContractException::class.java) {
+            session.returnedStatus(requestedBytes = 4_080, value = -1)
         }
     }
 
