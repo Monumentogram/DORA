@@ -1,6 +1,6 @@
 # DEC-044 — POC-RECOVERY-001 pre-PoC experiment decision
 
-Status: **Proposed experiment — active protocol v0.6 exact KEY-04 governance remediation and owner-approved prospective JSR-305 exclusion policy; implementation verification, accountable review and execution pending**\
+Status: **Proposed experiment — PR #12 merged active protocol v0.6 governance package and advisory re-review completed without documentary findings; accountable review, implementation verification and execution pending**\
 Recorded for: **Project owner**\
 Recorded on: **2026-08-12**\
 Gate Set: `poc-recovery-stage0-v0.6`\
@@ -24,6 +24,12 @@ OpenAI, then returned non-formal documentary advisory disposition `CHANGES_REQUI
 inherited `KEY-04` oracle and `REC-REV-20260812-02` recorded the unassigned accountable reviewer.
 Active v0.6 closes only the former by an exact decrypt-failure override; the latter remains
 `OPEN_BLOCKING` and the AI review does not close `REC-RDY-02`.
+Protected GitHub squash merge PR #12 placed the v0.6 tree on `main` as
+`f14c6f37d7acb37590be875f176653c100f0ae20`. A separate OpenAI Codex (GPT-5) documentary
+advisory re-review of the tree-identical PR HEAD `b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd`
+returned `NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED` with no actionable findings. It was not
+published as a formal GitHub review, has `formalReviewer=false`, and does not close
+`REC-REV-20260812-02` or `REC-RDY-02`.
 This record remains a **Proposed experiment decision**, not `ADR-AUDIO-001`, a
 production architecture decision, dependency admission, or permission to implement or execute a
 harness. Gate Set/protocol v0.1, v0.2, v0.3, v0.4 and v0.5 remain unchanged SHA-256-pinned superseded audit artifacts and are
@@ -217,6 +223,9 @@ injections. PASS remains forbidden without the complete D1/D2/D5 profile.
 - The recorded GPT-5.6 Sol/OpenAI review is AI documentary advisory evidence with
   `formalReviewer=false` and disposition `CHANGES_REQUIRED`; it cannot serve as the distinct
   accountable reviewer or close `REC-RDY-02`.
+- The later OpenAI Codex (GPT-5) advisory re-review is separate historical evidence with
+  `formalReviewer=false` and `NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED`; it likewise cannot serve
+  as the distinct accountable reviewer or close `REC-RDY-02`.
 - Production Legal is unassigned. Stage 0 evaluation review does not grant redistribution or
   production rights.
 - Supply-chain authenticity is verified for all eight publisher-closure coordinates. The
@@ -244,8 +253,9 @@ authenticity/LICENSE/NOTICE evidence is closed/verified. The future actual graph
 verification and its scoped Product/IP disposition remain open/blocking. The readiness checker
 requires absence of excluded JSR-305 in recovery scope, not approval to use that artifact.
 
-`executionAllowed=false` and `implementationAllowed=false`. A repeat read-only review of the exact resulting governance HEAD, a
-distinct accountable Engineering/Security reviewer, separate implementation authorization,
+`executionAllowed=false` and `implementationAllowed=false`. The repeat AI documentary read-only
+review is complete. Assignment and formal disposition by a distinct accountable
+Engineering/Security reviewer, separate implementation authorization,
 implementation and non-metric implementation verification, an exact future Gradle graph with zero
 forbidden components, a release R8 build with no unresolved missing classes, scoped Product/IP
 disposition of that actual graph, fresh emulator/D2 SQLite/Keystore/filesystem preflight and a

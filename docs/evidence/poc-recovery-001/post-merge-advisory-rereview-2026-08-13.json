@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "evidenceId": "POC-RECOVERY-001-POST-MERGE-ADVISORY-REREVIEW-20260813",
+  "pocId": "POC-RECOVERY-001",
+  "recordedOn": "2026-08-13",
+  "scope": "GOVERNANCE_ONLY_POST_MERGE_RECONCILIATION",
+  "mergeEvidence": {
+    "repository": "Monumentogram/DORA",
+    "pullRequest": 12,
+    "url": "https://github.com/Monumentogram/DORA/pull/12",
+    "state": "CLOSED",
+    "merged": true,
+    "draft": false,
+    "mergedAt": "2026-08-13T06:03:14+03:00",
+    "timezone": "Europe/Moscow",
+    "mergeMethod": "PROTECTED_GITHUB_SQUASH_MERGE",
+    "previousMainCommit": "eca48ba62acd79007884710395cc40ea21a02611",
+    "pullRequestHeadCommit": "b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd",
+    "mergedMainCommit": "f14c6f37d7acb37590be875f176653c100f0ae20",
+    "mergeCommitParents": [
+      "eca48ba62acd79007884710395cc40ea21a02611"
+    ],
+    "mergeCommitTreeObjectId": "1fd03fd489836c65f7ee043298f8f6d32df00c55",
+    "pullRequestHeadTreeObjectId": "1fd03fd489836c65f7ee043298f8f6d32df00c55",
+    "mergeTreeMatchesPullRequestHeadTree": true,
+    "sourceHeadBranch": "stage/0d-poc-recovery-key04-v06",
+    "sourceHeadBranchPreserved": true
+  },
+  "postMergeActions": {
+    "workflow": "Android CI",
+    "runId": 31662723278,
+    "runUrl": "https://github.com/Monumentogram/DORA/actions/runs/31662723278",
+    "event": "push",
+    "headCommit": "f14c6f37d7acb37590be875f176653c100f0ae20",
+    "status": "COMPLETED",
+    "conclusion": "SUCCESS",
+    "jobs": [
+      {
+        "name": "android-bootstrap",
+        "conclusion": "SUCCESS"
+      },
+      {
+        "name": "search-smoke",
+        "conclusion": "SUCCESS"
+      }
+    ]
+  },
+  "advisoryReReview": {
+    "reviewer": "OpenAI Codex (GPT-5)",
+    "organization": "OpenAI",
+    "role": "AI documentary advisory reviewer",
+    "reviewDate": "2026-08-13",
+    "timezone": "Europe/Moscow",
+    "reviewedCommit": "b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd",
+    "reviewedTreeObjectId": "1fd03fd489836c65f7ee043298f8f6d32df00c55",
+    "formalReviewer": false,
+    "disposition": "NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED",
+    "actionableFindings": [],
+    "publishedAsFormalGitHubReview": false,
+    "repeatAdvisoryReviewComplete": true,
+    "closesRecRev2026081202": false,
+    "closesRecRdy02": false
+  },
+  "findingState": {
+    "REC-REV-20260812-01": "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE",
+    "REC-REV-20260812-02": "OPEN_BLOCKING"
+  },
+  "readinessBoundary": {
+    "nextGate": "ASSIGN_DISTINCT_ACCOUNTABLE_RECOVERY_ENGINEERING_SECURITY_REVIEWER",
+    "recRdy02Priority": "P0",
+    "recRdy02Status": "OPEN_UNASSIGNED",
+    "recRdy02Blocking": true,
+    "accountableEngineeringSecurityReviewer": null,
+    "implementationAllowed": false,
+    "implementationAllowedByThisPackage": false,
+    "executionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "recoveryDependencyWiringPresent": false,
+    "recoveryModuleExists": false,
+    "harnessExists": false,
+    "recoveryOrDeviceTestsExecuted": false,
+    "killCampaignExecuted": false,
+    "benchmarkExecuted": false,
+    "measuredExecutionPerformed": false,
+    "dependencyAdmission": false,
+    "productionAdmission": false
+  }
+}

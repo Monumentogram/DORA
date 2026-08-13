@@ -145,6 +145,13 @@ actual graph and fresh emulator/D2 SQLite, Keystore and filesystem preflight rem
 later, separate owner record must authorize execution; D1/D5 remain required for a full physical
 `PASS`.
 
+Post-decision reconciliation, 13 August 2026: PR #12 merged the v0.6 package and the required
+repeat AI documentary read-only review of exact PR HEAD `b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd`
+completed with `NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED`, no actionable findings and
+`formalReviewer=false`. This historical advisory evidence does not amend the owner decision,
+assign the distinct accountable Engineering/Security reviewer, close `REC-REV-20260812-02` or
+`REC-RDY-02`, or authorize implementation or execution.
+
 ## Normative package
 
 - Proposed decision: `docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md`;

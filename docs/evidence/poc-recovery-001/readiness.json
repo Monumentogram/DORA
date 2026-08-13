@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 7,
+  "schemaVersion": 8,
   "pocId": "POC-RECOVERY-001",
-  "assessedOn": "2026-08-12",
-  "status": "BLOCKED_V0_6_KEY04_FINDING_CLOSED_ACCOUNTABLE_REVIEW_ACTUAL_GRAPH_IMPLEMENTATION_PREFLIGHT_EXECUTION_PENDING",
+  "assessedOn": "2026-08-13",
+  "status": "BLOCKED_POST_MERGE_ADVISORY_REREVIEW_COMPLETE_ACCOUNTABLE_REVIEW_ACTUAL_GRAPH_IMPLEMENTATION_PREFLIGHT_EXECUTION_PENDING",
   "executionAllowed": false,
   "implementationAllowed": false,
   "implementationAllowedByThisPackage": false,
@@ -47,6 +47,8 @@
     "reviewFindingsV03LedgerPresent": true,
     "reviewFindingsV04LedgerPresent": true,
     "reviewFindingsV05LedgerPresent": true,
+    "postMergeAdvisoryReReviewEvidencePresent": true,
+    "postMergeAdvisoryReReviewEvidenceLocator": "docs/evidence/poc-recovery-001/post-merge-advisory-rereview-2026-08-13.json",
     "dependencyIpAuthenticityV03Present": true,
     "ownerProductIpDecisionPresent": true,
     "ownerProductIpDecisionLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md",
@@ -85,6 +87,21 @@
     "disposition": "CHANGES_REQUIRED",
     "recRev2026081201Disposition": "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE",
     "recRev2026081202Disposition": "OPEN_BLOCKING",
+    "closesRecRdy02": false
+  },
+  "advisoryDocumentaryReReviewEvidence": {
+    "locator": "docs/evidence/poc-recovery-001/post-merge-advisory-rereview-2026-08-13.json",
+    "reviewer": "OpenAI Codex (GPT-5)",
+    "organization": "OpenAI",
+    "role": "AI documentary advisory reviewer",
+    "reviewDate": "2026-08-13",
+    "reviewedCommit": "b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd",
+    "formalReviewer": false,
+    "disposition": "NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED",
+    "actionableFindings": [],
+    "publishedAsFormalGitHubReview": false,
+    "repeatAdvisoryReviewComplete": true,
+    "closesRecRev2026081202": false,
     "closesRecRdy02": false
   },
   "effectiveKey04": {
@@ -156,7 +173,7 @@
       "priority": "P0",
       "status": "OPEN_UNASSIGNED",
       "owner": "Project owner",
-      "condition": "Assign a distinct accountable recovery Engineering/Security reviewer and record a formal read-only exact-HEAD v0.6 disposition including the exact effective KEY-04 decrypt-failure-only oracle, preserved KCF-07 route, canonical eight-class KEY algorithm and separate campaign profiles. The GPT-5.6 Sol/OpenAI documentary review is advisory only, formalReviewer=false, and does not close REC-RDY-02; Codex is not the accountable reviewer."
+      "condition": "Assign a distinct accountable recovery Engineering/Security reviewer and record a formal read-only exact-HEAD v0.6 disposition including the exact effective KEY-04 decrypt-failure-only oracle, preserved KCF-07 route, canonical eight-class KEY algorithm and separate campaign profiles. The earlier GPT-5.6 Sol/OpenAI review and the 2026-08-13 OpenAI Codex (GPT-5) re-review are advisory only, formalReviewer=false, and do not close REC-RDY-02; Codex is not the accountable reviewer."
     },
     {
       "id": "REC-RDY-03-STREAMING-IMPLEMENTATION-VERIFICATION",
@@ -191,7 +208,7 @@
       "priority": "P0",
       "status": "OPEN_BY_OWNER_INSTRUCTION",
       "owner": "Future separately scoped implementation task",
-      "condition": "Obtain separate owner implementation scope, then implement and safely non-metrically verify an isolated common harness only after repeat exact-HEAD read-only review and accountable v0.6 Engineering/Security review."
+      "condition": "The repeat AI documentary exact-HEAD re-review is complete without actionable documentary findings. Obtain separate owner implementation scope, then implement and safely non-metrically verify an isolated common harness only after the distinct accountable v0.6 Engineering/Security review closes REC-RDY-02."
     },
     {
       "id": "REC-RDY-08-OWNER-EXECUTION-AUTHORIZATION",
