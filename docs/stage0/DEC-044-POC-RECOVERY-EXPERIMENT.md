@@ -1,6 +1,6 @@
 # DEC-044 — POC-RECOVERY-001 pre-PoC experiment decision
 
-Status: **Proposed experiment — PR #12 merged active protocol v0.6 governance package and advisory re-review completed without documentary findings; accountable review, implementation verification and execution pending**\
+Status: **Proposed experiment — active protocol v0.6 governance package merged; distinct accountable formal human review completed with APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW; separate implementation review/authorization, implementation verification and execution pending**\
 Recorded for: **Project owner**\
 Recorded on: **2026-08-12**\
 Gate Set: `poc-recovery-stage0-v0.6`\
@@ -21,15 +21,23 @@ reviewed commit `c3eae5c3fbe5cba6a96ad827441cfe4e3f1bfc55` then received
 `REC-ADV-V04-001..004`; historical v0.5 closed those findings prospectively. GPT-5.6 Sol,
 OpenAI, then returned non-formal documentary advisory disposition `CHANGES_REQUIRED` on commit
 `eca48ba62acd79007884710395cc40ea21a02611`: `REC-REV-20260812-01` identified an ambiguous
-inherited `KEY-04` oracle and `REC-REV-20260812-02` recorded the unassigned accountable reviewer.
-Active v0.6 closes only the former by an exact decrypt-failure override; the latter remains
-`OPEN_BLOCKING` and the AI review does not close `REC-RDY-02`.
+inherited `KEY-04` oracle and `REC-REV-20260812-02` recorded the then-unassigned accountable
+reviewer. Active v0.6 closed only the former by an exact decrypt-failure override; the AI review did
+not close `REC-RDY-02` and remains unchanged historical evidence.
 Protected GitHub squash merge PR #12 placed the v0.6 tree on `main` as
 `f14c6f37d7acb37590be875f176653c100f0ae20`. A separate OpenAI Codex (GPT-5) documentary
 advisory re-review of the tree-identical PR HEAD `b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd`
 returned `NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED` with no actionable findings. It was not
 published as a formal GitHub review, has `formalReviewer=false`, and does not close
-`REC-REV-20260812-02` or `REC-RDY-02`.
+`REC-REV-20260812-02` or `REC-RDY-02`. A separate AI-prepared dossier remains advisory evidence
+with `formalReviewer=false` and is not Novikova Katerina's decision. Novikova Katerina subsequently
+returned all 12 answers as `ACCEPT` and formal disposition
+`APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW` for exact commit
+`b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd` / tree
+`1fd03fd489836c65f7ee043298f8f6d32df00c55`. She acted in `individual professional capacity;
+Rambus listed only as affiliation`; no Rambus corporate approval is claimed. The additive formal
+record closes `REC-REV-20260812-02` and `REC-RDY-02`, but does not authorize implementation,
+Phase A, execution, measurement, dependency admission, Production Security or Production Legal.
 This record remains a **Proposed experiment decision**, not `ADR-AUDIO-001`, a
 production architecture decision, dependency admission, or permission to implement or execute a
 harness. Gate Set/protocol v0.1, v0.2, v0.3, v0.4 and v0.5 remain unchanged SHA-256-pinned superseded audit artifacts and are
@@ -218,8 +226,10 @@ injections. PASS remains forbidden without the complete D1/D2/D5 profile.
   Production Security, must verify the selected v0.6 construction, effective KEY-04/KCF-07 routing,
   key confirmation/hierarchy/AAD,
   checkpoint/commit semantics, parsers, barriers, durability and recovery state machine before
-  execution. That reviewer is currently unassigned. This Codex remediation does not claim formal
-  independence.
+  any later execution. Novikova Katerina completed that read-only formal review on 2026-08-13 in
+  individual professional capacity, with Rambus listed only as affiliation. This Codex remediation
+  does not claim formal independence, and the disposition does not grant implementation or
+  execution authority.
 - The recorded GPT-5.6 Sol/OpenAI review is AI documentary advisory evidence with
   `formalReviewer=false` and disposition `CHANGES_REQUIRED`; it cannot serve as the distinct
   accountable reviewer or close `REC-RDY-02`.
@@ -253,12 +263,13 @@ authenticity/LICENSE/NOTICE evidence is closed/verified. The future actual graph
 verification and its scoped Product/IP disposition remain open/blocking. The readiness checker
 requires absence of excluded JSR-305 in recovery scope, not approval to use that artifact.
 
-`executionAllowed=false` and `implementationAllowed=false`. The repeat AI documentary read-only
-review is complete. Assignment and formal disposition by a distinct accountable
-Engineering/Security reviewer, separate implementation authorization,
+`executionAllowed=false`, `implementationAllowed=false`, `implementationAllowedByThisPackage=false`
+and `measuredExecutionAllowed=false`. The repeat AI documentary read-only review and distinct
+accountable formal human review are complete. A separate implementation review and owner
+implementation authorization,
 implementation and non-metric implementation verification, an exact future Gradle graph with zero
 forbidden components, a release R8 build with no unresolved missing classes, scoped Product/IP
 disposition of that actual graph, fresh emulator/D2 SQLite/Keystore/filesystem preflight and a
-separate Project-owner execution authorization remain absent. The formal Engineering/Security
-reviewer, runtime emulator/D2 facts, Production Legal and Production Security remain null.
+separate Project-owner execution authorization remain absent. Runtime emulator/D2 facts,
+Production Legal and Production Security remain null.
 Completing a prerequisite never flips the flag implicitly.

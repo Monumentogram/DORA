@@ -884,7 +884,7 @@ def validate_static(
         "License/NOTICE inventory JetBrains record drift",
     )
 
-    require(readiness["schemaVersion"] == 8 and readiness["executionAllowed"] is False and readiness["implementationAllowed"] is False and readiness["implementationAllowedByThisPackage"] is False, "Readiness authority boundary drift")
+    require(readiness["schemaVersion"] == 9 and readiness["executionAllowed"] is False and readiness["implementationAllowed"] is False and readiness["implementationAllowedByThisPackage"] is False and readiness["measuredExecutionAllowed"] is False, "Readiness authority boundary drift")
     require(
         readiness["packageArtifacts"]["activeGateSetVersion"] == GATE_ID
         and readiness["packageArtifacts"]["activeProtocolId"] == PROTOCOL_ID,
@@ -904,7 +904,7 @@ def validate_static(
         "Readiness recovery-only graph/R8 policy drift",
     )
     require(
-        review_roles["schemaVersion"] == 8
+        review_roles["schemaVersion"] == 9
         and review_roles["activeGateSetVersion"] == GATE_ID
         and review_roles["activeProtocolId"] == PROTOCOL_ID,
         "Review-role active v0.6 metadata drift",
@@ -917,7 +917,22 @@ def validate_static(
         and product_ip["approvedReviewer"] is None,
         "Product/IP packet/actual-graph role split drift",
     )
-    require(review_roles["roles"]["independentRecoveryEngineeringSecurity"]["reviewer"] is None, "Accountable reviewer was assigned by remediation")
+    accountable = review_roles["roles"]["independentRecoveryEngineeringSecurity"]
+    require(
+        accountable["reviewer"] == "Novikova Katerina"
+        and accountable["capacity"] == "individual professional capacity; Rambus listed only as affiliation"
+        and accountable["formalReviewer"] is True
+        and accountable["status"] == "APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW"
+        and accountable["closesRecRdy02"] is True
+        and accountable["rambusCorporateApprovalClaimed"] is False
+        and accountable["mayApproveImplementation"] is False
+        and accountable["mayAuthorizeExecution"] is False
+        and all(accountable[field] is False for field in (
+            "implementationAllowed", "implementationAllowedByThisPackage", "executionAllowed",
+            "measuredExecutionAllowed", "phaseAAuthorized",
+        )),
+        "Accountable review/authority boundary drift",
+    )
     require(
         review_roles["roles"]["advisoryDocumentaryReviewer"]["formalReviewer"] is False
         and review_roles["roles"]["advisoryDocumentaryReviewer"]["closesRecRdy02"] is False,

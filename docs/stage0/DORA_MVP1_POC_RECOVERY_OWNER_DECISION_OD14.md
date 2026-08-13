@@ -36,11 +36,12 @@ the closed `POC-SEARCH-001` evidence ledger. It does not modify or re-hash that 
   `StreamingAeadKeyTemplates` is forbidden.
 - The microfile candidate selects `AES256_GCM_TINK_IV12_TAG16`, one fresh keyset per microfile and
   exact binary big-endian authenticated manifest `DORA_RECOVERY_MANIFEST_V1_BINARY_BE`.
-- The Project owner is Stage 0 Product/IP reviewer. Production Legal is unassigned. An independent
-  recovery Engineering/Security reviewer must separately verify the selected construction and
-  recovery protocol; that review does not replace Production Security. No formal independence is
-  claimed for the current Codex remediation; a distinct accountable reviewer is mandatory before
-  execution.
+- The Project owner is Stage 0 Product/IP reviewer. Production Legal is unassigned. A distinct
+  accountable recovery Engineering/Security reviewer must separately verify the selected
+  construction and recovery protocol; that review does not replace Production Security. No formal
+  independence is claimed for the Codex remediation. The required read-only review was later
+  completed by Novikova Katerina, but separate implementation and execution authority remain
+  mandatory.
 - The protocol requires exact stream/microfile/manifest/checkpoint/key-envelope AAD, Android
   Keystore alias and encrypted-keyset rules, no key replacement, no keys in Git/logs and the full
   key-loss/mismatch/envelope fault matrix. It does not claim a different derived AES key per
@@ -78,8 +79,9 @@ the closed `POC-SEARCH-001` evidence ledger. It does not modify or re-hash that 
 - GPT-5.6 Sol, OpenAI, acting only as AI documentary advisory reviewer, reviewed commit
   `eca48ba62acd79007884710395cc40ea21a02611` on 2026-08-12 with `formalReviewer=false` and
   disposition `CHANGES_REQUIRED`. `REC-REV-20260812-01` is
-  `CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE`; `REC-REV-20260812-02` remains
-  `OPEN_BLOCKING`. This review does not close `REC-RDY-02` or assign formal accountability.
+  `CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE`; `REC-REV-20260812-02` was
+  `OPEN_BLOCKING` at the time. This historical advisory review did not close `REC-RDY-02` or assign
+  formal accountability and remains unchanged.
 - Per-coordinate checksum, OpenPGP and source-correspondence verification closes authenticity for
   all eight publisher-closure coordinates. The `jsr305:3.0.2` signed-POM/exact-source license
   conflict remains uninterpreted and the artifact is handled only by the prospective exclusion
@@ -152,6 +154,17 @@ completed with `NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED`, no actionable findings
 assign the distinct accountable Engineering/Security reviewer, close `REC-REV-20260812-02` or
 `REC-RDY-02`, or authorize implementation or execution.
 
+Formal-review reconciliation, 13 August 2026: Novikova Katerina, acting in `individual professional
+capacity; Rambus listed only as affiliation`, returned all 12 answers as `ACCEPT` and disposition
+`APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW` for exact commit
+`b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd` / tree
+`1fd03fd489836c65f7ee043298f8f6d32df00c55`. The formal record at
+`docs/evidence/poc-recovery-001/formal-engineering-security-review-2026-08-13.json` closes
+`REC-REV-20260812-02` and `REC-RDY-02`. This evidence is read-only, is not a Rambus corporate
+approval, was not published as a formal GitHub review, does not amend the owner constraints, and
+does not authorize implementation, Phase A, execution, measurement, dependency admission,
+Production Security or Production Legal.
+
 ## Normative package
 
 - Proposed decision: `docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md`;
@@ -168,10 +181,10 @@ assign the distinct accountable Engineering/Security reviewer, close `REC-REV-20
 
 ## Not approved
 
-This record does not approve a winner/final format, final `ADR-AUDIO-001`, implementation
+This record and the later formal review do not approve a winner/final format, final `ADR-AUDIO-001`, implementation
 correctness, an actual Gradle/runtime dependency graph, a recovery module, production schema,
 redistribution, JSR-305 use, Production Legal/Security, physical D1/D5 availability or execution.
-The formal Engineering/Security reviewer, Production Legal reviewer, Production Security reviewer,
-execution authorization and emulator/D2 runtime facts remain null. Both
-`implementationAllowed=false` and `executionAllowed=false`; neither may change implicitly when a
+Production Legal reviewer, Production Security reviewer, execution authorization and emulator/D2
+runtime facts remain null. `implementationAllowed=false`, `implementationAllowedByThisPackage=false`,
+`executionAllowed=false` and `measuredExecutionAllowed=false`; none may change implicitly when a
 prerequisite is completed.

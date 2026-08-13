@@ -21,10 +21,47 @@ REVIEWED_V05_HEAD = "eca48ba62acd79007884710395cc40ea21a02611"
 REVIEWED_V06_HEAD = "b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd"
 MERGED_V06_MAIN = "f14c6f37d7acb37590be875f176653c100f0ae20"
 MERGED_V06_TREE = "1fd03fd489836c65f7ee043298f8f6d32df00c55"
+FORMAL_REVIEW_BASE_MAIN = "5c97f09f3165a90afa5300b30499e0dcb36168f2"
 POST_MERGE_EVIDENCE_PATH = "docs/evidence/poc-recovery-001/post-merge-advisory-rereview-2026-08-13.json"
 POST_MERGE_EVIDENCE_SHA256 = "f9165ec41d6bd5a5f6286a8f95223802a7bc91272103da8da05937e4fa4b7d91"
-BASE_HEAD = REVIEWED_V05_HEAD
+ADVISORY_DOSSIER_PATH = "docs/evidence/poc-recovery-001/advisory-engineering-security-dossier-2026-08-13.md"
+ADVISORY_DOSSIER_SHA256 = "619f33cbd795637853cfa51cc0ff76c1c5e642a1a5d13bb0582285844dc7462a"
+ADVISORY_DOSSIER_SOURCE_SHA256 = "3cf168080a6733c0afb33ab618ddca8e724533b599ce72634e3cbe12bbb12f95"
+FORMAL_REVIEW_PATH = "docs/evidence/poc-recovery-001/formal-engineering-security-review-2026-08-13.json"
+FORMAL_REVIEW_SHA256 = "8a57f0603bbd4ec6ae2768007d11425a9fc5c4bdff58ca4408421e5712838960"
+FORMAL_FINDINGS_LEDGER_PATH = "docs/evidence/poc-recovery-001/review-findings-v0.6.json"
+FORMAL_FINDINGS_LEDGER_SHA256 = "776f3803e0237aea71532529c75268c10f1180cc23aa4aaa793382d2b72ac42f"
+HISTORICAL_ADVISORY_LEDGER_PATH = "docs/evidence/poc-recovery-001/review-findings-v0.5.json"
+HISTORICAL_ADVISORY_LEDGER_SHA256 = "bb848aba1324a2ee9c67eacd443d5855bb138af39532baddc92ea5a61b5d517c"
+REVIEWER_NAME = "Novikova Katerina"
+REVIEWER_CAPACITY = "individual professional capacity; Rambus listed only as affiliation"
+FORMAL_DISPOSITION = "APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW"
+REC_REV_02_CLOSURE = "CLOSED_BY_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW"
+REC_RDY_02_CLOSURE = "CLOSED_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW"
+PUBLIC_CONSENT = "Я согласна на публичное размещение моего имени, affiliation, project role, review date и formal disposition в публичном репозитории DORA."
+WRITTEN_CONFIRMATION_METHOD = "Verbatim written response of Novikova Katerina, relayed by the Project owner in this Codex task on 2026-08-13."
+FORMAL_QUESTION_SUBJECTS = [
+    "DURABLE_ONE_SEGMENT_LOOKAHEAD, q/R, reads and EOF",
+    "public non-deprecated streaming construction",
+    "five-second AES256_GCM_TINK_IV12_TAG16 microfiles",
+    "manifest, four exact AAD schemas and bounded rollback claim",
+    "Android Keystore, key confirmation, ordered KEY taxonomy and KEY-04",
+    "semantic commit and C/R/A accounting",
+    "publication sequences, path families, reconciliation and quarantine",
+    "SQLite contract and fresh preflight contract",
+    "candidate-specific K01 through K12 barriers",
+    "46 effective rows, KEY-04, KCF-07 and fault routing",
+    "dependency, IP, authenticity and narrow R8 boundary",
+    "separate campaign profiles, reuse criteria and canonical blockers",
+]
+BASE_HEAD = FORMAL_REVIEW_BASE_MAIN
 SQLITE_STATUS = "RECOVERY_STAGE0_V0_6_SQLITE_PROFILE_SELECTED_FRESH_PREFLIGHT_INCOMPLETE"
+
+NORMATIVE_V06_HASHES = {
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_6.md": "5ab6d105fe6c94868d77c25d1be065a1688ccb083fcbdc0c3f43096e73909063",
+    GATE_PATH: "6a5f1f994e5084836527fded9bdf762ac1ed982cb5022b6da64090a283717755",
+    PROTOCOL_PATH: "9108cbffc3dc74a0e2a45868bf0c82b3827cb1e9023e1f0f12c53e7374c07a3d",
+}
 
 IMMUTABLE_AUDIT_HASHES = {
     "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_1.md": "d891e033e3e58455dbafd03be5a41ca64cafda93182424357035c37d769ae46e",
@@ -479,20 +516,199 @@ def validate_post_merge_evidence(record: dict[str, Any]) -> None:
     )
 
 
+def validate_historical_advisory_ledger(record: dict[str, Any]) -> None:
+    require(
+        record["sourceReviewedCommit"] == REVIEWED_V05_HEAD
+        and record["reviewedGateSetVersion"] == "poc-recovery-stage0-v0.5"
+        and record["activeRemediationProtocolId"] == PROTOCOL_ID
+        and record["review"]["reviewer"] == "GPT-5.6 Sol"
+        and record["review"]["organization"] == "OpenAI"
+        and record["review"]["formalReviewer"] is False
+        and record["review"]["disposition"] == "CHANGES_REQUIRED"
+        and record["closesRecRdy02"] is False,
+        "Historical advisory findings ledger identity/authority drift",
+    )
+    findings = {item["id"]: item for item in record["findings"]}
+    require(
+        findings["REC-REV-20260812-01"]["severity"] == "P1"
+        and findings["REC-REV-20260812-01"]["disposition"] == "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE"
+        and findings["REC-REV-20260812-02"]["severity"] == "P0"
+        and findings["REC-REV-20260812-02"]["category"] == "governance"
+        and findings["REC-REV-20260812-02"]["disposition"] == "OPEN_BLOCKING",
+        "Historical advisory finding content drift",
+    )
+
+
+def validate_formal_human_review(record: dict[str, Any]) -> None:
+    require(
+        record["schemaVersion"] == 1
+        and record["evidenceId"] == "POC-RECOVERY-001-FORMAL-HUMAN-ENGINEERING-SECURITY-REVIEW-20260813"
+        and record["pocId"] == "POC-RECOVERY-001"
+        and record["reviewType"] == "FORMAL_DISTINCT_ACCOUNTABLE_STAGE0_RECOVERY_ENGINEERING_SECURITY_REVIEW"
+        and record["formalReviewer"] is True
+        and record["reviewMode"] == "READ_ONLY_DOCUMENTARY_STATIC"
+        and record["reviewDate"] == "2026-08-13",
+        "Formal human review identity drift",
+    )
+    reviewer = record["reviewer"]
+    require(
+        reviewer["name"] == REVIEWER_NAME
+        and reviewer["affiliation"] == "Rambus"
+        and reviewer["affiliationOnly"] is True
+        and reviewer["capacity"] == REVIEWER_CAPACITY
+        and reviewer["projectRole"] == "Distinct accountable Stage 0 Recovery Engineering/Security reviewer"
+        and reviewer["distinctFromPackageAuthor"] is True
+        and reviewer["packageAuthor"] == "Codex"
+        and reviewer["name"].casefold() != reviewer["packageAuthor"].casefold()
+        and reviewer["rambusCorporateApprovalClaimed"] is False,
+        "Formal reviewer identity, capacity, distinctness or Rambus affiliation-only boundary drift",
+    )
+    target = record["reviewedTarget"]
+    require(
+        target == {
+            "packageCommit": REVIEWED_V06_HEAD,
+            "packageTree": MERGED_V06_TREE,
+            "gateSetVersion": GATE_ID,
+            "protocolId": PROTOCOL_ID,
+        },
+        "Formal review target drift",
+    )
+    dossier = record["advisoryDossier"]
+    require(
+        dossier["locator"] == ADVISORY_DOSSIER_PATH
+        and dossier["sourceAttachmentSha256"] == ADVISORY_DOSSIER_SOURCE_SHA256
+        and dossier["formalReviewer"] is False
+        and dossier["isNovikovaKaterinaDecision"] is False
+        and dossier["closesRecRdy02"] is False,
+        "AI dossier acquired formal human-review authority",
+    )
+    require(record["writtenConfirmationMethod"] == WRITTEN_CONFIRMATION_METHOD, "Written confirmation method drift")
+    consent = record["publicRecordConsent"]
+    require(consent["consented"] is True and consent["statement"] == PUBLIC_CONSENT, "Public-record consent missing or altered")
+    responses = record["responses"]
+    require(
+        [item["id"] for item in responses] == [f"Q{index:02d}" for index in range(1, 13)]
+        and len(responses) == 12
+        and [item["subject"] for item in responses] == FORMAL_QUESTION_SUBJECTS
+        and all(item["response"] == "ACCEPT" for item in responses),
+        "All twelve formal review responses must be ACCEPT",
+    )
+    require(
+        record["requiredChanges"] == "not stated in the verbatim response"
+        and record["nonBlockingObservations"] == "not stated in the verbatim response"
+        and record["disposition"] == FORMAL_DISPOSITION,
+        "Formal disposition/change-observation record drift",
+    )
+    require(
+        record["confirmations"] == {
+            "personallyReadAdvisoryDossierAndReferencedEvidence": True,
+            "consciouslyAcceptedOrCorrectedEachOfTwelveResponses": True,
+            "acceptsAccountabilityForThisDisposition": True,
+            "reviewWasReadOnly": True,
+            "implementationPerformed": False,
+            "executionPerformed": False,
+            "measurementPerformed": False,
+            "isProductionSecurityApproval": False,
+            "isProductionLegalApproval": False,
+            "isDependencyAdmission": False,
+            "isExecutionAuthorization": False,
+            "isImplementationAuthorization": False,
+            "dispositionChangesAuthorityFlags": False,
+        },
+        "Formal reviewer confirmations/authority boundary drift",
+    )
+    require(
+        record["findingClosures"] == {
+            "REC-REV-20260812-02": REC_REV_02_CLOSURE,
+            "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW": REC_RDY_02_CLOSURE,
+        },
+        "Formal review finding-closure state drift",
+    )
+    boundary = record["authorityBoundary"]
+    require(
+        all(boundary[field] is False for field in (
+            "implementationAllowed", "implementationAllowedByThisPackage", "executionAllowed",
+            "measuredExecutionAllowed", "phaseAAuthorized", "dependencyAdmission",
+            "productionSecurityApproval", "productionLegalApproval", "formalGitHubReviewClaimed",
+        ))
+        and boundary["separateImplementationReviewRequired"] is True
+        and boundary["separateOwnerImplementationAuthorizationRequired"] is True
+        and boundary["separateOwnerExecutionAuthorizationRequired"] is True,
+        "Formal review improperly authorized implementation, Phase A, execution or production",
+    )
+
+
+def validate_formal_findings_ledger(record: dict[str, Any]) -> None:
+    require(
+        record["schemaVersion"] == 1
+        and record["pocId"] == "POC-RECOVERY-001"
+        and record["sourceLedger"] == HISTORICAL_ADVISORY_LEDGER_PATH
+        and record["sourceLedgerUnchanged"] is True
+        and record["reviewedPackageCommit"] == REVIEWED_V06_HEAD
+        and record["reviewedPackageTree"] == MERGED_V06_TREE
+        and record["reviewedGateSetVersion"] == GATE_ID
+        and record["reviewedProtocolId"] == PROTOCOL_ID
+        and record["formalReviewEvidenceLocator"] == FORMAL_REVIEW_PATH
+        and record["formalReviewer"] is True
+        and record["reviewer"] == REVIEWER_NAME
+        and record["reviewerCapacity"] == REVIEWER_CAPACITY
+        and record["disposition"] == FORMAL_DISPOSITION
+        and record["closesRecRdy02"] is True,
+        "Formal findings-ledger identity drift",
+    )
+    findings = {item["id"]: item for item in record["findings"]}
+    require(
+        findings["REC-REV-20260812-01"]["disposition"] == "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE"
+        and findings["REC-REV-20260812-01"]["changedByThisLedger"] is False
+        and findings["REC-REV-20260812-02"]["priorDisposition"] == "OPEN_BLOCKING"
+        and findings["REC-REV-20260812-02"]["disposition"] == REC_REV_02_CLOSURE
+        and findings["REC-REV-20260812-02"]["closureEvidenceLocator"] == FORMAL_REVIEW_PATH
+        and findings["REC-REV-20260812-02"]["reviewer"] == REVIEWER_NAME
+        and findings["REC-REV-20260812-02"]["formalReviewer"] is True,
+        "Formal finding closure drift",
+    )
+    boundary = record["authorityBoundary"]
+    require(
+        all(boundary[field] is False for field in (
+            "implementationAllowed", "implementationAllowedByThisPackage", "executionAllowed",
+            "measuredExecutionAllowed", "phaseAAuthorized", "dependencyAdmission",
+            "productionSecurityApproval", "productionLegalApproval",
+        )),
+        "Formal findings ledger authorized prohibited work",
+    )
+
+
 def validate_readiness_and_evidence(gate: dict[str, Any]) -> None:
     readiness = read_json("docs/evidence/poc-recovery-001/readiness.json")
     roles = read_json("docs/evidence/poc-recovery-001/review-roles.json")
-    ledger = read_json("docs/evidence/poc-recovery-001/review-findings-v0.5.json")
+    historical_ledger = read_json(HISTORICAL_ADVISORY_LEDGER_PATH)
+    formal_ledger = read_json(FORMAL_FINDINGS_LEDGER_PATH)
+    formal_review = read_json(FORMAL_REVIEW_PATH)
     index = read_json("docs/evidence/poc-recovery-001/evidence-index.json")
     provenance = read_json("docs/evidence/poc-recovery-001/sqlite-platform-provenance.json")
     security = read_json("docs/evidence/poc-recovery-001/security-advisory-inventory.json")
     post_merge = read_json(POST_MERGE_EVIDENCE_PATH)
 
     require(sha256(POST_MERGE_EVIDENCE_PATH) == POST_MERGE_EVIDENCE_SHA256, "Post-merge evidence SHA-256 drift")
+    require(sha256(HISTORICAL_ADVISORY_LEDGER_PATH) == HISTORICAL_ADVISORY_LEDGER_SHA256, "Historical advisory ledger changed")
+    require(sha256(ADVISORY_DOSSIER_PATH) == ADVISORY_DOSSIER_SHA256, "Advisory Engineering/Security dossier SHA-256 drift")
+    require(sha256(FORMAL_REVIEW_PATH) == FORMAL_REVIEW_SHA256, "Formal human-review evidence SHA-256 drift")
+    require(sha256(FORMAL_FINDINGS_LEDGER_PATH) == FORMAL_FINDINGS_LEDGER_SHA256, "Formal findings-ledger SHA-256 drift")
     validate_post_merge_evidence(post_merge)
+    validate_historical_advisory_ledger(historical_ledger)
+    validate_formal_human_review(formal_review)
+    validate_formal_findings_ledger(formal_ledger)
+    dossier = read_text(ADVISORY_DOSSIER_PATH)
+    require(
+        "ADVISORY DRAFT FOR HUMAN REVIEWER" in dossier
+        and "`formalReviewer` for this AI dossier | `false`" in dossier
+        and "не является formal disposition Novikova Katerina" in dossier
+        and "не закрывает `REC-RDY-02`" in dossier,
+        "AI dossier formalReviewer/decision/readiness boundary drift",
+    )
 
     require(
-        readiness["schemaVersion"] == 8
+        readiness["schemaVersion"] == 9
         and readiness["status"].startswith("BLOCKED_")
         and all(readiness[field] is False for field in (
             "executionAllowed", "implementationAllowed", "implementationAllowedByThisPackage",
@@ -510,7 +726,10 @@ def validate_readiness_and_evidence(gate: dict[str, Any]) -> None:
         and package["governanceRemediationV06Present"] is True
         and package["v05RetainedAsSupersededAuditArtifact"] is True
         and package["v05Executable"] is False
-        and package["reviewFindingsV05LedgerPresent"] is True,
+        and package["reviewFindingsV05LedgerPresent"] is True
+        and package["reviewFindingsV06LedgerPresent"] is True
+        and package["advisoryEngineeringSecurityDossierPresent"] is True
+        and package["formalAccountableEngineeringSecurityReviewPresent"] is True,
         "Readiness active package metadata drift",
     )
     require(
@@ -534,61 +753,152 @@ def validate_readiness_and_evidence(gate: dict[str, Any]) -> None:
         and rereview["closesRecRdy02"] is False,
         "Readiness post-merge advisory re-review drift",
     )
+    formal_summary = readiness["formalAccountableEngineeringSecurityReviewEvidence"]
+    require(
+        formal_summary["locator"] == FORMAL_REVIEW_PATH
+        and formal_summary["reviewer"] == REVIEWER_NAME
+        and formal_summary["affiliation"] == "Rambus"
+        and formal_summary["capacity"] == REVIEWER_CAPACITY
+        and formal_summary["reviewDate"] == "2026-08-13"
+        and formal_summary["reviewedCommit"] == REVIEWED_V06_HEAD
+        and formal_summary["reviewedTree"] == MERGED_V06_TREE
+        and formal_summary["formalReviewer"] is True
+        and formal_summary["disposition"] == FORMAL_DISPOSITION
+        and formal_summary["recRev2026081202Disposition"] == REC_REV_02_CLOSURE
+        and formal_summary["recRdy02Status"] == REC_RDY_02_CLOSURE
+        and formal_summary["closesRecRev2026081202"] is True
+        and formal_summary["closesRecRdy02"] is True
+        and formal_summary["rambusCorporateApprovalClaimed"] is False
+        and formal_summary["formalGitHubReviewClaimed"] is False
+        and all(formal_summary[field] is False for field in (
+            "implementationAllowed", "implementationAllowedByThisPackage", "executionAllowed",
+            "measuredExecutionAllowed", "phaseAAuthorized",
+        )),
+        "Readiness formal accountable review summary drift",
+    )
     blocker_ids = [item["id"] for item in readiness["blockers"]]
     require(gate["blockers"] == blocker_ids == CANONICAL_BLOCKERS and len(set(blocker_ids)) == 11, "Readiness blocker contract drift")
     rec02 = readiness["blockers"][1]
-    require(rec02["priority"] == "P0" and rec02["status"] == "OPEN_UNASSIGNED", "REC-RDY-02 was closed by advisory review")
-    require(readiness["phaseA"]["phaseATotalInjections"] == 184 and readiness["phaseA"]["hardKillDenominatorSeparate"] is True, "Readiness Phase A drift")
+    require(
+        rec02["priority"] == "P0"
+        and rec02["status"] == REC_RDY_02_CLOSURE
+        and rec02["owner"] == "Novikova Katerina, individual professional capacity"
+        and "Closure does not authorize implementation, Phase A" in rec02["condition"],
+        "REC-RDY-02 distinct accountable human-review closure drift",
+    )
+    require(
+        readiness["phaseA"]["phaseATotalInjections"] == 184
+        and readiness["phaseA"]["hardKillDenominatorSeparate"] is True
+        and readiness["phaseA"]["authorizedNow"] is False
+        and readiness["phaseA"]["authorizationGrantedByFormalReview"] is False
+        and readiness["phaseA"]["executionAllowedNow"] is False,
+        "Readiness Phase A authority/count drift",
+    )
     require(readiness["fullVerdict"]["fullPhysicalTotalInjections"] == 138 and readiness["fullVerdict"]["deferred"] is True, "Readiness full physical drift")
 
-    require(roles["schemaVersion"] == 8 and roles["activeGateSetVersion"] == GATE_ID and roles["activeProtocolId"] == PROTOCOL_ID, "Review role metadata drift")
+    require(roles["schemaVersion"] == 9 and roles["activeGateSetVersion"] == GATE_ID and roles["activeProtocolId"] == PROTOCOL_ID, "Review role metadata drift")
     require(
         roles["advisoryReviewEvidenceLocators"] == [
-            "docs/evidence/poc-recovery-001/review-findings-v0.5.json",
+            HISTORICAL_ADVISORY_LEDGER_PATH,
             POST_MERGE_EVIDENCE_PATH,
+            ADVISORY_DOSSIER_PATH,
         ],
         "Review role advisory evidence history drift",
+    )
+    require(
+        roles["formalReviewEvidenceLocators"] == [FORMAL_REVIEW_PATH, FORMAL_FINDINGS_LEDGER_PATH],
+        "Review role formal evidence locators drift",
     )
     role_map = roles["roles"]
     require(role_map["packageAuthor"]["claimedFormallyIndependentReviewer"] is False, "Codex claimed formal independence")
     require(role_map["advisoryDocumentaryReviewer"]["formalReviewer"] is False and role_map["advisoryDocumentaryReviewer"]["closesRecRdy02"] is False, "AI advisory reviewer gained formal authority")
     independent = role_map["independentRecoveryEngineeringSecurity"]
-    require(independent["reviewer"] is None and independent["status"] == "UNASSIGNED_BLOCKING", "Accountable reviewer assignment drift")
+    require(
+        independent["reviewer"] == REVIEWER_NAME
+        and independent["affiliation"] == "Rambus"
+        and independent["affiliationOnly"] is True
+        and independent["capacity"] == REVIEWER_CAPACITY
+        and independent["status"] == FORMAL_DISPOSITION
+        and independent["formalReviewer"] is True
+        and independent["formalReviewEvidenceLocator"] == FORMAL_REVIEW_PATH
+        and independent["reviewedCommit"] == REVIEWED_V06_HEAD
+        and independent["reviewedTree"] == MERGED_V06_TREE
+        and independent["recRev2026081202Disposition"] == REC_REV_02_CLOSURE
+        and independent["recRdy02Status"] == REC_RDY_02_CLOSURE
+        and independent["closesRecRdy02"] is True
+        and independent["rambusCorporateApprovalClaimed"] is False
+        and independent["formalGitHubReviewClaimed"] is False
+        and independent["mayApproveImplementation"] is False
+        and independent["mayAuthorizeExecution"] is False
+        and all(independent[field] is False for field in (
+            "implementationAllowed", "implementationAllowedByThisPackage", "executionAllowed",
+            "measuredExecutionAllowed", "phaseAAuthorized",
+        )),
+        "Accountable formal reviewer assignment/disposition/authority drift",
+    )
     require(role_map["stage0ProductIp"]["futureExactGraphDisposition"]["status"] == "OPEN_BLOCKED", "Future Product/IP graph disposition closed")
     require(role_map["productionLegal"]["reviewer"] is None and role_map["productionSecurity"]["reviewer"] is None, "Production review prematurely assigned")
 
     require(
-        ledger["sourceReviewedCommit"] == REVIEWED_V05_HEAD
-        and ledger["reviewedGateSetVersion"] == "poc-recovery-stage0-v0.5"
-        and ledger["activeRemediationProtocolId"] == PROTOCOL_ID
-        and ledger["review"]["reviewer"] == "GPT-5.6 Sol"
-        and ledger["review"]["organization"] == "OpenAI"
-        and ledger["review"]["formalReviewer"] is False
-        and ledger["review"]["disposition"] == "CHANGES_REQUIRED"
-        and ledger["closesRecRdy02"] is False,
-        "Review findings ledger identity drift",
+        index["schemaVersion"] == 6
+        and index["activeGateSetVersion"] == GATE_ID
+        and index["activeProtocolId"] == PROTOCOL_ID
+        and all(index[field] is False for field in (
+            "implementationAllowed", "implementationAllowedByThisPackage", "executionAllowed",
+            "measuredExecutionAllowed",
+        )),
+        "Evidence index metadata/authority drift",
     )
-    findings = {item["id"]: item for item in ledger["findings"]}
-    require(
-        findings["REC-REV-20260812-01"]["severity"] == "P1"
-        and findings["REC-REV-20260812-01"]["disposition"] == "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE"
-        and findings["REC-REV-20260812-02"]["severity"] == "P0"
-        and findings["REC-REV-20260812-02"]["category"] == "governance"
-        and findings["REC-REV-20260812-02"]["disposition"] == "OPEN_BLOCKING",
-        "Finding severity/disposition drift",
-    )
-
-    require(index["schemaVersion"] == 5 and index["activeGateSetVersion"] == GATE_ID and index["activeProtocolId"] == PROTOCOL_ID, "Evidence index metadata drift")
     require({item["locator"]: item["sha256"] for item in index["supersededAuditArtifacts"]} == IMMUTABLE_AUDIT_HASHES, "Evidence index historical hashes drift")
     artifact_ids = {item["id"] for item in index["artifacts"]}
-    require({"REC-V06-GATE-MARKDOWN", "REC-V06-GATE-JSON", "REC-V06-PROTOCOL-JSON", "REC-V06-REMEDIATION", "REC-REVIEW-V05-LEDGER"}.issubset(artifact_ids), "Evidence index lacks v0.6 artifacts")
+    require({
+        "REC-V06-GATE-MARKDOWN", "REC-V06-GATE-JSON", "REC-V06-PROTOCOL-JSON",
+        "REC-V06-REMEDIATION", "REC-REVIEW-V05-LEDGER",
+        "REC-ADVISORY-ENGINEERING-SECURITY-DOSSIER-20260813",
+        "REC-FORMAL-HUMAN-ENGINEERING-SECURITY-REVIEW-20260813",
+        "REC-REVIEW-V06-FORMAL-CLOSURE-LEDGER",
+    }.issubset(artifact_ids), "Evidence index lacks formal-review artifacts")
     post_merge_index = next(item for item in index["artifacts"] if item["id"] == "REC-POST-MERGE-ADVISORY-REREVIEW-20260813")
     require(
         post_merge_index["locator"] == POST_MERGE_EVIDENCE_PATH
         and post_merge_index["sha256"] == POST_MERGE_EVIDENCE_SHA256
         and post_merge_index["sha256"] == sha256(post_merge_index["locator"])
-        and post_merge_index["status"] == "PR12_SQUASH_MERGED_ADVISORY_REREVIEW_NO_FURTHER_DOCUMENTARY_CHANGES_FORMAL_REVIEWER_FALSE_REC_RDY_02_OPEN",
+        and post_merge_index["status"] == "HISTORICAL_PR12_SQUASH_MERGED_ADVISORY_REREVIEW_NO_FURTHER_DOCUMENTARY_CHANGES_FORMAL_REVIEWER_FALSE_REC_RDY_02_OPEN_AT_RECORD_TIME",
         "Evidence index post-merge advisory re-review pin drift",
+    )
+    indexed = {item["id"]: item for item in index["artifacts"]}
+    historical_index = indexed["REC-REVIEW-V05-LEDGER"]
+    require(
+        historical_index["locator"] == HISTORICAL_ADVISORY_LEDGER_PATH
+        and historical_index["sha256"] == HISTORICAL_ADVISORY_LEDGER_SHA256
+        and historical_index["sha256"] == sha256(historical_index["locator"]),
+        "Evidence index historical advisory ledger pin drift",
+    )
+    dossier_index = indexed["REC-ADVISORY-ENGINEERING-SECURITY-DOSSIER-20260813"]
+    require(
+        dossier_index["locator"] == ADVISORY_DOSSIER_PATH
+        and dossier_index["sha256"] == ADVISORY_DOSSIER_SHA256
+        and dossier_index["sourceAttachmentSha256"] == ADVISORY_DOSSIER_SOURCE_SHA256
+        and dossier_index["sha256"] == sha256(dossier_index["locator"])
+        and "FORMAL_REVIEWER_FALSE" in dossier_index["status"]
+        and "DOES_NOT_CLOSE_REC_RDY_02" in dossier_index["status"],
+        "Evidence index advisory dossier pin/authority drift",
+    )
+    formal_index = indexed["REC-FORMAL-HUMAN-ENGINEERING-SECURITY-REVIEW-20260813"]
+    require(
+        formal_index["locator"] == FORMAL_REVIEW_PATH
+        and formal_index["sha256"] == FORMAL_REVIEW_SHA256
+        and formal_index["sha256"] == sha256(formal_index["locator"])
+        and FORMAL_DISPOSITION in formal_index["status"],
+        "Evidence index formal review pin drift",
+    )
+    ledger_index = indexed["REC-REVIEW-V06-FORMAL-CLOSURE-LEDGER"]
+    require(
+        ledger_index["locator"] == FORMAL_FINDINGS_LEDGER_PATH
+        and ledger_index["sha256"] == FORMAL_FINDINGS_LEDGER_SHA256
+        and ledger_index["sha256"] == sha256(ledger_index["locator"])
+        and "REC_RDY_02_CLOSED" in ledger_index["status"],
+        "Evidence index formal closure-ledger pin drift",
     )
 
     require(provenance["status"] == SQLITE_STATUS and provenance["activeGateSetVersion"] == GATE_ID and provenance["activeProtocolId"] == PROTOCOL_ID and provenance["phaseA"]["executionAllowed"] is False, "SQLite provenance metadata drift")
@@ -603,6 +913,17 @@ def validate_dependency_and_scope_boundary() -> None:
     require(boundary["currentTinkAndroid123Wired"] is False and boundary["currentRecoveryModuleExists"] is False and boundary["futureActualRecoveryGraphStatus"].startswith("OPEN_BLOCKED"), "Recovery dependency boundary drift")
     require(not (ROOT / "android" / "poc" / "recovery").exists(), "Recovery module exists")
     require(":poc:recovery" not in read_text("android/settings.gradle.kts"), "Recovery module included")
+    for relative, expected in NORMATIVE_V06_HASHES.items():
+        require(sha256(relative) == expected, f"Normative v0.6 contract changed: {relative}")
+    changed_normative = subprocess.run(
+        ["git", "diff", "--name-only", BASE_HEAD, "--", *NORMATIVE_V06_HASHES],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    ).stdout.splitlines()
+    require(not changed_normative, f"Normative v0.6 contract differs from formal-review base: {changed_normative}")
     changed_android = subprocess.run(
         ["git", "diff", "--name-only", BASE_HEAD, "--", "android"],
         cwd=ROOT,
@@ -617,14 +938,14 @@ def validate_dependency_and_scope_boundary() -> None:
 def validate_active_metadata() -> None:
     fragments = {
         "docs/DORA_MVP1_TECHNICAL_PLAN.md": ["prospective protocol v0.6", "KEY_UNAVAILABLE_KEY_MISMATCH", "REC-RDY-02"],
-        "docs/DORA_MVP1_PRODUCT_DECISIONS.md": [GATE_ID, PROTOCOL_ID, "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE"],
+        "docs/DORA_MVP1_PRODUCT_DECISIONS.md": [GATE_ID, PROTOCOL_ID, REC_REV_02_CLOSURE, REC_RDY_02_CLOSURE, REVIEWER_NAME],
         "docs/DORA_MVP1_TEST_STRATEGY.md": ["POC-RECOVERY-001` v0.6", "46 unique active fault rows", "KCF-07"],
-        "docs/DORA_MVP1_STAGE_STATUS.md": ["PR #12 MERGED", GATE_ID, PROTOCOL_ID, "REC-REV-20260812-02", "NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED"],
-        "docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md": [GATE_ID, PROTOCOL_ID, "KEY_UNAVAILABLE_KEY_MISMATCH", "KCF-07"],
+        "docs/DORA_MVP1_STAGE_STATUS.md": [GATE_ID, PROTOCOL_ID, REC_RDY_02_CLOSURE, REVIEWER_NAME, "Current Pull Request state is never a static document invariant"],
+        "docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md": [GATE_ID, PROTOCOL_ID, "KEY_UNAVAILABLE_KEY_MISMATCH", "KCF-07", FORMAL_DISPOSITION, REVIEWER_CAPACITY],
         "docs/stage0/DORA_MVP1_POC_GATES.md": ["stage0-v0.6", "46 unique IDs", "KEY_UNAVAILABLE_KEY_MISMATCH"],
-        "docs/stage0/DORA_MVP1_POC_EXECUTION_ORDER.md": ["stage0-v0.6", "46 unique active rows", "REC-RDY-02"],
+        "docs/stage0/DORA_MVP1_POC_EXECUTION_ORDER.md": ["stage0-v0.6", "46 unique active rows", "accountable formal review complete"],
         "docs/stage0/DORA_MVP1_IP_ASSET_POLICY.md": ["active protocol v0.6", "future actual recovery", "Engineering/Security reviewer"],
-        "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md": [GATE_ID, PROTOCOL_ID, "15 SHA-256 values", "formalReviewer=false"],
+        "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md": [GATE_ID, PROTOCOL_ID, "15 SHA-256 values", "formalReviewer=false", FORMAL_DISPOSITION, REVIEWER_NAME],
         "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_6.md": [
             *KEY04_PRECONDITIONS,
             "KEY_UNAVAILABLE_KEY_MISMATCH",
@@ -636,12 +957,12 @@ def validate_active_metadata() -> None:
             "138 injections",
             "120 attempts per candidate",
         ],
-        "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md": [GATE_ID, PROTOCOL_ID, "REC-REV-20260812-01", "implementationAllowed=false"],
-        "docs/DORA_MVP1_IMPLEMENTATION_READINESS.md": [GATE_ID, PROTOCOL_ID, "REC-RDY-02", "executionAllowed=false"],
-        "docs/evidence/poc-recovery-001/README.md": ["PR #12 MERGED", "15 superseded audit artifacts", "GPT-5.6 Sol", "KCF-07", "NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED"],
+        "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md": [GATE_ID, PROTOCOL_ID, "REC-REV-20260812-01", FORMAL_DISPOSITION, "implementationAllowed=false"],
+        "docs/DORA_MVP1_IMPLEMENTATION_READINESS.md": [GATE_ID, PROTOCOL_ID, REC_RDY_02_CLOSURE, FORMAL_DISPOSITION, "executionAllowed=false"],
+        "docs/evidence/poc-recovery-001/README.md": ["15 superseded audit artifacts", "GPT-5.6 Sol", "KCF-07", "NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED", FORMAL_DISPOSITION, REVIEWER_NAME],
         "docs/evidence/poc-recovery-001/governance-remediation-v0.6.md": [REVIEWED_V05_HEAD, "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE", "OPEN_BLOCKING"],
-        "docs/evidence/poc-recovery-001/independent-engineering-security-review-task.md": ["POC-RECOVERY-001 v0.6", "KEY-04", "formalReviewer=false"],
-        "docs/evidence/poc-recovery-001/ip-stage0-evaluation-review.md": [GATE_ID, PROTOCOL_ID, "does not\nclose `REC-RDY-02`"],
+        "docs/evidence/poc-recovery-001/independent-engineering-security-review-task.md": ["POC-RECOVERY-001 v0.6", "KEY-04", "formalReviewer=false", "COMPLETED 2026-08-13"],
+        "docs/evidence/poc-recovery-001/ip-stage0-evaluation-review.md": [GATE_ID, PROTOCOL_ID, FORMAL_DISPOSITION, REVIEWER_NAME],
     }
     for relative, required in fragments.items():
         content = read_text(relative)
@@ -726,6 +1047,48 @@ def run_negative_tests() -> None:
         else:
             raise ValueError(f"Negative test unexpectedly passed: {name}")
 
+    formal_tests: list[tuple[str, Callable[[dict[str, Any]], None]]] = [
+        ("formal-review-formalReviewer-false", lambda record: record.__setitem__("formalReviewer", False)),
+        ("formal-review-missing-reviewer-name", lambda record: record["reviewer"].__setitem__("name", "")),
+        ("formal-review-reviewer-equals-package-author", lambda record: record["reviewer"].__setitem__("name", "Codex")),
+        ("formal-review-wrong-reviewed-target", lambda record: record["reviewedTarget"].__setitem__("packageCommit", "0" * 40)),
+        ("formal-review-wrong-capacity", lambda record: record["reviewer"].__setitem__("capacity", "authorized representative of Rambus")),
+        ("formal-review-false-rambus-corporate-approval", lambda record: record["reviewer"].__setitem__("rambusCorporateApprovalClaimed", True)),
+        ("formal-review-non-accept-answer", lambda record: record["responses"][5].__setitem__("response", "CHANGES_REQUIRED")),
+        ("formal-review-wrong-disposition", lambda record: record.__setitem__("disposition", "APPROVE_FOR_IMPLEMENTATION")),
+        ("formal-review-missing-public-consent", lambda record: record["publicRecordConsent"].__setitem__("consented", False)),
+        ("formal-review-advisory-dossier-closes-rec-rdy-02", lambda record: record["advisoryDossier"].__setitem__("closesRecRdy02", True)),
+    ]
+    for field in ("implementationAllowed", "implementationAllowedByThisPackage", "executionAllowed", "measuredExecutionAllowed"):
+        formal_tests.append((f"formal-review-authority-{field}-true", lambda record, key=field: record["authorityBoundary"].__setitem__(key, True)))
+    for name, mutation in formal_tests:
+        record = read_json(FORMAL_REVIEW_PATH)
+        mutation(record)
+        try:
+            validate_formal_human_review(record)
+        except (ValueError, KeyError):
+            print(f"PASS negative {name}")
+        else:
+            raise ValueError(f"Negative test unexpectedly passed: {name}")
+
+    historical = read_json(HISTORICAL_ADVISORY_LEDGER_PATH)
+    historical["review"]["formalReviewer"] = True
+    try:
+        validate_historical_advisory_ledger(historical)
+    except (ValueError, KeyError):
+        print("PASS negative historical-advisory-record-modified")
+    else:
+        raise ValueError("Negative test unexpectedly passed: historical-advisory-record-modified")
+
+    formal_ledger = read_json(FORMAL_FINDINGS_LEDGER_PATH)
+    formal_ledger["sourceLedgerUnchanged"] = False
+    try:
+        validate_formal_findings_ledger(formal_ledger)
+    except (ValueError, KeyError):
+        print("PASS negative historical-advisory-source-rewritten")
+    else:
+        raise ValueError("Negative test unexpectedly passed: historical-advisory-source-rewritten")
+
 
 def main() -> int:
     gate = read_json(GATE_PATH)
@@ -741,7 +1104,8 @@ def main() -> int:
         "46 unique effective rows with one KEY-04, KEY-04 authentication/AAD failure only -> "
         "KEY_UNAVAILABLE_KEY_MISMATCH, KCF-07 successful-decrypt malformed plaintext -> "
         "CORRUPT_KEY_CONFIRMATION, Phase A=184, full physical=138, hard kills=120/candidate separate, "
-        "implementationAllowed=false, executionAllowed=false"
+        "formal accountable review complete with REC-RDY-02 closed, implementationAllowed=false, "
+        "implementationAllowedByThisPackage=false, executionAllowed=false, measuredExecutionAllowed=false"
     )
     return 0
 

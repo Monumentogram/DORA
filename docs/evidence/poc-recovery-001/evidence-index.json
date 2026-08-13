@@ -1,11 +1,13 @@
 {
-  "schemaVersion": 5,
+  "schemaVersion": 6,
   "pocId": "POC-RECOVERY-001",
-  "status": "PR12_MERGED_ADVISORY_REREVIEW_COMPLETE_NO_DOCUMENTARY_FINDINGS_ACCOUNTABLE_REVIEW_ACTUAL_GRAPH_IMPLEMENTATION_EXECUTION_BLOCKED",
+  "status": "ACCOUNTABLE_FORMAL_HUMAN_REVIEW_COMPLETE_SEPARATE_IMPLEMENTATION_REVIEW_AND_AUTHORIZATION_ACTUAL_GRAPH_IMPLEMENTATION_EXECUTION_BLOCKED",
   "activeGateSetVersion": "poc-recovery-stage0-v0.6",
   "activeProtocolId": "poc-recovery-protocol-stage0-v0.6",
   "implementationAllowed": false,
+  "implementationAllowedByThisPackage": false,
   "executionAllowed": false,
+  "measuredExecutionAllowed": false,
   "supersededAuditArtifacts": [
     {
       "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_1.md",
@@ -152,7 +154,7 @@
     {
       "id": "REC-V06-REMEDIATION",
       "locator": "docs/evidence/poc-recovery-001/governance-remediation-v0.6.md",
-      "status": "REC_REV_20260812_01_CLOSED_KEY04_OVERRIDE_REC_REV_20260812_02_OPEN_BLOCKING"
+      "status": "HISTORICAL_REMEDIATION_STATE_REC_REV_20260812_01_CLOSED_KEY04_OVERRIDE_REC_REV_20260812_02_OPEN_BLOCKING_AT_RECORD_TIME"
     },
     {
       "id": "REC-REVIEW-V01-LEDGER",
@@ -177,13 +179,33 @@
     {
       "id": "REC-REVIEW-V05-LEDGER",
       "locator": "docs/evidence/poc-recovery-001/review-findings-v0.5.json",
-      "status": "GPT_5_6_SOL_OPENAI_ADVISORY_CHANGES_REQUIRED_FORMAL_REVIEWER_FALSE_REC_RDY_02_OPEN"
+      "sha256": "bb848aba1324a2ee9c67eacd443d5855bb138af39532baddc92ea5a61b5d517c",
+      "status": "HISTORICAL_GPT_5_6_SOL_OPENAI_ADVISORY_CHANGES_REQUIRED_FORMAL_REVIEWER_FALSE_REC_RDY_02_OPEN_AT_RECORD_TIME"
     },
     {
       "id": "REC-POST-MERGE-ADVISORY-REREVIEW-20260813",
       "locator": "docs/evidence/poc-recovery-001/post-merge-advisory-rereview-2026-08-13.json",
       "sha256": "f9165ec41d6bd5a5f6286a8f95223802a7bc91272103da8da05937e4fa4b7d91",
-      "status": "PR12_SQUASH_MERGED_ADVISORY_REREVIEW_NO_FURTHER_DOCUMENTARY_CHANGES_FORMAL_REVIEWER_FALSE_REC_RDY_02_OPEN"
+      "status": "HISTORICAL_PR12_SQUASH_MERGED_ADVISORY_REREVIEW_NO_FURTHER_DOCUMENTARY_CHANGES_FORMAL_REVIEWER_FALSE_REC_RDY_02_OPEN_AT_RECORD_TIME"
+    },
+    {
+      "id": "REC-ADVISORY-ENGINEERING-SECURITY-DOSSIER-20260813",
+      "locator": "docs/evidence/poc-recovery-001/advisory-engineering-security-dossier-2026-08-13.md",
+      "sha256": "619f33cbd795637853cfa51cc0ff76c1c5e642a1a5d13bb0582285844dc7462a",
+      "sourceAttachmentSha256": "3cf168080a6733c0afb33ab618ddca8e724533b599ce72634e3cbe12bbb12f95",
+      "status": "ADVISORY_DOSSIER_FORMAL_REVIEWER_FALSE_NOT_NOVIKOVA_KATERINA_DECISION_DOES_NOT_CLOSE_REC_RDY_02"
+    },
+    {
+      "id": "REC-FORMAL-HUMAN-ENGINEERING-SECURITY-REVIEW-20260813",
+      "locator": "docs/evidence/poc-recovery-001/formal-engineering-security-review-2026-08-13.json",
+      "sha256": "8a57f0603bbd4ec6ae2768007d11425a9fc5c4bdff58ca4408421e5712838960",
+      "status": "NOVIKOVA_KATERINA_DISTINCT_ACCOUNTABLE_FORMAL_REVIEW_APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW_NO_IMPLEMENTATION_OR_EXECUTION_AUTHORITY"
+    },
+    {
+      "id": "REC-REVIEW-V06-FORMAL-CLOSURE-LEDGER",
+      "locator": "docs/evidence/poc-recovery-001/review-findings-v0.6.json",
+      "sha256": "776f3803e0237aea71532529c75268c10f1180cc23aa4aaa793382d2b72ac42f",
+      "status": "REC_REV_20260812_02_AND_REC_RDY_02_CLOSED_BY_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW"
     },
     {
       "id": "REC-DEPENDENCY-INVENTORY",
@@ -233,7 +255,7 @@
     {
       "id": "REC-SECURITY-INVENTORY",
       "locator": "docs/evidence/poc-recovery-001/security-advisory-inventory.json",
-      "status": "SNAPSHOT_COMPLETE_INDEPENDENT_REVIEW_PENDING"
+      "status": "HISTORICAL_SNAPSHOT_COMPLETE_ACCOUNTABLE_REVIEW_LATER_RECORDED_SEPARATELY"
     },
     {
       "id": "REC-SQLITE-PROVENANCE",
@@ -243,7 +265,7 @@
     {
       "id": "REC-REVIEW-ROLES",
       "locator": "docs/evidence/poc-recovery-001/review-roles.json",
-      "status": "OWNER_POLICY_APPROVED_FORMAL_ENGINEERING_SECURITY_REVIEWER_UNASSIGNED"
+      "status": "NOVIKOVA_KATERINA_DISTINCT_ACCOUNTABLE_FORMAL_REVIEW_COMPLETE_SEPARATE_IMPLEMENTATION_AND_EXECUTION_AUTHORITY_WITHHELD"
     },
     {
       "id": "REC-READINESS",
@@ -258,7 +280,7 @@
     {
       "id": "REC-INDEPENDENT-REVIEW-TASK",
       "locator": "docs/evidence/poc-recovery-001/independent-engineering-security-review-task.md",
-      "status": "READY_TO_COPY_REVIEWER_UNASSIGNED"
+      "status": "HISTORICAL_ASSIGNMENT_TEMPLATE_REVIEW_COMPLETED_20260813"
     }
   ]
 }

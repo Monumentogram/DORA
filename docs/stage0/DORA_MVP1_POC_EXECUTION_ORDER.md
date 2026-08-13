@@ -33,7 +33,7 @@ It is selected by `OD-01` because the higher-precedence Technical Plan puts capt
 
 ```mermaid
 flowchart TD
-    O["Approved owner constraints OD-01..OD-14"] --> G["Defined Stage 0 gates Approved; recovery v0.6 KEY-04 governance fixed, exact packet evidence verified, implementation/actual graph/accountable review blocked"]
+    O["Approved owner constraints OD-01..OD-14"] --> G["Defined Stage 0 gates Approved; recovery v0.6 KEY-04 governance fixed, exact packet evidence and accountable formal review complete; separate implementation review/authorization and actual graph blocked"]
     O --> D["Connect and auto-identify one physical phone"]
     O --> C["Synthetic-only until controlled evidence storage"]
     G --> CAP["POC-CAPTURE-001"]

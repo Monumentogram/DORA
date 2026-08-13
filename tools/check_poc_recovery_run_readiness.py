@@ -8,6 +8,17 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from validate_poc_recovery_governance import (
+    FORMAL_DISPOSITION,
+    FORMAL_FINDINGS_LEDGER_PATH,
+    FORMAL_REVIEW_PATH,
+    REC_RDY_02_CLOSURE,
+    REVIEWER_CAPACITY,
+    REVIEWER_NAME,
+    validate_formal_findings_ledger,
+    validate_formal_human_review,
+)
+
 
 ROOT = Path(__file__).resolve().parents[1]
 STAGE0 = ROOT / "docs" / "stage0"
@@ -66,12 +77,14 @@ def validate_static_contract(
     analysis: dict[str, Any],
     roles: dict[str, Any],
     rereview: dict[str, Any],
+    formal_review: dict[str, Any],
+    formal_ledger: dict[str, Any],
 ) -> None:
     require(gate["schemaVersion"] == 6 and gate["gateSetVersion"] == GATE_ID, "Active Gate Set is not v0.6")
     require(protocol["schemaVersion"] == 6 and protocol["protocolId"] == PROTOCOL_ID, "Active protocol is not v0.6")
-    require(readiness["schemaVersion"] == 8, "Recovery readiness schema is stale")
+    require(readiness["schemaVersion"] == 9, "Recovery readiness schema is stale")
     require(analysis["schemaVersion"] == 3, "JSR305 exclusion analysis schema is stale")
-    require(roles["schemaVersion"] == 8, "Recovery review-role schema is stale")
+    require(roles["schemaVersion"] == 9, "Recovery review-role schema is stale")
     require(
         readiness["packageArtifacts"]["activeGateSetVersion"] == GATE_ID
         and readiness["packageArtifacts"]["activeProtocolId"] == PROTOCOL_ID
@@ -87,9 +100,37 @@ def validate_static_contract(
     require(
         readiness["advisoryDocumentaryReview"]["formalReviewer"] is False
         and readiness["advisoryDocumentaryReview"]["closesRecRdy02"] is False
-        and roles["roles"]["advisoryDocumentaryReviewer"]["formalReviewer"] is False
-        and roles["roles"]["independentRecoveryEngineeringSecurity"]["reviewer"] is None,
+        and roles["roles"]["advisoryDocumentaryReviewer"]["formalReviewer"] is False,
         "Advisory review acquired formal/accountable authority",
+    )
+    validate_formal_human_review(formal_review)
+    validate_formal_findings_ledger(formal_ledger)
+    independent = roles["roles"]["independentRecoveryEngineeringSecurity"]
+    formal_summary = readiness["formalAccountableEngineeringSecurityReviewEvidence"]
+    rec02 = readiness["blockers"][1]
+    require(
+        independent["reviewer"] == REVIEWER_NAME
+        and independent["capacity"] == REVIEWER_CAPACITY
+        and independent["formalReviewer"] is True
+        and independent["status"] == FORMAL_DISPOSITION
+        and independent["formalReviewEvidenceLocator"] == FORMAL_REVIEW_PATH
+        and independent["recRdy02Status"] == REC_RDY_02_CLOSURE
+        and independent["closesRecRdy02"] is True
+        and independent["rambusCorporateApprovalClaimed"] is False
+        and independent["formalGitHubReviewClaimed"] is False
+        and formal_summary["locator"] == FORMAL_REVIEW_PATH
+        and formal_summary["formalReviewer"] is True
+        and formal_summary["disposition"] == FORMAL_DISPOSITION
+        and formal_summary["recRdy02Status"] == REC_RDY_02_CLOSURE
+        and formal_summary["closesRecRdy02"] is True
+        and formal_summary["rambusCorporateApprovalClaimed"] is False
+        and rec02["id"] == CANONICAL_BLOCKERS[1]
+        and rec02["status"] == REC_RDY_02_CLOSURE
+        and all(readiness[field] is False for field in (
+            "implementationAllowed", "implementationAllowedByThisPackage", "executionAllowed",
+            "measuredExecutionAllowed",
+        )),
+        "REC-RDY-02 lacks valid distinct accountable formal human-review closure",
     )
     rereview_summary = readiness["advisoryDocumentaryReReviewEvidence"]
     rereview_record = rereview["advisoryReReview"]
@@ -218,8 +259,10 @@ def main() -> int:
     analysis = read_json(EVIDENCE / "jsr305-exclusion-analysis-2026-08-12.json")
     roles = read_json(EVIDENCE / "review-roles.json")
     rereview = read_json(POST_MERGE_EVIDENCE)
+    formal_review = read_json(ROOT / FORMAL_REVIEW_PATH)
+    formal_ledger = read_json(ROOT / FORMAL_FINDINGS_LEDGER_PATH)
     provenance = read_json(EVIDENCE / "sqlite-platform-provenance.json")
-    validate_static_contract(gate, protocol, readiness, analysis, roles, rereview)
+    validate_static_contract(gate, protocol, readiness, analysis, roles, rereview, formal_review, formal_ledger)
 
     active_blockers = {item["id"]: item for item in readiness["blockers"]}
     blockers: list[str] = []
@@ -236,7 +279,13 @@ def main() -> int:
     independent = roles["roles"]["independentRecoveryEngineeringSecurity"]
     if approvals["futureActualGraphProductIpDisposition"] != "APPROVED" or product_ip["futureExactGraphDisposition"]["actualGraphApproved"] is not True:
         blockers.append(CANONICAL_BLOCKERS[0])
-    if independent["status"] != "APPROVED_FOR_EXACT_RECOVERY_V0_6_IMPLEMENTATION_AND_PHASE_A" or not isinstance(independent["reviewer"], str) or not independent["reviewer"]:
+    if (
+        independent["status"] != FORMAL_DISPOSITION
+        or independent["reviewer"] != REVIEWER_NAME
+        or independent["capacity"] != REVIEWER_CAPACITY
+        or independent["formalReviewer"] is not True
+        or active_blockers[CANONICAL_BLOCKERS[1]]["status"] != REC_RDY_02_CLOSURE
+    ):
         blockers.append(CANONICAL_BLOCKERS[1])
     if readiness["runtimeDependencyAdded"] is not True or readiness["nonMetricImplementationVerificationPassed"] is not True:
         blockers.append(CANONICAL_BLOCKERS[2])
@@ -277,6 +326,7 @@ def main() -> int:
         blockers.append(CANONICAL_BLOCKERS[10])
 
     require(readiness["killCampaignExecuted"] is False and readiness["deviceTestsExecuted"] is False and readiness["benchmarksExecuted"] is False, "Readiness evidence must precede measured/device execution")
+    require(readiness["phaseA"]["authorizedNow"] is False and readiness["phaseA"]["authorizationGrantedByFormalReview"] is False, "Formal review must not authorize Phase A")
     require(readiness["productionAppChanged"] is False, "Production :app changed")
     ordered = [blocker_id for blocker_id in CANONICAL_BLOCKERS if blocker_id in set(blockers)]
     require(all(blocker_id in active_blockers for blocker_id in ordered), "Readiness checker emitted unknown blocker ID")

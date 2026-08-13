@@ -9,9 +9,9 @@ Default branch: `main`
 Stage 0B merge commit: `5e748469b22c6e7303fe6eb5f95394ea40088d84`
 Stage 0C merge commit: `849d9d0406a619b334c9b707a4b6b42b34885b4b`
 Active stage: `Stage 0D — POC-RECOVERY-001 governance/readiness package`
-Active branch: `agent/stage-0d-post-merge-reconciliation`
+Work branch: task-scoped; live Git/GitHub metadata is authoritative and no branch name is a stage invariant
 Active PoC: `POC-RECOVERY-001`
-Stage state: **PR #12 MERGED; ADVISORY RE-REVIEW COMPLETE WITHOUT DOCUMENTARY FINDINGS; ACCOUNTABLE REVIEW, IMPLEMENTATION AND EXECUTION BLOCKED**
+Stage state: **DISTINCT ACCOUNTABLE FORMAL HUMAN REVIEW COMPLETE; SEPARATE IMPLEMENTATION REVIEW/AUTHORIZATION, ACTUAL GRAPH, IMPLEMENTATION AND EXECUTION BLOCKED**
 
 ## Stage 00 closure
 
@@ -126,9 +126,12 @@ Phase A is described only prospectively for the pinned emulator and available ph
 execution is withheld. Without D1/D5 it can produce only `FAIL` or `INCONCLUSIVE`. A full physical
 verdict requires D1/D2/D5; D1/D5 procurement is deferred. The scoped owner/Stage 0 Product-IP
 prospective policy disposition is recorded, while an actual future graph, dependency admission,
-implementation and execution remain unapproved. A distinct accountable recovery
-Engineering/Security reviewer is unassigned and blocking; the current Codex remediation does not
-claim formal independence. Production Legal and Production Security remain null and separate.
+implementation and execution remain unapproved. Novikova Katerina completed the distinct
+accountable recovery Engineering/Security formal read-only review in individual professional
+capacity with Rambus listed only as affiliation; no Rambus corporate approval is claimed. The
+disposition closes only the accountable-review gate and grants no implementation or execution
+authority. Codex does not claim formal independence. Production Legal and Production Security
+remain null and separate.
 
 No `:poc:recovery`, recovery harness, production schema, `:app` change, kill campaign, device run,
 benchmark or recovery measurement exists. The fail-closed readiness record remains
@@ -161,7 +164,7 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - `OD-11`: Project owner is Product and IP policy reviewer and acts as Engineering/Security reviewer only for Stage 0 evaluation. This does not replace production Legal or independent production Security. Embedded platform SQLite may use the containing system-image digest plus exact image/runtime identity for Stage 0; that boundary must be reconsidered before production admission.
 - `OD-12`: Project owner prospectively approves Option B for `stage0-v0.2`, based on the local-MVP storage/update/one-second visibility balance and not on prior Dora results. Benchmark execution remains separately withheld.
 - `OD-13`: Project owner approves the exact 66-component/license/NOTICE/platform package only for internal synthetic Stage 0 evaluation and accepts formal `INCONCLUSIVE` closure without a new benchmark. This is not production Legal/Security approval, does not admit FTS4 automatically, is not retroactive, and leaves D1/D3 plus measured execution deferred.
-- `OD-14`: Project owner constraints link active prospective governance protocol v0.6, which inherits all unchanged SHA-256-pinned v0.5/v0.4/v0.3 semantics and replaces only effective KEY-04 while preserving the 46-row campaign profiles and canonical blocker IDs. `REC-REV-20260812-01` is `CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE`; advisory `formalReviewer=false` does not close `REC-REV-20260812-02` or `REC-RDY-02`, both still blocking accountable review. Prospective `REC-JSR305-EXCLUDE-001` and exact governance authenticity/LICENSE/NOTICE evidence are closed; the future actual recovery graph/package/R8 evidence and its Product/IP disposition remain open/blocking. The selected construction remains `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`; excluded JSR-305 terms are not interpreted and use/distribution is not approved. PR #12 merged the v0.6 package, and the repeat AI documentary re-review completed without actionable findings; distinct accountable Engineering/Security review, separate implementation authorization/verification and later owner execution authorization remain mandatory. `implementationAllowed=false`; `executionAllowed=false`.
+- `OD-14`: Project owner constraints link active prospective governance protocol v0.6, which inherits all unchanged SHA-256-pinned v0.5/v0.4/v0.3 semantics and replaces only effective KEY-04 while preserving the 46-row campaign profiles and canonical blocker IDs. Historical AI advisory records remain unchanged with `formalReviewer=false`. Novikova Katerina completed the distinct accountable read-only formal human review in individual professional capacity, Rambus affiliation only, with `APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW`; `REC-REV-20260812-02=CLOSED_BY_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW` and `REC-RDY-02=CLOSED_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW` without a Rambus corporate-approval claim or implementation/Phase A/execution authority. Prospective `REC-JSR305-EXCLUDE-001` and exact governance authenticity/LICENSE/NOTICE evidence are closed; the future actual recovery graph/package/R8 evidence and its Product/IP disposition remain open/blocking. The selected construction remains `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`; excluded JSR-305 terms are not interpreted and use/distribution is not approved. Separate implementation review/authorization and verification plus later owner execution authorization remain mandatory. `implementationAllowed=false`; `implementationAllowedByThisPackage=false`; `executionAllowed=false`; `measuredExecutionAllowed=false`.
 
 ## Current gates and blockers
 
@@ -173,9 +176,10 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
   Coordinate authenticity, immutable JetBrains LICENSE/NOTICE and conditioned JSR-305 exclusion
   are verified; the owner accepted `REC-JSR305-EXCLUDE-001` as prospective policy for the reviewed
   governance package. The underlying excluded-artifact conflict is not interpreted,
-  JSR-305 use/distribution is not approved. The repeat AI documentary exact-HEAD re-review is
-  complete without actionable findings; a distinct accountable recovery Engineering/Security
-  reviewer/approval and separate implementation authorization remain unresolved.
+  JSR-305 use/distribution is not approved. The repeat AI documentary exact-HEAD re-review remains
+  historical non-formal evidence. The distinct accountable recovery Engineering/Security formal
+  review is complete; separate implementation review/owner authorization remains unresolved and
+  the disposition does not authorize Phase A or execution.
 - The exact published Tink closure is inventoried without Gradle wiring. A future harness-resolved
   graph remains a P0 pre-execution check because repository Kotlin alignment may differ from the
   publisher POM closure. It must enumerate every resolvable compile/runtime/unit-test/`androidTest`/
@@ -256,26 +260,24 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
   2026 as `main` commit `f14c6f37d7acb37590be875f176653c100f0ae20`; that commit has parent
   `eca48ba62acd79007884710395cc40ea21a02611` and the same tree as PR HEAD
   `b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd`. Post-merge `android-bootstrap` and
-  `search-smoke` succeeded, and the source head branch is preserved.
+  `search-smoke` succeeded. Governance-only reconciliation PR #13 later merged as
+  `5c97f09f3165a90afa5300b30499e0dcb36168f2`. Live GitHub metadata is authoritative for current
+  branch, PR and `main` lifecycle state.
 
 ## Next safe action
 
-The repeat OpenAI Codex (GPT-5) documentary advisory review of exact PR HEAD `b5371f…` completed
-with `NO_FURTHER_DOCUMENTARY_CHANGES_REQUIRED`, no actionable findings and
-`formalReviewer=false`; it was not published as a formal GitHub review and does not close
-`REC-REV-20260812-02` or `REC-RDY-02`. The prospective owner/Stage 0 Product-IP policy disposition
-is recorded. The next gate is for the Project owner to assign a distinct accountable recovery
-Engineering/Security reviewer. That reviewer
-must verify or require revision
-of the selected v0.6 Streaming/microfile construction, exact effective KEY-04/KCF-07 routing,
-durable key-confirmation bootstrap,
-manifest/key/AAD contract, publication/temp-state/commit/durability,
-SQLite profile, public barriers and complete fault/recovery state machine. Only a later separately
-scoped owner task may authorize implementation and non-metrically verify the isolated harness;
-only after exact excluded Gradle graph/release R8, scoped Product/IP disposition of the actual graph
-and fresh device SQLite/Keystore/filesystem preflight may a still later owner record change
-`executionAllowed`. The post-merge reconciliation PR is governance-only and must remain Draft and
-unmerged.
+The distinct accountable formal human review of exact PR #12 HEAD `b5371f…` / tree `1fd03f…` is
+complete. Novikova Katerina returned all 12 answers as `ACCEPT` and disposition
+`APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW` in individual professional capacity, with Rambus
+listed only as affiliation. This closes `REC-REV-20260812-02` and `REC-RDY-02`, but is not a Rambus
+corporate approval, formal GitHub review, implementation authorization, Phase A authorization,
+execution authorization, dependency admission, Production Security or Production Legal.
+
+The next safe gate is a separately scoped implementation review and separate Project-owner
+implementation authorization. Only after non-metric implementation verification, exact excluded
+Gradle graph/release R8, scoped Product/IP disposition of the actual graph and fresh device
+SQLite/Keystore/filesystem preflight may a still later owner record change `executionAllowed`.
+Current Pull Request state is never a static document invariant; use live GitHub metadata.
 
 ## Update protocol
 
