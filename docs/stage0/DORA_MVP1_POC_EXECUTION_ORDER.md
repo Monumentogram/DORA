@@ -127,20 +127,19 @@ Execute only `POC-CAPTURE-001` in the next chat:
 
 After capture evidence is understood:
 
-- `POC-RECOVERY-001` may proceed only in three separate scopes: governance review, then authorized
-  isolated harness implementation, then separately authorized execution. The current scope stops
-  after prospective governance/readiness v0.6 publication with `implementationAllowed=false` and
-  `executionAllowed=false`;
+- `POC-RECOVERY-001` proceeds through separately authorized scopes. Governance review and the
+  distinct accountable formal human review are complete. `REC-I1-AUTH-20260813-01` permits only the
+  isolated pure contract foundation; runtime crypto/storage/harness implementation and execution
+  each still require later scope. Global `implementationAllowed=false` and `executionAllowed=false`;
 - v0.1/v0.2/v0.3/v0.4/v0.5 remain 15 unchanged SHA-256-pinned superseded audit artifacts and cannot govern
   implementation or execution;
 - prospective `REC-JSR305-EXCLUDE-001` and exact governance packet authenticity/LICENSE/NOTICE
-  evidence are closed. Before implementation/execution, a distinct accountable recovery
-  Engineering/Security review of the v0.6 design remains mandatory; the GPT-5.6 Sol/OpenAI
-  documentary review is non-formal and does not close `REC-RDY-02`; after separately authorized
-  implementation, exact recovery-only graph/package/R8 evidence and scoped Product/IP disposition
-  of that actual graph are mandatory. Approval to use the excluded JSR-305 artifact is not required
-  or granted; this Codex remediation does not
-  claim formal independence;
+  evidence are closed. Novikova Katerina's distinct accountable formal review closed `REC-RDY-02`;
+  the GPT-5.6 Sol/OpenAI records remain non-formal historical evidence. The I1 module adds no Tink
+  or JSR-305 wiring. A later authorized runtime implementation must still produce exact
+  recovery-only graph/package/R8 evidence and a scoped Product/IP disposition. Approval to use the
+  excluded JSR-305 artifact is neither required nor granted; this implementation chat does not claim
+  independent-review status;
 - a later authorized recovery Phase A may use emulator+D2 but cannot PASS without D1/D5;
 - `POC-VAD-001` remains a separate branch/harness and is not admitted by recovery work;
 - `POC-BATTERY-001` may begin with capture-only modes once the capture harness is stable;
@@ -229,9 +228,10 @@ explicit v0.6 effective `KEY-04` override and adds durable
 run-key confirmation. Its exact Gate Set compares durable-one-segment-lookahead public Tink
 Streaming AEAD with five-second `AES256_GCM_TINK_IV12_TAG16` microfiles and the exact authenticated
 binary manifest; 15/30-second microfiles are not PASS-eligible. Design selection does not prove an
-implementation. Prospective policy and exact governance packet evidence are closed; future actual
-graph Product/IP disposition, distinct accountable Engineering/Security review, implementation
-verification and execution authorization remain absent. v0.1–v0.5 are retained only as 15
+implementation. Prospective policy, exact governance packet evidence and the distinct accountable
+Engineering/Security review are complete. The task-scoped I1 pure contract foundation is present,
+but future actual runtime-graph Product/IP disposition, complete implementation verification and
+execution authorization remain absent. v0.1–v0.5 are retained only as 15
 unchanged SHA-256-pinned superseded audit artifacts. v0.6 replaces only effective KEY-04 with its
 exact decrypt-failure-only oracle and keeps KCF-07. A future final `ADR-AUDIO-001` remains evidence-dependent.
 

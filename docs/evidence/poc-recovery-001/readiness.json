@@ -1,14 +1,17 @@
 {
-  "schemaVersion": 9,
+  "schemaVersion": 10,
   "pocId": "POC-RECOVERY-001",
   "assessedOn": "2026-08-13",
-  "status": "BLOCKED_ACCOUNTABLE_REVIEW_COMPLETE_SEPARATE_IMPLEMENTATION_REVIEW_AND_AUTHORIZATION_ACTUAL_GRAPH_IMPLEMENTATION_PREFLIGHT_EXECUTION_PENDING",
+  "status": "BLOCKED_REC_I1_TASK_SCOPED_CONTRACT_FOUNDATION_PRESENT_RUNTIME_IMPLEMENTATION_PREFLIGHT_EXECUTION_PENDING",
+  "taskScopedImplementationAuthorized": true,
+  "authorizationId": "REC-I1-AUTH-20260813-01",
+  "authorizationRecord": "docs/evidence/poc-recovery-001/implementation-authorization-rec-i1-20260813-01.json",
   "executionAllowed": false,
   "implementationAllowed": false,
   "implementationAllowedByThisPackage": false,
   "measuredExecutionAllowed": false,
   "runtimeDependencyAdded": false,
-  "recoveryModuleExists": false,
+  "recoveryModuleExists": true,
   "harnessImplemented": false,
   "nonMetricImplementationVerificationPassed": false,
   "exactFutureResolvedGraphReviewed": false,
@@ -22,6 +25,8 @@
     "machineProtocolPresent": true,
     "activeGateSetVersion": "poc-recovery-stage0-v0.6",
     "activeProtocolId": "poc-recovery-protocol-stage0-v0.6",
+    "recI1AuthorizationPresent": true,
+    "recI1ContractKernelPresent": true,
     "governanceRemediationV06Present": true,
     "governanceRemediationV05Present": true,
     "governanceRemediationV04Present": true,
@@ -141,6 +146,15 @@
     "kcf07Preserved": true,
     "kcf07ExpectedClassification": "CORRUPT_KEY_CONFIRMATION"
   },
+  "recI1NonMetricVerification": {
+    "scope": "PURE_NON_METRIC_NO_RUNTIME_CRYPTO",
+    "status": "PASSED_LOCAL_NON_METRIC_CHECKS",
+    "passed": true,
+    "globalNonMetricImplementationVerificationSatisfied": false,
+    "runtimeCryptoVerified": false,
+    "harnessVerified": false,
+    "executionEvidenceProduced": false
+  },
   "dependencyExclusionPolicy": {
     "policyId": "REC-JSR305-EXCLUDE-001",
     "analysisLocator": "docs/evidence/poc-recovery-001/jsr305-exclusion-analysis-2026-08-12.json",
@@ -164,7 +178,7 @@
     ],
     "repositoryWideAbsenceClaimed": false,
     "currentTinkAndroid123Wired": false,
-    "currentRecoveryModuleExists": false,
+    "currentRecoveryModuleExists": true,
     "excludedCurrentInputs": [
       "buildscript, AGP, UTP, lint and tooling configurations of other existing modules",
       "existing app, capture and search lockfiles"
@@ -188,6 +202,14 @@
     "acceptedBy": "Project owner",
     "acceptedOn": "2026-08-12"
   },
+  "closedBlockers": [
+    {
+      "id": "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
+      "status": "CLOSED_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW",
+      "closedOn": "2026-08-13",
+      "evidenceLocator": "docs/evidence/poc-recovery-001/formal-engineering-security-review-2026-08-13.json"
+    }
+  ],
   "blockers": [
     {
       "id": "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
@@ -197,32 +219,25 @@
       "condition": "Project owner / Stage 0 Product-IP approved REC-JSR305-EXCLUDE-001 and the exact governance packet evidence is verified. The future actual recovery graph/package/R8 evidence and its scoped Product/IP disposition remain open; dependency admission, excluded JSR-305 use/distribution, implementation and execution remain unapproved."
     },
     {
-      "id": "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
-      "priority": "P0",
-      "status": "CLOSED_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW",
-      "owner": "Novikova Katerina, individual professional capacity",
-      "condition": "Closed by the 2026-08-13 formal read-only disposition APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW from Novikova Katerina, distinct from package author Codex, for exact commit b5371f523e4471aca48a63a82b9ee4e1f9a7e0fd and tree 1fd03fd489836c65f7ee043298f8f6d32df00c55. Rambus is affiliation only and no corporate approval is claimed. Closure does not authorize implementation, Phase A, execution, measurement, dependency admission, Production Security or Production Legal."
-    },
-    {
       "id": "REC-RDY-03-STREAMING-IMPLEMENTATION-VERIFICATION",
       "priority": "P0",
       "status": "OPEN_BY_DESIGN",
       "owner": "Future recovery implementation and accountable review tasks",
-      "condition": "Implement and non-metrically verify exact public construction, DURABLE_ONE_SEGMENT_LOOKAHEAD, q/R math, read accounting, EOF handling and public barriers."
+      "condition": "REC-I1 provides only the authorized pure q/R, read-accounting and codec contract foundation. Runtime StreamingAead construction, segment callbacks, public barriers and complete accountable implementation verification remain absent and blocked."
     },
     {
       "id": "REC-RDY-04-MICROFILE-IMPLEMENTATION-VERIFICATION",
       "priority": "P0",
       "status": "OPEN_BY_DESIGN",
       "owner": "Future recovery implementation and accountable review tasks",
-      "condition": "Implement and non-metrically verify exact microfile parameters, manifest/AAD parsers, 13-step durable key-confirmation bootstrap, canonical post-decrypt-aware KEY reconciliation, exact v0.6 KEY-04 decrypt authentication/AAD failure-only oracle, preserved KCF-07 successful-decrypt malformed-plaintext route, Keystore envelopes, durability, SQLite, path, quarantine and 46 unique active fault rows."
+      "condition": "REC-I1 provides only bounded pure manifest/AAD/key-confirmation codecs, taxonomy and KEY-04/KCF-07 routing invariants. Runtime microfile crypto, 13-step bootstrap, Keystore envelopes, durability, SQLite, path, quarantine and complete accountable implementation verification remain absent and blocked."
     },
     {
       "id": "REC-RDY-05-FUTURE-RESOLVED-GRAPH",
       "priority": "P0",
       "status": "OPEN_BY_DESIGN",
       "owner": "Future recovery implementation task",
-      "condition": "After separately authorized :poc:recovery scaffolding, enumerate all resolvable compile, runtime, unit-test, androidTest, benchmark and release configurations, packaging/runtime-artifact inputs, dependency locks and verification metadata owned by that module; prove zero resolved com.google.code.findbugs:jsr305:3.0.2 components and zero packaged JSR-305 javax.annotation definitions; verify the Tink-local exclude and exact three-line R8 rule with no broader dontwarn; pass release R8 with no unresolved missing classes and independently resolve javax.lang.model.element.Modifier if present. Existing other-module buildscript/AGP/UTP/lint/tooling and app/capture/search lockfile occurrences are outside this boundary and alone do not block recovery. Any occurrence inside recovery scope fails closed."
+      "condition": "The authorized pure :poc:recovery I1 module has no Tink/runtime wiring, but the future runtime graph is not admitted or reviewed. After separate runtime-dependency authorization, enumerate every covered configuration, packaging/runtime input, lock and verification record; prove zero resolved or packaged JSR-305, verify the scoped exclude and exact narrow R8 rule, and obtain the exact-graph Product/IP disposition. Existing other-module tooling occurrences remain outside this boundary."
     },
     {
       "id": "REC-RDY-06-DEVICE-SQLITE-PREFLIGHT",

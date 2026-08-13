@@ -22,6 +22,13 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
+from validate_poc_recovery_governance import (
+    AUTHORIZATION_ID,
+    AUTHORIZATION_PATH,
+    validate_authorization_record,
+    validate_recovery_build_text,
+)
+
 
 ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE = ROOT / "docs" / "evidence" / "poc-recovery-001"
@@ -32,6 +39,8 @@ JSR305_EXCLUSION_PATH = EVIDENCE / "jsr305-exclusion-analysis-2026-08-12.json"
 JSR305_CLASS_LIST_PATH = EVIDENCE / "jsr305-reference-classes-2026-08-12.txt"
 READINESS_PATH = EVIDENCE / "readiness.json"
 REVIEW_ROLES_PATH = EVIDENCE / "review-roles.json"
+RECOVERY_BUILD_PATH = ROOT / "android" / "poc" / "recovery" / "build.gradle.kts"
+RECOVERY_LOCK_PATH = ROOT / "android" / "poc" / "recovery" / "gradle.lockfile"
 OWNER_DECISION_PATH = ROOT / "docs" / "stage0" / "DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md"
 OWNER_DECISION_INPUT_HEAD = "eb312feb2a0d5e5b24b45fcd045bacca94e8c9da"
 GATE_ID = "poc-recovery-stage0-v0.6"
@@ -594,7 +603,7 @@ def _validate_static_v03_superseded(
     readiness: dict[str, Any],
     review_roles: dict[str, Any],
 ) -> None:
-    require(inventory["schemaVersion"] == 3, "Dependency inventory schema drift")
+    require(inventory["schemaVersion"] == 3, "Superseded v0.3 dependency inventory schema drift")
     require(inventory["rootCoordinate"] == "com.google.crypto.tink:tink-android:1.23.0", "Root coordinate drift")
     require(inventory["dependencyAdmission"] is False, "Inventory must not admit the dependency")
     require(inventory["runtimeGraphModified"] is False, "Inventory must not claim a runtime graph")
@@ -746,14 +755,41 @@ def validate_static(
 ) -> None:
     """Validate the active v0.6 packet and its exact recovery-only boundary."""
 
-    require(inventory["schemaVersion"] == 3, "Dependency inventory schema drift")
+    require(inventory["schemaVersion"] == 4, "Dependency inventory schema drift")
     require(inventory["rootCoordinate"] == "com.google.crypto.tink:tink-android:1.23.0", "Root coordinate drift")
     require(inventory["dependencyAdmission"] is False and inventory["runtimeGraphModified"] is False, "Inventory admitted a runtime graph")
     require(len(inventory["artifacts"]) == 8 and len(inventory["graphEdges"]) == 8, "Published closure count drift")
     require(all(artifact["jar"]["nativeEntries"] == 0 for artifact in inventory["artifacts"]), "Native entry recorded")
+    current_i1 = inventory["currentImplementationState"]
+    require(
+        current_i1["authorizationId"] == AUTHORIZATION_ID
+        and current_i1["taskScopedImplementationAuthorized"] is True
+        and current_i1["recoveryModuleExists"] is True
+        and current_i1["module"] == ":poc:recovery"
+        and current_i1["moduleKind"] == "PURE_NON_METRIC_NO_RUNTIME_CRYPTO"
+        and current_i1["tinkAndroid123Wired"] is False
+        and current_i1["runtimeCryptoDependencyAdded"] is False
+        and current_i1["newExternalDependencyCoordinateAdded"] is False
+        and current_i1["moduleLockfilePresent"] is RECOVERY_LOCK_PATH.is_file()
+        and current_i1["actualRecoveryRuntimeGraphReviewed"] is False
+        and current_i1["dependencyAdmission"] is False
+        and current_i1["productionAdmission"] is False,
+        "Current REC-I1 module/dependency state drift",
+    )
+    validate_authorization_record(read_json(ROOT / AUTHORIZATION_PATH))
+    require(RECOVERY_BUILD_PATH.is_file(), "Authorized REC-I1 module build file is missing")
+    validate_recovery_build_text(RECOVERY_BUILD_PATH.read_text(encoding="utf-8"))
+    settings = (ROOT / "android" / "settings.gradle.kts").read_text(encoding="utf-8")
+    require(settings.count('include(":poc:recovery")') == 1, "REC-I1 module include drift")
+    if RECOVERY_LOCK_PATH.is_file():
+        recovery_lock = RECOVERY_LOCK_PATH.read_text(encoding="utf-8").lower()
+        require("tink" not in recovery_lock and "jsr305" not in recovery_lock, "Forbidden dependency in REC-I1 lockfile")
+
     boundary = inventory["recoveryBoundary"]
     require(
         boundary["boundaryId"] == "REC-JSR305-EXCLUDE-001"
+        and boundary["historicalSnapshot"] is True
+        and boundary["snapshotAssessedOn"] == "2026-08-12"
         and boundary["currentTinkAndroid123Wired"] is False
         and boundary["currentRecoveryModuleExists"] is False
         and boundary["repositoryWideAbsenceClaimed"] is False
@@ -884,7 +920,18 @@ def validate_static(
         "License/NOTICE inventory JetBrains record drift",
     )
 
-    require(readiness["schemaVersion"] == 9 and readiness["executionAllowed"] is False and readiness["implementationAllowed"] is False and readiness["implementationAllowedByThisPackage"] is False and readiness["measuredExecutionAllowed"] is False, "Readiness authority boundary drift")
+    require(
+        readiness["schemaVersion"] == 10
+        and readiness["taskScopedImplementationAuthorized"] is True
+        and readiness["authorizationId"] == AUTHORIZATION_ID
+        and readiness["recoveryModuleExists"] is True
+        and readiness["runtimeDependencyAdded"] is False
+        and readiness["executionAllowed"] is False
+        and readiness["implementationAllowed"] is False
+        and readiness["implementationAllowedByThisPackage"] is False
+        and readiness["measuredExecutionAllowed"] is False,
+        "Readiness authority boundary drift",
+    )
     require(
         readiness["packageArtifacts"]["activeGateSetVersion"] == GATE_ID
         and readiness["packageArtifacts"]["activeProtocolId"] == PROTOCOL_ID,
@@ -895,6 +942,8 @@ def validate_static(
         readiness_policy["policyId"] == "REC-JSR305-EXCLUDE-001"
         and readiness_policy["coveredFutureModule"] == ":poc:recovery"
         and readiness_policy["allCoveredRecoveryInputsRequired"] is True
+        and readiness_policy["currentRecoveryModuleExists"] is True
+        and readiness_policy["currentTinkAndroid123Wired"] is False
         and readiness_policy["repositoryWideAbsenceClaimed"] is False
         and readiness_policy["requiredResolvedComponentCount"] == 0
         and readiness_policy["requiredR8Rules"] == R8_RULES
@@ -1113,7 +1162,7 @@ def main() -> int:
         verify_online(inventory, license_notice, authenticity, jsr305_exclusion)
         print("Verified 8 exact external JAR/POM coordinates online plus immutable JetBrains LICENSE/NOTICE bytes: artifact hashes, publisher checksums, full-fingerprint detached OpenPGP cryptography and identity metadata, signed source JARs for the six multisource coordinates, POM graph/licenses, no native payload, exact Tink JSR305 annotation-only classification, and exact-commit LICENSE/NOTICE SHA-256; temporary files removed")
     else:
-        print("POC-RECOVERY-001 v0.6 dependency/IP static validation passed; exact governance packet authenticity/LICENSE/NOTICE evidence and prospective REC-JSR305-EXCLUDE-001 are closed, future actual :poc:recovery graph/Product-IP disposition remains blocked, repository-wide absence is not claimed, and excluded JSR305 use/distribution is unapproved (use --online for artifact/signature and immutable LICENSE/NOTICE revalidation)")
+        print("POC-RECOVERY-001 v0.6 dependency/IP static validation passed; authorized pure REC-I1 module is present with no Tink/runtime-crypto wiring or new coordinate, exact governance packet authenticity/LICENSE/NOTICE evidence and prospective REC-JSR305-EXCLUDE-001 are closed, future actual runtime graph/Product-IP disposition remains blocked, repository-wide absence is not claimed, and excluded JSR305 use/distribution is unapproved (use --online for artifact/signature and immutable LICENSE/NOTICE revalidation)")
     return 0
 
 

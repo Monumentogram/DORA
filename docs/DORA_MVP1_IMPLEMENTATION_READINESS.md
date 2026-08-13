@@ -4,6 +4,12 @@
 Дата: 4 августа 2026 года\
 Recovery governance amendment: 13 августа 2026 года — active prospective protocol v0.6 under Proposed `DEC-044`/`OD-14` inherits all unchanged SHA-256-pinned v0.5/v0.4/v0.3 semantics and replaces only effective `KEY-04` with an exact decrypt authentication/AAD failure-only oracle; the active matrix has exactly 46 unique IDs and one KEY-04, while successful decrypt malformed/wrong plaintext remains KCF-07 → `CORRUPT_KEY_CONFIRMATION`. Historical AI advisory records remain `formalReviewer=false` and unchanged. Novikova Katerina completed the distinct accountable read-only formal review for exact `b5371f…`/tree `1fd03f…` with `APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW`, recording `REC-REV-20260812-02=CLOSED_BY_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW` and `REC-RDY-02=CLOSED_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW`; Rambus is affiliation only and no corporate approval is claimed. Prospective `REC-JSR305-EXCLUDE-001` and exact governance authenticity/LICENSE/NOTICE evidence are CLOSED, while separate implementation review/authorization, future actual recovery graph/package/R8 Product/IP disposition, implementation verification, preflight and execution remain BLOCKED; excluded JSR-305 terms are not interpreted and use/distribution is not approved\
 Active recovery Gate Set: `poc-recovery-stage0-v0.6`; active recovery protocol: `poc-recovery-protocol-stage0-v0.6`; `implementationAllowed=false`; `implementationAllowedByThisPackage=false`; `executionAllowed=false`; `measuredExecutionAllowed=false`\
+Current Recovery I1 amendment: owner record `REC-I1-AUTH-20260813-01` authorizes only the isolated
+pure `:poc:recovery` common contract foundation on exact base `9c4a798a…`. The module has no
+Tink/JSR-305/runtime-crypto wiring, Android runtime API, Keystore/SQLite/filesystem implementation,
+harness, product edge or measured execution. Narrow I1 non-metric verification is recorded
+separately and does not make global implementation verification true. Independent review of the
+frozen I1 PR head and every later runtime/execution scope remain required.\
 Проверенный baseline: `1be83e2940a09f7b23e33b4cdf3827de2690f3fd`\
 Источники: `DORA_MVP1_TECHNICAL_PLAN.md`, `DORA_MVP1_DESIGN_SPEC.md`, design tokens и screen inventory.
 

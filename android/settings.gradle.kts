@@ -24,6 +24,8 @@ include(":poc:capture")
 
 include(":poc:search")
 
+include(":poc:recovery")
+
 include(":core:common")
 
 include(":core:model")

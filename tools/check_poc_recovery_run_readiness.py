@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any
 
 from validate_poc_recovery_governance import (
+    AUTHORIZATION_ID,
+    AUTHORIZATION_PATH,
     FORMAL_DISPOSITION,
     FORMAL_FINDINGS_LEDGER_PATH,
     FORMAL_REVIEW_PATH,
@@ -17,6 +19,7 @@ from validate_poc_recovery_governance import (
     REVIEWER_NAME,
     validate_formal_findings_ledger,
     validate_formal_human_review,
+    validate_authorization_record,
 )
 
 
@@ -35,7 +38,7 @@ R8_RULES = [
     "-dontwarn javax.annotation.concurrent.GuardedBy",
     "-dontwarn javax.annotation.concurrent.ThreadSafe",
 ]
-CANONICAL_BLOCKERS = [
+HISTORICAL_CANONICAL_BLOCKERS = [
     "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
     "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
     "REC-RDY-03-STREAMING-IMPLEMENTATION-VERIFICATION",
@@ -47,6 +50,11 @@ CANONICAL_BLOCKERS = [
     "REC-RDY-09-D1-D5-FULL-VERDICT",
     "REC-RDY-10-PRODUCTION-LEGAL-SECURITY",
     "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY",
+]
+CANONICAL_BLOCKERS = [
+    blocker
+    for blocker in HISTORICAL_CANONICAL_BLOCKERS
+    if blocker != "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW"
 ]
 EXPECTED_COVERED_INPUTS = [
     "all resolvable compile",
@@ -82,7 +90,7 @@ def validate_static_contract(
 ) -> None:
     require(gate["schemaVersion"] == 6 and gate["gateSetVersion"] == GATE_ID, "Active Gate Set is not v0.6")
     require(protocol["schemaVersion"] == 6 and protocol["protocolId"] == PROTOCOL_ID, "Active protocol is not v0.6")
-    require(readiness["schemaVersion"] == 9, "Recovery readiness schema is stale")
+    require(readiness["schemaVersion"] == 10, "Recovery readiness schema is stale")
     require(analysis["schemaVersion"] == 3, "JSR305 exclusion analysis schema is stale")
     require(roles["schemaVersion"] == 9, "Recovery review-role schema is stale")
     require(
@@ -96,7 +104,23 @@ def validate_static_contract(
     readiness_ids = [item["id"] for item in readiness["blockers"]]
     require(len(gate_ids) == len(set(gate_ids)), "Gate Set contains duplicate blocker IDs")
     require(len(readiness_ids) == len(set(readiness_ids)), "Readiness contains duplicate blocker IDs")
-    require(gate_ids == readiness_ids == roles["canonicalBlockerIds"] == CANONICAL_BLOCKERS, "Canonical blocker list mismatch")
+    require(
+        gate_ids == roles["canonicalBlockerIds"] == HISTORICAL_CANONICAL_BLOCKERS,
+        "Historical canonical blocker list mismatch",
+    )
+    require(readiness_ids == CANONICAL_BLOCKERS and len(readiness_ids) == 10, "Current ten-blocker list mismatch")
+    validate_authorization_record(read_json(ROOT / AUTHORIZATION_PATH))
+    require(
+        readiness["taskScopedImplementationAuthorized"] is True
+        and readiness["authorizationId"] == AUTHORIZATION_ID
+        and readiness["authorizationRecord"] == AUTHORIZATION_PATH
+        and readiness["recoveryModuleExists"] is True
+        and (ROOT / "android" / "poc" / "recovery").is_dir()
+        and readiness["runtimeDependencyAdded"] is False
+        and readiness["harnessImplemented"] is False
+        and readiness["nonMetricImplementationVerificationPassed"] is False,
+        "REC-I1 task-scoped module state is invalid or overclaims runtime/global verification",
+    )
     require(
         readiness["advisoryDocumentaryReview"]["formalReviewer"] is False
         and readiness["advisoryDocumentaryReview"]["closesRecRdy02"] is False
@@ -107,7 +131,8 @@ def validate_static_contract(
     validate_formal_findings_ledger(formal_ledger)
     independent = roles["roles"]["independentRecoveryEngineeringSecurity"]
     formal_summary = readiness["formalAccountableEngineeringSecurityReviewEvidence"]
-    rec02 = readiness["blockers"][1]
+    require(len(readiness["closedBlockers"]) == 1, "REC-RDY-02 closed-blocker ledger drift")
+    rec02 = readiness["closedBlockers"][0]
     require(
         independent["reviewer"] == REVIEWER_NAME
         and independent["capacity"] == REVIEWER_CAPACITY
@@ -124,7 +149,7 @@ def validate_static_contract(
         and formal_summary["recRdy02Status"] == REC_RDY_02_CLOSURE
         and formal_summary["closesRecRdy02"] is True
         and formal_summary["rambusCorporateApprovalClaimed"] is False
-        and rec02["id"] == CANONICAL_BLOCKERS[1]
+        and rec02["id"] == "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW"
         and rec02["status"] == REC_RDY_02_CLOSURE
         and all(readiness[field] is False for field in (
             "implementationAllowed", "implementationAllowedByThisPackage", "executionAllowed",
@@ -272,25 +297,16 @@ def main() -> int:
     if report_present:
         validate_future_graph(read_json(report_path))
     else:
-        blockers.append(CANONICAL_BLOCKERS[4])
+        blockers.append(CANONICAL_BLOCKERS[3])
 
     approvals = readiness["approvals"]
     product_ip = roles["roles"]["stage0ProductIp"]
-    independent = roles["roles"]["independentRecoveryEngineeringSecurity"]
     if approvals["futureActualGraphProductIpDisposition"] != "APPROVED" or product_ip["futureExactGraphDisposition"]["actualGraphApproved"] is not True:
         blockers.append(CANONICAL_BLOCKERS[0])
-    if (
-        independent["status"] != FORMAL_DISPOSITION
-        or independent["reviewer"] != REVIEWER_NAME
-        or independent["capacity"] != REVIEWER_CAPACITY
-        or independent["formalReviewer"] is not True
-        or active_blockers[CANONICAL_BLOCKERS[1]]["status"] != REC_RDY_02_CLOSURE
-    ):
-        blockers.append(CANONICAL_BLOCKERS[1])
     if readiness["runtimeDependencyAdded"] is not True or readiness["nonMetricImplementationVerificationPassed"] is not True:
-        blockers.append(CANONICAL_BLOCKERS[2])
+        blockers.append(CANONICAL_BLOCKERS[1])
     if readiness["nonMetricImplementationVerificationPassed"] is not True:
-        blockers.append(CANONICAL_BLOCKERS[3])
+        blockers.append(CANONICAL_BLOCKERS[2])
     if (
         readiness["recoveryModuleExists"] is not True
         or readiness["harnessImplemented"] is not True
@@ -299,7 +315,7 @@ def main() -> int:
         or gate["implementationAllowed"] is not True
         or protocol["implementationAllowed"] is not True
     ):
-        blockers.append(CANONICAL_BLOCKERS[6])
+        blockers.append(CANONICAL_BLOCKERS[5])
 
     environments = {item["id"]: item for item in provenance["phaseA"]["environments"]}
     preflight_ready = True
@@ -314,16 +330,16 @@ def main() -> int:
         require(evidence["effectiveForeignKeys"] is True, f"{environment_id} foreign_keys is not ON")
         require(evidence["protocolId"] == PROTOCOL_ID, f"{environment_id} protocol drift")
     if not preflight_ready:
-        blockers.append(CANONICAL_BLOCKERS[5])
+        blockers.append(CANONICAL_BLOCKERS[4])
 
     if gate["executionAllowed"] is not True or protocol["executionAllowed"] is not True or readiness["executionAllowed"] is not True or provenance["phaseA"]["executionAllowed"] is not True or gate["executionAuthorization"]["status"] != "AUTHORIZED_BY_PROJECT_OWNER" or roles["roles"]["executionAuthorizer"]["status"] != "AUTHORIZED_FOR_NAMED_PHASE_AND_COMMIT":
-        blockers.append(CANONICAL_BLOCKERS[7])
+        blockers.append(CANONICAL_BLOCKERS[6])
     if readiness["fullVerdict"]["deferred"] is True or readiness["fullVerdict"]["passAllowedWithoutCompleteD1D2D5Profile"] is not False:
-        blockers.append(CANONICAL_BLOCKERS[8])
+        blockers.append(CANONICAL_BLOCKERS[7])
     if roles["roles"]["productionLegal"]["reviewer"] is None or roles["roles"]["productionSecurity"]["reviewer"] is None:
-        blockers.append(CANONICAL_BLOCKERS[9])
+        blockers.append(CANONICAL_BLOCKERS[8])
     if readiness["exactFutureResolvedGraphReviewed"] is not True or not report_present:
-        blockers.append(CANONICAL_BLOCKERS[10])
+        blockers.append(CANONICAL_BLOCKERS[9])
 
     require(readiness["killCampaignExecuted"] is False and readiness["deviceTestsExecuted"] is False and readiness["benchmarksExecuted"] is False, "Readiness evidence must precede measured/device execution")
     require(readiness["phaseA"]["authorizedNow"] is False and readiness["phaseA"]["authorizationGrantedByFormalReview"] is False, "Formal review must not authorize Phase A")

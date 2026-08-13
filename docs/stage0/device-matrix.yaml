@@ -95,6 +95,8 @@ recovery_owner_decision:
     invalid_attempts_must_remain_explicit: true
     silent_restart_or_replacement_allowed: false
   authority:
+    snapshot_status: historical_as_of_2026_08_12
+    current_readiness_locator: docs/evidence/poc-recovery-001/readiness.json
     product_ip_reviewer: Project owner
     product_ip_final_approved_reviewer: null
     product_ip_final_approved_on: null
@@ -111,6 +113,24 @@ recovery_owner_decision:
     production_legal: null
     production_security: null
     production_security_replaced: false
+
+recovery_current_authorization:
+  assessed_on: "2026-08-13"
+  authorization_id: REC-I1-AUTH-20260813-01
+  authorization_record: docs/evidence/poc-recovery-001/implementation-authorization-rec-i1-20260813-01.json
+  task_id: REC-I1
+  scope: PURE_NON_METRIC_NO_RUNTIME_CRYPTO
+  recovery_module_exists: true
+  runtime_dependency_added: false
+  harness_implemented: false
+  implementation_allowed: false
+  implementation_allowed_by_this_package: false
+  execution_allowed: false
+  measured_execution_allowed: false
+  phase_a_authorized: false
+  device_execution_authorized: false
+  merge_authorized: false
+  current_readiness_locator: docs/evidence/poc-recovery-001/readiness.json
 
 first_exploratory_campaign:
   mode: single_owner_physical_phone
