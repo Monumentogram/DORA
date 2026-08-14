@@ -1,6 +1,6 @@
 # Dora MVP 1 — Stage Status
 
-Updated: 13 August 2026
+Updated: 14 August 2026
 Baseline: `1be83e2940a09f7b23e33b4cdf3827de2690f3fd`
 Stage 00 merge commit: `a4aae302f9033e5471f6759f513e7e351c375a72`
 Stage 0A merge commit: `91b9916b01ff70f63d82412bafbed0d72307dbe1`
@@ -11,7 +11,7 @@ Stage 0C merge commit: `849d9d0406a619b334c9b707a4b6b42b34885b4b`
 Active stage: `Stage 0D — POC-RECOVERY-001 authorized I1 contract foundation`
 Work branch: task-scoped; live Git/GitHub metadata is authoritative and no branch name is a stage invariant
 Active PoC: `POC-RECOVERY-001`
-Stage state: **REC-I1 TASK-SCOPED PURE CONTRACT FOUNDATION PRESENT; RUNTIME IMPLEMENTATION, ACTUAL GRAPH AND EXECUTION BLOCKED**
+Stage state: **REC-I1 REVIEWED AND SQUASH-MERGED; POST-MERGE VALIDATOR LIFECYCLE REMEDIATED; RUNTIME IMPLEMENTATION, ACTUAL GRAPH AND EXECUTION BLOCKED**
 
 ## Stage 00 closure
 
@@ -142,6 +142,29 @@ Android runtime API use, harness, production schema, product-module edge, kill c
 benchmark or recovery measurement. The fail-closed readiness record remains
 `implementationAllowed=false`, `implementationAllowedByThisPackage=false` and `executionAllowed=false`.
 
+The exact REC-I1 implementation lifecycle is now closed only for that pure contract foundation.
+OpenAI Codex / GPT-5 independently reviewed PR #15 HEAD
+`ee7bb00b09a282df7a8fb3b4d3481a5abd4d0177` / tree
+`ac3dcf273fd447623fa8dbc5c71087acd6315830` as an AI Recovery I1 implementation advisory
+reviewer. The review recorded `formalReviewer=false`, `NO_FURTHER_CHANGES_REQUIRED`, no P0/P1/P2
+findings, `REC-I1-IMPL-001..004=CLOSED` and 62/62 passing Recovery JVM tests. Protected squash
+merge created `main` commit `f2bc8c95bbe8af0d010968fff2ca175851728bf2` with parent
+`9c4a798aa3c95877ff3f9aa66f18f94849b25cce` and the same reviewed tree. This review and merge do
+not authorize runtime crypto, dependencies, a harness, device execution or production admission.
+
+The first post-merge push run `31743157457` failed only because the governance validator still
+treated `main` as an unauthorized pre-merge branch. That was a validator lifecycle defect, not a
+new finding in the Recovery Kotlin implementation. PR #16 remediated only
+`tools/validate_poc_recovery_governance.py`: its final reviewed HEAD
+`8038153db2557e439c684686ea739d8c14620da3` / tree
+`a75ea1bf1de96827b26c98cd99e461aedfa06ab7` received a separate OpenAI Codex / GPT-5 AI governance
+remediation advisory re-review with `formalReviewer=false`, `NO_FURTHER_CHANGES_REQUIRED` and no
+P0/P1/P2 findings. Required PR CI run `31784363002` attempt 3 passed. Protected squash merge then
+created `main` `685e759290f8987444280b05e69b9d4d0070424e`, parent `f2bc8c95…`, with the reviewed tree; exact
+post-merge push run `31790356849` passed. Its `search-smoke` job remains unrelated Search emulator
+evidence and is not Recovery execution evidence. These are completed audit facts; GitHub remains
+authoritative for current branch, PR, protection and CI state.
+
 ## Closed Stage 0B evidence record
 
 Stage 0B implemented only the disposable `POC-CAPTURE-001` evidence harness selected by `OD-01`. It did not admit that implementation into production Dora.
@@ -169,7 +192,7 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - `OD-11`: Project owner is Product and IP policy reviewer and acts as Engineering/Security reviewer only for Stage 0 evaluation. This does not replace production Legal or independent production Security. Embedded platform SQLite may use the containing system-image digest plus exact image/runtime identity for Stage 0; that boundary must be reconsidered before production admission.
 - `OD-12`: Project owner prospectively approves Option B for `stage0-v0.2`, based on the local-MVP storage/update/one-second visibility balance and not on prior Dora results. Benchmark execution remains separately withheld.
 - `OD-13`: Project owner approves the exact 66-component/license/NOTICE/platform package only for internal synthetic Stage 0 evaluation and accepts formal `INCONCLUSIVE` closure without a new benchmark. This is not production Legal/Security approval, does not admit FTS4 automatically, is not retroactive, and leaves D1/D3 plus measured execution deferred.
-- `OD-14`: Project owner constraints link active prospective governance protocol v0.6, which inherits all unchanged SHA-256-pinned v0.5/v0.4/v0.3 semantics and replaces only effective KEY-04 while preserving the 46-row campaign profiles and canonical blocker IDs. Historical AI advisory records remain unchanged with `formalReviewer=false`. Novikova Katerina completed the distinct accountable read-only formal human review in individual professional capacity, Rambus affiliation only, with `APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW`; `REC-REV-20260812-02=CLOSED_BY_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW` and `REC-RDY-02=CLOSED_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW` without a Rambus corporate-approval claim or implementation/Phase A/execution authority. Prospective `REC-JSR305-EXCLUDE-001` and exact governance authenticity/LICENSE/NOTICE evidence are closed; the future actual recovery graph/package/R8 evidence and its Product/IP disposition remain open/blocking. The selected construction remains `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`; excluded JSR-305 terms are not interpreted and use/distribution is not approved. Separate implementation review/authorization and verification plus later owner execution authorization remain mandatory. `implementationAllowed=false`; `implementationAllowedByThisPackage=false`; `executionAllowed=false`; `measuredExecutionAllowed=false`.
+- `OD-14`: Project owner constraints link active prospective governance protocol v0.6, which inherits all unchanged SHA-256-pinned v0.5/v0.4/v0.3 semantics and replaces only effective KEY-04 while preserving the 46-row campaign profiles and canonical blocker IDs. Historical AI advisory records remain unchanged with `formalReviewer=false`. Novikova Katerina completed the distinct accountable read-only formal human review in individual professional capacity, Rambus affiliation only, with `APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW`; `REC-REV-20260812-02=CLOSED_BY_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW` and `REC-RDY-02=CLOSED_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW` without a Rambus corporate-approval claim or implementation/Phase A/execution authority. Prospective `REC-JSR305-EXCLUDE-001` and exact governance authenticity/LICENSE/NOTICE evidence are closed; the future actual recovery graph/package/R8 evidence and its Product/IP disposition remain open/blocking. The selected construction remains `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`; excluded JSR-305 terms are not interpreted and use/distribution is not approved. The task-scoped REC-I1 foundation has its own completed advisory implementation review/authorization/verification lifecycle; every runtime implementation scope, complete verification and later execution authorization remain separate and mandatory. `implementationAllowed=false`; `implementationAllowedByThisPackage=false`; `executionAllowed=false`; `measuredExecutionAllowed=false`.
 
 ## Current gates and blockers
 
@@ -184,8 +207,9 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
   JSR-305 use/distribution is not approved. The repeat AI documentary exact-HEAD re-review remains
   historical non-formal evidence. The distinct accountable recovery Engineering/Security formal
   review is complete. Exact owner authorization `REC-I1-AUTH-20260813-01` covers only the pure I1
-  foundation; independent review of the frozen I1 PR head, runtime implementation authority, Phase A
-  and execution remain separate.
+  foundation. Independent AI advisory review and protected merge of that exact foundation are now
+  complete with `formalReviewer=false`; runtime implementation authority, complete runtime
+  verification, Phase A and execution remain separate.
 - The exact published Tink closure is inventoried without Gradle wiring. A future harness-resolved
   graph remains a P0 pre-execution check because repository Kotlin alignment may differ from the
   publisher POM closure. It must enumerate every resolvable compile/runtime/unit-test/`androidTest`/
@@ -272,6 +296,11 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
   `search-smoke` succeeded. Governance-only reconciliation PR #13 later merged as
   `5c97f09f3165a90afa5300b30499e0dcb36168f2`. Live GitHub metadata is authoritative for current
   branch, PR and `main` lifecycle state.
+- PR #15 later protected-squash-merged the independently reviewed pure REC-I1 foundation as
+  `f2bc8c95bbe8af0d010968fff2ca175851728bf2`. Its first post-merge CI exposed only the branch-lifecycle
+  validator defect. PR #16 changed only the validator and protected-squash-merged the reviewed fix as
+  `685e759290f8987444280b05e69b9d4d0070424e`; exact-main post-merge CI then passed. Neither merge
+  changed any Recovery authority flag or produced Recovery execution evidence.
 
 ## Next safe action
 
@@ -282,12 +311,14 @@ listed only as affiliation. This closes `REC-REV-20260812-02` and `REC-RDY-02`, 
 corporate approval, formal GitHub review, implementation authorization, Phase A authorization,
 execution authorization, dependency admission, Production Security or Production Legal.
 
-`REC-I1-AUTH-20260813-01` authorizes the pure contract foundation but not independent review or
-merge. The next safe gate is an independent review of the exact frozen I1 PR head. Any runtime
-crypto/storage/harness work needs a new owner scope. Only after complete non-metric implementation
-verification, exact excluded runtime Gradle graph/release R8, scoped Product/IP disposition and
-fresh device SQLite/Keystore/filesystem preflight may a still later owner record change
-`executionAllowed`.
+`REC-I1-AUTH-20260813-01` authorized only the pure contract foundation. Its exact independent AI
+advisory review and protected merge are complete, and the post-merge validator lifecycle is green.
+No runtime Recovery work becomes READY as a result. The next safe Recovery capability gate must be
+separately owner-scoped and remain fail-closed against the ten active blockers: actual future graph
+and Product/IP disposition, complete Streaming/microfile runtime implementation verification,
+harness, fresh device SQLite/Keystore/filesystem preflight, execution authorization, full-device
+verdict and Production Legal/Security. Only a later explicit owner record may change
+`executionAllowed` after every prerequisite is satisfied.
 Current Pull Request state is never a static document invariant; use live GitHub metadata.
 
 ## Update protocol

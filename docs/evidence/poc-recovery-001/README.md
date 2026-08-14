@@ -1,7 +1,7 @@
 # POC-RECOVERY-001 governance/readiness evidence
 
-Status: **REC-I1 TASK-SCOPED PURE CONTRACT FOUNDATION PRESENT; RUNTIME IMPLEMENTATION, ACTUAL GRAPH AND EXECUTION BLOCKED**\
-Date: 13 August 2026\
+Status: **REC-I1 REVIEWED AND SQUASH-MERGED; POST-MERGE VALIDATOR LIFECYCLE REMEDIATED; RUNTIME IMPLEMENTATION, ACTUAL GRAPH AND EXECUTION BLOCKED**\
+Date: 14 August 2026\
 Repository lifecycle: live Git/GitHub state is authoritative; no mutable branch or Pull Request state is a package invariant\
 Measured execution: **none**
 
@@ -32,12 +32,34 @@ contains no runtime-graph dependency lock, device result, benchmark, key, keyset
 plaintext, audio or database. Global `implementationAllowed`, execution and measurement authority
 remain false.
 
+The pure foundation's later implementation lifecycle is recorded as completed audit context, not
+as new authority. OpenAI Codex / GPT-5 independently reviewed PR #15 exact HEAD
+`ee7bb00b09a282df7a8fb3b4d3481a5abd4d0177` / tree
+`ac3dcf273fd447623fa8dbc5c71087acd6315830` in the AI Recovery I1 implementation advisory role.
+The disposition was `NO_FURTHER_CHANGES_REQUIRED`, `formalReviewer=false`, P0/P1/P2=0/0/0,
+`REC-I1-IMPL-001..004=CLOSED`, with 62/62 Recovery JVM tests passing. Protected squash merge
+created `main` `f2bc8c95bbe8af0d010968fff2ca175851728bf2` from parent
+`9c4a798aa3c95877ff3f9aa66f18f94849b25cce`, preserving the reviewed tree.
+
+Initial post-merge push run `31743157457` failed because the validator still rejected branch
+`main`; this was a governance-validator lifecycle defect, not a Recovery Kotlin finding. PR #16
+changed only `tools/validate_poc_recovery_governance.py`. Its final HEAD
+`8038153db2557e439c684686ea739d8c14620da3` / tree
+`a75ea1bf1de96827b26c98cd99e461aedfa06ab7` received a separate OpenAI Codex / GPT-5 AI Recovery
+governance remediation advisory re-review with `formalReviewer=false`,
+`NO_FURTHER_CHANGES_REQUIRED` and P0/P1/P2=0/0/0. Required PR CI run `31784363002` attempt 3
+passed; protected squash merge produced `main` `685e759290f8987444280b05e69b9d4d0070424e`, and exact-main
+post-merge push run `31790356849` passed. `search-smoke` is unrelated Search emulator evidence, not
+Recovery execution evidence. GitHub is authoritative for live branch, PR, protection and CI state.
+
 ## Package index
 
 | Artifact | Purpose | Current state |
 |---|---|---|
 | `implementation-authorization-rec-i1-20260813-01.json` | exact owner authorization for Recovery I1 | task-scoped pure contract implementation only; no runtime crypto, execution, Ready state or merge authority |
-| `evidence-index.json` | machine-readable active/superseded artifact index and immutable v0.1–v0.5 SHA-256 pins | v0.6 active; implementation/execution blocked |
+| `rec-i1-implementation-advisory-review-2026-08-13.json` | sanitized committed PR #15 AI advisory task-report record | `formalReviewer=false`; no GitHub/human/formal/Legal/Security review or authority change |
+| `rec-i1-validator-lifecycle-remediation-advisory-review-2026-08-14.json` | sanitized committed PR #16 AI advisory task-report record | `formalReviewer=false`; validator remediation only; no Recovery execution evidence or authority change |
+| `evidence-index.json` | machine-readable active/superseded artifact index, immutable v0.1–v0.5 SHA-256 pins and completed PR #15/#16 lifecycle audit summary | v0.6 active; pure REC-I1 reviewed/merged; runtime implementation/execution blocked |
 | `governance-remediation-v0.2.md` | retained first remediation record | superseded audit evidence; unchanged |
 | `governance-remediation-v0.3.md` | F-01–F-06 disposition and remaining blockers at the reviewed remediation point | F-01–F-06 closed; retained evidence of the underlying jsr305 license conflict |
 | `governance-remediation-v0.4.md` | final four-finding remediation and three-state readiness model | governance findings closed; future actual graph remains blocked |
@@ -59,7 +81,7 @@ remain false.
 | `security-advisory-inventory.json` | exact-version and historical advisory snapshot, upstream maintenance notes and crypto-review risks | retained historical snapshot; later accountable review recorded separately |
 | `sqlite-platform-provenance.json` | recovery-only emulator/D2 platform SQLite provenance boundary | emulator pinned; D2 runtime preflight pending |
 | `review-roles.json` | reviewer assignment, scoped owner disposition and authority boundaries | accountable formal review complete; implementation and execution authority withheld |
-| `readiness.json` | fail-closed current readiness and narrow I1 verification record | ten active blockers; global implementation/execution flags remain false |
+| `readiness.json` | fail-closed current readiness, narrow I1 verification and completed PR #15/#16 lifecycle audit summary | ten active blockers; all authority flags remain false |
 | `ip-stage0-evaluation-review.md` | human-readable supply-chain and Product/IP package assessment | prospective exclusion policy approved; artifact use, implementation and execution blocked |
 | `independent-engineering-security-review-task.md` | retained read-only review assignment and question set | assignment completed 2026-08-13; no implementation/execution |
 
@@ -164,8 +186,16 @@ lock and delta review therefore remain pre-execution blockers and require separa
   `eb312feb2a0d5e5b24b45fcd045bacca94e8c9da`; exact governance authenticity/LICENSE/NOTICE evidence
   is verified. `REC-I1-AUTH-20260813-01` now authorizes only the pure contract foundation on its
   exact base. An actual candidate runtime graph, dependency admission, JSR-305 use/distribution,
-  runtime implementation, harness and execution remain unapproved. Independent review of the
-  frozen I1 PR head is still required and is not performed by this implementation task.
+  runtime implementation, harness and execution remain unapproved.
+- OpenAI Codex / GPT-5 independently reviewed the exact PR #15 implementation HEAD/tree in the AI
+  Recovery I1 implementation advisory role and returned `NO_FURTHER_CHANGES_REQUIRED` with
+  `formalReviewer=false`, no P0/P1/P2 findings and all four implementation findings closed. PR #15
+  then protected-squash-merged the pure foundation. This is a completed task-scoped advisory and
+  merge lifecycle, not formal human review or runtime/Phase A authority.
+- The PR #15 post-merge failure was isolated to validator branch-lifecycle handling. PR #16 changed
+  only that validator, received a separate OpenAI Codex / GPT-5 AI advisory re-review with
+  `formalReviewer=false` and `NO_FURTHER_CHANGES_REQUIRED`, then protected-squash-merged. Exact-main
+  post-merge CI passed; no Recovery execution evidence was produced.
 - Production Legal and Production Security remain null and separate future approvals.
 - A later owner authorization is required even after all package/reviewer conditions are met.
 
