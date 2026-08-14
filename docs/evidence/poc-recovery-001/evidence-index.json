@@ -1,13 +1,19 @@
 {
   "schemaVersion": 7,
   "pocId": "POC-RECOVERY-001",
-  "status": "REC_I1_TASK_SCOPED_CONTRACT_FOUNDATION_PRESENT_RUNTIME_IMPLEMENTATION_AND_EXECUTION_BLOCKED",
+  "assessedOn": "2026-08-14",
+  "status": "REC_I1_REVIEWED_MERGED_VALIDATOR_LIFECYCLE_REMEDIATED_RUNTIME_IMPLEMENTATION_AND_EXECUTION_BLOCKED",
   "activeGateSetVersion": "poc-recovery-stage0-v0.6",
   "activeProtocolId": "poc-recovery-protocol-stage0-v0.6",
   "implementationAllowed": false,
   "implementationAllowedByThisPackage": false,
   "executionAllowed": false,
   "measuredExecutionAllowed": false,
+  "dependencyAdmission": false,
+  "productionAdmission": false,
+  "phaseAAuthorized": false,
+  "deviceExecutionAuthorized": false,
+  "mergeAuthorized": false,
   "taskScopedImplementationAuthorized": true,
   "authorizationId": "REC-I1-AUTH-20260813-01",
   "recoveryModuleExists": true,
@@ -15,6 +21,78 @@
   "harnessImplemented": false,
   "recI1NonMetricVerificationStatus": "PASSED_LOCAL_NON_METRIC_CHECKS",
   "globalNonMetricImplementationVerificationPassed": false,
+  "independentRecI1ImplementationAdvisoryReviewComplete": true,
+  "recI1ProtectedSquashMergeComplete": true,
+  "postMergeValidatorLifecycleRemediated": true,
+  "recI1ImplementationLifecycle": {
+    "pullRequest": 15,
+    "pullRequestUrl": "https://github.com/Monumentogram/DORA/pull/15",
+    "reviewedHead": "ee7bb00b09a282df7a8fb3b4d3481a5abd4d0177",
+    "reviewedTree": "ac3dcf273fd447623fa8dbc5c71087acd6315830",
+    "reviewerModel": "OpenAI Codex / GPT-5",
+    "reviewerRole": "AI independent Recovery I1 implementation advisory reviewer",
+    "formalReviewer": false,
+    "disposition": "NO_FURTHER_CHANGES_REQUIRED",
+    "findings": {
+      "p0": 0,
+      "p1": 0,
+      "p2": 0,
+      "recI1Impl001Through004": "CLOSED"
+    },
+    "recoveryJvmTests": "62/62 PASS",
+    "mainCommit": "f2bc8c95bbe8af0d010968fff2ca175851728bf2",
+    "mainParent": "9c4a798aa3c95877ff3f9aa66f18f94849b25cce",
+    "mainTree": "ac3dcf273fd447623fa8dbc5c71087acd6315830",
+    "initialPostMergeRun": {
+      "id": 31743157457,
+      "url": "https://github.com/Monumentogram/DORA/actions/runs/31743157457",
+      "conclusion": "failure",
+      "failureClass": "GOVERNANCE_VALIDATOR_BRANCH_LIFECYCLE_DEFECT",
+      "recoveryKotlinFinding": false
+    }
+  },
+  "postMergeValidatorLifecycleRemediation": {
+    "pullRequest": 16,
+    "pullRequestUrl": "https://github.com/Monumentogram/DORA/pull/16",
+    "reviewedHead": "8038153db2557e439c684686ea739d8c14620da3",
+    "reviewedTree": "a75ea1bf1de96827b26c98cd99e461aedfa06ab7",
+    "changedPaths": [
+      "tools/validate_poc_recovery_governance.py"
+    ],
+    "reviewerModel": "OpenAI Codex / GPT-5",
+    "reviewerRole": "AI independent Recovery governance remediation advisory reviewer",
+    "formalReviewer": false,
+    "disposition": "NO_FURTHER_CHANGES_REQUIRED",
+    "findings": {
+      "p0": 0,
+      "p1": 0,
+      "p2": 0,
+      "priorGitPathQuotingP1": "CLOSED",
+      "priorDetachedEnvironmentP2": "CLOSED"
+    },
+    "requiredPullRequestCi": {
+      "runId": 31784363002,
+      "attempt": 3,
+      "url": "https://github.com/Monumentogram/DORA/actions/runs/31784363002",
+      "conclusion": "success",
+      "searchSmokeIsRecoveryEvidence": false
+    },
+    "mainCommit": "685e759290f8987444280b05e69b9d4d0070424e",
+    "mainParent": "f2bc8c95bbe8af0d010968fff2ca175851728bf2",
+    "mainTree": "a75ea1bf1de96827b26c98cd99e461aedfa06ab7",
+    "postMergeCi": {
+      "runId": 31790356849,
+      "attempt": 1,
+      "url": "https://github.com/Monumentogram/DORA/actions/runs/31790356849",
+      "event": "push",
+      "conclusion": "success",
+      "androidBootstrap": "success",
+      "searchSmoke": "success",
+      "searchSmokeIsRecoveryEvidence": false,
+      "recoveryExecutionEvidenceProduced": false
+    },
+    "liveStateAuthority": "GitHub"
+  },
   "supersededAuditArtifacts": [
     {
       "locator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_1.md",
