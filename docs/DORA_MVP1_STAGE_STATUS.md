@@ -1,6 +1,6 @@
 # Dora MVP 1 — Stage Status
 
-Updated: 14 August 2026
+Updated: 15 August 2026
 Baseline: `1be83e2940a09f7b23e33b4cdf3827de2690f3fd`
 Stage 00 merge commit: `a4aae302f9033e5471f6759f513e7e351c375a72`
 Stage 0A merge commit: `91b9916b01ff70f63d82412bafbed0d72307dbe1`
@@ -20,6 +20,9 @@ Stage state: **REC-I1 REVIEWED AND SQUASH-MERGED; POST-MERGE VALIDATOR LIFECYCLE
 - The merge commit is `a4aae302f9033e5471f6759f513e7e351c375a72`.
 - The Stage 00 Android bootstrap, CI, governance baseline and validation tooling are present on `main`.
 - Production functionality was not started in Stage 00.
+- Build-only Stage 00 maintenance updates the Spotless Gradle plugin from 8.8.0 to 8.9.0. ktfmt
+  0.63, Detekt 1.23.8 and the formatting/static-analysis policy remain unchanged. This does not
+  change product/runtime behavior, the active stage, Recovery readiness or any authority flag.
 
 ## Stage 0A closure
 
