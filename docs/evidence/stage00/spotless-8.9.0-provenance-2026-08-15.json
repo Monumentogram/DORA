@@ -1,0 +1,78 @@
+{
+  "schemaVersion": "dora-stage00-tool-provenance-v1",
+  "recordId": "S00-QUALITY-SPOTLESS-8.9.0-20260815",
+  "checkedOn": "2026-08-15",
+  "scope": {
+    "backlogId": "S00-QUALITY-001",
+    "change": "com.diffplug.spotless 8.8.0 to 8.9.0",
+    "buildOnly": true,
+    "formatterPolicyChanged": false,
+    "productOrRuntimeBehaviorChanged": false
+  },
+  "plugin": {
+    "pluginId": "com.diffplug.spotless",
+    "version": "8.9.0",
+    "pluginMarkerCoordinate": "com.diffplug.spotless:com.diffplug.spotless.gradle.plugin:8.9.0",
+    "implementationCoordinate": "com.diffplug.spotless:spotless-plugin-gradle:8.9.0",
+    "licenseSpdx": "Apache-2.0",
+    "officialUrls": {
+      "pluginPortal": "https://plugins.gradle.org/plugin/com.diffplug.spotless/8.9.0",
+      "pluginMarkerPom": "https://plugins.gradle.org/m2/com/diffplug/spotless/com.diffplug.spotless.gradle.plugin/8.9.0/com.diffplug.spotless.gradle.plugin-8.9.0.pom",
+      "release": "https://github.com/diffplug/spotless/releases/tag/gradle/8.9.0",
+      "sourceRepository": "https://github.com/diffplug/spotless",
+      "license": "https://github.com/diffplug/spotless/blob/cbd01c4e4b91cea538691d4fe6a8f929d75c27c6/LICENSE.txt"
+    }
+  },
+  "releaseIdentity": {
+    "tag": "gradle/8.9.0",
+    "annotatedTagRefObjectSha": "297e49c16b0684470ccc1ca9a51eef1ab307627d",
+    "releaseCommitSha": "cbd01c4e4b91cea538691d4fe6a8f929d75c27c6",
+    "releaseTreeSha": "363337bb8d1bbfe93e0a5afb4a319a46fb26e592",
+    "releaseImmutable": false,
+    "releaseCommitVerified": false,
+    "releaseCommitVerificationReason": "unsigned"
+  },
+  "publishedArtifacts": [
+    {
+      "classifier": "pluginJar",
+      "url": "https://repo.maven.apache.org/maven2/com/diffplug/spotless/spotless-plugin-gradle/8.9.0/spotless-plugin-gradle-8.9.0.jar",
+      "sha256": "aae4d2f5fa5026cd20274c5760fd017b499230032fe84dfd8e482ab9960d3766"
+    },
+    {
+      "classifier": "pom",
+      "url": "https://repo.maven.apache.org/maven2/com/diffplug/spotless/spotless-plugin-gradle/8.9.0/spotless-plugin-gradle-8.9.0.pom",
+      "sha256": "3cd610499bea594ff370e502fe0fe800059750da72ac64ec3e506790cd21134b"
+    },
+    {
+      "classifier": "gradleModuleMetadata",
+      "url": "https://repo.maven.apache.org/maven2/com/diffplug/spotless/spotless-plugin-gradle/8.9.0/spotless-plugin-gradle-8.9.0.module",
+      "sha256": "45dc5a8765021b5f665dfde2972b063b9660b74b72498755a945434343d800e7"
+    },
+    {
+      "classifier": "sourcesJar",
+      "url": "https://repo.maven.apache.org/maven2/com/diffplug/spotless/spotless-plugin-gradle/8.9.0/spotless-plugin-gradle-8.9.0-sources.jar",
+      "sha256": "e679a486ddd2b8a4e3a69030cd0bd9a11507b6eb04549060cb5cf915f1929def"
+    }
+  ],
+  "signatureObservation": {
+    "detachedPgpSignatureFilesObservedForAllPublishedArtifacts": true,
+    "signerIdentityVerified": false
+  },
+  "unchangedQualityPolicy": {
+    "ktfmtVersion": "0.63",
+    "detektVersion": "1.23.8",
+    "spotlessConfigurationChanged": false,
+    "detektConfigurationChanged": false,
+    "baselineAdded": false,
+    "ruleDisabled": false
+  },
+  "limitations": [
+    "The GitHub release metadata reports immutable=false.",
+    "The release commit is unsigned.",
+    "Detached PGP signature files were observed, but signer identity was not verified.",
+    "No reproducible source-to-binary build or SLSA attestation was established.",
+    "The exact minimum supported Gradle version was not independently established.",
+    "This record makes no blanket vulnerability-free claim."
+  ],
+  "disposition": "BUILD_TOOL_MAINTENANCE_EVIDENCE_ONLY_NO_DEPENDENCY_OR_PRODUCTION_ADMISSION"
+}
