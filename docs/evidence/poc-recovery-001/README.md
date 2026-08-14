@@ -57,6 +57,8 @@ Recovery execution evidence. GitHub is authoritative for live branch, PR, protec
 | Artifact | Purpose | Current state |
 |---|---|---|
 | `implementation-authorization-rec-i1-20260813-01.json` | exact owner authorization for Recovery I1 | task-scoped pure contract implementation only; no runtime crypto, execution, Ready state or merge authority |
+| `rec-i1-implementation-advisory-review-2026-08-13.json` | sanitized committed PR #15 AI advisory task-report record | `formalReviewer=false`; no GitHub/human/formal/Legal/Security review or authority change |
+| `rec-i1-validator-lifecycle-remediation-advisory-review-2026-08-14.json` | sanitized committed PR #16 AI advisory task-report record | `formalReviewer=false`; validator remediation only; no Recovery execution evidence or authority change |
 | `evidence-index.json` | machine-readable active/superseded artifact index, immutable v0.1–v0.5 SHA-256 pins and completed PR #15/#16 lifecycle audit summary | v0.6 active; pure REC-I1 reviewed/merged; runtime implementation/execution blocked |
 | `governance-remediation-v0.2.md` | retained first remediation record | superseded audit evidence; unchanged |
 | `governance-remediation-v0.3.md` | F-01–F-06 disposition and remaining blockers at the reviewed remediation point | F-01–F-06 closed; retained evidence of the underlying jsr305 license conflict |

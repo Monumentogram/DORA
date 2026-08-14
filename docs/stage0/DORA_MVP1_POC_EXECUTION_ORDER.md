@@ -103,25 +103,30 @@ Common blockers:
 
 ## 6. Recommended waves
 
-### Wave 0 — owner/readiness gate
+### Wave 0 — owner/readiness gate (historical completion)
 
 1. ~~Obtain explicit OD-01–OD-10 answers.~~ Completed 4 August 2026.
 2. ~~Approve the fully specified Stage 0 gate set.~~ Completed; section 7 thresholds remain `Proposed` by decision.
-3. Connect the owner's one physical Android phone and automatically discover sanitized model, Android API, firmware/build, ABI and RAM.
-4. Freeze the synthetic fixture, sanitized evidence destination and cleanup plan; retain no raw trace/audio outside a configured controlled store.
-5. Open one dedicated PoC branch; do not reuse the Stage 0A documentation branch.
+3. ~~Connect the owner's one physical Android phone and automatically discover sanitized model, Android API, firmware/build, ABI and RAM.~~ Completed for Stage 0B; the sanitized phone inventory is recorded as D2 evidence.
+4. ~~Freeze the synthetic fixture, sanitized evidence destination and cleanup plan.~~ Completed for the synthetic Stage 0B campaign. No controlled private evidence store was created, so real human data remains blocked.
+5. ~~Open one dedicated PoC branch; do not reuse the Stage 0A documentation branch.~~ Completed for the isolated Stage 0B capture work.
 
-### Wave 1 — first technical PoC
+### Wave 1 — first technical PoC (historical completion)
 
-Execute only `POC-CAPTURE-001` in the next chat:
+`POC-CAPTURE-001` was executed in isolated Stage 0B scope and closed `INCONCLUSIVE`. The following
+were its execution-time constraints, not instructions to start a new or repeat campaign:
 
-- one isolated Android PoC harness;
-- microphone permission and user-initiated microphone FGS only inside the PoC scope;
-- no ASR, VAD, diarization, database, backend, account, production application ID/signing or real meeting audio;
-- run only on the one automatically identified physical owner phone in the first exploratory campaign;
-- produce a schema-valid result and sanitized evidence;
-- do not claim D1–D7 PASS or device support; a critical approved failure gate may yield `FAIL`, otherwise missing matrix coverage yields `INCONCLUSIVE`;
-- do not admit PoC code to production.
+- one isolated Android PoC harness was used;
+- microphone permission and the user-initiated microphone FGS remained inside the PoC scope;
+- ASR, VAD, diarization, database, backend, account, production application ID/signing and real meeting audio were excluded;
+- the exploratory campaign used only the automatically identified owner phone;
+- schema-valid sanitized results were produced;
+- no D1–D7 PASS or general device-support claim was made; the formal result remains `INCONCLUSIVE`;
+- PoC code was not admitted to production.
+
+The clean 60-minute screen-off baseline remains deferred. This document does not authorize a
+repeat Capture/device campaign; any such campaign requires a separate owner scope and suitable
+dedicated test device.
 
 ### Wave 2 — capture durability primitives
 
@@ -243,18 +248,23 @@ execution authorization remain absent. v0.1–v0.5 are retained only as 15
 unchanged SHA-256-pinned superseded audit artifacts. v0.6 replaces only effective KEY-04 with its
 exact decrypt-failure-only oracle and keeps KCF-07. A future final `ADR-AUDIO-001` remains evidence-dependent.
 
-## 11. First PoC Definition of Ready
+## 11. First PoC Definition of Ready (historical completion)
 
-`POC-CAPTURE-001` is ready for a new chat only when all are true:
+`POC-CAPTURE-001` passed this task-start readiness gate for the completed Stage 0B campaign. It is
+not waiting for a new chat; its current result remains `DONE` / formal `INCONCLUSIVE` in the backlog
+and Stage Status.
 
 - OD-01, OD-02, OD-03, OD-05, OD-06, OD-07 and OD-08 have direct owner answers — **satisfied 4 August 2026**;
 - fully specified `stage0-v0.1` gates are approved and every section 7 dependency is kept `Proposed`/`INCONCLUSIVE` — **satisfied**;
-- the owner's one physical Android phone is connected and model/API/firmware/ABI/RAM are automatically identified — **pending**;
-- synthetic acoustic fixture/generator and digest plan are fixed;
-- sanitized evidence, raw-artifact handling/deletion and retention destination are known; no raw trace/audio is retained outside a configured controlled store;
-- expected PoC files/modules and branch name are declared;
-- microphone/FGS code is isolated from production and no unrelated feature is scaffolded;
-- cleanup, failure fallback and machine-readable result path are defined.
+- the owner's one physical Android phone was connected and its sanitized model/API/firmware/ABI/RAM inventory was recorded as D2 — **satisfied for Stage 0B**;
+- synthetic acoustic fixture/generator and digest plan were fixed — **satisfied for Stage 0B**;
+- sanitized evidence handling, raw-artifact deletion and retention boundaries were fixed — **satisfied for synthetic Stage 0B evidence; no private store or real-data authority**;
+- expected PoC files/module and dedicated branch were declared — **satisfied for Stage 0B**;
+- microphone/FGS code was isolated from production and no unrelated feature was scaffolded — **satisfied for Stage 0B**;
+- cleanup, failure fallback and machine-readable result paths were defined — **satisfied for Stage 0B**.
+
+These historical readiness facts do not authorize a repeat Capture campaign. The deferred clean
+60-minute screen-off baseline remains a separate future device-campaign scope.
 
 ## 12. Explicit non-action in Stage 0A
 
