@@ -496,13 +496,14 @@ def collect_github_pull_request_context(
     merge_sha = env.get("GITHUB_SHA", "")
     require(merge_ref == f"refs/pull/{number}/merge", "GitHub pull_request ref is not the merge ref")
     require(FULL_SHA256_RE.fullmatch(merge_sha) is not None and merge_sha == head, "GitHub merge SHA does not match HEAD")
-    # GitHub's pull_request payload may report merge_commit_sha as null for an
-    # open pull request while GITHUB_SHA and refs/pull/<number>/merge already
-    # identify the merge commit checked out by Actions. When the payload does
-    # report a commit, retain the stricter exact binding.
+    # GitHub's pull_request payload may report merge_commit_sha as null or as a
+    # stale synthetic merge commit for an open pull request. Treat that field as
+    # non-authoritative metadata; GITHUB_SHA, refs/pull/<number>/merge, and the
+    # exact base/head parent topology below bind the checkout used by Actions.
     require(
-        event_merge_sha is None or event_merge_sha == merge_sha,
-        "GitHub event merge commit SHA conflicts with HEAD",
+        event_merge_sha is None
+        or (isinstance(event_merge_sha, str) and FULL_SHA256_RE.fullmatch(event_merge_sha) is not None),
+        "GitHub event merge commit SHA is malformed",
     )
     require(
         git_output("rev-parse", "--verify", f"{base_sha}^{{commit}}", root=repository_root) == base_sha
@@ -2169,6 +2170,37 @@ def run_github_pull_request_context_tests() -> None:
             "Verified post-merge remediation pull_request context was rejected",
         )
         print("PASS positive github-current-post-merge-pr-merge-ref")
+
+        stale_merge = test_git_text(
+            repo,
+            "-c",
+            "user.name=Dora Validator Test",
+            "-c",
+            "user.email=dora-validator@example.invalid",
+            "commit-tree",
+            head_tree,
+            "-p",
+            base,
+            "-p",
+            pull_request_head,
+            input_data=b"older synthetic GitHub merge ref\n",
+        )
+        require(stale_merge != merge, "Synthetic stale merge fixture unexpectedly reused current merge SHA")
+        write_test_pull_request_event(
+            event_path,
+            number=number,
+            head_ref=remediation_branch,
+            head_sha=pull_request_head,
+            base_sha=base,
+            merge_sha=stale_merge,
+        )
+        collect_github_pull_request_context(
+            merge,
+            remediation_branch,
+            environ=environment(remediation_branch),
+            root=repo,
+        )
+        print("PASS positive github-stale-event-merge-sha-is-non-authoritative")
 
         write_test_pull_request_event(
             event_path,
