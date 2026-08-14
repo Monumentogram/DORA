@@ -8,11 +8,21 @@ Scope: all ten Technical Plan PoCs mapped to the executable backlog
 
 ## 1. Decision summary
 
-The recommended first real technical PoC is **`POC-CAPTURE-001` — one-hour microphone capture through a user-initiated foreground service**.
+`POC-CAPTURE-001` — one-hour microphone capture through a user-initiated foreground service — was
+selected as the first real technical PoC under `OD-01`. The higher-precedence Technical Plan put
+capture first because capture reliability was the core product risk and its output blocked
+battery/endurance work plus production Stage 2.
 
-It is selected by `OD-01` because the higher-precedence Technical Plan puts capture first, capture reliability is the core product risk, and its output blocks battery/endurance work plus production Stage 2. The first campaign is only an exploratory one-phone run under `OD-06`; it must start after automatic device discovery and evidence handling are ready. It is an isolated PoC harness, not production capture and not an admitted dependency.
+For the completed Stage 0B work, automatic device discovery and synthetic evidence/deletion
+handling were established, then the initial exploratory one-phone Capture campaign was performed.
+It closed with the formal verdict `INCONCLUSIVE`; Stage 0B is complete and its changes were merged.
+The harness remained isolated PoC evidence, not production capture or an admitted dependency. The
+clean 60-minute screen-off baseline remains deferred, and any repeat Capture/device campaign
+requires separate owner scope and execution authorization.
 
-`POC-SEARCH-001` is the easiest safe parallel experiment because it uses generated data and no microphone/model/cloud. It is not selected as the first PoC because it does not reduce the leading data-loss/OEM feasibility risk and the Technical Plan explicitly prioritizes capture.
+`POC-SEARCH-001` was selected as the safest parallel PoC/work because it used generated data and no
+microphone, model or cloud. This records historical ordering only: it grants no new Search or
+Capture execution authority and does not change the current Recovery reconciliation/review gate.
 
 ## 2. PoC mapping
 
@@ -212,7 +222,10 @@ Not allowed:
 | Offline | firewall/mock preparation | retail no-GMS D4 and physical local workflow |
 | VPN | server fault injection | radio/VPN/Wi-Fi↔cell route behavior D2/D4/D5 |
 
-No row claims a device is currently available. `device-matrix.yaml` records all availability as `unknown` until the owner's phone is connected and automatically inventoried. `OD-06` explicitly defers procurement of every additional device; this limits evidence and does not relax the final matrix.
+The owner's phone was automatically inventoried and is recorded as available D2 in
+`device-matrix.yaml`. D1 and D3–D7 remain `unknown`/unavailable unless separately inventoried.
+`OD-06` explicitly defers procurement of every additional device; their absence limits evidence
+and does not relax the final matrix.
 
 ## 9. Data requirements
 
