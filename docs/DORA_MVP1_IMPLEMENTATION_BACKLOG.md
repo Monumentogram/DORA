@@ -94,7 +94,7 @@ are superseded only for this narrow I1 foundation.
 | DES-STOP-001 | BLOCKED | Pause/Back/Stop/finalize D3 | capture state contract | zero accidental stop; persistent-state comprehension |
 | DES-STORAGE-001 | TODO | Storage/retention/delete comprehension | DEC-013, BE-DELETE-001 | exact scope and loss-of-source test |
 | DES-EXPORT-001 | TODO | Export scope/privacy flow | DEC-017 | accessible selection, plain-share warning, cleanup state |
-| DES-A11Y-001 | READY | Component accessibility contract | DEC-040 | semantics/focus/touch/contrast/200% template |
+| DES-A11Y-001 | DONE | Component accessibility contract | DEC-040 | [versioned semantics/focus/touch/contrast/200% contract and evidence template](design/DORA_MVP1_COMPONENT_ACCESSIBILITY_CONTRACT.md); no component audit/conformance claim |
 | DES-ADAPT-001 | TODO | D10 compact→expanded/posture | DES-IA-001 | resize/state/inset/hinge evidence |
 
 ## 5. Stage 1 — production project foundation (после Stage 0 go/no-go)
