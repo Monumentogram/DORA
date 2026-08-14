@@ -11,7 +11,9 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
 import xml.etree.ElementTree as ET
+from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Callable
@@ -97,6 +99,23 @@ AUTHORIZED_PATHS = [
 # including this validator, but no file below this module may differ from the
 # merged anchor in a commit, index, worktree, or relevant untracked state.
 POST_MERGE_PROTECTED_PATHS = ["android/poc/recovery/**"]
+GITHUB_REPOSITORY = "Monumentogram/DORA"
+GITHUB_BASE_BRANCH = "main"
+GITHUB_EVENT_MAX_BYTES = 10 * 1024 * 1024
+FULL_SHA256_RE = re.compile(r"[0-9a-f]{40}")
+
+
+@dataclass(frozen=True)
+class GitHubPullRequestContext:
+    repository: str
+    head_repository: str
+    head_ref: str
+    head_sha: str
+    base_ref: str
+    base_sha: str
+    merge_ref: str
+    merge_sha: str
+    number: int
 
 
 @dataclass(frozen=True)
@@ -111,6 +130,7 @@ class RecoveryLifecycleIdentity:
     reviewed_implementation_commit: str | None
     reviewed_implementation_tree: str | None
     merged_anchor_is_ancestor: bool
+    github_pull_request_context: GitHubPullRequestContext | None = None
 
 NORMATIVE_V06_HASHES = {
     "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_6.md": "5ab6d105fe6c94868d77c25d1be065a1688ccb083fcbdc0c3f43096e73909063",
@@ -238,32 +258,58 @@ def semantic_sha256(record: dict[str, Any]) -> str:
     return hashlib.sha256(canonical).hexdigest()
 
 
-def git_output(*arguments: str) -> str:
+def git_output(*arguments: str, root: Path | None = None) -> str:
     return subprocess.run(
         ["git", *arguments],
-        cwd=ROOT,
+        cwd=root or ROOT,
         check=True,
         capture_output=True,
         text=True,
         encoding="utf-8",
+        errors="strict",
     ).stdout.strip()
 
 
-def git_optional_output(*arguments: str) -> str | None:
+def git_optional_output(*arguments: str, root: Path | None = None) -> str | None:
     try:
-        return git_output(*arguments)
+        return git_output(*arguments, root=root)
     except subprocess.CalledProcessError:
         return None
 
 
-def git_is_ancestor(ancestor: str, descendant: str) -> bool:
+def decode_git_path_records(output: bytes, command: str) -> list[str]:
+    if not output:
+        return []
+    require(output.endswith(b"\0"), f"Git path output is not NUL-terminated: {command}")
+    try:
+        records = output[:-1].split(b"\0")
+        decoded = [record.decode("utf-8", errors="strict") for record in records]
+    except UnicodeDecodeError as error:
+        raise ValueError(f"Git path output is not valid UTF-8: {command}") from error
+    require(all("\0" not in path for path in decoded), f"Git path output contains NUL: {command}")
+    return [path for path in decoded if path]
+
+
+def git_path_records(*arguments: str, root: Path | None = None) -> list[str]:
+    result = subprocess.run(
+        ["git", *arguments],
+        cwd=root or ROOT,
+        check=True,
+        capture_output=True,
+        text=False,
+    )
+    return decode_git_path_records(result.stdout, "git " + " ".join(arguments))
+
+
+def git_is_ancestor(ancestor: str, descendant: str, root: Path | None = None) -> bool:
     result = subprocess.run(
         ["git", "merge-base", "--is-ancestor", ancestor, descendant],
-        cwd=ROOT,
+        cwd=root or ROOT,
         check=False,
         capture_output=True,
         text=True,
         encoding="utf-8",
+        errors="strict",
     )
     if result.returncode not in (0, 1):
         raise subprocess.CalledProcessError(
@@ -381,7 +427,109 @@ def validate_post_merge_protected_paths(changes: dict[str, list[str]]) -> None:
     )
 
 
-def select_lifecycle_branch(checked_out_branch: str, github_head_ref: str) -> str:
+def path_is_within(path: Path, parent: Path) -> bool:
+    try:
+        path.relative_to(parent)
+        return True
+    except ValueError:
+        return False
+
+
+def collect_github_pull_request_context(
+    head: str,
+    github_head_ref: str,
+    *,
+    environ: Mapping[str, str] | None = None,
+    root: Path | None = None,
+) -> GitHubPullRequestContext:
+    env = os.environ if environ is None else environ
+    repository_root = (root or ROOT).resolve(strict=True)
+    require(env.get("GITHUB_EVENT_NAME") == "pull_request", "GITHUB_HEAD_REF requires a pull_request event")
+    require(env.get("GITHUB_REPOSITORY") == GITHUB_REPOSITORY, "GitHub event repository mismatch")
+
+    workspace_value = env.get("GITHUB_WORKSPACE", "")
+    runner_temp_value = env.get("RUNNER_TEMP", "")
+    event_path_value = env.get("GITHUB_EVENT_PATH", "")
+    require(workspace_value and runner_temp_value and event_path_value, "Incomplete GitHub pull_request path context")
+    workspace = Path(workspace_value)
+    runner_temp = Path(runner_temp_value)
+    event_path = Path(event_path_value)
+    require(workspace.is_absolute() and runner_temp.is_absolute() and event_path.is_absolute(), "GitHub event paths must be absolute")
+    require(workspace.resolve(strict=True) == repository_root, "GITHUB_WORKSPACE does not match the repository root")
+    resolved_runner_temp = runner_temp.resolve(strict=True)
+    require(event_path.is_file() and not event_path.is_symlink(), "GITHUB_EVENT_PATH is not a regular non-symlink file")
+    resolved_event_path = event_path.resolve(strict=True)
+    require(path_is_within(resolved_event_path, resolved_runner_temp), "GITHUB_EVENT_PATH escapes RUNNER_TEMP")
+    event_size = resolved_event_path.stat().st_size
+    require(0 < event_size <= GITHUB_EVENT_MAX_BYTES, "GitHub event payload size is invalid")
+    try:
+        event = json.loads(resolved_event_path.read_text(encoding="utf-8", errors="strict"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("GitHub pull_request event payload is unreadable") from error
+    require(isinstance(event, dict), "GitHub event payload root must be an object")
+
+    try:
+        repository = event["repository"]["full_name"]
+        pull_request = event["pull_request"]
+        number = event["number"]
+        pull_request_number = pull_request["number"]
+        head_record = pull_request["head"]
+        base_record = pull_request["base"]
+        head_repository = head_record["repo"]["full_name"]
+        base_repository = base_record["repo"]["full_name"]
+        head_ref = head_record["ref"]
+        head_sha = head_record["sha"]
+        base_ref = base_record["ref"]
+        base_sha = base_record["sha"]
+        event_merge_sha = pull_request["merge_commit_sha"]
+    except (KeyError, TypeError) as error:
+        raise ValueError("GitHub pull_request event payload is incomplete") from error
+
+    require(isinstance(number, int) and number > 0 and pull_request_number == number, "GitHub pull_request number mismatch")
+    require(repository == GITHUB_REPOSITORY and base_repository == GITHUB_REPOSITORY, "GitHub pull_request base repository mismatch")
+    require(head_repository == GITHUB_REPOSITORY, "GitHub pull_request head repository is a fork")
+    require(head_ref == github_head_ref == env.get("GITHUB_HEAD_REF"), "GitHub pull_request head ref mismatch")
+    require(base_ref == GITHUB_BASE_BRANCH == env.get("GITHUB_BASE_REF"), "GitHub pull_request base ref mismatch")
+    require(FULL_SHA256_RE.fullmatch(head_sha or "") is not None, "GitHub pull_request head SHA is invalid")
+    require(FULL_SHA256_RE.fullmatch(base_sha or "") is not None, "GitHub pull_request base SHA is invalid")
+    merge_ref = env.get("GITHUB_REF", "")
+    merge_sha = env.get("GITHUB_SHA", "")
+    require(merge_ref == f"refs/pull/{number}/merge", "GitHub pull_request ref is not the merge ref")
+    require(FULL_SHA256_RE.fullmatch(merge_sha) is not None and merge_sha == head, "GitHub merge SHA does not match HEAD")
+    require(event_merge_sha == merge_sha, "GitHub event merge commit SHA does not match HEAD")
+    require(
+        git_output("rev-parse", "--verify", f"{base_sha}^{{commit}}", root=repository_root) == base_sha
+        and git_output("rev-parse", "--verify", f"{head_sha}^{{commit}}", root=repository_root) == head_sha,
+        "GitHub pull_request base or head commit is missing",
+    )
+    merge_parents = tuple(git_output("show", "-s", "--format=%P", head, root=repository_root).split())
+    require(merge_parents == (base_sha, head_sha), "GitHub merge-ref parent topology mismatch")
+    require(git_output("merge-base", base_sha, head_sha, root=repository_root) == base_sha, "GitHub pull_request head is not based on its base SHA")
+
+    return GitHubPullRequestContext(
+        repository=repository,
+        head_repository=head_repository,
+        head_ref=head_ref,
+        head_sha=head_sha,
+        base_ref=base_ref,
+        base_sha=base_sha,
+        merge_ref=merge_ref,
+        merge_sha=merge_sha,
+        number=number,
+    )
+
+
+def select_lifecycle_branch(
+    checked_out_branch: str,
+    github_head_ref: str,
+    github_pull_request_context: GitHubPullRequestContext | None = None,
+) -> str:
+    if github_head_ref:
+        require(github_pull_request_context is not None, "GITHUB_HEAD_REF lacks verified pull_request context")
+        require(
+            github_pull_request_context.head_ref == github_head_ref,
+            "Verified pull_request context conflicts with GITHUB_HEAD_REF",
+        )
     require(
         not checked_out_branch or not github_head_ref or checked_out_branch == github_head_ref,
         "Checked-out branch conflicts with GITHUB_HEAD_REF",
@@ -426,6 +574,16 @@ def validate_recovery_lifecycle(
         "HEAD is not based on the exact authorized base",
     )
     require(identity.branch == AUTHORIZED_BRANCH, f"REC-I1 is running on unauthorized branch: {identity.branch}")
+    if identity.github_pull_request_context is not None:
+        pull_request = identity.github_pull_request_context
+        require(
+            pull_request.repository == GITHUB_REPOSITORY
+            and pull_request.head_repository == GITHUB_REPOSITORY
+            and pull_request.head_ref == AUTHORIZED_BRANCH
+            and pull_request.base_ref == GITHUB_BASE_BRANCH
+            and pull_request.base_sha == AUTHORIZED_BASE_HEAD,
+            "REC-I1 pre-merge pull_request context is not the authorized same-repository base",
+        )
     validate_changed_paths(pre_merge_changed_paths)
     return "pre-merge"
 
@@ -434,7 +592,12 @@ def collect_recovery_lifecycle_identity() -> RecoveryLifecycleIdentity:
     head = git_output("rev-parse", "HEAD")
     checked_out_branch = git_output("branch", "--show-current")
     github_head_ref = os.environ.get("GITHUB_HEAD_REF", "")
-    branch = select_lifecycle_branch(checked_out_branch, github_head_ref)
+    github_pull_request_context = (
+        collect_github_pull_request_context(head, github_head_ref)
+        if github_head_ref
+        else None
+    )
+    branch = select_lifecycle_branch(checked_out_branch, github_head_ref, github_pull_request_context)
 
     merged_anchor_commit = git_optional_output("rev-parse", "--verify", f"{REC_I1_MERGED_ANCHOR}^{{commit}}")
     merged_anchor_tree = None
@@ -464,28 +627,35 @@ def collect_recovery_lifecycle_identity() -> RecoveryLifecycleIdentity:
         merged_anchor_is_ancestor=(
             merged_anchor_commit is not None and git_is_ancestor(REC_I1_MERGED_ANCHOR, head)
         ),
+        github_pull_request_context=github_pull_request_context,
     )
 
 
-def collect_pre_merge_changed_paths() -> list[str]:
-    changed_paths = set(git_output("diff", "--name-only", AUTHORIZED_BASE_HEAD).splitlines())
-    untracked = git_output("ls-files", "--others", "--exclude-standard").splitlines()
+def collect_pre_merge_changed_paths(*, root: Path | None = None, authorized_base: str | None = None) -> list[str]:
+    repository_root = root or ROOT
+    base = authorized_base or AUTHORIZED_BASE_HEAD
+    changed_paths = set(
+        git_path_records("diff", "--name-only", "--no-renames", "-z", base, "--", root=repository_root)
+    )
+    untracked = git_path_records("ls-files", "--others", "--exclude-standard", "-z", root=repository_root)
     changed_paths.update(path for path in untracked if not path.startswith(".codex-remote-attachments/"))
     return sorted(path for path in changed_paths if path)
 
 
-def collect_post_merge_changes() -> dict[str, list[str]]:
-    committed_tree_delta = git_output(
-        "diff", "--name-only", "--no-renames", REC_I1_MERGED_ANCHOR, "HEAD", "--"
-    ).splitlines()
-    committed_history = git_output(
-        "log", "--format=", "--name-only", "--no-renames", f"{REC_I1_MERGED_ANCHOR}..HEAD", "--"
-    ).splitlines()
+def collect_post_merge_changes(*, root: Path | None = None, merged_anchor: str | None = None) -> dict[str, list[str]]:
+    repository_root = root or ROOT
+    anchor = merged_anchor or REC_I1_MERGED_ANCHOR
+    committed_tree_delta = git_path_records(
+        "diff", "--name-only", "--no-renames", "-z", anchor, "HEAD", "--", root=repository_root
+    )
+    committed_history = git_path_records(
+        "log", "--format=", "--name-only", "--no-renames", "-z", f"{anchor}..HEAD", "--", root=repository_root
+    )
     return {
         "committed": sorted({path for path in (*committed_tree_delta, *committed_history) if path}),
-        "staged": git_output("diff", "--cached", "--name-only", "--no-renames", "HEAD", "--").splitlines(),
-        "unstaged": git_output("diff", "--name-only", "--no-renames", "--").splitlines(),
-        "untracked": git_output("ls-files", "--others", "--exclude-standard").splitlines(),
+        "staged": git_path_records("diff", "--cached", "--name-only", "--no-renames", "-z", "HEAD", "--", root=repository_root),
+        "unstaged": git_path_records("diff", "--name-only", "--no-renames", "-z", "--", root=repository_root),
+        "untracked": git_path_records("ls-files", "--others", "--exclude-standard", "-z", root=repository_root),
     }
 
 
@@ -1362,7 +1532,9 @@ def validate_dependency_and_scope_boundary() -> None:
 
     for relative, expected in NORMATIVE_V06_HASHES.items():
         require(sha256(relative) == expected, f"Normative v0.6 contract changed: {relative}")
-    changed_normative = git_output("diff", "--name-only", AUTHORIZED_BASE_HEAD, "--", *NORMATIVE_V06_HASHES).splitlines()
+    changed_normative = git_path_records(
+        "diff", "--name-only", "--no-renames", "-z", AUTHORIZED_BASE_HEAD, "--", *NORMATIVE_V06_HASHES
+    )
     require(not changed_normative, f"Normative v0.6 contract differs from formal-review base: {changed_normative}")
 
     require(git_output("rev-parse", f"{REVIEWED_V06_HEAD}^{{tree}}") == AUTHORIZED_REVIEWED_TREE, "Reviewed technical target tree mismatch")
@@ -1380,7 +1552,9 @@ def validate_dependency_and_scope_boundary() -> None:
     )
 
     for historical_commit in (AUTHORIZED_BASE_HEAD, REVIEWED_V06_HEAD):
-        module_snapshot = git_output("ls-tree", "-r", "--name-only", historical_commit, "--", "android/poc/recovery")
+        module_snapshot = git_path_records(
+            "ls-tree", "-r", "--name-only", "-z", historical_commit, "--", "android/poc/recovery"
+        )
         require(not module_snapshot, f"Historical snapshot unexpectedly contains Recovery module: {historical_commit}")
         settings_snapshot = git_output("show", f"{historical_commit}:android/settings.gradle.kts")
         require(":poc:recovery" not in settings_snapshot, f"Historical snapshot unexpectedly includes Recovery: {historical_commit}")
@@ -1423,7 +1597,9 @@ def validate_dependency_and_scope_boundary() -> None:
         lock_text = lockfile.read_text(encoding="utf-8")
         require("tink" not in lock_text.lower() and "jsr305" not in lock_text.lower(), "Recovery lockfile contains forbidden runtime dependency")
         base_lock_coordinates: set[str] = set()
-        base_lockfiles = git_output("ls-tree", "-r", "--name-only", AUTHORIZED_BASE_HEAD, "--", "android").splitlines()
+        base_lockfiles = git_path_records(
+            "ls-tree", "-r", "--name-only", "-z", AUTHORIZED_BASE_HEAD, "--", "android"
+        )
         for relative in base_lockfiles:
             if relative.endswith("gradle.lockfile"):
                 snapshot = git_output("show", f"{AUTHORIZED_BASE_HEAD}:{relative}")
@@ -1561,6 +1737,23 @@ def run_lifecycle_tests() -> None:
         "tools/validate_poc_recovery_governance.py",
     ]
     expect_positive("historical-authorized-branch", historical, "pre-merge", historical_paths)
+    historical_pull_request = GitHubPullRequestContext(
+        repository=GITHUB_REPOSITORY,
+        head_repository=GITHUB_REPOSITORY,
+        head_ref=AUTHORIZED_BRANCH,
+        head_sha=REC_I1_REVIEWED_HEAD,
+        base_ref=GITHUB_BASE_BRANCH,
+        base_sha=AUTHORIZED_BASE_HEAD,
+        merge_ref="refs/pull/15/merge",
+        merge_sha=REC_I1_REVIEWED_HEAD,
+        number=15,
+    )
+    expect_positive(
+        "historical-authorized-pull-request-context",
+        replace(historical, github_pull_request_context=historical_pull_request),
+        "pre-merge",
+        historical_paths,
+    )
 
     anchor = RecoveryLifecycleIdentity(
         head=REC_I1_MERGED_ANCHOR,
@@ -1610,6 +1803,14 @@ def run_lifecycle_tests() -> None:
         historical_paths,
     )
     expect_lifecycle_negative(
+        "historical-pull-request-wrong-base-sha",
+        replace(
+            historical,
+            github_pull_request_context=replace(historical_pull_request, base_sha="0" * 40),
+        ),
+        historical_paths,
+    )
+    expect_lifecycle_negative(
         "non-descendant-post-merge-spoof",
         replace(anchor, head="e" * 40, merged_anchor_is_ancestor=False),
     )
@@ -1653,11 +1854,376 @@ def run_lifecycle_tests() -> None:
         post_merge_changes=changes(committed=[protected_kotlin]),
     )
     try:
-        select_lifecycle_branch("codex/wrong-branch", AUTHORIZED_BRANCH)
+        select_lifecycle_branch("", AUTHORIZED_BRANCH)
     except ValueError:
-        print("PASS negative lifecycle-environment-branch-spoof")
+        print("PASS negative lifecycle-environment-only-branch-spoof")
     else:
-        raise ValueError("Negative lifecycle test unexpectedly passed: environment-branch-spoof")
+        raise ValueError("Negative lifecycle test unexpectedly passed: environment-only-branch-spoof")
+    try:
+        select_lifecycle_branch("codex/wrong-branch", AUTHORIZED_BRANCH, historical_pull_request)
+    except ValueError:
+        print("PASS negative lifecycle-checked-out-branch-conflicts-with-event")
+    else:
+        raise ValueError("Negative lifecycle test unexpectedly passed: checked-out-branch-conflicts-with-event")
+
+
+def test_git(repo: Path, *arguments: str, input_data: bytes | None = None) -> bytes:
+    return subprocess.run(
+        ["git", *arguments],
+        cwd=repo,
+        input=input_data,
+        check=True,
+        capture_output=True,
+        text=False,
+    ).stdout
+
+
+def test_git_text(repo: Path, *arguments: str, input_data: bytes | None = None) -> str:
+    return test_git(repo, *arguments, input_data=input_data).decode("utf-8", errors="strict").strip()
+
+
+def initialize_test_git_repo(parent: Path) -> tuple[Path, str]:
+    repo = parent / "repo"
+    repo.mkdir()
+    test_git(repo, "init", "-q", "--initial-branch=main")
+    (repo / "seed.txt").write_bytes(b"seed")
+    return repo, commit_test_git_repo(repo, "base")
+
+
+def commit_test_git_repo(repo: Path, message: str) -> str:
+    test_git(repo, "add", "-A")
+    test_git(
+        repo,
+        "-c",
+        "user.name=Dora Validator Test",
+        "-c",
+        "user.email=dora-validator@example.invalid",
+        "commit",
+        "-q",
+        "-m",
+        message,
+    )
+    return test_git_text(repo, "rev-parse", "HEAD")
+
+
+def expect_real_git_protected_path_rejection(
+    name: str,
+    changes: dict[str, list[str]],
+    expected_layer: str,
+    expected_path: str,
+) -> None:
+    require(expected_path in changes[expected_layer], f"Real-Git collector missed {name}: {changes}")
+    try:
+        validate_post_merge_protected_paths(changes)
+    except ValueError:
+        print(f"PASS negative real-git-{name}")
+        return
+    raise ValueError(f"Real-Git protected path mutation unexpectedly passed: {name}")
+
+
+def run_git_path_collector_tests() -> None:
+    unicode_relative = "android/poc/recovery/данные.bin"
+    for layer in ("committed", "staged", "unstaged", "untracked"):
+        with tempfile.TemporaryDirectory(prefix=f"dora-recovery-path-{layer}-") as temporary:
+            repo, anchor = initialize_test_git_repo(Path(temporary))
+            path = repo / Path(unicode_relative)
+            path.parent.mkdir(parents=True)
+            if layer == "committed":
+                path.write_bytes(b"committed")
+                commit_test_git_repo(repo, "committed unicode protected path")
+            elif layer == "staged":
+                path.write_bytes(b"staged")
+                test_git(repo, "add", "--", unicode_relative)
+            elif layer == "unstaged":
+                path.write_bytes(b"original")
+                anchor = commit_test_git_repo(repo, "track unicode protected path")
+                path.write_bytes(b"unstaged")
+            else:
+                path.write_bytes(b"untracked")
+            changes = collect_post_merge_changes(root=repo, merged_anchor=anchor)
+            expect_real_git_protected_path_rejection(
+                f"unicode-{layer}", changes, layer, unicode_relative
+            )
+
+    with tempfile.TemporaryDirectory(prefix="dora-recovery-path-control-") as temporary:
+        repo, anchor = initialize_test_git_repo(Path(temporary))
+        control_relative = "android/poc/recovery/control\nname.bin"
+        blob = test_git_text(repo, "hash-object", "-w", "--stdin", input_data=b"control")
+        control_name = control_relative.rsplit("/", 1)[1]
+        recovery_tree = test_git_text(
+            repo,
+            "mktree",
+            "-z",
+            input_data=f"100644 blob {blob}\t".encode("ascii") + control_name.encode("utf-8") + b"\0",
+        )
+        poc_tree = test_git_text(
+            repo,
+            "mktree",
+            "-z",
+            input_data=f"040000 tree {recovery_tree}\trecovery\0".encode("ascii"),
+        )
+        android_tree = test_git_text(
+            repo,
+            "mktree",
+            "-z",
+            input_data=f"040000 tree {poc_tree}\tpoc\0".encode("ascii"),
+        )
+        tree = test_git_text(
+            repo,
+            "mktree",
+            "-z",
+            input_data=f"040000 tree {android_tree}\tandroid\0".encode("ascii"),
+        )
+        commit = test_git_text(
+            repo,
+            "-c",
+            "user.name=Dora Validator Test",
+            "-c",
+            "user.email=dora-validator@example.invalid",
+            "commit-tree",
+            tree,
+            "-p",
+            anchor,
+            input_data=b"control-character path\n",
+        )
+        test_git(repo, "update-ref", "refs/heads/main", commit)
+        changes = collect_post_merge_changes(root=repo, merged_anchor=anchor)
+        expect_real_git_protected_path_rejection(
+            "control-character-committed-tree", changes, "committed", control_relative
+        )
+
+    for change_kind in ("delete", "rename", "type-change"):
+        with tempfile.TemporaryDirectory(prefix=f"dora-recovery-path-{change_kind}-") as temporary:
+            repo, _initial = initialize_test_git_repo(Path(temporary))
+            relative = "android/poc/recovery/payload.bin"
+            path = repo / Path(relative)
+            path.parent.mkdir(parents=True)
+            path.write_bytes(b"payload")
+            anchor = commit_test_git_repo(repo, "protected payload base")
+            if change_kind == "delete":
+                path.unlink()
+                commit_test_git_repo(repo, "delete protected payload")
+            elif change_kind == "rename":
+                destination = repo / "docs" / "renamed-payload.bin"
+                destination.parent.mkdir()
+                test_git(repo, "mv", "--", relative, destination.relative_to(repo).as_posix())
+                commit_test_git_repo(repo, "rename protected payload")
+            else:
+                link_blob = test_git_text(repo, "hash-object", "-w", "--stdin", input_data=b"target")
+                test_git(repo, "update-index", "--cacheinfo", f"120000,{link_blob},{relative}")
+                tree = test_git_text(repo, "write-tree")
+                commit = test_git_text(
+                    repo,
+                    "-c",
+                    "user.name=Dora Validator Test",
+                    "-c",
+                    "user.email=dora-validator@example.invalid",
+                    "commit-tree",
+                    tree,
+                    "-p",
+                    anchor,
+                    input_data=b"type change\n",
+                )
+                test_git(repo, "update-ref", "refs/heads/main", commit)
+            changes = collect_post_merge_changes(root=repo, merged_anchor=anchor)
+            expect_real_git_protected_path_rejection(
+                f"{change_kind}-preserved", changes, "committed", relative
+            )
+
+    try:
+        decode_git_path_records(b"android/poc/recovery/\xff\0", "synthetic invalid UTF-8")
+    except ValueError:
+        print("PASS negative git-path-invalid-utf8-fails-closed")
+    else:
+        raise ValueError("Invalid UTF-8 Git path output unexpectedly passed")
+
+    with tempfile.TemporaryDirectory(prefix="dora-recovery-path-git-error-") as temporary:
+        repo, _anchor = initialize_test_git_repo(Path(temporary))
+        try:
+            git_path_records("diff", "--name-only", "-z", "missing-revision", "--", root=repo)
+        except subprocess.CalledProcessError:
+            print("PASS negative git-path-command-error-fails-closed")
+        else:
+            raise ValueError("Failed Git path command unexpectedly passed")
+
+
+def write_test_pull_request_event(
+    event_path: Path,
+    *,
+    number: int,
+    head_ref: str,
+    head_sha: str,
+    base_sha: str,
+    merge_sha: str,
+    head_repository: str = GITHUB_REPOSITORY,
+) -> None:
+    event = {
+        "number": number,
+        "repository": {"full_name": GITHUB_REPOSITORY},
+        "pull_request": {
+            "number": number,
+            "merge_commit_sha": merge_sha,
+            "head": {
+                "ref": head_ref,
+                "sha": head_sha,
+                "repo": {"full_name": head_repository},
+            },
+            "base": {
+                "ref": GITHUB_BASE_BRANCH,
+                "sha": base_sha,
+                "repo": {"full_name": GITHUB_REPOSITORY},
+            },
+        },
+    }
+    event_path.write_text(json.dumps(event, ensure_ascii=False), encoding="utf-8")
+
+
+def run_github_pull_request_context_tests() -> None:
+    with tempfile.TemporaryDirectory(prefix="dora-recovery-pr-context-") as temporary:
+        parent = Path(temporary)
+        repo, base = initialize_test_git_repo(parent)
+        authorized_relative = "tools/validate_poc_recovery_governance.py"
+        authorized_path = repo / Path(authorized_relative)
+        authorized_path.parent.mkdir()
+        authorized_path.write_bytes(b"change")
+        pull_request_head = commit_test_git_repo(repo, "pull request head")
+        head_tree = test_git_text(repo, "rev-parse", f"{pull_request_head}^{{tree}}")
+        merge = test_git_text(
+            repo,
+            "-c",
+            "user.name=Dora Validator Test",
+            "-c",
+            "user.email=dora-validator@example.invalid",
+            "commit-tree",
+            head_tree,
+            "-p",
+            base,
+            "-p",
+            pull_request_head,
+            input_data=b"synthetic GitHub merge ref\n",
+        )
+        test_git(repo, "checkout", "--detach", "-q", merge)
+
+        runner_temp = parent / "runner-temp"
+        runner_temp.mkdir()
+        event_path = runner_temp / "event.json"
+        number = 15
+
+        def environment(head_ref: str, path: Path = event_path) -> dict[str, str]:
+            return {
+                "GITHUB_EVENT_NAME": "pull_request",
+                "GITHUB_REPOSITORY": GITHUB_REPOSITORY,
+                "GITHUB_WORKSPACE": str(repo.resolve()),
+                "RUNNER_TEMP": str(runner_temp.resolve()),
+                "GITHUB_EVENT_PATH": str(path.resolve()),
+                "GITHUB_HEAD_REF": head_ref,
+                "GITHUB_BASE_REF": GITHUB_BASE_BRANCH,
+                "GITHUB_REF": f"refs/pull/{number}/merge",
+                "GITHUB_SHA": merge,
+            }
+
+        write_test_pull_request_event(
+            event_path,
+            number=number,
+            head_ref=AUTHORIZED_BRANCH,
+            head_sha=pull_request_head,
+            base_sha=base,
+            merge_sha=merge,
+        )
+        context = collect_github_pull_request_context(
+            merge,
+            AUTHORIZED_BRANCH,
+            environ=environment(AUTHORIZED_BRANCH),
+            root=repo,
+        )
+        require(
+            select_lifecycle_branch("", AUTHORIZED_BRANCH, context) == AUTHORIZED_BRANCH,
+            "Verified historical pull_request context did not select the authorized branch",
+        )
+        print("PASS positive github-historical-authorized-pr-merge-ref")
+
+        remediation_branch = "codex/recovery-i1-post-merge-validator-remediation"
+        write_test_pull_request_event(
+            event_path,
+            number=number,
+            head_ref=remediation_branch,
+            head_sha=pull_request_head,
+            base_sha=base,
+            merge_sha=merge,
+        )
+        remediation_context = collect_github_pull_request_context(
+            merge,
+            remediation_branch,
+            environ=environment(remediation_branch),
+            root=repo,
+        )
+        require(
+            select_lifecycle_branch("", remediation_branch, remediation_context) == remediation_branch,
+            "Verified post-merge remediation pull_request context was rejected",
+        )
+        print("PASS positive github-current-post-merge-pr-merge-ref")
+
+        write_test_pull_request_event(
+            event_path,
+            number=number,
+            head_ref=AUTHORIZED_BRANCH,
+            head_sha=pull_request_head,
+            base_sha=base,
+            merge_sha=merge,
+            head_repository="untrusted-fork/DORA",
+        )
+        try:
+            collect_github_pull_request_context(
+                merge,
+                AUTHORIZED_BRANCH,
+                environ=environment(AUTHORIZED_BRANCH),
+                root=repo,
+            )
+        except ValueError:
+            print("PASS negative github-same-name-fork")
+        else:
+            raise ValueError("Same-name fork pull_request context unexpectedly passed")
+
+        write_test_pull_request_event(
+            event_path,
+            number=number,
+            head_ref=AUTHORIZED_BRANCH,
+            head_sha=base,
+            base_sha=base,
+            merge_sha=merge,
+        )
+        try:
+            collect_github_pull_request_context(
+                merge,
+                AUTHORIZED_BRANCH,
+                environ=environment(AUTHORIZED_BRANCH),
+                root=repo,
+            )
+        except ValueError:
+            print("PASS negative github-merge-ref-topology-mismatch")
+        else:
+            raise ValueError("Mismatched GitHub merge-ref topology unexpectedly passed")
+
+        escaped_event = parent / "escaped-event.json"
+        write_test_pull_request_event(
+            escaped_event,
+            number=number,
+            head_ref=AUTHORIZED_BRANCH,
+            head_sha=pull_request_head,
+            base_sha=base,
+            merge_sha=merge,
+        )
+        try:
+            collect_github_pull_request_context(
+                merge,
+                AUTHORIZED_BRANCH,
+                environ=environment(AUTHORIZED_BRANCH, escaped_event),
+                root=repo,
+            )
+        except ValueError:
+            print("PASS negative github-event-path-escape")
+        else:
+            raise ValueError("Escaped GitHub event path unexpectedly passed")
 
 
 def run_negative_tests() -> None:
@@ -1817,6 +2383,8 @@ def main() -> int:
     validate_active_metadata()
     if "--self-test" in sys.argv[1:]:
         run_lifecycle_tests()
+        run_git_path_collector_tests()
+        run_github_pull_request_context_tests()
         run_negative_tests()
     print(
         "POC-RECOVERY-001 governance v0.6 validation passed; 15 v0.1-v0.5 audit artifacts immutable, "
