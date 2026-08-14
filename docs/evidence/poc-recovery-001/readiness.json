@@ -1,8 +1,8 @@
 {
   "schemaVersion": 10,
   "pocId": "POC-RECOVERY-001",
-  "assessedOn": "2026-08-13",
-  "status": "BLOCKED_REC_I1_TASK_SCOPED_CONTRACT_FOUNDATION_PRESENT_RUNTIME_IMPLEMENTATION_PREFLIGHT_EXECUTION_PENDING",
+  "assessedOn": "2026-08-14",
+  "status": "BLOCKED_REC_I1_REVIEWED_MERGED_VALIDATOR_LIFECYCLE_REMEDIATED_RUNTIME_IMPLEMENTATION_PREFLIGHT_EXECUTION_PENDING",
   "taskScopedImplementationAuthorized": true,
   "authorizationId": "REC-I1-AUTH-20260813-01",
   "authorizationRecord": "docs/evidence/poc-recovery-001/implementation-authorization-rec-i1-20260813-01.json",
@@ -10,6 +10,11 @@
   "implementationAllowed": false,
   "implementationAllowedByThisPackage": false,
   "measuredExecutionAllowed": false,
+  "dependencyAdmission": false,
+  "productionAdmission": false,
+  "phaseAAuthorized": false,
+  "deviceExecutionAuthorized": false,
+  "mergeAuthorized": false,
   "runtimeDependencyAdded": false,
   "recoveryModuleExists": true,
   "harnessImplemented": false,
@@ -19,6 +24,9 @@
   "deviceTestsExecuted": false,
   "benchmarksExecuted": false,
   "productionAppChanged": false,
+  "independentRecI1ImplementationAdvisoryReviewComplete": true,
+  "recI1ProtectedSquashMergeComplete": true,
+  "postMergeValidatorLifecycleRemediated": true,
   "packageArtifacts": {
     "proposedDecisionPresent": true,
     "exactGateSetPresent": true,
@@ -27,6 +35,18 @@
     "activeProtocolId": "poc-recovery-protocol-stage0-v0.6",
     "recI1AuthorizationPresent": true,
     "recI1ContractKernelPresent": true,
+    "recI1ImplementationLifecycleAuditSummaryPresent": true,
+    "postMergeValidatorLifecycleRemediationAuditSummaryPresent": true,
+    "recI1ImplementationAdvisoryReviewEvidence": {
+      "present": true,
+      "evidenceLocator": "docs/evidence/poc-recovery-001/rec-i1-implementation-advisory-review-2026-08-13.json",
+      "sha256": "d84f7ea0dff80b28f432a00de6144bdd529a82ab88bdc5d51ac225f9955546b6"
+    },
+    "recI1ValidatorLifecycleRemediationAdvisoryReviewEvidence": {
+      "present": true,
+      "evidenceLocator": "docs/evidence/poc-recovery-001/rec-i1-validator-lifecycle-remediation-advisory-review-2026-08-14.json",
+      "sha256": "15540b9c6613d0df48a8ff6f3fdde8ed9c2ba45c254eb6f75e4b8d28f28cc1be"
+    },
     "governanceRemediationV06Present": true,
     "governanceRemediationV05Present": true,
     "governanceRemediationV04Present": true,
@@ -154,6 +174,98 @@
     "runtimeCryptoVerified": false,
     "harnessVerified": false,
     "executionEvidenceProduced": false
+  },
+  "recI1ImplementationLifecycle": {
+    "auditState": "COMPLETED_TASK_SCOPED_FOUNDATION_ONLY",
+    "pullRequest": 15,
+    "pullRequestUrl": "https://github.com/Monumentogram/DORA/pull/15",
+    "reviewedHead": "ee7bb00b09a282df7a8fb3b4d3481a5abd4d0177",
+    "reviewedTree": "ac3dcf273fd447623fa8dbc5c71087acd6315830",
+    "review": {
+      "evidenceLocator": "docs/evidence/poc-recovery-001/rec-i1-implementation-advisory-review-2026-08-13.json",
+      "evidenceSha256": "d84f7ea0dff80b28f432a00de6144bdd529a82ab88bdc5d51ac225f9955546b6",
+      "reviewerModel": "OpenAI Codex / GPT-5",
+      "organization": "OpenAI",
+      "role": "AI independent Recovery I1 implementation advisory reviewer",
+      "formalReviewer": false,
+      "disposition": "NO_FURTHER_CHANGES_REQUIRED",
+      "p0": 0,
+      "p1": 0,
+      "p2": 0,
+      "findingClosures": [
+        "REC-I1-IMPL-001",
+        "REC-I1-IMPL-002",
+        "REC-I1-IMPL-003",
+        "REC-I1-IMPL-004"
+      ],
+      "recoveryJvmTestsPassed": 62,
+      "recoveryJvmTestsTotal": 62
+    },
+    "protectedSquashMerge": {
+      "mainCommit": "f2bc8c95bbe8af0d010968fff2ca175851728bf2",
+      "parent": "9c4a798aa3c95877ff3f9aa66f18f94849b25cce",
+      "tree": "ac3dcf273fd447623fa8dbc5c71087acd6315830",
+      "linearHistoryPreserved": true
+    },
+    "initialPostMergeCi": {
+      "runId": 31743157457,
+      "url": "https://github.com/Monumentogram/DORA/actions/runs/31743157457",
+      "conclusion": "failure",
+      "failureClass": "GOVERNANCE_VALIDATOR_BRANCH_LIFECYCLE_DEFECT",
+      "recoveryKotlinFinding": false,
+      "recoveryExecutionEvidenceProduced": false
+    }
+  },
+  "postMergeValidatorLifecycleRemediation": {
+    "auditState": "COMPLETED_POST_MERGE_LIFECYCLE_REMEDIATION",
+    "pullRequest": 16,
+    "pullRequestUrl": "https://github.com/Monumentogram/DORA/pull/16",
+    "reviewedHead": "8038153db2557e439c684686ea739d8c14620da3",
+    "reviewedTree": "a75ea1bf1de96827b26c98cd99e461aedfa06ab7",
+    "changedPaths": [
+      "tools/validate_poc_recovery_governance.py"
+    ],
+    "review": {
+      "evidenceLocator": "docs/evidence/poc-recovery-001/rec-i1-validator-lifecycle-remediation-advisory-review-2026-08-14.json",
+      "evidenceSha256": "15540b9c6613d0df48a8ff6f3fdde8ed9c2ba45c254eb6f75e4b8d28f28cc1be",
+      "reviewerModel": "OpenAI Codex / GPT-5",
+      "organization": "OpenAI",
+      "role": "AI independent Recovery governance remediation advisory reviewer",
+      "formalReviewer": false,
+      "disposition": "NO_FURTHER_CHANGES_REQUIRED",
+      "p0": 0,
+      "p1": 0,
+      "p2": 0,
+      "priorGitPathQuotingP1Closed": true,
+      "priorDetachedEnvironmentP2Closed": true
+    },
+    "requiredPullRequestCi": {
+      "runId": 31784363002,
+      "attempt": 3,
+      "url": "https://github.com/Monumentogram/DORA/actions/runs/31784363002",
+      "conclusion": "success",
+      "androidBootstrap": "success",
+      "searchSmoke": "success",
+      "searchSmokeIsRecoveryEvidence": false
+    },
+    "protectedSquashMerge": {
+      "mainCommit": "685e759290f8987444280b05e69b9d4d0070424e",
+      "parent": "f2bc8c95bbe8af0d010968fff2ca175851728bf2",
+      "tree": "a75ea1bf1de96827b26c98cd99e461aedfa06ab7",
+      "linearHistoryPreserved": true
+    },
+    "postMergeCi": {
+      "runId": 31790356849,
+      "attempt": 1,
+      "url": "https://github.com/Monumentogram/DORA/actions/runs/31790356849",
+      "event": "push",
+      "conclusion": "success",
+      "androidBootstrap": "success",
+      "searchSmoke": "success",
+      "searchSmokeIsRecoveryEvidence": false,
+      "recoveryExecutionEvidenceProduced": false
+    },
+    "liveStateAuthority": "GitHub"
   },
   "dependencyExclusionPolicy": {
     "policyId": "REC-JSR305-EXCLUDE-001",

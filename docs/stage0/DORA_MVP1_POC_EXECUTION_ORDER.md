@@ -1,18 +1,28 @@
 # Dora MVP 1 — Stage 0 PoC Execution Order
 
-Version: 1.3
-Date: 12 August 2026
+Version: 1.4
+Date: 14 August 2026
 Owner decisions effective: 4, 11 and 12 August 2026 (`OD-01`–`OD-14`)
-Status: owner-approved ordering with recovery governance addendum; recovery implementation/execution blocked
+Status: owner-approved ordering with reviewed/merged REC-I1 foundation; recovery runtime implementation/execution blocked
 Scope: all ten Technical Plan PoCs mapped to the executable backlog
 
 ## 1. Decision summary
 
-The recommended first real technical PoC is **`POC-CAPTURE-001` — one-hour microphone capture through a user-initiated foreground service**.
+`POC-CAPTURE-001` — one-hour microphone capture through a user-initiated foreground service — was
+selected as the first real technical PoC under `OD-01`. The higher-precedence Technical Plan put
+capture first because capture reliability was the core product risk and its output blocked
+battery/endurance work plus production Stage 2.
 
-It is selected by `OD-01` because the higher-precedence Technical Plan puts capture first, capture reliability is the core product risk, and its output blocks battery/endurance work plus production Stage 2. The first campaign is only an exploratory one-phone run under `OD-06`; it must start after automatic device discovery and evidence handling are ready. It is an isolated PoC harness, not production capture and not an admitted dependency.
+For the completed Stage 0B work, automatic device discovery and synthetic evidence/deletion
+handling were established, then the initial exploratory one-phone Capture campaign was performed.
+It closed with the formal verdict `INCONCLUSIVE`; Stage 0B is complete and its changes were merged.
+The harness remained isolated PoC evidence, not production capture or an admitted dependency. The
+clean 60-minute screen-off baseline remains deferred, and any repeat Capture/device campaign
+requires separate owner scope and execution authorization.
 
-`POC-SEARCH-001` is the easiest safe parallel experiment because it uses generated data and no microphone/model/cloud. It is not selected as the first PoC because it does not reduce the leading data-loss/OEM feasibility risk and the Technical Plan explicitly prioritizes capture.
+`POC-SEARCH-001` was selected as the safest parallel PoC/work because it used generated data and no
+microphone, model or cloud. This records historical ordering only: it grants no new Search or
+Capture execution authority and does not change the current Recovery reconciliation/review gate.
 
 ## 2. PoC mapping
 
@@ -33,7 +43,7 @@ It is selected by `OD-01` because the higher-precedence Technical Plan puts capt
 
 ```mermaid
 flowchart TD
-    O["Approved owner constraints OD-01..OD-14"] --> G["Defined Stage 0 gates Approved; recovery v0.6 KEY-04 governance fixed, exact packet evidence and accountable formal review complete; separate implementation review/authorization and actual graph blocked"]
+    O["Approved owner constraints OD-01..OD-14"] --> G["Defined Stage 0 gates Approved; recovery v0.6 KEY-04 governance fixed, exact packet and pure I1 review lifecycle complete; runtime implementation/actual graph blocked"]
     O --> D["Connect and auto-identify one physical phone"]
     O --> C["Synthetic-only until controlled evidence storage"]
     G --> CAP["POC-CAPTURE-001"]
@@ -73,7 +83,7 @@ Common blockers:
 | PoC | Direct dependencies | What it blocks | Safe parallel work | Physical phone | Audio/data requirement | Owner decisions |
 |---|---|---|---|---|---|---|
 | `POC-CAPTURE-001` | approved defined gates; one owner phone connected and automatically inventoried; synthetic fixture and evidence/deletion plan | `POC-BATTERY-001`; production Stage 2; informs recovery writer timing and offline capture harness | Search harness and synthetic decision corpus preparation | **First exploratory run:** exactly one physical owner phone. **Full gate later:** required D1/D2/D3/D5 and applicable D4–D7 slices; emulator only supplements API/fault checks | Reproducible synthetic acoustic speech/silence first; purpose-recorded only after consent and controlled-store gate | OD-01, OD-02, OD-03, OD-05, OD-06, OD-07, OD-08 |
-| `POC-RECOVERY-001` | Proposed `DEC-044`; prospective Gate Set/protocol `stage0-v0.6`; repeat exact-commit read-only review; distinct accountable recovery Engineering/Security review; separately scoped implementation/non-metric verification; exact recovery-only zero-JSR305 graph/package/R8 evidence and scoped Product/IP disposition of that actual graph; fresh emulator/D2 preflight; separate owner execution authorization | production Stage 3 and later `ADR-AUDIO-001` final storage choice; contributes to offline/process-death evidence | repeat read-only governance review only in the current scope | **Phase A:** 46 × (3 pinned emulator + 1 D2) = 184, only `FAIL`/`INCONCLUSIVE`. **Full physical:** 46 × (D1 + D2 + D5) = 138; D1/D5 deferred; exact-match-only D2 reuse leaves 92 injections. | Deterministic synthetic PCM16 byte oracle only; no microphone/real speech. 12 strata, 120 base hard kills/candidate as a separate denominator, ≥100 valid and ≥8/stratum; exactly 46 unique active rows with one KEY-04. KEY-04 is decrypt authentication/AAD failure only → `KEY_UNAVAILABLE_KEY_MISMATCH`; successful decrypt malformed/wrong plaintext remains KCF-07 → `CORRUPT_KEY_CONFIRMATION`. | OD-05, OD-08, OD-11, OD-14 |
+| `POC-RECOVERY-001` | Proposed `DEC-044`; prospective Gate Set/protocol `stage0-v0.6`; completed distinct accountable recovery Engineering/Security governance review; completed pure REC-I1 task-scoped authorization, independent AI advisory implementation review and non-metric verification; separately authorized complete runtime implementation/non-metric verification; exact recovery-only zero-JSR305 graph/package/R8 evidence and scoped Product/IP disposition of that actual graph; fresh emulator/D2 preflight; separate owner execution authorization | production Stage 3 and later `ADR-AUDIO-001` final storage choice; contributes to offline/process-death evidence | governance/status reconciliation and synthetic-only planning; no runtime implementation or execution in the current scope | **Phase A:** 46 × (3 pinned emulator + 1 D2) = 184, only `FAIL`/`INCONCLUSIVE`. **Full physical:** 46 × (D1 + D2 + D5) = 138; D1/D5 deferred; exact-match-only D2 reuse leaves 92 injections. | Deterministic synthetic PCM16 byte oracle only; no microphone/real speech. 12 strata, 120 base hard kills/candidate as a separate denominator, ≥100 valid and ≥8/stratum; exactly 46 unique active rows with one KEY-04. KEY-04 is decrypt authentication/AAD failure only → `KEY_UNAVAILABLE_KEY_MISMATCH`; successful decrypt malformed/wrong plaintext remains KCF-07 → `CORRUPT_KEY_CONFIRMATION`. | OD-05, OD-08, OD-11, OD-14 |
 | `POC-VAD-001` | gates, data governance; deterministic clock/frame contract | production Stage 3 segmentation profile; stable physical-segment inputs for later pipeline | Recovery and search; acoustic part can wait while deterministic part runs | Physical D1–D3 for real-time/acoustic evidence; emulator/JVM suitable for deterministic boundary cases | Synthetic 89.5/90/90.5, resume 89.9, noise and >10 min speech-like fixtures; governed real speech only later | OD-03, OD-04, OD-05, OD-06, OD-08, OD-09 if purpose-recorded |
 | `POC-ASR-001` | gates, governed immutable corpus, D1–D4/D7, artifact license/digest/ABI/16-KiB approval | production Stage 4; timestamp contract and quality baseline for diarization/offline local ML | Search and decision benchmarks; runtime candidates may be compared independently after common normalization freezes | **Required:** D1–D4 for tier claims; D7 emulator/physical for native gate | Blind RU/EN/mixed clean/noisy/speakerphone corpus; participant-isolated evaluation | OD-03–OD-06, OD-08–OD-10 plus named IP/Legal artifact approval |
 | `POC-DIAR-001` | gates, governed 1–6 speaker corpus, ASR/reference timestamp contract, exact weight license | production Stage 5 and correction UX scope | Battery repeats and decision/search work after shared corpus freezes | **Required:** D2/D3; D7 for native path; server reference may run separately | Clean/noisy/overlap/fast-turn/returning-speaker/speakerphone/negative corpus | OD-03–OD-06, OD-08–OD-10 plus weight terms approval |
@@ -103,43 +113,54 @@ Common blockers:
 
 ## 6. Recommended waves
 
-### Wave 0 — owner/readiness gate
+### Wave 0 — owner/readiness gate (historical completion)
 
 1. ~~Obtain explicit OD-01–OD-10 answers.~~ Completed 4 August 2026.
 2. ~~Approve the fully specified Stage 0 gate set.~~ Completed; section 7 thresholds remain `Proposed` by decision.
-3. Connect the owner's one physical Android phone and automatically discover sanitized model, Android API, firmware/build, ABI and RAM.
-4. Freeze the synthetic fixture, sanitized evidence destination and cleanup plan; retain no raw trace/audio outside a configured controlled store.
-5. Open one dedicated PoC branch; do not reuse the Stage 0A documentation branch.
+3. ~~Connect the owner's one physical Android phone and automatically discover sanitized model, Android API, firmware/build, ABI and RAM.~~ Completed for Stage 0B; the sanitized phone inventory is recorded as D2 evidence.
+4. ~~Freeze the synthetic fixture, sanitized evidence destination and cleanup plan.~~ Completed for the synthetic Stage 0B campaign. No controlled private evidence store was created, so real human data remains blocked.
+5. ~~Open one dedicated PoC branch; do not reuse the Stage 0A documentation branch.~~ Completed for the isolated Stage 0B capture work.
 
-### Wave 1 — first technical PoC
+### Wave 1 — first technical PoC (historical completion)
 
-Execute only `POC-CAPTURE-001` in the next chat:
+`POC-CAPTURE-001` was executed in isolated Stage 0B scope and closed `INCONCLUSIVE`. The following
+were its execution-time constraints, not instructions to start a new or repeat campaign:
 
-- one isolated Android PoC harness;
-- microphone permission and user-initiated microphone FGS only inside the PoC scope;
-- no ASR, VAD, diarization, database, backend, account, production application ID/signing or real meeting audio;
-- run only on the one automatically identified physical owner phone in the first exploratory campaign;
-- produce a schema-valid result and sanitized evidence;
-- do not claim D1–D7 PASS or device support; a critical approved failure gate may yield `FAIL`, otherwise missing matrix coverage yields `INCONCLUSIVE`;
-- do not admit PoC code to production.
+- one isolated Android PoC harness was used;
+- microphone permission and the user-initiated microphone FGS remained inside the PoC scope;
+- ASR, VAD, diarization, database, backend, account, production application ID/signing and real meeting audio were excluded;
+- the exploratory campaign used only the automatically identified owner phone;
+- schema-valid sanitized results were produced;
+- no D1–D7 PASS or general device-support claim was made; the formal result remains `INCONCLUSIVE`;
+- PoC code was not admitted to production.
+
+The clean 60-minute screen-off baseline remains deferred. This document does not authorize a
+repeat Capture/device campaign; any such campaign requires a separate owner scope and suitable
+dedicated test device.
 
 ### Wave 2 — capture durability primitives
 
 After capture evidence is understood:
 
 - `POC-RECOVERY-001` proceeds through separately authorized scopes. Governance review and the
-  distinct accountable formal human review are complete. `REC-I1-AUTH-20260813-01` permits only the
-  isolated pure contract foundation; runtime crypto/storage/harness implementation and execution
-  each still require later scope. Global `implementationAllowed=false` and `executionAllowed=false`;
+  distinct accountable formal human review are complete; `accountable formal review complete`
+  remains the exact v0.6 governance marker. `REC-I1-AUTH-20260813-01` permits only the
+  isolated pure contract foundation. Its exact PR #15 HEAD `ee7bb00…` received an independent
+  OpenAI Codex / GPT-5 AI implementation advisory review with `formalReviewer=false`,
+  `NO_FURTHER_CHANGES_REQUIRED`, no P0/P1/P2 findings and 62/62 Recovery JVM tests, then
+  protected-squash-merged as `f2bc8c95…`. Validator-only PR #16 closed the resulting main-branch
+  lifecycle defect and protected-squash-merged as `685e7592…`; exact-main post-merge CI passed.
+  Runtime crypto/storage/harness implementation and execution each still require later scope.
+  Global `implementationAllowed=false` and `executionAllowed=false`;
 - v0.1/v0.2/v0.3/v0.4/v0.5 remain 15 unchanged SHA-256-pinned superseded audit artifacts and cannot govern
   implementation or execution;
 - prospective `REC-JSR305-EXCLUDE-001` and exact governance packet authenticity/LICENSE/NOTICE
   evidence are closed. Novikova Katerina's distinct accountable formal review closed `REC-RDY-02`;
-  the GPT-5.6 Sol/OpenAI records remain non-formal historical evidence. The I1 module adds no Tink
+  the GPT-5.6 Sol/OpenAI records remain non-formal historical evidence, and the later REC-I1 and
+  validator-remediation AI reviews likewise have `formalReviewer=false`. The I1 module adds no Tink
   or JSR-305 wiring. A later authorized runtime implementation must still produce exact
   recovery-only graph/package/R8 evidence and a scoped Product/IP disposition. Approval to use the
-  excluded JSR-305 artifact is neither required nor granted; this implementation chat does not claim
-  independent-review status;
+  excluded JSR-305 artifact is neither required nor granted;
 - a later authorized recovery Phase A may use emulator+D2 but cannot PASS without D1/D5;
 - `POC-VAD-001` remains a separate branch/harness and is not admitted by recovery work;
 - `POC-BATTERY-001` may begin with capture-only modes once the capture harness is stable;
@@ -201,7 +222,10 @@ Not allowed:
 | Offline | firewall/mock preparation | retail no-GMS D4 and physical local workflow |
 | VPN | server fault injection | radio/VPN/Wi-Fi↔cell route behavior D2/D4/D5 |
 
-No row claims a device is currently available. `device-matrix.yaml` records all availability as `unknown` until the owner's phone is connected and automatically inventoried. `OD-06` explicitly defers procurement of every additional device; this limits evidence and does not relax the final matrix.
+The owner's phone was automatically inventoried and is recorded as available D2 in
+`device-matrix.yaml`. D1 and D3–D7 remain `unknown`/unavailable unless separately inventoried.
+`OD-06` explicitly defers procurement of every additional device; their absence limits evidence
+and does not relax the final matrix.
 
 ## 9. Data requirements
 
@@ -230,23 +254,30 @@ Streaming AEAD with five-second `AES256_GCM_TINK_IV12_TAG16` microfiles and the 
 binary manifest; 15/30-second microfiles are not PASS-eligible. Design selection does not prove an
 implementation. Prospective policy, exact governance packet evidence and the distinct accountable
 Engineering/Security review are complete. The task-scoped I1 pure contract foundation is present,
-but future actual runtime-graph Product/IP disposition, complete implementation verification and
+independently AI-advisory-reviewed with `formalReviewer=false`, and protected-squash-merged; its
+post-merge validator lifecycle defect is separately remediated with green exact-main CI. Future
+actual runtime-graph Product/IP disposition, complete runtime implementation verification and
 execution authorization remain absent. v0.1–v0.5 are retained only as 15
 unchanged SHA-256-pinned superseded audit artifacts. v0.6 replaces only effective KEY-04 with its
 exact decrypt-failure-only oracle and keeps KCF-07. A future final `ADR-AUDIO-001` remains evidence-dependent.
 
-## 11. First PoC Definition of Ready
+## 11. First PoC Definition of Ready (historical completion)
 
-`POC-CAPTURE-001` is ready for a new chat only when all are true:
+`POC-CAPTURE-001` passed this task-start readiness gate for the completed Stage 0B campaign. It is
+not waiting for a new chat; its current result remains `DONE` / formal `INCONCLUSIVE` in the backlog
+and Stage Status.
 
 - OD-01, OD-02, OD-03, OD-05, OD-06, OD-07 and OD-08 have direct owner answers — **satisfied 4 August 2026**;
 - fully specified `stage0-v0.1` gates are approved and every section 7 dependency is kept `Proposed`/`INCONCLUSIVE` — **satisfied**;
-- the owner's one physical Android phone is connected and model/API/firmware/ABI/RAM are automatically identified — **pending**;
-- synthetic acoustic fixture/generator and digest plan are fixed;
-- sanitized evidence, raw-artifact handling/deletion and retention destination are known; no raw trace/audio is retained outside a configured controlled store;
-- expected PoC files/modules and branch name are declared;
-- microphone/FGS code is isolated from production and no unrelated feature is scaffolded;
-- cleanup, failure fallback and machine-readable result path are defined.
+- the owner's one physical Android phone was connected and its sanitized model/API/firmware/ABI/RAM inventory was recorded as D2 — **satisfied for Stage 0B**;
+- synthetic acoustic fixture/generator and digest plan were fixed — **satisfied for Stage 0B**;
+- sanitized evidence handling, raw-artifact deletion and retention boundaries were fixed — **satisfied for synthetic Stage 0B evidence; no private store or real-data authority**;
+- expected PoC files/module and dedicated branch were declared — **satisfied for Stage 0B**;
+- microphone/FGS code was isolated from production and no unrelated feature was scaffolded — **satisfied for Stage 0B**;
+- cleanup, failure fallback and machine-readable result paths were defined — **satisfied for Stage 0B**.
+
+These historical readiness facts do not authorize a repeat Capture campaign. The deferred clean
+60-minute screen-off baseline remains a separate future device-campaign scope.
 
 ## 12. Explicit non-action in Stage 0A
 
