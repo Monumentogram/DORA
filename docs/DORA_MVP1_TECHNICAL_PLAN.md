@@ -863,7 +863,7 @@ SQLCipher Community допускает commercial closed-source use при со�
 
 ### 24.4. Удаление и экспорт
 
-Delete Conversation — транзакционный tombstone → cancel local jobs → revoke/dequeue uploads → delete FTS/derivatives/audio → enqueue remote deletion → показать partial status до receipt. Backup/replica TTL раскрывается в policy. На flash **нельзя гарантировать физическую перезапись** из-за wear levelling; применяются cryptographic erasure (удаление wrapped DEK/keyset) и best-effort file deletion. Export по умолчанию создаётся временно, зашифрованный export предлагается для sensitive data, а plain share сопровождается предупреждением.
+Delete Conversation — транзакционный tombstone → cancel local jobs → revoke/dequeue uploads → delete FTS/derivatives/audio → enqueue remote deletion → показать partial status до receipt. Backup/replica TTL раскрывается в policy. На flash **нельзя гарантировать физическую перезапись** из-за wear levelling; применяются cryptographic erasure (удаление wrapped DEK/keyset) и best-effort file deletion. Для MVP 1 утверждённый `DEC-017` / `des-export-interaction-v0.1` baseline разрешает только явно инициированный незашифрованный transfer с обязательным предупреждением перед каждой передачей и ограниченным lifecycle Dora-managed temp. Encrypted bundle в MVP 1 не предлагается и отложен до отдельного key/recovery decision и отдельно утверждённого Security design; см. change record `docs/evidence/des-export-001/decision-record-v0.1.json`. Это узкое reconciliation прежнего требования, а не реализация encryption, Security approval или production admission.
 
 ### 24.5. Supply chain
 

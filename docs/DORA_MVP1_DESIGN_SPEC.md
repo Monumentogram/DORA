@@ -1665,11 +1665,17 @@ Primary `Записать разговор`; secondary `Создать зада�
 | Язык и формат | RU/EN UI, recognition hints, date/timezone | none |
 | Уведомления | recording notification explanation, processing results | open Android settings |
 | Accessibility | reduced motion, optional waveform intensity, text preferences | none |
-| Экспорт | default formats, recent exports, cleanup | plain sensitive share |
+| Экспорт | format availability/policy restrictions, recent exports, cleanup | plain sensitive share |
 | Диагностика | permissions, OEM state, exit reason, versions, logs without content | share diagnostic package |
 | О приложении | privacy policy, licenses, version, support | none |
 
 Settings row uses title, current value and optional supporting text. Toggle appears only for truly binary immediate settings; navigation rows do not masquerade as switches.
+
+`DEC-017` / `des-export-interaction-v0.1` replaces the earlier `default formats` wording for MVP 1:
+Export settings may expose only visible format availability and managed-policy restrictions. They
+do not persist, remember or preselect content, format or destination. This is a design-source
+reconciliation recorded in `docs/evidence/des-export-001/decision-record-v0.1.json`; it does not
+implement settings, export, schema or provider behavior.
 
 ### 31.2. Processing mode `ST-02`
 

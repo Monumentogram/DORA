@@ -41,9 +41,10 @@ No human signature is represented or implied.
 | Dataset Governance §§2, 9–14 | synthetic fixtures first; no real meetings, training or public sensitive evidence |
 | Component Accessibility Contract | names/roles/states, focus, 48-dp targets, 200% reflow, gesture alternatives, truthful manual evidence status |
 
-This contract resolves the `DEC-017` export baseline without modifying the Technical Plan, Design
-Spec, token JSON or screen inventory. `ST-07` remains the screen identity; this contract supplies
-its reusable state and acceptance detail.
+The narrow `DEC-017` reconciliations in Technical Plan §24.4 and Design Spec §31.1 explicitly defer
+the encrypted bundle and remove persisted/default export selections. No token JSON or screen
+inventory is changed. `ST-07` remains the screen identity; this contract supplies its reusable
+state and acceptance detail.
 
 ## 3. Export plan and defaults
 
@@ -86,8 +87,8 @@ disabled with the specific incompatibility reason; Dora must not silently drop a
 | Destination | Allowed output | Success boundary | Required disclosure |
 |---|---|---|---|
 | Clipboard | `Copy`/plain text only | Android clipboard API accepted Dora's clip | Clearing is best-effort; other apps/system surfaces may already hold or read the clip. |
-| Android Sharesheet | File outputs only | The share was handed to Android | Dora does not know whether another app read, saved, synced or delivered the file. |
-| Storage Access Framework | File outputs only | Final write and close completed | The selected storage provider controls the resulting copy and may independently use network. |
+| Android Sharesheet | File outputs only; use a Dora-managed temp copy, never the canonical source | The share was handed to Android | Handoff is not recipient delivery. Retain the temp until an observable safe-release event, or `Delete now`, one-hour expiry or startup orphan cleanup. |
+| Storage Access Framework | File outputs only; direct write or optional Dora staging | Final destination write and close completed | A Dora staging temp becomes cleanup-eligible only after successful destination close. The selected provider controls its copy and may independently use network. |
 | Dora cloud upload | none | not applicable | Unavailable; export has no Dora cloud route. |
 
 Account, GMS, network and Dora cloud configuration are never prerequisites for opening or using the
@@ -136,45 +137,120 @@ invariant below.
 | `EX-13` | `CANCELLED` | User/system destination picker cancellation is complete and no live temp remains. | No persistent export-history entry. |
 | `EX-14` | `CLEANUP_FAILED` | Dora could not delete a managed temp. Show content-free failure and retry/delete action. | Source content is untouched; failed temp stays visible and retryable. |
 
-### 5.1. Transition rules
+### 5.1. Normative transition relation
 
-1. `CLOSED → SELECT_CONTENT` always creates an empty plan.
-2. Valid explicit selection advances `SELECT_CONTENT → SELECT_FORMAT → SELECT_DESTINATION → REVIEW`.
-   Back navigation reverses these steps without generating data.
-3. Empty content, unsupported pair, destination incompatibility or managed-policy restriction cannot
-   advance and cannot create an artifact. The exact reason remains focusable/readable.
-4. `REVIEW` revalidates source existence/version, selected content, formats, destination and policy.
-   A changed/invalid item returns to the applicable selection state with a reason.
-5. If Audio is selected, confirmation follows `REVIEW → AUDIO_ACKNOWLEDGEMENT`. A decline returns to
-   Review with Audio removed or cancels the attempt; it never acknowledges the unencrypted warning.
-6. Every approved MVP transfer is unencrypted, so the current path reaches
-   `UNENCRYPTED_WARNING` after Review and any separate Audio acknowledgement. A future encrypted
-   path cannot bypass a new decision merely because the state exists.
-7. Accepting the warning enters `PREPARING` for file outputs or `TRANSFERRING` for Clipboard when no
-   temporary artifact is needed.
-8. Cancelling before any artifact exists enters `CANCELLED`. Cancelling in `PREPARING` or
-   `TRANSFERRING` with a live/partial Dora artifact enters `CLEANUP_PENDING` with
-   `pendingOutcome=CANCELLED`.
-9. Cancelling a system destination picker is not success. If no Dora temp exists it enters
-   `CANCELLED`; otherwise it converges through `CLEANUP_PENDING`.
-10. A preparation/transfer failure with a live/partial Dora artifact enters `CLEANUP_PENDING` with
-    `pendingOutcome=FAILED_RETRYABLE`; without one it enters `FAILED_RETRYABLE`.
-11. A Dora-specific success enters `HANDOFF_SUCCEEDED`. If no Dora temp exists, it may enter
-    `COMPLETED`; otherwise it enters `CLEANUP_PENDING` with `pendingOutcome=COMPLETED` after safe
-    handoff.
-12. Successful cleanup from `CLEANUP_PENDING` enters the stored `pendingOutcome`. Failed cleanup
-    enters `CLEANUP_FAILED` while retaining that outcome.
-13. `Retry cleanup` enters `CLEANUP_PENDING` and retries deletion only. On success it enters the
-    retained outcome. It never repeats the export.
-14. `Retry export` from `FAILED_RETRYABLE` discards partial state, revalidates source/selection/policy
-    and returns to `REVIEW` only when valid. If revalidation fails, it returns to the applicable
-    selection state with a reason. There is no background resume or partial-output reuse.
-15. Closing `COMPLETED` or `CANCELLED` enters `CLOSED`; the next session is empty. Closing a failure
-    must not hide a live temp or cleanup failure from Recent exports.
-16. `Delete now`, expiry and startup orphan cleanup enter `CLEANUP_PENDING` with the retained
-    content-free `pendingOutcome`. An orphan without a valid retained outcome uses `CANCELLED`
-    fail-closed, so cleanup cannot manufacture an export-success claim. Success and failure then
-    follow rules 12–13.
+The tuple `(source, event)` is the deterministic key. Every row has one guard, one action and one
+target. Product UI that offers alternative outcomes must expose distinct events or fix the named
+policy input before the triggering action. The machine record contains the same 82 rows; row-by-row
+Markdown/JSON parity is mandatory.
+
+| ID | Source | Event | Guard | Action | Target |
+|---|---|---|---|---|---|
+| `TR-001` | `CLOSED` | `OPEN_EXPORT` | no active export session | create a fresh attempt; clear selections, acknowledgements and pendingOutcome | `SELECT_CONTENT` |
+| `TR-002` | `CLOSED` | `STARTUP_ORPHAN_FOUND_COMPLETED` | allowlisted Dora temp has retained pendingOutcome=COMPLETED | restore content-free cleanup metadata; set reason=STARTUP_ORPHAN | `CLEANUP_PENDING` |
+| `TR-003` | `CLOSED` | `STARTUP_ORPHAN_FOUND_FAILED_RETRYABLE` | allowlisted Dora temp has retained pendingOutcome=FAILED_RETRYABLE | restore content-free cleanup metadata; set reason=STARTUP_ORPHAN | `CLEANUP_PENDING` |
+| `TR-004` | `CLOSED` | `STARTUP_ORPHAN_FOUND_CANCELLED` | allowlisted Dora temp has retained pendingOutcome=CANCELLED | restore content-free cleanup metadata; set reason=STARTUP_ORPHAN | `CLEANUP_PENDING` |
+| `TR-005` | `CLOSED` | `STARTUP_ORPHAN_FOUND_UNKNOWN` | allowlisted Dora temp lacks a valid retained pendingOutcome | set pendingOutcome=CANCELLED fail-closed; set reason=STARTUP_ORPHAN | `CLEANUP_PENDING` |
+| `TR-006` | `SELECT_CONTENT` | `CONTENT_SELECTION_ACCEPTED` | selection is non-empty, compatible and policy-allowed | store explicit content selection for this attempt | `SELECT_FORMAT` |
+| `TR-007` | `SELECT_CONTENT` | `CONTENT_SELECTION_EMPTY` | selection contains zero content classes | show accessible empty-selection reason; create no artifact | `SELECT_CONTENT` |
+| `TR-008` | `SELECT_CONTENT` | `CONTENT_SELECTION_POLICY_BLOCKED` | selected content is visibly restricted by managed policy | show policy reason; create no artifact; select no fallback | `SELECT_CONTENT` |
+| `TR-009` | `SELECT_CONTENT` | `CANCEL_FROM_CONTENT` | no artifact exists | discard the attempt selection | `CANCELLED` |
+| `TR-010` | `SELECT_FORMAT` | `FORMAT_SELECTION_ACCEPTED` | every selected content-format pair is compatible and policy-allowed | store explicit formats for this attempt | `SELECT_DESTINATION` |
+| `TR-011` | `SELECT_FORMAT` | `FORMAT_SELECTION_INCOMPATIBLE` | a selected content-format pair is unsupported | disable the pair with an accessible reason; create no artifact | `SELECT_FORMAT` |
+| `TR-012` | `SELECT_FORMAT` | `FORMAT_SELECTION_POLICY_BLOCKED` | a selected format is visibly restricted by managed policy | show policy reason; create no artifact; select no fallback | `SELECT_FORMAT` |
+| `TR-013` | `SELECT_FORMAT` | `BACK_TO_CONTENT` | no artifact exists | retain current attempt values for editing | `SELECT_CONTENT` |
+| `TR-014` | `SELECT_FORMAT` | `CANCEL_FROM_FORMAT` | no artifact exists | discard the attempt selection | `CANCELLED` |
+| `TR-015` | `SELECT_DESTINATION` | `DESTINATION_CONFIRMED` | destination accepts the complete selected plan and policy allows it | store the explicit destination for this attempt | `REVIEW` |
+| `TR-016` | `SELECT_DESTINATION` | `DESTINATION_INCOMPATIBLE` | destination cannot accept the complete selected plan | disable the destination with an accessible reason; create no artifact | `SELECT_DESTINATION` |
+| `TR-017` | `SELECT_DESTINATION` | `DESTINATION_POLICY_BLOCKED` | destination is visibly restricted by managed policy | show policy reason; create no artifact; select no fallback | `SELECT_DESTINATION` |
+| `TR-018` | `SELECT_DESTINATION` | `PICKER_CANCEL_RETURN` | pickerCancelPolicy=RETURN_TO_DESTINATION was fixed before picker launch | record cancellation; restore focus to destination control; create no artifact | `SELECT_DESTINATION` |
+| `TR-019` | `SELECT_DESTINATION` | `PICKER_CANCEL_ATTEMPT` | pickerCancelPolicy=CANCEL_ATTEMPT was fixed before picker launch | record cancellation; discard the attempt; create no artifact | `CANCELLED` |
+| `TR-020` | `SELECT_DESTINATION` | `BACK_TO_FORMAT` | no artifact exists | retain current attempt values for editing | `SELECT_FORMAT` |
+| `TR-021` | `SELECT_DESTINATION` | `CANCEL_FROM_DESTINATION` | no artifact exists | discard the attempt selection | `CANCELLED` |
+| `TR-022` | `REVIEW` | `REVIEW_CONFIRM_NO_AUDIO` | source, structured selection, formats, destination and policy revalidate; Audio is absent | freeze reviewed plan for this attempt | `UNENCRYPTED_WARNING` |
+| `TR-023` | `REVIEW` | `REVIEW_CONFIRM_AUDIO` | source, selection, formats, destination and policy revalidate; Audio is present | freeze reviewed plan; require a fresh Audio acknowledgement | `AUDIO_ACKNOWLEDGEMENT` |
+| `TR-024` | `REVIEW` | `REVIEW_SOURCE_INVALID` | source no longer exists at the reviewed version | invalidate reviewed plan; show source reason; create no artifact | `SELECT_CONTENT` |
+| `TR-025` | `REVIEW` | `REVIEW_CONTENT_INVALID` | selected content no longer exists at the reviewed version | invalidate reviewed plan; show content reason; create no artifact | `SELECT_CONTENT` |
+| `TR-026` | `REVIEW` | `REVIEW_FORMAT_INVALID` | formatInvalidReason is fixed before evaluation as one member of {INCOMPATIBLE, POLICY_BLOCKED} | invalidate reviewed plan; show the reason named by formatInvalidReason; create no artifact | `SELECT_FORMAT` |
+| `TR-027` | `REVIEW` | `REVIEW_DESTINATION_INVALID` | destinationInvalidReason is fixed before evaluation as one member of {INCOMPATIBLE, POLICY_BLOCKED} | invalidate reviewed plan; show the reason named by destinationInvalidReason; create no artifact | `SELECT_DESTINATION` |
+| `TR-028` | `REVIEW` | `BACK_TO_DESTINATION` | no artifact exists | unfreeze reviewed plan for editing | `SELECT_DESTINATION` |
+| `TR-029` | `REVIEW` | `CANCEL_FROM_REVIEW` | no artifact exists | discard the reviewed attempt | `CANCELLED` |
+| `TR-030` | `AUDIO_ACKNOWLEDGEMENT` | `AUDIO_ACK_ACCEPTED` | Audio remains selected; acknowledgement is fresh for this attempt | record attempt-scoped Audio acknowledgement | `UNENCRYPTED_WARNING` |
+| `TR-031` | `AUDIO_ACKNOWLEDGEMENT` | `AUDIO_DECLINE_REMOVE` | user chooses the explicit Remove Audio action | remove Audio; invalidate Audio acknowledgement; return to review | `REVIEW` |
+| `TR-032` | `AUDIO_ACKNOWLEDGEMENT` | `AUDIO_DECLINE_CANCEL` | user chooses the explicit Cancel export action | discard the attempt; record no acknowledgement | `CANCELLED` |
+| `TR-033` | `UNENCRYPTED_WARNING` | `WARNING_ACCEPT_CLIPBOARD` | warning is fresh; destination=Clipboard; plan contains Copy/plain text only | record warning acknowledgement; create no file temp; invoke clipboard transfer | `TRANSFERRING` |
+| `TR-034` | `UNENCRYPTED_WARNING` | `WARNING_ACCEPT_SAF_FILE` | warning is fresh; destination=SAF; plan contains policy-allowed file outputs; safWriteMode is fixed as one member of {DIRECT_DESTINATION, DORA_STAGING} | record warning acknowledgement; begin serialization under safWriteMode | `PREPARING` |
+| `TR-035` | `UNENCRYPTED_WARNING` | `WARNING_ACCEPT_SHARESHEET_FILE` | warning is fresh; destination=Sharesheet; plan contains policy-allowed file outputs | record warning acknowledgement; create a Dora-managed temp copy | `PREPARING` |
+| `TR-036` | `UNENCRYPTED_WARNING` | `WARNING_DECLINE_REVIEW` | user chooses the explicit Back to review action | record no acknowledgement; create no artifact | `REVIEW` |
+| `TR-037` | `UNENCRYPTED_WARNING` | `WARNING_CANCEL_EXPORT` | user chooses the explicit Cancel export action | record no acknowledgement; discard the attempt | `CANCELLED` |
+| `TR-038` | `PREPARING` | `PREPARATION_SUCCEEDED_SAF` | destination=SAF; every selected file output serialized; writer can start | seal the prepared bytes; retain staging metadata; begin SAF write | `TRANSFERRING` |
+| `TR-039` | `PREPARING` | `PREPARATION_SUCCEEDED_SHARESHEET` | destination=Sharesheet; every selected file output serialized into Dora temp | seal the temp; register one-hour expiry; invoke Android Sharesheet | `TRANSFERRING` |
+| `TR-040` | `PREPARING` | `PREPARATION_FAILED_NO_TEMP` | preparation failed before a Dora temp was created | discard partial memory; record content-free failure | `FAILED_RETRYABLE` |
+| `TR-041` | `PREPARING` | `PREPARATION_FAILED_WITH_TEMP` | preparation failed after a Dora temp was created | stop writes; set pendingOutcome=FAILED_RETRYABLE; request temp cleanup | `CLEANUP_PENDING` |
+| `TR-042` | `PREPARING` | `PREPARATION_CANCELLED_NO_TEMP` | cancellation became effective before a Dora temp was created | stop preparation; discard partial memory | `CANCELLED` |
+| `TR-043` | `PREPARING` | `PREPARATION_CANCELLED_WITH_TEMP` | cancellation became effective after a Dora temp was created | stop writes; set pendingOutcome=CANCELLED; request temp cleanup | `CLEANUP_PENDING` |
+| `TR-044` | `PREPARING` | `PREPARATION_TEMP_EXPIRED` | Dora temp reached its effective expiry during preparation | stop writes; set pendingOutcome=FAILED_RETRYABLE; request temp cleanup | `CLEANUP_PENDING` |
+| `TR-045` | `TRANSFERRING` | `CLIPBOARD_API_ACCEPTED` | destination=Clipboard; Android clipboard API accepted the unchanged Dora clip | record clipboard success boundary; schedule independent best-effort clear | `HANDOFF_SUCCEEDED` |
+| `TR-046` | `TRANSFERRING` | `CLIPBOARD_API_REJECTED` | destination=Clipboard; clipboard API did not accept the clip | record content-free failure; retain no payload | `FAILED_RETRYABLE` |
+| `TR-047` | `TRANSFERRING` | `SAF_FINAL_CLOSE_SUCCEEDED_NO_STAGING` | destination=SAF; final write and close succeeded; no Dora staging exists | record SAF success boundary; claim no provider persistence | `HANDOFF_SUCCEEDED` |
+| `TR-048` | `TRANSFERRING` | `SAF_FINAL_CLOSE_SUCCEEDED_WITH_STAGING` | destination=SAF; final write and close succeeded; Dora staging exists | record SAF success boundary; mark staging cleanupEligible=true | `HANDOFF_SUCCEEDED` |
+| `TR-049` | `TRANSFERRING` | `SAF_WRITE_FAILED_NO_STAGING` | destination=SAF; the final-close success boundary was not reached; no Dora staging exists | close writer best-effort; disclose provider partial outside Dora control; record failure | `FAILED_RETRYABLE` |
+| `TR-050` | `TRANSFERRING` | `SAF_WRITE_FAILED_WITH_STAGING` | destination=SAF; the final-close success boundary was not reached; Dora staging exists | close writer best-effort; disclose provider partial outside Dora control; set pendingOutcome=FAILED_RETRYABLE | `CLEANUP_PENDING` |
+| `TR-051` | `TRANSFERRING` | `SHARESHEET_HANDOFF_ACCEPTED` | destination=Sharesheet; Android accepted the share handoff; Dora temp exists | record handoff boundary; retain temp; claim no recipient delivery | `HANDOFF_SUCCEEDED` |
+| `TR-052` | `TRANSFERRING` | `SHARESHEET_HANDOFF_REJECTED` | destination=Sharesheet; Android did not accept the share handoff; Dora temp exists | set pendingOutcome=FAILED_RETRYABLE; request temp cleanup | `CLEANUP_PENDING` |
+| `TR-053` | `TRANSFERRING` | `TRANSFER_PICKER_CANCELLED_NO_TEMP` | system picker cancelled; no Dora temp exists | record cancellation; restore focus; claim no success | `CANCELLED` |
+| `TR-054` | `TRANSFERRING` | `TRANSFER_PICKER_CANCELLED_WITH_TEMP` | system picker cancelled; Dora temp exists | record cancellation; restore focus; set pendingOutcome=CANCELLED | `CLEANUP_PENDING` |
+| `TR-055` | `TRANSFERRING` | `TRANSFER_CANCELLED_NO_TEMP` | user cancellation became effective; no Dora temp exists | stop transfer when safe; claim no success | `CANCELLED` |
+| `TR-056` | `TRANSFERRING` | `TRANSFER_CANCELLED_WITH_TEMP` | user cancellation became effective; Dora temp exists | stop transfer when safe; set pendingOutcome=CANCELLED; request temp cleanup | `CLEANUP_PENDING` |
+| `TR-057` | `TRANSFERRING` | `TRANSFER_TEMP_EXPIRED` | Dora temp reached its effective expiry during transfer | stop transfer when safe; set pendingOutcome=FAILED_RETRYABLE; request temp cleanup | `CLEANUP_PENDING` |
+| `TR-058` | `TRANSFERRING` | `PROGRESS_WITH_REAL_DENOMINATOR` | real numerator and denominator are both available | publish determinate progress from the real fraction | `TRANSFERRING` |
+| `TR-059` | `TRANSFERRING` | `PROGRESS_WITHOUT_REAL_DENOMINATOR` | a real denominator is unavailable | publish stage-only progress; publish no percentage | `TRANSFERRING` |
+| `TR-060` | `HANDOFF_SUCCEEDED` | `CLIPBOARD_SUCCESS_RECORDED` | destination=Clipboard; no Dora file temp exists | retain only content-free result metadata | `COMPLETED` |
+| `TR-061` | `HANDOFF_SUCCEEDED` | `SAF_SUCCESS_RECORDED_NO_STAGING` | destination=SAF; final close succeeded; no Dora staging exists | retain only content-free result metadata | `COMPLETED` |
+| `TR-062` | `HANDOFF_SUCCEEDED` | `SAF_STAGING_CLEANUP_ELIGIBLE` | destination=SAF; final close succeeded; Dora staging cleanupEligible=true | set pendingOutcome=COMPLETED; request staging cleanup | `CLEANUP_PENDING` |
+| `TR-063` | `HANDOFF_SUCCEEDED` | `SHARESHEET_SAFE_RELEASE_OBSERVED` | destination=Sharesheet; exact lifecycle signal is observable and separately evidenced as safe release | set pendingOutcome=COMPLETED; request temp cleanup | `CLEANUP_PENDING` |
+| `TR-064` | `HANDOFF_SUCCEEDED` | `SHARESHEET_DELETE_NOW` | destination=Sharesheet; live Dora temp exists; user confirms access-loss warning | set pendingOutcome=COMPLETED; request temp cleanup; leave external copies untouched | `CLEANUP_PENDING` |
+| `TR-065` | `HANDOFF_SUCCEEDED` | `SHARESHEET_TEMP_EXPIRED` | destination=Sharesheet; live Dora temp reached effective expiry | set pendingOutcome=COMPLETED; request temp cleanup; leave external copies untouched | `CLEANUP_PENDING` |
+| `TR-066` | `HANDOFF_SUCCEEDED` | `CLOSE_HANDOFF_VIEW_WITH_TEMP` | destination=Sharesheet; live Dora temp exists | close the view; retain state and content-free Recent exports entry | `HANDOFF_SUCCEEDED` |
+| `TR-067` | `CLEANUP_PENDING` | `CLEANUP_SUCCEEDED_COMPLETED` | deletion succeeded; pendingOutcome=COMPLETED | remove Recent exports entry; clear cleanup metadata | `COMPLETED` |
+| `TR-068` | `CLEANUP_PENDING` | `CLEANUP_SUCCEEDED_FAILED_RETRYABLE` | deletion succeeded; pendingOutcome=FAILED_RETRYABLE | remove Recent exports entry; clear cleanup metadata | `FAILED_RETRYABLE` |
+| `TR-069` | `CLEANUP_PENDING` | `CLEANUP_SUCCEEDED_CANCELLED` | deletion succeeded; pendingOutcome=CANCELLED | remove Recent exports entry; clear cleanup metadata | `CANCELLED` |
+| `TR-070` | `CLEANUP_PENDING` | `CLEANUP_DELETE_FAILED` | Dora temp deletion returned failure | retain pendingOutcome; persist content-free failure; expose retry | `CLEANUP_FAILED` |
+| `TR-071` | `CLEANUP_PENDING` | `DISMISS_CLEANUP_PROGRESS` | cleanup has not reached a terminal result | close the view; retain state and content-free Recent exports entry | `CLEANUP_PENDING` |
+| `TR-072` | `CLEANUP_FAILED` | `RETRY_CLEANUP` | failed Dora temp still exists | retain pendingOutcome; retry deletion only | `CLEANUP_PENDING` |
+| `TR-073` | `CLEANUP_FAILED` | `DELETE_NOW_RETRY` | failed Dora temp still exists; user invokes Delete now | retain pendingOutcome; retry deletion only; leave source and external copies untouched | `CLEANUP_PENDING` |
+| `TR-074` | `CLEANUP_FAILED` | `DISMISS_CLEANUP_FAILURE` | failed Dora temp still exists | close the view; retain failure state and visible content-free Recent exports entry | `CLEANUP_FAILED` |
+| `TR-075` | `FAILED_RETRYABLE` | `RETRY_EXPORT_REVALIDATED` | source, selection, formats, destination and policy all revalidate | discard every partial output; create a fresh reviewed attempt; reuse no payload | `REVIEW` |
+| `TR-076` | `FAILED_RETRYABLE` | `RETRY_SOURCE_INVALID` | source revalidation failed | discard every partial output; show source reason | `SELECT_CONTENT` |
+| `TR-077` | `FAILED_RETRYABLE` | `RETRY_CONTENT_INVALID` | content revalidation failed | discard every partial output; show content reason | `SELECT_CONTENT` |
+| `TR-078` | `FAILED_RETRYABLE` | `RETRY_FORMAT_INVALID` | format revalidation failed | discard every partial output; show format reason | `SELECT_FORMAT` |
+| `TR-079` | `FAILED_RETRYABLE` | `RETRY_DESTINATION_INVALID` | retryDestinationInvalidReason is fixed before evaluation as one member of {INCOMPATIBLE, POLICY_BLOCKED} | discard every partial output; show the reason named by retryDestinationInvalidReason | `SELECT_DESTINATION` |
+| `TR-080` | `FAILED_RETRYABLE` | `DISMISS_RETRYABLE_FAILURE` | no Dora temp and no cleanup failure remain | discard the failed attempt; retain no export history | `CLOSED` |
+| `TR-081` | `COMPLETED` | `CLOSE_COMPLETED` | no Dora temp and no cleanup failure remain | clear attempt-only state; retain no export history | `CLOSED` |
+| `TR-082` | `CANCELLED` | `CLOSE_CANCELLED` | no Dora temp and no cleanup failure remain | clear attempt-only state; retain no export history | `CLOSED` |
+
+Transition evaluation is fail-closed:
+
+- an event absent from this table cannot advance the export;
+- guards are evaluated against the current attempt snapshot; a false guard leaves state unchanged
+  and exposes a content-free reason;
+- every file-output path accepts the warning, enters `PREPARING`, fires exactly one of
+  `PREPARATION_SUCCEEDED_SAF` or `PREPARATION_SUCCEEDED_SHARESHEET`, and then reaches
+  `TRANSFERRING`;
+- `pendingOutcome` is content-free and has exactly one value: `COMPLETED`,
+  `FAILED_RETRYABLE` or `CANCELLED`;
+- a Sharesheet safe-release event is unavailable unless an exact observable lifecycle signal has
+  separate evidence. Handoff alone never satisfies its guard.
+
+Auxiliary lifecycle/evidence events do not change the 15-state interaction state:
+
+| ID | Event | Precondition | Action | State effect |
+|---|---|---|---|---|
+| `AUX-001` | `CLIPBOARD_CLEAR_TIMER_UNCHANGED` | scheduled Dora clipboard check fires; clip identity and content are unchanged | attempt best-effort clipboard clear; disclose no guarantee | `NONE` |
+| `AUX-002` | `CLIPBOARD_CLEAR_TIMER_CHANGED` | scheduled Dora clipboard check fires; clip comparison result=CHANGED | leave replacement clipboard content untouched | `NONE` |
+| `AUX-003` | `DIAGNOSTIC_SNAPSHOT_REQUESTED` | current state/error requires diagnostic evidence | emit bounded categorical codes and numeric counters only | `NONE` |
+| `AUX-004` | `ACCESSIBILITY_FIXTURE_RENDERED` | synthetic RU, EN, scale, input and motion fixture is selected | render semantics, focus, reflow and action reachability without user data | `NONE` |
+
 
 ### 5.2. Global invariants
 
@@ -193,20 +269,32 @@ invariant below.
 
 ## 6. Temporary-artifact lifecycle
 
-1. Create a Dora-managed share temp only after Review, separate Audio acknowledgement when
-   applicable, and the mandatory unencrypted warning.
-2. Clean it on cancellation, preparation/transfer failure and after safe handoff.
-3. Offer `Удалить сейчас` / `Delete now` while a live Dora temp exists.
-4. A Dora-managed share temp has a hard maximum lifetime of one hour from creation. Managed policy
-   may shorten, never extend, this limit.
-5. On startup, discover and clean expired/orphaned Dora temps from the exact allowlisted Dora temp
+1. Create a Dora-managed temp only after Review, separate Audio acknowledgement when applicable,
+   and the mandatory unencrypted warning.
+2. Clipboard creates no Dora-managed file temp. Clipboard success and the independent 60-second
+   best-effort clear therefore never enter file cleanup.
+3. SAF may serialize directly to the chosen destination or use Dora staging. A successful final
+   destination write and close is the only success boundary. On success, staging becomes
+   cleanup-eligible only after that close is observed. On cancel/failure, stop and close the writer
+   before cleaning Dora staging. A partial provider copy is outside Dora control and must never be
+   reported as cleaned by Dora.
+4. Sharesheet uses a Dora-managed temp copy and never grants the canonical source. Android handoff
+   is not evidence that a recipient read, saved, synced or delivered it. The temp remains live after
+   handoff until an exact OS/provider lifecycle signal is both observable and separately evidenced
+   as safe release. If no such signal exists, automatic post-handoff cleanup does not fire; cleanup
+   occurs only through `Delete now`, the one-hour maximum or startup orphan cleanup.
+5. `Delete now` warns that pending external access to a Sharesheet temp may stop. It deletes only
+   the Dora temp, never a SAF/provider copy or canonical source.
+6. A Dora-managed temp has a hard maximum lifetime of one hour from creation. Managed policy may
+   shorten, never extend, this limit.
+7. On startup, discover and clean expired/orphaned Dora temps from the exact allowlisted Dora temp
    area. Unknown files are not export artifacts and are not deleted by this contract.
-6. Failed cleanup remains visible and retryable until resolved. It is not renamed `complete`.
-7. SAF and other external-destination copies are outside Dora expiry and cannot be deleted by
+8. Failed cleanup remains visible and retryable until resolved. It is not renamed `complete`.
+9. SAF and other external-destination copies are outside Dora expiry and cannot be deleted by
    `Delete now` or startup cleanup.
-8. Cleanup deletes only Dora-managed temporary outputs. Source Conversation, Audio, Summary,
-   Protocol, Transcript and Tasks are never cleanup targets.
-9. Logical/best-effort deletion wording is used. Physical overwrite is never claimed.
+10. Cleanup deletes only Dora-managed temporary outputs. Source Conversation, Audio, Summary,
+    Protocol, Transcript and Tasks are never cleanup targets.
+11. Logical/best-effort deletion wording is used. Physical overwrite is never claimed.
 
 ### 6.1. Recent exports
 
@@ -300,38 +388,38 @@ Minimum requirements:
 Only original deterministic synthetic text/audio metadata is allowed. No real meeting, person,
 voice, title, path, provider credential or private destination is needed or authorized.
 
-| Fixture ID | Scenario | Expected contract result |
-|---|---|---|
-| `EXP-SYN-001` | Fresh open | `CLOSED → SELECT_CONTENT`; all selections empty; no artifact. |
-| `EXP-SYN-002` | Empty content then Continue | Remain `SELECT_CONTENT`; accessible reason; no payload/temp. |
-| `EXP-SYN-003` | Summary + Copy + Clipboard | Review; exact warning; clipboard success means API accepted only. |
-| `EXP-SYN-004` | Protocol/Transcript + Markdown + Sharesheet | File-only destination; warning before temp; handoff does not claim recipient delivery. |
-| `EXP-SYN-005` | Four structured classes + JSON v1 | JSON version visible; raw audio/path/URI/key excluded. |
-| `EXP-SYN-006` | Summary + CSV | Pair disabled with reason; no artifact. |
-| `EXP-SYN-007` | Tasks + CSV + SAF | Allowed; success only after final write/close. |
-| `EXP-SYN-008` | `Select all` | Selects Summary/Protocol/Transcript/Tasks only; Audio remains off. |
-| `EXP-SYN-009` | Audio WAV/PCM | Separate acknowledgement every attempt, then exact warning; no remembered state. |
-| `EXP-SYN-010` | Encrypted bundle | Visible deferred/not-MVP disabled reason; no artifact. |
-| `EXP-SYN-011` | Managed policy disables Audio/Clipboard | Options visibly disabled with reason; policy does not select a fallback. |
-| `EXP-SYN-012` | Policy expiry 15 minutes | Review shows 15 minutes; still below hard one-hour maximum. |
-| `EXP-SYN-013` | External provider may use network | Disclosure present; Dora itself has no network/account/GMS prerequisite. |
-| `EXP-SYN-014` | Destination picker cancelled before temp | `CANCELLED` or return to selection by explicit UI policy; no artifact/success claim; focus restored. |
-| `EXP-SYN-015` | Picker cancelled after a temp exists | `CLEANUP_PENDING(pendingOutcome=CANCELLED)`; success→`CANCELLED`; failure→`CLEANUP_FAILED`. |
-| `EXP-SYN-016` | Cancel during `PREPARING` | Partial is not reusable; cleanup convergence; source remains byte-for-byte/logically unchanged. |
-| `EXP-SYN-017` | Cancel during `TRANSFERRING` | Same cleanup convergence; no background resume. |
-| `EXP-SYN-018` | SAF write fails before close | Not success; cleanup partial; retry can start only through revalidation and Review. |
-| `EXP-SYN-019` | Sharesheet accepts intent | `HANDOFF_SUCCEEDED`; never claim another app read/saved/synced/delivered. |
-| `EXP-SYN-020` | Clipboard clear at 60 s, clip unchanged | Best-effort clear attempted; no guarantee claim. |
-| `EXP-SYN-021` | Clipboard changed before 60 s | Dora does not clear the replacement clip. |
-| `EXP-SYN-022` | `Delete now` on live Dora temp | Delete only temp; remove Recent entry after success; source untouched. |
-| `EXP-SYN-023` | Dora temp reaches one hour | Cleanup triggered; external/SAF copy unaffected. |
-| `EXP-SYN-024` | Expired/orphaned temp found at startup | Allowlisted Dora temp cleanup; unknown file untouched. |
-| `EXP-SYN-025` | Cleanup deletion fails | `CLEANUP_FAILED` stays visible/content-free/retryable; no complete claim. |
-| `EXP-SYN-026` | Cleanup retry succeeds | Return through `CLEANUP_PENDING` to retained pending outcome; no export retry. |
-| `EXP-SYN-027` | Export retry after transfer failure | Discard partial; revalidate; return to Review; no background resume/reuse. |
-| `EXP-SYN-028` | Known bytes/items vs unknown provider stage | Real fraction only for known denominator; otherwise stage-only. |
-| `EXP-SYN-029` | Diagnostics capture on every state/error | No path, URI, key, payload, user content or destination credential. |
-| `EXP-SYN-030` | 200% RU/EN + TalkBack/Switch/keyboard/reduced motion | Warning, selections, reasons, cancel, cleanup and retry remain reachable and understandable. |
+| Fixture ID | Scenario | Inputs | Preconditions | Events | Expected states and outcome | Invariants |
+|---|---|---|---|---|---|---|
+| `EXP-SYN-001` | Fresh open | none | state=CLOSED; no active export session | `OPEN_EXPORT` | `CLOSED` → `SELECT_CONTENT`; fresh empty attempt | no selection; no acknowledgement; no artifact |
+| `EXP-SYN-002` | Empty content then Continue | content=[] | state=SELECT_CONTENT | `CONTENT_SELECTION_EMPTY` | `SELECT_CONTENT` → `SELECT_CONTENT`; accessible empty-selection reason | no auto-selection; no payload; no temp |
+| `EXP-SYN-003` | Summary plus Copy plus Clipboard | Summary; Copy/plain text; Clipboard | state=CLOSED; policy allows plan | `OPEN_EXPORT`; `CONTENT_SELECTION_ACCEPTED`; `FORMAT_SELECTION_ACCEPTED`; `DESTINATION_CONFIRMED`; `REVIEW_CONFIRM_NO_AUDIO`; `WARNING_ACCEPT_CLIPBOARD`; `CLIPBOARD_API_ACCEPTED`; `CLIPBOARD_SUCCESS_RECORDED` | `CLOSED` → `SELECT_CONTENT` → `SELECT_FORMAT` → `SELECT_DESTINATION` → `REVIEW` → `UNENCRYPTED_WARNING` → `TRANSFERRING` → `HANDOFF_SUCCEEDED` → `COMPLETED`; clipboard API accepted | exact warning shown; no file temp; recipient read not claimed |
+| `EXP-SYN-004` | Protocol and Transcript plus Markdown plus Sharesheet | Protocol; Transcript; Markdown; Sharesheet | state=CLOSED; policy allows plan | `OPEN_EXPORT`; `CONTENT_SELECTION_ACCEPTED`; `FORMAT_SELECTION_ACCEPTED`; `DESTINATION_CONFIRMED`; `REVIEW_CONFIRM_NO_AUDIO`; `WARNING_ACCEPT_SHARESHEET_FILE`; `PREPARATION_SUCCEEDED_SHARESHEET`; `SHARESHEET_HANDOFF_ACCEPTED` | `CLOSED` → `SELECT_CONTENT` → `SELECT_FORMAT` → `SELECT_DESTINATION` → `REVIEW` → `UNENCRYPTED_WARNING` → `PREPARING` → `TRANSFERRING` → `HANDOFF_SUCCEEDED`; Android accepted handoff; live Dora temp retained | warning precedes temp; handoff is not delivery; source not granted |
+| `EXP-SYN-005` | Four structured classes plus JSON v1 plus SAF | Summary; Protocol; Transcript; Tasks; JSON v1; SAF | state=CLOSED; policy allows plan; SAF direct write selected | `OPEN_EXPORT`; `CONTENT_SELECTION_ACCEPTED`; `FORMAT_SELECTION_ACCEPTED`; `DESTINATION_CONFIRMED`; `REVIEW_CONFIRM_NO_AUDIO`; `WARNING_ACCEPT_SAF_FILE`; `PREPARATION_SUCCEEDED_SAF`; `SAF_FINAL_CLOSE_SUCCEEDED_NO_STAGING`; `SAF_SUCCESS_RECORDED_NO_STAGING` | `CLOSED` → `SELECT_CONTENT` → `SELECT_FORMAT` → `SELECT_DESTINATION` → `REVIEW` → `UNENCRYPTED_WARNING` → `PREPARING` → `TRANSFERRING` → `HANDOFF_SUCCEEDED` → `COMPLETED`; SAF final write and close completed | JSON version visible; raw audio excluded; path URI and key excluded |
+| `EXP-SYN-006` | Summary plus CSV | Summary; CSV | state=SELECT_FORMAT; Summary selected | `FORMAT_SELECTION_INCOMPATIBLE` | `SELECT_FORMAT` → `SELECT_FORMAT`; CSV pair disabled with reason | Tasks-only CSV; no artifact |
+| `EXP-SYN-007` | Tasks plus CSV plus SAF with staging | Tasks; CSV; SAF; Dora staging | state=CLOSED; policy allows plan | `OPEN_EXPORT`; `CONTENT_SELECTION_ACCEPTED`; `FORMAT_SELECTION_ACCEPTED`; `DESTINATION_CONFIRMED`; `REVIEW_CONFIRM_NO_AUDIO`; `WARNING_ACCEPT_SAF_FILE`; `PREPARATION_SUCCEEDED_SAF`; `SAF_FINAL_CLOSE_SUCCEEDED_WITH_STAGING`; `SAF_STAGING_CLEANUP_ELIGIBLE`; `CLEANUP_SUCCEEDED_COMPLETED` | `CLOSED` → `SELECT_CONTENT` → `SELECT_FORMAT` → `SELECT_DESTINATION` → `REVIEW` → `UNENCRYPTED_WARNING` → `PREPARING` → `TRANSFERRING` → `HANDOFF_SUCCEEDED` → `CLEANUP_PENDING` → `COMPLETED`; destination closed before Dora staging cleanup | no cleanup eligibility before close; external copy outside Dora expiry; source untouched |
+| `EXP-SYN-008` | Select all | Select all | state=SELECT_CONTENT; all structured classes available | `CONTENT_SELECTION_ACCEPTED` | `SELECT_CONTENT` → `SELECT_FORMAT`; Summary Protocol Transcript and Tasks selected | Audio remains off; no remembered state |
+| `EXP-SYN-009` | Audio WAV/PCM plus Sharesheet | Audio; WAV/PCM; Sharesheet | state=CLOSED; policy allows Audio | `OPEN_EXPORT`; `CONTENT_SELECTION_ACCEPTED`; `FORMAT_SELECTION_ACCEPTED`; `DESTINATION_CONFIRMED`; `REVIEW_CONFIRM_AUDIO`; `AUDIO_ACK_ACCEPTED`; `WARNING_ACCEPT_SHARESHEET_FILE`; `PREPARATION_SUCCEEDED_SHARESHEET`; `SHARESHEET_HANDOFF_ACCEPTED` | `CLOSED` → `SELECT_CONTENT` → `SELECT_FORMAT` → `SELECT_DESTINATION` → `REVIEW` → `AUDIO_ACKNOWLEDGEMENT` → `UNENCRYPTED_WARNING` → `PREPARING` → `TRANSFERRING` → `HANDOFF_SUCCEEDED`; one-shot Audio handed to Android; live temp retained | Audio acknowledgement fresh; warning separate and fresh; Audio not selected by Select all |
+| `EXP-SYN-010` | Encrypted bundle | Encrypted bundle | state=SELECT_FORMAT | `FORMAT_SELECTION_INCOMPATIBLE` | `SELECT_FORMAT` → `SELECT_FORMAT`; deferred not-MVP reason shown | no artifact; no Security approval claim; separate key and recovery decision required |
+| `EXP-SYN-011` | Managed policy disables Audio | Audio; managed policy restriction | state=SELECT_CONTENT; restriction visible | `CONTENT_SELECTION_POLICY_BLOCKED` | `SELECT_CONTENT` → `SELECT_CONTENT`; Audio remains disabled with policy reason | policy selects no fallback; policy initiates nothing; no artifact |
+| `EXP-SYN-012` | Managed policy expiry is 15 minutes | effective temp expiry=15 minutes | state=REVIEW; selected file plan valid | none | `REVIEW`; Review shows 15-minute expiry | below one-hour maximum; policy cannot extend expiry |
+| `EXP-SYN-013` | External provider may use network | SAF external provider | state=REVIEW; selected file plan valid | none | `REVIEW`; external-control and independent-network disclosure shown | Dora account not required; GMS not required; Dora network not required |
+| `EXP-SYN-014` | Destination picker cancelled before temp | pickerCancelPolicy=RETURN_TO_DESTINATION | state=SELECT_DESTINATION; no artifact | `PICKER_CANCEL_RETURN` | `SELECT_DESTINATION` → `SELECT_DESTINATION`; focus restored and cancellation announced | no success claim; no artifact; policy fixed before launch |
+| `EXP-SYN-015` | Transfer picker cancelled after temp exists | Sharesheet; live Dora temp | state=TRANSFERRING | `TRANSFER_PICKER_CANCELLED_WITH_TEMP`; `CLEANUP_SUCCEEDED_CANCELLED` | `TRANSFERRING` → `CLEANUP_PENDING` → `CANCELLED`; cancel converges through cleanup | pendingOutcome=CANCELLED; no delivery claim; source untouched |
+| `EXP-SYN-016` | Cancel during PREPARING | live Dora temp | state=PREPARING | `PREPARATION_CANCELLED_WITH_TEMP`; `CLEANUP_SUCCEEDED_CANCELLED` | `PREPARING` → `CLEANUP_PENDING` → `CANCELLED`; partial temp deleted | no partial reuse; no background resume; source untouched |
+| `EXP-SYN-017` | Cancel during TRANSFERRING | live Dora temp | state=TRANSFERRING | `TRANSFER_CANCELLED_WITH_TEMP`; `CLEANUP_SUCCEEDED_CANCELLED` | `TRANSFERRING` → `CLEANUP_PENDING` → `CANCELLED`; transfer stops safely then temp is deleted | no partial reuse; no background resume; source untouched |
+| `EXP-SYN-018` | SAF write fails before close | SAF; Dora staging; provider partial possible | state=TRANSFERRING; final close not observed | `SAF_WRITE_FAILED_WITH_STAGING`; `CLEANUP_SUCCEEDED_FAILED_RETRYABLE` | `TRANSFERRING` → `CLEANUP_PENDING` → `FAILED_RETRYABLE`; Dora staging cleaned; export retry available | provider partial outside Dora control; no success claim; retry must revalidate |
+| `EXP-SYN-019` | Sharesheet accepts handoff | Sharesheet; live Dora temp | state=TRANSFERRING | `SHARESHEET_HANDOFF_ACCEPTED` | `TRANSFERRING` → `HANDOFF_SUCCEEDED`; Android handoff boundary recorded; temp retained | recipient read not claimed; recipient save not claimed; recipient delivery not claimed |
+| `EXP-SYN-020` | Clipboard clear timer fires with unchanged clip | unchanged Dora clip; elapsed=60 seconds | clipboard API previously accepted clip | `CLIPBOARD_CLEAR_TIMER_UNCHANGED` | `COMPLETED`; best-effort clear attempted without state change | clear not guaranteed; clip content not logged |
+| `EXP-SYN-021` | Clipboard changed before clear timer | replacement clip; elapsed=60 seconds | clipboard API previously accepted Dora clip | `CLIPBOARD_CLEAR_TIMER_CHANGED` | `COMPLETED`; replacement clip left untouched | no clear attempt on changed clip; replacement content not logged |
+| `EXP-SYN-022` | Delete now on live Sharesheet temp | live Dora temp; user confirms access-loss warning | state=HANDOFF_SUCCEEDED; destination=Sharesheet | `SHARESHEET_DELETE_NOW`; `CLEANUP_SUCCEEDED_COMPLETED` | `HANDOFF_SUCCEEDED` → `CLEANUP_PENDING` → `COMPLETED`; Dora temp deleted and Recent exports entry removed | external copies untouched; canonical source untouched; no physical overwrite claim |
+| `EXP-SYN-023` | Sharesheet temp reaches effective expiry | live Dora temp; effective expiry reached | state=HANDOFF_SUCCEEDED; destination=Sharesheet | `SHARESHEET_TEMP_EXPIRED`; `CLEANUP_SUCCEEDED_COMPLETED` | `HANDOFF_SUCCEEDED` → `CLEANUP_PENDING` → `COMPLETED`; expired Dora temp deleted | hard maximum one hour; external copies unaffected; source untouched |
+| `EXP-SYN-024` | Unknown orphaned temp found at startup | allowlisted Dora temp; missing retained pendingOutcome | state=CLOSED | `STARTUP_ORPHAN_FOUND_UNKNOWN`; `CLEANUP_SUCCEEDED_CANCELLED`; `CLOSE_CANCELLED` | `CLOSED` → `CLEANUP_PENDING` → `CANCELLED` → `CLOSED`; orphan deleted without manufacturing success | unknown files untouched; pendingOutcome fail-closed CANCELLED; source untouched |
+| `EXP-SYN-025` | Cleanup deletion fails | live Dora temp; delete returns failure | state=CLEANUP_PENDING; pendingOutcome retained | `CLEANUP_DELETE_FAILED` | `CLEANUP_PENDING` → `CLEANUP_FAILED`; content-free cleanup failure remains visible | retry available; completion not claimed; source untouched |
+| `EXP-SYN-026` | Cleanup retry succeeds | failed Dora temp; pendingOutcome=COMPLETED | state=CLEANUP_FAILED | `RETRY_CLEANUP`; `CLEANUP_SUCCEEDED_COMPLETED` | `CLEANUP_FAILED` → `CLEANUP_PENDING` → `COMPLETED`; retained outcome reached after deletion | export not repeated; Recent exports entry removed; source untouched |
+| `EXP-SYN-027` | Retry after transfer failure | previous transfer failure | state=FAILED_RETRYABLE; source selection and policy still valid | `RETRY_EXPORT_REVALIDATED` | `FAILED_RETRYABLE` → `REVIEW`; fresh reviewed attempt | partial output discarded; no background resume; no payload reuse |
+| `EXP-SYN-028` | Known and unknown transfer progress | known byte total; then unavailable denominator | state=TRANSFERRING | `PROGRESS_WITH_REAL_DENOMINATOR`; `PROGRESS_WITHOUT_REAL_DENOMINATOR` | `TRANSFERRING` → `TRANSFERRING` → `TRANSFERRING`; real fraction then stage-only progress | no fabricated percentage; no provider sync progress |
+| `EXP-SYN-029` | Diagnostics across every state and error | all 15 states; representative categorical errors | isolated synthetic state snapshots | `DIAGNOSTIC_SNAPSHOT_REQUESTED` | `CLOSED` → `SELECT_CONTENT` → `SELECT_FORMAT` → `SELECT_DESTINATION` → `REVIEW` → `AUDIO_ACKNOWLEDGEMENT` → `UNENCRYPTED_WARNING` → `PREPARING` → `TRANSFERRING` → `HANDOFF_SUCCEEDED` → `CLEANUP_PENDING` → `COMPLETED` → `FAILED_RETRYABLE` → `CANCELLED` → `CLEANUP_FAILED`; state remains unchanged for every snapshot | no path URI key payload user content or destination credential |
+| `EXP-SYN-030` | 200 percent RU EN accessibility matrix | RU; EN; 200 percent text; TalkBack; Switch; keyboard; reduced motion | synthetic content only | `ACCESSIBILITY_FIXTURE_RENDERED` | `SELECT_CONTENT` → `SELECT_FORMAT` → `SELECT_DESTINATION` → `REVIEW` → `AUDIO_ACKNOWLEDGEMENT` → `UNENCRYPTED_WARNING` → `CLEANUP_FAILED`; critical text actions reasons cleanup and retry remain reachable | focus deterministic; no clipping; status not color-only; no user research claim |
 
 ### 11.1. Future implementation acceptance
 
