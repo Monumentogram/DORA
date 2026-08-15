@@ -35,6 +35,16 @@ TLS, provider, billing, Security, Legal or production PASS. `POC-VPN-001` remain
 `NOT_READY`, `NOT_RUN` and globally `NOT_AUTHORIZED`; active Stage 0D and every Recovery authority
 flag remain unchanged.
 
+POC-OFFLINE governance reconciliation: prospective
+[`poc-offline-readiness-stage0-v0.1`](stage0/DORA_MVP1_POC_OFFLINE_READINESS_CONTRACT_STAGE0_V0_1.md)
+and its [machine record](evidence/poc-offline-001/readiness-contract-stage0-v0.1.json) complete only
+the static readiness/call-surface contract. They classify the Stage 00 shell and isolated
+Capture/Search/Recovery/VPN evidence without claiming an integrated local flow or runtime absence
+of calls. The required device matrix, D4 no-GMS, approved local model, calibrated call monitor,
+Offline-owned reconnect and OS-blocked execution remain open. `POC-OFFLINE-001` remains `TODO`,
+`NOT_READY`, `NOT_RUN` and `NOT_AUTHORIZED`; active Stage 0D and every Recovery authority flag
+remain unchanged.
+
 ## Stage 00 closure
 
 - Stage 00 is complete.
