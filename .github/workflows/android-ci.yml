@@ -81,7 +81,16 @@ jobs:
         run: >-
           ./gradlew --no-daemon --stacktrace
           -p poc/vpn-contract-kernel
-          hostTest
+          :hostTest
+          --offline
+          --no-configuration-cache
+
+      - name: Verify hermetic numeric-loopback VPN transport harness
+        working-directory: android
+        run: >-
+          ./gradlew --no-daemon --stacktrace
+          -p poc/vpn-contract-kernel
+          :transport-harness:loopbackTest
           --offline
           --no-configuration-cache
 

@@ -27,12 +27,12 @@ claim follows. Active Stage 0D, `POC-DATA-001` blocking and every Recovery autho
 unchanged.
 
 POC-VPN governance reconciliation: prospective contract `poc-vpn-synthetic-api-stage0-v0.1` and its
-machine record are contract complete for a future synthetic transport-fake plus hermetic-loopback
-HTTP harness. A [pure-host oracle implementation record](evidence/poc-vpn-001/contract-kernel-implementation-stage0-v0.1.json)
-locates the dependency-free, non-network contract kernel and its Tier A host checks; it is not the
-transport harness and authorizes no execution. There is no device, VPN, route, provider, billing,
-Security, Legal or production PASS. `POC-VPN-001` remains `TODO`, `NOT_READY`, `NOT_RUN` and
-`NOT_AUTHORIZED`; active Stage 0D and every Recovery authority flag remain unchanged.
+machine record are contract complete. A [pure-host oracle implementation record](evidence/poc-vpn-001/contract-kernel-implementation-stage0-v0.1.json)
+locates the dependency-free, non-network kernel, while the task-scoped [I2 implementation/evidence](evidence/poc-vpn-001/loopback-transport-implementation-evidence-stage0-v0.1.json)
+locates only its hermetic numeric-loopback HTTP/fault subset. There is no device, VPN, route, DNS,
+TLS, provider, billing, Security, Legal or production PASS. `POC-VPN-001` remains `TODO`,
+`NOT_READY`, `NOT_RUN` and globally `NOT_AUTHORIZED`; active Stage 0D and every Recovery authority
+flag remain unchanged.
 
 ## Stage 00 closure
 
