@@ -416,34 +416,34 @@
       {
         "id": "TR-002",
         "source": "CLOSED",
-        "event": "STARTUP_SHARESHEET_RESTORE_UNEXPIRED",
-        "guard": "valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED, now<effectiveExpiresAt, safeReleaseObserved=false and deleteNowConfirmedAfterWarning=false",
-        "action": "restore content-free recovery context and Recent exports entry; retain temp; expose warned Delete now; claim no delivery",
-        "target": "HANDOFF_SUCCEEDED"
-      },
-      {
-        "id": "TR-003",
-        "source": "CLOSED",
-        "event": "STARTUP_SHARESHEET_CLEANUP_SAFE_RELEASE",
-        "guard": "valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED and safeReleaseObserved=true",
-        "action": "restore context; retain pendingOutcome; set cleanupReason=SAFE_RELEASE_OBSERVED; request temp cleanup",
-        "target": "CLEANUP_PENDING"
-      },
-      {
-        "id": "TR-004",
-        "source": "CLOSED",
         "event": "STARTUP_SHARESHEET_CLEANUP_DELETE_NOW",
         "guard": "valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED and deleteNowConfirmedAfterWarning=true",
         "action": "restore context; retain pendingOutcome; set cleanupReason=DELETE_NOW_CONFIRMED; request temp cleanup",
         "target": "CLEANUP_PENDING"
       },
       {
-        "id": "TR-005",
+        "id": "TR-003",
+        "source": "CLOSED",
+        "event": "STARTUP_SHARESHEET_CLEANUP_SAFE_RELEASE",
+        "guard": "valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED, deleteNowConfirmedAfterWarning=false and safeReleaseObserved=true",
+        "action": "restore context; retain pendingOutcome; set cleanupReason=SAFE_RELEASE_OBSERVED; request temp cleanup",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-004",
         "source": "CLOSED",
         "event": "STARTUP_SHARESHEET_CLEANUP_EXPIRED",
-        "guard": "valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED and now>=effectiveExpiresAt",
+        "guard": "valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED, deleteNowConfirmedAfterWarning=false, safeReleaseObserved=false and now>=effectiveExpiresAt",
         "action": "restore context; retain pendingOutcome; set cleanupReason=EXPIRED; request temp cleanup",
         "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-005",
+        "source": "CLOSED",
+        "event": "STARTUP_SHARESHEET_RESTORE_UNEXPIRED",
+        "guard": "valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED, deleteNowConfirmedAfterWarning=false, safeReleaseObserved=false and now<effectiveExpiresAt",
+        "action": "restore content-free recovery context and Recent exports entry; retain temp; expose warned Delete now; claim no delivery",
+        "target": "HANDOFF_SUCCEEDED"
       },
       {
         "id": "TR-083",
@@ -1134,6 +1134,61 @@
       "falseGuardChangesState": false,
       "alternativeOutcomeRequiresDistinctEventOrFixedPolicyInput": true
     },
+    "startupEventSelection": {
+      "priority": [
+        "DELETE_NOW_CONFIRMED",
+        "SAFE_RELEASE_OBSERVED",
+        "EXPIRED",
+        "RETAIN_UNEXPIRED"
+      ],
+      "lowerPriorityGuardsNegateAllHigherPriorityPredicates": true,
+      "exactlyOneEventSelected": true,
+      "overlapAssertionSchema": [
+        "id",
+        "inputs",
+        "selectedEvent",
+        "cleanupReason",
+        "suppressedEvents"
+      ],
+      "overlapAssertions": [
+        {
+          "id": "STARTUP-OVERLAP-001",
+          "inputs": [
+            "valid Sharesheet context",
+            "Delete-now=true",
+            "safe-release=true",
+            "expired=true"
+          ],
+          "selectedEvent": "STARTUP_SHARESHEET_CLEANUP_DELETE_NOW",
+          "cleanupReason": "DELETE_NOW_CONFIRMED",
+          "suppressedEvents": [
+            "STARTUP_SHARESHEET_CLEANUP_SAFE_RELEASE",
+            "STARTUP_SHARESHEET_CLEANUP_EXPIRED",
+            "STARTUP_SHARESHEET_RESTORE_UNEXPIRED"
+          ]
+        },
+        {
+          "id": "STARTUP-OVERLAP-002",
+          "inputs": [
+            "valid Sharesheet context",
+            "Delete-now=false",
+            "safe-release=true",
+            "expired=true"
+          ],
+          "selectedEvent": "STARTUP_SHARESHEET_CLEANUP_SAFE_RELEASE",
+          "cleanupReason": "SAFE_RELEASE_OBSERVED",
+          "suppressedEvents": [
+            "STARTUP_SHARESHEET_CLEANUP_EXPIRED",
+            "STARTUP_SHARESHEET_RESTORE_UNEXPIRED"
+          ]
+        }
+      ],
+      "markdownParity": {
+        "normativeSection": "docs/design/DORA_MVP1_EXPORT_INTERACTION_CONTRACT.md#51-normative-transition-relation",
+        "exactRowOrderRequired": true,
+        "required": true
+      }
+    },
     "reachability": {
       "initialState": "CLOSED",
       "requiredReachableStates": [
@@ -1451,11 +1506,13 @@
           "Tasks",
           "CSV",
           "SAF",
-          "Dora staging"
+          "Dora staging",
+          "effective temp expiry=15 minutes"
         ],
         "preconditions": [
           "state=CLOSED",
-          "policy allows plan"
+          "policy allows plan",
+          "managed policy shortens temp expiry to 15 minutes"
         ],
         "events": [
           "OPEN_EXPORT",
@@ -1482,8 +1539,10 @@
           "CLEANUP_PENDING",
           "COMPLETED"
         ],
-        "expectedOutcome": "destination closed before Dora staging cleanup",
+        "expectedOutcome": "Review displays the policy-shortened 15-minute expiry; destination closed before Dora staging cleanup",
         "invariants": [
+          "policy expiry visible at Review",
+          "policy cannot extend expiry",
           "no cleanup eligibility before close",
           "external copy outside Dora expiry",
           "source untouched"
