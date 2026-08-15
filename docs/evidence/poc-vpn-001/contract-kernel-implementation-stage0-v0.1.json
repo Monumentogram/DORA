@@ -1,0 +1,155 @@
+{
+  "schemaVersion": "poc-vpn-contract-kernel-implementation-stage0-v0.1",
+  "recordType": "PURE_HOST_CONTRACT_ORACLE_IMPLEMENTATION",
+  "recordDate": "2026-08-15",
+  "implementationState": "HOST_ORACLE_IMPLEMENTED_AND_TESTED",
+  "formalReviewer": false,
+  "decisionBoundary": "OWNER_DELEGATED_REVERSIBLE_STAGE0_HOST_ORACLE_ONLY",
+  "sourceBaseline": {
+    "gitCommit": "b183fa72b019f449333844a720f86c29904ca0df",
+    "gitTree": "2bf17cdea58256e14009465d3ba0d249a721a7f4",
+    "signatureVerified": true
+  },
+  "contractSources": {
+    "contractId": "poc-vpn-synthetic-api-stage0-v0.1",
+    "machineRecord": "docs/evidence/poc-vpn-001/contract-record-stage0-v0.1.json",
+    "machineRecordSha256": "5efb14b67026bed208310249c7d2e0bd03450af0069f6af8c1634c7efc4025c2",
+    "markdownContract": "docs/stage0/DORA_MVP1_POC_VPN_SYNTHETIC_CONTRACT_STAGE0_V0_1.md",
+    "markdownContractSha256": "cc3e7508238564fd1346467625b3bd03c9a9ffdbf2b00d44a3b7ca67bea81ebf",
+    "semanticSourcesChanged": false,
+    "parityMode": "FAIL_CLOSED_STRICT_JSON_DUPLICATE_REJECTION_AND_EXACT_SOURCE_PINS"
+  },
+  "module": {
+    "includedBuild": "android/poc/vpn-contract-kernel",
+    "package": "com.monumentogram.dora.poc.vpn.contract",
+    "androidPluginApplied": false,
+    "androidManifestPresent": false,
+    "androidResourcesPresent": false,
+    "runtimeNetworkStackPresent": false,
+    "filesystemPersistencePresent": false,
+    "clockOrRandomnessUsedWithoutInjectedValues": false
+  },
+  "toolBoundary": {
+    "gradleVersion": "9.5.0",
+    "gradleDistributionSha256": "553c78f50dafcd54d65b9a444649057857469edf836431389695608536d6b746",
+    "compilerVersion": "2.3.20",
+    "compilerSource": "PINNED_GRADLE_DISTRIBUTION_TOOL_ONLY",
+    "compilerProcessJarNames": [
+      "kotlin-compiler-embeddable-2.3.20.jar",
+      "kotlin-stdlib-2.3.20.jar",
+      "kotlin-script-runtime-2.3.20.jar",
+      "kotlin-reflect-2.3.20.jar",
+      "kotlinx-coroutines-core-jvm-1.10.2.jar",
+      "annotations-24.0.1.jar"
+    ],
+    "sourceCompileClasspath": [
+      "kotlin-stdlib-2.3.20.jar"
+    ],
+    "testRuntimeClasspath": [
+      "compiled-main-classes",
+      "compiled-test-classes",
+      "kotlin-stdlib-2.3.20.jar"
+    ],
+    "gradlePluginIds": [
+      "base (Gradle core)"
+    ],
+    "externalDependencyCoordinates": [],
+    "dependencyLockfileRequired": false,
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "jvmRuntime": 17,
+    "jvmTarget": 17,
+    "classFileMajorVersion": 61
+  },
+  "catalogParity": {
+    "operationCount": 9,
+    "clientStateCount": 16,
+    "clientTransitionCount": 52,
+    "serverStateCount": 12,
+    "serverTransitionCount": 20,
+    "traceCount": 6,
+    "faultCount": 34,
+    "faultCoverageCount": 34,
+    "processDeathFaultRuleTargetCount": 4,
+    "fixtureCount": 7,
+    "outcomeInvariantCount": 10,
+    "deletionRecordFieldCount": 11,
+    "requestSchemaValidatorCount": 4,
+    "trace006DigestCount": 4
+  },
+  "implementedPureBehavior": [
+    "DORA_CJ_V1_CANONICAL_JSON_AND_STRICT_PARSER",
+    "TYPED_PATH_MAP_ROUTE_RENDERING_AND_REQUEST_DIGEST",
+    "PRE_IDEMPOTENCY_EXACT_REQUEST_SCHEMA_AND_PATH_BODY_REJECTION",
+    "CONSENT_PROFILE_ENDPOINT_REGION_BINDING_WITH_INJECTED_TIME",
+    "IMMUTABLE_IDEMPOTENCY_LEDGER_COMMIT_REPLAY_AND_409",
+    "CLIENT_SERVER_FSM_CATALOG_AND_PRIORITY_ARBITRATION",
+    "TYPED_MONOTONE_DELETE_RECEIPT_CONVERGENCE_AND_RECEIPT_ONLY_EXIT",
+    "DELETE_RESOURCE_BINDING_DIGEST",
+    "REPOSITORY_OWNED_SYNTHETIC_FIXTURE_GENERATION"
+  ],
+  "localChecks": [
+    {
+      "command": ".\\gradlew.bat -p poc\\vpn-contract-kernel hostTest --offline --no-configuration-cache --warning-mode all",
+      "outcome": "PASS_TWICE_WITH_ALL_SIX_TASKS_EXECUTED_AND_MAIN_AND_TEST_STALE_CLASS_NEGATIVE_SELF_TEST"
+    },
+    {
+      "command": ".\\gradlew.bat -p poc\\vpn-contract-kernel dependencies buildEnvironment --offline --no-configuration-cache",
+      "outcome": "PASS_NO_CONFIGURATIONS_AND_NO_BUILDSCRIPT_DEPENDENCIES"
+    },
+    {
+      "command": "javap -verbose ContractOracle",
+      "outcome": "PASS_CLASS_FILE_MAJOR_61"
+    },
+    {
+      "command": "jdeps --multi-release 17 --class-path <gradle-9.5.0-distribution>/lib/kotlin-stdlib-2.3.20.jar -summary android/poc/vpn-contract-kernel/build/classes/kotlin/main",
+      "outcome": "PASS_MAIN_DEPENDS_ONLY_ON_JAVA_BASE_AND_PINNED_KOTLIN_STDLIB"
+    }
+  ],
+  "ci": {
+    "requiredContext": "android-bootstrap",
+    "stepName": "Verify pure-host VPN contract kernel",
+    "state": "PENDING_NOT_RUN"
+  },
+  "authorityFlags": {
+    "implementationAllowed": false,
+    "implementationAllowedByThisPackage": false,
+    "executionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "harnessExecutionAllowed": false,
+    "networkExecutionAllowed": false,
+    "deviceExecutionAllowed": false,
+    "emulatorExecutionAllowed": false,
+    "vpnExecutionAllowed": false,
+    "providerExecutionAllowed": false,
+    "recoveryExecutionAllowed": false,
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "productionApiAdmission": false,
+    "realDataAllowed": false,
+    "credentialsAllowed": false,
+    "billingAllowed": false,
+    "featureFlagActivationAllowed": false,
+    "legalApprovalClaimed": false,
+    "securityApprovalClaimed": false,
+    "formalHumanApprovalClaimed": false,
+    "mergeAuthorized": false
+  },
+  "preservedStatus": {
+    "pocVpn001": "TODO_NOT_READY_NOT_RUN_NOT_AUTHORIZED",
+    "pocData001": "BLOCKED",
+    "recoveryBlockersChanged": false
+  },
+  "proofBoundary": {
+    "hostOracleOnly": true,
+    "transportHarnessImplemented": false,
+    "httpClientOrServerImplemented": false,
+    "vpnOrRouteExecutionPerformed": false,
+    "deviceOrEmulatorExecutionPerformed": false,
+    "providerOrBillingExecutionPerformed": false,
+    "measurementClaimed": false,
+    "pocPassClaimed": false,
+    "readyClaimed": false,
+    "mergeClaimed": false
+  }
+}

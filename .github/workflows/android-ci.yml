@@ -76,6 +76,15 @@ jobs:
           fi
           echo "Recovery execution is correctly blocked"
 
+      - name: Verify pure-host VPN contract kernel
+        working-directory: android
+        run: >-
+          ./gradlew --no-daemon --stacktrace
+          -p poc/vpn-contract-kernel
+          hostTest
+          --offline
+          --no-configuration-cache
+
       - name: Check formatting and Kotlin static analysis
         working-directory: android
         run: >-
