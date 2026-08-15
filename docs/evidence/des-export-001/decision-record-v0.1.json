@@ -1,0 +1,439 @@
+{
+  "schemaVersion": 1,
+  "recordType": "DORA_DESIGN_DECISION_EVIDENCE",
+  "recordId": "DES-EXPORT-001-DEC-017-20260815",
+  "status": "CONTRACT_COMPLETE_NO_IMPLEMENTATION_CLAIM",
+  "recordedOn": "2026-08-15",
+  "repository": "Monumentogram/DORA",
+  "base": {
+    "branch": "main",
+    "parentCommit": "c35178662206180505896f6ab3044a5e6fa60718",
+    "parentTree": "237a54d67958b107635a2e1ecf7864d162ae8461",
+    "mustMatchLiveProtectedMainAtTaskStart": true,
+    "githubSignatureVerified": true,
+    "githubSignatureReason": "valid"
+  },
+  "decision": {
+    "id": "DEC-017",
+    "status": "Approved",
+    "approvedScope": "versioned reversible design/governance contract only",
+    "codeFigmaSchemaProviderAndExportExecutionSeparatelyScoped": true
+  },
+  "decisionProvenance": {
+    "sourceKind": "project_owner_message",
+    "sourceWording": "Продолжи работу. Все где нужно принимать решения типа РАЗРЕШАЮ делай сама или поручи отдельному агенту. Важно, чтобы процесс не останавливался из-за этого",
+    "interpretation": "Project owner standing delegation to the AI coordinator for ordinary reversible project/product decisions so workflow does not stop.",
+    "decisionExecutor": "OpenAI Codex project coordinator",
+    "reviewer": "OpenAI Codex project coordinator",
+    "formalReviewer": false,
+    "humanSignatureClaimed": false,
+    "qualifiedLegalOrSecurityReviewerClaimed": false
+  },
+  "contract": {
+    "identity": "des-export-interaction-v0.1",
+    "version": "0.1",
+    "normativeDocument": "docs/design/DORA_MVP1_EXPORT_INTERACTION_CONTRACT.md",
+    "backlogId": "DES-EXPORT-001",
+    "completionMeaning": "contract complete; no implementation/conformance/user-research claim"
+  },
+  "contentFormatMatrix": {
+    "contentClasses": [
+      "Summary",
+      "Protocol",
+      "Transcript",
+      "Tasks",
+      "Audio"
+    ],
+    "formats": {
+      "Copy/plain text": {
+        "allowedContent": [
+          "Summary",
+          "Protocol",
+          "Transcript",
+          "Tasks"
+        ],
+        "rawAudioBytesExcluded": true
+      },
+      "Markdown": {
+        "allowedContent": [
+          "Summary",
+          "Protocol",
+          "Transcript",
+          "Tasks"
+        ],
+        "rawAudioBytesExcluded": true
+      },
+      "JSON v1": {
+        "allowedContent": [
+          "Summary",
+          "Protocol",
+          "Transcript",
+          "Tasks"
+        ],
+        "versioned": true,
+        "structuredContentOnly": true,
+        "rawAudioBytesExcluded": true
+      },
+      "CSV": {
+        "allowedContent": [
+          "Tasks"
+        ],
+        "rawAudioBytesExcluded": true
+      },
+      "Audio WAV/PCM": {
+        "allowedContent": [
+          "Audio"
+        ],
+        "oneShotOnly": true,
+        "defaultOff": true,
+        "inherited": false,
+        "selectedBySelectAll": false
+      },
+      "Encrypted bundle": {
+        "availability": "DEFERRED_NOT_MVP",
+        "enabled": false,
+        "requiresSeparateKeyAndRecoveryDecision": true
+      }
+    }
+  },
+  "defaults": {
+    "contentPreselected": false,
+    "formatPreselected": false,
+    "destinationPreselected": false,
+    "contentRemembered": false,
+    "formatRemembered": false,
+    "destinationRemembered": false,
+    "incompatiblePairsDisabledWithReason": true,
+    "audioAcknowledgementRequiredEveryExport": true,
+    "audioAcknowledgementRemembered": false,
+    "selectAllStructuredContent": [
+      "Summary",
+      "Protocol",
+      "Transcript",
+      "Tasks"
+    ],
+    "selectAllIncludesAudio": false
+  },
+  "destinations": {
+    "Clipboard": {
+      "allowedFormats": [
+        "Copy/plain text"
+      ],
+      "successBoundary": "clipboard API accepted"
+    },
+    "Android Sharesheet": {
+      "fileFormatsOnly": true,
+      "successBoundary": "file handoff to Android Sharesheet",
+      "recipientDeliveryClaimed": false
+    },
+    "Storage Access Framework": {
+      "fileFormatsOnly": true,
+      "successBoundary": "final write and close completed",
+      "providerPersistenceClaimed": false
+    },
+    "doraCloudUpload": false,
+    "doraAccountPrerequisite": false,
+    "gmsPrerequisite": false,
+    "doraNetworkPrerequisite": false,
+    "externalControlDisclosureRequired": true,
+    "externalAppOrProviderMayIndependentlyUseNetworkDisclosureRequired": true
+  },
+  "unencryptedTransferWarning": {
+    "requiredBeforeEveryClipboardPlainOrUnencryptedTransfer": true,
+    "skippable": false,
+    "rememberedAcknowledgement": false,
+    "ru": "Dora передаст выбранные данные разговора как незашифрованный текст или файл. После копирования, сохранения или отправки Dora не управляет копией в буфере обмена, другом приложении или выбранном хранилище.",
+    "en": "Dora will transfer the selected conversation data as unencrypted text or files. After copying, saving, or sharing, Dora does not control copies held by the clipboard, another app, or the selected storage provider."
+  },
+  "temporaryArtifactLifecycle": {
+    "creationAllowedOnlyAfterReviewAndRequiredAcknowledgements": true,
+    "creationAllowedOnlyAfterReviewAndUnencryptedWarning": true,
+    "deleteNowAvailable": true,
+    "cleanupOnCancel": true,
+    "cleanupOnFailure": true,
+    "cleanupAfterSafeHandoff": true,
+    "doraManagedShareTempHardMaximumSeconds": 3600,
+    "expiredAndOrphanedCleanupOnStartup": true,
+    "failedCleanupVisible": true,
+    "failedCleanupRetryable": true,
+    "safAndExternalDestinationCopiesOutsideDoraExpiry": true,
+    "sourceConversationDeletedByCleanup": false,
+    "sourceAudioDeletedByCleanup": false,
+    "sourceContentDeletedByCleanup": false,
+    "physicalOverwritePromised": false
+  },
+  "recentExports": {
+    "showsOnlyLiveDoraManagedTempArtifactsAndCleanupFailures": true,
+    "metadataContentFree": true,
+    "entryRemovedAfterCleanup": true,
+    "separatePersistentHistoryInMvp": false,
+    "forbiddenMetadata": [
+      "conversation title",
+      "content excerpt",
+      "participant",
+      "path",
+      "URI",
+      "destination identity",
+      "provider credential"
+    ]
+  },
+  "clipboard": {
+    "explicitDestination": true,
+    "bestEffortClearAfterSeconds": 60,
+    "clearOnlyIfDoraClipIsUnchanged": true,
+    "clearGuaranteed": false,
+    "nonGuaranteeDisclosureRequired": true
+  },
+  "managedPolicy": {
+    "mayVisiblyDisableOrRestrictFormats": true,
+    "mayVisiblyDisableOrRestrictDestinations": true,
+    "mayVisiblyDisableOrRestrictAudio": true,
+    "mayShortenTempExpiry": true,
+    "maySilentlyEnable": false,
+    "mayInitiateExport": false,
+    "mayPreselectFallback": false
+  },
+  "retry": {
+    "startsFrom": "REVIEW",
+    "sourceRevalidationRequired": true,
+    "selectionRevalidationRequired": true,
+    "backgroundResume": false,
+    "partialOutputReuse": false
+  },
+  "successSemantics": {
+    "Clipboard": "clipboard API accepted",
+    "Storage Access Framework": "final write and close completed",
+    "Android Sharesheet": "handed to Android",
+    "externalAppOrProviderReadClaimed": false,
+    "externalAppOrProviderSavedClaimed": false,
+    "externalAppOrProviderSyncedClaimed": false,
+    "externalAppOrProviderDeliveredClaimed": false
+  },
+  "progressAndDiagnostics": {
+    "determinateOnlyWithRealNumeratorAndDenominator": true,
+    "otherwiseStageOnly": true,
+    "contentFree": true,
+    "pathsAllowed": false,
+    "urisAllowed": false,
+    "keysAllowed": false,
+    "payloadAllowed": false,
+    "userContentAllowed": false,
+    "destinationCredentialsAllowed": false
+  },
+  "stateMachine": {
+    "stateCount": 15,
+    "initialState": "CLOSED",
+    "states": [
+      {
+        "id": "EX-00",
+        "name": "CLOSED",
+        "artifactAllowed": false
+      },
+      {
+        "id": "EX-01",
+        "name": "SELECT_CONTENT",
+        "artifactAllowed": false,
+        "emptySelectionAdvances": false
+      },
+      {
+        "id": "EX-02",
+        "name": "SELECT_FORMAT",
+        "artifactAllowed": false,
+        "unsupportedOrPolicyBlockedPairAdvances": false
+      },
+      {
+        "id": "EX-03",
+        "name": "SELECT_DESTINATION",
+        "artifactAllowed": false,
+        "destinationPickerCancelIsSuccess": false
+      },
+      {
+        "id": "EX-04",
+        "name": "REVIEW",
+        "artifactAllowed": false,
+        "sourceAndSelectionRevalidationRequired": true
+      },
+      {
+        "id": "EX-05",
+        "name": "AUDIO_ACKNOWLEDGEMENT",
+        "artifactAllowed": false,
+        "requiredForAudioEveryAttempt": true
+      },
+      {
+        "id": "EX-06",
+        "name": "UNENCRYPTED_WARNING",
+        "artifactAllowed": false,
+        "requiredEveryAttempt": true
+      },
+      {
+        "id": "EX-07",
+        "name": "PREPARING",
+        "artifactAllowed": true,
+        "cancelRequiresCleanupConvergenceWhenArtifactExists": true
+      },
+      {
+        "id": "EX-08",
+        "name": "TRANSFERRING",
+        "artifactAllowed": true,
+        "cancelRequiresCleanupConvergenceWhenArtifactExists": true
+      },
+      {
+        "id": "EX-09",
+        "name": "HANDOFF_SUCCEEDED",
+        "recipientDeliveryClaimed": false
+      },
+      {
+        "id": "EX-10",
+        "name": "CLEANUP_PENDING",
+        "pendingOutcomeValues": [
+          "COMPLETED",
+          "FAILED_RETRYABLE",
+          "CANCELLED"
+        ]
+      },
+      {
+        "id": "EX-11",
+        "name": "COMPLETED",
+        "persistentHistoryAllowed": false
+      },
+      {
+        "id": "EX-12",
+        "name": "FAILED_RETRYABLE",
+        "retryMustReturnThroughReview": true
+      },
+      {
+        "id": "EX-13",
+        "name": "CANCELLED",
+        "persistentHistoryAllowed": false
+      },
+      {
+        "id": "EX-14",
+        "name": "CLEANUP_FAILED",
+        "visible": true,
+        "retryable": true,
+        "sourceDeleted": false
+      }
+    ],
+    "rules": {
+      "emptyUnsupportedOrPolicyValidationCreatesArtifact": false,
+      "pickerExplorationCreatesArtifact": false,
+      "pickerCancelBeforeArtifact": "CANCELLED_OR_EXPLICIT_RETURN_TO_SELECTION_WITH_NO_SUCCESS_CLAIM",
+      "pickerCancelAfterArtifact": "CLEANUP_PENDING_WITH_PENDING_OUTCOME_CANCELLED",
+      "cancelDuringPrepareOrTransfer": "STOP_WHEN_SAFE_THEN_CLEANUP_PENDING_IF_ARTIFACT_EXISTS",
+      "cleanupSuccess": "ENTER_STORED_PENDING_OUTCOME",
+      "cleanupFailure": "ENTER_CLEANUP_FAILED_AND_RETAIN_STORED_PENDING_OUTCOME",
+      "cleanupRetrySuccess": "ENTER_STORED_PENDING_OUTCOME",
+      "handoffSuccessEqualsRecipientDelivery": false,
+      "expiryDeleteNowAndStartupOrphanCleanupUseCleanupConvergence": true,
+      "startupOrphanWithoutRetainedPendingOutcome": "CANCELLED_FAIL_CLOSED",
+      "sourceConversationAudioAndContentNeverDeleted": true,
+      "partialOutputNeverReused": true,
+      "backgroundResumeAllowed": false
+    }
+  },
+  "accessibility": {
+    "semanticLabelsAndStatesRequired": true,
+    "disabledReasonProgrammaticallyAssociated": true,
+    "warningReadInLogicalOrder": true,
+    "focusRestorationRequired": true,
+    "talkBackSwitchKeyboardReachabilityRequired": true,
+    "minimumTouchTargetDp": 48,
+    "twoHundredPercentTextRequired": true,
+    "statusNotColorOnly": true,
+    "reducedMotionRespected": true,
+    "timeoutExceptionForSensitiveClipboardDisclosed": true
+  },
+  "syntheticAcceptance": {
+    "fixtureNamespace": "EXP-SYN",
+    "fixtureCount": 30,
+    "fixtureIds": [
+      "EXP-SYN-001",
+      "EXP-SYN-002",
+      "EXP-SYN-003",
+      "EXP-SYN-004",
+      "EXP-SYN-005",
+      "EXP-SYN-006",
+      "EXP-SYN-007",
+      "EXP-SYN-008",
+      "EXP-SYN-009",
+      "EXP-SYN-010",
+      "EXP-SYN-011",
+      "EXP-SYN-012",
+      "EXP-SYN-013",
+      "EXP-SYN-014",
+      "EXP-SYN-015",
+      "EXP-SYN-016",
+      "EXP-SYN-017",
+      "EXP-SYN-018",
+      "EXP-SYN-019",
+      "EXP-SYN-020",
+      "EXP-SYN-021",
+      "EXP-SYN-022",
+      "EXP-SYN-023",
+      "EXP-SYN-024",
+      "EXP-SYN-025",
+      "EXP-SYN-026",
+      "EXP-SYN-027",
+      "EXP-SYN-028",
+      "EXP-SYN-029",
+      "EXP-SYN-030"
+    ],
+    "realUserDataAllowed": false,
+    "userResearchExecuted": false,
+    "implementationConformanceExecuted": false
+  },
+  "authorityBoundary": {
+    "ordinaryReversibleDesignDecisionOnly": true,
+    "formalReviewer": false,
+    "legalApproval": false,
+    "securityApproval": false,
+    "recoveryAuthority": false,
+    "deviceExecutionAuthority": false,
+    "measuredExecutionAuthority": false,
+    "dependencyAdmissionAuthority": false,
+    "productionAdmissionAuthority": false,
+    "realDataCollectionAuthority": false,
+    "mergeAuthority": false,
+    "androidImplementationAuthority": false,
+    "figmaImplementationAuthority": false,
+    "schemaImplementationAuthority": false,
+    "providerImplementationAuthority": false,
+    "exportExecutionAuthority": false
+  },
+  "recoveryAuthoritySnapshot": {
+    "source": "docs/evidence/poc-recovery-001/implementation-authorization-rec-i1-20260813-01.json",
+    "unchangedByThisRecord": true,
+    "implementationAllowed": false,
+    "implementationAllowedByThisPackage": false,
+    "executionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "phaseAAuthorized": false,
+    "deviceExecutionAuthorized": false,
+    "mergeAuthorized": false
+  },
+  "evidenceStatus": {
+    "designGovernanceContract": "CONTRACT_COMPLETE",
+    "androidImplementation": "NOT_RUN",
+    "figmaPrototype": "NOT_RUN",
+    "schemaProviderSafSharesheetImplementation": "NOT_RUN",
+    "syntheticFixtureExecution": "NOT_RUN",
+    "accessibilityConformance": "NOT_RUN",
+    "userResearch": "NOT_RUN",
+    "legalReview": "NOT_RUN",
+    "securityReview": "NOT_RUN",
+    "deviceOrRecoveryExecution": "NOT_RUN"
+  },
+  "nonClaims": [
+    "No Android or export implementation",
+    "No Figma or prototype completion",
+    "No JSON export schema or provider implementation",
+    "No accessibility conformance",
+    "No user research or real-data evidence",
+    "No Legal or Security approval",
+    "No dependency or production admission",
+    "No Recovery, emulator, device, benchmark or measured execution",
+    "No merge authority"
+  ]
+}
