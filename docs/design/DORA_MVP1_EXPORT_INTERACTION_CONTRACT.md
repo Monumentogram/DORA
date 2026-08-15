@@ -87,7 +87,7 @@ disabled with the specific incompatibility reason; Dora must not silently drop a
 | Destination | Allowed output | Success boundary | Required disclosure |
 |---|---|---|---|
 | Clipboard | `Copy`/plain text only | Android clipboard API accepted Dora's clip | Clearing is best-effort; other apps/system surfaces may already hold or read the clip. |
-| Android Sharesheet | File outputs only; use a Dora-managed temp copy, never the canonical source | The share was handed to Android | Handoff is not recipient delivery. Retain the temp until an observable safe-release event, or `Delete now`, one-hour expiry or startup orphan cleanup. |
+| Android Sharesheet | File outputs only; use a Dora-managed temp copy, never the canonical source | The share was handed to Android | Handoff is not recipient delivery. Retain the temp until an observable safe-release event, warned `Delete now` or effective expiry; startup recovery must preserve that access window. |
 | Storage Access Framework | File outputs only; direct write or optional Dora staging | Final destination write and close completed | A Dora staging temp becomes cleanup-eligible only after successful destination close. The selected provider controls its copy and may independently use network. |
 | Dora cloud upload | none | not applicable | Unavailable; export has no Dora cloud route. |
 
@@ -137,20 +137,29 @@ invariant below.
 | `EX-13` | `CANCELLED` | User/system destination picker cancellation is complete and no live temp remains. | No persistent export-history entry. |
 | `EX-14` | `CLEANUP_FAILED` | Dora could not delete a managed temp. Show content-free failure and retry/delete action. | Source content is untouched; failed temp stays visible and retryable. |
 
+On startup, `HANDOFF_SUCCEEDED` is also the conservative live-temp retention state when corrupt or
+missing recovery context makes the original handoff boundary unprovable. In that degraded case the
+UI says that handoff is unverified and makes no success or delivery claim; the state is reused only
+to avoid premature deletion without adding a sixteenth state.
+
 ### 5.1. Normative transition relation
 
 The tuple `(source, event)` is the deterministic key. Every row has one guard, one action and one
 target. Product UI that offers alternative outcomes must expose distinct events or fix the named
-policy input before the triggering action. The machine record contains the same 82 rows; row-by-row
+policy input before the triggering action. The machine record contains the same 86 rows; row-by-row
 Markdown/JSON parity is mandatory.
 
 | ID | Source | Event | Guard | Action | Target |
 |---|---|---|---|---|---|
 | `TR-001` | `CLOSED` | `OPEN_EXPORT` | no active export session | create a fresh attempt; clear selections, acknowledgements and pendingOutcome | `SELECT_CONTENT` |
-| `TR-002` | `CLOSED` | `STARTUP_ORPHAN_FOUND_COMPLETED` | allowlisted Dora temp has retained pendingOutcome=COMPLETED | restore content-free cleanup metadata; set reason=STARTUP_ORPHAN | `CLEANUP_PENDING` |
-| `TR-003` | `CLOSED` | `STARTUP_ORPHAN_FOUND_FAILED_RETRYABLE` | allowlisted Dora temp has retained pendingOutcome=FAILED_RETRYABLE | restore content-free cleanup metadata; set reason=STARTUP_ORPHAN | `CLEANUP_PENDING` |
-| `TR-004` | `CLOSED` | `STARTUP_ORPHAN_FOUND_CANCELLED` | allowlisted Dora temp has retained pendingOutcome=CANCELLED | restore content-free cleanup metadata; set reason=STARTUP_ORPHAN | `CLEANUP_PENDING` |
-| `TR-005` | `CLOSED` | `STARTUP_ORPHAN_FOUND_UNKNOWN` | allowlisted Dora temp lacks a valid retained pendingOutcome | set pendingOutcome=CANCELLED fail-closed; set reason=STARTUP_ORPHAN | `CLEANUP_PENDING` |
+| `TR-002` | `CLOSED` | `STARTUP_SHARESHEET_RESTORE_UNEXPIRED` | valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED, now<effectiveExpiresAt, safeReleaseObserved=false and deleteNowConfirmedAfterWarning=false | restore content-free recovery context and Recent exports entry; retain temp; expose warned Delete now; claim no delivery | `HANDOFF_SUCCEEDED` |
+| `TR-003` | `CLOSED` | `STARTUP_SHARESHEET_CLEANUP_SAFE_RELEASE` | valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED and safeReleaseObserved=true | restore context; retain pendingOutcome; set cleanupReason=SAFE_RELEASE_OBSERVED; request temp cleanup | `CLEANUP_PENDING` |
+| `TR-004` | `CLOSED` | `STARTUP_SHARESHEET_CLEANUP_DELETE_NOW` | valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED and deleteNowConfirmedAfterWarning=true | restore context; retain pendingOutcome; set cleanupReason=DELETE_NOW_CONFIRMED; request temp cleanup | `CLEANUP_PENDING` |
+| `TR-005` | `CLOSED` | `STARTUP_SHARESHEET_CLEANUP_EXPIRED` | valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED and now>=effectiveExpiresAt | restore context; retain pendingOutcome; set cleanupReason=EXPIRED; request temp cleanup | `CLEANUP_PENDING` |
+| `TR-083` | `CLOSED` | `STARTUP_SAF_STAGING_CLEANUP_ELIGIBLE` | valid recovery context has destinationClass=SAF, pendingOutcome=COMPLETED and finalDestinationCloseObserved=true | restore context; retain pendingOutcome; set cleanupReason=SAF_CLOSE_OBSERVED; request staging cleanup | `CLEANUP_PENDING` |
+| `TR-084` | `CLOSED` | `STARTUP_ABORTED_TEMP_CLEANUP_ELIGIBLE` | valid recovery context has pendingOutcome fixed as one member of {FAILED_RETRYABLE, CANCELLED} | restore context; retain pendingOutcome; set cleanupReason=NO_EXTERNAL_ACCESS_WINDOW; request temp cleanup | `CLEANUP_PENDING` |
+| `TR-085` | `CLOSED` | `STARTUP_CONTEXT_INVALID_RETAIN` | recoveryContextStatus=INVALID and now<conservativeRetentionDeadline | reconstruct content-free context with destinationClass=SHARESHEET_CONSERVATIVE, pendingOutcome=CANCELLED and handoffEvidence=UNKNOWN; retain temp; expose warned Delete now; claim neither success nor delivery | `HANDOFF_SUCCEEDED` |
+| `TR-086` | `CLOSED` | `STARTUP_CONTEXT_INVALID_RETENTION_EXPIRED` | recoveryContextStatus=INVALID and now>=conservativeRetentionDeadline | reconstruct content-free context with pendingOutcome=CANCELLED; set cleanupReason=CONSERVATIVE_RETENTION_EXPIRED; request temp cleanup | `CLEANUP_PENDING` |
 | `TR-006` | `SELECT_CONTENT` | `CONTENT_SELECTION_ACCEPTED` | selection is non-empty, compatible and policy-allowed | store explicit content selection for this attempt | `SELECT_FORMAT` |
 | `TR-007` | `SELECT_CONTENT` | `CONTENT_SELECTION_EMPTY` | selection contains zero content classes | show accessible empty-selection reason; create no artifact | `SELECT_CONTENT` |
 | `TR-008` | `SELECT_CONTENT` | `CONTENT_SELECTION_POLICY_BLOCKED` | selected content is visibly restricted by managed policy | show policy reason; create no artifact; select no fallback | `SELECT_CONTENT` |
@@ -193,10 +202,10 @@ Markdown/JSON parity is mandatory.
 | `TR-045` | `TRANSFERRING` | `CLIPBOARD_API_ACCEPTED` | destination=Clipboard; Android clipboard API accepted the unchanged Dora clip | record clipboard success boundary; schedule independent best-effort clear | `HANDOFF_SUCCEEDED` |
 | `TR-046` | `TRANSFERRING` | `CLIPBOARD_API_REJECTED` | destination=Clipboard; clipboard API did not accept the clip | record content-free failure; retain no payload | `FAILED_RETRYABLE` |
 | `TR-047` | `TRANSFERRING` | `SAF_FINAL_CLOSE_SUCCEEDED_NO_STAGING` | destination=SAF; final write and close succeeded; no Dora staging exists | record SAF success boundary; claim no provider persistence | `HANDOFF_SUCCEEDED` |
-| `TR-048` | `TRANSFERRING` | `SAF_FINAL_CLOSE_SUCCEEDED_WITH_STAGING` | destination=SAF; final write and close succeeded; Dora staging exists | record SAF success boundary; mark staging cleanupEligible=true | `HANDOFF_SUCCEEDED` |
+| `TR-048` | `TRANSFERRING` | `SAF_FINAL_CLOSE_SUCCEEDED_WITH_STAGING` | destination=SAF; final write and close succeeded; Dora staging exists | set pendingOutcome=COMPLETED; persist finalDestinationCloseObserved=true; record SAF success boundary; mark staging cleanupEligible=true | `HANDOFF_SUCCEEDED` |
 | `TR-049` | `TRANSFERRING` | `SAF_WRITE_FAILED_NO_STAGING` | destination=SAF; the final-close success boundary was not reached; no Dora staging exists | close writer best-effort; disclose provider partial outside Dora control; record failure | `FAILED_RETRYABLE` |
 | `TR-050` | `TRANSFERRING` | `SAF_WRITE_FAILED_WITH_STAGING` | destination=SAF; the final-close success boundary was not reached; Dora staging exists | close writer best-effort; disclose provider partial outside Dora control; set pendingOutcome=FAILED_RETRYABLE | `CLEANUP_PENDING` |
-| `TR-051` | `TRANSFERRING` | `SHARESHEET_HANDOFF_ACCEPTED` | destination=Sharesheet; Android accepted the share handoff; Dora temp exists | record handoff boundary; retain temp; claim no recipient delivery | `HANDOFF_SUCCEEDED` |
+| `TR-051` | `TRANSFERRING` | `SHARESHEET_HANDOFF_ACCEPTED` | destination=Sharesheet; Android accepted the share handoff; Dora temp exists | set pendingOutcome=COMPLETED; persist content-free recovery context; record handoff boundary; retain temp; claim no recipient delivery | `HANDOFF_SUCCEEDED` |
 | `TR-052` | `TRANSFERRING` | `SHARESHEET_HANDOFF_REJECTED` | destination=Sharesheet; Android did not accept the share handoff; Dora temp exists | set pendingOutcome=FAILED_RETRYABLE; request temp cleanup | `CLEANUP_PENDING` |
 | `TR-053` | `TRANSFERRING` | `TRANSFER_PICKER_CANCELLED_NO_TEMP` | system picker cancelled; no Dora temp exists | record cancellation; restore focus; claim no success | `CANCELLED` |
 | `TR-054` | `TRANSFERRING` | `TRANSFER_PICKER_CANCELLED_WITH_TEMP` | system picker cancelled; Dora temp exists | record cancellation; restore focus; set pendingOutcome=CANCELLED | `CLEANUP_PENDING` |
@@ -207,10 +216,10 @@ Markdown/JSON parity is mandatory.
 | `TR-059` | `TRANSFERRING` | `PROGRESS_WITHOUT_REAL_DENOMINATOR` | a real denominator is unavailable | publish stage-only progress; publish no percentage | `TRANSFERRING` |
 | `TR-060` | `HANDOFF_SUCCEEDED` | `CLIPBOARD_SUCCESS_RECORDED` | destination=Clipboard; no Dora file temp exists | retain only content-free result metadata | `COMPLETED` |
 | `TR-061` | `HANDOFF_SUCCEEDED` | `SAF_SUCCESS_RECORDED_NO_STAGING` | destination=SAF; final close succeeded; no Dora staging exists | retain only content-free result metadata | `COMPLETED` |
-| `TR-062` | `HANDOFF_SUCCEEDED` | `SAF_STAGING_CLEANUP_ELIGIBLE` | destination=SAF; final close succeeded; Dora staging cleanupEligible=true | set pendingOutcome=COMPLETED; request staging cleanup | `CLEANUP_PENDING` |
-| `TR-063` | `HANDOFF_SUCCEEDED` | `SHARESHEET_SAFE_RELEASE_OBSERVED` | destination=Sharesheet; exact lifecycle signal is observable and separately evidenced as safe release | set pendingOutcome=COMPLETED; request temp cleanup | `CLEANUP_PENDING` |
-| `TR-064` | `HANDOFF_SUCCEEDED` | `SHARESHEET_DELETE_NOW` | destination=Sharesheet; live Dora temp exists; user confirms access-loss warning | set pendingOutcome=COMPLETED; request temp cleanup; leave external copies untouched | `CLEANUP_PENDING` |
-| `TR-065` | `HANDOFF_SUCCEEDED` | `SHARESHEET_TEMP_EXPIRED` | destination=Sharesheet; live Dora temp reached effective expiry | set pendingOutcome=COMPLETED; request temp cleanup; leave external copies untouched | `CLEANUP_PENDING` |
+| `TR-062` | `HANDOFF_SUCCEEDED` | `SAF_STAGING_CLEANUP_ELIGIBLE` | destination=SAF; final close succeeded; Dora staging cleanupEligible=true | retain pendingOutcome=COMPLETED; request staging cleanup | `CLEANUP_PENDING` |
+| `TR-063` | `HANDOFF_SUCCEEDED` | `SHARESHEET_SAFE_RELEASE_OBSERVED` | destinationClass is one member of {SHARESHEET, SHARESHEET_CONSERVATIVE}; exact lifecycle signal is observable and separately evidenced as safe release | retain pendingOutcome; persist safeReleaseObserved=true; request temp cleanup | `CLEANUP_PENDING` |
+| `TR-064` | `HANDOFF_SUCCEEDED` | `SHARESHEET_DELETE_NOW` | destinationClass is one member of {SHARESHEET, SHARESHEET_CONSERVATIVE}; live Dora temp exists; user confirms access-loss warning | retain pendingOutcome; persist deleteNowConfirmedAfterWarning=true; request temp cleanup; leave external copies untouched | `CLEANUP_PENDING` |
+| `TR-065` | `HANDOFF_SUCCEEDED` | `SHARESHEET_TEMP_EXPIRED` | destinationClass is one member of {SHARESHEET, SHARESHEET_CONSERVATIVE}; live Dora temp reached the recovery-context-selected active retention deadline | retain pendingOutcome; set cleanupReason=EXPIRED; request temp cleanup; leave external copies untouched | `CLEANUP_PENDING` |
 | `TR-066` | `HANDOFF_SUCCEEDED` | `CLOSE_HANDOFF_VIEW_WITH_TEMP` | destination=Sharesheet; live Dora temp exists | close the view; retain state and content-free Recent exports entry | `HANDOFF_SUCCEEDED` |
 | `TR-067` | `CLEANUP_PENDING` | `CLEANUP_SUCCEEDED_COMPLETED` | deletion succeeded; pendingOutcome=COMPLETED | remove Recent exports entry; clear cleanup metadata | `COMPLETED` |
 | `TR-068` | `CLEANUP_PENDING` | `CLEANUP_SUCCEEDED_FAILED_RETRYABLE` | deletion succeeded; pendingOutcome=FAILED_RETRYABLE | remove Recent exports entry; clear cleanup metadata | `FAILED_RETRYABLE` |
@@ -241,6 +250,9 @@ Transition evaluation is fail-closed:
   `FAILED_RETRYABLE` or `CANCELLED`;
 - a Sharesheet safe-release event is unavailable unless an exact observable lifecycle signal has
   separate evidence. Handoff alone never satisfies its guard.
+- startup evaluates one explicit persisted/reconstructed recovery-context predicate before choosing
+  exactly one startup event. Mere process restart or `pendingOutcome=COMPLETED` is never cleanup
+  eligibility for an unexpired Sharesheet temp.
 
 Auxiliary lifecycle/evidence events do not change the 15-state interaction state:
 
@@ -264,8 +276,9 @@ Auxiliary lifecycle/evidence events do not change the 15-state interaction state
 - No state or deletion copy promises physical overwrite of flash/provider storage.
 - A managed policy can remove capabilities or shorten expiry only. It cannot select, enable,
   acknowledge or initiate export.
-- Logs, diagnostics, state persistence and Recent exports contain no payload, user content, path,
-  URI, key or destination credential.
+- Logs, diagnostics, state persistence and Recent exports contain no payload, user content, title,
+  path, URI, key or destination credential. The internal recovery context may contain only the
+  content-free fields enumerated in §6.1.
 
 ## 6. Temporary-artifact lifecycle
 
@@ -282,21 +295,54 @@ Auxiliary lifecycle/evidence events do not change the 15-state interaction state
    is not evidence that a recipient read, saved, synced or delivered it. The temp remains live after
    handoff until an exact OS/provider lifecycle signal is both observable and separately evidenced
    as safe release. If no such signal exists, automatic post-handoff cleanup does not fire; cleanup
-   occurs only through `Delete now`, the one-hour maximum or startup orphan cleanup.
+   occurs only through warned `Delete now` or effective expiry. Restart alone never makes the temp
+   cleanup-eligible.
 5. `Delete now` warns that pending external access to a Sharesheet temp may stop. It deletes only
    the Dora temp, never a SAF/provider copy or canonical source.
 6. A Dora-managed temp has a hard maximum lifetime of one hour from creation. Managed policy may
    shorten, never extend, this limit.
-7. On startup, discover and clean expired/orphaned Dora temps from the exact allowlisted Dora temp
-   area. Unknown files are not export artifacts and are not deleted by this contract.
-8. Failed cleanup remains visible and retryable until resolved. It is not renamed `complete`.
-9. SAF and other external-destination copies are outside Dora expiry and cannot be deleted by
+7. On startup, inspect only the exact allowlisted Dora temp area. Restore an unexpired Sharesheet
+   temp to governed retention unless the recovery context proves observable safe release, warned
+   `Delete now` or expiry. SAF staging is cleanup-eligible only when successful destination close is
+   persisted. Failed/cancelled pre-handoff temps can resume cleanup without an external access
+   window. Unknown files are not export artifacts and are not deleted by this contract.
+8. Missing/corrupt recovery context never triggers immediate deletion while the artifact could be
+   an unexpired Sharesheet handoff. On first observation, persist
+   `conservativeRetentionDeadline` as the earliest valid value among recovered
+   `effectiveExpiresAt`, recovered `createdAt + one hour`, and `firstObservedAt + one hour`; invalid
+   candidates are ignored. If no earlier trustworthy value exists, use `firstObservedAt + one
+   hour`. This degraded rule is bounded, never indefinite, and is recorded as a conformance failure
+   because the original creation-based maximum cannot be proved. Until that deadline, retain the
+   temp with `handoffEvidence=UNKNOWN` and no success claim; then clean with
+   `pendingOutcome=CANCELLED`. Warned `Delete now` or separately evidenced safe release may trigger
+   that cleanup earlier without changing the fail-closed outcome.
+9. Failed cleanup remains visible and retryable until resolved. It is not renamed `complete`.
+10. SAF and other external-destination copies are outside Dora expiry and cannot be deleted by
    `Delete now` or startup cleanup.
-10. Cleanup deletes only Dora-managed temporary outputs. Source Conversation, Audio, Summary,
+11. Cleanup deletes only Dora-managed temporary outputs. Source Conversation, Audio, Summary,
     Protocol, Transcript and Tasks are never cleanup targets.
-11. Logical/best-effort deletion wording is used. Physical overwrite is never claimed.
+12. Logical/best-effort deletion wording is used. Physical overwrite is never claimed.
 
-### 6.1. Recent exports
+### 6.1. Content-free recovery context
+
+Persist atomically with every Dora-managed temp, before handoff, only:
+
+- opaque transfer ID and `destinationClass` from
+  `{SAF, SHARESHEET, SHARESHEET_CONSERVATIVE}`;
+- `pendingOutcome`, `createdAt`, `effectiveExpiresAt` and, only for degraded recovery,
+  `firstObservedAt` plus `conservativeRetentionDeadline`;
+- `safeReleaseObserved`, `deleteNowConfirmedAfterWarning`, `finalDestinationCloseObserved` and
+  `handoffEvidence` from `{ANDROID_ACCEPTED, UNKNOWN}`, plus `recoveryContextStatus` from
+  `{VALID, INVALID}`.
+
+These fields decide retention/cleanup but are not an export history. They contain no title,
+participant, content, excerpt, payload, format payload, path, URI, provider/destination identity,
+credential or key. A destination class is a bounded enum, not an external destination identity.
+Before an external handoff succeeds, initialize `pendingOutcome=CANCELLED` fail-closed; replace it
+with `COMPLETED` only when the Sharesheet handoff or SAF final-close boundary is observed, and with
+`FAILED_RETRYABLE` on a retryable failure.
+
+### 6.2. Recent exports
 
 MVP has no separate persistent export history. `Recent exports` is a live operational surface only:
 
@@ -401,7 +447,7 @@ voice, title, path, provider credential or private destination is needed or auth
 | `EXP-SYN-009` | Audio WAV/PCM plus Sharesheet | Audio; WAV/PCM; Sharesheet | state=CLOSED; policy allows Audio | `OPEN_EXPORT`; `CONTENT_SELECTION_ACCEPTED`; `FORMAT_SELECTION_ACCEPTED`; `DESTINATION_CONFIRMED`; `REVIEW_CONFIRM_AUDIO`; `AUDIO_ACK_ACCEPTED`; `WARNING_ACCEPT_SHARESHEET_FILE`; `PREPARATION_SUCCEEDED_SHARESHEET`; `SHARESHEET_HANDOFF_ACCEPTED` | `CLOSED` → `SELECT_CONTENT` → `SELECT_FORMAT` → `SELECT_DESTINATION` → `REVIEW` → `AUDIO_ACKNOWLEDGEMENT` → `UNENCRYPTED_WARNING` → `PREPARING` → `TRANSFERRING` → `HANDOFF_SUCCEEDED`; one-shot Audio handed to Android; live temp retained | Audio acknowledgement fresh; warning separate and fresh; Audio not selected by Select all |
 | `EXP-SYN-010` | Encrypted bundle | Encrypted bundle | state=SELECT_FORMAT | `FORMAT_SELECTION_INCOMPATIBLE` | `SELECT_FORMAT` → `SELECT_FORMAT`; deferred not-MVP reason shown | no artifact; no Security approval claim; separate key and recovery decision required |
 | `EXP-SYN-011` | Managed policy disables Audio | Audio; managed policy restriction | state=SELECT_CONTENT; restriction visible | `CONTENT_SELECTION_POLICY_BLOCKED` | `SELECT_CONTENT` → `SELECT_CONTENT`; Audio remains disabled with policy reason | policy selects no fallback; policy initiates nothing; no artifact |
-| `EXP-SYN-012` | Managed policy expiry is 15 minutes | effective temp expiry=15 minutes | state=REVIEW; selected file plan valid | none | `REVIEW`; Review shows 15-minute expiry | below one-hour maximum; policy cannot extend expiry |
+| `EXP-SYN-012` | Restart before managed-policy expiry then expire | valid Sharesheet recovery context; effective temp expiry=15 minutes; now=10 minutes | state=CLOSED after restart; pendingOutcome=COMPLETED; safeReleaseObserved=false; deleteNowConfirmedAfterWarning=false | `STARTUP_SHARESHEET_RESTORE_UNEXPIRED`; `SHARESHEET_TEMP_EXPIRED`; `CLEANUP_SUCCEEDED_COMPLETED` | `CLOSED` → `HANDOFF_SUCCEEDED` → `CLEANUP_PENDING` → `COMPLETED`; restart retains access window, then effective expiry cleans temp | no cleanup on restart; below one-hour maximum; policy cannot extend expiry; no delivery claim |
 | `EXP-SYN-013` | External provider may use network | SAF external provider | state=REVIEW; selected file plan valid | none | `REVIEW`; external-control and independent-network disclosure shown | Dora account not required; GMS not required; Dora network not required |
 | `EXP-SYN-014` | Destination picker cancelled before temp | pickerCancelPolicy=RETURN_TO_DESTINATION | state=SELECT_DESTINATION; no artifact | `PICKER_CANCEL_RETURN` | `SELECT_DESTINATION` → `SELECT_DESTINATION`; focus restored and cancellation announced | no success claim; no artifact; policy fixed before launch |
 | `EXP-SYN-015` | Transfer picker cancelled after temp exists | Sharesheet; live Dora temp | state=TRANSFERRING | `TRANSFER_PICKER_CANCELLED_WITH_TEMP`; `CLEANUP_SUCCEEDED_CANCELLED` | `TRANSFERRING` → `CLEANUP_PENDING` → `CANCELLED`; cancel converges through cleanup | pendingOutcome=CANCELLED; no delivery claim; source untouched |
@@ -413,7 +459,7 @@ voice, title, path, provider credential or private destination is needed or auth
 | `EXP-SYN-021` | Clipboard changed before clear timer | replacement clip; elapsed=60 seconds | clipboard API previously accepted Dora clip | `CLIPBOARD_CLEAR_TIMER_CHANGED` | `COMPLETED`; replacement clip left untouched | no clear attempt on changed clip; replacement content not logged |
 | `EXP-SYN-022` | Delete now on live Sharesheet temp | live Dora temp; user confirms access-loss warning | state=HANDOFF_SUCCEEDED; destination=Sharesheet | `SHARESHEET_DELETE_NOW`; `CLEANUP_SUCCEEDED_COMPLETED` | `HANDOFF_SUCCEEDED` → `CLEANUP_PENDING` → `COMPLETED`; Dora temp deleted and Recent exports entry removed | external copies untouched; canonical source untouched; no physical overwrite claim |
 | `EXP-SYN-023` | Sharesheet temp reaches effective expiry | live Dora temp; effective expiry reached | state=HANDOFF_SUCCEEDED; destination=Sharesheet | `SHARESHEET_TEMP_EXPIRED`; `CLEANUP_SUCCEEDED_COMPLETED` | `HANDOFF_SUCCEEDED` → `CLEANUP_PENDING` → `COMPLETED`; expired Dora temp deleted | hard maximum one hour; external copies unaffected; source untouched |
-| `EXP-SYN-024` | Unknown orphaned temp found at startup | allowlisted Dora temp; missing retained pendingOutcome | state=CLOSED | `STARTUP_ORPHAN_FOUND_UNKNOWN`; `CLEANUP_SUCCEEDED_CANCELLED`; `CLOSE_CANCELLED` | `CLOSED` → `CLEANUP_PENDING` → `CANCELLED` → `CLOSED`; orphan deleted without manufacturing success | unknown files untouched; pendingOutcome fail-closed CANCELLED; source untouched |
+| `EXP-SYN-024` | Missing recovery context across restart | allowlisted Dora temp; recovery context missing; now before conservativeRetentionDeadline | state=CLOSED after restart; artifact could be an unexpired Sharesheet handoff | `STARTUP_CONTEXT_INVALID_RETAIN`; `SHARESHEET_TEMP_EXPIRED`; `CLEANUP_SUCCEEDED_CANCELLED`; `CLOSE_CANCELLED` | `CLOSED` → `HANDOFF_SUCCEEDED` → `CLEANUP_PENDING` → `CANCELLED` → `CLOSED`; temp is retained first, then bounded conservative expiry cleans without manufacturing success | no immediate deletion; handoff unverified; warned Delete now remains available; unknown files and source untouched |
 | `EXP-SYN-025` | Cleanup deletion fails | live Dora temp; delete returns failure | state=CLEANUP_PENDING; pendingOutcome retained | `CLEANUP_DELETE_FAILED` | `CLEANUP_PENDING` → `CLEANUP_FAILED`; content-free cleanup failure remains visible | retry available; completion not claimed; source untouched |
 | `EXP-SYN-026` | Cleanup retry succeeds | failed Dora temp; pendingOutcome=COMPLETED | state=CLEANUP_FAILED | `RETRY_CLEANUP`; `CLEANUP_SUCCEEDED_COMPLETED` | `CLEANUP_FAILED` → `CLEANUP_PENDING` → `COMPLETED`; retained outcome reached after deletion | export not repeated; Recent exports entry removed; source untouched |
 | `EXP-SYN-027` | Retry after transfer failure | previous transfer failure | state=FAILED_RETRYABLE; source selection and policy still valid | `RETRY_EXPORT_REVALIDATED` | `FAILED_RETRYABLE` → `REVIEW`; fresh reviewed attempt | partial output discarded; no background resume; no payload reuse |

@@ -174,15 +174,66 @@
         "fallbackCleanupEvents": [
           "SHARESHEET_DELETE_NOW",
           "SHARESHEET_TEMP_EXPIRED",
-          "STARTUP_ORPHAN_FOUND_COMPLETED",
-          "STARTUP_ORPHAN_FOUND_FAILED_RETRYABLE",
-          "STARTUP_ORPHAN_FOUND_CANCELLED",
-          "STARTUP_ORPHAN_FOUND_UNKNOWN"
+          "STARTUP_SHARESHEET_CLEANUP_SAFE_RELEASE",
+          "STARTUP_SHARESHEET_CLEANUP_DELETE_NOW",
+          "STARTUP_SHARESHEET_CLEANUP_EXPIRED",
+          "STARTUP_CONTEXT_INVALID_RETENTION_EXPIRED"
         ]
       }
     },
+    "contentFreeRecoveryContext": {
+      "persistAtomicallyBeforeHandoff": true,
+      "allowedFields": [
+        "opaqueTransferId",
+        "destinationClass",
+        "pendingOutcome",
+        "createdAt",
+        "effectiveExpiresAt",
+        "firstObservedAt",
+        "conservativeRetentionDeadline",
+        "safeReleaseObserved",
+        "deleteNowConfirmedAfterWarning",
+        "finalDestinationCloseObserved",
+        "handoffEvidence",
+        "recoveryContextStatus"
+      ],
+      "destinationClassValues": [
+        "SAF",
+        "SHARESHEET",
+        "SHARESHEET_CONSERVATIVE"
+      ],
+      "handoffEvidenceValues": [
+        "ANDROID_ACCEPTED",
+        "UNKNOWN"
+      ],
+      "recoveryContextStatusValues": [
+        "VALID",
+        "INVALID"
+      ],
+      "forbiddenFields": [
+        "conversation title",
+        "participant",
+        "content excerpt",
+        "payload",
+        "path",
+        "URI",
+        "provider or destination identity",
+        "credential",
+        "key"
+      ],
+      "restartAloneMakesSharesheetCleanupEligible": false,
+      "invalidContextDeletesImmediately": false,
+      "invalidContextPendingOutcome": "CANCELLED",
+      "initialPendingOutcomeBeforeExternalHandoff": "CANCELLED",
+      "completedOutcomeRequiresObservedHandoffOrFinalClose": true,
+      "conservativeDeadlineRule": "earliest valid value among recovered effectiveExpiresAt, recovered createdAt plus one hour, and firstObservedAt plus one hour; if no earlier trustworthy value exists use firstObservedAt plus one hour",
+      "degradedOriginalCreationMaximumConformanceClaimed": false
+    },
     "doraManagedShareTempHardMaximumSeconds": 3600,
-    "expiredAndOrphanedCleanupOnStartup": true,
+    "startupRecoveryEnabled": true,
+    "expiredCleanupOnStartup": true,
+    "unexpiredSharesheetCleanupOnStartup": false,
+    "invalidContextImmediateCleanupOnStartup": false,
     "failedCleanupVisible": true,
     "failedCleanupRetryable": true,
     "safAndExternalDestinationCopiesOutsideDoraExpiry": true,
@@ -351,7 +402,7 @@
       "action",
       "target"
     ],
-    "transitionCount": 82,
+    "transitionCount": 86,
     "transitionRelationNormative": true,
     "transitions": [
       {
@@ -365,33 +416,65 @@
       {
         "id": "TR-002",
         "source": "CLOSED",
-        "event": "STARTUP_ORPHAN_FOUND_COMPLETED",
-        "guard": "allowlisted Dora temp has retained pendingOutcome=COMPLETED",
-        "action": "restore content-free cleanup metadata; set reason=STARTUP_ORPHAN",
-        "target": "CLEANUP_PENDING"
+        "event": "STARTUP_SHARESHEET_RESTORE_UNEXPIRED",
+        "guard": "valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED, now<effectiveExpiresAt, safeReleaseObserved=false and deleteNowConfirmedAfterWarning=false",
+        "action": "restore content-free recovery context and Recent exports entry; retain temp; expose warned Delete now; claim no delivery",
+        "target": "HANDOFF_SUCCEEDED"
       },
       {
         "id": "TR-003",
         "source": "CLOSED",
-        "event": "STARTUP_ORPHAN_FOUND_FAILED_RETRYABLE",
-        "guard": "allowlisted Dora temp has retained pendingOutcome=FAILED_RETRYABLE",
-        "action": "restore content-free cleanup metadata; set reason=STARTUP_ORPHAN",
+        "event": "STARTUP_SHARESHEET_CLEANUP_SAFE_RELEASE",
+        "guard": "valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED and safeReleaseObserved=true",
+        "action": "restore context; retain pendingOutcome; set cleanupReason=SAFE_RELEASE_OBSERVED; request temp cleanup",
         "target": "CLEANUP_PENDING"
       },
       {
         "id": "TR-004",
         "source": "CLOSED",
-        "event": "STARTUP_ORPHAN_FOUND_CANCELLED",
-        "guard": "allowlisted Dora temp has retained pendingOutcome=CANCELLED",
-        "action": "restore content-free cleanup metadata; set reason=STARTUP_ORPHAN",
+        "event": "STARTUP_SHARESHEET_CLEANUP_DELETE_NOW",
+        "guard": "valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED and deleteNowConfirmedAfterWarning=true",
+        "action": "restore context; retain pendingOutcome; set cleanupReason=DELETE_NOW_CONFIRMED; request temp cleanup",
         "target": "CLEANUP_PENDING"
       },
       {
         "id": "TR-005",
         "source": "CLOSED",
-        "event": "STARTUP_ORPHAN_FOUND_UNKNOWN",
-        "guard": "allowlisted Dora temp lacks a valid retained pendingOutcome",
-        "action": "set pendingOutcome=CANCELLED fail-closed; set reason=STARTUP_ORPHAN",
+        "event": "STARTUP_SHARESHEET_CLEANUP_EXPIRED",
+        "guard": "valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED and now>=effectiveExpiresAt",
+        "action": "restore context; retain pendingOutcome; set cleanupReason=EXPIRED; request temp cleanup",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-083",
+        "source": "CLOSED",
+        "event": "STARTUP_SAF_STAGING_CLEANUP_ELIGIBLE",
+        "guard": "valid recovery context has destinationClass=SAF, pendingOutcome=COMPLETED and finalDestinationCloseObserved=true",
+        "action": "restore context; retain pendingOutcome; set cleanupReason=SAF_CLOSE_OBSERVED; request staging cleanup",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-084",
+        "source": "CLOSED",
+        "event": "STARTUP_ABORTED_TEMP_CLEANUP_ELIGIBLE",
+        "guard": "valid recovery context has pendingOutcome fixed as one member of {FAILED_RETRYABLE, CANCELLED}",
+        "action": "restore context; retain pendingOutcome; set cleanupReason=NO_EXTERNAL_ACCESS_WINDOW; request temp cleanup",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-085",
+        "source": "CLOSED",
+        "event": "STARTUP_CONTEXT_INVALID_RETAIN",
+        "guard": "recoveryContextStatus=INVALID and now<conservativeRetentionDeadline",
+        "action": "reconstruct content-free context with destinationClass=SHARESHEET_CONSERVATIVE, pendingOutcome=CANCELLED and handoffEvidence=UNKNOWN; retain temp; expose warned Delete now; claim neither success nor delivery",
+        "target": "HANDOFF_SUCCEEDED"
+      },
+      {
+        "id": "TR-086",
+        "source": "CLOSED",
+        "event": "STARTUP_CONTEXT_INVALID_RETENTION_EXPIRED",
+        "guard": "recoveryContextStatus=INVALID and now>=conservativeRetentionDeadline",
+        "action": "reconstruct content-free context with pendingOutcome=CANCELLED; set cleanupReason=CONSERVATIVE_RETENTION_EXPIRED; request temp cleanup",
         "target": "CLEANUP_PENDING"
       },
       {
@@ -735,7 +818,7 @@
         "source": "TRANSFERRING",
         "event": "SAF_FINAL_CLOSE_SUCCEEDED_WITH_STAGING",
         "guard": "destination=SAF; final write and close succeeded; Dora staging exists",
-        "action": "record SAF success boundary; mark staging cleanupEligible=true",
+        "action": "set pendingOutcome=COMPLETED; persist finalDestinationCloseObserved=true; record SAF success boundary; mark staging cleanupEligible=true",
         "target": "HANDOFF_SUCCEEDED"
       },
       {
@@ -759,7 +842,7 @@
         "source": "TRANSFERRING",
         "event": "SHARESHEET_HANDOFF_ACCEPTED",
         "guard": "destination=Sharesheet; Android accepted the share handoff; Dora temp exists",
-        "action": "record handoff boundary; retain temp; claim no recipient delivery",
+        "action": "set pendingOutcome=COMPLETED; persist content-free recovery context; record handoff boundary; retain temp; claim no recipient delivery",
         "target": "HANDOFF_SUCCEEDED"
       },
       {
@@ -847,31 +930,31 @@
         "source": "HANDOFF_SUCCEEDED",
         "event": "SAF_STAGING_CLEANUP_ELIGIBLE",
         "guard": "destination=SAF; final close succeeded; Dora staging cleanupEligible=true",
-        "action": "set pendingOutcome=COMPLETED; request staging cleanup",
+        "action": "retain pendingOutcome=COMPLETED; request staging cleanup",
         "target": "CLEANUP_PENDING"
       },
       {
         "id": "TR-063",
         "source": "HANDOFF_SUCCEEDED",
         "event": "SHARESHEET_SAFE_RELEASE_OBSERVED",
-        "guard": "destination=Sharesheet; exact lifecycle signal is observable and separately evidenced as safe release",
-        "action": "set pendingOutcome=COMPLETED; request temp cleanup",
+        "guard": "destinationClass is one member of {SHARESHEET, SHARESHEET_CONSERVATIVE}; exact lifecycle signal is observable and separately evidenced as safe release",
+        "action": "retain pendingOutcome; persist safeReleaseObserved=true; request temp cleanup",
         "target": "CLEANUP_PENDING"
       },
       {
         "id": "TR-064",
         "source": "HANDOFF_SUCCEEDED",
         "event": "SHARESHEET_DELETE_NOW",
-        "guard": "destination=Sharesheet; live Dora temp exists; user confirms access-loss warning",
-        "action": "set pendingOutcome=COMPLETED; request temp cleanup; leave external copies untouched",
+        "guard": "destinationClass is one member of {SHARESHEET, SHARESHEET_CONSERVATIVE}; live Dora temp exists; user confirms access-loss warning",
+        "action": "retain pendingOutcome; persist deleteNowConfirmedAfterWarning=true; request temp cleanup; leave external copies untouched",
         "target": "CLEANUP_PENDING"
       },
       {
         "id": "TR-065",
         "source": "HANDOFF_SUCCEEDED",
         "event": "SHARESHEET_TEMP_EXPIRED",
-        "guard": "destination=Sharesheet; live Dora temp reached effective expiry",
-        "action": "set pendingOutcome=COMPLETED; request temp cleanup; leave external copies untouched",
+        "guard": "destinationClass is one member of {SHARESHEET, SHARESHEET_CONSERVATIVE}; live Dora temp reached the recovery-context-selected active retention deadline",
+        "action": "retain pendingOutcome; set cleanupReason=EXPIRED; request temp cleanup; leave external copies untouched",
         "target": "CLEANUP_PENDING"
       },
       {
@@ -1101,7 +1184,9 @@
         "key",
         "destination credential"
       ],
-      "sharesheetSafeReleaseRequiresObservableSeparatelyEvidencedSignal": true
+      "sharesheetSafeReleaseRequiresObservableSeparatelyEvidencedSignal": true,
+      "restartAloneMakesSharesheetCleanupEligible": false,
+      "invalidRecoveryContextDeletesImmediately": false
     }
   },
   "accessibility": {
@@ -1519,22 +1604,35 @@
       },
       {
         "id": "EXP-SYN-012",
-        "scenario": "Managed policy expiry is 15 minutes",
+        "scenario": "Restart before managed-policy expiry then expire",
         "inputs": [
-          "effective temp expiry=15 minutes"
+          "valid Sharesheet recovery context",
+          "effective temp expiry=15 minutes",
+          "now=10 minutes"
         ],
         "preconditions": [
-          "state=REVIEW",
-          "selected file plan valid"
+          "state=CLOSED after restart",
+          "pendingOutcome=COMPLETED",
+          "safeReleaseObserved=false",
+          "deleteNowConfirmedAfterWarning=false"
         ],
-        "events": [],
+        "events": [
+          "STARTUP_SHARESHEET_RESTORE_UNEXPIRED",
+          "SHARESHEET_TEMP_EXPIRED",
+          "CLEANUP_SUCCEEDED_COMPLETED"
+        ],
         "expectedStates": [
-          "REVIEW"
+          "CLOSED",
+          "HANDOFF_SUCCEEDED",
+          "CLEANUP_PENDING",
+          "COMPLETED"
         ],
-        "expectedOutcome": "Review shows 15-minute expiry",
+        "expectedOutcome": "restart retains access window, then effective expiry cleans temp",
         "invariants": [
+          "no cleanup on restart",
           "below one-hour maximum",
-          "policy cannot extend expiry"
+          "policy cannot extend expiry",
+          "no delivery claim"
         ]
       },
       {
@@ -1810,30 +1908,35 @@
       },
       {
         "id": "EXP-SYN-024",
-        "scenario": "Unknown orphaned temp found at startup",
+        "scenario": "Missing recovery context across restart",
         "inputs": [
           "allowlisted Dora temp",
-          "missing retained pendingOutcome"
+          "recovery context missing",
+          "now before conservativeRetentionDeadline"
         ],
         "preconditions": [
-          "state=CLOSED"
+          "state=CLOSED after restart",
+          "artifact could be an unexpired Sharesheet handoff"
         ],
         "events": [
-          "STARTUP_ORPHAN_FOUND_UNKNOWN",
+          "STARTUP_CONTEXT_INVALID_RETAIN",
+          "SHARESHEET_TEMP_EXPIRED",
           "CLEANUP_SUCCEEDED_CANCELLED",
           "CLOSE_CANCELLED"
         ],
         "expectedStates": [
           "CLOSED",
+          "HANDOFF_SUCCEEDED",
           "CLEANUP_PENDING",
           "CANCELLED",
           "CLOSED"
         ],
-        "expectedOutcome": "orphan deleted without manufacturing success",
+        "expectedOutcome": "temp is retained first, then bounded conservative expiry cleans without manufacturing success",
         "invariants": [
-          "unknown files untouched",
-          "pendingOutcome fail-closed CANCELLED",
-          "source untouched"
+          "no immediate deletion",
+          "handoff unverified",
+          "warned Delete now remains available",
+          "unknown files and source untouched"
         ]
       },
       {
