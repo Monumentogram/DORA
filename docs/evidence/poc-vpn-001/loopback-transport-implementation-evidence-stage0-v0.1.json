@@ -62,15 +62,15 @@
     },
     {
       "path": "android/poc/vpn-contract-kernel/transport-harness/src/test/kotlin/com/monumentogram/dora/poc/vpn/transport/LoopbackTransportHostTest.kt",
-      "sha256": "bc044b6f8f1483c5e37aa8b60e177e38fb29080218f21138c94d1e935c0071b3"
+      "sha256": "e559a4331c6cabbc5b2f3bc381087c2cd52bf76a7c336e9f4ca00f2b25fbdda0"
     },
     {
       "path": "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
-      "sha256": "f46d50144d46aaacc4344f6f90b192639f234bc7e4cf19191740d6d8704469a5"
+      "sha256": "4a9942a3e1839e1f0d66419576abfc7ef5c98be8bba0fe45fedc147026452d5e"
     },
     {
       "path": "docs/DORA_MVP1_STAGE_STATUS.md",
-      "sha256": "7eed0e177d600a3a935a0b879cfc2aaf5f3ad3b4643aee10e1f719728e8ea34f"
+      "sha256": "58d00ce603e4c94062872ee7f22bbba565c2224d415498e5a57a39b8fe736db3"
     }
   ],
   "ownerAuthorization": {
@@ -107,7 +107,12 @@
   },
   "review": {
     "formalReviewer": false,
-    "reviewClass": "TASK_SCOPED_IMPLEMENTATION_EVIDENCE"
+    "reviewClass": "TASK_SCOPED_IMPLEMENTATION_EVIDENCE",
+    "advisoryRecordPath": "docs/evidence/poc-vpn-001/i2-implementation-advisory-review-2026-08-15.json",
+    "advisoryRecordSha256": "7b3125366927c22fd663c05024ae8fd4a3dfd3944b4520e95b4cb0b62ca53e50",
+    "reviewedCommit": "96f86f672d8d70a73ff33d17a12b9041acb975f0",
+    "reviewedTree": "498c0c04e95466d67bfdf4c09a0dda77180a4dab",
+    "disposition": "NO_FURTHER_CHANGES_REQUIRED"
   },
   "finiteTestProfile": {
     "address": "NUMERIC_IPV4_LOOPBACK",
@@ -217,8 +222,9 @@
   },
   "independentAuditRounds": [
     {"round":"FROZEN_DIFF_AUDIT_1","findingClasses":["TASK_BOUNDARY","BOUNDED_IO_AND_CLEANUP","WIRE_AND_IDEMPOTENCY","FAULT_TAXONOMY"],"disposition":"REMEDIATED_AND_LOCAL_RECHECKED"},
-    {"round":"FROZEN_DIFF_AUDIT_2","findingClasses":["ABSORBING_DELETION_TOMBSTONE","HARNESS_RUN_ATTEMPT_IDS","SERVER_FACTORY_AND_CLOSE","GRADLE_TASK_ACTION"],"disposition":"REMEDIATED_LOCAL_RECHECKED_REPEAT_AUDIT_PENDING"},
-    {"round":"FROZEN_DIFF_AUDIT_3","findingClasses":["DELETE_PENDING_CANCEL_CLASSIFICATION","STRICT_UTF8_REQUEST_DECODE"],"disposition":"REMEDIATED_LOCAL_RECHECKED_REPEAT_AUDIT_PENDING"}
+    {"round":"FROZEN_DIFF_AUDIT_2","findingClasses":["ABSORBING_DELETION_TOMBSTONE","HARNESS_RUN_ATTEMPT_IDS","SERVER_FACTORY_AND_CLOSE","GRADLE_TASK_ACTION"],"disposition":"REMEDIATED_AND_REPEAT_AUDIT_CLEAN"},
+    {"round":"FROZEN_DIFF_AUDIT_3","findingClasses":["DELETE_PENDING_CANCEL_CLASSIFICATION","STRICT_UTF8_REQUEST_DECODE"],"disposition":"REMEDIATED_AND_REPEAT_AUDIT_CLEAN"},
+    {"round":"EXACT_HEAD_ADVISORY_REVIEW","findingClasses":[],"disposition":"NO_FURTHER_CHANGES_REQUIRED"}
   ],
   "contentBoundary": {
     "repositoryOwnedSyntheticBytesOnly": true,
@@ -283,7 +289,7 @@
   },
   "notRunBoundaries": ["actual DNS", "TLS trust", "external network", "provider endpoint", "VPN route", "Wi-Fi to cellular route", "device", "emulator", "credentials", "billing", "real data", "Recovery measured execution"],
   "resultTaxonomy": {
-    "i2ImplementationVerification": "I2_IMPLEMENTED_LOCAL_CHECKS_PASS_REVIEW_PENDING",
+    "i2ImplementationVerification": "I2_IMPLEMENTED_LOCAL_CHECKS_PASS_ADVISORY_REVIEW_COMPLETE",
     "proofClass": "HERMETIC_LOOPBACK_CONTRACT_SUBSET",
     "pocVpnOverallResult": "NOT_RUN",
     "pocVpnBacklogState": "TODO",
@@ -315,7 +321,15 @@
     }
   ],
   "ciEvidence": {
-    "futureExactHeadConclusionRecordedHere": false,
-    "futurePrMetadataOnly": true
+    "exactHeadRunId": 31906121308,
+    "exactHeadCommit": "96f86f672d8d70a73ff33d17a12b9041acb975f0",
+    "exactHeadConclusion": "success",
+    "requiredAndroidBootstrapConclusion": "success",
+    "pureHostKernelStep": "success",
+    "hermeticLoopbackStep": "success",
+    "postMergeCommit": "0fee654785c596a6bd820cfecfa7d1e4f8668b2c",
+    "postMergeRunId": 31907301400,
+    "postMergeConclusion": "success",
+    "searchSmokeIsPocVpnEvidence": false
   }
 }

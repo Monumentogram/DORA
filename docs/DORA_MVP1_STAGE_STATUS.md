@@ -1,6 +1,6 @@
 # Dora MVP 1 — Stage Status
 
-Updated: 15 August 2026
+Updated: 16 August 2026
 Baseline: `1be83e2940a09f7b23e33b4cdf3827de2690f3fd`
 Stage 00 merge commit: `a4aae302f9033e5471f6759f513e7e351c375a72`
 Stage 0A merge commit: `91b9916b01ff70f63d82412bafbed0d72307dbe1`
@@ -29,7 +29,8 @@ unchanged.
 POC-VPN governance reconciliation: prospective contract `poc-vpn-synthetic-api-stage0-v0.1` and its
 machine record are contract complete. A [pure-host oracle implementation record](evidence/poc-vpn-001/contract-kernel-implementation-stage0-v0.1.json)
 locates the dependency-free, non-network kernel, while the task-scoped [I2 implementation/evidence](evidence/poc-vpn-001/loopback-transport-implementation-evidence-stage0-v0.1.json)
-locates only its hermetic numeric-loopback HTTP/fault subset. There is no device, VPN, route, DNS,
+locates only its hermetic numeric-loopback HTTP/fault subset. The exact I2 tree received a clean,
+non-formal independent AI advisory review recorded in the [sanitized review artifact](evidence/poc-vpn-001/i2-implementation-advisory-review-2026-08-15.json), then preserved through protected squash merge and successful exact-main CI. There is no device, VPN, route, DNS,
 TLS, provider, billing, Security, Legal or production PASS. `POC-VPN-001` remains `TODO`,
 `NOT_READY`, `NOT_RUN` and globally `NOT_AUTHORIZED`; active Stage 0D and every Recovery authority
 flag remain unchanged.
