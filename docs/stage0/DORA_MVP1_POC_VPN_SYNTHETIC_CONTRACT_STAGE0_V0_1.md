@@ -89,7 +89,7 @@ usable without account, network, GMS or cloud configuration and must never wait 
 | `VPN-REQ-011` | Lost responses and duplicate requests replay one canonical outcome without a second resource or economic effect. |
 | `VPN-REQ-012` | A successful logical workflow commits one job, exactly one result and exactly one synthetic economic event, with zero duplicates. |
 | `VPN-REQ-013` | Cancellation resolves deterministically against completion/result commit order and never creates a second terminal effect. |
-| `VPN-REQ-014` | Delete remains independently pending until one verifiable deletion receipt is returned; repeats do not create another deletion. |
+| `VPN-REQ-014` | After a deletion record is accepted, `DELETE_PENDING` is monotone: cancel, profile invalidation, final errors and retry exhaustion may change only a visible deletion substatus/error, never the primary state, `deletionId` or delete idempotency binding; bounded or explicit manual replay of that same record continues until one verifiable receipt moves it to `DELETED`, and repeats create no second deletion. |
 | `VPN-REQ-015` | Logs and evidence are content-free and exclude payload bytes, text, URLs, object keys, IP addresses, tokens, credentials and raw idempotency keys. |
 | `VPN-REQ-016` | Fake and loopback evidence is contract-layer evidence only and cannot be reported as physical device, VPN, route, provider or production PASS. |
 
@@ -229,10 +229,14 @@ Exact classes are `WAIT_NETWORK`, `BACKOFF_REPLAY`, `REFRESH_UPLOAD_PLAN`,
   valid profile and required network condition.
 - Honor a valid `Retry-After` only inside both remaining attempt and elapsed budgets. Missing,
   malformed or excessive values use the bounded local policy or exhaust safely.
-- Stop after `maxAttempts` or `maxElapsedMs`; exhaustion is `FAILED_FINAL` until explicit user action
-  creates a new logical workflow.
+- Stop after `maxAttempts` or `maxElapsedMs`. Exhaustion is `FAILED_FINAL` for ordinary operations;
+  an accepted deletion remains `DELETE_PENDING` with `DELETE_MANUAL_RETRY_REQUIRED` and schedules no
+  further work until explicit user action grants one new positive finite attempt budget for the same
+  deletion record.
 - TLS trust/name, consent, schema, endpoint/region, checksum, authorization and key/payload mismatch
   are final or user-action failures and are never silently retried.
+- A pending deletion never busy-loops: automatic attempts stop at the frozen budget, and lack of
+  revalidation or user action leaves the durable deletion pending without wakeups.
 - No production timeout, SLA, quota or tariff is defined.
 
 The future execution profile must freeze positive finite deterministic values for
@@ -250,20 +254,18 @@ but is not deletion-terminal: only a later explicit delete under a valid profile
 `DELETE_PENDING`. `DELETED` and `FAILED_FINAL` are absorbing for this logical workflow; a later new
 workflow requires a new FSM instance and new keys.
 
-The four named source sets below are exact; transitions do not use wildcard sources:
+The five named source sets below are exact; transitions do not use wildcard sources:
 
 - `profileInvalidEligibleStates`: `READY`, `CREATING`, `WAITING_UPLOAD`, `UPLOADING`,
   `WAITING_NETWORK`, `RETRY_SCHEDULED`, `COMPLETING`, `REMOTE_PROCESSING`, `RESULT_AVAILABLE`,
-  `RESULT_VERIFIED`, `DELETE_PENDING`, `CANCEL_PENDING`.
+  `RESULT_VERIFIED`, `CANCEL_PENDING`.
 - `cancelEligibleStates`: `CREATING`, `WAITING_UPLOAD`, `UPLOADING`, `WAITING_NETWORK`,
-  `RETRY_SCHEDULED`, `COMPLETING`, `REMOTE_PROCESSING`, `RESULT_AVAILABLE`, `RESULT_VERIFIED`,
-  `DELETE_PENDING`.
+  `RETRY_SCHEDULED`, `COMPLETING`, `REMOTE_PROCESSING`, `RESULT_AVAILABLE`, `RESULT_VERIFIED`.
 - `retryBudgetEligibleStates`: `CREATING`, `WAITING_UPLOAD`, `UPLOADING`, `WAITING_NETWORK`,
-  `RETRY_SCHEDULED`, `COMPLETING`, `REMOTE_PROCESSING`, `RESULT_AVAILABLE`, `DELETE_PENDING`,
-  `CANCEL_PENDING`.
+  `RETRY_SCHEDULED`, `COMPLETING`, `REMOTE_PROCESSING`, `RESULT_AVAILABLE`, `CANCEL_PENDING`.
 - `remoteResponseEligibleStates`: `CREATING`, `WAITING_UPLOAD`, `UPLOADING`, `WAITING_NETWORK`,
-  `RETRY_SCHEDULED`, `COMPLETING`, `REMOTE_PROCESSING`, `RESULT_AVAILABLE`, `DELETE_PENDING`,
-  `CANCEL_PENDING`.
+  `RETRY_SCHEDULED`, `COMPLETING`, `REMOTE_PROCESSING`, `RESULT_AVAILABLE`, `CANCEL_PENDING`.
+- `deletionPendingProtectedStates`: `DELETE_PENDING`.
 
 | ID | From | Event | Guard | To / resume | Retry class |
 |---|---|---|---|---|---|
@@ -290,11 +292,11 @@ The four named source sets below are exact; transitions do not use wildcard sour
 | `VPN-C-TR-021` | `REMOTE_PROCESSING` | `BACKOFF_REPLAY` | budget remains | `RETRY_SCHEDULED`; resume `REMOTE_PROCESSING` | — |
 | `VPN-C-TR-022` | `RESULT_AVAILABLE` | `RESULT_CHECKSUM_VALID` | length and SHA-256 match | `RESULT_VERIFIED` | — |
 | `VPN-C-TR-023` | `RESULT_AVAILABLE` | `RESULT_CHECKSUM_INVALID` | terminal integrity failure | `FAILED_FINAL` | `FINAL_REJECT` |
-| `VPN-C-TR-024` | `RESULT_VERIFIED` | `DELETE_REQUESTED` | separate explicit synthetic action | `DELETE_PENDING` | — |
-| `VPN-C-TR-025` | `DELETE_PENDING` | `DELETION_RECEIPT_PENDING` | revision nondecreasing | `DELETE_PENDING` | — |
+| `VPN-C-TR-024` | `RESULT_VERIFIED` | `DELETE_REQUESTED` | separate explicit synthetic action | `DELETE_PENDING`; substatus `DELETE_RECEIPT_POLL_ELIGIBLE` | — |
+| `VPN-C-TR-025` | `DELETE_PENDING` | `DELETION_RECEIPT_PENDING` | revision nondecreasing | `DELETE_PENDING`; substatus `DELETE_RECEIPT_POLL_ELIGIBLE`; preserve deletion record | — |
 | `VPN-C-TR-026` | `DELETE_PENDING` | `DELETION_RECEIPT_VERIFIED` | `verifiedAbsent=true` and stable receipt | `DELETED` | — |
-| `VPN-C-TR-027` | `DELETE_PENDING` | `WAIT_NETWORK` | budget remains | `WAITING_NETWORK`; resume `DELETE_PENDING` | — |
-| `VPN-C-TR-028` | `DELETE_PENDING` | `BACKOFF_REPLAY` | budget remains | `RETRY_SCHEDULED`; resume `DELETE_PENDING` | — |
+| `VPN-C-TR-027` | `DELETE_PENDING` | `WAIT_NETWORK` | automatic attempt budget remains | `DELETE_PENDING`; substatus `DELETE_WAITING_NETWORK`; preserve deletion record | `WAIT_NETWORK` |
+| `VPN-C-TR-028` | `DELETE_PENDING` | `BACKOFF_REPLAY` | automatic attempt budget remains and `nextAttemptAt` is finite | `DELETE_PENDING`; substatus `DELETE_RETRY_SCHEDULED`; preserve deletion record | `BACKOFF_REPLAY` |
 | `VPN-C-TR-029` | `cancelEligibleStates` | `CANCEL_REQUESTED` | current state is `cancelEligibleStates` and profile valid | `CANCEL_PENDING` | — |
 | `VPN-C-TR-030` | `CANCEL_PENDING` | `CANCEL_COMMIT_WON` | stable cancel receipt | `CANCELLED` | — |
 | `VPN-C-TR-031` | `CANCEL_PENDING` | `RESULT_COMMIT_WON` | server returns `ALREADY_TERMINAL` with stable `resultId` | `RESULT_AVAILABLE` | — |
@@ -306,10 +308,19 @@ The four named source sets below are exact; transitions do not use wildcard sour
 | `VPN-C-TR-037` | `remoteResponseEligibleStates` | `FINAL_TLS_TRUST_OR_NAME_REJECT` | TLS trust or hostname validation failed | `FAILED_FINAL` | `FINAL_REJECT` |
 | `VPN-C-TR-038` | `remoteResponseEligibleStates` | `FINAL_SCHEMA_OR_UNSUPPORTED_REJECT` | schema, API version or input format is rejected | `FAILED_FINAL` | `FINAL_REJECT` |
 | `VPN-C-TR-039` | `UPLOADING`/`COMPLETING` | `FINAL_CHECKSUM_OR_MANIFEST_REJECT` | part, manifest or overall integrity predicate failed | `FAILED_FINAL` | `FINAL_REJECT` |
-| `VPN-C-TR-040` | `CREATING`/`WAITING_UPLOAD`/`UPLOADING`/`COMPLETING`/`DELETE_PENDING`/`CANCEL_PENDING` | `FINAL_IDEMPOTENCY_PAYLOAD_MISMATCH` | same scope and key bind a different canonical request digest | `FAILED_FINAL` | `FINAL_REJECT` |
+| `VPN-C-TR-040` | `CREATING`/`WAITING_UPLOAD`/`UPLOADING`/`COMPLETING`/`CANCEL_PENDING` | `FINAL_IDEMPOTENCY_PAYLOAD_MISMATCH` | same scope and key bind a different canonical request digest | `FAILED_FINAL` | `FINAL_REJECT` |
 | `VPN-C-TR-041` | `remoteResponseEligibleStates` | `FINAL_CROSS_TENANT_OR_PROFILE_REJECT` | non-enumerating scope rejection received | `FAILED_FINAL` | `FINAL_REJECT` |
-| `VPN-C-TR-042` | `CANCELLED` | `DELETE_REQUESTED` | separate explicit synthetic delete and valid profile | `DELETE_PENDING` | — |
+| `VPN-C-TR-042` | `CANCELLED` | `DELETE_REQUESTED` | separate explicit synthetic delete and valid profile | `DELETE_PENDING`; substatus `DELETE_RECEIPT_POLL_ELIGIBLE` | — |
 | `VPN-C-TR-043` | `CANCEL_PENDING` | `BACKOFF_REPLAY` | budget remains | `RETRY_SCHEDULED`; resume `CANCEL_PENDING` | — |
+| `VPN-C-TR-044` | `DELETE_PENDING` | `CANCEL_REQUESTED` | accepted deletion record exists | `DELETE_PENDING`; same substatus and deletion record; `REJECTED_NO_STATE_CHANGE`; `CANCEL_NOT_APPLICABLE_DELETE_PENDING` | — |
+| `VPN-C-TR-045` | `DELETE_PENDING` | `PROFILE_ABSENT_STALE_EXPIRED_REVOKED_OR_MISMATCHED` | accepted deletion record exists | `DELETE_PENDING`; `DELETE_REVALIDATION_REQUIRED`; preserve deletion record; `DELETE_PROFILE_REVALIDATION_REQUIRED` | `USER_ACTION_REQUIRED` |
+| `VPN-C-TR-046` | `DELETE_PENDING` | `FINAL_TLS_TRUST_OR_NAME_REJECT` | accepted deletion exists and TLS trust/name validation failed | `DELETE_PENDING`; `DELETE_USER_ACTION_REQUIRED`; preserve deletion record; `DELETE_TLS_TRUST_OR_NAME_REJECTED` | `USER_ACTION_REQUIRED` |
+| `VPN-C-TR-047` | `DELETE_PENDING` | `FINAL_SCHEMA_OR_UNSUPPORTED_REJECT` | accepted deletion exists and schema, API version or response format is rejected | `DELETE_PENDING`; `DELETE_USER_ACTION_REQUIRED`; preserve deletion record; `DELETE_SCHEMA_OR_FORMAT_REJECTED` | `USER_ACTION_REQUIRED` |
+| `VPN-C-TR-048` | `DELETE_PENDING` | `FINAL_CHECKSUM_OR_MANIFEST_REJECT` | accepted deletion exists and deletion-response integrity failed | `DELETE_PENDING`; `DELETE_USER_ACTION_REQUIRED`; preserve deletion record; `DELETE_RESPONSE_INTEGRITY_REJECTED` | `USER_ACTION_REQUIRED` |
+| `VPN-C-TR-049` | `DELETE_PENDING` | `FINAL_IDEMPOTENCY_PAYLOAD_MISMATCH` | accepted deletion exists and replay request digest mismatches | `DELETE_PENDING`; `DELETE_USER_ACTION_REQUIRED`; preserve deletion record; `DELETE_IDEMPOTENCY_PAYLOAD_MISMATCH` | `USER_ACTION_REQUIRED` |
+| `VPN-C-TR-050` | `DELETE_PENDING` | `FINAL_CROSS_TENANT_OR_PROFILE_REJECT` | accepted deletion exists and non-enumerating scope rejection is received | `DELETE_PENDING`; `DELETE_REVALIDATION_REQUIRED`; preserve deletion record; `DELETE_SCOPE_REVALIDATION_REQUIRED` | `USER_ACTION_REQUIRED` |
+| `VPN-C-TR-051` | `DELETE_PENDING` | `RETRY_BUDGET_EXHAUSTED` | accepted deletion exists and automatic attempt or elapsed budget is exhausted | `DELETE_PENDING`; `DELETE_MANUAL_RETRY_REQUIRED`; preserve deletion record; no automatic wakeup; `DELETE_FINITE_BUDGET_EXHAUSTED` | `USER_ACTION_REQUIRED` |
+| `VPN-C-TR-052` | `DELETE_PENDING` | `DELETE_REVALIDATED_OR_USER_ACTION_CONFIRMED` | profile valid and explicit action grants one positive finite attempt budget from a revalidation, user-action or manual-retry substatus | `DELETE_PENDING`; `DELETE_RECEIPT_POLL_ELIGIBLE`; preserve deletion record | `REPLAY_SAME_OPERATION` |
 
 For one durable state/event snapshot, filter by explicit source set and true guard. Lower numeric
 priority wins; within one priority, the first listed transition wins. At most one selected event,
@@ -319,10 +330,10 @@ a content-free `NO_STATE_CHANGE` and retain the state.
 | Priority | Arbitration group | Exact secondary order |
 |---:|---|---|
 | 0 | `DURABLE_SERVER_OUTCOME_RECONCILIATION` | `004`, `007`, `010`, `011`, `015`, `019`, `022`, `026`, `030`, `031` |
-| 10 | `PROFILE_FAIL_CLOSED` | `001` |
-| 20 | `IMMEDIATE_FINAL_REJECT` | `023`, `037`, `038`, `039`, `040`, `041` |
-| 30 | `RETRY_BUDGET_EXHAUSTED` | `035` |
-| 40 | `EXPLICIT_USER_CANCEL_OR_DELETE` | `024`, `029`, `042` |
+| 10 | `PROFILE_FAIL_CLOSED` | `001`, `045` |
+| 20 | `IMMEDIATE_FINAL_REJECT` | `023`, `037`, `038`, `039`, `040`, `041`, `046`, `047`, `048`, `049`, `050` |
+| 30 | `RETRY_BUDGET_EXHAUSTED` | `035`, `051` |
+| 40 | `EXPLICIT_USER_CANCEL_OR_DELETE` | `024`, `029`, `042`, `044`, `052` |
 | 50 | `NONTERMINAL_PROGRESS` | `018`, `025` |
 | 60 | `BOUNDED_RETRY_OR_WAIT` | `005`, `006`, `008`, `009`, `012`, `013`, `014`, `016`, `017`, `020`, `021`, `027`, `028`, `032`, `036`, `043` |
 | 70 | `WAKE_OR_RESUME` | `033`, `034` |
@@ -331,20 +342,45 @@ a content-free `NO_STATE_CHANGE` and retain the state.
 `DELETED` and `FAILED_FINAL` have no outgoing client transitions. `CANCELLED` ignores profile-invalid
 and automatic events; it permits only `VPN-C-TR-042` under a valid profile.
 
+`DELETE_PENDING` is excluded from every general cancel, profile-invalid, final-reject and exhaustion
+source set. Its explicit transitions retain `DELETE_PENDING` or accept one verified receipt into
+`DELETED`; none may enter `BLOCKED_NO_PROFILE`, `CANCEL_PENDING`, `WAITING_NETWORK`,
+`RETRY_SCHEDULED` or `FAILED_FINAL`.
+
+The durable pending-deletion record contains `jobId`, `deleteIdempotencyKeyLedgerRef`,
+`deleteIdempotencyKeyDigest`, `deleteRequestDigest`, `deletionId`, `profileBindingSha256`,
+`endpointId`, `regionId` and `lastReceiptRevision`. Every `DELETE_PENDING` transition preserves that
+identity. Its exact visible substatuses are `DELETE_RECEIPT_POLL_ELIGIBLE`,
+`DELETE_WAITING_NETWORK`, `DELETE_RETRY_SCHEDULED`, `DELETE_REVALIDATION_REQUIRED`,
+`DELETE_USER_ACTION_REQUIRED` and `DELETE_MANUAL_RETRY_REQUIRED`. Its exact content-free error codes
+are `CANCEL_NOT_APPLICABLE_DELETE_PENDING`, `DELETE_PROFILE_REVALIDATION_REQUIRED`,
+`DELETE_TLS_TRUST_OR_NAME_REJECTED`, `DELETE_SCHEMA_OR_FORMAT_REJECTED`,
+`DELETE_RESPONSE_INTEGRITY_REJECTED`, `DELETE_IDEMPOTENCY_PAYLOAD_MISMATCH`,
+`DELETE_SCOPE_REVALIDATION_REQUIRED` and `DELETE_FINITE_BUDGET_EXHAUSTED`.
+
+Cancel during `DELETE_PENDING` is rejected with no state/substatus or record change. Wait/backoff may
+schedule only a due attempt inside the current positive finite attempt and elapsed budgets. Profile or
+scope invalidation requires revalidation; final transport/response rejection requires user action;
+exhaustion requires manual retry and schedules no automatic wakeup. Only explicit user action after a
+valid profile may grant one new positive finite budget, replaying the same delete/receipt operation and
+binding. A stable verified-absent receipt for the same `deletionId` moves to `DELETED`; otherwise the
+record remains durably pending without a busy loop, and unconditional liveness is not claimed.
+
 Immediate final-reject coverage is exact:
 
 | Family | Transition IDs | Fault IDs | Error codes |
 |---|---|---|---|
-| `TLS_TRUST_OR_HOSTNAME` | `037` | `006` | — |
-| `SCHEMA_API_VERSION_OR_UNSUPPORTED_FORMAT` | `038` | — | `SCHEMA_VALIDATION_FAILED`, `UNSUPPORTED_FORMAT`, `UPGRADE_REQUIRED` |
-| `CHECKSUM_OR_MANIFEST` | `023`, `039` | `014`, `029`, `030` | `CHECKSUM_MISMATCH`, `MANIFEST_INVALID`, `OVERALL_CHECKSUM_MISMATCH` |
-| `IDEMPOTENCY_PAYLOAD_MISMATCH` | `040` | `009`, `013` | `IDEMPOTENCY_KEY_PAYLOAD_MISMATCH` |
-| `CROSS_TENANT_OR_PROFILE` | `001`, `041` | `003` | `RESOURCE_NOT_FOUND_OR_NOT_AUTHORIZED` |
+| `TLS_TRUST_OR_HOSTNAME` | `037`, `046` | `006` | — |
+| `SCHEMA_API_VERSION_OR_UNSUPPORTED_FORMAT` | `038`, `047` | — | `SCHEMA_VALIDATION_FAILED`, `UNSUPPORTED_FORMAT`, `UPGRADE_REQUIRED` |
+| `CHECKSUM_OR_MANIFEST` | `023`, `039`, `048` | `014`, `029`, `030` | `CHECKSUM_MISMATCH`, `MANIFEST_INVALID`, `OVERALL_CHECKSUM_MISMATCH` |
+| `IDEMPOTENCY_PAYLOAD_MISMATCH` | `040`, `049` | `009`, `013` | `IDEMPOTENCY_KEY_PAYLOAD_MISMATCH` |
+| `CROSS_TENANT_OR_PROFILE` | `001`, `041`, `045`, `050` | `003` | `RESOURCE_NOT_FOUND_OR_NOT_AUTHORIZED` |
 
 After process death, validate profile, load the checksum-protected state/operation ledger, reconcile
-server receipts with the same keys, and restore exactly that state or its waiting wrapper. Never
-reset to `READY` or implicitly create a job. Remote work is durable queued work and never blocks the
-local workflow.
+server receipts with the same keys, and restore exactly that state or its waiting wrapper. A deletion
+record is always restored directly to `DELETE_PENDING` with its persisted visible substatus, never a
+general wrapper. Never reset to `READY` or implicitly create a job or deletion. Remote work is durable
+queued work and never blocks the local workflow.
 
 Server states (12): `ABSENT`, `CREATED`, `WAITING_UPLOAD`, `UPLOADING`, `UPLOAD_COMPLETE`, `QUEUED`,
 `PROCESSING`, `RESULT_READY`, `DELIVERED`, `DELETE_PENDING`, `DELETED`, `CANCELLED`. Terminal states
@@ -379,7 +415,7 @@ Each later commit atomically persists its idempotency record, state and effect. 
 those ledgers and never reconstructs a second resource/effect. `DELETED` is absorbing; its read and
 repeat-delete self-transitions cannot create an effect.
 
-The deterministic transition traces are exactly `VPN-TRACE-001..004`:
+The deterministic transition traces are exactly `VPN-TRACE-001..005`:
 
 | ID | Preconditions / deterministic selected path | Expected |
 |---|---|---|
@@ -387,6 +423,7 @@ The deterministic transition traces are exactly `VPN-TRACE-001..004`:
 | `VPN-TRACE-002` `IMMEDIATE_FINAL_REJECT_FAMILIES` | `CREATING` + `FINAL_TLS_TRUST_OR_NAME_REJECT` -> `VPN-C-TR-037`; `REMOTE_PROCESSING` + `FINAL_SCHEMA_OR_UNSUPPORTED_REJECT` -> `VPN-C-TR-038`; `UPLOADING` + `FINAL_CHECKSUM_OR_MANIFEST_REJECT` -> `VPN-C-TR-039`; `CREATING` + `FINAL_IDEMPOTENCY_PAYLOAD_MISMATCH` -> `VPN-C-TR-040`; `RESULT_AVAILABLE` + `FINAL_CROSS_TENANT_OR_PROFILE_REJECT` -> `VPN-C-TR-041`. | Every case reaches `FAILED_FINAL` in one transition, without `WAITING_NETWORK` or `RETRY_SCHEDULED`. |
 | `VPN-TRACE-003` `CANCEL_THEN_EXPLICIT_DELETE` | Valid profile: `CREATING` + `CANCEL_REQUESTED` -> `VPN-C-TR-029`/`CANCEL_PENDING`; `CANCEL_COMMIT_WON` -> `VPN-C-TR-030` plus `VPN-S-TR-011`/`CANCELLED`; `DELETE_REQUESTED` -> `VPN-C-TR-042` plus `VPN-S-TR-013`/`DELETE_PENDING`; `DELETION_RECEIPT_PENDING` -> `VPN-C-TR-025`; `DELETION_RECEIPT_VERIFIED` -> `VPN-C-TR-026` plus `VPN-S-TR-014`/`DELETED`. | One cancellation receipt, one deletion record and one verified deletion receipt; `CANCELLED` is deletion-eligible and `DELETED` absorbing. |
 | `VPN-TRACE-004` `TERMINAL_PROFILE_AND_PRIORITY_OVERLAP` | `PROFILE_ABSENT_STALE_EXPIRED_REVOKED_OR_MISMATCHED` in `DELETED`, `CANCELLED` or `FAILED_FINAL` selects no transition and preserves state. Simultaneous: in `CREATING`, `CREATE_COMMITTED` (priority 0) beats profile-invalid (10), selecting `VPN-C-TR-004` -> `WAITING_UPLOAD`; in `CREATING`, profile-invalid (10) beats `FINAL_TLS_TRUST_OR_NAME_REJECT` (20) and `WAIT_NETWORK` (60), selecting `VPN-C-TR-001` -> `BLOCKED_NO_PROFILE`; in `CANCEL_PENDING`, `CANCEL_COMMIT_WON` (0) beats profile-invalid (10), selecting `VPN-C-TR-030` -> `CANCELLED`; in `RESULT_AVAILABLE`, `RESULT_CHECKSUM_INVALID` (20) beats `RETRY_BUDGET_EXHAUSTED` (30) and `RESULT_FETCH_RESPONSE_LOST_OR_RETRYABLE` (60), selecting `VPN-C-TR-023` -> `FAILED_FINAL`. | Explicit source sets plus numeric/secondary arbitration select exactly one transition. |
+| `VPN-TRACE-005` `DELETE_PENDING_PRESERVATION_AND_RECOVERY` | Start `DELETE_PENDING`/`DELETE_RECEIPT_POLL_ELIGIBLE` with one opaque deletion token and stable delete-key/request/profile-binding digests. `CANCEL_REQUESTED` selects `C044`, is `REJECTED_NO_STATE_CHANGE` and preserves the substatus/record. Profile-invalid selects `C045` -> `DELETE_REVALIDATION_REQUIRED`; explicit valid revalidation selects `C052` -> poll eligible. TLS final reject selects `C046` -> `DELETE_USER_ACTION_REQUIRED`; action selects `C052`; schema final reject selects `C047` -> user action; action selects `C052`. Exhaustion selects `C051` -> `DELETE_MANUAL_RETRY_REQUIRED` with no automatic retry; explicit action selects `C052` and grants one positive finite budget. Receipt pending selects `C025`; the same verified receipt selects `C026` plus `S014` -> `DELETED`. Additional exact cases: checksum/integrity `C048` and idempotency mismatch `C049` retain `DELETE_PENDING`/`DELETE_USER_ACTION_REQUIRED`; cross-scope `C050` retains `DELETE_PENDING`/`DELETE_REVALIDATION_REQUIRED`. | Every step preserves the same deletion record and ID until the verified receipt. No general wrapper, final state replacement, busy retry or second deletion occurs. |
 
 Invalid attempts never influence PASS/FAIL:
 
@@ -413,10 +450,10 @@ All rows use synthetic bytes. `SIMULATED_ROUTE_ONLY` can never support a physica
 |---|---|---|---|---|---|
 | `VPN-FLT-001` | PREFLIGHT | Consent profile absent | `BLOCKED_NO_PROFILE`; zero transport attempts/effects. | `FINAL_REJECT` | `FAKE_OR_LOOPBACK` |
 | `VPN-FLT-002` | PREFLIGHT | Profile stale, expired or revoked | `BLOCKED_NO_PROFILE`; zero transport attempts/effects. | `FINAL_REJECT` | `FAKE_OR_LOOPBACK` |
-| `VPN-FLT-003` | PREFLIGHT | Endpoint/region mismatches persisted profile | Enter `BLOCKED_NO_PROFILE` as immediate final reject before transport; no fallback, switch or migration. | `FINAL_REJECT` | `FAKE_OR_LOOPBACK` |
+| `VPN-FLT-003` | PREFLIGHT | Endpoint/region mismatches persisted profile | Before deletion acceptance enter `BLOCKED_NO_PROFILE` as immediate final reject before transport. During `DELETE_PENDING`, preserve the record and expose `DELETE_REVALIDATION_REQUIRED`. No fallback, switch or migration. | `FINAL_REJECT` | `FAKE_OR_LOOPBACK` |
 | `VPN-FLT-004` | CREATE | DNS failure before create commit | Wait, replay same create key/digest within budget; at most one job/effect. | `WAIT_NETWORK` | `LOOPBACK_CATEGORY_SIMULATION` |
 | `VPN-FLT-005` | INIT_OR_REFRESH | Connect failure before plan commit | Wait, replay same plan key/digest within budget; no second upload. | `WAIT_NETWORK` | `LOOPBACK_CATEGORY_SIMULATION` |
-| `VPN-FLT-006` | TLS | Trust or hostname failure | Enter `FAILED_FINAL` immediately; no insecure fallback or transient retry. | `FINAL_REJECT` | `CATEGORY_ONLY_UNTIL_SECURITY_SCOPE` |
+| `VPN-FLT-006` | TLS | Trust or hostname failure | Ordinary active work enters `FAILED_FINAL` immediately. During `DELETE_PENDING`, preserve the record and expose `DELETE_USER_ACTION_REQUIRED`. No insecure fallback or transient automatic retry. | `FINAL_REJECT` | `CATEGORY_ONLY_UNTIL_SECURITY_SCOPE` |
 | `VPN-FLT-007` | CREATE | Create committed; success response lost | Replay returns same job/economic effect. | `REPLAY_SAME_OPERATION` | `FAKE_OR_LOOPBACK` |
 | `VPN-FLT-008` | CREATE | Same key and same payload repeated | Original 201 digest, job/effect; duplicate counters zero. | `REPLAY_SAME_OPERATION` | `FAKE_OR_LOOPBACK` |
 | `VPN-FLT-009` | CREATE | Same key, different canonical payload | Enter `FAILED_FINAL` immediately after 409 mismatch; no new state/effect. | `FINAL_REJECT` | `FAKE_OR_LOOPBACK` |
@@ -427,7 +464,7 @@ All rows use synthetic bytes. `SIMULATED_ROUTE_ONLY` can never support a physica
 | `VPN-FLT-014` | UPLOAD_PART | Transmitted checksum mismatch | Enter `FAILED_FINAL` immediately after 422; server emits no receipt/state advance. | `FINAL_REJECT` | `FAKE_OR_LOOPBACK` |
 | `VPN-FLT-015` | ANY_MUTATION | 429 with valid in-budget `Retry-After` | Persist due time; replay once due inside both budgets. | `BACKOFF_REPLAY` | `FAKE_OR_LOOPBACK` |
 | `VPN-FLT-016` | ANY_MUTATION | 429 without `Retry-After` | Frozen local backoff; preserve key/digest; stop on exhaustion. | `BACKOFF_REPLAY` | `FAKE_OR_LOOPBACK` |
-| `VPN-FLT-017` | ANY_MUTATION | 429 malformed/out-of-budget `Retry-After` | Ignore unsafe value; bounded local policy or final exhaustion. | `BACKOFF_REPLAY` | `FAKE_OR_LOOPBACK` |
+| `VPN-FLT-017` | ANY_MUTATION | 429 malformed/out-of-budget `Retry-After` | Ignore unsafe value; use bounded local policy while budget remains. Ordinary exhaustion enters `FAILED_FINAL`; deletion exhaustion preserves the record in `DELETE_PENDING`/`DELETE_MANUAL_RETRY_REQUIRED`, with no work until explicit action grants one positive finite retry budget. | `BACKOFF_REPLAY` | `FAKE_OR_LOOPBACK` |
 | `VPN-FLT-018` | ANY_RETRYABLE_OPERATION | Retryable 5xx | Bounded same-operation backoff; no duplicate effect. | `BACKOFF_REPLAY` | `FAKE_OR_LOOPBACK` |
 | `VPN-FLT-019` | ANY_RETRYABLE_OPERATION | Per-attempt timeout | Unknown commit; same-operation replay and reconcile within budget. | `REPLAY_SAME_OPERATION` | `FAKE_OR_LOOPBACK` |
 | `VPN-FLT-020` | UPLOAD_PART | Part URL expired | Next plan generation/new plan key; same job/upload/profile/endpoint/region. | `REFRESH_UPLOAD_PLAN` | `FAKE_OR_LOOPBACK` |
@@ -444,7 +481,7 @@ All rows use synthetic bytes. `SIMULATED_ROUTE_ONLY` can never support a physica
 | `VPN-FLT-031` | POLL | Timeout, 5xx or repeated ETag | Bounded read repeat; nondecreasing revision; no effect. | `BACKOFF_REPLAY` | `FAKE_OR_LOOPBACK` |
 | `VPN-FLT-032` | RESULT | Response lost or repeated fetch | From `RESULT_AVAILABLE`, replay same fetch inside finite budget with job/profile/endpoint/region unchanged; return to `RESULT_AVAILABLE` for identical result or `FAILED_FINAL` on exhaustion; result count one. | `REPLAY_SAME_OPERATION` | `FAKE_OR_LOOPBACK` |
 | `VPN-FLT-033` | CANCEL | Cancel races result or repeats | First terminal commit wins: cancel-first one receipt/no result; result-first 409 and one stable result. | `REPLAY_SAME_OPERATION` | `FAKE_OR_LOOPBACK` |
-| `VPN-FLT-034` | DELETE_AND_RECEIPT | Offline delete, lost/repeated response or interrupted receipt poll | Stay `DELETE_PENDING`; same deletion/one receipt; no duplicate; finite wait. | `REPLAY_SAME_OPERATION` | `FAKE_OR_LOOPBACK` |
+| `VPN-FLT-034` | DELETE_AND_RECEIPT | While one accepted deletion is pending: cancel request, invalid profile, final transport/response rejection, finite-budget exhaustion, revalidation/manual action, then stable receipt | Every interruption preserves `DELETE_PENDING`, the same `deletionId`, idempotency binding and record. Cancel is `REJECTED_NO_STATE_CHANGE`; profile/final errors expose revalidation/user-action substatus; exhaustion schedules no wakeup until one explicit positive finite retry budget. The same verified receipt alone moves to `DELETED`; no second deletion effect. | `REPLAY_SAME_OPERATION` | `FAKE_OR_LOOPBACK` |
 
 Fault-to-transition coverage is total and deterministic. In this table, `Cddd`, `Sddd` and `Tddd`
 mean `VPN-C-TR-ddd`, `VPN-S-TR-ddd` and `VPN-TRACE-ddd`; `—` means an empty list.
@@ -453,10 +490,10 @@ mean `VPN-C-TR-ddd`, `VPN-S-TR-ddd` and `VPN-TRACE-ddd`; `—` means an empty li
 |---|---|---|---|---|
 | `001` | `C001` | — | `T004` | — |
 | `002` | `C001` | — | `T004` | — |
-| `003` | `C001` | — | `T004` | — |
+| `003` | `C001`, `C045` | — | `T004`, `T005` | — |
 | `004` | `C005`, `C033` | — | — | — |
 | `005` | `C008`, `C033` | — | — | — |
-| `006` | `C037` | — | `T002` | — |
+| `006` | `C037`, `C046` | — | `T002`, `T005` | — |
 | `007` | `C006`, `C034`, `C004` | `S017` | — | — |
 | `008` | `C004` | `S017` | — | — |
 | `009` | `C040` | — | `T002` | — |
@@ -467,7 +504,7 @@ mean `VPN-C-TR-ddd`, `VPN-S-TR-ddd` and `VPN-TRACE-ddd`; `—` means an empty li
 | `014` | `C039` | — | `T002` | — |
 | `015` | `C006`, `C009`, `C013`, `C017`, `C021`, `C028`, `C043`, `C034` | — | — | — |
 | `016` | `C006`, `C009`, `C013`, `C017`, `C021`, `C028`, `C043`, `C034` | — | — | — |
-| `017` | `C006`, `C009`, `C013`, `C017`, `C021`, `C028`, `C043`, `C034`, `C035` | — | — | — |
+| `017` | `C006`, `C009`, `C013`, `C017`, `C021`, `C028`, `C043`, `C034`, `C035`, `C051`, `C052` | — | `T005` | — |
 | `018` | `C006`, `C009`, `C013`, `C017`, `C021`, `C028`, `C043`, `C034` | — | — | — |
 | `019` | `C006`, `C009`, `C013`, `C017`, `C021`, `C028`, `C036`, `C043`, `C034`, `C035` | — | `T001` | — |
 | `020` | `C014`, `C007` | `S020` | — | — |
@@ -484,7 +521,7 @@ mean `VPN-C-TR-ddd`, `VPN-S-TR-ddd` and `VPN-TRACE-ddd`; `—` means an empty li
 | `031` | `C021`, `C034`, `C018`, `C019` | `S016` | — | — |
 | `032` | `C036`, `C034`, `C022`, `C035` | `S010` | `T001` | — |
 | `033` | `C029`, `C030`, `C031`, `C043` | `S011`, `S012` | `T003` | — |
-| `034` | `C024`, `C042`, `C027`, `C028`, `C033`, `C034`, `C025`, `C026` | `S013`, `S014`, `S015`, `S016` | `T003` | — |
+| `034` | `C024`, `C042`, `C044`, `C045`, `C046`, `C047`, `C048`, `C049`, `C050`, `C051`, `C052`, `C027`, `C028`, `C025`, `C026` | `S013`, `S014`, `S015`, `S016` | `T003`, `T005` | — |
 
 ## 10. Deterministic synthetic fixtures
 

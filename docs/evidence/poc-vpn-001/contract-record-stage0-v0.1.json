@@ -154,7 +154,7 @@
     {"id": "VPN-REQ-011", "requirement": "Lost responses and duplicate requests replay one canonical outcome without a second resource or economic effect."},
     {"id": "VPN-REQ-012", "requirement": "A successful logical workflow commits one job, exactly one result and exactly one synthetic economic event, with zero duplicates."},
     {"id": "VPN-REQ-013", "requirement": "Cancellation resolves deterministically against completion/result commit order and never creates a second terminal effect."},
-    {"id": "VPN-REQ-014", "requirement": "Delete remains independently pending until one verifiable deletion receipt is returned; repeats do not create another deletion."},
+    {"id": "VPN-REQ-014", "requirement": "After a deletion record is accepted, DELETE_PENDING is monotone: cancel, profile invalidation, final errors and retry exhaustion may change only a visible deletion substatus/error, never the primary state, deletionId or delete idempotency binding; bounded or explicit manual replay of that same record continues until one verifiable receipt moves it to DELETED, and repeats create no second deletion."},
     {"id": "VPN-REQ-015", "requirement": "Logs and evidence are content-free and exclude payload bytes, text, URLs, object keys, IP addresses, tokens, credentials and raw idempotency keys."},
     {"id": "VPN-REQ-016", "requirement": "Fake and loopback evidence is contract-layer evidence only and cannot be reported as physical device, VPN, route, provider or production PASS."}
   ],
@@ -319,8 +319,9 @@
       "Every retry preserves logical operation key and canonical request digest except REFRESH_UPLOAD_PLAN, which uses a new plan-generation key while preserving upload identity and profile binding.",
       "No busy loop: persist nextAttemptAt from a monotonic clock and wake only for a due attempt with valid profile and required network condition.",
       "Retry-After is honored only when valid and within both remaining attempt and elapsed budgets; absent, malformed or excessive values use bounded local policy or exhaust safely.",
-      "No attempt occurs after maxAttempts or maxElapsedMs; exhaustion is FAILED_FINAL until explicit user action creates a new logical workflow.",
+      "No attempt occurs after maxAttempts or maxElapsedMs. Exhaustion is FAILED_FINAL for ordinary operations; an accepted deletion remains DELETE_PENDING with DELETE_MANUAL_RETRY_REQUIRED and schedules no further work until explicit user action grants one new positive finite attempt budget for the same deletion record.",
       "TLS trust/name, consent profile, schema, endpoint/region, checksum, authorization and idempotency-payload mismatch failures are FINAL_REJECT or USER_ACTION_REQUIRED and never silently retried.",
+      "A pending deletion never busy-loops: automatic attempts stop at the frozen budget, and lack of revalidation or user action leaves the durable deletion pending without wakeups.",
       "This contract defines no production timeout, SLA, provider quota or tariff."
     ],
     "futurePositiveFiniteExecutionProfile": {
@@ -344,13 +345,14 @@
     "terminalStates": ["DELETED", "FAILED_FINAL"],
     "settledDeletionEligibleStates": ["CANCELLED"],
     "stateSets": {
-      "profileInvalidEligibleStates": ["READY", "CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "RESULT_VERIFIED", "DELETE_PENDING", "CANCEL_PENDING"],
-      "cancelEligibleStates": ["CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "RESULT_VERIFIED", "DELETE_PENDING"],
-      "retryBudgetEligibleStates": ["CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "DELETE_PENDING", "CANCEL_PENDING"],
-      "remoteResponseEligibleStates": ["CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "DELETE_PENDING", "CANCEL_PENDING"]
+      "profileInvalidEligibleStates": ["READY", "CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "RESULT_VERIFIED", "CANCEL_PENDING"],
+      "cancelEligibleStates": ["CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "RESULT_VERIFIED"],
+      "retryBudgetEligibleStates": ["CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "CANCEL_PENDING"],
+      "remoteResponseEligibleStates": ["CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "CANCEL_PENDING"],
+      "deletionPendingProtectedStates": ["DELETE_PENDING"]
     },
     "transitions": [
-      {"id": "VPN-C-TR-001", "from": ["READY", "CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "RESULT_VERIFIED", "DELETE_PENDING", "CANCEL_PENDING"], "event": "PROFILE_ABSENT_STALE_EXPIRED_REVOKED_OR_MISMATCHED", "guard": "current state is profileInvalidEligibleStates", "to": "BLOCKED_NO_PROFILE", "retryClass": "FINAL_REJECT"},
+      {"id": "VPN-C-TR-001", "from": ["READY", "CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "RESULT_VERIFIED", "CANCEL_PENDING"], "event": "PROFILE_ABSENT_STALE_EXPIRED_REVOKED_OR_MISMATCHED", "guard": "current state is profileInvalidEligibleStates", "to": "BLOCKED_NO_PROFILE", "retryClass": "FINAL_REJECT"},
       {"id": "VPN-C-TR-002", "from": "BLOCKED_NO_PROFILE", "event": "VALID_PROFILE_DURABLY_SELECTED", "guard": "profile validates", "to": "READY"},
       {"id": "VPN-C-TR-003", "from": "READY", "event": "START_REMOTE_SYNTHETIC_WORK", "guard": "preflight PASS and separate execution authorization", "to": "CREATING"},
       {"id": "VPN-C-TR-004", "from": "CREATING", "event": "CREATE_COMMITTED", "guard": "canonical outcome verified", "to": "WAITING_UPLOAD"},
@@ -373,35 +375,44 @@
       {"id": "VPN-C-TR-021", "from": "REMOTE_PROCESSING", "event": "BACKOFF_REPLAY", "guard": "budget remains", "to": "RETRY_SCHEDULED", "resumeState": "REMOTE_PROCESSING"},
       {"id": "VPN-C-TR-022", "from": "RESULT_AVAILABLE", "event": "RESULT_CHECKSUM_VALID", "guard": "length and SHA-256 match", "to": "RESULT_VERIFIED"},
       {"id": "VPN-C-TR-023", "from": "RESULT_AVAILABLE", "event": "RESULT_CHECKSUM_INVALID", "guard": "terminal integrity failure", "to": "FAILED_FINAL", "retryClass": "FINAL_REJECT"},
-      {"id": "VPN-C-TR-024", "from": "RESULT_VERIFIED", "event": "DELETE_REQUESTED", "guard": "separate explicit synthetic action", "to": "DELETE_PENDING"},
-      {"id": "VPN-C-TR-025", "from": "DELETE_PENDING", "event": "DELETION_RECEIPT_PENDING", "guard": "revision nondecreasing", "to": "DELETE_PENDING"},
+      {"id": "VPN-C-TR-024", "from": "RESULT_VERIFIED", "event": "DELETE_REQUESTED", "guard": "separate explicit synthetic action", "to": "DELETE_PENDING", "visibleSubstatusOnEnter": "DELETE_RECEIPT_POLL_ELIGIBLE"},
+      {"id": "VPN-C-TR-025", "from": "DELETE_PENDING", "event": "DELETION_RECEIPT_PENDING", "guard": "revision nondecreasing", "to": "DELETE_PENDING", "visibleSubstatusOnEnter": "DELETE_RECEIPT_POLL_ELIGIBLE", "preserveDeletionRecord": true},
       {"id": "VPN-C-TR-026", "from": "DELETE_PENDING", "event": "DELETION_RECEIPT_VERIFIED", "guard": "verifiedAbsent=true and stable receipt", "to": "DELETED"},
-      {"id": "VPN-C-TR-027", "from": "DELETE_PENDING", "event": "WAIT_NETWORK", "guard": "budget remains", "to": "WAITING_NETWORK", "resumeState": "DELETE_PENDING"},
-      {"id": "VPN-C-TR-028", "from": "DELETE_PENDING", "event": "BACKOFF_REPLAY", "guard": "budget remains", "to": "RETRY_SCHEDULED", "resumeState": "DELETE_PENDING"},
-      {"id": "VPN-C-TR-029", "from": ["CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "RESULT_VERIFIED", "DELETE_PENDING"], "event": "CANCEL_REQUESTED", "guard": "current state is cancelEligibleStates and profile valid", "to": "CANCEL_PENDING"},
+      {"id": "VPN-C-TR-027", "from": "DELETE_PENDING", "event": "WAIT_NETWORK", "guard": "automatic attempt budget remains", "to": "DELETE_PENDING", "visibleSubstatusOnEnter": "DELETE_WAITING_NETWORK", "preserveDeletionRecord": true, "retryClass": "WAIT_NETWORK"},
+      {"id": "VPN-C-TR-028", "from": "DELETE_PENDING", "event": "BACKOFF_REPLAY", "guard": "automatic attempt budget remains and nextAttemptAt is finite", "to": "DELETE_PENDING", "visibleSubstatusOnEnter": "DELETE_RETRY_SCHEDULED", "preserveDeletionRecord": true, "retryClass": "BACKOFF_REPLAY"},
+      {"id": "VPN-C-TR-029", "from": ["CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "RESULT_VERIFIED"], "event": "CANCEL_REQUESTED", "guard": "current state is cancelEligibleStates and profile valid", "to": "CANCEL_PENDING"},
       {"id": "VPN-C-TR-030", "from": "CANCEL_PENDING", "event": "CANCEL_COMMIT_WON", "guard": "stable cancel receipt", "to": "CANCELLED"},
       {"id": "VPN-C-TR-031", "from": "CANCEL_PENDING", "event": "RESULT_COMMIT_WON", "guard": "server returns ALREADY_TERMINAL with stable resultId", "to": "RESULT_AVAILABLE"},
       {"id": "VPN-C-TR-032", "from": "CANCEL_PENDING", "event": "WAIT_NETWORK", "guard": "budget remains", "to": "WAITING_NETWORK", "resumeState": "CANCEL_PENDING"},
       {"id": "VPN-C-TR-033", "from": "WAITING_NETWORK", "event": "NETWORK_AVAILABLE", "guard": "profile valid and budget remains", "to": "$persistedResumeState"},
       {"id": "VPN-C-TR-034", "from": "RETRY_SCHEDULED", "event": "BACKOFF_DUE", "guard": "profile valid and budget remains", "to": "$persistedResumeState"},
-      {"id": "VPN-C-TR-035", "from": ["CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "DELETE_PENDING", "CANCEL_PENDING"], "event": "RETRY_BUDGET_EXHAUSTED", "guard": "current state is retryBudgetEligibleStates", "to": "FAILED_FINAL"},
+      {"id": "VPN-C-TR-035", "from": ["CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "CANCEL_PENDING"], "event": "RETRY_BUDGET_EXHAUSTED", "guard": "current state is retryBudgetEligibleStates", "to": "FAILED_FINAL"},
       {"id": "VPN-C-TR-036", "from": "RESULT_AVAILABLE", "event": "RESULT_FETCH_RESPONSE_LOST_OR_RETRYABLE", "guard": "same job/profile/endpoint/region and retry budget remains", "to": "RETRY_SCHEDULED", "resumeState": "RESULT_AVAILABLE", "retryClass": "REPLAY_SAME_OPERATION"},
-      {"id": "VPN-C-TR-037", "from": ["CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "DELETE_PENDING", "CANCEL_PENDING"], "event": "FINAL_TLS_TRUST_OR_NAME_REJECT", "guard": "TLS trust or hostname validation failed", "to": "FAILED_FINAL", "retryClass": "FINAL_REJECT"},
-      {"id": "VPN-C-TR-038", "from": ["CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "DELETE_PENDING", "CANCEL_PENDING"], "event": "FINAL_SCHEMA_OR_UNSUPPORTED_REJECT", "guard": "schema, API version or input format is rejected", "to": "FAILED_FINAL", "retryClass": "FINAL_REJECT"},
+      {"id": "VPN-C-TR-037", "from": ["CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "CANCEL_PENDING"], "event": "FINAL_TLS_TRUST_OR_NAME_REJECT", "guard": "TLS trust or hostname validation failed", "to": "FAILED_FINAL", "retryClass": "FINAL_REJECT"},
+      {"id": "VPN-C-TR-038", "from": ["CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "CANCEL_PENDING"], "event": "FINAL_SCHEMA_OR_UNSUPPORTED_REJECT", "guard": "schema, API version or input format is rejected", "to": "FAILED_FINAL", "retryClass": "FINAL_REJECT"},
       {"id": "VPN-C-TR-039", "from": ["UPLOADING", "COMPLETING"], "event": "FINAL_CHECKSUM_OR_MANIFEST_REJECT", "guard": "part, manifest or overall integrity predicate failed", "to": "FAILED_FINAL", "retryClass": "FINAL_REJECT"},
-      {"id": "VPN-C-TR-040", "from": ["CREATING", "WAITING_UPLOAD", "UPLOADING", "COMPLETING", "DELETE_PENDING", "CANCEL_PENDING"], "event": "FINAL_IDEMPOTENCY_PAYLOAD_MISMATCH", "guard": "same scope and key bind a different canonical request digest", "to": "FAILED_FINAL", "retryClass": "FINAL_REJECT"},
-      {"id": "VPN-C-TR-041", "from": ["CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "DELETE_PENDING", "CANCEL_PENDING"], "event": "FINAL_CROSS_TENANT_OR_PROFILE_REJECT", "guard": "non-enumerating scope rejection received", "to": "FAILED_FINAL", "retryClass": "FINAL_REJECT"},
-      {"id": "VPN-C-TR-042", "from": "CANCELLED", "event": "DELETE_REQUESTED", "guard": "separate explicit synthetic delete and valid profile", "to": "DELETE_PENDING"},
-      {"id": "VPN-C-TR-043", "from": "CANCEL_PENDING", "event": "BACKOFF_REPLAY", "guard": "budget remains", "to": "RETRY_SCHEDULED", "resumeState": "CANCEL_PENDING"}
+      {"id": "VPN-C-TR-040", "from": ["CREATING", "WAITING_UPLOAD", "UPLOADING", "COMPLETING", "CANCEL_PENDING"], "event": "FINAL_IDEMPOTENCY_PAYLOAD_MISMATCH", "guard": "same scope and key bind a different canonical request digest", "to": "FAILED_FINAL", "retryClass": "FINAL_REJECT"},
+      {"id": "VPN-C-TR-041", "from": ["CREATING", "WAITING_UPLOAD", "UPLOADING", "WAITING_NETWORK", "RETRY_SCHEDULED", "COMPLETING", "REMOTE_PROCESSING", "RESULT_AVAILABLE", "CANCEL_PENDING"], "event": "FINAL_CROSS_TENANT_OR_PROFILE_REJECT", "guard": "non-enumerating scope rejection received", "to": "FAILED_FINAL", "retryClass": "FINAL_REJECT"},
+      {"id": "VPN-C-TR-042", "from": "CANCELLED", "event": "DELETE_REQUESTED", "guard": "separate explicit synthetic delete and valid profile", "to": "DELETE_PENDING", "visibleSubstatusOnEnter": "DELETE_RECEIPT_POLL_ELIGIBLE"},
+      {"id": "VPN-C-TR-043", "from": "CANCEL_PENDING", "event": "BACKOFF_REPLAY", "guard": "budget remains", "to": "RETRY_SCHEDULED", "resumeState": "CANCEL_PENDING"},
+      {"id": "VPN-C-TR-044", "from": "DELETE_PENDING", "event": "CANCEL_REQUESTED", "guard": "accepted deletion record exists", "to": "DELETE_PENDING", "visibleSubstatusOnEnter": "$sameVisibleSubstatus", "preserveDeletionRecord": true, "actionResult": "REJECTED_NO_STATE_CHANGE", "contentFreeErrorCode": "CANCEL_NOT_APPLICABLE_DELETE_PENDING"},
+      {"id": "VPN-C-TR-045", "from": "DELETE_PENDING", "event": "PROFILE_ABSENT_STALE_EXPIRED_REVOKED_OR_MISMATCHED", "guard": "accepted deletion record exists", "to": "DELETE_PENDING", "visibleSubstatusOnEnter": "DELETE_REVALIDATION_REQUIRED", "preserveDeletionRecord": true, "retryClass": "USER_ACTION_REQUIRED", "contentFreeErrorCode": "DELETE_PROFILE_REVALIDATION_REQUIRED"},
+      {"id": "VPN-C-TR-046", "from": "DELETE_PENDING", "event": "FINAL_TLS_TRUST_OR_NAME_REJECT", "guard": "accepted deletion record exists and TLS trust or hostname validation failed", "to": "DELETE_PENDING", "visibleSubstatusOnEnter": "DELETE_USER_ACTION_REQUIRED", "preserveDeletionRecord": true, "retryClass": "USER_ACTION_REQUIRED", "contentFreeErrorCode": "DELETE_TLS_TRUST_OR_NAME_REJECTED"},
+      {"id": "VPN-C-TR-047", "from": "DELETE_PENDING", "event": "FINAL_SCHEMA_OR_UNSUPPORTED_REJECT", "guard": "accepted deletion record exists and schema, API version or response format is rejected", "to": "DELETE_PENDING", "visibleSubstatusOnEnter": "DELETE_USER_ACTION_REQUIRED", "preserveDeletionRecord": true, "retryClass": "USER_ACTION_REQUIRED", "contentFreeErrorCode": "DELETE_SCHEMA_OR_FORMAT_REJECTED"},
+      {"id": "VPN-C-TR-048", "from": "DELETE_PENDING", "event": "FINAL_CHECKSUM_OR_MANIFEST_REJECT", "guard": "accepted deletion record exists and deletion-response integrity predicate failed", "to": "DELETE_PENDING", "visibleSubstatusOnEnter": "DELETE_USER_ACTION_REQUIRED", "preserveDeletionRecord": true, "retryClass": "USER_ACTION_REQUIRED", "contentFreeErrorCode": "DELETE_RESPONSE_INTEGRITY_REJECTED"},
+      {"id": "VPN-C-TR-049", "from": "DELETE_PENDING", "event": "FINAL_IDEMPOTENCY_PAYLOAD_MISMATCH", "guard": "accepted deletion record exists and replay request digest mismatches", "to": "DELETE_PENDING", "visibleSubstatusOnEnter": "DELETE_USER_ACTION_REQUIRED", "preserveDeletionRecord": true, "retryClass": "USER_ACTION_REQUIRED", "contentFreeErrorCode": "DELETE_IDEMPOTENCY_PAYLOAD_MISMATCH"},
+      {"id": "VPN-C-TR-050", "from": "DELETE_PENDING", "event": "FINAL_CROSS_TENANT_OR_PROFILE_REJECT", "guard": "accepted deletion record exists and non-enumerating scope rejection is received", "to": "DELETE_PENDING", "visibleSubstatusOnEnter": "DELETE_REVALIDATION_REQUIRED", "preserveDeletionRecord": true, "retryClass": "USER_ACTION_REQUIRED", "contentFreeErrorCode": "DELETE_SCOPE_REVALIDATION_REQUIRED"},
+      {"id": "VPN-C-TR-051", "from": "DELETE_PENDING", "event": "RETRY_BUDGET_EXHAUSTED", "guard": "accepted deletion record exists and automatic attempt or elapsed budget is exhausted", "to": "DELETE_PENDING", "visibleSubstatusOnEnter": "DELETE_MANUAL_RETRY_REQUIRED", "preserveDeletionRecord": true, "retryClass": "USER_ACTION_REQUIRED", "contentFreeErrorCode": "DELETE_FINITE_BUDGET_EXHAUSTED"},
+      {"id": "VPN-C-TR-052", "from": "DELETE_PENDING", "event": "DELETE_REVALIDATED_OR_USER_ACTION_CONFIRMED", "guard": "profile is valid and explicit user action grants one positive finite attempt budget from a revalidation, user-action or manual-retry substatus", "to": "DELETE_PENDING", "visibleSubstatusOnEnter": "DELETE_RECEIPT_POLL_ELIGIBLE", "preserveDeletionRecord": true, "retryClass": "REPLAY_SAME_OPERATION"}
     ],
     "arbitration": {
       "lowerNumericPriorityWins": true,
       "priorityGroups": [
         {"priority": 0, "name": "DURABLE_SERVER_OUTCOME_RECONCILIATION", "transitionIds": ["VPN-C-TR-004", "VPN-C-TR-007", "VPN-C-TR-010", "VPN-C-TR-011", "VPN-C-TR-015", "VPN-C-TR-019", "VPN-C-TR-022", "VPN-C-TR-026", "VPN-C-TR-030", "VPN-C-TR-031"]},
-        {"priority": 10, "name": "PROFILE_FAIL_CLOSED", "transitionIds": ["VPN-C-TR-001"]},
-        {"priority": 20, "name": "IMMEDIATE_FINAL_REJECT", "transitionIds": ["VPN-C-TR-023", "VPN-C-TR-037", "VPN-C-TR-038", "VPN-C-TR-039", "VPN-C-TR-040", "VPN-C-TR-041"]},
-        {"priority": 30, "name": "RETRY_BUDGET_EXHAUSTED", "transitionIds": ["VPN-C-TR-035"]},
-        {"priority": 40, "name": "EXPLICIT_USER_CANCEL_OR_DELETE", "transitionIds": ["VPN-C-TR-024", "VPN-C-TR-029", "VPN-C-TR-042"]},
+        {"priority": 10, "name": "PROFILE_FAIL_CLOSED", "transitionIds": ["VPN-C-TR-001", "VPN-C-TR-045"]},
+        {"priority": 20, "name": "IMMEDIATE_FINAL_REJECT", "transitionIds": ["VPN-C-TR-023", "VPN-C-TR-037", "VPN-C-TR-038", "VPN-C-TR-039", "VPN-C-TR-040", "VPN-C-TR-041", "VPN-C-TR-046", "VPN-C-TR-047", "VPN-C-TR-048", "VPN-C-TR-049", "VPN-C-TR-050"]},
+        {"priority": 30, "name": "RETRY_BUDGET_EXHAUSTED", "transitionIds": ["VPN-C-TR-035", "VPN-C-TR-051"]},
+        {"priority": 40, "name": "EXPLICIT_USER_CANCEL_OR_DELETE", "transitionIds": ["VPN-C-TR-024", "VPN-C-TR-029", "VPN-C-TR-042", "VPN-C-TR-044", "VPN-C-TR-052"]},
         {"priority": 50, "name": "NONTERMINAL_PROGRESS", "transitionIds": ["VPN-C-TR-018", "VPN-C-TR-025"]},
         {"priority": 60, "name": "BOUNDED_RETRY_OR_WAIT", "transitionIds": ["VPN-C-TR-005", "VPN-C-TR-006", "VPN-C-TR-008", "VPN-C-TR-009", "VPN-C-TR-012", "VPN-C-TR-013", "VPN-C-TR-014", "VPN-C-TR-016", "VPN-C-TR-017", "VPN-C-TR-020", "VPN-C-TR-021", "VPN-C-TR-027", "VPN-C-TR-028", "VPN-C-TR-032", "VPN-C-TR-036", "VPN-C-TR-043"]},
         {"priority": 70, "name": "WAKE_OR_RESUME", "transitionIds": ["VPN-C-TR-033", "VPN-C-TR-034"]},
@@ -410,21 +421,35 @@
       "withinGroupOrder": "The listed transitionIds are an exact secondary order; the first eligible transition wins.",
       "selectionRule": "For one durable state/event snapshot, filter to transitions whose explicit from set contains the current state and whose guard is true; select the eligible transition with the lowest numeric priority, then the earliest listed transitionId in that priority group. Select at most one transition and persist its event, priority and transitionId atomically with the state change.",
       "noEligibleTransitionRule": "Persist a content-free NO_STATE_CHANGE observation and retain the current state.",
-      "terminalPreservationRule": "DELETED and FAILED_FINAL have no outgoing transitions. CANCELLED ignores profile-invalid and automatic events and permits only explicit VPN-C-TR-042 when the profile is valid."
+      "terminalPreservationRule": "DELETED and FAILED_FINAL have no outgoing transitions. CANCELLED ignores profile-invalid and automatic events and permits only explicit VPN-C-TR-042 when the profile is valid.",
+      "deletionPendingPreservationRule": "DELETE_PENDING is excluded from every general cancel, profile-invalid, final-reject and exhaustion source set. Its explicit transitions may retain DELETE_PENDING or accept one verified receipt into DELETED; none may enter BLOCKED_NO_PROFILE, CANCEL_PENDING, WAITING_NETWORK, RETRY_SCHEDULED or FAILED_FINAL."
     },
     "terminalSemantics": {
       "DELETED": "Absorbing terminal state for this logical workflow.",
       "FAILED_FINAL": "Absorbing terminal state for this logical workflow; a new explicit workflow creates a new FSM instance and keys.",
       "CANCELLED": "Durably settled and non-retryable, but not deletion-terminal; only a later explicit valid-profile delete may enter DELETE_PENDING."
     },
+    "deletionPendingModel": {
+      "primaryState": "DELETE_PENDING",
+      "durableRecordFields": ["jobId", "deleteIdempotencyKeyLedgerRef", "deleteIdempotencyKeyDigest", "deleteRequestDigest", "deletionId", "profileBindingSha256", "endpointId", "regionId", "lastReceiptRevision"],
+      "visibleSubstatuses": ["DELETE_RECEIPT_POLL_ELIGIBLE", "DELETE_WAITING_NETWORK", "DELETE_RETRY_SCHEDULED", "DELETE_REVALIDATION_REQUIRED", "DELETE_USER_ACTION_REQUIRED", "DELETE_MANUAL_RETRY_REQUIRED"],
+      "contentFreeErrorCodes": ["CANCEL_NOT_APPLICABLE_DELETE_PENDING", "DELETE_PROFILE_REVALIDATION_REQUIRED", "DELETE_TLS_TRUST_OR_NAME_REJECTED", "DELETE_SCHEMA_OR_FORMAT_REJECTED", "DELETE_RESPONSE_INTEGRITY_REJECTED", "DELETE_IDEMPOTENCY_PAYLOAD_MISMATCH", "DELETE_SCOPE_REVALIDATION_REQUIRED", "DELETE_FINITE_BUDGET_EXHAUSTED"],
+      "identityRule": "Once deletionId is accepted, every DELETE_PENDING transition preserves the same deletionId, delete idempotency key ledger reference, key digest, request digest, job, profile binding, endpoint and region; evidence exposes only content-free IDs and digests.",
+      "cancelRule": "CANCEL_REQUESTED during DELETE_PENDING returns CANCEL_NOT_APPLICABLE_DELETE_PENDING as REJECTED_NO_STATE_CHANGE and preserves both primary state and visible substatus.",
+      "automaticRetryRule": "WAIT_NETWORK and BACKOFF_REPLAY keep primary state DELETE_PENDING and may schedule only a due attempt inside the current positive finite attempt and elapsed budgets for the same deletion record.",
+      "exhaustionRule": "RETRY_BUDGET_EXHAUSTED sets DELETE_MANUAL_RETRY_REQUIRED, schedules no automatic wakeup and preserves the deletion record.",
+      "revalidationRule": "Profile or scope invalidation sets DELETE_REVALIDATION_REQUIRED; a final transport or response rejection sets DELETE_USER_ACTION_REQUIRED. Neither condition destroys or replaces the deletion record.",
+      "manualRetryRule": "Only explicit user action after valid profile revalidation may grant one new positive finite attempt budget; it replays the same delete or receipt operation with the same idempotency binding and never creates a new deletion.",
+      "convergenceRule": "If valid revalidation or user action permits a finite poll and the server returns the stable verified-absent receipt for the same deletionId, VPN-C-TR-026 moves the client to DELETED. Without that condition the client remains durably pending without busy retry; unconditional liveness is not claimed."
+    },
     "immediateFinalRejectCoverage": [
-      {"family": "TLS_TRUST_OR_HOSTNAME", "transitionIds": ["VPN-C-TR-037"], "faultIds": ["VPN-FLT-006"], "errorCodes": []},
-      {"family": "SCHEMA_API_VERSION_OR_UNSUPPORTED_FORMAT", "transitionIds": ["VPN-C-TR-038"], "faultIds": [], "errorCodes": ["SCHEMA_VALIDATION_FAILED", "UNSUPPORTED_FORMAT", "UPGRADE_REQUIRED"]},
-      {"family": "CHECKSUM_OR_MANIFEST", "transitionIds": ["VPN-C-TR-023", "VPN-C-TR-039"], "faultIds": ["VPN-FLT-014", "VPN-FLT-029", "VPN-FLT-030"], "errorCodes": ["CHECKSUM_MISMATCH", "MANIFEST_INVALID", "OVERALL_CHECKSUM_MISMATCH"]},
-      {"family": "IDEMPOTENCY_PAYLOAD_MISMATCH", "transitionIds": ["VPN-C-TR-040"], "faultIds": ["VPN-FLT-009", "VPN-FLT-013"], "errorCodes": ["IDEMPOTENCY_KEY_PAYLOAD_MISMATCH"]},
-      {"family": "CROSS_TENANT_OR_PROFILE", "transitionIds": ["VPN-C-TR-001", "VPN-C-TR-041"], "faultIds": ["VPN-FLT-003"], "errorCodes": ["RESOURCE_NOT_FOUND_OR_NOT_AUTHORIZED"]}
+      {"family": "TLS_TRUST_OR_HOSTNAME", "transitionIds": ["VPN-C-TR-037", "VPN-C-TR-046"], "faultIds": ["VPN-FLT-006"], "errorCodes": []},
+      {"family": "SCHEMA_API_VERSION_OR_UNSUPPORTED_FORMAT", "transitionIds": ["VPN-C-TR-038", "VPN-C-TR-047"], "faultIds": [], "errorCodes": ["SCHEMA_VALIDATION_FAILED", "UNSUPPORTED_FORMAT", "UPGRADE_REQUIRED"]},
+      {"family": "CHECKSUM_OR_MANIFEST", "transitionIds": ["VPN-C-TR-023", "VPN-C-TR-039", "VPN-C-TR-048"], "faultIds": ["VPN-FLT-014", "VPN-FLT-029", "VPN-FLT-030"], "errorCodes": ["CHECKSUM_MISMATCH", "MANIFEST_INVALID", "OVERALL_CHECKSUM_MISMATCH"]},
+      {"family": "IDEMPOTENCY_PAYLOAD_MISMATCH", "transitionIds": ["VPN-C-TR-040", "VPN-C-TR-049"], "faultIds": ["VPN-FLT-009", "VPN-FLT-013"], "errorCodes": ["IDEMPOTENCY_KEY_PAYLOAD_MISMATCH"]},
+      {"family": "CROSS_TENANT_OR_PROFILE", "transitionIds": ["VPN-C-TR-001", "VPN-C-TR-041", "VPN-C-TR-045", "VPN-C-TR-050"], "faultIds": ["VPN-FLT-003"], "errorCodes": ["RESOURCE_NOT_FOUND_OR_NOT_AUTHORIZED"]}
     ],
-    "processDeathRule": "On restart, validate profile, load the last checksum-protected state/operation ledger, reconcile server receipts using the same keys, and restore exactly that state or its WAITING_NETWORK/RETRY_SCHEDULED wrapper. Never reset to READY or create a new job implicitly.",
+    "processDeathRule": "On restart, validate profile, load the last checksum-protected state/operation ledger, reconcile server receipts using the same keys, and restore exactly that state or its WAITING_NETWORK/RETRY_SCHEDULED wrapper. A deletion record is always restored directly to DELETE_PENDING with its persisted visible substatus, never to a general wrapper. Never reset to READY or create a job or deletion implicitly.",
     "localNonblockingRule": "Every remote transition is durable queued work. Local capture, local processing, local browse/search/export and access to an existing local result continue independently."
   },
   "serverStateMachine": {
@@ -514,9 +539,40 @@
         {"state": "RESULT_AVAILABLE", "events": ["RESULT_CHECKSUM_INVALID", "RETRY_BUDGET_EXHAUSTED", "RESULT_FETCH_RESPONSE_LOST_OR_RETRYABLE"], "selectedTransitionId": "VPN-C-TR-023", "selectedPriority": 20, "nextState": "FAILED_FINAL"}
       ],
       "expected": "Explicit source sets preserve settled/terminal states; lower numeric priority and listed secondary order select exactly one transition."
+    },
+    {
+      "id": "VPN-TRACE-005",
+      "name": "DELETE_PENDING_PRESERVATION_AND_RECOVERY",
+      "preconditions": {
+        "state": "DELETE_PENDING",
+        "visibleSubstatus": "DELETE_RECEIPT_POLL_ELIGIBLE",
+        "deletionIdToken": "opaque-deletion-001",
+        "deleteIdempotencyKeyDigestToken": "synthetic-delete-key-digest-001",
+        "deleteRequestDigestToken": "synthetic-delete-request-digest-001",
+        "profileBindingToken": "synthetic-profile-binding-001"
+      },
+      "steps": [
+        {"state": "DELETE_PENDING", "visibleSubstatus": "DELETE_RECEIPT_POLL_ELIGIBLE", "event": "CANCEL_REQUESTED", "selectedTransitionId": "VPN-C-TR-044", "nextState": "DELETE_PENDING", "nextVisibleSubstatus": "$sameVisibleSubstatus", "actionResult": "REJECTED_NO_STATE_CHANGE", "deletionRecord": "$same"},
+        {"state": "DELETE_PENDING", "visibleSubstatus": "DELETE_RECEIPT_POLL_ELIGIBLE", "event": "PROFILE_ABSENT_STALE_EXPIRED_REVOKED_OR_MISMATCHED", "selectedTransitionId": "VPN-C-TR-045", "nextState": "DELETE_PENDING", "nextVisibleSubstatus": "DELETE_REVALIDATION_REQUIRED", "deletionRecord": "$same"},
+        {"state": "DELETE_PENDING", "visibleSubstatus": "DELETE_REVALIDATION_REQUIRED", "event": "DELETE_REVALIDATED_OR_USER_ACTION_CONFIRMED", "selectedTransitionId": "VPN-C-TR-052", "nextState": "DELETE_PENDING", "nextVisibleSubstatus": "DELETE_RECEIPT_POLL_ELIGIBLE", "deletionRecord": "$same"},
+        {"state": "DELETE_PENDING", "visibleSubstatus": "DELETE_RECEIPT_POLL_ELIGIBLE", "event": "FINAL_TLS_TRUST_OR_NAME_REJECT", "selectedTransitionId": "VPN-C-TR-046", "nextState": "DELETE_PENDING", "nextVisibleSubstatus": "DELETE_USER_ACTION_REQUIRED", "deletionRecord": "$same"},
+        {"state": "DELETE_PENDING", "visibleSubstatus": "DELETE_USER_ACTION_REQUIRED", "event": "DELETE_REVALIDATED_OR_USER_ACTION_CONFIRMED", "selectedTransitionId": "VPN-C-TR-052", "nextState": "DELETE_PENDING", "nextVisibleSubstatus": "DELETE_RECEIPT_POLL_ELIGIBLE", "deletionRecord": "$same"},
+        {"state": "DELETE_PENDING", "visibleSubstatus": "DELETE_RECEIPT_POLL_ELIGIBLE", "event": "FINAL_SCHEMA_OR_UNSUPPORTED_REJECT", "selectedTransitionId": "VPN-C-TR-047", "nextState": "DELETE_PENDING", "nextVisibleSubstatus": "DELETE_USER_ACTION_REQUIRED", "deletionRecord": "$same"},
+        {"state": "DELETE_PENDING", "visibleSubstatus": "DELETE_USER_ACTION_REQUIRED", "event": "DELETE_REVALIDATED_OR_USER_ACTION_CONFIRMED", "selectedTransitionId": "VPN-C-TR-052", "nextState": "DELETE_PENDING", "nextVisibleSubstatus": "DELETE_RECEIPT_POLL_ELIGIBLE", "deletionRecord": "$same"},
+        {"state": "DELETE_PENDING", "visibleSubstatus": "DELETE_RECEIPT_POLL_ELIGIBLE", "event": "RETRY_BUDGET_EXHAUSTED", "selectedTransitionId": "VPN-C-TR-051", "nextState": "DELETE_PENDING", "nextVisibleSubstatus": "DELETE_MANUAL_RETRY_REQUIRED", "automaticRetryScheduled": false, "deletionRecord": "$same"},
+        {"state": "DELETE_PENDING", "visibleSubstatus": "DELETE_MANUAL_RETRY_REQUIRED", "event": "DELETE_REVALIDATED_OR_USER_ACTION_CONFIRMED", "selectedTransitionId": "VPN-C-TR-052", "nextState": "DELETE_PENDING", "nextVisibleSubstatus": "DELETE_RECEIPT_POLL_ELIGIBLE", "grantedAttemptBudget": "ONE_POSITIVE_FINITE_BUDGET", "deletionRecord": "$same"},
+        {"state": "DELETE_PENDING", "visibleSubstatus": "DELETE_RECEIPT_POLL_ELIGIBLE", "event": "DELETION_RECEIPT_PENDING", "selectedTransitionId": "VPN-C-TR-025", "nextState": "DELETE_PENDING", "nextVisibleSubstatus": "DELETE_RECEIPT_POLL_ELIGIBLE", "deletionRecord": "$same"},
+        {"state": "DELETE_PENDING", "visibleSubstatus": "DELETE_RECEIPT_POLL_ELIGIBLE", "event": "DELETION_RECEIPT_VERIFIED", "selectedTransitionId": "VPN-C-TR-026", "nextState": "DELETED", "serverTransitionId": "VPN-S-TR-014", "deletionRecord": "$same"}
+      ],
+      "additionalImmediateRejectCases": [
+        {"state": "DELETE_PENDING", "event": "FINAL_CHECKSUM_OR_MANIFEST_REJECT", "selectedTransitionId": "VPN-C-TR-048", "nextState": "DELETE_PENDING", "nextVisibleSubstatus": "DELETE_USER_ACTION_REQUIRED", "deletionRecord": "$same"},
+        {"state": "DELETE_PENDING", "event": "FINAL_IDEMPOTENCY_PAYLOAD_MISMATCH", "selectedTransitionId": "VPN-C-TR-049", "nextState": "DELETE_PENDING", "nextVisibleSubstatus": "DELETE_USER_ACTION_REQUIRED", "deletionRecord": "$same"},
+        {"state": "DELETE_PENDING", "event": "FINAL_CROSS_TENANT_OR_PROFILE_REJECT", "selectedTransitionId": "VPN-C-TR-050", "nextState": "DELETE_PENDING", "nextVisibleSubstatus": "DELETE_REVALIDATION_REQUIRED", "deletionRecord": "$same"}
+      ],
+      "expected": "Cancel rejection preserves the same visible status; profile invalidation, every immediate final reject and exhaustion preserve DELETE_PENDING and the same deletion record. Valid revalidation or explicit user action grants only one finite retry budget; the same stable verified receipt then reaches DELETED without a second deletion."
     }
   ],
-  "transitionTraceRange": {"first": "VPN-TRACE-001", "last": "VPN-TRACE-004", "count": 4, "exactlyContiguous": true},
+  "transitionTraceRange": {"first": "VPN-TRACE-001", "last": "VPN-TRACE-005", "count": 5, "exactlyContiguous": true},
   "invalidAttempts": [
     {"id": "VPN-INV-001", "condition": "Any non-synthetic or user-derived input is selected.", "result": "INVALID_ATTEMPT"},
     {"id": "VPN-INV-002", "condition": "Execution or measured-execution authority is absent.", "result": "INVALID_ATTEMPT"},
@@ -534,10 +590,10 @@
   "faultMatrix": [
     {"id": "VPN-FLT-001", "boundary": "PREFLIGHT", "injection": "Consent profile absent", "expected": "BLOCKED_NO_PROFILE; zero transport attempts and zero remote effects.", "retryClass": "FINAL_REJECT", "proofClass": "FAKE_OR_LOOPBACK"},
     {"id": "VPN-FLT-002", "boundary": "PREFLIGHT", "injection": "Consent profile stale, expired or revoked", "expected": "BLOCKED_NO_PROFILE; zero transport attempts and zero remote effects.", "retryClass": "FINAL_REJECT", "proofClass": "FAKE_OR_LOOPBACK"},
-    {"id": "VPN-FLT-003", "boundary": "PREFLIGHT", "injection": "Endpoint or region mismatches persisted profile", "expected": "Client enters BLOCKED_NO_PROFILE as an immediate FINAL_REJECT before transport; no fallback, switch or migration.", "retryClass": "FINAL_REJECT", "proofClass": "FAKE_OR_LOOPBACK"},
+    {"id": "VPN-FLT-003", "boundary": "PREFLIGHT", "injection": "Endpoint or region mismatches persisted profile", "expected": "Before deletion acceptance the client enters BLOCKED_NO_PROFILE as an immediate FINAL_REJECT before transport. During DELETE_PENDING it instead preserves the deletion record and exposes DELETE_REVALIDATION_REQUIRED. Neither case permits fallback, switch or migration.", "retryClass": "FINAL_REJECT", "proofClass": "FAKE_OR_LOOPBACK"},
     {"id": "VPN-FLT-004", "boundary": "CREATE", "injection": "DNS failure before create commit", "expected": "WAIT_NETWORK then replay the same create key and digest within budget; at most one job/economic effect.", "retryClass": "WAIT_NETWORK", "proofClass": "LOOPBACK_CATEGORY_SIMULATION"},
     {"id": "VPN-FLT-005", "boundary": "INIT_OR_REFRESH", "injection": "Connect failure before upload-plan commit", "expected": "WAIT_NETWORK then replay the same plan key and digest within budget; no second upload.", "retryClass": "WAIT_NETWORK", "proofClass": "LOOPBACK_CATEGORY_SIMULATION"},
-    {"id": "VPN-FLT-006", "boundary": "TLS", "injection": "TLS trust or hostname failure", "expected": "Client enters FAILED_FINAL immediately; no insecure fallback and no transient retry.", "retryClass": "FINAL_REJECT", "proofClass": "CATEGORY_ONLY_UNTIL_SECURITY_SCOPE"},
+    {"id": "VPN-FLT-006", "boundary": "TLS", "injection": "TLS trust or hostname failure", "expected": "Ordinary active work enters FAILED_FINAL immediately. During DELETE_PENDING the same final error preserves the deletion record and exposes DELETE_USER_ACTION_REQUIRED. Neither case permits insecure fallback or transient automatic retry.", "retryClass": "FINAL_REJECT", "proofClass": "CATEGORY_ONLY_UNTIL_SECURITY_SCOPE"},
     {"id": "VPN-FLT-007", "boundary": "CREATE", "injection": "Create committed and success response lost", "expected": "Replay same key/digest returns the same job and economic effect.", "retryClass": "REPLAY_SAME_OPERATION", "proofClass": "FAKE_OR_LOOPBACK"},
     {"id": "VPN-FLT-008", "boundary": "CREATE", "injection": "Repeated create with same key and same payload", "expected": "Original 201 response digest, jobId and economic effect replay; duplicate counters remain zero.", "retryClass": "REPLAY_SAME_OPERATION", "proofClass": "FAKE_OR_LOOPBACK"},
     {"id": "VPN-FLT-009", "boundary": "CREATE", "injection": "Same create key with different canonical payload", "expected": "Client enters FAILED_FINAL immediately after 409 IDEMPOTENCY_KEY_PAYLOAD_MISMATCH; no new state or effect.", "retryClass": "FINAL_REJECT", "proofClass": "FAKE_OR_LOOPBACK"},
@@ -548,7 +604,7 @@
     {"id": "VPN-FLT-014", "boundary": "UPLOAD_PART", "injection": "Transmitted part checksum mismatch", "expected": "Client enters FAILED_FINAL immediately after 422 CHECKSUM_MISMATCH; server emits no part receipt and does not advance state.", "retryClass": "FINAL_REJECT", "proofClass": "FAKE_OR_LOOPBACK"},
     {"id": "VPN-FLT-015", "boundary": "ANY_MUTATION", "injection": "429 with valid in-budget Retry-After", "expected": "Persist due time, BACKOFF_REPLAY once due, preserve key/digest and remain within both budgets.", "retryClass": "BACKOFF_REPLAY", "proofClass": "FAKE_OR_LOOPBACK"},
     {"id": "VPN-FLT-016", "boundary": "ANY_MUTATION", "injection": "429 without Retry-After", "expected": "Use frozen bounded local backoff, preserve key/digest and stop at budget exhaustion.", "retryClass": "BACKOFF_REPLAY", "proofClass": "FAKE_OR_LOOPBACK"},
-    {"id": "VPN-FLT-017", "boundary": "ANY_MUTATION", "injection": "429 with malformed or out-of-budget Retry-After", "expected": "Ignore unsafe value; use bounded local policy if budget remains, otherwise FAILED_FINAL.", "retryClass": "BACKOFF_REPLAY", "proofClass": "FAKE_OR_LOOPBACK"},
+    {"id": "VPN-FLT-017", "boundary": "ANY_MUTATION", "injection": "429 with malformed or out-of-budget Retry-After", "expected": "Ignore the unsafe value and use bounded local policy while budget remains. On exhaustion ordinary work enters FAILED_FINAL; DELETE_PENDING preserves the same deletion record, exposes DELETE_MANUAL_RETRY_REQUIRED and schedules no work until explicit action grants one positive finite retry budget.", "retryClass": "BACKOFF_REPLAY", "proofClass": "FAKE_OR_LOOPBACK"},
     {"id": "VPN-FLT-018", "boundary": "ANY_RETRYABLE_OPERATION", "injection": "Retryable 5xx", "expected": "Bounded BACKOFF_REPLAY with same logical operation; no duplicate effect.", "retryClass": "BACKOFF_REPLAY", "proofClass": "FAKE_OR_LOOPBACK"},
     {"id": "VPN-FLT-019", "boundary": "ANY_RETRYABLE_OPERATION", "injection": "Per-attempt timeout", "expected": "Classify unknown commit, replay same operation within finite budget and reconcile canonical outcome.", "retryClass": "REPLAY_SAME_OPERATION", "proofClass": "FAKE_OR_LOOPBACK"},
     {"id": "VPN-FLT-020", "boundary": "UPLOAD_PART", "injection": "Part URL expired", "expected": "Create one next plan generation with a new plan key and same job/upload/profile/endpoint/region; old URL stays invalid.", "retryClass": "REFRESH_UPLOAD_PLAN", "proofClass": "FAKE_OR_LOOPBACK"},
@@ -565,15 +621,15 @@
     {"id": "VPN-FLT-031", "boundary": "POLL", "injection": "Poll timeout, 5xx or repeated ETag", "expected": "Bounded read-only repeat; revision never decreases and no resource/economic effect is created.", "retryClass": "BACKOFF_REPLAY", "proofClass": "FAKE_OR_LOOPBACK"},
     {"id": "VPN-FLT-032", "boundary": "RESULT", "injection": "Result response lost or fetch repeated", "expected": "From RESULT_AVAILABLE, replay the same fetch within the finite budget while preserving job, profile, endpoint and region; return to RESULT_AVAILABLE for the same resultId, length, SHA-256 and bytes, or enter FAILED_FINAL on exhaustion; committedResultCount remains one.", "retryClass": "REPLAY_SAME_OPERATION", "proofClass": "FAKE_OR_LOOPBACK"},
     {"id": "VPN-FLT-033", "boundary": "CANCEL", "injection": "Cancel races result commit or is repeated", "expected": "First terminal commit wins: cancel-first yields one cancel receipt and no result; result-first yields 409 ALREADY_TERMINAL and the one stable result.", "retryClass": "REPLAY_SAME_OPERATION", "proofClass": "FAKE_OR_LOOPBACK"},
-    {"id": "VPN-FLT-034", "boundary": "DELETE_AND_RECEIPT", "injection": "Delete starts offline, response is lost or repeated, or receipt poll is interrupted", "expected": "Client remains DELETE_PENDING; replay resolves the same deletionId and one verified receipt, with no second delete effect and finite waiting.", "retryClass": "REPLAY_SAME_OPERATION", "proofClass": "FAKE_OR_LOOPBACK"}
+    {"id": "VPN-FLT-034", "boundary": "DELETE_AND_RECEIPT", "injection": "While one accepted deletion is pending: cancel is requested; profile becomes invalid; a final transport or response rejection occurs; finite retry budget exhausts; revalidation or explicit user action resumes; the stable receipt is then returned", "expected": "Every interruption preserves DELETE_PENDING and the same deletionId, delete idempotency binding and deletion record. Cancel is REJECTED_NO_STATE_CHANGE; profile/final errors expose revalidation or user-action substatus; exhaustion schedules no wakeup until one explicit positive finite retry budget is granted. The same verified receipt alone moves to DELETED; no second deletion effect occurs.", "retryClass": "REPLAY_SAME_OPERATION", "proofClass": "FAKE_OR_LOOPBACK"}
   ],
   "faultTransitionCoverage": [
     {"faultId": "VPN-FLT-001", "clientTransitionIds": ["VPN-C-TR-001"], "serverTransitionIds": [], "traceIds": ["VPN-TRACE-004"]},
     {"faultId": "VPN-FLT-002", "clientTransitionIds": ["VPN-C-TR-001"], "serverTransitionIds": [], "traceIds": ["VPN-TRACE-004"]},
-    {"faultId": "VPN-FLT-003", "clientTransitionIds": ["VPN-C-TR-001"], "serverTransitionIds": [], "traceIds": ["VPN-TRACE-004"]},
+    {"faultId": "VPN-FLT-003", "clientTransitionIds": ["VPN-C-TR-001", "VPN-C-TR-045"], "serverTransitionIds": [], "traceIds": ["VPN-TRACE-004", "VPN-TRACE-005"]},
     {"faultId": "VPN-FLT-004", "clientTransitionIds": ["VPN-C-TR-005", "VPN-C-TR-033"], "serverTransitionIds": [], "traceIds": []},
     {"faultId": "VPN-FLT-005", "clientTransitionIds": ["VPN-C-TR-008", "VPN-C-TR-033"], "serverTransitionIds": [], "traceIds": []},
-    {"faultId": "VPN-FLT-006", "clientTransitionIds": ["VPN-C-TR-037"], "serverTransitionIds": [], "traceIds": ["VPN-TRACE-002"]},
+    {"faultId": "VPN-FLT-006", "clientTransitionIds": ["VPN-C-TR-037", "VPN-C-TR-046"], "serverTransitionIds": [], "traceIds": ["VPN-TRACE-002", "VPN-TRACE-005"]},
     {"faultId": "VPN-FLT-007", "clientTransitionIds": ["VPN-C-TR-006", "VPN-C-TR-034", "VPN-C-TR-004"], "serverTransitionIds": ["VPN-S-TR-017"], "traceIds": []},
     {"faultId": "VPN-FLT-008", "clientTransitionIds": ["VPN-C-TR-004"], "serverTransitionIds": ["VPN-S-TR-017"], "traceIds": []},
     {"faultId": "VPN-FLT-009", "clientTransitionIds": ["VPN-C-TR-040"], "serverTransitionIds": [], "traceIds": ["VPN-TRACE-002"]},
@@ -584,7 +640,7 @@
     {"faultId": "VPN-FLT-014", "clientTransitionIds": ["VPN-C-TR-039"], "serverTransitionIds": [], "traceIds": ["VPN-TRACE-002"]},
     {"faultId": "VPN-FLT-015", "clientTransitionIds": ["VPN-C-TR-006", "VPN-C-TR-009", "VPN-C-TR-013", "VPN-C-TR-017", "VPN-C-TR-021", "VPN-C-TR-028", "VPN-C-TR-043", "VPN-C-TR-034"], "serverTransitionIds": [], "traceIds": []},
     {"faultId": "VPN-FLT-016", "clientTransitionIds": ["VPN-C-TR-006", "VPN-C-TR-009", "VPN-C-TR-013", "VPN-C-TR-017", "VPN-C-TR-021", "VPN-C-TR-028", "VPN-C-TR-043", "VPN-C-TR-034"], "serverTransitionIds": [], "traceIds": []},
-    {"faultId": "VPN-FLT-017", "clientTransitionIds": ["VPN-C-TR-006", "VPN-C-TR-009", "VPN-C-TR-013", "VPN-C-TR-017", "VPN-C-TR-021", "VPN-C-TR-028", "VPN-C-TR-043", "VPN-C-TR-034", "VPN-C-TR-035"], "serverTransitionIds": [], "traceIds": []},
+    {"faultId": "VPN-FLT-017", "clientTransitionIds": ["VPN-C-TR-006", "VPN-C-TR-009", "VPN-C-TR-013", "VPN-C-TR-017", "VPN-C-TR-021", "VPN-C-TR-028", "VPN-C-TR-043", "VPN-C-TR-034", "VPN-C-TR-035", "VPN-C-TR-051", "VPN-C-TR-052"], "serverTransitionIds": [], "traceIds": ["VPN-TRACE-005"]},
     {"faultId": "VPN-FLT-018", "clientTransitionIds": ["VPN-C-TR-006", "VPN-C-TR-009", "VPN-C-TR-013", "VPN-C-TR-017", "VPN-C-TR-021", "VPN-C-TR-028", "VPN-C-TR-043", "VPN-C-TR-034"], "serverTransitionIds": [], "traceIds": []},
     {"faultId": "VPN-FLT-019", "clientTransitionIds": ["VPN-C-TR-006", "VPN-C-TR-009", "VPN-C-TR-013", "VPN-C-TR-017", "VPN-C-TR-021", "VPN-C-TR-028", "VPN-C-TR-036", "VPN-C-TR-043", "VPN-C-TR-034", "VPN-C-TR-035"], "serverTransitionIds": [], "traceIds": ["VPN-TRACE-001"]},
     {"faultId": "VPN-FLT-020", "clientTransitionIds": ["VPN-C-TR-014", "VPN-C-TR-007"], "serverTransitionIds": ["VPN-S-TR-020"], "traceIds": []},
@@ -601,7 +657,7 @@
     {"faultId": "VPN-FLT-031", "clientTransitionIds": ["VPN-C-TR-021", "VPN-C-TR-034", "VPN-C-TR-018", "VPN-C-TR-019"], "serverTransitionIds": ["VPN-S-TR-016"], "traceIds": []},
     {"faultId": "VPN-FLT-032", "clientTransitionIds": ["VPN-C-TR-036", "VPN-C-TR-034", "VPN-C-TR-022", "VPN-C-TR-035"], "serverTransitionIds": ["VPN-S-TR-010"], "traceIds": ["VPN-TRACE-001"]},
     {"faultId": "VPN-FLT-033", "clientTransitionIds": ["VPN-C-TR-029", "VPN-C-TR-030", "VPN-C-TR-031", "VPN-C-TR-043"], "serverTransitionIds": ["VPN-S-TR-011", "VPN-S-TR-012"], "traceIds": ["VPN-TRACE-003"]},
-    {"faultId": "VPN-FLT-034", "clientTransitionIds": ["VPN-C-TR-024", "VPN-C-TR-042", "VPN-C-TR-027", "VPN-C-TR-028", "VPN-C-TR-033", "VPN-C-TR-034", "VPN-C-TR-025", "VPN-C-TR-026"], "serverTransitionIds": ["VPN-S-TR-013", "VPN-S-TR-014", "VPN-S-TR-015", "VPN-S-TR-016"], "traceIds": ["VPN-TRACE-003"]}
+    {"faultId": "VPN-FLT-034", "clientTransitionIds": ["VPN-C-TR-024", "VPN-C-TR-042", "VPN-C-TR-044", "VPN-C-TR-045", "VPN-C-TR-046", "VPN-C-TR-047", "VPN-C-TR-048", "VPN-C-TR-049", "VPN-C-TR-050", "VPN-C-TR-051", "VPN-C-TR-052", "VPN-C-TR-027", "VPN-C-TR-028", "VPN-C-TR-025", "VPN-C-TR-026"], "serverTransitionIds": ["VPN-S-TR-013", "VPN-S-TR-014", "VPN-S-TR-015", "VPN-S-TR-016"], "traceIds": ["VPN-TRACE-003", "VPN-TRACE-005"]}
   ],
   "syntheticFixtures": {
     "generator": "Concatenate SHA-256 blocks of UTF8(contractId + '|' + fixtureId + '|block=' + eight-digit-decimal blockIndex), then truncate to byteLength.",
@@ -759,10 +815,10 @@
     "operations": 9,
     "outcomeInvariants": 10,
     "clientStates": 16,
-    "clientTransitions": 43,
+    "clientTransitions": 52,
     "serverStates": 12,
     "serverTransitions": 20,
-    "transitionTraces": 4,
+    "transitionTraces": 5,
     "invalidAttempts": 12,
     "faultRows": 34,
     "faultTransitionCoverageRows": 34,
