@@ -1087,11 +1087,30 @@ internal object LoopbackTransportHostTest {
             },
             "broader authority false",
         )
+        val review = evidence.requiredObject("review")
         checkThat(
-            !(evidence.requiredObject("review").value("formalReviewer")
-                    as CanonicalValue.BooleanValue)
-                .value,
+            !(review.value("formalReviewer") as CanonicalValue.BooleanValue).value,
             "formal reviewer false",
+        )
+        val advisoryRecordBytes =
+            Files.readAllBytes(root.resolve(review.requiredString("advisoryRecordPath")))
+        checkEquals(
+            review.requiredString("advisoryRecordSha256"),
+            ContractOracle.sha256Hex(advisoryRecordBytes).value,
+            "advisory review record hash",
+        )
+        val advisoryRecord =
+            DoraCanonicalJson.parseStrict(String(advisoryRecordBytes, Charsets.UTF_8))
+                as CanonicalValue.ObjectValue
+        checkEquals(
+            "NO_FURTHER_CHANGES_REQUIRED",
+            advisoryRecord.requiredObject("review").requiredString("disposition"),
+            "advisory review disposition",
+        )
+        checkEquals(
+            "96f86f672d8d70a73ff33d17a12b9041acb975f0",
+            review.requiredString("reviewedCommit"),
+            "advisory reviewed commit",
         )
         checkEquals(
             ContractCatalog.operations.map { it.id.value },
@@ -1220,9 +1239,9 @@ internal object LoopbackTransportHostTest {
         }
         val result = evidence.requiredObject("resultTaxonomy")
         checkEquals(
-            "I2_IMPLEMENTED_LOCAL_CHECKS_PASS_REVIEW_PENDING",
+            "I2_IMPLEMENTED_LOCAL_CHECKS_PASS_ADVISORY_REVIEW_COMPLETE",
             result.requiredString("i2ImplementationVerification"),
-            "review-pending I2 taxonomy",
+            "review-complete I2 taxonomy",
         )
         checkEquals("TODO", result.requiredString("pocVpnBacklogState"), "backlog truth")
         checkEquals("NOT_READY", result.requiredString("pocVpnReadiness"), "readiness truth")
