@@ -13,6 +13,11 @@ Work branch: task-scoped; live Git/GitHub metadata is authoritative and no branc
 Active PoC: `POC-RECOVERY-001`
 Stage state: **REC-I1 REVIEWED AND SQUASH-MERGED; POST-MERGE VALIDATOR LIFECYCLE REMEDIATED; RUNTIME IMPLEMENTATION, ACTUAL GRAPH AND EXECUTION BLOCKED**
 
+Design-governance reconciliation: `DES-EXPORT-001` / `des-export-interaction-v0.1` is contract
+complete under `DEC-017`; no implementation/conformance/user-research, code/Figma/schema/provider
+or export-execution claim follows. Active Stage 0D, `POC-DATA-001` blocking and every Recovery
+authority flag remain unchanged.
+
 ## Stage 00 closure
 
 - Stage 00 is complete.

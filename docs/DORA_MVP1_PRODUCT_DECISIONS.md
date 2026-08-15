@@ -1,8 +1,8 @@
 # Dora MVP 1 — Product Decisions
 
 Статус документа: единый реестр решений владельца продукта\
-Дата: 12 августа 2026 года\
-Последнее изменение: владелец / Stage 0 Product-IP reviewer утвердил только prospective policy `REC-JSR305-EXCLUDE-001` и reviewed recovery governance package; implementation, exact future graph и execution остаются заблокированы, underlying license conflict не интерпретирован и JSR-305 не одобрен для use/distribution, v0.1/v0.2 сохранены как superseded audit artifacts\
+Дата: 15 августа 2026 года\
+Последнее изменение: `DEC-017` утверждён только как versioned reversible design/governance contract `des-export-interaction-v0.1`; code, Figma, schema, provider и export execution остаются separately scoped. Recovery authority, prospective `REC-JSR305-EXCLUDE-001`, exact future graph и execution не изменены\
 Основание: Technical Plan §40 P1–P20, Design Spec §40.2 D-P1–D-P22 и owner approval record Stage 0A.
 
 `Provisional` означает, что рекомендуемый baseline можно использовать для обратимого PoC/bootstrap, но это не заменяет явное решение владельца. `Proposed` запрещает необратимые или пользовательские действия до утверждения. `Approved` означает прямое решение владельца в указанной области; оно не расширяет scope на production, Legal или release без явной формулировки. Статусы, повышенные owner-решением, ссылаются на соответствующий `OD-*`, владельца и дату.
@@ -251,16 +251,35 @@
 
 ## DEC-017. Export formats
 
-Статус: Provisional\
+Статус: Approved — только versioned reversible design/governance contract\
 Приоритет: P1\
 Источник: Technical P17; Design ST-07\
-Срок принятия: до Stage 12/export implementation\
+Дата решения: 15 августа 2026 года\
+Владелец решения: Project owner, через standing delegation для ordinary reversible project/product decisions\
+Исполнитель/рецензент решения: OpenAI Codex project coordinator; `formalReviewer=false`\
+Область утверждения: reusable contract `des-export-interaction-v0.1`; code, Figma, schema, provider, FileProvider, SAF/Sharesheet wiring и export execution остаются separately scoped\
+Источник делегирования (дословно): `Продолжи работу. Все где нужно принимать решения типа РАЗРЕШАЮ делай сама или поручи отдельному агенту. Важно, чтобы процесс не останавливался из-за этого`\
+Интерпретация делегирования: standing delegation координатору для ordinary reversible project/product decisions, чтобы workflow не останавливался\
+Граница полномочий: делегирование не даёт Legal/Security approval, Recovery/device/measured execution, dependency admission, production admission, real-data collection или merge authority; Codex не выдаёт себя за квалифицированного Legal/Security reviewer и не создаёт подпись человека\
+Срок принятия: contract принят до Stage 12/export implementation; implementation остаётся отдельным gate\
 Варианты: copy/select; Markdown; JSON; CSV tasks; audio; encrypted bundle\
-Рекомендуемый вариант: copy + Markdown + versioned JSON + CSV tasks; audio explicit\
-Обоснование: portable results without connector lock-in.\
-Влияние на архитектуру: versioned export schema/temp cleanup.\
-Влияние на UX: content selection and plain-share warning.\
+Рекомендуемый вариант: утверждённый local-first/privacy-first baseline ниже\
+Утверждённая матрица содержимого и форматов: Copy/plain text — Summary, Protocol, Transcript, Tasks; Markdown — Summary, Protocol, Transcript, Tasks; versioned JSON v1 — эти четыре structured content class, raw audio bytes исключены; CSV — только Tasks; Audio — отдельный one-shot WAV/PCM, default OFF и никогда не наследуется и не выбирается через Select all; encrypted bundle — deferred/not MVP и недоступен до отдельного key/recovery decision\
+Defaults и совместимость: content, format и destination не preselected и не remembered; incompatible pairs disabled с доступной причиной; Audio требует отдельное acknowledgement при каждом export\
+Destinations: Copy использует только clipboard; files используют Android Sharesheet или Storage Access Framework; Dora cloud upload отсутствует, account/GMS/network не требуются; до передачи раскрывается, что выбранное external app/provider управляет своей копией и может независимо использовать network\
+Обязательное предупреждение перед каждым clipboard/plain/unencrypted transfer, без skip или remembered acknowledgement — RU: `Dora передаст выбранные данные разговора как незашифрованный текст или файл. После копирования, сохранения или отправки Dora не управляет копией в буфере обмена, другом приложении или выбранном хранилище.` EN: `Dora will transfer the selected conversation data as unencrypted text or files. After copying, saving, or sharing, Dora does not control copies held by the clipboard, another app, or the selected storage provider.`\
+Temp lifecycle: Dora-managed temp создаётся только после Review и обязательного warning; Clipboard temp не создаёт; SAF staging можно clean только после successful destination close либо после прекращённой/failed write; Sharesheet handoff не равен delivery, поэтому Dora temp сохраняется до отдельного observable safe-release event, а при отсутствии такого event — до `Delete now` / `Удалить сейчас`, hard maximum один час или startup orphan cleanup. Failed cleanup остаётся видимым и retryable. SAF/external destination copies находятся вне Dora expiry. Export cleanup никогда не удаляет source conversation/audio/content и не обещает physical overwrite\
+Recent exports: только currently live Dora-managed temp artifacts и cleanup failures с content-free metadata; entry удаляется после cleanup; отдельной persistent export history в MVP нет\
+Clipboard: только explicit action; best-effort clear через 60 секунд только если clipboard всё ещё содержит неизменённый Dora clip; clearing не гарантируется\
+Managed policy: может явно disable/restrict formats, destinations и Audio и сокращать expiry; не может молча enable, select или initiate export\
+Retry: начинается с REVIEW после source/selection revalidation; background resume и reuse partial output запрещены\
+Success semantics: clipboard API accepted; SAF final write/close completed; Sharesheet handed to Android. Нельзя утверждать, что external app/provider прочитал, сохранил, синхронизировал или доставил copy\
+Progress и diagnostics: determinate только при real numerator/denominator, иначе stage-only; logs/diagnostics content-free и не содержат path, URI, key, payload или user content\
+Обоснование: portable local-first results without connector lock-in, silent outbound flow, retained acknowledgement или ложного контроля внешней копии.\
+Влияние на архитектуру: versioned future export schema/ports, deny-by-default compatibility and policy gates, bounded Dora-managed temp lifecycle; этот DEC не создаёт schema/port/provider implementation.\
+Влияние на UX: explicit selection, separate audio acknowledgement, exact per-transfer unencrypted warning, truthful handoff semantics, accessible cleanup/retry states.\
 Обратимость: высокая additively; removing a published format is costly.\
+Decision/evidence record: `docs/evidence/des-export-001/decision-record-v0.1.json`; interaction contract: `docs/design/DORA_MVP1_EXPORT_INTERACTION_CONTRACT.md`\
 Связанные задачи: `EXPORT-001`, `DES-EXPORT-001`.
 
 ## DEC-018. Восьмичасовая запись

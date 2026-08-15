@@ -1,0 +1,2253 @@
+{
+  "schemaVersion": 1,
+  "recordType": "DORA_DESIGN_DECISION_EVIDENCE",
+  "recordId": "DES-EXPORT-001-DEC-017-20260815",
+  "status": "CONTRACT_COMPLETE_NO_IMPLEMENTATION_CLAIM",
+  "recordedOn": "2026-08-15",
+  "repository": "Monumentogram/DORA",
+  "base": {
+    "branch": "main",
+    "parentCommit": "c35178662206180505896f6ab3044a5e6fa60718",
+    "parentTree": "237a54d67958b107635a2e1ecf7864d162ae8461",
+    "mustMatchLiveProtectedMainAtTaskStart": true,
+    "githubSignatureVerified": true,
+    "githubSignatureReason": "valid"
+  },
+  "decision": {
+    "id": "DEC-017",
+    "status": "Approved",
+    "approvedScope": "versioned reversible design/governance contract only",
+    "codeFigmaSchemaProviderAndExportExecutionSeparatelyScoped": true
+  },
+  "decisionProvenance": {
+    "sourceKind": "project_owner_message",
+    "sourceWording": "Продолжи работу. Все где нужно принимать решения типа РАЗРЕШАЮ делай сама или поручи отдельному агенту. Важно, чтобы процесс не останавливался из-за этого",
+    "interpretation": "Project owner standing delegation to the AI coordinator for ordinary reversible project/product decisions so workflow does not stop.",
+    "decisionExecutor": "OpenAI Codex project coordinator",
+    "reviewer": "OpenAI Codex project coordinator",
+    "formalReviewer": false,
+    "humanSignatureClaimed": false,
+    "qualifiedLegalOrSecurityReviewerClaimed": false
+  },
+  "contract": {
+    "identity": "des-export-interaction-v0.1",
+    "version": "0.1",
+    "normativeDocument": "docs/design/DORA_MVP1_EXPORT_INTERACTION_CONTRACT.md",
+    "backlogId": "DES-EXPORT-001",
+    "completionMeaning": "contract complete; no implementation/conformance/user-research claim"
+  },
+  "contentFormatMatrix": {
+    "contentClasses": [
+      "Summary",
+      "Protocol",
+      "Transcript",
+      "Tasks",
+      "Audio"
+    ],
+    "formats": {
+      "Copy/plain text": {
+        "allowedContent": [
+          "Summary",
+          "Protocol",
+          "Transcript",
+          "Tasks"
+        ],
+        "rawAudioBytesExcluded": true
+      },
+      "Markdown": {
+        "allowedContent": [
+          "Summary",
+          "Protocol",
+          "Transcript",
+          "Tasks"
+        ],
+        "rawAudioBytesExcluded": true
+      },
+      "JSON v1": {
+        "allowedContent": [
+          "Summary",
+          "Protocol",
+          "Transcript",
+          "Tasks"
+        ],
+        "versioned": true,
+        "structuredContentOnly": true,
+        "rawAudioBytesExcluded": true
+      },
+      "CSV": {
+        "allowedContent": [
+          "Tasks"
+        ],
+        "rawAudioBytesExcluded": true
+      },
+      "Audio WAV/PCM": {
+        "allowedContent": [
+          "Audio"
+        ],
+        "oneShotOnly": true,
+        "defaultOff": true,
+        "inherited": false,
+        "selectedBySelectAll": false
+      },
+      "Encrypted bundle": {
+        "availability": "DEFERRED_NOT_MVP",
+        "enabled": false,
+        "requiresSeparateKeyAndRecoveryDecision": true
+      }
+    }
+  },
+  "defaults": {
+    "contentPreselected": false,
+    "formatPreselected": false,
+    "destinationPreselected": false,
+    "contentRemembered": false,
+    "formatRemembered": false,
+    "destinationRemembered": false,
+    "incompatiblePairsDisabledWithReason": true,
+    "audioAcknowledgementRequiredEveryExport": true,
+    "audioAcknowledgementRemembered": false,
+    "selectAllStructuredContent": [
+      "Summary",
+      "Protocol",
+      "Transcript",
+      "Tasks"
+    ],
+    "selectAllIncludesAudio": false
+  },
+  "destinations": {
+    "Clipboard": {
+      "allowedFormats": [
+        "Copy/plain text"
+      ],
+      "successBoundary": "clipboard API accepted"
+    },
+    "Android Sharesheet": {
+      "fileFormatsOnly": true,
+      "successBoundary": "file handoff to Android Sharesheet",
+      "recipientDeliveryClaimed": false
+    },
+    "Storage Access Framework": {
+      "fileFormatsOnly": true,
+      "successBoundary": "final write and close completed",
+      "providerPersistenceClaimed": false
+    },
+    "doraCloudUpload": false,
+    "doraAccountPrerequisite": false,
+    "gmsPrerequisite": false,
+    "doraNetworkPrerequisite": false,
+    "externalControlDisclosureRequired": true,
+    "externalAppOrProviderMayIndependentlyUseNetworkDisclosureRequired": true
+  },
+  "unencryptedTransferWarning": {
+    "requiredBeforeEveryClipboardPlainOrUnencryptedTransfer": true,
+    "skippable": false,
+    "rememberedAcknowledgement": false,
+    "ru": "Dora передаст выбранные данные разговора как незашифрованный текст или файл. После копирования, сохранения или отправки Dora не управляет копией в буфере обмена, другом приложении или выбранном хранилище.",
+    "en": "Dora will transfer the selected conversation data as unencrypted text or files. After copying, saving, or sharing, Dora does not control copies held by the clipboard, another app, or the selected storage provider."
+  },
+  "temporaryArtifactLifecycle": {
+    "creationAllowedOnlyAfterReviewAndRequiredAcknowledgements": true,
+    "creationAllowedOnlyAfterReviewAndUnencryptedWarning": true,
+    "deleteNowAvailable": true,
+    "cleanupOnCancel": true,
+    "cleanupOnFailure": true,
+    "destinationSpecificLifecycle": {
+      "Clipboard": {
+        "doraManagedFileTempCreated": false,
+        "fileCleanupStateEntered": false,
+        "independentBestEffortClearSeconds": 60
+      },
+      "Storage Access Framework": {
+        "directWriteOrDoraStaging": true,
+        "successRequiresFinalDestinationClose": true,
+        "stagingCleanupEligibleBeforeSuccessfulClose": false,
+        "stagingCleanupEligibleAfterSuccessfulClose": true,
+        "failureCleanupRequiresWriterStopped": true,
+        "providerPartialControlledOrDeletedByDora": false
+      },
+      "Android Sharesheet": {
+        "usesDoraManagedTempCopy": true,
+        "canonicalSourceGranted": false,
+        "handoffEqualsRecipientDelivery": false,
+        "cleanupImmediatelyAfterHandoff": false,
+        "safeReleaseRequiresObservableSeparatelyEvidencedSignal": true,
+        "fallbackCleanupEvents": [
+          "SHARESHEET_DELETE_NOW",
+          "SHARESHEET_TEMP_EXPIRED",
+          "STARTUP_SHARESHEET_CLEANUP_SAFE_RELEASE",
+          "STARTUP_SHARESHEET_CLEANUP_DELETE_NOW",
+          "STARTUP_SHARESHEET_CLEANUP_EXPIRED",
+          "STARTUP_CONTEXT_INVALID_RETENTION_EXPIRED"
+        ]
+      }
+    },
+    "contentFreeRecoveryContext": {
+      "persistAtomicallyBeforeHandoff": true,
+      "allowedFields": [
+        "opaqueTransferId",
+        "destinationClass",
+        "pendingOutcome",
+        "createdAt",
+        "effectiveExpiresAt",
+        "firstObservedAt",
+        "conservativeRetentionDeadline",
+        "safeReleaseObserved",
+        "deleteNowConfirmedAfterWarning",
+        "finalDestinationCloseObserved",
+        "handoffEvidence",
+        "recoveryContextStatus"
+      ],
+      "destinationClassValues": [
+        "SAF",
+        "SHARESHEET",
+        "SHARESHEET_CONSERVATIVE"
+      ],
+      "handoffEvidenceValues": [
+        "ANDROID_ACCEPTED",
+        "UNKNOWN"
+      ],
+      "recoveryContextStatusValues": [
+        "VALID",
+        "INVALID"
+      ],
+      "forbiddenFields": [
+        "conversation title",
+        "participant",
+        "content excerpt",
+        "payload",
+        "path",
+        "URI",
+        "provider or destination identity",
+        "credential",
+        "key"
+      ],
+      "restartAloneMakesSharesheetCleanupEligible": false,
+      "invalidContextDeletesImmediately": false,
+      "invalidContextPendingOutcome": "CANCELLED",
+      "initialPendingOutcomeBeforeExternalHandoff": "CANCELLED",
+      "completedOutcomeRequiresObservedHandoffOrFinalClose": true,
+      "conservativeDeadlineRule": "earliest valid value among recovered effectiveExpiresAt, recovered createdAt plus one hour, and firstObservedAt plus one hour; if no earlier trustworthy value exists use firstObservedAt plus one hour",
+      "degradedOriginalCreationMaximumConformanceClaimed": false
+    },
+    "doraManagedShareTempHardMaximumSeconds": 3600,
+    "startupRecoveryEnabled": true,
+    "expiredCleanupOnStartup": true,
+    "unexpiredSharesheetCleanupOnStartup": false,
+    "invalidContextImmediateCleanupOnStartup": false,
+    "failedCleanupVisible": true,
+    "failedCleanupRetryable": true,
+    "safAndExternalDestinationCopiesOutsideDoraExpiry": true,
+    "sourceConversationDeletedByCleanup": false,
+    "sourceAudioDeletedByCleanup": false,
+    "sourceContentDeletedByCleanup": false,
+    "physicalOverwritePromised": false
+  },
+  "recentExports": {
+    "showsOnlyLiveDoraManagedTempArtifactsAndCleanupFailures": true,
+    "metadataContentFree": true,
+    "entryRemovedAfterCleanup": true,
+    "separatePersistentHistoryInMvp": false,
+    "forbiddenMetadata": [
+      "conversation title",
+      "content excerpt",
+      "participant",
+      "path",
+      "URI",
+      "destination identity",
+      "provider credential"
+    ]
+  },
+  "clipboard": {
+    "explicitDestination": true,
+    "bestEffortClearAfterSeconds": 60,
+    "clearOnlyIfDoraClipIsUnchanged": true,
+    "clearGuaranteed": false,
+    "nonGuaranteeDisclosureRequired": true
+  },
+  "managedPolicy": {
+    "mayVisiblyDisableOrRestrictFormats": true,
+    "mayVisiblyDisableOrRestrictDestinations": true,
+    "mayVisiblyDisableOrRestrictAudio": true,
+    "mayShortenTempExpiry": true,
+    "maySilentlyEnable": false,
+    "mayInitiateExport": false,
+    "mayPreselectFallback": false
+  },
+  "retry": {
+    "startsFrom": "REVIEW",
+    "sourceRevalidationRequired": true,
+    "selectionRevalidationRequired": true,
+    "backgroundResume": false,
+    "partialOutputReuse": false
+  },
+  "successSemantics": {
+    "Clipboard": "clipboard API accepted",
+    "Storage Access Framework": "final write and close completed",
+    "Android Sharesheet": "handed to Android",
+    "externalAppOrProviderReadClaimed": false,
+    "externalAppOrProviderSavedClaimed": false,
+    "externalAppOrProviderSyncedClaimed": false,
+    "externalAppOrProviderDeliveredClaimed": false
+  },
+  "progressAndDiagnostics": {
+    "determinateOnlyWithRealNumeratorAndDenominator": true,
+    "otherwiseStageOnly": true,
+    "contentFree": true,
+    "pathsAllowed": false,
+    "urisAllowed": false,
+    "keysAllowed": false,
+    "payloadAllowed": false,
+    "userContentAllowed": false,
+    "destinationCredentialsAllowed": false
+  },
+  "stateMachine": {
+    "stateCount": 15,
+    "initialState": "CLOSED",
+    "states": [
+      {
+        "id": "EX-00",
+        "name": "CLOSED",
+        "artifactAllowed": false
+      },
+      {
+        "id": "EX-01",
+        "name": "SELECT_CONTENT",
+        "artifactAllowed": false,
+        "emptySelectionAdvances": false
+      },
+      {
+        "id": "EX-02",
+        "name": "SELECT_FORMAT",
+        "artifactAllowed": false,
+        "unsupportedOrPolicyBlockedPairAdvances": false
+      },
+      {
+        "id": "EX-03",
+        "name": "SELECT_DESTINATION",
+        "artifactAllowed": false,
+        "destinationPickerCancelIsSuccess": false
+      },
+      {
+        "id": "EX-04",
+        "name": "REVIEW",
+        "artifactAllowed": false,
+        "sourceAndSelectionRevalidationRequired": true
+      },
+      {
+        "id": "EX-05",
+        "name": "AUDIO_ACKNOWLEDGEMENT",
+        "artifactAllowed": false,
+        "requiredForAudioEveryAttempt": true
+      },
+      {
+        "id": "EX-06",
+        "name": "UNENCRYPTED_WARNING",
+        "artifactAllowed": false,
+        "requiredEveryAttempt": true
+      },
+      {
+        "id": "EX-07",
+        "name": "PREPARING",
+        "artifactAllowed": true,
+        "cancelRequiresCleanupConvergenceWhenArtifactExists": true
+      },
+      {
+        "id": "EX-08",
+        "name": "TRANSFERRING",
+        "artifactAllowed": true,
+        "cancelRequiresCleanupConvergenceWhenArtifactExists": true
+      },
+      {
+        "id": "EX-09",
+        "name": "HANDOFF_SUCCEEDED",
+        "recipientDeliveryClaimed": false
+      },
+      {
+        "id": "EX-10",
+        "name": "CLEANUP_PENDING",
+        "pendingOutcomeValues": [
+          "COMPLETED",
+          "FAILED_RETRYABLE",
+          "CANCELLED"
+        ]
+      },
+      {
+        "id": "EX-11",
+        "name": "COMPLETED",
+        "persistentHistoryAllowed": false
+      },
+      {
+        "id": "EX-12",
+        "name": "FAILED_RETRYABLE",
+        "retryMustReturnThroughReview": true
+      },
+      {
+        "id": "EX-13",
+        "name": "CANCELLED",
+        "persistentHistoryAllowed": false
+      },
+      {
+        "id": "EX-14",
+        "name": "CLEANUP_FAILED",
+        "visible": true,
+        "retryable": true,
+        "sourceDeleted": false
+      }
+    ],
+    "transitionSchema": [
+      "id",
+      "source",
+      "event",
+      "guard",
+      "action",
+      "target"
+    ],
+    "transitionCount": 86,
+    "transitionRelationNormative": true,
+    "transitions": [
+      {
+        "id": "TR-001",
+        "source": "CLOSED",
+        "event": "OPEN_EXPORT",
+        "guard": "no active export session",
+        "action": "create a fresh attempt; clear selections, acknowledgements and pendingOutcome",
+        "target": "SELECT_CONTENT"
+      },
+      {
+        "id": "TR-002",
+        "source": "CLOSED",
+        "event": "STARTUP_SHARESHEET_CLEANUP_DELETE_NOW",
+        "guard": "valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED and deleteNowConfirmedAfterWarning=true",
+        "action": "restore context; retain pendingOutcome; set cleanupReason=DELETE_NOW_CONFIRMED; request temp cleanup",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-003",
+        "source": "CLOSED",
+        "event": "STARTUP_SHARESHEET_CLEANUP_SAFE_RELEASE",
+        "guard": "valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED, deleteNowConfirmedAfterWarning=false and safeReleaseObserved=true",
+        "action": "restore context; retain pendingOutcome; set cleanupReason=SAFE_RELEASE_OBSERVED; request temp cleanup",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-004",
+        "source": "CLOSED",
+        "event": "STARTUP_SHARESHEET_CLEANUP_EXPIRED",
+        "guard": "valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED, deleteNowConfirmedAfterWarning=false, safeReleaseObserved=false and now>=effectiveExpiresAt",
+        "action": "restore context; retain pendingOutcome; set cleanupReason=EXPIRED; request temp cleanup",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-005",
+        "source": "CLOSED",
+        "event": "STARTUP_SHARESHEET_RESTORE_UNEXPIRED",
+        "guard": "valid recovery context has destinationClass=SHARESHEET, pendingOutcome=COMPLETED, deleteNowConfirmedAfterWarning=false, safeReleaseObserved=false and now<effectiveExpiresAt",
+        "action": "restore content-free recovery context and Recent exports entry; retain temp; expose warned Delete now; claim no delivery",
+        "target": "HANDOFF_SUCCEEDED"
+      },
+      {
+        "id": "TR-083",
+        "source": "CLOSED",
+        "event": "STARTUP_SAF_STAGING_CLEANUP_ELIGIBLE",
+        "guard": "valid recovery context has destinationClass=SAF, pendingOutcome=COMPLETED and finalDestinationCloseObserved=true",
+        "action": "restore context; retain pendingOutcome; set cleanupReason=SAF_CLOSE_OBSERVED; request staging cleanup",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-084",
+        "source": "CLOSED",
+        "event": "STARTUP_ABORTED_TEMP_CLEANUP_ELIGIBLE",
+        "guard": "valid recovery context has pendingOutcome fixed as one member of {FAILED_RETRYABLE, CANCELLED}",
+        "action": "restore context; retain pendingOutcome; set cleanupReason=NO_EXTERNAL_ACCESS_WINDOW; request temp cleanup",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-085",
+        "source": "CLOSED",
+        "event": "STARTUP_CONTEXT_INVALID_RETAIN",
+        "guard": "recoveryContextStatus=INVALID and now<conservativeRetentionDeadline",
+        "action": "reconstruct content-free context with destinationClass=SHARESHEET_CONSERVATIVE, pendingOutcome=CANCELLED and handoffEvidence=UNKNOWN; retain temp; expose warned Delete now; claim neither success nor delivery",
+        "target": "HANDOFF_SUCCEEDED"
+      },
+      {
+        "id": "TR-086",
+        "source": "CLOSED",
+        "event": "STARTUP_CONTEXT_INVALID_RETENTION_EXPIRED",
+        "guard": "recoveryContextStatus=INVALID and now>=conservativeRetentionDeadline",
+        "action": "reconstruct content-free context with pendingOutcome=CANCELLED; set cleanupReason=CONSERVATIVE_RETENTION_EXPIRED; request temp cleanup",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-006",
+        "source": "SELECT_CONTENT",
+        "event": "CONTENT_SELECTION_ACCEPTED",
+        "guard": "selection is non-empty, compatible and policy-allowed",
+        "action": "store explicit content selection for this attempt",
+        "target": "SELECT_FORMAT"
+      },
+      {
+        "id": "TR-007",
+        "source": "SELECT_CONTENT",
+        "event": "CONTENT_SELECTION_EMPTY",
+        "guard": "selection contains zero content classes",
+        "action": "show accessible empty-selection reason; create no artifact",
+        "target": "SELECT_CONTENT"
+      },
+      {
+        "id": "TR-008",
+        "source": "SELECT_CONTENT",
+        "event": "CONTENT_SELECTION_POLICY_BLOCKED",
+        "guard": "selected content is visibly restricted by managed policy",
+        "action": "show policy reason; create no artifact; select no fallback",
+        "target": "SELECT_CONTENT"
+      },
+      {
+        "id": "TR-009",
+        "source": "SELECT_CONTENT",
+        "event": "CANCEL_FROM_CONTENT",
+        "guard": "no artifact exists",
+        "action": "discard the attempt selection",
+        "target": "CANCELLED"
+      },
+      {
+        "id": "TR-010",
+        "source": "SELECT_FORMAT",
+        "event": "FORMAT_SELECTION_ACCEPTED",
+        "guard": "every selected content-format pair is compatible and policy-allowed",
+        "action": "store explicit formats for this attempt",
+        "target": "SELECT_DESTINATION"
+      },
+      {
+        "id": "TR-011",
+        "source": "SELECT_FORMAT",
+        "event": "FORMAT_SELECTION_INCOMPATIBLE",
+        "guard": "a selected content-format pair is unsupported",
+        "action": "disable the pair with an accessible reason; create no artifact",
+        "target": "SELECT_FORMAT"
+      },
+      {
+        "id": "TR-012",
+        "source": "SELECT_FORMAT",
+        "event": "FORMAT_SELECTION_POLICY_BLOCKED",
+        "guard": "a selected format is visibly restricted by managed policy",
+        "action": "show policy reason; create no artifact; select no fallback",
+        "target": "SELECT_FORMAT"
+      },
+      {
+        "id": "TR-013",
+        "source": "SELECT_FORMAT",
+        "event": "BACK_TO_CONTENT",
+        "guard": "no artifact exists",
+        "action": "retain current attempt values for editing",
+        "target": "SELECT_CONTENT"
+      },
+      {
+        "id": "TR-014",
+        "source": "SELECT_FORMAT",
+        "event": "CANCEL_FROM_FORMAT",
+        "guard": "no artifact exists",
+        "action": "discard the attempt selection",
+        "target": "CANCELLED"
+      },
+      {
+        "id": "TR-015",
+        "source": "SELECT_DESTINATION",
+        "event": "DESTINATION_CONFIRMED",
+        "guard": "destination accepts the complete selected plan and policy allows it",
+        "action": "store the explicit destination for this attempt",
+        "target": "REVIEW"
+      },
+      {
+        "id": "TR-016",
+        "source": "SELECT_DESTINATION",
+        "event": "DESTINATION_INCOMPATIBLE",
+        "guard": "destination cannot accept the complete selected plan",
+        "action": "disable the destination with an accessible reason; create no artifact",
+        "target": "SELECT_DESTINATION"
+      },
+      {
+        "id": "TR-017",
+        "source": "SELECT_DESTINATION",
+        "event": "DESTINATION_POLICY_BLOCKED",
+        "guard": "destination is visibly restricted by managed policy",
+        "action": "show policy reason; create no artifact; select no fallback",
+        "target": "SELECT_DESTINATION"
+      },
+      {
+        "id": "TR-018",
+        "source": "SELECT_DESTINATION",
+        "event": "PICKER_CANCEL_RETURN",
+        "guard": "pickerCancelPolicy=RETURN_TO_DESTINATION was fixed before picker launch",
+        "action": "record cancellation; restore focus to destination control; create no artifact",
+        "target": "SELECT_DESTINATION"
+      },
+      {
+        "id": "TR-019",
+        "source": "SELECT_DESTINATION",
+        "event": "PICKER_CANCEL_ATTEMPT",
+        "guard": "pickerCancelPolicy=CANCEL_ATTEMPT was fixed before picker launch",
+        "action": "record cancellation; discard the attempt; create no artifact",
+        "target": "CANCELLED"
+      },
+      {
+        "id": "TR-020",
+        "source": "SELECT_DESTINATION",
+        "event": "BACK_TO_FORMAT",
+        "guard": "no artifact exists",
+        "action": "retain current attempt values for editing",
+        "target": "SELECT_FORMAT"
+      },
+      {
+        "id": "TR-021",
+        "source": "SELECT_DESTINATION",
+        "event": "CANCEL_FROM_DESTINATION",
+        "guard": "no artifact exists",
+        "action": "discard the attempt selection",
+        "target": "CANCELLED"
+      },
+      {
+        "id": "TR-022",
+        "source": "REVIEW",
+        "event": "REVIEW_CONFIRM_NO_AUDIO",
+        "guard": "source, structured selection, formats, destination and policy revalidate; Audio is absent",
+        "action": "freeze reviewed plan for this attempt",
+        "target": "UNENCRYPTED_WARNING"
+      },
+      {
+        "id": "TR-023",
+        "source": "REVIEW",
+        "event": "REVIEW_CONFIRM_AUDIO",
+        "guard": "source, selection, formats, destination and policy revalidate; Audio is present",
+        "action": "freeze reviewed plan; require a fresh Audio acknowledgement",
+        "target": "AUDIO_ACKNOWLEDGEMENT"
+      },
+      {
+        "id": "TR-024",
+        "source": "REVIEW",
+        "event": "REVIEW_SOURCE_INVALID",
+        "guard": "source no longer exists at the reviewed version",
+        "action": "invalidate reviewed plan; show source reason; create no artifact",
+        "target": "SELECT_CONTENT"
+      },
+      {
+        "id": "TR-025",
+        "source": "REVIEW",
+        "event": "REVIEW_CONTENT_INVALID",
+        "guard": "selected content no longer exists at the reviewed version",
+        "action": "invalidate reviewed plan; show content reason; create no artifact",
+        "target": "SELECT_CONTENT"
+      },
+      {
+        "id": "TR-026",
+        "source": "REVIEW",
+        "event": "REVIEW_FORMAT_INVALID",
+        "guard": "formatInvalidReason is fixed before evaluation as one member of {INCOMPATIBLE, POLICY_BLOCKED}",
+        "action": "invalidate reviewed plan; show the reason named by formatInvalidReason; create no artifact",
+        "target": "SELECT_FORMAT"
+      },
+      {
+        "id": "TR-027",
+        "source": "REVIEW",
+        "event": "REVIEW_DESTINATION_INVALID",
+        "guard": "destinationInvalidReason is fixed before evaluation as one member of {INCOMPATIBLE, POLICY_BLOCKED}",
+        "action": "invalidate reviewed plan; show the reason named by destinationInvalidReason; create no artifact",
+        "target": "SELECT_DESTINATION"
+      },
+      {
+        "id": "TR-028",
+        "source": "REVIEW",
+        "event": "BACK_TO_DESTINATION",
+        "guard": "no artifact exists",
+        "action": "unfreeze reviewed plan for editing",
+        "target": "SELECT_DESTINATION"
+      },
+      {
+        "id": "TR-029",
+        "source": "REVIEW",
+        "event": "CANCEL_FROM_REVIEW",
+        "guard": "no artifact exists",
+        "action": "discard the reviewed attempt",
+        "target": "CANCELLED"
+      },
+      {
+        "id": "TR-030",
+        "source": "AUDIO_ACKNOWLEDGEMENT",
+        "event": "AUDIO_ACK_ACCEPTED",
+        "guard": "Audio remains selected; acknowledgement is fresh for this attempt",
+        "action": "record attempt-scoped Audio acknowledgement",
+        "target": "UNENCRYPTED_WARNING"
+      },
+      {
+        "id": "TR-031",
+        "source": "AUDIO_ACKNOWLEDGEMENT",
+        "event": "AUDIO_DECLINE_REMOVE",
+        "guard": "user chooses the explicit Remove Audio action",
+        "action": "remove Audio; invalidate Audio acknowledgement; return to review",
+        "target": "REVIEW"
+      },
+      {
+        "id": "TR-032",
+        "source": "AUDIO_ACKNOWLEDGEMENT",
+        "event": "AUDIO_DECLINE_CANCEL",
+        "guard": "user chooses the explicit Cancel export action",
+        "action": "discard the attempt; record no acknowledgement",
+        "target": "CANCELLED"
+      },
+      {
+        "id": "TR-033",
+        "source": "UNENCRYPTED_WARNING",
+        "event": "WARNING_ACCEPT_CLIPBOARD",
+        "guard": "warning is fresh; destination=Clipboard; plan contains Copy/plain text only",
+        "action": "record warning acknowledgement; create no file temp; invoke clipboard transfer",
+        "target": "TRANSFERRING"
+      },
+      {
+        "id": "TR-034",
+        "source": "UNENCRYPTED_WARNING",
+        "event": "WARNING_ACCEPT_SAF_FILE",
+        "guard": "warning is fresh; destination=SAF; plan contains policy-allowed file outputs; safWriteMode is fixed as one member of {DIRECT_DESTINATION, DORA_STAGING}",
+        "action": "record warning acknowledgement; begin serialization under safWriteMode",
+        "target": "PREPARING"
+      },
+      {
+        "id": "TR-035",
+        "source": "UNENCRYPTED_WARNING",
+        "event": "WARNING_ACCEPT_SHARESHEET_FILE",
+        "guard": "warning is fresh; destination=Sharesheet; plan contains policy-allowed file outputs",
+        "action": "record warning acknowledgement; create a Dora-managed temp copy",
+        "target": "PREPARING"
+      },
+      {
+        "id": "TR-036",
+        "source": "UNENCRYPTED_WARNING",
+        "event": "WARNING_DECLINE_REVIEW",
+        "guard": "user chooses the explicit Back to review action",
+        "action": "record no acknowledgement; create no artifact",
+        "target": "REVIEW"
+      },
+      {
+        "id": "TR-037",
+        "source": "UNENCRYPTED_WARNING",
+        "event": "WARNING_CANCEL_EXPORT",
+        "guard": "user chooses the explicit Cancel export action",
+        "action": "record no acknowledgement; discard the attempt",
+        "target": "CANCELLED"
+      },
+      {
+        "id": "TR-038",
+        "source": "PREPARING",
+        "event": "PREPARATION_SUCCEEDED_SAF",
+        "guard": "destination=SAF; every selected file output serialized; writer can start",
+        "action": "seal the prepared bytes; retain staging metadata; begin SAF write",
+        "target": "TRANSFERRING"
+      },
+      {
+        "id": "TR-039",
+        "source": "PREPARING",
+        "event": "PREPARATION_SUCCEEDED_SHARESHEET",
+        "guard": "destination=Sharesheet; every selected file output serialized into Dora temp",
+        "action": "seal the temp; register one-hour expiry; invoke Android Sharesheet",
+        "target": "TRANSFERRING"
+      },
+      {
+        "id": "TR-040",
+        "source": "PREPARING",
+        "event": "PREPARATION_FAILED_NO_TEMP",
+        "guard": "preparation failed before a Dora temp was created",
+        "action": "discard partial memory; record content-free failure",
+        "target": "FAILED_RETRYABLE"
+      },
+      {
+        "id": "TR-041",
+        "source": "PREPARING",
+        "event": "PREPARATION_FAILED_WITH_TEMP",
+        "guard": "preparation failed after a Dora temp was created",
+        "action": "stop writes; set pendingOutcome=FAILED_RETRYABLE; request temp cleanup",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-042",
+        "source": "PREPARING",
+        "event": "PREPARATION_CANCELLED_NO_TEMP",
+        "guard": "cancellation became effective before a Dora temp was created",
+        "action": "stop preparation; discard partial memory",
+        "target": "CANCELLED"
+      },
+      {
+        "id": "TR-043",
+        "source": "PREPARING",
+        "event": "PREPARATION_CANCELLED_WITH_TEMP",
+        "guard": "cancellation became effective after a Dora temp was created",
+        "action": "stop writes; set pendingOutcome=CANCELLED; request temp cleanup",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-044",
+        "source": "PREPARING",
+        "event": "PREPARATION_TEMP_EXPIRED",
+        "guard": "Dora temp reached its effective expiry during preparation",
+        "action": "stop writes; set pendingOutcome=FAILED_RETRYABLE; request temp cleanup",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-045",
+        "source": "TRANSFERRING",
+        "event": "CLIPBOARD_API_ACCEPTED",
+        "guard": "destination=Clipboard; Android clipboard API accepted the unchanged Dora clip",
+        "action": "record clipboard success boundary; schedule independent best-effort clear",
+        "target": "HANDOFF_SUCCEEDED"
+      },
+      {
+        "id": "TR-046",
+        "source": "TRANSFERRING",
+        "event": "CLIPBOARD_API_REJECTED",
+        "guard": "destination=Clipboard; clipboard API did not accept the clip",
+        "action": "record content-free failure; retain no payload",
+        "target": "FAILED_RETRYABLE"
+      },
+      {
+        "id": "TR-047",
+        "source": "TRANSFERRING",
+        "event": "SAF_FINAL_CLOSE_SUCCEEDED_NO_STAGING",
+        "guard": "destination=SAF; final write and close succeeded; no Dora staging exists",
+        "action": "record SAF success boundary; claim no provider persistence",
+        "target": "HANDOFF_SUCCEEDED"
+      },
+      {
+        "id": "TR-048",
+        "source": "TRANSFERRING",
+        "event": "SAF_FINAL_CLOSE_SUCCEEDED_WITH_STAGING",
+        "guard": "destination=SAF; final write and close succeeded; Dora staging exists",
+        "action": "set pendingOutcome=COMPLETED; persist finalDestinationCloseObserved=true; record SAF success boundary; mark staging cleanupEligible=true",
+        "target": "HANDOFF_SUCCEEDED"
+      },
+      {
+        "id": "TR-049",
+        "source": "TRANSFERRING",
+        "event": "SAF_WRITE_FAILED_NO_STAGING",
+        "guard": "destination=SAF; the final-close success boundary was not reached; no Dora staging exists",
+        "action": "close writer best-effort; disclose provider partial outside Dora control; record failure",
+        "target": "FAILED_RETRYABLE"
+      },
+      {
+        "id": "TR-050",
+        "source": "TRANSFERRING",
+        "event": "SAF_WRITE_FAILED_WITH_STAGING",
+        "guard": "destination=SAF; the final-close success boundary was not reached; Dora staging exists",
+        "action": "close writer best-effort; disclose provider partial outside Dora control; set pendingOutcome=FAILED_RETRYABLE",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-051",
+        "source": "TRANSFERRING",
+        "event": "SHARESHEET_HANDOFF_ACCEPTED",
+        "guard": "destination=Sharesheet; Android accepted the share handoff; Dora temp exists",
+        "action": "set pendingOutcome=COMPLETED; persist content-free recovery context; record handoff boundary; retain temp; claim no recipient delivery",
+        "target": "HANDOFF_SUCCEEDED"
+      },
+      {
+        "id": "TR-052",
+        "source": "TRANSFERRING",
+        "event": "SHARESHEET_HANDOFF_REJECTED",
+        "guard": "destination=Sharesheet; Android did not accept the share handoff; Dora temp exists",
+        "action": "set pendingOutcome=FAILED_RETRYABLE; request temp cleanup",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-053",
+        "source": "TRANSFERRING",
+        "event": "TRANSFER_PICKER_CANCELLED_NO_TEMP",
+        "guard": "system picker cancelled; no Dora temp exists",
+        "action": "record cancellation; restore focus; claim no success",
+        "target": "CANCELLED"
+      },
+      {
+        "id": "TR-054",
+        "source": "TRANSFERRING",
+        "event": "TRANSFER_PICKER_CANCELLED_WITH_TEMP",
+        "guard": "system picker cancelled; Dora temp exists",
+        "action": "record cancellation; restore focus; set pendingOutcome=CANCELLED",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-055",
+        "source": "TRANSFERRING",
+        "event": "TRANSFER_CANCELLED_NO_TEMP",
+        "guard": "user cancellation became effective; no Dora temp exists",
+        "action": "stop transfer when safe; claim no success",
+        "target": "CANCELLED"
+      },
+      {
+        "id": "TR-056",
+        "source": "TRANSFERRING",
+        "event": "TRANSFER_CANCELLED_WITH_TEMP",
+        "guard": "user cancellation became effective; Dora temp exists",
+        "action": "stop transfer when safe; set pendingOutcome=CANCELLED; request temp cleanup",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-057",
+        "source": "TRANSFERRING",
+        "event": "TRANSFER_TEMP_EXPIRED",
+        "guard": "Dora temp reached its effective expiry during transfer",
+        "action": "stop transfer when safe; set pendingOutcome=FAILED_RETRYABLE; request temp cleanup",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-058",
+        "source": "TRANSFERRING",
+        "event": "PROGRESS_WITH_REAL_DENOMINATOR",
+        "guard": "real numerator and denominator are both available",
+        "action": "publish determinate progress from the real fraction",
+        "target": "TRANSFERRING"
+      },
+      {
+        "id": "TR-059",
+        "source": "TRANSFERRING",
+        "event": "PROGRESS_WITHOUT_REAL_DENOMINATOR",
+        "guard": "a real denominator is unavailable",
+        "action": "publish stage-only progress; publish no percentage",
+        "target": "TRANSFERRING"
+      },
+      {
+        "id": "TR-060",
+        "source": "HANDOFF_SUCCEEDED",
+        "event": "CLIPBOARD_SUCCESS_RECORDED",
+        "guard": "destination=Clipboard; no Dora file temp exists",
+        "action": "retain only content-free result metadata",
+        "target": "COMPLETED"
+      },
+      {
+        "id": "TR-061",
+        "source": "HANDOFF_SUCCEEDED",
+        "event": "SAF_SUCCESS_RECORDED_NO_STAGING",
+        "guard": "destination=SAF; final close succeeded; no Dora staging exists",
+        "action": "retain only content-free result metadata",
+        "target": "COMPLETED"
+      },
+      {
+        "id": "TR-062",
+        "source": "HANDOFF_SUCCEEDED",
+        "event": "SAF_STAGING_CLEANUP_ELIGIBLE",
+        "guard": "destination=SAF; final close succeeded; Dora staging cleanupEligible=true",
+        "action": "retain pendingOutcome=COMPLETED; request staging cleanup",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-063",
+        "source": "HANDOFF_SUCCEEDED",
+        "event": "SHARESHEET_SAFE_RELEASE_OBSERVED",
+        "guard": "destinationClass is one member of {SHARESHEET, SHARESHEET_CONSERVATIVE}; exact lifecycle signal is observable and separately evidenced as safe release",
+        "action": "retain pendingOutcome; persist safeReleaseObserved=true; request temp cleanup",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-064",
+        "source": "HANDOFF_SUCCEEDED",
+        "event": "SHARESHEET_DELETE_NOW",
+        "guard": "destinationClass is one member of {SHARESHEET, SHARESHEET_CONSERVATIVE}; live Dora temp exists; user confirms access-loss warning",
+        "action": "retain pendingOutcome; persist deleteNowConfirmedAfterWarning=true; request temp cleanup; leave external copies untouched",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-065",
+        "source": "HANDOFF_SUCCEEDED",
+        "event": "SHARESHEET_TEMP_EXPIRED",
+        "guard": "destinationClass is one member of {SHARESHEET, SHARESHEET_CONSERVATIVE}; live Dora temp reached the recovery-context-selected active retention deadline",
+        "action": "retain pendingOutcome; set cleanupReason=EXPIRED; request temp cleanup; leave external copies untouched",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-066",
+        "source": "HANDOFF_SUCCEEDED",
+        "event": "CLOSE_HANDOFF_VIEW_WITH_TEMP",
+        "guard": "destination=Sharesheet; live Dora temp exists",
+        "action": "close the view; retain state and content-free Recent exports entry",
+        "target": "HANDOFF_SUCCEEDED"
+      },
+      {
+        "id": "TR-067",
+        "source": "CLEANUP_PENDING",
+        "event": "CLEANUP_SUCCEEDED_COMPLETED",
+        "guard": "deletion succeeded; pendingOutcome=COMPLETED",
+        "action": "remove Recent exports entry; clear cleanup metadata",
+        "target": "COMPLETED"
+      },
+      {
+        "id": "TR-068",
+        "source": "CLEANUP_PENDING",
+        "event": "CLEANUP_SUCCEEDED_FAILED_RETRYABLE",
+        "guard": "deletion succeeded; pendingOutcome=FAILED_RETRYABLE",
+        "action": "remove Recent exports entry; clear cleanup metadata",
+        "target": "FAILED_RETRYABLE"
+      },
+      {
+        "id": "TR-069",
+        "source": "CLEANUP_PENDING",
+        "event": "CLEANUP_SUCCEEDED_CANCELLED",
+        "guard": "deletion succeeded; pendingOutcome=CANCELLED",
+        "action": "remove Recent exports entry; clear cleanup metadata",
+        "target": "CANCELLED"
+      },
+      {
+        "id": "TR-070",
+        "source": "CLEANUP_PENDING",
+        "event": "CLEANUP_DELETE_FAILED",
+        "guard": "Dora temp deletion returned failure",
+        "action": "retain pendingOutcome; persist content-free failure; expose retry",
+        "target": "CLEANUP_FAILED"
+      },
+      {
+        "id": "TR-071",
+        "source": "CLEANUP_PENDING",
+        "event": "DISMISS_CLEANUP_PROGRESS",
+        "guard": "cleanup has not reached a terminal result",
+        "action": "close the view; retain state and content-free Recent exports entry",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-072",
+        "source": "CLEANUP_FAILED",
+        "event": "RETRY_CLEANUP",
+        "guard": "failed Dora temp still exists",
+        "action": "retain pendingOutcome; retry deletion only",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-073",
+        "source": "CLEANUP_FAILED",
+        "event": "DELETE_NOW_RETRY",
+        "guard": "failed Dora temp still exists; user invokes Delete now",
+        "action": "retain pendingOutcome; retry deletion only; leave source and external copies untouched",
+        "target": "CLEANUP_PENDING"
+      },
+      {
+        "id": "TR-074",
+        "source": "CLEANUP_FAILED",
+        "event": "DISMISS_CLEANUP_FAILURE",
+        "guard": "failed Dora temp still exists",
+        "action": "close the view; retain failure state and visible content-free Recent exports entry",
+        "target": "CLEANUP_FAILED"
+      },
+      {
+        "id": "TR-075",
+        "source": "FAILED_RETRYABLE",
+        "event": "RETRY_EXPORT_REVALIDATED",
+        "guard": "source, selection, formats, destination and policy all revalidate",
+        "action": "discard every partial output; create a fresh reviewed attempt; reuse no payload",
+        "target": "REVIEW"
+      },
+      {
+        "id": "TR-076",
+        "source": "FAILED_RETRYABLE",
+        "event": "RETRY_SOURCE_INVALID",
+        "guard": "source revalidation failed",
+        "action": "discard every partial output; show source reason",
+        "target": "SELECT_CONTENT"
+      },
+      {
+        "id": "TR-077",
+        "source": "FAILED_RETRYABLE",
+        "event": "RETRY_CONTENT_INVALID",
+        "guard": "content revalidation failed",
+        "action": "discard every partial output; show content reason",
+        "target": "SELECT_CONTENT"
+      },
+      {
+        "id": "TR-078",
+        "source": "FAILED_RETRYABLE",
+        "event": "RETRY_FORMAT_INVALID",
+        "guard": "format revalidation failed",
+        "action": "discard every partial output; show format reason",
+        "target": "SELECT_FORMAT"
+      },
+      {
+        "id": "TR-079",
+        "source": "FAILED_RETRYABLE",
+        "event": "RETRY_DESTINATION_INVALID",
+        "guard": "retryDestinationInvalidReason is fixed before evaluation as one member of {INCOMPATIBLE, POLICY_BLOCKED}",
+        "action": "discard every partial output; show the reason named by retryDestinationInvalidReason",
+        "target": "SELECT_DESTINATION"
+      },
+      {
+        "id": "TR-080",
+        "source": "FAILED_RETRYABLE",
+        "event": "DISMISS_RETRYABLE_FAILURE",
+        "guard": "no Dora temp and no cleanup failure remain",
+        "action": "discard the failed attempt; retain no export history",
+        "target": "CLOSED"
+      },
+      {
+        "id": "TR-081",
+        "source": "COMPLETED",
+        "event": "CLOSE_COMPLETED",
+        "guard": "no Dora temp and no cleanup failure remain",
+        "action": "clear attempt-only state; retain no export history",
+        "target": "CLOSED"
+      },
+      {
+        "id": "TR-082",
+        "source": "CANCELLED",
+        "event": "CLOSE_CANCELLED",
+        "guard": "no Dora temp and no cleanup failure remain",
+        "action": "clear attempt-only state; retain no export history",
+        "target": "CLOSED"
+      }
+    ],
+    "auxiliaryEvents": [
+      {
+        "id": "AUX-001",
+        "event": "CLIPBOARD_CLEAR_TIMER_UNCHANGED",
+        "precondition": "scheduled Dora clipboard check fires; clip identity and content are unchanged",
+        "action": "attempt best-effort clipboard clear; disclose no guarantee",
+        "stateEffect": "NONE"
+      },
+      {
+        "id": "AUX-002",
+        "event": "CLIPBOARD_CLEAR_TIMER_CHANGED",
+        "precondition": "scheduled Dora clipboard check fires; clip comparison result=CHANGED",
+        "action": "leave replacement clipboard content untouched",
+        "stateEffect": "NONE"
+      },
+      {
+        "id": "AUX-003",
+        "event": "DIAGNOSTIC_SNAPSHOT_REQUESTED",
+        "precondition": "current state/error requires diagnostic evidence",
+        "action": "emit bounded categorical codes and numeric counters only",
+        "stateEffect": "NONE"
+      },
+      {
+        "id": "AUX-004",
+        "event": "ACCESSIBILITY_FIXTURE_RENDERED",
+        "precondition": "synthetic RU, EN, scale, input and motion fixture is selected",
+        "action": "render semantics, focus, reflow and action reachability without user data",
+        "stateEffect": "NONE"
+      }
+    ],
+    "determinism": {
+      "key": [
+        "source",
+        "event"
+      ],
+      "duplicateKeysAllowed": false,
+      "multipleTargetsPerKeyAllowed": false,
+      "falseGuardChangesState": false,
+      "alternativeOutcomeRequiresDistinctEventOrFixedPolicyInput": true
+    },
+    "startupEventSelection": {
+      "priority": [
+        "DELETE_NOW_CONFIRMED",
+        "SAFE_RELEASE_OBSERVED",
+        "EXPIRED",
+        "RETAIN_UNEXPIRED"
+      ],
+      "lowerPriorityGuardsNegateAllHigherPriorityPredicates": true,
+      "exactlyOneEventSelected": true,
+      "overlapAssertionSchema": [
+        "id",
+        "inputs",
+        "selectedEvent",
+        "cleanupReason",
+        "suppressedEvents"
+      ],
+      "overlapAssertions": [
+        {
+          "id": "STARTUP-OVERLAP-001",
+          "inputs": [
+            "valid Sharesheet context",
+            "Delete-now=true",
+            "safe-release=true",
+            "expired=true"
+          ],
+          "selectedEvent": "STARTUP_SHARESHEET_CLEANUP_DELETE_NOW",
+          "cleanupReason": "DELETE_NOW_CONFIRMED",
+          "suppressedEvents": [
+            "STARTUP_SHARESHEET_CLEANUP_SAFE_RELEASE",
+            "STARTUP_SHARESHEET_CLEANUP_EXPIRED",
+            "STARTUP_SHARESHEET_RESTORE_UNEXPIRED"
+          ]
+        },
+        {
+          "id": "STARTUP-OVERLAP-002",
+          "inputs": [
+            "valid Sharesheet context",
+            "Delete-now=false",
+            "safe-release=true",
+            "expired=true"
+          ],
+          "selectedEvent": "STARTUP_SHARESHEET_CLEANUP_SAFE_RELEASE",
+          "cleanupReason": "SAFE_RELEASE_OBSERVED",
+          "suppressedEvents": [
+            "STARTUP_SHARESHEET_CLEANUP_EXPIRED",
+            "STARTUP_SHARESHEET_RESTORE_UNEXPIRED"
+          ]
+        }
+      ],
+      "markdownParity": {
+        "normativeSection": "docs/design/DORA_MVP1_EXPORT_INTERACTION_CONTRACT.md#51-normative-transition-relation",
+        "exactRowOrderRequired": true,
+        "required": true
+      }
+    },
+    "reachability": {
+      "initialState": "CLOSED",
+      "requiredReachableStates": [
+        "CLOSED",
+        "SELECT_CONTENT",
+        "SELECT_FORMAT",
+        "SELECT_DESTINATION",
+        "REVIEW",
+        "AUDIO_ACKNOWLEDGEMENT",
+        "UNENCRYPTED_WARNING",
+        "PREPARING",
+        "TRANSFERRING",
+        "HANDOFF_SUCCEEDED",
+        "CLEANUP_PENDING",
+        "COMPLETED",
+        "FAILED_RETRYABLE",
+        "CANCELLED",
+        "CLEANUP_FAILED"
+      ],
+      "allRequiredStatesReachable": true
+    },
+    "markdownParity": {
+      "normativeSection": "docs/design/DORA_MVP1_EXPORT_INTERACTION_CONTRACT.md#51-normative-transition-relation",
+      "comparedFields": [
+        "id",
+        "source",
+        "event",
+        "guard",
+        "action",
+        "target"
+      ],
+      "exactRowOrderRequired": true,
+      "exactRowCountRequired": true,
+      "required": true
+    },
+    "globalInvariants": {
+      "artifactBeforePreparingAllowed": false,
+      "audioAcknowledgementSeparateFromWarning": true,
+      "handoffEqualsRecipientDelivery": false,
+      "cleanupMayDeleteCanonicalSource": false,
+      "physicalOverwritePromised": false,
+      "managedPolicyMaySelectEnableAcknowledgeOrInitiate": false,
+      "prohibitedDiagnosticsFields": [
+        "payload",
+        "user content",
+        "path",
+        "URI",
+        "key",
+        "destination credential"
+      ],
+      "sharesheetSafeReleaseRequiresObservableSeparatelyEvidencedSignal": true,
+      "restartAloneMakesSharesheetCleanupEligible": false,
+      "invalidRecoveryContextDeletesImmediately": false
+    }
+  },
+  "accessibility": {
+    "semanticLabelsAndStatesRequired": true,
+    "disabledReasonProgrammaticallyAssociated": true,
+    "warningReadInLogicalOrder": true,
+    "focusRestorationRequired": true,
+    "talkBackSwitchKeyboardReachabilityRequired": true,
+    "minimumTouchTargetDp": 48,
+    "twoHundredPercentTextRequired": true,
+    "statusNotColorOnly": true,
+    "reducedMotionRespected": true,
+    "timeoutExceptionForSensitiveClipboardDisclosed": true
+  },
+  "syntheticAcceptance": {
+    "fixtureSchema": [
+      "id",
+      "scenario",
+      "inputs",
+      "preconditions",
+      "events",
+      "expectedStates",
+      "expectedOutcome",
+      "invariants"
+    ],
+    "fixtureCount": 30,
+    "fixtureIds": [
+      "EXP-SYN-001",
+      "EXP-SYN-002",
+      "EXP-SYN-003",
+      "EXP-SYN-004",
+      "EXP-SYN-005",
+      "EXP-SYN-006",
+      "EXP-SYN-007",
+      "EXP-SYN-008",
+      "EXP-SYN-009",
+      "EXP-SYN-010",
+      "EXP-SYN-011",
+      "EXP-SYN-012",
+      "EXP-SYN-013",
+      "EXP-SYN-014",
+      "EXP-SYN-015",
+      "EXP-SYN-016",
+      "EXP-SYN-017",
+      "EXP-SYN-018",
+      "EXP-SYN-019",
+      "EXP-SYN-020",
+      "EXP-SYN-021",
+      "EXP-SYN-022",
+      "EXP-SYN-023",
+      "EXP-SYN-024",
+      "EXP-SYN-025",
+      "EXP-SYN-026",
+      "EXP-SYN-027",
+      "EXP-SYN-028",
+      "EXP-SYN-029",
+      "EXP-SYN-030"
+    ],
+    "fixtures": [
+      {
+        "id": "EXP-SYN-001",
+        "scenario": "Fresh open",
+        "inputs": [
+          "none"
+        ],
+        "preconditions": [
+          "state=CLOSED",
+          "no active export session"
+        ],
+        "events": [
+          "OPEN_EXPORT"
+        ],
+        "expectedStates": [
+          "CLOSED",
+          "SELECT_CONTENT"
+        ],
+        "expectedOutcome": "fresh empty attempt",
+        "invariants": [
+          "no selection",
+          "no acknowledgement",
+          "no artifact"
+        ]
+      },
+      {
+        "id": "EXP-SYN-002",
+        "scenario": "Empty content then Continue",
+        "inputs": [
+          "content=[]"
+        ],
+        "preconditions": [
+          "state=SELECT_CONTENT"
+        ],
+        "events": [
+          "CONTENT_SELECTION_EMPTY"
+        ],
+        "expectedStates": [
+          "SELECT_CONTENT",
+          "SELECT_CONTENT"
+        ],
+        "expectedOutcome": "accessible empty-selection reason",
+        "invariants": [
+          "no auto-selection",
+          "no payload",
+          "no temp"
+        ]
+      },
+      {
+        "id": "EXP-SYN-003",
+        "scenario": "Summary plus Copy plus Clipboard",
+        "inputs": [
+          "Summary",
+          "Copy/plain text",
+          "Clipboard"
+        ],
+        "preconditions": [
+          "state=CLOSED",
+          "policy allows plan"
+        ],
+        "events": [
+          "OPEN_EXPORT",
+          "CONTENT_SELECTION_ACCEPTED",
+          "FORMAT_SELECTION_ACCEPTED",
+          "DESTINATION_CONFIRMED",
+          "REVIEW_CONFIRM_NO_AUDIO",
+          "WARNING_ACCEPT_CLIPBOARD",
+          "CLIPBOARD_API_ACCEPTED",
+          "CLIPBOARD_SUCCESS_RECORDED"
+        ],
+        "expectedStates": [
+          "CLOSED",
+          "SELECT_CONTENT",
+          "SELECT_FORMAT",
+          "SELECT_DESTINATION",
+          "REVIEW",
+          "UNENCRYPTED_WARNING",
+          "TRANSFERRING",
+          "HANDOFF_SUCCEEDED",
+          "COMPLETED"
+        ],
+        "expectedOutcome": "clipboard API accepted",
+        "invariants": [
+          "exact warning shown",
+          "no file temp",
+          "recipient read not claimed"
+        ]
+      },
+      {
+        "id": "EXP-SYN-004",
+        "scenario": "Protocol and Transcript plus Markdown plus Sharesheet",
+        "inputs": [
+          "Protocol",
+          "Transcript",
+          "Markdown",
+          "Sharesheet"
+        ],
+        "preconditions": [
+          "state=CLOSED",
+          "policy allows plan"
+        ],
+        "events": [
+          "OPEN_EXPORT",
+          "CONTENT_SELECTION_ACCEPTED",
+          "FORMAT_SELECTION_ACCEPTED",
+          "DESTINATION_CONFIRMED",
+          "REVIEW_CONFIRM_NO_AUDIO",
+          "WARNING_ACCEPT_SHARESHEET_FILE",
+          "PREPARATION_SUCCEEDED_SHARESHEET",
+          "SHARESHEET_HANDOFF_ACCEPTED"
+        ],
+        "expectedStates": [
+          "CLOSED",
+          "SELECT_CONTENT",
+          "SELECT_FORMAT",
+          "SELECT_DESTINATION",
+          "REVIEW",
+          "UNENCRYPTED_WARNING",
+          "PREPARING",
+          "TRANSFERRING",
+          "HANDOFF_SUCCEEDED"
+        ],
+        "expectedOutcome": "Android accepted handoff; live Dora temp retained",
+        "invariants": [
+          "warning precedes temp",
+          "handoff is not delivery",
+          "source not granted"
+        ]
+      },
+      {
+        "id": "EXP-SYN-005",
+        "scenario": "Four structured classes plus JSON v1 plus SAF",
+        "inputs": [
+          "Summary",
+          "Protocol",
+          "Transcript",
+          "Tasks",
+          "JSON v1",
+          "SAF"
+        ],
+        "preconditions": [
+          "state=CLOSED",
+          "policy allows plan",
+          "SAF direct write selected"
+        ],
+        "events": [
+          "OPEN_EXPORT",
+          "CONTENT_SELECTION_ACCEPTED",
+          "FORMAT_SELECTION_ACCEPTED",
+          "DESTINATION_CONFIRMED",
+          "REVIEW_CONFIRM_NO_AUDIO",
+          "WARNING_ACCEPT_SAF_FILE",
+          "PREPARATION_SUCCEEDED_SAF",
+          "SAF_FINAL_CLOSE_SUCCEEDED_NO_STAGING",
+          "SAF_SUCCESS_RECORDED_NO_STAGING"
+        ],
+        "expectedStates": [
+          "CLOSED",
+          "SELECT_CONTENT",
+          "SELECT_FORMAT",
+          "SELECT_DESTINATION",
+          "REVIEW",
+          "UNENCRYPTED_WARNING",
+          "PREPARING",
+          "TRANSFERRING",
+          "HANDOFF_SUCCEEDED",
+          "COMPLETED"
+        ],
+        "expectedOutcome": "SAF final write and close completed",
+        "invariants": [
+          "JSON version visible",
+          "raw audio excluded",
+          "path URI and key excluded"
+        ]
+      },
+      {
+        "id": "EXP-SYN-006",
+        "scenario": "Summary plus CSV",
+        "inputs": [
+          "Summary",
+          "CSV"
+        ],
+        "preconditions": [
+          "state=SELECT_FORMAT",
+          "Summary selected"
+        ],
+        "events": [
+          "FORMAT_SELECTION_INCOMPATIBLE"
+        ],
+        "expectedStates": [
+          "SELECT_FORMAT",
+          "SELECT_FORMAT"
+        ],
+        "expectedOutcome": "CSV pair disabled with reason",
+        "invariants": [
+          "Tasks-only CSV",
+          "no artifact"
+        ]
+      },
+      {
+        "id": "EXP-SYN-007",
+        "scenario": "Tasks plus CSV plus SAF with staging",
+        "inputs": [
+          "Tasks",
+          "CSV",
+          "SAF",
+          "Dora staging",
+          "effective temp expiry=15 minutes"
+        ],
+        "preconditions": [
+          "state=CLOSED",
+          "policy allows plan",
+          "managed policy shortens temp expiry to 15 minutes"
+        ],
+        "events": [
+          "OPEN_EXPORT",
+          "CONTENT_SELECTION_ACCEPTED",
+          "FORMAT_SELECTION_ACCEPTED",
+          "DESTINATION_CONFIRMED",
+          "REVIEW_CONFIRM_NO_AUDIO",
+          "WARNING_ACCEPT_SAF_FILE",
+          "PREPARATION_SUCCEEDED_SAF",
+          "SAF_FINAL_CLOSE_SUCCEEDED_WITH_STAGING",
+          "SAF_STAGING_CLEANUP_ELIGIBLE",
+          "CLEANUP_SUCCEEDED_COMPLETED"
+        ],
+        "expectedStates": [
+          "CLOSED",
+          "SELECT_CONTENT",
+          "SELECT_FORMAT",
+          "SELECT_DESTINATION",
+          "REVIEW",
+          "UNENCRYPTED_WARNING",
+          "PREPARING",
+          "TRANSFERRING",
+          "HANDOFF_SUCCEEDED",
+          "CLEANUP_PENDING",
+          "COMPLETED"
+        ],
+        "expectedOutcome": "Review displays the policy-shortened 15-minute expiry; destination closed before Dora staging cleanup",
+        "invariants": [
+          "policy expiry visible at Review",
+          "policy cannot extend expiry",
+          "no cleanup eligibility before close",
+          "external copy outside Dora expiry",
+          "source untouched"
+        ]
+      },
+      {
+        "id": "EXP-SYN-008",
+        "scenario": "Select all",
+        "inputs": [
+          "Select all"
+        ],
+        "preconditions": [
+          "state=SELECT_CONTENT",
+          "all structured classes available"
+        ],
+        "events": [
+          "CONTENT_SELECTION_ACCEPTED"
+        ],
+        "expectedStates": [
+          "SELECT_CONTENT",
+          "SELECT_FORMAT"
+        ],
+        "expectedOutcome": "Summary Protocol Transcript and Tasks selected",
+        "invariants": [
+          "Audio remains off",
+          "no remembered state"
+        ]
+      },
+      {
+        "id": "EXP-SYN-009",
+        "scenario": "Audio WAV/PCM plus Sharesheet",
+        "inputs": [
+          "Audio",
+          "WAV/PCM",
+          "Sharesheet"
+        ],
+        "preconditions": [
+          "state=CLOSED",
+          "policy allows Audio"
+        ],
+        "events": [
+          "OPEN_EXPORT",
+          "CONTENT_SELECTION_ACCEPTED",
+          "FORMAT_SELECTION_ACCEPTED",
+          "DESTINATION_CONFIRMED",
+          "REVIEW_CONFIRM_AUDIO",
+          "AUDIO_ACK_ACCEPTED",
+          "WARNING_ACCEPT_SHARESHEET_FILE",
+          "PREPARATION_SUCCEEDED_SHARESHEET",
+          "SHARESHEET_HANDOFF_ACCEPTED"
+        ],
+        "expectedStates": [
+          "CLOSED",
+          "SELECT_CONTENT",
+          "SELECT_FORMAT",
+          "SELECT_DESTINATION",
+          "REVIEW",
+          "AUDIO_ACKNOWLEDGEMENT",
+          "UNENCRYPTED_WARNING",
+          "PREPARING",
+          "TRANSFERRING",
+          "HANDOFF_SUCCEEDED"
+        ],
+        "expectedOutcome": "one-shot Audio handed to Android; live temp retained",
+        "invariants": [
+          "Audio acknowledgement fresh",
+          "warning separate and fresh",
+          "Audio not selected by Select all"
+        ]
+      },
+      {
+        "id": "EXP-SYN-010",
+        "scenario": "Encrypted bundle",
+        "inputs": [
+          "Encrypted bundle"
+        ],
+        "preconditions": [
+          "state=SELECT_FORMAT"
+        ],
+        "events": [
+          "FORMAT_SELECTION_INCOMPATIBLE"
+        ],
+        "expectedStates": [
+          "SELECT_FORMAT",
+          "SELECT_FORMAT"
+        ],
+        "expectedOutcome": "deferred not-MVP reason shown",
+        "invariants": [
+          "no artifact",
+          "no Security approval claim",
+          "separate key and recovery decision required"
+        ]
+      },
+      {
+        "id": "EXP-SYN-011",
+        "scenario": "Managed policy disables Audio",
+        "inputs": [
+          "Audio",
+          "managed policy restriction"
+        ],
+        "preconditions": [
+          "state=SELECT_CONTENT",
+          "restriction visible"
+        ],
+        "events": [
+          "CONTENT_SELECTION_POLICY_BLOCKED"
+        ],
+        "expectedStates": [
+          "SELECT_CONTENT",
+          "SELECT_CONTENT"
+        ],
+        "expectedOutcome": "Audio remains disabled with policy reason",
+        "invariants": [
+          "policy selects no fallback",
+          "policy initiates nothing",
+          "no artifact"
+        ]
+      },
+      {
+        "id": "EXP-SYN-012",
+        "scenario": "Restart before managed-policy expiry then expire",
+        "inputs": [
+          "valid Sharesheet recovery context",
+          "effective temp expiry=15 minutes",
+          "now=10 minutes"
+        ],
+        "preconditions": [
+          "state=CLOSED after restart",
+          "pendingOutcome=COMPLETED",
+          "safeReleaseObserved=false",
+          "deleteNowConfirmedAfterWarning=false"
+        ],
+        "events": [
+          "STARTUP_SHARESHEET_RESTORE_UNEXPIRED",
+          "SHARESHEET_TEMP_EXPIRED",
+          "CLEANUP_SUCCEEDED_COMPLETED"
+        ],
+        "expectedStates": [
+          "CLOSED",
+          "HANDOFF_SUCCEEDED",
+          "CLEANUP_PENDING",
+          "COMPLETED"
+        ],
+        "expectedOutcome": "restart retains access window, then effective expiry cleans temp",
+        "invariants": [
+          "no cleanup on restart",
+          "below one-hour maximum",
+          "policy cannot extend expiry",
+          "no delivery claim"
+        ]
+      },
+      {
+        "id": "EXP-SYN-013",
+        "scenario": "External provider may use network",
+        "inputs": [
+          "SAF external provider"
+        ],
+        "preconditions": [
+          "state=REVIEW",
+          "selected file plan valid"
+        ],
+        "events": [],
+        "expectedStates": [
+          "REVIEW"
+        ],
+        "expectedOutcome": "external-control and independent-network disclosure shown",
+        "invariants": [
+          "Dora account not required",
+          "GMS not required",
+          "Dora network not required"
+        ]
+      },
+      {
+        "id": "EXP-SYN-014",
+        "scenario": "Destination picker cancelled before temp",
+        "inputs": [
+          "pickerCancelPolicy=RETURN_TO_DESTINATION"
+        ],
+        "preconditions": [
+          "state=SELECT_DESTINATION",
+          "no artifact"
+        ],
+        "events": [
+          "PICKER_CANCEL_RETURN"
+        ],
+        "expectedStates": [
+          "SELECT_DESTINATION",
+          "SELECT_DESTINATION"
+        ],
+        "expectedOutcome": "focus restored and cancellation announced",
+        "invariants": [
+          "no success claim",
+          "no artifact",
+          "policy fixed before launch"
+        ]
+      },
+      {
+        "id": "EXP-SYN-015",
+        "scenario": "Transfer picker cancelled after temp exists",
+        "inputs": [
+          "Sharesheet",
+          "live Dora temp"
+        ],
+        "preconditions": [
+          "state=TRANSFERRING"
+        ],
+        "events": [
+          "TRANSFER_PICKER_CANCELLED_WITH_TEMP",
+          "CLEANUP_SUCCEEDED_CANCELLED"
+        ],
+        "expectedStates": [
+          "TRANSFERRING",
+          "CLEANUP_PENDING",
+          "CANCELLED"
+        ],
+        "expectedOutcome": "cancel converges through cleanup",
+        "invariants": [
+          "pendingOutcome=CANCELLED",
+          "no delivery claim",
+          "source untouched"
+        ]
+      },
+      {
+        "id": "EXP-SYN-016",
+        "scenario": "Cancel during PREPARING",
+        "inputs": [
+          "live Dora temp"
+        ],
+        "preconditions": [
+          "state=PREPARING"
+        ],
+        "events": [
+          "PREPARATION_CANCELLED_WITH_TEMP",
+          "CLEANUP_SUCCEEDED_CANCELLED"
+        ],
+        "expectedStates": [
+          "PREPARING",
+          "CLEANUP_PENDING",
+          "CANCELLED"
+        ],
+        "expectedOutcome": "partial temp deleted",
+        "invariants": [
+          "no partial reuse",
+          "no background resume",
+          "source untouched"
+        ]
+      },
+      {
+        "id": "EXP-SYN-017",
+        "scenario": "Cancel during TRANSFERRING",
+        "inputs": [
+          "live Dora temp"
+        ],
+        "preconditions": [
+          "state=TRANSFERRING"
+        ],
+        "events": [
+          "TRANSFER_CANCELLED_WITH_TEMP",
+          "CLEANUP_SUCCEEDED_CANCELLED"
+        ],
+        "expectedStates": [
+          "TRANSFERRING",
+          "CLEANUP_PENDING",
+          "CANCELLED"
+        ],
+        "expectedOutcome": "transfer stops safely then temp is deleted",
+        "invariants": [
+          "no partial reuse",
+          "no background resume",
+          "source untouched"
+        ]
+      },
+      {
+        "id": "EXP-SYN-018",
+        "scenario": "SAF write fails before close",
+        "inputs": [
+          "SAF",
+          "Dora staging",
+          "provider partial possible"
+        ],
+        "preconditions": [
+          "state=TRANSFERRING",
+          "final close not observed"
+        ],
+        "events": [
+          "SAF_WRITE_FAILED_WITH_STAGING",
+          "CLEANUP_SUCCEEDED_FAILED_RETRYABLE"
+        ],
+        "expectedStates": [
+          "TRANSFERRING",
+          "CLEANUP_PENDING",
+          "FAILED_RETRYABLE"
+        ],
+        "expectedOutcome": "Dora staging cleaned; export retry available",
+        "invariants": [
+          "provider partial outside Dora control",
+          "no success claim",
+          "retry must revalidate"
+        ]
+      },
+      {
+        "id": "EXP-SYN-019",
+        "scenario": "Sharesheet accepts handoff",
+        "inputs": [
+          "Sharesheet",
+          "live Dora temp"
+        ],
+        "preconditions": [
+          "state=TRANSFERRING"
+        ],
+        "events": [
+          "SHARESHEET_HANDOFF_ACCEPTED"
+        ],
+        "expectedStates": [
+          "TRANSFERRING",
+          "HANDOFF_SUCCEEDED"
+        ],
+        "expectedOutcome": "Android handoff boundary recorded; temp retained",
+        "invariants": [
+          "recipient read not claimed",
+          "recipient save not claimed",
+          "recipient delivery not claimed"
+        ]
+      },
+      {
+        "id": "EXP-SYN-020",
+        "scenario": "Clipboard clear timer fires with unchanged clip",
+        "inputs": [
+          "unchanged Dora clip",
+          "elapsed=60 seconds"
+        ],
+        "preconditions": [
+          "clipboard API previously accepted clip"
+        ],
+        "events": [
+          "CLIPBOARD_CLEAR_TIMER_UNCHANGED"
+        ],
+        "expectedStates": [
+          "COMPLETED"
+        ],
+        "expectedOutcome": "best-effort clear attempted without state change",
+        "invariants": [
+          "clear not guaranteed",
+          "clip content not logged"
+        ]
+      },
+      {
+        "id": "EXP-SYN-021",
+        "scenario": "Clipboard changed before clear timer",
+        "inputs": [
+          "replacement clip",
+          "elapsed=60 seconds"
+        ],
+        "preconditions": [
+          "clipboard API previously accepted Dora clip"
+        ],
+        "events": [
+          "CLIPBOARD_CLEAR_TIMER_CHANGED"
+        ],
+        "expectedStates": [
+          "COMPLETED"
+        ],
+        "expectedOutcome": "replacement clip left untouched",
+        "invariants": [
+          "no clear attempt on changed clip",
+          "replacement content not logged"
+        ]
+      },
+      {
+        "id": "EXP-SYN-022",
+        "scenario": "Delete now on live Sharesheet temp",
+        "inputs": [
+          "live Dora temp",
+          "user confirms access-loss warning"
+        ],
+        "preconditions": [
+          "state=HANDOFF_SUCCEEDED",
+          "destination=Sharesheet"
+        ],
+        "events": [
+          "SHARESHEET_DELETE_NOW",
+          "CLEANUP_SUCCEEDED_COMPLETED"
+        ],
+        "expectedStates": [
+          "HANDOFF_SUCCEEDED",
+          "CLEANUP_PENDING",
+          "COMPLETED"
+        ],
+        "expectedOutcome": "Dora temp deleted and Recent exports entry removed",
+        "invariants": [
+          "external copies untouched",
+          "canonical source untouched",
+          "no physical overwrite claim"
+        ]
+      },
+      {
+        "id": "EXP-SYN-023",
+        "scenario": "Sharesheet temp reaches effective expiry",
+        "inputs": [
+          "live Dora temp",
+          "effective expiry reached"
+        ],
+        "preconditions": [
+          "state=HANDOFF_SUCCEEDED",
+          "destination=Sharesheet"
+        ],
+        "events": [
+          "SHARESHEET_TEMP_EXPIRED",
+          "CLEANUP_SUCCEEDED_COMPLETED"
+        ],
+        "expectedStates": [
+          "HANDOFF_SUCCEEDED",
+          "CLEANUP_PENDING",
+          "COMPLETED"
+        ],
+        "expectedOutcome": "expired Dora temp deleted",
+        "invariants": [
+          "hard maximum one hour",
+          "external copies unaffected",
+          "source untouched"
+        ]
+      },
+      {
+        "id": "EXP-SYN-024",
+        "scenario": "Missing recovery context across restart",
+        "inputs": [
+          "allowlisted Dora temp",
+          "recovery context missing",
+          "now before conservativeRetentionDeadline"
+        ],
+        "preconditions": [
+          "state=CLOSED after restart",
+          "artifact could be an unexpired Sharesheet handoff"
+        ],
+        "events": [
+          "STARTUP_CONTEXT_INVALID_RETAIN",
+          "SHARESHEET_TEMP_EXPIRED",
+          "CLEANUP_SUCCEEDED_CANCELLED",
+          "CLOSE_CANCELLED"
+        ],
+        "expectedStates": [
+          "CLOSED",
+          "HANDOFF_SUCCEEDED",
+          "CLEANUP_PENDING",
+          "CANCELLED",
+          "CLOSED"
+        ],
+        "expectedOutcome": "temp is retained first, then bounded conservative expiry cleans without manufacturing success",
+        "invariants": [
+          "no immediate deletion",
+          "handoff unverified",
+          "warned Delete now remains available",
+          "unknown files and source untouched"
+        ]
+      },
+      {
+        "id": "EXP-SYN-025",
+        "scenario": "Cleanup deletion fails",
+        "inputs": [
+          "live Dora temp",
+          "delete returns failure"
+        ],
+        "preconditions": [
+          "state=CLEANUP_PENDING",
+          "pendingOutcome retained"
+        ],
+        "events": [
+          "CLEANUP_DELETE_FAILED"
+        ],
+        "expectedStates": [
+          "CLEANUP_PENDING",
+          "CLEANUP_FAILED"
+        ],
+        "expectedOutcome": "content-free cleanup failure remains visible",
+        "invariants": [
+          "retry available",
+          "completion not claimed",
+          "source untouched"
+        ]
+      },
+      {
+        "id": "EXP-SYN-026",
+        "scenario": "Cleanup retry succeeds",
+        "inputs": [
+          "failed Dora temp",
+          "pendingOutcome=COMPLETED"
+        ],
+        "preconditions": [
+          "state=CLEANUP_FAILED"
+        ],
+        "events": [
+          "RETRY_CLEANUP",
+          "CLEANUP_SUCCEEDED_COMPLETED"
+        ],
+        "expectedStates": [
+          "CLEANUP_FAILED",
+          "CLEANUP_PENDING",
+          "COMPLETED"
+        ],
+        "expectedOutcome": "retained outcome reached after deletion",
+        "invariants": [
+          "export not repeated",
+          "Recent exports entry removed",
+          "source untouched"
+        ]
+      },
+      {
+        "id": "EXP-SYN-027",
+        "scenario": "Retry after transfer failure",
+        "inputs": [
+          "previous transfer failure"
+        ],
+        "preconditions": [
+          "state=FAILED_RETRYABLE",
+          "source selection and policy still valid"
+        ],
+        "events": [
+          "RETRY_EXPORT_REVALIDATED"
+        ],
+        "expectedStates": [
+          "FAILED_RETRYABLE",
+          "REVIEW"
+        ],
+        "expectedOutcome": "fresh reviewed attempt",
+        "invariants": [
+          "partial output discarded",
+          "no background resume",
+          "no payload reuse"
+        ]
+      },
+      {
+        "id": "EXP-SYN-028",
+        "scenario": "Known and unknown transfer progress",
+        "inputs": [
+          "known byte total",
+          "then unavailable denominator"
+        ],
+        "preconditions": [
+          "state=TRANSFERRING"
+        ],
+        "events": [
+          "PROGRESS_WITH_REAL_DENOMINATOR",
+          "PROGRESS_WITHOUT_REAL_DENOMINATOR"
+        ],
+        "expectedStates": [
+          "TRANSFERRING",
+          "TRANSFERRING",
+          "TRANSFERRING"
+        ],
+        "expectedOutcome": "real fraction then stage-only progress",
+        "invariants": [
+          "no fabricated percentage",
+          "no provider sync progress"
+        ]
+      },
+      {
+        "id": "EXP-SYN-029",
+        "scenario": "Diagnostics across every state and error",
+        "inputs": [
+          "all 15 states",
+          "representative categorical errors"
+        ],
+        "preconditions": [
+          "isolated synthetic state snapshots"
+        ],
+        "events": [
+          "DIAGNOSTIC_SNAPSHOT_REQUESTED"
+        ],
+        "expectedStates": [
+          "CLOSED",
+          "SELECT_CONTENT",
+          "SELECT_FORMAT",
+          "SELECT_DESTINATION",
+          "REVIEW",
+          "AUDIO_ACKNOWLEDGEMENT",
+          "UNENCRYPTED_WARNING",
+          "PREPARING",
+          "TRANSFERRING",
+          "HANDOFF_SUCCEEDED",
+          "CLEANUP_PENDING",
+          "COMPLETED",
+          "FAILED_RETRYABLE",
+          "CANCELLED",
+          "CLEANUP_FAILED"
+        ],
+        "expectedOutcome": "state remains unchanged for every snapshot",
+        "invariants": [
+          "no path URI key payload user content or destination credential"
+        ]
+      },
+      {
+        "id": "EXP-SYN-030",
+        "scenario": "200 percent RU EN accessibility matrix",
+        "inputs": [
+          "RU",
+          "EN",
+          "200 percent text",
+          "TalkBack",
+          "Switch",
+          "keyboard",
+          "reduced motion"
+        ],
+        "preconditions": [
+          "synthetic content only"
+        ],
+        "events": [
+          "ACCESSIBILITY_FIXTURE_RENDERED"
+        ],
+        "expectedStates": [
+          "SELECT_CONTENT",
+          "SELECT_FORMAT",
+          "SELECT_DESTINATION",
+          "REVIEW",
+          "AUDIO_ACKNOWLEDGEMENT",
+          "UNENCRYPTED_WARNING",
+          "CLEANUP_FAILED"
+        ],
+        "expectedOutcome": "critical text actions reasons cleanup and retry remain reachable",
+        "invariants": [
+          "focus deterministic",
+          "no clipping",
+          "status not color-only",
+          "no user research claim"
+        ]
+      }
+    ],
+    "eventVocabulary": {
+      "stateTransitionEventsFrom": "stateMachine.transitions[].event",
+      "auxiliaryEventsFrom": "stateMachine.auxiliaryEvents[].event",
+      "unknownEventsAllowed": false
+    },
+    "markdownParity": {
+      "normativeSection": "docs/design/DORA_MVP1_EXPORT_INTERACTION_CONTRACT.md#11-synthetic-fixture-and-acceptance-matrix",
+      "comparedFields": [
+        "id",
+        "scenario",
+        "inputs",
+        "preconditions",
+        "events",
+        "expectedStates",
+        "expectedOutcome",
+        "invariants"
+      ],
+      "arrayRenderingSeparator": "; ",
+      "stateRenderingSeparator": " → ",
+      "exactRowOrderRequired": true,
+      "exactRowCountRequired": true,
+      "required": true
+    },
+    "realUserDataAllowed": false,
+    "userResearchExecuted": false,
+    "implementationConformanceExecuted": false
+  },
+  "authorityBoundary": {
+    "ordinaryReversibleDesignDecisionOnly": true,
+    "formalReviewer": false,
+    "legalApproval": false,
+    "securityApproval": false,
+    "recoveryAuthority": false,
+    "deviceExecutionAuthority": false,
+    "measuredExecutionAuthority": false,
+    "dependencyAdmissionAuthority": false,
+    "productionAdmissionAuthority": false,
+    "realDataCollectionAuthority": false,
+    "mergeAuthority": false,
+    "androidImplementationAuthority": false,
+    "figmaImplementationAuthority": false,
+    "schemaImplementationAuthority": false,
+    "providerImplementationAuthority": false,
+    "exportExecutionAuthority": false
+  },
+  "recoveryAuthoritySnapshot": {
+    "source": "docs/evidence/poc-recovery-001/implementation-authorization-rec-i1-20260813-01.json",
+    "unchangedByThisRecord": true,
+    "implementationAllowed": false,
+    "implementationAllowedByThisPackage": false,
+    "executionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "phaseAAuthorized": false,
+    "deviceExecutionAuthorized": false,
+    "mergeAuthorized": false
+  },
+  "evidenceStatus": {
+    "designGovernanceContract": "CONTRACT_COMPLETE",
+    "androidImplementation": "NOT_RUN",
+    "figmaPrototype": "NOT_RUN",
+    "schemaProviderSafSharesheetImplementation": "NOT_RUN",
+    "syntheticFixtureExecution": "NOT_RUN",
+    "accessibilityConformance": "NOT_RUN",
+    "userResearch": "NOT_RUN",
+    "legalReview": "NOT_RUN",
+    "securityReview": "NOT_RUN",
+    "deviceOrRecoveryExecution": "NOT_RUN"
+  },
+  "nonClaims": [
+    "No Android or export implementation",
+    "No Figma or prototype completion",
+    "No JSON export schema or provider implementation",
+    "No accessibility conformance",
+    "No user research or real-data evidence",
+    "No Legal or Security approval",
+    "No dependency or production admission",
+    "No Recovery, emulator, device, benchmark or measured execution",
+    "No merge authority"
+  ]
+}
