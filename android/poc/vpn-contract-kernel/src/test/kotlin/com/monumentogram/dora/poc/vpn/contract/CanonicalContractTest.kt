@@ -230,6 +230,18 @@ internal object CanonicalContractTest {
         val validEntry = manifestEntry()
         val valid = completeUploadBody(validEntry)
         accepted(operation, path, BodyDescriptor.Json(valid), PROFILE_DIGEST)
+
+        val fullPart = manifestEntry(1, 1024, "part-receipt-synthetic-1")
+        val lastFullPart = manifestEntry(2, 1024, "part-receipt-synthetic-2")
+        val lastSingleByte = manifestEntry(2, 1, "part-receipt-synthetic-2")
+        listOf(
+                valid.withManifest(listOf(fullPart, lastFullPart), 2048),
+                valid.withManifest(listOf(fullPart, lastSingleByte), 1025),
+            )
+            .forEach { multipart ->
+                accepted(operation, path, BodyDescriptor.Json(multipart), PROFILE_DIGEST)
+            }
+
         assertPreLedgerReject(operation, path, BodyDescriptor.Json(valid.without("uploadId")))
         assertPreLedgerReject(
             operation,
@@ -279,17 +291,88 @@ internal object CanonicalContractTest {
             operation,
             path,
             BodyDescriptor.Json(
-                valid.with(
-                    "manifest",
-                    CanonicalValue.ArrayValue(
+                valid
+                    .with(
+                        "manifest",
+                        CanonicalValue.ArrayValue(
+                            listOf(
+                                fullPart.with("partNumber", canonicalInteger(2)),
+                                lastSingleByte.with("partNumber", canonicalInteger(1)),
+                            )
+                        ),
+                    )
+                    .with("totalByteLength", canonicalInteger(1025))
+            ),
+        )
+        assertPreLedgerReject(
+            operation,
+            path,
+            BodyDescriptor.Json(
+                valid
+                    .with(
+                        "manifest",
+                        CanonicalValue.ArrayValue(
+                            listOf(
+                                fullPart.with("partNumber", canonicalInteger(2)),
+                                lastSingleByte,
+                            )
+                        ),
+                    )
+                    .with("totalByteLength", canonicalInteger(1025))
+            ),
+        )
+
+        listOf(1L, 1023L, 1025L).forEach { invalidNonLastLength ->
+            assertPreLedgerReject(
+                operation,
+                path,
+                BodyDescriptor.Json(
+                    valid.withManifest(
                         listOf(
-                            validEntry.with("partNumber", canonicalInteger(2)),
-                            validEntry.with("partReceiptId", canonicalString("receipt-2")),
-                        )
+                            manifestEntry(
+                                1,
+                                invalidNonLastLength,
+                                "part-receipt-synthetic-1",
+                            ),
+                            lastSingleByte,
+                        ),
+                        invalidNonLastLength + 1,
+                    )
+                ),
+            )
+        }
+        assertPreLedgerReject(
+            operation,
+            path,
+            BodyDescriptor.Json(
+                valid.withManifest(
+                    listOf(
+                        fullPart,
+                        manifestEntry(2, 1025, "part-receipt-synthetic-2"),
                     ),
+                    2049,
                 )
             ),
         )
+        listOf(0L, -1L).forEach { nonPositiveLastLength ->
+            assertPreLedgerReject(
+                operation,
+                path,
+                BodyDescriptor.Json(
+                    valid.withManifest(
+                        listOf(
+                            fullPart,
+                            manifestEntry(
+                                2,
+                                nonPositiveLastLength,
+                                "part-receipt-synthetic-2",
+                            ),
+                        ),
+                        1024 + nonPositiveLastLength,
+                    )
+                ),
+            )
+        }
     }
 
     private fun uploadPartSchemaCases() {
@@ -369,15 +452,26 @@ internal object CanonicalContractTest {
         )
     }
 
-    private fun manifestEntry(): CanonicalValue.ObjectValue {
+    private fun manifestEntry(
+        partNumber: Long = 1,
+        byteLength: Long = ContractCatalog.fixtures.first().parts.single().byteLength.toLong(),
+        partReceiptId: String = "part-receipt-synthetic-a",
+    ): CanonicalValue.ObjectValue {
         val fixturePart = ContractCatalog.fixtures.first().parts.single()
         return canonicalObject(
-            "partNumber" to canonicalInteger(fixturePart.partNumber.toLong()),
-            "byteLength" to canonicalInteger(fixturePart.byteLength.toLong()),
+            "partNumber" to canonicalInteger(partNumber),
+            "byteLength" to canonicalInteger(byteLength),
             "sha256" to canonicalString(fixturePart.sha256.value),
-            "partReceiptId" to canonicalString("part-receipt-synthetic-a"),
+            "partReceiptId" to canonicalString(partReceiptId),
         )
     }
+
+    private fun CanonicalValue.ObjectValue.withManifest(
+        entries: List<CanonicalValue.ObjectValue>,
+        totalByteLength: Long,
+    ): CanonicalValue.ObjectValue =
+        with("manifest", CanonicalValue.ArrayValue(entries))
+            .with("totalByteLength", canonicalInteger(totalByteLength))
 
     private fun CanonicalValue.ObjectValue.with(
         name: String,

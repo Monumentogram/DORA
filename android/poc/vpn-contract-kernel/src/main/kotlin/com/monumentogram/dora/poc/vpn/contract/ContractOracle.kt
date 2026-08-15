@@ -516,9 +516,17 @@ object ContractOracle {
             manifestEntries.isNotEmpty() &&
             manifestEntries.all(::manifestEntryValid) &&
             declaredPartNumbers == (1L..manifestEntries.size.toLong()).toList() &&
+            manifestPartSizesValid(manifestEntries) &&
             body.isPositiveInteger("totalByteLength") &&
             body.integerValue("totalByteLength") == declaredByteLength &&
             body.isSha256("totalSha256")
+    }
+
+    private fun manifestPartSizesValid(entries: List<CanonicalValue.ObjectValue>): Boolean {
+        val partSizeBytes = ContractCatalog.PART_SIZE_BYTES.toLong()
+        return entries.isNotEmpty() &&
+            entries.dropLast(1).all { it.integerValue("byteLength") == partSizeBytes } &&
+            entries.last().integerValue("byteLength")?.let { it in 1L..partSizeBytes } == true
     }
 
     private fun manifestEntryValid(value: CanonicalValue): Boolean {
