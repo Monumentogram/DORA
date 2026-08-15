@@ -26,6 +26,12 @@ deletion execution, conformance, user research, backend, Legal/Security or produ
 claim follows. Active Stage 0D, `POC-DATA-001` blocking and every Recovery authority flag remain
 unchanged.
 
+POC-VPN governance reconciliation: prospective contract `poc-vpn-synthetic-api-stage0-v0.1` and its
+machine record are contract complete for a future synthetic transport-fake plus hermetic-loopback
+HTTP harness. They authorize no implementation or execution and provide no device, VPN, route,
+provider, billing, Security, Legal or production PASS. `POC-VPN-001` remains `TODO`, `NOT_READY`,
+`NOT_RUN` and `NOT_AUTHORIZED`; active Stage 0D and every Recovery authority flag remain unchanged.
+
 ## Stage 00 closure
 
 - Stage 00 is complete.
