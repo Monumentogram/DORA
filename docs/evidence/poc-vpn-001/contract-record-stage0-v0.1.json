@@ -145,7 +145,7 @@
     {"id": "VPN-REQ-002", "requirement": "Absent, stale, expired or revoked profile fails closed before any request."},
     {"id": "VPN-REQ-003", "requirement": "Route, network type and VPN state never select, switch or migrate endpoint or region."},
     {"id": "VPN-REQ-004", "requirement": "Local-first workflows remain usable and nonblocking without account, network, GMS or cloud configuration."},
-    {"id": "VPN-REQ-005", "requirement": "Every mutating logical operation uses a stable content-free idempotency key bound to its canonical request digest and scope."},
+    {"id": "VPN-REQ-005", "requirement": "Every mutating logical operation uses a stable content-free idempotency key bound to scope and a canonical request digest that includes every resolved path target and nonvolatile body target."},
     {"id": "VPN-REQ-006", "requirement": "Create, init-or-refresh, upload part, complete, poll, result, cancel, delete and deletion-receipt operations form one versioned lifecycle."},
     {"id": "VPN-REQ-007", "requirement": "Every part and the complete artifact bind exact byte length and SHA-256; manifest order and contiguous part ordinals are mandatory."},
     {"id": "VPN-REQ-008", "requirement": "Resume reconciles durable server receipts and uploads only missing parts."},
@@ -154,7 +154,7 @@
     {"id": "VPN-REQ-011", "requirement": "Lost responses and duplicate requests replay one canonical outcome without a second resource or economic effect."},
     {"id": "VPN-REQ-012", "requirement": "A successful logical workflow commits one job, exactly one result and exactly one synthetic economic event, with zero duplicates."},
     {"id": "VPN-REQ-013", "requirement": "Cancellation resolves deterministically against completion/result commit order and never creates a second terminal effect."},
-    {"id": "VPN-REQ-014", "requirement": "After a deletion record is accepted, DELETE_PENDING is monotone: cancel, profile invalidation, final errors and retry exhaustion may change only a visible deletion substatus/error, never the primary state, deletionId or delete idempotency binding; bounded or explicit manual replay of that same record continues until one verifiable receipt moves it to DELETED, and repeats create no second deletion."},
+    {"id": "VPN-REQ-014", "requirement": "After a deletion record is accepted, DELETE_PENDING is monotone and durably binds conversationFixtureId, deletionId, profileBindingSha256 and regionCode: cancel, profile invalidation, final errors and retry exhaustion may change only a visible deletion substatus/error, never the primary state, target or delete idempotency/resource binding; bounded or explicit manual replay of that same record continues until one verifiable receipt moves it to DELETED, and repeats create no second deletion."},
     {"id": "VPN-REQ-015", "requirement": "Logs and evidence are content-free and exclude payload bytes, text, URLs, object keys, IP addresses, tokens, credentials and raw idempotency keys."},
     {"id": "VPN-REQ-016", "requirement": "Fake and loopback evidence is contract-layer evidence only and cannot be reported as physical device, VPN, route, provider or production PASS."}
   ],
@@ -230,7 +230,11 @@
   "canonicalization": {
     "name": "DORA-CJ-v1",
     "jsonRule": "UTF-8 JSON; object keys sorted by Unicode code point; array order preserved; strings JSON-escaped; integers base-10 without leading zero; lowercase true/false/null; floats forbidden; no insignificant whitespace.",
-    "requestDigestRule": "SHA-256(UTF8(contractId + LF + method + LF + routeTemplate + LF + operationClass + LF + profileBindingSha256 + LF + bodyDescriptor)).",
+    "pathParametersRule": "canonicalPathParameters is a DORA-CJ-v1 object whose key set exactly equals the unique placeholder names in routeTemplate and whose typed values are the resolved target identifiers. Keys are emitted in ascending unsigned UTF-8 byte order; string values are the exact logical opaque IDs before URI encoding and positive integers use canonical base-10 JSON numbers. A route with no placeholders uses {}.",
+    "routeResolutionRule": "One typed canonicalPathParameters map is the source for both route rendering and request digest. The receiver rebuilds the same map from the resolved route. Missing, extra or duplicate placeholder keys, a route value that differs from the map, or a path value duplicated inconsistently in the request body is SCHEMA_VALIDATION_FAILED before idempotency lookup and creates no effect.",
+    "targetBindingRule": "Every operation declares exact pathParameterSchema, bodyTargetFields and pathBodyEqualityFields. Every resolved target identifier appears in canonicalPathParameters or the nonvolatile bodyDescriptor; a field declared in both must have identical type and value.",
+    "requestDigestRule": "SHA-256(UTF8(contractId + LF + method + LF + routeTemplate + LF + DORA-CJ-v1(canonicalPathParameters) + LF + operationClass + LF + profileBindingSha256 + LF + bodyDescriptor)).",
+    "noneBodyDescriptor": "NONE",
     "jsonBodyDescriptor": "DORA-CJ-v1(request body after removal of volatile fields).",
     "binaryBodyDescriptor": "DORA-CJ-v1({byteLength,sha256,uploadId,partNumber,planGeneration}).",
     "excludedVolatileFields": ["X-Client-Request-Id", "attemptNumber", "attempt timestamps", "Retry-After", "part URL", "URL expiry", "transport connection identity"],
@@ -238,6 +242,7 @@
     "logKeyRule": "Evidence stores SHA-256 of an idempotency key, never the raw key."
   },
   "canonicalSchemas": {
+    "CanonicalPathParameters-v0.1": ["object with exactly the operation pathParameterSchema keys", "keys sorted by ascending unsigned UTF-8 bytes", "opaque-id values are logical strings before URI encoding", "positive-integer values are canonical base-10 JSON numbers", "no missing, extra or duplicate keys"],
     "CreateJobRequest-v0.1": ["schemaVersion:string", "profileBindingSha256:sha256-hex", "syntheticTenantId:string", "fixtureId:string", "artifactClass:SYNTHETIC_BYTES", "purpose:STAGE0_CONTRACT_TEST", "payloadByteLength:positive-integer", "payloadSha256:sha256-hex"],
     "CreateJobResponse-v0.1": ["schemaVersion:string", "jobId:opaque-id", "state:server-state", "endpointId:string", "regionCode:string", "createdAt:rfc3339", "syntheticEconomicEffectId:opaque-id"],
     "UploadPlanRequest-v0.1": ["schemaVersion:string", "jobId:opaque-id", "priorUploadId:opaque-id|null", "requestedPlanGeneration:positive-integer", "partSizeBytes:positive-integer", "totalByteLength:positive-integer", "totalSha256:sha256-hex"],
@@ -254,24 +259,25 @@
     "ErrorResponse-v0.1": ["schemaVersion:string", "errorCode:enum", "retryClass:enum", "operationClass:enum", "requestDigest:sha256-hex", "contentFreeDetailCode:string"]
   },
   "operations": [
-    {"id": "VPN-OP-001", "name": "CREATE_JOB", "method": "POST", "routeTemplate": "/v1/processing-jobs", "requestSchema": "CreateJobRequest-v0.1", "responseSchema": "CreateJobResponse-v0.1", "idempotency": "REQUIRED", "successStatus": 201},
-    {"id": "VPN-OP-002", "name": "INIT_OR_REFRESH_UPLOAD", "method": "POST", "routeTemplate": "/v1/processing-jobs/{jobId}/uploads", "requestSchema": "UploadPlanRequest-v0.1", "responseSchema": "UploadPlanResponse-v0.1", "idempotency": "REQUIRED_NEW_KEY_PER_PLAN_GENERATION", "successStatus": 201},
-    {"id": "VPN-OP-003", "name": "UPLOAD_PART", "method": "PUT", "routeTemplate": "/synthetic-upload/{uploadId}/{planGeneration}/{partNumber}", "requestSchema": "UploadPartRequest-v0.1", "responseSchema": "UploadPartResponse-v0.1", "idempotency": "REQUIRED_STABLE_PER_UPLOAD_AND_PART", "successStatus": 200},
-    {"id": "VPN-OP-004", "name": "COMPLETE_UPLOAD", "method": "POST", "routeTemplate": "/v1/processing-jobs/{jobId}/uploads:complete", "requestSchema": "CompleteUploadRequest-v0.1", "responseSchema": "CompleteUploadResponse-v0.1", "idempotency": "REQUIRED", "successStatus": 202},
-    {"id": "VPN-OP-005", "name": "POLL_JOB", "method": "GET", "routeTemplate": "/v1/processing-jobs/{jobId}", "requestSchema": "NONE", "responseSchema": "JobStatusResponse-v0.1", "idempotency": "READ_ONLY", "successStatus": 200},
-    {"id": "VPN-OP-006", "name": "FETCH_RESULT", "method": "GET", "routeTemplate": "/v1/processing-jobs/{jobId}/result", "requestSchema": "NONE", "responseSchema": "ResultResponse-v0.1", "idempotency": "READ_ONLY_STABLE_RESULT", "successStatus": 200},
-    {"id": "VPN-OP-007", "name": "CANCEL_JOB", "method": "POST", "routeTemplate": "/v1/processing-jobs/{jobId}:cancel", "requestSchema": "NONE", "responseSchema": "CancelResponse-v0.1", "idempotency": "REQUIRED", "successStatus": 202},
-    {"id": "VPN-OP-008", "name": "DELETE_CLOUD_COPY", "method": "DELETE", "routeTemplate": "/v1/conversations/{conversationFixtureId}/cloud-copy", "requestSchema": "NONE", "responseSchema": "DeleteResponse-v0.1", "idempotency": "REQUIRED", "successStatus": 202},
-    {"id": "VPN-OP-009", "name": "POLL_DELETION_RECEIPT", "method": "GET", "routeTemplate": "/v1/deletions/{deletionId}", "requestSchema": "NONE", "responseSchema": "DeletionReceiptResponse-v0.1", "idempotency": "READ_ONLY_STABLE_RECEIPT", "successStatus": 200}
+    {"id": "VPN-OP-001", "name": "CREATE_JOB", "method": "POST", "routeTemplate": "/v1/processing-jobs", "pathParameterSchema": {}, "bodyTargetFields": ["fixtureId"], "pathBodyEqualityFields": [], "requestSchema": "CreateJobRequest-v0.1", "responseSchema": "CreateJobResponse-v0.1", "idempotency": "REQUIRED", "successStatus": 201},
+    {"id": "VPN-OP-002", "name": "INIT_OR_REFRESH_UPLOAD", "method": "POST", "routeTemplate": "/v1/processing-jobs/{jobId}/uploads", "pathParameterSchema": {"jobId": "opaque-id"}, "bodyTargetFields": ["jobId", "priorUploadId"], "pathBodyEqualityFields": ["jobId"], "requestSchema": "UploadPlanRequest-v0.1", "responseSchema": "UploadPlanResponse-v0.1", "idempotency": "REQUIRED_NEW_KEY_PER_PLAN_GENERATION", "successStatus": 201},
+    {"id": "VPN-OP-003", "name": "UPLOAD_PART", "method": "PUT", "routeTemplate": "/synthetic-upload/{uploadId}/{planGeneration}/{partNumber}", "pathParameterSchema": {"partNumber": "positive-integer", "planGeneration": "positive-integer", "uploadId": "opaque-id"}, "bodyTargetFields": ["uploadId", "planGeneration", "partNumber"], "pathBodyEqualityFields": ["uploadId", "planGeneration", "partNumber"], "requestSchema": "UploadPartRequest-v0.1", "responseSchema": "UploadPartResponse-v0.1", "idempotency": "REQUIRED_STABLE_PER_UPLOAD_AND_PART", "successStatus": 200},
+    {"id": "VPN-OP-004", "name": "COMPLETE_UPLOAD", "method": "POST", "routeTemplate": "/v1/processing-jobs/{jobId}/uploads:complete", "pathParameterSchema": {"jobId": "opaque-id"}, "bodyTargetFields": ["jobId", "uploadId", "manifest[].partReceiptId"], "pathBodyEqualityFields": ["jobId"], "requestSchema": "CompleteUploadRequest-v0.1", "responseSchema": "CompleteUploadResponse-v0.1", "idempotency": "REQUIRED", "successStatus": 202},
+    {"id": "VPN-OP-005", "name": "POLL_JOB", "method": "GET", "routeTemplate": "/v1/processing-jobs/{jobId}", "pathParameterSchema": {"jobId": "opaque-id"}, "bodyTargetFields": [], "pathBodyEqualityFields": [], "requestSchema": "NONE", "responseSchema": "JobStatusResponse-v0.1", "idempotency": "READ_ONLY", "successStatus": 200},
+    {"id": "VPN-OP-006", "name": "FETCH_RESULT", "method": "GET", "routeTemplate": "/v1/processing-jobs/{jobId}/result", "pathParameterSchema": {"jobId": "opaque-id"}, "bodyTargetFields": [], "pathBodyEqualityFields": [], "requestSchema": "NONE", "responseSchema": "ResultResponse-v0.1", "idempotency": "READ_ONLY_STABLE_RESULT", "successStatus": 200},
+    {"id": "VPN-OP-007", "name": "CANCEL_JOB", "method": "POST", "routeTemplate": "/v1/processing-jobs/{jobId}:cancel", "pathParameterSchema": {"jobId": "opaque-id"}, "bodyTargetFields": [], "pathBodyEqualityFields": [], "requestSchema": "NONE", "responseSchema": "CancelResponse-v0.1", "idempotency": "REQUIRED", "successStatus": 202},
+    {"id": "VPN-OP-008", "name": "DELETE_CLOUD_COPY", "method": "DELETE", "routeTemplate": "/v1/conversations/{conversationFixtureId}/cloud-copy", "pathParameterSchema": {"conversationFixtureId": "opaque-id"}, "bodyTargetFields": [], "pathBodyEqualityFields": [], "requestSchema": "NONE", "responseSchema": "DeleteResponse-v0.1", "idempotency": "REQUIRED", "successStatus": 202},
+    {"id": "VPN-OP-009", "name": "POLL_DELETION_RECEIPT", "method": "GET", "routeTemplate": "/v1/deletions/{deletionId}", "pathParameterSchema": {"deletionId": "opaque-id"}, "bodyTargetFields": [], "pathBodyEqualityFields": [], "requestSchema": "NONE", "responseSchema": "DeletionReceiptResponse-v0.1", "idempotency": "READ_ONLY_STABLE_RECEIPT", "successStatus": 200}
   ],
   "idempotencyContract": {
     "headers": {"logicalOperation": "Idempotency-Key", "transportAttempt": "X-Client-Request-Id", "replayMarker": "Idempotency-Replayed"},
     "scopeTuple": ["syntheticTenantId", "profileBindingSha256", "operationClass", "Idempotency-Key"],
-    "sameKeySamePayload": "Return the original application status and canonical response digest, identical resource IDs and identical economic effect; set Idempotency-Replayed=true after the first response.",
-    "sameKeyDifferentPayload": "Return 409 IDEMPOTENCY_KEY_PAYLOAD_MISMATCH; create no resource, state transition, receipt or economic effect.",
+    "sameKeySamePayload": "The same scoped key, canonicalPathParameters target map and bodyDescriptor return the original application status and canonical response digest, identical resource IDs and identical economic effect; set Idempotency-Replayed=true after the first response.",
+    "sameKeyDifferentPayload": "A different canonicalPathParameters target map or bodyDescriptor changes canonicalRequestDigest. Return 409 IDEMPOTENCY_KEY_PAYLOAD_MISMATCH; create no server resource, state transition, receipt, deletion or economic effect.",
+    "sameKeyDifferentTarget": "For a target-bearing operation, reuse of one scoped Idempotency-Key with any different resolved path target is a payload mismatch even when both bodies are NONE. CANCEL_JOB with another jobId and DELETE_CLOUD_COPY with another conversationFixtureId return 409 IDEMPOTENCY_KEY_PAYLOAD_MISMATCH and produce zero server-state, economic and deletion deltas.",
     "lostResponseReplay": "Replay the same key and canonical request digest; recover the committed canonical outcome without issuing a new logical operation.",
     "duplicateCompletion": "Return the original 202 response and commitId; do not enqueue twice or create another result/economic effect.",
-    "repeatedDelete": "The same logical delete returns the same deletionId and eventual deletionReceiptId. A new key for an already deleted fixture also resolves to the same deletion record without a second delete effect.",
+    "repeatedDelete": "The same scoped key, conversationFixtureId, profile/region binding and bodyDescriptor return the same deletionId and eventual deletionReceiptId. The same fixture under a new key after deletion also resolves to that record without a second delete effect; the same key with another conversationFixtureId is always 409 IDEMPOTENCY_KEY_PAYLOAD_MISMATCH.",
     "crossTenantOrProfile": "Never reuse or migrate a record. Return non-enumerating 404 RESOURCE_NOT_FOUND_OR_NOT_AUTHORIZED and create no effect.",
     "sameKeyDifferentOperationClass": "A different operationClass is a distinct scope, but clients still generate a fresh key to avoid ambiguous diagnostics.",
     "durabilityBoundary": "A future hermetic server must durably commit idempotency record, resource state and synthetic economic effect atomically and preserve them across injected process death for the entire authorized run.",
@@ -431,10 +437,11 @@
     },
     "deletionPendingModel": {
       "primaryState": "DELETE_PENDING",
-      "durableRecordFields": ["jobId", "deleteIdempotencyKeyLedgerRef", "deleteIdempotencyKeyDigest", "deleteRequestDigest", "deletionId", "profileBindingSha256", "endpointId", "regionId", "lastReceiptRevision"],
+      "durableRecordFields": ["jobId", "conversationFixtureId", "deleteResourceBindingSha256", "deleteIdempotencyKeyLedgerRef", "deleteIdempotencyKeyDigest", "deleteRequestDigest", "deletionId", "profileBindingSha256", "endpointId", "regionCode", "lastReceiptRevision"],
       "visibleSubstatuses": ["DELETE_RECEIPT_POLL_ELIGIBLE", "DELETE_WAITING_NETWORK", "DELETE_RETRY_SCHEDULED", "DELETE_REVALIDATION_REQUIRED", "DELETE_USER_ACTION_REQUIRED", "DELETE_MANUAL_RETRY_REQUIRED"],
       "contentFreeErrorCodes": ["CANCEL_NOT_APPLICABLE_DELETE_PENDING", "DELETE_PROFILE_REVALIDATION_REQUIRED", "DELETE_TLS_TRUST_OR_NAME_REJECTED", "DELETE_SCHEMA_OR_FORMAT_REJECTED", "DELETE_RESPONSE_INTEGRITY_REJECTED", "DELETE_IDEMPOTENCY_PAYLOAD_MISMATCH", "DELETE_SCOPE_REVALIDATION_REQUIRED", "DELETE_FINITE_BUDGET_EXHAUSTED"],
-      "identityRule": "Once deletionId is accepted, every DELETE_PENDING transition preserves the same deletionId, delete idempotency key ledger reference, key digest, request digest, job, profile binding, endpoint and region; evidence exposes only content-free IDs and digests.",
+      "identityRule": "Once deletionId is accepted, every DELETE_PENDING transition preserves the same deletionId, conversationFixtureId, deleteResourceBindingSha256, delete idempotency key ledger reference, key digest, request digest, job, profile binding, endpointId and regionCode; evidence exposes only content-free synthetic IDs and digests.",
+      "resourceBindingRule": "deleteResourceBindingSha256 is SHA-256(UTF8(contractId + LF + DELETE_CLOUD_COPY + LF + syntheticTenantId + LF + profileBindingSha256 + LF + endpointId + LF + regionCode + LF + conversationFixtureId)). The accepted deletion record and its idempotency entry bind this digest; neither route nor retry may substitute another conversationFixtureId, profile, endpoint or regionCode.",
       "cancelRule": "CANCEL_REQUESTED during DELETE_PENDING returns CANCEL_NOT_APPLICABLE_DELETE_PENDING as REJECTED_NO_STATE_CHANGE and preserves both primary state and visible substatus.",
       "automaticRetryRule": "WAIT_NETWORK and BACKOFF_REPLAY keep primary state DELETE_PENDING and may schedule only a due attempt inside the current positive finite attempt and elapsed budgets for the same deletion record.",
       "exhaustionRule": "RETRY_BUDGET_EXHAUSTED sets DELETE_MANUAL_RETRY_REQUIRED, schedules no automatic wakeup and preserves the deletion record.",
@@ -546,10 +553,13 @@
       "preconditions": {
         "state": "DELETE_PENDING",
         "visibleSubstatus": "DELETE_RECEIPT_POLL_ELIGIBLE",
+        "conversationFixtureIdToken": "conversation-synthetic-a",
         "deletionIdToken": "opaque-deletion-001",
+        "deleteResourceBindingSha256Token": "synthetic-delete-resource-binding-digest-001",
         "deleteIdempotencyKeyDigestToken": "synthetic-delete-key-digest-001",
         "deleteRequestDigestToken": "synthetic-delete-request-digest-001",
-        "profileBindingToken": "synthetic-profile-binding-001"
+        "profileBindingToken": "synthetic-profile-binding-001",
+        "regionCodeToken": "SYN-REGION-A"
       },
       "steps": [
         {"state": "DELETE_PENDING", "visibleSubstatus": "DELETE_RECEIPT_POLL_ELIGIBLE", "event": "CANCEL_REQUESTED", "selectedTransitionId": "VPN-C-TR-044", "nextState": "DELETE_PENDING", "nextVisibleSubstatus": "$sameVisibleSubstatus", "actionResult": "REJECTED_NO_STATE_CHANGE", "deletionRecord": "$same"},
@@ -569,10 +579,36 @@
         {"state": "DELETE_PENDING", "event": "FINAL_IDEMPOTENCY_PAYLOAD_MISMATCH", "selectedTransitionId": "VPN-C-TR-049", "nextState": "DELETE_PENDING", "nextVisibleSubstatus": "DELETE_USER_ACTION_REQUIRED", "deletionRecord": "$same"},
         {"state": "DELETE_PENDING", "event": "FINAL_CROSS_TENANT_OR_PROFILE_REJECT", "selectedTransitionId": "VPN-C-TR-050", "nextState": "DELETE_PENDING", "nextVisibleSubstatus": "DELETE_REVALIDATION_REQUIRED", "deletionRecord": "$same"}
       ],
-      "expected": "Cancel rejection preserves the same visible status; profile invalidation, every immediate final reject and exhaustion preserve DELETE_PENDING and the same deletion record. Valid revalidation or explicit user action grants only one finite retry budget; the same stable verified receipt then reaches DELETED without a second deletion."
+      "expected": "Cancel rejection preserves the same visible status; profile invalidation, every immediate final reject and exhaustion preserve DELETE_PENDING and the same conversationFixtureId, regionCode, resource binding and deletion record. Valid revalidation or explicit user action grants only one finite retry budget; the same stable verified receipt then reaches DELETED without a second deletion."
+    },
+    {
+      "id": "VPN-TRACE-006",
+      "name": "SAME_KEY_DIFFERENT_PATH_TARGET_REJECT",
+      "preconditions": {"syntheticTenantId": "tenant-synthetic-a", "profileBindingSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "sameScopedIdempotencyKeySha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "bodyDescriptor": "NONE"},
+      "cases": [
+        {
+          "operationId": "VPN-OP-007",
+          "operationClass": "CANCEL_JOB",
+          "method": "POST",
+          "routeTemplate": "/v1/processing-jobs/{jobId}:cancel",
+          "firstRequest": {"canonicalPathParameters": {"jobId": "job-synthetic-a"}, "canonicalPathParametersDescriptor": "{\"jobId\":\"job-synthetic-a\"}", "canonicalRequestDigest": "5793cbc158297174fff8a67a22119427ae9d1dcf35a115d7be71b15b972b556d", "applicationStatus": 202, "cancelReceiptId": "cancel-receipt-synthetic-a"},
+          "differentTargetReplay": {"canonicalPathParameters": {"jobId": "job-synthetic-b"}, "canonicalPathParametersDescriptor": "{\"jobId\":\"job-synthetic-b\"}", "canonicalRequestDigest": "7ed20fbf37fc119a28c3e9175af3e6494af211be79042fd8252dfa72b160a3a0", "responseStatus": 409, "errorCode": "IDEMPOTENCY_KEY_PAYLOAD_MISMATCH", "serverTransitionId": null, "serverStateTransitionDelta": 0, "cancelReceiptCountDelta": 0, "economicEffectCountDelta": 0, "deletionRecordCountDelta": 0},
+          "assertions": ["canonical request digests differ solely because canonicalPathParameters differ", "job-synthetic-b state is unchanged", "cancel-receipt-synthetic-a remains the only cancel receipt"]
+        },
+        {
+          "operationId": "VPN-OP-008",
+          "operationClass": "DELETE_CLOUD_COPY",
+          "method": "DELETE",
+          "routeTemplate": "/v1/conversations/{conversationFixtureId}/cloud-copy",
+          "firstRequest": {"canonicalPathParameters": {"conversationFixtureId": "conversation-synthetic-a"}, "canonicalPathParametersDescriptor": "{\"conversationFixtureId\":\"conversation-synthetic-a\"}", "canonicalRequestDigest": "af1c896acd29cf41bf635b3db1b6595ecccc29d86d5b3fbcb107941b739ec646", "applicationStatus": 202, "deletionId": "deletion-synthetic-a", "deletionRecordCountAfter": 1},
+          "differentTargetReplay": {"canonicalPathParameters": {"conversationFixtureId": "conversation-synthetic-b"}, "canonicalPathParametersDescriptor": "{\"conversationFixtureId\":\"conversation-synthetic-b\"}", "canonicalRequestDigest": "f846211bba2a92c986e6f809de52de7da7a804e906ebc5a062b939d5f679e1ac", "responseStatus": 409, "errorCode": "IDEMPOTENCY_KEY_PAYLOAD_MISMATCH", "serverTransitionId": null, "serverStateTransitionDelta": 0, "cancelReceiptCountDelta": 0, "economicEffectCountDelta": 0, "deletionRecordCountDelta": 0, "deletionRecordCountAfter": 1},
+          "assertions": ["canonical request digests differ solely because canonicalPathParameters differ", "conversation-synthetic-b has no deletion record", "deletion-synthetic-a remains bound to conversation-synthetic-a"]
+        }
+      ],
+      "expected": "For both NONE-body operations, changing only the resolved path target under the same scoped idempotency key changes canonicalRequestDigest and returns 409 IDEMPOTENCY_KEY_PAYLOAD_MISMATCH with zero second-request server-state, receipt, economic and deletion effects."
     }
   ],
-  "transitionTraceRange": {"first": "VPN-TRACE-001", "last": "VPN-TRACE-005", "count": 5, "exactlyContiguous": true},
+  "transitionTraceRange": {"first": "VPN-TRACE-001", "last": "VPN-TRACE-006", "count": 6, "exactlyContiguous": true},
   "invalidAttempts": [
     {"id": "VPN-INV-001", "condition": "Any non-synthetic or user-derived input is selected.", "result": "INVALID_ATTEMPT"},
     {"id": "VPN-INV-002", "condition": "Execution or measured-execution authority is absent.", "result": "INVALID_ATTEMPT"},
@@ -596,7 +632,7 @@
     {"id": "VPN-FLT-006", "boundary": "TLS", "injection": "TLS trust or hostname failure", "expected": "Ordinary active work enters FAILED_FINAL immediately. During DELETE_PENDING the same final error preserves the deletion record and exposes DELETE_USER_ACTION_REQUIRED. Neither case permits insecure fallback or transient automatic retry.", "retryClass": "FINAL_REJECT", "proofClass": "CATEGORY_ONLY_UNTIL_SECURITY_SCOPE"},
     {"id": "VPN-FLT-007", "boundary": "CREATE", "injection": "Create committed and success response lost", "expected": "Replay same key/digest returns the same job and economic effect.", "retryClass": "REPLAY_SAME_OPERATION", "proofClass": "FAKE_OR_LOOPBACK"},
     {"id": "VPN-FLT-008", "boundary": "CREATE", "injection": "Repeated create with same key and same payload", "expected": "Original 201 response digest, jobId and economic effect replay; duplicate counters remain zero.", "retryClass": "REPLAY_SAME_OPERATION", "proofClass": "FAKE_OR_LOOPBACK"},
-    {"id": "VPN-FLT-009", "boundary": "CREATE", "injection": "Same create key with different canonical payload", "expected": "Client enters FAILED_FINAL immediately after 409 IDEMPOTENCY_KEY_PAYLOAD_MISMATCH; no new state or effect.", "retryClass": "FINAL_REJECT", "proofClass": "FAKE_OR_LOOPBACK"},
+    {"id": "VPN-FLT-009", "boundary": "ANY_IDEMPOTENT_MUTATION", "injection": "Same scoped key with a different canonical body or resolved path target", "expected": "Return 409 IDEMPOTENCY_KEY_PAYLOAD_MISMATCH. Ordinary active work enters FAILED_FINAL; an accepted DELETE_PENDING record remains pending. No second-request server-state, receipt, deletion or economic effect occurs.", "retryClass": "FINAL_REJECT", "proofClass": "FAKE_OR_LOOPBACK"},
     {"id": "VPN-FLT-010", "boundary": "UPLOAD_PART", "injection": "Part interrupted before server commit", "expected": "No receipt; replay same part key/digest within budget and commit at most once.", "retryClass": "REPLAY_SAME_OPERATION", "proofClass": "FAKE_OR_LOOPBACK"},
     {"id": "VPN-FLT-011", "boundary": "UPLOAD_PART", "injection": "Part committed and receipt response lost", "expected": "Replay returns the same partReceiptId; committed part count is unchanged.", "retryClass": "REPLAY_SAME_OPERATION", "proofClass": "FAKE_OR_LOOPBACK"},
     {"id": "VPN-FLT-012", "boundary": "UPLOAD_PART", "injection": "Duplicate same upload, ordinal, length and checksum", "expected": "Same partReceiptId and no replacement or duplicate part.", "retryClass": "REPLAY_SAME_OPERATION", "proofClass": "FAKE_OR_LOOPBACK"},
@@ -621,7 +657,7 @@
     {"id": "VPN-FLT-031", "boundary": "POLL", "injection": "Poll timeout, 5xx or repeated ETag", "expected": "Bounded read-only repeat; revision never decreases and no resource/economic effect is created.", "retryClass": "BACKOFF_REPLAY", "proofClass": "FAKE_OR_LOOPBACK"},
     {"id": "VPN-FLT-032", "boundary": "RESULT", "injection": "Result response lost or fetch repeated", "expected": "From RESULT_AVAILABLE, replay the same fetch within the finite budget while preserving job, profile, endpoint and region; return to RESULT_AVAILABLE for the same resultId, length, SHA-256 and bytes, or enter FAILED_FINAL on exhaustion; committedResultCount remains one.", "retryClass": "REPLAY_SAME_OPERATION", "proofClass": "FAKE_OR_LOOPBACK"},
     {"id": "VPN-FLT-033", "boundary": "CANCEL", "injection": "Cancel races result commit or is repeated", "expected": "First terminal commit wins: cancel-first yields one cancel receipt and no result; result-first yields 409 ALREADY_TERMINAL and the one stable result.", "retryClass": "REPLAY_SAME_OPERATION", "proofClass": "FAKE_OR_LOOPBACK"},
-    {"id": "VPN-FLT-034", "boundary": "DELETE_AND_RECEIPT", "injection": "While one accepted deletion is pending: cancel is requested; profile becomes invalid; a final transport or response rejection occurs; finite retry budget exhausts; revalidation or explicit user action resumes; the stable receipt is then returned", "expected": "Every interruption preserves DELETE_PENDING and the same deletionId, delete idempotency binding and deletion record. Cancel is REJECTED_NO_STATE_CHANGE; profile/final errors expose revalidation or user-action substatus; exhaustion schedules no wakeup until one explicit positive finite retry budget is granted. The same verified receipt alone moves to DELETED; no second deletion effect occurs.", "retryClass": "REPLAY_SAME_OPERATION", "proofClass": "FAKE_OR_LOOPBACK"}
+    {"id": "VPN-FLT-034", "boundary": "DELETE_AND_RECEIPT", "injection": "While one accepted deletion is pending: cancel is requested; profile becomes invalid; a final transport or response rejection occurs; finite retry budget exhausts; revalidation or explicit user action resumes; the stable receipt is then returned", "expected": "Every interruption preserves DELETE_PENDING and the same conversationFixtureId, deletionId, profileBindingSha256, regionCode, delete resource/idempotency binding and deletion record. Cancel is REJECTED_NO_STATE_CHANGE; profile/final errors expose revalidation or user-action substatus; exhaustion schedules no wakeup until one explicit positive finite retry budget is granted. The same verified receipt alone moves to DELETED; no second deletion effect occurs.", "retryClass": "REPLAY_SAME_OPERATION", "proofClass": "FAKE_OR_LOOPBACK"}
   ],
   "faultTransitionCoverage": [
     {"faultId": "VPN-FLT-001", "clientTransitionIds": ["VPN-C-TR-001"], "serverTransitionIds": [], "traceIds": ["VPN-TRACE-004"]},
@@ -632,7 +668,7 @@
     {"faultId": "VPN-FLT-006", "clientTransitionIds": ["VPN-C-TR-037", "VPN-C-TR-046"], "serverTransitionIds": [], "traceIds": ["VPN-TRACE-002", "VPN-TRACE-005"]},
     {"faultId": "VPN-FLT-007", "clientTransitionIds": ["VPN-C-TR-006", "VPN-C-TR-034", "VPN-C-TR-004"], "serverTransitionIds": ["VPN-S-TR-017"], "traceIds": []},
     {"faultId": "VPN-FLT-008", "clientTransitionIds": ["VPN-C-TR-004"], "serverTransitionIds": ["VPN-S-TR-017"], "traceIds": []},
-    {"faultId": "VPN-FLT-009", "clientTransitionIds": ["VPN-C-TR-040"], "serverTransitionIds": [], "traceIds": ["VPN-TRACE-002"]},
+    {"faultId": "VPN-FLT-009", "clientTransitionIds": ["VPN-C-TR-040", "VPN-C-TR-049"], "serverTransitionIds": [], "traceIds": ["VPN-TRACE-002", "VPN-TRACE-006"]},
     {"faultId": "VPN-FLT-010", "clientTransitionIds": ["VPN-C-TR-013", "VPN-C-TR-034", "VPN-C-TR-010"], "serverTransitionIds": ["VPN-S-TR-003", "VPN-S-TR-004"], "traceIds": []},
     {"faultId": "VPN-FLT-011", "clientTransitionIds": ["VPN-C-TR-013", "VPN-C-TR-034", "VPN-C-TR-010"], "serverTransitionIds": ["VPN-S-TR-018"], "traceIds": []},
     {"faultId": "VPN-FLT-012", "clientTransitionIds": ["VPN-C-TR-010"], "serverTransitionIds": ["VPN-S-TR-018"], "traceIds": []},
@@ -706,7 +742,7 @@
     ],
     "runMetadataFields": ["schemaVersion", "contractId", "runId", "attemptId", "contractGitCommit", "contractGitTree", "harnessMode", "environmentClass", "executionAuthorizationId", "startedAt", "finishedAt", "resultTaxonomy", "proofScope", "profileBindingSha256", "syntheticTenantId", "endpointId", "regionCode", "fixtureManifestSha256", "faultMatrixSha256", "executionProfileSha256", "toolVersions", "deviceEvidenceStatus", "providerEvidenceStatus", "productionEvidenceStatus"],
     "stateLedgerFields": ["sequence", "eventId", "machine", "fromState", "event", "guardResult", "toState", "operationId", "attemptNumber", "monotonicOffsetMs", "stateDigest"],
-    "idempotencyLedgerFields": ["sequence", "syntheticTenantId", "profileBindingSha256", "operationClass", "idempotencyKeySha256", "canonicalRequestDigest", "canonicalResponseDigest", "resourceId", "replayed", "effectCountAfter"],
+    "idempotencyLedgerFields": ["sequence", "syntheticTenantId", "profileBindingSha256", "endpointId", "regionCode", "operationClass", "idempotencyKeySha256", "canonicalPathParametersSha256", "targetResourceBindingSha256", "canonicalRequestDigest", "canonicalResponseDigest", "resourceId", "conversationFixtureId", "replayed", "effectCountAfter"],
     "economicLedgerFields": ["sequence", "jobId", "syntheticEconomicEffectId", "eventType", "commitSequence", "duplicateSuppressed", "totalEffectCountAfter"],
     "failureLedgerFields": ["sequence", "faultId", "operationId", "attemptNumber", "failureCategory", "retryClass", "retryAfterSource", "nextAttemptMonotonicMs", "attemptBudgetRemaining", "elapsedBudgetRemainingMs", "terminalErrorCode", "contentFreeDetailCode"],
     "evidenceIndexFields": ["relativePath", "mediaType", "byteLength", "sha256", "recordCount", "status", "containsSyntheticBytes", "containsForbiddenContent"],
@@ -812,13 +848,14 @@
     "markdownContract": "docs/stage0/DORA_MVP1_POC_VPN_SYNTHETIC_CONTRACT_STAGE0_V0_1.md",
     "requirements": 16,
     "harnessOptions": 3,
+    "canonicalSchemas": 15,
     "operations": 9,
     "outcomeInvariants": 10,
     "clientStates": 16,
     "clientTransitions": 52,
     "serverStates": 12,
     "serverTransitions": 20,
-    "transitionTraces": 5,
+    "transitionTraces": 6,
     "invalidAttempts": 12,
     "faultRows": 34,
     "faultTransitionCoverageRows": 34,

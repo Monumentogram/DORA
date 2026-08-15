@@ -80,7 +80,7 @@ usable without account, network, GMS or cloud configuration and must never wait 
 | `VPN-REQ-002` | Absent, stale, expired or revoked profile fails closed before any request. |
 | `VPN-REQ-003` | Route, network type and VPN state never select, switch or migrate endpoint or region. |
 | `VPN-REQ-004` | Local-first workflows remain usable and nonblocking without account, network, GMS or cloud configuration. |
-| `VPN-REQ-005` | Every mutating logical operation uses a stable content-free idempotency key bound to its canonical request digest and scope. |
+| `VPN-REQ-005` | Every mutating logical operation uses a stable content-free idempotency key bound to scope and a canonical request digest that includes every resolved path target and nonvolatile body target. |
 | `VPN-REQ-006` | Create, init-or-refresh, upload part, complete, poll, result, cancel, delete and deletion-receipt operations form one versioned lifecycle. |
 | `VPN-REQ-007` | Every part and the complete artifact bind exact byte length and SHA-256; manifest order and contiguous part ordinals are mandatory. |
 | `VPN-REQ-008` | Resume reconciles durable server receipts and uploads only missing parts. |
@@ -89,7 +89,7 @@ usable without account, network, GMS or cloud configuration and must never wait 
 | `VPN-REQ-011` | Lost responses and duplicate requests replay one canonical outcome without a second resource or economic effect. |
 | `VPN-REQ-012` | A successful logical workflow commits one job, exactly one result and exactly one synthetic economic event, with zero duplicates. |
 | `VPN-REQ-013` | Cancellation resolves deterministically against completion/result commit order and never creates a second terminal effect. |
-| `VPN-REQ-014` | After a deletion record is accepted, `DELETE_PENDING` is monotone: cancel, profile invalidation, final errors and retry exhaustion may change only a visible deletion substatus/error, never the primary state, `deletionId` or delete idempotency binding; bounded or explicit manual replay of that same record continues until one verifiable receipt moves it to `DELETED`, and repeats create no second deletion. |
+| `VPN-REQ-014` | After a deletion record is accepted, `DELETE_PENDING` is monotone and durably binds `conversationFixtureId`, `deletionId`, `profileBindingSha256` and `regionCode`: cancel, profile invalidation, final errors and retry exhaustion may change only a visible deletion substatus/error, never the primary state, target or delete idempotency/resource binding; bounded or explicit manual replay of that same record continues until one verifiable receipt moves it to `DELETED`, and repeats create no second deletion. |
 | `VPN-REQ-015` | Logs and evidence are content-free and exclude payload bytes, text, URLs, object keys, IP addresses, tokens, credentials and raw idempotency keys. |
 | `VPN-REQ-016` | Fake and loopback evidence is contract-layer evidence only and cannot be reported as physical device, VPN, route, provider or production PASS. |
 
@@ -127,11 +127,24 @@ JSON-escaped strings, base-10 integers without leading zero, lowercase booleans/
 no insignificant whitespace. The canonical request digest is:
 
 ```text
-SHA-256(UTF8(contractId + LF + method + LF + routeTemplate + LF + operationClass + LF
+SHA-256(UTF8(contractId + LF + method + LF + routeTemplate + LF
+             + DORA-CJ-v1(canonicalPathParameters) + LF + operationClass + LF
              + profileBindingSha256 + LF + bodyDescriptor))
 ```
 
-For JSON, `bodyDescriptor=DORA-CJ-v1(nonvolatile request body)`. For a binary part it is
+`canonicalPathParameters` is a typed `DORA-CJ-v1` object whose key set exactly equals the unique
+placeholder names in the route template. Keys use ascending unsigned UTF-8 byte order; opaque-ID
+values are their exact logical strings before URI encoding and positive integers are canonical
+base-10 JSON numbers. A route without placeholders uses `{}`. The same typed map renders the route
+and enters the digest; the receiver rebuilds it from the resolved route. Missing, extra or duplicate
+keys, a route/map mismatch, or a path value duplicated differently in the request body is
+`SCHEMA_VALIDATION_FAILED` before idempotency lookup and creates no effect.
+
+Every operation declares exact `pathParameterSchema`, `bodyTargetFields` and
+`pathBodyEqualityFields`. Thus every resolved target identifier is bound either by
+`canonicalPathParameters` or the nonvolatile body descriptor, and any path/body duplicate has one
+identical type and value. For JSON, `bodyDescriptor=DORA-CJ-v1(nonvolatile request body)`. For a
+NONE body it is the literal `NONE`. For a binary part it is
 `DORA-CJ-v1({byteLength,sha256,uploadId,partNumber,planGeneration})`. Request ID, attempt number and
 timestamps, `Retry-After`, part URL/expiry and connection identity are volatile and excluded.
 Server IDs are opaque/content-free/immutable. Evidence records only SHA-256 of an idempotency key.
@@ -140,6 +153,7 @@ Canonical schema field catalogs:
 
 | Schema | Exact fields |
 |---|---|
+| `CanonicalPathParameters-v0.1` | Object with exactly the operation `pathParameterSchema` keys; keys sorted by ascending unsigned UTF-8 bytes; opaque IDs are logical strings before URI encoding; positive integers are canonical base-10 JSON numbers; no missing, extra or duplicate keys |
 | `CreateJobRequest-v0.1` | `schemaVersion:string`; `profileBindingSha256:sha256-hex`; `syntheticTenantId:string`; `fixtureId:string`; `artifactClass:SYNTHETIC_BYTES`; `purpose:STAGE0_CONTRACT_TEST`; `payloadByteLength:positive-integer`; `payloadSha256:sha256-hex` |
 | `CreateJobResponse-v0.1` | `schemaVersion:string`; `jobId:opaque-id`; `state:server-state`; `endpointId:string`; `regionCode:string`; `createdAt:rfc3339`; `syntheticEconomicEffectId:opaque-id` |
 | `UploadPlanRequest-v0.1` | `schemaVersion:string`; `jobId:opaque-id`; `priorUploadId:opaque-id\|null`; `requestedPlanGeneration:positive-integer`; `partSizeBytes:positive-integer`; `totalByteLength:positive-integer`; `totalSha256:sha256-hex` |
@@ -161,17 +175,17 @@ identifiers.
 
 ## 6. Protocol lifecycle
 
-| ID | Operation | Method and route | Request → response | Idempotency | Success |
-|---|---|---|---|---|---|
-| `VPN-OP-001` | `CREATE_JOB` | `POST /v1/processing-jobs` | `CreateJobRequest-v0.1` → `CreateJobResponse-v0.1` | Required | 201 |
-| `VPN-OP-002` | `INIT_OR_REFRESH_UPLOAD` | `POST /v1/processing-jobs/{jobId}/uploads` | `UploadPlanRequest-v0.1` → `UploadPlanResponse-v0.1` | New key per plan generation | 201 |
-| `VPN-OP-003` | `UPLOAD_PART` | `PUT /synthetic-upload/{uploadId}/{planGeneration}/{partNumber}` | `UploadPartRequest-v0.1` → `UploadPartResponse-v0.1` | Stable per upload/part | 200 |
-| `VPN-OP-004` | `COMPLETE_UPLOAD` | `POST /v1/processing-jobs/{jobId}/uploads:complete` | `CompleteUploadRequest-v0.1` → `CompleteUploadResponse-v0.1` | Required | 202 |
-| `VPN-OP-005` | `POLL_JOB` | `GET /v1/processing-jobs/{jobId}` | none → `JobStatusResponse-v0.1` | Read-only | 200 |
-| `VPN-OP-006` | `FETCH_RESULT` | `GET /v1/processing-jobs/{jobId}/result` | none → `ResultResponse-v0.1` | Read-only stable result | 200 |
-| `VPN-OP-007` | `CANCEL_JOB` | `POST /v1/processing-jobs/{jobId}:cancel` | none → `CancelResponse-v0.1` | Required | 202 |
-| `VPN-OP-008` | `DELETE_CLOUD_COPY` | `DELETE /v1/conversations/{conversationFixtureId}/cloud-copy` | none → `DeleteResponse-v0.1` | Required | 202 |
-| `VPN-OP-009` | `POLL_DELETION_RECEIPT` | `GET /v1/deletions/{deletionId}` | none → `DeletionReceiptResponse-v0.1` | Read-only stable receipt | 200 |
+| ID | Operation | Method and route | Canonical targets: path; body; equality | Request → response | Idempotency | Success |
+|---|---|---|---|---|---|---|
+| `VPN-OP-001` | `CREATE_JOB` | `POST /v1/processing-jobs` | `{}`; `fixtureId`; none | `CreateJobRequest-v0.1` → `CreateJobResponse-v0.1` | Required | 201 |
+| `VPN-OP-002` | `INIT_OR_REFRESH_UPLOAD` | `POST /v1/processing-jobs/{jobId}/uploads` | `{jobId:opaque-id}`; `jobId`, `priorUploadId`; `jobId` | `UploadPlanRequest-v0.1` → `UploadPlanResponse-v0.1` | New key per plan generation | 201 |
+| `VPN-OP-003` | `UPLOAD_PART` | `PUT /synthetic-upload/{uploadId}/{planGeneration}/{partNumber}` | `{partNumber:positive-integer,planGeneration:positive-integer,uploadId:opaque-id}`; `uploadId`, `planGeneration`, `partNumber`; all three | `UploadPartRequest-v0.1` → `UploadPartResponse-v0.1` | Stable per upload/part | 200 |
+| `VPN-OP-004` | `COMPLETE_UPLOAD` | `POST /v1/processing-jobs/{jobId}/uploads:complete` | `{jobId:opaque-id}`; `jobId`, `uploadId`, `manifest[].partReceiptId`; `jobId` | `CompleteUploadRequest-v0.1` → `CompleteUploadResponse-v0.1` | Required | 202 |
+| `VPN-OP-005` | `POLL_JOB` | `GET /v1/processing-jobs/{jobId}` | `{jobId:opaque-id}`; none; none | none → `JobStatusResponse-v0.1` | Read-only | 200 |
+| `VPN-OP-006` | `FETCH_RESULT` | `GET /v1/processing-jobs/{jobId}/result` | `{jobId:opaque-id}`; none; none | none → `ResultResponse-v0.1` | Read-only stable result | 200 |
+| `VPN-OP-007` | `CANCEL_JOB` | `POST /v1/processing-jobs/{jobId}:cancel` | `{jobId:opaque-id}`; none; none | none → `CancelResponse-v0.1` | Required | 202 |
+| `VPN-OP-008` | `DELETE_CLOUD_COPY` | `DELETE /v1/conversations/{conversationFixtureId}/cloud-copy` | `{conversationFixtureId:opaque-id}`; none; none | none → `DeleteResponse-v0.1` | Required | 202 |
+| `VPN-OP-009` | `POLL_DELETION_RECEIPT` | `GET /v1/deletions/{deletionId}` | `{deletionId:opaque-id}`; none; none | none → `DeletionReceiptResponse-v0.1` | Read-only stable receipt | 200 |
 
 Every mutating logical operation uses stable `Idempotency-Key`; every transport attempt uses a new
 `X-Client-Request-Id`. Scope is `(syntheticTenantId, profileBindingSha256, operationClass,
@@ -179,11 +193,11 @@ Idempotency-Key)`.
 
 | Case | Required outcome |
 |---|---|
-| Same scope/key + same digest | Original application status and canonical response digest, identical IDs/effect; replay adds `Idempotency-Replayed=true`. |
-| Same scope/key + different digest | `409 IDEMPOTENCY_KEY_PAYLOAD_MISMATCH`; no resource, transition, receipt or effect. |
+| Same scope/key + same target/body digest | Same `canonicalPathParameters` and body descriptor replay the original application status/response digest and identical IDs/effect; add `Idempotency-Replayed=true`. |
+| Same scope/key + different target or body digest | Any different resolved path target or body descriptor changes the digest: `409 IDEMPOTENCY_KEY_PAYLOAD_MISMATCH`; no server resource, transition, receipt, deletion or economic effect. This includes NONE-body cancel with another `jobId` and delete with another `conversationFixtureId`. |
 | Lost response | Replay same key/digest and recover the committed outcome; never create a new logical operation. |
 | Duplicate completion | Original 202/`commitId`; no second queue, result or economic effect. |
-| Repeated delete | Same `deletionId` and receipt; even a new key after deletion resolves to the same record without another delete effect. |
+| Repeated delete | Same key, `conversationFixtureId`, profile/region binding and body descriptor replay the same `deletionId`/receipt. A new key for that deleted fixture resolves to the same record; the same key with another fixture is 409. |
 | Cross tenant/profile | No reuse/migration; non-enumerating `404 RESOURCE_NOT_FOUND_OR_NOT_AUTHORIZED`; no effect. |
 | Same key, different operation class | Distinct scope, though clients still generate a fresh key for unambiguous diagnostics. |
 
@@ -347,10 +361,15 @@ source set. Its explicit transitions retain `DELETE_PENDING` or accept one verif
 `DELETED`; none may enter `BLOCKED_NO_PROFILE`, `CANCEL_PENDING`, `WAITING_NETWORK`,
 `RETRY_SCHEDULED` or `FAILED_FINAL`.
 
-The durable pending-deletion record contains `jobId`, `deleteIdempotencyKeyLedgerRef`,
-`deleteIdempotencyKeyDigest`, `deleteRequestDigest`, `deletionId`, `profileBindingSha256`,
-`endpointId`, `regionId` and `lastReceiptRevision`. Every `DELETE_PENDING` transition preserves that
-identity. Its exact visible substatuses are `DELETE_RECEIPT_POLL_ELIGIBLE`,
+The durable pending-deletion record contains `jobId`, `conversationFixtureId`,
+`deleteResourceBindingSha256`, `deleteIdempotencyKeyLedgerRef`, `deleteIdempotencyKeyDigest`,
+`deleteRequestDigest`, `deletionId`, `profileBindingSha256`, `endpointId`, `regionCode` and
+`lastReceiptRevision`. Every `DELETE_PENDING` transition preserves that identity.
+`deleteResourceBindingSha256` is
+`SHA-256(UTF8(contractId + LF + DELETE_CLOUD_COPY + LF + syntheticTenantId + LF +
+profileBindingSha256 + LF + endpointId + LF + regionCode + LF + conversationFixtureId))`. The
+deletion/idempotency records bind this digest; route or retry cannot substitute another fixture,
+profile, endpoint or `regionCode`. Its exact visible substatuses are `DELETE_RECEIPT_POLL_ELIGIBLE`,
 `DELETE_WAITING_NETWORK`, `DELETE_RETRY_SCHEDULED`, `DELETE_REVALIDATION_REQUIRED`,
 `DELETE_USER_ACTION_REQUIRED` and `DELETE_MANUAL_RETRY_REQUIRED`. Its exact content-free error codes
 are `CANCEL_NOT_APPLICABLE_DELETE_PENDING`, `DELETE_PROFILE_REVALIDATION_REQUIRED`,
@@ -415,7 +434,7 @@ Each later commit atomically persists its idempotency record, state and effect. 
 those ledgers and never reconstructs a second resource/effect. `DELETED` is absorbing; its read and
 repeat-delete self-transitions cannot create an effect.
 
-The deterministic transition traces are exactly `VPN-TRACE-001..005`:
+The deterministic transition traces are exactly `VPN-TRACE-001..006`:
 
 | ID | Preconditions / deterministic selected path | Expected |
 |---|---|---|
@@ -423,7 +442,8 @@ The deterministic transition traces are exactly `VPN-TRACE-001..005`:
 | `VPN-TRACE-002` `IMMEDIATE_FINAL_REJECT_FAMILIES` | `CREATING` + `FINAL_TLS_TRUST_OR_NAME_REJECT` -> `VPN-C-TR-037`; `REMOTE_PROCESSING` + `FINAL_SCHEMA_OR_UNSUPPORTED_REJECT` -> `VPN-C-TR-038`; `UPLOADING` + `FINAL_CHECKSUM_OR_MANIFEST_REJECT` -> `VPN-C-TR-039`; `CREATING` + `FINAL_IDEMPOTENCY_PAYLOAD_MISMATCH` -> `VPN-C-TR-040`; `RESULT_AVAILABLE` + `FINAL_CROSS_TENANT_OR_PROFILE_REJECT` -> `VPN-C-TR-041`. | Every case reaches `FAILED_FINAL` in one transition, without `WAITING_NETWORK` or `RETRY_SCHEDULED`. |
 | `VPN-TRACE-003` `CANCEL_THEN_EXPLICIT_DELETE` | Valid profile: `CREATING` + `CANCEL_REQUESTED` -> `VPN-C-TR-029`/`CANCEL_PENDING`; `CANCEL_COMMIT_WON` -> `VPN-C-TR-030` plus `VPN-S-TR-011`/`CANCELLED`; `DELETE_REQUESTED` -> `VPN-C-TR-042` plus `VPN-S-TR-013`/`DELETE_PENDING`; `DELETION_RECEIPT_PENDING` -> `VPN-C-TR-025`; `DELETION_RECEIPT_VERIFIED` -> `VPN-C-TR-026` plus `VPN-S-TR-014`/`DELETED`. | One cancellation receipt, one deletion record and one verified deletion receipt; `CANCELLED` is deletion-eligible and `DELETED` absorbing. |
 | `VPN-TRACE-004` `TERMINAL_PROFILE_AND_PRIORITY_OVERLAP` | `PROFILE_ABSENT_STALE_EXPIRED_REVOKED_OR_MISMATCHED` in `DELETED`, `CANCELLED` or `FAILED_FINAL` selects no transition and preserves state. Simultaneous: in `CREATING`, `CREATE_COMMITTED` (priority 0) beats profile-invalid (10), selecting `VPN-C-TR-004` -> `WAITING_UPLOAD`; in `CREATING`, profile-invalid (10) beats `FINAL_TLS_TRUST_OR_NAME_REJECT` (20) and `WAIT_NETWORK` (60), selecting `VPN-C-TR-001` -> `BLOCKED_NO_PROFILE`; in `CANCEL_PENDING`, `CANCEL_COMMIT_WON` (0) beats profile-invalid (10), selecting `VPN-C-TR-030` -> `CANCELLED`; in `RESULT_AVAILABLE`, `RESULT_CHECKSUM_INVALID` (20) beats `RETRY_BUDGET_EXHAUSTED` (30) and `RESULT_FETCH_RESPONSE_LOST_OR_RETRYABLE` (60), selecting `VPN-C-TR-023` -> `FAILED_FINAL`. | Explicit source sets plus numeric/secondary arbitration select exactly one transition. |
-| `VPN-TRACE-005` `DELETE_PENDING_PRESERVATION_AND_RECOVERY` | Start `DELETE_PENDING`/`DELETE_RECEIPT_POLL_ELIGIBLE` with one opaque deletion token and stable delete-key/request/profile-binding digests. `CANCEL_REQUESTED` selects `C044`, is `REJECTED_NO_STATE_CHANGE` and preserves the substatus/record. Profile-invalid selects `C045` -> `DELETE_REVALIDATION_REQUIRED`; explicit valid revalidation selects `C052` -> poll eligible. TLS final reject selects `C046` -> `DELETE_USER_ACTION_REQUIRED`; action selects `C052`; schema final reject selects `C047` -> user action; action selects `C052`. Exhaustion selects `C051` -> `DELETE_MANUAL_RETRY_REQUIRED` with no automatic retry; explicit action selects `C052` and grants one positive finite budget. Receipt pending selects `C025`; the same verified receipt selects `C026` plus `S014` -> `DELETED`. Additional exact cases: checksum/integrity `C048` and idempotency mismatch `C049` retain `DELETE_PENDING`/`DELETE_USER_ACTION_REQUIRED`; cross-scope `C050` retains `DELETE_PENDING`/`DELETE_REVALIDATION_REQUIRED`. | Every step preserves the same deletion record and ID until the verified receipt. No general wrapper, final state replacement, busy retry or second deletion occurs. |
+| `VPN-TRACE-005` `DELETE_PENDING_PRESERVATION_AND_RECOVERY` | Start `DELETE_PENDING`/`DELETE_RECEIPT_POLL_ELIGIBLE` with one `conversationFixtureId`, opaque deletion token, `regionCode`, and stable delete-resource/key/request/profile-binding digests. `CANCEL_REQUESTED` selects `C044`, is `REJECTED_NO_STATE_CHANGE` and preserves the substatus/record. Profile-invalid selects `C045` -> `DELETE_REVALIDATION_REQUIRED`; explicit valid revalidation selects `C052` -> poll eligible. TLS final reject selects `C046` -> `DELETE_USER_ACTION_REQUIRED`; action selects `C052`; schema final reject selects `C047` -> user action; action selects `C052`. Exhaustion selects `C051` -> `DELETE_MANUAL_RETRY_REQUIRED` with no automatic retry; explicit action selects `C052` and grants one positive finite budget. Receipt pending selects `C025`; the same verified receipt selects `C026` plus `S014` -> `DELETED`. Additional exact cases: checksum/integrity `C048` and idempotency mismatch `C049` retain `DELETE_PENDING`/`DELETE_USER_ACTION_REQUIRED`; cross-scope `C050` retains `DELETE_PENDING`/`DELETE_REVALIDATION_REQUIRED`. | Every step preserves the same fixture, region, resource binding, deletion record and ID until the verified receipt. No general wrapper, final state replacement, busy retry or second deletion occurs. |
+| `VPN-TRACE-006` `SAME_KEY_DIFFERENT_PATH_TARGET_REJECT` | Profile digest is 64 `a` characters, the same scoped idempotency-key digest is 64 `b` characters, and both bodies are `NONE`. `CANCEL_JOB`: `{"jobId":"job-synthetic-a"}` digest `5793cbc158297174fff8a67a22119427ae9d1dcf35a115d7be71b15b972b556d` commits one cancel receipt; same key with `{"jobId":"job-synthetic-b"}` digest `7ed20fbf37fc119a28c3e9175af3e6494af211be79042fd8252dfa72b160a3a0` returns 409. `DELETE_CLOUD_COPY`: `{"conversationFixtureId":"conversation-synthetic-a"}` digest `af1c896acd29cf41bf635b3db1b6595ecccc29d86d5b3fbcb107941b739ec646` commits `deletion-synthetic-a`; same key with `{"conversationFixtureId":"conversation-synthetic-b"}` digest `f846211bba2a92c986e6f809de52de7da7a804e906ebc5a062b939d5f679e1ac` returns 409. | Each digest difference comes solely from canonical path targets. Both second requests return `IDEMPOTENCY_KEY_PAYLOAD_MISMATCH`; server-state, receipt, economic and deletion deltas are zero; job B is unchanged, conversation B has no deletion, and deletion A stays bound to conversation A. |
 
 Invalid attempts never influence PASS/FAIL:
 
@@ -456,7 +476,7 @@ All rows use synthetic bytes. `SIMULATED_ROUTE_ONLY` can never support a physica
 | `VPN-FLT-006` | TLS | Trust or hostname failure | Ordinary active work enters `FAILED_FINAL` immediately. During `DELETE_PENDING`, preserve the record and expose `DELETE_USER_ACTION_REQUIRED`. No insecure fallback or transient automatic retry. | `FINAL_REJECT` | `CATEGORY_ONLY_UNTIL_SECURITY_SCOPE` |
 | `VPN-FLT-007` | CREATE | Create committed; success response lost | Replay returns same job/economic effect. | `REPLAY_SAME_OPERATION` | `FAKE_OR_LOOPBACK` |
 | `VPN-FLT-008` | CREATE | Same key and same payload repeated | Original 201 digest, job/effect; duplicate counters zero. | `REPLAY_SAME_OPERATION` | `FAKE_OR_LOOPBACK` |
-| `VPN-FLT-009` | CREATE | Same key, different canonical payload | Enter `FAILED_FINAL` immediately after 409 mismatch; no new state/effect. | `FINAL_REJECT` | `FAKE_OR_LOOPBACK` |
+| `VPN-FLT-009` | ANY_IDEMPOTENT_MUTATION | Same scoped key with a different canonical body or resolved path target | Return 409 mismatch. Ordinary active work enters `FAILED_FINAL`; accepted `DELETE_PENDING` stays pending. No second-request server-state, receipt, deletion or economic effect. | `FINAL_REJECT` | `FAKE_OR_LOOPBACK` |
 | `VPN-FLT-010` | UPLOAD_PART | Part interrupted before commit | No receipt; replay same part key/digest and commit at most once. | `REPLAY_SAME_OPERATION` | `FAKE_OR_LOOPBACK` |
 | `VPN-FLT-011` | UPLOAD_PART | Part committed; receipt lost | Replay same `partReceiptId`; count unchanged. | `REPLAY_SAME_OPERATION` | `FAKE_OR_LOOPBACK` |
 | `VPN-FLT-012` | UPLOAD_PART | Duplicate same upload/ordinal/length/hash | Same receipt; no replacement/duplicate. | `REPLAY_SAME_OPERATION` | `FAKE_OR_LOOPBACK` |
@@ -481,7 +501,7 @@ All rows use synthetic bytes. `SIMULATED_ROUTE_ONLY` can never support a physica
 | `VPN-FLT-031` | POLL | Timeout, 5xx or repeated ETag | Bounded read repeat; nondecreasing revision; no effect. | `BACKOFF_REPLAY` | `FAKE_OR_LOOPBACK` |
 | `VPN-FLT-032` | RESULT | Response lost or repeated fetch | From `RESULT_AVAILABLE`, replay same fetch inside finite budget with job/profile/endpoint/region unchanged; return to `RESULT_AVAILABLE` for identical result or `FAILED_FINAL` on exhaustion; result count one. | `REPLAY_SAME_OPERATION` | `FAKE_OR_LOOPBACK` |
 | `VPN-FLT-033` | CANCEL | Cancel races result or repeats | First terminal commit wins: cancel-first one receipt/no result; result-first 409 and one stable result. | `REPLAY_SAME_OPERATION` | `FAKE_OR_LOOPBACK` |
-| `VPN-FLT-034` | DELETE_AND_RECEIPT | While one accepted deletion is pending: cancel request, invalid profile, final transport/response rejection, finite-budget exhaustion, revalidation/manual action, then stable receipt | Every interruption preserves `DELETE_PENDING`, the same `deletionId`, idempotency binding and record. Cancel is `REJECTED_NO_STATE_CHANGE`; profile/final errors expose revalidation/user-action substatus; exhaustion schedules no wakeup until one explicit positive finite retry budget. The same verified receipt alone moves to `DELETED`; no second deletion effect. | `REPLAY_SAME_OPERATION` | `FAKE_OR_LOOPBACK` |
+| `VPN-FLT-034` | DELETE_AND_RECEIPT | While one accepted deletion is pending: cancel request, invalid profile, final transport/response rejection, finite-budget exhaustion, revalidation/manual action, then stable receipt | Every interruption preserves `DELETE_PENDING`, the same `conversationFixtureId`, `deletionId`, `profileBindingSha256`, `regionCode`, resource/idempotency binding and record. Cancel is `REJECTED_NO_STATE_CHANGE`; profile/final errors expose revalidation/user-action substatus; exhaustion schedules no wakeup until one explicit positive finite retry budget. The same verified receipt alone moves to `DELETED`; no second deletion effect. | `REPLAY_SAME_OPERATION` | `FAKE_OR_LOOPBACK` |
 
 Fault-to-transition coverage is total and deterministic. In this table, `Cddd`, `Sddd` and `Tddd`
 mean `VPN-C-TR-ddd`, `VPN-S-TR-ddd` and `VPN-TRACE-ddd`; `—` means an empty list.
@@ -496,7 +516,7 @@ mean `VPN-C-TR-ddd`, `VPN-S-TR-ddd` and `VPN-TRACE-ddd`; `—` means an empty li
 | `006` | `C037`, `C046` | — | `T002`, `T005` | — |
 | `007` | `C006`, `C034`, `C004` | `S017` | — | — |
 | `008` | `C004` | `S017` | — | — |
-| `009` | `C040` | — | `T002` | — |
+| `009` | `C040`, `C049` | — | `T002`, `T006` | — |
 | `010` | `C013`, `C034`, `C010` | `S003`, `S004` | — | — |
 | `011` | `C013`, `C034`, `C010` | `S018` | — | — |
 | `012` | `C010` | `S018` | — | — |
@@ -585,8 +605,9 @@ Required content-free field groups:
   evidence statuses.
 - State ledgers: sequence/event ID, machine, from/event/guard/to, operation, attempt, monotonic
   offset and state digest.
-- Idempotency ledger: sequence, tenant/profile, operation class, key SHA-256, request/response
-  digests, resource ID, replay marker and effect count.
+- Idempotency ledger: sequence, tenant/profile/endpoint/`regionCode`, operation class, key SHA-256,
+  canonical-path and target-resource-binding SHA-256, request/response digests, resource and
+  `conversationFixtureId`, replay marker and effect count.
 - Synthetic economic ledger: sequence, job/effect IDs and type, commit sequence, duplicate
   suppression and total count.
 - Failure ledger: sequence, fault/operation/attempt, category, retry class/source, next monotonic
