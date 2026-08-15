@@ -26,6 +26,8 @@ include(":poc:search")
 
 include(":poc:recovery")
 
+includeBuild("poc/vpn-contract-kernel")
+
 include(":core:common")
 
 include(":core:model")
