@@ -1,0 +1,349 @@
+{
+  "schemaVersion": "des-storage-retention-delete-decision-record-v0.1",
+  "contractId": "des-storage-retention-delete-v0.1",
+  "contractVersion": "0.1",
+  "decisionId": "DEC-013",
+  "decisionDate": "2026-08-15",
+  "sourceSnapshot": {
+    "branch": "main",
+    "commit": "4cba244c614dd258a1d228d5775de653b3df8df0",
+    "tree": "b570821171a0bd0e80688f2197332541fdc971fc"
+  },
+  "authority": {
+    "decisionOwner": "Project owner",
+    "delegationSourceExact": "Продолжи работу. Все где нужно принимать решения типа РАЗРЕШАЮ делай сама или поручи отдельному агенту. Важно, чтобы процесс не останавливался из-за этого",
+    "delegationInterpretation": "Project owner standing delegation to the OpenAI Codex project coordinator for ordinary reversible project/product decisions so workflow does not stop.",
+    "delegationExclusions": [
+      "Legal approval",
+      "Security approval",
+      "Recovery execution",
+      "device or measured execution",
+      "dependency admission",
+      "production admission",
+      "real-data collection",
+      "merge authority"
+    ],
+    "organization": "OpenAI",
+    "decisionExecutorReviewer": "OpenAI Codex project coordinator",
+    "role": "AI ordinary reversible project/product decision executor and advisory reviewer",
+    "formalReviewer": false,
+    "humanSignatureClaimed": false,
+    "legalReviewerClaimed": false,
+    "securityReviewerClaimed": false
+  },
+  "decision": {
+    "status": "APPROVED_FOR_VERSIONED_REVERSIBLE_DESIGN_GOVERNANCE_CONTRACT_ONLY",
+    "scope": "Reusable docs/governance contract des-storage-retention-delete-v0.1",
+    "defaultLocalAudioRetention": "UNTIL_EXPLICIT_DELETION",
+    "automaticRetentionDefault": "OFF",
+    "automaticRetentionScope": "AUDIO_ONLY",
+    "explicitDeletionNeedsResultOrExport": false,
+    "externalExportQualifiesAsDurableLocalResult": false,
+    "automaticRetentionAgeAnchor": "DURABLE_FINALIZATION",
+    "physicalOverwriteClaimAllowed": false,
+    "implementationClaim": false,
+    "schemaClaim": false,
+    "conformanceClaim": false,
+    "researchClaim": false,
+    "legalApprovalClaim": false,
+    "securityApprovalClaim": false,
+    "productionAdmissionClaim": false
+  },
+  "allowedPeriodCatalog": {
+    "status": "UNAPPROVED",
+    "entries": [],
+    "numericPeriodInventedByThisContract": false,
+    "controlAvailability": "VISIBLY_UNAVAILABLE_UNTIL_SEPARATE_VERSIONED_APPROVAL"
+  },
+  "operationScopeMatrix": [
+    {
+      "id": "OP-AUTO-AUDIO",
+      "operation": "Automatic retention cleanup",
+      "triggerAndMandatoryGuard": "Future approved period; explicit opt-in; age from durable finalization; durable internally validated local result; recording inactive; source jobs reconciled",
+      "localTargets": "eligible Audio, verifiably per-audio key/material, audio-only cache",
+      "preservedOrExternalBoundary": "all structured content and FTS; external exports; cloud state",
+      "completionBoundary": "every scoped local target verified absent or crypto-erased; otherwise partial failure"
+    },
+    {
+      "id": "OP-EXPLICIT-AUDIO",
+      "operation": "Explicit audio-only deletion",
+      "triggerAndMandatoryGuard": "enhanced warning and explicit confirmation; no result/export prerequisite",
+      "localTargets": "selected local Audio, verifiably per-audio key/material, audio-only cache; cancel/reconcile source jobs and queued uploads",
+      "preservedOrExternalBoundary": "transcript, protocol, decisions, tasks, summary, FTS and source links remain with exact unavailable reason; external copies remain",
+      "completionBoundary": "scoped Audio inventory reconciled; retained content receives exact reason; partial failure stays visible"
+    },
+    {
+      "id": "OP-EXPLICIT-CONVERSATION",
+      "operation": "Explicit whole-conversation deletion",
+      "triggerAndMandatoryGuard": "scoped warning and explicit confirmation; no result/export prerequisite",
+      "localTargets": "local canonical Audio and structured content, derivatives, FTS, caches; tombstone; jobs cancelled; queued uploads revoked",
+      "preservedOrExternalBoundary": "minimum content-free operation evidence; external copies remain; remote deletion separate",
+      "completionBoundary": "every scoped local category reconciled; partial failure stays visible"
+    },
+    {
+      "id": "OP-ACTIVE-STOP-DELETE",
+      "operation": "Stop active recording and delete/discard captured local data",
+      "triggerAndMandatoryGuard": "separate accessible action and confirmation while capture remains visibly active",
+      "localTargets": "stop capture, reconcile/finalize only as needed for safe deletion, then apply explicit scoped deletion",
+      "preservedOrExternalBoundary": "cancel before confirmation changes nothing; external copies and remote state remain separate",
+      "completionBoundary": "capture stopped and selected local scope reconciled; UI close after confirmation is not cancel"
+    },
+    {
+      "id": "OP-EXPORT-TEMP",
+      "operation": "Delete Dora-managed export temp",
+      "triggerAndMandatoryGuard": "DEC-017 safe release, warned Delete-now, expiry or startup rule",
+      "localTargets": "only the Dora-managed temporary export",
+      "preservedOrExternalBoundary": "canonical Conversation/Audio/content and external copies remain; temp never blocks conversation deletion",
+      "completionBoundary": "governed temp absent; cleanup failure remains visible/retryable"
+    },
+    {
+      "id": "OP-UNUSED-MODEL",
+      "operation": "Delete unused model",
+      "triggerAndMandatoryGuard": "explicit action; model not active, selected or in use by a running/retryable job",
+      "localTargets": "selected model artifact and model-only cache",
+      "preservedOrExternalBoundary": "conversations, Audio, structured data and safety reserve remain",
+      "completionBoundary": "model inventory reconciled; in-use model is blocked without mutation"
+    },
+    {
+      "id": "OP-STORAGE-GUIDANCE",
+      "operation": "Soft/hard storage guidance",
+      "triggerAndMandatoryGuard": "observed storage pressure",
+      "localTargets": "no automatic target; route only to an explicitly selected compatible operation",
+      "preservedOrExternalBoundary": "reserved safety space is never a cleanup target; no content is selected implicitly",
+      "completionBoundary": "guidance dismissed or explicit operation opened; observation alone never deletes"
+    }
+  ],
+  "sourceUnavailableReasons": [
+    {"reason": "USER_DELETED", "ruLabel": "Аудио удалено вами", "enLabel": "Audio deleted by you"},
+    {"reason": "RETENTION_DELETED", "ruLabel": "Аудио удалено по настроенному сроку хранения", "enLabel": "Audio deleted by the configured retention period"},
+    {"reason": "MISSING", "ruLabel": "Аудиофайл отсутствует", "enLabel": "Audio file is missing"},
+    {"reason": "CORRUPT", "ruLabel": "Аудиофайл повреждён", "enLabel": "Audio file is corrupt"},
+    {"reason": "KEY_UNAVAILABLE", "ruLabel": "Ключ аудио недоступен", "enLabel": "Audio key is unavailable"}
+  ],
+  "exactCopy": [
+    {
+      "id": "COPY-AUDIO-DELETE",
+      "ru": "Удалить только аудио этого разговора? Расшифровка, протокол, решения, задачи, резюме и поиск останутся, но Dora больше не сможет открыть или повторно проверить их по записи. Удаление может завершиться частично; физическая перезапись памяти не гарантируется.",
+      "en": "Delete only this conversation’s audio? The transcript, protocol, decisions, tasks, summary, and search entries will remain, but Dora will no longer be able to open or re-check them against the recording. Deletion may complete only partially; physical storage overwrite is not guaranteed."
+    },
+    {
+      "id": "COPY-CONVERSATION-DELETE",
+      "ru": "Удалить весь разговор с этого устройства? Dora удалит локальное аудио, расшифровку, протокол, решения, задачи, резюме, производные данные и поисковый индекс, отменит локальную обработку и отзовёт ожидающие отправки. Внешние экспортированные копии не удалятся. Удаление в облаке, если оно доступно, отслеживается отдельно. Физическая перезапись памяти не гарантируется.",
+      "en": "Delete the whole conversation from this device? Dora will delete the local audio, transcript, protocol, decisions, tasks, summary, derived data, and search index, cancel local processing, and revoke queued sends. External exported copies will not be deleted. Cloud deletion, when available, is tracked separately. Physical storage overwrite is not guaranteed."
+    },
+    {
+      "id": "COPY-ACTIVE-STOP-DELETE",
+      "ru": "Остановить запись и удалить уже записанное? До подтверждения запись продолжается и ничего не удаляется. После подтверждения Dora остановит запись и начнёт удаление; закрытие экрана не отменит операцию, отмены после начала удаления нет.",
+      "en": "Stop recording and delete what has already been captured? Until you confirm, recording continues and nothing is deleted. After confirmation, Dora will stop recording and begin deletion; closing the screen will not cancel the operation, and there is no undo after deletion starts."
+    },
+    {
+      "id": "COPY-RETENTION-OPT-IN",
+      "ru": "Включить автоудаление аудио через {periodLabel}? Автоудаление касается только аудио и сработает лишь после подтверждённого локального результата и завершения связанных задач. Расшифровка и другие материалы разговора останутся без аудиоисточника.",
+      "en": "Turn on automatic audio deletion after {periodLabel}? Automatic deletion applies only to audio and runs only after a validated local result and related jobs are complete. The transcript and other conversation materials will remain without the audio source."
+    },
+    {
+      "id": "COPY-RETENTION-SHORTEN",
+      "ru": "Сократить срок хранения аудио до {periodLabel}? Аудио, уже вышедшее за новый срок, станет доступно для автоудаления только после этого подтверждения и проверки всех условий.",
+      "en": "Shorten audio retention to {periodLabel}? Audio already older than the new period becomes eligible for automatic deletion only after this confirmation and all required checks."
+    },
+    {
+      "id": "COPY-EXPORT-TEMP-DELETE",
+      "ru": "Удалить временный файл Dora сейчас? Приложение, которому уже передан доступ, может перестать открывать файл. Копии вне Dora не удалятся, исходный разговор не изменится.",
+      "en": "Delete Dora’s temporary file now? An app that was already given access may stop being able to open it. Copies outside Dora will not be deleted, and the source conversation will not change."
+    },
+    {
+      "id": "COPY-REMOTE-PENDING",
+      "ru": "Локальные данные удалены. Удаление в облаке ещё не подтверждено.",
+      "en": "Local data has been deleted. Cloud deletion has not yet been confirmed."
+    },
+    {
+      "id": "COPY-PARTIAL-FAILURE",
+      "ru": "Удаление завершилось не полностью. Сохранённые данные и незавершённые шаги перечислены отдельно. Можно повторить только оставшиеся шаги.",
+      "en": "Deletion did not complete fully. Preserved data and unfinished steps are listed separately. You can retry only the remaining steps."
+    }
+  ],
+  "stateMachines": {
+    "retention": {
+      "states": ["RT_OFF", "RT_UNAVAILABLE", "RT_REVIEW", "RT_ACTIVE", "RT_SHORTEN_REVIEW", "RT_ELIGIBLE", "RT_CLEANUP_PENDING", "RT_PARTIAL_FAILURE"],
+      "transitions": [
+        {"id": "RT-001", "source": "RT_OFF", "event": "OPEN_WITH_CATALOG_UNAPPROVED", "guard": "allowed-period catalog has zero approved entries", "action": "expose unavailable reason; select no period", "target": "RT_UNAVAILABLE"},
+        {"id": "RT-002", "source": "RT_UNAVAILABLE", "event": "CATALOG_APPROVED_LATER", "guard": "a separately approved versioned catalog is installed", "action": "expose allowed entries; retain automatic retention off", "target": "RT_OFF"},
+        {"id": "RT-003", "source": "RT_UNAVAILABLE", "event": "CLOSE_UNAVAILABLE", "guard": "no selection exists", "action": "retain automatic retention off", "target": "RT_OFF"},
+        {"id": "RT-004", "source": "RT_OFF", "event": "SELECT_ALLOWED_PERIOD", "guard": "period key exists in the approved catalog; no value is preselected", "action": "create impact review; mutate no content", "target": "RT_REVIEW"},
+        {"id": "RT-005", "source": "RT_REVIEW", "event": "CANCEL_OPT_IN", "guard": "confirmation not accepted", "action": "discard draft policy; mutate no content", "target": "RT_OFF"},
+        {"id": "RT-006", "source": "RT_REVIEW", "event": "CONFIRM_OPT_IN", "guard": "exact opt-in copy shown; user explicitly confirms", "action": "activate selected period for Audio only; do not delete yet", "target": "RT_ACTIVE"},
+        {"id": "RT-007", "source": "RT_ACTIVE", "event": "REQUEST_SHORTENING", "guard": "shorter period key exists in approved catalog", "action": "show impact, including already-overdue eligibility; do not change policy yet", "target": "RT_SHORTEN_REVIEW"},
+        {"id": "RT-008", "source": "RT_SHORTEN_REVIEW", "event": "CANCEL_SHORTENING", "guard": "confirmation not accepted", "action": "retain prior period; do not change eligibility", "target": "RT_ACTIVE"},
+        {"id": "RT-009", "source": "RT_SHORTEN_REVIEW", "event": "CONFIRM_SHORTENING", "guard": "exact shortening copy shown; user explicitly confirms", "action": "activate shorter period; re-evaluate guards without deleting yet", "target": "RT_ACTIVE"},
+        {"id": "RT-010", "source": "RT_ACTIVE", "event": "DISABLE_AUTOMATIC_RETENTION", "guard": "explicit user action", "action": "clear active period; cancel future eligibility; do not restore deleted Audio", "target": "RT_OFF"},
+        {"id": "RT-011", "source": "RT_ACTIVE", "event": "AGE_REACHED_GUARDS_PASS", "guard": "durable finalization age reached; local result valid; recording inactive; jobs reconciled", "action": "freeze exact eligible Audio scope", "target": "RT_ELIGIBLE"},
+        {"id": "RT-012", "source": "RT_ACTIVE", "event": "AGE_REACHED_GUARDS_BLOCKED", "guard": "any required guard false, including export-only evidence", "action": "retain Audio; expose bounded reason; schedule no deletion", "target": "RT_ACTIVE"},
+        {"id": "RT-013", "source": "RT_ELIGIBLE", "event": "START_AUTOMATIC_CLEANUP", "guard": "frozen scope still revalidates and policy remains active", "action": "create/resume durable OP-AUTO-AUDIO operation", "target": "RT_CLEANUP_PENDING"},
+        {"id": "RT-014", "source": "RT_CLEANUP_PENDING", "event": "AUTOMATIC_CLEANUP_SUCCEEDED", "guard": "every scoped target verified", "action": "record RETENTION_DELETED; keep policy active for future Audio", "target": "RT_ACTIVE"},
+        {"id": "RT-015", "source": "RT_CLEANUP_PENDING", "event": "AUTOMATIC_CLEANUP_PARTIAL", "guard": "any scoped target failed or is unverified", "action": "persist remaining steps and content-free failure", "target": "RT_PARTIAL_FAILURE"},
+        {"id": "RT-016", "source": "RT_PARTIAL_FAILURE", "event": "RETRY_AUTOMATIC_REMAINING", "guard": "operation scope and policy still revalidate", "action": "retry only incomplete idempotent steps", "target": "RT_CLEANUP_PENDING"}
+      ]
+    },
+    "localDeletion": {
+      "states": ["LD_IDLE", "LD_REVIEW_AUDIO", "LD_REVIEW_CONVERSATION", "LD_REVIEW_ACTIVE_CAPTURE", "LD_RECONCILING", "LD_IRREVERSIBLE", "LD_PARTIAL_FAILURE", "LD_COMPLETED", "LD_CANCELLED"],
+      "transitions": [
+        {"id": "LD-001", "source": "LD_IDLE", "event": "REQUEST_AUDIO_ONLY_DELETE", "guard": "selected Conversation exists; active capture uses its separate event", "action": "show exact audio-only warning; mutate nothing", "target": "LD_REVIEW_AUDIO"},
+        {"id": "LD-002", "source": "LD_IDLE", "event": "REQUEST_CONVERSATION_DELETE", "guard": "selected Conversation exists; active capture uses its separate event", "action": "show exact whole-conversation warning; mutate nothing", "target": "LD_REVIEW_CONVERSATION"},
+        {"id": "LD-003", "source": "LD_IDLE", "event": "REQUEST_ACTIVE_STOP_DELETE", "guard": "selected capture is active", "action": "show exact stop-and-delete warning while capture remains active", "target": "LD_REVIEW_ACTIVE_CAPTURE"},
+        {"id": "LD-004", "source": "LD_REVIEW_AUDIO", "event": "CANCEL_AUDIO_DELETE", "guard": "confirmation not accepted", "action": "discard draft; restore focus; mutate nothing", "target": "LD_CANCELLED"},
+        {"id": "LD-005", "source": "LD_REVIEW_CONVERSATION", "event": "CANCEL_CONVERSATION_DELETE", "guard": "confirmation not accepted", "action": "discard draft; restore focus; mutate nothing", "target": "LD_CANCELLED"},
+        {"id": "LD-006", "source": "LD_REVIEW_ACTIVE_CAPTURE", "event": "CANCEL_ACTIVE_STOP_DELETE", "guard": "confirmation not accepted", "action": "leave capture and data unchanged; restore focus", "target": "LD_CANCELLED"},
+        {"id": "LD-007", "source": "LD_REVIEW_AUDIO", "event": "CONFIRM_AUDIO_DELETE", "guard": "exact warning shown; explicit confirmation accepted", "action": "durably create OP-EXPLICIT-AUDIO; cancellation ends", "target": "LD_RECONCILING"},
+        {"id": "LD-008", "source": "LD_REVIEW_CONVERSATION", "event": "CONFIRM_CONVERSATION_DELETE", "guard": "exact warning shown; explicit confirmation accepted", "action": "durably create OP-EXPLICIT-CONVERSATION; cancellation ends", "target": "LD_RECONCILING"},
+        {"id": "LD-009", "source": "LD_REVIEW_ACTIVE_CAPTURE", "event": "CONFIRM_ACTIVE_STOP_DELETE", "guard": "exact warning shown; explicit confirmation accepted", "action": "durably create OP-ACTIVE-STOP-DELETE; stop capture; cancellation ends", "target": "LD_RECONCILING"},
+        {"id": "LD-010", "source": "LD_RECONCILING", "event": "RECONCILIATION_READY", "guard": "jobs/uploads/keys/files/DB scope frozen and safe to mutate", "action": "begin idempotent irreversible scoped steps", "target": "LD_IRREVERSIBLE"},
+        {"id": "LD-011", "source": "LD_RECONCILING", "event": "RECONCILIATION_BLOCKED", "guard": "a required step cannot yet be verified", "action": "persist remaining steps; claim no completion", "target": "LD_PARTIAL_FAILURE"},
+        {"id": "LD-012", "source": "LD_IRREVERSIBLE", "event": "LOCAL_DELETE_SUCCEEDED", "guard": "every scoped category verified", "action": "persist content-free completion and exact source reason if retained", "target": "LD_COMPLETED"},
+        {"id": "LD-013", "source": "LD_IRREVERSIBLE", "event": "LOCAL_DELETE_PARTIAL", "guard": "any scoped category failed or is unverified", "action": "persist completed/remaining category bitmap without content", "target": "LD_PARTIAL_FAILURE"},
+        {"id": "LD-014", "source": "LD_PARTIAL_FAILURE", "event": "RETRY_LOCAL_REMAINING", "guard": "durable scope still revalidates", "action": "retry only incomplete idempotent steps", "target": "LD_RECONCILING"},
+        {"id": "LD-015", "source": "LD_COMPLETED", "event": "CLOSE_LOCAL_RESULT", "guard": "local terminal result visible", "action": "clear transient UI; retain minimum content-free evidence", "target": "LD_IDLE"},
+        {"id": "LD-016", "source": "LD_CANCELLED", "event": "CLOSE_CANCELLED", "guard": "no durable destructive operation exists", "action": "clear transient UI", "target": "LD_IDLE"}
+      ]
+    },
+    "storageCleanup": {
+      "states": ["SC_IDLE", "SC_SOFT_PRESSURE", "SC_HARD_PRESSURE", "SC_REVIEW_ACTION", "SC_RUNNING", "SC_PARTIAL_FAILURE", "SC_COMPLETED"],
+      "transitions": [
+        {"id": "SC-001", "source": "SC_IDLE", "event": "OBSERVE_SOFT_PRESSURE", "guard": "soft threshold observed", "action": "show sizes and explicit reversible suggestions; delete nothing", "target": "SC_SOFT_PRESSURE"},
+        {"id": "SC-002", "source": "SC_IDLE", "event": "OBSERVE_HARD_PRESSURE", "guard": "hard threshold observed", "action": "show safe-stop/storage guidance; delete nothing", "target": "SC_HARD_PRESSURE"},
+        {"id": "SC-003", "source": "SC_SOFT_PRESSURE", "event": "SELECT_EXPLICIT_CLEANUP_ACTION", "guard": "action is visible and compatible", "action": "show exact target/scope impact; preselect nothing else", "target": "SC_REVIEW_ACTION"},
+        {"id": "SC-004", "source": "SC_HARD_PRESSURE", "event": "SELECT_EXPLICIT_CLEANUP_ACTION", "guard": "action is visible and compatible", "action": "show exact target/scope impact; preselect nothing else", "target": "SC_REVIEW_ACTION"},
+        {"id": "SC-005", "source": "SC_SOFT_PRESSURE", "event": "DISMISS_SOFT_GUIDANCE", "guard": "no operation confirmed", "action": "delete nothing", "target": "SC_IDLE"},
+        {"id": "SC-006", "source": "SC_HARD_PRESSURE", "event": "DISMISS_HARD_GUIDANCE", "guard": "no operation confirmed", "action": "delete nothing; preserve safety reserve", "target": "SC_IDLE"},
+        {"id": "SC-007", "source": "SC_REVIEW_ACTION", "event": "CANCEL_CLEANUP_ACTION", "guard": "confirmation not accepted", "action": "discard draft; mutate nothing", "target": "SC_IDLE"},
+        {"id": "SC-008", "source": "SC_REVIEW_ACTION", "event": "MODEL_IN_USE_BLOCKED", "guard": "selected model is active/selected/in use", "action": "show in-use reason and alternative; mutate nothing", "target": "SC_REVIEW_ACTION"},
+        {"id": "SC-009", "source": "SC_REVIEW_ACTION", "event": "SAFETY_SPACE_TARGET_BLOCKED", "guard": "proposed target is reserved safety space", "action": "reject target; mutate nothing", "target": "SC_REVIEW_ACTION"},
+        {"id": "SC-010", "source": "SC_REVIEW_ACTION", "event": "ROUTE_TO_LOCAL_DELETE", "guard": "selected action is audio-only or whole-conversation deletion", "action": "open the matching local-deletion review; start no cleanup here", "target": "SC_IDLE"},
+        {"id": "SC-011", "source": "SC_REVIEW_ACTION", "event": "CONFIRM_NON_SOURCE_CLEANUP", "guard": "selected target is DEC-017 temp or unused model and all guards pass", "action": "create/resume matching durable operation", "target": "SC_RUNNING"},
+        {"id": "SC-012", "source": "SC_RUNNING", "event": "CLEANUP_SUCCEEDED", "guard": "every selected non-source target verified", "action": "persist content-free result", "target": "SC_COMPLETED"},
+        {"id": "SC-013", "source": "SC_RUNNING", "event": "CLEANUP_PARTIAL", "guard": "any selected target failed or is unverified", "action": "persist remaining steps and failure", "target": "SC_PARTIAL_FAILURE"},
+        {"id": "SC-014", "source": "SC_PARTIAL_FAILURE", "event": "RETRY_CLEANUP_REMAINING", "guard": "exact scope still revalidates", "action": "retry only incomplete steps", "target": "SC_RUNNING"},
+        {"id": "SC-015", "source": "SC_COMPLETED", "event": "CLOSE_CLEANUP_RESULT", "guard": "terminal result visible", "action": "clear transient UI", "target": "SC_IDLE"}
+      ]
+    },
+    "remoteDeletion": {
+      "states": ["ABSENT", "NOT_REQUESTED", "PENDING", "FAILED", "RECEIPT"],
+      "transitions": [
+        {"id": "RM-001", "source": "ABSENT", "event": "REMOTE_SCOPE_NOT_APPLICABLE", "guard": "no approved remote representation is known", "action": "retain absent state; make no backend promise", "target": "ABSENT"},
+        {"id": "RM-002", "source": "ABSENT", "event": "REMOTE_SCOPE_DISCOVERED", "guard": "an approved provider record says remote scope may exist", "action": "expose separate remote action; send nothing", "target": "NOT_REQUESTED"},
+        {"id": "RM-003", "source": "NOT_REQUESTED", "event": "LOCAL_DELETE_COMPLETED_ONLY", "guard": "local operation completed; no remote request authorized", "action": "keep local result independent; send nothing", "target": "NOT_REQUESTED"},
+        {"id": "RM-004", "source": "NOT_REQUESTED", "event": "REQUEST_REMOTE_DELETE", "guard": "provider/region/account/consent/authZ/delete API are separately approved", "action": "enqueue one idempotent request; expose pending", "target": "PENDING"},
+        {"id": "RM-005", "source": "PENDING", "event": "REMOTE_DELETE_FAILED", "guard": "provider returned retryable/final failure or status is unverified", "action": "persist content-free failure; do not change local result", "target": "FAILED"},
+        {"id": "RM-006", "source": "PENDING", "event": "REMOTE_RECEIPT_VERIFIED", "guard": "receipt authenticates exact approved remote scope", "action": "store content-free receipt identity/status", "target": "RECEIPT"},
+        {"id": "RM-007", "source": "FAILED", "event": "RETRY_REMOTE_DELETE", "guard": "separate remote gate still valid", "action": "retry same idempotent operation", "target": "PENDING"},
+        {"id": "RM-008", "source": "FAILED", "event": "KEEP_REMOTE_FAILURE_VISIBLE", "guard": "retry not selected or unavailable", "action": "retain failure and local result independently", "target": "FAILED"},
+        {"id": "RM-009", "source": "RECEIPT", "event": "CLOSE_REMOTE_RECEIPT", "guard": "receipt status visible", "action": "retain content-free receipt; clear transient UI", "target": "RECEIPT"}
+      ]
+    }
+  },
+  "durableOperationContract": {
+    "behavioralOnlyNotSchema": true,
+    "contentFreeFields": [
+      "opaque local operation ID",
+      "operation class",
+      "confirmed scope version",
+      "current state",
+      "content-free category completion bitmap",
+      "attempt counter",
+      "last categorical error",
+      "local and remote axes",
+      "timestamps"
+    ],
+    "privateOpaqueBindingMayExist": true,
+    "bindingLogged": false,
+    "restartBeforeDurableConfirmation": "NO_OPERATION_NO_MUTATION",
+    "restartAfterConfirmation": "RESUME_ONLY_REMAINING_IDEMPOTENT_STEPS",
+    "uiDismissalCancelsConfirmedOperation": false,
+    "successRequiresInventoryReconciliation": true
+  },
+  "syntheticFixtures": [
+    {"id": "DST-SYN-001", "scenario": "Default retention", "eventsOrInputs": "fresh install/settings", "expectedOutcomeAndInvariants": "audio retained until explicit delete; RT_OFF; no period selected; no deletion"},
+    {"id": "DST-SYN-002", "scenario": "Catalog unavailable", "eventsOrInputs": "OPEN_WITH_CATALOG_UNAPPROVED", "expectedOutcomeAndInvariants": "RT_OFF→RT_UNAVAILABLE; zero entries; readable reason; no numeric period or mutation"},
+    {"id": "DST-SYN-003", "scenario": "Future deterministic opt-in", "eventsOrInputs": "CATALOG_APPROVED_LATER, SELECT_ALLOWED_PERIOD, CONFIRM_OPT_IN with catalog key only", "expectedOutcomeAndInvariants": "RT_UNAVAILABLE→RT_OFF→RT_REVIEW→RT_ACTIVE; exact copy; Audio only; no immediate deletion"},
+    {"id": "DST-SYN-004", "scenario": "Future shortening", "eventsOrInputs": "REQUEST_SHORTENING, CONFIRM_SHORTENING", "expectedOutcomeAndInvariants": "RT_ACTIVE→RT_SHORTEN_REVIEW→RT_ACTIVE; exact impact; overdue Audio only re-evaluated after confirmation"},
+    {"id": "DST-SYN-005", "scenario": "Automatic cleanup with durable local result", "eventsOrInputs": "age reached; result validated; recording inactive; jobs reconciled; cleanup succeeds", "expectedOutcomeAndInvariants": "RT_ACTIVE→RT_ELIGIBLE→RT_CLEANUP_PENDING→RT_ACTIVE; reason RETENTION_DELETED; structured content/FTS preserved"},
+    {"id": "DST-SYN-006", "scenario": "Export-only automatic candidate", "eventsOrInputs": "external export exists; no durable local result; AGE_REACHED_GUARDS_BLOCKED", "expectedOutcomeAndInvariants": "remains RT_ACTIVE; no deletion; export is not result"},
+    {"id": "DST-SYN-007", "scenario": "Explicit audio-only with result", "eventsOrInputs": "audio warning, confirm, reconcile, success", "expectedOutcomeAndInvariants": "LD_IDLE→LD_REVIEW_AUDIO→LD_RECONCILING→LD_IRREVERSIBLE→LD_COMPLETED; result irrelevant; structured content/FTS preserved"},
+    {"id": "DST-SYN-008", "scenario": "Explicit audio-only with export only", "eventsOrInputs": "export exists; no result; explicit confirm and success", "expectedOutcomeAndInvariants": "same successful explicit path; export neither required nor a blocker; external copy untouched"},
+    {"id": "DST-SYN-009", "scenario": "Explicit audio-only with neither", "eventsOrInputs": "no result and no export; explicit confirm and success", "expectedOutcomeAndInvariants": "same successful explicit path; reason USER_DELETED; no result/export prerequisite"},
+    {"id": "DST-SYN-010", "scenario": "Whole-conversation deletion", "eventsOrInputs": "whole warning, confirm, reconcile, success", "expectedOutcomeAndInvariants": "canonical/structured/derivatives/FTS deleted locally; minimum content-free evidence retained; remote independent"},
+    {"id": "DST-SYN-011", "scenario": "Active capture cancel", "eventsOrInputs": "REQUEST_ACTIVE_STOP_DELETE, CANCEL_ACTIVE_STOP_DELETE", "expectedOutcomeAndInvariants": "capture continues; bytes/data unchanged; focus restored; no durable destructive operation"},
+    {"id": "DST-SYN-012", "scenario": "Active capture confirm", "eventsOrInputs": "REQUEST_ACTIVE_STOP_DELETE, CONFIRM_ACTIVE_STOP_DELETE, reconcile and success", "expectedOutcomeAndInvariants": "capture stops then scoped deletion runs; closing UI does not cancel; no undo claim"},
+    {"id": "DST-SYN-013", "scenario": "Processing and queued upload reconciliation", "eventsOrInputs": "explicit deletion with running local job and unsent queued upload", "expectedOutcomeAndInvariants": "new work blocked; job cancelled/reconciled; queued send revoked; already-remote scope moves only through remote axis"},
+    {"id": "DST-SYN-014", "scenario": "Per-audio key failure", "eventsOrInputs": "explicit audio operation cannot verify per-audio key deletion", "expectedOutcomeAndInvariants": "no crypto-erasure claim; LD_PARTIAL_FAILURE; file/data state listed content-free; retry remaining available"},
+    {"id": "DST-SYN-015", "scenario": "File deletion failure", "eventsOrInputs": "allowlisted Audio file delete fails", "expectedOutcomeAndInvariants": "LD_PARTIAL_FAILURE; completion forbidden; source reason not falsely finalized; retry remaining"},
+    {"id": "DST-SYN-016", "scenario": "Database reconciliation failure", "eventsOrInputs": "file/key step may have completed but DB reason/tombstone update fails", "expectedOutcomeAndInvariants": "durable bitmap preserves completed steps; partial visible; restart/retry only incomplete DB step"},
+    {"id": "DST-SYN-017", "scenario": "FTS failure", "eventsOrInputs": "whole-conversation FTS removal fails", "expectedOutcomeAndInvariants": "whole deletion remains partial; FTS category retryable; no local-complete claim"},
+    {"id": "DST-SYN-018", "scenario": "Source reason taxonomy", "eventsOrInputs": "synthetic retained links exercise USER_DELETED, RETENTION_DELETED, MISSING, CORRUPT, KEY_UNAVAILABLE", "expectedOutcomeAndInvariants": "each exact RU/EN label distinct; missing/corrupt/key unavailable never called deletion success"},
+    {"id": "DST-SYN-019", "scenario": "Source links after audio-only delete", "eventsOrInputs": "transcript/protocol/decisions/tasks/summary/FTS with timestamps", "expectedOutcomeAndInvariants": "all retained and searchable; source action exposes exact unavailable reason without fake playback"},
+    {"id": "DST-SYN-020", "scenario": "Live DEC-017 temp during conversation delete", "eventsOrInputs": "unexpired Sharesheet temp plus whole-conversation confirmation", "expectedOutcomeAndInvariants": "Conversation deletion proceeds; temp remains under safe-release/warned Delete-now/one-hour/startup lifecycle; external copy untouched"},
+    {"id": "DST-SYN-021", "scenario": "Model in use", "eventsOrInputs": "MODEL_IN_USE_BLOCKED", "expectedOutcomeAndInvariants": "SC_REVIEW_ACTION unchanged; model and data untouched; reason/action accessible"},
+    {"id": "DST-SYN-022", "scenario": "Unused model cleanup", "eventsOrInputs": "explicit model action, confirm, cleanup success", "expectedOutcomeAndInvariants": "SC_REVIEW_ACTION→SC_RUNNING→SC_COMPLETED; only model/model-cache target; source and safety reserve untouched"},
+    {"id": "DST-SYN-023", "scenario": "Soft storage pressure", "eventsOrInputs": "OBSERVE_SOFT_PRESSURE, dismiss", "expectedOutcomeAndInvariants": "sizes/suggestions shown; no target selected; SC_IDLE→SC_SOFT_PRESSURE→SC_IDLE; no deletion"},
+    {"id": "DST-SYN-024", "scenario": "Hard storage pressure", "eventsOrInputs": "OBSERVE_HARD_PRESSURE, attempted safety-space target", "expectedOutcomeAndInvariants": "safety target blocked; safe-stop guidance shown; no automatic deletion or invented cleanup"},
+    {"id": "DST-SYN-025", "scenario": "Restart before irreversible work", "eventsOrInputs": "confirmation not durably accepted, then restart", "expectedOutcomeAndInvariants": "no operation and no mutation; return to idle; confirmation required again"},
+    {"id": "DST-SYN-026", "scenario": "Restart after partial work", "eventsOrInputs": "durable operation bitmap has key complete, file pending, DB pending", "expectedOutcomeAndInvariants": "resume/retry only pending steps; completed key step not repeated; no success until full reconciliation"},
+    {"id": "DST-SYN-027", "scenario": "Remote-state matrix", "eventsOrInputs": "no scope; discover scope; local-only completion; separately gated request; failure/retry; verified receipt", "expectedOutcomeAndInvariants": "only ABSENT/NOT_REQUESTED/PENDING/FAILED/RECEIPT; local result unchanged; no backend promise"},
+    {"id": "DST-SYN-028", "scenario": "Accessibility matrix", "eventsOrInputs": "RU/EN, 200%, TalkBack, Switch, keyboard/D-pad, reduced motion, modal cancel/result/partial states", "expectedOutcomeAndInvariants": "exact warnings/actions reachable; focus deterministic/restored; ≥48 dp; meaningful announcements; no color-only state; no conformance claim"}
+  ],
+  "fixtureRange": {
+    "first": "DST-SYN-001",
+    "last": "DST-SYN-028",
+    "count": 28,
+    "exactlyContiguous": true,
+    "syntheticOnly": true
+  },
+  "authorityFlags": {
+    "implementationAllowed": false,
+    "implementationAllowedByThisPackage": false,
+    "executionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "phaseAAuthorized": false,
+    "deviceExecutionAuthorized": false,
+    "mergeAuthorized": false
+  },
+  "dataGovernance": {
+    "pocDataStatus": "BLOCKED",
+    "syntheticFixturesAllowed": true,
+    "realMeetingCollectionAllowed": false,
+    "realHumanSpeechCollectionAllowed": false,
+    "trainingAllowed": false,
+    "cloudOutboundAllowedByThisContract": false
+  },
+  "currentEvidence": {
+    "contract": "CONTRACT_COMPLETE",
+    "androidImplementation": "NOT_RUN",
+    "figmaPrototype": "NOT_RUN",
+    "schemaImplementation": "NOT_RUN",
+    "storageDeletionExecution": "NOT_RUN",
+    "syntheticFixtureExecution": "NOT_RUN",
+    "deviceEvidence": "NOT_RUN",
+    "accessibilityConformance": "NOT_RUN",
+    "userResearch": "NOT_RUN",
+    "legalReview": "NOT_RUN",
+    "securityReview": "NOT_RUN",
+    "productionAdmission": "NOT_RUN"
+  },
+  "parityRequirements": {
+    "markdownContract": "docs/design/DORA_MVP1_STORAGE_RETENTION_DELETE_CONTRACT.md",
+    "operationScopeRows": 7,
+    "sourceUnavailableReasons": 5,
+    "exactCopyEntries": 8,
+    "retentionStates": 8,
+    "retentionTransitions": 16,
+    "localDeletionStates": 9,
+    "localDeletionTransitions": 16,
+    "storageCleanupStates": 7,
+    "storageCleanupTransitions": 15,
+    "remoteDeletionStates": 5,
+    "remoteDeletionTransitions": 9,
+    "syntheticFixtures": 28,
+    "exactMarkdownJsonParityRequired": true
+  }
+}

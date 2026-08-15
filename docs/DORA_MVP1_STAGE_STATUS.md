@@ -18,6 +18,14 @@ complete under `DEC-017`; no implementation/conformance/user-research, code/Figm
 or export-execution claim follows. Active Stage 0D, `POC-DATA-001` blocking and every Recovery
 authority flag remain unchanged.
 
+Storage design-governance reconciliation: `DES-STORAGE-001` /
+`des-storage-retention-delete-v0.1` is contract complete under `DEC-013`. It distinguishes
+automatic audio retention, explicit audio-only deletion and whole-conversation deletion, with
+orthogonal local/remote/cleanup states and synthetic acceptance fixtures. No Android/storage/schema,
+deletion execution, conformance, user research, backend, Legal/Security or production-admission
+claim follows. Active Stage 0D, `POC-DATA-001` blocking and every Recovery authority flag remain
+unchanged.
+
 ## Stage 00 closure
 
 - Stage 00 is complete.

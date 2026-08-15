@@ -1715,6 +1715,13 @@ Use horizontal stacked bar + textual sizes. Suggestions are reversible and expli
 - `Настроить автоудаление аудио` — opt-in only;
 - `Сохранить транскрипт, удалить аудио` requires loss-of-source warning.
 
+`DEC-013` / `des-storage-retention-delete-v0.1` уточняет MVP 1: default — хранить audio
+до явного удаления, automatic retention выключена и не может быть выбрана, пока отдельным
+versioned decision не утверждён allowed-period catalog. Будущая automatic retention относится
+только к audio, требует explicit opt-in/impact review/confirmation и durable internally validated
+local result; export alone не является result. Soft/hard storage состояния предлагают только
+явные действия и никогда не запускают удаление. Safety space не является cleanup target.
+
 ### 31.5. Export `ST-07` / conversation action
 
 Export sheet:
@@ -1743,6 +1750,16 @@ Delete conversation confirmation lists scope:
 ```
 
 Actions: `Удалить разговор` and `Отмена`. Confirmation may require typing title only for bulk/account deletion, not ordinary single item. After action, show local completion + remote pending receipt separately.
+
+Тот же contract разделяет две явные операции. `Удалить только аудио` доступно без result/export
+после enhanced loss-of-source warning: audio, его verifiably per-audio key material и audio caches
+удаляются, jobs/uploads reconciled, а transcript/protocol/decisions/tasks/summary/FTS и их source
+links сохраняются с точной причиной недоступности source. `Удалить весь разговор` также не требует
+result/export и охватывает local canonical/structured/derivative/FTS data после scoped
+confirmation. Во время active recording отдельное доступное действие `Остановить и удалить`
+останавливает capture и удаляет уже записанное только после confirmation; cancel до confirmation
+ничего не меняет. После начала irreversible work закрытие UI не является отменой и undo не
+обещается. Local и remote deletion всегда показываются как независимые states.
 
 ### 31.7. Diagnostics `ST-09`
 

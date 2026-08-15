@@ -2,7 +2,7 @@
 
 Статус документа: единый реестр решений владельца продукта\
 Дата: 15 августа 2026 года\
-Последнее изменение: `DEC-017` утверждён только как versioned reversible design/governance contract `des-export-interaction-v0.1`; code, Figma, schema, provider и export execution остаются separately scoped. Recovery authority, prospective `REC-JSR305-EXCLUDE-001`, exact future graph и execution не изменены\
+Последнее изменение: `DEC-013` утверждён только как versioned reversible design/governance contract `des-storage-retention-delete-v0.1`; implementation, schema, deletion execution, conformance, research, Legal/Security и production admission остаются separately scoped. Recovery authority, prospective `REC-JSR305-EXCLUDE-001`, exact future graph и execution не изменены\
 Основание: Technical Plan §40 P1–P20, Design Spec §40.2 D-P1–D-P22 и owner approval record Stage 0A.
 
 `Provisional` означает, что рекомендуемый baseline можно использовать для обратимого PoC/bootstrap, но это не заменяет явное решение владельца. `Proposed` запрещает необратимые или пользовательские действия до утверждения. `Approved` означает прямое решение владельца в указанной области; оно не расширяет scope на production, Legal или release без явной формулировки. Статусы, повышенные owner-решением, ссылаются на соответствующий `OD-*`, владельца и дату.
@@ -189,16 +189,35 @@
 
 ## DEC-013. Local audio retention
 
-Статус: Proposed\
+Статус: Approved — только versioned reversible design/governance contract\
 Приоритет: P1\
 Источник: Technical P13\
-Срок принятия: до Stage 3 storage policy\
+Дата решения: 15 августа 2026 года\
+Владелец решения: Project owner, через standing delegation для ordinary reversible project/product decisions\
+Исполнитель/рецензент решения: OpenAI Codex project coordinator; `formalReviewer=false`\
+Область утверждения: reusable contract `des-storage-retention-delete-v0.1`; code, Figma, schema, storage/provider wiring, deletion execution, conformance и research остаются separately scoped\
+Источник делегирования (дословно): `Продолжи работу. Все где нужно принимать решения типа РАЗРЕШАЮ делай сама или поручи отдельному агенту. Важно, чтобы процесс не останавливался из-за этого`\
+Интерпретация делегирования: standing delegation координатору для ordinary reversible project/product decisions, чтобы workflow не останавливался\
+Граница полномочий: делегирование не даёт Legal/Security approval, Recovery/device/measured execution, dependency admission, production admission, real-data collection или merge authority; Codex не выдаёт себя за квалифицированного Legal/Security reviewer и не создаёт подпись человека\
+Срок принятия: contract принят до Stage 3 storage policy; implementation/schema/deletion execution остаются отдельными gates\
 Варианты: until explicit delete; opt-in auto-retention; transcript-only cleanup\
-Рекомендуемый вариант: хранить до явного удаления; auto-retention только opt-in\
-Обоснование: audio — проверяемый source, но расходует storage.\
-Влияние на архитектуру: retention job, source-unavailable reason, crypto erase.\
-Влияние на UX: storage budget and loss-of-source warning.\
+Рекомендуемый вариант: утверждённый local-first/privacy-first baseline ниже\
+Default и automatic retention: audio хранится до явного удаления; automatic retention OFF, никогда не preselected/silent и может относиться только к audio, не к structured content/whole conversation. До отдельного утверждения versioned allowed-period catalog automatic retention visibly unavailable; этот DEC не придумывает numeric periods. Будущий opt-in/shortening требует impact review и explicit confirmation; overdue audio становится eligible только после confirmation и всех guards\
+Automatic-cleanup guards: durable internally validated local result обязателен; внешний export сам по себе не считается result; age anchor — durable finalization; cleanup запрещена во время active recording и до reconciliation source jobs. Technical §14.3(7) относится только к automatic retention, не к explicit erasure\
+Explicit audio-only deletion: доступно без result/export после enhanced warning; удаляет local audio и только verifiably per-audio key/material/audio caches, reconciles jobs/uploads; сохраняет transcript, protocol, decisions, tasks, summary, FTS и source links с точной source-unavailable reason\
+Whole-conversation deletion: доступно без result/export после scoped confirmation; tombstones/reconciles jobs, revokes queued uploads, deletes local canonical/structured/derivatives/FTS и сохраняет минимальное content-free operation evidence. Local и remote scope независимы\
+Active capture: отдельный accessible `Stop and delete/discard` flow; cancel до confirmation ничего не меняет; после начала irreversible work UI close не является cancellation, undo не обещается\
+Erasure claim: physical overwrite не обещается. Crypto erase допускается только при verified per-artifact key granularity; иначе scoped best-effort cleanup и visible partial failure/retry\
+Source reasons: `USER_DELETED`, `RETENTION_DELETED`, `MISSING`, `CORRUPT`, `KEY_UNAVAILABLE` различаются\
+Export boundary: `DEC-017` temp не canonical и никогда не блокирует conversation delete. Opaque local binding, если нужен, не логируется; unexpired temp следует `DEC-017` safe-release/warned Delete-now/one-hour/startup lifecycle. External copies не удаляются\
+Remote deletion: отдельно gated; только `ABSENT`, `NOT_REQUESTED`, `PENDING`, `FAILED`, `RECEIPT`; local success не равен remote success и backend promise не создаётся\
+Storage/model boundary: model cleanup — отдельная in-use-guarded операция; reserved safety space не cleanup target; low/full storage не инициирует и не выдумывает deletion\
+A11y/logging: focus, ≥48 dp targets, 200%, TalkBack/Switch/keyboard/D-pad, focus restore, meaningful announcements and no color-only state; logs/evidence content-free\
+Обоснование: audio остаётся проверяемым source по умолчанию, а явное scoped erasure не блокируется отсутствием производного результата или export.\
+Влияние на архитектуру: future retention/deletion operation contracts, durable retry/restart, source-unavailable taxonomy and orthogonal local/remote state; этот DEC не создаёт schema/storage implementation.\
+Влияние на UX: exact scope/warnings, explicit opt-in, independent local/remote results, visible partial failure/retry and accessible destructive flow.\
 Обратимость: низкая после удаления.\
+Decision/evidence record: `docs/evidence/des-storage-001/decision-record-v0.1.json`; interaction contract: `docs/design/DORA_MVP1_STORAGE_RETENTION_DELETE_CONTRACT.md`\
 Связанные задачи: `STORAGE-RETENTION-001`, `DES-STORAGE-001`.
 
 ## DEC-014. Использование встреч для улучшения моделей
