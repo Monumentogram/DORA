@@ -41,14 +41,6 @@
   ],
   "implementationPins": [
     {
-      "path": ".github/workflows/android-ci.yml",
-      "sha256": "77996dcdd685178329965cca19f51f3d15b79d6aff781ce06b04815fa210052f"
-    },
-    {
-      "path": "android/poc/vpn-contract-kernel/settings.gradle.kts",
-      "sha256": "8814222323b69bcaaa49badaef2ebac76f9617d69f3d0f29cca91b82fe075a27"
-    },
-    {
       "path": "android/poc/vpn-contract-kernel/transport-harness/build.gradle.kts",
       "sha256": "74813f6d90243e1b73c7c31e96b95d5fe69142547986ac00211f48db11055097"
     },
@@ -62,15 +54,33 @@
     },
     {
       "path": "android/poc/vpn-contract-kernel/transport-harness/src/test/kotlin/com/monumentogram/dora/poc/vpn/transport/LoopbackTransportHostTest.kt",
-      "sha256": "e559a4331c6cabbc5b2f3bc381087c2cd52bf76a7c336e9f4ca00f2b25fbdda0"
+      "sha256": "d5707eb94a0d356cf937242fa0dbf30a2a148addc8f1b2f1c669308a39d77f19"
+    }
+  ],
+  "integrationLocators": [
+    {
+      "kind": "YAML_STEP_BLOCK",
+      "path": ".github/workflows/android-ci.yml",
+      "anchor": "- name: Verify hermetic numeric-loopback VPN transport harness",
+      "canonicalSha256": "53de46ad9fd83f2b79b2da6e1e9a14d9e72cd400f2cb3e6fdda255c212ab0713"
     },
     {
+      "kind": "KOTLIN_STATEMENT_SET",
+      "path": "android/poc/vpn-contract-kernel/settings.gradle.kts",
+      "anchor": "rootProject.name = \"dora-poc-vpn-contract-kernel\"",
+      "canonicalSha256": "6cad49502ed72260f519f4d2df7ede015c47f13ff1a5a0d03ac9cd6c1ee8e462"
+    },
+    {
+      "kind": "MARKDOWN_TABLE_ROW",
       "path": "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
-      "sha256": "4a9942a3e1839e1f0d66419576abfc7ef5c98be8bba0fe45fedc147026452d5e"
+      "anchor": "| POC-VPN-001 |",
+      "canonicalSha256": "5a5833352989eaebeb13c8eb8b70c686e7cb2e08f327e37cec98716b4210939d"
     },
     {
+      "kind": "MARKDOWN_PARAGRAPH",
       "path": "docs/DORA_MVP1_STAGE_STATUS.md",
-      "sha256": "58d00ce603e4c94062872ee7f22bbba565c2224d415498e5a57a39b8fe736db3"
+      "anchor": "POC-VPN governance reconciliation:",
+      "canonicalSha256": "891bf5c6846cebea4781ce720fef3d6dd1f9141888e1c5a3c4a02d62dc83170d"
     }
   ],
   "ownerAuthorization": {
@@ -278,7 +288,7 @@
       {"file":"TEST","declaration":"forkTerminationAndSocketRegression","rules":["LongMethod","NestedBlockDepth"],"rationale":"Two bounded child lifecycles share one process, output, and socket cleanup boundary."},
       {"file":"TEST","declaration":"preflightAndTransportBoundary","rules":["LongMethod"],"rationale":"One no-send and transport-boundary scenario group."},
       {"file":"TEST","declaration":"cancellationAndDeletionLifecycle","rules":["LongMethod"],"rationale":"One coherent delete convergence and tombstone scenario."},
-      {"file":"TEST","declaration":"machineEvidenceParity","rules":["LongMethod"],"rationale":"Pins, authority, IDs, hashes, and suppression inventory checked together."},
+      {"file":"TEST","declaration":"machineEvidenceParity","rules":["LongMethod"],"rationale":"Immutable pins, mutable integration semantics, authority, IDs, hashes, and suppression inventory stay checked together."},
       {"file":"TEST","declaration":"multipartSnapshotCompletionAndReads","rules":["LongMethod"],"rationale":"One coherent multipart, restore, completion, and exact-byte scenario."},
       {"file":"TEST","declaration":"lostResponseReplayAndMismatch","rules":["LongMethod"],"rationale":"One atomic replay/mismatch effect scenario."},
       {"file":"TEST","declaration":"constructorAndCleanupFailureBoundary","rules":["LongMethod"],"rationale":"All constructor and aggregate-cleanup probes share one resource scope."},

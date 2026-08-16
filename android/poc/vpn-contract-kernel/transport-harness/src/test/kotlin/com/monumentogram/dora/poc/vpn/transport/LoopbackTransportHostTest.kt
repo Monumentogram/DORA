@@ -1041,6 +1041,127 @@ internal object LoopbackTransportHostTest {
         val evidenceText = Files.readString(evidencePath)
         checkThat(!evidenceText.contains(LOOPBACK_HOST), "evidence excludes raw loopback address")
         val evidence = DoraCanonicalJson.parseStrict(evidenceText) as CanonicalValue.ObjectValue
+        val transportHarnessPath = "android/poc/vpn-contract-kernel/transport-harness/"
+        val expectedImmutableImplementationPaths =
+            setOf(
+                transportHarnessPath + "build.gradle.kts",
+                transportHarnessPath +
+                    "src/main/kotlin/com/monumentogram/dora/poc/vpn/transport/LoopbackHttpTransport.kt",
+                transportHarnessPath +
+                    "src/main/kotlin/com/monumentogram/dora/poc/vpn/transport/SyntheticContractService.kt",
+                transportHarnessPath +
+                    "src/test/kotlin/com/monumentogram/dora/poc/vpn/transport/LoopbackTransportHostTest.kt",
+            )
+        val immutableImplementationPinEntries =
+            evidence.requiredArray("implementationPins").map { it as CanonicalValue.ObjectValue }
+        checkEquals(
+            expectedImmutableImplementationPaths.size,
+            immutableImplementationPinEntries.size,
+            "immutable implementation pin count",
+        )
+        val immutableImplementationPathList = immutableImplementationPinEntries.map {
+            it.requiredString("path")
+        }
+        checkEquals(
+            immutableImplementationPathList.size,
+            immutableImplementationPathList.toSet().size,
+            "immutable implementation pin paths unique",
+        )
+        checkEquals(
+            expectedImmutableImplementationPaths,
+            immutableImplementationPathList.toSet(),
+            "immutable implementation pin paths",
+        )
+        val expectedIntegrationLocators =
+            setOf(
+                IntegrationLocatorSpec(
+                    "YAML_STEP_BLOCK",
+                    ".github/workflows/android-ci.yml",
+                    "- name: Verify hermetic numeric-loopback VPN transport harness",
+                ),
+                IntegrationLocatorSpec(
+                    "KOTLIN_STATEMENT_SET",
+                    "android/poc/vpn-contract-kernel/settings.gradle.kts",
+                    "rootProject.name = \"dora-poc-vpn-contract-kernel\"",
+                ),
+                IntegrationLocatorSpec(
+                    "MARKDOWN_TABLE_ROW",
+                    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+                    "| POC-VPN-001 |",
+                ),
+                IntegrationLocatorSpec(
+                    "MARKDOWN_PARAGRAPH",
+                    "docs/DORA_MVP1_STAGE_STATUS.md",
+                    "POC-VPN governance reconciliation:",
+                ),
+            )
+        val integrationEntries =
+            evidence.requiredArray("integrationLocators").map { it as CanonicalValue.ObjectValue }
+        checkEquals(
+            expectedIntegrationLocators.size,
+            integrationEntries.size,
+            "integration locator count",
+        )
+        val integrationLocators = integrationEntries.associate { entry ->
+            val spec =
+                IntegrationLocatorSpec(
+                    entry.requiredString("kind"),
+                    entry.requiredString("path"),
+                    entry.requiredString("anchor"),
+                )
+            spec to entry.requiredString("canonicalSha256")
+        }
+        checkEquals(
+            expectedIntegrationLocators,
+            integrationLocators.keys,
+            "integration locator identity",
+        )
+        integrationLocators.forEach { (spec, expectedHash) ->
+            val source = Files.readString(root.resolve(spec.path))
+            val canonical = canonicalIntegrationSlice(spec, source)
+            checkThat(
+                ContractOracle.sha256Hex(canonical.toByteArray(Charsets.UTF_8)).value ==
+                    expectedHash,
+                "integration locator canonical hash",
+            )
+            val unrelated = unrelatedIntegrationChange(spec, source, canonical)
+            checkThat(unrelated != source, "unrelated integration mutation applied")
+            checkEquals(
+                canonical,
+                canonicalIntegrationSlice(spec, unrelated),
+                "unrelated integration edit ignored",
+            )
+            val mutated = relevantIntegrationMutation(spec.kind, source)
+            checkThat(mutated != source, "relevant integration mutation applied")
+            checkThat(
+                ContractOracle.sha256Hex(
+                        canonicalIntegrationSlice(spec, mutated).toByteArray(Charsets.UTF_8)
+                    )
+                    .value != expectedHash,
+                "relevant integration mutation rejected",
+            )
+            val duplicateFailure =
+                runCatching {
+                        canonicalIntegrationSlice(spec, duplicateIntegrationAnchor(spec, source))
+                    }
+                    .exceptionOrNull()
+            checkThat(
+                duplicateFailure is IllegalStateException,
+                "duplicate integration anchor rejected",
+            )
+            val missingFailure =
+                runCatching {
+                        canonicalIntegrationSlice(
+                            spec,
+                            source.replace(spec.anchor, "REMOVED_INTEGRATION_ANCHOR"),
+                        )
+                    }
+                    .exceptionOrNull()
+            checkThat(
+                missingFailure is IllegalStateException,
+                "missing integration anchor rejected",
+            )
+        }
         val harnessKotlinPaths =
             evidence
                 .requiredArray("implementationPins")
@@ -2369,6 +2490,87 @@ internal object LoopbackTransportHostTest {
         error("FAILED: loopback port remained open")
     }
 
+    private fun canonicalIntegrationSlice(spec: IntegrationLocatorSpec, source: String): String {
+        val normalized = source.replace("\r\n", "\n").replace('\r', '\n')
+        return when (spec.kind) {
+            "YAML_STEP_BLOCK" -> {
+                val lines = normalized.split('\n')
+                val starts = lines.indices.filter { lines[it].trim() == spec.anchor }
+                checkEquals(1, starts.size, "unique YAML step anchor")
+                val start = starts.single()
+                val indent = lines[start].indexOfFirst { !it.isWhitespace() }
+                checkThat(indent >= 0, "YAML step indentation")
+                val end =
+                    (start + 1 until lines.size).firstOrNull { index ->
+                        val line = lines[index]
+                        line.isNotBlank() && line.indexOfFirst { !it.isWhitespace() } <= indent
+                    } ?: lines.size
+                lines.subList(start, end).joinToString("\n") { it.trimEnd() }.trimEnd()
+            }
+            "KOTLIN_STATEMENT_SET" -> {
+                val statements =
+                    normalized.lines().map(String::trim).filter(String::isNotEmpty).filterNot {
+                        it.startsWith("//")
+                    }
+                checkEquals(1, statements.count { it == spec.anchor }, "unique settings anchor")
+                statements.joinToString("\n") { it.replace(Regex("\\s+"), " ") }
+            }
+            "MARKDOWN_TABLE_ROW" -> {
+                val rows =
+                    normalized.lines().map(String::trim).filter { it.startsWith(spec.anchor) }
+                checkEquals(1, rows.size, "unique backlog row anchor")
+                rows.single().replace(Regex("\\s+"), " ")
+            }
+            "MARKDOWN_PARAGRAPH" -> {
+                val paragraphs =
+                    normalized.split(Regex("\n\\s*\n")).map(String::trim).filter {
+                        it.startsWith(spec.anchor)
+                    }
+                checkEquals(1, paragraphs.size, "unique status paragraph anchor")
+                paragraphs.single().replace(Regex("\\s+"), " ")
+            }
+            else -> error("FAILED: unknown integration locator kind")
+        }
+    }
+
+    private fun unrelatedIntegrationChange(
+        spec: IntegrationLocatorSpec,
+        source: String,
+        canonical: String,
+    ): String =
+        when (spec.kind) {
+            "YAML_STEP_BLOCK" -> "$canonical\n      - uses: synthetic/unrelated-action@0000000\n"
+            "KOTLIN_STATEMENT_SET" -> "// unrelated settings comment\n\n$source"
+            "MARKDOWN_TABLE_ROW" -> "$source\n| POC-UNRELATED-001 | TODO |"
+            "MARKDOWN_PARAGRAPH" -> "$source\n\nUnrelated governance paragraph."
+            else -> error("FAILED: unknown integration locator kind")
+        }
+
+    private fun relevantIntegrationMutation(kind: String, source: String): String =
+        when (kind) {
+            "YAML_STEP_BLOCK" ->
+                source.replaceFirst(":transport-harness:loopbackTest", ":transport-harness:check")
+            "KOTLIN_STATEMENT_SET" -> "$source\nrepositories { mavenCentral() }\n"
+            "MARKDOWN_TABLE_ROW" ->
+                source.replaceFirst("| POC-VPN-001 | TODO |", "| POC-VPN-001 | DONE |")
+            "MARKDOWN_PARAGRAPH" ->
+                source.replaceFirst(
+                    "`POC-VPN-001` remains `TODO`,",
+                    "`POC-VPN-001` remains `DONE`,",
+                )
+            else -> error("FAILED: unknown integration locator kind")
+        }
+
+    private fun duplicateIntegrationAnchor(spec: IntegrationLocatorSpec, source: String): String =
+        when (spec.kind) {
+            "YAML_STEP_BLOCK" ->
+                "$source\n      ${spec.anchor}\n        working-directory: android\n"
+            "KOTLIN_STATEMENT_SET" -> "$source\n${spec.anchor}\n"
+            "MARKDOWN_TABLE_ROW" -> "$source\n${spec.anchor} duplicate |\n"
+            "MARKDOWN_PARAGRAPH" -> "$source\n\n${spec.anchor} duplicate.\n"
+            else -> error("FAILED: unknown integration locator kind")
+        }
+
     private fun differentPort(port: Int): Int = if (port == 65_535) 65_534 else port + 1
 
     private fun checkThat(condition: Boolean, label: String) {
@@ -2380,6 +2582,12 @@ internal object LoopbackTransportHostTest {
     }
 
     private data class UploadedPart(val ordinal: Int, val bytes: ByteArray, val receiptId: String)
+
+    private data class IntegrationLocatorSpec(
+        val kind: String,
+        val path: String,
+        val anchor: String,
+    )
 
     private data class SchemaShape(
         val fields: Set<String>,
