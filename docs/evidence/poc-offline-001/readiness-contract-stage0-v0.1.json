@@ -1,0 +1,967 @@
+{
+  "schemaVersion": "dora.poc-offline.readiness-contract.v0.1",
+  "contractId": "poc-offline-readiness-stage0-v0.1",
+  "contractVersion": "0.1",
+  "recordDate": "2026-08-16",
+  "recordedAt": "2026-08-16T00:41:33.4825352+03:00",
+  "timezone": "Europe/Moscow",
+  "disposition": "PROSPECTIVE_READINESS_CONTRACT_READY",
+  "contractArtifactState": "CONTRACT_COMPLETE",
+  "backlogItem": {
+    "id": "POC-OFFLINE-001",
+    "state": "TODO",
+    "readiness": "NOT_READY",
+    "result": "NOT_RUN",
+    "authorization": "NOT_AUTHORIZED"
+  },
+  "sourceSnapshot": {
+    "repository": "Monumentogram/DORA",
+    "visibility": "PUBLIC",
+    "branch": "main",
+    "commit": "51892efb4568d2ae9f94df63de99370dc7d91923",
+    "tree": "292324f628a911d69746d0f12a758c80930d969c",
+    "signatureVerified": true,
+    "exactMainCiRun": 31909284263,
+    "androidBootstrap": "SUCCESS",
+    "searchSmoke": "SUCCESS_UNRELATED_SEARCH_ONLY",
+    "openPullRequestCount": 0,
+    "snapshotDrift": false
+  },
+  "reviewer": {
+    "model": "OpenAI Codex / GPT-5",
+    "organization": "OpenAI",
+    "role": "AI POC-OFFLINE readiness contract implementation agent",
+    "formalReviewer": false
+  },
+  "authority": {
+    "decisionSource": "Project owner standing delegation for ordinary reversible project and documentation decisions",
+    "scope": "Versioned docs/evidence readiness contract only",
+    "excluded": [
+      "Legal approval",
+      "Security approval",
+      "formal human approval",
+      "implementation",
+      "dependency or model admission",
+      "device or emulator execution",
+      "network or GMS execution",
+      "real data",
+      "production admission"
+    ]
+  },
+  "authorityFlags": {
+    "implementationAllowed": false,
+    "implementationAllowedByThisPackage": false,
+    "executionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "harnessExecutionAllowed": false,
+    "networkExecutionAllowed": false,
+    "deviceExecutionAllowed": false,
+    "emulatorExecutionAllowed": false,
+    "modelExecutionAllowed": false,
+    "gmsExecutionAllowed": false,
+    "cloudExecutionAllowed": false,
+    "vpnExecutionAllowed": false,
+    "providerExecutionAllowed": false,
+    "recoveryExecutionAllowed": false,
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "productionApiAdmission": false,
+    "realDataAllowed": false,
+    "credentialsAllowed": false,
+    "billingAllowed": false,
+    "featureFlagActivationAllowed": false,
+    "legalApprovalClaimed": false,
+    "securityApprovalClaimed": false,
+    "formalHumanApprovalClaimed": false,
+    "mergeAuthorized": false
+  },
+  "scope": {
+    "included": [
+      "static tracked-tree Android manifest, source, catalog and lockfile inventory",
+      "current local-flow evidence classification",
+      "prospective offline scenario and evidence contract",
+      "content-free app-attributed network-call ledger contract",
+      "readiness blockers and proof boundary",
+      "Backlog and Stage Status locators"
+    ],
+    "excluded": [
+      "Android or host harness implementation",
+      "airplane, no-GMS, OS-denied, firewall-denied or reconnect execution",
+      "device, emulator, VPN, route, provider or cloud execution",
+      "model or native artifact download, admission or execution",
+      "real or purpose-recorded data",
+      "production feature, dependency, API, Security or Legal admission",
+      "closure of POC-VPN-001 or VPN-FND-P1-001"
+    ]
+  },
+  "authoritativeSources": [
+    "docs/DORA_MVP1_TECHNICAL_PLAN.md",
+    "docs/DORA_MVP1_DESIGN_SPEC.md",
+    "docs/DORA_MVP1_PRODUCT_DECISIONS.md",
+    "docs/adr/ADR-0001-android-bootstrap.md",
+    "docs/adr/ADR-0002-public-repository-for-branch-protection.md",
+    "docs/DORA_MVP1_TEST_STRATEGY.md",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    "docs/stage0/DORA_MVP1_POC_GATES.md",
+    "docs/stage0/DORA_MVP1_POC_EXECUTION_ORDER.md",
+    "docs/stage0/DORA_MVP1_STAGE0_OWNER_DECISIONS.md",
+    "docs/stage0/device-matrix.yaml",
+    "docs/stage0/DORA_MVP1_PRIVACY_DATA_FLOW_THREAT_MODEL.md",
+    "docs/stage0/DORA_MVP1_DATASET_GOVERNANCE.md",
+    "docs/stage0/DORA_MVP1_IP_ASSET_POLICY.md",
+    "docs/stage0/DORA_MVP1_POC_VPN_SYNTHETIC_CONTRACT_STAGE0_V0_1.md",
+    "README.md",
+    "CONTRIBUTING.md"
+  ],
+  "requirements": [
+    {
+      "id": "OFF-REQ-001",
+      "statement": "Local is the default; cloud is off; no account, network, GMS or cloud configuration is a prerequisite for local mode."
+    },
+    {
+      "id": "OFF-REQ-002",
+      "statement": "Every required local scenario has zero app-attributed forbidden runtime network attempts; build, Gradle and Actions downloads are explicitly not runtime evidence."
+    },
+    {
+      "id": "OFF-REQ-003",
+      "statement": "Approved local capture, storage, history, search, tasks, edit, copy and export flows remain usable without account, GMS or network."
+    },
+    {
+      "id": "OFF-REQ-004",
+      "statement": "The future campaign freezes fresh-install, model-absent and model-installed scenario families before execution."
+    },
+    {
+      "id": "OFF-REQ-005",
+      "statement": "A required model-dependent processing job with MODEL_NOT_INSTALLED enters processing state WAITING_MODEL; an optional summary request on an incapable device with an installed model enters processing/capability state PENDING_CAPABILITY; these per-request states are orthogonal to local readiness, never become a login wall, generic failure or data loss, and never block non-model local flows."
+    },
+    {
+      "id": "OFF-REQ-006",
+      "statement": "A model-installed scenario may use only an exact EVALUATION_APPROVED runtime with digest, license, provenance, API and ABI compatibility, and 16-KiB package, load and run evidence already included in the frozen harness or APK, plus an exact EVALUATION_APPROVED weight or data package with digest, license, provenance and runtime compatibility, preinstalled or activated through an approved signed offline side-load; executable runtime code is never side-loaded or downloaded during the offline run."
+    },
+    {
+      "id": "OFF-REQ-007",
+      "statement": "A queued non-deletion cloud upload or processing intent remains durably WAITING_NETWORK while connectivity is denied. An idempotent remote-deletion operation for an existing cloud copy has primary queue state DELETE_PENDING from durable enqueue through request acceptance, retryable or final error, revalidation and manual-retry-required handling; only a verified scoped receipt changes it to DELETED_REMOTE. FAILED_RETRYABLE and FAILED_FINAL are reserved for non-deletion work. Neither kind emits an outbound request while denied, blocks local work or replaces local canonical truth, and local deletion completion remains distinct from remote status."
+    },
+    {
+      "id": "OFF-REQ-008",
+      "statement": "Reconnect produces exactly one logical job, result, application and economic effect; transport attempts may repeat, while duplicate or corrupted logical effects remain zero."
+    },
+    {
+      "id": "OFF-REQ-009",
+      "statement": "Process death or reboot preserves local data and durable queued work, never starts the microphone or any new, stale-consent or otherwise ineligible network/cloud work, and may resume only previously authorized eligible work after current consent, profile and runtime constraints are revalidated; every resumed or later reconnect path remains idempotent."
+    },
+    {
+      "id": "OFF-REQ-010",
+      "statement": "Login, AccountManager or OIDC, GMS, DNS, remote configuration, analytics or crash providers, and provider availability cannot gate local core; safe local defaults are present."
+    },
+    {
+      "id": "OFF-REQ-011",
+      "statement": "The call ledger is content-free, app-UID and process attributed, and monitor calibrated; pre-run and post-run canaries run in separate declared calibration windows, remain visible in the raw monitor total, are excluded from the measured scenario total by exact event IDs, and prove per-call-kind coverage before a zero-count claim."
+    },
+    {
+      "id": "OFF-REQ-012",
+      "statement": "Only synthetic or generated inputs are used; real meeting data, private audio, model weights and raw packet traces never enter Git or Actions, and public evidence is sanitized and hashed."
+    },
+    {
+      "id": "OFF-REQ-013",
+      "statement": "UI and evidence distinguish На устройстве, Ожидает модель and Ожидает сеть; local offline mode is neutral rather than degraded, and external share traffic after explicit handoff is outside Dora attribution."
+    },
+    {
+      "id": "OFF-REQ-014",
+      "statement": "Every proof label is bounded to the exact disposable Stage 0 harness and device slices and grants no feature, dependency, support-matrix or production admission."
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "OFF-CFL-001",
+      "name": "DEVICE_SCOPE",
+      "issue": "Technical PoC 9 names D1-D4, Execution Order requires D4 plus at least D1 or D2, and Device Matrix maps Offline to D1, D2, D4, D5 and D7.",
+      "contractRule": "Do not narrow silently; full PASS remains blocked until a versioned pre-run DEC or ADR freezes the mandatory device set."
+    },
+    {
+      "id": "OFF-CFL-002",
+      "name": "TEMPORAL_SCOPE",
+      "issue": "The Technical Plan says local functions work indefinitely but does not define a finite campaign duration.",
+      "contractRule": "Test structural absence of token, lease, login, remote-config and catalog-expiry dependencies with bounded clock-advance and reboot scenarios; make no indefinite or support claim."
+    },
+    {
+      "id": "OFF-CFL-003",
+      "name": "RETRY_ENERGY",
+      "issue": "The approved failure gate forbids a battery-draining retry loop but supplies no Offline numeric energy threshold.",
+      "contractRule": "Require finite retry, no tight loop and no attempt while denied; quantitative energy judgment requires a separately approved pre-run threshold and applicable POC-BATTERY evidence."
+    },
+    {
+      "id": "OFF-CFL-004",
+      "name": "ORDERING",
+      "issue": "Offline precedes VPN, while the existing VPN kernel and I2 loopback contain only synthetic reconnect and idempotency precedent and explicitly leave integrated Offline reconnect unevidenced.",
+      "contractRule": "Do not depend on or count VPN I2 as Offline evidence; a future Offline-owned minimal queue and reconnect oracle is required."
+    },
+    {
+      "id": "OFF-CFL-005",
+      "name": "EXPORT_ATTRIBUTION",
+      "issue": "DEC-017 allows explicit clipboard, SAF and Sharesheet handoff, after which an external app or provider may use its own network.",
+      "contractRule": "Attribute only Dora UID and process; prove core copy/export with clipboard and a local SAF sink, and classify post-handoff external traffic outside the Dora call count."
+    }
+  ],
+  "implementationInventory": [
+    {
+      "id": "OFF-SUR-001",
+      "surface": "Production app",
+      "status": "PLACEHOLDER_ONLY",
+      "evidence": "The :app module is the Stage 00 shell with Home, History, Tasks and Settings placeholders and no functional recording action or product flow.",
+      "limitation": "It is not an integrated offline product harness."
+    },
+    {
+      "id": "OFF-SUR-002",
+      "surface": "Capture",
+      "status": "EXISTING_ISOLATED_INCONCLUSIVE",
+      "evidence": "The isolated :poc:capture module contains AudioRecord, foreground-service, file, sanitized evidence export and deletion behavior.",
+      "limitation": "It is not connected to :app; its formal Stage 0B result is INCONCLUSIVE and physical evidence is limited to exploratory D2."
+    },
+    {
+      "id": "OFF-SUR-003",
+      "surface": "Local storage and recovery",
+      "status": "PARTIAL_RUNTIME_RECOVERY_BLOCKED",
+      "evidence": "Capture writes PoC WAV and run identifiers; Search owns a separate Room database; Recovery supplies pure contracts.",
+      "limitation": "There is no canonical product database, encrypted audio runtime, durable job or outbox, or authorized Recovery runtime."
+    },
+    {
+      "id": "OFF-SUR-004",
+      "surface": "History and search",
+      "status": "EXISTING_ISOLATED_INCONCLUSIVE",
+      "evidence": "The isolated :poc:search module provides generated-data Room FTS4 repositories and benchmark harnesses.",
+      "limitation": "There is no functional History UI or capture integration, and the authoritative Search verdict is INCONCLUSIVE with recommendation BLOCKED."
+    },
+    {
+      "id": "OFF-SUR-005",
+      "surface": "Tasks, protocol and edit",
+      "status": "ABSENT",
+      "evidence": "Only the Stage 00 Tasks placeholder exists.",
+      "limitation": "No task, decision or protocol entities, repository, UI or processing flow exists; POC-DECISION-001 is BLOCKED."
+    },
+    {
+      "id": "OFF-SUR-006",
+      "surface": "Copy and export",
+      "status": "PARTIAL_EVIDENCE_EXPORT_ONLY",
+      "evidence": "Capture can create a sanitized evidence ZIP in cache and hand it to a private FileProvider and ACTION_SEND.",
+      "limitation": "This is not the DEC-017 conversation copy/export implementation; clipboard, local SAF and History integration are absent."
+    },
+    {
+      "id": "OFF-SUR-007",
+      "surface": "Local model and processing",
+      "status": "ABSENT_BLOCKED",
+      "evidence": "No ASR, VAD, diarization or decision runtime, model manager, model file or installed-versus-absent model flow is present.",
+      "limitation": "No exact model or native artifact is EVALUATION_APPROVED."
+    },
+    {
+      "id": "OFF-SUR-008",
+      "surface": "Queue and reconnect",
+      "status": "HOST_PRECEDENT_ONLY_BLOCKED",
+      "evidence": "The pure JVM VPN contract kernel and hermetic numeric-loopback transport subset exercise bounded synthetic idempotency behavior.",
+      "limitation": "There is no Android client, outbox, WorkManager, sync record or integrated Offline reconnect, and POC-VPN-001 remains NOT_RUN and NOT_AUTHORIZED."
+    },
+    {
+      "id": "OFF-SUR-009",
+      "surface": "Call monitoring and device matrix",
+      "status": "ABSENT_NOT_RUN",
+      "evidence": "Static manifests and source contain no app INTERNET or ACCESS_NETWORK_STATE permission and no production runtime client dependency.",
+      "limitation": "No calibrated app-attributed OS or firewall monitor, D4 no-GMS execution, airplane run, merged-APK proof or packet and call ledger exists."
+    }
+  ],
+  "staticAudit": {
+    "evidenceClass": "OBSERVED_NOT_EXECUTION_EVIDENCE",
+    "treeFacts": {
+      "trackedAndroidFileCount": 157,
+      "mainManifestCount": 7,
+      "dependencyLockfileCount": 9,
+      "trackedNativeOrModelArtifactCount": 0,
+      "nativeOrModelArtifactExtensions": [
+        ".so",
+        ".aar",
+        ".tflite",
+        ".onnx",
+        ".gguf",
+        ".model",
+        ".bin"
+      ],
+      "artifactScanRule": "Case-insensitive suffix match over tracked android tree paths from the frozen tree object",
+      "excludedBuildToolBinary": "android/gradle/wrapper/gradle-wrapper.jar is a pinned build-tool JAR and is outside the native-or-model suffix set"
+    },
+    "manifestFacts": {
+      "internetPermissionDeclared": false,
+      "accessNetworkStatePermissionDeclared": false,
+      "capturePermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MICROPHONE",
+        "android.permission.POST_NOTIFICATIONS"
+      ],
+      "captureUsesCleartextTraffic": false,
+      "captureAllowBackup": false,
+      "capturePrivateFileProviderScope": "cacheDir/exports"
+    },
+    "dependencyFacts": {
+      "runtimeFirebaseOrPlayServices": false,
+      "runtimeAccountOrAuthSdk": false,
+      "runtimeRetrofitOkHttpKtorOrVolley": false,
+      "runtimeWorkManager": false,
+      "runtimeModelOrNativeEngine": false,
+      "hostLoopbackException": "java.net.http and jdk.httpserver exist only in the isolated VPN host transport harness",
+      "buildToolOnlyExclusions": "Android lint, UTP, Gradle repositories and Actions transfers are build or test infrastructure, not on-device runtime evidence"
+    }
+  },
+  "prospectiveProofLayers": [
+    {
+      "id": "OFF-LYR-001",
+      "name": "STATIC_TREE_INVENTORY",
+      "proof": "Tracked manifests, components, source imports, dependency coordinates, lockfiles and forbidden artifact absence.",
+      "currentStatus": "OBSERVED_NOT_EXECUTION_EVIDENCE"
+    },
+    {
+      "id": "OFF-LYR-002",
+      "name": "DISPOSABLE_INTEGRATED_LOCAL_HARNESS",
+      "proof": "One synthetic record-process-edit-search-task-copy-export path with explicit model-present and model-absent states.",
+      "currentStatus": "ABSENT_NOT_AUTHORIZED"
+    },
+    {
+      "id": "OFF-LYR-003",
+      "name": "CALIBRATED_APP_ATTRIBUTED_CALL_MONITOR",
+      "proof": "Complete Dora UID and process call ledger with pre-run and post-run canaries under airplane and OS or firewall denial.",
+      "currentStatus": "ABSENT_NOT_AUTHORIZED"
+    },
+    {
+      "id": "OFF-LYR-004",
+      "name": "PHYSICAL_DEVICE_AND_RECONNECT_CAMPAIGN",
+      "proof": "Frozen mandatory physical matrix including D4 no-GMS and separately approved reconnect execution.",
+      "currentStatus": "BLOCKED_NOT_AUTHORIZED"
+    }
+  ],
+  "stateCatalog": {
+    "local": [
+      "FRESH_LOCAL_DEFAULT",
+      "LOCAL_READY",
+      "LOCAL_OPERATION_RUNNING",
+      "LOCAL_OPERATION_SUCCEEDED",
+      "LOCAL_OPERATION_FAILED_SCOPED"
+    ],
+    "processingCapability": [
+      "PROCESSING_NOT_REQUESTED",
+      "PROCESSING_QUEUED",
+      "PROCESSING_ACTIVE",
+      "WAITING_MODEL",
+      "PENDING_CAPABILITY",
+      "PROCESSING_SUCCEEDED",
+      "PROCESSING_FAILED_SCOPED"
+    ],
+    "connectivity": [
+      "NETWORK_DENIED",
+      "AIRPLANE_MODE",
+      "AVAILABLE",
+      "RECONNECTING"
+    ],
+    "model": [
+      "MODEL_NOT_INSTALLED",
+      "MODEL_INSTALLED_APPROVED",
+      "MODEL_UNAVAILABLE_OR_INVALID"
+    ],
+    "queue": [
+      "LOCAL_ONLY",
+      "PENDING_UPLOAD",
+      "WAITING_NETWORK",
+      "UPLOADING",
+      "REMOTE_PROCESSING",
+      "RESULT_AVAILABLE",
+      "APPLIED",
+      "DELETE_PENDING",
+      "DELETED_REMOTE",
+      "CONFLICT",
+      "FAILED_RETRYABLE",
+      "FAILED_FINAL",
+      "CANCELLED"
+    ]
+  },
+  "queueCatalogBoundary": {
+    "role": "OFFLINE_HARNESS_OBSERVER_SUBSET",
+    "canonicalMapping": [
+      "LOCAL_ONLY maps no remote intent",
+      "PENDING_UPLOAD maps a durable local outbound intent before eligibility",
+      "WAITING_NETWORK maps denied or unavailable connectivity without a transport attempt",
+      "UPLOADING maps a separately authorized in-flight remote send",
+      "REMOTE_PROCESSING maps accepted remote processing",
+      "RESULT_AVAILABLE maps a candidate awaiting local validation",
+      "APPLIED maps one validated application to local truth without overwriting user edits",
+      "DELETE_PENDING maps an idempotent remote-deletion operation from durable enqueue through accepted response, wait, retry, final rejection, revalidation and manual-retry-required handling while local deletion status remains separate",
+      "DELETED_REMOTE maps only a verified remote-deletion receipt within its declared scope",
+      "CONFLICT maps a durable content-free reconciliation state that cannot overwrite local user truth",
+      "FAILED_RETRYABLE maps a durable finite retry state for non-deletion work only",
+      "FAILED_FINAL maps an explicit terminal remote failure for non-deletion work only",
+      "CANCELLED maps revoked or explicitly cancelled non-deletion remote work"
+    ],
+    "deletionSubstatusCatalog": [
+      "DELETE_RECEIPT_POLL_ELIGIBLE",
+      "DELETE_WAITING_NETWORK",
+      "DELETE_RETRY_SCHEDULED",
+      "DELETE_REVALIDATION_REQUIRED",
+      "DELETE_USER_ACTION_REQUIRED",
+      "DELETE_MANUAL_RETRY_REQUIRED"
+    ],
+    "contentFreeDeletionErrorCodeCatalog": [
+      "CANCEL_NOT_APPLICABLE_DELETE_PENDING",
+      "DELETE_PROFILE_REVALIDATION_REQUIRED",
+      "DELETE_TLS_TRUST_OR_NAME_REJECTED",
+      "DELETE_SCHEMA_OR_FORMAT_REJECTED",
+      "DELETE_RESPONSE_INTEGRITY_REJECTED",
+      "DELETE_IDEMPOTENCY_PAYLOAD_MISMATCH",
+      "DELETE_SCOPE_REVALIDATION_REQUIRED",
+      "DELETE_FINITE_BUDGET_EXHAUSTED"
+    ],
+    "deletionEventOutcomeMapping": [
+      {"eventOutcomeClass": "DURABLE_ENQUEUE_WHILE_NETWORK_DENIED", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_WAITING_NETWORK", "deletionIdHashOutcome": "NULL", "contentFreeDeletionErrorCode": null, "deletionReceiptVerificationOutcome": null, "deterministicRule": "Pre-acceptance: deletionIdHash=null; no transport attempt occurs while denied."},
+      {"eventOutcomeClass": "PRE_ACCEPTANCE_RESUME", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_RETRY_SCHEDULED", "deletionIdHashOutcome": "NULL", "contentFreeDeletionErrorCode": null, "deletionReceiptVerificationOutcome": null, "deterministicRule": "Before acceptance, revalidation, user-action confirmation or manual-retry confirmation preserves deletionIdHash=null and schedules only one bounded eligible acceptance attempt."},
+      {"eventOutcomeClass": "ACCEPTED_RESPONSE_OR_RECEIPT_POLL_PENDING", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_RECEIPT_POLL_ELIGIBLE", "deletionIdHashOutcome": "REQUIRED_IMMUTABLE", "contentFreeDeletionErrorCode": null, "deletionReceiptVerificationOutcome": null, "deterministicRule": "After acceptance, deletionIdHash is required and immutable; deletionReceiptIdHash remains null."},
+      {"eventOutcomeClass": "NETWORK_DENIED_AFTER_ACCEPTANCE", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_WAITING_NETWORK", "deletionIdHashOutcome": "REQUIRED_IMMUTABLE", "contentFreeDeletionErrorCode": null, "deletionReceiptVerificationOutcome": null, "deterministicRule": "Post-acceptance: preserve required immutable deletionIdHash; no transport attempt occurs while denied."},
+      {"eventOutcomeClass": "RETRYABLE_FAILURE_OR_BACKOFF", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_RETRY_SCHEDULED", "deletionIdHashOutcome": "PRESERVE_PHASE", "contentFreeDeletionErrorCode": null, "deletionReceiptVerificationOutcome": null, "deterministicRule": "Preserve the current acceptance phase and schedule only bounded eligible work."},
+      {"eventOutcomeClass": "PROFILE_INVALID", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_REVALIDATION_REQUIRED", "deletionIdHashOutcome": "PRESERVE_PHASE", "contentFreeDeletionErrorCode": "DELETE_PROFILE_REVALIDATION_REQUIRED", "deletionReceiptVerificationOutcome": null, "deterministicRule": "Preserve the deletion record and require profile revalidation."},
+      {"eventOutcomeClass": "SCOPE_INVALID", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_REVALIDATION_REQUIRED", "deletionIdHashOutcome": "PRESERVE_PHASE", "contentFreeDeletionErrorCode": "DELETE_SCOPE_REVALIDATION_REQUIRED", "deletionReceiptVerificationOutcome": null, "deterministicRule": "Preserve the deletion record and require scope revalidation."},
+      {"eventOutcomeClass": "FINAL_TLS_TRUST_OR_NAME_REJECT", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_USER_ACTION_REQUIRED", "deletionIdHashOutcome": "PRESERVE_PHASE", "contentFreeDeletionErrorCode": "DELETE_TLS_TRUST_OR_NAME_REJECTED", "deletionReceiptVerificationOutcome": null, "deterministicRule": "Preserve the deletion record; no automatic retry."},
+      {"eventOutcomeClass": "FINAL_SCHEMA_OR_FORMAT_REJECT", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_USER_ACTION_REQUIRED", "deletionIdHashOutcome": "PRESERVE_PHASE", "contentFreeDeletionErrorCode": "DELETE_SCHEMA_OR_FORMAT_REJECTED", "deletionReceiptVerificationOutcome": null, "deterministicRule": "Preserve the deletion record; no automatic retry."},
+      {"eventOutcomeClass": "FINAL_RESPONSE_INTEGRITY_REJECT", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_USER_ACTION_REQUIRED", "deletionIdHashOutcome": "PRESERVE_PHASE", "contentFreeDeletionErrorCode": "DELETE_RESPONSE_INTEGRITY_REJECTED", "deletionReceiptVerificationOutcome": null, "deterministicRule": "Preserve the deletion record; no automatic retry."},
+      {"eventOutcomeClass": "FINAL_IDEMPOTENCY_PAYLOAD_MISMATCH", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_USER_ACTION_REQUIRED", "deletionIdHashOutcome": "PRESERVE_PHASE", "contentFreeDeletionErrorCode": "DELETE_IDEMPOTENCY_PAYLOAD_MISMATCH", "deletionReceiptVerificationOutcome": null, "deterministicRule": "Preserve the deletion record; no automatic retry."},
+      {"eventOutcomeClass": "RETRY_BUDGET_EXHAUSTED", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_MANUAL_RETRY_REQUIRED", "deletionIdHashOutcome": "PRESERVE_PHASE", "contentFreeDeletionErrorCode": "DELETE_FINITE_BUDGET_EXHAUSTED", "deletionReceiptVerificationOutcome": null, "deterministicRule": "Preserve the deletion record and schedule no automatic wakeup."},
+      {"eventOutcomeClass": "CANCEL_REQUESTED_WHILE_DELETE_PENDING", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "PRESERVE_CURRENT", "deletionIdHashOutcome": "PRESERVE_PHASE", "contentFreeDeletionErrorCode": "CANCEL_NOT_APPLICABLE_DELETE_PENDING", "deletionReceiptVerificationOutcome": null, "deterministicRule": "Return REJECTED_NO_STATE_CHANGE; preserve the current substatus and record with zero state change."},
+      {"eventOutcomeClass": "DELETE_REVALIDATED_OR_USER_ACTION_CONFIRMED_AFTER_ACCEPTANCE", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_RECEIPT_POLL_ELIGIBLE", "deletionIdHashOutcome": "REQUIRED_IMMUTABLE", "contentFreeDeletionErrorCode": null, "deletionReceiptVerificationOutcome": null, "deterministicRule": "Post-acceptance: preserve required immutable deletionIdHash; an explicit revalidation, user-action or manual-retry grant supplies one new positive finite attempt budget."},
+      {"eventOutcomeClass": "VERIFIED_SCOPED_RECEIPT", "queueState": "DELETED_REMOTE", "deletionSubstatusOutcome": null, "deletionIdHashOutcome": "REQUIRED_IMMUTABLE", "contentFreeDeletionErrorCode": null, "deletionReceiptVerificationOutcome": "VERIFIED", "deterministicRule": "Require immutable deletionReceiptIdHash; preserve identity and create no second deletion effect."}
+    ],
+    "deletionEventOutcomeMappingDirective": "PRESERVE_CURRENT is a transition directive, not a seventh substatus; the ledger row retains its current exact catalog value. NULL, REQUIRED_IMMUTABLE and PRESERVE_PHASE are deletionIdHashOutcome transition directives, not hash values. NULL requires deletionIdHash=null; REQUIRED_IMMUTABLE requires one non-null hash that cannot change; PRESERVE_PHASE stays null when no accepted response is durably evidenced and stays the same required immutable hash once acceptance is durably evidenced.",
+    "operationClassRule": "Every remote-deletion queue-ledger row uses exact operationClass=DELETE_CLOUD_COPY, matching VPN-OP-008; non-deletion operation classes remain separately versioned and outside this deletion rule.",
+    "deletionSubstatusRule": "For a remote-deletion row, queueState and deletionSubstatus are separate axes. deletionSubstatus is non-null and limited to the exact six-value catalog only for a DELETE_PENDING deletion row; it is null for a DELETED_REMOTE deletion row and every non-deletion row. Retryable or final deletion errors never replace the primary queue state; they select the applicable pending substatus. The separately projected storage-contract remote axis may expose FAILED, but it does not overwrite the queue axis.",
+    "contentFreeDeletionErrorRule": "contentFreeDeletionErrorCode is nullable when there is no current deletion error and otherwise contains only one exact eight-value catalog member. A normal network wait, accepted-response or receipt-poll wait, retryable backoff, explicit revalidation/user/manual-retry grant or verified receipt has no current deletion error and therefore records null. The field never contains an exception message, HTTP body, URL, endpoint, identifier, content or credential.",
+    "cloudRevocationRule": "Consent revocation while offline cancels or revokes only a queued non-deletion upload or processing intent, performs no send, preserves local canonical data and is covered by OFF-SYN-022.",
+    "deletionRule": "Explicit local deletion without a remote copy is covered by OFF-SYN-023. Explicit whole-conversation deletion with a remote copy is covered by OFF-SYN-024: local deletion completes within its scope and one idempotent remote deletion remains DELETE_PENDING. Consent revocation with a remote copy is covered separately by OFF-SYN-025: local canonical data is preserved, non-deletion sends are revoked and one idempotent remote deletion remains DELETE_PENDING. Only a separately authorized reconnect and verified receipt may produce DELETED_REMOTE as covered by OFF-SYN-026; every non-receipt branch retains DELETE_PENDING and follows deletionEventOutcomeMapping. The terminal row requires immutable deletionReceiptIdHash and deletionReceiptVerificationOutcome=VERIFIED, with deletionSubstatus=null and contentFreeDeletionErrorCode=null. Local completion and remote pending, failed or receipt status remain separate under DEC-012, BE-DELETE-001 and the storage contract. These scenarios define required future proof only and do not prove a backend, provider receipt or execution."
+  },
+  "invariants": [
+    {
+      "id": "OFF-INV-001",
+      "statement": "Local readiness is orthogonal to each per-request processing/capability state, connectivity, model and remote queue state."
+    },
+    {
+      "id": "OFF-INV-002",
+      "statement": "The default state requires no account and has cloud disabled."
+    },
+    {
+      "id": "OFF-INV-003",
+      "statement": "Network-denied and airplane states produce zero Dora-attributed outbound attempts."
+    },
+    {
+      "id": "OFF-INV-004",
+      "statement": "No transport attempt executes while network is denied; a durable constrained schedule may remain persisted, and every retry budget is positive, finite and non-busy-looping."
+    },
+    {
+      "id": "OFF-INV-005",
+      "statement": "Missing or invalid model state cannot block capture, storage, history, search, tasks, edit, copy or export."
+    },
+    {
+      "id": "OFF-INV-006",
+      "statement": "A model run is eligible only with one exact EVALUATION_APPROVED runtime with digest, license, provenance, API and ABI compatibility, and 16-KiB package, load and run evidence already included in the frozen harness or APK, plus one exact compatible EVALUATION_APPROVED weight or data package already installed or activated under a separate signed-package approval; executable runtime side-load is forbidden."
+    },
+    {
+      "id": "OFF-INV-007",
+      "statement": "Local canonical data and user edits are never replaced by remote or model candidates."
+    },
+    {
+      "id": "OFF-INV-008",
+      "statement": "Process death and reboot never start the microphone or new, stale-consent or otherwise ineligible network/cloud work; previously authorized durable work may resume only after current consent, profile and runtime constraints are revalidated."
+    },
+    {
+      "id": "OFF-INV-009",
+      "statement": "Reconnect preserves one logical queue identity and yields at most one result application and economic effect. Every remote-deletion row uses operationClass=DELETE_CLOUD_COPY; logicalKeyHash and deletionScopeDigest are immutable from enqueue; deletionIdHash is null before an accepted response and immutable after it; deletionReceiptIdHash is null until a verified scoped receipt. Every non-receipt branch retains primary queue state DELETE_PENDING; only that verified receipt yields DELETED_REMOTE with required immutable deletionReceiptIdHash, deletionReceiptVerificationOutcome=VERIFIED, deletionSubstatus=null and contentFreeDeletionErrorCode=null."
+    },
+    {
+      "id": "OFF-INV-010",
+      "statement": "Call and flow evidence, including deletion substatus and error evidence, is content-free and excludes URL, IP address, account, path, transcript, audio, credential, raw identifier and raw key."
+    },
+    {
+      "id": "OFF-INV-011",
+      "statement": "Clipboard and local SAF remain Dora-owned proof paths; external Sharesheet traffic after explicit handoff is separately attributed."
+    },
+    {
+      "id": "OFF-INV-012",
+      "statement": "Static absence evidence, isolated PoCs, emulator networking and host loopback are never labelled as a physical Offline PASS."
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "OFF-SYN-001",
+      "title": "Fresh install local default",
+      "preconditions": ["synthetic profile", "no account", "cloud off", "network denied", "model absent"],
+      "actions": ["launch local mode", "inspect available local surfaces"],
+      "expected": ["FRESH_LOCAL_DEFAULT", "zero Dora-attributed calls", "no login or GMS gate"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-002",
+      "title": "Synthetic capture and local save under airplane mode",
+      "preconditions": ["deterministic synthetic PCM", "AIRPLANE_MODE", "explicit user start"],
+      "actions": ["capture", "finalize", "save locally"],
+      "expected": ["LOCAL_OPERATION_SUCCEEDED", "durable local source", "zero Dora-attributed calls"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-003",
+      "title": "Open saved local source after process death",
+      "preconditions": ["OFF-SYN-002 complete", "process killed", "network denied"],
+      "actions": ["restart", "open local source"],
+      "expected": ["source remains available", "no microphone auto-start", "zero Dora-attributed calls"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-004",
+      "title": "Generated history and search",
+      "preconditions": ["fictional generated conversation", "network denied"],
+      "actions": ["open history", "search local index", "open result"],
+      "expected": ["LOCAL_OPERATION_SUCCEEDED", "canonical mapping preserved", "zero Dora-attributed calls"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-005",
+      "title": "Local task protocol and manual edit",
+      "preconditions": ["fictional local conversation", "network denied"],
+      "actions": ["create local task", "edit protocol field", "reopen"],
+      "expected": ["user truth persists", "source remains local", "zero Dora-attributed calls"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-006",
+      "title": "Clipboard copy",
+      "preconditions": ["fictional local result", "network denied"],
+      "actions": ["copy approved local representation"],
+      "expected": ["copy completes locally", "external network not invoked by Dora", "content excluded from evidence"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-007",
+      "title": "Local SAF export sink",
+      "preconditions": ["fictional local result", "local test document provider", "network denied"],
+      "actions": ["export through SAF", "verify local bytes and cleanup"],
+      "expected": ["export completes locally", "zero Dora-attributed calls", "no provider or cloud claim"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-008",
+      "title": "Sharesheet attribution boundary",
+      "preconditions": ["fictional local result", "explicit user handoff"],
+      "actions": ["prepare Dora temp", "handoff to external target", "observe Dora process only"],
+      "expected": ["Dora call count remains scoped to Dora UID", "external target traffic excluded", "DEC-017 temp lifecycle preserved"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-009",
+      "title": "Model absent capability wait",
+      "preconditions": ["model absent", "network denied", "local source available"],
+      "actions": ["request model-dependent processing", "continue non-model flows"],
+      "expected": ["processing state WAITING_MODEL", "local state remains ready or succeeds for non-model flows", "no login or download attempt"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-010",
+      "title": "Approved installed model Russian synthetic input",
+      "preconditions": ["exact EVALUATION_APPROVED runtime frozen in harness or APK", "exact compatible EVALUATION_APPROVED installed weight package", "synthetic RU fixture", "network denied"],
+      "actions": ["run bounded local processing"],
+      "expected": ["successful local load and inference", "structurally valid local result", "zero Dora-attributed calls", "quality scoring out of scope"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-011",
+      "title": "Approved installed model English synthetic input",
+      "preconditions": ["exact EVALUATION_APPROVED runtime frozen in harness or APK", "exact compatible EVALUATION_APPROVED installed weight package", "synthetic EN fixture", "network denied"],
+      "actions": ["run bounded local processing"],
+      "expected": ["successful local load and inference", "structurally valid local result", "zero Dora-attributed calls", "quality scoring out of scope"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-012",
+      "title": "Approved installed model mixed synthetic input",
+      "preconditions": ["exact EVALUATION_APPROVED runtime frozen in harness or APK", "exact compatible EVALUATION_APPROVED installed weight package", "synthetic mixed RU-EN fixture", "network denied"],
+      "actions": ["run bounded local processing"],
+      "expected": ["successful local load and inference", "structurally valid local result", "zero Dora-attributed calls", "quality scoring out of scope"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-013",
+      "title": "Queue cloud intent while denied",
+      "preconditions": ["synthetic non-deletion upload or processing intent", "valid future consent profile", "NETWORK_DENIED"],
+      "actions": ["enqueue intent", "advance deterministic scheduler"],
+      "expected": ["WAITING_NETWORK", "zero transport attempts", "local canonical state unchanged"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-014",
+      "title": "Repeated local work while cloud waits",
+      "preconditions": ["OFF-SYN-013 pending", "network denied"],
+      "actions": ["search", "edit", "task", "copy", "export"],
+      "expected": ["all eligible local flows remain usable", "queue identity stable", "zero Dora-attributed calls"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-015",
+      "title": "Process death with queued intent",
+      "preconditions": ["OFF-SYN-013 pending", "network denied"],
+      "actions": ["kill process", "restart"],
+      "expected": ["same WAITING_NETWORK intent restored", "no send while denied", "no new or stale-consent work", "local state digest preserved"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-016",
+      "title": "Reboot with queued intent",
+      "preconditions": ["OFF-SYN-013 pending", "network denied"],
+      "actions": ["reboot", "open app"],
+      "expected": ["same WAITING_NETWORK intent restored", "microphone remains off", "no send while denied", "local state digest preserved"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-017",
+      "title": "Authorized reconnect success",
+      "preconditions": ["same queued intent", "separate future network execution authority", "connectivity becomes AVAILABLE", "current consent, profile and constraints revalidate"],
+      "actions": ["reconcile", "resume eligible work", "send bounded attempts", "validate result", "apply once"],
+      "expected": ["only the previously authorized eligible intent resumes", "one logical job", "one result", "one application", "one economic effect", "zero duplicates"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-018",
+      "title": "Reconnect lost response and duplicate trigger",
+      "preconditions": ["OFF-SYN-017 profile", "scripted lost response", "duplicate scheduler trigger"],
+      "actions": ["replay same logical operation", "reconcile receipt"],
+      "expected": ["transport attempt may repeat", "one logical result and application", "no corruption or second effect"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-019",
+      "title": "Forbidden dependency canaries",
+      "preconditions": ["no account", "no GMS", "DNS denied", "remote config analytics and provider unavailable", "frozen Dora UID and process set", "declared calibration and measured windows"],
+      "actions": ["run one pre-run canary for every call kind in the calibration window", "close calibration window", "exercise every eligible local flow in the measured window", "close measured window", "run one post-run canary for every call kind in the calibration window"],
+      "expected": ["all canaries appear in the raw monitor total with exact calibration event IDs", "calibration events are excluded from the measured scenario total", "per-call-kind coverage has no gap", "local flows remain usable", "measured Dora-attributed forbidden call count is zero"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-020",
+      "title": "Clock advance and expiry independence",
+      "preconditions": ["local canonical data", "network denied", "deterministic future clock"],
+      "actions": ["advance beyond frozen token lease catalog and remote-config intervals", "restart", "exercise local flows"],
+      "expected": ["safe local defaults persist", "no login or remote-config gate", "no indefinite support claim"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-021",
+      "title": "Installed model optional capability unavailable",
+      "preconditions": ["exact EVALUATION_APPROVED runtime frozen in harness or APK", "exact compatible EVALUATION_APPROVED installed weight package", "device fails the frozen optional-summary capability predicate", "network denied"],
+      "actions": ["request optional summary", "continue required local flows"],
+      "expected": ["processing/capability state PENDING_CAPABILITY", "local state remains ready or succeeds for required flows", "no cloud fallback or login gate", "zero Dora-attributed calls"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-022",
+      "title": "Consent revoke while offline without a remote copy",
+      "preconditions": ["durable queued non-deletion upload or processing intent", "NETWORK_DENIED", "current consent is revoked", "no remote copy exists"],
+      "actions": ["apply revocation", "restart queue observer", "exercise local flows"],
+      "expected": ["non-deletion queue state CANCELLED", "zero transport attempts", "local canonical data preserved", "local flows remain usable"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-023",
+      "title": "Explicit local deletion while offline",
+      "preconditions": ["fictional local conversation", "NETWORK_DENIED", "no remote copy configured"],
+      "actions": ["confirm scoped local deletion", "reconcile local indexes and derivatives", "restart"],
+      "expected": ["local deletion contract outcome is truthful", "zero Dora-attributed calls", "no remote deletion receipt claim", "unrelated local data preserved"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-024",
+      "title": "Explicit local and remote deletion while offline",
+      "preconditions": ["fictional local conversation with an existing remote copy", "NETWORK_DENIED", "explicit whole-conversation deletion confirmed"],
+      "actions": ["complete scoped local deletion", "create or preserve idempotent remote-deletion operation", "restart"],
+      "expected": ["local deletion completes truthfully within scope", "operationClass=DELETE_CLOUD_COPY", "queue state DELETE_PENDING", "deletion substatus DELETE_WAITING_NETWORK", "contentFreeDeletionErrorCode=null", "stable logicalKeyHash and deletionScopeDigest", "exact deletionIdHash=null because zero transport attempts mean no accepted response", "deletionReceiptIdHash=null", "local completion and remote status remain separate"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-025",
+      "title": "Consent revoke with remote copy while offline",
+      "preconditions": ["fictional local conversation with an existing remote copy", "NETWORK_DENIED", "cloud consent revoked", "no local deletion requested"],
+      "actions": ["revoke non-deletion sends", "preserve local canonical data", "create or preserve idempotent remote-deletion operation", "restart"],
+      "expected": ["local canonical data remains available", "non-deletion work is CANCELLED", "remote deletion operationClass=DELETE_CLOUD_COPY", "queue state DELETE_PENDING", "deletion substatus DELETE_WAITING_NETWORK", "contentFreeDeletionErrorCode=null", "stable logicalKeyHash and deletionScopeDigest", "exact deletionIdHash=null because zero transport attempts mean no accepted response", "deletionReceiptIdHash=null", "local and remote status remain separate"],
+      "currentStatus": "NOT_RUN"
+    },
+    {
+      "id": "OFF-SYN-026",
+      "title": "Reconcile remote deletion after reconnect",
+      "preconditions": ["OFF-SYN-024 or OFF-SYN-025 deletion pending", "separate future backend/provider and network execution authority", "connectivity AVAILABLE", "current deletion scope and constraints revalidate", "deterministic receipt, retryable-error, final-error, revalidation or manual-retry branch frozen"],
+      "actions": ["send or replay the same logical deletion key and scope", "reconcile accepted response, error or receipt"],
+      "expected": ["exactly one remote deletion operation with operationClass=DELETE_CLOUD_COPY", "every non-receipt branch remains DELETE_PENDING and follows the exact deletion event/outcome mapping", "FAILED_RETRYABLE and FAILED_FINAL are forbidden for deletion work", "only a verified scoped receipt changes queue state to DELETED_REMOTE, requires immutable deletionReceiptIdHash and deletionReceiptVerificationOutcome=VERIFIED, and records deletionSubstatus=null and contentFreeDeletionErrorCode=null", "logicalKeyHash, deletionScopeDigest and any accepted deletionIdHash remain immutable", "local outcome remains unchanged and separate", "zero duplicate deletion effects"],
+      "currentStatus": "NOT_RUN"
+    }
+  ],
+  "futureEvidenceContract": {
+    "fixtureClass": "SYNTHETIC_ONLY",
+    "fixtureGenerator": "NOT_IMPLEMENTED_NOT_AUTHORIZED",
+    "resultSchema": "docs/stage0/benchmark-result.schema.json",
+    "result": "NOT_RUN",
+    "requiredRecords": [
+      "execution-profile.json",
+      "preflight.json",
+      "fixture-manifest.json",
+      "dependency-inventory.json",
+      "merged-manifest-inventory.json",
+      "flow-ledger.json",
+      "network-call-ledger.json",
+      "queue-idempotency-ledger.json",
+      "run-result.json",
+      "evidence-index.json"
+    ],
+    "networkCallKinds": [
+      "DNS",
+      "SOCKET",
+      "HTTP",
+      "GMS_BIND",
+      "ACCOUNT_AUTH",
+      "REMOTE_CONFIG",
+      "ANALYTICS",
+      "PROVIDER"
+    ],
+    "networkCallLedgerFields": [
+      "sequence",
+      "windowClass",
+      "calibrationEventId",
+      "attributedToMeasuredScenario",
+      "appUidClass",
+      "processClass",
+      "componentClass",
+      "scenarioId",
+      "actionId",
+      "callKind",
+      "destinationClass",
+      "endpointId",
+      "consentProfileDigest",
+      "decision",
+      "outcome",
+      "retryState",
+      "monotonicOffsetMs"
+    ],
+    "monitorCalibrationFields": [
+      "method",
+      "attributionBoundary",
+      "coverageStart",
+      "coverageEnd",
+      "coverageGaps",
+      "perCallKindCoverage",
+      "preRunCanaryObserved",
+      "postRunCanaryObserved",
+      "rawMonitorEventCount",
+      "excludedCalibrationEventCount",
+      "measuredDoraForbiddenAttemptCount"
+    ],
+    "flowLedgerFields": [
+      "sequence",
+      "scenarioId",
+      "actionId",
+      "preStateVector",
+      "postStateVector",
+      "outcome",
+      "monotonicOffsetMs",
+      "preStateDigest",
+      "postStateDigest",
+      "processingRequestIdHash",
+      "queueIntentIdHash",
+      "contentFreeErrorCode"
+    ],
+    "flowStateVectorContract": {
+      "exactKeys": [
+        "local",
+        "processingCapability",
+        "connectivity",
+        "model",
+        "queue"
+      ],
+      "valueRule": "Every value is one member of its corresponding frozen state catalog; extra or missing keys are forbidden.",
+      "canonicalEncoding": "UTF-8 JSON with keys emitted in exactKeys order, JSON-escaped string values and no insignificant whitespace.",
+      "digestRule": "preStateDigest and postStateDigest are lowercase hexadecimal SHA-256 of the canonical UTF-8 preStateVector and postStateVector respectively.",
+      "identifierHashRule": "processingRequestIdHash = lowercaseHex(SHA-256(UTF8(contractId + LF + \"PROCESSING_REQUEST\" + LF + opaqueProcessingRequestId))); queueIntentIdHash = lowercaseHex(SHA-256(UTF8(contractId + LF + \"QUEUE_INTENT\" + LF + opaqueQueueIntentId))); intentIdHash = lowercaseHex(SHA-256(UTF8(contractId + LF + \"QUEUE_INTENT\" + LF + opaqueQueueIntentId))). LF=U+000A; the UTF-8 input receives no normalization or whitespace insertion. Each hash is immutable for the same logical request or intent and is null only when that axis has no request or queue intent. For the same queue intent, flow-ledger queueIntentIdHash == queue-ledger intentIdHash; the two fields use the identical QUEUE_INTENT formula. Raw identifiers never enter public evidence."
+    },
+    "queueLedgerFields": [
+      "operationClass",
+      "intentIdHash",
+      "logicalKeyHash",
+      "jobIdHash",
+      "resultIdHash",
+      "deletionScopeDigest",
+      "deletionIdHash",
+      "deletionReceiptIdHash",
+      "queueState",
+      "deletionSubstatus",
+      "contentFreeDeletionErrorCode",
+      "deletionReceiptVerificationOutcome",
+      "attemptCount",
+      "replayMarker",
+      "effectCount",
+      "applyCount",
+      "remoteDeletionEffectCount",
+      "preLocalStateDigest",
+      "postLocalStateDigest"
+    ],
+    "queueLedgerDeletionContract": {
+      "operationClassValue": "DELETE_CLOUD_COPY",
+      "operationClassRule": "Every remote-deletion row uses exact operationClass=DELETE_CLOUD_COPY, matching VPN-OP-008; non-deletion operation classes remain separately versioned and outside this deletion rule.",
+      "intentIdHashRule": "For the same queue intent, flow-ledger queueIntentIdHash == queue-ledger intentIdHash; intentIdHash = lowercaseHex(SHA-256(UTF8(contractId + LF + \"QUEUE_INTENT\" + LF + opaqueQueueIntentId))). LF=U+000A; the UTF-8 input receives no normalization or whitespace insertion, and the raw identifier never enters public evidence.",
+      "primaryStateRule": "Every deletion row has queueState DELETE_PENDING from durable enqueue through request acceptance and every retryable, final, revalidation or manual-retry-required non-receipt branch. Only a verified scoped receipt permits queueState DELETED_REMOTE. FAILED_RETRYABLE and FAILED_FINAL are allowed only for non-deletion rows.",
+      "logicalKeyHashRule": "Required and immutable from durable enqueue for a deletion row.",
+      "deletionScopeDigestRule": "Required and immutable from durable enqueue for a deletion row.",
+      "deletionIdHashRule": "Null before an accepted response; required and immutable after the accepted response.",
+      "deletionReceiptIdHashRule": "Null until the exact scoped receipt verifies; required and immutable after verification.",
+      "deletionReceiptVerificationOutcomeRule": "Null until the exact scoped receipt verifies; the DELETED_REMOTE row requires exact value VERIFIED.",
+      "deletionSubstatusRule": "Required and non-null only for DELETE_PENDING deletion rows, null for DELETED_REMOTE and all non-deletion rows, and otherwise limited to queueCatalogBoundary.deletionSubstatusCatalog.",
+      "contentFreeDeletionErrorCodeRule": "Nullable when there is no current deletion error; otherwise limited to queueCatalogBoundary.contentFreeDeletionErrorCodeCatalog and forbidden from containing content, identifiers, endpoints, response bodies or credentials. It is null for DELETED_REMOTE.",
+      "eventOutcomeMappingRule": "Every remote-deletion row follows queueCatalogBoundary.deletionEventOutcomeMapping; PRESERVE_CURRENT retains the current exact six-value pending substatus and is not a ledger value."
+    },
+    "forbiddenPublicFields": [
+      "serial or IMEI",
+      "advertising ID",
+      "account, email or contact",
+      "SSID, URL, IP address or private endpoint",
+      "absolute local path",
+      "raw audio, transcript or meeting content",
+      "credential, token or raw idempotency key",
+      "model weight or private packet trace"
+    ]
+  },
+  "readinessBlockers": [
+    {
+      "id": "OFF-RDY-01",
+      "status": "BLOCKED",
+      "statement": "The mandatory device-scope conflict requires a versioned pre-run decision."
+    },
+    {
+      "id": "OFF-RDY-02",
+      "status": "BLOCKED",
+      "statement": "Required physical D4 no-GMS and the rest of the frozen physical matrix are unavailable or unauthorized."
+    },
+    {
+      "id": "OFF-RDY-03",
+      "status": "BLOCKED",
+      "statement": "An integrated disposable Offline harness covering every required local flow is absent."
+    },
+    {
+      "id": "OFF-RDY-04",
+      "status": "BLOCKED",
+      "statement": "No exact local model runtime with digest, license, provenance, API and ABI compatibility, and 16-KiB package, load and run evidence is EVALUATION_APPROVED and included in a frozen harness or APK, and no exact compatible weight or data package is EVALUATION_APPROVED for an approved signed offline side-load."
+    },
+    {
+      "id": "OFF-RDY-05",
+      "status": "BLOCKED",
+      "statement": "A calibrated app-attributed OS or firewall denial monitor and content-free call ledger are absent."
+    },
+    {
+      "id": "OFF-RDY-06",
+      "status": "BLOCKED",
+      "statement": "The immutable fixture, scenario, execution profile and fault matrix are not frozen for execution."
+    },
+    {
+      "id": "OFF-RDY-07",
+      "status": "BLOCKED",
+      "statement": "Offline-owned queue and reconnect integration is absent; VPN I2 does not close it."
+    },
+    {
+      "id": "OFF-RDY-08",
+      "status": "BLOCKED",
+      "statement": "Retention, redaction and deletion for any raw network trace are unresolved; only synthetic sanitized evidence is currently allowed."
+    },
+    {
+      "id": "OFF-RDY-09",
+      "status": "BLOCKED",
+      "statement": "Exact merged-manifest, runtime-dependency, APK and non-metric implementation verification for a future harness is absent."
+    },
+    {
+      "id": "OFF-RDY-10",
+      "status": "BLOCKED",
+      "statement": "Separate implementation scope and review plus later device, network and model execution authorization are withheld."
+    }
+  ],
+  "proofBoundary": {
+    "contractProves": [
+      "the current tracked-tree static inventory and evidence classification on the frozen source tree",
+      "a versioned prospective offline requirements, state, scenario and evidence contract",
+      "explicit conflicts, blockers and future proof boundaries"
+    ],
+    "contractDoesNotProve": [
+      "runtime absence of network calls",
+      "working integrated capture, storage, history, search, task, edit, copy or export flows",
+      "installed or missing local-model behavior",
+      "D4 no-GMS, airplane, OS-denied, firewall-denied, process-death, reboot or reconnect behavior",
+      "battery safety, indefinite operation or any device support matrix",
+      "POC-OFFLINE-001 readiness, execution, PASS or production admission"
+    ]
+  },
+  "acceptanceBoundary": {
+    "contractArtifactMayBeComplete": true,
+    "contractCompletionRequirements": [
+      "strict JSON and duplicate-key validation",
+      "exact Markdown and JSON semantic parity for requirements, conflicts, inventory, states, invariants, scenarios, blockers and flags",
+      "source links, snapshot and static counts verified",
+      "all authority flags false",
+      "Backlog and Stage Status explicitly preserve TODO, NOT_READY, NOT_RUN and NOT_AUTHORIZED"
+    ],
+    "pocMayBeReadyOrDone": false,
+    "pocRequiredState": "TODO_NOT_READY_NOT_RUN_NOT_AUTHORIZED",
+    "implementationOrExecutionClaim": false
+  },
+  "futureDecisionTemplate": {
+    "decisionRecordId": "",
+    "decisionTimestamp": "",
+    "mandatoryDeviceSetDecision": "",
+    "boundedDurationProfile": "",
+    "retryAndEnergyPolicy": "",
+    "integratedHarnessScope": "",
+    "modelArtifactApprovalRecord": "",
+    "monitorAndCallLedgerApproval": "",
+    "fixtureScenarioAndFaultManifest": "",
+    "rawTraceRetentionDecision": "",
+    "implementationReview": "",
+    "deviceNetworkAndModelExecutionAuthorization": "",
+    "legalApproval": "",
+    "securityApproval": "",
+    "productionAdmission": "",
+    "formalReviewer": false
+  },
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "note": "Artifact authoring findings are empty; the ten separate PoC readiness blockers remain open."
+  },
+  "currentEvidenceStatus": {
+    "staticInventory": "OBSERVED_NOT_EXECUTION_EVIDENCE",
+    "integratedHarness": "ABSENT",
+    "deviceCampaign": "NOT_RUN",
+    "networkCallLedger": "NOT_RUN",
+    "modelInstalledScenario": "NOT_RUN",
+    "modelAbsentScenario": "NOT_RUN",
+    "reconnectScenario": "NOT_RUN",
+    "pocResult": "NOT_RUN",
+    "recommendation": "BLOCKED_PENDING_SEPARATE_READINESS_DECISIONS_IMPLEMENTATION_AND_EXECUTION"
+  },
+  "parityRequirements": {
+    "requirementCount": 14,
+    "conflictCount": 5,
+    "inventorySurfaceCount": 9,
+    "proofLayerCount": 4,
+    "localStateCount": 5,
+    "processingCapabilityStateCount": 7,
+    "connectivityStateCount": 4,
+    "modelStateCount": 3,
+    "queueStateCount": 13,
+    "invariantCount": 12,
+    "scenarioCount": 26,
+    "readinessBlockerCount": 10,
+    "authorityFlagCount": 25,
+    "allAuthorityFlagsFalse": true,
+    "semanticParityRequired": true
+  }
+}
