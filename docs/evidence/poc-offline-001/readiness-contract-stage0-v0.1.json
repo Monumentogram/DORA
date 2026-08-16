@@ -141,7 +141,7 @@
     },
     {
       "id": "OFF-REQ-007",
-      "statement": "A queued non-deletion cloud upload or processing intent remains durably WAITING_NETWORK while connectivity is denied; an idempotent remote-deletion operation for an existing cloud copy remains durably DELETE_PENDING; neither emits an outbound request while denied, blocks local work or replaces local canonical truth, and local deletion completion remains distinct from remote status."
+      "statement": "A queued non-deletion cloud upload or processing intent remains durably WAITING_NETWORK while connectivity is denied. An idempotent remote-deletion operation for an existing cloud copy has primary queue state DELETE_PENDING from durable enqueue through request acceptance, retryable or final error, revalidation and manual-retry-required handling; only a verified scoped receipt changes it to DELETED_REMOTE. FAILED_RETRYABLE and FAILED_FINAL are reserved for non-deletion work. Neither kind emits an outbound request while denied, blocks local work or replaces local canonical truth, and local deletion completion remains distinct from remote status."
     },
     {
       "id": "OFF-REQ-008",
@@ -391,15 +391,54 @@
       "REMOTE_PROCESSING maps accepted remote processing",
       "RESULT_AVAILABLE maps a candidate awaiting local validation",
       "APPLIED maps one validated application to local truth without overwriting user edits",
-      "DELETE_PENDING maps an idempotent remote-deletion operation queued or awaiting receipt while local deletion status remains separate",
+      "DELETE_PENDING maps an idempotent remote-deletion operation from durable enqueue through accepted response, wait, retry, final rejection, revalidation and manual-retry-required handling while local deletion status remains separate",
       "DELETED_REMOTE maps only a verified remote-deletion receipt within its declared scope",
       "CONFLICT maps a durable content-free reconciliation state that cannot overwrite local user truth",
-      "FAILED_RETRYABLE maps a durable finite retry state",
-      "FAILED_FINAL maps an explicit terminal remote failure",
+      "FAILED_RETRYABLE maps a durable finite retry state for non-deletion work only",
+      "FAILED_FINAL maps an explicit terminal remote failure for non-deletion work only",
       "CANCELLED maps revoked or explicitly cancelled non-deletion remote work"
     ],
+    "deletionSubstatusCatalog": [
+      "DELETE_RECEIPT_POLL_ELIGIBLE",
+      "DELETE_WAITING_NETWORK",
+      "DELETE_RETRY_SCHEDULED",
+      "DELETE_REVALIDATION_REQUIRED",
+      "DELETE_USER_ACTION_REQUIRED",
+      "DELETE_MANUAL_RETRY_REQUIRED"
+    ],
+    "contentFreeDeletionErrorCodeCatalog": [
+      "CANCEL_NOT_APPLICABLE_DELETE_PENDING",
+      "DELETE_PROFILE_REVALIDATION_REQUIRED",
+      "DELETE_TLS_TRUST_OR_NAME_REJECTED",
+      "DELETE_SCHEMA_OR_FORMAT_REJECTED",
+      "DELETE_RESPONSE_INTEGRITY_REJECTED",
+      "DELETE_IDEMPOTENCY_PAYLOAD_MISMATCH",
+      "DELETE_SCOPE_REVALIDATION_REQUIRED",
+      "DELETE_FINITE_BUDGET_EXHAUSTED"
+    ],
+    "deletionEventOutcomeMapping": [
+      {"eventOutcomeClass": "DURABLE_ENQUEUE_WHILE_NETWORK_DENIED", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_WAITING_NETWORK", "deletionIdHashOutcome": "NULL", "contentFreeDeletionErrorCode": null, "deletionReceiptVerificationOutcome": null, "deterministicRule": "Pre-acceptance: deletionIdHash=null; no transport attempt occurs while denied."},
+      {"eventOutcomeClass": "PRE_ACCEPTANCE_RESUME", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_RETRY_SCHEDULED", "deletionIdHashOutcome": "NULL", "contentFreeDeletionErrorCode": null, "deletionReceiptVerificationOutcome": null, "deterministicRule": "Before acceptance, revalidation, user-action confirmation or manual-retry confirmation preserves deletionIdHash=null and schedules only one bounded eligible acceptance attempt."},
+      {"eventOutcomeClass": "ACCEPTED_RESPONSE_OR_RECEIPT_POLL_PENDING", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_RECEIPT_POLL_ELIGIBLE", "deletionIdHashOutcome": "REQUIRED_IMMUTABLE", "contentFreeDeletionErrorCode": null, "deletionReceiptVerificationOutcome": null, "deterministicRule": "After acceptance, deletionIdHash is required and immutable; deletionReceiptIdHash remains null."},
+      {"eventOutcomeClass": "NETWORK_DENIED_AFTER_ACCEPTANCE", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_WAITING_NETWORK", "deletionIdHashOutcome": "REQUIRED_IMMUTABLE", "contentFreeDeletionErrorCode": null, "deletionReceiptVerificationOutcome": null, "deterministicRule": "Post-acceptance: preserve required immutable deletionIdHash; no transport attempt occurs while denied."},
+      {"eventOutcomeClass": "RETRYABLE_FAILURE_OR_BACKOFF", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_RETRY_SCHEDULED", "deletionIdHashOutcome": "PRESERVE_PHASE", "contentFreeDeletionErrorCode": null, "deletionReceiptVerificationOutcome": null, "deterministicRule": "Preserve the current acceptance phase and schedule only bounded eligible work."},
+      {"eventOutcomeClass": "PROFILE_INVALID", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_REVALIDATION_REQUIRED", "deletionIdHashOutcome": "PRESERVE_PHASE", "contentFreeDeletionErrorCode": "DELETE_PROFILE_REVALIDATION_REQUIRED", "deletionReceiptVerificationOutcome": null, "deterministicRule": "Preserve the deletion record and require profile revalidation."},
+      {"eventOutcomeClass": "SCOPE_INVALID", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_REVALIDATION_REQUIRED", "deletionIdHashOutcome": "PRESERVE_PHASE", "contentFreeDeletionErrorCode": "DELETE_SCOPE_REVALIDATION_REQUIRED", "deletionReceiptVerificationOutcome": null, "deterministicRule": "Preserve the deletion record and require scope revalidation."},
+      {"eventOutcomeClass": "FINAL_TLS_TRUST_OR_NAME_REJECT", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_USER_ACTION_REQUIRED", "deletionIdHashOutcome": "PRESERVE_PHASE", "contentFreeDeletionErrorCode": "DELETE_TLS_TRUST_OR_NAME_REJECTED", "deletionReceiptVerificationOutcome": null, "deterministicRule": "Preserve the deletion record; no automatic retry."},
+      {"eventOutcomeClass": "FINAL_SCHEMA_OR_FORMAT_REJECT", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_USER_ACTION_REQUIRED", "deletionIdHashOutcome": "PRESERVE_PHASE", "contentFreeDeletionErrorCode": "DELETE_SCHEMA_OR_FORMAT_REJECTED", "deletionReceiptVerificationOutcome": null, "deterministicRule": "Preserve the deletion record; no automatic retry."},
+      {"eventOutcomeClass": "FINAL_RESPONSE_INTEGRITY_REJECT", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_USER_ACTION_REQUIRED", "deletionIdHashOutcome": "PRESERVE_PHASE", "contentFreeDeletionErrorCode": "DELETE_RESPONSE_INTEGRITY_REJECTED", "deletionReceiptVerificationOutcome": null, "deterministicRule": "Preserve the deletion record; no automatic retry."},
+      {"eventOutcomeClass": "FINAL_IDEMPOTENCY_PAYLOAD_MISMATCH", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_USER_ACTION_REQUIRED", "deletionIdHashOutcome": "PRESERVE_PHASE", "contentFreeDeletionErrorCode": "DELETE_IDEMPOTENCY_PAYLOAD_MISMATCH", "deletionReceiptVerificationOutcome": null, "deterministicRule": "Preserve the deletion record; no automatic retry."},
+      {"eventOutcomeClass": "RETRY_BUDGET_EXHAUSTED", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_MANUAL_RETRY_REQUIRED", "deletionIdHashOutcome": "PRESERVE_PHASE", "contentFreeDeletionErrorCode": "DELETE_FINITE_BUDGET_EXHAUSTED", "deletionReceiptVerificationOutcome": null, "deterministicRule": "Preserve the deletion record and schedule no automatic wakeup."},
+      {"eventOutcomeClass": "CANCEL_REQUESTED_WHILE_DELETE_PENDING", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "PRESERVE_CURRENT", "deletionIdHashOutcome": "PRESERVE_PHASE", "contentFreeDeletionErrorCode": "CANCEL_NOT_APPLICABLE_DELETE_PENDING", "deletionReceiptVerificationOutcome": null, "deterministicRule": "Return REJECTED_NO_STATE_CHANGE; preserve the current substatus and record with zero state change."},
+      {"eventOutcomeClass": "DELETE_REVALIDATED_OR_USER_ACTION_CONFIRMED_AFTER_ACCEPTANCE", "queueState": "DELETE_PENDING", "deletionSubstatusOutcome": "DELETE_RECEIPT_POLL_ELIGIBLE", "deletionIdHashOutcome": "REQUIRED_IMMUTABLE", "contentFreeDeletionErrorCode": null, "deletionReceiptVerificationOutcome": null, "deterministicRule": "Post-acceptance: preserve required immutable deletionIdHash; an explicit revalidation, user-action or manual-retry grant supplies one new positive finite attempt budget."},
+      {"eventOutcomeClass": "VERIFIED_SCOPED_RECEIPT", "queueState": "DELETED_REMOTE", "deletionSubstatusOutcome": null, "deletionIdHashOutcome": "REQUIRED_IMMUTABLE", "contentFreeDeletionErrorCode": null, "deletionReceiptVerificationOutcome": "VERIFIED", "deterministicRule": "Require immutable deletionReceiptIdHash; preserve identity and create no second deletion effect."}
+    ],
+    "deletionEventOutcomeMappingDirective": "PRESERVE_CURRENT is a transition directive, not a seventh substatus; the ledger row retains its current exact catalog value. NULL, REQUIRED_IMMUTABLE and PRESERVE_PHASE are deletionIdHashOutcome transition directives, not hash values. NULL requires deletionIdHash=null; REQUIRED_IMMUTABLE requires one non-null hash that cannot change; PRESERVE_PHASE stays null when no accepted response is durably evidenced and stays the same required immutable hash once acceptance is durably evidenced.",
+    "operationClassRule": "Every remote-deletion queue-ledger row uses exact operationClass=DELETE_CLOUD_COPY, matching VPN-OP-008; non-deletion operation classes remain separately versioned and outside this deletion rule.",
+    "deletionSubstatusRule": "For a remote-deletion row, queueState and deletionSubstatus are separate axes. deletionSubstatus is non-null and limited to the exact six-value catalog only for a DELETE_PENDING deletion row; it is null for a DELETED_REMOTE deletion row and every non-deletion row. Retryable or final deletion errors never replace the primary queue state; they select the applicable pending substatus. The separately projected storage-contract remote axis may expose FAILED, but it does not overwrite the queue axis.",
+    "contentFreeDeletionErrorRule": "contentFreeDeletionErrorCode is nullable when there is no current deletion error and otherwise contains only one exact eight-value catalog member. A normal network wait, accepted-response or receipt-poll wait, retryable backoff, explicit revalidation/user/manual-retry grant or verified receipt has no current deletion error and therefore records null. The field never contains an exception message, HTTP body, URL, endpoint, identifier, content or credential.",
     "cloudRevocationRule": "Consent revocation while offline cancels or revokes only a queued non-deletion upload or processing intent, performs no send, preserves local canonical data and is covered by OFF-SYN-022.",
-    "deletionRule": "Explicit local deletion without a remote copy is covered by OFF-SYN-023. Explicit whole-conversation deletion with a remote copy is covered by OFF-SYN-024: local deletion completes within its scope and one idempotent remote deletion remains DELETE_PENDING. Consent revocation with a remote copy is covered separately by OFF-SYN-025: local canonical data is preserved, non-deletion sends are revoked and one idempotent remote deletion remains DELETE_PENDING. Only a separately authorized reconnect and verified receipt may produce DELETED_REMOTE as covered by OFF-SYN-026. Local completion and remote pending, failed or receipt status remain separate under DEC-012, BE-DELETE-001 and the storage contract. These scenarios define required future proof only and do not prove a backend, provider receipt or execution."
+    "deletionRule": "Explicit local deletion without a remote copy is covered by OFF-SYN-023. Explicit whole-conversation deletion with a remote copy is covered by OFF-SYN-024: local deletion completes within its scope and one idempotent remote deletion remains DELETE_PENDING. Consent revocation with a remote copy is covered separately by OFF-SYN-025: local canonical data is preserved, non-deletion sends are revoked and one idempotent remote deletion remains DELETE_PENDING. Only a separately authorized reconnect and verified receipt may produce DELETED_REMOTE as covered by OFF-SYN-026; every non-receipt branch retains DELETE_PENDING and follows deletionEventOutcomeMapping. The terminal row requires immutable deletionReceiptIdHash and deletionReceiptVerificationOutcome=VERIFIED, with deletionSubstatus=null and contentFreeDeletionErrorCode=null. Local completion and remote pending, failed or receipt status remain separate under DEC-012, BE-DELETE-001 and the storage contract. These scenarios define required future proof only and do not prove a backend, provider receipt or execution."
   },
   "invariants": [
     {
@@ -436,11 +475,11 @@
     },
     {
       "id": "OFF-INV-009",
-      "statement": "Reconnect preserves one logical queue identity and yields at most one result application and economic effect."
+      "statement": "Reconnect preserves one logical queue identity and yields at most one result application and economic effect. Every remote-deletion row uses operationClass=DELETE_CLOUD_COPY; logicalKeyHash and deletionScopeDigest are immutable from enqueue; deletionIdHash is null before an accepted response and immutable after it; deletionReceiptIdHash is null until a verified scoped receipt. Every non-receipt branch retains primary queue state DELETE_PENDING; only that verified receipt yields DELETED_REMOTE with required immutable deletionReceiptIdHash, deletionReceiptVerificationOutcome=VERIFIED, deletionSubstatus=null and contentFreeDeletionErrorCode=null."
     },
     {
       "id": "OFF-INV-010",
-      "statement": "Call and flow evidence is content-free and excludes URL, IP address, account, path, transcript, audio, credential and raw key."
+      "statement": "Call and flow evidence, including deletion substatus and error evidence, is content-free and excludes URL, IP address, account, path, transcript, audio, credential, raw identifier and raw key."
     },
     {
       "id": "OFF-INV-011",
@@ -641,7 +680,7 @@
       "title": "Explicit local and remote deletion while offline",
       "preconditions": ["fictional local conversation with an existing remote copy", "NETWORK_DENIED", "explicit whole-conversation deletion confirmed"],
       "actions": ["complete scoped local deletion", "create or preserve idempotent remote-deletion operation", "restart"],
-      "expected": ["local deletion completes truthfully within scope", "remote state DELETE_PENDING", "one stable deletion identity", "zero transport attempts", "local completion and remote status remain separate"],
+      "expected": ["local deletion completes truthfully within scope", "operationClass=DELETE_CLOUD_COPY", "queue state DELETE_PENDING", "deletion substatus DELETE_WAITING_NETWORK", "contentFreeDeletionErrorCode=null", "stable logicalKeyHash and deletionScopeDigest", "exact deletionIdHash=null because zero transport attempts mean no accepted response", "deletionReceiptIdHash=null", "local completion and remote status remain separate"],
       "currentStatus": "NOT_RUN"
     },
     {
@@ -649,15 +688,15 @@
       "title": "Consent revoke with remote copy while offline",
       "preconditions": ["fictional local conversation with an existing remote copy", "NETWORK_DENIED", "cloud consent revoked", "no local deletion requested"],
       "actions": ["revoke non-deletion sends", "preserve local canonical data", "create or preserve idempotent remote-deletion operation", "restart"],
-      "expected": ["local canonical data remains available", "non-deletion work is CANCELLED", "remote deletion is DELETE_PENDING with one stable identity", "zero transport attempts", "local and remote status remain separate"],
+      "expected": ["local canonical data remains available", "non-deletion work is CANCELLED", "remote deletion operationClass=DELETE_CLOUD_COPY", "queue state DELETE_PENDING", "deletion substatus DELETE_WAITING_NETWORK", "contentFreeDeletionErrorCode=null", "stable logicalKeyHash and deletionScopeDigest", "exact deletionIdHash=null because zero transport attempts mean no accepted response", "deletionReceiptIdHash=null", "local and remote status remain separate"],
       "currentStatus": "NOT_RUN"
     },
     {
       "id": "OFF-SYN-026",
       "title": "Reconcile remote deletion after reconnect",
-      "preconditions": ["OFF-SYN-024 or OFF-SYN-025 deletion pending", "separate future backend/provider and network execution authority", "connectivity AVAILABLE", "current deletion scope and constraints revalidate", "deterministic receipt or failure branch frozen"],
-      "actions": ["send or replay the same deletion identity", "reconcile response or receipt"],
-      "expected": ["exactly one remote deletion operation", "DELETED_REMOTE only after a verified scoped receipt, otherwise DELETE_PENDING, FAILED_RETRYABLE or FAILED_FINAL", "local outcome remains unchanged and separate", "zero duplicate deletion effects"],
+      "preconditions": ["OFF-SYN-024 or OFF-SYN-025 deletion pending", "separate future backend/provider and network execution authority", "connectivity AVAILABLE", "current deletion scope and constraints revalidate", "deterministic receipt, retryable-error, final-error, revalidation or manual-retry branch frozen"],
+      "actions": ["send or replay the same logical deletion key and scope", "reconcile accepted response, error or receipt"],
+      "expected": ["exactly one remote deletion operation with operationClass=DELETE_CLOUD_COPY", "every non-receipt branch remains DELETE_PENDING and follows the exact deletion event/outcome mapping", "FAILED_RETRYABLE and FAILED_FINAL are forbidden for deletion work", "only a verified scoped receipt changes queue state to DELETED_REMOTE, requires immutable deletionReceiptIdHash and deletionReceiptVerificationOutcome=VERIFIED, and records deletionSubstatus=null and contentFreeDeletionErrorCode=null", "logicalKeyHash, deletionScopeDigest and any accepted deletionIdHash remain immutable", "local outcome remains unchanged and separate", "zero duplicate deletion effects"],
       "currentStatus": "NOT_RUN"
     }
   ],
@@ -724,14 +763,29 @@
       "sequence",
       "scenarioId",
       "actionId",
-      "fromState",
-      "toState",
+      "preStateVector",
+      "postStateVector",
       "outcome",
       "monotonicOffsetMs",
       "preStateDigest",
       "postStateDigest",
+      "processingRequestIdHash",
+      "queueIntentIdHash",
       "contentFreeErrorCode"
     ],
+    "flowStateVectorContract": {
+      "exactKeys": [
+        "local",
+        "processingCapability",
+        "connectivity",
+        "model",
+        "queue"
+      ],
+      "valueRule": "Every value is one member of its corresponding frozen state catalog; extra or missing keys are forbidden.",
+      "canonicalEncoding": "UTF-8 JSON with keys emitted in exactKeys order, JSON-escaped string values and no insignificant whitespace.",
+      "digestRule": "preStateDigest and postStateDigest are lowercase hexadecimal SHA-256 of the canonical UTF-8 preStateVector and postStateVector respectively.",
+      "identifierHashRule": "processingRequestIdHash = lowercaseHex(SHA-256(UTF8(contractId + LF + \"PROCESSING_REQUEST\" + LF + opaqueProcessingRequestId))); queueIntentIdHash = lowercaseHex(SHA-256(UTF8(contractId + LF + \"QUEUE_INTENT\" + LF + opaqueQueueIntentId))); intentIdHash = lowercaseHex(SHA-256(UTF8(contractId + LF + \"QUEUE_INTENT\" + LF + opaqueQueueIntentId))). LF=U+000A; the UTF-8 input receives no normalization or whitespace insertion. Each hash is immutable for the same logical request or intent and is null only when that axis has no request or queue intent. For the same queue intent, flow-ledger queueIntentIdHash == queue-ledger intentIdHash; the two fields use the identical QUEUE_INTENT formula. Raw identifiers never enter public evidence."
+    },
     "queueLedgerFields": [
       "operationClass",
       "intentIdHash",
@@ -739,8 +793,11 @@
       "jobIdHash",
       "resultIdHash",
       "deletionScopeDigest",
+      "deletionIdHash",
       "deletionReceiptIdHash",
       "queueState",
+      "deletionSubstatus",
+      "contentFreeDeletionErrorCode",
       "deletionReceiptVerificationOutcome",
       "attemptCount",
       "replayMarker",
@@ -750,6 +807,20 @@
       "preLocalStateDigest",
       "postLocalStateDigest"
     ],
+    "queueLedgerDeletionContract": {
+      "operationClassValue": "DELETE_CLOUD_COPY",
+      "operationClassRule": "Every remote-deletion row uses exact operationClass=DELETE_CLOUD_COPY, matching VPN-OP-008; non-deletion operation classes remain separately versioned and outside this deletion rule.",
+      "intentIdHashRule": "For the same queue intent, flow-ledger queueIntentIdHash == queue-ledger intentIdHash; intentIdHash = lowercaseHex(SHA-256(UTF8(contractId + LF + \"QUEUE_INTENT\" + LF + opaqueQueueIntentId))). LF=U+000A; the UTF-8 input receives no normalization or whitespace insertion, and the raw identifier never enters public evidence.",
+      "primaryStateRule": "Every deletion row has queueState DELETE_PENDING from durable enqueue through request acceptance and every retryable, final, revalidation or manual-retry-required non-receipt branch. Only a verified scoped receipt permits queueState DELETED_REMOTE. FAILED_RETRYABLE and FAILED_FINAL are allowed only for non-deletion rows.",
+      "logicalKeyHashRule": "Required and immutable from durable enqueue for a deletion row.",
+      "deletionScopeDigestRule": "Required and immutable from durable enqueue for a deletion row.",
+      "deletionIdHashRule": "Null before an accepted response; required and immutable after the accepted response.",
+      "deletionReceiptIdHashRule": "Null until the exact scoped receipt verifies; required and immutable after verification.",
+      "deletionReceiptVerificationOutcomeRule": "Null until the exact scoped receipt verifies; the DELETED_REMOTE row requires exact value VERIFIED.",
+      "deletionSubstatusRule": "Required and non-null only for DELETE_PENDING deletion rows, null for DELETED_REMOTE and all non-deletion rows, and otherwise limited to queueCatalogBoundary.deletionSubstatusCatalog.",
+      "contentFreeDeletionErrorCodeRule": "Nullable when there is no current deletion error; otherwise limited to queueCatalogBoundary.contentFreeDeletionErrorCodeCatalog and forbidden from containing content, identifiers, endpoints, response bodies or credentials. It is null for DELETED_REMOTE.",
+      "eventOutcomeMappingRule": "Every remote-deletion row follows queueCatalogBoundary.deletionEventOutcomeMapping; PRESERVE_CURRENT retains the current exact six-value pending substatus and is not a ledger value."
+    },
     "forbiddenPublicFields": [
       "serial or IMEI",
       "advertising ID",
