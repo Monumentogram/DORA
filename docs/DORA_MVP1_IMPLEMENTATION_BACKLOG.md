@@ -1,7 +1,7 @@
 # Dora MVP 1 — Executable Backlog
 
-Версия: Stage 0D POC-RECOVERY-001 reviewed/merged I1 contract foundation / execution hold\
-Дата: 16 августа 2026 года\
+Версия: Stage 0D parallel with DORA Alpha Increment 1\
+Дата: 17 августа 2026 года\
 Owner approvals effective: 4 августа 2026 года (`OD-01`–`OD-10`), 11 августа 2026 года (`OD-11`–`OD-13`), recovery constraints / prospective `REC-JSR305-EXCLUDE-001` 12 августа 2026 года (`OD-14`; governance package only), and exact task-scoped `REC-I1-AUTH-20260813-01` on 13 августа 2026 года (pure contract foundation only; no runtime crypto/execution/merge)\
 Источник порядка: Technical Plan §37/§39, Design Spec §36/§39 и readiness gates.
 
@@ -98,6 +98,23 @@ are superseded only for this narrow I1 foundation.
 | DES-ADAPT-001 | TODO | D10 compact→expanded/posture | DES-IA-001 | resize/state/inset/hinge evidence |
 
 ## 5. Stage 1 — production project foundation (после Stage 0 go/no-go)
+
+Stage 1 remains gated. The separate internal Alpha below is not Stage 1 or production admission.
+
+## 5A. DORA Alpha — parallel internal product track
+
+Authority: direct Project-owner scope `DORA-ALPHA-001`, `ALPHA-GATE-001`, `DEC-045` and
+`ADR-0003`. Alpha does not alter Stage 0 PoC state or production readiness.
+
+| ID | State | Size | Task | Depends on | Deliverable / acceptance |
+|---|---|---:|---|---|---|
+| ALPHA-001 | DONE | S | Freeze Charter, critical path, seven-day increment and exact DoD | direct owner scope | `DORA_ALPHA_CHARTER.md`, `DEC-045`, `ADR-0003`; product-code boundary and non-claims explicit |
+| ALPHA-002 | READY | M | Bounded manual-workspace model, codec and AtomicFile repository | ALPHA-001 | versioned app-private snapshot; bounds/corruption/Unicode/duplicate/restart tests; no dependency or security claim |
+| ALPHA-003 | READY | L | Manual create/view/edit workspace | ALPHA-002 | user-owned title, notes/transcript, summary and conversation tasks persist after restart; no fake AI/source |
+| ALPHA-004 | READY | M | Local history, search and task completion | ALPHA-002/003 | deterministic case-insensitive local search; completed state persists; no network/GMS/account |
+| ALPHA-005 | READY | M | Explicit local whole-conversation deletion | ALPHA-002/003 | confirmation before mutation; persisted absence after restart; local-only scope and no physical/crypto-erasure claim |
+| ALPHA-006 | READY | M | Honest unavailable states and accessibility Tier A | ALPHA-003/004/005 | recording/import/ASR/diarization/automatic results/models/cloud/export disabled; semantic labels, 48-dp actions, compact/wide and 200% fixtures |
+| ALPHA-007 | BLOCKED | M | Internal Alpha APK/physical smoke and install guide | ALPHA-002–006, exact-head CI, physical Android profile | debug APK digest + exact commit; create→edit→restart→search→toggle→delete smoke; no known P0/P1; installation/limitations guide |
 
 | ID | State | Задача | Gate | Acceptance |
 |---|---|---|---|---|

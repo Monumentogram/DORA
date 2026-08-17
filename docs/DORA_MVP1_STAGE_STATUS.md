@@ -1,6 +1,6 @@
 # Dora MVP 1 — Stage Status
 
-Updated: 16 August 2026
+Updated: 17 August 2026
 Baseline: `1be83e2940a09f7b23e33b4cdf3827de2690f3fd`
 Stage 00 merge commit: `a4aae302f9033e5471f6759f513e7e351c375a72`
 Stage 0A merge commit: `91b9916b01ff70f63d82412bafbed0d72307dbe1`
@@ -12,6 +12,32 @@ Active stage: `Stage 0D — POC-RECOVERY-001 authorized I1 contract foundation`
 Work branch: task-scoped; live Git/GitHub metadata is authoritative and no branch name is a stage invariant
 Active PoC: `POC-RECOVERY-001`
 Stage state: **REC-I1 REVIEWED AND SQUASH-MERGED; POST-MERGE VALIDATOR LIFECYCLE REMEDIATED; RUNTIME IMPLEMENTATION, ACTUAL GRAPH AND EXECUTION BLOCKED**
+
+Parallel product track: `DORA-ALPHA-001`\
+Alpha state: **INCREMENT 1 GOVERNANCE READY; MANUAL LOCAL WORKSPACE IMPLEMENTATION AUTHORIZED**\
+Alpha branch: `codex/dora-alpha-001` from verified `main` `223f31d87355596c8cb36576d2d94366eae9d620`
+
+## Parallel DORA Alpha status
+
+The Project owner explicitly opened `DORA-ALPHA-001` in parallel with formal Stage 0 closure.
+`DORA_ALPHA_CHARTER.md`, `DEC-045` and `ADR-0003` create `ALPHA-GATE-001` and authorize only an
+internal non-release manual local workspace: user-authored conversation title, notes/transcript,
+manual summary and conversation-scoped manual tasks with view/edit/search/toggle/delete and restart
+persistence.
+
+The Alpha does not change this file's active Stage 0D state or any PoC verdict. Recording/import/
+audio, VAD, ASR, diarization, automatic protocol/summary/task extraction, models, network/cloud,
+account/GMS and export remain unavailable. Real meeting/voice/sensitive data, production identity,
+signing, store/release and Stage 0 PASS claims remain unauthorized.
+
+The approved Increment 1 storage boundary is a dependency-free, bounded, versioned app-private
+AtomicFile snapshot. It is explicitly not Room/SQLCipher, encrypted Dora storage, a production
+schema or a security/physical-erasure claim. `RDY-002` is reconciled only for this disposable Alpha
+model through conversation ownership and `origin=USER`; future production schema remains open.
+
+The first Alpha branch/PR uses separate governance and implementation commits. Draft publication is
+allowed after proportional local checks. Ready/merge requires exact-head CI, independent review
+with no P0/P1, unchanged scope and no specialist blocker. No PR is merged by this status update.
 
 Design-governance reconciliation: `DES-EXPORT-001` / `des-export-interaction-v0.1` is contract
 complete under `DEC-017`; no implementation/conformance/user-research, code/Figma/schema/provider

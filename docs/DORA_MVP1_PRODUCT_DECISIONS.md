@@ -2,7 +2,7 @@
 
 Статус документа: единый реестр решений владельца продукта\
 Дата: 15 августа 2026 года\
-Последнее изменение: `DEC-013` утверждён только как versioned reversible design/governance contract `des-storage-retention-delete-v0.1`; implementation, schema, deletion execution, conformance, research, Legal/Security и production admission остаются separately scoped. Recovery authority, prospective `REC-JSR305-EXCLUDE-001`, exact future graph и execution не изменены\
+Последнее изменение: `DEC-045` утверждает только `DORA-ALPHA-001` Increment 1 manual local workspace; Stage 0 verdicts, production storage/capture/ML/backend, real data, Legal/Security и release не изменены\
 Основание: Technical Plan §40 P1–P20, Design Spec §40.2 D-P1–D-P22 и owner approval record Stage 0A.
 
 `Provisional` означает, что рекомендуемый baseline можно использовать для обратимого PoC/bootstrap, но это не заменяет явное решение владельца. `Proposed` запрещает необратимые или пользовательские действия до утверждения. `Approved` означает прямое решение владельца в указанной области; оно не расширяет scope на production, Legal или release без явной формулировки. Статусы, повышенные owner-решением, ссылаются на соответствующий `OD-*`, владельца и дату.
@@ -699,6 +699,26 @@ Decision record: `docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md`; Gate Set: `do
 Finding status: `REC-REV-20260812-01=CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE`; `REC-REV-20260812-02=CLOSED_BY_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW`; `REC-RDY-02=CLOSED_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW`.\
 Active identities: Gate Set `poc-recovery-stage0-v0.6`; protocol `poc-recovery-protocol-stage0-v0.6`.\
 Связанные задачи: `POC-GATES-001`, `POC-DEVICE-001`, `POC-RECOVERY-001`, future final `ADR-AUDIO-001`.
+
+## DEC-045. DORA Alpha Increment 1 manual local workspace
+
+Статус: Approved for `DORA-ALPHA-001` Increment 1 only\
+Приоритет: P0\
+Источник: direct Project-owner instruction of 17 August 2026 to launch DORA Alpha in parallel with Stage 0, create the necessary DEC/ADR/backlog/status records and immediately implement the narrowest useful honest slice\
+Дата решения: 17 August 2026\
+Владелец решения: Project owner\
+Область утверждения: internal non-release Alpha Increment 1 under `ALPHA-GATE-001`; no production or Stage 0 reclassification\
+Утверждённое поведение: user-authored conversation title, transcript/notes, manual summary and conversation-scoped manual tasks can be created, viewed, edited, searched, completed and deleted locally without account, network or GMS. Every stored task has `origin=USER`; no transcript/source event is fabricated.\
+Честный fallback: recording/import/audio, ASR, diarization, automatic protocol/summary/task extraction, models, cloud and export are visibly unavailable and produce no placeholder result.\
+Data boundary: only synthetic or non-sensitive test text until a later privacy/data decision; real meetings, voice and unapproved personal data are not authorized.\
+Техническая граница: Alpha-only versioned bounded app-private AtomicFile snapshot, no new runtime dependency and no Room/SQLCipher/encryption/security claim; preserve the non-release bootstrap ID.\
+Readiness reconciliation: `RDY-002` is resolved only for this disposable Alpha model by requiring conversation ownership plus `origin=USER` and allowing no machine-source claim. The future production task schema remains unresolved and unchanged.\
+Обоснование: this is the largest useful end-to-end local slice that does not depend on blocked capture, storage-crypto, data-corpus, ML, backend or Legal gates and does not misrepresent synthetic output.\
+Влияние на архитектуру: reuse `:app`/Compose/semantic tokens; isolate a replaceable bounded store behind a repository; no new module until a real boundary requires one.\
+Влияние на UX: manual authorship and limitations are explicit; the microphone action remains unavailable; whole-conversation local deletion requires confirmation.\
+Обратимость: high before production schema or real data; Alpha snapshot migration/discard requires a later ADR.\
+Не разрешает: production identity/signing/release, store publication, real meeting data, audio, models, cloud/backend, dependency admission, Stage 0 PASS or security/privacy compliance claims.\
+Связанные артефакты: `DORA_ALPHA_CHARTER.md`, `ADR-0003`, `ALPHA-001`–`ALPHA-007`.
 
 ## Stage 0A owner approval record
 
