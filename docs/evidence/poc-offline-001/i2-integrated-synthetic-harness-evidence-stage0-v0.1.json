@@ -1,0 +1,453 @@
+{
+  "schemaVersion": "poc-offline-i2-integrated-synthetic-harness-evidence-stage0-v0.1",
+  "recordId": "OFF-I2-INTEGRATED-SYNTHETIC-HARNESS-EVIDENCE-001",
+  "recordDate": "2026-08-17",
+  "timezone": "Europe/Moscow",
+  "disposition": "PURE_HOST_SYNTHETIC_IN_MEMORY_SEMANTICS_TWO_REMEDIATIONS_LOCAL_CHECKS_PASS_FRESH_EXACT_HEAD_CI_AND_REVIEW_REQUIRED",
+  "artifactState": "LOCAL_RESULT_ENVELOPE_REMEDIATION_AND_TEST_EVIDENCE_COMPLETE_DRAFT_PR_FRESH_EXACT_HEAD_CI_AND_REVIEW_REQUIRED",
+  "backlogTruth": {
+    "id": "POC-OFFLINE-001",
+    "status": "TODO",
+    "readiness": "NOT_READY",
+    "integratedExecution": "NOT_RUN",
+    "authorization": "NOT_AUTHORIZED"
+  },
+  "authorization": {
+    "authorizationId": "STAGE0-OWNER-UNLOCK-BATCH-20260817-02",
+    "branch": "codex/poc-offline-i2-integrated-synthetic-harness",
+    "normalizedScope": "disposable dependency-free pure Java 17 deterministic synthetic integrated harness plus tests evidence commit push Draft PR and exact host CI",
+    "i2ImplementationAllowed": true,
+    "localSyntheticHarnessExecutionAllowed": true,
+    "commitAllowed": true,
+    "pushAllowed": true,
+    "draftPullRequestAllowed": true,
+    "readyAllowed": false,
+    "mergeAllowed": false
+  },
+  "technicalRemediation": {
+    "authorizationId": "OFF-I2-QUEUE-BINDING-REMEDIATION-AUTH-20260817-01",
+    "sourcePullRequest": 37,
+    "sourceHead": "76cb1afc164757a71c7a70caf476577399b42ed1",
+    "sourceTree": "8eb3a5c0cabf458b80a1bb06167fe2ddff267701",
+    "findingSeverity": "P1",
+    "findingStatus": "CONFIRMED_REMEDIATED_AND_EXACT_HEAD_CI_PASSED_FRESH_REVIEW_FOUND_SEPARATE_P1",
+    "finding": "state and snapshot validation did not bind canonical queue input to local lineage, exhaustively bind queue lifecycle to action index, or bind trace prefixes to the deterministic action outcome and state chain",
+    "allowedFiles": [
+      ".github/workflows/stage0-host-oracles.yml",
+      "docs/evidence/poc-offline-001/i2-integrated-synthetic-harness-evidence-stage0-v0.1.json",
+      "tools/offline_i2_integrated_harness/src/main/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarness.java",
+      "tools/offline_i2_integrated_harness/src/test/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarnessTest.java"
+    ],
+    "originalExactHeadCi": {
+      "head": "76cb1afc164757a71c7a70caf476577399b42ed1",
+      "hostRun": 32025078118,
+      "authorizedScopeJob": 95372691713,
+      "offlineI2Job": 95372715834,
+      "advisoryJob": 95372789039,
+      "androidRun": 32025078082,
+      "searchSmokeJob": 95372691260,
+      "androidBootstrapJob": 95372691342,
+      "conclusion": "success"
+    },
+    "remediatedExactHeadCi": {
+      "head": "8eff995683f9cad2efb4fa04cbd339356062c692",
+      "hostRun": 32027933649,
+      "authorizedScopeJob": 95381190958,
+      "offlineI2Job": 95381218729,
+      "advisoryJob": 95381289446,
+      "androidRun": 32027933676,
+      "androidAttempt": 2,
+      "searchSmokeJob": 95382250677,
+      "androidBootstrapJob": 95382249813,
+      "initialAndroidBootstrapFailureJob": 95381190961,
+      "initialFailureClass": "EXTERNAL_MAVEN_CENTRAL_HTTP_403",
+      "conclusion": "success"
+    },
+    "invariantsAdded": [
+      "canonicalInputDigest equals SHA-256 domain QUEUE_INPUT_V1 over conversationIdHash and exportDigest",
+      "local phase queue state counters and replay marker equal the exhaustive action-index lifecycle",
+      "every trace prefix row is rebound by deterministic replay to its exact sequence action outcome pre-state post-state local aggregate queue identity and final state before transition snapshot restore and result acceptance"
+    ],
+    "scopeExpansion": false,
+    "readyOrMerge": false
+  },
+  "resultEnvelopeRemediation": {
+    "authorizationId": "OFF-I2-RESULT-ENVELOPE-BINDING-REMEDIATION-AUTH-20260817-02",
+    "sourcePullRequest": 37,
+    "sourceHead": "8eff995683f9cad2efb4fa04cbd339356062c692",
+    "sourceTree": "da23096754f4279303a7b8b2ee701f857507d923",
+    "independentTechnicalVerdict": {
+      "disposition": "CHANGES_REQUIRED",
+      "P0": 0,
+      "P1": 1,
+      "P2": 0
+    },
+    "findingStatus": "CONFIRMED_AND_LOCALLY_REMEDIATED_FRESH_EXACT_HEAD_CI_AND_REVIEW_REQUIRED",
+    "finding": "RunResult accepted a declared profile different from finalState.profile, arbitrary shape-valid I1 witness digests, and an arbitrary shape-valid summaryDigest because the result envelope did not recompute those bindings",
+    "allowedFiles": [
+      ".github/workflows/stage0-host-oracles.yml",
+      "docs/evidence/poc-offline-001/i2-integrated-synthetic-harness-evidence-stage0-v0.1.json",
+      "tools/offline_i2_integrated_harness/src/main/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarness.java",
+      "tools/offline_i2_integrated_harness/src/test/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarnessTest.java"
+    ],
+    "invariantsAdded": [
+      "declared RunResult profile equals finalState.profile",
+      "supplied I1Witnesses equals the exact six-field verifyI1Witnesses output",
+      "RUN_SUMMARY_V1 is recomputed from the bound profile exact final state and local aggregate copied trace size and digest bound witnesses and fixed proof class",
+      "profile witness and summary mismatches fail closed without mutating the accepted state trace witnesses or summary"
+    ],
+    "freshExactHeadCiRequired": true,
+    "freshIndependentReviewRequired": true,
+    "scopeExpansion": false,
+    "readyOrMerge": false
+  },
+  "sourceBaseline": {
+    "githubMainCommit": "ca817b07651a8524792ccd3af7af3dff75612730",
+    "githubMainTree": "bc428d22cd5c00dc37c2fb926986a40962364047",
+    "githubMainSignature": "VERIFIED",
+    "exactMainAndroidCiRun": 32020702638,
+    "androidBootstrapJob": 95359591263,
+    "searchSmokeJob": 95359591358,
+    "exactMainConclusion": "success"
+  },
+  "contractPins": [
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_OFFLINE_READINESS_CONTRACT_STAGE0_V0_1.md",
+      "bytes": 45377,
+      "sha256": "9a905eabbcd75601fc598cccc001dcff56a5b6b65eeb936f2a9c4602d658682a"
+    },
+    {
+      "path": "docs/evidence/poc-offline-001/readiness-contract-stage0-v0.1.json",
+      "bytes": 58124,
+      "sha256": "a564cf9031f610006327c374baff82983de2ea9ba4b6c9d13d6185e7967a6dae"
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_OFFLINE_I1_HOST_ORACLE_SCOPE_STAGE0_V0_1.md",
+      "bytes": 32916,
+      "sha256": "f3134d5e97fc8c728b31260a056d3d916e523a5a34256bee2dd89d486292f4f2"
+    },
+    {
+      "path": "docs/evidence/poc-offline-001/i1-host-oracle-scope-stage0-v0.1.json",
+      "bytes": 52997,
+      "sha256": "83075ca723f007b1f282fe0e089a7725a68d8bcf69ebb084f0f1a44704fb97b7"
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_OFFLINE_I1_SEMANTICS_AND_IMPLEMENTATION_SCOPE_STAGE0_V0_2.md",
+      "bytes": 46364,
+      "sha256": "64a8cd6c7230b104834ca8bdb8a8a3a1c1525277dc8b913487acf2739e67c08e"
+    },
+    {
+      "path": "docs/evidence/poc-offline-001/i1-semantics-and-implementation-scope-stage0-v0.2.json",
+      "bytes": 124165,
+      "sha256": "156915ba88f97e9bbf08da02b6ef4c2b475c173f1f9b96e8c70fe50e2a174785"
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_OFFLINE_I1_RESOURCE_ENVELOPE_AMENDMENT_STAGE0_V0_3.md",
+      "bytes": 13595,
+      "sha256": "d28faad79faa740c8dc54095c9bd8cc9ad9d59de592261784eaea3e2eb1de2a0"
+    },
+    {
+      "path": "docs/evidence/poc-offline-001/i1-resource-envelope-amendment-stage0-v0.3.json",
+      "bytes": 16965,
+      "sha256": "6972a5df028f64664c4f411cedb87f3db2a7a2e1d8ae982ae707bd2ca3e7f46f"
+    },
+    {
+      "path": "docs/evidence/poc-offline-001/i1-host-oracle-implementation-evidence-stage0-v0.1.json",
+      "bytes": 15672,
+      "sha256": "27168571abe76fc76e958ca984217b5ff58f6433d7790e36a72d065815de876d"
+    }
+  ],
+  "i1ImplementationPins": [
+    {
+      "path": "tools/offline_i1_oracle/src/main/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1Oracle.java",
+      "bytes": 213295,
+      "sha256": "2eb3a80716fdc25abe7300552c8ba95f4deabe68e7c8d5d42dcf9d5cb13235bf"
+    },
+    {
+      "path": "tools/offline_i1_oracle/src/test/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1OracleTest.java",
+      "bytes": 244685,
+      "sha256": "235be2b6d3c646ce9c0910369de99847a149d226159ab1f8a1785e074572b89c"
+    }
+  ],
+  "implementationPins": [
+    {
+      "kind": "I2_MAIN",
+      "path": "tools/offline_i2_integrated_harness/src/main/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarness.java",
+      "bytes": 47515,
+      "lines": 1378,
+      "sha256": "74a775220f58fedcb51fc3eeac3d6d0e652377e19e1597269105c5a432e25ac2"
+    },
+    {
+      "kind": "I2_TEST",
+      "path": "tools/offline_i2_integrated_harness/src/test/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarnessTest.java",
+      "bytes": 41310,
+      "lines": 982,
+      "sha256": "fa307e3fdc1c03a2ebbe9b7a916f9523374384342c04748bf406bfb7ead07383"
+    }
+  ],
+  "implementationBoundary": {
+    "harnessId": "poc-offline-i2-integrated-synthetic-harness-stage0-v0.1",
+    "package": "com.monumentogram.dora.stage0.offline.i2",
+    "language": "Java",
+    "languageLevel": 17,
+    "dependencyBoundary": "JAVA_STANDARD_LIBRARY_ONLY",
+    "bytecodeModuleDependencies": [
+      "java.base"
+    ],
+    "externalDependencies": [],
+    "gradleModuleAdded": false,
+    "androidSourceAdded": false,
+    "filesystemPersistence": false,
+    "networkSocketOrDnsSurface": false,
+    "environmentProcessThreadClockOrRandomSurface": false,
+    "modelRuntimeOrWeightPresent": false,
+    "providerOrVpnSurface": false,
+    "productionIntegration": false,
+    "proofClass": "PURE_HOST_SYNTHETIC_IN_MEMORY_SEMANTICS_NOT_DEVICE_NETWORK_OR_PRODUCT"
+  },
+  "fixtureProfiles": [
+    {
+      "id": "MODEL_ABSENT",
+      "modelState": "MODEL_NOT_INSTALLED",
+      "processingOutcome": "WAITING_MODEL",
+      "localCoreOutcome": "EXPORTED_LOCAL",
+      "summaryDigest": "fc222dc7240b0137014b9c5928eb5ed4e3dfd23cd74c94b2bf93a6f0d4d80071",
+      "traceDigest": "2a1fb678219c16711b0deff2e429dd454dbdb508ad514c94fbd1168563910fb5"
+    },
+    {
+      "id": "MODEL_PRESENT_UNAPPROVED",
+      "modelState": "MODEL_UNAVAILABLE_OR_INVALID",
+      "processingOutcome": "PROCESSING_FAILED_SCOPED",
+      "localCoreOutcome": "EXPORTED_LOCAL",
+      "summaryDigest": "c192a29008965a55e7720daec676921586af7eb2df071bc7f03dd071114ef685",
+      "traceDigest": "07092ac03841f5e9b69734e6b48cf9eabf62aecf61b61ae55f1936ba4b18db3c"
+    }
+  ],
+  "actionSequence": [
+    "CAPTURE_SYNTHETIC_SOURCE",
+    "SAVE_LOCAL_SOURCE",
+    "PROCESS_RULES_ONLY",
+    "OPEN_HISTORY",
+    "SEARCH_LOCAL_INDEX",
+    "CREATE_LOCAL_TASK",
+    "EDIT_LOCAL_PROTOCOL",
+    "COPY_LOCAL_REPRESENTATION",
+    "EXPORT_LOCAL_REPRESENTATION",
+    "REQUEST_REQUIRED_MODEL",
+    "ENQUEUE_CLOUD_INTENT",
+    "DENIED_SCHEDULER_TICK",
+    "REPEAT_LOCAL_WHILE_WAITING",
+    "SNAPSHOT_AND_RESTORE",
+    "PROJECT_RECONNECT_CONFLICT",
+    "PROJECT_SAME_INPUT_REPLAY"
+  ],
+  "knownAnswerLineage": {
+    "conversationIdHash": "cfc1c032ec573d792fcbf2a828dab13781d0f04dddfb44e4859afdbd164ef7fb",
+    "sourceDigest": "62afd6ae53abf9c531354c36f47d5363351da2c68ba35a853c8d14819f863117",
+    "durableDigest": "d2d5e28795cd741aa5d4317d2fe418e9e5869607723cba9845fb7bf7dc0c98a2",
+    "transcriptShapeDigest": "ae319be3080dfaf4b3cfad536e393931d3b3d76c79e1968aa0b392a788262e84",
+    "userOwnedProtocolDigest": "4ad1e273c9c31e859fb30bb512db7d6d67450f78851cffeb7e3704e76a3d1812",
+    "taskDigest": "377852ed029525fcdf09b4d5486f046801d13d6ef08a89421093816b93ef65e4",
+    "taskSourceProtocolDigest": "454dc56497b73c3ca66dea31b99621680c1898534bb6a043e6fa6ed7ffd5b309",
+    "copyDigest": "a69d12d5d8808a99f5b22979650c5b664cd58daeaee1785590b479b433ce490f",
+    "exportDigest": "1a1d4e5e284e537f79679ced27b024eb7cd7d1ee241413ce7a77edccd035a560",
+    "queueIntentIdHash": "2c77d3e0dbe6fef1b438ba2bffbcf930481116d56af31124ee334a7e2c56b05a",
+    "queueCanonicalInputDigest": "c57e5514a1ce49bba8234faa30af08824361aed75dbbea67483aa2abf94eb1cf"
+  },
+  "queueAndOwnershipAssertions": {
+    "networkDeniedState": "WAITING_NETWORK",
+    "attemptCountWhileDenied": 0,
+    "localWorkWhileWaitingPreservesQueueIdentity": true,
+    "snapshotBoundary": "IMMUTABLE_IN_MEMORY_COPY_ONLY",
+    "reconnectBoundary": "PURE_SEMANTIC_PROJECTION_NOT_TRANSPORT_EXECUTION",
+    "reconnectOutcomeAfterUserEdit": "CONFLICT",
+    "attemptCountAfterFirstProjection": 1,
+    "attemptCountAfterSameInputReplay": 2,
+    "effectCountAfterReplay": 1,
+    "applyCountAfterReplay": 0,
+    "canonicalInputBoundToConversationAndExport": true,
+    "queueLifecycleBoundToExactActionIndex": true,
+    "tracePrefixBoundBeforeStateAcceptance": true,
+    "runResultProfileBoundToFinalState": true,
+    "runResultWitnessesBoundToSixCanonicalI1Witnesses": true,
+    "runSummaryRecomputedFromBoundEnvelope": true,
+    "userOwnedProtocolOverwritten": false,
+    "taskSourceLineageOverwritten": false
+  },
+  "i1WitnessKnownAnswers": {
+    "modelAbsentDigest": "af8905cbafcb61ba64cec680e001a2399bbd442d71d92c42049768043217bd13",
+    "deniedQueueDigest": "bff7b94a2842026018dd6910768953f5e07954a775f37abdc3d2a8b97d5b199b",
+    "localWhileQueuedDigest": "e56ffb5df8bcfaae842d0d5638e4a71e78be45db3967edde18b8b17fd780e422",
+    "snapshotContinuationDigest": "d2f343f8b92080603cc9fde7c0c0e7298d1e4bc7907a34273971b203fb1996b6",
+    "reconnectExactlyOnceDigest": "737413ba09679254982f939426cd603ab347f7635b4e8ec30334cfcb758416b8",
+    "replayExactlyOnceDigest": "4cf8509cc8356d7b1ffe1fe00ad9cea75c9a178a121117269dc015e9dad81ec3"
+  },
+  "localValidation": {
+    "jdk": "Microsoft OpenJDK 17.0.10+7-LTS Windows x86_64",
+    "javaSha256": "98fd4a0eec7fa39abbc2b3f55007ed9c8c24ef8fa5d7c04c3895b4c5915ec3f1",
+    "javacSha256": "0e79806dea4681cf6bb1fd41b4d5ba8c579481cb70a28890fe65813639294ffe",
+    "releaseMetadataSha256": "f463618c7067d1d7421a2aacdc8a4cfa939e9844436462c1c165cbed20a9769a",
+    "compileFlags": [
+      "-encoding UTF-8",
+      "--release 17",
+      "-Xlint:all",
+      "-Werror"
+    ],
+    "runtimeFlags": [
+      "-ea",
+      "-Xverify:all"
+    ],
+    "testRunCount": 2,
+    "strictVerificationRunCount": 1,
+    "testStdout": "PASS offline-i2-integrated-synthetic-harness",
+    "testStderrBytes": 0,
+    "i1RegressionRunRequired": true,
+    "jdepsExpected": "java.base",
+    "result": "PASS_LOCAL_EXACT_BYTES"
+  },
+  "testCoverage": {
+    "modelProfileCount": 2,
+    "actionCountPerProfile": 16,
+    "knownAnswerSummaryCount": 2,
+    "knownAnswerTraceCount": 2,
+    "knownAnswerLineageFieldCount": 11,
+    "i1WitnessCount": 6,
+    "checks": [
+      "exact action order and trace chaining",
+      "capture save rules-only processing history search task edit copy export lineage",
+      "model absent waits without blocking local core",
+      "model present but unapproved fails closed without false admission",
+      "network denied queue has zero attempts effects and applies",
+      "local work while queued preserves identity counters and user ownership",
+      "immutable in-memory snapshot restore and continuation equality",
+      "semantic reconnect conflict preserves the user edit",
+      "same-input replay adds no second effect and no apply",
+      "canonical queue input mismatch fails closed before state acceptance",
+      "foreign queue states phase-index mismatches counter drift and replay-marker drift fail closed",
+      "trace action outcome sequence chain queue identity intermediate local digest and final state drift fail closed even when a forged trace digest is self-consistent",
+      "RunResult declared profile mismatch fails closed",
+      "each of the six RunResult I1 witness fields fails closed when replaced independently",
+      "RunResult summary digest is recomputed from the exact bound envelope and mismatch fails closed",
+      "RunResult adversarial construction does not mutate accepted state trace witnesses or summary and copies the supplied trace",
+      "I1 model queue snapshot reconnect and replay witness parity",
+      "null order digest snapshot queue identity model admission and counter tamper fail closed",
+      "immutable result collections and content-free evidence shape"
+    ]
+  },
+  "ciContract": {
+    "workflow": ".github/workflows/stage0-host-oracles.yml",
+    "job": "stage0-host-offline-i2",
+    "authorizedHead": "codex/poc-offline-i2-integrated-synthetic-harness",
+    "base": "main",
+    "requiredExactDiffFileCount": 4,
+    "exactHeadCiStatus": "REQUIRED_LIVE_GITHUB_AUTHORITATIVE_NOT_EMBEDDED",
+    "androidCiStatus": "REQUIRED_BY_REPOSITORY_NOT_OFFLINE_DEVICE_EVIDENCE"
+  },
+  "readinessImpact": {
+    "OFF-LYR-002": "PURE_HOST_SYNTHETIC_IN_MEMORY_SUBSET_IMPLEMENTED_NOT_PRODUCT_OR_DEVICE_INTEGRATION",
+    "OFF-RDY-03": "PARTIALLY_EVIDENCED_HOST_SEMANTICS_ONLY_NOT_CLOSED",
+    "OFF-RDY-07": "PURE_SEMANTIC_RECONNECT_PROJECTION_ONLY_NOT_CLOSED",
+    "inheritedOfflineBlockerCount": 10,
+    "inheritedOfflineBlockersClosed": 0,
+    "stageStatusMutation": false,
+    "backlogMutation": false,
+    "offlinePassClaimed": false,
+    "pocTruth": "TODO_NOT_READY_NOT_RUN_NOT_AUTHORIZED"
+  },
+  "taskSpecificScopeFlags": {
+    "i2Implementation": true,
+    "localSyntheticHarnessExecution": true,
+    "testAndEvidenceCreation": true,
+    "commitAndPush": true,
+    "draftPullRequest": true,
+    "exactHostCi": true,
+    "readyOrMerge": false
+  },
+  "broaderAuthorityFlags": {
+    "productImplementationAllowed": false,
+    "androidIntegrationAllowed": false,
+    "deviceExecutionAllowed": false,
+    "emulatorExecutionAllowed": false,
+    "networkExecutionAllowed": false,
+    "socketOrDnsExecutionAllowed": false,
+    "gmsExecutionAllowed": false,
+    "modelExecutionAllowed": false,
+    "providerExecutionAllowed": false,
+    "vpnExecutionAllowed": false,
+    "recoveryExecutionAllowed": false,
+    "realDataAllowed": false,
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "productionApiAdmission": false,
+    "featureFlagActivationAllowed": false,
+    "legalApprovalClaimed": false,
+    "securityApprovalClaimed": false,
+    "formalHumanApprovalClaimed": false,
+    "offlinePassClaimed": false,
+    "readyAllowed": false,
+    "mergeAllowed": false
+  },
+  "review": {
+    "formalReviewer": false,
+    "independentAdvisoryReviewPerformed": false,
+    "remediationReviewClass": "TECHNICAL_REMEDIATION_NOT_FORMAL_INDEPENDENT_ADVISORY",
+    "latestIndependentTechnicalVerdict": {
+      "sourceHead": "8eff995683f9cad2efb4fa04cbd339356062c692",
+      "disposition": "CHANGES_REQUIRED",
+      "P0": 0,
+      "P1": 1,
+      "P2": 0
+    },
+    "confirmedFindings": {
+      "P0": 0,
+      "P1": 2,
+      "P2": 0
+    },
+    "locallyRemediatedFindings": {
+      "P0": 0,
+      "P1": 2,
+      "P2": 0
+    },
+    "remainingImplementerLocalFindings": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 0
+    },
+    "freshIndependentReviewStatus": "REQUIRED_AFTER_FRESH_EXACT_HEAD_CI",
+    "findingCountsClass": "TWO_TECHNICAL_P1_FINDINGS_LOCALLY_REMEDIATED_FRESH_EXACT_HEAD_CI_AND_REVIEW_PENDING_NOT_FORMAL_REVIEW"
+  },
+  "privacy": {
+    "repositoryOwnedSyntheticFixtureOnly": true,
+    "rawIdentifiersPresent": false,
+    "userOrMeetingContentPresent": false,
+    "rawAudioOrTextPresent": false,
+    "absolutePathPresent": false,
+    "endpointIpUrlOrPacketPresent": false,
+    "credentialTokenOrSecretPresent": false,
+    "modelBytesPresent": false,
+    "publicEvidenceContentFree": true,
+    "ciArtifactUpload": false,
+    "stdoutClass": "ONE_FIXED_PASS_MARKER_ONLY"
+  },
+  "proofBoundary": {
+    "mayClaim": [
+      "two exact deterministic pure-host model-boundary profiles execute the same content-free local-core semantic path",
+      "digest-linked capture save rules-only processing history search task user edit copy and export semantics are integrated in memory",
+      "the denied queue has zero attempts while local work remains usable",
+      "an immutable in-memory restore and pure reconnect conflict replay projection preserve user ownership and at-most-one effect",
+      "the RunResult envelope locally rejects mismatched profile witnesses trace binding summary digest and proof class",
+      "the exact implementation has local Java 17 compile test static and known-answer evidence"
+    ],
+    "mustNotClaim": [
+      "Android product or user-interface integration",
+      "filesystem durability database storage process-death or reboot execution",
+      "actual network absence call-monitor DNS socket reconnect VPN route provider or backend evidence",
+      "approved model runtime weight inference quality or 16-KiB evidence",
+      "device emulator D4 no-GMS physical matrix battery or support evidence",
+      "real-data Legal Security dependency or production admission",
+      "closure of any inherited Offline blocker",
+      "POC-OFFLINE-001 readiness authorization execution PASS or completion",
+      "Ready or merge authority"
+    ]
+  }
+}
