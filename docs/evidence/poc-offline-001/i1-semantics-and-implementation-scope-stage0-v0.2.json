@@ -1,0 +1,1473 @@
+{
+  "schemaVersion": "poc-offline-i1-semantics-and-implementation-scope-stage0-v0.2",
+  "recordId": "OFF-I1-SEMANTICS-SCOPE-002",
+  "recordDate": "2026-08-16",
+  "recordedAt": "2026-08-16T17:41:31.2773422+03:00",
+  "timezone": "Europe/Moscow",
+  "disposition": "LOCAL_PURE_HOST_IMPLEMENTATION_SCOPE_DEFINED_REVIEW_REQUIRED",
+  "artifactState": "DECISION_PACKET_COMPLETE_PENDING_INDEPENDENT_ADVISORY_REVIEW",
+  "backlogItem": {
+    "id": "POC-OFFLINE-001",
+    "status": "TODO",
+    "readiness": "NOT_READY",
+    "execution": "NOT_RUN",
+    "authorization": "NOT_AUTHORIZED",
+    "changedByThisPackage": false
+  },
+  "sourceBaseline": {
+    "mainCommit": "78e9dd07d616989987118f26bb16ebb9932ddb2b",
+    "mainTree": "f403bf60b86273ee8a2634ed5e8530c9d4af20e4",
+    "stackedParentCommit": "d164b6372ad3e717762d48a9a3ea7e6551602ab7",
+    "stackedParentTree": "076c9eeda8180d775c6ec6dbb1dc5cc53aeb7ce6",
+    "localUnpublished": true
+  },
+  "markdownBinding": {
+    "path": "docs/stage0/DORA_MVP1_POC_OFFLINE_I1_SEMANTICS_AND_IMPLEMENTATION_SCOPE_STAGE0_V0_2.md",
+    "bytes": 46364,
+    "sha256": "64a8cd6c7230b104834ca8bdb8a8a3a1c1525277dc8b913487acf2739e67c08e"
+  },
+  "contractPins": [
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_OFFLINE_READINESS_CONTRACT_STAGE0_V0_1.md",
+      "bytes": 45377,
+      "sha256": "9a905eabbcd75601fc598cccc001dcff56a5b6b65eeb936f2a9c4602d658682a"
+    },
+    {
+      "path": "docs/evidence/poc-offline-001/readiness-contract-stage0-v0.1.json",
+      "bytes": 58124,
+      "sha256": "a564cf9031f610006327c374baff82983de2ea9ba4b6c9d13d6185e7967a6dae"
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_OFFLINE_I1_HOST_ORACLE_SCOPE_STAGE0_V0_1.md",
+      "bytes": 32916,
+      "sha256": "f3134d5e97fc8c728b31260a056d3d916e523a5a34256bee2dd89d486292f4f2"
+    },
+    {
+      "path": "docs/evidence/poc-offline-001/i1-host-oracle-scope-stage0-v0.1.json",
+      "bytes": 52997,
+      "sha256": "83075ca723f007b1f282fe0e089a7725a68d8bcf69ebb084f0f1a44704fb97b7"
+    }
+  ],
+  "sourceTrace": {
+    "technicalPlanSections": [
+      "21.3",
+      "22",
+      "28"
+    ],
+    "productDecisions": [
+      "DEC-009",
+      "DEC-012",
+      "DEC-013",
+      "DEC-015",
+      "DEC-017",
+      "DEC-020"
+    ],
+    "testStrategy": [
+      "TS-UNIT",
+      "TS-OFFLINE",
+      "TS-PRIVACY",
+      "Tier A"
+    ],
+    "dec012Boundary": "PROPOSED_NOT_UPGRADED_BY_THIS_PACKET"
+  },
+  "authorityFlags": {
+    "implementationAllowed": false,
+    "implementationAllowedByThisPackage": false,
+    "executionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "harnessExecutionAllowed": false,
+    "networkExecutionAllowed": false,
+    "deviceExecutionAllowed": false,
+    "emulatorExecutionAllowed": false,
+    "modelExecutionAllowed": false,
+    "gmsExecutionAllowed": false,
+    "cloudExecutionAllowed": false,
+    "vpnExecutionAllowed": false,
+    "providerExecutionAllowed": false,
+    "recoveryExecutionAllowed": false,
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "productionApiAdmission": false,
+    "realDataAllowed": false,
+    "credentialsAllowed": false,
+    "billingAllowed": false,
+    "featureFlagActivationAllowed": false,
+    "legalApprovalClaimed": false,
+    "securityApprovalClaimed": false,
+    "formalHumanApprovalClaimed": false,
+    "mergeAuthorized": false
+  },
+  "narrowLocalAuthorization": {
+    "prospectiveLocalImplementationScopeAllowed": true,
+    "activationRequiresStrictPacketValidation": true,
+    "activationRequiresCleanIndependentAdvisoryReview": true,
+    "activationDerivedFromExternalHashBoundReview": true,
+    "activationConditionsMet": false,
+    "implementationCreatedByThisPacket": false,
+    "implementationExecutedByThisPacket": false,
+    "commitAllowed": false,
+    "pushAllowed": false,
+    "pullRequestMutationAllowed": false,
+    "readyAllowed": false,
+    "mergeAllowed": false
+  },
+  "scopeFlags": {
+    "validatorExecutionAllowed": false,
+    "testExecutionAllowed": false,
+    "buildAllowed": false,
+    "dataStoreAccessAllowed": false,
+    "humanDataAllowed": false,
+    "newDependencyAllowed": false,
+    "androidIntegrationAllowed": false,
+    "statusMutationAllowed": false,
+    "publicationAllowed": false,
+    "formalSecurityApproval": false,
+    "formalReviewer": false,
+    "prAdvancementAllowed": false
+  },
+  "commonPrimitives": {
+    "contractId": "poc-offline-readiness-stage0-v0.1",
+    "textEncoding": "STRICT_UTF8_NO_BOM",
+    "lineFeedByteHex": "0a",
+    "normalization": "NONE",
+    "caseFolding": "NONE",
+    "trimming": "NONE",
+    "localeConversion": "NONE",
+    "opaqueIdPattern": "^[A-Za-z0-9._:-]{1,128}$",
+    "reservedOpaqueValue": "~",
+    "digestAlgorithm": "SHA-256",
+    "digestRendering": "LOWERCASE_HEX_64",
+    "integerDomain": "SIGNED_INT64_NON_NEGATIVE",
+    "integerEncoding": "BASE10_NO_LEADING_ZERO",
+    "futureOracleCanonicalJsonRules": [
+      "exact key order",
+      "no duplicate key",
+      "no unknown key",
+      "no missing key",
+      "no trailing byte",
+      "no insignificant whitespace",
+      "no float or exponent",
+      "no negative zero",
+      "no NaN or infinity"
+    ],
+    "governanceMirrorJsonRule": "TWO_SPACE_PRETTY_JSON_STRICT_PARSE_DUPLICATE_REJECTION_AND_MARKDOWN_SEMANTIC_PARITY; NOT_CANONICAL_ORACLE_BYTES"
+  },
+  "semanticDecisions": {
+    "OFF-I1-UNRESOLVED-001": {
+      "status": "RESOLVED_BY_V0_2",
+      "name": "SIX_QUEUE_AND_DELETION_HASH_PREIMAGES",
+      "framing": {
+        "prefix": "UTF8(contractId) || LF || ASCII(domain) || LF",
+        "stringField": "ASCII(name) || ASCII(\"=S\") || ASCII(decimal UTF-8 byte length with no leading zero) || ASCII(\":\") || UTF8(value) || LF",
+        "nullField": "ASCII(name) || ASCII(\"=N\") || LF; unused by all six identifier hashes and used only by replayInputDigest when deletionScopeDigest is null",
+        "nullableIdentifierRule": "JSON null means no preimage and no hash; empty, nullField, string null, zero bytes and zero digest are forbidden"
+      },
+      "hashes": [
+        {
+          "field": "logicalKeyHash",
+          "domain": "OFF_I1_LOGICAL_KEY_V1",
+          "orderedFields": [
+            "operationClass",
+            "opaqueLogicalKeyId"
+          ]
+        },
+        {
+          "field": "jobIdHash",
+          "domain": "OFF_I1_JOB_ID_V1",
+          "orderedFields": [
+            "logicalKeyHash",
+            "opaqueJobId"
+          ]
+        },
+        {
+          "field": "resultIdHash",
+          "domain": "OFF_I1_RESULT_ID_V1",
+          "orderedFields": [
+            "jobIdHash",
+            "opaqueResultId"
+          ]
+        },
+        {
+          "field": "deletionScopeDigest",
+          "domain": "OFF_I1_DELETION_SCOPE_V1",
+          "orderedFields": [
+            "scopeClass",
+            "opaqueScopeId"
+          ]
+        },
+        {
+          "field": "deletionIdHash",
+          "domain": "OFF_I1_DELETION_ID_V1",
+          "orderedFields": [
+            "logicalKeyHash",
+            "deletionScopeDigest",
+            "opaqueDeletionId"
+          ]
+        },
+        {
+          "field": "deletionReceiptIdHash",
+          "domain": "OFF_I1_DELETION_RECEIPT_ID_V1",
+          "orderedFields": [
+            "deletionIdHash",
+            "deletionScopeDigest",
+            "opaqueDeletionReceiptId"
+          ]
+        }
+      ],
+      "scopeClass": "REMOTE_CONVERSATION_COPY",
+      "lifecycle": {
+        "logicalKeyHash": "REQUIRED_IMMUTABLE_EVERY_QUEUE_ROW",
+        "jobIdHash": "NULL_BEFORE_NON_DELETION_ACCEPTANCE_REQUIRED_IMMUTABLE_AFTER",
+        "resultIdHash": "REQUIRED_IMMUTABLE_ONLY_RESULT_AVAILABLE_APPLIED_CONFLICT",
+        "deletionSpecificFieldsOnNonDeletion": "NULL",
+        "deletionScopeDigest": "REQUIRED_IMMUTABLE_FROM_ENQUEUE",
+        "deletionIdHash": "NULL_BEFORE_DURABLE_ACCEPTANCE_REQUIRED_IMMUTABLE_AFTER",
+        "deletionReceiptIdHash": "NULL_UNTIL_VERIFIED_SCOPED_RECEIPT_REQUIRED_IMMUTABLE_AFTER"
+      },
+      "replayInputDigest": {
+        "field": "canonicalInputDigest",
+        "domain": "OFF_I1_REPLAY_INPUT_V1",
+        "orderedFields": [
+          "operationClass",
+          "logicalKeyHash",
+          "inputVariant",
+          "deletionScopeDigest"
+        ],
+        "inputVariantCatalog": [
+          "PRIMARY",
+          "ALTERNATE"
+        ],
+        "operationClassRule": "ONE_REMOTE_VALUE_FROM_UNRESOLVED_007_OPERATION_CLASS_CATALOG",
+        "nullableFieldRule": "deletionScopeDigest uses NULL_FIELD only for non-deletion; otherwise STRING_FIELD",
+        "formula": "lowercaseHex(SHA-256(PREFIX(domain) || exact ordered framed fields))",
+        "proofBoundary": "SYNTHETIC_FIXTURE_DISCRIMINATOR_NOT_PRODUCT_PAYLOAD"
+      },
+      "rawInputsInEvidenceOrDiagnostics": false
+    },
+    "OFF-I1-UNRESOLVED-002": {
+      "status": "RESOLVED_BY_V0_2",
+      "name": "TOTAL_NON_DELETION_EVENT_STATE_TABLE",
+      "arbitrationOrder": [
+        "priority",
+        "secondaryOrder",
+        "ASCII ruleId"
+      ],
+      "structuralValidationBeforeRuleSelection": true,
+      "atMostOneSelectedRule": true,
+      "unmentionedAxes": "BYTE_IDENTICAL",
+      "validNoEligibleRule": "NO_STATE_CHANGE",
+      "validPolicyRefusal": "REJECTED_NO_STATE_CHANGE",
+      "malformedInput": "INVALID_INPUT",
+      "initialAutomaticAttemptBudget": 3,
+      "manualRetryGrantAttempts": 1,
+      "outcomeCatalog": [
+        "TRANSITION_APPLIED",
+        "NO_STATE_CHANGE",
+        "REJECTED_NO_STATE_CHANGE",
+        "INVALID_INPUT"
+      ],
+      "queueRuleFieldOrder": [
+        "id",
+        "priority",
+        "secondaryOrder",
+        "event",
+        "source",
+        "guard",
+        "target",
+        "outcome",
+        "queueAffecting",
+        "counterDeltas",
+        "flowLedgerAppend",
+        "queueLedgerAppend"
+      ],
+      "queueRules": [
+        {"id":"OFF-I1-RULE-Q-001","priority":10,"secondaryOrder":0,"event":"REVALIDATE_CONSENT","source":"NON_DELETION_NONTERMINAL","guard":"CONSENT_INVALID_OR_REVOKED","target":"CANCELLED","outcome":"TRANSITION_APPLIED","queueAffecting":true,"counterDeltas":"ZERO","flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"id":"OFF-I1-RULE-Q-002","priority":20,"secondaryOrder":0,"event":"IDEMPOTENCY_LOOKUP","source":"ANY_QUEUE_ROW","guard":"SAME_KEY_DIFFERENT_CANONICAL_INPUT","target":"UNCHANGED","outcome":"NO_STATE_CHANGE","queueAffecting":false,"counterDeltas":"ZERO","flowLedgerAppend":false,"queueLedgerAppend":false},
+        {"id":"OFF-I1-RULE-Q-003","priority":30,"secondaryOrder":0,"event":"REVALIDATE_PROFILE_OR_RUNTIME","source":"WAITING_NETWORK_OR_PENDING_UPLOAD_OR_FAILED_RETRYABLE","guard":"PROFILE_OR_RUNTIME_BLOCKED","target":"PENDING_UPLOAD","outcome":"TRANSITION_APPLIED","queueAffecting":true,"counterDeltas":"ZERO","flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"id":"OFF-I1-RULE-Q-004","priority":40,"secondaryOrder":0,"event":"REVALIDATE_CONNECTIVITY","source":"PENDING_UPLOAD_OR_FAILED_RETRYABLE","guard":"CONNECTIVITY_DENIED_AND_PRESERVE_EXISTING_JOB_ID_HASH_NULL_OR_NON_NULL","target":"WAITING_NETWORK","outcome":"TRANSITION_APPLIED","queueAffecting":true,"counterDeltas":"ZERO","flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"id":"OFF-I1-RULE-Q-005","priority":41,"secondaryOrder":0,"event":"TRANSPORT_CONNECTIVITY_LOST","source":"UPLOADING_OR_REMOTE_PROCESSING","guard":"CONNECTIVITY_LOST","target":"FAILED_RETRYABLE","outcome":"TRANSITION_APPLIED","queueAffecting":true,"counterDeltas":"PRESERVE","flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"id":"OFF-I1-RULE-Q-006","priority":50,"secondaryOrder":0,"event":"EXPLICIT_CANCEL","source":"ACTIVE_PRE_APPLICATION","guard":"VALID_CANCEL_OR_REVOKE","target":"CANCELLED","outcome":"TRANSITION_APPLIED","queueAffecting":true,"counterDeltas":"ZERO","flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"id":"OFF-I1-RULE-Q-007","priority":100,"secondaryOrder":0,"event":"ENQUEUE_NON_DELETION","source":"LOCAL_ONLY","guard":"NEW_LOGICAL_KEY","target":"PENDING_UPLOAD","outcome":"TRANSITION_APPLIED","queueAffecting":true,"counterDeltas":"ZERO","flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"id":"OFF-I1-RULE-Q-008","priority":110,"secondaryOrder":0,"event":"SCHEDULER_TICK","source":"PENDING_UPLOAD","guard":"CONNECTIVITY_DENIED","target":"WAITING_NETWORK","outcome":"TRANSITION_APPLIED","queueAffecting":true,"counterDeltas":"ZERO","flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"id":"OFF-I1-RULE-Q-009","priority":120,"secondaryOrder":0,"event":"REVALIDATE","source":"WAITING_NETWORK","guard":"ALL_REVALIDATION_ALLOW","target":"PENDING_UPLOAD","outcome":"TRANSITION_APPLIED","queueAffecting":true,"counterDeltas":"ZERO","flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"id":"OFF-I1-RULE-Q-010","priority":130,"secondaryOrder":0,"event":"SEND","source":"PENDING_UPLOAD","guard":"AVAILABLE_AND_POSITIVE_BUDGET","target":"UPLOADING","outcome":"TRANSITION_APPLIED","queueAffecting":true,"counterDeltas":"ATTEMPT_PLUS_ONE","flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"id":"OFF-I1-RULE-Q-011","priority":140,"secondaryOrder":0,"event":"DURABLE_ACCEPTANCE","source":"UPLOADING","guard":"FIRST_ACCEPTANCE","target":"REMOTE_PROCESSING","outcome":"TRANSITION_APPLIED","queueAffecting":true,"counterDeltas":"EFFECT_ZERO_TO_ONE","flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"id":"OFF-I1-RULE-Q-012","priority":150,"secondaryOrder":0,"event":"VALID_RESULT","source":"REMOTE_PROCESSING","guard":"RESULT_VALID","target":"RESULT_AVAILABLE","outcome":"TRANSITION_APPLIED","queueAffecting":true,"counterDeltas":"ZERO","flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"id":"OFF-I1-RULE-Q-013","priority":160,"secondaryOrder":0,"event":"APPLY_RESULT","source":"RESULT_AVAILABLE","guard":"VALIDATION_AND_USER_TRUTH_ALLOW","target":"APPLIED","outcome":"TRANSITION_APPLIED","queueAffecting":true,"counterDeltas":"APPLY_ZERO_TO_ONE","flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"id":"OFF-I1-RULE-Q-014","priority":161,"secondaryOrder":0,"event":"APPLY_RESULT","source":"RESULT_AVAILABLE","guard":"CURRENT_USER_TRUTH_BLOCKS","target":"CONFLICT","outcome":"TRANSITION_APPLIED","queueAffecting":true,"counterDeltas":"ZERO","flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"id":"OFF-I1-RULE-Q-015","priority":170,"secondaryOrder":0,"event":"TRANSPORT_FAILURE","source":"UPLOADING_OR_REMOTE_PROCESSING","guard":"RETRYABLE_ERROR","target":"FAILED_RETRYABLE","outcome":"TRANSITION_APPLIED","queueAffecting":true,"counterDeltas":"PRESERVE","flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"id":"OFF-I1-RULE-Q-016","priority":171,"secondaryOrder":0,"event":"RESUME_OR_MANUAL_RETRY","source":"FAILED_RETRYABLE_WITHOUT_JOB","guard":"REVALIDATION_ALLOW_AND_EITHER_POSITIVE_REMAINING_WITH_GRANT_NONE_OR_ZERO_REMAINING_WITH_ELIGIBLE_EXPLICIT_GRANT","target":"PENDING_UPLOAD","outcome":"TRANSITION_APPLIED","queueAffecting":true,"counterDeltas":"ZERO_FOR_POSITIVE_REMAINING_WITH_GRANT_NONE_OR_MANUAL_RETRY_GRANT_PLUS_ONE_ATTEMPT_ZERO_FOR_ZERO_REMAINING_WITH_ELIGIBLE_EXPLICIT_GRANT","flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"id":"OFF-I1-RULE-Q-017","priority":172,"secondaryOrder":0,"event":"RESUME_OR_MANUAL_RETRY","source":"FAILED_RETRYABLE_WITH_JOB","guard":"REVALIDATION_ALLOW_AND_EITHER_POSITIVE_REMAINING_WITH_GRANT_NONE_OR_ZERO_REMAINING_WITH_ELIGIBLE_EXPLICIT_GRANT","target":"REMOTE_PROCESSING","outcome":"TRANSITION_APPLIED","queueAffecting":true,"counterDeltas":"ZERO_FOR_POSITIVE_REMAINING_WITH_GRANT_NONE_OR_MANUAL_RETRY_GRANT_PLUS_ONE_ATTEMPT_ZERO_FOR_ZERO_REMAINING_WITH_ELIGIBLE_EXPLICIT_GRANT","flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"id":"OFF-I1-RULE-Q-018","priority":180,"secondaryOrder":0,"event":"FINAL_OR_BUDGET_EXHAUSTED","source":"ACTIVE_OR_RETRYABLE","guard":"TERMINAL_OR_AUTOMATIC_BUDGET_EXHAUSTED","target":"FAILED_FINAL","outcome":"TRANSITION_APPLIED","queueAffecting":true,"counterDeltas":"ZERO","flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"id":"OFF-I1-RULE-Q-019","priority":190,"secondaryOrder":0,"event":"TRANSPORT_REPLAY","source":"REMOTE_PROCESSING","guard":"SAME_INPUT","target":"UNCHANGED","outcome":"TRANSITION_APPLIED","queueAffecting":true,"counterDeltas":"ATTEMPT_PLUS_ONE_EFFECT_STAYS_ONE","flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"id":"OFF-I1-RULE-Q-020","priority":191,"secondaryOrder":0,"event":"DUPLICATE_TRIGGER","source":"APPLIED","guard":"SAME_INPUT","target":"UNCHANGED","outcome":"TRANSITION_APPLIED","queueAffecting":false,"counterDeltas":"ZERO","flowLedgerAppend":true,"queueLedgerAppend":false}
+      ],
+      "projectionNotation": {
+        "=": "entire state vector is preserved",
+        "L": "local axis only",
+        "P": "processingCapability axis only",
+        "C": "connectivity axis only",
+        "M": "model axis only",
+        "Q": "queue projection axis only"
+      },
+      "transitionDirectiveContract": {
+        "separator": ";",
+        "applicationOrder": "LEFT_TO_RIGHT",
+        "duplicateAxisOrCounterTokenAllowed": false,
+        "unmentionedAxesAndCounters": "BYTE_IDENTICAL",
+        "catalog": [
+          {"literal":"=","semantics":"preserve all five axes and all counters"},
+          {"literal":"L:LOCAL_OPERATION_RUNNING","semantics":"set only local=LOCAL_OPERATION_RUNNING"},
+          {"literal":"L:LOCAL_OPERATION_SUCCEEDED","semantics":"set only local=LOCAL_OPERATION_SUCCEEDED"},
+          {"literal":"L:LOCAL_OPERATION_SUCCEEDED;P:PRESERVE","semantics":"set local=LOCAL_OPERATION_SUCCEEDED and preserve processingCapability"},
+          {"literal":"L:LOCAL_OPERATION_SUCCEEDED;Q:PRESERVE_WAITING_NETWORK","semantics":"require queue=WAITING_NETWORK, set local=LOCAL_OPERATION_SUCCEEDED and preserve queue=WAITING_NETWORK"},
+          {"literal":"L:PRESERVE","semantics":"preserve local and every unmentioned axis and counter"},
+          {"literal":"P:PENDING_CAPABILITY","semantics":"set only processingCapability=PENDING_CAPABILITY"},
+          {"literal":"P:PROCESSING_SUCCEEDED","semantics":"set only processingCapability=PROCESSING_SUCCEEDED"},
+          {"literal":"P:WAITING_MODEL","semantics":"set only processingCapability=WAITING_MODEL"},
+          {"literal":"Q:PENDING_UPLOAD","semantics":"set only queue=PENDING_UPLOAD"},
+          {"literal":"Q:WAITING_NETWORK","semantics":"set only queue=WAITING_NETWORK"},
+          {"literal":"Q:UPLOADING;ATTEMPT:0_TO_1","semantics":"require attemptCount=0 and positive remaining budget; atomically set queue=UPLOADING, attemptCount=1 and consume one attempt"},
+          {"literal":"Q:REMOTE_PROCESSING;EFFECT:0_TO_1","semantics":"require queue=UPLOADING and effectCount=0; set queue=REMOTE_PROCESSING and effectCount=1"},
+          {"literal":"Q:RESULT_AVAILABLE","semantics":"require queue=REMOTE_PROCESSING and set queue=RESULT_AVAILABLE"},
+          {"literal":"Q:APPLIED;APPLY:0_TO_1","semantics":"require queue=RESULT_AVAILABLE and applyCount=0; set queue=APPLIED and applyCount=1"},
+          {"literal":"Q:PRESERVE_REMOTE_PROCESSING;ATTEMPT:1_TO_2","semantics":"require queue=REMOTE_PROCESSING, attemptCount=1 and positive remaining budget; preserve queue, set attemptCount=2 and consume one attempt"},
+          {"literal":"Q:APPLIED;APPLY:0_TO_1;EFFECT:PRESERVE_ONE","semantics":"require effectCount=1, applyCount=0 and queue=RESULT_AVAILABLE or REMOTE_PROCESSING_FROM_ATOMIC_RECONCILIATION; set queue=APPLIED, applyCount=1 and preserve effectCount=1"},
+          {"literal":"Q:CANCELLED","semantics":"set only the projected non-deletion queue row to CANCELLED"},
+          {"literal":"Q:CANCELLED_NON_DELETION_ROW","semantics":"set the selected non-deletion row to CANCELLED and retain every other durable row"},
+          {"literal":"Q:DELETE_PENDING;SUBSTATUS:DELETE_WAITING_NETWORK","semantics":"append or preserve one deletion row with queueState=DELETE_PENDING, deletionSubstatus=DELETE_WAITING_NETWORK and project it"},
+          {"literal":"Q:APPEND_DELETE_PENDING_ROW_AND_PROJECT","semantics":"append exactly one deletion row with queueState=DELETE_PENDING under inherited row 1 and project it while retaining the cancelled non-deletion row"},
+          {"literal":"SNAPSHOT:=","semantics":"emit canonical immutable in-memory snapshot bytes and preserve runtime state"},
+          {"literal":"RESTORE:=","semantics":"replace runtime graph only after strict canonical decode and equality validation; restored graph equals encoded graph byte-semantically"},
+          {"literal":"APPLY_EXACT_INHERITED_ROW","semantics":"apply exactly one scalar inherited deletion reconcile row selected by scriptedDeletionRowOrdinal"},
+          {"literal":"Q:PRESERVE_DELETE_PENDING;ATTEMPT:RESOLVE_BY_SUBCASE","semantics":"packet-template-only; resolve attempt delta from the shared scripted deletion row before runtime result construction"}
+        ],
+        "directRuleLiteralCatalog": [
+          "=",
+          "L:LOCAL_OPERATION_RUNNING",
+          "L:LOCAL_OPERATION_SUCCEEDED",
+          "L:LOCAL_OPERATION_SUCCEEDED;P:PRESERVE",
+          "L:LOCAL_OPERATION_SUCCEEDED;Q:PRESERVE_WAITING_NETWORK",
+          "L:PRESERVE",
+          "P:PENDING_CAPABILITY",
+          "P:PROCESSING_SUCCEEDED",
+          "P:WAITING_MODEL",
+          "SNAPSHOT:=",
+          "RESTORE:="
+        ],
+        "directRuleAxisOperation": "each of five axes has exactly PRESERVE with null value or SET with one exact axis-catalog value; no string parsing beyond exact literal lookup",
+        "runtimeLiteralSet": "exact union of the 23 catalog literals remaining after excluding APPLY_EXACT_INHERITED_ROW and Q:PRESERVE_DELETE_PENDING;ATTEMPT:RESOLVE_BY_SUBCASE, plus the exact 18-value scriptedDeletionResolvedTransitionCatalog; total 41 exact runtime literals",
+        "packetTemplateOnlyLiterals": [
+          "APPLY_EXACT_INHERITED_ROW",
+          "Q:PRESERVE_DELETE_PENDING;ATTEMPT:RESOLVE_BY_SUBCASE",
+          "SELECT_ONE_INHERITED_DELETION_CLASS",
+          "RECONCILE_SELECTED_CLASS"
+        ]
+      },
+      "directRuleContract": {
+        "idFormula": "replace OFF-I1-ACT- with OFF-I1-RULE-A-",
+        "priority": 1000,
+        "secondaryOrder": "ONE_BASED_GLOBAL_INHERITED_ACTION_INDEX",
+        "source": "EXACT_PINNED_SCENARIO_ACTION_EVENT_ORDINAL_TUPLE",
+        "guard": "STRUCTURALLY_VALID_TYPED_INPUT_AND_DIRECTIVE_PRECONDITION",
+        "target": "EXACT_ACTION_RULE_PROJECTION_TRANSITION",
+        "outcome": "TRANSITION_APPLIED",
+        "eligibility": "exact tuple exists in the pinned 67-slot catalog, selectedRuleId equals the idFormula result, the row is not mapped to queue/composite/deletion handling, the state vector and typed inputs validate, and every require clause in transitionDirectiveContract is true",
+        "prestatePredicate": "any exact catalog-valid five-axis vector satisfying the selected transition directive require clauses; SNAPSHOT accepts any valid graph and RESTORE additionally requires one complete canonical snapshot",
+        "noPlaceholderAllowedAtRuntime": true,
+        "nonDirectActionIds": [
+          "OFF-I1-ACT-013-01",
+          "OFF-I1-ACT-013-02",
+          "OFF-I1-ACT-017-01",
+          "OFF-I1-ACT-017-02",
+          "OFF-I1-ACT-017-03",
+          "OFF-I1-ACT-017-04",
+          "OFF-I1-ACT-017-05",
+          "OFF-I1-ACT-018-01",
+          "OFF-I1-ACT-018-02",
+          "OFF-I1-ACT-022-01",
+          "OFF-I1-ACT-024-02",
+          "OFF-I1-ACT-025-01",
+          "OFF-I1-ACT-025-03",
+          "OFF-I1-ACT-026-01",
+          "OFF-I1-ACT-026-02"
+        ],
+        "directRuleCommonEffects": "counter deltas zero; queueAffecting=false; flowLedgerAppend=true; queueLedgerAppend=false"
+      },
+      "compositeRule": {
+        "id": "OFF-I1-RULE-C-001",
+        "priority": 200,
+        "secondaryOrder": 0,
+        "actionId": "OFF-I1-ACT-018-02",
+        "source": "RESULT_AVAILABLE_FROM_REPLAY_RECONCILIATION",
+        "guard": "VALID_CANDIDATE_AND_USER_TRUTH_ALLOW",
+        "target": "APPLIED",
+        "outcome": "TRANSITION_APPLIED",
+        "queueAffecting": true,
+        "counterDeltas": "APPLY_ZERO_TO_ONE_EFFECT_PRESERVE_ONE",
+        "flowLedgerAppend": true,
+        "queueLedgerAppend": true,
+        "atomicSingleRule": true
+      },
+      "inheritedDeletionRuleContract": {
+        "canonicalPointer": "docs/evidence/poc-offline-001/readiness-contract-stage0-v0.1.json#/queueCatalogBoundary/deletionEventOutcomeMapping",
+        "identicalCopyPointer": "docs/evidence/poc-offline-001/i1-host-oracle-scope-stage0-v0.1.json#/deletionEventOutcomeMapping",
+        "rowCount": 15,
+        "ruleIdFormula": "OFF-I1-RULE-D-<one-based row ordinal three digits>",
+        "priority": 300,
+        "secondaryOrder": "ONE_BASED_ROW_ORDINAL",
+        "copiesMustBeByteSemanticallyEqual": true
+      },
+      "actionRuleProjectionFieldOrder": [
+        "scenarioId",
+        "actionId",
+        "ordinal",
+        "eventId",
+        "selectedRuleId",
+        "outcome",
+        "transition",
+        "queueAffecting",
+        "flowLedgerAppend",
+        "queueLedgerAppend"
+      ],
+      "actionRuleProjection": [
+        {"scenarioId":"OFF-SYN-001","actionId":"OFF-I1-ACT-001-01","ordinal":1,"eventId":"OFF-I1-EVT-001-01","selectedRuleId":"OFF-I1-RULE-A-001-01","outcome":"TRANSITION_APPLIED","transition":"=","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-001","actionId":"OFF-I1-ACT-001-02","ordinal":2,"eventId":"OFF-I1-EVT-001-02","selectedRuleId":"OFF-I1-RULE-A-001-02","outcome":"TRANSITION_APPLIED","transition":"=","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-002","actionId":"OFF-I1-ACT-002-01","ordinal":1,"eventId":"OFF-I1-EVT-002-01","selectedRuleId":"OFF-I1-RULE-A-002-01","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_RUNNING","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-002","actionId":"OFF-I1-ACT-002-02","ordinal":2,"eventId":"OFF-I1-EVT-002-02","selectedRuleId":"OFF-I1-RULE-A-002-02","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_RUNNING","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-002","actionId":"OFF-I1-ACT-002-03","ordinal":3,"eventId":"OFF-I1-EVT-002-03","selectedRuleId":"OFF-I1-RULE-A-002-03","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-003","actionId":"OFF-I1-ACT-003-01","ordinal":1,"eventId":"OFF-I1-EVT-003-01","selectedRuleId":"OFF-I1-RULE-A-003-01","outcome":"TRANSITION_APPLIED","transition":"RESTORE:=","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-003","actionId":"OFF-I1-ACT-003-02","ordinal":2,"eventId":"OFF-I1-EVT-003-02","selectedRuleId":"OFF-I1-RULE-A-003-02","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-004","actionId":"OFF-I1-ACT-004-01","ordinal":1,"eventId":"OFF-I1-EVT-004-01","selectedRuleId":"OFF-I1-RULE-A-004-01","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_RUNNING","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-004","actionId":"OFF-I1-ACT-004-02","ordinal":2,"eventId":"OFF-I1-EVT-004-02","selectedRuleId":"OFF-I1-RULE-A-004-02","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_RUNNING","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-004","actionId":"OFF-I1-ACT-004-03","ordinal":3,"eventId":"OFF-I1-EVT-004-03","selectedRuleId":"OFF-I1-RULE-A-004-03","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-005","actionId":"OFF-I1-ACT-005-01","ordinal":1,"eventId":"OFF-I1-EVT-005-01","selectedRuleId":"OFF-I1-RULE-A-005-01","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-005","actionId":"OFF-I1-ACT-005-02","ordinal":2,"eventId":"OFF-I1-EVT-005-02","selectedRuleId":"OFF-I1-RULE-A-005-02","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-005","actionId":"OFF-I1-ACT-005-03","ordinal":3,"eventId":"OFF-I1-EVT-005-03","selectedRuleId":"OFF-I1-RULE-A-005-03","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-006","actionId":"OFF-I1-ACT-006-01","ordinal":1,"eventId":"OFF-I1-EVT-006-01","selectedRuleId":"OFF-I1-RULE-A-006-01","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-007","actionId":"OFF-I1-ACT-007-01","ordinal":1,"eventId":"OFF-I1-EVT-007-01","selectedRuleId":"OFF-I1-RULE-A-007-01","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_RUNNING","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-007","actionId":"OFF-I1-ACT-007-02","ordinal":2,"eventId":"OFF-I1-EVT-007-02","selectedRuleId":"OFF-I1-RULE-A-007-02","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-008","actionId":"OFF-I1-ACT-008-01","ordinal":1,"eventId":"OFF-I1-EVT-008-01","selectedRuleId":"OFF-I1-RULE-A-008-01","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_RUNNING","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-008","actionId":"OFF-I1-ACT-008-02","ordinal":2,"eventId":"OFF-I1-EVT-008-02","selectedRuleId":"OFF-I1-RULE-A-008-02","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-008","actionId":"OFF-I1-ACT-008-03","ordinal":3,"eventId":"OFF-I1-EVT-008-03","selectedRuleId":"OFF-I1-RULE-A-008-03","outcome":"TRANSITION_APPLIED","transition":"=","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-009","actionId":"OFF-I1-ACT-009-01","ordinal":1,"eventId":"OFF-I1-EVT-009-01","selectedRuleId":"OFF-I1-RULE-A-009-01","outcome":"TRANSITION_APPLIED","transition":"P:WAITING_MODEL","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-009","actionId":"OFF-I1-ACT-009-02","ordinal":2,"eventId":"OFF-I1-EVT-009-02","selectedRuleId":"OFF-I1-RULE-A-009-02","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED;P:PRESERVE","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-010","actionId":"OFF-I1-ACT-010-01","ordinal":1,"eventId":"OFF-I1-EVT-010-01","selectedRuleId":"OFF-I1-RULE-A-010-01","outcome":"TRANSITION_APPLIED","transition":"P:PROCESSING_SUCCEEDED","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-011","actionId":"OFF-I1-ACT-011-01","ordinal":1,"eventId":"OFF-I1-EVT-011-01","selectedRuleId":"OFF-I1-RULE-A-011-01","outcome":"TRANSITION_APPLIED","transition":"P:PROCESSING_SUCCEEDED","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-012","actionId":"OFF-I1-ACT-012-01","ordinal":1,"eventId":"OFF-I1-EVT-012-01","selectedRuleId":"OFF-I1-RULE-A-012-01","outcome":"TRANSITION_APPLIED","transition":"P:PROCESSING_SUCCEEDED","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-013","actionId":"OFF-I1-ACT-013-01","ordinal":1,"eventId":"OFF-I1-EVT-013-01","selectedRuleId":"OFF-I1-RULE-Q-007","outcome":"TRANSITION_APPLIED","transition":"Q:PENDING_UPLOAD","queueAffecting":true,"flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"scenarioId":"OFF-SYN-013","actionId":"OFF-I1-ACT-013-02","ordinal":2,"eventId":"OFF-I1-EVT-013-02","selectedRuleId":"OFF-I1-RULE-Q-008","outcome":"TRANSITION_APPLIED","transition":"Q:WAITING_NETWORK","queueAffecting":true,"flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"scenarioId":"OFF-SYN-014","actionId":"OFF-I1-ACT-014-01","ordinal":1,"eventId":"OFF-I1-EVT-014-01","selectedRuleId":"OFF-I1-RULE-A-014-01","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED;Q:PRESERVE_WAITING_NETWORK","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-014","actionId":"OFF-I1-ACT-014-02","ordinal":2,"eventId":"OFF-I1-EVT-014-02","selectedRuleId":"OFF-I1-RULE-A-014-02","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED;Q:PRESERVE_WAITING_NETWORK","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-014","actionId":"OFF-I1-ACT-014-03","ordinal":3,"eventId":"OFF-I1-EVT-014-03","selectedRuleId":"OFF-I1-RULE-A-014-03","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED;Q:PRESERVE_WAITING_NETWORK","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-014","actionId":"OFF-I1-ACT-014-04","ordinal":4,"eventId":"OFF-I1-EVT-014-04","selectedRuleId":"OFF-I1-RULE-A-014-04","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED;Q:PRESERVE_WAITING_NETWORK","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-014","actionId":"OFF-I1-ACT-014-05","ordinal":5,"eventId":"OFF-I1-EVT-014-05","selectedRuleId":"OFF-I1-RULE-A-014-05","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED;Q:PRESERVE_WAITING_NETWORK","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-015","actionId":"OFF-I1-ACT-015-01","ordinal":1,"eventId":"OFF-I1-EVT-015-01","selectedRuleId":"OFF-I1-RULE-A-015-01","outcome":"TRANSITION_APPLIED","transition":"SNAPSHOT:=","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-015","actionId":"OFF-I1-ACT-015-02","ordinal":2,"eventId":"OFF-I1-EVT-015-02","selectedRuleId":"OFF-I1-RULE-A-015-02","outcome":"TRANSITION_APPLIED","transition":"RESTORE:=","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-016","actionId":"OFF-I1-ACT-016-01","ordinal":1,"eventId":"OFF-I1-EVT-016-01","selectedRuleId":"OFF-I1-RULE-A-016-01","outcome":"TRANSITION_APPLIED","transition":"SNAPSHOT:=","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-016","actionId":"OFF-I1-ACT-016-02","ordinal":2,"eventId":"OFF-I1-EVT-016-02","selectedRuleId":"OFF-I1-RULE-A-016-02","outcome":"TRANSITION_APPLIED","transition":"RESTORE:=","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-017","actionId":"OFF-I1-ACT-017-01","ordinal":1,"eventId":"OFF-I1-EVT-017-01","selectedRuleId":"OFF-I1-RULE-Q-009","outcome":"TRANSITION_APPLIED","transition":"Q:PENDING_UPLOAD","queueAffecting":true,"flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"scenarioId":"OFF-SYN-017","actionId":"OFF-I1-ACT-017-02","ordinal":2,"eventId":"OFF-I1-EVT-017-02","selectedRuleId":"OFF-I1-RULE-Q-010","outcome":"TRANSITION_APPLIED","transition":"Q:UPLOADING;ATTEMPT:0_TO_1","queueAffecting":true,"flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"scenarioId":"OFF-SYN-017","actionId":"OFF-I1-ACT-017-03","ordinal":3,"eventId":"OFF-I1-EVT-017-03","selectedRuleId":"OFF-I1-RULE-Q-011","outcome":"TRANSITION_APPLIED","transition":"Q:REMOTE_PROCESSING;EFFECT:0_TO_1","queueAffecting":true,"flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"scenarioId":"OFF-SYN-017","actionId":"OFF-I1-ACT-017-04","ordinal":4,"eventId":"OFF-I1-EVT-017-04","selectedRuleId":"OFF-I1-RULE-Q-012","outcome":"TRANSITION_APPLIED","transition":"Q:RESULT_AVAILABLE","queueAffecting":true,"flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"scenarioId":"OFF-SYN-017","actionId":"OFF-I1-ACT-017-05","ordinal":5,"eventId":"OFF-I1-EVT-017-05","selectedRuleId":"OFF-I1-RULE-Q-013","outcome":"TRANSITION_APPLIED","transition":"Q:APPLIED;APPLY:0_TO_1","queueAffecting":true,"flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"scenarioId":"OFF-SYN-018","actionId":"OFF-I1-ACT-018-01","ordinal":1,"eventId":"OFF-I1-EVT-018-01","selectedRuleId":"OFF-I1-RULE-Q-019","outcome":"TRANSITION_APPLIED","transition":"Q:PRESERVE_REMOTE_PROCESSING;ATTEMPT:1_TO_2","queueAffecting":true,"flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"scenarioId":"OFF-SYN-018","actionId":"OFF-I1-ACT-018-02","ordinal":2,"eventId":"OFF-I1-EVT-018-02","selectedRuleId":"OFF-I1-RULE-C-001","outcome":"TRANSITION_APPLIED","transition":"Q:APPLIED;APPLY:0_TO_1;EFFECT:PRESERVE_ONE","queueAffecting":true,"flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"scenarioId":"OFF-SYN-019","actionId":"OFF-I1-ACT-019-01","ordinal":1,"eventId":"OFF-I1-EVT-019-01","selectedRuleId":"OFF-I1-RULE-A-019-01","outcome":"TRANSITION_APPLIED","transition":"=","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-019","actionId":"OFF-I1-ACT-019-02","ordinal":2,"eventId":"OFF-I1-EVT-019-02","selectedRuleId":"OFF-I1-RULE-A-019-02","outcome":"TRANSITION_APPLIED","transition":"=","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-019","actionId":"OFF-I1-ACT-019-03","ordinal":3,"eventId":"OFF-I1-EVT-019-03","selectedRuleId":"OFF-I1-RULE-A-019-03","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-019","actionId":"OFF-I1-ACT-019-04","ordinal":4,"eventId":"OFF-I1-EVT-019-04","selectedRuleId":"OFF-I1-RULE-A-019-04","outcome":"TRANSITION_APPLIED","transition":"=","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-019","actionId":"OFF-I1-ACT-019-05","ordinal":5,"eventId":"OFF-I1-EVT-019-05","selectedRuleId":"OFF-I1-RULE-A-019-05","outcome":"TRANSITION_APPLIED","transition":"=","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-020","actionId":"OFF-I1-ACT-020-01","ordinal":1,"eventId":"OFF-I1-EVT-020-01","selectedRuleId":"OFF-I1-RULE-A-020-01","outcome":"TRANSITION_APPLIED","transition":"=","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-020","actionId":"OFF-I1-ACT-020-02","ordinal":2,"eventId":"OFF-I1-EVT-020-02","selectedRuleId":"OFF-I1-RULE-A-020-02","outcome":"TRANSITION_APPLIED","transition":"RESTORE:=","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-020","actionId":"OFF-I1-ACT-020-03","ordinal":3,"eventId":"OFF-I1-EVT-020-03","selectedRuleId":"OFF-I1-RULE-A-020-03","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-021","actionId":"OFF-I1-ACT-021-01","ordinal":1,"eventId":"OFF-I1-EVT-021-01","selectedRuleId":"OFF-I1-RULE-A-021-01","outcome":"TRANSITION_APPLIED","transition":"P:PENDING_CAPABILITY","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-021","actionId":"OFF-I1-ACT-021-02","ordinal":2,"eventId":"OFF-I1-EVT-021-02","selectedRuleId":"OFF-I1-RULE-A-021-02","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED;P:PRESERVE","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-022","actionId":"OFF-I1-ACT-022-01","ordinal":1,"eventId":"OFF-I1-EVT-022-01","selectedRuleId":"OFF-I1-RULE-Q-001","outcome":"TRANSITION_APPLIED","transition":"Q:CANCELLED","queueAffecting":true,"flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"scenarioId":"OFF-SYN-022","actionId":"OFF-I1-ACT-022-02","ordinal":2,"eventId":"OFF-I1-EVT-022-02","selectedRuleId":"OFF-I1-RULE-A-022-02","outcome":"TRANSITION_APPLIED","transition":"=","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-022","actionId":"OFF-I1-ACT-022-03","ordinal":3,"eventId":"OFF-I1-EVT-022-03","selectedRuleId":"OFF-I1-RULE-A-022-03","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-023","actionId":"OFF-I1-ACT-023-01","ordinal":1,"eventId":"OFF-I1-EVT-023-01","selectedRuleId":"OFF-I1-RULE-A-023-01","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_RUNNING","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-023","actionId":"OFF-I1-ACT-023-02","ordinal":2,"eventId":"OFF-I1-EVT-023-02","selectedRuleId":"OFF-I1-RULE-A-023-02","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-023","actionId":"OFF-I1-ACT-023-03","ordinal":3,"eventId":"OFF-I1-EVT-023-03","selectedRuleId":"OFF-I1-RULE-A-023-03","outcome":"TRANSITION_APPLIED","transition":"=","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-024","actionId":"OFF-I1-ACT-024-01","ordinal":1,"eventId":"OFF-I1-EVT-024-01","selectedRuleId":"OFF-I1-RULE-A-024-01","outcome":"TRANSITION_APPLIED","transition":"L:LOCAL_OPERATION_SUCCEEDED","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-024","actionId":"OFF-I1-ACT-024-02","ordinal":2,"eventId":"OFF-I1-EVT-024-02","selectedRuleId":"OFF-I1-RULE-D-001","outcome":"TRANSITION_APPLIED","transition":"Q:DELETE_PENDING;SUBSTATUS:DELETE_WAITING_NETWORK","queueAffecting":true,"flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"scenarioId":"OFF-SYN-024","actionId":"OFF-I1-ACT-024-03","ordinal":3,"eventId":"OFF-I1-EVT-024-03","selectedRuleId":"OFF-I1-RULE-A-024-03","outcome":"TRANSITION_APPLIED","transition":"=","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-025","actionId":"OFF-I1-ACT-025-01","ordinal":1,"eventId":"OFF-I1-EVT-025-01","selectedRuleId":"OFF-I1-RULE-Q-001","outcome":"TRANSITION_APPLIED","transition":"Q:CANCELLED_NON_DELETION_ROW","queueAffecting":true,"flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"scenarioId":"OFF-SYN-025","actionId":"OFF-I1-ACT-025-02","ordinal":2,"eventId":"OFF-I1-EVT-025-02","selectedRuleId":"OFF-I1-RULE-A-025-02","outcome":"TRANSITION_APPLIED","transition":"L:PRESERVE","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-025","actionId":"OFF-I1-ACT-025-03","ordinal":3,"eventId":"OFF-I1-EVT-025-03","selectedRuleId":"OFF-I1-RULE-D-001","outcome":"TRANSITION_APPLIED","transition":"Q:APPEND_DELETE_PENDING_ROW_AND_PROJECT","queueAffecting":true,"flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"scenarioId":"OFF-SYN-025","actionId":"OFF-I1-ACT-025-04","ordinal":4,"eventId":"OFF-I1-EVT-025-04","selectedRuleId":"OFF-I1-RULE-A-025-04","outcome":"TRANSITION_APPLIED","transition":"=","queueAffecting":false,"flowLedgerAppend":true,"queueLedgerAppend":false},
+        {"scenarioId":"OFF-SYN-026","actionId":"OFF-I1-ACT-026-01","ordinal":1,"eventId":"OFF-I1-EVT-026-01","selectedRuleId":"RESOLVE_SCRIPTED_DELETION_DISPATCH_RULE","outcome":"TRANSITION_APPLIED","transition":"Q:PRESERVE_DELETE_PENDING;ATTEMPT:RESOLVE_BY_SUBCASE","queueAffecting":true,"flowLedgerAppend":true,"queueLedgerAppend":true},
+        {"scenarioId":"OFF-SYN-026","actionId":"OFF-I1-ACT-026-02","ordinal":2,"eventId":"OFF-I1-EVT-026-02","selectedRuleId":"RESOLVE_SCRIPTED_DELETION_RECONCILE_RULE","outcome":"RESOLVE_BY_SUBCASE","transition":"APPLY_EXACT_INHERITED_ROW","queueAffecting":true,"flowLedgerAppend":true,"queueLedgerAppend":true}
+      ],
+      "scriptedDeletionSubcaseFieldOrder": [
+        "rowOrdinal",
+        "eventOutcomeClass",
+        "dispatchRuleId",
+        "dispatchAttemptDelta",
+        "reconcileRuleId",
+        "reconcileOutcome",
+        "reconcileEffectDelta"
+      ],
+      "scriptedDeletionSubcases": [
+        {"rowOrdinal":1,"eventOutcomeClass":"DURABLE_ENQUEUE_WHILE_NETWORK_DENIED","dispatchRuleId":"OFF-I1-RULE-DP-001","dispatchAttemptDelta":0,"reconcileRuleId":"OFF-I1-RULE-D-001","reconcileOutcome":"TRANSITION_APPLIED","reconcileEffectDelta":0},
+        {"rowOrdinal":2,"eventOutcomeClass":"PRE_ACCEPTANCE_RESUME","dispatchRuleId":"OFF-I1-RULE-DP-002","dispatchAttemptDelta":1,"reconcileRuleId":"OFF-I1-RULE-D-002","reconcileOutcome":"TRANSITION_APPLIED","reconcileEffectDelta":0},
+        {"rowOrdinal":3,"eventOutcomeClass":"ACCEPTED_RESPONSE_OR_RECEIPT_POLL_PENDING","dispatchRuleId":"OFF-I1-RULE-DP-003","dispatchAttemptDelta":1,"reconcileRuleId":"OFF-I1-RULE-D-003","reconcileOutcome":"TRANSITION_APPLIED","reconcileEffectDelta":0},
+        {"rowOrdinal":4,"eventOutcomeClass":"NETWORK_DENIED_AFTER_ACCEPTANCE","dispatchRuleId":"OFF-I1-RULE-DP-004","dispatchAttemptDelta":0,"reconcileRuleId":"OFF-I1-RULE-D-004","reconcileOutcome":"TRANSITION_APPLIED","reconcileEffectDelta":0},
+        {"rowOrdinal":5,"eventOutcomeClass":"RETRYABLE_FAILURE_OR_BACKOFF","dispatchRuleId":"OFF-I1-RULE-DP-005","dispatchAttemptDelta":1,"reconcileRuleId":"OFF-I1-RULE-D-005","reconcileOutcome":"TRANSITION_APPLIED","reconcileEffectDelta":0},
+        {"rowOrdinal":6,"eventOutcomeClass":"PROFILE_INVALID","dispatchRuleId":"OFF-I1-RULE-DP-006","dispatchAttemptDelta":0,"reconcileRuleId":"OFF-I1-RULE-D-006","reconcileOutcome":"TRANSITION_APPLIED","reconcileEffectDelta":0},
+        {"rowOrdinal":7,"eventOutcomeClass":"SCOPE_INVALID","dispatchRuleId":"OFF-I1-RULE-DP-007","dispatchAttemptDelta":0,"reconcileRuleId":"OFF-I1-RULE-D-007","reconcileOutcome":"TRANSITION_APPLIED","reconcileEffectDelta":0},
+        {"rowOrdinal":8,"eventOutcomeClass":"FINAL_TLS_TRUST_OR_NAME_REJECT","dispatchRuleId":"OFF-I1-RULE-DP-008","dispatchAttemptDelta":1,"reconcileRuleId":"OFF-I1-RULE-D-008","reconcileOutcome":"TRANSITION_APPLIED","reconcileEffectDelta":0},
+        {"rowOrdinal":9,"eventOutcomeClass":"FINAL_SCHEMA_OR_FORMAT_REJECT","dispatchRuleId":"OFF-I1-RULE-DP-009","dispatchAttemptDelta":1,"reconcileRuleId":"OFF-I1-RULE-D-009","reconcileOutcome":"TRANSITION_APPLIED","reconcileEffectDelta":0},
+        {"rowOrdinal":10,"eventOutcomeClass":"FINAL_RESPONSE_INTEGRITY_REJECT","dispatchRuleId":"OFF-I1-RULE-DP-010","dispatchAttemptDelta":1,"reconcileRuleId":"OFF-I1-RULE-D-010","reconcileOutcome":"TRANSITION_APPLIED","reconcileEffectDelta":0},
+        {"rowOrdinal":11,"eventOutcomeClass":"FINAL_IDEMPOTENCY_PAYLOAD_MISMATCH","dispatchRuleId":"OFF-I1-RULE-DP-011","dispatchAttemptDelta":1,"reconcileRuleId":"OFF-I1-RULE-D-011","reconcileOutcome":"TRANSITION_APPLIED","reconcileEffectDelta":0},
+        {"rowOrdinal":12,"eventOutcomeClass":"RETRY_BUDGET_EXHAUSTED","dispatchRuleId":"OFF-I1-RULE-DP-012","dispatchAttemptDelta":0,"reconcileRuleId":"OFF-I1-RULE-D-012","reconcileOutcome":"TRANSITION_APPLIED","reconcileEffectDelta":0},
+        {"rowOrdinal":13,"eventOutcomeClass":"CANCEL_REQUESTED_WHILE_DELETE_PENDING","dispatchRuleId":"OFF-I1-RULE-DP-013","dispatchAttemptDelta":0,"reconcileRuleId":"OFF-I1-RULE-D-013","reconcileOutcome":"REJECTED_NO_STATE_CHANGE","reconcileEffectDelta":0},
+        {"rowOrdinal":14,"eventOutcomeClass":"DELETE_REVALIDATED_OR_USER_ACTION_CONFIRMED_AFTER_ACCEPTANCE","dispatchRuleId":"OFF-I1-RULE-DP-014","dispatchAttemptDelta":1,"reconcileRuleId":"OFF-I1-RULE-D-014","reconcileOutcome":"TRANSITION_APPLIED","reconcileEffectDelta":0},
+        {"rowOrdinal":15,"eventOutcomeClass":"VERIFIED_SCOPED_RECEIPT","dispatchRuleId":"OFF-I1-RULE-DP-015","dispatchAttemptDelta":1,"reconcileRuleId":"OFF-I1-RULE-D-015","reconcileOutcome":"TRANSITION_APPLIED","reconcileEffectDelta":1}
+      ],
+      "scriptedDeletionDispatchRuleContract": {
+        "priority": 250,
+        "secondaryOrder": "ONE_BASED_ROW_ORDINAL",
+        "sourceActionId": "OFF-I1-ACT-026-01",
+        "target": "PRESERVE_DELETE_PENDING",
+        "outcome": "TRANSITION_APPLIED",
+        "flowLedgerAppend": true,
+        "queueLedgerAppend": true,
+        "counterDelta": "EXACT_SCRIPTED_DISPATCH_ATTEMPT_DELTA"
+      },
+      "scriptedDeletionInvocation": {
+        "exactInputKeyOrder": [
+          "scenarioId",
+          "scriptedDeletionRowOrdinal"
+        ],
+        "scenarioId": "OFF-SYN-026",
+        "scriptedDeletionRowOrdinal": "REQUIRED_INT64_1_THROUGH_15",
+        "sharedOrdinalRule": "one invocation executes OFF-I1-ACT-026-01 then OFF-I1-ACT-026-02 with the same immutable scriptedDeletionRowOrdinal",
+        "dispatchResolution": "selectedRuleId=scriptedDeletionSubcases[rowOrdinal].dispatchRuleId; outcome=TRANSITION_APPLIED; transition preserves DELETE_PENDING and applies exact dispatchAttemptDelta",
+        "reconcileResolution": "selectedRuleId=scriptedDeletionSubcases[rowOrdinal].reconcileRuleId; outcome=scriptedDeletionSubcases[rowOrdinal].reconcileOutcome; transition applies the exact inherited deletion row at the same ordinal",
+        "eventOutcomeClassResolution": "both actions use scriptedDeletionSubcases[rowOrdinal].eventOutcomeClass",
+        "scalarRuntimeRowsPerInvocation": 2,
+        "directiveValueAllowedInRuntimeResult": false
+      },
+      "scriptedDeletionResolvedCaseFieldOrder": [
+        "caseId",
+        "scriptedDeletionRowOrdinal",
+        "actionId",
+        "eventOutcomeClass",
+        "selectedRuleId",
+        "outcome",
+        "transition"
+      ],
+      "scriptedDeletionResolvedCases": [
+        {"caseId":"OFF-I1-026-ROW-001-DISPATCH","scriptedDeletionRowOrdinal":1,"actionId":"OFF-I1-ACT-026-01","eventOutcomeClass":"DURABLE_ENQUEUE_WHILE_NETWORK_DENIED","selectedRuleId":"OFF-I1-RULE-DP-001","outcome":"TRANSITION_APPLIED","transition":"PRESERVE_DELETE_PENDING_ATTEMPT_0"},
+        {"caseId":"OFF-I1-026-ROW-001-RECONCILE","scriptedDeletionRowOrdinal":1,"actionId":"OFF-I1-ACT-026-02","eventOutcomeClass":"DURABLE_ENQUEUE_WHILE_NETWORK_DENIED","selectedRuleId":"OFF-I1-RULE-D-001","outcome":"TRANSITION_APPLIED","transition":"APPLY_INHERITED_DELETION_ROW_001"},
+        {"caseId":"OFF-I1-026-ROW-002-DISPATCH","scriptedDeletionRowOrdinal":2,"actionId":"OFF-I1-ACT-026-01","eventOutcomeClass":"PRE_ACCEPTANCE_RESUME","selectedRuleId":"OFF-I1-RULE-DP-002","outcome":"TRANSITION_APPLIED","transition":"PRESERVE_DELETE_PENDING_ATTEMPT_1"},
+        {"caseId":"OFF-I1-026-ROW-002-RECONCILE","scriptedDeletionRowOrdinal":2,"actionId":"OFF-I1-ACT-026-02","eventOutcomeClass":"PRE_ACCEPTANCE_RESUME","selectedRuleId":"OFF-I1-RULE-D-002","outcome":"TRANSITION_APPLIED","transition":"APPLY_INHERITED_DELETION_ROW_002"},
+        {"caseId":"OFF-I1-026-ROW-003-DISPATCH","scriptedDeletionRowOrdinal":3,"actionId":"OFF-I1-ACT-026-01","eventOutcomeClass":"ACCEPTED_RESPONSE_OR_RECEIPT_POLL_PENDING","selectedRuleId":"OFF-I1-RULE-DP-003","outcome":"TRANSITION_APPLIED","transition":"PRESERVE_DELETE_PENDING_ATTEMPT_1"},
+        {"caseId":"OFF-I1-026-ROW-003-RECONCILE","scriptedDeletionRowOrdinal":3,"actionId":"OFF-I1-ACT-026-02","eventOutcomeClass":"ACCEPTED_RESPONSE_OR_RECEIPT_POLL_PENDING","selectedRuleId":"OFF-I1-RULE-D-003","outcome":"TRANSITION_APPLIED","transition":"APPLY_INHERITED_DELETION_ROW_003"},
+        {"caseId":"OFF-I1-026-ROW-004-DISPATCH","scriptedDeletionRowOrdinal":4,"actionId":"OFF-I1-ACT-026-01","eventOutcomeClass":"NETWORK_DENIED_AFTER_ACCEPTANCE","selectedRuleId":"OFF-I1-RULE-DP-004","outcome":"TRANSITION_APPLIED","transition":"PRESERVE_DELETE_PENDING_ATTEMPT_0"},
+        {"caseId":"OFF-I1-026-ROW-004-RECONCILE","scriptedDeletionRowOrdinal":4,"actionId":"OFF-I1-ACT-026-02","eventOutcomeClass":"NETWORK_DENIED_AFTER_ACCEPTANCE","selectedRuleId":"OFF-I1-RULE-D-004","outcome":"TRANSITION_APPLIED","transition":"APPLY_INHERITED_DELETION_ROW_004"},
+        {"caseId":"OFF-I1-026-ROW-005-DISPATCH","scriptedDeletionRowOrdinal":5,"actionId":"OFF-I1-ACT-026-01","eventOutcomeClass":"RETRYABLE_FAILURE_OR_BACKOFF","selectedRuleId":"OFF-I1-RULE-DP-005","outcome":"TRANSITION_APPLIED","transition":"PRESERVE_DELETE_PENDING_ATTEMPT_1"},
+        {"caseId":"OFF-I1-026-ROW-005-RECONCILE","scriptedDeletionRowOrdinal":5,"actionId":"OFF-I1-ACT-026-02","eventOutcomeClass":"RETRYABLE_FAILURE_OR_BACKOFF","selectedRuleId":"OFF-I1-RULE-D-005","outcome":"TRANSITION_APPLIED","transition":"APPLY_INHERITED_DELETION_ROW_005"},
+        {"caseId":"OFF-I1-026-ROW-006-DISPATCH","scriptedDeletionRowOrdinal":6,"actionId":"OFF-I1-ACT-026-01","eventOutcomeClass":"PROFILE_INVALID","selectedRuleId":"OFF-I1-RULE-DP-006","outcome":"TRANSITION_APPLIED","transition":"PRESERVE_DELETE_PENDING_ATTEMPT_0"},
+        {"caseId":"OFF-I1-026-ROW-006-RECONCILE","scriptedDeletionRowOrdinal":6,"actionId":"OFF-I1-ACT-026-02","eventOutcomeClass":"PROFILE_INVALID","selectedRuleId":"OFF-I1-RULE-D-006","outcome":"TRANSITION_APPLIED","transition":"APPLY_INHERITED_DELETION_ROW_006"},
+        {"caseId":"OFF-I1-026-ROW-007-DISPATCH","scriptedDeletionRowOrdinal":7,"actionId":"OFF-I1-ACT-026-01","eventOutcomeClass":"SCOPE_INVALID","selectedRuleId":"OFF-I1-RULE-DP-007","outcome":"TRANSITION_APPLIED","transition":"PRESERVE_DELETE_PENDING_ATTEMPT_0"},
+        {"caseId":"OFF-I1-026-ROW-007-RECONCILE","scriptedDeletionRowOrdinal":7,"actionId":"OFF-I1-ACT-026-02","eventOutcomeClass":"SCOPE_INVALID","selectedRuleId":"OFF-I1-RULE-D-007","outcome":"TRANSITION_APPLIED","transition":"APPLY_INHERITED_DELETION_ROW_007"},
+        {"caseId":"OFF-I1-026-ROW-008-DISPATCH","scriptedDeletionRowOrdinal":8,"actionId":"OFF-I1-ACT-026-01","eventOutcomeClass":"FINAL_TLS_TRUST_OR_NAME_REJECT","selectedRuleId":"OFF-I1-RULE-DP-008","outcome":"TRANSITION_APPLIED","transition":"PRESERVE_DELETE_PENDING_ATTEMPT_1"},
+        {"caseId":"OFF-I1-026-ROW-008-RECONCILE","scriptedDeletionRowOrdinal":8,"actionId":"OFF-I1-ACT-026-02","eventOutcomeClass":"FINAL_TLS_TRUST_OR_NAME_REJECT","selectedRuleId":"OFF-I1-RULE-D-008","outcome":"TRANSITION_APPLIED","transition":"APPLY_INHERITED_DELETION_ROW_008"},
+        {"caseId":"OFF-I1-026-ROW-009-DISPATCH","scriptedDeletionRowOrdinal":9,"actionId":"OFF-I1-ACT-026-01","eventOutcomeClass":"FINAL_SCHEMA_OR_FORMAT_REJECT","selectedRuleId":"OFF-I1-RULE-DP-009","outcome":"TRANSITION_APPLIED","transition":"PRESERVE_DELETE_PENDING_ATTEMPT_1"},
+        {"caseId":"OFF-I1-026-ROW-009-RECONCILE","scriptedDeletionRowOrdinal":9,"actionId":"OFF-I1-ACT-026-02","eventOutcomeClass":"FINAL_SCHEMA_OR_FORMAT_REJECT","selectedRuleId":"OFF-I1-RULE-D-009","outcome":"TRANSITION_APPLIED","transition":"APPLY_INHERITED_DELETION_ROW_009"},
+        {"caseId":"OFF-I1-026-ROW-010-DISPATCH","scriptedDeletionRowOrdinal":10,"actionId":"OFF-I1-ACT-026-01","eventOutcomeClass":"FINAL_RESPONSE_INTEGRITY_REJECT","selectedRuleId":"OFF-I1-RULE-DP-010","outcome":"TRANSITION_APPLIED","transition":"PRESERVE_DELETE_PENDING_ATTEMPT_1"},
+        {"caseId":"OFF-I1-026-ROW-010-RECONCILE","scriptedDeletionRowOrdinal":10,"actionId":"OFF-I1-ACT-026-02","eventOutcomeClass":"FINAL_RESPONSE_INTEGRITY_REJECT","selectedRuleId":"OFF-I1-RULE-D-010","outcome":"TRANSITION_APPLIED","transition":"APPLY_INHERITED_DELETION_ROW_010"},
+        {"caseId":"OFF-I1-026-ROW-011-DISPATCH","scriptedDeletionRowOrdinal":11,"actionId":"OFF-I1-ACT-026-01","eventOutcomeClass":"FINAL_IDEMPOTENCY_PAYLOAD_MISMATCH","selectedRuleId":"OFF-I1-RULE-DP-011","outcome":"TRANSITION_APPLIED","transition":"PRESERVE_DELETE_PENDING_ATTEMPT_1"},
+        {"caseId":"OFF-I1-026-ROW-011-RECONCILE","scriptedDeletionRowOrdinal":11,"actionId":"OFF-I1-ACT-026-02","eventOutcomeClass":"FINAL_IDEMPOTENCY_PAYLOAD_MISMATCH","selectedRuleId":"OFF-I1-RULE-D-011","outcome":"TRANSITION_APPLIED","transition":"APPLY_INHERITED_DELETION_ROW_011"},
+        {"caseId":"OFF-I1-026-ROW-012-DISPATCH","scriptedDeletionRowOrdinal":12,"actionId":"OFF-I1-ACT-026-01","eventOutcomeClass":"RETRY_BUDGET_EXHAUSTED","selectedRuleId":"OFF-I1-RULE-DP-012","outcome":"TRANSITION_APPLIED","transition":"PRESERVE_DELETE_PENDING_ATTEMPT_0"},
+        {"caseId":"OFF-I1-026-ROW-012-RECONCILE","scriptedDeletionRowOrdinal":12,"actionId":"OFF-I1-ACT-026-02","eventOutcomeClass":"RETRY_BUDGET_EXHAUSTED","selectedRuleId":"OFF-I1-RULE-D-012","outcome":"TRANSITION_APPLIED","transition":"APPLY_INHERITED_DELETION_ROW_012"},
+        {"caseId":"OFF-I1-026-ROW-013-DISPATCH","scriptedDeletionRowOrdinal":13,"actionId":"OFF-I1-ACT-026-01","eventOutcomeClass":"CANCEL_REQUESTED_WHILE_DELETE_PENDING","selectedRuleId":"OFF-I1-RULE-DP-013","outcome":"TRANSITION_APPLIED","transition":"PRESERVE_DELETE_PENDING_ATTEMPT_0"},
+        {"caseId":"OFF-I1-026-ROW-013-RECONCILE","scriptedDeletionRowOrdinal":13,"actionId":"OFF-I1-ACT-026-02","eventOutcomeClass":"CANCEL_REQUESTED_WHILE_DELETE_PENDING","selectedRuleId":"OFF-I1-RULE-D-013","outcome":"REJECTED_NO_STATE_CHANGE","transition":"APPLY_INHERITED_DELETION_ROW_013"},
+        {"caseId":"OFF-I1-026-ROW-014-DISPATCH","scriptedDeletionRowOrdinal":14,"actionId":"OFF-I1-ACT-026-01","eventOutcomeClass":"DELETE_REVALIDATED_OR_USER_ACTION_CONFIRMED_AFTER_ACCEPTANCE","selectedRuleId":"OFF-I1-RULE-DP-014","outcome":"TRANSITION_APPLIED","transition":"PRESERVE_DELETE_PENDING_ATTEMPT_1_AFTER_EXACT_GRANT"},
+        {"caseId":"OFF-I1-026-ROW-014-RECONCILE","scriptedDeletionRowOrdinal":14,"actionId":"OFF-I1-ACT-026-02","eventOutcomeClass":"DELETE_REVALIDATED_OR_USER_ACTION_CONFIRMED_AFTER_ACCEPTANCE","selectedRuleId":"OFF-I1-RULE-D-014","outcome":"TRANSITION_APPLIED","transition":"APPLY_INHERITED_DELETION_ROW_014"},
+        {"caseId":"OFF-I1-026-ROW-015-DISPATCH","scriptedDeletionRowOrdinal":15,"actionId":"OFF-I1-ACT-026-01","eventOutcomeClass":"VERIFIED_SCOPED_RECEIPT","selectedRuleId":"OFF-I1-RULE-DP-015","outcome":"TRANSITION_APPLIED","transition":"PRESERVE_DELETE_PENDING_ATTEMPT_1"},
+        {"caseId":"OFF-I1-026-ROW-015-RECONCILE","scriptedDeletionRowOrdinal":15,"actionId":"OFF-I1-ACT-026-02","eventOutcomeClass":"VERIFIED_SCOPED_RECEIPT","selectedRuleId":"OFF-I1-RULE-D-015","outcome":"TRANSITION_APPLIED","transition":"APPLY_INHERITED_DELETION_ROW_015"}
+      ],
+      "scriptedDeletionResolvedCaseScalarCompletion": {
+        "completeFieldOrder": [
+          "caseId",
+          "scriptedDeletionRowOrdinal",
+          "actionId",
+          "eventId",
+          "eventOutcomeClass",
+          "selectedRuleId",
+          "outcome",
+          "transition",
+          "inheritedMappingRowOrdinal",
+          "attemptDelta",
+          "effectDelta",
+          "applyDelta",
+          "remoteDeletionEffectDelta",
+          "queueAffecting",
+          "flowLedgerAppend",
+          "queueLedgerAppend"
+        ],
+        "eventIdByActionId": {
+          "OFF-I1-ACT-026-01": "OFF-I1-EVT-026-01",
+          "OFF-I1-ACT-026-02": "OFF-I1-EVT-026-02"
+        },
+        "inheritedMappingRowOrdinal": "EXACTLY_EQUALS_SCRIPTED_DELETION_ROW_ORDINAL",
+        "attemptDeltaByTransition": "exact scriptedDeletionResolvedTransitionCatalog row having the same literal",
+        "effectDelta": "1 only for OFF-I1-026-ROW-015-RECONCILE; zero for the other 29 cases",
+        "applyDelta": "zero for all 30 cases",
+        "remoteDeletionEffectDelta": "1 only for OFF-I1-026-ROW-015-RECONCILE; zero for the other 29 cases",
+        "queueAffecting": true,
+        "flowLedgerAppend": true,
+        "queueLedgerAppend": true,
+        "completionRule": "merge each scriptedDeletionResolvedCases row with the one exact scriptedDeletionResolvedTransitionCatalog row having the same literal plus these common scalar values; no prefix matching, pattern parsing, placeholder or resolver value remains"
+      },
+      "scriptedDeletionResolvedTransitionCatalog": [
+        {"literal":"PRESERVE_DELETE_PENDING_ATTEMPT_0","kind":"DISPATCH","rowOrdinal":null,"attemptDelta":0,"manualGrantDelta":0,"effectDelta":0,"applyDelta":0,"remoteDeletionEffectDelta":0,"semantics":"preserve current valid DELETE_PENDING row and all identities"},
+        {"literal":"PRESERVE_DELETE_PENDING_ATTEMPT_1","kind":"DISPATCH","rowOrdinal":null,"attemptDelta":1,"manualGrantDelta":0,"effectDelta":0,"applyDelta":0,"remoteDeletionEffectDelta":0,"semantics":"perform one exact attempt operation and preserve current valid DELETE_PENDING row and all identities"},
+        {"literal":"PRESERVE_DELETE_PENDING_ATTEMPT_1_AFTER_EXACT_GRANT","kind":"DISPATCH","rowOrdinal":14,"attemptDelta":1,"manualGrantDelta":1,"effectDelta":0,"applyDelta":0,"remoteDeletionEffectDelta":0,"semantics":"post-acceptance only; at zero remaining budget consume one eligible explicit grant then perform one exact attempt operation and preserve current DELETE_PENDING row"},
+        {"literal":"APPLY_INHERITED_DELETION_ROW_001","kind":"RECONCILE","rowOrdinal":1,"attemptDelta":0,"manualGrantDelta":0,"effectDelta":0,"applyDelta":0,"remoteDeletionEffectDelta":0,"semantics":"apply exact inherited deletion mapping row 1"},
+        {"literal":"APPLY_INHERITED_DELETION_ROW_002","kind":"RECONCILE","rowOrdinal":2,"attemptDelta":0,"manualGrantDelta":0,"effectDelta":0,"applyDelta":0,"remoteDeletionEffectDelta":0,"semantics":"apply exact inherited deletion mapping row 2"},
+        {"literal":"APPLY_INHERITED_DELETION_ROW_003","kind":"RECONCILE","rowOrdinal":3,"attemptDelta":0,"manualGrantDelta":0,"effectDelta":0,"applyDelta":0,"remoteDeletionEffectDelta":0,"semantics":"apply exact inherited deletion mapping row 3"},
+        {"literal":"APPLY_INHERITED_DELETION_ROW_004","kind":"RECONCILE","rowOrdinal":4,"attemptDelta":0,"manualGrantDelta":0,"effectDelta":0,"applyDelta":0,"remoteDeletionEffectDelta":0,"semantics":"apply exact inherited deletion mapping row 4"},
+        {"literal":"APPLY_INHERITED_DELETION_ROW_005","kind":"RECONCILE","rowOrdinal":5,"attemptDelta":0,"manualGrantDelta":0,"effectDelta":0,"applyDelta":0,"remoteDeletionEffectDelta":0,"semantics":"apply exact inherited deletion mapping row 5"},
+        {"literal":"APPLY_INHERITED_DELETION_ROW_006","kind":"RECONCILE","rowOrdinal":6,"attemptDelta":0,"manualGrantDelta":0,"effectDelta":0,"applyDelta":0,"remoteDeletionEffectDelta":0,"semantics":"apply exact inherited deletion mapping row 6"},
+        {"literal":"APPLY_INHERITED_DELETION_ROW_007","kind":"RECONCILE","rowOrdinal":7,"attemptDelta":0,"manualGrantDelta":0,"effectDelta":0,"applyDelta":0,"remoteDeletionEffectDelta":0,"semantics":"apply exact inherited deletion mapping row 7"},
+        {"literal":"APPLY_INHERITED_DELETION_ROW_008","kind":"RECONCILE","rowOrdinal":8,"attemptDelta":0,"manualGrantDelta":0,"effectDelta":0,"applyDelta":0,"remoteDeletionEffectDelta":0,"semantics":"apply exact inherited deletion mapping row 8"},
+        {"literal":"APPLY_INHERITED_DELETION_ROW_009","kind":"RECONCILE","rowOrdinal":9,"attemptDelta":0,"manualGrantDelta":0,"effectDelta":0,"applyDelta":0,"remoteDeletionEffectDelta":0,"semantics":"apply exact inherited deletion mapping row 9"},
+        {"literal":"APPLY_INHERITED_DELETION_ROW_010","kind":"RECONCILE","rowOrdinal":10,"attemptDelta":0,"manualGrantDelta":0,"effectDelta":0,"applyDelta":0,"remoteDeletionEffectDelta":0,"semantics":"apply exact inherited deletion mapping row 10"},
+        {"literal":"APPLY_INHERITED_DELETION_ROW_011","kind":"RECONCILE","rowOrdinal":11,"attemptDelta":0,"manualGrantDelta":0,"effectDelta":0,"applyDelta":0,"remoteDeletionEffectDelta":0,"semantics":"apply exact inherited deletion mapping row 11"},
+        {"literal":"APPLY_INHERITED_DELETION_ROW_012","kind":"RECONCILE","rowOrdinal":12,"attemptDelta":0,"manualGrantDelta":0,"effectDelta":0,"applyDelta":0,"remoteDeletionEffectDelta":0,"semantics":"apply exact inherited deletion mapping row 12"},
+        {"literal":"APPLY_INHERITED_DELETION_ROW_013","kind":"RECONCILE","rowOrdinal":13,"attemptDelta":0,"manualGrantDelta":0,"effectDelta":0,"applyDelta":0,"remoteDeletionEffectDelta":0,"semantics":"apply exact inherited rejection row 13 with no state or counter change"},
+        {"literal":"APPLY_INHERITED_DELETION_ROW_014","kind":"RECONCILE","rowOrdinal":14,"attemptDelta":0,"manualGrantDelta":0,"effectDelta":0,"applyDelta":0,"remoteDeletionEffectDelta":0,"semantics":"apply exact inherited deletion mapping row 14"},
+        {"literal":"APPLY_INHERITED_DELETION_ROW_015","kind":"RECONCILE","rowOrdinal":15,"attemptDelta":0,"manualGrantDelta":0,"effectDelta":1,"applyDelta":0,"remoteDeletionEffectDelta":1,"semantics":"apply exact inherited verified-receipt row 15"}
+      ],
+      "projectionDirectiveRules": {
+        "RESOLVE_SCRIPTED_DELETION_DISPATCH_RULE": "replace with the selected scriptedDeletionSubcases.dispatchRuleId before producing a runtime result",
+        "RESOLVE_SCRIPTED_DELETION_RECONCILE_RULE": "replace with the selected scriptedDeletionSubcases.reconcileRuleId before producing a runtime result",
+        "RESOLVE_BY_SUBCASE": "replace with the selected scriptedDeletionSubcases scalar field before producing a runtime result",
+        "directivesAllowedInRuntimeResult": false,
+        "exactlyOneSubcaseSelected": true,
+        "templateRowsInActionRuleProjection": [
+          "OFF-I1-ACT-026-01",
+          "OFF-I1-ACT-026-02"
+        ],
+        "ordinaryScalarRowsInActionRuleProjection": 65,
+        "conditionalScalarCasesForScenario026": 30,
+        "allResolvedRuntimeCases": 95,
+        "resolvedScalarRowsForOneComplete26ScenarioInvocation": 67,
+        "runtimeTransitionDomain": "exact union of 23 non-template transitionDirectiveContract catalog literals and all 18 scriptedDeletionResolvedTransitionCatalog literals; total 41 exact values, exact lookup only and no pattern parsing"
+      },
+      "actionProjection": [
+        {"scenarioId":"OFF-SYN-001","actionIds":["OFF-I1-ACT-001-01","OFF-I1-ACT-001-02"],"transitions":["=","="]},
+        {"scenarioId":"OFF-SYN-002","actionIds":["OFF-I1-ACT-002-01","OFF-I1-ACT-002-02","OFF-I1-ACT-002-03"],"transitions":["L:LOCAL_OPERATION_RUNNING","L:LOCAL_OPERATION_RUNNING","L:LOCAL_OPERATION_SUCCEEDED"]},
+        {"scenarioId":"OFF-SYN-003","actionIds":["OFF-I1-ACT-003-01","OFF-I1-ACT-003-02"],"transitions":["RESTORE:=","L:LOCAL_OPERATION_SUCCEEDED"]},
+        {"scenarioId":"OFF-SYN-004","actionIds":["OFF-I1-ACT-004-01","OFF-I1-ACT-004-02","OFF-I1-ACT-004-03"],"transitions":["L:LOCAL_OPERATION_RUNNING","L:LOCAL_OPERATION_RUNNING","L:LOCAL_OPERATION_SUCCEEDED"]},
+        {"scenarioId":"OFF-SYN-005","actionIds":["OFF-I1-ACT-005-01","OFF-I1-ACT-005-02","OFF-I1-ACT-005-03"],"transitions":["L:LOCAL_OPERATION_SUCCEEDED","L:LOCAL_OPERATION_SUCCEEDED","L:LOCAL_OPERATION_SUCCEEDED"]},
+        {"scenarioId":"OFF-SYN-006","actionIds":["OFF-I1-ACT-006-01"],"transitions":["L:LOCAL_OPERATION_SUCCEEDED"]},
+        {"scenarioId":"OFF-SYN-007","actionIds":["OFF-I1-ACT-007-01","OFF-I1-ACT-007-02"],"transitions":["L:LOCAL_OPERATION_RUNNING","L:LOCAL_OPERATION_SUCCEEDED"]},
+        {"scenarioId":"OFF-SYN-008","actionIds":["OFF-I1-ACT-008-01","OFF-I1-ACT-008-02","OFF-I1-ACT-008-03"],"transitions":["L:LOCAL_OPERATION_RUNNING","L:LOCAL_OPERATION_SUCCEEDED","="]},
+        {"scenarioId":"OFF-SYN-009","actionIds":["OFF-I1-ACT-009-01","OFF-I1-ACT-009-02"],"transitions":["P:WAITING_MODEL","L:LOCAL_OPERATION_SUCCEEDED;P:PRESERVE"]},
+        {"scenarioId":"OFF-SYN-010","actionIds":["OFF-I1-ACT-010-01"],"transitions":["P:PROCESSING_SUCCEEDED"]},
+        {"scenarioId":"OFF-SYN-011","actionIds":["OFF-I1-ACT-011-01"],"transitions":["P:PROCESSING_SUCCEEDED"]},
+        {"scenarioId":"OFF-SYN-012","actionIds":["OFF-I1-ACT-012-01"],"transitions":["P:PROCESSING_SUCCEEDED"]},
+        {"scenarioId":"OFF-SYN-013","actionIds":["OFF-I1-ACT-013-01","OFF-I1-ACT-013-02"],"transitions":["Q:PENDING_UPLOAD","Q:WAITING_NETWORK"]},
+        {"scenarioId":"OFF-SYN-014","actionIds":["OFF-I1-ACT-014-01","OFF-I1-ACT-014-02","OFF-I1-ACT-014-03","OFF-I1-ACT-014-04","OFF-I1-ACT-014-05"],"transitions":["L:LOCAL_OPERATION_SUCCEEDED;Q:PRESERVE_WAITING_NETWORK","L:LOCAL_OPERATION_SUCCEEDED;Q:PRESERVE_WAITING_NETWORK","L:LOCAL_OPERATION_SUCCEEDED;Q:PRESERVE_WAITING_NETWORK","L:LOCAL_OPERATION_SUCCEEDED;Q:PRESERVE_WAITING_NETWORK","L:LOCAL_OPERATION_SUCCEEDED;Q:PRESERVE_WAITING_NETWORK"]},
+        {"scenarioId":"OFF-SYN-015","actionIds":["OFF-I1-ACT-015-01","OFF-I1-ACT-015-02"],"transitions":["SNAPSHOT:=","RESTORE:="]},
+        {"scenarioId":"OFF-SYN-016","actionIds":["OFF-I1-ACT-016-01","OFF-I1-ACT-016-02"],"transitions":["SNAPSHOT:=","RESTORE:="]},
+        {"scenarioId":"OFF-SYN-017","actionIds":["OFF-I1-ACT-017-01","OFF-I1-ACT-017-02","OFF-I1-ACT-017-03","OFF-I1-ACT-017-04","OFF-I1-ACT-017-05"],"transitions":["Q:PENDING_UPLOAD","Q:UPLOADING;ATTEMPT:0_TO_1","Q:REMOTE_PROCESSING;EFFECT:0_TO_1","Q:RESULT_AVAILABLE","Q:APPLIED;APPLY:0_TO_1"]},
+        {"scenarioId":"OFF-SYN-018","actionIds":["OFF-I1-ACT-018-01","OFF-I1-ACT-018-02"],"fixture":"Q=REMOTE_PROCESSING;attempt=1;effect=1;apply=0","transitions":["Q:PRESERVE_REMOTE_PROCESSING;ATTEMPT:1_TO_2","Q:APPLIED;APPLY:0_TO_1;EFFECT:PRESERVE_ONE"]},
+        {"scenarioId":"OFF-SYN-019","actionIds":["OFF-I1-ACT-019-01","OFF-I1-ACT-019-02","OFF-I1-ACT-019-03","OFF-I1-ACT-019-04","OFF-I1-ACT-019-05"],"transitions":["=","=","L:LOCAL_OPERATION_SUCCEEDED","=","="],"claimBoundary":"SEMANTIC_LABELS_NOT_NETWORK_CALLS"},
+        {"scenarioId":"OFF-SYN-020","actionIds":["OFF-I1-ACT-020-01","OFF-I1-ACT-020-02","OFF-I1-ACT-020-03"],"transitions":["=","RESTORE:=","L:LOCAL_OPERATION_SUCCEEDED"]},
+        {"scenarioId":"OFF-SYN-021","actionIds":["OFF-I1-ACT-021-01","OFF-I1-ACT-021-02"],"transitions":["P:PENDING_CAPABILITY","L:LOCAL_OPERATION_SUCCEEDED;P:PRESERVE"]},
+        {"scenarioId":"OFF-SYN-022","actionIds":["OFF-I1-ACT-022-01","OFF-I1-ACT-022-02","OFF-I1-ACT-022-03"],"transitions":["Q:CANCELLED","=","L:LOCAL_OPERATION_SUCCEEDED"]},
+        {"scenarioId":"OFF-SYN-023","actionIds":["OFF-I1-ACT-023-01","OFF-I1-ACT-023-02","OFF-I1-ACT-023-03"],"transitions":["L:LOCAL_OPERATION_RUNNING","L:LOCAL_OPERATION_SUCCEEDED","="]},
+        {"scenarioId":"OFF-SYN-024","actionIds":["OFF-I1-ACT-024-01","OFF-I1-ACT-024-02","OFF-I1-ACT-024-03"],"transitions":["L:LOCAL_OPERATION_SUCCEEDED","Q:DELETE_PENDING;SUBSTATUS:DELETE_WAITING_NETWORK","="]},
+        {"scenarioId":"OFF-SYN-025","actionIds":["OFF-I1-ACT-025-01","OFF-I1-ACT-025-02","OFF-I1-ACT-025-03","OFF-I1-ACT-025-04"],"transitions":["Q:CANCELLED_NON_DELETION_ROW","L:PRESERVE","Q:APPEND_DELETE_PENDING_ROW_AND_PROJECT","="],"ledgerRule":"RETAIN_BOTH_DURABLE_ROWS"},
+        {"scenarioId":"OFF-SYN-026","actionIds":["OFF-I1-ACT-026-01","OFF-I1-ACT-026-02"],"transitions":["SELECT_ONE_INHERITED_DELETION_CLASS","RECONCILE_SELECTED_CLASS"],"onlyTerminalRule":"VERIFIED_SCOPED_RECEIPT_TO_DELETED_REMOTE"}
+      ],
+      "queueProjectionRule": "stateVector.queue projects the most recently mutated durable queue row; the ordered queue ledger retains every durable row",
+      "inheritedDeletionMappingExact": true,
+      "deletionFailedPrimaryStatesAllowed": false
+    },
+    "OFF-I1-UNRESOLVED-003": {
+      "status": "RESOLVED_BY_V0_2",
+      "name": "INVALID_TRANSITION_DISPOSITIONS",
+      "invalidCatalogPointer": "docs/evidence/poc-offline-001/i1-host-oracle-scope-stage0-v0.1.json#/invalidAttemptCatalog",
+      "diagnosticCatalog": [
+        "NONE",
+        "NO_ELIGIBLE_RULE",
+        "IDEMPOTENCY_INPUT_MISMATCH",
+        "POLICY_REJECTED",
+        "OFF-I1-INVALID-001",
+        "OFF-I1-INVALID-002",
+        "OFF-I1-INVALID-003",
+        "OFF-I1-INVALID-004",
+        "OFF-I1-INVALID-005",
+        "OFF-I1-INVALID-006",
+        "OFF-I1-INVALID-007",
+        "OFF-I1-INVALID-008",
+        "OFF-I1-INVALID-009",
+        "OFF-I1-INVALID-010",
+        "OFF-I1-INVALID-011",
+        "OFF-I1-INVALID-012",
+        "OFF-I1-INVALID-013",
+        "OFF-I1-INVALID-014",
+        "OFF-I1-INVALID-015"
+      ],
+      "invalidClassificationRule": "run validationCategoryTable in ascending order and emit the diagnosticCode from the first failing category; every invalid input fails at least one row and exactly one first row",
+      "validationCategoryTable": [
+        {"order":1,"category":"MALFORMED_UTF8_BOM_JSON_SYNTAX_TRAILING_BYTES_DUPLICATE_UNKNOWN_MISSING_OR_REORDERED_KEY_NONCANONICAL_ESCAPE_NUMBER_OR_WHITESPACE","diagnosticCode":"OFF-I1-INVALID-013"},
+        {"order":2,"category":"NON_SYNTHETIC_OR_USER_DERIVED_INPUT","diagnosticCode":"OFF-I1-INVALID-001"},
+        {"order":3,"category":"MISSING_OR_CHANGED_SEMANTIC_PARENT_PIN","diagnosticCode":"OFF-I1-INVALID-002"},
+        {"order":4,"category":"MISSING_DUPLICATE_NONCONTIGUOUS_OR_UNKNOWN_CATALOG_ACTION_EVENT_TRACE_OR_RULE_ID","diagnosticCode":"OFF-I1-INVALID-003"},
+        {"order":5,"category":"COVERAGE_COUNT_OR_BIJECTION_MISMATCH","diagnosticCode":"OFF-I1-INVALID-004"},
+        {"order":6,"category":"WALL_CLOCK_RANDOM_SLEEP_BACKGROUND_SCHEDULING_OR_OTHER_NONDETERMINISM","diagnosticCode":"OFF-I1-INVALID-005"},
+        {"order":7,"category":"ANDROID_NETWORK_SOCKET_DNS_FILESYSTEM_PERSISTENCE_SUBPROCESS_THREAD_ENV_OR_EXTERNAL_DEPENDENCY","diagnosticCode":"OFF-I1-INVALID-006"},
+        {"order":8,"category":"FORBIDDEN_OR_FREE_FORM_CONTENT_OR_RAW_IDENTIFIER","diagnosticCode":"OFF-I1-INVALID-007"},
+        {"order":9,"category":"UNBOUNDED_RETRY_TIGHT_LOOP_ATTEMPT_WHILE_DENIED_OR_BUDGET_UNDERFLOW","diagnosticCode":"OFF-I1-INVALID-008"},
+        {"order":10,"category":"RESTORE_RECONCILIATION_OR_DEEP_IMMUTABILITY_FAILURE_AFTER_CANONICAL_DECODE","diagnosticCode":"OFF-I1-INVALID-009"},
+        {"order":11,"category":"STATE_VECTOR_KEY_CATALOG_ORDER_OR_DIGEST_FAILURE","diagnosticCode":"OFF-I1-INVALID-010"},
+        {"order":12,"category":"DELETION_PHASE_PRIMARY_STATE_SUBSTATUS_HASH_RECEIPT_OR_EFFECT_FAILURE","diagnosticCode":"OFF-I1-INVALID-011"},
+        {"order":13,"category":"INFLATED_HOST_DEVICE_NETWORK_MODEL_PROVIDER_PRODUCTION_OR_PASS_CLAIM","diagnosticCode":"OFF-I1-INVALID-012"},
+        {"order":14,"category":"GENERIC_JSON_TYPE_NULLABILITY_CATALOG_PATTERN_INTEGER_RANGE_OR_ARITHMETIC_OVERFLOW_FAILURE_NOT_CLASSIFIED_ABOVE","diagnosticCode":"OFF-I1-INVALID-014"},
+        {"order":15,"category":"GENERIC_CROSS_FIELD_SEQUENCE_PHASE_IDENTITY_OR_RELATIONSHIP_FAILURE_NOT_CLASSIFIED_ABOVE","diagnosticCode":"OFF-I1-INVALID-015"}
+      ],
+      "INVALID_INPUT": {
+        "class": "UNINTERPRETABLE_OR_NONCANONICAL_INPUT",
+        "selectedRuleId": null,
+        "outcome": "INVALID_INPUT",
+        "diagnostic": "FIRST_FAILING_VALIDATION_CATEGORY_TABLE_CODE",
+        "stateVector": "ORIGINAL_IMMUTABLE",
+        "priorLedgers": "ORIGINAL_IMMUTABLE",
+        "replayRecords": "ORIGINAL_IMMUTABLE",
+        "flowLedgerAppend": false,
+        "queueLedgerAppend": false,
+        "counterDelta": 0
+      },
+      "REJECTED_NO_STATE_CHANGE": {
+        "class": "STRUCTURALLY_VALID_POLICY_REFUSAL",
+        "selectedRuleId": "OFF-I1-RULE-D-013",
+        "outcome": "REJECTED_NO_STATE_CHANGE",
+        "diagnostic": "POLICY_REJECTED",
+        "stateVectorBytes": "IDENTICAL",
+        "identityFields": "IDENTICAL",
+        "counterDelta": 0,
+        "flowLedgerAppend": true,
+        "queueLedgerAppend": true,
+        "onlyEligibleCase": "OFF-SYN-026 row 13 CANCEL_REQUESTED_WHILE_DELETE_PENDING",
+        "otherStructurallyValidIneligibleActions": "NO_STATE_CHANGE_WITH_NO_ELIGIBLE_RULE",
+        "identityMutation": "INVALID_INPUT_CROSS_FIELD_RELATIONSHIP_NOT_REJECTION",
+        "invalidConsentExcluded": true
+      },
+      "NO_STATE_CHANGE": {
+        "noEligibleRule": {
+          "selectedRuleId": null,
+          "outcome": "NO_STATE_CHANGE",
+          "diagnostic": "NO_ELIGIBLE_RULE",
+          "flowLedgerAppend": false,
+          "queueLedgerAppend": false
+        },
+        "differentCanonicalInput": {
+          "selectedRuleId": "OFF-I1-RULE-Q-002",
+          "outcome": "NO_STATE_CHANGE",
+          "diagnostic": "IDEMPOTENCY_INPUT_MISMATCH",
+          "flowLedgerAppend": false,
+          "queueLedgerAppend": false,
+          "originalReplayRecordPreserved": true
+        },
+        "stateVectorLedgersReplayAndCounters": "IDENTICAL"
+      },
+      "outcomeDiagnosticTable": [
+        {"outcome":"TRANSITION_APPLIED","selectedRuleId":"REQUIRED_NON_NULL","diagnosticCode":"NONE"},
+        {"outcome":"NO_STATE_CHANGE","selectedRuleId":null,"diagnosticCode":"NO_ELIGIBLE_RULE"},
+        {"outcome":"NO_STATE_CHANGE","selectedRuleId":"OFF-I1-RULE-Q-002","diagnosticCode":"IDEMPOTENCY_INPUT_MISMATCH"},
+        {"outcome":"REJECTED_NO_STATE_CHANGE","selectedRuleId":"OFF-I1-RULE-D-013","diagnosticCode":"POLICY_REJECTED"},
+        {"outcome":"INVALID_INPUT","selectedRuleId":null,"diagnosticCode":"ONE_EXACT_VALIDATION_CATEGORY_TABLE_CODE"}
+      ],
+      "totalityRule": "every result matches exactly one outcomeDiagnosticTable row"
+    },
+    "OFF-I1-UNRESOLVED-004": {
+      "status": "RESOLVED_BY_V0_2",
+      "name": "COUNTER_ALGEBRA",
+      "attemptCount": "NON_NEGATIVE_INT64_MONOTONIC_INCREMENT_IMMEDIATELY_BEFORE_ELIGIBLE_SYNTHETIC_SEND_ONLY",
+      "effectCount": "ZERO_OR_ONE_NON_DELETION_FIRST_DURABLE_ACCEPTANCE; FOR_DELETION_EQUALS_REMOTE_DELETION_EFFECT",
+      "applyCount": "ZERO_OR_ONE_FIRST_VALIDATED_NON_DELETION_APPLICATION; ZERO_FOR_DELETION",
+      "remoteDeletionEffectCount": "ZERO_OR_ONE; ZERO_TO_ONE_ONLY_ON_VERIFIED_SCOPED_RECEIPT",
+      "replayMarkerCatalog": [
+        "ORIGINAL",
+        "SAME_INPUT_REPLAY",
+        "DIFFERENT_INPUT_REJECTED"
+      ],
+      "attemptBudgetAlgebra": {
+        "scope": "ONE_CURRENTLY_PROJECTED_ACTIVE_REMOTE_OPERATION_PER_SCENARIO_INVOCATION",
+        "scopeRule": "at most one nonterminal remote operation is active in an I1 scenario; scenario 025 retains a cancelled historical non-deletion row but only its projected deletion row owns the budget scalars; a new active intent resets attemptCount=0, manualRetryGrantCount=0 and remaining=3",
+        "initialAutomaticAttemptBudget": 3,
+        "manualRetryGrantAttempts": 1,
+        "eligibleAttemptCount": "the queue-row attemptCount; non-negative int64",
+        "manualRetryGrantCount": "non-negative int64; increments only on an explicit eligible manual-retry, revalidation or user-action confirmation while remainingAutomaticAttemptBudget=0",
+        "equation": "remainingAutomaticAttemptBudget = 3 + manualRetryGrantCount - eligibleAttemptCount",
+        "bounds": "0 <= remainingAutomaticAttemptBudget <= 3 + manualRetryGrantCount and no int64 operand or result may overflow",
+        "attemptOperation": "immediately before each eligible synthetic send, require remainingAutomaticAttemptBudget>0, then atomically increment attemptCount by one and decrement remainingAutomaticAttemptBudget by one",
+        "noAttemptOperation": "every denied, malformed, rejected, no-rule, snapshot, restore and dispatchAttemptDelta=0 path preserves attemptCount and remainingAutomaticAttemptBudget",
+        "grantOperation": "an eligible explicit grant atomically increments manualRetryGrantCount by one before any send; it does not itself increment attemptCount",
+        "q010": "one attemptOperation",
+        "q019": "one attemptOperation with effectCount preserved at one",
+        "scriptedDeletionDispatch": "dispatchAttemptDelta=1 means exactly one attemptOperation; dispatchAttemptDelta=0 means noAttemptOperation",
+        "row14Ordering": "require remainingAutomaticAttemptBudget=0; perform exactly one grantOperation, then exactly one attemptOperation, so manualRetryGrantCount and attemptCount each increase by one and remainingAutomaticAttemptBudget returns to zero before reconcile",
+        "underflowOrOverflow": "INVALID_INPUT with zero state, ledger, replay and counter change",
+        "grantReplayRule": "replaying the same row-14 grant is content-addressed by the original logical key and does not create a second grant; only its already-recorded send may be replay-observed under the same-input rule"
+      },
+      "invariants": [
+        "non-deletion applyCount <= effectCount",
+        "deletion remoteDeletionEffectCount == effectCount",
+        "deletion applyCount == 0",
+        "effectCount == 0 implies applyCount == 0",
+        "DELETED_REMOTE iff deletion effect is one and receipt is verified with terminal null fields",
+        "same-input replay may increase only attemptCount",
+        "restore changes no counter",
+        "counter overflow is INVALID_INPUT",
+        "remainingAutomaticAttemptBudget always satisfies the exact attemptBudgetAlgebra equation"
+      ]
+    },
+    "OFF-I1-UNRESOLVED-005": {
+      "status": "RESOLVED_BY_V0_2",
+      "name": "LOCAL_FLOW_DIGEST_CORRELATION",
+      "domain": "OFF_I1_LOCAL_STATE_V1",
+      "formula": "lowercaseHex(SHA-256(PREFIX(domain) || STRING_FIELD(\"local\", exactLocalCatalogValue)))",
+      "isFullVectorDigest": false,
+      "rules": [
+        "flow sequence is contiguous",
+        "queue row emitted for every and only queueAffecting reducer result",
+        "queue rows preserve paired flow relative order",
+        "pairing uses the producing result selectedRuleId, equal intent hash and next unpaired per-intent occurrence; ledgers themselves do not gain a rule field",
+        "queue preLocalStateDigest equals pre flow local projection",
+        "queue postLocalStateDigest equals post flow local projection",
+        "unchanged local truth requires equal pre and post local digests",
+        "full-vector digests are independently recomputed"
+      ]
+    },
+    "OFF-I1-UNRESOLVED-006": {
+      "status": "RESOLVED_BY_V0_2",
+      "name": "STRICT_RESTORE_SNAPSHOT_DECODE_EQUALITY",
+      "snapshotSchema": "poc-offline-i1-snapshot-v0.2",
+      "topLevelKeyOrder": [
+        "snapshotSchema",
+        "contractId",
+        "scenarioId",
+        "nextActionOrdinal",
+        "monotonicOffsetMs",
+        "remainingAutomaticAttemptBudget",
+        "manualRetryGrantCount",
+        "stateVector",
+        "flowLedger",
+        "queueLedger",
+        "replayRecords",
+        "lastResult"
+      ],
+      "scalarRules": {
+        "snapshotSchema": "EXACT_LITERAL",
+        "contractId": "EXACT_INHERITED_LITERAL",
+        "scenarioId": "ONE_EXACT_INHERITED_SCENARIO_ID",
+        "nextActionOrdinal": "INT64_1_THROUGH_SCENARIO_ACTION_COUNT_PLUS_ONE",
+        "monotonicOffsetMs": "NON_NEGATIVE_INT64",
+        "remainingAutomaticAttemptBudget": "INT64_0_THROUGH_3_PLUS_MANUAL_RETRY_GRANT_COUNT",
+        "manualRetryGrantCount": "NON_NEGATIVE_INT64"
+      },
+      "inheritedNestedSchemaPointers": {
+        "stateVector": "docs/evidence/poc-offline-001/i1-host-oracle-scope-stage0-v0.1.json#/catalogs/stateVectorKeys",
+        "flowLedgerRow": "docs/evidence/poc-offline-001/i1-host-oracle-scope-stage0-v0.1.json#/ledgerContract/flowLedgerFields",
+        "queueLedgerRow": "docs/evidence/poc-offline-001/i1-host-oracle-scope-stage0-v0.1.json#/ledgerContract/queueLedgerFields",
+        "lastResult": "docs/evidence/poc-offline-001/i1-host-oracle-scope-stage0-v0.1.json#/reducerContract/resultFields"
+      },
+      "reusableFieldTypes": {
+        "NON_NEGATIVE_INT64": "JSON integer 0 through 9223372036854775807",
+        "POSITIVE_INT64": "JSON integer 1 through 9223372036854775807",
+        "ZERO_OR_ONE_INT": "JSON integer exactly 0 or 1",
+        "HASH64": "JSON string matching ^[0-9a-f]{64}$",
+        "SCENARIO_ID": "JSON string from exact inherited OFF-SYN-001..026 catalog",
+        "ACTION_ID": "JSON string from exact inherited 67-action catalog and belonging to scenarioId",
+        "RULE_ID": "JSON string resolving to one exact Q, C, D, DP or derived direct rule",
+        "STATE_VECTOR": "JSON object in exact local,processingCapability,connectivity,model,queue key order with one exact inherited catalog value per key",
+        "DIAGNOSTIC_CODE": "JSON string from exact v0.2 diagnosticCatalog"
+      },
+      "flowRowFieldSchemas": [
+        {"name":"sequence","type":"POSITIVE_INT64","nullable":false,"rule":"starts at one and is contiguous within one scenario invocation and its restore continuation"},
+        {"name":"scenarioId","type":"SCENARIO_ID","nullable":false,"rule":"exact current scenario"},
+        {"name":"actionId","type":"ACTION_ID","nullable":false,"rule":"belongs to scenarioId and exact ordinal"},
+        {"name":"preStateVector","type":"STATE_VECTOR","nullable":false,"rule":"exact immutable pre-action vector"},
+        {"name":"postStateVector","type":"STATE_VECTOR","nullable":false,"rule":"exact result vector"},
+        {"name":"outcome","type":"OUTCOME_CATALOG","nullable":false,"rule":"exact reducer outcome"},
+        {"name":"monotonicOffsetMs","type":"NON_NEGATIVE_INT64","nullable":false,"rule":"nondecreasing across flow rows"},
+        {"name":"preStateDigest","type":"HASH64","nullable":false,"rule":"SHA-256 of exact canonical preStateVector bytes"},
+        {"name":"postStateDigest","type":"HASH64","nullable":false,"rule":"SHA-256 of exact canonical postStateVector bytes"},
+        {"name":"processingRequestIdHash","type":"HASH64","nullable":true,"rule":"null iff both pre and post processingCapability are PROCESSING_NOT_REQUESTED; otherwise required and immutable for that processing request"},
+        {"name":"queueIntentIdHash","type":"HASH64","nullable":true,"rule":"null iff no durable queue row exists before or after the action; otherwise equals the paired or currently projected queue intentIdHash"},
+        {"name":"contentFreeErrorCode","type":"DIAGNOSTIC_CODE","nullable":true,"rule":"null iff typedLedgerDeltas.diagnosticCode=NONE; otherwise exactly equals that diagnostic"}
+      ],
+      "queueRowFieldSchemas": [
+        {"name":"operationClass","type":"ENUM_NON_DELETION_CLOUD_INTENT_OR_DELETE_CLOUD_COPY","nullable":false,"rule":"DELETE_CLOUD_COPY iff this is a deletion row"},
+        {"name":"intentIdHash","type":"HASH64","nullable":false,"rule":"required immutable for one queue intent"},
+        {"name":"logicalKeyHash","type":"HASH64","nullable":false,"rule":"required immutable for one logical operation"},
+        {"name":"jobIdHash","type":"HASH64","nullable":true,"rule":"null on every deletion row and before non-deletion durable acceptance; once acceptance is durably evidenced it is required immutable on every later row regardless of later retry/final/cancel/result state"},
+        {"name":"resultIdHash","type":"HASH64","nullable":true,"rule":"required immutable only on non-deletion RESULT_AVAILABLE, APPLIED and CONFLICT rows; null otherwise"},
+        {"name":"deletionScopeDigest","type":"HASH64","nullable":true,"rule":"required immutable on deletion rows and null on non-deletion rows"},
+        {"name":"deletionIdHash","type":"HASH64","nullable":true,"rule":"deletion only; null before durable acceptance and required immutable afterward"},
+        {"name":"deletionReceiptIdHash","type":"HASH64","nullable":true,"rule":"required immutable only for DELETED_REMOTE after verified scoped receipt; null otherwise"},
+        {"name":"queueState","type":"INHERITED_QUEUE_STATE_CATALOG","nullable":false,"rule":"deletion permits only DELETE_PENDING or DELETED_REMOTE; non-deletion forbids both"},
+        {"name":"deletionSubstatus","type":"INHERITED_SIX_VALUE_DELETION_SUBSTATUS","nullable":true,"rule":"non-null exactly for DELETE_PENDING and null otherwise"},
+        {"name":"contentFreeDeletionErrorCode","type":"INHERITED_EIGHT_VALUE_DELETION_ERROR","nullable":true,"rule":"nullable only as directed by the exact deletion row; always null for non-deletion and DELETED_REMOTE"},
+        {"name":"deletionReceiptVerificationOutcome","type":"ENUM_VERIFIED","nullable":true,"rule":"VERIFIED iff queueState=DELETED_REMOTE; null otherwise"},
+        {"name":"attemptCount","type":"NON_NEGATIVE_INT64","nullable":false,"rule":"exact attemptBudgetAlgebra cumulative count"},
+        {"name":"replayMarker","type":"ENUM_ORIGINAL_SAME_INPUT_REPLAY_DIFFERENT_INPUT_REJECTED","nullable":false,"rule":"exact replay lifecycle value"},
+        {"name":"effectCount","type":"ZERO_OR_ONE_INT","nullable":false,"rule":"cumulative exact logical effect"},
+        {"name":"applyCount","type":"ZERO_OR_ONE_INT","nullable":false,"rule":"cumulative exact local application"},
+        {"name":"remoteDeletionEffectCount","type":"ZERO_OR_ONE_INT","nullable":false,"rule":"cumulative verified remote deletion effect"},
+        {"name":"preLocalStateDigest","type":"HASH64","nullable":false,"rule":"exact local-axis digest from paired preStateVector"},
+        {"name":"postLocalStateDigest","type":"HASH64","nullable":false,"rule":"exact local-axis digest from paired postStateVector"}
+      ],
+      "queueRowCrossInvariants": [
+        "deletion applyCount=0 and effectCount=remoteDeletionEffectCount",
+        "non-deletion remoteDeletionEffectCount=0 and applyCount<=effectCount",
+        "DELETED_REMOTE iff receipt hash is present, receipt outcome is VERIFIED, substatus and deletion error are null, and deletion effect is one",
+        "all identity hashes are byte-identical across rows for the same logical key after their first non-null value",
+        "preLocalStateDigest and postLocalStateDigest equal the paired flow-row local-axis projections"
+      ],
+      "resultFieldSchemas": [
+        {"name":"selectedRuleId","type":"RULE_ID","nullable":true,"rule":"null exactly for INVALID_INPUT and no-eligible-rule NO_STATE_CHANGE; Q-002 NO_STATE_CHANGE is non-null"},
+        {"name":"outcome","type":"OUTCOME_CATALOG","nullable":false,"rule":"one exact outcome"},
+        {"name":"postStateVector","type":"STATE_VECTOR","nullable":false,"rule":"exact deeply immutable result vector"},
+        {"name":"typedLedgerDeltas","type":"TYPED_LEDGER_DELTAS_OBJECT","nullable":false,"rule":"exact three-key object below"},
+        {"name":"effectCount","type":"ZERO_OR_ONE_INT","nullable":false,"rule":"cumulative post-action count for affected logical row, otherwise zero"},
+        {"name":"applyCount","type":"ZERO_OR_ONE_INT","nullable":false,"rule":"cumulative post-action count for affected logical row, otherwise zero"},
+        {"name":"remoteDeletionEffectCount","type":"ZERO_OR_ONE_INT","nullable":false,"rule":"cumulative post-action count for affected logical row, otherwise zero"}
+      ],
+      "typedLedgerDeltasKeyOrder": [
+        "flowAppend",
+        "queueAppend",
+        "diagnosticCode"
+      ],
+      "typedLedgerDeltasRules": {
+        "flowAppend": "JSON_NULL_OR_ONE_EXACT_INHERITED_12_FIELD_ROW",
+        "queueAppend": "JSON_NULL_OR_ONE_EXACT_INHERITED_19_FIELD_ROW",
+        "diagnosticCode": "ONE_EXACT_DISPOSITION_DIAGNOSTIC_CATALOG_VALUE",
+        "appendRelations": "flowAppend is non-null iff selected rule declares flowLedgerAppend=true; queueAppend is non-null iff selected rule declares queueLedgerAppend=true; when both exist flow queueIntentIdHash equals queue intentIdHash; flow postStateVector equals result postStateVector"
+      },
+      "lastResultRules": {
+        "beforeFirstAction": "JSON_NULL",
+        "afterAction": "EXACT_DEEPLY_IMMUTABLE_INHERITED_RESULT_FIELD_ORDER_WITH_TYPED_LEDGER_DELTAS",
+        "otherNullOrOmittedMemberAllowed": false
+      },
+      "replayRecordKeyOrder": [
+        "logicalKeyHash",
+        "canonicalInputDigest",
+        "selectedRuleId",
+        "outcome",
+        "postStateDigest",
+        "resultIdHash",
+        "replayMarker",
+        "attemptCount",
+        "effectCount",
+        "applyCount",
+        "remoteDeletionEffectCount"
+      ],
+      "replayRecordRules": {
+        "cardinalityPerLogicalKeyHash": "ZERO_OR_ONE",
+        "order": "LOWERCASE_LOGICAL_KEY_HASH_ASCENDING",
+        "canonicalInputDigest": "EXACT_REPLAY_INPUT_DIGEST_FROM_UNRESOLVED_001",
+        "differentInput": "PRESERVE_ORIGINAL_ROW_AND_NEVER_STORE_ALTERNATE_DIGEST",
+        "resultIdHash": "INHERITED_PHASE_NULLABILITY",
+        "counters": "EXACT_COUNTER_ALGEBRA_AND_INT64_BOUNDS",
+        "rawIdentifierAllowed": false
+      },
+      "replayRecordLifecycle": [
+        {"event":"NO_REMOTE_QUEUE_LOGICAL_KEY","record":"ABSENT","rule":"local-only, processing-only, invalid and no-rule actions create no replay record"},
+        {"event":"FIRST_DURABLE_REMOTE_ENQUEUE","record":"CREATE_ORIGINAL","rule":"create exactly one record with immutable logicalKeyHash and canonicalInputDigest, current selectedRuleId/outcome/postStateDigest/resultIdHash under phase nullability, replayMarker=ORIGINAL and current cumulative counters"},
+        {"event":"ORDINARY_STATE_CHANGING_TRANSITION_SAME_LOGICAL_OPERATION","record":"UPDATE_CURRENT","rule":"preserve logicalKeyHash and canonicalInputDigest; replace selectedRuleId, outcome, postStateDigest, resultIdHash subject to phase nullability and cumulative counters; preserve replayMarker"},
+        {"event":"OFF-I1-RULE-Q-019_SAME_INPUT_TRANSPORT_REPLAY","record":"UPDATE_REPLAY_ATTEMPT","rule":"preserve logicalKeyHash, canonicalInputDigest and resultIdHash; set selectedRuleId=OFF-I1-RULE-Q-019, outcome=TRANSITION_APPLIED, postStateDigest=current unchanged vector digest, replayMarker=SAME_INPUT_REPLAY; increment attemptCount exactly once and preserve all effect counters"},
+        {"event":"OFF-I1-RULE-Q-020_SAME_INPUT_APPLIED_DUPLICATE","record":"PRESERVE_CACHED_SEMANTIC_RESULT","rule":"preserve logicalKeyHash, canonicalInputDigest, cached selectedRuleId/outcome/postStateDigest/resultIdHash and all counters; set replayMarker=SAME_INPUT_REPLAY; reducer result may select Q-020 but replay record retains the prior applied semantic result"},
+        {"event":"OFF-I1-RULE-Q-002_DIFFERENT_INPUT","record":"BYTE_IDENTICAL","rule":"preserve the entire existing record, never store the alternate digest, append no ledger and change no counter"},
+        {"event":"INVALID_NO_RULE_OR_POLICY_REJECTION","record":"BYTE_IDENTICAL","rule":"preserve every existing record and create none"},
+        {"event":"STRICT_RESTORE","record":"DEEP_IMMUTABLE_BYTE_IDENTICAL","rule":"restore all records in lowercase logicalKeyHash order without a lifecycle update"}
+      ],
+      "replayResultSeparationRule": "the replay record and current reducer result are separate immutable values; Q-020 can return selectedRuleId=Q-020 while preserving the cached prior applied rule and outcome in the replay record",
+      "emptyArrayRules": {
+        "flowLedger": "[]",
+        "queueLedger": "[]",
+        "replayRecords": "[]"
+      },
+      "canonicalRules": [
+        "strict UTF-8 without BOM",
+        "one object and no trailing bytes",
+        "exact key order at every depth",
+        "no insignificant whitespace",
+        "arrays retain semantic order",
+        "queue rows retain event order",
+        "replay records ordered by lowercase logicalKeyHash",
+        "strings restricted to frozen catalogs and patterns",
+        "integers use common primitive",
+        "no float",
+        "no raw identifier"
+      ],
+      "decodeRules": [
+        "reject malformed UTF-8 before JSON parse",
+        "reject duplicate, unknown, missing or reordered key",
+        "validate catalogs, IDs, hashes, phases, counters, order, sequence and cross-invariants",
+        "re-encode and require byte-for-byte equality",
+        "construct a new deeply immutable graph only after complete validation",
+        "never partially restore",
+        "failure returns INVALID_INPUT with unchanged state and zero delta"
+      ],
+      "snapshotDigest": "EXTERNAL_SHA256_OVER_COMPLETE_CANONICAL_BYTES_NOT_SELF_EMBEDDED",
+      "continuationEquality": "UNINTERRUPTED_AND_STRICT_RESTORE_RUNS_HAVE_BYTE_IDENTICAL_FINAL_VECTOR_LEDGERS_REPLAY_RESULT_COUNTERS",
+      "minimumFreshRepeats": 2,
+      "filesystemPersistenceAllowed": false
+    },
+    "OFF-I1-UNRESOLVED-007": {
+      "status": "RESOLVED_BY_V0_2",
+      "name": "TYPED_REVALIDATION_OUTCOMES",
+      "consentCatalog": [
+        "CURRENT",
+        "MISSING",
+        "REVOKED",
+        "SCOPE_MISMATCH",
+        "VERSION_MISMATCH",
+        "NOT_APPLICABLE_DELETE"
+      ],
+      "profileCatalog": [
+        "CURRENT",
+        "MISSING",
+        "CHANGED",
+        "SCOPE_MISMATCH"
+      ],
+      "connectivityCatalog": [
+        "NETWORK_DENIED",
+        "AIRPLANE_MODE",
+        "AVAILABLE",
+        "RECONNECTING"
+      ],
+      "runtimeCatalog": [
+        "NOT_REQUIRED",
+        "ELIGIBLE",
+        "MODEL_NOT_INSTALLED",
+        "MODEL_UNAVAILABLE_OR_INVALID",
+        "ARTIFACT_NOT_EVALUATION_APPROVED",
+        "DIGEST_MISMATCH",
+        "API_ABI_INCOMPATIBLE",
+        "REQUIRED_16K_EVIDENCE_MISSING"
+      ],
+      "outcomeCatalog": [
+        "INVALID_INPUT",
+        "NO_STATE_CHANGE",
+        "ALLOW",
+        "CANCEL_NON_DELETION_CONSENT_INVALID",
+        "BLOCK_PROFILE_REVALIDATION_REQUIRED",
+        "BLOCK_RUNTIME_REVALIDATION_REQUIRED",
+        "BLOCK_CONNECTIVITY_DENIED",
+        "BLOCK_FINITE_BUDGET_EXHAUSTED",
+        "WAIT_REQUIRED_MODEL",
+        "WAIT_OPTIONAL_CAPABILITY",
+        "ALLOW_DELETE_CONSENT_NOT_APPLICABLE"
+      ],
+      "priority": [
+        "STRUCTURAL_CANONICAL_VALIDATION",
+        "OPERATION_CLASS_DELETION_OR_NON_DELETION",
+        "NON_DELETION_CONSENT_REVOKED_MISSING_SCOPE_VERSION_CURRENT",
+        "PROFILE",
+        "RUNTIME",
+        "CONNECTIVITY",
+        "POSITIVE_FINITE_BUDGET",
+        "ALLOW"
+      ],
+      "operationClassCatalog": [
+        "NON_DELETION_CLOUD_INTENT",
+        "DELETE_CLOUD_COPY"
+      ],
+      "processingRequirementCatalog": [
+        "NONE",
+        "REQUIRED_MODEL",
+        "OPTIONAL_CAPABILITY"
+      ],
+      "explicitGrantCatalog": [
+        "NONE",
+        "ELIGIBLE_EXPLICIT_GRANT"
+      ],
+      "explicitGrantRelationship": "ELIGIBLE_EXPLICIT_GRANT is valid only after all non-budget gates pass and remainingAutomaticAttemptBudget=0 for either (a) POST_ACCEPTANCE DELETE_PENDING with scriptedDeletionRowOrdinal=14 or (b) non-deletion FAILED_RETRYABLE selecting Q-016 when jobIdHash is null or Q-017 when it is present; every other tuple requires NONE",
+      "deletionPhaseCatalog": [
+        "NOT_APPLICABLE",
+        "PRE_ACCEPTANCE",
+        "POST_ACCEPTANCE",
+        "VERIFIED"
+      ],
+      "deletionPhaseDerivation": [
+        {"phase":"NOT_APPLICABLE","predicate":"operationClass=NON_DELETION_CLOUD_INTENT and every deletion-only field is null"},
+        {"phase":"PRE_ACCEPTANCE","predicate":"operationClass=DELETE_CLOUD_COPY, queueState=DELETE_PENDING, deletionIdHash=null, deletionReceiptIdHash=null and receipt outcome=null"},
+        {"phase":"POST_ACCEPTANCE","predicate":"operationClass=DELETE_CLOUD_COPY, queueState=DELETE_PENDING, deletionIdHash non-null, deletionReceiptIdHash=null and receipt outcome=null"},
+        {"phase":"VERIFIED","predicate":"operationClass=DELETE_CLOUD_COPY, queueState=DELETED_REMOTE, deletionIdHash and deletionReceiptIdHash non-null, receipt outcome=VERIFIED and substatus/error null"}
+      ],
+      "validRelationshipMatrix": [
+        {"operationClass":"DELETE_CLOUD_COPY","consentValues":["NOT_APPLICABLE_DELETE"],"processingRequirement":"NONE","runtimeValues":["NOT_REQUIRED"],"allowedPhases":["PRE_ACCEPTANCE","POST_ACCEPTANCE"]},
+        {"operationClass":"NON_DELETION_CLOUD_INTENT","consentValues":["CURRENT","MISSING","REVOKED","SCOPE_MISMATCH","VERSION_MISMATCH"],"processingRequirement":"NONE","runtimeValues":["NOT_REQUIRED"],"allowedPhases":["NOT_APPLICABLE"]},
+        {"operationClass":"NON_DELETION_CLOUD_INTENT","consentValues":["CURRENT","MISSING","REVOKED","SCOPE_MISMATCH","VERSION_MISMATCH"],"processingRequirement":"REQUIRED_MODEL","runtimeValues":["ELIGIBLE","MODEL_NOT_INSTALLED","MODEL_UNAVAILABLE_OR_INVALID","ARTIFACT_NOT_EVALUATION_APPROVED","DIGEST_MISMATCH","API_ABI_INCOMPATIBLE","REQUIRED_16K_EVIDENCE_MISSING"],"allowedPhases":["NOT_APPLICABLE"]},
+        {"operationClass":"NON_DELETION_CLOUD_INTENT","consentValues":["CURRENT","MISSING","REVOKED","SCOPE_MISMATCH","VERSION_MISMATCH"],"processingRequirement":"OPTIONAL_CAPABILITY","runtimeValues":["ELIGIBLE","MODEL_NOT_INSTALLED","MODEL_UNAVAILABLE_OR_INVALID","ARTIFACT_NOT_EVALUATION_APPROVED","DIGEST_MISMATCH","API_ABI_INCOMPATIBLE","REQUIRED_16K_EVIDENCE_MISSING"],"allowedPhases":["NOT_APPLICABLE"]}
+      ],
+      "allowedRevalidationSourceQueueStates": {
+        "NON_DELETION_CLOUD_INTENT": [
+          "PENDING_UPLOAD",
+          "WAITING_NETWORK",
+          "FAILED_RETRYABLE"
+        ],
+        "DELETE_CLOUD_COPY": [
+          "DELETE_PENDING"
+        ],
+        "VERIFIED": "terminal; revalidation returns NO_STATE_CHANGE with no eligible rule and never sends"
+      },
+      "deletionPhaseRuleMapping": [
+        {"condition":"PROFILE_MISSING_OR_CHANGED","PRE_ACCEPTANCE":"OFF-I1-RULE-D-006","POST_ACCEPTANCE":"OFF-I1-RULE-D-006"},
+        {"condition":"PROFILE_SCOPE_MISMATCH","PRE_ACCEPTANCE":"OFF-I1-RULE-D-007","POST_ACCEPTANCE":"OFF-I1-RULE-D-007"},
+        {"condition":"CONNECTIVITY_NETWORK_DENIED_AIRPLANE_MODE_OR_RECONNECTING","PRE_ACCEPTANCE":"OFF-I1-RULE-D-001","POST_ACCEPTANCE":"OFF-I1-RULE-D-004"},
+        {"condition":"REMAINING_FINITE_BUDGET_ZERO","PRE_ACCEPTANCE":"OFF-I1-RULE-D-012","POST_ACCEPTANCE":"OFF-I1-RULE-D-012"},
+        {"condition":"ALL_GATES_PASS","PRE_ACCEPTANCE":"ALLOW_DELETE_CONSENT_NOT_APPLICABLE_ONLY","POST_ACCEPTANCE":"ALLOW_DELETE_CONSENT_NOT_APPLICABLE_ONLY"}
+      ],
+      "deletionAllowDispatchMapping": {
+        "rule": "ALLOW_DELETE_CONSENT_NOT_APPLICABLE does not predict a response/outcome; after the admitted synthetic operation the immutable scriptedDeletionRowOrdinal selects exactly DP-nnn and then D-nnn",
+        "phaseCompatibleRowOrdinals": {
+          "PRE_ACCEPTANCE": [1,2,3,5,6,7,8,9,10,11,12,13],
+          "POST_ACCEPTANCE": [4,5,6,7,8,9,10,11,12,13,14,15]
+        },
+        "attemptingRowsRequirePositiveBudget": [2,3,5,8,9,10,11,15],
+        "zeroAttemptRows": [1,4,6,7,12,13],
+        "row14": "requires POST_ACCEPTANCE, zero remaining budget and ELIGIBLE_EXPLICIT_GRANT; atomically grant then attempt and select OFF-I1-RULE-DP-014",
+        "selectedRuleFormula": "OFF-I1-RULE-DP-<scriptedDeletionRowOrdinal as three digits>",
+        "reconcileRuleFormula": "OFF-I1-RULE-D-<same scriptedDeletionRowOrdinal as three digits>"
+      },
+      "deletionScriptedRowEligibility": [
+        {"rowOrdinal":1,"phases":["PRE_ACCEPTANCE"],"explicitGrant":"NONE","budget":"ANY_NON_NEGATIVE","requiredRevalidationOutcome":"BLOCK_CONNECTIVITY_DENIED","selectedDispatchRuleId":"OFF-I1-RULE-DP-001"},
+        {"rowOrdinal":2,"phases":["PRE_ACCEPTANCE"],"explicitGrant":"NONE","budget":"POSITIVE","requiredRevalidationOutcome":"ALLOW_DELETE_CONSENT_NOT_APPLICABLE","selectedDispatchRuleId":"OFF-I1-RULE-DP-002"},
+        {"rowOrdinal":3,"phases":["PRE_ACCEPTANCE"],"explicitGrant":"NONE","budget":"POSITIVE","requiredRevalidationOutcome":"ALLOW_DELETE_CONSENT_NOT_APPLICABLE","selectedDispatchRuleId":"OFF-I1-RULE-DP-003"},
+        {"rowOrdinal":4,"phases":["POST_ACCEPTANCE"],"explicitGrant":"NONE","budget":"ANY_NON_NEGATIVE","requiredRevalidationOutcome":"BLOCK_CONNECTIVITY_DENIED","selectedDispatchRuleId":"OFF-I1-RULE-DP-004"},
+        {"rowOrdinal":5,"phases":["PRE_ACCEPTANCE","POST_ACCEPTANCE"],"explicitGrant":"NONE","budget":"POSITIVE","requiredRevalidationOutcome":"ALLOW_DELETE_CONSENT_NOT_APPLICABLE","selectedDispatchRuleId":"OFF-I1-RULE-DP-005"},
+        {"rowOrdinal":6,"phases":["PRE_ACCEPTANCE","POST_ACCEPTANCE"],"explicitGrant":"NONE","budget":"ANY_NON_NEGATIVE","requiredRevalidationOutcome":"BLOCK_PROFILE_REVALIDATION_REQUIRED","condition":"PROFILE_MISSING_OR_CHANGED","selectedDispatchRuleId":"OFF-I1-RULE-DP-006"},
+        {"rowOrdinal":7,"phases":["PRE_ACCEPTANCE","POST_ACCEPTANCE"],"explicitGrant":"NONE","budget":"ANY_NON_NEGATIVE","requiredRevalidationOutcome":"BLOCK_PROFILE_REVALIDATION_REQUIRED","condition":"PROFILE_SCOPE_MISMATCH","selectedDispatchRuleId":"OFF-I1-RULE-DP-007"},
+        {"rowOrdinal":8,"phases":["PRE_ACCEPTANCE","POST_ACCEPTANCE"],"explicitGrant":"NONE","budget":"POSITIVE","requiredRevalidationOutcome":"ALLOW_DELETE_CONSENT_NOT_APPLICABLE","selectedDispatchRuleId":"OFF-I1-RULE-DP-008"},
+        {"rowOrdinal":9,"phases":["PRE_ACCEPTANCE","POST_ACCEPTANCE"],"explicitGrant":"NONE","budget":"POSITIVE","requiredRevalidationOutcome":"ALLOW_DELETE_CONSENT_NOT_APPLICABLE","selectedDispatchRuleId":"OFF-I1-RULE-DP-009"},
+        {"rowOrdinal":10,"phases":["PRE_ACCEPTANCE","POST_ACCEPTANCE"],"explicitGrant":"NONE","budget":"POSITIVE","requiredRevalidationOutcome":"ALLOW_DELETE_CONSENT_NOT_APPLICABLE","selectedDispatchRuleId":"OFF-I1-RULE-DP-010"},
+        {"rowOrdinal":11,"phases":["PRE_ACCEPTANCE","POST_ACCEPTANCE"],"explicitGrant":"NONE","budget":"POSITIVE","requiredRevalidationOutcome":"ALLOW_DELETE_CONSENT_NOT_APPLICABLE","selectedDispatchRuleId":"OFF-I1-RULE-DP-011"},
+        {"rowOrdinal":12,"phases":["PRE_ACCEPTANCE","POST_ACCEPTANCE"],"explicitGrant":"NONE","budget":"ZERO","requiredRevalidationOutcome":"BLOCK_FINITE_BUDGET_EXHAUSTED","selectedDispatchRuleId":"OFF-I1-RULE-DP-012"},
+        {"rowOrdinal":13,"phases":["PRE_ACCEPTANCE","POST_ACCEPTANCE"],"explicitGrant":"NONE","budget":"ANY_NON_NEGATIVE","requiredRevalidationOutcome":null,"condition":"EXPLICIT_CANCEL_EVENT_BYPASSES_OUTBOUND_REVALIDATION","selectedDispatchRuleId":"OFF-I1-RULE-DP-013"},
+        {"rowOrdinal":14,"phases":["POST_ACCEPTANCE"],"explicitGrant":"ELIGIBLE_EXPLICIT_GRANT","budget":"ZERO","requiredRevalidationOutcome":"ALLOW_DELETE_CONSENT_NOT_APPLICABLE","selectedDispatchRuleId":"OFF-I1-RULE-DP-014"},
+        {"rowOrdinal":15,"phases":["POST_ACCEPTANCE"],"explicitGrant":"NONE","budget":"POSITIVE","requiredRevalidationOutcome":"ALLOW_DELETE_CONSENT_NOT_APPLICABLE","selectedDispatchRuleId":"OFF-I1-RULE-DP-015"}
+      ],
+      "deletionScriptedRowEligibilityPhaseSemantics": "each phases member is the derived source phase immediately before OFF-I1-ACT-026-01 dispatch; OFF-I1-ACT-026-02 may change phase only according to the selected inherited deletion row",
+      "nonDeletionRevalidationRuleMapping": [
+        {"source":"PENDING_UPLOAD","outcome":"CANCEL_NON_DELETION_CONSENT_INVALID","selectedRuleId":"OFF-I1-RULE-Q-001","target":"CANCELLED"},
+        {"source":"PENDING_UPLOAD","outcome":"BLOCK_PROFILE_REVALIDATION_REQUIRED","selectedRuleId":"OFF-I1-RULE-Q-003","target":"PENDING_UPLOAD"},
+        {"source":"PENDING_UPLOAD","outcome":"BLOCK_RUNTIME_REVALIDATION_REQUIRED","selectedRuleId":"OFF-I1-RULE-Q-003","target":"PENDING_UPLOAD"},
+        {"source":"PENDING_UPLOAD","outcome":"BLOCK_CONNECTIVITY_DENIED","selectedRuleId":"OFF-I1-RULE-Q-004","target":"WAITING_NETWORK"},
+        {"source":"PENDING_UPLOAD","outcome":"BLOCK_FINITE_BUDGET_EXHAUSTED","selectedRuleId":"OFF-I1-RULE-Q-018","target":"FAILED_FINAL"},
+        {"source":"PENDING_UPLOAD","outcome":"ALLOW","selectedRuleId":null,"target":"PENDING_UPLOAD_READY_FOR_SEPARATE_Q010_SEND"},
+        {"source":"WAITING_NETWORK","outcome":"CANCEL_NON_DELETION_CONSENT_INVALID","selectedRuleId":"OFF-I1-RULE-Q-001","target":"CANCELLED"},
+        {"source":"WAITING_NETWORK","outcome":"BLOCK_PROFILE_REVALIDATION_REQUIRED","selectedRuleId":"OFF-I1-RULE-Q-003","target":"PENDING_UPLOAD"},
+        {"source":"WAITING_NETWORK","outcome":"BLOCK_RUNTIME_REVALIDATION_REQUIRED","selectedRuleId":"OFF-I1-RULE-Q-003","target":"PENDING_UPLOAD"},
+        {"source":"WAITING_NETWORK","outcome":"BLOCK_CONNECTIVITY_DENIED","selectedRuleId":null,"target":"WAITING_NETWORK_NO_STATE_CHANGE"},
+        {"source":"WAITING_NETWORK","outcome":"BLOCK_FINITE_BUDGET_EXHAUSTED","selectedRuleId":"OFF-I1-RULE-Q-018","target":"FAILED_FINAL"},
+        {"source":"WAITING_NETWORK","outcome":"ALLOW","selectedRuleId":"OFF-I1-RULE-Q-009","target":"PENDING_UPLOAD"},
+        {"source":"FAILED_RETRYABLE","outcome":"CANCEL_NON_DELETION_CONSENT_INVALID","selectedRuleId":"OFF-I1-RULE-Q-001","target":"CANCELLED"},
+        {"source":"FAILED_RETRYABLE","outcome":"BLOCK_PROFILE_REVALIDATION_REQUIRED","selectedRuleId":"OFF-I1-RULE-Q-003","target":"PENDING_UPLOAD"},
+        {"source":"FAILED_RETRYABLE","outcome":"BLOCK_RUNTIME_REVALIDATION_REQUIRED","selectedRuleId":"OFF-I1-RULE-Q-003","target":"PENDING_UPLOAD"},
+        {"source":"FAILED_RETRYABLE","outcome":"BLOCK_CONNECTIVITY_DENIED","condition":"PRESERVE_EXISTING_JOB_ID_HASH_NULL_OR_NON_NULL","selectedRuleId":"OFF-I1-RULE-Q-004","target":"WAITING_NETWORK"},
+        {"source":"FAILED_RETRYABLE","outcome":"BLOCK_FINITE_BUDGET_EXHAUSTED","condition":"EXPLICIT_GRANT_NONE","selectedRuleId":"OFF-I1-RULE-Q-018","target":"FAILED_FINAL"},
+        {"source":"FAILED_RETRYABLE_WITH_JOB_HASH_NULL","outcome":"ALLOW","condition":"POSITIVE_BUDGET_AND_EXPLICIT_GRANT_NONE","selectedRuleId":"OFF-I1-RULE-Q-016","target":"PENDING_UPLOAD"},
+        {"source":"FAILED_RETRYABLE_WITH_JOB_HASH_PRESENT","outcome":"ALLOW","condition":"POSITIVE_BUDGET_AND_EXPLICIT_GRANT_NONE","selectedRuleId":"OFF-I1-RULE-Q-017","target":"REMOTE_PROCESSING"},
+        {"source":"FAILED_RETRYABLE_WITH_JOB_HASH_NULL","outcome":"ALLOW","condition":"ZERO_BUDGET_AND_ELIGIBLE_EXPLICIT_GRANT","selectedRuleId":"OFF-I1-RULE-Q-016","target":"PENDING_UPLOAD"},
+        {"source":"FAILED_RETRYABLE_WITH_JOB_HASH_PRESENT","outcome":"ALLOW","condition":"ZERO_BUDGET_AND_ELIGIBLE_EXPLICIT_GRANT","selectedRuleId":"OFF-I1-RULE-Q-017","target":"REMOTE_PROCESSING"},
+        {"source":"OFF-SYN-009_OFF-I1-ACT-009-01","outcome":"WAIT_REQUIRED_MODEL","selectedRuleId":"OFF-I1-RULE-A-009-01","target":"PROCESSING_CAPABILITY_WAITING_MODEL_QUEUE_PRESERVED"},
+        {"source":"OFF-SYN-021_OFF-I1-ACT-021-01","outcome":"WAIT_OPTIONAL_CAPABILITY","selectedRuleId":"OFF-I1-RULE-A-021-01","target":"PROCESSING_CAPABILITY_PENDING_CAPABILITY_QUEUE_PRESERVED"}
+      ],
+      "decisionTable": [
+        {"step":1,"predicate":"ANY_MALFORMED_OR_NONCANONICAL_RELATIONSHIP_OR_VALUE","outcome":"INVALID_INPUT","stateDelta":"ZERO","counterDelta":0},
+        {"step":2,"predicate":"DERIVED_DELETION_PHASE_VERIFIED","outcome":"NO_STATE_CHANGE","stateDelta":"ZERO_TERMINAL_NO_SEND","counterDelta":0},
+        {"step":3,"predicate":"INPUT_NOT_IN_EXACT_VALID_RELATIONSHIP_MATRIX_OR_EXPLICIT_GRANT_RELATIONSHIP_OR_SOURCE_QUEUE_STATE_NOT_ALLOWED","outcome":"INVALID_INPUT","stateDelta":"ZERO","counterDelta":0},
+        {"step":4,"predicate":"NON_DELETION_CONSENT_REVOKED_MISSING_SCOPE_MISMATCH_OR_VERSION_MISMATCH","outcome":"CANCEL_NON_DELETION_CONSENT_INVALID","stateDelta":"QUEUE_TO_CANCELLED","counterDelta":0},
+        {"step":5,"predicate":"PROFILE_MISSING_CHANGED_OR_SCOPE_MISMATCH","outcome":"BLOCK_PROFILE_REVALIDATION_REQUIRED","stateDelta":"NON_DELETION_TO_PENDING_UPLOAD_OR_EXACT_DELETION_PHASE_RULE_MAPPING_D006_D007","counterDelta":0},
+        {"step":6,"predicate":"NON_DELETION_REQUIRED_MODEL_AND_MODEL_NOT_INSTALLED","outcome":"WAIT_REQUIRED_MODEL","stateDelta":"PROCESSING_TO_WAITING_MODEL_ONLY","counterDelta":0},
+        {"step":7,"predicate":"NON_DELETION_OPTIONAL_CAPABILITY_AND_MODEL_NOT_INSTALLED","outcome":"WAIT_OPTIONAL_CAPABILITY","stateDelta":"PROCESSING_TO_PENDING_CAPABILITY_ONLY","counterDelta":0},
+        {"step":8,"predicate":"NON_DELETION_REQUIRED_OR_OPTIONAL_RUNTIME_NOT_ELIGIBLE","outcome":"BLOCK_RUNTIME_REVALIDATION_REQUIRED","stateDelta":"QUEUE_TO_PENDING_UPLOAD","counterDelta":0},
+        {"step":9,"predicate":"CONNECTIVITY_NETWORK_DENIED_AIRPLANE_MODE_OR_RECONNECTING","outcome":"BLOCK_CONNECTIVITY_DENIED","stateDelta":"NON_DELETION_TO_WAITING_NETWORK_OR_DELETE_D001_PRE_ACCEPTANCE_D004_POST_ACCEPTANCE","counterDelta":0},
+        {"step":10,"predicate":"REMAINING_FINITE_BUDGET_ZERO_AND_EXPLICIT_GRANT_NONE","outcome":"BLOCK_FINITE_BUDGET_EXHAUSTED","stateDelta":"NON_DELETION_TO_FAILED_FINAL_OR_DELETE_D012","counterDelta":0},
+        {"step":11,"predicate":"DELETE_PASSED_1_THROUGH_10_AND_EITHER_POSITIVE_BUDGET_WITH_GRANT_NONE_OR_POST_ACCEPTANCE_ZERO_BUDGET_WITH_ELIGIBLE_EXPLICIT_GRANT_AND_ROW_14","outcome":"ALLOW_DELETE_CONSENT_NOT_APPLICABLE","stateDelta":"ZERO_BEFORE_EXACT_SCRIPTED_DISPATCH_RULE","counterDelta":0},
+        {"step":12,"predicate":"NON_DELETION_PASSED_1_THROUGH_10_CONSENT_PROFILE_CURRENT_MATCHING_RUNTIME_CONNECTIVITY_AVAILABLE_AND_EITHER_POSITIVE_BUDGET_WITH_GRANT_NONE_OR_FAILED_RETRYABLE_ZERO_BUDGET_WITH_ELIGIBLE_EXPLICIT_GRANT","outcome":"ALLOW","stateDelta":"ZERO_BEFORE_EXACT_NON_DELETION_RULE_MAPPING","counterDelta":0}
+      ],
+      "decisionTableRule": "FIRST_MATCH_WINS_AND_ALL_CATALOG_COMBINATIONS_MATCH_EXACTLY_ONE_ROW",
+      "rules": [
+        "invalid non-deletion consent cancels only that row, makes no attempt and preserves local truth",
+        "profile or runtime block before send returns PENDING_UPLOAD with no attempt",
+        "required model absence changes only processing to WAITING_MODEL",
+        "optional inability changes only processing to PENDING_CAPABILITY",
+        "unrelated local flows remain usable",
+        "denied connectivity returns WAITING_NETWORK with no attempt",
+        "deletion is not cancelled by upload or processing consent revocation but still passes structural operation profile connectivity and budget gates",
+        "deletion scope or profile failure uses inherited DELETE_REVALIDATION_REQUIRED mapping",
+        "only the highest-priority categorical outcome is emitted"
+      ]
+    }
+  },
+  "implementationScope": {
+    "createdByThisPacket": false,
+    "futureFiles": [
+      "tools/offline_i1_oracle/src/main/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1Oracle.java",
+      "tools/offline_i1_oracle/src/test/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1OracleTest.java"
+    ],
+    "futurePackage": "com.monumentogram.dora.stage0.offline.i1",
+    "language": "Java",
+    "languageLevel": 17,
+    "dependencyBoundary": "JAVA_STANDARD_LIBRARY_ONLY",
+    "gradleModuleAllowed": false,
+    "pluginAllowed": false,
+    "repositoryAllowed": false,
+    "coordinateAllowed": false,
+    "generatedSourceAllowed": false,
+    "localToolchain": {
+      "implementor": "Microsoft",
+      "runtimeVersion": "17.0.10+7-LTS",
+      "os": "Windows",
+      "arch": "x86_64",
+      "javaSha256": "98fd4a0eec7fa39abbc2b3f55007ed9c8c24ef8fa5d7c04c3895b4c5915ec3f1",
+      "javacSha256": "0e79806dea4681cf6bb1fd41b4d5ba8c579481cb70a28890fe65813639294ffe",
+      "releaseMetadataSha256": "f463618c7067d1d7421a2aacdc8a4cfa939e9844436462c1c165cbed20a9769a"
+    },
+    "futureCompileBoundary": {
+      "encoding": "UTF-8",
+      "release": 17,
+      "output": "INITIALLY_EMPTY_VALIDATED_OS_TEMP_OUTSIDE_REPOSITORY",
+      "cleanupRequired": true,
+      "repositoryOutputAllowed": false,
+      "repositoryCacheAllowed": false,
+      "listenerAllowed": false,
+      "remainingChildProcessAllowed": false,
+      "userHomeOutputAllowed": false,
+      "compileArgv": [
+        "<PINNED_JDK_BIN>/javac.exe",
+        "-encoding",
+        "UTF-8",
+        "--release",
+        "17",
+        "-d",
+        "<VALIDATED_OS_TEMP>/classes",
+        "<EXACT_MAIN_SOURCE>",
+        "<EXACT_TEST_SOURCE>"
+      ],
+      "testArgv": [
+        "<PINNED_JDK_BIN>/java.exe",
+        "-cp",
+        "<VALIDATED_OS_TEMP>/classes",
+        "com.monumentogram.dora.stage0.offline.i1.OfflineI1OracleTest"
+      ],
+      "classpath": "ONLY_VALIDATED_OS_TEMP_CLASSES",
+      "environment": "EMPTY_ALLOWLIST_EXCEPT_OS_VALUES_STRICTLY_REQUIRED_TO_LAUNCH_PINNED_EXECUTABLE; NO_JAVA_OPTIONS_CLASSPATH_PROXY_NETWORK_LOCALE_TIMEZONE_OR_HOME_BEHAVIOR",
+      "cleanupOnSuccessOrFailure": true
+    },
+    "oracleRuntimeForbiddenApis": [
+      "filesystem read or write",
+      "environment variable",
+      "network",
+      "socket",
+      "DNS",
+      "subprocess",
+      "thread",
+      "wall clock",
+      "random",
+      "UUID",
+      "Android",
+      "user or free-form content"
+    ],
+    "testHarnessReadBoundary": "EXPLICIT_CONTRACT_ALLOWLIST_ONLY",
+    "ciProfile": "NOT_AUTHORIZED_PATCH_AND_OS_IMAGE_FLOATING",
+    "pythonPath": "NOT_SELECTED_LOCAL_STUBS_UNUSABLE_AND_UNPINNED",
+    "kotlinGradlePath": "NOT_SELECTED_CACHE_AND_GRAPH_BROADENING"
+  },
+  "readinessPredicates": [
+    {
+      "id": "OFF-I1-RDY-003",
+      "state": "SATISFIED_ONLY_AFTER_CLEAN_INDEPENDENT_ADVISORY_REVIEW",
+      "evidence": "this packet defines the exact local implementation scope"
+    },
+    {
+      "id": "OFF-I1-RDY-004",
+      "state": "SATISFIED_BY_V0_2",
+      "evidence": "all seven groups are selected and versioned"
+    },
+    {
+      "id": "OFF-I1-RDY-005",
+      "state": "SATISFIED_FOR_LOCAL_PROFILE_BY_V0_2",
+      "evidence": "exact two files, package, Java level and local JDK hashes frozen; CI remains blocked"
+    },
+    {
+      "ids": "OFF-I1-RDY-006..011",
+      "state": "NOT_RUN",
+      "evidence": "implementation and executable evidence absent"
+    },
+    {
+      "id": "OFF-I1-RDY-012",
+      "state": "BLOCKED",
+      "evidence": "later exact implementation review and publication authority absent"
+    }
+  ],
+  "acceptanceChecks": [
+    "strict duplicate-aware JSON",
+    "exact Markdown and JSON semantic parity",
+    "seven unique resolved IDs",
+    "exact source pins, tool hashes, paths and package",
+    "exact twenty queue rules with complete fields and explicit secondary order",
+    "exact 26 scenarios and flattened 67 action-rule results",
+    "exact inherited fifteen deletion rows",
+    "authority and backlog truth",
+    "UTF-8 LF no BOM final newline",
+    "privacy, secret and absolute-path scans",
+    "exact two-file packet-authoring scope before the separately authorized review carrier",
+    "external hash-bound independent advisory review with no packet P0, P1 or P2"
+  ],
+  "externalActivationReviewContract": {
+    "recordLocation": "docs/evidence/poc-offline-001/reviews/off-i1-semantics-scope-002.external-review.json",
+    "recordStateInThisPacket": "PROSPECTIVE_NOT_CREATED_UNTIL_EXACT_PACKET_HASHES_RECEIVE_CLEAN_INDEPENDENT_REVIEW",
+    "carrierClass": "SEPARATE_IMMUTABLE_REPOSITORY_RELATIVE_REVIEW_EVIDENCE_NOT_A_PACKET_SOURCE_FILE",
+    "serialization": {
+      "encoding": "UTF-8",
+      "bomAllowed": false,
+      "lineEnding": "LF",
+      "indent": "TWO_SPACES",
+      "finalLfCount": 1,
+      "duplicateUnknownMissingOrReorderedKeysAllowed": false,
+      "selfHashFieldAllowed": false
+    },
+    "exactKeyOrder": [
+      "packetId",
+      "mdPath",
+      "mdBytes",
+      "mdSha256",
+      "jsonPath",
+      "jsonBytes",
+      "jsonSha256",
+      "reviewerModel",
+      "reviewerOrganization",
+      "reviewerRole",
+      "formalReviewer",
+      "reviewedAt",
+      "timezone",
+      "verdict",
+      "packetP0",
+      "packetP1",
+      "packetP2"
+    ],
+    "fixedValues": {
+      "packetId": "OFF-I1-SEMANTICS-SCOPE-002",
+      "formalReviewer": false,
+      "verdict": "CLEAN",
+      "packetP0": 0,
+      "packetP1": 0,
+      "packetP2": 0
+    },
+    "fieldSchemas": [
+      {"name":"packetId","type":"STRING","nullable":false,"rule":"exact fixed value"},
+      {"name":"mdPath","type":"STRING","nullable":false,"rule":"exact repository-relative Markdown path"},
+      {"name":"mdBytes","type":"NON_NEGATIVE_INT64","nullable":false,"rule":"exact reviewed raw-byte count"},
+      {"name":"mdSha256","type":"LOWERCASE_HEX_64_STRING","nullable":false,"rule":"exact reviewed raw-byte SHA-256"},
+      {"name":"jsonPath","type":"STRING","nullable":false,"rule":"exact repository-relative machine-record path"},
+      {"name":"jsonBytes","type":"NON_NEGATIVE_INT64","nullable":false,"rule":"exact reviewed raw-byte count"},
+      {"name":"jsonSha256","type":"LOWERCASE_HEX_64_STRING","nullable":false,"rule":"exact reviewed raw-byte SHA-256"},
+      {"name":"reviewerModel","type":"NONEMPTY_CONTENT_FREE_STRING","nullable":false,"rule":"advisory model identity"},
+      {"name":"reviewerOrganization","type":"NONEMPTY_CONTENT_FREE_STRING","nullable":false,"rule":"advisory organization identity"},
+      {"name":"reviewerRole","type":"STRING","nullable":false,"rule":"exact INDEPENDENT_ADVISORY_REVIEWER"},
+      {"name":"formalReviewer","type":"BOOLEAN","nullable":false,"rule":"false"},
+      {"name":"reviewedAt","type":"RFC3339_STRING_WITH_SECONDS_AND_EXPLICIT_OFFSET","nullable":false,"rule":"review completion time"},
+      {"name":"timezone","type":"STRING","nullable":false,"rule":"exact Europe/Moscow"},
+      {"name":"verdict","type":"STRING","nullable":false,"rule":"exact CLEAN"},
+      {"name":"packetP0","type":"NON_NEGATIVE_INT64","nullable":false,"rule":"zero"},
+      {"name":"packetP1","type":"NON_NEGATIVE_INT64","nullable":false,"rule":"zero"},
+      {"name":"packetP2","type":"NON_NEGATIVE_INT64","nullable":false,"rule":"zero"}
+    ],
+    "reviewerRoleFixed": "INDEPENDENT_ADVISORY_REVIEWER",
+    "timezoneFixed": "Europe/Moscow",
+    "hashRule": "BOTH_PATH_BYTE_COUNT_SHA256_TUPLES_EQUAL_THE_FROZEN_REVIEWED_FILES",
+    "activationDerivation": "STRICT_PACKET_VALIDATION_AND_ONE_CONFORMING_EXTERNAL_REVIEW_RECORD_AT_EXACT_RECORD_LOCATION; any packet byte change invalidates the record",
+    "grantsOnly": "EXACT_LOCAL_PROSPECTIVE_SOURCE_SCOPE",
+    "doesNotGrant": "EXECUTION_PUBLICATION_COMMIT_PUSH_PR_ADVANCEMENT_READY_MERGE_OR_FORMAL_APPROVAL"
+  },
+  "proofBoundary": {
+    "packetMayClaim": "DECISION_PACKET_COMPLETE_PENDING_INDEPENDENT_ADVISORY_REVIEW",
+    "afterCleanReviewMayClaim": "LOCAL_PURE_HOST_IMPLEMENTATION_SCOPE_ACTIVE",
+    "forbiddenClaims": [
+      "implementation present",
+      "host tests passed",
+      "Offline PASS",
+      "device or emulator evidence",
+      "network absence evidence",
+      "model execution evidence",
+      "provider or backend evidence",
+      "production readiness",
+      "readiness blocker closure",
+      "publication or merge authority"
+    ],
+    "pocTruth": "TODO_NOT_READY_NOT_RUN_NOT_AUTHORIZED",
+    "inheritedOfflineBlockersClosed": 0
+  },
+  "packetReviewFindings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "state": "AWAITING_EXTERNAL_HASH_BOUND_REVIEW"
+  },
+  "futureImplementationRisks": {
+    "scope": "NOT_PACKET_DEFECT",
+    "items": [
+      "handwritten Java strict JSON parser requires adversarial tests before evidence claim",
+      "CI Java patch and runner OS image remain unpinned and unauthorized"
+    ]
+  },
+  "parityCounts": {
+    "sourcePinCount": 4,
+    "authorityFlagCount": 25,
+    "allAuthorityFlagsFalse": true,
+    "scopeFlagCount": 12,
+    "allScopeFlagsFalse": true,
+    "resolvedSemanticGroupCount": 7,
+    "hashPreimageCount": 6,
+    "queueRuleCount": 20,
+    "scenarioProjectionCount": 26,
+    "flattenedActionRuleResultCount": 67,
+    "directActionRuleCount": 52,
+    "queueMappedActionCount": 10,
+    "compositeMappedActionCount": 1,
+    "fixedDeletionMappedActionCount": 2,
+    "scriptedDeletionTemplateActionCount": 2,
+    "scriptedDeletionSubcaseCount": 15,
+    "scriptedDeletionResolvedCaseCount": 30,
+    "scriptedDeletionResolvedTransitionCount": 18,
+    "allResolvedRuntimeCaseCount": 95,
+    "transitionDirectiveLiteralCount": 25,
+    "generalCatalogTemplateLiteralCount": 2,
+    "runtimeTransitionLiteralCount": 41,
+    "directTransitionLiteralCount": 11,
+    "dispositionCount": 3,
+    "outcomeCount": 4,
+    "diagnosticCodeCount": 19,
+    "diagnosticClassificationRowCount": 15,
+    "counterFieldCount": 5,
+    "snapshotTopLevelKeyCount": 12,
+    "flowRowFieldSchemaCount": 12,
+    "queueRowFieldSchemaCount": 19,
+    "resultFieldSchemaCount": 7,
+    "replayRecordFieldCount": 11,
+    "replayLifecycleRowCount": 8,
+    "consentValueCount": 6,
+    "profileValueCount": 4,
+    "runtimeValueCount": 8,
+    "revalidationOutcomeCount": 11,
+    "revalidationDecisionRowCount": 12,
+    "deletionScriptedEligibilityRowCount": 15,
+    "nonDeletionRevalidationMappingRowCount": 23,
+    "futureSourceFileCount": 2,
+    "inheritedDeletionMappingRowCount": 15
+  }
+}

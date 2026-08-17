@@ -1,0 +1,465 @@
+{
+  "schemaVersion": "dora.poc-decision-001.decision-revision-host-oracle.local-evidence.stage0.v0.1",
+  "recordId": "POC-DECISION-001-LOCAL-HOST-ORACLE-20260817-01",
+  "recordedDate": "2026-08-17",
+  "recordedAtUtc": null,
+  "recordingTimeClaim": false,
+  "classification": "LOCAL_UNPUBLISHED_SYNTHETIC_HOST_VALIDATION",
+  "backlog": {
+    "id": "POC-DECISION-001",
+    "stage": "Stage 0",
+    "backlogStatus": "BLOCKED",
+    "readiness": "NOT_READY",
+    "benchmarkStatus": "NOT_RUN",
+    "overallAuthorization": "NOT_AUTHORIZED"
+  },
+  "repository": {
+    "branch": "codex/poc-decision-revision-oracle",
+    "baseCommit": "78e9dd07d616989987118f26bb16ebb9932ddb2b",
+    "baseTree": "f403bf60b86273ee8a2634ed5e8530c9d4af20e4",
+    "implementationCommit": null,
+    "staged": false,
+    "committed": false,
+    "pushed": false,
+    "pullRequestCreated": false,
+    "merged": false,
+    "publicationStatus": "LOCAL_UNPUBLISHED"
+  },
+  "scope": {
+    "exactFileCount": 3,
+    "files": [
+      "tools/decision_revision_oracle/src/main/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracle.java",
+      "tools/decision_revision_oracle/src/test/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracleTest.java",
+      "docs/evidence/poc-decision-001/decision-revision-projection-host-oracle-local-evidence-stage0-v0.1.json"
+    ],
+    "androidChanged": false,
+    "gradleChanged": false,
+    "workflowChanged": false,
+    "dependencyChanged": false,
+    "backlogOrStatusChanged": false
+  },
+  "authorityFlags": {
+    "taskScopedLocalImplementationAuthorized": true,
+    "syntheticInMemoryFixturesAuthorized": true,
+    "localHostValidationAuthorized": true,
+    "fullPocImplementationAuthorized": false,
+    "benchmarkExecutionAuthorized": false,
+    "productionImplementationAuthorized": false,
+    "productDecisionGrantedByThisRecord": false,
+    "legalApprovalGrantedByThisRecord": false,
+    "securityApprovalGrantedByThisRecord": false,
+    "dependencyAdmissionGrantedByThisRecord": false,
+    "publicationAuthorizedByThisRecord": false
+  },
+  "authorityPins": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "27b6a9b0e99e3f3fd864b3e5289f6246516f680869816623fafc5c809cdb22df",
+      "locators": ["Authoritative sources", "Stage gate", "Change discipline"]
+    },
+    {
+      "path": "docs/DORA_MVP1_TECHNICAL_PLAN.md",
+      "sha256": "00c4d6816265e86c82e44045a77f85c6e68b43e6094a3736e10ab44eed259a59",
+      "locators": ["§18 lines 647-663", "§19 lines 667-706", "§34.1 line 1380", "§35.2 lines 1476-1478", "Stage 7 lines 1605-1613", "PoC 7 lines 1822-1830"]
+    },
+    {
+      "path": "docs/DORA_MVP1_DESIGN_SPEC.md",
+      "sha256": "8bc88bd5b9cba036bbc5758957a4a2c1fdb64a053a319cf4b2f9ba544ea81f2b",
+      "locators": ["§4.4-4.5 lines 140-146", "§29 lines 1523-1588"]
+    },
+    {
+      "path": "docs/DORA_MVP1_PRODUCT_DECISIONS.md",
+      "sha256": "16283563ea328877c02192586e21affb69677e199206df14a3221e94bbadd401",
+      "locators": ["DEC-019 lines 321-333", "DEC-020 lines 335-350", "DEC-037 lines 579-591"]
+    },
+    {
+      "path": "docs/adr/ADR-0001-android-bootstrap.md",
+      "sha256": "dfd34f65bc420615fa85feb6258022d326de2cfe6a9c70b992ab3836116a1c13",
+      "locators": ["Decision", "Consequences"]
+    },
+    {
+      "path": "docs/adr/ADR-0002-public-repository-for-branch-protection.md",
+      "sha256": "9083cd00c2a2e129e20b282ab771c9125917f1d3a48165bb44296d0838c3d372",
+      "locators": ["Decision", "Public repository controls"]
+    },
+    {
+      "path": "docs/DORA_MVP1_TEST_STRATEGY.md",
+      "sha256": "cfa2d09387ed4bb80f0ff71a7138930c7a642fdad75c37b0b150774b8d74fbe8",
+      "locators": ["Principles lines 17-23", "TS-UNIT line 29", "Fixtures lines 67-74"]
+    },
+    {
+      "path": "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+      "sha256": "fa80c2402acf6ab94173514a21fe0f2c5451aaf3f36b51a33ebeddd4b6b2e484",
+      "locators": ["POC-DECISION-001 line 79"]
+    },
+    {
+      "path": "docs/DORA_MVP1_STAGE_STATUS.md",
+      "sha256": "0971c1c00b006b6bcc4cb1a3b11bf8399c9fc3a5746aea5889c74612f883b8dd",
+      "locators": ["Active stage line 11", "Current gates and blockers", "Synthetic-only boundary lines 323-325"]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_EXECUTION_ORDER.md",
+      "sha256": "da649013c4e39196216936ade02b1bf18a8784428f392573977ffb61175bcbd7",
+      "locators": ["PoC mapping line 37", "POC-DECISION-001 line 91", "Host sufficiency line 220", "Synthetic text line 234"]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_GATES.md",
+      "sha256": "c04db495abe24f1979096282e41bea7793a71c99c989d2cd1c78cdea386dfc5e",
+      "locators": ["POC-DECISION-001 line 103", "Public evidence lines 123-144"]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_DATASET_GOVERNANCE.md",
+      "sha256": "bad5250b1b7ca0ade53de5836b736e79cfce1f746e9aecfcb0b1a63f5f8bd7cc",
+      "locators": ["Generated text lines 24-28", "Permitted purpose line 41", "Annotation/source ranges lines 167-170", "Corpus readiness lines 295-307"]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_PRIVACY_DATA_FLOW_THREAT_MODEL.md",
+      "sha256": "d9b793eb5bb9a0c4ef64a03b815fc16425ca923921c98e539811f048853bb251",
+      "locators": ["T-02/T-03 lines 167-168", "Test data lines 219-230", "Verification gates lines 247-257"]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_IP_ASSET_POLICY.md",
+      "sha256": "46c49a50bc1df7e556f114694c46af6e73f7e22e51b0eff2a9342b0fad83bbe3",
+      "locators": ["Non-negotiable rules lines 15-26", "Synthetic fixtures lines 228-236", "Current disposition lines 340-354"]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_STAGE0_OWNER_DECISIONS.md",
+      "sha256": "6ad739370b6c0fd38cfd708426deff623759f69927fda5978b804b2ce0cc7a9a",
+      "locators": ["OD-03 lines 59-81", "OD-05 lines 107-129", "OD-08 lines 179-201", "Summary lines 337-346"]
+    }
+  ],
+  "implementationPins": [
+    {
+      "path": "tools/decision_revision_oracle/src/main/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracle.java",
+      "bytes": 32692,
+      "lines": 812,
+      "sha256": "0f0d2d0d98e59b37841215ac0a0c63f053bd1249342defb8a3ff0890fb65e470",
+      "encoding": "UTF-8",
+      "lineEndings": "LF",
+      "bom": false
+    },
+    {
+      "path": "tools/decision_revision_oracle/src/test/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracleTest.java",
+      "bytes": 86036,
+      "lines": 2251,
+      "sha256": "9969d1ef8a9392e4b82441eba8e96d1efd6be0460507e4aaed81e40c5bbf7537",
+      "encoding": "UTF-8",
+      "lineEndings": "LF",
+      "bom": false
+    }
+  ],
+  "contractBoundary": {
+    "language": "Java 17",
+    "runtimeModules": ["java.base"],
+    "inputKind": "OPAQUE_SYNTHETIC_IN_MEMORY_RECORDS",
+    "transcriptTextPresent": false,
+    "subjectNormalization": false,
+    "subjectRetrieval": false,
+    "sourceFixtureCheck": "opaque fixture ID existence, half-open range bounds, and whole-fixture lowercase nonzero SHA-256 syntax",
+    "fixtureBytesRead": false,
+    "excerptDigestPresent": false,
+    "excerptBytesVerified": false,
+    "semanticSourceGroundingVerified": false,
+    "authoritativeCurrentTypes": ["CONFIRMED", "FINAL"],
+    "policyCandidateEvaluation": "full authoritative ancestry of each active leaf, stopping at the root-most active cancellation boundary",
+    "oracleLocalFailClosedRank": "MANUAL_CONFIRMED origin first; within the selected origin pool FINAL before CONFIRMED; this is not a product demotion decision",
+    "distinctBranchCandidatePolicy": "unrelated policy-effective authoritative candidates produce CONFLICT_REVIEW with no current revision",
+    "cancellationBarrierPolicy": "an active descendant after the root-most CANCELLED is review-only, including a later CANCELLED; ancestry is not traversed through the root-most cancellation",
+    "manualCurrentSilentOverwriteAllowed": false,
+    "reopenAfterCancellationSemanticsDefined": false,
+    "manualDemotionProductSemanticsDefined": false,
+    "unclearOrDownTierRelationPolicy": "REVIEW_REQUIRED_OR_TYPED_INVALID",
+    "canonicalNullableCurrentEncoding": "N for null; S<decimal UTF-16 length>:<opaque ID> for non-null",
+    "invalidBatchPolicy": "NO_PROJECTIONS",
+    "invalidDuplicatePermutationDeterminismClaimed": false,
+    "validBatchInputPermutationDeterminismClaimed": true,
+    "fileApiUsedByImplementationOrTest": false,
+    "networkApiUsed": false,
+    "environmentApiUsed": false,
+    "clockApiUsed": false,
+    "randomApiUsed": false,
+    "threadApiUsed": false,
+    "processApiUsedByImplementationOrTest": false,
+    "androidApiUsed": false,
+    "modelUsed": false,
+    "externalCorpusUsed": false
+  },
+  "toolchain": {
+    "absoluteExecutablePathsPublished": false,
+    "pathClassification": "LOCAL_PRIVATE_PATH_REDACTED",
+    "javaVersionLines": [
+      "openjdk version \"17.0.10\" 2024-01-16 LTS",
+      "OpenJDK Runtime Environment Microsoft-8902769 (build 17.0.10+7-LTS)",
+      "OpenJDK 64-Bit Server VM Microsoft-8902769 (build 17.0.10+7-LTS, mixed mode, sharing)"
+    ],
+    "executables": [
+      {
+        "name": "java.exe",
+        "bytes": 49696,
+        "sha256": "98fd4a0eec7fa39abbc2b3f55007ed9c8c24ef8fa5d7c04c3895b4c5915ec3f1"
+      },
+      {
+        "name": "javac.exe",
+        "version": "javac 17.0.10",
+        "bytes": 23472,
+        "sha256": "0e79806dea4681cf6bb1fd41b4d5ba8c579481cb70a28890fe65813639294ffe"
+      },
+      {
+        "name": "jdeps.exe",
+        "version": "17.0.10",
+        "bytes": 23584,
+        "sha256": "3eafdf760ec7a872df431208e343f354d38aff05aa3f178b1a21f29b0f044a9b"
+      },
+      {
+        "name": "javap.exe",
+        "version": "17.0.10",
+        "bytes": 23472,
+        "sha256": "57d9be5cfcd423650e211d4744acbba453b91da0dcd58db92def369d7d9ecc17"
+      },
+      {
+        "name": "rg.exe",
+        "version": "ripgrep 15.2.0 (rev e89fff89ac)",
+        "bytes": 4234544,
+        "sha256": "0f5f7e6473e5374344ca8a895b89a79d7f25f68493d977ed539ddd825ccd0ffb"
+      }
+    ],
+    "releaseFile": {
+      "name": "release",
+      "bytes": 1312,
+      "sha256": "f463618c7067d1d7421a2aacdc8a4cfa939e9844436462c1c165cbed20a9769a"
+    }
+  },
+  "validation": {
+    "workingDirectoryDisclosure": "REPOSITORY_ROOT",
+    "temporaryOutputDisclosure": "DISPOSABLE_DIRECTORY_OUTSIDE_REPOSITORY_PRIVATE_PATH_REDACTED",
+    "allNonPrivateArgumentsExact": true,
+    "redactedArgumentCountByCommand": {
+      "COMPILE": 1,
+      "PRIMARY_RUN_1": 1,
+      "PRIMARY_RUN_2": 1,
+      "VERIFY_RUN": 1,
+      "JDEPS": 1,
+      "JAVAP": 1,
+      "STATIC_FORBIDDEN_API_SCAN": 0
+    },
+    "tempPlaceholder": "<TEMP_OUTSIDE_REPOSITORY>",
+    "commands": [
+      {
+        "id": "COMPILE",
+        "argv": ["javac", "-encoding", "UTF-8", "--release", "17", "-Xlint:all", "-Werror", "-d", "<TEMP_OUTSIDE_REPOSITORY>/classes", "tools/decision_revision_oracle/src/main/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracle.java", "tools/decision_revision_oracle/src/test/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracleTest.java"]
+      },
+      {
+        "id": "PRIMARY_RUN_1",
+        "argv": ["java", "-cp", "<TEMP_OUTSIDE_REPOSITORY>/classes", "com.monumentogram.dora.stage0.decision.DecisionRevisionOracleTest"]
+      },
+      {
+        "id": "PRIMARY_RUN_2",
+        "argv": ["java", "-cp", "<TEMP_OUTSIDE_REPOSITORY>/classes", "com.monumentogram.dora.stage0.decision.DecisionRevisionOracleTest"]
+      },
+      {
+        "id": "VERIFY_RUN",
+        "argv": ["java", "-ea", "-Xverify:all", "-cp", "<TEMP_OUTSIDE_REPOSITORY>/classes", "com.monumentogram.dora.stage0.decision.DecisionRevisionOracleTest"]
+      },
+      {
+        "id": "JDEPS",
+        "argv": ["jdeps", "--multi-release", "17", "--recursive", "-summary", "<TEMP_OUTSIDE_REPOSITORY>/classes"]
+      },
+      {
+        "id": "JAVAP",
+        "argv": ["javap", "-verbose", "-classpath", "<TEMP_OUTSIDE_REPOSITORY>/classes", "com.monumentogram.dora.stage0.decision.DecisionRevisionOracle"]
+      },
+      {
+        "id": "STATIC_FORBIDDEN_API_SCAN",
+        "argv": ["rg", "--line-number", "--no-heading", "--color", "never", "--regexp", "java\\.(io|net|nio\\.file)|System\\.(getenv|getProperty|currentTimeMillis|nanoTime)|Instant\\.now|Clock\\.|LocalDateTime\\.now|ZonedDateTime\\.now|OffsetDateTime\\.now|\\bRandom\\b|Thread\\.|\\bProcessBuilder\\b|Runtime\\.getRuntime|Executors\\.|ForkJoinPool", "--", "tools/decision_revision_oracle/src/main/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracle.java", "tools/decision_revision_oracle/src/test/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracleTest.java"]
+      }
+    ],
+    "results": {
+      "compile": {
+        "exitCode": 0,
+        "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "primaryRun1": {
+        "exitCode": 0,
+        "stdout": "POC_DECISION_REVISION_ORACLE_TESTS_OK\n",
+        "stdoutSha256": "17c4a17501d3124432c54606ccc9d2ccbba7411887ab6aa92c5dbd80c6e9ffb6",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "primaryRun2": {
+        "exitCode": 0,
+        "stdout": "POC_DECISION_REVISION_ORACLE_TESTS_OK\n",
+        "stdoutSha256": "17c4a17501d3124432c54606ccc9d2ccbba7411887ab6aa92c5dbd80c6e9ffb6",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "verifyRun": {
+        "exitCode": 0,
+        "stdout": "POC_DECISION_REVISION_ORACLE_TESTS_OK\n",
+        "stdoutSha256": "17c4a17501d3124432c54606ccc9d2ccbba7411887ab6aa92c5dbd80c6e9ffb6",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "compiledClasses": {
+        "count": 14,
+        "aggregateSha256": "1837724104ad96149736669cde3d08cd7931eaf7d98dbd12753bdd8243e7c342",
+        "aggregateAlgorithm": "SHA-256 of UTF-8 LF-terminated lines '<relative-class-path> <lowercase-class-sha256>', sorted by relative path"
+      },
+      "jdeps": {
+        "exitCode": 0,
+        "summaryLineCount": 1,
+        "summary": "classes -> java.base",
+        "stdoutSha256": "5b2a2c8f8ebafa6b1243c1c2a1c219d6052feb3911eb80f3d2cd6767865ccfd7",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "javap": {
+        "exitCode": 0,
+        "majorVersion": 61,
+        "rawOutputPublished": false,
+        "stdoutSha256": "e5dd618793d3f5701f6087111d98262ea1e7b9e066652e5e7691980f494d8366",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "forbiddenApiScan": {
+        "tool": "rg",
+        "toolExecutableSha256": "0f5f7e6473e5374344ca8a895b89a79d7f25f68493d977ed539ddd825ccd0ffb",
+        "argvMatchedRecordedCommand": true,
+        "pattern": "java\\.(io|net|nio\\.file)|System\\.(getenv|getProperty|currentTimeMillis|nanoTime)|Instant\\.now|Clock\\.|LocalDateTime\\.now|ZonedDateTime\\.now|OffsetDateTime\\.now|\\bRandom\\b|Thread\\.|\\bProcessBuilder\\b|Runtime\\.getRuntime|Executors\\.|ForkJoinPool",
+        "sourceScope": [
+          "tools/decision_revision_oracle/src/main/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracle.java",
+          "tools/decision_revision_oracle/src/test/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracleTest.java"
+        ],
+        "exitCode": 1,
+        "classification": "NO_MATCHES",
+        "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "forbiddenFamilies": ["file IO", "network", "environment", "wall clock", "random", "thread", "process"]
+      },
+      "temporaryOutputCleanup": {
+        "attempted": true,
+        "verifiedAbsent": true,
+        "repositoryClassFilesPresent": false
+      }
+    },
+    "testGroups": [
+      "proposal-amended-final explicit chain and retained history",
+      "only CONFIRMED and FINAL are authoritative current",
+      "policy-safe explicit cancellation",
+      "direct PROPOSAL to CANCELLED without an authoritative parent remains REVIEW_REQUIRED",
+      "cancel to tentative and cancel to final reopening attempts fail closed with no model current",
+      "root-most cancellation remains the hard barrier across later FINAL and CANCELLED descendants for manual and model-only chains, with permutation and repeat equality",
+      "active cancellation competing with an unlinked eligible leaf becomes CONFLICT_REVIEW",
+      "model cancellation and reopening cannot cross a protected manual current",
+      "manual current survives explicitly linked model replacement or model cancellation",
+      "unlinked eligible leaves become CONFLICT_REVIEW",
+      "CONTRADICTED and down-tier relations fail closed",
+      "MODEL FINAL to MODEL CONFIRMED preserves FINAL for review",
+      "MANUAL FINAL to MANUAL CONFIRMED preserves FINAL for review",
+      "three-deep MODEL and MANUAL down-tier chains preserve the strongest full-ancestry candidate",
+      "MANUAL CONFIRMED to MANUAL FINAL promotion selects the linked FINAL leaf",
+      "a down-tier branch plus an unrelated authoritative candidate becomes CONFLICT_REVIEW",
+      "two unrelated manual authoritative heads become CONFLICT_REVIEW",
+      "manual protection across cancellation, protected-manual mismatch, and two protected-manual conflicts",
+      "multiple branches with distinct preserved authoritative candidates become CONFLICT_REVIEW",
+      "rejected revisions excluded from projection but retained in history",
+      "two decisions and subjects remain isolated with exact projection counts and tuples",
+      "valid input permutation, branch-heavy reverse/rotation, and repeated evaluation equality",
+      "literal canonical-output golden and tagged null versus opaque NONE current-ID non-collision",
+      "duplicate and malformed fixture validation",
+      "duplicate and malformed revision validation",
+      "missing, unknown, malformed and out-of-range source reference validation",
+      "dangling, self, cyclic, cross-decision, cross-subject and non-later supersedes validation",
+      "exact scalar-null and Long.MIN_VALUE/Long.MAX_VALUE boundary issue tuples",
+      "three-node cycle exact issue tuples across all six input permutations",
+      "null input and element typed-invalid handling",
+      "exact valid projection/result tuples, deterministic sorted and deduplicated invalid issues, defensive copies, and unmodifiable output mutation attempts"
+    ],
+    "failedAttemptHistory": [
+      {
+        "id": "PRE_FREEZE_COMPILE_001",
+        "finalEvidenceRun": false,
+        "result": "FAILED",
+        "exitCode": 1,
+        "sanitizedCause": "invalid firstEntry call on Map-typed local",
+        "resolution": "local declared as TreeMap"
+      },
+      {
+        "id": "PRE_FREEZE_RUN_002",
+        "finalEvidenceRun": false,
+        "result": "FAILED",
+        "exitCode": 1,
+        "sanitizedCause": "null supersedes lookup in TreeMap",
+        "resolution": "explicit null guard"
+      },
+      {
+        "id": "PRE_FREEZE_JDEPS_003",
+        "finalEvidenceRun": false,
+        "result": "FAILED",
+        "exitCode": 2,
+        "sanitizedCause": "JDK 17 rejects --summary",
+        "resolution": "correct JDK 17 spelling -summary; no implementation behavior changed",
+        "temporaryOutputVerifiedAbsent": true
+      },
+      {
+        "id": "REMEDIATION_PRE_FREEZE_RUN_004",
+        "finalEvidenceRun": false,
+        "result": "FAILED",
+        "exitCode": 1,
+        "sanitizedCause": "legacy test expected manual preservation for an unlinked competing eligible branch after policy-effective branch reconciliation",
+        "resolution": "exact expectation changed to CONFLICT_REVIEW with null current; implementation behavior was retained",
+        "temporaryOutputVerifiedAbsent": true
+      },
+      {
+        "id": "FINAL_REMEDIATION_AUDIT_005",
+        "finalEvidenceRun": false,
+        "result": "FAILED",
+        "exitCode": 1,
+        "sanitizedCause": "PowerShell parser rejected a foreach tokenization error before audit assertions ran",
+        "resolution": "audit command spacing corrected; no implementation or recorded run fact changed",
+        "temporaryOutputVerifiedAbsent": true
+      }
+    ]
+  },
+  "privacy": {
+    "containsPersonalData": false,
+    "containsSecret": false,
+    "containsTranscriptText": false,
+    "containsAudio": false,
+    "containsRealNamesOrOrganizationsInFixtures": false,
+    "containsPrivateAbsolutePath": false,
+    "containsDeviceIdentifier": false,
+    "containsNetworkAddress": false,
+    "rawValidationOutputRetained": false,
+    "publicOutputIsContentFree": true
+  },
+  "claims": [
+    "The two pinned Java source files compile under the pinned Java 17 toolchain with -Xlint:all -Werror.",
+    "The pinned in-memory structural test matrix passes twice and under -ea -Xverify:all with identical content-free stdout and empty stderr.",
+    "The compiled slice depends only on java.base and has class-file major version 61.",
+    "The pinned rg executable found no token matches for the recorded forbidden API pattern in exactly the two pinned Java source files.",
+    "The oracle implements only exact opaque-ID revision projection, full-ancestry oracle-local candidate folding, cancellation barriers, deterministic branch reconciliation, fail-closed review behavior, structural fixture-reference bounds, fixture-digest syntax, deterministic valid-input ordering, and manual-current protection.",
+    "Canonical output uses a tagged nullable current encoding that distinguishes null from every permitted opaque ID, including NONE.",
+    "This is local unpublished host-only synthetic structural evidence for a narrow POC-DECISION-001 slice."
+  ],
+  "nonClaims": [
+    "No full POC-DECISION-001 PASS, READY state, benchmark execution, or backlog closure is claimed.",
+    "No corpus, at least 100 adjudicated cases, precision, recall, F1, unsupported-claim rate, or semantic source-grounding result is claimed.",
+    "No fixture bytes or excerpt bytes were read, and no per-excerpt digest or verbatim excerpt hash was verified.",
+    "No reopen-after-cancellation product semantics are defined; every such active descendant is review-only in this oracle.",
+    "The oracle-local MANUAL_CONFIRMED preference and FINAL-before-CONFIRMED rank are conservative fail-closed rules, not approved product semantics for manual demotion, automatic reopening, or authoritative conflict resolution.",
+    "No invalid duplicate-batch permutation invariance is claimed.",
+    "No subject normalization, retrieval, NLP extraction, relation model, task activation, task schema, UI, Android, storage, network, device, model, or production behavior is implemented.",
+    "No choice or resolution for DEC-019 or DEC-037 is made.",
+    "No dependency admission, Product approval, Legal approval, Security approval, publication, commit, push, Pull Request, or merge is claimed."
+  ],
+  "blockers": [
+    "POC-DATA-001 remains blocked.",
+    "The governed frozen corpus of at least 100 double-annotated and adjudicated cases is absent.",
+    "Semantic source validation and approved decision/revision quality scoring have not run.",
+    "Any model, local-device latency or production slice remains separately gated."
+  ],
+  "result": {
+    "localStructuralSlice": "VERIFIED",
+    "pocDecision001": "BLOCKED",
+    "readiness": "NOT_READY",
+    "benchmark": "NOT_RUN",
+    "overallAuthorization": "NOT_AUTHORIZED",
+    "productionAdmission": false
+  }
+}
