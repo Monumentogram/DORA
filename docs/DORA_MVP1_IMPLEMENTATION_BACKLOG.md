@@ -1,8 +1,9 @@
 # Dora MVP 1 — Executable Backlog
 
-Версия: Stage 0D POC-RECOVERY-001 reviewed/merged I1 contract foundation / execution hold\
-Дата: 16 августа 2026 года\
+Версия: Stage 0D POC-RECOVERY-001 reviewed/merged I1 contract foundation / execution hold / GOV-OMI-001 task defined\
+Дата: 18 августа 2026 года\
 Owner approvals effective: 4 августа 2026 года (`OD-01`–`OD-10`), 11 августа 2026 года (`OD-11`–`OD-13`), recovery constraints / prospective `REC-JSR305-EXCLUDE-001` 12 августа 2026 года (`OD-14`; governance package only), and exact task-scoped `REC-I1-AUTH-20260813-01` on 13 августа 2026 года (pure contract foundation only; no runtime crypto/execution/merge)\
+Owner task-definition scope: 18 августа 2026 года — define `GOV-OMI-001` only; upstream audit, retrieval, copying, execution and admission remain unauthorized.\
 Источник порядка: Technical Plan §37/§39, Design Spec §36/§39 и readiness gates.
 
 Current `POC-RECOVERY-001` delta: the isolated `:poc:recovery` module now supplies only the
@@ -65,6 +66,7 @@ are superseded only for this narrow I1 foundation.
 | GOV-PRIVACY-001 | DONE | M | Privacy/data-flow/threat assumptions v1 | DEC-009/014/015 | `docs/stage0/DORA_MVP1_PRIVACY_DATA_FLOW_THREAT_MODEL.md` | data inventory, forbidden telemetry, trust boundaries, deletion and local/corporate modes documented; unresolved cloud/legal flows explicitly blocked |
 | GOV-TRADEMARK-001 | TODO | S | Name/package/trademark availability | DEC-025 | evidence + approved production identifier candidate | no registration/store asset before approval |
 | GOV-IP-001 | DONE | S | Reference/font/model asset IP rules | DEC-024/042 | `docs/stage0/DORA_MVP1_IP_ASSET_POLICY.md` | artifact-level provenance, license, attribution and admission rules documented; no model/binary/reference asset admitted |
+| GOV-OMI-001 | TODO | XL | Exact-snapshot Omi reuse, test and hazard audit without changing Dora invariants | GOV-IP-001; later explicit owner audit authorization; canonical upstream availability | [`gov-omi-reuse-stage0-v0.1`](stage0/DORA_MVP1_GOV_OMI_REUSE_AUDIT_TASK.md) and [machine-readable task definition](stage0/gov-omi-reuse-task-stage0-v0.1.json); future sanitized snapshot/license/component/hazard/report evidence | task definition is complete only; `auditExecutionAllowed=false`, source/archive retrieval, copying, execution and admission are forbidden; future audit must classify each relevant unit, turn verified upstream failures into Dora regression specifications and fail closed on rights/evidence gaps; no active-stage or product change |
 | GOV-REPO-001 | TODO | S | Long-term repository visibility, account plan and licensing/contribution terms | ADR-0002, owner | explicit decision and, only if approved, matching license/contribution updates | before merging an external contribution or returning the repository to private visibility |
 | POC-GATES-001 | DONE | M | Approve versioned gates and result schema | DEC-020 / `OD-05` | `docs/stage0/DORA_MVP1_POC_GATES.md`, `docs/stage0/benchmark-result.schema.json`; defined `stage0-v0.1` gates Approved for Stage 0 | six undefined section 7 thresholds remain `Proposed`; affected verdict stays `INCONCLUSIVE` until pre-run approval |
 | POC-SEARCH-GATES-002 | DONE | S | Select prospective storage/update predicates for `POC-SEARCH-001` | `DEC-043`; Project owner / `OD-12` | approved prospective `stage0-v0.2` Markdown + machine-readable Option B with paired control, physical D1–D3, exact repetitions/aggregation/environment/fallback | Option B approved on 2026-08-11 independently of prior Dora results; `benchmarkExecutionAllowed=false`; historical v0.1 evidence is not reclassified |

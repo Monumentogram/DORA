@@ -1,0 +1,67 @@
+{
+  "recordType": "dora-governance-task-definition",
+  "taskId": "GOV-OMI-001",
+  "version": "gov-omi-reuse-stage0-v0.1",
+  "date": "2026-08-18",
+  "state": "TODO",
+  "definitionComplete": true,
+  "canonicalCandidateUpstream": "https://github.com/BasedHardware/omi",
+  "upstreamSnapshot": {
+    "commitSha": null,
+    "treeSha": null,
+    "retrievedAt": null,
+    "requiredBeforeSubstantiveAudit": true,
+    "movingRefsForbiddenAsIdentity": [
+      "main",
+      "latest"
+    ]
+  },
+  "authority": {
+    "taskDefinitionAllowed": true,
+    "auditExecutionAllowed": false,
+    "upstreamCloneOrArchiveDownloadAllowed": false,
+    "sourceCopyOrPortAllowed": false,
+    "thirdPartyCodeExecutionAllowed": false,
+    "binaryModelAssetDownloadAllowed": false,
+    "dependencyAdmission": false,
+    "productImplementationAllowed": false,
+    "activeStageChanged": false
+  },
+  "dependencies": [
+    "GOV-IP-001",
+    "DORA_MVP1_TECHNICAL_PLAN.md",
+    "DORA_MVP1_PRODUCT_DECISIONS.md",
+    "DORA_MVP1_TEST_STRATEGY.md",
+    "ADR-0002"
+  ],
+  "decisionVocabulary": [
+    "REUSE_CANDIDATE",
+    "PORT_CANDIDATE",
+    "LEARN_ONLY",
+    "REJECT",
+    "DEFER",
+    "BLOCKED_RIGHTS",
+    "INSUFFICIENT_EVIDENCE"
+  ],
+  "requiredFutureArtifacts": [
+    "docs/evidence/gov-omi-001/upstream-snapshot.json",
+    "docs/evidence/gov-omi-001/license-surface-inventory.json",
+    "docs/evidence/gov-omi-001/component-matrix.json",
+    "docs/evidence/gov-omi-001/hazard-register.json",
+    "docs/evidence/gov-omi-001/audit-report.md"
+  ],
+  "currentTaskFiles": [
+    "docs/stage0/DORA_MVP1_GOV_OMI_REUSE_AUDIT_TASK.md",
+    "docs/stage0/gov-omi-reuse-task-stage0-v0.1.json",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+    "docs/DORA_MVP1_STAGE_STATUS.md"
+  ],
+  "nextTransitionRequirements": [
+    "explicit owner authorization to execute GOV-OMI-001",
+    "current-main branch and file scope",
+    "confirmed immutable snapshot and reproducible query method",
+    "exact IP-policy disposition for any retrieval beyond public metadata",
+    "named reviewers for conclusions beyond factual metadata research"
+  ],
+  "noAdmissionStatement": "This task definition does not authorize or admit Omi source, dependencies, binaries, models, datasets, assets, services, schemas, tests or product behavior."
+}
