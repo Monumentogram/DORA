@@ -1,0 +1,523 @@
+{
+  "schemaVersion": "poc-vad-p2-host-oracle-local-evidence-stage0-v0.1",
+  "recordType": "LOCAL_UNPUBLISHED_PURE_HOST_ORACLE_VALIDATION",
+  "recordId": "POC-VAD-P2-HOST-ORACLE-20260817-01",
+  "recordedAt": "2026-08-17T01:18:55.1238883+03:00",
+  "timezone": "Europe/Moscow",
+  "backlogId": "POC-VAD-001",
+  "gateSetVersion": "stage0-v0.1",
+  "implementationSlice": "DETERMINISTIC_POST_VAD_FRAME_TIMING_AND_FRESH_SPAN_ROTATION_METADATA",
+  "disposition": "LOCAL_HOST_FRAME_TIMING_ORACLE_VALIDATED_POC_REMAINS_BLOCKED_NOT_RUN",
+  "formalReviewer": false,
+  "sourceBaseline": {
+    "branch": "codex/poc-vad-p2-host-oracle",
+    "upstream": "origin/main",
+    "baseCommit": "78e9dd07d616989987118f26bb16ebb9932ddb2b",
+    "baseTree": "f403bf60b86273ee8a2634ed5e8530c9d4af20e4",
+    "implementationCommit": null,
+    "implementationTree": null,
+    "localUnpublished": true,
+    "separateWorktree": true,
+    "commitCreated": false,
+    "pushPerformed": false,
+    "pullRequestCreated": false,
+    "mergePerformed": false
+  },
+  "authorityPins": [
+    {
+      "path": "docs/DORA_MVP1_TECHNICAL_PLAN.md",
+      "bytes": 212023,
+      "sha256": "00c4d6816265e86c82e44045a77f85c6e68b43e6094a3736e10ab44eed259a59",
+      "relevantLocators": [
+        "14.1",
+        "14.2",
+        "34.1",
+        "34.3",
+        "37",
+        "39 Prototype 2"
+      ]
+    },
+    {
+      "path": "docs/DORA_MVP1_DESIGN_SPEC.md",
+      "bytes": 148911,
+      "sha256": "8bc88bd5b9cba036bbc5758957a4a2c1fdb64a053a319cf4b2f9ba544ea81f2b",
+      "relevantLocators": [
+        "13.6"
+      ]
+    },
+    {
+      "path": "docs/DORA_MVP1_PRODUCT_DECISIONS.md",
+      "bytes": 66789,
+      "sha256": "16283563ea328877c02192586e21affb69677e199206df14a3221e94bbadd401",
+      "relevantLocators": [
+        "OD-03",
+        "OD-04",
+        "OD-05",
+        "OD-06",
+        "OD-08",
+        "DEC-020"
+      ]
+    },
+    {
+      "path": "docs/adr/ADR-0001-android-bootstrap.md",
+      "bytes": 3147,
+      "sha256": "dfd34f65bc420615fa85feb6258022d326de2cfe6a9c70b992ab3836116a1c13",
+      "relevantLocators": [
+        "Status: Accepted"
+      ]
+    },
+    {
+      "path": "docs/adr/ADR-0002-public-repository-for-branch-protection.md",
+      "bytes": 5639,
+      "sha256": "9083cd00c2a2e129e20b282ab771c9125917f1d3a48165bb44296d0838c3d372",
+      "relevantLocators": [
+        "Status: Accepted"
+      ]
+    },
+    {
+      "path": "docs/DORA_MVP1_TEST_STRATEGY.md",
+      "bytes": 17062,
+      "sha256": "cfa2d09387ed4bb80f0ff71a7138930c7a642fdad75c37b0b150774b8d74fbe8",
+      "relevantLocators": [
+        "Tier A",
+        "synthetic fixtures",
+        "content-free output"
+      ]
+    },
+    {
+      "path": "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+      "bytes": 24515,
+      "sha256": "fa80c2402acf6ab94173514a21fe0f2c5451aaf3f36b51a33ebeddd4b6b2e484",
+      "relevantLocators": [
+        "POC-VAD-001"
+      ]
+    },
+    {
+      "path": "docs/DORA_MVP1_STAGE_STATUS.md",
+      "bytes": 37908,
+      "sha256": "0971c1c00b006b6bcc4cb1a3b11bf8399c9fc3a5746aea5889c74612f883b8dd",
+      "relevantLocators": [
+        "Stage 0D",
+        "synthetic-only boundary"
+      ]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_GATES.md",
+      "bytes": 18298,
+      "sha256": "c04db495abe24f1979096282e41bea7793a71c99c989d2cd1c78cdea386dfc5e",
+      "relevantLocators": [
+        "POC-VAD-001",
+        "Status exception: None"
+      ]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_EXECUTION_ORDER.md",
+      "bytes": 23513,
+      "sha256": "da649013c4e39196216936ade02b1bf18a8784428f392573977ffb61175bcbd7",
+      "relevantLocators": [
+        "deterministic VAD replay",
+        "host evidence ceiling"
+      ]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_DATASET_GOVERNANCE.md",
+      "bytes": 18083,
+      "sha256": "bad5250b1b7ca0ade53de5836b736e79cfce1f746e9aecfcb0b1a63f5f8bd7cc",
+      "relevantLocators": [
+        "deterministic synthetic signal",
+        "VAD boundary cases"
+      ]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_PRIVACY_DATA_FLOW_THREAT_MODEL.md",
+      "bytes": 24629,
+      "sha256": "d9b793eb5bb9a0c4ef64a03b815fc16425ca923921c98e539811f048853bb251",
+      "relevantLocators": [
+        "synthetic-only evidence",
+        "public evidence boundary"
+      ]
+    }
+  ],
+  "implementationPins": [
+    {
+      "path": "tools/vad_p2_oracle/src/main/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracle.java",
+      "bytes": 14152,
+      "lines": 380,
+      "sha256": "4a2ae88075554e249c5fd67c1ed385e50dceacd3cdaf0ca0ec36244535055d29"
+    },
+    {
+      "path": "tools/vad_p2_oracle/src/test/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracleTest.java",
+      "bytes": 36900,
+      "lines": 741,
+      "sha256": "606adc21b1323258f554799e8ed7da600e5fc39c22b20027e0fe1888aff35325"
+    }
+  ],
+  "toolchain": {
+    "jdkDistribution": "Microsoft OpenJDK 17.0.10+7-LTS",
+    "jdkMajor": 17,
+    "javaVersion": "OpenJDK Runtime Environment Microsoft-8902769 (build 17.0.10+7-LTS)",
+    "javacVersion": "javac 17.0.10",
+    "os": "Microsoft Windows 10.0.19045",
+    "architecture": "X64",
+    "classFileMajorVersion": 61,
+    "jdkReleaseFileSha256": "f463618c7067d1d7421a2aacdc8a4cfa939e9844436462c1c165cbed20a9769a",
+    "executables": [
+      {
+        "name": "java.exe",
+        "bytes": 49696,
+        "sha256": "98fd4a0eec7fa39abbc2b3f55007ed9c8c24ef8fa5d7c04c3895b4c5915ec3f1"
+      },
+      {
+        "name": "javac.exe",
+        "bytes": 23472,
+        "sha256": "0e79806dea4681cf6bb1fd41b4d5ba8c579481cb70a28890fe65813639294ffe"
+      },
+      {
+        "name": "jdeps.exe",
+        "bytes": 23584,
+        "sha256": "3eafdf760ec7a872df431208e343f354d38aff05aa3f178b1a21f29b0f044a9b"
+      },
+      {
+        "name": "javap.exe",
+        "bytes": 23472,
+        "sha256": "57d9be5cfcd423650e211d4744acbba453b91da0dcd58db92def369d7d9ecc17"
+      }
+    ],
+    "absoluteExecutablePathsPublished": false
+  },
+  "dependencyBoundary": {
+    "sourceFiles": 2,
+    "externalCoordinates": [],
+    "repositoriesAdded": [],
+    "pluginsAdded": [],
+    "nativeBinaries": [],
+    "models": [],
+    "androidPlugin": false,
+    "runtimeModulesMain": [
+      "java.base"
+    ],
+    "runtimeModulesTest": [
+      "java.base"
+    ],
+    "stdlibOnly": true,
+    "gradleUsed": false,
+    "networkUsed": false
+  },
+  "timingContract": {
+    "input": "POST_ACOUSTIC_PRECLASSIFIED_SPEECH_OR_SILENCE_FRAMES",
+    "sampleRateHz": 16000,
+    "frameSamples": 320,
+    "frameDurationNanos": 20000000,
+    "semanticBoundaryFrames": 4500,
+    "semanticBoundaryNanos": 90000000000,
+    "freshPhysicalSpanFrames": 30000,
+    "freshPhysicalSpanNanos": 600000000000,
+    "allowedOverlapFramesInclusive": [
+      75,
+      100
+    ],
+    "allowedOverlapNanosInclusive": [
+      1500000000,
+      2000000000
+    ],
+    "selectedProductionOverlapFrames": null,
+    "semanticGroupRequiresPriorSpeech": true,
+    "usesInjectedFrameIndexInsteadOfClock": true,
+    "acousticProfileSelected": false,
+    "onsetSelected": false,
+    "shortPauseHysteresisSelected": false,
+    "preRollSelected": false
+  },
+  "coverage": {
+    "testGroups": [
+      "constants_and_profiles",
+      "initial_silence",
+      "semantic_boundary_cases",
+      "all_pre_boundary_resume_points",
+      "physical_cap_metadata",
+      "simultaneous_semantic_and_physical_events",
+      "fail_closed_invalid_inputs",
+      "restore_validation",
+      "terminal_arithmetic",
+      "deterministic_replay_and_restore",
+      "profile_isolation",
+      "no_mutable_static_state"
+    ],
+    "overlapProfilesExhaustivelyTested": 26,
+    "overlapRejectedValues": [
+      74,
+      101,
+      -2147483648,
+      2147483647
+    ],
+    "semanticSilenceLengthsExhaustivelyTestedInclusive": [
+      0,
+      4525
+    ],
+    "resumeSilenceLengthsExhaustivelyTestedInclusive": [
+      0,
+      4499
+    ],
+    "namedBoundarySeconds": [
+      "89.5",
+      "90.0",
+      "90.5"
+    ],
+    "namedResumeSeconds": [
+      "89.9"
+    ],
+    "physicalCapSeconds": [
+      600,
+      1200
+    ],
+    "deterministicRepeatCount": 100,
+    "literalGoldenTracePresent": true,
+    "simultaneousEventFieldsAsserted": true,
+    "actualAudioOrFileWriterCovered": false
+  },
+  "validationCommands": [
+    {
+      "id": "COMPILE_MAIN",
+      "argv": [
+        "javac",
+        "-encoding",
+        "UTF-8",
+        "--release",
+        "17",
+        "-Xlint:all",
+        "-Werror",
+        "-d",
+        "<validated-os-temp>/main-classes",
+        "<main-source>"
+      ],
+      "exitCode": 0
+    },
+    {
+      "id": "COMPILE_TEST",
+      "argv": [
+        "javac",
+        "-encoding",
+        "UTF-8",
+        "--release",
+        "17",
+        "-Xlint:all",
+        "-Werror",
+        "-classpath",
+        "<validated-os-temp>/main-classes",
+        "-d",
+        "<validated-os-temp>/test-classes",
+        "<test-source>"
+      ],
+      "exitCode": 0
+    },
+    {
+      "id": "RUN_PRIMARY",
+      "argv": [
+        "java",
+        "-cp",
+        "<main-classes>;<test-classes>",
+        "com.monumentogram.dora.stage0.vad.p2.VadBoundaryOracleTest"
+      ],
+      "executions": 2,
+      "retryOnFailure": false
+    },
+    {
+      "id": "RUN_SUPPLEMENTAL",
+      "argv": [
+        "java",
+        "-ea",
+        "-Xverify:all",
+        "-cp",
+        "<main-classes>;<test-classes>",
+        "com.monumentogram.dora.stage0.vad.p2.VadBoundaryOracleTest"
+      ],
+      "exitCode": 0
+    },
+    {
+      "id": "JDEPS_MAIN",
+      "argv": [
+        "jdeps",
+        "--multi-release",
+        "17",
+        "--print-module-deps",
+        "--recursive",
+        "<main-classes>"
+      ],
+      "stdout": "java.base",
+      "exitCode": 0
+    },
+    {
+      "id": "JDEPS_TEST",
+      "argv": [
+        "jdeps",
+        "--multi-release",
+        "17",
+        "--print-module-deps",
+        "--recursive",
+        "--class-path",
+        "<main-classes>",
+        "<test-classes>"
+      ],
+      "stdout": "java.base",
+      "exitCode": 0
+    },
+    {
+      "id": "JAVAP_MAJOR",
+      "argv": [
+        "javap",
+        "-classpath",
+        "<main-classes>",
+        "-verbose",
+        "com.monumentogram.dora.stage0.vad.p2.VadBoundaryOracle"
+      ],
+      "observedClassMajorVersion": 61,
+      "exitCode": 0
+    }
+  ],
+  "attemptHistory": [
+    {
+      "ordinal": 1,
+      "classification": "PRE_REVIEW_SMOKE_ONLY",
+      "outcome": "PASS_ON_SUPERSEDED_SOURCE_BYTES",
+      "acceptedAsFinalEvidence": false,
+      "reason": "Independent review narrowed claims and added adversarial tests afterward."
+    },
+    {
+      "ordinal": 2,
+      "classification": "INVALID_ENVIRONMENT_PROFILE",
+      "outcome": "SYSTEM_PROTECTED_TEMP_ACCESS_DENIED_TO_SPLIT_JAVAC_CLASSPATH",
+      "acceptedAsFinalEvidence": false,
+      "sourceFailureObserved": false,
+      "reason": "The protected system-temp location was unsuitable for the Java compiler classpath; the attempt was stopped and all outputs were deleted."
+    },
+    {
+      "ordinal": 3,
+      "classification": "FINAL_VALIDATED_PROFILE",
+      "outcome": "LOCAL_PASS",
+      "acceptedAsFinalEvidence": true,
+      "tempLocation": "DEDICATED_OS_ROOT_OUTSIDE_REPOSITORY_AND_USER_HOME",
+      "inheritedEnvironment": true,
+      "minimalEnvironmentClaimed": false,
+      "clearedEnvironmentVariables": [
+        "CLASSPATH",
+        "JAVA_TOOL_OPTIONS",
+        "JDK_JAVA_OPTIONS",
+        "_JAVA_OPTIONS"
+      ]
+    }
+  ],
+  "localValidation": {
+    "state": "LOCAL_PASS",
+    "primaryRuns": [
+      {
+        "ordinal": 1,
+        "exitCode": 0,
+        "stdoutMarker": "LOCAL_PASS vad-p2-frame-timing-host-oracle",
+        "stdoutLineEnding": "CRLF",
+        "stdoutBytes": 44,
+        "stdoutSha256": "8612e20eb8cdb7fbcb4c7a7afbe4c8ca66370fa538a019b8c0830b5e62f1ed7e",
+        "stderrBytes": 0,
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "ordinal": 2,
+        "exitCode": 0,
+        "stdoutMarker": "LOCAL_PASS vad-p2-frame-timing-host-oracle",
+        "stdoutLineEnding": "CRLF",
+        "stdoutBytes": 44,
+        "stdoutSha256": "8612e20eb8cdb7fbcb4c7a7afbe4c8ca66370fa538a019b8c0830b5e62f1ed7e",
+        "stderrBytes": 0,
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "primaryRunsByteIdentical": true,
+    "supplementalAssertionsAndVerificationRun": "LOCAL_PASS",
+    "compiledMainClassFiles": 18,
+    "compiledTestClassFiles": 2,
+    "sourcePinsMatchedAfterChecks": true,
+    "temporaryOutputsDeleted": true,
+    "temporaryOutputAbsenceVerified": true,
+    "ciState": "NOT_RUN_LOCAL_UNPUBLISHED"
+  },
+  "staticBoundary": {
+    "sourceForbiddenApiMatches": 0,
+    "mainBytecodeForbiddenApiMatches": 0,
+    "wallClockApiMatches": 0,
+    "fileOrPersistenceApiMatches": 0,
+    "networkApiMatches": 0,
+    "androidApiMatches": 0,
+    "audioOrModelApiMatches": 0,
+    "environmentOrProcessApiMatches": 0,
+    "mainMutableStaticState": false,
+    "testConsoleOutput": "ONE_CONSTANT_LOCAL_PASS_MARKER_ONLY"
+  },
+  "privacyBoundary": {
+    "syntheticFrameLabelsOnly": true,
+    "pcmOrEncodedAudioUsed": false,
+    "realSpeechUsed": false,
+    "personalDataPresent": false,
+    "secretsPresent": false,
+    "rawTraceRetained": false,
+    "absoluteLocalPathsPublished": false,
+    "ciArtifactUploaded": false
+  },
+  "proofBoundary": {
+    "hostOracleOnly": true,
+    "frameTimingSemanticsValidated": true,
+    "freshSpanRotationMetadataValidated": true,
+    "acousticVadImplemented": false,
+    "sileroOrOtherModelUsed": false,
+    "onsetHysteresisOrPreRollEvaluated": false,
+    "androidOrDeviceExecutionPerformed": false,
+    "realTimeDeadlineEvaluated": false,
+    "physicalFileRotationPerformed": false,
+    "encodedFileDurationEvaluated": false,
+    "byteOverlapIntegrityEvaluated": false,
+    "storageOrDedupEvaluated": false,
+    "pocPassClaimed": false,
+    "readyClaimed": false,
+    "doneClaimed": false,
+    "productionAdmissionClaimed": false
+  },
+  "authorityFlags": {
+    "implementationAllowedByThisRecord": false,
+    "pocExecutionAllowedByThisRecord": false,
+    "measuredExecutionAllowed": false,
+    "acousticExecutionAllowed": false,
+    "deviceExecutionAllowed": false,
+    "realDataAllowed": false,
+    "humanDataAllowed": false,
+    "newDependencyAllowed": false,
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "legalApprovalClaimed": false,
+    "securityApprovalClaimed": false,
+    "formalHumanApprovalClaimed": false,
+    "statusMutationAllowed": false,
+    "publicationAllowed": false,
+    "commitAllowedByThisRecord": false,
+    "pushAllowedByThisRecord": false,
+    "pullRequestAllowedByThisRecord": false,
+    "readyForReviewAllowed": false,
+    "mergeAuthorized": false
+  },
+  "resultTaxonomy": {
+    "localHostOracleValidation": "LOCAL_PASS",
+    "pocVadOverallResult": "NOT_RUN",
+    "pocVadBacklogState": "BLOCKED",
+    "pocVadReadiness": "NOT_READY",
+    "pocVadExecutionAuthorization": "NOT_AUTHORIZED",
+    "recommendation": "BLOCKED"
+  },
+  "blockers": [
+    "ACOUSTIC_VAD_AND_NOISE_MATRIX_NOT_RUN",
+    "ONSET_HYSTERESIS_PRE_ROLL_NOT_EVALUATED",
+    "PHYSICAL_D1_D2_D3_REAL_TIME_EVIDENCE_MISSING",
+    "PHYSICAL_FILE_ROTATION_AND_BYTE_OVERLAP_INTEGRITY_NOT_EVALUATED",
+    "POC_DATA_001_GOVERNED_CORPUS_BLOCKED",
+    "EXACT_IMPLEMENTATION_COMMIT_AND_CI_ABSENT",
+    "INDEPENDENT_EXACT_HEAD_REVIEW_ABSENT",
+    "DEPENDENCY_AND_PRODUCTION_ADMISSION_NOT_GRANTED"
+  ],
+  "externalBindingPolicy": "Bind this record only from a later external index or commit; this record contains no self-hash."
+}
