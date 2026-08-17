@@ -2,14 +2,14 @@
   "schemaVersion": 1,
   "reportId": "REC-I2A-LOCAL-GRAPH-R8-PROBE-20260817-01",
   "authorizationId": "REC-I2A-GRAPH-AUTH-20260817-01",
-  "recordedAtUtc": "2026-08-17T09:06:04Z",
+  "recordedAtUtc": "2026-08-17T09:31:37Z",
   "status": "TECHNICAL_PASS_PENDING_SEPARATE_SCOPED_PRODUCT_IP_DISPOSITION",
   "scope": "LOCAL_UNPUBLISHED_GRAPH_AND_R8_PROBE_ONLY",
   "pocId": "POC-RECOVERY-001",
   "module": ":poc:recovery",
   "baseCommit": "78e9dd07d616989987118f26bb16ebb9932ddb2b",
-  "probeImplementationCommit": "98e61310383a7e7517220cba0bed5c01439c26f3",
-  "probeImplementationTree": "86dbb3dbdd2404a78aa5548f7b433c37e0141442",
+  "probeImplementationCommit": "680d8483a4e20202fe9b5b864ce873b78784e983",
+  "probeImplementationTree": "ed900113905536ee8d2ee9e43e8c1cd88632e535",
   "published": false,
   "rootCoordinate": "com.google.crypto.tink:tink-android:1.23.0",
   "tinkLocalExclude": "com.google.code.findbugs:jsr305:3.0.2",
@@ -17,13 +17,114 @@
   "graph": {
     "gradleVersion": "9.5.0",
     "agpVersion": "9.3.1",
-    "allResolvableConfigurationsEnumerated": true,
-    "allResolvableConfigurationCount": 60,
-    "recoveryOwnedConfigurationCount": 8,
-    "outsideRecoveryClasspathBoundaryCount": 52,
+    "allResolvableConfigurationsEnumeratedAndResolved": true,
+    "allResolvableConfigurationCount": 61,
+    "policyCoveredConfigurationCount": 34,
+    "outsidePolicyBoundaryConfigurationCount": 27,
+    "consumerModuleCount": 0,
+    "consumerModules": [],
     "benchmarkVariantConfigured": false,
     "releaseUnitTestVariantConfigured": false,
-    "configurations": [
+    "policyBoundaryDefinition": "All resolvable debug, release, unit-test, androidTest and any future benchmark variant configurations whose names begin debug, release or benchmark. This includes variant metadata, annotation-processor and lint-check classpaths in addition to the primary compile/runtime classpaths.",
+    "policyCoveredConfigurationNames": [
+      "debugAndroidTestAnnotationProcessorClasspath",
+      "debugAndroidTestApiDependenciesMetadata",
+      "debugAndroidTestCompileClasspath",
+      "debugAndroidTestCompileOnlyDependenciesMetadata",
+      "debugAndroidTestImplementationDependenciesMetadata",
+      "debugAndroidTestIntransitiveDependenciesMetadata",
+      "debugAndroidTestLintChecksClasspath",
+      "debugAndroidTestRuntimeClasspath",
+      "debugAnnotationProcessorClasspath",
+      "debugApiDependenciesMetadata",
+      "debugCompileClasspath",
+      "debugCompileOnlyDependenciesMetadata",
+      "debugImplementationDependenciesMetadata",
+      "debugIntransitiveDependenciesMetadata",
+      "debugLintChecksClasspath",
+      "debugReverseMetadataValues",
+      "debugRuntimeClasspath",
+      "debugUnitTestAnnotationProcessorClasspath",
+      "debugUnitTestApiDependenciesMetadata",
+      "debugUnitTestCompileClasspath",
+      "debugUnitTestCompileOnlyDependenciesMetadata",
+      "debugUnitTestImplementationDependenciesMetadata",
+      "debugUnitTestIntransitiveDependenciesMetadata",
+      "debugUnitTestLintChecksClasspath",
+      "debugUnitTestRuntimeClasspath",
+      "releaseAnnotationProcessorClasspath",
+      "releaseApiDependenciesMetadata",
+      "releaseCompileClasspath",
+      "releaseCompileOnlyDependenciesMetadata",
+      "releaseImplementationDependenciesMetadata",
+      "releaseIntransitiveDependenciesMetadata",
+      "releaseLintChecksClasspath",
+      "releaseReverseMetadataValues",
+      "releaseRuntimeClasspath"
+    ],
+    "outsidePolicyBoundaryDefinition": "AGP-injected Android platform, Kotlin compiler/plugin, lint engine and Unified Test Platform implementation configurations. Every one is still resolved and inventoried, but none is a Recovery source-set dependency, consumer-module dependency, lock-owned variant dependency or APK packaging/runtime-artifact input.",
+    "outsidePolicyBoundaryConfigurationNames": [
+      "androidApis",
+      "androidJdkImage",
+      "androidLintTool",
+      "androidTestUtil",
+      "coreLibraryDesugaring",
+      "kotlinBuildToolsApiClasspath",
+      "kotlinCompilerClasspath",
+      "kotlinCompilerPluginClasspath",
+      "kotlinCompilerPluginClasspathDebug",
+      "kotlinCompilerPluginClasspathDebugAndroidTest",
+      "kotlinCompilerPluginClasspathDebugUnitTest",
+      "kotlinCompilerPluginClasspathRelease",
+      "lintChecks",
+      "lintPublish",
+      "unified-test-platform-android-device-provider-ddmlib",
+      "unified-test-platform-android-driver-instrumentation",
+      "unified-test-platform-android-test-plugin",
+      "unified-test-platform-android-test-plugin-host-additional-test-output",
+      "unified-test-platform-android-test-plugin-host-apk-installer",
+      "unified-test-platform-android-test-plugin-host-coverage",
+      "unified-test-platform-android-test-plugin-host-device-info",
+      "unified-test-platform-android-test-plugin-host-emulator-control",
+      "unified-test-platform-android-test-plugin-host-logcat",
+      "unified-test-platform-android-test-plugin-result-listener-gradle",
+      "unified-test-platform-core",
+      "unified-test-platform-gradle-work-action",
+      "unified-test-platform-launcher"
+    ],
+    "outsidePolicyBoundaryJsr305Inventory": {
+      "coordinate": "com.google.code.findbugs:jsr305:3.0.2",
+      "configurationOccurrenceCount": 14,
+      "configurationNames": [
+        "androidLintTool",
+        "unified-test-platform-android-device-provider-ddmlib",
+        "unified-test-platform-android-driver-instrumentation",
+        "unified-test-platform-android-test-plugin",
+        "unified-test-platform-android-test-plugin-host-additional-test-output",
+        "unified-test-platform-android-test-plugin-host-apk-installer",
+        "unified-test-platform-android-test-plugin-host-coverage",
+        "unified-test-platform-android-test-plugin-host-device-info",
+        "unified-test-platform-android-test-plugin-host-emulator-control",
+        "unified-test-platform-android-test-plugin-host-logcat",
+        "unified-test-platform-android-test-plugin-result-listener-gradle",
+        "unified-test-platform-core",
+        "unified-test-platform-gradle-work-action",
+        "unified-test-platform-launcher"
+      ],
+      "artifactClassDefinitionOccurrenceCountIncludingRepeatedToolingViews": 505,
+      "insidePolicyBoundary": false,
+      "insideRecoveryLock": false,
+      "insideDebugOrReleaseApk": false,
+      "repositoryWideAbsenceClaimed": false
+    },
+    "generatedFullGraphReport": {
+      "path": "android/poc/recovery/build/reports/recovery-i2a/resolved-graph.json",
+      "tracked": false,
+      "reproducibleByRecordedGradleCommand": true,
+      "bytes": 331809,
+      "sha256": "9e5c5bca40427a951569984999081bf0b17ca12529fbc1df476c226a2c06a3a3"
+    },
+    "primaryDependencyBearingConfigurations": [
       {
         "name": "debugAndroidTestCompileClasspath",
         "canBeResolved": true,
@@ -127,9 +228,9 @@
         "jsr305Components": []
       }
     ],
-    "jsr305ResolvedComponentCount": 0,
+    "policyCoveredJsr305ResolvedComponentCount": 0,
     "packagingRuntimeArtifactInputsEnumerated": true,
-    "packagedJsr305ClassDefinitionCount": 0
+    "policyCoveredPackagedJsr305ClassDefinitionCount": 0
   },
   "artifacts": [
     {
@@ -170,23 +271,29 @@
   "locksAndVerification": {
     "recoveryLock": {
       "path": "android/poc/recovery/gradle.lockfile",
-      "bytes": 1730,
-      "sha256": "9c7e882158432290b20c74b2e82701dbc17e090a195bfe8c3aad38f39aa9b5fa",
+      "gitBlobBytes": 3395,
+      "gitBlobSha256": "2e0de74c01b452476223a757ffa52ccc7f3f1ab74e9736e36bcd4a2ff0e8f08c",
+      "lineEndingNormalization": "LF_IN_GIT_AND_WORKING_TREE",
       "jsr305Entries": 0,
       "toolingEntries": 0
     },
     "gradleVerificationMetadata": {
       "path": "android/gradle/verification-metadata.xml",
-      "bytes": 298394,
-      "sha256": "515cb172de60fa101c31f7a9c09d83e4794f1658a07e64e02f5af392ec3b5c32",
+      "canonicalHashBasis": "RAW_GIT_BLOB_LF_BYTES",
+      "gitBlobSha1": "db5adcc6a5f31f95efcbdf8fe168834b3b2a39b0",
+      "gitBlobBytes": 293745,
+      "gitBlobSha256": "32c5e2e290aed91e6907985e7f6722691242cbb43a101c34747302b5ad5c7867",
+      "windowsGeneratedWorkingTreeBytes": 298394,
+      "windowsGeneratedWorkingTreeSha256": "515cb172de60fa101c31f7a9c09d83e4794f1658a07e64e02f5af392ec3b5c32",
+      "workingTreeNormalization": "Gradle rewrote this text file with CRLF on Windows; .gitattributes text/eol=lf normalizes the committed Git blob to LF. Both byte domains are pinned explicitly.",
       "candidateArtifactHashesPresent": true,
       "globalToolingJsr305Coordinates": [
         "com.google.code.findbugs:jsr305:2.0.2",
         "com.google.code.findbugs:jsr305:3.0.2"
       ],
-      "globalToolingOccurrencesInsideRecoveryOwnedConfigurations": false,
+      "globalToolingOccurrencesInsidePolicyCoveredConfigurations": false,
       "repositoryWideAbsenceClaimed": false,
-      "note": "Gradle verification metadata is root-global. Its AGP/UTP/lint/build-tool entries are explicitly outside the OD-14 recovery runtime boundary; the scoped recovery lock and all eight owned configuration reports contain no JSR-305."
+      "note": "Gradle verification metadata is root-global. Its AGP/UTP/lint/build-tool entries are explicitly resolved and classified outside the OD-14 Recovery dependency and packaging/runtime boundary; the scoped Recovery lock and all 34 policy-covered configuration reports contain no JSR-305."
     },
     "inspected": true
   },
@@ -261,8 +368,12 @@
       "result": "PASSED"
     },
     {
-      "command": "gradlew -PdoraRecoveryI2aGraphProbe=true :poc:recovery:recoveryI2aResolveOwnedConfigurations",
-      "result": "PASSED"
+      "command": "gradlew --no-configuration-cache -PdoraRecoveryI2aGraphProbe=true :poc:recovery:recoveryI2aResolveOwnedConfigurations",
+      "result": "PASSED_61_RESOLVED_34_POLICY_COVERED_ZERO_JSR305"
+    },
+    {
+      "command": "gradlew --no-configuration-cache -PdoraRecoveryI2aGraphProbe=true --write-locks :poc:recovery:recoveryI2aResolveOwnedConfigurations",
+      "result": "PASSED_EXACT_SCOPED_LOCK_REGENERATED"
     },
     {
       "command": "gradlew -PdoraRecoveryI2aGraphProbe=true :poc:recovery:clean :poc:recovery:assembleDebug :poc:recovery:assembleRelease :poc:recovery:recoveryI2aResolveOwnedConfigurations",
