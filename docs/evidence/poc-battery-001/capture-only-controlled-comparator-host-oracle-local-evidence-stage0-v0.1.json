@@ -1,0 +1,441 @@
+{
+  "schemaVersion": "dora.poc-battery-001.capture-only-controlled-comparator.local-evidence.stage0.v0.1",
+  "recordId": "POC-BATTERY-001-LOCAL-HOST-ORACLE-20260817-01",
+  "recordedDate": "2026-08-17",
+  "recordedAtUtc": null,
+  "recordingTimeClaim": false,
+  "classification": "LOCAL_UNPUBLISHED_SYNTHETIC_HOST_VALIDATION",
+  "backlog": {
+    "id": "POC-BATTERY-001",
+    "stage": "Stage 0",
+    "backlogStatus": "BLOCKED",
+    "readiness": "NOT_READY",
+    "measurementStatus": "NOT_RUN",
+    "overallAuthorization": "NOT_AUTHORIZED"
+  },
+  "repository": {
+    "branch": "codex/poc-battery-campaign-oracle",
+    "baseCommit": "78e9dd07d616989987118f26bb16ebb9932ddb2b",
+    "baseTree": "f403bf60b86273ee8a2634ed5e8530c9d4af20e4",
+    "implementationCommit": null,
+    "staged": false,
+    "committed": false,
+    "pushed": false,
+    "pullRequestCreated": false,
+    "merged": false,
+    "publicationStatus": "LOCAL_UNPUBLISHED"
+  },
+  "scope": {
+    "exactFileCount": 3,
+    "files": [
+      "tools/battery_campaign_oracle/src/main/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracle.java",
+      "tools/battery_campaign_oracle/src/test/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracleTest.java",
+      "docs/evidence/poc-battery-001/capture-only-controlled-comparator-host-oracle-local-evidence-stage0-v0.1.json"
+    ],
+    "androidChanged": false,
+    "gradleChanged": false,
+    "workflowChanged": false,
+    "dependencyChanged": false,
+    "backlogOrStatusChanged": false
+  },
+  "authorityFlags": {
+    "taskScopedLocalImplementationAuthorized": true,
+    "syntheticInMemoryFixturesAuthorized": true,
+    "localHostValidationAuthorized": true,
+    "fullPocImplementationAuthorized": false,
+    "measurementExecutionAuthorized": false,
+    "physicalDeviceExecutionAuthorized": false,
+    "batterystatsOrPerfettoAuthorized": false,
+    "productionImplementationAuthorized": false,
+    "productDecisionGrantedByThisRecord": false,
+    "legalApprovalGrantedByThisRecord": false,
+    "securityApprovalGrantedByThisRecord": false,
+    "dependencyAdmissionGrantedByThisRecord": false,
+    "publicationAuthorizedByThisRecord": false,
+    "commitAuthorizedByThisRecord": false,
+    "pushAuthorizedByThisRecord": false,
+    "pullRequestAuthorizedByThisRecord": false,
+    "mergeAuthorizedByThisRecord": false
+  },
+  "authorityPins": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "27b6a9b0e99e3f3fd864b3e5289f6246516f680869816623fafc5c809cdb22df",
+      "locators": ["Authoritative sources", "Stage gate", "Change discipline"]
+    },
+    {
+      "path": "docs/DORA_MVP1_TECHNICAL_PLAN.md",
+      "sha256": "00c4d6816265e86c82e44045a77f85c6e68b43e6094a3736e10ab44eed259a59",
+      "locators": ["§10.3 lines 300-309", "§14.5 lines 517-524", "§30.3 lines 1245-1255", "§34 lines 1374-1415", "PoC 6 lines 1812-1820"]
+    },
+    {
+      "path": "docs/DORA_MVP1_PRODUCT_DECISIONS.md",
+      "sha256": "16283563ea328877c02192586e21affb69677e199206df14a3221e94bbadd401",
+      "locators": ["DEC-020", "Approved Stage 0 gate boundary"]
+    },
+    {
+      "path": "docs/DORA_MVP1_TEST_STRATEGY.md",
+      "sha256": "cfa2d09387ed4bb80f0ff71a7138930c7a642fdad75c37b0b150774b8d74fbe8",
+      "locators": ["Principles lines 15-23", "TS-BATTERY line 38", "Tier B lines 59-61", "Physical matrix lines 76-88"]
+    },
+    {
+      "path": "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+      "sha256": "fa80c2402acf6ab94173514a21fe0f2c5451aaf3f36b51a33ebeddd4b6b2e484",
+      "locators": ["POC-BATTERY-001 line 78"]
+    },
+    {
+      "path": "docs/DORA_MVP1_STAGE_STATUS.md",
+      "sha256": "0971c1c00b006b6bcc4cb1a3b11bf8399c9fc3a5746aea5889c74612f883b8dd",
+      "locators": ["Active Stage 0D", "Capture evidence reconciliation", "Battery blockers"]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_STAGE0_OWNER_DECISIONS.md",
+      "sha256": "6ad739370b6c0fd38cfd708426deff623759f69927fda5978b804b2ce0cc7a9a",
+      "locators": ["OD-05", "OD-06", "OD-08", "Summary"]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_GATES.md",
+      "sha256": "c04db495abe24f1979096282e41bea7793a71c99c989d2cd1c78cdea386dfc5e",
+      "locators": ["Gate rules lines 19-28", "POC-BATTERY-001 line 102", "Proposed absolute drain line 117", "Measurement discipline lines 146-164"]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_EXECUTION_ORDER.md",
+      "sha256": "da649013c4e39196216936ade02b1bf18a8784428f392573977ffb61175bcbd7",
+      "locators": ["POC-BATTERY-001 line 90", "Device isolation lines 191-208", "Physical-only rule line 219", "Current D2-only availability lines 225-228"]
+    },
+    {
+      "path": "docs/stage0/benchmark-result.schema.json",
+      "sha256": "2a13de34a61884910865d6fa95108781c9b6c47e338bd0b7458a73f383f57c93",
+      "locators": ["Stage 0 result vocabulary and nullability"]
+    },
+    {
+      "path": "docs/evidence/poc-capture-001/README.md",
+      "sha256": "a7ff21671bbff10a2282c11d0ae0f2a1a92dbe979d855e8440d12723dddde8e4",
+      "locators": ["Run A lines 57-80", "Run B lines 82-107", "Run C owner correction lines 109-159", "Nonclaims lines 161-188"]
+    },
+    {
+      "path": "docs/evidence/poc-capture-001/device-profile.json",
+      "sha256": "e3cf3829a718db15692d5afe9e1e88fb0dd8ca16bb8439bf21be476033cb6c66",
+      "locators": ["Sanitized D2 profile"]
+    },
+    {
+      "path": "docs/evidence/poc-capture-001/run-a-result.json",
+      "sha256": "93a565e1e45f384f4bb47a2d48787f92280f4b8fad7feb33d78d1bf4699cee4d",
+      "locators": ["Exploratory observation only"]
+    },
+    {
+      "path": "docs/evidence/poc-capture-001/run-b-result.json",
+      "sha256": "91ee6de2070fe90216021393bb4ee28cd5cc79301d44f686c178469069c94340",
+      "locators": ["Uncontrolled exploratory observation only"]
+    },
+    {
+      "path": "docs/evidence/poc-capture-001/run-c-result.json",
+      "sha256": "63766554536b93195d9bc3b5bf016ed6661c5105d5c0c0decbb52ef05014a8f6",
+      "locators": ["Invalidated exploratory observation only"]
+    },
+    {
+      "path": "docs/evidence/poc-capture-001/deletion-summary.json",
+      "sha256": "273a032590cda252e27b41101cfeb4241ed8717f321d10aac7443186772e0483",
+      "locators": ["Capture artifact cleanup evidence"]
+    }
+  ],
+  "implementationPins": [
+    {
+      "path": "tools/battery_campaign_oracle/src/main/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracle.java",
+      "bytes": 54212,
+      "lines": 1349,
+      "sha256": "354b607a0ad7a5aa7a4243dee34d3bb8d93bdaeacfa9a8374ae69207d4fe1883",
+      "encoding": "UTF-8",
+      "lineEndings": "LF",
+      "bom": false,
+      "finalLf": true
+    },
+    {
+      "path": "tools/battery_campaign_oracle/src/test/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracleTest.java",
+      "bytes": 48496,
+      "lines": 968,
+      "sha256": "6868d63cda474cafc8661ccc01e25809467b4580988af33d042687604f7b5f30",
+      "encoding": "UTF-8",
+      "lineEndings": "LF",
+      "bom": false,
+      "finalLf": true
+    }
+  ],
+  "contractBoundary": {
+    "language": "Java 17",
+    "runtimeModules": ["java.base"],
+    "inputKind": "PRE_ADJUDICATED_SYNTHETIC_IN_MEMORY_METADATA",
+    "requiredPocId": "POC-BATTERY-001",
+    "requiredGateSetVersion": "stage0-v0.1",
+    "verdictSentinel": "NO_FULL_POC_VERDICT",
+    "physicalProfiles": ["D1", "D2", "D3", "D4", "D5"],
+    "approvedComparableModes": ["MINIMAL_AUDIO_RECORD_FGS_BASELINE", "DORA_CAPTURE_ONLY"],
+    "requiredDurationSeconds": 3600,
+    "minimumControlledRepeats": 3,
+    "relativeBoundary": "4 * captureMicroWh <= 5 * baselineMicroWh",
+    "relativeBoundaryArithmetic": "java.math.BigInteger",
+    "energyUnit": "positive integer microWh or JSON null",
+    "missingEnergyOutcome": "NOT_EVALUATED_NO_MWH",
+    "pairing": "explicit only; never inferred",
+    "pairControlEquality": [
+      "deviceProfile",
+      "deviceKind",
+      "deviceInstanceId",
+      "firmwareId",
+      "androidApi",
+      "abi",
+      "approvedSliceId",
+      "fixtureDigest",
+      "durationUnit",
+      "plannedDuration",
+      "actualDuration",
+      "completed",
+      "screenState",
+      "batterySaverEnabled",
+      "brightnessPercent",
+      "radioState",
+      "signalState",
+      "startThermalStatus",
+      "chargerState",
+      "powerSource",
+      "protocolId",
+      "measurementSourceId"
+    ],
+    "excludedAttemptsRetained": true,
+    "missingDropsEquivalentToZero": false,
+    "missingThermalEquivalentToNone": false,
+    "dropsAndSevereThermal": "local disqualifier observations only",
+    "repeatAggregationPolicyDefined": false,
+    "absoluteDrainPolicyDefined": false,
+    "sustainedSevereDurationDefined": false,
+    "fullSliceLatticeDefined": false,
+    "measurementAuthenticityVerified": false,
+    "calibrationVerified": false,
+    "captureRunsAtoCUsedAsOracleInputs": false,
+    "fileApiUsedByImplementationOrTest": false,
+    "networkApiUsed": false,
+    "environmentApiUsed": false,
+    "clockApiUsed": false,
+    "randomApiUsed": false,
+    "threadApiUsed": false,
+    "processApiUsedByImplementationOrTest": false,
+    "androidApiUsed": false,
+    "gradleUsed": false,
+    "modelUsed": false,
+    "externalDatasetUsed": false
+  },
+  "toolchain": {
+    "absoluteExecutablePathsPublished": false,
+    "pathClassification": "LOCAL_PRIVATE_PATH_REDACTED",
+    "runtime": "Microsoft OpenJDK 17.0.10+7-LTS",
+    "executables": [
+      {
+        "name": "java.exe",
+        "bytes": 49696,
+        "sha256": "98fd4a0eec7fa39abbc2b3f55007ed9c8c24ef8fa5d7c04c3895b4c5915ec3f1"
+      },
+      {
+        "name": "javac.exe",
+        "version": "javac 17.0.10",
+        "bytes": 23472,
+        "sha256": "0e79806dea4681cf6bb1fd41b4d5ba8c579481cb70a28890fe65813639294ffe"
+      },
+      {
+        "name": "jdeps.exe",
+        "version": "17.0.10",
+        "bytes": 23584,
+        "sha256": "3eafdf760ec7a872df431208e343f354d38aff05aa3f178b1a21f29b0f044a9b"
+      },
+      {
+        "name": "javap.exe",
+        "version": "17.0.10",
+        "bytes": 23472,
+        "sha256": "57d9be5cfcd423650e211d4744acbba453b91da0dcd58db92def369d7d9ecc17"
+      },
+      {
+        "name": "rg.exe",
+        "version": "ripgrep 15.2.0",
+        "sha256": "0f5f7e6473e5374344ca8a895b89a79d7f25f68493d977ed539ddd825ccd0ffb"
+      }
+    ],
+    "releaseFile": {
+      "bytes": 1312,
+      "sha256": "f463618c7067d1d7421a2aacdc8a4cfa939e9844436462c1c165cbed20a9769a"
+    }
+  },
+  "validation": {
+    "workingDirectoryDisclosure": "REPOSITORY_ROOT",
+    "temporaryOutputDisclosure": "RETAINED_OS_TEMP_OUTSIDE_REPOSITORY_PRIVATE_PATH_REDACTED_AFTER_TERMINAL_POLICY_BLOCKED_CLEANUP",
+    "allNonPrivateArgumentsExact": true,
+    "commands": [
+      {
+        "id": "COMPILE",
+        "argv": ["javac", "-encoding", "UTF-8", "--release", "17", "-Xlint:all", "-Werror", "-d", "<TEMP_OUTSIDE_REPOSITORY>/classes", "tools/battery_campaign_oracle/src/main/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracle.java", "tools/battery_campaign_oracle/src/test/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracleTest.java"]
+      },
+      {
+        "id": "PRIMARY_RUN_1",
+        "argv": ["java", "-cp", "<TEMP_OUTSIDE_REPOSITORY>/classes", "com.monumentogram.dora.stage0.battery.BatteryCampaignOracleTest"]
+      },
+      {
+        "id": "PRIMARY_RUN_2",
+        "argv": ["java", "-cp", "<TEMP_OUTSIDE_REPOSITORY>/classes", "com.monumentogram.dora.stage0.battery.BatteryCampaignOracleTest"]
+      },
+      {
+        "id": "VERIFY_RUN",
+        "argv": ["java", "-ea", "-Xverify:all", "-cp", "<TEMP_OUTSIDE_REPOSITORY>/classes", "com.monumentogram.dora.stage0.battery.BatteryCampaignOracleTest"]
+      },
+      {
+        "id": "JDEPS",
+        "argv": ["jdeps", "--multi-release", "17", "--recursive", "--print-module-deps", "<TEMP_OUTSIDE_REPOSITORY>/classes"]
+      },
+      {
+        "id": "JAVAP_MAIN",
+        "argv": ["javap", "-verbose", "-classpath", "<TEMP_OUTSIDE_REPOSITORY>/classes", "com.monumentogram.dora.stage0.battery.BatteryCampaignOracle"]
+      },
+      {
+        "id": "JAVAP_TEST",
+        "argv": ["javap", "-verbose", "-classpath", "<TEMP_OUTSIDE_REPOSITORY>/classes", "com.monumentogram.dora.stage0.battery.BatteryCampaignOracleTest"]
+      },
+      {
+        "id": "STATIC_FORBIDDEN_API_SCAN",
+        "argv": ["rg", "--line-number", "--no-heading", "--color", "never", "--regexp", "java\\.(io|net|nio\\.file)|System\\.(getenv|getProperty|currentTimeMillis|nanoTime)|Instant\\.now|Clock\\.|LocalDateTime\\.now|ZonedDateTime\\.now|OffsetDateTime\\.now|\\bRandom\\b|Thread\\.|\\bProcessBuilder\\b|Runtime\\.getRuntime|Executors\\.|ForkJoinPool", "--", "tools/battery_campaign_oracle/src/main/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracle.java", "tools/battery_campaign_oracle/src/test/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracleTest.java"]
+      }
+    ],
+    "results": {
+      "compile": {
+        "exitCode": 0,
+        "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "primaryRun1": {
+        "exitCode": 0,
+        "stdout": "BATTERY_CAMPAIGN_ORACLE_TEST_OK",
+        "stdoutBytes": 31,
+        "stdoutSha256": "22b71bd4d256949421964217b6b207aa007b77e054ae5bc56ccc9ec9ac37000d",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "primaryRun2": {
+        "exitCode": 0,
+        "stdout": "BATTERY_CAMPAIGN_ORACLE_TEST_OK",
+        "stdoutBytes": 31,
+        "stdoutSha256": "22b71bd4d256949421964217b6b207aa007b77e054ae5bc56ccc9ec9ac37000d",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "verifyRun": {
+        "exitCode": 0,
+        "stdout": "BATTERY_CAMPAIGN_ORACLE_TEST_OK",
+        "stdoutBytes": 31,
+        "stdoutSha256": "22b71bd4d256949421964217b6b207aa007b77e054ae5bc56ccc9ec9ac37000d",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "compiledClasses": {
+        "count": 33,
+        "aggregateManifestBytes": 4866,
+        "aggregateSha256": "ecb95e3b03371b084fc1a25bc206d020b2986ee9c8e84db9beee2fbf1647c339",
+        "aggregateAlgorithm": "SHA-256 of UTF-8 LF-terminated lines '<relative-class-path>|<class-bytes>|<lowercase-class-sha256>', sorted by relative path"
+      },
+      "jdeps": {
+        "exitCode": 0,
+        "stdout": "java.base\r\n",
+        "stdoutSha256": "8fa1cf738e9b5f90a56fa5a0e386b2f642c086c86d2c2731a0c208c46ceecf2f",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "javapMain": {
+        "exitCode": 0,
+        "majorVersion": 61,
+        "rawOutputPublished": false,
+        "stdoutSha256": "3ac388b6eec07e78967256f54778a11133d8ad14f3e2a6248f0c50368c45cb97"
+      },
+      "javapTest": {
+        "exitCode": 0,
+        "majorVersion": 61,
+        "rawOutputPublished": false,
+        "stdoutSha256": "be4027691b2072ea76efb275e92cc730fc60aa3aa0db85a44497c845c6d9236c"
+      },
+      "forbiddenApiScan": {
+        "tool": "rg",
+        "toolExecutableSha256": "0f5f7e6473e5374344ca8a895b89a79d7f25f68493d977ed539ddd825ccd0ffb",
+        "argvMatchedRecordedCommand": true,
+        "pattern": "java\\.(io|net|nio\\.file)|System\\.(getenv|getProperty|currentTimeMillis|nanoTime)|Instant\\.now|Clock\\.|LocalDateTime\\.now|ZonedDateTime\\.now|OffsetDateTime\\.now|\\bRandom\\b|Thread\\.|\\bProcessBuilder\\b|Runtime\\.getRuntime|Executors\\.|ForkJoinPool",
+        "sourceScope": [
+          "tools/battery_campaign_oracle/src/main/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracle.java",
+          "tools/battery_campaign_oracle/src/test/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracleTest.java"
+        ],
+        "exitCode": 1,
+        "classification": "NO_MATCHES",
+        "sourceFileCount": 2,
+        "forbiddenFamilies": ["file IO", "network", "environment", "wall clock", "random", "thread", "process"],
+        "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "temporaryOutputCleanup": {
+        "attempted": true,
+        "verifiedAbsent": false,
+        "blockedByTerminalPolicy": true,
+        "retainedOutsideRepository": true,
+        "repositoryClassFilesPresent": false
+      }
+    },
+    "testGroups": [
+      "exact 5/4 boundary, +1, near-Long.MAX_VALUE and overflow-safe BigInteger comparison",
+      "zero, negative, null and maximum energy handling",
+      "every frozen control-field mismatch with exact pair-exclusion projection and exact one-hour duration eligibility",
+      "self, swapped, dangling, duplicate, reused and cross-profile pair rejection",
+      "campaign, run, attempt and repeat identity validation",
+      "emulator, charging, unknown and invalidated attempt exclusion with retention",
+      "dropped-frame null, zero and one distinction",
+      "thermal null, NONE, MODERATE, SEVERE and CRITICAL distinction",
+      "two-versus-three controlled-repeat boundary",
+      "D1-D5 missing-profile disclosure and slice isolation",
+      "input permutation, repeated evaluation and branch isolation determinism",
+      "defensive copies and unmodifiable outputs",
+      "Capture-like null-energy and charging observations remain non-evidence",
+      "literal empty-invalid and non-empty escaping/null canonical JSON goldens"
+    ]
+  },
+  "privacy": {
+    "containsPersonalData": false,
+    "containsSecret": false,
+    "containsAudio": false,
+    "containsTranscriptText": false,
+    "containsRawTrace": false,
+    "containsPrivateAbsolutePath": false,
+    "containsUniqueDeviceIdentifier": false,
+    "containsNetworkAddress": false,
+    "rawValidationOutputRetained": false,
+    "publicOutputIsContentFree": true
+  },
+  "claims": [
+    "The two pinned Java source files compile under the pinned Java 17 toolchain with -Xlint:all -Werror.",
+    "The pinned structural test matrix passes twice and under -ea -Xverify:all with identical content-free stdout and empty stderr.",
+    "The compiled slice depends only on java.base and has class-file major version 61.",
+    "The oracle performs an overflow-safe exact 4*captureMicroWh <= 5*baselineMicroWh check only for explicit controlled capture-only pairs.",
+    "The oracle keeps invalidated and non-eligible attempts visible while excluding them from local repeat eligibility.",
+    "The oracle returns the constant top-level sentinel NO_FULL_POC_VERDICT and cannot issue a physical PoC verdict.",
+    "This is local unpublished host-only synthetic structural evidence for a narrow POC-BATTERY-001 slice."
+  ],
+  "nonClaims": [
+    "No full POC-BATTERY-001 PASS or FAIL, READY state, measurement execution, or backlog closure is claimed.",
+    "No physical D1-D5 run, Android capture, Batterystats, Perfetto, calibrated power reading, frame-continuity measurement, thermal-duration measurement, or scheduling-policy result is claimed.",
+    "The oracle does not prove that the named baseline is minimal or that any pre-adjudicated control fields are authentic or physically equivalent.",
+    "No idle subtraction, unit conversion, repeat aggregation, absolute-drain threshold, sustained-SEVERE duration, complete required-slice lattice, or production fallback policy is defined.",
+    "Drops greater than zero and SEVERE-or-higher thermal values are local disqualifier observations only; this record does not turn them into a full campaign verdict.",
+    "Capture Runs A, B and C are not oracle inputs and are not reclassified as battery evidence.",
+    "No Android, Gradle, filesystem, network, device, model, dataset, dependency, production, Product, Legal, Security, publication, commit, push, Pull Request, or merge authority is claimed."
+  ],
+  "blockers": [
+    "The approved physical D1-D5 campaign has not run.",
+    "A calibrated one-hour minimal AudioRecord plus FGS baseline and at least three controlled repeats per approved slice are absent.",
+    "Batterystats or Perfetto measurement provenance and raw-trace policy are not approved or executed.",
+    "The absolute-drain threshold without mWh, repeat aggregation, full slice lattice and sustained-SEVERE duration remain unresolved.",
+    "A safe scheduling policy and physical campaign review remain absent."
+  ],
+  "result": {
+    "localStructuralSlice": "VERIFIED",
+    "pocBattery001": "BLOCKED",
+    "readiness": "NOT_READY",
+    "measurement": "NOT_RUN",
+    "overallAuthorization": "NOT_AUTHORIZED",
+    "productionAdmission": false
+  }
+}
