@@ -1,0 +1,923 @@
+name: Stage 0 host oracles
+
+on:
+  pull_request:
+    branches:
+      - main
+      - codex/poc-offline-i1-oracle-scope
+    paths:
+      - .github/workflows/stage0-host-oracles.yml
+      - docs/evidence/poc-battery-001/capture-only-controlled-comparator-host-oracle-local-evidence-stage0-v0.1.json
+      - docs/evidence/poc-data-001/synthetic-public-manifest-validator-local-evidence-stage0-v0.1.json
+      - docs/evidence/poc-decision-001/decision-revision-projection-host-oracle-local-evidence-stage0-v0.1.json
+      - docs/evidence/poc-offline-001/i1-host-oracle-implementation-evidence-stage0-v0.1.json
+      - docs/evidence/poc-offline-001/i1-host-oracle-scope-stage0-v0.1.json
+      - docs/evidence/poc-offline-001/i1-resource-envelope-amendment-stage0-v0.3.json
+      - docs/evidence/poc-offline-001/readiness-contract-stage0-v0.1.json
+      - docs/evidence/poc-offline-001/i1-semantics-and-implementation-scope-stage0-v0.2.json
+      - docs/evidence/poc-offline-001/reviews/off-i1-resource-envelope-003.external-review.json
+      - docs/evidence/poc-offline-001/reviews/off-i1-semantics-scope-002.external-review.json
+      - docs/evidence/poc-vad-001/p2-host-oracle-local-evidence-stage0-v0.1.json
+      - docs/stage0/DORA_MVP1_POC_OFFLINE_I1_RESOURCE_ENVELOPE_AMENDMENT_STAGE0_V0_3.md
+      - docs/stage0/DORA_MVP1_POC_OFFLINE_I1_HOST_ORACLE_SCOPE_STAGE0_V0_1.md
+      - docs/stage0/DORA_MVP1_POC_OFFLINE_I1_SEMANTICS_AND_IMPLEMENTATION_SCOPE_STAGE0_V0_2.md
+      - docs/stage0/DORA_MVP1_POC_OFFLINE_READINESS_CONTRACT_STAGE0_V0_1.md
+      - docs/stage0/poc-data-synthetic-public-projection-stage0-v0.1.schema.json
+      - tools/battery_campaign_oracle/src/main/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracle.java
+      - tools/battery_campaign_oracle/src/test/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracleTest.java
+      - tools/decision_revision_oracle/src/main/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracle.java
+      - tools/decision_revision_oracle/src/test/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracleTest.java
+      - tools/offline_i1_oracle/src/main/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1Oracle.java
+      - tools/offline_i1_oracle/src/test/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1OracleTest.java
+      - tools/poc_data_manifest_validator/src/main/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidator.java
+      - tools/poc_data_manifest_validator/src/test/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidatorTest.java
+      - tools/vad_p2_oracle/src/main/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracle.java
+      - tools/vad_p2_oracle/src/test/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracleTest.java
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stage0-host-oracles-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  EXPECTED_IMAGE_OS: ubuntu24
+  EXPECTED_IMAGE_VERSION: 20260810.271.1
+  EXPECTED_JAVA_VERSION: 17.0.20
+  EXPECTED_JAVA_BUILD: "17.0.20+8"
+  EXPECTED_JAVA_RELEASE_DATE: "2026-07-21"
+  EXPECTED_JAVA_SHA256: 6dce8306ebf735a85decdc801d84431f6e84525b60adc885624df05edeffb481
+  EXPECTED_JAVAC_SHA256: a05c6a23a79c688d2f395a25e456c81749dc0f720aeea21c29ea44f6e27f3bfc
+  EXPECTED_JDEPS_SHA256: 8333a54439b0b25bec29bfabd0c81de51d06536d778866671031cd2616c7bd1f
+  EXPECTED_JAVAP_SHA256: 1f4a366f20ec1442232c242adeb03a597e20d2383f9ab59be02ab5c472c3136c
+  EXPECTED_JDK_RELEASE_SHA256: 9bba1dfe6fa144a9ed37833b4b3443ab803c41618612b772bdc7330027469346
+  EXPECTED_GREP_PATH: /usr/bin/grep
+  EXPECTED_GREP_VERSION: "grep (GNU grep) 3.11"
+  EXPECTED_GREP_SHA256: 20a35a4c18f2fe9e6305c1cbf866b9c0fcc3f957132ae66028c99ec353bb0a80
+
+jobs:
+  authorized-scope:
+    name: stage0-host-authorized-scope
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+
+    steps:
+      - name: Require an exact authorized head branch
+        shell: bash
+        env:
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          EXPECTED_REPOSITORY: ${{ github.repository }}
+          BASE_REF: ${{ github.base_ref }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          [[ "${HEAD_REPOSITORY}" == "${EXPECTED_REPOSITORY}" ]]
+          case "${GITHUB_HEAD_REF}" in
+            codex/poc-battery-campaign-oracle | \
+            codex/poc-vad-p2-host-oracle | \
+            codex/poc-decision-revision-oracle | \
+            codex/poc-data-manifest-validator)
+              [[ "${BASE_REF}" == "main" ]]
+              [[ "${BASE_SHA}" == "78e9dd07d616989987118f26bb16ebb9932ddb2b" ]]
+              ;;
+            codex/poc-offline-i1-semantics-v02)
+              [[ "${BASE_REF}" == "main" ]]
+              [[ "${BASE_SHA}" == "a3ccae7b1da1f42132a46f1a96b26fc43f680b80" ]]
+              ;;
+            *)
+              echo "::error::Unauthorized Stage 0 host-oracle head: ${GITHUB_HEAD_REF}"
+              exit 1
+              ;;
+          esac
+
+      - name: Check out the exact pull-request head and base history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Require the exact authorized pull-request file scope
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD)" == "${HEAD_SHA}" ]]
+          git cat-file -e "${BASE_SHA}^{commit}"
+          mapfile -t actual < <(git diff --name-only --diff-filter=ACDMRTUXB "${BASE_SHA}...${HEAD_SHA}" | LC_ALL=C sort)
+          case "${GITHUB_HEAD_REF}" in
+            codex/poc-battery-campaign-oracle)
+              expected=(
+                .github/workflows/stage0-host-oracles.yml
+                docs/evidence/poc-battery-001/capture-only-controlled-comparator-host-oracle-local-evidence-stage0-v0.1.json
+                tools/battery_campaign_oracle/src/main/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracle.java
+                tools/battery_campaign_oracle/src/test/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracleTest.java
+              )
+              ;;
+            codex/poc-vad-p2-host-oracle)
+              expected=(
+                .github/workflows/stage0-host-oracles.yml
+                docs/evidence/poc-vad-001/p2-host-oracle-local-evidence-stage0-v0.1.json
+                tools/vad_p2_oracle/src/main/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracle.java
+                tools/vad_p2_oracle/src/test/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracleTest.java
+              )
+              ;;
+            codex/poc-decision-revision-oracle)
+              expected=(
+                .github/workflows/stage0-host-oracles.yml
+                docs/evidence/poc-decision-001/decision-revision-projection-host-oracle-local-evidence-stage0-v0.1.json
+                tools/decision_revision_oracle/src/main/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracle.java
+                tools/decision_revision_oracle/src/test/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracleTest.java
+              )
+              ;;
+            codex/poc-data-manifest-validator)
+              expected=(
+                .github/workflows/stage0-host-oracles.yml
+                docs/evidence/poc-data-001/synthetic-public-manifest-validator-local-evidence-stage0-v0.1.json
+                docs/stage0/poc-data-synthetic-public-projection-stage0-v0.1.schema.json
+                tools/poc_data_manifest_validator/src/main/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidator.java
+                tools/poc_data_manifest_validator/src/test/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidatorTest.java
+              )
+              ;;
+            codex/poc-offline-i1-semantics-v02)
+              expected=(
+                .github/workflows/stage0-host-oracles.yml
+                docs/evidence/poc-offline-001/i1-host-oracle-implementation-evidence-stage0-v0.1.json
+                docs/evidence/poc-offline-001/i1-resource-envelope-amendment-stage0-v0.3.json
+                docs/evidence/poc-offline-001/i1-semantics-and-implementation-scope-stage0-v0.2.json
+                docs/evidence/poc-offline-001/reviews/off-i1-resource-envelope-003.external-review.json
+                docs/evidence/poc-offline-001/reviews/off-i1-semantics-scope-002.external-review.json
+                docs/stage0/DORA_MVP1_POC_OFFLINE_I1_RESOURCE_ENVELOPE_AMENDMENT_STAGE0_V0_3.md
+                docs/stage0/DORA_MVP1_POC_OFFLINE_I1_SEMANTICS_AND_IMPLEMENTATION_SCOPE_STAGE0_V0_2.md
+                tools/offline_i1_oracle/src/main/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1Oracle.java
+                tools/offline_i1_oracle/src/test/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1OracleTest.java
+              )
+              ;;
+            *)
+              exit 1
+              ;;
+          esac
+          [[ "${#actual[@]}" -eq "${#expected[@]}" ]]
+          for index in "${!expected[@]}"; do
+            [[ "${actual[index]}" == "${expected[index]}" ]]
+          done
+          [[ -z "$(git status --porcelain)" ]]
+
+  stage0-host-battery:
+    name: stage0-host-battery
+    if: ${{ github.head_ref == 'codex/poc-battery-campaign-oracle' }}
+    needs: authorized-scope
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out the exact pull-request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify the pinned runner and toolchain identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          clean_env=(env -i PATH="${JAVA_HOME_17_X64}/bin:/usr/bin:/bin")
+          [[ "${ImageOS:-}" == "${EXPECTED_IMAGE_OS}" ]]
+          [[ "${ImageVersion:-}" == "${EXPECTED_IMAGE_VERSION}" ]]
+          [[ -x "${JAVA_HOME_17_X64}/bin/java" ]]
+          [[ "$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/javac" -version 2>&1)" == "javac ${EXPECTED_JAVA_VERSION}" ]]
+          java_version="$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1)"
+          printf '%s\n' "${java_version}"
+          mapfile -t java_version_lines <<<"${java_version}"
+          [[ "${#java_version_lines[@]}" -eq 3 ]]
+          [[ "${java_version_lines[0]}" == "openjdk version \"${EXPECTED_JAVA_VERSION}\" ${EXPECTED_JAVA_RELEASE_DATE}" ]]
+          [[ "${java_version_lines[1]}" == "OpenJDK Runtime Environment Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD})" ]]
+          [[ "${java_version_lines[2]}" == "OpenJDK 64-Bit Server VM Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD}, mixed mode, sharing)" ]]
+          sha256sum \
+            "${JAVA_HOME_17_X64}/bin/java" \
+            "${JAVA_HOME_17_X64}/bin/javac" \
+            "${JAVA_HOME_17_X64}/bin/jdeps" \
+            "${JAVA_HOME_17_X64}/bin/javap" \
+            "${JAVA_HOME_17_X64}/release"
+          grep_path="$(PATH="/usr/bin:/bin" command -v grep)"
+          [[ "${grep_path}" == "${EXPECTED_GREP_PATH}" && -x "${grep_path}" ]]
+          grep_version="$("${clean_env[@]}" "${grep_path}" --version)"
+          printf '%s\n' "${grep_version}"
+          mapfile -t grep_version_lines <<<"${grep_version}"
+          [[ "${grep_version_lines[0]}" == "${EXPECTED_GREP_VERSION}" ]]
+          "${clean_env[@]}" /usr/bin/sha256sum --check --strict - <<SHA256
+          ${EXPECTED_JAVA_SHA256}  ${JAVA_HOME_17_X64}/bin/java
+          ${EXPECTED_JAVAC_SHA256}  ${JAVA_HOME_17_X64}/bin/javac
+          ${EXPECTED_JDEPS_SHA256}  ${JAVA_HOME_17_X64}/bin/jdeps
+          ${EXPECTED_JAVAP_SHA256}  ${JAVA_HOME_17_X64}/bin/javap
+          ${EXPECTED_JDK_RELEASE_SHA256}  ${JAVA_HOME_17_X64}/release
+          ${EXPECTED_GREP_SHA256}  ${grep_path}
+          SHA256
+          [[ "$(git rev-parse HEAD)" == "${{ github.event.pull_request.head.sha }}" ]]
+          [[ -z "$(git status --porcelain)" ]]
+
+      - name: Verify the exact POC-BATTERY-001 host oracle
+        shell: bash
+        run: |
+          set -euo pipefail
+          export LC_ALL=C
+          clean_env=(env -i PATH="${JAVA_HOME_17_X64}/bin:/usr/bin:/bin")
+          java_bin="${JAVA_HOME_17_X64}/bin/java"
+          javac_bin="${JAVA_HOME_17_X64}/bin/javac"
+          jdeps_bin="${JAVA_HOME_17_X64}/bin/jdeps"
+          javap_bin="${JAVA_HOME_17_X64}/bin/javap"
+          grep_bin="${EXPECTED_GREP_PATH}"
+          [[ "${grep_bin}" == /* && -x "${grep_bin}" ]]
+          main_source="tools/battery_campaign_oracle/src/main/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracle.java"
+          test_source="tools/battery_campaign_oracle/src/test/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracleTest.java"
+
+          sha256sum --check --strict <<'SHA256'
+          354b607a0ad7a5aa7a4243dee34d3bb8d93bdaeacfa9a8374ae69207d4fe1883  tools/battery_campaign_oracle/src/main/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracle.java
+          6868d63cda474cafc8661ccc01e25809467b4580988af33d042687604f7b5f30  tools/battery_campaign_oracle/src/test/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracleTest.java
+          21358153669e1ffc4a6b6ec398fb683b0d326debd4830b61edc7fcb21782844e  docs/evidence/poc-battery-001/capture-only-controlled-comparator-host-oracle-local-evidence-stage0-v0.1.json
+          SHA256
+
+          runner_temp="$(realpath -e -- "${RUNNER_TEMP}")"
+          workspace="$(realpath -e -- "${GITHUB_WORKSPACE}")"
+          slice_tmp="$(mktemp -d -- "${runner_temp}/dora-battery-ci.XXXXXX")"
+          cleanup() {
+            if [[ -n "${slice_tmp:-}" && "${slice_tmp}" == "${runner_temp}"/dora-battery-ci.* ]]; then
+              rm -rf -- "${slice_tmp}"
+            fi
+          }
+          trap cleanup EXIT
+          slice_tmp="$(realpath -e -- "${slice_tmp}")"
+          [[ "${slice_tmp}" == "${runner_temp}"/dora-battery-ci.* ]]
+          [[ "${slice_tmp}" != "${workspace}" && "${slice_tmp}" != "${workspace}"/* ]]
+          mkdir -p "${slice_tmp}/classes"
+
+          "${clean_env[@]}" "${javac_bin}" -encoding UTF-8 --release 17 -Xlint:all -Werror \
+            -d "${slice_tmp}/classes" "${main_source}" "${test_source}" \
+            >"${slice_tmp}/compile.stdout" 2>"${slice_tmp}/compile.stderr"
+          [[ ! -s "${slice_tmp}/compile.stdout" && ! -s "${slice_tmp}/compile.stderr" ]]
+
+          test_class="com.monumentogram.dora.stage0.battery.BatteryCampaignOracleTest"
+          "${clean_env[@]}" "${java_bin}" -cp "${slice_tmp}/classes" "${test_class}" \
+            >"${slice_tmp}/primary-1.stdout" 2>"${slice_tmp}/primary-1.stderr"
+          "${clean_env[@]}" "${java_bin}" -cp "${slice_tmp}/classes" "${test_class}" \
+            >"${slice_tmp}/primary-2.stdout" 2>"${slice_tmp}/primary-2.stderr"
+          "${clean_env[@]}" "${java_bin}" -ea -Xverify:all -cp "${slice_tmp}/classes" "${test_class}" \
+            >"${slice_tmp}/verify.stdout" 2>"${slice_tmp}/verify.stderr"
+          printf '%s' 'BATTERY_CAMPAIGN_ORACLE_TEST_OK' >"${slice_tmp}/expected.stdout"
+          cmp "${slice_tmp}/expected.stdout" "${slice_tmp}/primary-1.stdout"
+          cmp "${slice_tmp}/primary-1.stdout" "${slice_tmp}/primary-2.stdout"
+          cmp "${slice_tmp}/primary-1.stdout" "${slice_tmp}/verify.stdout"
+          [[ ! -s "${slice_tmp}/primary-1.stderr" ]]
+          [[ ! -s "${slice_tmp}/primary-2.stderr" ]]
+          [[ ! -s "${slice_tmp}/verify.stderr" ]]
+
+          printf '%s\n' 'java.base' >"${slice_tmp}/expected-jdeps.stdout"
+          "${clean_env[@]}" "${jdeps_bin}" --multi-release 17 --recursive --print-module-deps \
+            "${slice_tmp}/classes" >"${slice_tmp}/jdeps.stdout" 2>"${slice_tmp}/jdeps.stderr"
+          cmp "${slice_tmp}/expected-jdeps.stdout" "${slice_tmp}/jdeps.stdout"
+          [[ ! -s "${slice_tmp}/jdeps.stderr" ]]
+          "${clean_env[@]}" "${javap_bin}" -verbose -classpath "${slice_tmp}/classes" \
+            com.monumentogram.dora.stage0.battery.BatteryCampaignOracle \
+            >"${slice_tmp}/javap-main.stdout" 2>"${slice_tmp}/javap-main.stderr"
+          "${clean_env[@]}" "${javap_bin}" -verbose -classpath "${slice_tmp}/classes" "${test_class}" \
+            >"${slice_tmp}/javap-test.stdout" 2>"${slice_tmp}/javap-test.stderr"
+          [[ ! -s "${slice_tmp}/javap-main.stderr" && ! -s "${slice_tmp}/javap-test.stderr" ]]
+          [[ "$("${clean_env[@]}" "${grep_bin}" -Ec '^[[:space:]]*major version: 61$' "${slice_tmp}/javap-main.stdout")" == "1" ]]
+          [[ "$("${clean_env[@]}" "${grep_bin}" -Ec '^[[:space:]]*major version: 61$' "${slice_tmp}/javap-test.stdout")" == "1" ]]
+
+          forbidden='java\.(io|net|nio\.file)|System\.(getenv|getProperty|currentTimeMillis|nanoTime)|Instant\.now|Clock\.|LocalDateTime\.now|ZonedDateTime\.now|OffsetDateTime\.now|\bRandom\b|Thread\.|\bProcessBuilder\b|Runtime\.getRuntime|Executors\.|ForkJoinPool'
+          if "${clean_env[@]}" "${grep_bin}" --line-number --with-filename --color=never --extended-regexp -- "${forbidden}" "${main_source}" "${test_source}"; then
+            echo "::error::Forbidden API token found in POC-BATTERY-001"
+            exit 1
+          else
+            scan_status=$?
+            [[ "${scan_status}" -eq 1 ]]
+          fi
+
+          [[ -z "$(find . -path ./.git -prune -o -type f -name '*.class' -print -quit)" ]]
+          [[ -z "$(git status --porcelain)" ]]
+          cleanup
+          [[ ! -e "${slice_tmp}" ]]
+          trap - EXIT
+          printf '%s\n' 'PINNED_TOOLCHAIN_HOST_REVALIDATION_OK POC-BATTERY-001'
+
+  stage0-host-vad-p2:
+    name: stage0-host-vad-p2
+    if: ${{ github.head_ref == 'codex/poc-vad-p2-host-oracle' }}
+    needs: authorized-scope
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out the exact pull-request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify the pinned runner and toolchain identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          clean_env=(env -i PATH="${JAVA_HOME_17_X64}/bin:/usr/bin:/bin")
+          [[ "${ImageOS:-}" == "${EXPECTED_IMAGE_OS}" ]]
+          [[ "${ImageVersion:-}" == "${EXPECTED_IMAGE_VERSION}" ]]
+          [[ -x "${JAVA_HOME_17_X64}/bin/java" ]]
+          [[ "$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/javac" -version 2>&1)" == "javac ${EXPECTED_JAVA_VERSION}" ]]
+          java_version="$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1)"
+          printf '%s\n' "${java_version}"
+          mapfile -t java_version_lines <<<"${java_version}"
+          [[ "${#java_version_lines[@]}" -eq 3 ]]
+          [[ "${java_version_lines[0]}" == "openjdk version \"${EXPECTED_JAVA_VERSION}\" ${EXPECTED_JAVA_RELEASE_DATE}" ]]
+          [[ "${java_version_lines[1]}" == "OpenJDK Runtime Environment Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD})" ]]
+          [[ "${java_version_lines[2]}" == "OpenJDK 64-Bit Server VM Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD}, mixed mode, sharing)" ]]
+          sha256sum "${JAVA_HOME_17_X64}/bin/java" "${JAVA_HOME_17_X64}/bin/javac" \
+            "${JAVA_HOME_17_X64}/bin/jdeps" "${JAVA_HOME_17_X64}/bin/javap" "${JAVA_HOME_17_X64}/release"
+          grep_path="$(PATH="/usr/bin:/bin" command -v grep)"
+          [[ "${grep_path}" == "${EXPECTED_GREP_PATH}" && -x "${grep_path}" ]]
+          grep_version="$("${clean_env[@]}" "${grep_path}" --version)"
+          printf '%s\n' "${grep_version}"
+          mapfile -t grep_version_lines <<<"${grep_version}"
+          [[ "${grep_version_lines[0]}" == "${EXPECTED_GREP_VERSION}" ]]
+          "${clean_env[@]}" /usr/bin/sha256sum --check --strict - <<SHA256
+          ${EXPECTED_JAVA_SHA256}  ${JAVA_HOME_17_X64}/bin/java
+          ${EXPECTED_JAVAC_SHA256}  ${JAVA_HOME_17_X64}/bin/javac
+          ${EXPECTED_JDEPS_SHA256}  ${JAVA_HOME_17_X64}/bin/jdeps
+          ${EXPECTED_JAVAP_SHA256}  ${JAVA_HOME_17_X64}/bin/javap
+          ${EXPECTED_JDK_RELEASE_SHA256}  ${JAVA_HOME_17_X64}/release
+          ${EXPECTED_GREP_SHA256}  ${grep_path}
+          SHA256
+          [[ "$(git rev-parse HEAD)" == "${{ github.event.pull_request.head.sha }}" ]]
+          [[ -z "$(git status --porcelain)" ]]
+
+      - name: Verify the exact POC-VAD-001 P2 host oracle
+        shell: bash
+        run: |
+          set -euo pipefail
+          export LC_ALL=C
+          clean_env=(env -i PATH="${JAVA_HOME_17_X64}/bin:/usr/bin:/bin")
+          java_bin="${JAVA_HOME_17_X64}/bin/java"
+          javac_bin="${JAVA_HOME_17_X64}/bin/javac"
+          jdeps_bin="${JAVA_HOME_17_X64}/bin/jdeps"
+          javap_bin="${JAVA_HOME_17_X64}/bin/javap"
+          grep_bin="${EXPECTED_GREP_PATH}"
+          [[ "${grep_bin}" == /* && -x "${grep_bin}" ]]
+          main_source="tools/vad_p2_oracle/src/main/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracle.java"
+          test_source="tools/vad_p2_oracle/src/test/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracleTest.java"
+
+          sha256sum --check --strict <<'SHA256'
+          4a2ae88075554e249c5fd67c1ed385e50dceacd3cdaf0ca0ec36244535055d29  tools/vad_p2_oracle/src/main/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracle.java
+          606adc21b1323258f554799e8ed7da600e5fc39c22b20027e0fe1888aff35325  tools/vad_p2_oracle/src/test/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracleTest.java
+          3a274eadd23911f0d9151553885c0142a7106bf35b0d84adca0fd17170924713  docs/evidence/poc-vad-001/p2-host-oracle-local-evidence-stage0-v0.1.json
+          SHA256
+
+          runner_temp="$(realpath -e -- "${RUNNER_TEMP}")"
+          workspace="$(realpath -e -- "${GITHUB_WORKSPACE}")"
+          slice_tmp="$(mktemp -d -- "${runner_temp}/dora-vad-p2-ci.XXXXXX")"
+          cleanup() {
+            if [[ -n "${slice_tmp:-}" && "${slice_tmp}" == "${runner_temp}"/dora-vad-p2-ci.* ]]; then
+              rm -rf -- "${slice_tmp}"
+            fi
+          }
+          trap cleanup EXIT
+          slice_tmp="$(realpath -e -- "${slice_tmp}")"
+          [[ "${slice_tmp}" == "${runner_temp}"/dora-vad-p2-ci.* ]]
+          [[ "${slice_tmp}" != "${workspace}" && "${slice_tmp}" != "${workspace}"/* ]]
+          mkdir -p "${slice_tmp}/main-classes" "${slice_tmp}/test-classes"
+
+          "${clean_env[@]}" "${javac_bin}" -encoding UTF-8 --release 17 -Xlint:all -Werror \
+            -d "${slice_tmp}/main-classes" "${main_source}"
+          "${clean_env[@]}" "${javac_bin}" -encoding UTF-8 --release 17 -Xlint:all -Werror \
+            -classpath "${slice_tmp}/main-classes" -d "${slice_tmp}/test-classes" "${test_source}"
+          classpath="${slice_tmp}/main-classes:${slice_tmp}/test-classes"
+          test_class="com.monumentogram.dora.stage0.vad.p2.VadBoundaryOracleTest"
+          "${clean_env[@]}" "${java_bin}" -cp "${classpath}" "${test_class}" \
+            >"${slice_tmp}/primary-1.stdout" 2>"${slice_tmp}/primary-1.stderr"
+          "${clean_env[@]}" "${java_bin}" -cp "${classpath}" "${test_class}" \
+            >"${slice_tmp}/primary-2.stdout" 2>"${slice_tmp}/primary-2.stderr"
+          "${clean_env[@]}" "${java_bin}" -ea -Xverify:all -cp "${classpath}" "${test_class}" \
+            >"${slice_tmp}/verify.stdout" 2>"${slice_tmp}/verify.stderr"
+          printf '%s\n' 'LOCAL_PASS vad-p2-frame-timing-host-oracle' >"${slice_tmp}/expected.stdout"
+          cmp "${slice_tmp}/expected.stdout" "${slice_tmp}/primary-1.stdout"
+          cmp "${slice_tmp}/primary-1.stdout" "${slice_tmp}/primary-2.stdout"
+          cmp "${slice_tmp}/primary-1.stdout" "${slice_tmp}/verify.stdout"
+          [[ ! -s "${slice_tmp}/primary-1.stderr" && ! -s "${slice_tmp}/primary-2.stderr" && ! -s "${slice_tmp}/verify.stderr" ]]
+          printf '%s\n' 'java.base' >"${slice_tmp}/expected-jdeps.stdout"
+          "${clean_env[@]}" "${jdeps_bin}" --multi-release 17 --print-module-deps --recursive \
+            "${slice_tmp}/main-classes" >"${slice_tmp}/jdeps-main.stdout" 2>"${slice_tmp}/jdeps-main.stderr"
+          "${clean_env[@]}" "${jdeps_bin}" --multi-release 17 --print-module-deps --recursive \
+            --class-path "${slice_tmp}/main-classes" "${slice_tmp}/test-classes" \
+            >"${slice_tmp}/jdeps-test.stdout" 2>"${slice_tmp}/jdeps-test.stderr"
+          cmp "${slice_tmp}/expected-jdeps.stdout" "${slice_tmp}/jdeps-main.stdout"
+          cmp "${slice_tmp}/expected-jdeps.stdout" "${slice_tmp}/jdeps-test.stdout"
+          [[ ! -s "${slice_tmp}/jdeps-main.stderr" && ! -s "${slice_tmp}/jdeps-test.stderr" ]]
+          "${clean_env[@]}" "${javap_bin}" -classpath "${slice_tmp}/main-classes" -verbose \
+            com.monumentogram.dora.stage0.vad.p2.VadBoundaryOracle \
+            >"${slice_tmp}/javap.stdout" 2>"${slice_tmp}/javap.stderr"
+          [[ ! -s "${slice_tmp}/javap.stderr" ]]
+          [[ "$("${clean_env[@]}" "${grep_bin}" -Ec '^[[:space:]]*major version: 61$' "${slice_tmp}/javap.stdout")" == "1" ]]
+
+          forbidden='java\.(io|net|nio\.file)|System\.(getenv|getProperty|currentTimeMillis|nanoTime)|Instant\.now|Clock\.|LocalDateTime\.now|ZonedDateTime\.now|OffsetDateTime\.now|\bRandom\b|Thread\.|\bProcessBuilder\b|Runtime\.getRuntime|Executors\.|ForkJoinPool'
+          if "${clean_env[@]}" "${grep_bin}" --line-number --with-filename --color=never --extended-regexp -- "${forbidden}" "${main_source}" "${test_source}"; then
+            echo "::error::Forbidden API token found in POC-VAD-001"
+            exit 1
+          else
+            scan_status=$?
+            [[ "${scan_status}" -eq 1 ]]
+          fi
+          [[ -z "$(find . -path ./.git -prune -o -type f -name '*.class' -print -quit)" ]]
+          [[ -z "$(git status --porcelain)" ]]
+          cleanup
+          [[ ! -e "${slice_tmp}" ]]
+          trap - EXIT
+          printf '%s\n' 'PINNED_TOOLCHAIN_HOST_REVALIDATION_OK POC-VAD-001'
+
+  stage0-host-decision:
+    name: stage0-host-decision
+    if: ${{ github.head_ref == 'codex/poc-decision-revision-oracle' }}
+    needs: authorized-scope
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out the exact pull-request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify the pinned runner and toolchain identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          clean_env=(env -i PATH="${JAVA_HOME_17_X64}/bin:/usr/bin:/bin")
+          [[ "${ImageOS:-}" == "${EXPECTED_IMAGE_OS}" ]]
+          [[ "${ImageVersion:-}" == "${EXPECTED_IMAGE_VERSION}" ]]
+          [[ "$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/javac" -version 2>&1)" == "javac ${EXPECTED_JAVA_VERSION}" ]]
+          java_version="$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1)"
+          printf '%s\n' "${java_version}"
+          mapfile -t java_version_lines <<<"${java_version}"
+          [[ "${#java_version_lines[@]}" -eq 3 ]]
+          [[ "${java_version_lines[0]}" == "openjdk version \"${EXPECTED_JAVA_VERSION}\" ${EXPECTED_JAVA_RELEASE_DATE}" ]]
+          [[ "${java_version_lines[1]}" == "OpenJDK Runtime Environment Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD})" ]]
+          [[ "${java_version_lines[2]}" == "OpenJDK 64-Bit Server VM Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD}, mixed mode, sharing)" ]]
+          sha256sum "${JAVA_HOME_17_X64}/bin/java" "${JAVA_HOME_17_X64}/bin/javac" \
+            "${JAVA_HOME_17_X64}/bin/jdeps" "${JAVA_HOME_17_X64}/bin/javap" "${JAVA_HOME_17_X64}/release"
+          grep_path="$(PATH="/usr/bin:/bin" command -v grep)"
+          [[ "${grep_path}" == "${EXPECTED_GREP_PATH}" && -x "${grep_path}" ]]
+          grep_version="$("${clean_env[@]}" "${grep_path}" --version)"
+          printf '%s\n' "${grep_version}"
+          mapfile -t grep_version_lines <<<"${grep_version}"
+          [[ "${grep_version_lines[0]}" == "${EXPECTED_GREP_VERSION}" ]]
+          "${clean_env[@]}" /usr/bin/sha256sum --check --strict - <<SHA256
+          ${EXPECTED_JAVA_SHA256}  ${JAVA_HOME_17_X64}/bin/java
+          ${EXPECTED_JAVAC_SHA256}  ${JAVA_HOME_17_X64}/bin/javac
+          ${EXPECTED_JDEPS_SHA256}  ${JAVA_HOME_17_X64}/bin/jdeps
+          ${EXPECTED_JAVAP_SHA256}  ${JAVA_HOME_17_X64}/bin/javap
+          ${EXPECTED_JDK_RELEASE_SHA256}  ${JAVA_HOME_17_X64}/release
+          ${EXPECTED_GREP_SHA256}  ${grep_path}
+          SHA256
+          [[ "$(git rev-parse HEAD)" == "${{ github.event.pull_request.head.sha }}" ]]
+          [[ -z "$(git status --porcelain)" ]]
+
+      - name: Verify the exact POC-DECISION-001 host oracle
+        shell: bash
+        run: |
+          set -euo pipefail
+          export LC_ALL=C
+          clean_env=(env -i PATH="${JAVA_HOME_17_X64}/bin:/usr/bin:/bin")
+          java_bin="${JAVA_HOME_17_X64}/bin/java"
+          javac_bin="${JAVA_HOME_17_X64}/bin/javac"
+          jdeps_bin="${JAVA_HOME_17_X64}/bin/jdeps"
+          javap_bin="${JAVA_HOME_17_X64}/bin/javap"
+          grep_bin="${EXPECTED_GREP_PATH}"
+          [[ "${grep_bin}" == /* && -x "${grep_bin}" ]]
+          main_source="tools/decision_revision_oracle/src/main/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracle.java"
+          test_source="tools/decision_revision_oracle/src/test/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracleTest.java"
+
+          sha256sum --check --strict <<'SHA256'
+          0f0d2d0d98e59b37841215ac0a0c63f053bd1249342defb8a3ff0890fb65e470  tools/decision_revision_oracle/src/main/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracle.java
+          9969d1ef8a9392e4b82441eba8e96d1efd6be0460507e4aaed81e40c5bbf7537  tools/decision_revision_oracle/src/test/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracleTest.java
+          3bcd1742ee983acb661760cd71ef5bd6695557e84330b1867d64cc870b1829c4  docs/evidence/poc-decision-001/decision-revision-projection-host-oracle-local-evidence-stage0-v0.1.json
+          SHA256
+
+          runner_temp="$(realpath -e -- "${RUNNER_TEMP}")"
+          workspace="$(realpath -e -- "${GITHUB_WORKSPACE}")"
+          slice_tmp="$(mktemp -d -- "${runner_temp}/dora-decision-ci.XXXXXX")"
+          cleanup() {
+            if [[ -n "${slice_tmp:-}" && "${slice_tmp}" == "${runner_temp}"/dora-decision-ci.* ]]; then
+              rm -rf -- "${slice_tmp}"
+            fi
+          }
+          trap cleanup EXIT
+          slice_tmp="$(realpath -e -- "${slice_tmp}")"
+          [[ "${slice_tmp}" == "${runner_temp}"/dora-decision-ci.* ]]
+          [[ "${slice_tmp}" != "${workspace}" && "${slice_tmp}" != "${workspace}"/* ]]
+          mkdir -p "${slice_tmp}/classes"
+          "${clean_env[@]}" "${javac_bin}" -encoding UTF-8 --release 17 -Xlint:all -Werror \
+            -d "${slice_tmp}/classes" "${main_source}" "${test_source}" \
+            >"${slice_tmp}/compile.stdout" 2>"${slice_tmp}/compile.stderr"
+          [[ ! -s "${slice_tmp}/compile.stdout" && ! -s "${slice_tmp}/compile.stderr" ]]
+
+          test_class="com.monumentogram.dora.stage0.decision.DecisionRevisionOracleTest"
+          "${clean_env[@]}" "${java_bin}" -cp "${slice_tmp}/classes" "${test_class}" \
+            >"${slice_tmp}/primary-1.stdout" 2>"${slice_tmp}/primary-1.stderr"
+          "${clean_env[@]}" "${java_bin}" -cp "${slice_tmp}/classes" "${test_class}" \
+            >"${slice_tmp}/primary-2.stdout" 2>"${slice_tmp}/primary-2.stderr"
+          "${clean_env[@]}" "${java_bin}" -ea -Xverify:all -cp "${slice_tmp}/classes" "${test_class}" \
+            >"${slice_tmp}/verify.stdout" 2>"${slice_tmp}/verify.stderr"
+          printf '%s\n' 'POC_DECISION_REVISION_ORACLE_TESTS_OK' >"${slice_tmp}/expected.stdout"
+          cmp "${slice_tmp}/expected.stdout" "${slice_tmp}/primary-1.stdout"
+          cmp "${slice_tmp}/primary-1.stdout" "${slice_tmp}/primary-2.stdout"
+          cmp "${slice_tmp}/primary-1.stdout" "${slice_tmp}/verify.stdout"
+          [[ ! -s "${slice_tmp}/primary-1.stderr" && ! -s "${slice_tmp}/primary-2.stderr" && ! -s "${slice_tmp}/verify.stderr" ]]
+          [[ "$(find "${slice_tmp}/classes" -type f -name '*.class' | wc -l | tr -d ' ')" == "14" ]]
+          printf '%s\n' 'classes -> java.base' >"${slice_tmp}/expected-jdeps.stdout"
+          "${clean_env[@]}" "${jdeps_bin}" --multi-release 17 --recursive -summary \
+            "${slice_tmp}/classes" >"${slice_tmp}/jdeps.stdout" 2>"${slice_tmp}/jdeps.stderr"
+          cmp "${slice_tmp}/expected-jdeps.stdout" "${slice_tmp}/jdeps.stdout"
+          [[ ! -s "${slice_tmp}/jdeps.stderr" ]]
+          "${clean_env[@]}" "${javap_bin}" -verbose -classpath "${slice_tmp}/classes" \
+            com.monumentogram.dora.stage0.decision.DecisionRevisionOracle \
+            >"${slice_tmp}/javap.stdout" 2>"${slice_tmp}/javap.stderr"
+          [[ ! -s "${slice_tmp}/javap.stderr" ]]
+          [[ "$("${clean_env[@]}" "${grep_bin}" -Ec '^[[:space:]]*major version: 61$' "${slice_tmp}/javap.stdout")" == "1" ]]
+
+          forbidden='java\.(io|net|nio\.file)|System\.(getenv|getProperty|currentTimeMillis|nanoTime)|Instant\.now|Clock\.|LocalDateTime\.now|ZonedDateTime\.now|OffsetDateTime\.now|\bRandom\b|Thread\.|\bProcessBuilder\b|Runtime\.getRuntime|Executors\.|ForkJoinPool'
+          if "${clean_env[@]}" "${grep_bin}" --line-number --with-filename --color=never --extended-regexp -- "${forbidden}" "${main_source}" "${test_source}"; then
+            echo "::error::Forbidden API token found in POC-DECISION-001"
+            exit 1
+          else
+            scan_status=$?
+            [[ "${scan_status}" -eq 1 ]]
+          fi
+          [[ -z "$(find . -path ./.git -prune -o -type f -name '*.class' -print -quit)" ]]
+          [[ -z "$(git status --porcelain)" ]]
+          cleanup
+          [[ ! -e "${slice_tmp}" ]]
+          trap - EXIT
+          printf '%s\n' 'PINNED_TOOLCHAIN_HOST_REVALIDATION_OK POC-DECISION-001'
+
+  stage0-host-data:
+    name: stage0-host-data
+    if: ${{ github.head_ref == 'codex/poc-data-manifest-validator' }}
+    needs: authorized-scope
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out the exact pull-request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify the pinned runner and toolchain identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          clean_env=(env -i PATH="${JAVA_HOME_17_X64}/bin:/usr/bin:/bin")
+          [[ "${ImageOS:-}" == "${EXPECTED_IMAGE_OS}" ]]
+          [[ "${ImageVersion:-}" == "${EXPECTED_IMAGE_VERSION}" ]]
+          [[ "$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/javac" -version 2>&1)" == "javac ${EXPECTED_JAVA_VERSION}" ]]
+          java_version="$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1)"
+          printf '%s\n' "${java_version}"
+          mapfile -t java_version_lines <<<"${java_version}"
+          [[ "${#java_version_lines[@]}" -eq 3 ]]
+          [[ "${java_version_lines[0]}" == "openjdk version \"${EXPECTED_JAVA_VERSION}\" ${EXPECTED_JAVA_RELEASE_DATE}" ]]
+          [[ "${java_version_lines[1]}" == "OpenJDK Runtime Environment Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD})" ]]
+          [[ "${java_version_lines[2]}" == "OpenJDK 64-Bit Server VM Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD}, mixed mode, sharing)" ]]
+          sha256sum "${JAVA_HOME_17_X64}/bin/java" "${JAVA_HOME_17_X64}/bin/javac" \
+            "${JAVA_HOME_17_X64}/bin/jdeps" "${JAVA_HOME_17_X64}/bin/javap" "${JAVA_HOME_17_X64}/release"
+          grep_path="$(PATH="/usr/bin:/bin" command -v grep)"
+          [[ "${grep_path}" == "${EXPECTED_GREP_PATH}" && -x "${grep_path}" ]]
+          grep_version="$("${clean_env[@]}" "${grep_path}" --version)"
+          printf '%s\n' "${grep_version}"
+          mapfile -t grep_version_lines <<<"${grep_version}"
+          [[ "${grep_version_lines[0]}" == "${EXPECTED_GREP_VERSION}" ]]
+          "${clean_env[@]}" /usr/bin/sha256sum --check --strict - <<SHA256
+          ${EXPECTED_JAVA_SHA256}  ${JAVA_HOME_17_X64}/bin/java
+          ${EXPECTED_JAVAC_SHA256}  ${JAVA_HOME_17_X64}/bin/javac
+          ${EXPECTED_JDEPS_SHA256}  ${JAVA_HOME_17_X64}/bin/jdeps
+          ${EXPECTED_JAVAP_SHA256}  ${JAVA_HOME_17_X64}/bin/javap
+          ${EXPECTED_JDK_RELEASE_SHA256}  ${JAVA_HOME_17_X64}/release
+          ${EXPECTED_GREP_SHA256}  ${grep_path}
+          SHA256
+          [[ "$(git rev-parse HEAD)" == "${{ github.event.pull_request.head.sha }}" ]]
+          [[ -z "$(git status --porcelain)" ]]
+
+      - name: Verify the exact POC-DATA-001 host validator
+        shell: bash
+        run: |
+          set -euo pipefail
+          export LC_ALL=C
+          clean_env=(env -i PATH="${JAVA_HOME_17_X64}/bin:/usr/bin:/bin")
+          java_bin="${JAVA_HOME_17_X64}/bin/java"
+          javac_bin="${JAVA_HOME_17_X64}/bin/javac"
+          jdeps_bin="${JAVA_HOME_17_X64}/bin/jdeps"
+          javap_bin="${JAVA_HOME_17_X64}/bin/javap"
+          grep_bin="${EXPECTED_GREP_PATH}"
+          [[ "${grep_bin}" == /* && -x "${grep_bin}" ]]
+          main_source="tools/poc_data_manifest_validator/src/main/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidator.java"
+          test_source="tools/poc_data_manifest_validator/src/test/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidatorTest.java"
+
+          sha256sum --check --strict <<'SHA256'
+          d487e8062d10535ec64cb44e8ebc363a4d1dca337db9bf2a8dca23ae0518fffb  docs/stage0/poc-data-synthetic-public-projection-stage0-v0.1.schema.json
+          4b2f997c46b2014848f705626eb3e6273f26e48d9b95624126ecd715908397e4  tools/poc_data_manifest_validator/src/main/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidator.java
+          170826b8ee0a96378f90a104c8d3d06fd3a0a4d6b9ec32b5585c08784720c409  tools/poc_data_manifest_validator/src/test/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidatorTest.java
+          96df57742faf73bdb1607f537f17db2a1a3c0108421deadc194814c15eb30941  docs/evidence/poc-data-001/synthetic-public-manifest-validator-local-evidence-stage0-v0.1.json
+          SHA256
+
+          runner_temp="$(realpath -e -- "${RUNNER_TEMP}")"
+          workspace="$(realpath -e -- "${GITHUB_WORKSPACE}")"
+          slice_tmp="$(mktemp -d -- "${runner_temp}/dora-data-ci.XXXXXX")"
+          cleanup() {
+            if [[ -n "${slice_tmp:-}" && "${slice_tmp}" == "${runner_temp}"/dora-data-ci.* ]]; then
+              rm -rf -- "${slice_tmp}"
+            fi
+          }
+          trap cleanup EXIT
+          slice_tmp="$(realpath -e -- "${slice_tmp}")"
+          [[ "${slice_tmp}" == "${runner_temp}"/dora-data-ci.* ]]
+          [[ "${slice_tmp}" != "${workspace}" && "${slice_tmp}" != "${workspace}"/* ]]
+          mkdir -p "${slice_tmp}/classes" "${slice_tmp}/java-tmp"
+          "${clean_env[@]}" "${javac_bin}" -encoding UTF-8 --release 17 -Xlint:all -Werror \
+            -d "${slice_tmp}/classes" "${main_source}" "${test_source}" \
+            >"${slice_tmp}/compile.stdout" 2>"${slice_tmp}/compile.stderr"
+          [[ ! -s "${slice_tmp}/compile.stdout" && ! -s "${slice_tmp}/compile.stderr" ]]
+
+          test_class="com.monumentogram.dora.stage0.data.manifest.SyntheticManifestValidatorTest"
+          java_args=(-Djava.io.tmpdir="${slice_tmp}/java-tmp" -Duser.language=en -Duser.country=US -Duser.timezone=UTC)
+          "${clean_env[@]}" "${java_bin}" "${java_args[@]}" -cp "${slice_tmp}/classes" "${test_class}" \
+            >"${slice_tmp}/primary-1.stdout" 2>"${slice_tmp}/primary-1.stderr"
+          "${clean_env[@]}" "${java_bin}" "${java_args[@]}" -cp "${slice_tmp}/classes" "${test_class}" \
+            >"${slice_tmp}/primary-2.stdout" 2>"${slice_tmp}/primary-2.stderr"
+          "${clean_env[@]}" "${java_bin}" "${java_args[@]}" -ea -Xverify:all -cp "${slice_tmp}/classes" "${test_class}" \
+            >"${slice_tmp}/verify.stdout" 2>"${slice_tmp}/verify.stderr"
+          printf '%s\n' 'LOCAL_PASS poc-data-synthetic-manifest-validator-tests' >"${slice_tmp}/expected.stdout"
+          cmp "${slice_tmp}/expected.stdout" "${slice_tmp}/primary-1.stdout"
+          cmp "${slice_tmp}/primary-1.stdout" "${slice_tmp}/primary-2.stdout"
+          cmp "${slice_tmp}/primary-1.stdout" "${slice_tmp}/verify.stdout"
+          [[ ! -s "${slice_tmp}/primary-1.stderr" && ! -s "${slice_tmp}/primary-2.stderr" && ! -s "${slice_tmp}/verify.stderr" ]]
+          [[ "$(find "${slice_tmp}/classes" -type f -name '*.class' | wc -l | tr -d ' ')" == "7" ]]
+          printf '%s\n' 'classes -> java.base' >"${slice_tmp}/expected-jdeps.stdout"
+          "${clean_env[@]}" "${jdeps_bin}" -s -recursive "${slice_tmp}/classes" \
+            >"${slice_tmp}/jdeps.stdout" 2>"${slice_tmp}/jdeps.stderr"
+          cmp "${slice_tmp}/expected-jdeps.stdout" "${slice_tmp}/jdeps.stdout"
+          [[ ! -s "${slice_tmp}/jdeps.stderr" ]]
+          "${clean_env[@]}" "${javap_bin}" -verbose -classpath "${slice_tmp}/classes" \
+            com.monumentogram.dora.stage0.data.manifest.SyntheticManifestValidator \
+            >"${slice_tmp}/javap.stdout" 2>"${slice_tmp}/javap.stderr"
+          [[ ! -s "${slice_tmp}/javap.stderr" ]]
+          [[ "$("${clean_env[@]}" "${grep_bin}" -Ec '^[[:space:]]*major version: 61$' "${slice_tmp}/javap.stdout")" == "1" ]]
+
+          forbidden='java\.(net)|javax\.net|System\.(getenv|getProperty|currentTimeMillis|nanoTime)|Instant\.now|Clock\.|LocalDateTime\.now|ZonedDateTime\.now|OffsetDateTime\.now|\bRandom\b|Thread\.|\bProcessBuilder\b|Runtime\.getRuntime|Executors\.|ForkJoinPool'
+          if "${clean_env[@]}" "${grep_bin}" --line-number --with-filename --color=never --extended-regexp -- "${forbidden}" "${main_source}" "${test_source}"; then
+            echo "::error::Forbidden API token found in POC-DATA-001"
+            exit 1
+          else
+            scan_status=$?
+            [[ "${scan_status}" -eq 1 ]]
+          fi
+          [[ -z "$(find . -path ./.git -prune -o -type f -name '*.class' -print -quit)" ]]
+          [[ -z "$(git status --porcelain)" ]]
+          cleanup
+          [[ ! -e "${slice_tmp}" ]]
+          trap - EXIT
+          printf '%s\n' 'PINNED_TOOLCHAIN_HOST_REVALIDATION_OK POC-DATA-001'
+
+  stage0-host-offline-i1:
+    name: stage0-host-offline-i1
+    if: ${{ github.head_ref == 'codex/poc-offline-i1-semantics-v02' }}
+    needs: authorized-scope
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out the exact pull-request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Verify the exact post-parent-merge OFF-I1 base
+        shell: bash
+        env:
+          OBSERVED_BASE_REF: ${{ github.base_ref }}
+          OBSERVED_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          [[ "${OBSERVED_BASE_REF}" == "main" ]]
+          [[ "${OBSERVED_BASE_SHA}" == "a3ccae7b1da1f42132a46f1a96b26fc43f680b80" ]]
+
+      - name: Verify the pinned runner and toolchain identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          clean_env=(env -i PATH="${JAVA_HOME_17_X64}/bin:/usr/bin:/bin")
+          [[ "${ImageOS:-}" == "${EXPECTED_IMAGE_OS}" ]]
+          [[ "${ImageVersion:-}" == "${EXPECTED_IMAGE_VERSION}" ]]
+          [[ "$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/javac" -version 2>&1)" == "javac ${EXPECTED_JAVA_VERSION}" ]]
+          java_version="$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1)"
+          printf '%s\n' "${java_version}"
+          mapfile -t java_version_lines <<<"${java_version}"
+          [[ "${#java_version_lines[@]}" -eq 3 ]]
+          [[ "${java_version_lines[0]}" == "openjdk version \"${EXPECTED_JAVA_VERSION}\" ${EXPECTED_JAVA_RELEASE_DATE}" ]]
+          [[ "${java_version_lines[1]}" == "OpenJDK Runtime Environment Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD})" ]]
+          [[ "${java_version_lines[2]}" == "OpenJDK 64-Bit Server VM Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD}, mixed mode, sharing)" ]]
+          sha256sum "${JAVA_HOME_17_X64}/bin/java" "${JAVA_HOME_17_X64}/bin/javac" \
+            "${JAVA_HOME_17_X64}/bin/jdeps" "${JAVA_HOME_17_X64}/bin/javap" "${JAVA_HOME_17_X64}/release"
+          grep_path="$(PATH="/usr/bin:/bin" command -v grep)"
+          [[ "${grep_path}" == "${EXPECTED_GREP_PATH}" && -x "${grep_path}" ]]
+          grep_version="$("${clean_env[@]}" "${grep_path}" --version)"
+          printf '%s\n' "${grep_version}"
+          mapfile -t grep_version_lines <<<"${grep_version}"
+          [[ "${grep_version_lines[0]}" == "${EXPECTED_GREP_VERSION}" ]]
+          "${clean_env[@]}" /usr/bin/sha256sum --check --strict - <<SHA256
+          ${EXPECTED_JAVA_SHA256}  ${JAVA_HOME_17_X64}/bin/java
+          ${EXPECTED_JAVAC_SHA256}  ${JAVA_HOME_17_X64}/bin/javac
+          ${EXPECTED_JDEPS_SHA256}  ${JAVA_HOME_17_X64}/bin/jdeps
+          ${EXPECTED_JAVAP_SHA256}  ${JAVA_HOME_17_X64}/bin/javap
+          ${EXPECTED_JDK_RELEASE_SHA256}  ${JAVA_HOME_17_X64}/release
+          ${EXPECTED_GREP_SHA256}  ${grep_path}
+          SHA256
+          [[ "$(git rev-parse HEAD)" == "${{ github.event.pull_request.head.sha }}" ]]
+          [[ -z "$(git status --porcelain)" ]]
+
+      - name: Verify the exact POC-OFFLINE-001 I1 host oracle
+        shell: bash
+        run: |
+          set -euo pipefail
+          export LC_ALL=C
+          clean_env=(env -i PATH="${JAVA_HOME_17_X64}/bin:/usr/bin:/bin")
+          java_bin="${JAVA_HOME_17_X64}/bin/java"
+          javac_bin="${JAVA_HOME_17_X64}/bin/javac"
+          jdeps_bin="${JAVA_HOME_17_X64}/bin/jdeps"
+          javap_bin="${JAVA_HOME_17_X64}/bin/javap"
+          grep_bin="${EXPECTED_GREP_PATH}"
+          [[ "${grep_bin}" == /* && -x "${grep_bin}" ]]
+          main_source="tools/offline_i1_oracle/src/main/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1Oracle.java"
+          test_source="tools/offline_i1_oracle/src/test/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1OracleTest.java"
+
+          sha256sum --check --strict <<'SHA256'
+          27168571abe76fc76e958ca984217b5ff58f6433d7790e36a72d065815de876d  docs/evidence/poc-offline-001/i1-host-oracle-implementation-evidence-stage0-v0.1.json
+          83075ca723f007b1f282fe0e089a7725a68d8bcf69ebb084f0f1a44704fb97b7  docs/evidence/poc-offline-001/i1-host-oracle-scope-stage0-v0.1.json
+          6972a5df028f64664c4f411cedb87f3db2a7a2e1d8ae982ae707bd2ca3e7f46f  docs/evidence/poc-offline-001/i1-resource-envelope-amendment-stage0-v0.3.json
+          a564cf9031f610006327c374baff82983de2ea9ba4b6c9d13d6185e7967a6dae  docs/evidence/poc-offline-001/readiness-contract-stage0-v0.1.json
+          156915ba88f97e9bbf08da02b6ef4c2b475c173f1f9b96e8c70fe50e2a174785  docs/evidence/poc-offline-001/i1-semantics-and-implementation-scope-stage0-v0.2.json
+          b58d0d5abe643122f7b06ae7fa4de55d2724876ab655c88ee49b874d91c6efee  docs/evidence/poc-offline-001/reviews/off-i1-resource-envelope-003.external-review.json
+          c2a9f86f6d73a7b2f58fe7980691c07f4c9acca7e87fe517655604011db82f17  docs/evidence/poc-offline-001/reviews/off-i1-semantics-scope-002.external-review.json
+          d28faad79faa740c8dc54095c9bd8cc9ad9d59de592261784eaea3e2eb1de2a0  docs/stage0/DORA_MVP1_POC_OFFLINE_I1_RESOURCE_ENVELOPE_AMENDMENT_STAGE0_V0_3.md
+          f3134d5e97fc8c728b31260a056d3d916e523a5a34256bee2dd89d486292f4f2  docs/stage0/DORA_MVP1_POC_OFFLINE_I1_HOST_ORACLE_SCOPE_STAGE0_V0_1.md
+          64a8cd6c7230b104834ca8bdb8a8a3a1c1525277dc8b913487acf2739e67c08e  docs/stage0/DORA_MVP1_POC_OFFLINE_I1_SEMANTICS_AND_IMPLEMENTATION_SCOPE_STAGE0_V0_2.md
+          9a905eabbcd75601fc598cccc001dcff56a5b6b65eeb936f2a9c4602d658682a  docs/stage0/DORA_MVP1_POC_OFFLINE_READINESS_CONTRACT_STAGE0_V0_1.md
+          2eb3a80716fdc25abe7300552c8ba95f4deabe68e7c8d5d42dcf9d5cb13235bf  tools/offline_i1_oracle/src/main/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1Oracle.java
+          235be2b6d3c646ce9c0910369de99847a149d226159ab1f8a1785e074572b89c  tools/offline_i1_oracle/src/test/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1OracleTest.java
+          SHA256
+
+          runner_temp="$(realpath -e -- "${RUNNER_TEMP}")"
+          workspace="$(realpath -e -- "${GITHUB_WORKSPACE}")"
+          slice_tmp="$(mktemp -d -- "${runner_temp}/dora-offline-i1-ci.XXXXXX")"
+          cleanup() {
+            if [[ -n "${slice_tmp:-}" && "${slice_tmp}" == "${runner_temp}"/dora-offline-i1-ci.* ]]; then
+              rm -rf -- "${slice_tmp}"
+            fi
+          }
+          trap cleanup EXIT
+          slice_tmp="$(realpath -e -- "${slice_tmp}")"
+          [[ "${slice_tmp}" == "${runner_temp}"/dora-offline-i1-ci.* ]]
+          [[ "${slice_tmp}" != "${workspace}" && "${slice_tmp}" != "${workspace}"/* ]]
+          mkdir -p "${slice_tmp}/classes" "${slice_tmp}/strict-classes"
+          "${clean_env[@]}" "${javac_bin}" -encoding UTF-8 --release 17 \
+            -d "${slice_tmp}/classes" "${main_source}" "${test_source}" \
+            >"${slice_tmp}/compile.stdout" 2>"${slice_tmp}/compile.stderr"
+          [[ ! -s "${slice_tmp}/compile.stdout" && ! -s "${slice_tmp}/compile.stderr" ]]
+
+          test_class="com.monumentogram.dora.stage0.offline.i1.OfflineI1OracleTest"
+          "${clean_env[@]}" "${java_bin}" -cp "${slice_tmp}/classes" "${test_class}" \
+            >"${slice_tmp}/primary-1.stdout" 2>"${slice_tmp}/primary-1.stderr"
+          "${clean_env[@]}" "${java_bin}" -cp "${slice_tmp}/classes" "${test_class}" \
+            >"${slice_tmp}/primary-2.stdout" 2>"${slice_tmp}/primary-2.stderr"
+          printf '%s' 'PASS offline-i1-host-oracle' >"${slice_tmp}/expected.stdout"
+          cmp "${slice_tmp}/expected.stdout" "${slice_tmp}/primary-1.stdout"
+          cmp "${slice_tmp}/primary-1.stdout" "${slice_tmp}/primary-2.stdout"
+          [[ ! -s "${slice_tmp}/primary-1.stderr" && ! -s "${slice_tmp}/primary-2.stderr" ]]
+
+          "${clean_env[@]}" "${javac_bin}" -encoding UTF-8 --release 17 -Xlint:all -Werror \
+            -d "${slice_tmp}/strict-classes" "${main_source}" "${test_source}" \
+            >"${slice_tmp}/strict-compile.stdout" 2>"${slice_tmp}/strict-compile.stderr"
+          [[ ! -s "${slice_tmp}/strict-compile.stdout" && ! -s "${slice_tmp}/strict-compile.stderr" ]]
+          "${clean_env[@]}" "${java_bin}" -ea -Xverify:all -cp "${slice_tmp}/strict-classes" "${test_class}" \
+            >"${slice_tmp}/verify.stdout" 2>"${slice_tmp}/verify.stderr"
+          cmp "${slice_tmp}/expected.stdout" "${slice_tmp}/verify.stdout"
+          [[ ! -s "${slice_tmp}/verify.stderr" ]]
+          printf '%s\n' 'java.base' >"${slice_tmp}/expected-jdeps.stdout"
+          "${clean_env[@]}" "${jdeps_bin}" --multi-release 17 --recursive --print-module-deps \
+            "${slice_tmp}/strict-classes" >"${slice_tmp}/jdeps.stdout" 2>"${slice_tmp}/jdeps.stderr"
+          cmp "${slice_tmp}/expected-jdeps.stdout" "${slice_tmp}/jdeps.stdout"
+          [[ ! -s "${slice_tmp}/jdeps.stderr" ]]
+          "${clean_env[@]}" "${javap_bin}" -verbose -classpath "${slice_tmp}/strict-classes" \
+            com.monumentogram.dora.stage0.offline.i1.OfflineI1Oracle \
+            >"${slice_tmp}/javap.stdout" 2>"${slice_tmp}/javap.stderr"
+          [[ ! -s "${slice_tmp}/javap.stderr" ]]
+          [[ "$("${clean_env[@]}" "${grep_bin}" -Ec '^[[:space:]]*major version: 61$' "${slice_tmp}/javap.stdout")" == "1" ]]
+
+          forbidden='java\.(io|net|nio\.file)|System\.(getenv|getProperty|currentTimeMillis|nanoTime)|Instant\.now|Clock\.|LocalDateTime\.now|ZonedDateTime\.now|OffsetDateTime\.now|\bRandom\b|Thread\.|\bProcessBuilder\b|Runtime\.getRuntime|Executors\.|ForkJoinPool'
+          if "${clean_env[@]}" "${grep_bin}" --line-number --with-filename --color=never --extended-regexp -- "${forbidden}" "${main_source}"; then
+            echo "::error::Forbidden API token found in POC-OFFLINE-001"
+            exit 1
+          else
+            scan_status=$?
+            [[ "${scan_status}" -eq 1 ]]
+          fi
+          if "${clean_env[@]}" "${grep_bin}" --line-number --with-filename --color=never --extended-regexp -- 'System\.(out|err)' "${main_source}"; then
+            echo "::error::Main oracle writes stdout or stderr"
+            exit 1
+          else
+            scan_status=$?
+            [[ "${scan_status}" -eq 1 ]]
+          fi
+          "${clean_env[@]}" "${javap_bin}" -public -classpath "${slice_tmp}/strict-classes" \
+            com.monumentogram.dora.stage0.offline.i1.OfflineI1Oracle \
+            >"${slice_tmp}/public-api.txt" 2>"${slice_tmp}/public-api.stderr"
+          [[ ! -s "${slice_tmp}/public-api.stderr" ]]
+          if "${clean_env[@]}" "${grep_bin}" --line-number --with-filename --color=never --extended-regexp -- 'java\.(io|net|nio\.file)|Process|Thread|Executor|Random' "${slice_tmp}/public-api.txt"; then
+            echo "::error::Forbidden public API surface found"
+            exit 1
+          else
+            scan_status=$?
+            [[ "${scan_status}" -eq 1 ]]
+          fi
+          [[ -z "$(find . -path ./.git -prune -o -type f -name '*.class' -print -quit)" ]]
+          [[ -z "$(git status --porcelain)" ]]
+          cleanup
+          [[ ! -e "${slice_tmp}" ]]
+          trap - EXIT
+          printf '%s\n' 'PINNED_TOOLCHAIN_HOST_REVALIDATION_OK POC-OFFLINE-001 I1'
+
+  stage0-host-advisory:
+    name: stage0-host-advisory
+    if: ${{ always() }}
+    needs:
+      - authorized-scope
+      - stage0-host-battery
+      - stage0-host-vad-p2
+      - stage0-host-decision
+      - stage0-host-data
+      - stage0-host-offline-i1
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+
+    steps:
+      - name: Require the selected package job and only that job to pass
+        shell: bash
+        env:
+          HEAD_BRANCH: ${{ github.head_ref }}
+          SCOPE_RESULT: ${{ needs['authorized-scope'].result }}
+          BATTERY_RESULT: ${{ needs['stage0-host-battery'].result }}
+          VAD_RESULT: ${{ needs['stage0-host-vad-p2'].result }}
+          DECISION_RESULT: ${{ needs['stage0-host-decision'].result }}
+          DATA_RESULT: ${{ needs['stage0-host-data'].result }}
+          OFFLINE_RESULT: ${{ needs['stage0-host-offline-i1'].result }}
+        run: |
+          set -euo pipefail
+          [[ "${SCOPE_RESULT}" == "success" ]]
+          case "${HEAD_BRANCH}" in
+            codex/poc-battery-campaign-oracle)
+              [[ "${BATTERY_RESULT}" == "success" ]]
+              [[ "${VAD_RESULT}" == "skipped" && "${DECISION_RESULT}" == "skipped" ]]
+              [[ "${DATA_RESULT}" == "skipped" && "${OFFLINE_RESULT}" == "skipped" ]]
+              ;;
+            codex/poc-vad-p2-host-oracle)
+              [[ "${VAD_RESULT}" == "success" ]]
+              [[ "${BATTERY_RESULT}" == "skipped" && "${DECISION_RESULT}" == "skipped" ]]
+              [[ "${DATA_RESULT}" == "skipped" && "${OFFLINE_RESULT}" == "skipped" ]]
+              ;;
+            codex/poc-decision-revision-oracle)
+              [[ "${DECISION_RESULT}" == "success" ]]
+              [[ "${BATTERY_RESULT}" == "skipped" && "${VAD_RESULT}" == "skipped" ]]
+              [[ "${DATA_RESULT}" == "skipped" && "${OFFLINE_RESULT}" == "skipped" ]]
+              ;;
+            codex/poc-data-manifest-validator)
+              [[ "${DATA_RESULT}" == "success" ]]
+              [[ "${BATTERY_RESULT}" == "skipped" && "${VAD_RESULT}" == "skipped" ]]
+              [[ "${DECISION_RESULT}" == "skipped" && "${OFFLINE_RESULT}" == "skipped" ]]
+              ;;
+            codex/poc-offline-i1-semantics-v02)
+              [[ "${OFFLINE_RESULT}" == "success" ]]
+              [[ "${BATTERY_RESULT}" == "skipped" && "${VAD_RESULT}" == "skipped" ]]
+              [[ "${DECISION_RESULT}" == "skipped" && "${DATA_RESULT}" == "skipped" ]]
+              ;;
+            *)
+              exit 1
+              ;;
+          esac
+          printf '%s\n' "STAGE0_HOST_ADVISORY_CHECK_OK ${HEAD_BRANCH}"
