@@ -1,0 +1,395 @@
+{
+  "schemaVersion": 1,
+  "packetId": "REC-I2B-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW-PACKET-20260817-01",
+  "preparedAtUtc": "2026-08-17T10:48:08Z",
+  "status": "READY_FOR_DISTINCT_ACCOUNTABLE_REVIEW_NOT_REVIEWED",
+  "pocId": "POC-RECOVERY-001",
+  "stage": "Stage 0",
+  "reviewType": "DISTINCT_ACCOUNTABLE_ENGINEERING_SECURITY_IMPLEMENTATION_REVIEW",
+  "claimCeiling": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
+  "reviewTarget": {
+    "branch": "codex/poc-recovery-i2a-graph-probe",
+    "published": false,
+    "baseDispositionCommit": "4d58ab02424c7a43f6390f87c633b5464df6a916",
+    "implementationCommits": [
+      "7b90db3403f165bb268daa6a727c5a33c3524a2b",
+      "6557add0d1d74d9029bd0d547b5493e72cdf7bac"
+    ],
+    "terminalImplementationCommit": "6557add0d1d74d9029bd0d547b5493e72cdf7bac",
+    "terminalImplementationTree": "881cdcf54bd25f3bcb36fd20c4c0d0efd86210dc",
+    "implementationEvidence": {
+      "path": "docs/evidence/poc-recovery-001/rec-i2b-runtime-crypto-implementation-evidence-2026-08-17.json",
+      "bytes": 21496,
+      "sha256": "5f05259ed6d497e8db036ca0ee8bd6723c6e9ab02c29c5e89779b432d8ef3561"
+    }
+  },
+  "authorityBoundary": {
+    "implementationAuthority": [
+      "REC-I2A-ACTUAL-GRAPH-PRODUCT-IP-DISPOSITION-20260817-01",
+      "STAGE0-OWNER-UNLOCK-BATCH-20260817-02",
+      "STAGE0-TECHNICAL-REMEDIATION-DELEGATION-20260817-01"
+    ],
+    "thisPacketIsFormalApproval": false,
+    "technicalDelegationMaySubstituteAccountableReview": false,
+    "reviewerIdentityRecorded": false,
+    "reviewerSignatureRecorded": false,
+    "formalApprovalRecorded": false,
+    "recI3Activated": false,
+    "deviceOrEmulatorExecutionAuthorized": false,
+    "harnessOrCampaignAuthorized": false,
+    "measurementAuthorized": false,
+    "dependencyOrProductionAdmissionAuthorized": false,
+    "publicationOrMergeAuthorized": false
+  },
+  "exactFileManifest": [
+    {
+      "path": "android/poc/recovery/build.gradle.kts",
+      "gitBlobSha1": "8f45f6af4ca3e9cb35d446c31ab105288759bb76",
+      "rawGitBytes": 18417,
+      "rawGitSha256": "3101b78ef4ab35dafe84dd6e33d2c67e69a2fd6b48a49cba991f3e8b5b0616f7"
+    },
+    {
+      "path": "android/poc/recovery/proguard-recovery-i2a.pro",
+      "gitBlobSha1": "2b7927b569cf60b3b18da3591b4062d327f799c5",
+      "rawGitBytes": 572,
+      "rawGitSha256": "855841c6c021423972d874bf841ed4a1e55e669a69633a75f2e93531e2b7e39e"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryCryptoBindings.kt",
+      "gitBlobSha1": "15b21d9eea0605edfb0af062cb670bec44d1b02a",
+      "rawGitBytes": 3651,
+      "rawGitSha256": "15450277e153616b7118448fe1c2bae649073131715269f30dbf67da07e07b31"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryRunAead.kt",
+      "gitBlobSha1": "7273eeedd41cb3b926b74e13bb4c316428dbdadf",
+      "rawGitBytes": 1157,
+      "rawGitSha256": "b632801e1a9940b8a93a1a5e150a9f7d142c80538c5293720a935e2f699300c8"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryTinkRuntime.kt",
+      "gitBlobSha1": "527344dfa357783129a340932c4ff8e21de81168",
+      "rawGitBytes": 15431,
+      "rawGitSha256": "9c25af76a5ee56e1f28dd8b42b9e29734db15a1343e1857c002a460db37bbc63"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryAeadCryptoTest.kt",
+      "gitBlobSha1": "3cc2a070ab48e6161a67ae11298de08f4d1fc26b",
+      "rawGitBytes": 5783,
+      "rawGitSha256": "4ed63dd1353cdca06421594103b1dc73fbbc12124b7436e7b046f22f04f03885"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryCryptoTestFixtures.kt",
+      "gitBlobSha1": "3b218fdeddbaf8cc33a60dcb65146d0be64f976a",
+      "rawGitBytes": 6436,
+      "rawGitSha256": "975ca51ad08cc23009df2e1b5226f445a50e3d7561f9e722afe673ea76f11e5b"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryRunAeadTest.kt",
+      "gitBlobSha1": "d8474ff6299c5c9f3177ce6e97b8632c45d30620",
+      "rawGitBytes": 5494,
+      "rawGitSha256": "8ccb904f519078703b5b59e5013761aa2df709b7fd5ac54dabc960f87fde1e63"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryStreamingCryptoTest.kt",
+      "gitBlobSha1": "29c8cdb7aa5d972b2fcc9bd00841eef35cfb64cc",
+      "rawGitBytes": 3430,
+      "rawGitSha256": "682c10c8f98bdfde88a519a549d95f072444c226c0193091a4d6fc92fb967727"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryTinkRuntimeTest.kt",
+      "gitBlobSha1": "8d211147e661db38e1a0f913d89c2f1b81078b0f",
+      "rawGitBytes": 7905,
+      "rawGitSha256": "6f88470abca1e82edd97cc56971c938509a6866d59af32a749cb3cf9f21da217"
+    }
+  ],
+  "frozenDesignInvariants": [
+    {
+      "id": "I2B-INV-01",
+      "invariant": "The only runtime root is com.google.crypto.tink:tink-android:1.23.0 in :poc:recovery, with the dependency-local com.google.code.findbugs:jsr305:3.0.2 exclusion."
+    },
+    {
+      "id": "I2B-INV-02",
+      "invariant": "Streaming uses AES-GCM-HKDF with 16-byte input key, 16-byte derived AES-GCM key, SHA-256 HKDF and 4096-byte ciphertext segments."
+    },
+    {
+      "id": "I2B-INV-03",
+      "invariant": "AEAD uses AES-256-GCM with 32-byte key, 12-byte IV, 16-byte tag and TINK variant."
+    },
+    {
+      "id": "I2B-INV-04",
+      "invariant": "Every generated keyset has exactly one enabled random-ID primary, constructed through the exact KeysetHandle public builder sequence."
+    },
+    {
+      "id": "I2B-INV-05",
+      "invariant": "TinkConfig.register() and the fixed RegistryConfiguration.get() remain private to the crypto boundary; callers cannot supply a weaker configuration or obtain raw primitives/keyset handles."
+    },
+    {
+      "id": "I2B-INV-06",
+      "invariant": "Encrypted keysets use only the nondeprecated four-argument TinkProtoKeysetFormat serialize/parse APIs with exact typed KeyEnvelope AAD; no cleartext keyset serialization or cleartext key material exposure exists."
+    },
+    {
+      "id": "I2B-INV-07",
+      "invariant": "Each stream run, microfile and manifest/checkpoint generation receives a fresh keyset; a new keyset must serialize its envelope before exactly one encryption, and an envelope failure permanently poisons that wrapper."
+    },
+    {
+      "id": "I2B-INV-08",
+      "invariant": "Parsed keysets are decrypt-only and no open/recovery path may generate or replace a key."
+    },
+    {
+      "id": "I2B-INV-09",
+      "invariant": "Streaming, microfile, publication and key-envelope AAD are strict REC-I1 typed codecs with target, candidate, run, generation, range, cadence and chain-digest cross-binding as applicable."
+    },
+    {
+      "id": "I2B-INV-10",
+      "invariant": "The stream envelope is generation 1, no unit, range [0,115200000), cadence 0 and zero genesis digest."
+    },
+    {
+      "id": "I2B-INV-11",
+      "invariant": "Android Keystore creation calls generateNewAeadKey(canonicalKeyUri) once then obtains the AEAD from Builder.setKeyUri(...).build().getAead(...); open-existing performs only the latter route, with no generation fallback."
+    },
+    {
+      "id": "I2B-INV-12",
+      "invariant": "Key-confirmation AEAD authentication/AAD failure remains typed separately from authenticated post-decrypt strict-codec or value mismatch; neither assigns a REC-I3 outcome."
+    },
+    {
+      "id": "I2B-INV-13",
+      "invariant": "The approved exact graph remains six runtime and two test-only artifacts, 61/61 configurations resolved, 34 policy-covered configurations free of JSR305 components and class definitions, and 27 tooling configurations separately inventoried."
+    },
+    {
+      "id": "I2B-INV-14",
+      "invariant": "Release R8 uses exactly three narrow javax.annotation dontwarn rules, no broad dontwarn, retains the crypto boundary and packages no javax.annotation definition or native/JNI entry."
+    },
+    {
+      "id": "I2B-INV-15",
+      "invariant": "This implementation remains local, unpublished and nonmetric; it includes no harness, orchestrated kill/recovery campaign, device/emulator/network execution, REC-I3 activation, PoC PASS, readiness closure or dependency/production admission."
+    }
+  ],
+  "verificationEvidence": {
+    "fullStaticBuildAndUnitBlock": {
+      "result": "PASS",
+      "command": "./gradlew --no-configuration-cache --rerun-tasks --parallel spotlessCheck detekt :poc:recovery:testDebugUnitTest :poc:recovery:lintDebug :poc:recovery:lintRelease :poc:recovery:assembleDebug :poc:recovery:assembleRelease :poc:recovery:recoveryI2bVerifyCryptoPolicy",
+      "tasks": "104/104 executed",
+      "unitTests": "80/80 passed across 13 suites; 0 failures, 0 errors, 0 skipped",
+      "lint": "debug/release gates passed; each reports only NotShrinkingResources and MissingApplicationIcon; no zero-warning claim"
+    },
+    "cryptoPolicy": {
+      "path": "android/poc/recovery/build/reports/recovery-i2b/crypto-policy.json",
+      "bytes": 1492,
+      "sha256": "71063a29ba686be33b6ae483b370c0786f21dbd6c6588a1ba48b2d7865689aa9",
+      "forbiddenIdentifiersAbsent": true,
+      "cleartextKeysetSurfaceAbsent": true,
+      "callerSuppliedConfigurationSurfaceAbsent": true,
+      "rawPrimitiveClientSurfaceAbsent": true
+    },
+    "graph": {
+      "result": "PASS",
+      "command": "./gradlew --no-configuration-cache --rerun-tasks --parallel -PdoraRecoveryI2aGraphProbe=true --write-locks :poc:recovery:recoveryI2aResolveOwnedConfigurations",
+      "tasks": "81/81 executed",
+      "path": "android/poc/recovery/build/reports/recovery-i2a/resolved-graph.json",
+      "bytes": 332184,
+      "sha256": "3ab12ef698e59f323e71431496d72debd5741669b395b8052ad41b9a8b8b34a7",
+      "allConfigurations": "61/61 resolved",
+      "policyCovered": "34 configurations; zero JSR305 components and zero packaged class definitions",
+      "toolingOutsideBoundary": "27 explicitly classified; 14 JSR305 configuration occurrences and 505 repeated tooling-view class-definition occurrences",
+      "repositoryWideAbsenceClaimed": false,
+      "graphDrift": false
+    },
+    "locks": {
+      "recoveryLock": {
+        "bytes": 3395,
+        "sha256": "2e0de74c01b452476223a757ffa52ccc7f3f1ab74e9736e36bcd4a2ff0e8f08c"
+      },
+      "verificationMetadataRawGitLf": {
+        "bytes": 293745,
+        "sha256": "32c5e2e290aed91e6907985e7f6722691242cbb43a101c34747302b5ad5c7867"
+      },
+      "verificationMetadataWindowsWorkingCrlf": {
+        "bytes": 298394,
+        "sha256": "515cb172de60fa101c31f7a9c09d83e4794f1658a07e64e02f5af392ec3b5c32"
+      }
+    },
+    "r8": {
+      "result": "PASS",
+      "command": "./gradlew --no-configuration-cache --no-build-cache --rerun-tasks --parallel -PdoraRecoveryI2aGraphProbe=true :poc:recovery:minifyReleaseWithR8 :poc:recovery:packageRelease",
+      "tasks": "46/46 executed",
+      "missingClassFailureCount": 0,
+      "exactNarrowDontwarnRuleCount": 3,
+      "broadDontwarnCount": 0,
+      "cryptoBoundaryRetained": true,
+      "rulesSha256": "855841c6c021423972d874bf841ed4a1e55e669a69633a75f2e93531e2b7e39e",
+      "mappingSha256": "7a69f4a1f96a73795db7227d46850f6b7763f65cbeb84fd96a9c1558920bd128"
+    },
+    "bytecode": {
+      "fourArgumentSerializeEncryptedKeysetInvocations": 1,
+      "fourArgumentParseEncryptedKeysetInvocations": 1,
+      "generateNewAeadKeyInvocations": 1,
+      "builderSetKeyUriInvocations": 1,
+      "builderBuildInvocations": 1,
+      "getAeadInvocations": 1,
+      "cleartextKeysetInvocations": 0,
+      "androidKeysetManagerOccurrences": 0,
+      "getOrGenerateOccurrences": 0
+    },
+    "debugPackage": {
+      "apkBytes": 6338512,
+      "apkSha256": "f457962dba14c5735ed5cb2d228b325787b92d3d2e77538be872f290a413335c",
+      "dexCount": 5,
+      "javaxAnnotationClassDefinitions": 0,
+      "nativeEntries": 0,
+      "recoveryCryptoClassDefinitions": 23,
+      "recoveryTinkRuntimeDefinitions": 1
+    },
+    "releaseUnsignedPackage": {
+      "apkBytes": 2470446,
+      "apkSha256": "ad76c89eb7d48630883e93006996f1303c9769a19d92a0bd0b4af63e84da4aaf",
+      "dexCount": 1,
+      "dexBytes": 2455808,
+      "dexSha256": "1af74a0b95d8289e84c324287c4556f4b923a6f862f1a5ff84f91579ebf4010b",
+      "javaxAnnotationClassDefinitions": 0,
+      "nativeEntries": 0,
+      "recoveryCryptoClassDefinitions": 21,
+      "recoveryTinkRuntimeDefinitions": 1
+    }
+  },
+  "reviewChecklist": [
+    {
+      "id": "I2B-REV-01",
+      "question": "Does the exact target contain only the approved Tink 1.23.0 runtime root and unchanged six-runtime/two-test graph with the dependency-local JSR305 exclusion?",
+      "requiredAnswer": "YES",
+      "implementationEvidenceAnswer": "YES",
+      "accountableReviewerAnswer": null
+    },
+    {
+      "id": "I2B-REV-02",
+      "question": "Do the Streaming AEAD and AEAD builders exactly match all frozen key, hash, segment, IV, tag and variant parameters?",
+      "requiredAnswer": "YES",
+      "implementationEvidenceAnswer": "YES",
+      "accountableReviewerAnswer": null
+    },
+    {
+      "id": "I2B-REV-03",
+      "question": "Is every generated keyset exactly one enabled random-ID primary built with the required public KeysetHandle builder path?",
+      "requiredAnswer": "YES",
+      "implementationEvidenceAnswer": "YES",
+      "accountableReviewerAnswer": null
+    },
+    {
+      "id": "I2B-REV-04",
+      "question": "Are RegistryConfiguration, raw primitives and keyset handles fully contained, with no caller-supplied weakening surface or cleartext key material serialization/exposure?",
+      "requiredAnswer": "YES",
+      "implementationEvidenceAnswer": "YES",
+      "accountableReviewerAnswer": null
+    },
+    {
+      "id": "I2B-REV-05",
+      "question": "Are only the nondeprecated four-argument encrypted-keyset APIs used with exact typed KeyEnvelope AAD?",
+      "requiredAnswer": "YES",
+      "implementationEvidenceAnswer": "YES",
+      "accountableReviewerAnswer": null
+    },
+    {
+      "id": "I2B-REV-06",
+      "question": "Does the fresh-key lifecycle require successful envelope serialization before one encryption, poison failed serialization, and make parsed keysets decrypt-only?",
+      "requiredAnswer": "YES",
+      "implementationEvidenceAnswer": "YES",
+      "accountableReviewerAnswer": null
+    },
+    {
+      "id": "I2B-REV-07",
+      "question": "Are stream, microfile, manifest/checkpoint and key-envelope values cross-bound through the strict REC-I1 typed codecs without alternate encodings or target reuse?",
+      "requiredAnswer": "YES",
+      "implementationEvidenceAnswer": "YES",
+      "accountableReviewerAnswer": null
+    },
+    {
+      "id": "I2B-REV-08",
+      "question": "Are Android Keystore create-new and open-existing paths separate, canonical-alias bound, exactly counted in tests and bytecode, and free of generation/replacement fallback?",
+      "requiredAnswer": "YES",
+      "implementationEvidenceAnswer": "YES",
+      "accountableReviewerAnswer": null
+    },
+    {
+      "id": "I2B-REV-09",
+      "question": "Are key-confirmation authentication failures and authenticated post-decrypt contract failures typed separately without assigning REC-I3 outcomes?",
+      "requiredAnswer": "YES",
+      "implementationEvidenceAnswer": "YES",
+      "accountableReviewerAnswer": null
+    },
+    {
+      "id": "I2B-REV-10",
+      "question": "Do all 80 unit tests pass with deterministic invariant assertions while explicitly avoiding a deterministic-ciphertext claim?",
+      "requiredAnswer": "YES",
+      "implementationEvidenceAnswer": "YES",
+      "accountableReviewerAnswer": null
+    },
+    {
+      "id": "I2B-REV-11",
+      "question": "Do spotless, detekt, debug/release lint and assemble, policy scan, 61/61 graph resolve, locks and metadata checks all pass for the exact target?",
+      "requiredAnswer": "YES",
+      "implementationEvidenceAnswer": "YES",
+      "accountableReviewerAnswer": null
+    },
+    {
+      "id": "I2B-REV-12",
+      "question": "Does forced no-cache release R8 pass with only the exact three narrow rules, retain the crypto boundary, and produce packages with zero JSR305 definitions and zero native entries?",
+      "requiredAnswer": "YES",
+      "implementationEvidenceAnswer": "YES",
+      "accountableReviewerAnswer": null
+    },
+    {
+      "id": "I2B-REV-13",
+      "question": "Is the evidence sanitized and free of keys, keysets, plaintext, ciphertext, credentials, private audio, device identifiers and user-specific absolute paths?",
+      "requiredAnswer": "YES",
+      "implementationEvidenceAnswer": "YES",
+      "accountableReviewerAnswer": null
+    },
+    {
+      "id": "I2B-REV-14",
+      "question": "Is the claim held at IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW with no device/harness/measurement/PASS/Ready/admission/publication/merge or REC-I3 claim?",
+      "requiredAnswer": "YES",
+      "implementationEvidenceAnswer": "YES",
+      "accountableReviewerAnswer": null
+    }
+  ],
+  "decisionOptions": [
+    {
+      "option": "APPROVE_EXACT_REC_I2B_FOR_SEPARATE_REC_I3_ACTIVATION_DECISION",
+      "when": "Every checklist answer is independently verified YES and no new P0/P1 finding exists.",
+      "effect": "Records the required accountable implementation review only; REC-I3 still requires its separately authorized activation record."
+    },
+    {
+      "option": "CHANGES_REQUIRED",
+      "when": "Any invariant, proof or checklist item is not independently verified YES, or evidence is incomplete.",
+      "effect": "REC-I2B remains at the current claim ceiling and REC-I3 stays blocked pending remediation and exact-delta rereview."
+    },
+    {
+      "option": "REJECT_EXACT_IMPLEMENTATION",
+      "when": "The implementation conflicts with the authoritative protocol or introduces an unacceptable security boundary.",
+      "effect": "REC-I2B cannot be used as an input to REC-I3; affected implementation must stop and return to design/authority resolution."
+    }
+  ],
+  "recommendedDefault": {
+    "beforeAccountableReview": "HOLD_REC_I3",
+    "conditionalRecommendation": "APPROVE_EXACT_REC_I2B_FOR_SEPARATE_REC_I3_ACTIVATION_DECISION only after the distinct reviewer independently returns YES for every checklist item and records their own accountable review outside this prepared packet.",
+    "delegatedApprovalRecordedHere": false
+  },
+  "preparedFindings": {
+    "implementationP0": 0,
+    "implementationP1": 0,
+    "implementationP2": 0,
+    "openP0StageGate": "REC-I2B-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
+    "recI3MayProceedNow": false
+  },
+  "reviewCompletionRequirements": {
+    "independentExactCommitAndTreeReview": true,
+    "allChecklistAnswersRecordedByAccountableReviewer": true,
+    "reviewerIdentityAndCapacityRecordedInSeparateFinalReviewRecord": true,
+    "reviewerSignatureOrEquivalentAttestationRecordedInSeparateFinalReviewRecord": true,
+    "reviewTimestampRecordedInSeparateFinalReviewRecord": true,
+    "p0P1P2DispositionRecordedInSeparateFinalReviewRecord": true,
+    "formalDecisionRecordedInSeparateFinalReviewRecord": true,
+    "thisPreparedPacketMustNotBeEditedIntoAnApproval": true
+  },
+  "terminalGate": "REC-I3 is not activated by this packet. A distinct accountable Engineering/Security review is non-substitutable, and any later REC-I3 activation must be separately recorded under the applicable owner authority."
+}

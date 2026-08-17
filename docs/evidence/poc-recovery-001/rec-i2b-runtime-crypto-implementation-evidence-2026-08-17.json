@@ -1,0 +1,501 @@
+{
+  "schemaVersion": 1,
+  "reportId": "REC-I2B-RUNTIME-CRYPTO-IMPLEMENTATION-EVIDENCE-20260817-01",
+  "recordedAtUtc": "2026-08-17T10:48:08Z",
+  "status": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
+  "claimCeiling": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
+  "pocId": "POC-RECOVERY-001",
+  "stage": "Stage 0",
+  "scope": "LOCAL_UNPUBLISHED_NONMETRIC_REC_I2B_RUNTIME_CRYPTO_IMPLEMENTATION_ONLY",
+  "authority": {
+    "actualGraphProductIpDisposition": "REC-I2A-ACTUAL-GRAPH-PRODUCT-IP-DISPOSITION-20260817-01",
+    "conditionalOwnerAuthorization": "STAGE0-OWNER-UNLOCK-BATCH-20260817-02",
+    "technicalDelegation": "STAGE0-TECHNICAL-REMEDIATION-DELEGATION-20260817-01",
+    "designCheckpointApproved": true,
+    "accountableEngineeringSecurityReviewCompleted": false,
+    "runtimeCryptoImplementationAllowed": true,
+    "deviceOrEmulatorExecutionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "harnessOrCampaignAllowed": false,
+    "recI3Allowed": false,
+    "dependencyAdmissionAllowed": false,
+    "productionAdmissionAllowed": false,
+    "publicationAllowed": false,
+    "mergeAllowed": false
+  },
+  "git": {
+    "branch": "codex/poc-recovery-i2a-graph-probe",
+    "baseDispositionCommit": "4d58ab02424c7a43f6390f87c633b5464df6a916",
+    "implementationCommits": [
+      "7b90db3403f165bb268daa6a727c5a33c3524a2b",
+      "6557add0d1d74d9029bd0d547b5493e72cdf7bac"
+    ],
+    "terminalImplementationCommit": "6557add0d1d74d9029bd0d547b5493e72cdf7bac",
+    "terminalImplementationTree": "881cdcf54bd25f3bcb36fd20c4c0d0efd86210dc",
+    "cleanBeforeEvidenceWrite": true,
+    "published": false,
+    "pullRequestCreated": false,
+    "merged": false
+  },
+  "authoritativeInputs": {
+    "decision": "docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md",
+    "gateSet": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_6.md",
+    "machineGateSet": "docs/stage0/poc-recovery-gate-set-stage0-v0.6.json",
+    "protocol": "docs/stage0/poc-recovery-protocol-stage0-v0.6.json",
+    "ownerDecision": "docs/stage0/DORA_MVP1_POC_RECOVERY_OWNER_DECISION_OD14.md",
+    "pureContractAuthorization": "docs/evidence/poc-recovery-001/implementation-authorization-rec-i1-20260813-01.json",
+    "actualGraphDisposition": {
+      "path": "docs/evidence/poc-recovery-001/rec-i2a-actual-graph-product-ip-disposition-2026-08-17.json",
+      "commit": "4d58ab02424c7a43f6390f87c633b5464df6a916",
+      "bytes": 5729,
+      "sha256": "106060feb7b3afe634c2e3698e04f83fea2165a21d50a7168dab95dc058bc804"
+    }
+  },
+  "changedFiles": [
+    {
+      "path": "android/poc/recovery/build.gradle.kts",
+      "gitBlobSha1": "8f45f6af4ca3e9cb35d446c31ab105288759bb76",
+      "rawGitBytes": 18417,
+      "rawGitSha256": "3101b78ef4ab35dafe84dd6e33d2c67e69a2fd6b48a49cba991f3e8b5b0616f7"
+    },
+    {
+      "path": "android/poc/recovery/proguard-recovery-i2a.pro",
+      "gitBlobSha1": "2b7927b569cf60b3b18da3591b4062d327f799c5",
+      "rawGitBytes": 572,
+      "rawGitSha256": "855841c6c021423972d874bf841ed4a1e55e669a69633a75f2e93531e2b7e39e"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryCryptoBindings.kt",
+      "gitBlobSha1": "15b21d9eea0605edfb0af062cb670bec44d1b02a",
+      "rawGitBytes": 3651,
+      "rawGitSha256": "15450277e153616b7118448fe1c2bae649073131715269f30dbf67da07e07b31"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryRunAead.kt",
+      "gitBlobSha1": "7273eeedd41cb3b926b74e13bb4c316428dbdadf",
+      "rawGitBytes": 1157,
+      "rawGitSha256": "b632801e1a9940b8a93a1a5e150a9f7d142c80538c5293720a935e2f699300c8"
+    },
+    {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryTinkRuntime.kt",
+      "gitBlobSha1": "527344dfa357783129a340932c4ff8e21de81168",
+      "rawGitBytes": 15431,
+      "rawGitSha256": "9c25af76a5ee56e1f28dd8b42b9e29734db15a1343e1857c002a460db37bbc63"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryAeadCryptoTest.kt",
+      "gitBlobSha1": "3cc2a070ab48e6161a67ae11298de08f4d1fc26b",
+      "rawGitBytes": 5783,
+      "rawGitSha256": "4ed63dd1353cdca06421594103b1dc73fbbc12124b7436e7b046f22f04f03885"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryCryptoTestFixtures.kt",
+      "gitBlobSha1": "3b218fdeddbaf8cc33a60dcb65146d0be64f976a",
+      "rawGitBytes": 6436,
+      "rawGitSha256": "975ca51ad08cc23009df2e1b5226f445a50e3d7561f9e722afe673ea76f11e5b"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryRunAeadTest.kt",
+      "gitBlobSha1": "d8474ff6299c5c9f3177ce6e97b8632c45d30620",
+      "rawGitBytes": 5494,
+      "rawGitSha256": "8ccb904f519078703b5b59e5013761aa2df709b7fd5ac54dabc960f87fde1e63"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryStreamingCryptoTest.kt",
+      "gitBlobSha1": "29c8cdb7aa5d972b2fcc9bd00841eef35cfb64cc",
+      "rawGitBytes": 3430,
+      "rawGitSha256": "682c10c8f98bdfde88a519a549d95f072444c226c0193091a4d6fc92fb967727"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryTinkRuntimeTest.kt",
+      "gitBlobSha1": "8d211147e661db38e1a0f913d89c2f1b81078b0f",
+      "rawGitBytes": 7905,
+      "rawGitSha256": "6f88470abca1e82edd97cc56971c938509a6866d59af32a749cb3cf9f21da217"
+    }
+  ],
+  "implementation": {
+    "dependency": {
+      "coordinate": "com.google.crypto.tink:tink-android:1.23.0",
+      "scope": "unconditional implementation dependency inside :poc:recovery only",
+      "localExclude": "com.google.code.findbugs:jsr305:3.0.2",
+      "moduleVersionName": "0.1.0-poc-recovery-i2b"
+    },
+    "registry": {
+      "registration": "TinkConfig.register()",
+      "configuration": "RegistryConfiguration.get()",
+      "configurationOwnership": "private fixed singleton inside the crypto boundary",
+      "callerSuppliedConfigurationAccepted": false
+    },
+    "parameters": {
+      "streaming": {
+        "type": "AesGcmHkdfStreamingParameters",
+        "inputKeyBytes": 16,
+        "derivedAesGcmKeyBytes": 16,
+        "hkdfHash": "SHA256",
+        "ciphertextSegmentBytes": 4096
+      },
+      "aead": {
+        "type": "AesGcmParameters",
+        "keyBytes": 32,
+        "ivBytes": 12,
+        "tagBytes": 16,
+        "variant": "TINK"
+      }
+    },
+    "keysetConstruction": {
+      "exactBuilder": "KeysetHandle.newBuilder().addEntry(KeysetHandle.generateEntryFromParameters(parameters).withRandomId().makePrimary()).build()",
+      "entryCount": 1,
+      "enabledPrimaryCount": 1,
+      "primaryRandomNonzeroIdRequired": true
+    },
+    "encryptedKeysets": {
+      "serializeApi": "TinkProtoKeysetFormat.serializeEncryptedKeyset(handle, runAead, exactKeyEnvelopeAad, RegistryConfiguration.get())",
+      "parseApi": "TinkProtoKeysetFormat.parseEncryptedKeyset(bytes, runAead, exactKeyEnvelopeAad, RegistryConfiguration.get())",
+      "onlyNondeprecatedFourArgumentApis": true,
+      "cleartextKeyMaterialSerializedOrExposed": false
+    },
+    "primitiveBoundary": {
+      "rawAeadExposedToCallers": false,
+      "rawStreamingAeadExposedToCallers": false,
+      "rawKeysetHandleExposedToCallers": false,
+      "rawConfigurationExposedToCallers": false,
+      "typedRecoveryOperationsOnly": true
+    },
+    "freshKeyLifecycle": {
+      "freshStreamingKeysetPerRun": true,
+      "freshAeadKeysetPerMicrofile": true,
+      "freshAeadKeysetPerManifestOrCheckpointGeneration": true,
+      "envelopeMustSerializeBeforeEncryption": true,
+      "successfulFreshEncryptionCount": 1,
+      "failedEnvelopeSerializationPoisonsKeyset": true,
+      "parsedKeysetsDecryptOnly": true,
+      "implicitGenerationOnOpenOrRecovery": false
+    },
+    "typedBindings": {
+      "streamingAad": "DORA_RECOVERY_STREAMING_AAD_V1_BINARY_BE",
+      "microfileAad": "DORA_RECOVERY_MICROFILE_AAD_V1_BINARY_BE",
+      "publicationAad": "DORA_RECOVERY_PUBLICATION_AAD_V1_BINARY_BE",
+      "keyEnvelopeAad": "DORA_RECOVERY_KEY_ENVELOPE_AAD_V1_BINARY_BE",
+      "streamEnvelopeExactRunSpan": {
+        "generation": 1,
+        "unitIndex": 4294967295,
+        "plaintextStartInclusive": 0,
+        "plaintextEndExclusive": 115200000,
+        "cadenceSeconds": 0,
+        "previousPublicationCiphertextSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "microfileCrossBindingEnforced": true,
+      "manifestAndCheckpointCrossBindingEnforced": true
+    },
+    "androidKeystore": {
+      "canonicalKeyUri": "android-keystore://dora.poc.recovery.v1.<lowercase-run-uuid>",
+      "createNew": "AndroidKeystoreKmsClient.generateNewAeadKey(keyUri), then Builder().setKeyUri(keyUri).build().getAead(keyUri)",
+      "openExisting": "Builder().setKeyUri(keyUri).build().getAead(keyUri)",
+      "openExistingGenerates": false,
+      "generationFallbackPresent": false,
+      "aliasAndRunIdentityChecked": true
+    },
+    "keyConfirmation": {
+      "authenticationFailureType": "KeyConfirmationDecryption.AuthenticationFailure",
+      "postDecryptStrictCodecFailureType": "KeyConfirmationDecryption.PlaintextContractFailure",
+      "successType": "KeyConfirmationDecryption.Success",
+      "recI3OutcomeAssigned": false
+    }
+  },
+  "dependencyGraph": {
+    "generatedReport": {
+      "path": "android/poc/recovery/build/reports/recovery-i2a/resolved-graph.json",
+      "bytes": 332184,
+      "sha256": "3ab12ef698e59f323e71431496d72debd5741669b395b8052ad41b9a8b8b34a7"
+    },
+    "rootCoordinate": "com.google.crypto.tink:tink-android:1.23.0",
+    "allResolvableConfigurationsEnumeratedAndResolved": true,
+    "allResolvableConfigurationCount": 61,
+    "policyCoveredConfigurationCount": 34,
+    "outsidePolicyBoundaryToolingConfigurationCount": 27,
+    "policyCoveredJsr305ResolvedComponentCount": 0,
+    "policyCoveredPackagedJsr305ClassDefinitionCount": 0,
+    "outsidePolicyBoundaryJsr305ConfigurationOccurrenceCount": 14,
+    "outsidePolicyBoundaryJsr305DefinitionOccurrenceCountIncludingRepeatedToolingViews": 505,
+    "outsidePolicyBoundaryClassification": "AGP_KOTLIN_LINT_UTP_OR_PLATFORM_TOOLING_OUTSIDE_RECOVERY_DEPENDENCY_ADMISSION",
+    "repositoryWideJsr305AbsenceClaimed": false,
+    "runtimeArtifacts": [
+      {
+        "coordinate": "androidx.annotation:annotation-jvm:1.8.2",
+        "spdx": "Apache-2.0",
+        "sha256": "9aab326d9492800991854360ac248f493ce7f7c3183519309b78ace9e240f6f6"
+      },
+      {
+        "coordinate": "com.google.code.gson:gson:2.13.2",
+        "spdx": "Apache-2.0",
+        "sha256": "dd0ce1b55a3ed2080cb70f9c655850cda86c206862310009dcb5e5c95265a5e0"
+      },
+      {
+        "coordinate": "com.google.crypto.tink:tink-android:1.23.0",
+        "spdx": "Apache-2.0",
+        "sha256": "c656918451b01c45ce5b20c7b6d4c388f956f61b3a3528e769048c8944c42f9e",
+        "embeddedNotice": "shaded protobuf-java 4.33.6, BSD-3-Clause"
+      },
+      {
+        "coordinate": "com.google.errorprone:error_prone_annotations:2.41.0",
+        "spdx": "Apache-2.0",
+        "sha256": "a56e782b5b50811ac204073a355a21d915a2107fce13ec711331ad036f660fcc"
+      },
+      {
+        "coordinate": "org.jetbrains.kotlin:kotlin-stdlib:2.2.10",
+        "spdx": "Apache-2.0",
+        "sha256": "9c67cc79efd6b9215b49d2a4308f5f3433537376c7c88e89bdd6729bd096e61a"
+      },
+      {
+        "coordinate": "org.jetbrains:annotations:13.0",
+        "spdx": "Apache-2.0",
+        "sha256": "ace2a10dc8e2d5fd34925ecac03e4988b2c0f851650c94b8cef49ba1bd111478",
+        "noticeRetentionRequired": true
+      }
+    ],
+    "testOnlyArtifacts": [
+      {
+        "coordinate": "junit:junit:4.13.2",
+        "spdx": "EPL-1.0",
+        "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+      },
+      {
+        "coordinate": "org.hamcrest:hamcrest-core:1.3",
+        "spdx": "BSD-3-Clause",
+        "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+      }
+    ]
+  },
+  "locksAndVerificationMetadata": {
+    "recoveryLock": {
+      "path": "android/poc/recovery/gradle.lockfile",
+      "gitBlobSha1": "008fc0b8f9ac47bd02668e750ef6efaae9f0b73e",
+      "rawGitBytes": 3395,
+      "rawGitSha256": "2e0de74c01b452476223a757ffa52ccc7f3f1ab74e9736e36bcd4a2ff0e8f08c",
+      "workingBytes": 3395,
+      "workingSha256": "2e0de74c01b452476223a757ffa52ccc7f3f1ab74e9736e36bcd4a2ff0e8f08c"
+    },
+    "verificationMetadata": {
+      "path": "android/gradle/verification-metadata.xml",
+      "gitBlobSha1": "db5adcc6a5f31f95efcbdf8fe168834b3b2a39b0",
+      "rawGitLfBytes": 293745,
+      "rawGitLfSha256": "32c5e2e290aed91e6907985e7f6722691242cbb43a101c34747302b5ad5c7867",
+      "windowsWorkingCrlfBytes": 298394,
+      "windowsWorkingCrlfSha256": "515cb172de60fa101c31f7a9c09d83e4794f1658a07e64e02f5af392ec3b5c32",
+      "lineEndingRepresentationsExplicitlySeparated": true
+    },
+    "graphDriftFromApprovedSixRuntimeAndTwoTestOnlyArtifacts": false
+  },
+  "verification": {
+    "environment": {
+      "os": "Windows 10 amd64",
+      "jvm": "Microsoft OpenJDK 17.0.10+7-LTS",
+      "gradle": "9.5.0",
+      "androidGradlePlugin": "9.3.1",
+      "kotlinPlugin": "2.2.10",
+      "compileSdk": 36,
+      "minSdk": 28
+    },
+    "fullStaticBuildAndUnitBlock": {
+      "command": "./gradlew --no-configuration-cache --rerun-tasks --parallel spotlessCheck detekt :poc:recovery:testDebugUnitTest :poc:recovery:lintDebug :poc:recovery:lintRelease :poc:recovery:assembleDebug :poc:recovery:assembleRelease :poc:recovery:recoveryI2bVerifyCryptoPolicy",
+      "result": "PASS",
+      "actionableTasks": 104,
+      "executedTasks": 104
+    },
+    "unitTests": {
+      "suiteCount": 13,
+      "testCount": 80,
+      "passed": 80,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "inheritedRecI1Tests": 62,
+      "newRecI2bTests": 18,
+      "newSuites": [
+        {
+          "name": "RecoveryAeadCryptoTest",
+          "tests": 4
+        },
+        {
+          "name": "RecoveryRunAeadTest",
+          "tests": 5
+        },
+        {
+          "name": "RecoveryStreamingCryptoTest",
+          "tests": 3
+        },
+        {
+          "name": "RecoveryTinkRuntimeTest",
+          "tests": 6
+        }
+      ],
+      "coverageClaims": [
+        "exact parameter snapshot and one-entry enabled random-ID primary topology",
+        "streaming exact two-segment geometry and authenticated roundtrip",
+        "microfile exact 160000-byte plaintext to 160033-byte ciphertext geometry",
+        "ciphertexts are randomized; deterministic ciphertext is not claimed",
+        "tamper, truncation, wrong AAD and wrong key rejection",
+        "manifest and checkpoint strict-codec authenticated roundtrip",
+        "fresh envelope-first one-shot lifecycle and poison-on-envelope-failure",
+        "parsed keysets are decrypt-only",
+        "create-new versus open-existing call order, count and canonical alias identity",
+        "authentication failure is separate from authenticated post-decrypt codec failure"
+      ]
+    },
+    "lint": {
+      "debugGate": "PASS",
+      "releaseGate": "PASS",
+      "debugWarningIds": [
+        "NotShrinkingResources",
+        "MissingApplicationIcon"
+      ],
+      "releaseWarningIds": [
+        "NotShrinkingResources",
+        "MissingApplicationIcon"
+      ],
+      "warningDisposition": "known nonblocking empty local PoC application warnings; no zero-warning claim"
+    },
+    "cryptoPolicy": {
+      "task": ":poc:recovery:recoveryI2bVerifyCryptoPolicy",
+      "generatedReport": "android/poc/recovery/build/reports/recovery-i2b/crypto-policy.json",
+      "bytes": 1492,
+      "sha256": "71063a29ba686be33b6ae483b370c0786f21dbd6c6588a1ba48b2d7865689aa9",
+      "forbiddenIdentifiersAbsent": true,
+      "requiredPublicApiFragmentsPresent": true,
+      "cleartextSecretKeysetSerializationAbsent": true,
+      "callerSuppliedConfigurationSurfaceAbsent": true,
+      "rawPrimitiveClientSurfaceAbsent": true
+    },
+    "fullGraphResolve": {
+      "command": "./gradlew --no-configuration-cache --rerun-tasks --parallel -PdoraRecoveryI2aGraphProbe=true --write-locks :poc:recovery:recoveryI2aResolveOwnedConfigurations",
+      "result": "PASS",
+      "actionableTasks": 81,
+      "executedTasks": 81
+    },
+    "forcedReleaseR8AndPackage": {
+      "command": "./gradlew --no-configuration-cache --no-build-cache --rerun-tasks --parallel -PdoraRecoveryI2aGraphProbe=true :poc:recovery:minifyReleaseWithR8 :poc:recovery:packageRelease",
+      "result": "PASS",
+      "actionableTasks": 46,
+      "executedTasks": 46,
+      "missingClassFailureCount": 0,
+      "rulesPath": "android/poc/recovery/proguard-recovery-i2a.pro",
+      "rulesBytes": 572,
+      "rulesSha256": "855841c6c021423972d874bf841ed4a1e55e669a69633a75f2e93531e2b7e39e",
+      "exactDontwarnRules": [
+        "-dontwarn javax.annotation.Nullable",
+        "-dontwarn javax.annotation.concurrent.GuardedBy",
+        "-dontwarn javax.annotation.concurrent.ThreadSafe"
+      ],
+      "eachExactRuleOccurrenceCount": 1,
+      "broadDontwarnOccurrenceCount": 0,
+      "cryptoBoundaryRetained": true,
+      "mappingPath": "android/poc/recovery/build/outputs/mapping/release/mapping.txt",
+      "mappingBytes": 7678130,
+      "mappingSha256": "7a69f4a1f96a73795db7227d46850f6b7763f65cbeb84fd96a9c1558920bd128",
+      "configurationPath": "android/poc/recovery/build/outputs/mapping/release/configuration.txt",
+      "configurationBytes": 11204,
+      "configurationSha256": "49908c445b3512e019e339ea7fef6e8c44ca132b3f3f1454e5d7997e3f86f651"
+    },
+    "bytecodeProof": {
+      "tool": "JDK 17 javap -c -p -s",
+      "fourArgumentSerializeEncryptedKeysetInvocationCount": 1,
+      "fourArgumentParseEncryptedKeysetInvocationCount": 1,
+      "cleartextKeysetInvocationCount": 0,
+      "keystoreGenerateNewAeadKeyInvocationCount": 1,
+      "keystoreBuilderSetKeyUriInvocationCount": 1,
+      "keystoreBuilderBuildInvocationCount": 1,
+      "keystoreGetAeadInvocationCount": 1,
+      "androidKeysetManagerOccurrenceCount": 0,
+      "getOrGenerateOccurrenceCount": 0
+    },
+    "packages": {
+      "debug": {
+        "path": "android/poc/recovery/build/outputs/apk/debug/recovery-debug.apk",
+        "bytes": 6338512,
+        "sha256": "f457962dba14c5735ed5cb2d228b325787b92d3d2e77538be872f290a413335c",
+        "dexCount": 5,
+        "nativeEntryCount": 0,
+        "javaxAnnotationClassDefinitionCount": 0,
+        "recoveryCryptoClassDefinitionCount": 23,
+        "recoveryTinkRuntimeClassDefinitionCount": 1,
+        "dex": [
+          {
+            "name": "classes.dex",
+            "bytes": 6004860,
+            "sha256": "dc93faa74f4e08327b3e61a745c9c3f5e0ea693cd88aa5d59c242c87a7f54986"
+          },
+          {
+            "name": "classes2.dex",
+            "bytes": 600,
+            "sha256": "073e09bb006fcd14045936c70d0846b0d732e149d53977885403a913d715d952"
+          },
+          {
+            "name": "classes3.dex",
+            "bytes": 41116,
+            "sha256": "ea7f38e2360ff6822ed4c15d1a5f4a5eb2aa03d4a7f19a02bbbca61e18372e93"
+          },
+          {
+            "name": "classes4.dex",
+            "bytes": 175668,
+            "sha256": "0b64479daf0a56f779682c904578a7a4fc43e9c10c5f0d1ae292c96f5093df3f"
+          },
+          {
+            "name": "classes5.dex",
+            "bytes": 97312,
+            "sha256": "898c70366500aedf51a04c4df96c5463fbbb131ef97f6146a4000d2cfb2232ba"
+          }
+        ]
+      },
+      "releaseUnsigned": {
+        "path": "android/poc/recovery/build/outputs/apk/release/recovery-release-unsigned.apk",
+        "bytes": 2470446,
+        "sha256": "ad76c89eb7d48630883e93006996f1303c9769a19d92a0bd0b4af63e84da4aaf",
+        "dexCount": 1,
+        "nativeEntryCount": 0,
+        "javaxAnnotationClassDefinitionCount": 0,
+        "recoveryCryptoClassDefinitionCount": 21,
+        "recoveryTinkRuntimeClassDefinitionCount": 1,
+        "dex": [
+          {
+            "name": "classes.dex",
+            "bytes": 2455808,
+            "sha256": "1af74a0b95d8289e84c324287c4556f4b923a6f862f1a5ff84f91579ebf4010b"
+          }
+        ]
+      },
+      "scanTool": "Android SDK Build Tools 36.0.0 dexdump",
+      "scansSanitized": true
+    }
+  },
+  "findings": {
+    "implementationP0": 0,
+    "implementationP1": 0,
+    "implementationP2": 0,
+    "requiredExternalGate": {
+      "severity": "P0_STAGE_GATE",
+      "id": "REC-I2B-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
+      "status": "OPEN",
+      "delegationMaySubstitute": false,
+      "blocksRecI3": true
+    }
+  },
+  "notPerformedOrClaimed": {
+    "deviceOrEmulatorExecution": false,
+    "androidKeystoreRuntimeExecution": false,
+    "harnessImplementationOrExecution": false,
+    "orchestratedKillRecoveryCampaign": false,
+    "networkExecution": false,
+    "measurement": false,
+    "metricPass": false,
+    "pocPass": false,
+    "readinessClosure": false,
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "recI3Activation": false,
+    "publication": false,
+    "pullRequest": false,
+    "merge": false,
+    "googleSheetMutation": false
+  },
+  "nextGate": "A distinct accountable Engineering/Security reviewer must independently review the exact terminal implementation commit/tree and this evidence. This record is not that review and cannot activate REC-I3."
+}
