@@ -45,6 +45,16 @@ env:
   EXPECTED_IMAGE_OS: ubuntu24
   EXPECTED_IMAGE_VERSION: 20260810.271.1
   EXPECTED_JAVA_VERSION: 17.0.20
+  EXPECTED_JAVA_BUILD: "17.0.20+8"
+  EXPECTED_JAVA_RELEASE_DATE: "2026-07-21"
+  EXPECTED_JAVA_SHA256: 6dce8306ebf735a85decdc801d84431f6e84525b60adc885624df05edeffb481
+  EXPECTED_JAVAC_SHA256: a05c6a23a79c688d2f395a25e456c81749dc0f720aeea21c29ea44f6e27f3bfc
+  EXPECTED_JDEPS_SHA256: 8333a54439b0b25bec29bfabd0c81de51d06536d778866671031cd2616c7bd1f
+  EXPECTED_JAVAP_SHA256: 1f4a366f20ec1442232c242adeb03a597e20d2383f9ab59be02ab5c472c3136c
+  EXPECTED_JDK_RELEASE_SHA256: 9bba1dfe6fa144a9ed37833b4b3443ab803c41618612b772bdc7330027469346
+  EXPECTED_GREP_PATH: /usr/bin/grep
+  EXPECTED_GREP_VERSION: "grep (GNU grep) 3.11"
+  EXPECTED_GREP_SHA256: 20a35a4c18f2fe9e6305c1cbf866b9c0fcc3f957132ae66028c99ec353bb0a80
 
 jobs:
   authorized-scope:
@@ -171,7 +181,7 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Verify declared runner and JDK versions and record tool hashes
+      - name: Verify the pinned runner and toolchain identity
         shell: bash
         run: |
           set -euo pipefail
@@ -182,7 +192,11 @@ jobs:
           [[ "$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/javac" -version 2>&1)" == "javac ${EXPECTED_JAVA_VERSION}" ]]
           java_version="$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1)"
           printf '%s\n' "${java_version}"
-          [[ "${java_version}" == *"version \"${EXPECTED_JAVA_VERSION}\""* ]]
+          mapfile -t java_version_lines <<<"${java_version}"
+          [[ "${#java_version_lines[@]}" -eq 3 ]]
+          [[ "${java_version_lines[0]}" == "openjdk version \"${EXPECTED_JAVA_VERSION}\" ${EXPECTED_JAVA_RELEASE_DATE}" ]]
+          [[ "${java_version_lines[1]}" == "OpenJDK Runtime Environment Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD})" ]]
+          [[ "${java_version_lines[2]}" == "OpenJDK 64-Bit Server VM Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD}, mixed mode, sharing)" ]]
           sha256sum \
             "${JAVA_HOME_17_X64}/bin/java" \
             "${JAVA_HOME_17_X64}/bin/javac" \
@@ -190,10 +204,19 @@ jobs:
             "${JAVA_HOME_17_X64}/bin/javap" \
             "${JAVA_HOME_17_X64}/release"
           grep_path="$(PATH="/usr/bin:/bin" command -v grep)"
-          [[ "${grep_path}" == /* && -x "${grep_path}" ]]
-          "${clean_env[@]}" "${grep_path}" --version
-          sha256sum "${grep_path}"
-          printf 'DISCOVERED_GREP_BIN=%s\n' "${grep_path}" >>"${GITHUB_ENV}"
+          [[ "${grep_path}" == "${EXPECTED_GREP_PATH}" && -x "${grep_path}" ]]
+          grep_version="$("${clean_env[@]}" "${grep_path}" --version)"
+          printf '%s\n' "${grep_version}"
+          mapfile -t grep_version_lines <<<"${grep_version}"
+          [[ "${grep_version_lines[0]}" == "${EXPECTED_GREP_VERSION}" ]]
+          "${clean_env[@]}" /usr/bin/sha256sum --check --strict - <<SHA256
+          ${EXPECTED_JAVA_SHA256}  ${JAVA_HOME_17_X64}/bin/java
+          ${EXPECTED_JAVAC_SHA256}  ${JAVA_HOME_17_X64}/bin/javac
+          ${EXPECTED_JDEPS_SHA256}  ${JAVA_HOME_17_X64}/bin/jdeps
+          ${EXPECTED_JAVAP_SHA256}  ${JAVA_HOME_17_X64}/bin/javap
+          ${EXPECTED_JDK_RELEASE_SHA256}  ${JAVA_HOME_17_X64}/release
+          ${EXPECTED_GREP_SHA256}  ${grep_path}
+          SHA256
           [[ "$(git rev-parse HEAD)" == "${{ github.event.pull_request.head.sha }}" ]]
           [[ -z "$(git status --porcelain)" ]]
 
@@ -207,7 +230,7 @@ jobs:
           javac_bin="${JAVA_HOME_17_X64}/bin/javac"
           jdeps_bin="${JAVA_HOME_17_X64}/bin/jdeps"
           javap_bin="${JAVA_HOME_17_X64}/bin/javap"
-          grep_bin="${DISCOVERED_GREP_BIN}"
+          grep_bin="${EXPECTED_GREP_PATH}"
           [[ "${grep_bin}" == /* && -x "${grep_bin}" ]]
           main_source="tools/battery_campaign_oracle/src/main/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracle.java"
           test_source="tools/battery_campaign_oracle/src/test/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracleTest.java"
@@ -280,7 +303,7 @@ jobs:
           cleanup
           [[ ! -e "${slice_tmp}" ]]
           trap - EXIT
-          printf '%s\n' 'FROZEN_BYTES_HOST_REVALIDATION_OK POC-BATTERY-001 TOOL_HASHES_RECORDED_NOT_YET_PINNED'
+          printf '%s\n' 'PINNED_TOOLCHAIN_HOST_REVALIDATION_OK POC-BATTERY-001'
 
   stage0-host-vad-p2:
     name: stage0-host-vad-p2
@@ -297,7 +320,7 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Verify declared runner and JDK versions and record tool hashes
+      - name: Verify the pinned runner and toolchain identity
         shell: bash
         run: |
           set -euo pipefail
@@ -308,14 +331,27 @@ jobs:
           [[ "$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/javac" -version 2>&1)" == "javac ${EXPECTED_JAVA_VERSION}" ]]
           java_version="$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1)"
           printf '%s\n' "${java_version}"
-          [[ "${java_version}" == *"version \"${EXPECTED_JAVA_VERSION}\""* ]]
+          mapfile -t java_version_lines <<<"${java_version}"
+          [[ "${#java_version_lines[@]}" -eq 3 ]]
+          [[ "${java_version_lines[0]}" == "openjdk version \"${EXPECTED_JAVA_VERSION}\" ${EXPECTED_JAVA_RELEASE_DATE}" ]]
+          [[ "${java_version_lines[1]}" == "OpenJDK Runtime Environment Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD})" ]]
+          [[ "${java_version_lines[2]}" == "OpenJDK 64-Bit Server VM Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD}, mixed mode, sharing)" ]]
           sha256sum "${JAVA_HOME_17_X64}/bin/java" "${JAVA_HOME_17_X64}/bin/javac" \
             "${JAVA_HOME_17_X64}/bin/jdeps" "${JAVA_HOME_17_X64}/bin/javap" "${JAVA_HOME_17_X64}/release"
           grep_path="$(PATH="/usr/bin:/bin" command -v grep)"
-          [[ "${grep_path}" == /* && -x "${grep_path}" ]]
-          "${clean_env[@]}" "${grep_path}" --version
-          sha256sum "${grep_path}"
-          printf 'DISCOVERED_GREP_BIN=%s\n' "${grep_path}" >>"${GITHUB_ENV}"
+          [[ "${grep_path}" == "${EXPECTED_GREP_PATH}" && -x "${grep_path}" ]]
+          grep_version="$("${clean_env[@]}" "${grep_path}" --version)"
+          printf '%s\n' "${grep_version}"
+          mapfile -t grep_version_lines <<<"${grep_version}"
+          [[ "${grep_version_lines[0]}" == "${EXPECTED_GREP_VERSION}" ]]
+          "${clean_env[@]}" /usr/bin/sha256sum --check --strict - <<SHA256
+          ${EXPECTED_JAVA_SHA256}  ${JAVA_HOME_17_X64}/bin/java
+          ${EXPECTED_JAVAC_SHA256}  ${JAVA_HOME_17_X64}/bin/javac
+          ${EXPECTED_JDEPS_SHA256}  ${JAVA_HOME_17_X64}/bin/jdeps
+          ${EXPECTED_JAVAP_SHA256}  ${JAVA_HOME_17_X64}/bin/javap
+          ${EXPECTED_JDK_RELEASE_SHA256}  ${JAVA_HOME_17_X64}/release
+          ${EXPECTED_GREP_SHA256}  ${grep_path}
+          SHA256
           [[ "$(git rev-parse HEAD)" == "${{ github.event.pull_request.head.sha }}" ]]
           [[ -z "$(git status --porcelain)" ]]
 
@@ -329,7 +365,7 @@ jobs:
           javac_bin="${JAVA_HOME_17_X64}/bin/javac"
           jdeps_bin="${JAVA_HOME_17_X64}/bin/jdeps"
           javap_bin="${JAVA_HOME_17_X64}/bin/javap"
-          grep_bin="${DISCOVERED_GREP_BIN}"
+          grep_bin="${EXPECTED_GREP_PATH}"
           [[ "${grep_bin}" == /* && -x "${grep_bin}" ]]
           main_source="tools/vad_p2_oracle/src/main/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracle.java"
           test_source="tools/vad_p2_oracle/src/test/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracleTest.java"
@@ -399,7 +435,7 @@ jobs:
           cleanup
           [[ ! -e "${slice_tmp}" ]]
           trap - EXIT
-          printf '%s\n' 'FROZEN_BYTES_HOST_REVALIDATION_OK POC-VAD-001 TOOL_HASHES_RECORDED_NOT_YET_PINNED'
+          printf '%s\n' 'PINNED_TOOLCHAIN_HOST_REVALIDATION_OK POC-VAD-001'
 
   stage0-host-decision:
     name: stage0-host-decision
@@ -416,7 +452,7 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Verify declared runner and JDK versions and record tool hashes
+      - name: Verify the pinned runner and toolchain identity
         shell: bash
         run: |
           set -euo pipefail
@@ -426,14 +462,27 @@ jobs:
           [[ "$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/javac" -version 2>&1)" == "javac ${EXPECTED_JAVA_VERSION}" ]]
           java_version="$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1)"
           printf '%s\n' "${java_version}"
-          [[ "${java_version}" == *"version \"${EXPECTED_JAVA_VERSION}\""* ]]
+          mapfile -t java_version_lines <<<"${java_version}"
+          [[ "${#java_version_lines[@]}" -eq 3 ]]
+          [[ "${java_version_lines[0]}" == "openjdk version \"${EXPECTED_JAVA_VERSION}\" ${EXPECTED_JAVA_RELEASE_DATE}" ]]
+          [[ "${java_version_lines[1]}" == "OpenJDK Runtime Environment Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD})" ]]
+          [[ "${java_version_lines[2]}" == "OpenJDK 64-Bit Server VM Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD}, mixed mode, sharing)" ]]
           sha256sum "${JAVA_HOME_17_X64}/bin/java" "${JAVA_HOME_17_X64}/bin/javac" \
             "${JAVA_HOME_17_X64}/bin/jdeps" "${JAVA_HOME_17_X64}/bin/javap" "${JAVA_HOME_17_X64}/release"
           grep_path="$(PATH="/usr/bin:/bin" command -v grep)"
-          [[ "${grep_path}" == /* && -x "${grep_path}" ]]
-          "${clean_env[@]}" "${grep_path}" --version
-          sha256sum "${grep_path}"
-          printf 'DISCOVERED_GREP_BIN=%s\n' "${grep_path}" >>"${GITHUB_ENV}"
+          [[ "${grep_path}" == "${EXPECTED_GREP_PATH}" && -x "${grep_path}" ]]
+          grep_version="$("${clean_env[@]}" "${grep_path}" --version)"
+          printf '%s\n' "${grep_version}"
+          mapfile -t grep_version_lines <<<"${grep_version}"
+          [[ "${grep_version_lines[0]}" == "${EXPECTED_GREP_VERSION}" ]]
+          "${clean_env[@]}" /usr/bin/sha256sum --check --strict - <<SHA256
+          ${EXPECTED_JAVA_SHA256}  ${JAVA_HOME_17_X64}/bin/java
+          ${EXPECTED_JAVAC_SHA256}  ${JAVA_HOME_17_X64}/bin/javac
+          ${EXPECTED_JDEPS_SHA256}  ${JAVA_HOME_17_X64}/bin/jdeps
+          ${EXPECTED_JAVAP_SHA256}  ${JAVA_HOME_17_X64}/bin/javap
+          ${EXPECTED_JDK_RELEASE_SHA256}  ${JAVA_HOME_17_X64}/release
+          ${EXPECTED_GREP_SHA256}  ${grep_path}
+          SHA256
           [[ "$(git rev-parse HEAD)" == "${{ github.event.pull_request.head.sha }}" ]]
           [[ -z "$(git status --porcelain)" ]]
 
@@ -447,7 +496,7 @@ jobs:
           javac_bin="${JAVA_HOME_17_X64}/bin/javac"
           jdeps_bin="${JAVA_HOME_17_X64}/bin/jdeps"
           javap_bin="${JAVA_HOME_17_X64}/bin/javap"
-          grep_bin="${DISCOVERED_GREP_BIN}"
+          grep_bin="${EXPECTED_GREP_PATH}"
           [[ "${grep_bin}" == /* && -x "${grep_bin}" ]]
           main_source="tools/decision_revision_oracle/src/main/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracle.java"
           test_source="tools/decision_revision_oracle/src/test/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracleTest.java"
@@ -513,7 +562,7 @@ jobs:
           cleanup
           [[ ! -e "${slice_tmp}" ]]
           trap - EXIT
-          printf '%s\n' 'FROZEN_BYTES_HOST_REVALIDATION_OK POC-DECISION-001 TOOL_HASHES_RECORDED_NOT_YET_PINNED'
+          printf '%s\n' 'PINNED_TOOLCHAIN_HOST_REVALIDATION_OK POC-DECISION-001'
 
   stage0-host-data:
     name: stage0-host-data
@@ -530,7 +579,7 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Verify declared runner and JDK versions and record tool hashes
+      - name: Verify the pinned runner and toolchain identity
         shell: bash
         run: |
           set -euo pipefail
@@ -540,14 +589,27 @@ jobs:
           [[ "$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/javac" -version 2>&1)" == "javac ${EXPECTED_JAVA_VERSION}" ]]
           java_version="$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1)"
           printf '%s\n' "${java_version}"
-          [[ "${java_version}" == *"version \"${EXPECTED_JAVA_VERSION}\""* ]]
+          mapfile -t java_version_lines <<<"${java_version}"
+          [[ "${#java_version_lines[@]}" -eq 3 ]]
+          [[ "${java_version_lines[0]}" == "openjdk version \"${EXPECTED_JAVA_VERSION}\" ${EXPECTED_JAVA_RELEASE_DATE}" ]]
+          [[ "${java_version_lines[1]}" == "OpenJDK Runtime Environment Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD})" ]]
+          [[ "${java_version_lines[2]}" == "OpenJDK 64-Bit Server VM Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD}, mixed mode, sharing)" ]]
           sha256sum "${JAVA_HOME_17_X64}/bin/java" "${JAVA_HOME_17_X64}/bin/javac" \
             "${JAVA_HOME_17_X64}/bin/jdeps" "${JAVA_HOME_17_X64}/bin/javap" "${JAVA_HOME_17_X64}/release"
           grep_path="$(PATH="/usr/bin:/bin" command -v grep)"
-          [[ "${grep_path}" == /* && -x "${grep_path}" ]]
-          "${clean_env[@]}" "${grep_path}" --version
-          sha256sum "${grep_path}"
-          printf 'DISCOVERED_GREP_BIN=%s\n' "${grep_path}" >>"${GITHUB_ENV}"
+          [[ "${grep_path}" == "${EXPECTED_GREP_PATH}" && -x "${grep_path}" ]]
+          grep_version="$("${clean_env[@]}" "${grep_path}" --version)"
+          printf '%s\n' "${grep_version}"
+          mapfile -t grep_version_lines <<<"${grep_version}"
+          [[ "${grep_version_lines[0]}" == "${EXPECTED_GREP_VERSION}" ]]
+          "${clean_env[@]}" /usr/bin/sha256sum --check --strict - <<SHA256
+          ${EXPECTED_JAVA_SHA256}  ${JAVA_HOME_17_X64}/bin/java
+          ${EXPECTED_JAVAC_SHA256}  ${JAVA_HOME_17_X64}/bin/javac
+          ${EXPECTED_JDEPS_SHA256}  ${JAVA_HOME_17_X64}/bin/jdeps
+          ${EXPECTED_JAVAP_SHA256}  ${JAVA_HOME_17_X64}/bin/javap
+          ${EXPECTED_JDK_RELEASE_SHA256}  ${JAVA_HOME_17_X64}/release
+          ${EXPECTED_GREP_SHA256}  ${grep_path}
+          SHA256
           [[ "$(git rev-parse HEAD)" == "${{ github.event.pull_request.head.sha }}" ]]
           [[ -z "$(git status --porcelain)" ]]
 
@@ -561,7 +623,7 @@ jobs:
           javac_bin="${JAVA_HOME_17_X64}/bin/javac"
           jdeps_bin="${JAVA_HOME_17_X64}/bin/jdeps"
           javap_bin="${JAVA_HOME_17_X64}/bin/javap"
-          grep_bin="${DISCOVERED_GREP_BIN}"
+          grep_bin="${EXPECTED_GREP_PATH}"
           [[ "${grep_bin}" == /* && -x "${grep_bin}" ]]
           main_source="tools/poc_data_manifest_validator/src/main/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidator.java"
           test_source="tools/poc_data_manifest_validator/src/test/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidatorTest.java"
@@ -629,7 +691,7 @@ jobs:
           cleanup
           [[ ! -e "${slice_tmp}" ]]
           trap - EXIT
-          printf '%s\n' 'FROZEN_BYTES_HOST_REVALIDATION_OK POC-DATA-001 TOOL_HASHES_RECORDED_NOT_YET_PINNED'
+          printf '%s\n' 'PINNED_TOOLCHAIN_HOST_REVALIDATION_OK POC-DATA-001'
 
   stage0-host-offline-i1:
     name: stage0-host-offline-i1
@@ -656,7 +718,7 @@ jobs:
           [[ "${OBSERVED_BASE_REF}" == "codex/poc-offline-i1-oracle-scope" ]]
           [[ "${OBSERVED_BASE_SHA}" == "d164b6372ad3e717762d48a9a3ea7e6551602ab7" ]]
 
-      - name: Verify declared runner and JDK versions and record tool hashes
+      - name: Verify the pinned runner and toolchain identity
         shell: bash
         run: |
           set -euo pipefail
@@ -666,14 +728,27 @@ jobs:
           [[ "$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/javac" -version 2>&1)" == "javac ${EXPECTED_JAVA_VERSION}" ]]
           java_version="$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1)"
           printf '%s\n' "${java_version}"
-          [[ "${java_version}" == *"version \"${EXPECTED_JAVA_VERSION}\""* ]]
+          mapfile -t java_version_lines <<<"${java_version}"
+          [[ "${#java_version_lines[@]}" -eq 3 ]]
+          [[ "${java_version_lines[0]}" == "openjdk version \"${EXPECTED_JAVA_VERSION}\" ${EXPECTED_JAVA_RELEASE_DATE}" ]]
+          [[ "${java_version_lines[1]}" == "OpenJDK Runtime Environment Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD})" ]]
+          [[ "${java_version_lines[2]}" == "OpenJDK 64-Bit Server VM Temurin-${EXPECTED_JAVA_BUILD} (build ${EXPECTED_JAVA_BUILD}, mixed mode, sharing)" ]]
           sha256sum "${JAVA_HOME_17_X64}/bin/java" "${JAVA_HOME_17_X64}/bin/javac" \
             "${JAVA_HOME_17_X64}/bin/jdeps" "${JAVA_HOME_17_X64}/bin/javap" "${JAVA_HOME_17_X64}/release"
           grep_path="$(PATH="/usr/bin:/bin" command -v grep)"
-          [[ "${grep_path}" == /* && -x "${grep_path}" ]]
-          "${clean_env[@]}" "${grep_path}" --version
-          sha256sum "${grep_path}"
-          printf 'DISCOVERED_GREP_BIN=%s\n' "${grep_path}" >>"${GITHUB_ENV}"
+          [[ "${grep_path}" == "${EXPECTED_GREP_PATH}" && -x "${grep_path}" ]]
+          grep_version="$("${clean_env[@]}" "${grep_path}" --version)"
+          printf '%s\n' "${grep_version}"
+          mapfile -t grep_version_lines <<<"${grep_version}"
+          [[ "${grep_version_lines[0]}" == "${EXPECTED_GREP_VERSION}" ]]
+          "${clean_env[@]}" /usr/bin/sha256sum --check --strict - <<SHA256
+          ${EXPECTED_JAVA_SHA256}  ${JAVA_HOME_17_X64}/bin/java
+          ${EXPECTED_JAVAC_SHA256}  ${JAVA_HOME_17_X64}/bin/javac
+          ${EXPECTED_JDEPS_SHA256}  ${JAVA_HOME_17_X64}/bin/jdeps
+          ${EXPECTED_JAVAP_SHA256}  ${JAVA_HOME_17_X64}/bin/javap
+          ${EXPECTED_JDK_RELEASE_SHA256}  ${JAVA_HOME_17_X64}/release
+          ${EXPECTED_GREP_SHA256}  ${grep_path}
+          SHA256
           [[ "$(git rev-parse HEAD)" == "${{ github.event.pull_request.head.sha }}" ]]
           [[ -z "$(git status --porcelain)" ]]
 
@@ -687,7 +762,7 @@ jobs:
           javac_bin="${JAVA_HOME_17_X64}/bin/javac"
           jdeps_bin="${JAVA_HOME_17_X64}/bin/jdeps"
           javap_bin="${JAVA_HOME_17_X64}/bin/javap"
-          grep_bin="${DISCOVERED_GREP_BIN}"
+          grep_bin="${EXPECTED_GREP_PATH}"
           [[ "${grep_bin}" == /* && -x "${grep_bin}" ]]
           main_source="tools/offline_i1_oracle/src/main/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1Oracle.java"
           test_source="tools/offline_i1_oracle/src/test/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1OracleTest.java"
@@ -786,7 +861,7 @@ jobs:
           cleanup
           [[ ! -e "${slice_tmp}" ]]
           trap - EXIT
-          printf '%s\n' 'FROZEN_BYTES_HOST_REVALIDATION_OK POC-OFFLINE-001 I1 TOOL_HASHES_RECORDED_NOT_YET_PINNED'
+          printf '%s\n' 'PINNED_TOOLCHAIN_HOST_REVALIDATION_OK POC-OFFLINE-001 I1'
 
   stage0-host-advisory:
     name: stage0-host-advisory
