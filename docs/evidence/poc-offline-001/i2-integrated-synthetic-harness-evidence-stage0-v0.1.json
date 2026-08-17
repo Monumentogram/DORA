@@ -3,8 +3,8 @@
   "recordId": "OFF-I2-INTEGRATED-SYNTHETIC-HARNESS-EVIDENCE-001",
   "recordDate": "2026-08-17",
   "timezone": "Europe/Moscow",
-  "disposition": "PURE_HOST_SYNTHETIC_IN_MEMORY_SEMANTICS_REMEDIATION_LOCAL_CHECKS_PASS_EXACT_HEAD_CI_REQUIRED",
-  "artifactState": "LOCAL_REMEDIATION_AND_TEST_EVIDENCE_COMPLETE_DRAFT_PR_EXACT_HEAD_CI_REQUIRED",
+  "disposition": "PURE_HOST_SYNTHETIC_IN_MEMORY_SEMANTICS_TWO_REMEDIATIONS_LOCAL_CHECKS_PASS_FRESH_EXACT_HEAD_CI_AND_REVIEW_REQUIRED",
+  "artifactState": "LOCAL_RESULT_ENVELOPE_REMEDIATION_AND_TEST_EVIDENCE_COMPLETE_DRAFT_PR_FRESH_EXACT_HEAD_CI_AND_REVIEW_REQUIRED",
   "backlogTruth": {
     "id": "POC-OFFLINE-001",
     "status": "TODO",
@@ -30,7 +30,7 @@
     "sourceHead": "76cb1afc164757a71c7a70caf476577399b42ed1",
     "sourceTree": "8eb3a5c0cabf458b80a1bb06167fe2ddff267701",
     "findingSeverity": "P1",
-    "findingStatus": "CONFIRMED_AND_LOCALLY_REMEDIATED_EXACT_HEAD_CI_REQUIRED",
+    "findingStatus": "CONFIRMED_REMEDIATED_AND_EXACT_HEAD_CI_PASSED_FRESH_REVIEW_FOUND_SEPARATE_P1",
     "finding": "state and snapshot validation did not bind canonical queue input to local lineage, exhaustively bind queue lifecycle to action index, or bind trace prefixes to the deterministic action outcome and state chain",
     "allowedFiles": [
       ".github/workflows/stage0-host-oracles.yml",
@@ -49,11 +49,55 @@
       "androidBootstrapJob": 95372691342,
       "conclusion": "success"
     },
+    "remediatedExactHeadCi": {
+      "head": "8eff995683f9cad2efb4fa04cbd339356062c692",
+      "hostRun": 32027933649,
+      "authorizedScopeJob": 95381190958,
+      "offlineI2Job": 95381218729,
+      "advisoryJob": 95381289446,
+      "androidRun": 32027933676,
+      "androidAttempt": 2,
+      "searchSmokeJob": 95382250677,
+      "androidBootstrapJob": 95382249813,
+      "initialAndroidBootstrapFailureJob": 95381190961,
+      "initialFailureClass": "EXTERNAL_MAVEN_CENTRAL_HTTP_403",
+      "conclusion": "success"
+    },
     "invariantsAdded": [
       "canonicalInputDigest equals SHA-256 domain QUEUE_INPUT_V1 over conversationIdHash and exportDigest",
       "local phase queue state counters and replay marker equal the exhaustive action-index lifecycle",
       "every trace prefix row is rebound by deterministic replay to its exact sequence action outcome pre-state post-state local aggregate queue identity and final state before transition snapshot restore and result acceptance"
     ],
+    "scopeExpansion": false,
+    "readyOrMerge": false
+  },
+  "resultEnvelopeRemediation": {
+    "authorizationId": "OFF-I2-RESULT-ENVELOPE-BINDING-REMEDIATION-AUTH-20260817-02",
+    "sourcePullRequest": 37,
+    "sourceHead": "8eff995683f9cad2efb4fa04cbd339356062c692",
+    "sourceTree": "da23096754f4279303a7b8b2ee701f857507d923",
+    "independentTechnicalVerdict": {
+      "disposition": "CHANGES_REQUIRED",
+      "P0": 0,
+      "P1": 1,
+      "P2": 0
+    },
+    "findingStatus": "CONFIRMED_AND_LOCALLY_REMEDIATED_FRESH_EXACT_HEAD_CI_AND_REVIEW_REQUIRED",
+    "finding": "RunResult accepted a declared profile different from finalState.profile, arbitrary shape-valid I1 witness digests, and an arbitrary shape-valid summaryDigest because the result envelope did not recompute those bindings",
+    "allowedFiles": [
+      ".github/workflows/stage0-host-oracles.yml",
+      "docs/evidence/poc-offline-001/i2-integrated-synthetic-harness-evidence-stage0-v0.1.json",
+      "tools/offline_i2_integrated_harness/src/main/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarness.java",
+      "tools/offline_i2_integrated_harness/src/test/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarnessTest.java"
+    ],
+    "invariantsAdded": [
+      "declared RunResult profile equals finalState.profile",
+      "supplied I1Witnesses equals the exact six-field verifyI1Witnesses output",
+      "RUN_SUMMARY_V1 is recomputed from the bound profile exact final state and local aggregate copied trace size and digest bound witnesses and fixed proof class",
+      "profile witness and summary mismatches fail closed without mutating the accepted state trace witnesses or summary"
+    ],
+    "freshExactHeadCiRequired": true,
+    "freshIndependentReviewRequired": true,
     "scopeExpansion": false,
     "readyOrMerge": false
   },
@@ -129,16 +173,16 @@
     {
       "kind": "I2_MAIN",
       "path": "tools/offline_i2_integrated_harness/src/main/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarness.java",
-      "bytes": 46612,
-      "lines": 1351,
-      "sha256": "e3bc325fac1edee01d92af7cef3b143962ea56b5594612c3dbc31fc0bb392312"
+      "bytes": 47515,
+      "lines": 1378,
+      "sha256": "74a775220f58fedcb51fc3eeac3d6d0e652377e19e1597269105c5a432e25ac2"
     },
     {
       "kind": "I2_TEST",
       "path": "tools/offline_i2_integrated_harness/src/test/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarnessTest.java",
-      "bytes": 37390,
-      "lines": 888,
-      "sha256": "1dbbe1b28c1aab139d1721e8eb5af161db9d45850191b7fbc8a25bf4abdcd3a8"
+      "bytes": 41310,
+      "lines": 982,
+      "sha256": "fa307e3fdc1c03a2ebbe9b7a916f9523374384342c04748bf406bfb7ead07383"
     }
   ],
   "implementationBoundary": {
@@ -224,6 +268,9 @@
     "canonicalInputBoundToConversationAndExport": true,
     "queueLifecycleBoundToExactActionIndex": true,
     "tracePrefixBoundBeforeStateAcceptance": true,
+    "runResultProfileBoundToFinalState": true,
+    "runResultWitnessesBoundToSixCanonicalI1Witnesses": true,
+    "runSummaryRecomputedFromBoundEnvelope": true,
     "userOwnedProtocolOverwritten": false,
     "taskSourceLineageOverwritten": false
   },
@@ -278,6 +325,10 @@
       "canonical queue input mismatch fails closed before state acceptance",
       "foreign queue states phase-index mismatches counter drift and replay-marker drift fail closed",
       "trace action outcome sequence chain queue identity intermediate local digest and final state drift fail closed even when a forged trace digest is self-consistent",
+      "RunResult declared profile mismatch fails closed",
+      "each of the six RunResult I1 witness fields fails closed when replaced independently",
+      "RunResult summary digest is recomputed from the exact bound envelope and mismatch fails closed",
+      "RunResult adversarial construction does not mutate accepted state trace witnesses or summary and copies the supplied trace",
       "I1 model queue snapshot reconnect and replay witness parity",
       "null order digest snapshot queue identity model admission and counter tamper fail closed",
       "immutable result collections and content-free evidence shape"
@@ -340,14 +391,21 @@
     "formalReviewer": false,
     "independentAdvisoryReviewPerformed": false,
     "remediationReviewClass": "TECHNICAL_REMEDIATION_NOT_FORMAL_INDEPENDENT_ADVISORY",
-    "confirmedFindings": {
+    "latestIndependentTechnicalVerdict": {
+      "sourceHead": "8eff995683f9cad2efb4fa04cbd339356062c692",
+      "disposition": "CHANGES_REQUIRED",
       "P0": 0,
       "P1": 1,
       "P2": 0
     },
+    "confirmedFindings": {
+      "P0": 0,
+      "P1": 2,
+      "P2": 0
+    },
     "locallyRemediatedFindings": {
       "P0": 0,
-      "P1": 1,
+      "P1": 2,
       "P2": 0
     },
     "remainingImplementerLocalFindings": {
@@ -355,7 +413,8 @@
       "P1": 0,
       "P2": 0
     },
-    "findingCountsClass": "TECHNICAL_REMEDIATION_FINDING_LOCALLY_CLOSED_EXACT_HEAD_CI_PENDING_NOT_INDEPENDENT_FORMAL_REVIEW"
+    "freshIndependentReviewStatus": "REQUIRED_AFTER_FRESH_EXACT_HEAD_CI",
+    "findingCountsClass": "TWO_TECHNICAL_P1_FINDINGS_LOCALLY_REMEDIATED_FRESH_EXACT_HEAD_CI_AND_REVIEW_PENDING_NOT_FORMAL_REVIEW"
   },
   "privacy": {
     "repositoryOwnedSyntheticFixtureOnly": true,
@@ -376,6 +435,7 @@
       "digest-linked capture save rules-only processing history search task user edit copy and export semantics are integrated in memory",
       "the denied queue has zero attempts while local work remains usable",
       "an immutable in-memory restore and pure reconnect conflict replay projection preserve user ownership and at-most-one effect",
+      "the RunResult envelope locally rejects mismatched profile witnesses trace binding summary digest and proof class",
       "the exact implementation has local Java 17 compile test static and known-answer evidence"
     ],
     "mustNotClaim": [

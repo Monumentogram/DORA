@@ -274,12 +274,30 @@ public final class OfflineI2IntegratedHarness {
         throw fault(Diagnostic.INVALID_STATE);
       }
       trace = List.copyOf(trace);
+      if (profile != finalState.profile()) {
+        throw fault(Diagnostic.INVALID_STATE);
+      }
+      String expectedTraceDigest = digestTrace(trace);
       if (trace.size() != ACTION_ORDER.size()
           || finalState.nextActionIndex() != ACTION_ORDER.size()
-          || !traceDigest.equals(digestTrace(trace))) {
+          || !traceDigest.equals(expectedTraceDigest)) {
         throw fault(Diagnostic.INVALID_STATE);
       }
       validateTracePrefix(finalState, trace);
+      I1Witnesses expectedI1Witnesses = verifyI1Witnesses();
+      if (!i1Witnesses.equals(expectedI1Witnesses)) {
+        throw fault(Diagnostic.I1_WITNESS_MISMATCH);
+      }
+      String expectedSummaryDigest =
+          digestRunSummary(
+              profile,
+              finalState,
+              trace,
+              expectedTraceDigest,
+              expectedI1Witnesses);
+      if (!summaryDigest.equals(expectedSummaryDigest)) {
+        throw fault(Diagnostic.INVALID_STATE);
+      }
     }
   }
 
@@ -307,15 +325,7 @@ public final class OfflineI2IntegratedHarness {
     I1Witnesses witnesses = verifyI1Witnesses();
     String traceDigest = digestTrace(immutableTrace);
     String summaryDigest =
-        digest(
-            "RUN_SUMMARY_V1",
-            profile.name(),
-            Integer.toString(immutableTrace.size()),
-            digestState(state),
-            digestLocal(state.local()),
-            traceDigest,
-            digestWitnesses(witnesses),
-            PROOF_CLASS);
+        digestRunSummary(profile, state, immutableTrace, traceDigest, witnesses);
     return new RunResult(
         profile,
         state,
@@ -774,6 +784,23 @@ public final class OfflineI2IntegratedHarness {
       expected++;
     }
     return digest("TRACE_V1", fields.toArray(String[]::new));
+  }
+
+  private static String digestRunSummary(
+      ModelProfile profile,
+      IntegratedState finalState,
+      List<TraceRow> trace,
+      String traceDigest,
+      I1Witnesses i1Witnesses) {
+    return digest(
+        "RUN_SUMMARY_V1",
+        profile.name(),
+        Integer.toString(trace.size()),
+        digestState(finalState),
+        digestLocal(finalState.local()),
+        traceDigest,
+        digestWitnesses(i1Witnesses),
+        PROOF_CLASS);
   }
 
   private static void validateTracePrefix(IntegratedState state, List<TraceRow> trace) {

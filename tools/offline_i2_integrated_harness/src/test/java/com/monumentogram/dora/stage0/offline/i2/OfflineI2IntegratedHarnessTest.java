@@ -17,6 +17,7 @@ public final class OfflineI2IntegratedHarnessTest {
     testIntegratedLineageAndModelBoundary();
     testQueueSnapshotConflictAndReplay();
     testI1Witnesses();
+    testRunResultEnvelopeBindingsFailClosed();
     testFailClosedBeforeMutation();
     testQueueAndTraceBindingsFailClosed();
     testImmutabilityAndContentFreeShape();
@@ -351,6 +352,99 @@ public final class OfflineI2IntegratedHarnessTest {
         "4cf8509cc8356d7b1ffe1fe00ad9cea75c9a178a121117269dc015e9dad81ec3",
         witnesses.replayExactlyOnceDigest(),
         "T-I1-REPLAY");
+  }
+
+  private static void testRunResultEnvelopeBindingsFailClosed() {
+    OfflineI2IntegratedHarness.RunResult result =
+        OfflineI2IntegratedHarness.run(
+            OfflineI2IntegratedHarness.ModelProfile.MODEL_ABSENT);
+    OfflineI2IntegratedHarness.IntegratedState originalState = result.finalState();
+    List<OfflineI2IntegratedHarness.TraceRow> originalTrace = List.copyOf(result.trace());
+    OfflineI2IntegratedHarness.I1Witnesses originalWitnesses = result.i1Witnesses();
+    String originalSummary = result.summaryDigest();
+
+    expectFault(
+        OfflineI2IntegratedHarness.Diagnostic.INVALID_STATE,
+        () ->
+            new OfflineI2IntegratedHarness.RunResult(
+                OfflineI2IntegratedHarness.ModelProfile.MODEL_PRESENT_UNAPPROVED,
+                result.finalState(),
+                result.trace(),
+                result.i1Witnesses(),
+                result.traceDigest(),
+                result.summaryDigest(),
+                result.proofClass()),
+        "T-FAIL-RUN-PROFILE-STATE-BINDING");
+
+    String[] witnessFieldIds = {
+      "MODEL-ABSENT",
+      "DENIED-QUEUE",
+      "LOCAL-WHILE-QUEUED",
+      "SNAPSHOT-CONTINUATION",
+      "RECONNECT-EXACTLY-ONCE",
+      "REPLAY-EXACTLY-ONCE"
+    };
+    for (int index = 0; index < witnessFieldIds.length; index++) {
+      OfflineI2IntegratedHarness.I1Witnesses forgedWitnesses =
+          witnessWithTamper(result.i1Witnesses(), index);
+      expectFault(
+          OfflineI2IntegratedHarness.Diagnostic.I1_WITNESS_MISMATCH,
+          () ->
+              new OfflineI2IntegratedHarness.RunResult(
+                  result.profile(),
+                  result.finalState(),
+                  result.trace(),
+                  forgedWitnesses,
+                  result.traceDigest(),
+                  result.summaryDigest(),
+                  result.proofClass()),
+          "T-FAIL-RUN-WITNESS-" + witnessFieldIds[index]);
+    }
+
+    expectFault(
+        OfflineI2IntegratedHarness.Diagnostic.INVALID_STATE,
+        () ->
+            new OfflineI2IntegratedHarness.RunResult(
+                result.profile(),
+                result.finalState(),
+                result.trace(),
+                result.i1Witnesses(),
+                result.traceDigest(),
+                ZERO_HASH,
+                result.proofClass()),
+        "T-FAIL-RUN-SUMMARY-BINDING");
+
+    List<OfflineI2IntegratedHarness.TraceRow> mutableTrace =
+        new ArrayList<>(result.trace());
+    OfflineI2IntegratedHarness.RunResult rebound =
+        new OfflineI2IntegratedHarness.RunResult(
+            result.profile(),
+            result.finalState(),
+            mutableTrace,
+            result.i1Witnesses(),
+            result.traceDigest(),
+            result.summaryDigest(),
+            result.proofClass());
+    mutableTrace.clear();
+    equal(originalTrace, rebound.trace(), "T-RUN-ENVELOPE-COPIES-TRACE");
+    equal(originalState, result.finalState(), "T-RUN-ENVELOPE-NO-STATE-MUTATION");
+    equal(originalTrace, result.trace(), "T-RUN-ENVELOPE-NO-TRACE-MUTATION");
+    equal(
+        originalWitnesses,
+        result.i1Witnesses(),
+        "T-RUN-ENVELOPE-NO-WITNESS-MUTATION");
+    equal(originalSummary, result.summaryDigest(), "T-RUN-ENVELOPE-NO-SUMMARY-MUTATION");
+  }
+
+  private static OfflineI2IntegratedHarness.I1Witnesses witnessWithTamper(
+      OfflineI2IntegratedHarness.I1Witnesses prior, int fieldIndex) {
+    return new OfflineI2IntegratedHarness.I1Witnesses(
+        fieldIndex == 0 ? ZERO_HASH : prior.modelAbsentDigest(),
+        fieldIndex == 1 ? ZERO_HASH : prior.deniedQueueDigest(),
+        fieldIndex == 2 ? ZERO_HASH : prior.localWhileQueuedDigest(),
+        fieldIndex == 3 ? ZERO_HASH : prior.snapshotContinuationDigest(),
+        fieldIndex == 4 ? ZERO_HASH : prior.reconnectExactlyOnceDigest(),
+        fieldIndex == 5 ? ZERO_HASH : prior.replayExactlyOnceDigest());
   }
 
   private static void testFailClosedBeforeMutation() {
