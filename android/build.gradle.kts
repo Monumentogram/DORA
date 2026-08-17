@@ -5,6 +5,11 @@ plugins {
     alias(libs.plugins.spotless)
 }
 
+val recoveryI2aGraphProbe =
+    providers.gradleProperty("doraRecoveryI2aGraphProbe").map(String::toBoolean).orElse(false)
+val recoveryI2aOwnedClasspath =
+    Regex("^(debug|release|benchmark).*?(CompileClasspath|RuntimeClasspath)$")
+
 val detektCli by configurations.creating
 
 dependencies {
@@ -51,5 +56,15 @@ tasks.register<JavaExec>("detekt") {
 allprojects {
     dependencyLocking {
         lockAllConfigurations()
+    }
+
+    if (recoveryI2aGraphProbe.get()) {
+        configurations.configureEach {
+            val isRecoveryOwnedClasspath =
+                project.path == ":poc:recovery" && recoveryI2aOwnedClasspath.matches(name)
+            if (!isRecoveryOwnedClasspath) {
+                resolutionStrategy.deactivateDependencyLocking()
+            }
+        }
     }
 }
