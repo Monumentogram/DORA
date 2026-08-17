@@ -9,8 +9,7 @@ plugins {
 
 val recoveryI2aGraphProbe =
     providers.gradleProperty("doraRecoveryI2aGraphProbe").map(String::toBoolean).orElse(false)
-val recoveryI2aOwnedClasspath =
-    Regex("^(debug|release|benchmark).*?(CompileClasspath|RuntimeClasspath)$")
+val recoveryI2aPolicyConfiguration = Regex("^(debug|release|benchmark).*")
 val recoveryModulePath = project.path
 
 android {
@@ -79,10 +78,11 @@ tasks.register("recoveryI2aResolveOwnedConfigurations") {
         }
 
         val allResolvable = configurations.filter { it.isCanBeResolved }.sortedBy { it.name }
-        val owned = allResolvable.filter { recoveryI2aOwnedClasspath.matches(it.name) }
-        check(owned.isNotEmpty()) { "No recovery-owned compile/runtime configurations found" }
+        val policyCovered = allResolvable.filter { recoveryI2aPolicyConfiguration.matches(it.name) }
+        check(policyCovered.isNotEmpty()) { "No Recovery policy-covered configurations found" }
 
-        val configurationReports = owned.map { configuration ->
+        val configurationReports = allResolvable.map { configuration ->
+            val isPolicyCovered = recoveryI2aPolicyConfiguration.matches(configuration.name)
             val components =
                 configuration.incoming.resolutionResult.allComponents
                     .mapNotNull { component ->
@@ -133,7 +133,7 @@ tasks.register("recoveryI2aResolveOwnedConfigurations") {
                     }
                     .sortedBy { it["coordinate"].toString() }
             val jsr305Components = components.filter {
-                it == "com.google.code.findbugs:jsr305:3.0.2"
+                it.startsWith("com.google.code.findbugs:jsr305:")
             }
             val tinkComponents = components.filter {
                 it.startsWith("com.google.crypto.tink:tink-android:")
@@ -143,37 +143,46 @@ tasks.register("recoveryI2aResolveOwnedConfigurations") {
                 it["packagedJsr305Definitions"] as List<String>
             }
 
-            check(jsr305Components.isEmpty()) {
-                "JSR-305 reappeared in ${configuration.name}: $jsr305Components"
-            }
-            check(
-                tinkComponents.all {
-                    it == "com.google.crypto.tink:tink-android:1.23.0"
+            if (isPolicyCovered) {
+                check(jsr305Components.isEmpty()) {
+                    "JSR-305 reappeared in ${configuration.name}: $jsr305Components"
                 }
-            ) {
-                "Tink version drift in ${configuration.name}: $tinkComponents"
-            }
-            if (
-                configuration.name in
-                    setOf(
-                        "debugCompileClasspath",
-                        "debugRuntimeClasspath",
-                        "releaseCompileClasspath",
-                        "releaseRuntimeClasspath",
-                    )
-            ) {
-                check(tinkComponents == listOf("com.google.crypto.tink:tink-android:1.23.0")) {
-                    "Exact Tink coordinate absent from ${configuration.name}: $tinkComponents"
+                check(
+                    tinkComponents.all {
+                        it == "com.google.crypto.tink:tink-android:1.23.0"
+                    }
+                ) {
+                    "Tink version drift in ${configuration.name}: $tinkComponents"
                 }
-            }
-            check(packagedJsr305Definitions.isEmpty()) {
-                "Packaged JSR-305 definitions found in ${configuration.name}"
+                if (
+                    configuration.name in
+                        setOf(
+                            "debugCompileClasspath",
+                            "debugRuntimeClasspath",
+                            "releaseCompileClasspath",
+                            "releaseRuntimeClasspath",
+                        )
+                ) {
+                    check(tinkComponents == listOf("com.google.crypto.tink:tink-android:1.23.0")) {
+                        "Exact Tink coordinate absent from ${configuration.name}: $tinkComponents"
+                    }
+                }
+                check(packagedJsr305Definitions.isEmpty()) {
+                    "Packaged JSR-305 definitions found in ${configuration.name}"
+                }
             }
 
             mapOf(
                 "module" to recoveryModulePath,
                 "name" to configuration.name,
                 "canBeResolved" to true,
+                "policyCovered" to isPolicyCovered,
+                "boundaryClassification" to
+                    if (isPolicyCovered) {
+                        "OD14_VARIANT_DEPENDENCY_CONFIGURATION"
+                    } else {
+                        "AGP_KOTLIN_LINT_UTP_OR_PLATFORM_TOOLING_OUTSIDE_RECOVERY_DEPENDENCY_ADMISSION"
+                    },
                 "components" to components,
                 "jsr305Components" to jsr305Components,
                 "artifacts" to artifacts,
@@ -187,17 +196,46 @@ tasks.register("recoveryI2aResolveOwnedConfigurations") {
                 "module" to recoveryModulePath,
                 "rootCoordinate" to "com.google.crypto.tink:tink-android:1.23.0",
                 "tinkLocalExclude" to "com.google.code.findbugs:jsr305:3.0.2",
-                "allResolvableConfigurations" to
-                    allResolvable.map {
-                        mapOf(
-                            "name" to it.name,
-                            "recoveryOwnedClasspath" to recoveryI2aOwnedClasspath.matches(it.name),
-                        )
-                    },
+                "allResolvableConfigurationsEnumeratedAndResolved" to true,
                 "configurations" to configurationReports,
                 "configurationCount" to configurationReports.size,
-                "jsr305ResolvedComponentCount" to 0,
-                "packagedJsr305ClassDefinitionCount" to 0,
+                "policyCoveredConfigurationCount" to policyCovered.size,
+                "outsidePolicyBoundaryConfigurationCount" to
+                    configurationReports.size - policyCovered.size,
+                "policyCoveredJsr305ResolvedComponentCount" to
+                    configurationReports
+                        .filter { it["policyCovered"] == true }
+                        .sumOf {
+                            @Suppress("UNCHECKED_CAST")
+                            (it["jsr305Components"] as List<String>).size
+                        },
+                "outsidePolicyBoundaryJsr305ResolvedComponentCount" to
+                    configurationReports
+                        .filter { it["policyCovered"] == false }
+                        .sumOf {
+                            @Suppress("UNCHECKED_CAST")
+                            (it["jsr305Components"] as List<String>).size
+                        },
+                "policyCoveredPackagedJsr305ClassDefinitionCount" to
+                    configurationReports
+                        .filter { it["policyCovered"] == true }
+                        .sumOf {
+                            @Suppress("UNCHECKED_CAST")
+                            (it["artifacts"] as List<Map<String, Any>>).sumOf { artifact ->
+                                @Suppress("UNCHECKED_CAST")
+                                (artifact["packagedJsr305Definitions"] as List<String>).size
+                            }
+                        },
+                "outsidePolicyBoundaryPackagedJsr305ClassDefinitionCount" to
+                    configurationReports
+                        .filter { it["policyCovered"] == false }
+                        .sumOf {
+                            @Suppress("UNCHECKED_CAST")
+                            (it["artifacts"] as List<Map<String, Any>>).sumOf { artifact ->
+                                @Suppress("UNCHECKED_CAST")
+                                (artifact["packagedJsr305Definitions"] as List<String>).size
+                            }
+                        },
                 "authority" to
                     mapOf(
                         "actualGraphProductIpDisposition" to "PENDING_SEPARATE_OWNER_DISPOSITION",

@@ -7,8 +7,7 @@ plugins {
 
 val recoveryI2aGraphProbe =
     providers.gradleProperty("doraRecoveryI2aGraphProbe").map(String::toBoolean).orElse(false)
-val recoveryI2aOwnedClasspath =
-    Regex("^(debug|release|benchmark).*?(CompileClasspath|RuntimeClasspath)$")
+val recoveryI2aPolicyConfiguration = Regex("^(debug|release|benchmark).*")
 
 val detektCli by configurations.creating
 
@@ -60,9 +59,9 @@ allprojects {
 
     if (recoveryI2aGraphProbe.get()) {
         configurations.configureEach {
-            val isRecoveryOwnedClasspath =
-                project.path == ":poc:recovery" && recoveryI2aOwnedClasspath.matches(name)
-            if (!isRecoveryOwnedClasspath) {
+            val isRecoveryPolicyConfiguration =
+                project.path == ":poc:recovery" && recoveryI2aPolicyConfiguration.matches(name)
+            if (!isRecoveryPolicyConfiguration) {
                 resolutionStrategy.deactivateDependencyLocking()
             }
         }
