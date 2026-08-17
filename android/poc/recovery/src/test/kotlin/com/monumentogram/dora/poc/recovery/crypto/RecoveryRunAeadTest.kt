@@ -1,5 +1,6 @@
 package com.monumentogram.dora.poc.recovery.crypto
 
+import com.google.crypto.tink.Aead
 import com.monumentogram.dora.poc.recovery.contract.CanonicalRecoveryAlias
 import com.monumentogram.dora.poc.recovery.contract.KeyConfirmationAadCodec
 import com.monumentogram.dora.poc.recovery.contract.KeyConfirmationPlaintextCodec
@@ -7,6 +8,9 @@ import com.monumentogram.dora.poc.recovery.contract.KeyConfirmationValue
 import com.monumentogram.dora.poc.recovery.contract.RecoveryCandidate
 import com.monumentogram.dora.poc.recovery.contract.RecoveryContractException
 import java.security.GeneralSecurityException
+import java.security.ProviderException
+import javax.crypto.AEADBadTagException
+import javax.crypto.BadPaddingException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
@@ -75,8 +79,10 @@ class RecoveryRunAeadTest {
         val wrongCandidate =
             KeyConfirmationValue(RecoveryCandidate.MICROFILE, RecoveryCryptoTestFixtures.RUN_ID)
         assertTrue(
-            runAead.decryptKeyConfirmation(ciphertext, wrongCandidate)
-                is KeyConfirmationDecryption.AuthenticationFailure
+            runAead.decryptKeyConfirmation(ciphertext, wrongCandidate).let {
+                it is KeyConfirmationDecryption.DecryptFailure &&
+                    it.signal == RecoveryDecryptFailureSignal.UNKNOWN
+            }
         )
         assertThrows(RecoveryContractException::class.java) {
             runAead.encryptKeyConfirmation(
@@ -100,8 +106,10 @@ class RecoveryRunAeadTest {
                 .createNew(RecoveryCryptoTestFixtures.RUN_ID)
         val validCiphertext = runAead.encryptKeyConfirmation(expected)
         assertTrue(
-            otherRunAead.decryptKeyConfirmation(validCiphertext, expected)
-                is KeyConfirmationDecryption.AuthenticationFailure
+            otherRunAead.decryptKeyConfirmation(validCiphertext, expected).let {
+                it is KeyConfirmationDecryption.DecryptFailure &&
+                    it.signal == RecoveryDecryptFailureSignal.UNKNOWN
+            }
         )
 
         val malformedCiphertext =
@@ -124,5 +132,65 @@ class RecoveryRunAeadTest {
             runAead.decryptKeyConfirmation(mismatchedCiphertext, expected)
                 is KeyConfirmationDecryption.PlaintextContractFailure
         )
+    }
+
+    @Test
+    fun `key confirmation emits only neutral deterministic decrypt failure signals`() {
+        val expected =
+            KeyConfirmationValue(RecoveryCandidate.STREAM, RecoveryCryptoTestFixtures.RUN_ID)
+
+        assertDecryptSignal(
+            GeneralSecurityException("synthetic wrapped tag", AEADBadTagException("synthetic")),
+            expected,
+            RecoveryDecryptFailureSignal.AUTHENTICATION_REJECTED,
+        )
+        assertDecryptSignal(
+            GeneralSecurityException("synthetic wrapped padding", BadPaddingException("synthetic")),
+            expected,
+            RecoveryDecryptFailureSignal.AUTHENTICATION_REJECTED,
+        )
+        assertDecryptSignal(
+            GeneralSecurityException(
+                "synthetic wrapped provider",
+                ProviderException("synthetic"),
+            ),
+            expected,
+            RecoveryDecryptFailureSignal.OPERATIONAL,
+        )
+        assertDecryptSignal(
+            ProviderException("synthetic direct provider"),
+            expected,
+            RecoveryDecryptFailureSignal.OPERATIONAL,
+        )
+        assertDecryptSignal(
+            GeneralSecurityException("synthetic unknown"),
+            expected,
+            RecoveryDecryptFailureSignal.UNKNOWN,
+        )
+    }
+
+    private fun assertDecryptSignal(
+        error: Throwable,
+        expected: KeyConfirmationValue,
+        signal: RecoveryDecryptFailureSignal,
+    ) {
+        val backend = RecordingRunAeadBackend(ThrowingDecryptAead(error))
+        val runAead = RecoveryRunAeadProvider(backend).createNew(expected.runId)
+        val result = runAead.decryptKeyConfirmation(byteArrayOf(1), expected)
+
+        assertEquals(signal, (result as KeyConfirmationDecryption.DecryptFailure).signal)
+        assertTrue(result.error === error)
+    }
+
+    private class ThrowingDecryptAead(private val error: Throwable) : Aead {
+        override fun encrypt(
+            plaintext: ByteArray,
+            associatedData: ByteArray,
+        ): ByteArray = throw AssertionError("encrypt must not be called")
+
+        override fun decrypt(
+            ciphertext: ByteArray,
+            associatedData: ByteArray,
+        ): ByteArray = throw error
     }
 }

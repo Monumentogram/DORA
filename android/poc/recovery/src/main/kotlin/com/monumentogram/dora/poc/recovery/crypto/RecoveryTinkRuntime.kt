@@ -29,6 +29,7 @@ import com.monumentogram.dora.poc.recovery.contract.StreamingAadCodec
 import java.io.InputStream
 import java.io.OutputStream
 import java.security.GeneralSecurityException
+import java.security.ProviderException
 
 private object RegisteredRecoveryTink {
     val configuration: Configuration by
@@ -78,7 +79,7 @@ internal object RecoveryTinkRuntime {
     ): RecoveryStreamingKeyset {
         requireEnvelopeTarget(aad, KeyEnvelopeTargetKind.STREAM)
         return RecoveryStreamingKeyset(
-            handle = runAead.parseEncryptedKeyset(encryptedKeyset, aad),
+            handle = runAead.parseEncryptedStreamingKeyset(encryptedKeyset, aad),
             envelopeAad = aad,
             encryptionAllowed = false,
         )
@@ -91,7 +92,7 @@ internal object RecoveryTinkRuntime {
     ): RecoveryAeadKeyset {
         requireAeadEnvelopeTarget(aad)
         return RecoveryAeadKeyset(
-            handle = runAead.parseEncryptedKeyset(encryptedKeyset, aad),
+            handle = runAead.parseEncryptedAeadKeyset(encryptedKeyset, aad),
             envelopeAad = aad,
             encryptionAllowed = false,
         )
@@ -180,6 +181,7 @@ internal class RecoveryStreamingKeyset(
 
     init {
         handle.requireRecoveryTopology()
+        handle.requireExactStreamingParameterSuite()
         envelopeAad.requireStreamingEnvelopeSemantics()
     }
 
@@ -225,6 +227,7 @@ internal class RecoveryAeadKeyset(
 
     init {
         handle.requireRecoveryTopology()
+        handle.requireExactAeadParameterSuite()
         envelopeAad.requireAeadTarget()
     }
 
@@ -338,9 +341,53 @@ private fun KeysetHandle.requireRecoveryTopology() {
             topology.enabledPrimaryCount != 1 ||
             !topology.primaryHasNonzeroId
     ) {
-        throw GeneralSecurityException("Recovery keyset must contain one enabled random-ID primary")
+        throw RecoveryKeysetTopologyException()
     }
 }
+
+private fun KeysetHandle.requireExactStreamingParameterSuite() {
+    val parameters = getPrimary().getKey().getParameters()
+    if (parameters !is AesGcmHkdfStreamingParameters) {
+        throw RecoveryParameterSuiteException("streaming")
+    }
+    val matchesFrozenSuite =
+        listOf(
+                parameters.keySizeBytes == RecoveryTinkRuntime.STREAMING_INPUT_KEY_BYTES,
+                parameters.derivedAesGcmKeySizeBytes ==
+                    RecoveryTinkRuntime.STREAMING_DERIVED_KEY_BYTES,
+                parameters.hkdfHashType == AesGcmHkdfStreamingParameters.HashType.SHA256,
+                parameters.ciphertextSegmentSizeBytes ==
+                    RecoveryTinkRuntime.STREAMING_CIPHERTEXT_SEGMENT_BYTES,
+            )
+            .all { it }
+    if (!matchesFrozenSuite) {
+        throw RecoveryParameterSuiteException("streaming")
+    }
+}
+
+private fun KeysetHandle.requireExactAeadParameterSuite() {
+    val parameters = getPrimary().getKey().getParameters()
+    if (parameters !is AesGcmParameters) {
+        throw RecoveryParameterSuiteException("AEAD")
+    }
+    val matchesFrozenSuite =
+        listOf(
+                parameters.keySizeBytes == RecoveryTinkRuntime.AEAD_KEY_BYTES,
+                parameters.ivSizeBytes == RecoveryTinkRuntime.AEAD_IV_BYTES,
+                parameters.tagSizeBytes == RecoveryTinkRuntime.AEAD_TAG_BYTES,
+                parameters.variant == AesGcmParameters.Variant.TINK,
+            )
+            .all { it }
+    if (!matchesFrozenSuite) {
+        throw RecoveryParameterSuiteException("AEAD")
+    }
+}
+
+private class RecoveryKeysetTopologyException :
+    GeneralSecurityException("Recovery keyset must contain one enabled random-ID primary")
+
+private class RecoveryParameterSuiteException(kind: String) :
+    GeneralSecurityException("Recovery $kind keyset parameters do not match the frozen suite")
 
 /** A run-scoped wrapping primitive whose raw Tink AEAD never leaves the crypto boundary. */
 internal class RecoveryRunAead
@@ -361,23 +408,29 @@ private constructor(
         expected: KeyConfirmationValue,
     ): KeyConfirmationDecryption {
         requireMatchingAlias(expected)
-        val plaintext =
-            try {
-                primitive.decrypt(ciphertext, KeyConfirmationAadCodec.encode(expected))
-            } catch (error: GeneralSecurityException) {
-                return KeyConfirmationDecryption.AuthenticationFailure(error)
-            }
-
         return try {
-            val actual = KeyConfirmationPlaintextCodec.decode(plaintext)
-            if (actual != expected) {
-                throw RecoveryContractException(
-                    "Authenticated key-confirmation plaintext does not match the expected run"
-                )
+            val plaintext = primitive.decrypt(ciphertext, KeyConfirmationAadCodec.encode(expected))
+            try {
+                val actual = KeyConfirmationPlaintextCodec.decode(plaintext)
+                if (actual != expected) {
+                    throw RecoveryContractException(
+                        "Authenticated key-confirmation plaintext does not match the expected run"
+                    )
+                }
+                KeyConfirmationDecryption.Success(actual)
+            } catch (error: RecoveryContractException) {
+                KeyConfirmationDecryption.PlaintextContractFailure(error)
             }
-            KeyConfirmationDecryption.Success(actual)
-        } catch (error: RecoveryContractException) {
-            KeyConfirmationDecryption.PlaintextContractFailure(error)
+        } catch (error: GeneralSecurityException) {
+            KeyConfirmationDecryption.DecryptFailure(
+                signal = error.toRecoveryDecryptFailureSignal(),
+                error = error,
+            )
+        } catch (error: ProviderException) {
+            KeyConfirmationDecryption.DecryptFailure(
+                signal = error.toRecoveryDecryptFailureSignal(),
+                error = error,
+            )
         }
     }
 
@@ -394,17 +447,68 @@ private constructor(
         )
     }
 
-    internal fun parseEncryptedKeyset(
+    internal fun parseEncryptedStreamingKeyset(
         encryptedKeyset: ByteArray,
         aad: KeyEnvelopeAad,
+    ): KeysetHandle =
+        parseEncryptedKeyset(
+            encryptedKeyset,
+            aad,
+            ExpectedRecoveryParameterSuite.STREAMING,
+        )
+
+    internal fun parseEncryptedAeadKeyset(
+        encryptedKeyset: ByteArray,
+        aad: KeyEnvelopeAad,
+    ): KeysetHandle =
+        parseEncryptedKeyset(
+            encryptedKeyset,
+            aad,
+            ExpectedRecoveryParameterSuite.AEAD,
+        )
+
+    private fun parseEncryptedKeyset(
+        encryptedKeyset: ByteArray,
+        aad: KeyEnvelopeAad,
+        expectedSuite: ExpectedRecoveryParameterSuite,
     ): KeysetHandle {
         requireMatchingAlias(aad.runId)
-        return TinkProtoKeysetFormat.parseEncryptedKeyset(
-            encryptedKeyset,
-            primitive,
-            KeyEnvelopeAadCodec.encode(aad),
-            RegisteredRecoveryTink.configuration,
-        )
+        val observingAead = ObservingDecryptAead(primitive)
+        val handle =
+            try {
+                TinkProtoKeysetFormat.parseEncryptedKeyset(
+                    encryptedKeyset,
+                    observingAead,
+                    KeyEnvelopeAadCodec.encode(aad),
+                    RegisteredRecoveryTink.configuration,
+                )
+            } catch (error: GeneralSecurityException) {
+                failEncryptedKeysetParse(observingAead.toParseFailure(error), error)
+            } catch (error: ProviderException) {
+                failEncryptedKeysetParse(observingAead.toParseFailure(error), error)
+            }
+
+        try {
+            handle.requireRecoveryTopology()
+        } catch (error: RecoveryKeysetTopologyException) {
+            failEncryptedKeysetParse(
+                RecoveryEncryptedKeysetParseFailure.AUTHENTICATED_INNER_KEYSET_INVALID,
+                error,
+            )
+        }
+        try {
+            when (expectedSuite) {
+                ExpectedRecoveryParameterSuite.STREAMING ->
+                    handle.requireExactStreamingParameterSuite()
+                ExpectedRecoveryParameterSuite.AEAD -> handle.requireExactAeadParameterSuite()
+            }
+        } catch (error: RecoveryParameterSuiteException) {
+            failEncryptedKeysetParse(
+                RecoveryEncryptedKeysetParseFailure.PARSED_BUT_UNSUPPORTED_PARAMETER_SUITE,
+                error,
+            )
+        }
+        return handle
     }
 
     private fun requireMatchingAlias(value: KeyConfirmationValue) {
@@ -442,9 +546,58 @@ private constructor(
 internal sealed interface KeyConfirmationDecryption {
     data class Success(val value: KeyConfirmationValue) : KeyConfirmationDecryption
 
-    data class AuthenticationFailure(val error: GeneralSecurityException) :
-        KeyConfirmationDecryption
+    data class DecryptFailure(
+        val signal: RecoveryDecryptFailureSignal,
+        val error: Throwable,
+    ) : KeyConfirmationDecryption
 
     data class PlaintextContractFailure(val error: RecoveryContractException) :
         KeyConfirmationDecryption
+}
+
+private enum class ExpectedRecoveryParameterSuite {
+    STREAMING,
+    AEAD,
+}
+
+private enum class DecryptObservation {
+    NOT_INVOKED,
+    DECRYPT_FAILED,
+    DECRYPT_SUCCEEDED,
+}
+
+private class ObservingDecryptAead(private val delegate: Aead) : Aead {
+    var observation: DecryptObservation = DecryptObservation.NOT_INVOKED
+        private set
+
+    override fun encrypt(
+        plaintext: ByteArray,
+        associatedData: ByteArray,
+    ): ByteArray =
+        throw ProviderException("Encrypted-keyset parsing unexpectedly requested encryption")
+
+    override fun decrypt(
+        ciphertext: ByteArray,
+        associatedData: ByteArray,
+    ): ByteArray {
+        observation = DecryptObservation.DECRYPT_FAILED
+        return delegate.decrypt(ciphertext, associatedData).also {
+            observation = DecryptObservation.DECRYPT_SUCCEEDED
+        }
+    }
+
+    fun toParseFailure(error: Throwable): RecoveryEncryptedKeysetParseFailure {
+        val signal = error.toRecoveryDecryptFailureSignal()
+        return when {
+            signal == RecoveryDecryptFailureSignal.AUTHENTICATION_REJECTED ->
+                RecoveryEncryptedKeysetParseFailure.AUTHENTICATION_REJECTED
+            signal == RecoveryDecryptFailureSignal.OPERATIONAL ->
+                RecoveryEncryptedKeysetParseFailure.OPERATIONAL
+            observation == DecryptObservation.NOT_INVOKED ->
+                RecoveryEncryptedKeysetParseFailure.OUTER_STRUCTURAL_OR_ENCODING_INVALID
+            observation == DecryptObservation.DECRYPT_SUCCEEDED ->
+                RecoveryEncryptedKeysetParseFailure.AUTHENTICATED_INNER_KEYSET_INVALID
+            else -> RecoveryEncryptedKeysetParseFailure.UNKNOWN
+        }
+    }
 }

@@ -124,9 +124,9 @@ internal object RecoveryCryptoTestFixtures {
     }
 }
 
-internal class RecordingRunAeadBackend : RecoveryRunAeadBackend {
+internal class RecordingRunAeadBackend(val primitive: Aead = newTestAead()) :
+    RecoveryRunAeadBackend {
     val events = mutableListOf<String>()
-    val primitive: Aead = newTestAead()
     var generateFailure: Exception? = null
     var getFailure: Exception? = null
 
@@ -142,7 +142,7 @@ internal class RecordingRunAeadBackend : RecoveryRunAeadBackend {
     }
 }
 
-private fun newTestAead(): Aead {
+internal fun newTestAead(): Aead {
     TinkConfig.register()
     val parameters =
         AesGcmParameters.builder()
