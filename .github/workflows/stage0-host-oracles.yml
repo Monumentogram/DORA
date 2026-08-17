@@ -82,8 +82,8 @@ jobs:
               [[ "${BASE_SHA}" == "78e9dd07d616989987118f26bb16ebb9932ddb2b" ]]
               ;;
             codex/poc-offline-i1-semantics-v02)
-              [[ "${BASE_REF}" == "codex/poc-offline-i1-oracle-scope" ]]
-              [[ "${BASE_SHA}" == "d164b6372ad3e717762d48a9a3ea7e6551602ab7" ]]
+              [[ "${BASE_REF}" == "main" ]]
+              [[ "${BASE_SHA}" == "a3ccae7b1da1f42132a46f1a96b26fc43f680b80" ]]
               ;;
             *)
               echo "::error::Unauthorized Stage 0 host-oracle head: ${GITHUB_HEAD_REF}"
@@ -708,15 +708,15 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Verify the exact stacked OFF-I1 parent
+      - name: Verify the exact post-parent-merge OFF-I1 base
         shell: bash
         env:
           OBSERVED_BASE_REF: ${{ github.base_ref }}
           OBSERVED_BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           set -euo pipefail
-          [[ "${OBSERVED_BASE_REF}" == "codex/poc-offline-i1-oracle-scope" ]]
-          [[ "${OBSERVED_BASE_SHA}" == "d164b6372ad3e717762d48a9a3ea7e6551602ab7" ]]
+          [[ "${OBSERVED_BASE_REF}" == "main" ]]
+          [[ "${OBSERVED_BASE_SHA}" == "a3ccae7b1da1f42132a46f1a96b26fc43f680b80" ]]
 
       - name: Verify the pinned runner and toolchain identity
         shell: bash
