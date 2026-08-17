@@ -1,0 +1,298 @@
+{
+  "schemaVersion": 1,
+  "reportId": "REC-I2A-LOCAL-GRAPH-R8-PROBE-20260817-01",
+  "authorizationId": "REC-I2A-GRAPH-AUTH-20260817-01",
+  "recordedAtUtc": "2026-08-17T09:06:04Z",
+  "status": "TECHNICAL_PASS_PENDING_SEPARATE_SCOPED_PRODUCT_IP_DISPOSITION",
+  "scope": "LOCAL_UNPUBLISHED_GRAPH_AND_R8_PROBE_ONLY",
+  "pocId": "POC-RECOVERY-001",
+  "module": ":poc:recovery",
+  "baseCommit": "78e9dd07d616989987118f26bb16ebb9932ddb2b",
+  "probeImplementationCommit": "98e61310383a7e7517220cba0bed5c01439c26f3",
+  "probeImplementationTree": "86dbb3dbdd2404a78aa5548f7b433c37e0141442",
+  "published": false,
+  "rootCoordinate": "com.google.crypto.tink:tink-android:1.23.0",
+  "tinkLocalExclude": "com.google.code.findbugs:jsr305:3.0.2",
+  "scopedExcludeVerified": true,
+  "graph": {
+    "gradleVersion": "9.5.0",
+    "agpVersion": "9.3.1",
+    "allResolvableConfigurationsEnumerated": true,
+    "allResolvableConfigurationCount": 60,
+    "recoveryOwnedConfigurationCount": 8,
+    "outsideRecoveryClasspathBoundaryCount": 52,
+    "benchmarkVariantConfigured": false,
+    "releaseUnitTestVariantConfigured": false,
+    "configurations": [
+      {
+        "name": "debugAndroidTestCompileClasspath",
+        "canBeResolved": true,
+        "components": [
+          "androidx.annotation:annotation-jvm:1.8.2",
+          "com.google.code.gson:gson:2.13.2",
+          "com.google.crypto.tink:tink-android:1.23.0",
+          "com.google.errorprone:error_prone_annotations:2.41.0",
+          "org.jetbrains.kotlin:kotlin-stdlib:2.2.10",
+          "org.jetbrains:annotations:13.0"
+        ],
+        "jsr305Components": []
+      },
+      {
+        "name": "debugAndroidTestRuntimeClasspath",
+        "canBeResolved": true,
+        "components": [],
+        "note": "The test APK runtime configuration contains only the project-under-test edge; main runtime artifacts are enumerated independently.",
+        "jsr305Components": []
+      },
+      {
+        "name": "debugCompileClasspath",
+        "canBeResolved": true,
+        "components": [
+          "androidx.annotation:annotation-jvm:1.8.2",
+          "com.google.code.gson:gson:2.13.2",
+          "com.google.crypto.tink:tink-android:1.23.0",
+          "com.google.errorprone:error_prone_annotations:2.41.0",
+          "org.jetbrains.kotlin:kotlin-stdlib:2.2.10",
+          "org.jetbrains:annotations:13.0"
+        ],
+        "jsr305Components": []
+      },
+      {
+        "name": "debugRuntimeClasspath",
+        "canBeResolved": true,
+        "components": [
+          "androidx.annotation:annotation-jvm:1.8.2",
+          "com.google.code.gson:gson:2.13.2",
+          "com.google.crypto.tink:tink-android:1.23.0",
+          "com.google.errorprone:error_prone_annotations:2.41.0",
+          "org.jetbrains.kotlin:kotlin-stdlib:2.2.10",
+          "org.jetbrains:annotations:13.0"
+        ],
+        "jsr305Components": []
+      },
+      {
+        "name": "debugUnitTestCompileClasspath",
+        "canBeResolved": true,
+        "components": [
+          "androidx.annotation:annotation-jvm:1.8.2",
+          "com.google.code.gson:gson:2.13.2",
+          "com.google.crypto.tink:tink-android:1.23.0",
+          "com.google.errorprone:error_prone_annotations:2.41.0",
+          "junit:junit:4.13.2",
+          "org.hamcrest:hamcrest-core:1.3",
+          "org.jetbrains.kotlin:kotlin-stdlib:2.2.10",
+          "org.jetbrains:annotations:13.0"
+        ],
+        "jsr305Components": []
+      },
+      {
+        "name": "debugUnitTestRuntimeClasspath",
+        "canBeResolved": true,
+        "components": [
+          "androidx.annotation:annotation-jvm:1.8.2",
+          "com.google.code.gson:gson:2.13.2",
+          "com.google.crypto.tink:tink-android:1.23.0",
+          "com.google.errorprone:error_prone_annotations:2.41.0",
+          "junit:junit:4.13.2",
+          "org.hamcrest:hamcrest-core:1.3",
+          "org.jetbrains.kotlin:kotlin-stdlib:2.2.10",
+          "org.jetbrains:annotations:13.0"
+        ],
+        "jsr305Components": []
+      },
+      {
+        "name": "releaseCompileClasspath",
+        "canBeResolved": true,
+        "components": [
+          "androidx.annotation:annotation-jvm:1.8.2",
+          "com.google.code.gson:gson:2.13.2",
+          "com.google.crypto.tink:tink-android:1.23.0",
+          "com.google.errorprone:error_prone_annotations:2.41.0",
+          "org.jetbrains.kotlin:kotlin-stdlib:2.2.10",
+          "org.jetbrains:annotations:13.0"
+        ],
+        "jsr305Components": []
+      },
+      {
+        "name": "releaseRuntimeClasspath",
+        "canBeResolved": true,
+        "components": [
+          "androidx.annotation:annotation-jvm:1.8.2",
+          "com.google.code.gson:gson:2.13.2",
+          "com.google.crypto.tink:tink-android:1.23.0",
+          "com.google.errorprone:error_prone_annotations:2.41.0",
+          "org.jetbrains.kotlin:kotlin-stdlib:2.2.10",
+          "org.jetbrains:annotations:13.0"
+        ],
+        "jsr305Components": []
+      }
+    ],
+    "jsr305ResolvedComponentCount": 0,
+    "packagingRuntimeArtifactInputsEnumerated": true,
+    "packagedJsr305ClassDefinitionCount": 0
+  },
+  "artifacts": [
+    {
+      "coordinate": "androidx.annotation:annotation-jvm:1.8.2",
+      "sha256": "9aab326d9492800991854360ac248f493ce7f7c3183519309b78ace9e240f6f6"
+    },
+    {
+      "coordinate": "com.google.code.gson:gson:2.13.2",
+      "sha256": "dd0ce1b55a3ed2080cb70f9c655850cda86c206862310009dcb5e5c95265a5e0"
+    },
+    {
+      "coordinate": "com.google.crypto.tink:tink-android:1.23.0",
+      "sha256": "c656918451b01c45ce5b20c7b6d4c388f956f61b3a3528e769048c8944c42f9e"
+    },
+    {
+      "coordinate": "com.google.errorprone:error_prone_annotations:2.41.0",
+      "sha256": "a56e782b5b50811ac204073a355a21d915a2107fce13ec711331ad036f660fcc"
+    },
+    {
+      "coordinate": "org.jetbrains.kotlin:kotlin-stdlib:2.2.10",
+      "sha256": "9c67cc79efd6b9215b49d2a4308f5f3433537376c7c88e89bdd6729bd096e61a"
+    },
+    {
+      "coordinate": "org.jetbrains:annotations:13.0",
+      "sha256": "ace2a10dc8e2d5fd34925ecac03e4988b2c0f851650c94b8cef49ba1bd111478"
+    },
+    {
+      "coordinate": "junit:junit:4.13.2",
+      "scope": "unit-test-only",
+      "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+    },
+    {
+      "coordinate": "org.hamcrest:hamcrest-core:1.3",
+      "scope": "unit-test-only",
+      "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+    }
+  ],
+  "locksAndVerification": {
+    "recoveryLock": {
+      "path": "android/poc/recovery/gradle.lockfile",
+      "bytes": 1730,
+      "sha256": "9c7e882158432290b20c74b2e82701dbc17e090a195bfe8c3aad38f39aa9b5fa",
+      "jsr305Entries": 0,
+      "toolingEntries": 0
+    },
+    "gradleVerificationMetadata": {
+      "path": "android/gradle/verification-metadata.xml",
+      "bytes": 298394,
+      "sha256": "515cb172de60fa101c31f7a9c09d83e4794f1658a07e64e02f5af392ec3b5c32",
+      "candidateArtifactHashesPresent": true,
+      "globalToolingJsr305Coordinates": [
+        "com.google.code.findbugs:jsr305:2.0.2",
+        "com.google.code.findbugs:jsr305:3.0.2"
+      ],
+      "globalToolingOccurrencesInsideRecoveryOwnedConfigurations": false,
+      "repositoryWideAbsenceClaimed": false,
+      "note": "Gradle verification metadata is root-global. Its AGP/UTP/lint/build-tool entries are explicitly outside the OD-14 recovery runtime boundary; the scoped recovery lock and all eight owned configuration reports contain no JSR-305."
+    },
+    "inspected": true
+  },
+  "releaseR8": {
+    "status": "PASSED",
+    "agpTask": ":poc:recovery:minifyReleaseWithR8",
+    "agpTaskForcedWithoutBuildCache": true,
+    "r8Version": "9.3.16",
+    "r8BuildSha": "65eb2ed58d2ac1dbce414b51a8ea877c3ce5f68a",
+    "r8ContainerJarSha256": "873e0e9feda8762ead0ff1ce60c30cc2bf1c0859e139245a723248d998b009fa",
+    "minApi": 28,
+    "rules": [
+      "-dontwarn javax.annotation.Nullable",
+      "-dontwarn javax.annotation.concurrent.GuardedBy",
+      "-dontwarn javax.annotation.concurrent.ThreadSafe"
+    ],
+    "broaderDontwarnRules": [],
+    "rulesFileSha256": "5957f65ddf9ad220acc677b8c5259ef5a7c2af40bf69b4c24c8bdf2d8593b99a",
+    "unresolvedMissingClasses": [],
+    "fullSurfaceDiagnostic": {
+      "keepFileSha256": "97c683e6f82b669d60aaf98f4be3faef153a388c78d49e05af64a619f8db80c5",
+      "baselineWithoutModifierLibrary": "FAILED_ONLY_ON_JAVAX_LANG_MODEL_ELEMENT_MODIFIER",
+      "baselineExitCode": 1,
+      "resolvedWithNarrowModifierLibrary": "PASSED",
+      "resolvedExitCode": 0,
+      "outputBytes": 1496976,
+      "outputSha256": "387c48ae13a35915d92b202e828eaaf5496b546867c36c4dfd31a55d9828cd10"
+    }
+  },
+  "modifierResolution": {
+    "missingClass": "javax.lang.model.element.Modifier",
+    "status": "RESOLVED_AND_VERIFIED_AS_R8_LIBRARY_ONLY",
+    "source": "Microsoft OpenJDK 17.0.10+7-LTS java.compiler.jmod",
+    "sourceJmodSha256": "c0f34b316b88011ae71810cd6dad5e0d4b044d10e135d3846cdf6b4d945c7e61",
+    "extractedClassSha256": "89eded35e7011dc49ce9220d44fca030edabd3ae0fd4bbaeddfcd7ae4e913db0",
+    "derivedSingleClassLibrarySha256": "573bb006b3354790da4572f7c3163190d5e0b05f99d3844d827866b33bdfc73c",
+    "programOrRuntimeDependency": false,
+    "packaged": false,
+    "broadDontwarnUsed": false
+  },
+  "androidToolchain": {
+    "platformPackage": "platforms;android-36@2",
+    "officialPlatformArchiveSha1": "2c1a80dd4d9f7d0e6dd336ec603d9b5c55a6f576",
+    "platformArchiveSha256": "37607369a28c5b640b3a7998868d45898ebcb777565a0e85f9acf36f29631d2e",
+    "androidJarSha256": "d9eb9da824d9e247a352f570f01e1169e725b2954bca9e283a71786c59b59f9a",
+    "buildToolsPackage": "build-tools;36.0.0",
+    "officialBuildToolsArchiveSha1": "f16ccffd34de8790dede813a6c7d8e2c11a27b50",
+    "buildToolsArchiveSha256": "aa1095cb14d83e483818a748a2c06faaeb8e601561b06a356a119a1b2ca280d3",
+    "platformToolsInstalled": false,
+    "platformToolsRequiredByThisNonDeviceProbe": false
+  },
+  "builds": {
+    "debug": {
+      "status": "PASSED",
+      "apkBytes": 6297290,
+      "apkSha256": "032c6f25b5ad103a2563becd1280abdefb5abcbe50371180d93f302e173d7fc4",
+      "dexCount": 4,
+      "packagedJsr305ClassDefinitionCount": 0
+    },
+    "release": {
+      "status": "PASSED",
+      "unsignedApkBytes": 2440978,
+      "unsignedApkSha256": "29cf3f1cb8111ce31dec48feca601ded14c6f36048c33a69a535cce905387750",
+      "dexCount": 1,
+      "packagedJsr305ClassDefinitionCount": 0,
+      "r8UnresolvedMissingClasses": []
+    }
+  },
+  "checks": [
+    {
+      "command": "gradlew --no-configuration-cache spotlessCheck",
+      "result": "PASSED"
+    },
+    {
+      "command": "gradlew -PdoraRecoveryI2aGraphProbe=true :poc:recovery:recoveryI2aResolveOwnedConfigurations",
+      "result": "PASSED"
+    },
+    {
+      "command": "gradlew -PdoraRecoveryI2aGraphProbe=true :poc:recovery:clean :poc:recovery:assembleDebug :poc:recovery:assembleRelease :poc:recovery:recoveryI2aResolveOwnedConfigurations",
+      "result": "PASSED"
+    },
+    {
+      "command": "gradlew --no-build-cache --rerun-tasks -PdoraRecoveryI2aGraphProbe=true :poc:recovery:minifyReleaseWithR8",
+      "result": "PASSED"
+    },
+    {
+      "command": "dexdump every debug/release classes*.dex and count javax.annotation package definitions",
+      "result": "PASSED_ZERO_DEFINITIONS"
+    }
+  ],
+  "actualGraphProductIpDisposition": {
+    "status": "PENDING_SEPARATE_SCOPED_OWNER_DISPOSITION",
+    "approvedBy": null,
+    "approvedOn": null,
+    "jsr305UseOrDistributionApproved": false,
+    "dependencyAdmission": false,
+    "productionAdmission": false
+  },
+  "authority": {
+    "runtimeCryptoImplementationAllowedByThisReport": false,
+    "harnessImplementationAllowedByThisReport": false,
+    "deviceOrEmulatorExecutionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "passAllowed": false,
+    "readyOrMergeAllowed": false,
+    "readinessDocumentsMutated": false,
+    "formalFutureGraphReport": false
+  }
+}
