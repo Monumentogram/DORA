@@ -2,20 +2,23 @@
   "schemaVersion": 1,
   "reportId": "REC-I2B-RUNTIME-CRYPTO-IMPLEMENTATION-EVIDENCE-20260817-01",
   "recordedAtUtc": "2026-08-17T12:01:29Z",
-  "lastUpdatedAt": "2026-08-17T15:29:13+03:00",
+  "lastUpdatedAt": "2026-08-17T16:17:23+03:00",
   "lastUpdatedTimeZone": "Europe/Moscow",
   "status": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
-  "remediationState": "INDEPENDENT_ADVISORY_DELTA_REVIEW_CLEAN_ACCOUNTABLE_REVIEW_PENDING",
+  "remediationState": "VERIFICATION_METADATA_P1_REMEDIATED_LOCALLY_FRESH_INDEPENDENT_DELTA_REVIEW_PENDING",
   "claimCeiling": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
   "pocId": "POC-RECOVERY-001",
   "stage": "Stage 0",
-  "scope": "LOCAL_UNPUBLISHED_NONMETRIC_REC_I2B_RUNTIME_CRYPTO_IMPLEMENTATION_ONLY",
+  "scope": "PUBLISHED_DRAFT_BASELINE_WITH_LOCAL_UNPUBLISHED_NONMETRIC_REC_I2B_METADATA_REMEDIATION",
   "authority": {
     "actualGraphProductIpDisposition": "REC-I2A-ACTUAL-GRAPH-PRODUCT-IP-DISPOSITION-20260817-01",
     "conditionalOwnerAuthorization": "STAGE0-OWNER-UNLOCK-BATCH-20260817-02",
     "technicalDelegation": "STAGE0-TECHNICAL-REMEDIATION-DELEGATION-20260817-01",
     "advisoryRemediationAuthorization": "REC-I2B-ADVISORY-REMEDIATION-AUTH-20260817-01",
     "independentDeltaReviewClosureRecord": "REC-I2B-INDEPENDENT-DELTA-REVIEW-CLOSURE-AUTH-20260817-01",
+    "draftPublicationAuthorization": "REC-I2B-DRAFT-PUBLICATION-AUTH-20260817-01",
+    "verificationMetadataBomRemediationAuthorization": "REC-I2B-VERIFICATION-METADATA-BOM-REMEDIATION-AUTH-20260817-01",
+    "verificationMetadataTransitiveArtifactsRemediationAuthorization": "REC-I2B-VERIFICATION-METADATA-TRANSITIVE-ARTIFACTS-REMEDIATION-AUTH-20260817-02",
     "designCheckpointApproved": true,
     "accountableEngineeringSecurityReviewCompleted": false,
     "runtimeCryptoImplementationAllowed": true,
@@ -25,7 +28,9 @@
     "recI3Allowed": false,
     "dependencyAdmissionAllowed": false,
     "productionAdmissionAllowed": false,
-    "publicationAllowed": false,
+    "draftPublicationAuthorizedAndPerformed": true,
+    "currentMetadataRemediationPublicationAllowed": false,
+    "additionalPublicationPushOrMergeAllowed": false,
     "mergeAllowed": false
   },
   "git": {
@@ -34,16 +39,23 @@
     "priorEvidenceCommit": "ed9a6e72578f06b4712250cfcc034dc1851ff23f",
     "independentDeltaReviewedEvidenceCommit": "6eb055d9fdb83445ec1dcf27898bba07af2d4951",
     "independentDeltaReviewedEvidenceTree": "5cb9357700a9868c70c21ff987c8261882deaa1b",
+    "historicalIndependentCleanClosureCommit": "87a45d69b4a35854f7904895bf8e10968265983b",
+    "historicalIndependentCleanClosureTree": "dd1173626b73413fb9077ebf9046c11ba26496ac",
     "implementationCommits": [
       "7b90db3403f165bb268daa6a727c5a33c3524a2b",
       "6557add0d1d74d9029bd0d547b5493e72cdf7bac",
-      "dca745929b59b656dfa8bb210884e3c1c4bdad0f"
+      "dca745929b59b656dfa8bb210884e3c1c4bdad0f",
+      "adc422236003403d15581c10e31e2dc797ccf9bb"
     ],
-    "terminalImplementationCommit": "dca745929b59b656dfa8bb210884e3c1c4bdad0f",
-    "terminalImplementationTree": "482f0e57ad3ce9aba2b91d3cd8a5e21092757e9f",
+    "terminalImplementationCommit": "adc422236003403d15581c10e31e2dc797ccf9bb",
+    "terminalImplementationTree": "27e9f6b956e5818daae32949f978e42c0c1644b2",
     "cleanBeforeEvidenceWrite": true,
-    "published": false,
-    "pullRequestCreated": false,
+    "published": true,
+    "publishedHeadBeforeLocalMetadataRemediation": "87a45d69b4a35854f7904895bf8e10968265983b",
+    "terminalImplementationPublished": false,
+    "pullRequestCreated": true,
+    "pullRequestNumber": 38,
+    "pullRequestDraft": true,
     "merged": false
   },
   "advisoryRemediation": {
@@ -109,9 +121,83 @@
         "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-independent-delta-review-closure-2026-08-17.json",
         "bytes": 8534,
         "sha256": "3a3817150fa984a2caf6b4bf24e1ca677574bfc17d1d24916a2d35db343cdc04"
-      }
+      },
+      "reviewedImplementationCommit": "dca745929b59b656dfa8bb210884e3c1c4bdad0f",
+      "reviewedImplementationTree": "482f0e57ad3ce9aba2b91d3cd8a5e21092757e9f",
+      "reviewedEvidenceCommit": "6eb055d9fdb83445ec1dcf27898bba07af2d4951",
+      "reviewedEvidenceTree": "5cb9357700a9868c70c21ff987c8261882deaa1b",
+      "durableClosureRecordCommit": "87a45d69b4a35854f7904895bf8e10968265983b",
+      "coversCurrentTerminalImplementation": false,
+      "staleReason": "The later metadata-only P1 remediation changes android/gradle/verification-metadata.xml and requires a fresh independent delta review."
     },
-    "currentZeroFindingsClaimed": true
+    "verificationMetadataP1Remediation": {
+      "findingId": "REC-I2B-VERIFICATION-METADATA-P1-001",
+      "severity": "P1",
+      "discoveredBy": {
+        "githubActionsRunId": 32031359045,
+        "searchSmokeJobId": 95391886462,
+        "exactHead": "87a45d69b4a35854f7904895bf8e10968265983b",
+        "initialFailureArtifact": "org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.8.0/kotlinx-coroutines-bom-1.8.0.pom"
+      },
+      "requirement": "Complete exact SHA-256 verification metadata for the five already-resolved tooling-only metadata artifacts exposed by a clean or refreshed Gradle classpath without weakening verification or changing any coordinate, graph, lock, license or admission decision.",
+      "implementationStatus": "REMEDIATED_AND_LOCALLY_VERIFIED_PENDING_FRESH_INDEPENDENT_DELTA_REVIEW",
+      "implementationCommit": "adc422236003403d15581c10e31e2dc797ccf9bb",
+      "implementationTree": "27e9f6b956e5818daae32949f978e42c0c1644b2",
+      "metadataArtifactCount": 5,
+      "artifacts": [
+        {
+          "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.8.0",
+          "artifact": "kotlinx-coroutines-bom-1.8.0.pom",
+          "bytes": 4291,
+          "sha256": "1239e9dbe1397cd5971342956b2511bc3ace7b641842e4372a088dcfa8b9ad55"
+        },
+        {
+          "coordinate": "com.google.guava:guava-parent:33.4.0-jre",
+          "artifact": "guava-parent-33.4.0-jre.pom",
+          "bytes": 21100,
+          "sha256": "3a499ed34a0d9ee0f1bcc39230021a1cd4e2f7dd0426ab6844f585465d41dcd7"
+        },
+        {
+          "coordinate": "org.junit:junit-bom:5.10.2",
+          "artifact": "junit-bom-5.10.2.module",
+          "bytes": 6995,
+          "sha256": "de23b114b3e4119a8fe6eb17bed5a3852816698bace67071579d6d927ebb080a"
+        },
+        {
+          "coordinate": "org.junit:junit-bom:5.11.0-M2",
+          "artifact": "junit-bom-5.11.0-M2.module",
+          "bytes": 7104,
+          "sha256": "86477abcf490d6ca059aa9973cb108d22a506f49d1a5569bb32cc6cbf43c2cce"
+        },
+        {
+          "coordinate": "org.junit:junit-bom:5.14.2",
+          "artifact": "junit-bom-5.14.2.module",
+          "bytes": 6994,
+          "sha256": "5d26f4440392326dd2483cf490143eea1495d5095459a0b9651a7b1b38e24ebf"
+        }
+      ],
+      "freshIsolatedGradleResolution": true,
+      "canonicalMavenCentralBytesCrossChecked": true,
+      "canonicalRepository": "https://repo.maven.apache.org/maven2",
+      "publisherSidecarCrossCheck": {
+        "sha256AvailableAndMatchedArtifactCount": 4,
+        "guavaPomSha256SidecarAvailable": false,
+        "guavaPomPublishedSha1": "ee79b87abc4ef9b3591db13c59de368c7b03dc79",
+        "guavaPomPublishedSha1Matched": true
+      },
+      "newCoordinateOrRuntimeEdgeIntroduced": false,
+      "graphLockLicenseOrAdmissionChanged": false
+    },
+    "freshIndependentDeltaReview": {
+      "required": true,
+      "completed": false,
+      "reviewer": null,
+      "disposition": null,
+      "P0": null,
+      "P1": null,
+      "P2": null
+    },
+    "currentZeroFindingsClaimed": false
   },
   "authoritativeInputs": {
     "decision": "docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md",
@@ -399,16 +485,25 @@
     },
     "verificationMetadata": {
       "path": "android/gradle/verification-metadata.xml",
-      "gitBlobSha1": "db5adcc6a5f31f95efcbdf8fe168834b3b2a39b0",
-      "rawGitLfBytes": 293745,
-      "rawGitLfSha256": "32c5e2e290aed91e6907985e7f6722691242cbb43a101c34747302b5ad5c7867",
-      "windowsWorkingCrlfBytes": 298394,
-      "windowsWorkingCrlfSha256": "515cb172de60fa101c31f7a9c09d83e4794f1658a07e64e02f5af392ec3b5c32",
-      "lineEndingRepresentationsExplicitlySeparated": true
+      "gitBlobSha1": "cac66ef66383d966fc244d6f90c02d038765548d",
+      "rawGitLfBytes": 294957,
+      "rawGitLfSha256": "902ac63a932c097566a93201652c7ee392c435dd9e30407e711d9cef974d58fc",
+      "windowsWorkingCrlfBytes": 299625,
+      "windowsWorkingCrlfSha256": "bc4ba83cbdfde7eb2d35ab94c090c61b027cb1b64f7ddb016957cbc10582b835",
+      "lineEndingRepresentationsExplicitlySeparated": true,
+      "historicalReviewedGitBlobSha1": "db5adcc6a5f31f95efcbdf8fe168834b3b2a39b0",
+      "authorizedFiveArtifactMetadataOnlyRemediation": true
     },
     "unchangedByWriteLocks": true
   },
   "verification": {
+    "freshSearchSmokeResolution": {
+      "command": "./gradlew --no-daemon --no-configuration-cache --refresh-dependencies :poc:search:connectedDebugAndroidTest --dry-run -Pandroid.testInstrumentationRunnerArguments.class=com.monumentogram.dora.poc.search.SearchSmokeInstrumentedTest",
+      "result": "PASS",
+      "missingVerificationArtifactCount": 0,
+      "emulatorOrDeviceStarted": false,
+      "duration": "2m 6s"
+    },
     "fullStaticBuildAndUnitBlock": {
       "command": "./gradlew --no-configuration-cache --rerun-tasks --parallel spotlessCheck detekt :poc:recovery:testDebugUnitTest :poc:recovery:lintDebug :poc:recovery:lintRelease :poc:recovery:assembleDebug :poc:recovery:assembleRelease :poc:recovery:recoveryI2bVerifyCryptoPolicy",
       "result": "PASS",
@@ -566,19 +661,28 @@
       "P1": 3,
       "P2": 2
     },
-    "postRemediationIndependentFindingCounts": {
+    "historicalPostRemediationIndependentFindingCounts": {
       "P0": 0,
       "P1": 0,
       "P2": 0
     },
-    "independentDeltaReviewCompleted": true,
-    "independentDeltaReviewDisposition": "CLEAN",
-    "independentDeltaReviewRequired": false,
+    "historicalIndependentCleanReviewedImplementationCommit": "dca745929b59b656dfa8bb210884e3c1c4bdad0f",
+    "historicalIndependentCleanReviewedEvidenceCommit": "6eb055d9fdb83445ec1dcf27898bba07af2d4951",
+    "historicalIndependentCleanClosureRecordCommit": "87a45d69b4a35854f7904895bf8e10968265983b",
+    "historicalIndependentCleanReviewCoversCurrentTarget": false,
+    "currentMetadataRemediationFindingCountsPendingIndependentReview": {
+      "P0": 0,
+      "P1": 1,
+      "P2": 0
+    },
+    "independentDeltaReviewCompleted": false,
+    "independentDeltaReviewDisposition": null,
+    "independentDeltaReviewRequired": true,
     "distinctAccountableEngineeringSecurityReviewRequired": true,
-    "accountableEngineeringSecurityReviewRoutingMayBeRebuilt": true,
+    "accountableEngineeringSecurityReviewRoutingMayBeRebuilt": false,
     "delegationMaySubstituteAccountableReview": false,
     "recI3MayProceedNow": false,
-    "openStageGate": "REC-I2B-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW"
+    "openStageGate": "REC-I2B-FRESH-INDEPENDENT-DELTA-REVIEW_AFTER_METADATA_P1_REMEDIATION"
   },
   "notPerformedOrClaimed": {
     "deviceOrEmulatorExecution": false,
@@ -593,10 +697,10 @@
     "dependencyAdmission": false,
     "productionAdmission": false,
     "recI3Activation": false,
-    "publication": false,
-    "pullRequest": false,
+    "publication": true,
+    "pullRequest": true,
     "merge": false,
     "googleSheetMutation": false
   },
-  "nextGate": "Route the exact independently cleaned REC-I2B implementation and refreshed packet to a distinct accountable Engineering/Security reviewer. The advisory CLEAN verdict and technical delegation do not substitute for that review and cannot activate REC-I3."
+  "nextGate": "Obtain a fresh independent advisory delta review of exact metadata remediation commit adc422236003403d15581c10e31e2dc797ccf9bb and this refreshed evidence. The historical CLEAN verdict remains immutable but does not cover the current target; accountable review routing and REC-I3 remain blocked."
 }

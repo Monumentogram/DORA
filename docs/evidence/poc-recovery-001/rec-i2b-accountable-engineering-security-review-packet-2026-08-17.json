@@ -2,39 +2,46 @@
   "schemaVersion": 1,
   "packetId": "REC-I2B-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW-PACKET-20260817-01",
   "preparedAtUtc": "2026-08-17T12:01:29Z",
-  "refreshedAt": "2026-08-17T15:29:13+03:00",
+  "refreshedAt": "2026-08-17T16:17:23+03:00",
   "refreshedTimeZone": "Europe/Moscow",
-  "status": "READY_FOR_DISTINCT_ACCOUNTABLE_REVIEW_NOT_REVIEWED",
+  "status": "BLOCKED_PENDING_FRESH_INDEPENDENT_DELTA_REVIEW",
   "pocId": "POC-RECOVERY-001",
   "stage": "Stage 0",
   "reviewType": "DISTINCT_ACCOUNTABLE_ENGINEERING_SECURITY_IMPLEMENTATION_REVIEW",
   "claimCeiling": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
   "routingEligibility": {
-    "eligibleNow": true,
-    "blockingPrecondition": null,
-    "independentAdvisoryDeltaReviewDisposition": "CLEAN",
+    "eligibleNow": false,
+    "blockingPrecondition": "FRESH_INDEPENDENT_DELTA_REVIEW_OF_EXACT_METADATA_P1_REMEDIATION",
+    "historicalIndependentAdvisoryDeltaReviewDisposition": "CLEAN",
+    "historicalCleanReviewCoversCurrentTarget": false,
+    "currentIndependentAdvisoryDeltaReviewDisposition": null,
     "recI3MayProceedNow": false
   },
   "reviewTarget": {
     "branch": "codex/poc-recovery-i2a-graph-probe",
     "published": false,
+    "publishedDraftBaselineHead": "87a45d69b4a35854f7904895bf8e10968265983b",
+    "pullRequestNumber": 38,
+    "pullRequestDraft": true,
     "baseDispositionCommit": "4d58ab02424c7a43f6390f87c633b5464df6a916",
     "implementationCommits": [
       "7b90db3403f165bb268daa6a727c5a33c3524a2b",
       "6557add0d1d74d9029bd0d547b5493e72cdf7bac",
-      "dca745929b59b656dfa8bb210884e3c1c4bdad0f"
+      "dca745929b59b656dfa8bb210884e3c1c4bdad0f",
+      "adc422236003403d15581c10e31e2dc797ccf9bb"
     ],
-    "terminalImplementationCommit": "dca745929b59b656dfa8bb210884e3c1c4bdad0f",
-    "terminalImplementationTree": "482f0e57ad3ce9aba2b91d3cd8a5e21092757e9f",
+    "terminalImplementationCommit": "adc422236003403d15581c10e31e2dc797ccf9bb",
+    "terminalImplementationTree": "27e9f6b956e5818daae32949f978e42c0c1644b2",
     "implementationEvidence": {
       "path": "docs/evidence/poc-recovery-001/rec-i2b-runtime-crypto-implementation-evidence-2026-08-17.json",
-      "bytes": 26433,
-      "sha256": "386e74bd150ddefbfcdfe2a6a7ed3ef4ab23fc78b6395cf9f7acab6ecd271e24"
+      "bytes": 32132,
+      "sha256": "52015986203565b87f218b40905312493b57fabda69a0005273a8a3e6e4d6299"
     },
     "independentDeltaReviewClosure": {
       "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-independent-delta-review-closure-2026-08-17.json",
       "bytes": 8534,
-      "sha256": "3a3817150fa984a2caf6b4bf24e1ca677574bfc17d1d24916a2d35db343cdc04"
+      "sha256": "3a3817150fa984a2caf6b4bf24e1ca677574bfc17d1d24916a2d35db343cdc04",
+      "historicalOnlyForCurrentTarget": true
     }
   },
   "authorityBoundary": {
@@ -43,7 +50,10 @@
       "STAGE0-OWNER-UNLOCK-BATCH-20260817-02",
       "STAGE0-TECHNICAL-REMEDIATION-DELEGATION-20260817-01",
       "REC-I2B-ADVISORY-REMEDIATION-AUTH-20260817-01",
-      "REC-I2B-INDEPENDENT-DELTA-REVIEW-CLOSURE-AUTH-20260817-01"
+      "REC-I2B-INDEPENDENT-DELTA-REVIEW-CLOSURE-AUTH-20260817-01",
+      "REC-I2B-DRAFT-PUBLICATION-AUTH-20260817-01",
+      "REC-I2B-VERIFICATION-METADATA-BOM-REMEDIATION-AUTH-20260817-01",
+      "REC-I2B-VERIFICATION-METADATA-TRANSITIVE-ARTIFACTS-REMEDIATION-AUTH-20260817-02"
     ],
     "thisPacketIsFormalApproval": false,
     "technicalDelegationMaySubstituteAccountableReview": false,
@@ -55,7 +65,9 @@
     "harnessOrCampaignAuthorized": false,
     "measurementAuthorized": false,
     "dependencyOrProductionAdmissionAuthorized": false,
-    "publicationOrMergeAuthorized": false
+    "publicationOrMergeAuthorized": false,
+    "draftPublicationAlreadyAuthorizedAndPerformed": true,
+    "additionalPublicationPushOrMergeAuthorized": false
   },
   "advisoryRemediationGate": {
     "priorVerdict": {
@@ -82,7 +94,33 @@
       "P0": 0,
       "P1": 0,
       "P2": 0,
-      "record": "docs/evidence/poc-recovery-001/reviews/rec-i2b-independent-delta-review-closure-2026-08-17.json"
+      "record": "docs/evidence/poc-recovery-001/reviews/rec-i2b-independent-delta-review-closure-2026-08-17.json",
+      "reviewedImplementationCommit": "dca745929b59b656dfa8bb210884e3c1c4bdad0f",
+      "reviewedImplementationTree": "482f0e57ad3ce9aba2b91d3cd8a5e21092757e9f",
+      "reviewedEvidenceCommit": "6eb055d9fdb83445ec1dcf27898bba07af2d4951",
+      "reviewedEvidenceTree": "5cb9357700a9868c70c21ff987c8261882deaa1b",
+      "durableClosureRecordCommit": "87a45d69b4a35854f7904895bf8e10968265983b",
+      "coversCurrentTerminalImplementation": false
+    },
+    "verificationMetadataP1Remediation": {
+      "findingId": "REC-I2B-VERIFICATION-METADATA-P1-001",
+      "severity": "P1",
+      "implementationStatus": "REMEDIATED_AND_LOCALLY_VERIFIED_PENDING_FRESH_INDEPENDENT_DELTA_REVIEW",
+      "implementationCommit": "adc422236003403d15581c10e31e2dc797ccf9bb",
+      "implementationTree": "27e9f6b956e5818daae32949f978e42c0c1644b2",
+      "metadataArtifactCount": 5,
+      "coordinateOrRuntimeGraphChanged": false,
+      "lockChanged": false,
+      "licenseOrAdmissionDecisionChanged": false
+    },
+    "freshIndependentDeltaReview": {
+      "required": true,
+      "completed": false,
+      "reviewer": null,
+      "disposition": null,
+      "P0": null,
+      "P1": null,
+      "P2": null
     }
   },
   "exactFileManifest": [
@@ -232,10 +270,17 @@
     },
     {
       "id": "I2B-INV-17",
-      "invariant": "This implementation remains local, unpublished and nonmetric; it includes no device, emulator, network, harness, campaign, REC-I3 activation, PASS, Ready, admission, PR, push or merge."
+      "invariant": "The independently cleaned 87a baseline is published only in Draft PR 38; the current metadata remediation remains local, unpublished and nonmetric, with no device, emulator, network, harness, campaign, REC-I3 activation, PASS, Ready, admission, additional push or merge."
     }
   ],
   "verificationEvidence": {
+    "freshSearchSmokeResolution": {
+      "result": "PASS",
+      "mode": "connectedDebugAndroidTest task graph with --dry-run and --refresh-dependencies",
+      "missingVerificationArtifactCount": 0,
+      "emulatorOrDeviceStarted": false,
+      "duration": "2m 6s"
+    },
     "fullStaticBuildAndUnitBlock": {
       "result": "PASS",
       "tasks": "104/104 executed",
@@ -262,9 +307,10 @@
     },
     "locks": {
       "recoveryLock": "3395 bytes; SHA256 2e0de74c01b452476223a757ffa52ccc7f3f1ab74e9736e36bcd4a2ff0e8f08c",
-      "verificationMetadataRawGitLf": "293745 bytes; SHA256 32c5e2e290aed91e6907985e7f6722691242cbb43a101c34747302b5ad5c7867",
-      "verificationMetadataWindowsWorkingCrlf": "298394 bytes; SHA256 515cb172de60fa101c31f7a9c09d83e4794f1658a07e64e02f5af392ec3b5c32",
-      "unchanged": true
+      "verificationMetadataRawGitLf": "294957 bytes; SHA256 902ac63a932c097566a93201652c7ee392c435dd9e30407e711d9cef974d58fc",
+      "verificationMetadataWindowsWorkingCrlf": "299625 bytes; SHA256 bc4ba83cbdfde7eb2d35ab94c090c61b027cb1b64f7ddb016957cbc10582b835",
+      "recoveryLockUnchanged": true,
+      "verificationMetadataChangedOnlyByAuthorizedFiveArtifactRemediation": true
     },
     "r8": {
       "result": "PASS",
@@ -322,7 +368,7 @@
       "question": "Is the exact Tink 1.23.0 coordinate, dependency-local JSR305 exclusion and six-runtime/two-test graph unchanged?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -330,7 +376,7 @@
       "question": "Are the frozen Streaming 16/16/SHA256/4096 and AEAD 32/12/16/TINK Parameters validated for generated and parsed handles before primitive use?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -338,7 +384,7 @@
       "question": "Are alternate Streaming 32/32/8192 and AES-128-GCM encrypted keysets rejected only as PARSED_BUT_UNSUPPORTED_PARAMETER_SUITE?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -346,7 +392,7 @@
       "question": "Are Key, Parameters, raw key bytes, keyset handles, primitives and mutable configuration fully contained and never exposed, stored, stringified or logged?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -354,7 +400,7 @@
       "question": "Are only the nondeprecated four-argument encrypted-keyset APIs used with exact typed KeyEnvelope AAD and the fixed RegistryConfiguration?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -362,7 +408,7 @@
       "question": "Does the observing Aead proxy retain no payload references and support the six stable parse-failure types without production manual cleartext parsing or SecretKeyAccess?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -370,7 +416,7 @@
       "question": "Do neutral decrypt signals implement authentication-first, provider-second and generic-unknown precedence, while preserving authenticated plaintext-contract failure separately and assigning no REC-I3 outcome?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -378,7 +424,7 @@
       "question": "Do tests transparently record that actual Tink 1.23.0 wrong-AAD/tag failures are UNKNOWN when Tink strips the positive cause?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -386,7 +432,7 @@
       "question": "Do barrier tests prove one serializer/encrypt claimant and permanent poison semantics after an in-flight envelope failure?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -394,7 +440,7 @@
       "question": "Are strict REC-I1 AAD bindings used, including exact DORA_RECOVERY_STREAM_AAD_V1_BINARY_BE, without an alternate evidence label?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -402,7 +448,7 @@
       "question": "Are Android Keystore create-new/open-existing paths separate, canonical-alias bound, exactly counted and free of generation fallback?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -410,7 +456,7 @@
       "question": "Do all 91 tests pass while asserting deterministic contracts rather than deterministic ciphertext?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -418,7 +464,7 @@
       "question": "Do Spotless, Detekt, debug/release lint and assemble, policy scan, 61/61 graph resolve, locks and verification metadata checks pass for the exact target?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -426,7 +472,7 @@
       "question": "Does forced no-cache R8 pass with only three narrow rules, retain all required types, and produce packages with zero JSR305 definitions and native entries?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -434,7 +480,7 @@
       "question": "Is the packet sanitized and free of key material, plaintext, ciphertext, credentials, private audio, device identifiers and user-specific absolute paths?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -442,22 +488,22 @@
       "question": "Does findings truth preserve the prior 0/3/2 advisory verdict and record the exact independent CLEAN 0/0/0 delta closure?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
       "id": "I2B-REV-17",
-      "question": "Is the claim held exactly at IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW with no device, harness, campaign, measurement, PASS, Ready, admission, publication, merge or REC-I3 claim?",
+      "question": "Is the claim held exactly at IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW, with Draft PR 38 and the unpublished current remediation disclosed and no device, harness, campaign, measurement, PASS, Ready, admission, additional push, merge or REC-I3 claim?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     }
   ],
   "decisionOptions": [
     {
       "option": "APPROVE_EXACT_REC_I2B_FOR_SEPARATE_REC_I3_ACTIVATION_DECISION",
-      "when": "The completed independent CLEAN delta review is accepted as advisory input and the distinct accountable reviewer independently answers every checklist item YES with no new P0/P1 finding.",
+      "when": "A fresh independent CLEAN delta review covers the current exact terminal implementation and evidence, and the distinct accountable reviewer independently answers every checklist item YES with no new P0/P1 finding.",
       "effect": "Records only the accountable REC-I2B implementation review; REC-I3 still requires a separate activation record."
     },
     {
@@ -472,8 +518,8 @@
     }
   ],
   "recommendedDefault": {
-    "now": "ROUTE_TO_DISTINCT_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW_AND_HOLD_REC_I3",
-    "independentDeltaClosure": "CLEAN",
+    "now": "OBTAIN_FRESH_INDEPENDENT_DELTA_REVIEW_AND_HOLD_ACCOUNTABLE_ROUTING_AND_REC_I3",
+    "independentDeltaClosure": "HISTORICAL_CLEAN_STALE_FOR_CURRENT_TARGET",
     "delegatedApprovalRecordedHere": false
   },
   "findingsTruth": {
@@ -482,25 +528,34 @@
       "P1": 3,
       "P2": 2
     },
-    "postRemediationIndependentDelta": {
+    "historicalPostRemediationIndependentDelta": {
       "P0": 0,
       "P1": 0,
       "P2": 0
     },
-    "currentZeroFindingsClaimed": true,
-    "openP0StageGate": "REC-I2B-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
+    "currentMetadataRemediationPendingIndependentDelta": {
+      "P0": 0,
+      "P1": 1,
+      "P2": 0,
+      "localStatus": "REMEDIATED_AND_LOCALLY_VERIFIED"
+    },
+    "currentZeroFindingsClaimed": false,
+    "openP0StageGate": "REC-I2B-FRESH-INDEPENDENT-DELTA-REVIEW_AFTER_METADATA_P1_REMEDIATION",
     "recI3MayProceedNow": false
   },
   "reviewCompletionRequirements": {
-    "independentAdvisoryDeltaReviewCompleted": true,
-    "independentExactCommitAndTreeAccountableReviewAfterDeltaClosure": true,
-    "allChecklistAnswersRecordedByAccountableReviewer": true,
-    "reviewerIdentityAndCapacityRecordedInSeparateFinalReviewRecord": true,
-    "reviewerSignatureOrEquivalentAttestationRecordedInSeparateFinalReviewRecord": true,
-    "reviewTimestampRecordedInSeparateFinalReviewRecord": true,
-    "p0P1P2DispositionRecordedInSeparateFinalReviewRecord": true,
-    "formalDecisionRecordedInSeparateFinalReviewRecord": true,
+    "freshIndependentAdvisoryDeltaReview": {
+      "required": true,
+      "completed": false
+    },
+    "independentExactCommitAndTreeAccountableReviewAfterDeltaClosureRequired": true,
+    "allChecklistAnswersByAccountableReviewerRequired": true,
+    "reviewerIdentityAndCapacityInSeparateFinalReviewRecordRequired": true,
+    "reviewerSignatureOrEquivalentAttestationInSeparateFinalReviewRecordRequired": true,
+    "reviewTimestampInSeparateFinalReviewRecordRequired": true,
+    "p0P1P2DispositionInSeparateFinalReviewRecordRequired": true,
+    "formalDecisionInSeparateFinalReviewRecordRequired": true,
     "thisPreparedPacketMustNotBeEditedIntoAnApproval": true
   },
-  "terminalGate": "REC-I3 is not activated. Independent advisory delta review is CLEAN, but the distinct accountable Engineering/Security review remains non-substitutable, and any later REC-I3 activation must be separately recorded."
+  "terminalGate": "REC-I3 is not activated. The historical independent advisory CLEAN review remains immutable but does not cover the current metadata-only remediation; fresh independent delta review is required before accountable Engineering/Security routing can resume."
 }
