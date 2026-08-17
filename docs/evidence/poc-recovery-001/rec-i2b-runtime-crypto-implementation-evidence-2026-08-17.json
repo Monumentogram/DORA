@@ -1,8 +1,9 @@
 {
   "schemaVersion": 1,
   "reportId": "REC-I2B-RUNTIME-CRYPTO-IMPLEMENTATION-EVIDENCE-20260817-01",
-  "recordedAtUtc": "2026-08-17T10:48:08Z",
+  "recordedAtUtc": "2026-08-17T12:01:29Z",
   "status": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
+  "remediationState": "LOCALLY_VERIFIED_PENDING_INDEPENDENT_ADVISORY_DELTA_REVIEW",
   "claimCeiling": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
   "pocId": "POC-RECOVERY-001",
   "stage": "Stage 0",
@@ -11,6 +12,7 @@
     "actualGraphProductIpDisposition": "REC-I2A-ACTUAL-GRAPH-PRODUCT-IP-DISPOSITION-20260817-01",
     "conditionalOwnerAuthorization": "STAGE0-OWNER-UNLOCK-BATCH-20260817-02",
     "technicalDelegation": "STAGE0-TECHNICAL-REMEDIATION-DELEGATION-20260817-01",
+    "advisoryRemediationAuthorization": "REC-I2B-ADVISORY-REMEDIATION-AUTH-20260817-01",
     "designCheckpointApproved": true,
     "accountableEngineeringSecurityReviewCompleted": false,
     "runtimeCryptoImplementationAllowed": true,
@@ -26,16 +28,74 @@
   "git": {
     "branch": "codex/poc-recovery-i2a-graph-probe",
     "baseDispositionCommit": "4d58ab02424c7a43f6390f87c633b5464df6a916",
+    "priorEvidenceCommit": "ed9a6e72578f06b4712250cfcc034dc1851ff23f",
     "implementationCommits": [
       "7b90db3403f165bb268daa6a727c5a33c3524a2b",
-      "6557add0d1d74d9029bd0d547b5493e72cdf7bac"
+      "6557add0d1d74d9029bd0d547b5493e72cdf7bac",
+      "dca745929b59b656dfa8bb210884e3c1c4bdad0f"
     ],
-    "terminalImplementationCommit": "6557add0d1d74d9029bd0d547b5493e72cdf7bac",
-    "terminalImplementationTree": "881cdcf54bd25f3bcb36fd20c4c0d0efd86210dc",
+    "terminalImplementationCommit": "dca745929b59b656dfa8bb210884e3c1c4bdad0f",
+    "terminalImplementationTree": "482f0e57ad3ce9aba2b91d3cd8a5e21092757e9f",
     "cleanBeforeEvidenceWrite": true,
     "published": false,
     "pullRequestCreated": false,
     "merged": false
+  },
+  "advisoryRemediation": {
+    "sourceVerdict": {
+      "role": "independent advisory implementation reviewer",
+      "formalReviewer": false,
+      "disposition": "CHANGES_REQUIRED",
+      "P0": 0,
+      "P1": 3,
+      "P2": 2
+    },
+    "findings": [
+      {
+        "id": "REC-I2B-ADV-P1-001",
+        "severity": "P1",
+        "requirement": "Validate the exact frozen Streaming and AEAD parameter suites for generated and parsed keysets before primitive use.",
+        "implementationStatus": "REMEDIATED_AND_LOCALLY_VERIFIED",
+        "closureStatus": "PENDING_INDEPENDENT_DELTA_REVIEW"
+      },
+      {
+        "id": "REC-I2B-ADV-P1-002",
+        "severity": "P1",
+        "requirement": "Replace the overbroad authentication result with neutral cause-chain signals using authentication-first, provider-second and unknown fallback precedence.",
+        "implementationStatus": "REMEDIATED_AND_LOCALLY_VERIFIED",
+        "closureStatus": "PENDING_INDEPENDENT_DELTA_REVIEW"
+      },
+      {
+        "id": "REC-I2B-ADV-P1-003",
+        "severity": "P1",
+        "requirement": "Provide a stable observing-AEAD encrypted-keyset parsing boundary for outer, decrypt, authenticated-inner and unsupported-suite failures without manual cleartext parsing.",
+        "implementationStatus": "REMEDIATED_AND_LOCALLY_VERIFIED",
+        "closureStatus": "PENDING_INDEPENDENT_DELTA_REVIEW"
+      },
+      {
+        "id": "REC-I2B-ADV-P2-001",
+        "severity": "P2",
+        "requirement": "Add barrier-driven concurrency proof for the single claimant and poison-on-envelope-failure lifecycle.",
+        "implementationStatus": "REMEDIATED_AND_LOCALLY_VERIFIED",
+        "closureStatus": "PENDING_INDEPENDENT_DELTA_REVIEW"
+      },
+      {
+        "id": "REC-I2B-ADV-P2-002",
+        "severity": "P2",
+        "requirement": "Correct the Streaming AAD evidence label and replace stale post-review findings truth with provenance plus an explicit unreviewed delta state.",
+        "implementationStatus": "REMEDIATED_AND_LOCALLY_VERIFIED",
+        "closureStatus": "PENDING_INDEPENDENT_DELTA_REVIEW"
+      }
+    ],
+    "postRemediationIndependentDeltaReview": {
+      "completed": false,
+      "reviewer": null,
+      "disposition": null,
+      "P0": null,
+      "P1": null,
+      "P2": null
+    },
+    "currentZeroFindingsClaimed": false
   },
   "authoritativeInputs": {
     "decision": "docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md",
@@ -51,12 +111,12 @@
       "sha256": "106060feb7b3afe634c2e3698e04f83fea2165a21d50a7168dab95dc058bc804"
     }
   },
-  "changedFiles": [
+  "exactFileManifest": [
     {
       "path": "android/poc/recovery/build.gradle.kts",
-      "gitBlobSha1": "8f45f6af4ca3e9cb35d446c31ab105288759bb76",
-      "rawGitBytes": 18417,
-      "rawGitSha256": "3101b78ef4ab35dafe84dd6e33d2c67e69a2fd6b48a49cba991f3e8b5b0616f7"
+      "gitBlobSha1": "ca0e6458dd278e8d1ef9be5ce23a3d885bbc8753",
+      "rawGitBytes": 19426,
+      "rawGitSha256": "bfd8b7c349e679bc47f7ff56e76e15c9813275332565964ed16a45dcce458562"
     },
     {
       "path": "android/poc/recovery/proguard-recovery-i2a.pro",
@@ -71,6 +131,12 @@
       "rawGitSha256": "15450277e153616b7118448fe1c2bae649073131715269f30dbf67da07e07b31"
     },
     {
+      "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryCryptoFailureSignals.kt",
+      "gitBlobSha1": "3a69690070cb028a40af1d4392abf10ab1a98595",
+      "rawGitBytes": 2110,
+      "rawGitSha256": "61cef40ac468055d92c54684d82c555b0c03c85805e950b468908a66842628f8"
+    },
+    {
       "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryRunAead.kt",
       "gitBlobSha1": "7273eeedd41cb3b926b74e13bb4c316428dbdadf",
       "rawGitBytes": 1157,
@@ -78,9 +144,9 @@
     },
     {
       "path": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryTinkRuntime.kt",
-      "gitBlobSha1": "527344dfa357783129a340932c4ff8e21de81168",
-      "rawGitBytes": 15431,
-      "rawGitSha256": "9c25af76a5ee56e1f28dd8b42b9e29734db15a1343e1857c002a460db37bbc63"
+      "gitBlobSha1": "7bc1e6866f2117f4890f40245625ee0e5b44de93",
+      "rawGitBytes": 21309,
+      "rawGitSha256": "61850514381e47a59d4b04b3cadcc233d730411f14be3cd1d7aa4762978a2378"
     },
     {
       "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryAeadCryptoTest.kt",
@@ -89,16 +155,28 @@
       "rawGitSha256": "4ed63dd1353cdca06421594103b1dc73fbbc12124b7436e7b046f22f04f03885"
     },
     {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryCryptoConcurrencyTest.kt",
+      "gitBlobSha1": "22bbbc20c91b3d28ee6e2790ce6eb3b565d95fe1",
+      "rawGitBytes": 5513,
+      "rawGitSha256": "b0bb865938ca2330ee734c759458c05e74d2d4164371ce5ff215419b3dd5ecfc"
+    },
+    {
       "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryCryptoTestFixtures.kt",
-      "gitBlobSha1": "3b218fdeddbaf8cc33a60dcb65146d0be64f976a",
-      "rawGitBytes": 6436,
-      "rawGitSha256": "975ca51ad08cc23009df2e1b5226f445a50e3d7561f9e722afe673ea76f11e5b"
+      "gitBlobSha1": "dd8f9611cd199d63356e447cc3fed1369416af39",
+      "rawGitBytes": 6438,
+      "rawGitSha256": "45a7e971ca68db607fc6bd3f900e254803457ab45747dec330196ba5db7824c7"
+    },
+    {
+      "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryEncryptedKeysetParsingTest.kt",
+      "gitBlobSha1": "22b476d6f2f5c296cea4c3d676fedaec340eb1ab",
+      "rawGitBytes": 10567,
+      "rawGitSha256": "9c31277558b8c3d2a4a2814a5d202628d19085c6292e04866b10fd532032df37"
     },
     {
       "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryRunAeadTest.kt",
-      "gitBlobSha1": "d8474ff6299c5c9f3177ce6e97b8632c45d30620",
-      "rawGitBytes": 5494,
-      "rawGitSha256": "8ccb904f519078703b5b59e5013761aa2df709b7fd5ac54dabc960f87fde1e63"
+      "gitBlobSha1": "de451f2edd815c6d68baa535f20f8ce501bddf1f",
+      "rawGitBytes": 8040,
+      "rawGitSha256": "59d364a53d8dde9e65445b1ce94860098e03a17a9197f525765b86dee0524259"
     },
     {
       "path": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryStreamingCryptoTest.kt",
@@ -118,15 +196,20 @@
       "coordinate": "com.google.crypto.tink:tink-android:1.23.0",
       "scope": "unconditional implementation dependency inside :poc:recovery only",
       "localExclude": "com.google.code.findbugs:jsr305:3.0.2",
-      "moduleVersionName": "0.1.0-poc-recovery-i2b"
+      "approvedRuntimeArtifactCount": 6,
+      "approvedTestOnlyArtifactCount": 2
     },
-    "registry": {
+    "registryAndPrimitiveBoundary": {
       "registration": "TinkConfig.register()",
       "configuration": "RegistryConfiguration.get()",
       "configurationOwnership": "private fixed singleton inside the crypto boundary",
-      "callerSuppliedConfigurationAccepted": false
+      "callerSuppliedConfigurationAccepted": false,
+      "rawAeadExposed": false,
+      "rawStreamingAeadExposed": false,
+      "rawKeysetHandleExposed": false,
+      "cleartextKeyMaterialExposedSerializedStoredOrLogged": false
     },
-    "parameters": {
+    "frozenParameters": {
       "streaming": {
         "type": "AesGcmHkdfStreamingParameters",
         "inputKeyBytes": 16,
@@ -140,7 +223,12 @@
         "ivBytes": 12,
         "tagBytes": 16,
         "variant": "TINK"
-      }
+      },
+      "validationBoundary": "private getPrimary().getKey().getParameters() before primitive creation/use for generated and parsed handles",
+      "primaryKeyOrParametersExposedStoredStringifiedOrLogged": false,
+      "alternateStreamingSuiteRejected": "32/32/SHA256/8192",
+      "alternateAeadSuiteRejected": "AES-128-GCM",
+      "parsedMismatchSignal": "PARSED_BUT_UNSUPPORTED_PARAMETER_SUITE"
     },
     "keysetConstruction": {
       "exactBuilder": "KeysetHandle.newBuilder().addEntry(KeysetHandle.generateEntryFromParameters(parameters).withRandomId().makePrimary()).build()",
@@ -150,16 +238,40 @@
     },
     "encryptedKeysets": {
       "serializeApi": "TinkProtoKeysetFormat.serializeEncryptedKeyset(handle, runAead, exactKeyEnvelopeAad, RegistryConfiguration.get())",
-      "parseApi": "TinkProtoKeysetFormat.parseEncryptedKeyset(bytes, runAead, exactKeyEnvelopeAad, RegistryConfiguration.get())",
+      "parseApi": "TinkProtoKeysetFormat.parseEncryptedKeyset(bytes, observingAead, exactKeyEnvelopeAad, RegistryConfiguration.get())",
       "onlyNondeprecatedFourArgumentApis": true,
-      "cleartextKeyMaterialSerializedOrExposed": false
+      "observingProxyFields": [
+        "Aead delegate",
+        "DecryptObservation observation"
+      ],
+      "observingProxyByteArrayFieldCount": 0,
+      "observingProxyRetainsPlaintextOrCiphertextReferences": false,
+      "manualCleartextKeysetParsing": false,
+      "secretKeyAccessUse": false,
+      "typedFailures": [
+        "OUTER_STRUCTURAL_OR_ENCODING_INVALID",
+        "AUTHENTICATION_REJECTED",
+        "OPERATIONAL",
+        "UNKNOWN",
+        "AUTHENTICATED_INNER_KEYSET_INVALID",
+        "PARSED_BUT_UNSUPPORTED_PARAMETER_SUITE"
+      ]
     },
-    "primitiveBoundary": {
-      "rawAeadExposedToCallers": false,
-      "rawStreamingAeadExposedToCallers": false,
-      "rawKeysetHandleExposedToCallers": false,
-      "rawConfigurationExposedToCallers": false,
-      "typedRecoveryOperationsOnly": true
+    "neutralDecryptSignals": {
+      "types": [
+        "AUTHENTICATION_REJECTED",
+        "OPERATIONAL",
+        "UNKNOWN"
+      ],
+      "causeChainPrecedence": [
+        "AEADBadTagException or BadPaddingException => AUTHENTICATION_REJECTED",
+        "ProviderException => OPERATIONAL",
+        "generic GeneralSecurityException => UNKNOWN"
+      ],
+      "actualTinkWrappedWrongAadOrTagObservation": "Tink 1.23.0 supplies a generic GeneralSecurityException without a positive authentication cause, so the neutral signal is UNKNOWN",
+      "successRetained": true,
+      "authenticatedPlaintextContractFailureRetained": true,
+      "recI3OutcomeAssigned": false
     },
     "freshKeyLifecycle": {
       "freshStreamingKeysetPerRun": true,
@@ -169,10 +281,11 @@
       "successfulFreshEncryptionCount": 1,
       "failedEnvelopeSerializationPoisonsKeyset": true,
       "parsedKeysetsDecryptOnly": true,
-      "implicitGenerationOnOpenOrRecovery": false
+      "implicitGenerationOnOpenOrRecovery": false,
+      "barrierDrivenConcurrentClaimProof": true
     },
     "typedBindings": {
-      "streamingAad": "DORA_RECOVERY_STREAMING_AAD_V1_BINARY_BE",
+      "streamingAad": "DORA_RECOVERY_STREAM_AAD_V1_BINARY_BE",
       "microfileAad": "DORA_RECOVERY_MICROFILE_AAD_V1_BINARY_BE",
       "publicationAad": "DORA_RECOVERY_PUBLICATION_AAD_V1_BINARY_BE",
       "keyEnvelopeAad": "DORA_RECOVERY_KEY_ENVELOPE_AAD_V1_BINARY_BE",
@@ -184,22 +297,15 @@
         "cadenceSeconds": 0,
         "previousPublicationCiphertextSha256": "0000000000000000000000000000000000000000000000000000000000000000"
       },
-      "microfileCrossBindingEnforced": true,
-      "manifestAndCheckpointCrossBindingEnforced": true
+      "crossBindingEnforced": true
     },
     "androidKeystore": {
       "canonicalKeyUri": "android-keystore://dora.poc.recovery.v1.<lowercase-run-uuid>",
-      "createNew": "AndroidKeystoreKmsClient.generateNewAeadKey(keyUri), then Builder().setKeyUri(keyUri).build().getAead(keyUri)",
+      "createNew": "generateNewAeadKey(keyUri) once, then Builder().setKeyUri(keyUri).build().getAead(keyUri)",
       "openExisting": "Builder().setKeyUri(keyUri).build().getAead(keyUri)",
       "openExistingGenerates": false,
       "generationFallbackPresent": false,
       "aliasAndRunIdentityChecked": true
-    },
-    "keyConfirmation": {
-      "authenticationFailureType": "KeyConfirmationDecryption.AuthenticationFailure",
-      "postDecryptStrictCodecFailureType": "KeyConfirmationDecryption.PlaintextContractFailure",
-      "successType": "KeyConfirmationDecryption.Success",
-      "recI3OutcomeAssigned": false
     }
   },
   "dependencyGraph": {
@@ -208,7 +314,6 @@
       "bytes": 332184,
       "sha256": "3ab12ef698e59f323e71431496d72debd5741669b395b8052ad41b9a8b8b34a7"
     },
-    "rootCoordinate": "com.google.crypto.tink:tink-android:1.23.0",
     "allResolvableConfigurationsEnumeratedAndResolved": true,
     "allResolvableConfigurationCount": 61,
     "policyCoveredConfigurationCount": 34,
@@ -264,7 +369,8 @@
         "spdx": "BSD-3-Clause",
         "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
       }
-    ]
+    ],
+    "graphDriftFromApprovedSixRuntimeAndTwoTestOnlyArtifacts": false
   },
   "locksAndVerificationMetadata": {
     "recoveryLock": {
@@ -284,18 +390,9 @@
       "windowsWorkingCrlfSha256": "515cb172de60fa101c31f7a9c09d83e4794f1658a07e64e02f5af392ec3b5c32",
       "lineEndingRepresentationsExplicitlySeparated": true
     },
-    "graphDriftFromApprovedSixRuntimeAndTwoTestOnlyArtifacts": false
+    "unchangedByWriteLocks": true
   },
   "verification": {
-    "environment": {
-      "os": "Windows 10 amd64",
-      "jvm": "Microsoft OpenJDK 17.0.10+7-LTS",
-      "gradle": "9.5.0",
-      "androidGradlePlugin": "9.3.1",
-      "kotlinPlugin": "2.2.10",
-      "compileSdk": 36,
-      "minSdk": 28
-    },
     "fullStaticBuildAndUnitBlock": {
       "command": "./gradlew --no-configuration-cache --rerun-tasks --parallel spotlessCheck detekt :poc:recovery:testDebugUnitTest :poc:recovery:lintDebug :poc:recovery:lintRelease :poc:recovery:assembleDebug :poc:recovery:assembleRelease :poc:recovery:recoveryI2bVerifyCryptoPolicy",
       "result": "PASS",
@@ -303,44 +400,21 @@
       "executedTasks": 104
     },
     "unitTests": {
-      "suiteCount": 13,
-      "testCount": 80,
-      "passed": 80,
+      "suiteCount": 15,
+      "testCount": 91,
+      "passed": 91,
       "failures": 0,
       "errors": 0,
       "skipped": 0,
       "inheritedRecI1Tests": 62,
-      "newRecI2bTests": 18,
-      "newSuites": [
-        {
-          "name": "RecoveryAeadCryptoTest",
-          "tests": 4
-        },
-        {
-          "name": "RecoveryRunAeadTest",
-          "tests": 5
-        },
-        {
-          "name": "RecoveryStreamingCryptoTest",
-          "tests": 3
-        },
-        {
-          "name": "RecoveryTinkRuntimeTest",
-          "tests": 6
-        }
+      "recI2bTestsBeforeRemediation": 18,
+      "newRemediationTests": 11,
+      "remediationSuites": [
+        "RecoveryCryptoConcurrencyTest: 3",
+        "RecoveryEncryptedKeysetParsingTest: 7",
+        "RecoveryRunAeadTest delta: 1"
       ],
-      "coverageClaims": [
-        "exact parameter snapshot and one-entry enabled random-ID primary topology",
-        "streaming exact two-segment geometry and authenticated roundtrip",
-        "microfile exact 160000-byte plaintext to 160033-byte ciphertext geometry",
-        "ciphertexts are randomized; deterministic ciphertext is not claimed",
-        "tamper, truncation, wrong AAD and wrong key rejection",
-        "manifest and checkpoint strict-codec authenticated roundtrip",
-        "fresh envelope-first one-shot lifecycle and poison-on-envelope-failure",
-        "parsed keysets are decrypt-only",
-        "create-new versus open-existing call order, count and canonical alias identity",
-        "authentication failure is separate from authenticated post-decrypt codec failure"
-      ]
+      "deterministicCiphertextClaimed": false
     },
     "lint": {
       "debugGate": "PASS",
@@ -356,15 +430,15 @@
       "warningDisposition": "known nonblocking empty local PoC application warnings; no zero-warning claim"
     },
     "cryptoPolicy": {
-      "task": ":poc:recovery:recoveryI2bVerifyCryptoPolicy",
-      "generatedReport": "android/poc/recovery/build/reports/recovery-i2b/crypto-policy.json",
-      "bytes": 1492,
-      "sha256": "71063a29ba686be33b6ae483b370c0786f21dbd6c6588a1ba48b2d7865689aa9",
-      "forbiddenIdentifiersAbsent": true,
-      "requiredPublicApiFragmentsPresent": true,
-      "cleartextSecretKeysetSerializationAbsent": true,
-      "callerSuppliedConfigurationSurfaceAbsent": true,
-      "rawPrimitiveClientSurfaceAbsent": true
+      "path": "android/poc/recovery/build/reports/recovery-i2b/crypto-policy.json",
+      "bytes": 1924,
+      "sha256": "c7bd85cea72992303979e49b3ff3d5af8af7d3ca6efe6b8da0e990093c189d38",
+      "result": "PASS",
+      "exactPrimaryParameterValidationPresent": true,
+      "neutralDecryptFailureSignalsPresent": true,
+      "observingEncryptedKeysetParseBoundaryPresent": true,
+      "observingProxyRetainsPayloadReferences": false,
+      "manualCleartextKeysetParsingPresent": false
     },
     "fullGraphResolve": {
       "command": "./gradlew --no-configuration-cache --rerun-tasks --parallel -PdoraRecoveryI2aGraphProbe=true --write-locks :poc:recovery:recoveryI2aResolveOwnedConfigurations",
@@ -378,21 +452,13 @@
       "actionableTasks": 46,
       "executedTasks": 46,
       "missingClassFailureCount": 0,
-      "rulesPath": "android/poc/recovery/proguard-recovery-i2a.pro",
       "rulesBytes": 572,
       "rulesSha256": "855841c6c021423972d874bf841ed4a1e55e669a69633a75f2e93531e2b7e39e",
-      "exactDontwarnRules": [
-        "-dontwarn javax.annotation.Nullable",
-        "-dontwarn javax.annotation.concurrent.GuardedBy",
-        "-dontwarn javax.annotation.concurrent.ThreadSafe"
-      ],
       "eachExactRuleOccurrenceCount": 1,
       "broadDontwarnOccurrenceCount": 0,
-      "cryptoBoundaryRetained": true,
-      "mappingPath": "android/poc/recovery/build/outputs/mapping/release/mapping.txt",
-      "mappingBytes": 7678130,
-      "mappingSha256": "7a69f4a1f96a73795db7227d46850f6b7763f65cbeb84fd96a9c1558920bd128",
-      "configurationPath": "android/poc/recovery/build/outputs/mapping/release/configuration.txt",
+      "cryptoBoundaryAndNewTypedSignalsRetained": true,
+      "mappingBytes": 7695188,
+      "mappingSha256": "330ed8d37ad5dd93cf3caf8648fa4a26bb0d65a993e548223c3893c7fc1a4b1b",
       "configurationBytes": 11204,
       "configurationSha256": "49908c445b3512e019e339ea7fef6e8c44ca132b3f3f1454e5d7997e3f86f651"
     },
@@ -400,24 +466,32 @@
       "tool": "JDK 17 javap -c -p -s",
       "fourArgumentSerializeEncryptedKeysetInvocationCount": 1,
       "fourArgumentParseEncryptedKeysetInvocationCount": 1,
-      "cleartextKeysetInvocationCount": 0,
+      "getPrimaryInvocationCount": 2,
+      "entryGetKeyInvocationCount": 2,
+      "keyGetParametersInvocationCount": 2,
+      "observingProxyByteArrayFieldCount": 0,
       "keystoreGenerateNewAeadKeyInvocationCount": 1,
       "keystoreBuilderSetKeyUriInvocationCount": 1,
       "keystoreBuilderBuildInvocationCount": 1,
       "keystoreGetAeadInvocationCount": 1,
+      "secretKeyAccessOccurrenceCount": 0,
+      "cleartextKeysetOccurrenceCount": 0,
       "androidKeysetManagerOccurrenceCount": 0,
       "getOrGenerateOccurrenceCount": 0
     },
     "packages": {
       "debug": {
         "path": "android/poc/recovery/build/outputs/apk/debug/recovery-debug.apk",
-        "bytes": 6338512,
-        "sha256": "f457962dba14c5735ed5cb2d228b325787b92d3d2e77538be872f290a413335c",
+        "bytes": 6352440,
+        "sha256": "b55a08df042b4fdcb624132a24c1c48e4760b7ee333e77459b59ad7abee94a6e",
         "dexCount": 5,
         "nativeEntryCount": 0,
         "javaxAnnotationClassDefinitionCount": 0,
-        "recoveryCryptoClassDefinitionCount": 23,
+        "recoveryCryptoClassDefinitionCount": 33,
         "recoveryTinkRuntimeClassDefinitionCount": 1,
+        "decryptSignalClassDefinitionCount": 1,
+        "parseSignalClassDefinitionCount": 1,
+        "observerClassDefinitionCount": 1,
         "dex": [
           {
             "name": "classes.dex",
@@ -431,8 +505,8 @@
           },
           {
             "name": "classes3.dex",
-            "bytes": 41116,
-            "sha256": "ea7f38e2360ff6822ed4c15d1a5f4a5eb2aa03d4a7f19a02bbbca61e18372e93"
+            "bytes": 55044,
+            "sha256": "cab8c6b753c75001792a4cc9107d7e857001cf41cdb3559d0286be14431269c8"
           },
           {
             "name": "classes4.dex",
@@ -448,18 +522,21 @@
       },
       "releaseUnsigned": {
         "path": "android/poc/recovery/build/outputs/apk/release/recovery-release-unsigned.apk",
-        "bytes": 2470446,
-        "sha256": "ad76c89eb7d48630883e93006996f1303c9769a19d92a0bd0b4af63e84da4aaf",
+        "bytes": 2477410,
+        "sha256": "7dc17cb4034d967676c6212ff7890473a171566b0922fc4cd60299b7e451cb4a",
         "dexCount": 1,
         "nativeEntryCount": 0,
         "javaxAnnotationClassDefinitionCount": 0,
-        "recoveryCryptoClassDefinitionCount": 21,
+        "recoveryCryptoClassDefinitionCount": 31,
         "recoveryTinkRuntimeClassDefinitionCount": 1,
+        "decryptSignalClassDefinitionCount": 1,
+        "parseSignalClassDefinitionCount": 1,
+        "observerClassDefinitionCount": 1,
         "dex": [
           {
             "name": "classes.dex",
-            "bytes": 2455808,
-            "sha256": "1af74a0b95d8289e84c324287c4556f4b923a6f862f1a5ff84f91579ebf4010b"
+            "bytes": 2462772,
+            "sha256": "8e35af7306c6cfe1237f3db64dc3f649ed7ce0e7587f82b265ad09a038346ea9"
           }
         ]
       },
@@ -467,17 +544,22 @@
       "scansSanitized": true
     }
   },
-  "findings": {
-    "implementationP0": 0,
-    "implementationP1": 0,
-    "implementationP2": 0,
-    "requiredExternalGate": {
-      "severity": "P0_STAGE_GATE",
-      "id": "REC-I2B-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
-      "status": "OPEN",
-      "delegationMaySubstitute": false,
-      "blocksRecI3": true
-    }
+  "reviewAndGateTruth": {
+    "priorAdvisoryFindingCounts": {
+      "P0": 0,
+      "P1": 3,
+      "P2": 2
+    },
+    "postRemediationIndependentFindingCounts": {
+      "P0": null,
+      "P1": null,
+      "P2": null
+    },
+    "independentDeltaReviewRequired": true,
+    "distinctAccountableEngineeringSecurityReviewRequiredAfterDeltaClosure": true,
+    "delegationMaySubstituteAccountableReview": false,
+    "recI3MayProceedNow": false,
+    "openStageGate": "REC-I2B-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW"
   },
   "notPerformedOrClaimed": {
     "deviceOrEmulatorExecution": false,
@@ -497,5 +579,5 @@
     "merge": false,
     "googleSheetMutation": false
   },
-  "nextGate": "A distinct accountable Engineering/Security reviewer must independently review the exact terminal implementation commit/tree and this evidence. This record is not that review and cannot activate REC-I3."
+  "nextGate": "An independent advisory delta reviewer must review exact implementation commit dca745929b59b656dfa8bb210884e3c1c4bdad0f and tree 482f0e57ad3ce9aba2b91d3cd8a5e21092757e9f. Only after that delta closes may the distinct accountable Engineering/Security review routing be rebuilt. Neither this evidence nor technical delegation can activate REC-I3."
 }
