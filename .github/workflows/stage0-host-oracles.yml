@@ -180,19 +180,20 @@ jobs:
           [[ "${ImageVersion:-}" == "${EXPECTED_IMAGE_VERSION}" ]]
           [[ -x "${JAVA_HOME_17_X64}/bin/java" ]]
           [[ "$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/javac" -version 2>&1)" == "javac ${EXPECTED_JAVA_VERSION}" ]]
-          "${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1 |
-            grep -F "version \"${EXPECTED_JAVA_VERSION}\""
+          java_version="$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1)"
+          printf '%s\n' "${java_version}"
+          [[ "${java_version}" == *"version \"${EXPECTED_JAVA_VERSION}\""* ]]
           sha256sum \
             "${JAVA_HOME_17_X64}/bin/java" \
             "${JAVA_HOME_17_X64}/bin/javac" \
             "${JAVA_HOME_17_X64}/bin/jdeps" \
             "${JAVA_HOME_17_X64}/bin/javap" \
             "${JAVA_HOME_17_X64}/release"
-          rg_path="$(command -v rg)"
-          [[ "${rg_path}" == /* && -x "${rg_path}" ]]
-          "${clean_env[@]}" "${rg_path}" --version
-          sha256sum "${rg_path}"
-          printf 'DISCOVERED_RG_BIN=%s\n' "${rg_path}" >>"${GITHUB_ENV}"
+          grep_path="$(PATH="/usr/bin:/bin" command -v grep)"
+          [[ "${grep_path}" == /* && -x "${grep_path}" ]]
+          "${clean_env[@]}" "${grep_path}" --version
+          sha256sum "${grep_path}"
+          printf 'DISCOVERED_GREP_BIN=%s\n' "${grep_path}" >>"${GITHUB_ENV}"
           [[ "$(git rev-parse HEAD)" == "${{ github.event.pull_request.head.sha }}" ]]
           [[ -z "$(git status --porcelain)" ]]
 
@@ -206,8 +207,8 @@ jobs:
           javac_bin="${JAVA_HOME_17_X64}/bin/javac"
           jdeps_bin="${JAVA_HOME_17_X64}/bin/jdeps"
           javap_bin="${JAVA_HOME_17_X64}/bin/javap"
-          rg_bin="${DISCOVERED_RG_BIN}"
-          [[ "${rg_bin}" == /* && -x "${rg_bin}" ]]
+          grep_bin="${DISCOVERED_GREP_BIN}"
+          [[ "${grep_bin}" == /* && -x "${grep_bin}" ]]
           main_source="tools/battery_campaign_oracle/src/main/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracle.java"
           test_source="tools/battery_campaign_oracle/src/test/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracleTest.java"
 
@@ -262,11 +263,11 @@ jobs:
           "${clean_env[@]}" "${javap_bin}" -verbose -classpath "${slice_tmp}/classes" "${test_class}" \
             >"${slice_tmp}/javap-test.stdout" 2>"${slice_tmp}/javap-test.stderr"
           [[ ! -s "${slice_tmp}/javap-main.stderr" && ! -s "${slice_tmp}/javap-test.stderr" ]]
-          [[ "$(grep -Ec '^[[:space:]]*major version: 61$' "${slice_tmp}/javap-main.stdout")" == "1" ]]
-          [[ "$(grep -Ec '^[[:space:]]*major version: 61$' "${slice_tmp}/javap-test.stdout")" == "1" ]]
+          [[ "$("${clean_env[@]}" "${grep_bin}" -Ec '^[[:space:]]*major version: 61$' "${slice_tmp}/javap-main.stdout")" == "1" ]]
+          [[ "$("${clean_env[@]}" "${grep_bin}" -Ec '^[[:space:]]*major version: 61$' "${slice_tmp}/javap-test.stdout")" == "1" ]]
 
           forbidden='java\.(io|net|nio\.file)|System\.(getenv|getProperty|currentTimeMillis|nanoTime)|Instant\.now|Clock\.|LocalDateTime\.now|ZonedDateTime\.now|OffsetDateTime\.now|\bRandom\b|Thread\.|\bProcessBuilder\b|Runtime\.getRuntime|Executors\.|ForkJoinPool'
-          if "${clean_env[@]}" "${rg_bin}" --line-number --no-heading --color never --regexp "${forbidden}" -- "${main_source}" "${test_source}"; then
+          if "${clean_env[@]}" "${grep_bin}" --line-number --with-filename --color=never --extended-regexp -- "${forbidden}" "${main_source}" "${test_source}"; then
             echo "::error::Forbidden API token found in POC-BATTERY-001"
             exit 1
           else
@@ -305,15 +306,16 @@ jobs:
           [[ "${ImageVersion:-}" == "${EXPECTED_IMAGE_VERSION}" ]]
           [[ -x "${JAVA_HOME_17_X64}/bin/java" ]]
           [[ "$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/javac" -version 2>&1)" == "javac ${EXPECTED_JAVA_VERSION}" ]]
-          "${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1 |
-            grep -F "version \"${EXPECTED_JAVA_VERSION}\""
+          java_version="$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1)"
+          printf '%s\n' "${java_version}"
+          [[ "${java_version}" == *"version \"${EXPECTED_JAVA_VERSION}\""* ]]
           sha256sum "${JAVA_HOME_17_X64}/bin/java" "${JAVA_HOME_17_X64}/bin/javac" \
             "${JAVA_HOME_17_X64}/bin/jdeps" "${JAVA_HOME_17_X64}/bin/javap" "${JAVA_HOME_17_X64}/release"
-          rg_path="$(command -v rg)"
-          [[ "${rg_path}" == /* && -x "${rg_path}" ]]
-          "${clean_env[@]}" "${rg_path}" --version
-          sha256sum "${rg_path}"
-          printf 'DISCOVERED_RG_BIN=%s\n' "${rg_path}" >>"${GITHUB_ENV}"
+          grep_path="$(PATH="/usr/bin:/bin" command -v grep)"
+          [[ "${grep_path}" == /* && -x "${grep_path}" ]]
+          "${clean_env[@]}" "${grep_path}" --version
+          sha256sum "${grep_path}"
+          printf 'DISCOVERED_GREP_BIN=%s\n' "${grep_path}" >>"${GITHUB_ENV}"
           [[ "$(git rev-parse HEAD)" == "${{ github.event.pull_request.head.sha }}" ]]
           [[ -z "$(git status --porcelain)" ]]
 
@@ -327,8 +329,8 @@ jobs:
           javac_bin="${JAVA_HOME_17_X64}/bin/javac"
           jdeps_bin="${JAVA_HOME_17_X64}/bin/jdeps"
           javap_bin="${JAVA_HOME_17_X64}/bin/javap"
-          rg_bin="${DISCOVERED_RG_BIN}"
-          [[ "${rg_bin}" == /* && -x "${rg_bin}" ]]
+          grep_bin="${DISCOVERED_GREP_BIN}"
+          [[ "${grep_bin}" == /* && -x "${grep_bin}" ]]
           main_source="tools/vad_p2_oracle/src/main/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracle.java"
           test_source="tools/vad_p2_oracle/src/test/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracleTest.java"
 
@@ -382,10 +384,10 @@ jobs:
             com.monumentogram.dora.stage0.vad.p2.VadBoundaryOracle \
             >"${slice_tmp}/javap.stdout" 2>"${slice_tmp}/javap.stderr"
           [[ ! -s "${slice_tmp}/javap.stderr" ]]
-          [[ "$(grep -Ec '^[[:space:]]*major version: 61$' "${slice_tmp}/javap.stdout")" == "1" ]]
+          [[ "$("${clean_env[@]}" "${grep_bin}" -Ec '^[[:space:]]*major version: 61$' "${slice_tmp}/javap.stdout")" == "1" ]]
 
           forbidden='java\.(io|net|nio\.file)|System\.(getenv|getProperty|currentTimeMillis|nanoTime)|Instant\.now|Clock\.|LocalDateTime\.now|ZonedDateTime\.now|OffsetDateTime\.now|\bRandom\b|Thread\.|\bProcessBuilder\b|Runtime\.getRuntime|Executors\.|ForkJoinPool'
-          if "${clean_env[@]}" "${rg_bin}" --line-number --no-heading --color never --regexp "${forbidden}" -- "${main_source}" "${test_source}"; then
+          if "${clean_env[@]}" "${grep_bin}" --line-number --with-filename --color=never --extended-regexp -- "${forbidden}" "${main_source}" "${test_source}"; then
             echo "::error::Forbidden API token found in POC-VAD-001"
             exit 1
           else
@@ -422,14 +424,16 @@ jobs:
           [[ "${ImageOS:-}" == "${EXPECTED_IMAGE_OS}" ]]
           [[ "${ImageVersion:-}" == "${EXPECTED_IMAGE_VERSION}" ]]
           [[ "$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/javac" -version 2>&1)" == "javac ${EXPECTED_JAVA_VERSION}" ]]
-          "${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1 | grep -F "version \"${EXPECTED_JAVA_VERSION}\""
+          java_version="$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1)"
+          printf '%s\n' "${java_version}"
+          [[ "${java_version}" == *"version \"${EXPECTED_JAVA_VERSION}\""* ]]
           sha256sum "${JAVA_HOME_17_X64}/bin/java" "${JAVA_HOME_17_X64}/bin/javac" \
             "${JAVA_HOME_17_X64}/bin/jdeps" "${JAVA_HOME_17_X64}/bin/javap" "${JAVA_HOME_17_X64}/release"
-          rg_path="$(command -v rg)"
-          [[ "${rg_path}" == /* && -x "${rg_path}" ]]
-          "${clean_env[@]}" "${rg_path}" --version
-          sha256sum "${rg_path}"
-          printf 'DISCOVERED_RG_BIN=%s\n' "${rg_path}" >>"${GITHUB_ENV}"
+          grep_path="$(PATH="/usr/bin:/bin" command -v grep)"
+          [[ "${grep_path}" == /* && -x "${grep_path}" ]]
+          "${clean_env[@]}" "${grep_path}" --version
+          sha256sum "${grep_path}"
+          printf 'DISCOVERED_GREP_BIN=%s\n' "${grep_path}" >>"${GITHUB_ENV}"
           [[ "$(git rev-parse HEAD)" == "${{ github.event.pull_request.head.sha }}" ]]
           [[ -z "$(git status --porcelain)" ]]
 
@@ -443,8 +447,8 @@ jobs:
           javac_bin="${JAVA_HOME_17_X64}/bin/javac"
           jdeps_bin="${JAVA_HOME_17_X64}/bin/jdeps"
           javap_bin="${JAVA_HOME_17_X64}/bin/javap"
-          rg_bin="${DISCOVERED_RG_BIN}"
-          [[ "${rg_bin}" == /* && -x "${rg_bin}" ]]
+          grep_bin="${DISCOVERED_GREP_BIN}"
+          [[ "${grep_bin}" == /* && -x "${grep_bin}" ]]
           main_source="tools/decision_revision_oracle/src/main/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracle.java"
           test_source="tools/decision_revision_oracle/src/test/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracleTest.java"
 
@@ -494,10 +498,10 @@ jobs:
             com.monumentogram.dora.stage0.decision.DecisionRevisionOracle \
             >"${slice_tmp}/javap.stdout" 2>"${slice_tmp}/javap.stderr"
           [[ ! -s "${slice_tmp}/javap.stderr" ]]
-          [[ "$(grep -Ec '^[[:space:]]*major version: 61$' "${slice_tmp}/javap.stdout")" == "1" ]]
+          [[ "$("${clean_env[@]}" "${grep_bin}" -Ec '^[[:space:]]*major version: 61$' "${slice_tmp}/javap.stdout")" == "1" ]]
 
           forbidden='java\.(io|net|nio\.file)|System\.(getenv|getProperty|currentTimeMillis|nanoTime)|Instant\.now|Clock\.|LocalDateTime\.now|ZonedDateTime\.now|OffsetDateTime\.now|\bRandom\b|Thread\.|\bProcessBuilder\b|Runtime\.getRuntime|Executors\.|ForkJoinPool'
-          if "${clean_env[@]}" "${rg_bin}" --line-number --no-heading --color never --regexp "${forbidden}" -- "${main_source}" "${test_source}"; then
+          if "${clean_env[@]}" "${grep_bin}" --line-number --with-filename --color=never --extended-regexp -- "${forbidden}" "${main_source}" "${test_source}"; then
             echo "::error::Forbidden API token found in POC-DECISION-001"
             exit 1
           else
@@ -534,14 +538,16 @@ jobs:
           [[ "${ImageOS:-}" == "${EXPECTED_IMAGE_OS}" ]]
           [[ "${ImageVersion:-}" == "${EXPECTED_IMAGE_VERSION}" ]]
           [[ "$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/javac" -version 2>&1)" == "javac ${EXPECTED_JAVA_VERSION}" ]]
-          "${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1 | grep -F "version \"${EXPECTED_JAVA_VERSION}\""
+          java_version="$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1)"
+          printf '%s\n' "${java_version}"
+          [[ "${java_version}" == *"version \"${EXPECTED_JAVA_VERSION}\""* ]]
           sha256sum "${JAVA_HOME_17_X64}/bin/java" "${JAVA_HOME_17_X64}/bin/javac" \
             "${JAVA_HOME_17_X64}/bin/jdeps" "${JAVA_HOME_17_X64}/bin/javap" "${JAVA_HOME_17_X64}/release"
-          rg_path="$(command -v rg)"
-          [[ "${rg_path}" == /* && -x "${rg_path}" ]]
-          "${clean_env[@]}" "${rg_path}" --version
-          sha256sum "${rg_path}"
-          printf 'DISCOVERED_RG_BIN=%s\n' "${rg_path}" >>"${GITHUB_ENV}"
+          grep_path="$(PATH="/usr/bin:/bin" command -v grep)"
+          [[ "${grep_path}" == /* && -x "${grep_path}" ]]
+          "${clean_env[@]}" "${grep_path}" --version
+          sha256sum "${grep_path}"
+          printf 'DISCOVERED_GREP_BIN=%s\n' "${grep_path}" >>"${GITHUB_ENV}"
           [[ "$(git rev-parse HEAD)" == "${{ github.event.pull_request.head.sha }}" ]]
           [[ -z "$(git status --porcelain)" ]]
 
@@ -555,8 +561,8 @@ jobs:
           javac_bin="${JAVA_HOME_17_X64}/bin/javac"
           jdeps_bin="${JAVA_HOME_17_X64}/bin/jdeps"
           javap_bin="${JAVA_HOME_17_X64}/bin/javap"
-          rg_bin="${DISCOVERED_RG_BIN}"
-          [[ "${rg_bin}" == /* && -x "${rg_bin}" ]]
+          grep_bin="${DISCOVERED_GREP_BIN}"
+          [[ "${grep_bin}" == /* && -x "${grep_bin}" ]]
           main_source="tools/poc_data_manifest_validator/src/main/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidator.java"
           test_source="tools/poc_data_manifest_validator/src/test/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidatorTest.java"
 
@@ -608,10 +614,10 @@ jobs:
             com.monumentogram.dora.stage0.data.manifest.SyntheticManifestValidator \
             >"${slice_tmp}/javap.stdout" 2>"${slice_tmp}/javap.stderr"
           [[ ! -s "${slice_tmp}/javap.stderr" ]]
-          [[ "$(grep -Ec '^[[:space:]]*major version: 61$' "${slice_tmp}/javap.stdout")" == "1" ]]
+          [[ "$("${clean_env[@]}" "${grep_bin}" -Ec '^[[:space:]]*major version: 61$' "${slice_tmp}/javap.stdout")" == "1" ]]
 
           forbidden='java\.(net)|javax\.net|System\.(getenv|getProperty|currentTimeMillis|nanoTime)|Instant\.now|Clock\.|LocalDateTime\.now|ZonedDateTime\.now|OffsetDateTime\.now|\bRandom\b|Thread\.|\bProcessBuilder\b|Runtime\.getRuntime|Executors\.|ForkJoinPool'
-          if "${clean_env[@]}" "${rg_bin}" --line-number --no-heading --color never --regexp "${forbidden}" -- "${main_source}" "${test_source}"; then
+          if "${clean_env[@]}" "${grep_bin}" --line-number --with-filename --color=never --extended-regexp -- "${forbidden}" "${main_source}" "${test_source}"; then
             echo "::error::Forbidden API token found in POC-DATA-001"
             exit 1
           else
@@ -658,14 +664,16 @@ jobs:
           [[ "${ImageOS:-}" == "${EXPECTED_IMAGE_OS}" ]]
           [[ "${ImageVersion:-}" == "${EXPECTED_IMAGE_VERSION}" ]]
           [[ "$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/javac" -version 2>&1)" == "javac ${EXPECTED_JAVA_VERSION}" ]]
-          "${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1 | grep -F "version \"${EXPECTED_JAVA_VERSION}\""
+          java_version="$("${clean_env[@]}" "${JAVA_HOME_17_X64}/bin/java" -version 2>&1)"
+          printf '%s\n' "${java_version}"
+          [[ "${java_version}" == *"version \"${EXPECTED_JAVA_VERSION}\""* ]]
           sha256sum "${JAVA_HOME_17_X64}/bin/java" "${JAVA_HOME_17_X64}/bin/javac" \
             "${JAVA_HOME_17_X64}/bin/jdeps" "${JAVA_HOME_17_X64}/bin/javap" "${JAVA_HOME_17_X64}/release"
-          rg_path="$(command -v rg)"
-          [[ "${rg_path}" == /* && -x "${rg_path}" ]]
-          "${clean_env[@]}" "${rg_path}" --version
-          sha256sum "${rg_path}"
-          printf 'DISCOVERED_RG_BIN=%s\n' "${rg_path}" >>"${GITHUB_ENV}"
+          grep_path="$(PATH="/usr/bin:/bin" command -v grep)"
+          [[ "${grep_path}" == /* && -x "${grep_path}" ]]
+          "${clean_env[@]}" "${grep_path}" --version
+          sha256sum "${grep_path}"
+          printf 'DISCOVERED_GREP_BIN=%s\n' "${grep_path}" >>"${GITHUB_ENV}"
           [[ "$(git rev-parse HEAD)" == "${{ github.event.pull_request.head.sha }}" ]]
           [[ -z "$(git status --porcelain)" ]]
 
@@ -679,8 +687,8 @@ jobs:
           javac_bin="${JAVA_HOME_17_X64}/bin/javac"
           jdeps_bin="${JAVA_HOME_17_X64}/bin/jdeps"
           javap_bin="${JAVA_HOME_17_X64}/bin/javap"
-          rg_bin="${DISCOVERED_RG_BIN}"
-          [[ "${rg_bin}" == /* && -x "${rg_bin}" ]]
+          grep_bin="${DISCOVERED_GREP_BIN}"
+          [[ "${grep_bin}" == /* && -x "${grep_bin}" ]]
           main_source="tools/offline_i1_oracle/src/main/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1Oracle.java"
           test_source="tools/offline_i1_oracle/src/test/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1OracleTest.java"
 
@@ -745,17 +753,17 @@ jobs:
             com.monumentogram.dora.stage0.offline.i1.OfflineI1Oracle \
             >"${slice_tmp}/javap.stdout" 2>"${slice_tmp}/javap.stderr"
           [[ ! -s "${slice_tmp}/javap.stderr" ]]
-          [[ "$(grep -Ec '^[[:space:]]*major version: 61$' "${slice_tmp}/javap.stdout")" == "1" ]]
+          [[ "$("${clean_env[@]}" "${grep_bin}" -Ec '^[[:space:]]*major version: 61$' "${slice_tmp}/javap.stdout")" == "1" ]]
 
           forbidden='java\.(io|net|nio\.file)|System\.(getenv|getProperty|currentTimeMillis|nanoTime)|Instant\.now|Clock\.|LocalDateTime\.now|ZonedDateTime\.now|OffsetDateTime\.now|\bRandom\b|Thread\.|\bProcessBuilder\b|Runtime\.getRuntime|Executors\.|ForkJoinPool'
-          if "${clean_env[@]}" "${rg_bin}" --line-number --no-heading --color never --regexp "${forbidden}" -- "${main_source}"; then
+          if "${clean_env[@]}" "${grep_bin}" --line-number --with-filename --color=never --extended-regexp -- "${forbidden}" "${main_source}"; then
             echo "::error::Forbidden API token found in POC-OFFLINE-001"
             exit 1
           else
             scan_status=$?
             [[ "${scan_status}" -eq 1 ]]
           fi
-          if "${clean_env[@]}" "${rg_bin}" --line-number --no-heading --color never --regexp 'System\.(out|err)' -- "${main_source}"; then
+          if "${clean_env[@]}" "${grep_bin}" --line-number --with-filename --color=never --extended-regexp -- 'System\.(out|err)' "${main_source}"; then
             echo "::error::Main oracle writes stdout or stderr"
             exit 1
           else
@@ -766,7 +774,7 @@ jobs:
             com.monumentogram.dora.stage0.offline.i1.OfflineI1Oracle \
             >"${slice_tmp}/public-api.txt" 2>"${slice_tmp}/public-api.stderr"
           [[ ! -s "${slice_tmp}/public-api.stderr" ]]
-          if "${clean_env[@]}" "${rg_bin}" --line-number --no-heading --color never --regexp 'java\.(io|net|nio\.file)|Process|Thread|Executor|Random' -- "${slice_tmp}/public-api.txt"; then
+          if "${clean_env[@]}" "${grep_bin}" --line-number --with-filename --color=never --extended-regexp -- 'java\.(io|net|nio\.file)|Process|Thread|Executor|Random' "${slice_tmp}/public-api.txt"; then
             echo "::error::Forbidden public API surface found"
             exit 1
           else
