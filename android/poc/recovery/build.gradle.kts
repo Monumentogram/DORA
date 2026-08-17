@@ -51,10 +51,13 @@ dependencies {
 
 tasks.register("recoveryI2aResolveOwnedConfigurations") {
     group = "verification"
-    description = "Resolves and inventories the local unpublished REC-I2A graph boundary."
+    description =
+        "Builds both variants, then resolves and inventories the local unpublished REC-I2A graph boundary."
+    dependsOn("assembleDebug", "assembleRelease")
 
     val reportFile = layout.buildDirectory.file("reports/recovery-i2a/resolved-graph.json")
     outputs.file(reportFile)
+    outputs.upToDateWhen { false }
     notCompatibleWithConfigurationCache(
         "REC-I2A intentionally enumerates the live Gradle resolution model"
     )
