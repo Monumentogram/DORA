@@ -18,7 +18,7 @@ android {
     defaultConfig {
         applicationId = "com.monumentogram.dora.poc.recovery"
         versionCode = 1
-        versionName = "0.1.0-poc-recovery-i1"
+        versionName = "0.1.0-poc-recovery-i2b"
     }
 
     buildFeatures {
@@ -40,19 +40,17 @@ android {
 }
 
 dependencies {
-    testImplementation(libs.junit4)
-
-    if (recoveryI2aGraphProbe.get()) {
-        implementation("com.google.crypto.tink:tink-android:1.23.0") {
-            exclude(group = "com.google.code.findbugs", module = "jsr305")
-        }
+    implementation("com.google.crypto.tink:tink-android:1.23.0") {
+        exclude(group = "com.google.code.findbugs", module = "jsr305")
     }
+
+    testImplementation(libs.junit4)
 }
 
 tasks.register("recoveryI2aResolveOwnedConfigurations") {
     group = "verification"
     description =
-        "Builds both variants, then resolves and inventories the local unpublished REC-I2A graph boundary."
+        "Builds both variants, then resolves the REC-I2A-approved graph used by local REC-I2B."
     dependsOn("assembleDebug", "assembleRelease")
 
     val reportFile = layout.buildDirectory.file("reports/recovery-i2a/resolved-graph.json")
@@ -195,10 +193,11 @@ tasks.register("recoveryI2aResolveOwnedConfigurations") {
         val report =
             mapOf(
                 "schemaVersion" to 1,
-                "scope" to "REC-I2A-GRAPH-AUTH-20260817-01_LOCAL_UNPUBLISHED",
+                "scope" to "REC-I2B-RUNTIME-CRYPTO-IMPLEMENTATION_LOCAL_UNPUBLISHED",
                 "module" to recoveryModulePath,
                 "rootCoordinate" to "com.google.crypto.tink:tink-android:1.23.0",
                 "tinkLocalExclude" to "com.google.code.findbugs:jsr305:3.0.2",
+                "approvedGraphInput" to "REC-I2A-ACTUAL-GRAPH-PRODUCT-IP-DISPOSITION-20260817-01",
                 "allResolvableConfigurationsEnumeratedAndResolved" to true,
                 "configurations" to configurationReports,
                 "configurationCount" to configurationReports.size,
@@ -241,8 +240,14 @@ tasks.register("recoveryI2aResolveOwnedConfigurations") {
                         },
                 "authority" to
                     mapOf(
-                        "actualGraphProductIpDisposition" to "PENDING_SEPARATE_OWNER_DISPOSITION",
-                        "runtimeCryptoImplementationAllowed" to false,
+                        "actualGraphProductIpDisposition" to
+                            "REC-I2A-ACTUAL-GRAPH-PRODUCT-IP-DISPOSITION-20260817-01",
+                        "conditionalOwnerAuthorization" to "STAGE0-OWNER-UNLOCK-BATCH-20260817-02",
+                        "technicalDelegation" to
+                            "STAGE0-TECHNICAL-REMEDIATION-DELEGATION-20260817-01",
+                        "runtimeCryptoImplementationAllowed" to true,
+                        "accountableEngineeringSecurityReviewCompleted" to false,
+                        "recI3Allowed" to false,
                         "deviceExecutionAllowed" to false,
                         "measuredExecutionAllowed" to false,
                         "passAllowed" to false,
@@ -254,5 +259,145 @@ tasks.register("recoveryI2aResolveOwnedConfigurations") {
         output.parentFile.mkdirs()
         output.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(report)) + "\n")
         logger.lifecycle("REC-I2A graph inventory: ${output.absolutePath}")
+    }
+}
+
+tasks.register("recoveryI2bVerifyCryptoPolicy") {
+    group = "verification"
+    description = "Checks the fail-closed REC-I2B source, dependency, and exact R8 policy boundary."
+    dependsOn("compileDebugKotlin", "compileReleaseKotlin")
+
+    val cryptoSourceDirectory =
+        layout.projectDirectory.dir("src/main/kotlin/com/monumentogram/dora/poc/recovery/crypto")
+    val projectDirectoryFile = layout.projectDirectory.asFile
+    val buildScript = layout.projectDirectory.file("build.gradle.kts")
+    val r8Policy = layout.projectDirectory.file("proguard-recovery-i2a.pro")
+    val reportFile = layout.buildDirectory.file("reports/recovery-i2b/crypto-policy.json")
+    inputs.dir(cryptoSourceDirectory)
+    inputs.file(buildScript)
+    inputs.file(r8Policy)
+    outputs.file(reportFile)
+
+    doLast {
+        fun sha256(file: File): String {
+            val digest = MessageDigest.getInstance("SHA-256")
+            file.inputStream().buffered().use { input ->
+                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                while (true) {
+                    val count = input.read(buffer)
+                    if (count < 0) break
+                    digest.update(buffer, 0, count)
+                }
+            }
+            return digest.digest().joinToString("") { "%02x".format(it) }
+        }
+
+        val sourceFiles =
+            cryptoSourceDirectory.asFile
+                .walkTopDown()
+                .filter { it.isFile && it.extension == "kt" }
+                .sortedBy { it.invariantSeparatorsPath }
+                .toList()
+        check(sourceFiles.isNotEmpty()) { "REC-I2B crypto source boundary is empty" }
+        val sourceText = sourceFiles.joinToString("\n") { it.readText() }
+        val forbiddenIdentifiers =
+            listOf(
+                "AndroidKeysetManager",
+                "getOrGenerateNewAeadKey",
+                "StreamingAeadKeyTemplates",
+                "SecretKeyAccess",
+                "serializeKeyset(",
+                "parseKeyset(",
+                "fun configuration(",
+                "internal val primitive",
+                "RecoveryRunAead internal constructor",
+            )
+        val foundForbiddenIdentifiers = forbiddenIdentifiers.filter(sourceText::contains)
+        check(foundForbiddenIdentifiers.isEmpty()) {
+            "Forbidden REC-I2B API identifiers found: $foundForbiddenIdentifiers"
+        }
+
+        val requiredSourceFragments =
+            listOf(
+                "AesGcmHkdfStreamingParameters.builder()",
+                ".setKeySizeBytes(STREAMING_INPUT_KEY_BYTES)",
+                ".setDerivedAesGcmKeySizeBytes(STREAMING_DERIVED_KEY_BYTES)",
+                ".setHkdfHashType(AesGcmHkdfStreamingParameters.HashType.SHA256)",
+                ".setCiphertextSegmentSizeBytes(STREAMING_CIPHERTEXT_SEGMENT_BYTES)",
+                "AesGcmParameters.builder()",
+                ".setVariant(AesGcmParameters.Variant.TINK)",
+                "KeysetHandle.generateEntryFromParameters(parameters).withRandomId().makePrimary()",
+                "TinkProtoKeysetFormat.serializeEncryptedKeyset(",
+                "TinkProtoKeysetFormat.parseEncryptedKeyset(",
+                "RegisteredRecoveryTink.configuration",
+                "AndroidKeystoreKmsClient.generateNewAeadKey(keyUri)",
+                "AndroidKeystoreKmsClient.Builder().setKeyUri(keyUri).build().getAead(keyUri)",
+            )
+        val missingSourceFragments = requiredSourceFragments.filterNot(sourceText::contains)
+        check(missingSourceFragments.isEmpty()) {
+            "Required REC-I2B source fragments missing: $missingSourceFragments"
+        }
+
+        val dependencyText = buildScript.asFile.readText()
+        check(dependencyText.contains("com.google.crypto.tink:tink-android:1.23.0")) {
+            "Exact Tink 1.23.0 coordinate is missing"
+        }
+        check(
+            dependencyText.contains(
+                "exclude(group = \"com.google.code.findbugs\", module = \"jsr305\")"
+            )
+        ) {
+            "Exact dependency-local JSR305 exclusion is missing"
+        }
+
+        val dontWarnRules =
+            r8Policy.asFile.readLines().map(String::trim).filter { it.startsWith("-dontwarn") }
+        val expectedDontWarnRules =
+            listOf(
+                "-dontwarn javax.annotation.Nullable",
+                "-dontwarn javax.annotation.concurrent.GuardedBy",
+                "-dontwarn javax.annotation.concurrent.ThreadSafe",
+            )
+        check(dontWarnRules == expectedDontWarnRules) {
+            "REC-I2B requires exactly the approved three JSR305 R8 rules: $dontWarnRules"
+        }
+        check(
+            r8Policy.asFile
+                .readLines()
+                .map(String::trim)
+                .contains("-keep class com.monumentogram.dora.poc.recovery.crypto.** { *; }")
+        ) {
+            "REC-I2B crypto boundary is not retained by the local R8 probe"
+        }
+
+        val report =
+            mapOf(
+                "schemaVersion" to 1,
+                "scope" to "REC-I2B-RUNTIME-CRYPTO-IMPLEMENTATION_LOCAL_UNPUBLISHED",
+                "claimCeiling" to
+                    "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
+                "sourceFiles" to
+                    sourceFiles.associate { file ->
+                        file.relativeTo(projectDirectoryFile).invariantSeparatorsPath to
+                            sha256(file)
+                    },
+                "forbiddenIdentifiersAbsent" to true,
+                "requiredPublicApiFragmentsPresent" to true,
+                "cleartextSecretKeysetSerializationAbsent" to true,
+                "callerSuppliedConfigurationSurfaceAbsent" to true,
+                "rawPrimitiveClientSurfaceAbsent" to true,
+                "exactTinkCoordinate" to "com.google.crypto.tink:tink-android:1.23.0",
+                "dependencyLocalJsr305ExclusionPresent" to true,
+                "exactR8DontWarnRules" to dontWarnRules,
+                "cryptoBoundaryRetainedByR8Probe" to true,
+                "deviceExecutionPerformed" to false,
+                "measuredExecutionPerformed" to false,
+                "recI3Activated" to false,
+                "accountableEngineeringSecurityReviewCompleted" to false,
+            )
+        val output = reportFile.get().asFile
+        output.parentFile.mkdirs()
+        output.writeText(JsonOutput.prettyPrint(JsonOutput.toJson(report)) + "\n")
+        logger.lifecycle("REC-I2B crypto policy: ${output.absolutePath}")
     }
 }
