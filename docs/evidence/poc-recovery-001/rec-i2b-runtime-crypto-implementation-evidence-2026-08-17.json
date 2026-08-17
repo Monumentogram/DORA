@@ -2,8 +2,10 @@
   "schemaVersion": 1,
   "reportId": "REC-I2B-RUNTIME-CRYPTO-IMPLEMENTATION-EVIDENCE-20260817-01",
   "recordedAtUtc": "2026-08-17T12:01:29Z",
+  "lastUpdatedAt": "2026-08-17T15:29:13+03:00",
+  "lastUpdatedTimeZone": "Europe/Moscow",
   "status": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
-  "remediationState": "LOCALLY_VERIFIED_PENDING_INDEPENDENT_ADVISORY_DELTA_REVIEW",
+  "remediationState": "INDEPENDENT_ADVISORY_DELTA_REVIEW_CLEAN_ACCOUNTABLE_REVIEW_PENDING",
   "claimCeiling": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
   "pocId": "POC-RECOVERY-001",
   "stage": "Stage 0",
@@ -13,6 +15,7 @@
     "conditionalOwnerAuthorization": "STAGE0-OWNER-UNLOCK-BATCH-20260817-02",
     "technicalDelegation": "STAGE0-TECHNICAL-REMEDIATION-DELEGATION-20260817-01",
     "advisoryRemediationAuthorization": "REC-I2B-ADVISORY-REMEDIATION-AUTH-20260817-01",
+    "independentDeltaReviewClosureRecord": "REC-I2B-INDEPENDENT-DELTA-REVIEW-CLOSURE-AUTH-20260817-01",
     "designCheckpointApproved": true,
     "accountableEngineeringSecurityReviewCompleted": false,
     "runtimeCryptoImplementationAllowed": true,
@@ -29,6 +32,8 @@
     "branch": "codex/poc-recovery-i2a-graph-probe",
     "baseDispositionCommit": "4d58ab02424c7a43f6390f87c633b5464df6a916",
     "priorEvidenceCommit": "ed9a6e72578f06b4712250cfcc034dc1851ff23f",
+    "independentDeltaReviewedEvidenceCommit": "6eb055d9fdb83445ec1dcf27898bba07af2d4951",
+    "independentDeltaReviewedEvidenceTree": "5cb9357700a9868c70c21ff987c8261882deaa1b",
     "implementationCommits": [
       "7b90db3403f165bb268daa6a727c5a33c3524a2b",
       "6557add0d1d74d9029bd0d547b5493e72cdf7bac",
@@ -56,46 +61,57 @@
         "severity": "P1",
         "requirement": "Validate the exact frozen Streaming and AEAD parameter suites for generated and parsed keysets before primitive use.",
         "implementationStatus": "REMEDIATED_AND_LOCALLY_VERIFIED",
-        "closureStatus": "PENDING_INDEPENDENT_DELTA_REVIEW"
+        "closureStatus": "CLOSED_BY_INDEPENDENT_ADVISORY_DELTA_REVIEW"
       },
       {
         "id": "REC-I2B-ADV-P1-002",
         "severity": "P1",
         "requirement": "Replace the overbroad authentication result with neutral cause-chain signals using authentication-first, provider-second and unknown fallback precedence.",
         "implementationStatus": "REMEDIATED_AND_LOCALLY_VERIFIED",
-        "closureStatus": "PENDING_INDEPENDENT_DELTA_REVIEW"
+        "closureStatus": "CLOSED_BY_INDEPENDENT_ADVISORY_DELTA_REVIEW"
       },
       {
         "id": "REC-I2B-ADV-P1-003",
         "severity": "P1",
         "requirement": "Provide a stable observing-AEAD encrypted-keyset parsing boundary for outer, decrypt, authenticated-inner and unsupported-suite failures without manual cleartext parsing.",
         "implementationStatus": "REMEDIATED_AND_LOCALLY_VERIFIED",
-        "closureStatus": "PENDING_INDEPENDENT_DELTA_REVIEW"
+        "closureStatus": "CLOSED_BY_INDEPENDENT_ADVISORY_DELTA_REVIEW"
       },
       {
         "id": "REC-I2B-ADV-P2-001",
         "severity": "P2",
         "requirement": "Add barrier-driven concurrency proof for the single claimant and poison-on-envelope-failure lifecycle.",
         "implementationStatus": "REMEDIATED_AND_LOCALLY_VERIFIED",
-        "closureStatus": "PENDING_INDEPENDENT_DELTA_REVIEW"
+        "closureStatus": "CLOSED_BY_INDEPENDENT_ADVISORY_DELTA_REVIEW"
       },
       {
         "id": "REC-I2B-ADV-P2-002",
         "severity": "P2",
         "requirement": "Correct the Streaming AAD evidence label and replace stale post-review findings truth with provenance plus an explicit unreviewed delta state.",
         "implementationStatus": "REMEDIATED_AND_LOCALLY_VERIFIED",
-        "closureStatus": "PENDING_INDEPENDENT_DELTA_REVIEW"
+        "closureStatus": "CLOSED_BY_INDEPENDENT_ADVISORY_DELTA_REVIEW"
       }
     ],
     "postRemediationIndependentDeltaReview": {
-      "completed": false,
-      "reviewer": null,
-      "disposition": null,
-      "P0": null,
-      "P1": null,
-      "P2": null
+      "completed": true,
+      "reviewer": {
+        "product": "OpenAI Codex",
+        "organization": "OpenAI",
+        "role": "INDEPENDENT_ADVISORY_IMPLEMENTATION_REVIEWER",
+        "formalReviewer": false
+      },
+      "disposition": "CLEAN",
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "record": {
+        "recordId": "REC-I2B-INDEPENDENT-DELTA-REVIEW-CLOSURE-AUTH-20260817-01",
+        "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-independent-delta-review-closure-2026-08-17.json",
+        "bytes": 8534,
+        "sha256": "3a3817150fa984a2caf6b4bf24e1ca677574bfc17d1d24916a2d35db343cdc04"
+      }
     },
-    "currentZeroFindingsClaimed": false
+    "currentZeroFindingsClaimed": true
   },
   "authoritativeInputs": {
     "decision": "docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md",
@@ -551,12 +567,15 @@
       "P2": 2
     },
     "postRemediationIndependentFindingCounts": {
-      "P0": null,
-      "P1": null,
-      "P2": null
+      "P0": 0,
+      "P1": 0,
+      "P2": 0
     },
-    "independentDeltaReviewRequired": true,
-    "distinctAccountableEngineeringSecurityReviewRequiredAfterDeltaClosure": true,
+    "independentDeltaReviewCompleted": true,
+    "independentDeltaReviewDisposition": "CLEAN",
+    "independentDeltaReviewRequired": false,
+    "distinctAccountableEngineeringSecurityReviewRequired": true,
+    "accountableEngineeringSecurityReviewRoutingMayBeRebuilt": true,
     "delegationMaySubstituteAccountableReview": false,
     "recI3MayProceedNow": false,
     "openStageGate": "REC-I2B-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW"
@@ -579,5 +598,5 @@
     "merge": false,
     "googleSheetMutation": false
   },
-  "nextGate": "An independent advisory delta reviewer must review exact implementation commit dca745929b59b656dfa8bb210884e3c1c4bdad0f and tree 482f0e57ad3ce9aba2b91d3cd8a5e21092757e9f. Only after that delta closes may the distinct accountable Engineering/Security review routing be rebuilt. Neither this evidence nor technical delegation can activate REC-I3."
+  "nextGate": "Route the exact independently cleaned REC-I2B implementation and refreshed packet to a distinct accountable Engineering/Security reviewer. The advisory CLEAN verdict and technical delegation do not substitute for that review and cannot activate REC-I3."
 }
