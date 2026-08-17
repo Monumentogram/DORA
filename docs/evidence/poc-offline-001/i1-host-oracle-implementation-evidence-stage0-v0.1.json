@@ -1,0 +1,437 @@
+{
+  "schemaVersion": "poc-offline-i1-host-oracle-implementation-evidence-stage0-v0.1",
+  "recordId": "OFF-I1-HOST-ORACLE-IMPLEMENTATION-EVIDENCE-001",
+  "recordDate": "2026-08-17",
+  "recordedAt": "2026-08-17T00:01:23.5537606+03:00",
+  "timezone": "Europe/Moscow",
+  "disposition": "LOCAL_IMPLEMENTATION_CHECKS_PASS_EXACT_HEAD_TIER_A_AND_PUBLICATION_REVIEW_PENDING",
+  "artifactState": "LOCAL_EXACT_BYTE_EVIDENCE_COMPLETE_NOT_PUBLICATION_READY",
+  "backlogItem": {
+    "id": "POC-OFFLINE-001",
+    "status": "TODO",
+    "readiness": "NOT_READY",
+    "integratedExecution": "NOT_RUN",
+    "authorization": "NOT_AUTHORIZED"
+  },
+  "sourceBaseline": {
+    "mainCommit": "78e9dd07d616989987118f26bb16ebb9932ddb2b",
+    "mainTree": "f403bf60b86273ee8a2634ed5e8530c9d4af20e4",
+    "stackedParentCommit": "d164b6372ad3e717762d48a9a3ea7e6551602ab7",
+    "stackedParentTree": "076c9eeda8180d775c6ec6dbb1dc5cc53aeb7ce6",
+    "implementationCommit": null,
+    "implementationTree": null,
+    "localUnpublished": true,
+    "publicCommitPauseActive": true
+  },
+  "contractPins": [
+    {
+      "kind": "OFFLINE_READINESS_MARKDOWN",
+      "path": "docs/stage0/DORA_MVP1_POC_OFFLINE_READINESS_CONTRACT_STAGE0_V0_1.md",
+      "bytes": 45377,
+      "sha256": "9a905eabbcd75601fc598cccc001dcff56a5b6b65eeb936f2a9c4602d658682a"
+    },
+    {
+      "kind": "OFFLINE_READINESS_MACHINE_RECORD",
+      "path": "docs/evidence/poc-offline-001/readiness-contract-stage0-v0.1.json",
+      "bytes": 58124,
+      "sha256": "a564cf9031f610006327c374baff82983de2ea9ba4b6c9d13d6185e7967a6dae"
+    },
+    {
+      "kind": "I1_SCOPE_MARKDOWN",
+      "path": "docs/stage0/DORA_MVP1_POC_OFFLINE_I1_HOST_ORACLE_SCOPE_STAGE0_V0_1.md",
+      "bytes": 32916,
+      "sha256": "f3134d5e97fc8c728b31260a056d3d916e523a5a34256bee2dd89d486292f4f2"
+    },
+    {
+      "kind": "I1_SCOPE_MACHINE_RECORD",
+      "path": "docs/evidence/poc-offline-001/i1-host-oracle-scope-stage0-v0.1.json",
+      "bytes": 52997,
+      "sha256": "83075ca723f007b1f282fe0e089a7725a68d8bcf69ebb084f0f1a44704fb97b7"
+    },
+    {
+      "kind": "I1_SEMANTICS_MARKDOWN",
+      "path": "docs/stage0/DORA_MVP1_POC_OFFLINE_I1_SEMANTICS_AND_IMPLEMENTATION_SCOPE_STAGE0_V0_2.md",
+      "bytes": 46364,
+      "sha256": "64a8cd6c7230b104834ca8bdb8a8a3a1c1525277dc8b913487acf2739e67c08e"
+    },
+    {
+      "kind": "I1_SEMANTICS_MACHINE_RECORD",
+      "path": "docs/evidence/poc-offline-001/i1-semantics-and-implementation-scope-stage0-v0.2.json",
+      "bytes": 124165,
+      "sha256": "156915ba88f97e9bbf08da02b6ef4c2b475c173f1f9b96e8c70fe50e2a174785"
+    },
+    {
+      "kind": "I1_SEMANTICS_EXTERNAL_REVIEW",
+      "path": "docs/evidence/poc-offline-001/reviews/off-i1-semantics-scope-002.external-review.json",
+      "bytes": 757,
+      "sha256": "c2a9f86f6d73a7b2f58fe7980691c07f4c9acca7e87fe517655604011db82f17"
+    },
+    {
+      "kind": "RESOURCE_ENVELOPE_MARKDOWN",
+      "path": "docs/stage0/DORA_MVP1_POC_OFFLINE_I1_RESOURCE_ENVELOPE_AMENDMENT_STAGE0_V0_3.md",
+      "bytes": 13595,
+      "sha256": "d28faad79faa740c8dc54095c9bd8cc9ad9d59de592261784eaea3e2eb1de2a0"
+    },
+    {
+      "kind": "RESOURCE_ENVELOPE_MACHINE_RECORD",
+      "path": "docs/evidence/poc-offline-001/i1-resource-envelope-amendment-stage0-v0.3.json",
+      "bytes": 16965,
+      "sha256": "6972a5df028f64664c4f411cedb87f3db2a7a2e1d8ae982ae707bd2ca3e7f46f"
+    },
+    {
+      "kind": "RESOURCE_ENVELOPE_EXTERNAL_REVIEW",
+      "path": "docs/evidence/poc-offline-001/reviews/off-i1-resource-envelope-003.external-review.json",
+      "bytes": 744,
+      "sha256": "b58d0d5abe643122f7b06ae7fa4de55d2724876ab655c88ee49b874d91c6efee"
+    }
+  ],
+  "implementationPins": [
+    {
+      "kind": "ORACLE_MAIN",
+      "path": "tools/offline_i1_oracle/src/main/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1Oracle.java",
+      "bytes": 213295,
+      "lines": 5886,
+      "sha256": "2eb3a80716fdc25abe7300552c8ba95f4deabe68e7c8d5d42dcf9d5cb13235bf"
+    },
+    {
+      "kind": "ORACLE_TEST",
+      "path": "tools/offline_i1_oracle/src/test/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1OracleTest.java",
+      "bytes": 244685,
+      "lines": 5276,
+      "sha256": "235be2b6d3c646ce9c0910369de99847a149d226159ab1f8a1785e074572b89c"
+    }
+  ],
+  "toolchain": {
+    "implementor": "Microsoft",
+    "runtimeVersion": "17.0.10+7-LTS",
+    "os": "Windows",
+    "arch": "x86_64",
+    "javaSha256": "98fd4a0eec7fa39abbc2b3f55007ed9c8c24ef8fa5d7c04c3895b4c5915ec3f1",
+    "javacSha256": "0e79806dea4681cf6bb1fd41b4d5ba8c579481cb70a28890fe65813639294ffe",
+    "releaseMetadataSha256": "f463618c7067d1d7421a2aacdc8a4cfa939e9844436462c1c165cbed20a9769a",
+    "allPinsReverifiedImmediatelyAfterRuns": true
+  },
+  "implementationBoundary": {
+    "package": "com.monumentogram.dora.stage0.offline.i1",
+    "language": "Java",
+    "languageLevel": 17,
+    "sourceFileCount": 2,
+    "dependencyBoundary": "JAVA_STANDARD_LIBRARY_ONLY",
+    "gradleModuleAdded": false,
+    "dependencyAdded": false,
+    "androidSourceAdded": false,
+    "generatedSourceAdded": false,
+    "workflowChanged": false,
+    "backlogOrStageStatusChanged": false,
+    "forbiddenMainApiStaticScanMatches": 0,
+    "mainStdoutOrStderrCallMatches": 0,
+    "bytecodeModuleDependencies": [
+      "java.base"
+    ],
+    "publicMethodCount": 26,
+    "publicApiContainsFilesystemNetworkProcessThreadOrEnvironmentType": false
+  },
+  "implementedSemantics": {
+    "resolvedGroupCount": 7,
+    "scenarioCount": 26,
+    "actionSlotCount": 67,
+    "resolvedScalarCaseCount": 95,
+    "queueRuleCount": 20,
+    "deletionMappingRowCount": 15,
+    "diagnosticCodeCount": 20,
+    "semanticClassifierRowCount": 15,
+    "resourceEnvelopeRowCount": 1,
+    "maxCandidateBytesInclusive": 1048576,
+    "maxContainerDepthInclusive": 32,
+    "provedValidCanonicalSnapshotBytesUpperBound": 524288,
+    "maxValidContainerDepth": 5,
+    "exhaustiveValidSnapshotCount": 162,
+    "strictSnapshotSchema": "poc-offline-i1-snapshot-v0.2",
+    "resourceEnvelopeDiagnostic": "OFF-I1-INVALID-016",
+    "resourceEnvelopeDiagnosticSerializedIntoValidState": false
+  },
+  "localValidation": {
+    "supplementalStrictRun": {
+      "compileArgvDeltaFromNormative": [
+        "-Xlint:all",
+        "-Werror"
+      ],
+      "testArgvDeltaFromNormative": [
+        "-ea",
+        "-Xverify:all"
+      ],
+      "compileExitCode": 0,
+      "testExitCode": 0,
+      "stdout": "PASS offline-i1-host-oracle",
+      "stderrBytes": 0,
+      "result": "PASS_SUPPLEMENTAL_NOT_PRIMARY_EVIDENCE"
+    },
+    "normativePrimaryProfile": {
+      "compileArgv": [
+        "<PINNED_JDK_BIN>/javac.exe",
+        "-encoding",
+        "UTF-8",
+        "--release",
+        "17",
+        "-d",
+        "<VALIDATED_OS_TEMP>/classes",
+        "<EXACT_MAIN_SOURCE>",
+        "<EXACT_TEST_SOURCE>"
+      ],
+      "testArgv": [
+        "<PINNED_JDK_BIN>/java.exe",
+        "-cp",
+        "<VALIDATED_OS_TEMP>/classes",
+        "com.monumentogram.dora.stage0.offline.i1.OfflineI1OracleTest"
+      ],
+      "environmentKeys": [
+        "SystemRoot",
+        "WINDIR",
+        "TEMP",
+        "TMP"
+      ],
+      "classpath": "ONLY_VALIDATED_OS_TEMP_CLASSES",
+      "tempBoundary": "NEW_EMPTY_OS_ROOT_DIRECTORY_OUTSIDE_REPOSITORY_AND_USER_HOME_PER_RUN",
+      "runCount": 2,
+      "runs": [
+        {
+          "ordinal": 1,
+          "compileExitCode": 0,
+          "compileStdoutBytes": 0,
+          "compileStderrBytes": 0,
+          "testExitCode": 0,
+          "testStdoutBytes": 27,
+          "testStdoutSha256": "ca96c89c05bd1d1eeedc1670a12cc23b3243b043f22c6f58d2971958c3f39ac1",
+          "testStderrBytes": 0,
+          "compiledArtifactCountBeforeCleanup": 60,
+          "processesExited": true,
+          "tempRemoved": true
+        },
+        {
+          "ordinal": 2,
+          "compileExitCode": 0,
+          "compileStdoutBytes": 0,
+          "compileStderrBytes": 0,
+          "testExitCode": 0,
+          "testStdoutBytes": 27,
+          "testStdoutSha256": "ca96c89c05bd1d1eeedc1670a12cc23b3243b043f22c6f58d2971958c3f39ac1",
+          "testStderrBytes": 0,
+          "compiledArtifactCountBeforeCleanup": 60,
+          "processesExited": true,
+          "tempRemoved": true
+        }
+      ],
+      "postRunTempDirectoryCount": 0,
+      "postRunOwnedJavaProcessCount": 0,
+      "result": "PASS_EXACT_LOCAL_PROFILE"
+    },
+    "staticChecks": [
+      {
+        "id": "OFF-I1-STATIC-001",
+        "check": "MAIN_IMPORT_AND_FORBIDDEN_API_SCAN",
+        "result": "PASS_ZERO_MATCHES"
+      },
+      {
+        "id": "OFF-I1-STATIC-002",
+        "check": "MAIN_STDOUT_STDERR_CALL_SCAN",
+        "result": "PASS_ZERO_MATCHES"
+      },
+      {
+        "id": "OFF-I1-STATIC-003",
+        "check": "JDEPS_PRINT_MODULE_DEPS",
+        "result": "PASS_JAVA_BASE_ONLY"
+      },
+      {
+        "id": "OFF-I1-STATIC-004",
+        "check": "JAVAP_PUBLIC_API_FORBIDDEN_SURFACE",
+        "result": "PASS_ZERO_FORBIDDEN_TYPES"
+      },
+      {
+        "id": "OFF-I1-STATIC-005",
+        "check": "STRICT_UTF8_NO_BOM_LF_ONE_FINAL_LF",
+        "result": "PASS_BOTH_JAVA_FILES"
+      }
+    ]
+  },
+  "independentAdvisoryReview": {
+    "reviewCount": 3,
+    "exactImplementationHashesReviewed": true,
+    "formalReviewer": false,
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "verdict": "CLEAN_LOCAL_EXACT_BYTES",
+    "exactHeadReview": false,
+    "publicationAuthorizationGranted": false,
+    "reviewCarrierCreated": false,
+    "reasonCarrierAbsent": "IMPLEMENTATION_HAS_NO_COMMIT_OR_TREE_AND_PUBLIC_COMMIT_PAUSE_REMAINS_ACTIVE"
+  },
+  "readinessPredicates": [
+    {
+      "id": "OFF-I1-RDY-001",
+      "state": "SATISFIED_BY_V0_1_DOSSIER",
+      "evidence": "exact current main and semantic parent bytes remain pinned"
+    },
+    {
+      "id": "OFF-I1-RDY-002",
+      "state": "SATISFIED_BY_V0_1_DOSSIER",
+      "evidence": "scope, non-goals, catalogs, traces and validators remain versioned"
+    },
+    {
+      "id": "OFF-I1-RDY-003",
+      "state": "SATISFIED_FOR_LOCAL_UNPUBLISHED_SCOPE",
+      "evidence": "v0.2 and v0.3 exact packets each have clean hash-bound external advisory review"
+    },
+    {
+      "id": "OFF-I1-RDY-004",
+      "state": "SATISFIED_BY_V0_2",
+      "evidence": "all seven semantic groups are selected and versioned"
+    },
+    {
+      "id": "OFF-I1-RDY-005",
+      "state": "SATISFIED_FOR_EXACT_LOCAL_PROFILE",
+      "evidence": "two files, package, Java level, direct argv and local JDK hashes are frozen; CI remains blocked"
+    },
+    {
+      "id": "OFF-I1-RDY-006",
+      "state": "LOCAL_PASS",
+      "evidence": "exact 26 scenarios, 67 action slots, 15 deletion rows and 95 scalar cases execute in the host oracle"
+    },
+    {
+      "id": "OFF-I1-RDY-007",
+      "state": "LOCAL_PASS",
+      "evidence": "determinism, no-rule, reducer, replay, exactly-once and deletion receipt invariants pass"
+    },
+    {
+      "id": "OFF-I1-RDY-008",
+      "state": "LOCAL_PASS",
+      "evidence": "the inherited 12 invalid-attempt classes and expanded adversarial decoder/graph matrix pass fail closed"
+    },
+    {
+      "id": "OFF-I1-RDY-009",
+      "state": "LOCAL_PASS",
+      "evidence": "static API, dependency, bytecode, content-free output and no-I/O boundaries pass"
+    },
+    {
+      "id": "OFF-I1-RDY-010",
+      "state": "LOCAL_PASS",
+      "evidence": "two exact primary runs and 162 immutable snapshot round trips are deterministic"
+    },
+    {
+      "id": "OFF-I1-RDY-011",
+      "state": "BLOCKED_NO_EXACT_IMPLEMENTATION_HEAD_OR_TIER_A_CI",
+      "evidence": "unpublished working-tree bytes cannot satisfy exact-head repository-validation or CI predicates"
+    },
+    {
+      "id": "OFF-I1-RDY-012",
+      "state": "BLOCKED_NO_EXACT_HEAD_PUBLICATION_AUTHORITY",
+      "evidence": "local hash-bound advisory review is clean but no committed-head review or publication decision exists"
+    }
+  ],
+  "authorityFlags": {
+    "implementationAllowed": false,
+    "implementationAllowedByThisPackage": false,
+    "executionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "harnessExecutionAllowed": false,
+    "networkExecutionAllowed": false,
+    "deviceExecutionAllowed": false,
+    "emulatorExecutionAllowed": false,
+    "modelExecutionAllowed": false,
+    "gmsExecutionAllowed": false,
+    "cloudExecutionAllowed": false,
+    "vpnExecutionAllowed": false,
+    "providerExecutionAllowed": false,
+    "recoveryExecutionAllowed": false,
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "productionApiAdmission": false,
+    "realDataAllowed": false,
+    "credentialsAllowed": false,
+    "billingAllowed": false,
+    "featureFlagActivationAllowed": false,
+    "legalApprovalClaimed": false,
+    "securityApprovalClaimed": false,
+    "formalHumanApprovalClaimed": false,
+    "mergeAuthorized": false
+  },
+  "scopeFlags": {
+    "grantsFurtherImplementation": false,
+    "grantsFurtherExecution": false,
+    "grantsBuildOrTestExecution": false,
+    "grantsDeviceEmulatorOrNetworkExecution": false,
+    "grantsDataModelProviderOrDependencyAccess": false,
+    "grantsStatusMutation": false,
+    "grantsCommit": false,
+    "grantsPush": false,
+    "grantsPullRequestMutation": false,
+    "grantsReadyOrMerge": false,
+    "grantsPublication": false,
+    "formalReviewer": false,
+    "formalSecurityApproval": false,
+    "formalLegalApproval": false
+  },
+  "proofBoundary": {
+    "mayClaim": [
+      "exact local two-file Java implementation exists at the pinned working-tree hashes",
+      "exact local primary profile passed twice with deterministic content-free output",
+      "supplemental strict compile and runtime verification passed",
+      "local static API dependency bytecode and cleanup checks passed",
+      "three independent advisory audits found no P0 P1 or P2 on the exact Java bytes"
+    ],
+    "mustNotClaim": [
+      "exact implementation commit or tree exists",
+      "non-device Tier A passed on an exact implementation head",
+      "CI passed the implementation",
+      "integrated Offline harness or application flow exists",
+      "network absence device model provider or backend evidence exists",
+      "POC-OFFLINE-001 passed or is ready authorized done or admitted",
+      "publication commit push PR Ready or merge authority",
+      "formal Security Legal human or production approval"
+    ],
+    "openReadinessPredicateIds": [
+      "OFF-I1-RDY-011",
+      "OFF-I1-RDY-012"
+    ],
+    "inheritedOfflineBlockerCount": 10,
+    "inheritedOfflineBlockersClosed": 0,
+    "pocTruth": "TODO_NOT_READY_NOT_RUN_NOT_AUTHORIZED"
+  },
+  "privacy": {
+    "syntheticAndContentFreeOnly": true,
+    "rawIdentifiersPresent": false,
+    "userContentPresent": false,
+    "absoluteLocalPathPresent": false,
+    "hostnameOrUsernamePresent": false,
+    "credentialOrSecretPresent": false,
+    "stdoutContent": "ONE_FIXED_PASS_MARKER_ONLY",
+    "stderrContent": "EMPTY"
+  },
+  "parityCounts": {
+    "contractPinCount": 10,
+    "implementationPinCount": 2,
+    "sourceFileCount": 2,
+    "resolvedSemanticGroupCount": 7,
+    "scenarioCount": 26,
+    "actionSlotCount": 67,
+    "resolvedScalarCaseCount": 95,
+    "queueRuleCount": 20,
+    "deletionMappingRowCount": 15,
+    "diagnosticCodeCount": 20,
+    "semanticClassifierRowCount": 15,
+    "resourceEnvelopeRowCount": 1,
+    "validSnapshotCount": 162,
+    "normativeRunCount": 2,
+    "staticCheckCount": 5,
+    "independentReviewCount": 3,
+    "readinessPredicateCount": 12,
+    "locallySatisfiedReadinessPredicateCount": 10,
+    "blockedReadinessPredicateCount": 2,
+    "authorityFlagCount": 25,
+    "allAuthorityFlagsFalse": true,
+    "scopeFlagCount": 14,
+    "allScopeFlagsFalse": true,
+    "inheritedOfflineBlockerCount": 10,
+    "inheritedOfflineBlockersClosed": 0
+  }
+}
