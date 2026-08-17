@@ -935,7 +935,7 @@ jobs:
           i2_test="tools/offline_i2_integrated_harness/src/test/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarnessTest.java"
 
           sha256sum --check --strict <<'SHA256'
-          5b43335044af8a2a87d19304347af88cc9d06f3b1b164898c7d9618444bb4435  docs/evidence/poc-offline-001/i2-integrated-synthetic-harness-evidence-stage0-v0.1.json
+          e09936d1546bbc82f02665ea88ce9b18bb7e5b9794f17251b5b7114e2161f515  docs/evidence/poc-offline-001/i2-integrated-synthetic-harness-evidence-stage0-v0.1.json
           27168571abe76fc76e958ca984217b5ff58f6433d7790e36a72d065815de876d  docs/evidence/poc-offline-001/i1-host-oracle-implementation-evidence-stage0-v0.1.json
           83075ca723f007b1f282fe0e089a7725a68d8bcf69ebb084f0f1a44704fb97b7  docs/evidence/poc-offline-001/i1-host-oracle-scope-stage0-v0.1.json
           6972a5df028f64664c4f411cedb87f3db2a7a2e1d8ae982ae707bd2ca3e7f46f  docs/evidence/poc-offline-001/i1-resource-envelope-amendment-stage0-v0.3.json
@@ -947,8 +947,8 @@ jobs:
           9a905eabbcd75601fc598cccc001dcff56a5b6b65eeb936f2a9c4602d658682a  docs/stage0/DORA_MVP1_POC_OFFLINE_READINESS_CONTRACT_STAGE0_V0_1.md
           2eb3a80716fdc25abe7300552c8ba95f4deabe68e7c8d5d42dcf9d5cb13235bf  tools/offline_i1_oracle/src/main/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1Oracle.java
           235be2b6d3c646ce9c0910369de99847a149d226159ab1f8a1785e074572b89c  tools/offline_i1_oracle/src/test/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1OracleTest.java
-          812cf1d358c0b64aa311d6d3b8413ff75ae60f5a0aeba74361eb47ff3572bfba  tools/offline_i2_integrated_harness/src/main/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarness.java
-          104629efccbdeb52f18492065d38c89f1ccb17cfdf58d2b63a1df92392f1706e  tools/offline_i2_integrated_harness/src/test/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarnessTest.java
+          e3bc325fac1edee01d92af7cef3b143962ea56b5594612c3dbc31fc0bb392312  tools/offline_i2_integrated_harness/src/main/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarness.java
+          1dbbe1b28c1aab139d1721e8eb5af161db9d45850191b7fbc8a25bf4abdcd3a8  tools/offline_i2_integrated_harness/src/test/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarnessTest.java
           SHA256
 
           runner_temp="$(realpath -e -- "${RUNNER_TEMP}")"

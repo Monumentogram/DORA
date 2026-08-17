@@ -279,6 +279,7 @@ public final class OfflineI2IntegratedHarness {
           || !traceDigest.equals(digestTrace(trace))) {
         throw fault(Diagnostic.INVALID_STATE);
       }
+      validateTracePrefix(finalState, trace);
     }
   }
 
@@ -362,11 +363,20 @@ public final class OfflineI2IntegratedHarness {
     requirePresent(prior);
     requirePresent(action);
     requirePresent(priorTrace);
+    validateTracePrefix(prior, priorTrace);
     if (prior.nextActionIndex() >= ACTION_ORDER.size()
         || ACTION_ORDER.get(prior.nextActionIndex()) != action
         || priorTrace.size() != prior.nextActionIndex()) {
       throw fault(Diagnostic.INVALID_ORDER);
     }
+    return applyTransition(prior, action, priorTrace, true);
+  }
+
+  private static Transition applyTransition(
+      IntegratedState prior,
+      Action action,
+      List<TraceRow> priorTrace,
+      boolean verifySnapshotRoundTrip) {
     IntegratedState next;
     Outcome outcome = Outcome.TRANSITION_APPLIED;
     LocalAggregate local = prior.local();
@@ -551,7 +561,7 @@ public final class OfflineI2IntegratedHarness {
         projection =
             new QueueProjection(
                 expectedQueueIntent(local),
-                digest("QUEUE_INPUT_V1", local.conversationIdHash(), local.exportDigest()),
+                expectedCanonicalQueueInput(local),
                 OfflineI1Oracle.QueueState.PENDING_UPLOAD,
                 0,
                 0,
@@ -606,10 +616,13 @@ public final class OfflineI2IntegratedHarness {
         outcome = Outcome.LOCAL_STATE_PRESERVED;
       }
       case SNAPSHOT_AND_RESTORE -> {
-        Snapshot snapshot = snapshot(prior, priorTrace);
-        IntegratedState restored = restore(snapshot, priorTrace);
-        if (!prior.equals(restored)) {
-          throw fault(Diagnostic.INVALID_SNAPSHOT);
+        IntegratedState restored = prior;
+        if (verifySnapshotRoundTrip) {
+          Snapshot snapshot = snapshot(prior, priorTrace);
+          restored = restore(snapshot, priorTrace);
+          if (!prior.equals(restored)) {
+            throw fault(Diagnostic.INVALID_SNAPSHOT);
+          }
         }
         next = advance(restored);
         outcome = Outcome.RESTORED_IMMUTABLE_SEMANTIC_EQUALITY;
@@ -666,9 +679,7 @@ public final class OfflineI2IntegratedHarness {
   static Snapshot snapshot(IntegratedState state, List<TraceRow> trace) {
     requirePresent(state);
     requirePresent(trace);
-    if (trace.size() != state.nextActionIndex()) {
-      throw fault(Diagnostic.INVALID_SNAPSHOT);
-    }
+    validateTracePrefix(state, trace);
     IntegratedState copy = copyState(state);
     return new Snapshot(copy, digestState(copy), digestTrace(trace));
   }
@@ -676,6 +687,7 @@ public final class OfflineI2IntegratedHarness {
   static IntegratedState restore(Snapshot snapshot, List<TraceRow> trace) {
     requirePresent(snapshot);
     requirePresent(trace);
+    validateTracePrefix(snapshot.state(), trace);
     if (!snapshot.stateDigest().equals(digestState(snapshot.state()))
         || !snapshot.traceDigest().equals(digestTrace(trace))
         || trace.size() != snapshot.state().nextActionIndex()) {
@@ -762,6 +774,42 @@ public final class OfflineI2IntegratedHarness {
       expected++;
     }
     return digest("TRACE_V1", fields.toArray(String[]::new));
+  }
+
+  private static void validateTracePrefix(IntegratedState state, List<TraceRow> trace) {
+    requirePresent(state);
+    requirePresent(trace);
+    if (trace.size() != state.nextActionIndex()) {
+      throw fault(Diagnostic.INVALID_SNAPSHOT);
+    }
+    IntegratedState expectedState = initialState(state.profile());
+    List<TraceRow> expectedTrace = new ArrayList<>();
+    for (int index = 0; index < trace.size(); index++) {
+      TraceRow row = requirePresent(trace.get(index));
+      Action expectedAction = ACTION_ORDER.get(index);
+      Transition expectedTransition =
+          applyTransition(expectedState, expectedAction, expectedTrace, false);
+      IntegratedState expectedNext = expectedTransition.state();
+      TraceRow expectedRow =
+          new TraceRow(
+              index + 1L,
+              expectedAction,
+              expectedTransition.outcome(),
+              digestState(expectedState),
+              digestState(expectedNext),
+              digestLocal(expectedNext.local()),
+              expectedNext.queueProjection() == null
+                  ? null
+                  : expectedNext.queueProjection().intentIdHash());
+      if (!row.equals(expectedRow)) {
+        throw fault(Diagnostic.INVALID_SNAPSHOT);
+      }
+      expectedTrace.add(expectedRow);
+      expectedState = expectedNext;
+    }
+    if (!expectedState.equals(state)) {
+      throw fault(Diagnostic.INVALID_SNAPSHOT);
+    }
   }
 
   private static I1Witnesses verifyI1Witnesses() {
@@ -1015,6 +1063,9 @@ public final class OfflineI2IntegratedHarness {
         && model == OfflineI1Oracle.ModelState.MODEL_INSTALLED_APPROVED) {
       throw fault(Diagnostic.MODEL_ADMISSION_VIOLATION);
     }
+    if (phase != expectedLocalPhase(nextActionIndex)) {
+      throw fault(Diagnostic.INVALID_STATE);
+    }
     validateLocalPhase(phase, local);
     if (nextActionIndex >= 10) {
       OfflineI1Oracle.ProcessingState expectedProcessing =
@@ -1032,39 +1083,56 @@ public final class OfflineI2IntegratedHarness {
       throw fault(Diagnostic.INVALID_STATE);
     }
 
-    if (queue == OfflineI1Oracle.QueueState.LOCAL_ONLY) {
-      if (projection != null || nextActionIndex > 10) {
+    if (nextActionIndex <= 10) {
+      if (queue != OfflineI1Oracle.QueueState.LOCAL_ONLY || projection != null) {
         throw fault(Diagnostic.INVALID_STATE);
       }
     } else {
       if (projection == null || projection.state() != queue) {
         throw fault(Diagnostic.INVALID_STATE);
       }
-      if (!expectedQueueIntent(local).equals(projection.intentIdHash())) {
+      if (!expectedQueueIntent(local).equals(projection.intentIdHash())
+          || !expectedCanonicalQueueInput(local).equals(projection.canonicalInputDigest())) {
         throw fault(Diagnostic.QUEUE_IDENTITY_CHANGED);
       }
-      if (queue == OfflineI1Oracle.QueueState.PENDING_UPLOAD && nextActionIndex != 11) {
-        throw fault(Diagnostic.INVALID_STATE);
-      }
-      if (queue == OfflineI1Oracle.QueueState.WAITING_NETWORK) {
-        if (nextActionIndex < 12
-            || nextActionIndex > 14
-            || projection.attemptCount() != 0
-            || projection.effectCount() != 0
-            || projection.applyCount() != 0
-            || connectivity != OfflineI1Oracle.ConnectivityState.NETWORK_DENIED) {
-          throw fault(Diagnostic.ATTEMPT_WHILE_DENIED);
-        }
-      }
-      if (queue == OfflineI1Oracle.QueueState.CONFLICT) {
-        if (nextActionIndex < 15
-            || connectivity != OfflineI1Oracle.ConnectivityState.AVAILABLE
-            || projection.effectCount() != 1
-            || projection.applyCount() != 0
-            || local.protocolOwner() != FieldOwner.USER
-            || local.revision() != 1) {
-          throw fault(Diagnostic.USER_OWNERSHIP_VIOLATION);
-        }
+      switch (nextActionIndex) {
+        case 11 ->
+            requireQueueLifecycle(
+                queue,
+                projection,
+                OfflineI1Oracle.QueueState.PENDING_UPLOAD,
+                0,
+                0,
+                0,
+                ReplayMarker.ORIGINAL);
+        case 12, 13, 14 ->
+            requireQueueLifecycle(
+                queue,
+                projection,
+                OfflineI1Oracle.QueueState.WAITING_NETWORK,
+                0,
+                0,
+                0,
+                ReplayMarker.ORIGINAL);
+        case 15 ->
+            requireQueueLifecycle(
+                queue,
+                projection,
+                OfflineI1Oracle.QueueState.CONFLICT,
+                1,
+                1,
+                0,
+                ReplayMarker.ORIGINAL);
+        case 16 ->
+            requireQueueLifecycle(
+                queue,
+                projection,
+                OfflineI1Oracle.QueueState.CONFLICT,
+                2,
+                1,
+                0,
+                ReplayMarker.SAME_INPUT_REPLAY);
+        default -> throw fault(Diagnostic.INVALID_STATE);
       }
     }
     if (nextActionIndex < 15
@@ -1073,6 +1141,40 @@ public final class OfflineI2IntegratedHarness {
     }
     if (nextActionIndex >= 15
         && connectivity != OfflineI1Oracle.ConnectivityState.AVAILABLE) {
+      throw fault(Diagnostic.INVALID_STATE);
+    }
+  }
+
+  private static LocalPhase expectedLocalPhase(int nextActionIndex) {
+    return switch (nextActionIndex) {
+      case 0 -> LocalPhase.FRESH_LOCAL_DEFAULT;
+      case 1 -> LocalPhase.CAPTURED_SYNTHETIC;
+      case 2 -> LocalPhase.SAVED_LOCAL;
+      case 3 -> LocalPhase.RULES_PROCESSED;
+      case 4 -> LocalPhase.HISTORY_OPENED;
+      case 5 -> LocalPhase.SEARCH_MATCHED;
+      case 6 -> LocalPhase.TASK_CREATED;
+      case 7 -> LocalPhase.USER_EDITED;
+      case 8 -> LocalPhase.COPIED_LOCAL;
+      case 9, 10, 11, 12, 13, 14, 15, 16 -> LocalPhase.EXPORTED_LOCAL;
+      default -> throw fault(Diagnostic.INVALID_ORDER);
+    };
+  }
+
+  private static void requireQueueLifecycle(
+      OfflineI1Oracle.QueueState queue,
+      QueueProjection projection,
+      OfflineI1Oracle.QueueState expectedState,
+      long expectedAttempts,
+      int expectedEffects,
+      int expectedApplies,
+      ReplayMarker expectedMarker) {
+    if (queue != expectedState
+        || projection.state() != expectedState
+        || projection.attemptCount() != expectedAttempts
+        || projection.effectCount() != expectedEffects
+        || projection.applyCount() != expectedApplies
+        || projection.replayMarker() != expectedMarker) {
       throw fault(Diagnostic.INVALID_STATE);
     }
   }
@@ -1127,6 +1229,10 @@ public final class OfflineI2IntegratedHarness {
 
   private static String expectedQueueIntent(LocalAggregate local) {
     return digest("QUEUE_INTENT_ID_V1", QUEUE_ID, local.conversationIdHash());
+  }
+
+  private static String expectedCanonicalQueueInput(LocalAggregate local) {
+    return digest("QUEUE_INPUT_V1", local.conversationIdHash(), local.exportDigest());
   }
 
   private static String digestQueue(QueueProjection queue) {

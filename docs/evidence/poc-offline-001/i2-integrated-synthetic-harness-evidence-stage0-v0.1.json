@@ -3,8 +3,8 @@
   "recordId": "OFF-I2-INTEGRATED-SYNTHETIC-HARNESS-EVIDENCE-001",
   "recordDate": "2026-08-17",
   "timezone": "Europe/Moscow",
-  "disposition": "PURE_HOST_SYNTHETIC_IN_MEMORY_SEMANTICS_IMPLEMENTED_LOCAL_CHECKS_PASS_EXACT_HEAD_CI_REQUIRED",
-  "artifactState": "LOCAL_IMPLEMENTATION_AND_TEST_EVIDENCE_COMPLETE_DRAFT_PUBLICATION_REQUIRED",
+  "disposition": "PURE_HOST_SYNTHETIC_IN_MEMORY_SEMANTICS_REMEDIATION_LOCAL_CHECKS_PASS_EXACT_HEAD_CI_REQUIRED",
+  "artifactState": "LOCAL_REMEDIATION_AND_TEST_EVIDENCE_COMPLETE_DRAFT_PR_EXACT_HEAD_CI_REQUIRED",
   "backlogTruth": {
     "id": "POC-OFFLINE-001",
     "status": "TODO",
@@ -23,6 +23,39 @@
     "draftPullRequestAllowed": true,
     "readyAllowed": false,
     "mergeAllowed": false
+  },
+  "technicalRemediation": {
+    "authorizationId": "OFF-I2-QUEUE-BINDING-REMEDIATION-AUTH-20260817-01",
+    "sourcePullRequest": 37,
+    "sourceHead": "76cb1afc164757a71c7a70caf476577399b42ed1",
+    "sourceTree": "8eb3a5c0cabf458b80a1bb06167fe2ddff267701",
+    "findingSeverity": "P1",
+    "findingStatus": "CONFIRMED_AND_LOCALLY_REMEDIATED_EXACT_HEAD_CI_REQUIRED",
+    "finding": "state and snapshot validation did not bind canonical queue input to local lineage, exhaustively bind queue lifecycle to action index, or bind trace prefixes to the deterministic action outcome and state chain",
+    "allowedFiles": [
+      ".github/workflows/stage0-host-oracles.yml",
+      "docs/evidence/poc-offline-001/i2-integrated-synthetic-harness-evidence-stage0-v0.1.json",
+      "tools/offline_i2_integrated_harness/src/main/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarness.java",
+      "tools/offline_i2_integrated_harness/src/test/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarnessTest.java"
+    ],
+    "originalExactHeadCi": {
+      "head": "76cb1afc164757a71c7a70caf476577399b42ed1",
+      "hostRun": 32025078118,
+      "authorizedScopeJob": 95372691713,
+      "offlineI2Job": 95372715834,
+      "advisoryJob": 95372789039,
+      "androidRun": 32025078082,
+      "searchSmokeJob": 95372691260,
+      "androidBootstrapJob": 95372691342,
+      "conclusion": "success"
+    },
+    "invariantsAdded": [
+      "canonicalInputDigest equals SHA-256 domain QUEUE_INPUT_V1 over conversationIdHash and exportDigest",
+      "local phase queue state counters and replay marker equal the exhaustive action-index lifecycle",
+      "every trace prefix row is rebound by deterministic replay to its exact sequence action outcome pre-state post-state local aggregate queue identity and final state before transition snapshot restore and result acceptance"
+    ],
+    "scopeExpansion": false,
+    "readyOrMerge": false
   },
   "sourceBaseline": {
     "githubMainCommit": "ca817b07651a8524792ccd3af7af3dff75612730",
@@ -96,16 +129,16 @@
     {
       "kind": "I2_MAIN",
       "path": "tools/offline_i2_integrated_harness/src/main/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarness.java",
-      "bytes": 43037,
-      "lines": 1245,
-      "sha256": "812cf1d358c0b64aa311d6d3b8413ff75ae60f5a0aeba74361eb47ff3572bfba"
+      "bytes": 46612,
+      "lines": 1351,
+      "sha256": "e3bc325fac1edee01d92af7cef3b143962ea56b5594612c3dbc31fc0bb392312"
     },
     {
       "kind": "I2_TEST",
       "path": "tools/offline_i2_integrated_harness/src/test/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarnessTest.java",
-      "bytes": 23629,
-      "lines": 533,
-      "sha256": "104629efccbdeb52f18492065d38c89f1ccb17cfdf58d2b63a1df92392f1706e"
+      "bytes": 37390,
+      "lines": 888,
+      "sha256": "1dbbe1b28c1aab139d1721e8eb5af161db9d45850191b7fbc8a25bf4abdcd3a8"
     }
   ],
   "implementationBoundary": {
@@ -188,6 +221,9 @@
     "attemptCountAfterSameInputReplay": 2,
     "effectCountAfterReplay": 1,
     "applyCountAfterReplay": 0,
+    "canonicalInputBoundToConversationAndExport": true,
+    "queueLifecycleBoundToExactActionIndex": true,
+    "tracePrefixBoundBeforeStateAcceptance": true,
     "userOwnedProtocolOverwritten": false,
     "taskSourceLineageOverwritten": false
   },
@@ -239,6 +275,9 @@
       "immutable in-memory snapshot restore and continuation equality",
       "semantic reconnect conflict preserves the user edit",
       "same-input replay adds no second effect and no apply",
+      "canonical queue input mismatch fails closed before state acceptance",
+      "foreign queue states phase-index mismatches counter drift and replay-marker drift fail closed",
+      "trace action outcome sequence chain queue identity intermediate local digest and final state drift fail closed even when a forged trace digest is self-consistent",
       "I1 model queue snapshot reconnect and replay witness parity",
       "null order digest snapshot queue identity model admission and counter tamper fail closed",
       "immutable result collections and content-free evidence shape"
@@ -300,10 +339,23 @@
   "review": {
     "formalReviewer": false,
     "independentAdvisoryReviewPerformed": false,
-    "P0": 0,
-    "P1": 0,
-    "P2": 0,
-    "findingCountsClass": "IMPLEMENTER_LOCAL_TEST_FINDINGS_ONLY_NOT_INDEPENDENT_REVIEW"
+    "remediationReviewClass": "TECHNICAL_REMEDIATION_NOT_FORMAL_INDEPENDENT_ADVISORY",
+    "confirmedFindings": {
+      "P0": 0,
+      "P1": 1,
+      "P2": 0
+    },
+    "locallyRemediatedFindings": {
+      "P0": 0,
+      "P1": 1,
+      "P2": 0
+    },
+    "remainingImplementerLocalFindings": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 0
+    },
+    "findingCountsClass": "TECHNICAL_REMEDIATION_FINDING_LOCALLY_CLOSED_EXACT_HEAD_CI_PENDING_NOT_INDEPENDENT_FORMAL_REVIEW"
   },
   "privacy": {
     "repositoryOwnedSyntheticFixtureOnly": true,

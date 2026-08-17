@@ -18,6 +18,7 @@ public final class OfflineI2IntegratedHarnessTest {
     testQueueSnapshotConflictAndReplay();
     testI1Witnesses();
     testFailClosedBeforeMutation();
+    testQueueAndTraceBindingsFailClosed();
     testImmutabilityAndContentFreeShape();
     check(assertions >= 180, "T-ASSERTION-FLOOR");
     System.out.print("PASS offline-i2-integrated-synthetic-harness");
@@ -469,6 +470,356 @@ public final class OfflineI2IntegratedHarnessTest {
         "T-FAIL-EFFECT-BOUND");
   }
 
+  private static void testQueueAndTraceBindingsFailClosed() {
+    Prefix waiting = prefix(OfflineI2IntegratedHarness.ModelProfile.MODEL_ABSENT, 13);
+    OfflineI2IntegratedHarness.IntegratedState waitingState = waiting.state();
+    OfflineI2IntegratedHarness.QueueProjection waitingQueue = waitingState.queueProjection();
+
+    OfflineI2IntegratedHarness.QueueProjection wrongInput =
+        queueWith(
+            waitingQueue,
+            ZERO_HASH,
+            waitingQueue.state(),
+            waitingQueue.attemptCount(),
+            waitingQueue.effectCount(),
+            waitingQueue.applyCount(),
+            waitingQueue.replayMarker());
+    expectFault(
+        OfflineI2IntegratedHarness.Diagnostic.QUEUE_IDENTITY_CHANGED,
+        () -> stateWith(waitingState, waitingState.localPhase(), waitingState.queue(), wrongInput),
+        "T-FAIL-QUEUE-CANONICAL-INPUT-BINDING");
+
+    OfflineI2IntegratedHarness.QueueProjection foreignQueueState =
+        queueWith(
+            waitingQueue,
+            waitingQueue.canonicalInputDigest(),
+            OfflineI1Oracle.QueueState.FAILED_FINAL,
+            0,
+            0,
+            0,
+            OfflineI2IntegratedHarness.ReplayMarker.ORIGINAL);
+    expectFault(
+        OfflineI2IntegratedHarness.Diagnostic.INVALID_STATE,
+        () ->
+            stateWith(
+                waitingState,
+                waitingState.localPhase(),
+                OfflineI1Oracle.QueueState.FAILED_FINAL,
+                foreignQueueState),
+        "T-FAIL-QUEUE-STATE-LIFECYCLE");
+
+    OfflineI2IntegratedHarness.QueueProjection waitingReplayMarker =
+        queueWith(
+            waitingQueue,
+            waitingQueue.canonicalInputDigest(),
+            waitingQueue.state(),
+            0,
+            0,
+            0,
+            OfflineI2IntegratedHarness.ReplayMarker.SAME_INPUT_REPLAY);
+    expectFault(
+        OfflineI2IntegratedHarness.Diagnostic.INVALID_STATE,
+        () ->
+            stateWith(
+                waitingState,
+                waitingState.localPhase(),
+                waitingState.queue(),
+                waitingReplayMarker),
+        "T-FAIL-QUEUE-MARKER-LIFECYCLE");
+
+    Prefix history = prefix(OfflineI2IntegratedHarness.ModelProfile.MODEL_ABSENT, 4);
+    expectFault(
+        OfflineI2IntegratedHarness.Diagnostic.INVALID_STATE,
+        () ->
+            stateWith(
+                history.state(),
+                OfflineI2IntegratedHarness.LocalPhase.SEARCH_MATCHED,
+                history.state().queue(),
+                history.state().queueProjection()),
+        "T-FAIL-PHASE-INDEX-BINDING");
+
+    Prefix conflict = prefix(OfflineI2IntegratedHarness.ModelProfile.MODEL_ABSENT, 15);
+    OfflineI2IntegratedHarness.QueueProjection conflictQueue = conflict.state().queueProjection();
+    OfflineI2IntegratedHarness.QueueProjection earlyReplayCounter =
+        queueWith(
+            conflictQueue,
+            conflictQueue.canonicalInputDigest(),
+            conflictQueue.state(),
+            2,
+            1,
+            0,
+            OfflineI2IntegratedHarness.ReplayMarker.ORIGINAL);
+    expectFault(
+        OfflineI2IntegratedHarness.Diagnostic.INVALID_STATE,
+        () ->
+            stateWith(
+                conflict.state(),
+                conflict.state().localPhase(),
+                conflict.state().queue(),
+                earlyReplayCounter),
+        "T-FAIL-CONFLICT-COUNTER-LIFECYCLE");
+
+    Prefix replay = prefix(OfflineI2IntegratedHarness.ModelProfile.MODEL_ABSENT, 16);
+    OfflineI2IntegratedHarness.QueueProjection replayQueue = replay.state().queueProjection();
+    OfflineI2IntegratedHarness.QueueProjection replayWrongMarker =
+        queueWith(
+            replayQueue,
+            replayQueue.canonicalInputDigest(),
+            replayQueue.state(),
+            replayQueue.attemptCount(),
+            replayQueue.effectCount(),
+            replayQueue.applyCount(),
+            OfflineI2IntegratedHarness.ReplayMarker.ORIGINAL);
+    expectFault(
+        OfflineI2IntegratedHarness.Diagnostic.INVALID_STATE,
+        () ->
+            stateWith(
+                replay.state(),
+                replay.state().localPhase(),
+                replay.state().queue(),
+                replayWrongMarker),
+        "T-FAIL-REPLAY-MARKER-LIFECYCLE");
+
+    List<OfflineI2IntegratedHarness.TraceRow> wrongAction =
+        replaceTraceRow(
+            waiting.trace(),
+            0,
+            traceRowWith(
+                waiting.trace().get(0),
+                OfflineI2IntegratedHarness.Action.SAVE_LOCAL_SOURCE,
+                waiting.trace().get(0).outcome(),
+                waiting.trace().get(0).preStateDigest(),
+                waiting.trace().get(0).postStateDigest(),
+                waiting.trace().get(0).localAggregateDigest(),
+                waiting.trace().get(0).queueIntentIdHash()));
+    expectFault(
+        OfflineI2IntegratedHarness.Diagnostic.INVALID_SNAPSHOT,
+        () -> OfflineI2IntegratedHarness.snapshot(waitingState, wrongAction),
+        "T-FAIL-TRACE-ACTION-PREFIX");
+
+    List<OfflineI2IntegratedHarness.TraceRow> wrongOutcome =
+        replaceTraceRow(
+            waiting.trace(),
+            0,
+            traceRowWith(
+                waiting.trace().get(0),
+                waiting.trace().get(0).action(),
+                OfflineI2IntegratedHarness.Outcome.LOCAL_STATE_PRESERVED,
+                waiting.trace().get(0).preStateDigest(),
+                waiting.trace().get(0).postStateDigest(),
+                waiting.trace().get(0).localAggregateDigest(),
+                waiting.trace().get(0).queueIntentIdHash()));
+    expectFault(
+        OfflineI2IntegratedHarness.Diagnostic.INVALID_SNAPSHOT,
+        () -> OfflineI2IntegratedHarness.snapshot(waitingState, wrongOutcome),
+        "T-FAIL-TRACE-OUTCOME-PREFIX");
+
+    OfflineI2IntegratedHarness.TraceRow second = waiting.trace().get(1);
+    OfflineI2IntegratedHarness.TraceRow third = waiting.trace().get(2);
+    List<OfflineI2IntegratedHarness.TraceRow> withRewrittenSecond =
+        replaceTraceRow(
+            waiting.trace(),
+            1,
+            traceRowWith(
+                second,
+                second.action(),
+                second.outcome(),
+                second.preStateDigest(),
+                ZERO_HASH,
+                second.localAggregateDigest(),
+                second.queueIntentIdHash()));
+    List<OfflineI2IntegratedHarness.TraceRow> selfConsistentRechained =
+        replaceTraceRow(
+            withRewrittenSecond,
+            2,
+            traceRowWith(
+                third,
+                third.action(),
+                third.outcome(),
+                ZERO_HASH,
+                third.postStateDigest(),
+                third.localAggregateDigest(),
+                third.queueIntentIdHash()));
+    OfflineI2IntegratedHarness.Snapshot selfConsistentForgedTraceSnapshot =
+        new OfflineI2IntegratedHarness.Snapshot(
+            waitingState,
+            OfflineI2IntegratedHarness.digestState(waitingState),
+            OfflineI2IntegratedHarness.digestTrace(selfConsistentRechained));
+    expectFault(
+        OfflineI2IntegratedHarness.Diagnostic.INVALID_SNAPSHOT,
+        () ->
+            OfflineI2IntegratedHarness.restore(
+                selfConsistentForgedTraceSnapshot, selfConsistentRechained),
+        "T-FAIL-TRACE-SELF-CONSISTENT-RECHAIN");
+
+    int tailIndex = waiting.trace().size() - 1;
+    OfflineI2IntegratedHarness.TraceRow tail = waiting.trace().get(tailIndex);
+    List<OfflineI2IntegratedHarness.TraceRow> wrongTail =
+        replaceTraceRow(
+            waiting.trace(),
+            tailIndex,
+            traceRowWith(
+                tail,
+                tail.action(),
+                tail.outcome(),
+                tail.preStateDigest(),
+                ZERO_HASH,
+                tail.localAggregateDigest(),
+                tail.queueIntentIdHash()));
+    expectFault(
+        OfflineI2IntegratedHarness.Diagnostic.INVALID_SNAPSHOT,
+        () -> OfflineI2IntegratedHarness.snapshot(waitingState, wrongTail),
+        "T-FAIL-TRACE-TAIL-STATE");
+
+    List<OfflineI2IntegratedHarness.TraceRow> wrongTailLocal =
+        replaceTraceRow(
+            waiting.trace(),
+            tailIndex,
+            traceRowWith(
+                tail,
+                tail.action(),
+                tail.outcome(),
+                tail.preStateDigest(),
+                tail.postStateDigest(),
+                ZERO_HASH,
+                tail.queueIntentIdHash()));
+    expectFault(
+        OfflineI2IntegratedHarness.Diagnostic.INVALID_SNAPSHOT,
+        () -> OfflineI2IntegratedHarness.snapshot(waitingState, wrongTailLocal),
+        "T-FAIL-TRACE-TAIL-LOCAL");
+
+    int interiorIndex = 4;
+    OfflineI2IntegratedHarness.TraceRow interior = waiting.trace().get(interiorIndex);
+    List<OfflineI2IntegratedHarness.TraceRow> wrongInteriorLocal =
+        replaceTraceRow(
+            waiting.trace(),
+            interiorIndex,
+            traceRowWith(
+                interior,
+                interior.action(),
+                interior.outcome(),
+                interior.preStateDigest(),
+                interior.postStateDigest(),
+                ZERO_HASH,
+                interior.queueIntentIdHash()));
+    OfflineI2IntegratedHarness.Snapshot selfConsistentWrongInteriorLocalSnapshot =
+        new OfflineI2IntegratedHarness.Snapshot(
+            waitingState,
+            OfflineI2IntegratedHarness.digestState(waitingState),
+            OfflineI2IntegratedHarness.digestTrace(wrongInteriorLocal));
+    expectFault(
+        OfflineI2IntegratedHarness.Diagnostic.INVALID_SNAPSHOT,
+        () ->
+            OfflineI2IntegratedHarness.restore(
+                selfConsistentWrongInteriorLocalSnapshot, wrongInteriorLocal),
+        "T-FAIL-TRACE-INTERIOR-LOCAL");
+
+    List<OfflineI2IntegratedHarness.TraceRow> wrongTraceIntent =
+        replaceTraceRow(
+            waiting.trace(),
+            tailIndex,
+            traceRowWith(
+                tail,
+                tail.action(),
+                tail.outcome(),
+                tail.preStateDigest(),
+                tail.postStateDigest(),
+                tail.localAggregateDigest(),
+                ZERO_HASH));
+    expectFault(
+        OfflineI2IntegratedHarness.Diagnostic.INVALID_SNAPSHOT,
+        () -> OfflineI2IntegratedHarness.snapshot(waitingState, wrongTraceIntent),
+        "T-FAIL-TRACE-QUEUE-IDENTITY");
+  }
+
+  private static Prefix prefix(
+      OfflineI2IntegratedHarness.ModelProfile profile, int actionCount) {
+    OfflineI2IntegratedHarness.IntegratedState state =
+        OfflineI2IntegratedHarness.initialState(profile);
+    List<OfflineI2IntegratedHarness.TraceRow> trace = new ArrayList<>();
+    for (int index = 0; index < actionCount; index++) {
+      OfflineI2IntegratedHarness.Action action = OfflineI2IntegratedHarness.actionOrder().get(index);
+      String pre = OfflineI2IntegratedHarness.digestState(state);
+      OfflineI2IntegratedHarness.Transition transition =
+          OfflineI2IntegratedHarness.transition(state, action, trace);
+      state = transition.state();
+      trace.add(
+          new OfflineI2IntegratedHarness.TraceRow(
+              trace.size() + 1L,
+              action,
+              transition.outcome(),
+              pre,
+              OfflineI2IntegratedHarness.digestState(state),
+              OfflineI2IntegratedHarness.digestLocal(state.local()),
+              state.queueProjection() == null
+                  ? null
+                  : state.queueProjection().intentIdHash()));
+    }
+    return new Prefix(state, List.copyOf(trace));
+  }
+
+  private static OfflineI2IntegratedHarness.IntegratedState stateWith(
+      OfflineI2IntegratedHarness.IntegratedState prior,
+      OfflineI2IntegratedHarness.LocalPhase phase,
+      OfflineI1Oracle.QueueState queue,
+      OfflineI2IntegratedHarness.QueueProjection projection) {
+    return new OfflineI2IntegratedHarness.IntegratedState(
+        prior.profile(),
+        prior.nextActionIndex(),
+        phase,
+        prior.processing(),
+        prior.connectivity(),
+        prior.model(),
+        queue,
+        prior.local(),
+        projection);
+  }
+
+  private static OfflineI2IntegratedHarness.QueueProjection queueWith(
+      OfflineI2IntegratedHarness.QueueProjection prior,
+      String canonicalInputDigest,
+      OfflineI1Oracle.QueueState state,
+      long attemptCount,
+      int effectCount,
+      int applyCount,
+      OfflineI2IntegratedHarness.ReplayMarker marker) {
+    return new OfflineI2IntegratedHarness.QueueProjection(
+        prior.intentIdHash(),
+        canonicalInputDigest,
+        state,
+        attemptCount,
+        effectCount,
+        applyCount,
+        marker);
+  }
+
+  private static OfflineI2IntegratedHarness.TraceRow traceRowWith(
+      OfflineI2IntegratedHarness.TraceRow prior,
+      OfflineI2IntegratedHarness.Action action,
+      OfflineI2IntegratedHarness.Outcome outcome,
+      String preStateDigest,
+      String postStateDigest,
+      String localAggregateDigest,
+      String queueIntentIdHash) {
+    return new OfflineI2IntegratedHarness.TraceRow(
+        prior.sequence(),
+        action,
+        outcome,
+        preStateDigest,
+        postStateDigest,
+        localAggregateDigest,
+        queueIntentIdHash);
+  }
+
+  private static List<OfflineI2IntegratedHarness.TraceRow> replaceTraceRow(
+      List<OfflineI2IntegratedHarness.TraceRow> trace,
+      int index,
+      OfflineI2IntegratedHarness.TraceRow replacement) {
+    List<OfflineI2IntegratedHarness.TraceRow> changed = new ArrayList<>(trace);
+    changed.set(index, replacement);
+    return List.copyOf(changed);
+  }
+
   private static void testImmutabilityAndContentFreeShape() {
     OfflineI2IntegratedHarness.RunResult result =
         OfflineI2IntegratedHarness.run(
@@ -530,4 +881,8 @@ public final class OfflineI2IntegratedHarnessTest {
   private interface Checked {
     void run();
   }
+
+  private record Prefix(
+      OfflineI2IntegratedHarness.IntegratedState state,
+      List<OfflineI2IntegratedHarness.TraceRow> trace) {}
 }
