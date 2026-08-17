@@ -22,8 +22,6 @@ import com.monumentogram.dora.poc.recovery.contract.MicrofileAad
 import com.monumentogram.dora.poc.recovery.contract.MicrofileAadCodec
 import com.monumentogram.dora.poc.recovery.contract.PublicationAad
 import com.monumentogram.dora.poc.recovery.contract.PublicationAadCodec
-import com.monumentogram.dora.poc.recovery.contract.PublicationKind
-import com.monumentogram.dora.poc.recovery.contract.RecoveryContract
 import com.monumentogram.dora.poc.recovery.contract.RecoveryContractException
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.StreamingAad
@@ -58,7 +56,7 @@ internal object RecoveryTinkRuntime {
     fun newStreamingKeyset(aad: KeyEnvelopeAad): RecoveryStreamingKeyset {
         requireEnvelopeTarget(aad, KeyEnvelopeTargetKind.STREAM)
         return RecoveryStreamingKeyset(
-            handle = newKeyset(streamingParameters()),
+            handle = newRecoveryKeyset(streamingParameters()),
             envelopeAad = aad,
             encryptionAllowed = true,
         )
@@ -67,7 +65,7 @@ internal object RecoveryTinkRuntime {
     fun newAeadKeyset(aad: KeyEnvelopeAad): RecoveryAeadKeyset {
         requireAeadEnvelopeTarget(aad)
         return RecoveryAeadKeyset(
-            handle = newKeyset(aeadParameters()),
+            handle = newRecoveryKeyset(aeadParameters()),
             envelopeAad = aad,
             encryptionAllowed = true,
         )
@@ -113,54 +111,46 @@ internal object RecoveryTinkRuntime {
             aeadVariant = aead.variant.toString(),
         )
     }
+}
 
-    private fun streamingParameters(): AesGcmHkdfStreamingParameters =
-        AesGcmHkdfStreamingParameters.builder()
-            .setKeySizeBytes(STREAMING_INPUT_KEY_BYTES)
-            .setDerivedAesGcmKeySizeBytes(STREAMING_DERIVED_KEY_BYTES)
-            .setHkdfHashType(AesGcmHkdfStreamingParameters.HashType.SHA256)
-            .setCiphertextSegmentSizeBytes(STREAMING_CIPHERTEXT_SEGMENT_BYTES)
-            .build()
+private fun streamingParameters(): AesGcmHkdfStreamingParameters =
+    AesGcmHkdfStreamingParameters.builder()
+        .setKeySizeBytes(RecoveryTinkRuntime.STREAMING_INPUT_KEY_BYTES)
+        .setDerivedAesGcmKeySizeBytes(RecoveryTinkRuntime.STREAMING_DERIVED_KEY_BYTES)
+        .setHkdfHashType(AesGcmHkdfStreamingParameters.HashType.SHA256)
+        .setCiphertextSegmentSizeBytes(RecoveryTinkRuntime.STREAMING_CIPHERTEXT_SEGMENT_BYTES)
+        .build()
 
-    private fun aeadParameters(): AesGcmParameters =
-        AesGcmParameters.builder()
-            .setKeySizeBytes(AEAD_KEY_BYTES)
-            .setIvSizeBytes(AEAD_IV_BYTES)
-            .setTagSizeBytes(AEAD_TAG_BYTES)
-            .setVariant(AesGcmParameters.Variant.TINK)
-            .build()
+private fun aeadParameters(): AesGcmParameters =
+    AesGcmParameters.builder()
+        .setKeySizeBytes(RecoveryTinkRuntime.AEAD_KEY_BYTES)
+        .setIvSizeBytes(RecoveryTinkRuntime.AEAD_IV_BYTES)
+        .setTagSizeBytes(RecoveryTinkRuntime.AEAD_TAG_BYTES)
+        .setVariant(AesGcmParameters.Variant.TINK)
+        .build()
 
-    private fun newKeyset(parameters: Parameters): KeysetHandle {
-        ensureRegistered()
-        return KeysetHandle.newBuilder()
-            .addEntry(
-                KeysetHandle.generateEntryFromParameters(parameters).withRandomId().makePrimary()
-            )
-            .build()
+private fun newRecoveryKeyset(parameters: Parameters): KeysetHandle {
+    RegisteredRecoveryTink.configuration
+    return KeysetHandle.newBuilder()
+        .addEntry(KeysetHandle.generateEntryFromParameters(parameters).withRandomId().makePrimary())
+        .build()
+}
+
+private fun requireEnvelopeTarget(
+    aad: KeyEnvelopeAad,
+    expected: KeyEnvelopeTargetKind,
+) {
+    if (aad.targetKind != expected) {
+        throw RecoveryContractException("Unexpected key-envelope target: ${aad.targetKind}")
     }
-
-    private fun ensureRegistered() {
-        RegisteredRecoveryTink.configuration
+    if (expected == KeyEnvelopeTargetKind.STREAM) {
+        aad.requireStreamingEnvelopeSemantics()
     }
+}
 
-    private fun requireEnvelopeTarget(
-        aad: KeyEnvelopeAad,
-        expected: KeyEnvelopeTargetKind,
-    ) {
-        if (aad.targetKind != expected) {
-            throw RecoveryContractException("Unexpected key-envelope target: ${aad.targetKind}")
-        }
-        if (expected == KeyEnvelopeTargetKind.STREAM) {
-            aad.requireStreamingEnvelopeSemantics()
-        }
-    }
-
-    private fun requireAeadEnvelopeTarget(aad: KeyEnvelopeAad) {
-        if (aad.targetKind == KeyEnvelopeTargetKind.STREAM) {
-            throw RecoveryContractException(
-                "A streaming key envelope cannot contain an AEAD keyset"
-            )
-        }
+private fun requireAeadEnvelopeTarget(aad: KeyEnvelopeAad) {
+    if (aad.targetKind == KeyEnvelopeTargetKind.STREAM) {
+        throw RecoveryContractException("A streaming key envelope cannot contain an AEAD keyset")
     }
 }
 
@@ -349,67 +339,6 @@ private fun KeysetHandle.requireRecoveryTopology() {
             !topology.primaryHasNonzeroId
     ) {
         throw GeneralSecurityException("Recovery keyset must contain one enabled random-ID primary")
-    }
-}
-
-private fun KeyEnvelopeAad.requireStreamingEnvelopeSemantics() {
-    if (
-        targetKind != KeyEnvelopeTargetKind.STREAM ||
-            generation != 1UL ||
-            unitIndex != KeyEnvelopeAad.NOT_APPLICABLE_UNIT_INDEX ||
-            plaintextStartInclusive != 0UL ||
-            plaintextEndExclusive != RecoveryContract.MAX_PLAINTEXT_BYTES_PER_RUN ||
-            cadenceSeconds != 0UL ||
-            !previousPublicationCiphertextSha256.isZero()
-    ) {
-        throw RecoveryContractException("Streaming key envelope does not match the exact run span")
-    }
-}
-
-private fun KeyEnvelopeAad.requireAeadTarget() {
-    if (targetKind == KeyEnvelopeTargetKind.STREAM) {
-        throw RecoveryContractException("AEAD keyset cannot use a STREAM key envelope")
-    }
-}
-
-private fun KeyEnvelopeAad.requireStreamingBinding(aad: StreamingAad) {
-    if (candidate != aad.candidate || runId != aad.runId) {
-        throw RecoveryContractException("Streaming AAD does not match its key envelope")
-    }
-}
-
-private fun KeyEnvelopeAad.requireMicrofileBinding(aad: MicrofileAad) {
-    if (
-        targetKind != KeyEnvelopeTargetKind.MICROFILE ||
-            candidate != aad.candidate ||
-            runId != aad.runId ||
-            generation != aad.manifestGeneration ||
-            unitIndex != aad.unitIndex ||
-            plaintextStartInclusive != aad.plaintextStartInclusive ||
-            plaintextEndExclusive != aad.plaintextEndExclusive ||
-            cadenceSeconds != aad.cadenceSeconds ||
-            previousPublicationCiphertextSha256 != aad.previousManifestCiphertextSha256
-    ) {
-        throw RecoveryContractException("Microfile AAD does not match its key envelope")
-    }
-}
-
-private fun KeyEnvelopeAad.requirePublicationBinding(aad: PublicationAad) {
-    val expectedTarget =
-        when (aad.publicationKind) {
-            PublicationKind.MANIFEST -> KeyEnvelopeTargetKind.MANIFEST
-            PublicationKind.CHECKPOINT -> KeyEnvelopeTargetKind.CHECKPOINT
-        }
-    if (
-        targetKind != expectedTarget ||
-            candidate != aad.candidate ||
-            runId != aad.runId ||
-            generation != aad.generation ||
-            plaintextStartInclusive != 0UL ||
-            plaintextEndExclusive != aad.plaintextEndExclusive ||
-            previousPublicationCiphertextSha256 != aad.previousPublicationCiphertextSha256
-    ) {
-        throw RecoveryContractException("Publication AAD does not match its key envelope")
     }
 }
 

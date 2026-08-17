@@ -320,11 +320,14 @@ tasks.register("recoveryI2bVerifyCryptoPolicy") {
         val requiredSourceFragments =
             listOf(
                 "AesGcmHkdfStreamingParameters.builder()",
-                ".setKeySizeBytes(STREAMING_INPUT_KEY_BYTES)",
-                ".setDerivedAesGcmKeySizeBytes(STREAMING_DERIVED_KEY_BYTES)",
+                ".setKeySizeBytes(RecoveryTinkRuntime.STREAMING_INPUT_KEY_BYTES)",
+                ".setDerivedAesGcmKeySizeBytes(RecoveryTinkRuntime.STREAMING_DERIVED_KEY_BYTES)",
                 ".setHkdfHashType(AesGcmHkdfStreamingParameters.HashType.SHA256)",
-                ".setCiphertextSegmentSizeBytes(STREAMING_CIPHERTEXT_SEGMENT_BYTES)",
+                ".setCiphertextSegmentSizeBytes(RecoveryTinkRuntime.STREAMING_CIPHERTEXT_SEGMENT_BYTES)",
                 "AesGcmParameters.builder()",
+                ".setKeySizeBytes(RecoveryTinkRuntime.AEAD_KEY_BYTES)",
+                ".setIvSizeBytes(RecoveryTinkRuntime.AEAD_IV_BYTES)",
+                ".setTagSizeBytes(RecoveryTinkRuntime.AEAD_TAG_BYTES)",
                 ".setVariant(AesGcmParameters.Variant.TINK)",
                 "KeysetHandle.generateEntryFromParameters(parameters).withRandomId().makePrimary()",
                 "TinkProtoKeysetFormat.serializeEncryptedKeyset(",
