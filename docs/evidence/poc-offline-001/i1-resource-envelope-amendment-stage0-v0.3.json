@@ -1,0 +1,406 @@
+{
+  "schemaVersion": "poc-offline-i1-resource-envelope-amendment-stage0-v0.3",
+  "recordId": "OFF-I1-RESOURCE-ENVELOPE-003",
+  "recordDate": "2026-08-16",
+  "recordedAt": "2026-08-16T23:31:55.2072525+03:00",
+  "timezone": "Europe/Moscow",
+  "disposition": "LOCAL_PURE_HOST_RESOURCE_ENVELOPE_DEFINED_REVIEW_REQUIRED",
+  "artifactState": "ADDITIVE_DECISION_PACKET_COMPLETE_PENDING_INDEPENDENT_ADVISORY_REVIEW",
+  "backlogItem": {
+    "id": "POC-OFFLINE-001",
+    "status": "TODO",
+    "readiness": "NOT_READY",
+    "execution": "NOT_RUN",
+    "authorization": "NOT_AUTHORIZED"
+  },
+  "parentBindings": {
+    "sourceBaseline": {
+      "mainCommit": "78e9dd07d616989987118f26bb16ebb9932ddb2b",
+      "mainTree": "f403bf60b86273ee8a2634ed5e8530c9d4af20e4",
+      "stackedParentCommit": "d164b6372ad3e717762d48a9a3ea7e6551602ab7",
+      "stackedParentTree": "076c9eeda8180d775c6ec6dbb1dc5cc53aeb7ce6",
+      "localUnpublished": true
+    },
+    "artifacts": [
+      {
+        "kind": "PARENT_MARKDOWN",
+        "path": "docs/stage0/DORA_MVP1_POC_OFFLINE_I1_SEMANTICS_AND_IMPLEMENTATION_SCOPE_STAGE0_V0_2.md",
+        "bytes": 46364,
+        "sha256": "64a8cd6c7230b104834ca8bdb8a8a3a1c1525277dc8b913487acf2739e67c08e",
+        "inheritance": "BYTE_SEMANTIC_ALL_EXCEPT_RESOURCE_ENVELOPE_DELTA"
+      },
+      {
+        "kind": "PARENT_MACHINE_RECORD",
+        "path": "docs/evidence/poc-offline-001/i1-semantics-and-implementation-scope-stage0-v0.2.json",
+        "bytes": 124165,
+        "sha256": "156915ba88f97e9bbf08da02b6ef4c2b475c173f1f9b96e8c70fe50e2a174785",
+        "inheritance": "BYTE_SEMANTIC_ALL_EXCEPT_RESOURCE_ENVELOPE_DELTA"
+      },
+      {
+        "kind": "PARENT_EXTERNAL_REVIEW",
+        "path": "docs/evidence/poc-offline-001/reviews/off-i1-semantics-scope-002.external-review.json",
+        "bytes": 757,
+        "sha256": "c2a9f86f6d73a7b2f58fe7980691c07f4c9acca7e87fe517655604011db82f17",
+        "inheritance": "PROVES_ONLY_PARENT_PACKET_CLEAN_AT_PARENT_HASHES"
+      }
+    ],
+    "authoritySourceChain": [
+      "docs/DORA_MVP1_TECHNICAL_PLAN.md#21.3",
+      "docs/DORA_MVP1_TECHNICAL_PLAN.md#22",
+      "docs/DORA_MVP1_TECHNICAL_PLAN.md#28",
+      "docs/DORA_MVP1_PRODUCT_DECISIONS.md#DEC-009",
+      "docs/DORA_MVP1_PRODUCT_DECISIONS.md#DEC-012",
+      "docs/DORA_MVP1_PRODUCT_DECISIONS.md#DEC-013",
+      "docs/DORA_MVP1_PRODUCT_DECISIONS.md#DEC-015",
+      "docs/DORA_MVP1_PRODUCT_DECISIONS.md#DEC-017",
+      "docs/DORA_MVP1_PRODUCT_DECISIONS.md#DEC-020",
+      "docs/adr/",
+      "docs/DORA_MVP1_TEST_STRATEGY.md#TS-UNIT",
+      "docs/DORA_MVP1_TEST_STRATEGY.md#TS-OFFLINE",
+      "docs/DORA_MVP1_TEST_STRATEGY.md#TS-PRIVACY",
+      "docs/DORA_MVP1_TEST_STRATEGY.md#Tier A",
+      "docs/evidence/poc-offline-001/readiness-contract-stage0-v0.1.json",
+      "docs/evidence/poc-offline-001/i1-host-oracle-scope-stage0-v0.1.json",
+      "docs/evidence/poc-offline-001/i1-semantics-and-implementation-scope-stage0-v0.2.json"
+    ],
+    "unchangedDecisionBoundary": "NO_PRODUCT_RETENTION_RETRY_NETWORK_MODEL_PROVIDER_OR_PRODUCTION_DECISION"
+  },
+  "markdownBinding": {
+    "path": "docs/stage0/DORA_MVP1_POC_OFFLINE_I1_RESOURCE_ENVELOPE_AMENDMENT_STAGE0_V0_3.md",
+    "bytes": 13595,
+    "sha256": "d28faad79faa740c8dc54095c9bd8cc9ad9d59de592261784eaea3e2eb1de2a0"
+  },
+  "semanticDelta": {
+    "inheritanceRule": "ALL_V0_2_SEMANTICS_REMAIN_BYTE_SEMANTICALLY_INHERITED_EXCEPT_THIS_RESOURCE_ENVELOPE_DELTA",
+    "gateClass": "PRE_SEMANTIC_ADMISSION_GATE",
+    "notSyntaxClassification": true,
+    "notReplacementForSemanticClassifier": true,
+    "limits": {
+      "maxCandidateBytesInclusive": 1048576,
+      "candidateByteUnit": "ORIGINAL_UTF8_INPUT_BYTE_ARRAY_LENGTH_BEFORE_CLONE_OR_DECODE",
+      "maxContainerDepthInclusive": 32,
+      "rootObjectOrArrayDepth": 1,
+      "childContainerDepthDelta": 1,
+      "scalarDepthDelta": 0
+    },
+    "boundaryRules": [
+      {
+        "id": "OFF-I1-ENVELOPE-001",
+        "predicate": "candidate byte length <= 1048576 and every entered container depth <= 32",
+        "outcome": "NOT_REJECTED_BY_RESOURCE_ENVELOPE_CONTINUE_ORDERED_DECODE_PIPELINE"
+      },
+      {
+        "id": "OFF-I1-ENVELOPE-002",
+        "predicate": "candidate byte length >= 1048577",
+        "outcome": "OFF-I1-INVALID-016_BEFORE_UTF8_DECODE"
+      },
+      {
+        "id": "OFF-I1-ENVELOPE-003",
+        "predicate": "byte-admitted parse attempts to enter container depth 33",
+        "outcome": "OFF-I1-INVALID-016_WITHOUT_PARSING_LATER_DECODED_CHARACTERS"
+      }
+    ],
+    "boundaryPriority": "RESOURCE_ENVELOPE_REJECTION_PREEMPTS_EVERY_LATENT_001_THROUGH_015_CONDITION_BECAUSE_SEMANTIC_CLASSIFICATION_IS_NOT_ENTERED",
+    "orderedAdmissionPipeline": [
+      "ORIGINAL_BYTE_LENGTH_GATE",
+      "COMPLETE_STRICT_UTF8_DECODE_AND_BOM_REJECTION",
+      "SEQUENTIAL_JSON_PARSE_WITH_CONTAINER_DEPTH_GATE",
+      "COMPLETE_ORDERED_V0_2_SEMANTIC_CLASSIFIER"
+    ],
+    "utf8AndBomRule": "FOR_BYTE_ADMITTED_INPUT_ANY_MALFORMED_UTF8_ANYWHERE_OR_ANY_FORBIDDEN_BOM_IS_OFF-I1-INVALID-013_BEFORE_CONTAINER_DEPTH",
+    "jsonSyntaxAndDepthRule": "AFTER_SUCCESSFUL_FULL_BUFFER_DECODE_SYNTAX_OBSERVED_BEFORE_DEPTH_33_IS_OFF-I1-INVALID-013; ATTEMPTED_DEPTH_33_IS_OFF-I1-INVALID-016_AND_LATER_DECODED_CHARACTERS_ARE_NOT_PARSED",
+    "diagnostic": {
+      "code": "OFF-I1-INVALID-016",
+      "meaning": "RESOURCE_ENVELOPE_EXCEEDED_BEFORE_SEMANTIC_CLASSIFICATION",
+      "claimsJsonValidity": false,
+      "claimsLatentSemanticCategory": false,
+      "allowedForOtherDefects": false
+    },
+    "catalogEffects": {
+      "inheritedDiagnosticCodeCount": 19,
+      "amendedDiagnosticCodeCount": 20,
+      "semanticClassificationRowCount": 15,
+      "semanticRowsRenumbered": false,
+      "resourceEnvelopeRowCount": 1
+    },
+    "directDecodeFailure": {
+      "appliesTo": "PUBLIC_DECODE_SNAPSHOT_BYTE_ARRAY_ONLY",
+      "behavior": "THROW_EXISTING_TYPED_CONTRACT_FAULT",
+      "diagnosticCode": "OFF-I1-INVALID-016",
+      "returnsRunState": false,
+      "createsOrMutatesStateOrSnapshot": false,
+      "mutatesCallerOwnedInputBytes": false,
+      "publicApiShapeChanged": false
+    },
+    "restoreInvalidResult": {
+      "appliesTo": "RESTORE_STEP_RESULT_ONLY",
+      "selectedRuleId": null,
+      "outcome": "INVALID_INPUT",
+      "diagnosticCode": "OFF-I1-INVALID-016",
+      "priorStateLedgersReplayAndCounters": "BYTE_IDENTICAL_UNCHANGED",
+      "flowAppend": null,
+      "queueAppend": null,
+      "counterDeltaPolicy": "ALL_ZERO",
+      "snapshotBytes": null,
+      "snapshotCreationWriteOrReplacementAllowed": false
+    },
+    "snapshotBoundary": {
+      "snapshotSchema": "poc-offline-i1-snapshot-v0.2",
+      "schemaVersionChanged": false,
+      "diagnosticMayEnterValidRunState": false,
+      "diagnosticMayEnterReplayRecord": false,
+      "diagnosticMayEnterQueueRow": false,
+      "diagnosticMayEnterLastResult": false,
+      "reason": "DIRECT_DECODE_THROWS_WITHOUT_STATE_OR_SNAPSHOT; RESTORE_RETURNS_PRIOR_RUNSTATE_BYTE_IDENTICAL_WITH_NO_SNAPSHOT"
+    }
+  },
+  "validDomainProof": {
+    "proofClass": "SCHEMA_AND_CATALOG_BOUND_NOT_CURRENT_ENCODER_MEASUREMENT",
+    "maxValidContainerDepth": 5,
+    "provedValidCanonicalSnapshotBytesUpperBound": 524288,
+    "maxFlowRows": 67,
+    "maxQueueRows": 68,
+    "maxQueueRowsDerivation": "ONE_OPTIONAL_SEED_PLUS_AT_MOST_ONE_APPEND_PER_ACTION",
+    "maxReplayRows": 68,
+    "maxLastResultObjects": 1,
+    "schemaFieldCounts": {
+      "snapshot": 12,
+      "flowRow": 12,
+      "queueRow": 19,
+      "result": 7,
+      "replayRecord": 11
+    },
+    "maxAsciiStringBytes": 64,
+    "stringEscapingInValidSnapshot": false,
+    "maxNonNegativeInt64DecimalDigits": 19,
+    "maxJsonObjectMembers": 3587,
+    "maxJsonObjectMembersDerivation": "12_TOP_LEVEL_PLUS_5_TOP_STATE_VECTOR_PLUS_1474_FLOW_AND_NESTED_VECTORS_PLUS_1292_QUEUE_PLUS_748_REPLAY_PLUS_56_MAXIMAL_LAST_RESULT",
+    "conservativeLocalKeyColonAndScalarTokenBytesPerMember": 134,
+    "nestedChildMemberBytesCountedSeparately": true,
+    "maxStructuralDelimiterBytes": 8192,
+    "conservativeTotalBytesUpperBound": 488850,
+    "delimiterProof": "3587_TIMES_134_EQUALS_480658; PLUS_AT_MOST_8192_BRACES_BRACKETS_OBJECT_SEPARATORS_AND_ARRAY_SEPARATORS_EQUALS_AT_MOST_488850_WHICH_IS_STRICTLY_LESS_THAN_524288",
+    "strictHeadroom": {
+      "validByteUpperBoundLessThanAdmittedLimit": true,
+      "validDepthUpperBoundLessThanAdmittedLimit": true
+    },
+    "changeInvalidationRule": "ANY_SCHEMA_CATALOG_STRING_BOUND_LEDGER_ROW_BOUND_OR_ACTION_COUNT_EXPANSION_REQUIRES_A_NEW_VERSIONED_DECISION",
+    "prospectiveExhaustiveTest": {
+      "scenario001Through025InitialSnapshots": 25,
+      "scenario001Through025PostActionSnapshots": 65,
+      "scenario001Through025Total": 90,
+      "scenario026EligibleRowPhasePairs": 24,
+      "scenario026SnapshotsPerPair": 3,
+      "scenario026Total": 72,
+      "totalCanonicalSnapshots": 162,
+      "requiredAssertions": [
+        "EVERY_SIZE_STRICTLY_LESS_THAN_524288",
+        "EVERY_CONTAINER_DEPTH_AT_MOST_5",
+        "STRICT_DECODE_RETURNS_DEEPLY_EQUAL_IMMUTABLE_GRAPH",
+        "REENCODED_BYTES_EQUAL_ORIGINAL_CANONICAL_BYTES"
+      ]
+    }
+  },
+  "implementationInputPins": [
+    {
+      "path": "tools/offline_i1_oracle/src/main/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1Oracle.java",
+      "bytes": 213093,
+      "sha256": "7eb67b202722339d73ad70f1781a7d5ccddb89e5a1805361aeac2793eb506576",
+      "status": "REMEDIATION_INPUT_ONLY_NOT_ACCEPTED_OUTPUT"
+    },
+    {
+      "path": "tools/offline_i1_oracle/src/test/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1OracleTest.java",
+      "bytes": 237249,
+      "sha256": "7b40cea7586cd89034ad2e3a3ed3ef26eea4374dc9aaa61bffd0f522b81468b2",
+      "status": "REMEDIATION_INPUT_ONLY_NOT_ACCEPTED_OUTPUT"
+    }
+  ],
+  "implementationScope": {
+    "packetAuthoringFiles": [
+      "docs/stage0/DORA_MVP1_POC_OFFLINE_I1_RESOURCE_ENVELOPE_AMENDMENT_STAGE0_V0_3.md",
+      "docs/evidence/poc-offline-001/i1-resource-envelope-amendment-stage0-v0.3.json"
+    ],
+    "reviewCarrierPath": "docs/evidence/poc-offline-001/reviews/off-i1-resource-envelope-003.external-review.json",
+    "reviewCarrierIsPacketSource": false,
+    "prospectiveLocalImplementationScopeAllowed": true,
+    "activationRequiresStrictPacketValidation": true,
+    "activationRequiresCleanIndependentAdvisoryReview": true,
+    "activationConditionsMet": false,
+    "implementationCreatedByThisPacket": false,
+    "implementationExecutedByThisPacket": false,
+    "prospectiveSourceFiles": [
+      "tools/offline_i1_oracle/src/main/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1Oracle.java",
+      "tools/offline_i1_oracle/src/test/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1OracleTest.java"
+    ],
+    "package": "com.monumentogram.dora.stage0.offline.i1",
+    "language": "Java",
+    "languageLevel": 17,
+    "dependencyBoundary": "JAVA_STANDARD_LIBRARY_ONLY",
+    "allowedChangesAfterActivation": [
+      "ADD_OFF-I1-INVALID-016_TO_DIAGNOSTIC_CATALOG",
+      "ROUTE_ORIGINAL_BYTE_LENGTH_OVERFLOW_TO_OFF-I1-INVALID-016_BEFORE_DECODE",
+      "ROUTE_CONTAINER_DEPTH_33_ENTRY_TO_OFF-I1-INVALID-016",
+      "PRESERVE_COMPLETE_V0_2_001_THROUGH_015_ORDER_INSIDE_ADMITTED_DOMAIN",
+      "ADD_EXACT_BYTE_DEPTH_RESTORE_AND_162_VALID_SNAPSHOT_TESTS"
+    ],
+    "forbiddenChanges": [
+      "HELPER_OR_GENERATED_SOURCE",
+      "MODULE_OR_GRADLE_FILE",
+      "PLUGIN_REPOSITORY_COORDINATE_OR_DEPENDENCY",
+      "ANDROID_SOURCE",
+      "WORKFLOW",
+      "BACKLOG_OR_STAGE_STATUS"
+    ],
+    "localToolchain": {
+      "implementor": "Microsoft",
+      "runtimeVersion": "17.0.10+7-LTS",
+      "os": "Windows",
+      "arch": "x86_64",
+      "javaSha256": "98fd4a0eec7fa39abbc2b3f55007ed9c8c24ef8fa5d7c04c3895b4c5915ec3f1",
+      "javacSha256": "0e79806dea4681cf6bb1fd41b4d5ba8c579481cb70a28890fe65813639294ffe",
+      "releaseMetadataSha256": "f463618c7067d1d7421a2aacdc8a4cfa939e9844436462c1c165cbed20a9769a"
+    },
+    "executionProfile": "INHERIT_EXACT_V0_2_DIRECT_JAVAC_JAVA_ARGV_MINIMAL_ENV_EXTERNAL_OS_TEMP_CLEANUP_AND_FORBIDDEN_API_BOUNDARY",
+    "acceptedOutputHashLocation": "LATER_SEPARATE_IMPLEMENTATION_EVIDENCE_ONLY",
+    "executionAuthorizedByThisPacket": false
+  },
+  "authorityFlags": {
+    "implementationAllowed": false,
+    "implementationAllowedByThisPackage": false,
+    "executionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "harnessExecutionAllowed": false,
+    "networkExecutionAllowed": false,
+    "deviceExecutionAllowed": false,
+    "emulatorExecutionAllowed": false,
+    "modelExecutionAllowed": false,
+    "gmsExecutionAllowed": false,
+    "cloudExecutionAllowed": false,
+    "vpnExecutionAllowed": false,
+    "providerExecutionAllowed": false,
+    "recoveryExecutionAllowed": false,
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "productionApiAdmission": false,
+    "realDataAllowed": false,
+    "credentialsAllowed": false,
+    "billingAllowed": false,
+    "featureFlagActivationAllowed": false,
+    "legalApprovalClaimed": false,
+    "securityApprovalClaimed": false,
+    "formalHumanApprovalClaimed": false,
+    "mergeAuthorized": false
+  },
+  "scopeFlags": {
+    "validatorExecutionAllowed": false,
+    "testExecutionAllowed": false,
+    "buildAllowed": false,
+    "dataStoreAccessAllowed": false,
+    "humanDataAllowed": false,
+    "newDependencyAllowed": false,
+    "androidIntegrationAllowed": false,
+    "statusMutationAllowed": false,
+    "publicationAllowed": false,
+    "formalSecurityApproval": false,
+    "formalReviewer": false,
+    "prAdvancementAllowed": false,
+    "implementationCreatedByThisPacket": false,
+    "implementationExecutedByThisPacket": false,
+    "commitAllowed": false,
+    "pushAllowed": false,
+    "readyAllowed": false,
+    "mergeAllowed": false
+  },
+  "externalActivationReviewContract": {
+    "recordLocation": "docs/evidence/poc-offline-001/reviews/off-i1-resource-envelope-003.external-review.json",
+    "recordStateInThisPacket": "PROSPECTIVE_NOT_CREATED_UNTIL_EXACT_PACKET_HASHES_RECEIVE_CLEAN_INDEPENDENT_REVIEW",
+    "carrierClass": "SEPARATE_IMMUTABLE_REPOSITORY_RELATIVE_REVIEW_EVIDENCE_NOT_A_PACKET_SOURCE_FILE",
+    "serialization": {
+      "encoding": "UTF-8",
+      "bomAllowed": false,
+      "lineEnding": "LF",
+      "indent": "TWO_SPACES",
+      "finalLfCount": 1,
+      "duplicateUnknownMissingOrReorderedKeysAllowed": false,
+      "selfHashFieldAllowed": false
+    },
+    "exactKeyOrder": [
+      "packetId",
+      "mdPath",
+      "mdBytes",
+      "mdSha256",
+      "jsonPath",
+      "jsonBytes",
+      "jsonSha256",
+      "reviewerModel",
+      "reviewerOrganization",
+      "reviewerRole",
+      "formalReviewer",
+      "reviewedAt",
+      "timezone",
+      "verdict",
+      "packetP0",
+      "packetP1",
+      "packetP2"
+    ],
+    "fixedValues": {
+      "packetId": "OFF-I1-RESOURCE-ENVELOPE-003",
+      "reviewerRole": "INDEPENDENT_ADVISORY_REVIEWER",
+      "formalReviewer": false,
+      "timezone": "Europe/Moscow",
+      "verdict": "CLEAN",
+      "packetP0": 0,
+      "packetP1": 0,
+      "packetP2": 0
+    },
+    "hashRule": "BOTH_PATH_BYTE_COUNT_SHA256_TUPLES_EQUAL_THE_FROZEN_REVIEWED_FILES",
+    "activationDerivation": "STRICT_PACKET_VALIDATION_AND_ONE_CONFORMING_EXTERNAL_REVIEW_RECORD_AT_EXACT_RECORD_LOCATION",
+    "grantsOnly": "EXACT_LOCAL_PROSPECTIVE_TWO_JAVA_FILE_REMEDIATION_SCOPE",
+    "doesNotGrant": "EXECUTION_PUBLICATION_COMMIT_PUSH_PR_ADVANCEMENT_READY_MERGE_OR_FORMAL_APPROVAL"
+  },
+  "proofBoundary": {
+    "packetMayClaim": "ADDITIVE_DECISION_PACKET_COMPLETE_PENDING_INDEPENDENT_ADVISORY_REVIEW",
+    "afterCleanReviewMayClaim": "LOCAL_PURE_HOST_RESOURCE_ENVELOPE_SCOPE_ACTIVE",
+    "forbiddenClaims": [
+      "implementation present",
+      "host tests passed",
+      "host oracle evidence complete",
+      "Offline PASS",
+      "device or emulator evidence",
+      "network absence evidence",
+      "model execution evidence",
+      "provider or backend evidence",
+      "dependency or production admission",
+      "readiness blocker closure",
+      "publication or merge authority"
+    ],
+    "pocTruth": "TODO_NOT_READY_NOT_RUN_NOT_AUTHORIZED",
+    "inheritedOfflineBlockersClosed": 0,
+    "backlogOrStageStatusMutationAllowed": false
+  },
+  "packetReviewFindings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "state": "AWAITING_EXTERNAL_HASH_BOUND_REVIEW"
+  },
+  "parityCounts": {
+    "parentBindingCount": 3,
+    "boundaryRuleCount": 3,
+    "resourceEnvelopeRowCount": 1,
+    "inheritedSemanticClassificationRowCount": 15,
+    "inheritedDiagnosticCodeCount": 19,
+    "amendedDiagnosticCodeCount": 20,
+    "validDomainSnapshotCount": 162,
+    "implementationInputPinCount": 2,
+    "packetAuthoringFileCount": 2,
+    "prospectiveSourceFileCount": 2,
+    "authorityFlagCount": 25,
+    "allAuthorityFlagsFalse": true,
+    "scopeFlagCount": 18,
+    "allScopeFlagsFalse": true,
+    "externalReviewCarrierKeyCount": 17,
+    "inheritedOfflineBlockerCount": 10,
+    "inheritedOfflineBlockersClosed": 0
+  }
+}
