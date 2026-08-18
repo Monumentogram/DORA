@@ -106,11 +106,14 @@ Stage 1 remains gated. The separate internal Alpha below is not Stage 1 or produ
 Authority: direct Project-owner scope `DORA-ALPHA-001`, `ALPHA-GATE-001`, `DEC-045` and
 `ADR-0003`. Alpha does not alter Stage 0 PoC state or production readiness.
 
-Implementation checkpoint: commit `b9fb524048f05eeecad2aece523ba675a598bfe1` implements the
-bounded `ALPHA-002`–`ALPHA-006` slice and has green local JVM, Android-test compilation,
-formatting, detekt, lint, assemble, APK alignment and static boundary evidence. Those rows remain
-`READY`, not `DONE`, until exact-head CI and required Android/physical execution close their full
-acceptance. `ALPHA-007` remains `BLOCKED`; see `DORA_ALPHA_INSTALL_AND_SMOKE.md`.
+Implementation checkpoint: initial commit `b9fb524048f05eeecad2aece523ba675a598bfe1` plus review
+remediation commit `a1f00f55b309fe0ff196d7d300f270d5717d26c6` implement the bounded
+`ALPHA-002`–`ALPHA-006` slice. Local JVM, Android-test compilation, formatting, detekt, lint,
+assemble, APK alignment and static boundary evidence are green. The remediation fails closed when
+an existing primary/legacy-backup path cannot be read and gives each task checkbox identifying text
+and explicit completion state. Those rows remain `READY`, not `DONE`, until fresh exact-head CI,
+independent re-review and required Android/physical execution close their full acceptance.
+`ALPHA-007` remains `BLOCKED`; see `DORA_ALPHA_INSTALL_AND_SMOKE.md`.
 
 | ID | State | Size | Task | Depends on | Deliverable / acceptance |
 |---|---|---:|---|---|---|

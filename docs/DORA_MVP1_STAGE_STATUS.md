@@ -14,7 +14,7 @@ Active PoC: `POC-RECOVERY-001`
 Stage state: **REC-I1 REVIEWED AND SQUASH-MERGED; POST-MERGE VALIDATOR LIFECYCLE REMEDIATED; RUNTIME IMPLEMENTATION, ACTUAL GRAPH AND EXECUTION BLOCKED**
 
 Parallel product track: `DORA-ALPHA-001`\
-Alpha state: **IMPLEMENTATION COMMITTED; LOCAL HOST/STATIC/APK GREEN; EXACT-HEAD CI, INDEPENDENT REVIEW AND PHYSICAL SMOKE OPEN**\
+Alpha state: **DRAFT PR #40; REVIEW P1 REMEDIATION COMMITTED AND LOCALLY GREEN; FRESH EXACT-HEAD CI, INDEPENDENT RE-REVIEW AND PHYSICAL SMOKE OPEN**\
 Alpha branch: `codex/dora-alpha-001` from verified `main` `223f31d87355596c8cb36576d2d94366eae9d620`
 
 ## Parallel DORA Alpha status
@@ -39,14 +39,22 @@ The first Alpha branch/PR uses separate governance and implementation commits. D
 allowed after proportional local checks. Ready/merge requires exact-head CI, independent review
 with no P0/P1, unchanged scope and no specialist blocker. No PR is merged by this status update.
 
-Implementation commit `b9fb524048f05eeecad2aece523ba675a598bfe1` supplies the bounded manual
-workspace, strict UTF-8/versioned/size-limited AtomicFile adapter, fail-closed corruption behavior,
-local search, manual task completion, confirmed whole-conversation deletion and visibly unavailable
-audio/automatic/network/export stages. Local formatting, detekt, JVM tests, Android-test compilation,
-lint and the full CI-equivalent debug assembly graph passed. The exact local APK is 29,650,119 bytes
-with SHA-256 `99e9ae94bf2578927c292d3f3eea3dfe584edd9dfb1e4fa50f3daf0e05f1dc29`;
+Initial implementation commit `b9fb524048f05eeecad2aece523ba675a598bfe1` and remediation commit
+`a1f00f55b309fe0ff196d7d300f270d5717d26c6` supply the bounded manual workspace, strict
+UTF-8/versioned/size-limited AtomicFile adapter, fail-closed corruption/read behavior, local search,
+manual task completion, confirmed whole-conversation deletion and visibly unavailable audio/
+automatic/network/export stages. A missing snapshot is now accepted only when no primary or legacy
+backup path is provably present before and after the failed read; ambiguous or inaccessible state
+blocks mutation. Task toggles expose the task text and explicit completion state to accessibility.
+
+Local formatting, detekt, JVM tests, Android-test compilation, lint and the documented app/core
+debug assembly graph passed at the remediation commit. The exact local APK is 30,150,851 bytes with
+SHA-256 `5b6f323206ecc434659a94d3e53ee01926831daacef33a9667f279f69d43163e`;
 16-KiB zip alignment and the existing native allowlist match passed. No dependency or source
-manifest change, credential signature or Alpha network/audio/permission API was found.
+manifest change, credential signature or Alpha network/audio/permission API was found. Draft PR #40
+pre-remediation HEAD `e4ea3e24b1c1580b3a1436c8f8506db0447a5ac2` passed CI run `32107371424`.
+Its provisional independent review reported P0/P1/P2=`0/2/0`; both P1 findings are remediated in
+`a1f00f5`, but fresh exact-head CI and independent re-review remain mandatory.
 
 No Android device or emulator was available, so instrumentation execution and the required physical
 smoke are `NOT RUN`. Local Python is only a non-functional Windows application alias, so repository
