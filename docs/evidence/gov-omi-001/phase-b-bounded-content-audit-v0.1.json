@@ -5,11 +5,12 @@
   "authorityIds": [
     "GOV-OMI-PHASE-B-BOUNDED-PUBLIC-SOURCE-CONTENT-AUDIT-AUTH-20260818-01",
     "GOV-OMI-PHASE-B-CANONICAL-RECOVERY-AUTH-20260818-02",
-    "GOV-OMI-PHASE-B-INCOMPLETE-RETRIEVAL-RECOVERY-AUTH-20260818-03"
+    "GOV-OMI-PHASE-B-INCOMPLETE-RETRIEVAL-RECOVERY-AUTH-20260818-03",
+    "GOV-OMI-PHASE-B-TEXT-CLASSIFICATION-AND-TRACKER-RECOVERY-AUTH-20260818-04"
   ],
-  "capturedAt": "2026-08-18T15:56:59.356Z",
-  "state": "INCOMPLETE_TRACKER_FAIL_CLOSED",
-  "lifecycle": "PAUSED_PENDING_EXACT_TRACKER_RECOVERY_AUTH",
+  "capturedAt": "2026-08-18T16:19:39.019Z",
+  "state": "BOUNDED_RETRIEVAL_COMPLETE_REVIEW_PENDING",
+  "lifecycle": "LOCAL_EVIDENCE_FROZEN_PENDING_INDEPENDENT_REVIEW",
   "dora": {
     "repository": "Monumentogram/DORA",
     "branch": "codex/gov-omi-001-phase-b-bounded-content-audit",
@@ -22,11 +23,14 @@
       "d2dc88b",
       "e689f5e",
       "2140058",
-      "9c47368"
+      "9c47368",
+      "e3bce72",
+      "66b1d3e"
     ],
     "recoveryPlanCommits": [
       "2140058",
-      "9c47368"
+      "9c47368",
+      "66b1d3e"
     ],
     "grandfatheredImmutableArtifact": {
       "path": "docs/stage0/gov-omi-phase-b-contract-test-resolved-allowlist-v0.1.json",
@@ -74,11 +78,11 @@
       "localParserFailuresBeforeExternalTrackerRequest": 2,
       "externalRequestsConsumedByLocalParserFailures": 0
     },
-    "discussionRequests": 1,
-    "discussionItemsCompleted": 0,
-    "discussionItemsUnexecuted": 17,
+    "discussionRequestsBeforeAuth04": 1,
+    "discussionItemsCompletedBeforeAuth04": 0,
+    "discussionItemsUnexecutedBeforeAuth04": 17,
     "finalIdentityRequest": 0,
-    "canonicalBudget": {
+    "auth03CanonicalBudgetAtPause": {
       "cap": 86,
       "consumed": 69,
       "consumedBreakdown": {
@@ -96,9 +100,21 @@
       "grandfatheredContractTestTreeMetadata": 2,
       "total": 5
     },
-    "totalKnownRequests": 74,
-    "repeatedRequests": 0,
-    "arithmetic": "74 = 3 pre-freeze + 4 preserved prior-scope + 49 initial blob attempts + 1 failed-blob retry + 16 remaining blobs + 1 tracker attempt"
+    "auth04TextClassificationAndTrackerRecovery": {
+      "cap": 66,
+      "textClassificationBlobRequests": 48,
+      "trackerRequests": 18,
+      "successfulResponses": 66,
+      "failedResponses": 0,
+      "unexecuted": 0,
+      "authorizedRefetchesOfPreviouslySuccessfulBlobs": 48,
+      "authorizedRetryOfPreviouslyFailedTrackerItem": 1,
+      "discoveryIdentityPaginationOrLinkRequests": 0,
+      "arithmetic": "48 + 18 = 66"
+    },
+    "totalKnownRequests": 140,
+    "repeatedPreviouslySuccessfulRequests": 48,
+    "arithmetic": "140 = 74 preserved through AUTH-03 + 48 AUTH-04 text-classification blob requests + 18 AUTH-04 tracker requests"
   },
   "initialFailure": {
     "code": "BLOB_REQUEST_FAILED",
@@ -171,6 +187,76 @@
       "unrequestedPullRequests": [7331,6565,7099,7132,6777,7091,7006,7106,7322]
     }
   },
+  "auth04Execution": {
+    "authorityId": "GOV-OMI-PHASE-B-TEXT-CLASSIFICATION-AND-TRACKER-RECOVERY-AUTH-20260818-04",
+    "preservedEvidenceCommit": "e3bce723160c46d8ef98136aff0eab58db864471",
+    "planCommit": "66b1d3e",
+    "priorFailuresPreserved": {
+      "blobRequestFailureCommit": "e689f5e5d5ffa843f822a75d0ba7b30b8c696e68",
+      "trackerExternalFailureClass": "GH_API_NONZERO_EXIT_NO_SUCCESSFUL_RESPONSE_PARSED",
+      "localParserFailuresBeforePriorTrackerRequest": 2
+    },
+    "textClassification": {
+      "capturedAt": "2026-08-18T16:18:19.374Z",
+      "frozenSetSha256": "c706a42a2fa2de08dd875a69a1808e1bed5aacad7a8dbc0762f075de4b592efb",
+      "requestCap": 48,
+      "requestsAttempted": 48,
+      "verifiedOids": 48,
+      "verifiedBytes": 543654,
+      "allExpectedOidSizeSha256Matched": true,
+      "allStrictUtf8": true,
+      "allNulFree": true,
+      "totalDisallowedControlScalars": 0,
+      "binaryHeuristicPass": true,
+      "priorPrivacyClassificationInheritedAfterShaMatch": true,
+      "priorPrivacySuppressedOidCount": 4,
+      "rawContentPersisted": false,
+      "semanticInterpretationPerformed": false,
+      "failure": null
+    },
+    "trackerRecovery": {
+      "capturedAt": "2026-08-18T16:19:39.019Z",
+      "requestCap": 18,
+      "requestsAttempted": 18,
+      "successfulResponses": 18,
+      "itemsCompleted": 18,
+      "firstRequestWasAuthorizedRetry": {"type":"ISSUE","number":11769},
+      "totalDiscussionUtf8Bytes": 111788,
+      "allDiscussionUtf8ByteCap": 2097152,
+      "bodyByteCap": 131072,
+      "commentByteCap": 65536,
+      "itemsWithIncompleteCommentCap": 1,
+      "sanitizedFactsCanonicalRow": "type<TAB>number<TAB>state<TAB>createdAt<TAB>updatedAt<TAB>closedAt<TAB>mergedAt<TAB>bodyBytes<TAB>bodySha256<TAB>commentTotalCount<TAB>commentsReturned<TAB>commentBytes<TAB>commentsExecutionSha256<TAB>incompleteDueToCommentCap<LF>",
+      "sanitizedFactsCanonicalRules": "Stored request order; UTC ISO-8601 timestamps; null as empty field; lowercase true/false; UTF-8 without BOM; terminal LF.",
+      "normalizedFactsCanonicalSha256": "36de335097f918219ce6f15681a3c82efe5f72a0cf851e049439c3387b5a5138",
+      "rawContentPersisted": false,
+      "authorsRequested": false,
+      "urlsOrLinksRequested": false,
+      "paginationRequests": 0,
+      "privacyFailures": 0,
+      "failure": null,
+      "items": [
+        {"type":"ISSUE","number":11769,"hazardId":"GOV-OMI-HZ-META-001","taxonomyTag":"AUDIO_DATA_LOSS","state":"CLOSED","createdAt":"2026-08-17T23:10:30Z","updatedAt":"2026-08-17T23:25:59Z","closedAt":"2026-08-17T23:25:59Z","mergedAt":null,"bodyBytes":2947,"bodySha256":"0eb85cae1c8ef7f8a1bafdc2579dd4893817e6a2b6ea086d70ef79187fdb2d76","commentTotalCount":0,"commentsReturned":0,"commentBytes":0,"commentsExecutionSha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","incompleteDueToCommentCap":false,"privacySuppressed":false},
+        {"type":"ISSUE","number":11204,"hazardId":"GOV-OMI-HZ-META-002","taxonomyTag":"MIC_STATE_PERMISSION","state":"OPEN","createdAt":"2026-08-07T18:47:08Z","updatedAt":"2026-08-08T08:39:48Z","closedAt":null,"mergedAt":null,"bodyBytes":2682,"bodySha256":"67f986d8857d855706d548b94ae62f1db8297a3825c3589eea53fcff424899b9","commentTotalCount":3,"commentsReturned":3,"commentBytes":7942,"commentsExecutionSha256":"2e94ab1335fdbef45e1fb2ff95a5e1467f8a0aa5d9726a99270718b1e93aa805","incompleteDueToCommentCap":false,"privacySuppressed":false},
+        {"type":"ISSUE","number":11695,"hazardId":"GOV-OMI-HZ-META-003","taxonomyTag":"LIFECYCLE_CRASH","state":"OPEN","createdAt":"2026-08-16T17:17:58Z","updatedAt":"2026-08-17T16:06:11Z","closedAt":null,"mergedAt":null,"bodyBytes":2746,"bodySha256":"7d788dbda9070b61a9c3e69de50ffc08659ff47d59ad9a026c47499c18486277","commentTotalCount":4,"commentsReturned":4,"commentBytes":8494,"commentsExecutionSha256":"a789d9af4f215de0cfc7addd41bd304b9561df98752def33a146a9fc3b4c046a","incompleteDueToCommentCap":false,"privacySuppressed":false},
+        {"type":"ISSUE","number":11762,"hazardId":"GOV-OMI-HZ-META-004","taxonomyTag":"ROUTE_BLE_INTERRUPTION","state":"CLOSED","createdAt":"2026-08-17T21:43:38Z","updatedAt":"2026-08-17T22:01:09Z","closedAt":"2026-08-17T22:01:09Z","mergedAt":null,"bodyBytes":1705,"bodySha256":"929e2530ffac3ca4d972fdc9f10406afa908e3e5bb54f513e0b06095cbc52c5c","commentTotalCount":0,"commentsReturned":0,"commentBytes":0,"commentsExecutionSha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","incompleteDueToCommentCap":false,"privacySuppressed":false},
+        {"type":"ISSUE","number":11736,"hazardId":"GOV-OMI-HZ-META-005","taxonomyTag":"DUPLICATE_RETRY_ORDER","state":"CLOSED","createdAt":"2026-08-17T08:41:01Z","updatedAt":"2026-08-17T09:21:07Z","closedAt":"2026-08-17T09:21:07Z","mergedAt":null,"bodyBytes":3295,"bodySha256":"ff1b43d7a548dc04a7078f511ac8fe50425d161b12ca3ea1829ac1e030873008","commentTotalCount":0,"commentsReturned":0,"commentBytes":0,"commentsExecutionSha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","incompleteDueToCommentCap":false,"privacySuppressed":false},
+        {"type":"ISSUE","number":11694,"hazardId":"GOV-OMI-HZ-META-006","taxonomyTag":"OFFLINE_SYNC","state":"OPEN","createdAt":"2026-08-16T17:17:39Z","updatedAt":"2026-08-17T11:33:40Z","closedAt":null,"mergedAt":null,"bodyBytes":2567,"bodySha256":"c9b224792c4d72f377fa6aa7acace1eaabbde3eb83a2992c37e9bf58eb16869e","commentTotalCount":1,"commentsReturned":1,"commentBytes":2216,"commentsExecutionSha256":"15776bdd1b284945fcde823c3f062bebc5b7d5bda79c0e5b25ab90a2102b0754","incompleteDueToCommentCap":false,"privacySuppressed":false},
+        {"type":"ISSUE","number":11812,"hazardId":"GOV-OMI-HZ-META-007","taxonomyTag":"DELETE_PRIVACY_SECURITY","state":"CLOSED","createdAt":"2026-08-18T10:37:07Z","updatedAt":"2026-08-18T10:53:25Z","closedAt":"2026-08-18T10:53:25Z","mergedAt":null,"bodyBytes":2776,"bodySha256":"749423edf38cc4d01961d5c73a0cf41eae6e410f8738567e9882028328e477d1","commentTotalCount":0,"commentsReturned":0,"commentBytes":0,"commentsExecutionSha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","incompleteDueToCommentCap":false,"privacySuppressed":false},
+        {"type":"ISSUE","number":11308,"hazardId":"GOV-OMI-HZ-META-008","taxonomyTag":"USER_TRUTH_STALE_WRITE","state":"OPEN","createdAt":"2026-08-10T03:44:44Z","updatedAt":"2026-08-10T03:44:44Z","closedAt":null,"mergedAt":null,"bodyBytes":707,"bodySha256":"939b7093beac8b248ac7ec18b52d74c5308830732cd1e97039284de47a603828","commentTotalCount":0,"commentsReturned":0,"commentBytes":0,"commentsExecutionSha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","incompleteDueToCommentCap":false,"privacySuppressed":false},
+        {"type":"ISSUE","number":11777,"hazardId":"GOV-OMI-HZ-META-009","taxonomyTag":"STT_PROVIDER_FAILURE","state":"CLOSED","createdAt":"2026-08-18T00:37:56Z","updatedAt":"2026-08-18T02:48:23Z","closedAt":"2026-08-18T02:48:23Z","mergedAt":null,"bodyBytes":2664,"bodySha256":"f10af32ea45af5992e692b39a7dbf1021219e33d9ba885fdf0bfd8d7205a28e8","commentTotalCount":0,"commentsReturned":0,"commentBytes":0,"commentsExecutionSha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","incompleteDueToCommentCap":false,"privacySuppressed":false},
+        {"type":"PULL_REQUEST","number":7331,"hazardId":"GOV-OMI-HZ-META-001","taxonomyTag":"AUDIO_DATA_LOSS","state":"MERGED","createdAt":"2026-05-16T09:54:26Z","updatedAt":"2026-05-17T16:23:41Z","closedAt":"2026-05-17T16:23:40Z","mergedAt":"2026-05-17T16:23:40Z","bodyBytes":3475,"bodySha256":"256732f8571d7ab95067bedfab9d31fc6e841349a69ff3fcf0cfe4586a016b32","commentTotalCount":3,"commentsReturned":3,"commentBytes":5581,"commentsExecutionSha256":"7b1eba7748cfa95d581adc5de61eaa5c7470820af1cad574014a90c3612f1ed3","incompleteDueToCommentCap":false,"privacySuppressed":false},
+        {"type":"PULL_REQUEST","number":6565,"hazardId":"GOV-OMI-HZ-META-002","taxonomyTag":"MIC_STATE_PERMISSION","state":"MERGED","createdAt":"2026-04-12T11:01:11Z","updatedAt":"2026-05-06T12:25:12Z","closedAt":"2026-05-06T12:25:10Z","mergedAt":"2026-05-06T12:25:10Z","bodyBytes":3064,"bodySha256":"1be25d8b6a45308c3d04c07dbda8bb342d8d10119c3af30bc4a2905440f677c4","commentTotalCount":8,"commentsReturned":8,"commentBytes":7307,"commentsExecutionSha256":"83113148c09ba1c49d786105a846236bf0f530a3fead8bb6bdf3f402113df9d7","incompleteDueToCommentCap":false,"privacySuppressed":false},
+        {"type":"PULL_REQUEST","number":7099,"hazardId":"GOV-OMI-HZ-META-003","taxonomyTag":"LIFECYCLE_CRASH","state":"MERGED","createdAt":"2026-04-30T09:46:50Z","updatedAt":"2026-06-02T19:10:05Z","closedAt":"2026-06-02T19:10:02Z","mergedAt":"2026-06-02T19:10:02Z","bodyBytes":726,"bodySha256":"74fe2bdf1db1051d52c83d249be0aa54561a80bca304ae07fbfeac40baede2b7","commentTotalCount":1,"commentsReturned":1,"commentBytes":1953,"commentsExecutionSha256":"f3d70c0530b8bbb1dbfda66de5e04cb041136885a449d5df2fd94c3c02834d4d","incompleteDueToCommentCap":false,"privacySuppressed":false},
+        {"type":"PULL_REQUEST","number":7132,"hazardId":"GOV-OMI-HZ-META-004","taxonomyTag":"ROUTE_BLE_INTERRUPTION","state":"MERGED","createdAt":"2026-05-02T18:45:22Z","updatedAt":"2026-07-31T06:18:21Z","closedAt":"2026-07-31T06:18:20Z","mergedAt":"2026-07-31T06:18:20Z","bodyBytes":4492,"bodySha256":"01cca7b4983d21505d79dca040ada1ec888fe370a9812f23072f74bfeee79003","commentTotalCount":7,"commentsReturned":7,"commentBytes":8208,"commentsExecutionSha256":"cf5efe9d55bfe041cfc461ff17a1747063e29fb6851f8545565159289d56f0fd","incompleteDueToCommentCap":false,"privacySuppressed":false},
+        {"type":"PULL_REQUEST","number":6777,"hazardId":"GOV-OMI-HZ-META-005","taxonomyTag":"DUPLICATE_RETRY_ORDER","state":"MERGED","createdAt":"2026-04-17T17:25:16Z","updatedAt":"2026-06-10T06:16:41Z","closedAt":"2026-06-10T06:16:40Z","mergedAt":"2026-06-10T06:16:40Z","bodyBytes":1943,"bodySha256":"a84cb3424e6f7ce94a67172d7b276ca93962417f58f3f7a4c23407d1db8e2b8d","commentTotalCount":2,"commentsReturned":2,"commentBytes":3540,"commentsExecutionSha256":"01d58a6eb92de33e8af6099c8438491a1727a6d7a4bc4185d33d9b9990dbbea1","incompleteDueToCommentCap":false,"privacySuppressed":false},
+        {"type":"PULL_REQUEST","number":7091,"hazardId":"GOV-OMI-HZ-META-006","taxonomyTag":"OFFLINE_SYNC","state":"MERGED","createdAt":"2026-04-29T15:34:00Z","updatedAt":"2026-06-16T14:45:57Z","closedAt":"2026-06-05T06:36:47Z","mergedAt":"2026-06-05T06:36:46Z","bodyBytes":3504,"bodySha256":"2ccfedf31d766da477a5101bd33502e311c07e9d0b3935a67ff1e9a4131ed4ff","commentTotalCount":1,"commentsReturned":1,"commentBytes":4271,"commentsExecutionSha256":"58580ca91dc9e750fe77ff4c2751e91f449e8297a32b0dc5c2ab850e5531b983","incompleteDueToCommentCap":false,"privacySuppressed":false},
+        {"type":"PULL_REQUEST","number":7006,"hazardId":"GOV-OMI-HZ-META-007","taxonomyTag":"DELETE_PRIVACY_SECURITY","state":"CLOSED","createdAt":"2026-04-25T14:26:11Z","updatedAt":"2026-07-31T05:40:41Z","closedAt":"2026-07-31T05:40:32Z","mergedAt":null,"bodyBytes":1757,"bodySha256":"50c4beac4ccd0039b2e75342c8c296e45a2218991c8e07f31cd9a0cb12f28534","commentTotalCount":7,"commentsReturned":7,"commentBytes":6563,"commentsExecutionSha256":"994c81ee6c6d38c76e2d5c40f5ace920925620520b94f6f9218fbf187ad39a7d","incompleteDueToCommentCap":false,"privacySuppressed":false},
+        {"type":"PULL_REQUEST","number":7106,"hazardId":"GOV-OMI-HZ-META-008","taxonomyTag":"USER_TRUTH_STALE_WRITE","state":"CLOSED","createdAt":"2026-04-30T14:06:51Z","updatedAt":"2026-06-09T20:04:30Z","closedAt":"2026-06-09T20:04:18Z","mergedAt":null,"bodyBytes":623,"bodySha256":"0524dbbda2d2caf2695cd3d0fa54e9c71d7428f52a8b7482fc8ae8f13d2c21c0","commentTotalCount":4,"commentsReturned":4,"commentBytes":3485,"commentsExecutionSha256":"7114ba7271924c665749f9e02ed01ffb680a6c6a0bee79682682f8939d352260","incompleteDueToCommentCap":false,"privacySuppressed":false},
+        {"type":"PULL_REQUEST","number":7322,"hazardId":"GOV-OMI-HZ-META-009","taxonomyTag":"STT_PROVIDER_FAILURE","state":"OPEN","createdAt":"2026-05-15T18:27:24Z","updatedAt":"2026-08-12T10:25:16Z","closedAt":null,"mergedAt":null,"bodyBytes":785,"bodySha256":"90f7715fc323c400bfa7e7bceba249910b7cf9967222c2260e0f2993c70c2a24","commentTotalCount":18,"commentsReturned":10,"commentBytes":9770,"commentsExecutionSha256":"2543a386d171706b6df6e69590e611475d8a47f19f0a93b4f9f0d29b129167d0","incompleteDueToCommentCap":true,"privacySuppressed":false}
+      ]
+    }
+  },
   "blobBatchResult": {
     "completedUniqueBlobs": 65,
     "completedAllowlistedPaths": 67,
@@ -180,8 +266,11 @@
     "allCompletedGitBlobOidsVerified": true,
     "allCompletedUtf8Verified": true,
     "allCompletedNulFree": true,
+    "textClassificationCompleteForAllUniqueBlobs": true,
+    "auth04PreviouslySuccessful48DisallowedControlScalarCount": 0,
+    "binaryHeuristicPassForAllUniqueBlobs": true,
     "mechanicalInterpretationAvailable": false,
-    "mechanicalInterpretationUnavailableReason": "All 65 blobs satisfied the contract's base64, exact-size, Git-OID, strict-UTF-8 and NUL-free content gates. Complete sanitized content interpretations were not retained for the first 48 successful blobs, those requests cannot be repeated, and no tracker item completed.",
+    "mechanicalInterpretationUnavailableReason": "AUTH-04 completed text classification for all unique blobs, but source, license, manifest and test semantic interpretation was explicitly out of scope.",
     "completedOidSizeCanonicalSha256": "27b4677225746d26de8da2be0a1c274f4a38569e223798ef74cc05832b12d13e",
     "remainingIncludingFailedUniqueBlobs": 0,
     "remainingIncludingFailedExpectedBytes": 0,
@@ -267,6 +356,8 @@
     "secretLikePatternSuppressionCount": 1,
     "contactPatternSuppressionCount": 4,
     "privateEndpointPatternSuppressionCount": 1,
+    "auth04PriorSuppressionsInheritedOnlyAfterExactSha256Match": true,
+    "auth04TrackerPrivacyFailures": 0,
     "suppressedBlobOids": [
       "0a8e9f806977d2151aec4d9361b12b6227e26108",
       "3748a395c23e1b7b339b87fa1cae95a604cf8fd3",
@@ -275,13 +366,13 @@
     ]
   },
   "mechanicalObservations": {
-    "publicationState": "WITHHELD_INSUFFICIENT_VALIDATION",
-    "reason": "All 65 blobs completed the defined content gates, but complete sanitized interpretations were not retained for the first 48 successful blobs and no tracker item completed.",
+    "publicationState": "WITHHELD_PENDING_INDEPENDENT_AND_FORMAL_REVIEW",
+    "reason": "AUTH-04 completed the bounded text-classification and tracker retrieval. Semantic source interpretation was out of scope, one Pull Request has an explicitly capped comment tail, and formal rights/security review remains pending.",
     "licenseCompatibility": "BLOCKED_RIGHTS",
     "dependencyAdmission": "INSUFFICIENT_EVIDENCE",
     "sourceOrTestInterpretation": "INSUFFICIENT_EVIDENCE",
     "securityFitness": "INSUFFICIENT_EVIDENCE",
-    "trackerHazardValidation": "ATTEMPTED_ZERO_ITEMS_COMPLETED_SECOND_FAILURE",
+    "trackerHazardValidation": "18_ITEMS_RETRIEVED_ONE_INCOMPLETE_DUE_TO_FROZEN_COMMENT_CAP_NO_SEMANTIC_CLAIM",
     "contentDerivedSignalsPublished": false
   },
   "dispositions": {
@@ -296,14 +387,17 @@
   "technicalReview": {
     "previousZeroFindingReviewAppliesThroughCommit": "e689f5e5d5ffa843f822a75d0ba7b30b8c696e68",
     "previousReviewIsHistorical": true,
-    "currentRecoveryCandidateReviewState": "NO_FURTHER_CHANGES_REQUIRED",
-    "currentCounts": {"p0":0,"p1":0,"p2":0},
-    "formalReviewer": false,
-    "reviewedAt": "2026-08-18T16:08:05.166Z"
+    "auth03RecoveryReviewState": "NO_FURTHER_CHANGES_REQUIRED",
+    "auth03RecoveryCounts": {"p0":0,"p1":0,"p2":0},
+    "auth03RecoveryReviewedAt": "2026-08-18T16:08:05.166Z",
+    "auth04CandidateReviewState": "NO_FURTHER_CHANGES_REQUIRED",
+    "auth04Counts": {"p0":0,"p1":0,"p2":0},
+    "auth04ReviewedAt": "2026-08-18T16:35:37.633Z",
+    "formalReviewer": false
   },
   "reviewers": {
     "productLegalIp": {"identity":null,"capacityConfirmed":false,"signatureOrEquivalent":null,"reviewedAt":null,"disposition":null},
     "engineeringSecurity": {"identity":null,"capacityConfirmed":false,"signatureOrEquivalent":null,"reviewedAt":null,"disposition":null}
   },
-  "noAdmissionStatement": "Recovery completed all 65 allowlisted blobs but stopped after the first tracker request became the second external failure. No Omi material was copied, built, executed, ported, imported, evaluated, admitted or added as a Dora dependency."
+  "noAdmissionStatement": "AUTH-04 completed the bounded text-classification and tracker retrieval without source semantic interpretation. No Omi material was copied, built, executed, ported, imported, evaluated, admitted or added as a Dora dependency."
 }

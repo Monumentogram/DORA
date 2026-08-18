@@ -7,8 +7,9 @@ Authorities:
 - GOV-OMI-PHASE-B-BOUNDED-PUBLIC-SOURCE-CONTENT-AUDIT-AUTH-20260818-01
 - GOV-OMI-PHASE-B-CANONICAL-RECOVERY-AUTH-20260818-02
 - GOV-OMI-PHASE-B-INCOMPLETE-RETRIEVAL-RECOVERY-AUTH-20260818-03
+- GOV-OMI-PHASE-B-TEXT-CLASSIFICATION-AND-TRACKER-RECOVERY-AUTH-20260818-04
 
-Result: **INCOMPLETE_TRACKER_FAIL_CLOSED**
+Result: **BOUNDED_RETRIEVAL_COMPLETE_REVIEW_PENDING**
 
 Engineering evidence only; not legal advice.
 
@@ -19,10 +20,15 @@ one authorized retry of that immutable object, completed it successfully and the
 remaining allowlisted blob once. The blob audit therefore reached 65 of 65 unique objects and exactly
 700,153 decoded bytes.
 
-The first actual tracker request, issue 11769, returned no successful response. That was the second
-external request failure across the audit, so recovery paused without retry. The remaining 17
-tracker items were not requested. Two earlier local parser errors occurred before any tracker request
-and consumed no external budget. A further tracker attempt requires a new exact authority.
+AUTH-04 then re-fetched exactly the earlier 48 successful objects solely to prove the remaining text
+classification predicates. All 48 repeated their expected OID, size and SHA-256, decoded as strict
+UTF-8, contained no NUL or disallowed Unicode control scalar, and passed the frozen binary heuristic.
+No source, license, manifest or test semantic interpretation was performed.
+
+The same authority retried the previously failed issue 11769 request once and requested the other
+17 frozen tracker items once each. All 18 responses succeeded within 111,788 UTF-8 bytes. Pull
+Request 7322 reports 18 comments, so only the frozen ten-comment tail was inspected and that item is
+explicitly incomplete. No pagination was performed.
 
 This is a DEFER, not a PASS and not evidence of reuse fitness. Formal rights remain BLOCKED_RIGHTS.
 Component reuse, security fitness and hazard validation remain INSUFFICIENT_EVIDENCE. No material
@@ -38,11 +44,14 @@ The branch history remains linear and unrevised:
 4. d2dc88b — adopted 67-path canonical recovery scope;
 5. e689f5e — preserved the initial failed-blob terminal evidence;
 6. 2140058 — authorized the exact incomplete-retrieval recovery;
-7. 9c47368 — froze the schema-compatible tracker query shape.
+7. 9c47368 — froze the schema-compatible tracker query shape;
+8. e3bce72 — preserved the AUTH-03 paused evidence and its independent review;
+9. 66b1d3e — froze the AUTH-04 48-object/18-item/66-request recovery.
 
 The file docs/stage0/gov-omi-phase-b-contract-test-resolved-allowlist-v0.1.json remains a
-grandfathered, byte-for-byte immutable artifact introduced by f71a2a2. No previously successful
-metadata, blob or tracker request was repeated.
+grandfathered, byte-for-byte immutable artifact introduced by f71a2a2. AUTH-04 repeated only the
+explicitly authorized 48 previously successful blob requests; no other successful request was
+repeated.
 
 ## Frozen scope and integrity
 
@@ -60,10 +69,11 @@ BasedHardware/omi@7d99abcc4efb9e46a5853b21fc01289e4b891837, tree
   ef74a5642e5bf66eb3df14db915ffb35a964686b551b407ab0fb00e92f65fc64.
 
 Every blob passed base64 decoding, exact allowlisted size, recomputed Git blob OID, strict UTF-8
-decoding and explicit NUL rejection. These are the content predicates defined by this audit; no
-additional binary heuristic is claimed or required. The result JSON retains one SHA-256 per unique
-blob. Complete sanitized interpretations were not retained for the first 48 successful blobs, which
-may not be repeated, so content-derived source/license/manifest/test interpretation remains withheld.
+decoding and explicit NUL rejection. AUTH-04 additionally established zero disallowed Unicode
+`Control` scalars other than TAB, LF and CR for the earlier 48-object set. The frozen binary
+heuristic therefore passes for all 65 unique blobs. The result JSON retains one SHA-256 per unique
+blob, but content-derived source/license/manifest/test interpretation remains withheld because
+semantic interpretation was outside AUTH-04.
 
 ## Request ledger
 
@@ -75,39 +85,40 @@ may not be repeated, so content-derived source/license/manifest/test interpretat
 | Initial blob attempts | 49 |
 | Authorized failed-blob retry | 1 |
 | Remaining blob attempts | 16 |
-| Tracker attempts | 1 |
-| Successful tracker responses | 0 |
-| Repeated successful requests | 0 |
-| Canonical budget consumed | 69 of 86 |
-| Canonical budget unexecuted | 17 |
-| Total known external requests | 74 |
+| Failed tracker attempt before AUTH-04 | 1 |
+| AUTH-03 canonical budget consumed at pause | 69 of 86 |
+| AUTH-03 canonical budget unexecuted at pause | 17 |
+| Requests preserved through AUTH-03 | 74 |
+| AUTH-04 text-classification blob requests | 48 of 48 |
+| AUTH-04 tracker requests | 18 of 18 |
+| AUTH-04 successful responses | 66 of 66 |
+| Authorized repeats of previously successful requests | 48 |
+| Total known external requests | 140 |
 
 Canonical arithmetic: 2 + 49 + 1 + 16 + 1 = 69; 69 + 17 = 86.
 
-All-known-request arithmetic:
-3 pre-freeze + 4 preserved prior-scope + 49 initial blobs + 1 retry + 16 remaining blobs +
-1 tracker attempt = 74.
+AUTH-04 arithmetic: 48 text-classification objects + 18 tracker items = 66.
 
-The original final identity recheck was displaced by the authorized failed-blob retry and was not
-run. The failed tracker request was not retried.
+All-known-request arithmetic: 74 preserved through AUTH-03 + 66 AUTH-04 requests = 140. The original
+final identity recheck remains displaced and was not run.
 
-## Tracker pause evidence
+## Preserved tracker failure and completed recovery
 
 The failed target was the frozen AUDIO_DATA_LOSS issue 11769
 (GOV-OMI-HZ-META-001), using the public GitHub GraphQL issue body/top-level-comments endpoint
 category. The sanitized failure class is GH_API_NONZERO_EXIT_NO_SUCCESSFUL_RESPONSE_PARSED.
 HTTP status, GraphQL status, Retry-After and rate-limit remainder are unknown because no raw error or
-response was persisted. No body, comment, title or author was persisted. No tracker item completed,
-no tracker text bytes entered evidence and no content-derived tracker finding was made.
+response was persisted. No body, comment, title or author was persisted from that failed request.
+Both pre-request local parser failures also remain recorded and consumed no external request.
 
 The frozen identity-set SHA-256 remains
 ef74a5642e5bf66eb3df14db915ffb35a964686b551b407ab0fb00e92f65fc64.
 
-- Content-incomplete issues: 11769, 11204, 11695, 11762, 11736, 11694, 11812, 11308, 11777.
-- Content-incomplete Pull Requests: 7331, 6565, 7099, 7132, 6777, 7091, 7006, 7106, 7322.
-- Unrequested after the failure: eight issues and nine Pull Requests.
-- Canonical request budget still available: 17.
-- Retry authority currently available: none.
+AUTH-04 completed all nine issues and nine Pull Requests without requesting authors, URLs/links,
+patches, diffs or pagination. Evidence stores only item identity, state/timestamps, bounded byte and
+comment counts, digests, cap state and privacy state. Across the 18 items, 59 comments existed and
+51 were returned. Pull Request 7322 alone exceeded the frozen comment tail (18 total, 10 returned),
+so its tracker evidence remains incomplete and no semantic hazard or fix claim is made.
 
 ## Privacy and publication
 
@@ -116,24 +127,26 @@ files, Git, terminal output, PR text, CI logs, artifacts or attachments.
 
 Four of the original 48 completed blobs remain excluded from interpretation because the in-memory
 privacy scan detected contact, secret-like or private-endpoint patterns. The retry and remaining 16
-blobs added no privacy suppressions. Evidence retains only immutable identifiers, byte counts,
-digests and suppression counts; it contains no source line, license text, title, body, comment,
-author identity, contact detail, credential or private endpoint.
+blobs added no privacy suppressions. AUTH-04 inherited those four suppressions only after exact
+SHA-256 equality. All 18 tracker items passed the bounded privacy checks with zero suppression.
+Evidence retains only immutable identifiers, byte counts, digests and suppression counts; it
+contains no source line, license text, title, body, comment, author identity, contact detail,
+credential or private endpoint.
 
 ## Review and delivery gate
 
-The earlier independent 0/0/0 review applies only to the pre-recovery e689f5e evidence and is now
-historical. A fresh independent read-only review of the current recovery candidate completed with
-`NO_FURTHER_CHANGES_REQUIRED` and P0/P1/P2 counts of 0/0/0. The reviewer is technical and not a
-formal Product/Legal/IP or Engineering/Security reviewer.
+The earlier independent review of the AUTH-03 candidate is historical. A fresh independent
+read-only review of the exact AUTH-04 candidate completed with `NO_FURTHER_CHANGES_REQUIRED` and
+P0/P1/P2 counts of 0/0/0. The technical reviewer is not a formal Product/Legal/IP or
+Engineering/Security reviewer.
 
 Live main advanced to ebbc54eacc2d556180f07e2063e08c1c3d1c28a3 and exact-main Android CI run
-32156156620 succeeded. Ancestry sync and publication remain deliberately deferred pending the
-coordinator's next bounded instruction; the tracker remains paused with no retry authority.
+32156156620 succeeded. Ancestry sync and publication remain deliberately deferred; the newer live
+main and its exact-main CI must be rechecked only after the authorized semantic follow-up is frozen.
 
 Even after technical review and ancestry sync, the PR must remain Draft because:
 
-- tracker evidence is incomplete after a second external failure;
+- Pull Request 7322 tracker evidence is incomplete at the frozen ten-comment cap;
 - Product/Legal/IP reviewer identity and disposition remain null;
 - Engineering/Security reviewer identity and disposition remain null.
 
