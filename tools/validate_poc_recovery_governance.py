@@ -75,6 +75,15 @@ REC_I1_MERGED_ANCHOR = "f2bc8c95bbe8af0d010968fff2ca175851728bf2"
 REC_I1_MERGED_TREE = "ac3dcf273fd447623fa8dbc5c71087acd6315830"
 REC_I1_MERGED_PARENT = AUTHORIZED_BASE_HEAD
 REC_I2B_PROFILE = "REC-I2B_REVIEWED_SUCCESSOR"
+REC_I2B_MERGED_MAIN_PROFILE = "REC-I2B_SQUASH_MERGED_MAIN_SUCCESSOR"
+REC_I2B_MERGED_MAIN_ANCHOR = "a7e23c9a2758a3ee2cc8aba26be397b07ffc8f5b"
+REC_I2B_MERGED_MAIN_TREE = "4b07b00b247decfed3b1bd6155ca9bc98701a196"
+REC_I2B_MERGED_MAIN_PARENT = "e48305ee3b2d18a5612e14aa6cbd4c1c289de9c7"
+REC_I2B_MERGED_MAIN_REMEDIATION_AUTHORIZATION = (
+    "REC-I2B-POST-MERGE-MAIN-SUCCESSOR-DISPATCH-REMEDIATION-AUTH-20260819-01"
+)
+REC_I2B_MERGED_MAIN_REMEDIATION_BRANCH = "codex/rec-i2b-main-successor-dispatch"
+REC_I2B_MERGED_MAIN_VALIDATOR_PATH = "tools/validate_poc_recovery_governance.py"
 REC_I2B_BRANCH = "codex/poc-recovery-i2a-graph-probe"
 REC_I2B_PULL_REQUEST_NUMBER = 38
 REC_I2B_RUNTIME_IMPLEMENTATION_HEAD = "dca745929b59b656dfa8bb210884e3c1c4bdad0f"
@@ -231,6 +240,13 @@ AUTHORIZED_PATHS = [
 # including this validator, but no file below this module may differ from the
 # merged anchor in a commit, index, worktree, or relevant untracked state.
 POST_MERGE_PROTECTED_PATHS = ["android/poc/recovery/**"]
+REC_I2B_MERGED_MAIN_PROTECTED_PATHS = [
+    "android/poc/recovery/**",
+    "docs/evidence/poc-recovery-001/**",
+    "android/build.gradle.kts",
+    "android/gradle/verification-metadata.xml",
+    "tools/verify_poc_recovery_dependency_inventory.py",
+]
 GITHUB_REPOSITORY = "Monumentogram/DORA"
 GITHUB_BASE_BRANCH = "main"
 GITHUB_EVENT_MAX_BYTES = 10 * 1024 * 1024
@@ -288,6 +304,20 @@ class RecoveryI2bSuccessorIdentity:
     metadata_evidence: PinnedCommitIdentity
     metadata_closure: PinnedCommitIdentity
     metadata_closure_is_ancestor_of_pull_request_head: bool
+    github_pull_request_context: GitHubPullRequestContext | None = None
+
+
+@dataclass(frozen=True)
+class RecoveryI2bMergedMainIdentity:
+    head: str
+    branch: str
+    merged_anchor_commit: str | None
+    merged_anchor_tree: str | None
+    merged_anchor_parents: tuple[str, ...]
+    merged_anchor_is_ancestor: bool
+    head_module_tree: str | None
+    remediation_head_merge_base: str | None
+    pull_request_base_contains_merged_anchor: bool
     github_pull_request_context: GitHubPullRequestContext | None = None
 
 NORMATIVE_V06_HASHES = {
@@ -581,6 +611,14 @@ def path_is_post_merge_protected(relative: str) -> bool:
     )
 
 
+def path_is_rec_i2b_merged_main_protected(relative: str) -> bool:
+    normalized = relative.replace("\\", "/")
+    return any(
+        normalized.startswith(pattern[:-3] + "/") if pattern.endswith("/**") else fnmatch.fnmatchcase(normalized, pattern)
+        for pattern in REC_I2B_MERGED_MAIN_PROTECTED_PATHS
+    )
+
+
 def validate_post_merge_protected_paths(
     changes: dict[str, list[str]],
     *,
@@ -602,6 +640,42 @@ def validate_post_merge_protected_paths(
         not protected_changes,
         message,
     )
+
+
+def validate_rec_i2b_merged_main_protected_paths(
+    changes: dict[str, list[str]],
+    *,
+    protect_validator: bool = False,
+) -> None:
+    expected_layers = {"committed", "staged", "unstaged", "untracked"}
+    require(set(changes) == expected_layers, "Incomplete REC-I2B squash-main protected change inventory")
+    protected_changes = {
+        layer: sorted(
+            {
+                path
+                for path in paths
+                if path_is_rec_i2b_merged_main_protected(path)
+                or (protect_validator and path == REC_I2B_MERGED_MAIN_VALIDATOR_PATH)
+            }
+        )
+        for layer, paths in changes.items()
+    }
+    protected_changes = {layer: paths for layer, paths in protected_changes.items() if paths}
+    require(
+        not protected_changes,
+        f"REC-I2B squash-main reviewed payload/evidence differs from merged anchor: {protected_changes}",
+    )
+
+
+def validate_rec_i2b_merged_main_remediation_paths(changes: dict[str, list[str]]) -> None:
+    expected_layers = {"committed", "staged", "unstaged", "untracked"}
+    require(set(changes) == expected_layers, "Incomplete REC-I2B squash-main remediation change inventory")
+    changed_paths = sorted({path for paths in changes.values() for path in paths})
+    require(
+        changed_paths == [REC_I2B_MERGED_MAIN_VALIDATOR_PATH],
+        f"REC-I2B squash-main remediation is not the exact single validator-path delta: {changed_paths}",
+    )
+    validate_rec_i2b_merged_main_protected_paths(changes)
 
 
 def path_is_within(path: Path, parent: Path) -> bool:
@@ -841,6 +915,121 @@ def collect_pinned_commit_identity(commit: str, head: str) -> PinnedCommitIdenti
         parents=parents,
         is_ancestor_of_head=git_is_ancestor(commit, head),
     )
+
+
+def collect_rec_i2b_merged_main_identity(
+    lifecycle: RecoveryLifecycleIdentity | None = None,
+) -> RecoveryI2bMergedMainIdentity:
+    current = lifecycle or collect_recovery_lifecycle_identity()
+    pull_request = current.github_pull_request_context
+    merged_anchor_commit = git_optional_output(
+        "rev-parse",
+        "--verify",
+        f"{REC_I2B_MERGED_MAIN_ANCHOR}^{{commit}}",
+    )
+    merged_anchor_tree = None
+    merged_anchor_parents: tuple[str, ...] = ()
+    if merged_anchor_commit is not None:
+        merged_anchor_tree = git_optional_output("rev-parse", f"{REC_I2B_MERGED_MAIN_ANCHOR}^{{tree}}")
+        parents = git_optional_output("show", "-s", "--format=%P", REC_I2B_MERGED_MAIN_ANCHOR)
+        merged_anchor_parents = tuple(parents.split()) if parents is not None else ()
+    remediation_head_merge_base = (
+        git_optional_output("merge-base", REC_I2B_MERGED_MAIN_ANCHOR, pull_request.head_sha)
+        if merged_anchor_commit is not None and pull_request is not None
+        else None
+    )
+    pull_request_base_contains_merged_anchor = (
+        merged_anchor_commit is not None
+        and pull_request is not None
+        and git_is_ancestor(REC_I2B_MERGED_MAIN_ANCHOR, pull_request.base_sha)
+    )
+    return RecoveryI2bMergedMainIdentity(
+        head=current.head,
+        branch=current.branch,
+        merged_anchor_commit=merged_anchor_commit,
+        merged_anchor_tree=merged_anchor_tree,
+        merged_anchor_parents=merged_anchor_parents,
+        merged_anchor_is_ancestor=(
+            merged_anchor_commit is not None
+            and git_is_ancestor(REC_I2B_MERGED_MAIN_ANCHOR, current.head)
+        ),
+        head_module_tree=git_optional_output("rev-parse", f"{current.head}:android/poc/recovery"),
+        remediation_head_merge_base=remediation_head_merge_base,
+        pull_request_base_contains_merged_anchor=pull_request_base_contains_merged_anchor,
+        github_pull_request_context=pull_request,
+    )
+
+
+def rec_i2b_merged_main_candidate(identity: RecoveryI2bMergedMainIdentity) -> bool:
+    return identity.head == REC_I2B_MERGED_MAIN_ANCHOR or identity.merged_anchor_is_ancestor
+
+
+def validate_rec_i2b_merged_main_lifecycle(
+    identity: RecoveryI2bMergedMainIdentity,
+    post_merge_changes: dict[str, list[str]],
+) -> str:
+    require(
+        identity.merged_anchor_commit == REC_I2B_MERGED_MAIN_ANCHOR,
+        "REC-I2B squash-main merged anchor is missing or mismatched",
+    )
+    require(
+        identity.merged_anchor_tree == REC_I2B_MERGED_MAIN_TREE,
+        "REC-I2B squash-main merged anchor tree mismatch",
+    )
+    require(
+        identity.merged_anchor_parents == (REC_I2B_MERGED_MAIN_PARENT,),
+        "REC-I2B squash-main merged anchor parent mismatch",
+    )
+    require(
+        rec_i2b_merged_main_candidate(identity),
+        "HEAD is neither the exact REC-I2B squash-main anchor nor its descendant",
+    )
+    require(
+        identity.head_module_tree == REC_I2B_MODULE_TREE,
+        "REC-I2B squash-main current module subtree differs from the reviewed source tree",
+    )
+
+    pull_request = identity.github_pull_request_context
+    if pull_request is not None:
+        same_repository_open_main = (
+            pull_request.repository == GITHUB_REPOSITORY
+            and pull_request.head_repository == GITHUB_REPOSITORY
+            and pull_request.base_ref == GITHUB_BASE_BRANCH
+            and pull_request.state == "open"
+            and pull_request.merged is False
+            and identity.branch == pull_request.head_ref
+        )
+        if pull_request.head_ref == REC_I2B_MERGED_MAIN_REMEDIATION_BRANCH:
+            require(
+                same_repository_open_main
+                and pull_request.base_sha == REC_I2B_MERGED_MAIN_ANCHOR
+                and pull_request.draft is True
+                and identity.remediation_head_merge_base == REC_I2B_MERGED_MAIN_ANCHOR,
+                "REC-I2B squash-main remediation pull_request context is not the exact same-repository Draft/main lineage",
+            )
+            validate_rec_i2b_merged_main_remediation_paths(post_merge_changes)
+            return "rec-i2b-squash-main-remediation-pr"
+        require(
+            same_repository_open_main and identity.pull_request_base_contains_merged_anchor,
+            "REC-I2B squash-main descendant pull_request context is not same-repository protected-main lineage",
+        )
+        validate_rec_i2b_merged_main_protected_paths(post_merge_changes)
+        return "rec-i2b-squash-main-descendant-pr"
+
+    if identity.branch == GITHUB_BASE_BRANCH:
+        validate_rec_i2b_merged_main_protected_paths(post_merge_changes)
+        return "rec-i2b-squash-main"
+
+    if identity.branch == REC_I2B_MERGED_MAIN_REMEDIATION_BRANCH:
+        require(
+            REC_I2B_MERGED_MAIN_REMEDIATION_AUTHORIZATION
+            == "REC-I2B-POST-MERGE-MAIN-SUCCESSOR-DISPATCH-REMEDIATION-AUTH-20260819-01",
+            "REC-I2B squash-main remediation authority drift",
+        )
+        validate_rec_i2b_merged_main_remediation_paths(post_merge_changes)
+        return "rec-i2b-squash-main-remediation-local"
+    validate_rec_i2b_merged_main_protected_paths(post_merge_changes)
+    return "rec-i2b-squash-main-descendant-local"
 
 
 def collect_rec_i2b_successor_identity(
@@ -4336,7 +4525,102 @@ def validate_rec_i2b_evidence_boundary() -> None:
         )
 
 
-def validate_rec_i2b_current_module_boundary() -> None:
+def validate_rec_i2b_merged_main_nonclaims(
+    evidence: dict[str, Any],
+    packet: dict[str, Any],
+) -> None:
+    require(
+        evidence["status"] == REC_I2B_ACCOUNTABLE_STATUS
+        and evidence["remediationState"] == REC_I2B_ACCOUNTABLE_METADATA_CLEAN_REMEDIATION_STATE,
+        "REC-I2B squash-main accountable review/evidence state drift",
+    )
+    require(
+        all(
+            evidence["authority"][field] is False
+            for field in (
+                "deviceOrEmulatorExecutionAllowed",
+                "measuredExecutionAllowed",
+                "harnessOrCampaignAllowed",
+                "recI3Allowed",
+                "dependencyAdmissionAllowed",
+                "productionAdmissionAllowed",
+                "readyOrMergeAllowed",
+                "mergeAllowed",
+            )
+        ),
+        "REC-I2B squash-main evidence escalated blocked authority",
+    )
+    require(
+        all(
+            evidence["notPerformedOrClaimed"][field] is False
+            for field in (
+                "deviceOrEmulatorExecution",
+                "harnessImplementationOrExecution",
+                "orchestratedKillRecoveryCampaign",
+                "measurement",
+                "metricPass",
+                "pocPass",
+                "readinessClosure",
+                "dependencyAdmission",
+                "productionAdmission",
+                "recI3Activation",
+            )
+        ),
+        "REC-I2B squash-main evidence acquired a forbidden execution/PASS/admission claim",
+    )
+    require(
+        packet["routingEligibility"]["recI3MayProceedNow"] is False
+        and all(
+            packet["authorityBoundary"][field] is False
+            for field in (
+                "recI3Activated",
+                "deviceOrEmulatorExecutionAuthorized",
+                "harnessOrCampaignAuthorized",
+                "measurementAuthorized",
+                "dependencyOrProductionAdmissionAuthorized",
+                "publicationOrMergeAuthorizedByIndependentReview",
+                "readyOrMergeAuthorized",
+            )
+        ),
+        "REC-I2B squash-main packet escalated REC-I3/execution/PASS/admission authority",
+    )
+
+
+def validate_rec_i2b_merged_main_evidence_boundary() -> None:
+    require(
+        git_output("rev-parse", f"{REC_I2B_MERGED_MAIN_ANCHOR}^{{tree}}")
+        == REC_I2B_MERGED_MAIN_TREE,
+        "REC-I2B squash-main evidence anchor tree drift",
+    )
+    post_merge_changes = collect_post_merge_changes(merged_anchor=REC_I2B_MERGED_MAIN_ANCHOR)
+    validate_rec_i2b_merged_main_protected_paths(post_merge_changes)
+
+    protected_anchor_paths = [
+        path
+        for path in git_path_records(
+            "ls-tree",
+            "-r",
+            "--name-only",
+            "-z",
+            REC_I2B_MERGED_MAIN_ANCHOR,
+            "--",
+        )
+        if path_is_rec_i2b_merged_main_protected(path)
+    ]
+    require(protected_anchor_paths, "REC-I2B squash-main protected anchor inventory is empty")
+    for relative in protected_anchor_paths:
+        require(
+            git_optional_output("rev-parse", f"HEAD:{relative}")
+            == git_output("rev-parse", f"{REC_I2B_MERGED_MAIN_ANCHOR}:{relative}"),
+            f"REC-I2B squash-main protected blob differs from merged anchor: {relative}",
+        )
+
+    evidence = read_json(REC_I2B_RUNTIME_EVIDENCE_PATH)
+    packet = read_json(REC_I2B_ACCOUNTABLE_PACKET_PATH)
+    validate_rec_i2b_merged_main_nonclaims(evidence, packet)
+
+
+def validate_rec_i2b_current_module_boundary(*, merged_main: bool = False) -> None:
     build_text = read_text("android/poc/recovery/build.gradle.kts")
     for fragment in (
         'versionName = "0.1.0-poc-recovery-i2b"',
@@ -4351,11 +4635,22 @@ def validate_rec_i2b_current_module_boundary() -> None:
         "REC-I2B lockfile lacks exact Tink 1.23.0",
     )
     require("jsr305" not in lock_text, "REC-I2B lockfile resolves forbidden JSR305")
-    validate_rec_i2b_evidence_boundary()
+    if merged_main:
+        validate_rec_i2b_merged_main_evidence_boundary()
+    else:
+        validate_rec_i2b_evidence_boundary()
 
 
 def validate_current_rec_i2b_reviewed_successor() -> bool:
     lifecycle = collect_recovery_lifecycle_identity()
+    merged_main_identity = collect_rec_i2b_merged_main_identity(lifecycle)
+    if rec_i2b_merged_main_candidate(merged_main_identity):
+        validate_rec_i2b_merged_main_lifecycle(
+            merged_main_identity,
+            collect_post_merge_changes(merged_anchor=REC_I2B_MERGED_MAIN_ANCHOR),
+        )
+        validate_rec_i2b_current_module_boundary(merged_main=True)
+        return True
     identity = collect_rec_i2b_successor_identity(lifecycle)
     if not rec_i2b_successor_candidate(identity):
         return False
@@ -4409,29 +4704,47 @@ def validate_dependency_and_scope_boundary() -> bool:
     )
     require(not changed_normative, f"Normative v0.6 contract differs from formal-review base: {changed_normative}")
 
-    require(git_output("rev-parse", f"{REVIEWED_V06_HEAD}^{{tree}}") == AUTHORIZED_REVIEWED_TREE, "Reviewed technical target tree mismatch")
-
     lifecycle_identity = collect_recovery_lifecycle_identity()
-    rec_i2b_identity = collect_rec_i2b_successor_identity(lifecycle_identity)
-    rec_i2b_mode = rec_i2b_successor_candidate(rec_i2b_identity)
-    if rec_i2b_mode:
-        lifecycle_mode = validate_rec_i2b_successor_lifecycle(
-            rec_i2b_identity,
-            collect_post_merge_changes(merged_anchor=REC_I2B_RUNTIME_IMPLEMENTATION_HEAD),
+    rec_i2b_merged_main_identity = collect_rec_i2b_merged_main_identity(lifecycle_identity)
+    rec_i2b_merged_main_mode = rec_i2b_merged_main_candidate(rec_i2b_merged_main_identity)
+    reviewed_v06_tree = git_optional_output("rev-parse", f"{REVIEWED_V06_HEAD}^{{tree}}")
+    if rec_i2b_merged_main_mode:
+        require(
+            reviewed_v06_tree in {None, AUTHORIZED_REVIEWED_TREE}
+            and git_output("rev-parse", f"{MERGED_V06_MAIN}^{{tree}}") == AUTHORIZED_REVIEWED_TREE,
+            "Historical reviewed v0.6 source/merged tree identity mismatch",
         )
     else:
-        post_merge_candidate = (
-            lifecycle_identity.head == REC_I1_MERGED_ANCHOR or lifecycle_identity.merged_anchor_is_ancestor
+        require(reviewed_v06_tree == AUTHORIZED_REVIEWED_TREE, "Reviewed technical target tree mismatch")
+    if rec_i2b_merged_main_mode:
+        lifecycle_mode = validate_rec_i2b_merged_main_lifecycle(
+            rec_i2b_merged_main_identity,
+            collect_post_merge_changes(merged_anchor=REC_I2B_MERGED_MAIN_ANCHOR),
         )
-        lifecycle_mode = validate_recovery_lifecycle(
-            lifecycle_identity,
-            [] if post_merge_candidate else collect_pre_merge_changed_paths(),
-            collect_post_merge_changes()
-            if post_merge_candidate
-            else {"committed": [], "staged": [], "unstaged": [], "untracked": []},
-        )
+        rec_i2b_mode = True
+    else:
+        rec_i2b_identity = collect_rec_i2b_successor_identity(lifecycle_identity)
+        rec_i2b_mode = rec_i2b_successor_candidate(rec_i2b_identity)
+        if rec_i2b_mode:
+            lifecycle_mode = validate_rec_i2b_successor_lifecycle(
+                rec_i2b_identity,
+                collect_post_merge_changes(merged_anchor=REC_I2B_RUNTIME_IMPLEMENTATION_HEAD),
+            )
+        else:
+            post_merge_candidate = (
+                lifecycle_identity.head == REC_I1_MERGED_ANCHOR
+                or lifecycle_identity.merged_anchor_is_ancestor
+            )
+            lifecycle_mode = validate_recovery_lifecycle(
+                lifecycle_identity,
+                [] if post_merge_candidate else collect_pre_merge_changed_paths(),
+                collect_post_merge_changes()
+                if post_merge_candidate
+                else {"committed": [], "staged": [], "unstaged": [], "untracked": []},
+            )
 
-    for historical_commit in (AUTHORIZED_BASE_HEAD, REVIEWED_V06_HEAD):
+    historical_v06_commit = REVIEWED_V06_HEAD if reviewed_v06_tree is not None else MERGED_V06_MAIN
+    for historical_commit in (AUTHORIZED_BASE_HEAD, historical_v06_commit):
         module_snapshot = git_path_records(
             "ls-tree", "-r", "--name-only", "-z", historical_commit, "--", "android/poc/recovery"
         )
@@ -4442,7 +4755,7 @@ def validate_dependency_and_scope_boundary() -> bool:
     require(RECOVERY_MODULE.is_dir(), "Authorized Recovery module is missing")
     build_text = read_text("android/poc/recovery/build.gradle.kts")
     if rec_i2b_mode:
-        validate_rec_i2b_current_module_boundary()
+        validate_rec_i2b_current_module_boundary(merged_main=rec_i2b_merged_main_mode)
     else:
         validate_recovery_build_text(build_text)
     settings = read_text("android/settings.gradle.kts")
@@ -4513,8 +4826,18 @@ def validate_dependency_and_scope_boundary() -> bool:
         }
         require(current_lock_coordinates <= base_lock_coordinates, "Recovery lockfile contains a new coordinate")
 
-    profile = REC_I2B_PROFILE if rec_i2b_mode else "REC-I1"
-    print(f"PASS {profile} {lifecycle_mode} lifecycle; protected paths: {', '.join(POST_MERGE_PROTECTED_PATHS)}")
+    if rec_i2b_merged_main_mode:
+        profile = REC_I2B_MERGED_MAIN_PROFILE
+    elif rec_i2b_mode:
+        profile = REC_I2B_PROFILE
+    else:
+        profile = "REC-I1"
+    protected_paths = (
+        REC_I2B_MERGED_MAIN_PROTECTED_PATHS
+        if rec_i2b_merged_main_mode
+        else POST_MERGE_PROTECTED_PATHS
+    )
+    print(f"PASS {profile} {lifecycle_mode} lifecycle; protected paths: {', '.join(protected_paths)}")
     return rec_i2b_mode
 
 
@@ -4926,6 +5249,215 @@ def run_rec_i2b_successor_tests() -> None:
     for layer in ("committed", "staged", "unstaged", "untracked"):
         expect_negative(f"{layer}-module-mutation", exact, changes(**{layer: [protected]}))
     expect_negative("committed-reverted-module-mutation", exact, changes(committed=[protected]))
+
+
+def run_rec_i2b_merged_main_tests() -> None:
+    def changes(**overrides: list[str]) -> dict[str, list[str]]:
+        result = {"committed": [], "staged": [], "unstaged": [], "untracked": []}
+        result.update(overrides)
+        return result
+
+    def expect_positive(
+        name: str,
+        identity: RecoveryI2bMergedMainIdentity,
+        delta: dict[str, list[str]],
+        expected_mode: str,
+    ) -> None:
+        require(
+            validate_rec_i2b_merged_main_lifecycle(identity, delta) == expected_mode,
+            f"REC-I2B squash-main positive test selected the wrong mode: {name}",
+        )
+        print(f"PASS positive lifecycle-rec-i2b-squash-main-{name}")
+
+    def expect_negative(
+        name: str,
+        identity: RecoveryI2bMergedMainIdentity,
+        delta: dict[str, list[str]] | None = None,
+    ) -> None:
+        try:
+            validate_rec_i2b_merged_main_lifecycle(identity, delta or changes())
+        except ValueError:
+            print(f"PASS negative lifecycle-rec-i2b-squash-main-{name}")
+            return
+        raise ValueError(f"Negative REC-I2B squash-main test unexpectedly passed: {name}")
+
+    exact_main = RecoveryI2bMergedMainIdentity(
+        head=REC_I2B_MERGED_MAIN_ANCHOR,
+        branch=GITHUB_BASE_BRANCH,
+        merged_anchor_commit=REC_I2B_MERGED_MAIN_ANCHOR,
+        merged_anchor_tree=REC_I2B_MERGED_MAIN_TREE,
+        merged_anchor_parents=(REC_I2B_MERGED_MAIN_PARENT,),
+        merged_anchor_is_ancestor=True,
+        head_module_tree=REC_I2B_MODULE_TREE,
+        remediation_head_merge_base=None,
+        pull_request_base_contains_merged_anchor=False,
+    )
+    require(
+        rec_i2b_merged_main_candidate(exact_main),
+        "Exact REC-I2B squash-main anchor was not detected",
+    )
+    expect_positive("exact-anchor", exact_main, changes(), "rec-i2b-squash-main")
+
+    post_remediation_main = replace(exact_main, head="d" * 40)
+    expect_positive(
+        "post-remediation-descendant",
+        post_remediation_main,
+        changes(committed=[REC_I2B_MERGED_MAIN_VALIDATOR_PATH]),
+        "rec-i2b-squash-main",
+    )
+    remediation_local = replace(
+        post_remediation_main,
+        branch=REC_I2B_MERGED_MAIN_REMEDIATION_BRANCH,
+    )
+    expect_positive(
+        "exact-local-remediation",
+        remediation_local,
+        changes(unstaged=[REC_I2B_MERGED_MAIN_VALIDATOR_PATH]),
+        "rec-i2b-squash-main-remediation-local",
+    )
+
+    pull_request = GitHubPullRequestContext(
+        repository=GITHUB_REPOSITORY,
+        head_repository=GITHUB_REPOSITORY,
+        head_ref=REC_I2B_MERGED_MAIN_REMEDIATION_BRANCH,
+        head_sha="e" * 40,
+        base_ref=GITHUB_BASE_BRANCH,
+        base_sha=REC_I2B_MERGED_MAIN_ANCHOR,
+        merge_ref="refs/pull/99/merge",
+        merge_sha="f" * 40,
+        number=99,
+        draft=True,
+        state="open",
+        merged=False,
+    )
+    remediation_pr = replace(
+        remediation_local,
+        head=pull_request.merge_sha,
+        remediation_head_merge_base=REC_I2B_MERGED_MAIN_ANCHOR,
+        pull_request_base_contains_merged_anchor=True,
+        github_pull_request_context=pull_request,
+    )
+    expect_positive(
+        "exact-draft-pr-remediation",
+        remediation_pr,
+        changes(committed=[REC_I2B_MERGED_MAIN_VALIDATOR_PATH]),
+        "rec-i2b-squash-main-remediation-pr",
+    )
+    unrelated_local = replace(post_remediation_main, branch="codex/unrelated-main-descendant")
+    expect_positive(
+        "unrelated-local-descendant",
+        unrelated_local,
+        changes(committed=[REC_I2B_MERGED_MAIN_VALIDATOR_PATH, "docs/unrelated.md"]),
+        "rec-i2b-squash-main-descendant-local",
+    )
+    unrelated_pull_request = replace(
+        pull_request,
+        head_ref="codex/unrelated-main-descendant",
+        draft=False,
+    )
+    unrelated_pr = replace(
+        unrelated_local,
+        head=unrelated_pull_request.merge_sha,
+        remediation_head_merge_base=REC_I2B_MERGED_MAIN_ANCHOR,
+        pull_request_base_contains_merged_anchor=True,
+        github_pull_request_context=unrelated_pull_request,
+    )
+    expect_positive(
+        "unrelated-pr-descendant",
+        unrelated_pr,
+        changes(committed=[REC_I2B_MERGED_MAIN_VALIDATOR_PATH, "docs/unrelated.md"]),
+        "rec-i2b-squash-main-descendant-pr",
+    )
+
+    source_identity = RecoveryI2bSuccessorIdentity(
+        head=REC_I2B_MERGED_MAIN_ANCHOR,
+        branch=GITHUB_BASE_BRANCH,
+        head_module_tree=REC_I2B_MODULE_TREE,
+        runtime_implementation=PinnedCommitIdentity(
+            REC_I2B_RUNTIME_IMPLEMENTATION_HEAD,
+            REC_I2B_RUNTIME_IMPLEMENTATION_TREE,
+            (REC_I2B_RUNTIME_IMPLEMENTATION_PARENT,),
+            False,
+        ),
+        runtime_evidence=PinnedCommitIdentity(
+            REC_I2B_RUNTIME_EVIDENCE_HEAD,
+            REC_I2B_RUNTIME_EVIDENCE_TREE,
+            (REC_I2B_RUNTIME_IMPLEMENTATION_HEAD,),
+            False,
+        ),
+        runtime_closure=PinnedCommitIdentity(
+            REC_I2B_RUNTIME_CLOSURE_HEAD,
+            REC_I2B_RUNTIME_CLOSURE_TREE,
+            (REC_I2B_RUNTIME_EVIDENCE_HEAD,),
+            False,
+        ),
+        metadata_implementation=PinnedCommitIdentity(
+            REC_I2B_METADATA_IMPLEMENTATION_HEAD,
+            REC_I2B_METADATA_IMPLEMENTATION_TREE,
+            (REC_I2B_METADATA_IMPLEMENTATION_PARENT,),
+            False,
+        ),
+        metadata_evidence=PinnedCommitIdentity(
+            REC_I2B_METADATA_EVIDENCE_HEAD,
+            REC_I2B_METADATA_EVIDENCE_TREE,
+            (REC_I2B_METADATA_IMPLEMENTATION_HEAD,),
+            False,
+        ),
+        metadata_closure=PinnedCommitIdentity(
+            REC_I2B_METADATA_CLOSURE_HEAD,
+            REC_I2B_METADATA_CLOSURE_TREE,
+            (REC_I2B_METADATA_EVIDENCE_HEAD,),
+            False,
+        ),
+        metadata_closure_is_ancestor_of_pull_request_head=False,
+        github_pull_request_context=None,
+    )
+    require(
+        not rec_i2b_successor_candidate(source_identity)
+        and rec_i2b_merged_main_candidate(exact_main),
+        "Protected squash-main dispatch still depends on deleted source-branch ancestry",
+    )
+    print("PASS positive lifecycle-rec-i2b-squash-main-source-objects-unreachable")
+
+    expect_negative("anchor-missing", replace(exact_main, merged_anchor_commit=None))
+    expect_negative("anchor-tree", replace(exact_main, merged_anchor_tree="0" * 40))
+    expect_negative("anchor-parent", replace(exact_main, merged_anchor_parents=("0" * 40,)))
+    expect_negative(
+        "non-descendant",
+        replace(exact_main, head="0" * 40, merged_anchor_is_ancestor=False),
+    )
+    expect_negative("module-tree", replace(exact_main, head_module_tree="0" * 40))
+    expect_negative(
+        "protected-module-path",
+        exact_main,
+        changes(committed=["android/poc/recovery/build.gradle.kts"]),
+    )
+
+    for name, mutated_context in (
+        ("pr-repository", replace(pull_request, repository="attacker/DORA")),
+        ("pr-head-repository", replace(pull_request, head_repository="attacker/DORA")),
+        ("pr-head-ref", replace(pull_request, head_ref="codex/spoof")),
+        ("pr-base-ref", replace(pull_request, base_ref="not-main")),
+        ("pr-base-sha", replace(pull_request, base_sha="0" * 40)),
+        ("pr-ready", replace(pull_request, draft=False)),
+        ("pr-closed", replace(pull_request, state="closed")),
+        ("pr-merged", replace(pull_request, merged=True)),
+    ):
+        expect_negative(
+            name,
+            replace(remediation_pr, github_pull_request_context=mutated_context),
+            changes(committed=[REC_I2B_MERGED_MAIN_VALIDATOR_PATH]),
+        )
+    expect_negative(
+        "pr-merge-base",
+        replace(remediation_pr, remediation_head_merge_base="0" * 40),
+        changes(committed=[REC_I2B_MERGED_MAIN_VALIDATOR_PATH]),
+    )
+    expect_negative(
+        "pr-extra-path",
+        remediation_pr,
+        changes(committed=[REC_I2B_MERGED_MAIN_VALIDATOR_PATH, "docs/unrelated.md"]),
+    )
 
 
 def test_git(repo: Path, *arguments: str, input_data: bytes | None = None) -> bytes:
@@ -5647,6 +6179,64 @@ def run_rec_i2b_accountable_metadata_phase_tests() -> None:
     ]
     for name, mutation in packet_mutations:
         expect_metadata_negative(name, packet_mutation=mutation)
+
+
+def run_rec_i2b_merged_main_evidence_boundary_tests() -> None:
+    evidence = read_json(REC_I2B_RUNTIME_EVIDENCE_PATH)
+    packet = read_json(REC_I2B_ACCOUNTABLE_PACKET_PATH)
+    validate_rec_i2b_merged_main_evidence_boundary()
+
+    def expect_negative(
+        name: str,
+        *,
+        evidence_mutation: Callable[[dict[str, Any]], None] | None = None,
+        packet_mutation: Callable[[dict[str, Any]], None] | None = None,
+    ) -> None:
+        candidate_evidence = copy.deepcopy(evidence)
+        candidate_packet = copy.deepcopy(packet)
+        if evidence_mutation is not None:
+            evidence_mutation(candidate_evidence)
+        if packet_mutation is not None:
+            packet_mutation(candidate_packet)
+        try:
+            validate_rec_i2b_merged_main_nonclaims(candidate_evidence, candidate_packet)
+        except (ValueError, KeyError):
+            print(f"PASS negative rec-i2b-squash-main-evidence-{name}")
+            return
+        raise ValueError(f"Negative REC-I2B squash-main evidence mutation unexpectedly passed: {name}")
+
+    expect_negative(
+        "rec-i3-authority",
+        evidence_mutation=lambda record: record["authority"].__setitem__("recI3Allowed", True),
+    )
+    expect_negative(
+        "device-authority",
+        evidence_mutation=lambda record: record["authority"].__setitem__(
+            "deviceOrEmulatorExecutionAllowed", True
+        ),
+    )
+    expect_negative(
+        "measurement-claim",
+        evidence_mutation=lambda record: record["notPerformedOrClaimed"].__setitem__(
+            "measurement", True
+        ),
+    )
+    expect_negative(
+        "pass-claim",
+        evidence_mutation=lambda record: record["notPerformedOrClaimed"].__setitem__("pocPass", True),
+    )
+    expect_negative(
+        "admission-authority",
+        packet_mutation=lambda record: record["authorityBoundary"].__setitem__(
+            "dependencyOrProductionAdmissionAuthorized", True
+        ),
+    )
+    expect_negative(
+        "rec-i3-routing",
+        packet_mutation=lambda record: record["routingEligibility"].__setitem__(
+            "recI3MayProceedNow", True
+        ),
+    )
 
 
 def run_rec_i2b_evidence_boundary_tests() -> None:
@@ -6387,18 +6977,32 @@ def main() -> int:
     if "--self-test" in sys.argv[1:]:
         run_lifecycle_tests()
         run_rec_i2b_successor_tests()
+        run_rec_i2b_merged_main_tests()
         run_git_path_collector_tests()
         run_github_pull_request_context_tests()
-        run_rec_i2b_evidence_boundary_tests()
+        merged_main_identity = collect_rec_i2b_merged_main_identity()
+        if rec_i2b_merged_main_candidate(merged_main_identity):
+            run_rec_i2b_merged_main_evidence_boundary_tests()
+        else:
+            run_rec_i2b_evidence_boundary_tests()
         run_negative_tests()
     if rec_i2b_mode:
         current_evidence = read_json(REC_I2B_RUNTIME_EVIDENCE_PATH)
+        merged_main_mode = rec_i2b_merged_main_candidate(collect_rec_i2b_merged_main_identity())
         accountable_review_complete = current_evidence.get("status") == REC_I2B_ACCOUNTABLE_STATUS
         accountable_metadata_clean = (
             current_evidence.get("remediationState")
             == REC_I2B_ACCOUNTABLE_METADATA_CLEAN_REMEDIATION_STATE
         )
         profile_summary = (
+            (
+                "exact REC-I2B squash-merged main anchor/module/evidence boundary valid; distinct "
+                "accountable Engineering/Security review and its independent metadata review are "
+                "complete, while separate REC-I3 activation decision, execution and admission remain "
+                "blocked"
+            )
+            if merged_main_mode
+            else
             (
                 "exact REC-I2B reviewed-successor chain/module/evidence boundary valid; distinct "
                 "accountable Engineering/Security review and its independent metadata review are "
