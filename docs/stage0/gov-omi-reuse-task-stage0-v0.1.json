@@ -61,7 +61,8 @@
     "current-main branch and file scope",
     "confirmed immutable snapshot and reproducible query method",
     "exact IP-policy disposition for any retrieval beyond public metadata",
-    "named reviewers for conclusions beyond factual metadata research"
+    "named reviewers for conclusions beyond factual metadata research",
+    "no active-stage work or shared branch is displaced"
   ],
   "noAdmissionStatement": "This task definition does not authorize or admit Omi source, dependencies, binaries, models, datasets, assets, services, schemas, tests or product behavior."
 }
