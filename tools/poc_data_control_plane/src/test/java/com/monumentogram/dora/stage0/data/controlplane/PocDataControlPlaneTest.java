@@ -21,6 +21,10 @@ public final class PocDataControlPlaneTest {
                             + "control-plane-synthetic-manifest-stage0-v0.1.json");
     private static final Path SCHEMA =
             Path.of("docs/stage0/poc-data-control-plane-stage0-v0.1.schema.json");
+    private static final Path EVIDENCE =
+            Path.of(
+                    "docs/evidence/poc-data-001/"
+                            + "control-plane-dry-run-local-evidence-stage0-v0.1.json");
     private static int assertions;
 
     private PocDataControlPlaneTest() {}
@@ -63,8 +67,8 @@ public final class PocDataControlPlaneTest {
                 PocDataControlPlane.validateSchemaProfile(schema),
                 "schema digest");
 
-        byte[] schemaDrift = schema.clone();
-        schemaDrift[schemaDrift.length - 2] = (byte) ' ';
+        byte[] schemaDrift = Arrays.copyOf(schema, schema.length + 1);
+        schemaDrift[schema.length] = (byte) '\n';
         expectFault(
                 "E_SCHEMA_PROFILE_DRIFT",
                 () -> PocDataControlPlane.validateSchemaProfile(schemaDrift));
@@ -88,6 +92,12 @@ public final class PocDataControlPlaneTest {
         expectFault(
                 "E_JSON_ENCODING",
                 () -> PocDataControlPlane.validateManifest(new byte[] {(byte) 0xc3, (byte) 0x28}));
+        expectFault(
+                "E_JSON_UNICODE",
+                () ->
+                        PocDataControlPlane.validateCanonicalJson(
+                                "{\n  \"x\": \"\u200b\"\n}\n"
+                                        .getBytes(StandardCharsets.UTF_8)));
     }
 
     private static void scenario003DuplicateKeysAndSyntax() {
@@ -129,24 +139,24 @@ public final class PocDataControlPlaneTest {
                         PocDataControlPlane.validateManifest(
                                 replaceOnce(
                                         manifest,
-                                        "\"realPeopleAllowed\":false",
-                                        "\"realPeopleAllowed\":true")));
+                                        "\"realPeopleAllowed\": false",
+                                        "\"realPeopleAllowed\": true")));
         expectFault(
                 "E_VALUE",
                 () ->
                         PocDataControlPlane.validateManifest(
                                 replaceOnce(
                                         manifest,
-                                        "\"trainingAllowed\":false,\"transientSyntheticSentinelAllowed\"",
-                                        "\"trainingAllowed\":true,\"transientSyntheticSentinelAllowed\"")));
+                                        "\"trainingAllowed\": false,\n    \"transientSyntheticSentinelAllowed\"",
+                                        "\"trainingAllowed\": true,\n    \"transientSyntheticSentinelAllowed\"")));
         expectFault(
                 "E_VALUE",
                 () ->
                         PocDataControlPlane.validateManifest(
                                 replaceOnce(
                                         manifest,
-                                        "\"pocDataReadyAllowed\":false",
-                                        "\"pocDataReadyAllowed\":true")));
+                                        "\"pocDataReadyAllowed\": false",
+                                        "\"pocDataReadyAllowed\": true")));
     }
 
     private static void scenario006CustodianFailsClosed(byte[] manifest) {
@@ -156,16 +166,16 @@ public final class PocDataControlPlaneTest {
                         PocDataControlPlane.validateManifest(
                                 replaceOnce(
                                         manifest,
-                                        "\"assignment\":\"CUSTODIAN_UNASSIGNED\"",
-                                        "\"assignment\":\"UNAPPROVED_PERSON\"")));
+                                        "\"state\": \"CUSTODIAN_UNASSIGNED\"",
+                                        "\"state\": \"UNAPPROVED_ASSIGNMENT\"")));
         expectFault(
                 "E_VALUE",
                 () ->
                         PocDataControlPlane.validateManifest(
                                 replaceOnce(
                                         manifest,
-                                        "\"realCollectionEnabled\":false",
-                                        "\"realCollectionEnabled\":true")));
+                                        "\"purposeRecordedCollectionAllowed\": false",
+                                        "\"purposeRecordedCollectionAllowed\": true")));
         check(
                 !PocDataControlPlane.authorize("CUSTODIAN", "APPROVE_REAL_COLLECTION").allowed(),
                 "unassigned custodian cannot approve collection");
@@ -178,24 +188,24 @@ public final class PocDataControlPlaneTest {
                         PocDataControlPlane.validateManifest(
                                 replaceOnce(
                                         manifest,
-                                        "\"contentSha256\":null",
-                                        "\"contentSha256\":\"sha256:forbidden\"")));
+                                        "\"contentSha256\": null",
+                                        "\"contentSha256\": \"sha256:forbidden\"")));
         expectFault(
                 "E_PRIVATE_LOCATOR_PRESENT",
                 () ->
                         PocDataControlPlane.validateManifest(
                                 replaceOnce(
                                         manifest,
-                                        "\"evidenceLocator\":null",
-                                        "\"evidenceLocator\":\"private://forbidden\"")));
+                                        "\"evidenceLocator\": null",
+                                        "\"evidenceLocator\": \"private://forbidden\"")));
         expectFault(
                 "E_VALUE",
                 () ->
                         PocDataControlPlane.validateManifest(
                                 replaceOnce(
                                         manifest,
-                                        "\"containsPersonalData\":false",
-                                        "\"containsPersonalData\":true")));
+                                        "\"containsPersonalData\": false",
+                                        "\"containsPersonalData\": true")));
     }
 
     private static void scenario008LineageAndDeletionLedger(byte[] manifest) {
@@ -205,34 +215,33 @@ public final class PocDataControlPlaneTest {
                         PocDataControlPlane.validateManifest(
                                 replaceOnce(
                                         manifest,
-                                        "\"parentSampleId\":\"sample-1111111111111111\"",
-                                        "\"parentSampleId\":\"sample-2222222222222222\"")));
+                                        "\"parentRecordId\": \"control-1111111111111111\"",
+                                        "\"parentRecordId\": \"control-2222222222222222\"")));
         expectFault(
                 "E_VALUE",
                 () ->
                         PocDataControlPlane.validateManifest(
                                 replaceOnce(
                                         manifest,
-                                        "\"outcome\":\"DELETED\"",
-                                        "\"outcome\":\"ACTIVE\"")));
+                                        "\"outcome\": \"DELETED_METADATA_ONLY\"",
+                                        "\"outcome\": \"ACTIVE\"")));
         expectFault(
                 "E_VALUE",
                 () ->
                         PocDataControlPlane.validateManifest(
                                 replaceOnce(
                                         manifest,
-                                        "\"controlledStorageDryRunStatus\":\"NOT_RUN\"",
-                                        "\"controlledStorageDryRunStatus\":\"PASS\"")));
+                                        "\"controlledStoreDeletionDryRunCompleted\": false",
+                                        "\"controlledStoreDeletionDryRunCompleted\": true")));
     }
 
     private static void scenario009RbacPositiveMatrix() {
         allow("SYNTHETIC_DRY_RUN_OPERATOR", "READ_PUBLIC_MANIFEST");
         allow("SECURITY_AUDITOR", "READ_PUBLIC_MANIFEST");
         allow("EVALUATOR", "READ_PUBLIC_MANIFEST");
-        allow("SYNTHETIC_DRY_RUN_OPERATOR", "VALIDATE_MANIFEST");
-        allow("SYNTHETIC_DRY_RUN_OPERATOR", "CREATE_SYNTHETIC_TEMP");
-        allow("SYNTHETIC_DRY_RUN_OPERATOR", "DELETE_SYNTHETIC_TEMP");
-        allow("SYNTHETIC_DRY_RUN_OPERATOR", "READ_CONTENT_FREE_EVIDENCE");
+        allow("SYNTHETIC_DRY_RUN_OPERATOR", "CREATE_TRANSIENT_SYNTHETIC_SENTINEL");
+        allow("SYNTHETIC_DRY_RUN_OPERATOR", "DELETE_TRANSIENT_SYNTHETIC_SENTINEL");
+        allow("SYNTHETIC_DRY_RUN_OPERATOR", "EMIT_CONTENT_FREE_SUMMARY");
         allow("SECURITY_AUDITOR", "READ_CONTENT_FREE_EVIDENCE");
     }
 
@@ -242,9 +251,9 @@ public final class PocDataControlPlaneTest {
                 deny(role, action);
             }
         }
-        deny("EVALUATOR", "VALIDATE_MANIFEST");
+        deny("EVALUATOR", "EMIT_CONTENT_FREE_SUMMARY");
         deny("COLLECTOR", "READ_PUBLIC_MANIFEST");
-        deny("ANNOTATOR", "CREATE_SYNTHETIC_TEMP");
+        deny("ANNOTATOR", "CREATE_TRANSIENT_SYNTHETIC_SENTINEL");
         equal(
                 "E_UNKNOWN_ROLE",
                 PocDataControlPlane.authorize("UNKNOWN", "READ_PUBLIC_MANIFEST").code(),
@@ -297,6 +306,9 @@ public final class PocDataControlPlaneTest {
 
     private static void scenario014SourceIsImmutableAndTempConfined(byte[] manifest) throws IOException {
         byte[] before = manifest.clone();
+        expectFault(
+                "E_TEMP_ROOT_UNSAFE",
+                () -> PocDataControlPlane.dryRun(manifest, Path.of(".")));
         Path root = Files.createTempDirectory("dora-data-cp-test-confined-");
         try {
             PocDataControlPlane.DryRunReport report = PocDataControlPlane.dryRun(manifest, root);
@@ -358,6 +370,9 @@ public final class PocDataControlPlaneTest {
 
         check(Arrays.equals(manifest, Files.readAllBytes(MANIFEST)), "CLI source file unchanged");
         check(Arrays.equals(schema, Files.readAllBytes(SCHEMA)), "CLI schema file unchanged");
+        String evidenceDigest =
+                PocDataControlPlane.validateCanonicalJson(Files.readAllBytes(EVIDENCE));
+        check(evidenceDigest.matches("[0-9a-f]{64}"), "strict canonical evidence JSON");
     }
 
     private static byte[] replaceOnce(byte[] input, String expected, String replacement) {

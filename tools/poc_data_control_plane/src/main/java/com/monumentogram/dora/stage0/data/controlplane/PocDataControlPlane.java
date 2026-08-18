@@ -7,10 +7,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
@@ -44,16 +42,17 @@ public final class PocDataControlPlane {
     public static final int MAX_JSON_DEPTH = 32;
     public static final String CUSTODIAN_ASSIGNMENT = "CUSTODIAN_UNASSIGNED";
     public static final String MANIFEST_SHA256 =
-            "580589ff04d84ccfbb48d344cfddb144c82eb5f5e3f333794590105572094d46";
+            "5ce259432d77c8876f6b7c5e8ab6981d4312c1fbc18cdf6c84a97023d450ec72";
     public static final String SCHEMA_SHA256 =
-            "4489dd2f7bb9dba8488d9b8b3a298b790d5ce586eabd99dcdf1ed7ae29fa800b";
+            "b38ae362a5a804401878f56f139839dbd47009ec2fee59f1f05fdf08984b537e";
 
     private static final byte[] SENTINEL_BYTES =
             "DORA_STAGE0_SYNTHETIC_CONTROL_PLANE_SENTINEL_V1\n"
                     .getBytes(StandardCharsets.US_ASCII);
     private static final String SENTINEL_NAME = "dora-poc-data-control-plane.synthetic";
     private static final Pattern ID_16 =
-            Pattern.compile("^(dataset|manifest|sample|delete)-[0-9a-f]{16}$");
+            Pattern.compile("^(dataset|manifest|sample|delete|control)-[0-9a-f]{16}$");
+    private static final Pattern SHA256 = Pattern.compile("^sha256:[0-9a-f]{64}$");
     private static final Pattern TIMESTAMP =
             Pattern.compile("^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$");
 
@@ -69,9 +68,9 @@ public final class PocDataControlPlane {
     public static final List<String> ACTIONS =
             List.of(
                     "READ_PUBLIC_MANIFEST",
-                    "VALIDATE_MANIFEST",
-                    "CREATE_SYNTHETIC_TEMP",
-                    "DELETE_SYNTHETIC_TEMP",
+                    "CREATE_TRANSIENT_SYNTHETIC_SENTINEL",
+                    "DELETE_TRANSIENT_SYNTHETIC_SENTINEL",
+                    "EMIT_CONTENT_FREE_SUMMARY",
                     "READ_CONTENT_FREE_EVIDENCE",
                     "APPROVE_REAL_COLLECTION",
                     "ASSIGN_CONTROLLED_ACCESS",
@@ -98,16 +97,17 @@ public final class PocDataControlPlane {
 
     public static final List<String> LIMITATIONS =
             List.of(
-                    "SYNTHETIC_CONTROL_PLANE_ONLY",
-                    "NO_CORPUS_OR_REAL_DATA_CREATED",
+                    "CONTROL_PLANE_PREPARATION_ONLY",
                     "CUSTODIAN_UNASSIGNED",
-                    "CONSENT_PREPARED_NOT_OPERATIONAL",
-                    "NO_CONTROLLED_STORAGE",
-                    "NO_NETWORK_CLOUD_OR_DEVICE_EXECUTION",
-                    "NO_MODEL_INFERENCE_TRAINING_OR_IMPROVEMENT",
-                    "NO_PRODUCTION_SCHEMA_STORAGE_OR_ADMISSION",
-                    "NO_POC_DATA_READY_PASS_OR_BLOCKER_CLOSURE",
-                    "NO_LEGAL_SECURITY_OR_FORMAL_HUMAN_APPROVAL_CLAIM");
+                    "CONSENT_NOT_OPERATIONAL",
+                    "CONTROLLED_STORAGE_NOT_CONFIGURED",
+                    "SYNTHETIC_METADATA_ONLY",
+                    "NO_SAMPLE_BYTES",
+                    "NO_CORPUS_OR_DATASET_CREATED",
+                    "NO_POC_DATA_READINESS_PASS_OR_EXECUTION",
+                    "NO_REAL_PUBLIC_PRIVATE_OR_DERIVED_DATA",
+                    "NO_NETWORK_CLOUD_MODEL_OR_TRAINING",
+                    "NO_PRODUCTION_ADMISSION");
 
     public static final List<String> DELETION_SCOPES =
             List.of(
@@ -122,18 +122,18 @@ public final class PocDataControlPlane {
 
     public static final List<String> CONSENT_ELEMENTS =
             List.of(
-                    "STUDY_OPERATOR_AND_CONTACT",
+                    "OPERATOR_AND_CONTACT",
                     "NAMED_POC_AND_PURPOSE",
-                    "INTENTIONAL_RECORDING_AND_SCRIPT",
-                    "DERIVATIVE_CLASSES",
+                    "SCRIPT_AND_INTENTIONAL_RECORDING",
+                    "DERIVATIVES_AND_METRICS",
                     "RAW_AND_DERIVED_ACCESS_ROLES",
-                    "HUMAN_LISTENING_OR_ANNOTATION",
-                    "STORAGE_ENCRYPTION_RETENTION_DELETION",
-                    "PROVIDER_ARTIFACT_AND_REGION_OR_NONE",
+                    "HUMAN_REVIEW_DISCLOSURE",
+                    "STORAGE_ENCRYPTION_RETENTION",
+                    "PROVIDER_ARTIFACT_REGION_OR_NONE",
                     "WITHDRAWAL_AND_AGGREGATE_LIMIT",
-                    "TRAINING_AND_MODEL_IMPROVEMENT_PROHIBITED",
-                    "VOLUNTARY_NO_ACCOUNT_OR_PRODUCT_PENALTY",
-                    "DELETION_REQUEST_EVIDENCE_AND_BACKUP_EXPIRY");
+                    "NO_TRAINING_OR_MODEL_IMPROVEMENT",
+                    "VOLUNTARY_NO_PRODUCT_PENALTY",
+                    "DELETION_EVIDENCE_AND_BACKUP_EXPIRY");
 
     public static final List<String> SCENARIO_IDS = createScenarioIds();
     private static final Map<String, List<String>> ALLOWED_ROLES = createAllowedRoles();
@@ -202,31 +202,47 @@ public final class PocDataControlPlane {
         requireExactKeys(
                 root,
                 "/",
-                "$schema",
+                "$defs",
                 "$id",
-                "title",
-                "description",
-                "type",
+                "$schema",
                 "additionalProperties",
-                "required",
                 "properties",
-                "$defs");
+                "required",
+                "title",
+                "type",
+                "x-dora-semantic-layer");
         requireString(root, "$schema", "https://json-schema.org/draft/2020-12/schema", "/$schema");
         requireString(root, "$id", "urn:dora:stage0:poc-data:control-plane:v0.1", "/$id");
         requireString(root, "type", "object", "/type");
         requireBoolean(root, "additionalProperties", false, "/additionalProperties");
         requireStrings(root.get("required"), ROOT_KEYS, "/required");
-
-        Map<String, Object> defs = object(root.get("$defs"), "/$defs");
-        requireSchemaEnum(defs, "accessRole", ROLES);
-        requireSchemaEnum(defs, "action", ACTIONS);
-        requireSchemaEnum(defs, "blocker", BLOCKERS);
-        requireSchemaEnum(defs, "limitation", LIMITATIONS);
-        requireSchemaEnum(defs, "deletionScope", DELETION_SCOPES);
+        requireString(
+                root,
+                "x-dora-semantic-layer",
+                "PINNED_JAVA17_VALIDATOR_REQUIRED_FOR_CANONICAL_AND_CROSS_FIELD_RULES",
+                "/x-dora-semantic-layer");
+        Map<String, Object> properties = object(root.get("properties"), "/properties");
+        requireExactKeys(properties, "/properties", ROOT_KEYS.toArray(String[]::new));
+        Map<String, Object> definitions = object(root.get("$defs"), "/$defs");
+        requireExactKeys(
+                definitions,
+                "/$defs",
+                "controlRecord",
+                "controlRecordId",
+                "deletionEntry",
+                "sha256",
+                "timestamp");
 
         String digest = sha256(owned);
         require(SCHEMA_SHA256.equals(digest), "E_SCHEMA_PROFILE_DRIFT", "/");
         return digest;
+    }
+
+    /** Strictly parse and canonical-check an unpinned content-free JSON evidence document. */
+    public static String validateCanonicalJson(byte[] raw) {
+        byte[] owned = Objects.requireNonNull(raw, "raw").clone();
+        parse(owned, true);
+        return sha256(owned);
     }
 
     /** Evaluate one role/action pair under the frozen deny-by-default policy. */
@@ -254,8 +270,12 @@ public final class PocDataControlPlane {
     public static DryRunReport dryRun(byte[] raw, Path temporaryRoot) throws IOException {
         ValidationReport validation = validateManifest(raw);
         Path root = Objects.requireNonNull(temporaryRoot, "temporaryRoot").toAbsolutePath().normalize();
+        Path systemTemporaryRoot =
+                Path.of(System.getProperty("java.io.tmpdir")).toAbsolutePath().normalize();
         require(
-                Files.exists(root, LinkOption.NOFOLLOW_LINKS)
+                root.startsWith(systemTemporaryRoot)
+                        && !root.equals(systemTemporaryRoot)
+                        && Files.exists(root, LinkOption.NOFOLLOW_LINKS)
                         && Files.isDirectory(root, LinkOption.NOFOLLOW_LINKS)
                         && !Files.isSymbolicLink(root),
                 "E_TEMP_ROOT_UNSAFE",
@@ -264,9 +284,12 @@ public final class PocDataControlPlane {
             require(entries.findAny().isEmpty(), "E_TEMP_ROOT_NOT_EMPTY", "/dryRun/tempRoot");
         }
 
-        requireAllowed("SYNTHETIC_DRY_RUN_OPERATOR", "VALIDATE_MANIFEST");
-        requireAllowed("SYNTHETIC_DRY_RUN_OPERATOR", "CREATE_SYNTHETIC_TEMP");
-        requireAllowed("SYNTHETIC_DRY_RUN_OPERATOR", "DELETE_SYNTHETIC_TEMP");
+        requireAllowed("SYNTHETIC_DRY_RUN_OPERATOR", "READ_PUBLIC_MANIFEST");
+        requireAllowed(
+                "SYNTHETIC_DRY_RUN_OPERATOR", "CREATE_TRANSIENT_SYNTHETIC_SENTINEL");
+        requireAllowed(
+                "SYNTHETIC_DRY_RUN_OPERATOR", "DELETE_TRANSIENT_SYNTHETIC_SENTINEL");
+        requireAllowed("SYNTHETIC_DRY_RUN_OPERATOR", "EMIT_CONTENT_FREE_SUMMARY");
         requireDenied("COLLECTOR", "APPROVE_REAL_COLLECTION");
         requireDenied("CUSTODIAN", "READ_RAW_OR_DERIVED_DATA");
         requireDenied("SYNTHETIC_DRY_RUN_OPERATOR", "CONFIGURE_CLOUD_TRANSFER");
@@ -280,21 +303,18 @@ public final class PocDataControlPlane {
                 "E_TEMP_TARGET_ESCAPE",
                 "/dryRun/tempTarget");
 
-        boolean created = false;
         try {
             Files.write(
                     sentinel,
                     SENTINEL_BYTES,
                     StandardOpenOption.CREATE_NEW,
                     StandardOpenOption.WRITE);
-            created = true;
             byte[] observed = Files.readAllBytes(sentinel);
             require(
                     java.util.Arrays.equals(SENTINEL_BYTES, observed),
                     "E_SENTINEL_VERIFY",
                     "/dryRun/sentinel");
             Files.delete(sentinel);
-            created = false;
             require(
                     !Files.exists(sentinel, LinkOption.NOFOLLOW_LINKS),
                     "E_DELETE_VERIFY",
@@ -302,7 +322,7 @@ public final class PocDataControlPlane {
             boolean secondDelete = Files.deleteIfExists(sentinel);
             require(!secondDelete, "E_DELETE_NOT_IDEMPOTENT", "/dryRun/sentinel");
         } finally {
-            if (created && Files.exists(sentinel, LinkOption.NOFOLLOW_LINKS)) {
+            if (Files.exists(sentinel, LinkOption.NOFOLLOW_LINKS)) {
                 Files.delete(sentinel);
             }
         }
@@ -327,6 +347,19 @@ public final class PocDataControlPlane {
 
     /** Testable CLI entry point. */
     public static int runCli(String[] args, PrintStream out, PrintStream err) {
+        if (args != null && args.length == 2 && "validate-json".equals(args[0])) {
+            try {
+                String digest = validateCanonicalJson(readBounded(Path.of(args[1])));
+                out.println("LOCAL_PASS CANONICAL_JSON sha256=" + digest);
+                return 0;
+            } catch (ControlPlaneFault fault) {
+                err.println("LOCAL_FAIL " + fault.code() + " " + fault.pointer());
+                return 1;
+            } catch (IOException | RuntimeException error) {
+                err.println("LOCAL_FAIL E_READ_OR_INTERNAL /");
+                return 3;
+            }
+        }
         if (args == null
                 || args.length != 3
                 || !("validate".equals(args[0]) || "dry-run".equals(args[0]))) {
@@ -376,7 +409,7 @@ public final class PocDataControlPlane {
     /** Return deterministic canonical UTF-8 JSON with sorted object keys and one final LF. */
     public static byte[] canonicalBytes(Object value) {
         StringBuilder output = new StringBuilder();
-        appendCanonical(value, output);
+        appendPrettyCanonical(value, output, 0);
         output.append('\n');
         return output.toString().getBytes(StandardCharsets.UTF_8);
     }
@@ -384,46 +417,43 @@ public final class PocDataControlPlane {
     private static final List<String> ROOT_KEYS =
             List.of(
                     "authorityFlags",
-                    "authorizations",
                     "blockers",
                     "collectionPlan",
                     "consentProcess",
                     "contractId",
-                    "custodian",
-                    "datasetManifest",
-                    "dryRun",
+                    "controlRecords",
+                    "dataPolicy",
+                    "deletionLedger",
+                    "dryRunMatrix",
                     "limitations",
+                    "manifestId",
+                    "privacyBoundary",
                     "rbac",
-                    "retentionDeletion",
-                    "schemaVersion",
-                    "status");
+                    "retention",
+                    "schemaVersion");
 
     private static void validateManifestObject(Object parsed) {
         Map<String, Object> root = object(parsed, "/");
         requireExactKeys(root, "/", ROOT_KEYS.toArray(String[]::new));
         requireLong(root, "schemaVersion", 1L, "/schemaVersion");
-        requireString(
-                root,
-                "status",
-                "SYNTHETIC_CONTROL_PLANE_DRY_RUN_ONLY",
-                "/status");
         requireString(root, "contractId", "poc-data-control-plane-stage0-v0.1", "/contractId");
-        requireStrings(
-                root.get("authorizations"),
-                List.of(
-                        "POC-DATA-CONTROL-PLANE-SETUP-AUTH-20260818-01",
-                        "POC-DATA-CONTROL-PLANE-DISJOINT-FIRST-AUTH-20260818-01"),
-                "/authorizations");
         requireStrings(root.get("blockers"), BLOCKERS, "/blockers");
         requireStrings(root.get("limitations"), LIMITATIONS, "/limitations");
         validateAuthorityFlags(root.get("authorityFlags"));
         validateCollectionPlan(root.get("collectionPlan"));
         validateConsent(root.get("consentProcess"));
-        validateCustodian(root.get("custodian"));
-        validateDatasetManifest(root.get("datasetManifest"));
-        validateDryRun(root.get("dryRun"));
+        validateControlRecords(root.get("controlRecords"));
+        validateDataPolicy(root.get("dataPolicy"));
+        validateCurrentDeletionLedger(root.get("deletionLedger"));
+        validateDryRunMatrix(root.get("dryRunMatrix"));
+        requireString(
+                root,
+                "manifestId",
+                "control-manifest-0123456789abcdef",
+                "/manifestId");
+        validatePrivacyBoundary(root.get("privacyBoundary"));
         validateRbac(root.get("rbac"));
-        validateRetention(root.get("retentionDeletion"));
+        validateRetention(root.get("retention"));
     }
 
     private static void validateAuthorityFlags(Object value) {
@@ -440,7 +470,7 @@ public final class PocDataControlPlane {
         expected.put("deviceExecutionAllowed", false);
         expected.put("humanReviewAllowed", false);
         expected.put("localHostValidationAllowed", true);
-        expected.put("mergeAllowed", false);
+        expected.put("mergeAllowedByThisPackage", false);
         expected.put("modelImprovementAllowed", false);
         expected.put("modelInferenceAllowed", false);
         expected.put("networkExecutionAllowed", false);
@@ -449,6 +479,7 @@ public final class PocDataControlPlane {
         expected.put("productionAdmissionAllowed", false);
         expected.put("productionSchemaAllowed", false);
         expected.put("productionStorageAllowed", false);
+        expected.put("publicationAllowedByThisPackage", false);
         expected.put("purposeRecordedCollectionAllowed", false);
         expected.put("rawAudioAllowed", false);
         expected.put("realMeetingDataAllowed", false);
@@ -472,51 +503,71 @@ public final class PocDataControlPlane {
         requireExactKeys(
                 plan,
                 "/collectionPlan",
-                "cloudAllowed",
+                "clockSource",
                 "dataClasses",
-                "deviceCaptureAllowed",
-                "fixedInstant",
-                "inputBytesPresent",
+                "frozenAt",
+                "hypothesis",
+                "manifestRowCount",
                 "meetingCount",
-                "modelTrainingAllowed",
-                "networkAllowed",
+                "modelExecutionEnabled",
+                "networkEnabled",
+                "nonGoals",
                 "participantCount",
                 "planId",
-                "sampleRowCount",
                 "seed",
                 "state",
-                "storageClass",
+                "storageClasses",
                 "voiceCount");
-        requireBoolean(plan, "cloudAllowed", false, "/collectionPlan/cloudAllowed");
+        requireString(
+                plan,
+                "clockSource",
+                "FROZEN_LITERAL_NO_WALL_CLOCK_READ",
+                "/collectionPlan/clockSource");
         requireStrings(
                 plan.get("dataClasses"),
                 List.of("GENERATED_TEXT_METADATA", "SYNTHETIC_SIGNAL_METADATA"),
                 "/collectionPlan/dataClasses");
-        requireBoolean(plan, "deviceCaptureAllowed", false, "/collectionPlan/deviceCaptureAllowed");
-        requireTimestamp(plan.get("fixedInstant"), "/collectionPlan/fixedInstant");
-        requireString(plan, "fixedInstant", "2026-08-18T12:00:00Z", "/collectionPlan/fixedInstant");
-        requireBoolean(plan, "inputBytesPresent", false, "/collectionPlan/inputBytesPresent");
+        requireTimestamp(plan.get("frozenAt"), "/collectionPlan/frozenAt");
+        requireString(plan, "frozenAt", "2026-08-18T12:00:00Z", "/collectionPlan/frozenAt");
+        requireString(
+                plan,
+                "hypothesis",
+                "FAIL_CLOSED_SYNTHETIC_CONTROL_PLANE_IS_DETERMINISTIC",
+                "/collectionPlan/hypothesis");
+        requireLong(plan, "manifestRowCount", 4L, "/collectionPlan/manifestRowCount");
         requireLong(plan, "meetingCount", 0L, "/collectionPlan/meetingCount");
-        requireBoolean(plan, "modelTrainingAllowed", false, "/collectionPlan/modelTrainingAllowed");
-        requireBoolean(plan, "networkAllowed", false, "/collectionPlan/networkAllowed");
+        requireBoolean(
+                plan, "modelExecutionEnabled", false, "/collectionPlan/modelExecutionEnabled");
+        requireBoolean(plan, "networkEnabled", false, "/collectionPlan/networkEnabled");
+        requireStrings(
+                plan.get("nonGoals"),
+                List.of(
+                        "CORPUS_QUALITY",
+                        "CONSENT_USABILITY",
+                        "ACOUSTIC_COVERAGE",
+                        "MODEL_QUALITY",
+                        "DEVICE_BEHAVIOR",
+                        "CONTROLLED_STORE_OPERATIONS",
+                        "PRODUCTION_BEHAVIOR"),
+                "/collectionPlan/nonGoals");
         requireLong(plan, "participantCount", 0L, "/collectionPlan/participantCount");
         requireString(
                 plan,
                 "planId",
                 "poc-data-synthetic-control-plane-plan-stage0-v0.1",
                 "/collectionPlan/planId");
-        requireLong(plan, "sampleRowCount", 4L, "/collectionPlan/sampleRowCount");
         requireLong(plan, "seed", 2026081801L, "/collectionPlan/seed");
         requireString(
                 plan,
                 "state",
                 "AUTHORIZED_SYNTHETIC_DRY_RUN_ONLY",
                 "/collectionPlan/state");
-        requireString(
-                plan,
-                "storageClass",
-                "REPOSITORY_MANIFEST_AND_TRANSIENT_OS_TEMP_SENTINEL_ONLY",
-                "/collectionPlan/storageClass");
+        requireStrings(
+                plan.get("storageClasses"),
+                List.of(
+                        "PUBLIC_REPOSITORY_MANIFEST_ONLY",
+                        "VALIDATED_OS_TEMP_SENTINEL_ONLY"),
+                "/collectionPlan/storageClasses");
         requireLong(plan, "voiceCount", 0L, "/collectionPlan/voiceCount");
     }
 
@@ -525,134 +576,62 @@ public final class PocDataControlPlane {
         requireExactKeys(
                 consent,
                 "/consentProcess",
-                "appliesTo",
-                "currentConsentReference",
+                "consentReference",
+                "finalLegalCopyApproved",
                 "processId",
-                "realConsentRecords",
-                "requiredElements",
-                "state");
-        requireString(
+                "purposeRecordedConsentUsable",
+                "realConsentRecordCount",
+                "requirements",
+                "state",
+                "stateMachine");
+        requireString(consent, "consentReference", "not-applicable", "/consentProcess/consentReference");
+        requireBoolean(
                 consent,
-                "appliesTo",
-                "FUTURE_PURPOSE_RECORDED_ADULT_VOLUNTEER_DATA_ONLY",
-                "/consentProcess/appliesTo");
-        requireString(
-                consent,
-                "currentConsentReference",
-                "not-applicable",
-                "/consentProcess/currentConsentReference");
+                "finalLegalCopyApproved",
+                false,
+                "/consentProcess/finalLegalCopyApproved");
         requireString(
                 consent,
                 "processId",
                 "poc-data-consent-process-stage0-v0.1",
                 "/consentProcess/processId");
-        requireLong(consent, "realConsentRecords", 0L, "/consentProcess/realConsentRecords");
-        requireStrings(consent.get("requiredElements"), CONSENT_ELEMENTS, "/consentProcess/requiredElements");
+        requireBoolean(
+                consent,
+                "purposeRecordedConsentUsable",
+                false,
+                "/consentProcess/purposeRecordedConsentUsable");
+        requireLong(
+                consent,
+                "realConsentRecordCount",
+                0L,
+                "/consentProcess/realConsentRecordCount");
+        requireStrings(consent.get("requirements"), CONSENT_ELEMENTS, "/consentProcess/requirements");
         requireString(
                 consent,
                 "state",
                 "PREPARED_NOT_OPERATIONAL",
                 "/consentProcess/state");
-    }
-
-    private static void validateCustodian(Object value) {
-        Map<String, Object> custodian = object(value, "/custodian");
-        requireExactKeys(
-                custodian,
-                "/custodian",
-                "assignment",
-                "controlledStorageEnabled",
-                "realCollectionEnabled");
-        requireString(custodian, "assignment", CUSTODIAN_ASSIGNMENT, "/custodian/assignment");
-        requireBoolean(
-                custodian,
-                "controlledStorageEnabled",
-                false,
-                "/custodian/controlledStorageEnabled");
-        requireBoolean(
-                custodian,
-                "realCollectionEnabled",
-                false,
-                "/custodian/realCollectionEnabled");
-    }
-
-    private static void validateDatasetManifest(Object value) {
-        Map<String, Object> manifest = object(value, "/datasetManifest");
-        requireExactKeys(
-                manifest,
-                "/datasetManifest",
-                "consentReference",
-                "dataClass",
-                "datasetId",
-                "deletionLedger",
-                "manifestId",
-                "publicProjection",
-                "publicRedistributionAllowed",
-                "samples",
-                "trainingAllowed",
-                "version");
-        requireString(manifest, "consentReference", "not-applicable", "/datasetManifest/consentReference");
-        requireString(
-                manifest,
-                "dataClass",
-                "SYNTHETIC_CONTROL_PLANE_METADATA",
-                "/datasetManifest/dataClass");
-        requireId(manifest.get("datasetId"), "dataset", "/datasetManifest/datasetId");
-        requireString(
-                manifest,
-                "datasetId",
-                "dataset-1111222233334444",
-                "/datasetManifest/datasetId");
-        requireId(manifest.get("manifestId"), "manifest", "/datasetManifest/manifestId");
-        requireString(
-                manifest,
-                "manifestId",
-                "manifest-aaaabbbbccccdddd",
-                "/datasetManifest/manifestId");
-        requireBoolean(
-                manifest,
-                "publicRedistributionAllowed",
-                false,
-                "/datasetManifest/publicRedistributionAllowed");
-        requireBoolean(manifest, "trainingAllowed", false, "/datasetManifest/trainingAllowed");
-        requireString(manifest, "version", "1.0.0", "/datasetManifest/version");
-        validatePublicProjection(manifest.get("publicProjection"));
-        validateSamples(manifest.get("samples"));
-        validateDeletionLedger(manifest.get("deletionLedger"));
-    }
-
-    private static void validatePublicProjection(Object value) {
-        Map<String, Object> projection = object(value, "/datasetManifest/publicProjection");
-        List<String> keys =
+        requireStrings(
+                consent.get("stateMachine"),
                 List.of(
-                        "containsConsentForm",
-                        "containsContentDigest",
-                        "containsDeviceOrAccountIdentifier",
-                        "containsParticipantMapping",
-                        "containsPersonalData",
-                        "containsPrivateLocator",
-                        "containsRawAudioOrTranscript",
-                        "containsSignedUrl");
-        requireExactKeys(
-                projection, "/datasetManifest/publicProjection", keys.toArray(String[]::new));
-        for (String key : keys) {
-            requireBoolean(
-                    projection,
-                    key,
-                    false,
-                    "/datasetManifest/publicProjection/" + key);
-        }
+                        "DRAFT",
+                        "REVIEW_REQUIRED",
+                        "APPROVED_FOR_NAMED_PLAN",
+                        "GRANTED",
+                        "REVOKED",
+                        "EXPIRED"),
+                "/consentProcess/stateMachine");
     }
 
-    private static void validateSamples(Object value) {
-        List<Object> samples = array(value, "/datasetManifest/samples");
-        require(samples.size() == 4, "E_SAMPLE_COUNT", "/datasetManifest/samples");
+    private static void validateControlRecords(Object value) {
+        List<Object> records = array(value, "/controlRecords");
+        require(records.size() == 4, "E_RECORD_COUNT", "/controlRecords");
         List<String> ids =
                 List.of(
-                        "sample-1111111111111111",
-                        "sample-2222222222222222",
-                        "sample-3333333333333333",
-                        "sample-4444444444444444");
+                        "control-1111111111111111",
+                        "control-2222222222222222",
+                        "control-3333333333333333",
+                        "control-4444444444444444");
         List<String> classes =
                 List.of(
                         "GENERATED_TEXT_METADATA",
@@ -660,166 +639,242 @@ public final class PocDataControlPlane {
                         "SYNTHETIC_SIGNAL_METADATA",
                         "GENERATED_TEXT_METADATA");
         List<String> states = List.of("ACTIVE", "ACTIVE", "DELETED", "ACTIVE");
-        List<String> splits = List.of("development", "development", "test", "evaluation");
+        List<String> created =
+                List.of(
+                        "2026-08-18T12:00:00Z",
+                        "2026-08-18T12:01:00Z",
+                        "2026-08-18T12:00:00Z",
+                        "2026-08-18T12:00:00Z");
+        List<String> expires =
+                List.of(
+                        "2026-08-18T12:30:00Z",
+                        "2026-08-18T12:20:00Z",
+                        "2026-08-18T12:10:00Z",
+                        "2026-08-18T12:15:00Z");
         List<String> notes =
                 List.of(
-                        "ROOT_SYNTHETIC_ENTRY",
-                        "DERIVED_SYNTHETIC_VARIANT",
-                        "DELETION_DRY_RUN_TARGET",
-                        "ROOT_SYNTHETIC_ENTRY");
-        Set<String> observedIds = new HashSet<>();
-        for (int index = 0; index < samples.size(); index++) {
-            String pointer = "/datasetManifest/samples/" + index;
-            Map<String, Object> sample = object(samples.get(index), pointer);
+                        "ROOT_SYNTHETIC_CONTROL_ENTRY",
+                        "DERIVED_SYNTHETIC_CONTROL_ENTRY",
+                        "SYNTHETIC_DELETION_TARGET",
+                        "PROTECTED_EVALUATION_CONTROL_ENTRY");
+        List<String> splits = List.of("development", "development", "test", "evaluation");
+        List<List<String>> roles =
+                List.of(
+                        List.of("SYNTHETIC_DRY_RUN_OPERATOR", "SECURITY_AUDITOR", "EVALUATOR"),
+                        List.of("SYNTHETIC_DRY_RUN_OPERATOR", "SECURITY_AUDITOR"),
+                        List.of("SYNTHETIC_DRY_RUN_OPERATOR"),
+                        List.of("SECURITY_AUDITOR", "EVALUATOR"));
+        Set<String> observed = new HashSet<>();
+        for (int index = 0; index < records.size(); index++) {
+            String pointer = "/controlRecords/" + index;
+            Map<String, Object> record = object(records.get(index), pointer);
             requireExactKeys(
-                    sample,
+                    record,
                     pointer,
                     "accessRoles",
+                    "containsPersonalData",
+                    "containsSampleBytes",
+                    "containsTranscriptOrSourceExcerpt",
                     "contentSha256",
                     "createdAt",
                     "dataClass",
                     "deletionState",
                     "evidenceLocator",
                     "expiresAt",
-                    "notes",
-                    "parentSampleId",
-                    "sampleBytesPresent",
-                    "sampleId",
-                    "split");
-            String id = string(sample.get("sampleId"), pointer + "/sampleId");
-            requireId(id, "sample", pointer + "/sampleId");
-            require(ids.get(index).equals(id), "E_SAMPLE_ORDER", pointer + "/sampleId");
-            require(observedIds.add(id), "E_SAMPLE_DUPLICATE", pointer + "/sampleId");
-            requireString(sample, "dataClass", classes.get(index), pointer + "/dataClass");
-            requireString(sample, "deletionState", states.get(index), pointer + "/deletionState");
-            requireString(sample, "split", splits.get(index), pointer + "/split");
-            requireString(sample, "notes", notes.get(index), pointer + "/notes");
-            requireTimestamp(sample.get("createdAt"), pointer + "/createdAt");
-            requireTimestamp(sample.get("expiresAt"), pointer + "/expiresAt");
-            requireString(sample, "createdAt", "2026-08-18T12:00:00Z", pointer + "/createdAt");
-            requireString(sample, "expiresAt", "2026-08-18T12:00:00Z", pointer + "/expiresAt");
-            require(sample.get("contentSha256") == null, "E_CONTENT_DIGEST_PRESENT", pointer + "/contentSha256");
-            require(sample.get("evidenceLocator") == null, "E_PRIVATE_LOCATOR_PRESENT", pointer + "/evidenceLocator");
-            requireBoolean(sample, "sampleBytesPresent", false, pointer + "/sampleBytesPresent");
-            List<String> expectedRoles =
-                    index == 0 || index == 3
-                            ? List.of("SYNTHETIC_DRY_RUN_OPERATOR", "SECURITY_AUDITOR", "EVALUATOR")
-                            : List.of("SYNTHETIC_DRY_RUN_OPERATOR", "SECURITY_AUDITOR");
-            requireStrings(sample.get("accessRoles"), expectedRoles, pointer + "/accessRoles");
-            Object parent = sample.get("parentSampleId");
+                    "note",
+                    "parentRecordId",
+                    "recordId",
+                    "split",
+                    "storageClass");
+            String id = string(record.get("recordId"), pointer + "/recordId");
+            requireId(id, "control", pointer + "/recordId");
+            require(ids.get(index).equals(id), "E_RECORD_ORDER", pointer + "/recordId");
+            require(observed.add(id), "E_RECORD_DUPLICATE", pointer + "/recordId");
+            requireStrings(record.get("accessRoles"), roles.get(index), pointer + "/accessRoles");
+            requireBoolean(record, "containsPersonalData", false, pointer + "/containsPersonalData");
+            requireBoolean(record, "containsSampleBytes", false, pointer + "/containsSampleBytes");
+            requireBoolean(
+                    record,
+                    "containsTranscriptOrSourceExcerpt",
+                    false,
+                    pointer + "/containsTranscriptOrSourceExcerpt");
+            require(record.get("contentSha256") == null, "E_CONTENT_DIGEST_PRESENT", pointer + "/contentSha256");
+            require(record.get("evidenceLocator") == null, "E_PRIVATE_LOCATOR_PRESENT", pointer + "/evidenceLocator");
+            requireTimestamp(record.get("createdAt"), pointer + "/createdAt");
+            requireTimestamp(record.get("expiresAt"), pointer + "/expiresAt");
+            requireString(record, "createdAt", created.get(index), pointer + "/createdAt");
+            requireString(record, "expiresAt", expires.get(index), pointer + "/expiresAt");
+            requireString(record, "dataClass", classes.get(index), pointer + "/dataClass");
+            requireString(record, "deletionState", states.get(index), pointer + "/deletionState");
+            requireString(record, "note", notes.get(index), pointer + "/note");
+            requireString(record, "split", splits.get(index), pointer + "/split");
+            requireString(
+                    record,
+                    "storageClass",
+                    "MANIFEST_ONLY_NO_SAMPLE_BYTES",
+                    pointer + "/storageClass");
+            Object parent = record.get("parentRecordId");
             if (index == 1) {
                 require(
-                        "sample-1111111111111111".equals(parent),
+                        "control-1111111111111111".equals(parent),
                         "E_LINEAGE",
-                        pointer + "/parentSampleId");
+                        pointer + "/parentRecordId");
+                require(
+                        new HashSet<>(roles.get(0)).containsAll(roles.get(1)),
+                        "E_ACCESS_WIDENING",
+                        pointer + "/accessRoles");
+                require(
+                        splits.get(0).equals(splits.get(1)),
+                        "E_SPLIT_LINEAGE",
+                        pointer + "/split");
             } else {
-                require(parent == null, "E_LINEAGE", pointer + "/parentSampleId");
+                require(parent == null, "E_LINEAGE", pointer + "/parentRecordId");
             }
         }
     }
 
-    private static void validateDeletionLedger(Object value) {
-        List<Object> ledger = array(value, "/datasetManifest/deletionLedger");
-        require(ledger.size() == 1, "E_DELETION_LEDGER", "/datasetManifest/deletionLedger");
-        Map<String, Object> entry = object(ledger.get(0), "/datasetManifest/deletionLedger/0");
+    private static void validateDataPolicy(Object value) {
+        Map<String, Object> policy = object(value, "/dataPolicy");
+        requireExactKeys(
+                policy,
+                "/dataPolicy",
+                "allowedClasses",
+                "allowedUses",
+                "excludedUses",
+                "forbiddenClasses",
+                "licenseId",
+                "publicRedistributionAllowed",
+                "termsDigest",
+                "trainingAllowed");
+        requireStrings(
+                policy.get("allowedClasses"),
+                List.of("GENERATED_TEXT_METADATA", "SYNTHETIC_SIGNAL_METADATA"),
+                "/dataPolicy/allowedClasses");
+        requireStrings(
+                policy.get("allowedUses"),
+                List.of("CONTROL_PLANE_VALIDATION", "TRANSIENT_SENTINEL_DELETION_DRY_RUN"),
+                "/dataPolicy/allowedUses");
+        requireStrings(
+                policy.get("excludedUses"),
+                List.of(
+                        "MODEL_TRAINING",
+                        "FINE_TUNING",
+                        "DISTILLATION",
+                        "EMBEDDING_ENROLLMENT",
+                        "UNDECLARED_HUMAN_REVIEW",
+                        "PROVIDER_QUALITY_IMPROVEMENT",
+                        "PUBLIC_RELEASE_REDISTRIBUTION_OR_PUBLICATION",
+                        "MARKETING_OR_DEMO",
+                        "BIOMETRIC_IDENTITY",
+                        "CROSS_CONVERSATION_SPEAKER_RECOGNITION",
+                        "TRAINING_EXAMPLE_SELECTION_OUTSIDE_NAMED_POC",
+                        "HARD_EXAMPLE_RETENTION_BEYOND_APPROVED_PERIOD",
+                        "CROSS_PROJECT_OR_COMPANY_REUSE"),
+                "/dataPolicy/excludedUses");
+        requireStrings(
+                policy.get("forbiddenClasses"),
+                List.of("PURPOSE_RECORDED", "PUBLIC_LICENSED", "REAL_MEETING", "DERIVED_SENSITIVE"),
+                "/dataPolicy/forbiddenClasses");
+        requireString(
+                policy,
+                "licenseId",
+                "DORA_ORIGINAL_SYNTHETIC_CONTROL_METADATA_ONLY",
+                "/dataPolicy/licenseId");
+        requireBoolean(
+                policy,
+                "publicRedistributionAllowed",
+                false,
+                "/dataPolicy/publicRedistributionAllowed");
+        String termsDigest = string(policy.get("termsDigest"), "/dataPolicy/termsDigest");
+        require(SHA256.matcher(termsDigest).matches(), "E_SHA256", "/dataPolicy/termsDigest");
+        require(
+                "sha256:26726af9ea7a196b5aa940d358ccdc45a8566b01e9588ecf2af71f9e3f8ade0d"
+                        .equals(termsDigest),
+                "E_VALUE",
+                "/dataPolicy/termsDigest");
+        requireBoolean(policy, "trainingAllowed", false, "/dataPolicy/trainingAllowed");
+    }
+
+    private static void validateCurrentDeletionLedger(Object value) {
+        List<Object> ledger = array(value, "/deletionLedger");
+        require(ledger.size() == 1, "E_DELETION_LEDGER", "/deletionLedger");
+        Map<String, Object> entry = object(ledger.get(0), "/deletionLedger/0");
         requireExactKeys(
                 entry,
-                "/datasetManifest/deletionLedger/0",
+                "/deletionLedger/0",
                 "affectedScopes",
+                "backupExpiresAt",
                 "completedAt",
                 "eventId",
                 "outcome",
+                "recordId",
                 "requestedAt",
-                "sampleId",
                 "trigger",
                 "unresolvedFailures");
-        requireStrings(
-                entry.get("affectedScopes"),
-                DELETION_SCOPES,
-                "/datasetManifest/deletionLedger/0/affectedScopes");
-        requireTimestamp(entry.get("requestedAt"), "/datasetManifest/deletionLedger/0/requestedAt");
-        requireTimestamp(entry.get("completedAt"), "/datasetManifest/deletionLedger/0/completedAt");
-        requireString(
-                entry,
-                "requestedAt",
-                "2026-08-18T12:00:00Z",
-                "/datasetManifest/deletionLedger/0/requestedAt");
-        requireString(
-                entry,
-                "completedAt",
-                "2026-08-18T12:00:00Z",
-                "/datasetManifest/deletionLedger/0/completedAt");
-        requireString(
-                entry,
-                "eventId",
-                "delete-3333333333333333",
-                "/datasetManifest/deletionLedger/0/eventId");
-        requireId(entry.get("eventId"), "delete", "/datasetManifest/deletionLedger/0/eventId");
-        requireString(
-                entry,
-                "sampleId",
-                "sample-3333333333333333",
-                "/datasetManifest/deletionLedger/0/sampleId");
-        requireString(entry, "outcome", "DELETED", "/datasetManifest/deletionLedger/0/outcome");
-        requireString(
-                entry,
-                "trigger",
-                "SYNTHETIC_DRY_RUN",
-                "/datasetManifest/deletionLedger/0/trigger");
+        requireStrings(entry.get("affectedScopes"), DELETION_SCOPES, "/deletionLedger/0/affectedScopes");
+        requireString(entry, "backupExpiresAt", "2026-08-18T12:02:00Z", "/deletionLedger/0/backupExpiresAt");
+        requireString(entry, "completedAt", "2026-08-18T12:02:00Z", "/deletionLedger/0/completedAt");
+        requireString(entry, "requestedAt", "2026-08-18T12:01:00Z", "/deletionLedger/0/requestedAt");
+        requireTimestamp(entry.get("backupExpiresAt"), "/deletionLedger/0/backupExpiresAt");
+        requireTimestamp(entry.get("completedAt"), "/deletionLedger/0/completedAt");
+        requireTimestamp(entry.get("requestedAt"), "/deletionLedger/0/requestedAt");
+        requireString(entry, "eventId", "delete-3333333333333333", "/deletionLedger/0/eventId");
+        requireId(entry.get("eventId"), "delete", "/deletionLedger/0/eventId");
+        requireString(entry, "recordId", "control-3333333333333333", "/deletionLedger/0/recordId");
+        requireString(entry, "outcome", "DELETED_METADATA_ONLY", "/deletionLedger/0/outcome");
+        requireString(entry, "trigger", "SYNTHETIC_DRY_RUN", "/deletionLedger/0/trigger");
         require(
-                array(entry.get("unresolvedFailures"),
-                                "/datasetManifest/deletionLedger/0/unresolvedFailures")
-                        .isEmpty(),
+                array(entry.get("unresolvedFailures"), "/deletionLedger/0/unresolvedFailures").isEmpty(),
                 "E_DELETION_FAILURES",
-                "/datasetManifest/deletionLedger/0/unresolvedFailures");
+                "/deletionLedger/0/unresolvedFailures");
     }
 
-    private static void validateDryRun(Object value) {
-        Map<String, Object> dryRun = object(value, "/dryRun");
-        requireExactKeys(
-                dryRun,
-                "/dryRun",
-                "expectedCollectionAuthorization",
-                "expectedPocDataOverallResult",
-                "expectedPocDataReadiness",
-                "fixedInstant",
-                "inputClass",
-                "runId",
-                "scenarioIds");
-        requireString(
-                dryRun,
-                "expectedCollectionAuthorization",
-                "NOT_AUTHORIZED",
-                "/dryRun/expectedCollectionAuthorization");
-        requireString(
-                dryRun,
-                "expectedPocDataOverallResult",
-                "NOT_RUN",
-                "/dryRun/expectedPocDataOverallResult");
-        requireString(
-                dryRun,
-                "expectedPocDataReadiness",
-                "NOT_READY",
-                "/dryRun/expectedPocDataReadiness");
-        requireString(dryRun, "fixedInstant", "2026-08-18T12:00:00Z", "/dryRun/fixedInstant");
-        requireString(
-                dryRun,
-                "inputClass",
-                "REPOSITORY_OWNED_SYNTHETIC_NON_SENSITIVE",
-                "/dryRun/inputClass");
-        requireString(
-                dryRun,
-                "runId",
-                "poc-data-control-plane-dry-run-stage0-v0.1",
-                "/dryRun/runId");
-        requireStrings(dryRun.get("scenarioIds"), SCENARIO_IDS, "/dryRun/scenarioIds");
+    private static void validateDryRunMatrix(Object value) {
+        List<Object> matrix = array(value, "/dryRunMatrix");
+        require(matrix.size() == 15, "E_DRY_RUN_MATRIX", "/dryRunMatrix");
+        for (int index = 0; index < matrix.size(); index++) {
+            String pointer = "/dryRunMatrix/" + index;
+            Map<String, Object> row = object(matrix.get(index), pointer);
+            requireExactKeys(row, pointer, "expected", "id");
+            requireString(row, "id", SCENARIO_IDS.get(index), pointer + "/id");
+            String expected = index < 5 || (index >= 9 && index < 12)
+                    ? "ALLOW"
+                    : index < 9 ? "DENY" : "REJECT";
+            requireString(row, "expected", expected, pointer + "/expected");
+        }
+    }
+
+    private static void validatePrivacyBoundary(Object value) {
+        Map<String, Object> boundary = object(value, "/privacyBoundary");
+        List<String> keys =
+                List.of(
+                        "containsConsentForm",
+                        "containsDeviceOrAccountIdentifier",
+                        "containsNetworkEndpoint",
+                        "containsParticipantMapping",
+                        "containsPersonalData",
+                        "containsPrivateLocator",
+                        "containsPublicLinkableContentDigest",
+                        "containsRawContent",
+                        "containsSignedUrl",
+                        "containsTranscriptOrSourceExcerpt",
+                        "sampleBytesPresent");
+        requireExactKeys(boundary, "/privacyBoundary", keys.toArray(String[]::new));
+        for (String key : keys) {
+            requireBoolean(boundary, key, false, "/privacyBoundary/" + key);
+        }
     }
 
     private static void validateRbac(Object value) {
         Map<String, Object> rbac = object(value, "/rbac");
-        requireExactKeys(rbac, "/rbac", "assignments", "mode", "policies", "roles");
+        requireExactKeys(
+                rbac,
+                "/rbac",
+                "assignments",
+                "custodianAssignment",
+                "mode",
+                "roleRules");
         requireString(rbac, "mode", "DENY_BY_DEFAULT", "/rbac/mode");
-        requireStrings(rbac.get("roles"), ROLES, "/rbac/roles");
         List<Object> assignments = array(rbac.get("assignments"), "/rbac/assignments");
         require(assignments.size() == 1, "E_ASSIGNMENT_COUNT", "/rbac/assignments");
         Map<String, Object> assignment = object(assignments.get(0), "/rbac/assignments/0");
@@ -835,86 +890,95 @@ public final class PocDataControlPlane {
                 "SYNTHETIC_DRY_RUN_OPERATOR",
                 "/rbac/assignments/0/role");
 
-        List<Object> policies = array(rbac.get("policies"), "/rbac/policies");
-        require(policies.size() == ACTIONS.size(), "E_POLICY_COUNT", "/rbac/policies");
-        for (int index = 0; index < policies.size(); index++) {
-            String pointer = "/rbac/policies/" + index;
-            Map<String, Object> policy = object(policies.get(index), pointer);
-            requireExactKeys(
-                    policy,
-                    pointer,
-                    "action",
-                    "allowedRoles",
-                    "custodianRequired",
-                    "syntheticOnly");
-            String action = ACTIONS.get(index);
-            requireString(policy, "action", action, pointer + "/action");
-            requireStrings(policy.get("allowedRoles"), ALLOWED_ROLES.get(action), pointer + "/allowedRoles");
-            requireBoolean(
-                    policy,
-                    "custodianRequired",
-                    CUSTODIAN_REQUIRED_ACTIONS.contains(action),
-                    pointer + "/custodianRequired");
-            requireBoolean(
-                    policy,
-                    "syntheticOnly",
-                    index < 5,
-                    pointer + "/syntheticOnly");
+        Map<String, Object> custodian =
+                object(rbac.get("custodianAssignment"), "/rbac/custodianAssignment");
+        requireExactKeys(custodian, "/rbac/custodianAssignment", "principal", "state");
+        require(
+                custodian.get("principal") == null,
+                "E_CUSTODIAN_ASSIGNED",
+                "/rbac/custodianAssignment/principal");
+        requireString(
+                custodian,
+                "state",
+                CUSTODIAN_ASSIGNMENT,
+                "/rbac/custodianAssignment/state");
+
+        List<Object> rules = array(rbac.get("roleRules"), "/rbac/roleRules");
+        require(rules.size() == ROLES.size(), "E_ROLE_RULE_COUNT", "/rbac/roleRules");
+        List<List<String>> expectedActions =
+                List.of(
+                        List.of(
+                                "READ_PUBLIC_MANIFEST",
+                                "CREATE_TRANSIENT_SYNTHETIC_SENTINEL",
+                                "DELETE_TRANSIENT_SYNTHETIC_SENTINEL",
+                                "EMIT_CONTENT_FREE_SUMMARY"),
+                        List.of("READ_PUBLIC_MANIFEST", "READ_CONTENT_FREE_EVIDENCE"),
+                        List.of("READ_PUBLIC_MANIFEST"),
+                        List.of(),
+                        List.of(),
+                        List.of());
+        for (int index = 0; index < rules.size(); index++) {
+            String pointer = "/rbac/roleRules/" + index;
+            Map<String, Object> rule = object(rules.get(index), pointer);
+            requireExactKeys(rule, pointer, "actions", "role");
+            requireString(rule, "role", ROLES.get(index), pointer + "/role");
+            requireStrings(rule.get("actions"), expectedActions.get(index), pointer + "/actions");
         }
     }
 
     private static void validateRetention(Object value) {
-        Map<String, Object> retention = object(value, "/retentionDeletion");
+        Map<String, Object> retention = object(value, "/retention");
         requireExactKeys(
                 retention,
-                "/retentionDeletion",
-                "approvedMaxima",
-                "controlledStorageDryRunStatus",
-                "deletionScopes",
-                "shorterMandatoryPeriodWins",
-                "syntheticTempPolicy");
-        Map<String, Object> maxima =
-                object(retention.get("approvedMaxima"), "/retentionDeletion/approvedMaxima");
-        requireExactKeys(
-                maxima,
-                "/retentionDeletion/approvedMaxima",
-                "derivedDaysAfterPocClose",
-                "rawAudioDaysAfterPocClose",
-                "withdrawalCompletionDays");
-        requireLong(
-                maxima,
-                "derivedDaysAfterPocClose",
-                180L,
-                "/retentionDeletion/approvedMaxima/derivedDaysAfterPocClose");
-        requireLong(
-                maxima,
-                "rawAudioDaysAfterPocClose",
-                90L,
-                "/retentionDeletion/approvedMaxima/rawAudioDaysAfterPocClose");
-        requireLong(
-                maxima,
-                "withdrawalCompletionDays",
-                30L,
-                "/retentionDeletion/approvedMaxima/withdrawalCompletionDays");
-        requireString(
-                retention,
-                "controlledStorageDryRunStatus",
-                "NOT_RUN",
-                "/retentionDeletion/controlledStorageDryRunStatus");
-        requireStrings(
-                retention.get("deletionScopes"),
-                DELETION_SCOPES,
-                "/retentionDeletion/deletionScopes");
+                "/retention",
+                "controlledStoreDeletionDryRunCompleted",
+                "physicalOverwritePromised",
+                "purposeRecordedDerivedMaxDays",
+                "purposeRecordedRawMaxDays",
+                "shorterMandatoryTermWins",
+                "syntheticTempDeletionDryRunRequired",
+                "transientSentinelRetention",
+                "withdrawalCompletionMaxDays");
         requireBoolean(
                 retention,
-                "shorterMandatoryPeriodWins",
+                "controlledStoreDeletionDryRunCompleted",
+                false,
+                "/retention/controlledStoreDeletionDryRunCompleted");
+        requireBoolean(
+                retention,
+                "physicalOverwritePromised",
+                false,
+                "/retention/physicalOverwritePromised");
+        requireLong(
+                retention,
+                "purposeRecordedDerivedMaxDays",
+                180L,
+                "/retention/purposeRecordedDerivedMaxDays");
+        requireLong(
+                retention,
+                "purposeRecordedRawMaxDays",
+                90L,
+                "/retention/purposeRecordedRawMaxDays");
+        requireBoolean(
+                retention,
+                "shorterMandatoryTermWins",
                 true,
-                "/retentionDeletion/shorterMandatoryPeriodWins");
+                "/retention/shorterMandatoryTermWins");
+        requireBoolean(
+                retention,
+                "syntheticTempDeletionDryRunRequired",
+                true,
+                "/retention/syntheticTempDeletionDryRunRequired");
         requireString(
                 retention,
-                "syntheticTempPolicy",
-                "DELETE_AND_VERIFY_ABSENCE_BEFORE_RETURN",
-                "/retentionDeletion/syntheticTempPolicy");
+                "transientSentinelRetention",
+                "DELETE_BEFORE_OPERATION_RETURNS",
+                "/retention/transientSentinelRetention");
+        requireLong(
+                retention,
+                "withdrawalCompletionMaxDays",
+                30L,
+                "/retention/withdrawalCompletionMaxDays");
     }
 
     private static void requireAllowed(String role, String action) {
@@ -923,12 +987,6 @@ public final class PocDataControlPlane {
 
     private static void requireDenied(String role, String action) {
         require(!authorize(role, action).allowed(), "E_RBAC_EXPECTED_DENY", "/rbac");
-    }
-
-    private static void requireSchemaEnum(
-            Map<String, Object> definitions, String name, List<String> expected) {
-        Map<String, Object> definition = object(definitions.get(name), "/$defs/" + name);
-        requireStrings(definition.get("enum"), expected, "/$defs/" + name + "/enum");
     }
 
     private static void requireId(Object value, String prefix, String pointer) {
@@ -1014,12 +1072,16 @@ public final class PocDataControlPlane {
         result.put(
                 "READ_PUBLIC_MANIFEST",
                 List.of("SYNTHETIC_DRY_RUN_OPERATOR", "SECURITY_AUDITOR", "EVALUATOR"));
-        result.put("VALIDATE_MANIFEST", List.of("SYNTHETIC_DRY_RUN_OPERATOR"));
-        result.put("CREATE_SYNTHETIC_TEMP", List.of("SYNTHETIC_DRY_RUN_OPERATOR"));
-        result.put("DELETE_SYNTHETIC_TEMP", List.of("SYNTHETIC_DRY_RUN_OPERATOR"));
+        result.put(
+                "CREATE_TRANSIENT_SYNTHETIC_SENTINEL",
+                List.of("SYNTHETIC_DRY_RUN_OPERATOR"));
+        result.put(
+                "DELETE_TRANSIENT_SYNTHETIC_SENTINEL",
+                List.of("SYNTHETIC_DRY_RUN_OPERATOR"));
+        result.put("EMIT_CONTENT_FREE_SUMMARY", List.of("SYNTHETIC_DRY_RUN_OPERATOR"));
         result.put(
                 "READ_CONTENT_FREE_EVIDENCE",
-                List.of("SYNTHETIC_DRY_RUN_OPERATOR", "SECURITY_AUDITOR"));
+                List.of("SECURITY_AUDITOR"));
         for (String action : ACTIONS.subList(5, ACTIONS.size())) {
             result.put(action, List.of());
         }
@@ -1091,9 +1153,19 @@ public final class PocDataControlPlane {
                                     && Character.isLowSurrogate(text.charAt(index + 1)),
                             "E_JSON_UNICODE",
                             "/");
+                    int codePoint = Character.toCodePoint(current, text.charAt(index + 1));
+                    require(
+                            Character.getType(codePoint) != Character.FORMAT,
+                            "E_JSON_UNICODE",
+                            "/");
                     index++;
                 } else if (Character.isLowSurrogate(current)) {
                     reject("E_JSON_UNICODE", "/");
+                } else {
+                    require(
+                            Character.getType(current) != Character.FORMAT,
+                            "E_JSON_UNICODE",
+                            "/");
                 }
             }
         } else if (value instanceof List<?> list) {
@@ -1108,7 +1180,7 @@ public final class PocDataControlPlane {
         }
     }
 
-    private static void appendCanonical(Object value, StringBuilder output) {
+    private static void appendPrettyCanonical(Object value, StringBuilder output, int depth) {
         if (value == null) {
             output.append("null");
         } else if (value instanceof String text) {
@@ -1118,13 +1190,20 @@ public final class PocDataControlPlane {
         } else if (value instanceof Long number) {
             output.append(number.longValue());
         } else if (value instanceof List<?> list) {
-            output.append('[');
+            if (list.isEmpty()) {
+                output.append("[]");
+                return;
+            }
+            output.append("[\n");
             for (int index = 0; index < list.size(); index++) {
-                if (index > 0) {
+                appendIndent(output, depth + 1);
+                appendPrettyCanonical(list.get(index), output, depth + 1);
+                if (index + 1 < list.size()) {
                     output.append(',');
                 }
-                appendCanonical(list.get(index), output);
+                output.append('\n');
             }
+            appendIndent(output, depth);
             output.append(']');
         } else if (value instanceof Map<?, ?> map) {
             TreeMap<String, Object> sorted = new TreeMap<>();
@@ -1132,21 +1211,31 @@ public final class PocDataControlPlane {
                 require(entry.getKey() instanceof String, "E_JSON_OBJECT_KEY", "/");
                 sorted.put((String) entry.getKey(), entry.getValue());
             }
-            output.append('{');
-            boolean first = true;
+            if (sorted.isEmpty()) {
+                output.append("{}");
+                return;
+            }
+            output.append("{\n");
+            int index = 0;
             for (Map.Entry<String, Object> entry : sorted.entrySet()) {
-                if (!first) {
+                appendIndent(output, depth + 1);
+                appendString(entry.getKey(), output);
+                output.append(": ");
+                appendPrettyCanonical(entry.getValue(), output, depth + 1);
+                if (++index < sorted.size()) {
                     output.append(',');
                 }
-                first = false;
-                appendString(entry.getKey(), output);
-                output.append(':');
-                appendCanonical(entry.getValue(), output);
+                output.append('\n');
             }
+            appendIndent(output, depth);
             output.append('}');
         } else {
             reject("E_JSON_VALUE", "/");
         }
+    }
+
+    private static void appendIndent(StringBuilder output, int depth) {
+        output.append("  ".repeat(depth));
     }
 
     private static void appendString(String value, StringBuilder output) {

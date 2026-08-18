@@ -1,11 +1,11 @@
 # Dora MVP 1 — POC-DATA-001 synthetic control plane
 
-Contract ID: `poc-data-control-plane-stage0-v0.1`  
-Backlog item: `POC-DATA-001`  
-Date: 18 August 2026  
-Owner authority: `POC-DATA-CONTROL-PLANE-SETUP-AUTH-20260818-01`  
-Disjoint-first authority: `POC-DATA-CONTROL-PLANE-DISJOINT-FIRST-AUTH-20260818-01`  
-Exact implementation base: `main@4a1dacacc52926ef3608a5952a762f00b8dafaa9` / tree `23d0fe235acff4e4693b6eabcedad1e58b8d0816`  
+Contract ID: `poc-data-control-plane-stage0-v0.1`
+Backlog item: `POC-DATA-001`
+Date: 18 August 2026
+Owner authority: `POC-DATA-CONTROL-PLANE-SETUP-AUTH-20260818-01`
+Disjoint-first authority: `POC-DATA-CONTROL-PLANE-DISJOINT-FIRST-AUTH-20260818-01`
+Exact implementation base: `main@4a1dacacc52926ef3608a5952a762f00b8dafaa9` / tree `23d0fe235acff4e4693b6eabcedad1e58b8d0816`
 Status: **SYNTHETIC CONTROL-PLANE DRY-RUN ONLY; `CUSTODIAN_UNASSIGNED`; REAL COLLECTION NOT AUTHORIZED**
 
 ## 1. Decision and claim ceiling
@@ -52,7 +52,7 @@ tests, and content-free aggregate evidence may be committed.
 
 ## 3. Consent process — prepared, not operational
 
-Process ID: `poc-data-consent-process-stage0-v0.1`  
+Process ID: `poc-data-consent-process-stage0-v0.1`
 State: `PREPARED_NOT_OPERATIONAL`
 
 The process is a future gate for purpose-recorded adult-volunteer data. It is not final legal copy
@@ -93,12 +93,12 @@ the take stops if an unconsented voice or out-of-scope content is heard.
 - a per-take acknowledgement is separate from the research consent record and does not broaden it.
 - public evidence may contain only an opaque consent reference; no signature, contact, or mapping.
 
-Current machine state is fixed to `PREPARED_NOT_OPERATIONAL`, `realConsentRecords=0`, and
+Current machine state is fixed to `PREPARED_NOT_OPERATIONAL`, `realConsentRecordCount=0`, and
 `consentReference=not-applicable` for every synthetic entry.
 
 ## 4. Collection plan — exact synthetic dry-run
 
-Plan ID: `poc-data-synthetic-control-plane-plan-stage0-v0.1`  
+Plan ID: `poc-data-synthetic-control-plane-plan-stage0-v0.1`
 Plan state: `AUTHORIZED_SYNTHETIC_DRY_RUN_ONLY`
 
 | Field | Frozen value |
@@ -138,8 +138,9 @@ The schema is a closed Draft 2020-12 structural contract. The Java layer additio
 - canonical lexicographic object-key serialization with LF and exactly one terminal newline;
 - exact authority, role, action, limitation, blocker, and deletion-scope catalogues;
 - opaque IDs and timestamps with fixed formats;
-- no sample bytes, content digest, evidence locator, signed URL, participant mapping, device/account
-  identifier, consent form, or personal data;
+- no sample bytes, sample/content-linked digest, evidence locator, signed URL, participant mapping,
+  device/account identifier, consent form, or personal data; the non-null `termsDigest` is only a
+  frozen synthetic control-policy profile value, not external-data rights or product admission;
 - parent existence, acyclic lineage, equal split, non-widening roles/retention, and propagated
   deletion state;
 - exact deny-by-default RBAC and authority flags;
@@ -246,7 +247,8 @@ False and fail-closed:
 - `networkExecutionAllowed`, `cloudTransferAllowed`, `deviceExecutionAllowed`;
 - `modelInferenceAllowed`, `trainingAllowed`, `modelImprovementAllowed`;
 - `productionSchemaAllowed`, `productionStorageAllowed`, `dependencyAdmissionAllowed`;
-- `productionAdmissionAllowed`, `pocDataReadyAllowed`, `pocDataPassAllowed`, `mergeAllowed`.
+- `productionAdmissionAllowed`, `pocDataReadyAllowed`, `pocDataPassAllowed`,
+  `publicationAllowedByThisPackage`, `mergeAllowedByThisPackage`.
 
 ## 10. Remaining blockers and next owner gates
 
