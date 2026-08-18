@@ -1,0 +1,193 @@
+{
+  "recordType": "dora-gov-omi-phase-b-bounded-public-content-audit-scope",
+  "schemaVersion": 1,
+  "taskId": "GOV-OMI-001",
+  "version": "gov-omi-phase-b-bounded-content-audit-v0.1",
+  "date": "2026-08-18",
+  "state": "AUTHORIZED_BOUNDED_MECHANICAL_AUDIT",
+  "authority": {
+    "id": "GOV-OMI-PHASE-B-BOUNDED-PUBLIC-SOURCE-CONTENT-AUDIT-AUTH-20260818-01",
+    "approvedBy": "Project owner",
+    "approvedOn": "2026-08-18",
+    "literalNamePlaceholderAssignsReviewer": false,
+    "mechanicalFindingsOnly": true
+  },
+  "preQueryCheckpoint": {
+    "capturedAt": "2026-08-18T14:50:00Z",
+    "doraRepository": "Monumentogram/DORA",
+    "branch": "codex/gov-omi-001-phase-b-bounded-content-audit",
+    "baseCommitSha": "4a1dacacc52926ef3608a5952a762f00b8dafaa9",
+    "baseTreeSha": "23d0fe235acff4e4693b6eabcedad1e58b8d0816",
+    "baseParentSha": "97df1dc029328de16d7b2cc9f4aadcefc043bbbd",
+    "trackedWorktreeClean": true,
+    "stagedWorktreeClean": true,
+    "upstreamRequestCountBeforeCheckpoint": 0
+  },
+  "phaseASources": [
+    {
+      "path": "docs/stage0/DORA_MVP1_GOV_OMI_REUSE_AUDIT_TASK.md",
+      "gitBlobOid": "bb48502d14cd2d2a5adac31a83fba10dbac31efb",
+      "bytes": 16316,
+      "sha256": "fb6126bb89a59ecccecb5872db154a9f0a1239b5c2ffa19c4a3155a064b03c45"
+    },
+    {
+      "path": "docs/stage0/gov-omi-reuse-task-stage0-v0.1.json",
+      "gitBlobOid": "8e4901d0909ea2fc962e4397965f106833cdb026",
+      "bytes": 3986,
+      "sha256": "db7ba5e2c9ace0c1bc4ed8420adee79f049d018ad6c4416ffc8f1d1c7fbb6d14"
+    },
+    {
+      "path": "docs/evidence/gov-omi-001/upstream-snapshot.json",
+      "gitBlobOid": "b01c0833a85f10b8eede55d0be80a250da47a0b9",
+      "bytes": 21751,
+      "sha256": "77ac3597296ffcc58f1d1d8d14feedf0db50ef56a88754cd1683f2c81c1e407a"
+    },
+    {
+      "path": "docs/evidence/gov-omi-001/license-surface-inventory.json",
+      "gitBlobOid": "8f7b7652acc450c7caca2c87a3991fdac7b3880b",
+      "bytes": 74859,
+      "sha256": "19abbbb378a2b80a4ce157f6c3953fef55ca24a0d7ae79da200955a33dcb2d2a"
+    },
+    {
+      "path": "docs/evidence/gov-omi-001/component-matrix.json",
+      "gitBlobOid": "57c5bb2cc88f000a5c9f17fd74746c4306da4b49",
+      "bytes": 13024,
+      "sha256": "d79119d750d836ee376f1b2e3b7e5409cc97e8f627a4df9d7415dc66b5a2cb5b"
+    },
+    {
+      "path": "docs/evidence/gov-omi-001/hazard-register.json",
+      "gitBlobOid": "1148f3e0a0e44e323c88f207bb44a1e674244d84",
+      "bytes": 36825,
+      "sha256": "a03a5ec3d23527d5d63066e9cb368f5bafa9452d092ab138b05dddcf3f09d796"
+    },
+    {
+      "path": "docs/evidence/gov-omi-001/audit-report.md",
+      "gitBlobOid": "3348a5304080e827e3d94362b00d358f0be0c37e",
+      "bytes": 5604,
+      "sha256": "226daa9010f0a8467c9b4cb653837b02d2b57b428cbd240d164b42b934f154e4"
+    }
+  ],
+  "upstreamSnapshot": {
+    "repository": "BasedHardware/omi",
+    "commitSha": "7d99abcc4efb9e46a5853b21fc01289e4b891837",
+    "treeSha": "85db621ffd5dc5386bcbd7c87713cc69638be7e3",
+    "treeMetadataSha256": "007d030a21e72c07c89f36359c0e5ded355147c85b5b6284ae0858e5e5058e90",
+    "rootEntryCount": 48,
+    "recursiveEntryCount": 13341,
+    "movingRefAllowedAsIdentity": false
+  },
+  "staticBlobAllowlist": [
+    {"category":"rights","path":"LICENSE","mode":"100644","oid":"beb9b3553922522ad2466040709a4a76c05d81ca","size":1084},
+    {"category":"security","path":"SECURITY.md","mode":"100644","oid":"3b541d7704e77fbc2be195a400588453073d74ff","size":3413},
+    {"category":"mobile-manifest","path":"app/pubspec.yaml","mode":"100644","oid":"0fd1d42b3367ae21e1fc62f85f21c5f64a42e352","size":6211},
+    {"category":"mobile-lock","path":"app/pubspec.lock","mode":"100644","oid":"343b04ffa58f2c700c944899b0ba877f5c934796","size":75797},
+    {"category":"android-manifest","path":"app/android/app/build.gradle","mode":"100644","oid":"969fc35017e5b8b6dba80ad6f6769e4f063b95eb","size":5586},
+    {"category":"android-native-control","path":"app/android/app/src/main/cpp/CMakeLists.txt","mode":"100644","oid":"e58117c7cbe53ba4204fe394f263498ca2ee84d7","size":594},
+    {"category":"backend-manifest","path":"backend/pyproject.toml","mode":"100644","oid":"e047144e4753267f3041f369724f72d02354e8a9","size":301},
+    {"category":"backend-dependencies","path":"backend/requirements.txt","mode":"100644","oid":"0ffa99904132158a87cff837890e7b0cadec148a","size":4460},
+    {"category":"diarizer-dependencies","path":"backend/diarizer/requirements.txt","mode":"100644","oid":"df89c93a6b9086d11c09acfe4dca05742bee025c","size":2452},
+    {"category":"asr-dependencies","path":"backend/parakeet/requirements.txt","mode":"100644","oid":"10e7698b495460333e1149f1da51bc4c0c930478","size":892}
+  ],
+  "staticBlobCount": 10,
+  "staticBlobDecodedBytes": 100790,
+  "contractTestResolution": {
+    "metadataRequestCount": 2,
+    "contentRequestedBeforeResolvedCheckpoint": false,
+    "scopes": [
+      {"prefix":"contracts","treeOid":"8f75b76071a25b45ff1227b72888c0d9468888fa","phaseAEntryCount":7},
+      {"prefix":"contract_tests","treeOid":"d10af828ca4c088e4f3c011de4bc75dc011ef2e2","phaseAEntryCount":4}
+    ],
+    "allowedModes": ["100644","100755"],
+    "maxResolvedBlobs": 11,
+    "maxBlobBytes": 65536,
+    "maxAggregateDecodedBytes": 131072,
+    "symlinkAllowed": false,
+    "submoduleAllowed": false,
+    "unresolvedTreeAllowed": false,
+    "resolvedAllowlistPath": "docs/stage0/gov-omi-phase-b-contract-test-resolved-allowlist-v0.1.json"
+  },
+  "trackerAllowlist": [
+    {"hazardId":"GOV-OMI-HZ-META-001","taxonomyTag":"AUDIO_DATA_LOSS","issueNumber":11769,"pullRequestNumber":7331},
+    {"hazardId":"GOV-OMI-HZ-META-002","taxonomyTag":"MIC_STATE_PERMISSION","issueNumber":11204,"pullRequestNumber":6565},
+    {"hazardId":"GOV-OMI-HZ-META-003","taxonomyTag":"LIFECYCLE_CRASH","issueNumber":11695,"pullRequestNumber":7099},
+    {"hazardId":"GOV-OMI-HZ-META-004","taxonomyTag":"ROUTE_BLE_INTERRUPTION","issueNumber":11762,"pullRequestNumber":7132},
+    {"hazardId":"GOV-OMI-HZ-META-005","taxonomyTag":"DUPLICATE_RETRY_ORDER","issueNumber":11736,"pullRequestNumber":6777},
+    {"hazardId":"GOV-OMI-HZ-META-006","taxonomyTag":"OFFLINE_SYNC","issueNumber":11694,"pullRequestNumber":7091},
+    {"hazardId":"GOV-OMI-HZ-META-007","taxonomyTag":"DELETE_PRIVACY_SECURITY","issueNumber":11812,"pullRequestNumber":7006},
+    {"hazardId":"GOV-OMI-HZ-META-008","taxonomyTag":"USER_TRUTH_STALE_WRITE","issueNumber":11308,"pullRequestNumber":7106},
+    {"hazardId":"GOV-OMI-HZ-META-009","taxonomyTag":"STT_PROVIDER_FAILURE","issueNumber":11777,"pullRequestNumber":7322}
+  ],
+  "requestTypes": [
+    "GET /repos/BasedHardware/omi/git/commits/{exactCommitSha}",
+    "GET /repos/BasedHardware/omi/git/trees/{exactTreeOid}",
+    "GET /repos/BasedHardware/omi/git/blobs/{allowlistedBlobOid}",
+    "GET /repos/BasedHardware/omi/issues/{allowlistedIssueNumber}",
+    "GET /repos/BasedHardware/omi/issues/{allowlistedNumber}/comments?per_page=5&page=1",
+    "GET /repos/BasedHardware/omi/pulls/{allowlistedPullRequestNumber}",
+    "GET /repos/BasedHardware/omi/pulls/{allowlistedPullRequestNumber}/comments?per_page=5&page=1",
+    "GET /repos/BasedHardware/omi/pulls/{allowlistedPullRequestNumber}/reviews?per_page=5&page=1"
+  ],
+  "budgets": {
+    "identityAndRootMetadataRequests": 2,
+    "contractTestTreeMetadataRequests": 2,
+    "staticBlobRequests": 10,
+    "maxResolvedContractTestBlobRequests": 11,
+    "trackerRequests": 54,
+    "maxLogicalRequests": 79,
+    "maxRetryPerRequest": 1,
+    "retryConditions": ["transient-transport","HTTP-429","HTTP-5xx"],
+    "maxTransportAttempts": 158,
+    "maxDecodedStaticBlobBytes": 100790,
+    "maxDecodedResolvedContractTestBytes": 131072,
+    "maxDecodedAllBlobBytes": 262144,
+    "maxTrackerBodyUtf8Bytes": 131072,
+    "maxCommentOrReviewBodyUtf8Bytes": 65536,
+    "maxOneTrackerItemUtf8Bytes": 524288,
+    "maxAllTrackerTextUtf8Bytes": 8388608,
+    "maxOneApiJsonResponseBytes": 2097152,
+    "maxAllApiJsonResponseBytes": 33554432,
+    "commentPageSize": 5,
+    "commentPageCount": 1
+  },
+  "privacy": {
+    "rawContentMayExistOnlyInProcessMemory": true,
+    "rawContentInWorktree": false,
+    "rawContentInTemporaryFiles": false,
+    "rawContentInGit": false,
+    "rawContentInTerminalOrToolOutput": false,
+    "rawContentInPullRequest": false,
+    "rawContentInCiOrActionsArtifacts": false,
+    "retainAuthorsOrContactDetails": false,
+    "retainTitlesBodiesCommentsReviewsOrSourceExcerpts": false,
+    "potentialSecretOrPersonalContentAction": "SUPPRESS_AFFECTED_CONTENT_AND_RECORD_CATEGORY_COUNT_ONLY"
+  },
+  "reviewers": {
+    "productLegalIp": {"identity":null,"capacityConfirmed":false,"signatureOrEquivalent":null,"reviewedAt":null,"disposition":null},
+    "engineeringSecurity": {"identity":null,"capacityConfirmed":false,"signatureOrEquivalent":null,"reviewedAt":null,"disposition":null}
+  },
+  "authorityFlags": {
+    "publicBoundedContentRetrievalAllowedAfterFrozenCheckpoint": true,
+    "patchOrDiffRetrievalAllowed": false,
+    "cloneOrArchiveAllowed": false,
+    "buildOrExecutionAllowed": false,
+    "copyOrPortAllowed": false,
+    "doraDependencyOrProductAdmissionAllowed": false,
+    "reviewerAssignmentAllowed": false,
+    "backlogOrStageStatusEditAllowed": false,
+    "readyOrMergeAllowed": false
+  },
+  "allowedDoraFiles": [
+    "docs/stage0/DORA_MVP1_GOV_OMI_PHASE_B_BOUNDED_CONTENT_AUDIT.md",
+    "docs/stage0/gov-omi-phase-b-bounded-content-audit-v0.1.json",
+    "docs/stage0/gov-omi-phase-b-contract-test-resolved-allowlist-v0.1.json",
+    "docs/evidence/gov-omi-001/phase-b-bounded-content-audit-v0.1.json",
+    "docs/evidence/gov-omi-001/phase-b-bounded-content-audit-report.md"
+  ],
+  "expectedDispositionAfterMechanicalAudit": {
+    "overallRights": "BLOCKED_RIGHTS",
+    "componentAndHazardConclusions": "INSUFFICIENT_EVIDENCE",
+    "evaluationApproved": false,
+    "admitted": false
+  },
+  "noAdmissionStatement": "This bounded public-content audit may produce only sanitized mechanical evidence. It does not authorize or admit Omi source, dependencies, binaries, models, datasets, assets, services, schemas, tests or product behavior."
+}
