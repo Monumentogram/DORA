@@ -1,0 +1,479 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:dora:stage0:poc-data:synthetic-public-projection:v0.1",
+  "title": "Dora Stage 0 synthetic public-manifest minimum profile",
+  "description": "Non-normative disposable structural profile for Git-safe synthetic metadata. The pinned Java validator adds canonical ordering and cross-field semantics that JSON Schema does not express. This is not the canonical corpus schema, does not create a dataset or corpus manifest, and grants no collection, storage, training, redistribution, execution or publication authority.",
+  "x-dora-semantic-layer": "PINNED_JAVA_VALIDATOR_REQUIRED_FOR_CANONICAL_ORDER_AND_CROSS_FIELD_RULES",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "profileId",
+    "manifestId",
+    "datasetId",
+    "version",
+    "purpose",
+    "dataClass",
+    "origin",
+    "licenseId",
+    "termsDigest",
+    "consentReference",
+    "trainingAllowed",
+    "publicRedistributionAllowed",
+    "samples",
+    "deletionLedger",
+    "publicProjection",
+    "limitations"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "profileId": {
+      "const": "poc-data-synthetic-public-projection-stage0-v0.1"
+    },
+    "manifestId": {
+      "type": "string",
+      "pattern": "^manifest-[0-9a-f]{16}$"
+    },
+    "datasetId": {
+      "type": "string",
+      "pattern": "^dataset-[0-9a-f]{16}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "purpose": {
+      "$ref": "#/$defs/purpose"
+    },
+    "dataClass": {
+      "enum": [
+        "SYNTHETIC_SIGNAL",
+        "GENERATED_TEXT"
+      ]
+    },
+    "origin": {
+      "$ref": "#/$defs/origin"
+    },
+    "licenseId": {
+      "const": "DORA_ORIGINAL_SYNTHETIC_METADATA_ONLY"
+    },
+    "termsDigest": {
+      "$ref": "#/$defs/sha256"
+    },
+    "consentReference": {
+      "const": "not-applicable"
+    },
+    "trainingAllowed": {
+      "const": false
+    },
+    "publicRedistributionAllowed": {
+      "const": false
+    },
+    "samples": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/sample"
+      }
+    },
+    "deletionLedger": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/deletionEntry"
+      }
+    },
+    "publicProjection": {
+      "$ref": "#/$defs/publicProjection"
+    },
+    "limitations": {
+      "description": "The pinned Java semantic layer requires this complete catalogue in the listed order.",
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "NON_NORMATIVE_MINIMUM_PROFILE",
+          "NO_DURABLE_OR_GOVERNED_DATASET_OR_CORPUS_MANIFEST_CREATED",
+          "SYNTHETIC_METADATA_ONLY",
+          "NO_SAMPLE_BYTES",
+          "NO_COLLECTION_STORAGE_ACCESS_OR_CONSENT_EVIDENCE",
+          "NO_POC_PASS_OR_PRODUCTION_ADMISSION"
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:(?!0{64}$)[0-9a-f]{64}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "purpose": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pocIds",
+        "allowedUses",
+        "excludedUses"
+      ],
+      "properties": {
+        "pocIds": {
+          "description": "The pinned Java semantic layer requires source-catalog order and rejects duplicates.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "POC-CAPTURE-001",
+              "POC-RECOVERY-001",
+              "POC-VAD-001",
+              "POC-ASR-001",
+              "POC-DIAR-001",
+              "POC-DECISION-001",
+              "POC-OFFLINE-001",
+              "POC-VPN-001",
+              "POC-BATTERY-001",
+              "POC-SEARCH-001"
+            ]
+          }
+        },
+        "allowedUses": {
+          "description": "The pinned Java semantic layer requires source-catalog order and the exact PoC-to-purpose projection.",
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "CAPTURE_SAMPLE_INTEGRITY_AND_RECOVERY_TESTING",
+              "VAD_SILENCE_AND_MAX_CAP_EVALUATION",
+              "ASR_RU_EN_MIXED_EVALUATION",
+              "DIARIZATION_AND_CORRECTION_LOAD_EVALUATION",
+              "DECISION_TASK_SOURCE_GROUNDING_EVALUATION",
+              "OFFLINE_VPN_TRANSPORT_TESTING",
+              "BATTERY_THERMAL_CALIBRATION",
+              "SEARCH_SCALE_TESTING"
+            ]
+          }
+        },
+        "excludedUses": {
+          "description": "The pinned Java semantic layer requires this complete catalogue in the listed order.",
+          "type": "array",
+          "minItems": 13,
+          "maxItems": 13,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "MODEL_TRAINING",
+              "FINE_TUNING",
+              "DISTILLATION",
+              "EMBEDDING_ENROLLMENT",
+              "UNDECLARED_HUMAN_REVIEW",
+              "PROVIDER_QUALITY_IMPROVEMENT",
+              "PUBLIC_RELEASE_REDISTRIBUTION_OR_PUBLICATION",
+              "MARKETING_OR_DEMO",
+              "BIOMETRIC_IDENTITY",
+              "CROSS_CONVERSATION_SPEAKER_RECOGNITION",
+              "TRAINING_EXAMPLE_SELECTION_OUTSIDE_NAMED_POC",
+              "HARD_EXAMPLE_RETENTION_BEYOND_APPROVED_PERIOD",
+              "CROSS_PROJECT_OR_COMPANY_REUSE"
+            ]
+          }
+        }
+      }
+    },
+    "origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "generatorId",
+        "generatorVersion",
+        "seed",
+        "sourceReference"
+      ],
+      "properties": {
+        "type": {
+          "const": "DETERMINISTIC_GENERATOR"
+        },
+        "generatorId": {
+          "const": "poc-data-java17-in-memory-fixture-generator"
+        },
+        "generatorVersion": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9223372036854775807
+        },
+        "sourceReference": {
+          "const": "tools/poc_data_manifest_validator/src/test/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidatorTest.java"
+        }
+      }
+    },
+    "acousticSlice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "condition",
+        "distance",
+        "route",
+        "overlap"
+      ],
+      "properties": {
+        "condition": {
+          "enum": [
+            "SYNTHETIC_SILENCE",
+            "SYNTHETIC_TONE",
+            "SYNTHETIC_BOUNDED_NOISE",
+            "NOT_APPLICABLE_TEXT"
+          ]
+        },
+        "distance": {
+          "enum": [
+            "SYNTHETIC_NEAR_FIELD",
+            "SYNTHETIC_FAR_FIELD",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "route": {
+          "enum": [
+            "SYNTHETIC_BUILT_IN_MIC",
+            "SYNTHETIC_HEADSET",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "overlap": {
+          "enum": [
+            "NONE",
+            "SYNTHETIC_OVERLAP",
+            "NOT_APPLICABLE"
+          ]
+        }
+      }
+    },
+    "sample": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sampleId",
+        "contentSha256",
+        "languageSlice",
+        "acousticSlice",
+        "speakerCountBucket",
+        "split",
+        "parentSampleId",
+        "storageClass",
+        "evidenceLocator",
+        "accessRoles",
+        "createdAt",
+        "expiresAt",
+        "deletionState",
+        "notes"
+      ],
+      "properties": {
+        "sampleId": {
+          "type": "string",
+          "pattern": "^sample-[0-9a-f]{16}$"
+        },
+        "contentSha256": {
+          "type": "null"
+        },
+        "languageSlice": {
+          "enum": [
+            "ru",
+            "en",
+            "mixed-ru-en",
+            "non-speech"
+          ]
+        },
+        "acousticSlice": {
+          "$ref": "#/$defs/acousticSlice"
+        },
+        "speakerCountBucket": {
+          "enum": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5-6",
+            "not-applicable"
+          ]
+        },
+        "split": {
+          "enum": [
+            "development",
+            "test",
+            "evaluation"
+          ]
+        },
+        "parentSampleId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^sample-[0-9a-f]{16}$"
+        },
+        "storageClass": {
+          "const": "MANIFEST_ONLY_NO_SAMPLE_BYTES"
+        },
+        "evidenceLocator": {
+          "type": "null"
+        },
+        "accessRoles": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "generator",
+              "qa-evaluator",
+              "security-auditor"
+            ]
+          }
+        },
+        "createdAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "expiresAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "deletionState": {
+          "enum": [
+            "active",
+            "withdrawal-pending",
+            "expired",
+            "deleted",
+            "quarantined"
+          ]
+        },
+        "notes": {
+          "enum": [
+            "ROOT_SYNTHETIC_ENTRY",
+            "DERIVED_SYNTHETIC_VARIANT",
+            "DELETION_DRY_RUN_TARGET"
+          ]
+        }
+      }
+    },
+    "deletionEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "sampleId",
+        "trigger",
+        "requestedAt",
+        "completedAt",
+        "backupExpiresAt",
+        "affectedScopes",
+        "unresolvedFailures",
+        "outcome"
+      ],
+      "properties": {
+        "eventId": {
+          "type": "string",
+          "pattern": "^delete-[0-9a-f]{16}$"
+        },
+        "sampleId": {
+          "type": "string",
+          "pattern": "^sample-[0-9a-f]{16}$"
+        },
+        "trigger": {
+          "const": "SYNTHETIC_DRY_RUN"
+        },
+        "requestedAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "completedAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "backupExpiresAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "affectedScopes": {
+          "description": "The pinned Java semantic layer requires this complete catalogue in the listed order.",
+          "type": "array",
+          "minItems": 8,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "RAW_AND_TRANSFORMED_COPIES",
+              "TRANSCRIPTS_ANNOTATIONS_FEATURES_NOTES",
+              "CACHES_EXPORTS_DOWNLOADS",
+              "SPLIT_INDEX_AND_PRIVATE_MANIFESTS",
+              "CONTROLLED_BACKUPS",
+              "PROVIDER_COPIES",
+              "PARTICIPANT_MAPPING_AND_ACCESS_GRANTS",
+              "DERIVED_VARIANTS"
+            ]
+          }
+        },
+        "unresolvedFailures": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "outcome": {
+          "const": "DELETED"
+        }
+      }
+    },
+    "publicProjection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "containsRawContent",
+        "containsTranscriptOrSourceExcerpt",
+        "containsPersonalData",
+        "containsParticipantMapping",
+        "containsConsentForm",
+        "containsPrivateLocator",
+        "containsSignedUrl",
+        "containsDeviceOrAccountIdentifier",
+        "containsPublicLinkableContentDigest"
+      ],
+      "properties": {
+        "containsRawContent": {
+          "const": false
+        },
+        "containsTranscriptOrSourceExcerpt": {
+          "const": false
+        },
+        "containsPersonalData": {
+          "const": false
+        },
+        "containsParticipantMapping": {
+          "const": false
+        },
+        "containsConsentForm": {
+          "const": false
+        },
+        "containsPrivateLocator": {
+          "const": false
+        },
+        "containsSignedUrl": {
+          "const": false
+        },
+        "containsDeviceOrAccountIdentifier": {
+          "const": false
+        },
+        "containsPublicLinkableContentDigest": {
+          "const": false
+        }
+      }
+    }
+  }
+}

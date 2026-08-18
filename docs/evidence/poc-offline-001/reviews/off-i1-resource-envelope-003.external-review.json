@@ -1,0 +1,19 @@
+{
+  "packetId": "OFF-I1-RESOURCE-ENVELOPE-003",
+  "mdPath": "docs/stage0/DORA_MVP1_POC_OFFLINE_I1_RESOURCE_ENVELOPE_AMENDMENT_STAGE0_V0_3.md",
+  "mdBytes": 13595,
+  "mdSha256": "d28faad79faa740c8dc54095c9bd8cc9ad9d59de592261784eaea3e2eb1de2a0",
+  "jsonPath": "docs/evidence/poc-offline-001/i1-resource-envelope-amendment-stage0-v0.3.json",
+  "jsonBytes": 16965,
+  "jsonSha256": "6972a5df028f64664c4f411cedb87f3db2a7a2e1d8ae982ae707bd2ca3e7f46f",
+  "reviewerModel": "GPT-5 Codex",
+  "reviewerOrganization": "OpenAI",
+  "reviewerRole": "INDEPENDENT_ADVISORY_REVIEWER",
+  "formalReviewer": false,
+  "reviewedAt": "2026-08-16T23:44:55+03:00",
+  "timezone": "Europe/Moscow",
+  "verdict": "CLEAN",
+  "packetP0": 0,
+  "packetP1": 0,
+  "packetP2": 0
+}

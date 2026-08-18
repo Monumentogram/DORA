@@ -1,0 +1,437 @@
+{
+  "schemaVersion": 1,
+  "recordId": "poc-data-synthetic-public-manifest-validator-local-evidence-stage0-v0.1",
+  "recordType": "LOCAL_UNPUBLISHED_NON_NORMATIVE_SYNTHETIC_METADATA_VALIDATOR_VALIDATION",
+  "recordedAt": "2026-08-17T02:17:04+03:00",
+  "timezone": "Europe/Moscow",
+  "backlogId": "POC-DATA-001",
+  "profileId": "poc-data-synthetic-public-projection-stage0-v0.1",
+  "implementationSlice": "SYNTHETIC_PUBLIC_METADATA_MINIMUM_PROFILE_ONLY",
+  "disposition": "LOCAL_VALIDATOR_VALIDATED_POC_DATA_REMAINS_BLOCKED_NO_GOVERNED_DATASET_CREATED",
+  "sourceSnapshot": {
+    "branch": "codex/poc-data-manifest-validator",
+    "baseCommit": "78e9dd07d616989987118f26bb16ebb9932ddb2b",
+    "baseTree": "f403bf60b86273ee8a2634ed5e8530c9d4af20e4",
+    "implementationCommit": null,
+    "implementationTree": null,
+    "publicationStatus": "LOCAL_UNPUBLISHED",
+    "staged": false,
+    "committed": false,
+    "pushed": false,
+    "pullRequestOpened": false
+  },
+  "sourcePins": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 4318,
+      "sha256": "27b6a9b0e99e3f3fd864b3e5289f6246516f680869816623fafc5c809cdb22df"
+    },
+    {
+      "path": "docs/DORA_MVP1_TECHNICAL_PLAN.md",
+      "bytes": 212023,
+      "sha256": "00c4d6816265e86c82e44045a77f85c6e68b43e6094a3736e10ab44eed259a59"
+    },
+    {
+      "path": "docs/DORA_MVP1_DESIGN_SPEC.md",
+      "bytes": 148911,
+      "sha256": "8bc88bd5b9cba036bbc5758957a4a2c1fdb64a053a319cf4b2f9ba544ea81f2b"
+    },
+    {
+      "path": "docs/DORA_MVP1_PRODUCT_DECISIONS.md",
+      "bytes": 66789,
+      "sha256": "16283563ea328877c02192586e21affb69677e199206df14a3221e94bbadd401"
+    },
+    {
+      "path": "docs/adr/ADR-0001-android-bootstrap.md",
+      "bytes": 3147,
+      "sha256": "dfd34f65bc420615fa85feb6258022d326de2cfe6a9c70b992ab3836116a1c13"
+    },
+    {
+      "path": "docs/adr/ADR-0002-public-repository-for-branch-protection.md",
+      "bytes": 5639,
+      "sha256": "9083cd00c2a2e129e20b282ab771c9125917f1d3a48165bb44296d0838c3d372"
+    },
+    {
+      "path": "docs/DORA_MVP1_TEST_STRATEGY.md",
+      "bytes": 17062,
+      "sha256": "cfa2d09387ed4bb80f0ff71a7138930c7a642fdad75c37b0b150774b8d74fbe8"
+    },
+    {
+      "path": "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+      "bytes": 24515,
+      "sha256": "fa80c2402acf6ab94173514a21fe0f2c5451aaf3f36b51a33ebeddd4b6b2e484"
+    },
+    {
+      "path": "docs/DORA_MVP1_STAGE_STATUS.md",
+      "bytes": 37908,
+      "sha256": "0971c1c00b006b6bcc4cb1a3b11bf8399c9fc3a5746aea5889c74612f883b8dd"
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_DATASET_GOVERNANCE.md",
+      "bytes": 18083,
+      "sha256": "bad5250b1b7ca0ade53de5836b736e79cfce1f746e9aecfcb0b1a63f5f8bd7cc"
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_PRIVACY_DATA_FLOW_THREAT_MODEL.md",
+      "bytes": 24629,
+      "sha256": "d9b793eb5bb9a0c4ef64a03b815fc16425ca923921c98e539811f048853bb251"
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_IP_ASSET_POLICY.md",
+      "bytes": 25874,
+      "sha256": "46c49a50bc1df7e556f114694c46af6e73f7e22e51b0eff2a9342b0fad83bbe3"
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_GATES.md",
+      "bytes": 18298,
+      "sha256": "c04db495abe24f1979096282e41bea7793a71c99c989d2cd1c78cdea386dfc5e"
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_EXECUTION_ORDER.md",
+      "bytes": 23513,
+      "sha256": "da649013c4e39196216936ade02b1bf18a8784428f392573977ffb61175bcbd7"
+    }
+  ],
+  "implementationPins": [
+    {
+      "path": "docs/stage0/poc-data-synthetic-public-projection-stage0-v0.1.schema.json",
+      "bytes": 12743,
+      "lines": 479,
+      "sha256": "d487e8062d10535ec64cb44e8ebc363a4d1dca337db9bf2a8dca23ae0518fffb"
+    },
+    {
+      "path": "tools/poc_data_manifest_validator/src/main/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidator.java",
+      "bytes": 50942,
+      "lines": 1213,
+      "sha256": "4b2f997c46b2014848f705626eb3e6273f26e48d9b95624126ecd715908397e4"
+    },
+    {
+      "path": "tools/poc_data_manifest_validator/src/test/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidatorTest.java",
+      "bytes": 40126,
+      "lines": 890,
+      "sha256": "170826b8ee0a96378f90a104c8d3d06fd3a0a4d6b9ec32b5585c08784720c409"
+    }
+  ],
+  "validationLayers": {
+    "schemaLayer": "NON_NORMATIVE_DOCUMENTARY_STRUCTURAL_MINIMUM",
+    "javaLayer": "TASK_SCOPED_EXECUTABLE_CANONICAL_AND_SEMANTIC_SUPERSET",
+    "selectedCatalogueParityChecked": true,
+    "schemaExactBytePinChecked": true,
+    "fullDraft202012EngineImplemented": false,
+    "fullSchemaValidatorParityClaimed": false
+  },
+  "toolchain": {
+    "runtime": "Microsoft OpenJDK 17.0.10+7-LTS",
+    "javaVersion": "17.0.10",
+    "javacVersion": "17.0.10",
+    "jdepsVersion": "17.0.10",
+    "javapVersion": "17.0.10",
+    "release": 17,
+    "sourceEncoding": "UTF-8",
+    "environment": {
+      "classpathInherited": false,
+      "javaToolOptionsInherited": false,
+      "jdkJavaOptionsInherited": false,
+      "underscoreJavaOptionsInherited": false,
+      "userLanguage": "en",
+      "userCountry": "US",
+      "userTimezone": "UTC",
+      "tempRootClass": "VALIDATED_OS_TEMP_OUTSIDE_REPOSITORY"
+    },
+    "executables": [
+      {
+        "tool": "java",
+        "bytes": 49696,
+        "sha256": "98fd4a0eec7fa39abbc2b3f55007ed9c8c24ef8fa5d7c04c3895b4c5915ec3f1"
+      },
+      {
+        "tool": "javac",
+        "bytes": 23472,
+        "sha256": "0e79806dea4681cf6bb1fd41b4d5ba8c579481cb70a28890fe65813639294ffe"
+      },
+      {
+        "tool": "jdeps",
+        "bytes": 23584,
+        "sha256": "3eafdf760ec7a872df431208e343f354d38aff05aa3f178b1a21f29b0f044a9b"
+      },
+      {
+        "tool": "javap",
+        "bytes": 23472,
+        "sha256": "57d9be5cfcd423650e211d4744acbba453b91da0dcd58db92def369d7d9ecc17"
+      }
+    ],
+    "jdkReleaseFile": {
+      "bytes": 1312,
+      "sha256": "f463618c7067d1d7421a2aacdc8a4cfa939e9844436462c1c165cbed20a9769a"
+    }
+  },
+  "commands": [
+    {
+      "id": "JAVA17_RELEASE_COMPILE",
+      "normalizedArgv": "javac -encoding UTF-8 --release 17 -Xlint:all -Werror -d <VALIDATED_OS_TEMP>/classes <MAIN_SOURCE> <TEST_SOURCE>",
+      "exitCode": 0,
+      "stdoutBytes": 0,
+      "stderrBytes": 0
+    },
+    {
+      "id": "ADVERSARIAL_TEST_MAIN_PRIMARY",
+      "normalizedArgv": "java -Djava.io.tmpdir=<VALIDATED_OS_TEMP> -Duser.language=en -Duser.country=US -Duser.timezone=UTC -cp <VALIDATED_OS_TEMP>/classes com.monumentogram.dora.stage0.data.manifest.SyntheticManifestValidatorTest",
+      "repetitions": 2
+    },
+    {
+      "id": "ADVERSARIAL_TEST_MAIN_SUPPLEMENTAL",
+      "normalizedArgv": "java -Djava.io.tmpdir=<VALIDATED_OS_TEMP> -Duser.language=en -Duser.country=US -Duser.timezone=UTC -ea -Xverify:all -cp <VALIDATED_OS_TEMP>/classes com.monumentogram.dora.stage0.data.manifest.SyntheticManifestValidatorTest",
+      "repetitions": 1
+    },
+    {
+      "id": "JDEPS_JAVA_BASE_ONLY",
+      "normalizedArgv": "jdeps -s -recursive <VALIDATED_OS_TEMP>/classes",
+      "exitCode": 0
+    },
+    {
+      "id": "JAVA17_CLASS_VERSION",
+      "normalizedArgv": "javap -verbose -classpath <VALIDATED_OS_TEMP>/classes com.monumentogram.dora.stage0.data.manifest.SyntheticManifestValidator",
+      "exitCode": 0
+    }
+  ],
+  "runs": [
+    {
+      "id": "primary-1",
+      "exitCode": 0,
+      "stdoutBytes": 56,
+      "stdoutSha256": "72c6f8da1b5d4ad7b551282ac75e39f2954a876a09fb7eb15ae35f94ffa5cb9b",
+      "stdoutText": "LOCAL_PASS poc-data-synthetic-manifest-validator-tests",
+      "stderrBytes": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "primary-2",
+      "exitCode": 0,
+      "stdoutBytes": 56,
+      "stdoutSha256": "72c6f8da1b5d4ad7b551282ac75e39f2954a876a09fb7eb15ae35f94ffa5cb9b",
+      "stdoutText": "LOCAL_PASS poc-data-synthetic-manifest-validator-tests",
+      "stderrBytes": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "supplemental",
+      "exitCode": 0,
+      "stdoutBytes": 56,
+      "stdoutSha256": "72c6f8da1b5d4ad7b551282ac75e39f2954a876a09fb7eb15ae35f94ffa5cb9b",
+      "stdoutText": "LOCAL_PASS poc-data-synthetic-manifest-validator-tests",
+      "stderrBytes": 0,
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "compiledOutput": {
+    "classVersion": 61,
+    "classCount": 7,
+    "aggregateContract": "UTF8(relativePath+LF+bytes+LF+sha256+LF) in ordinal path order",
+    "aggregateSha256": "6945c407df04920162fbbd9195bab0a14eccd46aeace243fae8a3a386941005a",
+    "jdepsSummary": "classes -> java.base",
+    "jdepsStdoutSha256": "5b2a2c8f8ebafa6b1243c1c2a1c219d6052feb3911eb80f3d2cd6767865ccfd7",
+    "jdepsStderrBytes": 0
+  },
+  "coverage": {
+    "checkIds": [
+      "JAVA17_RELEASE_COMPILE",
+      "ADVERSARIAL_TEST_MAIN",
+      "PINNED_JDK_REPEAT_OUTPUT_IDENTITY",
+      "SCHEMA_EXACT_BYTE_PIN",
+      "SELECTED_PROFILE_CATALOGUE_PIN_CHECK",
+      "STRICT_UTF8_BOM_DUPLICATE_KEY_AND_DEPTH_CASES",
+      "INTEGER_ONLY_JSON_AND_CANONICAL_BYTE_REJECTION_CASES",
+      "CLOSED_FIELD_TYPE_AND_CATALOG_CASES",
+      "PURPOSE_EXCLUSION_AND_FALSE_RIGHTS_CASES",
+      "CLASS_AND_PUBLIC_PROJECTION_CASES",
+      "LINEAGE_SPLIT_CHRONOLOGY_ACCESS_AND_CYCLE_CASES",
+      "FINAL_STATE_AND_INDIVIDUAL_DELETION_LEDGER_CASES",
+      "EXACT_THIRTY_DAY_WITHDRAWAL_BOUNDARY_CASES",
+      "CLI_EXIT_0_1_2_3_BOUNDED_READ_AND_SOURCE_IMMUTABILITY",
+      "JDEPS_JAVA_BASE_ONLY",
+      "JAVA17_CLASS_VERSION",
+      "FOUR_FILE_SCOPE",
+      "SOURCE_AND_IMPLEMENTATION_PIN_RECHECK",
+      "TEMP_OUTPUT_CLEANUP"
+    ],
+    "pocIdCount": 10,
+    "allowedPurposeCount": 8,
+    "excludedUseCount": 13,
+    "deletionScopeCount": 8,
+    "limitationCodeCount": 6,
+    "testGroupCount": 7,
+    "claimCeiling": "SELECTED_SYNTHETIC_METADATA_PROFILE_AND_LOCAL_VALIDATOR_ONLY"
+  },
+  "dependencyBoundary": {
+    "thirdPartyDependencies": [],
+    "jdkModules": [
+      "java.base"
+    ],
+    "androidApiUsed": false,
+    "networkApiUsed": false,
+    "environmentReadByImplementation": false,
+    "wallClockReadByImplementation": false,
+    "randomnessUsedByImplementation": false,
+    "threadsStartedByImplementation": false,
+    "subprocessStartedByImplementation": false,
+    "filesystemBoundary": "CLI_READS_EXACTLY_ONE_BOUNDED_INPUT_FILE; TEST_WRITES_ONLY_TRANSIENT_SYNTHETIC_DOCUMENT_UNDER_VALIDATED_OS_TEMP"
+  },
+  "privacyBoundary": {
+    "fixtureClasses": [
+      "SYNTHETIC_SIGNAL",
+      "GENERATED_TEXT"
+    ],
+    "sampleBytesPresent": false,
+    "transcriptOrSourceExcerptPresent": false,
+    "personalDataPresent": false,
+    "participantMappingPresent": false,
+    "consentFormPresent": false,
+    "privateLocatorPresent": false,
+    "signedUrlPresent": false,
+    "deviceOrAccountIdentifierPresent": false,
+    "publicLinkableContentDigestPresent": false,
+    "fixtureTermsDigestIsSyntheticSentinel": true,
+    "rightsMetadataAuthenticityVerified": false,
+    "datasetLicenseApproved": false,
+    "privacyControlBasis": "CLOSED_STRUCTURAL_ALLOWLIST_AND_NULL_FALSE_PUBLIC_CARRIERS_NOT_A_GENERAL_PII_DETECTOR"
+  },
+  "temporaryArtifacts": {
+    "transientSyntheticManifestShapedDocumentCreated": true,
+    "locationClass": "VALIDATED_OS_TEMP_OUTSIDE_REPOSITORY",
+    "durableDatasetManifestCreated": false,
+    "repositoryCorpusManifestCreated": false,
+    "classFilesCreatedOutsideRepository": true,
+    "tempArtifactsRetained": false,
+    "cleanupAbsenceVerified": true
+  },
+  "attemptHistory": [
+    {
+      "id": "PRE_FREEZE_PYTHON_RUNTIME_UNAVAILABLE",
+      "classification": "EXCLUDED_NON_EVIDENCE_ATTEMPT",
+      "stateChanged": false
+    },
+    {
+      "id": "PRE_FREEZE_JAVA_PROPERTY_ARGUMENT_TOKENIZATION_FAILED",
+      "classification": "EXCLUDED_NON_EVIDENCE_ATTEMPT",
+      "stateChanged": false
+    },
+    {
+      "id": "PRE_FREEZE_TEST_EXPECTATION_MISMATCH",
+      "classification": "EXCLUDED_NON_EVIDENCE_ATTEMPT",
+      "stateChanged": false
+    },
+    {
+      "id": "PRE_FREEZE_JDEPS_UNSUPPORTED_SUMMARY_FLAG",
+      "classification": "EXCLUDED_NON_EVIDENCE_ATTEMPT",
+      "stateChanged": false
+    },
+    {
+      "id": "NON_EVIDENCE_EMPTY_JAVA_OPTION_ENVIRONMENT_RUN",
+      "classification": "EXCLUDED_NONZERO_TOOL_ENV_DIAGNOSTIC_OUTPUT",
+      "stateChanged": false
+    }
+  ],
+  "advisoryReview": {
+    "reviewClass": "MULTI_AGENT_AI_ADVISORY_READ_ONLY",
+    "formalReviewer": false,
+    "formalHumanReviewClaimed": false,
+    "schemaMainSemanticReview": "CLEAN",
+    "testClosureReview": "CLEAN",
+    "evidenceRecordReviewStatus": "PENDING_POST_CREATION_READ_ONLY_REVIEW",
+    "knownP0": 0,
+    "knownP1": 0
+  },
+  "claims": [
+    "The exact local Java 17 validator compiles and its selected adversarial suite passes reproducibly.",
+    "The structural schema bytes and selected catalogues are pinned.",
+    "The executable layer rejects non-canonical JSON and enforces the task-scoped synthetic metadata semantics.",
+    "The CLI bounded-read and content-free exit mapping pass for the tested cases.",
+    "The metadata final-state lineage and individual deletion-ledger checks pass for the tested cases."
+  ],
+  "nonClaims": [
+    "No full JSON Schema Draft 2020-12 engine or exhaustive schema-to-validator parity is claimed.",
+    "No canonical governed corpus schema is established.",
+    "No durable dataset, governed corpus manifest, sample bytes or immutable corpus split was created.",
+    "No real, purpose-recorded, public-licensed or derived-sensitive data was accessed or authorized.",
+    "No filesystem, backup, provider, private-manifest or withdrawal-process deletion was executed.",
+    "No ancestor-to-descendant operational deletion timing, immediate-stop execution or wall-clock expiry is proved.",
+    "No complete anti-leakage, near-duplicate, evaluation-immutability or scoring-pass control is proved.",
+    "No PoC benchmark, model, device, emulator, network or measured execution occurred.",
+    "No POC-DATA PASS, readiness, production admission, Legal approval or Security approval is claimed."
+  ],
+  "authorityFlags": {
+    "taskScopedLocalValidatorImplementationCompleted": true,
+    "syntheticInMemoryMetadataFixtureAllowed": true,
+    "localHostValidationAllowed": true,
+    "datasetCreated": false,
+    "corpusManifestCreated": false,
+    "canonicalCorpusSchemaEstablished": false,
+    "humanDataAllowed": false,
+    "purposeRecordedCollectionAllowed": false,
+    "publicLicensedDataAllowed": false,
+    "realMeetingDataAllowed": false,
+    "derivedSensitiveDataAllowed": false,
+    "humanReviewAllowed": false,
+    "trainingAllowed": false,
+    "modelImprovementAllowed": false,
+    "biometricIdentityAllowed": false,
+    "crossConversationRecognitionAllowed": false,
+    "publicRedistributionAllowed": false,
+    "consentProcessOperational": false,
+    "custodianNamed": false,
+    "controlledStorageConfigured": false,
+    "controlledStoreAccessAllowed": false,
+    "accessControlOperational": false,
+    "collectionScriptApproved": false,
+    "annotationGuideApproved": false,
+    "immutableCorpusSplitCreated": false,
+    "storageDeletionDryRunCompleted": false,
+    "externalDatasetLicenseApproved": false,
+    "networkExecutionAllowed": false,
+    "deviceExecutionAllowed": false,
+    "emulatorExecutionAllowed": false,
+    "modelOrWeightAllowed": false,
+    "benchmarkExecutionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "broaderPocDataImplementationAllowed": false,
+    "dependencyAdmissionAllowed": false,
+    "productionAdmissionAllowed": false,
+    "legalApprovalClaimed": false,
+    "securityApprovalClaimed": false,
+    "formalHumanApprovalClaimed": false,
+    "statusMutationAllowed": false,
+    "roadmapMutationAllowed": false,
+    "publicationAllowed": false,
+    "commitAllowed": false,
+    "pushAllowed": false,
+    "prAllowed": false,
+    "readyAllowed": false,
+    "mergeAllowed": false
+  },
+  "blockers": [
+    "DATA_CUSTODIAN_NOT_NAMED",
+    "CONTROLLED_STORAGE_NOT_OPERATIONAL",
+    "CONSENT_AND_ACCESS_PROCESS_NOT_OPERATIONAL",
+    "ACTUAL_IMMUTABLE_CORPUS_MANIFEST_AND_SPLITS_ABSENT",
+    "CORPUS_COUNTS_AND_SLICES_NOT_FROZEN",
+    "ANNOTATION_AND_ADJUDICATION_GUIDES_ABSENT",
+    "CONTROLLED_STORAGE_DELETION_DRY_RUN_NOT_RUN",
+    "EXTERNAL_DATA_RIGHTS_NOT_APPROVED"
+  ],
+  "resultTaxonomy": {
+    "selectedSchemaCatalogueCheck": "LOCAL_PASS",
+    "schemaExactBytePin": "LOCAL_PASS",
+    "java17ValidatorCompile": "LOCAL_PASS",
+    "localAdversarialValidation": "LOCAL_PASS",
+    "syntheticMetadataDryRun": "LOCAL_PASS",
+    "actualDatasetManifestValidation": "NOT_RUN",
+    "controlledStorageDeletionDryRun": "NOT_RUN",
+    "datasetCreated": false,
+    "corpusManifestCreated": false,
+    "pocDataOverallResult": "NOT_RUN",
+    "pocDataBacklogState": "BLOCKED",
+    "pocDataReadiness": "NOT_READY",
+    "collectionAuthorization": "NOT_AUTHORIZED",
+    "recommendation": "BLOCKED"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "packetId": "OFF-I1-SEMANTICS-SCOPE-002",
+  "mdPath": "docs/stage0/DORA_MVP1_POC_OFFLINE_I1_SEMANTICS_AND_IMPLEMENTATION_SCOPE_STAGE0_V0_2.md",
+  "mdBytes": 46364,
+  "mdSha256": "64a8cd6c7230b104834ca8bdb8a8a3a1c1525277dc8b913487acf2739e67c08e",
+  "jsonPath": "docs/evidence/poc-offline-001/i1-semantics-and-implementation-scope-stage0-v0.2.json",
+  "jsonBytes": 124165,
+  "jsonSha256": "156915ba88f97e9bbf08da02b6ef4c2b475c173f1f9b96e8c70fe50e2a174785",
+  "reviewerModel": "GPT-5 Codex",
+  "reviewerOrganization": "OpenAI",
+  "reviewerRole": "INDEPENDENT_ADVISORY_REVIEWER",
+  "formalReviewer": false,
+  "reviewedAt": "2026-08-16T19:16:58+03:00",
+  "timezone": "Europe/Moscow",
+  "verdict": "CLEAN",
+  "packetP0": 0,
+  "packetP1": 0,
+  "packetP2": 0
+}
