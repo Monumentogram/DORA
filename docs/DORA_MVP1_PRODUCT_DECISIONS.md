@@ -705,6 +705,9 @@ Active identities: Gate Set `poc-recovery-stage0-v0.6`; protocol `poc-recovery-p
 Статус: Approved for `DORA-ALPHA-001` Increment 1 only\
 Приоритет: P0\
 Источник: direct Project-owner instruction of 17 August 2026 to launch DORA Alpha in parallel with Stage 0, create the necessary DEC/ADR/backlog/status records and immediately implement the narrowest useful honest slice\
+Срок принятия: принято 17 August 2026 до начала product-code implementation\
+Варианты: (A) ждать полного Stage 0 closure без продуктового Alpha; (B) показывать недоказанные audio/AI placeholders; (C) выпустить ограниченный ручной local-only workspace с честно недоступными стадиями\
+Рекомендуемый вариант: C — полезный user-authored vertical slice без зависимости от blocked capture/storage-crypto/ML/backend gates\
 Дата решения: 17 August 2026\
 Владелец решения: Project owner\
 Область утверждения: internal non-release Alpha Increment 1 under `ALPHA-GATE-001`; no production or Stage 0 reclassification\
@@ -718,6 +721,7 @@ Readiness reconciliation: `RDY-002` is resolved only for this disposable Alpha m
 Влияние на UX: manual authorship and limitations are explicit; the microphone action remains unavailable; whole-conversation local deletion requires confirmation.\
 Обратимость: high before production schema or real data; Alpha snapshot migration/discard requires a later ADR.\
 Не разрешает: production identity/signing/release, store publication, real meeting data, audio, models, cloud/backend, dependency admission, Stage 0 PASS or security/privacy compliance claims.\
+Связанные задачи: `ALPHA-001`–`ALPHA-007`, Alpha-only reconciliation of `RDY-002`.\
 Связанные артефакты: `DORA_ALPHA_CHARTER.md`, `ADR-0003`, `ALPHA-001`–`ALPHA-007`.
 
 ## Stage 0A owner approval record
