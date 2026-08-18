@@ -2,14 +2,14 @@
   "schemaVersion": 1,
   "reportId": "REC-I2B-RUNTIME-CRYPTO-IMPLEMENTATION-EVIDENCE-20260817-01",
   "recordedAtUtc": "2026-08-17T12:01:29Z",
-  "lastUpdatedAt": "2026-08-18T22:54:06+03:00",
+  "lastUpdatedAt": "2026-08-18T23:30:49+03:00",
   "lastUpdatedTimeZone": "Europe/Moscow",
   "status": "ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW_COMPLETE_PENDING_SEPARATE_REC_I3_ACTIVATION_DECISION",
-  "remediationState": "ACCOUNTABLE_HUMAN_REVIEW_SANITIZED_CLOSURE_RECORDED_PENDING_INDEPENDENT_METADATA_REVIEW",
+  "remediationState": "ACCOUNTABLE_HUMAN_REVIEW_SANITIZED_CLOSURE_INDEPENDENT_METADATA_CLEAN_DRAFT_PR38_INTEGRATION_PENDING",
   "claimCeiling": "ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW_COMPLETE_PENDING_SEPARATE_REC_I3_ACTIVATION_DECISION",
   "pocId": "POC-RECOVERY-001",
   "stage": "Stage 0",
-  "scope": "LOCAL_UNPUBLISHED_SANITIZED_ACCOUNTABLE_REVIEW_CLOSURE_PENDING_INDEPENDENT_METADATA_REVIEW",
+  "scope": "LOCAL_UNPUBLISHED_SANITIZED_ACCOUNTABLE_REVIEW_CLOSURE_INDEPENDENT_METADATA_CLEAN_DRAFT_PR38_INTEGRATION_PENDING",
   "authority": {
     "actualGraphProductIpDisposition": "REC-I2A-ACTUAL-GRAPH-PRODUCT-IP-DISPOSITION-20260817-01",
     "conditionalOwnerAuthorization": "STAGE0-OWNER-UNLOCK-BATCH-20260817-02",
@@ -30,6 +30,8 @@
     "aapt2LinuxValidatorPinBindingClarification": "REC-I2B-AUTH05-VALIDATOR-PIN-BINDING-CLARIFICATION-20260818-01",
     "accountableHumanReviewSanitizedClosureAuthorization": "REC-I2B-ACCOUNTABLE-HUMAN-REVIEW-SANITIZED-CLOSURE-AUTH-20260818-01",
     "accountableHumanReviewValidatorPhaseAuthorization": "REC-I2B-ACCOUNTABLE-HUMAN-REVIEW-VALIDATOR-PHASE-AUTH-20260818-01",
+    "accountableClosureIntegrationAuthorization": "REC-I2B-ACCOUNTABLE-CLOSURE-INTEGRATION-AUTH-20260818-01",
+    "accountableClosureIndependentMetadataReviewAuthorization": "REC-I2B-ACCOUNTABLE-INDEPENDENT-METADATA-CLOSURE-AUTH-20260818-02",
     "designCheckpointApproved": true,
     "accountableEngineeringSecurityReviewCompleted": true,
     "runtimeCryptoImplementationAllowed": true,
@@ -41,9 +43,11 @@
     "productionAdmissionAllowed": false,
     "draftPublicationAuthorizedAndPerformed": true,
     "currentReviewedMetadataClosureDraftPublicationAllowed": false,
-    "draftPr38NonForcePushAllowed": false,
+    "draftPr38NonForcePushAllowed": true,
     "reviewedSuccessorDraftPr38NonForceUpdateAllowed": true,
     "accountableClosureDraftPr38NonForceUpdateAllowedAfterIndependentReview": true,
+    "accountableClosureIndependentMetadataReviewCompleted": true,
+    "accountableClosureDraftPr38NonForceUpdateAllowedNow": true,
     "readyOrMergeAllowed": false,
     "mergeAllowed": false
   },
@@ -76,6 +80,8 @@
     "publishedDraftTreeAtAccountableReviewReceipt": "389b43a20381fdfd4a86f8328dba05439d4bf5f6",
     "recordingBaseHead": "f64c5c150865901352889b607a075425c93e6cb4",
     "recordingBaseTree": "389b43a20381fdfd4a86f8328dba05439d4bf5f6",
+    "accountableHumanReviewClosureCommit": "50bb75d1069d72e843d2c253afabd6c2d28b78e1",
+    "accountableHumanReviewClosureTree": "5a7bdec7b6117286778429065540daa124bd64f2",
     "exactHeadCiAtAccountableReviewReceipt": {
       "workflow": "Android CI",
       "runId": 32143053829,
@@ -646,7 +652,20 @@
     "disposition": "APPROVE_EXACT_REC_I2B_FOR_SEPARATE_REC_I3_ACTIVATION_DECISION",
     "accountableReviewCompleted": true,
     "recI3Activated": false,
-    "separateRecI3ActivationDecisionRequired": true
+    "separateRecI3ActivationDecisionRequired": true,
+    "independentMetadataReview": {
+      "record": {
+        "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-accountable-closure-independent-metadata-review-closure-2026-08-18.json",
+        "bytes": 7439,
+        "sha256": "b08bc7d3725b190b8be42dc14349db4beca70286f3e9597820d036283f1ca22e"
+      },
+      "reviewedCommit": "50bb75d1069d72e843d2c253afabd6c2d28b78e1",
+      "reviewedTree": "5a7bdec7b6117286778429065540daa124bd64f2",
+      "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
+      "disposition": "CLEAN",
+      "formalReviewer": false,
+      "completed": true
+    }
   },
   "authoritativeInputs": {
     "decision": "docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md",
@@ -1225,10 +1244,24 @@
       "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
       "disposition": "APPROVE_EXACT_REC_I2B_FOR_SEPARATE_REC_I3_ACTIVATION_DECISION"
     },
+    "accountableClosureIndependentMetadataReview": {
+      "record": {
+        "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-accountable-closure-independent-metadata-review-closure-2026-08-18.json",
+        "bytes": 7439,
+        "sha256": "b08bc7d3725b190b8be42dc14349db4beca70286f3e9597820d036283f1ca22e"
+      },
+      "reviewedCommit": "50bb75d1069d72e843d2c253afabd6c2d28b78e1",
+      "reviewedTree": "5a7bdec7b6117286778429065540daa124bd64f2",
+      "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
+      "disposition": "CLEAN",
+      "completed": true,
+      "coversCurrentAccountableClosure": true,
+      "formalReviewer": false
+    },
     "accountableEngineeringSecurityReviewRoutingMayBeRebuilt": false,
     "delegationMaySubstituteAccountableReview": false,
     "recI3MayProceedNow": false,
-    "openStageGate": "REC-I3-SEPARATE-ACTIVATION-DECISION_REQUIRED"
+    "openStageGate": "REC-I2B-DRAFT-PR38-INTEGRATION_AND_EXACT_HEAD_CI_THEN_SEPARATE_REC_I3_ACTIVATION_DECISION"
   },
   "notPerformedOrClaimed": {
     "deviceOrEmulatorExecution": false,
@@ -1248,5 +1281,5 @@
     "merge": false,
     "googleSheetMutation": false
   },
-  "nextGate": "Obtain a fresh independent read-only metadata review of this sanitized accountable closure. After that review is CLEAN, a separate owner decision is still required to activate REC-I3; no REC-I3, execution, admission, Ready or merge authority is recorded here."
+  "nextGate": "Under REC-I2B-ACCOUNTABLE-CLOSURE-INTEGRATION-AUTH-20260818-01, independently read back this durable metadata closure, then integrate existing Draft PR 38 by normal non-force ancestry sync and require exact-head CI plus a fresh no-drift gate. REC-I3 remains inactive and requires a separate exact activation decision after terminal REC-I2B integration; no execution, admission, PASS or readiness authority is recorded here."
 }

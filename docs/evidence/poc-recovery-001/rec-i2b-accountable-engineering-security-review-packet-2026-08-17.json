@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "packetId": "REC-I2B-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW-PACKET-20260817-01",
   "preparedAtUtc": "2026-08-17T12:01:29Z",
-  "refreshedAt": "2026-08-18T22:54:06+03:00",
+  "refreshedAt": "2026-08-18T23:30:49+03:00",
   "refreshedTimeZone": "Europe/Moscow",
   "status": "ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW_COMPLETE_PENDING_SEPARATE_REC_I3_ACTIVATION_DECISION",
   "pocId": "POC-RECOVERY-001",
@@ -13,7 +13,7 @@
     "eligibleNow": false,
     "eligibleAfterDraftPr38ExactHeadCiGreen": false,
     "accountableReviewRoutingCompleted": true,
-    "blockingPrecondition": "SEPARATE_REC_I3_ACTIVATION_DECISION",
+    "blockingPrecondition": "DRAFT_PR38_INTEGRATION_AND_EXACT_HEAD_CI_THEN_SEPARATE_REC_I3_ACTIVATION_DECISION",
     "historicalIndependentAdvisoryDeltaReviewDisposition": "CLEAN",
     "historicalCleanReviewCoversCurrentTarget": false,
     "laterFreshGraphVerificationMetadataDisposition": "CHANGES_REQUIRED",
@@ -26,6 +26,8 @@
     "currentIndependentCleanReviewCoversExactImplementationAndReviewedEvidence": true,
     "accountableEngineeringSecurityReviewDisposition": "APPROVE_EXACT_REC_I2B_FOR_SEPARATE_REC_I3_ACTIVATION_DECISION",
     "accountableEngineeringSecurityReviewCompleted": true,
+    "accountableClosureIndependentMetadataReviewDisposition": "CLEAN",
+    "accountableClosureIndependentMetadataReviewCompleted": true,
     "recI3MayProceedNow": false
   },
   "reviewTarget": {
@@ -50,8 +52,8 @@
     "terminalImplementationTree": "744ee822d42b7caccd7abcc68f03dca1c24f5945",
     "implementationEvidence": {
       "path": "docs/evidence/poc-recovery-001/rec-i2b-runtime-crypto-implementation-evidence-2026-08-17.json",
-      "bytes": 59521,
-      "sha256": "42058ce6d68269fbcdd33b5ddd8c0589c2e97cb5896e601f6327b311c1260352"
+      "bytes": 61547,
+      "sha256": "71064a42abf46d67c45dd6a8ebe55cffc3db8c7254b96c63c3a7b72194ae144c"
     },
     "independentDeltaReviewClosure": {
       "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-independent-delta-review-closure-2026-08-17.json",
@@ -101,6 +103,19 @@
       "bytes": 5045,
       "sha256": "999bd50d7d913a9d299514d132df96d1ee22034ddc810a56503875774f006848"
     },
+    "accountableClosureIndependentMetadataReview": {
+      "record": {
+        "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-accountable-closure-independent-metadata-review-closure-2026-08-18.json",
+        "bytes": 7439,
+        "sha256": "b08bc7d3725b190b8be42dc14349db4beca70286f3e9597820d036283f1ca22e"
+      },
+      "reviewedCommit": "50bb75d1069d72e843d2c253afabd6c2d28b78e1",
+      "reviewedTree": "5a7bdec7b6117286778429065540daa124bd64f2",
+      "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
+      "disposition": "CLEAN",
+      "formalReviewer": false,
+      "completed": true
+    },
     "exactHeadCiAtAccountableReviewReceipt": {
       "workflow": "Android CI",
       "runId": 32143053829,
@@ -130,7 +145,9 @@
       "REC-I2B-AAPT2-LINUX-VERIFICATION-METADATA-REMEDIATION-AUTH-20260818-05",
       "REC-I2B-AUTH05-VALIDATOR-PIN-BINDING-CLARIFICATION-20260818-01",
       "REC-I2B-ACCOUNTABLE-HUMAN-REVIEW-SANITIZED-CLOSURE-AUTH-20260818-01",
-      "REC-I2B-ACCOUNTABLE-HUMAN-REVIEW-VALIDATOR-PHASE-AUTH-20260818-01"
+      "REC-I2B-ACCOUNTABLE-HUMAN-REVIEW-VALIDATOR-PHASE-AUTH-20260818-01",
+      "REC-I2B-ACCOUNTABLE-CLOSURE-INTEGRATION-AUTH-20260818-01",
+      "REC-I2B-ACCOUNTABLE-INDEPENDENT-METADATA-CLOSURE-AUTH-20260818-02"
     ],
     "thisPacketIsFormalApproval": false,
     "technicalDelegationMaySubstituteAccountableReview": false,
@@ -139,6 +156,7 @@
     "reviewerEquivalentAttestationRecorded": true,
     "formalApprovalRecorded": true,
     "accountableEngineeringSecurityReviewCompleted": true,
+    "accountableClosureIndependentMetadataReviewCompleted": true,
     "recI3Activated": false,
     "deviceOrEmulatorExecutionAuthorized": false,
     "harnessOrCampaignAuthorized": false,
@@ -150,6 +168,7 @@
     "reviewedSuccessorDraftPr38NonForceUpdateAuthorized": true,
     "aapt2LinuxDraftPr38NonForceUpdateAuthorizedAfterClean": true,
     "accountableClosureDraftPr38NonForceUpdateAuthorizedAfterIndependentReview": true,
+    "accountableClosureDraftPr38NonForceUpdateAuthorizedNow": true,
     "readyOrMergeAuthorized": false
   },
   "advisoryRemediationGate": {
@@ -1008,7 +1027,7 @@
     }
   ],
   "recommendedDefault": {
-    "now": "OBTAIN_FRESH_INDEPENDENT_METADATA_REVIEW_THEN_REQUIRE_SEPARATE_REC_I3_ACTIVATION_DECISION",
+    "now": "INDEPENDENTLY_READ_BACK_THIS_DURABLE_CLOSURE_THEN_INTEGRATE_DRAFT_PR38_RUN_EXACT_HEAD_CI_AND_REQUIRE_SEPARATE_REC_I3_ACTIVATION_DECISION",
     "independentDeltaClosure": "AAPT2_LINUX_METADATA_CLEAN_RECORDED",
     "priorFreshCacheIndependentDeltaClosure": "HISTORICAL_CLEAN_PRESERVED",
     "priorReviewedSuccessorIndependentDeltaClosure": "HISTORICAL_CLEAN_PRESERVED",
@@ -1016,6 +1035,7 @@
     "freshGraphVerificationMetadataReview": "HISTORICAL_CHANGES_REQUIRED_PRESERVED_AND_CLOSED_BY_PRIOR_FRESH_CACHE_CLEAN_REVIEW",
     "delegatedApprovalRecordedHere": false,
     "accountableHumanReviewRecordedInSeparateClosure": true,
+    "accountableClosureIndependentMetadataReview": "CLEAN_RECORDED_PENDING_DURABLE_CLOSURE_READBACK",
     "recI3Activated": false
   },
   "findingsTruth": {
@@ -1097,8 +1117,22 @@
       "completed": true,
       "recI3Activated": false
     },
+    "accountableClosureIndependentMetadataReview": {
+      "record": {
+        "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-accountable-closure-independent-metadata-review-closure-2026-08-18.json",
+        "bytes": 7439,
+        "sha256": "b08bc7d3725b190b8be42dc14349db4beca70286f3e9597820d036283f1ca22e"
+      },
+      "reviewedCommit": "50bb75d1069d72e843d2c253afabd6c2d28b78e1",
+      "reviewedTree": "5a7bdec7b6117286778429065540daa124bd64f2",
+      "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
+      "disposition": "CLEAN",
+      "formalReviewer": false,
+      "completed": true,
+      "recI3Activated": false
+    },
     "currentZeroFindingsClaimed": true,
-    "openP0StageGate": "REC-I3-SEPARATE-ACTIVATION-DECISION_REQUIRED",
+    "openP0StageGate": "REC-I2B-DRAFT-PR38-INTEGRATION_AND_EXACT_HEAD_CI_THEN_SEPARATE_REC_I3_ACTIVATION_DECISION",
     "recI3MayProceedNow": false
   },
   "reviewCompletionRequirements": {
@@ -1132,8 +1166,10 @@
       "reviewerSignatureOrEquivalentAttestationInSeparateFinalReviewRecordCompleted": true,
       "reviewTimestampInSeparateFinalReviewRecordCompleted": true,
       "p0P1P2DispositionInSeparateFinalReviewRecordCompleted": true,
-      "formalDecisionInSeparateFinalReviewRecordCompleted": true
+      "formalDecisionInSeparateFinalReviewRecordCompleted": true,
+      "accountableClosureIndependentMetadataReviewCompleted": true,
+      "accountableClosureIndependentMetadataReviewDisposition": "CLEAN"
     }
   },
-  "terminalGate": "The distinct accountable Engineering/Security review of exact REC-I2B is complete with 17/17 YES, P0/P1/P2=0/0/0 and disposition APPROVE_EXACT_REC_I2B_FOR_SEPARATE_REC_I3_ACTIVATION_DECISION. REC-I3 is not activated; a fresh independent metadata review of this sanitized closure and a separate REC-I3 activation decision remain required. No device, emulator, harness, campaign, measurement, PASS, admission, Ready or merge authority is recorded."
+  "terminalGate": "The distinct accountable Engineering/Security review of exact REC-I2B is complete with 17/17 YES, P0/P1/P2=0/0/0 and disposition APPROVE_EXACT_REC_I2B_FOR_SEPARATE_REC_I3_ACTIVATION_DECISION. The sanitized closure has an independent advisory metadata CLEAN 0/0/0 review of exact commit 50bb75d1069d72e843d2c253afabd6c2d28b78e1. After this durable metadata record receives an independent readback, Draft PR 38 integration and exact-head CI remain required. REC-I3 is not activated and still requires a separate exact activation decision after terminal REC-I2B integration; no device, emulator, harness, campaign, measurement, PASS, admission, readiness or current Ready/merge state is recorded."
 }

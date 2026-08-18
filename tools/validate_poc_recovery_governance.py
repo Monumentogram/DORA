@@ -133,6 +133,30 @@ REC_I2B_ACCOUNTABLE_RECORDED_AT = "2026-08-18T22:54:06+03:00"
 REC_I2B_ACCOUNTABLE_DISPOSITION = (
     "APPROVE_EXACT_REC_I2B_FOR_SEPARATE_REC_I3_ACTIVATION_DECISION"
 )
+REC_I2B_ACCOUNTABLE_METADATA_BASE_HEAD = "50bb75d1069d72e843d2c253afabd6c2d28b78e1"
+REC_I2B_ACCOUNTABLE_METADATA_BASE_TREE = "5a7bdec7b6117286778429065540daa124bd64f2"
+REC_I2B_ACCOUNTABLE_INTEGRATION_AUTHORIZATION = (
+    "REC-I2B-ACCOUNTABLE-CLOSURE-INTEGRATION-AUTH-20260818-01"
+)
+REC_I2B_ACCOUNTABLE_METADATA_CLOSURE_AUTHORIZATION = (
+    "REC-I2B-ACCOUNTABLE-INDEPENDENT-METADATA-CLOSURE-AUTH-20260818-02"
+)
+REC_I2B_ACCOUNTABLE_METADATA_CLOSURE_PATH = (
+    "docs/evidence/poc-recovery-001/reviews/"
+    "rec-i2b-accountable-closure-independent-metadata-review-closure-2026-08-18.json"
+)
+REC_I2B_ACCOUNTABLE_METADATA_CLOSURE_BYTES = 7439
+REC_I2B_ACCOUNTABLE_METADATA_CLOSURE_SHA256 = (
+    "b08bc7d3725b190b8be42dc14349db4beca70286f3e9597820d036283f1ca22e"
+)
+REC_I2B_ACCOUNTABLE_METADATA_CLOSURE_SEMANTIC_SHA256 = (
+    "107278d1cd261d56ef33ab56aa8ec285b2984d7810a21e778337f7f98fd3c021"
+)
+REC_I2B_ACCOUNTABLE_METADATA_RECORDED_AT = "2026-08-18T23:30:49+03:00"
+REC_I2B_ACCOUNTABLE_METADATA_CLEAN_REMEDIATION_STATE = (
+    "ACCOUNTABLE_HUMAN_REVIEW_SANITIZED_CLOSURE_INDEPENDENT_METADATA_CLEAN_"
+    "DRAFT_PR38_INTEGRATION_PENDING"
+)
 REC_I2B_SUCCESSOR_REMEDIATION_AUTHORIZATION = (
     "REC-I2B-REVIEWED-SUCCESSOR-VALIDATOR-AND-CI-METADATA-REMEDIATION-AUTH-20260818-01"
 )
@@ -3776,8 +3800,10 @@ def validate_rec_i2b_accountable_phase(
     evidence_bytes: bytes,
     packet: dict[str, Any],
     closure_override: dict[str, Any] | None = None,
+    validate_scope: bool = True,
 ) -> str:
-    validate_rec_i2b_accountable_recording_scope()
+    if validate_scope:
+        validate_rec_i2b_accountable_recording_scope()
     prior_evidence_bytes = git_blob_bytes(
         f"{REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD}:{REC_I2B_RUNTIME_EVIDENCE_PATH}"
     )
@@ -3827,6 +3853,339 @@ def validate_rec_i2b_accountable_phase(
         "REC-I2B accountable closure improperly activated REC-I3",
     )
     return "accountable-clean"
+
+
+def rec_i2b_accountable_metadata_closure_reference() -> dict[str, Any]:
+    return {
+        "path": REC_I2B_ACCOUNTABLE_METADATA_CLOSURE_PATH,
+        "bytes": REC_I2B_ACCOUNTABLE_METADATA_CLOSURE_BYTES,
+        "sha256": REC_I2B_ACCOUNTABLE_METADATA_CLOSURE_SHA256,
+    }
+
+
+def rec_i2b_accountable_metadata_review_summary() -> dict[str, Any]:
+    return {
+        "record": rec_i2b_accountable_metadata_closure_reference(),
+        "reviewedCommit": REC_I2B_ACCOUNTABLE_METADATA_BASE_HEAD,
+        "reviewedTree": REC_I2B_ACCOUNTABLE_METADATA_BASE_TREE,
+        "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
+        "disposition": "CLEAN",
+        "formalReviewer": False,
+        "completed": True,
+    }
+
+
+def validate_rec_i2b_accountable_metadata_closure(
+    closure_override: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    payload = (ROOT / REC_I2B_ACCOUNTABLE_METADATA_CLOSURE_PATH).read_bytes()
+    require(
+        len(payload) == REC_I2B_ACCOUNTABLE_METADATA_CLOSURE_BYTES
+        and hashlib.sha256(payload).hexdigest() == REC_I2B_ACCOUNTABLE_METADATA_CLOSURE_SHA256
+        and not payload.startswith(b"\xef\xbb\xbf")
+        and b"\r" not in payload,
+        "REC-I2B accountable independent metadata closure byte/hash/UTF-8-LF boundary drift",
+    )
+    closure = (
+        closure_override
+        if closure_override is not None
+        else json.loads(payload.decode("utf-8", errors="strict"))
+    )
+    require(
+        semantic_sha256(closure) == REC_I2B_ACCOUNTABLE_METADATA_CLOSURE_SEMANTIC_SHA256,
+        "REC-I2B accountable independent metadata closure exact sanitized semantics drift",
+    )
+    reviewed = closure["exactReviewedState"]
+    require(
+        reviewed["reviewedHead"] == REC_I2B_ACCOUNTABLE_METADATA_BASE_HEAD
+        and reviewed["reviewedTree"] == REC_I2B_ACCOUNTABLE_METADATA_BASE_TREE
+        and reviewed["reviewedParent"] == REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD
+        and git_output(
+            "rev-parse", f"{REC_I2B_ACCOUNTABLE_METADATA_BASE_HEAD}^{{tree}}"
+        )
+        == REC_I2B_ACCOUNTABLE_METADATA_BASE_TREE
+        and git_output("show", "-s", "--format=%P", REC_I2B_ACCOUNTABLE_METADATA_BASE_HEAD)
+        == REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD,
+        "REC-I2B accountable independent metadata reviewed commit/tree/parent drift",
+    )
+    for reviewed_file in reviewed["reviewedFiles"]:
+        path = reviewed_file["path"]
+        commit = reviewed_file["commit"]
+        raw = git_blob_bytes(f"{commit}:{path}")
+        require(
+            commit == REC_I2B_ACCOUNTABLE_METADATA_BASE_HEAD
+            and git_output("rev-parse", f"{commit}:{path}") == reviewed_file["gitBlobSha1"]
+            and len(raw) == reviewed_file["rawGitBytes"]
+            and hashlib.sha256(raw).hexdigest() == reviewed_file["rawGitSha256"],
+            f"REC-I2B accountable independent metadata reviewed file drift: {path}",
+        )
+    return closure
+
+
+def expected_rec_i2b_accountable_metadata_evidence(prior: dict[str, Any]) -> dict[str, Any]:
+    expected = copy.deepcopy(prior)
+    expected["lastUpdatedAt"] = REC_I2B_ACCOUNTABLE_METADATA_RECORDED_AT
+    expected["remediationState"] = REC_I2B_ACCOUNTABLE_METADATA_CLEAN_REMEDIATION_STATE
+    expected["scope"] = (
+        "LOCAL_UNPUBLISHED_SANITIZED_ACCOUNTABLE_REVIEW_CLOSURE_INDEPENDENT_METADATA_CLEAN_"
+        "DRAFT_PR38_INTEGRATION_PENDING"
+    )
+    expected["authority"].update(
+        {
+            "accountableClosureIntegrationAuthorization": (
+                REC_I2B_ACCOUNTABLE_INTEGRATION_AUTHORIZATION
+            ),
+            "accountableClosureIndependentMetadataReviewAuthorization": (
+                REC_I2B_ACCOUNTABLE_METADATA_CLOSURE_AUTHORIZATION
+            ),
+            "draftPr38NonForcePushAllowed": True,
+            "accountableClosureIndependentMetadataReviewCompleted": True,
+            "accountableClosureDraftPr38NonForceUpdateAllowedNow": True,
+        }
+    )
+    expected["git"].update(
+        {
+            "accountableHumanReviewClosureCommit": REC_I2B_ACCOUNTABLE_METADATA_BASE_HEAD,
+            "accountableHumanReviewClosureTree": REC_I2B_ACCOUNTABLE_METADATA_BASE_TREE,
+        }
+    )
+    expected["accountableHumanReview"][
+        "independentMetadataReview"
+    ] = rec_i2b_accountable_metadata_review_summary()
+    expected["reviewAndGateTruth"][
+        "accountableClosureIndependentMetadataReview"
+    ] = {
+        **rec_i2b_accountable_metadata_review_summary(),
+        "coversCurrentAccountableClosure": True,
+    }
+    expected["reviewAndGateTruth"]["openStageGate"] = (
+        "REC-I2B-DRAFT-PR38-INTEGRATION_AND_EXACT_HEAD_CI_THEN_SEPARATE_REC_I3_"
+        "ACTIVATION_DECISION"
+    )
+    expected["nextGate"] = (
+        "Under REC-I2B-ACCOUNTABLE-CLOSURE-INTEGRATION-AUTH-20260818-01, independently read back "
+        "this durable metadata closure, then integrate existing Draft PR 38 by normal non-force "
+        "ancestry sync and require exact-head CI plus a fresh no-drift gate. REC-I3 remains "
+        "inactive and requires a separate exact activation decision after terminal REC-I2B "
+        "integration; no execution, admission, PASS or readiness authority is recorded here."
+    )
+    return expected
+
+
+def expected_rec_i2b_accountable_metadata_packet(
+    prior: dict[str, Any],
+    *,
+    evidence_bytes: bytes,
+) -> dict[str, Any]:
+    expected = copy.deepcopy(prior)
+    expected["refreshedAt"] = REC_I2B_ACCOUNTABLE_METADATA_RECORDED_AT
+    expected["routingEligibility"].update(
+        {
+            "blockingPrecondition": (
+                "DRAFT_PR38_INTEGRATION_AND_EXACT_HEAD_CI_THEN_SEPARATE_REC_I3_"
+                "ACTIVATION_DECISION"
+            ),
+            "accountableClosureIndependentMetadataReviewDisposition": "CLEAN",
+            "accountableClosureIndependentMetadataReviewCompleted": True,
+        }
+    )
+    expected["reviewTarget"]["implementationEvidence"] = {
+        "path": REC_I2B_RUNTIME_EVIDENCE_PATH,
+        "bytes": len(evidence_bytes),
+        "sha256": hashlib.sha256(evidence_bytes).hexdigest(),
+    }
+    expected["reviewTarget"][
+        "accountableClosureIndependentMetadataReview"
+    ] = rec_i2b_accountable_metadata_review_summary()
+    expected["authorityBoundary"]["implementationAuthority"].extend(
+        [
+            REC_I2B_ACCOUNTABLE_INTEGRATION_AUTHORIZATION,
+            REC_I2B_ACCOUNTABLE_METADATA_CLOSURE_AUTHORIZATION,
+        ]
+    )
+    expected["authorityBoundary"].update(
+        {
+            "accountableClosureIndependentMetadataReviewCompleted": True,
+            "accountableClosureDraftPr38NonForceUpdateAuthorizedNow": True,
+        }
+    )
+    expected["recommendedDefault"].update(
+        {
+            "now": (
+                "INDEPENDENTLY_READ_BACK_THIS_DURABLE_CLOSURE_THEN_INTEGRATE_DRAFT_PR38_RUN_"
+                "EXACT_HEAD_CI_AND_REQUIRE_SEPARATE_REC_I3_ACTIVATION_DECISION"
+            ),
+            "accountableClosureIndependentMetadataReview": (
+                "CLEAN_RECORDED_PENDING_DURABLE_CLOSURE_READBACK"
+            ),
+        }
+    )
+    expected["findingsTruth"]["accountableClosureIndependentMetadataReview"] = {
+        **rec_i2b_accountable_metadata_review_summary(),
+        "recI3Activated": False,
+    }
+    expected["findingsTruth"]["openP0StageGate"] = (
+        "REC-I2B-DRAFT-PR38-INTEGRATION_AND_EXACT_HEAD_CI_THEN_SEPARATE_REC_I3_"
+        "ACTIVATION_DECISION"
+    )
+    expected["reviewCompletionRequirements"]["completion"].update(
+        {
+            "accountableClosureIndependentMetadataReviewCompleted": True,
+            "accountableClosureIndependentMetadataReviewDisposition": "CLEAN",
+        }
+    )
+    expected["terminalGate"] = (
+        "The distinct accountable Engineering/Security review of exact REC-I2B is complete with "
+        "17/17 YES, P0/P1/P2=0/0/0 and disposition "
+        "APPROVE_EXACT_REC_I2B_FOR_SEPARATE_REC_I3_ACTIVATION_DECISION. The sanitized closure has "
+        "an independent advisory metadata CLEAN 0/0/0 review of exact commit "
+        "50bb75d1069d72e843d2c253afabd6c2d28b78e1. After this durable metadata record receives an "
+        "independent readback, Draft PR 38 integration and exact-head CI remain required. REC-I3 "
+        "is not activated and still requires a separate exact activation decision after terminal "
+        "REC-I2B integration; no device, emulator, harness, campaign, measurement, PASS, admission, "
+        "readiness or current Ready/merge state is recorded."
+    )
+    return expected
+
+
+def validate_rec_i2b_accountable_metadata_recording_scope() -> None:
+    require(
+        git_output("rev-parse", f"{REC_I2B_ACCOUNTABLE_METADATA_BASE_HEAD}^{{tree}}")
+        == REC_I2B_ACCOUNTABLE_METADATA_BASE_TREE,
+        "REC-I2B accountable independent metadata recording base tree drift",
+    )
+    exact_paths = sorted(
+        [
+            REC_I2B_RUNTIME_EVIDENCE_PATH,
+            REC_I2B_ACCOUNTABLE_PACKET_PATH,
+            REC_I2B_ACCOUNTABLE_METADATA_CLOSURE_PATH,
+            "tools/validate_poc_recovery_governance.py",
+        ]
+    )
+    head = git_output("rev-parse", "HEAD")
+    if head == REC_I2B_ACCOUNTABLE_METADATA_BASE_HEAD:
+        status = subprocess.run(
+            ["git", "status", "--porcelain=v1", "--untracked-files=all"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        ).stdout.splitlines()
+        paths = sorted(line[3:].replace("\\", "/") for line in status)
+        require(paths == exact_paths, "REC-I2B accountable independent metadata precommit scope drift")
+        return
+    require(
+        git_is_ancestor(REC_I2B_ACCOUNTABLE_METADATA_BASE_HEAD, head),
+        "REC-I2B accountable independent metadata head does not descend from exact base",
+    )
+    closure_commits = git_output(
+        "rev-list",
+        "--reverse",
+        f"{REC_I2B_ACCOUNTABLE_METADATA_BASE_HEAD}..{head}",
+        "--",
+        *exact_paths,
+    ).splitlines()
+    require(
+        len(closure_commits) == 1,
+        "REC-I2B accountable independent metadata paths changed outside one exact commit",
+    )
+    closure_commit = closure_commits[0]
+    require(
+        git_output("show", "-s", "--format=%P", closure_commit)
+        == REC_I2B_ACCOUNTABLE_METADATA_BASE_HEAD,
+        "REC-I2B accountable independent metadata commit is not a direct child of exact base",
+    )
+    changed = sorted(
+        git_path_records(
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "--no-renames",
+            "-r",
+            "-z",
+            closure_commit,
+            "--",
+        )
+    )
+    require(changed == exact_paths, "REC-I2B accountable independent metadata commit scope drift")
+    require(
+        subprocess.run(
+            ["git", "diff", "--quiet", closure_commit, head, "--", *exact_paths],
+            cwd=ROOT,
+            check=False,
+        ).returncode
+        == 0,
+        "REC-I2B accountable independent metadata bytes changed after exact commit",
+    )
+    dirty = subprocess.run(
+        ["git", "status", "--porcelain=v1", "--untracked-files=all", "--", *exact_paths],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    ).stdout
+    require(not dirty, "REC-I2B accountable independent metadata paths are dirty after recording")
+
+
+def validate_rec_i2b_accountable_metadata_phase(
+    evidence: dict[str, Any],
+    *,
+    evidence_bytes: bytes,
+    packet: dict[str, Any],
+    closure_override: dict[str, Any] | None = None,
+) -> str:
+    validate_rec_i2b_accountable_metadata_recording_scope()
+    prior_evidence_bytes = git_blob_bytes(
+        f"{REC_I2B_ACCOUNTABLE_METADATA_BASE_HEAD}:{REC_I2B_RUNTIME_EVIDENCE_PATH}"
+    )
+    prior_packet_bytes = git_blob_bytes(
+        f"{REC_I2B_ACCOUNTABLE_METADATA_BASE_HEAD}:{REC_I2B_ACCOUNTABLE_PACKET_PATH}"
+    )
+    require(
+        len(prior_evidence_bytes) == 59521
+        and hashlib.sha256(prior_evidence_bytes).hexdigest()
+        == "42058ce6d68269fbcdd33b5ddd8c0589c2e97cb5896e601f6327b311c1260352"
+        and len(prior_packet_bytes) == 55895
+        and hashlib.sha256(prior_packet_bytes).hexdigest()
+        == "beb19b72910b3f6dc925a8483f9f8ad83d39139e66385cbcdf320fa135e3c6a3",
+        "REC-I2B accountable reviewed evidence/packet snapshot drift",
+    )
+    prior_evidence = json.loads(prior_evidence_bytes.decode("utf-8", errors="strict"))
+    prior_packet = json.loads(prior_packet_bytes.decode("utf-8", errors="strict"))
+    require(
+        validate_rec_i2b_accountable_phase(
+            prior_evidence,
+            evidence_bytes=prior_evidence_bytes,
+            packet=prior_packet,
+            validate_scope=False,
+        )
+        == "accountable-clean",
+        "REC-I2B accountable pre-metadata-clean phase drift",
+    )
+    validate_rec_i2b_accountable_metadata_closure(closure_override)
+    require(
+        evidence == expected_rec_i2b_accountable_metadata_evidence(prior_evidence),
+        "REC-I2B accountable independent metadata evidence overlay drift",
+    )
+    require(
+        packet
+        == expected_rec_i2b_accountable_metadata_packet(
+            prior_packet,
+            evidence_bytes=evidence_bytes,
+        ),
+        "REC-I2B accountable independent metadata packet overlay drift",
+    )
+    require(
+        evidence["authority"]["recI3Allowed"] is False
+        and evidence["notPerformedOrClaimed"]["recI3Activation"] is False
+        and packet["routingEligibility"]["recI3MayProceedNow"] is False
+        and packet["authorityBoundary"]["recI3Activated"] is False
+        and packet["authorityBoundary"]["readyOrMergeAuthorized"] is False,
+        "REC-I2B accountable independent metadata closure escalated blocked authority",
+    )
+    return "accountable-metadata-clean"
 
 
 def validate_rec_i2b_evidence_boundary() -> None:
@@ -3905,6 +4264,10 @@ def validate_rec_i2b_evidence_boundary() -> None:
     evidence_bytes = (ROOT / REC_I2B_RUNTIME_EVIDENCE_PATH).read_bytes()
     evidence = json.loads(evidence_bytes.decode("utf-8", errors="strict"))
     accountable_phase = evidence.get("status") == REC_I2B_ACCOUNTABLE_STATUS
+    accountable_metadata_clean = (
+        evidence.get("remediationState")
+        == REC_I2B_ACCOUNTABLE_METADATA_CLEAN_REMEDIATION_STATE
+    )
     terminal_commit = (
         "1aedccf477fb4d3ff20a48a1834b22b317c8c880"
         if accountable_phase
@@ -3945,7 +4308,13 @@ def validate_rec_i2b_evidence_boundary() -> None:
             "REC-I2B historical reviewed-successor CLEAN closure drift",
         )
     packet = read_json(REC_I2B_ACCOUNTABLE_PACKET_PATH)
-    if accountable_phase:
+    if accountable_metadata_clean:
+        validate_rec_i2b_accountable_metadata_phase(
+            evidence,
+            evidence_bytes=evidence_bytes,
+            packet=packet,
+        )
+    elif accountable_phase:
         validate_rec_i2b_accountable_phase(
             evidence,
             evidence_bytes=evidence_bytes,
@@ -4991,15 +5360,27 @@ def run_github_pull_request_context_tests() -> None:
             raise ValueError("Escaped GitHub event path unexpectedly passed")
 
 
-def run_rec_i2b_accountable_phase_tests() -> None:
-    evidence_bytes = (ROOT / REC_I2B_RUNTIME_EVIDENCE_PATH).read_bytes()
-    evidence = json.loads(evidence_bytes.decode("utf-8", errors="strict"))
-    packet = read_json(REC_I2B_ACCOUNTABLE_PACKET_PATH)
+def run_rec_i2b_accountable_phase_tests(*, historical: bool = False) -> None:
+    if historical:
+        evidence_bytes = git_blob_bytes(
+            f"{REC_I2B_ACCOUNTABLE_METADATA_BASE_HEAD}:{REC_I2B_RUNTIME_EVIDENCE_PATH}"
+        )
+        evidence = json.loads(evidence_bytes.decode("utf-8", errors="strict"))
+        packet = json.loads(
+            git_blob_bytes(
+                f"{REC_I2B_ACCOUNTABLE_METADATA_BASE_HEAD}:{REC_I2B_ACCOUNTABLE_PACKET_PATH}"
+            ).decode("utf-8", errors="strict")
+        )
+    else:
+        evidence_bytes = (ROOT / REC_I2B_RUNTIME_EVIDENCE_PATH).read_bytes()
+        evidence = json.loads(evidence_bytes.decode("utf-8", errors="strict"))
+        packet = read_json(REC_I2B_ACCOUNTABLE_PACKET_PATH)
     closure = read_json(REC_I2B_ACCOUNTABLE_CLOSURE_PATH)
     validate_rec_i2b_accountable_phase(
         evidence,
         evidence_bytes=evidence_bytes,
         packet=packet,
+        validate_scope=not historical,
     )
 
     def expect_accountable_negative(
@@ -5024,6 +5405,7 @@ def run_rec_i2b_accountable_phase_tests() -> None:
                 evidence_bytes=evidence_bytes,
                 packet=candidate_packet,
                 closure_override=candidate_closure,
+                validate_scope=not historical,
             )
         except (ValueError, KeyError):
             print(f"PASS negative rec-i2b-accountable-{name}")
@@ -5127,9 +5509,153 @@ def run_rec_i2b_accountable_phase_tests() -> None:
         expect_accountable_negative(name, packet_mutation=mutation)
 
 
+def run_rec_i2b_accountable_metadata_phase_tests() -> None:
+    evidence_bytes = (ROOT / REC_I2B_RUNTIME_EVIDENCE_PATH).read_bytes()
+    evidence = json.loads(evidence_bytes.decode("utf-8", errors="strict"))
+    packet = read_json(REC_I2B_ACCOUNTABLE_PACKET_PATH)
+    closure = read_json(REC_I2B_ACCOUNTABLE_METADATA_CLOSURE_PATH)
+    validate_rec_i2b_accountable_metadata_phase(
+        evidence,
+        evidence_bytes=evidence_bytes,
+        packet=packet,
+    )
+
+    def expect_metadata_negative(
+        name: str,
+        *,
+        evidence_mutation: Callable[[dict[str, Any]], None] | None = None,
+        packet_mutation: Callable[[dict[str, Any]], None] | None = None,
+        closure_mutation: Callable[[dict[str, Any]], None] | None = None,
+    ) -> None:
+        candidate_evidence = copy.deepcopy(evidence)
+        candidate_packet = copy.deepcopy(packet)
+        candidate_closure = copy.deepcopy(closure)
+        if evidence_mutation is not None:
+            evidence_mutation(candidate_evidence)
+        if packet_mutation is not None:
+            packet_mutation(candidate_packet)
+        if closure_mutation is not None:
+            closure_mutation(candidate_closure)
+        try:
+            validate_rec_i2b_accountable_metadata_phase(
+                candidate_evidence,
+                evidence_bytes=evidence_bytes,
+                packet=candidate_packet,
+                closure_override=candidate_closure,
+            )
+        except (ValueError, KeyError):
+            print(f"PASS negative rec-i2b-accountable-metadata-{name}")
+            return
+        raise ValueError(
+            f"Negative REC-I2B accountable metadata mutation unexpectedly passed: {name}"
+        )
+
+    closure_mutations: list[tuple[str, Callable[[dict[str, Any]], None]]] = [
+        (
+            "reviewer-role",
+            lambda record: record["reviewer"].__setitem__("role", "FORMAL_REVIEWER"),
+        ),
+        (
+            "formal-reviewer",
+            lambda record: record["reviewer"].__setitem__("formalReviewer", True),
+        ),
+        (
+            "reviewed-head",
+            lambda record: record["exactReviewedState"].__setitem__(
+                "reviewedHead", "0" * 40
+            ),
+        ),
+        ("verdict", lambda record: record["verdict"].__setitem__("P1", 1)),
+        (
+            "rec-i3-authority",
+            lambda record: record["authorityBoundary"].__setitem__("activatesRecI3", True),
+        ),
+        (
+            "mail-identifier",
+            lambda record: record["sanitization"].__setitem__(
+                "containsMailMessageOrThreadIdentifier", True
+            ),
+        ),
+    ]
+    for name, mutation in closure_mutations:
+        expect_metadata_negative(name, closure_mutation=mutation)
+
+    evidence_mutations: list[tuple[str, Callable[[dict[str, Any]], None]]] = [
+        (
+            "evidence-review-sha",
+            lambda record: record["accountableHumanReview"]["independentMetadataReview"][
+                "record"
+            ].__setitem__("sha256", "0" * 64),
+        ),
+        (
+            "evidence-reviewed-commit",
+            lambda record: record["reviewAndGateTruth"][
+                "accountableClosureIndependentMetadataReview"
+            ].__setitem__("reviewedCommit", "0" * 40),
+        ),
+        (
+            "evidence-rec-i3",
+            lambda record: record["authority"].__setitem__("recI3Allowed", True),
+        ),
+        (
+            "evidence-stage-gate",
+            lambda record: record["reviewAndGateTruth"].__setitem__("openStageGate", "REC-I3"),
+        ),
+    ]
+    for name, mutation in evidence_mutations:
+        expect_metadata_negative(name, evidence_mutation=mutation)
+
+    packet_mutations: list[tuple[str, Callable[[dict[str, Any]], None]]] = [
+        (
+            "packet-review-sha",
+            lambda record: record["reviewTarget"][
+                "accountableClosureIndependentMetadataReview"
+            ]["record"].__setitem__("sha256", "0" * 64),
+        ),
+        (
+            "packet-evidence-sha",
+            lambda record: record["reviewTarget"]["implementationEvidence"].__setitem__(
+                "sha256", "0" * 64
+            ),
+        ),
+        (
+            "packet-review-completion",
+            lambda record: record["authorityBoundary"].__setitem__(
+                "accountableClosureIndependentMetadataReviewCompleted", False
+            ),
+        ),
+        (
+            "packet-ready",
+            lambda record: record["authorityBoundary"].__setitem__(
+                "readyOrMergeAuthorized", True
+            ),
+        ),
+        (
+            "packet-rec-i3",
+            lambda record: record["authorityBoundary"].__setitem__("recI3Activated", True),
+        ),
+        (
+            "packet-stage-gate",
+            lambda record: record["findingsTruth"].__setitem__("openP0StageGate", "REC-I3"),
+        ),
+        (
+            "packet-human-closure-sha",
+            lambda record: record["reviewTarget"]["accountableHumanReviewClosure"].__setitem__(
+                "sha256", "0" * 64
+            ),
+        ),
+    ]
+    for name, mutation in packet_mutations:
+        expect_metadata_negative(name, packet_mutation=mutation)
+
+
 def run_rec_i2b_evidence_boundary_tests() -> None:
     working_evidence = read_json(REC_I2B_RUNTIME_EVIDENCE_PATH)
     accountable_phase = working_evidence.get("status") == REC_I2B_ACCOUNTABLE_STATUS
+    accountable_metadata_clean = (
+        working_evidence.get("remediationState")
+        == REC_I2B_ACCOUNTABLE_METADATA_CLEAN_REMEDIATION_STATE
+    )
     if accountable_phase:
         evidence_bytes = git_blob_bytes(
             f"{REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD}:{REC_I2B_RUNTIME_EVIDENCE_PATH}"
@@ -5696,7 +6222,10 @@ def run_rec_i2b_evidence_boundary_tests() -> None:
         )
     for name, mutation in packet_mutations:
         expect_packet_negative(name, mutation)
-    if accountable_phase:
+    if accountable_metadata_clean:
+        run_rec_i2b_accountable_phase_tests(historical=True)
+        run_rec_i2b_accountable_metadata_phase_tests()
+    elif accountable_phase:
         run_rec_i2b_accountable_phase_tests()
 
 
@@ -5863,12 +6392,21 @@ def main() -> int:
         run_rec_i2b_evidence_boundary_tests()
         run_negative_tests()
     if rec_i2b_mode:
-        accountable_review_complete = (
-            read_json(REC_I2B_RUNTIME_EVIDENCE_PATH).get("status")
-            == REC_I2B_ACCOUNTABLE_STATUS
+        current_evidence = read_json(REC_I2B_RUNTIME_EVIDENCE_PATH)
+        accountable_review_complete = current_evidence.get("status") == REC_I2B_ACCOUNTABLE_STATUS
+        accountable_metadata_clean = (
+            current_evidence.get("remediationState")
+            == REC_I2B_ACCOUNTABLE_METADATA_CLEAN_REMEDIATION_STATE
         )
         profile_summary = (
             (
+                "exact REC-I2B reviewed-successor chain/module/evidence boundary valid; distinct "
+                "accountable Engineering/Security review and its independent metadata review are "
+                "complete, while Draft PR integration, exact-head CI, separate REC-I3 activation "
+                "decision, execution and admission remain blocked"
+            )
+            if accountable_metadata_clean
+            else (
                 "exact REC-I2B reviewed-successor chain/module/evidence boundary valid; distinct "
                 "accountable Engineering/Security review complete, while fresh independent metadata "
                 "review, separate REC-I3 activation decision, execution, admission and merge remain "
