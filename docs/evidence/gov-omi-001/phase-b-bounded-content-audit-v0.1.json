@@ -1,0 +1,199 @@
+{
+  "recordType": "dora-gov-omi-phase-b-bounded-public-content-audit-result",
+  "schemaVersion": 1,
+  "taskId": "GOV-OMI-001",
+  "authorityIds": [
+    "GOV-OMI-PHASE-B-BOUNDED-PUBLIC-SOURCE-CONTENT-AUDIT-AUTH-20260818-01",
+    "GOV-OMI-PHASE-B-CANONICAL-RECOVERY-AUTH-20260818-02"
+  ],
+  "capturedAt": "2026-08-18T15:30:43.781Z",
+  "state": "INCOMPLETE_FAIL_CLOSED",
+  "dora": {
+    "repository": "Monumentogram/DORA",
+    "branch": "codex/gov-omi-001-phase-b-bounded-content-audit",
+    "baseCommitSha": "4a1dacacc52926ef3608a5952a762f00b8dafaa9",
+    "scopeCommitSha": "d2dc88b7918806d379cd7632ea55c61268d0890d",
+    "preservedHistory": [
+      "349f479",
+      "aa2f68f",
+      "f71a2a2",
+      "d2dc88b"
+    ],
+    "grandfatheredImmutableArtifact": {
+      "path": "docs/stage0/gov-omi-phase-b-contract-test-resolved-allowlist-v0.1.json",
+      "introducedByCommit": "f71a2a21b8cd7be1428cdce4cc44a02d78569803",
+      "forwardMutationAllowed": false,
+      "preservedByteForByte": true
+    }
+  },
+  "upstream": {
+    "repository": "BasedHardware/omi",
+    "commitSha": "7d99abcc4efb9e46a5853b21fc01289e4b891837",
+    "treeSha": "85db621ffd5dc5386bcbd7c87713cc69638be7e3",
+    "fileAllowlistPathCount": 67,
+    "fileAllowlistUniqueBlobCount": 65,
+    "fileAllowlistUniqueDecodedBytes": 700153,
+    "fileAllowlistSha256": "5ce13c2059bbb6dacbee78d7560985cbbe7cab8a54e93c73b1f643ccca277a4a",
+    "discussionAllowlistItemCount": 18,
+    "discussionAllowlistSha256": "ef74a5642e5bf66eb3df14db915ffb35a964686b551b407ab0fb00e92f65fc64"
+  },
+  "requestLedger": {
+    "preFreezeRecursiveTreeMetadataRequests": 3,
+    "preservedPriorScopeRequests": {
+      "identityRequests": 2,
+      "contractTestTreeMetadataRequests": 2,
+      "total": 4,
+      "repeatedDuringRecovery": false,
+      "rawResponsePersisted": false,
+      "sourceOrTrackerContentRequested": false
+    },
+    "canonicalBlobBatch": {
+      "logicalAndTransportAttempts": 49,
+      "successfulResponses": 48,
+      "failedResponses": 1,
+      "retries": 0,
+      "unattemptedAllowlistedBlobs": 16
+    },
+    "discussionRequests": 0,
+    "finalIdentityRequest": 0,
+    "canonicalBudget": {
+      "cap": 86,
+      "consumed": 51,
+      "consumedBreakdown": {
+        "preservedIdentityAndPreflight": 2,
+        "canonicalBlobBatchAttempts": 49
+      },
+      "unexecuted": 35,
+      "arithmetic": "51 + 35 = 86"
+    },
+    "outsideCanonicalBudget": {
+      "preFreezeRecursiveTreeMetadata": 3,
+      "grandfatheredContractTestTreeMetadata": 2,
+      "total": 5
+    },
+    "totalKnownRequests": 56,
+    "repeatedRequests": 0,
+    "arithmetic": "56 = 3 pre-freeze + 4 preserved prior-scope + 49 blob attempts"
+  },
+  "failure": {
+    "code": "BLOB_REQUEST_FAILED",
+    "attemptOrdinalWithinBlobBatch": 49,
+    "blobOid": "d62389a3aedd4e1b6d44f4fe66a8d00d0a7af9ce",
+    "allowlistedPath": "docs/doc/hardware/consumer/license.mdx",
+    "expectedBytes": 5125,
+    "rawErrorOrResponsePersisted": false,
+    "retryAllowed": false,
+    "wholeAuditStopped": true,
+    "trackerAuditStarted": false
+  },
+  "blobBatchResult": {
+    "completedUniqueBlobs": 48,
+    "completedAllowlistedPaths": 50,
+    "completedDecodedBytes": 543654,
+    "allCompletedBase64Decoded": true,
+    "allCompletedSizesMatched": true,
+    "allCompletedGitBlobOidsVerified": true,
+    "allCompletedUtf8Verified": true,
+    "allCompletedNulFree": true,
+    "separateBinaryHeuristicApplied": false,
+    "mechanicalInterpretationAvailable": false,
+    "mechanicalInterpretationUnavailableReason": "The in-memory gate verified base64, exact size, Git OID, strict UTF-8 and absence of NUL bytes, but did not retain evidence of a separate binary-content heuristic. Retrieval cannot be repeated under the frozen policy.",
+    "completedOidSizeCanonicalSha256": "44117ee69eeb83f305b2c4372cccf8bdec0019c4ec3f6c7cc7a1842a1e9ac043",
+    "remainingIncludingFailedUniqueBlobs": 17,
+    "remainingIncludingFailedExpectedBytes": 156499,
+    "byCategory": [
+      {"category":"LICENSE_NOTICE","completedPaths":18,"completedUniqueBlobs":16,"completedBytes":42436,"remainingPaths":3,"remainingUniqueBlobs":3,"remainingBytes":17536},
+      {"category":"MANIFEST","completedPaths":7,"completedUniqueBlobs":7,"completedBytes":94523,"remainingPaths":4,"remainingUniqueBlobs":4,"remainingBytes":3451},
+      {"category":"SOURCE","completedPaths":13,"completedUniqueBlobs":13,"completedBytes":266592,"remainingPaths":7,"remainingUniqueBlobs":7,"remainingBytes":109512},
+      {"category":"TEST","completedPaths":10,"completedUniqueBlobs":10,"completedBytes":132546,"remainingPaths":3,"remainingUniqueBlobs":3,"remainingBytes":26000},
+      {"category":"SECURITY_DOC","completedPaths":2,"completedUniqueBlobs":2,"completedBytes":7557,"remainingPaths":0,"remainingUniqueBlobs":0,"remainingBytes":0}
+    ]
+  },
+  "completedBlobSha256ByOid": {
+    "02fe5929daaa67986d3656aade4e205eaf8fef68": "99f8311c2ed9af65a5939eea186e7a270ba99aa821f777b00bd6354ac46bf462",
+    "0519ecba6ea913e21689ec692e81e9e4973fbf73": "36a9e7f1c95b82ffb99743e0c5c4ce95d83c9a430aac59f84ef3cbfab6145068",
+    "08b9b218a2410bf71aba28064370eed71aa2b842": "1c5a59ff4e7eb0cb000f43ca173c36b2cd2643bed66b3e2ebdee0c7dbe87a6fa",
+    "0a8e9f806977d2151aec4d9361b12b6227e26108": "478b050e66ce46564c1d081590edc7f3db7fcf1894430d20a9b6b550029d4ab8",
+    "0f92cad093fe6c3841306da3256b610b8a568adc": "b9f8d3c451f2e165a977c93ded873a7d79b8e5cd2046e00d27880fbf9f582cbe",
+    "0fd1d42b3367ae21e1fc62f85f21c5f64a42e352": "4fc178637ecf4dfb9c27e538099597e3c1461c05830668f577280d7c5f4e0776",
+    "0ffa99904132158a87cff837890e7b0cadec148a": "00379fb623f7bf0e8a76fa1ebc8716f270cdc6f4a473f3947de337c09c5030fc",
+    "10e7698b495460333e1149f1da51bc4c0c930478": "9bdab0701cbff4c94b2610dbc2aace79dc5959f08eab1a30665f1e9748d34464",
+    "141985a59788e84411c792453f1db1288da61ecb": "60dbfb141495e99bd64e4ee4709861a580d4f546f8c8b57495026dd394241ae3",
+    "194572e3ce20396dd7dea3d8644cb86301e9f036": "2dc9604c226289e541f4e4c726e35cb7c123cb41c5a1aa542928ba524daa8676",
+    "19517cb400116a8b08e9b5d08d4ca958a20e2545": "4a13e3911ee60cc45f548b8babf7fdc4fa9583b802793304bf99d50434b273a5",
+    "1e6a3956d8be1274af0acfa7a70cb025dd0cc4af": "5473a99772d9f70d45b95b4896fc072dffe02f5d8bb4dddcaa12b6e4bbb340de",
+    "251f20512b8a9102dfa5b3c8e867aafd806c9d27": "7f7a312fff1e91669bc2375cda7fce5888ca5d53bd22f1a7f9476c35b16f491d",
+    "2933d24a01edfefc22f7086761092db9ab471c96": "fb3c75f89aaeebb5c55f3028b13f38709bf2ecdb39909c3154affc4adfa4b85a",
+    "2e1db516ad74af176072f411c7720c30583ce020": "b2d451fcba3577b118741d733d37ebd15bdd0b6b381e554a7345bdbfa3743108",
+    "343b04ffa58f2c700c944899b0ba877f5c934796": "5b1ac5cdf08dea83e3ca0bd09596ff4716945dcbaf519db9b68cbdfbf773c147",
+    "3748a395c23e1b7b339b87fa1cae95a604cf8fd3": "88606729f4a2352be2689cd95cf902d0629b8d1a7976ebf1451590754c0e371f",
+    "3b541d7704e77fbc2be195a400588453073d74ff": "f5f7625ebdd7b00fd73cc2891dee24c1976d778632f3b53203047a19c2cb4de9",
+    "432dffe80f69bf0f991d82ee786b8e0be0569deb": "cf729d12f6c85f97f952ad03284a9131bf57348ceb9e0b84c9b1e20979537df0",
+    "46f9c222e7bd6a16e1c5295229b1ab3116b17c6b": "dc71ef1784bc3e543b6eca72cd7594fdf022ce0236b8164441ae2445374193ef",
+    "4abe69699a99fcfd54e06efd7def9543042d8760": "b0930510b13ccffb6f19c0e22aa2321c2df2c461279d9c7493f5dcafa5c6f76a",
+    "4b10917fb5f85b1d397e6d598329c9ad213c61a1": "c624f60b422881d3fa149f7476bba0251da6e125e20c2b0ac8783ec87cba1419",
+    "4f00060602c3e3f2234ccd9487ff2d2f21cabc87": "f4d29efa353530669cb9e91cd24da370dabbe49b26e6941c6bd83270d5009ec4",
+    "546ca2287dc56da02980b11237026aa595b29909": "69fe3123dc9e64775e635b4407efdf6c11c7124628a6ffd22966aaa882473b6a",
+    "5ca81f5a74fb342e20499cd0b08480e9b58fc733": "1432f4510d186cacabae027480e8245b41965ebe9921353d68ee38519deb2540",
+    "6f62850a5d2357a3cf64017b651bb1a6a97960de": "ea9bb2314f205e0c3add94b2ab3adff1c958c5c2da9bed5259cdb149e694d044",
+    "79d3f8087ac634a2053c9532b160a18df6448545": "707bde7952d4deddfee8610fa79c5281a8b030e9489e19a2cc3e30d657d84eb0",
+    "8153adfded2e099b75cf56c3dd760383634a9bb5": "f95d4a9de19982bf4e51871e5b095babd4538998b4a4215a9a3d2396e6b3b2e2",
+    "8287fa87613a46fc3e2a19cec8ce934d88b0082c": "7e985c686ceb76862635ffc78cbed172d04b9da1b73c9ad1df68960a29704602",
+    "889bb2d19bde9a9a7ac51aefc576e2814a3f4b9a": "fd9dbe760936a96ffa7084ffe64cb6282629aa4e5f34956bdda32afa596a57d0",
+    "8da1c16cf97911f9ea25b25a647021035368c882": "b95d3ea903ad9388054b69e732dcdcc9056c6948b5947f4fe1757bf46fb31948",
+    "92a9d27f58b06a9d4ae072e1a71a4a685c0dde87": "b16285d80b07cfe2607c1f9e3af563fac57c70a0890e488bf0d43e284d99c1b3",
+    "9631c4cf9d294a2d9f4f115206466297f3b5fa5d": "3afa6de6821512ba593cdb042bb411f1ad6917a04bd91791eb15493ccfa2d2ed",
+    "969fc35017e5b8b6dba80ad6f6769e4f063b95eb": "571c529aab2eef3becb398f1db5e25ad363f8c5abb4dd15271aaecb4a042185b",
+    "97511054e7b9431c9d345ea25669e72759d8d4e9": "e9b202ac95af787da52845c88965870c2be4531160ca1fb92d9cbc30ed6c7c29",
+    "9770b05125060fb69a0443a52254cb48a4f5c287": "24f66595311d0ede5d011a90f1912c9151b9cc5e140b440baf41b89e8de4b9e1",
+    "a144df0b090dc2193ee6de6045c17c981bc5d536": "228dd7ed20d3ce24c16ef410dc86f76f53a042ea54384fed8a0380ced5467f46",
+    "a21d87cbf7851dfd63054441a35c88f892a1f3dc": "1bc17b2e9a54d5b786ab00ea67515476ae51cf6f667dbfb7207a740662906295",
+    "a8362507db724cab6a35579fd428631aac4db8bb": "73efbc5a6415dc637817c70a232d0500801ada8891120ffd67895090c06fe242",
+    "acdeadde88f794e227c38b8ff3bbb4ccfbe8437c": "06964aa6e32a1df01493264f71282f884d3438d963aeaddf503d7d232560337e",
+    "b38ab8576134e3106fe474203b84d57b60fdd706": "2db4e927894f6bceb2e531b06e0d6c1ea49495ffb98cde19b91c5fe821769e41",
+    "b77bf2ab726c6e7cb5a81a9d3b7dc38266ebfd3d": "06dcddbb6908a0c6dd4a9e8ec822eea41d5a460a53089fecccc8a68049e99241",
+    "b8250ffb912b0346be7e0f8fde6b763ebdcd8ed6": "f64cb90ca4e8824c42109e257c2e536a5b40e65f3fc6610d9ecdaf965edd979f",
+    "bca1b1e545a9662453bd172b177dd7d967b027b6": "d2db6a94c1a7ea495d9a5776650059b50792633f21207ceb893098cce8cd8a99",
+    "beb9b3553922522ad2466040709a4a76c05d81ca": "7efdcd0fc0d7598a4771f4fa0d1a62d5ed1fcb7bf4d0c4384ca37a1420389efd",
+    "c0219ac2513f65805127c034c8bd7eb66e308c50": "59b8bee34834fa1298b78abd8aaa2d84d9c79ad10248c44b708bd0e715d271d0",
+    "d021ec22e5f93eacd96ee3b9264f006eea81cc95": "44ec926002ab0cdc6d897dedf6a4694badb75082cd090d8c5cfb630e263fe866",
+    "d2e649a97015cf177d0a73ecd2d378236638d67b": "ccd41c5622481cd7dcb4beb067ebe3f660907548ebed16000323f6e8bb718e90"
+  },
+  "privacyScan": {
+    "rawContentPersisted": false,
+    "completedBlobsSuppressedFromMechanicalInterpretation": 4,
+    "secretLikePatternSuppressionCount": 1,
+    "contactPatternSuppressionCount": 4,
+    "privateEndpointPatternSuppressionCount": 1,
+    "suppressedBlobOids": [
+      "0a8e9f806977d2151aec4d9361b12b6227e26108",
+      "3748a395c23e1b7b339b87fa1cae95a604cf8fd3",
+      "432dffe80f69bf0f991d82ee786b8e0be0569deb",
+      "79d3f8087ac634a2053c9532b160a18df6448545"
+    ]
+  },
+  "mechanicalObservations": {
+    "publicationState": "WITHHELD_INSUFFICIENT_VALIDATION",
+    "reason": "A separate binary-content heuristic was not evidenced for the 48 completed blobs, and the frozen no-retry policy prevents repeat retrieval.",
+    "licenseCompatibility": "BLOCKED_RIGHTS",
+    "dependencyAdmission": "INSUFFICIENT_EVIDENCE",
+    "sourceOrTestInterpretation": "INSUFFICIENT_EVIDENCE",
+    "securityFitness": "INSUFFICIENT_EVIDENCE",
+    "trackerHazardValidation": "NOT_STARTED",
+    "contentDerivedSignalsPublished": false
+  },
+  "dispositions": {
+    "phaseB": "DEFER",
+    "overallRights": "BLOCKED_RIGHTS",
+    "componentReuse": "INSUFFICIENT_EVIDENCE",
+    "hazardValidation": "INSUFFICIENT_EVIDENCE",
+    "evaluationApproved": false,
+    "admitted": false,
+    "readyOrMerge": false
+  },
+  "reviewers": {
+    "productLegalIp": {"identity":null,"capacityConfirmed":false,"signatureOrEquivalent":null,"reviewedAt":null,"disposition":null},
+    "engineeringSecurity": {"identity":null,"capacityConfirmed":false,"signatureOrEquivalent":null,"reviewedAt":null,"disposition":null}
+  },
+  "noAdmissionStatement": "The audit stopped after one non-retryable blob request failure. No Omi material was copied, built, executed, ported, imported, evaluated, admitted or added as a Dora dependency."
+}

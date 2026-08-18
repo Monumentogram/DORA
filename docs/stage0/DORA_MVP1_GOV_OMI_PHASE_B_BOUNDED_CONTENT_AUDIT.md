@@ -129,6 +129,18 @@ Only these five new sanitized files may be changed on this branch:
 4. `docs/evidence/gov-omi-001/phase-b-bounded-content-audit-report.md`
 5. `docs/evidence/gov-omi-001/phase-b-independent-technical-review.json`
 
+The earlier file
+`docs/stage0/gov-omi-phase-b-contract-test-resolved-allowlist-v0.1.json` is a grandfathered,
+immutable recovery artifact introduced by commit `f71a2a2` before the canonical scope commit
+`d2dc88b`. The recovery authority requires preserving it byte-for-byte. It is outside this
+forward-mutation allowlist and may not be edited, replaced or deleted.
+
+For canonical request accounting, the two identity/preflight requests recorded before `d2dc88b`
+consume two of the 86 canonical requests. The two grandfathered contract-tree metadata requests do
+not consume that canonical budget; they remain separately disclosed historical requests. The three
+pre-freeze recursive-tree discovery requests likewise remain separately disclosed. No request may be
+repeated.
+
 The first two files form the committed pre-content checkpoint. Local validation, explicit-file
 commits, push, Draft PR and CI are authorized. Google Sheets, report relay, Alpha, Ready and merge are
 out of scope. No Omi code, dependency, binary, model, dataset, asset, service or behavior is admitted.

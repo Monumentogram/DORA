@@ -195,6 +195,29 @@
     "readyOrMergeAllowed": false,
     "googleSheetReportRelayOrAlphaEditAllowed": false
   },
+  "canonicalRecoveryReconciliation": {
+    "recordedAfterScopeCommitWithoutHistoryRewrite": true,
+    "scopeCommitSha": "d2dc88b7918806d379cd7632ea55c61268d0890d",
+    "canonicalRequestCap": 86,
+    "canonicalRequestsConsumedBeforeScopeCommit": {
+      "identityAndPreflight": 2,
+      "countTowardCanonicalCap": true
+    },
+    "requestsOutsideCanonicalCap": {
+      "preFreezeRecursiveTreeDiscovery": 3,
+      "grandfatheredContractTestTreeMetadata": 2
+    },
+    "repeatAnyRecordedRequestAllowed": false,
+    "grandfatheredImmutableArtifacts": [
+      {
+        "path": "docs/stage0/gov-omi-phase-b-contract-test-resolved-allowlist-v0.1.json",
+        "introducedByCommit": "f71a2a21b8cd7be1428cdce4cc44a02d78569803",
+        "introducedBeforeCanonicalScopeCommit": true,
+        "forwardMutationAllowed": false,
+        "deleteOrRewriteAllowed": false
+      }
+    ]
+  },
   "allowedDoraFiles": [
     "docs/stage0/DORA_MVP1_GOV_OMI_PHASE_B_BOUNDED_CONTENT_AUDIT.md",
     "docs/stage0/gov-omi-phase-b-bounded-content-audit-v0.1.json",

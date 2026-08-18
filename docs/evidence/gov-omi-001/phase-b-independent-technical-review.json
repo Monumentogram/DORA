@@ -1,0 +1,89 @@
+{
+  "recordType": "dora-gov-omi-phase-b-independent-technical-review",
+  "schemaVersion": 1,
+  "taskId": "GOV-OMI-001",
+  "authorityId": "GOV-OMI-PHASE-B-CANONICAL-RECOVERY-AUTH-20260818-02",
+  "reviewedAt": "2026-08-18T15:44:38.528Z",
+  "reviewer": {
+    "type": "independent-codex-read-only-agent",
+    "taskPath": "/root/gov_omi_phase_a/gov_omi_phase_b_review",
+    "formalReviewer": false,
+    "productLegalIpReviewer": false,
+    "engineeringSecurityReviewer": false
+  },
+  "reviewedBranch": "codex/gov-omi-001-phase-b-bounded-content-audit",
+  "reviewedHeadBeforeEvidenceCommit": "d2dc88b7918806d379cd7632ea55c61268d0890d",
+  "reviewedFiles": [
+    {
+      "path": "docs/stage0/DORA_MVP1_GOV_OMI_PHASE_B_BOUNDED_CONTENT_AUDIT.md",
+      "sha256": "f4ca09d15734e540cb03d17fe865d9b9485922263970e570ba0b43b6fa6f0be2"
+    },
+    {
+      "path": "docs/stage0/gov-omi-phase-b-bounded-content-audit-v0.1.json",
+      "sha256": "7d1eb4a2b92a0c1470f5404ac9a92b60b1f496f859c0a95332b4ee66274884b6"
+    },
+    {
+      "path": "docs/stage0/gov-omi-phase-b-contract-test-resolved-allowlist-v0.1.json",
+      "sha256": "f51bb5e01a3e22287c727d6419b97d6d943daa889261afc80f43259e75360b26",
+      "grandfatheredImmutableArtifact": true
+    },
+    {
+      "path": "docs/evidence/gov-omi-001/phase-b-bounded-content-audit-v0.1.json",
+      "sha256": "4a48085175e5cf1dd980a7ed5b7dbde48c13cf8dfa52fea2a1a4f51e1e4b079c"
+    },
+    {
+      "path": "docs/evidence/gov-omi-001/phase-b-bounded-content-audit-report.md",
+      "sha256": "ea7a4344ae571db5a4e227e0b5758eb25c65fd7d11f9e8ec70f63f31d08db659"
+    }
+  ],
+  "initialReview": {
+    "disposition": "CHANGES_REQUIRED",
+    "counts": {"p0":0,"p1":1,"p2":2},
+    "findings": [
+      "GRANDFATHERED_ARTIFACT_SCOPE_AMBIGUITY",
+      "CANONICAL_REQUEST_BUDGET_AMBIGUITY",
+      "BINARY_VALIDATION_NOT_EVIDENCED"
+    ]
+  },
+  "remediationReview": {
+    "disposition": "NO_FURTHER_CHANGES_REQUIRED",
+    "counts": {"p0":0,"p1":0,"p2":0},
+    "allInitialFindingsClosed": true,
+    "verified": [
+      "GRANDFATHERED_ARTIFACT_EXPLICIT_IMMUTABLE_OUTSIDE_FORWARD_MUTATION_ALLOWLIST",
+      "REQUEST_ACCOUNTING_56_EQUALS_3_PLUS_4_PLUS_49",
+      "CANONICAL_BUDGET_51_PLUS_35_EQUALS_86",
+      "OUTSIDE_CANONICAL_BUDGET_EQUALS_5",
+      "REPEATED_REQUESTS_EQUALS_0",
+      "BASE64_SIZE_GIT_OID_UTF8_AND_NUL_EVIDENCE_EXPLICIT",
+      "SEPARATE_BINARY_HEURISTIC_FALSE",
+      "CONTENT_DERIVED_INTERPRETATION_WITHHELD",
+      "ALL_JSON_PARSE",
+      "ALLOWLIST_DISCUSSION_AND_COMPLETED_MAP_HASHES_MATCH",
+      "REVIEWER_PLACEHOLDERS_NULL",
+      "BLOCKED_RIGHTS_AND_INSUFFICIENT_EVIDENCE_CEILING",
+      "DRAFT_ONLY_NO_ADMISSION",
+      "NO_RAW_CONTENT_SECRET_PII_PRIVATE_PATH_OR_CREDENTIAL_IN_EVIDENCE"
+    ]
+  },
+  "reviewActions": {
+    "filesModified": false,
+    "gitStateModified": false,
+    "networkCallsMade": false,
+    "upstreamContentRetrieved": false
+  },
+  "publicationGate": {
+    "independentTechnicalReviewP0P1P2": "0/0/0",
+    "technicalEvidenceMayBeCommitted": true,
+    "readyOrMergeAllowed": false,
+    "reasonReadyOrMergeBlocked": [
+      "PHASE_B_INCOMPLETE_FAIL_CLOSED",
+      "PRODUCT_LEGAL_IP_FORMAL_REVIEW_PENDING",
+      "ENGINEERING_SECURITY_FORMAL_REVIEW_PENDING"
+    ]
+  },
+  "formalHumanDispositions": {
+    "productLegalIp": null,
+    "engineeringSecurity": null
+  }
+}
