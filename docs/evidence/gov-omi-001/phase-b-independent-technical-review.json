@@ -13,6 +13,15 @@
   },
   "reviewedBranch": "codex/gov-omi-001-phase-b-bounded-content-audit",
   "reviewedHeadBeforeEvidenceCommit": "d2dc88b7918806d379cd7632ea55c61268d0890d",
+  "supersession": {
+    "historicalReviewAppliedThroughCommit": "e689f5e5d5ffa843f822a75d0ba7b30b8c696e68",
+    "currentRecoveryAuthority": "GOV-OMI-PHASE-B-INCOMPLETE-RETRIEVAL-RECOVERY-AUTH-20260818-03",
+    "currentCandidateCoveredByThisReview": true,
+    "freshIndependentReviewRequired": false,
+    "currentCandidateReviewState": "NO_FURTHER_CHANGES_REQUIRED",
+    "historicalSeparateBinaryHeuristicConcernCarriedForward": false,
+    "currentDefinedContentPredicates": ["BASE64","EXACT_SIZE","GIT_BLOB_OID","STRICT_UTF8","NUL_FREE"]
+  },
   "reviewedFiles": [
     {
       "path": "docs/stage0/DORA_MVP1_GOV_OMI_PHASE_B_BOUNDED_CONTENT_AUDIT.md",
@@ -64,6 +73,51 @@
       "BLOCKED_RIGHTS_AND_INSUFFICIENT_EVIDENCE_CEILING",
       "DRAFT_ONLY_NO_ADMISSION",
       "NO_RAW_CONTENT_SECRET_PII_PRIVATE_PATH_OR_CREDENTIAL_IN_EVIDENCE"
+    ]
+  },
+  "currentRecoveryReview": {
+    "reviewedAt": "2026-08-18T16:08:05.166Z",
+    "authorityId": "GOV-OMI-PHASE-B-INCOMPLETE-RETRIEVAL-RECOVERY-AUTH-20260818-03",
+    "disposition": "NO_FURTHER_CHANGES_REQUIRED",
+    "counts": {"p0":0,"p1":0,"p2":0},
+    "formalReviewer": false,
+    "reviewRecordHashBeforeCurrentReviewRecording": "567f4f17b7871462f5306a9f68311798ecf98267a6a36b36449d95d7d24f6c7a",
+    "reviewedCandidateFiles": [
+      {
+        "path": "docs/stage0/DORA_MVP1_GOV_OMI_PHASE_B_BOUNDED_CONTENT_AUDIT.md",
+        "sha256": "689c30aac796321ef206ebfb3fd10f0f6829746b5f79af0f039020600b7872fc"
+      },
+      {
+        "path": "docs/stage0/gov-omi-phase-b-bounded-content-audit-v0.1.json",
+        "sha256": "ee2e8ce58d313e72fea32cf85f0bf3f365d4fbf8fd3a8f1928a14f6804fbbdf6"
+      },
+      {
+        "path": "docs/evidence/gov-omi-001/phase-b-bounded-content-audit-v0.1.json",
+        "sha256": "94f5ae00c4f8174a775b9e204b4461db5c7c53db1712490eeb8739c6f2fb3413"
+      },
+      {
+        "path": "docs/evidence/gov-omi-001/phase-b-bounded-content-audit-report.md",
+        "sha256": "50776f6c367a0428f5be6502cebe715da9e8b7d72b7732a179ce716d93076fb3"
+      },
+      {
+        "path": "docs/evidence/gov-omi-001/phase-b-independent-technical-review.json",
+        "sha256BeforeCurrentReviewRecording": "567f4f17b7871462f5306a9f68311798ecf98267a6a36b36449d95d7d24f6c7a"
+      }
+    ],
+    "verified": [
+      "INITIAL_BLOB_FAILURE_PROVENANCE_PRESERVED",
+      "AUTHORIZED_EXACT_RETRY_AND_REMAINING_16_BLOBS_COMPLETE",
+      "ALL_65_UNIQUE_BLOBS_AND_700153_BYTES_ACCOUNTED_FOR",
+      "TRACKER_FAILURE_CLASS_AND_UNKNOWN_TRANSPORT_METADATA_RECORDED_WITHOUT_RAW_RESPONSE",
+      "NO_TRACKER_RETRY_AND_17_IDENTITIES_UNREQUESTED",
+      "FROZEN_9_ISSUE_AND_9_PULL_REQUEST_IDENTITIES_AND_HASH_MATCH",
+      "CANONICAL_REQUEST_ACCOUNTING_69_PLUS_17_EQUALS_86",
+      "TOTAL_KNOWN_EXTERNAL_REQUESTS_EQUALS_74",
+      "REPEATED_SUCCESSFUL_REQUESTS_EQUALS_0",
+      "LIFECYCLE_PAUSED_PENDING_EXACT_TRACKER_RECOVERY_AUTH",
+      "CONTENT_INTERPRETATION_WITHHELD",
+      "NO_RAW_CONTENT_SECRET_PII_PRIVATE_PATH_OR_CREDENTIAL_IN_EVIDENCE",
+      "ANCESTRY_SYNC_AND_PUBLICATION_DEFERRED"
     ]
   },
   "reviewActions": {

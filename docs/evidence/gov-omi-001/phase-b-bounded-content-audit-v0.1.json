@@ -4,10 +4,12 @@
   "taskId": "GOV-OMI-001",
   "authorityIds": [
     "GOV-OMI-PHASE-B-BOUNDED-PUBLIC-SOURCE-CONTENT-AUDIT-AUTH-20260818-01",
-    "GOV-OMI-PHASE-B-CANONICAL-RECOVERY-AUTH-20260818-02"
+    "GOV-OMI-PHASE-B-CANONICAL-RECOVERY-AUTH-20260818-02",
+    "GOV-OMI-PHASE-B-INCOMPLETE-RETRIEVAL-RECOVERY-AUTH-20260818-03"
   ],
-  "capturedAt": "2026-08-18T15:30:43.781Z",
-  "state": "INCOMPLETE_FAIL_CLOSED",
+  "capturedAt": "2026-08-18T15:56:59.356Z",
+  "state": "INCOMPLETE_TRACKER_FAIL_CLOSED",
+  "lifecycle": "PAUSED_PENDING_EXACT_TRACKER_RECOVERY_AUTH",
   "dora": {
     "repository": "Monumentogram/DORA",
     "branch": "codex/gov-omi-001-phase-b-bounded-content-audit",
@@ -17,7 +19,14 @@
       "349f479",
       "aa2f68f",
       "f71a2a2",
-      "d2dc88b"
+      "d2dc88b",
+      "e689f5e",
+      "2140058",
+      "9c47368"
+    ],
+    "recoveryPlanCommits": [
+      "2140058",
+      "9c47368"
     ],
     "grandfatheredImmutableArtifact": {
       "path": "docs/stage0/gov-omi-phase-b-contract-test-resolved-allowlist-v0.1.json",
@@ -54,58 +63,133 @@
       "retries": 0,
       "unattemptedAllowlistedBlobs": 16
     },
-    "discussionRequests": 0,
+    "incompleteRetrievalRecovery": {
+      "failedBlobRetryAttempts": 1,
+      "failedBlobRetrySuccessfulResponses": 1,
+      "remainingBlobAttempts": 16,
+      "remainingBlobSuccessfulResponses": 16,
+      "trackerAttempts": 1,
+      "trackerSuccessfulResponses": 0,
+      "retriesOfPreviouslySuccessfulRequests": 0,
+      "localParserFailuresBeforeExternalTrackerRequest": 2,
+      "externalRequestsConsumedByLocalParserFailures": 0
+    },
+    "discussionRequests": 1,
+    "discussionItemsCompleted": 0,
+    "discussionItemsUnexecuted": 17,
     "finalIdentityRequest": 0,
     "canonicalBudget": {
       "cap": 86,
-      "consumed": 51,
+      "consumed": 69,
       "consumedBreakdown": {
         "preservedIdentityAndPreflight": 2,
-        "canonicalBlobBatchAttempts": 49
+        "canonicalBlobBatchAttempts": 49,
+        "failedBlobRetry": 1,
+        "remainingBlobAttempts": 16,
+        "trackerAttempts": 1
       },
-      "unexecuted": 35,
-      "arithmetic": "51 + 35 = 86"
+      "unexecuted": 17,
+      "arithmetic": "69 + 17 = 86"
     },
     "outsideCanonicalBudget": {
       "preFreezeRecursiveTreeMetadata": 3,
       "grandfatheredContractTestTreeMetadata": 2,
       "total": 5
     },
-    "totalKnownRequests": 56,
+    "totalKnownRequests": 74,
     "repeatedRequests": 0,
-    "arithmetic": "56 = 3 pre-freeze + 4 preserved prior-scope + 49 blob attempts"
+    "arithmetic": "74 = 3 pre-freeze + 4 preserved prior-scope + 49 initial blob attempts + 1 failed-blob retry + 16 remaining blobs + 1 tracker attempt"
   },
-  "failure": {
+  "initialFailure": {
     "code": "BLOB_REQUEST_FAILED",
     "attemptOrdinalWithinBlobBatch": 49,
     "blobOid": "d62389a3aedd4e1b6d44f4fe66a8d00d0a7af9ce",
     "allowlistedPath": "docs/doc/hardware/consumer/license.mdx",
     "expectedBytes": 5125,
     "rawErrorOrResponsePersisted": false,
-    "retryAllowed": false,
-    "wholeAuditStopped": true,
-    "trackerAuditStarted": false
+    "retryAllowedUnderOriginalScope": false,
+    "wholeAuditStoppedAtThatTime": true,
+    "trackerAuditStartedAtThatTime": false,
+    "preservedByEvidenceCommit": "e689f5e5d5ffa843f822a75d0ba7b30b8c696e68",
+    "laterRecoveryAuthority": "GOV-OMI-PHASE-B-INCOMPLETE-RETRIEVAL-RECOVERY-AUTH-20260818-03",
+    "authorizedRetryOutcome": "SUCCESS"
+  },
+  "incompleteRetrievalRecoveryResult": {
+    "failedBlobRetry": {
+      "attempts": 1,
+      "success": true,
+      "oid": "d62389a3aedd4e1b6d44f4fe66a8d00d0a7af9ce",
+      "bytes": 5125,
+      "sha256": "1b8a21dde02aecceb61e9e57d0258103bc27f59ea6da058b1655ac78a91f7637",
+      "gitOidVerified": true,
+      "strictUtf8Verified": true,
+      "nulFree": true,
+      "disallowedControlCharacterCount": 0,
+      "privacySuppressed": false,
+      "rawContentPersisted": false
+    },
+    "remainingBlobBatch": {
+      "attempts": 16,
+      "successes": 16,
+      "decodedBytes": 151374,
+      "allGitOidsVerified": true,
+      "allStrictUtf8Verified": true,
+      "allNulFree": true,
+      "allDisallowedControlCharacterCountsZero": true,
+      "privacySuppressionCount": 0,
+      "rawContentPersisted": false
+    },
+    "trackerBatch": {
+      "localParserFailuresBeforeRequest": 2,
+      "externalRequestsConsumedByLocalParserFailures": 0,
+      "externalAttempts": 1,
+      "successfulResponses": 0,
+      "completedItems": 0,
+      "failedItem": {
+        "type": "ISSUE",
+        "number": 11769,
+        "hazardId": "GOV-OMI-HZ-META-001",
+        "taxonomyTag": "AUDIO_DATA_LOSS"
+      },
+      "endpointCategory": "GITHUB_GRAPHQL_PUBLIC_ISSUE_BODY_AND_TOP_LEVEL_COMMENTS",
+      "failureCode": "SECOND_REQUEST_FAILURE",
+      "sanitizedFailureClass": "GH_API_NONZERO_EXIT_NO_SUCCESSFUL_RESPONSE_PARSED",
+      "httpStatus": null,
+      "graphqlStatus": null,
+      "retryAfterSeconds": null,
+      "rateLimitRemaining": null,
+      "statusAndRetryHeadersAvailable": false,
+      "rawErrorOrResponsePersisted": false,
+      "errorDetailPersisted": false,
+      "retryAllowed": false,
+      "canonicalBudgetRemaining": 17,
+      "remainingItemsNotRequested": 17,
+      "frozenIdentityHash": "ef74a5642e5bf66eb3df14db915ffb35a964686b551b407ab0fb00e92f65fc64",
+      "allFrozenIssuesContentIncomplete": [11769,11204,11695,11762,11736,11694,11812,11308,11777],
+      "allFrozenPullRequestsContentIncomplete": [7331,6565,7099,7132,6777,7091,7006,7106,7322],
+      "unrequestedIssues": [11204,11695,11762,11736,11694,11812,11308,11777],
+      "unrequestedPullRequests": [7331,6565,7099,7132,6777,7091,7006,7106,7322]
+    }
   },
   "blobBatchResult": {
-    "completedUniqueBlobs": 48,
-    "completedAllowlistedPaths": 50,
-    "completedDecodedBytes": 543654,
+    "completedUniqueBlobs": 65,
+    "completedAllowlistedPaths": 67,
+    "completedDecodedBytes": 700153,
     "allCompletedBase64Decoded": true,
     "allCompletedSizesMatched": true,
     "allCompletedGitBlobOidsVerified": true,
     "allCompletedUtf8Verified": true,
     "allCompletedNulFree": true,
-    "separateBinaryHeuristicApplied": false,
     "mechanicalInterpretationAvailable": false,
-    "mechanicalInterpretationUnavailableReason": "The in-memory gate verified base64, exact size, Git OID, strict UTF-8 and absence of NUL bytes, but did not retain evidence of a separate binary-content heuristic. Retrieval cannot be repeated under the frozen policy.",
-    "completedOidSizeCanonicalSha256": "44117ee69eeb83f305b2c4372cccf8bdec0019c4ec3f6c7cc7a1842a1e9ac043",
-    "remainingIncludingFailedUniqueBlobs": 17,
-    "remainingIncludingFailedExpectedBytes": 156499,
+    "mechanicalInterpretationUnavailableReason": "All 65 blobs satisfied the contract's base64, exact-size, Git-OID, strict-UTF-8 and NUL-free content gates. Complete sanitized content interpretations were not retained for the first 48 successful blobs, those requests cannot be repeated, and no tracker item completed.",
+    "completedOidSizeCanonicalSha256": "27b4677225746d26de8da2be0a1c274f4a38569e223798ef74cc05832b12d13e",
+    "remainingIncludingFailedUniqueBlobs": 0,
+    "remainingIncludingFailedExpectedBytes": 0,
     "byCategory": [
-      {"category":"LICENSE_NOTICE","completedPaths":18,"completedUniqueBlobs":16,"completedBytes":42436,"remainingPaths":3,"remainingUniqueBlobs":3,"remainingBytes":17536},
-      {"category":"MANIFEST","completedPaths":7,"completedUniqueBlobs":7,"completedBytes":94523,"remainingPaths":4,"remainingUniqueBlobs":4,"remainingBytes":3451},
-      {"category":"SOURCE","completedPaths":13,"completedUniqueBlobs":13,"completedBytes":266592,"remainingPaths":7,"remainingUniqueBlobs":7,"remainingBytes":109512},
-      {"category":"TEST","completedPaths":10,"completedUniqueBlobs":10,"completedBytes":132546,"remainingPaths":3,"remainingUniqueBlobs":3,"remainingBytes":26000},
+      {"category":"LICENSE_NOTICE","completedPaths":21,"completedUniqueBlobs":19,"completedBytes":59972,"remainingPaths":0,"remainingUniqueBlobs":0,"remainingBytes":0},
+      {"category":"MANIFEST","completedPaths":11,"completedUniqueBlobs":11,"completedBytes":97974,"remainingPaths":0,"remainingUniqueBlobs":0,"remainingBytes":0},
+      {"category":"SOURCE","completedPaths":20,"completedUniqueBlobs":20,"completedBytes":376104,"remainingPaths":0,"remainingUniqueBlobs":0,"remainingBytes":0},
+      {"category":"TEST","completedPaths":13,"completedUniqueBlobs":13,"completedBytes":158546,"remainingPaths":0,"remainingUniqueBlobs":0,"remainingBytes":0},
       {"category":"SECURITY_DOC","completedPaths":2,"completedUniqueBlobs":2,"completedBytes":7557,"remainingPaths":0,"remainingUniqueBlobs":0,"remainingBytes":0}
     ]
   },
@@ -157,11 +241,29 @@
     "beb9b3553922522ad2466040709a4a76c05d81ca": "7efdcd0fc0d7598a4771f4fa0d1a62d5ed1fcb7bf4d0c4384ca37a1420389efd",
     "c0219ac2513f65805127c034c8bd7eb66e308c50": "59b8bee34834fa1298b78abd8aaa2d84d9c79ad10248c44b708bd0e715d271d0",
     "d021ec22e5f93eacd96ee3b9264f006eea81cc95": "44ec926002ab0cdc6d897dedf6a4694badb75082cd090d8c5cfb630e263fe866",
-    "d2e649a97015cf177d0a73ecd2d378236638d67b": "ccd41c5622481cd7dcb4beb067ebe3f660907548ebed16000323f6e8bb718e90"
+    "d2e649a97015cf177d0a73ecd2d378236638d67b": "ccd41c5622481cd7dcb4beb067ebe3f660907548ebed16000323f6e8bb718e90",
+    "d62389a3aedd4e1b6d44f4fe66a8d00d0a7af9ce": "1b8a21dde02aecceb61e9e57d0258103bc27f59ea6da058b1655ac78a91f7637",
+    "d645695673349e3947e8e5ae42332d0ac3164cd7": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "d6d10a10875206c6c3dfbc3d8fd1b370c8541639": "3842ffdad7d4286efb432b942b9d5a108c6a996b5b90be6453625e5b9abbb81f",
+    "d81a1a93f2ae6fa2a939f7410c88daf9b9161853": "5c066ef962f6ed87ce0f7d7d02f7caf4412bd16d4f9a34553f6a91aec175e40f",
+    "de33dbb61ab5012e76560e8e16a9bcb6578d6e1a": "f34cd127775f7962d1038d70f3fc3a41f1969e55bd5a5a95d237a71fce0d7d6f",
+    "df89c93a6b9086d11c09acfe4dca05742bee025c": "2844caa791dc78e37d89dbc1bf31493345feac31f6943f6502a51d1981ff3c89",
+    "e047144e4753267f3041f369724f72d02354e8a9": "ec2cbe43b856ba95a4785dba716febc37eeedfe48f7336a611baffd3afe9ea65",
+    "e58117c7cbe53ba4204fe394f263498ca2ee84d7": "d2273cb5c1ee1eba35a612d1540a3e32df223156c4229f856af9954c76aca460",
+    "ecd7a1673820a97e651cac31476b0738497c6b98": "61b632693d3dcc9c61ece1b30e5e3693f049d49106117cf7c4078b27e9197d65",
+    "edb2c5dc10334a751c6dec2a808f2fe94bc6315f": "b36e962c0c7463c08934c9c86a078817ca4ec19e04064d961791b5173deb5dda",
+    "eedfe656fd6e55059abc3e60b4949d0cf24f1af7": "4dd2a2b0df9b00cc712381d7ad79a348fe23739a5316743cf2126c41eb17db15",
+    "f22d71b2632dc4f977739fa9a9655c0661ad9d9a": "33338bf400be28dc99353bb0adec74813e380f2fa6d22a30a374bf57e151d71d",
+    "f282f5692592fa49755e09c6b292f02e928f17e4": "23ff2a8d282be3263b347c60e567455ac4323798658820e6d13b044c13ce539f",
+    "f887062bc68f2c83310826f6110ee6ea48380312": "0f6a926e0ef45f4223f6fb6033c822a65b759db92152415f7456541b1f40315f",
+    "fa6c2d6e1948ed8096160b5c55337c0548c2fa81": "31d580f8bc7513f4e9d7f8ae6c109906f70894aecf4b7a684556a2dae83dec05",
+    "fc3c055693b275438f141a55dca0a18ac04dc7f9": "2a14c2a2d3fe7328cac535a8d742d257dc7d4fcf78be4d41cbb7feb2ba19b016",
+    "fe6c622eddf05f62ec22074e47d04ece4e5d9342": "54c517ada5d17ac2ef6a3992ac427defdeb6ed1e80edcb056d329776f01ce007"
   },
   "privacyScan": {
     "rawContentPersisted": false,
     "completedBlobsSuppressedFromMechanicalInterpretation": 4,
+    "recoveryBlobsSuppressedFromMechanicalInterpretation": 0,
     "secretLikePatternSuppressionCount": 1,
     "contactPatternSuppressionCount": 4,
     "privateEndpointPatternSuppressionCount": 1,
@@ -174,12 +276,12 @@
   },
   "mechanicalObservations": {
     "publicationState": "WITHHELD_INSUFFICIENT_VALIDATION",
-    "reason": "A separate binary-content heuristic was not evidenced for the 48 completed blobs, and the frozen no-retry policy prevents repeat retrieval.",
+    "reason": "All 65 blobs completed the defined content gates, but complete sanitized interpretations were not retained for the first 48 successful blobs and no tracker item completed.",
     "licenseCompatibility": "BLOCKED_RIGHTS",
     "dependencyAdmission": "INSUFFICIENT_EVIDENCE",
     "sourceOrTestInterpretation": "INSUFFICIENT_EVIDENCE",
     "securityFitness": "INSUFFICIENT_EVIDENCE",
-    "trackerHazardValidation": "NOT_STARTED",
+    "trackerHazardValidation": "ATTEMPTED_ZERO_ITEMS_COMPLETED_SECOND_FAILURE",
     "contentDerivedSignalsPublished": false
   },
   "dispositions": {
@@ -191,9 +293,17 @@
     "admitted": false,
     "readyOrMerge": false
   },
+  "technicalReview": {
+    "previousZeroFindingReviewAppliesThroughCommit": "e689f5e5d5ffa843f822a75d0ba7b30b8c696e68",
+    "previousReviewIsHistorical": true,
+    "currentRecoveryCandidateReviewState": "NO_FURTHER_CHANGES_REQUIRED",
+    "currentCounts": {"p0":0,"p1":0,"p2":0},
+    "formalReviewer": false,
+    "reviewedAt": "2026-08-18T16:08:05.166Z"
+  },
   "reviewers": {
     "productLegalIp": {"identity":null,"capacityConfirmed":false,"signatureOrEquivalent":null,"reviewedAt":null,"disposition":null},
     "engineeringSecurity": {"identity":null,"capacityConfirmed":false,"signatureOrEquivalent":null,"reviewedAt":null,"disposition":null}
   },
-  "noAdmissionStatement": "The audit stopped after one non-retryable blob request failure. No Omi material was copied, built, executed, ported, imported, evaluated, admitted or added as a Dora dependency."
+  "noAdmissionStatement": "Recovery completed all 65 allowlisted blobs but stopped after the first tracker request became the second external failure. No Omi material was copied, built, executed, ported, imported, evaluated, admitted or added as a Dora dependency."
 }
