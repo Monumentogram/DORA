@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "packetId": "REC-I2B-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW-PACKET-20260817-01",
   "preparedAtUtc": "2026-08-17T12:01:29Z",
-  "refreshedAt": "2026-08-17T16:17:23+03:00",
+  "refreshedAt": "2026-08-18T09:02:58+03:00",
   "refreshedTimeZone": "Europe/Moscow",
   "status": "BLOCKED_PENDING_FRESH_INDEPENDENT_DELTA_REVIEW",
   "pocId": "POC-RECOVERY-001",
@@ -11,9 +11,11 @@
   "claimCeiling": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
   "routingEligibility": {
     "eligibleNow": false,
-    "blockingPrecondition": "FRESH_INDEPENDENT_DELTA_REVIEW_OF_EXACT_METADATA_P1_REMEDIATION",
+    "blockingPrecondition": "FRESH_INDEPENDENT_DELTA_REVIEW_OF_EXACT_FRESH_CACHE_METADATA_CLOSURE",
     "historicalIndependentAdvisoryDeltaReviewDisposition": "CLEAN",
     "historicalCleanReviewCoversCurrentTarget": false,
+    "laterFreshGraphVerificationMetadataDisposition": "CHANGES_REQUIRED",
+    "laterChangesRequiredReviewCoversCurrentTarget": false,
     "currentIndependentAdvisoryDeltaReviewDisposition": null,
     "recI3MayProceedNow": false
   },
@@ -28,14 +30,15 @@
       "7b90db3403f165bb268daa6a727c5a33c3524a2b",
       "6557add0d1d74d9029bd0d547b5493e72cdf7bac",
       "dca745929b59b656dfa8bb210884e3c1c4bdad0f",
-      "adc422236003403d15581c10e31e2dc797ccf9bb"
+      "adc422236003403d15581c10e31e2dc797ccf9bb",
+      "c194fec9ecce5ee77ffca0c162d2b78c1c58b715"
     ],
-    "terminalImplementationCommit": "adc422236003403d15581c10e31e2dc797ccf9bb",
-    "terminalImplementationTree": "27e9f6b956e5818daae32949f978e42c0c1644b2",
+    "terminalImplementationCommit": "c194fec9ecce5ee77ffca0c162d2b78c1c58b715",
+    "terminalImplementationTree": "d6f84aeef27dab1e1de5c77e9722259c40b9653c",
     "implementationEvidence": {
       "path": "docs/evidence/poc-recovery-001/rec-i2b-runtime-crypto-implementation-evidence-2026-08-17.json",
-      "bytes": 32132,
-      "sha256": "52015986203565b87f218b40905312493b57fabda69a0005273a8a3e6e4d6299"
+      "bytes": 36854,
+      "sha256": "b9b9c228d81f12d22049b71e8862e8bcfc35abbe68780274be70c3c213cdf6a4"
     },
     "independentDeltaReviewClosure": {
       "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-independent-delta-review-closure-2026-08-17.json",
@@ -53,7 +56,9 @@
       "REC-I2B-INDEPENDENT-DELTA-REVIEW-CLOSURE-AUTH-20260817-01",
       "REC-I2B-DRAFT-PUBLICATION-AUTH-20260817-01",
       "REC-I2B-VERIFICATION-METADATA-BOM-REMEDIATION-AUTH-20260817-01",
-      "REC-I2B-VERIFICATION-METADATA-TRANSITIVE-ARTIFACTS-REMEDIATION-AUTH-20260817-02"
+      "REC-I2B-VERIFICATION-METADATA-TRANSITIVE-ARTIFACTS-REMEDIATION-AUTH-20260817-02",
+      "REC-I2B-VERIFICATION-METADATA-GUAVA-33_3_1-POM-REMEDIATION-AUTH-20260817-03",
+      "REC-I2B-VERIFICATION-METADATA-FRESH-CACHE-CLOSURE-AUTH-20260817-04"
     ],
     "thisPacketIsFormalApproval": false,
     "technicalDelegationMaySubstituteAccountableReview": false,
@@ -109,7 +114,82 @@
       "implementationCommit": "adc422236003403d15581c10e31e2dc797ccf9bb",
       "implementationTree": "27e9f6b956e5818daae32949f978e42c0c1644b2",
       "metadataArtifactCount": 5,
+      "artifacts": [
+        {
+          "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.8.0",
+          "artifact": "kotlinx-coroutines-bom-1.8.0.pom",
+          "bytes": 4291,
+          "sha256": "1239e9dbe1397cd5971342956b2511bc3ace7b641842e4372a088dcfa8b9ad55"
+        },
+        {
+          "coordinate": "com.google.guava:guava-parent:33.4.0-jre",
+          "artifact": "guava-parent-33.4.0-jre.pom",
+          "bytes": 21100,
+          "sha256": "3a499ed34a0d9ee0f1bcc39230021a1cd4e2f7dd0426ab6844f585465d41dcd7"
+        },
+        {
+          "coordinate": "org.junit:junit-bom:5.10.2",
+          "artifact": "junit-bom-5.10.2.module",
+          "bytes": 6995,
+          "sha256": "de23b114b3e4119a8fe6eb17bed5a3852816698bace67071579d6d927ebb080a"
+        },
+        {
+          "coordinate": "org.junit:junit-bom:5.11.0-M2",
+          "artifact": "junit-bom-5.11.0-M2.module",
+          "bytes": 7104,
+          "sha256": "86477abcf490d6ca059aa9973cb108d22a506f49d1a5569bb32cc6cbf43c2cce"
+        },
+        {
+          "coordinate": "org.junit:junit-bom:5.14.2",
+          "artifact": "junit-bom-5.14.2.module",
+          "bytes": 6994,
+          "sha256": "5d26f4440392326dd2483cf490143eea1495d5095459a0b9651a7b1b38e24ebf"
+        }
+      ],
       "coordinateOrRuntimeGraphChanged": false,
+      "lockChanged": false,
+      "licenseOrAdmissionDecisionChanged": false
+    },
+    "freshGraphVerificationMetadataAdvisoryVerdict": {
+      "reviewedImplementationCommit": "adc422236003403d15581c10e31e2dc797ccf9bb",
+      "reviewedImplementationTree": "27e9f6b956e5818daae32949f978e42c0c1644b2",
+      "reviewedEvidenceCommit": "c65fe0718f082aec97a38d2cc567e1d56c6da8d1",
+      "reviewedEvidenceTree": "d6227920a0b2e852c74f3aa5623ca853b3aa0b4b",
+      "disposition": "CHANGES_REQUIRED",
+      "P0": 0,
+      "P1": 1,
+      "P2": 0,
+      "formalAccountableReview": false,
+      "findingId": "REC-I2B-FRESH-GRAPH-VERIFICATION-METADATA-P1-001",
+      "coversCurrentTerminalImplementation": false
+    },
+    "verificationMetadataFreshCacheClosureRemediation": {
+      "implementationStatus": "REMEDIATED_AND_LOCALLY_VERIFIED_PENDING_FRESH_INDEPENDENT_DELTA_REVIEW",
+      "implementationCommit": "c194fec9ecce5ee77ffca0c162d2b78c1c58b715",
+      "implementationTree": "d6f84aeef27dab1e1de5c77e9722259c40b9653c",
+      "metadataArtifactCount": 2,
+      "artifacts": [
+        {
+          "coordinate": "com.google.guava:guava-parent:33.3.1-jre",
+          "artifact": "guava-parent-33.3.1-jre.pom",
+          "bytes": 20206,
+          "sha256": "55441db27e8869dfefe053059bdf478bdc7e95585642bf391f0023345fd56287",
+          "sha1": "94729a0ed1dc35f623edd13afa6c1c2fe9a15d7c"
+        },
+        {
+          "coordinate": "org.junit:junit-bom:5.9.2",
+          "artifact": "junit-bom-5.9.2.module",
+          "bytes": 6956,
+          "sha256": "ab137ba5a8e32c9b066bf9126a1c76dd5614b724ba5c0b02549772b5e9f4cf1f",
+          "sha1": "911eb82319eec8e880e4d32ab4da7323837dfc00"
+        }
+      ],
+      "isolatedGradleBytesAndCanonicalMavenCentralBytesIdentical": true,
+      "freshSearchSmokeResult": "PASS",
+      "freshOwnedConfigurationGraphResult": "PASS",
+      "missingVerificationArtifactCount": 0,
+      "coordinateOrSelectedVersionChanged": false,
+      "runtimeGraphChanged": false,
       "lockChanged": false,
       "licenseOrAdmissionDecisionChanged": false
     },
@@ -270,7 +350,7 @@
     },
     {
       "id": "I2B-INV-17",
-      "invariant": "The independently cleaned 87a baseline is published only in Draft PR 38; the current metadata remediation remains local, unpublished and nonmetric, with no device, emulator, network, harness, campaign, REC-I3 activation, PASS, Ready, admission, additional push or merge."
+      "invariant": "The independently cleaned 87a baseline is published only in Draft PR 38; the current fresh-cache metadata closure remains local, unpublished and nonmetric, with no device, emulator, network, harness, campaign, REC-I3 activation, PASS, Ready, admission, additional push or merge."
     }
   ],
   "verificationEvidence": {
@@ -279,11 +359,13 @@
       "mode": "connectedDebugAndroidTest task graph with --dry-run and --refresh-dependencies",
       "missingVerificationArtifactCount": 0,
       "emulatorOrDeviceStarted": false,
-      "duration": "2m 6s"
+      "duration": "5m 8s",
+      "genuinelyEmptyIsolatedCache": true
     },
     "fullStaticBuildAndUnitBlock": {
       "result": "PASS",
       "tasks": "104/104 executed",
+      "duration": "3m 42s",
       "unitTests": "91/91 passed across 15 suites; 0 failures, 0 errors, 0 skipped",
       "lint": "debug/release gates passed; each reports only NotShrinkingResources and MissingApplicationIcon; no zero-warning claim"
     },
@@ -303,18 +385,23 @@
       "policyCovered": "34; zero JSR305 components and zero packaged definitions",
       "toolingOutsideBoundary": "27; 14 JSR305 configuration occurrences and 505 repeated tooling-view definition occurrences",
       "repositoryWideAbsenceClaimed": false,
-      "graphDrift": false
+      "graphDrift": false,
+      "duration": "8m 9s",
+      "genuinelyEmptyIsolatedCache": true
     },
     "locks": {
       "recoveryLock": "3395 bytes; SHA256 2e0de74c01b452476223a757ffa52ccc7f3f1ab74e9736e36bcd4a2ff0e8f08c",
-      "verificationMetadataRawGitLf": "294957 bytes; SHA256 902ac63a932c097566a93201652c7ee392c435dd9e30407e711d9cef974d58fc",
-      "verificationMetadataWindowsWorkingCrlf": "299625 bytes; SHA256 bc4ba83cbdfde7eb2d35ab94c090c61b027cb1b64f7ddb016957cbc10582b835",
+      "verificationMetadataGitBlobSha1": "5e12177e5b397a65d78c456a96dd5e429674b706",
+      "verificationMetadataRawGitLf": "295455 bytes; SHA256 3b95f9e8bfd2d55e9c647cae94b3a2769100f0edeb5eed3fec4201cc9357ae78",
+      "verificationMetadataWindowsWorkingCrlf": "300114 bytes; SHA256 49bf98e2c0b807233ea0a25407e42bc6f229506ef84eb0957aac58949f84889e",
       "recoveryLockUnchanged": true,
-      "verificationMetadataChangedOnlyByAuthorizedFiveArtifactRemediation": true
+      "verificationMetadataChangedOnlyByAuthorizedCumulativeSevenArtifactRemediation": true,
+      "authorizedCumulativeArtifactCount": 7
     },
     "r8": {
       "result": "PASS",
       "tasks": "46/46 executed with --no-build-cache --rerun-tasks",
+      "duration": "1m 52s",
       "missingClassFailureCount": 0,
       "exactNarrowDontwarnRuleCount": 3,
       "broadDontwarnCount": 0,
@@ -485,7 +572,7 @@
     },
     {
       "id": "I2B-REV-16",
-      "question": "Does findings truth preserve the prior 0/3/2 advisory verdict and record the exact independent CLEAN 0/0/0 delta closure?",
+      "question": "Does findings truth preserve the prior 0/3/2 advisory verdict, the exact independent CLEAN 0/0/0 delta closure, and the later exact CHANGES_REQUIRED 0/1/0 fresh-graph verdict?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
       "independentDeltaReviewerAnswer": null,
@@ -520,6 +607,7 @@
   "recommendedDefault": {
     "now": "OBTAIN_FRESH_INDEPENDENT_DELTA_REVIEW_AND_HOLD_ACCOUNTABLE_ROUTING_AND_REC_I3",
     "independentDeltaClosure": "HISTORICAL_CLEAN_STALE_FOR_CURRENT_TARGET",
+    "freshGraphVerificationMetadataReview": "HISTORICAL_CHANGES_REQUIRED_STALE_AFTER_LOCAL_CLOSURE",
     "delegatedApprovalRecordedHere": false
   },
   "findingsTruth": {
@@ -533,6 +621,16 @@
       "P1": 0,
       "P2": 0
     },
+    "freshGraphVerificationMetadataAdvisory": {
+      "reviewedImplementationCommit": "adc422236003403d15581c10e31e2dc797ccf9bb",
+      "reviewedEvidenceCommit": "c65fe0718f082aec97a38d2cc567e1d56c6da8d1",
+      "disposition": "CHANGES_REQUIRED",
+      "findingId": "REC-I2B-FRESH-GRAPH-VERIFICATION-METADATA-P1-001",
+      "P0": 0,
+      "P1": 1,
+      "P2": 0,
+      "coversCurrentTarget": false
+    },
     "currentMetadataRemediationPendingIndependentDelta": {
       "P0": 0,
       "P1": 1,
@@ -540,7 +638,7 @@
       "localStatus": "REMEDIATED_AND_LOCALLY_VERIFIED"
     },
     "currentZeroFindingsClaimed": false,
-    "openP0StageGate": "REC-I2B-FRESH-INDEPENDENT-DELTA-REVIEW_AFTER_METADATA_P1_REMEDIATION",
+    "openP0StageGate": "REC-I2B-FRESH-INDEPENDENT-DELTA-REVIEW_AFTER_FRESH_CACHE_METADATA_CLOSURE",
     "recI3MayProceedNow": false
   },
   "reviewCompletionRequirements": {
@@ -557,5 +655,5 @@
     "formalDecisionInSeparateFinalReviewRecordRequired": true,
     "thisPreparedPacketMustNotBeEditedIntoAnApproval": true
   },
-  "terminalGate": "REC-I3 is not activated. The historical independent advisory CLEAN review remains immutable but does not cover the current metadata-only remediation; fresh independent delta review is required before accountable Engineering/Security routing can resume."
+  "terminalGate": "REC-I3 is not activated. The historical independent advisory CLEAN review and later CHANGES_REQUIRED fresh-graph review remain immutable but neither covers the current fresh-cache metadata closure; fresh independent delta review is required before accountable Engineering/Security routing can resume."
 }
