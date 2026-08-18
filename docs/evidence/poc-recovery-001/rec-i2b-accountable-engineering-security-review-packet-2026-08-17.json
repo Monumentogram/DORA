@@ -2,32 +2,34 @@
   "schemaVersion": 1,
   "packetId": "REC-I2B-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW-PACKET-20260817-01",
   "preparedAtUtc": "2026-08-17T12:01:29Z",
-  "refreshedAt": "2026-08-18T12:16:40+03:00",
+  "refreshedAt": "2026-08-18T14:01:37+03:00",
   "refreshedTimeZone": "Europe/Moscow",
-  "status": "INDEPENDENT_CLEAN_DRAFT_PR38_EXACT_HEAD_CI_PENDING",
+  "status": "LOCAL_AAPT2_LINUX_METADATA_REMEDIATION_VERIFIED_INDEPENDENT_DELTA_REVIEW_PENDING",
   "pocId": "POC-RECOVERY-001",
   "stage": "Stage 0",
   "reviewType": "DISTINCT_ACCOUNTABLE_ENGINEERING_SECURITY_IMPLEMENTATION_REVIEW",
   "claimCeiling": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
   "routingEligibility": {
     "eligibleNow": false,
-    "eligibleAfterDraftPr38ExactHeadCiGreen": true,
-    "blockingPrecondition": "DRAFT_PR38_EXACT_HEAD_CI_GREEN",
+    "eligibleAfterDraftPr38ExactHeadCiGreen": false,
+    "blockingPrecondition": "FRESH_INDEPENDENT_ADVISORY_DELTA_REVIEW_CLEAN",
     "historicalIndependentAdvisoryDeltaReviewDisposition": "CLEAN",
     "historicalCleanReviewCoversCurrentTarget": false,
     "laterFreshGraphVerificationMetadataDisposition": "CHANGES_REQUIRED",
     "laterChangesRequiredReviewCoversCurrentTarget": false,
     "priorFreshCacheMetadataIndependentDeltaDisposition": "CLEAN",
     "priorFreshCacheMetadataCleanReviewCoversCurrentTarget": false,
-    "currentIndependentAdvisoryDeltaReviewDisposition": "CLEAN",
-    "currentIndependentCleanReviewCoversExactImplementationAndReviewedEvidence": true,
+    "priorReviewedSuccessorIndependentDeltaDisposition": "CLEAN",
+    "priorReviewedSuccessorCleanReviewCoversCurrentTarget": false,
+    "currentIndependentAdvisoryDeltaReviewDisposition": "PENDING",
+    "currentIndependentCleanReviewCoversExactImplementationAndReviewedEvidence": false,
     "recI3MayProceedNow": false
   },
   "reviewTarget": {
     "branch": "codex/poc-recovery-i2a-graph-probe",
     "publishedAtPacketRefresh": false,
     "targetedForExistingDraftPr38Publication": true,
-    "publishedDraftBaselineHead": "87a45d69b4a35854f7904895bf8e10968265983b",
+    "publishedDraftBaselineHead": "e4a9b55c81c529ef1eee6dcd27a76046dc0a21ef",
     "pullRequestNumber": 38,
     "pullRequestDraft": true,
     "baseDispositionCommit": "4d58ab02424c7a43f6390f87c633b5464df6a916",
@@ -38,14 +40,14 @@
       "adc422236003403d15581c10e31e2dc797ccf9bb",
       "c194fec9ecce5ee77ffca0c162d2b78c1c58b715",
       "fa87d87abd3d1ddad2ee0a3c1669127fc288b4f8",
-      "3195c2fa79db6360a5844a8ce02ea419a74e2982"
+      "1aedccf477fb4d3ff20a48a1834b22b317c8c880"
     ],
-    "terminalImplementationCommit": "3195c2fa79db6360a5844a8ce02ea419a74e2982",
-    "terminalImplementationTree": "00b04684d7ceaac7685070e783c37e1178131b7b",
+    "terminalImplementationCommit": "1aedccf477fb4d3ff20a48a1834b22b317c8c880",
+    "terminalImplementationTree": "744ee822d42b7caccd7abcc68f03dca1c24f5945",
     "implementationEvidence": {
       "path": "docs/evidence/poc-recovery-001/rec-i2b-runtime-crypto-implementation-evidence-2026-08-17.json",
-      "bytes": 49272,
-      "sha256": "1f28f899e270da8868d06639d0018a5ed255ee1ee155b90cf21510697a4417ac"
+      "bytes": 56227,
+      "sha256": "507defa810fba985590d82289ec49d1d6a84da16f302aa3b7d39f3e9489c5052"
     },
     "independentDeltaReviewClosure": {
       "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-independent-delta-review-closure-2026-08-17.json",
@@ -60,10 +62,24 @@
       "reviewedImplementationCommit": "c194fec9ecce5ee77ffca0c162d2b78c1c58b715",
       "reviewedEvidenceCommit": "5eaadeb77c444bf0af2afadc82e1804a7c71bc43"
     },
-    "reviewedSuccessorIndependentDeltaReviewClosure": {
-      "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-reviewed-successor-validator-ci-metadata-independent-delta-review-closure-2026-08-18.json",
-      "bytes": 13547,
-      "sha256": "678974a985fe49addd7132eb1553e317e4cb9656cd92868567a1dd0a8e7f905a"
+    "reviewedSuccessorIndependentDeltaReviewClosure": null,
+    "historicalReviewedSuccessorIndependentDelta": {
+      "reviewedImplementationCommit": "3195c2fa79db6360a5844a8ce02ea419a74e2982",
+      "reviewedImplementationTree": "00b04684d7ceaac7685070e783c37e1178131b7b",
+      "reviewedEvidenceCommit": "b642c5206e2e9fc3493dbb78b801a371f2dd0868",
+      "reviewedEvidenceTree": "b9ebf29a654d3cb218289e8c23cdaffa03e36fb5",
+      "closureRecord": {
+        "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-reviewed-successor-validator-ci-metadata-independent-delta-review-closure-2026-08-18.json",
+        "bytes": 13547,
+        "sha256": "678974a985fe49addd7132eb1553e317e4cb9656cd92868567a1dd0a8e7f905a"
+      },
+      "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
+      "disposition": "CLEAN",
+      "completed": true,
+      "required": false,
+      "coversCurrentTarget": false,
+      "durableClosureCommit": "e4a9b55c81c529ef1eee6dcd27a76046dc0a21ef",
+      "durableClosureTree": "cc46703736072311982fe9a02476b90f0544432d"
     }
   },
   "authorityBoundary": {
@@ -82,7 +98,9 @@
       "REC-I2B-REVIEWED-SUCCESSOR-VALIDATOR-AND-CI-METADATA-REMEDIATION-AUTH-20260818-01",
       "REC-I2B-REVIEWED-SUCCESSOR-CI-JAR-METADATA-REMEDIATION-AUTH-20260818-02",
       "REC-I2B-REVIEWED-SUCCESSOR-SPOTLESS-METADATA-REMEDIATION-AUTH-20260818-03",
-      "REC-I2B-REVIEWED-SUCCESSOR-EVIDENCE-PHASE-SELFTEST-REMEDIATION-AUTH-20260818-04"
+      "REC-I2B-REVIEWED-SUCCESSOR-EVIDENCE-PHASE-SELFTEST-REMEDIATION-AUTH-20260818-04",
+      "REC-I2B-AAPT2-LINUX-VERIFICATION-METADATA-REMEDIATION-AUTH-20260818-05",
+      "REC-I2B-AUTH05-VALIDATOR-PIN-BINDING-CLARIFICATION-20260818-01"
     ],
     "thisPacketIsFormalApproval": false,
     "technicalDelegationMaySubstituteAccountableReview": false,
@@ -98,6 +116,7 @@
     "draftPublicationAlreadyAuthorizedAndPerformed": true,
     "currentReviewedClosureDraftPr38NonForceUpdateAuthorized": false,
     "reviewedSuccessorDraftPr38NonForceUpdateAuthorized": true,
+    "aapt2LinuxDraftPr38NonForceUpdateAuthorizedAfterClean": true,
     "readyOrMergeAuthorized": false
   },
   "advisoryRemediationGate": {
@@ -248,15 +267,17 @@
         "REC-I2B-REVIEWED-SUCCESSOR-VALIDATOR-AND-CI-METADATA-REMEDIATION-AUTH-20260818-01",
         "REC-I2B-REVIEWED-SUCCESSOR-CI-JAR-METADATA-REMEDIATION-AUTH-20260818-02",
         "REC-I2B-REVIEWED-SUCCESSOR-SPOTLESS-METADATA-REMEDIATION-AUTH-20260818-03",
-        "REC-I2B-REVIEWED-SUCCESSOR-EVIDENCE-PHASE-SELFTEST-REMEDIATION-AUTH-20260818-04"
+        "REC-I2B-REVIEWED-SUCCESSOR-EVIDENCE-PHASE-SELFTEST-REMEDIATION-AUTH-20260818-04",
+        "REC-I2B-AAPT2-LINUX-VERIFICATION-METADATA-REMEDIATION-AUTH-20260818-05",
+        "REC-I2B-AUTH05-VALIDATOR-PIN-BINDING-CLARIFICATION-20260818-01"
       ],
-      "implementationStatus": "IMPLEMENTED_LOCALLY_VERIFIED_AND_INDEPENDENTLY_CLEAN",
-      "implementationCommit": "3195c2fa79db6360a5844a8ce02ea419a74e2982",
-      "implementationTree": "00b04684d7ceaac7685070e783c37e1178131b7b",
+      "implementationStatus": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_FRESH_INDEPENDENT_DELTA_REVIEW",
+      "implementationCommit": "1aedccf477fb4d3ff20a48a1834b22b317c8c880",
+      "implementationTree": "744ee822d42b7caccd7abcc68f03dca1c24f5945",
       "implementationEvidence": {
         "path": "docs/evidence/poc-recovery-001/rec-i2b-runtime-crypto-implementation-evidence-2026-08-17.json",
-        "bytes": 49272,
-        "sha256": "1f28f899e270da8868d06639d0018a5ed255ee1ee155b90cf21510697a4417ac"
+        "bytes": 56227,
+        "sha256": "507defa810fba985590d82289ec49d1d6a84da16f302aa3b7d39f3e9489c5052"
       },
       "localVerification": {
         "governanceSelfTest": "PASS",
@@ -296,24 +317,126 @@
         }
       ],
       "freshIndependentDeltaReview": {
-        "reviewedImplementationCommit": "3195c2fa79db6360a5844a8ce02ea419a74e2982",
-        "reviewedImplementationTree": "00b04684d7ceaac7685070e783c37e1178131b7b",
-        "reviewedEvidenceCommit": "b642c5206e2e9fc3493dbb78b801a371f2dd0868",
-        "reviewedEvidenceTree": "b9ebf29a654d3cb218289e8c23cdaffa03e36fb5",
-        "closureRecord": {
-          "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-reviewed-successor-validator-ci-metadata-independent-delta-review-closure-2026-08-18.json",
-          "bytes": 13547,
-          "sha256": "678974a985fe49addd7132eb1553e317e4cb9656cd92868567a1dd0a8e7f905a"
+        "reviewedImplementationCommit": "1aedccf477fb4d3ff20a48a1834b22b317c8c880",
+        "reviewedImplementationTree": "744ee822d42b7caccd7abcc68f03dca1c24f5945",
+        "reviewedEvidenceCommit": null,
+        "reviewedEvidenceTree": null,
+        "closureRecord": null,
+        "findingCounts": null,
+        "disposition": "PENDING",
+        "completed": false,
+        "required": true,
+        "coversCurrentTarget": false
+      },
+      "aapt2LinuxVerificationMetadataRemediation": {
+        "authorization": "REC-I2B-AAPT2-LINUX-VERIFICATION-METADATA-REMEDIATION-AUTH-20260818-05",
+        "validatorPinBindingClarification": "REC-I2B-AUTH05-VALIDATOR-PIN-BINDING-CLARIFICATION-20260818-01",
+        "triggeringRequiredCi": {
+          "workflow": "Android CI",
+          "runId": 32122399476,
+          "url": "https://github.com/Monumentogram/DORA/actions/runs/32122399476",
+          "exactHead": "e4a9b55c81c529ef1eee6dcd27a76046dc0a21ef",
+          "conclusion": "failure",
+          "androidBootstrapJob": {
+            "jobId": 95665487159,
+            "conclusion": "failure",
+            "failedStep": "Unit tests, instrumentation compilation, lint, and debug assembly"
+          },
+          "searchSmokeJob": {
+            "jobId": 95665487083,
+            "conclusion": "failure",
+            "failedStep": "Run Room FTS4 schema, correctness, safety, mapping, and mutation smoke tests",
+            "searchEmulatorStarted": true,
+            "recoveryDeviceOrEmulatorExecution": false
+          },
+          "missingArtifact": "com.android.tools.build:aapt2:9.3.1-15703166/aapt2-9.3.1-15703166-linux.jar",
+          "preservedAsHistoricalFailedRun": true
         },
-        "findingCounts": {
-          "P0": 0,
-          "P1": 0,
-          "P2": 0
+        "historicalReviewedSuccessorIndependentDelta": {
+          "reviewedImplementationCommit": "3195c2fa79db6360a5844a8ce02ea419a74e2982",
+          "reviewedImplementationTree": "00b04684d7ceaac7685070e783c37e1178131b7b",
+          "reviewedEvidenceCommit": "b642c5206e2e9fc3493dbb78b801a371f2dd0868",
+          "reviewedEvidenceTree": "b9ebf29a654d3cb218289e8c23cdaffa03e36fb5",
+          "closureRecord": {
+            "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-reviewed-successor-validator-ci-metadata-independent-delta-review-closure-2026-08-18.json",
+            "bytes": 13547,
+            "sha256": "678974a985fe49addd7132eb1553e317e4cb9656cd92868567a1dd0a8e7f905a"
+          },
+          "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
+          "disposition": "CLEAN",
+          "completed": true,
+          "required": false,
+          "coversCurrentTarget": false,
+          "durableClosureCommit": "e4a9b55c81c529ef1eee6dcd27a76046dc0a21ef",
+          "durableClosureTree": "cc46703736072311982fe9a02476b90f0544432d"
         },
-        "disposition": "CLEAN",
-        "completed": true,
-        "required": false,
-        "coversCurrentTarget": true
+        "implementationCommit": "1aedccf477fb4d3ff20a48a1834b22b317c8c880",
+        "implementationTree": "744ee822d42b7caccd7abcc68f03dca1c24f5945",
+        "implementationParent": "e4a9b55c81c529ef1eee6dcd27a76046dc0a21ef",
+        "metadataCanonicalLfSha256": "61f71c6652faec73063a200bedcfa1e6fc07d5f969b426f3365aafd9fc217bb1",
+        "localVerification": {
+          "artifactProof": {
+            "coordinate": "com.android.tools.build:aapt2:9.3.1-15703166",
+            "artifact": "aapt2-9.3.1-15703166-linux.jar",
+            "bytes": 2369543,
+            "sha256": "e772a3dae8354764f1b0793903218427f483982445207f2e4ffc8c2026755bd4",
+            "sha1": "5287feac13566b9165cdf02c77565e68aec3aad0",
+            "isolatedGradleCacheBytesMatchCanonicalGoogleMavenBytes": true,
+            "publishedGoogleMavenSha1Matches": true
+          },
+          "freshEmptyCacheSearchSmoke": {
+            "result": "PASS",
+            "durationSeconds": 329.997,
+            "configurationCache": "disabled",
+            "refreshDependencies": true,
+            "missingVerificationArtifactCount": 0,
+            "deviceOrEmulatorStarted": false
+          },
+          "freshEmptyCacheOwnedConfigurationGraph": {
+            "result": "PASS",
+            "durationSeconds": 617.241,
+            "actionableTasks": 81,
+            "executedTasks": 81,
+            "configurationCount": 61,
+            "policyCoveredConfigurationCount": 34,
+            "outsidePolicyBoundaryToolingConfigurationCount": 27,
+            "missingVerificationArtifactCount": 0
+          },
+          "fullStaticBuildAndUnitBlock": {
+            "result": "PASS",
+            "durationSeconds": 235.633,
+            "actionableTasks": 104,
+            "executedTasks": 104,
+            "unitTests": "91/91 across 15 suites; zero failures, errors or skips"
+          },
+          "forcedReleaseR8AndPackage": {
+            "result": "PASS",
+            "durationSeconds": 163.901,
+            "actionableTasks": 46,
+            "executedTasks": 46
+          },
+          "graphSha256": "3ab12ef698e59f323e71431496d72debd5741669b395b8052ad41b9a8b8b34a7",
+          "recoveryLockSha256": "2e0de74c01b452476223a757ffa52ccc7f3f1ab74e9736e36bcd4a2ff0e8f08c",
+          "runtimeGraphChanged": false,
+          "recoveryLockChanged": false,
+          "nativePackagingChanged": false,
+          "licenseOrAdmissionDecisionChanged": false,
+          "verificationMetadataTrustWeakened": false
+        },
+        "freshIndependentDeltaReview": {
+          "reviewedImplementationCommit": "1aedccf477fb4d3ff20a48a1834b22b317c8c880",
+          "reviewedImplementationTree": "744ee822d42b7caccd7abcc68f03dca1c24f5945",
+          "reviewedEvidenceCommit": null,
+          "reviewedEvidenceTree": null,
+          "closureRecord": null,
+          "findingCounts": null,
+          "disposition": "PENDING",
+          "completed": false,
+          "required": true,
+          "coversCurrentTarget": false
+        },
+        "accountableEngineeringSecurityReviewCompleted": false,
+        "recI3Activated": false
       },
       "accountableEngineeringSecurityReviewCompleted": false,
       "recI3Activated": false
@@ -466,7 +589,7 @@
     },
     {
       "id": "I2B-INV-17",
-      "invariant": "The independently cleaned 87a baseline remains the only published Draft PR 38 head. Exact reviewed-successor implementation 3195c2f and its evidence have a fresh independent CLEAN 0/0/0 closure and remain local pending the authorized non-force Draft PR 38 update and exact-head CI; no Recovery device, emulator, network, harness, campaign, REC-I3 activation, PASS, Ready, admission or merge is claimed."
+      "invariant": "The independently cleaned e4a successor remains the published Draft PR 38 head. Exact reviewed-successor implementation 1aedccf and this pending evidence remain local and unpublished until a fresh independent CLEAN delta closure; no Recovery device, emulator, network, harness, campaign, REC-I3 activation, PASS, Ready, admission, push or merge is claimed."
     }
   ],
   "verificationEvidence": {
@@ -594,6 +717,94 @@
       "recoveryCryptoDefinitions": 31,
       "newTypedSignalAndObserverDefinitions": "1/1/1"
     },
+    "aapt2LinuxVerificationMetadataRemediation": {
+      "authorization": "REC-I2B-AAPT2-LINUX-VERIFICATION-METADATA-REMEDIATION-AUTH-20260818-05",
+      "validatorPinBindingClarification": "REC-I2B-AUTH05-VALIDATOR-PIN-BINDING-CLARIFICATION-20260818-01",
+      "triggeringRequiredCi": {
+        "workflow": "Android CI",
+        "runId": 32122399476,
+        "url": "https://github.com/Monumentogram/DORA/actions/runs/32122399476",
+        "exactHead": "e4a9b55c81c529ef1eee6dcd27a76046dc0a21ef",
+        "conclusion": "failure",
+        "androidBootstrapJob": {
+          "jobId": 95665487159,
+          "conclusion": "failure",
+          "failedStep": "Unit tests, instrumentation compilation, lint, and debug assembly"
+        },
+        "searchSmokeJob": {
+          "jobId": 95665487083,
+          "conclusion": "failure",
+          "failedStep": "Run Room FTS4 schema, correctness, safety, mapping, and mutation smoke tests",
+          "searchEmulatorStarted": true,
+          "recoveryDeviceOrEmulatorExecution": false
+        },
+        "missingArtifact": "com.android.tools.build:aapt2:9.3.1-15703166/aapt2-9.3.1-15703166-linux.jar",
+        "preservedAsHistoricalFailedRun": true
+      },
+      "metadataGitBlobSha1": "bb2e8e398bb522fa03b34c8e0f157c37db1fbe21",
+      "metadataCanonicalLfSha256": "61f71c6652faec73063a200bedcfa1e6fc07d5f969b426f3365aafd9fc217bb1",
+      "localVerification": {
+        "artifactProof": {
+          "coordinate": "com.android.tools.build:aapt2:9.3.1-15703166",
+          "artifact": "aapt2-9.3.1-15703166-linux.jar",
+          "bytes": 2369543,
+          "sha256": "e772a3dae8354764f1b0793903218427f483982445207f2e4ffc8c2026755bd4",
+          "sha1": "5287feac13566b9165cdf02c77565e68aec3aad0",
+          "isolatedGradleCacheBytesMatchCanonicalGoogleMavenBytes": true,
+          "publishedGoogleMavenSha1Matches": true
+        },
+        "freshEmptyCacheSearchSmoke": {
+          "result": "PASS",
+          "durationSeconds": 329.997,
+          "configurationCache": "disabled",
+          "refreshDependencies": true,
+          "missingVerificationArtifactCount": 0,
+          "deviceOrEmulatorStarted": false
+        },
+        "freshEmptyCacheOwnedConfigurationGraph": {
+          "result": "PASS",
+          "durationSeconds": 617.241,
+          "actionableTasks": 81,
+          "executedTasks": 81,
+          "configurationCount": 61,
+          "policyCoveredConfigurationCount": 34,
+          "outsidePolicyBoundaryToolingConfigurationCount": 27,
+          "missingVerificationArtifactCount": 0
+        },
+        "fullStaticBuildAndUnitBlock": {
+          "result": "PASS",
+          "durationSeconds": 235.633,
+          "actionableTasks": 104,
+          "executedTasks": 104,
+          "unitTests": "91/91 across 15 suites; zero failures, errors or skips"
+        },
+        "forcedReleaseR8AndPackage": {
+          "result": "PASS",
+          "durationSeconds": 163.901,
+          "actionableTasks": 46,
+          "executedTasks": 46
+        },
+        "graphSha256": "3ab12ef698e59f323e71431496d72debd5741669b395b8052ad41b9a8b8b34a7",
+        "recoveryLockSha256": "2e0de74c01b452476223a757ffa52ccc7f3f1ab74e9736e36bcd4a2ff0e8f08c",
+        "runtimeGraphChanged": false,
+        "recoveryLockChanged": false,
+        "nativePackagingChanged": false,
+        "licenseOrAdmissionDecisionChanged": false,
+        "verificationMetadataTrustWeakened": false
+      },
+      "freshIndependentDeltaReview": {
+        "reviewedImplementationCommit": "1aedccf477fb4d3ff20a48a1834b22b317c8c880",
+        "reviewedImplementationTree": "744ee822d42b7caccd7abcc68f03dca1c24f5945",
+        "reviewedEvidenceCommit": null,
+        "reviewedEvidenceTree": null,
+        "closureRecord": null,
+        "findingCounts": null,
+        "disposition": "PENDING",
+        "completed": false,
+        "required": true,
+        "coversCurrentTarget": false
+      }
+    },
     "sanitized": true
   },
   "reviewChecklist": [
@@ -602,7 +813,7 @@
       "question": "Is the exact Tink 1.23.0 coordinate, dependency-local JSR305 exclusion and six-runtime/two-test graph unchanged?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -610,7 +821,7 @@
       "question": "Are the frozen Streaming 16/16/SHA256/4096 and AEAD 32/12/16/TINK Parameters validated for generated and parsed handles before primitive use?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -618,7 +829,7 @@
       "question": "Are alternate Streaming 32/32/8192 and AES-128-GCM encrypted keysets rejected only as PARSED_BUT_UNSUPPORTED_PARAMETER_SUITE?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -626,7 +837,7 @@
       "question": "Are Key, Parameters, raw key bytes, keyset handles, primitives and mutable configuration fully contained and never exposed, stored, stringified or logged?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -634,7 +845,7 @@
       "question": "Are only the nondeprecated four-argument encrypted-keyset APIs used with exact typed KeyEnvelope AAD and the fixed RegistryConfiguration?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -642,7 +853,7 @@
       "question": "Does the observing Aead proxy retain no payload references and support the six stable parse-failure types without production manual cleartext parsing or SecretKeyAccess?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -650,7 +861,7 @@
       "question": "Do neutral decrypt signals implement authentication-first, provider-second and generic-unknown precedence, while preserving authenticated plaintext-contract failure separately and assigning no REC-I3 outcome?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -658,7 +869,7 @@
       "question": "Do tests transparently record that actual Tink 1.23.0 wrong-AAD/tag failures are UNKNOWN when Tink strips the positive cause?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -666,7 +877,7 @@
       "question": "Do barrier tests prove one serializer/encrypt claimant and permanent poison semantics after an in-flight envelope failure?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -674,7 +885,7 @@
       "question": "Are strict REC-I1 AAD bindings used, including exact DORA_RECOVERY_STREAM_AAD_V1_BINARY_BE, without an alternate evidence label?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -682,7 +893,7 @@
       "question": "Are Android Keystore create-new/open-existing paths separate, canonical-alias bound, exactly counted and free of generation fallback?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -690,7 +901,7 @@
       "question": "Do all 91 tests pass while asserting deterministic contracts rather than deterministic ciphertext?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -698,7 +909,7 @@
       "question": "Do Spotless, Detekt, debug/release lint and assemble, policy scan, 61/61 graph resolve, locks and verification metadata checks pass for the exact target?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -706,7 +917,7 @@
       "question": "Does forced no-cache R8 pass with only three narrow rules, retain all required types, and produce packages with zero JSR305 definitions and native entries?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -714,7 +925,7 @@
       "question": "Is the packet sanitized and free of key material, plaintext, ciphertext, credentials, private audio, device identifiers and user-specific absolute paths?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -722,7 +933,7 @@
       "question": "Does findings truth preserve the prior 0/3/2 advisory verdict, the historical independent CLEAN 0/0/0 closure, the later CHANGES_REQUIRED 0/1/0 fresh-graph verdict, and the current independent CLEAN 0/0/0 fresh-cache closure?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     },
     {
@@ -730,7 +941,7 @@
       "question": "Is the claim held exactly at IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW, with only the authorized non-force Draft PR 38 update allowed and no device, harness, campaign, measurement, PASS, Ready, admission, merge or REC-I3 claim?",
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
-      "independentDeltaReviewerAnswer": "YES",
+      "independentDeltaReviewerAnswer": null,
       "accountableReviewerAnswer": null
     }
   ],
@@ -752,9 +963,10 @@
     }
   ],
   "recommendedDefault": {
-    "now": "PUBLISH_ONLY_TO_EXISTING_DRAFT_PR38_RUN_EXACT_HEAD_CI_THEN_ROUTE_ACCOUNTABLE_REVIEW",
-    "independentDeltaClosure": "REVIEWED_SUCCESSOR_CLEAN_RECORDED",
+    "now": "OBTAIN_FRESH_INDEPENDENT_DELTA_REVIEW_BEFORE_ANY_DRAFT_PR38_UPDATE",
+    "independentDeltaClosure": "AAPT2_LINUX_METADATA_DELTA_PENDING",
     "priorFreshCacheIndependentDeltaClosure": "HISTORICAL_CLEAN_PRESERVED",
+    "priorReviewedSuccessorIndependentDeltaClosure": "HISTORICAL_CLEAN_PRESERVED",
     "historicalIndependentDeltaClosure": "HISTORICAL_CLEAN_PRESERVED",
     "freshGraphVerificationMetadataReview": "HISTORICAL_CHANGES_REQUIRED_PRESERVED_AND_CLOSED_BY_PRIOR_FRESH_CACHE_CLEAN_REVIEW",
     "delegatedApprovalRecordedHere": false
@@ -790,7 +1002,7 @@
       "record": "docs/evidence/poc-recovery-001/reviews/rec-i2b-fresh-cache-metadata-independent-delta-review-closure-2026-08-18.json",
       "coversCurrentTarget": false
     },
-    "currentReviewedSuccessorIndependentDelta": {
+    "historicalReviewedSuccessorIndependentDelta": {
       "reviewedImplementationCommit": "3195c2fa79db6360a5844a8ce02ea419a74e2982",
       "reviewedImplementationTree": "00b04684d7ceaac7685070e783c37e1178131b7b",
       "reviewedEvidenceCommit": "b642c5206e2e9fc3493dbb78b801a371f2dd0868",
@@ -800,18 +1012,28 @@
         "bytes": 13547,
         "sha256": "678974a985fe49addd7132eb1553e317e4cb9656cd92868567a1dd0a8e7f905a"
       },
-      "findingCounts": {
-        "P0": 0,
-        "P1": 0,
-        "P2": 0
-      },
+      "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
       "disposition": "CLEAN",
       "completed": true,
       "required": false,
-      "coversCurrentTarget": true
+      "coversCurrentTarget": false,
+      "durableClosureCommit": "e4a9b55c81c529ef1eee6dcd27a76046dc0a21ef",
+      "durableClosureTree": "cc46703736072311982fe9a02476b90f0544432d"
     },
-    "currentZeroFindingsClaimed": true,
-    "openP0StageGate": "REC-I2B-DRAFT-PR38-EXACT-HEAD-CI_THEN_ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
+    "currentReviewedSuccessorIndependentDelta": {
+      "reviewedImplementationCommit": "1aedccf477fb4d3ff20a48a1834b22b317c8c880",
+      "reviewedImplementationTree": "744ee822d42b7caccd7abcc68f03dca1c24f5945",
+      "reviewedEvidenceCommit": null,
+      "reviewedEvidenceTree": null,
+      "closureRecord": null,
+      "findingCounts": null,
+      "disposition": "PENDING",
+      "completed": false,
+      "required": true,
+      "coversCurrentTarget": false
+    },
+    "currentZeroFindingsClaimed": false,
+    "openP0StageGate": "REC-I2B-INDEPENDENT-ADVISORY-DELTA-REVIEW",
     "recI3MayProceedNow": false
   },
   "reviewCompletionRequirements": {
@@ -821,8 +1043,13 @@
       "coversCurrentTarget": false
     },
     "reviewedSuccessorIndependentAdvisoryDeltaReview": {
+      "required": true,
+      "completed": false
+    },
+    "priorReviewedSuccessorIndependentAdvisoryDeltaReview": {
       "required": false,
-      "completed": true
+      "completed": true,
+      "coversCurrentTarget": false
     },
     "independentExactCommitAndTreeAccountableReviewAfterDeltaClosureRequired": true,
     "allChecklistAnswersByAccountableReviewerRequired": true,
@@ -833,5 +1060,5 @@
     "formalDecisionInSeparateFinalReviewRecordRequired": true,
     "thisPreparedPacketMustNotBeEditedIntoAnApproval": true
   },
-  "terminalGate": "REC-I3 is not activated. Exact implementation 3195c2f and its evidence have an independent advisory CLEAN 0/0/0 closure, but Draft PR 38 exact-head CI and the distinct accountable Engineering/Security review remain required; all 17 accountable answers, identity, signature and formal decision remain unrecorded."
+  "terminalGate": "REC-I3 is not activated. Exact implementation 1aedccf and this pending evidence require a fresh independent advisory delta review before any Draft PR 38 update or exact-head CI. The distinct accountable Engineering/Security review remains incomplete; all 17 accountable answers, identity, signature and formal decision remain unrecorded."
 }
