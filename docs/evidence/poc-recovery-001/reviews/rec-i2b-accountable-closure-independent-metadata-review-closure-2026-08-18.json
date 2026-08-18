@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "recordId": "REC-I2B-ACCOUNTABLE-CLOSURE-INDEPENDENT-METADATA-REVIEW-CLOSURE-20260818-01",
+  "recordType": "IMMUTABLE_SANITIZED_INDEPENDENT_ADVISORY_METADATA_REVIEW_CLOSURE",
+  "recordedAt": "2026-08-18T23:30:49+03:00",
+  "timeZone": "Europe/Moscow",
+  "reviewerTimestamp": null,
+  "pocId": "POC-RECOVERY-001",
+  "stage": "Stage 0",
+  "authorizations": [
+    "REC-I2B-ACCOUNTABLE-CLOSURE-INTEGRATION-AUTH-20260818-01",
+    "REC-I2B-ACCOUNTABLE-INDEPENDENT-METADATA-CLOSURE-AUTH-20260818-02"
+  ],
+  "reviewer": {
+    "product": "OpenAI Codex",
+    "organization": "OpenAI",
+    "role": "INDEPENDENT_ADVISORY_METADATA_REVIEWER",
+    "capacity": "independent read-only advisory metadata review",
+    "formalReviewer": false,
+    "signature": null
+  },
+  "exactReviewedState": {
+    "branch": "codex/poc-recovery-i2a-graph-probe",
+    "published": false,
+    "reviewedHead": "50bb75d1069d72e843d2c253afabd6c2d28b78e1",
+    "reviewedTree": "5a7bdec7b6117286778429065540daa124bd64f2",
+    "reviewedParent": "f64c5c150865901352889b607a075425c93e6cb4",
+    "worktreeClean": true,
+    "changedPathCount": 4,
+    "reviewedFiles": [
+      {
+        "path": "tools/validate_poc_recovery_governance.py",
+        "commit": "50bb75d1069d72e843d2c253afabd6c2d28b78e1",
+        "gitBlobSha1": "f3c6dbdea48d27f6a0a4171b8ee55503f1b6933c",
+        "rawGitBytes": 268543,
+        "rawGitSha256": "f346a255d96690c44b0fe94d5db4e674c4434eb9eec80959e897e5e5e612a7f5"
+      },
+      {
+        "path": "docs/evidence/poc-recovery-001/rec-i2b-runtime-crypto-implementation-evidence-2026-08-17.json",
+        "commit": "50bb75d1069d72e843d2c253afabd6c2d28b78e1",
+        "gitBlobSha1": "48204dde38b4b8650bdc927f9d2e2a9635f47632",
+        "rawGitBytes": 59521,
+        "rawGitSha256": "42058ce6d68269fbcdd33b5ddd8c0589c2e97cb5896e601f6327b311c1260352"
+      },
+      {
+        "path": "docs/evidence/poc-recovery-001/rec-i2b-accountable-engineering-security-review-packet-2026-08-17.json",
+        "commit": "50bb75d1069d72e843d2c253afabd6c2d28b78e1",
+        "gitBlobSha1": "91a36c55aac1d84a01f8e9cc885df1b31e7d7150",
+        "rawGitBytes": 55895,
+        "rawGitSha256": "beb19b72910b3f6dc925a8483f9f8ad83d39139e66385cbcdf320fa135e3c6a3"
+      },
+      {
+        "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-accountable-human-engineering-security-review-closure-2026-08-18.json",
+        "commit": "50bb75d1069d72e843d2c253afabd6c2d28b78e1",
+        "gitBlobSha1": "7d85752d14b6a00d6e7a39afd5cc25d16820e948",
+        "rawGitBytes": 5045,
+        "rawGitSha256": "999bd50d7d913a9d299514d132df96d1ee22034ddc810a56503875774f006848"
+      }
+    ]
+  },
+  "verdict": {
+    "disposition": "CLEAN",
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "exactMinimalFix": null,
+    "newFindings": []
+  },
+  "independentProof": {
+    "exactDelta": {
+      "baseCommit": "f64c5c150865901352889b607a075425c93e6cb4",
+      "accountableClosureCommit": "50bb75d1069d72e843d2c253afabd6c2d28b78e1",
+      "accountableClosureTree": "5a7bdec7b6117286778429065540daa124bd64f2",
+      "changedPathCount": 4,
+      "runtimeOrCryptoSourceChanged": false,
+      "dependencyGraphOrLockChanged": false,
+      "verificationMetadataChanged": false,
+      "nativePackagingChanged": false,
+      "licenseOrAdmissionDecisionChanged": false
+    },
+    "verification": {
+      "governanceSelfTest": "PASS",
+      "offlineDependencyInventory": "PASS",
+      "strictJsonUtf8BomFreeLf": true,
+      "crossPinsAndExactFileHashesMatched": true,
+      "contentHashGraphAcyclic": true,
+      "privacyAndSecretScan": "PASS",
+      "gitDiffCheck": "PASS",
+      "reviewedWorktreeClean": true
+    },
+    "accountableReviewTruth": {
+      "humanClosureByteImmutableAtReviewedCommit": true,
+      "accountableChecklistAnswersYesCount": 17,
+      "accountableFindingCounts": {
+        "P0": 0,
+        "P1": 0,
+        "P2": 0
+      },
+      "corporateApprovalClaimed": false,
+      "separateRecI3ActivationDecisionRequired": true,
+      "recI3Activated": false
+    },
+    "targetedFailClosedReadback": {
+      "legacyGovernanceNegativeTestsRetained": true,
+      "accountablePhaseMutationNegativesPassed": true,
+      "reviewerIdentityCapacityAndDispositionBound": true,
+      "allSeventeenAnswersAndZeroFindingsBound": true,
+      "humanClosureAndHistoricalSnapshotPinsBound": true,
+      "laterDirtyRevertOrSpoofOfReviewedPathsRejected": true,
+      "unrelatedAncestryWithoutReviewedPathDriftSupported": true,
+      "authorityEscalationDetected": false
+    },
+    "liveRepositoryReadback": {
+      "pullRequestNumber": 38,
+      "pullRequestDraft": true,
+      "pullRequestOpen": true,
+      "pullRequestMerged": false,
+      "remoteDraftHeadAtReview": "f64c5c150865901352889b607a075425c93e6cb4",
+      "localReviewedHeadUnpublished": true
+    },
+    "reviewerActions": {
+      "edits": false,
+      "builds": false,
+      "gitMutation": false,
+      "pullRequestOrCiMutation": false,
+      "repositoryMetadataReadOnlyAccess": true,
+      "googleSheetMutation": false,
+      "omiWork": false,
+      "merge": false
+    }
+  },
+  "residualLimits": [
+    "The CLEAN verdict is a non-formal independent advisory metadata review of exact commit 50bb75d1069d72e843d2c253afabd6c2d28b78e1 only; the distinct accountable human REC-I2B review is recorded separately.",
+    "This review does not activate REC-I3; a separate exact REC-I3 activation decision remains mandatory after terminal REC-I2B integration.",
+    "No Android Keystore device or emulator execution, Recovery harness, campaign or measurement was performed or confirmed.",
+    "This review does not claim PoC PASS, readiness, dependency admission or production admission.",
+    "Draft PR 38 integration, exact-head CI and a fresh no-drift gate remain required before any Ready or protected merge action under separate integration authority.",
+    "The reviewer made no edits, build, Git mutation, Pull Request or CI mutation, Google Sheet mutation, Omi work or merge."
+  ],
+  "dispositionEffect": {
+    "freshIndependentAdvisoryMetadataReviewCompleted": true,
+    "exactAccountableClosureTargetClean": true,
+    "accountableEngineeringSecurityReviewRemainsCompleted": true,
+    "draftPr38IntegrationMayProceedOnlyAfterThisClosureIsDurablyRecordedAndIndependentlyReadBack": true,
+    "draftPr38ExactHeadCiRequired": true,
+    "claimCeiling": "ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW_COMPLETE_PENDING_SEPARATE_REC_I3_ACTIVATION_DECISION",
+    "recI3Activated": false,
+    "pocPassOrReadinessClaimed": false,
+    "dependencyOrProductionAdmissionGranted": false,
+    "readyOrMergeGrantedByThisReview": false
+  },
+  "authorityBoundary": {
+    "formalAccountableEngineeringSecurityReview": false,
+    "replacesHumanAccountableReview": false,
+    "activatesRecI3": false,
+    "authorizesDeviceOrEmulatorExecution": false,
+    "authorizesHarnessCampaignOrMeasurement": false,
+    "authorizesDependencyOrProductionAdmission": false,
+    "authorizesReadyOrMerge": false
+  },
+  "sanitization": {
+    "containsEmailAddress": false,
+    "containsMailMessageOrThreadIdentifier": false,
+    "containsMailHeader": false,
+    "containsRawOrQuotedMailContent": false,
+    "containsMailDeliveryMetadata": false,
+    "containsKeyMaterial": false,
+    "containsPlaintextOrCiphertextPayloads": false,
+    "containsCredentialsOrTokens": false,
+    "containsPrivateAudioOrDeviceIdentifiers": false,
+    "containsUserSpecificAbsolutePaths": false
+  }
+}
