@@ -19,6 +19,9 @@
     "auth03CandidateCoveredByCurrentRecoveryReview": true,
     "auth04RecoveryAuthority": "GOV-OMI-PHASE-B-TEXT-CLASSIFICATION-AND-TRACKER-RECOVERY-AUTH-20260818-04",
     "auth04CandidateCoveredByThisReview": true,
+    "auth04ReviewIsHistoricalForAuth05Candidate": true,
+    "auth05RecoveryAuthority": "GOV-OMI-PHASE-B-SANITIZED-SEMANTIC-FINDINGS-AUTH-20260818-05",
+    "auth05CandidateCoveredByThisReview": true,
     "freshIndependentReviewRequired": false,
     "currentCandidateReviewState": "NO_FURTHER_CHANGES_REQUIRED",
     "historicalSeparateBinaryHeuristicConcernCarriedForward": false,
@@ -161,6 +164,53 @@
     ],
     "actionableFindings": []
   },
+  "auth05CandidateReview": {
+    "authorityId": "GOV-OMI-PHASE-B-SANITIZED-SEMANTIC-FINDINGS-AUTH-20260818-05",
+    "reviewedAt": "2026-08-18T17:14:04.836Z",
+    "state": "NO_FURTHER_CHANGES_REQUIRED",
+    "candidateDisposition": "INCOMPLETE_AUTH05_PRIVACY_FAIL_CLOSED",
+    "productDisposition": "DEFER",
+    "counts": {"p0":0,"p1":0,"p2":0},
+    "formalReviewer": false,
+    "reviewRecordHashBeforeAuth05ReviewRecording": "65b981e2241bca7128f9fa485c05bb9fb86b92b68fd5004a2415bf7f373819e7",
+    "reviewedCandidateFiles": [
+      {"path":"docs/stage0/DORA_MVP1_GOV_OMI_PHASE_B_BOUNDED_CONTENT_AUDIT.md","sha256":"549668185a08addb4392898c449840e25109fd79e90d97a70ab4728eb1356cb6"},
+      {"path":"docs/stage0/gov-omi-phase-b-bounded-content-audit-v0.1.json","sha256":"6f4e0f116c41b3f51f1e0a8f41dcf9d6521528afc8eb600bcaa73b00d3e21496"},
+      {"path":"docs/evidence/gov-omi-001/phase-b-bounded-content-audit-v0.1.json","sha256":"7ed1a8c3eb42530c7166c0f07fc8cbc33a713253db69ef96a5b1eb14c60d7838"},
+      {"path":"docs/evidence/gov-omi-001/phase-b-bounded-content-audit-report.md","sha256":"2ab03be22c4e4d1a39688c8d0893a89f74cef0aa74e6ad39dcbcaaf0a2a0d076"},
+      {"path":"docs/evidence/gov-omi-001/phase-b-independent-technical-review.json","sha256BeforeAuth05ReviewRecording":"65b981e2241bca7128f9fa485c05bb9fb86b92b68fd5004a2415bf7f373819e7"}
+    ],
+    "candidateFacts": {
+      "localPreRequestFailures": 1,
+      "externalRequestsConsumedByLocalPreRequestFailures": 0,
+      "blobRequestsAttempted": 54,
+      "trackerRequestsAttempted": 0,
+      "totalAddedRequests": 54,
+      "privacyStopOid": "df89c93a6b9086d11c09acfe4dca05742bee025c",
+      "privacyStopKind": "PRIVATE_ENDPOINT",
+      "unrequestedBlobCount": 11,
+      "unrequestedTrackerItemCount": 18,
+      "rawContentPersisted": false,
+      "semanticScopeComplete": false,
+      "readyOrMergeAllowed": false
+    },
+    "verified": [
+      "ALL_FIVE_FROZEN_SHA256_HASHES_MATCH",
+      "JSON_PARSE_AND_DIFF_CHECK_PASS",
+      "EXACTLY_THREE_UNSTAGED_EVIDENCE_FILES_AND_ZERO_STAGED_CHANGES",
+      "AUTH04_EVIDENCE_AND_PRIOR_FAILURES_PRESERVED",
+      "AUTH05_LOCAL_FAILURE_ZERO_REQUESTS_AND_54_PLUS_29_EQUALS_83",
+      "TOTAL_KNOWN_REQUESTS_140_PLUS_54_EQUALS_194",
+      "PRIVACY_STOP_AT_BLOB_54_AFTER_IDENTITY_SIZE_SHA_AND_TEXT_CHECKS",
+      "NO_RAW_PRIVATE_ENDPOINT_VALUE_PERSISTED",
+      "54_BLOBS_AND_582154_BYTES_VERIFIED_WITH_11_BLOBS_AND_18_TRACKER_ITEMS_UNREQUESTED",
+      "PARTIAL_REFERENCES_ARE_ALLOWLISTED_AND_RECOMMENDATIONS_BOUNDED",
+      "ALL_NINE_HAZARDS_INSUFFICIENT_EVIDENCE_AND_DEFER",
+      "RIGHTS_BLOCKED_AND_FORMAL_REVIEWERS_NULL",
+      "NO_COMPLETION_EVALUATION_ADMISSION_READY_PUBLICATION_OR_MERGE_CLAIM"
+    ],
+    "actionableFindings": []
+  },
   "reviewActions": {
     "filesModified": false,
     "gitStateModified": false,
@@ -172,6 +222,7 @@
     "technicalEvidenceMayBeCommitted": true,
     "readyOrMergeAllowed": false,
     "reasonReadyOrMergeBlocked": [
+      "AUTH05_PRIVACY_FAIL_CLOSED_AND_SEMANTIC_SCOPE_INCOMPLETE",
       "TRACKER_PR_7322_INCOMPLETE_AT_FROZEN_COMMENT_CAP",
       "PRODUCT_LEGAL_IP_FORMAL_REVIEW_PENDING",
       "ENGINEERING_SECURITY_FORMAL_REVIEW_PENDING"

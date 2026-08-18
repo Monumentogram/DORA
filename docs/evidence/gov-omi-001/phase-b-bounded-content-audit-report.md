@@ -8,8 +8,9 @@ Authorities:
 - GOV-OMI-PHASE-B-CANONICAL-RECOVERY-AUTH-20260818-02
 - GOV-OMI-PHASE-B-INCOMPLETE-RETRIEVAL-RECOVERY-AUTH-20260818-03
 - GOV-OMI-PHASE-B-TEXT-CLASSIFICATION-AND-TRACKER-RECOVERY-AUTH-20260818-04
+- GOV-OMI-PHASE-B-SANITIZED-SEMANTIC-FINDINGS-AUTH-20260818-05
 
-Result: **BOUNDED_RETRIEVAL_COMPLETE_REVIEW_PENDING**
+Result: **INCOMPLETE_AUTH05_PRIVACY_FAIL_CLOSED**
 
 Engineering evidence only; not legal advice.
 
@@ -30,6 +31,13 @@ The same authority retried the previously failed issue 11769 request once and re
 Request 7322 reports 18 comments, so only the frozen ten-comment tail was inspected and that item is
 explicitly incomplete. No pagination was performed.
 
+AUTH-05 attempted the final sanitized semantic pass. A local command-line failure occurred before
+any request and consumed zero budget. The corrected, parser-validated execution then verified 54
+immutable blobs and 582,154 bytes. On object 54, the bounded privacy scanner found a new
+`PRIVATE_ENDPOINT` signal after OID, size, SHA-256 and text predicates had passed. It persisted no
+raw value and stopped immediately. The remaining 11 blobs and all 18 tracker items were not
+requested under AUTH-05.
+
 This is a DEFER, not a PASS and not evidence of reuse fitness. Formal rights remain BLOCKED_RIGHTS.
 Component reuse, security fitness and hazard validation remain INSUFFICIENT_EVIDENCE. No material
 became EVALUATION_APPROVED or ADMITTED.
@@ -46,12 +54,15 @@ The branch history remains linear and unrevised:
 6. 2140058 — authorized the exact incomplete-retrieval recovery;
 7. 9c47368 — froze the schema-compatible tracker query shape;
 8. e3bce72 — preserved the AUTH-03 paused evidence and its independent review;
-9. 66b1d3e — froze the AUTH-04 48-object/18-item/66-request recovery.
+9. 66b1d3e — froze the AUTH-04 48-object/18-item/66-request recovery;
+10. 4b39087 — preserved complete AUTH-04 evidence and its independent 0/0/0 review;
+11. e0666f4 — froze the AUTH-05 65-object/18-item/83-request semantic pass.
 
 The file docs/stage0/gov-omi-phase-b-contract-test-resolved-allowlist-v0.1.json remains a
 grandfathered, byte-for-byte immutable artifact introduced by f71a2a2. AUTH-04 repeated only the
 explicitly authorized 48 previously successful blob requests; no other successful request was
-repeated.
+repeated before AUTH-05. AUTH-05 then repeated exactly 54 previously successful immutable-blob
+requests before its mandatory privacy stop; it did not start tracker retrieval.
 
 ## Frozen scope and integrity
 
@@ -72,8 +83,9 @@ Every blob passed base64 decoding, exact allowlisted size, recomputed Git blob O
 decoding and explicit NUL rejection. AUTH-04 additionally established zero disallowed Unicode
 `Control` scalars other than TAB, LF and CR for the earlier 48-object set. The frozen binary
 heuristic therefore passes for all 65 unique blobs. The result JSON retains one SHA-256 per unique
-blob, but content-derived source/license/manifest/test interpretation remains withheld because
-semantic interpretation was outside AUTH-04.
+blob. AUTH-05 produced only partial sanitized findings from 49 eligible blobs, excluded four known
+privacy-suppressed blobs and stopped before classifying the newly suppressed object. Those partial
+findings are not a complete semantic audit.
 
 ## Request ledger
 
@@ -92,15 +104,21 @@ semantic interpretation was outside AUTH-04.
 | AUTH-04 text-classification blob requests | 48 of 48 |
 | AUTH-04 tracker requests | 18 of 18 |
 | AUTH-04 successful responses | 66 of 66 |
-| Authorized repeats of previously successful requests | 48 |
-| Total known external requests | 140 |
+| AUTH-05 local pre-request failures | 1; zero external requests |
+| AUTH-05 blob requests | 54 of 65 |
+| AUTH-05 tracker requests | 0 of 18 |
+| AUTH-05 budget | 54 consumed; 29 unexecuted of 83 |
+| Authorized repeats of previously successful requests | 102 |
+| Total known external requests | 194 |
 
 Canonical arithmetic: 2 + 49 + 1 + 16 + 1 = 69; 69 + 17 = 86.
 
 AUTH-04 arithmetic: 48 text-classification objects + 18 tracker items = 66.
 
-All-known-request arithmetic: 74 preserved through AUTH-03 + 66 AUTH-04 requests = 140. The original
-final identity recheck remains displaced and was not run.
+AUTH-05 arithmetic: 54 executed + 11 unrequested blobs + 18 unrequested tracker items = 83.
+
+All-known-request arithmetic: 140 preserved through AUTH-04 + 54 AUTH-05 requests = 194. The
+original final identity recheck remains displaced and was not run.
 
 ## Preserved tracker failure and completed recovery
 
@@ -120,6 +138,25 @@ comment counts, digests, cap state and privacy state. Across the 18 items, 59 co
 51 were returned. Pull Request 7322 alone exceeded the frozen comment tail (18 total, 10 returned),
 so its tracker evidence remains incomplete and no semantic hazard or fix claim is made.
 
+## Partial sanitized findings
+
+Before the AUTH-05 stop, 16 eligible license/notice objects produced mechanical family and
+obligation-signal codes. The partial set contains MIT-family, Apache-2-family, BSD-family, Notice and
+empty/unknown signals. These are text-classifier facts, not license-compatibility or legal
+conclusions; every license recommendation remains `DEFER`.
+
+The partial component pass found bounded patterns for Android audio lifecycle, Bluetooth route
+handling, recording finalization, offline sync/reconciliation, STT/VAD resilience, and
+privacy/deletion/user authority. Offline sync is recorded only as a non-admitting
+`PORT_CANDIDATE`; all other component patterns are `LEARN_ONLY`. The test/security pass found
+regression-test, parity-contract, security-reporting and privacy-control patterns, all
+`LEARN_ONLY`. Exact supporting allowlisted paths, OIDs and SHA-256 digests are retained in the JSON
+evidence; no code or text is retained.
+
+The semantic tracker pass never started. All nine hazard-taxonomy outcomes therefore remain
+`INSUFFICIENT_EVIDENCE` with recommendation `DEFER`; the AUTH-04 ten-comment cap on Pull Request
+7322 remains an independent limitation.
+
 ## Privacy and publication
 
 Raw upstream content existed only in process memory. It was not written to the worktree, temporary
@@ -129,24 +166,28 @@ Four of the original 48 completed blobs remain excluded from interpretation beca
 privacy scan detected contact, secret-like or private-endpoint patterns. The retry and remaining 16
 blobs added no privacy suppressions. AUTH-04 inherited those four suppressions only after exact
 SHA-256 equality. All 18 tracker items passed the bounded privacy checks with zero suppression.
-Evidence retains only immutable identifiers, byte counts, digests and suppression counts; it
-contains no source line, license text, title, body, comment, author identity, contact detail,
-credential or private endpoint.
+AUTH-05 excluded those same four objects, then found one new private-endpoint signal in
+`backend/diarizer/requirements.txt` and stopped. Only its OID, expected size, SHA-256, path and
+sanitized signal kind are retained. Evidence contains no source line, license text, title, body,
+comment, author identity, contact detail, credential or private endpoint value.
 
 ## Review and delivery gate
 
 The earlier independent review of the AUTH-03 candidate is historical. A fresh independent
 read-only review of the exact AUTH-04 candidate completed with `NO_FURTHER_CHANGES_REQUIRED` and
-P0/P1/P2 counts of 0/0/0. The technical reviewer is not a formal Product/Legal/IP or
-Engineering/Security reviewer.
+P0/P1/P2 counts of 0/0/0. A distinct fresh read-only review of the exact terminal AUTH-05 candidate
+also completed with `NO_FURTHER_CHANGES_REQUIRED` and P0/P1/P2 counts of 0/0/0. This validates the
+honest incomplete evidence record, not reuse fitness. The technical reviewer is not a formal
+Product/Legal/IP or Engineering/Security reviewer.
 
-Live main advanced to ebbc54eacc2d556180f07e2063e08c1c3d1c28a3 and exact-main Android CI run
-32156156620 succeeded. Ancestry sync and publication remain deliberately deferred; the newer live
-main and its exact-main CI must be rechecked only after the authorized semantic follow-up is frozen.
+The latest coordinator-provided main observation is e33f24b40587e7af9c16a2c42e492b6da79e19f3,
+with exact-main run 32160072118 still in progress at that checkpoint. Ancestry sync and publication
+remain deliberately deferred until AUTH-05 evidence passes independent review and main CI is green.
 
 Even after technical review and ancestry sync, the PR must remain Draft because:
 
-- Pull Request 7322 tracker evidence is incomplete at the frozen ten-comment cap;
+- AUTH-05 stopped at a new privacy signal and did not complete 11 blobs or any tracker semantics;
+- Pull Request 7322 tracker evidence remains incomplete at the frozen ten-comment cap;
 - Product/Legal/IP reviewer identity and disposition remain null;
 - Engineering/Security reviewer identity and disposition remain null.
 
