@@ -600,6 +600,15 @@
     "auth05CandidateReviewState": "NO_FURTHER_CHANGES_REQUIRED",
     "auth05Counts": {"p0":0,"p1":0,"p2":0},
     "auth05ReviewedAt": "2026-08-18T17:14:04.836Z",
+    "auth05ReviewIsHistoricalForAuth06RemediationCandidate": true,
+    "auth06PriorDiffCheckReviewState": "CHANGES_REQUIRED",
+    "auth06PriorDiffCheckCounts": {"p0":0,"p1":0,"p2":1},
+    "auth06PriorDiffCheckFinding": "FOUR_MARKDOWN_TRAILING_SPACE_HARD_BREAKS_LINES_3_TO_6",
+    "auth06RemediationState": "APPLIED_LOCAL_FRESH_REVIEW_PENDING",
+    "auth06FreshReviewState": "PENDING",
+    "auth06FreshReviewCounts": null,
+    "auth06FreshReviewer": null,
+    "auth06FreshReviewedAt": null,
     "formalReviewer": false
   },
   "reviewers": {

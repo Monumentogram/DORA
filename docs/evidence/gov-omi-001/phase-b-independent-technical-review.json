@@ -22,8 +22,11 @@
     "auth04ReviewIsHistoricalForAuth05Candidate": true,
     "auth05RecoveryAuthority": "GOV-OMI-PHASE-B-SANITIZED-SEMANTIC-FINDINGS-AUTH-20260818-05",
     "auth05CandidateCoveredByThisReview": true,
-    "freshIndependentReviewRequired": false,
-    "currentCandidateReviewState": "NO_FURTHER_CHANGES_REQUIRED",
+    "auth05ReviewIsHistoricalForAuth06RemediationCandidate": true,
+    "auth06RemediationAuthority": "GOV-OMI-PHASE-B-DIFF-CHECK-P2-REMEDIATION-AUTH-20260818-06",
+    "auth06RemediationCandidateCoveredByFreshReview": false,
+    "freshIndependentReviewRequired": true,
+    "currentCandidateReviewState": "PENDING",
     "historicalSeparateBinaryHeuristicConcernCarriedForward": false,
     "currentDefinedContentPredicates": ["BASE64","EXACT_SIZE","GIT_BLOB_OID","STRICT_UTF8","NUL_FREE"]
   },
@@ -211,6 +214,44 @@
     ],
     "actionableFindings": []
   },
+  "auth06DiffCheckRemediation": {
+    "authorityId": "GOV-OMI-PHASE-B-DIFF-CHECK-P2-REMEDIATION-AUTH-20260818-06",
+    "baseHead": "0bcb61b9fdf209182395ff7c02adece0809eeb63",
+    "reviewRecordHashBeforeAuth06RemediationRecording": "4188f42ce83a6b030cfa688119304c92eb75f7fb9d5b188b93b360fbc92caadc",
+    "priorIndependentVerdict": {
+      "state": "CHANGES_REQUIRED",
+      "counts": {"p0":0,"p1":0,"p2":1},
+      "finding": "FOUR_MARKDOWN_TRAILING_SPACE_HARD_BREAKS_LINES_3_TO_6",
+      "reviewer": null,
+      "reviewedAt": null
+    },
+    "remediation": {
+      "state": "APPLIED_LOCAL_FRESH_REVIEW_PENDING",
+      "changedFile": "docs/stage0/DORA_MVP1_GOV_OMI_PHASE_B_BOUNDED_CONTENT_AUDIT.md",
+      "changedLineNumbers": [3,4,5,6],
+      "change": "REMOVED_TRAILING_SPACES_ONLY",
+      "semanticFindingsChanged": false,
+      "requestAccountingChanged": false,
+      "dispositionsChanged": false,
+      "privacyEvidenceChanged": false,
+      "reviewerPlaceholdersChanged": false,
+      "upstreamQueriesMade": false
+    },
+    "candidateFilesPendingFreshReview": [
+      {"path":"docs/stage0/DORA_MVP1_GOV_OMI_PHASE_B_BOUNDED_CONTENT_AUDIT.md","sha256":"a63a0e47a44f444dc1d2ddb26e98bc07a8cfcf8d6296d1d4cb8be2c6bb5ac3b6"},
+      {"path":"docs/stage0/gov-omi-phase-b-bounded-content-audit-v0.1.json","sha256":"6f4e0f116c41b3f51f1e0a8f41dcf9d6521528afc8eb600bcaa73b00d3e21496"},
+      {"path":"docs/evidence/gov-omi-001/phase-b-bounded-content-audit-v0.1.json","sha256":"8757fd5016db774fb5671962b24feb9eb8834dbba25ad569c6dbe3a1d9b8de6f"},
+      {"path":"docs/evidence/gov-omi-001/phase-b-bounded-content-audit-report.md","sha256":"80ce3db0fddb008949c43b2d4af22f2bbb003e9607e3671179c369afcfa46baf"},
+      {"path":"docs/evidence/gov-omi-001/phase-b-independent-technical-review.json","sha256BeforeAuth06RemediationRecording":"4188f42ce83a6b030cfa688119304c92eb75f7fb9d5b188b93b360fbc92caadc"}
+    ],
+    "freshIndependentReview": {
+      "state": "PENDING",
+      "counts": null,
+      "reviewer": null,
+      "reviewedAt": null,
+      "formalReviewer": null
+    }
+  },
   "reviewActions": {
     "filesModified": false,
     "gitStateModified": false,
@@ -218,10 +259,13 @@
     "upstreamContentRetrieved": false
   },
   "publicationGate": {
-    "independentTechnicalReviewP0P1P2": "0/0/0",
+    "independentTechnicalReviewState": "PENDING",
+    "independentTechnicalReviewP0P1P2": null,
     "technicalEvidenceMayBeCommitted": true,
+    "draftPublicationAllowed": false,
     "readyOrMergeAllowed": false,
     "reasonReadyOrMergeBlocked": [
+      "AUTH06_FRESH_INDEPENDENT_REVIEW_PENDING",
       "AUTH05_PRIVACY_FAIL_CLOSED_AND_SEMANTIC_SCOPE_INCOMPLETE",
       "TRACKER_PR_7322_INCOMPLETE_AT_FROZEN_COMMENT_CAP",
       "PRODUCT_LEGAL_IP_FORMAL_REVIEW_PENDING",

@@ -180,6 +180,13 @@ also completed with `NO_FURTHER_CHANGES_REQUIRED` and P0/P1/P2 counts of 0/0/0. 
 honest incomplete evidence record, not reuse fitness. The technical reviewer is not a formal
 Product/Legal/IP or Engineering/Security reviewer.
 
+A later independent diff-check review found one P2 formatting defect: four Markdown hard-break
+lines contained trailing spaces. That exact defect was remediated under
+`GOV-OMI-PHASE-B-DIFF-CHECK-P2-REMEDIATION-AUTH-20260818-06` without changing semantic findings,
+request accounting, dispositions, privacy evidence or reviewer placeholders. The prior diff-check
+verdict was `CHANGES_REQUIRED` with P0/P1/P2 counts of 0/0/1. Fresh independent review of the
+remediated bytes is `PENDING`; its counts, reviewer identity and review time are null.
+
 The latest coordinator-provided main observation is e33f24b40587e7af9c16a2c42e492b6da79e19f3,
 with exact-main run 32160072118 still in progress at that checkpoint. Ancestry sync and publication
 remain deliberately deferred until AUTH-05 evidence passes independent review and main CI is green.
