@@ -1,0 +1,388 @@
+{
+  "schemaVersion": "poc-vad-p4-synthetic-pcm-rotation-local-evidence-stage0-v0.1",
+  "recordType": "LOCAL_HOST_SYNTHETIC_FILE_MECHANICS_ONLY_EVIDENCE",
+  "recordId": "POC-VAD-P4-SYNTHETIC-PCM-ROTATION-20260818-01",
+  "recordedAt": "2026-08-18T23:32:15.3184282+03:00",
+  "timezone": "Europe/Moscow",
+  "backlogId": "POC-VAD-001",
+  "authorityId": "POC-VAD-001-I4-SYNTHETIC-PCM-ROTATION-AUTH-20260818-01",
+  "gateSetVersion": "stage0-v0.1",
+  "evidenceCeiling": "LOCAL_HOST_SYNTHETIC_FILE_MECHANICS_ONLY",
+  "implementationSlice": "DEPENDENCY_FREE_JDK17_DETERMINISTIC_MONO_PCM16LE_PHYSICAL_PART_ROTATION_OVERLAP_RESTORE_AND_SAFE_CLEANUP",
+  "disposition": "LOCAL_HOST_SYNTHETIC_FILE_MECHANICS_VALIDATED_INDEPENDENT_REVIEW_PENDING_POC_REMAINS_BLOCKED_NOT_READY_NOT_RUN_NOT_AUTHORIZED",
+  "sourceBaseline": {
+    "branch": "codex/poc-vad-i4-synthetic-pcm-rotation",
+    "upstream": "origin/main",
+    "baseCommit": "1203ed7959ed5191df9b4e4bd7dcdf982e0f8f8a",
+    "baseTree": "1283ef75c7878e74e3cabbe89395289fdbe8847a",
+    "baseExactMainCiRun": 32178754961,
+    "baseExactMainCiConclusion": "SUCCESS",
+    "baseExactMainCiHead": "1203ed7959ed5191df9b4e4bd7dcdf982e0f8f8a",
+    "implementationCommitPublished": false,
+    "pullRequestCreated": false,
+    "mergePerformed": false,
+    "commitAndTreeBinding": "EXTERNAL_CONTAINING_GIT_TREE"
+  },
+  "exactAdditiveScope": [
+    "tools/vad_p4_pcm_rotation_oracle/src/main/java/com/monumentogram/dora/stage0/vad/p4/VadPcmRotationOracle.java",
+    "tools/vad_p4_pcm_rotation_oracle/src/test/java/com/monumentogram/dora/stage0/vad/p4/VadPcmRotationOracleTest.java",
+    "docs/evidence/poc-vad-001/p4-synthetic-pcm-rotation-local-evidence-stage0-v0.1.json"
+  ],
+  "authorityPins": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 4318,
+      "sha256": "27b6a9b0e99e3f3fd864b3e5289f6246516f680869816623fafc5c809cdb22df"
+    },
+    {
+      "path": "docs/DORA_MVP1_TECHNICAL_PLAN.md",
+      "bytes": 212023,
+      "sha256": "00c4d6816265e86c82e44045a77f85c6e68b43e6094a3736e10ab44eed259a59",
+      "relevantSections": ["14.1", "14.2", "34", "35", "37", "39 Prototype 2"]
+    },
+    {
+      "path": "docs/DORA_MVP1_DESIGN_SPEC.md",
+      "bytes": 148911,
+      "sha256": "8bc88bd5b9cba036bbc5758957a4a2c1fdb64a053a319cf4b2f9ba544ea81f2b",
+      "relevantSections": ["13.6"]
+    },
+    {
+      "path": "docs/DORA_MVP1_PRODUCT_DECISIONS.md",
+      "bytes": 66789,
+      "sha256": "16283563ea328877c02192586e21affb69677e199206df14a3221e94bbadd401",
+      "relevantSections": ["OD-03", "OD-04", "OD-05", "OD-06", "OD-08", "DEC-020", "DEC-031"]
+    },
+    {
+      "path": "docs/adr/ADR-0001-android-bootstrap.md",
+      "bytes": 3147,
+      "sha256": "dfd34f65bc420615fa85feb6258022d326de2cfe6a9c70b992ab3836116a1c13"
+    },
+    {
+      "path": "docs/adr/ADR-0002-public-repository-for-branch-protection.md",
+      "bytes": 5639,
+      "sha256": "9083cd00c2a2e129e20b282ab771c9125917f1d3a48165bb44296d0838c3d372"
+    },
+    {
+      "path": "docs/DORA_MVP1_TEST_STRATEGY.md",
+      "bytes": 17062,
+      "sha256": "cfa2d09387ed4bb80f0ff71a7138930c7a642fdad75c37b0b150774b8d74fbe8"
+    },
+    {
+      "path": "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+      "bytes": 27820,
+      "sha256": "c2ffbf0d8f1ea3ac587df15465a6683f3926d164b2fb4484f89538e758fa8872",
+      "relevantSections": ["POC-VAD-001"]
+    },
+    {
+      "path": "docs/DORA_MVP1_STAGE_STATUS.md",
+      "bytes": 40063,
+      "sha256": "f5de47fe12b927f7e349bc10944fa71f108e8c66bc405f54e839f63a3f7aac47"
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_GATES.md",
+      "bytes": 18298,
+      "sha256": "c04db495abe24f1979096282e41bea7793a71c99c989d2cd1c78cdea386dfc5e",
+      "relevantSections": ["POC-VAD-001"]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_EXECUTION_ORDER.md",
+      "bytes": 23513,
+      "sha256": "da649013c4e39196216936ade02b1bf18a8784428f392573977ffb61175bcbd7",
+      "relevantSections": ["POC-VAD-001", "host evidence ceiling"]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_DATASET_GOVERNANCE.md",
+      "bytes": 19678,
+      "sha256": "cf10ae2ddca0ffdbddfd717eeebfe9d5fd3a11013f2cef17f75776cfb45f6941",
+      "relevantSections": ["SYNTHETIC_SIGNAL", "generator and seed manifest"]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_PRIVACY_DATA_FLOW_THREAT_MODEL.md",
+      "bytes": 24629,
+      "sha256": "d9b793eb5bb9a0c4ef64a03b815fc16425ca923921c98e539811f048853bb251",
+      "relevantSections": ["synthetic-only", "content-free public evidence"]
+    },
+    {
+      "path": "docs/evidence/poc-vad-001/p2-host-oracle-local-evidence-stage0-v0.1.json",
+      "bytes": 15572,
+      "sha256": "3a274eadd23911f0d9151553885c0142a7106bf35b0d84adca0fd17170924713"
+    },
+    {
+      "path": "docs/evidence/poc-vad-001/p3-deterministic-integrated-replay-local-evidence-stage0-v0.1.json",
+      "bytes": 10783,
+      "sha256": "75ddd5090231b83b151f714c5d8e4636ec10e0fb70c91bd70bb34382c58fd6b5"
+    }
+  ],
+  "p3DependencyPins": [
+    {
+      "path": "tools/vad_p3_deterministic_replay/src/main/java/com/monumentogram/dora/stage0/vad/p3/VadDeterministicReplay.java",
+      "bytes": 20393,
+      "lines": 502,
+      "sha256": "46e618d4472b53d17c2da948d825a72431551a1735f1e013cbe04c0fcfb80e01",
+      "gitBlob": "869c1e7cfc5262b83ccb1ab31a682e8a3cc8cfaa"
+    },
+    {
+      "path": "tools/vad_p3_deterministic_replay/src/test/java/com/monumentogram/dora/stage0/vad/p3/VadDeterministicReplayTest.java",
+      "bytes": 29852,
+      "lines": 625,
+      "sha256": "e88a38f4d8b9e9afddaa4a421c2b786f801937d9165ba2c0040151cb4f9aea38",
+      "gitBlob": "03f0ec815ac1e926dac8178b8455681fbb8a1ddc"
+    }
+  ],
+  "implementationPins": [
+    {
+      "path": "tools/vad_p4_pcm_rotation_oracle/src/main/java/com/monumentogram/dora/stage0/vad/p4/VadPcmRotationOracle.java",
+      "bytes": 53977,
+      "lines": 1253,
+      "sha256": "541cf81b8e0d9f683d20bc8e46cbfa30354dfd177aaf3e4c4e543c4340fd2aa1",
+      "gitBlob": "f4da2a688b81d02282fa9e88bb6d4b56a46e142b"
+    },
+    {
+      "path": "tools/vad_p4_pcm_rotation_oracle/src/test/java/com/monumentogram/dora/stage0/vad/p4/VadPcmRotationOracleTest.java",
+      "bytes": 37682,
+      "lines": 817,
+      "sha256": "7c69013554b9cd93e12b404bc930a029fed5ef035be151e76300bff8921ec060",
+      "gitBlob": "55ae532bdef5908b034ead08de3f4de3d59fc05c"
+    }
+  ],
+  "toolchain": {
+    "jdkDistribution": "Microsoft OpenJDK 17.0.10+7-LTS",
+    "jdkMajor": 17,
+    "classFileMajorVersion": 61,
+    "executables": [
+      {
+        "name": "java.exe",
+        "bytes": 49696,
+        "sha256": "98fd4a0eec7fa39abbc2b3f55007ed9c8c24ef8fa5d7c04c3895b4c5915ec3f1"
+      },
+      {
+        "name": "javac.exe",
+        "bytes": 23472,
+        "sha256": "0e79806dea4681cf6bb1fd41b4d5ba8c579481cb70a28890fe65813639294ffe"
+      }
+    ],
+    "absoluteExecutablePathsPublished": false
+  },
+  "dependencyBoundary": {
+    "compiledInputSourceFiles": 3,
+    "p4ImplementationSourceFiles": 2,
+    "externalCoordinates": [],
+    "repositoriesAdded": [],
+    "pluginsAdded": [],
+    "nativeBinaries": [],
+    "models": [],
+    "datasets": [],
+    "androidCodeChanged": false,
+    "runtimeModules": ["java.base"],
+    "stdlibOnly": true,
+    "networkUsedByOracle": false,
+    "wallClockUsedForPcmGeneration": false,
+    "randomnessUsedForPcmGeneration": false,
+    "filesystemUsed": true,
+    "filesystemScope": "BOUNDED_ORACLE_OWNED_TEMPORARY_CHILD_ONLY"
+  },
+  "frozenPcmProfile": {
+    "input": "DETERMINISTIC_SYNTHETIC_MONO_SIGNED_PCM16LE",
+    "syntheticSeedHex": "0x444F524156414434",
+    "syntheticSeedUnsignedDecimal": "4922243358312711220",
+    "sampleRateHz": 16000,
+    "channels": 1,
+    "bitsPerSample": 16,
+    "bytesPerSample": 2,
+    "samplesPerFrame": 320,
+    "frameDurationMillis": 20,
+    "frameBytes": 640,
+    "freshPhysicalCapFrames": 30000,
+    "freshPhysicalCapSeconds": 600,
+    "freshPhysicalCapBytes": 19200000,
+    "overlapFrames": 75,
+    "overlapMillis": 1500,
+    "overlapBytes": 48000,
+    "preRollFrames": 100,
+    "nonOverlapPreRollPrefixFrames": 25,
+    "nonOverlapPreRollPrefixBytes": 16000,
+    "maximumProofFreshFrames": 60025,
+    "maximumProofFreshBytes": 38416000,
+    "overlapOwnership": "CLOSING_FRESH_PART_OWNS_DUPLICATED_SOURCE_RANGE",
+    "harnessProfileIsProductionSelection": false
+  },
+  "exactKnownAnswer": {
+    "totalFreshFrames": 60025,
+    "totalFreshBytes": 38416000,
+    "partCount": 3,
+    "overlapCount": 2,
+    "part0": {
+      "storedFrameRange": "[0,30000)",
+      "freshFrameRange": "[0,30000)",
+      "storedBytes": 19200000,
+      "freshBytes": 19200000,
+      "sha256": "3de2c5c8f1b69f79fbdaf4eb9d065e997f3a9f52d301aae5b80753f172c25f54"
+    },
+    "part1": {
+      "storedFrameRange": "[29925,60000)",
+      "freshFrameRange": "[30000,60000)",
+      "storedBytes": 19248000,
+      "freshBytes": 19200000,
+      "overlapPrefixBytes": 48000,
+      "overlapOwnerPartOrdinal": 0,
+      "sha256": "4a3dfdc29b052b009a34c7650a0e3b233da27c1c57d94218b9614343f1bb3296"
+    },
+    "part2": {
+      "storedFrameRange": "[59925,60025)",
+      "freshFrameRange": "[60000,60025)",
+      "storedBytes": 64000,
+      "freshBytes": 16000,
+      "overlapPrefixBytes": 48000,
+      "overlapOwnerPartOrdinal": 1,
+      "sha256": "fc9df6d06a821b56c55a99e5cda106682a9161c7ea923478da1967e9a70f7c6b"
+    },
+    "frameZeroSha256": "b35bc378bf0093d20e31cad8a94271fff9424fac97087071eb252eaa92ef08b0",
+    "canonicalSummarySha256": "ef3d8bb065c181009a7126e2eabe8127d1a060657f266d31eeda6fb6dc68a554",
+    "primaryOutputSha256": "c27f1de5085eac67a49c12573130cbef52bcf075331b3a75697e33af91d00ca3"
+  },
+  "ownedFilesystemMechanics": {
+    "rootCreation": "JDK_CREATE_TEMP_DIRECTORY_UNDER_CALLER_SUPPLIED_EXISTING_PARENT",
+    "rootNamePrefixBounded": true,
+    "partNamesOrdinalAndBounded": true,
+    "ownershipMarkerExact": true,
+    "partIdentityHardLinkAnchors": true,
+    "symbolicLinksRejected": true,
+    "unexpectedDirectoryEntriesRejected": true,
+    "fileIdentityCheckedBeforeRestoreAndCleanup": true,
+    "lengthCheckedBeforeRestoreAndCleanup": true,
+    "everyPcmByteRegeneratedAndComparedBeforeRestoreAndCleanup": true,
+    "snapshotDigestsChecked": true,
+    "cleanupPreflightBeforeDeletion": true,
+    "recursiveDeletionUsedByOracle": false,
+    "normalCompletionRetainedOwnedFiles": 0,
+    "normalCompletionRetainedPcmBytes": 0
+  },
+  "coverage": {
+    "testGroups": [
+      "constants_mono_pcm16le_frame_cap_overlap_and_seed",
+      "frame_zero_and_per_part_sha256_known_answers",
+      "exact_60025_fresh_frame_three_part_rotation",
+      "two_exact_48000_byte_suffix_prefix_equalities",
+      "closing_part_ownership_of_each_25_frame_non_overlap_preroll_prefix",
+      "snapshot_suspend_restore_and_adversarial_chunk_equivalence",
+      "null_plan_profile_cap_and_total_bound_rejections_before_artifact_creation",
+      "schema_constant_plan_next_frame_part_order_and_digest_snapshot_rejections",
+      "truncation_same_length_corruption_replaced_identity_unexpected_entry_and_marker_tamper_rejections",
+      "input_order_count_bounds_and_incomplete_finish_rejections_without_state_advance",
+      "cleanup_corruption_preflight_retention_then_verified_repair_and_cleanup",
+      "snapshot_defensive_copy_and_no_mutable_static_state"
+    ],
+    "primarySuiteExecutions": 2,
+    "primaryOutputsIdentical": true,
+    "primaryOutput": "LOCAL_PASS vad-p4-synthetic-pcm-rotation",
+    "assertionsEnabled": true,
+    "bytecodeVerificationEnabled": true,
+    "physicalSyntheticPcmFilesWritten": true,
+    "syntheticByteOverlapIntegrityEvaluated": true,
+    "snapshotRestoreEvaluated": true,
+    "chunkEquivalenceEvaluated": true,
+    "tamperFailClosedEvaluated": true,
+    "verifiedCleanupEvaluated": true,
+    "realAudioContentUsed": false
+  },
+  "localValidation": {
+    "state": "LOCAL_PASS_FOR_BOUNDED_HOST_SLICE",
+    "javacMainAndTest": "PASS_RELEASE_17_UTF8_XLINT_ALL_WERROR",
+    "primaryRun1": "LOCAL_PASS vad-p4-synthetic-pcm-rotation",
+    "primaryRun2": "LOCAL_PASS vad-p4-synthetic-pcm-rotation",
+    "primaryOutputsByteIdentical": true,
+    "javaAssertionsAndVerifyAll": "PASS",
+    "knownAnswerBoundaryAdversarialAndPropertyAssertions": "PASS",
+    "jdeps": "java.base",
+    "compiledClassFileMajorVersion": 61,
+    "compiledP3ClassFiles": 21,
+    "compiledP4ClassFilesIncludingTest": 17,
+    "forbiddenImportMatches": 0,
+    "secretPatternMatches": 0,
+    "emailPatternMatches": 0,
+    "absolutePrivatePathMatches": 0,
+    "mainStdoutCalls": 0,
+    "testConstantPassMarkerCalls": 1,
+    "validateStage00": "PASS",
+    "pythonWindowsAppAliasAttempt": "INVALID_ENVIRONMENT_ALIAS_NO_VALIDATION_EXECUTED",
+    "validateStage00Runtime": "PYTHON_3_12_13_BUNDLED_RUNTIME",
+    "androidTierASpotlessAndDetekt": "BUILD_SUCCESSFUL_9_ACTIONABLE_4_EXECUTED_3_FROM_CACHE_2_UP_TO_DATE",
+    "androidTierAUnitTests": "BUILD_SUCCESSFUL_83_ACTIONABLE_23_EXECUTED_56_FROM_CACHE_4_UP_TO_DATE",
+    "androidTierACompileDebugAndroidTestKotlin": "BUILD_SUCCESSFUL_54_ACTIONABLE_6_FROM_CACHE_48_UP_TO_DATE",
+    "androidTierALint": "BUILD_SUCCESSFUL_140_ACTIONABLE_57_EXECUTED_22_FROM_CACHE_61_UP_TO_DATE",
+    "androidTierAAssembleDebug": "BUILD_SUCCESSFUL_76_ACTIONABLE_17_EXECUTED_7_FROM_CACHE_52_UP_TO_DATE",
+    "apkNativeAlignmentInventory": "PASS_4_ABI_ENTRIES_1_ALLOWLISTED_LIBRARY_BASENAME",
+    "ciState": "NOT_RUN_UNPUBLISHED"
+  },
+  "privacyBoundary": {
+    "syntheticPcmOnly": true,
+    "realSpeechUsed": false,
+    "microphoneUsed": false,
+    "audioRecordUsed": false,
+    "personalDataPresent": false,
+    "secretsPresent": false,
+    "privateEmailPresent": false,
+    "pcmCommitted": false,
+    "pcmRetainedAfterPassingTest": false,
+    "rawTraceRetained": false,
+    "absoluteLocalPathsPublished": false,
+    "filesystemIdentitiesPublishedInCanonicalOutput": false,
+    "consoleOutput": "ONE_CONSTANT_CONTENT_FREE_PASS_MARKER_ONLY",
+    "googleSheetChanged": false,
+    "alphaOrRtlUsed": false
+  },
+  "proofBoundary": {
+    "localHostSyntheticFileMechanicsOnly": true,
+    "deterministicPcm16leGenerationValidated": true,
+    "freshPhysicalCapByteMechanicsValidated": true,
+    "syntheticSuffixPrefixByteEqualityValidated": true,
+    "closingPartOverlapOwnershipValidated": true,
+    "snapshotRestoreAndChunkEquivalenceValidated": true,
+    "corruptionTruncationOrderSchemaBoundsAndTamperFailClosedValidated": true,
+    "verifiedSafeCleanupValidated": true,
+    "acousticVadImplemented": false,
+    "sileroOrOtherModelUsed": false,
+    "microphoneOrAudioRecordUsed": false,
+    "codecOrContainerUsed": false,
+    "androidOrDeviceExecutionPerformedForThisOracle": false,
+    "emulatorOrRtlUsed": false,
+    "networkOrCloudUsedByThisOracle": false,
+    "realDataUsed": false,
+    "realTimeDeadlineEvaluated": false,
+    "encodedFileDurationEvaluated": false,
+    "deviceFilesystemRotationEvaluated": false,
+    "storageOrDedupImplementationEvaluated": false,
+    "modelTrainingPerformed": false,
+    "productIntegrationPerformed": false,
+    "pocPassClaimed": false,
+    "readyClaimed": false,
+    "doneClaimed": false,
+    "productionAdmissionClaimed": false
+  },
+  "review": {
+    "independentReadOnlyExactCommitReviewRequired": true,
+    "independentReadOnlyExactCommitReviewState": "PENDING",
+    "formalHumanReviewClaimed": false
+  },
+  "resultTaxonomy": {
+    "localBoundedHostSlice": "LOCAL_PASS",
+    "pocVadOverallResult": "NOT_RUN",
+    "pocVadBacklogState": "BLOCKED",
+    "pocVadReadiness": "NOT_READY",
+    "pocVadExecutionAuthorization": "NOT_AUTHORIZED",
+    "recommendation": "BLOCKED"
+  },
+  "blockers": [
+    "HOST_SYNTHETIC_FILE_MECHANICS_DO_NOT_CLOSE_ACOUSTIC_OR_DEVICE_GATE",
+    "ACOUSTIC_VAD_AND_NOISE_MATRIX_NOT_RUN",
+    "SPEECH_ONSET_PRESERVATION_NOT_MEASURED",
+    "SHORT_PAUSE_HYSTERESIS_NOT_EVALUATED",
+    "PHYSICAL_D1_D2_D3_REAL_TIME_EVIDENCE_MISSING",
+    "REAL_DEVICE_FILESYSTEM_ROTATION_NOT_RUN",
+    "POC_DATA_001_GOVERNED_CORPUS_BLOCKED",
+    "EXACT_HEAD_CI_NOT_YET_RUN",
+    "INDEPENDENT_EXACT_COMMIT_REVIEW_PENDING",
+    "DEPENDENCY_AND_PRODUCTION_ADMISSION_NOT_GRANTED"
+  ],
+  "externalBindingPolicy": "Bind this record through the containing Git tree; the record intentionally contains no self-hash."
+}
