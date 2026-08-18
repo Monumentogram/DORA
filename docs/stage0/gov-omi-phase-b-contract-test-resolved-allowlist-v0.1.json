@@ -1,0 +1,52 @@
+{
+  "recordType": "dora-gov-omi-phase-b-contract-test-resolved-allowlist",
+  "schemaVersion": 1,
+  "taskId": "GOV-OMI-001",
+  "authorityId": "GOV-OMI-PHASE-B-BOUNDED-PUBLIC-SOURCE-CONTENT-AUDIT-AUTH-20260818-01",
+  "scopeVersion": "gov-omi-phase-b-bounded-content-audit-v0.1",
+  "capturedAt": "2026-08-18T14:54:43Z",
+  "doraScopeCommit": "aa2f68fe9dee00abea62e6900800aadfda5713f3",
+  "upstreamSnapshot": {
+    "repository": "BasedHardware/omi",
+    "commitSha": "7d99abcc4efb9e46a5853b21fc01289e4b891837",
+    "treeSha": "85db621ffd5dc5386bcbd7c87713cc69638be7e3"
+  },
+  "metadataRequests": [
+    {
+      "treePath": "contracts",
+      "treeOid": "8f75b76071a25b45ff1227b72888c0d9468888fa",
+      "logicalRequestCount": 1,
+      "transportAttemptCount": 1,
+      "responseReceived": true,
+      "rawResponseLoggedOrPersisted": false
+    },
+    {
+      "treePath": "contract_tests",
+      "treeOid": "d10af828ca4c088e4f3c011de4bc75dc011ef2e2",
+      "logicalRequestCount": 1,
+      "transportAttemptCount": 1,
+      "responseReceived": true,
+      "rawResponseLoggedOrPersisted": false
+    }
+  ],
+  "batchContext": {
+    "identityRequestCount": 2,
+    "treeMetadataRequestCount": 2,
+    "transportAttemptCount": 4,
+    "identityAndTreeAssertionsReached": true,
+    "localPostProcessingCompleted": false,
+    "failureCode": "LOCAL_RESOLVED_SIZE_FILTER_SYNTAX_ERROR",
+    "failureOccurredBeforeRawOrResolvedOutput": true,
+    "retryPermittedByFrozenScope": false,
+    "reasonRetryNotPermitted": "The frozen scope permits one retry only for transient transport, HTTP 429 or HTTP 5xx; a local post-processing defect is not retryable."
+  },
+  "resolutionState": "SKIPPED_FAIL_CLOSED_LOCAL_POSTPROCESS_FAILURE",
+  "resolvedBlobs": [],
+  "resolvedBlobCount": 0,
+  "resolvedDecodedBytes": 0,
+  "contractOrTestBlobContentRequested": false,
+  "contractOrTestBlobContentRetrievalAllowed": false,
+  "disposition": "INSUFFICIENT_EVIDENCE",
+  "limitation": "The two allowed immutable tree responses were not retained and their exact resolved blob list was not published because local post-processing failed after response parsing. Re-query was forbidden by the frozen retry policy, so contract/test content was skipped.",
+  "noAdmissionStatement": "No contract or test blob content was requested, retained, copied, executed, evaluated or admitted."
+}
