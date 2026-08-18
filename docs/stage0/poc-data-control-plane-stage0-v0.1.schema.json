@@ -1,0 +1,881 @@
+{
+  "$defs": {
+    "controlRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "accessRoles": {
+          "items": {
+            "enum": [
+              "SYNTHETIC_DRY_RUN_OPERATOR",
+              "SECURITY_AUDITOR",
+              "EVALUATOR"
+            ],
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "containsPersonalData": {
+          "const": false
+        },
+        "containsSampleBytes": {
+          "const": false
+        },
+        "containsTranscriptOrSourceExcerpt": {
+          "const": false
+        },
+        "contentSha256": {
+          "type": "null"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "dataClass": {
+          "enum": [
+            "GENERATED_TEXT_METADATA",
+            "SYNTHETIC_SIGNAL_METADATA"
+          ],
+          "type": "string"
+        },
+        "deletionState": {
+          "enum": [
+            "ACTIVE",
+            "DELETED"
+          ],
+          "type": "string"
+        },
+        "evidenceLocator": {
+          "type": "null"
+        },
+        "expiresAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "note": {
+          "enum": [
+            "ROOT_SYNTHETIC_CONTROL_ENTRY",
+            "DERIVED_SYNTHETIC_CONTROL_ENTRY",
+            "SYNTHETIC_DELETION_TARGET",
+            "PROTECTED_EVALUATION_CONTROL_ENTRY"
+          ],
+          "type": "string"
+        },
+        "parentRecordId": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/controlRecordId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "recordId": {
+          "$ref": "#/$defs/controlRecordId"
+        },
+        "split": {
+          "enum": [
+            "development",
+            "test",
+            "evaluation"
+          ],
+          "type": "string"
+        },
+        "storageClass": {
+          "const": "MANIFEST_ONLY_NO_SAMPLE_BYTES"
+        }
+      },
+      "required": [
+        "accessRoles",
+        "containsPersonalData",
+        "containsSampleBytes",
+        "containsTranscriptOrSourceExcerpt",
+        "contentSha256",
+        "createdAt",
+        "dataClass",
+        "deletionState",
+        "evidenceLocator",
+        "expiresAt",
+        "note",
+        "parentRecordId",
+        "recordId",
+        "split",
+        "storageClass"
+      ],
+      "type": "object"
+    },
+    "controlRecordId": {
+      "pattern": "^control-[0-9a-f]{16}$",
+      "type": "string"
+    },
+    "deletionEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "affectedScopes": {
+          "items": {
+            "enum": [
+              "RAW_AND_TRANSFORMED_COPIES",
+              "TRANSCRIPTS_ANNOTATIONS_FEATURES_NOTES",
+              "CACHES_EXPORTS_DOWNLOADS",
+              "SPLIT_INDEX_AND_PRIVATE_MANIFESTS",
+              "CONTROLLED_BACKUPS",
+              "PROVIDER_COPIES",
+              "PARTICIPANT_MAPPING_AND_ACCESS_GRANTS",
+              "DERIVED_VARIANTS"
+            ],
+            "type": "string"
+          },
+          "maxItems": 8,
+          "minItems": 8,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "backupExpiresAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "completedAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "eventId": {
+          "pattern": "^delete-[0-9a-f]{16}$",
+          "type": "string"
+        },
+        "outcome": {
+          "const": "DELETED_METADATA_ONLY"
+        },
+        "recordId": {
+          "$ref": "#/$defs/controlRecordId"
+        },
+        "requestedAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "trigger": {
+          "const": "SYNTHETIC_DRY_RUN"
+        },
+        "unresolvedFailures": {
+          "maxItems": 0,
+          "type": "array"
+        }
+      },
+      "required": [
+        "affectedScopes",
+        "backupExpiresAt",
+        "completedAt",
+        "eventId",
+        "outcome",
+        "recordId",
+        "requestedAt",
+        "trigger",
+        "unresolvedFailures"
+      ],
+      "type": "object"
+    },
+    "sha256": {
+      "pattern": "^sha256:(?!0{64}$)[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "timestamp": {
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+      "type": "string"
+    }
+  },
+  "$id": "urn:dora:stage0:poc-data:control-plane:v0.1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "authorityFlags": {
+      "additionalProperties": false,
+      "properties": {
+        "cloudTransferAllowed": {
+          "const": false
+        },
+        "consentProcessOperational": {
+          "const": false
+        },
+        "contentFreeEvidenceAllowed": {
+          "const": true
+        },
+        "controlPlanePreparationAllowed": {
+          "const": true
+        },
+        "controlledStorageConfigured": {
+          "const": false
+        },
+        "custodianAssigned": {
+          "const": false
+        },
+        "dependencyAdmissionAllowed": {
+          "const": false
+        },
+        "derivedSensitiveDataAllowed": {
+          "const": false
+        },
+        "deviceExecutionAllowed": {
+          "const": false
+        },
+        "humanReviewAllowed": {
+          "const": false
+        },
+        "localHostValidationAllowed": {
+          "const": true
+        },
+        "mergeAllowedByThisPackage": {
+          "const": false
+        },
+        "modelImprovementAllowed": {
+          "const": false
+        },
+        "modelInferenceAllowed": {
+          "const": false
+        },
+        "networkExecutionAllowed": {
+          "const": false
+        },
+        "pocDataPassAllowed": {
+          "const": false
+        },
+        "pocDataReadyAllowed": {
+          "const": false
+        },
+        "productionAdmissionAllowed": {
+          "const": false
+        },
+        "productionSchemaAllowed": {
+          "const": false
+        },
+        "productionStorageAllowed": {
+          "const": false
+        },
+        "publicationAllowedByThisPackage": {
+          "const": false
+        },
+        "purposeRecordedCollectionAllowed": {
+          "const": false
+        },
+        "rawAudioAllowed": {
+          "const": false
+        },
+        "realMeetingDataAllowed": {
+          "const": false
+        },
+        "realPeopleAllowed": {
+          "const": false
+        },
+        "syntheticDryRunAllowed": {
+          "const": true
+        },
+        "syntheticManifestArtifactAllowed": {
+          "const": true
+        },
+        "trainingAllowed": {
+          "const": false
+        },
+        "transientSyntheticSentinelAllowed": {
+          "const": true
+        }
+      },
+      "required": [
+        "cloudTransferAllowed",
+        "consentProcessOperational",
+        "contentFreeEvidenceAllowed",
+        "controlPlanePreparationAllowed",
+        "controlledStorageConfigured",
+        "custodianAssigned",
+        "dependencyAdmissionAllowed",
+        "derivedSensitiveDataAllowed",
+        "deviceExecutionAllowed",
+        "humanReviewAllowed",
+        "localHostValidationAllowed",
+        "mergeAllowedByThisPackage",
+        "modelImprovementAllowed",
+        "modelInferenceAllowed",
+        "networkExecutionAllowed",
+        "pocDataPassAllowed",
+        "pocDataReadyAllowed",
+        "productionAdmissionAllowed",
+        "productionSchemaAllowed",
+        "productionStorageAllowed",
+        "publicationAllowedByThisPackage",
+        "purposeRecordedCollectionAllowed",
+        "rawAudioAllowed",
+        "realMeetingDataAllowed",
+        "realPeopleAllowed",
+        "syntheticDryRunAllowed",
+        "syntheticManifestArtifactAllowed",
+        "trainingAllowed",
+        "transientSyntheticSentinelAllowed"
+      ],
+      "type": "object"
+    },
+    "blockers": {
+      "items": {
+        "enum": [
+          "DATA_CUSTODIAN_UNASSIGNED",
+          "CONTROLLED_NON_PUBLIC_STORAGE_NOT_CONFIGURED",
+          "CONSENT_PROCESS_PREPARED_NOT_OPERATIONAL",
+          "REAL_COLLECTION_NOT_AUTHORIZED",
+          "ACTUAL_CORPUS_COUNTS_SLICES_AND_SCRIPTS_NOT_FROZEN",
+          "ACTUAL_IMMUTABLE_CORPUS_MANIFEST_AND_SPLITS_ABSENT",
+          "ANNOTATION_AND_ADJUDICATION_GUIDES_ABSENT",
+          "CONTROLLED_STORAGE_ACCESS_AND_DELETION_DRY_RUN_NOT_RUN",
+          "EXTERNAL_DATA_RIGHTS_NOT_APPROVED",
+          "PRODUCTION_LEGAL_AND_SECURITY_APPROVAL_ABSENT"
+        ],
+        "type": "string"
+      },
+      "maxItems": 10,
+      "minItems": 10,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "collectionPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "clockSource": {
+          "const": "FROZEN_LITERAL_NO_WALL_CLOCK_READ"
+        },
+        "dataClasses": {
+          "items": {
+            "enum": [
+              "GENERATED_TEXT_METADATA",
+              "SYNTHETIC_SIGNAL_METADATA"
+            ],
+            "type": "string"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "frozenAt": {
+          "const": "2026-08-18T12:00:00Z"
+        },
+        "hypothesis": {
+          "const": "FAIL_CLOSED_SYNTHETIC_CONTROL_PLANE_IS_DETERMINISTIC"
+        },
+        "manifestRowCount": {
+          "const": 4
+        },
+        "meetingCount": {
+          "const": 0
+        },
+        "modelExecutionEnabled": {
+          "const": false
+        },
+        "networkEnabled": {
+          "const": false
+        },
+        "nonGoals": {
+          "items": {
+            "enum": [
+              "CORPUS_QUALITY",
+              "CONSENT_USABILITY",
+              "ACOUSTIC_COVERAGE",
+              "MODEL_QUALITY",
+              "DEVICE_BEHAVIOR",
+              "CONTROLLED_STORE_OPERATIONS",
+              "PRODUCTION_BEHAVIOR"
+            ],
+            "type": "string"
+          },
+          "maxItems": 7,
+          "minItems": 7,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "participantCount": {
+          "const": 0
+        },
+        "planId": {
+          "const": "poc-data-synthetic-control-plane-plan-stage0-v0.1"
+        },
+        "seed": {
+          "const": 2026081801
+        },
+        "state": {
+          "const": "AUTHORIZED_SYNTHETIC_DRY_RUN_ONLY"
+        },
+        "storageClasses": {
+          "items": {
+            "enum": [
+              "PUBLIC_REPOSITORY_MANIFEST_ONLY",
+              "VALIDATED_OS_TEMP_SENTINEL_ONLY"
+            ],
+            "type": "string"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "voiceCount": {
+          "const": 0
+        }
+      },
+      "required": [
+        "clockSource",
+        "dataClasses",
+        "frozenAt",
+        "hypothesis",
+        "manifestRowCount",
+        "meetingCount",
+        "modelExecutionEnabled",
+        "networkEnabled",
+        "nonGoals",
+        "participantCount",
+        "planId",
+        "seed",
+        "state",
+        "storageClasses",
+        "voiceCount"
+      ],
+      "type": "object"
+    },
+    "consentProcess": {
+      "additionalProperties": false,
+      "properties": {
+        "consentReference": {
+          "const": "not-applicable"
+        },
+        "finalLegalCopyApproved": {
+          "const": false
+        },
+        "processId": {
+          "const": "poc-data-consent-process-stage0-v0.1"
+        },
+        "purposeRecordedConsentUsable": {
+          "const": false
+        },
+        "realConsentRecordCount": {
+          "const": 0
+        },
+        "requirements": {
+          "items": {
+            "enum": [
+              "OPERATOR_AND_CONTACT",
+              "NAMED_POC_AND_PURPOSE",
+              "SCRIPT_AND_INTENTIONAL_RECORDING",
+              "DERIVATIVES_AND_METRICS",
+              "RAW_AND_DERIVED_ACCESS_ROLES",
+              "HUMAN_REVIEW_DISCLOSURE",
+              "STORAGE_ENCRYPTION_RETENTION",
+              "PROVIDER_ARTIFACT_REGION_OR_NONE",
+              "WITHDRAWAL_AND_AGGREGATE_LIMIT",
+              "NO_TRAINING_OR_MODEL_IMPROVEMENT",
+              "VOLUNTARY_NO_PRODUCT_PENALTY",
+              "DELETION_EVIDENCE_AND_BACKUP_EXPIRY"
+            ],
+            "type": "string"
+          },
+          "maxItems": 12,
+          "minItems": 12,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "state": {
+          "const": "PREPARED_NOT_OPERATIONAL"
+        },
+        "stateMachine": {
+          "items": {
+            "enum": [
+              "DRAFT",
+              "REVIEW_REQUIRED",
+              "APPROVED_FOR_NAMED_PLAN",
+              "GRANTED",
+              "REVOKED",
+              "EXPIRED"
+            ],
+            "type": "string"
+          },
+          "maxItems": 6,
+          "minItems": 6,
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "consentReference",
+        "finalLegalCopyApproved",
+        "processId",
+        "purposeRecordedConsentUsable",
+        "realConsentRecordCount",
+        "requirements",
+        "state",
+        "stateMachine"
+      ],
+      "type": "object"
+    },
+    "contractId": {
+      "const": "poc-data-control-plane-stage0-v0.1"
+    },
+    "controlRecords": {
+      "items": {
+        "$ref": "#/$defs/controlRecord"
+      },
+      "maxItems": 4,
+      "minItems": 4,
+      "type": "array"
+    },
+    "dataPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "allowedClasses": {
+          "items": {
+            "enum": [
+              "GENERATED_TEXT_METADATA",
+              "SYNTHETIC_SIGNAL_METADATA"
+            ],
+            "type": "string"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "allowedUses": {
+          "items": {
+            "enum": [
+              "CONTROL_PLANE_VALIDATION",
+              "TRANSIENT_SENTINEL_DELETION_DRY_RUN"
+            ],
+            "type": "string"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "excludedUses": {
+          "items": {
+            "enum": [
+              "MODEL_TRAINING",
+              "FINE_TUNING",
+              "DISTILLATION",
+              "EMBEDDING_ENROLLMENT",
+              "UNDECLARED_HUMAN_REVIEW",
+              "PROVIDER_QUALITY_IMPROVEMENT",
+              "PUBLIC_RELEASE_REDISTRIBUTION_OR_PUBLICATION",
+              "MARKETING_OR_DEMO",
+              "BIOMETRIC_IDENTITY",
+              "CROSS_CONVERSATION_SPEAKER_RECOGNITION",
+              "TRAINING_EXAMPLE_SELECTION_OUTSIDE_NAMED_POC",
+              "HARD_EXAMPLE_RETENTION_BEYOND_APPROVED_PERIOD",
+              "CROSS_PROJECT_OR_COMPANY_REUSE"
+            ],
+            "type": "string"
+          },
+          "maxItems": 13,
+          "minItems": 13,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "forbiddenClasses": {
+          "items": {
+            "enum": [
+              "PURPOSE_RECORDED",
+              "PUBLIC_LICENSED",
+              "REAL_MEETING",
+              "DERIVED_SENSITIVE"
+            ],
+            "type": "string"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "licenseId": {
+          "const": "DORA_ORIGINAL_SYNTHETIC_CONTROL_METADATA_ONLY"
+        },
+        "publicRedistributionAllowed": {
+          "const": false
+        },
+        "termsDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "trainingAllowed": {
+          "const": false
+        }
+      },
+      "required": [
+        "allowedClasses",
+        "allowedUses",
+        "excludedUses",
+        "forbiddenClasses",
+        "licenseId",
+        "publicRedistributionAllowed",
+        "termsDigest",
+        "trainingAllowed"
+      ],
+      "type": "object"
+    },
+    "deletionLedger": {
+      "items": {
+        "$ref": "#/$defs/deletionEntry"
+      },
+      "maxItems": 1,
+      "minItems": 1,
+      "type": "array"
+    },
+    "dryRunMatrix": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "expected": {
+            "enum": [
+              "ALLOW",
+              "DENY",
+              "REJECT"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^DATA-CP-0(?:0[1-9]|1[0-5])$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected",
+          "id"
+        ],
+        "type": "object"
+      },
+      "maxItems": 15,
+      "minItems": 15,
+      "type": "array"
+    },
+    "limitations": {
+      "items": {
+        "enum": [
+          "CONTROL_PLANE_PREPARATION_ONLY",
+          "CUSTODIAN_UNASSIGNED",
+          "CONSENT_NOT_OPERATIONAL",
+          "CONTROLLED_STORAGE_NOT_CONFIGURED",
+          "SYNTHETIC_METADATA_ONLY",
+          "NO_SAMPLE_BYTES",
+          "NO_CORPUS_OR_DATASET_CREATED",
+          "NO_POC_DATA_READINESS_PASS_OR_EXECUTION",
+          "NO_REAL_PUBLIC_PRIVATE_OR_DERIVED_DATA",
+          "NO_NETWORK_CLOUD_MODEL_OR_TRAINING",
+          "NO_PRODUCTION_ADMISSION"
+        ],
+        "type": "string"
+      },
+      "maxItems": 11,
+      "minItems": 11,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "manifestId": {
+      "pattern": "^control-manifest-[0-9a-f]{16}$",
+      "type": "string"
+    },
+    "privacyBoundary": {
+      "additionalProperties": false,
+      "properties": {
+        "containsConsentForm": {
+          "const": false
+        },
+        "containsDeviceOrAccountIdentifier": {
+          "const": false
+        },
+        "containsNetworkEndpoint": {
+          "const": false
+        },
+        "containsParticipantMapping": {
+          "const": false
+        },
+        "containsPersonalData": {
+          "const": false
+        },
+        "containsPrivateLocator": {
+          "const": false
+        },
+        "containsPublicLinkableContentDigest": {
+          "const": false
+        },
+        "containsRawContent": {
+          "const": false
+        },
+        "containsSignedUrl": {
+          "const": false
+        },
+        "containsTranscriptOrSourceExcerpt": {
+          "const": false
+        },
+        "sampleBytesPresent": {
+          "const": false
+        }
+      },
+      "required": [
+        "containsConsentForm",
+        "containsDeviceOrAccountIdentifier",
+        "containsNetworkEndpoint",
+        "containsParticipantMapping",
+        "containsPersonalData",
+        "containsPrivateLocator",
+        "containsPublicLinkableContentDigest",
+        "containsRawContent",
+        "containsSignedUrl",
+        "containsTranscriptOrSourceExcerpt",
+        "sampleBytesPresent"
+      ],
+      "type": "object"
+    },
+    "rbac": {
+      "additionalProperties": false,
+      "properties": {
+        "assignments": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "principal": {
+                "const": "BUILT_IN_TEST_HARNESS_ONLY"
+              },
+              "role": {
+                "const": "SYNTHETIC_DRY_RUN_OPERATOR"
+              }
+            },
+            "required": [
+              "principal",
+              "role"
+            ],
+            "type": "object"
+          },
+          "maxItems": 1,
+          "minItems": 1,
+          "type": "array"
+        },
+        "custodianAssignment": {
+          "additionalProperties": false,
+          "properties": {
+            "principal": {
+              "type": "null"
+            },
+            "state": {
+              "const": "CUSTODIAN_UNASSIGNED"
+            }
+          },
+          "required": [
+            "principal",
+            "state"
+          ],
+          "type": "object"
+        },
+        "mode": {
+          "const": "DENY_BY_DEFAULT"
+        },
+        "roleRules": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "actions": {
+                "items": {
+                  "enum": [
+                    "READ_PUBLIC_MANIFEST",
+                    "CREATE_TRANSIENT_SYNTHETIC_SENTINEL",
+                    "DELETE_TRANSIENT_SYNTHETIC_SENTINEL",
+                    "EMIT_CONTENT_FREE_SUMMARY",
+                    "READ_CONTENT_FREE_EVIDENCE"
+                  ],
+                  "type": "string"
+                },
+                "type": "array",
+                "uniqueItems": true
+              },
+              "role": {
+                "enum": [
+                  "SYNTHETIC_DRY_RUN_OPERATOR",
+                  "SECURITY_AUDITOR",
+                  "EVALUATOR",
+                  "COLLECTOR",
+                  "ANNOTATOR",
+                  "CUSTODIAN"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "actions",
+              "role"
+            ],
+            "type": "object"
+          },
+          "maxItems": 6,
+          "minItems": 6,
+          "type": "array"
+        }
+      },
+      "required": [
+        "assignments",
+        "custodianAssignment",
+        "mode",
+        "roleRules"
+      ],
+      "type": "object"
+    },
+    "retention": {
+      "additionalProperties": false,
+      "properties": {
+        "controlledStoreDeletionDryRunCompleted": {
+          "const": false
+        },
+        "physicalOverwritePromised": {
+          "const": false
+        },
+        "purposeRecordedDerivedMaxDays": {
+          "const": 180
+        },
+        "purposeRecordedRawMaxDays": {
+          "const": 90
+        },
+        "shorterMandatoryTermWins": {
+          "const": true
+        },
+        "syntheticTempDeletionDryRunRequired": {
+          "const": true
+        },
+        "transientSentinelRetention": {
+          "const": "DELETE_BEFORE_OPERATION_RETURNS"
+        },
+        "withdrawalCompletionMaxDays": {
+          "const": 30
+        }
+      },
+      "required": [
+        "controlledStoreDeletionDryRunCompleted",
+        "physicalOverwritePromised",
+        "purposeRecordedDerivedMaxDays",
+        "purposeRecordedRawMaxDays",
+        "shorterMandatoryTermWins",
+        "syntheticTempDeletionDryRunRequired",
+        "transientSentinelRetention",
+        "withdrawalCompletionMaxDays"
+      ],
+      "type": "object"
+    },
+    "schemaVersion": {
+      "const": 1
+    }
+  },
+  "required": [
+    "authorityFlags",
+    "blockers",
+    "collectionPlan",
+    "consentProcess",
+    "contractId",
+    "controlRecords",
+    "dataPolicy",
+    "deletionLedger",
+    "dryRunMatrix",
+    "limitations",
+    "manifestId",
+    "privacyBoundary",
+    "rbac",
+    "retention",
+    "schemaVersion"
+  ],
+  "title": "Dora Stage 0 POC-DATA synthetic control-plane manifest",
+  "type": "object",
+  "x-dora-semantic-layer": "PINNED_JAVA17_VALIDATOR_REQUIRED_FOR_CANONICAL_AND_CROSS_FIELD_RULES"
+}

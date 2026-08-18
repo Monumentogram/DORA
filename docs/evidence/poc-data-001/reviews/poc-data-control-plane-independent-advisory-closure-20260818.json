@@ -1,0 +1,115 @@
+{
+  "authority": "POC-DATA-CONTROL-PLANE-INDEPENDENT-ADVISORY-CLOSURE-AUTH-20260818-03",
+  "claimCeiling": {
+    "collectionAuthorization": "NOT_AUTHORIZED",
+    "custodian": "CUSTODIAN_UNASSIGNED",
+    "dependencyAdmission": "NOT_GRANTED",
+    "formalHumanApprovalClaimed": false,
+    "humanReviewer": false,
+    "legalDisposition": "NOT_GRANTED",
+    "mergeAuthorization": "NOT_GRANTED_BY_REVIEW",
+    "pocDataOverallResult": "NOT_RUN",
+    "pocDataReadiness": "NOT_READY",
+    "productionAdmission": "NOT_GRANTED",
+    "publicationAuthorization": "NOT_GRANTED_BY_REVIEW",
+    "securityApproval": false,
+    "trainingAuthorization": "NOT_AUTHORIZED"
+  },
+  "closedPriorFindings": [
+    {
+      "closureProof": [
+        "PREEXISTING_SENTINEL_PRESERVED",
+        "CREATE_RACE_SENTINEL_PRESERVED",
+        "POST_CLOSE_REPLACEMENT_PRESERVED",
+        "CONTENT_FREE_FAILURES_VERIFIED"
+      ],
+      "id": "P1-1",
+      "originalFinding": "PATH_BASED_SENTINEL_CLEANUP_COULD_DELETE_AN_UNOWNED_RACING_ENTRY",
+      "originalSeverity": "P1",
+      "remediation": "CREATE_NEW_NOFOLLOW_DELETE_ON_CLOSE_OWNED_HANDLE_WITH_NO_SENTINEL_PATH_DELETE",
+      "status": "CLOSED"
+    },
+    {
+      "closureProof": [
+        "CALLER_MUTATED_AFTER_VALIDATION",
+        "CALLER_MUTATED_AGAIN_BEFORE_FINAL_DIGEST",
+        "REPORT_AND_DIGEST_REMAINED_BOUND_TO_ENTRY_SNAPSHOT"
+      ],
+      "id": "P1-2",
+      "originalFinding": "POST_VALIDATION_CALLER_MUTATION_COULD_DECOUPLE_REPORT_AND_HASHED_BYTES",
+      "originalSeverity": "P1",
+      "remediation": "ONE_OWNED_ENTRY_CLONE_USED_FOR_VALIDATION_DIGESTS_AND_REPORT",
+      "status": "CLOSED"
+    }
+  ],
+  "findingHistory": {
+    "freshReview": {
+      "p0": 0,
+      "p1": 0,
+      "p2": 0,
+      "status": "CLEAN"
+    },
+    "originalReview": {
+      "p0": 0,
+      "p1": 2,
+      "p2": 0,
+      "status": "CHANGES_REQUIRED"
+    }
+  },
+  "recordId": "poc-data-control-plane-independent-advisory-closure-20260818",
+  "recordType": "SANITIZED_IMMUTABLE_AI_ADVISORY_REVIEW_CLOSURE",
+  "review": {
+    "disposition": "CLEAN_NO_CHANGES_REQUIRED",
+    "formalReviewer": false,
+    "reviewDateTime": "2026-08-18T19:08:28+03:00",
+    "reviewerClass": "OPENAI_CODEX_AI_ADVISORY",
+    "timezone": "Europe/Moscow"
+  },
+  "reviewedTarget": {
+    "branch": "codex/poc-data-control-plane-setup",
+    "commit": "c9e750bb1ea0cbf0c85b95d96fe72603d759e335",
+    "fileCount": 4,
+    "parent": "f603034ff074c47762505f8b2be8f3ce195b59e4",
+    "pendingEvidence": {
+      "bytes": 7354,
+      "gitBlob": "5ab97a2bd85642d2425823d73d1f4c3683cd6689",
+      "independentAdvisoryReviewStatus": "PENDING",
+      "path": "docs/evidence/poc-data-001/control-plane-dry-run-local-evidence-stage0-v0.1.json",
+      "sha256": "sha256:e08dbf55479ee2dfbcb927d8d2590597f418993ed145fa8ec4aab858d85123eb"
+    },
+    "remediationCommitDelta": {
+      "additions": 229,
+      "deletions": 42,
+      "exactFiles": [
+        "docs/evidence/poc-data-001/control-plane-dry-run-local-evidence-stage0-v0.1.json",
+        "docs/stage0/DORA_MVP1_POC_DATA_CONTROL_PLANE.md",
+        "tools/poc_data_control_plane/src/main/java/com/monumentogram/dora/stage0/data/controlplane/PocDataControlPlane.java",
+        "tools/poc_data_control_plane/src/test/java/com/monumentogram/dora/stage0/data/controlplane/PocDataControlPlaneTest.java"
+      ],
+      "fileCount": 4
+    },
+    "tree": "5a7adfe50fcb68329fc5b19631a7573912a694dc"
+  },
+  "sourceClassification": {
+    "committedSanitizedRecord": true,
+    "localSessionPathIncluded": false,
+    "privateProcessDetailsIncluded": false,
+    "privateTranscriptContentIncluded": false,
+    "source": "INDEPENDENT_AI_EXACT_COMMIT_ADVISORY_REVIEW",
+    "sourceTranscriptCommitted": false
+  },
+  "verification": {
+    "assertions": 180,
+    "canonicalEvidenceJson": "PASS",
+    "contentFreeFaults": "PASS",
+    "exactFilePins": "PASS_6_INPUT_FILES",
+    "gradle": "PASS_197_TASKS",
+    "javaCompile": "PASS_RELEASE_17_XLINT_ALL_WERROR",
+    "localCli": "PASS_VALIDATE_AND_SYNTHETIC_DRY_RUN",
+    "networkCloudDeviceModelOrTrainingExecution": false,
+    "realDataUsed": false,
+    "scenarioCount": 15,
+    "testsRepeated": 10,
+    "verdict": "CLEAN"
+  }
+}
