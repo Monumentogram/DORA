@@ -1,0 +1,182 @@
+{
+  "authorities": [
+    "POC-DATA-CONTROL-PLANE-SETUP-AUTH-20260818-01",
+    "POC-DATA-CONTROL-PLANE-DISJOINT-FIRST-AUTH-20260818-01",
+    "POC-DATA-CONTROL-PLANE-PROFILE-RECONCILIATION-AUTH-20260818-02"
+  ],
+  "authoritySummary": {
+    "contentFreeEvidenceAllowed": true,
+    "controlPlanePreparationAllowed": true,
+    "localHostValidationAllowed": true,
+    "prohibitedRealCloudModelProductActionsAllowed": false,
+    "syntheticDryRunAllowed": true,
+    "syntheticManifestArtifactAllowed": true,
+    "transientSyntheticSentinelAllowed": true
+  },
+  "blockers": [
+    "DATA_CUSTODIAN_UNASSIGNED",
+    "CONTROLLED_NON_PUBLIC_STORAGE_NOT_CONFIGURED",
+    "CONSENT_PROCESS_PREPARED_NOT_OPERATIONAL",
+    "REAL_COLLECTION_NOT_AUTHORIZED",
+    "ACTUAL_CORPUS_COUNTS_SLICES_AND_SCRIPTS_NOT_FROZEN",
+    "ACTUAL_IMMUTABLE_CORPUS_MANIFEST_AND_SPLITS_ABSENT",
+    "ANNOTATION_AND_ADJUDICATION_GUIDES_ABSENT",
+    "CONTROLLED_STORAGE_ACCESS_AND_DELETION_DRY_RUN_NOT_RUN",
+    "EXTERNAL_DATA_RIGHTS_NOT_APPROVED",
+    "PRODUCTION_LEGAL_AND_SECURITY_APPROVAL_ABSENT"
+  ],
+  "checkpoint": {
+    "commit": "362a32a5ccee547180f0a777b6610c1329917b42",
+    "notPassOrValidationEvidence": true,
+    "purpose": "HISTORICAL_DUPLICATE_WRITER_OVERLAP_PRESERVATION",
+    "tree": "f5ce6039058442741124138749c3201735d272ab"
+  },
+  "commands": [
+    {
+      "command": "javac --release 17 -Xlint:all -Werror -d <os-temp> <main-source> <test-source>",
+      "exitCode": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "java -cp <os-temp> com.monumentogram.dora.stage0.data.controlplane.PocDataControlPlaneTest",
+      "exitCode": 0,
+      "result": "LOCAL_PASS POC_DATA_CONTROL_PLANE_TESTS scenarios=15 assertions=180 readiness=NOT_READY overall=NOT_RUN collection=NOT_AUTHORIZED"
+    },
+    {
+      "command": "java -cp <os-temp> com.monumentogram.dora.stage0.data.controlplane.PocDataControlPlane validate <manifest> <schema>",
+      "exitCode": 0,
+      "result": "LOCAL_PASS POC_DATA_CONTROL_PLANE_SYNTHETIC_ONLY readiness=NOT_READY overall=NOT_RUN collection=NOT_AUTHORIZED"
+    },
+    {
+      "command": "java -cp <os-temp> com.monumentogram.dora.stage0.data.controlplane.PocDataControlPlane dry-run <manifest> <schema>",
+      "exitCode": 0,
+      "result": "LOCAL_PASS POC_DATA_CONTROL_PLANE_SYNTHETIC_DRY_RUN scenarios=15 sentinel_deleted=true deletion_idempotent=true source_unchanged=true readiness=NOT_READY overall=NOT_RUN collection=NOT_AUTHORIZED"
+    },
+    {
+      "command": "android/gradlew.bat spotlessCheck detekt :app:testDebugUnitTest :core:common:testDebugUnitTest :core:model:testDebugUnitTest :core:testing:testDebugUnitTest :app:compileDebugAndroidTestKotlin :app:lintDebug :core:common:lintDebug :core:model:lintDebug :core:testing:lintDebug :app:assembleDebug",
+      "exitCode": 0,
+      "result": "BUILD SUCCESSFUL; 197 actionable tasks; 5 executed; 192 up-to-date"
+    }
+  ],
+  "deterministicResults": {
+    "assertions": 180,
+    "callerMutationIsolated": true,
+    "contentFreeDiagnostics": true,
+    "deletionBoundToOwnedHandle": true,
+    "deletionIdempotent": true,
+    "manifestSourceUnchanged": true,
+    "networkCloudDeviceOrModelExecution": false,
+    "repeatedRunByteIdentical": true,
+    "scenarioCount": 15,
+    "sentinelDeletedAndAbsent": true,
+    "syntheticNonSensitiveInputOnly": true,
+    "temporaryRootEmptyAfterRun": true,
+    "unownedSentinelPreserved": true
+  },
+  "environment": {
+    "java": "openjdk 17.0.10 LTS",
+    "javac": "17.0.10",
+    "networkRequired": false,
+    "platformClass": "WINDOWS_LOCAL_HOST",
+    "pythonInterpreterAvailable": false,
+    "thirdPartyRuntimeDependency": false
+  },
+  "filePins": [
+    {
+      "bytes": 17737,
+      "path": "docs/stage0/DORA_MVP1_POC_DATA_CONTROL_PLANE.md",
+      "sha256": "sha256:1d54b6eb41286c88042d05682682f061608d8d91e2bd54a8908d4220853cfff2"
+    },
+    {
+      "bytes": 22917,
+      "path": "docs/stage0/poc-data-control-plane-stage0-v0.1.schema.json",
+      "sha256": "sha256:b38ae362a5a804401878f56f139839dbd47009ec2fee59f1f05fdf08984b537e"
+    },
+    {
+      "bytes": 11427,
+      "path": "docs/evidence/poc-data-001/control-plane-synthetic-manifest-stage0-v0.1.json",
+      "sha256": "sha256:5ce259432d77c8876f6b7c5e8ab6981d4312c1fbc18cdf6c84a97023d450ec72"
+    },
+    {
+      "bytes": 67315,
+      "path": "tools/poc_data_control_plane/src/main/java/com/monumentogram/dora/stage0/data/controlplane/PocDataControlPlane.java",
+      "sha256": "sha256:4c4d247f7c76bf8845e0fc082bc661481080d0eb1aa5a264503075ef3f3c3ee1"
+    },
+    {
+      "bytes": 26607,
+      "path": "tools/poc_data_control_plane/src/test/java/com/monumentogram/dora/stage0/data/controlplane/PocDataControlPlaneTest.java",
+      "sha256": "sha256:f728935e9fb06191e0047e9f054560d18c2941b9b000eaee954af3e743e7557e"
+    },
+    {
+      "bytes": 19678,
+      "path": "docs/stage0/DORA_MVP1_DATASET_GOVERNANCE.md",
+      "sha256": "sha256:cf10ae2ddca0ffdbddfd717eeebfe9d5fd3a11013f2cef17f75776cfb45f6941"
+    }
+  ],
+  "independentAdvisoryReview": {
+    "appliesToCommit": "c9e750bb1ea0cbf0c85b95d96fe72603d759e335",
+    "appliesToTree": "5a7adfe50fcb68329fc5b19631a7573912a694dc",
+    "closureAuthority": "POC-DATA-CONTROL-PLANE-INDEPENDENT-ADVISORY-CLOSURE-AUTH-20260818-03",
+    "formalReviewer": false,
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "priorP1Closed": 2,
+    "reviewArtifact": {
+      "bytes": 4176,
+      "path": "docs/evidence/poc-data-001/reviews/poc-data-control-plane-independent-advisory-closure-20260818.json",
+      "sha256": "sha256:f4ad6d955d99746eee586dda7c4553acc1190ac7911329297fd8324c017d4ceb"
+    },
+    "reviewedPendingEvidenceBlob": "5ab97a2bd85642d2425823d73d1f4c3683cd6689",
+    "status": "CLEAN"
+  },
+  "limitations": [
+    "SYNTHETIC_METADATA_CONTROL_PLANE_ONLY",
+    "NO_CORPUS_SAMPLE_BYTES_OR_REAL_DATA",
+    "CUSTODIAN_UNASSIGNED",
+    "CONSENT_PREPARED_NOT_OPERATIONAL",
+    "NO_CONTROLLED_STORAGE_OR_CONTROLLED_STORE_DRY_RUN",
+    "NO_NETWORK_CLOUD_DEVICE_MODEL_OR_TRAINING",
+    "NO_PRODUCTION_SCHEMA_STORAGE_DEPENDENCY_OR_ADMISSION",
+    "NO_POC_DATA_READY_PASS_OR_BLOCKER_CLOSURE",
+    "NO_FORMAL_PRODUCT_LEGAL_SECURITY_OR_HUMAN_APPROVAL_CLAIM",
+    "NO_PUBLICATION_OR_MERGE_CLAIM",
+    "TERMS_DIGEST_IS_SYNTHETIC_PROFILE_METADATA_NOT_EXTERNAL_RIGHTS_APPROVAL"
+  ],
+  "profileReconciliation": {
+    "authority": "POC-DATA-CONTROL-PLANE-PROFILE-RECONCILIATION-AUTH-20260818-02",
+    "collisionObserved": true,
+    "disposition": "CURRENT_CLOSED_PROFILE_PRESERVED_NO_SCOPE_ELEVATION",
+    "frozenManifestSha256": "sha256:5ce259432d77c8876f6b7c5e8ab6981d4312c1fbc18cdf6c84a97023d450ec72",
+    "frozenSchemaSha256": "sha256:b38ae362a5a804401878f56f139839dbd47009ec2fee59f1f05fdf08984b537e",
+    "privateEnvironmentOrProcessDetailsIncluded": false
+  },
+  "recordId": "poc-data-control-plane-dry-run-local-evidence-stage0-v0.1",
+  "recordType": "LOCAL_SYNTHETIC_CONTROL_PLANE_VALIDATION_EVIDENCE",
+  "recordedAt": "2026-08-18T19:09:26+03:00",
+  "repositoryBase": {
+    "commit": "4a1dacacc52926ef3608a5952a762f00b8dafaa9",
+    "exactMainCiConclusion": "SUCCESS",
+    "exactMainCiRunId": 32142221783,
+    "tree": "23d0fe235acff4e4693b6eabcedad1e58b8d0816"
+  },
+  "repositoryChecks": {
+    "allowlist": "PASS_EXACT_7_FILES_BACKLOG_AND_STAGE_STATUS_UNTOUCHED",
+    "deviceInstrumentation": "NOT_IN_SCOPE_NO_ANDROID_BEHAVIOR_CHANGE",
+    "diffCheck": "PASS",
+    "documentedGradleBootstrap": "PASS",
+    "filePins": "PASS_6_INPUT_FILES",
+    "privacySecretPrivatePathAndRuntimeEdgeScans": "PASS",
+    "stage00PythonValidator": "NOT_RUN_NO_LOCAL_PYTHON_INTERPRETER_CI_REQUIRED",
+    "utf8LfNoBomOrNul": "PASS_7_FILES"
+  },
+  "result": "LOCAL_PASS_SYNTHETIC_CONTROL_PLANE_ONLY",
+  "status": {
+    "collectionAuthorization": "NOT_AUTHORIZED",
+    "controlledStoreDeletionDryRun": "NOT_RUN",
+    "custodian": "CUSTODIAN_UNASSIGNED",
+    "pocDataOverallResult": "NOT_RUN",
+    "pocDataReadiness": "NOT_READY",
+    "recommendation": "BLOCKED"
+  }
+}

@@ -1,0 +1,218 @@
+{
+  "schemaVersion": "off-i2-independent-advisory-review-v0.1",
+  "recordId": "OFF-I2-INTEGRATED-SYNTHETIC-HARNESS-INDEPENDENT-ADVISORY-REVIEW-20260818-01",
+  "recordDate": "2026-08-18",
+  "timezone": "Europe/Moscow",
+  "recordType": "SANITIZED_COMMITTED_AI_INDEPENDENT_ADVISORY_REVIEW",
+  "sourceClassification": {
+    "source": "PROJECT_COORDINATOR_RELAYED_AI_ADVISORY_TASK_REPORT",
+    "committedSanitizedRecord": true,
+    "sourceTranscriptCommitted": false,
+    "privateTranscriptContentIncluded": false,
+    "localSessionPathIncluded": false
+  },
+  "authorization": {
+    "taskAuthorizationId": "STAGE0-OFF-I2-HOST-CLOSURE-AUTH-20260818-01",
+    "sequencedCommitPlanId": "STAGE0-OFF-I2-HOST-CLOSURE-SEQUENCED-COMMIT-PLAN-20260818-01",
+    "standingTechnicalAuthorizationId": "DORA-TECHNICAL-CONTINUOUS-AUTONOMY-AUTH-20260818-01",
+    "reviewWasReadOnly": true,
+    "reviewArtifactIsAdditive": true,
+    "existingEvidenceModificationAllowed": false
+  },
+  "review": {
+    "reviewedAt": "2026-08-18T18:20:06.800+03:00",
+    "reviewerProduct": "OpenAI Codex",
+    "organization": "OpenAI",
+    "role": "INDEPENDENT_ADVISORY_IMPLEMENTATION_REVIEWER",
+    "formalReviewer": false,
+    "humanReviewer": false,
+    "signature": null,
+    "disposition": "CLEAN_NO_FURTHER_CHANGES_REQUIRED_FOR_EXACT_REVIEWED_SCOPE",
+    "minimalFix": null
+  },
+  "reviewedReconciliation": {
+    "repository": "Monumentogram/DORA",
+    "branch": "codex/poc-offline-i2-host-closure-reconciliation",
+    "commit": "edb48ee3bc884d3dcef12f62ec3b887793072066",
+    "tree": "a39d5c3c5a2c53d2bd65aefcfe5a55720faaf673",
+    "soleParent": "4a1dacacc52926ef3608a5952a762f00b8dafaa9",
+    "baseTree": "23d0fe235acff4e4693b6eabcedad1e58b8d0816",
+    "reviewedFileCount": 3,
+    "additions": 250,
+    "deletions": 5,
+    "companionReviewFileExcludedFromItsOwnReviewedCommit": true,
+    "finalAuthorizedFileCountAfterThisRecord": 4,
+    "sourceModified": false,
+    "testModified": false,
+    "workflowModified": false,
+    "existingEvidenceModified": false,
+    "reviewedFilePins": [
+      {
+        "path": "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+        "gitBlob": "7774990f4396b5925edaa0ac1d76d71442e15d7a",
+        "bytes": 27820,
+        "sha256": "c2ffbf0d8f1ea3ac587df15465a6683f3926d164b2fb4484f89538e758fa8872"
+      },
+      {
+        "path": "docs/DORA_MVP1_STAGE_STATUS.md",
+        "gitBlob": "d20bfea949d608ab191f6a56ea92207d1195adc8",
+        "bytes": 40063,
+        "sha256": "f5de47fe12b927f7e349bc10944fa71f108e8c66bc405f54e839f63a3f7aac47"
+      },
+      {
+        "path": "docs/evidence/stage0-host-oracle-publication-closure-2026-08-18.json",
+        "gitBlob": "5fa2f4b6ae24b10e7ad3aa627c5771267e337dd9",
+        "bytes": 9746,
+        "sha256": "d11aba83be1fe2664eda3ae847386967239b4ad09280bb2a5bd7002fed70d1d8"
+      }
+    ]
+  },
+  "reviewedImplementation": {
+    "pocId": "POC-OFFLINE-001",
+    "pullRequest": 37,
+    "pullRequestUrl": "https://github.com/Monumentogram/DORA/pull/37",
+    "sourceHead": "2eb34bbd64a19d6ff7f032e84498c56573658776",
+    "sourceTree": "ced727ac77f6e10270d88ca69e4f815ec81f9b3b",
+    "sourceCommitSignature": "UNSIGNED",
+    "protectedSquashMergeCommit": "223f31d87355596c8cb36576d2d94366eae9d620",
+    "protectedSquashMergeTree": "ced727ac77f6e10270d88ca69e4f815ec81f9b3b",
+    "protectedSquashMergeSoleParent": "ca817b07651a8524792ccd3af7af3dff75612730",
+    "protectedSquashMergeSignature": "VERIFIED_VALID",
+    "sourceTreePreserved": true,
+    "implementationPins": [
+      {
+        "path": "tools/offline_i2_integrated_harness/src/main/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarness.java",
+        "gitBlob": "058dbdc5ad36f9ec0df40515fb996403366cbb4b",
+        "bytes": 47515,
+        "lines": 1378,
+        "sha256": "74a775220f58fedcb51fc3eeac3d6d0e652377e19e1597269105c5a432e25ac2"
+      },
+      {
+        "path": "tools/offline_i2_integrated_harness/src/test/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarnessTest.java",
+        "gitBlob": "222439e287832bf4a4478b515d062d358c498606",
+        "bytes": 41310,
+        "lines": 982,
+        "sha256": "fa307e3fdc1c03a2ebbe9b7a916f9523374384342c04748bf406bfb7ead07383"
+      },
+      {
+        "path": "docs/evidence/poc-offline-001/i2-integrated-synthetic-harness-evidence-stage0-v0.1.json",
+        "gitBlob": "0e372af6c27c27fc7f75fcfb9b5b8f953574a027",
+        "bytes": 20853,
+        "sha256": "bd4b8cfbe96f05192eb0e37d4a1dfa4758009abb91a2cc95d8a991ac49c75e5c"
+      }
+    ]
+  },
+  "priorFindingClosure": [
+    {
+      "findingClass": "QUEUE_INPUT_LIFECYCLE_AND_TRACE_BINDING",
+      "originalSeverity": "P1",
+      "status": "CLOSED_IN_EXACT_REVIEWED_SOURCE",
+      "verifiedProperties": [
+        "canonical queue input is bound to conversation and export lineage",
+        "queue state counters and replay marker are bound to the exact action index",
+        "full deterministic replay binds action outcome pre-state post-state queue identity digests and terminal state"
+      ]
+    },
+    {
+      "findingClass": "RUN_RESULT_ENVELOPE_BINDING",
+      "originalSeverity": "P1",
+      "status": "CLOSED_IN_EXACT_REVIEWED_SOURCE",
+      "verifiedProperties": [
+        "declared profile equals final state profile",
+        "all six I1 witnesses equal the canonical witness set",
+        "summary digest is recomputed from the bound result envelope"
+      ]
+    }
+  ],
+  "verification": {
+    "exactHeadHostCi": {
+      "runId": 32030762956,
+      "headCommit": "2eb34bbd64a19d6ff7f032e84498c56573658776",
+      "attempt": 1,
+      "conclusion": "success"
+    },
+    "exactHeadAndroidCi": {
+      "runId": 32030763061,
+      "headCommit": "2eb34bbd64a19d6ff7f032e84498c56573658776",
+      "attempt": 1,
+      "conclusion": "success",
+      "classification": "REPOSITORY_REGRESSION_GATE_NOT_OFFLINE_DEVICE_EVIDENCE"
+    },
+    "exactMainAndroidCi": {
+      "runId": 32033055431,
+      "headCommit": "223f31d87355596c8cb36576d2d94366eae9d620",
+      "attempt": 1,
+      "conclusion": "success"
+    },
+    "independentLocalChecks": {
+      "javacRelease17XlintAllWerror": "PASS",
+      "offlineI1Regression": "PASS",
+      "offlineI2DeterministicRuns": 2,
+      "offlineI2StrictEaXverifyAll": "PASS",
+      "jdepsModuleSet": [
+        "java.base"
+      ],
+      "bytecodeMajorVersion": 61,
+      "forbiddenApiHits": 0
+    },
+    "publicationIndexChecks": {
+      "pullRequests": [
+        36,
+        32,
+        33,
+        34,
+        35,
+        37
+      ],
+      "allSourceTreesEqualProtectedSquashMergeTrees": true,
+      "allMergeSignaturesVerifiedValid": true,
+      "allRecordedCiRunsExactAndSuccessful": true,
+      "allEvidenceBlobAndBytePinsExact": true
+    }
+  },
+  "findingSummary": {
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "newActionableFindings": 0,
+    "priorP1FindingsClosed": 2
+  },
+  "backlogTruth": {
+    "DONE": 27,
+    "BLOCKED": 18,
+    "TODO": 9,
+    "READY": 0,
+    "pocOfflineStatus": "TODO",
+    "pocOfflineReadiness": "NOT_READY",
+    "pocOfflineExecution": "NOT_RUN",
+    "pocOfflineAuthorization": "NOT_AUTHORIZED",
+    "offlineReadinessBlockers": 10,
+    "offlineReadinessBlockersClosed": 0
+  },
+  "residualLimits": [
+    "This is a non-formal AI advisory review and not a human Legal or Security review.",
+    "The reviewed implementation is a pure-host synthetic in-memory semantics harness, not product, device, emulator, network, model, GMS, provider, VPN, storage-durability or real-data evidence.",
+    "The historical implementation evidence remains immutable and its pre-review snapshot fields are not rewritten.",
+    "No inherited Offline readiness blocker is closed and no PoC PASS, readiness, execution or authorization state is elevated.",
+    "This review does not admit any dependency, model, dataset, schema, production behavior or release.",
+    "This review does not itself authorize Ready or merge."
+  ],
+  "privacy": {
+    "repositoryOwnedSyntheticEvidenceOnly": true,
+    "rawAudioTranscriptOrMeetingContentPresent": false,
+    "personalDataPresent": false,
+    "credentialTokenOrSecretPresent": false,
+    "absoluteLocalPathPresent": false,
+    "privateReviewTranscriptPresent": false
+  },
+  "result": {
+    "disposition": "CLEAN_EXACT_SCOPE_NO_FURTHER_CHANGES_REQUIRED",
+    "pocTruth": "TODO_NOT_READY_NOT_RUN_NOT_AUTHORIZED",
+    "reviewClosesImplementationAdvisoryOnly": true,
+    "pocPassClaimed": false,
+    "readinessClaimed": false,
+    "deviceOrNetworkEvidenceClaimed": false,
+    "legalOrSecurityApprovalClaimed": false,
+    "productionAdmissionClaimed": false
+  }
+}

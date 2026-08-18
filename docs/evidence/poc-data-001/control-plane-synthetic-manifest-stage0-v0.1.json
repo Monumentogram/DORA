@@ -1,0 +1,395 @@
+{
+  "authorityFlags": {
+    "cloudTransferAllowed": false,
+    "consentProcessOperational": false,
+    "contentFreeEvidenceAllowed": true,
+    "controlPlanePreparationAllowed": true,
+    "controlledStorageConfigured": false,
+    "custodianAssigned": false,
+    "dependencyAdmissionAllowed": false,
+    "derivedSensitiveDataAllowed": false,
+    "deviceExecutionAllowed": false,
+    "humanReviewAllowed": false,
+    "localHostValidationAllowed": true,
+    "mergeAllowedByThisPackage": false,
+    "modelImprovementAllowed": false,
+    "modelInferenceAllowed": false,
+    "networkExecutionAllowed": false,
+    "pocDataPassAllowed": false,
+    "pocDataReadyAllowed": false,
+    "productionAdmissionAllowed": false,
+    "productionSchemaAllowed": false,
+    "productionStorageAllowed": false,
+    "publicationAllowedByThisPackage": false,
+    "purposeRecordedCollectionAllowed": false,
+    "rawAudioAllowed": false,
+    "realMeetingDataAllowed": false,
+    "realPeopleAllowed": false,
+    "syntheticDryRunAllowed": true,
+    "syntheticManifestArtifactAllowed": true,
+    "trainingAllowed": false,
+    "transientSyntheticSentinelAllowed": true
+  },
+  "blockers": [
+    "DATA_CUSTODIAN_UNASSIGNED",
+    "CONTROLLED_NON_PUBLIC_STORAGE_NOT_CONFIGURED",
+    "CONSENT_PROCESS_PREPARED_NOT_OPERATIONAL",
+    "REAL_COLLECTION_NOT_AUTHORIZED",
+    "ACTUAL_CORPUS_COUNTS_SLICES_AND_SCRIPTS_NOT_FROZEN",
+    "ACTUAL_IMMUTABLE_CORPUS_MANIFEST_AND_SPLITS_ABSENT",
+    "ANNOTATION_AND_ADJUDICATION_GUIDES_ABSENT",
+    "CONTROLLED_STORAGE_ACCESS_AND_DELETION_DRY_RUN_NOT_RUN",
+    "EXTERNAL_DATA_RIGHTS_NOT_APPROVED",
+    "PRODUCTION_LEGAL_AND_SECURITY_APPROVAL_ABSENT"
+  ],
+  "collectionPlan": {
+    "clockSource": "FROZEN_LITERAL_NO_WALL_CLOCK_READ",
+    "dataClasses": [
+      "GENERATED_TEXT_METADATA",
+      "SYNTHETIC_SIGNAL_METADATA"
+    ],
+    "frozenAt": "2026-08-18T12:00:00Z",
+    "hypothesis": "FAIL_CLOSED_SYNTHETIC_CONTROL_PLANE_IS_DETERMINISTIC",
+    "manifestRowCount": 4,
+    "meetingCount": 0,
+    "modelExecutionEnabled": false,
+    "networkEnabled": false,
+    "nonGoals": [
+      "CORPUS_QUALITY",
+      "CONSENT_USABILITY",
+      "ACOUSTIC_COVERAGE",
+      "MODEL_QUALITY",
+      "DEVICE_BEHAVIOR",
+      "CONTROLLED_STORE_OPERATIONS",
+      "PRODUCTION_BEHAVIOR"
+    ],
+    "participantCount": 0,
+    "planId": "poc-data-synthetic-control-plane-plan-stage0-v0.1",
+    "seed": 2026081801,
+    "state": "AUTHORIZED_SYNTHETIC_DRY_RUN_ONLY",
+    "storageClasses": [
+      "PUBLIC_REPOSITORY_MANIFEST_ONLY",
+      "VALIDATED_OS_TEMP_SENTINEL_ONLY"
+    ],
+    "voiceCount": 0
+  },
+  "consentProcess": {
+    "consentReference": "not-applicable",
+    "finalLegalCopyApproved": false,
+    "processId": "poc-data-consent-process-stage0-v0.1",
+    "purposeRecordedConsentUsable": false,
+    "realConsentRecordCount": 0,
+    "requirements": [
+      "OPERATOR_AND_CONTACT",
+      "NAMED_POC_AND_PURPOSE",
+      "SCRIPT_AND_INTENTIONAL_RECORDING",
+      "DERIVATIVES_AND_METRICS",
+      "RAW_AND_DERIVED_ACCESS_ROLES",
+      "HUMAN_REVIEW_DISCLOSURE",
+      "STORAGE_ENCRYPTION_RETENTION",
+      "PROVIDER_ARTIFACT_REGION_OR_NONE",
+      "WITHDRAWAL_AND_AGGREGATE_LIMIT",
+      "NO_TRAINING_OR_MODEL_IMPROVEMENT",
+      "VOLUNTARY_NO_PRODUCT_PENALTY",
+      "DELETION_EVIDENCE_AND_BACKUP_EXPIRY"
+    ],
+    "state": "PREPARED_NOT_OPERATIONAL",
+    "stateMachine": [
+      "DRAFT",
+      "REVIEW_REQUIRED",
+      "APPROVED_FOR_NAMED_PLAN",
+      "GRANTED",
+      "REVOKED",
+      "EXPIRED"
+    ]
+  },
+  "contractId": "poc-data-control-plane-stage0-v0.1",
+  "controlRecords": [
+    {
+      "accessRoles": [
+        "SYNTHETIC_DRY_RUN_OPERATOR",
+        "SECURITY_AUDITOR",
+        "EVALUATOR"
+      ],
+      "containsPersonalData": false,
+      "containsSampleBytes": false,
+      "containsTranscriptOrSourceExcerpt": false,
+      "contentSha256": null,
+      "createdAt": "2026-08-18T12:00:00Z",
+      "dataClass": "GENERATED_TEXT_METADATA",
+      "deletionState": "ACTIVE",
+      "evidenceLocator": null,
+      "expiresAt": "2026-08-18T12:30:00Z",
+      "note": "ROOT_SYNTHETIC_CONTROL_ENTRY",
+      "parentRecordId": null,
+      "recordId": "control-1111111111111111",
+      "split": "development",
+      "storageClass": "MANIFEST_ONLY_NO_SAMPLE_BYTES"
+    },
+    {
+      "accessRoles": [
+        "SYNTHETIC_DRY_RUN_OPERATOR",
+        "SECURITY_AUDITOR"
+      ],
+      "containsPersonalData": false,
+      "containsSampleBytes": false,
+      "containsTranscriptOrSourceExcerpt": false,
+      "contentSha256": null,
+      "createdAt": "2026-08-18T12:01:00Z",
+      "dataClass": "GENERATED_TEXT_METADATA",
+      "deletionState": "ACTIVE",
+      "evidenceLocator": null,
+      "expiresAt": "2026-08-18T12:20:00Z",
+      "note": "DERIVED_SYNTHETIC_CONTROL_ENTRY",
+      "parentRecordId": "control-1111111111111111",
+      "recordId": "control-2222222222222222",
+      "split": "development",
+      "storageClass": "MANIFEST_ONLY_NO_SAMPLE_BYTES"
+    },
+    {
+      "accessRoles": [
+        "SYNTHETIC_DRY_RUN_OPERATOR"
+      ],
+      "containsPersonalData": false,
+      "containsSampleBytes": false,
+      "containsTranscriptOrSourceExcerpt": false,
+      "contentSha256": null,
+      "createdAt": "2026-08-18T12:00:00Z",
+      "dataClass": "SYNTHETIC_SIGNAL_METADATA",
+      "deletionState": "DELETED",
+      "evidenceLocator": null,
+      "expiresAt": "2026-08-18T12:10:00Z",
+      "note": "SYNTHETIC_DELETION_TARGET",
+      "parentRecordId": null,
+      "recordId": "control-3333333333333333",
+      "split": "test",
+      "storageClass": "MANIFEST_ONLY_NO_SAMPLE_BYTES"
+    },
+    {
+      "accessRoles": [
+        "SECURITY_AUDITOR",
+        "EVALUATOR"
+      ],
+      "containsPersonalData": false,
+      "containsSampleBytes": false,
+      "containsTranscriptOrSourceExcerpt": false,
+      "contentSha256": null,
+      "createdAt": "2026-08-18T12:00:00Z",
+      "dataClass": "GENERATED_TEXT_METADATA",
+      "deletionState": "ACTIVE",
+      "evidenceLocator": null,
+      "expiresAt": "2026-08-18T12:15:00Z",
+      "note": "PROTECTED_EVALUATION_CONTROL_ENTRY",
+      "parentRecordId": null,
+      "recordId": "control-4444444444444444",
+      "split": "evaluation",
+      "storageClass": "MANIFEST_ONLY_NO_SAMPLE_BYTES"
+    }
+  ],
+  "dataPolicy": {
+    "allowedClasses": [
+      "GENERATED_TEXT_METADATA",
+      "SYNTHETIC_SIGNAL_METADATA"
+    ],
+    "allowedUses": [
+      "CONTROL_PLANE_VALIDATION",
+      "TRANSIENT_SENTINEL_DELETION_DRY_RUN"
+    ],
+    "excludedUses": [
+      "MODEL_TRAINING",
+      "FINE_TUNING",
+      "DISTILLATION",
+      "EMBEDDING_ENROLLMENT",
+      "UNDECLARED_HUMAN_REVIEW",
+      "PROVIDER_QUALITY_IMPROVEMENT",
+      "PUBLIC_RELEASE_REDISTRIBUTION_OR_PUBLICATION",
+      "MARKETING_OR_DEMO",
+      "BIOMETRIC_IDENTITY",
+      "CROSS_CONVERSATION_SPEAKER_RECOGNITION",
+      "TRAINING_EXAMPLE_SELECTION_OUTSIDE_NAMED_POC",
+      "HARD_EXAMPLE_RETENTION_BEYOND_APPROVED_PERIOD",
+      "CROSS_PROJECT_OR_COMPANY_REUSE"
+    ],
+    "forbiddenClasses": [
+      "PURPOSE_RECORDED",
+      "PUBLIC_LICENSED",
+      "REAL_MEETING",
+      "DERIVED_SENSITIVE"
+    ],
+    "licenseId": "DORA_ORIGINAL_SYNTHETIC_CONTROL_METADATA_ONLY",
+    "publicRedistributionAllowed": false,
+    "termsDigest": "sha256:26726af9ea7a196b5aa940d358ccdc45a8566b01e9588ecf2af71f9e3f8ade0d",
+    "trainingAllowed": false
+  },
+  "deletionLedger": [
+    {
+      "affectedScopes": [
+        "RAW_AND_TRANSFORMED_COPIES",
+        "TRANSCRIPTS_ANNOTATIONS_FEATURES_NOTES",
+        "CACHES_EXPORTS_DOWNLOADS",
+        "SPLIT_INDEX_AND_PRIVATE_MANIFESTS",
+        "CONTROLLED_BACKUPS",
+        "PROVIDER_COPIES",
+        "PARTICIPANT_MAPPING_AND_ACCESS_GRANTS",
+        "DERIVED_VARIANTS"
+      ],
+      "backupExpiresAt": "2026-08-18T12:02:00Z",
+      "completedAt": "2026-08-18T12:02:00Z",
+      "eventId": "delete-3333333333333333",
+      "outcome": "DELETED_METADATA_ONLY",
+      "recordId": "control-3333333333333333",
+      "requestedAt": "2026-08-18T12:01:00Z",
+      "trigger": "SYNTHETIC_DRY_RUN",
+      "unresolvedFailures": []
+    }
+  ],
+  "dryRunMatrix": [
+    {
+      "expected": "ALLOW",
+      "id": "DATA-CP-001"
+    },
+    {
+      "expected": "ALLOW",
+      "id": "DATA-CP-002"
+    },
+    {
+      "expected": "ALLOW",
+      "id": "DATA-CP-003"
+    },
+    {
+      "expected": "ALLOW",
+      "id": "DATA-CP-004"
+    },
+    {
+      "expected": "ALLOW",
+      "id": "DATA-CP-005"
+    },
+    {
+      "expected": "DENY",
+      "id": "DATA-CP-006"
+    },
+    {
+      "expected": "DENY",
+      "id": "DATA-CP-007"
+    },
+    {
+      "expected": "DENY",
+      "id": "DATA-CP-008"
+    },
+    {
+      "expected": "DENY",
+      "id": "DATA-CP-009"
+    },
+    {
+      "expected": "ALLOW",
+      "id": "DATA-CP-010"
+    },
+    {
+      "expected": "ALLOW",
+      "id": "DATA-CP-011"
+    },
+    {
+      "expected": "ALLOW",
+      "id": "DATA-CP-012"
+    },
+    {
+      "expected": "REJECT",
+      "id": "DATA-CP-013"
+    },
+    {
+      "expected": "REJECT",
+      "id": "DATA-CP-014"
+    },
+    {
+      "expected": "REJECT",
+      "id": "DATA-CP-015"
+    }
+  ],
+  "limitations": [
+    "CONTROL_PLANE_PREPARATION_ONLY",
+    "CUSTODIAN_UNASSIGNED",
+    "CONSENT_NOT_OPERATIONAL",
+    "CONTROLLED_STORAGE_NOT_CONFIGURED",
+    "SYNTHETIC_METADATA_ONLY",
+    "NO_SAMPLE_BYTES",
+    "NO_CORPUS_OR_DATASET_CREATED",
+    "NO_POC_DATA_READINESS_PASS_OR_EXECUTION",
+    "NO_REAL_PUBLIC_PRIVATE_OR_DERIVED_DATA",
+    "NO_NETWORK_CLOUD_MODEL_OR_TRAINING",
+    "NO_PRODUCTION_ADMISSION"
+  ],
+  "manifestId": "control-manifest-0123456789abcdef",
+  "privacyBoundary": {
+    "containsConsentForm": false,
+    "containsDeviceOrAccountIdentifier": false,
+    "containsNetworkEndpoint": false,
+    "containsParticipantMapping": false,
+    "containsPersonalData": false,
+    "containsPrivateLocator": false,
+    "containsPublicLinkableContentDigest": false,
+    "containsRawContent": false,
+    "containsSignedUrl": false,
+    "containsTranscriptOrSourceExcerpt": false,
+    "sampleBytesPresent": false
+  },
+  "rbac": {
+    "assignments": [
+      {
+        "principal": "BUILT_IN_TEST_HARNESS_ONLY",
+        "role": "SYNTHETIC_DRY_RUN_OPERATOR"
+      }
+    ],
+    "custodianAssignment": {
+      "principal": null,
+      "state": "CUSTODIAN_UNASSIGNED"
+    },
+    "mode": "DENY_BY_DEFAULT",
+    "roleRules": [
+      {
+        "actions": [
+          "READ_PUBLIC_MANIFEST",
+          "CREATE_TRANSIENT_SYNTHETIC_SENTINEL",
+          "DELETE_TRANSIENT_SYNTHETIC_SENTINEL",
+          "EMIT_CONTENT_FREE_SUMMARY"
+        ],
+        "role": "SYNTHETIC_DRY_RUN_OPERATOR"
+      },
+      {
+        "actions": [
+          "READ_PUBLIC_MANIFEST",
+          "READ_CONTENT_FREE_EVIDENCE"
+        ],
+        "role": "SECURITY_AUDITOR"
+      },
+      {
+        "actions": [
+          "READ_PUBLIC_MANIFEST"
+        ],
+        "role": "EVALUATOR"
+      },
+      {
+        "actions": [],
+        "role": "COLLECTOR"
+      },
+      {
+        "actions": [],
+        "role": "ANNOTATOR"
+      },
+      {
+        "actions": [],
+        "role": "CUSTODIAN"
+      }
+    ]
+  },
+  "retention": {
+    "controlledStoreDeletionDryRunCompleted": false,
+    "physicalOverwritePromised": false,
+    "purposeRecordedDerivedMaxDays": 180,
+    "purposeRecordedRawMaxDays": 90,
+    "shorterMandatoryTermWins": true,
+    "syntheticTempDeletionDryRunRequired": true,
+    "transientSentinelRetention": "DELETE_BEFORE_OPERATION_RETURNS",
+    "withdrawalCompletionMaxDays": 30
+  },
+  "schemaVersion": 1
+}
