@@ -1,0 +1,342 @@
+{
+  "schemaVersion": "poc-offline-i3-static-call-ledger-local-evidence-stage0-v0.1",
+  "recordId": "OFF-I3-STATIC-CALL-LEDGER-LOCAL-EVIDENCE-001",
+  "recordDate": "2026-08-18",
+  "recordedAt": "2026-08-18T22:26:08.366+03:00",
+  "timezone": "Europe/Moscow",
+  "disposition": "LOCAL_STATIC_STRUCTURE_CHECKS_PASS_INDEPENDENT_EXACT_HEAD_REVIEW_REQUIRED",
+  "artifactState": "LOCAL_THREE_FILE_EVIDENCE_COMPLETE_NOT_PUBLISHED",
+  "authorization": {
+    "authorizationId": "POC-OFFLINE-001-I3-STATIC-CALL-LEDGER-AUTH-20260818-01",
+    "standingTechnicalAuthorizationId": "DORA-TECHNICAL-CONTINUOUS-AUTONOMY-AUTH-20260818-01",
+    "baseCommit": "881c5bfbb84cedfc2d267ca8f8255c456b3908b8",
+    "baseTree": "0366351b73fd68adc713b22b587926330aed4bab",
+    "branch": "codex/poc-offline-i3-static-call-ledger",
+    "allowedTrackedFileCount": 3,
+    "localImplementationAllowed": true,
+    "localSyntheticValidationAllowed": true,
+    "commitAllowed": true,
+    "pushAllowedBeforeIndependentReview": false,
+    "pullRequestAllowedBeforeIndependentReview": false,
+    "readyOrMergeAllowed": false
+  },
+  "backlogTruth": {
+    "id": "POC-OFFLINE-001",
+    "status": "TODO",
+    "readiness": "NOT_READY",
+    "integratedExecution": "NOT_RUN",
+    "authorization": "NOT_AUTHORIZED",
+    "pocTruth": "TODO_NOT_READY_NOT_RUN_NOT_AUTHORIZED"
+  },
+  "fixtureContract": {
+    "schema": "poc-offline-i3-static-call-ledger-fixture-v0.1",
+    "contractId": "poc-offline-readiness-stage0-v0.1",
+    "fixtureClass": "REPOSITORY_OWNED_SYNTHETIC_CONTENT_FREE_STATIC_SCHEMA_CANARY",
+    "canonicalFixtureSha256": "1aa27452ebed89a2b12a3d9a4c59644abe9d73bd9042d21cc325b37b0df92fa8",
+    "canonicalValidResultSha256": "d58d2a2fbf5ac5f8180b18326ab1139d042f28d59c64daa7ee8b0bf88cd3bbc9",
+    "syntheticConsentProfileDigest": "913f222095eb3894f928956d2e0cd14d19d8c4dbe9c5332028b59ce3330b19dd",
+    "syntheticConsentProfileDigestPreimageClass": "CONTRACT_ID_LF_OFF_I3_SYNTHETIC_CONSENT_PROFILE_V1_LF_STATIC_CONTENT_FREE_PROFILE",
+    "canonicalEncoding": "LENGTH_FRAMED_UTF8_LF_FIELDS_WITH_DECLARED_FIXTURE_HASH_EXCLUDED_FROM_ITS_PREIMAGE",
+    "networkCallLedgerFields": [
+      "sequence",
+      "windowClass",
+      "calibrationEventId",
+      "attributedToMeasuredScenario",
+      "appUidClass",
+      "processClass",
+      "componentClass",
+      "scenarioId",
+      "actionId",
+      "callKind",
+      "destinationClass",
+      "endpointId",
+      "consentProfileDigest",
+      "decision",
+      "outcome",
+      "retryState",
+      "monotonicOffsetMs"
+    ],
+    "monitorCalibrationFields": [
+      "method",
+      "attributionBoundary",
+      "coverageStart",
+      "coverageEnd",
+      "coverageGaps",
+      "perCallKindCoverage",
+      "preRunCanaryObserved",
+      "postRunCanaryObserved",
+      "rawMonitorEventCount",
+      "excludedCalibrationEventCount",
+      "measuredDoraForbiddenAttemptCount"
+    ],
+    "networkCallKinds": [
+      "DNS",
+      "SOCKET",
+      "HTTP",
+      "GMS_BIND",
+      "ACCOUNT_AUTH",
+      "REMOTE_CONFIG",
+      "ANALYTICS",
+      "PROVIDER"
+    ],
+    "rowContract": {
+      "staticRowCount": 16,
+      "measuredRowCount": 0,
+      "order": "CALIBRATION_PRE_CALL_KIND_ORDER_THEN_CALIBRATION_POST_CALL_KIND_ORDER",
+      "rowsPerCallKind": {
+        "preStaticRows": 1,
+        "postStaticRows": 1,
+        "measuredRows": 0
+      },
+      "attributedToMeasuredScenario": false,
+      "observationClass": "STRUCTURE_ONLY_NOT_OBSERVED",
+      "runtimeZeroCallClaimAllowed": false
+    }
+  },
+  "artifactPins": [
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_OFFLINE_READINESS_CONTRACT_STAGE0_V0_1.md",
+      "bytes": 45377,
+      "sha256": "9a905eabbcd75601fc598cccc001dcff56a5b6b65eeb936f2a9c4602d658682a"
+    },
+    {
+      "path": "docs/evidence/poc-offline-001/readiness-contract-stage0-v0.1.json",
+      "bytes": 58124,
+      "sha256": "a564cf9031f610006327c374baff82983de2ea9ba4b6c9d13d6185e7967a6dae"
+    },
+    {
+      "path": "docs/evidence/poc-offline-001/i1-host-oracle-implementation-evidence-stage0-v0.1.json",
+      "bytes": 15672,
+      "sha256": "27168571abe76fc76e958ca984217b5ff58f6433d7790e36a72d065815de876d"
+    },
+    {
+      "path": "tools/offline_i1_oracle/src/main/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1Oracle.java",
+      "bytes": 213295,
+      "sha256": "2eb3a80716fdc25abe7300552c8ba95f4deabe68e7c8d5d42dcf9d5cb13235bf"
+    },
+    {
+      "path": "tools/offline_i1_oracle/src/test/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1OracleTest.java",
+      "bytes": 244685,
+      "sha256": "235be2b6d3c646ce9c0910369de99847a149d226159ab1f8a1785e074572b89c"
+    },
+    {
+      "path": "docs/evidence/poc-offline-001/i2-integrated-synthetic-harness-evidence-stage0-v0.1.json",
+      "bytes": 20853,
+      "sha256": "bd4b8cfbe96f05192eb0e37d4a1dfa4758009abb91a2cc95d8a991ac49c75e5c"
+    },
+    {
+      "path": "tools/offline_i2_integrated_harness/src/main/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarness.java",
+      "bytes": 47515,
+      "sha256": "74a775220f58fedcb51fc3eeac3d6d0e652377e19e1597269105c5a432e25ac2"
+    },
+    {
+      "path": "tools/offline_i2_integrated_harness/src/test/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarnessTest.java",
+      "bytes": 41310,
+      "sha256": "fa307e3fdc1c03a2ebbe9b7a916f9523374384342c04748bf406bfb7ead07383"
+    },
+    {
+      "path": "docs/evidence/poc-offline-001/reviews/off-i2-integrated-synthetic-harness-independent-advisory-review-2026-08-18.json",
+      "bytes": 8566,
+      "sha256": "75e1b8c91ed9e5a4b04b569a74b19574eeac60b81d34ddf50c30e9697f95a922"
+    },
+    {
+      "path": "docs/evidence/stage0-host-oracle-publication-closure-2026-08-18.json",
+      "bytes": 9746,
+      "sha256": "d11aba83be1fe2664eda3ae847386967239b4ad09280bb2a5bd7002fed70d1d8"
+    }
+  ],
+  "implementationPins": [
+    {
+      "kind": "I3_MAIN",
+      "path": "tools/offline_i3_static_call_ledger/src/main/java/com/monumentogram/dora/stage0/offline/i3/OfflineI3StaticCallLedger.java",
+      "bytes": 35653,
+      "lines": 896,
+      "sha256": "87fb3da93df1a43b12aea79fcc95cbd6e688025f9cbd79f7e6ea9b726373dcac"
+    },
+    {
+      "kind": "I3_TEST",
+      "path": "tools/offline_i3_static_call_ledger/src/test/java/com/monumentogram/dora/stage0/offline/i3/OfflineI3StaticCallLedgerTest.java",
+      "bytes": 30625,
+      "lines": 696,
+      "sha256": "eac83efbb829c815ef26fa9a35c92f5109e99418dd520719ed3732982b2398b8"
+    }
+  ],
+  "implementationBoundary": {
+    "package": "com.monumentogram.dora.stage0.offline.i3",
+    "language": "Java",
+    "languageLevel": 17,
+    "sourceFileCount": 2,
+    "evidenceFileCount": 1,
+    "dependencyBoundary": "JAVA_STANDARD_LIBRARY_ONLY",
+    "bytecodeModuleDependencies": [
+      "java.base"
+    ],
+    "filesystemAccess": false,
+    "networkSocketOrDnsAccess": false,
+    "wallClockRandomEnvironmentProcessThreadOrReflectionAccess": false,
+    "androidOrGmsAccess": false,
+    "modelProviderOrProductIntegration": false,
+    "workflowChanged": false,
+    "dependencyAdded": false,
+    "backlogOrStageStatusChanged": false
+  },
+  "failClosedCoverage": {
+    "validationOrder": "TOP_LEVEL_THEN_SCHEMA_CATALOGS_PINS_READINESS_BLOCKERS_ROWS_DECLARED_HASH_RESULT_KNOWN_ANSWER",
+    "schemaFamilies": [
+      "NETWORK_CALL_LEDGER_FIELDS",
+      "MONITOR_CALIBRATION_FIELDS",
+      "NETWORK_CALL_KINDS"
+    ],
+    "rejectionClasses": [
+      "MISSING",
+      "EXTRA",
+      "DUPLICATE",
+      "ORDER_STALE",
+      "HASH_STALE",
+      "BASE_OR_CONTRACT_STALE",
+      "MALFORMED_OR_UNKNOWN_CATALOG_TOKEN",
+      "READINESS_OR_BLOCKER_STATE_STALE"
+    ],
+    "candidateMutationAllowed": false,
+    "acceptedResultMutationAllowed": false,
+    "failedCandidateCarriesObservedRows": false,
+    "failedCandidateCanElevateProof": false
+  },
+  "readinessBlockers": [
+    {
+      "id": "OFF-RDY-01",
+      "state": "BLOCKED"
+    },
+    {
+      "id": "OFF-RDY-02",
+      "state": "BLOCKED"
+    },
+    {
+      "id": "OFF-RDY-03",
+      "state": "BLOCKED"
+    },
+    {
+      "id": "OFF-RDY-04",
+      "state": "BLOCKED"
+    },
+    {
+      "id": "OFF-RDY-05",
+      "state": "BLOCKED"
+    },
+    {
+      "id": "OFF-RDY-06",
+      "state": "BLOCKED"
+    },
+    {
+      "id": "OFF-RDY-07",
+      "state": "BLOCKED"
+    },
+    {
+      "id": "OFF-RDY-08",
+      "state": "BLOCKED"
+    },
+    {
+      "id": "OFF-RDY-09",
+      "state": "BLOCKED"
+    },
+    {
+      "id": "OFF-RDY-10",
+      "state": "BLOCKED"
+    }
+  ],
+  "localValidation": {
+    "toolchain": {
+      "runtime": "Microsoft OpenJDK 17.0.10+7-LTS",
+      "javaSha256": "98fd4a0eec7fa39abbc2b3f55007ed9c8c24ef8fa5d7c04c3895b4c5915ec3f1",
+      "javacSha256": "0e79806dea4681cf6bb1fd41b4d5ba8c579481cb70a28890fe65813639294ffe"
+    },
+    "compileFlags": [
+      "-encoding UTF-8",
+      "--release 17",
+      "-Xlint:all",
+      "-Werror"
+    ],
+    "runtimeFlags": [
+      "-ea",
+      "-Xverify:all"
+    ],
+    "freshRunCount": 2,
+    "compileExitCodes": [
+      0,
+      0
+    ],
+    "testExitCodes": [
+      0,
+      0
+    ],
+    "testStdout": "PASS offline-i3-static-call-ledger",
+    "testStdoutSha256": "fbbc77e724355ef33e181af78ea4b57074a06969afdc20c5dfed882531377132",
+    "testStderrBytesPerRun": [
+      0,
+      0
+    ],
+    "compiledClassCountPerRun": [
+      13,
+      13
+    ],
+    "jdepsModuleSet": [
+      "java.base"
+    ],
+    "bytecodeMajorVersion": 61,
+    "forbiddenSourceApiMatches": 0,
+    "forbiddenMainBytecodeMatches": 0,
+    "mainStdoutOrStderrMatches": 0,
+    "stage00ArtifactValidator": "PASS",
+    "androidGateInitialSdkLocatorAttempt": "NOT_RUN_SDK_LOCATION_UNSET_CONFIGURATION_ONLY",
+    "androidGateRerunWithExistingLocalSdk": "PASS_197_ACTIONABLE_TASKS",
+    "apkNativeAlignment": "PASS_4_ABI_ENTRIES_ONE_ALLOWLISTED_LIBRARY"
+  },
+  "proofBoundary": {
+    "proofClass": "STATIC_SYNTHETIC_CALL_LEDGER_STRUCTURE_ONLY_NOT_RUNTIME_EVIDENCE",
+    "mayClaim": [
+      "the exact 17-field call-ledger schema and 11-field calibration schema are independently pinned",
+      "the exact eight call kinds have one deterministic pre and post synthetic static schema-canary row",
+      "the frozen repository artifact pins and all ten blocked readiness rows are validated in memory",
+      "missing extra duplicate reordered malformed hash-stale and readiness-stale inputs fail closed",
+      "the exact Java 17 implementation passes deterministic local tests and static dependency checks"
+    ],
+    "mustNotClaim": [
+      "a monitor was calibrated",
+      "zero runtime app-attributed calls were observed or proved",
+      "Android device emulator D4 no-GMS airplane firewall process or physical execution occurred",
+      "an integrated offline product journey storage durability reconnect provider backend or model ran",
+      "a dependency model dataset product behavior or production component is admitted",
+      "POC-OFFLINE-001 is ready authorized executed passed complete or done",
+      "any OFF-RDY blocker is closed",
+      "formal Security Legal human or production approval"
+    ],
+    "monitorCalibrated": false,
+    "runtimeZeroCallProven": false,
+    "d4NoGmsDeviceProven": false,
+    "offlineJourneyProven": false,
+    "modelProviderOrProductReady": false,
+    "offlineReadinessBlockersClosed": 0
+  },
+  "privacy": {
+    "repositoryOwnedSyntheticFixtureOnly": true,
+    "contentFreePublicEvidence": true,
+    "rawIdentifierPresent": false,
+    "realPersonOrMeetingDataPresent": false,
+    "rawAudioTranscriptOrPacketPresent": false,
+    "endpointUrlIpOrPrivatePathPresent": false,
+    "credentialTokenOrSecretPresent": false,
+    "modelWeightPresent": false,
+    "absoluteLocalPathPresent": false
+  },
+  "review": {
+    "independentExactHeadReviewRequired": true,
+    "independentExactHeadReviewPerformed": false,
+    "formalReviewer": false,
+    "P0": null,
+    "P1": null,
+    "P2": null,
+    "publicationStatus": "WITHHELD_PENDING_INDEPENDENT_REVIEW",
+    "pushPerformed": false,
+    "pullRequestCreated": false
+  }
+}
