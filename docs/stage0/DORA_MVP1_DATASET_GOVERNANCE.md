@@ -1,10 +1,11 @@
 # Dora MVP 1 — Dataset Governance
 
 Task: `POC-DATA-001` foundation
-Version: 1.1
-Date: 5 August 2026
+Version: 1.2
+Date: 18 August 2026
 Owner decisions effective: 4 August 2026 (`OD-03`, `OD-04`, `OD-08`, `OD-09`)
-Status: owner Stage 0 policy approved; consent process, custodian and controlled storage pending; **no audio dataset is created by this change**
+Control-plane authorities: `POC-DATA-CONTROL-PLANE-SETUP-AUTH-20260818-01`, `POC-DATA-CONTROL-PLANE-DISJOINT-FIRST-AUTH-20260818-01`, and `POC-DATA-CONTROL-PLANE-PROFILE-RECONCILIATION-AUTH-20260818-02`
+Status: owner Stage 0 policy and synthetic control-plane preparation approved; consent process prepared but not operational; custodian and controlled storage pending; **no audio dataset is created by this change**
 
 ## 1. Scope
 
@@ -306,6 +307,24 @@ A PoC using anything beyond synthetic data is `READY` only when:
 - benchmark logging/publication is content-free;
 - no raw data path points into the repository or CI artifact directory.
 
+### 16.1 Synthetic control-plane preparation evidence
+
+The 18 August 2026 bounded setup produced a closed synthetic-metadata manifest and schema, a
+deny-by-default RBAC model, the future consent/collection and retention/deletion protocols, and a
+dependency-free local Java 17 validator/dry-run. Its inputs contain no sample bytes, raw content,
+transcript, participant data, consent record, private locator, device/account identifier, network
+endpoint or signed URL. The only filesystem lifecycle is a bounded ASCII sentinel in an empty
+OS-temporary directory; the harness verifies deletion, absence, repeat-safe deletion and unchanged
+source bytes before returning.
+
+A task-scoped `LOCAL_PASS` proves only deterministic validation, fail-closed authorization and
+transient synthetic cleanup for the exact repository profile. It does **not** make consent
+operational, assign a custodian, configure or exercise controlled non-public storage, test a real
+withdrawal/backup/provider deletion graph, create a corpus, authorize collection, or satisfy the
+corpus-backed Definition of Ready above. Consequently `POC-DATA-001` remains
+`BLOCKED / NOT_READY / NOT_RUN / NOT_AUTHORIZED`; the controlled-store deletion dry-run remains
+`NOT_RUN`.
+
 ## 17. Stage 0A exit
 
-The owner-approved governance foundation defines allowed data, consent, purpose, language/acoustic coverage, immutable development/test/evaluation separation, access, retention, deletion, public reporting and the training prohibition. The actual corpus remains uncreated. `POC-DATA-001` remains blocked on consent-process approval, a named custodian, controlled non-public storage, access/deletion dry-run and an immutable manifest—not on `OD-03`/`OD-04`/`OD-08`/`OD-09`.
+The owner-approved governance foundation defines allowed data, consent, purpose, language/acoustic coverage, immutable development/test/evaluation separation, access, retention, deletion, public reporting and the training prohibition. The actual corpus remains uncreated. `POC-DATA-001` remains blocked on operational/final consent approval, a named custodian, controlled non-public storage, the controlled-store access/deletion dry-run and an immutable corpus manifest—not on `OD-03`/`OD-04`/`OD-08`/`OD-09` or the bounded synthetic control-plane preparation.

@@ -26,6 +26,19 @@ issue/PR body/comment, patch/diff, copying, execution, dependency admission and 
 implementation remain forbidden. No Omi artifact entered Dora. Active Stage 0D, all Recovery
 authority flags and every existing PoC verdict remain unchanged.
 
+Stage 0 host-oracle publication reconciliation: the immutable
+[closure index](evidence/stage0-host-oracle-publication-closure-2026-08-18.json) binds the exact
+source heads, source-equal protected-squash merge trees, successful exact-head checks, successful
+exact-main checks and original evidence blobs for merged Pull Requests #32–#37. These artifacts
+cover only deterministic repository-owned pure-host semantics for Battery comparison, VAD frame
+timing, Decision revision projection, synthetic-public manifest validation and Offline I1/I2. The
+separate [Offline I2 independent advisory record](evidence/poc-offline-001/reviews/off-i2-integrated-synthetic-harness-independent-advisory-review-2026-08-18.json)
+is non-formal and cannot substitute device, model, network, Legal, Security or production review.
+The publication reconciliation leaves aggregate backlog truth `DONE=27`, `BLOCKED=18`, `TODO=9`,
+`READY=0`; `POC-OFFLINE-001` remains `TODO / NOT_READY / NOT_RUN / NOT_AUTHORIZED` with all ten
+readiness blockers open, while `POC-BATTERY-001`, `POC-VAD-001`, `POC-DECISION-001` and
+`POC-DATA-001` remain `BLOCKED`. No PoC PASS, active-stage change or authority elevation follows.
+
 Design-governance reconciliation: `DES-EXPORT-001` / `des-export-interaction-v0.1` is contract
 complete under `DEC-017`; no implementation/conformance/user-research, code/Figma/schema/provider
 or export-execution claim follows. Active Stage 0D, `POC-DATA-001` blocking and every Recovery

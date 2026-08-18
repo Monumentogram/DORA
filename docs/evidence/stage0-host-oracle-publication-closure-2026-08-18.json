@@ -1,0 +1,232 @@
+{
+  "schemaVersion": "stage0-host-oracle-publication-closure-v0.1",
+  "recordId": "STAGE0-HOST-ORACLE-PUBLICATION-CLOSURE-20260818-01",
+  "recordDate": "2026-08-18",
+  "timezone": "Europe/Moscow",
+  "recordType": "IMMUTABLE_MERGED_PUBLICATION_INDEX_NOT_POC_CLOSURE",
+  "authorization": {
+    "taskAuthorizationId": "STAGE0-OFF-I2-HOST-CLOSURE-AUTH-20260818-01",
+    "standingTechnicalAuthorizationId": "DORA-TECHNICAL-CONTINUOUS-AUTONOMY-AUTH-20260818-01",
+    "baseCommit": "4a1dacacc52926ef3608a5952a762f00b8dafaa9",
+    "baseTree": "23d0fe235acff4e4693b6eabcedad1e58b8d0816",
+    "baseExactMainCiRun": 32142221783,
+    "baseExactMainCiConclusion": "success",
+    "branch": "codex/poc-offline-i2-host-closure-reconciliation",
+    "allowedTrackedFileCount": 4,
+    "sourceOrTestModificationAllowed": false,
+    "existingEvidenceModificationAllowed": false,
+    "runtimeOrMeasuredExecutionAllowed": false,
+    "deviceOrNetworkExecutionAllowed": false,
+    "pocStatusElevationAllowed": false
+  },
+  "integrationOrder": [
+    36,
+    32,
+    33,
+    34,
+    35,
+    37
+  ],
+  "mergedPublications": [
+    {
+      "pullRequest": 36,
+      "pocId": "POC-OFFLINE-001",
+      "slice": "OFF-I1_PURE_HOST_ORACLE",
+      "sourceHead": "86fcfdda436fce58c1acd7bd9f56108e944653ae",
+      "sourceTree": "737132c571f4a582ffea66097a51d88f55f288c3",
+      "mergeCommit": "3947c2343ce5bcfa9b2b5c8fff761246e4cb4ea9",
+      "mergeTree": "737132c571f4a582ffea66097a51d88f55f288c3",
+      "mergeParent": "a3ccae7b1da1f42132a46f1a96b26fc43f680b80",
+      "sourceTreePreserved": true,
+      "githubSignatureVerified": true,
+      "exactHeadHostCiRun": 32012426651,
+      "exactHeadAndroidCiRun": 32012426568,
+      "exactMainAndroidCiRun": 32013421106,
+      "allRecordedCiConclusions": "success",
+      "evidence": {
+        "path": "docs/evidence/poc-offline-001/i1-host-oracle-implementation-evidence-stage0-v0.1.json",
+        "gitBlob": "0032f616dbda2c822b7af06d84064833966e01af",
+        "gitBlobBytes": 15672
+      },
+      "proofClass": "PURE_HOST_SYNTHETIC_SEMANTICS_NOT_INTEGRATED_OFFLINE_EXECUTION"
+    },
+    {
+      "pullRequest": 32,
+      "pocId": "POC-BATTERY-001",
+      "slice": "CAPTURE_ONLY_CONTROLLED_COMPARATOR_HOST_ORACLE",
+      "sourceHead": "551193000a629945799746f71ee5392aaace8cbe",
+      "sourceTree": "f5f12a9630e3724322ba5be124964a6fd3484443",
+      "mergeCommit": "31a4b670d44cf35af6c9a9b1d8ac8fd4577f107f",
+      "mergeTree": "f5f12a9630e3724322ba5be124964a6fd3484443",
+      "mergeParent": "3947c2343ce5bcfa9b2b5c8fff761246e4cb4ea9",
+      "sourceTreePreserved": true,
+      "githubSignatureVerified": true,
+      "exactHeadHostCiRun": 32016261204,
+      "exactHeadAndroidCiRun": 32016261218,
+      "exactMainAndroidCiRun": 32016926152,
+      "allRecordedCiConclusions": "success",
+      "evidence": {
+        "path": "docs/evidence/poc-battery-001/capture-only-controlled-comparator-host-oracle-local-evidence-stage0-v0.1.json",
+        "gitBlob": "d2a19b40cedbfe7a4b295086372353f5f0f5f763",
+        "gitBlobBytes": 20630
+      },
+      "proofClass": "PURE_HOST_ARITHMETIC_AND_ATTRIBUTION_NOT_ENERGY_OR_THERMAL_MEASUREMENT"
+    },
+    {
+      "pullRequest": 33,
+      "pocId": "POC-VAD-001",
+      "slice": "P2_FRAME_TIMING_HOST_ORACLE",
+      "sourceHead": "201b2eee8ebdfe02e68dab65c9552d848df36a89",
+      "sourceTree": "c3a8efaad976de354ea794c3bf244e8f2c71dde0",
+      "mergeCommit": "849e27d7e4e0e0f35245b38565366f9d66b32dbc",
+      "mergeTree": "c3a8efaad976de354ea794c3bf244e8f2c71dde0",
+      "mergeParent": "31a4b670d44cf35af6c9a9b1d8ac8fd4577f107f",
+      "sourceTreePreserved": true,
+      "githubSignatureVerified": true,
+      "exactHeadHostCiRun": 32017529374,
+      "exactHeadAndroidCiRun": 32017529566,
+      "exactMainAndroidCiRun": 32018145795,
+      "allRecordedCiConclusions": "success",
+      "evidence": {
+        "path": "docs/evidence/poc-vad-001/p2-host-oracle-local-evidence-stage0-v0.1.json",
+        "gitBlob": "78067222f6c5d0708b7d1fa6b28fb73e2f7a286b",
+        "gitBlobBytes": 15572
+      },
+      "proofClass": "PURE_HOST_FRAME_TIMING_NOT_ACOUSTIC_REALTIME_OR_DEVICE_EVIDENCE"
+    },
+    {
+      "pullRequest": 34,
+      "pocId": "POC-DECISION-001",
+      "slice": "DECISION_REVISION_PROJECTION_HOST_ORACLE",
+      "sourceHead": "107f2d94705f6abd6f68417d5eaf57cf47e3bb91",
+      "sourceTree": "4ac0b582f92a2bea07b4793121181cb9efe35621",
+      "mergeCommit": "ebfa1bbd260ea42904444cc681942b43f31ddfec",
+      "mergeTree": "4ac0b582f92a2bea07b4793121181cb9efe35621",
+      "mergeParent": "849e27d7e4e0e0f35245b38565366f9d66b32dbc",
+      "sourceTreePreserved": true,
+      "githubSignatureVerified": true,
+      "exactHeadHostCiRun": 32018818807,
+      "exactHeadAndroidCiRun": 32018818818,
+      "exactMainAndroidCiRun": 32019447582,
+      "allRecordedCiConclusions": "success",
+      "evidence": {
+        "path": "docs/evidence/poc-decision-001/decision-revision-projection-host-oracle-local-evidence-stage0-v0.1.json",
+        "gitBlob": "6dd67e17b8b3c7ccdbf41108519b9810e4301fdb",
+        "gitBlobBytes": 23643
+      },
+      "proofClass": "PURE_HOST_REVISION_AND_USER_OWNERSHIP_NOT_CORPUS_QUALITY_OR_MODEL_BENCHMARK"
+    },
+    {
+      "pullRequest": 35,
+      "pocId": "POC-DATA-001",
+      "slice": "SYNTHETIC_PUBLIC_MANIFEST_PROFILE_VALIDATOR",
+      "sourceHead": "4f4577e92e7ec0d4462ed9c27773b08904b6704c",
+      "sourceTree": "bc428d22cd5c00dc37c2fb926986a40962364047",
+      "mergeCommit": "ca817b07651a8524792ccd3af7af3dff75612730",
+      "mergeTree": "bc428d22cd5c00dc37c2fb926986a40962364047",
+      "mergeParent": "ebfa1bbd260ea42904444cc681942b43f31ddfec",
+      "sourceTreePreserved": true,
+      "githubSignatureVerified": true,
+      "exactHeadHostCiRun": 32020019758,
+      "exactHeadAndroidCiRun": 32020019715,
+      "exactMainAndroidCiRun": 32020702638,
+      "allRecordedCiConclusions": "success",
+      "evidence": {
+        "path": "docs/evidence/poc-data-001/synthetic-public-manifest-validator-local-evidence-stage0-v0.1.json",
+        "gitBlob": "31c4e552a92d3b994b17d880f0cf6d23158a89c2",
+        "gitBlobBytes": 16884
+      },
+      "proofClass": "PURE_HOST_SYNTHETIC_METADATA_VALIDATION_NOT_DATASET_COLLECTION_OR_GOVERNED_MANIFEST"
+    },
+    {
+      "pullRequest": 37,
+      "pocId": "POC-OFFLINE-001",
+      "slice": "OFF_I2_INTEGRATED_SYNTHETIC_IN_MEMORY_HARNESS",
+      "sourceHead": "2eb34bbd64a19d6ff7f032e84498c56573658776",
+      "sourceTree": "ced727ac77f6e10270d88ca69e4f815ec81f9b3b",
+      "mergeCommit": "223f31d87355596c8cb36576d2d94366eae9d620",
+      "mergeTree": "ced727ac77f6e10270d88ca69e4f815ec81f9b3b",
+      "mergeParent": "ca817b07651a8524792ccd3af7af3dff75612730",
+      "sourceTreePreserved": true,
+      "githubSignatureVerified": true,
+      "exactHeadHostCiRun": 32030762956,
+      "exactHeadAndroidCiRun": 32030763061,
+      "exactMainAndroidCiRun": 32033055431,
+      "allRecordedCiConclusions": "success",
+      "evidence": {
+        "path": "docs/evidence/poc-offline-001/i2-integrated-synthetic-harness-evidence-stage0-v0.1.json",
+        "gitBlob": "0e372af6c27c27fc7f75fcfb9b5b8f953574a027",
+        "gitBlobBytes": 20853
+      },
+      "proofClass": "PURE_HOST_SYNTHETIC_IN_MEMORY_SEMANTICS_NOT_PRODUCT_DEVICE_NETWORK_MODEL_OR_DURABILITY"
+    }
+  ],
+  "offlineI2IndependentAdvisory": {
+    "required": true,
+    "companionPath": "docs/evidence/poc-offline-001/reviews/off-i2-integrated-synthetic-harness-independent-advisory-review-2026-08-18.json",
+    "reviewTargetHead": "2eb34bbd64a19d6ff7f032e84498c56573658776",
+    "reviewTargetTree": "ced727ac77f6e10270d88ca69e4f815ec81f9b3b",
+    "resultMustBeReadFromCompanionArtifact": true,
+    "formalHumanReviewRequired": false,
+    "formalHumanReviewClaimed": false
+  },
+  "backlogTruth": {
+    "aggregateCounts": {
+      "DONE": 27,
+      "BLOCKED": 18,
+      "TODO": 9,
+      "READY": 0
+    },
+    "pocStates": {
+      "POC-BATTERY-001": "BLOCKED",
+      "POC-VAD-001": "BLOCKED",
+      "POC-DECISION-001": "BLOCKED",
+      "POC-DATA-001": "BLOCKED",
+      "POC-OFFLINE-001": "TODO"
+    },
+    "offlineReadiness": "NOT_READY",
+    "offlineExecution": "NOT_RUN",
+    "offlineAuthorization": "NOT_AUTHORIZED",
+    "offlineReadinessBlockers": 10,
+    "offlineReadinessBlockersClosed": 0,
+    "statusElevationCount": 0,
+    "activeStageChanged": false
+  },
+  "immutability": {
+    "existingEvidenceFilesModifiedByThisReconciliation": false,
+    "sourceFilesModifiedByThisReconciliation": false,
+    "testFilesModifiedByThisReconciliation": false,
+    "workflowFilesModifiedByThisReconciliation": false,
+    "historicalFailureOrPendingFieldsRewritten": false,
+    "publicationFactsAreAdditive": true
+  },
+  "privacy": {
+    "repositoryOwnedSyntheticEvidenceOnly": true,
+    "realPersonOrMeetingDataPresent": false,
+    "rawAudioOrTranscriptPresent": false,
+    "credentialOrSecretPresent": false,
+    "absoluteLocalPathPresent": false,
+    "privateReviewTranscriptPresent": false
+  },
+  "authorityBoundary": {
+    "pocPassClaimed": false,
+    "readinessClaimed": false,
+    "runtimeExecutionAuthorized": false,
+    "deviceExecutionAuthorized": false,
+    "emulatorExecutionClaimedAsPhysical": false,
+    "networkOrCallAbsenceClaimed": false,
+    "modelOrDependencyAdmitted": false,
+    "realDataAuthorized": false,
+    "legalApprovalClaimed": false,
+    "securityApprovalClaimed": false,
+    "productionAdmissionClaimed": false
+  },
+  "result": {
+    "disposition": "MERGED_PURE_HOST_PUBLICATION_PROVENANCE_RECONCILED_NO_POC_CLOSURE",
+    "allSixSourceTreesPreservedByProtectedSquashMerge": true,
+    "allRecordedExactHeadAndExactMainCiGreen": true,
+    "historicalEvidenceRetainedUnchanged": true,
+    "offlinePocTruth": "TODO_NOT_READY_NOT_RUN_NOT_AUTHORIZED",
+    "readyPoCCount": 0
+  }
+}
