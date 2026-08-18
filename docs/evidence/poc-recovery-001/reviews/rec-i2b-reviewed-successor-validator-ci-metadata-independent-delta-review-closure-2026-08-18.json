@@ -1,0 +1,326 @@
+{
+  "schemaVersion": 1,
+  "recordId": "REC-I2B-REVIEWED-SUCCESSOR-VALIDATOR-CI-METADATA-INDEPENDENT-DELTA-REVIEW-CLOSURE-20260818-01",
+  "recordType": "IMMUTABLE_SANITIZED_INDEPENDENT_ADVISORY_DELTA_REVIEW_CLOSURE",
+  "recordedAt": "2026-08-18T12:16:40+03:00",
+  "timeZone": "Europe/Moscow",
+  "pocId": "POC-RECOVERY-001",
+  "stage": "Stage 0",
+  "technicalDelegation": "STAGE0-TECHNICAL-REMEDIATION-DELEGATION-20260817-01",
+  "implementationAuthorizations": [
+    "REC-I2B-REVIEWED-SUCCESSOR-VALIDATOR-AND-CI-METADATA-REMEDIATION-AUTH-20260818-01",
+    "REC-I2B-REVIEWED-SUCCESSOR-CI-JAR-METADATA-REMEDIATION-AUTH-20260818-02",
+    "REC-I2B-REVIEWED-SUCCESSOR-SPOTLESS-METADATA-REMEDIATION-AUTH-20260818-03",
+    "REC-I2B-REVIEWED-SUCCESSOR-EVIDENCE-PHASE-SELFTEST-REMEDIATION-AUTH-20260818-04"
+  ],
+  "reviewer": {
+    "product": "OpenAI Codex",
+    "organization": "OpenAI",
+    "role": "INDEPENDENT_ADVISORY_IMPLEMENTATION_REVIEWER",
+    "formalReviewer": false,
+    "signature": null
+  },
+  "exactReviewedState": {
+    "branch": "codex/poc-recovery-i2a-graph-probe",
+    "published": false,
+    "reviewedHead": "b642c5206e2e9fc3493dbb78b801a371f2dd0868",
+    "implementationCommit": "3195c2fa79db6360a5844a8ce02ea419a74e2982",
+    "implementationTree": "00b04684d7ceaac7685070e783c37e1178131b7b",
+    "evidenceCommit": "b642c5206e2e9fc3493dbb78b801a371f2dd0868",
+    "evidenceTree": "b9ebf29a654d3cb218289e8c23cdaffa03e36fb5",
+    "linearCommitChain": [
+      "95304992407392c82ee86870dff72529cc70e5c8",
+      "fa87d87abd3d1ddad2ee0a3c1669127fc288b4f8",
+      "3195c2fa79db6360a5844a8ce02ea419a74e2982",
+      "b642c5206e2e9fc3493dbb78b801a371f2dd0868"
+    ],
+    "reviewedFiles": [
+      {
+        "path": "android/gradle/verification-metadata.xml",
+        "commit": "fa87d87abd3d1ddad2ee0a3c1669127fc288b4f8",
+        "gitBlobSha1": "93deb44d85a1de634dbdb70d5550e86fe1a89763",
+        "rawGitBytes": 297477,
+        "rawGitSha256": "35046c96e293d56cd36ba5894c0fd286cf6e96167df5a3d6e6cd9c3de379f3ac"
+      },
+      {
+        "path": "tools/validate_poc_recovery_governance.py",
+        "commit": "3195c2fa79db6360a5844a8ce02ea419a74e2982",
+        "gitBlobSha1": "df97f059193cfbf858ca0e4ad01725976c78e31a",
+        "rawGitBytes": 220420,
+        "rawGitSha256": "579f82e9530e8ad5ea2db502e1fa01497716e8f1ba0c487b3c203007c4e31cac"
+      },
+      {
+        "path": "tools/verify_poc_recovery_dependency_inventory.py",
+        "commit": "fa87d87abd3d1ddad2ee0a3c1669127fc288b4f8",
+        "gitBlobSha1": "ca612cee81742f3e7405a989e48c645fb2654ae4",
+        "rawGitBytes": 71923,
+        "rawGitSha256": "5da59672eeb1d336bf088d6dd948fa10c076808c7a6f0c9be64fd35e1589ff87"
+      },
+      {
+        "path": "docs/evidence/poc-recovery-001/rec-i2b-runtime-crypto-implementation-evidence-2026-08-17.json",
+        "commit": "b642c5206e2e9fc3493dbb78b801a371f2dd0868",
+        "gitBlobSha1": "45f8249845343077d689268a1e72d7e8cce2171c",
+        "rawGitBytes": 48968,
+        "rawGitSha256": "8ea6be9953512a06fe17651a9171549d4da996ad463c44009389c6f1f4e4178c"
+      },
+      {
+        "path": "docs/evidence/poc-recovery-001/rec-i2b-accountable-engineering-security-review-packet-2026-08-17.json",
+        "commit": "b642c5206e2e9fc3493dbb78b801a371f2dd0868",
+        "gitBlobSha1": "29c64d97656ce459c1dd36d8c34243c66f5f8f8f",
+        "rawGitBytes": 38256,
+        "rawGitSha256": "a70ce3db88984d0c4671178afa95427c2d9de527d86c2fb2214ee89927c58d18"
+      }
+    ]
+  },
+  "verdict": {
+    "disposition": "CLEAN",
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "exactMinimalFix": null,
+    "newFindings": []
+  },
+  "reviewHistoryPreserved": {
+    "originalRuntimeAdvisory": {
+      "disposition": "CHANGES_REQUIRED",
+      "P0": 0,
+      "P1": 3,
+      "P2": 2
+    },
+    "historicalRuntimeIndependentDelta": {
+      "disposition": "CLEAN",
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "reviewedImplementationCommit": "dca745929b59b656dfa8bb210884e3c1c4bdad0f",
+      "reviewedEvidenceCommit": "6eb055d9fdb83445ec1dcf27898bba07af2d4951",
+      "durableClosureRecordCommit": "87a45d69b4a35854f7904895bf8e10968265983b"
+    },
+    "freshGraphVerificationMetadataAdvisory": {
+      "disposition": "CHANGES_REQUIRED",
+      "P0": 0,
+      "P1": 1,
+      "P2": 0,
+      "findingId": "REC-I2B-FRESH-GRAPH-VERIFICATION-METADATA-P1-001",
+      "reviewedImplementationCommit": "adc422236003403d15581c10e31e2dc797ccf9bb",
+      "reviewedEvidenceCommit": "c65fe0718f082aec97a38d2cc567e1d56c6da8d1"
+    },
+    "historicalFreshCacheMetadataIndependentDelta": {
+      "disposition": "CLEAN",
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "reviewedImplementationCommit": "c194fec9ecce5ee77ffca0c162d2b78c1c58b715",
+      "reviewedEvidenceCommit": "5eaadeb77c444bf0af2afadc82e1804a7c71bc43",
+      "durableClosureRecordCommit": "9bb64e58caa1a83e7b4bf4ac58a5a5077a986a57"
+    },
+    "reviewedSuccessorPrecommitReview": {
+      "initialVerdicts": [
+        {
+          "disposition": "CHANGES_REQUIRED",
+          "P0": 0,
+          "P1": 2,
+          "P2": 0
+        },
+        {
+          "disposition": "CHANGES_REQUIRED",
+          "P0": 0,
+          "P1": 1,
+          "P2": 0
+        },
+        {
+          "disposition": "CLEAN",
+          "P0": 0,
+          "P1": 0,
+          "P2": 0
+        }
+      ],
+      "evidencePhaseSelftestVerdicts": [
+        {
+          "disposition": "CHANGES_REQUIRED",
+          "P0": 0,
+          "P1": 1,
+          "P2": 0
+        },
+        {
+          "disposition": "CLEAN",
+          "P0": 0,
+          "P1": 0,
+          "P2": 0
+        }
+      ],
+      "precommitReviewsCoverCommittedPostcommitTarget": false
+    }
+  },
+  "independentProof": {
+    "exactDelta": {
+      "initialImplementationCommit": "fa87d87abd3d1ddad2ee0a3c1669127fc288b4f8",
+      "evidencePhaseValidatorCommit": "3195c2fa79db6360a5844a8ce02ea419a74e2982",
+      "pendingEvidenceCommit": "b642c5206e2e9fc3493dbb78b801a371f2dd0868",
+      "initialImplementationChangedPathCount": 3,
+      "evidencePhaseValidatorChangedPathCount": 1,
+      "pendingEvidenceChangedPathCount": 2,
+      "runtimeOrCryptoSourceChanged": false,
+      "metadataArtifactEntryCount": 7,
+      "metadataComponentCount": 5
+    },
+    "metadataArtifacts": [
+      {
+        "coordinate": "com.google.guava:guava-parent:33.2.1-jre",
+        "artifact": "guava-parent-33.2.1-jre.pom",
+        "bytes": 19431,
+        "sha256": "9095f6d8ee3765950207510785830cc2280e781067915fa99cfe1740d4865c14",
+        "sha1": "fc55955fab23e86fad230acc81bf570deb5660bd"
+      },
+      {
+        "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.10.2",
+        "artifact": "kotlinx-coroutines-bom-1.10.2.pom",
+        "bytes": 4279,
+        "sha256": "faf0c6538e53ddc0499a63664d8e763c216580b2e18e722ccbdf1b431a6afe26",
+        "sha1": "bc3b109335d4fa0106a1e17b7863e388ef93c553"
+      },
+      {
+        "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.2",
+        "artifact": "kotlinx-coroutines-core-jvm-1.10.2.module",
+        "bytes": 4450,
+        "sha256": "e9e4a74b4dbfe0f5ebeed88d49f3546c3ec3089419b20e5250403135c2c64c53",
+        "sha1": "4287c0f64d2ae79ae0645440c8e787be1e4c9305"
+      },
+      {
+        "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.10.2",
+        "artifact": "kotlinx-coroutines-core-jvm-1.10.2.jar",
+        "bytes": 1479317,
+        "sha256": "5ca175b38df331fd64155b35cd8cae1251fa9ee369709b36d42e0a288ccce3fd",
+        "sha1": "4a9f78ef49483748e2c129f3d124b8fa249dafbf"
+      },
+      {
+        "coordinate": "com.google.devtools.ksp:symbol-processing-aa-embeddable:2.3.9",
+        "artifact": "symbol-processing-aa-embeddable-2.3.9.pom",
+        "bytes": 1910,
+        "sha256": "d5dd46ba75df65ccf43c093f0b7134903f9d68299975dd20851dfeb1600b8296",
+        "sha1": "36ab1d7dcc45e1879b3135fc8be3e5985fa76744"
+      },
+      {
+        "coordinate": "com.google.devtools.ksp:symbol-processing-aa-embeddable:2.3.9",
+        "artifact": "symbol-processing-aa-embeddable-2.3.9.jar",
+        "bytes": 84501468,
+        "sha256": "b3536a0e599eaf1c150a42ab089d8d82aeec35fb2546c937f4d37f4c5ecb7998",
+        "sha1": "214defea18ed4a0030e3d129c1831e266072b7ec"
+      },
+      {
+        "coordinate": "com.google.guava:guava-parent:33.5.0-jre",
+        "artifact": "guava-parent-33.5.0-jre.pom",
+        "bytes": 23932,
+        "sha256": "68719e687c6e4c9ff3e0fecbef7bd20896f0f4f7b314743ed33c72f962568215",
+        "sha1": "c911af9ef688aeb809f86a864741cd91df184092"
+      }
+    ],
+    "metadataArtifactProvenance": {
+      "isolatedGradleBytesMatchedCanonicalMavenCentralBytes": true,
+      "publishedDigestsMatched": true,
+      "verificationTrustWeakened": false,
+      "newCoordinateOrSelectedVersionIntroduced": false
+    },
+    "verification": {
+      "governanceSelfTest": "PASS",
+      "offlineDependencyInventory": "PASS",
+      "fullStaticBuildAndUnitTasks": "104/104",
+      "unitTests": "91/91 across 15 suites",
+      "freshOwnedConfigurationGraphTasks": "81/81",
+      "forcedR8AndPackageTasks": "46/46"
+    },
+    "dependencyGraph": {
+      "bytes": 332184,
+      "sha256": "3ab12ef698e59f323e71431496d72debd5741669b395b8052ad41b9a8b8b34a7",
+      "configurationCount": 61,
+      "allConfigurationsResolved": true,
+      "policyCoveredConfigurationCount": 34,
+      "outsidePolicyBoundaryToolingConfigurationCount": 27,
+      "policyCoveredJsr305ResolvedComponentCount": 0,
+      "policyCoveredPackagedJsr305ClassDefinitionCount": 0,
+      "graphDrift": false
+    },
+    "locksAndMetadata": {
+      "recoveryLockBytes": 3395,
+      "recoveryLockSha256": "2e0de74c01b452476223a757ffa52ccc7f3f1ab74e9736e36bcd4a2ff0e8f08c",
+      "verificationMetadataGitBlobSha1": "93deb44d85a1de634dbdb70d5550e86fe1a89763",
+      "verificationMetadataRawGitBytes": 297477,
+      "verificationMetadataRawGitSha256": "35046c96e293d56cd36ba5894c0fd286cf6e96167df5a3d6e6cd9c3de379f3ac",
+      "runtimeGraphChanged": false,
+      "lockChanged": false,
+      "nativePackagingChanged": false,
+      "licenseOrAdmissionDecisionChanged": false
+    },
+    "r8AndPackaging": {
+      "rulesSha256": "855841c6c021423972d874bf841ed4a1e55e669a69633a75f2e93531e2b7e39e",
+      "mappingBytes": 7695188,
+      "mappingSha256": "330ed8d37ad5dd93cf3caf8648fa4a26bb0d65a993e548223c3893c7fc1a4b1b",
+      "configurationBytes": 11204,
+      "configurationSha256": "49908c445b3512e019e339ea7fef6e8c44ca132b3f3f1454e5d7997e3f86f651",
+      "debugApkBytes": 6352440,
+      "debugApkSha256": "b55a08df042b4fdcb624132a24c1c48e4760b7ee333e77459b59ad7abee94a6e",
+      "debugDexCount": 5,
+      "releaseUnsignedApkBytes": 2477410,
+      "releaseUnsignedApkSha256": "7dc17cb4034d967676c6212ff7890473a171566b0922fc4cd60299b7e451cb4a",
+      "releaseDexCount": 1,
+      "debugAndReleaseNativeEntryCount": 0,
+      "debugAndReleaseJavaxAnnotationDefinitionCount": 0,
+      "allHashesMatchedReviewedEvidence": true
+    },
+    "evidenceAndBypassValidation": {
+      "strictJsonUtf8BomFreeLf": true,
+      "crossPinsAndManifestHashesMatched": true,
+      "pendingIndependentChecklistAnswersNullCount": 17,
+      "accountableChecklistAnswersNullCount": 17,
+      "directBypassProbeCount": 17,
+      "allDirectBypassProbesRejected": true,
+      "successorPendingValidation": "PASS",
+      "successorCleanInMemoryTransition": "PASS_WITH_ONLY_FUTURE_CLOSURE_FILE_READ_STUBBED"
+    },
+    "historicalRequiredCiFailure": {
+      "runId": 32108343415,
+      "exactHead": "95304992407392c82ee86870dff72529cc70e5c8",
+      "androidBootstrapJobId": 95622292823,
+      "searchSmokeJobId": 95622292927,
+      "conclusion": "failure",
+      "preserved": true
+    },
+    "workingTreeClean": true
+  },
+  "residualLimits": [
+    "The CLEAN verdict is an independent advisory postcommit delta review only; it is not the distinct accountable Engineering/Security review.",
+    "No Android Keystore device or emulator execution, Recovery harness or measurement campaign was performed.",
+    "Draft PR 38 exact-head CI remains required before accountable review routing.",
+    "This review does not activate REC-I3 or claim PoC PASS, readiness, dependency admission, production admission, Ready state or merge.",
+    "The reviewer made no edits, build, network access, Git mutation, Pull Request or CI action, Google Sheet mutation, Omi work or merge."
+  ],
+  "dispositionEffect": {
+    "freshIndependentAdvisoryDeltaReviewCompleted": true,
+    "reviewedSuccessorExactTargetClean": true,
+    "draftPr38NonForceUpdateMayProceedUnderPriorAuthorization": true,
+    "draftPr38ExactHeadCiRequired": true,
+    "accountableEngineeringSecurityReviewCompleted": false,
+    "accountableChecklistAnswersRecorded": false,
+    "claimCeiling": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
+    "recI3Activated": false,
+    "pocPassOrReadinessClaimed": false,
+    "dependencyOrProductionAdmissionGranted": false,
+    "readyOrMergeGranted": false
+  },
+  "authorityBoundary": {
+    "formalAccountableEngineeringSecurityReview": false,
+    "accountableReviewerIdentityOrSignatureRecorded": false,
+    "activatesRecI3": false,
+    "authorizesDeviceOrEmulatorExecution": false,
+    "authorizesHarnessOrMeasurement": false,
+    "authorizesDependencyOrProductionAdmission": false,
+    "authorizesReadyOrMerge": false
+  },
+  "sanitization": {
+    "containsKeyMaterial": false,
+    "containsPlaintextOrCiphertextPayloads": false,
+    "containsCredentialsOrTokens": false,
+    "containsPrivateAudioOrDeviceIdentifiers": false,
+    "containsUserSpecificAbsolutePaths": false
+  }
+}

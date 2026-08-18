@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "recordId": "REC-I2B-FRESH-CACHE-METADATA-INDEPENDENT-DELTA-REVIEW-CLOSURE-20260818-01",
+  "recordType": "IMMUTABLE_SANITIZED_INDEPENDENT_ADVISORY_DELTA_REVIEW_CLOSURE",
+  "recordedAt": "2026-08-18T09:31:38+03:00",
+  "timeZone": "Europe/Moscow",
+  "pocId": "POC-RECOVERY-001",
+  "stage": "Stage 0",
+  "technicalDelegation": "STAGE0-TECHNICAL-REMEDIATION-DELEGATION-20260817-01",
+  "reviewer": {
+    "product": "OpenAI Codex",
+    "organization": "OpenAI",
+    "role": "INDEPENDENT_ADVISORY_IMPLEMENTATION_REVIEWER",
+    "formalReviewer": false,
+    "modelVersion": null,
+    "humanIdentity": null,
+    "signature": null
+  },
+  "exactReviewedState": {
+    "branch": "codex/poc-recovery-i2a-graph-probe",
+    "published": false,
+    "implementationCommit": "c194fec9ecce5ee77ffca0c162d2b78c1c58b715",
+    "implementationTree": "d6f84aeef27dab1e1de5c77e9722259c40b9653c",
+    "evidenceCommit": "5eaadeb77c444bf0af2afadc82e1804a7c71bc43",
+    "evidenceTree": "4524cdf21ea9c22d5d8b9af6b4a4864c800d50b0",
+    "reviewedFiles": [
+      {
+        "path": "android/gradle/verification-metadata.xml",
+        "gitBlobSha1": "5e12177e5b397a65d78c456a96dd5e429674b706",
+        "rawGitBytes": 295455,
+        "rawGitSha256": "3b95f9e8bfd2d55e9c647cae94b3a2769100f0edeb5eed3fec4201cc9357ae78"
+      },
+      {
+        "path": "docs/evidence/poc-recovery-001/rec-i2b-runtime-crypto-implementation-evidence-2026-08-17.json",
+        "gitBlobSha1": "ef8b71e148d670fb6f544cf96d9c01455c64314a",
+        "rawGitBytes": 36854,
+        "rawGitSha256": "b9b9c228d81f12d22049b71e8862e8bcfc35abbe68780274be70c3c213cdf6a4"
+      },
+      {
+        "path": "docs/evidence/poc-recovery-001/rec-i2b-accountable-engineering-security-review-packet-2026-08-17.json",
+        "gitBlobSha1": "1cfc27121b7d2a69856341b238802b0a805fdd7b",
+        "rawGitBytes": 31314,
+        "rawGitSha256": "8379c3d1ee6bbc138dd1f5913c44e5e9e1e010319f1c6d4f0908b6adef8debed"
+      }
+    ]
+  },
+  "verdict": {
+    "disposition": "CLEAN",
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "exactMinimalFix": null,
+    "newFindings": []
+  },
+  "reviewHistoryPreserved": {
+    "originalAdvisory": {
+      "disposition": "CHANGES_REQUIRED",
+      "P0": 0,
+      "P1": 3,
+      "P2": 2
+    },
+    "historicalIndependentDelta": {
+      "disposition": "CLEAN",
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "reviewedImplementationCommit": "dca745929b59b656dfa8bb210884e3c1c4bdad0f",
+      "reviewedEvidenceCommit": "6eb055d9fdb83445ec1dcf27898bba07af2d4951",
+      "durableClosureRecordCommit": "87a45d69b4a35854f7904895bf8e10968265983b"
+    },
+    "freshGraphVerificationMetadataAdvisory": {
+      "disposition": "CHANGES_REQUIRED",
+      "P0": 0,
+      "P1": 1,
+      "P2": 0,
+      "findingId": "REC-I2B-FRESH-GRAPH-VERIFICATION-METADATA-P1-001",
+      "reviewedImplementationCommit": "adc422236003403d15581c10e31e2dc797ccf9bb",
+      "reviewedEvidenceCommit": "c65fe0718f082aec97a38d2cc567e1d56c6da8d1"
+    }
+  },
+  "findingClosure": {
+    "id": "REC-I2B-FRESH-GRAPH-VERIFICATION-METADATA-P1-001",
+    "severity": "P1",
+    "status": "CLOSED",
+    "independentConclusion": "A genuinely empty isolated Gradle cache resolved the exact search-smoke task graph and all 61 REC-owned configurations with zero additional missing verification artifact; the cumulative metadata delta remains checksum-only for already-resolved tooling/build-test artifacts and changes no coordinate, selected version, runtime graph, lock, native packaging, license or admission decision."
+  },
+  "independentProof": {
+    "exactDelta": {
+      "implementationParent": "c65fe0718f082aec97a38d2cc567e1d56c6da8d1",
+      "implementationCommit": "c194fec9ecce5ee77ffca0c162d2b78c1c58b715",
+      "implementationChangedPathCount": 1,
+      "implementationAddedLineCount": 8,
+      "implementationDeletedLineCount": 0,
+      "evidenceCommit": "5eaadeb77c444bf0af2afadc82e1804a7c71bc43",
+      "evidenceChangedPathCount": 2,
+      "implementationOrRuntimeSourceChanged": false
+    },
+    "freshCacheClosureArtifacts": [
+      {
+        "coordinate": "com.google.guava:guava-parent:33.3.1-jre",
+        "artifact": "guava-parent-33.3.1-jre.pom",
+        "bytes": 20206,
+        "sha256": "55441db27e8869dfefe053059bdf478bdc7e95585642bf391f0023345fd56287",
+        "sha1": "94729a0ed1dc35f623edd13afa6c1c2fe9a15d7c"
+      },
+      {
+        "coordinate": "org.junit:junit-bom:5.9.2",
+        "artifact": "junit-bom-5.9.2.module",
+        "bytes": 6956,
+        "sha256": "ab137ba5a8e32c9b066bf9126a1c76dd5614b724ba5c0b02549772b5e9f4cf1f",
+        "sha1": "911eb82319eec8e880e4d32ab4da7323837dfc00"
+      }
+    ],
+    "artifactByteCountsAndDigestsMatchedRetainedImmutableCacheBytes": true,
+    "verification": {
+      "fullStaticBuildAndUnitTasks": "104/104",
+      "unitTests": "91/91 across 15 suites",
+      "freshOwnedConfigurationGraphTasks": "81/81",
+      "forcedR8AndPackageTasks": "46/46"
+    },
+    "dependencyGraph": {
+      "bytes": 332184,
+      "sha256": "3ab12ef698e59f323e71431496d72debd5741669b395b8052ad41b9a8b8b34a7",
+      "configurationCount": 61,
+      "allConfigurationsResolved": true,
+      "policyCoveredConfigurationCount": 34,
+      "outsidePolicyBoundaryToolingConfigurationCount": 27,
+      "policyCoveredJsr305ResolvedComponentCount": 0,
+      "policyCoveredPackagedJsr305ClassDefinitionCount": 0,
+      "graphDrift": false
+    },
+    "locksAndMetadata": {
+      "recoveryLockBytes": 3395,
+      "recoveryLockSha256": "2e0de74c01b452476223a757ffa52ccc7f3f1ab74e9736e36bcd4a2ff0e8f08c",
+      "verificationMetadataGitBlobSha1": "5e12177e5b397a65d78c456a96dd5e429674b706",
+      "verificationMetadataRawGitBytes": 295455,
+      "verificationMetadataRawGitSha256": "3b95f9e8bfd2d55e9c647cae94b3a2769100f0edeb5eed3fec4201cc9357ae78",
+      "runtimeGraphChanged": false,
+      "lockChanged": false,
+      "licenseOrAdmissionDecisionChanged": false
+    },
+    "r8AndPackaging": {
+      "rulesSha256": "855841c6c021423972d874bf841ed4a1e55e669a69633a75f2e93531e2b7e39e",
+      "mappingBytes": 7695188,
+      "mappingSha256": "330ed8d37ad5dd93cf3caf8648fa4a26bb0d65a993e548223c3893c7fc1a4b1b",
+      "configurationBytes": 11204,
+      "configurationSha256": "49908c445b3512e019e339ea7fef6e8c44ca132b3f3f1454e5d7997e3f86f651",
+      "debugApkBytes": 6352440,
+      "debugApkSha256": "b55a08df042b4fdcb624132a24c1c48e4760b7ee333e77459b59ad7abee94a6e",
+      "debugDexCount": 5,
+      "releaseUnsignedApkBytes": 2477410,
+      "releaseUnsignedApkSha256": "7dc17cb4034d967676c6212ff7890473a171566b0922fc4cd60299b7e451cb4a",
+      "releaseDexCount": 1,
+      "debugAndReleaseNativeEntryCount": 0,
+      "debugAndReleaseJavaxAnnotationDefinitionCount": 0,
+      "allHashesMatchedReviewedEvidenceAndRetainedOutputs": true
+    },
+    "evidenceBindingsAndPrivacy": {
+      "allManifestAndCrossPinsMatched": true,
+      "strictUtf8BomFreeLfNormalizedGitBlobs": true,
+      "xmlAndJsonParsed": true,
+      "sensitiveContentOrUserSpecificPathFindingCount": 0
+    },
+    "workingTreeClean": true
+  },
+  "residualLimits": [
+    "No Android Keystore device or emulator execution was performed.",
+    "This audit is not the distinct accountable Engineering/Security review and does not record any accountable checklist answer, identity, signature or formal decision.",
+    "This audit does not activate REC-I3 or claim PoC PASS, readiness, dependency admission or production admission.",
+    "The reviewer made no edits, build, network access, Git mutation, Pull Request or CI action, Google Sheet mutation, Omi work or merge."
+  ],
+  "dispositionEffect": {
+    "freshGraphVerificationMetadataFindingClosed": true,
+    "freshIndependentAdvisoryDeltaReviewCompleted": true,
+    "accountableEngineeringSecurityReviewRoutingMayBeRebuilt": true,
+    "accountableEngineeringSecurityReviewCompleted": false,
+    "accountableChecklistAnswersRecorded": false,
+    "claimCeiling": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
+    "recI3Activated": false,
+    "pocPassOrReadinessClaimed": false,
+    "dependencyOrProductionAdmissionGranted": false,
+    "publicationOrMergeGrantedByThisReview": false
+  },
+  "sanitization": {
+    "containsKeyMaterial": false,
+    "containsPlaintextOrCiphertextPayloads": false,
+    "containsCredentialsOrTokens": false,
+    "containsPrivateAudioOrDeviceIdentifiers": false,
+    "containsUserSpecificAbsolutePaths": false
+  }
+}

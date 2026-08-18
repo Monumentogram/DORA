@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "recordId": "REC-I2B-INDEPENDENT-DELTA-REVIEW-CLOSURE-AUTH-20260817-01",
+  "recordType": "IMMUTABLE_SANITIZED_INDEPENDENT_ADVISORY_DELTA_REVIEW_CLOSURE",
+  "recordedAt": "2026-08-17T15:29:13+03:00",
+  "timeZone": "Europe/Moscow",
+  "pocId": "POC-RECOVERY-001",
+  "stage": "Stage 0",
+  "technicalDelegation": "STAGE0-TECHNICAL-REMEDIATION-DELEGATION-20260817-01",
+  "reviewer": {
+    "product": "OpenAI Codex",
+    "organization": "OpenAI",
+    "role": "INDEPENDENT_ADVISORY_IMPLEMENTATION_REVIEWER",
+    "formalReviewer": false,
+    "modelVersion": null,
+    "humanIdentity": null,
+    "signature": null
+  },
+  "exactReviewedState": {
+    "branch": "codex/poc-recovery-i2a-graph-probe",
+    "published": false,
+    "implementationCommit": "dca745929b59b656dfa8bb210884e3c1c4bdad0f",
+    "implementationTree": "482f0e57ad3ce9aba2b91d3cd8a5e21092757e9f",
+    "evidenceCommit": "6eb055d9fdb83445ec1dcf27898bba07af2d4951",
+    "evidenceTree": "5cb9357700a9868c70c21ff987c8261882deaa1b",
+    "reviewedEvidenceFiles": [
+      {
+        "path": "docs/evidence/poc-recovery-001/rec-i2b-runtime-crypto-implementation-evidence-2026-08-17.json",
+        "gitBlobSha1": "9ae7d6fc20b5abf599b3e0d4e9636f533d9fe56f",
+        "rawGitBytes": 25458,
+        "rawGitSha256": "c895b4f19658e611359cebfec39b2943a5fedea8ee2c2a9fa5754f3f20c6dc81"
+      },
+      {
+        "path": "docs/evidence/poc-recovery-001/rec-i2b-accountable-engineering-security-review-packet-2026-08-17.json",
+        "gitBlobSha1": "5e9b78b972845654aff7408b39a1edc304c6e207",
+        "rawGitBytes": 23530,
+        "rawGitSha256": "7034f310b8b0973425e109601c1f0ffdc7fc29eaf9f066586deecc5b9715d15a"
+      }
+    ]
+  },
+  "verdict": {
+    "disposition": "CLEAN",
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "priorAdvisoryVerdict": {
+      "disposition": "CHANGES_REQUIRED",
+      "P0": 0,
+      "P1": 3,
+      "P2": 2
+    },
+    "allPriorFindingsClosed": true,
+    "newFindings": []
+  },
+  "findingClosure": [
+    {
+      "id": "REC-I2B-ADV-P1-001",
+      "severity": "P1",
+      "status": "CLOSED",
+      "independentConclusion": "Exact public Parameters are checked through the private primary-entry/key/parameters chain before primitive exposure or use for generated and parsed keysets; exact positive suites pass and alternate Streaming 32/32/SHA256/8192 and AES-128-GCM suites are rejected only as PARSED_BUT_UNSUPPORTED_PARAMETER_SUITE."
+    },
+    {
+      "id": "REC-I2B-ADV-P1-002",
+      "severity": "P1",
+      "status": "CLOSED",
+      "independentConclusion": "Neutral cause classification is authentication-first for positive BadPaddingException or AEADBadTagException, ProviderException second and generic GeneralSecurityException UNKNOWN; success and authenticated plaintext-contract failure remain separate and no REC-I3 outcome is assigned."
+    },
+    {
+      "id": "REC-I2B-ADV-P1-003",
+      "severity": "P1",
+      "status": "CLOSED",
+      "independentConclusion": "The observing-Aead boundary separates outer invalid, positive authentication rejection, provider operational, unknown, authenticated-inner invalid and unsupported-suite failures without production manual proto parsing, SecretKeyAccess or retained plaintext/ciphertext references. Android Keystore create-new and open-existing remain distinct, alias-bound and free of generation fallback."
+    },
+    {
+      "id": "REC-I2B-ADV-P2-001",
+      "severity": "P2",
+      "status": "CLOSED",
+      "independentConclusion": "The synchronized lifecycle admits one envelope serializer and one encryption claimant, permanently poisons a wrapper after an in-flight envelope failure, and is covered by barrier-driven concurrency tests."
+    },
+    {
+      "id": "REC-I2B-ADV-P2-002",
+      "severity": "P2",
+      "status": "CLOSED",
+      "independentConclusion": "Evidence uses exact DORA_RECOVERY_STREAM_AAD_V1_BINARY_BE, retains the old 0/3/2 advisory provenance, binds the reviewed state exactly and made no premature post-remediation zero-finding claim before this review."
+    }
+  ],
+  "independentProof": {
+    "targetedGradle": {
+      "result": "PASS",
+      "actionableTasks": 35,
+      "executedTasks": 35
+    },
+    "unitTests": {
+      "suiteCount": 15,
+      "testCount": 91,
+      "passed": 91,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "cryptoPolicy": {
+      "result": "PASS",
+      "bytes": 1924,
+      "sha256": "c7bd85cea72992303979e49b3ff3d5af8af7d3ca6efe6b8da0e990093c189d38"
+    },
+    "sourceManifest": {
+      "verifiedGitBlobByteShaTripleCount": 13,
+      "expectedGitBlobByteShaTripleCount": 13,
+      "allMatched": true
+    },
+    "reviewedEvidenceBinding": {
+      "byteAndSha256PinsRecomputed": true,
+      "allMatched": true
+    },
+    "dependencyGraph": {
+      "bytes": 332184,
+      "sha256": "3ab12ef698e59f323e71431496d72debd5741669b395b8052ad41b9a8b8b34a7",
+      "configurationCount": 61,
+      "allConfigurationsResolved": true,
+      "policyCoveredConfigurationCount": 34,
+      "outsidePolicyBoundaryToolingConfigurationCount": 27,
+      "policyCoveredJsr305ResolvedComponentCount": 0,
+      "policyCoveredPackagedJsr305ClassDefinitionCount": 0,
+      "graphDrift": false
+    },
+    "r8AndPackaging": {
+      "mappingBytes": 7695188,
+      "mappingSha256": "330ed8d37ad5dd93cf3caf8648fa4a26bb0d65a993e548223c3893c7fc1a4b1b",
+      "configurationBytes": 11204,
+      "configurationSha256": "49908c445b3512e019e339ea7fef6e8c44ca132b3f3f1454e5d7997e3f86f651",
+      "debugApkBytes": 6352440,
+      "debugApkSha256": "b55a08df042b4fdcb624132a24c1c48e4760b7ee333e77459b59ad7abee94a6e",
+      "debugDexCount": 5,
+      "releaseUnsignedApkBytes": 2477410,
+      "releaseUnsignedApkSha256": "7dc17cb4034d967676c6212ff7890473a171566b0922fc4cd60299b7e451cb4a",
+      "releaseDexCount": 1,
+      "debugDex": [
+        {
+          "name": "classes.dex",
+          "bytes": 6004860,
+          "sha256": "dc93faa74f4e08327b3e61a745c9c3f5e0ea693cd88aa5d59c242c87a7f54986"
+        },
+        {
+          "name": "classes2.dex",
+          "bytes": 600,
+          "sha256": "073e09bb006fcd14045936c70d0846b0d732e149d53977885403a913d715d952"
+        },
+        {
+          "name": "classes3.dex",
+          "bytes": 55044,
+          "sha256": "cab8c6b753c75001792a4cc9107d7e857001cf41cdb3559d0286be14431269c8"
+        },
+        {
+          "name": "classes4.dex",
+          "bytes": 175668,
+          "sha256": "0b64479daf0a56f779682c904578a7a4fc43e9c10c5f0d1ae292c96f5093df3f"
+        },
+        {
+          "name": "classes5.dex",
+          "bytes": 97312,
+          "sha256": "898c70366500aedf51a04c4df96c5463fbbb131ef97f6146a4000d2cfb2232ba"
+        }
+      ],
+      "releaseDex": [
+        {
+          "name": "classes.dex",
+          "bytes": 2462772,
+          "sha256": "8e35af7306c6cfe1237f3db64dc3f649ed7ce0e7587f82b265ad09a038346ea9"
+        }
+      ],
+      "debugRecoveryCryptoClassDefinitionCount": 33,
+      "releaseRecoveryCryptoClassDefinitionCount": 31,
+      "newRuntimeDefinitionCount": 1,
+      "decryptSignalDefinitionCount": 1,
+      "parseSignalDefinitionCount": 1,
+      "observerDefinitionCount": 1,
+      "debugAndReleaseNativeEntryCount": 0,
+      "debugAndReleaseJavaxAnnotationDefinitionCount": 0,
+      "allHashesRecomputedAndMatched": true
+    },
+    "workingTreeClean": true
+  },
+  "residualLimits": [
+    "Tink Aead guarantees only GeneralSecurityException; precise Android provider cause chains remain device- and provider-dependent, so generic failures correctly remain UNKNOWN.",
+    "No Android Keystore device or emulator execution was performed.",
+    "This audit is not the distinct accountable Engineering/Security review and does not activate REC-I3.",
+    "The reviewer made no edits, commit, push, Pull Request, device execution, Google Sheet mutation or merge."
+  ],
+  "dispositionEffect": {
+    "priorAdvisoryFindingsClosed": true,
+    "accountableEngineeringSecurityReviewRoutingMayBeRebuilt": true,
+    "accountableEngineeringSecurityReviewCompleted": false,
+    "claimCeiling": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
+    "recI3Activated": false,
+    "pocPassOrReadinessClaimed": false,
+    "dependencyOrProductionAdmissionGranted": false,
+    "publicationOrMergeGranted": false
+  },
+  "sanitization": {
+    "containsKeyMaterial": false,
+    "containsPlaintextOrCiphertextPayloads": false,
+    "containsCredentialsOrTokens": false,
+    "containsPrivateAudioOrDeviceIdentifiers": false,
+    "containsUserSpecificAbsolutePaths": false
+  }
+}
