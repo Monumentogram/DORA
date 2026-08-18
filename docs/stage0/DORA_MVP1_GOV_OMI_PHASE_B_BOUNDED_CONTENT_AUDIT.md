@@ -1,9 +1,13 @@
 # Dora MVP 1 — GOV-OMI-001 Phase B bounded public-content audit
 
-Authority: GOV-OMI-PHASE-B-BOUNDED-PUBLIC-SOURCE-CONTENT-AUDIT-AUTH-20260818-01  
-Version: gov-omi-phase-b-bounded-content-audit-v0.1  
-Date: 18 August 2026  
-State: AUTHORIZED_BOUNDED_MECHANICAL_AUDIT; retrieval is permitted only after this frozen checkpoint  
+Authority: GOV-OMI-PHASE-B-BOUNDED-PUBLIC-SOURCE-CONTENT-AUDIT-AUTH-20260818-01
+
+Version: gov-omi-phase-b-bounded-content-audit-v0.1
+
+Date: 18 August 2026
+
+State: AUTHORIZED_BOUNDED_MECHANICAL_AUDIT; retrieval is permitted only after this frozen checkpoint
+
 Policy boundary: DORA_MVP1_IP_ASSET_POLICY.md; engineering evidence, not legal advice
 
 ## 1. Purpose and authority boundary
@@ -217,4 +221,3 @@ Exactly five new Dora files are permitted on this branch:
 The first two files are the immutable pre-query plan. File 3 is committed after tree metadata and
 before any contract/test blob request. Files 4–5 contain sanitized results. Local validation,
 explicit-file commits, push and a Draft PR are allowed. Ready and merge are not authorized.
-
