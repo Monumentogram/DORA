@@ -1,6 +1,6 @@
 # Dora MVP 1 — Stage Status
 
-Updated: 16 August 2026
+Updated: 18 August 2026
 Baseline: `1be83e2940a09f7b23e33b4cdf3827de2690f3fd`
 Stage 00 merge commit: `a4aae302f9033e5471f6759f513e7e351c375a72`
 Stage 0A merge commit: `91b9916b01ff70f63d82412bafbed0d72307dbe1`
@@ -12,6 +12,17 @@ Active stage: `Stage 0D — POC-RECOVERY-001 authorized I1 contract foundation`
 Work branch: task-scoped; live Git/GitHub metadata is authoritative and no branch name is a stage invariant
 Active PoC: `POC-RECOVERY-001`
 Stage state: **REC-I1 REVIEWED AND SQUASH-MERGED; POST-MERGE VALIDATOR LIFECYCLE REMEDIATED; RUNTIME IMPLEMENTATION, ACTUAL GRAPH AND EXECUTION BLOCKED**
+
+Omi upstream-governance reconciliation: `GOV-OMI-001` /
+`gov-omi-reuse-stage0-v0.1` is now defined as a separate `TODO` task. Owner scope on
+18 August 2026 authorizes only this task definition. `auditExecutionAllowed=false`,
+`sourceCopyOrPortAllowed=false`, `thirdPartyCodeExecutionAllowed=false`,
+`dependencyAdmission=false` and `productImplementationAllowed=false`. The future audit must pin one
+immutable Omi commit/tree, inventory license and component surfaces, convert verified upstream
+failures into Dora regression specifications, and classify candidates without silently changing
+Dora invariants. No Omi source, dependency, executable, model, dataset, asset or test is imported by
+this definition. Active Stage 0D, all Recovery authority flags and every existing PoC verdict remain
+unchanged.
 
 Design-governance reconciliation: `DES-EXPORT-001` / `des-export-interaction-v0.1` is contract
 complete under `DEC-017`; no implementation/conformance/user-research, code/Figma/schema/provider
