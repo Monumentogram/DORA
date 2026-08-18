@@ -2,6 +2,7 @@ package com.monumentogram.dora.poc.vpn.transport
 
 import com.monumentogram.dora.poc.vpn.contract.ArtifactClass
 import com.monumentogram.dora.poc.vpn.contract.CanonicalValue
+import com.monumentogram.dora.poc.vpn.contract.ClientState
 import com.monumentogram.dora.poc.vpn.contract.ConsentProfileBinding
 import com.monumentogram.dora.poc.vpn.contract.ConsentPurpose
 import com.monumentogram.dora.poc.vpn.contract.ContractCatalog
@@ -161,6 +162,10 @@ internal object LoopbackTransportHostTest {
             runScenario(::multipartSnapshotCompletionAndReads)
             runScenario(::finiteRetryProfiles)
             runScenario(::cancellationAndDeletionLifecycle)
+            runScenario(::i3ConnectPartAndRetryAfterFaults)
+            runScenario(::i3PlanRefreshAndSimulatedRoutes)
+            runScenario(::i3ProcessDeathAndPollReconciliation)
+            runScenario(::i3DeletionPendingRecovery)
             runScenario(::constructorAndCleanupFailureBoundary)
             forkTerminationAndSocketRegression()
             assertHarnessRunRequestIds()
@@ -1347,17 +1352,37 @@ internal object LoopbackTransportHostTest {
             contractForbiddenFields.containsAll(boundedCategories),
             "credential categories derive from contract record",
         )
-        listOf("contractPins", "implementationPins").forEach { pinGroup ->
-            evidence.requiredArray(pinGroup).forEach { value ->
-                val pin = value as CanonicalValue.ObjectValue
-                val bytes = Files.readAllBytes(root.resolve(pin.requiredString("path")))
-                checkEquals(
-                    pin.requiredString("sha256"),
-                    ContractOracle.sha256Hex(bytes).value,
-                    "$pinGroup source hash",
-                )
-            }
+        evidence.requiredArray("contractPins").forEach { value ->
+            val pin = value as CanonicalValue.ObjectValue
+            val bytes = Files.readAllBytes(root.resolve(pin.requiredString("path")))
+            checkEquals(
+                pin.requiredString("sha256"),
+                ContractOracle.sha256Hex(bytes).value,
+                "contractPins source hash",
+            )
         }
+        val historicalImplementationPins =
+            evidence.requiredArray("implementationPins").associate { value ->
+                val pin = value as CanonicalValue.ObjectValue
+                pin.requiredString("path") to pin.requiredString("sha256")
+            }
+        checkEquals(
+            mapOf(
+                transportHarnessPath + "build.gradle.kts" to
+                    "74813f6d90243e1b73c7c31e96b95d5fe69142547986ac00211f48db11055097",
+                transportHarnessPath +
+                    "src/main/kotlin/com/monumentogram/dora/poc/vpn/transport/LoopbackHttpTransport.kt" to
+                    "765f168602a7d48f673b8041022dab10b272d5da778ebfa13fe27a426159b2bb",
+                transportHarnessPath +
+                    "src/main/kotlin/com/monumentogram/dora/poc/vpn/transport/SyntheticContractService.kt" to
+                    "64c08db43d885a43013a23d44668a16f208d9bdb34559ed0e5b5a9c0c359d065",
+                transportHarnessPath +
+                    "src/test/kotlin/com/monumentogram/dora/poc/vpn/transport/LoopbackTransportHostTest.kt" to
+                    "d5707eb94a0d356cf937242fa0dbf30a2a148addc8f1b2f1c669308a39d77f19",
+            ),
+            historicalImplementationPins,
+            "immutable reviewed I2 historical pin set",
+        )
         val result = evidence.requiredObject("resultTaxonomy")
         checkEquals(
             "I2_IMPLEMENTED_LOCAL_CHECKS_PASS_ADVISORY_REVIEW_COMPLETE",
@@ -1367,6 +1392,171 @@ internal object LoopbackTransportHostTest {
         checkEquals("TODO", result.requiredString("pocVpnBacklogState"), "backlog truth")
         checkEquals("NOT_READY", result.requiredString("pocVpnReadiness"), "readiness truth")
         checkEquals("NOT_RUN", result.requiredString("pocVpnOverallResult"), "overall truth")
+        i3EvidenceParity(root)
+    }
+
+    @Suppress("LongMethod")
+    private fun i3EvidenceParity(root: Path) {
+        val path =
+            root.resolve(
+                "docs/evidence/poc-vpn-001/i3-host-fault-completion-local-evidence-stage0-v0.1.json"
+            )
+        val text = Files.readString(path)
+        checkThat(!text.contains(LOOPBACK_HOST), "I3 evidence excludes raw loopback address")
+        val evidence = DoraCanonicalJson.parseStrict(text) as CanonicalValue.ObjectValue
+        checkEquals(
+            "POC-VPN-001-I3-HOST-FAULT-COMPLETION-20260819",
+            evidence.requiredString("recordId"),
+            "I3 record ID",
+        )
+        val source = evidence.requiredObject("sourceSnapshot")
+        checkEquals(
+            "e48305ee3b2d18a5612e14aa6cbd4c1c289de9c7",
+            source.requiredString("githubMainCommit"),
+            "I3 base commit",
+        )
+        checkEquals(
+            "777f1f9713553fce9cc154fcee9ff60a5676b13e",
+            source.requiredString("githubMainTree"),
+            "I3 base tree",
+        )
+        val scope = evidence.requiredObject("scope")
+        val expectedFaultIds =
+            setOf(
+                "VPN-FLT-005",
+                "VPN-FLT-010",
+                "VPN-FLT-015",
+                "VPN-FLT-016",
+                "VPN-FLT-017",
+                "VPN-FLT-020",
+                "VPN-FLT-021",
+                "VPN-FLT-022",
+                "VPN-FLT-023",
+                "VPN-FLT-024",
+                "VPN-FLT-025",
+                "VPN-FLT-026",
+                "VPN-FLT-027",
+                "VPN-FLT-031",
+                "VPN-FLT-034",
+            )
+        checkEquals(
+            expectedFaultIds,
+            scope
+                .requiredArray("faultIds")
+                .map { (it as CanonicalValue.StringValue).value }
+                .toSet(),
+            "I3 exact fault IDs",
+        )
+        checkEquals(
+            expectedFaultIds.size,
+            scope.requiredArray("faultIds").size,
+            "I3 fault IDs unique",
+        )
+        checkEquals(
+            "HOST_HERMETIC_SYNTHETIC_FAULT_COMPLETION_ONLY",
+            scope.requiredString("claimCeiling"),
+            "I3 claim ceiling",
+        )
+        val tls = scope.requiredObject("tlsFault006")
+        checkEquals(
+            "CATEGORY_ONLY_UNTIL_SECURITY_SCOPE",
+            tls.requiredString("proofClass"),
+            "TLS class",
+        )
+        checkEquals("NOT_RUN", tls.requiredString("execution"), "TLS execution")
+        val sourceRoot =
+            "android/poc/vpn-contract-kernel/transport-harness/src/" +
+                "main/kotlin/com/monumentogram/dora/poc/vpn/transport/"
+        val testRoot =
+            "android/poc/vpn-contract-kernel/transport-harness/src/" +
+                "test/kotlin/com/monumentogram/dora/poc/vpn/transport/"
+        val expectedPaths =
+            setOf(
+                sourceRoot + "LoopbackHttpTransport.kt",
+                sourceRoot + "SyntheticContractService.kt",
+                testRoot + "LoopbackTransportHostTest.kt",
+                "docs/evidence/poc-vpn-001/i3-host-fault-completion-local-evidence-stage0-v0.1.json",
+            )
+        checkEquals(
+            expectedPaths,
+            scope
+                .requiredArray("allowedPaths")
+                .map {
+                    (it as CanonicalValue.StringValue).value
+                }
+                .toSet(),
+            "I3 exact path scope",
+        )
+        evidence.requiredArray("contractPins").forEach { value ->
+            val pin = value as CanonicalValue.ObjectValue
+            val bytes = Files.readAllBytes(root.resolve(pin.requiredString("path")))
+            checkEquals(
+                pin.requiredString("sha256"),
+                ContractOracle.sha256Hex(bytes).value,
+                "I3 authority pin",
+            )
+        }
+        val pins = evidence.requiredArray("implementationPins")
+        checkEquals(3, pins.size, "I3 current implementation pin count")
+        pins.forEach { value ->
+            val pin = value as CanonicalValue.ObjectValue
+            val bytes = Files.readAllBytes(root.resolve(pin.requiredString("path")))
+            checkEquals(
+                (pin.value("byteLength") as CanonicalValue.IntegerValue).value,
+                bytes.size.toLong(),
+                "I3 current implementation length",
+            )
+            checkEquals(
+                pin.requiredString("sha256"),
+                ContractOracle.sha256Hex(bytes).value,
+                "I3 current implementation hash",
+            )
+        }
+        val status = evidence.requiredObject("statusBoundary")
+        listOf(
+                "pocPassClaimed",
+                "readyClaimed",
+                "physicalExecutionClaimed",
+                "deviceExecutionClaimed",
+                "vpnExecutionClaimed",
+                "providerExecutionClaimed",
+                "productionAdmissionClaimed",
+            )
+            .forEach { name ->
+                checkThat(
+                    !(status.value(name) as CanonicalValue.BooleanValue).value,
+                    "I3 $name false",
+                )
+            }
+        checkEquals("TODO", status.requiredString("pocVpnState"), "I3 POC state")
+        checkEquals("NOT_READY", status.requiredString("pocVpnReadiness"), "I3 readiness")
+        checkEquals("NOT_RUN", status.requiredString("pocVpnOverallResult"), "I3 result")
+        checkEquals(
+            "NOT_AUTHORIZED",
+            status.requiredString("pocVpnGlobalAuthority"),
+            "I3 authority",
+        )
+        val privacy = evidence.requiredObject("privacyBoundary")
+        checkThat(
+            (privacy.value("repositoryOwnedSyntheticBytesOnly") as CanonicalValue.BooleanValue)
+                .value,
+            "I3 synthetic only",
+        )
+        checkThat(
+            !(privacy.value("rawBodiesUrisKeysTokensPersisted") as CanonicalValue.BooleanValue)
+                .value,
+            "I3 no raw persistence",
+        )
+        val review = evidence.requiredObject("independentReview")
+        checkThat(
+            !(review.value("formalReviewer") as CanonicalValue.BooleanValue).value,
+            "I3 formal reviewer false",
+        )
+        checkEquals(
+            "PENDING_DISTINCT_READ_ONLY_REVIEW",
+            review.requiredString("status"),
+            "I3 review",
+        )
     }
 
     @Suppress("LongMethod")
@@ -1701,6 +1891,882 @@ internal object LoopbackTransportHostTest {
         }
         server.close()
         assertPortClosed(port)
+    }
+
+    @Suppress("LongMethod")
+    private fun i3ConnectPartAndRetryAfterFaults() {
+        val planService = SyntheticContractService()
+        val planServer = trackedServer(planService)
+        val planPort = planServer.port
+        val planFaults =
+            FrozenClientFaultQueue(
+                listOf(
+                    ClientFaultDirective(
+                        "VPN-FLT-005",
+                        "INIT_OR_REFRESH_UPLOAD",
+                        ClientFaultAction.CONNECT_FAILURE_BEFORE_SEND,
+                    )
+                )
+            )
+        HermeticLoopbackClient(
+                planServer.endpoint,
+                requestIdAllocator,
+                clientFaults = planFaults,
+            )
+            .use { client ->
+                val jobId = createOnly(client, planServer.endpoint, "i3-flt-005")
+                val scheduler = DeterministicRetryScheduler()
+                val response =
+                    RetryingLoopbackTransport(client, scheduler)
+                        .execute(
+                            uploadPlanRequest(
+                                planServer.endpoint,
+                                jobId,
+                                fixture(),
+                                "key-synthetic-i3-flt-005-plan",
+                            )
+                        )
+                val plan = assertExactSchema(response, "UploadPlanResponse-v0.1")
+                checkEquals(
+                    1L,
+                    plan.value("planGeneration").let {
+                        (it as CanonicalValue.IntegerValue).value
+                    },
+                    "VPN-FLT-005 plan generation",
+                )
+                checkEquals(
+                    listOf("WAIT_NETWORK"),
+                    scheduler.events().map { it.category },
+                    "VPN-FLT-005 wait category",
+                )
+                checkEquals(
+                    listOf(RetryDelaySource.SIMULATED_NETWORK),
+                    scheduler.events().map { it.delaySource },
+                    "VPN-FLT-005 delay source",
+                )
+                checkEquals(1, client.contentFreeClientFaultLedger().size, "VPN-FLT-005 ledger")
+                checkThat(client.remainingClientFaults().isEmpty(), "VPN-FLT-005 queue consumed")
+                checkEquals(1, planService.job(jobId)?.planGeneration, "VPN-FLT-005 one plan")
+            }
+        planServer.close()
+        assertPortClosed(planPort)
+
+        val partService = SyntheticContractService()
+        val partServer =
+            trackedServer(
+                partService,
+                listOf(
+                    FaultDirective(
+                        "VPN-FLT-010",
+                        "UPLOAD_PART",
+                        FaultAction.DROP_BEFORE_COMMIT,
+                    )
+                ),
+            )
+        val partPort = partServer.port
+        HermeticLoopbackClient(partServer.endpoint, requestIdAllocator).use { client ->
+            val jobId = createOnly(client, partServer.endpoint, "i3-flt-010")
+            val plan =
+                client.send(
+                    uploadPlanRequest(
+                        partServer.endpoint,
+                        jobId,
+                        fixture(),
+                        "key-synthetic-i3-flt-010-plan",
+                    )
+                )
+            val uploadId =
+                assertExactSchema(plan, "UploadPlanResponse-v0.1").requiredString("uploadId")
+            val bytes =
+                ContractOracle.fixtureParts(ContractOracle.materializeFixture(fixture())).first()
+            val scheduler = DeterministicRetryScheduler()
+            val response =
+                RetryingLoopbackTransport(client, scheduler)
+                    .execute(
+                        partRequest(
+                            partServer.endpoint,
+                            uploadId,
+                            1,
+                            bytes,
+                            "key-synthetic-i3-flt-010-part",
+                        )
+                    )
+            assertExactSchema(response, "UploadPartResponse-v0.1")
+            checkEquals(
+                listOf("UNKNOWN_COMMIT"),
+                scheduler.events().map { it.category },
+                "VPN-FLT-010 replay category",
+            )
+            checkEquals(1, partService.job(jobId)?.parts?.size, "VPN-FLT-010 one committed part")
+            checkEquals(1, partService.effectTotals().receipts, "VPN-FLT-010 one part receipt")
+            checkEquals(1, partServer.contentFreeFaultLedger().size, "VPN-FLT-010 ledger")
+        }
+        partServer.close()
+        assertPortClosed(partPort)
+
+        runI3RetryAfterFault(
+            "VPN-FLT-015",
+            FaultAction.RETURN_429,
+            RetryDelaySource.RETRY_AFTER,
+            1_000,
+        )
+        runI3RetryAfterFault(
+            "VPN-FLT-016",
+            FaultAction.RETURN_429_WITHOUT_RETRY_AFTER,
+            RetryDelaySource.LOCAL_POLICY,
+            LOCAL_BACKOFF_BASE_MILLIS,
+        )
+        runI3RetryAfterFault(
+            "VPN-FLT-017",
+            FaultAction.RETURN_429_MALFORMED_RETRY_AFTER,
+            RetryDelaySource.LOCAL_POLICY,
+            LOCAL_BACKOFF_BASE_MILLIS,
+        )
+        runI3RetryAfterFault(
+            "VPN-FLT-017",
+            FaultAction.RETURN_429_OUT_OF_BUDGET_RETRY_AFTER,
+            RetryDelaySource.LOCAL_POLICY,
+            LOCAL_BACKOFF_BASE_MILLIS,
+        )
+
+        val exhaustedService = SyntheticContractService()
+        val exhaustedServer =
+            trackedServer(
+                exhaustedService,
+                List(MAX_ATTEMPTS) {
+                    FaultDirective(
+                        "VPN-FLT-017",
+                        "CREATE_JOB",
+                        FaultAction.RETURN_429_MALFORMED_RETRY_AFTER,
+                    )
+                },
+            )
+        val exhaustedPort = exhaustedServer.port
+        HermeticLoopbackClient(exhaustedServer.endpoint, requestIdAllocator).use { client ->
+            val scheduler = DeterministicRetryScheduler()
+            val exhausted = expectBudgetExhausted {
+                RetryingLoopbackTransport(client, scheduler)
+                    .execute(
+                        createRequest(
+                            exhaustedServer.endpoint.child("/v1/processing-jobs"),
+                            fixture(),
+                            "key-synthetic-i3-flt-017-exhausted",
+                        )
+                    )
+            }
+            checkEquals(MAX_ATTEMPTS, exhausted.attempts, "VPN-FLT-017 finite attempts")
+            checkEquals(
+                ClientState.FAILED_FINAL,
+                exhausted.terminalState,
+                "VPN-FLT-017 final state",
+            )
+            checkThat(!exhausted.automaticRetryScheduled, "VPN-FLT-017 no automatic retry")
+            checkEquals(
+                listOf(100L, 200L),
+                scheduler.events().map { it.logicalDelayMillis },
+                "VPN-FLT-017 local backoff",
+            )
+            checkThat(
+                scheduler.elapsedMillis() <= MAX_RETRY_ELAPSED_MILLIS,
+                "VPN-FLT-017 elapsed budget",
+            )
+            checkEquals(
+                0,
+                exhaustedService.effectTotals().economicEffects,
+                "VPN-FLT-017 zero effect",
+            )
+        }
+        exhaustedServer.close()
+        assertPortClosed(exhaustedPort)
+
+        val elapsedService = SyntheticContractService()
+        val elapsedServer =
+            trackedServer(
+                elapsedService,
+                listOf(
+                    FaultDirective(
+                        "VPN-FLT-017",
+                        "CREATE_JOB",
+                        FaultAction.RETURN_429_MALFORMED_RETRY_AFTER,
+                    )
+                ),
+            )
+        val elapsedPort = elapsedServer.port
+        HermeticLoopbackClient(elapsedServer.endpoint, requestIdAllocator).use { client ->
+            val restoredElapsed = MAX_RETRY_ELAPSED_MILLIS - LOCAL_BACKOFF_BASE_MILLIS + 1L
+            val scheduler = DeterministicRetryScheduler(restoredElapsed)
+            val exhausted = expectBudgetExhausted {
+                RetryingLoopbackTransport(client, scheduler)
+                    .execute(
+                        createRequest(
+                            elapsedServer.endpoint.child("/v1/processing-jobs"),
+                            fixture(),
+                            "key-synthetic-i3-flt-017-elapsed",
+                        )
+                    )
+            }
+            checkEquals(1, exhausted.attempts, "VPN-FLT-017 elapsed attempts")
+            checkEquals(restoredElapsed, exhausted.logicalElapsedMillis, "restored elapsed budget")
+            checkThat(scheduler.events().isEmpty(), "elapsed exhaustion schedules no retry")
+            checkEquals(1, client.sendCount(), "elapsed exhaustion one send")
+            checkEquals(0, elapsedService.effectTotals().economicEffects, "elapsed zero effect")
+        }
+        elapsedServer.close()
+        assertPortClosed(elapsedPort)
+    }
+
+    @Suppress("LongMethod")
+    private fun i3PlanRefreshAndSimulatedRoutes() {
+        val refreshService = SyntheticContractService()
+        val refreshServer =
+            trackedServer(
+                refreshService,
+                listOf(
+                    FaultDirective(
+                        "VPN-FLT-020",
+                        "UPLOAD_PART",
+                        FaultAction.RETURN_UPLOAD_URL_EXPIRED,
+                    )
+                ),
+            )
+        val refreshPort = refreshServer.port
+        HermeticLoopbackClient(refreshServer.endpoint, requestIdAllocator).use { client ->
+            val jobId = createOnly(client, refreshServer.endpoint, "i3-flt-020")
+            val firstPlanResponse =
+                client.send(
+                    uploadPlanRequest(
+                        refreshServer.endpoint,
+                        jobId,
+                        fixture(),
+                        "key-synthetic-i3-flt-020-plan-1",
+                    )
+                )
+            val firstPlan = assertExactSchema(firstPlanResponse, "UploadPlanResponse-v0.1")
+            val uploadId = firstPlan.requiredString("uploadId")
+            val firstPart =
+                ContractOracle.fixtureParts(ContractOracle.materializeFixture(fixture())).first()
+            val expired =
+                client.send(
+                    partRequest(
+                        refreshServer.endpoint,
+                        uploadId,
+                        1,
+                        firstPart,
+                        "key-synthetic-i3-flt-020-expired-part",
+                    )
+                )
+            checkEquals(410, expired.status, "VPN-FLT-020 expired status")
+            val expiredBody = assertExactSchema(expired, "ErrorResponse-v0.1")
+            checkEquals(
+                "REFRESH_UPLOAD_PLAN",
+                expiredBody.requiredString("retryClass"),
+                "VPN-FLT-020 retry mapping",
+            )
+            checkThat(
+                refreshService.job(jobId)?.parts?.isEmpty() == true,
+                "expired part not committed",
+            )
+
+            val nextPlanResponse =
+                client.send(
+                    uploadPlanRequest(
+                        refreshServer.endpoint,
+                        jobId,
+                        fixture(),
+                        "key-synthetic-i3-flt-020-plan-2",
+                        priorUploadId = uploadId,
+                        requestedPlanGeneration = 2,
+                    )
+                )
+            val nextPlan = assertExactSchema(nextPlanResponse, "UploadPlanResponse-v0.1")
+            checkEquals(uploadId, nextPlan.requiredString("uploadId"), "VPN-FLT-020 same upload")
+            checkEquals(
+                ENDPOINT_BINDING.endpointId,
+                nextPlan.requiredString("endpointId"),
+                "VPN-FLT-020 endpoint stable",
+            )
+            checkEquals(
+                ENDPOINT_BINDING.regionCode,
+                nextPlan.requiredString("regionCode"),
+                "VPN-FLT-020 region stable",
+            )
+            val stalePart =
+                client.send(
+                    partRequest(
+                        refreshServer.endpoint,
+                        uploadId,
+                        1,
+                        firstPart,
+                        "key-synthetic-i3-flt-020-stale-part",
+                    )
+                )
+            checkEquals(409, stalePart.status, "VPN-FLT-020 stale generation rejected")
+            val acceptedPart =
+                client.send(
+                    partRequest(
+                        refreshServer.endpoint,
+                        uploadId,
+                        1,
+                        firstPart,
+                        "key-synthetic-i3-flt-020-current-part",
+                        planGeneration = 2,
+                    )
+                )
+            assertExactSchema(acceptedPart, "UploadPartResponse-v0.1")
+            checkEquals(2, refreshService.job(jobId)?.planGeneration, "VPN-FLT-020 next generation")
+            checkEquals(1, refreshService.job(jobId)?.parts?.size, "VPN-FLT-020 one part")
+        }
+        refreshServer.close()
+        assertPortClosed(refreshPort)
+
+        runI3PartRouteFault("VPN-FLT-021", serverSide = true)
+        listOf("VPN-FLT-022", "VPN-FLT-023", "VPN-FLT-024", "VPN-FLT-025").forEach { faultId ->
+            runI3PartRouteFault(faultId, serverSide = false)
+        }
+    }
+
+    @Suppress("LongMethod")
+    private fun i3ProcessDeathAndPollReconciliation() {
+        val fixture = fixture()
+        val fixtureBytes = ContractOracle.materializeFixture(fixture)
+        val parts = ContractOracle.fixtureParts(fixtureBytes)
+        val initialService = SyntheticContractService()
+        val initialServer = trackedServer(initialService)
+        val initialPort = initialServer.port
+        lateinit var jobId: String
+        lateinit var uploadId: String
+        lateinit var firstPart: UploadedPart
+        lateinit var partOperationRequest: HarnessRequest
+        lateinit var partCheckpoint: ClientRecoverySnapshot
+        initialServer.use {
+            HermeticLoopbackClient(initialServer.endpoint, requestIdAllocator).use { client ->
+                jobId = createOnly(client, initialServer.endpoint, "i3-flt-026")
+                val plan =
+                    client.send(
+                        uploadPlanRequest(
+                            initialServer.endpoint,
+                            jobId,
+                            fixture,
+                            "key-synthetic-i3-flt-026-plan",
+                        )
+                    )
+                uploadId =
+                    assertExactSchema(plan, "UploadPlanResponse-v0.1").requiredString("uploadId")
+                partOperationRequest =
+                    partRequest(
+                        initialServer.endpoint,
+                        uploadId,
+                        1,
+                        parts.first(),
+                        "key-synthetic-i3-flt-026-part",
+                    )
+                val duplicateCaseHeaders =
+                    partOperationRequest.headers +
+                        ("IDEMPOTENCY-KEY" to
+                            checkNotNull(partOperationRequest.headers["Idempotency-Key"]))
+                checkThat(
+                    initialService.contentFreeOperationIdentity(
+                        partOperationRequest.copy(headers = duplicateCaseHeaders)
+                    ) == null,
+                    "VPN-FLT-026 duplicate header identity rejected",
+                )
+                checkThat(
+                    initialService.contentFreeOperationIdentity(
+                        partOperationRequest.copy(operationClass = "CREATE_JOB")
+                    ) == null,
+                    "VPN-FLT-026 mismatched operation identity rejected",
+                )
+                val nonLoopbackUri =
+                    URI("http://127.0.0.2:${initialServer.port}" + partOperationRequest.uri.rawPath)
+                checkThat(
+                    initialService.contentFreeOperationIdentity(
+                        partOperationRequest.copy(uri = nonLoopbackUri)
+                    ) == null,
+                    "VPN-FLT-026 non-loopback identity rejected",
+                )
+                val identity =
+                    checkNotNull(initialService.contentFreeOperationIdentity(partOperationRequest))
+                val clientLedger = DeterministicClientRecoveryLedger()
+                clientLedger.begin(ClientState.UPLOADING, identity)
+                partCheckpoint = clientLedger.snapshot()
+                val response = client.send(partOperationRequest)
+                firstPart = uploadedPart(1, parts.first(), response)
+                checkEquals(1, initialService.job(jobId)?.parts?.size, "VPN-FLT-026 server commit")
+            }
+        }
+        assertPortClosed(initialPort)
+
+        val afterPartEffects = initialService.effectTotals()
+        val restoredPartService = SyntheticContractService(initialService.snapshot())
+        val restoredPartServer = trackedServer(restoredPartService)
+        val restoredPartPort = restoredPartServer.port
+        checkThat(restoredPartPort != initialPort, "VPN-FLT-026 new loopback port")
+        val restoredClientLedger = DeterministicClientRecoveryLedger(partCheckpoint)
+        HermeticLoopbackClient(restoredPartServer.endpoint, requestIdAllocator).use { client ->
+            val replayRequest =
+                partOperationRequest.copy(
+                    uri = restoredPartServer.endpoint.child(partOperationRequest.uri.rawPath)
+                )
+            val replayIdentity =
+                checkNotNull(restoredPartService.contentFreeOperationIdentity(replayRequest))
+            checkEquals(
+                partCheckpoint.pendingOperation,
+                replayIdentity,
+                "VPN-FLT-026 identity stable",
+            )
+            val replay = client.send(replayRequest)
+            assertReplayMarker(replay, expected = true)
+            checkEquals(
+                firstPart.receiptId,
+                objectBody(replay).requiredString("partReceiptId"),
+                "VPN-FLT-026 receipt",
+            )
+            checkEquals(
+                afterPartEffects,
+                restoredPartService.effectTotals(),
+                "VPN-FLT-026 zero duplicate",
+            )
+            restoredClientLedger.reconcile(replayIdentity, replay, ClientState.UPLOADING)
+            val reconciled = restoredClientLedger.snapshot()
+            checkThat(reconciled.pendingOperation == null, "VPN-FLT-026 pending cleared")
+            checkEquals(ClientState.UPLOADING, reconciled.durableState, "VPN-FLT-026 state")
+            checkEquals(
+                ContractOracle.sha256Hex(replay.body),
+                reconciled.reconciledResponseDigest,
+                "VPN-FLT-026 response digest",
+            )
+
+            val uploaded = mutableListOf(firstPart)
+            for (ordinal in 2..parts.size) {
+                val response =
+                    client.send(
+                        partRequest(
+                            restoredPartServer.endpoint,
+                            uploadId,
+                            ordinal,
+                            parts[ordinal - 1],
+                            "key-synthetic-i3-flt-027-part-$ordinal",
+                        )
+                    )
+                uploaded += uploadedPart(ordinal, parts[ordinal - 1], response)
+            }
+            val complete =
+                completeRequest(
+                    restoredPartServer.endpoint,
+                    jobId,
+                    uploadId,
+                    uploaded,
+                    "key-synthetic-i3-flt-027-complete",
+                    fixtureBytes.size,
+                )
+            val completeIdentity =
+                checkNotNull(restoredPartService.contentFreeOperationIdentity(complete))
+            val completeLedger = DeterministicClientRecoveryLedger()
+            completeLedger.begin(ClientState.COMPLETING, completeIdentity)
+            val completeCheckpoint = completeLedger.snapshot()
+
+            val lossServer =
+                trackedServer(
+                    restoredPartService,
+                    listOf(
+                        FaultDirective(
+                            "VPN-FLT-027",
+                            "COMPLETE_UPLOAD",
+                            FaultAction.DROP_AFTER_COMMIT,
+                        )
+                    ),
+                )
+            val lossPort = lossServer.port
+            val lossRequest = complete.copy(uri = lossServer.endpoint.child(complete.uri.rawPath))
+            HermeticLoopbackClient(lossServer.endpoint, requestIdAllocator).use { lossClient ->
+                expectIo { lossClient.send(lossRequest) }
+            }
+            checkEquals("RESULT_READY", restoredPartService.job(jobId)?.state, "VPN-FLT-027 commit")
+            val effectsAfterComplete = restoredPartService.effectTotals()
+            lossServer.close()
+            assertPortClosed(lossPort)
+
+            val completeRestoredService = SyntheticContractService(restoredPartService.snapshot())
+            val completeRestoredServer = trackedServer(completeRestoredService)
+            val completeRestoredPort = completeRestoredServer.port
+            val completeRestoredLedger = DeterministicClientRecoveryLedger(completeCheckpoint)
+            HermeticLoopbackClient(completeRestoredServer.endpoint, requestIdAllocator).use {
+                completeClient ->
+                val completeReplay =
+                    complete.copy(uri = completeRestoredServer.endpoint.child(complete.uri.rawPath))
+                val replayIdentity =
+                    checkNotNull(
+                        completeRestoredService.contentFreeOperationIdentity(completeReplay)
+                    )
+                checkEquals(
+                    completeCheckpoint.pendingOperation,
+                    replayIdentity,
+                    "VPN-FLT-027 identity stable",
+                )
+                val replay = completeClient.send(completeReplay)
+                assertReplayMarker(replay, expected = true)
+                completeRestoredLedger.reconcile(
+                    replayIdentity,
+                    replay,
+                    ClientState.REMOTE_PROCESSING,
+                )
+                checkEquals(
+                    effectsAfterComplete,
+                    completeRestoredService.effectTotals(),
+                    "VPN-FLT-027 zero duplicate",
+                )
+                checkEquals(
+                    1,
+                    completeRestoredService.snapshot().jobs.values.count { it.resultId != null },
+                    "VPN-FLT-027 one result",
+                )
+
+                runI3PollFault(completeRestoredService, jobId)
+            }
+            completeRestoredServer.close()
+            assertPortClosed(completeRestoredPort)
+        }
+        restoredPartServer.close()
+        assertPortClosed(restoredPartPort)
+    }
+
+    @Suppress("LongMethod")
+    private fun i3DeletionPendingRecovery() {
+        val service = SyntheticContractService()
+        val server = trackedServer(service)
+        val port = server.port
+        lateinit var deletionId: String
+        lateinit var baselineDeletion: DeletionState
+        lateinit var receiptRequest: HarnessRequest
+        lateinit var effectsAfterDelete: EffectVector
+        HermeticLoopbackClient(server.endpoint, requestIdAllocator).use { client ->
+            val uploaded = createAndUpload(client, server.endpoint, "i3-flt-034")
+            val complete =
+                completeRequest(
+                    server.endpoint,
+                    uploaded.jobId,
+                    uploaded.uploadId,
+                    uploaded.parts,
+                    "key-synthetic-i3-flt-034-complete",
+                    uploaded.parts.sumOf { it.bytes.size },
+                )
+            checkEquals(202, client.send(complete).status, "VPN-FLT-034 complete")
+            val conversation = conversationFixtureId(uploaded.jobId)
+            val delete =
+                client.send(
+                    deleteRequest(
+                        server.endpoint,
+                        conversation,
+                        "key-synthetic-i3-flt-034-delete",
+                    )
+                )
+            deletionId =
+                assertExactSchema(delete, "DeleteResponse-v0.1").requiredString("deletionId")
+            baselineDeletion = checkNotNull(service.deletion(deletionId))
+            effectsAfterDelete = service.effectTotals()
+            var visibleSubstatus = "DELETE_RECEIPT_POLL_ELIGIBLE"
+            listOf(
+                    "VPN-C-TR-044",
+                    "VPN-C-TR-045",
+                    "VPN-C-TR-052",
+                    "VPN-C-TR-047",
+                    "VPN-C-TR-052",
+                )
+                .forEach { transitionId ->
+                    val selected =
+                        checkNotNull(
+                            ContractOracle.selectClientTransition(
+                                ClientState.DELETE_PENDING,
+                                setOf(transitionId),
+                                currentVisibleSubstatus = visibleSubstatus,
+                            )
+                        )
+                    checkEquals(
+                        ClientState.DELETE_PENDING,
+                        selected.to,
+                        "$transitionId preserves delete",
+                    )
+                    checkThat(selected.preserveDeletionRecord, "$transitionId record flag")
+                    visibleSubstatus = checkNotNull(selected.visibleSubstatus)
+                    checkEquals(
+                        baselineDeletion,
+                        service.deletion(deletionId),
+                        "$transitionId server deletion unchanged",
+                    )
+                }
+            checkEquals(
+                "DELETE_RECEIPT_POLL_ELIGIBLE",
+                visibleSubstatus,
+                "VPN-FLT-034 explicit recovery substatus",
+            )
+            receiptRequest = readRequest(server.endpoint, "/v1/deletions/$deletionId")
+        }
+        server.close()
+        assertPortClosed(port)
+
+        val retryService = SyntheticContractService(service.snapshot())
+        val retryServer =
+            trackedServer(
+                retryService,
+                List(MAX_ATTEMPTS) {
+                    FaultDirective(
+                        "VPN-FLT-034",
+                        "POLL_DELETION_RECEIPT",
+                        FaultAction.RETURN_503,
+                    )
+                },
+            )
+        val retryPort = retryServer.port
+        HermeticLoopbackClient(retryServer.endpoint, requestIdAllocator).use { client ->
+            val reboundRequest =
+                receiptRequest.copy(uri = retryServer.endpoint.child(receiptRequest.uri.rawPath))
+            val scheduler = DeterministicRetryScheduler()
+            val exhausted = expectBudgetExhausted {
+                RetryingLoopbackTransport(
+                        client,
+                        scheduler,
+                        terminalContext = RetryTerminalContext.DELETE_PENDING,
+                    )
+                    .execute(reboundRequest)
+            }
+            checkEquals(ClientState.DELETE_PENDING, exhausted.terminalState, "VPN-FLT-034 pending")
+            checkEquals(
+                "DELETE_MANUAL_RETRY_REQUIRED",
+                exhausted.visibleSubstatus,
+                "VPN-FLT-034 manual retry",
+            )
+            checkThat(!exhausted.automaticRetryScheduled, "VPN-FLT-034 no wakeup")
+            checkEquals(
+                baselineDeletion,
+                retryService.deletion(deletionId),
+                "VPN-FLT-034 record stable",
+            )
+            val explicitResume =
+                checkNotNull(
+                    ContractOracle.selectClientTransition(
+                        ClientState.DELETE_PENDING,
+                        setOf("VPN-C-TR-052"),
+                        currentVisibleSubstatus = exhausted.visibleSubstatus,
+                    )
+                )
+            checkEquals(ClientState.DELETE_PENDING, explicitResume.to, "explicit resume pending")
+            checkEquals(
+                "DELETE_RECEIPT_POLL_ELIGIBLE",
+                explicitResume.visibleSubstatus,
+                "explicit resume grants finite poll",
+            )
+            checkThat(explicitResume.preserveDeletionRecord, "explicit resume preserves record")
+
+            val resumed =
+                RetryingLoopbackTransport(
+                        client,
+                        DeterministicRetryScheduler(),
+                        terminalContext = RetryTerminalContext.DELETE_PENDING,
+                    )
+                    .execute(reboundRequest)
+            val receipt = assertExactSchema(resumed, "DeletionReceiptResponse-v0.1")
+            checkEquals("DELETED", receipt.requiredString("state"), "VPN-FLT-034 receipt state")
+            val terminal = checkNotNull(retryService.deletion(deletionId))
+            checkEquals(baselineDeletion.deletionId, terminal.deletionId, "VPN-FLT-034 deletion ID")
+            checkEquals(
+                baselineDeletion.conversationFixtureId,
+                terminal.conversationFixtureId,
+                "VPN-FLT-034 conversation",
+            )
+            checkEquals(
+                baselineDeletion.deleteResourceBindingSha256,
+                terminal.deleteResourceBindingSha256,
+                "VPN-FLT-034 resource binding",
+            )
+            checkEquals(
+                baselineDeletion.idempotencyKeyDigests,
+                terminal.idempotencyKeyDigests,
+                "VPN-FLT-034 key digests",
+            )
+            checkEquals(
+                effectsAfterDelete,
+                retryService.effectTotals(),
+                "VPN-FLT-034 zero duplicate",
+            )
+            checkEquals(1, retryService.effectTotals().deletionRecords, "VPN-FLT-034 one deletion")
+            val stableReceipt = client.send(reboundRequest)
+            checkThat(resumed.body.contentEquals(stableReceipt.body), "VPN-FLT-034 stable receipt")
+        }
+        retryServer.close()
+        assertPortClosed(retryPort)
+    }
+
+    private fun runI3RetryAfterFault(
+        faultId: String,
+        action: FaultAction,
+        expectedSource: RetryDelaySource,
+        expectedDelayMillis: Long,
+    ) {
+        val service = SyntheticContractService()
+        val server = trackedServer(service, listOf(FaultDirective(faultId, "CREATE_JOB", action)))
+        val port = server.port
+        HermeticLoopbackClient(server.endpoint, requestIdAllocator).use { client ->
+            val scheduler = DeterministicRetryScheduler()
+            val response =
+                RetryingLoopbackTransport(client, scheduler)
+                    .execute(
+                        createRequest(
+                            server.endpoint.child("/v1/processing-jobs"),
+                            fixture(),
+                            "key-synthetic-i3-${faultId.lowercase()}-${action.name.lowercase()}",
+                        )
+                    )
+            assertExactSchema(response, "CreateJobResponse-v0.1")
+            val event = scheduler.events().single()
+            checkEquals("HTTP_429", event.category, "$faultId category")
+            checkEquals(expectedSource, event.delaySource, "$faultId delay source")
+            checkEquals(expectedDelayMillis, event.logicalDelayMillis, "$faultId delay")
+            checkThat(event.nextAttemptAtMillis <= MAX_RETRY_ELAPSED_MILLIS, "$faultId due time")
+            checkEquals(1, service.effectTotals().economicEffects, "$faultId one effect")
+        }
+        server.close()
+        assertPortClosed(port)
+    }
+
+    @Suppress("LongMethod")
+    private fun runI3PartRouteFault(faultId: String, serverSide: Boolean) {
+        val service = SyntheticContractService()
+        val server =
+            trackedServer(
+                service,
+                if (serverSide) {
+                    listOf(FaultDirective(faultId, "UPLOAD_PART", FaultAction.DROP_BEFORE_COMMIT))
+                } else {
+                    emptyList()
+                },
+            )
+        val port = server.port
+        val clientFaults =
+            if (serverSide) {
+                FrozenClientFaultQueue()
+            } else {
+                FrozenClientFaultQueue(
+                    listOf(
+                        ClientFaultDirective(
+                            faultId,
+                            "UPLOAD_PART",
+                            ClientFaultAction.SIMULATED_ROUTE_WAIT_BEFORE_SEND,
+                        )
+                    )
+                )
+            }
+        HermeticLoopbackClient(server.endpoint, requestIdAllocator, clientFaults = clientFaults)
+            .use { client ->
+                val jobId = createOnly(client, server.endpoint, "i3-route-${faultId.lowercase()}")
+                val plan =
+                    client.send(
+                        uploadPlanRequest(
+                            server.endpoint,
+                            jobId,
+                            fixture(),
+                            "key-synthetic-i3-route-plan-${faultId.lowercase()}",
+                        )
+                    )
+                val planBody = assertExactSchema(plan, "UploadPlanResponse-v0.1")
+                val uploadId = planBody.requiredString("uploadId")
+                val part =
+                    ContractOracle.fixtureParts(ContractOracle.materializeFixture(fixture()))
+                        .first()
+                val scheduler = DeterministicRetryScheduler()
+                val response =
+                    RetryingLoopbackTransport(client, scheduler)
+                        .execute(
+                            partRequest(
+                                server.endpoint,
+                                uploadId,
+                                1,
+                                part,
+                                "key-synthetic-i3-route-part-${faultId.lowercase()}",
+                            )
+                        )
+                assertExactSchema(response, "UploadPartResponse-v0.1")
+                checkEquals(
+                    if (serverSide) "UNKNOWN_COMMIT" else "WAIT_NETWORK",
+                    scheduler.events().single().category,
+                    "$faultId retry category",
+                )
+                checkEquals(
+                    ENDPOINT_BINDING.endpointId,
+                    service.job(jobId)?.endpointId,
+                    "$faultId endpoint",
+                )
+                checkEquals(
+                    ENDPOINT_BINDING.regionCode,
+                    service.job(jobId)?.regionCode,
+                    "$faultId region",
+                )
+                checkEquals(uploadId, service.job(jobId)?.uploadId, "$faultId upload")
+                checkEquals(1, service.job(jobId)?.parts?.size, "$faultId one part")
+                checkEquals(1, service.effectTotals().receipts, "$faultId one receipt")
+            }
+        server.close()
+        assertPortClosed(port)
+    }
+
+    @Suppress("LongMethod")
+    private fun runI3PollFault(service: SyntheticContractService, jobId: String) {
+        val server =
+            trackedServer(
+                service,
+                listOf(
+                    FaultDirective("VPN-FLT-031", "POLL_JOB", FaultAction.TIMEOUT_BEFORE_COMMIT),
+                    FaultDirective("VPN-FLT-031", "POLL_JOB", FaultAction.RETURN_503),
+                ),
+            )
+        val port = server.port
+        HermeticLoopbackClient(server.endpoint, requestIdAllocator).use { client ->
+            val scheduler = DeterministicRetryScheduler()
+            val effectsBefore = service.effectTotals()
+            val request = readRequest(server.endpoint, "/v1/processing-jobs/$jobId")
+            val response = RetryingLoopbackTransport(client, scheduler).execute(request)
+            val first = assertExactSchema(response, "JobStatusResponse-v0.1")
+            checkEquals(
+                listOf("REQUEST_TIMEOUT", "HTTP_5XX"),
+                scheduler.events().map { it.category },
+                "VPN-FLT-031 retry sequence",
+            )
+            val repeated = client.send(request)
+            val repeatedBody = assertExactSchema(repeated, "JobStatusResponse-v0.1")
+            checkEquals(
+                first.requiredString("statusEtag"),
+                repeatedBody.requiredString("statusEtag"),
+                "VPN-FLT-031 ETag",
+            )
+            checkEquals(
+                first.value("revision"),
+                repeatedBody.value("revision"),
+                "VPN-FLT-031 revision",
+            )
+            checkEquals(effectsBefore, service.effectTotals(), "VPN-FLT-031 read-only effects")
+        }
+        server.close()
+        assertPortClosed(port)
+
+        val exhaustedServer =
+            trackedServer(
+                service,
+                List(MAX_ATTEMPTS) {
+                    FaultDirective("VPN-FLT-031", "POLL_JOB", FaultAction.RETURN_503)
+                },
+            )
+        val exhaustedPort = exhaustedServer.port
+        HermeticLoopbackClient(exhaustedServer.endpoint, requestIdAllocator).use { client ->
+            val effectsBefore = service.effectTotals()
+            val exhausted = expectBudgetExhausted {
+                RetryingLoopbackTransport(client, DeterministicRetryScheduler())
+                    .execute(readRequest(exhaustedServer.endpoint, "/v1/processing-jobs/$jobId"))
+            }
+            checkEquals(MAX_ATTEMPTS, exhausted.attempts, "VPN-FLT-031 finite attempts")
+            checkEquals(ClientState.FAILED_FINAL, exhausted.terminalState, "VPN-FLT-031 terminal")
+            checkEquals(effectsBefore, service.effectTotals(), "VPN-FLT-031 exhaustion effects")
+        }
+        exhaustedServer.close()
+        assertPortClosed(exhaustedPort)
     }
 
     private fun runTransientFault(
@@ -2231,7 +3297,7 @@ internal object LoopbackTransportHostTest {
                 "payloadByteLength" to canonicalInteger(fixture.byteLength.toLong()),
                 "payloadSha256" to canonicalString(fixture.sha256.value),
             )
-        return HarnessRequest(uri, "POST", commonHeaders(key), encode(body))
+        return HarnessRequest(uri, "POST", commonHeaders(key), encode(body), "CREATE_JOB")
     }
 
     private fun cancelRequest(endpoint: URI, jobId: String, key: String): HarnessRequest =
@@ -2239,6 +3305,7 @@ internal object LoopbackTransportHostTest {
             endpoint.child("/v1/processing-jobs/$jobId:cancel"),
             "POST",
             commonHeaders(key),
+            operationClass = "CANCEL_JOB",
         )
 
     private fun deleteRequest(
@@ -2250,20 +3317,25 @@ internal object LoopbackTransportHostTest {
             endpoint.child("/v1/conversations/$conversationFixtureId/cloud-copy"),
             "DELETE",
             commonHeaders(key),
+            operationClass = "DELETE_CLOUD_COPY",
         )
 
+    @Suppress("LongParameterList")
     private fun uploadPlanRequest(
         endpoint: URI,
         jobId: String,
         fixture: FixtureDefinition,
         key: String,
+        priorUploadId: String? = null,
+        requestedPlanGeneration: Int = 1,
     ): HarnessRequest {
         val body =
             canonicalObject(
                 "schemaVersion" to canonicalString("UploadPlanRequest-v0.1"),
                 "jobId" to canonicalString(jobId),
-                "priorUploadId" to CanonicalValue.NullValue,
-                "requestedPlanGeneration" to canonicalInteger(1),
+                "priorUploadId" to
+                    (priorUploadId?.let(::canonicalString) ?: CanonicalValue.NullValue),
+                "requestedPlanGeneration" to canonicalInteger(requestedPlanGeneration.toLong()),
                 "partSizeBytes" to canonicalInteger(ContractCatalog.PART_SIZE_BYTES.toLong()),
                 "totalByteLength" to canonicalInteger(fixture.byteLength.toLong()),
                 "totalSha256" to canonicalString(fixture.sha256.value),
@@ -2273,6 +3345,7 @@ internal object LoopbackTransportHostTest {
             "POST",
             commonHeaders(key),
             encode(body),
+            "INIT_OR_REFRESH_UPLOAD",
         )
     }
 
@@ -2284,9 +3357,10 @@ internal object LoopbackTransportHostTest {
         bytes: ByteArray,
         key: String,
         declaredSha256: String = ContractOracle.sha256Hex(bytes).value,
+        planGeneration: Int = 1,
     ): HarnessRequest =
         HarnessRequest(
-            endpoint.child("/synthetic-upload/$uploadId/1/$ordinal"),
+            endpoint.child("/synthetic-upload/$uploadId/$planGeneration/$ordinal"),
             "PUT",
             commonHeaders(key) +
                 mapOf(
@@ -2294,6 +3368,7 @@ internal object LoopbackTransportHostTest {
                     "X-Content-Sha256" to declaredSha256,
                 ),
             bytes,
+            "UPLOAD_PART",
         )
 
     @Suppress("LongParameterList")
@@ -2329,11 +3404,24 @@ internal object LoopbackTransportHostTest {
             "POST",
             commonHeaders(key),
             encode(body),
+            "COMPLETE_UPLOAD",
         )
     }
 
-    private fun readRequest(endpoint: URI, path: String): HarnessRequest =
-        HarnessRequest(endpoint.child(path), "GET", commonHeaders())
+    private fun readRequest(endpoint: URI, path: String): HarnessRequest {
+        val operationClass =
+            when {
+                path.startsWith("/v1/deletions/") -> "POLL_DELETION_RECEIPT"
+                path.endsWith("/result") -> "FETCH_RESULT"
+                else -> "POLL_JOB"
+            }
+        return HarnessRequest(
+            endpoint.child(path),
+            "GET",
+            commonHeaders(),
+            operationClass = operationClass,
+        )
+    }
 
     private fun uploadedPart(
         ordinal: Int,
