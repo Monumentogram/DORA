@@ -106,6 +106,30 @@ No author/login/name/email/avatar is requested. Secret-like, personal or private
 suppressed in memory and stops the affected item; evidence retains only a sanitized suppression flag.
 No link is followed.
 
+## Incomplete-retrieval recovery checkpoint
+
+Authority GOV-OMI-PHASE-B-INCOMPLETE-RETRIEVAL-RECOVERY-AUTH-20260818-03 preserves the first
+failure and all 48 successful blob results recorded by commit e689f5e; it does not erase, rewrite
+or repeat them.
+
+The remaining canonical budget is exactly 35 requests:
+
+1. one and only one retry of blob d62389a3aedd4e1b6d44f4fe66a8d00d0a7af9ce, expected 5,125
+   bytes;
+2. after that retry succeeds, one request for each of the remaining 16 unique allowlisted blobs in
+   ordinal OID order;
+3. after all blobs succeed, one request for each of the frozen nine issues and nine Pull Requests.
+
+Arithmetic: 51 consumed + 1 retry + 16 remaining blobs + 18 tracker items = 86. The original final
+identity recheck is displaced by the explicitly authorized retry and must not run. No previously
+successful blob, metadata or tracker request may be repeated.
+
+Every recovered blob retains the same base64, size, Git OID, SHA-256, strict UTF-8, NUL and privacy
+checks. Tracker requests retain the same body/comment byte caps, ten-comment page cap, no-pagination
+rule and author-free field selection. Stop the whole recovery on a second request failure, identity,
+OID, size, request or byte-cap drift, raw-content persistence, privacy leak or any need for an
+unallowlisted request.
+
 ## Allowed findings and mandatory stop conditions
 
 The audit may record `LEARN_ONLY`, `DEFER` or `REJECT` where bounded content directly supports the

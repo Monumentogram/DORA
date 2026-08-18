@@ -12,6 +12,18 @@
     "mechanicalFindingsOnly": true,
     "legalAdvice": false
   },
+  "recoveryAuthorities": [
+    {
+      "id": "GOV-OMI-PHASE-B-CANONICAL-RECOVERY-AUTH-20260818-02",
+      "preserveExistingHistoryAndWip": true
+    },
+    {
+      "id": "GOV-OMI-PHASE-B-INCOMPLETE-RETRIEVAL-RECOVERY-AUTH-20260818-03",
+      "capturedAt": "2026-08-18T15:50:58.833Z",
+      "preserveFirstFailureAndSuccessfulRequests": true,
+      "permitExactlyOneFailedBlobRetry": true
+    }
+  ],
   "preContentCheckpoint": {
     "capturedAt": "2026-08-18T14:55:24.370Z",
     "doraRepository": "Monumentogram/DORA",
@@ -216,6 +228,50 @@
         "forwardMutationAllowed": false,
         "deleteOrRewriteAllowed": false
       }
+    ]
+  },
+  "incompleteRetrievalRecovery": {
+    "priorEvidenceCommit": "e689f5e5d5ffa843f822a75d0ba7b30b8c696e68",
+    "priorSuccessfulBlobRequests": 48,
+    "repeatPriorSuccessfulBlobRequestAllowed": false,
+    "priorFailedBlob": {
+      "oid": "d62389a3aedd4e1b6d44f4fe66a8d00d0a7af9ce",
+      "expectedBytes": 5125,
+      "exactRetryAllowed": 1
+    },
+    "remainingBlobOidsAfterSuccessfulRetry": [
+      "d645695673349e3947e8e5ae42332d0ac3164cd7",
+      "d6d10a10875206c6c3dfbc3d8fd1b370c8541639",
+      "d81a1a93f2ae6fa2a939f7410c88daf9b9161853",
+      "de33dbb61ab5012e76560e8e16a9bcb6578d6e1a",
+      "df89c93a6b9086d11c09acfe4dca05742bee025c",
+      "e047144e4753267f3041f369724f72d02354e8a9",
+      "e58117c7cbe53ba4204fe394f263498ca2ee84d7",
+      "ecd7a1673820a97e651cac31476b0738497c6b98",
+      "edb2c5dc10334a751c6dec2a808f2fe94bc6315f",
+      "eedfe656fd6e55059abc3e60b4949d0cf24f1af7",
+      "f22d71b2632dc4f977739fa9a9655c0661ad9d9a",
+      "f282f5692592fa49755e09c6b292f02e928f17e4",
+      "f887062bc68f2c83310826f6110ee6ea48380312",
+      "fa6c2d6e1948ed8096160b5c55337c0548c2fa81",
+      "fc3c055693b275438f141a55dca0a18ac04dc7f9",
+      "fe6c622eddf05f62ec22074e47d04ece4e5d9342"
+    ],
+    "trackerRequestsAfterAllBlobsSucceed": 18,
+    "canonicalBudget": {
+      "consumedBeforeRecovery": 51,
+      "failedBlobRetry": 1,
+      "remainingUniqueBlobs": 16,
+      "frozenTrackerItems": 18,
+      "finalIdentityRecheck": 0,
+      "total": 86
+    },
+    "stopOn": [
+      "SECOND_REQUEST_FAILURE",
+      "CAP_OR_SCOPE_DRIFT",
+      "PRIVACY_LEAK",
+      "RAW_CONTENT_PERSISTENCE",
+      "IDENTITY_OID_OR_SIZE_MISMATCH"
     ]
   },
   "allowedDoraFiles": [
