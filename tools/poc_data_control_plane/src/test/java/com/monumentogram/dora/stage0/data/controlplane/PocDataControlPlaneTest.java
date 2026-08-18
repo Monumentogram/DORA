@@ -7,6 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -25,6 +26,7 @@ public final class PocDataControlPlaneTest {
             Path.of(
                     "docs/evidence/poc-data-001/"
                             + "control-plane-dry-run-local-evidence-stage0-v0.1.json");
+    private static final String SENTINEL_NAME = "dora-poc-data-control-plane.synthetic";
     private static int assertions;
 
     private PocDataControlPlaneTest() {}
@@ -276,6 +278,79 @@ public final class PocDataControlPlaneTest {
         } finally {
             Files.deleteIfExists(root);
         }
+
+        byte[] unowned = "UNOWNED_PREEXISTING\n".getBytes(StandardCharsets.US_ASCII);
+        Path preexistingRoot = Files.createTempDirectory("dora-data-cp-test-preexisting-");
+        Path preexistingSentinel = preexistingRoot.resolve(SENTINEL_NAME);
+        try {
+            Files.write(preexistingSentinel, unowned, StandardOpenOption.CREATE_NEW);
+            expectFault(
+                    "E_TEMP_ROOT_NOT_EMPTY",
+                    () -> PocDataControlPlane.dryRun(manifest, preexistingRoot));
+            check(Files.exists(preexistingSentinel, LinkOption.NOFOLLOW_LINKS), "preexisting sentinel preserved");
+            check(Arrays.equals(unowned, Files.readAllBytes(preexistingSentinel)), "preexisting bytes preserved");
+        } finally {
+            Files.deleteIfExists(preexistingSentinel);
+            Files.deleteIfExists(preexistingRoot);
+        }
+
+        byte[] raced = "UNOWNED_CREATE_RACE\n".getBytes(StandardCharsets.US_ASCII);
+        Path raceRoot = Files.createTempDirectory("dora-data-cp-test-create-race-");
+        Path racedSentinel = raceRoot.resolve(SENTINEL_NAME);
+        try {
+            expectFault(
+                    "E_SENTINEL_CREATE_CONFLICT",
+                    () ->
+                            PocDataControlPlane.dryRunForTest(
+                                    manifest,
+                                    raceRoot,
+                                    new PocDataControlPlane.DryRunInterlock() {
+                                        @Override
+                                        public void beforeOwnedSentinelCreate(Path sentinel)
+                                                throws IOException {
+                                            Files.write(
+                                                    sentinel,
+                                                    raced,
+                                                    StandardOpenOption.CREATE_NEW);
+                                        }
+                                    }));
+            check(Files.exists(racedSentinel, LinkOption.NOFOLLOW_LINKS), "raced sentinel preserved");
+            check(Arrays.equals(raced, Files.readAllBytes(racedSentinel)), "raced bytes preserved");
+        } finally {
+            Files.deleteIfExists(racedSentinel);
+            Files.deleteIfExists(raceRoot);
+        }
+
+        byte[] replacement = "UNOWNED_REPLACEMENT\n".getBytes(StandardCharsets.US_ASCII);
+        Path replacementRoot = Files.createTempDirectory("dora-data-cp-test-replacement-");
+        Path replacementSentinel = replacementRoot.resolve(SENTINEL_NAME);
+        try {
+            expectFault(
+                    "E_SENTINEL_UNOWNED_PATH",
+                    () ->
+                            PocDataControlPlane.dryRunForTest(
+                                    manifest,
+                                    replacementRoot,
+                                    new PocDataControlPlane.DryRunInterlock() {
+                                        @Override
+                                        public void afterOwnedSentinelClose(Path sentinel)
+                                                throws IOException {
+                                            Files.write(
+                                                    sentinel,
+                                                    replacement,
+                                                    StandardOpenOption.CREATE_NEW);
+                                        }
+                                    }));
+            check(
+                    Files.exists(replacementSentinel, LinkOption.NOFOLLOW_LINKS),
+                    "replacement sentinel preserved");
+            check(
+                    Arrays.equals(replacement, Files.readAllBytes(replacementSentinel)),
+                    "replacement bytes preserved");
+        } finally {
+            Files.deleteIfExists(replacementSentinel);
+            Files.deleteIfExists(replacementRoot);
+        }
     }
 
     private static void scenario012DeletionIsIdempotent(byte[] manifest) throws IOException {
@@ -323,6 +398,36 @@ public final class PocDataControlPlaneTest {
             Files.delete(occupied);
         } finally {
             Files.deleteIfExists(root);
+        }
+
+        byte[] caller = manifest.clone();
+        byte[] ownedSnapshot = caller.clone();
+        Path isolationRoot = Files.createTempDirectory("dora-data-cp-test-input-isolation-");
+        try {
+            PocDataControlPlane.DryRunReport isolated =
+                    PocDataControlPlane.dryRunForTest(
+                            caller,
+                            isolationRoot,
+                            new PocDataControlPlane.DryRunInterlock() {
+                                @Override
+                                public void afterManifestValidation() {
+                                    caller[0] = (byte) '[';
+                                }
+
+                                @Override
+                                public void afterOwnedSentinelClose(Path sentinel) {
+                                    caller[1] = (byte) ' ';
+                                }
+                            });
+            check(isolated.sourceUnchanged(), "owned input snapshot unchanged");
+            equal(sha256(ownedSnapshot), isolated.manifestSha256(), "report bound to owned snapshot");
+            check(!Arrays.equals(ownedSnapshot, caller), "caller mutation isolated from dry-run");
+            try (var entries = Files.list(isolationRoot)) {
+                check(entries.findAny().isEmpty(), "input-isolation root empty after dry-run");
+            }
+        } finally {
+            Files.deleteIfExists(isolationRoot.resolve(SENTINEL_NAME));
+            Files.deleteIfExists(isolationRoot);
         }
     }
 

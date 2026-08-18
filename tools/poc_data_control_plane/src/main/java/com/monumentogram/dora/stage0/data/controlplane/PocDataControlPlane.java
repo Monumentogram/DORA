@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
@@ -146,8 +149,18 @@ public final class PocDataControlPlane {
                     "DELETE_CONTROLLED_DATA",
                     "EXPORT_PRIVATE_DATA",
                     "CONFIGURE_CLOUD_TRANSFER");
+    private static final DryRunInterlock NOOP_DRY_RUN_INTERLOCK = new DryRunInterlock() {};
 
     private PocDataControlPlane() {}
+
+    /** Package-private deterministic interlocks used only by adversarial local tests. */
+    interface DryRunInterlock {
+        default void afterManifestValidation() throws IOException {}
+
+        default void beforeOwnedSentinelCreate(Path sentinel) throws IOException {}
+
+        default void afterOwnedSentinelClose(Path sentinel) throws IOException {}
+    }
 
     /** A successful exact-profile validation result. */
     public record ValidationReport(
@@ -187,6 +200,10 @@ public final class PocDataControlPlane {
     /** Validate the exact canonical repository-owned synthetic manifest. */
     public static ValidationReport validateManifest(byte[] raw) {
         byte[] owned = Objects.requireNonNull(raw, "raw").clone();
+        return validateOwnedManifest(owned);
+    }
+
+    private static ValidationReport validateOwnedManifest(byte[] owned) {
         Object parsed = parse(owned, true);
         validateManifestObject(parsed);
         String digest = sha256(owned);
@@ -268,7 +285,20 @@ public final class PocDataControlPlane {
      * The directory path is never included in the result or diagnostics.
      */
     public static DryRunReport dryRun(byte[] raw, Path temporaryRoot) throws IOException {
-        ValidationReport validation = validateManifest(raw);
+        byte[] owned = Objects.requireNonNull(raw, "raw").clone();
+        return dryRunOwned(owned, temporaryRoot, NOOP_DRY_RUN_INTERLOCK);
+    }
+
+    static DryRunReport dryRunForTest(
+            byte[] raw, Path temporaryRoot, DryRunInterlock interlock) throws IOException {
+        byte[] owned = Objects.requireNonNull(raw, "raw").clone();
+        return dryRunOwned(owned, temporaryRoot, Objects.requireNonNull(interlock, "interlock"));
+    }
+
+    private static DryRunReport dryRunOwned(
+            byte[] owned, Path temporaryRoot, DryRunInterlock interlock) throws IOException {
+        ValidationReport validation = validateOwnedManifest(owned);
+        interlock.afterManifestValidation();
         Path root = Objects.requireNonNull(temporaryRoot, "temporaryRoot").toAbsolutePath().normalize();
         Path systemTemporaryRoot =
                 Path.of(System.getProperty("java.io.tmpdir")).toAbsolutePath().normalize();
@@ -296,38 +326,37 @@ public final class PocDataControlPlane {
         requireDenied("SYNTHETIC_DRY_RUN_OPERATOR", "RUN_MODEL_INFERENCE");
         requireDenied("SYNTHETIC_DRY_RUN_OPERATOR", "TRAIN_OR_IMPROVE_MODEL");
 
-        String before = sha256(raw);
+        String before = sha256(owned);
         Path sentinel = root.resolve(SENTINEL_NAME).normalize();
         require(
                 sentinel.startsWith(root) && root.equals(sentinel.getParent()),
                 "E_TEMP_TARGET_ESCAPE",
                 "/dryRun/tempTarget");
+        interlock.beforeOwnedSentinelCreate(sentinel);
 
-        try {
-            Files.write(
-                    sentinel,
-                    SENTINEL_BYTES,
-                    StandardOpenOption.CREATE_NEW,
-                    StandardOpenOption.WRITE);
-            byte[] observed = Files.readAllBytes(sentinel);
-            require(
-                    java.util.Arrays.equals(SENTINEL_BYTES, observed),
-                    "E_SENTINEL_VERIFY",
-                    "/dryRun/sentinel");
-            Files.delete(sentinel);
-            require(
-                    !Files.exists(sentinel, LinkOption.NOFOLLOW_LINKS),
-                    "E_DELETE_VERIFY",
-                    "/dryRun/sentinel");
-            boolean secondDelete = Files.deleteIfExists(sentinel);
-            require(!secondDelete, "E_DELETE_NOT_IDEMPOTENT", "/dryRun/sentinel");
-        } finally {
-            if (Files.exists(sentinel, LinkOption.NOFOLLOW_LINKS)) {
-                Files.delete(sentinel);
-            }
+        boolean ownedHandleOpened = false;
+        try (FileChannel ownedSentinel =
+                FileChannel.open(
+                        sentinel,
+                        StandardOpenOption.CREATE_NEW,
+                        StandardOpenOption.READ,
+                        StandardOpenOption.WRITE,
+                        StandardOpenOption.DELETE_ON_CLOSE,
+                        LinkOption.NOFOLLOW_LINKS)) {
+            ownedHandleOpened = true;
+            writeAndVerifyOwnedSentinel(ownedSentinel);
+        } catch (FileAlreadyExistsException conflict) {
+            reject("E_SENTINEL_CREATE_CONFLICT", "/dryRun/sentinel");
         }
+        require(ownedHandleOpened, "E_SENTINEL_CREATE", "/dryRun/sentinel");
 
-        String after = sha256(raw);
+        // DELETE_ON_CLOSE binds cleanup to the successfully created handle. Never delete by path:
+        // a path present now can only be unverified or replacement state and must be preserved.
+        interlock.afterOwnedSentinelClose(sentinel);
+        requireSentinelAbsent(sentinel);
+        requireSentinelAbsent(sentinel);
+
+        String after = sha256(owned);
         require(before.equals(after), "E_SOURCE_MUTATED", "/");
         return new DryRunReport(
                 validation.manifestSha256(),
@@ -338,6 +367,48 @@ public final class PocDataControlPlane {
                 validation.readiness(),
                 validation.overallResult(),
                 validation.collectionAuthorization());
+    }
+
+    private static void writeAndVerifyOwnedSentinel(FileChannel ownedSentinel) throws IOException {
+        ByteBuffer writeBuffer = ByteBuffer.wrap(SENTINEL_BYTES);
+        while (writeBuffer.hasRemaining()) {
+            require(
+                    ownedSentinel.write(writeBuffer) > 0,
+                    "E_SENTINEL_WRITE",
+                    "/dryRun/sentinel");
+        }
+        ownedSentinel.force(true);
+        require(
+                ownedSentinel.size() == SENTINEL_BYTES.length,
+                "E_SENTINEL_VERIFY",
+                "/dryRun/sentinel");
+
+        ownedSentinel.position(0L);
+        byte[] observed = new byte[SENTINEL_BYTES.length];
+        ByteBuffer readBuffer = ByteBuffer.wrap(observed);
+        while (readBuffer.hasRemaining()) {
+            require(
+                    ownedSentinel.read(readBuffer) > 0,
+                    "E_SENTINEL_VERIFY",
+                    "/dryRun/sentinel");
+        }
+        require(
+                ownedSentinel.read(ByteBuffer.allocate(1)) == -1
+                        && java.util.Arrays.equals(SENTINEL_BYTES, observed),
+                "E_SENTINEL_VERIFY",
+                "/dryRun/sentinel");
+    }
+
+    private static void requireSentinelAbsent(Path sentinel) throws IOException {
+        try {
+            Files.readAttributes(
+                    sentinel,
+                    java.nio.file.attribute.BasicFileAttributes.class,
+                    LinkOption.NOFOLLOW_LINKS);
+            reject("E_SENTINEL_UNOWNED_PATH", "/dryRun/sentinel");
+        } catch (NoSuchFileException expected) {
+            // Expected: the owned handle deleted only its own file on close.
+        }
     }
 
     /** Command line entry point used by the evidence commands. */

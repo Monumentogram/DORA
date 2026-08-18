@@ -201,15 +201,21 @@ For future controlled data, the custodian-gated protocol is:
 Physical flash overwrite is not promised. A partial or failed scope remains visible and retryable.
 
 The authorized dry-run performs only the analogous lifecycle on one transient, non-sensitive
-sentinel under OS temp. It verifies first deletion, absence, and repeat-safe second deletion. It does
-not test controlled storage, backup, provider, participant mapping, or real withdrawal.
+sentinel under OS temp. It clones the caller bytes exactly once at entry and binds validation,
+digests, and the content-free report to that owned snapshot. The sentinel is created with
+`CREATE_NEW`, `NOFOLLOW_LINKS`, and a `DELETE_ON_CLOSE` file handle. Cleanup is therefore bound to
+the successfully created handle rather than a mutable path. A pre-existing, racing, replaced, or
+otherwise unverified path is rejected without deletion; its bytes are not emitted. The dry-run
+verifies owned-handle bytes, absence after close, and repeat-safe absence without a second
+path-based delete. It does not test controlled storage, backup, provider, participant mapping, or
+real withdrawal.
 
 ## 8. Deterministic dry-run matrix
 
 | ID | Scenario | Expected result |
 |---|---|---|
 | `DATA-CP-001` | Validate exact canonical synthetic manifest | `ALLOW / MANIFEST_VALID` |
-| `DATA-CP-002` | Repeat validation and dry-run on unchanged bytes | byte-identical summary and digest |
+| `DATA-CP-002` | Repeat validation; mutate caller bytes after owned snapshot | byte-identical owned digest/report; caller mutation isolated |
 | `DATA-CP-003` | Synthetic operator reads manifest | allow |
 | `DATA-CP-004` | Security auditor reads manifest | allow |
 | `DATA-CP-005` | Evaluator reads manifest | allow |
@@ -218,7 +224,7 @@ not test controlled storage, backup, provider, participant mapping, or real with
 | `DATA-CP-008` | `CUSTODIAN` requests a custodian-gated action while unassigned | deny `CUSTODIAN_UNASSIGNED` |
 | `DATA-CP-009` | Any role requests network/cloud/model-training action | deny, no side effect |
 | `DATA-CP-010` | Create transient synthetic sentinel through exact allowed role | allow; exact bounded bytes only |
-| `DATA-CP-011` | Delete sentinel, verify absence, repeat deletion | `DELETED`, absent, idempotent |
+| `DATA-CP-011` | Close owned sentinel handle; inject pre-existing/racing/replacement paths | owned file absent and idempotent; unowned path preserved; content-free reject |
 | `DATA-CP-012` | Dry-run exits | temp directory absent and source manifest byte-identical |
 | `DATA-CP-013` | Invalid UTF-8/BOM/duplicate key/non-canonical/oversized/deep input | stable content-free reject |
 | `DATA-CP-014` | Unknown/missing field, forbidden class/flag/private carrier | stable content-free reject |
@@ -278,7 +284,9 @@ The implementation is accepted only when:
 - Java 17 compile with `--release 17 -Xlint:all -Werror` succeeds without third-party dependency;
 - adversarial tests and the exact manifest CLI pass repeatedly with byte-identical output;
 - RBAC denies unknown, unassigned, real-data, cloud, and training operations before side effects;
-- the synthetic temp sentinel is deleted, repeat deletion is safe, and cleanup absence is verified;
+- the synthetic temp sentinel is deleted only through its owned handle, repeat absence is safe,
+  cleanup absence is verified, and any pre-existing/racing/replacement path is preserved;
+- validation, digests, and the report remain bound to one entry snapshot under caller mutation;
 - JSON parses with duplicate-key rejection, UTF-8/LF/no-BOM checks pass, and file pins are recorded;
 - diff/secret/PII/private-path/raw-content/network-endpoint scans are clean;
 - an independent read-only advisory review records exact P0/P1/P2 findings with

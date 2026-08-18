@@ -40,7 +40,7 @@
     {
       "command": "java -cp <os-temp> com.monumentogram.dora.stage0.data.controlplane.PocDataControlPlaneTest",
       "exitCode": 0,
-      "result": "LOCAL_PASS POC_DATA_CONTROL_PLANE_TESTS scenarios=15 assertions=164 readiness=NOT_READY overall=NOT_RUN collection=NOT_AUTHORIZED"
+      "result": "LOCAL_PASS POC_DATA_CONTROL_PLANE_TESTS scenarios=15 assertions=180 readiness=NOT_READY overall=NOT_RUN collection=NOT_AUTHORIZED"
     },
     {
       "command": "java -cp <os-temp> com.monumentogram.dora.stage0.data.controlplane.PocDataControlPlane validate <manifest> <schema>",
@@ -55,12 +55,14 @@
     {
       "command": "android/gradlew.bat spotlessCheck detekt :app:testDebugUnitTest :core:common:testDebugUnitTest :core:model:testDebugUnitTest :core:testing:testDebugUnitTest :app:compileDebugAndroidTestKotlin :app:lintDebug :core:common:lintDebug :core:model:lintDebug :core:testing:lintDebug :app:assembleDebug",
       "exitCode": 0,
-      "result": "BUILD SUCCESSFUL; 197 actionable tasks; 98 executed; 93 from cache; 6 up-to-date"
+      "result": "BUILD SUCCESSFUL; 197 actionable tasks; 5 executed; 192 up-to-date"
     }
   ],
   "deterministicResults": {
-    "assertions": 164,
+    "assertions": 180,
+    "callerMutationIsolated": true,
     "contentFreeDiagnostics": true,
+    "deletionBoundToOwnedHandle": true,
     "deletionIdempotent": true,
     "manifestSourceUnchanged": true,
     "networkCloudDeviceOrModelExecution": false,
@@ -68,7 +70,8 @@
     "scenarioCount": 15,
     "sentinelDeletedAndAbsent": true,
     "syntheticNonSensitiveInputOnly": true,
-    "temporaryRootEmptyAfterRun": true
+    "temporaryRootEmptyAfterRun": true,
+    "unownedSentinelPreserved": true
   },
   "environment": {
     "java": "openjdk 17.0.10 LTS",
@@ -80,9 +83,9 @@
   },
   "filePins": [
     {
-      "bytes": 16952,
+      "bytes": 17737,
       "path": "docs/stage0/DORA_MVP1_POC_DATA_CONTROL_PLANE.md",
-      "sha256": "sha256:aaff4bf8778c6c64c4d6509d01db235ae5d8f394dc1222a075b8899e8ba6bf1d"
+      "sha256": "sha256:1d54b6eb41286c88042d05682682f061608d8d91e2bd54a8908d4220853cfff2"
     },
     {
       "bytes": 22917,
@@ -95,14 +98,14 @@
       "sha256": "sha256:5ce259432d77c8876f6b7c5e8ab6981d4312c1fbc18cdf6c84a97023d450ec72"
     },
     {
-      "bytes": 64122,
+      "bytes": 67315,
       "path": "tools/poc_data_control_plane/src/main/java/com/monumentogram/dora/stage0/data/controlplane/PocDataControlPlane.java",
-      "sha256": "sha256:4737da53de375508679a60582f7db830297dcbef76aee8176e2e9bfe4f5780e5"
+      "sha256": "sha256:4c4d247f7c76bf8845e0fc082bc661481080d0eb1aa5a264503075ef3f3c3ee1"
     },
     {
-      "bytes": 20988,
+      "bytes": 26607,
       "path": "tools/poc_data_control_plane/src/test/java/com/monumentogram/dora/stage0/data/controlplane/PocDataControlPlaneTest.java",
-      "sha256": "sha256:d99a3a83462b27bc9ed91714be8f134a1d722cc7cac978ddea4bd785b725f706"
+      "sha256": "sha256:f728935e9fb06191e0047e9f054560d18c2941b9b000eaee954af3e743e7557e"
     },
     {
       "bytes": 19678,
@@ -140,7 +143,7 @@
   },
   "recordId": "poc-data-control-plane-dry-run-local-evidence-stage0-v0.1",
   "recordType": "LOCAL_SYNTHETIC_CONTROL_PLANE_VALIDATION_EVIDENCE",
-  "recordedAt": "2026-08-18T18:23:22+03:00",
+  "recordedAt": "2026-08-18T19:00:18+03:00",
   "repositoryBase": {
     "commit": "4a1dacacc52926ef3608a5952a762f00b8dafaa9",
     "exactMainCiConclusion": "SUCCESS",
