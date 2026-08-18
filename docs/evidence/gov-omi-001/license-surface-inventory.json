@@ -1,0 +1,2263 @@
+{
+  "recordType": "dora-gov-omi-phase-a-license-surface-inventory",
+  "schemaVersion": 1,
+  "taskId": "GOV-OMI-001",
+  "phase": "PUBLIC_METADATA_PHASE_A",
+  "phaseState": "PROPOSED",
+  "authorityId": "GOV-OMI-PHASE-A-PUBLIC-METADATA-AUDIT-AUTH-20260818-01",
+  "snapshot": {
+    "repository": "BasedHardware/omi",
+    "commitSha": "7d99abcc4efb9e46a5853b21fc01289e4b891837",
+    "treeSha": "85db621ffd5dc5386bcbd7c87713cc69638be7e3",
+    "treeMetadataSha256": "007d030a21e72c07c89f36359c0e5ded355147c85b5b6284ae0858e5e5058e90"
+  },
+  "method": {
+    "source": "untruncated recursive Git tree path metadata only",
+    "licensePathRule": "exact LICENSE, LICENCE, COPYING, NOTICE, AUTHORS or THIRD_PARTY_NOTICES basename with optional dot extension, plus exact licenses directory segments; case-insensitive",
+    "manifestPathRule": "allowlisted package/build/lock/control basenames and extensions recorded in this file",
+    "contentRetrieved": false,
+    "legalInterpretationPerformed": false
+  },
+  "githubDetectedRootLicenseMetadata": {
+    "key": "mit",
+    "name": "MIT License",
+    "spdxId": "MIT",
+    "url": "http://choosealicense.com/licenses/mit/",
+    "pseudoLicense": false,
+    "statement": "GitHub-detected repository metadata only; not a Dora rights conclusion."
+  },
+  "rootLicensePathMetadata": {
+    "path": "LICENSE",
+    "mode": "100644",
+    "type": "blob",
+    "oid": "beb9b3553922522ad2466040709a4a76c05d81ca",
+    "size": 1084,
+    "contentRetrieved": false,
+    "licenseTextSha256": null,
+    "rightsReviewed": false,
+    "disposition": "BLOCKED_RIGHTS"
+  },
+  "licenseAndNoticePaths": {
+    "count": 21,
+    "capped": false,
+    "declaredPathRuleFullyApplied": true,
+    "embeddedLicenseInventoryComplete": false,
+    "entries": [
+      {
+        "path": "desktop/context-for-claude/LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "beb9b3553922522ad2466040709a4a76c05d81ca",
+        "size": 1084,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "desktop/context-for-claude/NOTICE",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "194572e3ce20396dd7dea3d8644cb86301e9f036",
+        "size": 3561,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "docs/doc/hardware/consumer/license.mdx",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "d62389a3aedd4e1b6d44f4fe66a8d00d0a7af9ce",
+        "size": 5125,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "docs/doc/info/License.mdx",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "432dffe80f69bf0f991d82ee786b8e0be0569deb",
+        "size": 2019,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "beb9b3553922522ad2466040709a4a76c05d81ca",
+        "size": 1084,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "mcp/LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "f282f5692592fa49755e09c6b292f02e928f17e4",
+        "size": 1053,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "omi/hardware/consumer/LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "beb9b3553922522ad2466040709a4a76c05d81ca",
+        "size": 1084,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "omiGlass/firmware/.pio/libdeps/seeed_xiao_esp32s3/esp32-camera/LICENSE",
+        "mode": "100755",
+        "type": "blob",
+        "oid": "d645695673349e3947e8e5ae42332d0ac3164cd7",
+        "size": 11358,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "omiGlass/firmware/.pio/libdeps/seeed_xiao_esp32s3/NimBLE-Arduino/LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "4abe69699a99fcfd54e06efd7def9543042d8760",
+        "size": 12108,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "omiGlass/firmware/.pio/libdeps/seeed_xiao_esp32s3/NimBLE-Arduino/src/nimble/ext/tinycrypt/AUTHORS",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "0a8e9f806977d2151aec4d9361b12b6227e26108",
+        "size": 406,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "omiGlass/firmware/.pio/libdeps/seeed_xiao_esp32s3/NimBLE-Arduino/src/nimble/ext/tinycrypt/LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "2e1db516ad74af176072f411c7720c30583ce020",
+        "size": 3313,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "omiGlass/firmware/.pio/libdeps/seeed_xiao_esp32s3/NimBLE-Arduino/src/nimble/LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "08b9b218a2410bf71aba28064370eed71aa2b842",
+        "size": 12043,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "omiGlass/firmware/.pio/libdeps/seeed_xiao_esp32s3/NimBLE-Arduino/src/nimble/NOTICE",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "02fe5929daaa67986d3656aade4e205eaf8fef68",
+        "size": 321,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "omiGlass/LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "2933d24a01edfefc22f7086761092db9ab471c96",
+        "size": 1074,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "plugins/hume-ai/LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "b77bf2ab726c6e7cb5a81a9d3b7dc38266ebfd3d",
+        "size": 1056,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "plugins/omi-clickup-app/LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "d2e649a97015cf177d0a73ecd2d378236638d67b",
+        "size": 1094,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "plugins/omi-github-app/LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "546ca2287dc56da02980b11237026aa595b29909",
+        "size": 1093,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "plugins/omi-slack-app/LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "5ca81f5a74fb342e20499cd0b08480e9b58fc733",
+        "size": 1092,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "plugins/omi-twitter-app/LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "889bb2d19bde9a9a7ac51aefc576e2814a3f4b9a",
+        "size": 1094,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "sdks/python-cli/LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "bca1b1e545a9662453bd172b177dd7d967b027b6",
+        "size": 1077,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "web/personas-open-source/LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "0519ecba6ea913e21689ec692e81e9e4973fbf73",
+        "size": 1,
+        "contentRetrieved": false,
+        "licenseId": null,
+        "licenseTextSha256": null,
+        "rightsReviewed": false,
+        "disposition": "BLOCKED_RIGHTS"
+      }
+    ]
+  },
+  "manifestAndControlPaths": {
+    "count": 188,
+    "capped": false,
+    "declaredPathRuleFullyApplied": true,
+    "dependencyInventoryComplete": false,
+    "entries": [
+      {
+        "path": "app/android/app/build.gradle",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "969fc35017e5b8b6dba80ad6f6769e4f063b95eb",
+        "size": 5586,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "app/android/app/src/main/cpp/CMakeLists.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "e58117c7cbe53ba4204fe394f263498ca2ee84d7",
+        "size": 594,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "app/android/build.gradle",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "9631c4cf9d294a2d9f4f115206466297f3b5fa5d",
+        "size": 623,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "app/android/gradle.properties",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "f887062bc68f2c83310826f6110ee6ea48380312",
+        "size": 104,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "app/android/settings.gradle",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "b8250ffb912b0346be7e0f8fde6b763ebdcd8ed6",
+        "size": 954,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "app/ios/Flutter/ephemeral/Packages/FlutterGeneratedPluginSwiftPackage/Package.swift",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "ec574a829738ad5ddc048432f247762308ff762a",
+        "size": 5260,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "app/ios/Podfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "387e583fecac1b1a066f74720979b70c4c51f8a5",
+        "size": 4010,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "app/ios/Podfile.lock",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "acbe9234501113c7a7605cc6ef8b52d7b07911f1",
+        "size": 20505,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "app/ios/Runner.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "a314f815148afb2b83b2de941655847f12b45293",
+        "size": 410,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "app/macos/Podfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "ff5ddb3b8bdcd02db4e59cb12b3488f81ea0bb09",
+        "size": 1366,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "app/pubspec.lock",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "343b04ffa58f2c700c944899b0ba877f5c934796",
+        "size": 75797,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "app/pubspec.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "0fd1d42b3367ae21e1fc62f85f21c5f64a42e352",
+        "size": 6211,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/backend-listen/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "3ad962e7556d14473356eb2a7d137415f6228444",
+        "size": 1150,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/backend-secrets/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "b94becb9558d0def4ec72c2890c971574ba8ada8",
+        "size": 115,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/deepgram-self-hosted/nova-2/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "3369240cf554d86b9421e85ed4f8a163c24abedc",
+        "size": 1390,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/deepgram-self-hosted/nova-3/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "d84958256cfc62465325a29ca3aad060a42a9585",
+        "size": 1309,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/deepgram-self-hosted/nova-3/charts/cluster-autoscaler/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "2751faad1fbaf0006855d3250e3bfc5ad1714ffd",
+        "size": 437,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/deepgram-self-hosted/nova-3/charts/gpu-operator/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "269a870c95d6b9a6671059815523b92204031c00",
+        "size": 620,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/deepgram-self-hosted/nova-3/charts/gpu-operator/charts/node-feature-discovery/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "7656c732fa89ac529f70d9380aa23d070b90b4b7",
+        "size": 436,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/deepgram-self-hosted/nova-3/charts/kube-prometheus-stack/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "33cd434a94407a1b08c0d4f2ce53630ad827469e",
+        "size": 2117,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/deepgram-self-hosted/nova-3/charts/kube-prometheus-stack/charts/crds/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "adb9e4a5d36c05ec929aa0fe4df27cf384f118df",
+        "size": 41,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/deepgram-self-hosted/nova-3/charts/kube-prometheus-stack/charts/grafana/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "5d5a480723c41d1eaa623898d374b63083c31426",
+        "size": 932,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/deepgram-self-hosted/nova-3/charts/kube-prometheus-stack/charts/kube-state-metrics/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "1fc3a499b61ccdeaddbd52517863427d7533d6f5",
+        "size": 659,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/deepgram-self-hosted/nova-3/charts/kube-prometheus-stack/charts/prometheus-node-exporter/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "4123fd57668274f849bfc09ed49c303c59bce8d5",
+        "size": 628,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/deepgram-self-hosted/nova-3/charts/kube-prometheus-stack/charts/prometheus-windows-exporter/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "55982819dda850c6789f7bb6d6bf28b094c031a2",
+        "size": 413,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/deepgram-self-hosted/nova-3/charts/prometheus-adapter/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "e29c8bbf57a329d711034f573b52cfbfb5b51e14",
+        "size": 598,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/diarizer/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "3756717599723eec1064a822dcf245b2fbdf832d",
+        "size": 1144,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/llm-gateway/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "60b300d5c22c8518753e76c80f68d6c333f8b031",
+        "size": 133,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/nllb-translation/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "1f7bfe3d0e6735434604b593b64456a834bb5d98",
+        "size": 165,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/parakeet/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "4c8156d6b999cc76e912958416e0caf480bc105c",
+        "size": 1144,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/pusher/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "6bcd246467f740b23d4b97291fe5b427d08bd8d6",
+        "size": 1142,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/charts/vad/Chart.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "4fea97ebcf13481a401eec68c7c777524a158a6d",
+        "size": 1139,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/diarizer/Dockerfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "c1f228d423775791fe9960355eba96cc4f8205b6",
+        "size": 1435,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/diarizer/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "df89c93a6b9086d11c09acfe4dca05742bee025c",
+        "size": 2452,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/Dockerfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "e2a5026ce3baead279a3c6e5c82f8a51c91e4b68",
+        "size": 2843,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/modal/Dockerfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "305206bec43234ccbc263ab4d4adf60165d26712",
+        "size": 1679,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/modal/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "742ee3d9f10575cc6a63a933fcecb107eae3c8d5",
+        "size": 221,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/nllb_translation/Dockerfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "e73639d04da24b6e5784cabcda8628c3bf3d1896",
+        "size": 471,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/nllb_translation/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "b12c0ab88b44398b0059ac4cf0ffe4d4621fe3bc",
+        "size": 115,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/parakeet/Dockerfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "d08b291519ddff5e38e65ec67cf614478c55c7a6",
+        "size": 5227,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/parakeet/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "10e7698b495460333e1149f1da51bc4c0c930478",
+        "size": 892,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/pusher/Dockerfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "d1bba5559b7f543c5f12fe54c3183200598a9889",
+        "size": 3175,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/pusher/pylock.toml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "3f83396344c75c876a4fea044b450817fd326224",
+        "size": 102024,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/pusher/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "7a8a50499a00510de241ad7e7a19ad7adbafeca6",
+        "size": 1929,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/pylock.macos-x86_64.toml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "b8ba4d28b3cb01ab219480f659a563d43c14dc0f",
+        "size": 180010,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/pylock.macos.toml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "796dbb228c7267ed5214d41885161452cfbc7692",
+        "size": 176901,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/pylock.runtime.toml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "80f65a869c41468384547a8d8a552b29c603506d",
+        "size": 173283,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/pylock.toml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "26009966765e489a92877e03cee721c13caf688a",
+        "size": 177253,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/pylock.windows.toml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "1bb18bac372e3a487dae2b23c8947e1d7acfe9a2",
+        "size": 174946,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/pyproject.toml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "e047144e4753267f3041f369724f72d02354e8a9",
+        "size": 301,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "0ffa99904132158a87cff837890e7b0cadec148a",
+        "size": 4460,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "backend/testing/e2e/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "f3d7d7390c86aa007846d9a854af169f9bb1141a",
+        "size": 147,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/Cargo.lock",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "fadcf65864768fc1e13859bcf95a07910abbae64",
+        "size": 19177,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/Cargo.toml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "8dae56fa55533cc5a5041901c7b86fd7488e8560",
+        "size": 244,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/context-for-claude/core/CMakeLists.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "a02c5704bda5ef02ee588bf270ad5103f760b0b3",
+        "size": 2273,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/context-for-claude/Package.resolved",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "885d560e990a49fa62ec27a4180b600add5bb4b7",
+        "size": 898,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/context-for-claude/Package.swift",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "0923811440516daf1457f6996f7cf2e132983a36",
+        "size": 4109,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/context-for-claude/windows/CMakeLists.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "efdec2790d4866874719d6ee432c184d451cad13",
+        "size": 9966,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/context-for-claude/windows/swift-host/Package.swift",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "ce0fdc86e0f4121e587110e1af01a3ea2d2d31a8",
+        "size": 756,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/macos/agent/package-lock.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "fe054a75a56d27981e21e98b4afb83656c3bfdb3",
+        "size": 131707,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/macos/agent/package.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "91e0dcf33d0ea5e7412390d3c5c09e3480072f34",
+        "size": 851,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/macos/demo/package-lock.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "b00c400936b83bebfb5248be635d213106b8d950",
+        "size": 235328,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/macos/demo/package.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "8b98faa820e011d498c3780c57ac1fa1f875d2b9",
+        "size": 938,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/macos/Desktop/Package.resolved",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "9d6eaa9b0eb71b03eaa3e4f4786d423dd64682ff",
+        "size": 5684,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/macos/Desktop/Package.swift",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "8345c5355e89dce03523d684e012a47563cc3a0b",
+        "size": 6153,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/macos/pi-mono-extension/package-lock.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "3a54d0ed65bfb2329a2baed5594db1b04a8f5194",
+        "size": 120146,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/macos/pi-mono-extension/package.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "546bf31e3d3b1e92155004b6dd9dce0065db13e6",
+        "size": 571,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/shared-rust/Cargo.toml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "54214061ca66dfa45b91fa26536866c35b650ff4",
+        "size": 494,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/windows/.gitattributes",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "9d7dc4fd5003cce2782ac2df246c49f2938c9e83",
+        "size": 90,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/windows/package.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "e18509d5b7c19330bb29a975bb4879e6fc54d1f4",
+        "size": 8004,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/windows/pnpm-lock.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "603877bcec0e96f1fc963367043a746f0a6029cc",
+        "size": 402890,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/windows/src/main/audio/helper/win-audio-helper.csproj",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "c84f4b7b016f7cdf5650954134cbb6b9fbc28e61",
+        "size": 735,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/windows/src/main/automation/helper/win-automation-helper.csproj",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "0494cd50c11893ffc357e642ec759c0f52e7a5a3",
+        "size": 625,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/windows/src/main/codingAgent/pi-mono-extension/package.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "514ad8b9e8727ec7af384956fd183e68b551f4a6",
+        "size": 452,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "desktop/windows/src/main/ocr/win-ocr-helper/win-ocr-helper.csproj",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "a9e2f4a7759d597ef8edf3fda742e318f6e67287",
+        "size": 483,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "docs/package-lock.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "a54d6effc96ed8b6ad3b0ce2b68a603c366a7286",
+        "size": 256628,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "docs/package.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "751dede4121d41a83e1cc9af7ebe8e8eee80bbf2",
+        "size": 497,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "infrastructure/opentofu/foundation/.terraform.lock.hcl",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "fd178657fb82fca800ba45a4d27735f4ffa121a8",
+        "size": 1524,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "infrastructure/opentofu/foundation/main.tf",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "056b1d10cd0ae2154fe6616ebb2acb105fd2d64f",
+        "size": 329,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "infrastructure/opentofu/pilots/development-wif-plan/.terraform.lock.hcl",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "fd178657fb82fca800ba45a4d27735f4ffa121a8",
+        "size": 1524,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "infrastructure/opentofu/pilots/development-wif-plan/main.tf",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "9dc797b2d7ef2870af9abe77166ad1ffc434dde1",
+        "size": 2622,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "infrastructure/opentofu/pilots/development-wif-plan/variables.tf",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "e72678d1858cda04c17742739768a5cf902ceae7",
+        "size": 2578,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "infrastructure/opentofu/probes/development-project-read/.terraform.lock.hcl",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "fd178657fb82fca800ba45a4d27735f4ffa121a8",
+        "size": 1524,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "infrastructure/opentofu/probes/development-project-read/main.tf",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "9823cf183a1b7f25c7af0ed3a5f91d8efd7d58b5",
+        "size": 765,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "Makefile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "f79e1179b86950dec0ec1056955a8c7fd6669c02",
+        "size": 4892,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "mcp/Dockerfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "c11b4ab4a3b74127ed014c2c54440edf593f81e5",
+        "size": 1274,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "mcp/examples/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "a323e8ee98bb235f06e5044b0dabe1b6ba5bbbe4",
+        "size": 3160,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "mcp/pyproject.toml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "21866e1ce614c04927b2a097c5fa474ebd3dccbe",
+        "size": 1185,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "mcp/uv.lock",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "c8170c8f131a7ddff4dc5b1724c93d404cd23aac",
+        "size": 177884,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omi/firmware/boards/omi/Kconfig",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "1462b39bf05d635b21f8a9bd8be5d1ec02ed4954",
+        "size": 511,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omi/firmware/devkit/CMakeLists.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "9dbba5f50475ab19f012b70c9f75e756b6ea180d",
+        "size": 6555,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omi/firmware/devkit/Kconfig",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "2b8b1a847076be8d67a766576a77dd4488bb466a",
+        "size": 1198,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omi/firmware/devkit/src/lib/opus-1.2.1/CmakeLists.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "7ae9332bcba50a8ffdf1397e710521ee000ced69",
+        "size": 3284,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omi/firmware/omi/CMakeLists.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "4a4de28247d9bd58cc9aca6e0149ba4acb72cd12",
+        "size": 1110,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omi/firmware/omi/Kconfig",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "9e486155ca0c6d517b0217cee7c2e9939b722683",
+        "size": 3899,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omi/firmware/omi/src/lib/core/lib/opus-1.2.1/CMakeLists.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "7ae9332bcba50a8ffdf1397e710521ee000ced69",
+        "size": 3284,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omi/firmware/scripts/devkit/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "c38c769e890801cda966f85d5a8da011a2f78585",
+        "size": 57,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omi/firmware/scripts/devkit/sdcard_test_files/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "c38c769e890801cda966f85d5a8da011a2f78585",
+        "size": 57,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omi/firmware/test/CMakeLists.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "f6e712f4a46e2f995d05183f3c03d362482b3ba3",
+        "size": 186,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omi/firmware/test/Kconfig",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "0ffe175530456d80349a49647a44721d39fa347d",
+        "size": 23,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omiGlass/firmware/.pio/libdeps/seeed_xiao_esp32s3/esp32-camera/CMakeLists.txt",
+        "mode": "100755",
+        "type": "blob",
+        "oid": "65e46aef60d9ca29cd37d9afc5f4509609d1aeae",
+        "size": 2240,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omiGlass/firmware/.pio/libdeps/seeed_xiao_esp32s3/esp32-camera/examples/CMakeLists.txt",
+        "mode": "100755",
+        "type": "blob",
+        "oid": "0a0396884558e36d2be10b2318f600953c095efe",
+        "size": 318,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omiGlass/firmware/.pio/libdeps/seeed_xiao_esp32s3/esp32-camera/examples/main/CMakeLists.txt",
+        "mode": "100755",
+        "type": "blob",
+        "oid": "1735fb184b89e11d9458d0227aa1c9fc1d67278b",
+        "size": 88,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omiGlass/firmware/.pio/libdeps/seeed_xiao_esp32s3/esp32-camera/examples/Makefile",
+        "mode": "100755",
+        "type": "blob",
+        "oid": "f06df0ecc9679e296a40bfe9135794b1636c7180",
+        "size": 215,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omiGlass/firmware/.pio/libdeps/seeed_xiao_esp32s3/esp32-camera/Kconfig",
+        "mode": "100755",
+        "type": "blob",
+        "oid": "2632c8235f7e853f27b109b2520aee5c63252040",
+        "size": 7302,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omiGlass/firmware/platformio.ini",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "8ced229ada4268075a87d7be15cd956fc6118d18",
+        "size": 1693,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omiGlass/package-lock.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "1364b6037348029a05c37204dad1848ad29b3737",
+        "size": 442701,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "omiGlass/package.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "5a14c2d8c3ca309d472e7a738c195f2025d9e064",
+        "size": 1535,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "package-lock.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "b9a485e2a018c72076308f01f8996a6dbd2c82da",
+        "size": 528979,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "package.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "1a464b5935cf2ece7bfa9fbcbd78a112485db520",
+        "size": 3885,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "Package.resolved",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "91e2b74878d9ecd2ed999357e508de20e5ba4485",
+        "size": 835,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "Package.swift",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "5245246b8f265cfb0fec1125d8f063e30ab5d849",
+        "size": 1328,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/composio/Dockerfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "21c35b74b1e549b8fcc52b5fb7682f2cd1508736",
+        "size": 512,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/composio/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "1e0b3de7b330480b536c0c44c13daa2bf81b631b",
+        "size": 139,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/Dockerfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "e02bd091aaa46c85e1d37dc2327852cc954b8d6a",
+        "size": 761,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/hume-ai/Dockerfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "4f467010fc786bbfc8056d66796a6ea55731b23f",
+        "size": 664,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/hume-ai/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "31c1e19cfa14c98614fa5308c9278ee27fe7b948",
+        "size": 159,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/import/manual-import/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "7badce3f636ad5b079094df26edae9e4dcf96298",
+        "size": 66,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/iq_rating/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "5e6ef776b5a9a183590dddcf64af55d210551ccd",
+        "size": 119,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-arxiv-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "708103b72e1983e62613a2123015c594e55f8e5e",
+        "size": 64,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-clickup-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "f54c2bebbf306a9524f801c84bcf635d025f7e62",
+        "size": 129,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-crossref-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "0a9315fdb4443a1cc6d195f3bde59a9cdbf05fa8",
+        "size": 63,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-dropbox-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "5816478cebf1b9884f95cc6d4f17ff5cd115e360",
+        "size": 171,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-frankfurter-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "534f16ca7741ed2b8b1e507fc6aa5cb6859d069e",
+        "size": 74,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-github-app/Dockerfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "1284600cfa0699edd9ce274f23799fad1c85ef1c",
+        "size": 598,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-github-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "6c8c13c2f7aac2c5070af983a984e3306d817827",
+        "size": 134,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-google-calendar-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "ed9fa08c00f0e2a8fd99ecd3e55ba602d33b41e2",
+        "size": 139,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-hacker-news-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "534f16ca7741ed2b8b1e507fc6aa5cb6859d069e",
+        "size": 74,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-hermes-agent-app/Dockerfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "d0ff0ba90ae4880a4be170b3775836de1bbd1603",
+        "size": 223,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-hermes-agent-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "5dba0829c3fc1212a741675877821ea6dfdd85dd",
+        "size": 60,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-hive-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "7a3b69c4c02ca50bc2b4c1c923b4d43074f604d2",
+        "size": 173,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-linear-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "7a3b69c4c02ca50bc2b4c1c923b4d43074f604d2",
+        "size": 173,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-ms365-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "cec730f0a202b8cfab3b19ca8b734a6d905deb84",
+        "size": 204,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-notion-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "ed9fa08c00f0e2a8fd99ecd3e55ba602d33b41e2",
+        "size": 139,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-open-library-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "708103b72e1983e62613a2123015c594e55f8e5e",
+        "size": 64,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-open-meteo-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "534f16ca7741ed2b8b1e507fc6aa5cb6859d069e",
+        "size": 74,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-openfoodfacts-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "fb319fe6f05a464aa63438f2673d96049e84b273",
+        "size": 66,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-plugin-sdk/pyproject.toml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "7c1e9f217b2dedadb2f29698cb50072ad6f9ae6b",
+        "size": 353,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-public-holidays-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "534f16ca7741ed2b8b1e507fc6aa5cb6859d069e",
+        "size": 74,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-pubmed-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "0461ccbacd3a03a761be0b29739858fce8d42ebd",
+        "size": 63,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-semantic-scholar-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "61254b73429a928fb67b459ddf5bcb00ba4d31ca",
+        "size": 63,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-shipbob-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "c653b66d4fddc938c7f6e22c91df28574a6f5818",
+        "size": 157,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-shopify-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "ec5b30763146d1cfd88d5901948433750c14b52d",
+        "size": 156,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-slack-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "c544b71e5e79243e9391cda28073497704ee3fa8",
+        "size": 134,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-stack-overflow-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "708103b72e1983e62613a2123015c594e55f8e5e",
+        "size": 64,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-twitter-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "d17ca5948bb329a1487a69f4f378d7a36a5d1284",
+        "size": 184,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-twitter-chat-tools-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "4236adc2bc84246dd5ccb3f683281f930e570c54",
+        "size": 100,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-usgs-earthquake-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "210fd0bce0bedec3ea1ac4bb1edcb7f7c954f6a5",
+        "size": 58,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-whoop-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "4236adc2bc84246dd5ccb3f683281f930e570c54",
+        "size": 100,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/omi-wikipedia-app/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "9b9db22ebb0ac23ab1b084c3dfa42e2040b709ec",
+        "size": 74,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "c718e78a2f320b20153fb56efe70e634121419ec",
+        "size": 4243,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/uber_call/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "21b54644dfc08fc863a0a450040a1d351a939305",
+        "size": 57,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/zapier/omi-zap/package-lock.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "76293947e589df9f7fbf98eff9cc815bbb29e9e1",
+        "size": 159566,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "plugins/zapier/omi-zap/package.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "3c24fcf2939184173677eec6c000d68fe9fd6333",
+        "size": 590,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "scripts/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "82f6908089c0abc10a20ba06f9be8ea1e81c33ac",
+        "size": 78,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/device/cpp/CMakeLists.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "da83d49f70189b5c82767ecc12ff9d4b298d38ce",
+        "size": 2550,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/device/dart/pubspec.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "306ece3d4ccb64a1c9a9ad9b1743c686cdca6299",
+        "size": 346,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/device/go/go.mod",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "a3af4aeb43f1fa80fcc0497b82f11f73397198c7",
+        "size": 734,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/device/go/go.sum",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "1e180cf08ae96903fbd0f2d03e65a6fdf04340de",
+        "size": 4107,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/device/rust/Cargo.toml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "f87e91f079d0e00a09cb88156433c10a0acdd80c",
+        "size": 981,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/device/typescript/package.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "c1d2a4c9ae6066978e1806efcfcf85ae486d8454",
+        "size": 715,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/python-cli/pyproject.toml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "88bab7909cca38b26222a87f64c7a4e95a1546d9",
+        "size": 3108,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/python/pyproject.toml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "847ae83ccc6f616ef099552b87771a14f667d074",
+        "size": 2700,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/python/requirements.txt",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "035ba665c56772c0fb732a7e54602b404e7cee24",
+        "size": 654,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/react-native/example/android/app/build.gradle",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "91b1c044a3fe47d8d40f4a913609f1561d820ae9",
+        "size": 7912,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/react-native/example/android/build.gradle",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "513b766148a468b2895247fdb9ba771d17cb79f2",
+        "size": 1530,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/react-native/example/android/gradle.properties",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "41b173c48a15702b2d3aca0e0196f14d21c2eef7",
+        "size": 2308,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/react-native/example/android/settings.gradle",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "4a3e8270e114ab224b4f7892ebcc16783a352915",
+        "size": 981,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/react-native/example/ios/Podfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "af9481f0b624563f11e0b74fa9f362ed0ba8b28d",
+        "size": 3235,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/react-native/example/package-lock.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "7dba81c3727f0dbb86b5c277ba2eb57cfd84bca4",
+        "size": 513358,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/react-native/example/package.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "4cbb9bf2a49835325326083efc1941c3cbbe7e90",
+        "size": 1003,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/react-native/omi-react-native.podspec",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "eccd1512523501d18591898d2e6488962bfbaff7",
+        "size": 555,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/react-native/package-lock.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "39c4b195d7c694db1e204f3c72988471c3a61737",
+        "size": 661201,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/react-native/package.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "c0160b1198ec5ebef7e433dd9d08455065bbcd68",
+        "size": 3938,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/rust/omi-device/Cargo.toml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "b3a308fd595197165997ab863221969d9147c860",
+        "size": 329,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "sdks/swift/Package.resolved",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "d911ad5a63adf989176212e8e8cb123458d9b625",
+        "size": 835,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "web/admin/Dockerfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "deaa40174850c356fa24e1af60bb7738b38f3eef",
+        "size": 3534,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "web/admin/package-lock.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "ac150b8db2ca257e874a261c2f7147802344379b",
+        "size": 466021,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "web/admin/package.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "f6458fcef07434d76abe2b83ce088f4ef5c9787a",
+        "size": 3415,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "web/app/Dockerfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "8e30181853717b81b18ba685fde1d3f559b8aaed",
+        "size": 2765,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "web/app/package-lock.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "afb56a12ed2f4d3f2700495dbc3d28278bda0a1a",
+        "size": 420931,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "web/app/package.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "0a2d4caafd4b117570bec2d6cc51a790dc12e91d",
+        "size": 2188,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "web/frontend/Dockerfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "3662883818a88773b10e76bcecf8a565c093d61d",
+        "size": 2660,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "web/frontend/package-lock.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "835cb7d95fcf5b70b0adc423269815fd755d0f96",
+        "size": 360770,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "web/frontend/package.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "5fc976c8b8d1a5cbd4e5e306af15cc77bc5298ec",
+        "size": 2762,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "web/personas-open-source/Dockerfile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "7d10726c04e2616665c192bfdf6cc3e939df53c6",
+        "size": 2034,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "web/personas-open-source/package-lock.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "fd5084164712315dfea9d33dd589819d23dc44d3",
+        "size": 309824,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "path": "web/personas-open-source/package.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "c8a904f838c10073324eb5a6b27e66218a423155",
+        "size": 2195,
+        "contentRetrieved": false,
+        "dependencyClosureKnown": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      }
+    ]
+  },
+  "vendorRoots": {
+    "count": 2,
+    "detectionRule": "tree directories whose basename is vendor, vendors, vendored, third_party, third-party, external, deps, libdeps, node_modules or pods; case-insensitive",
+    "declaredPathRuleFullyApplied": true,
+    "embeddedVendorInventoryComplete": false,
+    "additionalVendorCandidatesMayExist": true,
+    "entries": [
+      {
+        "path": "desktop/macos/vendor",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "24642fce3c8e265e714218af301ffa8d89051397",
+        "size": null,
+        "contentRetrieved": false,
+        "embeddedArtifactInventoryComplete": false,
+        "disposition": "BLOCKED_RIGHTS"
+      },
+      {
+        "path": "omiGlass/firmware/.pio/libdeps",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "efe8dea78d313992ce88479187aa04561ef878a9",
+        "size": null,
+        "contentRetrieved": false,
+        "embeddedArtifactInventoryComplete": false,
+        "disposition": "BLOCKED_RIGHTS"
+      }
+    ]
+  },
+  "submodules": {
+    "count": 0,
+    "entries": [],
+    "disposition": "PROPOSED",
+    "statement": "No mode 160000 or tree type commit entry was present in the complete recursive tree metadata."
+  },
+  "lfsSurface": {
+    "gitAttributesPathCount": 1,
+    "gitAttributesPaths": [
+      {
+        "path": "desktop/windows/.gitattributes",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "9d7dc4fd5003cce2782ac2df246c49f2938c9e83",
+        "size": 90,
+        "contentRetrieved": false
+      }
+    ],
+    "lfsPointerContentRetrieved": false,
+    "lfsUsageKnown": false,
+    "disposition": "INSUFFICIENT_EVIDENCE"
+  },
+  "symlinks": {
+    "count": 1,
+    "entries": [
+      {
+        "path": "omi/firmware/test/sysbuild/mcuboot.conf",
+        "mode": "120000",
+        "type": "blob",
+        "oid": "68bbc590a8e5fde43d21f34750916e25d01eaf11",
+        "size": 37,
+        "targetContentRetrieved": false,
+        "disposition": "INSUFFICIENT_EVIDENCE"
+      }
+    ]
+  },
+  "unresolvedRights": [
+    "Root and nested license bytes were not retrieved or reviewed.",
+    "Manifest and lockfile contents were not retrieved; direct and transitive dependency rights are unknown.",
+    "Vendored roots were identified by tree paths only; embedded artifact provenance and notices are unknown.",
+    "The .gitattributes content was not retrieved, so LFS use cannot be determined.",
+    "The symlink target text was not retrieved.",
+    "GitHub licenseInfo metadata cannot grant evaluation, modification, redistribution, patent, trademark, model, dataset or asset rights."
+  ],
+  "overallDisposition": "BLOCKED_RIGHTS",
+  "noAdmissionStatement": "No Omi source, dependency, binary, model, dataset, asset, service, schema or test is evaluated or admitted by this metadata inventory."
+}

@@ -1,0 +1,360 @@
+{
+  "recordType": "dora-gov-omi-phase-a-component-matrix",
+  "schemaVersion": 1,
+  "taskId": "GOV-OMI-001",
+  "phase": "PUBLIC_METADATA_PHASE_A",
+  "phaseState": "PROPOSED",
+  "authorityId": "GOV-OMI-PHASE-A-PUBLIC-METADATA-AUDIT-AUTH-20260818-01",
+  "snapshot": {
+    "repository": "BasedHardware/omi",
+    "commitSha": "7d99abcc4efb9e46a5853b21fc01289e4b891837",
+    "treeSha": "85db621ffd5dc5386bcbd7c87713cc69638be7e3",
+    "treeMetadataSha256": "007d030a21e72c07c89f36359c0e5ded355147c85b5b6284ae0858e5e5058e90"
+  },
+  "method": {
+    "evidenceLevel": "public GitHub path and index metadata only",
+    "reviewedSourceContent": false,
+    "reviewedDependencyContent": false,
+    "executedCode": false,
+    "allowedDispositions": [
+      "PROPOSED",
+      "DEFER",
+      "BLOCKED_RIGHTS",
+      "INSUFFICIENT_EVIDENCE"
+    ],
+    "statement": "Paths and manifest filenames identify research surfaces only; they do not prove implementation, behavior, quality, security, rights or Dora fit."
+  },
+  "components": [
+    {
+      "componentId": "OMI-META-001",
+      "name": "Mobile capture and lifecycle surface",
+      "scopePaths": [
+        "app",
+        "app/android",
+        "app/ios",
+        "app/lib",
+        "app/test"
+      ],
+      "observedPathMetadata": {
+        "topLevelEntryCount": 1638,
+        "manifestHints": [
+          "app/pubspec.yaml",
+          "app/pubspec.lock",
+          "app/android/app/build.gradle",
+          "app/android/app/src/main/cpp/CMakeLists.txt",
+          "app/ios/Podfile",
+          "app/ios/Podfile.lock"
+        ]
+      },
+      "doraRelevance": [
+        "microphone capture",
+        "buffering and lifecycle",
+        "offline mobile behavior",
+        "Android bridge",
+        "mobile tests"
+      ],
+      "disposition": "BLOCKED_RIGHTS",
+      "rationale": "Path and manifest names identify a potentially relevant surface, but Phase A did not retrieve source, manifest contents, tests or license bytes. Reuse, port and behavior claims are prohibited.",
+      "doraInterface": null,
+      "fallback": "Retain Dora-owned capture and lifecycle contracts behind replaceable ports.",
+      "futureOwnerRole": "unassigned Product/Legal/IP plus Engineering/Security reviewers"
+    },
+    {
+      "componentId": "OMI-META-002",
+      "name": "Backend STT, VAD, diarization and provider surface",
+      "scopePaths": [
+        "backend",
+        "backend/diarizer",
+        "backend/parakeet",
+        "backend/routers",
+        "backend/services",
+        "backend/tests"
+      ],
+      "observedPathMetadata": {
+        "topLevelEntryCount": 2854,
+        "manifestHints": [
+          "backend/pyproject.toml",
+          "backend/requirements.txt",
+          "backend/diarizer/requirements.txt",
+          "backend/parakeet/requirements.txt"
+        ]
+      },
+      "doraRelevance": [
+        "STT and diarization",
+        "provider selection and fallback",
+        "retry and idempotency",
+        "deletion and privacy",
+        "backend tests"
+      ],
+      "disposition": "BLOCKED_RIGHTS",
+      "rationale": "Names alone cannot establish algorithms, dependencies, operational behavior, license compatibility or failure handling.",
+      "doraInterface": null,
+      "fallback": "Keep cloud optional and disabled; preserve Dora provider ports and local-mode contracts.",
+      "futureOwnerRole": "unassigned Product/Legal/IP plus Engineering/Security reviewers"
+    },
+    {
+      "componentId": "OMI-META-003",
+      "name": "Storage, synchronization and deletion metadata surface",
+      "scopePaths": [
+        "backend/database",
+        "backend/migrations",
+        "backend/models",
+        "backend/jobs",
+        "backend/testing",
+        "app/lib"
+      ],
+      "observedPathMetadata": {
+        "topLevelEntryCount": null,
+        "keywordMatchedPathCountNote": "Counts are path-keyword observations in upstream-snapshot tree metadata, not behavior evidence."
+      },
+      "doraRelevance": [
+        "durable local truth",
+        "reconciliation",
+        "retry",
+        "retention and deletion",
+        "stale-result protection"
+      ],
+      "disposition": "INSUFFICIENT_EVIDENCE",
+      "rationale": "No schema, migration, job, deletion, sync or state-transition content was retrieved. Compatibility with Dora authoritative-user-truth rules is unknown.",
+      "doraInterface": null,
+      "fallback": "Use Dora-owned storage, reconciliation and deletion specifications until a separately authorized source audit proves a safer portable boundary.",
+      "futureOwnerRole": "unassigned Storage Engineering and Security/Privacy reviewers"
+    },
+    {
+      "componentId": "OMI-META-004",
+      "name": "Contracts and contract-test surface",
+      "scopePaths": [
+        "contracts",
+        "contract_tests"
+      ],
+      "observedPathMetadata": {
+        "contractsEntryCount": 7,
+        "contractTestsEntryCount": 4
+      },
+      "doraRelevance": [
+        "protocol contracts",
+        "regression specifications",
+        "interoperability checks"
+      ],
+      "disposition": "PROPOSED",
+      "rationale": "The paths are credible metadata leads for a later read-only audit; no contract or test content was inspected and nothing is imported.",
+      "doraInterface": null,
+      "fallback": "Continue using Dora-owned versioned contracts and deterministic synthetic fixtures.",
+      "futureOwnerRole": "unassigned Architecture and QA reviewers"
+    },
+    {
+      "componentId": "OMI-META-005",
+      "name": "Device protocol SDK surface",
+      "scopePaths": [
+        "sdks/device",
+        "sdks/react-native",
+        "sdks/swift",
+        "sdks/python"
+      ],
+      "observedPathMetadata": {
+        "topLevelEntryCount": 326,
+        "manifestHints": [
+          "sdks/device/cpp/CMakeLists.txt",
+          "sdks/device/go/go.mod",
+          "sdks/device/rust/Cargo.toml",
+          "sdks/device/typescript/package.json",
+          "sdks/react-native/package.json"
+        ]
+      },
+      "doraRelevance": [
+        "replaceable future BLE/device protocol port",
+        "cross-language protocol evidence"
+      ],
+      "disposition": "DEFER",
+      "rationale": "A Dora device port is not in the active stage. Source and protocol content were not retrieved.",
+      "doraInterface": null,
+      "fallback": "No SDK or device dependency; retain a future replaceable protocol port.",
+      "futureOwnerRole": "unassigned Device Engineering and Security reviewers"
+    },
+    {
+      "componentId": "OMI-META-006",
+      "name": "Omi firmware and hardware surface",
+      "scopePaths": [
+        "omi/firmware",
+        "omi/hardware"
+      ],
+      "observedPathMetadata": {
+        "topLevelEntryCount": 899,
+        "manifestHints": [
+          "omi/firmware/devkit/CMakeLists.txt",
+          "omi/firmware/omi/CMakeLists.txt",
+          "omi/firmware/test/CMakeLists.txt"
+        ]
+      },
+      "doraRelevance": [
+        "BLE framing",
+        "device interruption behavior",
+        "future hardware compatibility"
+      ],
+      "disposition": "DEFER",
+      "rationale": "Firmware and hardware are outside current Dora MVP 1 implementation scope; nested rights and vendored-code provenance are unresolved.",
+      "doraInterface": null,
+      "fallback": "No hardware promise or firmware dependency.",
+      "futureOwnerRole": "unassigned Firmware Engineering, Product/Legal/IP and Security reviewers"
+    },
+    {
+      "componentId": "OMI-META-007",
+      "name": "Repository tests, failure classes and security-document paths",
+      "scopePaths": [
+        ".github/failure-classes",
+        ".github/workflows",
+        "SECURITY.md",
+        "backend/tests",
+        "app/test"
+      ],
+      "observedPathMetadata": {
+        "githubEntryCount": 370,
+        "backendEntryCount": 2854,
+        "appEntryCount": 1638
+      },
+      "doraRelevance": [
+        "hazard discovery",
+        "regression candidates",
+        "security process",
+        "CI evidence patterns"
+      ],
+      "disposition": "PROPOSED",
+      "rationale": "Path metadata suggests future audit value. Phase A did not retrieve test, workflow or security-document contents.",
+      "doraInterface": null,
+      "fallback": "Use Dora Test Strategy and existing deterministic gates.",
+      "futureOwnerRole": "unassigned QA and Security reviewers"
+    },
+    {
+      "componentId": "OMI-META-008",
+      "name": "Desktop applications",
+      "scopePaths": [
+        "desktop"
+      ],
+      "observedPathMetadata": {
+        "topLevelEntryCount": 4261
+      },
+      "doraRelevance": [
+        "possible lifecycle and local-processing lessons only"
+      ],
+      "disposition": "DEFER",
+      "rationale": "Desktop product behavior is outside Dora Android MVP 1 and no concrete current contract requires deep review.",
+      "doraInterface": null,
+      "fallback": "No desktop module or dependency.",
+      "futureOwnerRole": "unassigned"
+    },
+    {
+      "componentId": "OMI-META-009",
+      "name": "Web and infrastructure surfaces",
+      "scopePaths": [
+        "web",
+        "infrastructure"
+      ],
+      "observedPathMetadata": {
+        "webEntryCount": 1012,
+        "infrastructureEntryCount": 19
+      },
+      "doraRelevance": [
+        "possible future optional cloud operations only"
+      ],
+      "disposition": "DEFER",
+      "rationale": "Cloud and web remain optional, separately consented and outside the active stage.",
+      "doraInterface": null,
+      "fallback": "Local mode remains functional without account, network, GMS or cloud configuration.",
+      "futureOwnerRole": "unassigned Backend, Security/Privacy and Product/Legal reviewers"
+    },
+    {
+      "componentId": "OMI-META-010",
+      "name": "Plugins and MCP integrations",
+      "scopePaths": [
+        "plugins",
+        "mcp"
+      ],
+      "observedPathMetadata": {
+        "pluginsEntryCount": 593,
+        "mcpEntryCount": 26
+      },
+      "doraRelevance": [
+        "none for current MVP core; possible future integrations"
+      ],
+      "disposition": "DEFER",
+      "rationale": "Marketplace, plugin and MCP integration surfaces are outside current scope and introduce additional service and rights boundaries.",
+      "doraInterface": null,
+      "fallback": "No plugin, MCP or external-service dependency.",
+      "futureOwnerRole": "unassigned"
+    },
+    {
+      "componentId": "OMI-META-011",
+      "name": "OmiGlass product, firmware and vendored dependency surface",
+      "scopePaths": [
+        "omiGlass",
+        "omiGlass/firmware/.pio/libdeps"
+      ],
+      "observedPathMetadata": {
+        "topLevelEntryCount": 885,
+        "vendorRootObserved": true
+      },
+      "doraRelevance": [
+        "possible future device lessons only"
+      ],
+      "disposition": "DEFER",
+      "rationale": "A separate product/hardware surface with vendored dependencies is outside current Dora scope; rights and provenance are unresolved.",
+      "doraInterface": null,
+      "fallback": "No OmiGlass dependency, firmware, asset or hardware claim.",
+      "futureOwnerRole": "unassigned Firmware Engineering, Product/Legal/IP and Security reviewers"
+    },
+    {
+      "componentId": "OMI-META-012",
+      "name": "License, manifest and vendored-artifact surface",
+      "scopePaths": [
+        "LICENSE",
+        "desktop/context-for-claude/LICENSE",
+        "omiGlass/firmware/.pio/libdeps",
+        "desktop/macos/vendor"
+      ],
+      "observedPathMetadata": {
+        "licenseAndNoticePathCount": 21,
+        "manifestAndControlPathCount": 188,
+        "vendorRootCount": 2,
+        "submoduleCount": 0,
+        "symlinkCount": 1
+      },
+      "doraRelevance": [
+        "rights",
+        "dependency footprint",
+        "supply-chain risk",
+        "notices and redistribution"
+      ],
+      "disposition": "BLOCKED_RIGHTS",
+      "rationale": "Only Git tree path metadata and GitHub licenseInfo were collected. Exact terms, dependencies, notices, binaries and embedded assets were not inspected.",
+      "doraInterface": null,
+      "fallback": "Do not retrieve, execute, copy, port or admit any Omi artifact.",
+      "futureOwnerRole": "named Product/Legal/IP and Engineering/Security reviewers required"
+    }
+  ],
+  "summary": {
+    "componentCount": 12,
+    "dispositionCounts": [
+      {
+        "disposition": "BLOCKED_RIGHTS",
+        "count": 3
+      },
+      {
+        "disposition": "DEFER",
+        "count": 6
+      },
+      {
+        "disposition": "INSUFFICIENT_EVIDENCE",
+        "count": 1
+      },
+      {
+        "disposition": "PROPOSED",
+        "count": 2
+      }
+    ],
+    "reuseCandidateCount": 0,
+    "portCandidateCount": 0,
+    "admittedCount": 0
+  },
+  "nextGate": "Any source-level assessment requires separate exact-scope retrieval authority, exact rights disposition, and named reviewers. This matrix creates no PoC or implementation task.",
+  "noAdmissionStatement": "No Omi source, dependency, binary, model, dataset, asset, service, schema, test or behavior is evaluated or admitted."
+}

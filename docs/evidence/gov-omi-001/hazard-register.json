@@ -1,0 +1,856 @@
+{
+  "recordType": "dora-gov-omi-phase-a-hazard-register",
+  "schemaVersion": 1,
+  "taskId": "GOV-OMI-001",
+  "phase": "PUBLIC_METADATA_PHASE_A",
+  "phaseState": "PROPOSED",
+  "authorityId": "GOV-OMI-PHASE-A-PUBLIC-METADATA-AUDIT-AUTH-20260818-01",
+  "snapshot": {
+    "repository": "BasedHardware/omi",
+    "commitSha": "7d99abcc4efb9e46a5853b21fc01289e4b891837",
+    "treeSha": "85db621ffd5dc5386bcbd7c87713cc69638be7e3"
+  },
+  "indexEvidence": {
+    "issueIndex": {
+      "totalCount": 2953,
+      "retrievedCount": 2953,
+      "completeAtCollectionEnd": true,
+      "canonicalMetadataSha256": "bda191f44ef1c9bf1e348d7abd3ad019a79045d802448fad0aff1d1adfeff4ec"
+    },
+    "pullRequestIndex": {
+      "totalCountAtLastPage": 8794,
+      "retrievedCount": 5000,
+      "capped": true,
+      "uncollectedCountAtLastPage": 3794,
+      "canonicalMetadataSha256": "35f15141d4366114898daa44d4dd5c43664e0ba338ee7dbec2f447ae25cc6f7c"
+    },
+    "taxonomyVersion": "gov-omi-phase-a-title-taxonomy-v0.1",
+    "rawTitlesRetained": false,
+    "bodyCommentPatchDiffRetrieved": false,
+    "candidateExampleSelection": "from the retained deterministic 200-record candidate subset per index, ordered updatedAt DESC then number ASC; at most three examples per taxonomy and source type"
+  },
+  "hazards": [
+    {
+      "hazardId": "GOV-OMI-HZ-META-001",
+      "taxonomyTag": "AUDIO_DATA_LOSS",
+      "doraSeverity": "P0",
+      "severityRationale": "Potential silent or partial audio/transcript loss would violate source integrity and recovery contracts.",
+      "metadataCandidates": {
+        "issueMatchesInCompleteIndex": 39,
+        "pullRequestMatchesInRetrievedPrefix": 12,
+        "issueExamples": [
+          {
+            "number": 11769,
+            "url": "https://github.com/BasedHardware/omi/issues/11769",
+            "state": "CLOSED",
+            "createdAt": "2026-08-17T23:10:30Z",
+            "updatedAt": "2026-08-17T23:25:59Z",
+            "closedAt": "2026-08-17T23:25:59Z",
+            "titleSha256": "39e57f6828d17b044aca641cf211a2d123f193192ea1b6eabd9a0de1226f55e3"
+          },
+          {
+            "number": 11742,
+            "url": "https://github.com/BasedHardware/omi/issues/11742",
+            "state": "OPEN",
+            "createdAt": "2026-08-17T10:35:21Z",
+            "updatedAt": "2026-08-17T10:35:21Z",
+            "closedAt": null,
+            "titleSha256": "a263060376529e681466dd4c84a564379cf30c37bb970e6b6b190717a1448042"
+          },
+          {
+            "number": 6999,
+            "url": "https://github.com/BasedHardware/omi/issues/6999",
+            "state": "OPEN",
+            "createdAt": "2026-04-25T01:48:47Z",
+            "updatedAt": "2026-08-06T16:59:38Z",
+            "closedAt": null,
+            "titleSha256": "9350263faf56e96b750fbfe31270446dea8806180cde0d66e55ed89b288e501f"
+          }
+        ],
+        "pullRequestExamples": [
+          {
+            "number": 7331,
+            "url": "https://github.com/BasedHardware/omi/pull/7331",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-05-16T09:54:26Z",
+            "updatedAt": "2026-05-17T16:23:41Z",
+            "closedAt": "2026-05-17T16:23:40Z",
+            "mergedAt": "2026-05-17T16:23:40Z",
+            "titleSha256": "89bee5568c485284014dc06642b544725527cdb1819f1980c4b57ae037685470",
+            "mergedStateIsNotFixEvidence": true
+          },
+          {
+            "number": 7125,
+            "url": "https://github.com/BasedHardware/omi/pull/7125",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-05-02T04:23:13Z",
+            "updatedAt": "2026-05-02T07:42:34Z",
+            "closedAt": "2026-05-02T07:42:32Z",
+            "mergedAt": "2026-05-02T07:42:32Z",
+            "titleSha256": "a588165dbfebe3415dee8b691ef5e6c5e759c92a9c9619973f59a092c427205b",
+            "mergedStateIsNotFixEvidence": true
+          },
+          {
+            "number": 7013,
+            "url": "https://github.com/BasedHardware/omi/pull/7013",
+            "state": "CLOSED",
+            "isDraft": false,
+            "createdAt": "2026-04-25T23:06:57Z",
+            "updatedAt": "2026-04-25T23:11:57Z",
+            "closedAt": "2026-04-25T23:08:36Z",
+            "mergedAt": null,
+            "titleSha256": "90a0be23d441b21e00b6f15f2b44eaab460b4e299bb3a5679b4d14db2dabd5c3",
+            "mergedStateIsNotFixEvidence": true
+          }
+        ]
+      },
+      "upstreamFailureVerified": false,
+      "upstreamFixVerified": false,
+      "affectedVersions": null,
+      "doraApplicability": "possible; not established from title metadata",
+      "proposedSyntheticRegressionFixture": "Fixed-seed numbered PCM/frame stream with deterministic truncation, interruption and finalization points; assert committed-prefix preservation and explicit tail classification.",
+      "targetTestStrategyIds": [
+        "TS-FGS",
+        "TS-LIFECYCLE",
+        "TS-STORAGE"
+      ],
+      "futureBacklogOwner": null,
+      "testSpecificationCreated": false,
+      "disposition": "INSUFFICIENT_EVIDENCE",
+      "limitation": "Title taxonomy is a discovery heuristic only. No body, comment, patch, diff, test, source or path history was retrieved."
+    },
+    {
+      "hazardId": "GOV-OMI-HZ-META-002",
+      "taxonomyTag": "MIC_STATE_PERMISSION",
+      "doraSeverity": "P0",
+      "severityRationale": "Hidden, unauthorized or incorrectly stopped microphone state would violate explicit Start/Stop and privacy contracts.",
+      "metadataCandidates": {
+        "issueMatchesInCompleteIndex": 23,
+        "pullRequestMatchesInRetrievedPrefix": 19,
+        "issueExamples": [
+          {
+            "number": 11204,
+            "url": "https://github.com/BasedHardware/omi/issues/11204",
+            "state": "OPEN",
+            "createdAt": "2026-08-07T18:47:08Z",
+            "updatedAt": "2026-08-08T08:39:48Z",
+            "closedAt": null,
+            "titleSha256": "92ee465a3c087b0c7337a049d3abd3c336158a7dfb034577e04e3f079fe2348f"
+          },
+          {
+            "number": 4706,
+            "url": "https://github.com/BasedHardware/omi/issues/4706",
+            "state": "CLOSED",
+            "createdAt": "2026-02-09T19:48:58Z",
+            "updatedAt": "2026-08-06T14:38:34Z",
+            "closedAt": "2026-08-06T14:38:34Z",
+            "titleSha256": "ea56b2e7daa956242d071941d921fbc10676ee46ba6082465c6ca152faeb17b4"
+          },
+          {
+            "number": 10921,
+            "url": "https://github.com/BasedHardware/omi/issues/10921",
+            "state": "CLOSED",
+            "createdAt": "2026-07-31T01:47:29Z",
+            "updatedAt": "2026-08-06T14:38:04Z",
+            "closedAt": "2026-08-06T14:38:04Z",
+            "titleSha256": "d947dfb5e00aca0cc946ef107079675e17ee6302f5b3102c71f224dfaacfcca5"
+          }
+        ],
+        "pullRequestExamples": [
+          {
+            "number": 6565,
+            "url": "https://github.com/BasedHardware/omi/pull/6565",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-04-12T11:01:11Z",
+            "updatedAt": "2026-05-06T12:25:12Z",
+            "closedAt": "2026-05-06T12:25:10Z",
+            "mergedAt": "2026-05-06T12:25:10Z",
+            "titleSha256": "88985964cca2972472b4540bd6ed18f9813edc4c9a36b70cfa6bdc11a52eee02",
+            "mergedStateIsNotFixEvidence": true
+          },
+          {
+            "number": 6869,
+            "url": "https://github.com/BasedHardware/omi/pull/6869",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-04-19T23:58:53Z",
+            "updatedAt": "2026-04-20T00:07:14Z",
+            "closedAt": "2026-04-20T00:07:13Z",
+            "mergedAt": "2026-04-20T00:07:13Z",
+            "titleSha256": "250a646fe0060279c5f47c9567539470a657f0e8bd103abefb62c97ddc3dd87b",
+            "mergedStateIsNotFixEvidence": true
+          },
+          {
+            "number": 6650,
+            "url": "https://github.com/BasedHardware/omi/pull/6650",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-04-14T17:18:50Z",
+            "updatedAt": "2026-04-14T17:34:26Z",
+            "closedAt": "2026-04-14T17:33:14Z",
+            "mergedAt": "2026-04-14T17:33:14Z",
+            "titleSha256": "c2989fb260d3f7663bc726a5301bd6b47e00d3d5679de84d8782449e0c575150",
+            "mergedStateIsNotFixEvidence": true
+          }
+        ]
+      },
+      "upstreamFailureVerified": false,
+      "upstreamFixVerified": false,
+      "affectedVersions": null,
+      "doraApplicability": "possible; not established from title metadata",
+      "proposedSyntheticRegressionFixture": "Deterministic permission and lifecycle state machine covering explicit Start, denial, Stop, process recreation and no-silent-restart assertions.",
+      "targetTestStrategyIds": [
+        "TS-FGS",
+        "TS-PRIVACY",
+        "TS-COMPOSE"
+      ],
+      "futureBacklogOwner": null,
+      "testSpecificationCreated": false,
+      "disposition": "INSUFFICIENT_EVIDENCE",
+      "limitation": "Title taxonomy is a discovery heuristic only. No body, comment, patch, diff, test, source or path history was retrieved."
+    },
+    {
+      "hazardId": "GOV-OMI-HZ-META-003",
+      "taxonomyTag": "LIFECYCLE_CRASH",
+      "doraSeverity": "P0",
+      "severityRationale": "Process death, backgrounding or restart can corrupt durable state or restart capture without consent.",
+      "metadataCandidates": {
+        "issueMatchesInCompleteIndex": 95,
+        "pullRequestMatchesInRetrievedPrefix": 129,
+        "issueExamples": [
+          {
+            "number": 11695,
+            "url": "https://github.com/BasedHardware/omi/issues/11695",
+            "state": "OPEN",
+            "createdAt": "2026-08-16T17:17:58Z",
+            "updatedAt": "2026-08-17T16:06:11Z",
+            "closedAt": null,
+            "titleSha256": "952689c2d23af45b1656d94c874990daae360a166a3ae92fa15b17a9a902164d"
+          },
+          {
+            "number": 11568,
+            "url": "https://github.com/BasedHardware/omi/issues/11568",
+            "state": "OPEN",
+            "createdAt": "2026-08-14T13:43:21Z",
+            "updatedAt": "2026-08-16T15:40:07Z",
+            "closedAt": null,
+            "titleSha256": "bbcb312d8db9d84fff3d0e28451dd5ab0b7eadcaf06fbdfcc309173f8febe1f9"
+          },
+          {
+            "number": 11307,
+            "url": "https://github.com/BasedHardware/omi/issues/11307",
+            "state": "OPEN",
+            "createdAt": "2026-08-10T03:44:43Z",
+            "updatedAt": "2026-08-14T02:17:27Z",
+            "closedAt": null,
+            "titleSha256": "f78668ab464025d96b019dbbc3ac8971ec6cd7ab8e3607819080c08e27ae42bc"
+          }
+        ],
+        "pullRequestExamples": [
+          {
+            "number": 7099,
+            "url": "https://github.com/BasedHardware/omi/pull/7099",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-04-30T09:46:50Z",
+            "updatedAt": "2026-06-02T19:10:05Z",
+            "closedAt": "2026-06-02T19:10:02Z",
+            "mergedAt": "2026-06-02T19:10:02Z",
+            "titleSha256": "310f1a47b5c9831261af1f40604136f0e6e4b97b8dfb45dfa577a20ff2567a73",
+            "mergedStateIsNotFixEvidence": true
+          },
+          {
+            "number": 6948,
+            "url": "https://github.com/BasedHardware/omi/pull/6948",
+            "state": "CLOSED",
+            "isDraft": false,
+            "createdAt": "2026-04-22T13:12:19Z",
+            "updatedAt": "2026-05-25T02:59:42Z",
+            "closedAt": "2026-05-25T02:59:34Z",
+            "mergedAt": null,
+            "titleSha256": "91b722d892c955035addc923c6f9f7cbc6dcaa188ea89f284e6fcf6795aab085",
+            "mergedStateIsNotFixEvidence": true
+          },
+          {
+            "number": 7175,
+            "url": "https://github.com/BasedHardware/omi/pull/7175",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-05-05T10:51:50Z",
+            "updatedAt": "2026-05-05T12:18:03Z",
+            "closedAt": "2026-05-05T11:06:03Z",
+            "mergedAt": "2026-05-05T11:06:03Z",
+            "titleSha256": "4dcfc5aa647e21d0990598fcb622e62bfa46d3a8b61ca7af5953e1f1477bbe0a",
+            "mergedStateIsNotFixEvidence": true
+          }
+        ]
+      },
+      "upstreamFailureVerified": false,
+      "upstreamFixVerified": false,
+      "affectedVersions": null,
+      "doraApplicability": "possible; not established from title metadata",
+      "proposedSyntheticRegressionFixture": "Synthetic durable session with fixed kill barriers and restart reconciliation; assert no committed loss, duplicate intent or automatic microphone start.",
+      "targetTestStrategyIds": [
+        "TS-LIFECYCLE",
+        "TS-STORAGE"
+      ],
+      "futureBacklogOwner": null,
+      "testSpecificationCreated": false,
+      "disposition": "INSUFFICIENT_EVIDENCE",
+      "limitation": "Title taxonomy is a discovery heuristic only. No body, comment, patch, diff, test, source or path history was retrieved."
+    },
+    {
+      "hazardId": "GOV-OMI-HZ-META-004",
+      "taxonomyTag": "ROUTE_BLE_INTERRUPTION",
+      "doraSeverity": "P1",
+      "severityRationale": "Route or BLE interruption can drop, duplicate or reorder capture events and misstate device status.",
+      "metadataCandidates": {
+        "issueMatchesInCompleteIndex": 115,
+        "pullRequestMatchesInRetrievedPrefix": 137,
+        "issueExamples": [
+          {
+            "number": 11762,
+            "url": "https://github.com/BasedHardware/omi/issues/11762",
+            "state": "CLOSED",
+            "createdAt": "2026-08-17T21:43:38Z",
+            "updatedAt": "2026-08-17T22:01:09Z",
+            "closedAt": "2026-08-17T22:01:09Z",
+            "titleSha256": "66393a59a6dc2dc8e1163a54d29a3f69051d8a030c0e9c3e44bc5b4223aa4071"
+          },
+          {
+            "number": 11694,
+            "url": "https://github.com/BasedHardware/omi/issues/11694",
+            "state": "OPEN",
+            "createdAt": "2026-08-16T17:17:39Z",
+            "updatedAt": "2026-08-17T11:33:40Z",
+            "closedAt": null,
+            "titleSha256": "94fff4a81ca2233865a22385c020432ae37ee695ae4458ef2ec3b981b827722c"
+          },
+          {
+            "number": 11307,
+            "url": "https://github.com/BasedHardware/omi/issues/11307",
+            "state": "OPEN",
+            "createdAt": "2026-08-10T03:44:43Z",
+            "updatedAt": "2026-08-14T02:17:27Z",
+            "closedAt": null,
+            "titleSha256": "f78668ab464025d96b019dbbc3ac8971ec6cd7ab8e3607819080c08e27ae42bc"
+          }
+        ],
+        "pullRequestExamples": [
+          {
+            "number": 7132,
+            "url": "https://github.com/BasedHardware/omi/pull/7132",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-05-02T18:45:22Z",
+            "updatedAt": "2026-07-31T06:18:21Z",
+            "closedAt": "2026-07-31T06:18:20Z",
+            "mergedAt": "2026-07-31T06:18:20Z",
+            "titleSha256": "43b0e7653e022eb7ea28f1db2cfa970618979a4806dea8396aa73bb4a44ffad4",
+            "mergedStateIsNotFixEvidence": true
+          },
+          {
+            "number": 7346,
+            "url": "https://github.com/BasedHardware/omi/pull/7346",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-05-17T13:11:12Z",
+            "updatedAt": "2026-06-09T21:32:38Z",
+            "closedAt": "2026-06-09T21:32:38Z",
+            "mergedAt": "2026-06-09T21:32:38Z",
+            "titleSha256": "25c192a2ff58a5053aa69032b57ed69bc19688a84e9169965825556e318a78d0",
+            "mergedStateIsNotFixEvidence": true
+          },
+          {
+            "number": 6987,
+            "url": "https://github.com/BasedHardware/omi/pull/6987",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-04-24T10:52:46Z",
+            "updatedAt": "2026-06-09T18:28:00Z",
+            "closedAt": "2026-06-09T18:27:59Z",
+            "mergedAt": "2026-06-09T18:27:59Z",
+            "titleSha256": "4ca24e25d839e0e7763334a457fa55b58aa5cefc595fbe721e24eb5843af6854",
+            "mergedStateIsNotFixEvidence": true
+          }
+        ]
+      },
+      "upstreamFailureVerified": false,
+      "upstreamFixVerified": false,
+      "affectedVersions": null,
+      "doraApplicability": "possible; not established from title metadata",
+      "proposedSyntheticRegressionFixture": "Fixed event ledger with deterministic disconnect, route switch and reconnect ordering; assert bounded explicit loss and idempotent recovery.",
+      "targetTestStrategyIds": [
+        "TS-FGS",
+        "TS-DEVICE",
+        "TS-INTEGRATION"
+      ],
+      "futureBacklogOwner": null,
+      "testSpecificationCreated": false,
+      "disposition": "INSUFFICIENT_EVIDENCE",
+      "limitation": "Title taxonomy is a discovery heuristic only. No body, comment, patch, diff, test, source or path history was retrieved."
+    },
+    {
+      "hazardId": "GOV-OMI-HZ-META-005",
+      "taxonomyTag": "DUPLICATE_RETRY_ORDER",
+      "doraSeverity": "P1",
+      "severityRationale": "Duplicate, retried or reordered jobs can create duplicated user-visible or economic effects.",
+      "metadataCandidates": {
+        "issueMatchesInCompleteIndex": 38,
+        "pullRequestMatchesInRetrievedPrefix": 36,
+        "issueExamples": [
+          {
+            "number": 11736,
+            "url": "https://github.com/BasedHardware/omi/issues/11736",
+            "state": "CLOSED",
+            "createdAt": "2026-08-17T08:41:01Z",
+            "updatedAt": "2026-08-17T09:21:07Z",
+            "closedAt": "2026-08-17T09:21:07Z",
+            "titleSha256": "0dd5481c7f5cfe6ce0a6f22629af426ca697ad1693f3d4ec9b08e1b346a28a74"
+          },
+          {
+            "number": 11724,
+            "url": "https://github.com/BasedHardware/omi/issues/11724",
+            "state": "OPEN",
+            "createdAt": "2026-08-17T03:58:08Z",
+            "updatedAt": "2026-08-17T03:58:08Z",
+            "closedAt": null,
+            "titleSha256": "0d9509b5c27e1f191465e0a23bf8a212a18397517c4aca173b7b85616d513934"
+          },
+          {
+            "number": 4769,
+            "url": "https://github.com/BasedHardware/omi/issues/4769",
+            "state": "CLOSED",
+            "createdAt": "2026-02-12T15:34:02Z",
+            "updatedAt": "2026-08-09T14:34:46Z",
+            "closedAt": "2026-08-09T14:34:46Z",
+            "titleSha256": "5e14183d47f8e78b4c69cb83ea670958a3a0f8ac5bed7db351bd02f78e66d5e1"
+          }
+        ],
+        "pullRequestExamples": [
+          {
+            "number": 6777,
+            "url": "https://github.com/BasedHardware/omi/pull/6777",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-04-17T17:25:16Z",
+            "updatedAt": "2026-06-10T06:16:41Z",
+            "closedAt": "2026-06-10T06:16:40Z",
+            "mergedAt": "2026-06-10T06:16:40Z",
+            "titleSha256": "d63a4fba6ffc37fedd4928fb3873507165dd0a7dfff82a990d8d39de6edea0a1",
+            "mergedStateIsNotFixEvidence": true
+          },
+          {
+            "number": 7093,
+            "url": "https://github.com/BasedHardware/omi/pull/7093",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-04-29T15:42:26Z",
+            "updatedAt": "2026-06-09T20:19:40Z",
+            "closedAt": "2026-06-09T20:19:40Z",
+            "mergedAt": "2026-06-09T20:19:40Z",
+            "titleSha256": "1adb6b6f3d16bd05ff884caba814f0bb25573036cead7a11b9fc49ed563e2537",
+            "mergedStateIsNotFixEvidence": true
+          },
+          {
+            "number": 7185,
+            "url": "https://github.com/BasedHardware/omi/pull/7185",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-05-05T21:38:07Z",
+            "updatedAt": "2026-06-03T02:47:34Z",
+            "closedAt": "2026-06-03T02:47:34Z",
+            "mergedAt": "2026-06-03T02:47:34Z",
+            "titleSha256": "e9bcec7445610be5119bf6f95ea39a41840f0e1ce0b0be43011f684cb816e865",
+            "mergedStateIsNotFixEvidence": true
+          }
+        ]
+      },
+      "upstreamFailureVerified": false,
+      "upstreamFixVerified": false,
+      "affectedVersions": null,
+      "doraApplicability": "possible; not established from title metadata",
+      "proposedSyntheticRegressionFixture": "Fixed IDs and fake clock; inject duplicate, retry and out-of-order delivery; assert one durable effect and deterministic reconciliation.",
+      "targetTestStrategyIds": [
+        "TS-INTEGRATION",
+        "TS-OFFLINE"
+      ],
+      "futureBacklogOwner": null,
+      "testSpecificationCreated": false,
+      "disposition": "INSUFFICIENT_EVIDENCE",
+      "limitation": "Title taxonomy is a discovery heuristic only. No body, comment, patch, diff, test, source or path history was retrieved."
+    },
+    {
+      "hazardId": "GOV-OMI-HZ-META-006",
+      "taxonomyTag": "OFFLINE_SYNC",
+      "doraSeverity": "P1",
+      "severityRationale": "Network coupling or reconnect errors can make local mode unusable or corrupt local authority.",
+      "metadataCandidates": {
+        "issueMatchesInCompleteIndex": 224,
+        "pullRequestMatchesInRetrievedPrefix": 349,
+        "issueExamples": [
+          {
+            "number": 11694,
+            "url": "https://github.com/BasedHardware/omi/issues/11694",
+            "state": "OPEN",
+            "createdAt": "2026-08-16T17:17:39Z",
+            "updatedAt": "2026-08-17T11:33:40Z",
+            "closedAt": null,
+            "titleSha256": "94fff4a81ca2233865a22385c020432ae37ee695ae4458ef2ec3b981b827722c"
+          },
+          {
+            "number": 11305,
+            "url": "https://github.com/BasedHardware/omi/issues/11305",
+            "state": "CLOSED",
+            "createdAt": "2026-08-10T03:44:42Z",
+            "updatedAt": "2026-08-13T16:00:50Z",
+            "closedAt": "2026-08-13T16:00:49Z",
+            "titleSha256": "72a6db6614e6b3cb3a7b00ddd708063476d3f7d8ed10e05ef1ab299300216955"
+          },
+          {
+            "number": 11481,
+            "url": "https://github.com/BasedHardware/omi/issues/11481",
+            "state": "OPEN",
+            "createdAt": "2026-08-13T08:45:00Z",
+            "updatedAt": "2026-08-13T08:45:00Z",
+            "closedAt": null,
+            "titleSha256": "1d1ee22a3b352593f72886610a71ebfd154bb5e78776a619a8c512ec955fbe0e"
+          }
+        ],
+        "pullRequestExamples": [
+          {
+            "number": 7091,
+            "url": "https://github.com/BasedHardware/omi/pull/7091",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-04-29T15:34:00Z",
+            "updatedAt": "2026-06-16T14:45:57Z",
+            "closedAt": "2026-06-05T06:36:47Z",
+            "mergedAt": "2026-06-05T06:36:46Z",
+            "titleSha256": "bfdf4041fdd45f6186fdcd325296ed187c31618dbd34c10d2765fe16bf3b1bdc",
+            "mergedStateIsNotFixEvidence": true
+          },
+          {
+            "number": 7102,
+            "url": "https://github.com/BasedHardware/omi/pull/7102",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-04-30T11:37:33Z",
+            "updatedAt": "2026-06-16T14:45:52Z",
+            "closedAt": "2026-06-11T14:41:34Z",
+            "mergedAt": "2026-06-11T14:41:34Z",
+            "titleSha256": "df665fedcb71fdc7ab881a5e8a13174dfd21e8d012ff42209393dd4bfcbc90d8",
+            "mergedStateIsNotFixEvidence": true
+          },
+          {
+            "number": 7103,
+            "url": "https://github.com/BasedHardware/omi/pull/7103",
+            "state": "CLOSED",
+            "isDraft": false,
+            "createdAt": "2026-04-30T12:01:26Z",
+            "updatedAt": "2026-06-09T20:07:00Z",
+            "closedAt": "2026-06-09T20:06:46Z",
+            "mergedAt": null,
+            "titleSha256": "209167e14975d1b7ca7baff3e5fadce62f4005881b9f39bd2144ecc69ca2a316",
+            "mergedStateIsNotFixEvidence": true
+          }
+        ]
+      },
+      "upstreamFailureVerified": false,
+      "upstreamFixVerified": false,
+      "affectedVersions": null,
+      "doraApplicability": "possible; not established from title metadata",
+      "proposedSyntheticRegressionFixture": "Airplane/deny-network synthetic flow with queued operations and deterministic reconnect; assert zero forbidden call and idempotent local-first completion.",
+      "targetTestStrategyIds": [
+        "TS-OFFLINE",
+        "TS-INTEGRATION"
+      ],
+      "futureBacklogOwner": null,
+      "testSpecificationCreated": false,
+      "disposition": "INSUFFICIENT_EVIDENCE",
+      "limitation": "Title taxonomy is a discovery heuristic only. No body, comment, patch, diff, test, source or path history was retrieved."
+    },
+    {
+      "hazardId": "GOV-OMI-HZ-META-007",
+      "taxonomyTag": "DELETE_PRIVACY_SECURITY",
+      "doraSeverity": "P0",
+      "severityRationale": "Deletion, retention or leakage defects can expose sensitive audio, transcripts, credentials or private metadata.",
+      "metadataCandidates": {
+        "issueMatchesInCompleteIndex": 86,
+        "pullRequestMatchesInRetrievedPrefix": 126,
+        "issueExamples": [
+          {
+            "number": 11812,
+            "url": "https://github.com/BasedHardware/omi/issues/11812",
+            "state": "OPEN",
+            "createdAt": "2026-08-18T10:37:07Z",
+            "updatedAt": "2026-08-18T10:37:07Z",
+            "closedAt": null,
+            "titleSha256": "ebfd76cdf51fa2284c940544ac92b4cad7489088b9cbe0ababa43169cd9ce1b9"
+          },
+          {
+            "number": 11796,
+            "url": "https://github.com/BasedHardware/omi/issues/11796",
+            "state": "OPEN",
+            "createdAt": "2026-08-18T06:08:31Z",
+            "updatedAt": "2026-08-18T06:08:31Z",
+            "closedAt": null,
+            "titleSha256": "fec59b5337906297b97d801ce2b0f09af02b6f5f533889e3472a1e3cb0039b2d"
+          },
+          {
+            "number": 11726,
+            "url": "https://github.com/BasedHardware/omi/issues/11726",
+            "state": "CLOSED",
+            "createdAt": "2026-08-17T04:26:03Z",
+            "updatedAt": "2026-08-18T01:10:39Z",
+            "closedAt": "2026-08-18T01:10:39Z",
+            "titleSha256": "1a00e28ad9b12884d77741d5e9909e17afef86f520cb1aecd072ead0cd066a65"
+          }
+        ],
+        "pullRequestExamples": [
+          {
+            "number": 7006,
+            "url": "https://github.com/BasedHardware/omi/pull/7006",
+            "state": "CLOSED",
+            "isDraft": false,
+            "createdAt": "2026-04-25T14:26:11Z",
+            "updatedAt": "2026-07-31T05:40:41Z",
+            "closedAt": "2026-07-31T05:40:32Z",
+            "mergedAt": null,
+            "titleSha256": "6ad4d0517605ba70e4aca6ac43a133b7730ada1450960cbcd85ef7bda449a6f5",
+            "mergedStateIsNotFixEvidence": true
+          },
+          {
+            "number": 7102,
+            "url": "https://github.com/BasedHardware/omi/pull/7102",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-04-30T11:37:33Z",
+            "updatedAt": "2026-06-16T14:45:52Z",
+            "closedAt": "2026-06-11T14:41:34Z",
+            "mergedAt": "2026-06-11T14:41:34Z",
+            "titleSha256": "df665fedcb71fdc7ab881a5e8a13174dfd21e8d012ff42209393dd4bfcbc90d8",
+            "mergedStateIsNotFixEvidence": true
+          },
+          {
+            "number": 6495,
+            "url": "https://github.com/BasedHardware/omi/pull/6495",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-04-09T08:22:40Z",
+            "updatedAt": "2026-06-11T07:18:34Z",
+            "closedAt": "2026-06-09T21:34:10Z",
+            "mergedAt": "2026-06-09T21:34:10Z",
+            "titleSha256": "f9b8b149faf96ae09d0a833533c55133c7f89b5523268ba79b3d0fe5af08e108",
+            "mergedStateIsNotFixEvidence": true
+          }
+        ]
+      },
+      "upstreamFailureVerified": false,
+      "upstreamFixVerified": false,
+      "affectedVersions": null,
+      "doraApplicability": "possible; not established from title metadata",
+      "proposedSyntheticRegressionFixture": "Synthetic conversation graph with audio-only and whole-conversation deletion, scoped receipts, retry and content-free logging assertions.",
+      "targetTestStrategyIds": [
+        "TS-PRIVACY",
+        "TS-STORAGE"
+      ],
+      "futureBacklogOwner": null,
+      "testSpecificationCreated": false,
+      "disposition": "INSUFFICIENT_EVIDENCE",
+      "limitation": "Title taxonomy is a discovery heuristic only. No body, comment, patch, diff, test, source or path history was retrieved."
+    },
+    {
+      "hazardId": "GOV-OMI-HZ-META-008",
+      "taxonomyTag": "USER_TRUTH_STALE_WRITE",
+      "doraSeverity": "P0",
+      "severityRationale": "A stale model or remote result overwriting a user edit would violate Dora authoritative-user-truth semantics.",
+      "metadataCandidates": {
+        "issueMatchesInCompleteIndex": 32,
+        "pullRequestMatchesInRetrievedPrefix": 21,
+        "issueExamples": [
+          {
+            "number": 11308,
+            "url": "https://github.com/BasedHardware/omi/issues/11308",
+            "state": "OPEN",
+            "createdAt": "2026-08-10T03:44:44Z",
+            "updatedAt": "2026-08-10T03:44:44Z",
+            "closedAt": null,
+            "titleSha256": "59374ef52b9df6946bee25e7972d0f7fc8e31b004be205c522770f3c5c608301"
+          },
+          {
+            "number": 10785,
+            "url": "https://github.com/BasedHardware/omi/issues/10785",
+            "state": "OPEN",
+            "createdAt": "2026-07-28T16:57:48Z",
+            "updatedAt": "2026-07-28T16:57:48Z",
+            "closedAt": null,
+            "titleSha256": "12d63632570ecdb12fe2a31a85c505ea074e6d616d4ea0c3627bc7027a924b88"
+          },
+          {
+            "number": 10217,
+            "url": "https://github.com/BasedHardware/omi/issues/10217",
+            "state": "CLOSED",
+            "createdAt": "2026-07-21T18:34:18Z",
+            "updatedAt": "2026-07-25T14:34:41Z",
+            "closedAt": "2026-07-25T14:34:41Z",
+            "titleSha256": "4422e7e8eaa1ea70de883bbbb5e05a128375fb23b6896d94a4b588a1ffbad87f"
+          }
+        ],
+        "pullRequestExamples": [
+          {
+            "number": 7106,
+            "url": "https://github.com/BasedHardware/omi/pull/7106",
+            "state": "CLOSED",
+            "isDraft": false,
+            "createdAt": "2026-04-30T14:06:51Z",
+            "updatedAt": "2026-06-09T20:04:30Z",
+            "closedAt": "2026-06-09T20:04:18Z",
+            "mergedAt": null,
+            "titleSha256": "93d7d0539d45d3f243482882c034fa428fbb5883401c08417ced913620bc5a8d",
+            "mergedStateIsNotFixEvidence": true
+          },
+          {
+            "number": 7349,
+            "url": "https://github.com/BasedHardware/omi/pull/7349",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-05-17T17:59:26Z",
+            "updatedAt": "2026-05-17T18:01:53Z",
+            "closedAt": "2026-05-17T17:59:34Z",
+            "mergedAt": "2026-05-17T17:59:34Z",
+            "titleSha256": "ad10fe539811e6db8e6cbef9410ddfa21bd77f4cd064e43d2364128858a1e1cb",
+            "mergedStateIsNotFixEvidence": true
+          },
+          {
+            "number": 7070,
+            "url": "https://github.com/BasedHardware/omi/pull/7070",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-04-28T04:45:49Z",
+            "updatedAt": "2026-04-28T04:50:18Z",
+            "closedAt": "2026-04-28T04:50:16Z",
+            "mergedAt": "2026-04-28T04:50:16Z",
+            "titleSha256": "724c7437cedcadb0fd9a83901b2ce6a4a4964f083e727587cb828165163fee43",
+            "mergedStateIsNotFixEvidence": true
+          }
+        ]
+      },
+      "upstreamFailureVerified": false,
+      "upstreamFixVerified": false,
+      "affectedVersions": null,
+      "doraApplicability": "possible; not established from title metadata",
+      "proposedSyntheticRegressionFixture": "Versioned synthetic edit/result race with fixed revisions; assert stale output becomes a reviewable diff and never overwrites authoritative user state.",
+      "targetTestStrategyIds": [
+        "TS-UNIT",
+        "TS-INTEGRATION"
+      ],
+      "futureBacklogOwner": null,
+      "testSpecificationCreated": false,
+      "disposition": "INSUFFICIENT_EVIDENCE",
+      "limitation": "Title taxonomy is a discovery heuristic only. No body, comment, patch, diff, test, source or path history was retrieved."
+    },
+    {
+      "hazardId": "GOV-OMI-HZ-META-009",
+      "taxonomyTag": "STT_PROVIDER_FAILURE",
+      "doraSeverity": "P1",
+      "severityRationale": "Provider timeout, quota or fallback errors can lose work, duplicate cost or falsely report completion.",
+      "metadataCandidates": {
+        "issueMatchesInCompleteIndex": 24,
+        "pullRequestMatchesInRetrievedPrefix": 13,
+        "issueExamples": [
+          {
+            "number": 11777,
+            "url": "https://github.com/BasedHardware/omi/issues/11777",
+            "state": "CLOSED",
+            "createdAt": "2026-08-18T00:37:56Z",
+            "updatedAt": "2026-08-18T02:48:23Z",
+            "closedAt": "2026-08-18T02:48:23Z",
+            "titleSha256": "82d9b6ffafc2fa92ba859736d18bbe62f701445180562f83d2adbff4b02a1b64"
+          },
+          {
+            "number": 11695,
+            "url": "https://github.com/BasedHardware/omi/issues/11695",
+            "state": "OPEN",
+            "createdAt": "2026-08-16T17:17:58Z",
+            "updatedAt": "2026-08-17T16:06:11Z",
+            "closedAt": null,
+            "titleSha256": "952689c2d23af45b1656d94c874990daae360a166a3ae92fa15b17a9a902164d"
+          },
+          {
+            "number": 11752,
+            "url": "https://github.com/BasedHardware/omi/issues/11752",
+            "state": "OPEN",
+            "createdAt": "2026-08-17T16:06:03Z",
+            "updatedAt": "2026-08-17T16:06:03Z",
+            "closedAt": null,
+            "titleSha256": "7e629e990a39978ca6b2ca511bbdcbf36768726efa2d31b2052222d06236ddb7"
+          }
+        ],
+        "pullRequestExamples": [
+          {
+            "number": 7322,
+            "url": "https://github.com/BasedHardware/omi/pull/7322",
+            "state": "OPEN",
+            "isDraft": false,
+            "createdAt": "2026-05-15T18:27:24Z",
+            "updatedAt": "2026-08-12T10:25:16Z",
+            "closedAt": null,
+            "mergedAt": null,
+            "titleSha256": "70f9139690f3c91c9811792b42bc2b0304fcef039f24b023fdc7e53998493ad3",
+            "mergedStateIsNotFixEvidence": true
+          },
+          {
+            "number": 7012,
+            "url": "https://github.com/BasedHardware/omi/pull/7012",
+            "state": "CLOSED",
+            "isDraft": false,
+            "createdAt": "2026-04-25T22:47:39Z",
+            "updatedAt": "2026-04-26T04:43:07Z",
+            "closedAt": "2026-04-26T04:42:58Z",
+            "mergedAt": null,
+            "titleSha256": "870227abde736d1e509b52bfd83785d9defcb589a3f352493d0bbd2bc9488403",
+            "mergedStateIsNotFixEvidence": true
+          },
+          {
+            "number": 7016,
+            "url": "https://github.com/BasedHardware/omi/pull/7016",
+            "state": "MERGED",
+            "isDraft": false,
+            "createdAt": "2026-04-26T01:00:43Z",
+            "updatedAt": "2026-04-26T01:48:49Z",
+            "closedAt": "2026-04-26T01:48:47Z",
+            "mergedAt": "2026-04-26T01:48:47Z",
+            "titleSha256": "543d56ac3af3bd45b5f6f59c07d838e0aedb45c0f34f20a20b92392d8fbe557c",
+            "mergedStateIsNotFixEvidence": true
+          }
+        ]
+      },
+      "upstreamFailureVerified": false,
+      "upstreamFixVerified": false,
+      "affectedVersions": null,
+      "doraApplicability": "possible; not established from title metadata",
+      "proposedSyntheticRegressionFixture": "Deterministic fake-provider timeout/quota/fallback sequence with fixed operation IDs; assert explicit state, idempotency and local fallback.",
+      "targetTestStrategyIds": [
+        "TS-ASR",
+        "TS-OFFLINE",
+        "TS-INTEGRATION"
+      ],
+      "futureBacklogOwner": null,
+      "testSpecificationCreated": false,
+      "disposition": "INSUFFICIENT_EVIDENCE",
+      "limitation": "Title taxonomy is a discovery heuristic only. No body, comment, patch, diff, test, source or path history was retrieved."
+    }
+  ],
+  "summary": {
+    "hazardClassCount": 9,
+    "verifiedUpstreamFailureCount": 0,
+    "verifiedUpstreamFixCount": 0,
+    "doraTestSpecificationCreatedCount": 0,
+    "disposition": "INSUFFICIENT_EVIDENCE"
+  },
+  "noAdmissionStatement": "Metadata candidates are not verified hazards or fixes and do not admit upstream tests, source, dependencies or behavior."
+}
