@@ -7,6 +7,11 @@ import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.LinkOption
+import java.nio.file.NoSuchFileException
+import java.nio.file.Path
+import java.nio.file.attribute.BasicFileAttributes
 
 internal sealed interface AlphaLoadResult {
     data class Ready(val snapshot: AlphaWorkspaceSnapshot) : AlphaLoadResult
@@ -28,14 +33,17 @@ internal interface AlphaWorkspaceRepository {
 }
 
 internal class AtomicFileAlphaWorkspaceRepository(directory: File) : AlphaWorkspaceRepository {
-    private val file = AtomicFile(File(directory, FILE_NAME))
+    private val basePath = File(directory, FILE_NAME).toPath()
+    private val legacyBackupPath = File(directory, FILE_NAME + LEGACY_BACKUP_SUFFIX).toPath()
+    private val file = AtomicFile(basePath.toFile())
 
-    override fun load(): AlphaLoadResult =
-        try {
+    override fun load(): AlphaLoadResult {
+        val presenceBeforeRead = snapshotPresence()
+        return try {
             val bytes = file.openRead().use(::readBounded)
             AlphaLoadResult.Ready(AlphaWorkspaceCodec.decode(bytes))
         } catch (_: FileNotFoundException) {
-            AlphaLoadResult.Ready(AlphaWorkspaceSnapshot())
+            missingSnapshotResult(presenceBeforeRead)
         } catch (_: AlphaWorkspaceFormatException) {
             AlphaLoadResult.Unavailable(CORRUPT_MESSAGE)
         } catch (_: IOException) {
@@ -43,6 +51,7 @@ internal class AtomicFileAlphaWorkspaceRepository(directory: File) : AlphaWorksp
         } catch (_: SecurityException) {
             AlphaLoadResult.Unavailable(READ_MESSAGE)
         }
+    }
 
     override fun save(snapshot: AlphaWorkspaceSnapshot): AlphaSaveResult {
         val bytes =
@@ -85,8 +94,51 @@ internal class AtomicFileAlphaWorkspaceRepository(directory: File) : AlphaWorksp
         return output.toByteArray()
     }
 
+    private fun missingSnapshotResult(presenceBeforeRead: SnapshotPresence): AlphaLoadResult {
+        val presenceAfterRead = snapshotPresence()
+        return if (
+            presenceBeforeRead == SnapshotPresence.ABSENT &&
+                presenceAfterRead == SnapshotPresence.ABSENT
+        ) {
+            AlphaLoadResult.Ready(AlphaWorkspaceSnapshot())
+        } else {
+            AlphaLoadResult.Unavailable(READ_MESSAGE)
+        }
+    }
+
+    private fun snapshotPresence(): SnapshotPresence {
+        val basePresence = pathPresence(basePath)
+        val backupPresence = pathPresence(legacyBackupPath)
+        return when {
+            basePresence == SnapshotPresence.PRESENT ||
+                backupPresence == SnapshotPresence.PRESENT -> SnapshotPresence.PRESENT
+            basePresence == SnapshotPresence.ABSENT && backupPresence == SnapshotPresence.ABSENT ->
+                SnapshotPresence.ABSENT
+            else -> SnapshotPresence.UNKNOWN
+        }
+    }
+
+    private fun pathPresence(path: Path): SnapshotPresence =
+        try {
+            Files.readAttributes(
+                path,
+                BasicFileAttributes::class.java,
+                LinkOption.NOFOLLOW_LINKS,
+            )
+            SnapshotPresence.PRESENT
+        } catch (_: NoSuchFileException) {
+            SnapshotPresence.ABSENT
+        } catch (_: IOException) {
+            SnapshotPresence.UNKNOWN
+        } catch (_: SecurityException) {
+            SnapshotPresence.UNKNOWN
+        } catch (_: UnsupportedOperationException) {
+            SnapshotPresence.UNKNOWN
+        }
+
     internal companion object {
         const val FILE_NAME = "dora-alpha-workspace-v1.bin"
+        internal const val LEGACY_BACKUP_SUFFIX = ".bak"
         private const val CORRUPT_MESSAGE =
             "Локальные данные Alpha повреждены или имеют неподдерживаемую версию. " +
                 "Редактирование заблокировано, исходный файл не перезаписан."
@@ -96,5 +148,11 @@ internal class AtomicFileAlphaWorkspaceRepository(directory: File) : AlphaWorksp
             "Не удалось сохранить изменение. Предыдущая версия локальных данных сохранена."
         private const val LIMIT_MESSAGE =
             "Изменение превышает безопасные ограничения Alpha и не было сохранено."
+    }
+
+    private enum class SnapshotPresence {
+        ABSENT,
+        PRESENT,
+        UNKNOWN,
     }
 }

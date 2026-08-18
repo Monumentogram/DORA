@@ -27,6 +27,8 @@
     <string name="alpha_tasks_title">Ручные задачи</string>
     <string name="alpha_no_tasks">В сохранённых разговорах пока нет ручных задач.</string>
     <string name="alpha_task_origin">Создано пользователем · %1$s</string>
+    <string name="alpha_task_state_completed">Выполнено</string>
+    <string name="alpha_task_state_incomplete">Не выполнено</string>
     <string name="alpha_settings_title">Ограничения Alpha 1</string>
     <string name="alpha_unavailable_heading">Сейчас недоступно</string>
     <string name="alpha_unavailable_body">Запись и импорт аудио; распознавание речи и спикеров; автоматические резюме, решения и задачи; модели; аккаунт, облако и синхронизация; экспорт и отправка.</string>

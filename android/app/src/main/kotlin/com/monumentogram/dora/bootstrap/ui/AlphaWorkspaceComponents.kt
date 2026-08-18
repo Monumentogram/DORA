@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import com.monumentogram.dora.bootstrap.R
 import com.monumentogram.dora.bootstrap.alpha.AlphaConversation
@@ -66,6 +67,11 @@ internal fun AlphaConversationCard(
 
 @Composable
 internal fun AlphaTaskCard(row: AlphaTaskRow, onToggle: () -> Unit) {
+    val taskStateDescription =
+        stringResource(
+            if (row.task.completed) R.string.alpha_task_state_completed
+            else R.string.alpha_task_state_incomplete
+        )
     Surface(
         modifier =
             Modifier.fillMaxWidth()
@@ -83,7 +89,11 @@ internal fun AlphaTaskCard(row: AlphaTaskRow, onToggle: () -> Unit) {
             Checkbox(
                 checked = row.task.completed,
                 onCheckedChange = { onToggle() },
-                modifier = Modifier.testTag(AlphaTestTags.TASK_TOGGLE_PREFIX + row.task.id),
+                modifier =
+                    Modifier.testTag(AlphaTestTags.TASK_TOGGLE_PREFIX + row.task.id).semantics {
+                        contentDescription = row.task.text
+                        stateDescription = taskStateDescription
+                    },
             )
             Column(verticalArrangement = Arrangement.spacedBy(DoraDimensions.space1)) {
                 Text(row.task.text, style = MaterialTheme.typography.bodyLarge)

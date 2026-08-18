@@ -1,16 +1,27 @@
 package com.monumentogram.dora.bootstrap.alpha
 
+import android.system.Os
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
 import java.util.UUID
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class AtomicFileAlphaWorkspaceRepositoryTest {
+    @Test
+    fun genuinelyMissingSnapshotLoadsAsEmpty() = withTemporaryDirectory { directory ->
+        assertEquals(
+            AlphaLoadResult.Ready(AlphaWorkspaceSnapshot()),
+            AtomicFileAlphaWorkspaceRepository(directory).load(),
+        )
+    }
+
     @Test
     fun savesAndLoadsSnapshotAcrossRepositoryInstances() = withTemporaryDirectory { directory ->
         val snapshot = sampleSnapshot()
@@ -46,6 +57,39 @@ class AtomicFileAlphaWorkspaceRepositoryTest {
         assertTrue(result is AlphaLoadResult.Unavailable)
         assertTrue(snapshotFile.readBytes().contentEquals(source))
     }
+
+    @Test
+    fun danglingPrimarySnapshotFailsClosedWithoutMutation() =
+        assertDanglingSnapshotArtifactFailsClosed(AtomicFileAlphaWorkspaceRepository.FILE_NAME)
+
+    @Test
+    fun danglingLegacyBackupFailsClosedWithoutMutation() =
+        assertDanglingSnapshotArtifactFailsClosed(
+            AtomicFileAlphaWorkspaceRepository.FILE_NAME +
+                AtomicFileAlphaWorkspaceRepository.LEGACY_BACKUP_SUFFIX
+        )
+
+    private fun assertDanglingSnapshotArtifactFailsClosed(artifactName: String) =
+        withTemporaryDirectory { directory ->
+            val missingTarget = File(directory, "missing-target")
+            val snapshotArtifact = File(directory, artifactName)
+            Os.symlink(missingTarget.absolutePath, snapshotArtifact.absolutePath)
+            val entriesBefore = requireNotNull(directory.list()).toSet()
+            val controller =
+                AtomicFileAlphaWorkspaceRepository(directory).let(::AlphaWorkspaceController)
+
+            val result =
+                controller.saveConversation(
+                    existingConversationId = null,
+                    draft = AlphaConversationDraft("Title", "Notes", "Summary", "Task"),
+                )
+
+            assertFalse(result.succeeded)
+            assertFalse(result.state.isWritable)
+            assertNotNull(result.state.blockingError)
+            assertEquals(entriesBefore, requireNotNull(directory.list()).toSet())
+            assertEquals(missingTarget.absolutePath, Os.readlink(snapshotArtifact.absolutePath))
+        }
 
     private fun withTemporaryDirectory(block: (File) -> Unit) {
         val context = InstrumentationRegistry.getInstrumentation().targetContext

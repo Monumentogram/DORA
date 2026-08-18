@@ -2,7 +2,13 @@ package com.monumentogram.dora.bootstrap.ui
 
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
+import androidx.compose.ui.test.assertContentDescriptionEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.StateRestorationTester
@@ -49,7 +55,27 @@ class DoraAlphaWorkflowTest {
         composeRule.onNodeWithText("Проверить перезапуск").assertIsDisplayed()
 
         val taskId = repository.snapshot.conversations.single().tasks.single().id
-        composeRule.onNodeWithTag(AlphaTestTags.TASK_TOGGLE_PREFIX + taskId).performClick()
+        composeRule
+            .onNodeWithTag(AlphaTestTags.TASK_TOGGLE_PREFIX + taskId)
+            .assertContentDescriptionEquals("Проверить перезапуск")
+            .assertIsOff()
+            .assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.StateDescription,
+                    "Не выполнено",
+                )
+            )
+            .performClick()
+        composeRule
+            .onNodeWithTag(AlphaTestTags.TASK_TOGGLE_PREFIX + taskId)
+            .assertContentDescriptionEquals("Проверить перезапуск")
+            .assertIsOn()
+            .assert(
+                SemanticsMatcher.expectValue(
+                    SemanticsProperties.StateDescription,
+                    "Выполнено",
+                )
+            )
         composeRule.runOnIdle {
             assertTrue(repository.snapshot.conversations.single().tasks.single().completed)
         }
