@@ -1,7 +1,7 @@
 # Dora MVP 1 — Executable Backlog
 
 Версия: Stage 0D parallel with DORA Alpha Increment 1\
-Дата: 17 августа 2026 года\
+Дата: 18 августа 2026 года\
 Owner approvals effective: 4 августа 2026 года (`OD-01`–`OD-10`), 11 августа 2026 года (`OD-11`–`OD-13`), recovery constraints / prospective `REC-JSR305-EXCLUDE-001` 12 августа 2026 года (`OD-14`; governance package only), and exact task-scoped `REC-I1-AUTH-20260813-01` on 13 августа 2026 года (pure contract foundation only; no runtime crypto/execution/merge)\
 Источник порядка: Technical Plan §37/§39, Design Spec §36/§39 и readiness gates.
 
@@ -105,6 +105,12 @@ Stage 1 remains gated. The separate internal Alpha below is not Stage 1 or produ
 
 Authority: direct Project-owner scope `DORA-ALPHA-001`, `ALPHA-GATE-001`, `DEC-045` and
 `ADR-0003`. Alpha does not alter Stage 0 PoC state or production readiness.
+
+Implementation checkpoint: commit `b9fb524048f05eeecad2aece523ba675a598bfe1` implements the
+bounded `ALPHA-002`–`ALPHA-006` slice and has green local JVM, Android-test compilation,
+formatting, detekt, lint, assemble, APK alignment and static boundary evidence. Those rows remain
+`READY`, not `DONE`, until exact-head CI and required Android/physical execution close their full
+acceptance. `ALPHA-007` remains `BLOCKED`; see `DORA_ALPHA_INSTALL_AND_SMOKE.md`.
 
 | ID | State | Size | Task | Depends on | Deliverable / acceptance |
 |---|---|---:|---|---|---|

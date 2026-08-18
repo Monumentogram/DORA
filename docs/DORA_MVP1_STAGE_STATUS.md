@@ -1,6 +1,6 @@
 # Dora MVP 1 — Stage Status
 
-Updated: 17 August 2026
+Updated: 18 August 2026
 Baseline: `1be83e2940a09f7b23e33b4cdf3827de2690f3fd`
 Stage 00 merge commit: `a4aae302f9033e5471f6759f513e7e351c375a72`
 Stage 0A merge commit: `91b9916b01ff70f63d82412bafbed0d72307dbe1`
@@ -14,7 +14,7 @@ Active PoC: `POC-RECOVERY-001`
 Stage state: **REC-I1 REVIEWED AND SQUASH-MERGED; POST-MERGE VALIDATOR LIFECYCLE REMEDIATED; RUNTIME IMPLEMENTATION, ACTUAL GRAPH AND EXECUTION BLOCKED**
 
 Parallel product track: `DORA-ALPHA-001`\
-Alpha state: **INCREMENT 1 GOVERNANCE READY; MANUAL LOCAL WORKSPACE IMPLEMENTATION AUTHORIZED**\
+Alpha state: **IMPLEMENTATION COMMITTED; LOCAL HOST/STATIC/APK GREEN; EXACT-HEAD CI, INDEPENDENT REVIEW AND PHYSICAL SMOKE OPEN**\
 Alpha branch: `codex/dora-alpha-001` from verified `main` `223f31d87355596c8cb36576d2d94366eae9d620`
 
 ## Parallel DORA Alpha status
@@ -38,6 +38,21 @@ model through conversation ownership and `origin=USER`; future production schema
 The first Alpha branch/PR uses separate governance and implementation commits. Draft publication is
 allowed after proportional local checks. Ready/merge requires exact-head CI, independent review
 with no P0/P1, unchanged scope and no specialist blocker. No PR is merged by this status update.
+
+Implementation commit `b9fb524048f05eeecad2aece523ba675a598bfe1` supplies the bounded manual
+workspace, strict UTF-8/versioned/size-limited AtomicFile adapter, fail-closed corruption behavior,
+local search, manual task completion, confirmed whole-conversation deletion and visibly unavailable
+audio/automatic/network/export stages. Local formatting, detekt, JVM tests, Android-test compilation,
+lint and the full CI-equivalent debug assembly graph passed. The exact local APK is 29,650,119 bytes
+with SHA-256 `99e9ae94bf2578927c292d3f3eea3dfe584edd9dfb1e4fa50f3daf0e05f1dc29`;
+16-KiB zip alignment and the existing native allowlist match passed. No dependency or source
+manifest change, credential signature or Alpha network/audio/permission API was found.
+
+No Android device or emulator was available, so instrumentation execution and the required physical
+smoke are `NOT RUN`. Local Python is only a non-functional Windows application alias, so repository
+Python validators are also `NOT RUN` locally and must run in exact-head CI. Therefore no Alpha DoD,
+Ready, merge, release, production or Stage 0 PASS claim is made. Installation, limitations and the
+physical checklist are frozen in `DORA_ALPHA_INSTALL_AND_SMOKE.md`.
 
 Design-governance reconciliation: `DES-EXPORT-001` / `des-export-interaction-v0.1` is contract
 complete under `DEC-017`; no implementation/conformance/user-research, code/Figma/schema/provider
