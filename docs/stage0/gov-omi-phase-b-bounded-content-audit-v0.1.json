@@ -258,6 +258,15 @@
       "fe6c622eddf05f62ec22074e47d04ece4e5d9342"
     ],
     "trackerRequestsAfterAllBlobsSucceed": 18,
+    "trackerCommentSelectionRecoveryOverride": {
+      "graphqlArgument": "last:10",
+      "explicitOrderByArgument": false,
+      "orderingClaim": null,
+      "maximumCommentsPerItem": 10,
+      "pagination": false,
+      "incompleteWhenTotalCountExceedsMaximum": true,
+      "reason": "Use the schema-compatible author-free connection tail without an unsupported orderBy argument."
+    },
     "canonicalBudget": {
       "consumedBeforeRecovery": 51,
       "failedBlobRetry": 1,

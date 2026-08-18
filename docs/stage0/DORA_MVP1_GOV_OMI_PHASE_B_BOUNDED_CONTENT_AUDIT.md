@@ -130,6 +130,11 @@ rule and author-free field selection. Stop the whole recovery on a second reques
 OID, size, request or byte-cap drift, raw-content persistence, privacy leak or any need for an
 unallowlisted request.
 
+For the recovery's schema-compatible GraphQL execution, each issue or Pull Request selects the
+connection tail with last:10. It does not request an author or an unsupported orderBy argument, does
+not paginate and does not claim update-time ordering. A total count above ten is explicitly
+incomplete. This narrows neither the ten-comment cap nor the frozen item allowlist.
+
 ## Allowed findings and mandatory stop conditions
 
 The audit may record `LEARN_ONLY`, `DEFER` or `REJECT` where bounded content directly supports the
