@@ -1,0 +1,275 @@
+{
+  "schemaVersion": "poc-vad-p3-deterministic-integrated-replay-local-evidence-stage0-v0.1",
+  "recordType": "LOCAL_SYNTHETIC_PURE_HOST_INTEGRATED_REPLAY_EVIDENCE",
+  "recordId": "POC-VAD-P3-DETERMINISTIC-REPLAY-20260818-01",
+  "recordedAt": "2026-08-18T19:49:36.3234632+03:00",
+  "timezone": "Europe/Moscow",
+  "backlogId": "POC-VAD-001",
+  "authorityId": "POC-VAD-001-I3-DETERMINISTIC-INTEGRATED-REPLAY-AUTH-20260818-01",
+  "gateSetVersion": "stage0-v0.1",
+  "implementationSlice": "SYNTHETIC_POST_ACOUSTIC_FRAME_REPLAY_PRE_ROLL_AND_PHYSICAL_CAP_OVERLAP_METADATA",
+  "disposition": "LOCAL_HOST_INTEGRATED_REPLAY_VALIDATED_INDEPENDENT_REVIEW_PENDING_POC_REMAINS_BLOCKED_NOT_RUN",
+  "sourceBaseline": {
+    "branch": "codex/poc-vad-p3-deterministic-replay",
+    "upstream": "origin/main",
+    "baseCommit": "e33f24b40587e7af9c16a2c42e492b6da79e19f3",
+    "baseExactMainCiRun": 32160072118,
+    "baseExactMainCiConclusion": "SUCCESS",
+    "implementationCommits": [
+      "422cf0319007b555260c89c7da307e36abbc2676",
+      "0c3605b863233fc388eb079788f5439ce94f19c6"
+    ],
+    "implementationExactHead": "0c3605b863233fc388eb079788f5439ce94f19c6",
+    "implementationTree": "a7677d17d153c2a25e862259d87cfcd289849916",
+    "implementationBaseParent": "e33f24b40587e7af9c16a2c42e492b6da79e19f3",
+    "implementationCommitPublished": false,
+    "pullRequestCreated": false,
+    "mergePerformed": false
+  },
+  "authorityPins": [
+    {
+      "path": "AGENTS.md",
+      "bytes": 4318,
+      "sha256": "27b6a9b0e99e3f3fd864b3e5289f6246516f680869816623fafc5c809cdb22df"
+    },
+    {
+      "path": "docs/DORA_MVP1_TECHNICAL_PLAN.md",
+      "bytes": 212023,
+      "sha256": "00c4d6816265e86c82e44045a77f85c6e68b43e6094a3736e10ab44eed259a59",
+      "relevantSections": ["14.1", "14.2", "34", "39 Prototype 2"]
+    },
+    {
+      "path": "docs/DORA_MVP1_DESIGN_SPEC.md",
+      "bytes": 148911,
+      "sha256": "8bc88bd5b9cba036bbc5758957a4a2c1fdb64a053a319cf4b2f9ba544ea81f2b",
+      "relevantSections": ["13.6"]
+    },
+    {
+      "path": "docs/DORA_MVP1_PRODUCT_DECISIONS.md",
+      "bytes": 66789,
+      "sha256": "16283563ea328877c02192586e21affb69677e199206df14a3221e94bbadd401",
+      "relevantSections": ["OD-03", "OD-04", "OD-05", "OD-06", "OD-08", "DEC-020", "DEC-031"]
+    },
+    {
+      "path": "docs/adr/ADR-0001-android-bootstrap.md",
+      "bytes": 3147,
+      "sha256": "dfd34f65bc420615fa85feb6258022d326de2cfe6a9c70b992ab3836116a1c13"
+    },
+    {
+      "path": "docs/adr/ADR-0002-public-repository-for-branch-protection.md",
+      "bytes": 5639,
+      "sha256": "9083cd00c2a2e129e20b282ab771c9125917f1d3a48165bb44296d0838c3d372"
+    },
+    {
+      "path": "docs/DORA_MVP1_TEST_STRATEGY.md",
+      "bytes": 17062,
+      "sha256": "cfa2d09387ed4bb80f0ff71a7138930c7a642fdad75c37b0b150774b8d74fbe8"
+    },
+    {
+      "path": "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+      "bytes": 27820,
+      "sha256": "c2ffbf0d8f1ea3ac587df15465a6683f3926d164b2fb4484f89538e758fa8872",
+      "relevantSections": ["POC-VAD-001"]
+    },
+    {
+      "path": "docs/DORA_MVP1_STAGE_STATUS.md",
+      "bytes": 40063,
+      "sha256": "f5de47fe12b927f7e349bc10944fa71f108e8c66bc405f54e839f63a3f7aac47"
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_GATES.md",
+      "bytes": 18298,
+      "sha256": "c04db495abe24f1979096282e41bea7793a71c99c989d2cd1c78cdea386dfc5e",
+      "relevantSections": ["POC-VAD-001"]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_EXECUTION_ORDER.md",
+      "bytes": 23513,
+      "sha256": "da649013c4e39196216936ade02b1bf18a8784428f392573977ffb61175bcbd7",
+      "relevantSections": ["POC-VAD-001", "host evidence ceiling"]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_DATASET_GOVERNANCE.md",
+      "bytes": 19678,
+      "sha256": "cf10ae2ddca0ffdbddfd717eeebfe9d5fd3a11013f2cef17f75776cfb45f6941",
+      "relevantSections": ["SYNTHETIC_SIGNAL", "language and acoustic matrix"]
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_PRIVACY_DATA_FLOW_THREAT_MODEL.md",
+      "bytes": 24629,
+      "sha256": "d9b793eb5bb9a0c4ef64a03b815fc16425ca923921c98e539811f048853bb251",
+      "relevantSections": ["synthetic-only", "content-free public evidence"]
+    },
+    {
+      "path": "docs/evidence/poc-vad-001/p2-host-oracle-local-evidence-stage0-v0.1.json",
+      "bytes": 15572,
+      "sha256": "3a274eadd23911f0d9151553885c0142a7106bf35b0d84adca0fd17170924713"
+    }
+  ],
+  "implementationPins": [
+    {
+      "path": "tools/vad_p3_deterministic_replay/src/main/java/com/monumentogram/dora/stage0/vad/p3/VadDeterministicReplay.java",
+      "bytes": 19891,
+      "lines": 502,
+      "sha256": "737f9300ea3451dea8e7c89cc82bedbdd6a84765e4f484c41a459ad55b5e4f96",
+      "gitBlob": "869c1e7cfc5262b83ccb1ab31a682e8a3cc8cfaa"
+    },
+    {
+      "path": "tools/vad_p3_deterministic_replay/src/test/java/com/monumentogram/dora/stage0/vad/p3/VadDeterministicReplayTest.java",
+      "bytes": 29227,
+      "lines": 625,
+      "sha256": "775a082f0687f47251ffabff74a67dd90958dcc83dae6b3364f7204a45e4dc44",
+      "gitBlob": "03f0ec815ac1e926dac8178b8455681fbb8a1ddc"
+    }
+  ],
+  "toolchain": {
+    "jdkDistribution": "Microsoft OpenJDK 17.0.10+7-LTS",
+    "jdkMajor": 17,
+    "classFileMajorVersion": 61,
+    "executables": [
+      {
+        "name": "java.exe",
+        "bytes": 49696,
+        "sha256": "98fd4a0eec7fa39abbc2b3f55007ed9c8c24ef8fa5d7c04c3895b4c5915ec3f1"
+      },
+      {
+        "name": "javac.exe",
+        "bytes": 23472,
+        "sha256": "0e79806dea4681cf6bb1fd41b4d5ba8c579481cb70a28890fe65813639294ffe"
+      }
+    ],
+    "absoluteExecutablePathsPublished": false
+  },
+  "dependencyBoundary": {
+    "sourceFiles": 2,
+    "externalCoordinates": [],
+    "repositoriesAdded": [],
+    "pluginsAdded": [],
+    "nativeBinaries": [],
+    "models": [],
+    "androidCodeChanged": false,
+    "runtimeModulesMain": ["java.base"],
+    "runtimeModulesTest": ["java.base"],
+    "stdlibOnly": true,
+    "networkUsed": false,
+    "filesystemUsedByReplay": false,
+    "wallClockUsedByReplay": false
+  },
+  "frozenHarnessProfile": {
+    "input": "SYNTHETIC_POST_ACOUSTIC_INDEXED_SPEECH_OR_SILENCE_LABELS",
+    "sampleRateHz": 16000,
+    "samplesPerFrame": 320,
+    "frameDurationNanos": 20000000,
+    "semanticBoundaryFrames": 4500,
+    "semanticBoundaryNanos": 90000000000,
+    "preRollFrames": 100,
+    "preRollNanos": 2000000000,
+    "freshPhysicalCapFrames": 30000,
+    "freshPhysicalCapNanos": 600000000000,
+    "overlapFrames": 75,
+    "overlapNanos": 1500000000,
+    "harnessProfileIsProductionSelection": false,
+    "semanticGroupRequiresPriorSpeech": true,
+    "timeAuthority": "INJECTED_CONTIGUOUS_FRAME_INDEX",
+    "overlapOwnership": "CLOSING_FRESH_PART_OWNS_DUPLICATED_SOURCE_RANGE"
+  },
+  "coverage": {
+    "testGroups": [
+      "constants_and_exact_harness_profile",
+      "defensive_input_copy",
+      "bounded_pre_roll_at_beginning_full_buffer_across_cap_and_exactly_at_cap",
+      "semantic_boundary_89_5_90_0_90_5",
+      "resume_89_9_cancellation_and_fresh_timer",
+      "ten_minute_cap_and_overlap_links",
+      "simultaneous_semantic_and_physical_events",
+      "fail_closed_order_null_bounds_schema_profile_counter_and_terminal_range",
+      "restore_and_chunking_equivalence",
+      "deterministic_known_answer_and_100_repeats",
+      "no_mutable_static_state"
+    ],
+    "namedBoundarySeconds": ["89.5", "90.0", "90.5"],
+    "namedResumeSeconds": ["89.9"],
+    "physicalCapSeconds": [600, 1200],
+    "canonicalKnownAnswerSha256": "e83e102990aa22efc138705bd9ed4ad8457cbe44097c67780fee47a6e91fc6e8",
+    "deterministicRepeatCountPerSuiteExecution": 100,
+    "primarySuiteExecutions": 2,
+    "primaryOutputsIdentical": true,
+    "physicalFilesWritten": false,
+    "byteOverlapIntegrityEvaluated": false,
+    "audioContentUsed": false
+  },
+  "localValidation": {
+    "state": "LOCAL_PASS_FOR_BOUNDED_HOST_SLICE",
+    "javacMain": "PASS_RELEASE_17_XLINT_ALL_WERROR",
+    "javacTest": "PASS_RELEASE_17_XLINT_ALL_WERROR",
+    "primaryRun1": "LOCAL_PASS vad-p3-deterministic-integrated-replay",
+    "primaryRun2": "LOCAL_PASS vad-p3-deterministic-integrated-replay",
+    "supplementalAssertionsAndVerification": "LOCAL_PASS vad-p3-deterministic-integrated-replay",
+    "jdepsMain": "java.base",
+    "jdepsTest": "java.base",
+    "compiledMainClassFiles": 21,
+    "compiledTestClassFiles": 1,
+    "validateStage00": "PASS",
+    "androidTierA": "BUILD_SUCCESSFUL_197_ACTIONABLE_TASKS_5_EXECUTED_192_UP_TO_DATE",
+    "androidTierAInitialEnvironmentAttempt": "INVALID_ENVIRONMENT_SDK_LOCATION_UNSET_NO_SOURCE_FAILURE",
+    "ciState": "NOT_RUN_UNPUBLISHED"
+  },
+  "privacyBoundary": {
+    "syntheticLabelsOnly": true,
+    "pcmOrEncodedAudioUsed": false,
+    "realSpeechUsed": false,
+    "personalDataPresent": false,
+    "secretsPresent": false,
+    "rawTraceRetained": false,
+    "absoluteLocalPathsPublished": false,
+    "consoleOutput": "ONE_CONSTANT_CONTENT_FREE_PASS_MARKER_ONLY",
+    "googleSheetChanged": false,
+    "alphaOrRtlUsed": false
+  },
+  "proofBoundary": {
+    "hostReplayOnly": true,
+    "frameTimingSemanticsValidated": true,
+    "preRollRangeMetadataValidated": true,
+    "physicalCapAndOverlapRangeMetadataValidated": true,
+    "immutableInputAndRestoreValidated": true,
+    "acousticVadImplemented": false,
+    "sileroOrOtherModelUsed": false,
+    "speechOnsetPreservationMeasured": false,
+    "shortPauseHysteresisEvaluated": false,
+    "androidOrDeviceExecutionPerformed": false,
+    "realTimeDeadlineEvaluated": false,
+    "physicalFileRotationPerformed": false,
+    "encodedFileDurationEvaluated": false,
+    "byteOverlapIntegrityEvaluated": false,
+    "storageOrDedupImplementationEvaluated": false,
+    "pocPassClaimed": false,
+    "readyClaimed": false,
+    "doneClaimed": false,
+    "productionAdmissionClaimed": false
+  },
+  "review": {
+    "independentReadOnlyReviewRequired": true,
+    "independentReadOnlyReviewState": "PENDING",
+    "formalHumanReviewClaimed": false
+  },
+  "resultTaxonomy": {
+    "localBoundedHostSlice": "LOCAL_PASS",
+    "pocVadOverallResult": "NOT_RUN",
+    "pocVadBacklogState": "BLOCKED",
+    "pocVadReadiness": "NOT_READY",
+    "pocVadExecutionAuthorization": "NOT_AUTHORIZED",
+    "recommendation": "BLOCKED"
+  },
+  "blockers": [
+    "ACOUSTIC_VAD_AND_NOISE_MATRIX_NOT_RUN",
+    "SPEECH_ONSET_PRESERVATION_NOT_MEASURED",
+    "SHORT_PAUSE_HYSTERESIS_NOT_EVALUATED",
+    "PHYSICAL_D1_D2_D3_REAL_TIME_EVIDENCE_MISSING",
+    "PHYSICAL_FILE_ROTATION_AND_BYTE_OVERLAP_INTEGRITY_NOT_EVALUATED",
+    "POC_DATA_001_GOVERNED_CORPUS_BLOCKED",
+    "EXACT_HEAD_CI_NOT_YET_RUN",
+    "INDEPENDENT_EXACT_HEAD_REVIEW_PENDING",
+    "DEPENDENCY_AND_PRODUCTION_ADMISSION_NOT_GRANTED"
+  ],
+  "externalBindingPolicy": "Bind this record through the containing Git tree; the record intentionally contains no self-hash."
+}
