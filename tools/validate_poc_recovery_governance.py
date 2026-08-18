@@ -120,19 +120,42 @@ REC_I2B_SUCCESSOR_SPOTLESS_METADATA_AUTHORIZATION = (
 REC_I2B_SUCCESSOR_SELFTEST_REMEDIATION_AUTHORIZATION = (
     "REC-I2B-REVIEWED-SUCCESSOR-EVIDENCE-PHASE-SELFTEST-REMEDIATION-AUTH-20260818-04"
 )
+REC_I2B_AAPT2_LINUX_METADATA_REMEDIATION_AUTHORIZATION = (
+    "REC-I2B-AAPT2-LINUX-VERIFICATION-METADATA-REMEDIATION-AUTH-20260818-05"
+)
+REC_I2B_AAPT2_VALIDATOR_PIN_CLARIFICATION = (
+    "REC-I2B-AUTH05-VALIDATOR-PIN-BINDING-CLARIFICATION-20260818-01"
+)
 REC_I2B_SUCCESSOR_INITIAL_IMPLEMENTATION_HEAD = "fa87d87abd3d1ddad2ee0a3c1669127fc288b4f8"
 REC_I2B_SUCCESSOR_INITIAL_IMPLEMENTATION_TREE = "7c1add0f5ee3cad3463a22a636c16e0c2b322f5e"
+REC_I2B_SUCCESSOR_EVIDENCE_PHASE_IMPLEMENTATION_HEAD = (
+    "3195c2fa79db6360a5844a8ce02ea419a74e2982"
+)
+REC_I2B_SUCCESSOR_EVIDENCE_PHASE_IMPLEMENTATION_TREE = (
+    "00b04684d7ceaac7685070e783c37e1178131b7b"
+)
+REC_I2B_SUCCESSOR_REVIEWED_EVIDENCE_HEAD = "b642c5206e2e9fc3493dbb78b801a371f2dd0868"
+REC_I2B_SUCCESSOR_REVIEWED_EVIDENCE_TREE = "b9ebf29a654d3cb218289e8c23cdaffa03e36fb5"
+REC_I2B_SUCCESSOR_REVIEW_CLOSURE_HEAD = "e4a9b55c81c529ef1eee6dcd27a76046dc0a21ef"
+REC_I2B_SUCCESSOR_REVIEW_CLOSURE_TREE = "cc46703736072311982fe9a02476b90f0544432d"
 REC_I2B_SUCCESSOR_IMPLEMENTATION_PATHS = (
     "android/gradle/verification-metadata.xml",
     "tools/validate_poc_recovery_governance.py",
     "tools/verify_poc_recovery_dependency_inventory.py",
 )
-REC_I2B_SUCCESSOR_METADATA_CANONICAL_SHA256 = (
+REC_I2B_SUCCESSOR_HISTORICAL_METADATA_CANONICAL_SHA256 = (
     "35046c96e293d56cd36ba5894c0fd286cf6e96167df5a3d6e6cd9c3de379f3ac"
+)
+REC_I2B_AAPT2_METADATA_CANONICAL_SHA256 = (
+    "61f71c6652faec73063a200bedcfa1e6fc07d5f969b426f3365aafd9fc217bb1"
 )
 REC_I2B_SUCCESSOR_REVIEW_CLOSURE_PATH = (
     "docs/evidence/poc-recovery-001/reviews/"
     "rec-i2b-reviewed-successor-validator-ci-metadata-independent-delta-review-closure-2026-08-18.json"
+)
+REC_I2B_AAPT2_REVIEW_CLOSURE_PATH = (
+    "docs/evidence/poc-recovery-001/reviews/"
+    "rec-i2b-aapt2-linux-verification-metadata-independent-delta-review-closure-2026-08-18.json"
 )
 RECOVERY_MODULE = ROOT / "android" / "poc" / "recovery"
 AUTHORIZED_PATHS = [
@@ -1774,7 +1797,56 @@ def canonical_lf_sha256(relative: str) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def rec_i2b_expected_authority(*, successor: bool) -> dict[str, Any]:
+def rec_i2b_successor_implementation_phase(terminal_commit: str) -> str:
+    if terminal_commit in {
+        REC_I2B_SUCCESSOR_INITIAL_IMPLEMENTATION_HEAD,
+        REC_I2B_SUCCESSOR_EVIDENCE_PHASE_IMPLEMENTATION_HEAD,
+    }:
+        return "reviewed-successor"
+    require(
+        git_output("show", "-s", "--format=%P", terminal_commit)
+        == REC_I2B_SUCCESSOR_REVIEW_CLOSURE_HEAD,
+        "REC-I2B AUTH-05 implementation is not the single direct successor of the reviewed closure",
+    )
+    changed_paths = git_path_records(
+        "diff-tree",
+        "--no-commit-id",
+        "--name-only",
+        "--no-renames",
+        "-r",
+        "-z",
+        terminal_commit,
+        "--",
+    )
+    require(
+        sorted(changed_paths)
+        == [
+            "android/gradle/verification-metadata.xml",
+            "tools/validate_poc_recovery_governance.py",
+        ],
+        "REC-I2B AUTH-05 implementation commit changed paths outside exact metadata/pin scope",
+    )
+    return "aapt2-linux"
+
+
+def validate_rec_i2b_successor_metadata_sha256(
+    terminal_commit: str,
+    actual_sha256: str,
+) -> str:
+    phase = rec_i2b_successor_implementation_phase(terminal_commit)
+    expected_sha256 = (
+        REC_I2B_AAPT2_METADATA_CANONICAL_SHA256
+        if phase == "aapt2-linux"
+        else REC_I2B_SUCCESSOR_HISTORICAL_METADATA_CANONICAL_SHA256
+    )
+    require(
+        actual_sha256 == expected_sha256,
+        "REC-I2B reviewed-successor exact phase-bound verification-metadata payload drift",
+    )
+    return phase
+
+
+def rec_i2b_expected_authority(*, successor: bool, aapt2_linux: bool = False) -> dict[str, Any]:
     authority: dict[str, Any] = {
         "actualGraphProductIpDisposition": "REC-I2A-ACTUAL-GRAPH-PRODUCT-IP-DISPOSITION-20260817-01",
         "conditionalOwnerAuthorization": "STAGE0-OWNER-UNLOCK-BATCH-20260817-02",
@@ -1828,6 +1900,17 @@ def rec_i2b_expected_authority(*, successor: bool) -> dict[str, Any]:
                 "reviewedSuccessorDraftPr38NonForceUpdateAllowed": True,
             }
         )
+    if aapt2_linux:
+        authority.update(
+            {
+                "aapt2LinuxVerificationMetadataRemediationAuthorization": (
+                    REC_I2B_AAPT2_LINUX_METADATA_REMEDIATION_AUTHORIZATION
+                ),
+                "aapt2LinuxValidatorPinBindingClarification": (
+                    REC_I2B_AAPT2_VALIDATOR_PIN_CLARIFICATION
+                ),
+            }
+        )
     return authority
 
 
@@ -1854,8 +1937,110 @@ def rec_i2b_expected_common_review_truth() -> dict[str, Any]:
     }
 
 
-def rec_i2b_successor_metadata_artifacts() -> list[dict[str, Any]]:
-    return [
+def rec_i2b_historical_successor_review_truth() -> dict[str, Any]:
+    return {
+        "reviewedImplementationCommit": REC_I2B_SUCCESSOR_EVIDENCE_PHASE_IMPLEMENTATION_HEAD,
+        "reviewedImplementationTree": REC_I2B_SUCCESSOR_EVIDENCE_PHASE_IMPLEMENTATION_TREE,
+        "reviewedEvidenceCommit": REC_I2B_SUCCESSOR_REVIEWED_EVIDENCE_HEAD,
+        "reviewedEvidenceTree": REC_I2B_SUCCESSOR_REVIEWED_EVIDENCE_TREE,
+        "closureRecord": {
+            "path": REC_I2B_SUCCESSOR_REVIEW_CLOSURE_PATH,
+            "bytes": 13547,
+            "sha256": "678974a985fe49addd7132eb1553e317e4cb9656cd92868567a1dd0a8e7f905a",
+        },
+        "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
+        "disposition": "CLEAN",
+        "completed": True,
+        "required": False,
+        "coversCurrentTarget": False,
+        "durableClosureCommit": REC_I2B_SUCCESSOR_REVIEW_CLOSURE_HEAD,
+        "durableClosureTree": REC_I2B_SUCCESSOR_REVIEW_CLOSURE_TREE,
+    }
+
+
+def rec_i2b_aapt2_triggering_ci() -> dict[str, Any]:
+    return {
+        "workflow": "Android CI",
+        "runId": 32122399476,
+        "url": "https://github.com/Monumentogram/DORA/actions/runs/32122399476",
+        "exactHead": REC_I2B_SUCCESSOR_REVIEW_CLOSURE_HEAD,
+        "conclusion": "failure",
+        "androidBootstrapJob": {
+            "jobId": 95665487159,
+            "conclusion": "failure",
+            "failedStep": "Unit tests, instrumentation compilation, lint, and debug assembly",
+        },
+        "searchSmokeJob": {
+            "jobId": 95665487083,
+            "conclusion": "failure",
+            "failedStep": (
+                "Run Room FTS4 schema, correctness, safety, mapping, and mutation smoke tests"
+            ),
+            "searchEmulatorStarted": True,
+            "recoveryDeviceOrEmulatorExecution": False,
+        },
+        "missingArtifact": (
+            "com.android.tools.build:aapt2:9.3.1-15703166/"
+            "aapt2-9.3.1-15703166-linux.jar"
+        ),
+        "preservedAsHistoricalFailedRun": True,
+    }
+
+
+def rec_i2b_aapt2_local_verification() -> dict[str, Any]:
+    return {
+        "artifactProof": {
+            "coordinate": "com.android.tools.build:aapt2:9.3.1-15703166",
+            "artifact": "aapt2-9.3.1-15703166-linux.jar",
+            "bytes": 2369543,
+            "sha256": "e772a3dae8354764f1b0793903218427f483982445207f2e4ffc8c2026755bd4",
+            "sha1": "5287feac13566b9165cdf02c77565e68aec3aad0",
+            "isolatedGradleCacheBytesMatchCanonicalGoogleMavenBytes": True,
+            "publishedGoogleMavenSha1Matches": True,
+        },
+        "freshEmptyCacheSearchSmoke": {
+            "result": "PASS",
+            "durationSeconds": 329.997,
+            "configurationCache": "disabled",
+            "refreshDependencies": True,
+            "missingVerificationArtifactCount": 0,
+            "deviceOrEmulatorStarted": False,
+        },
+        "freshEmptyCacheOwnedConfigurationGraph": {
+            "result": "PASS",
+            "durationSeconds": 617.241,
+            "actionableTasks": 81,
+            "executedTasks": 81,
+            "configurationCount": 61,
+            "policyCoveredConfigurationCount": 34,
+            "outsidePolicyBoundaryToolingConfigurationCount": 27,
+            "missingVerificationArtifactCount": 0,
+        },
+        "fullStaticBuildAndUnitBlock": {
+            "result": "PASS",
+            "durationSeconds": 235.633,
+            "actionableTasks": 104,
+            "executedTasks": 104,
+            "unitTests": "91/91 across 15 suites; zero failures, errors or skips",
+        },
+        "forcedReleaseR8AndPackage": {
+            "result": "PASS",
+            "durationSeconds": 163.901,
+            "actionableTasks": 46,
+            "executedTasks": 46,
+        },
+        "graphSha256": "3ab12ef698e59f323e71431496d72debd5741669b395b8052ad41b9a8b8b34a7",
+        "recoveryLockSha256": "2e0de74c01b452476223a757ffa52ccc7f3f1ab74e9736e36bcd4a2ff0e8f08c",
+        "runtimeGraphChanged": False,
+        "recoveryLockChanged": False,
+        "nativePackagingChanged": False,
+        "licenseOrAdmissionDecisionChanged": False,
+        "verificationMetadataTrustWeakened": False,
+    }
+
+
+def rec_i2b_successor_metadata_artifacts(*, aapt2_linux: bool = False) -> list[dict[str, Any]]:
+    artifacts = [
         {
             "coordinate": "com.google.guava:guava-parent:33.2.1-jre",
             "artifact": "guava-parent-33.2.1-jre.pom",
@@ -1906,9 +2091,23 @@ def rec_i2b_successor_metadata_artifacts() -> list[dict[str, Any]]:
             "sha1": "c911af9ef688aeb809f86a864741cd91df184092",
         },
     ]
+    if aapt2_linux:
+        artifacts.append(
+            {
+                "coordinate": "com.android.tools.build:aapt2:9.3.1-15703166",
+                "artifact": "aapt2-9.3.1-15703166-linux.jar",
+                "bytes": 2369543,
+                "sha256": "e772a3dae8354764f1b0793903218427f483982445207f2e4ffc8c2026755bd4",
+                "sha1": "5287feac13566b9165cdf02c77565e68aec3aad0",
+                "repository": "Google Maven",
+                "toolingOnly": True,
+            }
+        )
+    return artifacts
 
 
 def rec_i2b_successor_implementation_manifest(terminal_commit: str) -> list[dict[str, Any]]:
+    aapt2_linux = rec_i2b_successor_implementation_phase(terminal_commit) == "aapt2-linux"
     manifest: list[dict[str, Any]] = []
     for path in REC_I2B_SUCCESSOR_IMPLEMENTATION_PATHS:
         payload = git_blob_bytes(f"{terminal_commit}:{path}")
@@ -1921,9 +2120,11 @@ def rec_i2b_successor_implementation_manifest(terminal_commit: str) -> list[dict
                 {
                     "rawGitLfBytes": len(payload),
                     "rawGitLfSha256": hashlib.sha256(payload).hexdigest(),
-                    "windowsWorkingBytes": 302121,
+                    "windowsWorkingBytes": 302390 if aapt2_linux else 302121,
                     "windowsWorkingSha256": (
-                        "cfd4e04db9b2aed7471f38ba5274d8462784944420d2b8b001bb0b9478ad884e"
+                        "d5fe5ea69db9a544442892d4b38269acb14fa180ede3de1ed6651b2f2622c4ef"
+                        if aapt2_linux
+                        else "cfd4e04db9b2aed7471f38ba5274d8462784944420d2b8b001bb0b9478ad884e"
                     ),
                 }
             )
@@ -1974,19 +2175,28 @@ def validate_rec_i2b_successor_advisory_remediation(
     remediation = evidence["advisoryRemediation"]["reviewedSuccessorValidatorAndCiMetadataRemediation"]
     current_review = evidence["reviewAndGateTruth"]["currentReviewedSuccessorIndependentDelta"]
     clean = current_review["disposition"] == "CLEAN"
-    expected_parent = (
-        "95304992407392c82ee86870dff72529cc70e5c8"
-        if terminal_commit == REC_I2B_SUCCESSOR_INITIAL_IMPLEMENTATION_HEAD
-        else REC_I2B_SUCCESSOR_INITIAL_IMPLEMENTATION_HEAD
-    )
+    aapt2_linux = rec_i2b_successor_implementation_phase(terminal_commit) == "aapt2-linux"
+    if terminal_commit == REC_I2B_SUCCESSOR_INITIAL_IMPLEMENTATION_HEAD:
+        expected_parent = "95304992407392c82ee86870dff72529cc70e5c8"
+    elif aapt2_linux:
+        expected_parent = REC_I2B_SUCCESSOR_REVIEW_CLOSURE_HEAD
+    else:
+        expected_parent = REC_I2B_SUCCESSOR_INITIAL_IMPLEMENTATION_HEAD
+    expected_authorizations = [
+        REC_I2B_SUCCESSOR_REMEDIATION_AUTHORIZATION,
+        REC_I2B_SUCCESSOR_JAR_METADATA_AUTHORIZATION,
+        REC_I2B_SUCCESSOR_SPOTLESS_METADATA_AUTHORIZATION,
+        REC_I2B_SUCCESSOR_SELFTEST_REMEDIATION_AUTHORIZATION,
+    ]
+    if aapt2_linux:
+        expected_authorizations.extend(
+            [
+                REC_I2B_AAPT2_LINUX_METADATA_REMEDIATION_AUTHORIZATION,
+                REC_I2B_AAPT2_VALIDATOR_PIN_CLARIFICATION,
+            ]
+        )
     require(
-        remediation["authorizations"]
-        == [
-            REC_I2B_SUCCESSOR_REMEDIATION_AUTHORIZATION,
-            REC_I2B_SUCCESSOR_JAR_METADATA_AUTHORIZATION,
-            REC_I2B_SUCCESSOR_SPOTLESS_METADATA_AUTHORIZATION,
-            REC_I2B_SUCCESSOR_SELFTEST_REMEDIATION_AUTHORIZATION,
-        ]
+        remediation["authorizations"] == expected_authorizations
         and remediation["implementationStatus"]
         == (
             "IMPLEMENTED_LOCALLY_VERIFIED_AND_INDEPENDENTLY_CLEAN"
@@ -2000,9 +2210,10 @@ def validate_rec_i2b_successor_advisory_remediation(
         == git_output("show", "-s", "--format=%P", terminal_commit)
         and remediation["implementationFiles"]
         == rec_i2b_successor_implementation_manifest(terminal_commit)
-        and remediation["metadataArtifacts"] == rec_i2b_successor_metadata_artifacts()
-        and remediation["metadataArtifactCount"] == 7
-        and remediation["metadataComponentCount"] == 5,
+        and remediation["metadataArtifacts"]
+        == rec_i2b_successor_metadata_artifacts(aapt2_linux=aapt2_linux)
+        and remediation["metadataArtifactCount"] == (8 if aapt2_linux else 7)
+        and remediation["metadataComponentCount"] == (6 if aapt2_linux else 5),
         "REC-I2B reviewed-successor remediation identity/artifact boundary drift",
     )
     triggering_ci = remediation["triggeringRequiredCi"]
@@ -2031,24 +2242,29 @@ def validate_rec_i2b_successor_advisory_remediation(
         },
         "REC-I2B reviewed-successor historical failed-CI provenance drift",
     )
+    expected_root_causes = [
+        (
+            "The Recovery governance validator dispatched the published REC-I2B successor through "
+            "the historical REC-I1 anchor instead of an additive exact reviewed-successor profile."
+        ),
+        (
+            "The clean GitHub runner exposed four already-resolved build/search tooling artifacts "
+            "absent from strict verification metadata: guava-parent 33.2.1-jre POM, "
+            "kotlinx-coroutines-bom 1.10.2 POM, kotlinx-coroutines-core-jvm 1.10.2 module, and "
+            "symbol-processing-aa-embeddable 2.3.9 POM."
+        ),
+        (
+            "Subsequent genuinely empty-cache closure exposed exactly the two corresponding tooling "
+            "JARs and the Spotless guava-parent 33.5.0-jre POM; no eighth missing artifact appeared."
+        ),
+    ]
+    if aapt2_linux:
+        expected_root_causes.append(
+            "Required Linux CI resolved the existing tooling-only aapt2 9.3.1-15703166 classifier "
+            "whose exact JAR checksum was absent from strict verification metadata."
+        )
     require(
-        remediation["rootCauses"]
-        == [
-            (
-                "The Recovery governance validator dispatched the published REC-I2B successor through "
-                "the historical REC-I1 anchor instead of an additive exact reviewed-successor profile."
-            ),
-            (
-                "The clean GitHub runner exposed four already-resolved build/search tooling artifacts "
-                "absent from strict verification metadata: guava-parent 33.2.1-jre POM, "
-                "kotlinx-coroutines-bom 1.10.2 POM, kotlinx-coroutines-core-jvm 1.10.2 module, and "
-                "symbol-processing-aa-embeddable 2.3.9 POM."
-            ),
-            (
-                "Subsequent genuinely empty-cache closure exposed exactly the two corresponding tooling "
-                "JARs and the Spotless guava-parent 33.5.0-jre POM; no eighth missing artifact appeared."
-            ),
-        ]
+        remediation["rootCauses"] == expected_root_causes
         and remediation["isolatedGradleBytesCanonicalMavenCentralBytesAndPublishedDigestMatched"] is True
         and remediation["verificationMetadataTrustWeakened"] is False
         and remediation["coordinateOrSelectedVersionChanged"] is False
@@ -2103,6 +2319,32 @@ def validate_rec_i2b_successor_advisory_remediation(
         and evidence["advisoryRemediation"]["currentZeroFindingsClaimed"] is clean,
         "REC-I2B reviewed-successor verification/admission boundary drift",
     )
+    if aapt2_linux:
+        require(
+            remediation["aapt2LinuxVerificationMetadataRemediation"]
+            == {
+                "authorization": REC_I2B_AAPT2_LINUX_METADATA_REMEDIATION_AUTHORIZATION,
+                "validatorPinBindingClarification": REC_I2B_AAPT2_VALIDATOR_PIN_CLARIFICATION,
+                "triggeringRequiredCi": rec_i2b_aapt2_triggering_ci(),
+                "historicalReviewedSuccessorIndependentDelta": (
+                    rec_i2b_historical_successor_review_truth()
+                ),
+                "implementationCommit": terminal_commit,
+                "implementationTree": terminal_tree,
+                "implementationParent": REC_I2B_SUCCESSOR_REVIEW_CLOSURE_HEAD,
+                "metadataCanonicalLfSha256": REC_I2B_AAPT2_METADATA_CANONICAL_SHA256,
+                "localVerification": rec_i2b_aapt2_local_verification(),
+                "freshIndependentDeltaReview": current_review,
+                "accountableEngineeringSecurityReviewCompleted": False,
+                "recI3Activated": False,
+            },
+            "REC-I2B AUTH-05 aapt2 remediation proof/review boundary drift",
+        )
+    else:
+        require(
+            "aapt2LinuxVerificationMetadataRemediation" not in remediation,
+            "REC-I2B historical reviewed-successor profile acquired AUTH-05 state",
+        )
 
 
 def validate_rec_i2b_successor_review_closure(
@@ -2111,8 +2353,22 @@ def validate_rec_i2b_successor_review_closure(
     terminal_commit: str,
     terminal_tree: str,
 ) -> tuple[str, str]:
+    aapt2_linux = rec_i2b_successor_implementation_phase(terminal_commit) == "aapt2-linux"
+    expected_path = (
+        REC_I2B_AAPT2_REVIEW_CLOSURE_PATH
+        if aapt2_linux
+        else REC_I2B_SUCCESSOR_REVIEW_CLOSURE_PATH
+    )
+    expected_record_id = (
+        "REC-I2B-AAPT2-LINUX-VERIFICATION-METADATA-INDEPENDENT-DELTA-REVIEW-CLOSURE-20260818-01"
+        if aapt2_linux
+        else (
+            "REC-I2B-REVIEWED-SUCCESSOR-VALIDATOR-CI-METADATA-INDEPENDENT-DELTA-REVIEW-"
+            "CLOSURE-20260818-01"
+        )
+    )
     require(
-        record["path"] == REC_I2B_SUCCESSOR_REVIEW_CLOSURE_PATH
+        record["path"] == expected_path
         and isinstance(record["bytes"], int)
         and record["bytes"] > 0
         and re.fullmatch(r"[0-9a-f]{64}", record["sha256"] or "") is not None,
@@ -2134,8 +2390,7 @@ def validate_rec_i2b_successor_review_closure(
     evidence_commit = reviewed["evidenceCommit"]
     evidence_tree = reviewed["evidenceTree"]
     require(
-        closure["recordId"]
-        == "REC-I2B-REVIEWED-SUCCESSOR-VALIDATOR-CI-METADATA-INDEPENDENT-DELTA-REVIEW-CLOSURE-20260818-01"
+        closure["recordId"] == expected_record_id
         and reviewer
         == {
             "product": "OpenAI Codex",
@@ -2186,6 +2441,10 @@ def validate_rec_i2b_runtime_evidence(
     terminal_tree: str,
 ) -> str:
     baseline = terminal_commit == REC_I2B_METADATA_IMPLEMENTATION_HEAD
+    aapt2_linux = (
+        not baseline
+        and rec_i2b_successor_implementation_phase(terminal_commit) == "aapt2-linux"
+    )
     require(
         evidence["reportId"] == "REC-I2B-RUNTIME-CRYPTO-IMPLEMENTATION-EVIDENCE-20260817-01"
         and evidence["status"] == REC_I2B_CLAIM_CEILING
@@ -2193,7 +2452,8 @@ def validate_rec_i2b_runtime_evidence(
         "REC-I2B implementation evidence identity/status/claim ceiling drift",
     )
     require(
-        evidence["authority"] == rec_i2b_expected_authority(successor=not baseline),
+        evidence["authority"]
+        == rec_i2b_expected_authority(successor=not baseline, aapt2_linux=aapt2_linux),
         "REC-I2B implementation evidence exact authority boundary drift",
     )
     git_record = evidence["git"]
@@ -2220,7 +2480,12 @@ def validate_rec_i2b_runtime_evidence(
         and git_record["terminalImplementationCommit"] == terminal_commit
         and git_record["terminalImplementationTree"] == terminal_tree
         and git_record["published"] is True
-        and git_record["publishedHeadBeforeLocalMetadataRemediation"] == REC_I2B_RUNTIME_CLOSURE_HEAD
+        and git_record["publishedHeadBeforeLocalMetadataRemediation"]
+        == (
+            REC_I2B_SUCCESSOR_REVIEW_CLOSURE_HEAD
+            if aapt2_linux
+            else REC_I2B_RUNTIME_CLOSURE_HEAD
+        )
         and git_record["terminalImplementationPublished"] is False
         and git_record["pullRequestCreated"] is True
         and git_record["pullRequestNumber"] == REC_I2B_PULL_REQUEST_NUMBER
@@ -2317,6 +2582,15 @@ def validate_rec_i2b_runtime_evidence(
             "priorFreshCacheMetadataIndependentClosureRecord": REC_I2B_METADATA_CLOSURE_PATH,
             "priorFreshCacheMetadataIndependentDisposition": "CLEAN",
             "priorFreshCacheMetadataIndependentReviewCoversCurrentTarget": False,
+            **(
+                {
+                    "historicalReviewedSuccessorIndependentDelta": (
+                        rec_i2b_historical_successor_review_truth()
+                    )
+                }
+                if aapt2_linux
+                else {}
+            ),
             "currentReviewedSuccessorIndependentDelta": expected_current_review,
             "currentZeroFindingsClaimed": clean,
             "independentDeltaReviewCompleted": clean,
@@ -2335,9 +2609,17 @@ def validate_rec_i2b_runtime_evidence(
         require(
             evidence["remediationState"]
             == (
-                "REVIEWED_SUCCESSOR_VALIDATOR_AND_CI_METADATA_INDEPENDENT_CLEAN_DRAFT_CI_PENDING"
-                if clean
-                else "REVIEWED_SUCCESSOR_VALIDATOR_AND_CI_METADATA_REMEDIATED_LOCALLY_VERIFIED_INDEPENDENT_DELTA_PENDING"
+                (
+                    "AAPT2_LINUX_VERIFICATION_METADATA_INDEPENDENT_CLEAN_DRAFT_CI_PENDING"
+                    if clean
+                    else "AAPT2_LINUX_VERIFICATION_METADATA_LOCALLY_VERIFIED_INDEPENDENT_DELTA_PENDING"
+                )
+                if aapt2_linux
+                else (
+                    "REVIEWED_SUCCESSOR_VALIDATOR_AND_CI_METADATA_INDEPENDENT_CLEAN_DRAFT_CI_PENDING"
+                    if clean
+                    else "REVIEWED_SUCCESSOR_VALIDATOR_AND_CI_METADATA_REMEDIATED_LOCALLY_VERIFIED_INDEPENDENT_DELTA_PENDING"
+                )
             )
             and evidence["reviewAndGateTruth"] == expected_truth,
             "REC-I2B successor independent-review/gate truth drift",
@@ -2379,6 +2661,10 @@ def validate_rec_i2b_accountable_packet(
     phase: str,
 ) -> None:
     baseline = phase == "baseline-clean"
+    aapt2_linux = (
+        not baseline
+        and rec_i2b_successor_implementation_phase(terminal_commit) == "aapt2-linux"
+    )
     require(
         packet["packetId"] == "REC-I2B-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW-PACKET-20260817-01"
         and packet["claimCeiling"] == REC_I2B_CLAIM_CEILING,
@@ -2423,6 +2709,14 @@ def validate_rec_i2b_accountable_packet(
             ]
         )
         expected_authority["reviewedSuccessorDraftPr38NonForceUpdateAuthorized"] = True
+    if aapt2_linux:
+        expected_authority["implementationAuthority"].extend(
+            [
+                REC_I2B_AAPT2_LINUX_METADATA_REMEDIATION_AUTHORIZATION,
+                REC_I2B_AAPT2_VALIDATOR_PIN_CLARIFICATION,
+            ]
+        )
+        expected_authority["aapt2LinuxDraftPr38NonForceUpdateAuthorizedAfterClean"] = True
     require(
         packet["authorityBoundary"] == expected_authority,
         "REC-I2B accountable packet exact authority boundary drift",
@@ -2434,7 +2728,12 @@ def validate_rec_i2b_accountable_packet(
         target["branch"] == REC_I2B_BRANCH
         and target["publishedAtPacketRefresh"] is False
         and target["targetedForExistingDraftPr38Publication"] is True
-        and target["publishedDraftBaselineHead"] == REC_I2B_RUNTIME_CLOSURE_HEAD
+        and target["publishedDraftBaselineHead"]
+        == (
+            REC_I2B_SUCCESSOR_REVIEW_CLOSURE_HEAD
+            if aapt2_linux
+            else REC_I2B_RUNTIME_CLOSURE_HEAD
+        )
         and target["pullRequestNumber"] == REC_I2B_PULL_REQUEST_NUMBER
         and target["pullRequestDraft"] is True
         and target["implementationCommits"] == expected_commits
@@ -2568,12 +2867,22 @@ def validate_rec_i2b_accountable_packet(
         require(
             advisory_gate["reviewedSuccessorValidatorAndCiMetadataRemediation"]
             == {
-                "authorizations": [
-                    REC_I2B_SUCCESSOR_REMEDIATION_AUTHORIZATION,
-                    REC_I2B_SUCCESSOR_JAR_METADATA_AUTHORIZATION,
-                    REC_I2B_SUCCESSOR_SPOTLESS_METADATA_AUTHORIZATION,
-                    REC_I2B_SUCCESSOR_SELFTEST_REMEDIATION_AUTHORIZATION,
-                ],
+                "authorizations": (
+                    [
+                        REC_I2B_SUCCESSOR_REMEDIATION_AUTHORIZATION,
+                        REC_I2B_SUCCESSOR_JAR_METADATA_AUTHORIZATION,
+                        REC_I2B_SUCCESSOR_SPOTLESS_METADATA_AUTHORIZATION,
+                        REC_I2B_SUCCESSOR_SELFTEST_REMEDIATION_AUTHORIZATION,
+                    ]
+                    + (
+                        [
+                            REC_I2B_AAPT2_LINUX_METADATA_REMEDIATION_AUTHORIZATION,
+                            REC_I2B_AAPT2_VALIDATOR_PIN_CLARIFICATION,
+                        ]
+                        if aapt2_linux
+                        else []
+                    )
+                ),
                 "implementationStatus": successor_remediation["implementationStatus"],
                 "implementationCommit": terminal_commit,
                 "implementationTree": terminal_tree,
@@ -2589,6 +2898,15 @@ def validate_rec_i2b_accountable_packet(
                     terminal_commit
                 ),
                 "freshIndependentDeltaReview": current_review,
+                **(
+                    {
+                        "aapt2LinuxVerificationMetadataRemediation": successor_remediation[
+                            "aapt2LinuxVerificationMetadataRemediation"
+                        ]
+                    }
+                    if aapt2_linux
+                    else {}
+                ),
                 "accountableEngineeringSecurityReviewCompleted": False,
                 "recI3Activated": False,
             },
@@ -2616,7 +2934,13 @@ def validate_rec_i2b_accountable_packet(
         current_review = evidence["reviewAndGateTruth"]["currentReviewedSuccessorIndependentDelta"]
         require(
             target["reviewedSuccessorIndependentDeltaReviewClosure"]
-            == current_review["closureRecord"],
+            == current_review["closureRecord"]
+            and (
+                target.get("historicalReviewedSuccessorIndependentDelta")
+                == rec_i2b_historical_successor_review_truth()
+                if aapt2_linux
+                else "historicalReviewedSuccessorIndependentDelta" not in target
+            ),
             "REC-I2B accountable packet successor closure cross-pin drift",
         )
 
@@ -2679,8 +3003,12 @@ def validate_rec_i2b_accountable_packet(
         expected_last_invariant = {
             "id": "I2B-INV-17",
             "invariant": (
-                "The independently cleaned 87a baseline remains the only published Draft PR 38 head. "
-                f"Exact reviewed-successor implementation {terminal_commit[:7]} and its evidence have a "
+                (
+                    "The independently cleaned e4a successor remains the published Draft PR 38 head. "
+                    if aapt2_linux
+                    else "The independently cleaned 87a baseline remains the only published Draft PR 38 head. "
+                )
+                + f"Exact reviewed-successor implementation {terminal_commit[:7]} and its evidence have a "
                 "fresh independent CLEAN 0/0/0 closure and remain local pending the authorized non-force "
                 "Draft PR 38 update and exact-head CI; no Recovery device, emulator, network, harness, "
                 "campaign, REC-I3 activation, PASS, Ready, admission or merge is claimed."
@@ -2690,8 +3018,12 @@ def validate_rec_i2b_accountable_packet(
         expected_last_invariant = {
             "id": "I2B-INV-17",
             "invariant": (
-                "The independently cleaned 87a baseline remains the only published Draft PR 38 head. "
-                f"Exact reviewed-successor implementation {terminal_commit[:7]} and this pending evidence "
+                (
+                    "The independently cleaned e4a successor remains the published Draft PR 38 head. "
+                    if aapt2_linux
+                    else "The independently cleaned 87a baseline remains the only published Draft PR 38 head. "
+                )
+                + f"Exact reviewed-successor implementation {terminal_commit[:7]} and this pending evidence "
                 "remain local and unpublished until a fresh independent CLEAN delta closure; no Recovery "
                 "device, emulator, network, harness, campaign, REC-I3 activation, PASS, Ready, admission, "
                 "push or merge is claimed."
@@ -2711,6 +3043,10 @@ def validate_rec_i2b_accountable_packet(
         )
     else:
         clean = phase == "successor-clean"
+        aapt2_verification = verification_evidence.pop(
+            "aapt2LinuxVerificationMetadataRemediation",
+            None,
+        )
         successor_delta = verification_evidence["governanceAndInventory"].pop(
             "freshIndependentDeltaReview",
             None,
@@ -2721,19 +3057,51 @@ def validate_rec_i2b_accountable_packet(
             "REC-I2B accountable packet reviewed-successor local verification evidence drift",
         )
         current_review = evidence["reviewAndGateTruth"]["currentReviewedSuccessorIndependentDelta"]
-        expected_successor_delta = (
-            {
+        if aapt2_linux:
+            historical_review = rec_i2b_historical_successor_review_truth()
+            expected_successor_delta = {
                 "result": "CLEAN",
-                "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
-                "reviewedImplementationCommit": terminal_commit,
-                "reviewedImplementationTree": terminal_tree,
-                "reviewedEvidenceCommit": current_review["reviewedEvidenceCommit"],
-                "reviewedEvidenceTree": current_review["reviewedEvidenceTree"],
-                "closureRecord": current_review["closureRecord"],
+                "findingCounts": historical_review["findingCounts"],
+                "reviewedImplementationCommit": historical_review["reviewedImplementationCommit"],
+                "reviewedImplementationTree": historical_review["reviewedImplementationTree"],
+                "reviewedEvidenceCommit": historical_review["reviewedEvidenceCommit"],
+                "reviewedEvidenceTree": historical_review["reviewedEvidenceTree"],
+                "closureRecord": historical_review["closureRecord"],
             }
-            if clean
-            else None
-        )
+            require(
+                aapt2_verification
+                == {
+                    "authorization": REC_I2B_AAPT2_LINUX_METADATA_REMEDIATION_AUTHORIZATION,
+                    "validatorPinBindingClarification": REC_I2B_AAPT2_VALIDATOR_PIN_CLARIFICATION,
+                    "triggeringRequiredCi": rec_i2b_aapt2_triggering_ci(),
+                    "metadataGitBlobSha1": git_output(
+                        "rev-parse",
+                        f"{terminal_commit}:android/gradle/verification-metadata.xml",
+                    ),
+                    "metadataCanonicalLfSha256": REC_I2B_AAPT2_METADATA_CANONICAL_SHA256,
+                    "localVerification": rec_i2b_aapt2_local_verification(),
+                    "freshIndependentDeltaReview": current_review,
+                },
+                "REC-I2B accountable packet AUTH-05 verification proof drift",
+            )
+        else:
+            expected_successor_delta = (
+                {
+                    "result": "CLEAN",
+                    "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
+                    "reviewedImplementationCommit": terminal_commit,
+                    "reviewedImplementationTree": terminal_tree,
+                    "reviewedEvidenceCommit": current_review["reviewedEvidenceCommit"],
+                    "reviewedEvidenceTree": current_review["reviewedEvidenceTree"],
+                    "closureRecord": current_review["closureRecord"],
+                }
+                if clean
+                else None
+            )
+            require(
+                aapt2_verification is None,
+                "REC-I2B historical reviewed-successor verification acquired AUTH-05 state",
+            )
         require(
             successor_delta == expected_successor_delta,
             "REC-I2B accountable packet phase-aware independent verification evidence drift",
@@ -2776,9 +3144,17 @@ def validate_rec_i2b_accountable_packet(
         require(
             packet["status"]
             == (
-                "INDEPENDENT_CLEAN_DRAFT_PR38_EXACT_HEAD_CI_PENDING"
-                if clean
-                else "LOCAL_REVIEWED_SUCCESSOR_REMEDIATION_VERIFIED_INDEPENDENT_DELTA_REVIEW_PENDING"
+                (
+                    "AAPT2_LINUX_METADATA_INDEPENDENT_CLEAN_DRAFT_PR38_EXACT_HEAD_CI_PENDING"
+                    if clean
+                    else "LOCAL_AAPT2_LINUX_METADATA_REMEDIATION_VERIFIED_INDEPENDENT_DELTA_REVIEW_PENDING"
+                )
+                if aapt2_linux
+                else (
+                    "INDEPENDENT_CLEAN_DRAFT_PR38_EXACT_HEAD_CI_PENDING"
+                    if clean
+                    else "LOCAL_REVIEWED_SUCCESSOR_REMEDIATION_VERIFIED_INDEPENDENT_DELTA_REVIEW_PENDING"
+                )
             )
             and packet["routingEligibility"]
             == {
@@ -2795,6 +3171,14 @@ def validate_rec_i2b_accountable_packet(
                 "laterChangesRequiredReviewCoversCurrentTarget": False,
                 "priorFreshCacheMetadataIndependentDeltaDisposition": "CLEAN",
                 "priorFreshCacheMetadataCleanReviewCoversCurrentTarget": False,
+                **(
+                    {
+                        "priorReviewedSuccessorIndependentDeltaDisposition": "CLEAN",
+                        "priorReviewedSuccessorCleanReviewCoversCurrentTarget": False,
+                    }
+                    if aapt2_linux
+                    else {}
+                ),
                 "currentIndependentAdvisoryDeltaReviewDisposition": "CLEAN" if clean else "PENDING",
                 "currentIndependentCleanReviewCoversExactImplementationAndReviewedEvidence": clean,
                 "recI3MayProceedNow": False,
@@ -2810,6 +3194,12 @@ def validate_rec_i2b_accountable_packet(
                 "record": REC_I2B_METADATA_CLOSURE_PATH,
                 "coversCurrentTarget": False,
             }
+            and (
+                findings.get("historicalReviewedSuccessorIndependentDelta")
+                == rec_i2b_historical_successor_review_truth()
+                if aapt2_linux
+                else "historicalReviewedSuccessorIndependentDelta" not in findings
+            )
             and findings["currentReviewedSuccessorIndependentDelta"] == current
             and findings["currentZeroFindingsClaimed"] is clean
             and findings["openP0StageGate"]
@@ -2869,11 +3259,24 @@ def validate_rec_i2b_accountable_packet(
                     else "OBTAIN_FRESH_INDEPENDENT_DELTA_REVIEW_BEFORE_ANY_DRAFT_PR38_UPDATE"
                 ),
                 "independentDeltaClosure": (
-                    "REVIEWED_SUCCESSOR_CLEAN_RECORDED"
-                    if clean
-                    else "REVIEWED_SUCCESSOR_DELTA_PENDING"
+                    (
+                        "AAPT2_LINUX_METADATA_CLEAN_RECORDED"
+                        if clean
+                        else "AAPT2_LINUX_METADATA_DELTA_PENDING"
+                    )
+                    if aapt2_linux
+                    else (
+                        "REVIEWED_SUCCESSOR_CLEAN_RECORDED"
+                        if clean
+                        else "REVIEWED_SUCCESSOR_DELTA_PENDING"
+                    )
                 ),
                 "priorFreshCacheIndependentDeltaClosure": "HISTORICAL_CLEAN_PRESERVED",
+                **(
+                    {"priorReviewedSuccessorIndependentDeltaClosure": "HISTORICAL_CLEAN_PRESERVED"}
+                    if aapt2_linux
+                    else {}
+                ),
                 "historicalIndependentDeltaClosure": "HISTORICAL_CLEAN_PRESERVED",
                 "freshGraphVerificationMetadataReview": (
                     "HISTORICAL_CHANGES_REQUIRED_PRESERVED_AND_CLOSED_BY_PRIOR_FRESH_CACHE_CLEAN_REVIEW"
@@ -2891,6 +3294,17 @@ def validate_rec_i2b_accountable_packet(
                     "required": not clean,
                     "completed": clean,
                 },
+                **(
+                    {
+                        "priorReviewedSuccessorIndependentAdvisoryDeltaReview": {
+                            "required": False,
+                            "completed": True,
+                            "coversCurrentTarget": False,
+                        }
+                    }
+                    if aapt2_linux
+                    else {}
+                ),
                 **common_completion_requirements,
             }
             and packet["terminalGate"]
@@ -2987,11 +3401,6 @@ def validate_rec_i2b_evidence_boundary() -> None:
         "REC-I2B immutable metadata independent-closure semantics drift",
     )
 
-    require(
-        canonical_lf_sha256("android/gradle/verification-metadata.xml")
-        == REC_I2B_SUCCESSOR_METADATA_CANONICAL_SHA256,
-        "REC-I2B reviewed-successor exact verification-metadata payload drift",
-    )
     terminal_commit = git_output(
         "log",
         "-1",
@@ -3000,12 +3409,33 @@ def validate_rec_i2b_evidence_boundary() -> None:
         *REC_I2B_SUCCESSOR_IMPLEMENTATION_PATHS,
     )
     terminal_tree = git_output("rev-parse", f"{terminal_commit}^{{tree}}")
+    successor_phase = validate_rec_i2b_successor_metadata_sha256(
+        terminal_commit,
+        canonical_lf_sha256("android/gradle/verification-metadata.xml"),
+    )
     require(
         git_is_ancestor(REC_I2B_METADATA_IMPLEMENTATION_HEAD, terminal_commit)
         and git_is_ancestor(terminal_commit, git_output("rev-parse", "HEAD"))
         and git_output("rev-parse", f"{terminal_commit}:android/poc/recovery") == REC_I2B_MODULE_TREE,
         "REC-I2B reviewed-successor terminal commit/tree/module lineage drift",
     )
+    if successor_phase == "aapt2-linux":
+        require(
+            sha256(REC_I2B_SUCCESSOR_REVIEW_CLOSURE_PATH)
+            == "678974a985fe49addd7132eb1553e317e4cb9656cd92868567a1dd0a8e7f905a"
+            and git_output(
+                "rev-parse",
+                "--verify",
+                f"{REC_I2B_SUCCESSOR_REVIEW_CLOSURE_HEAD}^{{commit}}",
+            )
+            == REC_I2B_SUCCESSOR_REVIEW_CLOSURE_HEAD
+            and git_output(
+                "rev-parse",
+                f"{REC_I2B_SUCCESSOR_REVIEW_CLOSURE_HEAD}^{{tree}}",
+            )
+            == REC_I2B_SUCCESSOR_REVIEW_CLOSURE_TREE,
+            "REC-I2B historical reviewed-successor CLEAN closure drift",
+        )
     evidence_bytes = (ROOT / REC_I2B_RUNTIME_EVIDENCE_PATH).read_bytes()
     evidence = json.loads(evidence_bytes.decode("utf-8", errors="strict"))
     phase = validate_rec_i2b_runtime_evidence(
@@ -4059,6 +4489,43 @@ def run_rec_i2b_evidence_boundary_tests() -> None:
         *REC_I2B_SUCCESSOR_IMPLEMENTATION_PATHS,
     )
     terminal_tree = git_output("rev-parse", f"{terminal_commit}^{{tree}}")
+    validate_rec_i2b_successor_metadata_sha256(
+        REC_I2B_SUCCESSOR_EVIDENCE_PHASE_IMPLEMENTATION_HEAD,
+        REC_I2B_SUCCESSOR_HISTORICAL_METADATA_CANONICAL_SHA256,
+    )
+    for name, commit, candidate_sha256 in (
+        (
+            "historical-profile-rejects-auth05-sha",
+            REC_I2B_SUCCESSOR_EVIDENCE_PHASE_IMPLEMENTATION_HEAD,
+            REC_I2B_AAPT2_METADATA_CANONICAL_SHA256,
+        ),
+        (
+            "historical-profile-rejects-wrong-sha",
+            REC_I2B_SUCCESSOR_EVIDENCE_PHASE_IMPLEMENTATION_HEAD,
+            "0" * 64,
+        ),
+    ):
+        try:
+            validate_rec_i2b_successor_metadata_sha256(commit, candidate_sha256)
+        except ValueError:
+            print(f"PASS negative rec-i2b-metadata-{name}")
+        else:
+            raise ValueError(f"Negative REC-I2B metadata pin unexpectedly passed: {name}")
+    if rec_i2b_successor_implementation_phase(terminal_commit) == "aapt2-linux":
+        validate_rec_i2b_successor_metadata_sha256(
+            terminal_commit,
+            REC_I2B_AAPT2_METADATA_CANONICAL_SHA256,
+        )
+        for name, candidate_sha256 in (
+            ("auth05-rejects-historical-sha", REC_I2B_SUCCESSOR_HISTORICAL_METADATA_CANONICAL_SHA256),
+            ("auth05-rejects-wrong-sha", "0" * 64),
+        ):
+            try:
+                validate_rec_i2b_successor_metadata_sha256(terminal_commit, candidate_sha256)
+            except ValueError:
+                print(f"PASS negative rec-i2b-metadata-{name}")
+            else:
+                raise ValueError(f"Negative REC-I2B metadata pin unexpectedly passed: {name}")
     phase = validate_rec_i2b_runtime_evidence(
         evidence,
         terminal_commit=terminal_commit,
