@@ -114,11 +114,21 @@
     }
   ],
   "independentAdvisoryReview": {
+    "appliesToCommit": "c9e750bb1ea0cbf0c85b95d96fe72603d759e335",
+    "appliesToTree": "5a7adfe50fcb68329fc5b19631a7573912a694dc",
+    "closureAuthority": "POC-DATA-CONTROL-PLANE-INDEPENDENT-ADVISORY-CLOSURE-AUTH-20260818-03",
     "formalReviewer": false,
-    "p0": null,
-    "p1": null,
-    "p2": null,
-    "status": "PENDING"
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "priorP1Closed": 2,
+    "reviewArtifact": {
+      "bytes": 4176,
+      "path": "docs/evidence/poc-data-001/reviews/poc-data-control-plane-independent-advisory-closure-20260818.json",
+      "sha256": "sha256:f4ad6d955d99746eee586dda7c4553acc1190ac7911329297fd8324c017d4ceb"
+    },
+    "reviewedPendingEvidenceBlob": "5ab97a2bd85642d2425823d73d1f4c3683cd6689",
+    "status": "CLEAN"
   },
   "limitations": [
     "SYNTHETIC_METADATA_CONTROL_PLANE_ONLY",
@@ -143,7 +153,7 @@
   },
   "recordId": "poc-data-control-plane-dry-run-local-evidence-stage0-v0.1",
   "recordType": "LOCAL_SYNTHETIC_CONTROL_PLANE_VALIDATION_EVIDENCE",
-  "recordedAt": "2026-08-18T19:00:18+03:00",
+  "recordedAt": "2026-08-18T19:09:26+03:00",
   "repositoryBase": {
     "commit": "4a1dacacc52926ef3608a5952a762f00b8dafaa9",
     "exactMainCiConclusion": "SUCCESS",
