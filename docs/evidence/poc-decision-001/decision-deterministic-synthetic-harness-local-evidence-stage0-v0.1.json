@@ -1,0 +1,239 @@
+{
+  "recordType": "DORA_STAGE0_POC_DECISION_DETERMINISTIC_SYNTHETIC_HARNESS_LOCAL_EVIDENCE",
+  "recordVersion": "0.1",
+  "recordedDate": "2026-08-18",
+  "authority": {
+    "authorizationId": "POC-DECISION-DETERMINISTIC-SYNTHETIC-HARNESS-AUTH-20260818-01",
+    "backlogId": "POC-DECISION-001",
+    "branch": "codex/poc-decision-deterministic-synthetic-harness",
+    "baselineCommit": "e33f24b40587e7af9c16a2c42e492b6da79e19f3",
+    "baselineTree": "ab534094a0bd3cfee67aa37b1264e241106a513d",
+    "baselineCi": {
+      "runId": 32160072118,
+      "headCommit": "e33f24b40587e7af9c16a2c42e492b6da79e19f3",
+      "workflow": "Android CI",
+      "status": "COMPLETED_SUCCESS"
+    }
+  },
+  "scope": {
+    "profile": "stage0-v0.1",
+    "executionClass": "PURE_HOST_LOCAL_SYNTHETIC_MECHANICS",
+    "dependencyBoundary": "JAVA_BASE_ONLY",
+    "sourceRangeConvention": "UTF8_BYTE_OFFSETS_HALF_OPEN_STAGE0_V0_1",
+    "sourceRangeConventionIsProductContract": false,
+    "generatedLanguages": [
+      "RU",
+      "EN",
+      "MIXED_RU_EN"
+    ],
+    "generatedFixtureCount": 3,
+    "governedBenchmarkCaseCount": 0,
+    "realMeetingCount": 0,
+    "purposeRecordedParticipantCount": 0,
+    "modelCount": 0,
+    "deviceCount": 0,
+    "networkOperationCount": 0,
+    "androidModuleCount": 0,
+    "manualStandaloneTaskCount": 0
+  },
+  "fileDigestBasis": "CANONICAL_GIT_BLOB_BYTES_WITH_LF",
+  "files": [
+    {
+      "path": "tools/decision_deterministic_synthetic_harness/src/main/java/com/monumentogram/dora/stage0/decision/synthetic/DecisionDeterministicSyntheticHarness.java",
+      "role": "DEPENDENCY_FREE_SOURCE_RANGE_METRIC_AND_USER_TRUTH_CONTRACT",
+      "sha256": "2adb2a4e6706212f5b7530a647e7ef90bd5d423f388e988f845c2e3690740411",
+      "bytes": 40806,
+      "lines": 984
+    },
+    {
+      "path": "tools/decision_deterministic_synthetic_harness/src/test/java/com/monumentogram/dora/stage0/decision/synthetic/DecisionDeterministicSyntheticHarnessTest.java",
+      "role": "GENERATED_TEXT_ADVERSARIAL_JAVA17_TEST",
+      "sha256": "064d4ad5b00a18d1746fe2f6e29367aad9b0473b99e8cce5746f3d0b8a2e8fec",
+      "bytes": 49907,
+      "lines": 945
+    }
+  ],
+  "preExistingProjectionOracle": {
+    "modified": false,
+    "sourcePath": "tools/decision_revision_oracle/src/main/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracle.java",
+    "sourceSha256": "2188b17bc34fa04310a61b16409719e4883d748c45eb5bfc39940da65038ec66",
+    "testPath": "tools/decision_revision_oracle/src/test/java/com/monumentogram/dora/stage0/decision/DecisionRevisionOracleTest.java",
+    "testSha256": "00a0e14effeddd086bd51007f79042116be8af913f77753b3b24450568389fa6",
+    "evidencePath": "docs/evidence/poc-decision-001/decision-revision-projection-host-oracle-local-evidence-stage0-v0.1.json",
+    "evidenceSha256": "3bcd1742ee983acb661760cd71ef5bd6695557e84330b1867d64cc870b1829c4",
+    "relationship": "COMPLEMENTARY_MECHANICS_ONLY_NO_PROJECTION_REDEFINITION"
+  },
+  "sourceValidation": {
+    "wholeGeneratedTextSha256Required": true,
+    "wellFormedUtf16RequiredBeforeUtf8Encoding": true,
+    "nonEmptyHalfOpenRangeRequired": true,
+    "utf8CodePointBoundariesRequired": true,
+    "exactExcerptSha256Required": true,
+    "unknownSourceRejected": true,
+    "missingSourceRejected": true,
+    "invalidCandidateApplied": false,
+    "goldSourceFailureInvalidatesInput": true,
+    "generatedFixturePins": [
+      {
+        "sourceId": "SOURCE_RU",
+        "utf8Bytes": 85,
+        "sourceSha256": "f236164d907a56edb548c1eed4a378b9ca0783d008103bb132efd6f4df74c73a",
+        "validatedRange": {
+          "startInclusive": 24,
+          "endExclusive": 66,
+          "excerptSha256": "b769214e1587142e14a74da7448e0d737e888c6126448fd497e4631e3fa6bd48"
+        }
+      },
+      {
+        "sourceId": "SOURCE_EN",
+        "utf8Bytes": 42,
+        "sourceSha256": "77d2b4fa180ac37d1c3f1cc9bb12ef45756f31355b0e99d9accb079647be8d62",
+        "validatedRange": {
+          "startInclusive": 10,
+          "endExclusive": 41,
+          "excerptSha256": "a41eab3209606fc74bc446166d49cd7228c570f19b826792fd780ea556f89ad5"
+        }
+      },
+      {
+        "sourceId": "SOURCE_MIXED",
+        "utf8Bytes": 48,
+        "sourceSha256": "6b3551de5c874d49a73cdc11a2d5c02b9d8ea6f1b9479695bf295f5d0e7f603a",
+        "validatedRange": {
+          "startInclusive": 19,
+          "endExclusive": 47,
+          "excerptSha256": "dba17b9120213515be4fbb0ce95da760e6276e83f79f2d10e2f876c34fba37c7"
+        }
+      }
+    ],
+    "generatedSourceTextPublishedInEvidence": false
+  },
+  "metricAggregation": {
+    "labels": [
+      "FINAL_DECISION",
+      "REVISION_LINK",
+      "CONFIRMED_TASK"
+    ],
+    "matchingRule": "EXACT_OPAQUE_ITEM_ID_AND_LABEL",
+    "perLabelMetrics": [
+      "TRUE_POSITIVE",
+      "FALSE_POSITIVE",
+      "FALSE_NEGATIVE",
+      "PRECISION",
+      "RECALL",
+      "F1"
+    ],
+    "aggregateMetrics": [
+      "MICRO_PRECISION_RECALL_F1",
+      "MACRO_PRECISION_RECALL_F1",
+      "SOURCE_VALIDITY",
+      "UNSUPPORTED_CLAIM_RATE"
+    ],
+    "arithmetic": "EXACT_REDUCED_NON_NEGATIVE_RATIONAL_WITH_FIXED_SIX_DECIMAL_RENDER",
+    "zeroDenominator": "NA",
+    "macroRule": "UNWEIGHTED_MEAN_OVER_LABELS_WHERE_THE_SPECIFIC_RATIO_IS_DEFINED",
+    "sourceValidityDefinition": "PREDICTED_ITEMS_WITH_ALL_VALID_SOURCE_RANGES_DIVIDED_BY_ALL_PREDICTED_ITEMS",
+    "unsupportedClaimRateDefinition": "PREDICTED_ITEMS_WITHOUT_EXACT_SYNTHETIC_GOLD_ID_AND_LABEL_MATCH_DIVIDED_BY_ALL_PREDICTED_ITEMS",
+    "unsupportedClaimRateIsSemanticProductionAssessment": false,
+    "invalidSourcePredictionStillIncludedInClassificationCounts": true,
+    "thresholdComparisonPerformed": false,
+    "benchmarkVerdictProduced": false,
+    "canonicalKnownAnswer": {
+      "goldItems": 4,
+      "predictedItems": 4,
+      "microCounts": {
+        "truePositive": 3,
+        "falsePositive": 1,
+        "falseNegative": 1
+      },
+      "microPrecision": "3/4@0.750000",
+      "microRecall": "3/4@0.750000",
+      "microF1": "3/4@0.750000",
+      "macroPrecision": "5/6@0.833333",
+      "macroRecall": "5/6@0.833333",
+      "macroF1": "5/6@0.833333",
+      "sourceValidity": "3/4@0.750000",
+      "unsupportedClaimRate": "1/4@0.250000"
+    }
+  },
+  "userTruthProtection": {
+    "machineProposalApplicationPerformed": false,
+    "currentStateReturnedAsMutated": false,
+    "userOwnedChangedFieldDisposition": "USER_TRUTH_PROTECTED",
+    "machineOwnedChangedFieldDisposition": "PROPOSED_DIFF_REVIEW_REQUIRED",
+    "needsConfirmationToPlannedDisposition": "ACTIVATION_REVIEW_REQUIRED",
+    "candidateSuccessDisposition": "ADMISSIBLE_FOR_REVIEW",
+    "candidateSuccessMeansCurrentOrConfirmed": false,
+    "fieldValuesIncludedInCanonicalOutput": false,
+    "manualTaskCreationImplemented": false,
+    "taskSchemaOrForeignKeyChoiceMade": false,
+    "dec019StatusChanged": false,
+    "dec037DispositionMade": false
+  },
+  "verification": {
+    "javaRuntime": "openjdk 17.0.10 2024-01-16 LTS",
+    "javac": "javac 17.0.10",
+    "compileCommand": "javac --release 17 -encoding UTF-8 -Xlint:all -Werror -d <TEMP_DIR> <MAIN_JAVA> <TEST_JAVA>",
+    "compileExitCode": 0,
+    "classMajorVersion": 61,
+    "testCommand": "java -ea -cp <TEMP_DIR> com.monumentogram.dora.stage0.decision.synthetic.DecisionDeterministicSyntheticHarnessTest",
+    "testExitCode": 0,
+    "testStdout": "POC_DECISION_DETERMINISTIC_SYNTHETIC_HARNESS_TESTS_OK\n",
+    "testStdoutSha256": "24f5a50de5b9cfa9b560ee603fbe3775a60e88a06a3d45715b63ee6812b209e8",
+    "testStderrBytes": 0,
+    "repeatRuns": 5,
+    "uniqueRepeatStdoutHashes": 1,
+    "defaultSourceEncodingRegressionCompileAndRun": "SUCCESS",
+    "explicitUtf8SourceEncodingCompileAndRun": "SUCCESS",
+    "dependencyCommand": "jdeps -s -R <TEMP_DIR>",
+    "dependencySummary": "HARNESS_CLASSES -> java.base",
+    "dependencyCheck": "SUCCESS",
+    "trailingWhitespaceCheck": "SUCCESS_NONE_FOUND",
+    "forbiddenRuntimeSurfaceCheck": "SUCCESS_NONE_FOUND",
+    "forbiddenClaimCheck": "SUCCESS_NONE_FOUND"
+  },
+  "dataAndPublicationSafety": {
+    "evidenceContainsGeneratedSourceText": false,
+    "containsPersonalData": false,
+    "containsSecret": false,
+    "containsCredential": false,
+    "containsPrivateAddressOrChannel": false,
+    "containsRealPersonOrOrganization": false,
+    "containsRealMeeting": false,
+    "containsAudio": false,
+    "containsModelOrWeight": false,
+    "containsTrainingData": false,
+    "containsDeviceIdentifier": false,
+    "containsLocalAbsolutePath": false,
+    "cloudTransmissionPerformed": false,
+    "modelTrainingPerformed": false,
+    "repositoryPublicationState": "LOCAL_UNPUBLISHED_AT_EVIDENCE_CREATION"
+  },
+  "selfReview": {
+    "status": "NO_ACTIONABLE_FINDINGS",
+    "scopeOverlap": "NONE",
+    "independentReviewStatus": "PENDING_POST_COMMIT_REQUEST",
+    "ciForThisBranch": "NOT_RUN",
+    "readyOrMergeAction": "NOT_AUTHORIZED_NOT_PERFORMED"
+  },
+  "nonClaims": [
+    "This is not the governed adjudicated corpus or a case from that corpus.",
+    "This does not execute or satisfy the at-least-100-case POC-DECISION-001 benchmark.",
+    "This does not compare any POC-DECISION-001 threshold and cannot emit PASS.",
+    "This does not validate the complete production transcript-and-audio provenance envelope.",
+    "This does not evaluate a model, extractor, device, Android module, network route, or real data.",
+    "This does not make a decision current or a task planned, confirmed, or final.",
+    "This does not resolve DEC-019 or dispose DEC-037.",
+    "This does not admit a dependency or modify the existing decision revision projection oracle.",
+    "This does not change the authoritative Backlog or Stage Status readiness truth."
+  ],
+  "outcome": {
+    "localEvidenceResult": "DETERMINISTIC_SYNTHETIC_MECHANICS_VERIFIED",
+    "pocVerdict": "NOT_RUN",
+    "pocReadiness": "BLOCKED_UNCHANGED",
+    "fullSourceValidatorGapClosed": false,
+    "governedScoringGapClosed": false,
+    "readinessElevation": false,
+    "productAdmission": false,
+    "sharedBacklogOrStageStatusModified": false
+  }
+}
