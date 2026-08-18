@@ -151,6 +151,32 @@ public final class VadDeterministicReplayTest {
                                 .get(0)
                                 .nextPartOverlapStartFrameInclusive(),
                 "pre-roll is covered by selected next-part overlap");
+
+        FrameClass[] atCapLabels = labels(30_001, FrameClass.SILENCE);
+        atCapLabels[30_000] = FrameClass.SPEECH;
+        Accepted atCap = replay(profile, atCapLabels);
+        PhysicalCap closedPart = atCap.physicalCaps().get(0);
+        SpeechOnset capOnset = atCap.speechOnsets().get(0);
+        checkEquals(
+                new SpeechOnset(30_000L, 29_900L, 30_000L, 100, true),
+                capOnset,
+                "onset exactly at cap");
+        checkTrue(
+                capOnset.preRollStartFrameInclusive()
+                        < closedPart.nextPartOverlapStartFrameInclusive(),
+                "1.5 second overlap alone is shorter than the 2 second pre-roll");
+        checkTrue(
+                capOnset.preRollStartFrameInclusive()
+                                >= closedPart.freshStartFrameInclusive()
+                        && capOnset.preRollEndFrameExclusive()
+                                <= closedPart.freshEndFrameExclusive(),
+                "closing fresh part owns the complete pre-roll range at cap");
+        checkEquals(
+                closedPart.nextPartOverlapStartFrameInclusive(),
+                Math.max(
+                        capOnset.preRollStartFrameInclusive(),
+                        closedPart.nextPartOverlapStartFrameInclusive()),
+                "next-part overlap is the exact tail intersection");
     }
 
     private static void semanticBoundaryGoldensAreExact() {
