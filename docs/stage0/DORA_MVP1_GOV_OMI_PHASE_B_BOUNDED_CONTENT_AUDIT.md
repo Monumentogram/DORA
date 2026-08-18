@@ -167,6 +167,40 @@ diff or patch request. Existing body/comment/all-discussion byte caps and memory
 remain unchanged. Stop on the first new external, schema, identity, OID, size, SHA, cap, privacy or
 raw-persistence failure.
 
+## Sanitized semantic-findings checkpoint
+
+Authority `GOV-OMI-PHASE-B-SANITIZED-SEMANTIC-FINDINGS-AUTH-20260818-05` permits one final
+in-memory-only semantic pass. It preserves the complete AUTH-04 evidence and independent 0/0/0
+review at commit `4b39087f7d57222edb614530567a22e272a18f5b`.
+
+The blob set is exactly all 65 unique allowlisted OIDs in ordinal OID order. Canonical expected rows
+are `oid<TAB>size<TAB>sha256<LF>`, UTF-8 without BOM with a terminal LF: 65 objects, 700,153 bytes,
+SHA-256 `28d85ced1277ae60168a0d9c1195b34af7f2a2fa9071826876f63a662c24149c`.
+Each blob receives at most one request and must repeat its OID, size and AUTH-04 SHA-256 before any
+semantic classifier runs. The four already privacy-suppressed OIDs remain excluded from semantics.
+
+The tracker set is the same nine issues followed by the same nine Pull Requests, in the AUTH-04
+order. Each item receives at most one request using the exact author-free, link-free,
+`comments(last:10)` query. Body/comment digests, state/timestamps, counts, bytes and cap flags must
+equal AUTH-04 before classification. Pull Request 7322 remains incomplete at 10 of 18 comments and
+must remain `INSUFFICIENT_EVIDENCE`.
+
+Only controlled, content-free findings may leave process memory:
+
+- mechanical license-family and obligation-signal codes, never compatibility or legal conclusions;
+- bounded component, test and security pattern codes with exact allowlisted paths/OIDs/digests;
+- one finding for each of the nine existing hazard-taxonomy IDs, containing only signal counts,
+  completeness, evidence digests and a sanitized fixed-vocabulary paraphrase;
+- recommendations limited to `LEARN_ONLY`, `DEFER`, `REJECT`, `REUSE_CANDIDATE` or
+  `PORT_CANDIDATE`, all non-admitting and subject to formal human review.
+
+AUTH-05 adds exactly 83 content requests: 65 immutable blobs plus 18 tracker items. It permits no
+discovery, identity preflight, pagination, author identity, link, patch, diff or archive request.
+Raw text stays in memory and is cleared after classification; no quote, snippet, source text,
+license text, title, body, comment, personal identifier, credential or private endpoint may enter
+evidence. Stop on the first new request, schema, identity, OID, size, SHA, tracker-digest, metadata,
+cap, privacy or raw-persistence failure.
+
 ## Allowed findings and mandatory stop conditions
 
 The audit may record `LEARN_ONLY`, `DEFER` or `REJECT` where bounded content directly supports the

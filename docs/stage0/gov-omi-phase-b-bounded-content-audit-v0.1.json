@@ -30,6 +30,13 @@
       "addedContentRequestCap": 66,
       "permitPriorSuccessful48TextClassificationRefetch": true,
       "permitFrozen18TrackerRecovery": true
+    },
+    {
+      "id": "GOV-OMI-PHASE-B-SANITIZED-SEMANTIC-FINDINGS-AUTH-20260818-05",
+      "capturedAt": "2026-08-18T16:36:55.504Z",
+      "preserveAuth04EvidenceAndReviewCommit": "4b39087f7d57222edb614530567a22e272a18f5b",
+      "permitOneFinalInMemorySemanticPass": true,
+      "addedContentRequestCap": 83
     }
   ],
   "preContentCheckpoint": {
@@ -337,6 +344,64 @@
       "EXTERNAL_REQUEST_FAILURE",
       "GRAPHQL_SCHEMA_FAILURE",
       "IDENTITY_OID_SIZE_OR_SHA_MISMATCH",
+      "REQUEST_OR_BYTE_CAP_DRIFT",
+      "PRIVACY_FAILURE",
+      "RAW_CONTENT_PERSISTENCE"
+    ]
+  },
+  "sanitizedSemanticFindingsPass": {
+    "authorityId": "GOV-OMI-PHASE-B-SANITIZED-SEMANTIC-FINDINGS-AUTH-20260818-05",
+    "preservedAuth04EvidenceCommit": "4b39087f7d57222edb614530567a22e272a18f5b",
+    "preservedAuth04EvidenceHashes": {
+      "resultJson": "54680e1b545e19f8b4bedd4277410cfb09fa7dc2a8c75bae69ce5a886315cfdc",
+      "reportMarkdown": "50534f009042ad44c806c674adb8a95d97c499b9b23bce86e4ce243df0b8f31c",
+      "independentReviewJson": "0c8b26db3b18bfdc91a16df1d972d8596c536c3ab39ee5649f8f89fe17e8606b"
+    },
+    "blobSet": {
+      "derivation": "All unique OIDs in fileAllowlist, ordinal OID order, with expected SHA-256 from the preserved AUTH-04 result.",
+      "uniqueOids": 65,
+      "decodedBytesExact": 700153,
+      "canonicalRow": "oid<TAB>size<TAB>sha256<LF>",
+      "terminalLf": true,
+      "canonicalSha256": "28d85ced1277ae60168a0d9c1195b34af7f2a2fa9071826876f63a662c24149c",
+      "requestsPerOid": 1,
+      "requiredBeforeSemantics": ["EXPECTED_OID","EXPECTED_SIZE","EXPECTED_SHA256","BASE64","STRICT_UTF8","NUL_FREE","ZERO_DISALLOWED_CONTROL_SCALARS","PRIVACY_GATE"],
+      "privacySuppressedOidsExcludedFromSemantics": [
+        "0a8e9f806977d2151aec4d9361b12b6227e26108",
+        "3748a395c23e1b7b339b87fa1cae95a604cf8fd3",
+        "432dffe80f69bf0f991d82ee786b8e0be0569deb",
+        "79d3f8087ac634a2053c9532b160a18df6448545"
+      ]
+    },
+    "trackerSet": {
+      "issues": [11769,11204,11695,11762,11736,11694,11812,11308,11777],
+      "pullRequests": [7331,6565,7099,7132,6777,7091,7006,7106,7322],
+      "requestsPerItem": 1,
+      "requiredAuth04Equality": ["TYPE","NUMBER","STATE","CREATED_AT","UPDATED_AT","CLOSED_AT","MERGED_AT","BODY_BYTES","BODY_SHA256","COMMENT_TOTAL_COUNT","COMMENTS_RETURNED","COMMENT_BYTES","COMMENTS_EXECUTION_SHA256","INCOMPLETE_CAP_FLAG"],
+      "pr7322MustRemainIncomplete": true,
+      "graphqlShapeInheritedExactlyFromAuth04": true
+    },
+    "semanticTaxonomy": {
+      "licenseFactCodes": ["MIT_FAMILY_SIGNAL","APACHE_2_FAMILY_SIGNAL","BSD_FAMILY_SIGNAL","ISC_FAMILY_SIGNAL","GPL_FAMILY_SIGNAL","LGPL_FAMILY_SIGNAL","MPL_FAMILY_SIGNAL","NOTICE_FILE_SIGNAL","EMPTY_OR_UNKNOWN_LICENSE_SIGNAL"],
+      "obligationFactCodes": ["PRESERVE_COPYRIGHT_AND_LICENSE_NOTICE_SIGNAL","PRESERVE_NOTICE_SIGNAL","STATE_CHANGES_SIGNAL","PATENT_TERMS_SIGNAL","SOURCE_AVAILABILITY_SIGNAL","SAME_LICENSE_SIGNAL","FILE_LEVEL_SOURCE_SIGNAL","NO_OBLIGATION_SIGNAL_ESTABLISHED"],
+      "componentPatternCodes": ["ANDROID_AUDIO_CAPTURE_LIFECYCLE","BLE_CONNECTION_AND_ROUTE_HANDLING","LOCAL_RECORDING_FINALIZATION","OFFLINE_SYNC_RECONCILIATION","STT_PROVIDER_RESILIENCE_AND_VAD","PRIVACY_DELETION_AND_USER_AUTHORITY"],
+      "artifactPatternCodes": ["SYNTHETIC_REGRESSION_TEST_PATTERN","PARITY_CONTRACT_PATTERN","SECURITY_REPORTING_PATTERN","PRIVACY_CONTROL_PATTERN"],
+      "hazardTaxonomyIds": ["GOV-OMI-HZ-META-001","GOV-OMI-HZ-META-002","GOV-OMI-HZ-META-003","GOV-OMI-HZ-META-004","GOV-OMI-HZ-META-005","GOV-OMI-HZ-META-006","GOV-OMI-HZ-META-007","GOV-OMI-HZ-META-008","GOV-OMI-HZ-META-009"],
+      "recommendationValues": ["LEARN_ONLY","DEFER","REJECT","REUSE_CANDIDATE","PORT_CANDIDATE"],
+      "quotesOrSnippetsAllowed": false,
+      "legalCompatibilityConclusionAllowed": false,
+      "admissionAllowed": false
+    },
+    "addedRequestBudget": {
+      "immutableBlobRequests": 65,
+      "trackerRequests": 18,
+      "total": 83,
+      "discoveryIdentityPaginationAuthorLinkPatchDiffOrArchiveRequests": 0
+    },
+    "stopOnFirstNew": [
+      "EXTERNAL_REQUEST_OR_GRAPHQL_SCHEMA_FAILURE",
+      "IDENTITY_OID_SIZE_OR_SHA_MISMATCH",
+      "AUTH04_TRACKER_DIGEST_OR_METADATA_MISMATCH",
       "REQUEST_OR_BYTE_CAP_DRIFT",
       "PRIVACY_FAILURE",
       "RAW_CONTENT_PERSISTENCE"
