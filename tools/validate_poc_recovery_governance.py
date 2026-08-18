@@ -108,6 +108,31 @@ REC_I2B_METADATA_CLOSURE_PATH = (
 )
 REC_I2B_METADATA_CLOSURE_SHA256 = "fc0c5a9f759eb836bbc81f2a64cc55a034786465a8473679f244528a3e17e714"
 REC_I2B_CLAIM_CEILING = "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW"
+REC_I2B_ACCOUNTABLE_CLAIM_CEILING = (
+    "ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW_COMPLETE_PENDING_SEPARATE_REC_I3_ACTIVATION_DECISION"
+)
+REC_I2B_ACCOUNTABLE_STATUS = REC_I2B_ACCOUNTABLE_CLAIM_CEILING
+REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD = "f64c5c150865901352889b607a075425c93e6cb4"
+REC_I2B_ACCOUNTABLE_RECORDING_BASE_TREE = "389b43a20381fdfd4a86f8328dba05439d4bf5f6"
+REC_I2B_ACCOUNTABLE_CLOSURE_AUTHORIZATION = (
+    "REC-I2B-ACCOUNTABLE-HUMAN-REVIEW-SANITIZED-CLOSURE-AUTH-20260818-01"
+)
+REC_I2B_ACCOUNTABLE_VALIDATOR_AUTHORIZATION = (
+    "REC-I2B-ACCOUNTABLE-HUMAN-REVIEW-VALIDATOR-PHASE-AUTH-20260818-01"
+)
+REC_I2B_ACCOUNTABLE_CLOSURE_PATH = (
+    "docs/evidence/poc-recovery-001/reviews/"
+    "rec-i2b-accountable-human-engineering-security-review-closure-2026-08-18.json"
+)
+REC_I2B_ACCOUNTABLE_CLOSURE_BYTES = 5045
+REC_I2B_ACCOUNTABLE_CLOSURE_SHA256 = (
+    "999bd50d7d913a9d299514d132df96d1ee22034ddc810a56503875774f006848"
+)
+REC_I2B_ACCOUNTABLE_REVIEW_DATE = "2026-08-18"
+REC_I2B_ACCOUNTABLE_RECORDED_AT = "2026-08-18T22:54:06+03:00"
+REC_I2B_ACCOUNTABLE_DISPOSITION = (
+    "APPROVE_EXACT_REC_I2B_FOR_SEPARATE_REC_I3_ACTIVATION_DECISION"
+)
 REC_I2B_SUCCESSOR_REMEDIATION_AUTHORIZATION = (
     "REC-I2B-REVIEWED-SUCCESSOR-VALIDATOR-AND-CI-METADATA-REMEDIATION-AUTH-20260818-01"
 )
@@ -3328,6 +3353,482 @@ def validate_rec_i2b_accountable_packet(
         )
 
 
+def rec_i2b_accountable_closure_reference() -> dict[str, Any]:
+    return {
+        "path": REC_I2B_ACCOUNTABLE_CLOSURE_PATH,
+        "bytes": REC_I2B_ACCOUNTABLE_CLOSURE_BYTES,
+        "sha256": REC_I2B_ACCOUNTABLE_CLOSURE_SHA256,
+    }
+
+
+def rec_i2b_accountable_reviewer() -> dict[str, Any]:
+    return {
+        "name": "Novikova Katerina",
+        "capacity": "individual professional capacity",
+        "projectRole": "Distinct accountable Stage 0 REC-I2B Engineering/Security reviewer",
+        "corporateApproval": False,
+    }
+
+
+def rec_i2b_accountable_review_summary() -> dict[str, Any]:
+    return {
+        "recordId": "REC-I2B-ACCOUNTABLE-HUMAN-REVIEW-SANITIZED-CLOSURE-20260818-01",
+        "record": rec_i2b_accountable_closure_reference(),
+        "reviewer": rec_i2b_accountable_reviewer(),
+        "reviewDate": REC_I2B_ACCOUNTABLE_REVIEW_DATE,
+        "channel": "SAME_AUTHORIZED_PRIVATE_EMAIL_VERIFIED",
+        "answerCount": 17,
+        "allAnswers": "YES",
+        "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
+        "disposition": REC_I2B_ACCOUNTABLE_DISPOSITION,
+        "accountableReviewCompleted": True,
+        "recI3Activated": False,
+        "separateRecI3ActivationDecisionRequired": True,
+    }
+
+
+def rec_i2b_accountable_exact_head_ci() -> dict[str, Any]:
+    return {
+        "workflow": "Android CI",
+        "runId": 32143053829,
+        "head": REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD,
+        "conclusion": "SUCCESS",
+        "androidBootstrapJobId": 95730094951,
+        "searchSmokeJobId": 95730095098,
+    }
+
+
+def expected_rec_i2b_accountable_closure() -> dict[str, Any]:
+    return {
+        "schemaVersion": 1,
+        "recordId": "REC-I2B-ACCOUNTABLE-HUMAN-REVIEW-SANITIZED-CLOSURE-20260818-01",
+        "pocId": "POC-RECOVERY-001",
+        "stage": "STAGE_0_ISOLATED_POC",
+        "reviewType": (
+            "FORMAL_DISTINCT_ACCOUNTABLE_REC_I2B_IMPLEMENTATION_ENGINEERING_SECURITY_REVIEW"
+        ),
+        "formalReviewer": True,
+        "reviewMode": "READ_ONLY_EXACT_IMPLEMENTATION_AND_EVIDENCE_REVIEW",
+        "reviewDate": REC_I2B_ACCOUNTABLE_REVIEW_DATE,
+        "recordedAt": REC_I2B_ACCOUNTABLE_RECORDED_AT,
+        "recordedTimeZone": "Europe/Moscow",
+        "authority": {
+            "sanitizedClosureAuthorization": REC_I2B_ACCOUNTABLE_CLOSURE_AUTHORIZATION,
+            "validatorPhaseAuthorization": REC_I2B_ACCOUNTABLE_VALIDATOR_AUTHORIZATION,
+            "routingAuthorization": "REC-I2B-ACCOUNTABLE-REVIEW-ROUTING-AUTH-20260817-01",
+        },
+        "reviewer": {
+            **rec_i2b_accountable_reviewer(),
+            "distinctFromImplementationAndEvidenceAuthor": True,
+            "acceptsAccountabilityForDisposition": True,
+        },
+        "receipt": {
+            "channel": "SAME_AUTHORIZED_PRIVATE_EMAIL_VERIFIED",
+            "canonicalCorrectedResponse": True,
+            "equivalentWrittenAttestationRecorded": True,
+            "onlySanitizedNormalizedFactsRecorded": True,
+        },
+        "reviewedTarget": {
+            "branch": REC_I2B_BRANCH,
+            "pullRequestNumber": REC_I2B_PULL_REQUEST_NUMBER,
+            "publishedReviewPackageHead": REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD,
+            "publishedReviewPackageTree": REC_I2B_ACCOUNTABLE_RECORDING_BASE_TREE,
+            "terminalImplementationCommit": "1aedccf477fb4d3ff20a48a1834b22b317c8c880",
+            "terminalImplementationTree": "744ee822d42b7caccd7abcc68f03dca1c24f5945",
+            "independentReviewedEvidenceCommit": "991d61d34129f0a6afba2940a7297cb5207143cc",
+            "independentReviewedEvidenceTree": "691ecc5ff43e78da79d3bdff3a3f94b4e817d8ae",
+            "implementationEvidenceSnapshot": {
+                "path": REC_I2B_RUNTIME_EVIDENCE_PATH,
+                "gitBlobSha1": "155166d81206b73254cb163946201d23a10d8686",
+                "bytes": 56992,
+                "sha256": "5c933573d972cf21de4719f636b9e721905336789babf72921dcdd903b724c42",
+            },
+            "accountableReviewPacketSnapshot": {
+                "path": REC_I2B_ACCOUNTABLE_PACKET_PATH,
+                "gitBlobSha1": "a1b5e90198d8047efefa9e89da915196e84620db",
+                "bytes": 52810,
+                "sha256": "ffdebc8fe8eec7b338563b5e80ccbc771bbba2219f4f9f3c91371642e32b049a",
+            },
+            "independentAdvisoryCleanClosure": {
+                "path": REC_I2B_AAPT2_REVIEW_CLOSURE_PATH,
+                "bytes": 10680,
+                "sha256": "659fe48a810a872de10941575d90a6161d112ca728f364b45831220eff7c0ed6",
+                "disposition": "CLEAN",
+                "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
+            },
+        },
+        "responses": [
+            {"id": f"I2B-REV-{index:02d}", "answer": "YES"} for index in range(1, 18)
+        ],
+        "findings": {"P0": 0, "P1": 0, "P2": 0, "items": []},
+        "disposition": REC_I2B_ACCOUNTABLE_DISPOSITION,
+        "reviewEffect": {
+            "accountableRecI2bImplementationReviewCompleted": True,
+            "implementationAndEvidenceAcceptedAsInputToSeparateRecI3Decision": True,
+            "recI3Activated": False,
+            "separateRecI3ActivationDecisionRequired": True,
+        },
+        "authorityBoundary": {
+            "productionSecurityApproval": False,
+            "productionLegalApproval": False,
+            "corporateApproval": False,
+            "dependencyAdmission": False,
+            "productionAdmission": False,
+            "deviceOrEmulatorExecutionAuthorization": False,
+            "androidKeystoreRuntimeExecutionAuthorization": False,
+            "harnessOrCampaignAuthorization": False,
+            "measurementAuthorization": False,
+            "metricPassOrPocPass": False,
+            "readinessClosure": False,
+            "readyForReviewTransition": False,
+            "mergeAuthorization": False,
+            "recI3Activation": False,
+        },
+        "privacy": {
+            "emailAddressRecorded": False,
+            "messageOrThreadIdentifierRecorded": False,
+            "mailHeaderRecorded": False,
+            "rawOrQuotedMessageContentRecorded": False,
+            "deliveryMetadataRecorded": False,
+            "credentialOrSecretRecorded": False,
+            "userSpecificAbsolutePathRecorded": False,
+        },
+    }
+
+
+def validate_rec_i2b_accountable_closure(
+    closure_override: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    payload = (ROOT / REC_I2B_ACCOUNTABLE_CLOSURE_PATH).read_bytes()
+    require(
+        len(payload) == REC_I2B_ACCOUNTABLE_CLOSURE_BYTES
+        and hashlib.sha256(payload).hexdigest() == REC_I2B_ACCOUNTABLE_CLOSURE_SHA256
+        and not payload.startswith(b"\xef\xbb\xbf")
+        and b"\r" not in payload,
+        "REC-I2B accountable human closure byte/hash/UTF-8-LF boundary drift",
+    )
+    closure = closure_override or json.loads(payload.decode("utf-8", errors="strict"))
+    require(
+        closure == expected_rec_i2b_accountable_closure(),
+        "REC-I2B accountable human closure exact sanitized semantics drift",
+    )
+    return closure
+
+
+def expected_rec_i2b_accountable_evidence(prior: dict[str, Any]) -> dict[str, Any]:
+    expected = copy.deepcopy(prior)
+    expected["lastUpdatedAt"] = REC_I2B_ACCOUNTABLE_RECORDED_AT
+    expected["status"] = REC_I2B_ACCOUNTABLE_STATUS
+    expected["remediationState"] = (
+        "ACCOUNTABLE_HUMAN_REVIEW_SANITIZED_CLOSURE_RECORDED_PENDING_INDEPENDENT_METADATA_REVIEW"
+    )
+    expected["claimCeiling"] = REC_I2B_ACCOUNTABLE_CLAIM_CEILING
+    expected["scope"] = (
+        "LOCAL_UNPUBLISHED_SANITIZED_ACCOUNTABLE_REVIEW_CLOSURE_PENDING_INDEPENDENT_METADATA_REVIEW"
+    )
+    authority = expected["authority"]
+    authority.update(
+        {
+            "accountableHumanReviewSanitizedClosureAuthorization": (
+                REC_I2B_ACCOUNTABLE_CLOSURE_AUTHORIZATION
+            ),
+            "accountableHumanReviewValidatorPhaseAuthorization": (
+                REC_I2B_ACCOUNTABLE_VALIDATOR_AUTHORIZATION
+            ),
+            "accountableEngineeringSecurityReviewCompleted": True,
+            "draftPr38NonForcePushAllowed": False,
+            "accountableClosureDraftPr38NonForceUpdateAllowedAfterIndependentReview": True,
+        }
+    )
+    git_record = expected["git"]
+    git_record.update(
+        {
+            "terminalImplementationPublished": True,
+            "publishedDraftHeadAtAccountableReviewReceipt": REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD,
+            "publishedDraftTreeAtAccountableReviewReceipt": REC_I2B_ACCOUNTABLE_RECORDING_BASE_TREE,
+            "recordingBaseHead": REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD,
+            "recordingBaseTree": REC_I2B_ACCOUNTABLE_RECORDING_BASE_TREE,
+            "exactHeadCiAtAccountableReviewReceipt": rec_i2b_accountable_exact_head_ci(),
+        }
+    )
+    successor = expected["advisoryRemediation"][
+        "reviewedSuccessorValidatorAndCiMetadataRemediation"
+    ]
+    successor["aapt2LinuxVerificationMetadataRemediation"][
+        "accountableEngineeringSecurityReviewCompleted"
+    ] = True
+    successor["accountableEngineeringSecurityReviewCompleted"] = True
+    expected["accountableHumanReview"] = rec_i2b_accountable_review_summary()
+    truth = expected["reviewAndGateTruth"]
+    truth["distinctAccountableEngineeringSecurityReviewRequired"] = False
+    truth["accountableEngineeringSecurityReviewCompleted"] = True
+    truth["accountableHumanReviewClosure"] = {
+        **rec_i2b_accountable_closure_reference(),
+        "reviewDate": REC_I2B_ACCOUNTABLE_REVIEW_DATE,
+        "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
+        "disposition": REC_I2B_ACCOUNTABLE_DISPOSITION,
+    }
+    truth["openStageGate"] = "REC-I3-SEPARATE-ACTIVATION-DECISION_REQUIRED"
+    expected["nextGate"] = (
+        "Obtain a fresh independent read-only metadata review of this sanitized accountable closure. "
+        "After that review is CLEAN, a separate owner decision is still required to activate REC-I3; "
+        "no REC-I3, execution, admission, Ready or merge authority is recorded here."
+    )
+    return expected
+
+
+def expected_rec_i2b_accountable_packet(
+    prior: dict[str, Any],
+    *,
+    evidence_bytes: bytes,
+) -> dict[str, Any]:
+    expected = copy.deepcopy(prior)
+    expected["refreshedAt"] = REC_I2B_ACCOUNTABLE_RECORDED_AT
+    expected["status"] = REC_I2B_ACCOUNTABLE_STATUS
+    expected["claimCeiling"] = REC_I2B_ACCOUNTABLE_CLAIM_CEILING
+    expected["routingEligibility"].update(
+        {
+            "eligibleAfterDraftPr38ExactHeadCiGreen": False,
+            "accountableReviewRoutingCompleted": True,
+            "blockingPrecondition": "SEPARATE_REC_I3_ACTIVATION_DECISION",
+            "accountableEngineeringSecurityReviewDisposition": REC_I2B_ACCOUNTABLE_DISPOSITION,
+            "accountableEngineeringSecurityReviewCompleted": True,
+        }
+    )
+    target = expected["reviewTarget"]
+    target.update(
+        {
+            "publishedAtPacketRefresh": True,
+            "publishedDraftBaselineHead": REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD,
+            "publishedDraftBaselineTree": REC_I2B_ACCOUNTABLE_RECORDING_BASE_TREE,
+            "historicalPreparedPacketSnapshot": {
+                "commit": REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD,
+                "path": REC_I2B_ACCOUNTABLE_PACKET_PATH,
+                "gitBlobSha1": "a1b5e90198d8047efefa9e89da915196e84620db",
+                "bytes": 52810,
+                "sha256": (
+                    "ffdebc8fe8eec7b338563b5e80ccbc771bbba2219f4f9f3c91371642e32b049a"
+                ),
+            },
+            "accountableHumanReviewClosure": rec_i2b_accountable_closure_reference(),
+            "exactHeadCiAtAccountableReviewReceipt": rec_i2b_accountable_exact_head_ci(),
+        }
+    )
+    target["implementationEvidence"] = {
+        "path": REC_I2B_RUNTIME_EVIDENCE_PATH,
+        "bytes": len(evidence_bytes),
+        "sha256": hashlib.sha256(evidence_bytes).hexdigest(),
+    }
+    authority = expected["authorityBoundary"]
+    authority["implementationAuthority"].extend(
+        [
+            REC_I2B_ACCOUNTABLE_CLOSURE_AUTHORIZATION,
+            REC_I2B_ACCOUNTABLE_VALIDATOR_AUTHORIZATION,
+        ]
+    )
+    authority.update(
+        {
+            "reviewerIdentityRecorded": True,
+            "reviewerSignatureRecorded": False,
+            "reviewerEquivalentAttestationRecorded": True,
+            "formalApprovalRecorded": True,
+            "accountableEngineeringSecurityReviewCompleted": True,
+            "accountableClosureDraftPr38NonForceUpdateAuthorizedAfterIndependentReview": True,
+        }
+    )
+    for item in expected["reviewChecklist"]:
+        item["accountableReviewerAnswer"] = "YES"
+    expected["recommendedDefault"].update(
+        {
+            "now": (
+                "OBTAIN_FRESH_INDEPENDENT_METADATA_REVIEW_THEN_REQUIRE_SEPARATE_REC_I3_"
+                "ACTIVATION_DECISION"
+            ),
+            "accountableHumanReviewRecordedInSeparateClosure": True,
+            "recI3Activated": False,
+        }
+    )
+    expected["findingsTruth"]["accountableHumanReview"] = {
+        "record": rec_i2b_accountable_closure_reference(),
+        "reviewDate": REC_I2B_ACCOUNTABLE_REVIEW_DATE,
+        "answerCount": 17,
+        "allAnswers": "YES",
+        "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
+        "disposition": REC_I2B_ACCOUNTABLE_DISPOSITION,
+        "completed": True,
+        "recI3Activated": False,
+    }
+    expected["findingsTruth"]["openP0StageGate"] = (
+        "REC-I3-SEPARATE-ACTIVATION-DECISION_REQUIRED"
+    )
+    completion = expected["reviewCompletionRequirements"]
+    del completion["thisPreparedPacketMustNotBeEditedIntoAnApproval"]
+    completion.update(
+        {
+            "originalPreparedPacketMustNotBeEditedIntoAnApproval": True,
+            "originalPreparedPacketPreservedByExactGitAndHashSnapshot": True,
+            "completion": {
+                "independentExactCommitAndTreeAccountableReviewAfterDeltaClosureCompleted": True,
+                "allChecklistAnswersByAccountableReviewerCompleted": True,
+                "reviewerIdentityAndCapacityInSeparateFinalReviewRecordCompleted": True,
+                "reviewerSignatureOrEquivalentAttestationInSeparateFinalReviewRecordCompleted": True,
+                "reviewTimestampInSeparateFinalReviewRecordCompleted": True,
+                "p0P1P2DispositionInSeparateFinalReviewRecordCompleted": True,
+                "formalDecisionInSeparateFinalReviewRecordCompleted": True,
+            },
+        }
+    )
+    expected["terminalGate"] = (
+        "The distinct accountable Engineering/Security review of exact REC-I2B is complete with "
+        "17/17 YES, P0/P1/P2=0/0/0 and disposition "
+        "APPROVE_EXACT_REC_I2B_FOR_SEPARATE_REC_I3_ACTIVATION_DECISION. REC-I3 is not activated; "
+        "a fresh independent metadata review of this sanitized closure and a separate REC-I3 "
+        "activation decision remain required. No device, emulator, harness, campaign, measurement, "
+        "PASS, admission, Ready or merge authority is recorded."
+    )
+    return expected
+
+
+def validate_rec_i2b_accountable_recording_scope() -> None:
+    require(
+        git_output("rev-parse", f"{REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD}^{{tree}}")
+        == REC_I2B_ACCOUNTABLE_RECORDING_BASE_TREE,
+        "REC-I2B accountable recording base tree drift",
+    )
+    exact_paths = sorted(
+        [
+            REC_I2B_RUNTIME_EVIDENCE_PATH,
+            REC_I2B_ACCOUNTABLE_PACKET_PATH,
+            REC_I2B_ACCOUNTABLE_CLOSURE_PATH,
+            "tools/validate_poc_recovery_governance.py",
+        ]
+    )
+    head = git_output("rev-parse", "HEAD")
+    if head == REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD:
+        status = subprocess.run(
+            ["git", "status", "--porcelain=v1", "--untracked-files=all"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        ).stdout.splitlines()
+        paths = sorted(line[3:].replace("\\", "/") for line in status)
+        require(paths == exact_paths, "REC-I2B accountable precommit scope drift")
+        return
+    require(
+        git_is_ancestor(REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD, head),
+        "REC-I2B accountable closure head does not descend from exact recording base",
+    )
+    closure_commits = git_output(
+        "rev-list",
+        "--reverse",
+        f"{REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD}..{head}",
+        "--",
+        *exact_paths,
+    ).splitlines()
+    require(
+        len(closure_commits) == 1,
+        "REC-I2B accountable closure paths changed outside one exact recording commit",
+    )
+    closure_commit = closure_commits[0]
+    require(
+        git_output("show", "-s", "--format=%P", closure_commit)
+        == REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD,
+        "REC-I2B accountable closure recording commit is not a direct child of exact base",
+    )
+    changed = sorted(
+        git_path_records(
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "--no-renames",
+            "-r",
+            "-z",
+            closure_commit,
+            "--",
+        )
+    )
+    require(changed == exact_paths, "REC-I2B accountable closure commit path scope drift")
+    require(
+        subprocess.run(
+            ["git", "diff", "--quiet", closure_commit, head, "--", *exact_paths],
+            cwd=ROOT,
+            check=False,
+        ).returncode
+        == 0,
+        "REC-I2B accountable closure bytes changed after exact recording commit",
+    )
+    dirty = subprocess.run(
+        ["git", "status", "--porcelain=v1", "--untracked-files=all", "--", *exact_paths],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+    ).stdout
+    require(not dirty, "REC-I2B accountable closure paths are dirty after recording")
+
+
+def validate_rec_i2b_accountable_phase(
+    evidence: dict[str, Any],
+    *,
+    evidence_bytes: bytes,
+    packet: dict[str, Any],
+    closure_override: dict[str, Any] | None = None,
+) -> str:
+    validate_rec_i2b_accountable_recording_scope()
+    prior_evidence_bytes = git_blob_bytes(
+        f"{REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD}:{REC_I2B_RUNTIME_EVIDENCE_PATH}"
+    )
+    prior_packet_bytes = git_blob_bytes(
+        f"{REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD}:{REC_I2B_ACCOUNTABLE_PACKET_PATH}"
+    )
+    require(
+        len(prior_evidence_bytes) == 56992
+        and hashlib.sha256(prior_evidence_bytes).hexdigest()
+        == "5c933573d972cf21de4719f636b9e721905336789babf72921dcdd903b724c42"
+        and len(prior_packet_bytes) == 52810
+        and hashlib.sha256(prior_packet_bytes).hexdigest()
+        == "ffdebc8fe8eec7b338563b5e80ccbc771bbba2219f4f9f3c91371642e32b049a",
+        "REC-I2B historical prepared evidence/packet snapshot drift",
+    )
+    prior_evidence = json.loads(prior_evidence_bytes.decode("utf-8", errors="strict"))
+    prior_packet = json.loads(prior_packet_bytes.decode("utf-8", errors="strict"))
+    terminal_commit = "1aedccf477fb4d3ff20a48a1834b22b317c8c880"
+    terminal_tree = "744ee822d42b7caccd7abcc68f03dca1c24f5945"
+    prior_phase = validate_rec_i2b_runtime_evidence(
+        prior_evidence,
+        terminal_commit=terminal_commit,
+        terminal_tree=terminal_tree,
+    )
+    require(prior_phase == "successor-clean", "REC-I2B historical prepared phase drift")
+    validate_rec_i2b_accountable_packet(
+        prior_packet,
+        evidence=prior_evidence,
+        evidence_bytes=prior_evidence_bytes,
+        terminal_commit=terminal_commit,
+        terminal_tree=terminal_tree,
+        phase=prior_phase,
+    )
+    validate_rec_i2b_accountable_closure(closure_override)
+    require(
+        evidence == expected_rec_i2b_accountable_evidence(prior_evidence),
+        "REC-I2B accountable implementation evidence overlay drift",
+    )
+    require(
+        packet == expected_rec_i2b_accountable_packet(prior_packet, evidence_bytes=evidence_bytes),
+        "REC-I2B accountable review packet overlay drift",
+    )
+    require(
+        evidence["notPerformedOrClaimed"]["recI3Activation"] is False
+        and packet["routingEligibility"]["recI3MayProceedNow"] is False
+        and packet["authorityBoundary"]["recI3Activated"] is False,
+        "REC-I2B accountable closure improperly activated REC-I3",
+    )
+    return "accountable-clean"
+
+
 def validate_rec_i2b_evidence_boundary() -> None:
     require(
         sha256(REC_I2A_DISPOSITION_PATH) == REC_I2A_DISPOSITION_SHA256,
@@ -3401,12 +3902,19 @@ def validate_rec_i2b_evidence_boundary() -> None:
         "REC-I2B immutable metadata independent-closure semantics drift",
     )
 
-    terminal_commit = git_output(
-        "log",
-        "-1",
-        "--format=%H",
-        "--",
-        *REC_I2B_SUCCESSOR_IMPLEMENTATION_PATHS,
+    evidence_bytes = (ROOT / REC_I2B_RUNTIME_EVIDENCE_PATH).read_bytes()
+    evidence = json.loads(evidence_bytes.decode("utf-8", errors="strict"))
+    accountable_phase = evidence.get("status") == REC_I2B_ACCOUNTABLE_STATUS
+    terminal_commit = (
+        "1aedccf477fb4d3ff20a48a1834b22b317c8c880"
+        if accountable_phase
+        else git_output(
+            "log",
+            "-1",
+            "--format=%H",
+            "--",
+            *REC_I2B_SUCCESSOR_IMPLEMENTATION_PATHS,
+        )
     )
     terminal_tree = git_output("rev-parse", f"{terminal_commit}^{{tree}}")
     successor_phase = validate_rec_i2b_successor_metadata_sha256(
@@ -3436,22 +3944,27 @@ def validate_rec_i2b_evidence_boundary() -> None:
             == REC_I2B_SUCCESSOR_REVIEW_CLOSURE_TREE,
             "REC-I2B historical reviewed-successor CLEAN closure drift",
         )
-    evidence_bytes = (ROOT / REC_I2B_RUNTIME_EVIDENCE_PATH).read_bytes()
-    evidence = json.loads(evidence_bytes.decode("utf-8", errors="strict"))
-    phase = validate_rec_i2b_runtime_evidence(
-        evidence,
-        terminal_commit=terminal_commit,
-        terminal_tree=terminal_tree,
-    )
     packet = read_json(REC_I2B_ACCOUNTABLE_PACKET_PATH)
-    validate_rec_i2b_accountable_packet(
-        packet,
-        evidence=evidence,
-        evidence_bytes=evidence_bytes,
-        terminal_commit=terminal_commit,
-        terminal_tree=terminal_tree,
-        phase=phase,
-    )
+    if accountable_phase:
+        validate_rec_i2b_accountable_phase(
+            evidence,
+            evidence_bytes=evidence_bytes,
+            packet=packet,
+        )
+    else:
+        phase = validate_rec_i2b_runtime_evidence(
+            evidence,
+            terminal_commit=terminal_commit,
+            terminal_tree=terminal_tree,
+        )
+        validate_rec_i2b_accountable_packet(
+            packet,
+            evidence=evidence,
+            evidence_bytes=evidence_bytes,
+            terminal_commit=terminal_commit,
+            terminal_tree=terminal_tree,
+            phase=phase,
+        )
 
 
 def validate_rec_i2b_current_module_boundary() -> None:
@@ -4478,16 +4991,161 @@ def run_github_pull_request_context_tests() -> None:
             raise ValueError("Escaped GitHub event path unexpectedly passed")
 
 
-def run_rec_i2b_evidence_boundary_tests() -> None:
-    evidence = read_json(REC_I2B_RUNTIME_EVIDENCE_PATH)
+def run_rec_i2b_accountable_phase_tests() -> None:
     evidence_bytes = (ROOT / REC_I2B_RUNTIME_EVIDENCE_PATH).read_bytes()
-    terminal_commit = git_output(
-        "log",
-        "-1",
-        "--format=%H",
-        "--",
-        *REC_I2B_SUCCESSOR_IMPLEMENTATION_PATHS,
+    evidence = json.loads(evidence_bytes.decode("utf-8", errors="strict"))
+    packet = read_json(REC_I2B_ACCOUNTABLE_PACKET_PATH)
+    closure = read_json(REC_I2B_ACCOUNTABLE_CLOSURE_PATH)
+    validate_rec_i2b_accountable_phase(
+        evidence,
+        evidence_bytes=evidence_bytes,
+        packet=packet,
     )
+
+    def expect_accountable_negative(
+        name: str,
+        *,
+        evidence_mutation: Callable[[dict[str, Any]], None] | None = None,
+        packet_mutation: Callable[[dict[str, Any]], None] | None = None,
+        closure_mutation: Callable[[dict[str, Any]], None] | None = None,
+    ) -> None:
+        candidate_evidence = copy.deepcopy(evidence)
+        candidate_packet = copy.deepcopy(packet)
+        candidate_closure = copy.deepcopy(closure)
+        if evidence_mutation is not None:
+            evidence_mutation(candidate_evidence)
+        if packet_mutation is not None:
+            packet_mutation(candidate_packet)
+        if closure_mutation is not None:
+            closure_mutation(candidate_closure)
+        try:
+            validate_rec_i2b_accountable_phase(
+                candidate_evidence,
+                evidence_bytes=evidence_bytes,
+                packet=candidate_packet,
+                closure_override=candidate_closure,
+            )
+        except (ValueError, KeyError):
+            print(f"PASS negative rec-i2b-accountable-{name}")
+            return
+        raise ValueError(f"Negative REC-I2B accountable mutation unexpectedly passed: {name}")
+
+    closure_mutations: list[tuple[str, Callable[[dict[str, Any]], None]]] = [
+        ("reviewer-name", lambda record: record["reviewer"].__setitem__("name", "Spoofed")),
+        (
+            "reviewer-capacity",
+            lambda record: record["reviewer"].__setitem__("capacity", "corporate capacity"),
+        ),
+        (
+            "corporate-approval",
+            lambda record: record["reviewer"].__setitem__("corporateApproval", True),
+        ),
+        (
+            "receipt-channel",
+            lambda record: record["receipt"].__setitem__("channel", "UNVERIFIED"),
+        ),
+        ("answer", lambda record: record["responses"][0].__setitem__("answer", "NO")),
+        ("finding", lambda record: record["findings"].__setitem__("P1", 1)),
+        ("disposition", lambda record: record.__setitem__("disposition", "REJECT")),
+        (
+            "rec-i3-activation",
+            lambda record: record["authorityBoundary"].__setitem__("recI3Activation", True),
+        ),
+        (
+            "privacy-email",
+            lambda record: record["privacy"].__setitem__("emailAddressRecorded", True),
+        ),
+    ]
+    for name, mutation in closure_mutations:
+        expect_accountable_negative(name, closure_mutation=mutation)
+
+    evidence_mutations: list[tuple[str, Callable[[dict[str, Any]], None]]] = [
+        (
+            "evidence-closure-sha",
+            lambda record: record["accountableHumanReview"]["record"].__setitem__(
+                "sha256", "0" * 64
+            ),
+        ),
+        (
+            "evidence-review-completion",
+            lambda record: record["authority"].__setitem__(
+                "accountableEngineeringSecurityReviewCompleted", False
+            ),
+        ),
+        (
+            "evidence-rec-i3-authority",
+            lambda record: record["authority"].__setitem__("recI3Allowed", True),
+        ),
+        (
+            "evidence-review-truth",
+            lambda record: record["reviewAndGateTruth"].__setitem__(
+                "accountableEngineeringSecurityReviewCompleted", False
+            ),
+        ),
+    ]
+    for name, mutation in evidence_mutations:
+        expect_accountable_negative(name, evidence_mutation=mutation)
+
+    packet_mutations: list[tuple[str, Callable[[dict[str, Any]], None]]] = [
+        (
+            "packet-answer",
+            lambda record: record["reviewChecklist"][0].__setitem__(
+                "accountableReviewerAnswer", "NO"
+            ),
+        ),
+        (
+            "packet-closure-sha",
+            lambda record: record["reviewTarget"]["accountableHumanReviewClosure"].__setitem__(
+                "sha256", "0" * 64
+            ),
+        ),
+        (
+            "packet-formal-approval",
+            lambda record: record["authorityBoundary"].__setitem__(
+                "formalApprovalRecorded", False
+            ),
+        ),
+        (
+            "packet-rec-i3-authority",
+            lambda record: record["authorityBoundary"].__setitem__("recI3Activated", True),
+        ),
+        (
+            "packet-historical-snapshot",
+            lambda record: record["reviewTarget"]["historicalPreparedPacketSnapshot"].__setitem__(
+                "sha256", "0" * 64
+            ),
+        ),
+        (
+            "packet-evidence-sha",
+            lambda record: record["reviewTarget"]["implementationEvidence"].__setitem__(
+                "sha256", "0" * 64
+            ),
+        ),
+        ("packet-status", lambda record: record.__setitem__("status", "REC_I3_ACTIVE")),
+    ]
+    for name, mutation in packet_mutations:
+        expect_accountable_negative(name, packet_mutation=mutation)
+
+
+def run_rec_i2b_evidence_boundary_tests() -> None:
+    working_evidence = read_json(REC_I2B_RUNTIME_EVIDENCE_PATH)
+    accountable_phase = working_evidence.get("status") == REC_I2B_ACCOUNTABLE_STATUS
+    if accountable_phase:
+        evidence_bytes = git_blob_bytes(
+            f"{REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD}:{REC_I2B_RUNTIME_EVIDENCE_PATH}"
+        )
+        evidence = json.loads(evidence_bytes.decode("utf-8", errors="strict"))
+        terminal_commit = "1aedccf477fb4d3ff20a48a1834b22b317c8c880"
+    else:
+        evidence = working_evidence
+        evidence_bytes = (ROOT / REC_I2B_RUNTIME_EVIDENCE_PATH).read_bytes()
+        terminal_commit = git_output(
+            "log",
+            "-1",
+            "--format=%H",
+            "--",
+            *REC_I2B_SUCCESSOR_IMPLEMENTATION_PATHS,
+        )
     terminal_tree = git_output("rev-parse", f"{terminal_commit}^{{tree}}")
     validate_rec_i2b_successor_metadata_sha256(
         REC_I2B_SUCCESSOR_EVIDENCE_PHASE_IMPLEMENTATION_HEAD,
@@ -4700,7 +5358,15 @@ def run_rec_i2b_evidence_boundary_tests() -> None:
     for name, mutation in evidence_mutations:
         expect_evidence_negative(name, mutation)
 
-    packet = read_json(REC_I2B_ACCOUNTABLE_PACKET_PATH)
+    packet = (
+        json.loads(
+            git_blob_bytes(
+                f"{REC_I2B_ACCOUNTABLE_RECORDING_BASE_HEAD}:{REC_I2B_ACCOUNTABLE_PACKET_PATH}"
+            ).decode("utf-8", errors="strict")
+        )
+        if accountable_phase
+        else read_json(REC_I2B_ACCOUNTABLE_PACKET_PATH)
+    )
     validate_rec_i2b_accountable_packet(
         packet,
         evidence=evidence,
@@ -5030,6 +5696,8 @@ def run_rec_i2b_evidence_boundary_tests() -> None:
         )
     for name, mutation in packet_mutations:
         expect_packet_negative(name, mutation)
+    if accountable_phase:
+        run_rec_i2b_accountable_phase_tests()
 
 
 def run_negative_tests() -> None:
@@ -5194,12 +5862,26 @@ def main() -> int:
         run_github_pull_request_context_tests()
         run_rec_i2b_evidence_boundary_tests()
         run_negative_tests()
-    profile_summary = (
-        "exact REC-I2B reviewed-successor chain/module/evidence boundary valid; accountable Engineering/Security review, "
-        "REC-I3, execution, admission and merge remain blocked"
-        if rec_i2b_mode
-        else "exact REC-I1 authorization and pure module valid"
-    )
+    if rec_i2b_mode:
+        accountable_review_complete = (
+            read_json(REC_I2B_RUNTIME_EVIDENCE_PATH).get("status")
+            == REC_I2B_ACCOUNTABLE_STATUS
+        )
+        profile_summary = (
+            (
+                "exact REC-I2B reviewed-successor chain/module/evidence boundary valid; distinct "
+                "accountable Engineering/Security review complete, while fresh independent metadata "
+                "review, separate REC-I3 activation decision, execution, admission and merge remain "
+                "blocked"
+            )
+            if accountable_review_complete
+            else (
+                "exact REC-I2B reviewed-successor chain/module/evidence boundary valid; accountable "
+                "Engineering/Security review, REC-I3, execution, admission and merge remain blocked"
+            )
+        )
+    else:
+        profile_summary = "exact REC-I1 authorization and pure module valid"
     print(
         "POC-RECOVERY-001 governance v0.6 validation passed; 15 v0.1-v0.5 audit artifacts immutable, "
         "46 unique effective rows with one KEY-04, KEY-04 authentication/AAD failure only -> "

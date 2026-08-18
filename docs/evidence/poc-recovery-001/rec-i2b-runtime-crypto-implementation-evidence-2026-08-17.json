@@ -2,14 +2,14 @@
   "schemaVersion": 1,
   "reportId": "REC-I2B-RUNTIME-CRYPTO-IMPLEMENTATION-EVIDENCE-20260817-01",
   "recordedAtUtc": "2026-08-17T12:01:29Z",
-  "lastUpdatedAt": "2026-08-18T14:27:36+03:00",
+  "lastUpdatedAt": "2026-08-18T22:54:06+03:00",
   "lastUpdatedTimeZone": "Europe/Moscow",
-  "status": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
-  "remediationState": "AAPT2_LINUX_VERIFICATION_METADATA_INDEPENDENT_CLEAN_DRAFT_CI_PENDING",
-  "claimCeiling": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
+  "status": "ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW_COMPLETE_PENDING_SEPARATE_REC_I3_ACTIVATION_DECISION",
+  "remediationState": "ACCOUNTABLE_HUMAN_REVIEW_SANITIZED_CLOSURE_RECORDED_PENDING_INDEPENDENT_METADATA_REVIEW",
+  "claimCeiling": "ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW_COMPLETE_PENDING_SEPARATE_REC_I3_ACTIVATION_DECISION",
   "pocId": "POC-RECOVERY-001",
   "stage": "Stage 0",
-  "scope": "LOCAL_UNPUBLISHED_AAPT2_LINUX_VERIFICATION_METADATA_INDEPENDENT_CLEAN_DRAFT_CI_PENDING",
+  "scope": "LOCAL_UNPUBLISHED_SANITIZED_ACCOUNTABLE_REVIEW_CLOSURE_PENDING_INDEPENDENT_METADATA_REVIEW",
   "authority": {
     "actualGraphProductIpDisposition": "REC-I2A-ACTUAL-GRAPH-PRODUCT-IP-DISPOSITION-20260817-01",
     "conditionalOwnerAuthorization": "STAGE0-OWNER-UNLOCK-BATCH-20260817-02",
@@ -28,8 +28,10 @@
     "reviewedSuccessorEvidencePhaseSelftestRemediationAuthorization": "REC-I2B-REVIEWED-SUCCESSOR-EVIDENCE-PHASE-SELFTEST-REMEDIATION-AUTH-20260818-04",
     "aapt2LinuxVerificationMetadataRemediationAuthorization": "REC-I2B-AAPT2-LINUX-VERIFICATION-METADATA-REMEDIATION-AUTH-20260818-05",
     "aapt2LinuxValidatorPinBindingClarification": "REC-I2B-AUTH05-VALIDATOR-PIN-BINDING-CLARIFICATION-20260818-01",
+    "accountableHumanReviewSanitizedClosureAuthorization": "REC-I2B-ACCOUNTABLE-HUMAN-REVIEW-SANITIZED-CLOSURE-AUTH-20260818-01",
+    "accountableHumanReviewValidatorPhaseAuthorization": "REC-I2B-ACCOUNTABLE-HUMAN-REVIEW-VALIDATOR-PHASE-AUTH-20260818-01",
     "designCheckpointApproved": true,
-    "accountableEngineeringSecurityReviewCompleted": false,
+    "accountableEngineeringSecurityReviewCompleted": true,
     "runtimeCryptoImplementationAllowed": true,
     "deviceOrEmulatorExecutionAllowed": false,
     "measuredExecutionAllowed": false,
@@ -39,8 +41,9 @@
     "productionAdmissionAllowed": false,
     "draftPublicationAuthorizedAndPerformed": true,
     "currentReviewedMetadataClosureDraftPublicationAllowed": false,
-    "draftPr38NonForcePushAllowed": true,
+    "draftPr38NonForcePushAllowed": false,
     "reviewedSuccessorDraftPr38NonForceUpdateAllowed": true,
+    "accountableClosureDraftPr38NonForceUpdateAllowedAfterIndependentReview": true,
     "readyOrMergeAllowed": false,
     "mergeAllowed": false
   },
@@ -68,7 +71,19 @@
     "cleanBeforeEvidenceWrite": true,
     "published": true,
     "publishedHeadBeforeLocalMetadataRemediation": "e4a9b55c81c529ef1eee6dcd27a76046dc0a21ef",
-    "terminalImplementationPublished": false,
+    "terminalImplementationPublished": true,
+    "publishedDraftHeadAtAccountableReviewReceipt": "f64c5c150865901352889b607a075425c93e6cb4",
+    "publishedDraftTreeAtAccountableReviewReceipt": "389b43a20381fdfd4a86f8328dba05439d4bf5f6",
+    "recordingBaseHead": "f64c5c150865901352889b607a075425c93e6cb4",
+    "recordingBaseTree": "389b43a20381fdfd4a86f8328dba05439d4bf5f6",
+    "exactHeadCiAtAccountableReviewReceipt": {
+      "workflow": "Android CI",
+      "runId": 32143053829,
+      "head": "f64c5c150865901352889b607a075425c93e6cb4",
+      "conclusion": "SUCCESS",
+      "androidBootstrapJobId": 95730094951,
+      "searchSmokeJobId": 95730095098
+    },
     "pullRequestCreated": true,
     "pullRequestNumber": 38,
     "pullRequestDraft": true,
@@ -601,14 +616,37 @@
           "required": false,
           "coversCurrentTarget": true
         },
-        "accountableEngineeringSecurityReviewCompleted": false,
+        "accountableEngineeringSecurityReviewCompleted": true,
         "recI3Activated": false
       },
       "freshIndependentPostCommitDeltaReviewRequired": false,
-      "accountableEngineeringSecurityReviewCompleted": false,
+      "accountableEngineeringSecurityReviewCompleted": true,
       "recI3Activated": false
     },
     "currentZeroFindingsClaimed": true
+  },
+  "accountableHumanReview": {
+    "recordId": "REC-I2B-ACCOUNTABLE-HUMAN-REVIEW-SANITIZED-CLOSURE-20260818-01",
+    "record": {
+      "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-accountable-human-engineering-security-review-closure-2026-08-18.json",
+      "bytes": 5045,
+      "sha256": "999bd50d7d913a9d299514d132df96d1ee22034ddc810a56503875774f006848"
+    },
+    "reviewer": {
+      "name": "Novikova Katerina",
+      "capacity": "individual professional capacity",
+      "projectRole": "Distinct accountable Stage 0 REC-I2B Engineering/Security reviewer",
+      "corporateApproval": false
+    },
+    "reviewDate": "2026-08-18",
+    "channel": "SAME_AUTHORIZED_PRIVATE_EMAIL_VERIFIED",
+    "answerCount": 17,
+    "allAnswers": "YES",
+    "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
+    "disposition": "APPROVE_EXACT_REC_I2B_FOR_SEPARATE_REC_I3_ACTIVATION_DECISION",
+    "accountableReviewCompleted": true,
+    "recI3Activated": false,
+    "separateRecI3ActivationDecisionRequired": true
   },
   "authoritativeInputs": {
     "decision": "docs/stage0/DEC-044-POC-RECOVERY-EXPERIMENT.md",
@@ -1177,11 +1215,20 @@
     "independentDeltaReviewCompleted": true,
     "independentDeltaReviewDisposition": "CLEAN",
     "independentDeltaReviewRequired": false,
-    "distinctAccountableEngineeringSecurityReviewRequired": true,
+    "distinctAccountableEngineeringSecurityReviewRequired": false,
+    "accountableEngineeringSecurityReviewCompleted": true,
+    "accountableHumanReviewClosure": {
+      "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-accountable-human-engineering-security-review-closure-2026-08-18.json",
+      "bytes": 5045,
+      "sha256": "999bd50d7d913a9d299514d132df96d1ee22034ddc810a56503875774f006848",
+      "reviewDate": "2026-08-18",
+      "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
+      "disposition": "APPROVE_EXACT_REC_I2B_FOR_SEPARATE_REC_I3_ACTIVATION_DECISION"
+    },
     "accountableEngineeringSecurityReviewRoutingMayBeRebuilt": false,
     "delegationMaySubstituteAccountableReview": false,
     "recI3MayProceedNow": false,
-    "openStageGate": "REC-I2B-DRAFT-PR38-EXACT-HEAD-CI_THEN_ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW"
+    "openStageGate": "REC-I3-SEPARATE-ACTIVATION-DECISION_REQUIRED"
   },
   "notPerformedOrClaimed": {
     "deviceOrEmulatorExecution": false,
@@ -1201,5 +1248,5 @@
     "merge": false,
     "googleSheetMutation": false
   },
-  "nextGate": "Under the prior Draft publication authorization, update only existing Draft PR 38 by normal non-force push, then require exact-head CI green before accountable Engineering/Security review routing. REC-I3 remains blocked."
+  "nextGate": "Obtain a fresh independent read-only metadata review of this sanitized accountable closure. After that review is CLEAN, a separate owner decision is still required to activate REC-I3; no REC-I3, execution, admission, Ready or merge authority is recorded here."
 }

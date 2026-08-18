@@ -2,17 +2,18 @@
   "schemaVersion": 1,
   "packetId": "REC-I2B-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW-PACKET-20260817-01",
   "preparedAtUtc": "2026-08-17T12:01:29Z",
-  "refreshedAt": "2026-08-18T14:27:36+03:00",
+  "refreshedAt": "2026-08-18T22:54:06+03:00",
   "refreshedTimeZone": "Europe/Moscow",
-  "status": "AAPT2_LINUX_METADATA_INDEPENDENT_CLEAN_DRAFT_PR38_EXACT_HEAD_CI_PENDING",
+  "status": "ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW_COMPLETE_PENDING_SEPARATE_REC_I3_ACTIVATION_DECISION",
   "pocId": "POC-RECOVERY-001",
   "stage": "Stage 0",
   "reviewType": "DISTINCT_ACCOUNTABLE_ENGINEERING_SECURITY_IMPLEMENTATION_REVIEW",
-  "claimCeiling": "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW",
+  "claimCeiling": "ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW_COMPLETE_PENDING_SEPARATE_REC_I3_ACTIVATION_DECISION",
   "routingEligibility": {
     "eligibleNow": false,
-    "eligibleAfterDraftPr38ExactHeadCiGreen": true,
-    "blockingPrecondition": "DRAFT_PR38_EXACT_HEAD_CI_GREEN",
+    "eligibleAfterDraftPr38ExactHeadCiGreen": false,
+    "accountableReviewRoutingCompleted": true,
+    "blockingPrecondition": "SEPARATE_REC_I3_ACTIVATION_DECISION",
     "historicalIndependentAdvisoryDeltaReviewDisposition": "CLEAN",
     "historicalCleanReviewCoversCurrentTarget": false,
     "laterFreshGraphVerificationMetadataDisposition": "CHANGES_REQUIRED",
@@ -23,13 +24,16 @@
     "priorReviewedSuccessorCleanReviewCoversCurrentTarget": false,
     "currentIndependentAdvisoryDeltaReviewDisposition": "CLEAN",
     "currentIndependentCleanReviewCoversExactImplementationAndReviewedEvidence": true,
+    "accountableEngineeringSecurityReviewDisposition": "APPROVE_EXACT_REC_I2B_FOR_SEPARATE_REC_I3_ACTIVATION_DECISION",
+    "accountableEngineeringSecurityReviewCompleted": true,
     "recI3MayProceedNow": false
   },
   "reviewTarget": {
     "branch": "codex/poc-recovery-i2a-graph-probe",
-    "publishedAtPacketRefresh": false,
+    "publishedAtPacketRefresh": true,
     "targetedForExistingDraftPr38Publication": true,
-    "publishedDraftBaselineHead": "e4a9b55c81c529ef1eee6dcd27a76046dc0a21ef",
+    "publishedDraftBaselineHead": "f64c5c150865901352889b607a075425c93e6cb4",
+    "publishedDraftBaselineTree": "389b43a20381fdfd4a86f8328dba05439d4bf5f6",
     "pullRequestNumber": 38,
     "pullRequestDraft": true,
     "baseDispositionCommit": "4d58ab02424c7a43f6390f87c633b5464df6a916",
@@ -46,8 +50,8 @@
     "terminalImplementationTree": "744ee822d42b7caccd7abcc68f03dca1c24f5945",
     "implementationEvidence": {
       "path": "docs/evidence/poc-recovery-001/rec-i2b-runtime-crypto-implementation-evidence-2026-08-17.json",
-      "bytes": 56992,
-      "sha256": "5c933573d972cf21de4719f636b9e721905336789babf72921dcdd903b724c42"
+      "bytes": 59521,
+      "sha256": "42058ce6d68269fbcdd33b5ddd8c0589c2e97cb5896e601f6327b311c1260352"
     },
     "independentDeltaReviewClosure": {
       "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-independent-delta-review-closure-2026-08-17.json",
@@ -84,6 +88,26 @@
       "coversCurrentTarget": false,
       "durableClosureCommit": "e4a9b55c81c529ef1eee6dcd27a76046dc0a21ef",
       "durableClosureTree": "cc46703736072311982fe9a02476b90f0544432d"
+    },
+    "historicalPreparedPacketSnapshot": {
+      "commit": "f64c5c150865901352889b607a075425c93e6cb4",
+      "path": "docs/evidence/poc-recovery-001/rec-i2b-accountable-engineering-security-review-packet-2026-08-17.json",
+      "gitBlobSha1": "a1b5e90198d8047efefa9e89da915196e84620db",
+      "bytes": 52810,
+      "sha256": "ffdebc8fe8eec7b338563b5e80ccbc771bbba2219f4f9f3c91371642e32b049a"
+    },
+    "accountableHumanReviewClosure": {
+      "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-accountable-human-engineering-security-review-closure-2026-08-18.json",
+      "bytes": 5045,
+      "sha256": "999bd50d7d913a9d299514d132df96d1ee22034ddc810a56503875774f006848"
+    },
+    "exactHeadCiAtAccountableReviewReceipt": {
+      "workflow": "Android CI",
+      "runId": 32143053829,
+      "head": "f64c5c150865901352889b607a075425c93e6cb4",
+      "conclusion": "SUCCESS",
+      "androidBootstrapJobId": 95730094951,
+      "searchSmokeJobId": 95730095098
     }
   },
   "authorityBoundary": {
@@ -104,13 +128,17 @@
       "REC-I2B-REVIEWED-SUCCESSOR-SPOTLESS-METADATA-REMEDIATION-AUTH-20260818-03",
       "REC-I2B-REVIEWED-SUCCESSOR-EVIDENCE-PHASE-SELFTEST-REMEDIATION-AUTH-20260818-04",
       "REC-I2B-AAPT2-LINUX-VERIFICATION-METADATA-REMEDIATION-AUTH-20260818-05",
-      "REC-I2B-AUTH05-VALIDATOR-PIN-BINDING-CLARIFICATION-20260818-01"
+      "REC-I2B-AUTH05-VALIDATOR-PIN-BINDING-CLARIFICATION-20260818-01",
+      "REC-I2B-ACCOUNTABLE-HUMAN-REVIEW-SANITIZED-CLOSURE-AUTH-20260818-01",
+      "REC-I2B-ACCOUNTABLE-HUMAN-REVIEW-VALIDATOR-PHASE-AUTH-20260818-01"
     ],
     "thisPacketIsFormalApproval": false,
     "technicalDelegationMaySubstituteAccountableReview": false,
-    "reviewerIdentityRecorded": false,
+    "reviewerIdentityRecorded": true,
     "reviewerSignatureRecorded": false,
-    "formalApprovalRecorded": false,
+    "reviewerEquivalentAttestationRecorded": true,
+    "formalApprovalRecorded": true,
+    "accountableEngineeringSecurityReviewCompleted": true,
     "recI3Activated": false,
     "deviceOrEmulatorExecutionAuthorized": false,
     "harnessOrCampaignAuthorized": false,
@@ -121,6 +149,7 @@
     "currentReviewedClosureDraftPr38NonForceUpdateAuthorized": false,
     "reviewedSuccessorDraftPr38NonForceUpdateAuthorized": true,
     "aapt2LinuxDraftPr38NonForceUpdateAuthorizedAfterClean": true,
+    "accountableClosureDraftPr38NonForceUpdateAuthorizedAfterIndependentReview": true,
     "readyOrMergeAuthorized": false
   },
   "advisoryRemediationGate": {
@@ -830,7 +859,7 @@
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
       "independentDeltaReviewerAnswer": "YES",
-      "accountableReviewerAnswer": null
+      "accountableReviewerAnswer": "YES"
     },
     {
       "id": "I2B-REV-02",
@@ -838,7 +867,7 @@
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
       "independentDeltaReviewerAnswer": "YES",
-      "accountableReviewerAnswer": null
+      "accountableReviewerAnswer": "YES"
     },
     {
       "id": "I2B-REV-03",
@@ -846,7 +875,7 @@
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
       "independentDeltaReviewerAnswer": "YES",
-      "accountableReviewerAnswer": null
+      "accountableReviewerAnswer": "YES"
     },
     {
       "id": "I2B-REV-04",
@@ -854,7 +883,7 @@
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
       "independentDeltaReviewerAnswer": "YES",
-      "accountableReviewerAnswer": null
+      "accountableReviewerAnswer": "YES"
     },
     {
       "id": "I2B-REV-05",
@@ -862,7 +891,7 @@
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
       "independentDeltaReviewerAnswer": "YES",
-      "accountableReviewerAnswer": null
+      "accountableReviewerAnswer": "YES"
     },
     {
       "id": "I2B-REV-06",
@@ -870,7 +899,7 @@
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
       "independentDeltaReviewerAnswer": "YES",
-      "accountableReviewerAnswer": null
+      "accountableReviewerAnswer": "YES"
     },
     {
       "id": "I2B-REV-07",
@@ -878,7 +907,7 @@
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
       "independentDeltaReviewerAnswer": "YES",
-      "accountableReviewerAnswer": null
+      "accountableReviewerAnswer": "YES"
     },
     {
       "id": "I2B-REV-08",
@@ -886,7 +915,7 @@
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
       "independentDeltaReviewerAnswer": "YES",
-      "accountableReviewerAnswer": null
+      "accountableReviewerAnswer": "YES"
     },
     {
       "id": "I2B-REV-09",
@@ -894,7 +923,7 @@
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
       "independentDeltaReviewerAnswer": "YES",
-      "accountableReviewerAnswer": null
+      "accountableReviewerAnswer": "YES"
     },
     {
       "id": "I2B-REV-10",
@@ -902,7 +931,7 @@
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
       "independentDeltaReviewerAnswer": "YES",
-      "accountableReviewerAnswer": null
+      "accountableReviewerAnswer": "YES"
     },
     {
       "id": "I2B-REV-11",
@@ -910,7 +939,7 @@
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
       "independentDeltaReviewerAnswer": "YES",
-      "accountableReviewerAnswer": null
+      "accountableReviewerAnswer": "YES"
     },
     {
       "id": "I2B-REV-12",
@@ -918,7 +947,7 @@
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
       "independentDeltaReviewerAnswer": "YES",
-      "accountableReviewerAnswer": null
+      "accountableReviewerAnswer": "YES"
     },
     {
       "id": "I2B-REV-13",
@@ -926,7 +955,7 @@
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
       "independentDeltaReviewerAnswer": "YES",
-      "accountableReviewerAnswer": null
+      "accountableReviewerAnswer": "YES"
     },
     {
       "id": "I2B-REV-14",
@@ -934,7 +963,7 @@
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
       "independentDeltaReviewerAnswer": "YES",
-      "accountableReviewerAnswer": null
+      "accountableReviewerAnswer": "YES"
     },
     {
       "id": "I2B-REV-15",
@@ -942,7 +971,7 @@
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
       "independentDeltaReviewerAnswer": "YES",
-      "accountableReviewerAnswer": null
+      "accountableReviewerAnswer": "YES"
     },
     {
       "id": "I2B-REV-16",
@@ -950,7 +979,7 @@
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
       "independentDeltaReviewerAnswer": "YES",
-      "accountableReviewerAnswer": null
+      "accountableReviewerAnswer": "YES"
     },
     {
       "id": "I2B-REV-17",
@@ -958,7 +987,7 @@
       "requiredAnswer": "YES",
       "implementationEvidenceAnswer": "YES",
       "independentDeltaReviewerAnswer": "YES",
-      "accountableReviewerAnswer": null
+      "accountableReviewerAnswer": "YES"
     }
   ],
   "decisionOptions": [
@@ -979,13 +1008,15 @@
     }
   ],
   "recommendedDefault": {
-    "now": "PUBLISH_ONLY_TO_EXISTING_DRAFT_PR38_RUN_EXACT_HEAD_CI_THEN_ROUTE_ACCOUNTABLE_REVIEW",
+    "now": "OBTAIN_FRESH_INDEPENDENT_METADATA_REVIEW_THEN_REQUIRE_SEPARATE_REC_I3_ACTIVATION_DECISION",
     "independentDeltaClosure": "AAPT2_LINUX_METADATA_CLEAN_RECORDED",
     "priorFreshCacheIndependentDeltaClosure": "HISTORICAL_CLEAN_PRESERVED",
     "priorReviewedSuccessorIndependentDeltaClosure": "HISTORICAL_CLEAN_PRESERVED",
     "historicalIndependentDeltaClosure": "HISTORICAL_CLEAN_PRESERVED",
     "freshGraphVerificationMetadataReview": "HISTORICAL_CHANGES_REQUIRED_PRESERVED_AND_CLOSED_BY_PRIOR_FRESH_CACHE_CLEAN_REVIEW",
-    "delegatedApprovalRecordedHere": false
+    "delegatedApprovalRecordedHere": false,
+    "accountableHumanReviewRecordedInSeparateClosure": true,
+    "recI3Activated": false
   },
   "findingsTruth": {
     "priorAdvisory": {
@@ -1052,8 +1083,22 @@
       "required": false,
       "coversCurrentTarget": true
     },
+    "accountableHumanReview": {
+      "record": {
+        "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-accountable-human-engineering-security-review-closure-2026-08-18.json",
+        "bytes": 5045,
+        "sha256": "999bd50d7d913a9d299514d132df96d1ee22034ddc810a56503875774f006848"
+      },
+      "reviewDate": "2026-08-18",
+      "answerCount": 17,
+      "allAnswers": "YES",
+      "findingCounts": {"P0": 0, "P1": 0, "P2": 0},
+      "disposition": "APPROVE_EXACT_REC_I2B_FOR_SEPARATE_REC_I3_ACTIVATION_DECISION",
+      "completed": true,
+      "recI3Activated": false
+    },
     "currentZeroFindingsClaimed": true,
-    "openP0StageGate": "REC-I2B-DRAFT-PR38-EXACT-HEAD-CI_THEN_ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
+    "openP0StageGate": "REC-I3-SEPARATE-ACTIVATION-DECISION_REQUIRED",
     "recI3MayProceedNow": false
   },
   "reviewCompletionRequirements": {
@@ -1078,7 +1123,17 @@
     "reviewTimestampInSeparateFinalReviewRecordRequired": true,
     "p0P1P2DispositionInSeparateFinalReviewRecordRequired": true,
     "formalDecisionInSeparateFinalReviewRecordRequired": true,
-    "thisPreparedPacketMustNotBeEditedIntoAnApproval": true
+    "originalPreparedPacketMustNotBeEditedIntoAnApproval": true,
+    "originalPreparedPacketPreservedByExactGitAndHashSnapshot": true,
+    "completion": {
+      "independentExactCommitAndTreeAccountableReviewAfterDeltaClosureCompleted": true,
+      "allChecklistAnswersByAccountableReviewerCompleted": true,
+      "reviewerIdentityAndCapacityInSeparateFinalReviewRecordCompleted": true,
+      "reviewerSignatureOrEquivalentAttestationInSeparateFinalReviewRecordCompleted": true,
+      "reviewTimestampInSeparateFinalReviewRecordCompleted": true,
+      "p0P1P2DispositionInSeparateFinalReviewRecordCompleted": true,
+      "formalDecisionInSeparateFinalReviewRecordCompleted": true
+    }
   },
-  "terminalGate": "REC-I3 is not activated. Exact implementation 1aedccf and its evidence have an independent advisory CLEAN 0/0/0 closure, but Draft PR 38 exact-head CI and the distinct accountable Engineering/Security review remain required; all 17 accountable answers, identity, signature and formal decision remain unrecorded."
+  "terminalGate": "The distinct accountable Engineering/Security review of exact REC-I2B is complete with 17/17 YES, P0/P1/P2=0/0/0 and disposition APPROVE_EXACT_REC_I2B_FOR_SEPARATE_REC_I3_ACTIVATION_DECISION. REC-I3 is not activated; a fresh independent metadata review of this sanitized closure and a separate REC-I3 activation decision remain required. No device, emulator, harness, campaign, measurement, PASS, admission, Ready or merge authority is recorded."
 }
