@@ -135,6 +135,38 @@ connection tail with last:10. It does not request an author or an unsupported or
 not paginate and does not claim update-time ordering. A total count above ten is explicitly
 incomplete. This narrows neither the ten-comment cap nor the frozen item allowlist.
 
+## Text-classification and tracker-recovery checkpoint
+
+Authority `GOV-OMI-PHASE-B-TEXT-CLASSIFICATION-AND-TRACKER-RECOVERY-AUTH-20260818-04`
+supersedes AUTH-03 only for the two predicates that remained unproven. It preserves the original
+blob-request failure, both pre-request local parser failures, the failed first tracker request and
+all evidence through local commit `e3bce723160c46d8ef98136aff0eab58db864471`.
+
+The text-classification set is exactly the 48 OIDs present in
+`completedBlobSha256ByOid` at commit `e3bce723160c46d8ef98136aff0eab58db864471`, excluding the one
+AUTH-03 retry OID and the 16 `remainingBlobOidsAfterSuccessfulRetry` OIDs. Requests run once in
+ordinal OID order. Canonical rows are `oid<TAB>size<TAB>sha256<LF>` with a terminal LF; the set is
+48 OIDs, 543,654 bytes and SHA-256
+`c706a42a2fa2de08dd875a69a1808e1bed5aacad7a8dbc0762f075de4b592efb`.
+
+Each response must repeat the previously recorded exact OID, byte size and SHA-256, decode with
+strict UTF-8, contain no NUL and contain no Unicode `Control` scalar except TAB, LF or CR. The bounded
+binary heuristic passes only when strict UTF-8, NUL-free and zero-disallowed-control predicates all
+pass. No source, license, manifest or test semantic interpretation is performed. Prior privacy
+suppressions are inherited only after exact SHA-256 equality; no raw text is retained.
+
+The tracker order is exactly the nine frozen issues in their existing allowlist order, beginning
+with the single authorized retry of issue 11769, followed by the nine frozen Pull Requests in their
+existing allowlist order. Each item gets at most one public GraphQL request. The author-free query
+uses `comments(last:10)` without pagination or ordering claims and omits URL/link fields. It retains
+only sanitized identity, state/timestamp, byte-count, digest, cap and privacy facts.
+
+AUTH-04 adds an exact cap of 66 content requests: 48 text-classification blob requests plus 18
+tracker requests. It allows no discovery, identity preflight, pagination, author identity, link,
+diff or patch request. Existing body/comment/all-discussion byte caps and memory-only privacy rules
+remain unchanged. Stop on the first new external, schema, identity, OID, size, SHA, cap, privacy or
+raw-persistence failure.
+
 ## Allowed findings and mandatory stop conditions
 
 The audit may record `LEARN_ONLY`, `DEFER` or `REJECT` where bounded content directly supports the

@@ -22,6 +22,14 @@
       "capturedAt": "2026-08-18T15:50:58.833Z",
       "preserveFirstFailureAndSuccessfulRequests": true,
       "permitExactlyOneFailedBlobRetry": true
+    },
+    {
+      "id": "GOV-OMI-PHASE-B-TEXT-CLASSIFICATION-AND-TRACKER-RECOVERY-AUTH-20260818-04",
+      "capturedAt": "2026-08-18T16:14:19.525Z",
+      "preserveAllPriorFailuresAndSuccessfulRequests": true,
+      "addedContentRequestCap": 66,
+      "permitPriorSuccessful48TextClassificationRefetch": true,
+      "permitFrozen18TrackerRecovery": true
     }
   ],
   "preContentCheckpoint": {
@@ -281,6 +289,57 @@
       "PRIVACY_LEAK",
       "RAW_CONTENT_PERSISTENCE",
       "IDENTITY_OID_OR_SIZE_MISMATCH"
+    ]
+  },
+  "textClassificationAndTrackerRecovery": {
+    "authorityId": "GOV-OMI-PHASE-B-TEXT-CLASSIFICATION-AND-TRACKER-RECOVERY-AUTH-20260818-04",
+    "preservedEvidenceCommit": "e3bce723160c46d8ef98136aff0eab58db864471",
+    "preservePriorBlobRequestFailure": true,
+    "preservePriorTrackerRequestFailure": true,
+    "preservePriorLocalParserFailures": 2,
+    "textClassificationBlobSet": {
+      "derivation": "The completedBlobSha256ByOid keys at preservedEvidenceCommit, excluding incompleteRetrievalRecovery.priorFailedBlob.oid and all incompleteRetrievalRecovery.remainingBlobOidsAfterSuccessfulRetry; ordinal OID order.",
+      "uniqueOids": 48,
+      "decodedBytesExact": 543654,
+      "canonicalRow": "oid<TAB>size<TAB>sha256<LF>",
+      "terminalLf": true,
+      "canonicalSha256": "c706a42a2fa2de08dd875a69a1808e1bed5aacad7a8dbc0762f075de4b592efb",
+      "requestsPerOid": 1,
+      "requiredChecks": ["EXPECTED_OID","EXPECTED_SIZE","EXPECTED_SHA256","BASE64","STRICT_UTF8","NUL_FREE","ZERO_DISALLOWED_CONTROL_SCALARS","BINARY_HEURISTIC_PASS"],
+      "disallowedControlDefinition": "Any Unicode Control scalar except U+0009 TAB, U+000A LF or U+000D CR.",
+      "binaryHeuristicDefinition": "STRICT_UTF8 and NUL_FREE and ZERO_DISALLOWED_CONTROL_SCALARS",
+      "semanticInterpretationAllowed": false,
+      "priorPrivacyClassificationMayBeInheritedOnlyAfterExactSha256Match": true
+    },
+    "trackerSet": {
+      "requestOrder": {
+        "issues": [11769,11204,11695,11762,11736,11694,11812,11308,11777],
+        "pullRequests": [7331,6565,7099,7132,6777,7091,7006,7106,7322]
+      },
+      "firstRequestIsExactRetry": {"type":"ISSUE","number":11769,"allowedAttempts":1},
+      "requestsPerItem": 1,
+      "graphqlSelection": ["typename","number","state","createdAt","updatedAt","closedAt","mergedAt","bodyText","comments.totalCount","comments.nodes.bodyText","comments.nodes.createdAt","comments.nodes.updatedAt"],
+      "commentsArgument": "last:10",
+      "pagination": false,
+      "orderingClaim": null,
+      "authorIdentityRequested": false,
+      "urlOrLinkRequested": false,
+      "bodyAndCommentByteCapsInherited": true
+    },
+    "addedRequestBudget": {
+      "textClassificationBlobRequests": 48,
+      "trackerRequests": 18,
+      "total": 66,
+      "discoveryOrIdentityRequests": 0,
+      "paginationRequests": 0
+    },
+    "stopOnFirstNew": [
+      "EXTERNAL_REQUEST_FAILURE",
+      "GRAPHQL_SCHEMA_FAILURE",
+      "IDENTITY_OID_SIZE_OR_SHA_MISMATCH",
+      "REQUEST_OR_BYTE_CAP_DRIFT",
+      "PRIVACY_FAILURE",
+      "RAW_CONTENT_PERSISTENCE"
     ]
   },
   "allowedDoraFiles": [
