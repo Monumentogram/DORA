@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.sp
  * Sole Android mapping for the semantic handoff in `docs/design/DORA_MVP1_DESIGN_TOKENS.json`
  * version `1.0.0-proposal`.
  *
- * Stage 00 keeps this mapping manual and reviewable. UI components consume semantic roles from
+ * Alpha 1 keeps this mapping manual and reviewable. UI components consume semantic roles from
  * [MaterialTheme] or the dimension objects below; raw brand colors must not be redeclared in
  * components. Automated JSON generation may replace this file later through a scoped ADR/PR.
  */

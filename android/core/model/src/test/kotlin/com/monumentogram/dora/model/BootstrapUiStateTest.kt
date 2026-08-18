@@ -31,10 +31,10 @@ class BootstrapUiStateTest {
     }
 
     @Test
-    fun recordingActionIsAnHonestStage00Placeholder() {
+    fun recordingActionIsHonestlyUnavailableInAlpha1() {
         val initial = BootstrapUiState(selectedDestination = BootstrapDestination.TASKS)
 
-        val update = initial.reduce(BootstrapAction.InvokeRecordingPlaceholder)
+        val update = initial.reduce(BootstrapAction.InvokeUnavailableRecording)
 
         assertSame(initial, update.state)
         assertEquals(
@@ -42,7 +42,7 @@ class BootstrapUiStateTest {
             update.effect,
         )
         assertEquals(
-            BootstrapRecordingAvailability.STAGE_00_PLACEHOLDER,
+            BootstrapRecordingAvailability.ALPHA_1_UNAVAILABLE,
             update.state.recordingAction.availability,
         )
         assertFalse(update.state.recordingAction.canStartRecording)

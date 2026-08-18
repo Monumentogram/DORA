@@ -12,12 +12,12 @@ enum class BootstrapDestination(val route: String) {
 }
 
 enum class BootstrapRecordingAvailability {
-    STAGE_00_PLACEHOLDER
+    ALPHA_1_UNAVAILABLE
 }
 
 data class BootstrapRecordingActionState(
     val availability: BootstrapRecordingAvailability =
-        BootstrapRecordingAvailability.STAGE_00_PLACEHOLDER,
+        BootstrapRecordingAvailability.ALPHA_1_UNAVAILABLE,
     val canStartRecording: Boolean = false,
     val requestsMicrophonePermission: Boolean = false,
 )
@@ -30,7 +30,7 @@ data class BootstrapUiState(
 sealed interface BootstrapAction {
     data class SelectDestination(val destination: BootstrapDestination) : BootstrapAction
 
-    data object InvokeRecordingPlaceholder : BootstrapAction
+    data object InvokeUnavailableRecording : BootstrapAction
 }
 
 sealed interface BootstrapEffect {
@@ -46,7 +46,7 @@ fun BootstrapUiState.reduce(action: BootstrapAction): BootstrapUpdate =
     when (action) {
         is BootstrapAction.SelectDestination ->
             BootstrapUpdate(state = copy(selectedDestination = action.destination))
-        BootstrapAction.InvokeRecordingPlaceholder ->
+        BootstrapAction.InvokeUnavailableRecording ->
             BootstrapUpdate(
                 state = this,
                 effect = BootstrapEffect.ShowRecordingUnavailableNotice,

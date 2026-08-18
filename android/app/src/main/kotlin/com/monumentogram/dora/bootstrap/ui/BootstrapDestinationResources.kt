@@ -14,15 +14,6 @@ internal fun BootstrapDestination.labelResource(): Int =
         BootstrapDestination.SETTINGS -> R.string.nav_settings
     }
 
-@StringRes
-internal fun BootstrapDestination.placeholderResource(): Int =
-    when (this) {
-        BootstrapDestination.HOME -> R.string.placeholder_home
-        BootstrapDestination.HISTORY -> R.string.placeholder_history
-        BootstrapDestination.TASKS -> R.string.placeholder_tasks
-        BootstrapDestination.SETTINGS -> R.string.placeholder_settings
-    }
-
 @DrawableRes
 internal fun BootstrapDestination.iconResource(): Int =
     when (this) {

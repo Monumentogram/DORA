@@ -1,5 +1,6 @@
 package com.monumentogram.dora.bootstrap.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,12 +35,8 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,34 +49,62 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import com.monumentogram.dora.bootstrap.R
+import com.monumentogram.dora.bootstrap.alpha.AlphaWorkspaceRepository
 import com.monumentogram.dora.bootstrap.ui.theme.DoraDimensions
-import com.monumentogram.dora.model.BootstrapAction
 import com.monumentogram.dora.model.BootstrapDestination
-import com.monumentogram.dora.model.BootstrapEffect
 import com.monumentogram.dora.model.BootstrapUiState
-import com.monumentogram.dora.model.reduce
 import kotlinx.coroutines.launch
 
 @Composable
-internal fun DoraBootstrapApp(forcedLayout: BootstrapNavigationLayout? = null) {
-    var selectedRoute by rememberSaveable { mutableStateOf(BootstrapDestination.HOME.route) }
+internal fun DoraBootstrapApp(
+    forcedLayout: BootstrapNavigationLayout? = null,
+    repository: AlphaWorkspaceRepository? = null,
+) {
+    val appState = rememberAlphaAppState(repository)
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-    val recordingUnavailableMessage = stringResource(R.string.record_unavailable_message)
-    val selectedDestination = BootstrapDestination.ordered.first { it.route == selectedRoute }
-    val uiState = BootstrapUiState(selectedDestination = selectedDestination)
+    val messages =
+        AlphaUiMessages(
+            saved = stringResource(R.string.alpha_saved_message),
+            deleted = stringResource(R.string.alpha_deleted_message),
+            recordingUnavailable = stringResource(R.string.record_unavailable_message),
+        )
 
-    fun dispatch(action: BootstrapAction) {
-        val update = uiState.reduce(action)
-        selectedRoute = update.state.selectedDestination.route
-        if (update.effect == BootstrapEffect.ShowRecordingUnavailableNotice) {
-            coroutineScope.launch {
-                snackbarHostState.currentSnackbarData?.dismiss()
-                snackbarHostState.showSnackbar(recordingUnavailableMessage)
-            }
+    fun showMessage(message: String) {
+        coroutineScope.launch {
+            snackbarHostState.currentSnackbarData?.dismiss()
+            snackbarHostState.showSnackbar(message)
         }
     }
 
+    BackHandler(enabled = appState.editorOpen, onBack = appState::closeEditor)
+    val uiActions = appState.createUiActions(messages, ::showMessage)
+    val shellActions = appState.createShellActions(messages, ::showMessage)
+    val selectedDestination = appState.uiState.selectedDestination
+    DoraBootstrapSurface(
+        forcedLayout = forcedLayout,
+        state = appState.uiState,
+        snackbarHostState = snackbarHostState,
+        actions = shellActions,
+    ) { contentModifier ->
+        AlphaDestinationContent(
+            destination = selectedDestination,
+            workspaceState = appState.workspaceState,
+            editor = appState.editorSelection,
+            modifier = contentModifier,
+            actions = uiActions,
+        )
+    }
+}
+
+@Composable
+private fun DoraBootstrapSurface(
+    forcedLayout: BootstrapNavigationLayout?,
+    state: BootstrapUiState,
+    snackbarHostState: SnackbarHostState,
+    actions: BootstrapShellActions,
+    content: @Composable (Modifier) -> Unit,
+) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background,
@@ -89,25 +114,19 @@ internal fun DoraBootstrapApp(forcedLayout: BootstrapNavigationLayout? = null) {
             when (layout) {
                 BootstrapNavigationLayout.COMPACT_DOCK ->
                     CompactBootstrapShell(
-                        state = uiState,
+                        state = state,
                         snackbarHostState = snackbarHostState,
-                        onDestinationSelected = {
-                            dispatch(BootstrapAction.SelectDestination(it))
-                        },
-                        onRecordingAction = {
-                            dispatch(BootstrapAction.InvokeRecordingPlaceholder)
-                        },
+                        onDestinationSelected = actions.selectDestination,
+                        onRecordingAction = actions.invokeRecording,
+                        content = content,
                     )
                 BootstrapNavigationLayout.WIDE_RAIL ->
                     WideBootstrapShell(
-                        state = uiState,
+                        state = state,
                         snackbarHostState = snackbarHostState,
-                        onDestinationSelected = {
-                            dispatch(BootstrapAction.SelectDestination(it))
-                        },
-                        onRecordingAction = {
-                            dispatch(BootstrapAction.InvokeRecordingPlaceholder)
-                        },
+                        onDestinationSelected = actions.selectDestination,
+                        onRecordingAction = actions.invokeRecording,
+                        content = content,
                     )
             }
         }
@@ -120,6 +139,7 @@ private fun CompactBootstrapShell(
     snackbarHostState: SnackbarHostState,
     onDestinationSelected: (BootstrapDestination) -> Unit,
     onRecordingAction: () -> Unit,
+    content: @Composable (Modifier) -> Unit,
 ) {
     Scaffold(
         containerColor = Color.Transparent,
@@ -134,10 +154,7 @@ private fun CompactBootstrapShell(
             )
         },
     ) { contentPadding ->
-        DestinationPlaceholder(
-            destination = state.selectedDestination,
-            modifier = Modifier.padding(contentPadding),
-        )
+        content(Modifier.padding(contentPadding))
     }
 }
 
@@ -147,6 +164,7 @@ private fun WideBootstrapShell(
     snackbarHostState: SnackbarHostState,
     onDestinationSelected: (BootstrapDestination) -> Unit,
     onRecordingAction: () -> Unit,
+    content: @Composable (Modifier) -> Unit,
 ) {
     Scaffold(
         containerColor = Color.Transparent,
@@ -159,10 +177,7 @@ private fun WideBootstrapShell(
                 onDestinationSelected = onDestinationSelected,
                 onRecordingAction = onRecordingAction,
             )
-            DestinationPlaceholder(
-                destination = state.selectedDestination,
-                modifier = Modifier.weight(1f),
-            )
+            content(Modifier.weight(1f))
         }
     }
 }
@@ -202,7 +217,7 @@ private fun DoraDock(
                         onClick = { onDestinationSelected(destination) },
                     )
                 }
-                RecordingPlaceholderButton(
+                RecordingUnavailableButton(
                     onClick = onRecordingAction,
                     modifier = Modifier.weight(1f),
                 )
@@ -269,7 +284,7 @@ private fun DoraRail(
         modifier = Modifier.fillMaxHeight().selectableGroup(),
         containerColor = MaterialTheme.colorScheme.surface,
         header = {
-            RecordingPlaceholderButton(
+            RecordingUnavailableButton(
                 onClick = onRecordingAction,
                 showLabel = true,
             )
@@ -296,7 +311,7 @@ private fun DoraRail(
 }
 
 @Composable
-private fun RecordingPlaceholderButton(
+private fun RecordingUnavailableButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     showLabel: Boolean = false,
@@ -317,8 +332,8 @@ private fun RecordingPlaceholderButton(
                 },
             colors =
                 IconButtonDefaults.filledIconButtonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
         ) {
             Icon(
