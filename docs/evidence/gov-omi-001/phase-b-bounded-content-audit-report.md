@@ -184,8 +184,14 @@ A later independent diff-check review found one P2 formatting defect: four Markd
 lines contained trailing spaces. That exact defect was remediated under
 `GOV-OMI-PHASE-B-DIFF-CHECK-P2-REMEDIATION-AUTH-20260818-06` without changing semantic findings,
 request accounting, dispositions, privacy evidence or reviewer placeholders. The prior diff-check
-verdict was `CHANGES_REQUIRED` with P0/P1/P2 counts of 0/0/1. Fresh independent review of the
-remediated bytes is `PENDING`; its counts, reviewer identity and review time are null.
+verdict was `CHANGES_REQUIRED` with P0/P1/P2 counts of 0/0/1. At remediation-commit time, fresh
+review of the changed bytes was `PENDING`, with counts, reviewer and review time null. A subsequent
+independent read-only Codex review of exact commit
+`8f59f103a83f133af42b5b89bd674d2a307b6762` and tree
+`28120085942a11469f729b46100fd37c7e3b9255` returned terminal `CLEAN` /
+`NO_FURTHER_CHANGES_REQUIRED` with P0/P1/P2 counts of 0/0/0. That reviewer is non-formal; Product/
+Legal/IP and Engineering/Security identities and dispositions remain null. This closure changes no
+semantic finding, request count, disposition or privacy fact.
 
 The latest coordinator-provided main observation is e33f24b40587e7af9c16a2c42e492b6da79e19f3,
 with exact-main run 32160072118 still in progress at that checkpoint. Ancestry sync and publication

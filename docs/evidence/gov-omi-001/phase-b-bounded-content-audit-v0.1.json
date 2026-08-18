@@ -604,11 +604,21 @@
     "auth06PriorDiffCheckReviewState": "CHANGES_REQUIRED",
     "auth06PriorDiffCheckCounts": {"p0":0,"p1":0,"p2":1},
     "auth06PriorDiffCheckFinding": "FOUR_MARKDOWN_TRAILING_SPACE_HARD_BREAKS_LINES_3_TO_6",
-    "auth06RemediationState": "APPLIED_LOCAL_FRESH_REVIEW_PENDING",
-    "auth06FreshReviewState": "PENDING",
-    "auth06FreshReviewCounts": null,
-    "auth06FreshReviewer": null,
+    "auth06RemediationState": "APPLIED_LOCAL_REVIEWED_CLEAN",
+    "auth06FreshReviewPreviousState": "PENDING",
+    "auth06FreshReviewState": "NO_FURTHER_CHANGES_REQUIRED",
+    "auth06FreshReviewVerdict": "CLEAN",
+    "auth06FreshReviewCounts": {"p0":0,"p1":0,"p2":0},
+    "auth06FreshReviewer": {
+      "type": "independent-codex-read-only-agent",
+      "formalReviewer": false,
+      "productLegalIpReviewer": false,
+      "engineeringSecurityReviewer": false
+    },
+    "auth06FreshReviewedCommit": "8f59f103a83f133af42b5b89bd674d2a307b6762",
+    "auth06FreshReviewedTree": "28120085942a11469f729b46100fd37c7e3b9255",
     "auth06FreshReviewedAt": null,
+    "auth07ClosureAuthority": "GOV-OMI-PHASE-B-AUTH06-CLEAN-CLOSURE-AUTH-20260818-07",
     "formalReviewer": false
   },
   "reviewers": {
