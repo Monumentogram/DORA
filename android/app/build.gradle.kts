@@ -8,8 +8,8 @@ android {
 
     defaultConfig {
         applicationId = "com.monumentogram.dora.bootstrap"
-        versionCode = 1
-        versionName = "0.0.1-stage00"
+        versionCode = 2
+        versionName = "0.1.0-alpha01-internal"
     }
 
     buildFeatures {

@@ -37,12 +37,15 @@ class DoraBootstrapAppTest {
     @Test
     fun recordActionShowsUnavailableNoticeInsteadOfStartingRecording() {
         composeRule
-            .onNodeWithContentDescription("Запись недоступна в Stage 00")
+            .onNodeWithContentDescription("Запись недоступна в Alpha 1")
             .assertIsDisplayed()
             .performClick()
 
         composeRule
-            .onNodeWithText("Запись пока недоступна: Stage 00 не запрашивает доступ к микрофону.")
+            .onNodeWithText(
+                "Запись и импорт аудио недоступны в Alpha 1. " +
+                    "Приложение не запрашивает доступ к микрофону."
+            )
             .assertIsDisplayed()
     }
 }

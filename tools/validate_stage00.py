@@ -78,9 +78,9 @@ def validate_screen_inventory() -> None:
 def validate_decisions() -> None:
     text = read_text("docs/DORA_MVP1_PRODUCT_DECISIONS.md")
     ids = re.findall(r"^## (DEC-\d{3})\.", text, flags=re.MULTILINE)
-    expected_ids = [f"DEC-{index:03d}" for index in range(1, 45)]
+    expected_ids = [f"DEC-{index:03d}" for index in range(1, 46)]
     if ids != expected_ids:
-        fail(f"Expected ordered product decisions DEC-001 through DEC-044, found {ids}")
+        fail(f"Expected ordered product decisions DEC-001 through DEC-045, found {ids}")
 
     required_labels = (
         "Статус:",

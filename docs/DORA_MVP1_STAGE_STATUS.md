@@ -1,6 +1,6 @@
 # Dora MVP 1 — Stage Status
 
-Updated: 16 August 2026
+Updated: 18 August 2026
 Baseline: `1be83e2940a09f7b23e33b4cdf3827de2690f3fd`
 Stage 00 merge commit: `a4aae302f9033e5471f6759f513e7e351c375a72`
 Stage 0A merge commit: `91b9916b01ff70f63d82412bafbed0d72307dbe1`
@@ -12,6 +12,55 @@ Active stage: `Stage 0D — POC-RECOVERY-001 authorized I1 contract foundation`
 Work branch: task-scoped; live Git/GitHub metadata is authoritative and no branch name is a stage invariant
 Active PoC: `POC-RECOVERY-001`
 Stage state: **REC-I1 REVIEWED AND SQUASH-MERGED; POST-MERGE VALIDATOR LIFECYCLE REMEDIATED; RUNTIME IMPLEMENTATION, ACTUAL GRAPH AND EXECUTION BLOCKED**
+
+Parallel product track: `DORA-ALPHA-001`\
+Alpha state: **DRAFT PR #40; REVIEW P1 REMEDIATION COMMITTED AND LOCALLY GREEN; FRESH EXACT-HEAD CI, INDEPENDENT RE-REVIEW AND PHYSICAL SMOKE OPEN**\
+Alpha branch: `codex/dora-alpha-001` from verified `main` `223f31d87355596c8cb36576d2d94366eae9d620`
+
+## Parallel DORA Alpha status
+
+The Project owner explicitly opened `DORA-ALPHA-001` in parallel with formal Stage 0 closure.
+`DORA_ALPHA_CHARTER.md`, `DEC-045` and `ADR-0003` create `ALPHA-GATE-001` and authorize only an
+internal non-release manual local workspace: user-authored conversation title, notes/transcript,
+manual summary and conversation-scoped manual tasks with view/edit/search/toggle/delete and restart
+persistence.
+
+The Alpha does not change this file's active Stage 0D state or any PoC verdict. Recording/import/
+audio, VAD, ASR, diarization, automatic protocol/summary/task extraction, models, network/cloud,
+account/GMS and export remain unavailable. Real meeting/voice/sensitive data, production identity,
+signing, store/release and Stage 0 PASS claims remain unauthorized.
+
+The approved Increment 1 storage boundary is a dependency-free, bounded, versioned app-private
+AtomicFile snapshot. It is explicitly not Room/SQLCipher, encrypted Dora storage, a production
+schema or a security/physical-erasure claim. `RDY-002` is reconciled only for this disposable Alpha
+model through conversation ownership and `origin=USER`; future production schema remains open.
+
+The first Alpha branch/PR uses separate governance and implementation commits. Draft publication is
+allowed after proportional local checks. Ready/merge requires exact-head CI, independent review
+with no P0/P1, unchanged scope and no specialist blocker. No PR is merged by this status update.
+
+Initial implementation commit `b9fb524048f05eeecad2aece523ba675a598bfe1` and remediation commit
+`a1f00f55b309fe0ff196d7d300f270d5717d26c6` supply the bounded manual workspace, strict
+UTF-8/versioned/size-limited AtomicFile adapter, fail-closed corruption/read behavior, local search,
+manual task completion, confirmed whole-conversation deletion and visibly unavailable audio/
+automatic/network/export stages. A missing snapshot is now accepted only when no primary or legacy
+backup path is provably present before and after the failed read; ambiguous or inaccessible state
+blocks mutation. Task toggles expose the task text and explicit completion state to accessibility.
+
+Local formatting, detekt, JVM tests, Android-test compilation, lint and the documented app/core
+debug assembly graph passed at the remediation commit. The exact local APK is 30,150,851 bytes with
+SHA-256 `5b6f323206ecc434659a94d3e53ee01926831daacef33a9667f279f69d43163e`;
+16-KiB zip alignment and the existing native allowlist match passed. No dependency or source
+manifest change, credential signature or Alpha network/audio/permission API was found. Draft PR #40
+pre-remediation HEAD `e4ea3e24b1c1580b3a1436c8f8506db0447a5ac2` passed CI run `32107371424`.
+Its provisional independent review reported P0/P1/P2=`0/2/0`; both P1 findings are remediated in
+`a1f00f5`, but fresh exact-head CI and independent re-review remain mandatory.
+
+No Android device or emulator was available, so instrumentation execution and the required physical
+smoke are `NOT RUN`. Local Python is only a non-functional Windows application alias, so repository
+Python validators are also `NOT RUN` locally and must run in exact-head CI. Therefore no Alpha DoD,
+Ready, merge, release, production or Stage 0 PASS claim is made. Installation, limitations and the
+physical checklist are frozen in `DORA_ALPHA_INSTALL_AND_SMOKE.md`.
 
 Design-governance reconciliation: `DES-EXPORT-001` / `des-export-interaction-v0.1` is contract
 complete under `DEC-017`; no implementation/conformance/user-research, code/Figma/schema/provider
