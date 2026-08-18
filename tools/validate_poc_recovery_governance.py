@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail-closed validation for v0.6 governance plus authorized pure Recovery I1."""
+"""Fail-closed validation for v0.6 governance and reviewed Recovery payloads."""
 
 from __future__ import annotations
 
@@ -74,6 +74,56 @@ REC_I1_REVIEWED_HEAD = "ee7bb00b09a282df7a8fb3b4d3481a5abd4d0177"
 REC_I1_MERGED_ANCHOR = "f2bc8c95bbe8af0d010968fff2ca175851728bf2"
 REC_I1_MERGED_TREE = "ac3dcf273fd447623fa8dbc5c71087acd6315830"
 REC_I1_MERGED_PARENT = AUTHORIZED_BASE_HEAD
+REC_I2B_PROFILE = "REC-I2B_REVIEWED_SUCCESSOR"
+REC_I2B_BRANCH = "codex/poc-recovery-i2a-graph-probe"
+REC_I2B_PULL_REQUEST_NUMBER = 38
+REC_I2B_RUNTIME_IMPLEMENTATION_HEAD = "dca745929b59b656dfa8bb210884e3c1c4bdad0f"
+REC_I2B_RUNTIME_IMPLEMENTATION_TREE = "482f0e57ad3ce9aba2b91d3cd8a5e21092757e9f"
+REC_I2B_RUNTIME_IMPLEMENTATION_PARENT = "ed9a6e72578f06b4712250cfcc034dc1851ff23f"
+REC_I2B_RUNTIME_EVIDENCE_HEAD = "6eb055d9fdb83445ec1dcf27898bba07af2d4951"
+REC_I2B_RUNTIME_EVIDENCE_TREE = "5cb9357700a9868c70c21ff987c8261882deaa1b"
+REC_I2B_RUNTIME_CLOSURE_HEAD = "87a45d69b4a35854f7904895bf8e10968265983b"
+REC_I2B_RUNTIME_CLOSURE_TREE = "dd1173626b73413fb9077ebf9046c11ba26496ac"
+REC_I2B_METADATA_IMPLEMENTATION_HEAD = "c194fec9ecce5ee77ffca0c162d2b78c1c58b715"
+REC_I2B_METADATA_IMPLEMENTATION_TREE = "d6f84aeef27dab1e1de5c77e9722259c40b9653c"
+REC_I2B_METADATA_IMPLEMENTATION_PARENT = "c65fe0718f082aec97a38d2cc567e1d56c6da8d1"
+REC_I2B_METADATA_EVIDENCE_HEAD = "5eaadeb77c444bf0af2afadc82e1804a7c71bc43"
+REC_I2B_METADATA_EVIDENCE_TREE = "4524cdf21ea9c22d5d8b9af6b4a4864c800d50b0"
+REC_I2B_METADATA_CLOSURE_HEAD = "9bb64e58caa1a83e7b4bf4ac58a5a5077a986a57"
+REC_I2B_METADATA_CLOSURE_TREE = "eb5d9d0873d4c6b23ed11abd55859286076b460c"
+REC_I2B_MODULE_TREE = "c92d921b376cf17d67dae1af82e37a7931a3897d"
+REC_I2A_DISPOSITION_PATH = (
+    "docs/evidence/poc-recovery-001/rec-i2a-actual-graph-product-ip-disposition-2026-08-17.json"
+)
+REC_I2A_DISPOSITION_SHA256 = "106060feb7b3afe634c2e3698e04f83fea2165a21d50a7168dab95dc058bc804"
+REC_I2B_RUNTIME_EVIDENCE_PATH = (
+    "docs/evidence/poc-recovery-001/rec-i2b-runtime-crypto-implementation-evidence-2026-08-17.json"
+)
+REC_I2B_ACCOUNTABLE_PACKET_PATH = (
+    "docs/evidence/poc-recovery-001/rec-i2b-accountable-engineering-security-review-packet-2026-08-17.json"
+)
+REC_I2B_METADATA_CLOSURE_PATH = (
+    "docs/evidence/poc-recovery-001/reviews/"
+    "rec-i2b-fresh-cache-metadata-independent-delta-review-closure-2026-08-18.json"
+)
+REC_I2B_METADATA_CLOSURE_SHA256 = "fc0c5a9f759eb836bbc81f2a64cc55a034786465a8473679f244528a3e17e714"
+REC_I2B_CLAIM_CEILING = "IMPLEMENTED_AND_LOCALLY_VERIFIED_PENDING_ACCOUNTABLE_ENGINEERING_SECURITY_REVIEW"
+REC_I2B_SUCCESSOR_REMEDIATION_AUTHORIZATION = (
+    "REC-I2B-REVIEWED-SUCCESSOR-VALIDATOR-AND-CI-METADATA-REMEDIATION-AUTH-20260818-01"
+)
+REC_I2B_SUCCESSOR_JAR_METADATA_AUTHORIZATION = (
+    "REC-I2B-REVIEWED-SUCCESSOR-CI-JAR-METADATA-REMEDIATION-AUTH-20260818-02"
+)
+REC_I2B_SUCCESSOR_SPOTLESS_METADATA_AUTHORIZATION = (
+    "REC-I2B-REVIEWED-SUCCESSOR-SPOTLESS-METADATA-REMEDIATION-AUTH-20260818-03"
+)
+REC_I2B_SUCCESSOR_METADATA_CANONICAL_SHA256 = (
+    "35046c96e293d56cd36ba5894c0fd286cf6e96167df5a3d6e6cd9c3de379f3ac"
+)
+REC_I2B_SUCCESSOR_REVIEW_CLOSURE_PATH = (
+    "docs/evidence/poc-recovery-001/reviews/"
+    "rec-i2b-reviewed-successor-validator-ci-metadata-independent-delta-review-closure-2026-08-18.json"
+)
 RECOVERY_MODULE = ROOT / "android" / "poc" / "recovery"
 AUTHORIZED_PATHS = [
     "android/poc/recovery/**",
@@ -116,6 +166,9 @@ class GitHubPullRequestContext:
     merge_ref: str
     merge_sha: str
     number: int
+    draft: bool
+    state: str
+    merged: bool
 
 
 @dataclass(frozen=True)
@@ -130,6 +183,29 @@ class RecoveryLifecycleIdentity:
     reviewed_implementation_commit: str | None
     reviewed_implementation_tree: str | None
     merged_anchor_is_ancestor: bool
+    github_pull_request_context: GitHubPullRequestContext | None = None
+
+
+@dataclass(frozen=True)
+class PinnedCommitIdentity:
+    commit: str | None
+    tree: str | None
+    parents: tuple[str, ...]
+    is_ancestor_of_head: bool
+
+
+@dataclass(frozen=True)
+class RecoveryI2bSuccessorIdentity:
+    head: str
+    branch: str
+    head_module_tree: str | None
+    runtime_implementation: PinnedCommitIdentity
+    runtime_evidence: PinnedCommitIdentity
+    runtime_closure: PinnedCommitIdentity
+    metadata_implementation: PinnedCommitIdentity
+    metadata_evidence: PinnedCommitIdentity
+    metadata_closure: PinnedCommitIdentity
+    metadata_closure_is_ancestor_of_pull_request_head: bool
     github_pull_request_context: GitHubPullRequestContext | None = None
 
 NORMATIVE_V06_HASHES = {
@@ -413,7 +489,11 @@ def path_is_post_merge_protected(relative: str) -> bool:
     )
 
 
-def validate_post_merge_protected_paths(changes: dict[str, list[str]]) -> None:
+def validate_post_merge_protected_paths(
+    changes: dict[str, list[str]],
+    *,
+    profile: str = "REC-I1",
+) -> None:
     expected_layers = {"committed", "staged", "unstaged", "untracked"}
     require(set(changes) == expected_layers, "Incomplete post-merge Recovery payload change inventory")
     protected_changes = {
@@ -421,9 +501,14 @@ def validate_post_merge_protected_paths(changes: dict[str, list[str]]) -> None:
         for layer, paths in changes.items()
     }
     protected_changes = {layer: paths for layer, paths in protected_changes.items() if paths}
+    message = (
+        f"REC-I1 post-merge protected payload differs from merged anchor: {protected_changes}"
+        if profile == "REC-I1"
+        else f"{profile} protected payload differs from its reviewed anchor: {protected_changes}"
+    )
     require(
         not protected_changes,
-        f"REC-I1 post-merge protected payload differs from merged anchor: {protected_changes}",
+        message,
     )
 
 
@@ -482,10 +567,19 @@ def collect_github_pull_request_context(
         base_ref = base_record["ref"]
         base_sha = base_record["sha"]
         event_merge_sha = pull_request["merge_commit_sha"]
+        draft = pull_request["draft"]
+        state = pull_request["state"]
+        merged = pull_request["merged"]
     except (KeyError, TypeError) as error:
         raise ValueError("GitHub pull_request event payload is incomplete") from error
 
     require(isinstance(number, int) and number > 0 and pull_request_number == number, "GitHub pull_request number mismatch")
+    require(isinstance(draft, bool), "GitHub pull_request draft state is invalid")
+    require(
+        isinstance(state, str) and state in {"open", "closed"},
+        "GitHub pull_request state is invalid",
+    )
+    require(isinstance(merged, bool), "GitHub pull_request merged state is invalid")
     require(repository == GITHUB_REPOSITORY and base_repository == GITHUB_REPOSITORY, "GitHub pull_request base repository mismatch")
     require(head_repository == GITHUB_REPOSITORY, "GitHub pull_request head repository is a fork")
     require(head_ref == github_head_ref == env.get("GITHUB_HEAD_REF"), "GitHub pull_request head ref mismatch")
@@ -524,6 +618,9 @@ def collect_github_pull_request_context(
         merge_ref=merge_ref,
         merge_sha=merge_sha,
         number=number,
+        draft=draft,
+        state=state,
+        merged=merged,
     )
 
 
@@ -637,6 +734,151 @@ def collect_recovery_lifecycle_identity() -> RecoveryLifecycleIdentity:
         ),
         github_pull_request_context=github_pull_request_context,
     )
+
+
+def collect_pinned_commit_identity(commit: str, head: str) -> PinnedCommitIdentity:
+    resolved = git_optional_output("rev-parse", "--verify", f"{commit}^{{commit}}")
+    if resolved is None:
+        return PinnedCommitIdentity(None, None, (), False)
+    tree = git_optional_output("rev-parse", f"{commit}^{{tree}}")
+    parent_text = git_optional_output("show", "-s", "--format=%P", commit)
+    parents = tuple(parent_text.split()) if parent_text is not None else ()
+    return PinnedCommitIdentity(
+        commit=resolved,
+        tree=tree,
+        parents=parents,
+        is_ancestor_of_head=git_is_ancestor(commit, head),
+    )
+
+
+def collect_rec_i2b_successor_identity(
+    lifecycle: RecoveryLifecycleIdentity | None = None,
+) -> RecoveryI2bSuccessorIdentity:
+    current = lifecycle or collect_recovery_lifecycle_identity()
+    pull_request = current.github_pull_request_context
+    return RecoveryI2bSuccessorIdentity(
+        head=current.head,
+        branch=current.branch,
+        head_module_tree=git_optional_output("rev-parse", f"{current.head}:android/poc/recovery"),
+        runtime_implementation=collect_pinned_commit_identity(REC_I2B_RUNTIME_IMPLEMENTATION_HEAD, current.head),
+        runtime_evidence=collect_pinned_commit_identity(REC_I2B_RUNTIME_EVIDENCE_HEAD, current.head),
+        runtime_closure=collect_pinned_commit_identity(REC_I2B_RUNTIME_CLOSURE_HEAD, current.head),
+        metadata_implementation=collect_pinned_commit_identity(REC_I2B_METADATA_IMPLEMENTATION_HEAD, current.head),
+        metadata_evidence=collect_pinned_commit_identity(REC_I2B_METADATA_EVIDENCE_HEAD, current.head),
+        metadata_closure=collect_pinned_commit_identity(REC_I2B_METADATA_CLOSURE_HEAD, current.head),
+        metadata_closure_is_ancestor_of_pull_request_head=(
+            pull_request is not None
+            and git_is_ancestor(REC_I2B_METADATA_CLOSURE_HEAD, pull_request.head_sha)
+        ),
+        github_pull_request_context=pull_request,
+    )
+
+
+def rec_i2b_successor_candidate(identity: RecoveryI2bSuccessorIdentity) -> bool:
+    return any(
+        item.is_ancestor_of_head
+        for item in (
+            identity.runtime_implementation,
+            identity.runtime_evidence,
+            identity.runtime_closure,
+            identity.metadata_implementation,
+            identity.metadata_evidence,
+            identity.metadata_closure,
+        )
+    )
+
+
+def validate_pinned_commit_identity(
+    identity: PinnedCommitIdentity,
+    *,
+    expected_commit: str,
+    expected_tree: str,
+    expected_parents: tuple[str, ...],
+    label: str,
+) -> None:
+    require(identity.commit == expected_commit, f"{label} commit is missing or mismatched")
+    require(identity.tree == expected_tree, f"{label} tree mismatch")
+    require(identity.parents == expected_parents, f"{label} parent topology mismatch")
+    require(identity.is_ancestor_of_head, f"{label} is not an ancestor of HEAD")
+
+
+def validate_rec_i2b_successor_identity(identity: RecoveryI2bSuccessorIdentity) -> None:
+    validate_pinned_commit_identity(
+        identity.runtime_implementation,
+        expected_commit=REC_I2B_RUNTIME_IMPLEMENTATION_HEAD,
+        expected_tree=REC_I2B_RUNTIME_IMPLEMENTATION_TREE,
+        expected_parents=(REC_I2B_RUNTIME_IMPLEMENTATION_PARENT,),
+        label="REC-I2B reviewed runtime implementation",
+    )
+    validate_pinned_commit_identity(
+        identity.runtime_evidence,
+        expected_commit=REC_I2B_RUNTIME_EVIDENCE_HEAD,
+        expected_tree=REC_I2B_RUNTIME_EVIDENCE_TREE,
+        expected_parents=(REC_I2B_RUNTIME_IMPLEMENTATION_HEAD,),
+        label="REC-I2B reviewed runtime evidence",
+    )
+    validate_pinned_commit_identity(
+        identity.runtime_closure,
+        expected_commit=REC_I2B_RUNTIME_CLOSURE_HEAD,
+        expected_tree=REC_I2B_RUNTIME_CLOSURE_TREE,
+        expected_parents=(REC_I2B_RUNTIME_EVIDENCE_HEAD,),
+        label="REC-I2B runtime independent closure",
+    )
+    validate_pinned_commit_identity(
+        identity.metadata_implementation,
+        expected_commit=REC_I2B_METADATA_IMPLEMENTATION_HEAD,
+        expected_tree=REC_I2B_METADATA_IMPLEMENTATION_TREE,
+        expected_parents=(REC_I2B_METADATA_IMPLEMENTATION_PARENT,),
+        label="REC-I2B reviewed metadata implementation",
+    )
+    validate_pinned_commit_identity(
+        identity.metadata_evidence,
+        expected_commit=REC_I2B_METADATA_EVIDENCE_HEAD,
+        expected_tree=REC_I2B_METADATA_EVIDENCE_TREE,
+        expected_parents=(REC_I2B_METADATA_IMPLEMENTATION_HEAD,),
+        label="REC-I2B reviewed metadata evidence",
+    )
+    validate_pinned_commit_identity(
+        identity.metadata_closure,
+        expected_commit=REC_I2B_METADATA_CLOSURE_HEAD,
+        expected_tree=REC_I2B_METADATA_CLOSURE_TREE,
+        expected_parents=(REC_I2B_METADATA_EVIDENCE_HEAD,),
+        label="REC-I2B metadata independent closure",
+    )
+    require(identity.head_module_tree == REC_I2B_MODULE_TREE, "REC-I2B reviewed module subtree mismatch")
+
+    pull_request = identity.github_pull_request_context
+    if pull_request is not None:
+        require(
+            pull_request.repository == GITHUB_REPOSITORY
+            and pull_request.head_repository == GITHUB_REPOSITORY
+            and pull_request.head_ref == REC_I2B_BRANCH
+            and pull_request.base_ref == GITHUB_BASE_BRANCH
+            and pull_request.number == REC_I2B_PULL_REQUEST_NUMBER
+            and pull_request.draft is True
+            and pull_request.state == "open"
+            and pull_request.merged is False
+            and identity.branch == REC_I2B_BRANCH,
+            "REC-I2B pull_request context is not exact same-repository Draft PR 38 lineage",
+        )
+        require(
+            identity.metadata_closure_is_ancestor_of_pull_request_head,
+            "REC-I2B metadata closure is present only through the pull_request base or merge ref",
+        )
+    else:
+        require(
+            identity.branch in {REC_I2B_BRANCH, GITHUB_BASE_BRANCH},
+            f"REC-I2B reviewed successor is running on an unauthorized branch: {identity.branch}",
+        )
+
+
+def validate_rec_i2b_successor_lifecycle(
+    identity: RecoveryI2bSuccessorIdentity,
+    post_implementation_changes: dict[str, list[str]],
+) -> str:
+    validate_rec_i2b_successor_identity(identity)
+    validate_post_merge_protected_paths(post_implementation_changes, profile=REC_I2B_PROFILE)
+    return "rec-i2b-reviewed-successor"
 
 
 def collect_pre_merge_changed_paths(*, root: Path | None = None, authorized_base: str | None = None) -> list[str]:
@@ -1503,7 +1745,781 @@ def validate_readiness_and_evidence(gate: dict[str, Any]) -> None:
     require(security["activeGateSetVersion"] == GATE_ID and security["activeProtocolId"] == PROTOCOL_ID and all(item["mitigationState"].startswith("V0_6_") for item in security["templateAndProtocolRisks"]), "Security metadata drift")
 
 
-def validate_dependency_and_scope_boundary() -> None:
+def canonical_lf_sha256(relative: str) -> str:
+    payload = (ROOT / relative).read_bytes()
+    require(not payload.startswith(b"\xef\xbb\xbf"), f"UTF-8 BOM is forbidden: {relative}")
+    text = payload.decode("utf-8", errors="strict")
+    canonical = text.replace("\r\n", "\n")
+    require("\r" not in canonical, f"Bare CR line ending is forbidden: {relative}")
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def rec_i2b_expected_authority(*, successor: bool) -> dict[str, Any]:
+    authority: dict[str, Any] = {
+        "actualGraphProductIpDisposition": "REC-I2A-ACTUAL-GRAPH-PRODUCT-IP-DISPOSITION-20260817-01",
+        "conditionalOwnerAuthorization": "STAGE0-OWNER-UNLOCK-BATCH-20260817-02",
+        "technicalDelegation": "STAGE0-TECHNICAL-REMEDIATION-DELEGATION-20260817-01",
+        "advisoryRemediationAuthorization": "REC-I2B-ADVISORY-REMEDIATION-AUTH-20260817-01",
+        "independentDeltaReviewClosureRecord": "REC-I2B-INDEPENDENT-DELTA-REVIEW-CLOSURE-AUTH-20260817-01",
+        "draftPublicationAuthorization": "REC-I2B-DRAFT-PUBLICATION-AUTH-20260817-01",
+        "verificationMetadataBomRemediationAuthorization": "REC-I2B-VERIFICATION-METADATA-BOM-REMEDIATION-AUTH-20260817-01",
+        "verificationMetadataTransitiveArtifactsRemediationAuthorization": (
+            "REC-I2B-VERIFICATION-METADATA-TRANSITIVE-ARTIFACTS-REMEDIATION-AUTH-20260817-02"
+        ),
+        "verificationMetadataGuava3331PomRemediationAuthorization": (
+            "REC-I2B-VERIFICATION-METADATA-GUAVA-33_3_1-POM-REMEDIATION-AUTH-20260817-03"
+        ),
+        "verificationMetadataFreshCacheClosureAuthorization": (
+            "REC-I2B-VERIFICATION-METADATA-FRESH-CACHE-CLOSURE-AUTH-20260817-04"
+        ),
+        "freshCacheMetadataIndependentDeltaReviewClosureRecord": (
+            "REC-I2B-FRESH-CACHE-METADATA-INDEPENDENT-DELTA-REVIEW-CLOSURE-20260818-01"
+        ),
+        "designCheckpointApproved": True,
+        "accountableEngineeringSecurityReviewCompleted": False,
+        "runtimeCryptoImplementationAllowed": True,
+        "deviceOrEmulatorExecutionAllowed": False,
+        "measuredExecutionAllowed": False,
+        "harnessOrCampaignAllowed": False,
+        "recI3Allowed": False,
+        "dependencyAdmissionAllowed": False,
+        "productionAdmissionAllowed": False,
+        "draftPublicationAuthorizedAndPerformed": True,
+        "currentReviewedMetadataClosureDraftPublicationAllowed": not successor,
+        "draftPr38NonForcePushAllowed": True,
+        "readyOrMergeAllowed": False,
+        "mergeAllowed": False,
+    }
+    if successor:
+        authority.update(
+            {
+                "reviewedSuccessorValidatorAndCiMetadataRemediationAuthorization": (
+                    REC_I2B_SUCCESSOR_REMEDIATION_AUTHORIZATION
+                ),
+                "reviewedSuccessorCiJarMetadataRemediationAuthorization": (
+                    REC_I2B_SUCCESSOR_JAR_METADATA_AUTHORIZATION
+                ),
+                "reviewedSuccessorSpotlessMetadataRemediationAuthorization": (
+                    REC_I2B_SUCCESSOR_SPOTLESS_METADATA_AUTHORIZATION
+                ),
+                "reviewedSuccessorDraftPr38NonForceUpdateAllowed": True,
+            }
+        )
+    return authority
+
+
+def rec_i2b_expected_common_review_truth() -> dict[str, Any]:
+    return {
+        "priorAdvisoryFindingCounts": {"P0": 0, "P1": 3, "P2": 2},
+        "historicalPostRemediationIndependentFindingCounts": {"P0": 0, "P1": 0, "P2": 0},
+        "historicalIndependentCleanReviewedImplementationCommit": REC_I2B_RUNTIME_IMPLEMENTATION_HEAD,
+        "historicalIndependentCleanReviewedEvidenceCommit": REC_I2B_RUNTIME_EVIDENCE_HEAD,
+        "historicalIndependentCleanClosureRecordCommit": REC_I2B_RUNTIME_CLOSURE_HEAD,
+        "historicalIndependentCleanReviewCoversCurrentTarget": False,
+        "freshGraphVerificationMetadataAdvisoryFindingCounts": {"P0": 0, "P1": 1, "P2": 0},
+        "freshGraphVerificationMetadataReviewedImplementationCommit": (
+            "adc422236003403d15581c10e31e2dc797ccf9bb"
+        ),
+        "freshGraphVerificationMetadataReviewedEvidenceCommit": (
+            "c65fe0718f082aec97a38d2cc567e1d56c6da8d1"
+        ),
+        "freshGraphVerificationMetadataDisposition": "CHANGES_REQUIRED",
+        "freshGraphVerificationMetadataFindingId": (
+            "REC-I2B-FRESH-GRAPH-VERIFICATION-METADATA-P1-001"
+        ),
+        "freshGraphVerificationMetadataReviewCoversCurrentTarget": False,
+    }
+
+
+def validate_rec_i2b_successor_review_closure(
+    record: dict[str, Any],
+    *,
+    terminal_commit: str,
+    terminal_tree: str,
+) -> tuple[str, str]:
+    require(
+        record["path"] == REC_I2B_SUCCESSOR_REVIEW_CLOSURE_PATH
+        and isinstance(record["bytes"], int)
+        and record["bytes"] > 0
+        and re.fullmatch(r"[0-9a-f]{64}", record["sha256"] or "") is not None,
+        "REC-I2B successor independent closure reference is malformed",
+    )
+    closure_path = ROOT / record["path"]
+    require(closure_path.is_file(), "REC-I2B successor independent closure is missing")
+    closure_bytes = closure_path.read_bytes()
+    require(
+        len(closure_bytes) == record["bytes"]
+        and hashlib.sha256(closure_bytes).hexdigest() == record["sha256"],
+        "REC-I2B successor independent closure byte/hash pin drift",
+    )
+    closure = json.loads(closure_bytes.decode("utf-8", errors="strict"))
+    reviewed = closure["exactReviewedState"]
+    verdict = closure["verdict"]
+    reviewer = closure["reviewer"]
+    authority = closure["authorityBoundary"]
+    evidence_commit = reviewed["evidenceCommit"]
+    evidence_tree = reviewed["evidenceTree"]
+    require(
+        closure["recordId"]
+        == "REC-I2B-REVIEWED-SUCCESSOR-VALIDATOR-CI-METADATA-INDEPENDENT-DELTA-REVIEW-CLOSURE-20260818-01"
+        and reviewer
+        == {
+            "product": "OpenAI Codex",
+            "organization": "OpenAI",
+            "role": "INDEPENDENT_ADVISORY_IMPLEMENTATION_REVIEWER",
+            "formalReviewer": False,
+            "signature": None,
+        }
+        and reviewed["implementationCommit"] == terminal_commit
+        and reviewed["implementationTree"] == terminal_tree
+        and FULL_SHA256_RE.fullmatch(evidence_commit or "") is not None
+        and FULL_SHA256_RE.fullmatch(evidence_tree or "") is not None
+        and verdict
+        == {
+            "disposition": "CLEAN",
+            "P0": 0,
+            "P1": 0,
+            "P2": 0,
+            "exactMinimalFix": None,
+            "newFindings": [],
+        }
+        and authority
+        == {
+            "formalAccountableEngineeringSecurityReview": False,
+            "accountableReviewerIdentityOrSignatureRecorded": False,
+            "activatesRecI3": False,
+            "authorizesDeviceOrEmulatorExecution": False,
+            "authorizesHarnessOrMeasurement": False,
+            "authorizesDependencyOrProductionAdmission": False,
+            "authorizesReadyOrMerge": False,
+        },
+        "REC-I2B successor independent closure semantics/authority drift",
+    )
+    require(
+        git_output("rev-parse", "--verify", f"{evidence_commit}^{{commit}}") == evidence_commit
+        and git_output("rev-parse", f"{evidence_commit}^{{tree}}") == evidence_tree
+        and git_is_ancestor(terminal_commit, evidence_commit)
+        and git_is_ancestor(evidence_commit, git_output("rev-parse", "HEAD")),
+        "REC-I2B successor reviewed evidence commit/tree/lineage mismatch",
+    )
+    return evidence_commit, evidence_tree
+
+
+def validate_rec_i2b_runtime_evidence(
+    evidence: dict[str, Any],
+    *,
+    terminal_commit: str,
+    terminal_tree: str,
+) -> str:
+    baseline = terminal_commit == REC_I2B_METADATA_IMPLEMENTATION_HEAD
+    require(
+        evidence["reportId"] == "REC-I2B-RUNTIME-CRYPTO-IMPLEMENTATION-EVIDENCE-20260817-01"
+        and evidence["status"] == REC_I2B_CLAIM_CEILING
+        and evidence["claimCeiling"] == REC_I2B_CLAIM_CEILING,
+        "REC-I2B implementation evidence identity/status/claim ceiling drift",
+    )
+    require(
+        evidence["authority"] == rec_i2b_expected_authority(successor=not baseline),
+        "REC-I2B implementation evidence exact authority boundary drift",
+    )
+    git_record = evidence["git"]
+    expected_commits = [
+        "7b90db3403f165bb268daa6a727c5a33c3524a2b",
+        "6557add0d1d74d9029bd0d547b5493e72cdf7bac",
+        REC_I2B_RUNTIME_IMPLEMENTATION_HEAD,
+        "adc422236003403d15581c10e31e2dc797ccf9bb",
+        REC_I2B_METADATA_IMPLEMENTATION_HEAD,
+    ]
+    if not baseline:
+        expected_commits.append(terminal_commit)
+    require(
+        git_record["branch"] == REC_I2B_BRANCH
+        and git_record["implementationCommits"] == expected_commits
+        and git_record["terminalImplementationCommit"] == terminal_commit
+        and git_record["terminalImplementationTree"] == terminal_tree
+        and git_record["published"] is True
+        and git_record["publishedHeadBeforeLocalMetadataRemediation"] == REC_I2B_RUNTIME_CLOSURE_HEAD
+        and git_record["terminalImplementationPublished"] is False
+        and git_record["pullRequestCreated"] is True
+        and git_record["pullRequestNumber"] == REC_I2B_PULL_REQUEST_NUMBER
+        and git_record["pullRequestDraft"] is True
+        and git_record["merged"] is False,
+        "REC-I2B implementation evidence Git/PR target drift",
+    )
+
+    actual_graph = evidence["dependencyGraph"]
+    require(
+        actual_graph["allResolvableConfigurationsEnumeratedAndResolved"] is True
+        and actual_graph["allResolvableConfigurationCount"] == 61
+        and actual_graph["policyCoveredConfigurationCount"] == 34
+        and actual_graph["outsidePolicyBoundaryToolingConfigurationCount"] == 27
+        and actual_graph["policyCoveredJsr305ResolvedComponentCount"] == 0
+        and actual_graph["policyCoveredPackagedJsr305ClassDefinitionCount"] == 0
+        and len(actual_graph["runtimeArtifacts"]) == 6
+        and len(actual_graph["testOnlyArtifacts"]) == 2
+        and actual_graph["graphDriftFromApprovedSixRuntimeAndTwoTestOnlyArtifacts"] is False,
+        "REC-I2B current actual-graph evidence drift",
+    )
+
+    common_truth = rec_i2b_expected_common_review_truth()
+    if baseline:
+        expected_truth = {
+            **common_truth,
+            "currentFreshCacheMetadataIndependentFindingCounts": {"P0": 0, "P1": 0, "P2": 0},
+            "currentIndependentCleanReviewedImplementationCommit": REC_I2B_METADATA_IMPLEMENTATION_HEAD,
+            "currentIndependentCleanReviewedEvidenceCommit": REC_I2B_METADATA_EVIDENCE_HEAD,
+            "currentIndependentCleanClosureRecord": REC_I2B_METADATA_CLOSURE_PATH,
+            "currentZeroFindingsClaimed": True,
+            "independentDeltaReviewCompleted": True,
+            "independentDeltaReviewDisposition": "CLEAN",
+            "independentDeltaReviewRequired": False,
+            "distinctAccountableEngineeringSecurityReviewRequired": True,
+            "accountableEngineeringSecurityReviewRoutingMayBeRebuilt": True,
+            "delegationMaySubstituteAccountableReview": False,
+            "recI3MayProceedNow": False,
+            "openStageGate": "REC-I2B-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
+        }
+        require(
+            evidence["remediationState"]
+            == "FRESH_CACHE_METADATA_CLOSURE_INDEPENDENT_CLEAN_ACCOUNTABLE_REVIEW_PENDING"
+            and evidence["reviewAndGateTruth"] == expected_truth,
+            "REC-I2B baseline current independent-review/gate truth drift",
+        )
+        phase = "baseline-clean"
+    else:
+        current_review = evidence["reviewAndGateTruth"]["currentReviewedSuccessorIndependentDelta"]
+        disposition = current_review["disposition"]
+        require(disposition in {"PENDING", "CLEAN"}, "REC-I2B successor independent disposition is invalid")
+        clean = disposition == "CLEAN"
+        evidence_commit: str | None = None
+        evidence_tree: str | None = None
+        closure_reference: dict[str, Any] | None = None
+        if clean:
+            closure_reference = current_review["closureRecord"]
+            evidence_commit, evidence_tree = validate_rec_i2b_successor_review_closure(
+                closure_reference,
+                terminal_commit=terminal_commit,
+                terminal_tree=terminal_tree,
+            )
+        expected_current_review = {
+            "reviewedImplementationCommit": terminal_commit,
+            "reviewedImplementationTree": terminal_tree,
+            "reviewedEvidenceCommit": evidence_commit,
+            "reviewedEvidenceTree": evidence_tree,
+            "closureRecord": closure_reference,
+            "findingCounts": {"P0": 0, "P1": 0, "P2": 0} if clean else None,
+            "disposition": "CLEAN" if clean else "PENDING",
+            "completed": clean,
+            "required": not clean,
+            "coversCurrentTarget": clean,
+        }
+        expected_truth = {
+            **common_truth,
+            "priorFreshCacheMetadataIndependentFindingCounts": {"P0": 0, "P1": 0, "P2": 0},
+            "priorFreshCacheMetadataIndependentReviewedImplementationCommit": (
+                REC_I2B_METADATA_IMPLEMENTATION_HEAD
+            ),
+            "priorFreshCacheMetadataIndependentReviewedEvidenceCommit": REC_I2B_METADATA_EVIDENCE_HEAD,
+            "priorFreshCacheMetadataIndependentClosureRecord": REC_I2B_METADATA_CLOSURE_PATH,
+            "priorFreshCacheMetadataIndependentDisposition": "CLEAN",
+            "priorFreshCacheMetadataIndependentReviewCoversCurrentTarget": False,
+            "currentReviewedSuccessorIndependentDelta": expected_current_review,
+            "currentZeroFindingsClaimed": clean,
+            "independentDeltaReviewCompleted": clean,
+            "independentDeltaReviewDisposition": "CLEAN" if clean else "PENDING",
+            "independentDeltaReviewRequired": not clean,
+            "distinctAccountableEngineeringSecurityReviewRequired": True,
+            "accountableEngineeringSecurityReviewRoutingMayBeRebuilt": False,
+            "delegationMaySubstituteAccountableReview": False,
+            "recI3MayProceedNow": False,
+            "openStageGate": (
+                "REC-I2B-DRAFT-PR38-EXACT-HEAD-CI_THEN_ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW"
+                if clean
+                else "REC-I2B-INDEPENDENT-ADVISORY-DELTA-REVIEW"
+            ),
+        }
+        require(
+            evidence["remediationState"]
+            == (
+                "REVIEWED_SUCCESSOR_VALIDATOR_AND_CI_METADATA_INDEPENDENT_CLEAN_DRAFT_CI_PENDING"
+                if clean
+                else "REVIEWED_SUCCESSOR_VALIDATOR_AND_CI_METADATA_REMEDIATED_LOCALLY_VERIFIED_INDEPENDENT_DELTA_PENDING"
+            )
+            and evidence["reviewAndGateTruth"] == expected_truth,
+            "REC-I2B successor independent-review/gate truth drift",
+        )
+        phase = "successor-clean" if clean else "successor-pending"
+
+    forbidden_claims = evidence["notPerformedOrClaimed"]
+    expected_forbidden_fields = {
+        "deviceOrEmulatorExecution",
+        "androidKeystoreRuntimeExecution",
+        "harnessImplementationOrExecution",
+        "orchestratedKillRecoveryCampaign",
+        "networkExecution",
+        "measurement",
+        "metricPass",
+        "pocPass",
+        "readinessClosure",
+        "dependencyAdmission",
+        "productionAdmission",
+        "recI3Activation",
+        "merge",
+        "googleSheetMutation",
+    }
+    require(
+        expected_forbidden_fields.issubset(forbidden_claims)
+        and all(forbidden_claims[field] is False for field in expected_forbidden_fields),
+        "REC-I2B forbidden execution/admission/PASS/merge claim became true or disappeared",
+    )
+    return phase
+
+
+def validate_rec_i2b_accountable_packet(
+    packet: dict[str, Any],
+    *,
+    evidence: dict[str, Any],
+    evidence_bytes: bytes,
+    terminal_commit: str,
+    terminal_tree: str,
+    phase: str,
+) -> None:
+    baseline = phase == "baseline-clean"
+    require(
+        packet["packetId"] == "REC-I2B-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW-PACKET-20260817-01"
+        and packet["claimCeiling"] == REC_I2B_CLAIM_CEILING,
+        "REC-I2B accountable packet identity/claim ceiling drift",
+    )
+    expected_authority = {
+        "implementationAuthority": [
+            "REC-I2A-ACTUAL-GRAPH-PRODUCT-IP-DISPOSITION-20260817-01",
+            "STAGE0-OWNER-UNLOCK-BATCH-20260817-02",
+            "STAGE0-TECHNICAL-REMEDIATION-DELEGATION-20260817-01",
+            "REC-I2B-ADVISORY-REMEDIATION-AUTH-20260817-01",
+            "REC-I2B-INDEPENDENT-DELTA-REVIEW-CLOSURE-AUTH-20260817-01",
+            "REC-I2B-DRAFT-PUBLICATION-AUTH-20260817-01",
+            "REC-I2B-VERIFICATION-METADATA-BOM-REMEDIATION-AUTH-20260817-01",
+            "REC-I2B-VERIFICATION-METADATA-TRANSITIVE-ARTIFACTS-REMEDIATION-AUTH-20260817-02",
+            "REC-I2B-VERIFICATION-METADATA-GUAVA-33_3_1-POM-REMEDIATION-AUTH-20260817-03",
+            "REC-I2B-VERIFICATION-METADATA-FRESH-CACHE-CLOSURE-AUTH-20260817-04",
+            "REC-I2B-FRESH-CACHE-METADATA-INDEPENDENT-DELTA-REVIEW-CLOSURE-20260818-01",
+        ],
+        "thisPacketIsFormalApproval": False,
+        "technicalDelegationMaySubstituteAccountableReview": False,
+        "reviewerIdentityRecorded": False,
+        "reviewerSignatureRecorded": False,
+        "formalApprovalRecorded": False,
+        "recI3Activated": False,
+        "deviceOrEmulatorExecutionAuthorized": False,
+        "harnessOrCampaignAuthorized": False,
+        "measurementAuthorized": False,
+        "dependencyOrProductionAdmissionAuthorized": False,
+        "publicationOrMergeAuthorizedByIndependentReview": False,
+        "draftPublicationAlreadyAuthorizedAndPerformed": True,
+        "currentReviewedClosureDraftPr38NonForceUpdateAuthorized": baseline,
+        "readyOrMergeAuthorized": False,
+    }
+    if not baseline:
+        expected_authority["implementationAuthority"].extend(
+            [
+                REC_I2B_SUCCESSOR_REMEDIATION_AUTHORIZATION,
+                REC_I2B_SUCCESSOR_JAR_METADATA_AUTHORIZATION,
+                REC_I2B_SUCCESSOR_SPOTLESS_METADATA_AUTHORIZATION,
+            ]
+        )
+        expected_authority["reviewedSuccessorDraftPr38NonForceUpdateAuthorized"] = True
+    require(
+        packet["authorityBoundary"] == expected_authority,
+        "REC-I2B accountable packet exact authority boundary drift",
+    )
+
+    target = packet["reviewTarget"]
+    expected_commits = evidence["git"]["implementationCommits"]
+    require(
+        target["branch"] == REC_I2B_BRANCH
+        and target["publishedAtPacketRefresh"] is False
+        and target["targetedForExistingDraftPr38Publication"] is True
+        and target["publishedDraftBaselineHead"] == REC_I2B_RUNTIME_CLOSURE_HEAD
+        and target["pullRequestNumber"] == REC_I2B_PULL_REQUEST_NUMBER
+        and target["pullRequestDraft"] is True
+        and target["implementationCommits"] == expected_commits
+        and target["terminalImplementationCommit"] == terminal_commit
+        and target["terminalImplementationTree"] == terminal_tree,
+        "REC-I2B accountable packet exact branch/PR/terminal target drift",
+    )
+    evidence_reference = target["implementationEvidence"]
+    require(
+        evidence_reference
+        == {
+            "path": REC_I2B_RUNTIME_EVIDENCE_PATH,
+            "bytes": len(evidence_bytes),
+            "sha256": hashlib.sha256(evidence_bytes).hexdigest(),
+        },
+        "REC-I2B accountable packet implementation-evidence byte/hash pin drift",
+    )
+    historical_closure = target["independentDeltaReviewClosure"]
+    require(
+        historical_closure
+        == {
+            "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-independent-delta-review-closure-2026-08-17.json",
+            "bytes": 8534,
+            "sha256": "3a3817150fa984a2caf6b4bf24e1ca677574bfc17d1d24916a2d35db343cdc04",
+            "historicalOnlyForCurrentTarget": True,
+        },
+        "REC-I2B accountable packet historical runtime closure pin drift",
+    )
+    prior_metadata_closure = target["freshCacheMetadataIndependentDeltaReviewClosure"]
+    require(
+        prior_metadata_closure["path"] == REC_I2B_METADATA_CLOSURE_PATH
+        and prior_metadata_closure["bytes"] == 8427
+        and prior_metadata_closure["sha256"] == REC_I2B_METADATA_CLOSURE_SHA256
+        and prior_metadata_closure["reviewedImplementationCommit"] == REC_I2B_METADATA_IMPLEMENTATION_HEAD
+        and prior_metadata_closure["reviewedEvidenceCommit"] == REC_I2B_METADATA_EVIDENCE_HEAD,
+        "REC-I2B accountable packet fresh-cache historical closure pin drift",
+    )
+
+    advisory_gate = packet["advisoryRemediationGate"]
+    require(
+        advisory_gate["priorVerdict"]
+        == {
+            "formalReviewer": False,
+            "disposition": "CHANGES_REQUIRED",
+            "P0": 0,
+            "P1": 3,
+            "P2": 2,
+        }
+        and advisory_gate["localRemediation"]
+        == {
+            "P1FindingsImplementedAndVerified": 3,
+            "P2FindingsImplementedAndVerified": 2,
+            "closureClaimed": True,
+        }
+        and advisory_gate["independentDeltaReview"]
+        == {
+            "completed": True,
+            "reviewer": {
+                "product": "OpenAI Codex",
+                "organization": "OpenAI",
+                "role": "INDEPENDENT_ADVISORY_IMPLEMENTATION_REVIEWER",
+                "formalReviewer": False,
+            },
+            "disposition": "CLEAN",
+            "P0": 0,
+            "P1": 0,
+            "P2": 0,
+            "record": (
+                "docs/evidence/poc-recovery-001/reviews/"
+                "rec-i2b-independent-delta-review-closure-2026-08-17.json"
+            ),
+            "reviewedImplementationCommit": REC_I2B_RUNTIME_IMPLEMENTATION_HEAD,
+            "reviewedImplementationTree": REC_I2B_RUNTIME_IMPLEMENTATION_TREE,
+            "reviewedEvidenceCommit": REC_I2B_RUNTIME_EVIDENCE_HEAD,
+            "reviewedEvidenceTree": REC_I2B_RUNTIME_EVIDENCE_TREE,
+            "durableClosureRecordCommit": REC_I2B_RUNTIME_CLOSURE_HEAD,
+            "coversCurrentTerminalImplementation": False,
+        }
+        and advisory_gate["freshGraphVerificationMetadataAdvisoryVerdict"]
+        == {
+            "reviewedImplementationCommit": "adc422236003403d15581c10e31e2dc797ccf9bb",
+            "reviewedImplementationTree": "27e9f6b956e5818daae32949f978e42c0c1644b2",
+            "reviewedEvidenceCommit": "c65fe0718f082aec97a38d2cc567e1d56c6da8d1",
+            "reviewedEvidenceTree": "d6227920a0b2e852c74f3aa5623ca853b3aa0b4b",
+            "disposition": "CHANGES_REQUIRED",
+            "P0": 0,
+            "P1": 1,
+            "P2": 0,
+            "formalAccountableReview": False,
+            "findingId": "REC-I2B-FRESH-GRAPH-VERIFICATION-METADATA-P1-001",
+            "coversCurrentTerminalImplementation": False,
+        }
+        and advisory_gate["freshIndependentDeltaReview"]
+        == {
+            "required": False,
+            "completed": True,
+            "reviewer": {
+                "product": "OpenAI Codex",
+                "organization": "OpenAI",
+                "role": "INDEPENDENT_ADVISORY_IMPLEMENTATION_REVIEWER",
+                "formalReviewer": False,
+            },
+            "disposition": "CLEAN",
+            "P0": 0,
+            "P1": 0,
+            "P2": 0,
+            "reviewedImplementationCommit": REC_I2B_METADATA_IMPLEMENTATION_HEAD,
+            "reviewedImplementationTree": REC_I2B_METADATA_IMPLEMENTATION_TREE,
+            "reviewedEvidenceCommit": REC_I2B_METADATA_EVIDENCE_HEAD,
+            "reviewedEvidenceTree": REC_I2B_METADATA_EVIDENCE_TREE,
+            "record": {
+                "recordId": (
+                    "REC-I2B-FRESH-CACHE-METADATA-INDEPENDENT-DELTA-REVIEW-CLOSURE-20260818-01"
+                ),
+                "path": REC_I2B_METADATA_CLOSURE_PATH,
+                "bytes": 8427,
+                "sha256": REC_I2B_METADATA_CLOSURE_SHA256,
+            },
+        },
+        "REC-I2B accountable packet duplicated advisory review pins/closures drift",
+    )
+
+    findings = packet["findingsTruth"]
+    require(
+        findings["priorAdvisory"] == {"P0": 0, "P1": 3, "P2": 2}
+        and findings["historicalPostRemediationIndependentDelta"] == {"P0": 0, "P1": 0, "P2": 0}
+        and findings["freshGraphVerificationMetadataAdvisory"]
+        == {
+            "reviewedImplementationCommit": "adc422236003403d15581c10e31e2dc797ccf9bb",
+            "reviewedEvidenceCommit": "c65fe0718f082aec97a38d2cc567e1d56c6da8d1",
+            "disposition": "CHANGES_REQUIRED",
+            "findingId": "REC-I2B-FRESH-GRAPH-VERIFICATION-METADATA-P1-001",
+            "P0": 0,
+            "P1": 1,
+            "P2": 0,
+            "coversCurrentTarget": False,
+        },
+        "REC-I2B accountable packet duplicated historical findings truth drift",
+    )
+    if not baseline:
+        current_review = evidence["reviewAndGateTruth"]["currentReviewedSuccessorIndependentDelta"]
+        require(
+            target["reviewedSuccessorIndependentDeltaReviewClosure"]
+            == current_review["closureRecord"],
+            "REC-I2B accountable packet successor closure cross-pin drift",
+        )
+
+    checklist = packet["reviewChecklist"]
+    require(
+        len(checklist) == 17
+        and all(item["accountableReviewerAnswer"] is None for item in checklist),
+        "REC-I2B accountable packet must retain 17/17 null accountable answers",
+    )
+    if baseline:
+        require(
+            packet["status"] == "INDEPENDENT_CLEAN_DRAFT_PUBLICATION_AND_EXACT_HEAD_CI_PENDING"
+            and packet["routingEligibility"]
+            == {
+                "eligibleNow": False,
+                "eligibleAfterDraftPr38ExactHeadCiGreen": True,
+                "blockingPrecondition": "DRAFT_PR38_EXACT_HEAD_CI_GREEN",
+                "historicalIndependentAdvisoryDeltaReviewDisposition": "CLEAN",
+                "historicalCleanReviewCoversCurrentTarget": False,
+                "laterFreshGraphVerificationMetadataDisposition": "CHANGES_REQUIRED",
+                "laterChangesRequiredReviewCoversCurrentTarget": False,
+                "currentIndependentAdvisoryDeltaReviewDisposition": "CLEAN",
+                "currentIndependentCleanReviewCoversExactImplementationAndReviewedEvidence": True,
+                "recI3MayProceedNow": False,
+            }
+            and findings["currentFreshCacheMetadataIndependentDelta"]
+            == {
+                "reviewedImplementationCommit": REC_I2B_METADATA_IMPLEMENTATION_HEAD,
+                "reviewedEvidenceCommit": REC_I2B_METADATA_EVIDENCE_HEAD,
+                "disposition": "CLEAN",
+                "P0": 0,
+                "P1": 0,
+                "P2": 0,
+                "record": REC_I2B_METADATA_CLOSURE_PATH,
+            }
+            and findings["currentZeroFindingsClaimed"] is True
+            and findings["openP0StageGate"]
+            == "REC-I2B-DRAFT-PR38-EXACT-HEAD-CI_THEN_ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW"
+            and findings["recI3MayProceedNow"] is False,
+            "REC-I2B accountable packet baseline status/routing/findings drift",
+        )
+    else:
+        clean = phase == "successor-clean"
+        current = evidence["reviewAndGateTruth"]["currentReviewedSuccessorIndependentDelta"]
+        require(
+            packet["status"]
+            == (
+                "INDEPENDENT_CLEAN_DRAFT_PR38_EXACT_HEAD_CI_PENDING"
+                if clean
+                else "LOCAL_REVIEWED_SUCCESSOR_REMEDIATION_VERIFIED_INDEPENDENT_DELTA_REVIEW_PENDING"
+            )
+            and packet["routingEligibility"]
+            == {
+                "eligibleNow": False,
+                "eligibleAfterDraftPr38ExactHeadCiGreen": clean,
+                "blockingPrecondition": (
+                    "DRAFT_PR38_EXACT_HEAD_CI_GREEN"
+                    if clean
+                    else "FRESH_INDEPENDENT_ADVISORY_DELTA_REVIEW_CLEAN"
+                ),
+                "historicalIndependentAdvisoryDeltaReviewDisposition": "CLEAN",
+                "historicalCleanReviewCoversCurrentTarget": False,
+                "laterFreshGraphVerificationMetadataDisposition": "CHANGES_REQUIRED",
+                "laterChangesRequiredReviewCoversCurrentTarget": False,
+                "priorFreshCacheMetadataIndependentDeltaDisposition": "CLEAN",
+                "priorFreshCacheMetadataCleanReviewCoversCurrentTarget": False,
+                "currentIndependentAdvisoryDeltaReviewDisposition": "CLEAN" if clean else "PENDING",
+                "currentIndependentCleanReviewCoversExactImplementationAndReviewedEvidence": clean,
+                "recI3MayProceedNow": False,
+            }
+            and findings["priorFreshCacheMetadataIndependentDelta"]
+            == {
+                "reviewedImplementationCommit": REC_I2B_METADATA_IMPLEMENTATION_HEAD,
+                "reviewedEvidenceCommit": REC_I2B_METADATA_EVIDENCE_HEAD,
+                "disposition": "CLEAN",
+                "P0": 0,
+                "P1": 0,
+                "P2": 0,
+                "record": REC_I2B_METADATA_CLOSURE_PATH,
+                "coversCurrentTarget": False,
+            }
+            and findings["currentReviewedSuccessorIndependentDelta"] == current
+            and findings["currentZeroFindingsClaimed"] is clean
+            and findings["openP0StageGate"]
+            == (
+                "REC-I2B-DRAFT-PR38-EXACT-HEAD-CI_THEN_ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW"
+                if clean
+                else "REC-I2B-INDEPENDENT-ADVISORY-DELTA-REVIEW"
+            )
+            and findings["recI3MayProceedNow"] is False,
+            "REC-I2B accountable packet successor status/routing/findings drift",
+        )
+
+
+def validate_rec_i2b_evidence_boundary() -> None:
+    require(
+        sha256(REC_I2A_DISPOSITION_PATH) == REC_I2A_DISPOSITION_SHA256,
+        "REC-I2A actual-graph Product/IP disposition hash drift",
+    )
+    disposition = read_json(REC_I2A_DISPOSITION_PATH)
+    require(
+        disposition["decisionId"] == "REC-I2A-ACTUAL-GRAPH-PRODUCT-IP-DISPOSITION-20260817-01"
+        and disposition["status"] == "EVALUATION_APPROVED_FOR_EXACT_REC_I2B_IMPLEMENTATION_INPUT"
+        and disposition["authority"]["delegationId"]
+        == "STAGE0-TECHNICAL-REMEDIATION-DELEGATION-20260817-01"
+        and disposition["authority"]["conditionalImplementationAuthorizationId"]
+        == "STAGE0-OWNER-UNLOCK-BATCH-20260817-02",
+        "REC-I2A actual-graph Product/IP authority drift",
+    )
+    approved_graph = disposition["exactGraph"]
+    require(
+        approved_graph["rootCoordinate"] == "com.google.crypto.tink:tink-android:1.23.0"
+        and len(approved_graph["runtimeArtifacts"]) == 6
+        and len(approved_graph["testOnlyArtifacts"]) == 2
+        and approved_graph["resolvableConfigurationCount"] == 61
+        and approved_graph["policyCoveredConfigurationCount"] == 34
+        and approved_graph["outsidePolicyBoundaryToolingConfigurationCount"] == 27
+        and approved_graph["policyCoveredJsr305ResolvedComponentCount"] == 0
+        and approved_graph["policyCoveredPackagedJsr305ClassDefinitionCount"] == 0
+        and approved_graph["debugAndReleaseApkJsr305ClassDefinitionCount"] == 0
+        and approved_graph["repositoryWideJsr305AbsenceClaimed"] is False
+        and approved_graph["nativeOrJniArtifactsPresent"] is False
+        and approved_graph["releaseR8PassedWithExactThreeRules"] is True
+        and approved_graph["broadDontwarnUsed"] is False
+        and approved_graph["unresolvedR8MissingClassCount"] == 0,
+        "REC-I2A approved actual graph boundary drift",
+    )
+    decision = disposition["decision"]
+    require(
+        decision["claimCeiling"] == "EVALUATION_APPROVED_FOR_EXACT_REC_I2B_IMPLEMENTATION_INPUT"
+        and decision["recI2bImplementationInputApproved"] is True
+        and decision["recI2bConditionalImplementationAuthorizationActivated"] is True
+        and decision["exactGraphDriftRequiresFreshDeltaReview"] is True,
+        "REC-I2A decision no longer authorizes only the exact REC-I2B input",
+    )
+    require(
+        all(value is False for value in disposition["notAuthorized"].values()),
+        "REC-I2A disposition acquired forbidden execution/admission/merge authority",
+    )
+
+    require(
+        sha256(REC_I2B_METADATA_CLOSURE_PATH) == REC_I2B_METADATA_CLOSURE_SHA256,
+        "REC-I2B immutable metadata independent-closure hash drift",
+    )
+    closure = read_json(REC_I2B_METADATA_CLOSURE_PATH)
+    reviewed = closure["exactReviewedState"]
+    require(
+        closure["recordId"]
+        == "REC-I2B-FRESH-CACHE-METADATA-INDEPENDENT-DELTA-REVIEW-CLOSURE-20260818-01"
+        and closure["reviewer"]["product"] == "OpenAI Codex"
+        and closure["reviewer"]["formalReviewer"] is False
+        and closure["reviewer"]["signature"] is None
+        and reviewed["implementationCommit"] == REC_I2B_METADATA_IMPLEMENTATION_HEAD
+        and reviewed["implementationTree"] == REC_I2B_METADATA_IMPLEMENTATION_TREE
+        and reviewed["evidenceCommit"] == REC_I2B_METADATA_EVIDENCE_HEAD
+        and reviewed["evidenceTree"] == REC_I2B_METADATA_EVIDENCE_TREE
+        and closure["verdict"] == {
+            "disposition": "CLEAN",
+            "P0": 0,
+            "P1": 0,
+            "P2": 0,
+            "exactMinimalFix": None,
+            "newFindings": [],
+        },
+        "REC-I2B immutable metadata independent-closure semantics drift",
+    )
+
+    require(
+        canonical_lf_sha256("android/gradle/verification-metadata.xml")
+        == REC_I2B_SUCCESSOR_METADATA_CANONICAL_SHA256,
+        "REC-I2B reviewed-successor exact verification-metadata payload drift",
+    )
+    terminal_commit = git_output(
+        "log",
+        "-1",
+        "--format=%H",
+        "--",
+        "android/gradle/verification-metadata.xml",
+    )
+    terminal_tree = git_output("rev-parse", f"{terminal_commit}^{{tree}}")
+    require(
+        git_is_ancestor(REC_I2B_METADATA_IMPLEMENTATION_HEAD, terminal_commit)
+        and git_is_ancestor(terminal_commit, git_output("rev-parse", "HEAD"))
+        and git_output("rev-parse", f"{terminal_commit}:android/poc/recovery") == REC_I2B_MODULE_TREE,
+        "REC-I2B reviewed-successor terminal commit/tree/module lineage drift",
+    )
+    evidence_bytes = (ROOT / REC_I2B_RUNTIME_EVIDENCE_PATH).read_bytes()
+    evidence = json.loads(evidence_bytes.decode("utf-8", errors="strict"))
+    phase = validate_rec_i2b_runtime_evidence(
+        evidence,
+        terminal_commit=terminal_commit,
+        terminal_tree=terminal_tree,
+    )
+    packet = read_json(REC_I2B_ACCOUNTABLE_PACKET_PATH)
+    validate_rec_i2b_accountable_packet(
+        packet,
+        evidence=evidence,
+        evidence_bytes=evidence_bytes,
+        terminal_commit=terminal_commit,
+        terminal_tree=terminal_tree,
+        phase=phase,
+    )
+
+
+def validate_rec_i2b_current_module_boundary() -> None:
+    build_text = read_text("android/poc/recovery/build.gradle.kts")
+    for fragment in (
+        'versionName = "0.1.0-poc-recovery-i2b"',
+        'implementation("com.google.crypto.tink:tink-android:1.23.0")',
+        'exclude(group = "com.google.code.findbugs", module = "jsr305")',
+        "testImplementation(libs.junit4)",
+    ):
+        require(fragment in build_text, f"REC-I2B build contract missing: {fragment}")
+    lock_text = read_text("android/poc/recovery/gradle.lockfile").lower()
+    require(
+        "com.google.crypto.tink:tink-android:1.23.0" in lock_text,
+        "REC-I2B lockfile lacks exact Tink 1.23.0",
+    )
+    require("jsr305" not in lock_text, "REC-I2B lockfile resolves forbidden JSR305")
+    validate_rec_i2b_evidence_boundary()
+
+
+def validate_current_rec_i2b_reviewed_successor() -> bool:
+    lifecycle = collect_recovery_lifecycle_identity()
+    identity = collect_rec_i2b_successor_identity(lifecycle)
+    if not rec_i2b_successor_candidate(identity):
+        return False
+    validate_rec_i2b_successor_lifecycle(
+        identity,
+        collect_post_merge_changes(merged_anchor=REC_I2B_RUNTIME_IMPLEMENTATION_HEAD),
+    )
+    validate_rec_i2b_current_module_boundary()
+    return True
+
+
+def validate_dependency_and_scope_boundary() -> bool:
     authorization = read_json(AUTHORIZATION_PATH)
     validate_authorization_record(authorization)
     inventory = read_json("docs/evidence/poc-recovery-001/dependency-inventory.json")
@@ -1548,16 +2564,24 @@ def validate_dependency_and_scope_boundary() -> None:
     require(git_output("rev-parse", f"{REVIEWED_V06_HEAD}^{{tree}}") == AUTHORIZED_REVIEWED_TREE, "Reviewed technical target tree mismatch")
 
     lifecycle_identity = collect_recovery_lifecycle_identity()
-    post_merge_candidate = (
-        lifecycle_identity.head == REC_I1_MERGED_ANCHOR or lifecycle_identity.merged_anchor_is_ancestor
-    )
-    lifecycle_mode = validate_recovery_lifecycle(
-        lifecycle_identity,
-        [] if post_merge_candidate else collect_pre_merge_changed_paths(),
-        collect_post_merge_changes()
-        if post_merge_candidate
-        else {"committed": [], "staged": [], "unstaged": [], "untracked": []},
-    )
+    rec_i2b_identity = collect_rec_i2b_successor_identity(lifecycle_identity)
+    rec_i2b_mode = rec_i2b_successor_candidate(rec_i2b_identity)
+    if rec_i2b_mode:
+        lifecycle_mode = validate_rec_i2b_successor_lifecycle(
+            rec_i2b_identity,
+            collect_post_merge_changes(merged_anchor=REC_I2B_RUNTIME_IMPLEMENTATION_HEAD),
+        )
+    else:
+        post_merge_candidate = (
+            lifecycle_identity.head == REC_I1_MERGED_ANCHOR or lifecycle_identity.merged_anchor_is_ancestor
+        )
+        lifecycle_mode = validate_recovery_lifecycle(
+            lifecycle_identity,
+            [] if post_merge_candidate else collect_pre_merge_changed_paths(),
+            collect_post_merge_changes()
+            if post_merge_candidate
+            else {"committed": [], "staged": [], "unstaged": [], "untracked": []},
+        )
 
     for historical_commit in (AUTHORIZED_BASE_HEAD, REVIEWED_V06_HEAD):
         module_snapshot = git_path_records(
@@ -1569,7 +2593,10 @@ def validate_dependency_and_scope_boundary() -> None:
 
     require(RECOVERY_MODULE.is_dir(), "Authorized Recovery module is missing")
     build_text = read_text("android/poc/recovery/build.gradle.kts")
-    validate_recovery_build_text(build_text)
+    if rec_i2b_mode:
+        validate_rec_i2b_current_module_boundary()
+    else:
+        validate_recovery_build_text(build_text)
     settings = read_text("android/settings.gradle.kts")
     require(settings.count('include(":poc:recovery")') == 1, "Recovery module include missing or duplicated")
     validate_ci_text(read_text(".github/workflows/android-ci.yml"))
@@ -1580,8 +2607,12 @@ def validate_dependency_and_scope_boundary() -> None:
     production_sources = sorted((RECOVERY_MODULE / "src" / "main" / "kotlin").rglob("*.kt"))
     require(production_sources, "REC-I1 production contract sources are missing")
     production_text = "\n".join(path.read_text(encoding="utf-8") for path in production_sources)
-    for source in production_sources:
-        validate_production_source_text(source.read_text(encoding="utf-8"), source.relative_to(ROOT).as_posix())
+    if not rec_i2b_mode:
+        for source in production_sources:
+            validate_production_source_text(
+                source.read_text(encoding="utf-8"),
+                source.relative_to(ROOT).as_posix(),
+            )
     for magic in ("DORARM01", "DORARC01", "DORASA01", "DORAMA01", "DORACP01", "DORAKE01", "DORAKC01", "DORAKA01"):
         require(magic in production_text, f"REC-I1 source lacks codec magic {magic}")
     for classification in CANONICAL_TAXONOMY:
@@ -1597,11 +2628,22 @@ def validate_dependency_and_scope_boundary() -> None:
     for build_file in (ROOT / "android").rglob("build.gradle.kts"):
         if build_file == RECOVERY_MODULE / "build.gradle.kts":
             continue
-        require(":poc:recovery" not in build_file.read_text(encoding="utf-8"), f"Production/module edge into Recovery: {build_file}")
+        build_text = build_file.read_text(encoding="utf-8")
+        if rec_i2b_mode:
+            recovery_project_edge = re.search(
+                r'''project\s*\(\s*(?:path\s*=\s*)?["']:poc:recovery["']''',
+                build_text,
+            ) or re.search(r"projects\s*\.\s*poc\s*\.\s*recovery", build_text)
+            require(not recovery_project_edge, f"Production/module edge into Recovery: {build_file}")
+        else:
+            require(":poc:recovery" not in build_text, f"Production/module edge into Recovery: {build_file}")
 
     lockfile = RECOVERY_MODULE / "gradle.lockfile"
-    require(current["moduleLockfilePresent"] is lockfile.is_file(), "Recovery lockfile presence claim mismatch")
-    if lockfile.is_file():
+    if rec_i2b_mode:
+        require(lockfile.is_file(), "REC-I2B Recovery lockfile is missing")
+    else:
+        require(current["moduleLockfilePresent"] is lockfile.is_file(), "Recovery lockfile presence claim mismatch")
+    if lockfile.is_file() and not rec_i2b_mode:
         lock_text = lockfile.read_text(encoding="utf-8")
         require("tink" not in lock_text.lower() and "jsr305" not in lock_text.lower(), "Recovery lockfile contains forbidden runtime dependency")
         base_lock_coordinates: set[str] = set()
@@ -1623,10 +2665,9 @@ def validate_dependency_and_scope_boundary() -> None:
         }
         require(current_lock_coordinates <= base_lock_coordinates, "Recovery lockfile contains a new coordinate")
 
-    print(
-        f"PASS REC-I1 {lifecycle_mode} lifecycle; post-merge protected paths: "
-        f"{', '.join(POST_MERGE_PROTECTED_PATHS)}"
-    )
+    profile = REC_I2B_PROFILE if rec_i2b_mode else "REC-I1"
+    print(f"PASS {profile} {lifecycle_mode} lifecycle; protected paths: {', '.join(POST_MERGE_PROTECTED_PATHS)}")
+    return rec_i2b_mode
 
 
 def validate_active_metadata() -> None:
@@ -1755,6 +2796,9 @@ def run_lifecycle_tests() -> None:
         merge_ref="refs/pull/15/merge",
         merge_sha=REC_I1_REVIEWED_HEAD,
         number=15,
+        draft=True,
+        state="open",
+        merged=False,
     )
     expect_positive(
         "historical-authorized-pull-request-context",
@@ -1873,6 +2917,167 @@ def run_lifecycle_tests() -> None:
         print("PASS negative lifecycle-checked-out-branch-conflicts-with-event")
     else:
         raise ValueError("Negative lifecycle test unexpectedly passed: checked-out-branch-conflicts-with-event")
+
+
+def run_rec_i2b_successor_tests() -> None:
+    def pin(commit: str, tree: str, parent: str) -> PinnedCommitIdentity:
+        return PinnedCommitIdentity(commit, tree, (parent,), True)
+
+    def changes(**overrides: list[str]) -> dict[str, list[str]]:
+        result = {"committed": [], "staged": [], "unstaged": [], "untracked": []}
+        result.update(overrides)
+        return result
+
+    pull_request = GitHubPullRequestContext(
+        repository=GITHUB_REPOSITORY,
+        head_repository=GITHUB_REPOSITORY,
+        head_ref=REC_I2B_BRANCH,
+        head_sha="a" * 40,
+        base_ref=GITHUB_BASE_BRANCH,
+        base_sha="b" * 40,
+        merge_ref=f"refs/pull/{REC_I2B_PULL_REQUEST_NUMBER}/merge",
+        merge_sha="c" * 40,
+        number=REC_I2B_PULL_REQUEST_NUMBER,
+        draft=True,
+        state="open",
+        merged=False,
+    )
+    exact = RecoveryI2bSuccessorIdentity(
+        head="c" * 40,
+        branch=REC_I2B_BRANCH,
+        head_module_tree=REC_I2B_MODULE_TREE,
+        runtime_implementation=pin(
+            REC_I2B_RUNTIME_IMPLEMENTATION_HEAD,
+            REC_I2B_RUNTIME_IMPLEMENTATION_TREE,
+            REC_I2B_RUNTIME_IMPLEMENTATION_PARENT,
+        ),
+        runtime_evidence=pin(
+            REC_I2B_RUNTIME_EVIDENCE_HEAD,
+            REC_I2B_RUNTIME_EVIDENCE_TREE,
+            REC_I2B_RUNTIME_IMPLEMENTATION_HEAD,
+        ),
+        runtime_closure=pin(
+            REC_I2B_RUNTIME_CLOSURE_HEAD,
+            REC_I2B_RUNTIME_CLOSURE_TREE,
+            REC_I2B_RUNTIME_EVIDENCE_HEAD,
+        ),
+        metadata_implementation=pin(
+            REC_I2B_METADATA_IMPLEMENTATION_HEAD,
+            REC_I2B_METADATA_IMPLEMENTATION_TREE,
+            REC_I2B_METADATA_IMPLEMENTATION_PARENT,
+        ),
+        metadata_evidence=pin(
+            REC_I2B_METADATA_EVIDENCE_HEAD,
+            REC_I2B_METADATA_EVIDENCE_TREE,
+            REC_I2B_METADATA_IMPLEMENTATION_HEAD,
+        ),
+        metadata_closure=pin(
+            REC_I2B_METADATA_CLOSURE_HEAD,
+            REC_I2B_METADATA_CLOSURE_TREE,
+            REC_I2B_METADATA_EVIDENCE_HEAD,
+        ),
+        metadata_closure_is_ancestor_of_pull_request_head=True,
+        github_pull_request_context=pull_request,
+    )
+
+    require(rec_i2b_successor_candidate(exact), "Exact REC-I2B reviewed successor was not detected")
+    require(
+        validate_rec_i2b_successor_lifecycle(
+            exact,
+            changes(committed=["docs/evidence/poc-recovery-001/unrelated.json"]),
+        )
+        == "rec-i2b-reviewed-successor",
+        "Exact REC-I2B pull_request successor selected the wrong lifecycle",
+    )
+    print("PASS positive lifecycle-rec-i2b-exact-pr38-reviewed-successor")
+    main_descendant = replace(
+        exact,
+        branch=GITHUB_BASE_BRANCH,
+        metadata_closure_is_ancestor_of_pull_request_head=False,
+        github_pull_request_context=None,
+    )
+    require(
+        validate_rec_i2b_successor_lifecycle(main_descendant, changes())
+        == "rec-i2b-reviewed-successor",
+        "Exact REC-I2B main descendant selected the wrong lifecycle",
+    )
+    print("PASS positive lifecycle-rec-i2b-main-descendant")
+
+    def expect_negative(
+        name: str,
+        identity: RecoveryI2bSuccessorIdentity,
+        delta: dict[str, list[str]] | None = None,
+    ) -> None:
+        try:
+            validate_rec_i2b_successor_lifecycle(identity, delta or changes())
+        except ValueError:
+            print(f"PASS negative lifecycle-rec-i2b-{name}")
+            return
+        raise ValueError(f"Negative REC-I2B successor test unexpectedly passed: {name}")
+
+    for field in (
+        "runtime_implementation",
+        "runtime_evidence",
+        "runtime_closure",
+        "metadata_implementation",
+        "metadata_evidence",
+        "metadata_closure",
+    ):
+        value = getattr(exact, field)
+        expect_negative(f"{field}-commit", replace(exact, **{field: replace(value, commit="0" * 40)}))
+        expect_negative(f"{field}-tree", replace(exact, **{field: replace(value, tree="0" * 40)}))
+        expect_negative(f"{field}-parent", replace(exact, **{field: replace(value, parents=("0" * 40,))}))
+        expect_negative(
+            f"{field}-not-ancestor",
+            replace(exact, **{field: replace(value, is_ancestor_of_head=False)}),
+        )
+
+    expect_negative("module-subtree", replace(exact, head_module_tree="0" * 40))
+    expect_negative("branch", replace(exact, branch="codex/spoof"))
+    expect_negative(
+        "repository",
+        replace(exact, github_pull_request_context=replace(pull_request, repository="attacker/DORA")),
+    )
+    expect_negative(
+        "head-repository",
+        replace(exact, github_pull_request_context=replace(pull_request, head_repository="attacker/DORA")),
+    )
+    expect_negative(
+        "head-ref",
+        replace(exact, github_pull_request_context=replace(pull_request, head_ref="codex/spoof")),
+    )
+    expect_negative(
+        "base-ref",
+        replace(exact, github_pull_request_context=replace(pull_request, base_ref="not-main")),
+    )
+    expect_negative(
+        "pr-number",
+        replace(
+            exact,
+            github_pull_request_context=replace(pull_request, number=REC_I2B_PULL_REQUEST_NUMBER + 1),
+        ),
+    )
+    expect_negative(
+        "ready-pr",
+        replace(exact, github_pull_request_context=replace(pull_request, draft=False)),
+    )
+    expect_negative(
+        "closed-pr",
+        replace(exact, github_pull_request_context=replace(pull_request, state="closed")),
+    )
+    expect_negative(
+        "merged-pr",
+        replace(exact, github_pull_request_context=replace(pull_request, merged=True)),
+    )
+    expect_negative(
+        "head-lineage-spoof",
+        replace(exact, metadata_closure_is_ancestor_of_pull_request_head=False),
+    )
+
+    protected = "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/crypto/Injected.kt"
+    for layer in ("committed", "staged", "unstaged", "untracked"):
+        expect_negative(f"{layer}-module-mutation", exact, changes(**{layer: [protected]}))
+    expect_negative("committed-reverted-module-mutation", exact, changes(committed=[protected]))
 
 
 def test_git(repo: Path, *arguments: str, input_data: bytes | None = None) -> bytes:
@@ -2038,6 +3243,22 @@ def run_git_path_collector_tests() -> None:
                 f"{change_kind}-preserved", changes, "committed", relative
             )
 
+    with tempfile.TemporaryDirectory(prefix="dora-recovery-path-reverted-") as temporary:
+        repo, _initial = initialize_test_git_repo(Path(temporary))
+        relative = "android/poc/recovery/reverted.bin"
+        path = repo / Path(relative)
+        path.parent.mkdir(parents=True)
+        path.write_bytes(b"reviewed")
+        anchor = commit_test_git_repo(repo, "reviewed protected payload")
+        path.write_bytes(b"mutated")
+        commit_test_git_repo(repo, "mutate protected payload")
+        path.write_bytes(b"reviewed")
+        commit_test_git_repo(repo, "restore protected payload bytes")
+        changes = collect_post_merge_changes(root=repo, merged_anchor=anchor)
+        expect_real_git_protected_path_rejection(
+            "reverted-committed-history", changes, "committed", relative
+        )
+
     try:
         decode_git_path_records(b"android/poc/recovery/\xff\0", "synthetic invalid UTF-8")
     except ValueError:
@@ -2064,6 +3285,9 @@ def write_test_pull_request_event(
     base_sha: str,
     merge_sha: str | None,
     head_repository: str = GITHUB_REPOSITORY,
+    draft: bool = True,
+    state: str = "open",
+    merged: bool = False,
 ) -> None:
     event = {
         "number": number,
@@ -2071,6 +3295,9 @@ def write_test_pull_request_event(
         "pull_request": {
             "number": number,
             "merge_commit_sha": merge_sha,
+            "draft": draft,
+            "state": state,
+            "merged": merged,
             "head": {
                 "ref": head_ref,
                 "sha": head_sha,
@@ -2285,6 +3512,295 @@ def run_github_pull_request_context_tests() -> None:
             raise ValueError("Escaped GitHub event path unexpectedly passed")
 
 
+def run_rec_i2b_evidence_boundary_tests() -> None:
+    evidence = read_json(REC_I2B_RUNTIME_EVIDENCE_PATH)
+    evidence_bytes = (ROOT / REC_I2B_RUNTIME_EVIDENCE_PATH).read_bytes()
+    terminal_commit = REC_I2B_METADATA_IMPLEMENTATION_HEAD
+    terminal_tree = REC_I2B_METADATA_IMPLEMENTATION_TREE
+
+    def expect_evidence_negative(name: str, mutation: Callable[[dict[str, Any]], None]) -> None:
+        candidate = copy.deepcopy(evidence)
+        mutation(candidate)
+        try:
+            validate_rec_i2b_runtime_evidence(
+                candidate,
+                terminal_commit=terminal_commit,
+                terminal_tree=terminal_tree,
+            )
+        except (ValueError, KeyError):
+            print(f"PASS negative rec-i2b-evidence-{name}")
+            return
+        raise ValueError(f"Negative REC-I2B evidence mutation unexpectedly passed: {name}")
+
+    evidence_mutations: list[tuple[str, Callable[[dict[str, Any]], None]]] = [
+        ("status", lambda record: record.__setitem__("status", "PASS_READY_MERGED")),
+        ("branch", lambda record: record["git"].__setitem__("branch", "attacker/spoof")),
+        ("pr-number", lambda record: record["git"].__setitem__("pullRequestNumber", 999)),
+        ("pr-not-draft", lambda record: record["git"].__setitem__("pullRequestDraft", False)),
+        ("merged", lambda record: record["git"].__setitem__("merged", True)),
+        (
+            "terminal-commit",
+            lambda record: record["git"].__setitem__("terminalImplementationCommit", "0" * 40),
+        ),
+        (
+            "terminal-tree",
+            lambda record: record["git"].__setitem__("terminalImplementationTree", "0" * 40),
+        ),
+        (
+            "reviewed-implementation",
+            lambda record: record["reviewAndGateTruth"].__setitem__(
+                "currentIndependentCleanReviewedImplementationCommit", "0" * 40
+            ),
+        ),
+        (
+            "reviewed-evidence",
+            lambda record: record["reviewAndGateTruth"].__setitem__(
+                "currentIndependentCleanReviewedEvidenceCommit", "0" * 40
+            ),
+        ),
+        (
+            "review-closure",
+            lambda record: record["reviewAndGateTruth"].__setitem__(
+                "currentIndependentCleanClosureRecord", "docs/evidence/spoof.json"
+            ),
+        ),
+        (
+            "review-disposition",
+            lambda record: record["reviewAndGateTruth"].__setitem__(
+                "independentDeltaReviewDisposition", "REJECTED"
+            ),
+        ),
+        (
+            "open-stage-gate",
+            lambda record: record["reviewAndGateTruth"].__setitem__("openStageGate", "REC-I3"),
+        ),
+        (
+            "rec-i3-gate",
+            lambda record: record["reviewAndGateTruth"].__setitem__("recI3MayProceedNow", True),
+        ),
+    ]
+    for field in (
+        "accountableEngineeringSecurityReviewCompleted",
+        "deviceOrEmulatorExecutionAllowed",
+        "measuredExecutionAllowed",
+        "harnessOrCampaignAllowed",
+        "recI3Allowed",
+        "dependencyAdmissionAllowed",
+        "productionAdmissionAllowed",
+        "readyOrMergeAllowed",
+        "mergeAllowed",
+    ):
+        evidence_mutations.append(
+            (
+                f"authority-{field}",
+                lambda record, key=field: record["authority"].__setitem__(key, True),
+            )
+        )
+    for name, mutation in evidence_mutations:
+        expect_evidence_negative(name, mutation)
+
+    packet = read_json(REC_I2B_ACCOUNTABLE_PACKET_PATH)
+
+    def expect_packet_negative(name: str, mutation: Callable[[dict[str, Any]], None]) -> None:
+        candidate = copy.deepcopy(packet)
+        mutation(candidate)
+        try:
+            validate_rec_i2b_accountable_packet(
+                candidate,
+                evidence=evidence,
+                evidence_bytes=evidence_bytes,
+                terminal_commit=terminal_commit,
+                terminal_tree=terminal_tree,
+                phase="baseline-clean",
+            )
+        except (ValueError, KeyError):
+            print(f"PASS negative rec-i2b-packet-{name}")
+            return
+        raise ValueError(f"Negative REC-I2B packet mutation unexpectedly passed: {name}")
+
+    packet_mutations: list[tuple[str, Callable[[dict[str, Any]], None]]] = [
+        ("status", lambda record: record.__setitem__("status", "FORMALLY_APPROVED_AND_READY")),
+        ("branch", lambda record: record["reviewTarget"].__setitem__("branch", "attacker/spoof")),
+        ("pr-number", lambda record: record["reviewTarget"].__setitem__("pullRequestNumber", 999)),
+        ("pr-not-draft", lambda record: record["reviewTarget"].__setitem__("pullRequestDraft", False)),
+        (
+            "terminal-commit",
+            lambda record: record["reviewTarget"].__setitem__("terminalImplementationCommit", "0" * 40),
+        ),
+        (
+            "terminal-tree",
+            lambda record: record["reviewTarget"].__setitem__("terminalImplementationTree", "0" * 40),
+        ),
+        (
+            "evidence-bytes",
+            lambda record: record["reviewTarget"]["implementationEvidence"].__setitem__("bytes", 0),
+        ),
+        (
+            "evidence-sha256",
+            lambda record: record["reviewTarget"]["implementationEvidence"].__setitem__(
+                "sha256", "0" * 64
+            ),
+        ),
+        (
+            "reviewed-implementation",
+            lambda record: record["findingsTruth"]["currentFreshCacheMetadataIndependentDelta"].__setitem__(
+                "reviewedImplementationCommit", "0" * 40
+            ),
+        ),
+        (
+            "reviewed-evidence",
+            lambda record: record["findingsTruth"]["currentFreshCacheMetadataIndependentDelta"].__setitem__(
+                "reviewedEvidenceCommit", "0" * 40
+            ),
+        ),
+        (
+            "review-disposition",
+            lambda record: record["findingsTruth"]["currentFreshCacheMetadataIndependentDelta"].__setitem__(
+                "disposition", "REJECTED"
+            ),
+        ),
+        (
+            "current-findings-record",
+            lambda record: record["findingsTruth"]["currentFreshCacheMetadataIndependentDelta"].__setitem__(
+                "record", "docs/evidence/spoof.json"
+            ),
+        ),
+        (
+            "runtime-review-implementation-commit",
+            lambda record: record["advisoryRemediationGate"]["independentDeltaReview"].__setitem__(
+                "reviewedImplementationCommit", "0" * 40
+            ),
+        ),
+        (
+            "runtime-review-implementation-tree",
+            lambda record: record["advisoryRemediationGate"]["independentDeltaReview"].__setitem__(
+                "reviewedImplementationTree", "0" * 40
+            ),
+        ),
+        (
+            "runtime-review-evidence-commit",
+            lambda record: record["advisoryRemediationGate"]["independentDeltaReview"].__setitem__(
+                "reviewedEvidenceCommit", "0" * 40
+            ),
+        ),
+        (
+            "runtime-review-evidence-tree",
+            lambda record: record["advisoryRemediationGate"]["independentDeltaReview"].__setitem__(
+                "reviewedEvidenceTree", "0" * 40
+            ),
+        ),
+        (
+            "runtime-review-record",
+            lambda record: record["advisoryRemediationGate"]["independentDeltaReview"].__setitem__(
+                "record", "docs/evidence/spoof.json"
+            ),
+        ),
+        (
+            "changes-required-review-implementation-commit",
+            lambda record: record["advisoryRemediationGate"][
+                "freshGraphVerificationMetadataAdvisoryVerdict"
+            ].__setitem__("reviewedImplementationCommit", "0" * 40),
+        ),
+        (
+            "changes-required-review-implementation-tree",
+            lambda record: record["advisoryRemediationGate"][
+                "freshGraphVerificationMetadataAdvisoryVerdict"
+            ].__setitem__("reviewedImplementationTree", "0" * 40),
+        ),
+        (
+            "changes-required-review-evidence-commit",
+            lambda record: record["advisoryRemediationGate"][
+                "freshGraphVerificationMetadataAdvisoryVerdict"
+            ].__setitem__("reviewedEvidenceCommit", "0" * 40),
+        ),
+        (
+            "changes-required-review-evidence-tree",
+            lambda record: record["advisoryRemediationGate"][
+                "freshGraphVerificationMetadataAdvisoryVerdict"
+            ].__setitem__("reviewedEvidenceTree", "0" * 40),
+        ),
+        (
+            "fresh-clean-review-implementation-commit",
+            lambda record: record["advisoryRemediationGate"]["freshIndependentDeltaReview"].__setitem__(
+                "reviewedImplementationCommit", "0" * 40
+            ),
+        ),
+        (
+            "fresh-clean-review-implementation-tree",
+            lambda record: record["advisoryRemediationGate"]["freshIndependentDeltaReview"].__setitem__(
+                "reviewedImplementationTree", "0" * 40
+            ),
+        ),
+        (
+            "fresh-clean-review-evidence-commit",
+            lambda record: record["advisoryRemediationGate"]["freshIndependentDeltaReview"].__setitem__(
+                "reviewedEvidenceCommit", "0" * 40
+            ),
+        ),
+        (
+            "fresh-clean-review-evidence-tree",
+            lambda record: record["advisoryRemediationGate"]["freshIndependentDeltaReview"].__setitem__(
+                "reviewedEvidenceTree", "0" * 40
+            ),
+        ),
+        (
+            "fresh-clean-review-record-path",
+            lambda record: record["advisoryRemediationGate"]["freshIndependentDeltaReview"][
+                "record"
+            ].__setitem__("path", "docs/evidence/spoof.json"),
+        ),
+        (
+            "fresh-clean-review-record-sha256",
+            lambda record: record["advisoryRemediationGate"]["freshIndependentDeltaReview"][
+                "record"
+            ].__setitem__("sha256", "0" * 64),
+        ),
+        (
+            "changes-required-findings-implementation",
+            lambda record: record["findingsTruth"]["freshGraphVerificationMetadataAdvisory"].__setitem__(
+                "reviewedImplementationCommit", "0" * 40
+            ),
+        ),
+        (
+            "changes-required-findings-evidence",
+            lambda record: record["findingsTruth"]["freshGraphVerificationMetadataAdvisory"].__setitem__(
+                "reviewedEvidenceCommit", "0" * 40
+            ),
+        ),
+        (
+            "open-stage-gate",
+            lambda record: record["findingsTruth"].__setitem__("openP0StageGate", "REC-I3"),
+        ),
+        ("routing-now", lambda record: record["routingEligibility"].__setitem__("eligibleNow", True)),
+        (
+            "rec-i3-routing",
+            lambda record: record["routingEligibility"].__setitem__("recI3MayProceedNow", True),
+        ),
+    ]
+    for field in (
+        "thisPacketIsFormalApproval",
+        "technicalDelegationMaySubstituteAccountableReview",
+        "reviewerIdentityRecorded",
+        "reviewerSignatureRecorded",
+        "formalApprovalRecorded",
+        "recI3Activated",
+        "deviceOrEmulatorExecutionAuthorized",
+        "harnessOrCampaignAuthorized",
+        "measurementAuthorized",
+        "dependencyOrProductionAdmissionAuthorized",
+        "publicationOrMergeAuthorizedByIndependentReview",
+        "readyOrMergeAuthorized",
+    ):
+        packet_mutations.append(
+            (
+                f"authority-{field}",
+                lambda record, key=field: record["authorityBoundary"].__setitem__(key, True),
+            )
+        )
+    for name, mutation in packet_mutations:
+        expect_packet_negative(name, mutation)
+
+
 def run_negative_tests() -> None:
     def key04(protocol: dict[str, Any]) -> dict[str, Any]:
         return next(row for row in effective_rows(protocol) if row["id"] == "KEY-04")
@@ -2438,21 +3954,29 @@ def main() -> int:
     protocol = read_json(PROTOCOL_PATH)
     validate_all(gate, protocol)
     validate_readiness_and_evidence(gate)
-    validate_dependency_and_scope_boundary()
+    rec_i2b_mode = validate_dependency_and_scope_boundary()
     validate_active_metadata()
     if "--self-test" in sys.argv[1:]:
         run_lifecycle_tests()
+        run_rec_i2b_successor_tests()
         run_git_path_collector_tests()
         run_github_pull_request_context_tests()
+        run_rec_i2b_evidence_boundary_tests()
         run_negative_tests()
+    profile_summary = (
+        "exact REC-I2B reviewed-successor chain/module/evidence boundary valid; accountable Engineering/Security review, "
+        "REC-I3, execution, admission and merge remain blocked"
+        if rec_i2b_mode
+        else "exact REC-I1 authorization and pure module valid"
+    )
     print(
         "POC-RECOVERY-001 governance v0.6 validation passed; 15 v0.1-v0.5 audit artifacts immutable, "
         "46 unique effective rows with one KEY-04, KEY-04 authentication/AAD failure only -> "
         "KEY_UNAVAILABLE_KEY_MISMATCH, KCF-07 successful-decrypt malformed plaintext -> "
         "CORRUPT_KEY_CONFIRMATION, Phase A=184, full physical=138, hard kills=120/candidate separate, "
-        "formal accountable review complete with REC-RDY-02 closed, exact REC-I1 authorization and pure module valid, "
-        "10 current blockers remain, implementationAllowed=false, "
-        "implementationAllowedByThisPackage=false, executionAllowed=false, measuredExecutionAllowed=false"
+        f"formal accountable protocol review complete with REC-RDY-02 closed, {profile_summary}; "
+        "10 current protocol-execution blockers remain, implementationAllowedByThisPackage=false, "
+        "executionAllowed=false, measuredExecutionAllowed=false"
     )
     return 0
 
