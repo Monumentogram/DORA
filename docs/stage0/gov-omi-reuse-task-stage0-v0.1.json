@@ -3,14 +3,15 @@
   "taskId": "GOV-OMI-001",
   "version": "gov-omi-reuse-stage0-v0.1",
   "date": "2026-08-18",
-  "state": "TODO",
+  "state": "BLOCKED",
   "definitionComplete": true,
   "canonicalCandidateUpstream": "https://github.com/BasedHardware/omi",
   "upstreamSnapshot": {
-    "commitSha": null,
-    "treeSha": null,
-    "retrievedAt": null,
-    "requiredBeforeSubstantiveAudit": true,
+    "commitSha": "7d99abcc4efb9e46a5853b21fc01289e4b891837",
+    "treeSha": "85db621ffd5dc5386bcbd7c87713cc69638be7e3",
+    "retrievedAt": "2026-08-18T10:34:04.378Z",
+    "phaseAPublicMetadataIdentityPinned": true,
+    "requiredBeforeSubstantiveAudit": false,
     "movingRefsForbiddenAsIdentity": [
       "main",
       "latest"
@@ -18,8 +19,14 @@
   },
   "authority": {
     "taskDefinitionAllowed": true,
+    "phaseAPublicMetadataAuditAllowed": true,
+    "phaseAPublicMetadataAuditCompleted": true,
+    "phaseAAuthorityId": "GOV-OMI-PHASE-A-PUBLIC-METADATA-AUDIT-AUTH-20260818-01",
     "auditExecutionAllowed": false,
     "upstreamCloneOrArchiveDownloadAllowed": false,
+    "upstreamBlobOrSourceRetrievalAllowed": false,
+    "issueOrPullRequestBodyCommentRetrievalAllowed": false,
+    "patchOrDiffRetrievalAllowed": false,
     "sourceCopyOrPortAllowed": false,
     "thirdPartyCodeExecutionAllowed": false,
     "binaryModelAssetDownloadAllowed": false,
@@ -43,7 +50,20 @@
     "BLOCKED_RIGHTS",
     "INSUFFICIENT_EVIDENCE"
   ],
+  "phaseAAllowedDispositions": [
+    "PROPOSED",
+    "DEFER",
+    "BLOCKED_RIGHTS",
+    "INSUFFICIENT_EVIDENCE"
+  ],
   "requiredFutureArtifacts": [
+    "docs/evidence/gov-omi-001/upstream-snapshot.json",
+    "docs/evidence/gov-omi-001/license-surface-inventory.json",
+    "docs/evidence/gov-omi-001/component-matrix.json",
+    "docs/evidence/gov-omi-001/hazard-register.json",
+    "docs/evidence/gov-omi-001/audit-report.md"
+  ],
+  "phaseAArtifactsProduced": [
     "docs/evidence/gov-omi-001/upstream-snapshot.json",
     "docs/evidence/gov-omi-001/license-surface-inventory.json",
     "docs/evidence/gov-omi-001/component-matrix.json",
@@ -57,11 +77,30 @@
     "docs/DORA_MVP1_STAGE_STATUS.md"
   ],
   "nextTransitionRequirements": [
-    "explicit owner authorization to execute GOV-OMI-001",
+    "explicit owner authorization for exact source/license/blob or issue/pull-request body retrieval beyond Phase A public metadata",
     "current-main branch and file scope",
     "confirmed immutable snapshot and reproducible query method",
     "exact IP-policy disposition for any retrieval beyond public metadata",
-    "named reviewers for conclusions beyond factual metadata research"
+    "named reviewers for conclusions beyond factual metadata research",
+    "no active-stage work or shared branch is displaced"
   ],
+  "phaseAResult": {
+    "state": "BLOCKED",
+    "treePathMetadataComplete": true,
+    "treeEntryCount": 13341,
+    "treeMetadataSha256": "007d030a21e72c07c89f36359c0e5ded355147c85b5b6284ae0858e5e5058e90",
+    "releaseIndexRetrieved": 998,
+    "releaseIndexTotal": 998,
+    "issueIndexRetrieved": 2953,
+    "issueIndexTotal": 2953,
+    "tagIndexRetrieved": 1000,
+    "tagIndexTotal": 1470,
+    "pullRequestIndexRetrieved": 5000,
+    "pullRequestIndexTotal": 8794,
+    "sourceOrBlobContentRetrieved": false,
+    "overallRightsDisposition": "BLOCKED_RIGHTS",
+    "overallComponentAndHazardDisposition": "INSUFFICIENT_EVIDENCE",
+    "activeStageChanged": false
+  },
   "noAdmissionStatement": "This task definition does not authorize or admit Omi source, dependencies, binaries, models, datasets, assets, services, schemas, tests or product behavior."
 }

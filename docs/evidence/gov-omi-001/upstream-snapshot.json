@@ -1,0 +1,675 @@
+{
+  "recordType": "dora-gov-omi-phase-a-upstream-snapshot",
+  "schemaVersion": 1,
+  "taskId": "GOV-OMI-001",
+  "phase": "PUBLIC_METADATA_PHASE_A",
+  "phaseState": "PROPOSED",
+  "authority": {
+    "id": "GOV-OMI-PHASE-A-PUBLIC-METADATA-AUDIT-AUTH-20260818-01",
+    "approvedOn": "2026-08-18",
+    "allowed": [
+      "public GitHub repository/ref/commit/tree-path metadata",
+      "public release and tag index metadata",
+      "public issue and pull-request index metadata",
+      "sanitized governance evidence"
+    ],
+    "prohibited": [
+      "clone or archive download",
+      "blob or source-content retrieval",
+      "raw-file retrieval",
+      "issue or pull-request body/comment retrieval",
+      "patch or diff retrieval",
+      "download, build, execution, copy or port",
+      "dependency, model, dataset, asset, service or product admission",
+      "active-stage change"
+    ]
+  },
+  "doraBase": {
+    "repository": "Monumentogram/DORA",
+    "commitSha": "97df1dc029328de16d7b2cc9f4aadcefc043bbbd",
+    "treeSha": "4b4ac11c07a0465c22a6f7840c40d809955c92f2",
+    "branch": "codex/gov-omi-001-phase-a-metadata"
+  },
+  "collectionWindowUtc": {
+    "startedAt": "2026-08-18T10:34:04.378Z",
+    "endedAt": "2026-08-18T10:47:55.862Z"
+  },
+  "canonicalRepository": {
+    "nodeId": "R_kgDOLkKqyg",
+    "databaseId": 776121034,
+    "nameWithOwner": "BasedHardware/omi",
+    "url": "https://github.com/BasedHardware/omi",
+    "visibility": "PUBLIC",
+    "isPrivate": false,
+    "isArchived": false,
+    "isDisabled": false,
+    "isFork": false,
+    "createdAt": "2024-03-22T18:12:25Z",
+    "defaultBranchObserved": "main"
+  },
+  "movingRefObservation": {
+    "ref": "refs/heads/main",
+    "objectType": "commit",
+    "initialCommitSha": "7d99abcc4efb9e46a5853b21fc01289e4b891837",
+    "finalCommitSha": "7d99abcc4efb9e46a5853b21fc01289e4b891837",
+    "stableDuringCollection": true,
+    "usedAsSnapshotIdentity": false
+  },
+  "immutableSnapshot": {
+    "commitSha": "7d99abcc4efb9e46a5853b21fc01289e4b891837",
+    "treeSha": "85db621ffd5dc5386bcbd7c87713cc69638be7e3",
+    "parentCommitShas": [
+      "c84185763239e418b7811a595d9fba9ec2c82548"
+    ],
+    "commitVerification": {
+      "reason": "valid",
+      "verified": true
+    },
+    "canonicalIdentity": "BasedHardware/omi@7d99abcc4efb9e46a5853b21fc01289e4b891837",
+    "treeIdentity": "BasedHardware/omi tree 85db621ffd5dc5386bcbd7c87713cc69638be7e3"
+  },
+  "rootTreeMetadata": {
+    "treeSha": "85db621ffd5dc5386bcbd7c87713cc69638be7e3",
+    "truncated": false,
+    "entryCount": 13341,
+    "canonicalMetadataSha256": "007d030a21e72c07c89f36359c0e5ded355147c85b5b6284ae0858e5e5058e90",
+    "canonicalization": "UTF-8(no BOM); rows sorted by path ordinal; path<TAB>mode<TAB>type<TAB>oid<TAB>size-or-null<LF>; terminal LF",
+    "typeCounts": [
+      {
+        "type": "blob",
+        "count": 11709
+      },
+      {
+        "type": "tree",
+        "count": 1632
+      }
+    ],
+    "modeCounts": [
+      {
+        "mode": "040000",
+        "count": 1632
+      },
+      {
+        "mode": "100644",
+        "count": 11349
+      },
+      {
+        "mode": "100755",
+        "count": 359
+      },
+      {
+        "mode": "120000",
+        "count": 1
+      }
+    ],
+    "rootEntryCount": 48,
+    "rootEntries": [
+      {
+        "path": ".cross-review-verify.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "3f1e9ddfce12344f25e880ea44201ccbba2063ae",
+        "size": 874
+      },
+      {
+        "path": ".cursor",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "92b5cd81ee4c7ecf8e1262ac29365a61eb5ed603",
+        "size": null
+      },
+      {
+        "path": ".cursorignore",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "a599ea24224c901997fc1d329915c0007c75b087",
+        "size": 1462
+      },
+      {
+        "path": ".dockerignore",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "5def37bb480b4a4e6b81832ce61da926b6a34490",
+        "size": 32
+      },
+      {
+        "path": ".envrc.example",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "f59533862f4688471e805768886c0eaa986b1ee5",
+        "size": 1340
+      },
+      {
+        "path": ".gemini",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "856190519f8a57bf8bf4ff820a1d2939332a1693",
+        "size": null
+      },
+      {
+        "path": ".github",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "e7f86ed1e69e86c482ae9621f1de1a2b2f83f2fd",
+        "size": null
+      },
+      {
+        "path": ".gitignore",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "d75276a86b405b30ec78983b56324c8ee81c8b7c",
+        "size": 5196
+      },
+      {
+        "path": ".impeccable.md",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "1d4295cdcc65d95bf5d912e4e540d2c13cc75721",
+        "size": 1053
+      },
+      {
+        "path": ".pre-commit-config.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "98ec846c1e1b00b1664db39c9ed9b805daeb534b",
+        "size": 3105
+      },
+      {
+        "path": ".prettierignore",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "84d2b94c680b0758ca0dbe36e259347c943710b5",
+        "size": 229
+      },
+      {
+        "path": ".secrets.baseline",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "168ca9788ee7f4a814d6dfee7edd8a9e9704e1d7",
+        "size": 2776
+      },
+      {
+        "path": ".windsurf",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "7ecab09b026db978f28bb56a83478ffac566110b",
+        "size": null
+      },
+      {
+        "path": "AGENTS.md",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "2d478fc4fe4ba6906b6f6708ab3f856be2cb7c2a",
+        "size": 17275
+      },
+      {
+        "path": "app",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "e2161aad79c7f5019f6d7f66efa21c935982bc89",
+        "size": null
+      },
+      {
+        "path": "backend",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "5693127fa5436d31207a8fc47a95ef537da10718",
+        "size": null
+      },
+      {
+        "path": "build6.done",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "size": 0
+      },
+      {
+        "path": "CLAUDE.md",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "44a0868d2ad6b6e7f202bd57aa993e18145a21b6",
+        "size": 1012
+      },
+      {
+        "path": "codemagic.yaml",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "624697309ad9d0c8ec043b06164415e010d1f292",
+        "size": 130868
+      },
+      {
+        "path": "community-plugin-stats.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "d4ea9630fb47acd838ed84c29c9960262b1a628e",
+        "size": 5339
+      },
+      {
+        "path": "config",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "30275ae8d49b082ebbf23c16ec2d756bd58df180",
+        "size": null
+      },
+      {
+        "path": "contract_tests",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "d10af828ca4c088e4f3c011de4bc75dc011ef2e2",
+        "size": null
+      },
+      {
+        "path": "contracts",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "8f75b76071a25b45ff1227b72888c0d9468888fa",
+        "size": null
+      },
+      {
+        "path": "CONTRIBUTING.md",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "92961786e00da2ae81d94484515f87334ec6e5b1",
+        "size": 640
+      },
+      {
+        "path": "design-qa.md",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "14777d883578a3773a5b222c64bcb6eb591aba08",
+        "size": 3218
+      },
+      {
+        "path": "desktop",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "5f1adbb1eff532b774f950954c206c0267821fc3",
+        "size": null
+      },
+      {
+        "path": "docs",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "4d752ed924e9345af9cda4b4abf3321915aaa67f",
+        "size": null
+      },
+      {
+        "path": "firebase.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "14f91fcce5c2a47da34e41e4eb6bf346cf0b6151",
+        "size": 257
+      },
+      {
+        "path": "firestore.indexes.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "1522b32a6e96eff481e4d30793fac3f327937cb3",
+        "size": 15655
+      },
+      {
+        "path": "firestore.rules",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "f8eca733d2c6a4bed1b9a9fb05a71926b5a36258",
+        "size": 1199
+      },
+      {
+        "path": "infrastructure",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "45495eaf4209817b3f2c466aca81b5eddf1179b9",
+        "size": null
+      },
+      {
+        "path": "ISSUE_TRIAGE_GUIDE.MD",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "4650660a5d716a87632fee043deed3fa45257a67",
+        "size": 5284
+      },
+      {
+        "path": "LICENSE",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "beb9b3553922522ad2466040709a4a76c05d81ca",
+        "size": 1084
+      },
+      {
+        "path": "Makefile",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "f79e1179b86950dec0ec1056955a8c7fd6669c02",
+        "size": 4892
+      },
+      {
+        "path": "mcp",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "b9f33f25fa72802930a64a452ffe9aace8ea4439",
+        "size": null
+      },
+      {
+        "path": "omi",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "ebc46e7d0f19da4bc52b59808616c16b2099a8b5",
+        "size": null
+      },
+      {
+        "path": "omiGlass",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "d1d4772860be2350d9fda61412fcb7ca56023160",
+        "size": null
+      },
+      {
+        "path": "package-lock.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "b9a485e2a018c72076308f01f8996a6dbd2c82da",
+        "size": 528979
+      },
+      {
+        "path": "package.json",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "1a464b5935cf2ece7bfa9fbcbd78a112485db520",
+        "size": 3885
+      },
+      {
+        "path": "Package.resolved",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "91e2b74878d9ecd2ed999357e508de20e5ba4485",
+        "size": 835
+      },
+      {
+        "path": "Package.swift",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "5245246b8f265cfb0fec1125d8f063e30ab5d849",
+        "size": 1328
+      },
+      {
+        "path": "plugins",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "c71891d024fd1ad436dd0d6003ed2c02da4c8aac",
+        "size": null
+      },
+      {
+        "path": "PRODUCT.md",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "0145f971cf362391648b62fc7be01b10e7f6def3",
+        "size": 3528
+      },
+      {
+        "path": "README.md",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "3e46869d8bd3b1a6056ff21c7a1938ef2f2e3a00",
+        "size": 9139
+      },
+      {
+        "path": "scripts",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "ec756faf4bd12cda035b493c8cebff0091741053",
+        "size": null
+      },
+      {
+        "path": "sdks",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "1876bd2d4c87c48f4db369988b24af53ad9db2a7",
+        "size": null
+      },
+      {
+        "path": "SECURITY.md",
+        "mode": "100644",
+        "type": "blob",
+        "oid": "3b541d7704e77fbc2be195a400588453073d74ff",
+        "size": 3413
+      },
+      {
+        "path": "web",
+        "mode": "040000",
+        "type": "tree",
+        "oid": "c86edf7fa2c2efe88dd98e8ae53a52ed8ee61c78",
+        "size": null
+      }
+    ]
+  },
+  "publicIndexMetadata": {
+    "repositoryCountsAtStart": {
+      "issues": 2952,
+      "pullRequests": 8793,
+      "releases": 998,
+      "tags": 1470
+    },
+    "repositoryCountsAtEnd": {
+      "issues": 2953,
+      "pullRequests": 8794,
+      "releases": 998,
+      "tags": 1470
+    },
+    "releases": {
+      "totalCount": 998,
+      "retrievedCount": 998,
+      "capped": false,
+      "canonicalMetadataSha256": "7ef84c92079083707a8dc111568d6ccc60215d9932dc4000ec0a3c8c78b52a01",
+      "canonicalization": "retrieved rows sorted createdAt DESC then tagName ASC; timestamps UTC ISO-8601 seconds; tab-separated selected fields; LF; terminal LF"
+    },
+    "tags": {
+      "totalCount": 1470,
+      "retrievedCount": 1000,
+      "capped": true,
+      "canonicalMetadataSha256": "0ce7e5ea899624a6f2f11b0b1e33ed6ad329ff9f3d9e8df6d379da470675d2ad",
+      "canonicalization": "retrieved rows sorted tag name ordinal ASC; name<TAB>targetType<TAB>targetOid<LF>; terminal LF"
+    },
+    "issues": {
+      "totalCountAtCollectionEnd": 2953,
+      "retrievedCount": 2953,
+      "uniqueNumberCount": 2953,
+      "duplicateNumberCount": 0,
+      "capped": false,
+      "completeAtCollectionEnd": true,
+      "canonicalMetadataSha256": "bda191f44ef1c9bf1e348d7abd3ad019a79045d802448fad0aff1d1adfeff4ec",
+      "canonicalization": "all retrieved rows sorted issue number ASC; timestamps UTC ISO-8601 seconds; selected fields tab-separated; title exact except CR/LF normalized to spaces; LF; terminal LF",
+      "rawTitlesRetained": false
+    },
+    "pullRequests": {
+      "totalCountAtLastPage": 8794,
+      "retrievedCount": 5000,
+      "uniqueNumberCount": 5000,
+      "duplicateNumberCount": 0,
+      "capped": true,
+      "uncollectedCountAtLastPage": 3794,
+      "canonicalMetadataSha256": "35f15141d4366114898daa44d4dd5c43664e0ba338ee7dbec2f447ae25cc6f7c",
+      "canonicalization": "retrieved rows sorted PR number ASC; timestamps UTC ISO-8601 seconds; selected fields tab-separated; title exact except CR/LF normalized to spaces; LF; terminal LF",
+      "rawTitlesRetained": false
+    }
+  },
+  "queryLog": [
+    {
+      "id": "Q01_REPOSITORY_SNAPSHOT",
+      "transport": "GitHub GraphQL API",
+      "query": "query RepoSnapshot($owner: String!, $name: String!) { repository(owner: $owner, name: $name) { id databaseId nameWithOwner url isPrivate isArchived isDisabled isFork visibility createdAt updatedAt pushedAt diskUsage forkCount stargazerCount watchers { totalCount } issues { totalCount } pullRequests { totalCount } releases { totalCount } refs(refPrefix: \"refs/tags/\") { totalCount } licenseInfo { key name nickname spdxId url pseudoLicense } primaryLanguage { name } defaultBranchRef { name target { __typename oid ... on Commit { authoredDate committedDate pushedDate messageHeadline tree { oid entries { name type mode oid } } } } } } rateLimit { cost remaining resetAt } }",
+      "variables": {
+        "owner": "BasedHardware",
+        "name": "omi"
+      },
+      "pagination": null,
+      "contentFieldsRequested": false
+    },
+    {
+      "id": "Q02_DEFAULT_REF",
+      "transport": "GitHub REST API",
+      "request": "GET /repos/BasedHardware/omi/git/ref/heads/main",
+      "selectedFields": [
+        "ref",
+        "node_id",
+        "object.type",
+        "object.sha"
+      ],
+      "pagination": null,
+      "contentFieldsRequested": false
+    },
+    {
+      "id": "Q03_GIT_COMMIT_METADATA",
+      "transport": "GitHub REST API",
+      "request": "GET /repos/BasedHardware/omi/git/commits/7d99abcc4efb9e46a5853b21fc01289e4b891837",
+      "selectedFields": [
+        "sha",
+        "tree.sha",
+        "parents[].sha",
+        "verification.verified",
+        "verification.reason"
+      ],
+      "pagination": null,
+      "contentFieldsRequested": false
+    },
+    {
+      "id": "Q04_RECURSIVE_TREE_PATH_METADATA",
+      "transport": "GitHub REST API",
+      "request": "GET /repos/BasedHardware/omi/git/trees/85db621ffd5dc5386bcbd7c87713cc69638be7e3?recursive=1",
+      "selectedFields": [
+        "sha",
+        "truncated",
+        "tree[].path",
+        "tree[].mode",
+        "tree[].type",
+        "tree[].sha",
+        "tree[].size"
+      ],
+      "pagination": null,
+      "stopCondition": "tree.truncated must equal false",
+      "contentFieldsRequested": false
+    },
+    {
+      "id": "Q05_RELEASE_INDEX",
+      "transport": "GitHub GraphQL API",
+      "query": "query ReleaseIndex($owner:String!, $name:String!, $pageSize:Int!, $after:String) { repository(owner:$owner, name:$name) { releases(first:$pageSize, after:$after, orderBy:{field:CREATED_AT,direction:DESC}) { totalCount pageInfo { hasNextPage endCursor } nodes { tagName name createdAt updatedAt publishedAt isDraft isPrerelease url } } } }",
+      "variables": {
+        "owner": "BasedHardware",
+        "name": "omi",
+        "pageSize": 100,
+        "after": "cursor-or-null"
+      },
+      "pagination": {
+        "ordering": "CREATED_AT DESC",
+        "pageSize": 100,
+        "cap": 1000,
+        "pageCount": 10,
+        "totalCount": 998,
+        "retrievedCount": 998,
+        "capped": false,
+        "hasNextPageAfterCap": false
+      },
+      "contentFieldsRequested": false
+    },
+    {
+      "id": "Q06_TAG_INDEX",
+      "transport": "GitHub GraphQL API",
+      "query": "query TagIndex($owner:String!, $name:String!, $pageSize:Int!, $after:String) { repository(owner:$owner, name:$name) { refs(refPrefix:\"refs/tags/\", first:$pageSize, after:$after, orderBy:{field:ALPHABETICAL,direction:ASC}) { totalCount pageInfo { hasNextPage endCursor } nodes { name target { __typename oid } } } } }",
+      "variables": {
+        "owner": "BasedHardware",
+        "name": "omi",
+        "pageSize": 100,
+        "after": "cursor-or-null"
+      },
+      "pagination": {
+        "ordering": "ALPHABETICAL ASC",
+        "pageSize": 100,
+        "cap": 1000,
+        "pageCount": 10,
+        "totalCount": 1470,
+        "retrievedCount": 1000,
+        "capped": true,
+        "hasNextPageAfterCap": true
+      },
+      "contentFieldsRequested": false
+    },
+    {
+      "id": "Q07_ISSUE_INDEX",
+      "transport": "GitHub GraphQL API",
+      "query": "query IssueIndexStable($owner:String!, $name:String!, $pageSize:Int!, $after:String) { repository(owner:$owner,name:$name) { issues(first:$pageSize,after:$after,states:[OPEN,CLOSED],orderBy:{field:CREATED_AT,direction:ASC}) { totalCount pageInfo { hasNextPage endCursor } nodes { number title state createdAt updatedAt closedAt url } } } }",
+      "variables": {
+        "owner": "BasedHardware",
+        "name": "omi",
+        "pageSize": 100,
+        "after": "cursor-or-null"
+      },
+      "pagination": {
+        "ordering": "CREATED_AT ASC",
+        "pageSize": 100,
+        "cap": 5000,
+        "pageCount": 30,
+        "firstPageTotalCount": 2953,
+        "lastPageTotalCount": 2953,
+        "retrievedCount": 2953,
+        "uniqueNumberCount": 2953,
+        "duplicateNumberCount": 0,
+        "capped": false,
+        "hasNextPageAfterCap": false
+      },
+      "contentFieldsRequested": false
+    },
+    {
+      "id": "Q08_PULL_REQUEST_INDEX",
+      "transport": "GitHub GraphQL API",
+      "query": "query PullRequestIndexStable($owner:String!, $name:String!, $pageSize:Int!, $after:String) { repository(owner:$owner,name:$name) { pullRequests(first:$pageSize,after:$after,states:[OPEN,CLOSED,MERGED],orderBy:{field:CREATED_AT,direction:ASC}) { totalCount pageInfo { hasNextPage endCursor } nodes { number title state isDraft createdAt updatedAt closedAt mergedAt url } } } }",
+      "variables": {
+        "owner": "BasedHardware",
+        "name": "omi",
+        "pageSize": 100,
+        "after": "cursor-or-null"
+      },
+      "pagination": {
+        "ordering": "CREATED_AT ASC",
+        "pageSize": 100,
+        "cap": 5000,
+        "pageCount": 50,
+        "firstPageTotalCount": 8794,
+        "lastPageTotalCount": 8794,
+        "retrievedCount": 5000,
+        "uniqueNumberCount": 5000,
+        "duplicateNumberCount": 0,
+        "capped": true,
+        "hasNextPageAfterCap": true,
+        "uncollectedCountAtLastPage": 3794
+      },
+      "contentFieldsRequested": false
+    },
+    {
+      "id": "Q09_FINAL_IDENTITY_RECHECK",
+      "transport": "GitHub GraphQL API",
+      "query": "query RepoFinal($owner:String!,$name:String!){repository(owner:$owner,name:$name){nameWithOwner isPrivate visibility defaultBranchRef{name target{__typename oid ... on Commit{tree{oid}}}} issues{totalCount} pullRequests{totalCount} releases{totalCount} refs(refPrefix:\"refs/tags/\"){totalCount}}}",
+      "variables": {
+        "owner": "BasedHardware",
+        "name": "omi"
+      },
+      "pagination": null,
+      "contentFieldsRequested": false
+    }
+  ],
+  "stopConditions": {
+    "repositoryMustRemainPublic": true,
+    "immutableCommitAndTreeMustResolve": true,
+    "recursiveTreeMustNotBeTruncated": true,
+    "paginationWithoutDeclaredCapForbidden": true,
+    "privateOrAuthGatedContentForbidden": true,
+    "blobSourceBodyCommentPatchDiffRetrievalForbidden": true
+  },
+  "limitations": [
+    "Issue and pull-request indexes are live metadata, not part of the immutable Git tree.",
+    "Issue count changed from 2952 to 2953 and pull-request count changed from 8793 to 8794 during collection; immutable commit and tree did not change.",
+    "Tag metadata is capped at 1000 of 1470.",
+    "Pull-request metadata is capped at 5000 of 8794; 3794 records were not collected.",
+    "No blob or source bytes were retrieved, so file contents, dependency declarations, license text and LFS pointer contents are unknown.",
+    "No issue or pull-request body, comment, author, patch or diff was retrieved; a title match cannot prove a defect, fix, revert or applicability."
+  ],
+  "noAdmissionStatement": "This Phase A record does not authorize or admit Omi source, dependencies, binaries, models, datasets, assets, services, schemas, tests or product behavior."
+}

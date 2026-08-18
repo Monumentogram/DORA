@@ -3,7 +3,7 @@
 Task: `GOV-OMI-001`\
 Version: `gov-omi-reuse-stage0-v0.1`\
 Date: 18 August 2026\
-State: `TODO` — task definition complete; audit execution is not authorized\
+State: `BLOCKED` — task definition and Phase A public-metadata evidence complete; full audit remains gated\
 Canonical candidate upstream: `https://github.com/BasedHardware/omi`\
 Policy boundary: `DORA_MVP1_IP_ASSET_POLICY.md`; this is an engineering control, not legal advice
 
@@ -27,14 +27,22 @@ that a Dora implementation would be better.
 
 ## 2. Authority and current boundary
 
-The project owner authorized only the creation of this separate task definition on 18 August 2026.
-This document does not authorize the audit run or any upstream artifact action.
+The project owner first authorized creation of this separate task definition on 18 August 2026,
+then authorized the bounded public-metadata-only Phase A through
+`GOV-OMI-PHASE-A-PUBLIC-METADATA-AUDIT-AUTH-20260818-01`. Phase A is complete at immutable Omi
+commit `7d99abcc4efb9e46a5853b21fc01289e4b891837` / tree
+`85db621ffd5dc5386bcbd7c87713cc69638be7e3`. This document still does not authorize source/blob,
+archive, issue/PR body/comment, patch/diff, download, execution, copying, porting or admission.
 
 | Authority | Current value |
 |---|---|
 | `taskDefinitionAllowed` | `true` |
-| `auditExecutionAllowed` | `false` |
+| `phaseAPublicMetadataAuditAllowed` | `true` |
+| `phaseAPublicMetadataAuditCompleted` | `true` |
+| `auditExecutionAllowed` | `false` beyond the completed Phase A boundary |
 | `upstreamCloneOrArchiveDownloadAllowed` | `false` |
+| `upstreamBlobOrSourceRetrievalAllowed` | `false` |
+| `issueOrPullRequestBodyCommentRetrievalAllowed` | `false` |
 | `sourceCopyOrPortAllowed` | `false` |
 | `thirdPartyCodeExecutionAllowed` | `false` |
 | `binaryModelAssetDownloadAllowed` | `false` |
@@ -42,10 +50,14 @@ This document does not authorize the audit run or any upstream artifact action.
 | `productImplementationAllowed` | `false` |
 | `activeStageChanged` | `false` |
 
-After a later explicit owner instruction starts the audit, Phase A may collect canonical public
-metadata under the `PROPOSED` state in the IP policy. Any broader source retrieval, controlled
-evaluation or execution still requires the applicable exact-artifact rights and security gate.
-No audit result may silently move an artifact to `EVALUATION_APPROVED` or `ADMITTED`.
+Phase A collected only canonical public repository/ref/commit/tree-path, release/tag and issue/PR
+index metadata under `PROPOSED`. The five sanitized artifacts are under
+`docs/evidence/gov-omi-001/`. The recursive tree was complete, but tags were capped at
+`1000/1470` and Pull Requests at `5000/8794`; license bytes, manifest contents and issue/PR
+content were not retrieved. Phase A therefore uses only `PROPOSED`, `DEFER`,
+`BLOCKED_RIGHTS` and `INSUFFICIENT_EVIDENCE`. Any broader retrieval, controlled evaluation or
+execution still requires an exact-artifact rights and security gate. No result may silently move
+an artifact to `EVALUATION_APPROVED` or `ADMITTED`.
 
 ## 3. Dora invariants that upstream cannot change
 
@@ -103,12 +115,15 @@ port makes them relevant.
 
 ## 6. Immutable snapshot and reproducible collection
 
-Before any substantive audit work, the future audit records:
+Phase A recorded the canonical repository, immutable commit/tree, retrieval window, default branch,
+exact metadata queries, filters, ordering, pagination, counts and caps. The remaining full-audit
+requirements are:
 
 - canonical repository owner/name and URL;
 - exact commit SHA and tree SHA resolved from the canonical publisher;
 - retrieval timestamp and default branch observed at that time;
-- root license bytes/digest and an inventory of nested license/NOTICE files;
+- root license bytes/digest and the contents of nested license/NOTICE files, only after separate
+  exact-scope retrieval authority and rights disposition;
 - repository archive or source-tree digest only if later retrieval is explicitly approved;
 - GitHub query strings, filters, sort order, pagination, result counts and any API/search cap;
 - every unavailable, deleted, truncated or authentication-gated source as an evidence limitation.
@@ -185,9 +200,9 @@ Priority review covers at least:
 - credential, transcript, audio or private metadata leakage;
 - dependency, native packaging and unsupported-device regressions.
 
-## 10. Required future artifacts
+## 10. Required artifacts
 
-The audit run, when separately authorized, produces only sanitized governance evidence:
+The completed Phase A produced the following sanitized governance evidence:
 
 | Artifact | Required content |
 |---|---|
@@ -201,22 +216,28 @@ Machine-readable records must use stable IDs, deterministic ordering, explicit n
 facts and canonical UTF-8/LF serialization. They contain no source-code blobs, secrets, private
 issue content, personal data or unapproved assets.
 
+Artifact existence does not complete the full audit: their Phase A records deliberately retain
+`BLOCKED_RIGHTS` and `INSUFFICIENT_EVIDENCE` wherever content or capped history was unavailable.
+
 ## 11. Transition to READY
 
-The audit remains `TODO` until all of the following are true in a later owner-scoped task:
+Phase A is complete. The full audit remains `BLOCKED` until all of the following are true in a
+later owner-scoped task:
 
-1. the owner explicitly authorizes execution of `GOV-OMI-001` and its read-only boundaries;
+1. the owner explicitly authorizes exact source/license/blob or issue/PR body retrieval boundaries;
 2. the exact expected branch and files are restated against current `main`;
 3. the canonical snapshot/query method and evidence limits are confirmed;
 4. any source retrieval beyond public metadata has an exact IP-policy disposition;
 5. reviewer roles are named for any conclusion that would go beyond factual metadata research;
 6. no active-stage work or shared branch is displaced.
 
-Suggested future branch: `agent/gov-omi-001-audit`.
+Suggested future branch: a new `codex/gov-omi-001-*` branch from then-current `main`; the
+completed Phase A branch is not continuing authority.
 
 ## 12. Definition of Done for the audit
 
-`GOV-OMI-001` may become `DONE` only when:
+`GOV-OMI-001` may become `DONE` only when all conditions below are substantively satisfied;
+the presence of five Phase A files alone is insufficient:
 
 - all five required artifacts exist and cross-reference one immutable Omi snapshot;
 - the top-level repository is inventoried and every Dora-relevant reviewed unit has one disposition;
@@ -242,6 +263,10 @@ Suggested future branch: `agent/gov-omi-001-audit`.
 
 ## 14. Current exit statement
 
-The task is now defined but not executed. No Omi snapshot has been selected, no source or asset has
-been downloaded or copied, no test has been imported, no dependency has been added, and no Dora
-architecture, stage, PoC verdict or authority flag has changed.
+The task definition and Phase A public-metadata collection are complete. The snapshot is
+`7d99abcc4efb9e46a5853b21fc01289e4b891837` / tree
+`85db621ffd5dc5386bcbd7c87713cc69638be7e3`. No Omi blob/source, archive, issue/PR content,
+binary, model, dataset or asset was downloaded or copied; no upstream test was imported; no
+dependency was added; no code was executed; and no Dora architecture, active stage, PoC verdict
+or product authority flag changed. The full audit remains blocked on exact rights, content,
+reviewer and completeness gates.
