@@ -14,15 +14,17 @@ Active PoC: `POC-RECOVERY-001`
 Stage state: **REC-I1 REVIEWED AND SQUASH-MERGED; POST-MERGE VALIDATOR LIFECYCLE REMEDIATED; RUNTIME IMPLEMENTATION, ACTUAL GRAPH AND EXECUTION BLOCKED**
 
 Omi upstream-governance reconciliation: `GOV-OMI-001` /
-`gov-omi-reuse-stage0-v0.1` is now defined as a separate `TODO` task. Owner scope on
-18 August 2026 authorizes only this task definition. `auditExecutionAllowed=false`,
-`sourceCopyOrPortAllowed=false`, `thirdPartyCodeExecutionAllowed=false`,
-`dependencyAdmission=false` and `productImplementationAllowed=false`. The future audit must pin one
-immutable Omi commit/tree, inventory license and component surfaces, convert verified upstream
-failures into Dora regression specifications, and classify candidates without silently changing
-Dora invariants. No Omi source, dependency, executable, model, dataset, asset or test is imported by
-this definition. Active Stage 0D, all Recovery authority flags and every existing PoC verdict remain
-unchanged.
+`gov-omi-reuse-stage0-v0.1` is now `BLOCKED` after completing the owner-authorized
+public-metadata-only Phase A. The immutable upstream identity is commit
+`7d99abcc4efb9e46a5853b21fc01289e4b891837` / tree
+`85db621ffd5dc5386bcbd7c87713cc69638be7e3`; the recursive 13,341-entry tree was untruncated,
+release metadata was complete at 998/998, issue metadata complete/unique at 2,953/2,953, while tags
+were capped at 1,000/1,470 and Pull Requests at 5,000/8,794. The five sanitized artifacts under
+`docs/evidence/gov-omi-001/` retain `BLOCKED_RIGHTS` for exact rights and
+`INSUFFICIENT_EVIDENCE` for behavior, reuse and hazard/fix conclusions. Source/blob/archive,
+issue/PR body/comment, patch/diff, copying, execution, dependency admission and product
+implementation remain forbidden. No Omi artifact entered Dora. Active Stage 0D, all Recovery
+authority flags and every existing PoC verdict remain unchanged.
 
 Design-governance reconciliation: `DES-EXPORT-001` / `des-export-interaction-v0.1` is contract
 complete under `DEC-017`; no implementation/conformance/user-research, code/Figma/schema/provider
