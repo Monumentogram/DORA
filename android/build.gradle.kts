@@ -5,6 +5,10 @@ plugins {
     alias(libs.plugins.spotless)
 }
 
+val recoveryI2aGraphProbe =
+    providers.gradleProperty("doraRecoveryI2aGraphProbe").map(String::toBoolean).orElse(false)
+val recoveryI2aPolicyConfiguration = Regex("^(debug|release|benchmark).*")
+
 val detektCli by configurations.creating
 
 dependencies {
@@ -51,5 +55,15 @@ tasks.register<JavaExec>("detekt") {
 allprojects {
     dependencyLocking {
         lockAllConfigurations()
+    }
+
+    if (recoveryI2aGraphProbe.get()) {
+        configurations.configureEach {
+            val isRecoveryPolicyConfiguration =
+                project.path == ":poc:recovery" && recoveryI2aPolicyConfiguration.matches(name)
+            if (!isRecoveryPolicyConfiguration) {
+                resolutionStrategy.deactivateDependencyLocking()
+            }
+        }
     }
 }

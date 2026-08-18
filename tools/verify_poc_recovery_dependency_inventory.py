@@ -26,6 +26,7 @@ from validate_poc_recovery_governance import (
     AUTHORIZATION_ID,
     AUTHORIZATION_PATH,
     validate_authorization_record,
+    validate_current_rec_i2b_reviewed_successor,
     validate_recovery_build_text,
 )
 
@@ -752,36 +753,44 @@ def validate_static(
     jsr305_exclusion: dict[str, Any],
     readiness: dict[str, Any],
     review_roles: dict[str, Any],
-) -> None:
+) -> bool:
     """Validate the active v0.6 packet and its exact recovery-only boundary."""
 
+    rec_i2b_mode = validate_current_rec_i2b_reviewed_successor()
     require(inventory["schemaVersion"] == 4, "Dependency inventory schema drift")
     require(inventory["rootCoordinate"] == "com.google.crypto.tink:tink-android:1.23.0", "Root coordinate drift")
     require(inventory["dependencyAdmission"] is False and inventory["runtimeGraphModified"] is False, "Inventory admitted a runtime graph")
     require(len(inventory["artifacts"]) == 8 and len(inventory["graphEdges"]) == 8, "Published closure count drift")
     require(all(artifact["jar"]["nativeEntries"] == 0 for artifact in inventory["artifacts"]), "Native entry recorded")
-    current_i1 = inventory["currentImplementationState"]
+    historical_i1 = inventory["currentImplementationState"]
     require(
-        current_i1["authorizationId"] == AUTHORIZATION_ID
-        and current_i1["taskScopedImplementationAuthorized"] is True
-        and current_i1["recoveryModuleExists"] is True
-        and current_i1["module"] == ":poc:recovery"
-        and current_i1["moduleKind"] == "PURE_NON_METRIC_NO_RUNTIME_CRYPTO"
-        and current_i1["tinkAndroid123Wired"] is False
-        and current_i1["runtimeCryptoDependencyAdded"] is False
-        and current_i1["newExternalDependencyCoordinateAdded"] is False
-        and current_i1["moduleLockfilePresent"] is RECOVERY_LOCK_PATH.is_file()
-        and current_i1["actualRecoveryRuntimeGraphReviewed"] is False
-        and current_i1["dependencyAdmission"] is False
-        and current_i1["productionAdmission"] is False,
-        "Current REC-I1 module/dependency state drift",
+        historical_i1["authorizationId"] == AUTHORIZATION_ID
+        and historical_i1["assessedOn"] == "2026-08-13"
+        and historical_i1["taskScopedImplementationAuthorized"] is True
+        and historical_i1["recoveryModuleExists"] is True
+        and historical_i1["module"] == ":poc:recovery"
+        and historical_i1["moduleKind"] == "PURE_NON_METRIC_NO_RUNTIME_CRYPTO"
+        and historical_i1["tinkAndroid123Wired"] is False
+        and historical_i1["runtimeCryptoDependencyAdded"] is False
+        and historical_i1["newExternalDependencyCoordinateAdded"] is False
+        and historical_i1["moduleLockfilePresent"] is False
+        and historical_i1["actualRecoveryRuntimeGraphReviewed"] is False
+        and historical_i1["dependencyAdmission"] is False
+        and historical_i1["productionAdmission"] is False,
+        "Historical REC-I1 module/dependency state drift",
     )
+    if not rec_i2b_mode:
+        require(
+            historical_i1["moduleLockfilePresent"] is RECOVERY_LOCK_PATH.is_file(),
+            "Current REC-I1 lockfile state drift",
+        )
     validate_authorization_record(read_json(ROOT / AUTHORIZATION_PATH))
     require(RECOVERY_BUILD_PATH.is_file(), "Authorized REC-I1 module build file is missing")
-    validate_recovery_build_text(RECOVERY_BUILD_PATH.read_text(encoding="utf-8"))
+    if not rec_i2b_mode:
+        validate_recovery_build_text(RECOVERY_BUILD_PATH.read_text(encoding="utf-8"))
     settings = (ROOT / "android" / "settings.gradle.kts").read_text(encoding="utf-8")
     require(settings.count('include(":poc:recovery")') == 1, "REC-I1 module include drift")
-    if RECOVERY_LOCK_PATH.is_file():
+    if RECOVERY_LOCK_PATH.is_file() and not rec_i2b_mode:
         recovery_lock = RECOVERY_LOCK_PATH.read_text(encoding="utf-8").lower()
         require("tink" not in recovery_lock and "jsr305" not in recovery_lock, "Forbidden dependency in REC-I1 lockfile")
 
@@ -825,7 +834,8 @@ def validate_static(
         "JSR305 prospective exclusion policy drift",
     )
     require(policy["excludedCurrentInputsAreRecoveryAdmissionEvidence"] is False, "Existing tooling paths were treated as recovery admission")
-    require(not (ROOT / policy["futureResolvedGraphReportLocator"]).exists(), "Future resolved graph appeared before authorized implementation")
+    if not rec_i2b_mode:
+        require(not (ROOT / policy["futureResolvedGraphReportLocator"]).exists(), "Future resolved graph appeared before authorized implementation")
     bytecode = jsr305_exclusion["bytecodeAndSourceEvidence"]
     require(bytecode["classesContainingAnyJsr305Descriptor"] == 182, "Tink JSR305 descriptor class count drift")
     require(JSR305_CLASS_LIST_PATH.is_file() and sha256(JSR305_CLASS_LIST_PATH) == bytecode["classListSha256"], "JSR305 class-list hash drift")
@@ -996,6 +1006,7 @@ def validate_static(
         and rereview["closesRecRdy02"] is False,
         "AI advisory re-review acquired formal/accountable authority",
     )
+    return rec_i2b_mode
 
 
 def verify_online(
@@ -1157,10 +1168,19 @@ def main() -> int:
     jsr305_exclusion = read_json(JSR305_EXCLUSION_PATH)
     readiness = read_json(READINESS_PATH)
     review_roles = read_json(REVIEW_ROLES_PATH)
-    validate_static(inventory, license_notice, authenticity, jsr305_exclusion, readiness, review_roles)
+    rec_i2b_mode = validate_static(
+        inventory,
+        license_notice,
+        authenticity,
+        jsr305_exclusion,
+        readiness,
+        review_roles,
+    )
     if args.online:
         verify_online(inventory, license_notice, authenticity, jsr305_exclusion)
         print("Verified 8 exact external JAR/POM coordinates online plus immutable JetBrains LICENSE/NOTICE bytes: artifact hashes, publisher checksums, full-fingerprint detached OpenPGP cryptography and identity metadata, signed source JARs for the six multisource coordinates, POM graph/licenses, no native payload, exact Tink JSR305 annotation-only classification, and exact-commit LICENSE/NOTICE SHA-256; temporary files removed")
+    elif rec_i2b_mode:
+        print("POC-RECOVERY-001 v0.6 dependency/IP static validation passed; the exact eight-coordinate publisher packet remains immutable historical input, and the current REC-I2B reviewed-successor profile validates the approved six-runtime/two-test-only graph, scoped zero-JSR305 boundary, no native payload, no dependency/production admission, and no execution or REC-I3 authority (use --online for artifact/signature and immutable LICENSE/NOTICE revalidation)")
     else:
         print("POC-RECOVERY-001 v0.6 dependency/IP static validation passed; authorized pure REC-I1 module is present with no Tink/runtime-crypto wiring or new coordinate, exact governance packet authenticity/LICENSE/NOTICE evidence and prospective REC-JSR305-EXCLUDE-001 are closed, future actual runtime graph/Product-IP disposition remains blocked, repository-wide absence is not claimed, and excluded JSR305 use/distribution is unapproved (use --online for artifact/signature and immutable LICENSE/NOTICE revalidation)")
     return 0

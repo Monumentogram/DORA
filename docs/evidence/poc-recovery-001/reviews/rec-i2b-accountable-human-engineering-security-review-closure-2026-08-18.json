@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "recordId": "REC-I2B-ACCOUNTABLE-HUMAN-REVIEW-SANITIZED-CLOSURE-20260818-01",
+  "pocId": "POC-RECOVERY-001",
+  "stage": "STAGE_0_ISOLATED_POC",
+  "reviewType": "FORMAL_DISTINCT_ACCOUNTABLE_REC_I2B_IMPLEMENTATION_ENGINEERING_SECURITY_REVIEW",
+  "formalReviewer": true,
+  "reviewMode": "READ_ONLY_EXACT_IMPLEMENTATION_AND_EVIDENCE_REVIEW",
+  "reviewDate": "2026-08-18",
+  "recordedAt": "2026-08-18T22:54:06+03:00",
+  "recordedTimeZone": "Europe/Moscow",
+  "authority": {
+    "sanitizedClosureAuthorization": "REC-I2B-ACCOUNTABLE-HUMAN-REVIEW-SANITIZED-CLOSURE-AUTH-20260818-01",
+    "validatorPhaseAuthorization": "REC-I2B-ACCOUNTABLE-HUMAN-REVIEW-VALIDATOR-PHASE-AUTH-20260818-01",
+    "routingAuthorization": "REC-I2B-ACCOUNTABLE-REVIEW-ROUTING-AUTH-20260817-01"
+  },
+  "reviewer": {
+    "name": "Novikova Katerina",
+    "capacity": "individual professional capacity",
+    "projectRole": "Distinct accountable Stage 0 REC-I2B Engineering/Security reviewer",
+    "distinctFromImplementationAndEvidenceAuthor": true,
+    "acceptsAccountabilityForDisposition": true,
+    "corporateApproval": false
+  },
+  "receipt": {
+    "channel": "SAME_AUTHORIZED_PRIVATE_EMAIL_VERIFIED",
+    "canonicalCorrectedResponse": true,
+    "equivalentWrittenAttestationRecorded": true,
+    "onlySanitizedNormalizedFactsRecorded": true
+  },
+  "reviewedTarget": {
+    "branch": "codex/poc-recovery-i2a-graph-probe",
+    "pullRequestNumber": 38,
+    "publishedReviewPackageHead": "f64c5c150865901352889b607a075425c93e6cb4",
+    "publishedReviewPackageTree": "389b43a20381fdfd4a86f8328dba05439d4bf5f6",
+    "terminalImplementationCommit": "1aedccf477fb4d3ff20a48a1834b22b317c8c880",
+    "terminalImplementationTree": "744ee822d42b7caccd7abcc68f03dca1c24f5945",
+    "independentReviewedEvidenceCommit": "991d61d34129f0a6afba2940a7297cb5207143cc",
+    "independentReviewedEvidenceTree": "691ecc5ff43e78da79d3bdff3a3f94b4e817d8ae",
+    "implementationEvidenceSnapshot": {
+      "path": "docs/evidence/poc-recovery-001/rec-i2b-runtime-crypto-implementation-evidence-2026-08-17.json",
+      "gitBlobSha1": "155166d81206b73254cb163946201d23a10d8686",
+      "bytes": 56992,
+      "sha256": "5c933573d972cf21de4719f636b9e721905336789babf72921dcdd903b724c42"
+    },
+    "accountableReviewPacketSnapshot": {
+      "path": "docs/evidence/poc-recovery-001/rec-i2b-accountable-engineering-security-review-packet-2026-08-17.json",
+      "gitBlobSha1": "a1b5e90198d8047efefa9e89da915196e84620db",
+      "bytes": 52810,
+      "sha256": "ffdebc8fe8eec7b338563b5e80ccbc771bbba2219f4f9f3c91371642e32b049a"
+    },
+    "independentAdvisoryCleanClosure": {
+      "path": "docs/evidence/poc-recovery-001/reviews/rec-i2b-aapt2-linux-verification-metadata-independent-delta-review-closure-2026-08-18.json",
+      "bytes": 10680,
+      "sha256": "659fe48a810a872de10941575d90a6161d112ca728f364b45831220eff7c0ed6",
+      "disposition": "CLEAN",
+      "findingCounts": {
+        "P0": 0,
+        "P1": 0,
+        "P2": 0
+      }
+    }
+  },
+  "responses": [
+    {"id": "I2B-REV-01", "answer": "YES"},
+    {"id": "I2B-REV-02", "answer": "YES"},
+    {"id": "I2B-REV-03", "answer": "YES"},
+    {"id": "I2B-REV-04", "answer": "YES"},
+    {"id": "I2B-REV-05", "answer": "YES"},
+    {"id": "I2B-REV-06", "answer": "YES"},
+    {"id": "I2B-REV-07", "answer": "YES"},
+    {"id": "I2B-REV-08", "answer": "YES"},
+    {"id": "I2B-REV-09", "answer": "YES"},
+    {"id": "I2B-REV-10", "answer": "YES"},
+    {"id": "I2B-REV-11", "answer": "YES"},
+    {"id": "I2B-REV-12", "answer": "YES"},
+    {"id": "I2B-REV-13", "answer": "YES"},
+    {"id": "I2B-REV-14", "answer": "YES"},
+    {"id": "I2B-REV-15", "answer": "YES"},
+    {"id": "I2B-REV-16", "answer": "YES"},
+    {"id": "I2B-REV-17", "answer": "YES"}
+  ],
+  "findings": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "items": []
+  },
+  "disposition": "APPROVE_EXACT_REC_I2B_FOR_SEPARATE_REC_I3_ACTIVATION_DECISION",
+  "reviewEffect": {
+    "accountableRecI2bImplementationReviewCompleted": true,
+    "implementationAndEvidenceAcceptedAsInputToSeparateRecI3Decision": true,
+    "recI3Activated": false,
+    "separateRecI3ActivationDecisionRequired": true
+  },
+  "authorityBoundary": {
+    "productionSecurityApproval": false,
+    "productionLegalApproval": false,
+    "corporateApproval": false,
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "deviceOrEmulatorExecutionAuthorization": false,
+    "androidKeystoreRuntimeExecutionAuthorization": false,
+    "harnessOrCampaignAuthorization": false,
+    "measurementAuthorization": false,
+    "metricPassOrPocPass": false,
+    "readinessClosure": false,
+    "readyForReviewTransition": false,
+    "mergeAuthorization": false,
+    "recI3Activation": false
+  },
+  "privacy": {
+    "emailAddressRecorded": false,
+    "messageOrThreadIdentifierRecorded": false,
+    "mailHeaderRecorded": false,
+    "rawOrQuotedMessageContentRecorded": false,
+    "deliveryMetadataRecorded": false,
+    "credentialOrSecretRecorded": false,
+    "userSpecificAbsolutePathRecorded": false
+  }
+}
