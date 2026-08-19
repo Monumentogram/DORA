@@ -1,0 +1,130 @@
+name: Stage 0 Decision I4 provenance source validator
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/stage0-decision-i4-provenance-source-validator.yml
+      - docs/evidence/poc-decision-001/decision-i4-provenance-source-validator-local-evidence-stage0-v0.1.json
+      - docs/stage0/DORA_MVP1_DECISION_I4_PROVENANCE_SOURCE_VALIDATOR_SCOPE_STAGE0_V0_1.md
+      - tools/decision_i4_provenance_source_validator/src/main/java/com/monumentogram/dora/stage0/decision/i4/DecisionProvenanceSourceValidator.java
+      - tools/decision_i4_provenance_source_validator/src/test/java/com/monumentogram/dora/stage0/decision/i4/DecisionProvenanceSourceValidatorTest.java
+      - tools/run_stage0_decision_i4_provenance_source_validator.py
+      - docs/evidence/poc-decision-001/decision-deterministic-synthetic-harness-local-evidence-stage0-v0.1.json
+      - tools/decision_deterministic_synthetic_harness/src/main/java/com/monumentogram/dora/stage0/decision/synthetic/DecisionDeterministicSyntheticHarness.java
+      - tools/decision_deterministic_synthetic_harness/src/test/java/com/monumentogram/dora/stage0/decision/synthetic/DecisionDeterministicSyntheticHarnessTest.java
+      - docs/evidence/poc-decision-001/decision-i3-synthetic-campaign-local-evidence-stage0-v0.1.json
+      - tools/decision_i3_synthetic_campaign/src/main/java/com/monumentogram/dora/stage0/decision/i3/DecisionSyntheticCampaign.java
+      - tools/decision_i3_synthetic_campaign/src/test/java/com/monumentogram/dora/stage0/decision/i3/DecisionSyntheticCampaignTest.java
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/stage0-decision-i4-provenance-source-validator.yml
+      - docs/evidence/poc-decision-001/decision-i4-provenance-source-validator-local-evidence-stage0-v0.1.json
+      - docs/stage0/DORA_MVP1_DECISION_I4_PROVENANCE_SOURCE_VALIDATOR_SCOPE_STAGE0_V0_1.md
+      - tools/decision_i4_provenance_source_validator/src/main/java/com/monumentogram/dora/stage0/decision/i4/DecisionProvenanceSourceValidator.java
+      - tools/decision_i4_provenance_source_validator/src/test/java/com/monumentogram/dora/stage0/decision/i4/DecisionProvenanceSourceValidatorTest.java
+      - tools/run_stage0_decision_i4_provenance_source_validator.py
+      - docs/evidence/poc-decision-001/decision-deterministic-synthetic-harness-local-evidence-stage0-v0.1.json
+      - tools/decision_deterministic_synthetic_harness/src/main/java/com/monumentogram/dora/stage0/decision/synthetic/DecisionDeterministicSyntheticHarness.java
+      - tools/decision_deterministic_synthetic_harness/src/test/java/com/monumentogram/dora/stage0/decision/synthetic/DecisionDeterministicSyntheticHarnessTest.java
+      - docs/evidence/poc-decision-001/decision-i3-synthetic-campaign-local-evidence-stage0-v0.1.json
+      - tools/decision_i3_synthetic_campaign/src/main/java/com/monumentogram/dora/stage0/decision/i3/DecisionSyntheticCampaign.java
+      - tools/decision_i3_synthetic_campaign/src/test/java/com/monumentogram/dora/stage0/decision/i3/DecisionSyntheticCampaignTest.java
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stage0-decision-i4-provenance-source-validator-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  REQUIRED_BASELINE: 9256db3d95fa20bc0d98aa35b48734ffeeb2623c
+  REQUIRED_BASELINE_TREE: 6e17701efbdc80e14bd0778535f187c1424ed047
+  REQUIRED_JAVA_VERSION: 17.0.20
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  decision-i4-host:
+    name: stage0-decision-i4-provenance-source-validator
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out the exact event commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Require exact event SHA, baseline identity, and clean checkout
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD)" == "${EXPECTED_SHA}" ]]
+          git cat-file -e "${REQUIRED_BASELINE}^{commit}"
+          [[ "$(git show -s --format=%T "${REQUIRED_BASELINE}")" == "${REQUIRED_BASELINE_TREE}" ]]
+          git merge-base --is-ancestor "${REQUIRED_BASELINE}" HEAD
+          [[ -z "$(git status --porcelain)" ]]
+
+      - name: Resolve the exact allowlist diff base
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          case "${EVENT_NAME}" in
+            pull_request) diff_base="${PR_BASE_SHA}" ;;
+            push) diff_base="${PUSH_BEFORE_SHA}" ;;
+            workflow_dispatch) diff_base="${REQUIRED_BASELINE}" ;;
+            *) exit 1 ;;
+          esac
+          [[ "${diff_base}" =~ ^[0-9a-f]{40}$ ]]
+          git cat-file -e "${diff_base}^{commit}"
+          git merge-base --is-ancestor "${diff_base}" HEAD
+          printf '%s\n' "DORA_I4_DIFF_BASE=${diff_base}" >> "${GITHUB_ENV}"
+
+      - name: Set up the exact Java 17 toolchain
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: temurin
+          java-version: "17.0.20+8"
+          check-latest: false
+
+      - name: Verify host toolchain boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$(javac -version 2>&1)" == "javac ${REQUIRED_JAVA_VERSION}" ]]
+          [[ "$(jdeps --version 2>&1)" == "${REQUIRED_JAVA_VERSION}" ]]
+          [[ "$(javap -version 2>&1)" == "${REQUIRED_JAVA_VERSION}" ]]
+          java -version 2>&1 | grep -F "openjdk version \"${REQUIRED_JAVA_VERSION}\""
+          python3 -c 'import sys; assert sys.version_info >= (3, 11)'
+          [[ -n "${RUNNER_TEMP}" && -d "${RUNNER_TEMP}" ]]
+          [[ -z "$(git status --porcelain)" ]]
+
+      - name: Exercise fail-closed validator self-tests
+        run: >-
+          python3 -B tools/run_stage0_decision_i4_provenance_source_validator.py
+          --self-test
+
+      - name: Validate the exact Decision I4 generated fixture
+        run: python3 -B tools/run_stage0_decision_i4_provenance_source_validator.py
+
+      - name: Require complete cleanup and an unchanged worktree
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -z "$(git status --porcelain)" ]]
+          generated="$(find . -path ./.git -prune -o -type f -name '*.class' -print -quit)"
+          [[ -z "${generated}" ]]
+          printf '%s\n' 'STAGE0_DECISION_I4_PROVENANCE_SOURCE_VALIDATOR_CLEANUP_OK'
