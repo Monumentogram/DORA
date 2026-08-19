@@ -74,7 +74,7 @@ jobs:
           git merge-base --is-ancestor "${REQUIRED_BASELINE}" HEAD
           [[ -z "$(git status --porcelain)" ]]
 
-      - name: Resolve the exact allowlist diff base
+      - name: Resolve the fail-closed event lifecycle
         shell: bash
         env:
           EVENT_NAME: ${{ github.event_name }}
@@ -85,7 +85,10 @@ jobs:
           case "${EVENT_NAME}" in
             pull_request) diff_base="${PR_BASE_SHA}" ;;
             push) diff_base="${PUSH_BEFORE_SHA}" ;;
-            workflow_dispatch) diff_base="${REQUIRED_BASELINE}" ;;
+            workflow_dispatch)
+              printf '%s\n' "DORA_I4_SNAPSHOT_ONLY=true" >> "${GITHUB_ENV}"
+              exit 0
+              ;;
             *) exit 1 ;;
           esac
           [[ "${diff_base}" =~ ^[0-9a-f]{40}$ ]]

@@ -111,6 +111,10 @@ PIN_HASHES = {
     ): "0e5896e71270293c92bdedec7f99a6b4ce8ed7463ff7f423433c0d64a9db781d",
 }
 
+REGRESSION_ALLOWED_FILES = tuple(
+    dict.fromkeys((*EXPECTED_TRACKED_FILES, *PIN_HASHES.keys()))
+)
+
 EXPECTED_SOURCE_PINS = [
     {
         "sourceId": "SOURCE_RU",
@@ -725,6 +729,7 @@ def validate_public_files(repository: Path, pin_texts: Mapping[str, str]) -> Non
         "--self-test",
         RUNNER_PATH,
         "DORA_I4_DIFF_BASE",
+        "DORA_I4_SNAPSHOT_ONLY",
     )
     for fragment in required_workflow_fragments:
         require(fragment in workflow_text, f"workflow requirement missing: {fragment}")
@@ -743,7 +748,80 @@ def _validate_commit_id(value: str, label: str) -> str:
     return value
 
 
-def verify_repository_snapshot(repository: Path, diff_base: str) -> None:
+def _validate_repository_lifecycle(
+    base_present: frozenset[str],
+    changes: Sequence[tuple[str, tuple[str, ...]]],
+    *,
+    snapshot_only: bool,
+) -> str:
+    expected_files = frozenset(EXPECTED_TRACKED_FILES)
+    require(
+        base_present <= expected_files,
+        "lifecycle base presence contains an unexpected path",
+    )
+    if snapshot_only:
+        return "SNAPSHOT"
+    if not base_present:
+        expected_changes = frozenset(("A", (path,)) for path in EXPECTED_TRACKED_FILES)
+        require(
+            frozenset(changes) == expected_changes
+            and len(changes) == len(expected_changes),
+            "initial lifecycle requires exactly six added slice files",
+        )
+        return "INITIAL"
+    require(
+        base_present == expected_files,
+        "lifecycle base has only a partial Decision I4 slice",
+    )
+    require(changes, "regression lifecycle requires a relevant change")
+    seen_paths: set[str] = set()
+    allowed_files = frozenset(REGRESSION_ALLOWED_FILES)
+    for status, paths in changes:
+        require(status == "M", f"regression lifecycle forbids git status {status}")
+        require(len(paths) == 1, "regression lifecycle forbids rename/copy entries")
+        relative_path = paths[0]
+        require(
+            relative_path in allowed_files,
+            f"regression lifecycle has an unexpected delta: {relative_path}",
+        )
+        require(relative_path not in seen_paths, "regression lifecycle has a duplicate path")
+        seen_paths.add(relative_path)
+    return "REGRESSION"
+
+
+def _parse_name_status_z(raw: bytes) -> tuple[tuple[str, tuple[str, ...]], ...]:
+    if not raw:
+        return ()
+    require(raw.endswith(b"\0"), "changed-file diff is not NUL terminated")
+    raw_tokens = raw[:-1].split(b"\0")
+    try:
+        tokens = [token.decode("utf-8", "strict") for token in raw_tokens]
+    except UnicodeDecodeError as error:
+        raise RunnerError("changed-file diff is not UTF-8") from error
+    changes: list[tuple[str, tuple[str, ...]]] = []
+    index = 0
+    while index < len(tokens):
+        status = tokens[index]
+        index += 1
+        require(re.fullmatch(r"[A-Z][0-9]*", status) is not None, "invalid git status")
+        path_count = 2 if status.startswith(("R", "C")) else 1
+        require(index + path_count <= len(tokens), "truncated changed-file diff")
+        paths = tuple(tokens[index : index + path_count])
+        require(
+            all(path and "\n" not in path and "\r" not in path for path in paths),
+            "invalid changed path",
+        )
+        changes.append((status, paths))
+        index += path_count
+    return tuple(changes)
+
+
+def verify_repository_snapshot(
+    repository: Path,
+    diff_base: str | None,
+    *,
+    snapshot_only: bool,
+) -> None:
     require(_repository_status(repository) == b"", "full validation requires a clean worktree")
     baseline = _git(repository, "cat-file", "-e", BASELINE_COMMIT + "^{commit}")
     require(baseline.returncode == 0, "baseline commit is missing")
@@ -752,32 +830,47 @@ def verify_repository_snapshot(repository: Path, diff_base: str) -> None:
     require(tree.stdout.decode("ascii").strip() == BASELINE_TREE, "baseline tree drifted")
     ancestor = _git(repository, "merge-base", "--is-ancestor", BASELINE_COMMIT, "HEAD")
     require(ancestor.returncode == 0, "baseline is not an ancestor of HEAD")
+    for relative_path in REGRESSION_ALLOWED_FILES:
+        tracked = _git(repository, "ls-files", "--error-unmatch", "--", relative_path)
+        require(tracked.returncode == 0, f"expected file is not tracked: {relative_path}")
+    if snapshot_only:
+        _validate_repository_lifecycle(frozenset(), (), snapshot_only=True)
+        return
+    require(diff_base is not None, "event validation requires a diff base")
     diff_base = _validate_commit_id(diff_base, "diff base")
     base_exists = _git(repository, "cat-file", "-e", diff_base + "^{commit}")
     require(base_exists.returncode == 0, "diff base commit is missing")
     base_ancestor = _git(repository, "merge-base", "--is-ancestor", diff_base, "HEAD")
     require(base_ancestor.returncode == 0, "diff base is not an ancestor of HEAD")
+    base_tree = _git(
+        repository,
+        "ls-tree",
+        "-r",
+        "--name-only",
+        diff_base,
+        "--",
+        *EXPECTED_TRACKED_FILES,
+    )
+    require(base_tree.returncode == 0 and not base_tree.stderr, "diff base tree cannot be read")
+    try:
+        base_present = frozenset(base_tree.stdout.decode("utf-8", "strict").splitlines())
+    except UnicodeDecodeError as error:
+        raise RunnerError("diff base tree is not UTF-8") from error
     diff = _git(
         repository,
         "diff",
         "--name-status",
-        "--no-renames",
+        "-z",
+        "--find-renames",
         diff_base,
         "HEAD",
         "--",
     )
     require(diff.returncode == 0 and not diff.stderr, "changed-file diff failed")
-    try:
-        lines = diff.stdout.decode("utf-8", "strict").splitlines()
-    except UnicodeDecodeError as error:
-        raise RunnerError("changed-file diff is not UTF-8") from error
-    expected_lines = {"A\t" + path for path in EXPECTED_TRACKED_FILES}
-    require(set(lines) == expected_lines and len(lines) == len(expected_lines), "exact file allowlist drifted")
+    changes = _parse_name_status_z(diff.stdout)
+    _validate_repository_lifecycle(base_present, changes, snapshot_only=False)
     diff_check = _git(repository, "diff", "--check", diff_base, "HEAD", "--")
     require(diff_check.returncode == 0 and not diff_check.stdout and not diff_check.stderr, "git diff --check failed")
-    for relative_path in EXPECTED_TRACKED_FILES:
-        tracked = _git(repository, "ls-files", "--error-unmatch", "--", relative_path)
-        require(tracked.returncode == 0, f"expected file is not tracked: {relative_path}")
 
 
 def resolve_toolchain(repository: Path) -> dict[str, str]:
@@ -995,6 +1088,22 @@ def _expect_boundary_rejection(name: str, operation: Callable[[], None]) -> None
     raise RunnerError(f"self-test did not reject boundary: {name}")
 
 
+def _expect_lifecycle_mode(
+    name: str,
+    expected_mode: str,
+    base_present: frozenset[str],
+    changes: Sequence[tuple[str, tuple[str, ...]]],
+    *,
+    snapshot_only: bool,
+) -> None:
+    actual = _validate_repository_lifecycle(
+        base_present,
+        changes,
+        snapshot_only=snapshot_only,
+    )
+    require(actual == expected_mode, f"self-test lifecycle mode drifted: {name}")
+
+
 def run_self_test(evidence: Mapping[str, Any]) -> None:
     evidence_cases: tuple[tuple[str, Callable[[dict[str, Any]], None]], ...] = (
         ("extra-key", lambda value: value.__setitem__("unexpected", True)),
@@ -1094,9 +1203,92 @@ def run_self_test(evidence: Mapping[str, Any]) -> None:
     )
     for name, operation in boundary_cases:
         _expect_boundary_rejection(name, operation)
+    exact_files = frozenset(EXPECTED_TRACKED_FILES)
+    initial_changes = tuple(("A", (path,)) for path in EXPECTED_TRACKED_FILES)
+    lifecycle_accept_cases: tuple[tuple[str, Callable[[], None]], ...] = (
+        (
+            "initial-exact-six-additions",
+            lambda: _expect_lifecycle_mode(
+                "initial-exact-six-additions",
+                "INITIAL",
+                frozenset(),
+                initial_changes,
+                snapshot_only=False,
+            ),
+        ),
+        (
+            "future-exact-snapshot",
+            lambda: _expect_lifecycle_mode(
+                "future-exact-snapshot",
+                "REGRESSION",
+                exact_files,
+                (
+                    ("M", (RUNNER_PATH,)),
+                    ("M", (next(path for path in PIN_HASHES if path not in exact_files),)),
+                ),
+                snapshot_only=False,
+            ),
+        ),
+        (
+            "manual-after-unrelated-descendant",
+            lambda: _expect_lifecycle_mode(
+                "manual-after-unrelated-descendant",
+                "SNAPSHOT",
+                exact_files,
+                (("M", ("docs/unrelated-descendant.md",)),),
+                snapshot_only=True,
+            ),
+        ),
+    )
+    for _, operation in lifecycle_accept_cases:
+        operation()
+    lifecycle_reject_cases: tuple[tuple[str, Callable[[], None]], ...] = (
+        (
+            "partial-base",
+            lambda: _validate_repository_lifecycle(
+                frozenset((WORKFLOW_PATH,)),
+                (("M", (WORKFLOW_PATH,)),),
+                snapshot_only=False,
+            ),
+        ),
+        (
+            "deletion",
+            lambda: _validate_repository_lifecycle(
+                exact_files,
+                (("D", (MAIN_SOURCE_PATH,)),),
+                snapshot_only=False,
+            ),
+        ),
+        (
+            "rename",
+            lambda: _validate_repository_lifecycle(
+                exact_files,
+                (("R100", (MAIN_SOURCE_PATH, MAIN_SOURCE_PATH + ".moved")),),
+                snapshot_only=False,
+            ),
+        ),
+        (
+            "unexpected-initial-delta",
+            lambda: _validate_repository_lifecycle(
+                frozenset(),
+                (*initial_changes, ("A", ("tools/unexpected-slice-file.txt",))),
+                snapshot_only=False,
+            ),
+        ),
+        (
+            "unexpected-regression-delta",
+            lambda: _validate_repository_lifecycle(
+                exact_files,
+                (("M", ("docs/unexpected-descendant.md",)),),
+                snapshot_only=False,
+            ),
+        ),
+    )
+    for name, operation in lifecycle_reject_cases:
+        _expect_boundary_rejection(name, operation)
     print(
         "SELF_TEST_OK stage0-decision-i4-provenance-source-validator "
-        f"cases={len(evidence_cases) + len(boundary_cases)}",
+        f"cases={len(evidence_cases) + len(boundary_cases) + len(lifecycle_accept_cases) + len(lifecycle_reject_cases)}",
         flush=True,
     )
 
@@ -1107,6 +1299,7 @@ def parse_args(argv: Sequence[str]) -> argparse.Namespace:
     )
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument("--diff-base", default=None)
+    parser.add_argument("--snapshot-only", action="store_true")
     return parser.parse_args(argv)
 
 
@@ -1122,8 +1315,23 @@ def main(argv: Sequence[str] | None = None) -> int:
         if args.self_test:
             run_self_test(evidence)
             return 0
-        diff_base = args.diff_base or os.environ.get("DORA_I4_DIFF_BASE") or BASELINE_COMMIT
-        verify_repository_snapshot(repository, diff_base)
+        environment_diff_base = os.environ.get("DORA_I4_DIFF_BASE")
+        environment_snapshot_only = os.environ.get("DORA_I4_SNAPSHOT_ONLY")
+        require(
+            environment_snapshot_only in (None, "true"),
+            "DORA_I4_SNAPSHOT_ONLY must be exactly true when set",
+        )
+        snapshot_only = args.snapshot_only or environment_snapshot_only == "true"
+        require(
+            not (snapshot_only and (args.diff_base or environment_diff_base)),
+            "snapshot-only mode cannot also set a diff base",
+        )
+        diff_base = args.diff_base or environment_diff_base or BASELINE_COMMIT
+        verify_repository_snapshot(
+            repository,
+            None if snapshot_only else diff_base,
+            snapshot_only=snapshot_only,
+        )
         before_status = _repository_status(repository)
         tools = resolve_toolchain(repository)
         run_full_validation(repository, tools, before_status)
