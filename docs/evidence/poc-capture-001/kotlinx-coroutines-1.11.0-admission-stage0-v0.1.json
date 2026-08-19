@@ -1,0 +1,432 @@
+{
+  "affectedConfigurations": [
+    "debugAndroidTestCompileClasspath",
+    "debugAndroidTestLintChecksClasspath",
+    "debugAndroidTestRuntimeClasspath",
+    "debugCompileClasspath",
+    "debugLintChecksClasspath",
+    "debugRuntimeClasspath",
+    "debugUnitTestCompileClasspath",
+    "debugUnitTestLintChecksClasspath",
+    "debugUnitTestRuntimeClasspath",
+    "releaseCompileClasspath",
+    "releaseLintChecksClasspath",
+    "releaseRuntimeClasspath"
+  ],
+  "artifacts": [
+    {
+      "bytes": 1761444,
+      "coordinate": "org.jetbrains.kotlin:kotlin-stdlib:2.2.20",
+      "extension": "jar",
+      "filename": "kotlin-stdlib-2.2.20.jar",
+      "sha1": "5380b19fa1924399b62ce3a1faffebb2b4f82272",
+      "sha256": "8836ccffd3585fadda9901244b20d42901d2f3cd581058d8434e2ffabcf3a3e7",
+      "signature": {
+        "bytes": 689,
+        "sha256": "d0d01eb832e9f6f7151bbb3e267d758173ace17f93b58d27aed101102f98386c",
+        "signatureCreatedUtc": "2025-09-08T21:09:40Z",
+        "signer": "kotlin",
+        "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/2.2.20/kotlin-stdlib-2.2.20.jar.asc"
+      },
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/2.2.20/kotlin-stdlib-2.2.20.jar"
+    },
+    {
+      "bytes": 12430,
+      "coordinate": "org.jetbrains.kotlin:kotlin-stdlib:2.2.20",
+      "extension": "module",
+      "filename": "kotlin-stdlib-2.2.20.module",
+      "sha1": "fb7b2a0499ac7fb1c611125b7de344b7cc998fa9",
+      "sha256": "c918f5214d021a72e3767f2756e97d103a526e04f1423da3663efdfb5847db95",
+      "signature": {
+        "bytes": 689,
+        "sha256": "36ec5f300aa97b61549abd01b16279175a868ef168ab65cc404896677abd5c08",
+        "signatureCreatedUtc": "2025-09-08T21:09:39Z",
+        "signer": "kotlin",
+        "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/2.2.20/kotlin-stdlib-2.2.20.module.asc"
+      },
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/2.2.20/kotlin-stdlib-2.2.20.module"
+    },
+    {
+      "bytes": 2301,
+      "coordinate": "org.jetbrains.kotlin:kotlin-stdlib:2.2.20",
+      "extension": "pom",
+      "filename": "kotlin-stdlib-2.2.20.pom",
+      "sha1": "62f87c4f4a53f249cb42926a1ef24bffdf190557",
+      "sha256": "4a8b086e6431bcf623637f52b2ff192e1adb913838742e5c0eea70a8dee429c4",
+      "signature": {
+        "bytes": 689,
+        "sha256": "4ce5d476edd9524e503f656382043aa0f3c95a9ae311496cb574dcd93f1abd26",
+        "signatureCreatedUtc": "2025-09-08T21:09:39Z",
+        "signer": "kotlin",
+        "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/2.2.20/kotlin-stdlib-2.2.20.pom.asc"
+      },
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlin/kotlin-stdlib/2.2.20/kotlin-stdlib-2.2.20.pom"
+    },
+    {
+      "bytes": 17819,
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0",
+      "extension": "jar",
+      "filename": "kotlinx-coroutines-android-1.11.0.jar",
+      "sha1": "51ffb50a6478872fbbac6cbd48f09553bf4e9e7d",
+      "sha256": "c2cb206d27017c7d1bf5ff179787397543d13748dbabb0d7237e1585e0b29044",
+      "signature": {
+        "bytes": 660,
+        "sha256": "0ce618365d88e4bec629dffeb1db3a794b0926aaede5f621c13c942b1b05a89c",
+        "signatureCreatedUtc": "2026-05-07T13:59:15Z",
+        "signer": "coroutines",
+        "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-android/1.11.0/kotlinx-coroutines-android-1.11.0.jar.asc"
+      },
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-android/1.11.0/kotlinx-coroutines-android-1.11.0.jar"
+    },
+    {
+      "bytes": 4387,
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0",
+      "extension": "module",
+      "filename": "kotlinx-coroutines-android-1.11.0.module",
+      "sha1": "531000e501e830dd477fea22c83eb62324b3404e",
+      "sha256": "7b7d1dddf188817deaad738e92e11faa5abdf937c87120cdf036102566ad4be3",
+      "signature": {
+        "bytes": 660,
+        "sha256": "62bb33a6573718e345c1ab41f18db52be995326ddd724972a6e7d9818b20480b",
+        "signatureCreatedUtc": "2026-05-07T13:59:15Z",
+        "signer": "coroutines",
+        "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-android/1.11.0/kotlinx-coroutines-android-1.11.0.module.asc"
+      },
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-android/1.11.0/kotlinx-coroutines-android-1.11.0.module"
+    },
+    {
+      "bytes": 2194,
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0",
+      "extension": "pom",
+      "filename": "kotlinx-coroutines-android-1.11.0.pom",
+      "sha1": "c1803771dc96ca0454ed9aced9a218ed8cf37cbc",
+      "sha256": "224567420d3e0ed5fef40f789fded45dfd51b162319e28d77d3c9a8dec4821b8",
+      "signature": {
+        "bytes": 660,
+        "sha256": "e7daa5fec1658ae0ce0848fe1a1b7d9ebb5315fd21d53017b8d317db6526d649",
+        "signatureCreatedUtc": "2026-05-07T13:59:15Z",
+        "signer": "coroutines",
+        "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-android/1.11.0/kotlinx-coroutines-android-1.11.0.pom.asc"
+      },
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-android/1.11.0/kotlinx-coroutines-android-1.11.0.pom"
+    },
+    {
+      "bytes": 4279,
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.11.0",
+      "extension": "pom",
+      "filename": "kotlinx-coroutines-bom-1.11.0.pom",
+      "sha1": "b4ca3dd84d1f380f6ef1e8c1a81bdf9977a3a2d6",
+      "sha256": "f65860bce58a2bfadf05fdc516d38333421f0e387fef87e24449c0394c80d254",
+      "signature": {
+        "bytes": 660,
+        "sha256": "21c3f43de9477b65694b70547d89a5ed649e4a325cc203c0b99ae860810b5210",
+        "signatureCreatedUtc": "2026-05-07T13:59:15Z",
+        "signer": "coroutines",
+        "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-bom/1.11.0/kotlinx-coroutines-bom-1.11.0.pom.asc"
+      },
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-bom/1.11.0/kotlinx-coroutines-bom-1.11.0.pom"
+    },
+    {
+      "bytes": 47152,
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0",
+      "extension": "module",
+      "filename": "kotlinx-coroutines-core-1.11.0.module",
+      "sha1": "fae4828ee1cbcf8f9aaa54d655263fd253d94406",
+      "sha256": "1e19785d34728b7525d7a77ff32ead4547d51cc7a45d4ac44d4de608169b0c0d",
+      "signature": {
+        "bytes": 660,
+        "sha256": "4b5c2655e774de1beb135dea34dd3cd92178df6a8e5622423584c3bf6ea5fc8b",
+        "signatureCreatedUtc": "2026-05-07T13:59:42Z",
+        "signer": "coroutines",
+        "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core/1.11.0/kotlinx-coroutines-core-1.11.0.module.asc"
+      },
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core/1.11.0/kotlinx-coroutines-core-1.11.0.module"
+    },
+    {
+      "bytes": 2030,
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0",
+      "extension": "pom",
+      "filename": "kotlinx-coroutines-core-1.11.0.pom",
+      "sha1": "d82d89f0543debc20787622e379033c2439a857a",
+      "sha256": "41b6e78c1b0d11bc99de795390df9e4ece64dc113f482d6e308f1b7a421c1d30",
+      "signature": {
+        "bytes": 660,
+        "sha256": "3120ab8dcfb7d8d3272ec8def5cbba728dfad29afed073c6042d583e5c2b970a",
+        "signatureCreatedUtc": "2026-05-07T13:59:42Z",
+        "signer": "coroutines",
+        "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core/1.11.0/kotlinx-coroutines-core-1.11.0.pom.asc"
+      },
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core/1.11.0/kotlinx-coroutines-core-1.11.0.pom"
+    },
+    {
+      "bytes": 1577052,
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.11.0",
+      "extension": "jar",
+      "filename": "kotlinx-coroutines-core-jvm-1.11.0.jar",
+      "sha1": "3d57dc678bd8d72a60e7adf0eca5c54e3f4f4b79",
+      "sha256": "d1d75aa01dffbb4d1c520e67e4c4e7f5f6174718e7cb4632412503f2f0e604fa",
+      "signature": {
+        "bytes": 660,
+        "sha256": "cf1e4229aa49ec31430ff6b436619173a54e587947cde442b8b855904b7c11ad",
+        "signatureCreatedUtc": "2026-05-07T13:59:42Z",
+        "signer": "coroutines",
+        "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.11.0/kotlinx-coroutines-core-jvm-1.11.0.jar.asc"
+      },
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.11.0/kotlinx-coroutines-core-jvm-1.11.0.jar"
+    },
+    {
+      "bytes": 4454,
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.11.0",
+      "extension": "module",
+      "filename": "kotlinx-coroutines-core-jvm-1.11.0.module",
+      "sha1": "c96c61a5771d7f281fe7f0f86954e4b8d8931e58",
+      "sha256": "5b255653ad6b1f21e0c46108605f129e3aa56ed9414849cc9f5b436441517528",
+      "signature": {
+        "bytes": 660,
+        "sha256": "3bc038f12d61d3010fb0e7939a7a1ea3f512368a3c553c6f1ad87791479faa39",
+        "signatureCreatedUtc": "2026-05-07T13:59:42Z",
+        "signer": "coroutines",
+        "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.11.0/kotlinx-coroutines-core-jvm-1.11.0.module.asc"
+      },
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.11.0/kotlinx-coroutines-core-jvm-1.11.0.module"
+    },
+    {
+      "bytes": 2168,
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.11.0",
+      "extension": "pom",
+      "filename": "kotlinx-coroutines-core-jvm-1.11.0.pom",
+      "sha1": "2cb8283844ee479838d1a756a6a7f1c6f1acbb76",
+      "sha256": "dd54b97aa3fab91fc24f5df2916c22be9429a339d2f45b7ff092332f6c19dc39",
+      "signature": {
+        "bytes": 660,
+        "sha256": "9556c1d652358bc6486787a2d3d2895ce7617db4d013c90e87f1f04b60eb9b40",
+        "signatureCreatedUtc": "2026-05-07T13:59:42Z",
+        "signer": "coroutines",
+        "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.11.0/kotlinx-coroutines-core-jvm-1.11.0.pom.asc"
+      },
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-core-jvm/1.11.0/kotlinx-coroutines-core-jvm-1.11.0.pom"
+    },
+    {
+      "bytes": 47330,
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0",
+      "extension": "module",
+      "filename": "kotlinx-coroutines-test-1.11.0.module",
+      "sha1": "eda965c7969c35808f222112e1b8435d116acaa4",
+      "sha256": "ba1e78c5397aa934a74b9e799d290e6b769f604daadb30640f91ae6fcaf81d6d",
+      "signature": {
+        "bytes": 660,
+        "sha256": "99369e3b9bfe2c2910dfde7e353b68c31b5d6c1f51b577d3703389ca6924ea8f",
+        "signatureCreatedUtc": "2026-05-07T14:00:11Z",
+        "signer": "coroutines",
+        "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-test/1.11.0/kotlinx-coroutines-test-1.11.0.module.asc"
+      },
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-test/1.11.0/kotlinx-coroutines-test-1.11.0.module"
+    },
+    {
+      "bytes": 2030,
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0",
+      "extension": "pom",
+      "filename": "kotlinx-coroutines-test-1.11.0.pom",
+      "sha1": "f6c6f6e97ec4e688820d56a20e882d31241401e8",
+      "sha256": "9fe5cd4c606c785cc14fc4692ed1ec6cb4053c1f5e67fa8b3fa3adf1c71af9aa",
+      "signature": {
+        "bytes": 660,
+        "sha256": "38d3d617ee1715a2c3e7686fff084a93491d5c08fb76ed3796b43d479d795427",
+        "signatureCreatedUtc": "2026-05-07T14:00:11Z",
+        "signer": "coroutines",
+        "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-test/1.11.0/kotlinx-coroutines-test-1.11.0.pom.asc"
+      },
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-test/1.11.0/kotlinx-coroutines-test-1.11.0.pom"
+    },
+    {
+      "bytes": 105295,
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm:1.11.0",
+      "extension": "jar",
+      "filename": "kotlinx-coroutines-test-jvm-1.11.0.jar",
+      "sha1": "1dfe8ce2b805d913922f283b386895bd0979dfcb",
+      "sha256": "d4f7ee71da708af4719dceb6d3200c8f9dc5146ea1a812cb628ed53c64196f96",
+      "signature": {
+        "bytes": 660,
+        "sha256": "4770f0c587ac2c22cebf922fbf3981b131f41f6299e61b84d3c966e65a0a9d49",
+        "signatureCreatedUtc": "2026-05-07T14:00:11Z",
+        "signer": "coroutines",
+        "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-test-jvm/1.11.0/kotlinx-coroutines-test-jvm-1.11.0.jar.asc"
+      },
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-test-jvm/1.11.0/kotlinx-coroutines-test-jvm-1.11.0.jar"
+    },
+    {
+      "bytes": 4811,
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm:1.11.0",
+      "extension": "module",
+      "filename": "kotlinx-coroutines-test-jvm-1.11.0.module",
+      "sha1": "f6cb9eaefd985f53257df55134a6793956161893",
+      "sha256": "83553592a446adf922dc66afb7565a3b00c52958708c210c284e7761d31d0f86",
+      "signature": {
+        "bytes": 660,
+        "sha256": "71e186e9229f36b5f473d7c880f532be387031b75b13ed425c2bb4bb9a7f56ce",
+        "signatureCreatedUtc": "2026-05-07T14:00:11Z",
+        "signer": "coroutines",
+        "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-test-jvm/1.11.0/kotlinx-coroutines-test-jvm-1.11.0.module.asc"
+      },
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-test-jvm/1.11.0/kotlinx-coroutines-test-jvm-1.11.0.module"
+    },
+    {
+      "bytes": 2370,
+      "coordinate": "org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm:1.11.0",
+      "extension": "pom",
+      "filename": "kotlinx-coroutines-test-jvm-1.11.0.pom",
+      "sha1": "645ccb28c1e4f8041b0532d55a06b2e785540417",
+      "sha256": "84d119326de6496b8f20a985abe33d18e2d262b0cf2045305a91ebc57fb1f5b6",
+      "signature": {
+        "bytes": 660,
+        "sha256": "66bf70eaed79e616a251357f19da82d7b16c8a2b3c03b8be483e344701ce6675",
+        "signatureCreatedUtc": "2026-05-07T14:00:11Z",
+        "signer": "coroutines",
+        "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-test-jvm/1.11.0/kotlinx-coroutines-test-jvm-1.11.0.pom.asc"
+      },
+      "url": "https://repo.maven.apache.org/maven2/org/jetbrains/kotlinx/kotlinx-coroutines-test-jvm/1.11.0/kotlinx-coroutines-test-jvm-1.11.0.pom"
+    }
+  ],
+  "authorization": "OWNER-AUTH-BATCH-20260819-01",
+  "base": {
+    "commit": "da1d9bd13b71d609fe7ec4ea62fe1e984f726040",
+    "tree": "925bd08802fefc314742776d147771a92edfac70"
+  },
+  "claimCeiling": "KOTLINX_COROUTINES_1_11_0_EXACT_GRAPH_PROVENANCE_LICENSE_SECURITY_AND_OFFLINE_REPRODUCTION_LOCALLY_VERIFIED_PENDING_INDEPENDENT_ADMISSION_REVIEW_AND_EXACT_HEAD_CI",
+  "fileHashes": {
+    "base": {
+      "android/gradle/libs.versions.toml": "230e8b8f5042b5e4852aa3ad05009e5b1d1336eb467d9d89f3d37a7f5104fc4c",
+      "android/gradle/verification-metadata.xml": "2d31104754fc8df67ff14d9f8fb613782170862d421202ad3132297793357f23",
+      "android/poc/capture/gradle.lockfile": "e02b8f90e83cd744bcd7703ad3b7f4b1538991d43e5ec0f5f2ec34b0a5285f3c",
+      "android/poc/search/gradle.lockfile": "3e47b2a46c493245ad24399b8bb26c834bc79b52397a4e920d5895bec695ba8f",
+      "docs/evidence/poc-search-001/build-tool-lock-overlay-ksp-2.3.11.json": "511914d7e001c786ace199535d5e0d6f79bbae73052ae5523c9cdc817eb08b84"
+    },
+    "candidate": {
+      "android/gradle/libs.versions.toml": "dc7d85be3bf534f8a2f7a9ab9a07e1b9d51a2ff7701338261b0df07d944caee7",
+      "android/gradle/verification-metadata.xml": "4c43f466346a5b72edd0c363b670e953982ccdc956fd75e5545130bb53e48b91",
+      "android/poc/capture/gradle.lockfile": "b1abf679a07a423de897fe833f4ce41a941e74f6f99b99f731e85b48d717a4c2"
+    },
+    "candidateMetadataGitBlobSha1": "16071c00ac76fbb35c62d88f9eb748e7c0046cb7",
+    "candidateMetadataLfBytes": 303325
+  },
+  "graph": {
+    "changedLockfiles": [
+      "android/poc/capture/gradle.lockfile"
+    ],
+    "kspClassification": "BUILD_TOOL_ONLY_UNCHANGED",
+    "newlySelectedCoordinates": [
+      "org.jetbrains.kotlin:kotlin-stdlib:2.2.20",
+      "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0",
+      "org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.11.0",
+      "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.11.0",
+      "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0",
+      "org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm:1.11.0",
+      "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0"
+    ],
+    "recoveryExecutionAllowed": false,
+    "standaloneVpnCoroutinesVersion": "1.10.2_UNCHANGED",
+    "verificationMetadataAddedArtifacts": 11,
+    "verificationMetadataAddedComponents": 7
+  },
+  "nonClaims": [
+    "No production Legal or Security approval.",
+    "No blanket vulnerability-free claim.",
+    "No Recovery execution, measurement, PASS, readiness, REC-I3, or admission claim.",
+    "PoC-scoped dependency-family update only; no production dependency admission.",
+    "No Search, Capture, VPN, KSP, Room, schema, model, backend, or product-feature admission.",
+    "Parent PoC states and thresholds are unchanged."
+  ],
+  "offlineContract": {
+    "affectedGradleTasks": [
+      ":poc:capture:dependencies",
+      "spotlessCheck",
+      "detekt",
+      ":poc:capture:testDebugUnitTest",
+      ":poc:capture:compileDebugAndroidTestKotlin",
+      ":poc:capture:lintDebug",
+      ":poc:capture:assembleDebug"
+    ],
+    "canonicalProjectionDefinition": "SORTED_UTF8_LF_JSON_OF_EXACT_TASKS_AFFECTED_CONFIGURATIONS_LOCKED_GRAPH_AND_CATALOG_LOCK_METADATA_SHA256",
+    "canonicalProjectionRuns": 2,
+    "cleanupRequired": true,
+    "gradleUserHome": "FRESH_JOB_SCOPED_BOUNDED_RUNNER_TEMP",
+    "onlineSeedRequiredBeforeOffline": true
+  },
+  "schemaVersion": 1,
+  "securitySnapshot": {
+    "checkedAt": "2026-08-19T09:42:45Z",
+    "claim": "POINT_IN_TIME_ZERO_RESULTS_NOT_A_BLANKET_VULNERABILITY_FREE_CLAIM",
+    "githubRepositoryAdvisoryCounts": {
+      "JetBrains/kotlin": 0,
+      "Kotlin/kotlinx.coroutines": 0
+    },
+    "globalMavenAdvisoryCountByCoordinate": {
+      "org.jetbrains.kotlin:kotlin-stdlib:2.2.20": 0,
+      "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0": 0,
+      "org.jetbrains.kotlinx:kotlinx-coroutines-bom:1.11.0": 0,
+      "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.11.0": 0,
+      "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0": 0,
+      "org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm:1.11.0": 0,
+      "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0": 0
+    }
+  },
+  "signers": {
+    "coroutines": {
+      "bytes": 7127,
+      "primaryFingerprint": "BC900CD2FC9A9D906ECBA48BE3822B59020A349D",
+      "primaryUserIds": "",
+      "sha256": "cdd5a548f8c8d884cfa3bc502bcc752931f701aa2867df3c23a7dd266e1ebcd2",
+      "signingFingerprint": "E7DC75FC24FB3C8DFE8086AD3D5839A2262CBBFB",
+      "signingKeyId": "3D5839A2262CBBFB",
+      "url": "https://keys.openpgp.org/vks/v1/by-keyid/3D5839A2262CBBFB"
+    },
+    "kotlin": {
+      "bytes": 12819,
+      "primaryFingerprint": "2FBA29D08D2E25EE84C132C30729A0AFF8999A87",
+      "primaryUserIds": "Kotlin Release <kt-a@jetbrains.com>",
+      "sha256": "dd4e4696a9cea1c666733a72d9a136b2375980bfcb4167d90634e82ba7719e50",
+      "signingFingerprint": "6F538074CCEBF35F28AF9B066A0975F8B1127B83",
+      "signingKeyId": "6A0975F8B1127B83",
+      "url": "https://keys.openpgp.org/vks/v1/by-keyid/6A0975F8B1127B83"
+    }
+  },
+  "status": "LOCAL_VERIFICATION_PENDING_REVIEW_AND_CI",
+  "upstream": {
+    "coroutines": {
+      "commit": "8564f65764d3d05893cec026c6e94250e2b23874",
+      "createdAt": "2026-05-07T08:06:21Z",
+      "licenseBlob": "9c308d958bf91eafe83f66106ca692ff414a4965",
+      "licenseBytes": 11398,
+      "licensePath": "LICENSE.txt",
+      "licenseSha256": "b1febe6399dffb10d19d35e7663ab16300c93cb0476a94115df1cc0097a8ffd8",
+      "notice": null,
+      "publishedAt": "2026-05-08T12:49:29Z",
+      "releaseBodyBytes": 2718,
+      "releaseBodySha256": "43d8e8132b13259c90e650fe16315a33959f0cfc85125b444996700765ddb56d",
+      "releaseId": 319497021,
+      "repository": "Kotlin/kotlinx.coroutines",
+      "tag": "1.11.0",
+      "tree": "454b8c238b0b77bae9e5e3c2bff76da4e57e2f27"
+    },
+    "kotlin": {
+      "commit": "693c44ee79f62895a9b92bdd60fdd7a9bc29a975",
+      "createdAt": "2025-08-28T12:25:38Z",
+      "licenseBlob": "d645695673349e3947e8e5ae42332d0ac3164cd7",
+      "licenseBytes": 11358,
+      "licensePath": "license/LICENSE.txt",
+      "licenseSha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "notice": {
+        "bytes": 482,
+        "path": "license/NOTICE.txt",
+        "sha256": "0b09a83d3ef7795c7dec65e815866597c066c53898f2852a76599b8f5552941a"
+      },
+      "publishedAt": "2025-09-10T08:33:26Z",
+      "releaseBodyBytes": 100225,
+      "releaseBodySha256": "8c390142052ea24632a2fb9bd4dda6b4d24f9b26e02b22665e6ad266c3e065cd",
+      "releaseId": 245851945,
+      "repository": "JetBrains/kotlin",
+      "tag": "v2.2.20",
+      "tree": "ed2a6a9b5c7a46cc2be299cc2243c499ba8ce840"
+    }
+  }
+}

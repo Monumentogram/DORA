@@ -21,7 +21,7 @@ jobs:
   android-bootstrap:
     name: android-bootstrap
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Check out repository
@@ -51,6 +51,64 @@ jobs:
           "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
           "platforms;android-36"
           "build-tools;36.0.0"
+
+      - name: Self-test Kotlinx Coroutines 1.11.0 admission contract
+        run: python3 tools/verify_kotlinx_coroutines_admission.py --self-test
+
+      - name: Verify Kotlinx Coroutines 1.11.0 online provenance and authenticity
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 tools/verify_kotlinx_coroutines_admission.py --online
+
+      - name: Create fresh bounded Coroutines admission Gradle home
+        id: coroutines-gradle-home
+        shell: bash
+        run: |
+          bounded_home="${RUNNER_TEMP}/dora-coroutines-admission-gradle"
+          if [ -e "${bounded_home}" ]; then
+            echo "Bounded Gradle home unexpectedly exists: ${bounded_home}" >&2
+            exit 1
+          fi
+          mkdir -p "${bounded_home}"
+          printf 'path=%s\n' "${bounded_home}" >> "${GITHUB_OUTPUT}"
+
+      - name: Seed exact affected Capture commands online in bounded home
+        env:
+          GRADLE_USER_HOME: ${{ steps.coroutines-gradle-home.outputs.path }}
+        working-directory: android
+        run: >-
+          ./gradlew --no-daemon --stacktrace
+          :poc:capture:dependencies
+          spotlessCheck
+          detekt
+          :poc:capture:testDebugUnitTest
+          :poc:capture:compileDebugAndroidTestKotlin
+          :poc:capture:lintDebug
+          :poc:capture:assembleDebug
+          --no-configuration-cache
+
+      - name: Reproduce affected Capture commands twice offline
+        env:
+          GRADLE_USER_HOME: ${{ steps.coroutines-gradle-home.outputs.path }}
+        run: python3 tools/verify_kotlinx_coroutines_admission.py --offline
+
+      - name: Remove bounded Coroutines admission Gradle home
+        if: always()
+        env:
+          GRADLE_USER_HOME: ${{ steps.coroutines-gradle-home.outputs.path }}
+        shell: bash
+        run: |
+          expected="${RUNNER_TEMP}/dora-coroutines-admission-gradle"
+          if [ -z "${GRADLE_USER_HOME}" ] || [ "${GRADLE_USER_HOME}" != "${expected}" ]; then
+            echo "Refusing unexpected cleanup target: ${GRADLE_USER_HOME}" >&2
+            exit 1
+          fi
+          case "${GRADLE_USER_HOME}" in
+            "${RUNNER_TEMP}"/*) ;;
+            *) echo "Cleanup target escaped RUNNER_TEMP" >&2; exit 1 ;;
+          esac
+          rm -rf -- "${GRADLE_USER_HOME}"
+          test ! -e "${GRADLE_USER_HOME}"
 
       - name: Validate Stage 00 artifacts
         run: python3 tools/validate_stage00.py
