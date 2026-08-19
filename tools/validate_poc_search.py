@@ -24,6 +24,7 @@ import combine_poc_search_gate_v02 as gate_v02_combiner  # noqa: E402
 import check_poc_search_run_readiness as run_readiness  # noqa: E402
 import finalize_poc_search_result as finalizer  # noqa: E402
 import poc_search_evidence_ledger as evidence_ledger  # noqa: E402
+import poc_search_dependency_inventory as dependency_inventory_tool  # noqa: E402
 from poc_search_environment import (  # noqa: E402
     classify_android_runtime,
     require_consistent_android_runtime,
@@ -464,27 +465,6 @@ def validate_approved_contract_still_blocks_measured_run() -> None:
     run_readiness.validate_gate_set(future_authorized)
 
 
-def locked_components(lock_path: Path) -> dict[str, list[str]]:
-    selected_configurations = {
-        "_agp_internal_benchmark_kspClasspath",
-        "_agp_internal_debug_kspClasspath",
-        "benchmarkAndroidTestRuntimeClasspath",
-        "benchmarkRuntimeClasspath",
-        "debugAndroidTestRuntimeClasspath",
-        "debugRuntimeClasspath",
-    }
-    components: dict[str, list[str]] = {}
-    for raw_line in lock_path.read_text(encoding="utf-8").splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        coordinate, raw_configurations = line.split("=", 1)
-        scopes = sorted(selected_configurations.intersection(raw_configurations.split(",")))
-        if scopes:
-            components[coordinate] = scopes
-    return components
-
-
 def validate_dependency_and_ip_inventory() -> None:
     lock_path = ROOT / "android/poc/search/gradle.lockfile"
     inventory_path = EVIDENCE / "dependency-inventory.json"
@@ -492,7 +472,11 @@ def validate_dependency_and_ip_inventory() -> None:
     require(lock_path.is_file(), "POC-SEARCH-001 dependency lock is missing")
     require(inventory_path.is_file(), "POC-SEARCH-001 dependency inventory is missing")
     require(ip_path.is_file(), "POC-SEARCH-001 IP assessment is missing")
-    expected = locked_components(lock_path)
+    try:
+        overlay = dependency_inventory_tool.validate_build_tool_overlay(ROOT, inventory_path)
+        expected = dependency_inventory_tool.read_lock(lock_path)
+    except dependency_inventory_tool.InventoryError as error:
+        fail(str(error))
     require(bool(expected), "Search dependency lock has no measured-run configurations")
     inventory = read_json(inventory_path)
     require(inventory["pocId"] == "POC-SEARCH-001", "Dependency inventory PoC id mismatch")
@@ -501,6 +485,8 @@ def validate_dependency_and_ip_inventory() -> None:
         "Dependency inventory must not claim an unrecorded review",
     )
     lock_sha = hashlib.sha256(lock_path.read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+    if overlay is not None:
+        lock_sha = overlay["historicalEvidenceAnchor"]["lock"]["sha256"]
     require(inventory["lock"]["sha256"] == lock_sha, "Dependency inventory lock SHA mismatch")
     require(
         set(inventory["lock"]["configurations"])
@@ -819,6 +805,214 @@ def validate_dependency_and_ip_inventory() -> None:
             "sqliteVersion": runtime_identity["sqliteVersion"],
         },
         "SQLite Stage 0 runtime identity is incomplete",
+    )
+
+
+def validate_build_tool_overlay_negative_cases() -> None:
+    profile_path = EVIDENCE / "build-tool-lock-overlay-ksp-2.3.11.json"
+    profile = dependency_inventory_tool.read_json_strict(profile_path)
+    anchor = profile["historicalEvidenceAnchor"]
+    base = profile["maintenanceBase"]
+    historical_lock_text = dependency_inventory_tool.git_bytes(
+        ROOT,
+        "show",
+        f"{anchor['commit']}:{anchor['lock']['path']}",
+    ).decode("utf-8")
+    current_lock_text = (ROOT / dependency_inventory_tool.LOCK_RELATIVE_PATH).read_text(
+        encoding="utf-8"
+    )
+    historical_lock = dependency_inventory_tool.parse_lock_strict_text(
+        historical_lock_text,
+        "historical lock fixture",
+    )
+    current_lock = dependency_inventory_tool.parse_lock_strict_text(
+        current_lock_text,
+        "current lock fixture",
+    )
+
+    def expect_rejected(label: str, action: Any) -> None:
+        try:
+            action()
+        except dependency_inventory_tool.InventoryError:
+            return
+        fail(f"Build-tool overlay mutation was accepted: {label}")
+
+    extra_key = deepcopy(profile)
+    extra_key["unexpected"] = True
+    expect_rejected(
+        "extra profile key",
+        lambda: dependency_inventory_tool.validate_overlay_schema(extra_key),
+    )
+    missing_key = deepcopy(profile)
+    del missing_key["nonClaims"]
+    expect_rejected(
+        "missing profile key",
+        lambda: dependency_inventory_tool.validate_overlay_schema(missing_key),
+    )
+    expect_rejected(
+        "duplicate JSON key",
+        lambda: dependency_inventory_tool._strict_json_object(
+            [("schemaVersion", 1), ("schemaVersion", 1)]
+        ),
+    )
+
+    for label, path, replacement in (
+        (
+            "maintenance base spoof",
+            ("maintenanceBase", "commit"),
+            "0" * 40,
+        ),
+        (
+            "historical lock blob spoof",
+            ("historicalEvidenceAnchor", "lock", "gitBlobSha1"),
+            "0" * 40,
+        ),
+        (
+            "current lock SHA spoof",
+            ("currentFiles", "lock", "sha256"),
+            "0" * 64,
+        ),
+        (
+            "immutable evidence digest spoof",
+            ("evaluatedProjection", "immutableEvidence", 0, "sha256"),
+            "0" * 64,
+        ),
+        (
+            "upstream fact spoof",
+            ("upstreamFacts", "release", "tagCommit"),
+            "0" * 40,
+        ),
+        (
+            "false readiness claim",
+            ("nonClaims", 0),
+            "POC-SEARCH-001 is READY.",
+        ),
+    ):
+        candidate = deepcopy(profile)
+        target: Any = candidate
+        for segment in path[:-1]:
+            target = target[segment]
+        target[path[-1]] = replacement
+        expect_rejected(
+            label,
+            lambda candidate=candidate: dependency_inventory_tool.validate_overlay_schema(
+                candidate
+            ),
+        )
+
+    data_lines = [line for line in current_lock_text.splitlines() if line and not line.startswith("#")]
+    malformed_lines = list(data_lines)
+    malformed_lines[0] = malformed_lines[0].replace("=", "==", 1)
+    duplicate_lines = list(data_lines)
+    duplicate_lines.insert(1, duplicate_lines[0])
+    unsorted_lines = list(data_lines)
+    unsorted_lines[0], unsorted_lines[1] = unsorted_lines[1], unsorted_lines[0]
+    for label, lines in (
+        ("malformed lock line", malformed_lines),
+        ("duplicate lock coordinate", duplicate_lines),
+        ("unsorted lock coordinates", unsorted_lines),
+    ):
+        expect_rejected(
+            label,
+            lambda lines=lines, label=label: dependency_inventory_tool.parse_lock_strict_text(
+                "\n".join(lines) + "\n",
+                label,
+            ),
+        )
+    expect_rejected(
+        "CRLF lock line endings",
+        lambda: dependency_inventory_tool.parse_lock_strict_text(
+            "\r\n".join(data_lines) + "\r\n",
+            "CRLF lock fixture",
+        ),
+    )
+
+    unexpected = deepcopy(current_lock)
+    unexpected["example.invalid:unexpected:1.0"] = ("kspPluginClasspath",)
+    mixed = deepcopy(current_lock)
+    mixed[dependency_inventory_tool.KSP_PLUGIN_API_OLD] = tuple(
+        dependency_inventory_tool.KSP_PLUGIN_CONFIGURATIONS
+    )
+    evaluated_scope_change = deepcopy(current_lock)
+    evaluated_coordinate = next(iter(dependency_inventory_tool.selected_projection(current_lock)))
+    evaluated_scope_change[evaluated_coordinate] = tuple(
+        scope
+        for scope in evaluated_scope_change[evaluated_coordinate]
+        if scope != "debugRuntimeClasspath"
+    )
+    room_substitution = deepcopy(current_lock)
+    room_scopes = room_substitution.pop(dependency_inventory_tool.ROOM_PROCESSOR_API)
+    room_substitution[
+        "com.google.devtools.ksp:symbol-processing-api:2.0.10-1.0.25"
+    ] = room_scopes
+    plugin_scope_leak = deepcopy(current_lock)
+    plugin_scope_leak[dependency_inventory_tool.KSP_PLUGIN_API_NEW] = tuple(
+        sorted(
+            set(plugin_scope_leak[dependency_inventory_tool.KSP_PLUGIN_API_NEW])
+            | {"_agp_internal_debug_kspClasspath"}
+        )
+    )
+    for label, candidate in (
+        ("unexpected lock selection", unexpected),
+        ("mixed KSP plugin versions", mixed),
+        ("evaluated projection scope change", evaluated_scope_change),
+        ("Room processor API substitution", room_substitution),
+        ("KSP plugin API evaluated-scope leak", plugin_scope_leak),
+    ):
+        expect_rejected(
+            label,
+            lambda candidate=candidate: dependency_inventory_tool.validate_lock_transition(
+                profile,
+                historical_lock,
+                candidate,
+            ),
+        )
+
+    historical_catalog = dependency_inventory_tool.git_bytes(
+        ROOT,
+        "show",
+        f"{base['commit']}:{base['catalog']['path']}",
+    ).decode("utf-8")
+    current_catalog = (ROOT / dependency_inventory_tool.CATALOG_RELATIVE_PATH).read_text(
+        encoding="utf-8"
+    )
+    expect_rejected(
+        "catalog change outside the KSP pin",
+        lambda: dependency_inventory_tool.validate_catalog_transition(
+            historical_catalog,
+            current_catalog + "# unexpected\n",
+        ),
+    )
+    immutable_digests = dict(dependency_inventory_tool.IMMUTABLE_EVIDENCE_SHA256)
+    immutable_digests[next(iter(immutable_digests))] = "0" * 64
+    expect_rejected(
+        "immutable historical evidence mutation",
+        lambda: dependency_inventory_tool.validate_immutable_evidence(
+            profile,
+            immutable_digests,
+        ),
+    )
+    expect_rejected(
+        "historical evidence anchor is not a descendant of the maintenance base",
+        lambda: dependency_inventory_tool.require_ancestor(
+            ROOT,
+            base["commit"],
+            anchor["commit"],
+            "reversed ancestry fixture",
+        ),
+    )
+
+    legacy = {"lock": {"sha256": dependency_inventory_tool.CURRENT_LOCK_SHA256}}
+    require(
+        dependency_inventory_tool.inventory_for_reviewed_output(legacy, None) is legacy
+        and legacy["lock"]["sha256"] == dependency_inventory_tool.CURRENT_LOCK_SHA256,
+        "Absent-profile path no longer preserves legacy inventory behavior",
+    )
+    overlaid = dependency_inventory_tool.inventory_for_reviewed_output(legacy, profile)
+    require(
+        overlaid is not legacy
+        and overlaid["lock"]["sha256"] == dependency_inventory_tool.HISTORICAL_LOCK_SHA256,
+        "Active overlay does not preserve the immutable reviewed lock binding",
     )
 
 
@@ -1894,6 +2088,7 @@ def main() -> int:
         validate_module_wiring,
         validate_approved_contract_still_blocks_measured_run,
         validate_dependency_and_ip_inventory,
+        validate_build_tool_overlay_negative_cases,
         validate_gate_v02_readiness_evidence,
         validate_durable_evidence_ledger,
         host_sqlite_smoke,
@@ -1912,6 +2107,13 @@ def main() -> int:
 if __name__ == "__main__":
     try:
         raise SystemExit(main())
-    except (OSError, ValueError, KeyError, sqlite3.Error, json.JSONDecodeError) as error:
+    except (
+        OSError,
+        ValueError,
+        KeyError,
+        sqlite3.Error,
+        json.JSONDecodeError,
+        dependency_inventory_tool.InventoryError,
+    ) as error:
         print(f"FAIL {error}", file=sys.stderr)
         raise SystemExit(1)
