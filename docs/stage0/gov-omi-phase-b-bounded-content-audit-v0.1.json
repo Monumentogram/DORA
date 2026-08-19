@@ -1,0 +1,425 @@
+{
+  "recordType": "dora-gov-omi-phase-b-bounded-public-content-audit-scope",
+  "schemaVersion": 1,
+  "taskId": "GOV-OMI-001",
+  "version": "gov-omi-phase-b-bounded-content-audit-v0.1",
+  "date": "2026-08-18",
+  "state": "AUTHORIZED_BOUNDED_MECHANICAL_AUDIT",
+  "authority": {
+    "id": "GOV-OMI-PHASE-B-BOUNDED-PUBLIC-SOURCE-CONTENT-AUDIT-AUTH-20260818-01",
+    "approvedBy": "Project owner",
+    "approvedOn": "2026-08-18",
+    "mechanicalFindingsOnly": true,
+    "legalAdvice": false
+  },
+  "recoveryAuthorities": [
+    {
+      "id": "GOV-OMI-PHASE-B-CANONICAL-RECOVERY-AUTH-20260818-02",
+      "preserveExistingHistoryAndWip": true
+    },
+    {
+      "id": "GOV-OMI-PHASE-B-INCOMPLETE-RETRIEVAL-RECOVERY-AUTH-20260818-03",
+      "capturedAt": "2026-08-18T15:50:58.833Z",
+      "preserveFirstFailureAndSuccessfulRequests": true,
+      "permitExactlyOneFailedBlobRetry": true
+    },
+    {
+      "id": "GOV-OMI-PHASE-B-TEXT-CLASSIFICATION-AND-TRACKER-RECOVERY-AUTH-20260818-04",
+      "capturedAt": "2026-08-18T16:14:19.525Z",
+      "preserveAllPriorFailuresAndSuccessfulRequests": true,
+      "addedContentRequestCap": 66,
+      "permitPriorSuccessful48TextClassificationRefetch": true,
+      "permitFrozen18TrackerRecovery": true
+    },
+    {
+      "id": "GOV-OMI-PHASE-B-SANITIZED-SEMANTIC-FINDINGS-AUTH-20260818-05",
+      "capturedAt": "2026-08-18T16:36:55.504Z",
+      "preserveAuth04EvidenceAndReviewCommit": "4b39087f7d57222edb614530567a22e272a18f5b",
+      "permitOneFinalInMemorySemanticPass": true,
+      "addedContentRequestCap": 83
+    }
+  ],
+  "preContentCheckpoint": {
+    "capturedAt": "2026-08-18T14:55:24.370Z",
+    "doraRepository": "Monumentogram/DORA",
+    "branch": "codex/gov-omi-001-phase-b-bounded-content-audit",
+    "baseCommitSha": "4a1dacacc52926ef3608a5952a762f00b8dafaa9",
+    "baseTreeSha": "23d0fe235acff4e4693b6eabcedad1e58b8d0816",
+    "trackedAndStagedBaseClean": true,
+    "upstreamContentRequestCountBeforeCheckpoint": 0,
+    "preFreezeRecursiveTreeMetadataRequestCount": 3
+  },
+  "upstreamSnapshot": {
+    "repository": "BasedHardware/omi",
+    "visibilityRequired": "PUBLIC",
+    "commitSha": "7d99abcc4efb9e46a5853b21fc01289e4b891837",
+    "treeSha": "85db621ffd5dc5386bcbd7c87713cc69638be7e3",
+    "phaseATreeMetadataSha256": "007d030a21e72c07c89f36359c0e5ded355147c85b5b6284ae0858e5e5058e90",
+    "movingRefAllowedAsIdentity": false
+  },
+  "fileAllowlistCanonicalization": {
+    "encoding": "UTF-8 without BOM",
+    "row": "category<TAB>path<TAB>oid<TAB>size<LF>",
+    "sort": "ordinal ascending over complete rows",
+    "terminalLf": true,
+    "sha256": "5ce13c2059bbb6dacbee78d7560985cbbe7cab8a54e93c73b1f643ccca277a4a"
+  },
+  "fileAllowlistSummary": {
+    "pathCount": 67,
+    "uniqueBlobCount": 65,
+    "pathExpandedBytes": 702321,
+    "uniqueDecodedBytes": 700153,
+    "categories": [
+      {"category":"LICENSE_NOTICE","paths":21,"uniqueBlobs":19,"pathExpandedBytes":62140,"uniqueDecodedBytes":59972},
+      {"category":"MANIFEST","paths":11,"uniqueBlobs":11,"pathExpandedBytes":97974,"uniqueDecodedBytes":97974},
+      {"category":"SOURCE","paths":20,"uniqueBlobs":20,"pathExpandedBytes":376104,"uniqueDecodedBytes":376104},
+      {"category":"TEST","paths":13,"uniqueBlobs":13,"pathExpandedBytes":158546,"uniqueDecodedBytes":158546},
+      {"category":"SECURITY_DOC","paths":2,"uniqueBlobs":2,"pathExpandedBytes":7557,"uniqueDecodedBytes":7557}
+    ]
+  },
+  "fileAllowlistColumns": ["category","path","oid","size"],
+  "fileAllowlist": [
+    ["LICENSE_NOTICE","desktop/context-for-claude/LICENSE","beb9b3553922522ad2466040709a4a76c05d81ca",1084],
+    ["LICENSE_NOTICE","desktop/context-for-claude/NOTICE","194572e3ce20396dd7dea3d8644cb86301e9f036",3561],
+    ["LICENSE_NOTICE","docs/doc/hardware/consumer/license.mdx","d62389a3aedd4e1b6d44f4fe66a8d00d0a7af9ce",5125],
+    ["LICENSE_NOTICE","docs/doc/info/License.mdx","432dffe80f69bf0f991d82ee786b8e0be0569deb",2019],
+    ["LICENSE_NOTICE","LICENSE","beb9b3553922522ad2466040709a4a76c05d81ca",1084],
+    ["LICENSE_NOTICE","mcp/LICENSE","f282f5692592fa49755e09c6b292f02e928f17e4",1053],
+    ["LICENSE_NOTICE","omi/hardware/consumer/LICENSE","beb9b3553922522ad2466040709a4a76c05d81ca",1084],
+    ["LICENSE_NOTICE","omiGlass/firmware/.pio/libdeps/seeed_xiao_esp32s3/esp32-camera/LICENSE","d645695673349e3947e8e5ae42332d0ac3164cd7",11358],
+    ["LICENSE_NOTICE","omiGlass/firmware/.pio/libdeps/seeed_xiao_esp32s3/NimBLE-Arduino/LICENSE","4abe69699a99fcfd54e06efd7def9543042d8760",12108],
+    ["LICENSE_NOTICE","omiGlass/firmware/.pio/libdeps/seeed_xiao_esp32s3/NimBLE-Arduino/src/nimble/ext/tinycrypt/AUTHORS","0a8e9f806977d2151aec4d9361b12b6227e26108",406],
+    ["LICENSE_NOTICE","omiGlass/firmware/.pio/libdeps/seeed_xiao_esp32s3/NimBLE-Arduino/src/nimble/ext/tinycrypt/LICENSE","2e1db516ad74af176072f411c7720c30583ce020",3313],
+    ["LICENSE_NOTICE","omiGlass/firmware/.pio/libdeps/seeed_xiao_esp32s3/NimBLE-Arduino/src/nimble/LICENSE","08b9b218a2410bf71aba28064370eed71aa2b842",12043],
+    ["LICENSE_NOTICE","omiGlass/firmware/.pio/libdeps/seeed_xiao_esp32s3/NimBLE-Arduino/src/nimble/NOTICE","02fe5929daaa67986d3656aade4e205eaf8fef68",321],
+    ["LICENSE_NOTICE","omiGlass/LICENSE","2933d24a01edfefc22f7086761092db9ab471c96",1074],
+    ["LICENSE_NOTICE","plugins/hume-ai/LICENSE","b77bf2ab726c6e7cb5a81a9d3b7dc38266ebfd3d",1056],
+    ["LICENSE_NOTICE","plugins/omi-clickup-app/LICENSE","d2e649a97015cf177d0a73ecd2d378236638d67b",1094],
+    ["LICENSE_NOTICE","plugins/omi-github-app/LICENSE","546ca2287dc56da02980b11237026aa595b29909",1093],
+    ["LICENSE_NOTICE","plugins/omi-slack-app/LICENSE","5ca81f5a74fb342e20499cd0b08480e9b58fc733",1092],
+    ["LICENSE_NOTICE","plugins/omi-twitter-app/LICENSE","889bb2d19bde9a9a7ac51aefc576e2814a3f4b9a",1094],
+    ["LICENSE_NOTICE","sdks/python-cli/LICENSE","bca1b1e545a9662453bd172b177dd7d967b027b6",1077],
+    ["LICENSE_NOTICE","web/personas-open-source/LICENSE","0519ecba6ea913e21689ec692e81e9e4973fbf73",1],
+    ["MANIFEST","app/android/app/build.gradle","969fc35017e5b8b6dba80ad6f6769e4f063b95eb",5586],
+    ["MANIFEST","app/android/app/src/main/cpp/CMakeLists.txt","e58117c7cbe53ba4204fe394f263498ca2ee84d7",594],
+    ["MANIFEST","app/android/build.gradle","9631c4cf9d294a2d9f4f115206466297f3b5fa5d",623],
+    ["MANIFEST","app/android/gradle.properties","f887062bc68f2c83310826f6110ee6ea48380312",104],
+    ["MANIFEST","app/android/settings.gradle","b8250ffb912b0346be7e0f8fde6b763ebdcd8ed6",954],
+    ["MANIFEST","app/pubspec.lock","343b04ffa58f2c700c944899b0ba877f5c934796",75797],
+    ["MANIFEST","app/pubspec.yaml","0fd1d42b3367ae21e1fc62f85f21c5f64a42e352",6211],
+    ["MANIFEST","backend/diarizer/requirements.txt","df89c93a6b9086d11c09acfe4dca05742bee025c",2452],
+    ["MANIFEST","backend/parakeet/requirements.txt","10e7698b495460333e1149f1da51bc4c0c930478",892],
+    ["MANIFEST","backend/pyproject.toml","e047144e4753267f3041f369724f72d02354e8a9",301],
+    ["MANIFEST","backend/requirements.txt","0ffa99904132158a87cff837890e7b0cadec148a",4460],
+    ["SECURITY_DOC","docs/doc/info/Privacy.mdx","79d3f8087ac634a2053c9532b160a18df6448545",4144],
+    ["SECURITY_DOC","SECURITY.md","3b541d7704e77fbc2be195a400588453073d74ff",3413],
+    ["SOURCE","app/android/app/src/main/kotlin/com/friend/ios/batch/OmiBackgroundAudioStreamer.kt","19517cb400116a8b08e9b5d08d4ca958a20e2545",14685],
+    ["SOURCE","app/android/app/src/main/kotlin/com/friend/ios/ble/OmiBleForegroundService.kt","fe6c622eddf05f62ec22074e47d04ece4e5d9342",42330],
+    ["SOURCE","app/android/app/src/main/kotlin/com/friend/ios/phonemic/PhoneMicCaptureEngine.kt","6f62850a5d2357a3cf64017b651bb1a6a97960de",8572],
+    ["SOURCE","app/android/app/src/main/kotlin/com/friend/ios/phonemic/PhoneMicForegroundService.kt","8da1c16cf97911f9ea25b25a647021035368c882",4620],
+    ["SOURCE","app/lib/backend/http/api/privacy.dart","f22d71b2632dc4f977739fa9a9655c0661ad9d9a",6782],
+    ["SOURCE","app/lib/providers/local_recordings_provider.dart","fa6c2d6e1948ed8096160b5c55337c0548c2fa81",22662],
+    ["SOURCE","app/lib/services/capture/capture_controller.dart","1e6a3956d8be1274af0acfa7a70cb025dd0cc4af",91711],
+    ["SOURCE","app/lib/services/mic/native_mic_recorder_service.dart","eedfe656fd6e55059abc3e60b4949d0cf24f1af7",11320],
+    ["SOURCE","app/lib/services/sockets/pure_streaming_stt.dart","c0219ac2513f65805127c034c8bd7eb66e308c50",20435],
+    ["SOURCE","app/lib/services/wals/sync_reconciler.dart","b38ab8576134e3106fe474203b84d57b60fdd706",4353],
+    ["SOURCE","app/lib/services/wals/sync_upload_gate.dart","141985a59788e84411c792453f1db1288da61ecb",5099],
+    ["SOURCE","backend/config/stt_provider_policy.py","8287fa87613a46fc3e2a19cec8ce934d88b0082c",8833],
+    ["SOURCE","backend/database/conversation_finalization_jobs.py","acdeadde88f794e227c38b8ff3bbb4ccfbe8437c",56173],
+    ["SOURCE","backend/database/sync_ledger.py","edb2c5dc10334a751c6dec2a808f2fe94bc6315f",20908],
+    ["SOURCE","backend/routers/transcribe.py","a144df0b090dc2193ee6de6045c17c981bc5d536",9988],
+    ["SOURCE","backend/utils/memory/memory_authority.py","ecd7a1673820a97e651cac31476b0738497c6b98",1252],
+    ["SOURCE","backend/utils/memory/retraction_scope.py","4f00060602c3e3f2234ccd9487ff2d2f21cabc87",7179],
+    ["SOURCE","backend/utils/stt/provider_resilience.py","d81a1a93f2ae6fa2a939f7410c88daf9b9161853",4258],
+    ["SOURCE","backend/utils/stt/vad_gate.py","8153adfded2e099b75cf56c3dd760383634a9bb5",29935],
+    ["SOURCE","backend/utils/sync/merge_dedupe.py","92a9d27f58b06a9d4ae072e1a71a4a685c0dde87",5009],
+    ["TEST","app/android/app/src/test/kotlin/com/friend/ios/batch/CustomSttRawAudioPolicyTest.kt","d021ec22e5f93eacd96ee3b9264f006eea81cc95",1022],
+    ["TEST","app/android/app/src/test/kotlin/com/friend/ios/ble/BleConnectRouterTest.kt","251f20512b8a9102dfa5b3c8e867aafd806c9d27",1470],
+    ["TEST","backend/testing/e2e/test_account_deletion_cloud_tasks.py","3748a395c23e1b7b339b87fa1cae95a604cf8fd3",20677],
+    ["TEST","backend/testing/e2e/test_sync_lifecycle.py","fc3c055693b275438f141a55dca0a18ac04dc7f9",10693],
+    ["TEST","backend/tests/unit/test_transcribe_teardown_flush.py","97511054e7b9431c9d345ea25669e72759d8d4e9",3567],
+    ["TEST","backend/tests/unit/test_transcription_outcomes.py","46f9c222e7bd6a16e1c5295229b1ab3116b17c6b",5034],
+    ["TEST","backend/tests/unit/test_vad_gate.py","9770b05125060fb69a0443a52254cb48a4f5c287",85800],
+    ["TEST","backend/tests/unit/test_verify_sync_ledger_fence_transition.py","d6d10a10875206c6c3dfbc3d8fd1b370c8541639",9830],
+    ["TEST","contracts/parity/day_keys.json","0f92cad093fe6c3841306da3256b610b8a568adc",2217],
+    ["TEST","contracts/parity/README.md","de33dbb61ab5012e76560e8e16a9bcb6578d6e1a",5477],
+    ["TEST","contracts/parity/section_labels.json","a21d87cbf7851dfd63054441a35c88f892a1f3dc",2802],
+    ["TEST","contracts/parity/task_due_buckets.json","a8362507db724cab6a35579fd428631aac4db8bb",4450],
+    ["TEST","contracts/parity/wire_action_item.json","4b10917fb5f85b1d397e6d598329c9ad213c61a1",5507]
+  ],
+  "discussionAllowlistCanonicalization": {
+    "encoding": "UTF-8 without BOM",
+    "row": "type<TAB>number<LF>",
+    "typeValues": ["ISSUE","PULL_REQUEST"],
+    "sort": "ordinal ascending over complete rows",
+    "terminalLf": true,
+    "sha256": "ef74a5642e5bf66eb3df14db915ffb35a964686b551b407ab0fb00e92f65fc64"
+  },
+  "discussionAllowlist": [
+    {"hazardId":"GOV-OMI-HZ-META-001","taxonomyTag":"AUDIO_DATA_LOSS","issueNumber":11769,"pullRequestNumber":7331},
+    {"hazardId":"GOV-OMI-HZ-META-002","taxonomyTag":"MIC_STATE_PERMISSION","issueNumber":11204,"pullRequestNumber":6565},
+    {"hazardId":"GOV-OMI-HZ-META-003","taxonomyTag":"LIFECYCLE_CRASH","issueNumber":11695,"pullRequestNumber":7099},
+    {"hazardId":"GOV-OMI-HZ-META-004","taxonomyTag":"ROUTE_BLE_INTERRUPTION","issueNumber":11762,"pullRequestNumber":7132},
+    {"hazardId":"GOV-OMI-HZ-META-005","taxonomyTag":"DUPLICATE_RETRY_ORDER","issueNumber":11736,"pullRequestNumber":6777},
+    {"hazardId":"GOV-OMI-HZ-META-006","taxonomyTag":"OFFLINE_SYNC","issueNumber":11694,"pullRequestNumber":7091},
+    {"hazardId":"GOV-OMI-HZ-META-007","taxonomyTag":"DELETE_PRIVACY_SECURITY","issueNumber":11812,"pullRequestNumber":7006},
+    {"hazardId":"GOV-OMI-HZ-META-008","taxonomyTag":"USER_TRUTH_STALE_WRITE","issueNumber":11308,"pullRequestNumber":7106},
+    {"hazardId":"GOV-OMI-HZ-META-009","taxonomyTag":"STT_PROVIDER_FAILURE","issueNumber":11777,"pullRequestNumber":7322}
+  ],
+  "discussionQueryBoundary": {
+    "oneRequestPerItem": true,
+    "allowedFields": ["typename","number","state","createdAt","updatedAt","closedAt","mergedAt","url","bodyText","comments.totalCount","comments.pageInfo","comments.nodes.bodyText","comments.nodes.createdAt","comments.nodes.updatedAt","comments.nodes.url"],
+    "topLevelComments": {"first":10,"orderByField":"UPDATED_AT","direction":"DESC","pagination":false},
+    "forbiddenFields": ["author","login","email","avatar","reaction","reviewThread","reviewComment","file","commit","patch","diff"]
+  },
+  "postFreezeBudgets": {
+    "repositoryIdentityRequests": 1,
+    "immutableCommitTreeRequests": 1,
+    "uniqueBlobRequests": 65,
+    "discussionRequests": 18,
+    "finalIdentityRequests": 1,
+    "maxLogicalAndTransportRequests": 86,
+    "retries": 0,
+    "decodedBlobBytesExact": 700153,
+    "maxOneBodyUtf8Bytes": 131072,
+    "maxOneCommentUtf8Bytes": 65536,
+    "maxAllDiscussionUtf8Bytes": 2097152,
+    "maxAllDecodedContentBytes": 2797305
+  },
+  "privacy": {
+    "rawContentMayExistOnlyInProcessMemory": true,
+    "rawContentInWorktreeTemporaryFilesGitToolOutputPullRequestCiOrArtifacts": false,
+    "retainAuthorsOrPersonalData": false,
+    "retainVerbatimSourceTitlesBodiesCommentsOrLicenseText": false,
+    "followLinks": false,
+    "potentialSecretPrivateEndpointOrPersonalContentAction": "STOP_AFFECTED_ITEM_AND_PERSIST_SANITIZED_SUPPRESSION_FLAG_ONLY"
+  },
+  "stopConditions": [
+    "DORA_IDENTITY_OR_SCOPE_DRIFT",
+    "DUPLICATE_BRANCH_WORKTREE_PR_OR_WRITER",
+    "UPSTREAM_NOT_PUBLIC_OR_AUTH_GATED",
+    "UPSTREAM_COMMIT_OR_TREE_MISMATCH",
+    "ALLOWLIST_HASH_COUNT_OID_OR_SIZE_MISMATCH",
+    "REQUEST_OR_BYTE_CAP_WOULD_BE_EXCEEDED",
+    "INVALID_BASE64_UTF8_NUL_OR_BINARY_CONTENT",
+    "GIT_BLOB_OID_MISMATCH",
+    "PRIVATE_SECRET_PERSONAL_OR_PRIVATE_ENDPOINT_CONTENT",
+    "UNALLOWLISTED_OR_LINKED_EVIDENCE_REQUIRED",
+    "RAW_CONTENT_PERSISTENCE_RISK",
+    "REVIEWER_IDENTITY_OR_DISPOSITION_INFERENCE",
+    "BUILD_RUN_COPY_PORT_DEPENDENCY_OR_ADMISSION_ATTEMPT",
+    "ACTIVE_STAGE_DISPLACEMENT_OR_FILE_OVERLAP",
+    "NEW_P0_P1_P2_VALIDATION_FAILURE_RED_CI_OR_PROTECTION_DRIFT"
+  ],
+  "allowedDispositions": ["LEARN_ONLY","DEFER","REJECT","REUSE_CANDIDATE_PENDING_HUMAN_REVIEW","PORT_CANDIDATE_PENDING_HUMAN_REVIEW","BLOCKED_RIGHTS","INSUFFICIENT_EVIDENCE"],
+  "reviewers": {
+    "productLegalIp": {"identity":null,"capacityConfirmed":false,"signatureOrEquivalent":null,"reviewedAt":null,"disposition":null},
+    "engineeringSecurity": {"identity":null,"capacityConfirmed":false,"signatureOrEquivalent":null,"reviewedAt":null,"disposition":null}
+  },
+  "authorityFlags": {
+    "cloneArchiveDiffPatchBuildExecuteCopyPortDependencyModelDatasetAdmissionAllowed": false,
+    "reviewerAssignmentAllowed": false,
+    "readyOrMergeAllowed": false,
+    "googleSheetReportRelayOrAlphaEditAllowed": false
+  },
+  "canonicalRecoveryReconciliation": {
+    "recordedAfterScopeCommitWithoutHistoryRewrite": true,
+    "scopeCommitSha": "d2dc88b7918806d379cd7632ea55c61268d0890d",
+    "canonicalRequestCap": 86,
+    "canonicalRequestsConsumedBeforeScopeCommit": {
+      "identityAndPreflight": 2,
+      "countTowardCanonicalCap": true
+    },
+    "requestsOutsideCanonicalCap": {
+      "preFreezeRecursiveTreeDiscovery": 3,
+      "grandfatheredContractTestTreeMetadata": 2
+    },
+    "repeatAnyRecordedRequestAllowed": false,
+    "grandfatheredImmutableArtifacts": [
+      {
+        "path": "docs/stage0/gov-omi-phase-b-contract-test-resolved-allowlist-v0.1.json",
+        "introducedByCommit": "f71a2a21b8cd7be1428cdce4cc44a02d78569803",
+        "introducedBeforeCanonicalScopeCommit": true,
+        "forwardMutationAllowed": false,
+        "deleteOrRewriteAllowed": false
+      }
+    ]
+  },
+  "incompleteRetrievalRecovery": {
+    "priorEvidenceCommit": "e689f5e5d5ffa843f822a75d0ba7b30b8c696e68",
+    "priorSuccessfulBlobRequests": 48,
+    "repeatPriorSuccessfulBlobRequestAllowed": false,
+    "priorFailedBlob": {
+      "oid": "d62389a3aedd4e1b6d44f4fe66a8d00d0a7af9ce",
+      "expectedBytes": 5125,
+      "exactRetryAllowed": 1
+    },
+    "remainingBlobOidsAfterSuccessfulRetry": [
+      "d645695673349e3947e8e5ae42332d0ac3164cd7",
+      "d6d10a10875206c6c3dfbc3d8fd1b370c8541639",
+      "d81a1a93f2ae6fa2a939f7410c88daf9b9161853",
+      "de33dbb61ab5012e76560e8e16a9bcb6578d6e1a",
+      "df89c93a6b9086d11c09acfe4dca05742bee025c",
+      "e047144e4753267f3041f369724f72d02354e8a9",
+      "e58117c7cbe53ba4204fe394f263498ca2ee84d7",
+      "ecd7a1673820a97e651cac31476b0738497c6b98",
+      "edb2c5dc10334a751c6dec2a808f2fe94bc6315f",
+      "eedfe656fd6e55059abc3e60b4949d0cf24f1af7",
+      "f22d71b2632dc4f977739fa9a9655c0661ad9d9a",
+      "f282f5692592fa49755e09c6b292f02e928f17e4",
+      "f887062bc68f2c83310826f6110ee6ea48380312",
+      "fa6c2d6e1948ed8096160b5c55337c0548c2fa81",
+      "fc3c055693b275438f141a55dca0a18ac04dc7f9",
+      "fe6c622eddf05f62ec22074e47d04ece4e5d9342"
+    ],
+    "trackerRequestsAfterAllBlobsSucceed": 18,
+    "trackerCommentSelectionRecoveryOverride": {
+      "graphqlArgument": "last:10",
+      "explicitOrderByArgument": false,
+      "orderingClaim": null,
+      "maximumCommentsPerItem": 10,
+      "pagination": false,
+      "incompleteWhenTotalCountExceedsMaximum": true,
+      "reason": "Use the schema-compatible author-free connection tail without an unsupported orderBy argument."
+    },
+    "canonicalBudget": {
+      "consumedBeforeRecovery": 51,
+      "failedBlobRetry": 1,
+      "remainingUniqueBlobs": 16,
+      "frozenTrackerItems": 18,
+      "finalIdentityRecheck": 0,
+      "total": 86
+    },
+    "stopOn": [
+      "SECOND_REQUEST_FAILURE",
+      "CAP_OR_SCOPE_DRIFT",
+      "PRIVACY_LEAK",
+      "RAW_CONTENT_PERSISTENCE",
+      "IDENTITY_OID_OR_SIZE_MISMATCH"
+    ]
+  },
+  "textClassificationAndTrackerRecovery": {
+    "authorityId": "GOV-OMI-PHASE-B-TEXT-CLASSIFICATION-AND-TRACKER-RECOVERY-AUTH-20260818-04",
+    "preservedEvidenceCommit": "e3bce723160c46d8ef98136aff0eab58db864471",
+    "preservePriorBlobRequestFailure": true,
+    "preservePriorTrackerRequestFailure": true,
+    "preservePriorLocalParserFailures": 2,
+    "textClassificationBlobSet": {
+      "derivation": "The completedBlobSha256ByOid keys at preservedEvidenceCommit, excluding incompleteRetrievalRecovery.priorFailedBlob.oid and all incompleteRetrievalRecovery.remainingBlobOidsAfterSuccessfulRetry; ordinal OID order.",
+      "uniqueOids": 48,
+      "decodedBytesExact": 543654,
+      "canonicalRow": "oid<TAB>size<TAB>sha256<LF>",
+      "terminalLf": true,
+      "canonicalSha256": "c706a42a2fa2de08dd875a69a1808e1bed5aacad7a8dbc0762f075de4b592efb",
+      "requestsPerOid": 1,
+      "requiredChecks": ["EXPECTED_OID","EXPECTED_SIZE","EXPECTED_SHA256","BASE64","STRICT_UTF8","NUL_FREE","ZERO_DISALLOWED_CONTROL_SCALARS","BINARY_HEURISTIC_PASS"],
+      "disallowedControlDefinition": "Any Unicode Control scalar except U+0009 TAB, U+000A LF or U+000D CR.",
+      "binaryHeuristicDefinition": "STRICT_UTF8 and NUL_FREE and ZERO_DISALLOWED_CONTROL_SCALARS",
+      "semanticInterpretationAllowed": false,
+      "priorPrivacyClassificationMayBeInheritedOnlyAfterExactSha256Match": true
+    },
+    "trackerSet": {
+      "requestOrder": {
+        "issues": [11769,11204,11695,11762,11736,11694,11812,11308,11777],
+        "pullRequests": [7331,6565,7099,7132,6777,7091,7006,7106,7322]
+      },
+      "firstRequestIsExactRetry": {"type":"ISSUE","number":11769,"allowedAttempts":1},
+      "requestsPerItem": 1,
+      "graphqlSelection": ["typename","number","state","createdAt","updatedAt","closedAt","mergedAt","bodyText","comments.totalCount","comments.nodes.bodyText","comments.nodes.createdAt","comments.nodes.updatedAt"],
+      "commentsArgument": "last:10",
+      "pagination": false,
+      "orderingClaim": null,
+      "authorIdentityRequested": false,
+      "urlOrLinkRequested": false,
+      "bodyAndCommentByteCapsInherited": true
+    },
+    "addedRequestBudget": {
+      "textClassificationBlobRequests": 48,
+      "trackerRequests": 18,
+      "total": 66,
+      "discoveryOrIdentityRequests": 0,
+      "paginationRequests": 0
+    },
+    "stopOnFirstNew": [
+      "EXTERNAL_REQUEST_FAILURE",
+      "GRAPHQL_SCHEMA_FAILURE",
+      "IDENTITY_OID_SIZE_OR_SHA_MISMATCH",
+      "REQUEST_OR_BYTE_CAP_DRIFT",
+      "PRIVACY_FAILURE",
+      "RAW_CONTENT_PERSISTENCE"
+    ]
+  },
+  "sanitizedSemanticFindingsPass": {
+    "authorityId": "GOV-OMI-PHASE-B-SANITIZED-SEMANTIC-FINDINGS-AUTH-20260818-05",
+    "preservedAuth04EvidenceCommit": "4b39087f7d57222edb614530567a22e272a18f5b",
+    "preservedAuth04EvidenceHashes": {
+      "resultJson": "54680e1b545e19f8b4bedd4277410cfb09fa7dc2a8c75bae69ce5a886315cfdc",
+      "reportMarkdown": "50534f009042ad44c806c674adb8a95d97c499b9b23bce86e4ce243df0b8f31c",
+      "independentReviewJson": "0c8b26db3b18bfdc91a16df1d972d8596c536c3ab39ee5649f8f89fe17e8606b"
+    },
+    "blobSet": {
+      "derivation": "All unique OIDs in fileAllowlist, ordinal OID order, with expected SHA-256 from the preserved AUTH-04 result.",
+      "uniqueOids": 65,
+      "decodedBytesExact": 700153,
+      "canonicalRow": "oid<TAB>size<TAB>sha256<LF>",
+      "terminalLf": true,
+      "canonicalSha256": "28d85ced1277ae60168a0d9c1195b34af7f2a2fa9071826876f63a662c24149c",
+      "requestsPerOid": 1,
+      "requiredBeforeSemantics": ["EXPECTED_OID","EXPECTED_SIZE","EXPECTED_SHA256","BASE64","STRICT_UTF8","NUL_FREE","ZERO_DISALLOWED_CONTROL_SCALARS","PRIVACY_GATE"],
+      "privacySuppressedOidsExcludedFromSemantics": [
+        "0a8e9f806977d2151aec4d9361b12b6227e26108",
+        "3748a395c23e1b7b339b87fa1cae95a604cf8fd3",
+        "432dffe80f69bf0f991d82ee786b8e0be0569deb",
+        "79d3f8087ac634a2053c9532b160a18df6448545"
+      ]
+    },
+    "trackerSet": {
+      "issues": [11769,11204,11695,11762,11736,11694,11812,11308,11777],
+      "pullRequests": [7331,6565,7099,7132,6777,7091,7006,7106,7322],
+      "requestsPerItem": 1,
+      "requiredAuth04Equality": ["TYPE","NUMBER","STATE","CREATED_AT","UPDATED_AT","CLOSED_AT","MERGED_AT","BODY_BYTES","BODY_SHA256","COMMENT_TOTAL_COUNT","COMMENTS_RETURNED","COMMENT_BYTES","COMMENTS_EXECUTION_SHA256","INCOMPLETE_CAP_FLAG"],
+      "pr7322MustRemainIncomplete": true,
+      "graphqlShapeInheritedExactlyFromAuth04": true
+    },
+    "semanticTaxonomy": {
+      "licenseFactCodes": ["MIT_FAMILY_SIGNAL","APACHE_2_FAMILY_SIGNAL","BSD_FAMILY_SIGNAL","ISC_FAMILY_SIGNAL","GPL_FAMILY_SIGNAL","LGPL_FAMILY_SIGNAL","MPL_FAMILY_SIGNAL","NOTICE_FILE_SIGNAL","EMPTY_OR_UNKNOWN_LICENSE_SIGNAL"],
+      "obligationFactCodes": ["PRESERVE_COPYRIGHT_AND_LICENSE_NOTICE_SIGNAL","PRESERVE_NOTICE_SIGNAL","STATE_CHANGES_SIGNAL","PATENT_TERMS_SIGNAL","SOURCE_AVAILABILITY_SIGNAL","SAME_LICENSE_SIGNAL","FILE_LEVEL_SOURCE_SIGNAL","NO_OBLIGATION_SIGNAL_ESTABLISHED"],
+      "componentPatternCodes": ["ANDROID_AUDIO_CAPTURE_LIFECYCLE","BLE_CONNECTION_AND_ROUTE_HANDLING","LOCAL_RECORDING_FINALIZATION","OFFLINE_SYNC_RECONCILIATION","STT_PROVIDER_RESILIENCE_AND_VAD","PRIVACY_DELETION_AND_USER_AUTHORITY"],
+      "artifactPatternCodes": ["SYNTHETIC_REGRESSION_TEST_PATTERN","PARITY_CONTRACT_PATTERN","SECURITY_REPORTING_PATTERN","PRIVACY_CONTROL_PATTERN"],
+      "hazardTaxonomyIds": ["GOV-OMI-HZ-META-001","GOV-OMI-HZ-META-002","GOV-OMI-HZ-META-003","GOV-OMI-HZ-META-004","GOV-OMI-HZ-META-005","GOV-OMI-HZ-META-006","GOV-OMI-HZ-META-007","GOV-OMI-HZ-META-008","GOV-OMI-HZ-META-009"],
+      "recommendationValues": ["LEARN_ONLY","DEFER","REJECT","REUSE_CANDIDATE","PORT_CANDIDATE"],
+      "quotesOrSnippetsAllowed": false,
+      "legalCompatibilityConclusionAllowed": false,
+      "admissionAllowed": false
+    },
+    "addedRequestBudget": {
+      "immutableBlobRequests": 65,
+      "trackerRequests": 18,
+      "total": 83,
+      "discoveryIdentityPaginationAuthorLinkPatchDiffOrArchiveRequests": 0
+    },
+    "stopOnFirstNew": [
+      "EXTERNAL_REQUEST_OR_GRAPHQL_SCHEMA_FAILURE",
+      "IDENTITY_OID_SIZE_OR_SHA_MISMATCH",
+      "AUTH04_TRACKER_DIGEST_OR_METADATA_MISMATCH",
+      "REQUEST_OR_BYTE_CAP_DRIFT",
+      "PRIVACY_FAILURE",
+      "RAW_CONTENT_PERSISTENCE"
+    ]
+  },
+  "allowedDoraFiles": [
+    "docs/stage0/DORA_MVP1_GOV_OMI_PHASE_B_BOUNDED_CONTENT_AUDIT.md",
+    "docs/stage0/gov-omi-phase-b-bounded-content-audit-v0.1.json",
+    "docs/evidence/gov-omi-001/phase-b-bounded-content-audit-v0.1.json",
+    "docs/evidence/gov-omi-001/phase-b-bounded-content-audit-report.md",
+    "docs/evidence/gov-omi-001/phase-b-independent-technical-review.json"
+  ],
+  "expectedClaimCeiling": {
+    "overallRights": "BLOCKED_RIGHTS",
+    "unsupportedConclusions": "INSUFFICIENT_EVIDENCE",
+    "evaluationApproved": false,
+    "admitted": false,
+    "readyOrMerge": false
+  },
+  "noAdmissionStatement": "This bounded public-content audit produces sanitized engineering evidence only. It does not authorize or admit Omi source, dependencies, binaries, models, datasets, assets, services, schemas, tests or product behavior."
+}
