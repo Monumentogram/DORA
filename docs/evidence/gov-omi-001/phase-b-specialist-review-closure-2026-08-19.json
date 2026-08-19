@@ -29,9 +29,17 @@
     "pullRequestState": "OPEN",
     "draft": true,
     "unmerged": true,
-    "behindBase": true,
-    "observedBaseRef": "main",
-    "observedBaseOid": "881c5bfbb84cedfc2d267ca8f8255c456b3908b8"
+    "githubReportedBaseRefName": "main",
+    "githubReportedBaseRefOid": "881c5bfbb84cedfc2d267ca8f8255c456b3908b8",
+    "githubReportedBaseRefOidClaimedAsCurrentRepositoryMain": false
+  },
+  "currentRemoteMainObservation": {
+    "observedAt": "2026-08-19T08:36:41Z",
+    "remoteRef": "refs/heads/main",
+    "commitSha": "da1d9bd13b71d609fe7ec4ea62fe1e984f726040",
+    "pullRequestHeadAtObservation": "d97c63e0d19923ebd9858c21b6cc0f988b5c6d7f",
+    "githubMergeStateStatus": "BEHIND",
+    "behindCurrentRemoteMain": true
   },
   "reviewedPhaseBBlobs": [
     {
@@ -88,6 +96,8 @@
       "identity": "Katerina Novikova",
       "capacity": "Engineering/Security read-only evidence reviewer",
       "capacityConfirmedByOwnerAssignment": true,
+      "formalReviewerClaimed": false,
+      "githubReviewSubmitted": false,
       "reviewedAt": "2026-08-19T06:49:54Z",
       "reviewedCommit": "a0580189333ab1ab8551c8c30cbb15a1e072faff",
       "reviewedTree": "df023d4cb8ca815c0ee499d35e8e1ad00c32e732",
@@ -112,7 +122,15 @@
         "kind": "DIRECT_USER_ATTESTATION_RELAYED_BY_PROJECT_COORDINATOR",
         "externalAttachment": false,
         "publicSafeAttestationTextRecorded": true,
-        "textPreservedVerbatimExceptUtf8LfAndTrailingWhitespaceNormalization": true,
+        "faithfulContentTranscription": true,
+        "byteIdentityWithSubmittedMessageClaimed": false,
+        "lineTopologyIdentityWithSubmittedMessageClaimed": false,
+        "normalizations": [
+          "UTF8_SERIALIZATION",
+          "LF_LINE_ENDINGS",
+          "TRAILING_WHITESPACE_REMOVAL",
+          "PARAGRAPH_BREAK_ADDED_BETWEEN_REVIEWER_CAPACITY_AND_SECTION_2"
+        ],
         "privateSourcePathRecorded": false
       }
     },
@@ -120,6 +138,8 @@
       "identity": "Новиков Юрий",
       "capacity": "Product/Legal/IP evidence reviewer",
       "capacityConfirmedByOwnerAssignment": true,
+      "formalReviewerClaimed": false,
+      "githubReviewSubmitted": false,
       "reviewedAt": "2026-08-19T06:57:25Z",
       "reviewedCommit": "a0580189333ab1ab8551c8c30cbb15a1e072faff",
       "reviewedTree": "df023d4cb8ca815c0ee499d35e8e1ad00c32e732",
