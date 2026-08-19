@@ -215,6 +215,117 @@ REC_I2B_AAPT2_REVIEW_CLOSURE_PATH = (
     "docs/evidence/poc-recovery-001/reviews/"
     "rec-i2b-aapt2-linux-verification-metadata-independent-delta-review-closure-2026-08-18.json"
 )
+REC_I2B_KSP_OVERLAY_PROFILE = "REC-I2B_KSP_2_3_11_VERIFICATION_METADATA_OVERLAY_V1"
+REC_I2B_KSP_OVERLAY_AUTHORIZATION = (
+    "DORA-KSP-2_3_11-REC-VERIFICATION-METADATA-OVERLAY-REMEDIATION-AUTH-20260819-04"
+)
+REC_I2B_KSP_OVERLAY_BRANCH = "codex/deps-ksp-2.3.11-admission"
+REC_I2B_KSP_OVERLAY_METADATA_PATH = "android/gradle/verification-metadata.xml"
+REC_I2B_KSP_OVERLAY_BASE_METADATA_BLOB = "bb2e8e398bb522fa03b34c8e0f157c37db1fbe21"
+REC_I2B_KSP_OVERLAY_BASE_METADATA_SHA256 = (
+    "61f71c6652faec73063a200bedcfa1e6fc07d5f969b426f3365aafd9fc217bb1"
+)
+REC_I2B_KSP_OVERLAY_METADATA_BLOB = "887c279e4e3cdccd4dd1c70c758333f27e089a11"
+REC_I2B_KSP_OVERLAY_METADATA_SHA256 = (
+    "2d31104754fc8df67ff14d9f8fb613782170862d421202ad3132297793357f23"
+)
+REC_I2B_KSP_OVERLAY_METADATA_LF_BYTES = 300225
+REC_I2B_KSP_OVERLAY_PATHS = (
+    "android/gradle/libs.versions.toml",
+    "android/poc/search/gradle.lockfile",
+    "docs/evidence/poc-search-001/build-tool-lock-overlay-ksp-2.3.11.json",
+    "tools/poc_search_dependency_inventory.py",
+    "tools/validate_poc_recovery_governance.py",
+    "tools/validate_poc_search.py",
+    REC_I2B_KSP_OVERLAY_METADATA_PATH,
+)
+REC_I2B_KSP_OVERLAY_FROZEN_FILES = {
+    "android/gradle/libs.versions.toml": (
+        "d19f37077b1e90b5e15fdb3ddd67e1126b01e5bb",
+        "230e8b8f5042b5e4852aa3ad05009e5b1d1336eb467d9d89f3d37a7f5104fc4c",
+    ),
+    "android/poc/search/gradle.lockfile": (
+        "a7549c1b47744fefc18ad82dc499a956cf99c02d",
+        "3e47b2a46c493245ad24399b8bb26c834bc79b52397a4e920d5895bec695ba8f",
+    ),
+    "docs/evidence/poc-search-001/build-tool-lock-overlay-ksp-2.3.11.json": (
+        "df532ff8720b3255405294b2da2e8efb737923fb",
+        "511914d7e001c786ace199535d5e0d6f79bbae73052ae5523c9cdc817eb08b84",
+    ),
+    "tools/poc_search_dependency_inventory.py": (
+        "98800f19a6486024f220cbe85c7307d1c8e89a59",
+        "336af6f37e1e328138dbb5c3a690d301845dcefc86bfcc62302826ef75b0d1a9",
+    ),
+    "tools/validate_poc_search.py": (
+        "508f170eb827e77f19f2e0c424baeb7bebc3b7a3",
+        "72ebc15266fb7bce272f72ef18e39a3a3f996ecd5b34d8402b41ebdf8c4a0aac",
+    ),
+}
+REC_I2B_KSP_OVERLAY_ARTIFACTS = (
+    (
+        "com.google.devtools.ksp.gradle.plugin",
+        "com.google.devtools.ksp.gradle.plugin-2.3.11.pom",
+        "1663b2590469e60ac9b225b27e838a3db8d762e1f459fe81e0988b471f4e0966",
+    ),
+    (
+        "symbol-processing-aa-embeddable",
+        "symbol-processing-aa-embeddable-2.3.11.jar",
+        "435b76802ab4e8d82055f80a156916b403b4ea12d003e53db5591fb7918dbc55",
+    ),
+    (
+        "symbol-processing-aa-embeddable",
+        "symbol-processing-aa-embeddable-2.3.11.pom",
+        "d23a0226c667b180deab02cb84b910e60f4937fe72c0f109f2a6f2aca5991fcd",
+    ),
+    (
+        "symbol-processing-api",
+        "symbol-processing-api-2.3.11.jar",
+        "88819c9243629ee710c992d3efdc146dae31aafbb7d8029ce5d29d4fbd5d2326",
+    ),
+    (
+        "symbol-processing-api",
+        "symbol-processing-api-2.3.11.module",
+        "b26da6ac85651ec3a65f1cbe88bfd5877748000391667a2f3f7dc34c8923213e",
+    ),
+    (
+        "symbol-processing-common-deps",
+        "symbol-processing-common-deps-2.3.11.jar",
+        "30510a4364e02880ce2fbf0c4f0ef564dead3818eef4fc0500cbcee23fc362af",
+    ),
+    (
+        "symbol-processing-common-deps",
+        "symbol-processing-common-deps-2.3.11.module",
+        "1704f8b9009a92e448f63f4742630b1a99e8b8ce8339df85dbfc324e1d0008ec",
+    ),
+    (
+        "symbol-processing-gradle-plugin",
+        "symbol-processing-gradle-plugin-2.3.11.jar",
+        "8a00502695b7c44a190c12b9b54d6668724b7aa583f48f9657fab437fbcf8fb9",
+    ),
+    (
+        "symbol-processing-gradle-plugin",
+        "symbol-processing-gradle-plugin-2.3.11.module",
+        "93130c9a1a63e37a617621282e9f32034b91430346faa63fda4bfccd8745d46e",
+    ),
+)
+REC_I2B_KSP_OVERLAY_PROJECTION_CONFIGURATIONS = (
+    "_agp_internal_benchmark_kspClasspath",
+    "_agp_internal_debug_kspClasspath",
+    "benchmarkAndroidTestRuntimeClasspath",
+    "benchmarkRuntimeClasspath",
+    "debugAndroidTestRuntimeClasspath",
+    "debugRuntimeClasspath",
+)
+REC_I2B_KSP_OVERLAY_PROJECTION_SHA256 = (
+    "ce4431bf4364a203db42674dd1a0aa88c264233ec67f26180a4d06af251acbc9"
+)
+REC_I2B_KSP_OVERLAY_NONCLAIMS = (
+    "POC-SEARCH-001 remains FORMAL INCONCLUSIVE with recommendation BLOCKED.",
+    "benchmarkExecutionAllowed remains false; this profile authorizes no measured execution.",
+    "The KSP 2.3.11 selection is build-tool maintenance only and is outside the immutable OD-13 evaluated projection.",
+    "This profile does not admit KSP, Room, FTS4, a schema, a runtime dependency, a native artifact, or a product feature into production.",
+    "Observed source, license, release, and advisory metadata is engineering evidence, not legal advice or production Legal/Security approval.",
+)
 RECOVERY_MODULE = ROOT / "android" / "poc" / "recovery"
 AUTHORIZED_PATHS = [
     "android/poc/recovery/**",
@@ -646,6 +757,7 @@ def validate_rec_i2b_merged_main_protected_paths(
     changes: dict[str, list[str]],
     *,
     protect_validator: bool = False,
+    allow_exact_ksp_overlay: bool = False,
 ) -> None:
     expected_layers = {"committed", "staged", "unstaged", "untracked"}
     require(set(changes) == expected_layers, "Incomplete REC-I2B squash-main protected change inventory")
@@ -656,6 +768,11 @@ def validate_rec_i2b_merged_main_protected_paths(
                 for path in paths
                 if path_is_rec_i2b_merged_main_protected(path)
                 or (protect_validator and path == REC_I2B_MERGED_MAIN_VALIDATOR_PATH)
+                if not (
+                    allow_exact_ksp_overlay
+                    and layer == "committed"
+                    and path == REC_I2B_KSP_OVERLAY_METADATA_PATH
+                )
             }
         )
         for layer, paths in changes.items()
@@ -967,6 +1084,8 @@ def rec_i2b_merged_main_candidate(identity: RecoveryI2bMergedMainIdentity) -> bo
 def validate_rec_i2b_merged_main_lifecycle(
     identity: RecoveryI2bMergedMainIdentity,
     post_merge_changes: dict[str, list[str]],
+    *,
+    ksp_overlay_active: bool | None = None,
 ) -> str:
     require(
         identity.merged_anchor_commit == REC_I2B_MERGED_MAIN_ANCHOR,
@@ -988,6 +1107,14 @@ def validate_rec_i2b_merged_main_lifecycle(
         identity.head_module_tree == REC_I2B_MODULE_TREE,
         "REC-I2B squash-main current module subtree differs from the reviewed source tree",
     )
+
+    overlay_active = (
+        rec_i2b_ksp_overlay_active()
+        if ksp_overlay_active is None
+        else ksp_overlay_active
+    )
+    if overlay_active:
+        return validate_rec_i2b_ksp_overlay_lifecycle(identity, post_merge_changes)
 
     pull_request = identity.github_pull_request_context
     if pull_request is not None:
@@ -2033,6 +2160,512 @@ def canonical_lf_sha256(relative: str) -> str:
     canonical = text.replace("\r\n", "\n")
     require("\r" not in canonical, f"Bare CR line ending is forbidden: {relative}")
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def canonical_lf_bytes(payload: bytes, label: str) -> bytes:
+    require(not payload.startswith(b"\xef\xbb\xbf"), f"UTF-8 BOM is forbidden: {label}")
+    try:
+        text = payload.decode("utf-8", errors="strict")
+    except UnicodeDecodeError as error:
+        raise ValueError(f"Invalid UTF-8: {label}") from error
+    canonical = text.replace("\r\n", "\n")
+    require("\r" not in canonical, f"Bare CR line ending is forbidden: {label}")
+    return canonical.encode("utf-8")
+
+
+def git_blob_sha1(payload: bytes) -> str:
+    header = f"blob {len(payload)}\0".encode("ascii")
+    return hashlib.sha1(header + payload).hexdigest()
+
+
+def xml_element_semantics(element: ET.Element) -> tuple[Any, ...]:
+    return (
+        element.tag,
+        tuple(sorted(element.attrib.items())),
+        (element.text or "").strip(),
+        tuple(xml_element_semantics(child) for child in element),
+    )
+
+
+def parse_verification_metadata(
+    payload: bytes,
+    label: str,
+) -> tuple[tuple[Any, ...], dict[tuple[str, str, str], tuple[Any, ...]], dict[tuple[str, str, str], ET.Element]]:
+    require(len(payload) <= 1024 * 1024, f"Verification metadata exceeds bounded size: {label}")
+    canonical = canonical_lf_bytes(payload, label)
+    upper_payload = canonical.upper()
+    require(b"<!DOCTYPE" not in upper_payload and b"<!ENTITY" not in upper_payload, f"Unsafe XML declaration: {label}")
+    try:
+        root = ET.fromstring(canonical)
+    except ET.ParseError as error:
+        raise ValueError(f"Malformed verification metadata XML: {label}") from error
+
+    namespace = "https://schema.gradle.org/dependency-verification"
+    require(root.tag == f"{{{namespace}}}verification-metadata", f"Verification metadata root drift: {label}")
+    components_tag = f"{{{namespace}}}components"
+    component_tag = f"{{{namespace}}}component"
+    component_containers = [child for child in root if child.tag == components_tag]
+    require(len(component_containers) == 1, f"Verification metadata components container drift: {label}")
+    require(
+        all(child.tag in {f"{{{namespace}}}configuration", components_tag} for child in root),
+        f"Unexpected verification metadata root child: {label}",
+    )
+
+    root_without_components = (
+        root.tag,
+        tuple(sorted(root.attrib.items())),
+        tuple(xml_element_semantics(child) for child in root if child.tag != components_tag),
+    )
+    component_semantics: dict[tuple[str, str, str], tuple[Any, ...]] = {}
+    component_elements: dict[tuple[str, str, str], ET.Element] = {}
+    for component in component_containers[0]:
+        require(component.tag == component_tag, f"Unexpected verification metadata component child: {label}")
+        require(
+            set(component.attrib) == {"group", "name", "version"},
+            f"Verification metadata component attributes drift: {label}",
+        )
+        key = (
+            component.attrib["group"],
+            component.attrib["name"],
+            component.attrib["version"],
+        )
+        require(key not in component_semantics, f"Duplicate verification metadata component: {key}")
+        component_semantics[key] = xml_element_semantics(component)
+        component_elements[key] = component
+    return root_without_components, component_semantics, component_elements
+
+
+def validate_rec_i2b_ksp_overlay_metadata_payloads(base_payload: bytes, candidate_payload: bytes) -> None:
+    base_lf = canonical_lf_bytes(base_payload, "REC-I2B KSP overlay base metadata")
+    candidate_lf = canonical_lf_bytes(candidate_payload, "REC-I2B KSP overlay candidate metadata")
+    require(
+        hashlib.sha256(base_lf).hexdigest() == REC_I2B_KSP_OVERLAY_BASE_METADATA_SHA256
+        and git_blob_sha1(base_lf) == REC_I2B_KSP_OVERLAY_BASE_METADATA_BLOB,
+        "REC-I2B KSP overlay base metadata pin drift",
+    )
+    require(
+        len(candidate_lf) == REC_I2B_KSP_OVERLAY_METADATA_LF_BYTES
+        and hashlib.sha256(candidate_lf).hexdigest() == REC_I2B_KSP_OVERLAY_METADATA_SHA256
+        and git_blob_sha1(candidate_lf) == REC_I2B_KSP_OVERLAY_METADATA_BLOB,
+        "REC-I2B KSP overlay candidate metadata pin drift",
+    )
+    require(
+        len(candidate_lf.splitlines()) - len(base_lf.splitlines()) == 37,
+        "REC-I2B KSP overlay is not the exact +37/-0 metadata delta",
+    )
+
+    validate_rec_i2b_ksp_overlay_metadata_semantics(base_lf, candidate_lf)
+
+
+def validate_rec_i2b_ksp_overlay_metadata_semantics(
+    base_payload: bytes,
+    candidate_payload: bytes,
+) -> None:
+    base_lf = canonical_lf_bytes(base_payload, "REC-I2B KSP overlay semantic base metadata")
+    candidate_lf = canonical_lf_bytes(
+        candidate_payload,
+        "REC-I2B KSP overlay semantic candidate metadata",
+    )
+
+    base_root, base_components, _ = parse_verification_metadata(base_lf, "REC-I2B KSP overlay base metadata")
+    candidate_root, candidate_components, candidate_elements = parse_verification_metadata(
+        candidate_lf,
+        "REC-I2B KSP overlay candidate metadata",
+    )
+    require(base_root == candidate_root, "REC-I2B KSP overlay changed verification configuration/trust records")
+    require(
+        all(candidate_components.get(key) == value for key, value in base_components.items()),
+        "REC-I2B KSP overlay changed or removed a preexisting component/artifact/checksum record",
+    )
+
+    expected_component_keys = {
+        ("com.google.devtools.ksp", module, "2.3.11")
+        for module, _artifact, _sha256 in REC_I2B_KSP_OVERLAY_ARTIFACTS
+    }
+    require(
+        set(candidate_components) - set(base_components) == expected_component_keys,
+        "REC-I2B KSP overlay component set is not the exact KSP 2.3.11 addition",
+    )
+    expected_artifacts = set(REC_I2B_KSP_OVERLAY_ARTIFACTS)
+    actual_artifacts: set[tuple[str, str, str]] = set()
+    namespace = "https://schema.gradle.org/dependency-verification"
+    artifact_tag = f"{{{namespace}}}artifact"
+    sha256_tag = f"{{{namespace}}}sha256"
+    for component_key in expected_component_keys:
+        component = candidate_elements[component_key]
+        require(len(component) > 0, f"Empty KSP overlay component: {component_key}")
+        for artifact in component:
+            require(
+                artifact.tag == artifact_tag and set(artifact.attrib) == {"name"},
+                f"Malformed KSP overlay artifact: {component_key}",
+            )
+            require(len(artifact) == 1, f"KSP overlay artifact checksum cardinality drift: {artifact.attrib['name']}")
+            checksum = artifact[0]
+            require(
+                checksum.tag == sha256_tag
+                and checksum.attrib.get("origin") == "Generated by Gradle"
+                and set(checksum.attrib) == {"value", "origin"}
+                and not list(checksum),
+                f"Malformed KSP overlay checksum record: {artifact.attrib['name']}",
+            )
+            record = (component_key[1], artifact.attrib["name"], checksum.attrib["value"])
+            require(record not in actual_artifacts, f"Duplicate KSP overlay artifact record: {record}")
+            actual_artifacts.add(record)
+    require(
+        actual_artifacts == expected_artifacts and len(actual_artifacts) == 9,
+        "REC-I2B KSP overlay artifact table is not the exact reviewed 9-file set",
+    )
+
+
+def validate_rec_i2b_ksp_overlay_profile(profile: dict[str, Any]) -> None:
+    require(
+        profile["schemaVersion"] == 1
+        and profile["pocId"] == "POC-SEARCH-001"
+        and profile["profileId"] == "DORA-KSP-2_3_11-BUILD-TOOL-LOCK-OVERLAY"
+        and profile["classification"] == "BUILD_TOOL_ONLY_LOCK_OVERLAY"
+        and profile["maintenanceAuthorization"]
+        == "DORA-KSP-BUILD-TOOL-LOCK-OVERLAY-REMEDIATION-AUTH-20260818-03",
+        "REC-I2B KSP overlay profile identity/authority drift",
+    )
+    require(
+        profile["currentFiles"]
+        == {
+            "catalog": {
+                "path": "android/gradle/libs.versions.toml",
+                "sha256": REC_I2B_KSP_OVERLAY_FROZEN_FILES["android/gradle/libs.versions.toml"][1],
+            },
+            "lock": {
+                "path": "android/poc/search/gradle.lockfile",
+                "sha256": REC_I2B_KSP_OVERLAY_FROZEN_FILES["android/poc/search/gradle.lockfile"][1],
+            },
+        },
+        "REC-I2B KSP overlay current-file pins drift",
+    )
+    projection = profile["evaluatedProjection"]
+    require(
+        projection["componentCount"] == 66
+        and tuple(projection["configurations"]) == REC_I2B_KSP_OVERLAY_PROJECTION_CONFIGURATIONS
+        and projection["sha256"] == REC_I2B_KSP_OVERLAY_PROJECTION_SHA256,
+        "REC-I2B KSP overlay evaluated six-configuration/66-row projection drift",
+    )
+    room = profile["roomProcessorApiInvariant"]
+    require(
+        room
+        == {
+            "coordinate": "com.google.devtools.ksp:symbol-processing-api:2.0.10-1.0.24",
+            "evaluatedConfigurations": [
+                "_agp_internal_benchmark_kspClasspath",
+                "_agp_internal_debug_kspClasspath",
+            ],
+            "kspPluginVersionSubstitutionAllowed": False,
+        },
+        "REC-I2B KSP overlay Room processor API invariant drift",
+    )
+    pair_delta = profile["pairDelta"]
+    require(
+        pair_delta["addedSelectionCount"] == 13
+        and pair_delta["removedSelectionCount"] == 149
+        and pair_delta["pluginApiReplacement"]["fromCoordinate"]
+        == "com.google.devtools.ksp:symbol-processing-api:2.3.9"
+        and pair_delta["pluginApiReplacement"]["toCoordinate"]
+        == "com.google.devtools.ksp:symbol-processing-api:2.3.11"
+        and pair_delta["emptyProcessorClasspaths"]["replacementCoordinate"] == "empty",
+        "REC-I2B KSP overlay exact pair delta drift",
+    )
+    require(
+        tuple(profile["nonClaims"]) == REC_I2B_KSP_OVERLAY_NONCLAIMS,
+        "REC-I2B KSP overlay claim ceiling drift",
+    )
+
+
+def validate_rec_i2b_ksp_overlay_frozen_files() -> None:
+    for relative, (expected_blob, expected_sha256) in REC_I2B_KSP_OVERLAY_FROZEN_FILES.items():
+        require(
+            git_output("rev-parse", f"HEAD:{relative}") == expected_blob,
+            f"REC-I2B KSP overlay frozen Git blob drift: {relative}",
+        )
+        require(
+            hashlib.sha256(git_blob_bytes(f"HEAD:{relative}")).hexdigest() == expected_sha256,
+            f"REC-I2B KSP overlay frozen SHA-256 drift: {relative}",
+        )
+
+    catalog = git_blob_bytes("HEAD:android/gradle/libs.versions.toml").decode("utf-8", errors="strict")
+    require(
+        catalog.count('ksp = "2.3.11"') == 1 and 'ksp = "2.3.9"' not in catalog,
+        "REC-I2B KSP overlay catalog version drift",
+    )
+    lock = git_blob_bytes("HEAD:android/poc/search/gradle.lockfile").decode("utf-8", errors="strict")
+    require(
+        "com.google.devtools.ksp:symbol-processing-api:2.3.9=" not in lock
+        and lock.count("com.google.devtools.ksp:symbol-processing-api:2.3.11=") == 1
+        and lock.count("com.google.devtools.ksp:symbol-processing-api:2.0.10-1.0.24=") == 1,
+        "REC-I2B KSP overlay lock KSP/Room coordinate drift",
+    )
+    profile_bytes = git_blob_bytes(
+        "HEAD:docs/evidence/poc-search-001/build-tool-lock-overlay-ksp-2.3.11.json"
+    )
+    profile = json.loads(profile_bytes.decode("utf-8", errors="strict"))
+    require(isinstance(profile, dict), "REC-I2B KSP overlay profile root is not an object")
+    validate_rec_i2b_ksp_overlay_profile(profile)
+
+
+def rec_i2b_ksp_overlay_active() -> bool:
+    current_payload = (ROOT / REC_I2B_KSP_OVERLAY_METADATA_PATH).read_bytes()
+    current_lf = canonical_lf_bytes(current_payload, REC_I2B_KSP_OVERLAY_METADATA_PATH)
+    current_sha256 = hashlib.sha256(current_lf).hexdigest()
+    if current_sha256 == REC_I2B_KSP_OVERLAY_BASE_METADATA_SHA256:
+        require(
+            git_blob_sha1(current_lf) == REC_I2B_KSP_OVERLAY_BASE_METADATA_BLOB,
+            "REC-I2B legacy verification metadata blob drift",
+        )
+        return False
+    require(
+        current_sha256 == REC_I2B_KSP_OVERLAY_METADATA_SHA256,
+        "REC-I2B verification metadata is neither the legacy anchor nor exact KSP overlay",
+    )
+    require(
+        git_output("rev-parse", f"HEAD:{REC_I2B_KSP_OVERLAY_METADATA_PATH}")
+        == REC_I2B_KSP_OVERLAY_METADATA_BLOB,
+        "REC-I2B KSP overlay is dirty or not committed at HEAD",
+    )
+    base_payload = git_blob_bytes(
+        f"{REC_I2B_MERGED_MAIN_ANCHOR}:{REC_I2B_KSP_OVERLAY_METADATA_PATH}"
+    )
+    validate_rec_i2b_ksp_overlay_metadata_payloads(base_payload, current_payload)
+    validate_rec_i2b_ksp_overlay_frozen_files()
+    require(
+        REC_I2B_KSP_OVERLAY_AUTHORIZATION
+        == "DORA-KSP-2_3_11-REC-VERIFICATION-METADATA-OVERLAY-REMEDIATION-AUTH-20260819-04",
+        "REC-I2B KSP overlay authorization drift",
+    )
+    return True
+
+
+def validate_rec_i2b_ksp_overlay_exact_scope(paths: list[str]) -> None:
+    require(
+        sorted(set(paths)) == sorted(REC_I2B_KSP_OVERLAY_PATHS)
+        and len(paths) == len(set(paths)),
+        f"REC-I2B KSP overlay is not the exact seven-path delta: {sorted(set(paths))}",
+    )
+
+
+def validate_rec_i2b_ksp_overlay_clean_layers(changes: dict[str, list[str]]) -> None:
+    require(
+        set(changes) == {"committed", "staged", "unstaged", "untracked"},
+        "Incomplete REC-I2B KSP overlay change inventory",
+    )
+    dirty = {layer: paths for layer, paths in changes.items() if layer != "committed" and paths}
+    require(not dirty, f"REC-I2B KSP overlay checkout is dirty: {dirty}")
+
+
+def validate_rec_i2b_ksp_overlay_revision(revision: str) -> None:
+    require(
+        git_output("rev-parse", f"{revision}:{REC_I2B_KSP_OVERLAY_METADATA_PATH}")
+        == REC_I2B_KSP_OVERLAY_METADATA_BLOB,
+        "REC-I2B KSP overlay revision metadata blob drift",
+    )
+    for relative, (expected_blob, _expected_sha256) in REC_I2B_KSP_OVERLAY_FROZEN_FILES.items():
+        require(
+            git_output("rev-parse", f"{revision}:{relative}") == expected_blob,
+            f"REC-I2B KSP overlay revision frozen blob drift: {relative}",
+        )
+
+
+def validate_rec_i2b_ksp_overlay_base_revision(revision: str) -> None:
+    require(
+        git_is_ancestor(REC_I2B_MERGED_MAIN_ANCHOR, revision),
+        "REC-I2B KSP overlay base does not contain the REC-I2B merged anchor",
+    )
+    require(
+        git_output("rev-parse", f"{revision}:{REC_I2B_KSP_OVERLAY_METADATA_PATH}")
+        == REC_I2B_KSP_OVERLAY_BASE_METADATA_BLOB,
+        "REC-I2B KSP overlay base is not the exact legacy verification metadata",
+    )
+
+
+def validate_rec_i2b_ksp_overlay_pull_request_core(pull_request: GitHubPullRequestContext) -> None:
+    require(
+        pull_request.repository == GITHUB_REPOSITORY
+        and pull_request.head_repository == GITHUB_REPOSITORY
+        and pull_request.base_ref == GITHUB_BASE_BRANCH
+        and pull_request.state == "open"
+        and pull_request.merged is False,
+        "REC-I2B KSP overlay pull_request is not a same-repository open/main context",
+    )
+    require(
+        pull_request.number > 0
+        and pull_request.merge_ref == f"refs/pull/{pull_request.number}/merge"
+        and FULL_SHA256_RE.fullmatch(pull_request.head_sha) is not None
+        and FULL_SHA256_RE.fullmatch(pull_request.base_sha) is not None
+        and FULL_SHA256_RE.fullmatch(pull_request.merge_sha) is not None,
+        "REC-I2B KSP overlay pull_request ref/SHA identity is malformed",
+    )
+
+
+def validate_rec_i2b_ksp_overlay_pull_request_fields(pull_request: GitHubPullRequestContext) -> None:
+    validate_rec_i2b_ksp_overlay_pull_request_core(pull_request)
+    require(
+        pull_request.head_ref == REC_I2B_KSP_OVERLAY_BRANCH
+        and pull_request.draft is True,
+        "REC-I2B KSP overlay introduction is not the exact authorized Draft branch",
+    )
+
+
+def validate_rec_i2b_ksp_overlay_transition_shape(
+    transitions: list[str],
+    parents: tuple[str, ...],
+    changed_paths: list[str],
+    parent_metadata_blob: str,
+    transition_metadata_blob: str,
+) -> None:
+    require(len(transitions) == 1, "REC-I2B KSP overlay must have exactly one metadata transition")
+    require(len(parents) == 1, "REC-I2B KSP overlay squash transition must be single-parent")
+    validate_rec_i2b_ksp_overlay_exact_scope(changed_paths)
+    require(
+        parent_metadata_blob == REC_I2B_KSP_OVERLAY_BASE_METADATA_BLOB
+        and transition_metadata_blob == REC_I2B_KSP_OVERLAY_METADATA_BLOB,
+        "REC-I2B KSP overlay squash transition is not exact legacy-to-candidate",
+    )
+
+
+def validate_rec_i2b_ksp_overlay_integrated_revision(revision: str) -> None:
+    require(
+        git_is_ancestor(REC_I2B_MERGED_MAIN_ANCHOR, revision),
+        "REC-I2B KSP overlay integrated revision lacks the REC-I2B merged anchor",
+    )
+    transition_output = git_output(
+        "log",
+        "--format=%H",
+        "--reverse",
+        f"{REC_I2B_MERGED_MAIN_ANCHOR}..{revision}",
+        "--",
+        REC_I2B_KSP_OVERLAY_METADATA_PATH,
+    )
+    transitions = [commit for commit in transition_output.splitlines() if commit]
+    transition = transitions[0] if transitions else revision
+    parents = tuple(git_output("show", "-s", "--format=%P", transition).split())
+    changed_paths = git_path_records(
+        "diff-tree",
+        "--no-commit-id",
+        "--name-only",
+        "--no-renames",
+        "-r",
+        "-z",
+        transition,
+        "--",
+    )
+    parent_metadata_blob = (
+        git_output("rev-parse", f"{parents[0]}:{REC_I2B_KSP_OVERLAY_METADATA_PATH}")
+        if len(parents) == 1
+        else ""
+    )
+    transition_metadata_blob = git_output(
+        "rev-parse",
+        f"{transition}:{REC_I2B_KSP_OVERLAY_METADATA_PATH}",
+    )
+    validate_rec_i2b_ksp_overlay_transition_shape(
+        transitions,
+        parents,
+        changed_paths,
+        parent_metadata_blob,
+        transition_metadata_blob,
+    )
+    validate_rec_i2b_ksp_overlay_revision(transition)
+    validate_rec_i2b_ksp_overlay_revision(revision)
+    for relative in REC_I2B_KSP_OVERLAY_FROZEN_FILES:
+        history = git_output(
+            "log",
+            "--format=%H",
+            f"{REC_I2B_MERGED_MAIN_ANCHOR}..{revision}",
+            "--",
+            relative,
+        ).splitlines()
+        require(
+            history == [transition],
+            f"REC-I2B KSP overlay frozen path has a later mutation/revert: {relative}",
+        )
+
+
+def validate_rec_i2b_ksp_overlay_lifecycle(
+    identity: RecoveryI2bMergedMainIdentity,
+    post_merge_changes: dict[str, list[str]],
+) -> str:
+    validate_rec_i2b_ksp_overlay_clean_layers(post_merge_changes)
+    validate_rec_i2b_merged_main_protected_paths(
+        post_merge_changes,
+        allow_exact_ksp_overlay=True,
+    )
+    pull_request = identity.github_pull_request_context
+    if pull_request is not None:
+        validate_rec_i2b_ksp_overlay_pull_request_core(pull_request)
+        require(
+            git_output("merge-base", pull_request.base_sha, pull_request.head_sha)
+            == pull_request.base_sha,
+            "REC-I2B KSP overlay pull_request is behind or not based on its exact main SHA",
+        )
+        base_metadata_blob = git_output(
+            "rev-parse",
+            f"{pull_request.base_sha}:{REC_I2B_KSP_OVERLAY_METADATA_PATH}",
+        )
+        if base_metadata_blob == REC_I2B_KSP_OVERLAY_BASE_METADATA_BLOB:
+            validate_rec_i2b_ksp_overlay_pull_request_fields(pull_request)
+            validate_rec_i2b_ksp_overlay_base_revision(pull_request.base_sha)
+            changed_paths = git_path_records(
+                "diff",
+                "--name-only",
+                "--no-renames",
+                "-z",
+                pull_request.base_sha,
+                pull_request.head_sha,
+                "--",
+            )
+            validate_rec_i2b_ksp_overlay_exact_scope(changed_paths)
+            validate_rec_i2b_ksp_overlay_revision(pull_request.head_sha)
+            return "rec-i2b-ksp-overlay-draft-pr"
+        require(
+            base_metadata_blob == REC_I2B_KSP_OVERLAY_METADATA_BLOB,
+            "REC-I2B KSP overlay pull_request base metadata is neither legacy nor integrated",
+        )
+        validate_rec_i2b_ksp_overlay_integrated_revision(identity.head)
+        return "rec-i2b-ksp-overlay-future-descendant-pr"
+
+    base = git_optional_output("rev-parse", "--verify", "refs/remotes/origin/main^{commit}")
+    if base is not None and identity.branch != GITHUB_BASE_BRANCH:
+        base_metadata_blob = git_output(
+            "rev-parse",
+            f"{base}:{REC_I2B_KSP_OVERLAY_METADATA_PATH}",
+        )
+        require(
+            git_is_ancestor(base, identity.head),
+            "REC-I2B KSP overlay local branch is behind origin/main",
+        )
+        if base_metadata_blob == REC_I2B_KSP_OVERLAY_METADATA_BLOB:
+            validate_rec_i2b_ksp_overlay_integrated_revision(identity.head)
+            return "rec-i2b-ksp-overlay-future-descendant-local"
+        require(
+            identity.branch == REC_I2B_KSP_OVERLAY_BRANCH,
+            f"REC-I2B KSP overlay introduction is running on an unauthorized branch: {identity.branch}",
+        )
+        validate_rec_i2b_ksp_overlay_base_revision(base)
+        changed_paths = git_path_records(
+            "diff",
+            "--name-only",
+            "--no-renames",
+            "-z",
+            base,
+            identity.head,
+            "--",
+        )
+        validate_rec_i2b_ksp_overlay_exact_scope(changed_paths)
+        validate_rec_i2b_ksp_overlay_revision(identity.head)
+        return "rec-i2b-ksp-overlay-local"
+
+    require(
+        identity.branch in {"", GITHUB_BASE_BRANCH},
+        f"REC-I2B KSP overlay is running on an unauthorized branch: {identity.branch}",
+    )
+    validate_rec_i2b_ksp_overlay_integrated_revision(identity.head)
+    return "rec-i2b-ksp-overlay-post-squash"
 
 
 def rec_i2b_successor_implementation_phase(terminal_commit: str) -> str:
@@ -4593,7 +5226,11 @@ def validate_rec_i2b_merged_main_evidence_boundary() -> None:
         "REC-I2B squash-main evidence anchor tree drift",
     )
     post_merge_changes = collect_post_merge_changes(merged_anchor=REC_I2B_MERGED_MAIN_ANCHOR)
-    validate_rec_i2b_merged_main_protected_paths(post_merge_changes)
+    overlay_active = rec_i2b_ksp_overlay_active()
+    validate_rec_i2b_merged_main_protected_paths(
+        post_merge_changes,
+        allow_exact_ksp_overlay=overlay_active,
+    )
 
     protected_anchor_paths = [
         path
@@ -4609,6 +5246,8 @@ def validate_rec_i2b_merged_main_evidence_boundary() -> None:
     ]
     require(protected_anchor_paths, "REC-I2B squash-main protected anchor inventory is empty")
     for relative in protected_anchor_paths:
+        if overlay_active and relative == REC_I2B_KSP_OVERLAY_METADATA_PATH:
+            continue
         require(
             git_optional_output("rev-parse", f"HEAD:{relative}")
             == git_output("rev-parse", f"{REC_I2B_MERGED_MAIN_ANCHOR}:{relative}"),
@@ -5264,7 +5903,12 @@ def run_rec_i2b_merged_main_tests() -> None:
         expected_mode: str,
     ) -> None:
         require(
-            validate_rec_i2b_merged_main_lifecycle(identity, delta) == expected_mode,
+            validate_rec_i2b_merged_main_lifecycle(
+                identity,
+                delta,
+                ksp_overlay_active=False,
+            )
+            == expected_mode,
             f"REC-I2B squash-main positive test selected the wrong mode: {name}",
         )
         print(f"PASS positive lifecycle-rec-i2b-squash-main-{name}")
@@ -5275,7 +5919,11 @@ def run_rec_i2b_merged_main_tests() -> None:
         delta: dict[str, list[str]] | None = None,
     ) -> None:
         try:
-            validate_rec_i2b_merged_main_lifecycle(identity, delta or changes())
+            validate_rec_i2b_merged_main_lifecycle(
+                identity,
+                delta or changes(),
+                ksp_overlay_active=False,
+            )
         except ValueError:
             print(f"PASS negative lifecycle-rec-i2b-squash-main-{name}")
             return
@@ -5458,6 +6106,433 @@ def run_rec_i2b_merged_main_tests() -> None:
         remediation_pr,
         changes(committed=[REC_I2B_MERGED_MAIN_VALIDATOR_PATH, "docs/unrelated.md"]),
     )
+
+
+def run_rec_i2b_ksp_overlay_tests() -> None:
+    namespace = "https://schema.gradle.org/dependency-verification"
+    components_tag = f"{{{namespace}}}components"
+    component_tag = f"{{{namespace}}}component"
+    artifact_tag = f"{{{namespace}}}artifact"
+    sha256_tag = f"{{{namespace}}}sha256"
+    base_payload = git_blob_bytes(
+        f"{REC_I2B_MERGED_MAIN_ANCHOR}:{REC_I2B_KSP_OVERLAY_METADATA_PATH}"
+    )
+    candidate_payload = (ROOT / REC_I2B_KSP_OVERLAY_METADATA_PATH).read_bytes()
+
+    validate_rec_i2b_ksp_overlay_metadata_payloads(base_payload, candidate_payload)
+    validate_rec_i2b_ksp_overlay_metadata_semantics(base_payload, candidate_payload)
+    print("PASS positive rec-i2b-ksp-overlay-exact-metadata")
+
+    def parse_candidate() -> ET.Element:
+        return ET.fromstring(
+            canonical_lf_bytes(candidate_payload, "REC-I2B KSP overlay self-test candidate")
+        )
+
+    def serialize(root: ET.Element) -> bytes:
+        return ET.tostring(root, encoding="utf-8", xml_declaration=True)
+
+    def components(root: ET.Element) -> ET.Element:
+        container = root.find(components_tag)
+        require(container is not None, "REC-I2B KSP overlay self-test components are missing")
+        return container
+
+    def component(root: ET.Element, module: str, version: str = "2.3.11") -> ET.Element:
+        matches = [
+            item
+            for item in components(root)
+            if item.tag == component_tag
+            and item.attrib.get("group") == "com.google.devtools.ksp"
+            and item.attrib.get("name") == module
+            and item.attrib.get("version") == version
+        ]
+        require(len(matches) == 1, f"REC-I2B KSP overlay self-test component missing: {module}")
+        return matches[0]
+
+    def artifact(root: ET.Element, module: str, name: str) -> ET.Element:
+        matches = [
+            item
+            for item in component(root, module)
+            if item.tag == artifact_tag and item.attrib.get("name") == name
+        ]
+        require(len(matches) == 1, f"REC-I2B KSP overlay self-test artifact missing: {name}")
+        return matches[0]
+
+    def expect_metadata_semantic_negative(
+        name: str,
+        mutation: Callable[[ET.Element], None],
+    ) -> None:
+        root = parse_candidate()
+        mutation(root)
+        try:
+            validate_rec_i2b_ksp_overlay_metadata_semantics(base_payload, serialize(root))
+        except (ValueError, KeyError):
+            print(f"PASS negative rec-i2b-ksp-overlay-metadata-{name}")
+            return
+        raise ValueError(f"Negative REC-I2B KSP overlay metadata test unexpectedly passed: {name}")
+
+    def mutate_new_checksum(root: ET.Element) -> None:
+        checksum = artifact(
+            root,
+            "symbol-processing-api",
+            "symbol-processing-api-2.3.11.jar",
+        )[0]
+        checksum.attrib["value"] = "0" * 64
+
+    def remove_new_artifact(root: ET.Element) -> None:
+        owner = component(root, "symbol-processing-api")
+        owner.remove(
+            artifact(
+                root,
+                "symbol-processing-api",
+                "symbol-processing-api-2.3.11.jar",
+            )
+        )
+
+    def duplicate_new_artifact(root: ET.Element) -> None:
+        owner = component(root, "symbol-processing-api")
+        owner.append(
+            copy.deepcopy(
+                artifact(
+                    root,
+                    "symbol-processing-api",
+                    "symbol-processing-api-2.3.11.jar",
+                )
+            )
+        )
+
+    def add_non_ksp_component(root: ET.Element) -> None:
+        owner = components(root)
+        injected = ET.SubElement(
+            owner,
+            component_tag,
+            {"group": "example.invalid", "name": "spoof", "version": "1"},
+        )
+        injected_artifact = ET.SubElement(injected, artifact_tag, {"name": "spoof-1.jar"})
+        ET.SubElement(
+            injected_artifact,
+            sha256_tag,
+            {"value": "0" * 64, "origin": "Generated by Gradle"},
+        )
+
+    def mutate_legacy_checksum(root: ET.Element) -> None:
+        legacy_components = [
+            item
+            for item in components(root)
+            if item.attrib.get("group") != "com.google.devtools.ksp"
+            or item.attrib.get("version") != "2.3.11"
+        ]
+        require(legacy_components, "REC-I2B KSP overlay self-test lacks a legacy component")
+        checksum = next(
+            (
+                item
+                for item in legacy_components[0].iter()
+                if item.tag == sha256_tag
+            ),
+            None,
+        )
+        require(checksum is not None, "REC-I2B KSP overlay self-test lacks a legacy checksum")
+        checksum.attrib["value"] = "0" * 64
+
+    def remove_legacy_component(root: ET.Element) -> None:
+        owner = components(root)
+        legacy = next(
+            (
+                item
+                for item in owner
+                if item.attrib.get("group") != "com.google.devtools.ksp"
+                or item.attrib.get("version") != "2.3.11"
+            ),
+            None,
+        )
+        require(legacy is not None, "REC-I2B KSP overlay self-test lacks a legacy component")
+        owner.remove(legacy)
+
+    def duplicate_component(root: ET.Element) -> None:
+        owner = components(root)
+        owner.append(copy.deepcopy(component(root, "symbol-processing-api")))
+
+    def rename_artifact(root: ET.Element) -> None:
+        artifact(
+            root,
+            "symbol-processing-api",
+            "symbol-processing-api-2.3.11.jar",
+        ).attrib["name"] = "symbol-processing-api-2.3.11-spoof.jar"
+
+    def change_checksum_origin(root: ET.Element) -> None:
+        artifact(
+            root,
+            "symbol-processing-api",
+            "symbol-processing-api-2.3.11.jar",
+        )[0].attrib["origin"] = "spoof"
+
+    def change_trust_configuration(root: ET.Element) -> None:
+        configuration = next(item for item in root if item.tag != components_tag)
+        configuration.attrib["ksp-overlay-spoof"] = "true"
+
+    for name, mutation in (
+        ("checksum-drift", mutate_new_checksum),
+        ("artifact-removal", remove_new_artifact),
+        ("artifact-duplicate", duplicate_new_artifact),
+        ("non-ksp-addition", add_non_ksp_component),
+        ("legacy-checksum-change", mutate_legacy_checksum),
+        ("legacy-component-removal", remove_legacy_component),
+        ("component-duplicate", duplicate_component),
+        ("artifact-rename", rename_artifact),
+        ("checksum-origin", change_checksum_origin),
+        ("trust-configuration", change_trust_configuration),
+    ):
+        expect_metadata_semantic_negative(name, mutation)
+
+    for name, malformed in (
+        ("invalid-utf8", b"\xff"),
+        ("doctype", b"<!DOCTYPE verification-metadata [<!ENTITY x 'y'>]>" + candidate_payload),
+        ("malformed-xml", b"<verification-metadata>"),
+    ):
+        try:
+            validate_rec_i2b_ksp_overlay_metadata_semantics(base_payload, malformed)
+        except ValueError:
+            print(f"PASS negative rec-i2b-ksp-overlay-metadata-{name}")
+        else:
+            raise ValueError(f"Negative REC-I2B KSP overlay metadata test unexpectedly passed: {name}")
+
+    for name, candidate_base, candidate_overlay in (
+        ("base-hash-drift", base_payload + b"\n", candidate_payload),
+        ("candidate-hash-drift", base_payload, candidate_payload + b"\n"),
+    ):
+        try:
+            validate_rec_i2b_ksp_overlay_metadata_payloads(candidate_base, candidate_overlay)
+        except ValueError:
+            print(f"PASS negative rec-i2b-ksp-overlay-metadata-{name}")
+        else:
+            raise ValueError(f"Negative REC-I2B KSP overlay hash test unexpectedly passed: {name}")
+
+    profile = read_json(
+        "docs/evidence/poc-search-001/build-tool-lock-overlay-ksp-2.3.11.json"
+    )
+    validate_rec_i2b_ksp_overlay_profile(profile)
+    validate_rec_i2b_ksp_overlay_frozen_files()
+    print("PASS positive rec-i2b-ksp-overlay-profile-and-frozen-files")
+
+    def expect_profile_negative(name: str, mutation: Callable[[dict[str, Any]], None]) -> None:
+        candidate = copy.deepcopy(profile)
+        mutation(candidate)
+        try:
+            validate_rec_i2b_ksp_overlay_profile(candidate)
+        except (ValueError, KeyError, TypeError):
+            print(f"PASS negative rec-i2b-ksp-overlay-profile-{name}")
+            return
+        raise ValueError(f"Negative REC-I2B KSP overlay profile test unexpectedly passed: {name}")
+
+    for name, mutation in (
+        ("schema", lambda record: record.__setitem__("schemaVersion", 2)),
+        ("poc", lambda record: record.__setitem__("pocId", "POC-SPOOF")),
+        ("profile", lambda record: record.__setitem__("profileId", "spoof")),
+        ("classification", lambda record: record.__setitem__("classification", "RUNTIME")),
+        ("authority", lambda record: record.__setitem__("maintenanceAuthorization", "spoof")),
+        (
+            "catalog-hash",
+            lambda record: record["currentFiles"]["catalog"].__setitem__("sha256", "0" * 64),
+        ),
+        (
+            "lock-hash",
+            lambda record: record["currentFiles"]["lock"].__setitem__("sha256", "0" * 64),
+        ),
+        (
+            "projection-count",
+            lambda record: record["evaluatedProjection"].__setitem__("componentCount", 67),
+        ),
+        (
+            "projection-order",
+            lambda record: record["evaluatedProjection"]["configurations"].reverse(),
+        ),
+        (
+            "projection-hash",
+            lambda record: record["evaluatedProjection"].__setitem__("sha256", "0" * 64),
+        ),
+        (
+            "room-coordinate",
+            lambda record: record["roomProcessorApiInvariant"].__setitem__(
+                "coordinate",
+                "com.google.devtools.ksp:symbol-processing-api:2.3.11",
+            ),
+        ),
+        (
+            "room-substitution",
+            lambda record: record["roomProcessorApiInvariant"].__setitem__(
+                "kspPluginVersionSubstitutionAllowed",
+                True,
+            ),
+        ),
+        (
+            "pair-add-count",
+            lambda record: record["pairDelta"].__setitem__("addedSelectionCount", 14),
+        ),
+        (
+            "pair-remove-count",
+            lambda record: record["pairDelta"].__setitem__("removedSelectionCount", 148),
+        ),
+        (
+            "pair-from-coordinate",
+            lambda record: record["pairDelta"]["pluginApiReplacement"].__setitem__(
+                "fromCoordinate",
+                "com.google.devtools.ksp:symbol-processing-api:2.3.8",
+            ),
+        ),
+        (
+            "pair-to-coordinate",
+            lambda record: record["pairDelta"]["pluginApiReplacement"].__setitem__(
+                "toCoordinate",
+                "com.google.devtools.ksp:symbol-processing-api:2.3.12",
+            ),
+        ),
+        (
+            "processor-classpath",
+            lambda record: record["pairDelta"]["emptyProcessorClasspaths"].__setitem__(
+                "replacementCoordinate",
+                "runtime",
+            ),
+        ),
+        (
+            "false-admission",
+            lambda record: record["nonClaims"].__setitem__(
+                3,
+                "This profile admits KSP into production.",
+            ),
+        ),
+    ):
+        expect_profile_negative(name, mutation)
+
+    exact_paths = list(REC_I2B_KSP_OVERLAY_PATHS)
+    validate_rec_i2b_ksp_overlay_exact_scope(exact_paths)
+    clean_changes = {"committed": exact_paths, "staged": [], "unstaged": [], "untracked": []}
+    validate_rec_i2b_ksp_overlay_clean_layers(clean_changes)
+    validate_rec_i2b_merged_main_protected_paths(
+        clean_changes,
+        allow_exact_ksp_overlay=True,
+    )
+    print("PASS positive rec-i2b-ksp-overlay-scope-and-clean-layers")
+    try:
+        validate_rec_i2b_merged_main_protected_paths(clean_changes)
+    except ValueError:
+        print("PASS negative rec-i2b-ksp-overlay-legacy-metadata-mutation")
+    else:
+        raise ValueError("Legacy REC-I2B phase unexpectedly admitted KSP metadata")
+
+    for name, paths in (
+        ("missing-path", exact_paths[:-1]),
+        ("extra-path", [*exact_paths, "docs/spoof.txt"]),
+        ("duplicate-path", [*exact_paths, exact_paths[0]]),
+    ):
+        try:
+            validate_rec_i2b_ksp_overlay_exact_scope(paths)
+        except ValueError:
+            print(f"PASS negative rec-i2b-ksp-overlay-scope-{name}")
+        else:
+            raise ValueError(f"Negative REC-I2B KSP overlay scope test unexpectedly passed: {name}")
+
+    for layer in ("staged", "unstaged", "untracked"):
+        dirty = copy.deepcopy(clean_changes)
+        dirty[layer] = [REC_I2B_KSP_OVERLAY_METADATA_PATH]
+        try:
+            validate_rec_i2b_ksp_overlay_clean_layers(dirty)
+        except ValueError:
+            print(f"PASS negative rec-i2b-ksp-overlay-dirty-{layer}")
+        else:
+            raise ValueError(f"Dirty REC-I2B KSP overlay test unexpectedly passed: {layer}")
+
+    try:
+        validate_rec_i2b_merged_main_protected_paths(
+            {
+                "committed": [
+                    REC_I2B_KSP_OVERLAY_METADATA_PATH,
+                    "android/poc/recovery/build.gradle.kts",
+                ],
+                "staged": [],
+                "unstaged": [],
+                "untracked": [],
+            },
+            allow_exact_ksp_overlay=True,
+        )
+    except ValueError:
+        print("PASS negative rec-i2b-ksp-overlay-other-protected-path")
+    else:
+        raise ValueError("REC-I2B KSP overlay admitted another REC protected path")
+
+    pull_request = GitHubPullRequestContext(
+        repository=GITHUB_REPOSITORY,
+        head_repository=GITHUB_REPOSITORY,
+        head_ref=REC_I2B_KSP_OVERLAY_BRANCH,
+        head_sha="a" * 40,
+        base_ref=GITHUB_BASE_BRANCH,
+        base_sha="b" * 40,
+        merge_ref="refs/pull/99/merge",
+        merge_sha="c" * 40,
+        number=99,
+        draft=True,
+        state="open",
+        merged=False,
+    )
+    validate_rec_i2b_ksp_overlay_pull_request_fields(pull_request)
+    print("PASS positive rec-i2b-ksp-overlay-draft-pr-fields")
+    future_pull_request = replace(
+        pull_request,
+        head_ref="codex/future-main-descendant",
+        draft=False,
+    )
+    validate_rec_i2b_ksp_overlay_pull_request_core(future_pull_request)
+    print("PASS positive rec-i2b-ksp-overlay-future-descendant-pr-fields")
+    for name, mutated in (
+        ("repository", replace(pull_request, repository="attacker/DORA")),
+        ("head-repository", replace(pull_request, head_repository="attacker/DORA")),
+        ("head-ref", replace(pull_request, head_ref="codex/spoof")),
+        ("base-ref", replace(pull_request, base_ref="not-main")),
+        ("ready", replace(pull_request, draft=False)),
+        ("closed", replace(pull_request, state="closed")),
+        ("merged", replace(pull_request, merged=True)),
+        ("number", replace(pull_request, number=0)),
+        ("merge-ref", replace(pull_request, merge_ref="refs/heads/main")),
+        ("head-sha", replace(pull_request, head_sha="0")),
+        ("base-sha", replace(pull_request, base_sha="0")),
+        ("merge-sha", replace(pull_request, merge_sha="0")),
+    ):
+        try:
+            validate_rec_i2b_ksp_overlay_pull_request_fields(mutated)
+        except ValueError:
+            print(f"PASS negative rec-i2b-ksp-overlay-pr-{name}")
+        else:
+            raise ValueError(f"Negative REC-I2B KSP overlay PR test unexpectedly passed: {name}")
+
+    transition = "d" * 40
+    parent = "e" * 40
+    validate_rec_i2b_ksp_overlay_transition_shape(
+        [transition],
+        (parent,),
+        exact_paths,
+        REC_I2B_KSP_OVERLAY_BASE_METADATA_BLOB,
+        REC_I2B_KSP_OVERLAY_METADATA_BLOB,
+    )
+    print("PASS positive rec-i2b-ksp-overlay-post-squash-transition")
+    transition_negatives = (
+        ("missing", [], (parent,), exact_paths, REC_I2B_KSP_OVERLAY_BASE_METADATA_BLOB, REC_I2B_KSP_OVERLAY_METADATA_BLOB),
+        ("revert", [transition, "f" * 40], (parent,), exact_paths, REC_I2B_KSP_OVERLAY_BASE_METADATA_BLOB, REC_I2B_KSP_OVERLAY_METADATA_BLOB),
+        ("merge-parent", [transition], (parent, "f" * 40), exact_paths, REC_I2B_KSP_OVERLAY_BASE_METADATA_BLOB, REC_I2B_KSP_OVERLAY_METADATA_BLOB),
+        ("extra-path", [transition], (parent,), [*exact_paths, "docs/spoof.txt"], REC_I2B_KSP_OVERLAY_BASE_METADATA_BLOB, REC_I2B_KSP_OVERLAY_METADATA_BLOB),
+        ("parent-blob", [transition], (parent,), exact_paths, "0" * 40, REC_I2B_KSP_OVERLAY_METADATA_BLOB),
+        ("candidate-blob", [transition], (parent,), exact_paths, REC_I2B_KSP_OVERLAY_BASE_METADATA_BLOB, "0" * 40),
+    )
+    for name, transitions, parents, paths, parent_blob, candidate_blob in transition_negatives:
+        try:
+            validate_rec_i2b_ksp_overlay_transition_shape(
+                transitions,
+                parents,
+                paths,
+                parent_blob,
+                candidate_blob,
+            )
+        except ValueError:
+            print(f"PASS negative rec-i2b-ksp-overlay-transition-{name}")
+        else:
+            raise ValueError(f"Negative REC-I2B KSP transition test unexpectedly passed: {name}")
 
 
 def test_git(repo: Path, *arguments: str, input_data: bytes | None = None) -> bytes:
@@ -6978,6 +8053,7 @@ def main() -> int:
         run_lifecycle_tests()
         run_rec_i2b_successor_tests()
         run_rec_i2b_merged_main_tests()
+        run_rec_i2b_ksp_overlay_tests()
         run_git_path_collector_tests()
         run_github_pull_request_context_tests()
         merged_main_identity = collect_rec_i2b_merged_main_identity()
