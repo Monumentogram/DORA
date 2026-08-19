@@ -65,6 +65,7 @@ HISTORICAL_LOCK_BLOB = "fc9248df3bd082c6e2307fd33000571d66734c27"
 HISTORICAL_LOCK_SHA256 = "d912e782f3f01452f9f785b6cf0971d1a76a6c6a984c5ea5e03ba1b311049704"
 CURRENT_CATALOG_SHA256 = "230e8b8f5042b5e4852aa3ad05009e5b1d1336eb467d9d89f3d37a7f5104fc4c"
 CURRENT_LOCK_SHA256 = "3e47b2a46c493245ad24399b8bb26c834bc79b52397a4e920d5895bec695ba8f"
+KSP_INTEGRATION_COMMIT = "1a1ef62b0db52be7ed73e58583d7d93c0a89aaf8"
 EVALUATED_PROJECTION_SHA256 = "ce4431bf4364a203db42674dd1a0aa88c264233ec67f26180a4d06af251acbc9"
 KSP_PLUGIN_CONFIGURATIONS = (
     "kotlinCompilerPluginClasspathBenchmark",
@@ -752,6 +753,18 @@ def validate_build_tool_overlay_profile(
     historical_catalog = git_bytes(repo_root, "show", f"{base['commit']}:{base['catalog']['path']}")
     historical_lock = git_bytes(repo_root, "show", f"{anchor['commit']}:{anchor['lock']['path']}")
     current_catalog = (repo_root / CATALOG_RELATIVE_PATH).read_bytes()
+    if sha256_bytes(current_catalog.replace(b"\r\n", b"\n")) != CURRENT_CATALOG_SHA256:
+        # The KSP overlay is an immutable historical layer. A later catalog successor must
+        # validate its own exact governed delta, then this validator evaluates the KSP layer
+        # against the exact catalog integrated by PR #52 rather than silently rebasing it.
+        from verify_kotlinx_coroutines_admission import validate_search_ksp_successor_layer
+
+        validate_search_ksp_successor_layer(repo_root)
+        current_catalog = git_bytes(
+            repo_root,
+            "show",
+            f"{KSP_INTEGRATION_COMMIT}:{CATALOG_RELATIVE_PATH.as_posix()}",
+        )
     current_lock = (repo_root / LOCK_RELATIVE_PATH).read_bytes()
     immutable_digests = {
         item["path"]: sha256_file(repo_root / item["path"])

@@ -25,6 +25,9 @@ import check_poc_search_run_readiness as run_readiness  # noqa: E402
 import finalize_poc_search_result as finalizer  # noqa: E402
 import poc_search_evidence_ledger as evidence_ledger  # noqa: E402
 import poc_search_dependency_inventory as dependency_inventory_tool  # noqa: E402
+from verify_kotlinx_coroutines_admission import (  # noqa: E402
+    validate_search_ksp_successor_layer,
+)
 from poc_search_environment import (  # noqa: E402
     classify_android_runtime,
     require_consistent_android_runtime,
@@ -466,6 +469,7 @@ def validate_approved_contract_still_blocks_measured_run() -> None:
 
 
 def validate_dependency_and_ip_inventory() -> None:
+    validate_search_ksp_successor_layer(ROOT)
     lock_path = ROOT / "android/poc/search/gradle.lockfile"
     inventory_path = EVIDENCE / "dependency-inventory.json"
     ip_path = EVIDENCE / "ip-evaluation.json"
@@ -973,9 +977,12 @@ def validate_build_tool_overlay_negative_cases() -> None:
         "show",
         f"{base['commit']}:{base['catalog']['path']}",
     ).decode("utf-8")
-    current_catalog = (ROOT / dependency_inventory_tool.CATALOG_RELATIVE_PATH).read_text(
-        encoding="utf-8"
-    )
+    current_catalog = dependency_inventory_tool.git_bytes(
+        ROOT,
+        "show",
+        f"{dependency_inventory_tool.KSP_INTEGRATION_COMMIT}:"
+        f"{dependency_inventory_tool.CATALOG_RELATIVE_PATH.as_posix()}",
+    ).decode("utf-8")
     expect_rejected(
         "catalog change outside the KSP pin",
         lambda: dependency_inventory_tool.validate_catalog_transition(

@@ -2,6 +2,8 @@
 
 Task authority: task-scoped owner instruction under `OWNER-AUTH-BATCH-20260819-01` for bounded diagnosis and remediation of stale-red PR #30. This scope record does not reinterpret the repository-wide owner record, admit any other dependency, authorize Recovery execution, or change a product/readiness state.
 
+Here, “admission” means only the governed PoC-scoped update of the already used Coroutines dependency family and its exact resolved evidence. It is not production dependency admission, an ADR acceptance, production Legal/Security approval, or permission to use this dependency in any new product surface.
+
 ## Frozen input identity
 
 - repository: `Monumentogram/DORA`
@@ -72,7 +74,7 @@ The scope document is committed alone before any dependency mutation. If actual 
 4. The PR #52 KSP transition is validated historically at its integrated revision. Its evidence, Search lock, OD-13 six-configuration/66-component projection, Room processor API invariant and build-tool-only/non-admission facts remain exact. The successor catalog layer is validated separately.
 5. The Recovery validator recognizes only the exact governed successor overlay while proving Recovery protected content/evidence/lock unchanged and all Recovery execution, measurement, REC-I3, `PASS`, readiness and admission flags remain false.
 6. Exact Maven/source/license/release/security/signature facts, affected graph/configurations, lock/metadata hashes, native/JNI absence, archive notices and bytecode compatibility are recorded and fail-closed validated.
-7. Online provenance/authenticity and graph resolution pass first; the same graph and all affected Gradle verification/build/test commands then pass with `--offline` in a clean bounded Gradle home. A second deterministic offline run produces identical canonical output.
+7. Online provenance/authenticity and graph resolution pass first; the same graph and all affected Gradle verification/build/test commands then pass with `--offline` in a clean bounded Gradle home. A second deterministic offline run produces identical canonical output. For this contract, “canonical output” is the sorted UTF-8/LF JSON projection of the exact affected Gradle task list, affected configurations, locked resolved component-to-configuration graph, and catalog/capture-lock/verification-metadata SHA-256 values after each successful offline command run; volatile Gradle console text and task-cache labels are intentionally outside that projection.
 8. Full repository governance validators/self-tests, dependency/license inventories, native/ELF and APK 16-KiB checks, formatting/static analysis, documented Tier A host/unit/Android-test compilation/lint/assembly, and affected Capture tests pass without device/emulator execution.
 9. The worktree is clean, contains no `local.properties` or temporary residue, and the final diff is exactly the ten paths above.
 10. Publication is Draft-only. Independent exact-head admission review with P0/P1/P2 disposition and terminal exact-head CI are required; this task does not authorize Ready, merge, or PR #30 closure.

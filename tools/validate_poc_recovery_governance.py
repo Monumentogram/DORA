@@ -230,6 +230,12 @@ REC_I2B_KSP_OVERLAY_METADATA_SHA256 = (
     "2d31104754fc8df67ff14d9f8fb613782170862d421202ad3132297793357f23"
 )
 REC_I2B_KSP_OVERLAY_METADATA_LF_BYTES = 300225
+REC_I2B_KSP_OVERLAY_INTEGRATION_COMMIT = "1a1ef62b0db52be7ed73e58583d7d93c0a89aaf8"
+REC_I2B_COROUTINES_SUCCESSOR_BRANCH = "codex/deps-kotlinx-coroutines-1.11.0-admission"
+REC_I2B_COROUTINES_SUCCESSOR_METADATA_BLOB = "16071c00ac76fbb35c62d88f9eb748e7c0046cb7"
+REC_I2B_COROUTINES_SUCCESSOR_METADATA_SHA256 = (
+    "4c43f466346a5b72edd0c363b670e953982ccdc956fd75e5545130bb53e48b91"
+)
 REC_I2B_KSP_OVERLAY_PATHS = (
     "android/gradle/libs.versions.toml",
     "android/poc/search/gradle.lockfile",
@@ -2378,23 +2384,29 @@ def validate_rec_i2b_ksp_overlay_profile(profile: dict[str, Any]) -> None:
     )
 
 
-def validate_rec_i2b_ksp_overlay_frozen_files() -> None:
+def validate_rec_i2b_ksp_overlay_frozen_files(
+    revision: str = REC_I2B_KSP_OVERLAY_INTEGRATION_COMMIT,
+) -> None:
     for relative, (expected_blob, expected_sha256) in REC_I2B_KSP_OVERLAY_FROZEN_FILES.items():
         require(
-            git_output("rev-parse", f"HEAD:{relative}") == expected_blob,
+            git_output("rev-parse", f"{revision}:{relative}") == expected_blob,
             f"REC-I2B KSP overlay frozen Git blob drift: {relative}",
         )
         require(
-            hashlib.sha256(git_blob_bytes(f"HEAD:{relative}")).hexdigest() == expected_sha256,
+            hashlib.sha256(git_blob_bytes(f"{revision}:{relative}")).hexdigest() == expected_sha256,
             f"REC-I2B KSP overlay frozen SHA-256 drift: {relative}",
         )
 
-    catalog = git_blob_bytes("HEAD:android/gradle/libs.versions.toml").decode("utf-8", errors="strict")
+    catalog = git_blob_bytes(f"{revision}:android/gradle/libs.versions.toml").decode(
+        "utf-8", errors="strict"
+    )
     require(
         catalog.count('ksp = "2.3.11"') == 1 and 'ksp = "2.3.9"' not in catalog,
         "REC-I2B KSP overlay catalog version drift",
     )
-    lock = git_blob_bytes("HEAD:android/poc/search/gradle.lockfile").decode("utf-8", errors="strict")
+    lock = git_blob_bytes(f"{revision}:android/poc/search/gradle.lockfile").decode(
+        "utf-8", errors="strict"
+    )
     require(
         "com.google.devtools.ksp:symbol-processing-api:2.3.9=" not in lock
         and lock.count("com.google.devtools.ksp:symbol-processing-api:2.3.11=") == 1
@@ -2402,7 +2414,7 @@ def validate_rec_i2b_ksp_overlay_frozen_files() -> None:
         "REC-I2B KSP overlay lock KSP/Room coordinate drift",
     )
     profile_bytes = git_blob_bytes(
-        "HEAD:docs/evidence/poc-search-001/build-tool-lock-overlay-ksp-2.3.11.json"
+        f"{revision}:docs/evidence/poc-search-001/build-tool-lock-overlay-ksp-2.3.11.json"
     )
     profile = json.loads(profile_bytes.decode("utf-8", errors="strict"))
     require(isinstance(profile, dict), "REC-I2B KSP overlay profile root is not an object")
@@ -2419,6 +2431,24 @@ def rec_i2b_ksp_overlay_active() -> bool:
             "REC-I2B legacy verification metadata blob drift",
         )
         return False
+    if current_sha256 == REC_I2B_COROUTINES_SUCCESSOR_METADATA_SHA256:
+        require(
+            git_output("rev-parse", f"HEAD:{REC_I2B_KSP_OVERLAY_METADATA_PATH}")
+            == REC_I2B_COROUTINES_SUCCESSOR_METADATA_BLOB,
+            "REC-I2B Coroutines successor metadata is dirty or not committed at HEAD",
+        )
+        base_payload = git_blob_bytes(
+            f"{REC_I2B_MERGED_MAIN_ANCHOR}:{REC_I2B_KSP_OVERLAY_METADATA_PATH}"
+        )
+        ksp_payload = git_blob_bytes(
+            f"{REC_I2B_KSP_OVERLAY_INTEGRATION_COMMIT}:{REC_I2B_KSP_OVERLAY_METADATA_PATH}"
+        )
+        validate_rec_i2b_ksp_overlay_metadata_payloads(base_payload, ksp_payload)
+        validate_rec_i2b_ksp_overlay_frozen_files()
+        from verify_kotlinx_coroutines_admission import validate_recovery_successor_layer
+
+        validate_recovery_successor_layer(ROOT)
+        return True
     require(
         current_sha256 == REC_I2B_KSP_OVERLAY_METADATA_SHA256,
         "REC-I2B verification metadata is neither the legacy anchor nor exact KSP overlay",
@@ -2529,6 +2559,17 @@ def validate_rec_i2b_ksp_overlay_transition_shape(
 
 
 def validate_rec_i2b_ksp_overlay_integrated_revision(revision: str) -> None:
+    revision_metadata_blob = git_output(
+        "rev-parse", f"{revision}:{REC_I2B_KSP_OVERLAY_METADATA_PATH}"
+    )
+    if revision_metadata_blob == REC_I2B_COROUTINES_SUCCESSOR_METADATA_BLOB:
+        validate_rec_i2b_ksp_overlay_integrated_revision(
+            REC_I2B_KSP_OVERLAY_INTEGRATION_COMMIT
+        )
+        from verify_kotlinx_coroutines_admission import validate_recovery_successor_layer
+
+        validate_recovery_successor_layer(ROOT)
+        return
     require(
         git_is_ancestor(REC_I2B_MERGED_MAIN_ANCHOR, revision),
         "REC-I2B KSP overlay integrated revision lacks the REC-I2B merged anchor",
@@ -6117,7 +6158,9 @@ def run_rec_i2b_ksp_overlay_tests() -> None:
     base_payload = git_blob_bytes(
         f"{REC_I2B_MERGED_MAIN_ANCHOR}:{REC_I2B_KSP_OVERLAY_METADATA_PATH}"
     )
-    candidate_payload = (ROOT / REC_I2B_KSP_OVERLAY_METADATA_PATH).read_bytes()
+    candidate_payload = git_blob_bytes(
+        f"{REC_I2B_KSP_OVERLAY_INTEGRATION_COMMIT}:{REC_I2B_KSP_OVERLAY_METADATA_PATH}"
+    )
 
     validate_rec_i2b_ksp_overlay_metadata_payloads(base_payload, candidate_payload)
     validate_rec_i2b_ksp_overlay_metadata_semantics(base_payload, candidate_payload)
