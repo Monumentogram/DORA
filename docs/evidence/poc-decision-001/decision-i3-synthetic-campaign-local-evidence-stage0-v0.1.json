@@ -1,0 +1,329 @@
+{
+  "recordType": "DORA_STAGE0_POC_DECISION_I3_SYNTHETIC_METAMORPHIC_CAMPAIGN_LOCAL_EVIDENCE",
+  "recordVersion": "0.1",
+  "recordedDate": "2026-08-19",
+  "authority": {
+    "authorizationId": "POC-DECISION-001-I3-SYNTHETIC-METAMORPHIC-CAMPAIGN-AUTH-20260819-01",
+    "backlogId": "POC-DECISION-001",
+    "branch": "codex/poc-decision-i3-synthetic-campaign",
+    "baselineCommit": "a7e23c9a2758a3ee2cc8aba26be397b07ffc8f5b",
+    "baselineTree": "4b07b00b247decfed3b1bd6155ca9bc98701a196",
+    "baselineWasExactLiveMainAtCreation": true,
+    "baselineCi": {
+      "runId": 32190003292,
+      "headCommit": "a7e23c9a2758a3ee2cc8aba26be397b07ffc8f5b",
+      "workflow": "Android CI",
+      "status": "COMPLETED_FAILURE",
+      "successfulJobs": [
+        "search-smoke"
+      ],
+      "failedJob": "android-bootstrap",
+      "failedStep": "Validate recovery governance package",
+      "failureIsInAssignedI3Paths": false
+    },
+    "publicationGate": "CLOSED_UNTIL_REMEDIATED_EXACT_MAIN_CI_IS_GREEN",
+    "publicationPerformed": false
+  },
+  "integratedDecisionI2Dependency": {
+    "pullRequest": 45,
+    "pullRequestState": "MERGED",
+    "sourceCommit": "ac1fd62a7d78da2c14d3e287297c3773e70428e6",
+    "squashCommit": "574f75690ec2b8eb7d6922d2a429745a72159877",
+    "sourceTree": "ffb20392aa49b535062d3337f31bfb904d3c308a",
+    "squashTree": "ffb20392aa49b535062d3337f31bfb904d3c308a",
+    "squashCommitIsAncestorOfBaseline": true,
+    "consumption": "PUBLIC_API_READ_ONLY",
+    "modified": false,
+    "sourcePath": "tools/decision_deterministic_synthetic_harness/src/main/java/com/monumentogram/dora/stage0/decision/synthetic/DecisionDeterministicSyntheticHarness.java",
+    "sourceCanonicalSha256": "2adb2a4e6706212f5b7530a647e7ef90bd5d423f388e988f845c2e3690740411",
+    "testPath": "tools/decision_deterministic_synthetic_harness/src/test/java/com/monumentogram/dora/stage0/decision/synthetic/DecisionDeterministicSyntheticHarnessTest.java",
+    "testCanonicalSha256": "064d4ad5b00a18d1746fe2f6e29367aad9b0473b99e8cce5746f3d0b8a2e8fec",
+    "evidencePath": "docs/evidence/poc-decision-001/decision-deterministic-synthetic-harness-local-evidence-stage0-v0.1.json",
+    "evidenceSha256": "ee64af394111744b26d7c4dac11cfc8a07aa301b4bdfa7191d8a0883a84d5d59"
+  },
+  "scope": {
+    "profile": "decision-i3-stage0-v0.1",
+    "executionClass": "PURE_HOST_LOCAL_SYNTHETIC_METAMORPHIC_MECHANICS",
+    "dependencyBoundary": "JDK17_JAVA_BASE_AND_MERGED_DECISION_I2_API_ONLY",
+    "generatedCaseCount": 144,
+    "minimumAuthorizedGeneratedCaseCount": 120,
+    "governedBenchmarkCaseCount": 0,
+    "adjudicatedCorpusCaseCount": 0,
+    "realMeetingCount": 0,
+    "purposeRecordedParticipantCount": 0,
+    "modelCount": 0,
+    "datasetCount": 0,
+    "deviceCount": 0,
+    "networkOperationCount": 0,
+    "filesystemPersistenceOperationCount": 0,
+    "clockReadCount": 0,
+    "randomOperationCount": 0,
+    "androidModuleCount": 0,
+    "dependencyAdditionCount": 0
+  },
+  "caseMatrix": {
+    "languages": {
+      "RU": 48,
+      "EN": 48,
+      "MIXED_RU_EN": 48
+    },
+    "relations": {
+      "FINAL": 36,
+      "AMEND": 36,
+      "CANCEL": 36,
+      "SOURCE_GROUNDING": 36
+    },
+    "outcomes": {
+      "MATCH_VALID_SOURCE": 48,
+      "WRONG_ID_VALID_SOURCE": 24,
+      "WRONG_LABEL_VALID_SOURCE": 24,
+      "MATCH_INVALID_UTF8_BOUNDARY": 24,
+      "WRONG_ID_INVALID_UTF8_BOUNDARY": 24
+    },
+    "uniqueCaseIds": 144,
+    "uniqueSourceIds": 144,
+    "uniqueGoldItemIds": 144
+  },
+  "relationMechanics": {
+    "FINAL": "FINAL_DECISION",
+    "AMEND": "REVISION_LINK",
+    "CANCEL": "REVISION_LINK",
+    "SOURCE_GROUNDING": "CONFIRMED_TASK",
+    "sourceGroundingMappingIsProductionSemanticContract": false,
+    "sourceGroundingMappingPurpose": "EXERCISE_THE_THIRD_I2_SCORING_LABEL_AS_A_MECHANICS_BUCKET_ONLY",
+    "relationSemanticsAdjudicated": false,
+    "currentDecisionMutationPerformed": false,
+    "taskActivationPerformed": false
+  },
+  "sourceMechanics": {
+    "sourceRangeConvention": "UTF8_BYTE_OFFSETS_HALF_OPEN_STAGE0_V0_1",
+    "sourceRangeConventionIsProductContract": false,
+    "wholeGeneratedTextSha256Required": true,
+    "exactExcerptSha256Required": true,
+    "validUtf8BoundaryCases": 96,
+    "invalidUtf8BoundaryCases": 48,
+    "invalidCasesStartAtFirstContinuationByte": true,
+    "validSourceStatusCount": 96,
+    "invalidSourceStatusCount": 48,
+    "supportedBySyntheticGoldCount": 72,
+    "unsupportedBySyntheticGoldCount": 72,
+    "generatedSourceTextPublishedInEvidence": false
+  },
+  "candidateDispositions": {
+    "ADMISSIBLE_FOR_REVIEW": 48,
+    "REJECT_UNSUPPORTED": 48,
+    "REJECT_INVALID_SOURCE": 24,
+    "REJECT_INVALID_SOURCE_AND_UNSUPPORTED": 24,
+    "admissibleForReviewMeansCurrentConfirmedOrFinal": false,
+    "autoApplyPerformed": false
+  },
+  "exactMetricMechanics": {
+    "goldItems": 144,
+    "predictedItems": 144,
+    "microCounts": {
+      "truePositive": 72,
+      "falsePositive": 72,
+      "falseNegative": 72
+    },
+    "microPrecision": "1/2@0.500000",
+    "microRecall": "1/2@0.500000",
+    "microF1": "1/2@0.500000",
+    "macroPrecision": "1/2@0.500000",
+    "macroRecall": "1/2@0.500000",
+    "macroF1": "1/2@0.500000",
+    "sourceValidity": "2/3@0.666667",
+    "unsupportedClaimRate": "1/2@0.500000",
+    "perLabelCounts": {
+      "FINAL_DECISION": {
+        "truePositive": 18,
+        "falsePositive": 18,
+        "falseNegative": 18
+      },
+      "REVISION_LINK": {
+        "truePositive": 36,
+        "falsePositive": 36,
+        "falseNegative": 36
+      },
+      "CONFIRMED_TASK": {
+        "truePositive": 18,
+        "falsePositive": 18,
+        "falseNegative": 18
+      }
+    },
+    "arithmetic": "MERGED_I2_EXACT_REDUCED_NON_NEGATIVE_RATIONAL",
+    "thresholdComparisonPerformed": false,
+    "benchmarkVerdictProduced": false,
+    "qualityAssessmentPerformed": false
+  },
+  "userTruthProtection": {
+    "currentFieldCount": 576,
+    "machineProposalCount": 576,
+    "currentFieldsEqualBeforeAndAfter": true,
+    "proposalDispositions": {
+      "NO_CHANGE": 144,
+      "PROPOSED_DIFF_REVIEW_REQUIRED": 144,
+      "USER_TRUTH_PROTECTED": 144,
+      "ACTIVATION_REVIEW_REQUIRED": 144
+    },
+    "userOwnedValueOverwritePerformed": false,
+    "machineProposalApplicationPerformed": false,
+    "stateMutationPerformed": false,
+    "fieldValuesIncludedInCanonicalOutput": false
+  },
+  "metamorphicChecks": {
+    "evaluationRepeatTypedEquality": true,
+    "evaluationReverseOrderEquality": true,
+    "evaluationRotatedOrderEquality": true,
+    "evaluationCanonicalOrderInvariance": true,
+    "protectionRepeatTypedEquality": true,
+    "protectionReverseOrderEquality": true,
+    "protectionRotatedOrderEquality": true,
+    "protectionCanonicalOrderInvariance": true,
+    "campaignRepeatTypedEquality": true,
+    "campaignRepeatCanonicalEquality": true,
+    "independentExternalReverseOrderEquality": true
+  },
+  "fixedDigests": {
+    "evaluationCanonicalOutputSha256": "2c0e95f069dfa64ea1846b6ab554418975255bcbbabaa375fc13abe5c5453d7a",
+    "protectionCanonicalOutputSha256": "807da67fb46b1c980b7d62893104575231441b6577de540c1abf2d7d361749f1",
+    "campaignCanonicalPayloadSha256": "00915b5ed6072eecec379342d7abebc2d59a3ff0a2f296294e2c46202abe8db9",
+    "campaignDigestBindsCanonicalPayload": true,
+    "generatedTextOrFieldValuesIncludedInCanonicalPayload": false
+  },
+  "fileDigestBasis": "WORKTREE_BYTES_WITH_LF_IDENTICAL_TO_CANONICAL_GIT_BLOB_CONTENT",
+  "files": [
+    {
+      "path": "tools/decision_i3_synthetic_campaign/src/main/java/com/monumentogram/dora/stage0/decision/i3/DecisionSyntheticCampaign.java",
+      "role": "DETERMINISTIC_144_CASE_I2_API_CAMPAIGN",
+      "sha256": "9243aecc97380f9188eb6e7c1d8307b9a010b7562a4b2ba0e0c229d91362b2a4",
+      "bytes": 41807,
+      "lines": 863,
+      "asciiOnlySourceRepresentation": true
+    },
+    {
+      "path": "tools/decision_i3_synthetic_campaign/src/test/java/com/monumentogram/dora/stage0/decision/i3/DecisionSyntheticCampaignTest.java",
+      "role": "EXECUTABLE_JAVA17_METAMORPHIC_AND_CLAIM_CEILING_TEST",
+      "sha256": "0e5896e71270293c92bdedec7f99a6b4ce8ed7463ff7f423433c0d64a9db781d",
+      "bytes": 22381,
+      "lines": 396,
+      "asciiOnlySourceRepresentation": true
+    }
+  ],
+  "verification": {
+    "javaRuntime": "openjdk 17.0.10 2024-01-16 LTS",
+    "javac": "javac 17.0.10",
+    "hostCompileCommand": "javac --release 17 -encoding UTF-8 -Xlint:all -Werror -d <TEMP_DIR> <I2_MAIN_JAVA> <I2_TEST_JAVA> <I3_MAIN_JAVA> <I3_TEST_JAVA>",
+    "hostCompileExitCode": 0,
+    "classMajorVersion": 61,
+    "i2RegressionTest": {
+      "command": "java -cp <TEMP_DIR> com.monumentogram.dora.stage0.decision.synthetic.DecisionDeterministicSyntheticHarnessTest",
+      "exitCode": 0,
+      "stdout": "POC_DECISION_DETERMINISTIC_SYNTHETIC_HARNESS_TESTS_OK\n"
+    },
+    "i3Test": {
+      "command": "java -cp <TEMP_DIR> com.monumentogram.dora.stage0.decision.i3.DecisionSyntheticCampaignTest",
+      "exitCode": 0,
+      "stdout": "POC_DECISION_I3_SYNTHETIC_CAMPAIGN_TESTS_OK\n",
+      "stdoutSha256": "3002be9813b512b3532c3911625cbc0db1b68883fa7ff7fd8c187588a8a056fb",
+      "repeatRuns": 5,
+      "uniqueRepeatStdoutHashes": 1
+    },
+    "defaultSourceEncodingRegressionCompileAndRun": "SUCCESS",
+    "explicitUtf8SourceEncodingCompileAndRun": "SUCCESS",
+    "dependencyCommand": "jdeps -s -R <TEMP_DIR>",
+    "dependencySummary": "CAMPAIGN_AND_I2_CLASSES -> java.base",
+    "dependencyCheck": "SUCCESS",
+    "stage00ArtifactValidator": {
+      "command": "python3 tools/validate_stage00.py",
+      "runtime": "Python 3.12.10",
+      "result": "SUCCESS"
+    },
+    "androidTierA": [
+      {
+        "command": "gradlew --no-daemon spotlessCheck detekt",
+        "result": "BUILD_SUCCESSFUL"
+      },
+      {
+        "command": "gradlew --no-daemon :app:testDebugUnitTest :core:common:testDebugUnitTest :core:model:testDebugUnitTest :core:testing:testDebugUnitTest",
+        "result": "BUILD_SUCCESSFUL"
+      },
+      {
+        "command": "gradlew --no-daemon :app:compileDebugAndroidTestKotlin",
+        "result": "BUILD_SUCCESSFUL"
+      },
+      {
+        "command": "gradlew --no-daemon :app:lintDebug :core:common:lintDebug :core:model:lintDebug :core:testing:lintDebug",
+        "result": "BUILD_SUCCESSFUL"
+      },
+      {
+        "command": "gradlew --no-daemon :app:assembleDebug",
+        "result": "BUILD_SUCCESSFUL"
+      }
+    ],
+    "apkNativeInventory": {
+      "command": "python3 tools/verify_apk_native_alignment.py android/app/build/outputs/apk/debug/app-debug.apk",
+      "result": "SUCCESS_4_ABI_ENTRIES_1_ALLOWLISTED_LIBRARY_BASENAME"
+    },
+    "apkZipAlignment": {
+      "command": "<EXISTING_ANDROID_SDK_36>/build-tools/36.0.0/zipalign -c -P 16 -v 4 android/app/build/outputs/apk/debug/app-debug.apk",
+      "result": "VERIFICATION_SUCCESSFUL"
+    },
+    "trailingWhitespaceCheck": "SUCCESS_NONE_FOUND",
+    "forbiddenRuntimeSurfaceCheck": "SUCCESS_NONE_FOUND",
+    "absoluteLocalPathCheck": "SUCCESS_NONE_FOUND",
+    "nonAsciiJavaSourceByteCheck": "SUCCESS_NONE_FOUND"
+  },
+  "dataAndPublicationSafety": {
+    "usesOnlyProgrammaticallyGeneratedText": true,
+    "evidenceContainsGeneratedSourceText": false,
+    "containsPersonalData": false,
+    "containsSecret": false,
+    "containsCredential": false,
+    "containsPrivateAddressOrChannel": false,
+    "containsRealPersonOrOrganization": false,
+    "containsRealMeeting": false,
+    "containsAudio": false,
+    "containsModelOrWeight": false,
+    "containsDatasetOrTrainingData": false,
+    "containsDeviceIdentifier": false,
+    "containsLocalAbsolutePath": false,
+    "cloudTransmissionPerformed": false,
+    "modelTrainingPerformed": false,
+    "repositoryPublicationState": "LOCAL_UNPUBLISHED_AT_EVIDENCE_CREATION"
+  },
+  "selfReview": {
+    "p0Findings": 0,
+    "p1Findings": 0,
+    "p2Findings": 0,
+    "scopeOverlap": "NONE",
+    "assignedNewOnlyPathCount": 3,
+    "modifiedPreExistingPathCount": 0,
+    "independentReviewStatus": "PENDING_POST_COMMIT_REQUEST",
+    "ciForThisBranch": "NOT_RUN_PUBLICATION_GATE_CLOSED",
+    "readyOrMergeAction": "NOT_PERFORMED"
+  },
+  "nonClaims": [
+    "The 144 generated cases are not governed or adjudicated corpus cases and count as zero toward the at-least-100-case POC-DECISION-001 benchmark.",
+    "This campaign does not execute the governed POC-DECISION-001 benchmark, compare any benchmark threshold, or emit PASS.",
+    "The exact one-half metric values are mechanics known-answers, not model or product quality measurements.",
+    "This campaign does not evaluate an extractor, model, transcript, audio recording, meeting, person, device, Android feature, network route, or real data.",
+    "This campaign does not make a decision current or make a task planned, confirmed, active, or final.",
+    "The synthetic SOURCE_GROUNDING-to-CONFIRMED_TASK mapping is not a production semantic contract.",
+    "This campaign does not admit a dependency, model, dataset, schema, provider, or product behavior.",
+    "This campaign does not resolve DEC-019, dispose DEC-037, or elevate Backlog or Stage Status readiness.",
+    "This campaign cannot claim quality, readiness, PASS, MVP completion, or product admission."
+  ],
+  "outcome": {
+    "localEvidenceResult": "DETERMINISTIC_SYNTHETIC_METAMORPHIC_MECHANICS_VERIFIED",
+    "pocVerdict": "NOT_RUN",
+    "pocReadiness": "BLOCKED_UNCHANGED",
+    "governedScoringGapClosed": false,
+    "qualityClaim": false,
+    "readinessElevation": false,
+    "productAdmission": false,
+    "sharedBacklogOrStageStatusModified": false,
+    "workflowModified": false,
+    "publicationPerformed": false,
+    "independentReviewRequired": true
+  }
+}
