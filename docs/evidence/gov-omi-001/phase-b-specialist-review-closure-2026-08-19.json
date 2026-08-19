@@ -1,0 +1,230 @@
+{
+  "recordType": "dora-gov-omi-phase-b-specialist-review-closure",
+  "schemaVersion": 1,
+  "recordId": "GOV-OMI-PHASE-B-SPECIALIST-REVIEW-CLOSURE-20260819-01",
+  "taskId": "GOV-OMI-001",
+  "recordedAt": "2026-08-19T08:30:55Z",
+  "recordingScope": {
+    "kind": "ADDITIVE_SPECIALIST_ATTESTATION_RECORDING_ONLY",
+    "newAttestationMarkdownRecords": 2,
+    "newMachineClosureRecords": 1,
+    "existingFilesModified": 0,
+    "upstreamRetrievalPerformed": false,
+    "omiMaterialBuiltOrExecuted": false,
+    "alphaChanged": false,
+    "pullRequestBodyChanged": false,
+    "githubReviewPublished": false,
+    "readyActionPerformed": false,
+    "mergeActionPerformed": false
+  },
+  "reviewedDoraIdentity": {
+    "repository": "Monumentogram/DORA",
+    "pullRequestNumber": 47,
+    "pullRequestUrl": "https://github.com/Monumentogram/DORA/pull/47",
+    "branch": "codex/gov-omi-001-phase-b-bounded-content-audit",
+    "commitSha": "a0580189333ab1ab8551c8c30cbb15a1e072faff",
+    "treeSha": "df023d4cb8ca815c0ee499d35e8e1ad00c32e732",
+    "originalSixBlobCommit": "173b089681e1679f7e4bd434732527eca2da9c6c",
+    "pullRequestStateObservedAt": "2026-08-19T08:30:55Z",
+    "pullRequestState": "OPEN",
+    "draft": true,
+    "unmerged": true,
+    "behindBase": true,
+    "observedBaseRef": "main",
+    "observedBaseOid": "881c5bfbb84cedfc2d267ca8f8255c456b3908b8"
+  },
+  "reviewedPhaseBBlobs": [
+    {
+      "path": "docs/evidence/gov-omi-001/phase-b-bounded-content-audit-report.md",
+      "gitBlobOid": "a4ce802c9d5658df5b689f6ae42557b05374b7f5",
+      "bytes": 11936,
+      "sha256": "b23a93646b7994505654b09b1f5d117899edfd86f4719a762f6d1a3c1838254b",
+      "sameGitBlobAtOriginalSixBlobCommit": true
+    },
+    {
+      "path": "docs/evidence/gov-omi-001/phase-b-bounded-content-audit-v0.1.json",
+      "gitBlobOid": "341401140fe97d2f0dc326115af32e126600177c",
+      "bytes": 57734,
+      "sha256": "7294bb96b5b7b4da3455d5549cd17ab31e9dd10caf75929472f4c238f9b8b1e0",
+      "sameGitBlobAtOriginalSixBlobCommit": true
+    },
+    {
+      "path": "docs/evidence/gov-omi-001/phase-b-independent-technical-review.json",
+      "gitBlobOid": "3561d04f66e6628f13d7100853b871411baad8f2",
+      "bytes": 15676,
+      "sha256": "46a5ddb68bfb9f2793ff7a83ae70b27e731ead3275527c20c7a91e2e2da2fe5b",
+      "sameGitBlobAtOriginalSixBlobCommit": true
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_GOV_OMI_PHASE_B_BOUNDED_CONTENT_AUDIT.md",
+      "gitBlobOid": "ee1adccd379e2d1e05627a30e7e55ac13d451651",
+      "bytes": 14193,
+      "sha256": "a63a0e47a44f444dc1d2ddb26e98bc07a8cfcf8d6296d1d4cb8be2c6bb5ac3b6",
+      "sameGitBlobAtOriginalSixBlobCommit": true
+    },
+    {
+      "path": "docs/stage0/gov-omi-phase-b-bounded-content-audit-v0.1.json",
+      "gitBlobOid": "3449e3b4aecc85f3c693786e6905364d3851ab90",
+      "bytes": 25360,
+      "sha256": "6f4e0f116c41b3f51f1e0a8f41dcf9d6521528afc8eb600bcaa73b00d3e21496",
+      "sameGitBlobAtOriginalSixBlobCommit": true
+    },
+    {
+      "path": "docs/stage0/gov-omi-phase-b-contract-test-resolved-allowlist-v0.1.json",
+      "gitBlobOid": "cdfebabea99588977f2316b139abdb5381537f61",
+      "bytes": 2336,
+      "sha256": "f51bb5e01a3e22287c727d6419b97d6d943daa889261afc80f43259e75360b26",
+      "sameGitBlobAtOriginalSixBlobCommit": true
+    }
+  ],
+  "reviewedPhaseBBlobIntegrity": {
+    "blobCount": 6,
+    "allMatchReviewedHead": true,
+    "allMatchOriginalSixBlobCommit": true,
+    "allPreservedByteForByteByThisRecording": true
+  },
+  "attestations": {
+    "engineeringSecurity": {
+      "identity": "Katerina Novikova",
+      "capacity": "Engineering/Security read-only evidence reviewer",
+      "capacityConfirmedByOwnerAssignment": true,
+      "reviewedAt": "2026-08-19T06:49:54Z",
+      "reviewedCommit": "a0580189333ab1ab8551c8c30cbb15a1e072faff",
+      "reviewedTree": "df023d4cb8ca815c0ee499d35e8e1ad00c32e732",
+      "disposition": "APPROVE_EVIDENCE_ONLY_RECORDING",
+      "counts": {
+        "p0": 0,
+        "p1": 0,
+        "p2": 0
+      },
+      "evidenceOnlyRecordingApproved": true,
+      "securityFitnessApproved": false,
+      "omiReuseApproved": false,
+      "productLegalIpAdmissionApproved": false,
+      "evaluationApproved": false,
+      "admitted": false,
+      "readyApproved": false,
+      "mergeApproved": false,
+      "attestationPath": "docs/evidence/gov-omi-001/phase-b-engineering-security-reviewer-attestation-2026-08-19.md",
+      "attestationBytes": 3509,
+      "attestationSha256": "8dfb41f2825bb3238bd3a1ede43d324d88cce781b8a19d948925312072f84431",
+      "sourceProvenance": {
+        "kind": "DIRECT_USER_ATTESTATION_RELAYED_BY_PROJECT_COORDINATOR",
+        "externalAttachment": false,
+        "publicSafeAttestationTextRecorded": true,
+        "textPreservedVerbatimExceptUtf8LfAndTrailingWhitespaceNormalization": true,
+        "privateSourcePathRecorded": false
+      }
+    },
+    "productLegalIp": {
+      "identity": "Новиков Юрий",
+      "capacity": "Product/Legal/IP evidence reviewer",
+      "capacityConfirmedByOwnerAssignment": true,
+      "reviewedAt": "2026-08-19T06:57:25Z",
+      "reviewedCommit": "a0580189333ab1ab8551c8c30cbb15a1e072faff",
+      "reviewedTree": "df023d4cb8ca815c0ee499d35e8e1ad00c32e732",
+      "overallRights": "BLOCKED_RIGHTS",
+      "licenseCompatibility": "INSUFFICIENT_EVIDENCE",
+      "disposition": "DEFER",
+      "rejectIssued": false,
+      "componentReuse": "INSUFFICIENT_EVIDENCE",
+      "evaluationApproved": false,
+      "admitted": false,
+      "readyApproved": false,
+      "mergeApproved": false,
+      "attestationPath": "docs/evidence/gov-omi-001/phase-b-product-legal-ip-reviewer-attestation-2026-08-19.md",
+      "attestationBytes": 8845,
+      "attestationSha256": "d616d6e168ef1cf8ef362fecf49323fe28c7f60b21aebb3dd4aec0c2facdb3ca",
+      "sourceProvenance": {
+        "kind": "OWNER_PROVIDED_ATTACHMENT_OUTSIDE_REPOSITORY",
+        "rawAttachmentBytes": 8958,
+        "rawAttachmentSha256": "b41363b1b819fe674fcfb943148360f82e32efe452b7bf9161b428049c8b858d",
+        "rawAttachmentBytesPresentInRepository": false,
+        "attachmentDigestLocallyRecomputed": true,
+        "privateAttachmentPathRecorded": false,
+        "publicSafeAttestationTextRecorded": true,
+        "publicAttestationMatchesAttachmentTextAfterCrlfToLfNormalization": true
+      }
+    }
+  },
+  "additiveSupersession": {
+    "historicalSixBlobMutation": false,
+    "historicalReviewerNullOrPendingFieldsRewritten": false,
+    "historicalNullOrPendingFieldsRemainAccurateForTheirOriginalSnapshots": true,
+    "currentReviewerAttestationsRecordedForExactReviewedHead": true,
+    "supersedesOnlyCurrentPendingReviewerRecordingForExactReviewedHead": true,
+    "semanticAuditStateChanged": false,
+    "rightsOrAdmissionStateElevated": false,
+    "readyOrMergeStateElevated": false
+  },
+  "boundedEvidenceFacts": {
+    "phaseBState": "INCOMPLETE_AUTH05_PRIVACY_FAIL_CLOSED",
+    "auth04MechanicalTextBlobChecksComplete": 65,
+    "auth05VerifiedBlobCountBeforeStop": 54,
+    "auth05VerifiedBlobBytesBeforeStop": 582154,
+    "auth05PrivacyStopKind": "PRIVATE_ENDPOINT",
+    "auth05RawPrivateValuePersisted": false,
+    "auth05SemanticClassificationPerformedForStopBlob": false,
+    "auth05UnrequestedBlobCount": 11,
+    "auth05UnrequestedTrackerSemanticRequestCount": 18,
+    "auth05RequestArithmetic": "54 + 11 + 18 = 83",
+    "pullRequest7322ReportedComments": 18,
+    "pullRequest7322ReturnedComments": 10,
+    "pullRequest7322Comments11Through18RetrievedOrChecked": false,
+    "historicalNonPersistenceOutsideReviewedGitArtifactsIndependentlyReconstructable": false
+  },
+  "exactHeadCi": {
+    "runId": 32177570175,
+    "conclusion": "SUCCESS",
+    "reviewedCommit": "a0580189333ab1ab8551c8c30cbb15a1e072faff",
+    "jobs": [
+      {
+        "name": "android-bootstrap",
+        "conclusion": "SUCCESS"
+      },
+      {
+        "name": "search-smoke",
+        "conclusion": "SUCCESS"
+      }
+    ],
+    "doraBuildTestAssemblyActivityOccurred": true,
+    "omiMaterialBuiltOrExecuted": false
+  },
+  "currentDispositions": {
+    "phaseB": "DEFER",
+    "overallRights": "BLOCKED_RIGHTS",
+    "licenseCompatibility": "INSUFFICIENT_EVIDENCE",
+    "componentReuse": "INSUFFICIENT_EVIDENCE",
+    "securityFitness": "INSUFFICIENT_EVIDENCE",
+    "hazardValidation": "INSUFFICIENT_EVIDENCE",
+    "evaluationApproved": false,
+    "admitted": false,
+    "ready": false,
+    "mergeApproved": false
+  },
+  "unchangedBlockers": [
+    "AUTH05_ELEVEN_BLOBS_NOT_SEMANTICALLY_CHECKED",
+    "AUTH05_EIGHTEEN_TRACKER_ITEMS_NOT_SEMANTICALLY_CHECKED",
+    "PULL_REQUEST_7322_COMMENTS_11_THROUGH_18_NOT_RETRIEVED_OR_CHECKED",
+    "EXACT_COMPONENT_RIGHTS_AND_LICENSE_COMPATIBILITY_INSUFFICIENT",
+    "SECURITY_FITNESS_INSUFFICIENT",
+    "COMPONENT_REUSE_AND_HAZARD_VALIDATION_INSUFFICIENT"
+  ],
+  "nonClaimsAndNoAuthority": {
+    "securityFitnessConclusion": false,
+    "rightsCompatibilityConclusion": false,
+    "sourceInspectionRightGranted": false,
+    "sourceReuseAllowed": false,
+    "codeCopyAllowed": false,
+    "portAllowed": false,
+    "dependencyAdditionAllowed": false,
+    "modelOrDatasetAdmissionAllowed": false,
+    "upstreamTestSchemaBinaryServiceOrProductBehaviorUseAllowed": false,
+    "evaluationAllowed": false,
+    "productionUseAllowed": false,
+    "readyAllowed": false,
+    "mergeAllowed": false,
+    "additionalUpstreamRetrievalAllowed": false
+  },
+  "noAdmissionStatement": "These additive specialist attestations approve only accurate recording of incomplete fail-closed evidence. They do not approve Omi reuse, Security fitness, rights compatibility, evaluation, source inspection, copy, port, dependency addition, model or dataset admission, product use, Ready status or merge."
+}
