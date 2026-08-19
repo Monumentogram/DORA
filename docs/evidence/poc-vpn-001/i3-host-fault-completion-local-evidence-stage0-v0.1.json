@@ -1,0 +1,367 @@
+{
+  "schemaVersion": "dora-poc-vpn-i3-host-fault-completion-local-evidence-stage0-v0.1",
+  "recordId": "POC-VPN-001-I3-HOST-FAULT-COMPLETION-20260819",
+  "recordDate": "2026-08-19",
+  "backlogId": "POC-VPN-001",
+  "contractId": "poc-vpn-synthetic-api-stage0-v0.1",
+  "implementationSlice": "I3_HOST_HERMETIC_SYNTHETIC_FAULT_COMPLETION",
+  "implementationState": "IMPLEMENTED_LOCAL_CHECKS_PASS_REVIEW_PENDING",
+  "authorization": {
+    "implementationAuthorizationId": "POC-VPN-001-I3-HOST-FAULT-COMPLETION-AUTH-20260819-01",
+    "conditionalIntegrationAuthorizationId": "POC-VPN-001-I3-EVIDENCE-INTEGRATION-AUTH-20260819-02",
+    "hostHermeticImplementationAllowed": true,
+    "hostHermeticExecutionAllowed": true,
+    "draftPublicationAllowedOnlyAfterIndependentCleanReview": true,
+    "broaderNetworkExecutionAllowed": false,
+    "physicalRouteExecutionAllowed": false,
+    "vpnExecutionAllowed": false,
+    "deviceExecutionAllowed": false,
+    "providerExecutionAllowed": false,
+    "productionAdmissionAllowed": false,
+    "realDataAllowed": false
+  },
+  "sourceSnapshot": {
+    "githubMainCommit": "e48305ee3b2d18a5612e14aa6cbd4c1c289de9c7",
+    "githubMainTree": "777f1f9713553fce9cc154fcee9ff60a5676b13e",
+    "exactMainCiRun": 32186226366,
+    "exactMainCiConclusion": "success",
+    "branch": "codex/poc-vpn-i3-host-fault-completion",
+    "worktreeClass": "FRESH_ISOLATED_FROM_EXACT_MAIN",
+    "historicalVpnWorktreeReused": false,
+    "openPullRequestPathOverlapAtStart": false
+  },
+  "scope": {
+    "allowedPaths": [
+      "android/poc/vpn-contract-kernel/transport-harness/src/main/kotlin/com/monumentogram/dora/poc/vpn/transport/LoopbackHttpTransport.kt",
+      "android/poc/vpn-contract-kernel/transport-harness/src/main/kotlin/com/monumentogram/dora/poc/vpn/transport/SyntheticContractService.kt",
+      "android/poc/vpn-contract-kernel/transport-harness/src/test/kotlin/com/monumentogram/dora/poc/vpn/transport/LoopbackTransportHostTest.kt",
+      "docs/evidence/poc-vpn-001/i3-host-fault-completion-local-evidence-stage0-v0.1.json"
+    ],
+    "faultIds": [
+      "VPN-FLT-005",
+      "VPN-FLT-010",
+      "VPN-FLT-015",
+      "VPN-FLT-016",
+      "VPN-FLT-017",
+      "VPN-FLT-020",
+      "VPN-FLT-021",
+      "VPN-FLT-022",
+      "VPN-FLT-023",
+      "VPN-FLT-024",
+      "VPN-FLT-025",
+      "VPN-FLT-026",
+      "VPN-FLT-027",
+      "VPN-FLT-031",
+      "VPN-FLT-034"
+    ],
+    "tlsFault006": {
+      "proofClass": "CATEGORY_ONLY_UNTIL_SECURITY_SCOPE",
+      "execution": "NOT_RUN",
+      "insecureFallbackAllowed": false
+    },
+    "claimCeiling": "HOST_HERMETIC_SYNTHETIC_FAULT_COMPLETION_ONLY"
+  },
+  "contractPins": [
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_VPN_SYNTHETIC_CONTRACT_STAGE0_V0_1.md",
+      "sha256": "cc3e7508238564fd1346467625b3bd03c9a9ffdbf2b00d44a3b7ca67bea81ebf"
+    },
+    {
+      "path": "docs/evidence/poc-vpn-001/contract-record-stage0-v0.1.json",
+      "sha256": "5efb14b67026bed208310249c7d2e0bd03450af0069f6af8c1634c7efc4025c2"
+    },
+    {
+      "path": "docs/evidence/poc-vpn-001/contract-kernel-implementation-stage0-v0.1.json",
+      "sha256": "c5d8c4418dbafe044f6dfcf4567afbef5da985cd64deb1f0a1fb47048144a8a8"
+    },
+    {
+      "path": "docs/evidence/poc-vpn-001/loopback-transport-implementation-evidence-stage0-v0.1.json",
+      "sha256": "3419482c3460c73deb6a3d56dcb7ad7ff1d1bd1e15f9296da23d9e2655c3b848"
+    },
+    {
+      "path": "docs/evidence/poc-vpn-001/i2-implementation-advisory-review-2026-08-15.json",
+      "sha256": "7b3125366927c22fd663c05024ae8fd4a3dfd3944b4520e95b4cb0b62ca53e50"
+    }
+  ],
+  "historicalI2Pins": [
+    {
+      "path": "android/poc/vpn-contract-kernel/transport-harness/src/main/kotlin/com/monumentogram/dora/poc/vpn/transport/LoopbackHttpTransport.kt",
+      "gitBlob": "5a46a0a0a60f4bbb9524b545d98cb691cf0a53af",
+      "sha256": "765f168602a7d48f673b8041022dab10b272d5da778ebfa13fe27a426159b2bb"
+    },
+    {
+      "path": "android/poc/vpn-contract-kernel/transport-harness/src/main/kotlin/com/monumentogram/dora/poc/vpn/transport/SyntheticContractService.kt",
+      "gitBlob": "33451cea34c8797b0f653302cc91dba65b652e62",
+      "sha256": "64c08db43d885a43013a23d44668a16f208d9bdb34559ed0e5b5a9c0c359d065"
+    },
+    {
+      "path": "android/poc/vpn-contract-kernel/transport-harness/src/test/kotlin/com/monumentogram/dora/poc/vpn/transport/LoopbackTransportHostTest.kt",
+      "gitBlob": "1c452283ec93851dbe9fc8d5a66f22a1b172a955",
+      "sha256": "d5707eb94a0d356cf937242fa0dbf30a2a148addc8f1b2f1c669308a39d77f19"
+    }
+  ],
+  "implementationPins": [
+    {
+      "path": "android/poc/vpn-contract-kernel/transport-harness/src/main/kotlin/com/monumentogram/dora/poc/vpn/transport/LoopbackHttpTransport.kt",
+      "byteLength": 39005,
+      "sha256": "b7f31677ff4bed9bb03bf0a3b3611fc86519de444cfe68a1e49777bf365c63c9"
+    },
+    {
+      "path": "android/poc/vpn-contract-kernel/transport-harness/src/main/kotlin/com/monumentogram/dora/poc/vpn/transport/SyntheticContractService.kt",
+      "byteLength": 61048,
+      "sha256": "074c38bc66c969f92715903b90a867edda56214baedd82f12a48100a340a89a7"
+    },
+    {
+      "path": "android/poc/vpn-contract-kernel/transport-harness/src/test/kotlin/com/monumentogram/dora/poc/vpn/transport/LoopbackTransportHostTest.kt",
+      "byteLength": 160288,
+      "sha256": "093946ab021b357490131947588a409638a0bf99fa91bbcc13fa2f4f5919745e"
+    }
+  ],
+  "deterministicProfile": {
+    "address": "NUMERIC_IPV4_LOOPBACK",
+    "serverPortRequest": 0,
+    "redirectPolicy": "NEVER",
+    "proxyPolicy": "EXPLICIT_NO_PROXY",
+    "maxAttempts": 3,
+    "maxLogicalElapsedMillis": 3000,
+    "maxAcceptedRetryAfterMillis": 2000,
+    "localBackoffBaseMillis": 100,
+    "connectTimeoutSeconds": 2,
+    "requestTimeoutSeconds": 2,
+    "scenarioDeadlineSeconds": 15,
+    "wallClockSleepUsed": false,
+    "randomnessUsed": false,
+    "externalDependencyCoordinates": []
+  },
+  "scenarioEvidence": [
+    {
+      "faultId": "VPN-FLT-005",
+      "proofClass": "LOOPBACK_CATEGORY_SIMULATION",
+      "assertions": ["connect category injected before send", "same upload-plan operation replayed", "one plan generation committed"]
+    },
+    {
+      "faultId": "VPN-FLT-010",
+      "proofClass": "HERMETIC_LOOPBACK",
+      "assertions": ["connection dropped before part commit", "same part replayed within finite budget", "one receipt and one committed part"]
+    },
+    {
+      "faultId": "VPN-FLT-015",
+      "proofClass": "HERMETIC_LOOPBACK",
+      "assertions": ["positive singleton Retry-After accepted", "due time remained inside elapsed cap", "one logical mutation outcome"]
+    },
+    {
+      "faultId": "VPN-FLT-016",
+      "proofClass": "HERMETIC_LOOPBACK",
+      "assertions": ["missing Retry-After used frozen local backoff", "retry remained finite", "one logical mutation outcome"]
+    },
+    {
+      "faultId": "VPN-FLT-017",
+      "proofClass": "HERMETIC_LOOPBACK",
+      "assertions": ["malformed and out-of-cap Retry-After values ignored", "local backoff remained bounded", "restored elapsed budget stopped before another retry could be scheduled", "ordinary exhaustion mapped to FAILED_FINAL without a scheduled wakeup"]
+    },
+    {
+      "faultId": "VPN-FLT-020",
+      "proofClass": "HERMETIC_LOOPBACK",
+      "assertions": ["expired part URL committed no part", "one next plan generation retained job/upload/profile/endpoint/region", "stale generation rejected and current generation accepted"]
+    },
+    {
+      "faultId": "VPN-FLT-021",
+      "proofClass": "SIMULATED_ROUTE_ONLY",
+      "assertions": ["part attempt dropped before commit", "same part operation replayed", "endpoint/region/upload binding and one receipt preserved"]
+    },
+    {
+      "faultId": "VPN-FLT-022",
+      "proofClass": "SIMULATED_ROUTE_ONLY",
+      "assertions": ["typed route-wait category", "same part operation replayed", "no endpoint or region migration"]
+    },
+    {
+      "faultId": "VPN-FLT-023",
+      "proofClass": "SIMULATED_ROUTE_ONLY",
+      "assertions": ["typed route-wait category", "same part operation replayed", "no endpoint or region migration"]
+    },
+    {
+      "faultId": "VPN-FLT-024",
+      "proofClass": "SIMULATED_ROUTE_ONLY",
+      "assertions": ["typed VPN-transition category without VPN execution", "same part operation replayed", "no endpoint or region migration"]
+    },
+    {
+      "faultId": "VPN-FLT-025",
+      "proofClass": "SIMULATED_ROUTE_ONLY",
+      "assertions": ["typed VPN-transition category without VPN execution", "same part operation replayed", "no endpoint or region migration"]
+    },
+    {
+      "faultId": "VPN-FLT-026",
+      "proofClass": "HOST_SNAPSHOT_RESTORE_SIMULATION",
+      "assertions": ["content-free pending operation identity survived restore", "non-loopback, mismatched-operation and duplicate-case-header identities failed closed", "committed part receipt reconciled by same-key replay", "no duplicate receipt or part effect"]
+    },
+    {
+      "faultId": "VPN-FLT-027",
+      "proofClass": "HOST_SNAPSHOT_RESTORE_SIMULATION",
+      "assertions": ["complete commit survived lost response and restore", "same request returned stable commit", "one result path and no duplicate effect"]
+    },
+    {
+      "faultId": "VPN-FLT-031",
+      "proofClass": "HERMETIC_LOOPBACK",
+      "assertions": ["timeout then 5xx repeated within finite budget", "ETag and revision remained stable", "poll exhaustion created no resource or economic effect"]
+    },
+    {
+      "faultId": "VPN-FLT-034",
+      "proofClass": "HOST_KERNEL_AND_HERMETIC_LOOPBACK",
+      "assertions": ["cancel, profile, final-reject and exhaustion transitions preserved DELETE_PENDING", "exhaustion exposed manual retry with no automatic wakeup", "an explicit VPN-C-TR-052 grant preceded the finite resume", "one stable verified receipt retained one deletion record"]
+    }
+  ],
+  "privacyBoundary": {
+    "repositoryOwnedSyntheticBytesOnly": true,
+    "contentFreeFaultLedgersOnly": true,
+    "contentFreeRecoverySnapshotOnly": true,
+    "rawBodiesUrisKeysTokensPersisted": false,
+    "credentialsConfigured": false,
+    "realEndpointConfigured": false,
+    "realDataUsed": false,
+    "ciArtifactUpload": false,
+    "publicOutput": "CONSTANT_CONTENT_FREE_PASS_FAIL_MARKER_ONLY"
+  },
+  "externalNotRun": [
+    "actual DNS",
+    "TLS trust or hostname validation",
+    "external network",
+    "physical VPN route",
+    "Wi-Fi to cellular route",
+    "cellular to Wi-Fi route",
+    "device",
+    "emulator",
+    "provider endpoint",
+    "account",
+    "billing",
+    "credentials",
+    "real data"
+  ],
+  "statusBoundary": {
+    "pocVpnState": "TODO",
+    "pocVpnReadiness": "NOT_READY",
+    "pocVpnOverallResult": "NOT_RUN",
+    "pocVpnGlobalAuthority": "NOT_AUTHORIZED",
+    "pocPassClaimed": false,
+    "readyClaimed": false,
+    "physicalExecutionClaimed": false,
+    "deviceExecutionClaimed": false,
+    "vpnExecutionClaimed": false,
+    "providerExecutionClaimed": false,
+    "productionAdmissionClaimed": false
+  },
+  "localChecks": [
+    {
+      "command": ".\\gradlew.bat -p poc\\vpn-contract-kernel :transport-harness:loopbackTest --offline --no-configuration-cache --warning-mode all",
+      "state": "PASS_TWICE_FROM_CLEAN_RECOMPILE",
+      "result": "PASS hermetic-loopback-transport-harness"
+    },
+    {
+      "command": ".\\gradlew.bat -p poc\\vpn-contract-kernel :hostTest --offline --no-configuration-cache --warning-mode all",
+      "state": "PASS_FROM_CLEAN_RECOMPILE",
+      "result": "PASS contract-kernel-host-oracle"
+    },
+    {
+      "command": ".\\gradlew.bat -p poc\\vpn-contract-kernel :transport-harness:dependencies :transport-harness:buildEnvironment --offline --no-configuration-cache --warning-mode all",
+      "state": "PASS",
+      "result": "NO_CONFIGURATIONS_NO_DEPENDENCIES"
+    },
+    {
+      "command": "jdeps --ignore-missing-deps --multi-release 17 --print-module-deps <transport-main> <transport-test>",
+      "state": "PASS",
+      "result": "java.base,java.net.http,jdk.httpserver"
+    },
+    {
+      "command": "java -ea -Xverify:all <exact-frozen-classpath> com.monumentogram.dora.poc.vpn.transport.LoopbackTransportHostTest",
+      "state": "PASS",
+      "result": "PASS hermetic-loopback-transport-harness"
+    },
+    {
+      "command": "java -ea -Xverify:all <exact-frozen-classpath> com.monumentogram.dora.poc.vpn.contract.ContractKernelHostTest",
+      "state": "PASS",
+      "result": "PASS contract-kernel-host-oracle"
+    },
+    {
+      "command": "javap -verbose <loopback-and-kernel-runner-classes>",
+      "state": "PASS",
+      "result": "BOTH_MAJOR_VERSION_61"
+    },
+    {
+      "command": ".\\gradlew.bat --no-daemon --stacktrace spotlessCheck detekt :app:testDebugUnitTest :core:common:testDebugUnitTest :core:model:testDebugUnitTest :core:testing:testDebugUnitTest :poc:capture:testDebugUnitTest :poc:recovery:testDebugUnitTest :poc:search:testDebugUnitTest :app:compileDebugAndroidTestKotlin :poc:capture:compileDebugAndroidTestKotlin :poc:search:compileDebugAndroidTestKotlin :app:lintDebug :core:common:lintDebug :core:model:lintDebug :core:testing:lintDebug :poc:capture:lintDebug :poc:recovery:lintDebug :poc:search:lintDebug :app:assembleDebug :poc:capture:assembleDebug :poc:recovery:assembleDebug :poc:search:assembleDebug --offline --no-configuration-cache --warning-mode all",
+      "state": "PASS_AFTER_FINAL_IMPLEMENTATION_PINS",
+      "result": "365_TASKS_GREEN"
+    },
+    {
+      "command": "python3 tools/validate_stage00.py",
+      "state": "PASS",
+      "result": "STAGE_00_ARTIFACT_VALIDATION_PASSED"
+    },
+    {
+      "command": "python3 tools/validate_poc_capture.py && python3 tools/validate_poc_search.py && python3 tools/validate_poc_recovery_governance.py --self-test",
+      "state": "PASS",
+      "result": "ALL_SCOPED_STATIC_AND_GOVERNANCE_VALIDATORS_PASSED"
+    },
+    {
+      "command": "python3 tools/verify_poc_recovery_dependency_inventory.py --online",
+      "state": "PASS",
+      "result": "8_EXACT_EXTERNAL_COORDINATES_AND_LICENSE_NOTICE_BYTES_VERIFIED"
+    },
+    {
+      "command": "python3 tools/check_poc_recovery_run_readiness.py",
+      "state": "EXPECTED_BLOCKED",
+      "result": "10_EXISTING_RECOVERY_BLOCKERS_RETAINED"
+    },
+    {
+      "command": "python3 tools/poc_search_dependency_inventory.py --check && python3 tools/poc_search_license_notice_inventory.py --check",
+      "state": "PASS",
+      "result": "SEARCH_DEPENDENCY_LICENSE_NOTICE_INVENTORIES_VALID"
+    },
+    {
+      "command": "python3 tools/verify_apk_native_alignment.py <app-and-capture-debug-apks>",
+      "state": "PASS",
+      "result": "EACH_APK_4_ABI_ENTRIES_1_ALLOWLISTED_LIBRARY_16_KIB_ELF_ALIGNED"
+    },
+    {
+      "command": "zipalign -c -P 16 -v 4 <app-and-capture-debug-apks>",
+      "state": "PASS",
+      "result": "BOTH_APKS_VERIFICATION_SUCCESSFUL"
+    }
+  ],
+  "localEnvironment": {
+    "jdk": "MICROSOFT_JDK_17_0_10",
+    "gradle": "9.5.0",
+    "kotlinCompiler": "2.3.20_FROM_PINNED_GRADLE_DISTRIBUTION",
+    "python": "CPYTHON_3_12_10_EXISTING_TEMP_RUNTIME_SHA256_4d6f5f81a4bca11191c4c7c6b43632694d0a4ce74e068619d8fdc161d469859a",
+    "androidSdk": "EXISTING_PLATFORM_AND_BUILD_TOOLS_36_0_0_PROCESS_LOCAL_ENVIRONMENT_ONLY",
+    "repositoryLocalPropertiesCreated": false,
+    "pythonBytecodePersisted": false
+  },
+  "observedFailClosedEnvironmentChecks": [
+    {
+      "condition": "ANDROID_SDK_ENVIRONMENT_WAS_INITIALIALLY_UNSET_IN_FRESH_WORKTREE",
+      "outcome": "CONFIGURATION_STOP_BEFORE_TASK_EXECUTION",
+      "remediation": "REUSED_EXISTING_SDK_36_VIA_PROCESS_LOCAL_ENVIRONMENT_WITHOUT_REPOSITORY_MUTATION"
+    },
+    {
+      "condition": "JAVA_TOOL_OPTIONS_INJECTED_STRICT_FLAGS_AND_EXTRA_STDERR_INTO_CHILD_PROBES",
+      "outcome": "CONSTANT_ONLY_CHILD_OUTPUT_GUARD_REJECTED_ENVIRONMENT_CONTAMINATION",
+      "remediation": "DIRECT_EXACT_CLASSPATH_PARENT_RUN_USED_EA_XVERIFY_ALL_WITHOUT_INHERITED_OUTPUT_INJECTION"
+    }
+  ],
+  "independentReview": {
+    "status": "PENDING_DISTINCT_READ_ONLY_REVIEW",
+    "formalReviewer": false,
+    "p0": null,
+    "p1": null,
+    "p2": null,
+    "reviewedCommit": null,
+    "reviewedTree": null
+  },
+  "publication": {
+    "branchPushed": false,
+    "pullRequestOpened": false,
+    "ready": false,
+    "merged": false,
+    "exactHeadCi": "NOT_RUN",
+    "exactMainCi": "NOT_RUN"
+  }
+}

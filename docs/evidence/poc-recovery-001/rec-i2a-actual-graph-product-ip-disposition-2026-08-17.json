@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "decisionId": "REC-I2A-ACTUAL-GRAPH-PRODUCT-IP-DISPOSITION-20260817-01",
+  "recordedAtUtc": "2026-08-17T09:40:08Z",
+  "status": "EVALUATION_APPROVED_FOR_EXACT_REC_I2B_IMPLEMENTATION_INPUT",
+  "pocId": "POC-RECOVERY-001",
+  "stage": "Stage 0",
+  "authority": {
+    "delegationId": "STAGE0-TECHNICAL-REMEDIATION-DELEGATION-20260817-01",
+    "conditionalImplementationAuthorizationId": "STAGE0-OWNER-UNLOCK-BATCH-20260817-02",
+    "decisionMakerRole": "Project Owner technical delegate: root/coordinator",
+    "basis": "OD-14 names the Project Owner as the Stage 0 Product/IP reviewer, and the owner expressly delegated narrow, reversible, evidence-backed Stage 0 technical dispositions that do not substitute a required specialist.",
+    "productionLegalReviewer": null,
+    "productionSecurityReviewer": null,
+    "qualifiedIpCounselReviewClaimed": false
+  },
+  "reviewedInputs": {
+    "probeAuthorizationId": "REC-I2A-GRAPH-AUTH-20260817-01",
+    "implementationCommit": "680d8483a4e20202fe9b5b864ce873b78784e983",
+    "implementationTree": "ed900113905536ee8d2ee9e43e8c1cd88632e535",
+    "evidenceCommit": "1dc3050183465c444b4ac89ba9746e7276ad3d54",
+    "evidencePath": "docs/evidence/poc-recovery-001/rec-i2a-local-graph-r8-probe-2026-08-17.json",
+    "evidenceBytes": 18060,
+    "evidenceSha256": "80f79144ddd37b24c78503beb44cdbeff873650a66365263c982926ad9660371",
+    "generatedGraphBytes": 331809,
+    "generatedGraphSha256": "9e5c5bca40427a951569984999081bf0b17ca12529fbc1df476c226a2c06a3a3",
+    "recoveryLockBytes": 3395,
+    "recoveryLockSha256": "2e0de74c01b452476223a757ffa52ccc7f3f1ab74e9736e36bcd4a2ff0e8f08c",
+    "gradleVerificationMetadataGitBlobBytes": 293745,
+    "gradleVerificationMetadataGitBlobSha256": "32c5e2e290aed91e6907985e7f6722691242cbb43a101c34747302b5ad5c7867"
+  },
+  "exactGraph": {
+    "rootCoordinate": "com.google.crypto.tink:tink-android:1.23.0",
+    "tinkLocalExclude": "com.google.code.findbugs:jsr305:3.0.2",
+    "runtimeArtifacts": [
+      {
+        "coordinate": "androidx.annotation:annotation-jvm:1.8.2",
+        "spdx": "Apache-2.0",
+        "sha256": "9aab326d9492800991854360ac248f493ce7f7c3183519309b78ace9e240f6f6"
+      },
+      {
+        "coordinate": "com.google.code.gson:gson:2.13.2",
+        "spdx": "Apache-2.0",
+        "sha256": "dd0ce1b55a3ed2080cb70f9c655850cda86c206862310009dcb5e5c95265a5e0"
+      },
+      {
+        "coordinate": "com.google.crypto.tink:tink-android:1.23.0",
+        "spdx": "Apache-2.0",
+        "sha256": "c656918451b01c45ce5b20c7b6d4c388f956f61b3a3528e769048c8944c42f9e",
+        "embeddedNotice": "shaded protobuf-java 4.33.6, BSD-3-Clause"
+      },
+      {
+        "coordinate": "com.google.errorprone:error_prone_annotations:2.41.0",
+        "spdx": "Apache-2.0",
+        "sha256": "a56e782b5b50811ac204073a355a21d915a2107fce13ec711331ad036f660fcc"
+      },
+      {
+        "coordinate": "org.jetbrains.kotlin:kotlin-stdlib:2.2.10",
+        "spdx": "Apache-2.0",
+        "sha256": "9c67cc79efd6b9215b49d2a4308f5f3433537376c7c88e89bdd6729bd096e61a"
+      },
+      {
+        "coordinate": "org.jetbrains:annotations:13.0",
+        "spdx": "Apache-2.0",
+        "sha256": "ace2a10dc8e2d5fd34925ecac03e4988b2c0f851650c94b8cef49ba1bd111478",
+        "noticeRetentionRequired": true
+      }
+    ],
+    "testOnlyArtifacts": [
+      {
+        "coordinate": "junit:junit:4.13.2",
+        "spdx": "EPL-1.0",
+        "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3"
+      },
+      {
+        "coordinate": "org.hamcrest:hamcrest-core:1.3",
+        "spdx": "BSD-3-Clause",
+        "sha256": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9"
+      }
+    ],
+    "resolvableConfigurationCount": 61,
+    "policyCoveredConfigurationCount": 34,
+    "policyCoveredJsr305ResolvedComponentCount": 0,
+    "policyCoveredPackagedJsr305ClassDefinitionCount": 0,
+    "outsidePolicyBoundaryToolingConfigurationCount": 27,
+    "outsidePolicyBoundaryJsr305ConfigurationOccurrenceCount": 14,
+    "repositoryWideJsr305AbsenceClaimed": false,
+    "debugAndReleaseApkJsr305ClassDefinitionCount": 0,
+    "nativeOrJniArtifactsPresent": false,
+    "releaseR8PassedWithExactThreeRules": true,
+    "broadDontwarnUsed": false,
+    "unresolvedR8MissingClassCount": 0,
+    "modifierResolution": "EXACT_JDK17_CLASS_USED_AS_R8_LIBRARY_ONLY_NOT_PACKAGED"
+  },
+  "independentDeltaReview": {
+    "reviewer": "OpenAI Codex",
+    "formalReviewer": false,
+    "reviewedImplementationCommit": "680d8483a4e20202fe9b5b864ce873b78784e983",
+    "reviewedEvidenceCommit": "1dc3050183465c444b4ac89ba9746e7276ad3d54",
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "configurationBoundaryCaveatClosed": true,
+    "lineEndingHashCaveatClosed": true,
+    "dispositionMayBeRecorded": true
+  },
+  "decision": {
+    "claimCeiling": "EVALUATION_APPROVED_FOR_EXACT_REC_I2B_IMPLEMENTATION_INPUT",
+    "recI2bImplementationInputApproved": true,
+    "recI2bConditionalImplementationAuthorizationActivated": true,
+    "jsr305Treatment": "EXCLUDED_TERMS_UNINTERPRETED_USE_AND_DISTRIBUTION_NOT_APPROVED",
+    "exactGraphDriftRequiresFreshDeltaReview": true,
+    "formalFutureGraphReport": false,
+    "recRdy05Closed": false,
+    "recRdy11Closed": false
+  },
+  "notAuthorized": {
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "redistributionApproval": false,
+    "jsr305UseOrDistribution": false,
+    "publicationByThisDisposition": false,
+    "deviceOrEmulatorExecution": false,
+    "measuredExecution": false,
+    "recoveryHarnessExecution": false,
+    "pocPass": false,
+    "finalFormatWinner": false,
+    "adrAudio001": false,
+    "ready": false,
+    "merge": false,
+    "productionLegalOrSecurityApproval": false
+  }
+}

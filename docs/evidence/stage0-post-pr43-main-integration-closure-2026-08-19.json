@@ -1,0 +1,370 @@
+{
+  "schemaVersion": "stage0-post-pr43-main-integration-closure-v0.1",
+  "recordId": "STAGE0-POST-PR43-MAIN-INTEGRATION-CLOSURE-20260819-01",
+  "recordDate": "2026-08-19",
+  "timezone": "Europe/Moscow",
+  "recordType": "IMMUTABLE_MAIN_INTEGRATION_INDEX_NOT_POC_CLOSURE",
+  "authority": {
+    "authorizationId": "OWNER-AUTH-BATCH-20260819-01",
+    "authorizationRecord": "docs/evidence/owner-auth-batch-20260819-01.json",
+    "ownerDecision": "OD-15",
+    "sourceOrTestModificationAllowed": false,
+    "historicalEvidenceModificationAllowed": false,
+    "deviceOrEmulatorExecutionPerformedByThisClosure": false,
+    "pocStatusElevationAllowed": false
+  },
+  "snapshot": {
+    "repository": "Monumentogram/DORA",
+    "integrationStartParent": "ebbc54eacc2d556180f07e2063e08c1c3d1c28a3",
+    "integrationStartDescription": "main after PR #43 and before PR #44",
+    "integrationCutoffMainCommit": "671f594074b37bb2b5c8e4a4c1026de909acf339",
+    "integrationCutoffMainTree": "4c969005307bbe5ef2c9a69b0b2ae84476217dc3",
+    "integrationCutoffMainPullRequest": 55,
+    "integrationCutoffMainAndroidCiRun": 32209524534,
+    "integrationCutoffMainAndroidCiConclusion": "success",
+    "publicationBaseMainCommit": "9256db3d95fa20bc0d98aa35b48734ffeeb2623c",
+    "publicationBaseMainTree": "6e17701efbdc80e14bd0778535f187c1424ed047",
+    "publicationBaseMainPullRequest": 56,
+    "commitVerificationSource": "GitHub Commit API",
+    "allMergeCommitGithubVerifications": "verified=true, reason=valid",
+    "localGpgCryptographicVerification": "NOT_RUN_LOCAL"
+  },
+  "subsequentHostRegressionBaselineFact": {
+    "pullRequest": 56,
+    "classification": "CURRENT_MAIN_VAD_OFFLINE_DATA_SYNTHETIC_HOST_MECHANICS_REVALIDATION",
+    "includedInHistoricalIntegrationOrder": false,
+    "nonProductHostRegressionToolWorkflowScopeAndInventoryOnly": true,
+    "sourceHead": "70fa04f036f82c8a0398b9012961e6d49bc7106c",
+    "sourceTree": "6e17701efbdc80e14bd0778535f187c1424ed047",
+    "sourceParent": "955ed104ae0296e296895ababb2341f276121086",
+    "sourceCommitGithubVerification": "verified=false, reason=unsigned",
+    "mergeCommit": "9256db3d95fa20bc0d98aa35b48734ffeeb2623c",
+    "mergeParent": "671f594074b37bb2b5c8e4a4c1026de909acf339",
+    "mergeTree": "6e17701efbdc80e14bd0778535f187c1424ed047",
+    "mergeCommitGithubVerification": "verified=true, reason=valid",
+    "exactHeadCi": {
+      "android": {"runId": 32226632874, "conclusion": "success"},
+      "hostRegression": {"runId": 32226633001, "conclusion": "success"}
+    },
+    "exactMainCi": {
+      "android": {"runId": 32227344157, "conclusion": "success"},
+      "hostRegression": {"runId": 32227344221, "conclusion": "success"}
+    },
+    "independentAdvisoryReview": {
+      "reviewedCommit": "70fa04f036f82c8a0398b9012961e6d49bc7106c",
+      "disposition": "NO_FURTHER_CHANGES_REQUIRED",
+      "formalReviewer": false,
+      "findingCounts": {"P0": 0, "P1": 0, "P2": 0}
+    },
+    "inventory": {
+      "path": "docs/evidence/stage0-vad-offline-data-host-regression/vad-offline-data-host-regression-inventory-stage0-v0.1.json",
+      "gitBlob": "d37029ab72a53043ec456b6f486f5480f99c08c7",
+      "bytes": 18947,
+      "sha256": "1d3556073b777f236010b7066b43e60f321c9d5023d3ff99f3ba63a6c312b1f3",
+      "schemaVersion": "dora-stage0-vad-offline-data-host-regression-inventory-v0.1",
+      "baselineCommit": "671f594074b37bb2b5c8e4a4c1026de909acf339",
+      "expectedCommands": 11,
+      "executions": 21,
+      "packages": 8
+    },
+    "claimCeiling": "CURRENT_MAIN_VAD_OFFLINE_DATA_SYNTHETIC_HOST_MECHANICS_REVALIDATED_NOT_POC_READINESS_OR_STATUS_ELEVATION"
+  },
+  "integrationOrder": [44, 45, 46, 48, 49, 38, 50, 51, 52, 53, 54, 55],
+  "integrations": [
+    {
+      "pullRequest": 44,
+      "classification": "POC_DATA_SYNTHETIC_CONTROL_PLANE",
+      "sourceHead": "d93f3364c5df2c881108c48e93f73252141b9029",
+      "sourceTree": "ab534094a0bd3cfee67aa37b1264e241106a513d",
+      "mergeCommit": "e33f24b40587e7af9c16a2c42e492b6da79e19f3",
+      "mergeParent": "ebbc54eacc2d556180f07e2063e08c1c3d1c28a3",
+      "mergeTree": "ab534094a0bd3cfee67aa37b1264e241106a513d",
+      "sourceTreePreserved": true,
+      "githubCommitVerification": "VALID",
+      "exactHeadCi": {"runId": 32159448005, "conclusion": "success"},
+      "exactMainCi": {"runId": 32160072118, "conclusion": "success"},
+      "evidence": [
+        "docs/evidence/poc-data-001/control-plane-dry-run-local-evidence-stage0-v0.1.json",
+        "docs/evidence/poc-data-001/control-plane-synthetic-manifest-stage0-v0.1.json",
+        "docs/evidence/poc-data-001/reviews/poc-data-control-plane-independent-advisory-closure-20260818.json"
+      ]
+    },
+    {
+      "pullRequest": 45,
+      "classification": "POC_DECISION_I2_SYNTHETIC_HARNESS",
+      "sourceHead": "ac1fd62a7d78da2c14d3e287297c3773e70428e6",
+      "sourceTree": "ffb20392aa49b535062d3337f31bfb904d3c308a",
+      "mergeCommit": "574f75690ec2b8eb7d6922d2a429745a72159877",
+      "mergeParent": "e33f24b40587e7af9c16a2c42e492b6da79e19f3",
+      "mergeTree": "ffb20392aa49b535062d3337f31bfb904d3c308a",
+      "sourceTreePreserved": true,
+      "githubCommitVerification": "VALID",
+      "exactHeadCi": {"runId": 32171128449, "conclusion": "success"},
+      "exactMainCi": {"runId": 32171771845, "conclusion": "success"},
+      "evidence": [
+        "docs/evidence/poc-decision-001/decision-deterministic-synthetic-harness-local-evidence-stage0-v0.1.json"
+      ]
+    },
+    {
+      "pullRequest": 46,
+      "classification": "POC_VAD_P3_DETERMINISTIC_REPLAY",
+      "sourceHead": "b622f5c6c11c7a9cc255a6f6c606ed47d34f154a",
+      "sourceTree": "0366351b73fd68adc713b22b587926330aed4bab",
+      "mergeCommit": "881c5bfbb84cedfc2d267ca8f8255c456b3908b8",
+      "mergeParent": "574f75690ec2b8eb7d6922d2a429745a72159877",
+      "mergeTree": "0366351b73fd68adc713b22b587926330aed4bab",
+      "sourceTreePreserved": true,
+      "githubCommitVerification": "VALID",
+      "exactHeadCi": {"runId": 32172380878, "conclusion": "success"},
+      "exactMainCi": {"runId": 32173183298, "conclusion": "success"},
+      "evidence": [
+        "docs/evidence/poc-vad-001/p3-deterministic-integrated-replay-local-evidence-stage0-v0.1.json"
+      ]
+    },
+    {
+      "pullRequest": 48,
+      "classification": "POC_OFFLINE_I3_STATIC_CALL_LEDGER",
+      "sourceHead": "1ef9f0da9580e4d5425e2e531503abea6c0571dd",
+      "sourceTree": "1283ef75c7878e74e3cabbe89395289fdbe8847a",
+      "mergeCommit": "1203ed7959ed5191df9b4e4bd7dcdf982e0f8f8a",
+      "mergeParent": "881c5bfbb84cedfc2d267ca8f8255c456b3908b8",
+      "mergeTree": "1283ef75c7878e74e3cabbe89395289fdbe8847a",
+      "sourceTreePreserved": true,
+      "githubCommitVerification": "VALID",
+      "exactHeadCi": {"runId": 32178040372, "conclusion": "success"},
+      "exactMainCi": {"runId": 32178754961, "conclusion": "success"},
+      "evidence": [
+        "docs/evidence/poc-offline-001/i3-static-call-ledger-local-evidence-stage0-v0.1.json"
+      ]
+    },
+    {
+      "pullRequest": 49,
+      "classification": "POC_VAD_P4_SYNTHETIC_PCM_ROTATION",
+      "sourceHead": "1ead02f8f56d80a177dbabaf1b2088a0af3d3522",
+      "sourceTree": "777f1f9713553fce9cc154fcee9ff60a5676b13e",
+      "mergeCommit": "e48305ee3b2d18a5612e14aa6cbd4c1c289de9c7",
+      "mergeParent": "1203ed7959ed5191df9b4e4bd7dcdf982e0f8f8a",
+      "mergeTree": "777f1f9713553fce9cc154fcee9ff60a5676b13e",
+      "sourceTreePreserved": true,
+      "githubCommitVerification": "VALID",
+      "exactHeadCi": {"runId": 32185374470, "conclusion": "success"},
+      "exactMainCi": {"runId": 32186226366, "conclusion": "success"},
+      "evidence": [
+        "docs/evidence/poc-vad-001/p4-synthetic-pcm-rotation-local-evidence-stage0-v0.1.json"
+      ]
+    },
+    {
+      "pullRequest": 38,
+      "classification": "REC_I2A_GRAPH_AND_REC_I2B_RUNTIME_CRYPTO",
+      "sourceHead": "f178490e314251bcb1c7fb334e92b479fece1155",
+      "sourceTree": "4b07b00b247decfed3b1bd6155ca9bc98701a196",
+      "mergeCommit": "a7e23c9a2758a3ee2cc8aba26be397b07ffc8f5b",
+      "mergeParent": "e48305ee3b2d18a5612e14aa6cbd4c1c289de9c7",
+      "mergeTree": "4b07b00b247decfed3b1bd6155ca9bc98701a196",
+      "sourceTreePreserved": true,
+      "githubCommitVerification": "VALID",
+      "exactHeadCi": {"runId": 32187059383, "conclusion": "success"},
+      "exactMainCi": {
+        "runId": 32190003292,
+        "conclusion": "failure",
+        "failureClass": "REC_I1_SUCCESSOR_DISPATCH_SELECTED_FOR_REC_I2B_SQUASH_MAIN",
+        "runtimeOrEvidenceFinding": false,
+        "historicalFailurePreserved": true,
+        "closedByPullRequest": 50
+      },
+      "evidence": [
+        "docs/evidence/poc-recovery-001/rec-i2a-actual-graph-product-ip-disposition-2026-08-17.json",
+        "docs/evidence/poc-recovery-001/rec-i2a-local-graph-r8-probe-2026-08-17.json",
+        "docs/evidence/poc-recovery-001/rec-i2b-runtime-crypto-implementation-evidence-2026-08-17.json",
+        "docs/evidence/poc-recovery-001/rec-i2b-accountable-engineering-security-review-packet-2026-08-17.json",
+        "docs/evidence/poc-recovery-001/reviews/rec-i2b-accountable-human-engineering-security-review-closure-2026-08-18.json",
+        "docs/evidence/poc-recovery-001/reviews/rec-i2b-accountable-closure-independent-metadata-review-closure-2026-08-18.json"
+      ],
+      "claimCeiling": "REC_I2B_IMPLEMENTED_REVIEWED_AND_MERGED_PENDING_SEPARATE_REC_I3_AUTHORITY_AND_EXECUTION"
+    },
+    {
+      "pullRequest": 50,
+      "classification": "REC_I2B_SQUASH_MAIN_SUCCESSOR_VALIDATOR_DISPATCH",
+      "sourceHead": "5ecb14cfdaf73058bb0b602d7c1a03b74e72d550",
+      "sourceTree": "560efe08641939dd0aef6c9aab69aa5452517ffc",
+      "mergeCommit": "0136a6904aac2909582ba228a7e24aafa7fdc4f7",
+      "mergeParent": "a7e23c9a2758a3ee2cc8aba26be397b07ffc8f5b",
+      "mergeTree": "560efe08641939dd0aef6c9aab69aa5452517ffc",
+      "sourceTreePreserved": true,
+      "githubCommitVerification": "VALID",
+      "changedPaths": ["tools/validate_poc_recovery_governance.py"],
+      "recoveryRuntimeOrEvidenceBytesModified": false,
+      "exactHeadCi": {"runId": 32194732532, "conclusion": "success"},
+      "exactMainCi": {"runId": 32195264657, "conclusion": "success"},
+      "closesHistoricalMainRun": 32190003292,
+      "authorityElevation": false
+    },
+    {
+      "pullRequest": 51,
+      "classification": "POC_VPN_I3_HOST_HERMETIC_FAULT_COMPLETION",
+      "sourceHead": "04c9be98757387e312f3b98f7c74d1f2ec1de934",
+      "sourceTree": "dc62730c7f2a69b370077ee69346cb1013756240",
+      "mergeCommit": "cdc40f5612103df60b9927b9f64060b54ea162d2",
+      "mergeParent": "0136a6904aac2909582ba228a7e24aafa7fdc4f7",
+      "mergeTree": "dc62730c7f2a69b370077ee69346cb1013756240",
+      "sourceTreePreserved": true,
+      "githubCommitVerification": "VALID",
+      "exactHeadCi": {"runId": 32196766194, "conclusion": "success"},
+      "exactMainCi": {"runId": 32197584844, "conclusion": "success"},
+      "evidence": [
+        "docs/evidence/poc-vpn-001/i3-host-fault-completion-local-evidence-stage0-v0.1.json"
+      ]
+    },
+    {
+      "pullRequest": 52,
+      "classification": "SEARCH_KSP_2_3_11_BUILD_TOOL_LOCK_OVERLAY",
+      "sourceHead": "d2af6dbe617f2f3705f56824c6d51cbbaff3a60e",
+      "sourceTree": "2290874500ee1b4715e18ac872188a110d77475f",
+      "mergeCommit": "1a1ef62b0db52be7ed73e58583d7d93c0a89aaf8",
+      "mergeParent": "cdc40f5612103df60b9927b9f64060b54ea162d2",
+      "mergeTree": "2290874500ee1b4715e18ac872188a110d77475f",
+      "sourceTreePreserved": true,
+      "githubCommitVerification": "VALID",
+      "exactHeadCi": {"runId": 32203283295, "conclusion": "success"},
+      "exactMainCi": {"runId": 32203815445, "conclusion": "success"},
+      "evidence": [
+        "docs/evidence/poc-search-001/build-tool-lock-overlay-ksp-2.3.11.json"
+      ],
+      "claimCeiling": "BUILD_TOOL_LOCK_OVERLAY_ONLY_SEARCH_REMAINS_INCONCLUSIVE_BLOCKED"
+    },
+    {
+      "pullRequest": 53,
+      "classification": "POC_ASR_I1_SYNTHETIC_SCORING_MECHANICS",
+      "sourceHead": "02f3d2c0ad8382ebb475e6b018dc76dae279336f",
+      "sourceTree": "21eb1b5aa93a1a1644e5e9594578777f2b957feb",
+      "mergeCommit": "78ae492d16756c043f61d48d0cc4d9e774876a35",
+      "mergeParent": "1a1ef62b0db52be7ed73e58583d7d93c0a89aaf8",
+      "mergeTree": "21eb1b5aa93a1a1644e5e9594578777f2b957feb",
+      "sourceTreePreserved": true,
+      "githubCommitVerification": "VALID",
+      "exactHeadCi": {"runId": 32205144260, "conclusion": "success"},
+      "exactMainCi": {"runId": 32205665311, "conclusion": "success"},
+      "evidence": [
+        "docs/evidence/poc-asr-001/i1-synthetic-scoring-oracle-local-evidence-stage0-v0.1.json"
+      ]
+    },
+    {
+      "pullRequest": 54,
+      "classification": "POC_DECISION_I3_SYNTHETIC_METAMORPHIC_CAMPAIGN",
+      "sourceHead": "cded620ea20de3ad2dab5823cc6e6ebac0264ce3",
+      "sourceTree": "588f5b878fa99d369efb233923d85085364531f9",
+      "mergeCommit": "0bb8f349a60c93f34361c05ef4d1f3da5c2927a5",
+      "mergeParent": "78ae492d16756c043f61d48d0cc4d9e774876a35",
+      "mergeTree": "588f5b878fa99d369efb233923d85085364531f9",
+      "sourceTreePreserved": true,
+      "githubCommitVerification": "VALID",
+      "exactHeadCi": {"runId": 32206830956, "conclusion": "success"},
+      "exactMainCi": {"runId": 32207353671, "conclusion": "success"},
+      "evidence": [
+        "docs/evidence/poc-decision-001/decision-i3-synthetic-campaign-local-evidence-stage0-v0.1.json"
+      ]
+    },
+    {
+      "pullRequest": 55,
+      "classification": "POC_DIAR_I1_SYNTHETIC_SCORING_MECHANICS",
+      "sourceHead": "10099e02c0e28e4ba57ee14e44536e7942d1469a",
+      "sourceTree": "4c969005307bbe5ef2c9a69b0b2ae84476217dc3",
+      "mergeCommit": "671f594074b37bb2b5c8e4a4c1026de909acf339",
+      "mergeParent": "0bb8f349a60c93f34361c05ef4d1f3da5c2927a5",
+      "mergeTree": "4c969005307bbe5ef2c9a69b0b2ae84476217dc3",
+      "sourceTreePreserved": true,
+      "githubCommitVerification": "VALID",
+      "exactHeadCi": {"runId": 32209062368, "conclusion": "success"},
+      "exactMainCi": {"runId": 32209524534, "conclusion": "success"},
+      "evidence": [
+        "docs/evidence/poc-diar-001/i1-synthetic-scoring-oracle-local-evidence-stage0-v0.1.json"
+      ]
+    }
+  ],
+  "reviewIndex": {
+    "hostSliceReviewClosure": "docs/evidence/stage0-post-pr43-host-review-closure-2026-08-19.json",
+    "recoveryAccountableReview": "docs/evidence/poc-recovery-001/reviews/rec-i2b-accountable-human-engineering-security-review-closure-2026-08-18.json",
+    "recoveryAccountableClosureMetadataReview": "docs/evidence/poc-recovery-001/reviews/rec-i2b-accountable-closure-independent-metadata-review-closure-2026-08-18.json",
+    "recoverySourceAndEvidencePreserved": true,
+    "kspOverlayRecord": "docs/evidence/poc-search-001/build-tool-lock-overlay-ksp-2.3.11.json"
+  },
+  "recoveryTruth": {
+    "pocId": "POC-RECOVERY-001",
+    "state": "BLOCKED",
+    "readiness": "NOT_READY",
+    "recI2AIntegrated": true,
+    "recI2BIntegrated": true,
+    "recI3ImplementationAllowed": true,
+    "recI3NonMetricVerificationAllowed": true,
+    "recI3ConditionalMergeAllowed": true,
+    "phaseAAllowed": false,
+    "executionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "productionAdmissionAllowed": false,
+    "closedReadinessBlocker": "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW",
+    "openReadinessBlockers": [
+      "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
+      "REC-RDY-03-STREAMING-IMPLEMENTATION-VERIFICATION",
+      "REC-RDY-04-MICROFILE-IMPLEMENTATION-VERIFICATION",
+      "REC-RDY-05-FUTURE-RESOLVED-GRAPH",
+      "REC-RDY-06-DEVICE-SQLITE-PREFLIGHT",
+      "REC-RDY-07-HARNESS-ABSENT",
+      "REC-RDY-08-OWNER-EXECUTION-AUTHORIZATION",
+      "REC-RDY-09-D1-D5-FULL-VERDICT",
+      "REC-RDY-10-PRODUCTION-LEGAL-SECURITY",
+      "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY"
+    ],
+    "openReadinessBlockerCount": 10,
+    "pocPassClaimed": false,
+    "recoveryExecutionEvidenceProduced": false
+  },
+  "deviceMatrixTruth": {
+    "ownerDecision": "OD-15",
+    "emulatorFirstSlots": ["E28", "E30", "E36-GAPI", "E-NOGMS", "E16K", "E-NEXT"],
+    "exactPinnedSlot": "E36-GAPI",
+    "openPinSlots": ["E28", "E30", "E-NOGMS", "E16K", "E-NEXT"],
+    "existingPhysicalProfile": "D2",
+    "postponedProcurementProfiles": ["D1", "D3", "D4", "D5", "D6"],
+    "boundedNonMeasuredEmulatorMatrixExecutionAuthorized": true,
+    "authorizedCheckClasses": ["functional", "fault", "compatibility", "preflight"],
+    "exactPinAvailabilityAndTaskPrerequisitesRequired": true,
+    "recoveryPreflightRequiresSuccessfulRecI3": true,
+    "recoveryHardKillFaultOrMeasuredCampaignAuthorized": false,
+    "d2LimitedToIntrinsicallyPhysicalEvidence": true,
+    "deviceOrEmulatorExecutionPerformed": false,
+    "physicalNonSubstitutionPreserved": true,
+    "deviceIdMappingConflictResolved": false
+  },
+  "backlogTruth": {
+    "aggregateCounts": {"DONE": 27, "BLOCKED": 18, "TODO": 9, "READY": 0},
+    "countsChangedByReconciliation": false,
+    "pocPassCountAdded": 0,
+    "readinessElevationCount": 0,
+    "activeStageChanged": false
+  },
+  "protectedHistoricalSurfaces": {
+    "recoverySourceEvidenceAndGateBytesModified": false,
+    "kspOverlayAndValidatorPinsModified": false,
+    "postPr43SourceOrTestBytesModified": false,
+    "stage0HostOracleWorkflowModified": false,
+    "historicalFailureOrPendingFieldsRewritten": false,
+    "vpnStatusAnchorsPreserved": true
+  },
+  "authorityBoundary": {
+    "deviceOrEmulatorExecutionPerformedOrClaimed": false,
+    "phaseAOrMeasuredExecutionClaimed": false,
+    "pocPassOrReadyClaimed": false,
+    "runtimeNetworkAbsenceClaimed": false,
+    "dependencyModelDatasetOrProductionAdmissionClaimed": false,
+    "productionLegalSecurityOrSupportClaimed": false,
+    "existingDecisionAdrOrThresholdSemanticChanged": false
+  },
+  "result": {
+    "disposition": "POST_PR43_MAIN_INTEGRATION_PROVENANCE_AND_ACTIVE_AUTHORITY_RECONCILED_NO_POC_CLOSURE",
+    "allTwelveSourceTreesPreservedByProtectedSquashMerge": true,
+    "allTwelveExactHeadCiRunsGreen": true,
+    "historicalPr38MainFailurePreservedAndClosedByPr50": true,
+    "publicationBaseMainCiGreen": true,
+    "readyPoCCount": 0
+  }
+}

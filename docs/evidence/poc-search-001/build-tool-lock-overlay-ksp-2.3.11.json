@@ -1,0 +1,198 @@
+{
+  "classification": "BUILD_TOOL_ONLY_LOCK_OVERLAY",
+  "currentFiles": {
+    "catalog": {
+      "path": "android/gradle/libs.versions.toml",
+      "sha256": "230e8b8f5042b5e4852aa3ad05009e5b1d1336eb467d9d89f3d37a7f5104fc4c"
+    },
+    "lock": {
+      "path": "android/poc/search/gradle.lockfile",
+      "sha256": "3e47b2a46c493245ad24399b8bb26c834bc79b52397a4e920d5895bec695ba8f"
+    }
+  },
+  "evaluatedProjection": {
+    "canonicalEncoding": "utf8-lf-maven-group-segments-module-hyphen-before-terminator-coordinate-equals-comma-sorted-scopes-v1",
+    "componentCount": 66,
+    "configurations": [
+      "_agp_internal_benchmark_kspClasspath",
+      "_agp_internal_debug_kspClasspath",
+      "benchmarkAndroidTestRuntimeClasspath",
+      "benchmarkRuntimeClasspath",
+      "debugAndroidTestRuntimeClasspath",
+      "debugRuntimeClasspath"
+    ],
+    "immutableEvidence": [
+      {
+        "path": "docs/evidence/poc-search-001/assessments/review-2026-08-11-v4/benchmark-result.json",
+        "sha256": "5fc5bd2d8340d11bbaf7b88fe3c26e1859d57ef84409f2c580158d2a3609a6b2"
+      },
+      {
+        "path": "docs/evidence/poc-search-001/assessments/review-2026-08-11-v5/benchmark-result.json",
+        "sha256": "76ea73bf251cc3b136e0c780b63c9ba346e092e6817bd7f37b4b8bc5c698c660"
+      },
+      {
+        "path": "docs/evidence/poc-search-001/dependency-inventory.json",
+        "sha256": "63a2a3dadfbfe072770d914a74cbd40d6adbd517548bda4ba0331dd314ca6a98"
+      },
+      {
+        "path": "docs/evidence/poc-search-001/evidence-index.json",
+        "sha256": "25fc2d6d6a89e2c496ef1d8538582252357ca0410521f0868910fc452397ac43"
+      },
+      {
+        "path": "docs/evidence/poc-search-001/ip-evaluation.json",
+        "sha256": "61c900ab976f07824b40077c3bb33c47888b30a74a92fc710045fca682509e9a"
+      },
+      {
+        "path": "docs/evidence/poc-search-001/ip-stage0-evaluation-review.md",
+        "sha256": "87e4ef5406c2a1ea3466d16abc07737b0df4c65b4d6ff2f91ada3797deb333a0"
+      },
+      {
+        "path": "docs/evidence/poc-search-001/license-notice-inventory.json",
+        "sha256": "8b80fa573a2674cb32fe08446683f5b3d05ce4721b6bcb018edec51cf9fbeb50"
+      },
+      {
+        "path": "docs/stage0/DORA_MVP1_STAGE0_OWNER_DECISIONS.md",
+        "sha256": "6ad739370b6c0fd38cfd708426deff623759f69927fda5978b804b2ce0cc7a9a"
+      }
+    ],
+    "sha256": "ce4431bf4364a203db42674dd1a0aa88c264233ec67f26180a4d06af251acbc9"
+  },
+  "historicalEvidenceAnchor": {
+    "commit": "849d9d0406a619b334c9b707a4b6b42b34885b4b",
+    "lock": {
+      "gitBlobSha1": "fc9248df3bd082c6e2307fd33000571d66734c27",
+      "path": "android/poc/search/gradle.lockfile",
+      "sha256": "d912e782f3f01452f9f785b6cf0971d1a76a6c6a984c5ea5e03ba1b311049704"
+    },
+    "tree": "65b412e86665ddcd38a0828fce1e4f1197490e18"
+  },
+  "maintenanceAuthorization": "DORA-KSP-BUILD-TOOL-LOCK-OVERLAY-REMEDIATION-AUTH-20260818-03",
+  "maintenanceBase": {
+    "catalog": {
+      "gitBlobSha1": "67da6c7c06db99f7bbfba46493bee86592a3c0e3",
+      "path": "android/gradle/libs.versions.toml",
+      "sha256": "ff17fff2c7a369593ea8c0269575cea437ebef07f5c81508a6d33f95839565e3"
+    },
+    "commit": "1203ed7959ed5191df9b4e4bd7dcdf982e0f8f8a",
+    "tree": "1283ef75c7878e74e3cabbe89395289fdbe8847a"
+  },
+  "nonClaims": [
+    "POC-SEARCH-001 remains FORMAL INCONCLUSIVE with recommendation BLOCKED.",
+    "benchmarkExecutionAllowed remains false; this profile authorizes no measured execution.",
+    "The KSP 2.3.11 selection is build-tool maintenance only and is outside the immutable OD-13 evaluated projection.",
+    "This profile does not admit KSP, Room, FTS4, a schema, a runtime dependency, a native artifact, or a product feature into production.",
+    "Observed source, license, release, and advisory metadata is engineering evidence, not legal advice or production Legal/Security approval."
+  ],
+  "pairDelta": {
+    "addedSelectionCount": 13,
+    "emptyProcessorClasspaths": {
+      "configurations": [
+        "kspBenchmarkAndroidTestKotlinProcessorClasspath",
+        "kspBenchmarkUnitTestKotlinProcessorClasspath",
+        "kspDebugAndroidTestKotlinProcessorClasspath",
+        "kspDebugUnitTestKotlinProcessorClasspath"
+      ],
+      "removedCoordinates": [
+        "androidx.annotation:annotation-jvm:1.9.1",
+        "androidx.annotation:annotation:1.9.1",
+        "androidx.room:room-common-jvm:2.8.4",
+        "androidx.room:room-common:2.8.4",
+        "androidx.room:room-compiler-processing:2.8.4",
+        "androidx.room:room-compiler:2.8.4",
+        "androidx.room:room-external-antlr:2.8.4",
+        "androidx.room:room-migration-jvm:2.8.4",
+        "androidx.room:room-migration:2.8.4",
+        "com.google.auto.value:auto-value-annotations:1.6.3",
+        "com.google.auto:auto-common:1.2.1",
+        "com.google.code.findbugs:jsr305:3.0.2",
+        "com.google.devtools.ksp:symbol-processing-api:2.0.10-1.0.24",
+        "com.google.errorprone:error_prone_annotations:2.26.1",
+        "com.google.guava:failureaccess:1.0.2",
+        "com.google.guava:guava:33.2.1-jre",
+        "com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava",
+        "com.intellij:annotations:12.0",
+        "com.squareup:javapoet:1.13.0",
+        "com.squareup:kotlinpoet-javapoet:2.0.0",
+        "com.squareup:kotlinpoet-jvm:2.0.0",
+        "com.squareup:kotlinpoet:2.0.0",
+        "commons-codec:commons-codec:1.15",
+        "org.checkerframework:checker-qual:3.42.0",
+        "org.jetbrains.kotlin:kotlin-metadata-jvm:2.2.0",
+        "org.jetbrains.kotlin:kotlin-reflect:2.0.10",
+        "org.jetbrains.kotlin:kotlin-stdlib:2.2.0",
+        "org.jetbrains.kotlinx:kotlinx-serialization-bom:1.8.1",
+        "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.8.1",
+        "org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1",
+        "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.8.1",
+        "org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1",
+        "org.jetbrains:annotations:13.0",
+        "org.jspecify:jspecify:1.0.0",
+        "org.xerial:sqlite-jdbc:3.41.2.2"
+      ],
+      "replacementCoordinate": "empty"
+    },
+    "pluginApiReplacement": {
+      "configurations": [
+        "kotlinCompilerPluginClasspathBenchmark",
+        "kotlinCompilerPluginClasspathBenchmarkAndroidTest",
+        "kotlinCompilerPluginClasspathBenchmarkUnitTest",
+        "kotlinCompilerPluginClasspathDebug",
+        "kotlinCompilerPluginClasspathDebugAndroidTest",
+        "kotlinCompilerPluginClasspathDebugUnitTest",
+        "kotlinCompilerPluginClasspathRelease",
+        "kspPluginClasspath",
+        "kspPluginClasspathNonEmbeddable"
+      ],
+      "fromCoordinate": "com.google.devtools.ksp:symbol-processing-api:2.3.9",
+      "toCoordinate": "com.google.devtools.ksp:symbol-processing-api:2.3.11"
+    },
+    "removedSelectionCount": 149
+  },
+  "pocId": "POC-SEARCH-001",
+  "profileId": "DORA-KSP-2_3_11-BUILD-TOOL-LOCK-OVERLAY",
+  "roomProcessorApiInvariant": {
+    "coordinate": "com.google.devtools.ksp:symbol-processing-api:2.0.10-1.0.24",
+    "evaluatedConfigurations": [
+      "_agp_internal_benchmark_kspClasspath",
+      "_agp_internal_debug_kspClasspath"
+    ],
+    "kspPluginVersionSubstitutionAllowed": false
+  },
+  "schemaVersion": 1,
+  "upstreamFacts": {
+    "apiPom": {
+      "observedSpdx": "Apache-2.0",
+      "sha256": "2acd178df7ec7ac69e14a26c3d134b12a70dba8e942c8e2f6d112cdbac4ddd61",
+      "url": "https://repo1.maven.org/maven2/com/google/devtools/ksp/symbol-processing-api/2.3.11/symbol-processing-api-2.3.11.pom"
+    },
+    "implementationPom": {
+      "observedSpdx": "Apache-2.0",
+      "sha256": "c7bef317cf96ea74894b2738c20a50f75ecaffd382c1e37fec6728c5f5d4220d",
+      "url": "https://plugins.gradle.org/m2/com/google/devtools/ksp/symbol-processing-gradle-plugin/2.3.11/symbol-processing-gradle-plugin-2.3.11.pom"
+    },
+    "license": {
+      "bytes": 11398,
+      "gitBlobSha1": "9c308d958bf91eafe83f66106ca692ff414a4965",
+      "observedSpdx": "Apache-2.0",
+      "sha256": "b1febe6399dffb10d19d35e7663ab16300c93cb0476a94115df1cc0097a8ffd8",
+      "url": "https://github.com/google/ksp/blob/2.3.11/LICENSE"
+    },
+    "pluginMarkerPom": {
+      "observedSpdx": "Apache-2.0",
+      "sha256": "1663b2590469e60ac9b225b27e838a3db8d762e1f459fe81e0988b471f4e0966",
+      "url": "https://plugins.gradle.org/m2/com/google/devtools/ksp/com.google.devtools.ksp.gradle.plugin/2.3.11/com.google.devtools.ksp.gradle.plugin-2.3.11.pom"
+    },
+    "release": {
+      "publishedOn": "2026-08-03",
+      "tagCommit": "c44fd9a91192679e07a1d905dda022796e32bbbe",
+      "url": "https://github.com/google/ksp/releases/tag/2.3.11",
+      "version": "2.3.11"
+    },
+    "securitySnapshot": {
+      "checkedOn": "2026-08-18",
+      "globalMavenAdvisoryCount": 0,
+      "repositorySecurityAdvisoryCount": 0,
+      "securityPolicyAtTag": "NOT_PRESENT"
+    }
+  }
+}
