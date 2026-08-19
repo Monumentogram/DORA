@@ -80,13 +80,15 @@ Success requires all of the following:
 3. `javac` is major version 17. Each isolated compile uses
    `--release 17 -encoding UTF-8 -Xlint:all -Werror`, exits zero, and emits no stdout or stderr.
 4. Every declared command runs with assertions and bytecode verification, exits zero for its exact
-   repeat count, emits exactly one declared content-free line using the host-native line ending,
-   emits no stderr, and is byte-identical across repeats on that host.
+   repeat count, emits exactly the declared content-free UTF-8 bytes, emits no stderr, and is
+   byte-identical across repeats on that host. Declared logical newlines map to the host-native line
+   ending; the historical Offline I1/I2 `System.out.print` markers intentionally have no terminator.
 5. Each isolated package closure has recursive module dependencies exactly `java.base`; every
    emitted class file has class major version 61.
 6. Main-source and compiled-main scans reject undeclared network, clock, randomness, environment,
    process, thread, reflection, Android, GMS, model, or persistence surfaces. Filesystem APIs are
-   allowed only for the frozen Data validator/control-plane and VAD P4 bounded profiles.
+   allowed only for the frozen Data validator/control-plane and VAD P4 bounded profiles. The Data
+   control plane may read only the validator-injected `java.io.tmpdir` system property.
 7. Public-artifact scans find no private key, credential/token, email, private address/endpoint,
    private locator, or absolute local path. The sole allowed URL is the public JSON Schema draft
    identifier already present in the Data schemas/source.
