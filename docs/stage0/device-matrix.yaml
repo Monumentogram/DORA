@@ -1,7 +1,7 @@
 schema_version: 1
 matrix_id: dora-mvp1-stage0-device-matrix
-updated: "2026-08-12"
-stage: "Stage 0D governance/readiness"
+updated: "2026-08-19"
+stage: "Stage 0D REC-I2B integrated; REC-I3 implementation authorized; bounded non-measured emulator checks authorized; Recovery campaign execution withheld"
 owner_task: "POC-DEVICE-001"
 inventory_confirmed: true
 production_support_claims_allowed: false
@@ -115,6 +115,7 @@ recovery_owner_decision:
     production_security_replaced: false
 
 recovery_current_authorization:
+  snapshot_status: historical_as_of_2026_08_13
   assessed_on: "2026-08-13"
   authorization_id: REC-I1-AUTH-20260813-01
   authorization_record: docs/evidence/poc-recovery-001/implementation-authorization-rec-i1-20260813-01.json
@@ -131,6 +132,34 @@ recovery_current_authorization:
   device_execution_authorized: false
   merge_authorized: false
   current_readiness_locator: docs/evidence/poc-recovery-001/readiness.json
+
+recovery_rec_i3_authority:
+  assessed_on: "2026-08-19"
+  decision_id: OD-15
+  decision_record: docs/stage0/DORA_MVP1_STAGE0_OWNER_DECISION_OD15.md
+  authorization_id: OWNER-AUTH-BATCH-20260819-01
+  authorization_record: docs/evidence/owner-auth-batch-20260819-01.json
+  authorization_base_main_commit: 671f594074b37bb2b5c8e4a4c1026de909acf339
+  task_id: REC-I3
+  rec_i3_implementation_allowed: true
+  rec_i3_non_metric_verification_allowed: true
+  rec_i3_conditional_merge_allowed: true
+  phase_a_allowed: false
+  execution_allowed: false
+  measured_execution_allowed: false
+  production_admission_allowed: false
+  device_or_emulator_execution_allowed_by_this_reconciliation: false
+  historical_authority_records_rewritten: false
+  scope: >-
+    Isolated recovery harness/controller implementation, deterministic synthetic fixtures,
+    host-JVM and non-metric verification, exact graph/locks/verification metadata/zero-JSR305/
+    package/release-R8 evidence, required review, exact-head CI and conditional protected merge.
+  excluded_scope:
+    - recovery_fault_or_kill_campaign
+    - recovery_PASS_or_READY_claim
+    - final_container_selection
+    - measured_or_device_execution
+    - production_storage_schema_or_dependency_admission
 
 first_exploratory_campaign:
   mode: single_owner_physical_phone
@@ -505,6 +534,146 @@ inventory:
     One owner-provided physical phone has a sanitized automatic inventory. Only D2
     availability changes; D1 and D3-D7 remain unknown, and no global coverage claim is made.
 
+emulator_first_matrix:
+  decision_id: OD-15
+  authorization_id: OWNER-AUTH-BATCH-20260819-01
+  decision_record: docs/stage0/DORA_MVP1_STAGE0_OWNER_DECISION_OD15.md
+  approval_status: owner_approved_bounded_non_measured_emulator_checks
+  bounded_non_measured_emulator_execution_allowed: true
+  allowed_check_classes:
+    - functional
+    - fault
+    - compatibility
+    - preflight
+  exact_pin_availability_and_task_prerequisites_required: true
+  unbounded_device_or_emulator_execution_allowed: false
+  measured_execution_allowed: false
+  execution_performed_by_this_reconciliation: false
+  recovery_boundary:
+    rec_i3_must_complete_before_recovery_preflight: true
+    recovery_preflight_allowed_only_after_successful_rec_i3: true
+    recovery_hard_kill_or_fault_campaign_allowed: false
+    recovery_phase_a_allowed: false
+    recovery_measured_campaign_allowed: false
+  namespace_relationship: >-
+    E slots are orthogonal environment targets. They do not renumber D profiles, resolve
+    DEVICE-ID-MAPPING-001, satisfy a physical profile, or establish device support.
+  order:
+    - E28
+    - E30
+    - E36-GAPI
+    - E-NOGMS
+    - E16K
+    - E-NEXT
+    - D2_WHERE_PHYSICAL_EVIDENCE_IS_INTRINSIC
+  slots:
+    - id: E28
+      purpose: android_api_28_compatibility
+      android_api: 28
+      abi: x86_64
+      gms_profile: unspecified_until_pin
+      artifact_pin_status: OPEN
+      runtime_availability: unknown
+      package: null
+      revision: null
+      archive_sha256: null
+      non_measured_execution_authorized_when_pinned_available_and_task_prerequisites_met: true
+      current_execution_readiness: BLOCKED_OPEN_PIN
+    - id: E30
+      purpose: android_api_30_compatibility
+      android_api: 30
+      abi: x86_64
+      gms_profile: unspecified_until_pin
+      artifact_pin_status: OPEN
+      runtime_availability: unknown
+      package: null
+      revision: null
+      archive_sha256: null
+      non_measured_execution_authorized_when_pinned_available_and_task_prerequisites_met: true
+      current_execution_readiness: BLOCKED_OPEN_PIN
+    - id: E36-GAPI
+      purpose: android_api_36_google_apis_reference
+      android_api: 36
+      abi: x86_64
+      gms_profile: google_apis
+      artifact_pin_status: PINNED_EXACT_STAGE0_EVALUATION_PROVENANCE
+      runtime_availability: unknown
+      package: "system-images;android-36;google_apis;x86_64"
+      revision: 7
+      display_name: "Google APIs Intel x86_64 Atom System Image"
+      archive_filename: x86_64-36_r07.zip
+      archive_bytes: 1895447397
+      official_repository_metadata: "https://dl.google.com/android/repository/sys-img/google_apis/sys-img2-3.xml"
+      official_sha1: c6bf44bdcd885bb902b4ba752d111a073ad7a817
+      archive_sha256: b1bb0769d0bed7698e61f203d7dc9bf6e7c37cd01a39d0d8788a11186bc78160
+      runtime_fingerprint: "google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys"
+      runtime_sqlite_version: "3.44.3"
+      provenance_record: docs/evidence/poc-search-001/android-system-image-provenance.json
+      stage0_evaluation_review: docs/evidence/poc-search-001/ip-stage0-evaluation-review.md
+      historical_provenance_license_state_preserved: true
+      non_measured_execution_authorized_when_pinned_available_and_task_prerequisites_met: true
+      current_execution_readiness: BLOCKED_RUNTIME_AVAILABILITY_AND_TASK_PREREQUISITES
+    - id: E-NOGMS
+      purpose: aosp_no_gms_behavior
+      android_api: null
+      abi: x86_64
+      gms_profile: aosp_no_gms
+      artifact_pin_status: OPEN
+      runtime_availability: unknown
+      package: null
+      revision: null
+      archive_sha256: null
+      non_measured_execution_authorized_when_pinned_available_and_task_prerequisites_met: true
+      current_execution_readiness: BLOCKED_OPEN_PIN
+    - id: E16K
+      purpose: 16_kib_runtime_and_packaging_behavior
+      android_api: null
+      abi: x86_64
+      page_size_bytes: 16384
+      gms_profile: unspecified_until_pin
+      artifact_pin_status: OPEN
+      runtime_availability: unknown
+      package: null
+      revision: null
+      archive_sha256: null
+      non_measured_execution_authorized_when_pinned_available_and_task_prerequisites_met: true
+      current_execution_readiness: BLOCKED_OPEN_PIN
+    - id: E-NEXT
+      purpose: next_android_api_behavior
+      android_api: next_unpinned
+      abi: x86_64
+      gms_profile: unspecified_until_pin
+      artifact_pin_status: OPEN
+      runtime_availability: unknown
+      package: null
+      revision: null
+      archive_sha256: null
+      non_measured_execution_authorized_when_pinned_available_and_task_prerequisites_met: true
+      current_execution_readiness: BLOCKED_OPEN_PIN
+  procurement_order:
+    use_existing_d2_only_for_intrinsically_physical_evidence: true
+    d2_task_specific_prerequisites_required: true
+    blanket_physical_execution_or_support_authority: false
+    physical_execution_performed_by_this_reconciliation: false
+    postponed_profiles:
+      - D1
+      - D3
+      - D4
+      - D5
+      - D6
+    reconsideration_condition: >-
+      Emulator-slot plus D2 evidence exists and a concrete final gate identifies the missing
+      physical profile. Postponement does not waive an eventual physical requirement.
+    d7_changed_or_waived: false
+  strict_physical_non_substitution:
+    - physical_microphone
+    - physical_flash_and_durability
+    - battery
+    - thermal_behavior
+    - OEM_lifecycle_behavior
+    - radio_and_VPN_route_behavior
+    - arm64_physical_performance
+
 abi_policy:
   required_physical:
     - arm64-v8a
@@ -805,7 +974,10 @@ execution_rules:
   - "No approved critical capture failure was observed on the tested Samsung device during Run A, Run B and the interrupted Run C campaign; the formal one-phone result remains INCONCLUSIVE."
   - "The owner closed the current campaign without a repeat. A clean 60-minute screen-off baseline is deferred to a separately scoped campaign on a dedicated test device; three-hour and eight-hour evidence was not collected."
   - "One discovered phone may satisfy only its matching execution slice; it never produces a global D1-D7 PASS or a device-support claim."
-  - "An emulator never substitutes for physical microphone, battery, thermal, flash or OEM evidence."
+  - "An emulator never substitutes for physical microphone, flash/durability, battery, thermal, OEM lifecycle, radio/VPN route behavior or arm64 physical performance evidence."
+  - "OD-15 authorizes all available non-measured functional, fault, compatibility and preflight checks on E28/E30/E36-GAPI/E-NOGMS/E16K/E-NEXT when the exact pin is available and the individually scoped task prerequisites are met; this reconciliation executes none of them."
+  - "That bounded emulator authority does not authorize Recovery hard-kill/fault campaigning, Recovery Phase A or measured campaigning; Recovery preflight remains gated on successful REC-I3."
+  - "Use existing D2 only where the property intrinsically requires a physical device; postpone D1 and D3-D6 procurement until emulator-slot plus D2 evidence and a concrete final gate identify the missing physical profile."
   - "A physical device never substitutes for the required 16-KiB emulator/image when its page size is not verified."
   - "Exact model, firmware, security patch and OTA date are added only after owner confirmation."
   - "After an OTA, rerun the critical capture/recovery/endurance subset before retaining support."
@@ -814,5 +986,9 @@ execution_rules:
 procurement_and_ota:
   owner: "Project owner"
   procurement_decision: "Approved choice B: do not procure additional devices for the first exploratory run."
+  current_emulator_first_decision: >-
+    OD-15 postpones D1 and D3-D6 procurement until emulator-slot plus existing-D2 evidence exists
+    and a concrete final gate identifies the missing physical profile; no final physical requirement
+    or support gate is waived.
   ota_policy: "Record current firmware; do not auto-update during a benchmark campaign; rerun critical gates after update."
   battery_health_policy: "Record health/state where available and exclude materially degraded batteries from comparative energy claims."
