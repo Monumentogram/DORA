@@ -851,7 +851,7 @@ def _verify_jdeps(
     repository: Path, classes: Path, tools: Mapping[str, str], environment: Mapping[str, str]
 ) -> None:
     result = _run_process(
-        (tools["jdeps"], "-s", "-R", str(classes)),
+        (tools["jdeps"], "-J-XX:-UsePerfData", "-s", "-R", str(classes)),
         cwd=repository,
         env=environment,
         label="jdeps",
@@ -892,15 +892,19 @@ def run_full_validation(
         else:
             raise RunnerError("temporary root must be outside the repository")
         classes = temp_root / "classes"
+        tool_temp = temp_root / "tool-temp"
         java_temp = temp_root / "java-temp"
         classes.mkdir()
+        tool_temp.mkdir()
         java_temp.mkdir()
-        environment = _clean_environment(java_temp)
+        tool_environment = _clean_environment(tool_temp)
+        java_environment = _clean_environment(java_temp)
         main_source = _resolve_repository_file(repository, MAIN_SOURCE_PATH)
         test_source = _resolve_repository_file(repository, TEST_SOURCE_PATH)
         compile_result = _run_process(
             (
                 tools["javac"],
+                "-J-XX:-UsePerfData",
                 "--release",
                 "17",
                 "-encoding",
@@ -913,7 +917,7 @@ def run_full_validation(
                 str(test_source),
             ),
             cwd=repository,
-            env=environment,
+            env=tool_environment,
             label="strict javac",
         )
         require(compile_result.returncode == 0, "strict javac failed")
@@ -922,7 +926,7 @@ def run_full_validation(
         class_files = tuple(sorted(classes.rglob("*.class")))
         _verify_class_major(class_files)
         _verify_compiled_surfaces(class_files)
-        _verify_jdeps(repository, classes, tools, environment)
+        _verify_jdeps(repository, classes, tools, tool_environment)
 
         observed_stdout: bytes | None = None
         classpath = str(classes)
@@ -943,7 +947,7 @@ def run_full_validation(
                     TEST_CLASS,
                 ),
                 cwd=repository,
-                env=environment,
+                env=java_environment,
                 label=f"Decision I4 test repeat {repeat}",
             )
             require(test_result.returncode == 0, f"test repeat {repeat} failed")
