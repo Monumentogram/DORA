@@ -1,0 +1,438 @@
+{
+  "schemaVersion": "dora-stage0-vad-offline-data-host-regression-inventory-v0.1",
+  "baselineCommit": "671f594074b37bb2b5c8e4a4c1026de909acf339",
+  "claimCeiling": "CURRENT_MAIN_VAD_OFFLINE_DATA_SYNTHETIC_HOST_MECHANICS_REVALIDATED",
+  "hashProfile": "STRICT_UTF8_CANONICAL_LF_SHA256",
+  "stdoutProfile": "EXACT_UTF8_DECLARED_LOGICAL_NEWLINES_TO_HOST_NATIVE",
+  "expectedCommandCount": 11,
+  "expectedExecutionCount": 21,
+  "expectedTrackedFiles": [
+    ".github/workflows/stage0-vad-offline-data-host-regression.yml",
+    "docs/evidence/stage0-vad-offline-data-host-regression/vad-offline-data-host-regression-inventory-stage0-v0.1.json",
+    "docs/stage0/DORA_MVP1_VAD_OFFLINE_DATA_HOST_REGRESSION_SCOPE_STAGE0_V0_1.md",
+    "tools/run_stage0_vad_offline_data_host_regression.py"
+  ],
+  "pins": [
+    {
+      "path": "docs/stage0/DORA_MVP1_VAD_OFFLINE_DATA_HOST_REGRESSION_SCOPE_STAGE0_V0_1.md",
+      "role": "VERSIONED_SCOPE_AND_CLAIM_CEILING",
+      "sha256": "fda7229ee667544aa806bdd581962cfc9a425123c1a993817b734abbb97104c9"
+    },
+    {
+      "path": "docs/evidence/poc-vad-001/p2-host-oracle-local-evidence-stage0-v0.1.json",
+      "role": "VAD_P2_LOCAL_EVIDENCE",
+      "sha256": "3a274eadd23911f0d9151553885c0142a7106bf35b0d84adca0fd17170924713"
+    },
+    {
+      "path": "tools/vad_p2_oracle/src/main/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracle.java",
+      "role": "VAD_P2_MAIN_SOURCE",
+      "sha256": "4a2ae88075554e249c5fd67c1ed385e50dceacd3cdaf0ca0ec36244535055d29"
+    },
+    {
+      "path": "tools/vad_p2_oracle/src/test/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracleTest.java",
+      "role": "VAD_P2_TEST_SOURCE",
+      "sha256": "606adc21b1323258f554799e8ed7da600e5fc39c22b20027e0fe1888aff35325"
+    },
+    {
+      "path": "docs/evidence/poc-vad-001/p3-deterministic-integrated-replay-local-evidence-stage0-v0.1.json",
+      "role": "VAD_P3_LOCAL_EVIDENCE",
+      "sha256": "75ddd5090231b83b151f714c5d8e4636ec10e0fb70c91bd70bb34382c58fd6b5"
+    },
+    {
+      "path": "tools/vad_p3_deterministic_replay/src/main/java/com/monumentogram/dora/stage0/vad/p3/VadDeterministicReplay.java",
+      "role": "VAD_P3_MAIN_SOURCE",
+      "sha256": "737f9300ea3451dea8e7c89cc82bedbdd6a84765e4f484c41a459ad55b5e4f96"
+    },
+    {
+      "path": "tools/vad_p3_deterministic_replay/src/test/java/com/monumentogram/dora/stage0/vad/p3/VadDeterministicReplayTest.java",
+      "role": "VAD_P3_TEST_SOURCE",
+      "sha256": "775a082f0687f47251ffabff74a67dd90958dcc83dae6b3364f7204a45e4dc44"
+    },
+    {
+      "path": "docs/evidence/poc-vad-001/p4-synthetic-pcm-rotation-local-evidence-stage0-v0.1.json",
+      "role": "VAD_P4_LOCAL_EVIDENCE",
+      "sha256": "33b25e9b7c2de3f83da84eabeca84fae502600f618129d44a577d904c9a12568"
+    },
+    {
+      "path": "tools/vad_p4_pcm_rotation_oracle/src/main/java/com/monumentogram/dora/stage0/vad/p4/VadPcmRotationOracle.java",
+      "role": "VAD_P4_MAIN_SOURCE",
+      "sha256": "541cf81b8e0d9f683d20bc8e46cbfa30354dfd177aaf3e4c4e543c4340fd2aa1"
+    },
+    {
+      "path": "tools/vad_p4_pcm_rotation_oracle/src/test/java/com/monumentogram/dora/stage0/vad/p4/VadPcmRotationOracleTest.java",
+      "role": "VAD_P4_TEST_SOURCE",
+      "sha256": "7c69013554b9cd93e12b404bc930a029fed5ef035be151e76300bff8921ec060"
+    },
+    {
+      "path": "docs/evidence/poc-offline-001/i1-host-oracle-implementation-evidence-stage0-v0.1.json",
+      "role": "OFFLINE_I1_LOCAL_EVIDENCE",
+      "sha256": "27168571abe76fc76e958ca984217b5ff58f6433d7790e36a72d065815de876d"
+    },
+    {
+      "path": "tools/offline_i1_oracle/src/main/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1Oracle.java",
+      "role": "OFFLINE_I1_MAIN_SOURCE",
+      "sha256": "2eb3a80716fdc25abe7300552c8ba95f4deabe68e7c8d5d42dcf9d5cb13235bf"
+    },
+    {
+      "path": "tools/offline_i1_oracle/src/test/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1OracleTest.java",
+      "role": "OFFLINE_I1_TEST_SOURCE",
+      "sha256": "235be2b6d3c646ce9c0910369de99847a149d226159ab1f8a1785e074572b89c"
+    },
+    {
+      "path": "docs/evidence/poc-offline-001/i2-integrated-synthetic-harness-evidence-stage0-v0.1.json",
+      "role": "OFFLINE_I2_LOCAL_EVIDENCE",
+      "sha256": "bd4b8cfbe96f05192eb0e37d4a1dfa4758009abb91a2cc95d8a991ac49c75e5c"
+    },
+    {
+      "path": "tools/offline_i2_integrated_harness/src/main/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarness.java",
+      "role": "OFFLINE_I2_MAIN_SOURCE",
+      "sha256": "74a775220f58fedcb51fc3eeac3d6d0e652377e19e1597269105c5a432e25ac2"
+    },
+    {
+      "path": "tools/offline_i2_integrated_harness/src/test/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarnessTest.java",
+      "role": "OFFLINE_I2_TEST_SOURCE",
+      "sha256": "fa307e3fdc1c03a2ebbe9b7a916f9523374384342c04748bf406bfb7ead07383"
+    },
+    {
+      "path": "docs/evidence/poc-offline-001/i3-static-call-ledger-local-evidence-stage0-v0.1.json",
+      "role": "OFFLINE_I3_LOCAL_EVIDENCE",
+      "sha256": "0ccd231385c40e876d5fdb92d32e64d66ebfb201c542212f566e293277439639"
+    },
+    {
+      "path": "tools/offline_i3_static_call_ledger/src/main/java/com/monumentogram/dora/stage0/offline/i3/OfflineI3StaticCallLedger.java",
+      "role": "OFFLINE_I3_MAIN_SOURCE",
+      "sha256": "87fb3da93df1a43b12aea79fcc95cbd6e688025f9cbd79f7e6ea9b726373dcac"
+    },
+    {
+      "path": "tools/offline_i3_static_call_ledger/src/test/java/com/monumentogram/dora/stage0/offline/i3/OfflineI3StaticCallLedgerTest.java",
+      "role": "OFFLINE_I3_TEST_SOURCE",
+      "sha256": "eac83efbb829c815ef26fa9a35c92f5109e99418dd520719ed3732982b2398b8"
+    },
+    {
+      "path": "docs/evidence/poc-data-001/synthetic-public-manifest-validator-local-evidence-stage0-v0.1.json",
+      "role": "DATA_MANIFEST_LOCAL_EVIDENCE",
+      "sha256": "96df57742faf73bdb1607f537f17db2a1a3c0108421deadc194814c15eb30941"
+    },
+    {
+      "path": "docs/stage0/poc-data-synthetic-public-projection-stage0-v0.1.schema.json",
+      "role": "DATA_MANIFEST_SCHEMA",
+      "sha256": "d487e8062d10535ec64cb44e8ebc363a4d1dca337db9bf2a8dca23ae0518fffb"
+    },
+    {
+      "path": "tools/poc_data_manifest_validator/src/main/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidator.java",
+      "role": "DATA_MANIFEST_MAIN_SOURCE",
+      "sha256": "4b2f997c46b2014848f705626eb3e6273f26e48d9b95624126ecd715908397e4"
+    },
+    {
+      "path": "tools/poc_data_manifest_validator/src/test/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidatorTest.java",
+      "role": "DATA_MANIFEST_TEST_SOURCE",
+      "sha256": "170826b8ee0a96378f90a104c8d3d06fd3a0a4d6b9ec32b5585c08784720c409"
+    },
+    {
+      "path": "docs/evidence/poc-data-001/control-plane-dry-run-local-evidence-stage0-v0.1.json",
+      "role": "DATA_CONTROL_PLANE_LOCAL_EVIDENCE",
+      "sha256": "6ff46c2d0dc7a2e898c97be9a89c82aa61d61e72ffa3714a1858405fedaf9f5c"
+    },
+    {
+      "path": "docs/evidence/poc-data-001/reviews/poc-data-control-plane-independent-advisory-closure-20260818.json",
+      "role": "DATA_CONTROL_PLANE_ADVISORY_CLOSURE",
+      "sha256": "f4ad6d955d99746eee586dda7c4553acc1190ac7911329297fd8324c017d4ceb"
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_POC_DATA_CONTROL_PLANE.md",
+      "role": "DATA_CONTROL_PLANE_CONTRACT",
+      "sha256": "1d54b6eb41286c88042d05682682f061608d8d91e2bd54a8908d4220853cfff2"
+    },
+    {
+      "path": "docs/stage0/poc-data-control-plane-stage0-v0.1.schema.json",
+      "role": "DATA_CONTROL_PLANE_SCHEMA",
+      "sha256": "b38ae362a5a804401878f56f139839dbd47009ec2fee59f1f05fdf08984b537e"
+    },
+    {
+      "path": "docs/stage0/DORA_MVP1_DATASET_GOVERNANCE.md",
+      "role": "DATASET_GOVERNANCE_BOUNDARY",
+      "sha256": "cf10ae2ddca0ffdbddfd717eeebfe9d5fd3a11013f2cef17f75776cfb45f6941"
+    },
+    {
+      "path": "docs/evidence/poc-data-001/control-plane-synthetic-manifest-stage0-v0.1.json",
+      "role": "DATA_CONTROL_PLANE_SYNTHETIC_MANIFEST",
+      "sha256": "5ce259432d77c8876f6b7c5e8ab6981d4312c1fbc18cdf6c84a97023d450ec72"
+    },
+    {
+      "path": "tools/poc_data_control_plane/src/main/java/com/monumentogram/dora/stage0/data/controlplane/PocDataControlPlane.java",
+      "role": "DATA_CONTROL_PLANE_MAIN_SOURCE",
+      "sha256": "4c4d247f7c76bf8845e0fc082bc661481080d0eb1aa5a264503075ef3f3c3ee1"
+    },
+    {
+      "path": "tools/poc_data_control_plane/src/test/java/com/monumentogram/dora/stage0/data/controlplane/PocDataControlPlaneTest.java",
+      "role": "DATA_CONTROL_PLANE_TEST_SOURCE",
+      "sha256": "f728935e9fb06191e0047e9f054560d18c2941b9b000eaee954af3e743e7557e"
+    }
+  ],
+  "packages": [
+    {
+      "id": "VAD_P2",
+      "pullRequest": 33,
+      "evidenceFiles": [
+        "docs/evidence/poc-vad-001/p2-host-oracle-local-evidence-stage0-v0.1.json"
+      ],
+      "supportFiles": [],
+      "mainSources": [
+        "tools/vad_p2_oracle/src/main/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracle.java"
+      ],
+      "testSources": [
+        "tools/vad_p2_oracle/src/test/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracleTest.java"
+      ],
+      "commands": [
+        {
+          "id": "tests",
+          "className": "com.monumentogram.dora.stage0.vad.p2.VadBoundaryOracleTest",
+          "args": [],
+          "repeat": 2,
+          "expectedStdout": "LOCAL_PASS vad-p2-frame-timing-host-oracle\n"
+        }
+      ],
+      "surfaceProfile": "NO_FILESYSTEM_NO_CONSOLE",
+      "expectedModules": [
+        "java.base"
+      ],
+      "expectedClassMajor": 61
+    },
+    {
+      "id": "VAD_P3",
+      "pullRequest": 46,
+      "evidenceFiles": [
+        "docs/evidence/poc-vad-001/p3-deterministic-integrated-replay-local-evidence-stage0-v0.1.json"
+      ],
+      "supportFiles": [],
+      "mainSources": [
+        "tools/vad_p3_deterministic_replay/src/main/java/com/monumentogram/dora/stage0/vad/p3/VadDeterministicReplay.java"
+      ],
+      "testSources": [
+        "tools/vad_p3_deterministic_replay/src/test/java/com/monumentogram/dora/stage0/vad/p3/VadDeterministicReplayTest.java"
+      ],
+      "commands": [
+        {
+          "id": "tests",
+          "className": "com.monumentogram.dora.stage0.vad.p3.VadDeterministicReplayTest",
+          "args": [],
+          "repeat": 2,
+          "expectedStdout": "LOCAL_PASS vad-p3-deterministic-integrated-replay\n"
+        }
+      ],
+      "surfaceProfile": "NO_FILESYSTEM_NO_CONSOLE",
+      "expectedModules": [
+        "java.base"
+      ],
+      "expectedClassMajor": 61
+    },
+    {
+      "id": "VAD_P4",
+      "pullRequest": 49,
+      "evidenceFiles": [
+        "docs/evidence/poc-vad-001/p4-synthetic-pcm-rotation-local-evidence-stage0-v0.1.json"
+      ],
+      "supportFiles": [],
+      "mainSources": [
+        "tools/vad_p3_deterministic_replay/src/main/java/com/monumentogram/dora/stage0/vad/p3/VadDeterministicReplay.java",
+        "tools/vad_p4_pcm_rotation_oracle/src/main/java/com/monumentogram/dora/stage0/vad/p4/VadPcmRotationOracle.java"
+      ],
+      "testSources": [
+        "tools/vad_p4_pcm_rotation_oracle/src/test/java/com/monumentogram/dora/stage0/vad/p4/VadPcmRotationOracleTest.java"
+      ],
+      "commands": [
+        {
+          "id": "tests",
+          "className": "com.monumentogram.dora.stage0.vad.p4.VadPcmRotationOracleTest",
+          "args": [],
+          "repeat": 2,
+          "expectedStdout": "LOCAL_PASS vad-p4-synthetic-pcm-rotation\n"
+        }
+      ],
+      "surfaceProfile": "BOUNDED_FILESYSTEM_NO_CONSOLE",
+      "expectedModules": [
+        "java.base"
+      ],
+      "expectedClassMajor": 61
+    },
+    {
+      "id": "OFFLINE_I1",
+      "pullRequest": 36,
+      "evidenceFiles": [
+        "docs/evidence/poc-offline-001/i1-host-oracle-implementation-evidence-stage0-v0.1.json"
+      ],
+      "supportFiles": [],
+      "mainSources": [
+        "tools/offline_i1_oracle/src/main/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1Oracle.java"
+      ],
+      "testSources": [
+        "tools/offline_i1_oracle/src/test/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1OracleTest.java"
+      ],
+      "commands": [
+        {
+          "id": "tests",
+          "className": "com.monumentogram.dora.stage0.offline.i1.OfflineI1OracleTest",
+          "args": [],
+          "repeat": 2,
+          "expectedStdout": "PASS offline-i1-host-oracle"
+        }
+      ],
+      "surfaceProfile": "NO_FILESYSTEM_NO_CONSOLE",
+      "expectedModules": [
+        "java.base"
+      ],
+      "expectedClassMajor": 61
+    },
+    {
+      "id": "OFFLINE_I2",
+      "pullRequest": 37,
+      "evidenceFiles": [
+        "docs/evidence/poc-offline-001/i2-integrated-synthetic-harness-evidence-stage0-v0.1.json"
+      ],
+      "supportFiles": [],
+      "mainSources": [
+        "tools/offline_i1_oracle/src/main/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1Oracle.java",
+        "tools/offline_i2_integrated_harness/src/main/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarness.java"
+      ],
+      "testSources": [
+        "tools/offline_i1_oracle/src/test/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1OracleTest.java",
+        "tools/offline_i2_integrated_harness/src/test/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarnessTest.java"
+      ],
+      "commands": [
+        {
+          "id": "i1-regression",
+          "className": "com.monumentogram.dora.stage0.offline.i1.OfflineI1OracleTest",
+          "args": [],
+          "repeat": 1,
+          "expectedStdout": "PASS offline-i1-host-oracle"
+        },
+        {
+          "id": "i2-tests",
+          "className": "com.monumentogram.dora.stage0.offline.i2.OfflineI2IntegratedHarnessTest",
+          "args": [],
+          "repeat": 2,
+          "expectedStdout": "PASS offline-i2-integrated-synthetic-harness"
+        }
+      ],
+      "surfaceProfile": "NO_FILESYSTEM_NO_CONSOLE",
+      "expectedModules": [
+        "java.base"
+      ],
+      "expectedClassMajor": 61
+    },
+    {
+      "id": "OFFLINE_I3",
+      "pullRequest": 48,
+      "evidenceFiles": [
+        "docs/evidence/poc-offline-001/i3-static-call-ledger-local-evidence-stage0-v0.1.json"
+      ],
+      "supportFiles": [],
+      "mainSources": [
+        "tools/offline_i3_static_call_ledger/src/main/java/com/monumentogram/dora/stage0/offline/i3/OfflineI3StaticCallLedger.java"
+      ],
+      "testSources": [
+        "tools/offline_i3_static_call_ledger/src/test/java/com/monumentogram/dora/stage0/offline/i3/OfflineI3StaticCallLedgerTest.java"
+      ],
+      "commands": [
+        {
+          "id": "tests",
+          "className": "com.monumentogram.dora.stage0.offline.i3.OfflineI3StaticCallLedgerTest",
+          "args": [],
+          "repeat": 2,
+          "expectedStdout": "PASS offline-i3-static-call-ledger\n"
+        }
+      ],
+      "surfaceProfile": "NO_FILESYSTEM_NO_CONSOLE",
+      "expectedModules": [
+        "java.base"
+      ],
+      "expectedClassMajor": 61
+    },
+    {
+      "id": "DATA_MANIFEST",
+      "pullRequest": 35,
+      "evidenceFiles": [
+        "docs/evidence/poc-data-001/synthetic-public-manifest-validator-local-evidence-stage0-v0.1.json"
+      ],
+      "supportFiles": [
+        "docs/stage0/poc-data-synthetic-public-projection-stage0-v0.1.schema.json"
+      ],
+      "mainSources": [
+        "tools/poc_data_manifest_validator/src/main/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidator.java"
+      ],
+      "testSources": [
+        "tools/poc_data_manifest_validator/src/test/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidatorTest.java"
+      ],
+      "commands": [
+        {
+          "id": "tests",
+          "className": "com.monumentogram.dora.stage0.data.manifest.SyntheticManifestValidatorTest",
+          "args": [],
+          "repeat": 2,
+          "expectedStdout": "LOCAL_PASS poc-data-synthetic-manifest-validator-tests\n"
+        }
+      ],
+      "surfaceProfile": "BOUNDED_FILESYSTEM_CLI",
+      "expectedModules": [
+        "java.base"
+      ],
+      "expectedClassMajor": 61
+    },
+    {
+      "id": "DATA_CONTROL_PLANE",
+      "pullRequest": 44,
+      "evidenceFiles": [
+        "docs/evidence/poc-data-001/control-plane-dry-run-local-evidence-stage0-v0.1.json"
+      ],
+      "supportFiles": [
+        "docs/evidence/poc-data-001/reviews/poc-data-control-plane-independent-advisory-closure-20260818.json",
+        "docs/stage0/DORA_MVP1_POC_DATA_CONTROL_PLANE.md",
+        "docs/stage0/poc-data-control-plane-stage0-v0.1.schema.json",
+        "docs/stage0/DORA_MVP1_DATASET_GOVERNANCE.md",
+        "docs/evidence/poc-data-001/control-plane-synthetic-manifest-stage0-v0.1.json"
+      ],
+      "mainSources": [
+        "tools/poc_data_control_plane/src/main/java/com/monumentogram/dora/stage0/data/controlplane/PocDataControlPlane.java"
+      ],
+      "testSources": [
+        "tools/poc_data_control_plane/src/test/java/com/monumentogram/dora/stage0/data/controlplane/PocDataControlPlaneTest.java"
+      ],
+      "commands": [
+        {
+          "id": "tests",
+          "className": "com.monumentogram.dora.stage0.data.controlplane.PocDataControlPlaneTest",
+          "args": [],
+          "repeat": 2,
+          "expectedStdout": "LOCAL_PASS POC_DATA_CONTROL_PLANE_TESTS scenarios=15 assertions=180 readiness=NOT_READY overall=NOT_RUN collection=NOT_AUTHORIZED\n"
+        },
+        {
+          "id": "validate",
+          "className": "com.monumentogram.dora.stage0.data.controlplane.PocDataControlPlane",
+          "args": [
+            "validate",
+            "docs/evidence/poc-data-001/control-plane-synthetic-manifest-stage0-v0.1.json",
+            "docs/stage0/poc-data-control-plane-stage0-v0.1.schema.json"
+          ],
+          "repeat": 2,
+          "expectedStdout": "LOCAL_PASS POC_DATA_CONTROL_PLANE_SYNTHETIC_ONLY manifest_sha256=5ce259432d77c8876f6b7c5e8ab6981d4312c1fbc18cdf6c84a97023d450ec72 schema_sha256=b38ae362a5a804401878f56f139839dbd47009ec2fee59f1f05fdf08984b537e readiness=NOT_READY overall=NOT_RUN collection=NOT_AUTHORIZED\n"
+        },
+        {
+          "id": "dry-run",
+          "className": "com.monumentogram.dora.stage0.data.controlplane.PocDataControlPlane",
+          "args": [
+            "dry-run",
+            "docs/evidence/poc-data-001/control-plane-synthetic-manifest-stage0-v0.1.json",
+            "docs/stage0/poc-data-control-plane-stage0-v0.1.schema.json"
+          ],
+          "repeat": 2,
+          "expectedStdout": "LOCAL_PASS POC_DATA_CONTROL_PLANE_SYNTHETIC_DRY_RUN manifest_sha256=5ce259432d77c8876f6b7c5e8ab6981d4312c1fbc18cdf6c84a97023d450ec72 schema_sha256=b38ae362a5a804401878f56f139839dbd47009ec2fee59f1f05fdf08984b537e scenarios=15 sentinel_deleted=true deletion_idempotent=true source_unchanged=true readiness=NOT_READY overall=NOT_RUN collection=NOT_AUTHORIZED\n"
+        }
+      ],
+      "surfaceProfile": "BOUNDED_FILESYSTEM_CLI_TMPDIR_PROPERTY",
+      "expectedModules": [
+        "java.base"
+      ],
+      "expectedClassMajor": 61
+    }
+  ]
+}

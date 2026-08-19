@@ -1,0 +1,154 @@
+name: Stage 0 VAD Offline Data host regression
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/stage0-vad-offline-data-host-regression.yml
+      - docs/evidence/stage0-vad-offline-data-host-regression/vad-offline-data-host-regression-inventory-stage0-v0.1.json
+      - docs/stage0/DORA_MVP1_VAD_OFFLINE_DATA_HOST_REGRESSION_SCOPE_STAGE0_V0_1.md
+      - tools/run_stage0_vad_offline_data_host_regression.py
+      - docs/evidence/poc-vad-001/p2-host-oracle-local-evidence-stage0-v0.1.json
+      - tools/vad_p2_oracle/src/main/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracle.java
+      - tools/vad_p2_oracle/src/test/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracleTest.java
+      - docs/evidence/poc-vad-001/p3-deterministic-integrated-replay-local-evidence-stage0-v0.1.json
+      - tools/vad_p3_deterministic_replay/src/main/java/com/monumentogram/dora/stage0/vad/p3/VadDeterministicReplay.java
+      - tools/vad_p3_deterministic_replay/src/test/java/com/monumentogram/dora/stage0/vad/p3/VadDeterministicReplayTest.java
+      - docs/evidence/poc-vad-001/p4-synthetic-pcm-rotation-local-evidence-stage0-v0.1.json
+      - tools/vad_p4_pcm_rotation_oracle/src/main/java/com/monumentogram/dora/stage0/vad/p4/VadPcmRotationOracle.java
+      - tools/vad_p4_pcm_rotation_oracle/src/test/java/com/monumentogram/dora/stage0/vad/p4/VadPcmRotationOracleTest.java
+      - docs/evidence/poc-offline-001/i1-host-oracle-implementation-evidence-stage0-v0.1.json
+      - tools/offline_i1_oracle/src/main/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1Oracle.java
+      - tools/offline_i1_oracle/src/test/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1OracleTest.java
+      - docs/evidence/poc-offline-001/i2-integrated-synthetic-harness-evidence-stage0-v0.1.json
+      - tools/offline_i2_integrated_harness/src/main/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarness.java
+      - tools/offline_i2_integrated_harness/src/test/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarnessTest.java
+      - docs/evidence/poc-offline-001/i3-static-call-ledger-local-evidence-stage0-v0.1.json
+      - tools/offline_i3_static_call_ledger/src/main/java/com/monumentogram/dora/stage0/offline/i3/OfflineI3StaticCallLedger.java
+      - tools/offline_i3_static_call_ledger/src/test/java/com/monumentogram/dora/stage0/offline/i3/OfflineI3StaticCallLedgerTest.java
+      - docs/evidence/poc-data-001/synthetic-public-manifest-validator-local-evidence-stage0-v0.1.json
+      - docs/stage0/poc-data-synthetic-public-projection-stage0-v0.1.schema.json
+      - tools/poc_data_manifest_validator/src/main/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidator.java
+      - tools/poc_data_manifest_validator/src/test/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidatorTest.java
+      - docs/evidence/poc-data-001/control-plane-dry-run-local-evidence-stage0-v0.1.json
+      - docs/evidence/poc-data-001/reviews/poc-data-control-plane-independent-advisory-closure-20260818.json
+      - docs/stage0/DORA_MVP1_POC_DATA_CONTROL_PLANE.md
+      - docs/stage0/poc-data-control-plane-stage0-v0.1.schema.json
+      - docs/stage0/DORA_MVP1_DATASET_GOVERNANCE.md
+      - docs/evidence/poc-data-001/control-plane-synthetic-manifest-stage0-v0.1.json
+      - tools/poc_data_control_plane/src/main/java/com/monumentogram/dora/stage0/data/controlplane/PocDataControlPlane.java
+      - tools/poc_data_control_plane/src/test/java/com/monumentogram/dora/stage0/data/controlplane/PocDataControlPlaneTest.java
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/stage0-vad-offline-data-host-regression.yml
+      - docs/evidence/stage0-vad-offline-data-host-regression/vad-offline-data-host-regression-inventory-stage0-v0.1.json
+      - docs/stage0/DORA_MVP1_VAD_OFFLINE_DATA_HOST_REGRESSION_SCOPE_STAGE0_V0_1.md
+      - tools/run_stage0_vad_offline_data_host_regression.py
+      - docs/evidence/poc-vad-001/p2-host-oracle-local-evidence-stage0-v0.1.json
+      - tools/vad_p2_oracle/src/main/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracle.java
+      - tools/vad_p2_oracle/src/test/java/com/monumentogram/dora/stage0/vad/p2/VadBoundaryOracleTest.java
+      - docs/evidence/poc-vad-001/p3-deterministic-integrated-replay-local-evidence-stage0-v0.1.json
+      - tools/vad_p3_deterministic_replay/src/main/java/com/monumentogram/dora/stage0/vad/p3/VadDeterministicReplay.java
+      - tools/vad_p3_deterministic_replay/src/test/java/com/monumentogram/dora/stage0/vad/p3/VadDeterministicReplayTest.java
+      - docs/evidence/poc-vad-001/p4-synthetic-pcm-rotation-local-evidence-stage0-v0.1.json
+      - tools/vad_p4_pcm_rotation_oracle/src/main/java/com/monumentogram/dora/stage0/vad/p4/VadPcmRotationOracle.java
+      - tools/vad_p4_pcm_rotation_oracle/src/test/java/com/monumentogram/dora/stage0/vad/p4/VadPcmRotationOracleTest.java
+      - docs/evidence/poc-offline-001/i1-host-oracle-implementation-evidence-stage0-v0.1.json
+      - tools/offline_i1_oracle/src/main/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1Oracle.java
+      - tools/offline_i1_oracle/src/test/java/com/monumentogram/dora/stage0/offline/i1/OfflineI1OracleTest.java
+      - docs/evidence/poc-offline-001/i2-integrated-synthetic-harness-evidence-stage0-v0.1.json
+      - tools/offline_i2_integrated_harness/src/main/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarness.java
+      - tools/offline_i2_integrated_harness/src/test/java/com/monumentogram/dora/stage0/offline/i2/OfflineI2IntegratedHarnessTest.java
+      - docs/evidence/poc-offline-001/i3-static-call-ledger-local-evidence-stage0-v0.1.json
+      - tools/offline_i3_static_call_ledger/src/main/java/com/monumentogram/dora/stage0/offline/i3/OfflineI3StaticCallLedger.java
+      - tools/offline_i3_static_call_ledger/src/test/java/com/monumentogram/dora/stage0/offline/i3/OfflineI3StaticCallLedgerTest.java
+      - docs/evidence/poc-data-001/synthetic-public-manifest-validator-local-evidence-stage0-v0.1.json
+      - docs/stage0/poc-data-synthetic-public-projection-stage0-v0.1.schema.json
+      - tools/poc_data_manifest_validator/src/main/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidator.java
+      - tools/poc_data_manifest_validator/src/test/java/com/monumentogram/dora/stage0/data/manifest/SyntheticManifestValidatorTest.java
+      - docs/evidence/poc-data-001/control-plane-dry-run-local-evidence-stage0-v0.1.json
+      - docs/evidence/poc-data-001/reviews/poc-data-control-plane-independent-advisory-closure-20260818.json
+      - docs/stage0/DORA_MVP1_POC_DATA_CONTROL_PLANE.md
+      - docs/stage0/poc-data-control-plane-stage0-v0.1.schema.json
+      - docs/stage0/DORA_MVP1_DATASET_GOVERNANCE.md
+      - docs/evidence/poc-data-001/control-plane-synthetic-manifest-stage0-v0.1.json
+      - tools/poc_data_control_plane/src/main/java/com/monumentogram/dora/stage0/data/controlplane/PocDataControlPlane.java
+      - tools/poc_data_control_plane/src/test/java/com/monumentogram/dora/stage0/data/controlplane/PocDataControlPlaneTest.java
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stage0-vad-offline-data-host-regression-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  REQUIRED_BASELINE: 671f594074b37bb2b5c8e4a4c1026de909acf339
+  REQUIRED_JAVA_VERSION: 17.0.20
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  host-regression:
+    name: stage0-vad-offline-data-host-regression
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out the exact event commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Require exact event SHA, baseline ancestry, and clean checkout
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD)" == "${EXPECTED_SHA}" ]]
+          git cat-file -e "${REQUIRED_BASELINE}^{commit}"
+          git merge-base --is-ancestor "${REQUIRED_BASELINE}" HEAD
+          [[ -z "$(git status --porcelain)" ]]
+
+      - name: Set up the exact Java 17 toolchain
+        uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
+        with:
+          distribution: temurin
+          java-version: "17.0.20+8"
+          check-latest: false
+
+      - name: Verify validator runtime boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$(javac -version 2>&1)" == "javac ${REQUIRED_JAVA_VERSION}" ]]
+          [[ "$(jdeps --version 2>&1)" == "${REQUIRED_JAVA_VERSION}" ]]
+          [[ "$(javap -version 2>&1)" == "${REQUIRED_JAVA_VERSION}" ]]
+          java_version="$(java -version 2>&1)"
+          [[ "${java_version%%$'\n'*}" == "openjdk version \"${REQUIRED_JAVA_VERSION}\" 2026-07-21" ]]
+          python3 -c 'import sys; assert sys.version_info >= (3, 11)'
+          [[ -n "${RUNNER_TEMP}" && -d "${RUNNER_TEMP}" ]]
+          [[ -z "$(git status --porcelain)" ]]
+
+      - name: Exercise fail-closed inventory validation
+        run: >-
+          python3 -B tools/run_stage0_vad_offline_data_host_regression.py
+          --self-test
+
+      - name: Revalidate the exact VAD Offline Data host inventory
+        run: python3 -B tools/run_stage0_vad_offline_data_host_regression.py
+
+      - name: Require complete cleanup and an unchanged worktree
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ -z "$(git status --porcelain)" ]]
+          generated="$(find . -path ./.git -prune -o -type f \( -name '*.class' -o -name '*.pcm' -o -name 'dora-poc-data-control-plane.synthetic' \) -print -quit)"
+          [[ -z "${generated}" ]]
+          printf '%s\n' 'STAGE0_VAD_OFFLINE_DATA_HOST_REGRESSION_CLEANUP_OK'
