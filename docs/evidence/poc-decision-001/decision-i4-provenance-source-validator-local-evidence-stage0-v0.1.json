@@ -1,0 +1,236 @@
+{
+  "recordType": "DORA_STAGE0_POC_DECISION_I4_SYNTHETIC_PROVENANCE_SOURCE_VALIDATOR_LOCAL_EVIDENCE",
+  "recordVersion": "0.1",
+  "recordedDate": "2026-08-19",
+  "authority": {
+    "authorization": "OWNER-AUTH-BATCH-20260819-01_DECISION_I4_PRIORITY",
+    "backlogId": "POC-DECISION-001",
+    "branch": "codex/poc-decision-i4-provenance-source-validator",
+    "baselineCommit": "9256db3d95fa20bc0d98aa35b48734ffeeb2623c",
+    "baselineTree": "6e17701efbdc80e14bd0778535f187c1424ed047",
+    "scopeFrozenCommit": "e9a67daf625ba81925fba8dd876c0998647da3e5",
+    "implementationAuthority": "PURE_HOST_GENERATED_FIXTURE_ONLY",
+    "executionAuthority": "LOCAL_AND_CI_STATIC_HOST_ONLY",
+    "mergeAuthority": "WITHHELD_PENDING_EXACT_HEAD_INDEPENDENT_REVIEW"
+  },
+  "scope": {
+    "profile": "decision-i4-provenance-source-validator-stage0-v0.1",
+    "executionClass": "PURE_HOST_LOCAL_GENERATED_PROVENANCE_MECHANICS",
+    "dependencyBoundary": "JDK17_JAVA_BASE_ONLY",
+    "envelopeSchemaVersion": "DORA_DECISION_I4_PROVENANCE_ENVELOPE_STAGE0_V0_1",
+    "sourceSetVersion": "DORA_DECISION_I4_GENERATED_SOURCE_SET_STAGE0_V0_1",
+    "rangeUnit": "UTF8_BYTE_OFFSETS_HALF_OPEN_STAGE0_V0_1",
+    "rangeUnitIsProductContract": false,
+    "productSchemaCreated": false,
+    "generatedSourceCount": 3,
+    "generatedCaseCount": 14,
+    "governedBenchmarkCaseCount": 0,
+    "adjudicatedCorpusCaseCount": 0,
+    "realMeetingCount": 0,
+    "participantCount": 0,
+    "audioCount": 0,
+    "modelCount": 0,
+    "deviceCount": 0,
+    "networkOperationCount": 0,
+    "filesystemPersistenceOperationCount": 0,
+    "androidModuleCount": 0,
+    "dependencyAdditionCount": 0
+  },
+  "generatedSourcePins": [
+    {
+      "sourceId": "SOURCE_RU",
+      "language": "RU",
+      "utf8Bytes": 63,
+      "wholeSourceSha256": "33ad03befe0d15cdb282314005ab9a6a5703e6b7d9135a22ec47c1befd1ae9f5",
+      "excerptStartInclusive": 20,
+      "excerptEndExclusive": 34,
+      "excerptSha256": "924a6e352c6e520050fd01842d1cc04963d2a7e3546d7adaf08921a044497e40"
+    },
+    {
+      "sourceId": "SOURCE_EN",
+      "language": "EN",
+      "utf8Bytes": 45,
+      "wholeSourceSha256": "d713a2e2ff20860d7a8eed4979b69baf553aa7fb4cde2ac3e03899c7b23b8519",
+      "excerptStartInclusive": 11,
+      "excerptEndExclusive": 31,
+      "excerptSha256": "8f5b63d4dc280da2dd6edccb14496d8957d1acfd729980ee0cbb56f007e5a5a9"
+    },
+    {
+      "sourceId": "SOURCE_MIXED",
+      "language": "MIXED_RU_EN",
+      "utf8Bytes": 48,
+      "wholeSourceSha256": "a68a839e1fd0b824ae6dbf8f5d87832cfeaf44a660abde39e6746b8fbfb79372",
+      "excerptStartInclusive": 11,
+      "excerptEndExclusive": 25,
+      "excerptSha256": "924a6e352c6e520050fd01842d1cc04963d2a7e3546d7adaf08921a044497e40"
+    }
+  ],
+  "caseMatrix": {
+    "accepted": [
+      "CASE_ACCEPT_RU",
+      "CASE_ACCEPT_EN",
+      "CASE_ACCEPT_MIXED"
+    ],
+    "rejected": [
+      {
+        "caseId": "CASE_REJECT_FORGED_SOURCE_ID",
+        "diagnostic": "UNKNOWN_SOURCE_ID"
+      },
+      {
+        "caseId": "CASE_REJECT_WHOLE_SHA",
+        "diagnostic": "WHOLE_SOURCE_SHA256_MISMATCH"
+      },
+      {
+        "caseId": "CASE_REJECT_EXCERPT_SHA",
+        "diagnostic": "EXCERPT_SHA256_MISMATCH"
+      },
+      {
+        "caseId": "CASE_REJECT_NEGATIVE_RANGE",
+        "diagnostic": "RANGE_NEGATIVE"
+      },
+      {
+        "caseId": "CASE_REJECT_OUT_OF_RANGE",
+        "diagnostic": "RANGE_OUT_OF_BOUNDS"
+      },
+      {
+        "caseId": "CASE_REJECT_REVERSED_RANGE",
+        "diagnostic": "RANGE_REVERSED"
+      },
+      {
+        "caseId": "CASE_REJECT_EMPTY_RANGE",
+        "diagnostic": "RANGE_EMPTY"
+      },
+      {
+        "caseId": "CASE_REJECT_MID_UTF8_START",
+        "diagnostic": "RANGE_NOT_UTF8_BOUNDARY"
+      },
+      {
+        "caseId": "CASE_REJECT_MID_UTF8_END",
+        "diagnostic": "RANGE_NOT_UTF8_BOUNDARY"
+      },
+      {
+        "caseId": "CASE_REJECT_SCHEMA_VERSION",
+        "diagnostic": "SCHEMA_VERSION_MISMATCH"
+      },
+      {
+        "caseId": "CASE_REJECT_SOURCE_VERSION",
+        "diagnostic": "SOURCE_VERSION_MISMATCH"
+      }
+    ],
+    "acceptedCount": 3,
+    "rejectedCount": 11,
+    "eachRejectedCaseHasExactlyOneDiagnostic": true,
+    "invalidRangeSlicingPerformed": false,
+    "inputOrderChangesCanonicalOutput": false,
+    "candidateApplicationPerformed": false,
+    "stateMutationPerformed": false
+  },
+  "contextPins": {
+    "scope": {
+      "path": "docs/stage0/DORA_MVP1_DECISION_I4_PROVENANCE_SOURCE_VALIDATOR_SCOPE_STAGE0_V0_1.md",
+      "canonicalLfSha256": "7a594ad9e0f3e9b8cb7b5438ab28ec2be156972c3f47e4250feeaf51bc1f466a"
+    },
+    "decisionI2": {
+      "modified": false,
+      "evidencePath": "docs/evidence/poc-decision-001/decision-deterministic-synthetic-harness-local-evidence-stage0-v0.1.json",
+      "evidenceCanonicalLfSha256": "ee64af394111744b26d7c4dac11cfc8a07aa301b4bdfa7191d8a0883a84d5d59",
+      "mainSourceCanonicalLfSha256": "2adb2a4e6706212f5b7530a647e7ef90bd5d423f388e988f845c2e3690740411",
+      "testSourceCanonicalLfSha256": "064d4ad5b00a18d1746fe2f6e29367aad9b0473b99e8cce5746f3d0b8a2e8fec",
+      "relationship": "UNCHANGED_CONTEXT_ONLY_NO_I2_REDEFINITION"
+    },
+    "decisionI3": {
+      "modified": false,
+      "evidencePath": "docs/evidence/poc-decision-001/decision-i3-synthetic-campaign-local-evidence-stage0-v0.1.json",
+      "evidenceCanonicalLfSha256": "5540efbc37574cb93de709c4a6d92069725b6f72191d68903d62b951e661c6d1",
+      "mainSourceCanonicalLfSha256": "9243aecc97380f9188eb6e7c1d8307b9a010b7562a4b2ba0e0c229d91362b2a4",
+      "testSourceCanonicalLfSha256": "0e5896e71270293c92bdedec7f99a6b4ce8ed7463ff7f423433c0d64a9db781d",
+      "relationship": "UNCHANGED_CONTEXT_ONLY_NO_I3_CAMPAIGN_REPEAT"
+    }
+  },
+  "fileDigestBasis": "STRICT_UTF8_CANONICAL_LF_SHA256",
+  "files": [
+    {
+      "path": "tools/decision_i4_provenance_source_validator/src/main/java/com/monumentogram/dora/stage0/decision/i4/DecisionProvenanceSourceValidator.java",
+      "role": "DEPENDENCY_FREE_GENERATED_PROVENANCE_ENVELOPE_MECHANICS",
+      "canonicalLfSha256": "c128cb8404e220523366529c80fc02e8a42aad934d7228dfb5c8698ddb7f96ee",
+      "canonicalLfBytes": 23280,
+      "asciiOnlySourceRepresentation": true
+    },
+    {
+      "path": "tools/decision_i4_provenance_source_validator/src/test/java/com/monumentogram/dora/stage0/decision/i4/DecisionProvenanceSourceValidatorTest.java",
+      "role": "EXACT_GENERATED_MATRIX_ADVERSARIAL_JAVA17_TEST",
+      "canonicalLfSha256": "09e8b7e6edcaaabc26b3427bb5e1bad9784f1f494a2545a99e80071365fc9907",
+      "canonicalLfBytes": 16134,
+      "asciiOnlySourceRepresentation": true
+    }
+  ],
+  "verification": {
+    "localJavaRuntime": "openjdk 17.0.10 2024-01-16 LTS",
+    "localJavac": "javac 17.0.10",
+    "ciJavaTarget": "Temurin 17.0.20+8",
+    "compileCommand": "javac --release 17 -encoding UTF-8 -Xlint:all -Werror -d <TEMP_DIR> <MAIN_JAVA> <TEST_JAVA>",
+    "compileExitCode": 0,
+    "compilerStdoutBytes": 0,
+    "compilerStderrBytes": 0,
+    "classMajorVersion": 61,
+    "dependencyCommand": "jdeps -s -R <TEMP_DIR>",
+    "dependencySummary": "I4_MAIN_AND_TEST_CLASSES -> java.base",
+    "testCommand": "java -ea -Xverify:all -cp <TEMP_DIR> com.monumentogram.dora.stage0.decision.i4.DecisionProvenanceSourceValidatorTest",
+    "testExitCode": 0,
+    "testStdout": "POC_DECISION_I4_PROVENANCE_SOURCE_VALIDATOR_TESTS_OK cases=14 accepted=3 rejected=11 canonicalSha256=eae9b3bd500e99660dfd07092f339a2f49ddd2fef5e2befe5bd24e489b6350ba claim=DECISION_I4_SYNTHETIC_PROVENANCE_SOURCE_MECHANICS_EXERCISED\n",
+    "testStdoutSha256": "ef8a1ed3f3855a79ad320d9ba522e508db5e8e1e5c8ced3424faf15ee6e8b318",
+    "testStderrBytes": 0,
+    "runnerRepeatCountPerInvocation": 3,
+    "uniqueRepeatStdoutHashesPerInvocation": 1,
+    "requiredLocalFullRunnerInvocations": 2,
+    "runnerStdout": "DECISION_I4_SYNTHETIC_PROVENANCE_SOURCE_MECHANICS_EXERCISED cases=14 accepted=3 rejected=11 repeats=3 jdeps=java.base class_major=61 temp_cleanup=true\n",
+    "runnerStdoutSha256": "fd2ca8d7341670e281fb5df38fd945b9980bfd9e4e55a5f78294ca4136e11e9f",
+    "canonicalOutputSha256": "eae9b3bd500e99660dfd07092f339a2f49ddd2fef5e2befe5bd24e489b6350ba",
+    "forbiddenRuntimeSurfaceCheck": "SUCCESS_NONE_FOUND",
+    "privacyAndClaimCeilingCheck": "SUCCESS_NONE_FOUND",
+    "temporaryCleanupRequired": true,
+    "repositoryStatusUnchangedRequired": true,
+    "ciAtEvidenceCreation": "NOT_RUN"
+  },
+  "dataAndPublicationSafety": {
+    "usesOnlyProgrammaticallyGeneratedText": true,
+    "evidenceContainsGeneratedSourceOrExcerptText": false,
+    "containsPersonalData": false,
+    "containsSecret": false,
+    "containsCredential": false,
+    "containsPrivateAddressOrChannel": false,
+    "containsRealPersonOrOrganization": false,
+    "containsRealMeeting": false,
+    "containsTranscriptOrAudio": false,
+    "containsModelOrWeight": false,
+    "containsDatasetOrTrainingData": false,
+    "containsDeviceIdentifier": false,
+    "containsLocalAbsolutePath": false,
+    "cloudTransmissionPerformed": false,
+    "modelTrainingPerformed": false,
+    "repositoryPublicationState": "LOCAL_UNPUBLISHED_AT_EVIDENCE_CREATION"
+  },
+  "nonClaims": [
+    "The 14 generated cases are not governed or adjudicated corpus cases and count as zero toward the at-least-100-case POC-DECISION-001 benchmark.",
+    "This fixture is not the complete source validator named by the Backlog and does not close that gap.",
+    "This fixture does not execute Decision I3, score semantic decisions, compare thresholds, or emit a PoC PASS or READY result.",
+    "This fixture does not validate a production transcript-and-audio provenance envelope or create a product schema.",
+    "This fixture does not evaluate an extractor, model, transcript, audio recording, meeting, person, device, Android feature, network route, or real data.",
+    "This fixture does not make a decision current/final or make a task planned/confirmed/active.",
+    "This fixture does not admit a dependency, model, dataset, provider, product behavior, or production capability.",
+    "This fixture does not change Backlog, Stage Status, readiness, parent PoC state, thresholds, or authority."
+  ],
+  "outcome": {
+    "claimCeiling": "DECISION_I4_SYNTHETIC_PROVENANCE_SOURCE_MECHANICS_EXERCISED",
+    "pocVerdict": "NOT_RUN",
+    "pocReadiness": "BLOCKED_UNCHANGED",
+    "fullSourceValidatorGapClosed": false,
+    "governedScoringGapClosed": false,
+    "qualityClaim": false,
+    "readinessElevation": false,
+    "productAdmission": false,
+    "sharedBacklogOrStageStatusModified": false,
+    "independentReviewRequired": true,
+    "mergePerformed": false
+  }
+}
