@@ -1,6 +1,6 @@
 # Dora MVP 1 — Stage Status
 
-Updated: 18 August 2026
+Updated: 19 August 2026
 Baseline: `1be83e2940a09f7b23e33b4cdf3827de2690f3fd`
 Stage 00 merge commit: `a4aae302f9033e5471f6759f513e7e351c375a72`
 Stage 0A merge commit: `91b9916b01ff70f63d82412bafbed0d72307dbe1`
@@ -8,10 +8,10 @@ Repository: public `Monumentogram/DORA` by temporary owner-approved decision (AD
 Default branch: `main`
 Stage 0B merge commit: `5e748469b22c6e7303fe6eb5f95394ea40088d84`
 Stage 0C merge commit: `849d9d0406a619b334c9b707a4b6b42b34885b4b`
-Active stage: `Stage 0D — POC-RECOVERY-001 authorized I1 contract foundation`
+Active stage: `Stage 0D — REC-I2A/I2B integrated; REC-I3 implementation authority active`
 Work branch: task-scoped; live Git/GitHub metadata is authoritative and no branch name is a stage invariant
 Active PoC: `POC-RECOVERY-001`
-Stage state: **REC-I1 REVIEWED AND SQUASH-MERGED; POST-MERGE VALIDATOR LIFECYCLE REMEDIATED; RUNTIME IMPLEMENTATION, ACTUAL GRAPH AND EXECUTION BLOCKED**
+Stage state: **REC-I2A GRAPH AND REC-I2B RUNTIME REVIEWED/SQUASH-MERGED; REC-I3 IMPLEMENTATION, NON-METRIC VERIFICATION AND CONDITIONAL MERGE PLUS BOUNDED NON-MEASURED E-SLOT CHECKS AUTHORIZED; RECOVERY PHASE A/MEASURED CAMPAIGN, PASS AND PRODUCTION ADMISSION BLOCKED**
 
 Omi upstream-governance reconciliation: `GOV-OMI-001` /
 `gov-omi-reuse-stage0-v0.1` is now `BLOCKED` after completing the owner-authorized
@@ -39,6 +39,36 @@ The publication reconciliation leaves aggregate backlog truth `DONE=27`, `BLOCKE
 readiness blockers open, while `POC-BATTERY-001`, `POC-VAD-001`, `POC-DECISION-001` and
 `POC-DATA-001` remain `BLOCKED`. No PoC PASS, active-stage change or authority elevation follows.
 
+Post-PR43 integration reconciliation: the additive
+[main integration closure](evidence/stage0-post-pr43-main-integration-closure-2026-08-19.json) binds
+the exact source/merge commits and source-equal squash-merge trees for PR #44, #45, #46, #48, #49,
+#38, #50, #51, #52, #53, #54 and #55 through the historical integration cutoff
+`671f594074b37bb2b5c8e4a4c1026de909acf339`. All twelve exact-head Android CI runs succeeded.
+The first exact-main run after PR #38 remains recorded as a Recovery successor-dispatch failure;
+PR #50 changed only the validator dispatch, preserved the REC-I2A/I2B runtime/evidence bytes and
+returned exact-main CI to success. The companion
+[host review closure](evidence/stage0-post-pr43-host-review-closure-2026-08-19.json) reconciles the
+current non-formal review/publication state for the bounded Data, Decision, VAD, Offline, VPN, ASR
+and Diar synthetic host slices without rewriting their immutable pre-review fields.
+This reconciliation is published from later `main` baseline
+`9256db3d95fa20bc0d98aa35b48734ffeeb2623c` (PR #56). PR #56 is indexed only as a subsequent
+non-product host-regression baseline (runner tool, workflow, scope and inventory) that revalidates
+current-main VAD/Offline/Data synthetic host mechanics; it is not a thirteenth member of the
+historical PR #44–#55 integration set and adds no PoC readiness/status elevation.
+
+`OWNER-AUTH-BATCH-20260819-01` / `OD-15` now records the named current REC-I3 overlay:
+`recI3ImplementationAllowed=true`, `recI3NonMetricVerificationAllowed=true` and
+`recI3ConditionalMergeAllowed=true`, while `phaseAAllowed=false`, `executionAllowed=false`,
+`measuredExecutionAllowed=false` and `productionAdmissionAllowed=false` retain their exact Recovery
+campaign meaning. Its supplemental direct approval authorizes all available non-measured
+functional, fault, compatibility and preflight checks on exactly pinned, available E slots after
+task-specific prerequisites; Recovery preflight remains gated on successful REC-I3 and no Recovery
+hard-kill/fault or Phase A campaign is authorized. Historical OD-14, DEC-044, Recovery records and
+their contemporaneous false REC-I3 flags remain unchanged. Aggregate backlog truth remains
+`DONE=27`, `BLOCKED=18`, `TODO=9`, `READY=0`; this reconciliation performs no device/emulator
+execution and adds no PoC PASS/READY, dependency/model/product admission or production support
+claim.
+
 Design-governance reconciliation: `DES-EXPORT-001` / `des-export-interaction-v0.1` is contract
 complete under `DEC-017`; no implementation/conformance/user-research, code/Figma/schema/provider
 or export-execution claim follows. Active Stage 0D, `POC-DATA-001` blocking and every Recovery
@@ -61,12 +91,20 @@ TLS, provider, billing, Security, Legal or production PASS. `POC-VPN-001` remain
 `NOT_READY`, `NOT_RUN` and globally `NOT_AUTHORIZED`; active Stage 0D and every Recovery authority
 flag remain unchanged.
 
+Post-PR43 POC-VPN additive publication fact: PR #51 merged the independently advisory-reviewed
+[I3 host-hermetic fault-completion slice](evidence/poc-vpn-001/i3-host-fault-completion-local-evidence-stage0-v0.1.json).
+Its immutable local record remains unchanged; source/merge-tree and exact-head/main CI truth is
+indexed by the [post-PR43 host closure](evidence/stage0-post-pr43-host-review-closure-2026-08-19.json).
+This host-only slice adds no device, VPN, route, DNS, TLS, provider, billing, Security, Legal or
+production PASS and leaves `POC-VPN-001` `TODO`, `NOT_READY`, `NOT_RUN` and `NOT_AUTHORIZED`.
+
 POC-OFFLINE governance reconciliation: prospective
 [`poc-offline-readiness-stage0-v0.1`](stage0/DORA_MVP1_POC_OFFLINE_READINESS_CONTRACT_STAGE0_V0_1.md)
 and its [machine record](evidence/poc-offline-001/readiness-contract-stage0-v0.1.json) complete only
-the static readiness/call-surface contract. They classify the Stage 00 shell and isolated
-Capture/Search/Recovery/VPN evidence without claiming an integrated local flow or runtime absence
-of calls. The required device matrix, D4 no-GMS, approved local model, calibrated call monitor,
+the static readiness/call-surface contract. Merged I1/I2 host semantics and PR #48's independently
+reviewed [I3 static call-ledger validator](evidence/poc-offline-001/i3-static-call-ledger-local-evidence-stage0-v0.1.json)
+still classify only synthetic/static structure and do not prove an integrated local flow or runtime
+absence of calls. The required device matrix, D4 no-GMS, approved local model, calibrated call monitor,
 Offline-owned reconnect and OS-blocked execution remain open. `POC-OFFLINE-001` remains `TODO`,
 `NOT_READY`, `NOT_RUN` and `NOT_AUTHORIZED`; active Stage 0D and every Recovery authority flag
 remain unchanged.
@@ -128,7 +166,7 @@ versioned 11 August review assessment. The current v5 closure result is `INCONCL
 recommendation `BLOCKED`; no measurement was changed or rerun. D1/D3 and the measured v0.2
 campaign are deferred to separately authorized future scope.
 
-## Stage 0D governance/readiness and authorized I1 scope
+## Stage 0D governance/readiness, REC-I2B integration and REC-I3 authority
 
 Stage 0D first prepared the governance/readiness package for `POC-RECOVERY-001`. Owner record
 `REC-I1-AUTH-20260813-01` now additionally permits only the isolated pure, non-metric common
@@ -183,25 +221,40 @@ The Project owner / Stage 0 Product-IP reviewer approved only prospective
 `REC-JSR305-EXCLUDE-001` and the reviewed governance package for a future exact excluded Stage 0
 graph. The disposition treats JSR-305 as excluded without selecting Apache-2.0 or BSD-3-Clause and
 does not approve its use/distribution. This remains package preparation, not dependency admission.
-No Tink coordinate or rule was added to Gradle.
+At that pre-REC-I2A governance snapshot, no Tink coordinate or rule had yet been added to Gradle.
 
-Phase A is described only prospectively for the pinned emulator and available physical D2; actual
-execution is withheld. Without D1/D5 it can produce only `FAIL` or `INCONCLUSIVE`. A full physical
-verdict requires D1/D2/D5; D1/D5 procurement is deferred. The scoped owner/Stage 0 Product-IP
-prospective policy disposition is recorded, while an actual future runtime graph, dependency
-admission, runtime implementation and execution remain unapproved. The pure I1 foundation is the
-only task-scoped implementation currently authorized. Novikova Katerina completed the distinct
-accountable recovery Engineering/Security formal read-only review in individual professional
-capacity with Rambus listed only as affiliation; no Rambus corporate approval is claimed. The
-disposition closes only the accountable-review gate and grants no implementation or execution
-authority. Codex does not claim formal independence. Production Legal and Production Security
-remain null and separate.
+Phase A remains prospective only; actual execution is withheld. Without D1/D5 it can produce only
+`FAIL` or `INCONCLUSIVE`, and a full physical verdict still requires D1/D2/D5. The later `OD-15`
+emulator-first order postpones D1 and D3–D6 procurement until E-slot plus D2 evidence and a concrete
+final gate identify the missing physical profile; it does not weaken the physical verdict. Its
+bounded non-measured E-slot check authority is separate and does not authorize Recovery Phase A,
+hard-kill/fault or measured campaigning.
 
-The isolated `:poc:recovery` application module now contains only defensively copied identities,
-bounded codecs, pure algebra/catalog rules and host-JVM tests. It has no runtime crypto dependency,
-Android runtime API use, harness, production schema, product-module edge, kill campaign, device run,
-benchmark or recovery measurement. The fail-closed readiness record remains
-`implementationAllowed=false`, `implementationAllowedByThisPackage=false` and `executionAllowed=false`.
+PR #38 protected-squash-merged exact source head
+`f178490e314251bcb1c7fb334e92b479fece1155` as
+`a7e23c9a2758a3ee2cc8aba26be397b07ffc8f5b`, preserving tree
+`4b07b00b247decfed3b1bd6155ca9bc98701a196`. It added the exact REC-I2A resolved
+graph/package/release-R8 proof and scoped Stage 0 Product/IP disposition for the REC-I2B input, plus
+the REC-I2B Tink runtime crypto boundary and its accountable/independent review records. This is
+evaluation-scope evidence, not dependency or production admission. The first exact-main run
+`32190003292` failed only because the Recovery governance validator selected the REC-I1 successor
+profile. PR #50 changed only that dispatch, preserved all Recovery runtime/evidence bytes, merged as
+`0136a6904aac2909582ba228a7e24aafa7fdc4f7`, and exact-main run `32195264657` succeeded.
+
+The isolated `:poc:recovery` module therefore contains the merged REC-I1 contract and REC-I2B
+runtime crypto boundary, but still no REC-I3 harness/controller, fault campaign, device run,
+benchmark, product schema or production-module edge. Immutable readiness record
+`docs/evidence/poc-recovery-001/readiness.json` remains a historical pre-REC-I2A/I2B snapshot with
+`implementationAllowed=false`, `implementationAllowedByThisPackage=false` and
+`executionAllowed=false`; it is not rewritten. Current additive authority is recorded by
+`OWNER-AUTH-BATCH-20260819-01` / `OD-15`: REC-I3 implementation, non-metric verification and
+conditional merge are allowed, while Recovery Phase A/hard-kill/measured campaigning and production
+admission remain false. OD-15 separately authorizes bounded non-measured
+E-slot functional, fault, compatibility and preflight checks after exact-pin availability and
+task-specific prerequisites; none was executed by this reconciliation. Novikova Katerina's
+distinct accountable reviews remain bounded to their
+exact targets; no Rambus corporate approval is claimed. Codex does not claim formal independence.
+Production Legal and Production Security remain null and separate.
 
 The exact REC-I1 implementation lifecycle is now closed only for that pure contract foundation.
 OpenAI Codex / GPT-5 independently reviewed PR #15 HEAD
@@ -240,7 +293,7 @@ The owner phone could not be attached to the remote development workstation. Sta
 
 Three bounded phone runs were returned after two invalid pre-recording starts. Run A attempt 003 and Run B attempt 004 on `5d9a8ac` recorded, stopped and finalized successfully. Run C attempt 005 recorded for 63:49 but is classified by the owner as an `invalidated exploratory attempt`: only 25:58 was screen-off, a TrueConf call occurred and the phone was charging. Bluetooth was fully disabled before Run C and no route change was reported. All three completed recordings produced valid WAVs, zero AudioRecord errors and verified raw-audio deletion/absence; no approved critical capture failure was observed on the tested Samsung device. The formal result remains `INCONCLUSIVE`, and the owner accepts exploratory closure without repeating Run C on the primary work phone. Production capture, storage, ML, backend, account, production identity/signing and model weights remain outside this stage. The bootstrap `:app` must not receive microphone permission.
 
-## Owner decisions effective 4, 11 and 12 August 2026
+## Owner decisions effective 4, 11, 12 and 19 August 2026
 
 - `OD-01`: first experiment is `POC-CAPTURE-001`, limited to a physical microphone and explicit Start/Stop; call, system-audio and passive recording are prohibited.
 - `OD-02`: every test run requires a separate reminder checkbox; it is not legal permission.
@@ -254,41 +307,37 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 - `OD-12`: Project owner prospectively approves Option B for `stage0-v0.2`, based on the local-MVP storage/update/one-second visibility balance and not on prior Dora results. Benchmark execution remains separately withheld.
 - `OD-13`: Project owner approves the exact 66-component/license/NOTICE/platform package only for internal synthetic Stage 0 evaluation and accepts formal `INCONCLUSIVE` closure without a new benchmark. This is not production Legal/Security approval, does not admit FTS4 automatically, is not retroactive, and leaves D1/D3 plus measured execution deferred.
 - `OD-14`: Project owner constraints link active prospective governance protocol v0.6, which inherits all unchanged SHA-256-pinned v0.5/v0.4/v0.3 semantics and replaces only effective KEY-04 while preserving the 46-row campaign profiles and canonical blocker IDs. Historical AI advisory records remain unchanged with `formalReviewer=false`. Novikova Katerina completed the distinct accountable read-only formal human review in individual professional capacity, Rambus affiliation only, with `APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW`; `REC-REV-20260812-02=CLOSED_BY_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW` and `REC-RDY-02=CLOSED_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW` without a Rambus corporate-approval claim or implementation/Phase A/execution authority. Prospective `REC-JSR305-EXCLUDE-001` and exact governance authenticity/LICENSE/NOTICE evidence are closed; the future actual recovery graph/package/R8 evidence and its Product/IP disposition remain open/blocking. The selected construction remains `DESIGN_SELECTED_IMPLEMENTATION_VERIFICATION_REQUIRED`; excluded JSR-305 terms are not interpreted and use/distribution is not approved. The task-scoped REC-I1 foundation has its own completed advisory implementation review/authorization/verification lifecycle; every runtime implementation scope, complete verification and later execution authorization remain separate and mandatory. `implementationAllowed=false`; `implementationAllowedByThisPackage=false`; `executionAllowed=false`; `measuredExecutionAllowed=false`.
+- `OD-15`: Project owner activates current REC-I3 implementation, non-metric verification and conditional protected merge after exact-head CI and required clean reviews. Exact Recovery flags are `recI3ImplementationAllowed=true`, `recI3NonMetricVerificationAllowed=true`, `recI3ConditionalMergeAllowed=true`, `phaseAAllowed=false`, `executionAllowed=false`, `measuredExecutionAllowed=false`, `productionAdmissionAllowed=false`. The same decision authorizes all available bounded non-measured functional, fault, compatibility and preflight checks on orthogonal E28/E30/E36-GAPI/E-NOGMS/E16K/E-NEXT slots after exact-pin availability and task prerequisites, uses D2 only for intrinsically physical evidence and postpones D1/D3–D6 procurement until E-slot plus D2 evidence and a concrete final gate. Recovery preflight still follows successful REC-I3; Recovery hard-kill/fault, Phase A and measured campaigning remain unauthorized. It does not rewrite OD-14/DEC-044/history, resolve D6/D7, waive physical microphone/flash/battery/thermal/OEM/radio/VPN/arm64 evidence, or admit a production dependency/container. This reconciliation performs no emulator/device run.
 
 ## Current gates and blockers
 
-- `POC-RECOVERY-001` remains `BLOCKED`, not READY. Proposed `DEC-044`, Gate Set
-  `poc-recovery-stage0-v0.6`, protocol `poc-recovery-protocol-stage0-v0.6` and remediation evidence exist. All 15 v0.1–v0.5 Markdown/Gate JSON/protocol JSON artifacts are
-  unchanged SHA-256-pinned superseded audit artifacts. The ninth-family
-  `key-confirmation/run.kc`, separate bounded plaintext/AAD schemas, 13-step durable bootstrap,
-  v0.6 canonical taxonomy/reconciliation/K01–K12 prerequisite and exact 46-unique-row fault contract are prospective.
-  Coordinate authenticity, immutable JetBrains LICENSE/NOTICE and conditioned JSR-305 exclusion
-  are verified; the owner accepted `REC-JSR305-EXCLUDE-001` as prospective policy for the reviewed
-  governance package. The underlying excluded-artifact conflict is not interpreted,
-  JSR-305 use/distribution is not approved. The repeat AI documentary exact-HEAD re-review remains
-  historical non-formal evidence. The distinct accountable recovery Engineering/Security formal
-  review is complete. Exact owner authorization `REC-I1-AUTH-20260813-01` covers only the pure I1
-  foundation. Independent AI advisory review and protected merge of that exact foundation are now
-  complete with `formalReviewer=false`; runtime implementation authority, complete runtime
-  verification, Phase A and execution remain separate.
-- The exact published Tink closure is inventoried without Gradle wiring. A future harness-resolved
-  graph remains a P0 pre-execution check because repository Kotlin alignment may differ from the
-  publisher POM closure. It must enumerate every resolvable compile/runtime/unit-test/`androidTest`/
-  benchmark/release configuration, packaging/runtime input, lock and verification-metadata input
-  owned by a future authorized runtime graph for `:poc:recovery`; prove zero
-  `com.google.code.findbugs:jsr305:3.0.2` components and
-  zero packaged JSR-305 definitions; verify the scoped exclude/exact narrow R8 rule; and pass
-  release R8 with no unresolved missing classes. Existing other-module tooling/lint/UTP/test
-  lockfile occurrences are inventoried, not claimed absent, and are not recovery admission. No runtime
-  dependency or production admission exists.
-- Only the narrow, pure REC-I1 contract implementation and its separate non-metric verification
-  exist; global non-metric implementation verification remains false. Runtime candidates, durable
-  storage and the harness remain absent. Phase A execution is separately withheld. Fresh emulator
-  and D2 recovery preflight must record effective WAL/FULL,
-  `wal_autocheckpoint=0`, `foreign_keys=ON`, `sqlite_version()`, `sqlite_source_id()` and canonical
-  compile-options digest; all runtime fields remain null. Phase A is 184 fault injections and can
-  return only FAIL/INCONCLUSIVE. The full physical campaign is 138 injections; D1/D5 are deferred,
-  so PASS is structurally forbidden. The 120-attempt hard-kill campaign/candidate is separate.
+- `POC-RECOVERY-001` remains `BLOCKED`, not READY. Proposed `DEC-044`, current Approved `OD-15`,
+  Gate Set `poc-recovery-stage0-v0.6`, protocol `poc-recovery-protocol-stage0-v0.6` and all 15
+  unchanged SHA-256-pinned v0.1–v0.5 superseded audit artifacts remain authoritative in their exact
+  scopes. Novikova Katerina's accountable governance review closed
+  `REC-RDY-02=CLOSED_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW`; the later exact REC-I2B accountable
+  review also completed for its own target. `REC-I1-AUTH-20260813-01` remains the historical pure-I1
+  authorization. None of those historical records is rewritten by current `OD-15`.
+- PR #38 merged the exact REC-I2A graph/package/R8 proof and REC-I2B Tink runtime, including the
+  dependency-local JSR305 exclusion, zero policy-covered resolved/packaged JSR305 evidence, exact
+  three-line R8 boundary and scoped Product/IP disposition for that REC-I2B input. Existing
+  other-module tooling/lint/UTP/test occurrences remain outside the Recovery admission boundary.
+  PR #50 closed only the squash-main validator dispatch defect. No final harness graph, recovery
+  campaign, dependency-production admission or Production Legal/Security approval follows.
+- Current `OWNER-AUTH-BATCH-20260819-01` allows the separate REC-I3 implementation and non-metric
+  verification needed to build the isolated harness/controller and refresh its exact graph/locks/
+  verification/package/R8 evidence; a conditional protected merge is allowed only after the
+  required exact-head CI and clean independent/accountable reviews. It also allows all available
+  bounded non-measured E-slot functional/fault/compatibility/preflight checks once exact pins are
+  available and task prerequisites are met; Recovery hard-kill/fault, Phase A and measured campaigns
+  remain excluded, and D2 remains limited to intrinsic physical evidence. Ten active blockers remain:
+  `REC-RDY-01`, `REC-RDY-03`–`REC-RDY-11`. Recovery preflight follows successful REC-I3 and must bind exact E-slot/D2
+  SQLite/Keystore/filesystem facts, including effective WAL/FULL, `wal_autocheckpoint=0`,
+  `foreign_keys=ON`, `sqlite_version()`, `sqlite_source_id()` and canonical compile-options digest.
+  `phaseAAllowed=false`, `executionAllowed=false`, `measuredExecutionAllowed=false`; Phase A's 184
+  injections and the full physical 138-injection D1/D2/D5 campaign were not run. PASS remains
+  structurally forbidden without the required physical evidence, and the 120-attempt hard-kill
+  campaign/candidate remains a separate denominator.
 - `tools/check_poc_recovery_run_readiness.py` must fail closed while
   `executionAllowed=false`; completion of any prerequisite cannot silently authorize execution.
 - `POC-SEARCH-001` retains its frozen generated-scale observations. The earlier valid full result
@@ -365,21 +414,24 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
 
 ## Next safe action
 
-The distinct accountable formal human review of exact PR #12 HEAD `b5371f…` / tree `1fd03f…` is
-complete. Novikova Katerina returned all 12 answers as `ACCEPT` and disposition
-`APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW` in individual professional capacity, with Rambus
-listed only as affiliation. This closes `REC-REV-20260812-02` and `REC-RDY-02`, but is not a Rambus
-corporate approval, formal GitHub review, implementation authorization, Phase A authorization,
-execution authorization, dependency admission, Production Security or Production Legal.
+The exact REC-I2A/REC-I2B integration and its accountable/independent review chain are complete on
+`main`; the historical PR #38 main-run failure is closed only by validator successor PR #50. The
+next safe Recovery implementation is the owner-authorized REC-I3 isolated harness/controller slice
+in a separate branch under `OWNER-AUTH-BATCH-20260819-01` / `OD-15`. That task may implement and
+non-metrically verify only the frozen v0.6 contract with deterministic synthetic fixtures, refresh
+its exact graph/locks/verification/package/R8 proof, obtain the required independent/accountable
+reviews and conditionally merge after exact-head CI.
 
-`REC-I1-AUTH-20260813-01` authorized only the pure contract foundation. Its exact independent AI
-advisory review and protected merge are complete, and the post-merge validator lifecycle is green.
-No runtime Recovery work becomes READY as a result. The next safe Recovery capability gate must be
-separately owner-scoped and remain fail-closed against the ten active blockers: actual future graph
-and Product/IP disposition, complete Streaming/microfile runtime implementation verification,
-harness, fresh device SQLite/Keystore/filesystem preflight, execution authorization, full-device
-verdict and Production Legal/Security. Only a later explicit owner record may change
-`executionAllowed` after every prerequisite is satisfied.
+REC-I3 authorization does not make the PoC READY and does not authorize a Recovery Phase A,
+hard-kill/fault or measured campaign. OD-15 separately authorizes all available bounded non-measured
+functional, fault, compatibility and preflight checks on exact pinned E slots after task-specific
+prerequisites; it does not authorize a support claim or substitute for intrinsic physical evidence.
+Only after successful REC-I3 may the Recovery preflight record exact pinned E-slot and D2 SQLite,
+Keystore and filesystem facts; it is still not Phase A or a verdict. Owner-only blockers remain:
+explicit Phase A/measured execution authorization, any later concrete physical procurement gate,
+the complete D1/D2/D5 verdict, Production Legal/Security and final post-evidence container/admission
+decisions. Only a later explicit owner record may change `executionAllowed` after every applicable
+prerequisite is satisfied.
 Current Pull Request state is never a static document invariant; use live GitHub metadata.
 
 ## Update protocol

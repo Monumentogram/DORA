@@ -1,9 +1,9 @@
 # Dora MVP 1 — Stage 0 PoC Execution Order
 
-Version: 1.4
-Date: 14 August 2026
-Owner decisions effective: 4, 11 and 12 August 2026 (`OD-01`–`OD-14`)
-Status: owner-approved ordering with reviewed/merged REC-I1 foundation; recovery runtime implementation/execution blocked
+Version: 1.5
+Date: 19 August 2026
+Owner decisions effective: 4, 11, 12 and 19 August 2026 (`OD-01`–`OD-15`)
+Status: post-PR43 integration reconciled; REC-I2A/I2B merged; REC-I3 implementation/non-metric verification/conditional merge and bounded non-measured E-slot checks authorized; Recovery Phase A/measured campaign blocked
 Scope: all ten Technical Plan PoCs mapped to the executable backlog
 
 ## 1. Decision summary
@@ -43,7 +43,7 @@ Capture execution authority and does not change the current Recovery reconciliat
 
 ```mermaid
 flowchart TD
-    O["Approved owner constraints OD-01..OD-14"] --> G["Defined Stage 0 gates Approved; recovery v0.6 KEY-04 governance fixed, exact packet and pure I1 review lifecycle complete; runtime implementation/actual graph blocked"]
+    O["Approved owner constraints OD-01..OD-15"] --> G["Defined Stage 0 gates Approved; recovery v0.6 fixed; REC-I2A/I2B merged; REC-I3 plus bounded non-measured E-slot checks authorized; Recovery campaign blocked"]
     O --> D["Connect and auto-identify one physical phone"]
     O --> C["Synthetic-only until controlled evidence storage"]
     G --> CAP["POC-CAPTURE-001"]
@@ -83,7 +83,7 @@ Common blockers:
 | PoC | Direct dependencies | What it blocks | Safe parallel work | Physical phone | Audio/data requirement | Owner decisions |
 |---|---|---|---|---|---|---|
 | `POC-CAPTURE-001` | approved defined gates; one owner phone connected and automatically inventoried; synthetic fixture and evidence/deletion plan | `POC-BATTERY-001`; production Stage 2; informs recovery writer timing and offline capture harness | Search harness and synthetic decision corpus preparation | **First exploratory run:** exactly one physical owner phone. **Full gate later:** required D1/D2/D3/D5 and applicable D4–D7 slices; emulator only supplements API/fault checks | Reproducible synthetic acoustic speech/silence first; purpose-recorded only after consent and controlled-store gate | OD-01, OD-02, OD-03, OD-05, OD-06, OD-07, OD-08 |
-| `POC-RECOVERY-001` | Proposed `DEC-044`; prospective Gate Set/protocol `stage0-v0.6`; completed distinct accountable recovery Engineering/Security governance review; completed pure REC-I1 task-scoped authorization, independent AI advisory implementation review and non-metric verification; separately authorized complete runtime implementation/non-metric verification; exact recovery-only zero-JSR305 graph/package/R8 evidence and scoped Product/IP disposition of that actual graph; fresh emulator/D2 preflight; separate owner execution authorization | production Stage 3 and later `ADR-AUDIO-001` final storage choice; contributes to offline/process-death evidence | governance/status reconciliation and synthetic-only planning; no runtime implementation or execution in the current scope | **Phase A:** 46 × (3 pinned emulator + 1 D2) = 184, only `FAIL`/`INCONCLUSIVE`. **Full physical:** 46 × (D1 + D2 + D5) = 138; D1/D5 deferred; exact-match-only D2 reuse leaves 92 injections. | Deterministic synthetic PCM16 byte oracle only; no microphone/real speech. 12 strata, 120 base hard kills/candidate as a separate denominator, ≥100 valid and ≥8/stratum; exactly 46 unique active rows with one KEY-04. KEY-04 is decrypt authentication/AAD failure only → `KEY_UNAVAILABLE_KEY_MISMATCH`; successful decrypt malformed/wrong plaintext remains KCF-07 → `CORRUPT_KEY_CONFIRMATION`. | OD-05, OD-08, OD-11, OD-14 |
+| `POC-RECOVERY-001` | Proposed `DEC-044`; current Approved `OD-15`; active Gate Set/protocol `stage0-v0.6`; completed distinct accountable governance and exact REC-I2B implementation review; merged REC-I2A exact graph/package/R8 evidence and REC-I2B runtime crypto; current `OWNER-AUTH-BATCH-20260819-01` permits REC-I3 implementation/non-metric verification/conditional merge; successful REC-I3 precedes fresh Recovery emulator/D2 preflight; separate owner authority remains required for Recovery Phase A/measured execution | production Stage 3 and later `ADR-AUDIO-001` final storage choice; contributes to offline/process-death evidence | REC-I3 isolated harness/controller implementation and deterministic non-metric verification may proceed in its own branch. OD-15 separately permits all available bounded non-measured E-slot functional/fault/compatibility/preflight checks after exact-pin availability and task prerequisites; it does not permit a Recovery hard-kill/fault or measured campaign. | Owner-approved readiness order is E28/E30/E36-GAPI/E-NOGMS/E16K/E-NEXT first, then D2 only where physical evidence is intrinsic. The active Phase A contract remains 46 × (3 pinned emulator repetitions + 1 D2) = 184 and only `FAIL`/`INCONCLUSIVE`; its exact campaign images and execution still require later authorization. Full physical remains 46 × (D1 + D2 + D5) = 138; D1/D5 deferred; exact-match-only D2 reuse leaves 92 injections. | Deterministic synthetic PCM16 byte oracle only; no microphone/real speech. 12 strata, 120 base hard kills/candidate as a separate denominator, ≥100 valid and ≥8/stratum; exactly 46 unique active rows with one KEY-04. KEY-04 is decrypt authentication/AAD failure only → `KEY_UNAVAILABLE_KEY_MISMATCH`; successful decrypt malformed/wrong plaintext remains KCF-07 → `CORRUPT_KEY_CONFIRMATION`. | OD-05, OD-08, OD-11, OD-14, OD-15 |
 | `POC-VAD-001` | gates, data governance; deterministic clock/frame contract | production Stage 3 segmentation profile; stable physical-segment inputs for later pipeline | Recovery and search; acoustic part can wait while deterministic part runs | Physical D1–D3 for real-time/acoustic evidence; emulator/JVM suitable for deterministic boundary cases | Synthetic 89.5/90/90.5, resume 89.9, noise and >10 min speech-like fixtures; governed real speech only later | OD-03, OD-04, OD-05, OD-06, OD-08, OD-09 if purpose-recorded |
 | `POC-ASR-001` | gates, governed immutable corpus, D1–D4/D7, artifact license/digest/ABI/16-KiB approval | production Stage 4; timestamp contract and quality baseline for diarization/offline local ML | Search and decision benchmarks; runtime candidates may be compared independently after common normalization freezes | **Required:** D1–D4 for tier claims; D7 emulator/physical for native gate | Blind RU/EN/mixed clean/noisy/speakerphone corpus; participant-isolated evaluation | OD-03–OD-06, OD-08–OD-10 plus named IP/Legal artifact approval |
 | `POC-DIAR-001` | gates, governed 1–6 speaker corpus, ASR/reference timestamp contract, exact weight license | production Stage 5 and correction UX scope | Battery repeats and decision/search work after shared corpus freezes | **Required:** D2/D3; D7 for native path; server reference may run separately | Clean/noisy/overlap/fast-turn/returning-speaker/speakerphone/negative corpus | OD-03–OD-06, OD-08–OD-10 plus weight terms approval |
@@ -144,24 +144,33 @@ After capture evidence is understood:
 
 - `POC-RECOVERY-001` proceeds through separately authorized scopes. Governance review and the
   distinct accountable formal human review are complete; `accountable formal review complete`
-  remains the exact v0.6 governance marker. `REC-I1-AUTH-20260813-01` permits only the
-  isolated pure contract foundation. Its exact PR #15 HEAD `ee7bb00…` received an independent
-  OpenAI Codex / GPT-5 AI implementation advisory review with `formalReviewer=false`,
-  `NO_FURTHER_CHANGES_REQUIRED`, no P0/P1/P2 findings and 62/62 Recovery JVM tests, then
-  protected-squash-merged as `f2bc8c95…`. Validator-only PR #16 closed the resulting main-branch
-  lifecycle defect and protected-squash-merged as `685e7592…`; exact-main post-merge CI passed.
-  Runtime crypto/storage/harness implementation and execution each still require later scope.
-  Global `implementationAllowed=false` and `executionAllowed=false`;
+  remains the exact v0.6 governance marker. `REC-I1-AUTH-20260813-01` permitted only the
+  isolated pure contract foundation, reviewed and protected-squash-merged through PR #15/#16.
+  PR #38 later protected-squash-merged the exact REC-I2A graph/package/R8 proof and REC-I2B Tink
+  runtime as `a7e23c9a…`; its exact-head CI was green, its first exact-main recovery-governance job
+  failed because dispatch still selected the REC-I1 successor profile, and validator-only PR #50
+  preserved the runtime/evidence bytes while closing that lifecycle defect as `0136a690…` with
+  green exact-main CI. `OWNER-AUTH-BATCH-20260819-01` / `OD-15` now permits exact REC-I3
+  implementation, non-metric verification and conditional protected merge. It keeps
+  `phaseAAllowed=false`, `executionAllowed=false`, `measuredExecutionAllowed=false` and
+  `productionAdmissionAllowed=false` for the Recovery campaign. The supplemental direct approval
+  allows all available bounded non-measured functional, fault, compatibility and preflight checks
+  on exact pinned E slots after task prerequisites, while Recovery preflight waits for successful
+  REC-I3 and Recovery hard-kill/fault, Phase A and measured campaigning remain unauthorized;
 - v0.1/v0.2/v0.3/v0.4/v0.5 remain 15 unchanged SHA-256-pinned superseded audit artifacts and cannot govern
   implementation or execution;
 - prospective `REC-JSR305-EXCLUDE-001` and exact governance packet authenticity/LICENSE/NOTICE
   evidence are closed. Novikova Katerina's distinct accountable formal review closed `REC-RDY-02`;
   the GPT-5.6 Sol/OpenAI records remain non-formal historical evidence, and the later REC-I1 and
-  validator-remediation AI reviews likewise have `formalReviewer=false`. The I1 module adds no Tink
-  or JSR-305 wiring. A later authorized runtime implementation must still produce exact
-  recovery-only graph/package/R8 evidence and a scoped Product/IP disposition. Approval to use the
-  excluded JSR-305 artifact is neither required nor granted;
-- a later authorized recovery Phase A may use emulator+D2 but cannot PASS without D1/D5;
+  validator-remediation AI reviews likewise have `formalReviewer=false`. REC-I2A records the exact
+  bounded graph/package/R8 and scoped Product/IP disposition used by merged REC-I2B; this is not
+  dependency or production admission. Approval to use the excluded JSR-305 artifact is neither
+  required nor granted;
+- REC-I3 may implement only the isolated harness/controller and deterministic non-metric checks.
+  OD-15 separately authorizes all available bounded non-measured E-slot functional, fault,
+  compatibility and preflight checks after exact-pin availability and task prerequisites. Recovery
+  preflight waits for successful REC-I3 and may use D2 only for intrinsic physical evidence; Phase A
+  remains forbidden now and cannot PASS without D1/D5;
 - `POC-VAD-001` remains a separate branch/harness and is not admitted by recovery work;
 - `POC-BATTERY-001` may begin with capture-only modes once the capture harness is stable;
 - no final crypto/container ADR is accepted before recovery evidence.
@@ -224,8 +233,20 @@ Not allowed:
 
 The owner's phone was automatically inventoried and is recorded as available D2 in
 `device-matrix.yaml`. D1 and D3–D7 remain `unknown`/unavailable unless separately inventoried.
-`OD-06` explicitly defers procurement of every additional device; their absence limits evidence
-and does not relax the final matrix.
+`OD-15` adds an emulator-first order: E28/E30/E36-GAPI/E-NOGMS/E16K/E-NEXT, then existing D2 only
+where physical evidence is intrinsic. Only E36-GAPI currently has an exact artifact pin; all other
+E-slot pins remain `OPEN`. OD-15 authorizes all available bounded non-measured functional, fault,
+compatibility and preflight checks once exact-pin availability and task-specific prerequisites are
+met; this document performs none. Recovery preflight additionally waits for successful REC-I3, and
+the bounded matrix authority does not permit Recovery hard-kill/fault, Phase A or measured
+campaigning. Procurement of D1
+and D3–D6 is postponed until emulator-slot plus D2 evidence and a concrete final gate identify the
+missing physical profile. Their absence limits evidence and does not relax the final matrix or
+resolve the D6/D7 identifier conflict.
+
+Emulators never substitute for physical microphone, flash/durability, battery, thermal, OEM
+lifecycle, radio/VPN route or arm64 performance evidence. A physical device never substitutes for
+an exact required emulator image, 16-KiB runtime or next-API environment.
 
 ## 9. Data requirements
 
@@ -242,6 +263,10 @@ and does not relax the final matrix.
 
 Technical Plan section 34.2 maps D6 to audio routes and D7 to 16-KiB. Test Strategy section 5 maps D6 to 16-KiB and D7 to next API. Following source precedence, the preparatory matrix uses D6 for audio routes and D7 for combined 16-KiB/next-API coverage. This interpretation is explicit, not a silent baseline change. Final cross-document IDs must be reconciled before a release matrix claim; it does not block D1–D5 capture work.
 
+The `OD-15` E-slot namespace is orthogonal and does not resolve or renumber this conflict. `E16K`
+and `E-NEXT` provide unambiguous planning targets while their exact pins and all execution remain
+separately blocked.
+
 ### RECOVERY-ADR-ORDER-001
 
 The backlog lists `ADR-AUDIO-001` as a dependency of `POC-RECOVERY-001`, while the Technical Plan expects the recovery PoC to choose Tink streaming versus sealed microfiles and then support a go/no-go ADR. Before recovery starts, create only a scoped **Proposed experiment decision** that freezes the compared formats and safety invariants. Accept the final audio/container ADR only after PoC evidence. This prevents a PoC from being forced to prove a choice already declared final.
@@ -253,11 +278,14 @@ run-key confirmation. Its exact Gate Set compares durable-one-segment-lookahead 
 Streaming AEAD with five-second `AES256_GCM_TINK_IV12_TAG16` microfiles and the exact authenticated
 binary manifest; 15/30-second microfiles are not PASS-eligible. Design selection does not prove an
 implementation. Prospective policy, exact governance packet evidence and the distinct accountable
-Engineering/Security review are complete. The task-scoped I1 pure contract foundation is present,
-independently AI-advisory-reviewed with `formalReviewer=false`, and protected-squash-merged; its
-post-merge validator lifecycle defect is separately remediated with green exact-main CI. Future
-actual runtime-graph Product/IP disposition, complete runtime implementation verification and
-execution authorization remain absent. v0.1–v0.5 are retained only as 15
+Engineering/Security review are complete. REC-I1 and the exact REC-I2A graph/package/R8 plus
+REC-I2B runtime boundary are reviewed and protected-squash-merged; PR #50 separately remediated the
+post-merge validator dispatch without changing those bytes. `OD-15` authorizes REC-I3
+harness/controller implementation, non-metric verification and conditional merge, plus bounded
+non-measured E-slot functional/fault/compatibility/preflight checks after exact-pin availability and
+task prerequisites. Recovery preflight still waits for successful REC-I3; Recovery hard-kill/fault,
+Phase A and measured campaigns remain unauthorized. The REC-I3 harness/fresh graph, preflight,
+Phase A and execution evidence remain absent. v0.1–v0.5 are retained only as 15
 unchanged SHA-256-pinned superseded audit artifacts. v0.6 replaces only effective KEY-04 with its
 exact decrypt-failure-only oracle and keeps KCF-07. A future final `ADR-AUDIO-001` remains evidence-dependent.
 
@@ -279,6 +307,10 @@ and Stage Status.
 These historical readiness facts do not authorize a repeat Capture campaign. The deferred clean
 60-minute screen-off baseline remains a separate future device-campaign scope.
 
-## 12. Explicit non-action in Stage 0A
+## 12. Explicit non-action in this reconciliation
 
-This document does not start `POC-CAPTURE-001` or any other PoC. No microphone permission, foreground service, audio writer, VAD, ASR, diarization, database, backend, account, model weight or production identity is added in this branch.
+This document records ordering and current authority only. This reconciliation starts no emulator/device run,
+preflight, Phase A, kill/fault campaign or benchmark. It adds no microphone permission, foreground
+service, product audio writer, VAD/ASR/diarization runtime, production database/backend/account,
+model weight or production identity. REC-I3 implementation is authorized only for a separate
+task-scoped branch under `OD-15` and is not implemented by this documentation/evidence PR.

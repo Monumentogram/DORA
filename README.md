@@ -1,6 +1,6 @@
 # Dora
 
-Dora is an Android local-first meeting assistant. This repository currently contains the approved MVP 1 technical/design baseline and the Stage 00 implementation bootstrap. The Android shell exposes four placeholder destinations and a clearly unavailable recording action; microphone permission and product features are intentionally not implemented yet.
+Dora is an Android local-first meeting assistant. This repository contains the approved MVP 1 technical/design baseline, the Stage 00 bootstrap, and isolated Stage 0 PoC contracts, harnesses and synthetic evidence. The Android product shell still exposes four placeholder destinations and a clearly unavailable recording action; microphone permission and product recording/features are intentionally not implemented or admitted by the PoC work.
 
 Repository visibility is temporarily public so GitHub Free can enforce server-side protection of `main`; see [`ADR-0002`](docs/adr/ADR-0002-public-repository-for-branch-protection.md). This is not a product release or approval to store private data, credentials, signing material or production configuration in the repository.
 

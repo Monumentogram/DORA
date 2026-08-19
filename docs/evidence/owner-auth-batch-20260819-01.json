@@ -1,0 +1,175 @@
+{
+  "schemaVersion": "dora-owner-authority-public-sanitized-v0.1",
+  "recordId": "OWNER-AUTH-BATCH-20260819-01",
+  "recordDate": "2026-08-19",
+  "timezone": "Europe/Moscow",
+  "recordType": "SANITIZED_OWNER_AUTHORITY_RECORD_NOT_EXECUTION_EVIDENCE",
+  "owner": "Project owner",
+  "coordinator": "coordinator 7",
+  "authorizationBaseMain": {
+    "commit": "671f594074b37bb2b5c8e4a4c1026de909acf339",
+    "tree": "4c969005307bbe5ef2c9a69b0b2ae84476217dc3",
+    "pullRequest": 55
+  },
+  "authoritySource": {
+    "sourceClass": "OWNER_PROVIDED_ATTACHMENT_OUTSIDE_REPOSITORY",
+    "sourceRecordId": "OWNER-AUTH-BATCH-20260819-01",
+    "attachmentBytes": 9075,
+    "attachmentSha256": "9966f95884d5210f7624133b30d7646bc0c49fefb260143f68532e429a648e89",
+    "attachmentBytesPresentInRepository": false,
+    "attachmentSourceBytesPresentOutsideRepository": true,
+    "attachmentDigestLocallyRecomputed": true,
+    "attachmentReadCompletely": true,
+    "privateSourcePathCommitted": false,
+    "attachmentBodyCommitted": false
+  },
+  "recI3Authority": {
+    "pocId": "POC-RECOVERY-001",
+    "taskId": "REC-I3",
+    "recI3ImplementationAllowed": true,
+    "recI3NonMetricVerificationAllowed": true,
+    "recI3ConditionalMergeAllowed": true,
+    "phaseAAllowed": false,
+    "executionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "productionAdmissionAllowed": false,
+    "allowedScope": [
+      "preimplementation contract",
+      "isolated recovery harness and controller slice",
+      "repository-owned deterministic synthetic fixtures",
+      "host-JVM and other non-metric verification",
+      "exact graph, locks, verification metadata, zero-JSR305, package inventory and release-R8 evidence",
+      "independent advisory review and accountable review",
+      "Pull Request publication, exact-head CI and conditional protected squash merge"
+    ],
+    "forbiddenClaimsOrActions": [
+      "Recovery fault-injection or kill campaign",
+      "Recovery PASS or readiness closure",
+      "final crypto or container selection",
+      "production storage or schema admission",
+      "device or emulator measured execution"
+    ],
+    "conditionalMergeRequirements": [
+      "exact-head required CI success",
+      "clean independent advisory review of the exact head",
+      "accountable review required by the REC-I3 contract",
+      "no authority, status, admission or execution elevation outside this record"
+    ]
+  },
+  "recoveryPreflightAuthority": {
+    "availableOnlyAfterSuccessfulRecI3": true,
+    "approvedEnvironmentClasses": [
+      "owner-approved emulator slots with exact pins",
+      "existing physical D2 where physical evidence is required"
+    ],
+    "allowedObservations": [
+      "sqlite_version()",
+      "sqlite_source_id()",
+      "canonical compile options",
+      "effective journal_mode=WAL",
+      "effective synchronous=FULL",
+      "effective wal_autocheckpoint=0",
+      "effective foreign_keys=ON",
+      "Android Keystore availability and alias lifecycle",
+      "filesystem and durability prerequisites",
+      "exact commit, APK digest, environment profile and sanitized result"
+    ],
+    "hardKillAllowed": false,
+    "phaseAAllowed": false,
+    "benchmarkAllowed": false,
+    "verdictAllowed": false,
+    "executionPerformedByThisRecord": false
+  },
+  "documentationReconciliationAuthority": {
+    "docsAndEvidenceReconciliationAllowed": true,
+    "historicalEvidenceRewriteAllowed": false,
+    "sourceOrTestModificationAllowed": false,
+    "workflowModificationAllowed": false,
+    "provenCommitPrCiAndReviewFactsOnly": true,
+    "pocPassOrReadyElevationAllowed": false,
+    "thresholdOrExistingDecisionSemanticChangeAllowed": false,
+    "deviceOrEmulatorExecutionPerformedByThisReconciliation": false,
+    "conditionalProtectedSquashMergeAllowed": true
+  },
+  "supplementalDirectOwnerApproval": {
+    "sourceClass": "DIRECT_OWNER_APPROVAL_RELAYED_BY_COORDINATOR",
+    "approvedOn": "2026-08-19",
+    "emulatorFirstMatrixApproved": true,
+    "executionOrder": [
+      "E28",
+      "E30",
+      "E36-GAPI",
+      "E-NOGMS",
+      "E16K",
+      "E-NEXT",
+      "D2 only for evidence that intrinsically requires a physical device"
+    ],
+    "postponedProcurementProfiles": [
+      "D1",
+      "D3",
+      "D4",
+      "D5",
+      "D6"
+    ],
+    "procurementReconsiderationCondition": "Emulator-slot plus D2 evidence exists and a concrete final gate identifies the missing physical profile.",
+    "emulatorDoesNotSubstituteFor": [
+      "physical microphone",
+      "physical flash and durability",
+      "battery",
+      "thermal behavior",
+      "OEM lifecycle behavior",
+      "radio and VPN route behavior",
+      "arm64 physical performance"
+    ],
+    "boundedNonMeasuredEmulatorMatrixChecks": {
+      "fixAndVerifyMatrixAllowed": true,
+      "availableFunctionalChecksExecutionAllowed": true,
+      "availableFaultChecksExecutionAllowed": true,
+      "availableCompatibilityChecksExecutionAllowed": true,
+      "availablePreflightChecksExecutionAllowed": true,
+      "exactPinAvailabilityAndTaskPrerequisitesRequired": true,
+      "measuredBenchmarkOrCampaignAllowed": false,
+      "executionPerformedByThisRecord": false,
+      "executionPerformedByThisReconciliation": false
+    },
+    "recoveryBoundary": {
+      "recI3MustCompleteBeforeRecoveryPreflight": true,
+      "recoveryPreflightAllowedOnlyAfterSuccessfulRecI3": true,
+      "recoveryHardKillOrFaultCampaignAllowed": false,
+      "recoveryPhaseAAllowed": false,
+      "recoveryMeasuredCampaignAllowed": false
+    },
+    "d2Boundary": {
+      "useAllowedOnlyWherePhysicalEvidenceIsIntrinsic": true,
+      "taskSpecificPrerequisitesRequired": true,
+      "blanketPhysicalExecutionOrSupportAuthority": false,
+      "physicalExecutionPerformedByThisRecord": false
+    }
+  },
+  "immutability": {
+    "olderOwnerRecordsRemainHistorical": true,
+    "olderRecI3FalseFlagsRewritten": false,
+    "recoveryGateSetOrProtocolBytesModified": false,
+    "recoverySourceOrEvidenceBytesModified": false,
+    "kspOverlayOrValidatorPinsModified": false
+  },
+  "globalAuthorityBoundary": {
+    "recoveryPhaseAOrCampaignExecutionAllowed": false,
+    "boundedNonMeasuredEmulatorMatrixExecutionAllowed": true,
+    "unboundedDeviceOrEmulatorExecutionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "executionPerformedByThisRecord": false,
+    "productionAdmissionAllowed": false,
+    "realDataAllowed": false,
+    "pocPassClaimed": false,
+    "readinessClaimed": false,
+    "dependencyOrModelAdmissionClaimed": false,
+    "productionLegalOrSecurityApprovalClaimed": false
+  },
+  "privacy": {
+    "attachmentBodyPresent": false,
+    "privateSourcePathPresent": false,
+    "credentialOrSecretPresent": false,
+    "realPersonMeetingAudioOrTranscriptPresent": false
+  }
+}
