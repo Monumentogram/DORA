@@ -26,11 +26,13 @@ import com.monumentogram.dora.poc.vpn.contract.canonicalString
 import com.monumentogram.dora.poc.vpn.contract.requiredArray
 import com.monumentogram.dora.poc.vpn.contract.requiredInteger
 import com.monumentogram.dora.poc.vpn.contract.requiredString
+import java.net.URI
 import java.nio.ByteBuffer
 import java.nio.charset.CharacterCodingException
 import java.nio.charset.CodingErrorAction
 import java.nio.charset.StandardCharsets
 import java.time.Instant
+import java.util.Locale
 
 internal const val SNAPSHOT_KIND = "IN_MEMORY_SNAPSHOT_RESTORE_SIMULATION"
 internal const val SYNTHETIC_TENANT = "tenant-synthetic-a"
@@ -90,6 +92,15 @@ internal data class RequestLedgerEntry(
     val disposition: String,
     val applicationStatus: Int,
     val effectDelta: EffectVector,
+)
+
+internal data class ContentFreeOperationIdentity(
+    val operationClass: String,
+    val canonicalRequestDigest: Sha256Hex,
+    val idempotencyKeyDigest: Sha256Hex?,
+    val profileBindingSha256: Sha256Hex,
+    val endpointId: String,
+    val regionCode: String,
 )
 
 internal data class InMemoryServiceSnapshot(
@@ -260,6 +271,37 @@ internal class SyntheticContractService(
     @Synchronized fun deletion(deletionId: String): DeletionState? = deletions[deletionId]
 
     @Synchronized fun resultBytes(jobId: String): ByteArray? = jobs[jobId]?.let(::resultBytes)
+
+    @Suppress("ReturnCount")
+    @Synchronized
+    fun contentFreeOperationIdentity(request: HarnessRequest): ContentFreeOperationIdentity? {
+        if (!isCanonicalLoopbackUri(request.uri)) return null
+        val routed = route(request.method, request.uri.rawPath) ?: return null
+        if (routed.operationClass != request.operationClass) return null
+        val operation = ContractCatalog.operationsByClass.getValue(routed.operationClass)
+        val normalizedHeaders = normalize(request.headers) ?: return null
+        val descriptor =
+            bodyDescriptor(operation, routed, normalizedHeaders, request.body) ?: return null
+        val prepared =
+            ContractOracle.prepareRequest(
+                operation,
+                routed.parameters,
+                descriptor,
+                PROFILE_DIGEST,
+                request.uri.rawPath,
+            ) as? RequestPreparation.Accepted ?: return null
+        val keyDigest =
+            request.headers.headerValue("idempotency-key")?.let(ContractOracle::sha256Utf8)
+        if (!operation.idempotencyPolicy.startsWith("READ_ONLY") && keyDigest == null) return null
+        return ContentFreeOperationIdentity(
+            operation.operationClass,
+            prepared.request.canonicalRequestDigest,
+            keyDigest,
+            PROFILE_DIGEST,
+            ENDPOINT_BINDING.endpointId,
+            ENDPOINT_BINDING.regionCode,
+        )
+    }
 
     @Suppress("LongMethod", "LongParameterList", "ReturnCount")
     private fun mutation(
@@ -1205,6 +1247,27 @@ internal class SyntheticContractService(
             null
         }
 
+    private fun normalize(headers: Map<String, String>): Map<String, String>? {
+        val normalized =
+            headers.entries.associate { (name, value) -> name.lowercase(Locale.ROOT) to value }
+        return normalized.takeIf { it.size == headers.size }
+    }
+
+    private fun isCanonicalLoopbackUri(uri: URI): Boolean =
+        listOf(
+                uri.scheme == "http",
+                uri.host == LOOPBACK_HOST,
+                uri.port in 1..65_535,
+                uri.rawAuthority == "$LOOPBACK_HOST:${uri.port}",
+                uri.rawUserInfo == null,
+                uri.rawQuery == null,
+                uri.rawFragment == null,
+            )
+            .all { it }
+
+    private fun Map<String, String>.headerValue(name: String): String? =
+        entries.singleOrNull { it.key.equals(name, ignoreCase = true) }?.value
+
     private fun CanonicalValue.ObjectValue.string(name: String): String? =
         (value(name) as? CanonicalValue.StringValue)?.value
 
@@ -1225,10 +1288,10 @@ internal class SyntheticContractService(
                         "errorCode" to canonicalString(code),
                         "retryClass" to
                             canonicalString(
-                                if (status == 429 || status in 500..599) {
-                                    "BACKOFF_REPLAY"
-                                } else {
-                                    "FINAL_REJECT"
+                                when {
+                                    code == "UPLOAD_URL_EXPIRED" -> "REFRESH_UPLOAD_PLAN"
+                                    status == 429 || status in 500..599 -> "BACKOFF_REPLAY"
+                                    else -> "FINAL_REJECT"
                                 }
                             ),
                         "operationClass" to canonicalString(context.operationClass),
