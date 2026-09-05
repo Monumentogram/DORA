@@ -7,7 +7,6 @@ import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
 import com.monumentogram.dora.poc.recovery.crypto.RecoveryRunAead
 import com.monumentogram.dora.poc.recovery.crypto.RecoveryRunAeadBackend
-import com.monumentogram.dora.poc.recovery.crypto.RecoveryRunAeadProvider
 import com.monumentogram.dora.poc.recovery.crypto.newTestAead
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -116,6 +115,59 @@ class RecoveryKeyBootstrapControllerTest {
             (result as BootstrapResult.Rejected).classification,
         )
         assertEquals(listOf("alias-exists"), fixture.events)
+    }
+
+    @Test
+    fun `provider get failure after successful generation fails KC03 with confirmed alias`() {
+        val fixture = Fixture(providerGetFailure = true)
+
+        val result = fixture.controller.bootstrap(fixture.value)
+
+        assertTrue(result is BootstrapResult.Failed)
+        result as BootstrapResult.Failed
+        assertEquals(BootstrapStep.KC03, result.failedStep)
+        assertTrue(result.remainder.aliasCreated)
+        assertEquals(
+            BootstrapAliasCreationState.CONFIRMED_CREATED,
+            result.remainder.aliasCreationState,
+        )
+        assertEquals("injected provider get", result.cause.message)
+        assertEquals(
+            listOf(
+                "alias-exists",
+                "inspect-namespaces",
+                "generate-alias",
+                "provider-generate",
+                "provider-get",
+            ),
+            fixture.events,
+        )
+    }
+
+    @Test
+    fun `provider generation failure stays KC02 unknown and never calls get`() {
+        val fixture = Fixture(providerGenerateFailure = true)
+
+        val result = fixture.controller.bootstrap(fixture.value)
+
+        assertTrue(result is BootstrapResult.Failed)
+        result as BootstrapResult.Failed
+        assertEquals(BootstrapStep.KC02, result.failedStep)
+        assertFalse(result.remainder.aliasCreated)
+        assertEquals(
+            BootstrapAliasCreationState.CREATION_OUTCOME_UNKNOWN,
+            result.remainder.aliasCreationState,
+        )
+        assertEquals("injected provider generate", result.cause.message)
+        assertEquals(
+            listOf(
+                "alias-exists",
+                "inspect-namespaces",
+                "generate-alias",
+                "provider-generate",
+            ),
+            fixture.events,
+        )
     }
 
     @Test
@@ -266,10 +318,19 @@ class RecoveryKeyBootstrapControllerTest {
         finalCollisionAtRename: Boolean = false,
         blockOnNamespace: Pair<CountDownLatch, CountDownLatch>? = null,
         aliasExists: Boolean = false,
+        providerGetFailure: Boolean = false,
+        providerGenerateFailure: Boolean = false,
     ) {
         val events = mutableListOf<String>()
         val value = KeyConfirmationValue(candidate, runId)
-        val crypto = RecordingCrypto(events, failAt, aliasExists)
+        val crypto =
+            RecordingCrypto(
+                events,
+                failAt,
+                aliasExists,
+                providerGetFailure,
+                providerGenerateFailure,
+            )
         val storage =
             RecordingStorage(
                 events,
@@ -297,13 +358,27 @@ class RecoveryKeyBootstrapControllerTest {
         private val events: MutableList<String>,
         private val failAt: String?,
         private val aliasExists: Boolean,
+        private val providerGetFailure: Boolean,
+        private val providerGenerateFailure: Boolean,
     ) : RecoveryBootstrapCrypto {
         private val primitive = newTestAead()
         private val backend =
             object : RecoveryRunAeadBackend {
-                override fun generateNew(keyUri: String) = Unit
+                override fun generateNew(keyUri: String) {
+                    if (providerGetFailure || providerGenerateFailure) {
+                        events += "provider-generate"
+                    }
+                    if (providerGenerateFailure) error("injected provider generate")
+                }
 
-                override fun getAead(keyUri: String) = primitive
+                override fun getAead(keyUri: String) =
+                    if (providerGetFailure) {
+                        events += "provider-get"
+                        error("injected provider get")
+                    } else {
+                        event("open-created-alias")
+                        primitive
+                    }
             }
 
         override fun aliasExists(runId: RunId): Boolean {
@@ -311,14 +386,9 @@ class RecoveryKeyBootstrapControllerTest {
             return aliasExists
         }
 
-        override fun createNewAlias(runId: RunId): RecoveryRunAead {
+        override fun createNewAlias(runId: RunId): BootstrapAliasCreation {
             event("generate-alias")
-            return RecoveryRunAeadProvider(backend).createNew(runId)
-        }
-
-        override fun consumeCreatedAlias(created: RecoveryRunAead): RecoveryRunAead {
-            event("open-created-alias")
-            return created
+            return WitnessedRecoveryRunAeadCreator(backend).createNew(runId)
         }
 
         override fun encryptConfirmation(

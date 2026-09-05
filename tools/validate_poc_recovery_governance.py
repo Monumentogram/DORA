@@ -391,6 +391,17 @@ REC_I3_BOOTSTRAP_SCOPE_SHA256 = (
 REC_I3_BOOTSTRAP_EVIDENCE_PATH = (
     "docs/evidence/poc-recovery-001/rec-i3-run-key-bootstrap-local-evidence-stage0-v0.2.json"
 )
+REC_I3_BOOTSTRAP_WITNESS_SCOPE_DRAFT_COMMIT = "08336516b9057e4ed81dc91a90115b9669758dae"
+REC_I3_BOOTSTRAP_WITNESS_SCOPE_DRAFT_TREE = "4d0bb8eee622689dc8e402e5c2020b2352f6ecab"
+REC_I3_BOOTSTRAP_WITNESS_SCOPE_COMMIT = "cd752f952666f414465c73bc55a0d7f7f20c4989"
+REC_I3_BOOTSTRAP_WITNESS_SCOPE_TREE = "315b9150d89143837c954aae97f7603752c006bb"
+REC_I3_BOOTSTRAP_WITNESS_SCOPE_PARENT = REC_I3_BOOTSTRAP_WITNESS_SCOPE_DRAFT_COMMIT
+REC_I3_BOOTSTRAP_WITNESS_SCOPE_PATH = (
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_BOOTSTRAP_PROVIDER_WITNESS_CORRECTION_STAGE0_V0_1.md"
+)
+REC_I3_BOOTSTRAP_WITNESS_SCOPE_SHA256 = (
+    "a5530175d9d306f2472dd29300451e9a152d40d107153ea62d23f3415d7c27d7"
+)
 REC_I3_BOOTSTRAP_SOURCE_PATHS = (
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/RecoveryKeyBootstrapController.kt",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryBootstrapCrypto.kt",
@@ -404,6 +415,7 @@ REC_I3_BOOTSTRAP_SOURCE_PATHS = (
 REC_I3_BOOTSTRAP_ADDITIVE_PATHS = (
     *REC_I3_BOOTSTRAP_SOURCE_PATHS,
     REC_I3_BOOTSTRAP_SCOPE_PATH,
+    REC_I3_BOOTSTRAP_WITNESS_SCOPE_PATH,
     REC_I3_BOOTSTRAP_EVIDENCE_PATH,
 )
 REC_I3_ADDITIVE_PATHS = (*REC_I3_SOURCE_PATHS, REC_I3_SCOPE_PATH, REC_I3_EVIDENCE_PATH,
@@ -5333,6 +5345,42 @@ def validate_rec_i3_bootstrap_scope_lineage(
     )
 
 
+def validate_rec_i3_bootstrap_witness_scope_lineage(
+    current: RecoveryLifecycleIdentity | None = None,
+) -> None:
+    lifecycle = current or collect_recovery_lifecycle_identity()
+    draft = collect_pinned_commit_identity(
+        REC_I3_BOOTSTRAP_WITNESS_SCOPE_DRAFT_COMMIT, lifecycle.head
+    )
+    validate_pinned_commit_identity(
+        draft,
+        expected_commit=REC_I3_BOOTSTRAP_WITNESS_SCOPE_DRAFT_COMMIT,
+        expected_tree=REC_I3_BOOTSTRAP_WITNESS_SCOPE_DRAFT_TREE,
+        expected_parents=("d6b419e38658725155cf2d4fa469b6d2053ee77c",),
+        label="REC-I3 bootstrap witness scope draft",
+    )
+    scope = collect_pinned_commit_identity(REC_I3_BOOTSTRAP_WITNESS_SCOPE_COMMIT, lifecycle.head)
+    validate_pinned_commit_identity(
+        scope,
+        expected_commit=REC_I3_BOOTSTRAP_WITNESS_SCOPE_COMMIT,
+        expected_tree=REC_I3_BOOTSTRAP_WITNESS_SCOPE_TREE,
+        expected_parents=(REC_I3_BOOTSTRAP_WITNESS_SCOPE_PARENT,),
+        label="REC-I3 bootstrap witness scope",
+    )
+    scope_paths = git_path_records(
+        "log", "--format=", "--name-only", "--no-renames", "-z",
+        f"d6b419e38658725155cf2d4fa469b6d2053ee77c..{REC_I3_BOOTSTRAP_WITNESS_SCOPE_COMMIT}",
+    )
+    require(scope_paths and set(scope_paths) == {REC_I3_BOOTSTRAP_WITNESS_SCOPE_PATH},
+            "REC-I3 bootstrap witness scope lineage contains implementation or unrelated paths")
+    require(sha256(REC_I3_BOOTSTRAP_WITNESS_SCOPE_PATH)
+            == REC_I3_BOOTSTRAP_WITNESS_SCOPE_SHA256,
+            "REC-I3 immutable bootstrap witness scope changed")
+    changes = collect_post_merge_changes(merged_anchor=REC_I3_BOOTSTRAP_WITNESS_SCOPE_COMMIT)
+    require(all(REC_I3_BOOTSTRAP_WITNESS_SCOPE_PATH not in paths for paths in changes.values()),
+            "REC-I3 bootstrap witness scope changed after its corrected scope commit")
+
+
 def validate_rec_i3_candidate_history(current: RecoveryLifecycleIdentity) -> None:
     # The inherited path collector omits merge-resolution diffs. This exact
     # branch must be linear; GitHub's verified synthetic merge is not its head.
@@ -5448,6 +5496,13 @@ def validate_rec_i3_bootstrap_evidence(
         "authorityRecord": "OWNER-AUTH-BATCH-20260819-01",
         "protocolId": PROTOCOL_ID,
         "scopeLocator": REC_I3_BOOTSTRAP_SCOPE_PATH,
+        "providerWitnessCorrection": {
+            "contractId": "rec-i3-bootstrap-provider-witness-correction-stage0-v0.1",
+            "draftCommit": REC_I3_BOOTSTRAP_WITNESS_SCOPE_DRAFT_COMMIT,
+            "scopeCommit": REC_I3_BOOTSTRAP_WITNESS_SCOPE_COMMIT,
+            "scopeLocator": REC_I3_BOOTSTRAP_WITNESS_SCOPE_PATH,
+            "scopeSha256": REC_I3_BOOTSTRAP_WITNESS_SCOPE_SHA256,
+        },
         "claimCeiling": REC_I3_BOOTSTRAP_CLAIM_CEILING,
         "fullRecI3Completed": False,
         "recoveryPreflightUnlocked": False,
@@ -5561,6 +5616,7 @@ def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | Non
     require(sha256(REC_I3_SCOPE_PATH) == REC_I3_SCOPE_SHA256,
             "REC-I3 immutable implementation scope changed")
     validate_rec_i3_bootstrap_scope_lineage(current)
+    validate_rec_i3_bootstrap_witness_scope_lineage(current)
     for commit in git_output("log", "--format=%H", f"{REC_I3_BASE}..HEAD", "--", *REC_I3_SOURCE_PATHS).splitlines():
         require(git_is_ancestor(REC_I3_SCOPE_COMMIT, commit), "REC-I3 source commit predates its scope")
     for commit in git_output("log", "--format=%H", f"{REC_I3_BASE}..HEAD", "--",
@@ -5595,6 +5651,7 @@ def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | Non
                              publication=current.github_pull_request_context is not None)
     bootstrap_present = [path for path in REC_I3_BOOTSTRAP_SOURCE_PATHS if (ROOT / path).exists()]
     for relative in (*bootstrap_present, REC_I3_BOOTSTRAP_SCOPE_PATH,
+                     REC_I3_BOOTSTRAP_WITNESS_SCOPE_PATH,
                      REC_I3_BOOTSTRAP_EVIDENCE_PATH):
         validate_rec_i3_regular_file(relative)
     validate_rec_i3_bootstrap_evidence(

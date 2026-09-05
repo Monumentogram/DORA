@@ -13,6 +13,16 @@ import validate_poc_recovery_governance as governance
 
 
 class RecoveryI3GovernanceTests(unittest.TestCase):
+    def test_bootstrap_provider_witness_correction_has_exact_scope_lineage(self) -> None:
+        self.assertEqual(
+            "cd752f952666f414465c73bc55a0d7f7f20c4989",
+            governance.REC_I3_BOOTSTRAP_WITNESS_SCOPE_COMMIT,
+        )
+        governance.validate_rec_i3_bootstrap_witness_scope_lineage()
+        changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
+        changes["untracked"] = [governance.REC_I3_BOOTSTRAP_WITNESS_SCOPE_PATH]
+        governance.validate_rec_i3_changed_paths(changes)
+
     def test_bootstrap_successor_has_exact_scope_first_identity_and_file_boundary(self) -> None:
         self.assertEqual(
             "f89ddba14d37efbdde5a99bf1fd169210ff189cb",

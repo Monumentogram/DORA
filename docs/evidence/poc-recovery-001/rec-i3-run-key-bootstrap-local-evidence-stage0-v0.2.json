@@ -10,6 +10,13 @@
   "authorityRecord": "OWNER-AUTH-BATCH-20260819-01",
   "protocolId": "poc-recovery-protocol-stage0-v0.6",
   "scopeLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_RUN_KEY_BOOTSTRAP_SCOPE_STAGE0_V0_2.md",
+  "providerWitnessCorrection": {
+    "contractId": "rec-i3-bootstrap-provider-witness-correction-stage0-v0.1",
+    "draftCommit": "08336516b9057e4ed81dc91a90115b9669758dae",
+    "scopeCommit": "cd752f952666f414465c73bc55a0d7f7f20c4989",
+    "scopeLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_BOOTSTRAP_PROVIDER_WITNESS_CORRECTION_STAGE0_V0_1.md",
+    "scopeSha256": "a5530175d9d306f2472dd29300451e9a152d40d107153ea62d23f3415d7c27d7"
+  },
   "claimCeiling": "PARTIAL_REC_I3_BOOTSTRAP_HOST_VERIFIED_PENDING_PLATFORM_PREFLIGHT_FULL_IMPLEMENTATION_AND_REVIEW",
   "implementationStatus": "LOCAL_VERIFIED",
   "fullRecI3Completed": false,
@@ -36,13 +43,13 @@
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/controller/RecoveryKeyConfirmationControllerTest.kt": "32935757ce9369ea04b9f787e6f4769a34d5a68424fcd5f6f359890518572f93"
   },
   "sourceFiles": {
-    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryBootstrapCrypto.kt": "6a0933e2d432df88c26cb9d2aaf814ba310dab47494dcf705167cf9884a0c8d7",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryBootstrapCrypto.kt": "6a665b167a5ab3b55c9e41ef80b3a4df4fc53c3075d6836bd40617d6c23fd3b8",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryKeyBootstrap.kt": "f6e73953f105bf88c8dd6e60dc0ccace674b716d1c71ba8d94ee97946925ffeb",
-    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/RecoveryKeyBootstrapController.kt": "dbeaf247b4ed1faf3bfef269e96a7527764ddae45599a85f19ed6bf04f5d290f",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/RecoveryKeyBootstrapController.kt": "a2003cbd89cbc58648896a0b9615517e2f6c693962787717fad7e268e84ed352",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryRunBootstrapJournal.kt": "c3198a21e6930392d6c01e48a2aaea4bec95c30654e4699ccf487f24d0e4d740",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryBootstrapStorage.kt": "d322d123208578460ff9442257941717cc67c9632221a544ccddd11a839b7da4",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicy.kt": "4a304cc98eb3576a2b975643e584ce5c47a1d6993459d8d0b5b3384049e17799",
-    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/RecoveryKeyBootstrapControllerTest.kt": "4850b1130dc17dd21856f161f32ada6611eb0396cea4ba76402bb058b46f8794",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/RecoveryKeyBootstrapControllerTest.kt": "18f77e4e6b2ad5bbb0f77c49ea4f912bef8df1bb0bbd7ea6716f07c8f19b1daa",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicyTest.kt": "4fe17ad71f150175b8225b69b98d854428eb5898c100b91c0ff1e9ca9ffba506"
   },
   "checks": [
@@ -65,7 +72,7 @@
       "command": ".\\gradlew.bat spotlessCheck detekt :poc:recovery:testDebugUnitTest :poc:recovery:lintDebug :poc:recovery:recoveryI2bVerifyCryptoPolicy --console=plain",
       "stage": "FINAL",
       "outcome": "PASS",
-      "tests": 119,
+      "tests": 121,
       "failures": 0,
       "errors": 0,
       "skipped": 0
@@ -88,6 +95,16 @@
     {
       "command": ".\\gradlew.bat :poc:recovery:testDebugUnitTest --tests '*RecoveryKeyBootstrapControllerTest.KC01 existing alias*' --console=plain",
       "stage": "REVIEW_FIX_BEHAVIORAL_GREEN",
+      "outcome": "PASS"
+    },
+    {
+      "command": ".\\gradlew.bat :poc:recovery:testDebugUnitTest --tests '*RecoveryKeyBootstrapControllerTest.provider get failure*' --tests '*RecoveryKeyBootstrapControllerTest.provider generation failure*' --console=plain",
+      "stage": "PROVIDER_WITNESS_BEHAVIORAL_RED",
+      "outcome": "EXPECTED_TEST_FAILURE"
+    },
+    {
+      "command": ".\\gradlew.bat :poc:recovery:testDebugUnitTest --tests '*RecoveryKeyBootstrapControllerTest' --console=plain",
+      "stage": "PROVIDER_WITNESS_GREEN",
       "outcome": "PASS"
     }
   ],

@@ -46,6 +46,12 @@ internal enum class KeyConfirmationState {
     VALID
 }
 
+internal enum class BootstrapAliasCreationState {
+    NOT_ATTEMPTED,
+    CREATION_OUTCOME_UNKNOWN,
+    CONFIRMED_CREATED,
+}
+
 internal data class RecoveryBootstrapRunRow(
     val runId: String,
     val candidateId: String,
@@ -57,7 +63,7 @@ internal data class RecoveryBootstrapRunRow(
 )
 
 internal data class BootstrapDurableRemainder(
-    val aliasCreated: Boolean = false,
+    val aliasCreationState: BootstrapAliasCreationState = BootstrapAliasCreationState.NOT_ATTEMPTED,
     val temporaryCreated: Boolean = false,
     val temporaryFullyWritten: Boolean = false,
     val temporaryFileSynced: Boolean = false,
@@ -67,7 +73,10 @@ internal data class BootstrapDurableRemainder(
     val transactionMarkedSuccessful: Boolean = false,
     val transactionCommitted: Boolean = false,
     val evidenceEmitted: Boolean = false,
-)
+) {
+    val aliasCreated: Boolean
+        get() = aliasCreationState == BootstrapAliasCreationState.CONFIRMED_CREATED
+}
 
 private val successfulEndTransactionProof = Any()
 
@@ -121,14 +130,18 @@ internal sealed interface BootstrapResult {
 internal interface RecoveryBootstrapCrypto {
     fun aliasExists(runId: RunId): Boolean
 
-    fun createNewAlias(runId: RunId): RecoveryRunAead
-
-    fun consumeCreatedAlias(created: RecoveryRunAead): RecoveryRunAead
+    fun createNewAlias(runId: RunId): BootstrapAliasCreation
 
     fun encryptConfirmation(
         runAead: RecoveryRunAead,
         value: KeyConfirmationValue,
     ): ByteArray
+}
+
+internal sealed interface BootstrapAliasCreation {
+    data class Created(val runAead: RecoveryRunAead) : BootstrapAliasCreation
+
+    data class GeneratedButOpenFailed(val cause: Throwable) : BootstrapAliasCreation
 }
 
 internal interface BootstrapWriteHandle
@@ -230,20 +243,24 @@ internal class RecoveryKeyBootstrapController(
         }
 
         val created = attempt(BootstrapStep.KC02, progress) { crypto.createNewAlias(value.runId) }
-        if (created is Attempt.Failure) return progress.failure(created)
-        progress.aliasCreated = true
+        if (created is Attempt.Failure) {
+            progress.aliasCreationState = BootstrapAliasCreationState.CREATION_OUTCOME_UNKNOWN
+            return progress.failure(created)
+        }
+        progress.aliasCreationState = BootstrapAliasCreationState.CONFIRMED_CREATED
         progress.complete(BootstrapStep.KC02)
 
-        val opened =
-            attempt(BootstrapStep.KC03, progress) {
-                crypto.consumeCreatedAlias((created as Attempt.Success).value)
+        val runAead =
+            when (val creation = (created as Attempt.Success).value) {
+                is BootstrapAliasCreation.Created -> creation.runAead
+                is BootstrapAliasCreation.GeneratedButOpenFailed ->
+                    return progress.failure(Attempt.Failure(BootstrapStep.KC03, creation.cause))
             }
-        if (opened is Attempt.Failure) return progress.failure(opened)
         progress.complete(BootstrapStep.KC03)
 
         val encrypted =
             attempt(BootstrapStep.KC04, progress) {
-                crypto.encryptConfirmation((opened as Attempt.Success).value, value)
+                crypto.encryptConfirmation(runAead, value)
             }
         if (encrypted is Attempt.Failure) return progress.failure(encrypted)
         val ciphertext = (encrypted as Attempt.Success).value.copyOf()
@@ -421,7 +438,7 @@ internal class RecoveryKeyBootstrapController(
 
     private class Progress {
         private val completed = mutableListOf<BootstrapStep>()
-        var aliasCreated = false
+        var aliasCreationState = BootstrapAliasCreationState.NOT_ATTEMPTED
         var temporaryCreated = false
         var temporaryFullyWritten = false
         var temporaryFileSynced = false
@@ -445,7 +462,7 @@ internal class RecoveryKeyBootstrapController(
 
         fun remainder(): BootstrapDurableRemainder =
             BootstrapDurableRemainder(
-                aliasCreated,
+                aliasCreationState,
                 temporaryCreated,
                 temporaryFullyWritten,
                 temporaryFileSynced,
