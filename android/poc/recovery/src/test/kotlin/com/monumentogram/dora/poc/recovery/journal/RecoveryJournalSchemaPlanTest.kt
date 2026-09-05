@@ -1,6 +1,7 @@
 package com.monumentogram.dora.poc.recovery.journal
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class RecoveryJournalSchemaPlanTest {
@@ -16,5 +17,19 @@ class RecoveryJournalSchemaPlanTest {
                 RecoveryJournalSchema.upgradePlan(old, new),
             )
         }
+    }
+
+    @Test
+    fun `publication and unit DDL retain protocol row constraints`() {
+        assertTrue(
+            RecoveryJournalSchema.CREATE_PUBLICATION_TABLE.contains(
+                "publication_kind TEXT NOT NULL CHECK(publication_kind='MANIFEST')"
+            )
+        )
+        assertTrue(
+            RecoveryJournalSchema.CREATE_UNIT_TABLE.contains(
+                "plaintext_end - plaintext_start <= cadence_seconds * 32000"
+            )
+        )
     }
 }

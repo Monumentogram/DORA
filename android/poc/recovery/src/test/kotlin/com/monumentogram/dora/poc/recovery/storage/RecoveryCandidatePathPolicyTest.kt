@@ -43,4 +43,33 @@ class RecoveryCandidatePathPolicyTest {
                 }
             }
     }
+
+    @Test
+    fun `final object types route absent regular and unsafe cases exactly`() {
+        val method =
+            RecoveryCandidatePathPolicy::class.java.methods.singleOrNull {
+                it.name == "finalExists" && it.parameterCount == 2
+            }
+        assertEquals("Typed final-object routing is missing", true, method != null)
+        val route = requireNotNull(method)
+        assertEquals(
+            false,
+            route.invoke(RecoveryCandidatePathPolicy, BootstrapPathType.ABSENT, "x"),
+        )
+        assertEquals(
+            true,
+            route.invoke(RecoveryCandidatePathPolicy, BootstrapPathType.REGULAR, "x"),
+        )
+        listOf(BootstrapPathType.DIRECTORY, BootstrapPathType.SYMLINK, BootstrapPathType.OTHER)
+            .forEach { type ->
+                val thrown =
+                    assertThrows(java.lang.reflect.InvocationTargetException::class.java) {
+                        route.invoke(RecoveryCandidatePathPolicy, type, "x")
+                    }
+                assertEquals(
+                    UnsafeRecoveryBootstrapPathException::class.java,
+                    thrown.cause?.javaClass,
+                )
+            }
+    }
 }

@@ -13,6 +13,7 @@ import com.monumentogram.dora.poc.recovery.contract.RecoveryContract
 import com.monumentogram.dora.poc.recovery.contract.RecoveryManifest
 import com.monumentogram.dora.poc.recovery.contract.RecoveryManifestCodec
 import com.monumentogram.dora.poc.recovery.contract.RecoveryManifestEntry
+import com.monumentogram.dora.poc.recovery.contract.RecoveryPcmContract
 import com.monumentogram.dora.poc.recovery.contract.RecoveryProcessingIntent
 import com.monumentogram.dora.poc.recovery.contract.RecoveryProcessingIntentInput
 import com.monumentogram.dora.poc.recovery.contract.RecoveryRelativeNameState
@@ -55,11 +56,11 @@ internal enum class CandidateSideEffectState {
 }
 
 internal data class CandidateArtifactRemainder(
-    var tempCreated: Boolean = false,
-    var fullyWritten: Boolean = false,
-    var fileSynced: Boolean = false,
-    var rename: CandidateSideEffectState = CandidateSideEffectState.NOT_ATTEMPTED,
-    var parentSynced: Boolean = false,
+    val tempCreated: Boolean = false,
+    val fullyWritten: Boolean = false,
+    val fileSynced: Boolean = false,
+    val rename: CandidateSideEffectState = CandidateSideEffectState.NOT_ATTEMPTED,
+    val parentSynced: Boolean = false,
 )
 
 internal data class MicrofileDurableRemainder(
@@ -67,11 +68,45 @@ internal data class MicrofileDurableRemainder(
     val unitCiphertext: CandidateArtifactRemainder = CandidateArtifactRemainder(),
     val manifestEnvelope: CandidateArtifactRemainder = CandidateArtifactRemainder(),
     val manifestCiphertext: CandidateArtifactRemainder = CandidateArtifactRemainder(),
+    val rowsInserted: Boolean = false,
+    val transactionMarkedSuccessful: Boolean = false,
+    val transactionEnd: CandidateSideEffectState = CandidateSideEffectState.NOT_ATTEMPTED,
+    val evidenceEmitted: Boolean = false,
+)
+
+private data class MutableCandidateArtifactRemainder(
+    var tempCreated: Boolean = false,
+    var fullyWritten: Boolean = false,
+    var fileSynced: Boolean = false,
+    var rename: CandidateSideEffectState = CandidateSideEffectState.NOT_ATTEMPTED,
+    var parentSynced: Boolean = false,
+) {
+    fun snapshot() =
+        CandidateArtifactRemainder(tempCreated, fullyWritten, fileSynced, rename, parentSynced)
+}
+
+private data class MutableMicrofileDurableRemainder(
+    val unitEnvelope: MutableCandidateArtifactRemainder = MutableCandidateArtifactRemainder(),
+    val unitCiphertext: MutableCandidateArtifactRemainder = MutableCandidateArtifactRemainder(),
+    val manifestEnvelope: MutableCandidateArtifactRemainder = MutableCandidateArtifactRemainder(),
+    val manifestCiphertext: MutableCandidateArtifactRemainder = MutableCandidateArtifactRemainder(),
     var rowsInserted: Boolean = false,
     var transactionMarkedSuccessful: Boolean = false,
     var transactionEnd: CandidateSideEffectState = CandidateSideEffectState.NOT_ATTEMPTED,
     var evidenceEmitted: Boolean = false,
-)
+) {
+    fun snapshot() =
+        MicrofileDurableRemainder(
+            unitEnvelope.snapshot(),
+            unitCiphertext.snapshot(),
+            manifestEnvelope.snapshot(),
+            manifestCiphertext.snapshot(),
+            rowsInserted,
+            transactionMarkedSuccessful,
+            transactionEnd,
+            evidenceEmitted,
+        )
+}
 
 internal data class PreparedRecoveryAead(val keyset: RecoveryAeadKeyset, val envelope: ByteArray)
 
@@ -138,6 +173,7 @@ internal data class RecoveryMicrofileUnitRow(
 internal data class RecoveryManifestPublicationRow(
     val runId: String,
     val candidateId: String,
+    val publicationKind: PublicationKind,
     val generation: ULong,
     val committedEndExclusive: ULong,
     val publicationRelativeName: String,
@@ -181,11 +217,14 @@ internal data class MicrofilePublicationInput(
     val cadenceSeconds: ULong,
 )
 
+private val successfulCandidateEndTransactionProof = Any()
+
 internal class CandidatePublicationCapability
-private constructor(val runId: RunId, val generation: ULong) {
-    companion object {
-        internal fun afterCommit(runId: RunId, generation: ULong) =
-            CandidatePublicationCapability(runId, generation)
+internal constructor(val runId: RunId, val generation: ULong, proof: Any) {
+    init {
+        check(proof === successfulCandidateEndTransactionProof) {
+            "Candidate publication capability requires private successful-endTransaction proof"
+        }
     }
 }
 
@@ -231,21 +270,26 @@ internal class RecoveryMicrofilePublicationController(
     @Suppress("LongMethod", "CyclomaticComplexMethod", "TooGenericExceptionCaught", "ReturnCount")
     private fun publishExclusive(input: MicrofilePublicationInput): MicrofilePublicationResult {
         val steps = mutableListOf<MicrofileStep>()
-        val remainder = MicrofileDurableRemainder()
+        val remainder = MutableMicrofileDurableRemainder()
         fun fail(step: MicrofileStep, error: Throwable) =
-            MicrofilePublicationResult.Failed(step, error, steps.toList(), remainder)
+            MicrofilePublicationResult.Failed(step, error, steps.toList(), remainder.snapshot())
         if (!input.capability.authorizes(input.confirmation)) {
             return MicrofilePublicationResult.Rejected(
                 IllegalArgumentException("Bootstrap capability mismatch"),
                 steps,
-                remainder,
+                remainder.snapshot(),
             )
+        }
+        try {
+            validateInput(input)
+        } catch (error: Throwable) {
+            return MicrofilePublicationResult.Rejected(error, steps, remainder.snapshot())
         }
         val continuation =
             try {
                 validateSnapshot(input, journal.loadSnapshot(input.confirmation.runId))
             } catch (error: Throwable) {
-                return MicrofilePublicationResult.Rejected(error, steps, remainder)
+                return MicrofilePublicationResult.Rejected(error, steps, remainder.snapshot())
             }
         val runAead =
             try {
@@ -427,6 +471,7 @@ internal class RecoveryMicrofilePublicationController(
             RecoveryManifestPublicationRow(
                 input.confirmation.runId.toCanonicalString(),
                 RecoveryCandidate.MICROFILE.contractId,
+                PublicationKind.MANIFEST,
                 continuation.generation,
                 continuation.end,
                 names.manifest,
@@ -470,27 +515,34 @@ internal class RecoveryMicrofilePublicationController(
                 transactionFailure,
             )
         val capability =
-            CandidatePublicationCapability.afterCommit(
+            CandidatePublicationCapability(
                 input.confirmation.runId,
                 continuation.generation,
+                successfulCandidateEndTransactionProof,
             )
         return try {
             evidenceSink.emit(unitRow, publicationRow)
             remainder.evidenceEmitted = true
             steps += MicrofileStep.P21
-            MicrofilePublicationResult.Committed(capability, true, null, steps.toList(), remainder)
+            MicrofilePublicationResult.Committed(
+                capability,
+                true,
+                null,
+                steps.toList(),
+                remainder.snapshot(),
+            )
         } catch (error: Throwable) {
             MicrofilePublicationResult.Committed(
                 capability,
                 false,
                 error,
                 steps.toList(),
-                remainder,
+                remainder.snapshot(),
             )
         }
     }
 
-    @Suppress("TooGenericExceptionCaught", "LongParameterList", "ReturnCount")
+    @Suppress("TooGenericExceptionCaught", "LongMethod", "LongParameterList", "ReturnCount")
     private fun publishFile(
         runId: RunId,
         temporary: String,
@@ -501,14 +553,19 @@ internal class RecoveryMicrofilePublicationController(
         renameStep: MicrofileStep,
         parentStep: MicrofileStep,
         steps: MutableList<MicrofileStep>,
-        whole: MicrofileDurableRemainder,
-        artifact: CandidateArtifactRemainder,
+        whole: MutableMicrofileDurableRemainder,
+        artifact: MutableCandidateArtifactRemainder,
     ): MicrofilePublicationResult.Failed? {
         val handle =
             try {
                 storage.openExclusiveTemp(runId, temporary)
             } catch (error: Throwable) {
-                return MicrofilePublicationResult.Failed(writeStep, error, steps.toList(), whole)
+                return MicrofilePublicationResult.Failed(
+                    writeStep,
+                    error,
+                    steps.toList(),
+                    whole.snapshot(),
+                )
             }
         artifact.tempCreated = true
         var failure: Throwable? = null
@@ -539,7 +596,7 @@ internal class RecoveryMicrofilePublicationController(
                 if (writeStep in steps) syncStep else writeStep,
                 failure,
                 steps.toList(),
-                whole,
+                whole.snapshot(),
             )
         try {
             check(!storage.finalExists(runId, final)) { "Candidate final already exists: $final" }
@@ -555,7 +612,7 @@ internal class RecoveryMicrofilePublicationController(
                 if (renameStep in steps) parentStep else renameStep,
                 error,
                 steps.toList(),
-                whole,
+                whole.snapshot(),
             )
         }
         return null
@@ -576,14 +633,6 @@ internal class RecoveryMicrofilePublicationController(
                 )
         ) {
             "Exactly one matching VALID bootstrap row is required"
-        }
-        check(input.plaintext.isNotEmpty()) { "Microfile plaintext must be non-empty" }
-        check(
-            input.cadenceSeconds == 5UL ||
-                input.cadenceSeconds == 15UL ||
-                input.cadenceSeconds == 30UL
-        ) {
-            "Invalid cadence"
         }
         check(snapshot.units.size == snapshot.publications.size) {
             "Unit/publication state is ambiguous"
@@ -615,6 +664,12 @@ internal class RecoveryMicrofilePublicationController(
             ) {
                 "Stored cadence invalid"
             }
+            check(
+                unit.plaintextEndExclusive - unit.plaintextStartInclusive <=
+                    unit.cadenceSeconds * RecoveryPcmContract.BYTES_PER_SECOND
+            ) {
+                "Stored unit exceeds cadence byte limit"
+            }
             check(unit.ciphertextBytes > 0 && unit.keyEnvelopeBytes > 0) {
                 "Stored artifact size invalid"
             }
@@ -644,6 +699,7 @@ internal class RecoveryMicrofilePublicationController(
             check(
                 publication.runId == run &&
                     publication.candidateId == RecoveryCandidate.MICROFILE.contractId &&
+                    publication.publicationKind == PublicationKind.MANIFEST &&
                     publication.state == "VALID"
             ) {
                 "Publication identity mismatch"
@@ -699,6 +755,23 @@ internal class RecoveryMicrofilePublicationController(
             "Unit index overflow"
         }
         return Continuation(nextIndex, nextIndex + 1UL, end, nextEnd, previous, entries)
+    }
+
+    private fun validateInput(input: MicrofilePublicationInput) {
+        check(input.plaintext.isNotEmpty()) { "Microfile plaintext must be non-empty" }
+        check(
+            input.cadenceSeconds == 5UL ||
+                input.cadenceSeconds == 15UL ||
+                input.cadenceSeconds == 30UL
+        ) {
+            "Invalid cadence"
+        }
+        check(
+            input.plaintext.size.toULong() <=
+                input.cadenceSeconds * RecoveryPcmContract.BYTES_PER_SECOND
+        ) {
+            "Microfile plaintext exceeds cadence byte limit"
+        }
     }
 
     private data class Continuation(

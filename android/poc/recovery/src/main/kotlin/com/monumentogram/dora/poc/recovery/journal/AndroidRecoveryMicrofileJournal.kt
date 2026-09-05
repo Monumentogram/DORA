@@ -11,6 +11,7 @@ import com.monumentogram.dora.poc.recovery.candidate.RecoveryManifestPublication
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryMicrofileJournal
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryMicrofileTransaction
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryMicrofileUnitRow
+import com.monumentogram.dora.poc.recovery.contract.PublicationKind
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
 
@@ -104,6 +105,7 @@ internal class AndroidRecoveryMicrofileJournal(context: Context) : RecoveryMicro
                 RecoveryManifestPublicationRow(
                     c.string("run_id"),
                     c.string("candidate_id"),
+                    PublicationKind.fromContractId(c.string("publication_kind")),
                     c.ulong("generation"),
                     c.ulong("committed_end"),
                     c.string("publication_relative_name"),
@@ -172,6 +174,7 @@ private fun RecoveryManifestPublicationRow.values() =
     ContentValues().apply {
         put("run_id", runId)
         put("candidate_id", candidateId)
+        put("publication_kind", publicationKind.contractId)
         put("generation", generation.toLong())
         put("committed_end", committedEndExclusive.toLong())
         put("publication_relative_name", publicationRelativeName)

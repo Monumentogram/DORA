@@ -419,6 +419,32 @@ REC_I3_MICROFILE_ADR_PATH = "docs/adr/ADR-0003-unified-poc-recovery-journal-and-
 REC_I3_MICROFILE_CLARIFICATION_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_PUBLICATION_CLARIFICATION_STAGE0_V0_1.md"
 REC_I3_PROCESSING_INTENT_SCOPE_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_PROCESSING_INTENT_SCOPE_STAGE0_V0_1.md"
 REC_I3_SQLITE_VERIFIER_SCOPE_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_SQLITE_HOST_VERIFIER_SCOPE_STAGE0_V0_1.md"
+REC_I3_MICROFILE_REVIEW_CORRECTION_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_PUBLICATION_REVIEW_CORRECTION_STAGE0_V0_1.md"
+REC_I3_MICROFILE_GOVERNANCE_MIGRATION_CORRECTION_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_GOVERNANCE_MIGRATION_CORRECTION_STAGE0_V0_1.md"
+REC_I3_MICROFILE_CONTROLLER_HARDENING_CORRECTION_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_CONTROLLER_HARDENING_CORRECTION_STAGE0_V0_1.md"
+REC_I3_MICROFILE_REVIEW_CORRECTIONS = (
+    (
+        "publicationRowAndCadence",
+        "2fe2f2477ed43eaa3bcc869b8210934e4343f750",
+        "5df3f899a958dcebc4499a25adacaac459a2a41c",
+        REC_I3_MICROFILE_REVIEW_CORRECTION_PATH,
+        "b38d025a61a1ee4a7d93c765f6ef2a71f199895603edfbcc247740e3bee7d65d",
+    ),
+    (
+        "governanceAndMigration",
+        "17cc3626e7f0cff875aa8615b11e4a797b9a2aec",
+        "e1633a70c183650480842b14e66bf99dc71e48b4",
+        REC_I3_MICROFILE_GOVERNANCE_MIGRATION_CORRECTION_PATH,
+        "9df3fa90b9387d7efaf7cbfd803f45b56f04010f5aa30eb1df677b6815d88120",
+    ),
+    (
+        "controllerHardening",
+        "49ce22f77eb33ad828eef842b3f586d91431c2f7",
+        "de6e964b4cc1ebcb6fdc4d80f39fd23d83599e1e",
+        REC_I3_MICROFILE_CONTROLLER_HARDENING_CORRECTION_PATH,
+        "d2a12d3fce6c12cf7f1f50fc7aed955efd9e33f1212902b3c9a6e7cef8512c95",
+    ),
+)
 REC_I3_MICROFILE_EVIDENCE_PATH = "docs/evidence/poc-recovery-001/rec-i3-sequential-microfile-publication-local-evidence-stage0-v0.1.json"
 REC_I3_MICROFILE_CLAIM_CEILING = "PARTIAL_REC_I3_MICROFILE_HOST_VERIFIED_PENDING_PLATFORM_PREFLIGHT_FULL_IMPLEMENTATION_AND_REVIEW"
 REC_I3_MICROFILE_SOURCE_PATHS = (
@@ -444,6 +470,19 @@ REC_I3_MICROFILE_SOURCE_PATHS = (
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicyTest.kt",
     "tools/verify_rec_i3_microfile_sqlite.py",
 )
+REC_I3_MICROFILE_REVIEWED_BOOTSTRAP_COMMIT = "a0348fe1d76a062af7d145045ef432f0a1eadf1c"
+REC_I3_MICROFILE_FROZEN_BOOTSTRAP_PATHS = (
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryBootstrapCrypto.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryKeyBootstrap.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicy.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryBootstrapStorage.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/RecoveryKeyBootstrapControllerTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicyTest.kt",
+)
+REC_I3_MICROFILE_MUTABLE_PATHS = tuple(
+    path for path in REC_I3_MICROFILE_SOURCE_PATHS
+    if path not in REC_I3_MICROFILE_FROZEN_BOOTSTRAP_PATHS
+)
 REC_I3_MICROFILE_ADDITIVE_PATHS = (
     *REC_I3_MICROFILE_SOURCE_PATHS,
     REC_I3_MICROFILE_SCOPE_PATH,
@@ -451,6 +490,9 @@ REC_I3_MICROFILE_ADDITIVE_PATHS = (
     REC_I3_MICROFILE_CLARIFICATION_PATH,
     REC_I3_PROCESSING_INTENT_SCOPE_PATH,
     REC_I3_SQLITE_VERIFIER_SCOPE_PATH,
+    REC_I3_MICROFILE_REVIEW_CORRECTION_PATH,
+    REC_I3_MICROFILE_GOVERNANCE_MIGRATION_CORRECTION_PATH,
+    REC_I3_MICROFILE_CONTROLLER_HARDENING_CORRECTION_PATH,
     REC_I3_MICROFILE_EVIDENCE_PATH,
 )
 REC_I3_BOOTSTRAP_ADDITIVE_PATHS = (
@@ -465,6 +507,14 @@ REC_I3_ADDITIVE_PATHS = (*REC_I3_SOURCE_PATHS, REC_I3_SCOPE_PATH, REC_I3_EVIDENC
                          "tools/test_poc_recovery_i3_governance.py")
 REC_I3_ALLOWED_PATHS = (*REC_I3_ADDITIVE_PATHS, REC_I2B_MERGED_MAIN_VALIDATOR_PATH,
                       "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md", "docs/DORA_MVP1_STAGE_STATUS.md")
+REC_I3_CURRENT_MUTABLE_PATHS = (
+    *REC_I3_MICROFILE_MUTABLE_PATHS,
+    REC_I3_MICROFILE_EVIDENCE_PATH,
+    REC_I2B_MERGED_MAIN_VALIDATOR_PATH,
+    "tools/test_poc_recovery_i3_governance.py",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+)
 REC_I3_CLAIM_CEILING = "PARTIAL_REC_I3_HOST_ONLY_PENDING_FULL_IMPLEMENTATION_AND_REVIEW"
 REC_I3_BOOTSTRAP_CLAIM_CEILING = (
     "PARTIAL_REC_I3_BOOTSTRAP_HOST_VERIFIED_PENDING_PLATFORM_PREFLIGHT_FULL_IMPLEMENTATION_AND_REVIEW"
@@ -5338,7 +5388,8 @@ def validate_rec_i3_changed_paths(changes: dict[str, list[str]]) -> None:
     require(set(changes) == {"committed", "staged", "unstaged", "untracked"},
             "REC-I3 change inventory is incomplete")
     for layer, paths in changes.items():
-        forbidden = sorted(set(paths) - set(REC_I3_ALLOWED_PATHS))
+        allowed = REC_I3_ALLOWED_PATHS if layer == "committed" else REC_I3_CURRENT_MUTABLE_PATHS
+        forbidden = sorted(set(paths) - set(allowed))
         require(not forbidden, f"REC-I3 {layer} delta escapes exact scope: {forbidden}")
 
 
@@ -5636,6 +5687,22 @@ def validate_rec_i3_regular_file(relative: str) -> None:
                 f"REC-I3 non-regular Git entry: {relative}")
 
 
+def rec_i3_bootstrap_checkpoint_hashes() -> dict[str, str]:
+    return {
+        relative: hashlib.sha256(
+            git_blob_bytes(f"{REC_I3_MICROFILE_REVIEWED_BOOTSTRAP_COMMIT}:{relative}")
+        ).hexdigest()
+        for relative in REC_I3_BOOTSTRAP_SOURCE_PATHS
+    }
+
+
+def validate_rec_i3_frozen_bootstrap_sources() -> None:
+    checkpoint = rec_i3_bootstrap_checkpoint_hashes()
+    for relative in REC_I3_MICROFILE_FROZEN_BOOTSTRAP_PATHS:
+        require(canonical_lf_sha256(relative) == checkpoint[relative],
+                f"REC-I3 frozen bootstrap source changed after reviewed checkpoint: {relative}")
+
+
 def validate_rec_i3_microfile_successor(publication: bool) -> None:
     require(git_is_ancestor(REC_I3_MICROFILE_SCOPE_COMMIT, git_output("rev-parse", "HEAD")),
             "REC-I3 microfile source predates its scope")
@@ -5658,9 +5725,17 @@ def validate_rec_i3_microfile_successor(publication: bool) -> None:
             and sha256(REC_I3_SQLITE_VERIFIER_SCOPE_PATH)
             == "2e1a0ffad3d36c9a27e862d0e7bbc70ceb09e55d853e7085cd9d33f84b210be9",
             "REC-I3 immutable microfile clarification changed")
+    for _, commit, tree, path, digest in REC_I3_MICROFILE_REVIEW_CORRECTIONS:
+        require(git_is_ancestor(commit, git_output("rev-parse", "HEAD"))
+                and git_output("rev-parse", f"{commit}^{{tree}}") == tree,
+                f"REC-I3 review correction identity drift: {path}")
+        require(set(git_path_records("diff", "--name-only", "-z", f"{commit}^", commit)) == {path},
+                f"REC-I3 review correction commit contains unrelated paths: {path}")
+        require(sha256(path) == digest, f"REC-I3 immutable review correction changed: {path}")
     present = [path for path in REC_I3_MICROFILE_SOURCE_PATHS if (ROOT / path).exists()]
     require(set(present) == set(REC_I3_MICROFILE_SOURCE_PATHS),
             "REC-I3 microfile source set is incomplete")
+    validate_rec_i3_frozen_bootstrap_sources()
     for relative in (*present, REC_I3_MICROFILE_SCOPE_PATH, REC_I3_MICROFILE_ADR_PATH,
                      REC_I3_MICROFILE_CLARIFICATION_PATH, REC_I3_PROCESSING_INTENT_SCOPE_PATH,
                      REC_I3_SQLITE_VERIFIER_SCOPE_PATH,
@@ -5678,6 +5753,11 @@ def validate_rec_i3_microfile_successor(publication: bool) -> None:
             and record.get("recoveryPreflightUnlocked") is False
             and record.get("readinessBlockersClosed") == [],
             "REC-I3 microfile evidence overclaims completion")
+    require(record.get("reviewCorrections") == {
+                name: {"scopeCommit": commit, "scopeTree": tree, "scopePath": path,
+                       "scopeSha256": digest}
+                for name, commit, tree, path, digest in REC_I3_MICROFILE_REVIEW_CORRECTIONS
+            }, "REC-I3 microfile review-correction evidence drift")
     require(all(record["authority"].get(field) is expected for field, expected in {
         "recI3ImplementationAllowed": True, "recI3NonMetricVerificationAllowed": True,
         "phaseAAllowed": False, "executionAllowed": False,
@@ -5762,7 +5842,7 @@ def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | Non
     bootstrap_record = read_json(REC_I3_BOOTSTRAP_EVIDENCE_PATH)
     validate_rec_i3_bootstrap_evidence(
         bootstrap_record,
-        bootstrap_record["sourceFiles"] if (ROOT / REC_I3_MICROFILE_EVIDENCE_PATH).exists()
+        rec_i3_bootstrap_checkpoint_hashes() if (ROOT / REC_I3_MICROFILE_EVIDENCE_PATH).exists()
         else {path: canonical_lf_sha256(path) for path in bootstrap_present},
         publication=current.github_pull_request_context is not None,
     )

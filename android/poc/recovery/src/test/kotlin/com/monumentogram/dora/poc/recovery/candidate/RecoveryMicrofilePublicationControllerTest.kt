@@ -5,14 +5,74 @@ package com.monumentogram.dora.poc.recovery.candidate
 import com.monumentogram.dora.poc.recovery.bootstrap.*
 import com.monumentogram.dora.poc.recovery.contract.*
 import com.monumentogram.dora.poc.recovery.crypto.*
+import java.lang.reflect.Modifier
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 import org.junit.Assert.*
 import org.junit.Test
 
+@Suppress("LargeClass")
 class RecoveryMicrofilePublicationControllerTest {
     private val run = RunId.fromCanonicalString("00112233-4455-6677-8899-aabbccddeeff")
+
+    @Test
+    fun `publication row model contains every active protocol field`() {
+        val protocolFields =
+            setOf(
+                "runId",
+                "candidateId",
+                "publicationKind",
+                "generation",
+                "committedEndExclusive",
+                "publicationRelativeName",
+                "publicationBytes",
+                "publicationSha256",
+                "keyEnvelopeRelativeName",
+                "keyEnvelopeBytes",
+                "keyEnvelopeSha256",
+                "previousPublicationCiphertextSha256",
+                "state",
+            )
+
+        assertEquals(
+            protocolFields,
+            RecoveryManifestPublicationRow::class
+                .java
+                .declaredFields
+                .filterNot { it.isSynthetic }
+                .map { it.name }
+                .toSet(),
+        )
+    }
+
+    @Test
+    fun `exact cadence byte limits publish and one byte oversize rejects before journal`() {
+        val auth = authorized(run)
+        listOf(5UL to 160_000, 15UL to 480_000, 30UL to 960_000).forEach { (cadence, limit) ->
+            val boundary = Fixture(run)
+            assertTrue(
+                boundary.controller.publish(
+                    MicrofilePublicationInput(auth.first, auth.second, ByteArray(limit), cadence)
+                ) is MicrofilePublicationResult.Committed
+            )
+
+            val oversize = Fixture(run)
+            val rejected =
+                oversize.controller.publish(
+                    MicrofilePublicationInput(
+                        auth.first,
+                        auth.second,
+                        ByteArray(limit + 1),
+                        cadence,
+                    )
+                )
+            assertTrue(rejected is MicrofilePublicationResult.Rejected)
+            assertEquals(0, oversize.journal.loadCount)
+            assertEquals(0, oversize.crypto.openCount)
+            assertTrue(oversize.storage.files.isEmpty())
+        }
+    }
 
     @Test
     fun `actual Tink genesis and later publication complete P01 through P21 with cumulative manifest`() {
@@ -43,6 +103,9 @@ class RecoveryMicrofilePublicationControllerTest {
         )
         assertEquals(listOf(0UL, 1UL), fixture.journal.units.map { it.unitIndex })
         assertEquals(listOf(1UL, 2UL), fixture.journal.publications.map { it.generation })
+        assertTrue(
+            fixture.journal.publications.all { it.publicationKind == PublicationKind.MANIFEST }
+        )
         assertEquals(
             fixture.journal.publications[0].publicationSha256,
             fixture.journal.publications[1].previousPublicationCiphertextSha256,
@@ -194,6 +257,10 @@ class RecoveryMicrofilePublicationControllerTest {
                 { j -> j.publications[0] = j.publications[0].copy(committedEndExclusive = 999UL) },
                 { j ->
                     j.publications[0] =
+                        j.publications[0].copy(publicationKind = PublicationKind.CHECKPOINT)
+                },
+                { j ->
+                    j.publications[0] =
                         j.publications[0].copy(
                             previousPublicationCiphertextSha256 =
                                 Sha256Value.fromBytes(ByteArray(32) { 1 })
@@ -221,6 +288,270 @@ class RecoveryMicrofilePublicationControllerTest {
             assertEquals(0, fixture.crypto.openCount)
             assertTrue(fixture.storage.files.isEmpty())
         }
+    }
+
+    @Test
+    fun `stored range wider than cadence limit rejects before alias`() {
+        val auth = authorized(run)
+        val fixture = Fixture(run)
+        assertTrue(
+            fixture.controller.publish(
+                MicrofilePublicationInput(auth.first, auth.second, byteArrayOf(1), 5UL)
+            ) is MicrofilePublicationResult.Committed
+        )
+        val prior = fixture.journal.units.single()
+        val oversizedEnd = 160_001UL
+        fixture.journal.units[0] =
+            prior.copy(
+                plaintextEndExclusive = oversizedEnd,
+                processingIntentId =
+                    RecoveryProcessingIntent.calculate(
+                        RecoveryProcessingIntentInput(
+                            RecoveryCandidate.MICROFILE,
+                            run,
+                            prior.unitIndex,
+                            prior.plaintextStartInclusive,
+                            oversizedEnd,
+                            prior.ciphertextSha256,
+                        )
+                    ),
+            )
+        fixture.journal.publications[0] =
+            fixture.journal.publications.single().copy(committedEndExclusive = oversizedEnd)
+        fixture.crypto.openCount = 0
+        fixture.storage.files.clear()
+
+        val result =
+            fixture.controller.publish(
+                MicrofilePublicationInput(auth.first, auth.second, byteArrayOf(2), 5UL)
+            )
+
+        assertTrue(result is MicrofilePublicationResult.Rejected)
+        assertEquals(0, fixture.crypto.openCount)
+        assertTrue(fixture.storage.files.isEmpty())
+    }
+
+    @Test
+    fun `arbitrary same-module construction cannot mint publication capability`() {
+        CandidatePublicationCapability::class.java.declaredConstructors.forEach { constructor ->
+            constructor.isAccessible = true
+            val arguments =
+                constructor.parameterTypes.map { type ->
+                    when {
+                        type == RunId::class.java -> run
+                        type == java.lang.Long.TYPE -> 1L
+                        else -> Any()
+                    }
+                }
+            val forged =
+                runCatching { constructor.newInstance(*arguments.toTypedArray()) }.getOrNull()
+            assertNull(forged)
+        }
+    }
+
+    @Test
+    fun `returned durable remainder graph exposes only immutable fields`() {
+        listOf(CandidateArtifactRemainder::class.java, MicrofileDurableRemainder::class.java)
+            .flatMap { type -> type.declaredFields.filterNot { it.isSynthetic } }
+            .forEach { field ->
+                assertTrue(
+                    "Returned remainder field is mutable: ${field.name}",
+                    Modifier.isFinal(field.modifiers),
+                )
+            }
+    }
+
+    @Test
+    fun `invalid write progress is rejected and acquired descriptor is closed`() {
+        val auth = authorized(run)
+        listOf("negative", "zero", "over").forEach { progress ->
+            val fixture = Fixture(run, invalidProgress = progress)
+            val result =
+                fixture.controller.publish(
+                    MicrofilePublicationInput(auth.first, auth.second, byteArrayOf(1), 5UL)
+                )
+            assertTrue(result is MicrofilePublicationResult.Failed)
+            assertEquals(
+                MicrofileStep.P02,
+                (result as MicrofilePublicationResult.Failed).failedStep,
+            )
+            assertTrue(fixture.storage.openHandles.single().closed)
+            assertTrue(fixture.journal.units.isEmpty())
+        }
+    }
+
+    @Test
+    fun `artifact failure matrix reports exact step closes descriptors and never commits`() {
+        data class Artifact(
+            val id: String,
+            val write: MicrofileStep,
+            val sync: MicrofileStep,
+            val rename: MicrofileStep,
+            val parent: MicrofileStep,
+            val remainder: (MicrofileDurableRemainder) -> CandidateArtifactRemainder,
+        )
+        val artifacts =
+            listOf(
+                Artifact(
+                    "unit-envelope",
+                    MicrofileStep.P02,
+                    MicrofileStep.P03,
+                    MicrofileStep.P04,
+                    MicrofileStep.P05,
+                ) {
+                    it.unitEnvelope
+                },
+                Artifact(
+                    "unit-ciphertext",
+                    MicrofileStep.P06,
+                    MicrofileStep.P07,
+                    MicrofileStep.P08,
+                    MicrofileStep.P09,
+                ) {
+                    it.unitCiphertext
+                },
+                Artifact(
+                    "manifest-envelope",
+                    MicrofileStep.P11,
+                    MicrofileStep.P12,
+                    MicrofileStep.P13,
+                    MicrofileStep.P14,
+                ) {
+                    it.manifestEnvelope
+                },
+                Artifact(
+                    "manifest-ciphertext",
+                    MicrofileStep.P15,
+                    MicrofileStep.P16,
+                    MicrofileStep.P17,
+                    MicrofileStep.P18,
+                ) {
+                    it.manifestCiphertext
+                },
+            )
+        val auth = authorized(run)
+        for (artifact in artifacts) {
+            for (operation in
+                listOf(
+                    "open",
+                    "write",
+                    "fsync",
+                    "close",
+                    "collision",
+                    "unsafe",
+                    "rename",
+                    "parent",
+                )) {
+                val fixture = Fixture(run, storageFail = "${artifact.id}:$operation")
+                val result =
+                    fixture.controller.publish(
+                        MicrofilePublicationInput(auth.first, auth.second, byteArrayOf(1), 5UL)
+                    )
+                assertTrue("${artifact.id}:$operation", result is MicrofilePublicationResult.Failed)
+                result as MicrofilePublicationResult.Failed
+                val expectedStep =
+                    when (operation) {
+                        "open",
+                        "write" -> artifact.write
+                        "fsync",
+                        "close" -> artifact.sync
+                        "collision",
+                        "unsafe",
+                        "rename" -> artifact.rename
+                        else -> artifact.parent
+                    }
+                assertEquals("${artifact.id}:$operation", expectedStep, result.failedStep)
+                assertTrue(fixture.storage.openHandles.all { it.closed })
+                assertTrue(fixture.journal.units.isEmpty())
+                val target = artifact.remainder(result.remainder)
+                when (operation) {
+                    "open" -> assertFalse(target.tempCreated)
+                    "write" -> {
+                        assertTrue(target.tempCreated)
+                        assertFalse(target.fullyWritten)
+                        assertFalse(target.fileSynced)
+                    }
+                    "fsync" -> {
+                        assertTrue(target.tempCreated)
+                        assertTrue(target.fullyWritten)
+                        assertFalse(target.fileSynced)
+                    }
+                    "close" -> {
+                        assertTrue(target.tempCreated)
+                        assertTrue(target.fullyWritten)
+                        assertTrue(target.fileSynced)
+                        assertEquals(CandidateSideEffectState.NOT_ATTEMPTED, target.rename)
+                    }
+                    "collision",
+                    "unsafe" -> {
+                        assertTrue(target.fileSynced)
+                        assertEquals(CandidateSideEffectState.NOT_ATTEMPTED, target.rename)
+                        assertFalse(artifact.id in fixture.storage.renamedArtifacts)
+                    }
+                    "rename" -> {
+                        assertEquals(CandidateSideEffectState.OUTCOME_UNKNOWN, target.rename)
+                        assertFalse(target.parentSynced)
+                    }
+                    "parent" -> {
+                        assertEquals(CandidateSideEffectState.CONFIRMED, target.rename)
+                        assertFalse(target.parentSynced)
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `shared guard excludes another candidate writer for same run`() {
+        val auth = authorized(run)
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val first = Fixture(run, blockOnOpen = entered to release)
+        val worker = thread {
+            first.controller.publish(
+                MicrofilePublicationInput(auth.first, auth.second, byteArrayOf(1), 5UL)
+            )
+        }
+        assertTrue(entered.await(5, TimeUnit.SECONDS))
+        val second = Fixture(run)
+        assertTrue(
+            second.controller.publish(
+                MicrofilePublicationInput(auth.first, auth.second, byteArrayOf(2), 5UL)
+            ) is MicrofilePublicationResult.ConcurrentWriter
+        )
+        release.countDown()
+        worker.join(5_000)
+        assertFalse(worker.isAlive)
+    }
+
+    @Test
+    fun `shared guard allows independent candidate writers for different runs`() {
+        val otherRun = RunId.fromCanonicalString("10213243-5465-7687-98a9-bacbdcedfe0f")
+        val firstAuth = authorized(run)
+        val otherAuth = authorized(otherRun)
+        val entered = CountDownLatch(1)
+        val release = CountDownLatch(1)
+        val first = Fixture(run, blockOnOpen = entered to release)
+        val worker = thread {
+            first.controller.publish(
+                MicrofilePublicationInput(
+                    firstAuth.first,
+                    firstAuth.second,
+                    byteArrayOf(1),
+                    5UL,
+                )
+            )
+        }
+        assertTrue(entered.await(5, TimeUnit.SECONDS))
+        val other = Fixture(otherRun)
+        assertTrue(
+            other.controller.publish(
+                MicrofilePublicationInput(otherAuth.first, otherAuth.second, byteArrayOf(2), 5UL)
+            ) is MicrofilePublicationResult.Committed
+        )
+        release.countDown()
+        worker.join(5_000)
+        assertFalse(worker.isAlive)
     }
 
     @Test
@@ -404,15 +735,18 @@ class RecoveryMicrofilePublicationControllerTest {
         return Authorization(value, result.publicationCapability)
     }
 
+    @Suppress("LongParameterList")
     private class Fixture(
         run: RunId,
         maxWrite: Int = Int.MAX_VALUE,
         evidenceFails: Boolean = false,
         failEnd: Boolean = false,
         storageFail: String? = null,
+        invalidProgress: String? = null,
+        blockOnOpen: Pair<CountDownLatch, CountDownLatch>? = null,
     ) {
         val crypto = ActualCrypto(run)
-        val storage = MemoryStorage(maxWrite, storageFail)
+        val storage = MemoryStorage(maxWrite, storageFail, invalidProgress, blockOnOpen)
         val journal = MemoryJournal(run, failEnd)
         val controller =
             RecoveryMicrofilePublicationController(
@@ -454,8 +788,12 @@ class RecoveryMicrofilePublicationControllerTest {
         ) = keyset.encryptPublication(plaintext, aad)
     }
 
-    private class MemoryStorage(private val maxWrite: Int, private val failAt: String? = null) :
-        RecoveryCandidateStorage {
+    private class MemoryStorage(
+        private val maxWrite: Int,
+        private val failAt: String? = null,
+        private val invalidProgress: String? = null,
+        private val blockOnOpen: Pair<CountDownLatch, CountDownLatch>? = null,
+    ) : RecoveryCandidateStorage {
         data class H(
             val name: String,
             val bytes: MutableList<Byte> = mutableListOf(),
@@ -464,41 +802,83 @@ class RecoveryMicrofilePublicationControllerTest {
 
         val files = mutableMapOf<String, ByteArray>()
         val openHandles = mutableListOf<H>()
+        val renamedArtifacts = mutableSetOf<String>()
 
-        override fun openExclusiveTemp(runId: RunId, temporaryRelativeName: String) =
-            H(temporaryRelativeName).also(openHandles::add)
+        private fun artifact(name: String) =
+            when {
+                name.startsWith("units/") -> "unit-ciphertext"
+                name.startsWith("manifests/") -> "manifest-ciphertext"
+                name.startsWith("key-envelopes/manifest-") -> "manifest-envelope"
+                else -> "unit-envelope"
+            }
 
+        private fun fail(name: String, operation: String) {
+            if (failAt == "${artifact(name)}:$operation" || failAt == operation) {
+                error("injected ${artifact(name)} $operation")
+            }
+        }
+
+        override fun openExclusiveTemp(
+            runId: RunId,
+            temporaryRelativeName: String,
+        ): CandidateWriteHandle {
+            fail(temporaryRelativeName, "open")
+            blockOnOpen?.let {
+                it.first.countDown()
+                check(it.second.await(5, TimeUnit.SECONDS))
+            }
+            return H(temporaryRelativeName).also(openHandles::add)
+        }
+
+        @Suppress("ReturnCount")
         override fun write(
             handle: CandidateWriteHandle,
             bytes: ByteArray,
             offset: Int,
             count: Int,
         ): Int {
+            val exact = handle as H
+            fail(exact.name, "write")
+            when (invalidProgress) {
+                "negative" -> return -1
+                "zero" -> return 0
+                "over" -> return count + 1
+            }
             val amount = minOf(maxWrite, count)
-            repeat(amount) { (handle as H).bytes += bytes[offset + it] }
+            repeat(amount) { exact.bytes += bytes[offset + it] }
             return amount
         }
 
-        override fun fsync(handle: CandidateWriteHandle) = Unit
-
-        override fun close(handle: CandidateWriteHandle) {
-            (handle as H).closed = true
+        override fun fsync(handle: CandidateWriteHandle) {
+            fail((handle as H).name, "fsync")
         }
 
-        override fun finalExists(runId: RunId, finalRelativeName: String) =
-            files.containsKey(finalRelativeName)
+        override fun close(handle: CandidateWriteHandle) {
+            val exact = handle as H
+            exact.closed = true
+            fail(exact.name, "close")
+        }
+
+        override fun finalExists(runId: RunId, finalRelativeName: String): Boolean {
+            fail(finalRelativeName, "unsafe")
+            if (failAt == "${artifact(finalRelativeName)}:collision") return true
+            return files.containsKey(finalRelativeName)
+        }
 
         override fun renameTempToFinal(
             runId: RunId,
             temporaryRelativeName: String,
             finalRelativeName: String,
         ) {
-            if (failAt == "rename") error("injected rename")
+            renamedArtifacts += artifact(finalRelativeName)
+            fail(finalRelativeName, "rename")
             val h = openHandles.single { it.name == temporaryRelativeName }
             files[finalRelativeName] = h.bytes.toByteArray()
         }
 
-        override fun fsyncParent(runId: RunId, finalRelativeName: String) = Unit
+        override fun fsyncParent(runId: RunId, finalRelativeName: String) {
+            fail(finalRelativeName, "parent")
+        }
     }
 
     private class MemoryJournal(run: RunId, private val failEnd: Boolean) :

@@ -62,12 +62,7 @@ internal class AndroidOsRecoveryCandidateStorage(context: Context) : RecoveryCan
 
     override fun finalExists(runId: RunId, finalRelativeName: String): Boolean {
         val file = paths(runId, finalRelativeName).artifact
-        return when (type(file)) {
-            BootstrapPathType.ABSENT -> false
-            BootstrapPathType.REGULAR -> true
-            else ->
-                throw UnsafeRecoveryBootstrapPathException("Unsafe candidate final: ${file.name}")
-        }
+        return RecoveryCandidatePathPolicy.finalExists(type(file), file.name)
     }
 
     override fun renameTempToFinal(

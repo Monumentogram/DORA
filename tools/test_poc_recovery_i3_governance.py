@@ -20,13 +20,49 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
         )
         governance.validate_rec_i3_microfile_successor(publication=False)
         changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
-        changes["untracked"] = list(governance.REC_I3_MICROFILE_SOURCE_PATHS)
+        changes["untracked"] = list(governance.REC_I3_MICROFILE_MUTABLE_PATHS)
         governance.validate_rec_i3_changed_paths(changes)
         changes["untracked"] = [
             "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/FutureWriter.kt"
         ]
         with self.assertRaisesRegex(ValueError, "escapes exact scope"):
             governance.validate_rec_i3_changed_paths(changes)
+
+    def test_microfile_successor_rejects_frozen_bootstrap_source_mutations(self) -> None:
+        frozen = (
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryBootstrapCrypto.kt",
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryKeyBootstrap.kt",
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicy.kt",
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryBootstrapStorage.kt",
+            "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/RecoveryKeyBootstrapControllerTest.kt",
+            "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicyTest.kt",
+        )
+        for relative in frozen:
+            changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
+            changes["unstaged"] = [relative]
+            with self.subTest(relative=relative), self.assertRaisesRegex(
+                ValueError, "escapes exact scope"
+            ):
+                governance.validate_rec_i3_changed_paths(changes)
+
+    def test_current_bootstrap_validation_receives_reviewed_checkpoint_hashes(self) -> None:
+        expected = governance.rec_i3_bootstrap_checkpoint_hashes()
+        with patch.object(governance, "validate_rec_i3_bootstrap_evidence") as validator, patch.object(
+            governance, "validate_rec_i3_microfile_successor"
+        ):
+            self.assertTrue(governance.validate_current_rec_i3_successor())
+        self.assertEqual(expected, validator.call_args.args[1])
+
+    def test_frozen_bootstrap_source_is_checked_against_reviewed_blob(self) -> None:
+        governance.validate_rec_i3_frozen_bootstrap_sources()
+        original = governance.canonical_lf_sha256
+        frozen = governance.REC_I3_MICROFILE_FROZEN_BOOTSTRAP_PATHS[0]
+        with patch.object(
+            governance,
+            "canonical_lf_sha256",
+            side_effect=lambda relative: "0" * 64 if relative == frozen else original(relative),
+        ), self.assertRaisesRegex(ValueError, "frozen bootstrap source changed"):
+            governance.validate_rec_i3_frozen_bootstrap_sources()
 
     def test_bootstrap_provider_witness_correction_has_exact_scope_lineage(self) -> None:
         self.assertEqual(
@@ -35,7 +71,7 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
         )
         governance.validate_rec_i3_bootstrap_witness_scope_lineage()
         changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
-        changes["untracked"] = [governance.REC_I3_BOOTSTRAP_WITNESS_SCOPE_PATH]
+        changes["committed"] = [governance.REC_I3_BOOTSTRAP_WITNESS_SCOPE_PATH]
         governance.validate_rec_i3_changed_paths(changes)
 
     def test_bootstrap_successor_has_exact_scope_first_identity_and_file_boundary(self) -> None:
@@ -45,7 +81,7 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
         )
         governance.validate_rec_i3_bootstrap_scope_lineage()
         changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
-        changes["untracked"] = list(governance.REC_I3_BOOTSTRAP_SOURCE_PATHS)
+        changes["committed"] = list(governance.REC_I3_BOOTSTRAP_SOURCE_PATHS)
         governance.validate_rec_i3_changed_paths(changes)
         changes["untracked"] = [
             "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/Extra.kt"
@@ -93,7 +129,11 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
     def test_exact_paths_in_each_layer_and_no_implicit_recovery_directory_permission(self) -> None:
         for layer in ("committed", "staged", "unstaged", "untracked"):
             changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
-            changes[layer] = list(governance.REC_I3_ALLOWED_PATHS)
+            changes[layer] = list(
+                governance.REC_I3_ALLOWED_PATHS
+                if layer == "committed"
+                else governance.REC_I3_CURRENT_MUTABLE_PATHS
+            )
             governance.validate_rec_i3_changed_paths(changes)
             for forbidden in (
                 "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/controller/Writer.kt",

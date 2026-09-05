@@ -43,7 +43,7 @@ internal object RecoveryJournalSchema {
         run_id TEXT NOT NULL, candidate_id TEXT NOT NULL CHECK(candidate_id='REC-MICROFILE-TINK'),
         unit_index INTEGER NOT NULL CHECK(unit_index BETWEEN 0 AND 4294967295),
         plaintext_start INTEGER NOT NULL CHECK(plaintext_start >= 0),
-        plaintext_end INTEGER NOT NULL CHECK(plaintext_end > plaintext_start AND plaintext_end <= 115200000),
+        plaintext_end INTEGER NOT NULL CHECK(plaintext_end > plaintext_start AND plaintext_end <= 115200000 AND plaintext_end - plaintext_start <= cadence_seconds * 32000),
         cadence_seconds INTEGER NOT NULL CHECK(cadence_seconds IN (5,15,30)),
         ciphertext_relative_name TEXT NOT NULL CHECK(ciphertext_relative_name = printf('units/u-%010d.ct',unit_index)), ciphertext_bytes INTEGER NOT NULL CHECK(ciphertext_bytes > 0),
         ciphertext_sha256 BLOB NOT NULL CHECK(length(ciphertext_sha256)=32),
@@ -58,6 +58,7 @@ internal object RecoveryJournalSchema {
     const val CREATE_PUBLICATION_TABLE =
         """CREATE TABLE recovery_manifest_publication_v2 (
         run_id TEXT NOT NULL, candidate_id TEXT NOT NULL CHECK(candidate_id='REC-MICROFILE-TINK'),
+        publication_kind TEXT NOT NULL CHECK(publication_kind='MANIFEST'),
         generation INTEGER NOT NULL CHECK(generation > 0), committed_end INTEGER NOT NULL CHECK(committed_end BETWEEN 1 AND 115200000),
         publication_relative_name TEXT NOT NULL CHECK(publication_relative_name = printf('manifests/g-%020d.ct',generation)), publication_bytes INTEGER NOT NULL CHECK(publication_bytes > 0),
         publication_sha256 BLOB NOT NULL CHECK(length(publication_sha256)=32),
@@ -83,24 +84,77 @@ internal object RecoveryJournalSchema {
         database.execSQL(CREATE_PUBLICATION_TABLE)
     }
 
+    @Suppress("CyclomaticComplexMethod", "LongMethod")
     private fun requireExactV1(database: SQLiteDatabase) {
-        val expected =
+        val expectedColumns =
             listOf(
-                "run_id",
-                "candidate_id",
-                "key_confirmation_relative_name",
-                "key_confirmation_bytes",
-                "key_confirmation_sha256",
-                "canonical_alias_sha256",
-                "key_confirmation_state",
+                listOf("0", "run_id", "TEXT", "1", null, "1"),
+                listOf("1", "candidate_id", "TEXT", "1", null, "0"),
+                listOf("2", "key_confirmation_relative_name", "TEXT", "1", null, "0"),
+                listOf("3", "key_confirmation_bytes", "INTEGER", "1", null, "0"),
+                listOf("4", "key_confirmation_sha256", "BLOB", "1", null, "0"),
+                listOf("5", "canonical_alias_sha256", "BLOB", "1", null, "0"),
+                listOf("6", "key_confirmation_state", "TEXT", "1", null, "0"),
             )
-        val actual = mutableListOf<String>()
+        val actualColumns = mutableListOf<List<String?>>()
         database.rawQuery("PRAGMA table_info($RUN_TABLE)", null).use { cursor ->
-            val index = cursor.getColumnIndexOrThrow("name")
-            while (cursor.moveToNext()) actual += cursor.getString(index)
+            val fields = listOf("cid", "name", "type", "notnull", "dflt_value", "pk")
+            while (cursor.moveToNext()) {
+                actualColumns += fields.map { field ->
+                    val index = cursor.getColumnIndexOrThrow(field)
+                    if (cursor.isNull(index)) null else cursor.getString(index)
+                }
+            }
         }
-        if (actual != expected) throw SQLiteException("Recovery journal v1 schema is not exact")
+        val tableSql =
+            database
+                .rawQuery(
+                    "SELECT sql FROM sqlite_master WHERE type='table' AND name=?",
+                    arrayOf(RUN_TABLE),
+                )
+                .use { cursor ->
+                    if (!cursor.moveToFirst() || cursor.isNull(0)) null else cursor.getString(0)
+                }
+        val foreignKeyCount = rowCount(database, "PRAGMA foreign_key_list($RUN_TABLE)")
+        val triggers =
+            database
+                .rawQuery(
+                    "SELECT name FROM sqlite_master WHERE type='trigger' AND tbl_name=?",
+                    arrayOf(RUN_TABLE),
+                )
+                .use { cursor ->
+                    buildList { while (cursor.moveToNext()) add(cursor.getString(0)) }
+                }
+        val indexes = mutableListOf<List<String>>()
+        database.rawQuery("PRAGMA index_list($RUN_TABLE)", null).use { cursor ->
+            val fields = listOf("seq", "name", "unique", "origin", "partial")
+            while (cursor.moveToNext()) {
+                indexes += fields.map { cursor.getString(cursor.getColumnIndexOrThrow(it)) }
+            }
+        }
+        val expectedIndexes = listOf(listOf("0", "sqlite_autoindex_${RUN_TABLE}_1", "1", "pk", "0"))
+        val exact =
+            listOf(
+                    actualColumns == expectedColumns,
+                    normalizeSql(tableSql) == normalizeSql(CREATE_RUN_TABLE),
+                    foreignKeyCount == 0,
+                    triggers.isEmpty(),
+                    indexes == expectedIndexes,
+                )
+                .all { it }
+        if (!exact) {
+            throw SQLiteException("Recovery journal v1 schema is not exact")
+        }
     }
+
+    private fun rowCount(database: SQLiteDatabase, sql: String): Int =
+        database.rawQuery(sql, null).use { cursor ->
+            var count = 0
+            while (cursor.moveToNext()) count++
+            count
+        }
+
+    private fun normalizeSql(value: String?): String? = value?.trim()?.replace(Regex("\\s+"), " ")
 }
 
 internal object AndroidRecoveryJournalDatabase {

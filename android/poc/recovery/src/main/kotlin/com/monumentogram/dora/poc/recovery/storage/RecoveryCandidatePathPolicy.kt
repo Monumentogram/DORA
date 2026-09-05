@@ -20,4 +20,11 @@ internal object RecoveryCandidatePathPolicy {
         RecoveryBootstrapPathPolicy.requireContained(runRoot, artifact)
         return RecoveryCandidatePaths(runRoot, artifact)
     }
+
+    fun finalExists(type: BootstrapPathType, leafName: String): Boolean =
+        when (type) {
+            BootstrapPathType.ABSENT -> false
+            BootstrapPathType.REGULAR -> true
+            else -> throw UnsafeRecoveryBootstrapPathException("Unsafe candidate final: $leafName")
+        }
 }
