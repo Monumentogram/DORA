@@ -366,6 +366,59 @@ FULL_SHA256_RE = re.compile(r"[0-9a-f]{40}")
 # OD-15 permits this first implementation slice, not a Recovery readiness gate.
 # This branch-only profile deliberately does not admit a future squash merge.
 REC_I3_BRANCH = "codex/rec-i3-key-confirmation-controller"
+REC_I3_STREAMING_INTEGRATION_BRANCH = "codex/rec-i3-streaming-option-a-integration"
+REC_I3_STREAMING_INTEGRATION_BASE = "6d8c1d9d4b6a205bb91a7c87a5e096939526bfc2"
+REC_I3_STREAMING_INTEGRATION_BASE_TREE = "f10a4d415af972ce91fd42be1ae07a57419e1aa8"
+REC_I3_STREAMING_INTEGRATION_BASE_PARENT = "549d744005243307884c8ea1b20366228d7ba0f3"
+REC_I3_STREAMING_INTEGRATION_IMPORTS = (
+    ("5db40041e03b92dd4696987097a67fbb8b7f1658", REC_I3_STREAMING_INTEGRATION_BASE,
+     "effb360cfa86b0576f3637a6e7c50580d111fea7", "477b5e354c8649fb0202fb039758526c4d41de03"),
+    ("8b54444cb74965833f71b082233a5d76ad775b79", "5db40041e03b92dd4696987097a67fbb8b7f1658",
+     "9b1b6a7d3701e4e7293bb77c3a58256762216d70", "714ea1839c277b7206dceafe1c11ae551c581d40"),
+    ("af194052e6f0363671fe216bb5e588ffd3787e60", "8b54444cb74965833f71b082233a5d76ad775b79",
+     "6dcff181a809242399aed4ae3d27acb6a7609160", "19807f6ea8166fff972e1537beeb131def8bfa1d"),
+    ("6092d2bc5ca542e47cbe1b9f94d50e79178dbdc9", "af194052e6f0363671fe216bb5e588ffd3787e60",
+     "af46973c729b17bd0dae7eab8e7ffe1df3162840", "7ec8b845c2fd0194097eefc024eed1ca7cae2e9a"),
+    ("0b1d60543efa0d0ab1a6372c76650b47cb977846", "6092d2bc5ca542e47cbe1b9f94d50e79178dbdc9",
+     "752b9051bb519858592b9913c63bc93739687789", "a82e11b8fc4e1ea6eeb9243085100606608e5380"),
+    ("5a7cc6280992aaaa1ea76932237ed4f251ca3989", "0b1d60543efa0d0ab1a6372c76650b47cb977846",
+     "60bd433accb2d4be24f852135158a6bdfb34a6e9", "5236c3dc814d93aaf19d50cfb8d2170d98aceadd"),
+    ("e7e3daf3ef776f694667790dd7859c5d43628103", "5a7cc6280992aaaa1ea76932237ed4f251ca3989",
+     "87ae62c9cdbeac8329d3e76542f4333f59a1af55", "885c28c6d26ea99e25be9552b613d9325216bc73"),
+)
+REC_I3_STREAMING_INTEGRATION_HEAD = REC_I3_STREAMING_INTEGRATION_IMPORTS[-1][0]
+REC_I3_STREAMING_INTEGRATION_PATHS = (
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryStreamingAuthenticatedTailController.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryStreamingBoundProofTest.kt",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+    "docs/DORA_MVP1_PRODUCT_DECISIONS.md",
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    "docs/stage0/DEC-045-POC-RECOVERY-STREAMING-AUTHENTICATED-TAIL.md",
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_STREAMING_BOUND_PROOF_SCOPE_STAGE0_V0_1.md",
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_STREAMING_OPTION_A_SCOPE_STAGE0_V0_1.md",
+)
+REC_I3_STREAMING_INTEGRATION_BLOBS = {
+    REC_I3_STREAMING_INTEGRATION_PATHS[0]: "12c2a7a75b148f9aa87d0fabad5fd3142817be71",
+    REC_I3_STREAMING_INTEGRATION_PATHS[1]: "b82c5e399a8e7cc36fa6c925981a0c0826321929",
+    REC_I3_STREAMING_INTEGRATION_PATHS[3]: "6aa9d15d94cc4e005dd576b5f72b01ea6eb2f5b3",
+    REC_I3_STREAMING_INTEGRATION_PATHS[5]: "e1e8ea6001b6fd87c5673d368efc530436ebe15c",
+    REC_I3_STREAMING_INTEGRATION_PATHS[6]: "c653843e2a0e4d6d10ee61a33e775ff800e78fe8",
+    REC_I3_STREAMING_INTEGRATION_PATHS[7]: "487fc4e9a3346bc5b223d9d4214725768149323d",
+}
+REC_I3_STREAMING_INTEGRATION_PROTECTED_PATHS = (
+    "docs/adr/ADR-0003-unified-poc-recovery-journal-and-run-lease.md",
+    "docs/adr/ADR-0004-poc-recovery-reconciliation-and-quarantine.md",
+    "docs/evidence/poc-recovery-001/governance-remediation-v0.6.md",
+    "docs/stage0/poc-recovery-gate-set-stage0-v0.6.json",
+    "docs/stage0/poc-recovery-protocol-stage0-v0.6.json",
+    "docs/stage0/DORA_MVP1_STAGE0_OWNER_DECISION_OD15.md",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryJournalDatabase.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalSchemaPlanTest.kt",
+)
+REC_I3_STREAMING_INTEGRATION_CORRECTION_PATHS = (
+    "tools/validate_poc_recovery_governance.py",
+    "tools/test_poc_recovery_i3_governance.py",
+)
 REC_I3_BASE = "da1d9bd13b71d609fe7ec4ea62fe1e984f726040"
 REC_I3_BASE_TREE = "925bd08802fefc314742776d147771a92edfac70"
 REC_I3_BASE_PARENT = "e5f94e3f5afc3bf5aa61acaaa4960614dcb09209"
@@ -5642,6 +5695,102 @@ def validate_rec_i3_candidate_history(current: RecoveryLifecycleIdentity) -> Non
     validate_rec_i3_changed_paths(collect_post_merge_changes(merged_anchor=REC_I3_BASE))
 
 
+def rec_i3_streaming_integration_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
+    return lifecycle.branch == REC_I3_STREAMING_INTEGRATION_BRANCH
+
+
+def validate_rec_i3_streaming_integration_context(
+    lifecycle: RecoveryLifecycleIdentity,
+    base: PinnedCommitIdentity,
+) -> None:
+    validate_pinned_commit_identity(
+        base,
+        expected_commit=REC_I3_STREAMING_INTEGRATION_BASE,
+        expected_tree=REC_I3_STREAMING_INTEGRATION_BASE_TREE,
+        expected_parents=(REC_I3_STREAMING_INTEGRATION_BASE_PARENT,),
+        label="REC-I3 streaming integration base",
+    )
+    require(
+        lifecycle.branch == REC_I3_STREAMING_INTEGRATION_BRANCH,
+        "REC-I3 streaming integration requires its exact authorized branch",
+    )
+    pull_request = lifecycle.github_pull_request_context
+    if pull_request is not None:
+        validate_rec_i2b_ksp_overlay_pull_request_core(pull_request)
+        require(
+            pull_request.head_ref == REC_I3_STREAMING_INTEGRATION_BRANCH
+            and pull_request.base_sha == REC_I3_STREAMING_INTEGRATION_BASE
+            and pull_request.merge_sha == lifecycle.head
+            and pull_request.head_sha != REC_I3_STREAMING_INTEGRATION_BASE,
+            "REC-I3 streaming integration pull_request does not bind the exact branch/base/merge checkout",
+        )
+
+
+def validate_rec_i3_streaming_integration_history(candidate_head: str) -> None:
+    require(
+        git_is_ancestor(REC_I3_STREAMING_INTEGRATION_HEAD, candidate_head),
+        "REC-I3 streaming integration head omits or replaces the exact seven-commit import",
+    )
+    require(
+        not git_output(
+            "rev-list", "--min-parents=2",
+            f"{REC_I3_STREAMING_INTEGRATION_BASE}..{candidate_head}",
+        ),
+        "REC-I3 streaming integration history must be linear",
+    )
+    require(
+        git_output("rev-list", "--reverse", f"{REC_I3_STREAMING_INTEGRATION_BASE}..{REC_I3_STREAMING_INTEGRATION_HEAD}").splitlines()
+        == [item[0] for item in REC_I3_STREAMING_INTEGRATION_IMPORTS],
+        "REC-I3 streaming integration commit sequence drift",
+    )
+    for commit, parent, tree, source in REC_I3_STREAMING_INTEGRATION_IMPORTS:
+        require(
+            git_output("rev-parse", f"{commit}^{{tree}}") == tree
+            and git_output("rev-parse", f"{commit}^") == parent,
+            f"REC-I3 streaming integration identity drift at {commit}",
+        )
+        trailer = f"(cherry picked from commit {source})"
+        require(
+            git_output("show", "-s", "--format=%B", commit).splitlines().count(trailer) == 1,
+            f"REC-I3 streaming integration source trailer drift at {commit}",
+        )
+        commit_paths = set(git_path_records("diff", "--name-only", "-z", parent, commit))
+        require(
+            commit_paths and commit_paths <= set(REC_I3_STREAMING_INTEGRATION_PATHS),
+            f"REC-I3 streaming integration commit contains an undeclared path at {commit}",
+        )
+    range_paths = set(git_path_records(
+        "log", "--format=", "--name-only", "--no-renames", "-z",
+        f"{REC_I3_STREAMING_INTEGRATION_BASE}..{REC_I3_STREAMING_INTEGRATION_HEAD}",
+    ))
+    require(
+        range_paths == set(REC_I3_STREAMING_INTEGRATION_PATHS),
+        "REC-I3 streaming integration range path set drift",
+    )
+    for relative, expected_blob in REC_I3_STREAMING_INTEGRATION_BLOBS.items():
+        require(
+            git_output("rev-parse", f"{REC_I3_STREAMING_INTEGRATION_HEAD}:{relative}") == expected_blob,
+            f"REC-I3 streaming integration final blob drift: {relative}",
+        )
+    for relative in REC_I3_STREAMING_INTEGRATION_PROTECTED_PATHS:
+        require(
+            git_output("rev-parse", f"{REC_I3_STREAMING_INTEGRATION_BASE}:{relative}")
+            == git_output("rev-parse", f"{REC_I3_STREAMING_INTEGRATION_HEAD}:{relative}"),
+            f"REC-I3 streaming integration changed a protected predecessor blob: {relative}",
+        )
+    changes = collect_post_merge_changes(merged_anchor=REC_I3_STREAMING_INTEGRATION_HEAD)
+    require(
+        set(changes) == {"committed", "staged", "unstaged", "untracked"},
+        "REC-I3 streaming integration correction inventory is incomplete",
+    )
+    for layer, paths in changes.items():
+        forbidden = sorted(set(paths) - set(REC_I3_STREAMING_INTEGRATION_CORRECTION_PATHS))
+        require(
+            not forbidden,
+            f"REC-I3 streaming integration {layer} correction escapes exact scope: {forbidden}",
+        )
+
+
 def validate_rec_i3_frozen_bootstrap_history(candidate_head: str) -> None:
     require(
         git_is_ancestor(REC_I3_MICROFILE_REVIEWED_BOOTSTRAP_COMMIT, candidate_head),
@@ -5956,8 +6105,12 @@ def validate_rec_i3_microfile_successor(publication: bool) -> None:
     require(record.get("limitations"), "REC-I3 microfile limitations missing")
 
 
-def validate_rec_i3_reconciliation_successor(publication: bool) -> None:
-    head = git_output("rev-parse", "HEAD")
+def validate_rec_i3_reconciliation_successor(
+    publication: bool,
+    *,
+    epoch_head: str | None = None,
+) -> None:
+    head = epoch_head or git_output("rev-parse", "HEAD")
     require(git_is_ancestor(REC_I3_RECON_SCOPE_COMMIT, head),
             "REC-I3 reconciliation source predates its scope")
     require(git_output("rev-parse", f"{REC_I3_RECON_SCOPE_COMMIT}^{{tree}}")
@@ -6143,12 +6296,26 @@ def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | Non
     if not rec_i3_candidate():
         return False
     current = lifecycle or collect_recovery_lifecycle_identity()
-    validate_rec_i3_context(current, collect_pinned_commit_identity(REC_I3_BASE, current.head),
-                            collect_pinned_commit_identity(REC_I3_SCOPE_COMMIT, current.head))
+    streaming_integration = rec_i3_streaming_integration_candidate(current)
+    if streaming_integration:
+        validate_rec_i3_streaming_integration_context(
+            current,
+            collect_pinned_commit_identity(REC_I3_STREAMING_INTEGRATION_BASE, current.head),
+        )
+        candidate_head = (
+            current.github_pull_request_context.head_sha
+            if current.github_pull_request_context is not None
+            else current.head
+        )
+        validate_rec_i3_streaming_integration_history(candidate_head)
+    else:
+        validate_rec_i3_context(current, collect_pinned_commit_identity(REC_I3_BASE, current.head),
+                                collect_pinned_commit_identity(REC_I3_SCOPE_COMMIT, current.head))
     if current.github_pull_request_context is not None:
         require(git_is_ancestor(REC_I3_SCOPE_COMMIT, current.github_pull_request_context.head_sha),
                 "REC-I3 scope exists only through PR base/merge")
-    validate_rec_i3_candidate_history(current)
+    if not streaming_integration:
+        validate_rec_i3_candidate_history(current)
     require(git_output("rev-parse", f"{REC_I3_BASE}:android/poc/recovery") == REC_I2B_MODULE_TREE,
             "REC-I3 base does not preserve the exact REC-I2B module")
     validate_rec_i3_additions_absent()
@@ -6182,7 +6349,11 @@ def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | Non
     require(rec_i2b_ksp_overlay_active(), "REC-I3 requires the already integrated exact KSP overlay")
     validate_rec_i2b_ksp_overlay_integrated_revision(REC_I3_BASE)
     predecessor_changes = collect_post_merge_changes(merged_anchor=REC_I2B_MERGED_MAIN_ANCHOR)
-    predecessor_changes = {layer: [path for path in paths if path not in REC_I3_ADDITIVE_PATHS]
+    permitted_additions = (
+        (*REC_I3_ADDITIVE_PATHS, *REC_I3_STREAMING_INTEGRATION_PATHS)
+        if streaming_integration else REC_I3_ADDITIVE_PATHS
+    )
+    predecessor_changes = {layer: [path for path in paths if path not in permitted_additions]
                            for layer, paths in predecessor_changes.items()}
     validate_rec_i2b_merged_main_protected_paths(predecessor_changes, allow_exact_ksp_overlay=True)
     # collect_post_merge_changes includes both the tree diff and every committed
@@ -6209,8 +6380,16 @@ def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | Non
     if (ROOT / REC_I3_MICROFILE_EVIDENCE_PATH).exists():
         validate_rec_i3_microfile_successor(current.github_pull_request_context is not None)
     if (ROOT / REC_I3_RECON_EVIDENCE_PATH).exists():
-        validate_rec_i3_reconciliation_successor(current.github_pull_request_context is not None)
-    if (ROOT / REC_I3_MICROFILE_EVIDENCE_PATH).exists():
+        validate_rec_i3_reconciliation_successor(
+            current.github_pull_request_context is not None,
+            epoch_head=REC_I3_STREAMING_INTEGRATION_BASE if streaming_integration else None,
+        )
+    if streaming_integration:
+        print(
+            "PASS REC-I3 bounded streaming Option A integration: exact seven-commit import; "
+            "full REC-I3/preflight blocked"
+        )
+    elif (ROOT / REC_I3_MICROFILE_EVIDENCE_PATH).exists():
         print(
             "PASS REC-I3 bounded sequential-microfile successor: "
             f"{REC_I3_MICROFILE_CLAIM_CEILING}; reviewed bootstrap checkpoint preserved; "

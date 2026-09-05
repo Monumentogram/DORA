@@ -13,6 +13,97 @@ import validate_poc_recovery_governance as governance
 
 
 class RecoveryI3GovernanceTests(unittest.TestCase):
+    def test_exact_streaming_integration_profile_accepts_current_checkout(self) -> None:
+        lifecycle = governance.collect_recovery_lifecycle_identity()
+        self.assertEqual(governance.REC_I3_STREAMING_INTEGRATION_BRANCH, lifecycle.branch)
+        governance.validate_rec_i3_streaming_integration_history(lifecycle.head)
+        self.assertTrue(governance.validate_current_rec_i3_successor(lifecycle))
+
+    def test_streaming_integration_profile_rejects_branch_and_pr_identity_spoofing(self) -> None:
+        base = governance.PinnedCommitIdentity(
+            governance.REC_I3_STREAMING_INTEGRATION_BASE,
+            governance.REC_I3_STREAMING_INTEGRATION_BASE_TREE,
+            (governance.REC_I3_STREAMING_INTEGRATION_BASE_PARENT,),
+            True,
+        )
+        local = governance.RecoveryLifecycleIdentity(
+            "c" * 40,
+            governance.REC_I3_STREAMING_INTEGRATION_BRANCH,
+            None, None, None, None, (), None, None, False,
+        )
+        governance.validate_rec_i3_streaming_integration_context(local, base)
+        for branch in (governance.REC_I3_BRANCH, "main", "", "codex/rec-i3-streaming-option-a"):
+            with self.subTest(branch=branch), self.assertRaisesRegex(ValueError, "exact authorized branch"):
+                governance.validate_rec_i3_streaming_integration_context(replace(local, branch=branch), base)
+        context = governance.GitHubPullRequestContext(
+            governance.GITHUB_REPOSITORY,
+            governance.GITHUB_REPOSITORY,
+            governance.REC_I3_STREAMING_INTEGRATION_BRANCH,
+            governance.REC_I3_STREAMING_INTEGRATION_HEAD,
+            governance.GITHUB_BASE_BRANCH,
+            governance.REC_I3_STREAMING_INTEGRATION_BASE,
+            "refs/pull/99/merge",
+            "c" * 40,
+            99, True, "open", False,
+        )
+        pr = replace(local, github_pull_request_context=context)
+        governance.validate_rec_i3_streaming_integration_context(pr, base)
+        for field, value in (
+            ("repository", "fork/DORA"),
+            ("head_ref", governance.REC_I3_BRANCH),
+            ("base_sha", "d" * 40),
+            ("head_sha", governance.REC_I3_STREAMING_INTEGRATION_BASE),
+            ("merge_sha", "e" * 40),
+            ("state", "closed"),
+        ):
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                governance.validate_rec_i3_streaming_integration_context(
+                    replace(pr, github_pull_request_context=replace(context, **{field: value})), base
+                )
+
+    def test_streaming_integration_history_rejects_topology_trailer_blob_and_post_import_drift(self) -> None:
+        head = governance.REC_I3_STREAMING_INTEGRATION_HEAD
+        with patch.object(governance, "git_is_ancestor", return_value=False), self.assertRaisesRegex(
+            ValueError, "omits or replaces"
+        ):
+            governance.validate_rec_i3_streaming_integration_history(head)
+
+        original_output = governance.git_output
+        first_commit = governance.REC_I3_STREAMING_INTEGRATION_IMPORTS[0][0]
+
+        def changed_trailer(*args: str) -> str:
+            if args == ("show", "-s", "--format=%B", first_commit):
+                return "message without source trailer"
+            return original_output(*args)
+
+        with patch.object(governance, "git_output", side_effect=changed_trailer), self.assertRaisesRegex(
+            ValueError, "source trailer drift"
+        ):
+            governance.validate_rec_i3_streaming_integration_history(head)
+
+        protected = governance.REC_I3_STREAMING_INTEGRATION_PROTECTED_PATHS[0]
+
+        def changed_blob(*args: str) -> str:
+            if args == ("rev-parse", f"{head}:{protected}"):
+                return "0" * 40
+            return original_output(*args)
+
+        with patch.object(governance, "git_output", side_effect=changed_blob), self.assertRaisesRegex(
+            ValueError, "protected predecessor blob"
+        ):
+            governance.validate_rec_i3_streaming_integration_history(head)
+
+        changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
+        changes["unstaged"] = ["docs/evidence/poc-recovery-001/injected.json"]
+        with patch.object(governance, "collect_post_merge_changes", return_value=changes), self.assertRaisesRegex(
+            ValueError, "correction escapes exact scope"
+        ):
+            governance.validate_rec_i3_streaming_integration_history(head)
+
+    def test_original_reconciliation_epoch_still_rejects_streaming_paths(self) -> None:
+        with self.assertRaisesRegex(ValueError, "reconciliation epoch contains an undeclared path"):
+            governance.validate_rec_i3_reconciliation_successor(publication=False)
+
     def test_reconciliation_round4_author_mapping_is_exact_and_current(self) -> None:
         record = copy.deepcopy(governance.read_json(governance.REC_I3_RECON_EVIDENCE_PATH))
         record["sourceFiles"] = {
@@ -37,7 +128,9 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
             ]
         )
         with patch.object(governance, "read_json", return_value=record):
-            governance.validate_rec_i3_reconciliation_successor(publication=False)
+            governance.validate_rec_i3_reconciliation_successor(
+                publication=False, epoch_head=governance.REC_I3_STREAMING_INTEGRATION_BASE
+            )
 
         historical_cases = record["round3Correction"]["authorVerification"]["acceptanceCases"]
         mutations = {
@@ -138,7 +231,9 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
             with self.subTest(mutation=name), patch.object(
                 governance, "read_json", return_value=changed
             ), self.assertRaises(ValueError):
-                governance.validate_rec_i3_reconciliation_successor(publication=False)
+                governance.validate_rec_i3_reconciliation_successor(
+                    publication=False, epoch_head=governance.REC_I3_STREAMING_INTEGRATION_BASE
+                )
 
         not_run = copy.deepcopy(record)
         not_run["round4Truth"]["authorVerification"] = {"status": "NOT_RUN"}
@@ -150,7 +245,9 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
         with patch.object(governance, "read_json", return_value=not_run), self.assertRaisesRegex(
             ValueError, "requires author checks"
         ):
-            governance.validate_rec_i3_reconciliation_successor(publication=True)
+            governance.validate_rec_i3_reconciliation_successor(
+                publication=True, epoch_head=governance.REC_I3_STREAMING_INTEGRATION_BASE
+            )
 
     def test_reconciliation_round3_truth_is_exact_and_open(self) -> None:
         record = governance.read_json(governance.REC_I3_RECON_EVIDENCE_PATH)
@@ -192,7 +289,9 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
                 for item in record["round3Correction"]["authorVerification"]["acceptanceCases"]
             ],
         )
-        governance.validate_rec_i3_reconciliation_successor(publication=False)
+        governance.validate_rec_i3_reconciliation_successor(
+            publication=False, epoch_head=governance.REC_I3_STREAMING_INTEGRATION_BASE
+        )
 
         for mutation in ("verified", "closed", "missing", "clean", "review-closed"):
             changed = copy.deepcopy(record)
@@ -211,7 +310,9 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
                 "read_json",
                 return_value=changed,
             ), self.assertRaises(ValueError):
-                governance.validate_rec_i3_reconciliation_successor(publication=False)
+                governance.validate_rec_i3_reconciliation_successor(
+                    publication=False, epoch_head=governance.REC_I3_STREAMING_INTEGRATION_BASE
+                )
 
         for mutation in ("acceptance-missing", "acceptance-duplicate", "test-name-only"):
             changed = copy.deepcopy(record)
@@ -228,7 +329,9 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
                 "read_json",
                 return_value=changed,
             ), self.assertRaisesRegex(ValueError, "production-entry acceptance mapping"):
-                governance.validate_rec_i3_reconciliation_successor(publication=False)
+                governance.validate_rec_i3_reconciliation_successor(
+                    publication=False, epoch_head=governance.REC_I3_STREAMING_INTEGRATION_BASE
+                )
 
     def test_reconciliation_correction_scope_and_new_files_are_exactly_declared(self) -> None:
         self.assertEqual(
