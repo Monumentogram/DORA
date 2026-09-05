@@ -39,7 +39,11 @@ internal interface RecoveryReconciliationSource {
 
     fun loadCandidate(runId: RunId): RecoveryCandidateSnapshot
 
-    fun loadArtifact(runId: RunId, relativeName: String): RecoveryArtifactBytes?
+    fun loadArtifact(
+        runId: RunId,
+        relativeName: String,
+        context: RecoveryArtifactContext,
+    ): RecoveryArtifactBytes?
 
     fun loadPendingQuarantine(runId: RunId): List<RecoveryQuarantineIntentRow> = emptyList()
 
@@ -51,9 +55,47 @@ internal interface RecoveryReconciliationSource {
     ): RecoveryInventorySnapshot = RecoveryInventorySnapshot(loadInventory(runId), emptyList())
 }
 
+internal enum class RecoveryBootstrapRowState {
+    UNKNOWN,
+    ABSENT,
+    PRESENT,
+}
+
+internal enum class RecoveryArtifactPresence {
+    UNKNOWN,
+    ABSENT,
+    PRESENT,
+}
+
+internal enum class RecoveryArtifactContext {
+    CONFIRMATION_FINAL,
+    CONFIRMATION_TEMP,
+    UNIT_KEY_ENVELOPE,
+    UNIT_CIPHERTEXT,
+    MANIFEST_KEY_ENVELOPE,
+    MANIFEST_CIPHERTEXT,
+}
+
+internal data class RecoverySourceFailureContext(
+    val bootstrapRowState: RecoveryBootstrapRowState?,
+    val artifactContext: RecoveryArtifactContext?,
+    val relativeName: String?,
+    val artifactPresence: RecoveryArtifactPresence,
+    val confirmationFinalPresence: RecoveryArtifactPresence = RecoveryArtifactPresence.UNKNOWN,
+) {
+    init {
+        require(relativeName == null || relativeName.length <= MAX_DIAGNOSTIC_RELATIVE_NAME_CHARS)
+    }
+
+    private companion object {
+        const val MAX_DIAGNOSTIC_RELATIVE_NAME_CHARS = 1_024
+    }
+}
+
 internal class RecoverySourceAccessException(
     val diagnostic: RecoveryFailureDiagnostic,
     cause: Throwable,
+    val context: RecoverySourceFailureContext? = null,
 ) : RuntimeException(diagnostic.message, cause)
 
 internal data class RecoveryInventoryEntry(
@@ -776,19 +818,7 @@ internal class RecoveryMicrofileReconciliationController(
             try {
                 source.loadConfirmation(runId)
             } catch (error: RecoverySourceAccessException) {
-                return noPrefix(
-                    diagnostic =
-                        if (
-                            error.diagnostic.category in
-                                setOf(
-                                    RecoveryFailureCategory.UNSAFE_PARENT,
-                                    RecoveryFailureCategory.CORRUPT_LEAF,
-                                )
-                        )
-                            ReconciliationDiagnostic.UNSAFE_PATH
-                        else ReconciliationDiagnostic.CRYPTO_OPERATIONAL,
-                    failure = error.diagnostic,
-                )
+                return confirmationSourceFailure(error)
             }
         when (val confirmation = confirmationController.evaluate(confirmationSnapshot)) {
             is ConfirmationResult.Absent -> return noPrefix()
@@ -1081,10 +1111,20 @@ internal class RecoveryMicrofileReconciliationController(
         for (unit in validUnits.take(manifest.entries.size)) {
             val loaded =
                 try {
-                    source.loadArtifact(runId, unit.keyEnvelopeRelativeName) to
-                        source.loadArtifact(runId, unit.ciphertextRelativeName)
+                    source.loadArtifact(
+                        runId,
+                        unit.keyEnvelopeRelativeName,
+                        RecoveryArtifactContext.UNIT_KEY_ENVELOPE,
+                    ) to
+                        source.loadArtifact(
+                            runId,
+                            unit.ciphertextRelativeName,
+                            RecoveryArtifactContext.UNIT_CIPHERTEXT,
+                        )
                 } catch (error: RecoverySourceAccessException) {
-                    failure = null to artifactResultDiagnostic(error.diagnostic)
+                    failure =
+                        classifyEnvelopeContext(error.diagnostic) to
+                            artifactResultDiagnostic(error.diagnostic)
                     failureDetail = error.diagnostic
                     break
                 }
@@ -1240,8 +1280,16 @@ internal class RecoveryMicrofileReconciliationController(
     ): ManifestAttempt {
         val loaded =
             try {
-                source.loadArtifact(runId, row.keyEnvelopeRelativeName) to
-                    source.loadArtifact(runId, row.publicationRelativeName)
+                source.loadArtifact(
+                    runId,
+                    row.keyEnvelopeRelativeName,
+                    RecoveryArtifactContext.MANIFEST_KEY_ENVELOPE,
+                ) to
+                    source.loadArtifact(
+                        runId,
+                        row.publicationRelativeName,
+                        RecoveryArtifactContext.MANIFEST_CIPHERTEXT,
+                    )
             } catch (error: RecoverySourceAccessException) {
                 return ManifestAttempt(null, error.diagnostic)
             }
@@ -1377,6 +1425,86 @@ internal class RecoveryMicrofileReconciliationController(
 
     private fun matches(value: RecoveryArtifactBytes?, bytes: Long, digest: Sha256Value): Boolean =
         value != null && value.size == bytes && value.sha256 == digest
+
+    private fun confirmationSourceFailure(
+        error: RecoverySourceAccessException
+    ): MicrofileReconciliationResult.NoAuthenticatedPrefix {
+        val context = error.context
+        val classification =
+            when (context?.artifactContext) {
+                RecoveryArtifactContext.CONFIRMATION_FINAL ->
+                    confirmationFinalClassification(context, error.diagnostic)
+                RecoveryArtifactContext.CONFIRMATION_TEMP ->
+                    confirmationTempClassification(context, error.diagnostic)
+                else -> null
+            }
+        val publicDiagnostic =
+            when (error.diagnostic.category) {
+                RecoveryFailureCategory.UNSAFE_PARENT,
+                RecoveryFailureCategory.CORRUPT_LEAF -> ReconciliationDiagnostic.UNSAFE_PATH
+                RecoveryFailureCategory.OPERATIONAL,
+                RecoveryFailureCategory.UNKNOWN,
+                RecoveryFailureCategory.UNKNOWN_OUTCOME ->
+                    ReconciliationDiagnostic.CRYPTO_OPERATIONAL
+                else -> null
+            }
+        return noPrefix(
+            classification = classification,
+            diagnostic = publicDiagnostic,
+            failure = error.diagnostic,
+        )
+    }
+
+    private fun confirmationFinalClassification(
+        context: RecoverySourceFailureContext,
+        diagnostic: RecoveryFailureDiagnostic,
+    ): KeyRecoveryClassification? =
+        when (context.bootstrapRowState) {
+            RecoveryBootstrapRowState.ABSENT ->
+                if (
+                    context.artifactPresence == RecoveryArtifactPresence.PRESENT ||
+                        diagnostic.category == RecoveryFailureCategory.UNSAFE_PARENT ||
+                        diagnostic.category == RecoveryFailureCategory.CORRUPT_LEAF
+                )
+                    KeyRecoveryClassification.INCOMPLETE_KEY_BOOTSTRAP
+                else null
+            RecoveryBootstrapRowState.PRESENT ->
+                if (
+                    context.artifactPresence == RecoveryArtifactPresence.PRESENT &&
+                        diagnostic.category in
+                            setOf(
+                                RecoveryFailureCategory.CORRUPT_LEAF,
+                                RecoveryFailureCategory.STRUCTURAL,
+                            )
+                )
+                    KeyRecoveryClassification.CORRUPT_KEY_CONFIRMATION
+                else null
+            else -> null
+        }
+
+    private fun confirmationTempClassification(
+        context: RecoverySourceFailureContext,
+        diagnostic: RecoveryFailureDiagnostic,
+    ): KeyRecoveryClassification? =
+        when (context.bootstrapRowState) {
+            RecoveryBootstrapRowState.ABSENT ->
+                if (
+                    context.confirmationFinalPresence == RecoveryArtifactPresence.PRESENT ||
+                        context.artifactPresence == RecoveryArtifactPresence.PRESENT ||
+                        diagnostic.category.isUnsafePathCategory()
+                )
+                    KeyRecoveryClassification.INCOMPLETE_KEY_BOOTSTRAP
+                else null
+            RecoveryBootstrapRowState.PRESENT ->
+                if (context.confirmationFinalPresence == RecoveryArtifactPresence.ABSENT)
+                    KeyRecoveryClassification.KEY_CONFIRMATION_MISSING
+                else null
+            else -> null
+        }
+
+    private fun RecoveryFailureCategory.isUnsafePathCategory(): Boolean =
+        this == RecoveryFailureCategory.UNSAFE_PARENT ||
+            this == RecoveryFailureCategory.CORRUPT_LEAF
 
     private fun manifestEntry(row: RecoveryMicrofileUnitRow) =
         RecoveryManifestEntry(

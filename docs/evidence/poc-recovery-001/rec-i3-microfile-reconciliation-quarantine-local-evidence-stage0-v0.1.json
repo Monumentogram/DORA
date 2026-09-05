@@ -30,24 +30,24 @@
     "measured": false
   },
   "sourceFiles": {
-    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationController.kt": "5ac8112b721ed3871d4bcd956d831a5b79b2fbd41fe4e96c5368a00870296015",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationController.kt": "ac78cdc6ee831e7b8a1752c812cacd0a0c91be994aac8c57f8e45759f4cb14c4",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryMicrofileReconciliation.kt": "91f2e2185c414aed4376c16732deb8d7377259496cf5b2a3d18e87e5a5372f16",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryMicrofileCrypto.kt": "68beef0e536d01a4b6e2a61e71ac6ee165945bf7e75cd743caaead3d09bea935",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationOutcomes.kt": "1935878e035e74d00af5050130e407b5a4c5b7a0cbf4b60bd7978ad781bcb29f",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntent.kt": "6e8847fe67f5fb1a5dbb5d36a55d85d248885f7a1b11cceaac7d5c9acdf709d7",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryJournalDatabase.kt": "5a0b466e89755e248d63c604c7d311fb4e02bd57e2ce2bacbae87f99a2c17acb",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryQuarantineJournal.kt": "636b702ffa15d17f2414033520146b5cfff2d0e09af6f89a2eecbd85ad4d1270",
-    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSource.kt": "6fb6509bc67581488b07a00410d16e81782d290834073d5c0b7607fc5b0d6ba1",
-    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryReconciliationPathPolicy.kt": "6476479cb7f15da82ce1b44f6aa45ab318998278ce66fd5b566952ecae965e26",
-    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorage.kt": "303e6928a90a1254f29dbdfd1447b563d7fc57e68e4c58c26ef92a210cb16c34",
-    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationControllerTest.kt": "eee8ce5c42b05f2eab2948cc787b5dbbcade8258cb5315fa6dd0888b786a001b",
-    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryQuarantineControllerTest.kt": "b9c4114fafe90353a35358365bb44a4c61f36e01b5847f530f651ff6ca484616",
-    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationAcceptanceTest.kt": "ba04f8622565e0c0dbb3b36fb3f2d38aabb307395290afd8c051df18fcd26fbe",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSource.kt": "6553e3f9425ab50ca26f194e2b5dff332f9bd39cdc8ba7a811b3cd7903274463",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryReconciliationPathPolicy.kt": "ca50adb5bb9a0475dbd900bedfec1baadb9aba521ced4491c88762601492f224",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorage.kt": "0fac1a0e72f13d9fdd7c87952cfc1b69b31e49aac8c4070878aab17238f42f4e",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationControllerTest.kt": "ec6b19f78609040ec546b5f767ae06ab52bcbdf487eab1d3727e5ffbdcc2cd5d",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryQuarantineControllerTest.kt": "f0e4e054c30538b2bea5914aba69711aa2152412dc34aae49a4a4233393be09f",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationAcceptanceTest.kt": "993159e54cdfbc7e69dd1e3d34d7c499941fb097c118fd5a0be8ea3b7f36c133",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntentTest.kt": "6896870663c59c81a7f80f801e39529cf76c93ea6887536568ae71e56788cfd8",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalSchemaPlanTest.kt": "74068644e879ba72ec285566336879eaee590c13c55a4bae94e35b712705dd38",
-    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSourceTest.kt": "8c53bb5a9be9f47044a292616b74d3fe5025483c4db5e89bd0229285d20fa463",
-    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryReconciliationPathPolicyTest.kt": "2619b4257729f8fa9aea54b0fbe2980197b814616d510543624846b578f3482e",
-    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorageTest.kt": "6d6401babc60bfaa4090f0e02c243acd4c2cdab0ce9846490edd752b3df068a5",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSourceTest.kt": "578cba2dac30d149fea71ebf9470c84c90623204254060246ae8d526109d9158",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryReconciliationPathPolicyTest.kt": "a6fd59757a576e903ce71814466bd096c7f5189441bf629c7e760a9798ccdfcf",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorageTest.kt": "9d2c88443a8ab34670dbed41bdca1736fcc121af98675421d3046fc4410fdc55",
     "tools/verify_rec_i3_microfile_sqlite.py": "c6a6c094731ca1cf7c4830e5c1aa162e631b4c2dff0f204f272e1a9e94885ad0"
   },
   "checks": [
@@ -123,6 +123,29 @@
       "errors": 0,
       "skipped": 0,
       "log": "rec-i3-round3-final-android-complete.log"
+    },
+    {
+      "command": "gradlew spotlessCheck detekt :poc:recovery:testDebugUnitTest :poc:recovery:lintDebug :poc:recovery:compileReleaseKotlin :poc:recovery:recoveryI2bVerifyCryptoPolicy --no-daemon --no-parallel",
+      "stage": "ROUND4_ANDROID_HOST",
+      "outcome": "PASS",
+      "tests": 214,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "log": "rec-i3-round4-final-android.log"
+    },
+    {
+      "command": "python -m unittest test_poc_recovery_i3_governance.py -v from tools; python tools/validate_poc_recovery_governance.py",
+      "stage": "ROUND4_GOVERNANCE",
+      "outcome": "PASS",
+      "tests": 23,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "logs": [
+        "rec-i3-round4-governance.log",
+        "rec-i3-round4-validator-precommit.log"
+      ]
     }
   ],
   "review": {
@@ -138,11 +161,11 @@
     }
   },
   "limitations": [
-    "Independent review of a020944f0444edfcbabc4690d4a367b1cf9e83d7 returned REVISE (P0/P1/P2 0/4/2); round-three author tests pass, while every finding remains open pending independent exact-candidate review.",
-    "The earlier a020944 exact-row, adapter and acceptance coverage claims are superseded claims; the round-three production-entry assertions are author evidence, not independent closure.",
+    "Independent review of ca2db88e0c6e53f346908bdc73b628beaf6c4ec4 and its addendum remains REVISE (P0/P1/P2 0/4/0); current round-four author checks pass while all four findings remain open pending independent exact-candidate review.",
+    "The earlier a020944 and round-three contextual-taxonomy, path-I/O, exact-row and adapter coverage statements are superseded author claims; the current production-entry mapping is author evidence, not independent closure.",
     "The immediate lstat-plus-rename sequence detects observed occupancy but does not prove kernel-atomic no-replace behavior; collision handling remains conservative and Android physical proof is still gated.",
-    "Host JVM tests, host SQLite and injected descriptor/journal/syscall seams prove their assertions and Android compilation only; they do not prove physical Android filesystem or SQLite durability.",
-    "No device or emulator execution occurred; preflight, fault campaign, measurement, production admission, accountable review and full REC-I3 remain blocked."
+    "Host JVM tests and injected descriptor, journal and syscall seams prove their assertions and Android compilation only; they do not prove physical Android filesystem or SQLite durability.",
+    "No device or emulator execution occurred; the ten remaining readiness blockers, preflight, fault campaign, measurement, production admission, accountable review and full REC-I3 remain open."
   ],
   "correctionScopeFirstCommit": "e78571776d34756325289dcfcb3853c9696f3011",
   "correctsReviewedCandidate": "dbbde0ef8e16cbac6cbe6f2ccbefde43e1853188",
@@ -339,14 +362,77 @@
     "status": "IN_PROGRESS",
     "baseCommit": "ca2db88e0c6e53f346908bdc73b628beaf6c4ec4",
     "baseTree": "0186863f17d2daf5c73804e0cc13f6043ec56f1a",
-    "originalReview": {"status": "REVISE", "counts": {"p0": 0, "p1": 3, "p2": 0}, "markdownSha256": "494934ba0e0c9adad769a4efc56aa0c54e82790e15405ff1de921d32604cf706", "jsonSha256": "60eb1d83161b1dd26234b3bf463093de1cc68155d40ad216f5549b3e39db9eca"},
+    "originalReview": {
+      "status": "REVISE",
+      "counts": {
+        "p0": 0,
+        "p1": 3,
+        "p2": 0
+      },
+      "markdownSha256": "494934ba0e0c9adad769a4efc56aa0c54e82790e15405ff1de921d32604cf706",
+      "jsonSha256": "60eb1d83161b1dd26234b3bf463093de1cc68155d40ad216f5549b3e39db9eca"
+    },
     "addendumSha256": "38120cc5ae49a5fe92b2467de05c216e962d792712fda2d7804af4f6c62bad0a",
-    "effectiveReview": {"status": "REVISE", "counts": {"p0": 0, "p1": 4, "p2": 0}},
-    "closedPriorFindingIds": ["P1-OPTIONAL-NAMESPACE-AND-RESULT-RETENTION", "P1-Q05-CONFIRMED-REMAINDER", "P2-ROW-DIGEST-FRAMING", "P2-PRODUCTION-UNIQUE-READBACK"],
-    "openFindingIds": ["P1-PRODUCTION-ARTIFACT-CONTEXT", "P1-LEXICAL-PATH-DIAGNOSTICS", "P1-EVIDENCE-ACTUAL-ENTRY", "P1-BOOTSTRAP-CURSOR-POSITION"],
-    "historicalAuthorClaimScope": {"round3Status": "PASS", "supersededAcceptanceIds": ["CONTEXTUAL-TAXONOMY", "PATH-IO-DISTINCTION"]},
-    "authorVerification": {"status": "NOT_RUN"},
-    "independentReview": {"status": "PENDING", "formalReviewer": false},
+    "effectiveReview": {
+      "status": "REVISE",
+      "counts": {
+        "p0": 0,
+        "p1": 4,
+        "p2": 0
+      }
+    },
+    "closedPriorFindingIds": [
+      "P1-OPTIONAL-NAMESPACE-AND-RESULT-RETENTION",
+      "P1-Q05-CONFIRMED-REMAINDER",
+      "P2-ROW-DIGEST-FRAMING",
+      "P2-PRODUCTION-UNIQUE-READBACK"
+    ],
+    "openFindingIds": [
+      "P1-PRODUCTION-ARTIFACT-CONTEXT",
+      "P1-LEXICAL-PATH-DIAGNOSTICS",
+      "P1-EVIDENCE-ACTUAL-ENTRY",
+      "P1-BOOTSTRAP-CURSOR-POSITION"
+    ],
+    "historicalAuthorClaimScope": {
+      "round3Status": "PASS",
+      "supersededAcceptanceIds": [
+        "CONTEXTUAL-TAXONOMY",
+        "PATH-IO-DISTINCTION"
+      ]
+    },
+    "authorVerification": {
+      "status": "PASS",
+      "acceptanceCases": [
+        {
+          "id": "CONTEXTUAL-TAXONOMY",
+          "productionEntry": "RecoveryMicrofileReconciliationController.reconcile -> AndroidRecoveryReconciliationSource.loadConfirmation/loadArtifact -> AndroidOsRecoveryReconciliationStorage.activeArtifactExists/loadActiveArtifact",
+          "test": "AndroidRecoveryReconciliationSourceTest.actual controller keeps no-row and durable-row confirmation path classifications; actual controller distinguishes known final from unknown and temporary observation; actual controller maps manifest envelope and ciphertext structural reads by caller role; actual controller maps unit envelope structural read without relabeling ciphertext; actual controller keeps later syscall IO operational across artifact roles",
+          "assertion": "Bootstrap row UNKNOWN, ABSENT and PRESENT and artifact presence UNKNOWN, ABSENT and PRESENT remain distinct; final and temporary confirmation plus MANIFEST_KEY_ENVELOPE, MANIFEST_CIPHERTEXT, UNIT_KEY_ENVELOPE and UNIT_CIPHERTEXT bind nullable key classification, public diagnostic, retained stage/category, prefix or rejection retention, and the last permitted side effect."
+        },
+        {
+          "id": "PATH-IO-DISTINCTION",
+          "productionEntry": "RecoveryQuarantineController.quarantine -> AndroidOsRecoveryReconciliationStorage.inspect -> RecoveryReconciliationPathPolicy.paths/requireContained",
+          "test": "RecoveryQuarantineControllerTest.actual lexical and initial inspect failures retain typed diagnostics; actual second inspect preserves confirmed rename for unsafe and IO transitions; persisted invalid destination is rejected before actual storage inspection; AndroidOsRecoveryReconciliationStorageTest.actual inspect rejects lexical source and destination before artifact syscall; RecoveryReconciliationPathPolicyTest.invalid platform path and direct containment escape are typed unsafe",
+          "assertion": "Typed lexical, destination and containment failures, earliest Q01 persisted-row rejection, initial unsafe versus I/O and post-rename unsafe versus I/O preserve rename CONFIRMED where known and prohibit later rename, parent fsync, completion and evidence after the applicable failure boundary."
+        },
+        {
+          "id": "BOOTSTRAP-CURSOR-POSITION",
+          "productionEntry": "AndroidRecoveryReconciliationSource.loadBootstrapIdentity/decodeBootstrapIdentity -> loadConfirmation -> AndroidOsRecoveryReconciliationStorage.loadActiveArtifact",
+          "test": "AndroidRecoveryReconciliationSourceTest.bootstrap cursor decoder returns null for zero rows; bootstrap cursor decoder decodes the one stored identity at position zero; bootstrap cursor decoder rejects two rows as a structural journal failure; actual controller keeps no-row and durable-row confirmation path classifications",
+          "assertion": "Zero, one and duplicate cursor cardinality are exact; every one-row getter remains at position zero without pre-decode advance, duplicate rows are structural JOURNAL failures, and the production-used PRESENT decode reaches actual storage artifact observation."
+        },
+        {
+          "id": "EVIDENCE-ACTUAL-ENTRY",
+          "productionEntry": "validate_rec_i3_reconciliation_successor",
+          "test": "RecoveryI3GovernanceTests.test_reconciliation_round4_author_mapping_is_exact_and_current",
+          "assertion": "Only exact round4Truth author acceptance and distinct ROUND4_ANDROID_HOST and ROUND4_GOVERNANCE checks satisfy current verification; historical round-three PASS, superseded mappings and old check records cannot satisfy it."
+        }
+      ]
+    },
+    "independentReview": {
+      "status": "PENDING",
+      "formalReviewer": false
+    },
     "accountableReview": "PENDING"
   }
 }

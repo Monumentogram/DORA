@@ -13,6 +13,123 @@ import validate_poc_recovery_governance as governance
 
 
 class RecoveryI3GovernanceTests(unittest.TestCase):
+    def test_reconciliation_round4_author_mapping_is_exact_and_current(self) -> None:
+        record = copy.deepcopy(governance.read_json(governance.REC_I3_RECON_EVIDENCE_PATH))
+        record["sourceFiles"] = {
+            path: governance.canonical_lf_sha256(path)
+            for path in governance.REC_I3_RECON_SOURCE_PATHS
+        }
+        record["round4Truth"]["authorVerification"] = {
+            "status": "PASS",
+            "acceptanceCases": copy.deepcopy(
+                list(governance.REC_I3_RECON_ROUND4_ACCEPTANCE_CASES)
+            ),
+        }
+        record["checks"] = [
+            item
+            for item in record["checks"]
+            if item.get("stage") not in {"ROUND4_ANDROID_HOST", "ROUND4_GOVERNANCE"}
+        ]
+        record["checks"].extend(
+            [
+                copy.deepcopy(governance.REC_I3_RECON_ROUND4_ANDROID_CHECK),
+                copy.deepcopy(governance.REC_I3_RECON_ROUND4_GOVERNANCE_CHECK),
+            ]
+        )
+        with patch.object(governance, "read_json", return_value=record):
+            governance.validate_rec_i3_reconciliation_successor(publication=False)
+
+        historical_cases = record["round3Correction"]["authorVerification"]["acceptanceCases"]
+        mutations = {
+            "round4-pass-without-cases": lambda r: r["round4Truth"].__setitem__(
+                "authorVerification", {"status": "PASS"}
+            ),
+            "round4-acceptance-missing": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ].pop(),
+            "round4-acceptance-duplicate": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ].__setitem__(3, copy.deepcopy(r["round4Truth"]["authorVerification"]["acceptanceCases"][0])),
+            "round4-stale-contextual-copy": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ].__setitem__(0, copy.deepcopy(historical_cases[2])),
+            "round4-stale-path-copy": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ].__setitem__(1, copy.deepcopy(historical_cases[7])),
+            "round4-context-helper-only": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ][0].__setitem__("test", historical_cases[2]["test"]),
+            "round4-artifact-role-missing": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ][0].__setitem__("assertion", "Manifest and unit ciphertext context omitted."),
+            "round4-bootstrap-state-missing": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ][0].__setitem__("assertion", "ABSENT and PRESENT remain distinct."),
+            "round4-cursor-helper-only": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ][2].__setitem__(
+                "test",
+                "AndroidRecoveryReconciliationSourceTest.bootstrap cursor decoder returns null for zero rows; bootstrap cursor decoder decodes the one stored identity at position zero; bootstrap cursor decoder rejects two rows as a structural journal failure",
+            ),
+            "round4-path-actual-entry-missing": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ][1].__setitem__(
+                "test",
+                "RecoveryQuarantineControllerTest.actual quarantine entry distinguishes unsafe paths from ordinary IO",
+            ),
+            "round4-production-entry-shortened": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ][0].__setitem__(
+                "productionEntry", "RecoveryMicrofileReconciliationController.reconcile"
+            ),
+            "round4-current-android-check-missing": lambda r: r.__setitem__(
+                "checks",
+                [item for item in r["checks"] if item.get("stage") != "ROUND4_ANDROID_HOST"],
+            ),
+            "round4-current-governance-check-missing": lambda r: r.__setitem__(
+                "checks",
+                [item for item in r["checks"] if item.get("stage") != "ROUND4_GOVERNANCE"],
+            ),
+            "round4-current-check-failed": lambda r: next(
+                item for item in r["checks"] if item.get("stage") == "ROUND4_ANDROID_HOST"
+            ).__setitem__("failures", 1),
+            "round4-finding-removed": lambda r: r["round4Truth"]["openFindingIds"].pop(),
+            "round4-effective-review-clean": lambda r: r["round4Truth"].__setitem__(
+                "effectiveReview", {"status": "CLEAN", "counts": {"p0": 0, "p1": 0, "p2": 0}}
+            ),
+            "round4-independent-clean": lambda r: r["round4Truth"]["independentReview"].__setitem__(
+                "status", "CLEAN"
+            ),
+            "round4-formal-reviewer": lambda r: r["round4Truth"]["independentReview"].__setitem__(
+                "formalReviewer", True
+            ),
+            "round4-accountable-approved": lambda r: r["round4Truth"].__setitem__(
+                "accountableReview", "APPROVED"
+            ),
+            "round4-overall-local-verified": lambda r: r.__setitem__(
+                "implementationStatus", "LOCAL_VERIFIED"
+            ),
+        }
+        for name, mutate in mutations.items():
+            changed = copy.deepcopy(record)
+            mutate(changed)
+            with self.subTest(mutation=name), patch.object(
+                governance, "read_json", return_value=changed
+            ), self.assertRaises(ValueError):
+                governance.validate_rec_i3_reconciliation_successor(publication=False)
+
+        not_run = copy.deepcopy(record)
+        not_run["round4Truth"]["authorVerification"] = {"status": "NOT_RUN"}
+        not_run["checks"] = [
+            item
+            for item in not_run["checks"]
+            if item.get("stage") not in {"ROUND4_ANDROID_HOST", "ROUND4_GOVERNANCE"}
+        ]
+        with patch.object(governance, "read_json", return_value=not_run), self.assertRaisesRegex(
+            ValueError, "requires author checks"
+        ):
+            governance.validate_rec_i3_reconciliation_successor(publication=True)
+
     def test_reconciliation_round3_truth_is_exact_and_open(self) -> None:
         record = governance.read_json(governance.REC_I3_RECON_EVIDENCE_PATH)
         self.assertEqual("IN_PROGRESS", record["implementationStatus"])

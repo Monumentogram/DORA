@@ -262,19 +262,19 @@ class RecoveryQuarantineControllerTest {
         assertEquals(RecoveryFailureCategory.UNSAFE_PARENT, lexicalResult.diagnostic?.category)
         assertEquals(RecoveryFailureStage.ARTIFACT_PATH, lexicalResult.diagnostic?.stage)
         assertEquals(QuarantineOperationState.CONFIRMED, lexicalResult.remainder.intentCommit)
-        assertFalse(lexical.os.events.any { it.startsWith("rename:") })
-        assertFalse("evidence" in lexical.events)
+        assertStopsAfterInitialInspect(lexical)
 
         val unsafe = ActualStorageFixture(initialFault = "unsafe-leaf")
         val unsafeResult = unsafe.run() as QuarantineResult.UnsafePath
         assertEquals(RecoveryFailureCategory.CORRUPT_LEAF, unsafeResult.diagnostic?.category)
         assertEquals(RecoveryFailureStage.ARTIFACT_PATH, unsafeResult.diagnostic?.stage)
+        assertStopsAfterInitialInspect(unsafe)
 
         val io = ActualStorageFixture(initialFault = "lstat-io")
         val ioResult = io.run() as QuarantineResult.RetryRequired
         assertEquals(RecoveryFailureCategory.OPERATIONAL, ioResult.diagnostic?.category)
         assertEquals(RecoveryFailureStage.ARTIFACT_IO, ioResult.diagnostic?.stage)
-        assertFalse(io.os.events.any { it.startsWith("rename:") })
+        assertStopsAfterInitialInspect(io)
     }
 
     @Test
@@ -285,14 +285,14 @@ class RecoveryQuarantineControllerTest {
         assertEquals(RecoveryFailureCategory.UNSAFE_PARENT, unsafeResult.diagnostic?.category)
         assertEquals(RecoveryFailureStage.ARTIFACT_PATH, unsafeResult.diagnostic?.stage)
         assertEquals(QuarantineOperationState.CONFIRMED, unsafeResult.remainder.rename)
-        assertFalse("evidence" in unsafe.events)
+        assertStopsAfterConfirmedRename(unsafe)
 
         val io = ActualStorageFixture(afterRenameFault = "lstat-io")
         val ioResult = io.run() as QuarantineResult.RetryRequired
         assertEquals(RecoveryFailureCategory.OPERATIONAL, ioResult.diagnostic?.category)
         assertEquals(RecoveryFailureStage.ARTIFACT_IO, ioResult.diagnostic?.stage)
         assertEquals(QuarantineOperationState.CONFIRMED, ioResult.remainder.rename)
-        assertFalse("evidence" in io.events)
+        assertStopsAfterConfirmedRename(io)
     }
 
     @Test
@@ -306,6 +306,24 @@ class RecoveryQuarantineControllerTest {
         assertEquals(RecoveryFailureStage.JOURNAL, result.diagnostic?.stage)
         assertFalse(fixture.os.events.any { it.contains("units/u-0000000000.ct.tmp") })
         assertFalse(fixture.os.events.any { it.startsWith("rename:") })
+        assertFalse("evidence" in fixture.events)
+    }
+
+    private fun assertStopsAfterInitialInspect(fixture: ActualStorageFixture) {
+        assertEquals(0, fixture.os.events.count { it.startsWith("rename:") })
+        assertEquals(0, fixture.os.events.count { it == "fsync:${fixture.os.sourceParent}" })
+        assertEquals(0, fixture.os.events.count { it == "fsync:${fixture.os.objectsRoot}" })
+        assertEquals(1, fixture.events.count { it == "begin" })
+        assertFalse("complete" in fixture.events)
+        assertFalse("evidence" in fixture.events)
+    }
+
+    private fun assertStopsAfterConfirmedRename(fixture: ActualStorageFixture) {
+        assertEquals(1, fixture.os.events.count { it.startsWith("rename:") })
+        assertEquals(0, fixture.os.events.count { it == "fsync:${fixture.os.sourceParent}" })
+        assertEquals(0, fixture.os.events.count { it == "fsync:${fixture.os.objectsRoot}" })
+        assertEquals(1, fixture.events.count { it == "begin" })
+        assertFalse("complete" in fixture.events)
         assertFalse("evidence" in fixture.events)
     }
 
@@ -373,6 +391,8 @@ class RecoveryQuarantineControllerTest {
         private val source = File(runRoot, input.sourceRelativeName)
         private val quarantineRoot =
             File(root, "poc-recovery/v1/quarantine/${input.runId.toCanonicalString()}")
+        val sourceParent: String = File(runRoot, "units").path
+        val objectsRoot: String = File(quarantineRoot, "objects").path
         private val destination =
             File(
                 quarantineRoot,
@@ -459,7 +479,9 @@ class RecoveryQuarantineControllerTest {
             renamed = true
         }
 
-        override fun fsync(descriptor: RecoveryReconciliationDescriptor) = Unit
+        override fun fsync(descriptor: RecoveryReconciliationDescriptor) {
+            events += "fsync:${(descriptor as ActualDescriptor).path}"
+        }
 
         override fun close(descriptor: RecoveryReconciliationDescriptor) = Unit
     }

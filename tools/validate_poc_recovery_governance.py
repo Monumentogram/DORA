@@ -509,6 +509,48 @@ REC_I3_RECON_ROUND3_ACCEPTANCE_CASES = (
     "MANIFEST-REJECTION-ORDER", "Q01-Q05-INDEPENDENT-READBACK",
     "ROW-DIGEST-FRAMING", "PRODUCTION-UNIQUE-TUPLE", "PATH-IO-DISTINCTION",
 )
+REC_I3_RECON_ROUND4_FINDINGS = (
+    "P1-PRODUCTION-ARTIFACT-CONTEXT", "P1-LEXICAL-PATH-DIAGNOSTICS",
+    "P1-EVIDENCE-ACTUAL-ENTRY", "P1-BOOTSTRAP-CURSOR-POSITION",
+)
+REC_I3_RECON_ROUND4_ACCEPTANCE_CASES = (
+    {
+        "id": "CONTEXTUAL-TAXONOMY",
+        "productionEntry": "RecoveryMicrofileReconciliationController.reconcile -> AndroidRecoveryReconciliationSource.loadConfirmation/loadArtifact -> AndroidOsRecoveryReconciliationStorage.activeArtifactExists/loadActiveArtifact",
+        "test": "AndroidRecoveryReconciliationSourceTest.actual controller keeps no-row and durable-row confirmation path classifications; actual controller distinguishes known final from unknown and temporary observation; actual controller maps manifest envelope and ciphertext structural reads by caller role; actual controller maps unit envelope structural read without relabeling ciphertext; actual controller keeps later syscall IO operational across artifact roles",
+        "assertion": "Bootstrap row UNKNOWN, ABSENT and PRESENT and artifact presence UNKNOWN, ABSENT and PRESENT remain distinct; final and temporary confirmation plus MANIFEST_KEY_ENVELOPE, MANIFEST_CIPHERTEXT, UNIT_KEY_ENVELOPE and UNIT_CIPHERTEXT bind nullable key classification, public diagnostic, retained stage/category, prefix or rejection retention, and the last permitted side effect.",
+    },
+    {
+        "id": "PATH-IO-DISTINCTION",
+        "productionEntry": "RecoveryQuarantineController.quarantine -> AndroidOsRecoveryReconciliationStorage.inspect -> RecoveryReconciliationPathPolicy.paths/requireContained",
+        "test": "RecoveryQuarantineControllerTest.actual lexical and initial inspect failures retain typed diagnostics; actual second inspect preserves confirmed rename for unsafe and IO transitions; persisted invalid destination is rejected before actual storage inspection; AndroidOsRecoveryReconciliationStorageTest.actual inspect rejects lexical source and destination before artifact syscall; RecoveryReconciliationPathPolicyTest.invalid platform path and direct containment escape are typed unsafe",
+        "assertion": "Typed lexical, destination and containment failures, earliest Q01 persisted-row rejection, initial unsafe versus I/O and post-rename unsafe versus I/O preserve rename CONFIRMED where known and prohibit later rename, parent fsync, completion and evidence after the applicable failure boundary.",
+    },
+    {
+        "id": "BOOTSTRAP-CURSOR-POSITION",
+        "productionEntry": "AndroidRecoveryReconciliationSource.loadBootstrapIdentity/decodeBootstrapIdentity -> loadConfirmation -> AndroidOsRecoveryReconciliationStorage.loadActiveArtifact",
+        "test": "AndroidRecoveryReconciliationSourceTest.bootstrap cursor decoder returns null for zero rows; bootstrap cursor decoder decodes the one stored identity at position zero; bootstrap cursor decoder rejects two rows as a structural journal failure; actual controller keeps no-row and durable-row confirmation path classifications",
+        "assertion": "Zero, one and duplicate cursor cardinality are exact; every one-row getter remains at position zero without pre-decode advance, duplicate rows are structural JOURNAL failures, and the production-used PRESENT decode reaches actual storage artifact observation.",
+    },
+    {
+        "id": "EVIDENCE-ACTUAL-ENTRY",
+        "productionEntry": "validate_rec_i3_reconciliation_successor",
+        "test": "RecoveryI3GovernanceTests.test_reconciliation_round4_author_mapping_is_exact_and_current",
+        "assertion": "Only exact round4Truth author acceptance and distinct ROUND4_ANDROID_HOST and ROUND4_GOVERNANCE checks satisfy current verification; historical round-three PASS, superseded mappings and old check records cannot satisfy it.",
+    },
+)
+REC_I3_RECON_ROUND4_ANDROID_CHECK = {
+    "command": "gradlew spotlessCheck detekt :poc:recovery:testDebugUnitTest :poc:recovery:lintDebug :poc:recovery:compileReleaseKotlin :poc:recovery:recoveryI2bVerifyCryptoPolicy --no-daemon --no-parallel",
+    "stage": "ROUND4_ANDROID_HOST", "outcome": "PASS",
+    "tests": 214, "failures": 0, "errors": 0, "skipped": 0,
+    "log": "rec-i3-round4-final-android.log",
+}
+REC_I3_RECON_ROUND4_GOVERNANCE_CHECK = {
+    "command": "python -m unittest test_poc_recovery_i3_governance.py -v from tools; python tools/validate_poc_recovery_governance.py",
+    "stage": "ROUND4_GOVERNANCE", "outcome": "PASS",
+    "tests": 23, "failures": 0, "errors": 0, "skipped": 0,
+    "logs": ["rec-i3-round4-governance.log", "rec-i3-round4-validator-precommit.log"],
+}
 REC_I3_RECON_ROUND3_STATE_COMMIT = "927a9a2946b79b29536b325956f90966c94f2af3"
 REC_I3_RECON_ROUND3_STATE_TREE = "0abc6990d2f18598cb3e3ced78a6eac5f041770f"
 REC_I3_RECON_ROUND2_STATE_COMMIT = "b645db8e31ad2eab7de71849082b29ce80f7b4ae"
@@ -6031,7 +6073,9 @@ def validate_rec_i3_reconciliation_successor(publication: bool) -> None:
                         and isinstance(item.get("assertion"), str)
                         and len(item["assertion"]) >= 32 for item in cases),
                 "REC-I3 round-three PASS lacks exact production-entry acceptance mapping")
-    require(record.get("round4Truth") == {
+    round4 = record.get("round4Truth")
+    require(isinstance(round4, dict), "REC-I3 round-four truth missing")
+    expected_round4_static = {
         "status": "IN_PROGRESS",
         "baseCommit": "ca2db88e0c6e53f346908bdc73b628beaf6c4ec4",
         "baseTree": "0186863f17d2daf5c73804e0cc13f6043ec56f1a",
@@ -6039,18 +6083,40 @@ def validate_rec_i3_reconciliation_successor(publication: bool) -> None:
         "addendumSha256": "38120cc5ae49a5fe92b2467de05c216e962d792712fda2d7804af4f6c62bad0a",
         "effectiveReview": {"status": "REVISE", "counts": {"p0": 0, "p1": 4, "p2": 0}},
         "closedPriorFindingIds": ["P1-OPTIONAL-NAMESPACE-AND-RESULT-RETENTION", "P1-Q05-CONFIRMED-REMAINDER", "P2-ROW-DIGEST-FRAMING", "P2-PRODUCTION-UNIQUE-READBACK"],
-        "openFindingIds": ["P1-PRODUCTION-ARTIFACT-CONTEXT", "P1-LEXICAL-PATH-DIAGNOSTICS", "P1-EVIDENCE-ACTUAL-ENTRY", "P1-BOOTSTRAP-CURSOR-POSITION"],
+        "openFindingIds": list(REC_I3_RECON_ROUND4_FINDINGS),
         "historicalAuthorClaimScope": {"round3Status": "PASS", "supersededAcceptanceIds": ["CONTEXTUAL-TAXONOMY", "PATH-IO-DISTINCTION"]},
-        "authorVerification": {"status": "NOT_RUN"},
         "independentReview": {"status": "PENDING", "formalReviewer": False},
         "accountableReview": "PENDING",
-    }, "REC-I3 round-four truth is not the exact open ca2 disposition")
+    }
+    require({key: value for key, value in round4.items() if key != "authorVerification"}
+            == expected_round4_static,
+            "REC-I3 round-four truth is not the exact open ca2 disposition")
+    round4_author = round4.get("authorVerification")
+    require(isinstance(round4_author, dict)
+            and round4_author.get("status") in {"NOT_RUN", "PASS"},
+            "REC-I3 round-four author verification state invalid")
     checks = record.get("checks", [])
+    current_stages = {item.get("stage"): item for item in checks
+                      if item.get("stage") in {"ROUND4_ANDROID_HOST", "ROUND4_GOVERNANCE"}}
+    if round4_author.get("status") == "NOT_RUN":
+        require(round4_author == {"status": "NOT_RUN"} and not current_stages,
+                "REC-I3 round-four NOT_RUN carries current acceptance or check claims")
+    else:
+        require(round4_author == {
+            "status": "PASS",
+            "acceptanceCases": list(REC_I3_RECON_ROUND4_ACCEPTANCE_CASES),
+        }, "REC-I3 round-four PASS lacks exact current production-entry acceptance mapping")
+        require(set(current_stages) == {"ROUND4_ANDROID_HOST", "ROUND4_GOVERNANCE"},
+                "REC-I3 round-four current check stages missing")
+        require(current_stages["ROUND4_ANDROID_HOST"] == REC_I3_RECON_ROUND4_ANDROID_CHECK,
+                "REC-I3 round-four Android author check is not exact")
+        require(current_stages["ROUND4_GOVERNANCE"] == REC_I3_RECON_ROUND4_GOVERNANCE_CHECK,
+                "REC-I3 round-four governance author check is not exact")
     require(any(item.get("stage") == "HOST_SQLITE" and item.get("outcome") == "PASS"
                 for item in checks), "REC-I3 reconciliation exact host SQLite evidence missing")
     require(record.get("limitations"), "REC-I3 reconciliation limitations missing")
     if publication:
-        require(author_verification.get("status") == "PASS",
+        require(round4_author.get("status") == "PASS",
                 "REC-I3 reconciliation PR requires author checks while review remains pending")
 
 

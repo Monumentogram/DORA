@@ -867,8 +867,11 @@ class RecoveryMicrofileReconciliationControllerTest {
 
                 override fun loadCandidate(runId: RunId) = candidateValue
 
-                override fun loadArtifact(runId: RunId, relativeName: String) =
-                    artifacts[relativeName]
+                override fun loadArtifact(
+                    runId: RunId,
+                    relativeName: String,
+                    context: RecoveryArtifactContext,
+                ) = artifacts[relativeName]
 
                 override fun loadPendingQuarantine(runId: RunId) = pending
 
@@ -1096,6 +1099,7 @@ class RecoveryMicrofileReconciliationControllerTest {
                     override fun loadArtifact(
                         runId: RunId,
                         relativeName: String,
+                        context: RecoveryArtifactContext,
                     ): RecoveryArtifactBytes? = artifacts[relativeName]
 
                     override fun loadPendingQuarantine(runId: RunId) = listOf(pending)
@@ -1200,6 +1204,7 @@ class RecoveryMicrofileReconciliationControllerTest {
                     override fun loadArtifact(
                         runId: RunId,
                         relativeName: String,
+                        context: RecoveryArtifactContext,
                     ): RecoveryArtifactBytes? {
                         if (relativeName == publication.keyEnvelopeRelativeName)
                             throw RecoverySourceAccessException(
@@ -1650,8 +1655,11 @@ class RecoveryMicrofileReconciliationControllerTest {
                         override fun loadCandidate(runId: RunId) =
                             candidate.copy(units = rows, publications = publications)
 
-                        override fun loadArtifact(runId: RunId, relativeName: String) =
-                            values[relativeName]
+                        override fun loadArtifact(
+                            runId: RunId,
+                            relativeName: String,
+                            context: RecoveryArtifactContext,
+                        ) = values[relativeName]
                     },
                     fakeCrypto,
                     com.monumentogram.dora.poc.recovery.controller
@@ -1671,8 +1679,11 @@ class RecoveryMicrofileReconciliationControllerTest {
 
                     override fun loadCandidate(runId: RunId) = snapshot
 
-                    override fun loadArtifact(runId: RunId, relativeName: String) =
-                        values[relativeName]
+                    override fun loadArtifact(
+                        runId: RunId,
+                        relativeName: String,
+                        context: RecoveryArtifactContext,
+                    ) = values[relativeName]
                 },
                 reconciliationCrypto,
                 com.monumentogram.dora.poc.recovery.controller.RecoveryKeyConfirmationController {

@@ -6,6 +6,9 @@ import com.monumentogram.dora.poc.recovery.bootstrap.AndroidRecoveryBootstrapCry
 import com.monumentogram.dora.poc.recovery.candidate.QuarantineBootstrapBinding
 import com.monumentogram.dora.poc.recovery.candidate.QuarantinePathState
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactBytes
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactContext
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactPresence
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryBootstrapRowState
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryCandidateSnapshot
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureCategory
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureDiagnostic
@@ -15,6 +18,7 @@ import com.monumentogram.dora.poc.recovery.candidate.RecoveryInventorySnapshot
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryReconciliationSource
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryReportOnlyInventoryEntry
 import com.monumentogram.dora.poc.recovery.candidate.RecoverySourceAccessException
+import com.monumentogram.dora.poc.recovery.candidate.RecoverySourceFailureContext
 import com.monumentogram.dora.poc.recovery.contract.KeyConfirmationValue
 import com.monumentogram.dora.poc.recovery.contract.RecoveryCandidate
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineArtifactRole
@@ -26,11 +30,13 @@ import com.monumentogram.dora.poc.recovery.controller.ConfirmationPathObservatio
 import com.monumentogram.dora.poc.recovery.controller.KeyConfirmationSnapshot
 import com.monumentogram.dora.poc.recovery.controller.StoredKeyConfirmationIdentity
 import com.monumentogram.dora.poc.recovery.storage.AndroidOsRecoveryReconciliationStorage
+import com.monumentogram.dora.poc.recovery.storage.RecoveryArtifactAccessException
 import com.monumentogram.dora.poc.recovery.storage.RecoveryUnsafePathException
 
 /**
  * Production source: rows come from the unified journal and bytes from descriptor-backed storage.
  */
+@Suppress("TooManyFunctions")
 internal class AndroidRecoveryReconciliationSource
 private constructor(
     private val loadBootstrap: (RunId) -> StoredKeyConfirmationIdentity?,
@@ -72,10 +78,27 @@ private constructor(
 
     override fun loadConfirmation(runId: RunId): KeyConfirmationSnapshot {
         val expected = KeyConfirmationValue(RecoveryCandidate.MICROFILE, runId)
-        val row = journalCall { loadBootstrap(runId) }
-        val final = pathCall {
-            storage.loadActiveArtifact(runId, CONFIRMATION_FINAL, MAX_CONFIRMATION_BYTES)
-        }
+        val row =
+            try {
+                journalCall { loadBootstrap(runId) }
+            } catch (error: RecoverySourceAccessException) {
+                throw error.withContext(
+                    RecoverySourceFailureContext(
+                        RecoveryBootstrapRowState.UNKNOWN,
+                        null,
+                        null,
+                        RecoveryArtifactPresence.UNKNOWN,
+                    )
+                )
+            }
+        val rowState =
+            if (row == null) RecoveryBootstrapRowState.ABSENT else RecoveryBootstrapRowState.PRESENT
+        val final =
+            pathCall(rowState, RecoveryArtifactContext.CONFIRMATION_FINAL, CONFIRMATION_FINAL) {
+                storage.loadActiveArtifact(runId, CONFIRMATION_FINAL, MAX_CONFIRMATION_BYTES)
+            }
+        val finalPresence =
+            if (final == null) RecoveryArtifactPresence.ABSENT else RecoveryArtifactPresence.PRESENT
         return KeyConfirmationSnapshot(
             expected,
             row,
@@ -86,7 +109,14 @@ private constructor(
                     it.snapshot(),
                 )
             },
-            pathCall { storage.activeArtifactExists(runId, CONFIRMATION_TEMP) },
+            pathCall(
+                rowState,
+                RecoveryArtifactContext.CONFIRMATION_TEMP,
+                CONFIRMATION_TEMP,
+                finalPresence,
+            ) {
+                storage.activeArtifactExists(runId, CONFIRMATION_TEMP)
+            },
             if (cryptoCall { aliasExists(runId) }) AliasObservation.PRESENT
             else AliasObservation.ABSENT,
         )
@@ -96,8 +126,12 @@ private constructor(
         loadSnapshot(runId)
     }
 
-    override fun loadArtifact(runId: RunId, relativeName: String): RecoveryArtifactBytes? =
-        pathCall {
+    override fun loadArtifact(
+        runId: RunId,
+        relativeName: String,
+        context: RecoveryArtifactContext,
+    ): RecoveryArtifactBytes? =
+        pathCall(null, context, relativeName) {
             storage.loadActiveArtifact(runId, relativeName, MAX_CANDIDATE_ARTIFACT_BYTES)
         }
 
@@ -191,6 +225,16 @@ private constructor(
 
     @Suppress("TooGenericExceptionCaught")
     private inline fun <T> pathCall(block: () -> T): T =
+        pathCall(null, null, null, RecoveryArtifactPresence.UNKNOWN, block)
+
+    @Suppress("TooGenericExceptionCaught")
+    private inline fun <T> pathCall(
+        rowState: RecoveryBootstrapRowState?,
+        context: RecoveryArtifactContext?,
+        relativeName: String?,
+        finalPresence: RecoveryArtifactPresence = RecoveryArtifactPresence.UNKNOWN,
+        block: () -> T,
+    ): T =
         try {
             block()
         } catch (error: RecoverySourceAccessException) {
@@ -203,6 +247,32 @@ private constructor(
                     RecoveryFailureStage.ARTIFACT_PATH,
                 ),
                 error,
+                failureContext(
+                    rowState,
+                    context,
+                    relativeName,
+                    if (error.category == RecoveryFailureCategory.CORRUPT_LEAF)
+                        RecoveryArtifactPresence.PRESENT
+                    else RecoveryArtifactPresence.UNKNOWN,
+                    finalPresence,
+                ),
+            )
+        } catch (error: RecoveryArtifactAccessException) {
+            throw RecoverySourceAccessException(
+                RecoveryFailureDiagnostic.capture(
+                    if (error.structural) RecoveryFailureCategory.STRUCTURAL
+                    else RecoveryFailureCategory.OPERATIONAL,
+                    error.cause ?: error,
+                    failureStage(context, error.structural),
+                ),
+                error,
+                failureContext(
+                    rowState,
+                    context,
+                    relativeName,
+                    error.presence,
+                    finalPresence,
+                ),
             )
         } catch (error: Throwable) {
             throw RecoverySourceAccessException(
@@ -212,8 +282,44 @@ private constructor(
                     RecoveryFailureStage.ARTIFACT_IO,
                 ),
                 error,
+                failureContext(
+                    rowState,
+                    context,
+                    relativeName,
+                    RecoveryArtifactPresence.UNKNOWN,
+                    finalPresence,
+                ),
             )
         }
+
+    private fun failureStage(
+        context: RecoveryArtifactContext?,
+        structural: Boolean,
+    ): RecoveryFailureStage =
+        if (
+            structural &&
+                context in
+                    setOf(
+                        RecoveryArtifactContext.UNIT_KEY_ENVELOPE,
+                        RecoveryArtifactContext.MANIFEST_KEY_ENVELOPE,
+                    )
+        )
+            RecoveryFailureStage.ENVELOPE_BINDING
+        else if (structural) RecoveryFailureStage.ARTIFACT_PATH
+        else RecoveryFailureStage.ARTIFACT_IO
+
+    private fun failureContext(
+        rowState: RecoveryBootstrapRowState?,
+        context: RecoveryArtifactContext?,
+        relativeName: String?,
+        presence: RecoveryArtifactPresence,
+        finalPresence: RecoveryArtifactPresence,
+    ) =
+        if (context == null && rowState == null) null
+        else RecoverySourceFailureContext(rowState, context, relativeName, presence, finalPresence)
+
+    private fun RecoverySourceAccessException.withContext(context: RecoverySourceFailureContext) =
+        RecoverySourceAccessException(diagnostic, cause ?: this, context)
 
     @Suppress("TooGenericExceptionCaught")
     private inline fun <T> sourceCall(

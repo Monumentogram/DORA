@@ -183,12 +183,16 @@ quarantine replay, immutable typed diagnostics, descriptor bounds and exact sche
 second corrected head `5de34577295b5e5477970785f9472d51e21bfc43` received independent `REVISE`
 review (P0/P1/P2 = 0/7/1). Author-local successor `a020944f0444edfcbabc4690d4a367b1cf9e83d7`
 passed its reported host checks, but its exact independent review returned `REVISE` (P0/P1/P2 =
-0/4/2). Round-three correction is in progress for optional namespace/result retention, contextual
-taxonomy, confirmed-Q05 truth, evidence truth, row framing and production unique readback.
-Round-three author tests pass for the bounded production-entry repairs, while all six findings
-remain pending independent exact-candidate review. The prior local closure mapping is superseded,
-not independent closure. Host assertions do not establish Android runtime durability; immediate
-lstat plus rename is not kernel-atomic no-replace evidence, and no Recovery gate is unlocked.
+0/4/2). The later `ca2db88e0c6e53f346908bdc73b628beaf6c4ec4` review recorded `REVISE`
+(P0/P1/P2 = 0/3/0), and its cursor addendum makes the effective disposition `REVISE`
+(P0/P1/P2 = 0/4/0). Optional namespace/result retention, confirmed-Q05 truth, row framing and
+production unique readback are closed prior findings. Production artifact context, lexical path
+diagnostics, actual-entry evidence truth and bootstrap cursor position remain the four exact open
+P1 findings. Current round-four author checks pass with 214 Android host tests and 23 governance
+tests, but independent and accountable review remain pending. Historical round-three contextual
+taxonomy and path-I/O assertions are superseded author claims. Host assertions do not establish
+Android runtime durability; immediate lstat plus rename is not kernel-atomic no-replace evidence,
+and no Recovery gate is unlocked.
 
 ## Stage 00 closure
 

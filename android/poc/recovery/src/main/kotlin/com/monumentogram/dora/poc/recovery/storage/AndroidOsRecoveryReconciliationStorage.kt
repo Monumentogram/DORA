@@ -7,6 +7,7 @@ import android.system.OsConstants
 import com.monumentogram.dora.poc.recovery.candidate.QuarantinePathObservation
 import com.monumentogram.dora.poc.recovery.candidate.QuarantinePathState
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactBytes
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactPresence
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureCategory
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineIntentRow
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineStorage
@@ -23,6 +24,12 @@ internal class RecoveryUnsafePathException(
     message: String,
     val category: RecoveryFailureCategory = RecoveryFailureCategory.UNSAFE_PARENT,
 ) : IllegalStateException(message)
+
+internal class RecoveryArtifactAccessException(
+    val presence: RecoveryArtifactPresence,
+    val structural: Boolean,
+    cause: Throwable,
+) : IllegalStateException(cause.message, cause)
 
 /** Raw Android-Os-shaped seam. read uses POSIX semantics: positive progress, zero EOF. */
 internal interface RecoveryReconciliationOs {
@@ -121,13 +128,7 @@ internal constructor(
         return when (type(paths.source)) {
             BootstrapPathType.ABSENT -> null
             BootstrapPathType.REGULAR ->
-                RecoveryArtifactBytes(
-                    relativeName,
-                    readBounded(
-                        paths.source,
-                        minOf(maximumBytes, RecoveryArtifactRoleBounds.maximumFor(relativeName)),
-                    ),
-                )
+                loadRegularArtifact(paths.source, relativeName, maximumBytes)
             else ->
                 throw RecoveryUnsafePathException(
                     "Unsafe Recovery active artifact: $relativeName",
@@ -135,6 +136,26 @@ internal constructor(
                 )
         }
     }
+
+    @Suppress("TooGenericExceptionCaught")
+    private fun loadRegularArtifact(
+        source: File,
+        relativeName: String,
+        maximumBytes: Long,
+    ): RecoveryArtifactBytes =
+        try {
+            RecoveryArtifactBytes(
+                relativeName,
+                readBounded(
+                    source,
+                    minOf(maximumBytes, RecoveryArtifactRoleBounds.maximumFor(relativeName)),
+                ),
+            )
+        } catch (error: RecoveryArtifactAccessException) {
+            throw error
+        } catch (error: Throwable) {
+            throw RecoveryArtifactAccessException(RecoveryArtifactPresence.PRESENT, false, error)
+        }
 
     fun listActiveArtifacts(runId: RunId): List<RecoveryArtifactBytes> =
         listActiveInventory(runId).map { requireNotNull(it.artifact) }
@@ -294,8 +315,8 @@ internal constructor(
             OsConstants.O_RDONLY or OsConstants.O_CLOEXEC or OsConstants.O_NOFOLLOW,
         ) { descriptor ->
             val stat = os.fstat(descriptor)
-            check(stat.type == BootstrapPathType.REGULAR && stat.size in 0..maximumBytes) {
-                "Recovery artifact exceeds its role bound"
+            if (stat.type != BootstrapPathType.REGULAR || stat.size !in 0..maximumBytes) {
+                throw structuralArtifactFailure("Recovery artifact exceeds its role bound")
             }
             readExactOpened(descriptor, stat.size)
         }
@@ -323,16 +344,26 @@ internal constructor(
         var offset = 0
         while (offset < bytes.size) {
             val read = os.read(descriptor, bytes, offset, bytes.size - offset)
+            if (read == 0) throw structuralArtifactFailure("Recovery artifact ended early")
             check(read > 0 && read <= bytes.size - offset) {
                 "Recovery artifact read made invalid progress"
             }
             offset += read
         }
-        check(os.read(descriptor, ByteArray(1), 0, 1) == 0) {
-            "Recovery artifact grew or returned malformed EOF"
+        val probe = os.read(descriptor, ByteArray(1), 0, 1)
+        if (probe > 0) throw structuralArtifactFailure("Recovery artifact grew during read")
+        check(probe == 0) {
+            "Recovery artifact returned malformed EOF"
         }
         return bytes
     }
+
+    private fun structuralArtifactFailure(message: String) =
+        RecoveryArtifactAccessException(
+            RecoveryArtifactPresence.PRESENT,
+            true,
+            IllegalStateException(message),
+        )
 
     private inline fun <T> withDescriptor(
         file: File,

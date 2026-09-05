@@ -52,19 +52,28 @@ class RecoveryReconciliationPathPolicyTest {
 
     @Test
     fun `invalid platform path and direct containment escape are typed unsafe`() {
-        assertThrows(RecoveryUnsafePathException::class.java) {
-            RecoveryReconciliationPathPolicy.paths(
-                File("build/test-no-backup"),
-                run,
-                "C:/outside.bin",
-                "objects/q-${"a".repeat(64)}.bin",
+        listOf(
+                assertThrows(RecoveryUnsafePathException::class.java) {
+                    RecoveryReconciliationPathPolicy.paths(
+                        File("build/test-no-backup"),
+                        run,
+                        "C:/outside.bin",
+                        "objects/q-${"a".repeat(64)}.bin",
+                    )
+                },
+                assertThrows(RecoveryUnsafePathException::class.java) {
+                    RecoveryReconciliationPathPolicy.requireContained(
+                        File("build/test-no-backup/root"),
+                        File("build/test-no-backup/outside"),
+                    )
+                },
             )
-        }
-        assertThrows(RecoveryUnsafePathException::class.java) {
-            RecoveryReconciliationPathPolicy.requireContained(
-                File("build/test-no-backup/root"),
-                File("build/test-no-backup/outside"),
-            )
-        }
+            .forEach {
+                assertEquals(
+                    com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureCategory
+                        .UNSAFE_PARENT,
+                    it.category,
+                )
+            }
     }
 }

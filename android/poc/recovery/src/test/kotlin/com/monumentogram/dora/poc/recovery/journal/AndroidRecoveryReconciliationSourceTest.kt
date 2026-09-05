@@ -1,28 +1,48 @@
 package com.monumentogram.dora.poc.recovery.journal
 
 import android.database.Cursor
+import com.monumentogram.dora.poc.recovery.bootstrap.KeyConfirmationState
 import com.monumentogram.dora.poc.recovery.candidate.AndroidRecoveryMicrofileReconciliation
+import com.monumentogram.dora.poc.recovery.candidate.CandidateBootstrapRow
+import com.monumentogram.dora.poc.recovery.candidate.ManifestAuthenticationOutcome
+import com.monumentogram.dora.poc.recovery.candidate.MicrofileReconciliationResult
 import com.monumentogram.dora.poc.recovery.candidate.QuarantineBootstrapBinding
 import com.monumentogram.dora.poc.recovery.candidate.QuarantineIntentState
 import com.monumentogram.dora.poc.recovery.candidate.QuarantinePathState
+import com.monumentogram.dora.poc.recovery.candidate.ReconciliationDiagnostic
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactContext
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryCandidateSnapshot
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureCategory
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureStage
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryManifestPublicationRow
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryMicrofileReconciliationController
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryMicrofileUnitRow
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineEvidenceSink
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineIntentRow
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryReconciliationCrypto
 import com.monumentogram.dora.poc.recovery.candidate.RecoverySourceAccessException
+import com.monumentogram.dora.poc.recovery.candidate.UnitAuthenticationOutcome
 import com.monumentogram.dora.poc.recovery.contract.KeyConfirmationValue
+import com.monumentogram.dora.poc.recovery.contract.KeyRecoveryClassification
+import com.monumentogram.dora.poc.recovery.contract.PublicationKind
 import com.monumentogram.dora.poc.recovery.contract.RecoveryCandidate
+import com.monumentogram.dora.poc.recovery.contract.RecoveryManifest
+import com.monumentogram.dora.poc.recovery.contract.RecoveryManifestEntry
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineArtifactRole
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntent
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntentInput
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineObservedState
+import com.monumentogram.dora.poc.recovery.contract.RecoveryRelativeNames
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
+import com.monumentogram.dora.poc.recovery.controller.RecoveryKeyConfirmationController
 import com.monumentogram.dora.poc.recovery.controller.StoredKeyConfirmationIdentity
+import com.monumentogram.dora.poc.recovery.crypto.KeyConfirmationDecryption
+import com.monumentogram.dora.poc.recovery.crypto.RecordingRunAeadBackend
+import com.monumentogram.dora.poc.recovery.crypto.RecoveryRunAeadProvider
 import com.monumentogram.dora.poc.recovery.storage.AndroidOsRecoveryReconciliationStorage
 import com.monumentogram.dora.poc.recovery.storage.BootstrapPathType
+import com.monumentogram.dora.poc.recovery.storage.RecoveryArtifactRoleBounds
 import com.monumentogram.dora.poc.recovery.storage.RecoveryReconciliationDescriptor
 import com.monumentogram.dora.poc.recovery.storage.RecoveryReconciliationOs
 import com.monumentogram.dora.poc.recovery.storage.RecoveryReconciliationStat
@@ -230,30 +250,410 @@ class AndroidRecoveryReconciliationSourceTest {
 
         os.addActive("units/u-0.bin", byteArrayOf(1))
         os.unsafe("units")
-        val unsafe = assertThrowsSource { source(os).loadArtifact(RUN, "units/u-0.bin") }
+        val unsafe = assertThrowsSource {
+            source(os)
+                .loadArtifact(
+                    RUN,
+                    "units/u-0.bin",
+                    RecoveryArtifactContext.UNIT_CIPHERTEXT,
+                )
+        }
         assertEquals(RecoveryFailureStage.ARTIFACT_PATH, unsafe.diagnostic.stage)
         os.safeDirectory("units")
         os.failRead = true
-        val io = assertThrowsSource { source(os).loadArtifact(RUN, "units/u-0.bin") }
+        val io = assertThrowsSource {
+            source(os)
+                .loadArtifact(
+                    RUN,
+                    "units/u-0.bin",
+                    RecoveryArtifactContext.UNIT_CIPHERTEXT,
+                )
+        }
         assertEquals(RecoveryFailureStage.ARTIFACT_IO, io.diagnostic.stage)
         assertEquals(RecoveryFailureCategory.OPERATIONAL, io.diagnostic.category)
     }
 
+    @Test
+    fun `actual controller keeps no-row and durable-row confirmation path classifications`() {
+        val noRowOs = InventoryOs().apply { seed(emptyMap(), emptyMap()) }
+        noRowOs.addActive("key-confirmation/run.kc", byteArrayOf(1))
+        noRowOs.setType("key-confirmation/run.kc", BootstrapPathType.SYMLINK)
+        val noRow =
+            reconcile(source(noRowOs)) as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        assertEquals(KeyRecoveryClassification.INCOMPLETE_KEY_BOOTSTRAP, noRow.classification)
+        assertEquals(ReconciliationDiagnostic.UNSAFE_PATH, noRow.diagnostic)
+        assertEquals(RecoveryFailureCategory.CORRUPT_LEAF, noRow.failure?.category)
+        assertEquals(RecoveryFailureStage.ARTIFACT_PATH, noRow.failure?.stage)
+
+        val durableOs = InventoryOs().apply { seed(emptyMap(), emptyMap()) }
+        durableOs.addActive("key-confirmation/run.kc", byteArrayOf(1))
+        durableOs.setType("key-confirmation/run.kc", BootstrapPathType.SYMLINK)
+        val durableCursor = CursorProbe(listOf(bootstrapRow()))
+        val durable =
+            reconcile(
+                source(
+                    durableOs,
+                    loadBootstrap = {
+                        AndroidRecoveryReconciliationSource.decodeBootstrapIdentity(
+                            durableCursor.cursor,
+                            RUN,
+                        )
+                    },
+                )
+            )
+                as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        assertEquals(KeyRecoveryClassification.CORRUPT_KEY_CONFIRMATION, durable.classification)
+        assertEquals(ReconciliationDiagnostic.UNSAFE_PATH, durable.diagnostic)
+        assertEquals(RecoveryFailureCategory.CORRUPT_LEAF, durable.failure?.category)
+        assertEquals(listOf(0, 0, 0, 0, 0), durableCursor.getterPositions)
+    }
+
+    @Test
+    fun `actual controller distinguishes known final from unknown and temporary observation`() {
+        val oversizedOs = InventoryOs().apply { seed(emptyMap(), emptyMap()) }
+        oversizedOs.addActive("key-confirmation/run.kc", byteArrayOf(1))
+        oversizedOs.setSize("key-confirmation/run.kc", 513)
+        val oversized =
+            reconcile(source(oversizedOs)) as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        assertEquals(KeyRecoveryClassification.INCOMPLETE_KEY_BOOTSTRAP, oversized.classification)
+        assertEquals(RecoveryFailureCategory.STRUCTURAL, oversized.failure?.category)
+        assertEquals(RecoveryFailureStage.ARTIFACT_PATH, oversized.failure?.stage)
+
+        val unknownOs = InventoryOs().apply { seed(emptyMap(), emptyMap()) }
+        unknownOs.failLstat("key-confirmation/run.kc")
+        val unknown =
+            reconcile(source(unknownOs)) as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        assertEquals(null, unknown.classification)
+        assertEquals(RecoveryFailureStage.ARTIFACT_IO, unknown.failure?.stage)
+
+        val tempOs = InventoryOs().apply { seed(emptyMap(), emptyMap()) }
+        tempOs.addActive("key-confirmation/run.kc", byteArrayOf(1))
+        tempOs.setType("key-confirmation/run.kc.tmp", BootstrapPathType.SYMLINK)
+        val temp = reconcile(source(tempOs)) as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        assertEquals(KeyRecoveryClassification.INCOMPLETE_KEY_BOOTSTRAP, temp.classification)
+        assertEquals(ReconciliationDiagnostic.UNSAFE_PATH, temp.diagnostic)
+
+        val missingFinalOs = InventoryOs().apply { seed(emptyMap(), emptyMap()) }
+        missingFinalOs.failLstat("key-confirmation/run.kc.tmp")
+        val missingFinal =
+            reconcile(
+                source(
+                    missingFinalOs,
+                    loadBootstrap = { expectedBootstrapIdentity(bootstrapRow()) },
+                )
+            )
+                as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        assertEquals(
+            KeyRecoveryClassification.KEY_CONFIRMATION_MISSING,
+            missingFinal.classification,
+        )
+        assertEquals(RecoveryFailureCategory.OPERATIONAL, missingFinal.failure?.category)
+        assertEquals(RecoveryFailureStage.ARTIFACT_IO, missingFinal.failure?.stage)
+
+        val absentBothOs = InventoryOs().apply { seed(emptyMap(), emptyMap()) }
+        absentBothOs.failLstat("key-confirmation/run.kc.tmp")
+        val absentBoth =
+            reconcile(source(absentBothOs)) as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        assertEquals(null, absentBoth.classification)
+        assertEquals(RecoveryFailureCategory.OPERATIONAL, absentBoth.failure?.category)
+        assertEquals(RecoveryFailureStage.ARTIFACT_IO, absentBoth.failure?.stage)
+    }
+
+    @Test
+    fun `actual source retains key envelope structural role separately from ciphertext`() {
+        val os = InventoryOs().apply { seed(emptyMap(), emptyMap()) }
+        os.addActive("key-envelopes/unit-0.bin", byteArrayOf(1))
+        os.setSize("key-envelopes/unit-0.bin", 65_537)
+        val envelope = assertThrowsSource {
+            source(os)
+                .loadArtifact(
+                    RUN,
+                    "key-envelopes/unit-0.bin",
+                    RecoveryArtifactContext.UNIT_KEY_ENVELOPE,
+                )
+        }
+        assertEquals(RecoveryFailureCategory.STRUCTURAL, envelope.diagnostic.category)
+        assertEquals(RecoveryFailureStage.ENVELOPE_BINDING, envelope.diagnostic.stage)
+
+        os.addActive("units/u-0.bin", byteArrayOf(1))
+        os.setSize("units/u-0.bin", 960_257)
+        val ciphertext = assertThrowsSource {
+            source(os)
+                .loadArtifact(
+                    RUN,
+                    "units/u-0.bin",
+                    RecoveryArtifactContext.UNIT_CIPHERTEXT,
+                )
+        }
+        assertEquals(RecoveryFailureCategory.STRUCTURAL, ciphertext.diagnostic.category)
+        assertEquals(RecoveryFailureStage.ARTIFACT_PATH, ciphertext.diagnostic.stage)
+    }
+
+    @Test
+    fun `actual controller maps manifest envelope and ciphertext structural reads by caller role`() {
+        listOf(
+                RecoveryArtifactCase.MANIFEST_ENVELOPE to
+                    KeyRecoveryClassification.CORRUPT_KEY_ENVELOPE,
+                RecoveryArtifactCase.MANIFEST_CIPHERTEXT to null,
+            )
+            .forEach { (artifactCase, expectedClassification) ->
+                val fixture = LaterArtifactFixture(artifactCase)
+                val result =
+                    fixture.reconcile() as MicrofileReconciliationResult.NoAuthenticatedPrefix
+                val rejection = result.manifestRejections.single()
+                assertEquals(expectedClassification, rejection.classification)
+                assertEquals(
+                    if (artifactCase == RecoveryArtifactCase.MANIFEST_ENVELOPE)
+                        RecoveryFailureStage.ENVELOPE_BINDING
+                    else RecoveryFailureStage.ARTIFACT_PATH,
+                    rejection.diagnostic.stage,
+                )
+                assertEquals(RecoveryFailureCategory.STRUCTURAL, rejection.diagnostic.category)
+            }
+    }
+
+    @Test
+    fun `actual controller maps unit envelope structural read without relabeling ciphertext`() {
+        listOf(
+                RecoveryArtifactCase.UNIT_ENVELOPE to
+                    KeyRecoveryClassification.CORRUPT_KEY_ENVELOPE,
+                RecoveryArtifactCase.UNIT_CIPHERTEXT to null,
+            )
+            .forEach { (artifactCase, expectedClassification) ->
+                val fixture = LaterArtifactFixture(artifactCase)
+                val result = fixture.reconcile() as MicrofileReconciliationResult.PartialPrefix
+                assertEquals(expectedClassification, result.classification)
+                assertEquals(
+                    if (artifactCase == RecoveryArtifactCase.UNIT_ENVELOPE)
+                        RecoveryFailureStage.ENVELOPE_BINDING
+                    else RecoveryFailureStage.ARTIFACT_PATH,
+                    result.failure?.stage,
+                )
+                assertEquals(RecoveryFailureCategory.STRUCTURAL, result.failure?.category)
+            }
+    }
+
+    @Test
+    fun `actual controller keeps later syscall IO operational across artifact roles`() {
+        val manifest =
+            LaterArtifactFixture(RecoveryArtifactCase.MANIFEST_ENVELOPE, operational = true)
+        val manifestResult =
+            manifest.reconcile() as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        assertEquals(null, manifestResult.classification)
+        assertEquals(ReconciliationDiagnostic.CRYPTO_OPERATIONAL, manifestResult.diagnostic)
+        assertEquals(RecoveryFailureCategory.OPERATIONAL, manifestResult.failure?.category)
+        assertEquals(RecoveryFailureStage.ARTIFACT_IO, manifestResult.failure?.stage)
+
+        val unit = LaterArtifactFixture(RecoveryArtifactCase.UNIT_CIPHERTEXT, operational = true)
+        val unitResult = unit.reconcile() as MicrofileReconciliationResult.PartialPrefix
+        assertEquals(null, unitResult.classification)
+        assertEquals(ReconciliationDiagnostic.CRYPTO_OPERATIONAL, unitResult.diagnostic)
+        assertEquals(RecoveryFailureCategory.OPERATIONAL, unitResult.failure?.category)
+        assertEquals(RecoveryFailureStage.ARTIFACT_IO, unitResult.failure?.stage)
+    }
+
     private fun source(
         os: InventoryOs,
+        loadBootstrap: (RunId) -> StoredKeyConfirmationIdentity? = { null },
         loadSnapshot: (RunId) -> RecoveryCandidateSnapshot = {
             RecoveryCandidateSnapshot(emptyList(), emptyList(), emptyList())
         },
         alias: (RunId) -> Boolean = { false },
     ) =
         AndroidRecoveryReconciliationSource(
-            loadBootstrap = { null },
+            loadBootstrap = loadBootstrap,
             loadSnapshot = loadSnapshot,
             loadPending = { emptyList() },
             loadAllIntents = { emptyList() },
             storage = AndroidOsRecoveryReconciliationStorage(ROOT, os),
             aliasExists = alias,
         )
+
+    private fun reconcile(source: AndroidRecoveryReconciliationSource) =
+        RecoveryMicrofileReconciliationController(source, RejectingCrypto).reconcile(RUN)
+
+    private object RejectingCrypto : RecoveryReconciliationCrypto {
+        override fun authenticateConfirmationOrphan(
+            expected: KeyConfirmationValue,
+            ciphertext: ByteArray,
+        ): KeyConfirmationDecryption = error("must not authenticate")
+
+        override fun authenticateManifest(
+            runId: RunId,
+            publication: RecoveryManifestPublicationRow,
+            previousDigest: Sha256Value,
+            envelope: ByteArray,
+            ciphertext: ByteArray,
+        ): ManifestAuthenticationOutcome = error("must not authenticate")
+
+        override fun authenticateUnit(
+            runId: RunId,
+            unit: RecoveryMicrofileUnitRow,
+            previousDigest: Sha256Value,
+            envelope: ByteArray,
+            ciphertext: ByteArray,
+        ): UnitAuthenticationOutcome = error("must not authenticate")
+    }
+
+    private enum class RecoveryArtifactCase {
+        MANIFEST_ENVELOPE,
+        MANIFEST_CIPHERTEXT,
+        UNIT_ENVELOPE,
+        UNIT_CIPHERTEXT,
+    }
+
+    private class LaterArtifactFixture(
+        private val failing: RecoveryArtifactCase,
+        operational: Boolean = false,
+    ) {
+        private val confirmationBackend = RecordingRunAeadBackend()
+        private val runAead = RecoveryRunAeadProvider(confirmationBackend).openExisting(RUN)
+        private val confirmationValue = KeyConfirmationValue(RecoveryCandidate.MICROFILE, RUN)
+        private val confirmationBytes = runAead.encryptKeyConfirmation(confirmationValue)
+        private val unitCiphertext = byteArrayOf(1)
+        private val unitEnvelope = byteArrayOf(2)
+        private val manifestCiphertext = byteArrayOf(3)
+        private val manifestEnvelope = byteArrayOf(4)
+        private val unit =
+            RecoveryMicrofileUnitRow(
+                RUN.toCanonicalString(),
+                RecoveryCandidate.MICROFILE.contractId,
+                0UL,
+                0UL,
+                1UL,
+                5UL,
+                RecoveryRelativeNames.microfileCiphertext(0UL),
+                unitCiphertext.size.toLong(),
+                Sha256Value.calculate(unitCiphertext),
+                RecoveryRelativeNames.microfileKeyEnvelope(0UL),
+                unitEnvelope.size.toLong(),
+                Sha256Value.calculate(unitEnvelope),
+                1UL,
+                Sha256Value.ZERO,
+            )
+        private val publication =
+            RecoveryManifestPublicationRow(
+                RUN.toCanonicalString(),
+                RecoveryCandidate.MICROFILE.contractId,
+                PublicationKind.MANIFEST,
+                1UL,
+                1UL,
+                RecoveryRelativeNames.manifestCiphertext(1UL),
+                manifestCiphertext.size.toLong(),
+                Sha256Value.calculate(manifestCiphertext),
+                RecoveryRelativeNames.manifestKeyEnvelope(1UL),
+                manifestEnvelope.size.toLong(),
+                Sha256Value.calculate(manifestEnvelope),
+                Sha256Value.ZERO,
+            )
+        private val manifest =
+            RecoveryManifest.create(
+                RecoveryCandidate.MICROFILE,
+                RUN,
+                1UL,
+                Sha256Value.ZERO,
+                1UL,
+                listOf(
+                    RecoveryManifestEntry(
+                        0UL,
+                        0UL,
+                        1UL,
+                        5UL,
+                        unitCiphertext.size.toULong(),
+                        Sha256Value.calculate(unitCiphertext),
+                        unitEnvelope.size.toULong(),
+                        Sha256Value.calculate(unitEnvelope),
+                        unit.ciphertextRelativeName,
+                        unit.keyEnvelopeRelativeName,
+                    )
+                ),
+            )
+        private val candidate =
+            RecoveryCandidateSnapshot(
+                listOf(
+                    CandidateBootstrapRow(
+                        RUN.toCanonicalString(),
+                        RecoveryCandidate.MICROFILE.contractId,
+                        KeyConfirmationState.VALID,
+                    )
+                ),
+                listOf(unit),
+                listOf(publication),
+            )
+        private val os =
+            InventoryOs().apply {
+                seed(
+                    mapOf(
+                        "key-confirmation/run.kc" to confirmationBytes,
+                        unit.ciphertextRelativeName to unitCiphertext,
+                        unit.keyEnvelopeRelativeName to unitEnvelope,
+                        publication.publicationRelativeName to manifestCiphertext,
+                        publication.keyEnvelopeRelativeName to manifestEnvelope,
+                    ),
+                    emptyMap(),
+                )
+                val relative =
+                    when (failing) {
+                        RecoveryArtifactCase.MANIFEST_ENVELOPE ->
+                            publication.keyEnvelopeRelativeName
+                        RecoveryArtifactCase.MANIFEST_CIPHERTEXT ->
+                            publication.publicationRelativeName
+                        RecoveryArtifactCase.UNIT_ENVELOPE -> unit.keyEnvelopeRelativeName
+                        RecoveryArtifactCase.UNIT_CIPHERTEXT -> unit.ciphertextRelativeName
+                    }
+                if (operational) ioOnSecondRead(relative) else structuralOnSecondRead(relative)
+            }
+        private val source =
+            AndroidRecoveryReconciliationSource(
+                loadBootstrap = {
+                    StoredKeyConfirmationIdentity(
+                        confirmationValue,
+                        "key-confirmation/run.kc",
+                        confirmationBytes.size.toLong(),
+                        Sha256Value.calculate(confirmationBytes),
+                        confirmationValue.canonicalAliasSha256,
+                    )
+                },
+                loadSnapshot = { candidate },
+                loadPending = { emptyList() },
+                loadAllIntents = { emptyList() },
+                storage = AndroidOsRecoveryReconciliationStorage(ROOT, os),
+                aliasExists = { true },
+            )
+        private val crypto =
+            object : RecoveryReconciliationCrypto {
+                override fun authenticateConfirmationOrphan(
+                    expected: KeyConfirmationValue,
+                    ciphertext: ByteArray,
+                ): KeyConfirmationDecryption = error("not used")
+
+                override fun authenticateManifest(
+                    runId: RunId,
+                    publication: RecoveryManifestPublicationRow,
+                    previousDigest: Sha256Value,
+                    envelope: ByteArray,
+                    ciphertext: ByteArray,
+                ) = ManifestAuthenticationOutcome.Authenticated(manifest)
+
+                override fun authenticateUnit(
+                    runId: RunId,
+                    unit: RecoveryMicrofileUnitRow,
+                    previousDigest: Sha256Value,
+                    envelope: ByteArray,
+                    ciphertext: ByteArray,
+                ) = UnitAuthenticationOutcome.Authenticated(byteArrayOf(9))
+            }
+
+        fun reconcile() =
+            RecoveryMicrofileReconciliationController(
+                    source,
+                    crypto,
+                    RecoveryKeyConfirmationController(
+                        RecoveryRunAeadProvider(confirmationBackend)::openExisting
+                    ),
+                )
+                .reconcile(RUN)
+    }
 
     private fun assertThrowsSource(block: () -> Unit): RecoverySourceAccessException =
         try {
@@ -360,6 +760,11 @@ class AndroidRecoveryReconciliationSourceTest {
         private val offsets = mutableMapOf<String, Int>()
         val listed = mutableListOf<String>()
         var failRead = false
+        private val failedLstat = mutableSetOf<String>()
+        private val structuralSecondRead = mutableSetOf<String>()
+        private val ioSecondRead = mutableSetOf<String>()
+        private val fstatCalls = mutableMapOf<String, Int>()
+        private val openCalls = mutableMapOf<String, Int>()
 
         fun seed(active: Map<String, ByteArray>, quarantine: Map<String, ByteArray>) {
             val base = File(ROOT, "poc-recovery")
@@ -388,6 +793,31 @@ class AndroidRecoveryReconciliationSourceTest {
 
         fun addActive(relative: String, bytes: ByteArray) {
             add(File(ROOT, "poc-recovery/v1/runs/${RUN.toCanonicalString()}"), relative, bytes)
+        }
+
+        fun setType(relative: String, type: BootstrapPathType) {
+            val path = File(ROOT, "poc-recovery/v1/runs/${RUN.toCanonicalString()}/$relative").path
+            stats[path] = RecoveryReconciliationStat(type, stats[path]?.size ?: 0)
+        }
+
+        fun setSize(relative: String, size: Long) {
+            val path = File(ROOT, "poc-recovery/v1/runs/${RUN.toCanonicalString()}/$relative").path
+            stats[path] = RecoveryReconciliationStat(BootstrapPathType.REGULAR, size)
+        }
+
+        fun failLstat(relative: String) {
+            failedLstat +=
+                File(ROOT, "poc-recovery/v1/runs/${RUN.toCanonicalString()}/$relative").path
+        }
+
+        fun structuralOnSecondRead(relative: String) {
+            structuralSecondRead +=
+                File(ROOT, "poc-recovery/v1/runs/${RUN.toCanonicalString()}/$relative").path
+        }
+
+        fun ioOnSecondRead(relative: String) {
+            ioSecondRead +=
+                File(ROOT, "poc-recovery/v1/runs/${RUN.toCanonicalString()}/$relative").path
         }
 
         fun removeQuarantineNamespace() {
@@ -433,7 +863,10 @@ class AndroidRecoveryReconciliationSourceTest {
             data[leaf.path] = bytes
         }
 
-        override fun lstat(path: String) = stats[path]
+        override fun lstat(path: String): RecoveryReconciliationStat? {
+            if (path in failedLstat) error("lstat")
+            return stats[path]
+        }
 
         override fun list(path: String): List<String> {
             listed += path
@@ -444,11 +877,21 @@ class AndroidRecoveryReconciliationSourceTest {
 
         override fun open(path: String, flags: Int): RecoveryReconciliationDescriptor {
             offsets[path] = 0
+            openCalls[path] = (openCalls[path] ?: 0) + 1
             return Descriptor(path)
         }
 
-        override fun fstat(descriptor: RecoveryReconciliationDescriptor) =
-            requireNotNull(stats[(descriptor as Descriptor).path])
+        override fun fstat(
+            descriptor: RecoveryReconciliationDescriptor
+        ): RecoveryReconciliationStat {
+            val path = (descriptor as Descriptor).path
+            val call = (fstatCalls[path] ?: 0) + 1
+            fstatCalls[path] = call
+            val stat = requireNotNull(stats[path])
+            return if (path in structuralSecondRead && call >= 2) {
+                stat.copy(size = RecoveryArtifactRoleBounds.maximumFor(File(path).name).plus(1))
+            } else stat
+        }
 
         override fun read(
             descriptor: RecoveryReconciliationDescriptor,
@@ -458,6 +901,7 @@ class AndroidRecoveryReconciliationSourceTest {
         ): Int {
             if (failRead) error("read")
             val path = (descriptor as Descriptor).path
+            if (path in ioSecondRead && (openCalls[path] ?: 0) >= 2) error("read")
             val bytes = data[path] ?: ByteArray(0)
             val position = offsets[path] ?: 0
             if (position == bytes.size) return 0

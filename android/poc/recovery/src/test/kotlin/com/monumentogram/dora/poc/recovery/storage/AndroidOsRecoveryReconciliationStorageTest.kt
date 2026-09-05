@@ -67,13 +67,21 @@ class AndroidOsRecoveryReconciliationStorageTest {
                     destinationRelativeName = RecoveryQuarantineIntent.destination(input),
                 )
             }
-        assertThrows(RecoveryUnsafePathException::class.java) { storage.inspect(unsafeSource) }
+        assertEquals(
+            com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureCategory.UNSAFE_PARENT,
+            assertThrows(RecoveryUnsafePathException::class.java) { storage.inspect(unsafeSource) }
+                .category,
+        )
         assertTrue(os.lstats.none { it.contains("..") })
 
         val unsafeDestination = row(byteArrayOf(1)).copy(destinationRelativeName = "objects/bad")
-        assertThrows(RecoveryUnsafePathException::class.java) {
-            storage.inspect(unsafeDestination)
-        }
+        assertEquals(
+            com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureCategory.UNSAFE_PARENT,
+            assertThrows(RecoveryUnsafePathException::class.java) {
+                    storage.inspect(unsafeDestination)
+                }
+                .category,
+        )
         assertTrue(os.lstats.none { it.endsWith("objects${File.separator}bad") })
     }
 

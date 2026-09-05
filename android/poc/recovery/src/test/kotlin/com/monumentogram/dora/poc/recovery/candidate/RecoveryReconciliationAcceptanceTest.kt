@@ -59,8 +59,11 @@ class RecoveryReconciliationAcceptanceTest {
                 override fun loadCandidate(runId: RunId): RecoveryCandidateSnapshot =
                     error("must not load")
 
-                override fun loadArtifact(runId: RunId, relativeName: String) =
-                    error("must not load")
+                override fun loadArtifact(
+                    runId: RunId,
+                    relativeName: String,
+                    context: RecoveryArtifactContext,
+                ) = error("must not load")
             }
         val result =
             controller(source).reconcile(RUN_A)
@@ -99,7 +102,11 @@ class RecoveryReconciliationAcceptanceTest {
             error("candidate should not load for absent confirmation")
         }
 
-        override fun loadArtifact(runId: RunId, relativeName: String) = null
+        override fun loadArtifact(
+            runId: RunId,
+            relativeName: String,
+            context: RecoveryArtifactContext,
+        ) = null
     }
 
     private object NeverCrypto : RecoveryReconciliationCrypto {
