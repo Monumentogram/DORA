@@ -13,6 +13,18 @@ import validate_poc_recovery_governance as governance
 
 
 class RecoveryI3GovernanceTests(unittest.TestCase):
+    def test_reconciliation_round2_truth_is_exact_and_open(self) -> None:
+        record = governance.read_json(governance.REC_I3_RECON_EVIDENCE_PATH)
+        self.assertEqual("IN_PROGRESS", record["implementationStatus"])
+        self.assertEqual("REVISE", record["review"]["independentAdvisory"])
+        self.assertEqual({"p0": 0, "p1": 7, "p2": 1}, record["review"]["counts"])
+        self.assertEqual(
+            list(governance.REC_I3_RECON_ROUND2_FINDINGS),
+            record["round2Correction"]["openFindingIds"],
+        )
+        self.assertFalse(record["round2Correction"]["actualEntryRegressionComplete"])
+        governance.validate_rec_i3_reconciliation_successor(publication=False)
+
     def test_reconciliation_correction_scope_and_new_files_are_exactly_declared(self) -> None:
         self.assertEqual(
             "e78571776d34756325289dcfcb3853c9696f3011",

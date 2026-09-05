@@ -84,8 +84,11 @@ supersedes the first local coverage claim after independent review found missing
 that bounded slice. The corrected host boundary owns platform observations, binds publication
 authority to the candidate, manifest and ordered rows, preserves authenticated fallback prefixes,
 and exercises pending quarantine replay, typed failures, descriptor bounds and schema-v3
-validation. Independent review of the corrected exact head remains pending; Android filesystem
-durability and every wider REC-I3 gate remain unproven.
+validation. Independent review of corrected head `5de34577295b5e5477970785f9472d51e21bfc43`
+returned `REVISE` (P0/P1/P2 = 0/7/1). Round-two correction is `IN_PROGRESS`; predecessor test
+evidence does not verify the pending production inventory, canonical row digest, typed diagnostic,
+actual publication chain, conservative journal readback, actual storage and descriptor-ownership
+repairs. Android filesystem durability and every wider REC-I3 gate remain unproven.
 
 ## 1. Правила выполнения
 

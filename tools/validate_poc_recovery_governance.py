@@ -492,7 +492,14 @@ REC_I3_RECON_CORRECTION_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_RECONCILIA
 REC_I3_RECON_SCOPE_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_RECONCILIATION_QUARANTINE_SCOPE_STAGE0_V0_1.md"
 REC_I3_RECON_ADR_PATH = "docs/adr/ADR-0004-poc-recovery-reconciliation-and-quarantine.md"
 REC_I3_RECON_EVIDENCE_PATH = "docs/evidence/poc-recovery-001/rec-i3-microfile-reconciliation-quarantine-local-evidence-stage0-v0.1.json"
-REC_I3_RECON_CLAIM_CEILING = "PARTIAL_REC_I3_RECONCILIATION_HOST_VERIFIED_PENDING_PLATFORM_PREFLIGHT_FULL_IMPLEMENTATION_AND_REVIEW"
+REC_I3_RECON_CLAIM_CEILING = "PARTIAL_REC_I3_RECONCILIATION_CORRECTION_IN_PROGRESS_PENDING_PLATFORM_PREFLIGHT_FULL_IMPLEMENTATION_AND_REVIEW"
+REC_I3_RECON_ROUND2_BASE = "5de34577295b5e5477970785f9472d51e21bfc43"
+REC_I3_RECON_ROUND2_REPORT_SHA256 = "5f1e8ce06c73a93cfb67ef6c98d877837d75cce341d0b94c7f1d020df10ebcff"
+REC_I3_RECON_ROUND2_FINDINGS = (
+    "P1-INVENTORY", "P1-ROW-DIGEST", "P1-TYPED-DIAGNOSTICS", "P1-MANIFEST-CHAIN",
+    "P1-JOURNAL-READBACK", "P1-PRODUCTION-STORAGE", "P1-EVIDENCE-TRUTH",
+    "P2-DESCRIPTOR-OWNERSHIP",
+)
 REC_I3_RECON_SOURCE_PATHS = (
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationController.kt",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryMicrofileReconciliation.kt",
@@ -5917,9 +5924,18 @@ def validate_rec_i3_reconciliation_successor(publication: bool) -> None:
             "REC-I3 reconciliation source digest mismatch")
     require(all(value is False for value in record["execution"].values()),
             "REC-I3 reconciliation execution overclaim")
-    require(record.get("review") == {"independentAdvisory": "PENDING",
-                                     "accountable": "PENDING", "formalReviewer": False},
-            "REC-I3 reconciliation review state overclaims closure")
+    require(record.get("review") == {
+        "independentAdvisory": "REVISE", "accountable": "PENDING", "formalReviewer": False,
+        "reviewedCommit": REC_I3_RECON_ROUND2_BASE,
+        "reportSha256": REC_I3_RECON_ROUND2_REPORT_SHA256,
+        "counts": {"p0": 0, "p1": 7, "p2": 1},
+    }, "REC-I3 reconciliation review state is not the exact open REVISE disposition")
+    round2 = record.get("round2Correction")
+    require(round2 == {
+        "status": "IN_PROGRESS", "baseCommit": REC_I3_RECON_ROUND2_BASE,
+        "openFindingIds": list(REC_I3_RECON_ROUND2_FINDINGS),
+        "actualEntryRegressionComplete": False,
+    }, "REC-I3 reconciliation round-two correction overclaims closure")
     checks = record.get("checks", [])
     require(any(item.get("stage") == "HOST_SQLITE" and item.get("outcome") == "PASS"
                 for item in checks), "REC-I3 reconciliation exact host SQLite evidence missing")

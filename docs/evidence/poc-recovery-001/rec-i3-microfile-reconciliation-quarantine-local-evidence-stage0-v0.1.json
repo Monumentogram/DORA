@@ -8,8 +8,8 @@
   "scopeFirstCommit": "b90305f1aa387c6668320b03e8aa33b754a7162a",
   "authorityRecord": "OWNER-AUTH-BATCH-20260819-01",
   "protocolId": "poc-recovery-protocol-stage0-v0.6",
-  "claimCeiling": "PARTIAL_REC_I3_RECONCILIATION_HOST_VERIFIED_PENDING_PLATFORM_PREFLIGHT_FULL_IMPLEMENTATION_AND_REVIEW",
-  "implementationStatus": "LOCAL_VERIFIED",
+  "claimCeiling": "PARTIAL_REC_I3_RECONCILIATION_CORRECTION_IN_PROGRESS_PENDING_PLATFORM_PREFLIGHT_FULL_IMPLEMENTATION_AND_REVIEW",
+  "implementationStatus": "IN_PROGRESS",
   "fullRecI3Completed": false,
   "recoveryPreflightUnlocked": false,
   "readinessBlockersClosed": [],
@@ -90,16 +90,38 @@
     }
   ],
   "review": {
-    "independentAdvisory": "PENDING",
+    "independentAdvisory": "REVISE",
     "accountable": "PENDING",
-    "formalReviewer": false
+    "formalReviewer": false,
+    "reviewedCommit": "5de34577295b5e5477970785f9472d51e21bfc43",
+    "reportSha256": "5f1e8ce06c73a93cfb67ef6c98d877837d75cce341d0b94c7f1d020df10ebcff",
+    "counts": {
+      "p0": 0,
+      "p1": 7,
+      "p2": 1
+    }
   },
   "limitations": [
+    "Independent review of 5de34577295b5e5477970785f9472d51e21bfc43 returned REVISE (P0/P1/P2 0/7/1); round-two production-boundary corrections are in progress.",
+    "The prior 176-test, host-SQLite and governance results describe the reviewed predecessor only and do not verify the round-two correction.",
     "Host JVM tests and injected descriptor/journal seams do not prove Android filesystem or SQLite durability.",
-    "The Android adapters compile and lint, but no device or emulator execution occurred.",
-    "Immediate lstat plus rename does not provide a kernel atomic no-replace primitive.",
-    "Independent review of this corrected exact head, streaming, external orchestration, preflight and full REC-I3 remain unfinished."
+    "No device or emulator execution occurred; preflight, fault campaign, measurement, production admission and full REC-I3 remain blocked."
   ],
   "correctionScopeFirstCommit": "e78571776d34756325289dcfcb3853c9696f3011",
-  "correctsReviewedCandidate": "dbbde0ef8e16cbac6cbe6f2ccbefde43e1853188"
+  "correctsReviewedCandidate": "dbbde0ef8e16cbac6cbe6f2ccbefde43e1853188",
+  "round2Correction": {
+    "status": "IN_PROGRESS",
+    "baseCommit": "5de34577295b5e5477970785f9472d51e21bfc43",
+    "openFindingIds": [
+      "P1-INVENTORY",
+      "P1-ROW-DIGEST",
+      "P1-TYPED-DIAGNOSTICS",
+      "P1-MANIFEST-CHAIN",
+      "P1-JOURNAL-READBACK",
+      "P1-PRODUCTION-STORAGE",
+      "P1-EVIDENCE-TRUTH",
+      "P2-DESCRIPTOR-OWNERSHIP"
+    ],
+    "actualEntryRegressionComplete": false
+  }
 }

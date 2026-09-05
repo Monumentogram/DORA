@@ -180,8 +180,11 @@ bounded slice. The additive
 [correction scope](stage0/DORA_MVP1_POC_RECOVERY_I3_RECONCILIATION_REVIEW_CORRECTION_STAGE0_V0_1.md)
 records production-owned observation, exact capability binding, authenticated fallback, pending
 quarantine replay, immutable typed diagnostics, descriptor bounds and exact schema-v3 checks. The
-corrected exact head still requires independent review and CI; host assertions and compilation do
-not establish Android runtime durability or unlock any Recovery gate.
+second corrected head `5de34577295b5e5477970785f9472d51e21bfc43` received independent `REVISE`
+review (P0/P1/P2 = 0/7/1). Round-two correction of the reported production inventory, identity
+digest, typed diagnostics, publication-chain, journal readback, actual storage and descriptor
+ownership gaps is in progress. Its predecessor checks are historical evidence only. Host
+assertions and compilation do not establish Android runtime durability or unlock any Recovery gate.
 
 ## Stage 00 closure
 
