@@ -194,6 +194,62 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
             with self.subTest(layer=layer), self.assertRaisesRegex(ValueError, "scope changed after"):
                 governance.validate_rec_i3_scope_frozen(changes)
 
+    def test_merge_only_predecessor_mutation_and_restore_is_rejected_for_local_and_pr_heads(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-merge-") as temporary:
+            repo, _ = governance.initialize_test_git_repo(Path(temporary))
+            relative = "android/poc/recovery/frozen.kt"
+            path = repo / relative
+            path.parent.mkdir(parents=True)
+            path.write_bytes(b"frozen\n")
+            base = governance.commit_test_git_repo(repo, "reviewed base")
+            original = governance.test_git_text(repo, "rev-parse", "HEAD^{tree}")
+
+            def commit_tree(tree: str, parents: tuple[str, ...], message: str) -> str:
+                arguments = ["-c", "user.name=Dora Validator Test", "-c",
+                             "user.email=dora-validator@example.invalid", "commit-tree", tree]
+                for parent in parents:
+                    arguments.extend(("-p", parent))
+                return governance.test_git_text(repo, *arguments, input_data=message.encode("ascii"))
+
+            side1 = commit_tree(original, (base,), "first empty side")
+            side2 = commit_tree(original, (base,), "second empty side")
+            path.write_bytes(b"unauthorized merge resolution\n")
+            governance.test_git(repo, "add", relative)
+            modified = governance.test_git_text(repo, "write-tree")
+            merge1 = commit_tree(modified, (base, side1), "mutate only in merge")
+            merge2 = commit_tree(original, (merge1, side2), "restore only in merge")
+            governance.test_git(repo, "update-ref", "refs/heads/main", merge2)
+            path.write_bytes(b"frozen\n")
+            governance.test_git(repo, "add", relative)
+            changes = governance.collect_post_merge_changes(root=repo, merged_anchor=base)
+            self.assertEqual({layer: [] for layer in ("committed", "staged", "unstaged", "untracked")}, changes)
+            self.assertEqual(original, governance.test_git_text(repo, "rev-parse", "HEAD^{tree}"))
+            self.assertEqual(relative, governance.test_git_text(repo, "diff", "--name-only", base, merge1))
+            local = governance.RecoveryLifecycleIdentity(merge2, governance.REC_I3_BRANCH,
+                                                         None, None, None, None, (), None, None, False)
+            context = governance.GitHubPullRequestContext(
+                governance.GITHUB_REPOSITORY, governance.GITHUB_REPOSITORY, governance.REC_I3_BRANCH,
+                merge2, "main", base, "refs/pull/99/merge", "c" * 40, 99, True, "open", False,
+            )
+            with patch.object(governance, "ROOT", repo), patch.object(governance, "REC_I3_BASE", base):
+                with self.assertRaisesRegex(ValueError, "candidate history must be linear"):
+                    governance.validate_rec_i3_candidate_history(local)
+                synthetic = commit_tree(original, (base, merge2), "synthetic GitHub merge")
+                governance.test_git(repo, "update-ref", "refs/heads/main", synthetic)
+                pr = replace(local, head=synthetic,
+                             github_pull_request_context=replace(context, merge_sha=synthetic))
+                with self.assertRaisesRegex(ValueError, "candidate history must be linear"):
+                    governance.validate_rec_i3_candidate_history(pr)
+
+                # A real two-parent CI checkout of a linear source head is valid.
+                clean_synthetic = commit_tree(original, (base, side1), "clean synthetic GitHub merge")
+                governance.test_git(repo, "update-ref", "refs/heads/main", clean_synthetic)
+                clean_pr = replace(local, head=clean_synthetic,
+                                   github_pull_request_context=replace(context, head_sha=side1, merge_sha=clean_synthetic))
+                governance.validate_rec_i3_candidate_history(clean_pr)
+                governance.test_git(repo, "update-ref", "refs/heads/main", side1)
+                governance.validate_rec_i3_candidate_history(replace(local, head=side1))
+
 
 if __name__ == "__main__":
     unittest.main()

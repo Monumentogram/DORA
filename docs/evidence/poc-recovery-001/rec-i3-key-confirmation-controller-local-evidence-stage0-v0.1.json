@@ -135,6 +135,18 @@
       "stage": "ITERATION",
       "outcome": "FAIL",
       "detail": "Initial Detekt run found four style issues; receipt predicate and nested test matrix simplified, two justified local ReturnCount suppressions retained. Final combined verification above passed."
+    },
+    {
+      "command": "python tools/test_poc_recovery_i3_governance.py RecoveryI3GovernanceTests.test_merge_only_predecessor_mutation_and_restore_is_rejected_for_local_and_pr_heads",
+      "stage": "REVIEW_RED",
+      "outcome": "EXPECTED_TEST_FAILURE",
+      "detail": "Independent P2 repro: two merge-resolution commits mutate then restore a frozen path while the inherited path collector returns no changes. Before the guard the regression fails because the expected ValueError is not raised."
+    },
+    {
+      "command": "python tools/validate_poc_recovery_governance.py --self-test",
+      "stage": "FINAL",
+      "outcome": "PASS",
+      "detail": "After REC-I3-only linear candidate-history guard, all legacy cases and nine focused tests pass. Actual PR source head is checked; the expected GitHub synthetic merge remains allowed. Kotlin and dependency inputs are unchanged, so Android checks are not repeated."
     }
   ],
   "review": {

@@ -5266,6 +5266,16 @@ def validate_rec_i3_scope_frozen(changes: dict[str, list[str]]) -> None:
             "REC-I3 scope changed after its scope-first commit")
 
 
+def validate_rec_i3_candidate_history(current: RecoveryLifecycleIdentity) -> None:
+    # The inherited path collector omits merge-resolution diffs. This exact
+    # branch must be linear; GitHub's verified synthetic merge is not its head.
+    candidate_head = (current.github_pull_request_context.head_sha
+                      if current.github_pull_request_context is not None else current.head)
+    require(not git_output("rev-list", "--min-parents=2", f"{REC_I3_BASE}..{candidate_head}"),
+            "REC-I3 candidate history must be linear; merge-resolution changes cannot be audited by the path collector")
+    validate_rec_i3_changed_paths(collect_post_merge_changes(merged_anchor=REC_I3_BASE))
+
+
 def validate_rec_i3_context(
     lifecycle: RecoveryLifecycleIdentity,
     base: PinnedCommitIdentity,
@@ -5378,8 +5388,7 @@ def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | Non
     if current.github_pull_request_context is not None:
         require(git_is_ancestor(REC_I3_SCOPE_COMMIT, current.github_pull_request_context.head_sha),
                 "REC-I3 scope exists only through PR base/merge")
-    changes = collect_post_merge_changes(merged_anchor=REC_I3_BASE)
-    validate_rec_i3_changed_paths(changes)
+    validate_rec_i3_candidate_history(current)
     require(git_output("rev-parse", f"{REC_I3_BASE}:android/poc/recovery") == REC_I2B_MODULE_TREE,
             "REC-I3 base does not preserve the exact REC-I2B module")
     validate_rec_i3_additions_absent()
