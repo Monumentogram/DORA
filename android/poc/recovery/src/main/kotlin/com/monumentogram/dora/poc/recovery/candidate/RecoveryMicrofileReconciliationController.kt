@@ -309,8 +309,12 @@ internal sealed interface QuarantineResult {
         val observation: QuarantinePathObservation,
     ) : QuarantineResult
 
-    data class UnsafePath(val row: RecoveryQuarantineIntentRow?, val failedStep: QuarantineStep) :
-        QuarantineResult
+    data class UnsafePath(
+        val row: RecoveryQuarantineIntentRow?,
+        val failedStep: QuarantineStep,
+        val diagnostic: RecoveryFailureDiagnostic,
+        val remainder: QuarantineRemainder,
+    ) : QuarantineResult
 }
 
 internal class RecoveryQuarantineController(
@@ -334,8 +338,8 @@ internal class RecoveryQuarantineController(
         var remainder = QuarantineRemainder()
         try {
             storage.prepare(input.runId)
-        } catch (_: RecoveryUnsafePathException) {
-            return QuarantineResult.UnsafePath(null, QuarantineStep.PREPARE)
+        } catch (error: RecoveryUnsafePathException) {
+            return unsafePath(null, QuarantineStep.PREPARE, error, remainder)
         } catch (error: Throwable) {
             return QuarantineResult.RetryRequired(
                 QuarantineStep.PREPARE,
@@ -417,17 +421,31 @@ internal class RecoveryQuarantineController(
         }
         val persisted = requireNotNull(row)
         if (!matchesProposed(persisted, proposed)) {
-            return QuarantineResult.RetryRequired(QuarantineStep.Q01, null, persisted, remainder)
+            return QuarantineResult.RetryRequired(
+                QuarantineStep.Q01,
+                RecoveryFailureDiagnostic(
+                    RecoveryFailureCategory.STRUCTURAL,
+                    "QuarantineRowIdentity",
+                    "Persisted quarantine row does not match the proposed identity",
+                    RecoveryFailureStage.JOURNAL,
+                ),
+                persisted,
+                remainder,
+            )
         }
         var observation =
             try {
                 storage.inspect(persisted)
-            } catch (_: RecoveryUnsafePathException) {
-                return QuarantineResult.UnsafePath(persisted, QuarantineStep.Q02)
+            } catch (error: RecoveryUnsafePathException) {
+                return unsafePath(persisted, QuarantineStep.Q02, error, remainder)
             } catch (error: Throwable) {
                 return QuarantineResult.RetryRequired(
                     QuarantineStep.Q02,
-                    RecoveryFailureDiagnostic.capture(RecoveryFailureCategory.OPERATIONAL, error),
+                    RecoveryFailureDiagnostic.capture(
+                        RecoveryFailureCategory.OPERATIONAL,
+                        error,
+                        RecoveryFailureStage.ARTIFACT_IO,
+                    ),
                     persisted,
                     remainder,
                 )
@@ -436,7 +454,7 @@ internal class RecoveryQuarantineController(
             observation.source == QuarantinePathState.UNSAFE ||
                 observation.destination == QuarantinePathState.UNSAFE
         ) {
-            return QuarantineResult.UnsafePath(persisted, QuarantineStep.Q02)
+            return unsafeObservation(persisted, QuarantineStep.Q02, remainder)
         }
         if (
             observation.source != QuarantinePathState.ABSENT &&
@@ -472,8 +490,8 @@ internal class RecoveryQuarantineController(
             try {
                 storage.renameNoOverwrite(persisted)
                 remainder = remainder.copy(rename = QuarantineOperationState.CONFIRMED)
-            } catch (_: RecoveryUnsafePathException) {
-                return QuarantineResult.UnsafePath(persisted, QuarantineStep.Q02)
+            } catch (error: RecoveryUnsafePathException) {
+                return unsafePath(persisted, QuarantineStep.Q02, error, remainder)
             } catch (error: Throwable) {
                 return QuarantineResult.RetryRequired(
                     QuarantineStep.Q02,
@@ -489,12 +507,15 @@ internal class RecoveryQuarantineController(
             observation =
                 try {
                     storage.inspect(persisted)
+                } catch (error: RecoveryUnsafePathException) {
+                    return unsafePath(persisted, QuarantineStep.Q02, error, remainder)
                 } catch (error: Throwable) {
                     return QuarantineResult.RetryRequired(
                         QuarantineStep.Q02,
                         RecoveryFailureDiagnostic.capture(
-                            RecoveryFailureCategory.UNKNOWN_OUTCOME,
+                            RecoveryFailureCategory.OPERATIONAL,
                             error,
+                            RecoveryFailureStage.ARTIFACT_IO,
                         ),
                         persisted,
                         remainder,
@@ -505,13 +526,19 @@ internal class RecoveryQuarantineController(
             observation !=
                 QuarantinePathObservation(QuarantinePathState.ABSENT, QuarantinePathState.EXACT)
         ) {
+            if (
+                observation.source == QuarantinePathState.UNSAFE ||
+                    observation.destination == QuarantinePathState.UNSAFE
+            ) {
+                return unsafeObservation(persisted, QuarantineStep.Q02, remainder)
+            }
             return QuarantineResult.RetryRequired(QuarantineStep.Q02, null, persisted, remainder)
         }
         try {
             storage.fsyncSourceParent(persisted)
             remainder = remainder.copy(sourceParentSync = QuarantineOperationState.CONFIRMED)
-        } catch (_: RecoveryUnsafePathException) {
-            return QuarantineResult.UnsafePath(persisted, QuarantineStep.Q03)
+        } catch (error: RecoveryUnsafePathException) {
+            return unsafePath(persisted, QuarantineStep.Q03, error, remainder)
         } catch (error: Throwable) {
             return QuarantineResult.RetryRequired(
                 QuarantineStep.Q03,
@@ -523,8 +550,8 @@ internal class RecoveryQuarantineController(
         try {
             storage.fsyncDestinationParent(persisted)
             remainder = remainder.copy(destinationParentSync = QuarantineOperationState.CONFIRMED)
-        } catch (_: RecoveryUnsafePathException) {
-            return QuarantineResult.UnsafePath(persisted, QuarantineStep.Q04)
+        } catch (error: RecoveryUnsafePathException) {
+            return unsafePath(persisted, QuarantineStep.Q04, error, remainder)
         } catch (error: Throwable) {
             return QuarantineResult.RetryRequired(
                 QuarantineStep.Q04,
@@ -596,6 +623,40 @@ internal class RecoveryQuarantineController(
         }
         return emit(completed, remainder)
     }
+
+    private fun unsafePath(
+        row: RecoveryQuarantineIntentRow?,
+        step: QuarantineStep,
+        error: RecoveryUnsafePathException,
+        remainder: QuarantineRemainder,
+    ) =
+        QuarantineResult.UnsafePath(
+            row,
+            step,
+            RecoveryFailureDiagnostic.capture(
+                error.category,
+                error,
+                RecoveryFailureStage.ARTIFACT_PATH,
+            ),
+            remainder,
+        )
+
+    private fun unsafeObservation(
+        row: RecoveryQuarantineIntentRow,
+        step: QuarantineStep,
+        remainder: QuarantineRemainder,
+    ) =
+        QuarantineResult.UnsafePath(
+            row,
+            step,
+            RecoveryFailureDiagnostic(
+                RecoveryFailureCategory.CORRUPT_LEAF,
+                "QuarantinePathObservation",
+                "Quarantine source or destination is unsafe",
+                RecoveryFailureStage.ARTIFACT_PATH,
+            ),
+            remainder,
+        )
 
     private fun validPersistedRow(row: RecoveryQuarantineIntentRow): Boolean =
         row.intentId == RecoveryQuarantineIntent.calculate(row.input) &&

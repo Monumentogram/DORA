@@ -26,21 +26,44 @@ class RecoveryReconciliationPathPolicyTest {
     @Test
     fun `traversal absolute separators and noncanonical destinations fail closed`() {
         listOf("../x", "/x", "a\\b", "a//b", ".").forEach { source ->
-            assertThrows(IllegalArgumentException::class.java) {
-                RecoveryReconciliationPathPolicy.paths(
-                    File("build/test-no-backup"),
-                    run,
-                    source,
-                    "objects/q-${"a".repeat(64)}.bin",
-                )
-            }
+            val failure =
+                assertThrows(RecoveryUnsafePathException::class.java) {
+                    RecoveryReconciliationPathPolicy.paths(
+                        File("build/test-no-backup"),
+                        run,
+                        source,
+                        "objects/q-${"a".repeat(64)}.bin",
+                    )
+                }
+            assertEquals(
+                com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureCategory.UNSAFE_PARENT,
+                failure.category,
+            )
         }
-        assertThrows(IllegalArgumentException::class.java) {
+        assertThrows(RecoveryUnsafePathException::class.java) {
             RecoveryReconciliationPathPolicy.paths(
                 File("build/test-no-backup"),
                 run,
                 "safe.tmp",
                 "objects/q-${"A".repeat(64)}.bin",
+            )
+        }
+    }
+
+    @Test
+    fun `invalid platform path and direct containment escape are typed unsafe`() {
+        assertThrows(RecoveryUnsafePathException::class.java) {
+            RecoveryReconciliationPathPolicy.paths(
+                File("build/test-no-backup"),
+                run,
+                "C:/outside.bin",
+                "objects/q-${"a".repeat(64)}.bin",
+            )
+        }
+        assertThrows(RecoveryUnsafePathException::class.java) {
+            RecoveryReconciliationPathPolicy.requireContained(
+                File("build/test-no-backup/root"),
+                File("build/test-no-backup/outside"),
             )
         }
     }

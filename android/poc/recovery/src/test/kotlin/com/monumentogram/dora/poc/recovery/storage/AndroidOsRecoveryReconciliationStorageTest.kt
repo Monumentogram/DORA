@@ -55,6 +55,29 @@ class AndroidOsRecoveryReconciliationStorageTest {
     }
 
     @Test
+    fun `actual inspect rejects lexical source and destination before artifact syscall`() {
+        val os = FakeOs().apply { seed(source = byteArrayOf(1)) }
+        val storage = AndroidOsRecoveryReconciliationStorage(ROOT, os)
+        val unsafeSource =
+            row(byteArrayOf(1)).let { original ->
+                val input = original.input.copy(sourceRelativeName = "../bad")
+                original.copy(
+                    intentId = RecoveryQuarantineIntent.calculate(input),
+                    input = input,
+                    destinationRelativeName = RecoveryQuarantineIntent.destination(input),
+                )
+            }
+        assertThrows(RecoveryUnsafePathException::class.java) { storage.inspect(unsafeSource) }
+        assertTrue(os.lstats.none { it.contains("..") })
+
+        val unsafeDestination = row(byteArrayOf(1)).copy(destinationRelativeName = "objects/bad")
+        assertThrows(RecoveryUnsafePathException::class.java) {
+            storage.inspect(unsafeDestination)
+        }
+        assertTrue(os.lstats.none { it.endsWith("objects${File.separator}bad") })
+    }
+
+    @Test
     fun `actual inspect validates every fixed ancestor and rejects each symlink`() {
         fixedDirectories().forEach { unsafe ->
             val os = FakeOs().apply { seed(unsafe = unsafe) }

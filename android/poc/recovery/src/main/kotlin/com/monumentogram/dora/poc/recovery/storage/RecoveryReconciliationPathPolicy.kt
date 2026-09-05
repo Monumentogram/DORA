@@ -2,6 +2,7 @@ package com.monumentogram.dora.poc.recovery.storage
 
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import java.io.File
+import java.nio.file.InvalidPathException
 
 internal data class RecoveryReconciliationPaths(
     val activeRunRoot: File,
@@ -19,8 +20,8 @@ internal object RecoveryReconciliationPathPolicy {
         destinationRelativeName: String,
     ): RecoveryReconciliationPaths {
         requireRelative(sourceRelativeName)
-        require(destinationRelativeName.matches(Regex("objects/q-[0-9a-f]{64}\\.bin"))) {
-            "Quarantine destination is not canonical"
+        if (!destinationRelativeName.matches(Regex("objects/q-[0-9a-f]{64}\\.bin"))) {
+            throw RecoveryUnsafePathException("Quarantine destination is not canonical")
         }
         val base = File(noBackupRoot, "poc-recovery/v1")
         val active = File(base, "runs/${runId.toCanonicalString()}")
@@ -34,22 +35,27 @@ internal object RecoveryReconciliationPathPolicy {
     }
 
     private fun requireRelative(value: String) {
-        require(
-            value.isNotEmpty() &&
-                !value.startsWith('/') &&
-                !value.startsWith('\\') &&
-                '\\' !in value &&
-                value.split('/').all { it.isNotEmpty() && it != "." && it != ".." }
-        ) {
-            "Recovery source relative name is unsafe"
+        if (value.isEmpty() || value.startsWith('/') || value.startsWith('\\')) unsafeRelative()
+        if ('\\' in value) unsafeRelative()
+        value.split('/').forEach { component ->
+            if (component.isEmpty() || component == "." || component == "..") unsafeRelative()
         }
     }
 
-    private fun requireContained(root: File, child: File) {
-        val rootPath = root.toPath().toAbsolutePath().normalize()
-        val childPath = child.toPath().toAbsolutePath().normalize()
-        require(childPath.startsWith(rootPath) && childPath != rootPath) {
-            "Recovery path escapes its run root"
+    private fun unsafeRelative(): Nothing =
+        throw RecoveryUnsafePathException("Recovery source relative name is unsafe")
+
+    internal fun requireContained(root: File, child: File) {
+        try {
+            val rootPath = root.toPath().toAbsolutePath().normalize()
+            val childPath = child.toPath().toAbsolutePath().normalize()
+            if (!(childPath.startsWith(rootPath) && childPath != rootPath)) {
+                throw RecoveryUnsafePathException("Recovery path escapes its run root")
+            }
+        } catch (error: InvalidPathException) {
+            throw RecoveryUnsafePathException("Recovery path is invalid").apply {
+                addSuppressed(error)
+            }
         }
     }
 }
