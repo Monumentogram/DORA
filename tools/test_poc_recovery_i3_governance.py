@@ -268,6 +268,63 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "escapes exact scope"):
                     governance.validate_rec_i3_changed_paths(changes)
 
+    def test_frozen_bootstrap_edit_and_restore_is_rejected_from_source_head_history(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-frozen-history-") as temporary:
+            repo, _ = governance.initialize_test_git_repo(Path(temporary))
+            relative = governance.REC_I3_MICROFILE_FROZEN_BOOTSTRAP_PATHS[0]
+            path = repo / relative
+            path.parent.mkdir(parents=True)
+            path.write_bytes(b"reviewed bootstrap\n")
+            base = governance.commit_test_git_repo(repo, "reviewed bootstrap checkpoint")
+            path.write_bytes(b"transient unauthorized edit\n")
+            governance.commit_test_git_repo(repo, "edit frozen bootstrap")
+            path.write_bytes(b"reviewed bootstrap\n")
+            restored = governance.commit_test_git_repo(repo, "restore frozen bootstrap")
+            tree = governance.test_git_text(repo, "rev-parse", "HEAD^{tree}")
+            synthetic = governance.test_git_text(
+                repo, "-c", "user.name=Dora Validator Test", "-c",
+                "user.email=dora-validator@example.invalid", "commit-tree", tree,
+                "-p", base, "-p", restored, input_data=b"synthetic GitHub merge",
+            )
+            local = governance.RecoveryLifecycleIdentity(
+                restored, governance.REC_I3_BRANCH, None, None, None, None, (), None, None, False,
+            )
+            context = governance.GitHubPullRequestContext(
+                governance.GITHUB_REPOSITORY, governance.GITHUB_REPOSITORY, governance.REC_I3_BRANCH,
+                restored, "main", base, "refs/pull/99/merge", "c" * 40, 99, True, "open", False,
+            )
+            pull_request = replace(
+                local, head=synthetic,
+                github_pull_request_context=replace(context, head_sha=restored, merge_sha=synthetic),
+            )
+            with (
+                patch.object(governance, "ROOT", repo),
+                patch.object(governance, "REC_I3_BASE", base),
+                patch.object(governance, "REC_I3_MICROFILE_REVIEWED_BOOTSTRAP_COMMIT", base),
+            ):
+                with self.assertRaisesRegex(ValueError, "frozen bootstrap history"):
+                    governance.validate_rec_i3_candidate_history(local)
+                governance.test_git(repo, "update-ref", "refs/heads/main", synthetic)
+                with self.assertRaisesRegex(ValueError, "frozen bootstrap history"):
+                    governance.validate_rec_i3_candidate_history(pull_request)
+
+    def test_frozen_bootstrap_staged_edit_cannot_hide_behind_restored_worktree_bytes(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-frozen-index-") as temporary:
+            repo, _ = governance.initialize_test_git_repo(Path(temporary))
+            relative = governance.REC_I3_MICROFILE_FROZEN_BOOTSTRAP_PATHS[0]
+            path = repo / relative
+            path.parent.mkdir(parents=True)
+            path.write_bytes(b"reviewed bootstrap\n")
+            base = governance.commit_test_git_repo(repo, "reviewed bootstrap checkpoint")
+            path.write_bytes(b"staged unauthorized edit\n")
+            governance.test_git(repo, "add", relative)
+            path.write_bytes(b"reviewed bootstrap\n")
+            changes = governance.collect_post_merge_changes(root=repo, merged_anchor=base)
+            self.assertIn(relative, changes["staged"])
+            self.assertEqual(b"reviewed bootstrap\n", path.read_bytes())
+            with self.assertRaisesRegex(ValueError, "staged delta escapes exact scope"):
+                governance.validate_rec_i3_changed_paths(changes)
+
     def test_regular_source_file_rejects_git_symlink_and_missing_file(self) -> None:
         with tempfile.TemporaryDirectory(prefix="dora-rec-i3-mode-") as temporary:
             repo, _ = governance.initialize_test_git_repo(Path(temporary))
@@ -341,7 +398,11 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
                 governance.GITHUB_REPOSITORY, governance.GITHUB_REPOSITORY, governance.REC_I3_BRANCH,
                 merge2, "main", base, "refs/pull/99/merge", "c" * 40, 99, True, "open", False,
             )
-            with patch.object(governance, "ROOT", repo), patch.object(governance, "REC_I3_BASE", base):
+            with (
+                patch.object(governance, "ROOT", repo),
+                patch.object(governance, "REC_I3_BASE", base),
+                patch.object(governance, "REC_I3_MICROFILE_REVIEWED_BOOTSTRAP_COMMIT", base),
+            ):
                 with self.assertRaisesRegex(ValueError, "candidate history must be linear"):
                     governance.validate_rec_i3_candidate_history(local)
                 synthetic = commit_tree(original, (base, merge2), "synthetic GitHub merge")

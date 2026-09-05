@@ -5481,7 +5481,24 @@ def validate_rec_i3_candidate_history(current: RecoveryLifecycleIdentity) -> Non
                       if current.github_pull_request_context is not None else current.head)
     require(not git_output("rev-list", "--min-parents=2", f"{REC_I3_BASE}..{candidate_head}"),
             "REC-I3 candidate history must be linear; merge-resolution changes cannot be audited by the path collector")
+    validate_rec_i3_frozen_bootstrap_history(candidate_head)
     validate_rec_i3_changed_paths(collect_post_merge_changes(merged_anchor=REC_I3_BASE))
+
+
+def validate_rec_i3_frozen_bootstrap_history(candidate_head: str) -> None:
+    require(
+        git_is_ancestor(REC_I3_MICROFILE_REVIEWED_BOOTSTRAP_COMMIT, candidate_head),
+        "REC-I3 candidate source head predates the reviewed bootstrap checkpoint",
+    )
+    touched = git_path_records(
+        "log", "--format=", "--name-only", "--no-renames", "-z",
+        f"{REC_I3_MICROFILE_REVIEWED_BOOTSTRAP_COMMIT}..{candidate_head}", "--",
+        *REC_I3_MICROFILE_FROZEN_BOOTSTRAP_PATHS,
+    )
+    require(
+        not touched,
+        f"REC-I3 frozen bootstrap history changed after reviewed checkpoint: {sorted(set(touched))}",
+    )
 
 
 def validate_rec_i3_context(
