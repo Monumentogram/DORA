@@ -188,9 +188,12 @@ passed its reported host checks, but its exact independent review returned `REVI
 (P0/P1/P2 = 0/4/0). Optional namespace/result retention, confirmed-Q05 truth, row framing and
 production unique readback are closed prior findings. Production artifact context, lexical path
 diagnostics, actual-entry evidence truth and bootstrap cursor position remain the four exact open
-P1 findings. Current round-four author checks pass with 214 Android host tests and 23 governance
-tests, but independent and accountable review remain pending. Historical round-three contextual
-taxonomy and path-I/O assertions are superseded author claims. Host assertions do not establish
+P1 findings. Independent review of `bc4f4423b535982956575f5a3480c9361eab6378` returned `REVISE`
+(P0/P1/P2 = 0/2/0): lexical path diagnostics, cursor position and the path side-effect ledger
+closed for that reviewed candidate, while production artifact context and current actual-entry
+evidence remain open. Current round-four author verification is `NOT_RUN` during correction;
+independent and accountable review remain pending. Historical round-three and bc4 contextual
+acceptance assertions are superseded author claims. Host assertions do not establish
 Android runtime durability; immediate lstat plus rename is not kernel-atomic no-replace evidence,
 and no Recovery gate is unlocked.
 

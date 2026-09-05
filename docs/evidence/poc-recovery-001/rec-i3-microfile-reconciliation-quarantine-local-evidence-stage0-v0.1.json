@@ -123,29 +123,6 @@
       "errors": 0,
       "skipped": 0,
       "log": "rec-i3-round3-final-android-complete.log"
-    },
-    {
-      "command": "gradlew spotlessCheck detekt :poc:recovery:testDebugUnitTest :poc:recovery:lintDebug :poc:recovery:compileReleaseKotlin :poc:recovery:recoveryI2bVerifyCryptoPolicy --no-daemon --no-parallel",
-      "stage": "ROUND4_ANDROID_HOST",
-      "outcome": "PASS",
-      "tests": 214,
-      "failures": 0,
-      "errors": 0,
-      "skipped": 0,
-      "log": "rec-i3-round4-final-android.log"
-    },
-    {
-      "command": "python -m unittest test_poc_recovery_i3_governance.py -v from tools; python tools/validate_poc_recovery_governance.py",
-      "stage": "ROUND4_GOVERNANCE",
-      "outcome": "PASS",
-      "tests": 23,
-      "failures": 0,
-      "errors": 0,
-      "skipped": 0,
-      "logs": [
-        "rec-i3-round4-governance.log",
-        "rec-i3-round4-validator-precommit.log"
-      ]
     }
   ],
   "review": {
@@ -161,8 +138,8 @@
     }
   },
   "limitations": [
-    "Independent review of ca2db88e0c6e53f346908bdc73b628beaf6c4ec4 and its addendum remains REVISE (P0/P1/P2 0/4/0); current round-four author checks pass while all four findings remain open pending independent exact-candidate review.",
-    "The earlier a020944 and round-three contextual-taxonomy, path-I/O, exact-row and adapter coverage statements are superseded author claims; the current production-entry mapping is author evidence, not independent closure.",
+    "Independent review of bc4f4423b535982956575f5a3480c9361eab6378 returned REVISE (P0/P1/P2 0/2/0); lexical path diagnostics, cursor position and path-ledger evidence closed at that reviewed candidate, while production artifact context and current actual-entry evidence remain open.",
+    "The earlier a020944, round-three and bc4 contextual-taxonomy acceptance claims are superseded author claims; current round-four verification is NOT_RUN during the accepted correction.",
     "The immediate lstat-plus-rename sequence detects observed occupancy but does not prove kernel-atomic no-replace behavior; collision handling remains conservative and Android physical proof is still gated.",
     "Host JVM tests and injected descriptor, journal and syscall seams prove their assertions and Android compilation only; they do not prove physical Android filesystem or SQLite durability.",
     "No device or emulator execution occurred; the ten remaining readiness blockers, preflight, fault campaign, measurement, production admission, accountable review and full REC-I3 remain open."
@@ -401,33 +378,7 @@
       ]
     },
     "authorVerification": {
-      "status": "PASS",
-      "acceptanceCases": [
-        {
-          "id": "CONTEXTUAL-TAXONOMY",
-          "productionEntry": "RecoveryMicrofileReconciliationController.reconcile -> AndroidRecoveryReconciliationSource.loadConfirmation/loadArtifact -> AndroidOsRecoveryReconciliationStorage.activeArtifactExists/loadActiveArtifact",
-          "test": "AndroidRecoveryReconciliationSourceTest.actual controller keeps no-row and durable-row confirmation path classifications; actual controller distinguishes known final from unknown and temporary observation; actual controller maps manifest envelope and ciphertext structural reads by caller role; actual controller maps unit envelope structural read without relabeling ciphertext; actual controller keeps later syscall IO operational across artifact roles",
-          "assertion": "Bootstrap row UNKNOWN, ABSENT and PRESENT and artifact presence UNKNOWN, ABSENT and PRESENT remain distinct; final and temporary confirmation plus MANIFEST_KEY_ENVELOPE, MANIFEST_CIPHERTEXT, UNIT_KEY_ENVELOPE and UNIT_CIPHERTEXT bind nullable key classification, public diagnostic, retained stage/category, prefix or rejection retention, and the last permitted side effect."
-        },
-        {
-          "id": "PATH-IO-DISTINCTION",
-          "productionEntry": "RecoveryQuarantineController.quarantine -> AndroidOsRecoveryReconciliationStorage.inspect -> RecoveryReconciliationPathPolicy.paths/requireContained",
-          "test": "RecoveryQuarantineControllerTest.actual lexical and initial inspect failures retain typed diagnostics; actual second inspect preserves confirmed rename for unsafe and IO transitions; persisted invalid destination is rejected before actual storage inspection; AndroidOsRecoveryReconciliationStorageTest.actual inspect rejects lexical source and destination before artifact syscall; RecoveryReconciliationPathPolicyTest.invalid platform path and direct containment escape are typed unsafe",
-          "assertion": "Typed lexical, destination and containment failures, earliest Q01 persisted-row rejection, initial unsafe versus I/O and post-rename unsafe versus I/O preserve rename CONFIRMED where known and prohibit later rename, parent fsync, completion and evidence after the applicable failure boundary."
-        },
-        {
-          "id": "BOOTSTRAP-CURSOR-POSITION",
-          "productionEntry": "AndroidRecoveryReconciliationSource.loadBootstrapIdentity/decodeBootstrapIdentity -> loadConfirmation -> AndroidOsRecoveryReconciliationStorage.loadActiveArtifact",
-          "test": "AndroidRecoveryReconciliationSourceTest.bootstrap cursor decoder returns null for zero rows; bootstrap cursor decoder decodes the one stored identity at position zero; bootstrap cursor decoder rejects two rows as a structural journal failure; actual controller keeps no-row and durable-row confirmation path classifications",
-          "assertion": "Zero, one and duplicate cursor cardinality are exact; every one-row getter remains at position zero without pre-decode advance, duplicate rows are structural JOURNAL failures, and the production-used PRESENT decode reaches actual storage artifact observation."
-        },
-        {
-          "id": "EVIDENCE-ACTUAL-ENTRY",
-          "productionEntry": "validate_rec_i3_reconciliation_successor",
-          "test": "RecoveryI3GovernanceTests.test_reconciliation_round4_author_mapping_is_exact_and_current",
-          "assertion": "Only exact round4Truth author acceptance and distinct ROUND4_ANDROID_HOST and ROUND4_GOVERNANCE checks satisfy current verification; historical round-three PASS, superseded mappings and old check records cannot satisfy it."
-        }
-      ]
+      "status": "NOT_RUN"
     },
     "independentReview": {
       "status": "PENDING",
