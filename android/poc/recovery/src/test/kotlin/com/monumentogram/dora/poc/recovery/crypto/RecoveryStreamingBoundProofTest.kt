@@ -200,6 +200,7 @@ class RecoveryStreamingBoundProofTest {
         assertEquals(4_056, recovery.durableCheckpointEndExclusive)
         assertEquals(8_136, recovery.recoveredEndExclusive)
         assertEquals(4_080, recovery.recoveredBeyondCheckpointBytes)
+        assertEquals(1, recovery.tailLossBytes)
         assertArrayEquals(checkpointQ2.oracle.copyOf(8_136), recovery.returnedBytes)
         assertEquals(
             BoundedRemainderClassification.AUTHENTICATION_FAILURE_QUARANTINED,
@@ -207,8 +208,48 @@ class RecoveryStreamingBoundProofTest {
         )
         assertTrue(!recovery.metadataAdopted)
         assertTrue(!recovery.processingIntentAdopted)
-        assertEquals(8_160, recovery.designBound.maximumExtensionBytes)
-        assertEquals(255, recovery.designBound.maximumExtensionMillis)
+        assertEquals(8_160, recovery.designBound.maximumBoundedTailLossBytes)
+        assertEquals(255, recovery.designBound.maximumBoundedTailLossMillis)
+    }
+
+    @Test
+    fun `Option A rejects a tail loss of 8161 bytes`() {
+        val controller =
+            RecoveryStreamingAuthenticatedTailController(
+                acceptedEndExclusive = 8_161,
+                durableCheckpointEndExclusive = 0,
+                oracle = plaintext(8_161),
+            )
+
+        try {
+            controller.recover(
+                completedAuthenticatedReads = emptyList(),
+                terminal = AuthenticatedTailTerminal.AuthenticationFailure,
+            )
+            fail("An 8,161-byte tail loss must be rejected")
+        } catch (_: IllegalArgumentException) {
+            // Expected: the bounded tail-loss rule rejects the result.
+        }
+    }
+
+    @Test
+    fun `Option A accepts the exact 8160 byte tail loss despite a larger recovered checkpoint distance`() {
+        val acceptedBytes = 24_000
+        val recoveredBytes = 15_840
+        val recovery =
+            RecoveryStreamingAuthenticatedTailController(
+                    acceptedEndExclusive = acceptedBytes,
+                    durableCheckpointEndExclusive = 0,
+                    oracle = plaintext(acceptedBytes),
+                )
+                .recover(
+                    completedAuthenticatedReads = listOf(plaintext(recoveredBytes)),
+                    terminal = AuthenticatedTailTerminal.AuthenticationFailure,
+                )
+
+        assertEquals(recoveredBytes, recovery.recoveredEndExclusive)
+        assertEquals(8_160, recovery.tailLossBytes)
+        assertTrue(recovery.recoveredBeyondCheckpointBytes > 8_160)
     }
 
     @Test

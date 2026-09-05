@@ -36,14 +36,14 @@ internal class RecoveryStreamingAuthenticatedTailController(
         val recoveredEndExclusive = returnedBytes.size
         require(recoveredEndExclusive >= durableCheckpointEndExclusive)
         val recoveredBeyondCheckpointBytes = recoveredEndExclusive - durableCheckpointEndExclusive
-        require(
-            recoveredBeyondCheckpointBytes <= AuthenticatedTailDesignBound.maximumExtensionBytes
-        )
+        val tailLossBytes = acceptedEndExclusive - recoveredEndExclusive
+        require(tailLossBytes in 0..AuthenticatedTailDesignBound.maximumBoundedTailLossBytes)
 
         return AuthenticatedTailRecovery(
             durableCheckpointEndExclusive = durableCheckpointEndExclusive,
             recoveredEndExclusive = recoveredEndExclusive,
             recoveredBeyondCheckpointBytes = recoveredBeyondCheckpointBytes,
+            tailLossBytes = tailLossBytes,
             returnedBytes = returnedBytes,
             remainder = terminal.toBoundedRemainderClassification(),
             metadataAdopted = false,
@@ -68,6 +68,7 @@ internal data class AuthenticatedTailRecovery(
     val durableCheckpointEndExclusive: Int,
     val recoveredEndExclusive: Int,
     val recoveredBeyondCheckpointBytes: Int,
+    val tailLossBytes: Int,
     val returnedBytes: ByteArray,
     val remainder: BoundedRemainderClassification,
     val metadataAdopted: Boolean,
@@ -76,8 +77,8 @@ internal data class AuthenticatedTailRecovery(
 )
 
 internal data object AuthenticatedTailDesignBound {
-    const val maximumExtensionBytes = 8_160
-    const val maximumExtensionMillis = 255
+    const val maximumBoundedTailLossBytes = 8_160
+    const val maximumBoundedTailLossMillis = 255
 }
 
 private fun AuthenticatedTailTerminal.toBoundedRemainderClassification():
