@@ -6,6 +6,7 @@ from dataclasses import replace
 from threading import Event, Thread
 import unittest
 
+import tools.rec_i3_external_controller as controller_module
 from tools.rec_i3_external_controller import (
     ACTIVE_GATE_SET_ID,
     ACTIVE_PROTOCOL_ID,
@@ -53,11 +54,11 @@ class FakeSignalPort:
 
 
 class FakeLivenessPort:
-    def __init__(self, *responses: bool):
+    def __init__(self, *responses: object):
         self.responses = list(responses)
         self.calls: list[tuple[str, int]] = []
 
-    def is_alive(self, attempt_id: str, target_pid: int) -> bool:
+    def is_alive(self, attempt_id: str, target_pid: int) -> object:
         self.calls.append((attempt_id, target_pid))
         if not self.responses:
             raise AssertionError("unexpected liveness probe")
@@ -520,6 +521,16 @@ class ControllerTest(unittest.TestCase):
         self.assertEqual(frozenset(), raised.exception.invalidators)
         self.assertEqual([], signals.calls)
 
+    def test_pre_signal_liveness_requires_exact_boolean(self) -> None:
+        expected = expected_identity()
+        for malformed in (None, 1):
+            signals = FakeSignalPort()
+            controller = ExternalController(signals, FakeLivenessPort(malformed))
+            with self.subTest(malformed=malformed), self.assertRaises(ProtocolInputError):
+                issue_valid(controller, expected)
+            self.assertEqual([], signals.calls)
+            self.assertEqual(AttemptStage.READY, controller.stage_for(expected.attempt_id))
+
     def test_signal_confirmation_does_not_confirm_death(self) -> None:
         expected = expected_identity()
         controller = ExternalController(FakeSignalPort(), FakeLivenessPort(True))
@@ -557,6 +568,78 @@ class ControllerTest(unittest.TestCase):
         self.assertEqual(AttemptStage.SIGNAL_CONFIRMED, controller.stage_for(expected.attempt_id))
         dead = controller.confirm_independent_death(expected, receipt)
         self.assertTrue(dead.independently_confirmed_dead)
+        self.assertEqual(AttemptStage.DEATH_CONFIRMED, controller.stage_for(expected.attempt_id))
+
+    def test_death_liveness_requires_exact_boolean_and_releases_probe(self) -> None:
+        expected = expected_identity()
+        for malformed in (None, 1):
+            liveness = FakeLivenessPort(True, malformed, False)
+            controller = ExternalController(FakeSignalPort(), liveness)
+            receipt = issue_valid(controller, expected)
+            with self.subTest(malformed=malformed), self.assertRaises(ProtocolInputError):
+                controller.confirm_independent_death(expected, receipt)
+            self.assertEqual(AttemptStage.SIGNAL_CONFIRMED, controller.stage_for(expected.attempt_id))
+            death = controller.confirm_independent_death(expected, receipt)
+            self.assertTrue(death.independently_confirmed_dead)
+
+    def test_death_probe_remains_in_flight_through_atomic_stage_transition(self) -> None:
+        expected = expected_identity()
+        liveness = FakeLivenessPort(True, False, True)
+        controller = ExternalController(FakeSignalPort(), liveness)
+        receipt = issue_valid(controller, expected)
+        original_death_observation = controller_module.DeathObservation
+        construction_entered = Event()
+        release_construction = Event()
+        construction_calls: list[int] = []
+        first_results: list[object] = []
+        second_results: list[object] = []
+
+        def gated_death_observation(
+            attempt_id: str,
+            target_pid: int,
+            independently_confirmed_dead: bool,
+        ) -> DeathObservation:
+            construction_calls.append(1)
+            if len(construction_calls) == 1:
+                construction_entered.set()
+                if not release_construction.wait(timeout=5):
+                    raise AssertionError("test did not release death observation construction")
+            return original_death_observation(
+                attempt_id,
+                target_pid,
+                independently_confirmed_dead,
+            )
+
+        def probe(results: list[object]) -> None:
+            try:
+                results.append(controller.confirm_independent_death(expected, receipt))
+            except Exception as error:
+                results.append(error)
+
+        controller_module.DeathObservation = gated_death_observation
+        first = Thread(target=probe, args=(first_results,))
+        second = Thread(target=probe, args=(second_results,))
+        try:
+            first.start()
+            self.assertTrue(construction_entered.wait(timeout=5))
+            second.start()
+            second.join(timeout=5)
+            self.assertFalse(second.is_alive())
+        finally:
+            release_construction.set()
+            first.join(timeout=5)
+            second.join(timeout=5)
+            controller_module.DeathObservation = original_death_observation
+
+        self.assertFalse(first.is_alive())
+        self.assertIsInstance(first_results[0], DeathObservation)
+        self.assertTrue(first_results[0].independently_confirmed_dead)
+        self.assertEqual(1, len(second_results))
+        self.assertIsInstance(second_results[0], ReceiptRejected)
+        self.assertEqual(
+            [(expected.attempt_id, expected.target_pid)] * 2,
+            liveness.calls,
+        )
         self.assertEqual(AttemptStage.DEATH_CONFIRMED, controller.stage_for(expected.attempt_id))
 
 

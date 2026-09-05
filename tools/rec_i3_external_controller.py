@@ -612,7 +612,9 @@ class ExternalController:
             invalidators.add(Invalidator.OPERATOR_INTERVENTION)
         if not scheduled_before_execution or invalidators:
             raise SignalNotEligible("attempt is not eligible for the signal port", frozenset(invalidators))
-        if not self._liveness_port.is_alive(expected.attempt_id, expected.target_pid):
+        alive = self._liveness_port.is_alive(expected.attempt_id, expected.target_pid)
+        _require_bool(alive, "pre_signal_liveness")
+        if not alive:
             raise SignalNotEligible("target PID is not alive immediately before signaling")
 
         with self._lock:
@@ -669,11 +671,15 @@ class ExternalController:
             record.death_probe_in_flight = True
         try:
             alive = self._liveness_port.is_alive(expected.attempt_id, expected.target_pid)
-        finally:
+            _require_bool(alive, "death_probe_liveness")
+            death = DeathObservation(expected.attempt_id, expected.target_pid, not alive)
+        except BaseException:
             with self._lock:
                 self._attempts[expected.attempt_id].death_probe_in_flight = False
-        death = DeathObservation(expected.attempt_id, expected.target_pid, not alive)
-        if death.independently_confirmed_dead:
-            with self._lock:
+            raise
+        with self._lock:
+            record = self._attempts[expected.attempt_id]
+            if death.independently_confirmed_dead:
                 self._attempts[expected.attempt_id].stage = AttemptStage.DEATH_CONFIRMED
+            record.death_probe_in_flight = False
         return death
