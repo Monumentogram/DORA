@@ -35,6 +35,63 @@ physical evidence. The harness/controller, fresh REC-I3 graph, preflight and cam
 `TODO=9`, `READY=0`. This reconciliation performs no emulator/device execution and elevates no PoC
 state, PASS, readiness or admission.
 
+REC-I3 first-slice amendment, 5 September 2026: the
+[read-only key-confirmation controller scope](stage0/DORA_MVP1_POC_RECOVERY_I3_KEY_CONFIRMATION_CONTROLLER_SCOPE_STAGE0_V0_1.md)
+and [local evidence](evidence/poc-recovery-001/rec-i3-key-confirmation-controller-local-evidence-stage0-v0.1.json)
+supersede only the pre-slice blanket absence of a controller in the historical summary/table.
+The full harness, durable bootstrap/publication/journal/quarantine, exact package verification and
+required implementation review remain unfinished. This partial REC-I3 result closes no readiness
+blocker, unlocks no Recovery preflight and leaves `POC-RECOVERY-001` `BLOCKED / NOT_READY`, aggregate
+counts and every campaign/admission flag unchanged. Subsequent implementation slices remain under
+the same current OD-15 authority; the current task performs no PR merge.
+
+REC-I3 run-key bootstrap amendment, 5 September 2026: the additive
+[bootstrap scope](stage0/DORA_MVP1_POC_RECOVERY_I3_RUN_KEY_BOOTSTRAP_SCOPE_STAGE0_V0_2.md)
+and [local evidence](evidence/poc-recovery-001/rec-i3-run-key-bootstrap-local-evidence-stage0-v0.2.json)
+add the exact KC01–KC13 new-run controller, typed crypto boundary, minimal PoC Android `Os`
+publication adapter and versioned platform SQLite run-row journal. Host tests establish ordering,
+short-write/error/closure behavior and the post-KC12 capability boundary; they do not prove Android
+filesystem, Keystore or SQLite runtime behavior. Reconciliation, quarantine, candidate writers,
+external kill controller, full fresh graph/package/R8 review and accountable implementation review
+remain unfinished. All ten readiness blockers, aggregate counts, Recovery preflight lock and every
+campaign/admission flag remain unchanged. This task performs no device/emulator execution,
+preflight, hard kill, fault campaign, measurement, PR merge or future merged-main admission.
+
+REC-I3 sequential microfile amendment, 5 September 2026: the additive
+[scope](stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_PUBLICATION_SCOPE_STAGE0_V0_1.md),
+[clarification](stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_PUBLICATION_CLARIFICATION_STAGE0_V0_1.md)
+and [local evidence](evidence/poc-recovery-001/rec-i3-sequential-microfile-publication-local-evidence-stage0-v0.1.json)
+add a repeatable `REC-MICROFILE-TINK` unit plus cumulative-manifest writer through
+exact `MICRO-P01`–`P21`. The slice shares the bootstrap run lease and advances only the PoC journal
+to a non-destructive schema v2 in the existing database. Host tests exercise actual Tink
+round trips, sequential state, conservative failure remainders and exact processing intents; host
+SQLite executes the production DDL and migration statements but is not Android runtime proof.
+Reconciliation, quarantine, streaming, external control and campaign execution remain unfinished.
+`fullRecI3Completed=false`, all ten blockers and the Recovery preflight lock remain unchanged.
+
+REC-I3 reconciliation/quarantine amendment, 5 September 2026: the additive
+[scope](stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_RECONCILIATION_QUARANTINE_SCOPE_STAGE0_V0_1.md),
+[ADR-0004](adr/ADR-0004-poc-recovery-reconciliation-and-quarantine.md) and local evidence add the
+bounded authenticated microfile-prefix and durable quarantine controller. Host tests cover actual
+Tink authentication, replay ordering and exact SQLite v1-to-v2-to-v3 migration; compiled Android
+adapters and host fakes are not device durability proof. Streaming, external control and campaign
+execution remain unfinished. `fullRecI3Completed=false`, all ten blockers and every preflight,
+execution, measurement and production-admission lock remain unchanged.
+
+The additive
+[review-correction scope](stage0/DORA_MVP1_POC_RECOVERY_I3_RECONCILIATION_REVIEW_CORRECTION_STAGE0_V0_1.md)
+supersedes the first local coverage claim after independent review found missing behavior inside
+that bounded slice. The corrected host boundary owns platform observations, binds publication
+authority to the candidate, manifest and ordered rows, preserves authenticated fallback prefixes,
+and exercises pending quarantine replay, typed failures, descriptor bounds and schema-v3
+validation. Independent review of corrected head `5de34577295b5e5477970785f9472d51e21bfc43`
+returned `REVISE` (P0/P1/P2 = 0/7/1). Author-local successor `a020944f0444edfcbabc4690d4a367b1cf9e83d7`
+then passed its reported host checks, but exact independent review also returned `REVISE`
+(P0/P1/P2 = 0/4/2). The historical a020 six findings were pending then; ca2 closed optional-quarantine/no-prefix retention, confirmed-Q05 remainder, row framing and production unique-readback. Exact ca2 round-four truth preserves the immutable original `REVISE 0/3/0` review and its addendum-effective `REVISE 0/4/0` disposition. Independent review of `bc4f4423b535982956575f5a3480c9361eab6378` returned `REVISE 0/2/0`; the later reviewed successor `de735735ace6da3572c45dfdc58a8bbff98145b0` closed the four ca2 findings, the bc4 findings, and the duplicate-check acceptance gap, but found two distinct current P1s: zero-byte inventory regression and missing-final failure retention. The current author successor separates zero-permitting inventory reads from strict non-empty role reads and retains a durable-row missing final as primary with at most one temporary-observation secondary. Its 224 Android host tests and current governance checks are author evidence only; both new P1s remain open pending exact-candidate independent review. No readiness or execution authority changes, and all immutable ca2/addendum history and nonclaims remain recorded.
+The prior author-local closure and acceptance mapping are superseded claims rather than independent
+closure. Immediate lstat plus rename is not kernel-atomic no-replace proof; Android filesystem
+durability and every wider REC-I3 gate remain unproven.
+
 ## 1. Правила выполнения
 
 - `DONE` означает: артефакт существует, acceptance выполнен и evidence доступно в commit/CI/report.

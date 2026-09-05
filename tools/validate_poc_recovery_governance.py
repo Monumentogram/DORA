@@ -363,6 +363,324 @@ GITHUB_BASE_BRANCH = "main"
 GITHUB_EVENT_MAX_BYTES = 10 * 1024 * 1024
 FULL_SHA256_RE = re.compile(r"[0-9a-f]{40}")
 
+# OD-15 permits this first implementation slice, not a Recovery readiness gate.
+# This branch-only profile deliberately does not admit a future squash merge.
+REC_I3_BRANCH = "codex/rec-i3-key-confirmation-controller"
+REC_I3_BASE = "da1d9bd13b71d609fe7ec4ea62fe1e984f726040"
+REC_I3_BASE_TREE = "925bd08802fefc314742776d147771a92edfac70"
+REC_I3_BASE_PARENT = "e5f94e3f5afc3bf5aa61acaaa4960614dcb09209"
+REC_I3_SCOPE_COMMIT = "455f587881cf2a32ed23105a05d53a47424f18bd"
+REC_I3_SCOPE_TREE = "528a709c866a9f560bc1fe5c8d6d3497bb6d0bd7"
+REC_I3_SCOPE_PARENT = "68628a17eb12d82f5b345af98daf0bb0eaad37f8"
+REC_I3_SCOPE_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_KEY_CONFIRMATION_CONTROLLER_SCOPE_STAGE0_V0_1.md"
+REC_I3_SCOPE_SHA256 = "e709284744b3d9563f9a291e4ebcfd3b77306e001ecdbca2bd09bf45427fc8ad"
+REC_I3_EVIDENCE_PATH = "docs/evidence/poc-recovery-001/rec-i3-key-confirmation-controller-local-evidence-stage0-v0.1.json"
+REC_I3_SOURCE_PATHS = (
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/controller/RecoveryKeyConfirmationController.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/controller/RecoveryKeyConfirmationControllerTest.kt",
+)
+REC_I3_BOOTSTRAP_SCOPE_COMMIT = "f89ddba14d37efbdde5a99bf1fd169210ff189cb"
+REC_I3_BOOTSTRAP_SCOPE_TREE = "799cf81572bfef7e6c6e45f6d7311d1ed0cdde3f"
+REC_I3_BOOTSTRAP_SCOPE_PARENT = "00f68af1b9cee1e4d8e92110de4ae474c2bd7b64"
+REC_I3_BOOTSTRAP_SCOPE_PATH = (
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_RUN_KEY_BOOTSTRAP_SCOPE_STAGE0_V0_2.md"
+)
+REC_I3_BOOTSTRAP_SCOPE_SHA256 = (
+    "8a2789d8ebe4c7da3318b966812b8f4860c84731620916a8cbc6765c142d5058"
+)
+REC_I3_BOOTSTRAP_EVIDENCE_PATH = (
+    "docs/evidence/poc-recovery-001/rec-i3-run-key-bootstrap-local-evidence-stage0-v0.2.json"
+)
+REC_I3_BOOTSTRAP_WITNESS_SCOPE_DRAFT_COMMIT = "08336516b9057e4ed81dc91a90115b9669758dae"
+REC_I3_BOOTSTRAP_WITNESS_SCOPE_DRAFT_TREE = "4d0bb8eee622689dc8e402e5c2020b2352f6ecab"
+REC_I3_BOOTSTRAP_WITNESS_SCOPE_COMMIT = "cd752f952666f414465c73bc55a0d7f7f20c4989"
+REC_I3_BOOTSTRAP_WITNESS_SCOPE_TREE = "315b9150d89143837c954aae97f7603752c006bb"
+REC_I3_BOOTSTRAP_WITNESS_SCOPE_PARENT = REC_I3_BOOTSTRAP_WITNESS_SCOPE_DRAFT_COMMIT
+REC_I3_BOOTSTRAP_WITNESS_SCOPE_PATH = (
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_BOOTSTRAP_PROVIDER_WITNESS_CORRECTION_STAGE0_V0_1.md"
+)
+REC_I3_BOOTSTRAP_WITNESS_SCOPE_SHA256 = (
+    "a5530175d9d306f2472dd29300451e9a152d40d107153ea62d23f3415d7c27d7"
+)
+REC_I3_BOOTSTRAP_SOURCE_PATHS = (
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/RecoveryKeyBootstrapController.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryBootstrapCrypto.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryKeyBootstrap.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicy.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryBootstrapStorage.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryRunBootstrapJournal.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/RecoveryKeyBootstrapControllerTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicyTest.kt",
+)
+REC_I3_MICROFILE_SCOPE_COMMIT = "4eab3eae72b9196fbd114339b9fe96bba7705f00"
+REC_I3_MICROFILE_SCOPE_TREE = "c7656c9107a111032ae4d247ea267acb831d1516"
+REC_I3_MICROFILE_SCOPE_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_PUBLICATION_SCOPE_STAGE0_V0_1.md"
+REC_I3_MICROFILE_ADR_PATH = "docs/adr/ADR-0003-unified-poc-recovery-journal-and-run-lease.md"
+REC_I3_MICROFILE_CLARIFICATION_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_PUBLICATION_CLARIFICATION_STAGE0_V0_1.md"
+REC_I3_PROCESSING_INTENT_SCOPE_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_PROCESSING_INTENT_SCOPE_STAGE0_V0_1.md"
+REC_I3_SQLITE_VERIFIER_SCOPE_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_SQLITE_HOST_VERIFIER_SCOPE_STAGE0_V0_1.md"
+REC_I3_MICROFILE_REVIEW_CORRECTION_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_PUBLICATION_REVIEW_CORRECTION_STAGE0_V0_1.md"
+REC_I3_MICROFILE_GOVERNANCE_MIGRATION_CORRECTION_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_GOVERNANCE_MIGRATION_CORRECTION_STAGE0_V0_1.md"
+REC_I3_MICROFILE_CONTROLLER_HARDENING_CORRECTION_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_CONTROLLER_HARDENING_CORRECTION_STAGE0_V0_1.md"
+REC_I3_MICROFILE_REVIEW_CORRECTIONS = (
+    (
+        "publicationRowAndCadence",
+        "2fe2f2477ed43eaa3bcc869b8210934e4343f750",
+        "5df3f899a958dcebc4499a25adacaac459a2a41c",
+        REC_I3_MICROFILE_REVIEW_CORRECTION_PATH,
+        "b38d025a61a1ee4a7d93c765f6ef2a71f199895603edfbcc247740e3bee7d65d",
+    ),
+    (
+        "governanceAndMigration",
+        "17cc3626e7f0cff875aa8615b11e4a797b9a2aec",
+        "e1633a70c183650480842b14e66bf99dc71e48b4",
+        REC_I3_MICROFILE_GOVERNANCE_MIGRATION_CORRECTION_PATH,
+        "9df3fa90b9387d7efaf7cbfd803f45b56f04010f5aa30eb1df677b6815d88120",
+    ),
+    (
+        "controllerHardening",
+        "49ce22f77eb33ad828eef842b3f586d91431c2f7",
+        "de6e964b4cc1ebcb6fdc4d80f39fd23d83599e1e",
+        REC_I3_MICROFILE_CONTROLLER_HARDENING_CORRECTION_PATH,
+        "d2a12d3fce6c12cf7f1f50fc7aed955efd9e33f1212902b3c9a6e7cef8512c95",
+    ),
+)
+REC_I3_MICROFILE_EVIDENCE_PATH = "docs/evidence/poc-recovery-001/rec-i3-sequential-microfile-publication-local-evidence-stage0-v0.1.json"
+REC_I3_MICROFILE_CLAIM_CEILING = "PARTIAL_REC_I3_MICROFILE_HOST_VERIFIED_PENDING_PLATFORM_PREFLIGHT_FULL_IMPLEMENTATION_AND_REVIEW"
+REC_I3_MICROFILE_SOURCE_PATHS = (
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/RecoveryKeyBootstrapController.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryBootstrapCrypto.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryKeyBootstrap.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofilePublicationController.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryMicrofileCrypto.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryProcessingIntent.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/coordination/RecoveryRunSingleWriterGuard.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryJournalDatabase.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryMicrofileJournal.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryRunBootstrapJournal.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryCandidatePathPolicy.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryCandidateStorage.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicy.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryBootstrapStorage.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/RecoveryKeyBootstrapControllerTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofilePublicationControllerTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryProcessingIntentTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalSchemaPlanTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryCandidatePathPolicyTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicyTest.kt",
+    "tools/verify_rec_i3_microfile_sqlite.py",
+)
+REC_I3_MICROFILE_REVIEWED_BOOTSTRAP_COMMIT = "a0348fe1d76a062af7d145045ef432f0a1eadf1c"
+REC_I3_MICROFILE_FROZEN_BOOTSTRAP_PATHS = (
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryBootstrapCrypto.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryKeyBootstrap.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicy.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryBootstrapStorage.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/RecoveryKeyBootstrapControllerTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicyTest.kt",
+)
+REC_I3_MICROFILE_MUTABLE_PATHS = tuple(
+    path for path in REC_I3_MICROFILE_SOURCE_PATHS
+    if path not in REC_I3_MICROFILE_FROZEN_BOOTSTRAP_PATHS
+)
+REC_I3_RECON_PREDECESSOR_COMMIT = "3619a9c1d285e2a1c27133467a6b987d23174570"
+REC_I3_RECON_SCOPE_COMMIT = "b90305f1aa387c6668320b03e8aa33b754a7162a"
+REC_I3_RECON_SCOPE_TREE = "6bddf5cb44030b6975a3cc9e8807672d44953c79"
+REC_I3_RECON_CORRECTION_COMMIT = "e78571776d34756325289dcfcb3853c9696f3011"
+REC_I3_RECON_CORRECTION_TREE = "bead248da7e62a272c6319bf7c70f94536d18e21"
+REC_I3_RECON_CORRECTION_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_RECONCILIATION_REVIEW_CORRECTION_STAGE0_V0_1.md"
+REC_I3_RECON_SCOPE_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_RECONCILIATION_QUARANTINE_SCOPE_STAGE0_V0_1.md"
+REC_I3_RECON_ADR_PATH = "docs/adr/ADR-0004-poc-recovery-reconciliation-and-quarantine.md"
+REC_I3_RECON_EVIDENCE_PATH = "docs/evidence/poc-recovery-001/rec-i3-microfile-reconciliation-quarantine-local-evidence-stage0-v0.1.json"
+REC_I3_RECON_CLAIM_CEILING = "PARTIAL_REC_I3_RECONCILIATION_CORRECTION_IN_PROGRESS_PENDING_PLATFORM_PREFLIGHT_FULL_IMPLEMENTATION_AND_REVIEW"
+REC_I3_RECON_ROUND2_BASE = "5de34577295b5e5477970785f9472d51e21bfc43"
+REC_I3_RECON_ROUND2_REPORT_SHA256 = "5f1e8ce06c73a93cfb67ef6c98d877837d75cce341d0b94c7f1d020df10ebcff"
+REC_I3_RECON_ROUND3_BASE = "a020944f0444edfcbabc4690d4a367b1cf9e83d7"
+REC_I3_RECON_ROUND3_TREE = "85ca1e53ea95485fdd1300b6843080c4d8cf6342"
+REC_I3_RECON_ROUND3_MD_SHA256 = "e9bdfabfa6faf5f5e37244599c0b3a15568b788e5ec3635d9b0631357ccef95f"
+REC_I3_RECON_ROUND3_JSON_SHA256 = "04da24eb0be3bd550cbdafb69c46459da3267771c87bd80b3a1f511670ecaa3e"
+REC_I3_RECON_ROUND3_FINDINGS = (
+    "P1-OPTIONAL-NAMESPACE-AND-RESULT-RETENTION", "P1-CONTEXTUAL-TAXONOMY",
+    "P1-Q05-CONFIRMED-REMAINDER", "P1-EVIDENCE-TRUTH", "P2-ROW-DIGEST-FRAMING",
+    "P2-PRODUCTION-UNIQUE-READBACK",
+)
+REC_I3_RECON_ROUND3_ACCEPTANCE_CASES = (
+    "OPTIONAL-NAMESPACE", "POST-INVENTORY-RETENTION", "CONTEXTUAL-TAXONOMY",
+    "MANIFEST-REJECTION-ORDER", "Q01-Q05-INDEPENDENT-READBACK",
+    "ROW-DIGEST-FRAMING", "PRODUCTION-UNIQUE-TUPLE", "PATH-IO-DISTINCTION",
+)
+REC_I3_RECON_ROUND4_FINDINGS = (
+    "P1-ZERO-BYTE-INVENTORY-REGRESSION", "P1-MISSING-FINAL-FAILURE-RETENTION",
+)
+REC_I3_RECON_ROUND4_ACCEPTANCE_CASES = (
+    {
+        "id": "CONTEXTUAL-TAXONOMY",
+        "productionEntry": "RecoveryMicrofileReconciliationController.reconcile -> AndroidRecoveryReconciliationSource.loadConfirmation/loadArtifact -> AndroidOsRecoveryReconciliationStorage.activeArtifactExists/loadActiveArtifact",
+        "test": "AndroidRecoveryReconciliationSourceTest.actual controller retains unknown bootstrap query and cursor failures before artifact access; actual controller maps confirmation final descriptor controls by durable row state; actual controller maps all confirmation temp row and final presence combinations; actual controller maps manifest envelope and ciphertext structural reads by caller role; actual controller maps unit envelope structural read without relabeling ciphertext; actual controller keeps later syscall IO operational across artifact roles",
+        "assertion": "Bootstrap row UNKNOWN, ABSENT and PRESENT and artifact presence UNKNOWN, ABSENT and PRESENT remain distinct; final and temporary confirmation, all descriptor controls, and MANIFEST_KEY_ENVELOPE, MANIFEST_CIPHERTEXT, UNIT_KEY_ENVELOPE and UNIT_CIPHERTEXT structural and I/O cases bind nullable key classification, public diagnostic, retained stage/category, ordered manifest rejection or non-empty authenticated prefix, and the exact last permitted journal, OS, alias or crypto event.",
+    },
+    {
+        "id": "PATH-IO-DISTINCTION",
+        "productionEntry": "RecoveryQuarantineController.quarantine -> AndroidOsRecoveryReconciliationStorage.inspect -> RecoveryReconciliationPathPolicy.paths/requireContained",
+        "test": "RecoveryQuarantineControllerTest.actual lexical and initial inspect failures retain typed diagnostics; actual second inspect preserves confirmed rename for unsafe and IO transitions; persisted invalid destination is rejected before actual storage inspection; AndroidOsRecoveryReconciliationStorageTest.actual inspect rejects lexical source and destination before artifact syscall; RecoveryReconciliationPathPolicyTest.invalid platform path and direct containment escape are typed unsafe",
+        "assertion": "Typed lexical, destination and containment failures, earliest Q01 persisted-row rejection, initial unsafe versus I/O and post-rename unsafe versus I/O preserve rename CONFIRMED where known and prohibit later rename, parent fsync, completion and evidence after the applicable failure boundary.",
+    },
+    {
+        "id": "BOOTSTRAP-CURSOR-POSITION",
+        "productionEntry": "AndroidRecoveryReconciliationSource.loadBootstrapIdentity/decodeBootstrapIdentity -> loadConfirmation -> AndroidOsRecoveryReconciliationStorage.loadActiveArtifact",
+        "test": "AndroidRecoveryReconciliationSourceTest.bootstrap cursor decoder returns null for zero rows; bootstrap cursor decoder decodes the one stored identity at position zero; bootstrap cursor decoder rejects two rows as a structural journal failure; actual controller keeps no-row and durable-row confirmation path classifications; actual controller retains unknown bootstrap query and cursor failures before artifact access",
+        "assertion": "Zero, one and duplicate cursor cardinality are exact; every one-row getter remains at position zero without pre-decode advance, duplicate rows are structural JOURNAL failures, and the production-used PRESENT decode reaches actual storage artifact observation.",
+    },
+    {
+        "id": "EVIDENCE-ACTUAL-ENTRY",
+        "productionEntry": "validate_rec_i3_reconciliation_successor",
+        "test": "RecoveryI3GovernanceTests.test_reconciliation_round4_author_mapping_is_exact_and_current",
+        "assertion": "Only exact round4Truth author acceptance and distinct ROUND4_ANDROID_HOST and ROUND4_GOVERNANCE checks satisfy current verification; historical round-three PASS, superseded mappings and old check records cannot satisfy it.",
+    },
+    {
+        "id": "ZERO-BYTE-INVENTORY",
+        "productionEntry": "RecoveryMicrofileReconciliationController.reconcile -> AndroidRecoveryReconciliationSource.loadInventorySnapshot/loadArtifact -> AndroidOsRecoveryReconciliationStorage.listActiveInventory/listQuarantineInventory/loadActiveArtifact",
+        "test": "AndroidRecoveryReconciliationSourceTest.actual source retains zero byte active and report only quarantine inventory; actual source recognizes exact zero byte quarantine intent destination; actual controller rejects zero byte referenced unit after authenticated prefix; actual controller rejects zero byte latest manifest and authenticates prior generation; actual controller quarantines zero byte unreferenced active and retains report only object",
+        "assertion": "Zero-byte regular crash residue is inventoried with the empty digest and descriptor closure, unreferenced active residue is quarantined, report-only quarantine residue is retained, and strict role reads still reject empty manifest or unit bodies while preserving fallback, authenticated prefix, and terminal side-effect order.",
+    },
+    {
+        "id": "MISSING-FINAL-RETENTION",
+        "productionEntry": "RecoveryMicrofileReconciliationController.reconcile -> AndroidRecoveryReconciliationSource.loadConfirmation -> AndroidOsRecoveryReconciliationStorage.loadActiveArtifact/activeArtifactExists",
+        "test": "AndroidRecoveryReconciliationSourceTest.actual source retains final primary and bounded temporary secondary context; actual controller maps all confirmation temp row and final presence combinations; durable missing final remains primary after successful temporary observation",
+        "assertion": "A PRESENT durable row plus ABSENT final retains ARTIFACT_PATH/MISSING_ARTIFACT as primary, at most one typed temporary observation as secondary, KEY_CONFIRMATION_MISSING with no public diagnostic, and no alias, crypto, later journal, quarantine, or evidence side effect after the terminal confirmation boundary.",
+    },
+)
+REC_I3_RECON_ROUND4_ANDROID_CHECK = {
+    "command": "gradlew spotlessCheck detekt :poc:recovery:testDebugUnitTest :poc:recovery:lintDebug :poc:recovery:compileReleaseKotlin :poc:recovery:recoveryI2bVerifyCryptoPolicy --no-daemon --no-parallel",
+    "stage": "ROUND4_ANDROID_HOST", "outcome": "PASS",
+    "tests": 224, "failures": 0, "errors": 0, "skipped": 0,
+    "log": "rec-i3-round4-linux-path-portability-android-green.log",
+}
+REC_I3_RECON_ROUND4_GOVERNANCE_CHECK = {
+    "command": "python -m unittest test_poc_recovery_i3_governance.py -v from tools; python tools/validate_poc_recovery_governance.py",
+    "stage": "ROUND4_GOVERNANCE", "outcome": "PASS",
+    "tests": 23, "failures": 0, "errors": 0, "skipped": 0,
+    "logs": [
+        "rec-i3-round4-linux-path-portability-governance-final.log",
+        "rec-i3-round4-linux-path-portability-validator-precommit-final.log",
+    ],
+}
+REC_I3_RECON_ROUND3_STATE_COMMIT = "927a9a2946b79b29536b325956f90966c94f2af3"
+REC_I3_RECON_ROUND3_STATE_TREE = "0abc6990d2f18598cb3e3ced78a6eac5f041770f"
+REC_I3_RECON_ROUND2_STATE_COMMIT = "b645db8e31ad2eab7de71849082b29ce80f7b4ae"
+REC_I3_RECON_ROUND2_STATE_TREE = "c529c3e01776ede0ea9ccf7b7dbfc4ec583b4099"
+REC_I3_RECON_ROUND2_STATE_PATHS = (
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    REC_I3_RECON_EVIDENCE_PATH,
+    "tools/test_poc_recovery_i3_governance.py",
+    "tools/validate_poc_recovery_governance.py",
+)
+REC_I3_RECON_ROUND2_FINDINGS = (
+    "P1-INVENTORY", "P1-ROW-DIGEST", "P1-TYPED-DIAGNOSTICS", "P1-MANIFEST-CHAIN",
+    "P1-JOURNAL-READBACK", "P1-PRODUCTION-STORAGE", "P1-EVIDENCE-TRUTH",
+    "P2-DESCRIPTOR-OWNERSHIP",
+)
+REC_I3_RECON_ACCEPTANCE_CASES = (
+    "CONFIRMATION-PRIORITY", "FIVE-STATES-AND-REPLAY", "KCB05-ORPHAN",
+    "ROW-DIGEST-15", "LATEST-N-FALLBACK", "PUBLICATION-CHAIN",
+    "UNIT-FAILURE-POSITIONS", "TYPED-CRYPTO-SOURCE", "Q01-Q05-READBACK",
+    "PATH-AND-POSIX-READ", "DESCRIPTOR-OWNERSHIP", "RUN-LEASE-AND-BOUND",
+    "SCHEMA-V3-HOST", "EVIDENCE-TRUTH",
+)
+REC_I3_RECON_SOURCE_PATHS = (
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationController.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryMicrofileReconciliation.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryMicrofileCrypto.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationOutcomes.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntent.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryJournalDatabase.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryQuarantineJournal.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSource.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryReconciliationPathPolicy.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorage.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationControllerTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryQuarantineControllerTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationAcceptanceTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntentTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalSchemaPlanTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSourceTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryReconciliationPathPolicyTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorageTest.kt",
+    "tools/verify_rec_i3_microfile_sqlite.py",
+)
+REC_I3_RECON_MUTABLE_PATHS = (
+    *REC_I3_RECON_SOURCE_PATHS,
+    REC_I3_RECON_EVIDENCE_PATH,
+    "tools/validate_poc_recovery_governance.py",
+    "tools/test_poc_recovery_i3_governance.py",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    REC_I3_RECON_CORRECTION_PATH,
+)
+REC_I3_RECON_ALLOWED_PATHS = (
+    *REC_I3_RECON_MUTABLE_PATHS,
+    REC_I3_RECON_SCOPE_PATH,
+    REC_I3_RECON_ADR_PATH,
+)
+REC_I3_RECON_ADDITIVE_PATHS = (
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationController.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryMicrofileReconciliation.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationOutcomes.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntent.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryQuarantineJournal.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSource.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryReconciliationPathPolicy.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorage.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationControllerTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryQuarantineControllerTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationAcceptanceTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntentTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryReconciliationPathPolicyTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSourceTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorageTest.kt",
+    REC_I3_RECON_SCOPE_PATH,
+    REC_I3_RECON_ADR_PATH,
+    REC_I3_RECON_CORRECTION_PATH,
+    REC_I3_RECON_EVIDENCE_PATH,
+)
+REC_I3_MICROFILE_ADDITIVE_PATHS = (
+    *REC_I3_MICROFILE_SOURCE_PATHS,
+    REC_I3_MICROFILE_SCOPE_PATH,
+    REC_I3_MICROFILE_ADR_PATH,
+    REC_I3_MICROFILE_CLARIFICATION_PATH,
+    REC_I3_PROCESSING_INTENT_SCOPE_PATH,
+    REC_I3_SQLITE_VERIFIER_SCOPE_PATH,
+    REC_I3_MICROFILE_REVIEW_CORRECTION_PATH,
+    REC_I3_MICROFILE_GOVERNANCE_MIGRATION_CORRECTION_PATH,
+    REC_I3_MICROFILE_CONTROLLER_HARDENING_CORRECTION_PATH,
+    REC_I3_MICROFILE_EVIDENCE_PATH,
+    *REC_I3_RECON_ADDITIVE_PATHS,
+)
+REC_I3_BOOTSTRAP_ADDITIVE_PATHS = (
+    *REC_I3_BOOTSTRAP_SOURCE_PATHS,
+    REC_I3_BOOTSTRAP_SCOPE_PATH,
+    REC_I3_BOOTSTRAP_WITNESS_SCOPE_PATH,
+    REC_I3_BOOTSTRAP_EVIDENCE_PATH,
+)
+REC_I3_ADDITIVE_PATHS = (*REC_I3_SOURCE_PATHS, REC_I3_SCOPE_PATH, REC_I3_EVIDENCE_PATH,
+                         *REC_I3_BOOTSTRAP_ADDITIVE_PATHS,
+                         *REC_I3_MICROFILE_ADDITIVE_PATHS,
+                         "tools/test_poc_recovery_i3_governance.py")
+REC_I3_ALLOWED_PATHS = (*REC_I3_ADDITIVE_PATHS, REC_I2B_MERGED_MAIN_VALIDATOR_PATH,
+                      "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md", "docs/DORA_MVP1_STAGE_STATUS.md")
+REC_I3_CURRENT_MUTABLE_PATHS = (
+    *REC_I3_RECON_MUTABLE_PATHS,
+)
+REC_I3_CLAIM_CEILING = "PARTIAL_REC_I3_HOST_ONLY_PENDING_FULL_IMPLEMENTATION_AND_REVIEW"
+REC_I3_BOOTSTRAP_CLAIM_CEILING = (
+    "PARTIAL_REC_I3_BOOTSTRAP_HOST_VERIFIED_PENDING_PLATFORM_PREFLIGHT_FULL_IMPLEMENTATION_AND_REVIEW"
+)
+REC_I3_FIRST_SLICE_HASHES = {
+    REC_I3_SOURCE_PATHS[0]: "3df585f1a3cb2fe6dfc8670a9c835db4a8c85b4b128e1ac66aa05d63a4bf3925",
+    REC_I3_SOURCE_PATHS[1]: "32935757ce9369ea04b9f787e6f4769a34d5a68424fcd5f6f359890518572f93",
+}
+
 
 @dataclass(frozen=True)
 class GitHubPullRequestContext:
@@ -5219,7 +5537,696 @@ def validate_rec_i2b_merged_main_nonclaims(
     )
 
 
+def rec_i3_candidate() -> bool:
+    return (ROOT / REC_I3_SCOPE_PATH).exists() or (ROOT / REC_I3_EVIDENCE_PATH).exists()
+
+
+def validate_rec_i3_changed_paths(changes: dict[str, list[str]]) -> None:
+    require(set(changes) == {"committed", "staged", "unstaged", "untracked"},
+            "REC-I3 change inventory is incomplete")
+    for layer, paths in changes.items():
+        allowed = REC_I3_ALLOWED_PATHS if layer == "committed" else REC_I3_CURRENT_MUTABLE_PATHS
+        forbidden = sorted(set(paths) - set(allowed))
+        require(not forbidden, f"REC-I3 {layer} delta escapes exact scope: {forbidden}")
+
+
+def validate_rec_i3_additions_absent() -> None:
+    for relative in REC_I3_ADDITIVE_PATHS:
+        require(not git_path_records("ls-tree", "-z", REC_I3_BASE, "--", relative),
+                f"REC-I3 additive path already exists at base: {relative}")
+
+
+def validate_rec_i3_scope_frozen(changes: dict[str, list[str]]) -> None:
+    require(set(changes) == {"committed", "staged", "unstaged", "untracked"},
+            "REC-I3 scope change inventory is incomplete")
+    require(all(REC_I3_SCOPE_PATH not in paths for paths in changes.values()),
+            "REC-I3 scope changed after its scope-first commit")
+
+
+def validate_rec_i3_bootstrap_scope_frozen(changes: dict[str, list[str]]) -> None:
+    require(set(changes) == {"committed", "staged", "unstaged", "untracked"},
+            "REC-I3 bootstrap scope change inventory is incomplete")
+    require(all(REC_I3_BOOTSTRAP_SCOPE_PATH not in paths for paths in changes.values()),
+            "REC-I3 bootstrap scope changed after its scope-first commit")
+
+
+def validate_rec_i3_bootstrap_scope_lineage(
+    current: RecoveryLifecycleIdentity | None = None,
+) -> None:
+    lifecycle = current or collect_recovery_lifecycle_identity()
+    scope = collect_pinned_commit_identity(REC_I3_BOOTSTRAP_SCOPE_COMMIT, lifecycle.head)
+    validate_pinned_commit_identity(
+        scope,
+        expected_commit=REC_I3_BOOTSTRAP_SCOPE_COMMIT,
+        expected_tree=REC_I3_BOOTSTRAP_SCOPE_TREE,
+        expected_parents=(REC_I3_BOOTSTRAP_SCOPE_PARENT,),
+        label="REC-I3 bootstrap scope-first",
+    )
+    scope_paths = git_path_records(
+        "log", "--format=", "--name-only", "--no-renames", "-z",
+        f"{REC_I3_BOOTSTRAP_SCOPE_PARENT}..{REC_I3_BOOTSTRAP_SCOPE_COMMIT}",
+    )
+    require(scope_paths and set(scope_paths) == {REC_I3_BOOTSTRAP_SCOPE_PATH},
+            "REC-I3 bootstrap scope-first lineage contains implementation or unrelated paths")
+    require(sha256(REC_I3_BOOTSTRAP_SCOPE_PATH) == REC_I3_BOOTSTRAP_SCOPE_SHA256,
+            "REC-I3 immutable bootstrap implementation scope changed")
+    validate_rec_i3_bootstrap_scope_frozen(
+        collect_post_merge_changes(merged_anchor=REC_I3_BOOTSTRAP_SCOPE_COMMIT)
+    )
+
+
+def validate_rec_i3_bootstrap_witness_scope_lineage(
+    current: RecoveryLifecycleIdentity | None = None,
+) -> None:
+    lifecycle = current or collect_recovery_lifecycle_identity()
+    draft = collect_pinned_commit_identity(
+        REC_I3_BOOTSTRAP_WITNESS_SCOPE_DRAFT_COMMIT, lifecycle.head
+    )
+    validate_pinned_commit_identity(
+        draft,
+        expected_commit=REC_I3_BOOTSTRAP_WITNESS_SCOPE_DRAFT_COMMIT,
+        expected_tree=REC_I3_BOOTSTRAP_WITNESS_SCOPE_DRAFT_TREE,
+        expected_parents=("d6b419e38658725155cf2d4fa469b6d2053ee77c",),
+        label="REC-I3 bootstrap witness scope draft",
+    )
+    scope = collect_pinned_commit_identity(REC_I3_BOOTSTRAP_WITNESS_SCOPE_COMMIT, lifecycle.head)
+    validate_pinned_commit_identity(
+        scope,
+        expected_commit=REC_I3_BOOTSTRAP_WITNESS_SCOPE_COMMIT,
+        expected_tree=REC_I3_BOOTSTRAP_WITNESS_SCOPE_TREE,
+        expected_parents=(REC_I3_BOOTSTRAP_WITNESS_SCOPE_PARENT,),
+        label="REC-I3 bootstrap witness scope",
+    )
+    scope_paths = git_path_records(
+        "log", "--format=", "--name-only", "--no-renames", "-z",
+        f"d6b419e38658725155cf2d4fa469b6d2053ee77c..{REC_I3_BOOTSTRAP_WITNESS_SCOPE_COMMIT}",
+    )
+    require(scope_paths and set(scope_paths) == {REC_I3_BOOTSTRAP_WITNESS_SCOPE_PATH},
+            "REC-I3 bootstrap witness scope lineage contains implementation or unrelated paths")
+    require(sha256(REC_I3_BOOTSTRAP_WITNESS_SCOPE_PATH)
+            == REC_I3_BOOTSTRAP_WITNESS_SCOPE_SHA256,
+            "REC-I3 immutable bootstrap witness scope changed")
+    changes = collect_post_merge_changes(merged_anchor=REC_I3_BOOTSTRAP_WITNESS_SCOPE_COMMIT)
+    require(all(REC_I3_BOOTSTRAP_WITNESS_SCOPE_PATH not in paths for paths in changes.values()),
+            "REC-I3 bootstrap witness scope changed after its corrected scope commit")
+
+
+def validate_rec_i3_candidate_history(current: RecoveryLifecycleIdentity) -> None:
+    # The inherited path collector omits merge-resolution diffs. This exact
+    # branch must be linear; GitHub's verified synthetic merge is not its head.
+    candidate_head = (current.github_pull_request_context.head_sha
+                      if current.github_pull_request_context is not None else current.head)
+    require(not git_output("rev-list", "--min-parents=2", f"{REC_I3_BASE}..{candidate_head}"),
+            "REC-I3 candidate history must be linear; merge-resolution changes cannot be audited by the path collector")
+    validate_rec_i3_frozen_bootstrap_history(candidate_head)
+    validate_rec_i3_changed_paths(collect_post_merge_changes(merged_anchor=REC_I3_BASE))
+
+
+def validate_rec_i3_frozen_bootstrap_history(candidate_head: str) -> None:
+    require(
+        git_is_ancestor(REC_I3_MICROFILE_REVIEWED_BOOTSTRAP_COMMIT, candidate_head),
+        "REC-I3 candidate source head predates the reviewed bootstrap checkpoint",
+    )
+    touched = git_path_records(
+        "log", "--format=", "--name-only", "--no-renames", "-z",
+        f"{REC_I3_MICROFILE_REVIEWED_BOOTSTRAP_COMMIT}..{candidate_head}", "--",
+        *REC_I3_MICROFILE_FROZEN_BOOTSTRAP_PATHS,
+    )
+    require(
+        not touched,
+        f"REC-I3 frozen bootstrap history changed after reviewed checkpoint: {sorted(set(touched))}",
+    )
+
+
+def validate_rec_i3_context(
+    lifecycle: RecoveryLifecycleIdentity,
+    base: PinnedCommitIdentity,
+    scope: PinnedCommitIdentity,
+) -> None:
+    validate_pinned_commit_identity(base, expected_commit=REC_I3_BASE,
+                                   expected_tree=REC_I3_BASE_TREE,
+                                   expected_parents=(REC_I3_BASE_PARENT,), label="REC-I3 base")
+    validate_pinned_commit_identity(scope, expected_commit=REC_I3_SCOPE_COMMIT,
+                                   expected_tree=REC_I3_SCOPE_TREE,
+                                   expected_parents=(REC_I3_SCOPE_PARENT,), label="REC-I3 scope-first")
+    require(lifecycle.branch == REC_I3_BRANCH, "REC-I3 requires its exact authorized branch")
+    pull_request = lifecycle.github_pull_request_context
+    if pull_request is not None:
+        validate_rec_i2b_ksp_overlay_pull_request_core(pull_request)
+        require(pull_request.head_ref == REC_I3_BRANCH
+                and pull_request.base_sha == REC_I3_BASE
+                and pull_request.merge_sha == lifecycle.head
+                and pull_request.head_sha != REC_I3_BASE,
+                "REC-I3 pull_request does not bind the exact branch/base/merge checkout")
+
+
+def validate_rec_i3_evidence(
+    record: dict[str, Any], source_hashes: dict[str, str], *, publication: bool = False,
+) -> None:
+    expected = {
+        "schemaVersion": 1, "scopeId": "rec-i3-key-confirmation-controller-stage0-v0.1",
+        "taskId": "REC-I3", "sliceId": "REC-I3-KEY-CONFIRMATION-CONTROLLER-001",
+        "date": "2026-09-05", "baseCommit": REC_I3_BASE,
+        "scopeFirstCommit": REC_I3_SCOPE_COMMIT, "authorityRecord": "OWNER-AUTH-BATCH-20260819-01",
+        "protocolId": PROTOCOL_ID, "scopeLocator": REC_I3_SCOPE_PATH,
+        "claimCeiling": REC_I3_CLAIM_CEILING,
+        "fullRecI3Completed": False, "recoveryPreflightUnlocked": False,
+        "readinessBlockersClosed": [],
+        "authority": {"recI3ImplementationAllowed": True, "recI3NonMetricVerificationAllowed": True,
+                      "phaseAAllowed": False, "executionAllowed": False,
+                      "measuredExecutionAllowed": False, "productionAdmissionAllowed": False},
+        "execution": {"device": False, "emulator": False, "preflight": False,
+                      "faultCampaign": False, "hardKill": False, "measured": False},
+        "review": {"independentAdvisory": "PENDING", "accountable": "PENDING", "formalReviewer": False},
+    }
+    # JSON canonical comparison distinguishes booleans from numeric 0/1.
+    require(set(record) == set(expected) | {"implementationStatus", "sourceFiles", "checks", "limitations"},
+            "REC-I3 evidence schema drift")
+    require(semantic_sha256({key: record[key] for key in expected}) == semantic_sha256(expected),
+            "REC-I3 evidence identity/authority/claim ceiling drift")
+    status = record["implementationStatus"]
+    require(status in {"IN_PROGRESS", "LOCAL_VERIFIED"}, "REC-I3 implementation status overclaims scope")
+    require(not publication or status == "LOCAL_VERIFIED", "REC-I3 PR requires complete local slice evidence")
+    sources = record["sourceFiles"]
+    require(isinstance(sources, dict) and set(sources) <= set(REC_I3_SOURCE_PATHS)
+            and set(source_hashes) <= set(REC_I3_SOURCE_PATHS), "REC-I3 source manifest escapes exact scope")
+    require(all(isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest)
+                and source_hashes.get(path) == digest for path, digest in sources.items()),
+            "REC-I3 source digest mismatch")
+    if status == "LOCAL_VERIFIED":
+        require(set(sources) == set(source_hashes) == set(REC_I3_SOURCE_PATHS),
+                "REC-I3 locally verified source manifest is incomplete")
+    checks = record["checks"]
+    require(isinstance(checks, list) and checks, "REC-I3 check evidence is missing")
+    for check in checks:
+        require(isinstance(check, dict) and isinstance(check.get("command"), str)
+                and check["command"] and isinstance(check.get("stage"), str)
+                and check.get("outcome") in {"PASS", "FAIL", "ENVIRONMENT_BLOCKED", "EXPECTED_TEST_FAILURE"},
+                "REC-I3 check evidence is malformed")
+        if "tests" in check:
+            require(type(check["tests"]) is int and check["tests"] > 0
+                    and type(check.get("failures")) is int and check["failures"] >= 0
+                    and all(type(check[field]) is int and check[field] >= 0
+                            for field in ("errors", "skipped") if field in check),
+                    "REC-I3 unit test counters are malformed")
+            if check["outcome"] == "PASS":
+                require(all(type(check.get(field)) is int and check[field] == 0
+                            for field in ("failures", "errors", "skipped")),
+                        "REC-I3 unit PASS contains failures/errors/skips")
+    if status == "LOCAL_VERIFIED":
+        final = [check for check in checks if check["stage"] == "FINAL"]
+        require(final and all(check["outcome"] == "PASS" for check in final),
+                "REC-I3 final verification is incomplete or failed")
+        commands = " ".join(check["command"] for check in final)
+        tokens = commands.split()
+        require(all(task in tokens for task in ("spotlessCheck", "detekt",
+                    ":poc:recovery:testDebugUnitTest", ":poc:recovery:lintDebug",
+                    ":poc:recovery:recoveryI2bVerifyCryptoPolicy")),
+                "REC-I3 final required check coverage is incomplete")
+    require(isinstance(record["limitations"], list) and record["limitations"]
+            and all(isinstance(item, str) and item for item in record["limitations"]),
+            "REC-I3 limitations are missing")
+
+
+def validate_rec_i3_bootstrap_evidence(
+    record: dict[str, Any], source_hashes: dict[str, str], *, publication: bool = False,
+) -> None:
+    expected = {
+        "schemaVersion": 1,
+        "scopeId": "rec-i3-run-key-bootstrap-stage0-v0.2",
+        "taskId": "REC-I3",
+        "sliceId": "REC-I3-RUN-KEY-BOOTSTRAP-002",
+        "date": "2026-09-05",
+        "reviewedPredecessorCommit": REC_I3_BOOTSTRAP_SCOPE_PARENT,
+        "reviewedPredecessorTree": "18df912687d020503f316d886c9e5264ab35f043",
+        "scopeFirstCommit": REC_I3_BOOTSTRAP_SCOPE_COMMIT,
+        "authorityRecord": "OWNER-AUTH-BATCH-20260819-01",
+        "protocolId": PROTOCOL_ID,
+        "scopeLocator": REC_I3_BOOTSTRAP_SCOPE_PATH,
+        "providerWitnessCorrection": {
+            "contractId": "rec-i3-bootstrap-provider-witness-correction-stage0-v0.1",
+            "draftCommit": REC_I3_BOOTSTRAP_WITNESS_SCOPE_DRAFT_COMMIT,
+            "scopeCommit": REC_I3_BOOTSTRAP_WITNESS_SCOPE_COMMIT,
+            "scopeLocator": REC_I3_BOOTSTRAP_WITNESS_SCOPE_PATH,
+            "scopeSha256": REC_I3_BOOTSTRAP_WITNESS_SCOPE_SHA256,
+        },
+        "claimCeiling": REC_I3_BOOTSTRAP_CLAIM_CEILING,
+        "fullRecI3Completed": False,
+        "recoveryPreflightUnlocked": False,
+        "readinessBlockersClosed": [],
+        "authority": {
+            "recI3ImplementationAllowed": True,
+            "recI3NonMetricVerificationAllowed": True,
+            "phaseAAllowed": False,
+            "executionAllowed": False,
+            "measuredExecutionAllowed": False,
+            "productionAdmissionAllowed": False,
+        },
+        "execution": {
+            "device": False,
+            "emulator": False,
+            "preflight": False,
+            "faultCampaign": False,
+            "hardKill": False,
+            "measured": False,
+        },
+        "preservedFirstSliceSourceFiles": REC_I3_FIRST_SLICE_HASHES,
+        "review": {
+            "independentAdvisory": "PENDING",
+            "accountable": "PENDING",
+            "formalReviewer": False,
+        },
+    }
+    variable = {"implementationStatus", "sourceFiles", "checks", "limitations"}
+    require(set(record) == set(expected) | variable, "REC-I3 bootstrap evidence schema drift")
+    require(semantic_sha256({key: record[key] for key in expected}) == semantic_sha256(expected),
+            "REC-I3 bootstrap identity/authority/claim ceiling drift")
+    status = record["implementationStatus"]
+    require(status in {"IN_PROGRESS", "LOCAL_VERIFIED"},
+            "REC-I3 bootstrap implementation status overclaims scope")
+    require(not publication or status == "LOCAL_VERIFIED",
+            "REC-I3 bootstrap PR requires complete local slice evidence")
+    sources = record["sourceFiles"]
+    require(isinstance(sources, dict)
+            and set(sources) <= set(REC_I3_BOOTSTRAP_SOURCE_PATHS)
+            and set(source_hashes) <= set(REC_I3_BOOTSTRAP_SOURCE_PATHS),
+            "REC-I3 bootstrap source manifest escapes exact scope")
+    require(all(isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest)
+                and source_hashes.get(path) == digest for path, digest in sources.items()),
+            "REC-I3 bootstrap source digest mismatch")
+    if status == "LOCAL_VERIFIED":
+        require(set(sources) == set(source_hashes) == set(REC_I3_BOOTSTRAP_SOURCE_PATHS),
+                "REC-I3 bootstrap locally verified source manifest is incomplete")
+    checks = record["checks"]
+    require(isinstance(checks, list) and checks, "REC-I3 bootstrap check evidence is missing")
+    for check in checks:
+        require(isinstance(check, dict) and isinstance(check.get("command"), str)
+                and check["command"] and isinstance(check.get("stage"), str)
+                and check.get("outcome") in {"PASS", "FAIL", "EXPECTED_TEST_FAILURE"},
+                "REC-I3 bootstrap check evidence is malformed")
+        if "tests" in check:
+            require(type(check["tests"]) is int and check["tests"] > 0
+                    and type(check.get("failures")) is int and check["failures"] >= 0
+                    and all(type(check[field]) is int and check[field] >= 0
+                            for field in ("errors", "skipped") if field in check),
+                    "REC-I3 bootstrap unit test counters are malformed")
+            if check["outcome"] == "PASS":
+                require(all(type(check.get(field)) is int and check[field] == 0
+                            for field in ("failures", "errors", "skipped")),
+                        "REC-I3 bootstrap unit PASS contains failures/errors/skips")
+    if status == "LOCAL_VERIFIED":
+        final = [check for check in checks if check["stage"] == "FINAL"]
+        require(final and all(check["outcome"] == "PASS" for check in final),
+                "REC-I3 bootstrap final verification is incomplete or failed")
+        commands = " ".join(check["command"] for check in final).split()
+        require(all(task in commands for task in (
+                    "spotlessCheck", "detekt", ":poc:recovery:testDebugUnitTest",
+                    ":poc:recovery:lintDebug", ":poc:recovery:recoveryI2bVerifyCryptoPolicy")),
+                "REC-I3 bootstrap final required check coverage is incomplete")
+    require(isinstance(record["limitations"], list) and record["limitations"]
+            and all(isinstance(item, str) and item for item in record["limitations"]),
+            "REC-I3 bootstrap limitations are missing")
+
+
+def validate_rec_i3_regular_file(relative: str) -> None:
+    path = ROOT / relative
+    require(path.is_file() and path_is_within(path.resolve(strict=True), ROOT.resolve(strict=True)),
+            f"REC-I3 file missing or outside repository: {relative}")
+    require(all(not component.is_symlink() for component in (path, *path.parents)),
+            f"REC-I3 symlink component: {relative}")
+    for revision in ("HEAD", ":"):
+        records = (git_path_records("ls-tree", "-z", revision, "--", relative)
+                   if revision != ":" else git_path_records("ls-files", "--stage", "-z", "--", relative))
+        require(all(item.startswith("100644 ") for item in records),
+                f"REC-I3 non-regular Git entry: {relative}")
+
+
+def rec_i3_bootstrap_checkpoint_hashes() -> dict[str, str]:
+    return {
+        relative: hashlib.sha256(
+            git_blob_bytes(f"{REC_I3_MICROFILE_REVIEWED_BOOTSTRAP_COMMIT}:{relative}")
+        ).hexdigest()
+        for relative in REC_I3_BOOTSTRAP_SOURCE_PATHS
+    }
+
+
+def validate_rec_i3_frozen_bootstrap_sources() -> None:
+    checkpoint = rec_i3_bootstrap_checkpoint_hashes()
+    for relative in REC_I3_MICROFILE_FROZEN_BOOTSTRAP_PATHS:
+        require(canonical_lf_sha256(relative) == checkpoint[relative],
+                f"REC-I3 frozen bootstrap source changed after reviewed checkpoint: {relative}")
+
+
+def validate_rec_i3_microfile_successor(publication: bool) -> None:
+    require(git_is_ancestor(REC_I3_MICROFILE_SCOPE_COMMIT, git_output("rev-parse", "HEAD")),
+            "REC-I3 microfile source predates its scope")
+    require(git_output("rev-parse", f"{REC_I3_MICROFILE_SCOPE_COMMIT}^{{tree}}")
+            == REC_I3_MICROFILE_SCOPE_TREE, "REC-I3 microfile scope tree drift")
+    scope_paths = set(git_path_records("diff", "--name-only", "-z",
+                                      f"{REC_I3_MICROFILE_SCOPE_COMMIT}^",
+                                      REC_I3_MICROFILE_SCOPE_COMMIT))
+    require(scope_paths == {REC_I3_MICROFILE_SCOPE_PATH, REC_I3_MICROFILE_ADR_PATH},
+            "REC-I3 microfile scope commit contains implementation or unrelated paths")
+    require(sha256(REC_I3_MICROFILE_SCOPE_PATH)
+            == "ad37727ab6eb2ea317447c98fc5bded941d8f75a8ec9b3bc71f0d7a90aece054"
+            and sha256(REC_I3_MICROFILE_ADR_PATH)
+            == "d733999d836580e701a75b5e8bff4fd4fab2bc350d5b827be7e2292d3ecb1818",
+            "REC-I3 immutable microfile scope or ADR changed")
+    require(sha256(REC_I3_MICROFILE_CLARIFICATION_PATH)
+            == "0f1e6d729c084f6fb8ae840b34c4abe9be9435d5d8a7d40305687d4eed804b45"
+            and sha256(REC_I3_PROCESSING_INTENT_SCOPE_PATH)
+            == "4d2494ff7b1f97c4aa260d81c6869471e1065cd7994da749ef44d3c3930fcb98"
+            and sha256(REC_I3_SQLITE_VERIFIER_SCOPE_PATH)
+            == "2e1a0ffad3d36c9a27e862d0e7bbc70ceb09e55d853e7085cd9d33f84b210be9",
+            "REC-I3 immutable microfile clarification changed")
+    for _, commit, tree, path, digest in REC_I3_MICROFILE_REVIEW_CORRECTIONS:
+        require(git_is_ancestor(commit, git_output("rev-parse", "HEAD"))
+                and git_output("rev-parse", f"{commit}^{{tree}}") == tree,
+                f"REC-I3 review correction identity drift: {path}")
+        require(set(git_path_records("diff", "--name-only", "-z", f"{commit}^", commit)) == {path},
+                f"REC-I3 review correction commit contains unrelated paths: {path}")
+        require(sha256(path) == digest, f"REC-I3 immutable review correction changed: {path}")
+    present = [path for path in REC_I3_MICROFILE_SOURCE_PATHS if (ROOT / path).exists()]
+    require(set(present) == set(REC_I3_MICROFILE_SOURCE_PATHS),
+            "REC-I3 microfile source set is incomplete")
+    validate_rec_i3_frozen_bootstrap_sources()
+    for relative in (*present, REC_I3_MICROFILE_SCOPE_PATH, REC_I3_MICROFILE_ADR_PATH,
+                     REC_I3_MICROFILE_CLARIFICATION_PATH, REC_I3_PROCESSING_INTENT_SCOPE_PATH,
+                     REC_I3_SQLITE_VERIFIER_SCOPE_PATH,
+                     REC_I3_MICROFILE_EVIDENCE_PATH):
+        validate_rec_i3_regular_file(relative)
+    record = read_json(REC_I3_MICROFILE_EVIDENCE_PATH)
+    require(record.get("scopeId") == "rec-i3-sequential-microfile-publication-stage0-v0.1"
+            and record.get("reviewedPredecessorCommit")
+            == "a0348fe1d76a062af7d145045ef432f0a1eadf1c"
+            and record.get("scopeFirstCommit") == REC_I3_MICROFILE_SCOPE_COMMIT
+            and record.get("claimCeiling") == REC_I3_MICROFILE_CLAIM_CEILING,
+            "REC-I3 microfile evidence identity drift")
+    require(record.get("implementationStatus") in {"IN_PROGRESS", "LOCAL_VERIFIED"}
+            and record.get("fullRecI3Completed") is False
+            and record.get("recoveryPreflightUnlocked") is False
+            and record.get("readinessBlockersClosed") == [],
+            "REC-I3 microfile evidence overclaims completion")
+    require(record.get("reviewCorrections") == {
+                name: {"scopeCommit": commit, "scopeTree": tree, "scopePath": path,
+                       "scopeSha256": digest}
+                for name, commit, tree, path, digest in REC_I3_MICROFILE_REVIEW_CORRECTIONS
+            }, "REC-I3 microfile review-correction evidence drift")
+    require(all(record["authority"].get(field) is expected for field, expected in {
+        "recI3ImplementationAllowed": True, "recI3NonMetricVerificationAllowed": True,
+        "phaseAAllowed": False, "executionAllowed": False,
+        "measuredExecutionAllowed": False, "productionAdmissionAllowed": False}.items()),
+        "REC-I3 microfile authority drift")
+    require(all(value is False for value in record["execution"].values()),
+            "REC-I3 microfile execution overclaim")
+    hashes = {
+        path: hashlib.sha256(git_blob_bytes(f"{REC_I3_RECON_PREDECESSOR_COMMIT}:{path}")).hexdigest()
+        for path in present
+    }
+    require(record.get("sourceFiles") == hashes, "REC-I3 microfile source digest mismatch")
+    if publication:
+        require(record.get("implementationStatus") == "LOCAL_VERIFIED",
+                "REC-I3 microfile PR requires complete local evidence")
+    require(record.get("review") == {"independentAdvisory": "PENDING",
+                                     "accountable": "PENDING", "formalReviewer": False},
+            "REC-I3 microfile review state overclaims closure")
+    checks = record.get("checks", [])
+    require(any(item.get("stage") == "HOST_SQLITE" and item.get("outcome") == "PASS"
+                for item in checks), "REC-I3 microfile exact host SQLite evidence missing")
+    require(record.get("limitations"), "REC-I3 microfile limitations missing")
+
+
+def validate_rec_i3_reconciliation_successor(publication: bool) -> None:
+    head = git_output("rev-parse", "HEAD")
+    require(git_is_ancestor(REC_I3_RECON_SCOPE_COMMIT, head),
+            "REC-I3 reconciliation source predates its scope")
+    require(git_output("rev-parse", f"{REC_I3_RECON_SCOPE_COMMIT}^{{tree}}")
+            == REC_I3_RECON_SCOPE_TREE, "REC-I3 reconciliation scope tree drift")
+    scope_paths = set(git_path_records("diff", "--name-only", "-z",
+                                      f"{REC_I3_RECON_SCOPE_COMMIT}^", REC_I3_RECON_SCOPE_COMMIT))
+    require(scope_paths == {REC_I3_RECON_SCOPE_PATH, REC_I3_RECON_ADR_PATH},
+            "REC-I3 reconciliation scope commit contains implementation or unrelated paths")
+    require(sha256(REC_I3_RECON_SCOPE_PATH)
+            == "cb97cbbe56dbfd6fe5753a1b9cf79af1e2f2de030f40e991107d8e96779daab7"
+            and sha256(REC_I3_RECON_ADR_PATH)
+            == "8f763bd5f65e3aec7c850685a1ed3fded5c540b9cd9481f2a3b97bb93d97c3ab",
+            "REC-I3 immutable reconciliation scope or ADR changed")
+    require(git_is_ancestor(REC_I3_RECON_CORRECTION_COMMIT, head),
+            "REC-I3 reconciliation correction predates its scope")
+    require(git_output("rev-parse", f"{REC_I3_RECON_CORRECTION_COMMIT}^{{tree}}")
+            == REC_I3_RECON_CORRECTION_TREE,
+            "REC-I3 reconciliation correction scope tree drift")
+    correction_paths = set(git_path_records(
+        "diff", "--name-only", "-z",
+        f"{REC_I3_RECON_CORRECTION_COMMIT}^", REC_I3_RECON_CORRECTION_COMMIT,
+    ))
+    require(correction_paths == {REC_I3_RECON_CORRECTION_PATH},
+            "REC-I3 reconciliation correction scope contains implementation or unrelated paths")
+    require(sha256(REC_I3_RECON_CORRECTION_PATH)
+            == "e79b2298ce810c851a6acd40eefcc02c055f0ea15a0d7b34040377b77c97339c",
+            "REC-I3 immutable reconciliation correction scope changed")
+    require(git_is_ancestor(REC_I3_RECON_ROUND2_STATE_COMMIT, head)
+            and git_output("rev-parse", f"{REC_I3_RECON_ROUND2_STATE_COMMIT}^{{tree}}")
+            == REC_I3_RECON_ROUND2_STATE_TREE,
+            "REC-I3 round-two truth checkpoint identity drift")
+    state_paths = set(git_path_records(
+        "diff", "--name-only", "-z",
+        f"{REC_I3_RECON_ROUND2_STATE_COMMIT}^", REC_I3_RECON_ROUND2_STATE_COMMIT,
+    ))
+    require(state_paths == set(REC_I3_RECON_ROUND2_STATE_PATHS),
+            "REC-I3 round-two truth checkpoint contains implementation or unrelated paths")
+    require(git_is_ancestor(REC_I3_RECON_ROUND3_STATE_COMMIT, head)
+            and git_output("rev-parse", f"{REC_I3_RECON_ROUND3_STATE_COMMIT}^{{tree}}")
+            == REC_I3_RECON_ROUND3_STATE_TREE,
+            "REC-I3 round-three truth checkpoint identity drift")
+    round3_state_paths = set(git_path_records(
+        "diff", "--name-only", "-z",
+        f"{REC_I3_RECON_ROUND3_STATE_COMMIT}^", REC_I3_RECON_ROUND3_STATE_COMMIT,
+    ))
+    require(round3_state_paths == set(REC_I3_RECON_ROUND2_STATE_PATHS),
+            "REC-I3 round-three truth checkpoint contains implementation or unrelated paths")
+    epoch_paths = set(git_path_records(
+        "log", "--format=", "--name-only", "--no-renames", "-z",
+        f"{REC_I3_RECON_PREDECESSOR_COMMIT}..{head}",
+    ))
+    require(epoch_paths <= set(REC_I3_RECON_ALLOWED_PATHS),
+            "REC-I3 reconciliation epoch contains an undeclared path")
+    present = [path for path in REC_I3_RECON_SOURCE_PATHS if (ROOT / path).exists()]
+    require(set(present) == set(REC_I3_RECON_SOURCE_PATHS),
+            "REC-I3 reconciliation source set is incomplete")
+    for relative in (*present, REC_I3_RECON_SCOPE_PATH, REC_I3_RECON_ADR_PATH,
+                     REC_I3_RECON_EVIDENCE_PATH):
+        validate_rec_i3_regular_file(relative)
+    record = read_json(REC_I3_RECON_EVIDENCE_PATH)
+    require(record.get("scopeId") == "rec-i3-microfile-reconciliation-quarantine-stage0-v0.1"
+            and record.get("reviewedPredecessorCommit") == REC_I3_RECON_PREDECESSOR_COMMIT
+            and record.get("scopeFirstCommit") == REC_I3_RECON_SCOPE_COMMIT
+            and record.get("claimCeiling") == REC_I3_RECON_CLAIM_CEILING,
+            "REC-I3 reconciliation evidence identity drift")
+    require(record.get("implementationStatus") == "IN_PROGRESS"
+            and record.get("fullRecI3Completed") is False
+            and record.get("recoveryPreflightUnlocked") is False
+            and record.get("readinessBlockersClosed") == [],
+            "REC-I3 reconciliation evidence overclaims completion")
+    require(record.get("sourceFiles") == {path: canonical_lf_sha256(path) for path in present},
+            "REC-I3 reconciliation source digest mismatch")
+    require(all(value is False for value in record["execution"].values()),
+            "REC-I3 reconciliation execution overclaim")
+    require(record.get("review") == {
+        "independentAdvisory": "REVISE", "accountable": "PENDING", "formalReviewer": False,
+        "reviewedCommit": REC_I3_RECON_ROUND2_BASE,
+        "reportSha256": REC_I3_RECON_ROUND2_REPORT_SHA256,
+        "counts": {"p0": 0, "p1": 7, "p2": 1},
+    }, "REC-I3 reconciliation review state is not the exact open REVISE disposition")
+    round2 = record.get("round2Correction")
+    require(isinstance(round2, dict)
+            and round2.get("status") == "SUPERSEDED_BY_A020944_INDEPENDENT_REVISE"
+            and round2.get("baseCommit") == REC_I3_RECON_ROUND2_BASE
+            and round2.get("independentlyClosed") is False,
+            "REC-I3 reconciliation round-two superseded claim identity drift")
+    author_claim = round2.get("authorClaimAtA020944")
+    require(isinstance(author_claim, dict)
+            and author_claim.get("status") == "LOCAL_VERIFIED"
+            and author_claim.get("openFindingIds") == []
+            and author_claim.get("actualEntryRegressionComplete") is True
+            and [item.get("id") for item in author_claim.get("acceptanceCases", [])]
+            == list(REC_I3_RECON_ACCEPTANCE_CASES),
+            "REC-I3 reconciliation historical author claim is not preserved")
+    require(round2.get("successorReview") == {
+        "status": "REVISE", "formalReviewer": False,
+        "reviewedCommit": REC_I3_RECON_ROUND3_BASE,
+        "reviewedTree": REC_I3_RECON_ROUND3_TREE,
+        "markdownReport": "rec-i3-reconciliation-independent-round2-review-a020944.md",
+        "markdownSha256": REC_I3_RECON_ROUND3_MD_SHA256,
+        "jsonReport": "rec-i3-reconciliation-independent-round2-review-a020944.json",
+        "jsonSha256": REC_I3_RECON_ROUND3_JSON_SHA256,
+        "counts": {"p0": 0, "p1": 4, "p2": 2},
+    }, "REC-I3 reconciliation a020944 review is not the exact REVISE disposition")
+    round3 = record.get("round3Correction")
+    require(isinstance(round3, dict)
+            and round3.get("status") == "IN_PROGRESS"
+            and round3.get("baseCommit") == REC_I3_RECON_ROUND3_BASE
+            and round3.get("openFindingIds") == list(REC_I3_RECON_ROUND3_FINDINGS)
+            and round3.get("actualEntryReviewClosureComplete") is False
+            and round3.get("independentReview") == {
+                "status": "PENDING", "formalReviewer": False,
+                "findingIds": list(REC_I3_RECON_ROUND3_FINDINGS),
+            }, "REC-I3 reconciliation round-three correction overclaims closure")
+    author_verification = round3.get("authorVerification")
+    require(isinstance(author_verification, dict)
+            and author_verification.get("status") in {"NOT_RUN", "PASS"},
+            "REC-I3 reconciliation author verification state invalid")
+    if author_verification.get("status") == "PASS":
+        cases = author_verification.get("acceptanceCases")
+        require(isinstance(cases, list)
+                and [item.get("id") for item in cases]
+                == list(REC_I3_RECON_ROUND3_ACCEPTANCE_CASES)
+                and all(isinstance(item.get("productionEntry"), str)
+                        and "." in item["productionEntry"]
+                        and isinstance(item.get("test"), str) and "." in item["test"]
+                        and isinstance(item.get("assertion"), str)
+                        and len(item["assertion"]) >= 32 for item in cases),
+                "REC-I3 round-three PASS lacks exact production-entry acceptance mapping")
+    round4 = record.get("round4Truth")
+    require(isinstance(round4, dict), "REC-I3 round-four truth missing")
+    expected_round4_static = {
+        "status": "IN_PROGRESS",
+        "baseCommit": "ca2db88e0c6e53f346908bdc73b628beaf6c4ec4",
+        "baseTree": "0186863f17d2daf5c73804e0cc13f6043ec56f1a",
+        "originalReview": {"status": "REVISE", "counts": {"p0": 0, "p1": 3, "p2": 0}, "markdownSha256": "494934ba0e0c9adad769a4efc56aa0c54e82790e15405ff1de921d32604cf706", "jsonSha256": "60eb1d83161b1dd26234b3bf463093de1cc68155d40ad216f5549b3e39db9eca"},
+        "addendumSha256": "38120cc5ae49a5fe92b2467de05c216e962d792712fda2d7804af4f6c62bad0a",
+        "effectiveReview": {"status": "REVISE", "counts": {"p0": 0, "p1": 4, "p2": 0}},
+        "successorReview": {"targetCommit": "de735735ace6da3572c45dfdc58a8bbff98145b0", "targetTree": "0d6e1fd1a00cf49c6d19832fd086a739c4d93209", "status": "REVISE", "counts": {"p0": 0, "p1": 2, "p2": 0}, "markdownSha256": "0b9458e1e13259b0773500fd38e28083f01a4968c24ad2230b6a43bdd5944edf", "jsonSha256": "7756cb9f90506d472b1846784812554a72a6e56df0a6d9fde6598012a767e161"},
+        "closedPriorFindingIds": ["P1-OPTIONAL-NAMESPACE-AND-RESULT-RETENTION", "P1-Q05-CONFIRMED-REMAINDER", "P2-ROW-DIGEST-FRAMING", "P2-PRODUCTION-UNIQUE-READBACK", "P1-PRODUCTION-ARTIFACT-CONTEXT", "P1-LEXICAL-PATH-DIAGNOSTICS", "P1-EVIDENCE-ACTUAL-ENTRY", "P1-BOOTSTRAP-CURSOR-POSITION", "P1-ROUND4-DUPLICATE-CHECK-ACCEPTANCE"],
+        "openFindingIds": list(REC_I3_RECON_ROUND4_FINDINGS),
+        "historicalAuthorClaimScope": {"round3Status": "PASS", "supersededAcceptanceIds": ["CONTEXTUAL-TAXONOMY", "PATH-IO-DISTINCTION"]},
+        "independentReview": {"status": "PENDING", "formalReviewer": False},
+        "accountableReview": "PENDING",
+    }
+    require({key: value for key, value in round4.items() if key != "authorVerification"}
+            == expected_round4_static,
+            "REC-I3 round-four truth is not the exact open ca2 disposition")
+    round4_author = round4.get("authorVerification")
+    require(isinstance(round4_author, dict)
+            and round4_author.get("status") in {"NOT_RUN", "PASS"},
+            "REC-I3 round-four author verification state invalid")
+    checks = record.get("checks", [])
+    current_checks = [item for item in checks
+                      if item.get("stage") in {"ROUND4_ANDROID_HOST", "ROUND4_GOVERNANCE"}]
+    if round4_author.get("status") == "NOT_RUN":
+        require(round4_author == {"status": "NOT_RUN"} and not current_checks,
+                "REC-I3 round-four NOT_RUN carries current acceptance or check claims")
+    else:
+        require(round4_author == {
+            "status": "PASS",
+            "acceptanceCases": list(REC_I3_RECON_ROUND4_ACCEPTANCE_CASES),
+        }, "REC-I3 round-four PASS lacks exact current production-entry acceptance mapping")
+        require(len(current_checks) == 2
+                and len({item.get("stage") for item in current_checks}) == 2,
+                "REC-I3 round-four current check records are not exact and unique")
+        current_stages = {item.get("stage"): item for item in current_checks}
+        require(set(current_stages) == {"ROUND4_ANDROID_HOST", "ROUND4_GOVERNANCE"},
+                "REC-I3 round-four current check stages missing")
+        require(current_stages["ROUND4_ANDROID_HOST"] == REC_I3_RECON_ROUND4_ANDROID_CHECK,
+                "REC-I3 round-four Android author check is not exact")
+        require(current_stages["ROUND4_GOVERNANCE"] == REC_I3_RECON_ROUND4_GOVERNANCE_CHECK,
+                "REC-I3 round-four governance author check is not exact")
+    require(any(item.get("stage") == "HOST_SQLITE" and item.get("outcome") == "PASS"
+                for item in checks), "REC-I3 reconciliation exact host SQLite evidence missing")
+    require(record.get("limitations"), "REC-I3 reconciliation limitations missing")
+    if publication:
+        require(round4_author.get("status") == "PASS",
+                "REC-I3 reconciliation PR requires author checks while review remains pending")
+
+
+def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | None = None) -> bool:
+    if not rec_i3_candidate():
+        return False
+    current = lifecycle or collect_recovery_lifecycle_identity()
+    validate_rec_i3_context(current, collect_pinned_commit_identity(REC_I3_BASE, current.head),
+                            collect_pinned_commit_identity(REC_I3_SCOPE_COMMIT, current.head))
+    if current.github_pull_request_context is not None:
+        require(git_is_ancestor(REC_I3_SCOPE_COMMIT, current.github_pull_request_context.head_sha),
+                "REC-I3 scope exists only through PR base/merge")
+    validate_rec_i3_candidate_history(current)
+    require(git_output("rev-parse", f"{REC_I3_BASE}:android/poc/recovery") == REC_I2B_MODULE_TREE,
+            "REC-I3 base does not preserve the exact REC-I2B module")
+    validate_rec_i3_additions_absent()
+    validate_rec_i3_scope_frozen(collect_post_merge_changes(merged_anchor=REC_I3_SCOPE_COMMIT))
+    require(git_path_records("log", "--format=", "--name-only", "--no-renames", "-z",
+                            f"{REC_I3_BASE}..{REC_I3_SCOPE_COMMIT}")
+            and set(git_path_records("log", "--format=", "--name-only", "--no-renames", "-z",
+                                     f"{REC_I3_BASE}..{REC_I3_SCOPE_COMMIT}")) == {REC_I3_SCOPE_PATH},
+            "REC-I3 scope-first lineage contains implementation or unrelated paths")
+    require(sha256(REC_I3_SCOPE_PATH) == REC_I3_SCOPE_SHA256,
+            "REC-I3 immutable implementation scope changed")
+    validate_rec_i3_bootstrap_scope_lineage(current)
+    validate_rec_i3_bootstrap_witness_scope_lineage(current)
+    for commit in git_output("log", "--format=%H", f"{REC_I3_BASE}..HEAD", "--", *REC_I3_SOURCE_PATHS).splitlines():
+        require(git_is_ancestor(REC_I3_SCOPE_COMMIT, commit), "REC-I3 source commit predates its scope")
+    for commit in git_output("log", "--format=%H", f"{REC_I3_BASE}..HEAD", "--",
+                             *REC_I3_BOOTSTRAP_SOURCE_PATHS).splitlines():
+        require(git_is_ancestor(REC_I3_BOOTSTRAP_SCOPE_COMMIT, commit),
+                "REC-I3 bootstrap source commit predates its scope")
+    for relative in ("docs/evidence/owner-auth-batch-20260819-01.json",
+                     "docs/stage0/DORA_MVP1_STAGE0_OWNER_DECISION_OD15.md"):
+        require((ROOT / relative).read_bytes() == git_blob_bytes(f"{REC_I3_BASE}:{relative}"),
+                "REC-I3 owner authority differs from pinned main")
+    owner = read_json("docs/evidence/owner-auth-batch-20260819-01.json")
+    require(owner["recordId"] == "OWNER-AUTH-BATCH-20260819-01"
+            and owner["recI3Authority"]["recI3ImplementationAllowed"] is True
+            and owner["recI3Authority"]["recI3NonMetricVerificationAllowed"] is True,
+            "REC-I3 lacks exact current owner authority")
+    # Only the frozen pre-REC-I3 KSP transition is accepted. No graph/lock/R8 overlay
+    # can enter via a new controller file or a reverted predecessor commit.
+    require(rec_i2b_ksp_overlay_active(), "REC-I3 requires the already integrated exact KSP overlay")
+    validate_rec_i2b_ksp_overlay_integrated_revision(REC_I3_BASE)
+    predecessor_changes = collect_post_merge_changes(merged_anchor=REC_I2B_MERGED_MAIN_ANCHOR)
+    predecessor_changes = {layer: [path for path in paths if path not in REC_I3_ADDITIVE_PATHS]
+                           for layer, paths in predecessor_changes.items()}
+    validate_rec_i2b_merged_main_protected_paths(predecessor_changes, allow_exact_ksp_overlay=True)
+    # collect_post_merge_changes includes both the tree diff and every committed
+    # path, so the two exact allowlists above also reject mode changes and reverts.
+    validate_rec_i2b_merged_main_nonclaims(read_json(REC_I2B_RUNTIME_EVIDENCE_PATH),
+                                         read_json(REC_I2B_ACCOUNTABLE_PACKET_PATH))
+    present = [path for path in REC_I3_SOURCE_PATHS if (ROOT / path).exists()]
+    for relative in (*present, REC_I3_SCOPE_PATH, REC_I3_EVIDENCE_PATH):
+        validate_rec_i3_regular_file(relative)
+    validate_rec_i3_evidence(read_json(REC_I3_EVIDENCE_PATH), {path: canonical_lf_sha256(path) for path in present},
+                             publication=current.github_pull_request_context is not None)
+    bootstrap_present = [path for path in REC_I3_BOOTSTRAP_SOURCE_PATHS if (ROOT / path).exists()]
+    for relative in (*bootstrap_present, REC_I3_BOOTSTRAP_SCOPE_PATH,
+                     REC_I3_BOOTSTRAP_WITNESS_SCOPE_PATH,
+                     REC_I3_BOOTSTRAP_EVIDENCE_PATH):
+        validate_rec_i3_regular_file(relative)
+    bootstrap_record = read_json(REC_I3_BOOTSTRAP_EVIDENCE_PATH)
+    validate_rec_i3_bootstrap_evidence(
+        bootstrap_record,
+        rec_i3_bootstrap_checkpoint_hashes() if (ROOT / REC_I3_MICROFILE_EVIDENCE_PATH).exists()
+        else {path: canonical_lf_sha256(path) for path in bootstrap_present},
+        publication=current.github_pull_request_context is not None,
+    )
+    if (ROOT / REC_I3_MICROFILE_EVIDENCE_PATH).exists():
+        validate_rec_i3_microfile_successor(current.github_pull_request_context is not None)
+    if (ROOT / REC_I3_RECON_EVIDENCE_PATH).exists():
+        validate_rec_i3_reconciliation_successor(current.github_pull_request_context is not None)
+    if (ROOT / REC_I3_MICROFILE_EVIDENCE_PATH).exists():
+        print(
+            "PASS REC-I3 bounded sequential-microfile successor: "
+            f"{REC_I3_MICROFILE_CLAIM_CEILING}; reviewed bootstrap checkpoint preserved; "
+            "full REC-I3/preflight blocked"
+        )
+    else:
+        print(
+            "PASS REC-I3 bounded bootstrap successor: "
+            f"{REC_I3_BOOTSTRAP_CLAIM_CEILING}; first slice/predecessor frozen; preflight blocked"
+        )
+    return True
+
+
 def validate_rec_i2b_merged_main_evidence_boundary() -> None:
+    if validate_current_rec_i3_successor():
+        return
     require(
         git_output("rev-parse", f"{REC_I2B_MERGED_MAIN_ANCHOR}^{{tree}}")
         == REC_I2B_MERGED_MAIN_TREE,
@@ -5282,6 +6289,8 @@ def validate_rec_i2b_current_module_boundary(*, merged_main: bool = False) -> No
 
 def validate_current_rec_i2b_reviewed_successor() -> bool:
     lifecycle = collect_recovery_lifecycle_identity()
+    if validate_current_rec_i3_successor(lifecycle):
+        return True
     merged_main_identity = collect_rec_i2b_merged_main_identity(lifecycle)
     if rec_i2b_merged_main_candidate(merged_main_identity):
         validate_rec_i2b_merged_main_lifecycle(
@@ -5344,6 +6353,8 @@ def validate_dependency_and_scope_boundary() -> bool:
     require(not changed_normative, f"Normative v0.6 contract differs from formal-review base: {changed_normative}")
 
     lifecycle_identity = collect_recovery_lifecycle_identity()
+    if validate_current_rec_i3_successor(lifecycle_identity):
+        return True
     rec_i2b_merged_main_identity = collect_rec_i2b_merged_main_identity(lifecycle_identity)
     rec_i2b_merged_main_mode = rec_i2b_merged_main_candidate(rec_i2b_merged_main_identity)
     reviewed_v06_tree = git_optional_output("rev-parse", f"{REVIEWED_V06_HEAD}^{{tree}}")
@@ -8062,7 +9073,20 @@ def main() -> int:
         else:
             run_rec_i2b_evidence_boundary_tests()
         run_negative_tests()
-    if rec_i2b_mode:
+        if rec_i3_candidate():
+            import unittest
+            import test_poc_recovery_i3_governance
+
+            suite = unittest.defaultTestLoader.loadTestsFromModule(test_poc_recovery_i3_governance)
+            require(unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful(),
+                    "REC-I3 successor mutation self-tests failed")
+    if rec_i3_candidate():
+        profile_summary = (
+            "OD-15 authorizes the bounded partial REC-I3 host controller; all predecessor inputs "
+            "remain frozen, full REC-I3 completion/review and Recovery preflight remain pending; "
+            "this branch-only profile grants no post-squash admission"
+        )
+    elif rec_i2b_mode:
         current_evidence = read_json(REC_I2B_RUNTIME_EVIDENCE_PATH)
         merged_main_mode = rec_i2b_merged_main_candidate(collect_rec_i2b_merged_main_identity())
         accountable_review_complete = current_evidence.get("status") == REC_I2B_ACCOUNTABLE_STATUS

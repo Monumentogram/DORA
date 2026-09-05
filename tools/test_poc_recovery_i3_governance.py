@@ -1,0 +1,675 @@
+"""Behavior and real-Git mutation tests for the bounded REC-I3 successor."""
+
+from __future__ import annotations
+
+import copy
+import tempfile
+import unittest
+from dataclasses import replace
+from pathlib import Path
+from unittest.mock import patch
+
+import validate_poc_recovery_governance as governance
+
+
+class RecoveryI3GovernanceTests(unittest.TestCase):
+    def test_reconciliation_round4_author_mapping_is_exact_and_current(self) -> None:
+        record = copy.deepcopy(governance.read_json(governance.REC_I3_RECON_EVIDENCE_PATH))
+        record["sourceFiles"] = {
+            path: governance.canonical_lf_sha256(path)
+            for path in governance.REC_I3_RECON_SOURCE_PATHS
+        }
+        record["round4Truth"]["authorVerification"] = {
+            "status": "PASS",
+            "acceptanceCases": copy.deepcopy(
+                list(governance.REC_I3_RECON_ROUND4_ACCEPTANCE_CASES)
+            ),
+        }
+        record["checks"] = [
+            item
+            for item in record["checks"]
+            if item.get("stage") not in {"ROUND4_ANDROID_HOST", "ROUND4_GOVERNANCE"}
+        ]
+        record["checks"].extend(
+            [
+                copy.deepcopy(governance.REC_I3_RECON_ROUND4_ANDROID_CHECK),
+                copy.deepcopy(governance.REC_I3_RECON_ROUND4_GOVERNANCE_CHECK),
+            ]
+        )
+        with patch.object(governance, "read_json", return_value=record):
+            governance.validate_rec_i3_reconciliation_successor(publication=False)
+
+        historical_cases = record["round3Correction"]["authorVerification"]["acceptanceCases"]
+        mutations = {
+            "round4-pass-without-cases": lambda r: r["round4Truth"].__setitem__(
+                "authorVerification", {"status": "PASS"}
+            ),
+            "round4-acceptance-missing": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ].pop(),
+            "round4-acceptance-duplicate": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ].__setitem__(3, copy.deepcopy(r["round4Truth"]["authorVerification"]["acceptanceCases"][0])),
+            "round4-stale-contextual-copy": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ].__setitem__(0, copy.deepcopy(historical_cases[2])),
+            "round4-stale-path-copy": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ].__setitem__(1, copy.deepcopy(historical_cases[7])),
+            "round4-context-helper-only": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ][0].__setitem__("test", historical_cases[2]["test"]),
+            "round4-artifact-role-missing": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ][0].__setitem__("assertion", "Manifest and unit ciphertext context omitted."),
+            "round4-bootstrap-state-missing": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ][0].__setitem__("assertion", "ABSENT and PRESENT remain distinct."),
+            "round4-cursor-helper-only": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ][2].__setitem__(
+                "test",
+                "AndroidRecoveryReconciliationSourceTest.bootstrap cursor decoder returns null for zero rows; bootstrap cursor decoder decodes the one stored identity at position zero; bootstrap cursor decoder rejects two rows as a structural journal failure",
+            ),
+            "round4-path-actual-entry-missing": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ][1].__setitem__(
+                "test",
+                "RecoveryQuarantineControllerTest.actual quarantine entry distinguishes unsafe paths from ordinary IO",
+            ),
+            "round4-production-entry-shortened": lambda r: r["round4Truth"]["authorVerification"][
+                "acceptanceCases"
+            ][0].__setitem__(
+                "productionEntry", "RecoveryMicrofileReconciliationController.reconcile"
+            ),
+            "round4-current-android-check-missing": lambda r: r.__setitem__(
+                "checks",
+                [item for item in r["checks"] if item.get("stage") != "ROUND4_ANDROID_HOST"],
+            ),
+            "round4-current-governance-check-missing": lambda r: r.__setitem__(
+                "checks",
+                [item for item in r["checks"] if item.get("stage") != "ROUND4_GOVERNANCE"],
+            ),
+            "round4-current-check-failed": lambda r: next(
+                item for item in r["checks"] if item.get("stage") == "ROUND4_ANDROID_HOST"
+            ).__setitem__("failures", 1),
+            "round4-stale-duplicate-android-check": lambda r: r["checks"].insert(
+                next(
+                    index
+                    for index, item in enumerate(r["checks"])
+                    if item.get("stage") == "ROUND4_ANDROID_HOST"
+                ),
+                {
+                    **copy.deepcopy(governance.REC_I3_RECON_ROUND4_ANDROID_CHECK),
+                    "outcome": "FAIL",
+                },
+            ),
+            "round4-stale-duplicate-governance-check": lambda r: r["checks"].insert(
+                next(
+                    index
+                    for index, item in enumerate(r["checks"])
+                    if item.get("stage") == "ROUND4_GOVERNANCE"
+                ),
+                {
+                    **copy.deepcopy(governance.REC_I3_RECON_ROUND4_GOVERNANCE_CHECK),
+                    "outcome": "FAIL",
+                },
+            ),
+            "round4-finding-removed": lambda r: r["round4Truth"]["openFindingIds"].pop(),
+            "round4-effective-review-clean": lambda r: r["round4Truth"].__setitem__(
+                "effectiveReview", {"status": "CLEAN", "counts": {"p0": 0, "p1": 0, "p2": 0}}
+            ),
+            "round4-independent-clean": lambda r: r["round4Truth"]["independentReview"].__setitem__(
+                "status", "CLEAN"
+            ),
+            "round4-formal-reviewer": lambda r: r["round4Truth"]["independentReview"].__setitem__(
+                "formalReviewer", True
+            ),
+            "round4-accountable-approved": lambda r: r["round4Truth"].__setitem__(
+                "accountableReview", "APPROVED"
+            ),
+            "round4-overall-local-verified": lambda r: r.__setitem__(
+                "implementationStatus", "LOCAL_VERIFIED"
+            ),
+        }
+        for name, mutate in mutations.items():
+            changed = copy.deepcopy(record)
+            mutate(changed)
+            with self.subTest(mutation=name), patch.object(
+                governance, "read_json", return_value=changed
+            ), self.assertRaises(ValueError):
+                governance.validate_rec_i3_reconciliation_successor(publication=False)
+
+        not_run = copy.deepcopy(record)
+        not_run["round4Truth"]["authorVerification"] = {"status": "NOT_RUN"}
+        not_run["checks"] = [
+            item
+            for item in not_run["checks"]
+            if item.get("stage") not in {"ROUND4_ANDROID_HOST", "ROUND4_GOVERNANCE"}
+        ]
+        with patch.object(governance, "read_json", return_value=not_run), self.assertRaisesRegex(
+            ValueError, "requires author checks"
+        ):
+            governance.validate_rec_i3_reconciliation_successor(publication=True)
+
+    def test_reconciliation_round3_truth_is_exact_and_open(self) -> None:
+        record = governance.read_json(governance.REC_I3_RECON_EVIDENCE_PATH)
+        self.assertEqual("IN_PROGRESS", record["implementationStatus"])
+        self.assertEqual("REVISE", record["review"]["independentAdvisory"])
+        self.assertEqual({"p0": 0, "p1": 7, "p2": 1}, record["review"]["counts"])
+        self.assertEqual(
+            "SUPERSEDED_BY_A020944_INDEPENDENT_REVISE",
+            record["round2Correction"]["status"],
+        )
+        self.assertEqual(
+            {"p0": 0, "p1": 4, "p2": 2},
+            record["round2Correction"]["successorReview"]["counts"],
+        )
+        self.assertEqual(
+            list(governance.REC_I3_RECON_ROUND3_FINDINGS),
+            record["round3Correction"]["openFindingIds"],
+        )
+        self.assertFalse(record["round3Correction"]["actualEntryReviewClosureComplete"])
+        self.assertEqual(
+            {"p0": 0, "p1": 4, "p2": 0},
+            record["round4Truth"]["effectiveReview"]["counts"],
+        )
+        self.assertEqual(
+            "de735735ace6da3572c45dfdc58a8bbff98145b0",
+            record["round4Truth"]["successorReview"]["targetCommit"],
+        )
+        self.assertEqual(
+            list(governance.REC_I3_RECON_ROUND4_FINDINGS),
+            record["round4Truth"]["openFindingIds"],
+        )
+        self.assertEqual("PENDING", record["round4Truth"]["independentReview"]["status"])
+        self.assertFalse(record["round4Truth"]["independentReview"]["formalReviewer"])
+        self.assertEqual("PASS", record["round3Correction"]["authorVerification"]["status"])
+        self.assertEqual(
+            list(governance.REC_I3_RECON_ROUND3_ACCEPTANCE_CASES),
+            [
+                item["id"]
+                for item in record["round3Correction"]["authorVerification"]["acceptanceCases"]
+            ],
+        )
+        governance.validate_rec_i3_reconciliation_successor(publication=False)
+
+        for mutation in ("verified", "closed", "missing", "clean", "review-closed"):
+            changed = copy.deepcopy(record)
+            if mutation == "verified":
+                changed["implementationStatus"] = "LOCAL_VERIFIED"
+            elif mutation == "closed":
+                changed["round3Correction"]["actualEntryReviewClosureComplete"] = True
+            elif mutation == "missing":
+                changed["round3Correction"]["openFindingIds"].pop()
+            elif mutation == "review-closed":
+                changed["round3Correction"]["independentReview"]["findingIds"].pop()
+            else:
+                changed["round2Correction"]["successorReview"]["status"] = "CLEAN"
+            with self.subTest(mutation=mutation), patch.object(
+                governance,
+                "read_json",
+                return_value=changed,
+            ), self.assertRaises(ValueError):
+                governance.validate_rec_i3_reconciliation_successor(publication=False)
+
+        for mutation in ("acceptance-missing", "acceptance-duplicate", "test-name-only"):
+            changed = copy.deepcopy(record)
+            cases = changed["round3Correction"]["authorVerification"]["acceptanceCases"]
+            if mutation == "acceptance-missing":
+                cases.pop()
+            elif mutation == "acceptance-duplicate":
+                cases[-1] = copy.deepcopy(cases[0])
+            else:
+                cases[0].pop("productionEntry")
+                cases[0].pop("assertion")
+            with self.subTest(mutation=mutation), patch.object(
+                governance,
+                "read_json",
+                return_value=changed,
+            ), self.assertRaisesRegex(ValueError, "production-entry acceptance mapping"):
+                governance.validate_rec_i3_reconciliation_successor(publication=False)
+
+    def test_reconciliation_correction_scope_and_new_files_are_exactly_declared(self) -> None:
+        self.assertEqual(
+            "e78571776d34756325289dcfcb3853c9696f3011",
+            governance.REC_I3_RECON_CORRECTION_COMMIT,
+        )
+        self.assertIn(governance.REC_I3_RECON_CORRECTION_PATH, governance.REC_I3_ALLOWED_PATHS)
+        expected_new = {
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationOutcomes.kt",
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSource.kt",
+            "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationAcceptanceTest.kt",
+            "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSourceTest.kt",
+            "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorageTest.kt",
+        }
+        self.assertTrue(expected_new <= set(governance.REC_I3_RECON_SOURCE_PATHS))
+        changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
+        changes["untracked"] = list(expected_new)
+        governance.validate_rec_i3_changed_paths(changes)
+        changes["untracked"] = [next(iter(expected_new)) + ".undeclared"]
+        with self.assertRaisesRegex(ValueError, "escapes exact scope"):
+            governance.validate_rec_i3_changed_paths(changes)
+
+    def test_reconciliation_epoch_exposes_only_declared_mutable_paths(self) -> None:
+        self.assertIn(
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/"
+            "candidate/RecoveryMicrofileReconciliationController.kt",
+            governance.REC_I3_CURRENT_MUTABLE_PATHS,
+        )
+        self.assertNotIn(
+            governance.REC_I3_MICROFILE_FROZEN_BOOTSTRAP_PATHS[0],
+            governance.REC_I3_CURRENT_MUTABLE_PATHS,
+        )
+
+    def test_sequential_microfile_successor_has_exact_scope_sources_and_nonclaims(self) -> None:
+        self.assertEqual(
+            "4eab3eae72b9196fbd114339b9fe96bba7705f00",
+            governance.REC_I3_MICROFILE_SCOPE_COMMIT,
+        )
+        governance.validate_rec_i3_microfile_successor(publication=False)
+        changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
+        changes["untracked"] = list(governance.REC_I3_RECON_MUTABLE_PATHS)
+        governance.validate_rec_i3_changed_paths(changes)
+        changes["untracked"] = [
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/FutureWriter.kt"
+        ]
+        with self.assertRaisesRegex(ValueError, "escapes exact scope"):
+            governance.validate_rec_i3_changed_paths(changes)
+
+    def test_microfile_successor_rejects_frozen_bootstrap_source_mutations(self) -> None:
+        frozen = (
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryBootstrapCrypto.kt",
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryKeyBootstrap.kt",
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicy.kt",
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryBootstrapStorage.kt",
+            "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/RecoveryKeyBootstrapControllerTest.kt",
+            "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicyTest.kt",
+        )
+        for relative in frozen:
+            changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
+            changes["unstaged"] = [relative]
+            with self.subTest(relative=relative), self.assertRaisesRegex(
+                ValueError, "escapes exact scope"
+            ):
+                governance.validate_rec_i3_changed_paths(changes)
+
+    def test_current_bootstrap_validation_receives_reviewed_checkpoint_hashes(self) -> None:
+        expected = governance.rec_i3_bootstrap_checkpoint_hashes()
+        with patch.object(governance, "validate_rec_i3_bootstrap_evidence") as validator, patch.object(
+            governance, "validate_rec_i3_microfile_successor"
+        ):
+            self.assertTrue(governance.validate_current_rec_i3_successor())
+        self.assertEqual(expected, validator.call_args.args[1])
+
+    def test_frozen_bootstrap_source_is_checked_against_reviewed_blob(self) -> None:
+        governance.validate_rec_i3_frozen_bootstrap_sources()
+        original = governance.canonical_lf_sha256
+        frozen = governance.REC_I3_MICROFILE_FROZEN_BOOTSTRAP_PATHS[0]
+        with patch.object(
+            governance,
+            "canonical_lf_sha256",
+            side_effect=lambda relative: "0" * 64 if relative == frozen else original(relative),
+        ), self.assertRaisesRegex(ValueError, "frozen bootstrap source changed"):
+            governance.validate_rec_i3_frozen_bootstrap_sources()
+
+    def test_bootstrap_provider_witness_correction_has_exact_scope_lineage(self) -> None:
+        self.assertEqual(
+            "cd752f952666f414465c73bc55a0d7f7f20c4989",
+            governance.REC_I3_BOOTSTRAP_WITNESS_SCOPE_COMMIT,
+        )
+        governance.validate_rec_i3_bootstrap_witness_scope_lineage()
+        changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
+        changes["committed"] = [governance.REC_I3_BOOTSTRAP_WITNESS_SCOPE_PATH]
+        governance.validate_rec_i3_changed_paths(changes)
+
+    def test_bootstrap_successor_has_exact_scope_first_identity_and_file_boundary(self) -> None:
+        self.assertEqual(
+            "f89ddba14d37efbdde5a99bf1fd169210ff189cb",
+            governance.REC_I3_BOOTSTRAP_SCOPE_COMMIT,
+        )
+        governance.validate_rec_i3_bootstrap_scope_lineage()
+        changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
+        changes["committed"] = list(governance.REC_I3_BOOTSTRAP_SOURCE_PATHS)
+        governance.validate_rec_i3_changed_paths(changes)
+        changes["untracked"] = [
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/Extra.kt"
+        ]
+        with self.assertRaisesRegex(ValueError, "escapes exact scope"):
+            governance.validate_rec_i3_changed_paths(changes)
+
+    def test_bootstrap_preparation_evidence_preserves_claim_ceiling_and_first_slice_hashes(self) -> None:
+        record = copy.deepcopy(governance.read_json(governance.REC_I3_BOOTSTRAP_EVIDENCE_PATH))
+        record["implementationStatus"] = "IN_PROGRESS"
+        record["sourceFiles"] = {}
+        governance.validate_rec_i3_bootstrap_evidence(record, {})
+        mutations = [
+            lambda r: r.__setitem__("fullRecI3Completed", True),
+            lambda r: r.__setitem__("recoveryPreflightUnlocked", True),
+            lambda r: r.__setitem__("readinessBlockersClosed", ["REC-RDY-07"]),
+            lambda r: r.__setitem__("scopeFirstCommit", governance.REC_I3_SCOPE_COMMIT),
+            lambda r: r["preservedFirstSliceSourceFiles"].__setitem__(
+                governance.REC_I3_SOURCE_PATHS[0], "0" * 64
+            ),
+            lambda r: r["execution"].__setitem__("device", True),
+            lambda r: r["review"].__setitem__("independentAdvisory", "CLEAN"),
+            lambda r: r.__setitem__("implementationStatus", "LOCAL_VERIFIED"),
+        ]
+        for index, mutate in enumerate(mutations):
+            candidate = copy.deepcopy(record)
+            mutate(candidate)
+            with self.subTest(mutation=index), self.assertRaises(ValueError):
+                governance.validate_rec_i3_bootstrap_evidence(candidate, {})
+
+    def test_bootstrap_scope_is_frozen_after_scope_first_commit(self) -> None:
+        for layer in ("committed", "staged", "unstaged", "untracked"):
+            changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
+            changes[layer] = [governance.REC_I3_BOOTSTRAP_SCOPE_PATH]
+            with self.subTest(layer=layer), self.assertRaisesRegex(ValueError, "bootstrap scope changed"):
+                governance.validate_rec_i3_bootstrap_scope_frozen(changes)
+
+    def test_authorized_worktree_reaches_the_dependency_inventory_entrypoint(self) -> None:
+        try:
+            accepted = governance.validate_current_rec_i2b_reviewed_successor()
+        except ValueError as error:
+            self.fail(f"Authorized partial REC-I3 must preserve the predecessor and dispatch: {error}")
+        self.assertTrue(accepted)
+
+    def test_exact_paths_in_each_layer_and_no_implicit_recovery_directory_permission(self) -> None:
+        for layer in ("committed", "staged", "unstaged", "untracked"):
+            changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
+            changes[layer] = list(
+                governance.REC_I3_ALLOWED_PATHS
+                if layer == "committed"
+                else governance.REC_I3_CURRENT_MUTABLE_PATHS
+            )
+            governance.validate_rec_i3_changed_paths(changes)
+            for forbidden in (
+                "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/controller/Writer.kt",
+                "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryRunAead.kt",
+                "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/crypto/RecoveryRunAeadTest.kt",
+                "android/poc/recovery/build.gradle.kts", "android/poc/recovery/gradle.lockfile",
+                "android/poc/recovery/recovery-i2b-r8.pro", "android/gradle/verification-metadata.xml",
+                "tools/verify_poc_recovery_dependency_inventory.py", "docs/evidence/poc-recovery-001/readiness.json",
+                "docs/stage0/poc-recovery-protocol-stage0-v0.6.json", ".github/workflows/android-ci.yml",
+                "android/poc/recovery/данные.bin", "android/poc/recovery/control\nname.bin",
+                governance.REC_I3_SOURCE_PATHS[0] + ".extra", "../" + governance.REC_I3_SOURCE_PATHS[0],
+            ):
+                with self.subTest(layer=layer, forbidden=forbidden):
+                    changes[layer] = [forbidden]
+                    with self.assertRaisesRegex(ValueError, "escapes exact scope"):
+                        governance.validate_rec_i3_changed_paths(changes)
+        with self.assertRaisesRegex(ValueError, "incomplete"):
+            governance.validate_rec_i3_changed_paths({"committed": []})
+
+    def test_exact_local_and_verified_pr_contexts_reject_identity_spoofing(self) -> None:
+        base = governance.PinnedCommitIdentity(governance.REC_I3_BASE, governance.REC_I3_BASE_TREE,
+                                               (governance.REC_I3_BASE_PARENT,), True)
+        scope = governance.PinnedCommitIdentity(governance.REC_I3_SCOPE_COMMIT, governance.REC_I3_SCOPE_TREE,
+                                                (governance.REC_I3_SCOPE_PARENT,), True)
+        local = governance.RecoveryLifecycleIdentity("c" * 40, governance.REC_I3_BRANCH,
+                                                     None, None, None, None, (), None, None, False)
+        context = governance.GitHubPullRequestContext(
+            governance.GITHUB_REPOSITORY, governance.GITHUB_REPOSITORY, governance.REC_I3_BRANCH,
+            "a" * 40, "main", governance.REC_I3_BASE, "refs/pull/99/merge", "c" * 40,
+            99, True, "open", False,
+        )
+        pr = replace(local, github_pull_request_context=context)
+        for valid in (local, pr):
+            governance.validate_rec_i3_context(valid, base, scope)
+        for branch in ("main", "", "codex/spoof", governance.REC_I2B_BRANCH):
+            with self.subTest(branch=branch), self.assertRaises(ValueError):
+                governance.validate_rec_i3_context(replace(local, branch=branch), base, scope)
+        for identity_name, identity in (("base", base), ("scope", scope)):
+            for field, value in (("commit", "0" * 40), ("tree", "0" * 40),
+                                 ("parents", ("0" * 40,)), ("is_ancestor_of_head", False)):
+                mutated = replace(identity, **{field: value})
+                with self.subTest(pin=identity_name, field=field), self.assertRaises(ValueError):
+                    governance.validate_rec_i3_context(local, mutated if identity_name == "base" else base,
+                                                        mutated if identity_name == "scope" else scope)
+        for field, value in (
+            ("repository", "fork/DORA"), ("head_repository", "fork/DORA"),
+            ("head_ref", "codex/spoof"), ("base_ref", "other"), ("base_sha", "d" * 40),
+            ("head_sha", "invalid"), ("head_sha", governance.REC_I3_BASE), ("merge_sha", "b" * 40),
+            ("merge_ref", "refs/heads/main"), ("number", 0), ("state", "closed"), ("merged", True),
+        ):
+            with self.subTest(field=field, value=value), self.assertRaises(ValueError):
+                governance.validate_rec_i3_context(replace(pr, github_pull_request_context=replace(context, **{field: value})),
+                                                    base, scope)
+        with self.assertRaisesRegex(ValueError, "lacks verified"):
+            governance.select_lifecycle_branch("", governance.REC_I3_BRANCH)
+
+    def evidence_fixture(self) -> tuple[dict, dict]:
+        record = copy.deepcopy(governance.read_json(governance.REC_I3_EVIDENCE_PATH))
+        hashes = dict.fromkeys(governance.REC_I3_SOURCE_PATHS, "a" * 64)
+        record["implementationStatus"] = "LOCAL_VERIFIED"
+        record["sourceFiles"] = hashes.copy()
+        record["checks"] = [{
+            "command": "gradlew.bat spotlessCheck detekt :poc:recovery:testDebugUnitTest "
+                       ":poc:recovery:lintDebug :poc:recovery:recoveryI2bVerifyCryptoPolicy",
+            "stage": "FINAL", "outcome": "PASS", "tests": 1, "failures": 0, "errors": 0, "skipped": 0,
+        }]
+        return record, hashes
+
+    def test_evidence_requires_actual_scope_nonclaims_and_final_check_coverage(self) -> None:
+        record, hashes = self.evidence_fixture()
+        governance.validate_rec_i3_evidence(record, hashes, publication=True)
+        mutations = [
+            lambda r: r.__setitem__("fullRecI3Completed", True),
+            lambda r: r.__setitem__("recoveryPreflightUnlocked", True),
+            lambda r: r.__setitem__("readinessBlockersClosed", ["REC-RDY-07"]),
+            lambda r: r.__setitem__("scopeFirstCommit", governance.REC_I3_BASE),
+            lambda r: r.__setitem__("claimCeiling", "PASS_READY"),
+            lambda r: r.__setitem__("schemaVersion", True),
+            lambda r: r.__setitem__("implementationStatus", "IN_PROGRESS"),
+            lambda r: r.__setitem__("sourceFiles", {}),
+            lambda r: r["sourceFiles"].__setitem__(governance.REC_I3_SOURCE_PATHS[0], "b" * 64),
+            lambda r: r["sourceFiles"].__setitem__("android/app/Injected.kt", "a" * 64),
+            lambda r: r["review"].__setitem__("formalReviewer", True),
+            lambda r: r["review"].__setitem__("accountable", "APPROVED"),
+            lambda r: r["review"].__setitem__("independentAdvisory", "CLEAN"),
+            lambda r: r["checks"][0].__setitem__("outcome", "FAIL"),
+            lambda r: r["checks"][0].__setitem__("command", "gradlew.bat :app:testDebugUnitTest"),
+            lambda r: r["checks"][0].__setitem__("stage", "BASELINE"),
+            lambda r: r["checks"][0].__setitem__("failures", 1),
+            lambda r: r["checks"][0].__setitem__("tests", 0),
+            lambda r: r.__setitem__("newExecutionApproval", True),
+        ]
+        for group in ("authority", "execution"):
+            for field, original in record[group].items():
+                mutations.append(lambda r, group=group, field=field, original=original:
+                                 r[group].__setitem__(field, not original))
+                mutations.append(lambda r, group=group, field=field, original=original:
+                                 r[group].__setitem__(field, int(original)))
+        for index, mutate in enumerate(mutations):
+            candidate = copy.deepcopy(record)
+            mutate(candidate)
+            with self.subTest(mutation=index), self.assertRaises(ValueError):
+                governance.validate_rec_i3_evidence(candidate, hashes, publication=True)
+        record["implementationStatus"] = "IN_PROGRESS"
+        record["sourceFiles"] = {}
+        governance.validate_rec_i3_evidence(record, {})
+
+    def test_real_git_predecessor_changes_cannot_hide_in_reverts_renames_or_index(self) -> None:
+        relative = "android/poc/recovery/reviewed.kt"
+        for layer in ("committed", "staged", "unstaged", "untracked", "reverted", "renamed"):
+            with self.subTest(layer=layer), tempfile.TemporaryDirectory(prefix="dora-rec-i3-") as temporary:
+                repo, _ = governance.initialize_test_git_repo(Path(temporary))
+                path = repo / relative
+                path.parent.mkdir(parents=True)
+                path.write_text("reviewed", encoding="utf-8")
+                base = governance.commit_test_git_repo(repo, "reviewed base")
+                if layer == "renamed":
+                    governance.test_git(repo, "mv", relative, "renamed.kt")
+                    governance.commit_test_git_repo(repo, "rename predecessor")
+                elif layer == "untracked":
+                    (path.parent / "unexpected.kt").write_text("extra", encoding="utf-8")
+                else:
+                    path.write_text("mutation", encoding="utf-8")
+                    if layer == "staged":
+                        governance.test_git(repo, "add", relative)
+                    elif layer in ("committed", "reverted"):
+                        governance.commit_test_git_repo(repo, "mutate predecessor")
+                        if layer == "reverted":
+                            path.write_text("reviewed", encoding="utf-8")
+                            governance.commit_test_git_repo(repo, "restore predecessor")
+                changes = governance.collect_post_merge_changes(root=repo, merged_anchor=base)
+                with self.assertRaisesRegex(ValueError, "escapes exact scope"):
+                    governance.validate_rec_i3_changed_paths(changes)
+
+    def test_frozen_bootstrap_edit_and_restore_is_rejected_from_source_head_history(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-frozen-history-") as temporary:
+            repo, _ = governance.initialize_test_git_repo(Path(temporary))
+            relative = governance.REC_I3_MICROFILE_FROZEN_BOOTSTRAP_PATHS[0]
+            path = repo / relative
+            path.parent.mkdir(parents=True)
+            path.write_bytes(b"reviewed bootstrap\n")
+            base = governance.commit_test_git_repo(repo, "reviewed bootstrap checkpoint")
+            path.write_bytes(b"transient unauthorized edit\n")
+            governance.commit_test_git_repo(repo, "edit frozen bootstrap")
+            path.write_bytes(b"reviewed bootstrap\n")
+            restored = governance.commit_test_git_repo(repo, "restore frozen bootstrap")
+            tree = governance.test_git_text(repo, "rev-parse", "HEAD^{tree}")
+            synthetic = governance.test_git_text(
+                repo, "-c", "user.name=Dora Validator Test", "-c",
+                "user.email=dora-validator@example.invalid", "commit-tree", tree,
+                "-p", base, "-p", restored, input_data=b"synthetic GitHub merge",
+            )
+            local = governance.RecoveryLifecycleIdentity(
+                restored, governance.REC_I3_BRANCH, None, None, None, None, (), None, None, False,
+            )
+            context = governance.GitHubPullRequestContext(
+                governance.GITHUB_REPOSITORY, governance.GITHUB_REPOSITORY, governance.REC_I3_BRANCH,
+                restored, "main", base, "refs/pull/99/merge", "c" * 40, 99, True, "open", False,
+            )
+            pull_request = replace(
+                local, head=synthetic,
+                github_pull_request_context=replace(context, head_sha=restored, merge_sha=synthetic),
+            )
+            with (
+                patch.object(governance, "ROOT", repo),
+                patch.object(governance, "REC_I3_BASE", base),
+                patch.object(governance, "REC_I3_MICROFILE_REVIEWED_BOOTSTRAP_COMMIT", base),
+            ):
+                with self.assertRaisesRegex(ValueError, "frozen bootstrap history"):
+                    governance.validate_rec_i3_candidate_history(local)
+                governance.test_git(repo, "update-ref", "refs/heads/main", synthetic)
+                with self.assertRaisesRegex(ValueError, "frozen bootstrap history"):
+                    governance.validate_rec_i3_candidate_history(pull_request)
+
+    def test_frozen_bootstrap_staged_edit_cannot_hide_behind_restored_worktree_bytes(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-frozen-index-") as temporary:
+            repo, _ = governance.initialize_test_git_repo(Path(temporary))
+            relative = governance.REC_I3_MICROFILE_FROZEN_BOOTSTRAP_PATHS[0]
+            path = repo / relative
+            path.parent.mkdir(parents=True)
+            path.write_bytes(b"reviewed bootstrap\n")
+            base = governance.commit_test_git_repo(repo, "reviewed bootstrap checkpoint")
+            path.write_bytes(b"staged unauthorized edit\n")
+            governance.test_git(repo, "add", relative)
+            path.write_bytes(b"reviewed bootstrap\n")
+            changes = governance.collect_post_merge_changes(root=repo, merged_anchor=base)
+            self.assertIn(relative, changes["staged"])
+            self.assertEqual(b"reviewed bootstrap\n", path.read_bytes())
+            with self.assertRaisesRegex(ValueError, "staged delta escapes exact scope"):
+                governance.validate_rec_i3_changed_paths(changes)
+
+    def test_regular_source_file_rejects_git_symlink_and_missing_file(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-mode-") as temporary:
+            repo, _ = governance.initialize_test_git_repo(Path(temporary))
+            relative = governance.REC_I3_SOURCE_PATHS[0]
+            source = repo / relative
+            source.parent.mkdir(parents=True)
+            source.write_text("source", encoding="utf-8")
+            with patch.object(governance, "ROOT", repo):
+                governance.validate_rec_i3_regular_file(relative)
+                blob = governance.test_git_text(repo, "hash-object", "-w", "--stdin", input_data=b"other.kt")
+                governance.test_git(repo, "update-index", "--add", "--cacheinfo", f"120000,{blob},{relative}")
+                with self.assertRaisesRegex(ValueError, "non-regular Git entry"):
+                    governance.validate_rec_i3_regular_file(relative)
+                source.unlink()
+                with self.assertRaisesRegex(ValueError, "missing"):
+                    governance.validate_rec_i3_regular_file(relative)
+
+    def test_new_files_must_be_absent_at_base(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-base-") as temporary:
+            repo, base = governance.initialize_test_git_repo(Path(temporary))
+            with patch.object(governance, "ROOT", repo), patch.object(governance, "REC_I3_BASE", base):
+                governance.validate_rec_i3_additions_absent()
+                source = repo / governance.REC_I3_SOURCE_PATHS[0]
+                source.parent.mkdir(parents=True)
+                source.write_text("preexisting", encoding="utf-8")
+                occupied = governance.commit_test_git_repo(repo, "preexisting proposed new source")
+                with patch.object(governance, "REC_I3_BASE", occupied), self.assertRaisesRegex(ValueError, "already exists"):
+                    governance.validate_rec_i3_additions_absent()
+
+    def test_scope_mutation_after_scope_first_commit_is_rejected_in_all_layers(self) -> None:
+        for layer in ("committed", "staged", "unstaged", "untracked"):
+            changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
+            changes[layer] = [governance.REC_I3_SCOPE_PATH]
+            with self.subTest(layer=layer), self.assertRaisesRegex(ValueError, "scope changed after"):
+                governance.validate_rec_i3_scope_frozen(changes)
+
+    def test_merge_only_predecessor_mutation_and_restore_is_rejected_for_local_and_pr_heads(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-merge-") as temporary:
+            repo, _ = governance.initialize_test_git_repo(Path(temporary))
+            relative = "android/poc/recovery/frozen.kt"
+            path = repo / relative
+            path.parent.mkdir(parents=True)
+            path.write_bytes(b"frozen\n")
+            base = governance.commit_test_git_repo(repo, "reviewed base")
+            original = governance.test_git_text(repo, "rev-parse", "HEAD^{tree}")
+
+            def commit_tree(tree: str, parents: tuple[str, ...], message: str) -> str:
+                arguments = ["-c", "user.name=Dora Validator Test", "-c",
+                             "user.email=dora-validator@example.invalid", "commit-tree", tree]
+                for parent in parents:
+                    arguments.extend(("-p", parent))
+                return governance.test_git_text(repo, *arguments, input_data=message.encode("ascii"))
+
+            side1 = commit_tree(original, (base,), "first empty side")
+            side2 = commit_tree(original, (base,), "second empty side")
+            path.write_bytes(b"unauthorized merge resolution\n")
+            governance.test_git(repo, "add", relative)
+            modified = governance.test_git_text(repo, "write-tree")
+            merge1 = commit_tree(modified, (base, side1), "mutate only in merge")
+            merge2 = commit_tree(original, (merge1, side2), "restore only in merge")
+            governance.test_git(repo, "update-ref", "refs/heads/main", merge2)
+            path.write_bytes(b"frozen\n")
+            governance.test_git(repo, "add", relative)
+            changes = governance.collect_post_merge_changes(root=repo, merged_anchor=base)
+            self.assertEqual({layer: [] for layer in ("committed", "staged", "unstaged", "untracked")}, changes)
+            self.assertEqual(original, governance.test_git_text(repo, "rev-parse", "HEAD^{tree}"))
+            self.assertEqual(relative, governance.test_git_text(repo, "diff", "--name-only", base, merge1))
+            local = governance.RecoveryLifecycleIdentity(merge2, governance.REC_I3_BRANCH,
+                                                         None, None, None, None, (), None, None, False)
+            context = governance.GitHubPullRequestContext(
+                governance.GITHUB_REPOSITORY, governance.GITHUB_REPOSITORY, governance.REC_I3_BRANCH,
+                merge2, "main", base, "refs/pull/99/merge", "c" * 40, 99, True, "open", False,
+            )
+            with (
+                patch.object(governance, "ROOT", repo),
+                patch.object(governance, "REC_I3_BASE", base),
+                patch.object(governance, "REC_I3_MICROFILE_REVIEWED_BOOTSTRAP_COMMIT", base),
+            ):
+                with self.assertRaisesRegex(ValueError, "candidate history must be linear"):
+                    governance.validate_rec_i3_candidate_history(local)
+                synthetic = commit_tree(original, (base, merge2), "synthetic GitHub merge")
+                governance.test_git(repo, "update-ref", "refs/heads/main", synthetic)
+                pr = replace(local, head=synthetic,
+                             github_pull_request_context=replace(context, merge_sha=synthetic))
+                with self.assertRaisesRegex(ValueError, "candidate history must be linear"):
+                    governance.validate_rec_i3_candidate_history(pr)
+
+                # A real two-parent CI checkout of a linear source head is valid.
+                clean_synthetic = commit_tree(original, (base, side1), "clean synthetic GitHub merge")
+                governance.test_git(repo, "update-ref", "refs/heads/main", clean_synthetic)
+                clean_pr = replace(local, head=clean_synthetic,
+                                   github_pull_request_context=replace(context, head_sha=side1, merge_sha=clean_synthetic))
+                governance.validate_rec_i3_candidate_history(clean_pr)
+                governance.test_git(repo, "update-ref", "refs/heads/main", side1)
+                governance.validate_rec_i3_candidate_history(replace(local, head=side1))
+
+
+if __name__ == "__main__":
+    unittest.main()

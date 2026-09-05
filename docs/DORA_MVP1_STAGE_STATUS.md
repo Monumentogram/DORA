@@ -109,6 +109,95 @@ Offline-owned reconnect and OS-blocked execution remain open. `POC-OFFLINE-001` 
 `NOT_READY`, `NOT_RUN` and `NOT_AUTHORIZED`; active Stage 0D and every Recovery authority flag
 remain unchanged.
 
+## REC-I3 key-confirmation first-slice amendment — 5 September 2026
+
+The additive [scope](stage0/DORA_MVP1_POC_RECOVERY_I3_KEY_CONFIRMATION_CONTROLLER_SCOPE_STAGE0_V0_1.md)
+and [local evidence](evidence/poc-recovery-001/rec-i3-key-confirmation-controller-local-evidence-stage0-v0.1.json)
+record a read-only key-confirmation controller in isolated `:poc:recovery`. It checks supplied
+stored identity before opening the existing alias, preserves the effective KEY-04/KCF-07 boundary,
+and performs no key creation, durable publication or device operation. The historical statements
+below that no controller existed describe the pre-slice snapshot; the full REC-I3 harness,
+bootstrap/writer, journal, quarantine, package verification and implementation review remain
+unfinished. Confirmation-only host evidence does not complete REC-I3 or unlock Recovery preflight.
+All ten active Recovery readiness blockers and the existing campaign/admission flags remain
+unchanged. Further REC-I3 implementation continues under current OD-15 authority; no new activation
+decision is required for its already authorized scope, and no PR merge is performed by this task.
+
+## REC-I3 run-key bootstrap amendment — 5 September 2026
+
+The additive [scope](stage0/DORA_MVP1_POC_RECOVERY_I3_RUN_KEY_BOOTSTRAP_SCOPE_STAGE0_V0_2.md)
+and [local evidence](evidence/poc-recovery-001/rec-i3-run-key-bootstrap-local-evidence-stage0-v0.2.json)
+record the next partial REC-I3 slice in isolated `:poc:recovery`. The new-run controller preserves
+the exact KC01–KC13 order, creates its typed publication capability only after successful KC12
+`endTransaction`, and treats KC13 evidence failure as a committed event gap rather than rollback.
+The minimal Android `Os` adapter performs exclusive temp creation, complete short writes, file and
+directory fsync, immediate final collision check and rename under an enforceable process-wide
+same-run writer lease. The platform SQLite journal is PoC-only, schema-versioned, WAL/FULL,
+zero-autocheckpoint and foreign-key configured, with no destructive migration fallback.
+
+Host fault/order tests and Android compilation do not establish runtime filesystem, Keystore,
+SQLite or kill-safety evidence. The full REC-I3 candidate writers, reconciliation, quarantine,
+external controller, fresh exact graph/package/R8 review and accountable implementation review
+remain unfinished. `fullRecI3Completed=false`, Recovery preflight remains locked, all ten active
+readiness blockers remain open, and `POC-RECOVERY-001` remains `BLOCKED / NOT_READY`. No
+device/emulator execution, preflight, hard-kill/fault campaign, measurement, PASS, production
+admission, PR merge or future merged-main admission is performed or claimed.
+
+## REC-I3 sequential microfile publication amendment — 5 September 2026
+
+The additive
+[scope](stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_PUBLICATION_SCOPE_STAGE0_V0_1.md),
+[clarification](stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_PUBLICATION_CLARIFICATION_STAGE0_V0_1.md)
+and [ADR-0003](adr/ADR-0003-unified-poc-recovery-journal-and-run-lease.md) record another partial
+REC-I3 slice. The host-verified implementation publishes sequential encrypted microfiles and
+cumulative authenticated manifests through exact `MICRO-P01`–`P21`, derives continuation only
+from validated durable rows, and creates its capability only after confirmed transaction end.
+Android storage/SQLite adapters compile as source evidence; host SQLite migration tests are not
+device preflight. Independent/accountable implementation review remains pending.
+
+The remaining REC-I3 harness, reconciliation, quarantine, stream candidate, external controller
+and campaign work are unfinished. `fullRecI3Completed=false`; all ten active blockers,
+`POC-RECOVERY-001` `BLOCKED / NOT_READY`, the Recovery preflight lock and every execution,
+measurement and production-admission nonclaim remain unchanged.
+
+## REC-I3 microfile reconciliation/quarantine amendment — 5 September 2026
+
+The additive
+[scope](stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_RECONCILIATION_QUARANTINE_SCOPE_STAGE0_V0_1.md)
+and [ADR-0004](adr/ADR-0004-poc-recovery-reconciliation-and-quarantine.md) record a bounded partial
+REC-I3 slice. It validates the confirmation root before unrelated candidate observations,
+authenticates the longest gap-free microfile prefix with actual typed Tink operations, and records
+stable quarantine intents before no-overwrite rename and both directory fsyncs. Schema v3 remains
+PoC-only at the existing database path and rejects malformed predecessor schemas.
+
+Host SQLite/fakes and compiled Android adapters do not prove Android runtime durability. The
+remaining REC-I3 harness, stream candidate, external controller and campaign work are unfinished.
+`fullRecI3Completed=false`; all ten active blockers, `POC-RECOVERY-001` `BLOCKED / NOT_READY`, and
+every preflight, execution, measurement and production-admission nonclaim remain unchanged.
+
+Independent review of the first reconciliation candidate required correction within this same
+bounded slice. The additive
+[correction scope](stage0/DORA_MVP1_POC_RECOVERY_I3_RECONCILIATION_REVIEW_CORRECTION_STAGE0_V0_1.md)
+records production-owned observation, exact capability binding, authenticated fallback, pending
+quarantine replay, immutable typed diagnostics, descriptor bounds and exact schema-v3 checks. The
+second corrected head `5de34577295b5e5477970785f9472d51e21bfc43` received independent `REVISE`
+review (P0/P1/P2 = 0/7/1). Author-local successor `a020944f0444edfcbabc4690d4a367b1cf9e83d7`
+passed its reported host checks, but its exact independent review returned `REVISE` (P0/P1/P2 =
+0/4/2). The later `ca2db88e0c6e53f346908bdc73b628beaf6c4ec4` review recorded `REVISE`
+(P0/P1/P2 = 0/3/0), and its cursor addendum makes the effective disposition `REVISE`
+(P0/P1/P2 = 0/4/0). Optional namespace/result retention, confirmed-Q05 truth, row framing and
+production unique readback are closed prior findings. Independent review of
+`bc4f4423b535982956575f5a3480c9361eab6378` returned `REVISE` (P0/P1/P2 = 0/2/0). The reviewed
+successor `de735735ace6da3572c45dfdc58a8bbff98145b0` closed the four ca2 findings, both bc4
+findings and the duplicate-check acceptance gap, then identified zero-byte inventory regression
+and missing-final failure retention as two distinct current P1 findings. The current author
+successor passed 224 Android host tests with the zero-byte inventory and primary/secondary
+diagnostic composition matrix. Current governance checks are author evidence; both P1s remain
+open until exact-candidate independent review, and accountable review remains pending. Historical
+round-three and bc4 contextual acceptance assertions are superseded author claims. Host assertions do not establish
+Android runtime durability; immediate lstat plus rename is not kernel-atomic no-replace evidence,
+and no Recovery gate is unlocked.
+
 ## Stage 00 closure
 
 - Stage 00 is complete.
