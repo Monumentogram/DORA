@@ -6,7 +6,7 @@
   "date": "2026-09-05",
   "reviewedPredecessorCommit": "00f68af1b9cee1e4d8e92110de4ae474c2bd7b64",
   "reviewedPredecessorTree": "18df912687d020503f316d886c9e5264ab35f043",
-  "scopeFirstCommit": "f89ddba51ab337be5572771e0303b51a8d12ce2a",
+  "scopeFirstCommit": "f89ddba14d37efbdde5a99bf1fd169210ff189cb",
   "authorityRecord": "OWNER-AUTH-BATCH-20260819-01",
   "protocolId": "poc-recovery-protocol-stage0-v0.6",
   "scopeLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_RUN_KEY_BOOTSTRAP_SCOPE_STAGE0_V0_2.md",
