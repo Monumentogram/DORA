@@ -1,6 +1,7 @@
 package com.monumentogram.dora.poc.recovery.journal
 
 import android.content.Context
+import android.database.Cursor
 import com.monumentogram.dora.poc.recovery.bootstrap.AndroidRecoveryBootstrapCrypto
 import com.monumentogram.dora.poc.recovery.candidate.QuarantineBootstrapBinding
 import com.monumentogram.dora.poc.recovery.candidate.QuarantinePathState
@@ -262,33 +263,59 @@ private constructor(
                     null,
                 )
                 .use { cursor ->
-                    if (!cursor.moveToFirst()) null
-                    else {
-                        check(!cursor.moveToNext()) { "Ambiguous bootstrap row" }
-                        StoredKeyConfirmationIdentity(
-                            KeyConfirmationValue(
-                                RecoveryCandidate.fromContractId(
-                                    cursor.getString(cursor.getColumnIndexOrThrow("candidate_id"))
-                                ),
-                                runId,
-                            ),
-                            cursor.getString(
-                                cursor.getColumnIndexOrThrow("key_confirmation_relative_name")
-                            ),
-                            cursor.getLong(cursor.getColumnIndexOrThrow("key_confirmation_bytes")),
-                            Sha256Value.fromBytes(
-                                cursor.getBlob(
-                                    cursor.getColumnIndexOrThrow("key_confirmation_sha256")
-                                )
-                            ),
-                            Sha256Value.fromBytes(
-                                cursor.getBlob(
-                                    cursor.getColumnIndexOrThrow("canonical_alias_sha256")
-                                )
-                            ),
-                        )
-                    }
+                    decodeBootstrapIdentity(cursor, runId)
                 }
+
+        @Suppress("ThrowsCount")
+        internal fun decodeBootstrapIdentity(
+            cursor: Cursor,
+            runId: RunId,
+        ): StoredKeyConfirmationIdentity? {
+            when (cursor.count) {
+                0 -> return null
+                1 -> Unit
+                else -> throw bootstrapStructuralFailure("Ambiguous bootstrap row")
+            }
+            if (!cursor.moveToFirst()) {
+                throw bootstrapStructuralFailure("Bootstrap cursor could not position its only row")
+            }
+            val candidateId = cursor.getString(cursor.getColumnIndexOrThrow("candidate_id"))
+            val relativeName =
+                cursor.getString(cursor.getColumnIndexOrThrow("key_confirmation_relative_name"))
+            val ciphertextBytes =
+                cursor.getLong(cursor.getColumnIndexOrThrow("key_confirmation_bytes"))
+            val ciphertextSha256 =
+                cursor.getBlob(cursor.getColumnIndexOrThrow("key_confirmation_sha256"))
+            val canonicalAliasSha256 =
+                cursor.getBlob(cursor.getColumnIndexOrThrow("canonical_alias_sha256"))
+            return try {
+                StoredKeyConfirmationIdentity(
+                    KeyConfirmationValue(
+                        RecoveryCandidate.fromContractId(candidateId),
+                        runId,
+                    ),
+                    relativeName,
+                    ciphertextBytes,
+                    Sha256Value.fromBytes(ciphertextSha256),
+                    Sha256Value.fromBytes(canonicalAliasSha256),
+                )
+            } catch (error: IllegalArgumentException) {
+                throw bootstrapStructuralFailure("Malformed bootstrap identity", error)
+            }
+        }
+
+        private fun bootstrapStructuralFailure(
+            message: String,
+            cause: Throwable = IllegalStateException(message),
+        ): RecoverySourceAccessException =
+            RecoverySourceAccessException(
+                RecoveryFailureDiagnostic.capture(
+                    RecoveryFailureCategory.STRUCTURAL,
+                    cause,
+                    RecoveryFailureStage.JOURNAL,
+                ),
+                cause,
+            )
 
         const val CONFIRMATION_FINAL = "key-confirmation/run.kc"
         const val CONFIRMATION_TEMP = "key-confirmation/run.kc.tmp"

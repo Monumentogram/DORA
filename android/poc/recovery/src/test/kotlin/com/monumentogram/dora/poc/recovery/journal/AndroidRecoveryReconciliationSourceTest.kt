@@ -1,5 +1,6 @@
 package com.monumentogram.dora.poc.recovery.journal
 
+import android.database.Cursor
 import com.monumentogram.dora.poc.recovery.candidate.AndroidRecoveryMicrofileReconciliation
 import com.monumentogram.dora.poc.recovery.candidate.QuarantineBootstrapBinding
 import com.monumentogram.dora.poc.recovery.candidate.QuarantineIntentState
@@ -11,6 +12,7 @@ import com.monumentogram.dora.poc.recovery.candidate.RecoveryMicrofileUnitRow
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineEvidenceSink
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineIntentRow
 import com.monumentogram.dora.poc.recovery.candidate.RecoverySourceAccessException
+import com.monumentogram.dora.poc.recovery.contract.KeyConfirmationValue
 import com.monumentogram.dora.poc.recovery.contract.RecoveryCandidate
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineArtifactRole
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntent
@@ -18,18 +20,58 @@ import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntentInpu
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineObservedState
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
+import com.monumentogram.dora.poc.recovery.controller.StoredKeyConfirmationIdentity
 import com.monumentogram.dora.poc.recovery.storage.AndroidOsRecoveryReconciliationStorage
 import com.monumentogram.dora.poc.recovery.storage.BootstrapPathType
 import com.monumentogram.dora.poc.recovery.storage.RecoveryReconciliationDescriptor
 import com.monumentogram.dora.poc.recovery.storage.RecoveryReconciliationOs
 import com.monumentogram.dora.poc.recovery.storage.RecoveryReconciliationStat
 import java.io.File
+import java.lang.reflect.InvocationHandler
+import java.lang.reflect.Proxy
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AndroidRecoveryReconciliationSourceTest {
+    @Test
+    fun `bootstrap cursor decoder returns null for zero rows`() {
+        val probe = CursorProbe(emptyList())
+
+        assertEquals(
+            null,
+            AndroidRecoveryReconciliationSource.decodeBootstrapIdentity(probe.cursor, RUN),
+        )
+        assertEquals(0, probe.getterPositions.size)
+    }
+
+    @Test
+    fun `bootstrap cursor decoder decodes the one stored identity at position zero`() {
+        val row = bootstrapRow()
+        val probe = CursorProbe(listOf(row))
+
+        val identity =
+            AndroidRecoveryReconciliationSource.decodeBootstrapIdentity(probe.cursor, RUN)
+
+        assertEquals(expectedBootstrapIdentity(row), identity)
+        assertEquals(listOf(0, 0, 0, 0, 0), probe.getterPositions)
+        assertEquals(0, probe.advanceCount)
+    }
+
+    @Test
+    fun `bootstrap cursor decoder rejects two rows as a structural journal failure`() {
+        val probe = CursorProbe(listOf(bootstrapRow(), bootstrapRow()))
+
+        val failure = assertThrowsSource {
+            AndroidRecoveryReconciliationSource.decodeBootstrapIdentity(probe.cursor, RUN)
+        }
+
+        assertEquals(RecoveryFailureCategory.STRUCTURAL, failure.diagnostic.category)
+        assertEquals(RecoveryFailureStage.JOURNAL, failure.diagnostic.stage)
+        assertEquals(0, probe.getterPositions.size)
+    }
+
     @Test
     fun `actual source treats never-created quarantine namespace as empty`() {
         val os =
@@ -220,6 +262,94 @@ class AndroidRecoveryReconciliationSourceTest {
         } catch (error: RecoverySourceAccessException) {
             error
         }
+
+    private fun bootstrapRow() =
+        mapOf(
+            "candidate_id" to RecoveryCandidate.MICROFILE.contractId,
+            "key_confirmation_relative_name" to "key-confirmation/run.kc",
+            "key_confirmation_bytes" to 17L,
+            "key_confirmation_sha256" to ByteArray(32) { 0x11 },
+            "canonical_alias_sha256" to ByteArray(32) { 0x22 },
+        )
+
+    private fun expectedBootstrapIdentity(row: Map<String, Any>) =
+        StoredKeyConfirmationIdentity(
+            KeyConfirmationValue(RecoveryCandidate.MICROFILE, RUN),
+            row.getValue("key_confirmation_relative_name") as String,
+            row.getValue("key_confirmation_bytes") as Long,
+            Sha256Value.fromBytes(row.getValue("key_confirmation_sha256") as ByteArray),
+            Sha256Value.fromBytes(row.getValue("canonical_alias_sha256") as ByteArray),
+        )
+
+    private class CursorProbe(private val rows: List<Map<String, Any>>) : InvocationHandler {
+        val getterPositions = mutableListOf<Int>()
+        var advanceCount = 0
+        private var position = -1
+        private val columns =
+            listOf(
+                "candidate_id",
+                "key_confirmation_relative_name",
+                "key_confirmation_bytes",
+                "key_confirmation_sha256",
+                "canonical_alias_sha256",
+            )
+
+        val cursor: Cursor =
+            Proxy.newProxyInstance(
+                Cursor::class.java.classLoader,
+                arrayOf(Cursor::class.java),
+                this,
+            ) as Cursor
+
+        @Suppress("CyclomaticComplexMethod")
+        override fun invoke(
+            proxy: Any,
+            method: java.lang.reflect.Method,
+            args: Array<Any?>?,
+        ): Any? =
+            when (method.name) {
+                "getCount" -> rows.size
+                "getPosition" -> position
+                "moveToFirst" -> moveTo(0)
+                "moveToNext" -> {
+                    advanceCount += 1
+                    moveTo(position + 1)
+                }
+                "getColumnIndexOrThrow" -> {
+                    val column = args!![0] as String
+                    columns.indexOf(column).takeIf { it >= 0 }
+                        ?: throw IllegalArgumentException("Unknown column: $column")
+                }
+                "getString" -> value(args).also { getterPositions += position } as String
+                "getLong" -> value(args).also { getterPositions += position } as Long
+                "getBlob" ->
+                    (value(args).also { getterPositions += position } as ByteArray).copyOf()
+                "close" -> Unit
+                "isClosed" -> false
+                "toString" -> "CursorProbe(position=$position)"
+                "hashCode" -> System.identityHashCode(proxy)
+                "equals" -> proxy === args!![0]
+                else ->
+                    throw UnsupportedOperationException("Unexpected cursor call: ${method.name}")
+            }
+
+        private fun moveTo(requested: Int): Boolean {
+            position =
+                when {
+                    requested < 0 -> -1
+                    requested >= rows.size -> rows.size
+                    else -> requested
+                }
+            return position in rows.indices
+        }
+
+        private fun value(args: Array<Any?>?): Any {
+            check(position in rows.indices) {
+                "Cursor position $position is outside ${rows.size} rows"
+            }
+            return rows[position].getValue(columns[args!![0] as Int])
+        }
+    }
 
     private class Descriptor(val path: String) : RecoveryReconciliationDescriptor
 
