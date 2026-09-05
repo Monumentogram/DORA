@@ -82,7 +82,11 @@
     {
       "command": "python tools/test_poc_recovery_i3_governance.py and exact candidate validator",
       "stage": "GOVERNANCE",
-      "outcome": "PENDING"
+      "outcome": "PASS",
+      "tests": 21,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
     }
   ],
   "review": {
