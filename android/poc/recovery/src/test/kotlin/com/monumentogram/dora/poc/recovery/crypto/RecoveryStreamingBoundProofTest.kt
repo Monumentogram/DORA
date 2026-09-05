@@ -169,6 +169,49 @@ class RecoveryStreamingBoundProofTest {
     }
 
     @Test
+    fun `Option A retains the authenticated preexisting tail after an appended authentication failure`() {
+        val emittedQ2 = buildScenario(targetQ = 2, triggerBytes = 1)
+        val checkpointQ2 =
+            emittedQ2.copy(
+                priorCommittedEnd = committedEnd(2),
+                checkpointCiphertextBytes = 2 * CIPHERTEXT_SEGMENT_BYTES,
+            )
+        val publicRead =
+            readPublic(
+                checkpointQ2.keyset,
+                selectSource(checkpointQ2, TailSource.ACTUAL_TAIL, appendBytes(1)),
+            )
+
+        assertTrue(publicRead.terminalError != null)
+        assertEquals(listOf(4_056, 4_080), publicRead.successfulReadSizes)
+        assertEquals(8_136, publicRead.recoveredBytes.size)
+
+        val recovery =
+            RecoveryStreamingAuthenticatedTailController(
+                    acceptedEndExclusive = checkpointQ2.acceptedWatermark,
+                    durableCheckpointEndExclusive = checkpointQ2.priorCommittedEnd,
+                    oracle = checkpointQ2.oracle,
+                )
+                .recover(
+                    completedAuthenticatedReads = listOf(publicRead.recoveredBytes),
+                    terminal = AuthenticatedTailTerminal.AuthenticationFailure,
+                )
+
+        assertEquals(4_056, recovery.durableCheckpointEndExclusive)
+        assertEquals(8_136, recovery.recoveredEndExclusive)
+        assertEquals(4_080, recovery.recoveredBeyondCheckpointBytes)
+        assertArrayEquals(checkpointQ2.oracle.copyOf(8_136), recovery.returnedBytes)
+        assertEquals(
+            BoundedRemainderClassification.AUTHENTICATION_FAILURE_QUARANTINED,
+            recovery.remainder,
+        )
+        assertTrue(!recovery.metadataAdopted)
+        assertTrue(!recovery.processingIntentAdopted)
+        assertEquals(8_160, recovery.designBound.maximumExtensionBytes)
+        assertEquals(255, recovery.designBound.maximumExtensionMillis)
+    }
+
+    @Test
     fun `partial lookahead and in progress calls preserve raw R at or below prior A`() {
         verifyHeldWrite(
             HeldWriteCase(
