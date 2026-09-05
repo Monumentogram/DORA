@@ -181,10 +181,12 @@ bounded slice. The additive
 records production-owned observation, exact capability binding, authenticated fallback, pending
 quarantine replay, immutable typed diagnostics, descriptor bounds and exact schema-v3 checks. The
 second corrected head `5de34577295b5e5477970785f9472d51e21bfc43` received independent `REVISE`
-review (P0/P1/P2 = 0/7/1). Round-two correction of the reported production inventory, identity
-digest, typed diagnostics, publication-chain, journal readback, actual storage and descriptor
-ownership gaps is in progress. Its predecessor checks are historical evidence only. Host
-assertions and compilation do not establish Android runtime durability or unlock any Recovery gate.
+review (P0/P1/P2 = 0/7/1). A local round-two successor corrects the reported production inventory,
+all-field bounded identity digest, typed diagnostics, publication-chain, journal readback, actual
+storage and descriptor-ownership gaps and now awaits fresh independent exact-head review. Its
+actual-entry host assertions supersede the earlier helper-only ordered-row and adapter-coverage
+claims. They do not establish Android runtime durability; immediate lstat plus rename is not
+kernel-atomic no-replace evidence, and no Recovery gate is unlocked.
 
 ## Stage 00 closure
 

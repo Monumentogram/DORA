@@ -13,17 +13,42 @@ import validate_poc_recovery_governance as governance
 
 
 class RecoveryI3GovernanceTests(unittest.TestCase):
-    def test_reconciliation_round2_truth_is_exact_and_open(self) -> None:
+    def test_reconciliation_round2_truth_is_exact_and_locally_verified(self) -> None:
         record = governance.read_json(governance.REC_I3_RECON_EVIDENCE_PATH)
-        self.assertEqual("IN_PROGRESS", record["implementationStatus"])
+        self.assertEqual("LOCAL_VERIFIED", record["implementationStatus"])
         self.assertEqual("REVISE", record["review"]["independentAdvisory"])
         self.assertEqual({"p0": 0, "p1": 7, "p2": 1}, record["review"]["counts"])
+        self.assertEqual([], record["round2Correction"]["openFindingIds"])
+        self.assertTrue(record["round2Correction"]["actualEntryRegressionComplete"])
         self.assertEqual(
-            list(governance.REC_I3_RECON_ROUND2_FINDINGS),
-            record["round2Correction"]["openFindingIds"],
+            list(governance.REC_I3_RECON_ACCEPTANCE_CASES),
+            [item["id"] for item in record["round2Correction"]["acceptanceCases"]],
         )
-        self.assertFalse(record["round2Correction"]["actualEntryRegressionComplete"])
         governance.validate_rec_i3_reconciliation_successor(publication=False)
+
+        for mutation in ("open", "false-completion", "missing-acceptance", "clean", "in-progress-missing"):
+            changed = copy.deepcopy(record)
+            if mutation == "open":
+                changed["round2Correction"]["openFindingIds"].append("P1-INVENTORY")
+            elif mutation == "false-completion":
+                changed["round2Correction"]["actualEntryRegressionComplete"] = False
+            elif mutation == "missing-acceptance":
+                changed["round2Correction"]["acceptanceCases"].pop()
+            elif mutation == "in-progress-missing":
+                changed["implementationStatus"] = "IN_PROGRESS"
+                changed["round2Correction"]["status"] = "IN_PROGRESS"
+                changed["round2Correction"]["actualEntryRegressionComplete"] = False
+                changed["round2Correction"]["openFindingIds"] = list(
+                    governance.REC_I3_RECON_ROUND2_FINDINGS[:-1]
+                )
+            else:
+                changed["review"]["independentAdvisory"] = "CLEAN"
+            with self.subTest(mutation=mutation), patch.object(
+                governance,
+                "read_json",
+                return_value=changed,
+            ), self.assertRaises(ValueError):
+                governance.validate_rec_i3_reconciliation_successor(publication=False)
 
     def test_reconciliation_correction_scope_and_new_files_are_exactly_declared(self) -> None:
         self.assertEqual(

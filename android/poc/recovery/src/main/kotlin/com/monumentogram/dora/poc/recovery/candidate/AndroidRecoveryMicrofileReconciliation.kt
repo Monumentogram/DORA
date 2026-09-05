@@ -15,14 +15,15 @@ internal object AndroidRecoveryMicrofileReconciliation {
         context: Context,
         evidence: RecoveryQuarantineEvidenceSink,
     ): RecoveryMicrofileReconciliationController {
+        val storage = AndroidOsRecoveryReconciliationStorage(context)
         val quarantine =
             RecoveryQuarantineController(
-                AndroidOsRecoveryReconciliationStorage(context),
+                storage,
                 AndroidRecoveryQuarantineJournal(context),
                 evidence,
             )
         return RecoveryMicrofileReconciliationController(
-            source = AndroidRecoveryReconciliationSource(context),
+            source = AndroidRecoveryReconciliationSource.withStorage(context, storage),
             crypto = AndroidRecoveryMicrofileCrypto(),
             confirmationController = RecoveryKeyConfirmationController(),
             quarantineController = quarantine,

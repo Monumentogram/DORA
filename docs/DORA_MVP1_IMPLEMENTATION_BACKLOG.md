@@ -85,10 +85,15 @@ that bounded slice. The corrected host boundary owns platform observations, bind
 authority to the candidate, manifest and ordered rows, preserves authenticated fallback prefixes,
 and exercises pending quarantine replay, typed failures, descriptor bounds and schema-v3
 validation. Independent review of corrected head `5de34577295b5e5477970785f9472d51e21bfc43`
-returned `REVISE` (P0/P1/P2 = 0/7/1). Round-two correction is `IN_PROGRESS`; predecessor test
-evidence does not verify the pending production inventory, canonical row digest, typed diagnostic,
-actual publication chain, conservative journal readback, actual storage and descriptor-ownership
-repairs. Android filesystem durability and every wider REC-I3 gate remain unproven.
+returned `REVISE` (P0/P1/P2 = 0/7/1). The locally verified round-two successor now routes the
+production composition through one owned active/quarantine inventory and injected storage path,
+binds prefix authority to a bounded canonical digest of all 15 row fields, retains typed
+crypto/source diagnostics, validates the actual publication chain, and resolves ambiguous journal
+outcomes through exact-ID plus unique-source full-row readback. Actual-entry host tests cover the
+POSIX zero-EOF descriptor contract and exactly-once closure. These claims supersede the earlier
+helper-only ordered-row and adapter-coverage claims and await fresh independent exact-head review.
+Immediate lstat plus rename is not kernel-atomic no-replace proof; Android filesystem durability and
+every wider REC-I3 gate remain unproven.
 
 ## 1. Правила выполнения
 

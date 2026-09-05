@@ -52,12 +52,16 @@ internal class AndroidRecoveryQuarantineJournal(context: Context) : RecoveryQuar
         )
 
     override fun loadPending(runId: RunId): List<RecoveryQuarantineIntentRow> {
+        return loadAll(runId).filter { it.state == QuarantineIntentState.PENDING }
+    }
+
+    fun loadAll(runId: RunId): List<RecoveryQuarantineIntentRow> {
         val rows = mutableListOf<RecoveryQuarantineIntentRow>()
         AndroidRecoveryJournalDatabase.writable(applicationContext)
             .query(
                 RecoveryJournalSchema.QUARANTINE_TABLE,
                 COLUMNS,
-                "run_id=? AND state='PENDING'",
+                "run_id=?",
                 arrayOf(runId.toCanonicalString()),
                 null,
                 null,

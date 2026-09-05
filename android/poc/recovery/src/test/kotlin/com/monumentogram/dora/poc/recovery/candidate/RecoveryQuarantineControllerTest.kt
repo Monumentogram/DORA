@@ -149,10 +149,41 @@ class RecoveryQuarantineControllerTest {
     fun `load and begin failures are immutable typed retry diagnostics`() {
         val load = Fixture(journalFault = "load").run() as QuarantineResult.RetryRequired
         assertEquals(QuarantineStep.Q01, load.failedStep)
-        assertEquals(RecoveryFailureCategory.OPERATIONAL, load.diagnostic?.category)
+        assertEquals(RecoveryFailureCategory.UNKNOWN_OUTCOME, load.diagnostic?.category)
+        assertEquals(RecoveryFailureStage.JOURNAL, load.diagnostic?.stage)
         val begin = Fixture(journalFault = "begin").run() as QuarantineResult.RetryRequired
         assertEquals(QuarantineStep.Q01, begin.failedStep)
         assertEquals(RecoveryFailureCategory.OPERATIONAL, begin.diagnostic?.category)
+    }
+
+    @Test
+    fun `Q01 Q05 and final readback failures never escape and keep unknown remainder`() {
+        listOf(
+                Fixture(transactionEndFault = 1, journalFault = "load-2") to QuarantineStep.Q01,
+                Fixture(transactionEndFault = 2, journalFault = "load-2") to QuarantineStep.Q05,
+                Fixture(journalFault = "load-2") to QuarantineStep.Q05,
+            )
+            .forEach { (fixture, step) ->
+                val result = fixture.run() as QuarantineResult.RetryRequired
+                assertEquals(step, result.failedStep)
+                assertEquals(RecoveryFailureStage.JOURNAL, result.diagnostic?.stage)
+                assertTrue(result.remainder.completionCommit != QuarantineOperationState.CONFIRMED)
+            }
+    }
+
+    @Test
+    fun `unique source race with different derived identity is retained and rejected`() {
+        val fixture = Fixture(journalFault = "insert-race")
+        val result = fixture.run() as QuarantineResult.RetryRequired
+        assertEquals(QuarantineStep.Q01, result.failedStep)
+        assertTrue(result.row != null)
+        assertTrue(
+            result.row!!.intentId !=
+                com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntent.calculate(
+                    fixture.input
+                )
+        )
+        assertFalse("rename" in fixture.events)
     }
 
     private class Fixture(
@@ -228,9 +259,11 @@ class RecoveryQuarantineControllerTest {
     ) : RecoveryQuarantineJournal {
         var row: RecoveryQuarantineIntentRow? = null
         private var transactionOrdinal = 0
+        private var loadCalls = 0
 
         override fun load(intentId: Sha256Value): RecoveryQuarantineIntentRow? {
-            if (fault == "load") error("load")
+            loadCalls++
+            if (fault == "load" || fault == "load-$loadCalls") error("load")
             if (row != null) events += "load"
             return row?.takeIf { it.intentId == intentId }
         }
@@ -238,8 +271,7 @@ class RecoveryQuarantineControllerTest {
         override fun loadBySource(input: RecoveryQuarantineIntentInput) = row?.takeIf {
             it.input.runId == input.runId &&
                 it.input.candidate == input.candidate &&
-                it.input.sourceRelativeName == input.sourceRelativeName &&
-                it.input.sourceSha256 == input.sourceSha256
+                it.input.sourceRelativeName == input.sourceRelativeName
         }
 
         override fun beginNonExclusive(): RecoveryQuarantineTransaction {
@@ -253,6 +285,23 @@ class RecoveryQuarantineControllerTest {
 
                 override fun insert(row: RecoveryQuarantineIntentRow) {
                     events += "insert"
+                    if (fault == "insert-race") {
+                        val racedInput =
+                            row.input.copy(sourceSha256 = Sha256Value.calculate(byteArrayOf(99)))
+                        this@Journal.row =
+                            row.copy(
+                                intentId =
+                                    com.monumentogram.dora.poc.recovery.contract
+                                        .RecoveryQuarantineIntent
+                                        .calculate(racedInput),
+                                input = racedInput,
+                                destinationRelativeName =
+                                    com.monumentogram.dora.poc.recovery.contract
+                                        .RecoveryQuarantineIntent
+                                        .destination(racedInput),
+                            )
+                        error("unique source race")
+                    }
                     inserted = row
                 }
 

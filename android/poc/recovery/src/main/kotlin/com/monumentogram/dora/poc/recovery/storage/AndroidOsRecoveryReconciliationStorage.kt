@@ -11,40 +11,46 @@ import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineIntentRow
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineStorage
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
-import java.io.ByteArrayOutputStream
-import java.io.Closeable
 import java.io.File
-import java.io.FileInputStream
-import java.security.MessageDigest
+import java.io.FileDescriptor
 
-internal interface RecoveryReadDescriptor : Closeable {
-    val regularFile: Boolean
-    val size: Long
+internal interface RecoveryReconciliationDescriptor
 
-    fun read(buffer: ByteArray, offset: Int, length: Int): Int
+internal data class RecoveryReconciliationStat(val type: BootstrapPathType, val size: Long = 0)
+
+internal class RecoveryUnsafePathException(message: String) : IllegalStateException(message)
+
+/** Raw Android-Os-shaped seam. read uses POSIX semantics: positive progress, zero EOF. */
+internal interface RecoveryReconciliationOs {
+    fun lstat(path: String): RecoveryReconciliationStat?
+
+    fun list(path: String): List<String>
+
+    fun mkdir(path: String, mode: Int)
+
+    fun open(path: String, flags: Int): RecoveryReconciliationDescriptor
+
+    fun fstat(descriptor: RecoveryReconciliationDescriptor): RecoveryReconciliationStat
+
+    fun read(
+        descriptor: RecoveryReconciliationDescriptor,
+        buffer: ByteArray,
+        offset: Int,
+        count: Int,
+    ): Int
+
+    fun rename(source: String, destination: String)
+
+    fun fsync(descriptor: RecoveryReconciliationDescriptor)
+
+    fun close(descriptor: RecoveryReconciliationDescriptor)
 }
 
-internal fun interface RecoveryDescriptorOpener {
-    fun open(path: String): RecoveryReadDescriptor
-}
-
-internal class RecoveryPathSafetyValidator(private val observe: (File) -> BootstrapPathType) {
-    fun requireDirectory(file: File) {
-        check(observe(file) == BootstrapPathType.DIRECTORY) {
-            "Unsafe Recovery directory: ${file.name}"
-        }
-    }
-
-    fun validateParentChain(root: File, leaf: File) {
-        requireDirectory(root)
-        var current = leaf.parentFile
-        while (current != null && current != root) {
-            requireDirectory(current)
-            current = current.parentFile
-        }
-        check(current == root) { "Recovery path escaped its root" }
-    }
-}
+internal data class RecoveryInventoryArtifact(
+    val relativeName: String,
+    val artifact: RecoveryArtifactBytes?,
+    val pathType: BootstrapPathType,
+)
 
 @Suppress("MagicNumber")
 internal object RecoveryArtifactRoleBounds {
@@ -58,73 +64,41 @@ internal object RecoveryArtifactRoleBounds {
         }
 }
 
-@Suppress("MagicNumber")
-internal class RecoveryBoundedDescriptorReader(private val opener: RecoveryDescriptorOpener) {
-    fun read(path: String, maximumBytes: Long): ByteArray {
-        require(maximumBytes > 0)
-        return opener.open(path).use { descriptor ->
-            check(descriptor.regularFile && descriptor.size in 0..maximumBytes) {
-                "Recovery artifact exceeds its role bound"
-            }
-            val output = ByteArrayOutputStream(descriptor.size.toInt())
-            val buffer = ByteArray(minOf(8192, maximumBytes.toInt()))
-            var count = 0L
-            while (count < descriptor.size) {
-                val read =
-                    descriptor.read(
-                        buffer,
-                        0,
-                        minOf(buffer.size.toLong(), descriptor.size - count).toInt(),
-                    )
-                check(read > 0) { "Recovery artifact read made no progress" }
-                output.write(buffer, 0, read)
-                count += read
-            }
-            check(descriptor.read(buffer, 0, 1) == -1) {
-                "Recovery artifact grew during bounded read"
-            }
-            output.toByteArray()
-        }
-    }
-}
-
-@Suppress("TooManyFunctions", "MagicNumber")
+@Suppress(
+    "TooGenericExceptionCaught",
+    "ThrowingExceptionFromFinally",
+    "TooManyFunctions",
+    "MagicNumber",
+    "LongMethod",
+)
 internal class AndroidOsRecoveryReconciliationStorage
-private constructor(
+internal constructor(
     private val root: File,
-    private val boundedReader: RecoveryBoundedDescriptorReader,
+    private val os: RecoveryReconciliationOs,
 ) : RecoveryQuarantineStorage {
-    private val pathSafety = RecoveryPathSafetyValidator(::type)
-
     constructor(
         context: Context
-    ) : this(
-        context.applicationContext.noBackupFilesDir,
-        RecoveryBoundedDescriptorReader(AndroidRecoveryDescriptorOpener),
-    )
+    ) : this(context.applicationContext.noBackupFilesDir, AndroidRecoveryReconciliationOs)
 
     override fun prepare(runId: RunId) {
-        val paths =
-            RecoveryReconciliationPathPolicy.paths(
-                root,
-                runId,
-                "key-confirmation/run.kc",
-                "objects/q-${"0".repeat(64)}.bin",
-            )
+        val paths = paths(runId, "key-confirmation/run.kc", zeroDestination())
+        requireActiveAncestors(paths)
         val base = File(root, "poc-recovery/v1")
-        pathSafety.requireDirectory(base)
         createDirectory(File(base, "quarantine"))
         createDirectory(paths.quarantineRunRoot)
         createDirectory(paths.objectsRoot)
+        requireQuarantineAncestors(paths)
     }
 
     fun activeArtifactExists(runId: RunId, relativeName: String): Boolean {
-        val paths = inspectionPaths(runId, relativeName)
-        pathSafety.validateParentChain(paths.activeRunRoot, paths.source)
+        val paths = paths(runId, relativeName, zeroDestination())
+        requireActiveAncestors(paths)
+        requireDirectoryChain(paths.activeRunRoot, requireNotNull(paths.source.parentFile))
         return when (type(paths.source)) {
             BootstrapPathType.ABSENT -> false
             BootstrapPathType.REGULAR -> true
-            else -> error("Unsafe Recovery active artifact: $relativeName")
+            else ->
+                throw RecoveryUnsafePathException("Unsafe Recovery active artifact: $relativeName")
         }
     }
 
@@ -134,180 +108,382 @@ private constructor(
         maximumBytes: Long,
     ): RecoveryArtifactBytes? {
         require(maximumBytes > 0)
-        val paths = inspectionPaths(runId, relativeName)
-        pathSafety.validateParentChain(paths.activeRunRoot, paths.source)
-        if (type(paths.source) == BootstrapPathType.ABSENT) return null
-        check(type(paths.source) == BootstrapPathType.REGULAR) { "Unsafe Recovery active artifact" }
-        return RecoveryArtifactBytes(
-            relativeName,
-            boundedReader.read(
-                paths.source.path,
-                minOf(maximumBytes, RecoveryArtifactRoleBounds.maximumFor(relativeName)),
-            ),
-        )
+        val paths = paths(runId, relativeName, zeroDestination())
+        requireActiveAncestors(paths)
+        requireDirectoryChain(paths.activeRunRoot, requireNotNull(paths.source.parentFile))
+        return when (type(paths.source)) {
+            BootstrapPathType.ABSENT -> null
+            BootstrapPathType.REGULAR ->
+                RecoveryArtifactBytes(
+                    relativeName,
+                    readBounded(
+                        paths.source,
+                        minOf(maximumBytes, RecoveryArtifactRoleBounds.maximumFor(relativeName)),
+                    ),
+                )
+            else ->
+                throw RecoveryUnsafePathException("Unsafe Recovery active artifact: $relativeName")
+        }
     }
 
-    fun listActiveArtifacts(runId: RunId): List<RecoveryArtifactBytes> {
-        val runRoot = inspectionPaths(runId, "key-confirmation/run.kc").activeRunRoot
-        val result = mutableListOf<RecoveryArtifactBytes>()
-        fun visit(directory: File) {
-            val children = directory.listFiles() ?: error("Cannot enumerate Recovery directory")
-            for (child in children.sortedBy { it.name }) {
-                when (type(child)) {
-                    BootstrapPathType.DIRECTORY -> visit(child)
-                    BootstrapPathType.REGULAR -> {
-                        val relative = child.relativeTo(runRoot).invariantSeparatorsPath
-                        result +=
-                            RecoveryArtifactBytes(
-                                relative,
-                                boundedReader.read(
-                                    child.path,
-                                    RecoveryArtifactRoleBounds.maximumFor(relative),
-                                ),
-                            )
-                    }
-                    else -> error("Unsafe Recovery inventory object: ${child.name}")
-                }
-            }
-        }
-        visit(runRoot)
+    fun listActiveArtifacts(runId: RunId): List<RecoveryArtifactBytes> =
+        listActiveInventory(runId).map { requireNotNull(it.artifact) }
+
+    fun listActiveInventory(runId: RunId): List<RecoveryInventoryArtifact> {
+        val paths = paths(runId, "key-confirmation/run.kc", zeroDestination())
+        requireActiveAncestors(paths)
+        val result = mutableListOf<RecoveryInventoryArtifact>()
+        visitActive(paths.activeRunRoot, paths.activeRunRoot, result)
         return java.util.Collections.unmodifiableList(result)
     }
 
-    private fun inspectionPaths(runId: RunId, relativeName: String): RecoveryReconciliationPaths {
-        val paths =
-            RecoveryReconciliationPathPolicy.paths(
-                root,
-                runId,
-                relativeName,
-                "objects/q-${"0".repeat(64)}.bin",
-            )
-        val base = File(root, "poc-recovery")
-        listOf(root, base, File(base, "v1"), File(base, "v1/runs"), paths.activeRunRoot)
-            .forEach(pathSafety::requireDirectory)
-        return paths
+    /** Quarantine inventory is one level only and report-only. */
+    fun listQuarantineInventory(runId: RunId): List<RecoveryInventoryArtifact> {
+        val paths = paths(runId, "key-confirmation/run.kc", zeroDestination())
+        requireQuarantineAncestors(paths)
+        return os.list(paths.objectsRoot.path)
+            .sorted()
+            .map { childName ->
+                requireSingleName(childName)
+                val child = File(paths.objectsRoot, childName)
+                when (val childType = type(child)) {
+                    BootstrapPathType.REGULAR ->
+                        RecoveryInventoryArtifact(
+                            "objects/$childName",
+                            RecoveryArtifactBytes(
+                                "objects/$childName",
+                                readBounded(
+                                    child,
+                                    RecoveryArtifactRoleBounds.maximumFor("unknown.bin"),
+                                ),
+                            ),
+                            childType,
+                        )
+                    else -> RecoveryInventoryArtifact("objects/$childName", null, childType)
+                }
+            }
+            .let { java.util.Collections.unmodifiableList(it) }
     }
 
     override fun inspect(row: RecoveryQuarantineIntentRow): QuarantinePathObservation {
         val paths = paths(row)
-        pathSafety.validateParentChain(paths.activeRunRoot, paths.source)
-        pathSafety.validateParentChain(paths.quarantineRunRoot, paths.destination)
-        return QuarantinePathObservation(state(paths.source, row), state(paths.destination, row))
+        requireAllAncestors(paths)
+        return QuarantinePathObservation(
+            state(
+                paths.source,
+                row.input.sourceRelativeName,
+                row.input.sourceBytes,
+                row.input.sourceSha256,
+            ),
+            state(
+                paths.destination,
+                row.input.sourceRelativeName,
+                row.input.sourceBytes,
+                row.input.sourceSha256,
+            ),
+        )
     }
 
     override fun renameNoOverwrite(row: RecoveryQuarantineIntentRow) {
         val paths = paths(row)
-        check(state(paths.source, row) == QuarantinePathState.EXACT) { "Quarantine source changed" }
+        requireAllAncestors(paths)
+        check(
+            state(
+                paths.source,
+                row.input.sourceRelativeName,
+                row.input.sourceBytes,
+                row.input.sourceSha256,
+            ) == QuarantinePathState.EXACT
+        ) {
+            "Quarantine source changed"
+        }
         check(type(paths.destination) == BootstrapPathType.ABSENT) {
             "Quarantine destination occupied"
         }
-        Os.rename(paths.source.path, paths.destination.path)
+        os.rename(paths.source.path, paths.destination.path)
     }
 
-    override fun fsyncSourceParent(row: RecoveryQuarantineIntentRow) =
-        syncDirectory(paths(row).source.parentFile!!)
+    override fun fsyncSourceParent(row: RecoveryQuarantineIntentRow) {
+        val paths = paths(row)
+        requireAllAncestors(paths)
+        syncDirectory(requireNotNull(paths.source.parentFile))
+    }
 
-    override fun fsyncDestinationParent(row: RecoveryQuarantineIntentRow) =
-        syncDirectory(paths(row).objectsRoot)
+    override fun fsyncDestinationParent(row: RecoveryQuarantineIntentRow) {
+        val paths = paths(row)
+        requireAllAncestors(paths)
+        syncDirectory(paths.objectsRoot)
+    }
 
-    private fun paths(row: RecoveryQuarantineIntentRow) =
-        RecoveryReconciliationPathPolicy.paths(
-            root,
-            row.input.runId,
-            row.input.sourceRelativeName,
-            row.destinationRelativeName,
-        )
+    private fun visitActive(
+        runRoot: File,
+        directory: File,
+        result: MutableList<RecoveryInventoryArtifact>,
+    ) {
+        requireDirectory(directory)
+        os.list(directory.path).sorted().forEach { childName ->
+            requireSingleName(childName)
+            val child = File(directory, childName)
+            when (val childType = type(child)) {
+                BootstrapPathType.DIRECTORY -> visitActive(runRoot, child, result)
+                BootstrapPathType.REGULAR -> {
+                    val relative =
+                        runRoot
+                            .toPath()
+                            .toAbsolutePath()
+                            .normalize()
+                            .relativize(child.toPath().toAbsolutePath().normalize())
+                            .toString()
+                            .replace('\\', '/')
+                    result +=
+                        RecoveryInventoryArtifact(
+                            relative,
+                            RecoveryArtifactBytes(
+                                relative,
+                                readBounded(child, RecoveryArtifactRoleBounds.maximumFor(relative)),
+                            ),
+                            childType,
+                        )
+                }
+                else ->
+                    throw RecoveryUnsafePathException(
+                        "Unsafe Recovery inventory object: $childName"
+                    )
+            }
+        }
+    }
 
-    private fun state(file: File, row: RecoveryQuarantineIntentRow): QuarantinePathState =
+    private fun state(
+        file: File,
+        roleName: String,
+        expectedBytes: ULong,
+        expectedSha256: Sha256Value,
+    ): QuarantinePathState =
         when (type(file)) {
             BootstrapPathType.ABSENT -> QuarantinePathState.ABSENT
             BootstrapPathType.REGULAR -> {
-                val (bytes, digest) = identity(file)
-                if (bytes == row.input.sourceBytes && digest == row.input.sourceSha256)
-                    QuarantinePathState.EXACT
-                else QuarantinePathState.OCCUPIED
+                val maximum = RecoveryArtifactRoleBounds.maximumFor(roleName)
+                if (expectedBytes > maximum.toULong()) QuarantinePathState.OCCUPIED
+                else {
+                    val bytes = readExact(file, expectedBytes.toLong(), maximum)
+                    if (Sha256Value.calculate(bytes) == expectedSha256) QuarantinePathState.EXACT
+                    else QuarantinePathState.OCCUPIED
+                }
             }
             else -> QuarantinePathState.UNSAFE
         }
 
-    private fun identity(file: File): Pair<ULong, Sha256Value> {
-        val descriptor =
-            Os.open(
-                file.path,
-                OsConstants.O_RDONLY or OsConstants.O_CLOEXEC or OsConstants.O_NOFOLLOW,
-                0,
-            )
-        return FileInputStream(descriptor).use { input ->
-            check(OsConstants.S_ISREG(Os.fstat(descriptor).st_mode)) {
-                "Recovery artifact is not regular"
+    private fun readBounded(file: File, maximumBytes: Long): ByteArray =
+        withDescriptor(
+            file,
+            OsConstants.O_RDONLY or OsConstants.O_CLOEXEC or OsConstants.O_NOFOLLOW,
+        ) { descriptor ->
+            val stat = os.fstat(descriptor)
+            check(stat.type == BootstrapPathType.REGULAR && stat.size in 0..maximumBytes) {
+                "Recovery artifact exceeds its role bound"
             }
-            val digest = MessageDigest.getInstance("SHA-256")
-            val buffer = ByteArray(8192)
-            var count = 0UL
-            while (true) {
-                val read = input.read(buffer)
-                if (read < 0) break
-                check(read > 0) { "Recovery artifact read made no progress" }
-                count += read.toULong()
-                digest.update(buffer, 0, read)
+            readExactOpened(descriptor, stat.size)
+        }
+
+    private fun readExact(file: File, expectedBytes: Long, maximumBytes: Long): ByteArray {
+        require(expectedBytes in 0..maximumBytes)
+        return withDescriptor(
+            file,
+            OsConstants.O_RDONLY or OsConstants.O_CLOEXEC or OsConstants.O_NOFOLLOW,
+        ) { descriptor ->
+            val stat = os.fstat(descriptor)
+            check(stat.type == BootstrapPathType.REGULAR && stat.size == expectedBytes) {
+                "Recovery artifact identity size changed"
             }
-            count to Sha256Value.fromBytes(digest.digest())
+            readExactOpened(descriptor, expectedBytes)
         }
     }
+
+    private fun readExactOpened(
+        descriptor: RecoveryReconciliationDescriptor,
+        expectedBytes: Long,
+    ): ByteArray {
+        check(expectedBytes in 0..1_048_576L)
+        val bytes = ByteArray(expectedBytes.toInt())
+        var offset = 0
+        while (offset < bytes.size) {
+            val read = os.read(descriptor, bytes, offset, bytes.size - offset)
+            check(read > 0 && read <= bytes.size - offset) {
+                "Recovery artifact read made invalid progress"
+            }
+            offset += read
+        }
+        check(os.read(descriptor, ByteArray(1), 0, 1) == 0) {
+            "Recovery artifact grew or returned malformed EOF"
+        }
+        return bytes
+    }
+
+    private inline fun <T> withDescriptor(
+        file: File,
+        flags: Int,
+        block: (RecoveryReconciliationDescriptor) -> T,
+    ): T {
+        val descriptor = os.open(file.path, flags)
+        var primary: Throwable? = null
+        try {
+            return block(descriptor)
+        } catch (error: Throwable) {
+            primary = error
+            throw error
+        } finally {
+            try {
+                os.close(descriptor)
+            } catch (close: Throwable) {
+                if (primary != null) primary.addSuppressed(close) else throw close
+            }
+        }
+    }
+
+    private fun syncDirectory(directory: File) =
+        withDescriptor(directory, OsConstants.O_RDONLY or OsConstants.O_CLOEXEC) { descriptor ->
+            check(os.fstat(descriptor).type == BootstrapPathType.DIRECTORY) {
+                "Recovery sync target is not a directory"
+            }
+            os.fsync(descriptor)
+        }
 
     private fun createDirectory(directory: File) {
         when (type(directory)) {
             BootstrapPathType.ABSENT -> {
-                Os.mkdir(directory.path, 0x1c0)
-                pathSafety.requireDirectory(directory)
-                syncDirectory(directory.parentFile!!)
+                os.mkdir(directory.path, 0x1c0)
+                requireDirectory(directory)
+                syncDirectory(requireNotNull(directory.parentFile))
             }
             BootstrapPathType.DIRECTORY -> Unit
-            else -> error("Unsafe Recovery quarantine directory: ${directory.name}")
+            else ->
+                throw RecoveryUnsafePathException(
+                    "Unsafe Recovery quarantine directory: ${directory.name}"
+                )
         }
     }
 
-    private fun syncDirectory(directory: File) {
-        val descriptor = Os.open(directory.path, OsConstants.O_RDONLY or OsConstants.O_CLOEXEC, 0)
-        try {
-            Os.fsync(descriptor)
-        } finally {
-            Os.close(descriptor)
+    private fun requireAllAncestors(paths: RecoveryReconciliationPaths) {
+        requireActiveAncestors(paths)
+        requireQuarantineAncestors(paths)
+        requireDirectoryChain(paths.activeRunRoot, requireNotNull(paths.source.parentFile))
+        requireDirectoryChain(paths.quarantineRunRoot, requireNotNull(paths.destination.parentFile))
+    }
+
+    private fun requireActiveAncestors(paths: RecoveryReconciliationPaths) {
+        val base = File(root, "poc-recovery")
+        listOf(root, base, File(base, "v1"), File(base, "v1/runs"), paths.activeRunRoot)
+            .forEach(::requireDirectory)
+    }
+
+    private fun requireQuarantineAncestors(paths: RecoveryReconciliationPaths) {
+        val base = File(root, "poc-recovery")
+        listOf(
+                root,
+                base,
+                File(base, "v1"),
+                File(base, "v1/quarantine"),
+                paths.quarantineRunRoot,
+                paths.objectsRoot,
+            )
+            .forEach(::requireDirectory)
+    }
+
+    private fun requireDirectoryChain(rootDirectory: File, leafDirectory: File) {
+        val rootPath = rootDirectory.toPath().toAbsolutePath().normalize()
+        val leafPath = leafDirectory.toPath().toAbsolutePath().normalize()
+        check(leafPath.startsWith(rootPath)) { "Recovery path escaped its root" }
+        var current = rootDirectory
+        requireDirectory(current)
+        rootPath.relativize(leafPath).forEach { component ->
+            current = File(current, component.toString())
+            requireDirectory(current)
+        }
+    }
+
+    private fun requireDirectory(file: File) {
+        if (type(file) != BootstrapPathType.DIRECTORY) {
+            throw RecoveryUnsafePathException("Unsafe Recovery directory: ${file.name}")
         }
     }
 
     private fun type(file: File): BootstrapPathType =
-        try {
-            val mode = Os.lstat(file.path).st_mode
-            when {
-                OsConstants.S_ISLNK(mode) -> BootstrapPathType.SYMLINK
-                OsConstants.S_ISREG(mode) -> BootstrapPathType.REGULAR
-                OsConstants.S_ISDIR(mode) -> BootstrapPathType.DIRECTORY
-                else -> BootstrapPathType.OTHER
-            }
-        } catch (error: ErrnoException) {
-            if (error.errno == OsConstants.ENOENT) BootstrapPathType.ABSENT else throw error
+        os.lstat(file.path)?.type ?: BootstrapPathType.ABSENT
+
+    private fun paths(row: RecoveryQuarantineIntentRow) =
+        paths(row.input.runId, row.input.sourceRelativeName, row.destinationRelativeName)
+
+    private fun paths(runId: RunId, source: String, destination: String) =
+        RecoveryReconciliationPathPolicy.paths(root, runId, source, destination)
+
+    private fun zeroDestination() = "objects/q-${"0".repeat(64)}.bin"
+
+    private fun requireSingleName(value: String) =
+        require(
+            value.isNotEmpty() && value != "." && value != ".." && '/' !in value && '\\' !in value
+        ) {
+            "Unsafe Recovery directory entry"
         }
 }
 
-private object AndroidRecoveryDescriptorOpener : RecoveryDescriptorOpener {
-    override fun open(path: String): RecoveryReadDescriptor {
-        val descriptor =
-            Os.open(
-                path,
-                OsConstants.O_RDONLY or OsConstants.O_CLOEXEC or OsConstants.O_NOFOLLOW,
-                0,
-            )
-        val input = FileInputStream(descriptor)
-        val stat = Os.fstat(descriptor)
-        return object : RecoveryReadDescriptor {
-            override val regularFile = OsConstants.S_ISREG(stat.st_mode)
-            override val size = stat.st_size
+private class AndroidRecoveryDescriptor(val value: FileDescriptor) :
+    RecoveryReconciliationDescriptor
 
-            override fun read(buffer: ByteArray, offset: Int, length: Int) =
-                input.read(buffer, offset, length)
-
-            override fun close() = input.close()
+private object AndroidRecoveryReconciliationOs : RecoveryReconciliationOs {
+    override fun lstat(path: String): RecoveryReconciliationStat? =
+        try {
+            Os.lstat(path).let { stat ->
+                RecoveryReconciliationStat(
+                    when {
+                        OsConstants.S_ISLNK(stat.st_mode) -> BootstrapPathType.SYMLINK
+                        OsConstants.S_ISREG(stat.st_mode) -> BootstrapPathType.REGULAR
+                        OsConstants.S_ISDIR(stat.st_mode) -> BootstrapPathType.DIRECTORY
+                        else -> BootstrapPathType.OTHER
+                    },
+                    stat.st_size,
+                )
+            }
+        } catch (error: ErrnoException) {
+            if (error.errno == OsConstants.ENOENT) null else throw error
         }
+
+    override fun list(path: String): List<String> =
+        File(path).list()?.toList() ?: error("Cannot enumerate Recovery directory")
+
+    override fun mkdir(path: String, mode: Int) = Os.mkdir(path, mode)
+
+    override fun open(path: String, flags: Int): RecoveryReconciliationDescriptor =
+        AndroidRecoveryDescriptor(Os.open(path, flags, 0))
+
+    override fun fstat(descriptor: RecoveryReconciliationDescriptor): RecoveryReconciliationStat {
+        val stat = Os.fstat(descriptor.android())
+        return RecoveryReconciliationStat(
+            when {
+                OsConstants.S_ISREG(stat.st_mode) -> BootstrapPathType.REGULAR
+                OsConstants.S_ISDIR(stat.st_mode) -> BootstrapPathType.DIRECTORY
+                OsConstants.S_ISLNK(stat.st_mode) -> BootstrapPathType.SYMLINK
+                else -> BootstrapPathType.OTHER
+            },
+            stat.st_size,
+        )
     }
+
+    override fun read(
+        descriptor: RecoveryReconciliationDescriptor,
+        buffer: ByteArray,
+        offset: Int,
+        count: Int,
+    ): Int = Os.read(descriptor.android(), buffer, offset, count)
+
+    override fun rename(source: String, destination: String) = Os.rename(source, destination)
+
+    override fun fsync(descriptor: RecoveryReconciliationDescriptor) =
+        Os.fsync(descriptor.android())
+
+    override fun close(descriptor: RecoveryReconciliationDescriptor) =
+        Os.close(descriptor.android())
+
+    private fun RecoveryReconciliationDescriptor.android(): FileDescriptor =
+        (this as? AndroidRecoveryDescriptor)?.value
+            ?: throw IllegalArgumentException("Foreign Recovery descriptor")
 }

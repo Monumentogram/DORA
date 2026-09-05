@@ -492,13 +492,29 @@ REC_I3_RECON_CORRECTION_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_RECONCILIA
 REC_I3_RECON_SCOPE_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_RECONCILIATION_QUARANTINE_SCOPE_STAGE0_V0_1.md"
 REC_I3_RECON_ADR_PATH = "docs/adr/ADR-0004-poc-recovery-reconciliation-and-quarantine.md"
 REC_I3_RECON_EVIDENCE_PATH = "docs/evidence/poc-recovery-001/rec-i3-microfile-reconciliation-quarantine-local-evidence-stage0-v0.1.json"
-REC_I3_RECON_CLAIM_CEILING = "PARTIAL_REC_I3_RECONCILIATION_CORRECTION_IN_PROGRESS_PENDING_PLATFORM_PREFLIGHT_FULL_IMPLEMENTATION_AND_REVIEW"
+REC_I3_RECON_CLAIM_CEILING = "PARTIAL_REC_I3_RECONCILIATION_HOST_VERIFIED_PENDING_PLATFORM_PREFLIGHT_FULL_IMPLEMENTATION_AND_REVIEW"
 REC_I3_RECON_ROUND2_BASE = "5de34577295b5e5477970785f9472d51e21bfc43"
 REC_I3_RECON_ROUND2_REPORT_SHA256 = "5f1e8ce06c73a93cfb67ef6c98d877837d75cce341d0b94c7f1d020df10ebcff"
+REC_I3_RECON_ROUND2_STATE_COMMIT = "b645db8e31ad2eab7de71849082b29ce80f7b4ae"
+REC_I3_RECON_ROUND2_STATE_TREE = "c529c3e01776ede0ea9ccf7b7dbfc4ec583b4099"
+REC_I3_RECON_ROUND2_STATE_PATHS = (
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    REC_I3_RECON_EVIDENCE_PATH,
+    "tools/test_poc_recovery_i3_governance.py",
+    "tools/validate_poc_recovery_governance.py",
+)
 REC_I3_RECON_ROUND2_FINDINGS = (
     "P1-INVENTORY", "P1-ROW-DIGEST", "P1-TYPED-DIAGNOSTICS", "P1-MANIFEST-CHAIN",
     "P1-JOURNAL-READBACK", "P1-PRODUCTION-STORAGE", "P1-EVIDENCE-TRUTH",
     "P2-DESCRIPTOR-OWNERSHIP",
+)
+REC_I3_RECON_ACCEPTANCE_CASES = (
+    "CONFIRMATION-PRIORITY", "FIVE-STATES-AND-REPLAY", "KCB05-ORPHAN",
+    "ROW-DIGEST-15", "LATEST-N-FALLBACK", "PUBLICATION-CHAIN",
+    "UNIT-FAILURE-POSITIONS", "TYPED-CRYPTO-SOURCE", "Q01-Q05-READBACK",
+    "PATH-AND-POSIX-READ", "DESCRIPTOR-OWNERSHIP", "RUN-LEASE-AND-BOUND",
+    "SCHEMA-V3-HOST", "EVIDENCE-TRUTH",
 )
 REC_I3_RECON_SOURCE_PATHS = (
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationController.kt",
@@ -5897,6 +5913,16 @@ def validate_rec_i3_reconciliation_successor(publication: bool) -> None:
     require(sha256(REC_I3_RECON_CORRECTION_PATH)
             == "e79b2298ce810c851a6acd40eefcc02c055f0ea15a0d7b34040377b77c97339c",
             "REC-I3 immutable reconciliation correction scope changed")
+    require(git_is_ancestor(REC_I3_RECON_ROUND2_STATE_COMMIT, head)
+            and git_output("rev-parse", f"{REC_I3_RECON_ROUND2_STATE_COMMIT}^{{tree}}")
+            == REC_I3_RECON_ROUND2_STATE_TREE,
+            "REC-I3 round-two truth checkpoint identity drift")
+    state_paths = set(git_path_records(
+        "diff", "--name-only", "-z",
+        f"{REC_I3_RECON_ROUND2_STATE_COMMIT}^", REC_I3_RECON_ROUND2_STATE_COMMIT,
+    ))
+    require(state_paths == set(REC_I3_RECON_ROUND2_STATE_PATHS),
+            "REC-I3 round-two truth checkpoint contains implementation or unrelated paths")
     epoch_paths = set(git_path_records(
         "log", "--format=", "--name-only", "--no-renames", "-z",
         f"{REC_I3_RECON_PREDECESSOR_COMMIT}..{head}",
@@ -5931,11 +5957,31 @@ def validate_rec_i3_reconciliation_successor(publication: bool) -> None:
         "counts": {"p0": 0, "p1": 7, "p2": 1},
     }, "REC-I3 reconciliation review state is not the exact open REVISE disposition")
     round2 = record.get("round2Correction")
-    require(round2 == {
-        "status": "IN_PROGRESS", "baseCommit": REC_I3_RECON_ROUND2_BASE,
-        "openFindingIds": list(REC_I3_RECON_ROUND2_FINDINGS),
-        "actualEntryRegressionComplete": False,
-    }, "REC-I3 reconciliation round-two correction overclaims closure")
+    require(isinstance(round2, dict) and round2.get("baseCommit") == REC_I3_RECON_ROUND2_BASE,
+            "REC-I3 reconciliation round-two identity drift")
+    if record.get("implementationStatus") == "IN_PROGRESS":
+        require(round2.get("status") == "IN_PROGRESS"
+                and round2.get("openFindingIds") == list(REC_I3_RECON_ROUND2_FINDINGS)
+                and round2.get("actualEntryRegressionComplete") is False,
+                "REC-I3 reconciliation round-two correction overclaims closure")
+    else:
+        require(round2.get("status") == "LOCAL_VERIFIED"
+                and round2.get("openFindingIds") == []
+                and round2.get("actualEntryRegressionComplete") is True,
+                "REC-I3 reconciliation LOCAL_VERIFIED lacks closed actual-entry evidence")
+        require(round2.get("successorReview") == {
+            "status": "PENDING", "formalReviewer": False,
+        }, "REC-I3 reconciliation successor review is not pending")
+        acceptance = round2.get("acceptanceCases")
+        require(isinstance(acceptance, list)
+                and [item.get("id") for item in acceptance]
+                == list(REC_I3_RECON_ACCEPTANCE_CASES)
+                and all(
+                    set(item) == {"id", "productionEntry", "test", "assertion"}
+                    and all(isinstance(item[key], str) and item[key]
+                            for key in ("productionEntry", "test", "assertion"))
+                    for item in acceptance
+                ), "REC-I3 reconciliation acceptance mapping is incomplete")
     checks = record.get("checks", [])
     require(any(item.get("stage") == "HOST_SQLITE" and item.get("outcome") == "PASS"
                 for item in checks), "REC-I3 reconciliation exact host SQLite evidence missing")

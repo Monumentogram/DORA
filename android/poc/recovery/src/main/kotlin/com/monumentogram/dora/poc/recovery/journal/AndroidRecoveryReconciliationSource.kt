@@ -3,12 +3,16 @@ package com.monumentogram.dora.poc.recovery.journal
 import android.content.Context
 import com.monumentogram.dora.poc.recovery.bootstrap.AndroidRecoveryBootstrapCrypto
 import com.monumentogram.dora.poc.recovery.candidate.QuarantineBootstrapBinding
+import com.monumentogram.dora.poc.recovery.candidate.QuarantinePathState
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactBytes
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryCandidateSnapshot
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureCategory
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureDiagnostic
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureStage
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryInventoryEntry
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryInventorySnapshot
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryReconciliationSource
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryReportOnlyInventoryEntry
 import com.monumentogram.dora.poc.recovery.candidate.RecoverySourceAccessException
 import com.monumentogram.dora.poc.recovery.contract.KeyConfirmationValue
 import com.monumentogram.dora.poc.recovery.contract.RecoveryCandidate
@@ -21,20 +25,53 @@ import com.monumentogram.dora.poc.recovery.controller.ConfirmationPathObservatio
 import com.monumentogram.dora.poc.recovery.controller.KeyConfirmationSnapshot
 import com.monumentogram.dora.poc.recovery.controller.StoredKeyConfirmationIdentity
 import com.monumentogram.dora.poc.recovery.storage.AndroidOsRecoveryReconciliationStorage
+import com.monumentogram.dora.poc.recovery.storage.RecoveryUnsafePathException
 
 /**
  * Production source: rows come from the unified journal and bytes from descriptor-backed storage.
  */
-internal class AndroidRecoveryReconciliationSource(context: Context) :
-    RecoveryReconciliationSource {
-    private val applicationContext = context.applicationContext
-    private val journal = AndroidRecoveryMicrofileJournal(applicationContext)
-    private val storage = AndroidOsRecoveryReconciliationStorage(applicationContext)
-    private val bootstrapCrypto = AndroidRecoveryBootstrapCrypto()
+internal class AndroidRecoveryReconciliationSource
+private constructor(
+    private val loadBootstrap: (RunId) -> StoredKeyConfirmationIdentity?,
+    private val loadSnapshot: (RunId) -> RecoveryCandidateSnapshot,
+    private val loadPending:
+        (RunId) -> List<com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineIntentRow>,
+    private val loadAllIntents:
+        (RunId) -> List<com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineIntentRow>,
+    private val storage: AndroidOsRecoveryReconciliationStorage,
+    private val aliasExists: (RunId) -> Boolean,
+) : RecoveryReconciliationSource {
+    constructor(
+        context: Context
+    ) : this(
+        loadBootstrap = { runId -> loadBootstrapIdentity(context.applicationContext, runId) },
+        loadSnapshot = AndroidRecoveryMicrofileJournal(context.applicationContext)::loadSnapshot,
+        loadPending = AndroidRecoveryQuarantineJournal(context.applicationContext)::loadPending,
+        loadAllIntents = AndroidRecoveryQuarantineJournal(context.applicationContext)::loadAll,
+        storage = AndroidOsRecoveryReconciliationStorage(context.applicationContext),
+        aliasExists = AndroidRecoveryBootstrapCrypto()::aliasExists,
+    )
+
+    @Suppress("LongParameterList", "UnusedPrivateProperty")
+    internal constructor(
+        loadBootstrap: (RunId) -> StoredKeyConfirmationIdentity?,
+        loadSnapshot: (RunId) -> RecoveryCandidateSnapshot,
+        loadPending:
+            (RunId) -> List<
+                    com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineIntentRow
+                >,
+        loadAllIntents:
+            (RunId) -> List<
+                    com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineIntentRow
+                >,
+        storage: AndroidOsRecoveryReconciliationStorage,
+        aliasExists: (RunId) -> Boolean,
+        testPort: Unit = Unit,
+    ) : this(loadBootstrap, loadSnapshot, loadPending, loadAllIntents, storage, aliasExists)
 
     override fun loadConfirmation(runId: RunId): KeyConfirmationSnapshot {
         val expected = KeyConfirmationValue(RecoveryCandidate.MICROFILE, runId)
-        val row = journalCall { loadBootstrapIdentity(runId) }
+        val row = journalCall { loadBootstrap(runId) }
         val final = pathCall {
             storage.loadActiveArtifact(runId, CONFIRMATION_FINAL, MAX_CONFIRMATION_BYTES)
         }
@@ -49,13 +86,13 @@ internal class AndroidRecoveryReconciliationSource(context: Context) :
                 )
             },
             pathCall { storage.activeArtifactExists(runId, CONFIRMATION_TEMP) },
-            if (cryptoCall { bootstrapCrypto.aliasExists(runId) }) AliasObservation.PRESENT
+            if (cryptoCall { aliasExists(runId) }) AliasObservation.PRESENT
             else AliasObservation.ABSENT,
         )
     }
 
     override fun loadCandidate(runId: RunId): RecoveryCandidateSnapshot = journalCall {
-        journal.loadSnapshot(runId)
+        loadSnapshot(runId)
     }
 
     override fun loadArtifact(runId: RunId, relativeName: String): RecoveryArtifactBytes? =
@@ -64,94 +101,195 @@ internal class AndroidRecoveryReconciliationSource(context: Context) :
         }
 
     override fun loadPendingQuarantine(runId: RunId) = journalCall {
-        AndroidRecoveryQuarantineJournal(applicationContext).loadPending(runId)
+        loadPending(runId)
     }
 
-    override fun loadInventory(runId: RunId): List<RecoveryInventoryEntry> {
+    override fun loadInventory(runId: RunId): List<RecoveryInventoryEntry> =
+        loadInventorySnapshot(runId, journalCall { loadSnapshot(runId) }).active
+
+    @Suppress("LongMethod")
+    override fun loadInventorySnapshot(
+        runId: RunId,
+        candidate: RecoveryCandidateSnapshot,
+    ): RecoveryInventorySnapshot {
         val binding =
-            if (loadBootstrapIdentity(runId) == null) QuarantineBootstrapBinding.ABSENT
+            if (journalCall { loadBootstrap(runId) } == null) QuarantineBootstrapBinding.ABSENT
             else QuarantineBootstrapBinding.PRESENT
-        return pathCall { storage.listActiveArtifacts(runId) }
-            .map { artifact ->
-                RecoveryInventoryEntry(
-                    com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntentInput(
-                        RecoveryCandidate.MICROFILE,
-                        runId,
-                        artifact.relativeName,
-                        RecoveryInventoryClassifier.role(artifact.relativeName),
-                        artifact.size.toULong(),
-                        artifact.sha256,
-                    ),
-                    if (artifact.relativeName.endsWith(".tmp"))
-                        com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineObservedState
-                            .TEMP_ONLY
-                    else
-                        com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineObservedState
-                            .FINAL_ORPHAN,
-                    binding,
-                )
+        val activeArtifacts = pathCall { storage.listActiveInventory(runId) }
+        val activeNames = activeArtifacts.map { it.relativeName }.toSet()
+        val referenced = buildSet {
+            candidate.units.forEach {
+                add(it.ciphertextRelativeName)
+                add(it.keyEnvelopeRelativeName)
             }
+            candidate.publications.forEach {
+                add(it.publicationRelativeName)
+                add(it.keyEnvelopeRelativeName)
+            }
+        }
+        val active = activeArtifacts.map { stored ->
+            val artifact = requireNotNull(stored.artifact)
+            RecoveryInventoryEntry(
+                com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntentInput(
+                    RecoveryCandidate.MICROFILE,
+                    runId,
+                    artifact.relativeName,
+                    RecoveryInventoryClassifier.role(artifact.relativeName),
+                    artifact.size.toULong(),
+                    artifact.sha256,
+                ),
+                RecoveryInventoryClassifier.observed(
+                    artifact.relativeName,
+                    activeNames,
+                    referenced,
+                ),
+                binding,
+            )
+        }
+        val rows = journalCall { loadAllIntents(runId) }
+        val known = rows.associateBy { it.destinationRelativeName }
+        val quarantine =
+            pathCall { storage.listQuarantineInventory(runId) }
+                .map { stored ->
+                    val row = known[stored.relativeName]
+                    val artifact = stored.artifact
+                    val exact =
+                        row != null &&
+                            artifact != null &&
+                            artifact.size.toULong() == row.input.sourceBytes &&
+                            artifact.sha256 == row.input.sourceSha256
+                    RecoveryReportOnlyInventoryEntry(
+                        stored.relativeName,
+                        when {
+                            stored.pathType !=
+                                com.monumentogram.dora.poc.recovery.storage.BootstrapPathType
+                                    .REGULAR -> QuarantinePathState.UNSAFE
+                            exact -> QuarantinePathState.EXACT
+                            else -> QuarantinePathState.OCCUPIED
+                        },
+                        artifact?.size?.toULong(),
+                        artifact?.sha256,
+                        row != null,
+                    )
+                }
+        return RecoveryInventorySnapshot(
+            java.util.Collections.unmodifiableList(active),
+            java.util.Collections.unmodifiableList(quarantine),
+        )
     }
 
     private inline fun <T> journalCall(block: () -> T): T =
-        sourceCall(RecoveryFailureCategory.OPERATIONAL, block)
+        sourceCall(RecoveryFailureCategory.OPERATIONAL, RecoveryFailureStage.JOURNAL, block)
 
     private inline fun <T> cryptoCall(block: () -> T): T =
-        sourceCall(RecoveryFailureCategory.OPERATIONAL, block)
-
-    private inline fun <T> pathCall(block: () -> T): T =
-        sourceCall(RecoveryFailureCategory.UNSAFE_PARENT, block)
+        sourceCall(
+            RecoveryFailureCategory.OPERATIONAL,
+            RecoveryFailureStage.ALIAS_OBSERVATION,
+            block,
+        )
 
     @Suppress("TooGenericExceptionCaught")
-    private inline fun <T> sourceCall(category: RecoveryFailureCategory, block: () -> T): T =
+    private inline fun <T> pathCall(block: () -> T): T =
+        try {
+            block()
+        } catch (error: RecoverySourceAccessException) {
+            throw error
+        } catch (error: RecoveryUnsafePathException) {
+            throw RecoverySourceAccessException(
+                RecoveryFailureDiagnostic.capture(
+                    RecoveryFailureCategory.UNSAFE_PARENT,
+                    error,
+                    RecoveryFailureStage.ARTIFACT_PATH,
+                ),
+                error,
+            )
+        } catch (error: Throwable) {
+            throw RecoverySourceAccessException(
+                RecoveryFailureDiagnostic.capture(
+                    RecoveryFailureCategory.OPERATIONAL,
+                    error,
+                    RecoveryFailureStage.ARTIFACT_IO,
+                ),
+                error,
+            )
+        }
+
+    @Suppress("TooGenericExceptionCaught")
+    private inline fun <T> sourceCall(
+        category: RecoveryFailureCategory,
+        stage: RecoveryFailureStage,
+        block: () -> T,
+    ): T =
         try {
             block()
         } catch (error: RecoverySourceAccessException) {
             throw error
         } catch (error: Throwable) {
             throw RecoverySourceAccessException(
-                RecoveryFailureDiagnostic.capture(category, error),
+                RecoveryFailureDiagnostic.capture(category, error, stage),
                 error,
             )
         }
 
-    private fun loadBootstrapIdentity(runId: RunId): StoredKeyConfirmationIdentity? =
-        AndroidRecoveryJournalDatabase.writable(applicationContext)
-            .query(
-                RecoveryJournalSchema.RUN_TABLE,
-                null,
-                "run_id=?",
-                arrayOf(runId.toCanonicalString()),
-                null,
-                null,
-                null,
+    internal companion object {
+        fun withStorage(
+            context: Context,
+            storage: AndroidOsRecoveryReconciliationStorage,
+        ): AndroidRecoveryReconciliationSource =
+            AndroidRecoveryReconciliationSource(
+                loadBootstrap = { runId ->
+                    loadBootstrapIdentity(context.applicationContext, runId)
+                },
+                loadSnapshot =
+                    AndroidRecoveryMicrofileJournal(context.applicationContext)::loadSnapshot,
+                loadPending =
+                    AndroidRecoveryQuarantineJournal(context.applicationContext)::loadPending,
+                loadAllIntents =
+                    AndroidRecoveryQuarantineJournal(context.applicationContext)::loadAll,
+                storage = storage,
+                aliasExists = AndroidRecoveryBootstrapCrypto()::aliasExists,
             )
-            .use { cursor ->
-                if (!cursor.moveToFirst()) null
-                else {
-                    check(!cursor.moveToNext()) { "Ambiguous bootstrap row" }
-                    StoredKeyConfirmationIdentity(
-                        KeyConfirmationValue(
-                            RecoveryCandidate.fromContractId(
-                                cursor.getString(cursor.getColumnIndexOrThrow("candidate_id"))
-                            ),
-                            runId,
-                        ),
-                        cursor.getString(
-                            cursor.getColumnIndexOrThrow("key_confirmation_relative_name")
-                        ),
-                        cursor.getLong(cursor.getColumnIndexOrThrow("key_confirmation_bytes")),
-                        Sha256Value.fromBytes(
-                            cursor.getBlob(cursor.getColumnIndexOrThrow("key_confirmation_sha256"))
-                        ),
-                        Sha256Value.fromBytes(
-                            cursor.getBlob(cursor.getColumnIndexOrThrow("canonical_alias_sha256"))
-                        ),
-                    )
-                }
-            }
 
-    private companion object {
+        fun loadBootstrapIdentity(context: Context, runId: RunId): StoredKeyConfirmationIdentity? =
+            AndroidRecoveryJournalDatabase.writable(context)
+                .query(
+                    RecoveryJournalSchema.RUN_TABLE,
+                    null,
+                    "run_id=?",
+                    arrayOf(runId.toCanonicalString()),
+                    null,
+                    null,
+                    null,
+                )
+                .use { cursor ->
+                    if (!cursor.moveToFirst()) null
+                    else {
+                        check(!cursor.moveToNext()) { "Ambiguous bootstrap row" }
+                        StoredKeyConfirmationIdentity(
+                            KeyConfirmationValue(
+                                RecoveryCandidate.fromContractId(
+                                    cursor.getString(cursor.getColumnIndexOrThrow("candidate_id"))
+                                ),
+                                runId,
+                            ),
+                            cursor.getString(
+                                cursor.getColumnIndexOrThrow("key_confirmation_relative_name")
+                            ),
+                            cursor.getLong(cursor.getColumnIndexOrThrow("key_confirmation_bytes")),
+                            Sha256Value.fromBytes(
+                                cursor.getBlob(
+                                    cursor.getColumnIndexOrThrow("key_confirmation_sha256")
+                                )
+                            ),
+                            Sha256Value.fromBytes(
+                                cursor.getBlob(
+                                    cursor.getColumnIndexOrThrow("canonical_alias_sha256")
+                                )
+                            ),
+                        )
+                    }
+                }
+
         const val CONFIRMATION_FINAL = "key-confirmation/run.kc"
         const val CONFIRMATION_TEMP = "key-confirmation/run.kc.tmp"
         const val MAX_CONFIRMATION_BYTES = 512L
@@ -171,4 +309,31 @@ internal object RecoveryInventoryClassifier {
                 RecoveryQuarantineArtifactRole.MICROFILE_KEY_ENVELOPE
             else -> RecoveryQuarantineArtifactRole.UNKNOWN_REGULAR
         }
+
+    fun observed(
+        name: String,
+        allNames: Set<String>,
+        referenced: Set<String> = emptySet(),
+    ): com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineObservedState {
+        val role = role(name)
+        if (role == RecoveryQuarantineArtifactRole.UNKNOWN_REGULAR) {
+            return com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineObservedState
+                .UNKNOWN_OR_NON_ALLOWLISTED_NAME
+        }
+        val counterpart = if (name.endsWith(".tmp")) name.removeSuffix(".tmp") else "$name.tmp"
+        return when {
+            name.endsWith(".tmp") && name in referenced ->
+                com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineObservedState
+                    .SQLITE_POINTS_TO_TEMP
+            counterpart in allNames ->
+                com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineObservedState
+                    .TEMP_AND_FINAL
+            name.endsWith(".tmp") ->
+                com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineObservedState
+                    .TEMP_ONLY
+            else ->
+                com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineObservedState
+                    .FINAL_ORPHAN
+        }
+    }
 }

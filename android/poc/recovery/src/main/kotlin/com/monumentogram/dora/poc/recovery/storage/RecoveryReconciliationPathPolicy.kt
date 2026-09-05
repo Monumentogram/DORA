@@ -46,11 +46,9 @@ internal object RecoveryReconciliationPathPolicy {
     }
 
     private fun requireContained(root: File, child: File) {
-        val rootPath = root.canonicalFile.toPath()
-        require(
-            child.canonicalFile.toPath().startsWith(rootPath) &&
-                child.canonicalFile != root.canonicalFile
-        ) {
+        val rootPath = root.toPath().toAbsolutePath().normalize()
+        val childPath = child.toPath().toAbsolutePath().normalize()
+        require(childPath.startsWith(rootPath) && childPath != rootPath) {
             "Recovery path escapes its run root"
         }
     }
