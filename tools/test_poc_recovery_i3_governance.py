@@ -93,6 +93,28 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
             "round4-current-check-failed": lambda r: next(
                 item for item in r["checks"] if item.get("stage") == "ROUND4_ANDROID_HOST"
             ).__setitem__("failures", 1),
+            "round4-stale-duplicate-android-check": lambda r: r["checks"].insert(
+                next(
+                    index
+                    for index, item in enumerate(r["checks"])
+                    if item.get("stage") == "ROUND4_ANDROID_HOST"
+                ),
+                {
+                    **copy.deepcopy(governance.REC_I3_RECON_ROUND4_ANDROID_CHECK),
+                    "outcome": "FAIL",
+                },
+            ),
+            "round4-stale-duplicate-governance-check": lambda r: r["checks"].insert(
+                next(
+                    index
+                    for index, item in enumerate(r["checks"])
+                    if item.get("stage") == "ROUND4_GOVERNANCE"
+                ),
+                {
+                    **copy.deepcopy(governance.REC_I3_RECON_ROUND4_GOVERNANCE_CHECK),
+                    "outcome": "FAIL",
+                },
+            ),
             "round4-finding-removed": lambda r: r["round4Truth"]["openFindingIds"].pop(),
             "round4-effective-review-clean": lambda r: r["round4Truth"].__setitem__(
                 "effectiveReview", {"status": "CLEAN", "counts": {"p0": 0, "p1": 0, "p2": 0}}

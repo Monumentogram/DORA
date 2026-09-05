@@ -6099,16 +6099,20 @@ def validate_rec_i3_reconciliation_successor(publication: bool) -> None:
             and round4_author.get("status") in {"NOT_RUN", "PASS"},
             "REC-I3 round-four author verification state invalid")
     checks = record.get("checks", [])
-    current_stages = {item.get("stage"): item for item in checks
-                      if item.get("stage") in {"ROUND4_ANDROID_HOST", "ROUND4_GOVERNANCE"}}
+    current_checks = [item for item in checks
+                      if item.get("stage") in {"ROUND4_ANDROID_HOST", "ROUND4_GOVERNANCE"}]
     if round4_author.get("status") == "NOT_RUN":
-        require(round4_author == {"status": "NOT_RUN"} and not current_stages,
+        require(round4_author == {"status": "NOT_RUN"} and not current_checks,
                 "REC-I3 round-four NOT_RUN carries current acceptance or check claims")
     else:
         require(round4_author == {
             "status": "PASS",
             "acceptanceCases": list(REC_I3_RECON_ROUND4_ACCEPTANCE_CASES),
         }, "REC-I3 round-four PASS lacks exact current production-entry acceptance mapping")
+        require(len(current_checks) == 2
+                and len({item.get("stage") for item in current_checks}) == 2,
+                "REC-I3 round-four current check records are not exact and unique")
+        current_stages = {item.get("stage"): item for item in current_checks}
         require(set(current_stages) == {"ROUND4_ANDROID_HOST", "ROUND4_GOVERNANCE"},
                 "REC-I3 round-four current check stages missing")
         require(current_stages["ROUND4_ANDROID_HOST"] == REC_I3_RECON_ROUND4_ANDROID_CHECK,
