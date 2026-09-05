@@ -1,5 +1,6 @@
 package com.monumentogram.dora.poc.recovery.storage
 
+import com.monumentogram.dora.poc.recovery.bootstrap.BootstrapNamespaceOccupancy
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
@@ -56,5 +57,36 @@ class RecoveryBootstrapPathPolicyTest {
         )
         RecoveryBootstrapPathPolicy.requireRegularOrAbsentLeaf(BootstrapPathType.REGULAR, "leaf")
         RecoveryBootstrapPathPolicy.requireRegularOrAbsentLeaf(BootstrapPathType.ABSENT, "leaf")
+    }
+
+    @Test
+    fun `namespace inspection classifies unsafe objects as occupied without opening them`() {
+        assertEquals(
+            BootstrapNamespaceOccupancy.ABSENT,
+            RecoveryBootstrapPathPolicy.directoryNamespaceOccupancy(BootstrapPathType.ABSENT),
+        )
+        assertEquals(
+            BootstrapNamespaceOccupancy.OCCUPIED_SAFE,
+            RecoveryBootstrapPathPolicy.directoryNamespaceOccupancy(BootstrapPathType.DIRECTORY),
+        )
+        assertEquals(
+            BootstrapNamespaceOccupancy.OCCUPIED_UNSAFE,
+            RecoveryBootstrapPathPolicy.directoryNamespaceOccupancy(BootstrapPathType.SYMLINK),
+        )
+        assertEquals(
+            BootstrapNamespaceOccupancy.OCCUPIED_SAFE,
+            RecoveryBootstrapPathPolicy.leafNamespaceOccupancy(BootstrapPathType.REGULAR),
+        )
+        for (type in
+            listOf(
+                BootstrapPathType.SYMLINK,
+                BootstrapPathType.DIRECTORY,
+                BootstrapPathType.OTHER,
+            )) {
+            assertEquals(
+                BootstrapNamespaceOccupancy.OCCUPIED_UNSAFE,
+                RecoveryBootstrapPathPolicy.leafNamespaceOccupancy(type),
+            )
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.monumentogram.dora.poc.recovery.storage
 
+import com.monumentogram.dora.poc.recovery.bootstrap.BootstrapNamespaceOccupancy
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import java.io.File
 
@@ -77,6 +78,20 @@ internal object RecoveryBootstrapPathPolicy {
             throw UnsafeRecoveryBootstrapPathException("Unsafe key-confirmation leaf: $name")
         }
     }
+
+    fun directoryNamespaceOccupancy(type: BootstrapPathType): BootstrapNamespaceOccupancy =
+        when (type) {
+            BootstrapPathType.ABSENT -> BootstrapNamespaceOccupancy.ABSENT
+            BootstrapPathType.DIRECTORY -> BootstrapNamespaceOccupancy.OCCUPIED_SAFE
+            else -> BootstrapNamespaceOccupancy.OCCUPIED_UNSAFE
+        }
+
+    fun leafNamespaceOccupancy(type: BootstrapPathType): BootstrapNamespaceOccupancy =
+        when (type) {
+            BootstrapPathType.ABSENT -> BootstrapNamespaceOccupancy.ABSENT
+            BootstrapPathType.REGULAR -> BootstrapNamespaceOccupancy.OCCUPIED_SAFE
+            else -> BootstrapNamespaceOccupancy.OCCUPIED_UNSAFE
+        }
 }
 
 internal class UnsafeRecoveryBootstrapPathException(message: String) :

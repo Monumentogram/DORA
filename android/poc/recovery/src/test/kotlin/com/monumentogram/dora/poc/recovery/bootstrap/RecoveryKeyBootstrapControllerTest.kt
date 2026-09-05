@@ -7,6 +7,7 @@ import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
 import com.monumentogram.dora.poc.recovery.crypto.RecoveryRunAead
 import com.monumentogram.dora.poc.recovery.crypto.RecoveryRunAeadBackend
+import com.monumentogram.dora.poc.recovery.crypto.RecoveryRunAeadProvider
 import com.monumentogram.dora.poc.recovery.crypto.newTestAead
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -77,10 +78,16 @@ class RecoveryKeyBootstrapControllerTest {
     fun `KC01 rejects every occupied namespace before mutation`() {
         val occupied =
             listOf(
-                BootstrapNamespaceState(aliasOccupied = true),
-                BootstrapNamespaceState(keyReferenceNamespaceOccupied = true),
-                BootstrapNamespaceState(temporaryOccupied = true),
-                BootstrapNamespaceState(finalOccupied = true),
+                BootstrapNamespaceState(
+                    keyReferenceNamespace = BootstrapNamespaceOccupancy.OCCUPIED_SAFE
+                ),
+                BootstrapNamespaceState(temporary = BootstrapNamespaceOccupancy.OCCUPIED_SAFE),
+                BootstrapNamespaceState(final = BootstrapNamespaceOccupancy.OCCUPIED_SAFE),
+                BootstrapNamespaceState(
+                    keyReferenceNamespace = BootstrapNamespaceOccupancy.OCCUPIED_UNSAFE
+                ),
+                BootstrapNamespaceState(temporary = BootstrapNamespaceOccupancy.OCCUPIED_UNSAFE),
+                BootstrapNamespaceState(final = BootstrapNamespaceOccupancy.OCCUPIED_UNSAFE),
             )
 
         occupied.forEach { state ->
@@ -95,6 +102,20 @@ class RecoveryKeyBootstrapControllerTest {
             assertFalse(result.remainder.aliasCreated)
             assertFalse(result.remainder.transactionCommitted)
         }
+    }
+
+    @Test
+    fun `KC01 existing alias short circuits throwing storage inspection as collision`() {
+        val fixture = Fixture(aliasExists = true, failAt = "inspect-namespaces")
+
+        val result = fixture.controller.bootstrap(fixture.value)
+
+        assertTrue(result is BootstrapResult.Rejected)
+        assertEquals(
+            KeyRecoveryClassification.KEY_REF_COLLISION,
+            (result as BootstrapResult.Rejected).classification,
+        )
+        assertEquals(listOf("alias-exists"), fixture.events)
     }
 
     @Test
@@ -244,10 +265,11 @@ class RecoveryKeyBootstrapControllerTest {
         failAt: String? = null,
         finalCollisionAtRename: Boolean = false,
         blockOnNamespace: Pair<CountDownLatch, CountDownLatch>? = null,
+        aliasExists: Boolean = false,
     ) {
         val events = mutableListOf<String>()
         val value = KeyConfirmationValue(candidate, runId)
-        val crypto = RecordingCrypto(events, failAt)
+        val crypto = RecordingCrypto(events, failAt, aliasExists)
         val storage =
             RecordingStorage(
                 events,
@@ -274,6 +296,7 @@ class RecoveryKeyBootstrapControllerTest {
     private class RecordingCrypto(
         private val events: MutableList<String>,
         private val failAt: String?,
+        private val aliasExists: Boolean,
     ) : RecoveryBootstrapCrypto {
         private val primitive = newTestAead()
         private val backend =
@@ -285,16 +308,17 @@ class RecoveryKeyBootstrapControllerTest {
 
         override fun aliasExists(runId: RunId): Boolean {
             event("alias-exists")
-            return false
+            return aliasExists
         }
 
-        override fun generateNewAlias(runId: RunId) {
+        override fun createNewAlias(runId: RunId): RecoveryRunAead {
             event("generate-alias")
+            return RecoveryRunAeadProvider(backend).createNew(runId)
         }
 
-        override fun openCreatedAlias(runId: RunId): RecoveryRunAead {
+        override fun consumeCreatedAlias(created: RecoveryRunAead): RecoveryRunAead {
             event("open-created-alias")
-            return RecoveryRunAead.openExisting(runId, backend)
+            return created
         }
 
         override fun encryptConfirmation(

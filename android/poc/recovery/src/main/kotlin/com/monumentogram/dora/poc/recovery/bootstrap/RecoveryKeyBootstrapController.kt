@@ -24,14 +24,22 @@ internal enum class BootstrapStep {
     KC13,
 }
 
+internal enum class BootstrapNamespaceOccupancy {
+    ABSENT,
+    OCCUPIED_SAFE,
+    OCCUPIED_UNSAFE;
+
+    val occupied: Boolean
+        get() = this != ABSENT
+}
+
 internal data class BootstrapNamespaceState(
-    val aliasOccupied: Boolean = false,
-    val keyReferenceNamespaceOccupied: Boolean = false,
-    val temporaryOccupied: Boolean = false,
-    val finalOccupied: Boolean = false,
+    val keyReferenceNamespace: BootstrapNamespaceOccupancy = BootstrapNamespaceOccupancy.ABSENT,
+    val temporary: BootstrapNamespaceOccupancy = BootstrapNamespaceOccupancy.ABSENT,
+    val final: BootstrapNamespaceOccupancy = BootstrapNamespaceOccupancy.ABSENT,
 ) {
     val anyOccupied: Boolean
-        get() = aliasOccupied || keyReferenceNamespaceOccupied || temporaryOccupied || finalOccupied
+        get() = keyReferenceNamespace.occupied || temporary.occupied || final.occupied
 }
 
 internal enum class KeyConfirmationState {
@@ -113,9 +121,9 @@ internal sealed interface BootstrapResult {
 internal interface RecoveryBootstrapCrypto {
     fun aliasExists(runId: RunId): Boolean
 
-    fun generateNewAlias(runId: RunId)
+    fun createNewAlias(runId: RunId): RecoveryRunAead
 
-    fun openCreatedAlias(runId: RunId): RecoveryRunAead
+    fun consumeCreatedAlias(created: RecoveryRunAead): RecoveryRunAead
 
     fun encryptConfirmation(
         runAead: RecoveryRunAead,
@@ -201,14 +209,19 @@ internal class RecoveryKeyBootstrapController(
         val aliasOccupied =
             attempt(BootstrapStep.KC01, progress) { crypto.aliasExists(value.runId) }
         if (aliasOccupied is Attempt.Failure) return progress.failure(aliasOccupied)
+        if ((aliasOccupied as Attempt.Success).value) {
+            progress.complete(BootstrapStep.KC01)
+            return BootstrapResult.Rejected(
+                KeyRecoveryClassification.KEY_REF_COLLISION,
+                progress.steps(),
+                progress.remainder(),
+            )
+        }
         val namespaces =
             attempt(BootstrapStep.KC01, progress) { storage.inspectNamespaces(value.runId) }
         if (namespaces is Attempt.Failure) return progress.failure(namespaces)
-        val occupied =
-            (aliasOccupied as Attempt.Success).value ||
-                (namespaces as Attempt.Success).value.anyOccupied
         progress.complete(BootstrapStep.KC01)
-        if (occupied) {
+        if ((namespaces as Attempt.Success).value.anyOccupied) {
             return BootstrapResult.Rejected(
                 KeyRecoveryClassification.KEY_REF_COLLISION,
                 progress.steps(),
@@ -216,13 +229,15 @@ internal class RecoveryKeyBootstrapController(
             )
         }
 
-        val generated =
-            attempt(BootstrapStep.KC02, progress) { crypto.generateNewAlias(value.runId) }
-        if (generated is Attempt.Failure) return progress.failure(generated)
+        val created = attempt(BootstrapStep.KC02, progress) { crypto.createNewAlias(value.runId) }
+        if (created is Attempt.Failure) return progress.failure(created)
         progress.aliasCreated = true
         progress.complete(BootstrapStep.KC02)
 
-        val opened = attempt(BootstrapStep.KC03, progress) { crypto.openCreatedAlias(value.runId) }
+        val opened =
+            attempt(BootstrapStep.KC03, progress) {
+                crypto.consumeCreatedAlias((created as Attempt.Success).value)
+            }
         if (opened is Attempt.Failure) return progress.failure(opened)
         progress.complete(BootstrapStep.KC03)
 

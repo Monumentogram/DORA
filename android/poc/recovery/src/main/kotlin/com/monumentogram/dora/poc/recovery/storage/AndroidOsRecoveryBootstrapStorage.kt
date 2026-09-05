@@ -4,6 +4,7 @@ import android.content.Context
 import android.system.ErrnoException
 import android.system.Os
 import android.system.OsConstants
+import com.monumentogram.dora.poc.recovery.bootstrap.BootstrapNamespaceOccupancy
 import com.monumentogram.dora.poc.recovery.bootstrap.BootstrapNamespaceState
 import com.monumentogram.dora.poc.recovery.bootstrap.BootstrapWriteHandle
 import com.monumentogram.dora.poc.recovery.bootstrap.RecoveryBootstrapStorage
@@ -21,11 +22,22 @@ internal class AndroidOsRecoveryBootstrapStorage(context: Context) : RecoveryBoo
     override fun inspectNamespaces(runId: RunId): BootstrapNamespaceState {
         val paths = paths(runId)
         validateExistingDirectoryChain(paths.runRoot)
-        validateOptionalDirectory(paths.confirmationDirectory)
+        val confirmationDirectory = namespaceDirectoryOccupancy(paths.confirmationDirectory)
+        val (temporary, final) =
+            when (confirmationDirectory) {
+                BootstrapNamespaceOccupancy.ABSENT ->
+                    BootstrapNamespaceOccupancy.ABSENT to BootstrapNamespaceOccupancy.ABSENT
+                BootstrapNamespaceOccupancy.OCCUPIED_SAFE ->
+                    namespaceLeafOccupancy(paths.temporaryFile) to
+                        namespaceLeafOccupancy(paths.finalFile)
+                BootstrapNamespaceOccupancy.OCCUPIED_UNSAFE ->
+                    BootstrapNamespaceOccupancy.OCCUPIED_UNSAFE to
+                        BootstrapNamespaceOccupancy.OCCUPIED_UNSAFE
+            }
         return BootstrapNamespaceState(
-            keyReferenceNamespaceOccupied = validateOptionalDirectory(paths.keyReferenceDirectory),
-            temporaryOccupied = existingLeafOccupied(paths.temporaryFile),
-            finalOccupied = existingLeafOccupied(paths.finalFile),
+            keyReferenceNamespace = namespaceDirectoryOccupancy(paths.keyReferenceDirectory),
+            temporary = temporary,
+            final = final,
         )
     }
 
@@ -76,7 +88,7 @@ internal class AndroidOsRecoveryBootstrapStorage(context: Context) : RecoveryBoo
     override fun finalExists(runId: RunId): Boolean {
         val paths = paths(runId)
         validateExistingDirectoryChain(paths.runRoot)
-        validateOptionalDirectory(paths.confirmationDirectory)
+        requireDirectory(paths.confirmationDirectory)
         return existingLeafOccupied(paths.finalFile)
     }
 
@@ -170,23 +182,13 @@ internal class AndroidOsRecoveryBootstrapStorage(context: Context) : RecoveryBoo
         }
     }
 
-    private fun validateOptionalDirectory(directory: File): Boolean =
-        when (val type = existingType(directory)) {
-            BootstrapPathType.ABSENT -> false
-            else -> {
-                RecoveryBootstrapPathPolicy.requireDirectoryComponent(type, directory.name)
-                true
-            }
-        }
+    private fun existingLeafOccupied(file: File): Boolean = namespaceLeafOccupancy(file).occupied
 
-    private fun existingLeafOccupied(file: File): Boolean =
-        when (val type = existingType(file)) {
-            BootstrapPathType.ABSENT -> false
-            else -> {
-                RecoveryBootstrapPathPolicy.requireRegularOrAbsentLeaf(type, file.name)
-                true
-            }
-        }
+    private fun namespaceDirectoryOccupancy(directory: File): BootstrapNamespaceOccupancy =
+        RecoveryBootstrapPathPolicy.directoryNamespaceOccupancy(existingType(directory))
+
+    private fun namespaceLeafOccupancy(file: File): BootstrapNamespaceOccupancy =
+        RecoveryBootstrapPathPolicy.leafNamespaceOccupancy(existingType(file))
 
     private fun requireRegularLeaf(file: File) {
         if (existingType(file) != BootstrapPathType.REGULAR) {
