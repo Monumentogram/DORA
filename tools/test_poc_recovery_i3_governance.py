@@ -13,6 +13,21 @@ import validate_poc_recovery_governance as governance
 
 
 class RecoveryI3GovernanceTests(unittest.TestCase):
+    def test_sequential_microfile_successor_has_exact_scope_sources_and_nonclaims(self) -> None:
+        self.assertEqual(
+            "4eab3eae72b9196fbd114339b9fe96bba7705f00",
+            governance.REC_I3_MICROFILE_SCOPE_COMMIT,
+        )
+        governance.validate_rec_i3_microfile_successor(publication=False)
+        changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
+        changes["untracked"] = list(governance.REC_I3_MICROFILE_SOURCE_PATHS)
+        governance.validate_rec_i3_changed_paths(changes)
+        changes["untracked"] = [
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/FutureWriter.kt"
+        ]
+        with self.assertRaisesRegex(ValueError, "escapes exact scope"):
+            governance.validate_rec_i3_changed_paths(changes)
+
     def test_bootstrap_provider_witness_correction_has_exact_scope_lineage(self) -> None:
         self.assertEqual(
             "cd752f952666f414465c73bc55a0d7f7f20c4989",

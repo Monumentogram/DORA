@@ -143,6 +143,23 @@ readiness blockers remain open, and `POC-RECOVERY-001` remains `BLOCKED / NOT_RE
 device/emulator execution, preflight, hard-kill/fault campaign, measurement, PASS, production
 admission, PR merge or future merged-main admission is performed or claimed.
 
+## REC-I3 sequential microfile publication amendment — 5 September 2026
+
+The additive
+[scope](stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_PUBLICATION_SCOPE_STAGE0_V0_1.md),
+[clarification](stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_PUBLICATION_CLARIFICATION_STAGE0_V0_1.md)
+and [ADR-0003](adr/ADR-0003-unified-poc-recovery-journal-and-run-lease.md) record another partial
+REC-I3 slice. The host-verified implementation publishes sequential encrypted microfiles and
+cumulative authenticated manifests through exact `MICRO-P01`–`P21`, derives continuation only
+from validated durable rows, and creates its capability only after confirmed transaction end.
+Android storage/SQLite adapters compile as source evidence; host SQLite migration tests are not
+device preflight. Independent/accountable implementation review remains pending.
+
+The remaining REC-I3 harness, reconciliation, quarantine, stream candidate, external controller
+and campaign work are unfinished. `fullRecI3Completed=false`; all ten active blockers,
+`POC-RECOVERY-001` `BLOCKED / NOT_READY`, the Recovery preflight lock and every execution,
+measurement and production-admission nonclaim remain unchanged.
+
 ## Stage 00 closure
 
 - Stage 00 is complete.

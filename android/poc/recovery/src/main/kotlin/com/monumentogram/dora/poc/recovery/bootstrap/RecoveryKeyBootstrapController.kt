@@ -4,9 +4,9 @@ import com.monumentogram.dora.poc.recovery.contract.KeyConfirmationValue
 import com.monumentogram.dora.poc.recovery.contract.KeyRecoveryClassification
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
+import com.monumentogram.dora.poc.recovery.coordination.ProcessRecoveryRunSingleWriterGuard
+import com.monumentogram.dora.poc.recovery.coordination.RecoveryRunSingleWriterGuard
 import com.monumentogram.dora.poc.recovery.crypto.RecoveryRunAead
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.locks.ReentrantLock
 
 internal enum class BootstrapStep {
     KC01,
@@ -185,29 +185,13 @@ internal fun interface BootstrapEvidenceSink {
     fun emit(value: RecoveryBootstrapRunRow)
 }
 
-internal fun interface BootstrapWriterLease : AutoCloseable
-
-internal fun interface BootstrapSingleWriterGuard {
-    fun tryAcquire(runId: RunId): BootstrapWriterLease?
-}
-
-private object ProcessBootstrapSingleWriterGuard : BootstrapSingleWriterGuard {
-    private val locks = ConcurrentHashMap<String, ReentrantLock>()
-
-    override fun tryAcquire(runId: RunId): BootstrapWriterLease? {
-        val lock = locks.computeIfAbsent(runId.toCanonicalString()) { ReentrantLock() }
-        if (!lock.tryLock()) return null
-        return BootstrapWriterLease { lock.unlock() }
-    }
-}
-
 /** Executes the immutable KC01–KC13 bootstrap and is the only publication-capability issuer. */
 internal class RecoveryKeyBootstrapController(
     private val crypto: RecoveryBootstrapCrypto,
     private val storage: RecoveryBootstrapStorage,
     private val journal: RecoveryRunBootstrapJournal,
     private val evidenceSink: BootstrapEvidenceSink,
-    private val writerGuard: BootstrapSingleWriterGuard = ProcessBootstrapSingleWriterGuard,
+    private val writerGuard: RecoveryRunSingleWriterGuard = ProcessRecoveryRunSingleWriterGuard,
 ) {
     fun bootstrap(value: KeyConfirmationValue): BootstrapResult {
         val lease =

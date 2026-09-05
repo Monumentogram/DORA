@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "scopeId": "rec-i3-sequential-microfile-publication-stage0-v0.1",
+  "taskId": "REC-I3",
+  "sliceId": "REC-I3-SEQUENTIAL-MICROFILE-003",
+  "date": "2026-09-05",
+  "reviewedPredecessorCommit": "a0348fe1d76a062af7d145045ef432f0a1eadf1c",
+  "reviewedPredecessorTree": "7af474369e06c1cceef2168eba224accb5ece4ba",
+  "scopeFirstCommit": "4eab3eae72b9196fbd114339b9fe96bba7705f00",
+  "clarificationCommit": "3adacb7c2a52dba53604e7dde63bfad1feea96a3",
+  "processingIntentScopeCommit": "6908515987dd5ecdd518e10d1ad41af2ca9b4c5c",
+  "authorityRecord": "OWNER-AUTH-BATCH-20260819-01",
+  "protocolId": "poc-recovery-protocol-stage0-v0.6",
+  "claimCeiling": "PARTIAL_REC_I3_MICROFILE_HOST_VERIFIED_PENDING_PLATFORM_PREFLIGHT_FULL_IMPLEMENTATION_AND_REVIEW",
+  "implementationStatus": "LOCAL_VERIFIED",
+  "fullRecI3Completed": false,
+  "recoveryPreflightUnlocked": false,
+  "readinessBlockersClosed": [],
+  "authority": {
+    "recI3ImplementationAllowed": true,
+    "recI3NonMetricVerificationAllowed": true,
+    "phaseAAllowed": false,
+    "executionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "productionAdmissionAllowed": false
+  },
+  "execution": {
+    "device": false,
+    "emulator": false,
+    "preflight": false,
+    "faultCampaign": false,
+    "hardKill": false,
+    "measured": false
+  },
+  "sourceFiles": {
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/RecoveryKeyBootstrapController.kt": "8634849519d5e9a14194193a5901e6ad803c72fdc18fa37154c3c11c33e482e0",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryBootstrapCrypto.kt": "6a665b167a5ab3b55c9e41ef80b3a4df4fc53c3075d6836bd40617d6c23fd3b8",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryKeyBootstrap.kt": "f6e73953f105bf88c8dd6e60dc0ccace674b716d1c71ba8d94ee97946925ffeb",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofilePublicationController.kt": "db350169e7e78b6fbb9e2b30fc91b410bafd04bccc3dc044bf09068100eebb90",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryMicrofileCrypto.kt": "dd7028a601830600e43ba91c11572b5f527522ae7facf562458fb8cad87c9e03",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryProcessingIntent.kt": "eeed7f9ccf957e775ea7600bffe4358047b96ad04a889629de33539437d0ffe3",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/coordination/RecoveryRunSingleWriterGuard.kt": "afd73bcfa7869ace3d15b02ee596fecaee975ab14a394ad0bc5554f6a7cc87d7",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryJournalDatabase.kt": "dba6625660e47383fe7d4d79df8dea21325ac2a779656bd272194834acfd579a",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryMicrofileJournal.kt": "51cb86303a6a4ad61fc76c0842e78aa3cc3b80e8a7f0671fcbe0bfc6c23f9dae",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryRunBootstrapJournal.kt": "56c50bbcc7a814540cba5d18e8619022a23249061a15f28992f3cc3b2a4b3fd7",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryCandidatePathPolicy.kt": "d171808ad2a87eb741116417d18e7cc5c9c0bbea3b15cb83c97c94224f1d072d",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryCandidateStorage.kt": "bc1202022777e470f329c6ca0273cb2951eae7fb2626a4bca764b40766424555",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicy.kt": "4a304cc98eb3576a2b975643e584ce5c47a1d6993459d8d0b5b3384049e17799",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryBootstrapStorage.kt": "d322d123208578460ff9442257941717cc67c9632221a544ccddd11a839b7da4",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/RecoveryKeyBootstrapControllerTest.kt": "18f77e4e6b2ad5bbb0f77c49ea4f912bef8df1bb0bbd7ea6716f07c8f19b1daa",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofilePublicationControllerTest.kt": "b53391d9fc15695c2707932f9003dc5f268f932768524c9ac9b9188beecd3a43",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryProcessingIntentTest.kt": "7da74c15ca13813fcac6fe4b79519b58189a37f0a77c96cdecd4e3882cafb681",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalSchemaPlanTest.kt": "a372d8cb98791a1a06c6322c10d1a2daa383ef2f50a4d9605be00a1f9e1f2373",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryCandidatePathPolicyTest.kt": "63a5d14565be4d9ff6894ba8c5e7cf327ea1e6f69e8b665726b65990b72be13a",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicyTest.kt": "4fe17ad71f150175b8225b69b98d854428eb5898c100b91c0ff1e9ca9ffba506",
+    "tools/verify_rec_i3_microfile_sqlite.py": "fef9d578baad2270b3178d427d25e70ab58bdfd38ea3ac3816f66fd7d4f41adc"
+  },
+  "checks": [
+    {
+      "command": "temporary omission of confirmed MICRO-P21 completion against actual-Tink sequential test",
+      "stage": "TDD_BEHAVIORAL_RED",
+      "outcome": "EXPECTED_TEST_FAILURE",
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "command": "gradlew spotlessCheck detekt focused sequential/intent/path/schema tests",
+      "stage": "FOCUSED_GREEN",
+      "outcome": "PASS",
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "command": "gradlew spotlessCheck detekt :poc:recovery:testDebugUnitTest :poc:recovery:lintDebug :poc:recovery:compileReleaseKotlin :poc:recovery:recoveryI2bVerifyCryptoPolicy",
+      "stage": "FINAL",
+      "outcome": "PASS",
+      "tests": 135,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "command": "python tools/verify_rec_i3_microfile_sqlite.py",
+      "stage": "HOST_SQLITE",
+      "outcome": "PASS",
+      "pythonVersion": "3.14.0",
+      "sqliteVersion": "3.53.1",
+      "ddlSha256": "fc6e7813c6a6717d39bba6c8a32269be929b43d0c5e8ac9dc0b18b5f9adf815b"
+    },
+    {
+      "command": "gradlew -PdoraRecoveryI2aGraphProbe=true :poc:recovery:recoveryI2aResolveOwnedConfigurations",
+      "stage": "PACKAGE_GRAPH_R8",
+      "outcome": "PASS"
+    }
+  ],
+  "review": {
+    "independentAdvisory": "PENDING",
+    "accountable": "PENDING",
+    "formalReviewer": false
+  },
+  "limitations": [
+    "Host tests and host SQLite do not prove Android filesystem, Keystore or SQLite runtime behavior.",
+    "Android Os.rename relies on immediate lstat plus the shared in-process run lease and is not a kernel atomic-no-replace claim.",
+    "Reconciliation, quarantine, streaming, external controller and Recovery campaign remain incomplete.",
+    "All ten active readiness blockers remain open; fullRecI3Completed=false and Recovery preflight remains locked.",
+    "No device, emulator, preflight, hard-kill, fault campaign, measurement, PASS, production admission or merge is claimed."
+  ]
+}

@@ -57,6 +57,18 @@ remain unfinished. All ten readiness blockers, aggregate counts, Recovery prefli
 campaign/admission flag remain unchanged. This task performs no device/emulator execution,
 preflight, hard kill, fault campaign, measurement, PR merge or future merged-main admission.
 
+REC-I3 sequential microfile amendment, 5 September 2026: the additive
+[scope](stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_PUBLICATION_SCOPE_STAGE0_V0_1.md),
+[clarification](stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_PUBLICATION_CLARIFICATION_STAGE0_V0_1.md)
+and [local evidence](evidence/poc-recovery-001/rec-i3-sequential-microfile-publication-local-evidence-stage0-v0.1.json)
+add a repeatable `REC-MICROFILE-TINK` unit plus cumulative-manifest writer through
+exact `MICRO-P01`–`P21`. The slice shares the bootstrap run lease and advances only the PoC journal
+to a non-destructive schema v2 in the existing database. Host tests exercise actual Tink
+round trips, sequential state, conservative failure remainders and exact processing intents; host
+SQLite executes the production DDL and migration statements but is not Android runtime proof.
+Reconciliation, quarantine, streaming, external control and campaign execution remain unfinished.
+`fullRecI3Completed=false`, all ten blockers and the Recovery preflight lock remain unchanged.
+
 ## 1. Правила выполнения
 
 - `DONE` означает: артефакт существует, acceptance выполнен и evidence доступно в commit/CI/report.
