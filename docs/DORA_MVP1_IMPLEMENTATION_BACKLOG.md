@@ -35,6 +35,16 @@ physical evidence. The harness/controller, fresh REC-I3 graph, preflight and cam
 `TODO=9`, `READY=0`. This reconciliation performs no emulator/device execution and elevates no PoC
 state, PASS, readiness or admission.
 
+REC-I3 first-slice amendment, 5 September 2026: the
+[read-only key-confirmation controller scope](stage0/DORA_MVP1_POC_RECOVERY_I3_KEY_CONFIRMATION_CONTROLLER_SCOPE_STAGE0_V0_1.md)
+and [local evidence](evidence/poc-recovery-001/rec-i3-key-confirmation-controller-local-evidence-stage0-v0.1.json)
+supersede only the pre-slice blanket absence of a controller in the historical summary/table.
+The full harness, durable bootstrap/publication/journal/quarantine, exact package verification and
+required implementation review remain unfinished. This partial REC-I3 result closes no readiness
+blocker, unlocks no Recovery preflight and leaves `POC-RECOVERY-001` `BLOCKED / NOT_READY`, aggregate
+counts and every campaign/admission flag unchanged. Subsequent implementation slices remain under
+the same current OD-15 authority; the current task performs no PR merge.
+
 ## 1. Правила выполнения
 
 - `DONE` означает: артефакт существует, acceptance выполнен и evidence доступно в commit/CI/report.

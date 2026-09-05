@@ -109,6 +109,20 @@ Offline-owned reconnect and OS-blocked execution remain open. `POC-OFFLINE-001` 
 `NOT_READY`, `NOT_RUN` and `NOT_AUTHORIZED`; active Stage 0D and every Recovery authority flag
 remain unchanged.
 
+## REC-I3 key-confirmation first-slice amendment — 5 September 2026
+
+The additive [scope](stage0/DORA_MVP1_POC_RECOVERY_I3_KEY_CONFIRMATION_CONTROLLER_SCOPE_STAGE0_V0_1.md)
+and [local evidence](evidence/poc-recovery-001/rec-i3-key-confirmation-controller-local-evidence-stage0-v0.1.json)
+record a read-only key-confirmation controller in isolated `:poc:recovery`. It checks supplied
+stored identity before opening the existing alias, preserves the effective KEY-04/KCF-07 boundary,
+and performs no key creation, durable publication or device operation. The historical statements
+below that no controller existed describe the pre-slice snapshot; the full REC-I3 harness,
+bootstrap/writer, journal, quarantine, package verification and implementation review remain
+unfinished. Confirmation-only host evidence does not complete REC-I3 or unlock Recovery preflight.
+All ten active Recovery readiness blockers and the existing campaign/admission flags remain
+unchanged. Further REC-I3 implementation continues under current OD-15 authority; no new activation
+decision is required for its already authorized scope, and no PR merge is performed by this task.
+
 ## Stage 00 closure
 
 - Stage 00 is complete.

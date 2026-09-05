@@ -363,6 +363,28 @@ GITHUB_BASE_BRANCH = "main"
 GITHUB_EVENT_MAX_BYTES = 10 * 1024 * 1024
 FULL_SHA256_RE = re.compile(r"[0-9a-f]{40}")
 
+# OD-15 permits this first implementation slice, not a Recovery readiness gate.
+# This branch-only profile deliberately does not admit a future squash merge.
+REC_I3_BRANCH = "codex/rec-i3-key-confirmation-controller"
+REC_I3_BASE = "da1d9bd13b71d609fe7ec4ea62fe1e984f726040"
+REC_I3_BASE_TREE = "925bd08802fefc314742776d147771a92edfac70"
+REC_I3_BASE_PARENT = "e5f94e3f5afc3bf5aa61acaaa4960614dcb09209"
+REC_I3_SCOPE_COMMIT = "455f587881cf2a32ed23105a05d53a47424f18bd"
+REC_I3_SCOPE_TREE = "528a709c866a9f560bc1fe5c8d6d3497bb6d0bd7"
+REC_I3_SCOPE_PARENT = "68628a17eb12d82f5b345af98daf0bb0eaad37f8"
+REC_I3_SCOPE_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_KEY_CONFIRMATION_CONTROLLER_SCOPE_STAGE0_V0_1.md"
+REC_I3_SCOPE_SHA256 = "e709284744b3d9563f9a291e4ebcfd3b77306e001ecdbca2bd09bf45427fc8ad"
+REC_I3_EVIDENCE_PATH = "docs/evidence/poc-recovery-001/rec-i3-key-confirmation-controller-local-evidence-stage0-v0.1.json"
+REC_I3_SOURCE_PATHS = (
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/controller/RecoveryKeyConfirmationController.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/controller/RecoveryKeyConfirmationControllerTest.kt",
+)
+REC_I3_ADDITIVE_PATHS = (*REC_I3_SOURCE_PATHS, REC_I3_SCOPE_PATH, REC_I3_EVIDENCE_PATH,
+                         "tools/test_poc_recovery_i3_governance.py")
+REC_I3_ALLOWED_PATHS = (*REC_I3_ADDITIVE_PATHS, REC_I2B_MERGED_MAIN_VALIDATOR_PATH,
+                      "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md", "docs/DORA_MVP1_STAGE_STATUS.md")
+REC_I3_CLAIM_CEILING = "PARTIAL_REC_I3_HOST_ONLY_PENDING_FULL_IMPLEMENTATION_AND_REVIEW"
+
 
 @dataclass(frozen=True)
 class GitHubPullRequestContext:
@@ -5219,7 +5241,191 @@ def validate_rec_i2b_merged_main_nonclaims(
     )
 
 
+def rec_i3_candidate() -> bool:
+    return (ROOT / REC_I3_SCOPE_PATH).exists() or (ROOT / REC_I3_EVIDENCE_PATH).exists()
+
+
+def validate_rec_i3_changed_paths(changes: dict[str, list[str]]) -> None:
+    require(set(changes) == {"committed", "staged", "unstaged", "untracked"},
+            "REC-I3 change inventory is incomplete")
+    for layer, paths in changes.items():
+        forbidden = sorted(set(paths) - set(REC_I3_ALLOWED_PATHS))
+        require(not forbidden, f"REC-I3 {layer} delta escapes exact scope: {forbidden}")
+
+
+def validate_rec_i3_additions_absent() -> None:
+    for relative in REC_I3_ADDITIVE_PATHS:
+        require(not git_path_records("ls-tree", "-z", REC_I3_BASE, "--", relative),
+                f"REC-I3 additive path already exists at base: {relative}")
+
+
+def validate_rec_i3_scope_frozen(changes: dict[str, list[str]]) -> None:
+    require(set(changes) == {"committed", "staged", "unstaged", "untracked"},
+            "REC-I3 scope change inventory is incomplete")
+    require(all(REC_I3_SCOPE_PATH not in paths for paths in changes.values()),
+            "REC-I3 scope changed after its scope-first commit")
+
+
+def validate_rec_i3_context(
+    lifecycle: RecoveryLifecycleIdentity,
+    base: PinnedCommitIdentity,
+    scope: PinnedCommitIdentity,
+) -> None:
+    validate_pinned_commit_identity(base, expected_commit=REC_I3_BASE,
+                                   expected_tree=REC_I3_BASE_TREE,
+                                   expected_parents=(REC_I3_BASE_PARENT,), label="REC-I3 base")
+    validate_pinned_commit_identity(scope, expected_commit=REC_I3_SCOPE_COMMIT,
+                                   expected_tree=REC_I3_SCOPE_TREE,
+                                   expected_parents=(REC_I3_SCOPE_PARENT,), label="REC-I3 scope-first")
+    require(lifecycle.branch == REC_I3_BRANCH, "REC-I3 requires its exact authorized branch")
+    pull_request = lifecycle.github_pull_request_context
+    if pull_request is not None:
+        validate_rec_i2b_ksp_overlay_pull_request_core(pull_request)
+        require(pull_request.head_ref == REC_I3_BRANCH
+                and pull_request.base_sha == REC_I3_BASE
+                and pull_request.merge_sha == lifecycle.head
+                and pull_request.head_sha != REC_I3_BASE,
+                "REC-I3 pull_request does not bind the exact branch/base/merge checkout")
+
+
+def validate_rec_i3_evidence(
+    record: dict[str, Any], source_hashes: dict[str, str], *, publication: bool = False,
+) -> None:
+    expected = {
+        "schemaVersion": 1, "scopeId": "rec-i3-key-confirmation-controller-stage0-v0.1",
+        "taskId": "REC-I3", "sliceId": "REC-I3-KEY-CONFIRMATION-CONTROLLER-001",
+        "date": "2026-09-05", "baseCommit": REC_I3_BASE,
+        "scopeFirstCommit": REC_I3_SCOPE_COMMIT, "authorityRecord": "OWNER-AUTH-BATCH-20260819-01",
+        "protocolId": PROTOCOL_ID, "scopeLocator": REC_I3_SCOPE_PATH,
+        "claimCeiling": REC_I3_CLAIM_CEILING,
+        "fullRecI3Completed": False, "recoveryPreflightUnlocked": False,
+        "readinessBlockersClosed": [],
+        "authority": {"recI3ImplementationAllowed": True, "recI3NonMetricVerificationAllowed": True,
+                      "phaseAAllowed": False, "executionAllowed": False,
+                      "measuredExecutionAllowed": False, "productionAdmissionAllowed": False},
+        "execution": {"device": False, "emulator": False, "preflight": False,
+                      "faultCampaign": False, "hardKill": False, "measured": False},
+        "review": {"independentAdvisory": "PENDING", "accountable": "PENDING", "formalReviewer": False},
+    }
+    # JSON canonical comparison distinguishes booleans from numeric 0/1.
+    require(set(record) == set(expected) | {"implementationStatus", "sourceFiles", "checks", "limitations"},
+            "REC-I3 evidence schema drift")
+    require(semantic_sha256({key: record[key] for key in expected}) == semantic_sha256(expected),
+            "REC-I3 evidence identity/authority/claim ceiling drift")
+    status = record["implementationStatus"]
+    require(status in {"IN_PROGRESS", "LOCAL_VERIFIED"}, "REC-I3 implementation status overclaims scope")
+    require(not publication or status == "LOCAL_VERIFIED", "REC-I3 PR requires complete local slice evidence")
+    sources = record["sourceFiles"]
+    require(isinstance(sources, dict) and set(sources) <= set(REC_I3_SOURCE_PATHS)
+            and set(source_hashes) <= set(REC_I3_SOURCE_PATHS), "REC-I3 source manifest escapes exact scope")
+    require(all(isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest)
+                and source_hashes.get(path) == digest for path, digest in sources.items()),
+            "REC-I3 source digest mismatch")
+    if status == "LOCAL_VERIFIED":
+        require(set(sources) == set(source_hashes) == set(REC_I3_SOURCE_PATHS),
+                "REC-I3 locally verified source manifest is incomplete")
+    checks = record["checks"]
+    require(isinstance(checks, list) and checks, "REC-I3 check evidence is missing")
+    for check in checks:
+        require(isinstance(check, dict) and isinstance(check.get("command"), str)
+                and check["command"] and isinstance(check.get("stage"), str)
+                and check.get("outcome") in {"PASS", "FAIL", "ENVIRONMENT_BLOCKED", "EXPECTED_TEST_FAILURE"},
+                "REC-I3 check evidence is malformed")
+        if "tests" in check:
+            require(type(check["tests"]) is int and check["tests"] > 0
+                    and type(check.get("failures")) is int and check["failures"] >= 0
+                    and all(type(check[field]) is int and check[field] >= 0
+                            for field in ("errors", "skipped") if field in check),
+                    "REC-I3 unit test counters are malformed")
+            if check["outcome"] == "PASS":
+                require(all(type(check.get(field)) is int and check[field] == 0
+                            for field in ("failures", "errors", "skipped")),
+                        "REC-I3 unit PASS contains failures/errors/skips")
+    if status == "LOCAL_VERIFIED":
+        final = [check for check in checks if check["stage"] == "FINAL"]
+        require(final and all(check["outcome"] == "PASS" for check in final),
+                "REC-I3 final verification is incomplete or failed")
+        commands = " ".join(check["command"] for check in final)
+        tokens = commands.split()
+        require(all(task in tokens for task in ("spotlessCheck", "detekt",
+                    ":poc:recovery:testDebugUnitTest", ":poc:recovery:lintDebug",
+                    ":poc:recovery:recoveryI2bVerifyCryptoPolicy")),
+                "REC-I3 final required check coverage is incomplete")
+    require(isinstance(record["limitations"], list) and record["limitations"]
+            and all(isinstance(item, str) and item for item in record["limitations"]),
+            "REC-I3 limitations are missing")
+
+
+def validate_rec_i3_regular_file(relative: str) -> None:
+    path = ROOT / relative
+    require(path.is_file() and path_is_within(path.resolve(strict=True), ROOT.resolve(strict=True)),
+            f"REC-I3 file missing or outside repository: {relative}")
+    require(all(not component.is_symlink() for component in (path, *path.parents)),
+            f"REC-I3 symlink component: {relative}")
+    for revision in ("HEAD", ":"):
+        records = (git_path_records("ls-tree", "-z", revision, "--", relative)
+                   if revision != ":" else git_path_records("ls-files", "--stage", "-z", "--", relative))
+        require(all(item.startswith("100644 ") for item in records),
+                f"REC-I3 non-regular Git entry: {relative}")
+
+
+def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | None = None) -> bool:
+    if not rec_i3_candidate():
+        return False
+    current = lifecycle or collect_recovery_lifecycle_identity()
+    validate_rec_i3_context(current, collect_pinned_commit_identity(REC_I3_BASE, current.head),
+                            collect_pinned_commit_identity(REC_I3_SCOPE_COMMIT, current.head))
+    if current.github_pull_request_context is not None:
+        require(git_is_ancestor(REC_I3_SCOPE_COMMIT, current.github_pull_request_context.head_sha),
+                "REC-I3 scope exists only through PR base/merge")
+    changes = collect_post_merge_changes(merged_anchor=REC_I3_BASE)
+    validate_rec_i3_changed_paths(changes)
+    require(git_output("rev-parse", f"{REC_I3_BASE}:android/poc/recovery") == REC_I2B_MODULE_TREE,
+            "REC-I3 base does not preserve the exact REC-I2B module")
+    validate_rec_i3_additions_absent()
+    validate_rec_i3_scope_frozen(collect_post_merge_changes(merged_anchor=REC_I3_SCOPE_COMMIT))
+    require(git_path_records("log", "--format=", "--name-only", "--no-renames", "-z",
+                            f"{REC_I3_BASE}..{REC_I3_SCOPE_COMMIT}")
+            and set(git_path_records("log", "--format=", "--name-only", "--no-renames", "-z",
+                                     f"{REC_I3_BASE}..{REC_I3_SCOPE_COMMIT}")) == {REC_I3_SCOPE_PATH},
+            "REC-I3 scope-first lineage contains implementation or unrelated paths")
+    require(sha256(REC_I3_SCOPE_PATH) == REC_I3_SCOPE_SHA256,
+            "REC-I3 immutable implementation scope changed")
+    for commit in git_output("log", "--format=%H", f"{REC_I3_BASE}..HEAD", "--", *REC_I3_SOURCE_PATHS).splitlines():
+        require(git_is_ancestor(REC_I3_SCOPE_COMMIT, commit), "REC-I3 source commit predates its scope")
+    for relative in ("docs/evidence/owner-auth-batch-20260819-01.json",
+                     "docs/stage0/DORA_MVP1_STAGE0_OWNER_DECISION_OD15.md"):
+        require((ROOT / relative).read_bytes() == git_blob_bytes(f"{REC_I3_BASE}:{relative}"),
+                "REC-I3 owner authority differs from pinned main")
+    owner = read_json("docs/evidence/owner-auth-batch-20260819-01.json")
+    require(owner["recordId"] == "OWNER-AUTH-BATCH-20260819-01"
+            and owner["recI3Authority"]["recI3ImplementationAllowed"] is True
+            and owner["recI3Authority"]["recI3NonMetricVerificationAllowed"] is True,
+            "REC-I3 lacks exact current owner authority")
+    # Only the frozen pre-REC-I3 KSP transition is accepted. No graph/lock/R8 overlay
+    # can enter via a new controller file or a reverted predecessor commit.
+    require(rec_i2b_ksp_overlay_active(), "REC-I3 requires the already integrated exact KSP overlay")
+    validate_rec_i2b_ksp_overlay_integrated_revision(REC_I3_BASE)
+    predecessor_changes = collect_post_merge_changes(merged_anchor=REC_I2B_MERGED_MAIN_ANCHOR)
+    predecessor_changes = {layer: [path for path in paths if path not in REC_I3_ADDITIVE_PATHS]
+                           for layer, paths in predecessor_changes.items()}
+    validate_rec_i2b_merged_main_protected_paths(predecessor_changes, allow_exact_ksp_overlay=True)
+    # collect_post_merge_changes includes both the tree diff and every committed
+    # path, so the two exact allowlists above also reject mode changes and reverts.
+    validate_rec_i2b_merged_main_nonclaims(read_json(REC_I2B_RUNTIME_EVIDENCE_PATH),
+                                         read_json(REC_I2B_ACCOUNTABLE_PACKET_PATH))
+    present = [path for path in REC_I3_SOURCE_PATHS if (ROOT / path).exists()]
+    for relative in (*present, REC_I3_SCOPE_PATH, REC_I3_EVIDENCE_PATH):
+        validate_rec_i3_regular_file(relative)
+    validate_rec_i3_evidence(read_json(REC_I3_EVIDENCE_PATH), {path: canonical_lf_sha256(path) for path in present},
+                             publication=current.github_pull_request_context is not None)
+    print(f"PASS REC-I3 bounded successor: {REC_I3_CLAIM_CEILING}; predecessor frozen; preflight blocked")
+    return True
+
+
 def validate_rec_i2b_merged_main_evidence_boundary() -> None:
+    if validate_current_rec_i3_successor():
+        return
     require(
         git_output("rev-parse", f"{REC_I2B_MERGED_MAIN_ANCHOR}^{{tree}}")
         == REC_I2B_MERGED_MAIN_TREE,
@@ -5282,6 +5488,8 @@ def validate_rec_i2b_current_module_boundary(*, merged_main: bool = False) -> No
 
 def validate_current_rec_i2b_reviewed_successor() -> bool:
     lifecycle = collect_recovery_lifecycle_identity()
+    if validate_current_rec_i3_successor(lifecycle):
+        return True
     merged_main_identity = collect_rec_i2b_merged_main_identity(lifecycle)
     if rec_i2b_merged_main_candidate(merged_main_identity):
         validate_rec_i2b_merged_main_lifecycle(
@@ -5344,6 +5552,8 @@ def validate_dependency_and_scope_boundary() -> bool:
     require(not changed_normative, f"Normative v0.6 contract differs from formal-review base: {changed_normative}")
 
     lifecycle_identity = collect_recovery_lifecycle_identity()
+    if validate_current_rec_i3_successor(lifecycle_identity):
+        return True
     rec_i2b_merged_main_identity = collect_rec_i2b_merged_main_identity(lifecycle_identity)
     rec_i2b_merged_main_mode = rec_i2b_merged_main_candidate(rec_i2b_merged_main_identity)
     reviewed_v06_tree = git_optional_output("rev-parse", f"{REVIEWED_V06_HEAD}^{{tree}}")
@@ -8062,7 +8272,20 @@ def main() -> int:
         else:
             run_rec_i2b_evidence_boundary_tests()
         run_negative_tests()
-    if rec_i2b_mode:
+        if rec_i3_candidate():
+            import unittest
+            import test_poc_recovery_i3_governance
+
+            suite = unittest.defaultTestLoader.loadTestsFromModule(test_poc_recovery_i3_governance)
+            require(unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful(),
+                    "REC-I3 successor mutation self-tests failed")
+    if rec_i3_candidate():
+        profile_summary = (
+            "OD-15 authorizes the bounded partial REC-I3 host controller; all predecessor inputs "
+            "remain frozen, full REC-I3 completion/review and Recovery preflight remain pending; "
+            "this branch-only profile grants no post-squash admission"
+        )
+    elif rec_i2b_mode:
         current_evidence = read_json(REC_I2B_RUNTIME_EVIDENCE_PATH)
         merged_main_mode = rec_i2b_merged_main_candidate(collect_rec_i2b_merged_main_identity())
         accountable_review_complete = current_evidence.get("status") == REC_I2B_ACCOUNTABLE_STATUS
