@@ -153,6 +153,8 @@ internal constructor(
             )
         } catch (error: RecoveryArtifactAccessException) {
             throw error
+        } catch (error: RecoveryUnsafePathException) {
+            throw error
         } catch (error: Throwable) {
             throw RecoveryArtifactAccessException(RecoveryArtifactPresence.PRESENT, false, error)
         }
@@ -315,7 +317,13 @@ internal constructor(
             OsConstants.O_RDONLY or OsConstants.O_CLOEXEC or OsConstants.O_NOFOLLOW,
         ) { descriptor ->
             val stat = os.fstat(descriptor)
-            if (stat.type != BootstrapPathType.REGULAR || stat.size !in 0..maximumBytes) {
+            if (stat.type != BootstrapPathType.REGULAR) {
+                throw RecoveryUnsafePathException(
+                    "Recovery artifact changed to an unsafe leaf type",
+                    RecoveryFailureCategory.CORRUPT_LEAF,
+                )
+            }
+            if (stat.size !in 1..maximumBytes) {
                 throw structuralArtifactFailure("Recovery artifact exceeds its role bound")
             }
             readExactOpened(descriptor, stat.size)

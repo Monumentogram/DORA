@@ -517,8 +517,8 @@ REC_I3_RECON_ROUND4_ACCEPTANCE_CASES = (
     {
         "id": "CONTEXTUAL-TAXONOMY",
         "productionEntry": "RecoveryMicrofileReconciliationController.reconcile -> AndroidRecoveryReconciliationSource.loadConfirmation/loadArtifact -> AndroidOsRecoveryReconciliationStorage.activeArtifactExists/loadActiveArtifact",
-        "test": "AndroidRecoveryReconciliationSourceTest.actual controller keeps no-row and durable-row confirmation path classifications; actual controller distinguishes known final from unknown and temporary observation; actual controller maps manifest envelope and ciphertext structural reads by caller role; actual controller maps unit envelope structural read without relabeling ciphertext; actual controller keeps later syscall IO operational across artifact roles",
-        "assertion": "Bootstrap row UNKNOWN, ABSENT and PRESENT and artifact presence UNKNOWN, ABSENT and PRESENT remain distinct; final and temporary confirmation plus MANIFEST_KEY_ENVELOPE, MANIFEST_CIPHERTEXT, UNIT_KEY_ENVELOPE and UNIT_CIPHERTEXT bind nullable key classification, public diagnostic, retained stage/category, prefix or rejection retention, and the last permitted side effect.",
+        "test": "AndroidRecoveryReconciliationSourceTest.actual controller retains unknown bootstrap query and cursor failures before artifact access; actual controller maps confirmation final descriptor controls by durable row state; actual controller maps all confirmation temp row and final presence combinations; actual controller maps manifest envelope and ciphertext structural reads by caller role; actual controller maps unit envelope structural read without relabeling ciphertext; actual controller keeps later syscall IO operational across artifact roles",
+        "assertion": "Bootstrap row UNKNOWN, ABSENT and PRESENT and artifact presence UNKNOWN, ABSENT and PRESENT remain distinct; final and temporary confirmation, all descriptor controls, and MANIFEST_KEY_ENVELOPE, MANIFEST_CIPHERTEXT, UNIT_KEY_ENVELOPE and UNIT_CIPHERTEXT structural and I/O cases bind nullable key classification, public diagnostic, retained stage/category, ordered manifest rejection or non-empty authenticated prefix, and the exact last permitted journal, OS, alias or crypto event.",
     },
     {
         "id": "PATH-IO-DISTINCTION",
@@ -529,7 +529,7 @@ REC_I3_RECON_ROUND4_ACCEPTANCE_CASES = (
     {
         "id": "BOOTSTRAP-CURSOR-POSITION",
         "productionEntry": "AndroidRecoveryReconciliationSource.loadBootstrapIdentity/decodeBootstrapIdentity -> loadConfirmation -> AndroidOsRecoveryReconciliationStorage.loadActiveArtifact",
-        "test": "AndroidRecoveryReconciliationSourceTest.bootstrap cursor decoder returns null for zero rows; bootstrap cursor decoder decodes the one stored identity at position zero; bootstrap cursor decoder rejects two rows as a structural journal failure; actual controller keeps no-row and durable-row confirmation path classifications",
+        "test": "AndroidRecoveryReconciliationSourceTest.bootstrap cursor decoder returns null for zero rows; bootstrap cursor decoder decodes the one stored identity at position zero; bootstrap cursor decoder rejects two rows as a structural journal failure; actual controller keeps no-row and durable-row confirmation path classifications; actual controller retains unknown bootstrap query and cursor failures before artifact access",
         "assertion": "Zero, one and duplicate cursor cardinality are exact; every one-row getter remains at position zero without pre-decode advance, duplicate rows are structural JOURNAL failures, and the production-used PRESENT decode reaches actual storage artifact observation.",
     },
     {
@@ -542,14 +542,17 @@ REC_I3_RECON_ROUND4_ACCEPTANCE_CASES = (
 REC_I3_RECON_ROUND4_ANDROID_CHECK = {
     "command": "gradlew spotlessCheck detekt :poc:recovery:testDebugUnitTest :poc:recovery:lintDebug :poc:recovery:compileReleaseKotlin :poc:recovery:recoveryI2bVerifyCryptoPolicy --no-daemon --no-parallel",
     "stage": "ROUND4_ANDROID_HOST", "outcome": "PASS",
-    "tests": 214, "failures": 0, "errors": 0, "skipped": 0,
-    "log": "rec-i3-round4-final-android.log",
+    "tests": 217, "failures": 0, "errors": 0, "skipped": 0,
+    "log": "rec-i3-round4-successor-final-android.log",
 }
 REC_I3_RECON_ROUND4_GOVERNANCE_CHECK = {
     "command": "python -m unittest test_poc_recovery_i3_governance.py -v from tools; python tools/validate_poc_recovery_governance.py",
     "stage": "ROUND4_GOVERNANCE", "outcome": "PASS",
     "tests": 23, "failures": 0, "errors": 0, "skipped": 0,
-    "logs": ["rec-i3-round4-governance.log", "rec-i3-round4-validator-precommit.log"],
+    "logs": [
+        "rec-i3-round4-successor-governance.log",
+        "rec-i3-round4-successor-validator-precommit.log",
+    ],
 }
 REC_I3_RECON_ROUND3_STATE_COMMIT = "927a9a2946b79b29536b325956f90966c94f2af3"
 REC_I3_RECON_ROUND3_STATE_TREE = "0abc6990d2f18598cb3e3ced78a6eac5f041770f"

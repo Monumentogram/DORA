@@ -191,8 +191,9 @@ diagnostics, actual-entry evidence truth and bootstrap cursor position remain th
 P1 findings. Independent review of `bc4f4423b535982956575f5a3480c9361eab6378` returned `REVISE`
 (P0/P1/P2 = 0/2/0): lexical path diagnostics, cursor position and the path side-effect ledger
 closed for that reviewed candidate, while production artifact context and current actual-entry
-evidence remain open. Current round-four author verification is `NOT_RUN` during correction;
-independent and accountable review remain pending. Historical round-three and bc4 contextual
+evidence remain open. Successor round-four author verification passed 217 Android host tests and
+23 governance tests with the complete production composition matrix; independent and accountable
+review remain pending. Historical round-three and bc4 contextual
 acceptance assertions are superseded author claims. Host assertions do not establish
 Android runtime durability; immediate lstat plus rename is not kernel-atomic no-replace evidence,
 and no Recovery gate is unlocked.

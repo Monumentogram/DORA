@@ -1446,6 +1446,13 @@ internal class RecoveryMicrofileReconciliationController(
                 RecoveryFailureCategory.UNKNOWN,
                 RecoveryFailureCategory.UNKNOWN_OUTCOME ->
                     ReconciliationDiagnostic.CRYPTO_OPERATIONAL
+                RecoveryFailureCategory.STRUCTURAL ->
+                    if (
+                        context?.artifactContext == null &&
+                            error.diagnostic.stage == RecoveryFailureStage.JOURNAL
+                    )
+                        ReconciliationDiagnostic.INVALID_BOOTSTRAP_ROOT
+                    else null
                 else -> null
             }
         return noPrefix(
@@ -1616,15 +1623,17 @@ internal class RecoveryMicrofileReconciliationController(
     private fun artifactResultDiagnostic(
         failure: RecoveryFailureDiagnostic
     ): ReconciliationDiagnostic =
-        if (
+        when {
             failure.category in
                 setOf(
                     RecoveryFailureCategory.UNSAFE_PARENT,
                     RecoveryFailureCategory.CORRUPT_LEAF,
-                )
-        )
-            ReconciliationDiagnostic.UNSAFE_PATH
-        else ReconciliationDiagnostic.CRYPTO_OPERATIONAL
+                ) -> ReconciliationDiagnostic.UNSAFE_PATH
+            failure.category == RecoveryFailureCategory.OPERATIONAL &&
+                failure.stage == RecoveryFailureStage.ARTIFACT_IO ->
+                ReconciliationDiagnostic.CRYPTO_OPERATIONAL
+            else -> ReconciliationDiagnostic.UNIT_MISSING_OR_INVALID
+        }
 
     private companion object {
         const val MAX_CONFIRMATION_CIPHERTEXT_BYTES = 512
