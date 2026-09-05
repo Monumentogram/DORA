@@ -46,7 +46,7 @@
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntentTest.kt": "6896870663c59c81a7f80f801e39529cf76c93ea6887536568ae71e56788cfd8",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalSchemaPlanTest.kt": "74068644e879ba72ec285566336879eaee590c13c55a4bae94e35b712705dd38",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSourceTest.kt": "33d18dde5b7d977dbd1a93f6358edd75d734a7eb8a1c6e99919930667da389c4",
-    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryReconciliationPathPolicyTest.kt": "a6fd59757a576e903ce71814466bd096c7f5189441bf629c7e760a9798ccdfcf",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryReconciliationPathPolicyTest.kt": "21ea41fb67d3dea5c6a34f0f8a6d71bb935f266275cd9a137262e14015dbc335",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorageTest.kt": "9d2c88443a8ab34670dbed41bdca1736fcc121af98675421d3046fc4410fdc55",
     "tools/verify_rec_i3_microfile_sqlite.py": "c6a6c094731ca1cf7c4830e5c1aa162e631b4c2dff0f204f272e1a9e94885ad0"
   },
@@ -132,7 +132,7 @@
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "log": "rec-i3-round4-zero-missing-final-android-green.log"
+      "log": "rec-i3-round4-linux-path-portability-android-green.log"
     },
     {
       "command": "python -m unittest test_poc_recovery_i3_governance.py -v from tools; python tools/validate_poc_recovery_governance.py",
@@ -143,8 +143,8 @@
       "errors": 0,
       "skipped": 0,
       "logs": [
-        "rec-i3-round4-zero-missing-final-governance.log",
-        "rec-i3-round4-zero-missing-final-validator-precommit.log"
+        "rec-i3-round4-linux-path-portability-governance-final.log",
+        "rec-i3-round4-linux-path-portability-validator-precommit-final.log"
       ]
     }
   ],

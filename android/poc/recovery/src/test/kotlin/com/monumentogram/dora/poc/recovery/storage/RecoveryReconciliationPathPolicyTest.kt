@@ -57,7 +57,7 @@ class RecoveryReconciliationPathPolicyTest {
                     RecoveryReconciliationPathPolicy.paths(
                         File("build/test-no-backup"),
                         run,
-                        "C:/outside.bin",
+                        File("outside.bin").absolutePath,
                         "objects/q-${"a".repeat(64)}.bin",
                     )
                 },

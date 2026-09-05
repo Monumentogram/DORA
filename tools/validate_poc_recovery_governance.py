@@ -554,15 +554,15 @@ REC_I3_RECON_ROUND4_ANDROID_CHECK = {
     "command": "gradlew spotlessCheck detekt :poc:recovery:testDebugUnitTest :poc:recovery:lintDebug :poc:recovery:compileReleaseKotlin :poc:recovery:recoveryI2bVerifyCryptoPolicy --no-daemon --no-parallel",
     "stage": "ROUND4_ANDROID_HOST", "outcome": "PASS",
     "tests": 224, "failures": 0, "errors": 0, "skipped": 0,
-    "log": "rec-i3-round4-zero-missing-final-android-green.log",
+    "log": "rec-i3-round4-linux-path-portability-android-green.log",
 }
 REC_I3_RECON_ROUND4_GOVERNANCE_CHECK = {
     "command": "python -m unittest test_poc_recovery_i3_governance.py -v from tools; python tools/validate_poc_recovery_governance.py",
     "stage": "ROUND4_GOVERNANCE", "outcome": "PASS",
     "tests": 23, "failures": 0, "errors": 0, "skipped": 0,
     "logs": [
-        "rec-i3-round4-zero-missing-final-governance.log",
-        "rec-i3-round4-zero-missing-final-validator-precommit.log",
+        "rec-i3-round4-linux-path-portability-governance-final.log",
+        "rec-i3-round4-linux-path-portability-validator-precommit-final.log",
     ],
 }
 REC_I3_RECON_ROUND3_STATE_COMMIT = "927a9a2946b79b29536b325956f90966c94f2af3"
