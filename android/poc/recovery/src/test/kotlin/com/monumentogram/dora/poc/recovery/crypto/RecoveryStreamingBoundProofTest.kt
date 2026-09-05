@@ -83,7 +83,10 @@ class RecoveryStreamingBoundProofTest {
             val tail = observe("q3-trigger-$trigger", scenario, TailSource.ACTUAL_TAIL)
             assertObservation(capped, recoveredEnd = 4_056, successfulReads = listOf(4_056))
             assertObservation(tail, recoveredEnd = 8_136, successfulReads = listOf(4_056, 4_080))
-            assertEquals(if (trigger == 1) 8_161 else 12_240, expectedA - capped.recoveredEndExclusive)
+            assertEquals(
+                if (trigger == 1) 8_161 else 12_240,
+                expectedA - capped.recoveredEndExclusive,
+            )
             assertEquals(if (trigger == 1) 4_081 else 8_160, expectedA - tail.recoveredEndExclusive)
         }
     }
@@ -93,7 +96,12 @@ class RecoveryStreamingBoundProofTest {
         val scenario = buildScenario(targetQ = 3, triggerBytes = 1)
         val before = observe("q3-before-commit", scenario, TailSource.ACTUAL_TAIL)
         val afterC = committedEnd(3)
-        val after = observe("q3-after-commit", scenario.copy(priorCommittedEnd = afterC), TailSource.ACTUAL_TAIL)
+        val after =
+            observe(
+                "q3-after-commit",
+                scenario.copy(priorCommittedEnd = afterC),
+                TailSource.ACTUAL_TAIL,
+            )
 
         assertEquals(4_056, scenario.priorCommittedEnd)
         assertEquals(8_136, afterC)
@@ -163,31 +171,37 @@ class RecoveryStreamingBoundProofTest {
     @Test
     fun `partial lookahead and in progress calls preserve raw R at or below prior A`() {
         verifyHeldWrite(
-            caseId = "nearly-empty-partial",
-            acceptedBeforeCall = 4_057,
-            prefillAfterQ1 = 0,
-            triggerBytes = 4_080,
-            copiedBeforePause = 1,
-            expectedExtent = 4_097,
-            expectedR = 4_056,
+            HeldWriteCase(
+                caseId = "nearly-empty-partial",
+                acceptedBeforeCall = 4_057,
+                prefillAfterQ1 = 0,
+                triggerBytes = 4_080,
+                copiedBeforePause = 1,
+                expectedExtent = 4_097,
+                expectedR = 4_056,
+            )
         )
         verifyHeldWrite(
-            caseId = "exact-full-partial-one",
-            acceptedBeforeCall = 8_136,
-            prefillAfterQ1 = 4_079,
-            triggerBytes = 1,
-            copiedBeforePause = 1,
-            expectedExtent = 4_097,
-            expectedR = 4_056,
+            HeldWriteCase(
+                caseId = "exact-full-partial-one",
+                acceptedBeforeCall = 8_136,
+                prefillAfterQ1 = 4_079,
+                triggerBytes = 1,
+                copiedBeforePause = 1,
+                expectedExtent = 4_097,
+                expectedR = 4_056,
+            )
         )
         verifyHeldWrite(
-            caseId = "exact-full-complete-4080",
-            acceptedBeforeCall = 8_136,
-            prefillAfterQ1 = 4_079,
-            triggerBytes = 4_080,
-            copiedBeforePause = CIPHERTEXT_SEGMENT_BYTES,
-            expectedExtent = 8_192,
-            expectedR = 4_056,
+            HeldWriteCase(
+                caseId = "exact-full-complete-4080",
+                acceptedBeforeCall = 8_136,
+                prefillAfterQ1 = 4_079,
+                triggerBytes = 4_080,
+                copiedBeforePause = CIPHERTEXT_SEGMENT_BYTES,
+                expectedExtent = 8_192,
+                expectedR = 4_056,
+            )
         )
         verifyPartialFailure()
     }
@@ -235,20 +249,66 @@ class RecoveryStreamingBoundProofTest {
         source: TailSource,
         appended: ByteArray = byteArrayOf(),
     ): ReadObservation {
-        val assembled = scenario.actualCiphertext + appended
-        val selected =
-            when (source) {
-                TailSource.CHECKPOINT_CAPPED -> {
-                    require(scenario.checkpointCiphertextBytes <= assembled.size)
-                    assembled.copyOfRange(0, scenario.checkpointCiphertextBytes)
-                }
-                TailSource.ACTUAL_TAIL -> assembled
-            }
+        val selected = selectSource(scenario, source, appended)
+        val readResult = readPublic(scenario.keyset, selected)
+        val recoveredBytes = readResult.recoveredBytes
+        assertTrue(
+            "Recovered bytes exceed accepted oracle",
+            recoveredBytes.size <= scenario.oracle.size,
+        )
+        assertArrayEquals(scenario.oracle.copyOf(recoveredBytes.size), recoveredBytes)
+        assertTrue(
+            "Recovered R exceeds accepted A",
+            recoveredBytes.size <= scenario.acceptedWatermark,
+        )
 
+        val terminalClasses = throwableClassChain(readResult.terminalError)
+        val terminal =
+            if (readResult.terminalError == null) {
+                assertTrue("Only -1 may establish authenticated EOF", readResult.authenticatedEof)
+                TerminalReadOutcome.AUTHENTICATED_EOF
+            } else {
+                assertTrue(
+                    "Unexpected public Tink read failure: $terminalClasses",
+                    isExpectedTinkCryptoReadFailure(readResult.terminalError),
+                )
+                TerminalReadOutcome.AUTHENTICATION_FAILURE
+            }
+        val observation =
+            ReadObservation(
+                recoveredEndExclusive = recoveredBytes.size,
+                successfulReadSizes = readResult.successfulReadSizes,
+                terminal = terminal,
+                attemptedCiphertextBytes = selected.size,
+                terminalExceptionClasses = terminalClasses,
+            )
+        emitObservation(caseId, source, scenario, observation)
+        return observation
+    }
+
+    private fun selectSource(
+        scenario: ProofScenario,
+        source: TailSource,
+        appended: ByteArray,
+    ): ByteArray {
+        val assembled = scenario.actualCiphertext + appended
+        return when (source) {
+            TailSource.CHECKPOINT_CAPPED -> {
+                require(scenario.checkpointCiphertextBytes <= assembled.size)
+                assembled.copyOfRange(0, scenario.checkpointCiphertextBytes)
+            }
+            TailSource.ACTUAL_TAIL -> assembled
+        }
+    }
+
+    private fun readPublic(
+        keyset: RecoveryStreamingKeyset,
+        selected: ByteArray,
+    ): PublicReadResult {
         var terminalError: Exception? = null
         val reader: InputStream? =
             try {
-                scenario.keyset.newDecryptingStream(ByteArrayInputStream(selected), aad())
+                keyset.newDecryptingStream(ByteArrayInputStream(selected), aad())
             } catch (error: Exception) {
                 terminalError = error
                 null
@@ -279,85 +339,57 @@ class RecoveryStreamingBoundProofTest {
                 }
             }
         }
-
-        val recoveredBytes = recovered.toByteArray()
-        assertTrue("Recovered bytes exceed accepted oracle", recoveredBytes.size <= scenario.oracle.size)
-        assertArrayEquals(scenario.oracle.copyOf(recoveredBytes.size), recoveredBytes)
-        assertTrue("Recovered R exceeds accepted A", recoveredBytes.size <= scenario.acceptedWatermark)
-
-        val terminalClasses = throwableClassChain(terminalError)
-        val terminal =
-            if (terminalError == null) {
-                assertTrue("Only -1 may establish authenticated EOF", authenticatedEof)
-                TerminalReadOutcome.AUTHENTICATED_EOF
-            } else {
-                assertTrue(
-                    "Unexpected public Tink read failure: $terminalClasses",
-                    isExpectedTinkCryptoReadFailure(terminalError),
-                )
-                TerminalReadOutcome.AUTHENTICATION_FAILURE
-            }
-        val observation =
-            ReadObservation(
-                recoveredEndExclusive = recoveredBytes.size,
-                successfulReadSizes = successfulReadSizes.toList(),
-                terminal = terminal,
-                attemptedCiphertextBytes = selected.size,
-                terminalExceptionClasses = terminalClasses,
-            )
-        emitObservation(caseId, source, scenario, observation)
-        return observation
+        return PublicReadResult(
+            recoveredBytes = recovered.toByteArray(),
+            successfulReadSizes = successfulReadSizes.toList(),
+            authenticatedEof = authenticatedEof,
+            terminalError = terminalError,
+        )
     }
 
-    private fun verifyHeldWrite(
-        caseId: String,
-        acceptedBeforeCall: Int,
-        prefillAfterQ1: Int,
-        triggerBytes: Int,
-        copiedBeforePause: Int,
-        expectedExtent: Int,
-        expectedR: Int,
-    ) {
+    private fun verifyHeldWrite(case: HeldWriteCase) {
         val destination = ControllableOutputStream()
         val publisher = OpenPublisher(destination)
         publisher.writeAccepted(FIRST_PLAINTEXT_BYTES)
         publisher.writeAccepted(1)
-        if (prefillAfterQ1 > 0) publisher.writeAccepted(prefillAfterQ1)
-        assertEquals(acceptedBeforeCall, publisher.acceptedWatermark)
+        if (case.prefillAfterQ1 > 0) publisher.writeAccepted(case.prefillAfterQ1)
+        assertEquals(case.acceptedBeforeCall, publisher.acceptedWatermark)
 
-        val gate = destination.pauseNextWrite(copiedBeforePause, failAfterPause = false)
+        val gate = destination.pauseNextWrite(case.copiedBeforePause, failAfterPause = false)
         val threadError = AtomicReference<Throwable?>()
-        val writerThread =
-            Thread {
-                try {
-                    publisher.writeWithoutAcceptance(triggerBytes)
-                } catch (error: Throwable) {
-                    threadError.set(error)
-                }
+        val writerThread = Thread {
+            try {
+                publisher.writeWithoutAcceptance(case.triggerBytes)
+            } catch (error: Throwable) {
+                threadError.set(error)
             }
+        }
         writerThread.start()
-        assertTrue("Timed out waiting for held downstream write", gate.reached.await(10, TimeUnit.SECONDS))
+        assertTrue(
+            "Timed out waiting for held downstream write",
+            gate.reached.await(10, TimeUnit.SECONDS),
+        )
 
         val held =
             publisher.snapshot(
                 observedCompletedQ = 1,
                 priorCommittedEnd = 0,
                 checkpointCiphertextBytes = CIPHERTEXT_SEGMENT_BYTES,
-                exactFillAcceptedWatermark = acceptedBeforeCall,
+                exactFillAcceptedWatermark = case.acceptedBeforeCall,
                 exactFillCiphertextBytes = CIPHERTEXT_SEGMENT_BYTES,
             )
-        assertEquals(expectedExtent, held.actualCiphertext.size)
-        assertEquals(acceptedBeforeCall, held.acceptedWatermark)
-        val observation = observe(caseId, held, TailSource.ACTUAL_TAIL)
-        assertEquals(expectedR, observation.recoveredEndExclusive)
-        assertTrue(observation.recoveredEndExclusive <= acceptedBeforeCall)
+        assertEquals(case.expectedExtent, held.actualCiphertext.size)
+        assertEquals(case.acceptedBeforeCall, held.acceptedWatermark)
+        val observation = observe(case.caseId, held, TailSource.ACTUAL_TAIL)
+        assertEquals(case.expectedR, observation.recoveredEndExclusive)
+        assertTrue(observation.recoveredEndExclusive <= case.acceptedBeforeCall)
 
         gate.release.countDown()
         writerThread.join(10_000)
         assertTrue("Held writer did not finish", !writerThread.isAlive)
         threadError.get()?.let { throw AssertionError("Held writer failed", it) }
-        publisher.accept(triggerBytes)
-        assertEquals(acceptedBeforeCall + triggerBytes, publisher.acceptedWatermark)
+        publisher.accept(case.triggerBytes)
+        assertEquals(case.acceptedBeforeCall + case.triggerBytes, publisher.acceptedWatermark)
     }
 
     private fun verifyPartialFailure() {
@@ -370,16 +402,18 @@ class RecoveryStreamingBoundProofTest {
 
         val gate = destination.pauseNextWrite(copiedBeforePause = 1, failAfterPause = true)
         val threadError = AtomicReference<Throwable?>()
-        val writerThread =
-            Thread {
-                try {
-                    publisher.writeWithoutAcceptance(1)
-                } catch (error: Throwable) {
-                    threadError.set(error)
-                }
+        val writerThread = Thread {
+            try {
+                publisher.writeWithoutAcceptance(1)
+            } catch (error: Throwable) {
+                threadError.set(error)
             }
+        }
         writerThread.start()
-        assertTrue("Timed out waiting for partial downstream write", gate.reached.await(10, TimeUnit.SECONDS))
+        assertTrue(
+            "Timed out waiting for partial downstream write",
+            gate.reached.await(10, TimeUnit.SECONDS),
+        )
         val partial =
             publisher.snapshot(
                 observedCompletedQ = 1,
@@ -417,6 +451,9 @@ class RecoveryStreamingBoundProofTest {
         scenario: ProofScenario,
         observation: ReadObservation,
     ) {
+        val reads = observation.successfulReadSizes.joinToString(",", prefix = "[", postfix = "]")
+        val terminalClasses =
+            observation.terminalExceptionClasses.joinToString(">", prefix = "[", postfix = "]")
         println(
             "BOUND_PROOF_OBSERVATION" +
                 " case=$caseId" +
@@ -426,9 +463,9 @@ class RecoveryStreamingBoundProofTest {
                 " A=${scenario.acceptedWatermark}" +
                 " C=${scenario.priorCommittedEnd}" +
                 " R=${observation.recoveredEndExclusive}" +
-                " reads=${observation.successfulReadSizes.joinToString(",", prefix = "[", postfix = "]")}" +
+                " reads=$reads" +
                 " terminal=${observation.terminal}" +
-                " terminalClasses=${observation.terminalExceptionClasses.joinToString(">", prefix = "[", postfix = "]")}"
+                " terminalClasses=$terminalClasses"
         )
     }
 
@@ -442,23 +479,16 @@ class RecoveryStreamingBoundProofTest {
         return result
     }
 
-    private fun isExpectedTinkCryptoReadFailure(error: Throwable): Boolean {
-        var cursor: Throwable? = error
-        while (cursor != null) {
-            if (cursor is GeneralSecurityException) return true
-            if (cursor.javaClass.name.startsWith("com.google.crypto.tink.")) return true
-            if (
-                cursor is IOException &&
-                    listOf("tag", "ciphertext", "decryption", "header", "segment").any {
-                        cursor.message?.contains(it, ignoreCase = true) == true
-                    }
-            ) {
-                return true
-            }
-            cursor = cursor.cause
-        }
-        return false
-    }
+    private fun isExpectedTinkCryptoReadFailure(error: Throwable): Boolean =
+        generateSequence(error as Throwable?) { it.cause }.any(::isExpectedTinkFailureSignal)
+
+    private fun isExpectedTinkFailureSignal(error: Throwable): Boolean =
+        error is GeneralSecurityException ||
+            error.javaClass.name.startsWith("com.google.crypto.tink.") ||
+            (error is IOException &&
+                listOf("tag", "ciphertext", "decryption", "header", "segment").any {
+                    error.message?.contains(it, ignoreCase = true) == true
+                })
 
     private fun aad(): StreamingAad =
         StreamingAad(RecoveryCandidate.STREAM, RecoveryCryptoTestFixtures.RUN_ID)
@@ -472,9 +502,7 @@ class RecoveryStreamingBoundProofTest {
     private fun committedEnd(q: Int): Int =
         if (q < 2) 0 else FIRST_PLAINTEXT_BYTES + (q - 2) * LATER_PLAINTEXT_BYTES
 
-    private inner class OpenPublisher(
-        val destination: OutputStream = ByteArrayOutputStream(),
-    ) {
+    private inner class OpenPublisher(val destination: OutputStream = ByteArrayOutputStream()) {
         val keyset = RecoveryCryptoTestFixtures.preparedStreamingKeyset()
         val writer = keyset.newEncryptingStream(destination, aad())
         private val acceptedOracle = ByteArrayOutputStream()
@@ -599,6 +627,23 @@ private data class ReadObservation(
     val terminal: TerminalReadOutcome,
     val attemptedCiphertextBytes: Int,
     val terminalExceptionClasses: List<String>,
+)
+
+private data class PublicReadResult(
+    val recoveredBytes: ByteArray,
+    val successfulReadSizes: List<Int>,
+    val authenticatedEof: Boolean,
+    val terminalError: Exception?,
+)
+
+private data class HeldWriteCase(
+    val caseId: String,
+    val acceptedBeforeCall: Int,
+    val prefillAfterQ1: Int,
+    val triggerBytes: Int,
+    val copiedBeforePause: Int,
+    val expectedExtent: Int,
+    val expectedR: Int,
 )
 
 private data class ProofScenario(
