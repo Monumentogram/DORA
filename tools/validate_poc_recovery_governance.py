@@ -6031,6 +6031,17 @@ def validate_rec_i3_reconciliation_successor(publication: bool) -> None:
                         and isinstance(item.get("assertion"), str)
                         and len(item["assertion"]) >= 32 for item in cases),
                 "REC-I3 round-three PASS lacks exact production-entry acceptance mapping")
+    require(record.get("round4Truth") == {
+        "status": "IN_PROGRESS",
+        "baseCommit": "ca2db88e0c6e53f346908bdc73b628beaf6c4ec4",
+        "baseTree": "0186863f17d2daf5c73804e0cc13f6043ec56f1a",
+        "originalReview": {"status": "REVISE", "counts": {"p0": 0, "p1": 3, "p2": 0}, "markdownSha256": "494934ba0e0c9adad769a4efc56aa0c54e82790e15405ff1de921d32604cf706", "jsonSha256": "60eb1d83161b1dd26234b3bf463093de1cc68155d40ad216f5549b3e39db9eca"},
+        "addendumSha256": "38120cc5ae49a5fe92b2467de05c216e962d792712fda2d7804af4f6c62bad0a",
+        "effectiveReview": {"status": "REVISE", "counts": {"p0": 0, "p1": 4, "p2": 0}},
+        "openFindingIds": ["P1-PRODUCTION-ARTIFACT-CONTEXT", "P1-LEXICAL-PATH-DIAGNOSTICS", "P1-EVIDENCE-ACTUAL-ENTRY", "P1-BOOTSTRAP-CURSOR-POSITION"],
+        "independentReview": {"status": "PENDING", "formalReviewer": False},
+        "accountableReview": "PENDING",
+    }, "REC-I3 round-four truth is not the exact open ca2 disposition")
     checks = record.get("checks", [])
     require(any(item.get("stage") == "HOST_SQLITE" and item.get("outcome") == "PASS"
                 for item in checks), "REC-I3 reconciliation exact host SQLite evidence missing")

@@ -31,6 +31,12 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
             record["round3Correction"]["openFindingIds"],
         )
         self.assertFalse(record["round3Correction"]["actualEntryReviewClosureComplete"])
+        self.assertEqual(
+            {"p0": 0, "p1": 4, "p2": 0},
+            record["round4Truth"]["effectiveReview"]["counts"],
+        )
+        self.assertEqual("PENDING", record["round4Truth"]["independentReview"]["status"])
+        self.assertFalse(record["round4Truth"]["independentReview"]["formalReviewer"])
         self.assertEqual("PASS", record["round3Correction"]["authorVerification"]["status"])
         self.assertEqual(
             list(governance.REC_I3_RECON_ROUND3_ACCEPTANCE_CASES),
