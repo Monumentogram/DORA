@@ -13,23 +13,29 @@ import java.io.File
 
 @Suppress("MagicNumber")
 internal object RecoveryJournalSchema {
-    const val VERSION = 3
+    const val VERSION = 4
     const val DATABASE_RELATIVE_NAME = "poc-recovery/v1/recovery-journal-v1.db"
     const val RUN_TABLE = "recovery_run_bootstrap_v1"
     const val UNIT_TABLE = "recovery_microfile_unit_v2"
     const val PUBLICATION_TABLE = "recovery_manifest_publication_v2"
-    const val QUARANTINE_TABLE = "recovery_quarantine_intent_v3"
+    const val QUARANTINE_V3_TABLE = "recovery_quarantine_intent_v3"
+    const val QUARANTINE_TABLE = "recovery_quarantine_intent_v4"
+    const val STREAM_CHECKPOINT_TABLE = "recovery_stream_checkpoint_v4"
+    const val STREAM_OUTCOME_TABLE = "recovery_stream_outcome_v4"
+    const val STREAM_RANGE_TABLE = "recovery_stream_range_quarantine_v4"
 
     enum class UpgradePlan {
-        V1_TO_V3,
-        V2_TO_V3,
+        V1_TO_V4,
+        V2_TO_V4,
+        V3_TO_V4,
         REJECT,
     }
 
     fun upgradePlan(oldVersion: Int, newVersion: Int): UpgradePlan =
         when {
-            oldVersion == 1 && newVersion == 3 -> UpgradePlan.V1_TO_V3
-            oldVersion == 2 && newVersion == 3 -> UpgradePlan.V2_TO_V3
+            oldVersion == 1 && newVersion == 4 -> UpgradePlan.V1_TO_V4
+            oldVersion == 2 && newVersion == 4 -> UpgradePlan.V2_TO_V4
+            oldVersion == 3 && newVersion == 4 -> UpgradePlan.V3_TO_V4
             else -> UpgradePlan.REJECT
         }
 
@@ -76,7 +82,7 @@ internal object RecoveryJournalSchema {
         PRIMARY KEY(run_id,candidate_id,generation),
         FOREIGN KEY(run_id,candidate_id) REFERENCES recovery_run_bootstrap_v1(run_id,candidate_id) ON UPDATE RESTRICT ON DELETE RESTRICT
     )"""
-    const val CREATE_QUARANTINE_TABLE =
+    const val CREATE_QUARANTINE_V3_TABLE =
         """CREATE TABLE recovery_quarantine_intent_v3 (
         intent_id BLOB NOT NULL PRIMARY KEY CHECK(length(intent_id)=32),
         run_id TEXT NOT NULL, candidate_id TEXT NOT NULL CHECK(candidate_id='REC-MICROFILE-TINK'),
@@ -93,13 +99,467 @@ internal object RecoveryJournalSchema {
         FOREIGN KEY(bootstrap_run_id,bootstrap_candidate_id) REFERENCES recovery_run_bootstrap_v1(run_id,candidate_id) ON UPDATE RESTRICT ON DELETE RESTRICT
     )"""
 
+    const val CREATE_QUARANTINE_TABLE = """CREATE TABLE recovery_quarantine_intent_v4 (
+  intent_id BLOB NOT NULL PRIMARY KEY CHECK(length(intent_id)=32),
+  run_id TEXT NOT NULL,
+  candidate_id TEXT NOT NULL
+    CHECK(candidate_id IN ('REC-STREAM-TINK','REC-MICROFILE-TINK')),
+  bootstrap_binding TEXT NOT NULL CHECK(bootstrap_binding IN ('ABSENT','PRESENT')),
+  bootstrap_run_id TEXT,
+  bootstrap_candidate_id TEXT,
+  artifact_role TEXT NOT NULL,
+  observed_state TEXT NOT NULL CHECK(observed_state IN
+    ('TEMP_ONLY','TEMP_AND_FINAL','FINAL_ORPHAN','SQLITE_POINTS_TO_TEMP',
+     'UNKNOWN_OR_NON_ALLOWLISTED_NAME')),
+  source_relative_name TEXT NOT NULL,
+  destination_relative_name TEXT NOT NULL,
+  source_bytes INTEGER NOT NULL CHECK(source_bytes>=0),
+  source_sha256 BLOB NOT NULL CHECK(length(source_sha256)=32),
+  state TEXT NOT NULL CHECK(state IN ('PENDING','COMPLETED')),
+  CHECK(
+    (candidate_id='REC-MICROFILE-TINK' AND artifact_role IN
+      ('KEY_CONFIRMATION','MICROFILE_KEY_ENVELOPE','MICROFILE_CIPHERTEXT',
+       'MANIFEST_KEY_ENVELOPE','MANIFEST_CIPHERTEXT','UNKNOWN_REGULAR')) OR
+    (candidate_id='REC-STREAM-TINK' AND artifact_role IN
+      ('KEY_CONFIRMATION','STREAM_KEY_ENVELOPE','STREAM_CIPHERTEXT',
+       'CHECKPOINT_KEY_ENVELOPE','CHECKPOINT_CIPHERTEXT','UNKNOWN_REGULAR'))
+  ),
+  CHECK(
+    (bootstrap_binding='ABSENT' AND bootstrap_run_id IS NULL AND
+      bootstrap_candidate_id IS NULL) OR
+    (bootstrap_binding='PRESENT' AND bootstrap_run_id=run_id AND
+      bootstrap_candidate_id=candidate_id)
+  ),
+  UNIQUE(run_id,candidate_id,source_relative_name,source_sha256),
+  FOREIGN KEY(bootstrap_run_id,bootstrap_candidate_id)
+    REFERENCES recovery_run_bootstrap_v1(run_id,candidate_id)
+    ON UPDATE RESTRICT ON DELETE RESTRICT
+)"""
+    const val CREATE_STREAM_CHECKPOINT_TABLE = """CREATE TABLE recovery_stream_checkpoint_v4 (
+  run_id TEXT NOT NULL,
+  candidate_id TEXT NOT NULL CHECK(candidate_id='REC-STREAM-TINK'),
+  publication_kind TEXT NOT NULL CHECK(publication_kind='CHECKPOINT'),
+  generation INTEGER NOT NULL CHECK(generation BETWEEN 1 AND 9223372036854775807),
+  durable_non_final_segment_count INTEGER NOT NULL
+    CHECK(durable_non_final_segment_count BETWEEN 0 AND 28236),
+  stream_ciphertext_prefix_bytes INTEGER NOT NULL
+    CHECK(stream_ciphertext_prefix_bytes=durable_non_final_segment_count*4096),
+  stream_ciphertext_prefix_sha256 BLOB NOT NULL
+    CHECK(length(stream_ciphertext_prefix_sha256)=32),
+  committed_end INTEGER NOT NULL CHECK(
+    (durable_non_final_segment_count<2 AND committed_end=0) OR
+    (durable_non_final_segment_count>=2 AND
+      committed_end=4056+(durable_non_final_segment_count-2)*4080)
+  ),
+  checkpoint_relative_name TEXT NOT NULL
+    CHECK(checkpoint_relative_name=printf('checkpoints/g-%020d.ct',generation)),
+  checkpoint_bytes INTEGER NOT NULL CHECK(checkpoint_bytes>0),
+  checkpoint_sha256 BLOB NOT NULL CHECK(length(checkpoint_sha256)=32),
+  checkpoint_key_envelope_relative_name TEXT NOT NULL CHECK(
+    checkpoint_key_envelope_relative_name=
+      printf('key-envelopes/checkpoint-g-%020d.ks',generation)),
+  checkpoint_key_envelope_bytes INTEGER NOT NULL CHECK(checkpoint_key_envelope_bytes>0),
+  checkpoint_key_envelope_sha256 BLOB NOT NULL
+    CHECK(length(checkpoint_key_envelope_sha256)=32),
+  stream_ciphertext_relative_name TEXT NOT NULL
+    CHECK(stream_ciphertext_relative_name='stream/stream.ct'),
+  stream_key_envelope_relative_name TEXT NOT NULL
+    CHECK(stream_key_envelope_relative_name='key-envelopes/stream.ks'),
+  stream_key_envelope_bytes INTEGER NOT NULL CHECK(stream_key_envelope_bytes>0),
+  stream_key_envelope_sha256 BLOB NOT NULL
+    CHECK(length(stream_key_envelope_sha256)=32),
+  previous_checkpoint_sha256 BLOB NOT NULL
+    CHECK(length(previous_checkpoint_sha256)=32),
+  checkpoint_identity BLOB NOT NULL UNIQUE CHECK(length(checkpoint_identity)=32),
+  state TEXT NOT NULL CHECK(state='VALID'),
+  PRIMARY KEY(run_id,candidate_id,generation),
+  UNIQUE(run_id,candidate_id,generation,checkpoint_identity,committed_end,
+         stream_ciphertext_prefix_bytes),
+  FOREIGN KEY(run_id,candidate_id)
+    REFERENCES recovery_run_bootstrap_v1(run_id,candidate_id)
+    ON UPDATE RESTRICT ON DELETE RESTRICT
+)"""
+    const val CREATE_STREAM_OUTCOME_TABLE = """CREATE TABLE recovery_stream_outcome_v4 (
+  outcome_id BLOB NOT NULL PRIMARY KEY CHECK(length(outcome_id)=32),
+  run_id TEXT NOT NULL,
+  candidate_id TEXT NOT NULL CHECK(candidate_id='REC-STREAM-TINK'),
+  checkpoint_generation INTEGER NOT NULL CHECK(checkpoint_generation>0),
+  checkpoint_identity BLOB NOT NULL CHECK(length(checkpoint_identity)=32),
+  checkpoint_context_end INTEGER NOT NULL
+    CHECK(checkpoint_context_end BETWEEN 0 AND 115200000),
+  checkpoint_prefix_bytes INTEGER NOT NULL
+    CHECK(checkpoint_prefix_bytes BETWEEN 0 AND 115654656),
+  checkpoint_artifact_state TEXT NOT NULL
+    CHECK(checkpoint_artifact_state='CRYPTOGRAPHICALLY_VALIDATED'),
+  source_witness_id BLOB NOT NULL CHECK(length(source_witness_id)=32),
+  witness_capability_state TEXT NOT NULL
+    CHECK(witness_capability_state='INTERNALLY_VERIFIED'),
+  controller_snapshot_sha256 BLOB NOT NULL CHECK(length(controller_snapshot_sha256)=32),
+  oracle_identity_sha256 BLOB NOT NULL CHECK(length(oracle_identity_sha256)=32),
+  oracle_plaintext_sha256 BLOB NOT NULL CHECK(length(oracle_plaintext_sha256)=32),
+  accepted_end INTEGER NOT NULL CHECK(accepted_end BETWEEN 0 AND 115200000),
+  source_relative_name TEXT NOT NULL CHECK(source_relative_name='stream/stream.ct'),
+  pre_fault_source_bytes INTEGER NOT NULL
+    CHECK(pre_fault_source_bytes BETWEEN 0 AND 115654656),
+  pre_fault_source_sha256 BLOB NOT NULL CHECK(length(pre_fault_source_sha256)=32),
+  observed_source_bytes INTEGER NOT NULL
+    CHECK(observed_source_bytes BETWEEN 0 AND 115662848),
+  observed_source_sha256 BLOB NOT NULL CHECK(length(observed_source_sha256)=32),
+  pre_fault_source_match_state TEXT NOT NULL CHECK(pre_fault_source_match_state IN
+    ('VERIFIED_SAME_DESCRIPTOR','UNPROVEN_OR_MISMATCH')),
+  checkpoint_intersection_state TEXT NOT NULL CHECK(checkpoint_intersection_state IN
+    ('PROVEN','CONTEXT_ONLY')),
+  decision TEXT NOT NULL CHECK(decision IN ('VALID','REJECTED','FATAL')),
+  diagnostic_branch TEXT NOT NULL CHECK(diagnostic_branch IN
+    ('NONE','PRE_INTERSECTION','POST_INTERSECTION')),
+  terminal_outcome TEXT NOT NULL CHECK(terminal_outcome IN
+    ('NOT_REACHED','COMPLETED_READ_REJECTED','AUTHENTICATED_EOF',
+     'AUTHENTICATION_FAILURE')),
+  recovered_end INTEGER,
+  recovered_beyond_checkpoint_bytes INTEGER,
+  tail_loss_bytes INTEGER,
+  returned_plaintext_sha256 BLOB,
+  remainder_boundary_bytes INTEGER,
+  remainder_certainty TEXT CHECK(remainder_certainty IS NULL OR remainder_certainty IN
+    ('EXACT_FORMAT_BOUNDARY','CONSERVATIVE_PROVEN_CHECKPOINT_SUPERSET',
+     'CONSERVATIVE_WHOLE_SOURCE')),
+  rejected_candidate_end INTEGER,
+  rejected_completed_plaintext_sha256 BLOB,
+  rejected_oracle_prefix_sha256 BLOB,
+  rejected_oracle_prefix_equal INTEGER,
+  rejected_compared_end INTEGER,
+  rejected_first_mismatch_offset INTEGER,
+  rejected_equal_prefix_sha256 BLOB,
+  rejected_expected_oracle_byte INTEGER,
+  rejected_observed_plaintext_byte INTEGER,
+  rejected_observed_tail_loss_bytes INTEGER,
+  rejected_boundary_result TEXT CHECK(rejected_boundary_result IS NULL OR
+    rejected_boundary_result IN
+      ('NOT_EVALUATED_ORACLE_MISMATCH','NOT_APPLICABLE_AUTHENTICATED_EOF',
+       'EXACT_FORMAT_BOUNDARY','NON_CANONICAL_CANDIDATE_END',
+       'BOUNDARY_EXCEEDS_OBSERVED_SOURCE')),
+  rejected_boundary_bytes INTEGER,
+  rejected_observation_sha256 BLOB,
+  required_range_start INTEGER,
+  required_range_certainty TEXT CHECK(required_range_certainty IS NULL OR
+    required_range_certainty IN
+      ('EXACT_FORMAT_BOUNDARY','CONSERVATIVE_PROVEN_CHECKPOINT_SUPERSET',
+       'CONSERVATIVE_WHOLE_SOURCE')),
+  diagnostic_stage TEXT NOT NULL CHECK(diagnostic_stage IN
+    ('NONE','STREAM_CHECKPOINT','STREAM_SOURCE_EXTENT','STREAM_PAYLOAD_DECRYPT')),
+  diagnostic_classification TEXT NOT NULL CHECK(diagnostic_classification IN
+    ('NONE','STREAM_CHECKPOINT_PREFIX_OUTSIDE_WITNESS','STREAM_SOURCE_TRUNCATED',
+     'STREAM_SOURCE_PREFIX_IDENTITY_MISMATCH','STREAM_RETURNED_BYTE_ORACLE_MISMATCH',
+     'STREAM_RECOVERED_BELOW_CHECKPOINT','STREAM_TAIL_BOUND_EXCEEDED',
+     'STREAM_REMAINDER_BOUNDARY_UNPROVEN')),
+  metadata_adopted INTEGER NOT NULL CHECK(metadata_adopted=0),
+  semantic_commit_adopted INTEGER NOT NULL CHECK(semantic_commit_adopted=0),
+  processing_intent_adopted INTEGER NOT NULL CHECK(processing_intent_adopted=0),
+  state TEXT NOT NULL CHECK(state='SEALED'),
+  CHECK(checkpoint_context_end<=accepted_end),
+  CHECK(observed_source_bytes<pre_fault_source_bytes OR
+        observed_source_bytes-pre_fault_source_bytes<=8192),
+  CHECK((required_range_start IS NULL AND required_range_certainty IS NULL) OR
+        (required_range_start IS NOT NULL AND required_range_certainty IS NOT NULL AND
+         required_range_start>=0 AND required_range_start<observed_source_bytes)),
+  CHECK(
+    (decision='VALID' AND diagnostic_branch='NONE' AND diagnostic_stage='NONE' AND
+      diagnostic_classification='NONE' AND recovered_end IS NOT NULL AND
+      recovered_beyond_checkpoint_bytes IS NOT NULL AND tail_loss_bytes IS NOT NULL AND
+      returned_plaintext_sha256 IS NOT NULL AND length(returned_plaintext_sha256)=32 AND
+      pre_fault_source_match_state='VERIFIED_SAME_DESCRIPTOR' AND
+      checkpoint_intersection_state='PROVEN' AND
+      checkpoint_prefix_bytes<=pre_fault_source_bytes AND
+      pre_fault_source_bytes<=observed_source_bytes AND
+      checkpoint_context_end<=recovered_end AND recovered_end<=accepted_end AND
+      recovered_beyond_checkpoint_bytes=recovered_end-checkpoint_context_end AND
+      tail_loss_bytes=accepted_end-recovered_end AND tail_loss_bytes<=8160 AND
+      rejected_candidate_end IS NULL AND rejected_completed_plaintext_sha256 IS NULL AND
+      rejected_oracle_prefix_sha256 IS NULL AND rejected_oracle_prefix_equal IS NULL AND
+      rejected_compared_end IS NULL AND rejected_first_mismatch_offset IS NULL AND
+      rejected_equal_prefix_sha256 IS NULL AND rejected_expected_oracle_byte IS NULL AND
+      rejected_observed_plaintext_byte IS NULL AND
+      rejected_observed_tail_loss_bytes IS NULL AND rejected_boundary_result IS NULL AND
+      rejected_boundary_bytes IS NULL AND rejected_observation_sha256 IS NULL AND
+      ((terminal_outcome='AUTHENTICATED_EOF' AND remainder_boundary_bytes IS NULL AND
+         remainder_certainty IS NULL AND required_range_start IS NULL AND
+         required_range_certainty IS NULL) OR
+       (terminal_outcome='AUTHENTICATION_FAILURE' AND
+         remainder_boundary_bytes IS NOT NULL AND
+         remainder_certainty='EXACT_FORMAT_BOUNDARY' AND
+         ((recovered_end=0 AND remainder_boundary_bytes=0) OR
+          (recovered_end>=4056 AND (recovered_end-4056)%4080=0 AND
+           remainder_boundary_bytes=(1+(recovered_end-4056)/4080)*4096)) AND
+         remainder_boundary_bytes<=observed_source_bytes AND
+         ((remainder_boundary_bytes=observed_source_bytes AND
+            required_range_start IS NULL AND required_range_certainty IS NULL) OR
+          (remainder_boundary_bytes<observed_source_bytes AND
+            required_range_start IS NOT NULL AND
+            required_range_start=remainder_boundary_bytes AND
+            required_range_certainty IS NOT NULL AND
+            required_range_certainty='EXACT_FORMAT_BOUNDARY'))))) OR
+    (decision='FATAL' AND diagnostic_branch='PRE_INTERSECTION' AND
+      terminal_outcome='NOT_REACHED' AND recovered_end IS NULL AND
+      recovered_beyond_checkpoint_bytes IS NULL AND tail_loss_bytes IS NULL AND
+      returned_plaintext_sha256 IS NULL AND remainder_boundary_bytes IS NULL AND
+      remainder_certainty IS NULL AND
+      rejected_candidate_end IS NULL AND rejected_completed_plaintext_sha256 IS NULL AND
+      rejected_oracle_prefix_sha256 IS NULL AND rejected_oracle_prefix_equal IS NULL AND
+      rejected_compared_end IS NULL AND rejected_first_mismatch_offset IS NULL AND
+      rejected_equal_prefix_sha256 IS NULL AND rejected_expected_oracle_byte IS NULL AND
+      rejected_observed_plaintext_byte IS NULL AND
+      rejected_observed_tail_loss_bytes IS NULL AND rejected_boundary_result IS NULL AND
+      rejected_boundary_bytes IS NULL AND rejected_observation_sha256 IS NULL AND
+      ((observed_source_bytes=0 AND required_range_start IS NULL AND
+         required_range_certainty IS NULL) OR
+       (observed_source_bytes>0 AND required_range_start IS NOT NULL AND
+         required_range_start=0 AND required_range_certainty IS NOT NULL AND
+         required_range_certainty='CONSERVATIVE_WHOLE_SOURCE')) AND
+      pre_fault_source_match_state='UNPROVEN_OR_MISMATCH' AND
+      checkpoint_intersection_state='CONTEXT_ONLY' AND
+      ((diagnostic_classification='STREAM_CHECKPOINT_PREFIX_OUTSIDE_WITNESS' AND
+         diagnostic_stage='STREAM_CHECKPOINT' AND
+         pre_fault_source_bytes<=observed_source_bytes AND
+         checkpoint_prefix_bytes>pre_fault_source_bytes) OR
+       (diagnostic_classification='STREAM_SOURCE_TRUNCATED' AND
+         diagnostic_stage='STREAM_SOURCE_EXTENT' AND
+         observed_source_bytes<pre_fault_source_bytes) OR
+       (diagnostic_classification='STREAM_SOURCE_PREFIX_IDENTITY_MISMATCH' AND
+         diagnostic_stage='STREAM_SOURCE_EXTENT' AND
+         checkpoint_prefix_bytes<=pre_fault_source_bytes AND
+         pre_fault_source_bytes<=observed_source_bytes))) OR
+    (diagnostic_branch='POST_INTERSECTION' AND recovered_end IS NULL AND
+      recovered_beyond_checkpoint_bytes IS NULL AND tail_loss_bytes IS NULL AND
+      returned_plaintext_sha256 IS NULL AND remainder_boundary_bytes IS NULL AND
+      remainder_certainty IS NULL AND rejected_candidate_end IS NOT NULL AND
+      rejected_candidate_end BETWEEN 0 AND accepted_end AND
+      rejected_completed_plaintext_sha256 IS NOT NULL AND
+      length(rejected_completed_plaintext_sha256)=32 AND
+      rejected_oracle_prefix_sha256 IS NOT NULL AND
+      length(rejected_oracle_prefix_sha256)=32 AND
+      rejected_oracle_prefix_equal IS NOT NULL AND rejected_oracle_prefix_equal IN (0,1) AND
+      rejected_compared_end IS NOT NULL AND rejected_compared_end=rejected_candidate_end AND
+      rejected_observed_tail_loss_bytes IS NOT NULL AND
+      rejected_observed_tail_loss_bytes=accepted_end-rejected_candidate_end AND
+      rejected_boundary_result IS NOT NULL AND rejected_observation_sha256 IS NOT NULL AND
+      length(rejected_observation_sha256)=32 AND
+      pre_fault_source_match_state='VERIFIED_SAME_DESCRIPTOR' AND
+      checkpoint_intersection_state='PROVEN' AND
+      checkpoint_prefix_bytes<=pre_fault_source_bytes AND
+      pre_fault_source_bytes<=observed_source_bytes AND
+      diagnostic_stage='STREAM_PAYLOAD_DECRYPT' AND
+      ((decision='FATAL' AND
+         diagnostic_classification='STREAM_RETURNED_BYTE_ORACLE_MISMATCH' AND
+         terminal_outcome='COMPLETED_READ_REJECTED' AND rejected_candidate_end>0 AND
+         rejected_oracle_prefix_equal=0 AND
+         rejected_completed_plaintext_sha256<>rejected_oracle_prefix_sha256 AND
+         rejected_first_mismatch_offset IS NOT NULL AND
+         rejected_first_mismatch_offset BETWEEN 0 AND rejected_candidate_end-1 AND
+         rejected_equal_prefix_sha256 IS NOT NULL AND
+         length(rejected_equal_prefix_sha256)=32 AND
+         rejected_expected_oracle_byte IS NOT NULL AND
+         rejected_expected_oracle_byte BETWEEN 0 AND 255 AND
+         rejected_observed_plaintext_byte IS NOT NULL AND
+         rejected_observed_plaintext_byte BETWEEN 0 AND 255 AND
+         rejected_expected_oracle_byte<>rejected_observed_plaintext_byte AND
+         rejected_boundary_result='NOT_EVALUATED_ORACLE_MISMATCH' AND
+         rejected_boundary_bytes IS NULL AND observed_source_bytes>0 AND
+         required_range_start IS NOT NULL AND required_range_start=0 AND
+         required_range_certainty IS NOT NULL AND
+         required_range_certainty='CONSERVATIVE_WHOLE_SOURCE') OR
+       (decision='FATAL' AND
+         diagnostic_classification='STREAM_RECOVERED_BELOW_CHECKPOINT' AND
+         terminal_outcome IN ('AUTHENTICATED_EOF','AUTHENTICATION_FAILURE') AND
+         rejected_candidate_end<checkpoint_context_end AND
+         rejected_oracle_prefix_equal=1 AND
+         rejected_completed_plaintext_sha256=rejected_oracle_prefix_sha256 AND
+         rejected_first_mismatch_offset IS NULL AND
+         rejected_equal_prefix_sha256 IS NULL AND rejected_expected_oracle_byte IS NULL AND
+         rejected_observed_plaintext_byte IS NULL AND
+         ((terminal_outcome='AUTHENTICATED_EOF' AND
+            rejected_boundary_result='NOT_APPLICABLE_AUTHENTICATED_EOF' AND
+            rejected_boundary_bytes IS NULL AND required_range_start IS NULL AND
+            required_range_certainty IS NULL) OR
+          (terminal_outcome='AUTHENTICATION_FAILURE' AND observed_source_bytes>0 AND
+            required_range_start IS NOT NULL AND required_range_start=0 AND
+            required_range_certainty IS NOT NULL AND
+            required_range_certainty='CONSERVATIVE_WHOLE_SOURCE' AND
+            ((rejected_candidate_end=0 AND
+               rejected_boundary_result='EXACT_FORMAT_BOUNDARY' AND
+               rejected_boundary_bytes IS NOT NULL AND rejected_boundary_bytes=0) OR
+             (rejected_candidate_end>=4056 AND
+               (rejected_candidate_end-4056)%4080=0 AND
+               rejected_boundary_bytes IS NOT NULL AND
+               rejected_boundary_bytes=(1+(rejected_candidate_end-4056)/4080)*4096 AND
+               ((rejected_boundary_bytes<=observed_source_bytes AND
+                  rejected_boundary_result='EXACT_FORMAT_BOUNDARY') OR
+                (rejected_boundary_bytes>observed_source_bytes AND
+                  rejected_boundary_result='BOUNDARY_EXCEEDS_OBSERVED_SOURCE'))) OR
+             (rejected_candidate_end<>0 AND
+               (rejected_candidate_end<4056 OR
+                (rejected_candidate_end-4056)%4080<>0) AND
+               rejected_boundary_result='NON_CANONICAL_CANDIDATE_END' AND
+               rejected_boundary_bytes IS NULL))))) OR
+       (decision='FATAL' AND
+         diagnostic_classification='STREAM_REMAINDER_BOUNDARY_UNPROVEN' AND
+         terminal_outcome='AUTHENTICATION_FAILURE' AND
+         rejected_candidate_end>=checkpoint_context_end AND
+         rejected_oracle_prefix_equal=1 AND
+         rejected_completed_plaintext_sha256=rejected_oracle_prefix_sha256 AND
+         rejected_first_mismatch_offset IS NULL AND
+         rejected_equal_prefix_sha256 IS NULL AND rejected_expected_oracle_byte IS NULL AND
+         rejected_observed_plaintext_byte IS NULL AND observed_source_bytes>0 AND
+         ((rejected_candidate_end<>0 AND
+            (rejected_candidate_end<4056 OR
+             (rejected_candidate_end-4056)%4080<>0) AND
+            rejected_boundary_result='NON_CANONICAL_CANDIDATE_END' AND
+            rejected_boundary_bytes IS NULL) OR
+          (rejected_candidate_end>=4056 AND
+            (rejected_candidate_end-4056)%4080=0 AND
+            rejected_boundary_bytes IS NOT NULL AND
+            rejected_boundary_bytes=(1+(rejected_candidate_end-4056)/4080)*4096 AND
+            rejected_boundary_bytes>observed_source_bytes AND
+            rejected_boundary_result='BOUNDARY_EXCEEDS_OBSERVED_SOURCE')) AND
+         (((CASE WHEN checkpoint_context_end=0 THEN 0 ELSE
+              (1+(checkpoint_context_end-4056)/4080)*4096 END)<observed_source_bytes AND
+            required_range_start IS NOT NULL AND
+            required_range_start=(CASE WHEN checkpoint_context_end=0 THEN 0 ELSE
+              (1+(checkpoint_context_end-4056)/4080)*4096 END) AND
+            required_range_certainty='CONSERVATIVE_PROVEN_CHECKPOINT_SUPERSET') OR
+          ((CASE WHEN checkpoint_context_end=0 THEN 0 ELSE
+             (1+(checkpoint_context_end-4056)/4080)*4096 END)>=observed_source_bytes AND
+            required_range_start IS NOT NULL AND required_range_start=0 AND
+            required_range_certainty='CONSERVATIVE_WHOLE_SOURCE'))) OR
+       (decision='REJECTED' AND
+         diagnostic_classification='STREAM_TAIL_BOUND_EXCEEDED' AND
+         terminal_outcome IN ('AUTHENTICATED_EOF','AUTHENTICATION_FAILURE') AND
+         rejected_candidate_end>=checkpoint_context_end AND
+         rejected_oracle_prefix_equal=1 AND
+         rejected_completed_plaintext_sha256=rejected_oracle_prefix_sha256 AND
+         rejected_observed_tail_loss_bytes>8160 AND
+         rejected_first_mismatch_offset IS NULL AND
+         rejected_equal_prefix_sha256 IS NULL AND rejected_expected_oracle_byte IS NULL AND
+         rejected_observed_plaintext_byte IS NULL AND
+         ((terminal_outcome='AUTHENTICATED_EOF' AND
+            rejected_boundary_result='NOT_APPLICABLE_AUTHENTICATED_EOF' AND
+            rejected_boundary_bytes IS NULL AND required_range_start IS NULL AND
+            required_range_certainty IS NULL) OR
+           (terminal_outcome='AUTHENTICATION_FAILURE' AND
+             rejected_boundary_bytes IS NOT NULL AND
+             ((rejected_candidate_end=0 AND rejected_boundary_bytes=0) OR
+              (rejected_candidate_end>=4056 AND
+               (rejected_candidate_end-4056)%4080=0 AND
+               rejected_boundary_bytes=(1+(rejected_candidate_end-4056)/4080)*4096)) AND
+             rejected_boundary_result='EXACT_FORMAT_BOUNDARY' AND
+             rejected_boundary_bytes<=observed_source_bytes AND
+             ((rejected_boundary_bytes=observed_source_bytes AND
+                required_range_start IS NULL AND required_range_certainty IS NULL) OR
+              (rejected_boundary_bytes<observed_source_bytes AND
+               required_range_start IS NOT NULL AND
+               required_range_start=rejected_boundary_bytes AND
+               required_range_certainty='EXACT_FORMAT_BOUNDARY')))))))
+  ),
+  UNIQUE(run_id,candidate_id,checkpoint_identity,source_witness_id),
+  UNIQUE(outcome_id,run_id,candidate_id,observed_source_bytes,
+         observed_source_sha256,decision,diagnostic_branch,terminal_outcome,
+         diagnostic_classification,required_range_start,required_range_certainty),
+  FOREIGN KEY(run_id,candidate_id,checkpoint_generation,checkpoint_identity,
+              checkpoint_context_end,checkpoint_prefix_bytes)
+    REFERENCES recovery_stream_checkpoint_v4
+      (run_id,candidate_id,generation,checkpoint_identity,committed_end,
+       stream_ciphertext_prefix_bytes)
+    ON UPDATE RESTRICT ON DELETE RESTRICT
+)"""
+    const val CREATE_STREAM_RANGE_TABLE = """CREATE TABLE recovery_stream_range_quarantine_v4 (
+  range_intent_id BLOB NOT NULL PRIMARY KEY CHECK(length(range_intent_id)=32),
+  outcome_id BLOB NOT NULL UNIQUE CHECK(length(outcome_id)=32),
+  run_id TEXT NOT NULL,
+  candidate_id TEXT NOT NULL CHECK(candidate_id='REC-STREAM-TINK'),
+  outcome_decision TEXT NOT NULL CHECK(outcome_decision IN ('VALID','REJECTED','FATAL')),
+  outcome_branch TEXT NOT NULL CHECK(outcome_branch IN
+    ('NONE','PRE_INTERSECTION','POST_INTERSECTION')),
+  outcome_terminal TEXT NOT NULL CHECK(outcome_terminal IN
+    ('NOT_REACHED','COMPLETED_READ_REJECTED','AUTHENTICATED_EOF',
+     'AUTHENTICATION_FAILURE')),
+  outcome_classification TEXT NOT NULL CHECK(outcome_classification IN
+    ('NONE','STREAM_CHECKPOINT_PREFIX_OUTSIDE_WITNESS','STREAM_SOURCE_TRUNCATED',
+     'STREAM_SOURCE_PREFIX_IDENTITY_MISMATCH','STREAM_RETURNED_BYTE_ORACLE_MISMATCH',
+     'STREAM_RECOVERED_BELOW_CHECKPOINT','STREAM_TAIL_BOUND_EXCEEDED',
+     'STREAM_REMAINDER_BOUNDARY_UNPROVEN')),
+  source_relative_name TEXT NOT NULL CHECK(source_relative_name='stream/stream.ct'),
+  source_bytes INTEGER NOT NULL CHECK(source_bytes BETWEEN 1 AND 115662848),
+  source_sha256 BLOB NOT NULL CHECK(length(source_sha256)=32),
+  range_start INTEGER NOT NULL CHECK(range_start>=0),
+  range_end INTEGER NOT NULL CHECK(range_end=source_bytes AND range_end>range_start),
+  range_sha256 BLOB NOT NULL CHECK(length(range_sha256)=32),
+  boundary_certainty TEXT NOT NULL CHECK(boundary_certainty IN
+    ('EXACT_FORMAT_BOUNDARY','CONSERVATIVE_PROVEN_CHECKPOINT_SUPERSET',
+     'CONSERVATIVE_WHOLE_SOURCE')),
+  disposition TEXT NOT NULL
+    CHECK(disposition='RETAINED_IN_PLACE_DENY_APP_READS'),
+  state TEXT NOT NULL CHECK(state='ACTIVE'),
+  CHECK(outcome_terminal<>'AUTHENTICATED_EOF'),
+  CHECK(boundary_certainty<>'CONSERVATIVE_WHOLE_SOURCE' OR range_start=0),
+  CHECK(
+    (outcome_decision='VALID' AND outcome_branch='NONE' AND
+      outcome_terminal='AUTHENTICATION_FAILURE' AND outcome_classification='NONE' AND
+      boundary_certainty='EXACT_FORMAT_BOUNDARY') OR
+    (outcome_decision='FATAL' AND outcome_branch='PRE_INTERSECTION' AND
+      outcome_terminal='NOT_REACHED' AND outcome_classification IN
+        ('STREAM_CHECKPOINT_PREFIX_OUTSIDE_WITNESS','STREAM_SOURCE_TRUNCATED',
+         'STREAM_SOURCE_PREFIX_IDENTITY_MISMATCH') AND
+      boundary_certainty='CONSERVATIVE_WHOLE_SOURCE') OR
+    (outcome_decision='FATAL' AND outcome_branch='POST_INTERSECTION' AND
+      ((outcome_terminal='COMPLETED_READ_REJECTED' AND
+         outcome_classification='STREAM_RETURNED_BYTE_ORACLE_MISMATCH' AND
+         boundary_certainty='CONSERVATIVE_WHOLE_SOURCE') OR
+       (outcome_terminal='AUTHENTICATION_FAILURE' AND
+         outcome_classification='STREAM_RECOVERED_BELOW_CHECKPOINT' AND
+         boundary_certainty='CONSERVATIVE_WHOLE_SOURCE') OR
+       (outcome_terminal='AUTHENTICATION_FAILURE' AND
+         outcome_classification='STREAM_REMAINDER_BOUNDARY_UNPROVEN' AND
+         boundary_certainty IN
+           ('CONSERVATIVE_PROVEN_CHECKPOINT_SUPERSET','CONSERVATIVE_WHOLE_SOURCE')))) OR
+    (outcome_decision='REJECTED' AND outcome_branch='POST_INTERSECTION' AND
+      outcome_terminal='AUTHENTICATION_FAILURE' AND
+      outcome_classification='STREAM_TAIL_BOUND_EXCEEDED' AND
+      boundary_certainty='EXACT_FORMAT_BOUNDARY')
+  ),
+  UNIQUE(run_id,candidate_id,source_relative_name,source_bytes,source_sha256,
+         range_start,range_end,range_sha256),
+  FOREIGN KEY(outcome_id,run_id,candidate_id,source_bytes,source_sha256,
+              outcome_decision,outcome_branch,outcome_terminal,outcome_classification,
+              range_start,boundary_certainty)
+    REFERENCES recovery_stream_outcome_v4
+      (outcome_id,run_id,candidate_id,observed_source_bytes,observed_source_sha256,
+       decision,diagnostic_branch,terminal_outcome,diagnostic_classification,
+       required_range_start,required_range_certainty)
+    ON UPDATE RESTRICT ON DELETE RESTRICT
+)"""
+    const val CREATE_STREAM_ACTIVE_RANGE_INDEX = """CREATE INDEX recovery_stream_active_range_v4
+ON recovery_stream_range_quarantine_v4
+  (run_id,candidate_id,source_relative_name,state,range_start,range_end)"""
+
     fun createV3(database: SQLiteDatabase) {
         database.execSQL(CREATE_RUN_TABLE)
         database.execSQL(CREATE_RUN_IDENTITY_INDEX)
         database.execSQL(CREATE_UNIT_TABLE)
         database.execSQL(CREATE_PUBLICATION_TABLE)
-        database.execSQL(CREATE_QUARANTINE_TABLE)
+        database.execSQL(CREATE_QUARANTINE_V3_TABLE)
         requireExactV3(database)
+    }
+
+    fun createV4(database: SQLiteDatabase) {
+        database.execSQL(CREATE_RUN_TABLE)
+        database.execSQL(CREATE_RUN_IDENTITY_INDEX)
+        database.execSQL(CREATE_UNIT_TABLE)
+        database.execSQL(CREATE_PUBLICATION_TABLE)
+        database.execSQL(CREATE_QUARANTINE_TABLE)
+        database.execSQL(CREATE_STREAM_CHECKPOINT_TABLE)
+        database.execSQL(CREATE_STREAM_OUTCOME_TABLE)
+        database.execSQL(CREATE_STREAM_RANGE_TABLE)
+        database.execSQL(CREATE_STREAM_ACTIVE_RANGE_INDEX)
+        requireExactV4(database)
     }
 
     fun migrateV1ToV2(database: SQLiteDatabase) {
@@ -111,7 +571,7 @@ internal object RecoveryJournalSchema {
 
     fun migrateV2ToV3(database: SQLiteDatabase) {
         requireExactV2(database)
-        database.execSQL(CREATE_QUARANTINE_TABLE)
+        database.execSQL(CREATE_QUARANTINE_V3_TABLE)
         requireExactV3(database)
     }
 
@@ -148,7 +608,7 @@ internal object RecoveryJournalSchema {
                 listOf(
                     "index" to "sqlite_autoindex_recovery_quarantine_intent_v3_1",
                     "index" to "sqlite_autoindex_recovery_quarantine_intent_v3_2",
-                    "table" to QUARANTINE_TABLE,
+                    "table" to QUARANTINE_V3_TABLE,
                 )
         expected.sortWith(compareBy<Pair<String, String>> { it.first }.thenBy { it.second })
         if (recoveryObjects != expected)
@@ -157,7 +617,36 @@ internal object RecoveryJournalSchema {
 
     fun requireExactV3(database: SQLiteDatabase) {
         requireExactV2(database, allowV3 = true)
+        requireExactSql(database, "table", QUARANTINE_V3_TABLE, CREATE_QUARANTINE_V3_TABLE)
+    }
+
+
+    fun migrateV3ToV4(database: SQLiteDatabase) {
+        requireExactV3(database)
+        database.execSQL(CREATE_QUARANTINE_TABLE)
+        database.execSQL(
+            "INSERT INTO $QUARANTINE_TABLE SELECT * FROM $QUARANTINE_V3_TABLE"
+        )
+        database.execSQL(CREATE_STREAM_CHECKPOINT_TABLE)
+        database.execSQL(CREATE_STREAM_OUTCOME_TABLE)
+        database.execSQL(CREATE_STREAM_RANGE_TABLE)
+        database.execSQL(CREATE_STREAM_ACTIVE_RANGE_INDEX)
+        database.execSQL("DROP TABLE $QUARANTINE_V3_TABLE")
+        requireExactV4(database)
+    }
+
+    fun requireExactV4(database: SQLiteDatabase) {
+        requireExactSql(database, "table", RUN_TABLE, CREATE_RUN_TABLE)
+        requireExactSql(database, "index", "recovery_run_candidate_v2", CREATE_RUN_IDENTITY_INDEX)
+        requireExactSql(database, "table", UNIT_TABLE, CREATE_UNIT_TABLE)
+        requireExactSql(database, "table", PUBLICATION_TABLE, CREATE_PUBLICATION_TABLE)
         requireExactSql(database, "table", QUARANTINE_TABLE, CREATE_QUARANTINE_TABLE)
+        requireExactSql(database, "table", STREAM_CHECKPOINT_TABLE, CREATE_STREAM_CHECKPOINT_TABLE)
+        requireExactSql(database, "table", STREAM_OUTCOME_TABLE, CREATE_STREAM_OUTCOME_TABLE)
+        requireExactSql(database, "table", STREAM_RANGE_TABLE, CREATE_STREAM_RANGE_TABLE)
+        requireExactSql(database, "index", "recovery_stream_active_range_v4", CREATE_STREAM_ACTIVE_RANGE_INDEX)
+        val forbidden = rowCount(database, "SELECT name FROM sqlite_master WHERE name='recovery_quarantine_intent_v3' OR ((type='trigger' OR type='view') AND (name LIKE 'recovery_%' OR tbl_name LIKE 'recovery_%'))")
+        if (forbidden != 0) throw SQLiteException("Recovery journal v4 schema is not exact")
     }
 
     private fun requireExactSql(
@@ -280,23 +769,28 @@ private class RecoveryJournalSqliteHelper(context: Context) :
         database.execSQL("PRAGMA wal_autocheckpoint=0")
     }
 
-    override fun onCreate(database: SQLiteDatabase) = RecoveryJournalSchema.createV3(database)
+    override fun onCreate(database: SQLiteDatabase) = RecoveryJournalSchema.createV4(database)
 
     override fun onOpen(database: SQLiteDatabase) {
         super.onOpen(database)
         if (database.version == RecoveryJournalSchema.VERSION) {
-            RecoveryJournalSchema.requireExactV3(database)
+            RecoveryJournalSchema.requireExactV4(database)
         }
     }
 
     override fun onUpgrade(database: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         when (RecoveryJournalSchema.upgradePlan(oldVersion, newVersion)) {
-            RecoveryJournalSchema.UpgradePlan.V1_TO_V3 -> {
+            RecoveryJournalSchema.UpgradePlan.V1_TO_V4 -> {
                 RecoveryJournalSchema.migrateV1ToV2(database)
                 RecoveryJournalSchema.migrateV2ToV3(database)
+                RecoveryJournalSchema.migrateV3ToV4(database)
             }
-            RecoveryJournalSchema.UpgradePlan.V2_TO_V3 ->
+            RecoveryJournalSchema.UpgradePlan.V2_TO_V4 -> {
                 RecoveryJournalSchema.migrateV2ToV3(database)
+                RecoveryJournalSchema.migrateV3ToV4(database)
+            }
+            RecoveryJournalSchema.UpgradePlan.V3_TO_V4 ->
+                RecoveryJournalSchema.migrateV3ToV4(database)
             RecoveryJournalSchema.UpgradePlan.REJECT ->
                 throw SQLiteException(
                     "PoC Recovery journal migration is not admitted: $oldVersion -> $newVersion"
