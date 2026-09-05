@@ -6,13 +6,16 @@ Date: 5 September 2026\
 Authority: `OWNER-AUTH-BATCH-20260819-01` / [OD-15](DORA_MVP1_STAGE0_OWNER_DECISION_OD15.md)\
 Implementation base: `da1d9bd13b71d609fe7ec4ea62fe1e984f726040`
 
-## 1. Accepted contract and boundary
+## 1. Selected contract and boundary
 
-This additive implementation scope applies the already accepted key-confirmation portion of
+This additive implementation scope applies the frozen selected key-confirmation portion of
 active `poc-recovery-protocol-stage0-v0.6`. It adds no product decision, crypto construction,
 classification, threshold or Gate Set change. Exact v0.4/v0.5 inherited semantics apply only where
 the active v0.6 protocol does not override them. Historical protocols, evidence and the existing
 REC-I1/REC-I2B source, tests, Gradle dependency graph, locks and R8 rules remain byte-preserved.
+The experiment decision remains Proposed; OD-15 authorizes implementing these exact semantics
+and does not elevate the global experiment, readiness or admission state. Subsequent REC-I3
+implementation slices remain under the same current OD-15 authority without a new activation gate.
 
 The slice adds a read-only controller and deterministic host tests inside isolated `:poc:recovery`.
 It consumes a supplied run-row/artifact snapshot and the existing REC-I2B typed crypto boundary.
