@@ -123,6 +123,26 @@ All ten active Recovery readiness blockers and the existing campaign/admission f
 unchanged. Further REC-I3 implementation continues under current OD-15 authority; no new activation
 decision is required for its already authorized scope, and no PR merge is performed by this task.
 
+## REC-I3 run-key bootstrap amendment — 5 September 2026
+
+The additive [scope](stage0/DORA_MVP1_POC_RECOVERY_I3_RUN_KEY_BOOTSTRAP_SCOPE_STAGE0_V0_2.md)
+and [local evidence](evidence/poc-recovery-001/rec-i3-run-key-bootstrap-local-evidence-stage0-v0.2.json)
+record the next partial REC-I3 slice in isolated `:poc:recovery`. The new-run controller preserves
+the exact KC01–KC13 order, creates its typed publication capability only after successful KC12
+`endTransaction`, and treats KC13 evidence failure as a committed event gap rather than rollback.
+The minimal Android `Os` adapter performs exclusive temp creation, complete short writes, file and
+directory fsync, immediate final collision check and rename under an enforceable process-wide
+same-run writer lease. The platform SQLite journal is PoC-only, schema-versioned, WAL/FULL,
+zero-autocheckpoint and foreign-key configured, with no destructive migration fallback.
+
+Host fault/order tests and Android compilation do not establish runtime filesystem, Keystore,
+SQLite or kill-safety evidence. The full REC-I3 candidate writers, reconciliation, quarantine,
+external controller, fresh exact graph/package/R8 review and accountable implementation review
+remain unfinished. `fullRecI3Completed=false`, Recovery preflight remains locked, all ten active
+readiness blockers remain open, and `POC-RECOVERY-001` remains `BLOCKED / NOT_READY`. No
+device/emulator execution, preflight, hard-kill/fault campaign, measurement, PASS, production
+admission, PR merge or future merged-main admission is performed or claimed.
+
 ## Stage 00 closure
 
 - Stage 00 is complete.

@@ -13,6 +13,51 @@ import validate_poc_recovery_governance as governance
 
 
 class RecoveryI3GovernanceTests(unittest.TestCase):
+    def test_bootstrap_successor_has_exact_scope_first_identity_and_file_boundary(self) -> None:
+        self.assertEqual(
+            "f89ddba14d37efbdde5a99bf1fd169210ff189cb",
+            governance.REC_I3_BOOTSTRAP_SCOPE_COMMIT,
+        )
+        governance.validate_rec_i3_bootstrap_scope_lineage()
+        changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
+        changes["untracked"] = list(governance.REC_I3_BOOTSTRAP_SOURCE_PATHS)
+        governance.validate_rec_i3_changed_paths(changes)
+        changes["untracked"] = [
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/Extra.kt"
+        ]
+        with self.assertRaisesRegex(ValueError, "escapes exact scope"):
+            governance.validate_rec_i3_changed_paths(changes)
+
+    def test_bootstrap_preparation_evidence_preserves_claim_ceiling_and_first_slice_hashes(self) -> None:
+        record = copy.deepcopy(governance.read_json(governance.REC_I3_BOOTSTRAP_EVIDENCE_PATH))
+        record["implementationStatus"] = "IN_PROGRESS"
+        record["sourceFiles"] = {}
+        governance.validate_rec_i3_bootstrap_evidence(record, {})
+        mutations = [
+            lambda r: r.__setitem__("fullRecI3Completed", True),
+            lambda r: r.__setitem__("recoveryPreflightUnlocked", True),
+            lambda r: r.__setitem__("readinessBlockersClosed", ["REC-RDY-07"]),
+            lambda r: r.__setitem__("scopeFirstCommit", governance.REC_I3_SCOPE_COMMIT),
+            lambda r: r["preservedFirstSliceSourceFiles"].__setitem__(
+                governance.REC_I3_SOURCE_PATHS[0], "0" * 64
+            ),
+            lambda r: r["execution"].__setitem__("device", True),
+            lambda r: r["review"].__setitem__("independentAdvisory", "CLEAN"),
+            lambda r: r.__setitem__("implementationStatus", "LOCAL_VERIFIED"),
+        ]
+        for index, mutate in enumerate(mutations):
+            candidate = copy.deepcopy(record)
+            mutate(candidate)
+            with self.subTest(mutation=index), self.assertRaises(ValueError):
+                governance.validate_rec_i3_bootstrap_evidence(candidate, {})
+
+    def test_bootstrap_scope_is_frozen_after_scope_first_commit(self) -> None:
+        for layer in ("committed", "staged", "unstaged", "untracked"):
+            changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
+            changes[layer] = [governance.REC_I3_BOOTSTRAP_SCOPE_PATH]
+            with self.subTest(layer=layer), self.assertRaisesRegex(ValueError, "bootstrap scope changed"):
+                governance.validate_rec_i3_bootstrap_scope_frozen(changes)
+
     def test_authorized_worktree_reaches_the_dependency_inventory_entrypoint(self) -> None:
         try:
             accepted = governance.validate_current_rec_i2b_reviewed_successor()

@@ -379,11 +379,46 @@ REC_I3_SOURCE_PATHS = (
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/controller/RecoveryKeyConfirmationController.kt",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/controller/RecoveryKeyConfirmationControllerTest.kt",
 )
+REC_I3_BOOTSTRAP_SCOPE_COMMIT = "f89ddba14d37efbdde5a99bf1fd169210ff189cb"
+REC_I3_BOOTSTRAP_SCOPE_TREE = "799cf81572bfef7e6c6e45f6d7311d1ed0cdde3f"
+REC_I3_BOOTSTRAP_SCOPE_PARENT = "00f68af1b9cee1e4d8e92110de4ae474c2bd7b64"
+REC_I3_BOOTSTRAP_SCOPE_PATH = (
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_RUN_KEY_BOOTSTRAP_SCOPE_STAGE0_V0_2.md"
+)
+REC_I3_BOOTSTRAP_SCOPE_SHA256 = (
+    "8a2789d8ebe4c7da3318b966812b8f4860c84731620916a8cbc6765c142d5058"
+)
+REC_I3_BOOTSTRAP_EVIDENCE_PATH = (
+    "docs/evidence/poc-recovery-001/rec-i3-run-key-bootstrap-local-evidence-stage0-v0.2.json"
+)
+REC_I3_BOOTSTRAP_SOURCE_PATHS = (
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/RecoveryKeyBootstrapController.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryBootstrapCrypto.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/AndroidRecoveryKeyBootstrap.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicy.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryBootstrapStorage.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryRunBootstrapJournal.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/bootstrap/RecoveryKeyBootstrapControllerTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryBootstrapPathPolicyTest.kt",
+)
+REC_I3_BOOTSTRAP_ADDITIVE_PATHS = (
+    *REC_I3_BOOTSTRAP_SOURCE_PATHS,
+    REC_I3_BOOTSTRAP_SCOPE_PATH,
+    REC_I3_BOOTSTRAP_EVIDENCE_PATH,
+)
 REC_I3_ADDITIVE_PATHS = (*REC_I3_SOURCE_PATHS, REC_I3_SCOPE_PATH, REC_I3_EVIDENCE_PATH,
+                         *REC_I3_BOOTSTRAP_ADDITIVE_PATHS,
                          "tools/test_poc_recovery_i3_governance.py")
 REC_I3_ALLOWED_PATHS = (*REC_I3_ADDITIVE_PATHS, REC_I2B_MERGED_MAIN_VALIDATOR_PATH,
                       "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md", "docs/DORA_MVP1_STAGE_STATUS.md")
 REC_I3_CLAIM_CEILING = "PARTIAL_REC_I3_HOST_ONLY_PENDING_FULL_IMPLEMENTATION_AND_REVIEW"
+REC_I3_BOOTSTRAP_CLAIM_CEILING = (
+    "PARTIAL_REC_I3_BOOTSTRAP_HOST_VERIFIED_PENDING_PLATFORM_PREFLIGHT_FULL_IMPLEMENTATION_AND_REVIEW"
+)
+REC_I3_FIRST_SLICE_HASHES = {
+    REC_I3_SOURCE_PATHS[0]: "3df585f1a3cb2fe6dfc8670a9c835db4a8c85b4b128e1ac66aa05d63a4bf3925",
+    REC_I3_SOURCE_PATHS[1]: "32935757ce9369ea04b9f787e6f4769a34d5a68424fcd5f6f359890518572f93",
+}
 
 
 @dataclass(frozen=True)
@@ -5266,6 +5301,38 @@ def validate_rec_i3_scope_frozen(changes: dict[str, list[str]]) -> None:
             "REC-I3 scope changed after its scope-first commit")
 
 
+def validate_rec_i3_bootstrap_scope_frozen(changes: dict[str, list[str]]) -> None:
+    require(set(changes) == {"committed", "staged", "unstaged", "untracked"},
+            "REC-I3 bootstrap scope change inventory is incomplete")
+    require(all(REC_I3_BOOTSTRAP_SCOPE_PATH not in paths for paths in changes.values()),
+            "REC-I3 bootstrap scope changed after its scope-first commit")
+
+
+def validate_rec_i3_bootstrap_scope_lineage(
+    current: RecoveryLifecycleIdentity | None = None,
+) -> None:
+    lifecycle = current or collect_recovery_lifecycle_identity()
+    scope = collect_pinned_commit_identity(REC_I3_BOOTSTRAP_SCOPE_COMMIT, lifecycle.head)
+    validate_pinned_commit_identity(
+        scope,
+        expected_commit=REC_I3_BOOTSTRAP_SCOPE_COMMIT,
+        expected_tree=REC_I3_BOOTSTRAP_SCOPE_TREE,
+        expected_parents=(REC_I3_BOOTSTRAP_SCOPE_PARENT,),
+        label="REC-I3 bootstrap scope-first",
+    )
+    scope_paths = git_path_records(
+        "log", "--format=", "--name-only", "--no-renames", "-z",
+        f"{REC_I3_BOOTSTRAP_SCOPE_PARENT}..{REC_I3_BOOTSTRAP_SCOPE_COMMIT}",
+    )
+    require(scope_paths and set(scope_paths) == {REC_I3_BOOTSTRAP_SCOPE_PATH},
+            "REC-I3 bootstrap scope-first lineage contains implementation or unrelated paths")
+    require(sha256(REC_I3_BOOTSTRAP_SCOPE_PATH) == REC_I3_BOOTSTRAP_SCOPE_SHA256,
+            "REC-I3 immutable bootstrap implementation scope changed")
+    validate_rec_i3_bootstrap_scope_frozen(
+        collect_post_merge_changes(merged_anchor=REC_I3_BOOTSTRAP_SCOPE_COMMIT)
+    )
+
+
 def validate_rec_i3_candidate_history(current: RecoveryLifecycleIdentity) -> None:
     # The inherited path collector omits merge-resolution diffs. This exact
     # branch must be linear; GitHub's verified synthetic merge is not its head.
@@ -5366,6 +5433,99 @@ def validate_rec_i3_evidence(
             "REC-I3 limitations are missing")
 
 
+def validate_rec_i3_bootstrap_evidence(
+    record: dict[str, Any], source_hashes: dict[str, str], *, publication: bool = False,
+) -> None:
+    expected = {
+        "schemaVersion": 1,
+        "scopeId": "rec-i3-run-key-bootstrap-stage0-v0.2",
+        "taskId": "REC-I3",
+        "sliceId": "REC-I3-RUN-KEY-BOOTSTRAP-002",
+        "date": "2026-09-05",
+        "reviewedPredecessorCommit": REC_I3_BOOTSTRAP_SCOPE_PARENT,
+        "reviewedPredecessorTree": "18df912687d020503f316d886c9e5264ab35f043",
+        "scopeFirstCommit": REC_I3_BOOTSTRAP_SCOPE_COMMIT,
+        "authorityRecord": "OWNER-AUTH-BATCH-20260819-01",
+        "protocolId": PROTOCOL_ID,
+        "scopeLocator": REC_I3_BOOTSTRAP_SCOPE_PATH,
+        "claimCeiling": REC_I3_BOOTSTRAP_CLAIM_CEILING,
+        "fullRecI3Completed": False,
+        "recoveryPreflightUnlocked": False,
+        "readinessBlockersClosed": [],
+        "authority": {
+            "recI3ImplementationAllowed": True,
+            "recI3NonMetricVerificationAllowed": True,
+            "phaseAAllowed": False,
+            "executionAllowed": False,
+            "measuredExecutionAllowed": False,
+            "productionAdmissionAllowed": False,
+        },
+        "execution": {
+            "device": False,
+            "emulator": False,
+            "preflight": False,
+            "faultCampaign": False,
+            "hardKill": False,
+            "measured": False,
+        },
+        "preservedFirstSliceSourceFiles": REC_I3_FIRST_SLICE_HASHES,
+        "review": {
+            "independentAdvisory": "PENDING",
+            "accountable": "PENDING",
+            "formalReviewer": False,
+        },
+    }
+    variable = {"implementationStatus", "sourceFiles", "checks", "limitations"}
+    require(set(record) == set(expected) | variable, "REC-I3 bootstrap evidence schema drift")
+    require(semantic_sha256({key: record[key] for key in expected}) == semantic_sha256(expected),
+            "REC-I3 bootstrap identity/authority/claim ceiling drift")
+    status = record["implementationStatus"]
+    require(status in {"IN_PROGRESS", "LOCAL_VERIFIED"},
+            "REC-I3 bootstrap implementation status overclaims scope")
+    require(not publication or status == "LOCAL_VERIFIED",
+            "REC-I3 bootstrap PR requires complete local slice evidence")
+    sources = record["sourceFiles"]
+    require(isinstance(sources, dict)
+            and set(sources) <= set(REC_I3_BOOTSTRAP_SOURCE_PATHS)
+            and set(source_hashes) <= set(REC_I3_BOOTSTRAP_SOURCE_PATHS),
+            "REC-I3 bootstrap source manifest escapes exact scope")
+    require(all(isinstance(digest, str) and re.fullmatch(r"[0-9a-f]{64}", digest)
+                and source_hashes.get(path) == digest for path, digest in sources.items()),
+            "REC-I3 bootstrap source digest mismatch")
+    if status == "LOCAL_VERIFIED":
+        require(set(sources) == set(source_hashes) == set(REC_I3_BOOTSTRAP_SOURCE_PATHS),
+                "REC-I3 bootstrap locally verified source manifest is incomplete")
+    checks = record["checks"]
+    require(isinstance(checks, list) and checks, "REC-I3 bootstrap check evidence is missing")
+    for check in checks:
+        require(isinstance(check, dict) and isinstance(check.get("command"), str)
+                and check["command"] and isinstance(check.get("stage"), str)
+                and check.get("outcome") in {"PASS", "FAIL", "EXPECTED_TEST_FAILURE"},
+                "REC-I3 bootstrap check evidence is malformed")
+        if "tests" in check:
+            require(type(check["tests"]) is int and check["tests"] > 0
+                    and type(check.get("failures")) is int and check["failures"] >= 0
+                    and all(type(check[field]) is int and check[field] >= 0
+                            for field in ("errors", "skipped") if field in check),
+                    "REC-I3 bootstrap unit test counters are malformed")
+            if check["outcome"] == "PASS":
+                require(all(type(check.get(field)) is int and check[field] == 0
+                            for field in ("failures", "errors", "skipped")),
+                        "REC-I3 bootstrap unit PASS contains failures/errors/skips")
+    if status == "LOCAL_VERIFIED":
+        final = [check for check in checks if check["stage"] == "FINAL"]
+        require(final and all(check["outcome"] == "PASS" for check in final),
+                "REC-I3 bootstrap final verification is incomplete or failed")
+        commands = " ".join(check["command"] for check in final).split()
+        require(all(task in commands for task in (
+                    "spotlessCheck", "detekt", ":poc:recovery:testDebugUnitTest",
+                    ":poc:recovery:lintDebug", ":poc:recovery:recoveryI2bVerifyCryptoPolicy")),
+                "REC-I3 bootstrap final required check coverage is incomplete")
+    require(isinstance(record["limitations"], list) and record["limitations"]
+            and all(isinstance(item, str) and item for item in record["limitations"]),
+            "REC-I3 bootstrap limitations are missing")
+
+
 def validate_rec_i3_regular_file(relative: str) -> None:
     path = ROOT / relative
     require(path.is_file() and path_is_within(path.resolve(strict=True), ROOT.resolve(strict=True)),
@@ -5400,8 +5560,13 @@ def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | Non
             "REC-I3 scope-first lineage contains implementation or unrelated paths")
     require(sha256(REC_I3_SCOPE_PATH) == REC_I3_SCOPE_SHA256,
             "REC-I3 immutable implementation scope changed")
+    validate_rec_i3_bootstrap_scope_lineage(current)
     for commit in git_output("log", "--format=%H", f"{REC_I3_BASE}..HEAD", "--", *REC_I3_SOURCE_PATHS).splitlines():
         require(git_is_ancestor(REC_I3_SCOPE_COMMIT, commit), "REC-I3 source commit predates its scope")
+    for commit in git_output("log", "--format=%H", f"{REC_I3_BASE}..HEAD", "--",
+                             *REC_I3_BOOTSTRAP_SOURCE_PATHS).splitlines():
+        require(git_is_ancestor(REC_I3_BOOTSTRAP_SCOPE_COMMIT, commit),
+                "REC-I3 bootstrap source commit predates its scope")
     for relative in ("docs/evidence/owner-auth-batch-20260819-01.json",
                      "docs/stage0/DORA_MVP1_STAGE0_OWNER_DECISION_OD15.md"):
         require((ROOT / relative).read_bytes() == git_blob_bytes(f"{REC_I3_BASE}:{relative}"),
@@ -5428,7 +5593,19 @@ def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | Non
         validate_rec_i3_regular_file(relative)
     validate_rec_i3_evidence(read_json(REC_I3_EVIDENCE_PATH), {path: canonical_lf_sha256(path) for path in present},
                              publication=current.github_pull_request_context is not None)
-    print(f"PASS REC-I3 bounded successor: {REC_I3_CLAIM_CEILING}; predecessor frozen; preflight blocked")
+    bootstrap_present = [path for path in REC_I3_BOOTSTRAP_SOURCE_PATHS if (ROOT / path).exists()]
+    for relative in (*bootstrap_present, REC_I3_BOOTSTRAP_SCOPE_PATH,
+                     REC_I3_BOOTSTRAP_EVIDENCE_PATH):
+        validate_rec_i3_regular_file(relative)
+    validate_rec_i3_bootstrap_evidence(
+        read_json(REC_I3_BOOTSTRAP_EVIDENCE_PATH),
+        {path: canonical_lf_sha256(path) for path in bootstrap_present},
+        publication=current.github_pull_request_context is not None,
+    )
+    print(
+        "PASS REC-I3 bounded bootstrap successor: "
+        f"{REC_I3_BOOTSTRAP_CLAIM_CEILING}; first slice/predecessor frozen; preflight blocked"
+    )
     return True
 
 

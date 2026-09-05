@@ -45,6 +45,18 @@ blocker, unlocks no Recovery preflight and leaves `POC-RECOVERY-001` `BLOCKED / 
 counts and every campaign/admission flag unchanged. Subsequent implementation slices remain under
 the same current OD-15 authority; the current task performs no PR merge.
 
+REC-I3 run-key bootstrap amendment, 5 September 2026: the additive
+[bootstrap scope](stage0/DORA_MVP1_POC_RECOVERY_I3_RUN_KEY_BOOTSTRAP_SCOPE_STAGE0_V0_2.md)
+and [local evidence](evidence/poc-recovery-001/rec-i3-run-key-bootstrap-local-evidence-stage0-v0.2.json)
+add the exact KC01–KC13 new-run controller, typed crypto boundary, minimal PoC Android `Os`
+publication adapter and versioned platform SQLite run-row journal. Host tests establish ordering,
+short-write/error/closure behavior and the post-KC12 capability boundary; they do not prove Android
+filesystem, Keystore or SQLite runtime behavior. Reconciliation, quarantine, candidate writers,
+external kill controller, full fresh graph/package/R8 review and accountable implementation review
+remain unfinished. All ten readiness blockers, aggregate counts, Recovery preflight lock and every
+campaign/admission flag remain unchanged. This task performs no device/emulator execution,
+preflight, hard kill, fault campaign, measurement, PR merge or future merged-main admission.
+
 ## 1. Правила выполнения
 
 - `DONE` означает: артефакт существует, acceptance выполнен и evidence доступно в commit/CI/report.
