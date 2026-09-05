@@ -510,8 +510,7 @@ REC_I3_RECON_ROUND3_ACCEPTANCE_CASES = (
     "ROW-DIGEST-FRAMING", "PRODUCTION-UNIQUE-TUPLE", "PATH-IO-DISTINCTION",
 )
 REC_I3_RECON_ROUND4_FINDINGS = (
-    "P1-PRODUCTION-ARTIFACT-CONTEXT", "P1-LEXICAL-PATH-DIAGNOSTICS",
-    "P1-EVIDENCE-ACTUAL-ENTRY", "P1-BOOTSTRAP-CURSOR-POSITION",
+    "P1-ZERO-BYTE-INVENTORY-REGRESSION", "P1-MISSING-FINAL-FAILURE-RETENTION",
 )
 REC_I3_RECON_ROUND4_ACCEPTANCE_CASES = (
     {
@@ -538,20 +537,32 @@ REC_I3_RECON_ROUND4_ACCEPTANCE_CASES = (
         "test": "RecoveryI3GovernanceTests.test_reconciliation_round4_author_mapping_is_exact_and_current",
         "assertion": "Only exact round4Truth author acceptance and distinct ROUND4_ANDROID_HOST and ROUND4_GOVERNANCE checks satisfy current verification; historical round-three PASS, superseded mappings and old check records cannot satisfy it.",
     },
+    {
+        "id": "ZERO-BYTE-INVENTORY",
+        "productionEntry": "RecoveryMicrofileReconciliationController.reconcile -> AndroidRecoveryReconciliationSource.loadInventorySnapshot/loadArtifact -> AndroidOsRecoveryReconciliationStorage.listActiveInventory/listQuarantineInventory/loadActiveArtifact",
+        "test": "AndroidRecoveryReconciliationSourceTest.actual source retains zero byte active and report only quarantine inventory; actual source recognizes exact zero byte quarantine intent destination; actual controller rejects zero byte referenced unit after authenticated prefix; actual controller rejects zero byte latest manifest and authenticates prior generation; actual controller quarantines zero byte unreferenced active and retains report only object",
+        "assertion": "Zero-byte regular crash residue is inventoried with the empty digest and descriptor closure, unreferenced active residue is quarantined, report-only quarantine residue is retained, and strict role reads still reject empty manifest or unit bodies while preserving fallback, authenticated prefix, and terminal side-effect order.",
+    },
+    {
+        "id": "MISSING-FINAL-RETENTION",
+        "productionEntry": "RecoveryMicrofileReconciliationController.reconcile -> AndroidRecoveryReconciliationSource.loadConfirmation -> AndroidOsRecoveryReconciliationStorage.loadActiveArtifact/activeArtifactExists",
+        "test": "AndroidRecoveryReconciliationSourceTest.actual source retains final primary and bounded temporary secondary context; actual controller maps all confirmation temp row and final presence combinations; durable missing final remains primary after successful temporary observation",
+        "assertion": "A PRESENT durable row plus ABSENT final retains ARTIFACT_PATH/MISSING_ARTIFACT as primary, at most one typed temporary observation as secondary, KEY_CONFIRMATION_MISSING with no public diagnostic, and no alias, crypto, later journal, quarantine, or evidence side effect after the terminal confirmation boundary.",
+    },
 )
 REC_I3_RECON_ROUND4_ANDROID_CHECK = {
     "command": "gradlew spotlessCheck detekt :poc:recovery:testDebugUnitTest :poc:recovery:lintDebug :poc:recovery:compileReleaseKotlin :poc:recovery:recoveryI2bVerifyCryptoPolicy --no-daemon --no-parallel",
     "stage": "ROUND4_ANDROID_HOST", "outcome": "PASS",
-    "tests": 217, "failures": 0, "errors": 0, "skipped": 0,
-    "log": "rec-i3-round4-successor-final-android.log",
+    "tests": 224, "failures": 0, "errors": 0, "skipped": 0,
+    "log": "rec-i3-round4-zero-missing-final-android-green.log",
 }
 REC_I3_RECON_ROUND4_GOVERNANCE_CHECK = {
     "command": "python -m unittest test_poc_recovery_i3_governance.py -v from tools; python tools/validate_poc_recovery_governance.py",
     "stage": "ROUND4_GOVERNANCE", "outcome": "PASS",
     "tests": 23, "failures": 0, "errors": 0, "skipped": 0,
     "logs": [
-        "rec-i3-round4-successor-governance.log",
-        "rec-i3-round4-successor-validator-precommit.log",
+        "rec-i3-round4-zero-missing-final-governance.log",
+        "rec-i3-round4-zero-missing-final-validator-precommit.log",
     ],
 }
 REC_I3_RECON_ROUND3_STATE_COMMIT = "927a9a2946b79b29536b325956f90966c94f2af3"
@@ -6085,7 +6096,8 @@ def validate_rec_i3_reconciliation_successor(publication: bool) -> None:
         "originalReview": {"status": "REVISE", "counts": {"p0": 0, "p1": 3, "p2": 0}, "markdownSha256": "494934ba0e0c9adad769a4efc56aa0c54e82790e15405ff1de921d32604cf706", "jsonSha256": "60eb1d83161b1dd26234b3bf463093de1cc68155d40ad216f5549b3e39db9eca"},
         "addendumSha256": "38120cc5ae49a5fe92b2467de05c216e962d792712fda2d7804af4f6c62bad0a",
         "effectiveReview": {"status": "REVISE", "counts": {"p0": 0, "p1": 4, "p2": 0}},
-        "closedPriorFindingIds": ["P1-OPTIONAL-NAMESPACE-AND-RESULT-RETENTION", "P1-Q05-CONFIRMED-REMAINDER", "P2-ROW-DIGEST-FRAMING", "P2-PRODUCTION-UNIQUE-READBACK"],
+        "successorReview": {"targetCommit": "de735735ace6da3572c45dfdc58a8bbff98145b0", "targetTree": "0d6e1fd1a00cf49c6d19832fd086a739c4d93209", "status": "REVISE", "counts": {"p0": 0, "p1": 2, "p2": 0}, "markdownSha256": "0b9458e1e13259b0773500fd38e28083f01a4968c24ad2230b6a43bdd5944edf", "jsonSha256": "7756cb9f90506d472b1846784812554a72a6e56df0a6d9fde6598012a767e161"},
+        "closedPriorFindingIds": ["P1-OPTIONAL-NAMESPACE-AND-RESULT-RETENTION", "P1-Q05-CONFIRMED-REMAINDER", "P2-ROW-DIGEST-FRAMING", "P2-PRODUCTION-UNIQUE-READBACK", "P1-PRODUCTION-ARTIFACT-CONTEXT", "P1-LEXICAL-PATH-DIAGNOSTICS", "P1-EVIDENCE-ACTUAL-ENTRY", "P1-BOOTSTRAP-CURSOR-POSITION", "P1-ROUND4-DUPLICATE-CHECK-ACCEPTANCE"],
         "openFindingIds": list(REC_I3_RECON_ROUND4_FINDINGS),
         "historicalAuthorClaimScope": {"round3Status": "PASS", "supersededAcceptanceIds": ["CONTEXTUAL-TAXONOMY", "PATH-IO-DISTINCTION"]},
         "independentReview": {"status": "PENDING", "formalReviewer": False},

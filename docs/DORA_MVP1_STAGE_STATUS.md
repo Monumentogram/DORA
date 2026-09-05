@@ -186,15 +186,15 @@ passed its reported host checks, but its exact independent review returned `REVI
 0/4/2). The later `ca2db88e0c6e53f346908bdc73b628beaf6c4ec4` review recorded `REVISE`
 (P0/P1/P2 = 0/3/0), and its cursor addendum makes the effective disposition `REVISE`
 (P0/P1/P2 = 0/4/0). Optional namespace/result retention, confirmed-Q05 truth, row framing and
-production unique readback are closed prior findings. Production artifact context, lexical path
-diagnostics, actual-entry evidence truth and bootstrap cursor position remain the four exact open
-P1 findings. Independent review of `bc4f4423b535982956575f5a3480c9361eab6378` returned `REVISE`
-(P0/P1/P2 = 0/2/0): lexical path diagnostics, cursor position and the path side-effect ledger
-closed for that reviewed candidate, while production artifact context and current actual-entry
-evidence remain open. Successor round-four author verification passed 217 Android host tests and
-23 governance tests with the complete production composition matrix; independent and accountable
-review remain pending. Historical round-three and bc4 contextual
-acceptance assertions are superseded author claims. Host assertions do not establish
+production unique readback are closed prior findings. Independent review of
+`bc4f4423b535982956575f5a3480c9361eab6378` returned `REVISE` (P0/P1/P2 = 0/2/0). The reviewed
+successor `de735735ace6da3572c45dfdc58a8bbff98145b0` closed the four ca2 findings, both bc4
+findings and the duplicate-check acceptance gap, then identified zero-byte inventory regression
+and missing-final failure retention as two distinct current P1 findings. The current author
+successor passed 224 Android host tests with the zero-byte inventory and primary/secondary
+diagnostic composition matrix. Current governance checks are author evidence; both P1s remain
+open until exact-candidate independent review, and accountable review remains pending. Historical
+round-three and bc4 contextual acceptance assertions are superseded author claims. Host assertions do not establish
 Android runtime durability; immediate lstat plus rename is not kernel-atomic no-replace evidence,
 and no Recovery gate is unlocked.
 

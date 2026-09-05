@@ -99,6 +99,7 @@ private constructor(
             }
         val finalPresence =
             if (final == null) RecoveryArtifactPresence.ABSENT else RecoveryArtifactPresence.PRESENT
+        val temporaryPresent = loadTemporaryPresence(runId, rowState, finalPresence)
         return KeyConfirmationSnapshot(
             expected,
             row,
@@ -109,17 +110,60 @@ private constructor(
                     it.snapshot(),
                 )
             },
-            pathCall(
-                rowState,
-                RecoveryArtifactContext.CONFIRMATION_TEMP,
-                CONFIRMATION_TEMP,
-                finalPresence,
-            ) {
-                storage.activeArtifactExists(runId, CONFIRMATION_TEMP)
-            },
+            temporaryPresent,
             if (cryptoCall { aliasExists(runId) }) AliasObservation.PRESENT
             else AliasObservation.ABSENT,
         )
+    }
+
+    private fun loadTemporaryPresence(
+        runId: RunId,
+        rowState: RecoveryBootstrapRowState,
+        finalPresence: RecoveryArtifactPresence,
+    ): Boolean {
+        var temporaryFailure: RecoverySourceAccessException? = null
+        val temporaryPresent =
+            try {
+                pathCall(
+                    rowState,
+                    RecoveryArtifactContext.CONFIRMATION_TEMP,
+                    CONFIRMATION_TEMP,
+                    finalPresence,
+                ) {
+                    storage.activeArtifactExists(runId, CONFIRMATION_TEMP)
+                }
+            } catch (error: RecoverySourceAccessException) {
+                temporaryFailure = error
+                false
+            }
+        if (
+            rowState == RecoveryBootstrapRowState.PRESENT &&
+                finalPresence == RecoveryArtifactPresence.ABSENT
+        ) {
+            val missingFinal =
+                RecoveryFailureDiagnostic(
+                    RecoveryFailureCategory.MISSING_ARTIFACT,
+                    "MissingKeyConfirmationArtifact",
+                    "Durable bootstrap row has no final key-confirmation artifact",
+                    RecoveryFailureStage.ARTIFACT_PATH,
+                )
+            throw RecoverySourceAccessException(
+                missingFinal,
+                temporaryFailure ?: IllegalStateException(missingFinal.message),
+                RecoverySourceFailureContext(
+                    rowState,
+                    RecoveryArtifactContext.CONFIRMATION_FINAL,
+                    CONFIRMATION_FINAL,
+                    RecoveryArtifactPresence.ABSENT,
+                ),
+                temporaryFailure?.diagnostic,
+                temporaryFailure?.context,
+            )
+        }
+        if (temporaryFailure != null) {
+            throw requireNotNull(temporaryFailure)
+        }
+        return temporaryPresent
     }
 
     override fun loadCandidate(runId: RunId): RecoveryCandidateSnapshot = journalCall {
@@ -319,7 +363,13 @@ private constructor(
         else RecoverySourceFailureContext(rowState, context, relativeName, presence, finalPresence)
 
     private fun RecoverySourceAccessException.withContext(context: RecoverySourceFailureContext) =
-        RecoverySourceAccessException(diagnostic, cause ?: this, context)
+        RecoverySourceAccessException(
+            diagnostic,
+            cause ?: this,
+            context,
+            secondaryDiagnostic,
+            secondaryContext,
+        )
 
     @Suppress("TooGenericExceptionCaught")
     private inline fun <T> sourceCall(

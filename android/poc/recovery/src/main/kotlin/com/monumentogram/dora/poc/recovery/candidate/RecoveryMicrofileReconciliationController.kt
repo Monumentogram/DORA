@@ -96,6 +96,8 @@ internal class RecoverySourceAccessException(
     val diagnostic: RecoveryFailureDiagnostic,
     cause: Throwable,
     val context: RecoverySourceFailureContext? = null,
+    val secondaryDiagnostic: RecoveryFailureDiagnostic? = null,
+    val secondaryContext: RecoverySourceFailureContext? = null,
 ) : RuntimeException(diagnostic.message, cause)
 
 internal data class RecoveryInventoryEntry(
@@ -215,6 +217,7 @@ internal sealed interface MicrofileReconciliationResult {
         val diagnostic: ReconciliationDiagnostic?,
         val quarantine: QuarantineResult? = null,
         val failure: RecoveryFailureDiagnostic? = null,
+        val secondaryFailure: RecoveryFailureDiagnostic? = null,
         val quarantineOutcomes: List<QuarantineResult> = emptyList(),
         val inventoryReports: List<RecoveryReportOnlyInventoryEntry> = emptyList(),
         val manifestRejections: List<ManifestRejection> = emptyList(),
@@ -1459,6 +1462,7 @@ internal class RecoveryMicrofileReconciliationController(
             classification = classification,
             diagnostic = publicDiagnostic,
             failure = error.diagnostic,
+            secondaryFailure = error.secondaryDiagnostic,
         )
     }
 
@@ -1477,6 +1481,11 @@ internal class RecoveryMicrofileReconciliationController(
                 else null
             RecoveryBootstrapRowState.PRESENT ->
                 if (
+                    context.artifactPresence == RecoveryArtifactPresence.ABSENT &&
+                        diagnostic.category == RecoveryFailureCategory.MISSING_ARTIFACT
+                )
+                    KeyRecoveryClassification.KEY_CONFIRMATION_MISSING
+                else if (
                     context.artifactPresence == RecoveryArtifactPresence.PRESENT &&
                         diagnostic.category in
                             setOf(
@@ -1534,6 +1543,7 @@ internal class RecoveryMicrofileReconciliationController(
         diagnostic: ReconciliationDiagnostic? = null,
         quarantine: QuarantineResult? = null,
         failure: RecoveryFailureDiagnostic? = null,
+        secondaryFailure: RecoveryFailureDiagnostic? = null,
         quarantineOutcomes: List<QuarantineResult> = emptyList(),
         inventoryReports: List<RecoveryReportOnlyInventoryEntry> = emptyList(),
         manifestRejections: List<ManifestRejection> = emptyList(),
@@ -1544,6 +1554,7 @@ internal class RecoveryMicrofileReconciliationController(
             diagnostic,
             quarantine,
             failure,
+            secondaryFailure,
             Collections.unmodifiableList(ArrayList(quarantineOutcomes)),
             Collections.unmodifiableList(ArrayList(inventoryReports)),
             immutableRejections(manifestRejections),

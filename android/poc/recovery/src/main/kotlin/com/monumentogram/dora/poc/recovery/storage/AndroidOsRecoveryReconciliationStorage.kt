@@ -146,7 +146,7 @@ internal constructor(
         try {
             RecoveryArtifactBytes(
                 relativeName,
-                readBounded(
+                readBoundedBody(
                     source,
                     minOf(maximumBytes, RecoveryArtifactRoleBounds.maximumFor(relativeName)),
                 ),
@@ -189,7 +189,7 @@ internal constructor(
                             "objects/$childName",
                             RecoveryArtifactBytes(
                                 "objects/$childName",
-                                readBounded(
+                                readBoundedInventory(
                                     child,
                                     RecoveryArtifactRoleBounds.maximumFor("unknown.bin"),
                                 ),
@@ -277,7 +277,10 @@ internal constructor(
                             relative,
                             RecoveryArtifactBytes(
                                 relative,
-                                readBounded(child, RecoveryArtifactRoleBounds.maximumFor(relative)),
+                                readBoundedInventory(
+                                    child,
+                                    RecoveryArtifactRoleBounds.maximumFor(relative),
+                                ),
                             ),
                             childType,
                         )
@@ -311,7 +314,17 @@ internal constructor(
             else -> QuarantinePathState.UNSAFE
         }
 
-    private fun readBounded(file: File, maximumBytes: Long): ByteArray =
+    private fun readBoundedBody(file: File, maximumBytes: Long): ByteArray =
+        readBounded(file, maximumBytes, minimumBytes = 1L)
+
+    private fun readBoundedInventory(file: File, maximumBytes: Long): ByteArray =
+        readBounded(file, maximumBytes, minimumBytes = 0L)
+
+    private fun readBounded(
+        file: File,
+        maximumBytes: Long,
+        minimumBytes: Long,
+    ): ByteArray =
         withDescriptor(
             file,
             OsConstants.O_RDONLY or OsConstants.O_CLOEXEC or OsConstants.O_NOFOLLOW,
@@ -323,7 +336,7 @@ internal constructor(
                     RecoveryFailureCategory.CORRUPT_LEAF,
                 )
             }
-            if (stat.size !in 1..maximumBytes) {
+            if (stat.size !in minimumBytes..maximumBytes) {
                 throw structuralArtifactFailure("Recovery artifact exceeds its role bound")
             }
             readExactOpened(descriptor, stat.size)

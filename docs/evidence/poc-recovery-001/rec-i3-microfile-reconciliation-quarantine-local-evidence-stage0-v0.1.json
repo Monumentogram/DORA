@@ -30,22 +30,22 @@
     "measured": false
   },
   "sourceFiles": {
-    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationController.kt": "c5710973f05c0fe4b3c9d6461818dcc5fe4d075104758d46d98a908770501913",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationController.kt": "a65028dd082e9036f4d639e87e3b57d020d058171ba2edc184b66f26ef124e98",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryMicrofileReconciliation.kt": "91f2e2185c414aed4376c16732deb8d7377259496cf5b2a3d18e87e5a5372f16",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryMicrofileCrypto.kt": "68beef0e536d01a4b6e2a61e71ac6ee165945bf7e75cd743caaead3d09bea935",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationOutcomes.kt": "1935878e035e74d00af5050130e407b5a4c5b7a0cbf4b60bd7978ad781bcb29f",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntent.kt": "6e8847fe67f5fb1a5dbb5d36a55d85d248885f7a1b11cceaac7d5c9acdf709d7",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryJournalDatabase.kt": "5a0b466e89755e248d63c604c7d311fb4e02bd57e2ce2bacbae87f99a2c17acb",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryQuarantineJournal.kt": "636b702ffa15d17f2414033520146b5cfff2d0e09af6f89a2eecbd85ad4d1270",
-    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSource.kt": "6553e3f9425ab50ca26f194e2b5dff332f9bd39cdc8ba7a811b3cd7903274463",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSource.kt": "92db8a3383b7f99e3f0d7e9ff2552a4e0ad703517f419d5a8b906e148152a326",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryReconciliationPathPolicy.kt": "ca50adb5bb9a0475dbd900bedfec1baadb9aba521ced4491c88762601492f224",
-    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorage.kt": "b88d622cfe60a2c669b386097f5b5ae909b516c2927b7f72626cd03b5a2e7dca",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorage.kt": "63712f9cf51ff1a2780933c4defe7490ec792594d41e1a4f0a0759b339c4031e",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationControllerTest.kt": "ec6b19f78609040ec546b5f767ae06ab52bcbdf487eab1d3727e5ffbdcc2cd5d",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryQuarantineControllerTest.kt": "f0e4e054c30538b2bea5914aba69711aa2152412dc34aae49a4a4233393be09f",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationAcceptanceTest.kt": "993159e54cdfbc7e69dd1e3d34d7c499941fb097c118fd5a0be8ea3b7f36c133",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntentTest.kt": "6896870663c59c81a7f80f801e39529cf76c93ea6887536568ae71e56788cfd8",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalSchemaPlanTest.kt": "74068644e879ba72ec285566336879eaee590c13c55a4bae94e35b712705dd38",
-    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSourceTest.kt": "d7cd343591d17096c980604d7fb9022a5065d5f02525b41ad6d8040f55f5ca70",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSourceTest.kt": "33d18dde5b7d977dbd1a93f6358edd75d734a7eb8a1c6e99919930667da389c4",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryReconciliationPathPolicyTest.kt": "a6fd59757a576e903ce71814466bd096c7f5189441bf629c7e760a9798ccdfcf",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorageTest.kt": "9d2c88443a8ab34670dbed41bdca1736fcc121af98675421d3046fc4410fdc55",
     "tools/verify_rec_i3_microfile_sqlite.py": "c6a6c094731ca1cf7c4830e5c1aa162e631b4c2dff0f204f272e1a9e94885ad0"
@@ -128,11 +128,11 @@
       "command": "gradlew spotlessCheck detekt :poc:recovery:testDebugUnitTest :poc:recovery:lintDebug :poc:recovery:compileReleaseKotlin :poc:recovery:recoveryI2bVerifyCryptoPolicy --no-daemon --no-parallel",
       "stage": "ROUND4_ANDROID_HOST",
       "outcome": "PASS",
-      "tests": 217,
+      "tests": 224,
       "failures": 0,
       "errors": 0,
       "skipped": 0,
-      "log": "rec-i3-round4-successor-final-android.log"
+      "log": "rec-i3-round4-zero-missing-final-android-green.log"
     },
     {
       "command": "python -m unittest test_poc_recovery_i3_governance.py -v from tools; python tools/validate_poc_recovery_governance.py",
@@ -143,8 +143,8 @@
       "errors": 0,
       "skipped": 0,
       "logs": [
-        "rec-i3-round4-successor-governance.log",
-        "rec-i3-round4-successor-validator-precommit.log"
+        "rec-i3-round4-zero-missing-final-governance.log",
+        "rec-i3-round4-zero-missing-final-validator-precommit.log"
       ]
     }
   ],
@@ -385,13 +385,16 @@
       "P1-OPTIONAL-NAMESPACE-AND-RESULT-RETENTION",
       "P1-Q05-CONFIRMED-REMAINDER",
       "P2-ROW-DIGEST-FRAMING",
-      "P2-PRODUCTION-UNIQUE-READBACK"
-    ],
-    "openFindingIds": [
+      "P2-PRODUCTION-UNIQUE-READBACK",
       "P1-PRODUCTION-ARTIFACT-CONTEXT",
       "P1-LEXICAL-PATH-DIAGNOSTICS",
       "P1-EVIDENCE-ACTUAL-ENTRY",
-      "P1-BOOTSTRAP-CURSOR-POSITION"
+      "P1-BOOTSTRAP-CURSOR-POSITION",
+      "P1-ROUND4-DUPLICATE-CHECK-ACCEPTANCE"
+    ],
+    "openFindingIds": [
+      "P1-ZERO-BYTE-INVENTORY-REGRESSION",
+      "P1-MISSING-FINAL-FAILURE-RETENTION"
     ],
     "historicalAuthorClaimScope": {
       "round3Status": "PASS",
@@ -426,6 +429,18 @@
           "productionEntry": "validate_rec_i3_reconciliation_successor",
           "test": "RecoveryI3GovernanceTests.test_reconciliation_round4_author_mapping_is_exact_and_current",
           "assertion": "Only exact round4Truth author acceptance and distinct ROUND4_ANDROID_HOST and ROUND4_GOVERNANCE checks satisfy current verification; historical round-three PASS, superseded mappings and old check records cannot satisfy it."
+        },
+        {
+          "id": "ZERO-BYTE-INVENTORY",
+          "productionEntry": "RecoveryMicrofileReconciliationController.reconcile -> AndroidRecoveryReconciliationSource.loadInventorySnapshot/loadArtifact -> AndroidOsRecoveryReconciliationStorage.listActiveInventory/listQuarantineInventory/loadActiveArtifact",
+          "test": "AndroidRecoveryReconciliationSourceTest.actual source retains zero byte active and report only quarantine inventory; actual source recognizes exact zero byte quarantine intent destination; actual controller rejects zero byte referenced unit after authenticated prefix; actual controller rejects zero byte latest manifest and authenticates prior generation; actual controller quarantines zero byte unreferenced active and retains report only object",
+          "assertion": "Zero-byte regular crash residue is inventoried with the empty digest and descriptor closure, unreferenced active residue is quarantined, report-only quarantine residue is retained, and strict role reads still reject empty manifest or unit bodies while preserving fallback, authenticated prefix, and terminal side-effect order."
+        },
+        {
+          "id": "MISSING-FINAL-RETENTION",
+          "productionEntry": "RecoveryMicrofileReconciliationController.reconcile -> AndroidRecoveryReconciliationSource.loadConfirmation -> AndroidOsRecoveryReconciliationStorage.loadActiveArtifact/activeArtifactExists",
+          "test": "AndroidRecoveryReconciliationSourceTest.actual source retains final primary and bounded temporary secondary context; actual controller maps all confirmation temp row and final presence combinations; durable missing final remains primary after successful temporary observation",
+          "assertion": "A PRESENT durable row plus ABSENT final retains ARTIFACT_PATH/MISSING_ARTIFACT as primary, at most one typed temporary observation as secondary, KEY_CONFIRMATION_MISSING with no public diagnostic, and no alias, crypto, later journal, quarantine, or evidence side effect after the terminal confirmation boundary."
         }
       ]
     },
@@ -433,6 +448,18 @@
       "status": "PENDING",
       "formalReviewer": false
     },
-    "accountableReview": "PENDING"
+    "accountableReview": "PENDING",
+    "successorReview": {
+      "targetCommit": "de735735ace6da3572c45dfdc58a8bbff98145b0",
+      "targetTree": "0d6e1fd1a00cf49c6d19832fd086a739c4d93209",
+      "status": "REVISE",
+      "counts": {
+        "p0": 0,
+        "p1": 2,
+        "p2": 0
+      },
+      "markdownSha256": "0b9458e1e13259b0773500fd38e28083f01a4968c24ad2230b6a43bdd5944edf",
+      "jsonSha256": "7756cb9f90506d472b1846784812554a72a6e56df0a6d9fde6598012a767e161"
+    }
   }
 }

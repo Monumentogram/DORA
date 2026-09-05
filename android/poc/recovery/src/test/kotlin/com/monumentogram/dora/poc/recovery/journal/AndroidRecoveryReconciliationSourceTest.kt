@@ -9,6 +9,7 @@ import com.monumentogram.dora.poc.recovery.candidate.MicrofileReconciliationResu
 import com.monumentogram.dora.poc.recovery.candidate.QuarantineBootstrapBinding
 import com.monumentogram.dora.poc.recovery.candidate.QuarantineIntentState
 import com.monumentogram.dora.poc.recovery.candidate.QuarantinePathState
+import com.monumentogram.dora.poc.recovery.candidate.QuarantineResult
 import com.monumentogram.dora.poc.recovery.candidate.ReconciliationDiagnostic
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactContext
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryCandidateSnapshot
@@ -17,8 +18,11 @@ import com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureStage
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryManifestPublicationRow
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryMicrofileReconciliationController
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryMicrofileUnitRow
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineController
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineEvidenceSink
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineIntentRow
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineJournal
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineTransaction
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryReconciliationCrypto
 import com.monumentogram.dora.poc.recovery.candidate.RecoverySourceAccessException
 import com.monumentogram.dora.poc.recovery.candidate.UnitAuthenticationOutcome
@@ -54,6 +58,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+@Suppress("LargeClass")
 class AndroidRecoveryReconciliationSourceTest {
     @Test
     fun `bootstrap cursor decoder returns null for zero rows`() {
@@ -177,6 +182,73 @@ class AndroidRecoveryReconciliationSourceTest {
         )
         assertTrue(inventory.quarantine.any { it.pathState == QuarantinePathState.UNSAFE })
         assertFalse(os.listed.any { it.endsWith("nested") })
+    }
+
+    @Test
+    fun `actual source retains zero byte active and report only quarantine inventory`() {
+        val quarantineName = "objects/q-${"e".repeat(64)}.bin"
+        val os =
+            InventoryOs().apply {
+                seed(
+                    mapOf("unknown.bin" to ByteArray(0)),
+                    mapOf(quarantineName to ByteArray(0)),
+                )
+            }
+
+        val inventory =
+            source(os)
+                .loadInventorySnapshot(
+                    RUN,
+                    RecoveryCandidateSnapshot(emptyList(), emptyList(), emptyList()),
+                )
+
+        val active = inventory.active.single()
+        assertEquals(0UL, active.input.sourceBytes)
+        assertEquals(
+            RecoveryQuarantineObservedState.UNKNOWN_OR_NON_ALLOWLISTED_NAME,
+            active.observedState,
+        )
+        val quarantine = inventory.quarantine.single()
+        assertEquals(quarantineName, quarantine.relativeName)
+        assertEquals(0UL, quarantine.sourceBytes)
+        assertEquals(Sha256Value.calculate(ByteArray(0)), quarantine.sourceSha256)
+        assertFalse(quarantine.knownIntentDestination)
+        assertEquals(QuarantinePathState.OCCUPIED, quarantine.pathState)
+        assertEquals(1, os.events.count { it.startsWith("os.close:unknown.bin:") })
+        assertEquals(1, os.events.count { it.contains("os.close:") && it.contains(quarantineName) })
+    }
+
+    @Test
+    fun `actual source recognizes exact zero byte quarantine intent destination`() {
+        val row = intent("unknown.bin", ByteArray(0), QuarantineIntentState.COMPLETED)
+        val os =
+            InventoryOs().apply {
+                seed(emptyMap(), mapOf(row.destinationRelativeName to ByteArray(0)))
+            }
+        val source =
+            AndroidRecoveryReconciliationSource(
+                loadBootstrap = { null },
+                loadSnapshot = {
+                    RecoveryCandidateSnapshot(emptyList(), emptyList(), emptyList())
+                },
+                loadPending = { emptyList() },
+                loadAllIntents = { listOf(row) },
+                storage = AndroidOsRecoveryReconciliationStorage(ROOT, os),
+                aliasExists = { false },
+            )
+
+        val report =
+            source
+                .loadInventorySnapshot(
+                    RUN,
+                    RecoveryCandidateSnapshot(emptyList(), emptyList(), emptyList()),
+                )
+                .quarantine
+                .single()
+
+        assertEquals(0UL, report.sourceBytes)
+        assertTrue(report.knownIntentDestination)
+        assertEquals(QuarantinePathState.EXACT, report.pathState)
     }
 
     @Test
@@ -347,8 +419,13 @@ class AndroidRecoveryReconciliationSourceTest {
             KeyRecoveryClassification.KEY_CONFIRMATION_MISSING,
             missingFinal.classification,
         )
-        assertEquals(RecoveryFailureCategory.OPERATIONAL, missingFinal.failure?.category)
-        assertEquals(RecoveryFailureStage.ARTIFACT_IO, missingFinal.failure?.stage)
+        assertEquals(RecoveryFailureCategory.MISSING_ARTIFACT, missingFinal.failure?.category)
+        assertEquals(RecoveryFailureStage.ARTIFACT_PATH, missingFinal.failure?.stage)
+        assertEquals(
+            RecoveryFailureCategory.OPERATIONAL,
+            missingFinal.secondaryFailure?.category,
+        )
+        assertEquals(RecoveryFailureStage.ARTIFACT_IO, missingFinal.secondaryFailure?.stage)
 
         val absentBothOs = InventoryOs().apply { seed(emptyMap(), emptyMap()) }
         absentBothOs.failLstat("key-confirmation/run.kc.tmp")
@@ -357,6 +434,44 @@ class AndroidRecoveryReconciliationSourceTest {
         assertEquals(null, absentBoth.classification)
         assertEquals(RecoveryFailureCategory.OPERATIONAL, absentBoth.failure?.category)
         assertEquals(RecoveryFailureStage.ARTIFACT_IO, absentBoth.failure?.stage)
+    }
+
+    @Test
+    fun `actual source retains final primary and bounded temporary secondary context`() {
+        listOf(false, true).forEach { unsafe ->
+            val os =
+                InventoryOs().apply {
+                    seed(emptyMap(), emptyMap())
+                    if (unsafe) setType(CONFIRMATION_TEMP_NAME, BootstrapPathType.SYMLINK)
+                    else failLstat(CONFIRMATION_TEMP_NAME)
+                }
+
+            val failure = assertThrowsSource {
+                source(
+                        os,
+                        loadBootstrap = { storedConfirmation(byteArrayOf(1)) },
+                    )
+                    .loadConfirmation(RUN)
+            }
+
+            assertEquals(RecoveryFailureCategory.MISSING_ARTIFACT, failure.diagnostic.category)
+            assertEquals(RecoveryFailureStage.ARTIFACT_PATH, failure.diagnostic.stage)
+            assertEquals(
+                RecoveryArtifactContext.CONFIRMATION_FINAL,
+                failure.context?.artifactContext,
+            )
+            assertEquals(
+                if (unsafe) RecoveryFailureCategory.CORRUPT_LEAF
+                else RecoveryFailureCategory.OPERATIONAL,
+                failure.secondaryDiagnostic?.category,
+            )
+            assertEquals(
+                RecoveryArtifactContext.CONFIRMATION_TEMP,
+                failure.secondaryContext?.artifactContext,
+            )
+            assertEquals("os.lstat:$CONFIRMATION_TEMP_NAME", os.events.last())
+            assertFalse(os.events.any { it == "alias.observe" || it == "journal.snapshot" })
+        }
     }
 
     @Test
@@ -445,6 +560,92 @@ class AndroidRecoveryReconciliationSourceTest {
                 assertFalse("crypto.unit:1" in fixture.eventsSnapshot())
                 assertTrue(fixture.eventsSnapshot().last().startsWith(fixture.targetClosePrefix()))
             }
+    }
+
+    @Test
+    fun `actual controller rejects zero byte referenced unit after authenticated prefix`() {
+        listOf(RecoveryArtifactCase.UNIT_ENVELOPE, RecoveryArtifactCase.UNIT_CIPHERTEXT).forEach {
+            artifactCase ->
+            val fixture = LaterArtifactFixture(artifactCase, zeroByte = true)
+            val result = fixture.reconcile() as MicrofileReconciliationResult.PartialPrefix
+
+            assertEquals(1, result.prefix.units.size)
+            assertEquals(1UL, result.prefix.authenticatedEndExclusive)
+            assertEquals(ReconciliationDiagnostic.UNIT_MISSING_OR_INVALID, result.diagnostic)
+            assertEquals(RecoveryFailureCategory.STRUCTURAL, result.failure?.category)
+            assertEquals(
+                if (artifactCase == RecoveryArtifactCase.UNIT_ENVELOPE)
+                    RecoveryFailureStage.ENVELOPE_BINDING
+                else RecoveryFailureStage.ARTIFACT_PATH,
+                result.failure?.stage,
+            )
+            assertTrue("crypto.unit:0" in fixture.eventsSnapshot())
+            assertFalse("crypto.unit:1" in fixture.eventsSnapshot())
+            assertEquals(
+                2,
+                fixture.eventsSnapshot().count { it.startsWith(fixture.targetClosePrefix()) },
+            )
+            assertTrue(fixture.eventsSnapshot().last().startsWith(fixture.targetClosePrefix()))
+        }
+    }
+
+    @Test
+    fun `actual controller rejects zero byte latest manifest and authenticates prior generation`() {
+        listOf(
+                RecoveryArtifactCase.MANIFEST_ENVELOPE,
+                RecoveryArtifactCase.MANIFEST_CIPHERTEXT,
+            )
+            .forEach { artifactCase ->
+                val fixture = LaterArtifactFixture(artifactCase, zeroByte = true)
+                val result = fixture.reconcile() as MicrofileReconciliationResult.PartialPrefix
+
+                assertEquals(1UL, result.prefix.manifestGenerationUsed)
+                assertEquals(1, result.prefix.units.size)
+                assertEquals(null, result.classification)
+                assertEquals(
+                    ReconciliationDiagnostic.LATER_JOURNAL_PREFIX_INVALID,
+                    result.diagnostic,
+                )
+                assertEquals(listOf(2UL), result.manifestRejections.map { it.generation })
+                assertEquals(
+                    RecoveryFailureCategory.STRUCTURAL,
+                    result.manifestRejections.single().diagnostic.category,
+                )
+                assertTrue("crypto.manifest:1" in fixture.eventsSnapshot())
+                assertTrue("crypto.unit:0" in fixture.eventsSnapshot())
+                assertFalse("crypto.unit:1" in fixture.eventsSnapshot())
+                assertEquals(
+                    2,
+                    fixture.eventsSnapshot().count { it.startsWith(fixture.targetClosePrefix()) },
+                )
+                assertEquals("crypto.unit:0", fixture.eventsSnapshot().last())
+            }
+    }
+
+    @Test
+    fun `actual controller quarantines zero byte unreferenced active and retains report only object`() {
+        val fixture =
+            LaterArtifactFixture(
+                RecoveryArtifactCase.MANIFEST_CIPHERTEXT,
+                noTargetFault = true,
+                zeroInventoryResidue = true,
+            )
+
+        val result = fixture.reconcile() as MicrofileReconciliationResult.AuthenticatedPrefix
+
+        val completed = result.quarantineOutcomes.single() as QuarantineResult.Completed
+        assertEquals("unknown.bin", completed.row.input.sourceRelativeName)
+        assertEquals(0UL, completed.row.input.sourceBytes)
+        assertTrue(completed.evidenceEmitted)
+        val report = result.inventoryReports.single()
+        assertEquals(0UL, report.sourceBytes)
+        assertFalse(report.knownIntentDestination)
+        assertEquals(QuarantinePathState.OCCUPIED, report.pathState)
+        assertTrue("crypto.manifest:2" in fixture.eventsSnapshot())
+        assertTrue("crypto.unit:1" in fixture.eventsSnapshot())
+        assertTrue(result.manifestRejections.isEmpty())
+        assertEquals(1, fixture.quarantineEvidenceCount())
+        assertEquals("crypto.unit:1", fixture.eventsSnapshot().last())
     }
 
     @Test
@@ -545,7 +746,7 @@ class AndroidRecoveryReconciliationSourceTest {
     }
 
     @Test
-    @Suppress("CyclomaticComplexMethod", "NestedBlockDepth")
+    @Suppress("CyclomaticComplexMethod", "NestedBlockDepth", "LongMethod")
     fun `actual controller maps all confirmation temp row and final presence combinations`() {
         listOf(false, true).forEach { durable ->
             listOf(false, true).forEach { finalPresent ->
@@ -580,24 +781,75 @@ class AndroidRecoveryReconciliationSourceTest {
                         }
                     assertEquals(expectedClassification, result.classification)
                     assertEquals(
-                        if (unsafe) ReconciliationDiagnostic.UNSAFE_PATH
+                        if (durable && !finalPresent) null
+                        else if (unsafe) ReconciliationDiagnostic.UNSAFE_PATH
                         else ReconciliationDiagnostic.CRYPTO_OPERATIONAL,
                         result.diagnostic,
                     )
                     assertEquals(
-                        if (unsafe) RecoveryFailureCategory.CORRUPT_LEAF
+                        if (durable && !finalPresent) RecoveryFailureCategory.MISSING_ARTIFACT
+                        else if (unsafe) RecoveryFailureCategory.CORRUPT_LEAF
                         else RecoveryFailureCategory.OPERATIONAL,
                         result.failure?.category,
                     )
                     assertEquals(
-                        if (unsafe) RecoveryFailureStage.ARTIFACT_PATH
+                        if (durable && !finalPresent) RecoveryFailureStage.ARTIFACT_PATH
+                        else if (unsafe) RecoveryFailureStage.ARTIFACT_PATH
                         else RecoveryFailureStage.ARTIFACT_IO,
                         result.failure?.stage,
                     )
+                    if (durable && !finalPresent) {
+                        assertEquals(
+                            if (unsafe) RecoveryFailureCategory.CORRUPT_LEAF
+                            else RecoveryFailureCategory.OPERATIONAL,
+                            result.secondaryFailure?.category,
+                        )
+                        assertEquals(
+                            if (unsafe) RecoveryFailureStage.ARTIFACT_PATH
+                            else RecoveryFailureStage.ARTIFACT_IO,
+                            result.secondaryFailure?.stage,
+                        )
+                    } else {
+                        assertEquals(null, result.secondaryFailure)
+                    }
                     assertEquals("os.lstat:$CONFIRMATION_TEMP_NAME", os.events.last())
                     assertFalse(os.events.any { it == "alias.observe" || it == "journal.snapshot" })
                 }
             }
+        }
+    }
+
+    @Test
+    fun `durable missing final remains primary after successful temporary observation`() {
+        listOf(false, true).forEach { tempPresent ->
+            val os =
+                InventoryOs().apply {
+                    seed(
+                        if (tempPresent) mapOf(CONFIRMATION_TEMP_NAME to byteArrayOf(2))
+                        else emptyMap(),
+                        emptyMap(),
+                    )
+                }
+
+            val result =
+                reconcile(
+                    source(
+                        os,
+                        loadBootstrap = { storedConfirmation(byteArrayOf(1)) },
+                    )
+                )
+                    as MicrofileReconciliationResult.NoAuthenticatedPrefix
+
+            assertEquals(
+                KeyRecoveryClassification.KEY_CONFIRMATION_MISSING,
+                result.classification,
+            )
+            assertEquals(null, result.diagnostic)
+            assertEquals(RecoveryFailureCategory.MISSING_ARTIFACT, result.failure?.category)
+            assertEquals(RecoveryFailureStage.ARTIFACT_PATH, result.failure?.stage)
+            assertEquals(null, result.secondaryFailure)
+            assertEquals("os.lstat:$CONFIRMATION_TEMP_NAME", os.events.last())
+            assertFalse(os.events.any { it == "alias.observe" || it == "journal.snapshot" })
         }
     }
 
@@ -806,15 +1058,32 @@ class AndroidRecoveryReconciliationSourceTest {
     private class LaterArtifactFixture(
         private val failing: RecoveryArtifactCase,
         operational: Boolean = false,
+        zeroByte: Boolean = false,
+        noTargetFault: Boolean = false,
+        private val zeroInventoryResidue: Boolean = false,
     ) {
         private val confirmationBackend = RecordingRunAeadBackend()
         private val runAead = RecoveryRunAeadProvider(confirmationBackend).openExisting(RUN)
         private val confirmationValue = KeyConfirmationValue(RecoveryCandidate.MICROFILE, RUN)
         private val confirmationBytes = runAead.encryptKeyConfirmation(confirmationValue)
-        private val unitCiphertexts = listOf(byteArrayOf(1), byteArrayOf(5))
-        private val unitEnvelopes = listOf(byteArrayOf(2), byteArrayOf(6))
-        private val manifestCiphertext = byteArrayOf(3)
-        private val manifestEnvelope = byteArrayOf(4)
+        private val unitCiphertexts =
+            listOf(
+                byteArrayOf(1),
+                if (zeroByte && failing == RecoveryArtifactCase.UNIT_CIPHERTEXT) ByteArray(0)
+                else byteArrayOf(5),
+            )
+        private val unitEnvelopes =
+            listOf(
+                byteArrayOf(2),
+                if (zeroByte && failing == RecoveryArtifactCase.UNIT_ENVELOPE) ByteArray(0)
+                else byteArrayOf(6),
+            )
+        private val manifestCiphertext =
+            if (zeroByte && failing == RecoveryArtifactCase.MANIFEST_CIPHERTEXT) ByteArray(0)
+            else byteArrayOf(3)
+        private val manifestEnvelope =
+            if (zeroByte && failing == RecoveryArtifactCase.MANIFEST_ENVELOPE) ByteArray(0)
+            else byteArrayOf(4)
         private val units = List(2) { unit(it) }
         private val priorManifestCiphertext = byteArrayOf(7)
         private val priorManifestEnvelope = byteArrayOf(8)
@@ -849,6 +1118,28 @@ class AndroidRecoveryReconciliationSourceTest {
                     )
                 },
             )
+        private val priorManifest =
+            RecoveryManifest.create(
+                RecoveryCandidate.MICROFILE,
+                RUN,
+                1UL,
+                Sha256Value.ZERO,
+                1UL,
+                listOf(
+                    RecoveryManifestEntry(
+                        units[0].unitIndex,
+                        units[0].plaintextStartInclusive,
+                        units[0].plaintextEndExclusive,
+                        units[0].cadenceSeconds,
+                        unitCiphertexts[0].size.toULong(),
+                        Sha256Value.calculate(unitCiphertexts[0]),
+                        unitEnvelopes[0].size.toULong(),
+                        Sha256Value.calculate(unitEnvelopes[0]),
+                        units[0].ciphertextRelativeName,
+                        units[0].keyEnvelopeRelativeName,
+                    )
+                ),
+            )
         private val targetRelativeName =
             when (failing) {
                 RecoveryArtifactCase.MANIFEST_ENVELOPE -> publication.keyEnvelopeRelativeName
@@ -871,20 +1162,44 @@ class AndroidRecoveryReconciliationSourceTest {
         private val os =
             InventoryOs().apply {
                 seed(
-                    mapOf(
-                        "key-confirmation/run.kc" to confirmationBytes,
-                        units[0].ciphertextRelativeName to unitCiphertexts[0],
-                        units[0].keyEnvelopeRelativeName to unitEnvelopes[0],
-                        units[1].ciphertextRelativeName to unitCiphertexts[1],
-                        units[1].keyEnvelopeRelativeName to unitEnvelopes[1],
-                        publication.publicationRelativeName to manifestCiphertext,
-                        publication.keyEnvelopeRelativeName to manifestEnvelope,
-                    ),
-                    emptyMap(),
+                    buildMap {
+                        put("key-confirmation/run.kc", confirmationBytes)
+                        put(units[0].ciphertextRelativeName, unitCiphertexts[0])
+                        put(units[0].keyEnvelopeRelativeName, unitEnvelopes[0])
+                        put(units[1].ciphertextRelativeName, unitCiphertexts[1])
+                        put(units[1].keyEnvelopeRelativeName, unitEnvelopes[1])
+                        put(publication.publicationRelativeName, manifestCiphertext)
+                        put(publication.keyEnvelopeRelativeName, manifestEnvelope)
+                        if (
+                            zeroByte &&
+                                failing in
+                                    setOf(
+                                        RecoveryArtifactCase.MANIFEST_ENVELOPE,
+                                        RecoveryArtifactCase.MANIFEST_CIPHERTEXT,
+                                    )
+                        ) {
+                            put(
+                                priorPublication.publicationRelativeName,
+                                priorManifestCiphertext,
+                            )
+                            put(
+                                priorPublication.keyEnvelopeRelativeName,
+                                priorManifestEnvelope,
+                            )
+                        }
+                        if (zeroInventoryResidue) put("unknown.bin", ByteArray(0))
+                    },
+                    if (zeroInventoryResidue)
+                        mapOf("objects/q-${"d".repeat(64)}.bin" to ByteArray(0))
+                    else emptyMap(),
                 )
-                if (operational) ioOnSecondRead(targetRelativeName)
-                else structuralOnSecondRead(targetRelativeName)
+                if (!zeroByte && !noTargetFault) {
+                    if (operational) ioOnSecondRead(targetRelativeName)
+                    else structuralOnSecondRead(targetRelativeName)
+                }
             }
+        private val quarantineJournal = MemoryQuarantineJournal()
+        private val quarantineEvidence = mutableListOf<RecoveryQuarantineIntentRow>()
         private val source =
             AndroidRecoveryReconciliationSource(
                 loadBootstrap = {
@@ -930,7 +1245,9 @@ class AndroidRecoveryReconciliationSourceTest {
                     ciphertext: ByteArray,
                 ): ManifestAuthenticationOutcome {
                     os.events += "crypto.manifest:${publication.generation}"
-                    return ManifestAuthenticationOutcome.Authenticated(manifest)
+                    return ManifestAuthenticationOutcome.Authenticated(
+                        if (publication.generation == 1UL) priorManifest else manifest
+                    )
                 }
 
                 override fun authenticateUnit(
@@ -952,12 +1269,21 @@ class AndroidRecoveryReconciliationSourceTest {
                     RecoveryKeyConfirmationController(
                         RecoveryRunAeadProvider(confirmationBackend)::openExisting
                     ),
+                    if (zeroInventoryResidue)
+                        RecoveryQuarantineController(
+                            AndroidOsRecoveryReconciliationStorage(ROOT, os),
+                            quarantineJournal,
+                            RecoveryQuarantineEvidenceSink(quarantineEvidence::add),
+                        )
+                    else null,
                 )
                 .reconcile(RUN)
 
         fun eventsSnapshot(): List<String> = os.events.toList()
 
         fun targetClosePrefix(): String = "os.close:$targetRelativeName:"
+
+        fun quarantineEvidenceCount(): Int = quarantineEvidence.size
 
         private fun unit(index: Int): RecoveryMicrofileUnitRow {
             val unitIndex = index.toULong()
@@ -1035,6 +1361,32 @@ class AndroidRecoveryReconciliationSourceTest {
             Sha256Value.calculate(bytes),
             KeyConfirmationValue(RecoveryCandidate.MICROFILE, RUN).canonicalAliasSha256,
         )
+
+    private class MemoryQuarantineJournal : RecoveryQuarantineJournal {
+        private val rows = mutableMapOf<Sha256Value, RecoveryQuarantineIntentRow>()
+
+        override fun load(intentId: Sha256Value): RecoveryQuarantineIntentRow? = rows[intentId]
+
+        override fun loadBySource(
+            input: RecoveryQuarantineIntentInput
+        ): RecoveryQuarantineIntentRow? = rows.values.singleOrNull { it.input == input }
+
+        override fun beginNonExclusive(): RecoveryQuarantineTransaction =
+            object : RecoveryQuarantineTransaction {
+                override fun insert(row: RecoveryQuarantineIntentRow) {
+                    rows[row.intentId] = row
+                }
+
+                override fun complete(intentId: Sha256Value) {
+                    rows[intentId] =
+                        requireNotNull(rows[intentId]).copy(state = QuarantineIntentState.COMPLETED)
+                }
+
+                override fun markSuccessful() = Unit
+
+                override fun end() = Unit
+            }
+    }
 
     private class CursorProbe(private val rows: List<Map<String, Any>>) : InvocationHandler {
         val getterPositions = mutableListOf<Int>()
@@ -1329,9 +1681,22 @@ class AndroidRecoveryReconciliationSourceTest {
             return actual
         }
 
-        override fun rename(source: String, destination: String) = error("not used")
+        override fun rename(source: String, destination: String) {
+            events += "os.rename:${display(source)}:${display(destination)}"
+            val stat = requireNotNull(stats.remove(source))
+            val bytes = requireNotNull(data.remove(source))
+            stats[destination] = stat
+            data[destination] = bytes
+            children[requireNotNull(File(source).parentFile).path]?.remove(File(source).name)
+            children
+                .getOrPut(requireNotNull(File(destination).parentFile).path) { mutableListOf() }
+                .add(File(destination).name)
+        }
 
-        override fun fsync(descriptor: RecoveryReconciliationDescriptor) = error("not used")
+        override fun fsync(descriptor: RecoveryReconciliationDescriptor) {
+            descriptor as Descriptor
+            events += "os.fsync:${display(descriptor.path)}:${descriptor.id}"
+        }
 
         override fun close(descriptor: RecoveryReconciliationDescriptor) {
             descriptor as Descriptor
