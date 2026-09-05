@@ -1,6 +1,8 @@
 package com.monumentogram.dora.poc.recovery.storage
 
+import java.io.File
 import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -52,6 +54,31 @@ class AndroidOsRecoveryReconciliationStorageTest {
                 }
                 assertTrue(descriptor.closed)
             }
+    }
+
+    @Test
+    fun `every existing ancestor is lstat classified and an unsafe middle component fails`() {
+        val root = File("safe-root")
+        val leaf = File(root, "one/two/artifact.bin")
+        val observed = mutableListOf<String>()
+        val validator = RecoveryPathSafetyValidator { file ->
+            observed += file.invariantSeparatorsPath
+            if (file.name == "one") BootstrapPathType.SYMLINK else BootstrapPathType.DIRECTORY
+        }
+        assertThrows(IllegalStateException::class.java) {
+            validator.validateParentChain(root, leaf)
+        }
+        assertTrue(observed.any { it.endsWith("safe-root/one") })
+        assertTrue(observed.any { it.endsWith("safe-root") })
+    }
+
+    @Test
+    fun `artifact roles have explicit independent descriptor bounds`() {
+        assertEquals(512L, RecoveryArtifactRoleBounds.maximumFor("key-confirmation/run.kc"))
+        assertEquals(960_256L, RecoveryArtifactRoleBounds.maximumFor("units/u-0.bin"))
+        assertEquals(65_536L, RecoveryArtifactRoleBounds.maximumFor("key-envelopes/unit-0.bin"))
+        assertEquals(262_144L, RecoveryArtifactRoleBounds.maximumFor("manifests/m-1.bin"))
+        assertEquals(1_048_576L, RecoveryArtifactRoleBounds.maximumFor("unknown.bin"))
     }
 
     private fun assertEqualsFailure(descriptor: FakeDescriptor, block: () -> Unit) {

@@ -28,6 +28,36 @@ internal fun interface RecoveryDescriptorOpener {
     fun open(path: String): RecoveryReadDescriptor
 }
 
+internal class RecoveryPathSafetyValidator(private val observe: (File) -> BootstrapPathType) {
+    fun requireDirectory(file: File) {
+        check(observe(file) == BootstrapPathType.DIRECTORY) {
+            "Unsafe Recovery directory: ${file.name}"
+        }
+    }
+
+    fun validateParentChain(root: File, leaf: File) {
+        requireDirectory(root)
+        var current = leaf.parentFile
+        while (current != null && current != root) {
+            requireDirectory(current)
+            current = current.parentFile
+        }
+        check(current == root) { "Recovery path escaped its root" }
+    }
+}
+
+@Suppress("MagicNumber")
+internal object RecoveryArtifactRoleBounds {
+    fun maximumFor(relativeName: String): Long =
+        when {
+            relativeName.startsWith("key-confirmation/") -> 512L
+            relativeName.startsWith("units/") -> 960_256L
+            relativeName.startsWith("key-envelopes/") -> 65_536L
+            relativeName.startsWith("manifests/") -> 262_144L
+            else -> 1_048_576L
+        }
+}
+
 @Suppress("MagicNumber")
 internal class RecoveryBoundedDescriptorReader(private val opener: RecoveryDescriptorOpener) {
     fun read(path: String, maximumBytes: Long): ByteArray {
@@ -64,6 +94,8 @@ private constructor(
     private val root: File,
     private val boundedReader: RecoveryBoundedDescriptorReader,
 ) : RecoveryQuarantineStorage {
+    private val pathSafety = RecoveryPathSafetyValidator(::type)
+
     constructor(
         context: Context
     ) : this(
@@ -80,7 +112,7 @@ private constructor(
                 "objects/q-${"0".repeat(64)}.bin",
             )
         val base = File(root, "poc-recovery/v1")
-        requireDirectory(base)
+        pathSafety.requireDirectory(base)
         createDirectory(File(base, "quarantine"))
         createDirectory(paths.quarantineRunRoot)
         createDirectory(paths.objectsRoot)
@@ -88,7 +120,7 @@ private constructor(
 
     fun activeArtifactExists(runId: RunId, relativeName: String): Boolean {
         val paths = inspectionPaths(runId, relativeName)
-        validateParents(paths.activeRunRoot, paths.source)
+        pathSafety.validateParentChain(paths.activeRunRoot, paths.source)
         return when (type(paths.source)) {
             BootstrapPathType.ABSENT -> false
             BootstrapPathType.REGULAR -> true
@@ -103,12 +135,15 @@ private constructor(
     ): RecoveryArtifactBytes? {
         require(maximumBytes > 0)
         val paths = inspectionPaths(runId, relativeName)
-        validateParents(paths.activeRunRoot, paths.source)
+        pathSafety.validateParentChain(paths.activeRunRoot, paths.source)
         if (type(paths.source) == BootstrapPathType.ABSENT) return null
         check(type(paths.source) == BootstrapPathType.REGULAR) { "Unsafe Recovery active artifact" }
         return RecoveryArtifactBytes(
             relativeName,
-            boundedReader.read(paths.source.path, maximumBytes),
+            boundedReader.read(
+                paths.source.path,
+                minOf(maximumBytes, RecoveryArtifactRoleBounds.maximumFor(relativeName)),
+            ),
         )
     }
 
@@ -125,7 +160,10 @@ private constructor(
                         result +=
                             RecoveryArtifactBytes(
                                 relative,
-                                boundedReader.read(child.path, MAX_ARTIFACT_BYTES),
+                                boundedReader.read(
+                                    child.path,
+                                    RecoveryArtifactRoleBounds.maximumFor(relative),
+                                ),
                             )
                     }
                     else -> error("Unsafe Recovery inventory object: ${child.name}")
@@ -146,14 +184,14 @@ private constructor(
             )
         val base = File(root, "poc-recovery")
         listOf(root, base, File(base, "v1"), File(base, "v1/runs"), paths.activeRunRoot)
-            .forEach(::requireDirectory)
+            .forEach(pathSafety::requireDirectory)
         return paths
     }
 
     override fun inspect(row: RecoveryQuarantineIntentRow): QuarantinePathObservation {
         val paths = paths(row)
-        validateParents(paths.activeRunRoot, paths.source)
-        validateParents(paths.quarantineRunRoot, paths.destination)
+        pathSafety.validateParentChain(paths.activeRunRoot, paths.source)
+        pathSafety.validateParentChain(paths.quarantineRunRoot, paths.destination)
         return QuarantinePathObservation(state(paths.source, row), state(paths.destination, row))
     }
 
@@ -221,27 +259,11 @@ private constructor(
         when (type(directory)) {
             BootstrapPathType.ABSENT -> {
                 Os.mkdir(directory.path, 0x1c0)
-                requireDirectory(directory)
+                pathSafety.requireDirectory(directory)
                 syncDirectory(directory.parentFile!!)
             }
             BootstrapPathType.DIRECTORY -> Unit
             else -> error("Unsafe Recovery quarantine directory: ${directory.name}")
-        }
-    }
-
-    private fun validateParents(root: File, leaf: File) {
-        requireDirectory(root)
-        var current = leaf.parentFile
-        while (current != null && current != root) {
-            requireDirectory(current)
-            current = current.parentFile
-        }
-        check(current == root) { "Recovery path escaped its root" }
-    }
-
-    private fun requireDirectory(file: File) {
-        check(type(file) == BootstrapPathType.DIRECTORY) {
-            "Unsafe Recovery directory: ${file.name}"
         }
     }
 
@@ -266,10 +288,6 @@ private constructor(
         } catch (error: ErrnoException) {
             if (error.errno == OsConstants.ENOENT) BootstrapPathType.ABSENT else throw error
         }
-
-    private companion object {
-        const val MAX_ARTIFACT_BYTES = 1_048_576L
-    }
 }
 
 private object AndroidRecoveryDescriptorOpener : RecoveryDescriptorOpener {
