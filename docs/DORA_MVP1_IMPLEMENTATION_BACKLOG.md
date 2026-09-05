@@ -87,12 +87,10 @@ and exercises pending quarantine replay, typed failures, descriptor bounds and s
 validation. Independent review of corrected head `5de34577295b5e5477970785f9472d51e21bfc43`
 returned `REVISE` (P0/P1/P2 = 0/7/1). Author-local successor `a020944f0444edfcbabc4690d4a367b1cf9e83d7`
 then passed its reported host checks, but exact independent review also returned `REVISE`
-(P0/P1/P2 = 0/4/2). Its optional-quarantine/no-prefix retention, contextual taxonomy, confirmed-Q05
-remainder, evidence truth, row framing and production unique-readback findings remain open while
+(P0/P1/P2 = 0/4/2). The historical a020 six findings were pending then; ca2 closed optional-quarantine/no-prefix retention, confirmed-Q05 remainder, row framing and production unique-readback. Contextual taxonomy, lexical path diagnostics, evidence actual-entry truth and bootstrap cursor position remain the four current P1 findings while
 round-three correction is `IN_PROGRESS`. Exact ca2 round-four truth preserves the immutable original
 `REVISE 0/3/0` review and its addendum-effective `REVISE 0/4/0` disposition; all four P1 items remain
-open pending a later independent review, and no readiness or execution authority changes. Round-three author tests now pass for the bounded
-production-entry repairs, while all six findings remain pending independent exact-candidate review.
+open pending a later independent review, and no readiness or execution authority changes. Historical round-three author PASS is retained as historical evidence; its contextual-taxonomy and path-I/O acceptance assertions are SUPERSEDED because they cover helpers/fakes rather than the current actual composition. Current round-four author verification is NOT_RUN.
 The prior author-local closure and acceptance mapping are superseded claims rather than independent
 closure. Immediate lstat plus rename is not kernel-atomic no-replace proof; Android filesystem
 durability and every wider REC-I3 gate remain unproven.
