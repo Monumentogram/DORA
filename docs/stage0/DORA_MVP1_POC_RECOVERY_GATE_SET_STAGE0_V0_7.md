@@ -1,9 +1,9 @@
 # Dora MVP 1 — POC-RECOVERY-001 prospective Gate Set v0.7
 
-Gate Set: `poc-recovery-stage0-v0.7`  
-Protocol: `poc-recovery-protocol-stage0-v0.7`  
-Date: 6 September 2026  
-Status: **Owner-confirmed governance; persistence implementation separately gated by governance review**  
+Gate Set: `poc-recovery-stage0-v0.7`\
+Protocol: `poc-recovery-protocol-stage0-v0.7`\
+Date: 6 September 2026\
+Status: **Owner-confirmed governance; persistence implementation separately gated by governance review**\
 Decision context: `DEC-044`, `DEC-045`, `DEC-046`, `OD-15`, accepted `ADR-0005`
 
 ## Scope and authority

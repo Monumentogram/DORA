@@ -1,8 +1,8 @@
 # DORA MVP 1 — REC-I3 streaming persistence scope Stage 0 v0.1
 
-Status: **Owner-confirmed governance scope; implementation blocked pending CLEAN review of this exact governance commit**  
-Baseline: `3c63ab09874f4d089e4363985aa8b5c99900c122` / tree `718eae8d8d619d17c25ac9d025e0e24db3d52f9e`  
-Authority: `OD-15`, `DEC-045`, `DEC-046`, ADR-0005, Gate Set/protocol v0.7  
+Status: **Owner-confirmed governance scope; implementation blocked pending CLEAN review of this exact governance commit**\
+Baseline: `3c63ab09874f4d089e4363985aa8b5c99900c122` / tree `718eae8d8d619d17c25ac9d025e0e24db3d52f9e`\
+Authority: `OD-15`, `DEC-045`, `DEC-046`, ADR-0005, Gate Set/protocol v0.7\
 Design packet: SHA-256 `9f8e3a6e4d20faf0d744310b83ca46bd34d5c6798785e1197e6b61fb8ae81011`
 
 ## Goal and non-goals
