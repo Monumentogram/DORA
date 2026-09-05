@@ -1,9 +1,9 @@
 # Dora MVP 1 — REC-I3 bootstrap provider-witness correction
 
-Contract ID: `rec-i3-bootstrap-provider-witness-correction-stage0-v0.1`  
-Backlog: `POC-RECOVERY-001` / partial `REC-I3` implementation correction  
-Date: 5 September 2026  
-Authority: `OWNER-AUTH-BATCH-20260819-01` / OD-15  
+Contract ID: `rec-i3-bootstrap-provider-witness-correction-stage0-v0.1`\
+Backlog: `POC-RECOVERY-001` / partial `REC-I3` implementation correction\
+Date: 5 September 2026\
+Authority: `OWNER-AUTH-BATCH-20260819-01` / OD-15\
 Corrected predecessor: `d6b419e38658725155cf2d4fa469b6d2053ee77c` / tree `12137d39ac7046a91e5a39e3efd77a42ee900e36`
 
 ## Additive correction boundary
