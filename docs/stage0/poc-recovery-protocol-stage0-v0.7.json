@@ -920,5 +920,120 @@
       "jsonSha256": "7f8ac61e9157ad864f1214bb2c6ab53e20e6fe29939d68af1438f8ae048c0deb"
     },
     "exactGovernanceCommitIndependentReview": "PENDING"
+  },
+  "identityEncodingsV07": {
+    "versioned": true,
+    "endianness": "BIG_ENDIAN",
+    "maximumPreimageBytes": 4096,
+    "primitives": {
+      "U8": "one unsigned byte",
+      "U16BE": "fixed-width unsigned 16-bit integer",
+      "U32BE": "fixed-width unsigned 32-bit integer",
+      "U64BE": "fixed-width unsigned 64-bit integer; representable in signed Kotlin/SQLite before conversion",
+      "SHA256": "exactly 32 raw bytes",
+      "RUN_ID": "exactly 16 raw bytes",
+      "LP16_ASCII": "U16BE(byteLength)||strict-US-ASCII; bounded by field maximum and 65535",
+      "LP16_UTF8": "U16BE(byteLength)||canonical-UTF-8; SQLite text; strict CAST-as-BLOB decode; exact re-encode; no U+0000/unpaired surrogate/normalization",
+      "N(T)": "U8(0) for null or U8(1)||T for present",
+      "BOOLEAN": "U8(0|1)"
+    },
+    "boundsBytes": {
+      "protocol": 96,
+      "candidate": 64,
+      "sourceOrPath": 512,
+      "artifactRole": 64,
+      "observedState": 64,
+      "decision": 64,
+      "diagnosticBranch": 64,
+      "terminal": 64,
+      "certainty": 64,
+      "stage": 64,
+      "classification": 64
+    },
+    "unknownEnumsOrNonCanonicalEncodingsRejected": true,
+    "oracleIdentitySha256": "SHA256(LP16_ASCII(\"DORA_REC_STREAM_ORACLE_V4\",96)||LP16_ASCII(protocolId,96)||LP16_ASCII(candidateId,64)||RUN_ID||U64BE(A)||oraclePlaintextSha256)",
+    "controllerSnapshotSha256": "SHA256(LP16_ASCII(\"DORA_REC_STREAM_SNAPSHOT_V4\",96)||LP16_ASCII(protocolId,96)||LP16_ASCII(candidateId,64)||RUN_ID||U64BE(checkpointGeneration)||checkpointIdentity||U64BE(P)||U64BE(checkpointContextEnd)||oracleIdentitySha256||U64BE(A)||oraclePlaintextSha256||U64BE(S)||preFaultSourceSha256)",
+    "sourceWitnessId": "SHA256(LP16_ASCII(\"DORA_REC_STREAM_WITNESS_V4\",96)||LP16_ASCII(protocolId,96)||LP16_ASCII(candidateId,64)||RUN_ID||U64BE(checkpointGeneration)||checkpointIdentity||U64BE(P)||U64BE(checkpointContextEnd)||oracleIdentitySha256||U64BE(A)||oraclePlaintextSha256||U64BE(S)||preFaultSourceSha256||controllerSnapshotSha256)",
+    "rejectedObservationSha256": "SHA256(LP16_ASCII(\"DORA_REC_STREAM_REJECTED_OBSERVATION_V4\",96)||LP16_ASCII(protocolId,96)||LP16_ASCII(candidateId,64)||RUN_ID||checkpointIdentity||sourceWitnessId||U64BE(E)||observedSourceSha256||U64BE(rejectedCandidateEnd)||rejectedCompletedPlaintextSha256||rejectedOraclePrefixSha256||U8(rejectedOraclePrefixEqual)||U64BE(rejectedComparedEnd)||N(U64BE(rejectedFirstMismatchOffset))||N(rejectedEqualPrefixSha256[32])||N(U8(rejectedExpectedOracleByte))||N(U8(rejectedObservedPlaintextByte))||U64BE(rejectedObservedTailLossBytes)||LP16_ASCII(rejectedBoundaryResult,64)||N(U64BE(rejectedBoundaryBytes)))",
+    "checkpointIdentity": {
+      "domain": "DORA_REC_STREAM_CHECKPOINT_V4",
+      "orderedFields": [
+        "protocolId",
+        "candidateId",
+        "RUN_ID",
+        "generation",
+        "q",
+        "q*4096",
+        "prefixSha256",
+        "C",
+        "checkpointRelativeName",
+        "checkpointBytes",
+        "checkpointSha256",
+        "checkpointEnvelopeRelativeName",
+        "checkpointEnvelopeBytes",
+        "checkpointEnvelopeSha256",
+        "streamRelativeName",
+        "streamEnvelopeRelativeName",
+        "streamEnvelopeBytes",
+        "streamEnvelopeSha256",
+        "previousCheckpointSha256"
+      ],
+      "exactFormulaLocation": "docs/adr/ADR-0005-poc-recovery-streaming-persistence-and-range-quarantine.md#exact-binary-encodings"
+    },
+    "outcomeId": {
+      "domain": "DORA_REC_STREAM_OUTCOME_V4",
+      "order": "exact recovery_stream_outcome_v4 table-column order excluding outcome_id and state",
+      "includesEveryRejectedField": true,
+      "includesRejectedObservationSha256": true,
+      "includesRequiredRangeStartAndCertainty": true,
+      "nullableInteger": "N(U64BE)",
+      "nullableEqualityOrByte": "N(U8)",
+      "nullableHash": "N(SHA256)",
+      "nullableEnum": "N(LP16_ASCII)",
+      "emptySubstitutesForNull": false
+    },
+    "rangeIntentId": {
+      "domain": "DORA_REC_STREAM_RANGE_V4",
+      "orderedFields": [
+        "protocolId",
+        "candidateId",
+        "RUN_ID",
+        "outcomeId",
+        "outcomeDecision",
+        "outcomeBranch",
+        "outcomeTerminal",
+        "outcomeClassification",
+        "sourceRelativeName",
+        "E",
+        "sourceSha256",
+        "rangeStart",
+        "rangeEnd",
+        "rangeSha256",
+        "boundaryCertainty",
+        "RETAINED_IN_PLACE_DENY_APP_READS"
+      ]
+    },
+    "migrationDigest": {
+      "domain": "DORA_RECOVERY_QMIG_V3_V4",
+      "formula": "SHA256(domain||U64BE(rowCount)||for each row ORDER BY intent_id ASC using SQLite BLOB byte order: U32BE(rowEncodingLength)||rowEncoding)",
+      "rowEncodingOrder": [
+        "intent_id[32]",
+        "run_id",
+        "candidate_id",
+        "bootstrap_binding",
+        "nullable bootstrap_run_id",
+        "nullable bootstrap_candidate_id",
+        "artifact_role",
+        "observed_state",
+        "source_relative_name",
+        "destination_relative_name",
+        "source_bytes",
+        "source_sha256[32]",
+        "state"
+      ],
+      "textEncoding": "LP16_UTF8 with exact field bounds",
+      "sourceAndDestinationIndependent": true,
+      "countDigestAndEveryCopiedValueMustMatchBeforeV3Drop": true
+    }
   }
 }

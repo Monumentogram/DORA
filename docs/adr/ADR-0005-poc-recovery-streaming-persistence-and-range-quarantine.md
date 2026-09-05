@@ -630,6 +630,255 @@ WAL, foreign keys, the shared helper, `synchronous=FULL`, `wal_autocheckpoint=0`
 `beginTransactionNonExclusive()` remain selected. A future implementation must verify their
 effective Android behavior; these settings are not current durability proof.
 
+## Exact binary encodings
+
+All identity encodings are versioned, bounded and big-endian. `U8` is one unsigned byte. `U16BE`,
+`U32BE` and `U64BE` are fixed-width unsigned integers. Runtime values must be representable in
+signed Kotlin/SQLite types before conversion. `SHA256` is exactly 32 raw bytes. `RUN_ID` is exactly
+16 raw bytes. `LP16_ASCII(x,max)` is `U16BE(byteLength)||strict-US-ASCII`, with length at most both
+`max` and 65,535. `LP16_UTF8(x,max)` is `U16BE(byteLength)||canonical-UTF-8`: require database
+encoding UTF-8, SQLite `typeof(x)='text'`, strict decoding of `CAST(x AS BLOB)` without replacement,
+no unpaired surrogate or U+0000, and byte-for-byte equality after re-encoding; no Unicode
+normalization is applied. `N(T)` is `U8(0)` for null or `U8(1)||T` for present. Booleans are
+`U8(0|1)`. Unknown enums and non-canonical encodings are rejected. Identity preimages are capped
+at 4,096 bytes.
+
+Bounds are: protocol 96 bytes; candidate 64; source/path 512; artifact role, observed state,
+decision, diagnostic branch, terminal, certainty, stage and classification 64 each. Hash the following exact
+concatenations:
+
+```text
+oracleIdentitySha256 = SHA256(
+  LP16_ASCII("DORA_REC_STREAM_ORACLE_V4",96) || LP16_ASCII(protocolId,96) ||
+  LP16_ASCII(candidateId,64) ||
+  RUN_ID || U64BE(A) || oraclePlaintextSha256)
+
+controllerSnapshotSha256 = SHA256(
+  LP16_ASCII("DORA_REC_STREAM_SNAPSHOT_V4",96) || LP16_ASCII(protocolId,96) ||
+  LP16_ASCII(candidateId,64) || RUN_ID || U64BE(checkpointGeneration) ||
+  checkpointIdentity || U64BE(P) || U64BE(checkpointContextEnd) ||
+  oracleIdentitySha256 || U64BE(A) || oraclePlaintextSha256 || U64BE(S) ||
+  preFaultSourceSha256)
+
+sourceWitnessId = SHA256(
+  LP16_ASCII("DORA_REC_STREAM_WITNESS_V4",96) || LP16_ASCII(protocolId,96) ||
+  LP16_ASCII(candidateId,64) || RUN_ID || U64BE(checkpointGeneration) ||
+  checkpointIdentity || U64BE(P) || U64BE(checkpointContextEnd) ||
+  oracleIdentitySha256 || U64BE(A) || oraclePlaintextSha256 || U64BE(S) ||
+  preFaultSourceSha256 || controllerSnapshotSha256)
+
+rejectedObservationSha256 = SHA256(
+  LP16_ASCII("DORA_REC_STREAM_REJECTED_OBSERVATION_V4",96) ||
+  LP16_ASCII(protocolId,96) || LP16_ASCII(candidateId,64) || RUN_ID ||
+  checkpointIdentity || sourceWitnessId || U64BE(E) || observedSourceSha256 ||
+  U64BE(rejectedCandidateEnd) || rejectedCompletedPlaintextSha256 ||
+  rejectedOraclePrefixSha256 || U8(rejectedOraclePrefixEqual) ||
+  U64BE(rejectedComparedEnd) || N(U64BE(rejectedFirstMismatchOffset)) ||
+  N(rejectedEqualPrefixSha256[32]) || N(U8(rejectedExpectedOracleByte)) ||
+  N(U8(rejectedObservedPlaintextByte)) || U64BE(rejectedObservedTailLossBytes) ||
+  LP16_ASCII(rejectedBoundaryResult,64) || N(U64BE(rejectedBoundaryBytes)))
+```
+
+`checkpointIdentity` is SHA-256 of, in this order:
+
+```text
+LP16_ASCII("DORA_REC_STREAM_CHECKPOINT_V4",96), LP16_ASCII(protocolId,96),
+LP16_ASCII(candidateId,64), RUN_ID,
+U64BE(generation), U64BE(q), U64BE(q*4096), prefixSha256, U64BE(C),
+LP16_ASCII(checkpointRelativeName,512), U64BE(checkpointBytes), checkpointSha256,
+LP16_ASCII(checkpointEnvelopeRelativeName,512), U64BE(checkpointEnvelopeBytes), checkpointEnvelopeSha256,
+LP16_ASCII(streamRelativeName,512), LP16_ASCII(streamEnvelopeRelativeName,512), U64BE(streamEnvelopeBytes),
+streamEnvelopeSha256, previousCheckpointSha256
+```
+
+`outcomeId` is SHA-256 of, in exact table-column order excluding `outcome_id` and `state`, with a
+leading `LP16_ASCII("DORA_REC_STREAM_OUTCOME_V4",96)||LP16_ASCII(protocolId,96)`. This includes
+every rejected-observation field, `rejected_observation_sha256`, `required_range_start` and
+`required_range_certainty`. Every nullable outcome integer uses `N(U64BE)`, except the nullable
+equality and byte-value columns use `N(U8)`; nullable hashes use `N(SHA256)` and nullable enums use
+`N(LP16_ASCII)`. No empty value substitutes for null. Before insert, the controller recomputes the
+rejected-observation digest, then computes `outcomeId`; exact readback and every collision
+comparison compare every table column byte-for-byte, including these fields.
+
+`rangeIntentId` is SHA-256 of:
+
+```text
+LP16_ASCII("DORA_REC_STREAM_RANGE_V4",96), LP16_ASCII(protocolId,96),
+LP16_ASCII(candidateId,64), RUN_ID, outcomeId, LP16_ASCII(outcomeDecision,64),
+LP16_ASCII(outcomeBranch,64), LP16_ASCII(outcomeTerminal,64),
+LP16_ASCII(outcomeClassification,64),
+LP16_ASCII(sourceRelativeName,512), U64BE(E), sourceSha256, U64BE(rangeStart),
+U64BE(rangeEnd), rangeSha256, LP16_ASCII(boundaryCertainty,64),
+LP16_ASCII("RETAINED_IN_PLACE_DENY_APP_READS",64)
+```
+
+The v3-to-v4 copy digest uses streaming SHA-256, source and destination independently:
+
+```text
+SHA256(
+  LP16_ASCII("DORA_RECOVERY_QMIG_V3_V4",96) || U64BE(rowCount) ||
+  for each row ORDER BY intent_id ASC using SQLite BLOB byte order:
+    U32BE(rowEncodingLength) || rowEncoding
+)
+```
+
+Each `rowEncoding`, in v3 column order, is:
+
+```text
+intent_id[32] || LP16_UTF8(run_id,64) || LP16_UTF8(candidate_id,64) ||
+LP16_UTF8(bootstrap_binding,16) || N(LP16_UTF8(bootstrap_run_id,64)) ||
+N(LP16_UTF8(bootstrap_candidate_id,64)) || LP16_UTF8(artifact_role,64) ||
+LP16_UTF8(observed_state,64) || LP16_UTF8(source_relative_name,512) ||
+LP16_UTF8(destination_relative_name,512) || U64BE(source_bytes) ||
+SHA256(source_sha256) || LP16_UTF8(state,16)
+```
+
+Both source and destination digest passes use the exact `LP16_UTF8` column encoding and bounds
+above. A DDL-valid non-ASCII v3 TEXT value is accepted when it is canonical UTF-8 and within its
+column bound; its exact Unicode scalar sequence is copied without normalization. An invalid,
+over-bound, NUL-containing or non-canonical value rejects during the read-only preflight before
+the first schema mutation. Source and destination counts, digests and every copied SQLite value
+must match before v3 is dropped.
+
+## Sealed controller outcomes and evidence
+
+The public Kotlin boundary is a closed sealed hierarchy:
+
+```text
+PersistenceReceipt(outcomeId, optionalRangeIntentId, replayed)
+ExistingEvidenceReference(recordKind, existingId, existingIdentitySha256)
+RejectedObservation(candidateEnd, completedPlaintextSha256, oraclePrefixSha256,
+                    oraclePrefixEqual, comparedEnd, firstMismatchOffset?,
+                    equalPrefixSha256?, expectedOracleByte?, observedPlaintextByte?,
+                    observedTailLossBytes, boundaryResult, boundaryBytes?,
+                    rejectedObservationSha256)
+
+PersistedValid(receipt, A, C, R, terminal)
+Retry(stage, classification, safeExceptionType, attemptedOutcomeId?, attemptedRangeId?,
+      existingEvidenceReferences=[])
+Rejected(stage, classification, diagnosticBranch?, checkpointIntersectionProven,
+         provenCheckpointEnd?, rejectedObservation?, newPersistenceReceipt?,
+         existingEvidenceReferences=[])
+Fatal(stage, classification, diagnosticBranch?, checkpointIntersectionProven,
+      provenCheckpointEnd?, rejectedObservation?, newPersistenceReceipt?,
+      existingEvidenceReferences=[])
+```
+
+`RejectedObservation` is an internal typed value and is non-null exactly for persisted
+`POST_INTERSECTION`; it is null for valid, pre-intersection and every non-persistable result. Its
+candidate end is explicitly rejected and cannot be accessed through the admitted-R property.
+`PersistenceReceipt` exists only after exact committed readback. `ExistingEvidenceReference`
+always names a pre-existing row and never implies that the current failure was inserted. Attempted
+IDs on `Retry` are deterministic lookup keys with unknown/absent commit status, not persistence
+receipts.
+
+Their behavior is fixed:
+
+| Outcome | SQLite behavior | Evidence behavior |
+|---|---|---|
+| `PersistedValid` | Insert one `VALID` outcome and its non-empty exact range in one transaction. On exact replay, insert nothing and return exact stored IDs. | Emit sanitized at-least-once event only after successful commit/readback: IDs, A/C/R, derived counts, terminal, range offsets/certainty and enum fields. Exclude returned plaintext digest publicly. |
+| `Retry` | Insert no new outcome/range. Used only for operational failure or an ambiguous commit whose exact readback finds neither intended row and cannot prove rollback. | Emit attempted IDs as unknown lookup keys, never receipts. No success, ACTIVE or durable-state claim. |
+| `Rejected` | Persist only the matrix's post-intersection `STREAM_TAIL_BOUND_EXCEEDED` row and its rejected observation. An authentication failure inserts its exact range only for `B(candidateR)<E`; exact equality inserts no range child and has null required-range fields. Other rejected classifications are non-persistable. | A persisted post-intersection rejection emits proven C, a sanitized observation-present/boundary-result marker and no R. Non-persistable rejection has null receipt and no ACTIVE claim. |
+| `Fatal` | Persist only the three pre-intersection and three post-intersection FATAL matrix rows when their parent/source, rejected-observation and atomic range prerequisites hold. Split brain, identity/unique/range collision, journal structural state and changed replay source never insert a new fatal row/range. | Pre-intersection receipt emits contextual endpoint with `checkpointIntersectionProven=false`; post-intersection receipt emits proven C, a sanitized observation marker and `true`; neither emits R. Collision/split-brain evidence contains only tagged pre-existing references. |
+
+Raw exception messages, paths, plaintext, keys, keysets, ciphertext bytes, raw database/WAL files,
+device identifiers, `returned_plaintext_sha256`, both rejected plaintext digests, the equal-prefix
+digest, mismatch offset, expected byte and observed byte are excluded from public evidence. Safe
+exception type is an allowlisted short class enum, not arbitrary text.
+
+## Transaction, replay and collision rules
+
+Checkpoint publication retains SCHK-01 through SCHK-13. SCHK-01 fsyncs the open append-only stream
+descriptor. Checkpoint envelope and checkpoint ciphertext use the selected file/directory fsync
+sequence. SCHK-11 inserts the exact checkpoint. Only successful return of SCHK-12
+`endTransaction()` creates semantic `C`; SCHK-13 is evidence.
+
+Recovery mutates no file or directory. After a valid read or matrix-persistable diagnostic,
+one `beginTransactionNonExclusive()` inserts outcome first and its matrix-required non-empty range
+second. PRE_INTERSECTION failures require `[0,E)` when `E>0`; POST_INTERSECTION range rules are
+classification/terminal-specific, and EOF never has a range. A missing required range or a child
+range where the matrix requires none aborts the transaction. Exact tail authentication equality
+`B(candidateR)=E` is the required no-range form, not a missing range error.
+Successful `endTransaction()` return plus exact readback seals the outcome and activates denial.
+There is no filesystem fsync because no directory entry or file content changes. This is an SQLite
+journal ordering claim, not device power-loss proof.
+
+Before insertion, compute the intended outcome/range IDs. On any insert/unique/commit ambiguity
+while holding the lease:
+
+1. Query by `outcome_id`, then by the unique witness tuple.
+2. Recompute the oracle-prefix digest and expected mismatch byte/equal-prefix digest from the
+   already validated controller oracle; recompute `rejectedObservationSha256` and `outcomeId`;
+   then compare every column, including blobs, rejected observations, required range fields and
+   nulls, in table order.
+3. If an exact intended outcome exists, query its range and compare the matrix-required presence
+   (including zero children for `B(candidateR)=E`) and every column/hash. Exact complete state is idempotent replay and returns the existing
+   `PersistenceReceipt(replayed=true)`.
+4. If neither intended ID nor unique witness/source tuple exists after an unresolved commit,
+   return `Retry/JOURNAL_COMMIT_STATE_UNRESOLVED`. Attempted IDs are not existing references.
+5. Same outcome ID with different bytes, or same witness tuple with another outcome ID, returns
+   non-persistable `Fatal/JOURNAL_ATTEMPT_CONFLICT`. Roll back the current transaction. Read and
+   return the pre-existing conflicting outcome ID only as `ExistingEvidenceReference`.
+6. Same range ID with different bytes, same source-range tuple with another ID, required range
+   missing from a pre-existing outcome, or an unexpected range (including any child for the
+   exact-empty tail form) returns non-persistable
+   `Fatal/STREAM_RANGE_QUARANTINE_COLLISION` or `JOURNAL_STRUCTURAL`. Roll back any current
+   transaction and reference only the pre-existing outcome/range IDs. Never insert a replacement
+   fatal row or range through the conflicted keys.
+7. A proven framework rollback with no row returns the original non-persistable semantic outcome;
+   an operational error without commit ambiguity returns `Retry/JOURNAL_OPERATIONAL`.
+
+This replay is deliberately hash-only. It rehashes the exact frozen source, revalidates the
+checkpoint and controller witness, rechecks the persisted observation's deterministic digest,
+oracle-side witness, class arithmetic and range, and returns the same IDs. It does not rerun public
+Tink and therefore does not independently re-observe the historical completed-candidate digest or
+observed mismatch byte. The sealed row proves integrity and idempotent identity of the recorded
+observation, not a second cryptographic execution of the failed read.
+
+Checkpoint split brain is detected before a unique validated parent can be selected. It returns
+non-persistable `Fatal/STREAM_CHECKPOINT_SPLIT_BRAIN` with readable conflicting checkpoint IDs as
+evidence references and cannot insert an outcome/range FK child.
+
+Whole-object quarantine keeps ADR-0004 Q01 intent commit, Q02 no-overwrite rename, Q03 source-dir
+fsync, Q04 destination-dir fsync, Q05 completion commit. Range quarantine never invokes Q01-Q05
+and does not call itself `COMPLETED`; its only v4 state is `ACTIVE`.
+
+## Journal-enforced read denial
+
+`ACTIVE` is a policy enforced by cooperating app code, not an OS access-control primitive. Every
+eligible app open of `stream/stream.ct`—recovery, replay, inspection and any later consumer—must
+use one gateway and this order:
+
+1. acquire the shared run lease and retain it for the descriptor's entire lifetime;
+2. validate exact journal schema and run/checkpoint identity;
+3. query `ACTIVE` ranges for the run/candidate/path before opening;
+4. if none exists, open the bounded attempt normally;
+5. if a range exists, deny any normal open that may read an interval intersecting it;
+6. for exact replay only, a privileged verifier may open under the same lease, `fstat`, hash
+   exactly `[0,E)`, close, compare with the sealed source identity, and return stored metadata. It
+   may not invoke public Tink or return source bytes;
+7. a size/hash mismatch returns `STREAM_SOURCE_IDENTITY_CHANGED` and never replaces the sealed row.
+
+No cached journal decision may authorize an open. A descriptor opened before range commit is safe
+only if all compliant code holds the same lease through its reads and the committing attempt; tests
+must prove the gateway cannot release that lease early. A descriptor opened outside the gateway
+can bypass the policy. Another process does not share the in-memory run lease, and schema v4 adds
+no kernel file lock or OS deny rule. Therefore the v4 guarantee is single-process, cooperating-app
+journal enforcement. Cross-process, external debugger/root access and stale foreign descriptors
+are outside the PoC guarantee and remain preflight/design work.
+
+Range retirement, deletion, compaction, physical suffix extraction and a controlled future
+consumer that might need quarantined lookahead are deferred. Any retirement requires a new ADR,
+forward schema migration and exact crash/replay contract. Version 4 exposes no retirement method.
+
+## Processing-intent prohibition
+
+This slice creates no streaming processing-intent table, calls no processing-intent calculator,
+and enqueues nothing. All v4 outcome rows CHECK the three adoption flags are zero. `R>C` is
+authenticated recovery accounting only. A later consuming-reconciliation ADR must define how it
+obtains plaintext again, whether controlled lookahead access is allowed, its stable identity and
+exact result/checkpoint foreign keys. It may not infer meaning from a range or unauthenticated byte.
+
 ## Consequences and verification
 
 All v0.1-v0.6 artifacts remain byte-identical audit history. The v0.7 Gate Set and protocol inherit the v0.6 Markdown/Gate/protocol hashes `5ab6d105fe6c94868d77c25d1be065a1688ccb083fcbdc0c3f43096e73909063`, `6a5f1f994e5084836527fded9bdf762ac1ed982cb5022b6da64090a283717755`, and `9108cbffc3dc74a0e2a45868bf0c82b3827cb1e9023e1f0f12c53e7374c07a3d` and enumerate only their explicit streaming-persistence overrides.
