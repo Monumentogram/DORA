@@ -230,3 +230,10 @@ These are not Ready until their stage dependencies pass.
 - status/backlog/DEC/ADR updated when outcome changes truth;
 - user/manual truth is never overwritten by a model result;
 - no merge to `main` from the current task unless the owner explicitly scopes that merge.
+
+
+## REC-I3 streaming persistence governance amendment — 6 September 2026
+
+Owner-confirmed `DEC-046`, accepted ADR-0005, and prospective Gate Set/protocol v0.7 pin the exact streaming persistence contract to combined baseline `3c63ab09874f4d089e4363985aa8b5c99900c122` / tree `718eae8d8d619d17c25ac9d025e0e24db3d52f9e`. The governance candidate adds schema-v4 migration, checkpoint/source-witness, sealed outcome/rejected-observation, exact/conservative ACTIVE retained-range, hash-only replay, K12-PERSISTENCE, and TRU-03 stream semantics only as a contract. It preserves the 46/184/138/120 campaign counts, keeps K12-CONSUMER deferred, and changes no v0.1-v0.6 artifact.
+
+Persistence source remains blocked until this exact eight-file governance commit receives an independent CLEAN review. `POC-RECOVERY-001` remains `BLOCKED / NOT_READY`; all ten active blockers remain open and `REC-RDY-02` remains historically closed. No device/emulator execution, Recovery preflight, process-death/fault/measured campaign, durability claim, PASS/READY, dependency/production admission, consumer intent, cross-process guarantee, retirement, or merge follows.

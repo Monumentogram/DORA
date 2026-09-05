@@ -806,3 +806,78 @@ Crosswalk: `OD-01` → `DEC-003`/`DEC-004`; `OD-02` → `DEC-002`/`DEC-027`; `OD
 ## Decision update rule
 
 Изменение статуса выполняется отдельным PR с owner, датой, evidence/ADR и влиянием на backlog. `Approved` решение не переписывается задним числом: замена получает `Superseded` и ссылку на новый DEC/ADR. Изменение runtime/product behavior без обновления этого реестра запрещено.
+
+
+## DEC-046. POC recovery streaming persistence and retained-range quarantine
+
+Status: Approved\
+Priority: P0\
+Decision date: 2026-09-06\
+Approved by: Project owner\
+Scope: bounded synthetic, non-metric Stage 0 REC-I3 governance and the separately gated persistence implementation under OD-15\
+Baseline: `3c63ab09874f4d089e4363985aa8b5c99900c122` / tree `718eae8d8d619d17c25ac9d025e0e24db3d52f9e`\
+Decision packet: `rec-i3-streaming-persistence-adr-proposal-successor-v5.md`, SHA-256 `9f8e3a6e4d20faf0d744310b83ca46bd34d5c6798785e1197e6b61fb8ae81011`\
+Decision record: `docs/adr/ADR-0005-poc-recovery-streaming-persistence-and-range-quarantine.md`\
+Gate Set/protocol: `poc-recovery-stage0-v0.7` / `poc-recovery-protocol-stage0-v0.7`
+
+The Project owner confirms the corrected ADR-0005 decision for bounded Stage 0 REC-I3. Schema
+version 4 preserves the exact v1/v2 journal objects, migrates valid v3 whole-object quarantine
+rows byte-for-byte into the specified v4 table, and adds the exact checkpoint, sealed-outcome
+and retained-range tables and index in this packet. The pre-fault controller witness binds the
+plaintext oracle identity and A plus exact source S/digest and checkpoint prefix P. A VALID
+result and proven C require a cryptographically validated checkpoint artifact, P<=S<=E, and
+exact hashes of `[0,P)` and `[0,S)` from the same opened descriptor. PRE_INTERSECTION diagnostic
+rows are limited to source truncation, checkpoint prefix outside S, and prefix-identity mismatch;
+they store UNPROVEN_OR_MISMATCH, CONTEXT_ONLY and NOT_REACHED, assert neither C nor R, and retain
+`[0,E)` conservatively when non-empty. POST_INTERSECTION diagnostic rows are limited to oracle
+mismatch, recovered-below-checkpoint, unproved B, and tail-bound exceeded; they preserve
+VERIFIED_SAME_DESCRIPTOR, PROVEN, proven C and the exact completed-read/authentication-failure/
+authenticated-EOF terminal, admit no R, and use only the classification-specific range in this
+packet: oracle mismatch is Fatal/COMPLETED_READ_REJECTED with whole-source range;
+recovered-below-checkpoint is Fatal with authentication-failure whole-source range or EOF no
+range; unproved B is Fatal/AUTHENTICATION_FAILURE with proven-checkpoint superset or whole-source
+fallback; tail-bound exceeded is Rejected with an authentication-failure exact B range only when
+B<E, no range when B=E, or EOF no range. Every POST_INTERSECTION row stores a rejected observation distinct from admitted R:
+candidateR, completed-candidate and same-extent oracle-prefix SHA-256, equality and compared
+extent, A-candidateR, typed boundary result/bytes, and a rejected-observation SHA-256. Oracle
+mismatch additionally stores the first mismatch offset, equal-prefix SHA-256 and distinct
+expected/observed bytes; equality classes require those mismatch fields null. Below-checkpoint
+requires candidateR<C. Unproved-boundary requires candidateR>=C and exactly a non-canonical
+candidate or canonical B(candidateR)>E. Tail rejection requires candidateR>=C, candidateR<=A,
+oracle equality and A-candidateR>8160. Its authentication-failure boundary is exact
+B(candidateR)<=E: when B(candidateR)<E, the required active range begins at B(candidateR);
+when B(candidateR)=E, the remainder is empty, required-range fields are null and no range row
+exists, while the SEALED REJECTED outcome and its rejected observation persist. EOF records a
+not-applicable boundary and no range. The required range
+start/certainty is part of the parent outcome and its composite range foreign key. All rejected
+fields enter rejectedObservationSha256, outcomeId, exact readback and collision comparison;
+recovered_end remains null. Public evidence excludes plaintext digests, mismatch offset and byte
+values. The persisted stage is STREAM_CHECKPOINT only for prefix-outside-witness,
+STREAM_SOURCE_EXTENT for pre-intersection truncation/prefix mismatch, and
+STREAM_PAYLOAD_DECRYPT for every post-intersection class. E<S verifies the controller-held witness fields and exact current `[0,E)` identity, then
+follows PRE_INTERSECTION. A failure without the matrix's persistable prerequisites creates no
+row/range and makes no durable-denial claim. Checkpoint missing/invalid/split-brain and
+identity/unique/range collisions are non-persistable Fatal results; readable conflicting IDs are
+evidence references to pre-existing records only, never receipts for a new fatal row/range.
+Exact complete readback is idempotent hash-only replay: it revalidates the source, witness,
+oracle-side rejected fields, observation/class arithmetic, range and IDs without rerunning Tink
+or independently re-observing the historical returned bytes. An unresolved ambiguous commit
+with no exact intended state returns Retry. Bounded `[S,E)` may influence public
+Tink only as untrusted lookahead; no ciphertext temporal provenance is claimed. R contains only
+completed public-authenticated reads exactly equal to the pre-fault oracle with R<=A. C never
+advances and no metadata, semantic commit or processing intent is adopted. On authentication
+failure the exact remainder is `[B(R),E)` using the frozen segment formula; an empty exact
+remainder creates no range row but remains a sealed diagnostic; unprovable boundaries
+create no valid result and use an explicitly conservative active denial range. Authenticated EOF
+has no remainder. The authenticated prefix stays in the same file without copy, rename,
+truncation, overwrite or deletion. ACTIVE range enforcement is limited to cooperating app opens
+under the shared single-process run lease; retirement is deferred. The owner-selected synthetic
+cap is E-S<=8,192 with maximum E=115,662,848 and one-over rejection; it does not change the
+8,160-byte/0.255-second plaintext gate. A prospective v0.7 must explicitly replace the
+REC-STREAM-TINK K12 seed/expectation and TRU-03 expectation exactly as specified, split current
+persistence from later K12 consumer intent, preserve 46 unique IDs, Phase A at exactly 184
+injections, full physical at exactly 138 injections, and 120 base hard-kill attempts per
+candidate, while inheriting every other v0.6 semantic by exact hash. This confirmation grants no device, campaign,
+production, dependency, processing, cross-process, retirement, push, PR or merge authority.
+
+This exact confirmation was supplied by the Project owner after the v5 packet received a CLEAN independent advisory review. The exact governance commit must receive a separate CLEAN review before any persistence source mutation. The current OD-15 REC-I3 implementation/non-metric/conditional-merge overlay remains the source of implementation authority; this decision does not elevate any execution or admission flag.

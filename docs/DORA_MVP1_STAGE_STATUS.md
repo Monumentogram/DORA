@@ -541,3 +541,10 @@ Current Pull Request state is never a static document invariant; use live GitHub
 ## Update protocol
 
 Every later task updates this file only when stage truth changes. Live PR/build status remains authoritative in GitHub and should not be copied as a stale badge or hard-coded run ID here.
+
+
+## REC-I3 streaming persistence governance amendment — 6 September 2026
+
+The Project owner confirmed the exact v5 streaming-persistence package, recorded as `DEC-046`. Accepted ADR-0005 and prospective Gate Set/protocol v0.7 are pinned to combined baseline `3c63ab09874f4d089e4363985aa8b5c99900c122` / tree `718eae8d8d619d17c25ac9d025e0e24db3d52f9e` and define schema v4, same-descriptor `P<=S<=E` proof, sealed outcomes, rejected observations, exact/conservative ACTIVE retained ranges, hash-only replay, K12-PERSISTENCE, and the TRU-03 stream override. K12-CONSUMER remains deferred. All v0.1-v0.6 artifacts and the exact 46/184/138/120 counts remain unchanged.
+
+This is governance truth only until the exact eight-file commit receives an independent CLEAN review. The current OD-15 implementation/non-metric/conditional-merge overlay remains unchanged; all campaign/execution/admission flags remain false. `POC-RECOVERY-001` remains `BLOCKED / NOT_READY`, all ten active blockers remain open, and `REC-RDY-02` remains historically closed. No source implementation, device/emulator/preflight, real process death, hard-kill/fault/Phase A/measured campaign, physical durability evidence, PASS/READY, dependency/production admission, processing intent, cross-process denial, retirement, or merge is claimed.

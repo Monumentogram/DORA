@@ -1,0 +1,924 @@
+{
+  "schemaVersion": 7,
+  "protocolId": "poc-recovery-protocol-stage0-v0.7",
+  "pocId": "POC-RECOVERY-001",
+  "status": "OWNER_CONFIRMED_STREAMING_PERSISTENCE_GOVERNANCE_SOURCE_REQUIRES_CLEAN_GOVERNANCE_REVIEW_EXECUTION_BLOCKED",
+  "gateSetLocator": "docs/stage0/poc-recovery-gate-set-stage0-v0.7.json",
+  "normativeMarkdown": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_7.md",
+  "executionAllowed": false,
+  "implementationAllowed": false,
+  "inheritsExactV05Contract": {
+    "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.5.json",
+    "sha256": "9b469562aa8deff2f94402b6fe5093fb832d76ec48f5ef0fd081b76b322c3e9c",
+    "allUnchangedSemanticsInherited": true,
+    "overriddenSections": [
+      "active identity and metadata",
+      "active effective fault matrix",
+      "effective KEY-04 oracle"
+    ],
+    "disposition": "INCORPORATED_BY_IMMUTABLE_REFERENCE_AND_SUPERSEDED_AS_STANDALONE_EXECUTION_INPUT"
+  },
+  "historicalProtocolV03": {
+    "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.3.json",
+    "sha256": "376c6bec9d6632ff0824465ee890f953445c0843716b8a1b3a044f322d03a0c9",
+    "immutable": true,
+    "historicalKey04Changed": false,
+    "historicalRowsParticipateAsAdditionalActiveRows": false
+  },
+  "canonicalKeyTaxonomyV06": {
+    "uniqueClassifications": [
+      "KEY_REF_COLLISION",
+      "INCOMPLETE_KEY_BOOTSTRAP",
+      "KEY_CONFIRMATION_MISSING",
+      "CORRUPT_KEY_CONFIRMATION",
+      "KEY_UNAVAILABLE",
+      "KEY_UNAVAILABLE_KEY_MISMATCH",
+      "CORRUPT_KEY_ENVELOPE",
+      "KEY_ENVELOPE_AUTH_FAILURE"
+    ],
+    "uniqueClassificationCount": 8,
+    "newRunCreation": {
+      "mustExecuteBeforeCreatingRun": true,
+      "occupiedNamespacesChecked": [
+        "canonical Android Keystore alias",
+        "mandatory key-reference namespace",
+        "key-confirmation/run.kc.tmp",
+        "key-confirmation/run.kc"
+      ],
+      "anyOccupiedClassification": "KEY_REF_COLLISION",
+      "overwriteOrReplacementAllowed": false
+    },
+    "recoveryReconciliationAlgorithm": [
+      {
+        "step": 1,
+        "condition": "durable run row is absent and an alias and/or key-confirmation temp/final remains after interrupted bootstrap",
+        "classification": "INCOMPLETE_KEY_BOOTSTRAP",
+        "evidenceRule": "record exact absent, temp-only or final-orphan state as subtype/evidence without changing the classification"
+      },
+      {
+        "step": 2,
+        "condition": "durable run row exists but key-confirmation final is absent",
+        "classification": "KEY_CONFIRMATION_MISSING"
+      },
+      {
+        "step": 3,
+        "condition": "key-confirmation final exists but exact path, type, recorded ciphertext length or recorded ciphertext SHA-256 does not match",
+        "classification": "CORRUPT_KEY_CONFIRMATION",
+        "decryptAllowed": false
+      },
+      {
+        "step": 4,
+        "condition": "exact stored ciphertext identity passed but the Android Keystore alias is absent, invalidated or unusable",
+        "classification": "KEY_UNAVAILABLE"
+      },
+      {
+        "step": 5,
+        "condition": "all eight effective KEY-04 preconditions hold and Aead.decrypt(existingConfirmationCiphertext, exactAad) terminates with authentication/AAD failure",
+        "classification": "KEY_UNAVAILABLE_KEY_MISMATCH",
+        "successfulDecryptAllowed": false,
+        "postDecryptPlaintextMismatchAllowed": false,
+        "replacementKeyAllowed": false
+      },
+      {
+        "step": 6,
+        "condition": "decrypt succeeds but bounded plaintext parser, magic, schema, no-trailing-bytes, protocolId, candidateId, runId or canonicalAliasSha256 validation fails",
+        "classification": "CORRUPT_KEY_CONFIRMATION",
+        "faultRow": "KCF-07",
+        "validationPhase": "POST_DECRYPT_ONLY"
+      },
+      {
+        "step": 7,
+        "condition": "confirmation is fully valid but a mandatory subsequent key reference or key envelope is absent",
+        "classification": "KEY_UNAVAILABLE"
+      },
+      {
+        "step": 8,
+        "condition": "subsequent envelope exists but its length, SHA-256, encoding or parser validation fails",
+        "classification": "CORRUPT_KEY_ENVELOPE"
+      },
+      {
+        "step": 9,
+        "condition": "subsequent envelope is structurally valid but AEAD, AAD or tag verification fails",
+        "classification": "KEY_ENVELOPE_AUTH_FAILURE"
+      }
+    ],
+    "plaintextMagicSchemaParserOrTrailingValidationBeforeDecryptAllowed": false,
+    "ambiguousExpectedOutcomeAllowed": false
+  },
+  "reconciliationV06": {
+    "NO_DURABLE_ROW_WITH_BOOTSTRAP_REMAINDER": "INCOMPLETE_KEY_BOOTSTRAP; retain exact absent/temp-only/final-orphan subtype and evidence; never infer commit or replace the alias",
+    "DURABLE_ROW_MISSING_CONFIRMATION_FINAL": "KEY_CONFIRMATION_MISSING; fail closed and retain evidence",
+    "CONFIRMATION_STORED_IDENTITY_MISMATCH": "CORRUPT_KEY_CONFIRMATION before decrypt; path/type/recorded ciphertext length/SHA-256 checks precede decrypt and a failure forbids decrypt",
+    "CONFIRMATION_ALIAS_ABSENT_INVALIDATED_OR_UNUSABLE": "KEY_UNAVAILABLE; never generate or replace an alias during recovery",
+    "CONFIRMATION_DECRYPT_AUTH_OR_AAD_FAILURE": "KEY_UNAVAILABLE_KEY_MISMATCH only when every effective KEY-04 precondition holds; successful decrypt and post-decrypt plaintext mismatch are forbidden KEY-04 interpretations",
+    "CONFIRMATION_DECRYPTED_PLAINTEXT_INVALID": "CORRUPT_KEY_CONFIRMATION through KCF-07; bounded parser, magic, schema, no-trailing-bytes and all exact identity fields are validated only after successful decrypt",
+    "VALID_CONFIRMATION_MISSING_LATER_KEY_REFERENCE_OR_ENVELOPE": "KEY_UNAVAILABLE",
+    "LATER_ENVELOPE_LENGTH_HASH_ENCODING_OR_PARSER_INVALID": "CORRUPT_KEY_ENVELOPE",
+    "STRUCTURALLY_VALID_LATER_ENVELOPE_AUTH_FAILURE": "KEY_ENVELOPE_AUTH_FAILURE",
+    "TEMP_OR_FINAL_NAMESPACE_COLLISION_DURING_NEW_RUN": "KEY_REF_COLLISION; never overwrite, promote by name or continue publication"
+  },
+  "faultCampaign": {
+    "inheritedV03MandatoryRows": 33,
+    "addedV04KeyConfirmationRows": 12,
+    "addedV05MandatoryRows": 1,
+    "addedV06MandatoryRows": 0,
+    "overriddenV06EffectiveRows": 1,
+    "mandatoryFaultRowCount": 46,
+    "activeEffectiveFaultMatrixV06": {
+      "rowCount": 46,
+      "uniqueIdsRequired": true,
+      "key04OccurrenceCountRequired": 1,
+      "historicalRowsAreAdditionalActiveRows": false,
+      "rows": [
+        {
+          "id": "COR-01",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_0_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "COR-02",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_1_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "COR-03",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_2_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "COR-04",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_3_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "COR-05",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_4_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "COR-06",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_5_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "TRU-01",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_6_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "TRU-02",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_7_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "TRU-03",
+          "effective": true,
+          "effectiveSource": "V0_7_STREAM_RANGE_OVERRIDE_WITH_MICROFILE_V0_3_INHERITED_UNCHANGED",
+          "candidateBranches": {
+            "id": "TRU-03",
+            "microfileBranch": "INHERIT_V0_3_CASE_8_UNCHANGED",
+            "streamBranchSource": "V0_7_STREAM_RANGE_OVERRIDE",
+            "appendBytes": [
+              1,
+              4096,
+              8192
+            ],
+            "afterWitnessFreeze": true,
+            "appliesExactV07Matrix": true,
+            "sourceMutationAllowed": false,
+            "processingIntentCreated": false
+          }
+        },
+        {
+          "id": "KEY-01",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_9_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "KEY-02",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_10_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "KEY-03",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_11_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "KEY-04",
+          "effective": true,
+          "effectiveSource": "V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE",
+          "replacesInheritedHistoricalRow": {
+            "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.3.json",
+            "sha256": "376c6bec9d6632ff0824465ee890f953445c0843716b8a1b3a044f322d03a0c9",
+            "jsonPointer": "/faultCampaign/cases/12",
+            "historicalRowModified": false,
+            "historicalRowActiveInAdditionToThisRow": false
+          },
+          "preconditions": [
+            "A durable run row exists.",
+            "The key-confirmation final exists.",
+            "The key-confirmation path, type, recorded ciphertext length and recorded ciphertext SHA-256 fully match.",
+            "The Android Keystore alias exists and is available through the approved Builder/getAead path.",
+            "The exact confirmation AAD is computed under the active protocol.",
+            "Before recovery, the fault controller replaces the underlying alias key with another valid AEAD key while preserving the previous confirmation ciphertext bytes and their recorded length and SHA-256.",
+            "Recovery does not create or replace the key.",
+            "Aead.decrypt(existingConfirmationCiphertext, exactAad) terminates with an authentication/AAD failure."
+          ],
+          "decryptOutcome": "AUTHENTICATION_OR_AAD_FAILURE_ONLY",
+          "successfulDecryptAllowed": false,
+          "postDecryptParserOrPlaintextMismatchAllowed": false,
+          "expectedClassification": "KEY_UNAVAILABLE_KEY_MISMATCH",
+          "expectedClassificationAlternativesAllowed": false,
+          "forbiddenInterpretations": [
+            "SUCCESSFUL_DECRYPT",
+            "MALFORMED_DECRYPTED_PLAINTEXT",
+            "WRONG_MAGIC_AFTER_SUCCESSFUL_DECRYPT",
+            "WRONG_SCHEMA_AFTER_SUCCESSFUL_DECRYPT",
+            "WRONG_PROTOCOL_ID_AFTER_SUCCESSFUL_DECRYPT",
+            "WRONG_CANDIDATE_ID_AFTER_SUCCESSFUL_DECRYPT",
+            "WRONG_RUN_ID_AFTER_SUCCESSFUL_DECRYPT",
+            "WRONG_CANONICAL_ALIAS_SHA256_AFTER_SUCCESSFUL_DECRYPT",
+            "CIPHERTEXT_PATH_CORRUPTION",
+            "CIPHERTEXT_TYPE_CORRUPTION",
+            "CIPHERTEXT_RECORDED_LENGTH_CORRUPTION",
+            "CIPHERTEXT_RECORDED_SHA256_CORRUPTION",
+            "MISSING_ALIAS",
+            "INVALIDATED_ALIAS",
+            "UNUSABLE_ALIAS"
+          ]
+        },
+        {
+          "id": "KEY-05",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_13_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "KEY-06",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_14_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "KEY-07",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_15_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "SPL-01",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_16_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "SPL-02",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_17_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "SPL-03",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_18_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "SPL-04",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_19_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "SPL-05",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_20_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "RBK-01",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_21_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "RBK-02",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_22_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "PAR-01",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_23_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "QUA-01",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_24_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "QUA-02",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_25_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "QUA-03",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_26_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "IDE-01",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_27_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "IDE-02",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_28_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "EVT-01",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_29_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "CLN-01",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_30_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "CLN-02",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_31_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "CLN-03",
+          "effective": true,
+          "effectiveSource": "V0_3_CASE_32_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "KCB-01",
+          "effective": true,
+          "effectiveSource": "V0_5_ORACLE_OVERRIDE_0_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "KCB-02",
+          "effective": true,
+          "effectiveSource": "V0_5_ORACLE_OVERRIDE_1_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "KCB-03",
+          "effective": true,
+          "effectiveSource": "V0_5_ORACLE_OVERRIDE_2_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "KCB-04",
+          "effective": true,
+          "effectiveSource": "V0_5_ORACLE_OVERRIDE_3_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "KCB-05",
+          "effective": true,
+          "effectiveSource": "V0_5_ORACLE_OVERRIDE_4_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "KCB-06",
+          "effective": true,
+          "effectiveSource": "V0_5_ORACLE_OVERRIDE_5_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "KCF-01",
+          "effective": true,
+          "effectiveSource": "V0_5_ORACLE_OVERRIDE_6_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "KCF-02",
+          "effective": true,
+          "effectiveSource": "V0_5_ORACLE_OVERRIDE_7_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "KCF-03",
+          "effective": true,
+          "effectiveSource": "V0_5_ORACLE_OVERRIDE_8_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "KCF-04",
+          "effective": true,
+          "effectiveSource": "V0_5_ORACLE_OVERRIDE_9_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "KCF-05",
+          "effective": true,
+          "effectiveSource": "V0_5_ORACLE_OVERRIDE_10_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "KCF-06",
+          "effective": true,
+          "effectiveSource": "V0_5_ORACLE_OVERRIDE_11_INHERITED_UNCHANGED"
+        },
+        {
+          "id": "KCF-07",
+          "effective": true,
+          "effectiveSource": "V0_5_CASE_INHERITED_UNCHANGED",
+          "injection": "encrypt malformed or wrong-identity key-confirmation plaintext with the correct current alias and exact AAD, then update the recorded outer ciphertext length and SHA-256",
+          "requiredObservation": "exact stored ciphertext identity passes and Aead.decrypt() succeeds",
+          "coveredPostDecryptFailures": [
+            "malformed plaintext",
+            "wrong magic",
+            "wrong schema",
+            "wrong protocolId",
+            "wrong candidateId",
+            "wrong runId",
+            "wrong canonicalAliasSha256"
+          ],
+          "expectedClassification": "CORRUPT_KEY_CONFIRMATION",
+          "replacementKeyAllowed": false
+        }
+      ]
+    },
+    "effectiveKey04Routing": {
+      "successfulDecryptWithMalformedOrWrongPlaintext": {
+        "faultRow": "KCF-07",
+        "classification": "CORRUPT_KEY_CONFIRMATION"
+      },
+      "ciphertextPathTypeLengthOrHashMismatch": {
+        "stage": "PRE_DECRYPT",
+        "classification": "CORRUPT_KEY_CONFIRMATION"
+      },
+      "missingInvalidatedOrUnusableAlias": {
+        "classification": "KEY_UNAVAILABLE"
+      },
+      "structurallyValidLaterKeyEnvelopeAeadAadOrTagFailureAfterValidConfirmation": {
+        "classification": "KEY_ENVELOPE_AUTH_FAILURE"
+      }
+    },
+    "inheritedV04CaseOracleOverrides": [
+      {
+        "id": "KCB-01",
+        "expected": "INCOMPLETE_KEY_BOOTSTRAP with alias-only subtype/evidence; no replacement alias or publication"
+      },
+      {
+        "id": "KCB-02",
+        "expected": "INCOMPLETE_KEY_BOOTSTRAP with temp-only subtype/evidence; quarantine transaction; never promote by name"
+      },
+      {
+        "id": "KCB-03",
+        "expected": "INCOMPLETE_KEY_BOOTSTRAP with temp-only subtype/evidence; quarantine transaction; never promote by name"
+      },
+      {
+        "id": "KCB-04",
+        "expected": "INCOMPLETE_KEY_BOOTSTRAP with exact absent or final-orphan subtype/evidence; no durable row means no commit or publication"
+      },
+      {
+        "id": "KCB-05",
+        "expected": "INCOMPLETE_KEY_BOOTSTRAP with final-orphan subtype/evidence; fail closed and quarantine; no publication"
+      },
+      {
+        "id": "KCB-06",
+        "expected": "VALID_DURABLE_BOOTSTRAP; restart validates confirmation and emits at most one idempotent evidence event"
+      },
+      {
+        "id": "KCF-01",
+        "expected": "KEY_CONFIRMATION_MISSING; fail closed; artifacts retained"
+      },
+      {
+        "id": "KCF-02",
+        "expected": "CORRUPT_KEY_CONFIRMATION at pre-decrypt stored ciphertext identity step; decrypt forbidden"
+      },
+      {
+        "id": "KCF-03",
+        "expected": "CORRUPT_KEY_CONFIRMATION at pre-decrypt stored ciphertext identity step; decrypt forbidden"
+      },
+      {
+        "id": "KCF-04",
+        "expected": "KEY_UNAVAILABLE_KEY_MISMATCH only from Aead.decrypt authentication/AAD failure; no exact-plaintext alternative and no replacement key"
+      },
+      {
+        "id": "KCF-05",
+        "expected": "KEY_UNAVAILABLE_KEY_MISMATCH from Aead.decrypt authentication/AAD failure; replacement alias is never accepted"
+      },
+      {
+        "id": "KCF-06",
+        "expected": "KEY_REF_COLLISION before new-run creation; no overwrite or publication"
+      }
+    ],
+    "phaseA": {
+      "rows": 46,
+      "perRow": {
+        "PINNED_API36_X86_64_EMULATOR": 3,
+        "PHYSICAL_D2": 1
+      },
+      "emulatorInjections": 138,
+      "physicalD2Injections": 46,
+      "phaseATotalInjections": 184,
+      "allowedVerdicts": [
+        "FAIL",
+        "INCONCLUSIVE"
+      ],
+      "passAllowed": false
+    },
+    "fullPhysicalCampaign": {
+      "rows": 46,
+      "perRow": {
+        "PHYSICAL_D1": 1,
+        "PHYSICAL_D2": 1,
+        "PHYSICAL_D5": 1
+      },
+      "fullPhysicalTotalInjections": 138,
+      "D1Status": "DEFERRED",
+      "D2Status": "AVAILABLE_PREFLIGHT_PENDING",
+      "D5Status": "DEFERRED",
+      "passRequiresCompleteD1D2D5Profile": true
+    },
+    "phaseAD2ReuseForFullPhysicalCampaign": {
+      "allowedOnlyWhenAllMatch": [
+        "exact commit",
+        "protocol and Gate Set version",
+        "fixture digest",
+        "injection definition",
+        "device identity and profile",
+        "fresh preflight",
+        "validity criteria"
+      ],
+      "otherwiseRepeatD2": true,
+      "additionalD1D5InjectionsWhenReuseAllowed": 92
+    },
+    "hardKillCampaign": {
+      "attemptsPerCandidate": 120,
+      "separateFromFaultInjectionDenominators": true
+    },
+    "existingRepetitionsValidityCriteriaAndFailureGatesWeakened": false,
+    "phaseAInjectionCount": 184,
+    "fullPhysicalInjectionCount": 138,
+    "baseHardKillAttemptsPerCandidate": 120
+  },
+  "canonicalBlockerIds": [
+    "REC-RDY-01-PRODUCT-IP-FINAL-APPROVAL",
+    "REC-RDY-03-STREAMING-IMPLEMENTATION-VERIFICATION",
+    "REC-RDY-04-MICROFILE-IMPLEMENTATION-VERIFICATION",
+    "REC-RDY-05-FUTURE-RESOLVED-GRAPH",
+    "REC-RDY-06-DEVICE-SQLITE-PREFLIGHT",
+    "REC-RDY-07-HARNESS-ABSENT",
+    "REC-RDY-08-OWNER-EXECUTION-AUTHORIZATION",
+    "REC-RDY-09-D1-D5-FULL-VERDICT",
+    "REC-RDY-10-PRODUCTION-LEGAL-SECURITY",
+    "REC-RDY-11-SUPPLY-CHAIN-AUTHENTICITY"
+  ],
+  "productIpStates": {
+    "stateAProspectivePolicy": "CLOSED_APPROVED",
+    "stateBGovernanceEvidence": "CLOSED_VERIFIED",
+    "stateCFutureActualGraphPackageR8Disposition": "OPEN_BLOCKED",
+    "dependencyAdmission": false,
+    "productionAdmission": false,
+    "jsr305UseOrDistributionApproved": false
+  },
+  "evidencePolicy": {
+    "formalReviewer": false,
+    "accountableEngineeringSecurityReviewer": null,
+    "productionLegalReviewer": null,
+    "productionSecurityReviewer": null,
+    "futureExecutionEvidenceAllowedByThisProtocol": false,
+    "publicEvidenceExcludesSensitiveRejectedObservation": true,
+    "accountableEngineeringSecurityReview": "CLOSED_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW",
+    "exactGovernanceCommitIndependentReview": "PENDING"
+  },
+  "implementationAllowedByThisPackage": false,
+  "inheritsExactV06Contract": {
+    "locator": "docs/stage0/poc-recovery-protocol-stage0-v0.6.json",
+    "sha256": "9108cbffc3dc74a0e2a45868bf0c82b3827cb1e9023e1f0f12c53e7374c07a3d",
+    "gateLocator": "docs/stage0/poc-recovery-gate-set-stage0-v0.6.json",
+    "gateSha256": "6a5f1f994e5084836527fded9bdf762ac1ed982cb5022b6da64090a283717755",
+    "markdownLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_6.md",
+    "markdownSha256": "5ab6d105fe6c94868d77c25d1be065a1688ccb083fcbdc0c3f43096e73909063",
+    "allUnchangedSemanticsInherited": true,
+    "overriddenSections": [
+      "active identity/status/locators",
+      "REC-STREAM-TINK witness/intersection/admission",
+      "checkpoint versus proven C and diagnostic matrices",
+      "public terminal and remainder boundary",
+      "candidate range quarantine",
+      "streaming processing-intent prohibition",
+      "K12 REC-STREAM-TINK seed and persistence/consumer split",
+      "TRU-03 REC-STREAM-TINK expectation",
+      "evidence fields and collision/retry semantics",
+      "synthetic 8192-byte exposure cap",
+      "current OD-15 overlay fields"
+    ]
+  },
+  "combinedBaseline": {
+    "commit": "3c63ab09874f4d089e4363985aa8b5c99900c122",
+    "tree": "718eae8d8d619d17c25ac9d025e0e24db3d52f9e"
+  },
+  "currentAuthorityOverlay": {
+    "authorityId": "OWNER-AUTH-BATCH-20260819-01",
+    "ownerDecision": "OD-15",
+    "recI3ImplementationAllowed": true,
+    "recI3NonMetricVerificationAllowed": true,
+    "recI3ConditionalMergeAllowed": true,
+    "phaseAAllowed": false,
+    "executionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "productionAdmissionAllowed": false,
+    "thisPackageGrantsAdditionalAuthority": false
+  },
+  "streamingPersistenceV07": {
+    "database": {
+      "path": "poc-recovery/v1/recovery-journal-v1.db",
+      "userVersion": 4,
+      "preserveExactV1V2Objects": true,
+      "migrateValidV3QuarantineRowsByteForByte": true,
+      "newTables": [
+        "recovery_quarantine_intent_v4",
+        "recovery_stream_checkpoint_v4",
+        "recovery_stream_outcome_v4",
+        "recovery_stream_range_quarantine_v4"
+      ],
+      "newIndexes": [
+        "recovery_stream_active_range_v4"
+      ],
+      "triggers": [],
+      "views": [],
+      "downgradeAllowed": false,
+      "destructiveFallbackAllowed": false
+    },
+    "witness": {
+      "protocolId": "poc-recovery-protocol-stage0-v0.7",
+      "fields": [
+        "candidateId",
+        "runId",
+        "checkpointGeneration",
+        "checkpointIdentity",
+        "checkpointPrefixBytes",
+        "checkpointContextEnd",
+        "oracleIdentitySha256",
+        "acceptedEnd",
+        "oraclePlaintextSha256",
+        "preFaultSourceBytes",
+        "preFaultSourceSha256",
+        "controllerSnapshotSha256",
+        "sourceWitnessId"
+      ],
+      "validIntersection": "P<=S<=E_AND_SHA256_0_P_AND_0_S_ON_SAME_DESCRIPTOR",
+      "checkpointArtifactAloneProvesCurrentSourceC": false
+    },
+    "extent": {
+      "acceptedEndMax": 115200000,
+      "preFaultSourceMax": 115654656,
+      "observedSourceMax": 115662848,
+      "maxDeltaWhenEAtLeastS": 8192,
+      "acceptedMaximumPair": {
+        "S": 115654656,
+        "E": 115662848
+      },
+      "oneOverRejected": 115662849,
+      "unsignedOverflowRejected": true,
+      "narrowingRejected": true,
+      "decryptAfterFailureAllowed": false
+    },
+    "admission": {
+      "relations": [
+        "0<=C<=R<=A",
+        "A-R<=8160"
+      ],
+      "oracleEqualityRequired": true,
+      "completedPublicAuthenticatedReadsOnly": true,
+      "recoveredMinusCheckpointCap": null,
+      "checkpointAdvances": false,
+      "metadataAdopted": false,
+      "semanticCommitAdopted": false,
+      "processingIntentCreated": false
+    },
+    "boundary": {
+      "B0": 0,
+      "canonicalPositiveR": "R=4056+k*4080",
+      "canonicalBoundary": "B(R)=(1+k)*4096",
+      "authenticationFailure": "B(R)<=E",
+      "nonEmptyRange": "[B(R),E) when B(R)<E",
+      "emptyRemainder": "B(R)=E means null required-range fields and zero range rows",
+      "authenticatedEofRange": null
+    },
+    "preIntersection": {
+      "states": {
+        "preFaultSourceMatch": "UNPROVEN_OR_MISMATCH",
+        "checkpointIntersection": "CONTEXT_ONLY",
+        "terminal": "NOT_REACHED",
+        "recoveredEnd": null
+      },
+      "precedence": [
+        "STREAM_SOURCE_TRUNCATED",
+        "STREAM_CHECKPOINT_PREFIX_OUTSIDE_WITNESS",
+        "STREAM_SOURCE_PREFIX_IDENTITY_MISMATCH"
+      ],
+      "nonEmptyRange": "[0,E) CONSERVATIVE_WHOLE_SOURCE"
+    },
+    "postIntersection": {
+      "states": {
+        "preFaultSourceMatch": "VERIFIED_SAME_DESCRIPTOR",
+        "checkpointIntersection": "PROVEN",
+        "recoveredEnd": null
+      },
+      "precedence": [
+        "STREAM_RETURNED_BYTE_ORACLE_MISMATCH",
+        "STREAM_RECOVERED_BELOW_CHECKPOINT",
+        "STREAM_REMAINDER_BOUNDARY_UNPROVEN",
+        "STREAM_TAIL_BOUND_EXCEEDED"
+      ],
+      "rejectedObservationFields": [
+        "candidateR",
+        "completedCandidateSha256",
+        "oraclePrefixSha256",
+        "oraclePrefixEqual",
+        "comparedEnd",
+        "firstMismatchOffset",
+        "equalPrefixSha256",
+        "expectedByte",
+        "observedByte",
+        "AminusCandidateR",
+        "boundaryResult",
+        "boundaryBytes",
+        "rejectedObservationSha256"
+      ],
+      "allRejectedFieldsEnterOutcomeIdReadbackAndCollision": true,
+      "publicEvidenceExcludes": [
+        "completedCandidateSha256",
+        "oraclePrefixSha256",
+        "firstMismatchOffset",
+        "equalPrefixSha256",
+        "expectedByte",
+        "observedByte"
+      ]
+    },
+    "persistedDiagnosticMatrix": [
+      {
+        "branch": "PRE_INTERSECTION",
+        "classification": "STREAM_SOURCE_TRUNCATED",
+        "decision": "FATAL",
+        "stage": "STREAM_SOURCE_EXTENT",
+        "terminal": "NOT_REACHED",
+        "range": "[0,E) CONSERVATIVE_WHOLE_SOURCE if E>0 else none"
+      },
+      {
+        "branch": "PRE_INTERSECTION",
+        "classification": "STREAM_CHECKPOINT_PREFIX_OUTSIDE_WITNESS",
+        "decision": "FATAL",
+        "stage": "STREAM_CHECKPOINT",
+        "terminal": "NOT_REACHED",
+        "range": "[0,E) CONSERVATIVE_WHOLE_SOURCE if E>0 else none"
+      },
+      {
+        "branch": "PRE_INTERSECTION",
+        "classification": "STREAM_SOURCE_PREFIX_IDENTITY_MISMATCH",
+        "decision": "FATAL",
+        "stage": "STREAM_SOURCE_EXTENT",
+        "terminal": "NOT_REACHED",
+        "range": "[0,E) CONSERVATIVE_WHOLE_SOURCE if E>0 else none"
+      },
+      {
+        "branch": "POST_INTERSECTION",
+        "classification": "STREAM_RETURNED_BYTE_ORACLE_MISMATCH",
+        "decision": "FATAL",
+        "stage": "STREAM_PAYLOAD_DECRYPT",
+        "terminal": "COMPLETED_READ_REJECTED",
+        "range": "[0,E) CONSERVATIVE_WHOLE_SOURCE"
+      },
+      {
+        "branch": "POST_INTERSECTION",
+        "classification": "STREAM_RECOVERED_BELOW_CHECKPOINT",
+        "decision": "FATAL",
+        "stage": "STREAM_PAYLOAD_DECRYPT",
+        "terminal": "AUTHENTICATION_FAILURE_OR_AUTHENTICATED_EOF",
+        "range": "auth failure [0,E) CONSERVATIVE_WHOLE_SOURCE; EOF none"
+      },
+      {
+        "branch": "POST_INTERSECTION",
+        "classification": "STREAM_REMAINDER_BOUNDARY_UNPROVEN",
+        "decision": "FATAL",
+        "stage": "STREAM_PAYLOAD_DECRYPT",
+        "terminal": "AUTHENTICATION_FAILURE",
+        "range": "[B(C),E) CONSERVATIVE_PROVEN_CHECKPOINT_SUPERSET when B(C)<E else [0,E) CONSERVATIVE_WHOLE_SOURCE"
+      },
+      {
+        "branch": "POST_INTERSECTION",
+        "classification": "STREAM_TAIL_BOUND_EXCEEDED",
+        "decision": "REJECTED",
+        "stage": "STREAM_PAYLOAD_DECRYPT",
+        "terminal": "AUTHENTICATION_FAILURE_OR_AUTHENTICATED_EOF",
+        "range": "auth failure [B(candidateR),E) EXACT_FORMAT_BOUNDARY when B<E; B=E none; EOF none"
+      }
+    ],
+    "persistence": {
+      "outcomeState": "SEALED",
+      "rangeState": "ACTIVE",
+      "outcomeAndRangeSingleTransaction": true,
+      "exactReadbackBeforeReceipt": true,
+      "hashOnlyReplay": true,
+      "replayRunsTink": false,
+      "sameFileUnchanged": true,
+      "wholeObjectQuarantineQ01Q05Unchanged": true,
+      "rangeRetirementAllowed": false,
+      "crossProcessEnforcementClaimed": false
+    },
+    "nonPersistable": {
+      "fatal": [
+        "STREAM_CHECKPOINT_MISSING",
+        "STREAM_CHECKPOINT_STRUCTURAL",
+        "STREAM_CHECKPOINT_AUTHENTICATION_REJECTED",
+        "STREAM_CHECKPOINT_SPLIT_BRAIN",
+        "STREAM_SOURCE_WITNESS_MISSING",
+        "UNSAFE_PATH",
+        "STREAM_SOURCE_IDENTITY_CHANGED",
+        "JOURNAL_STRUCTURAL",
+        "JOURNAL_ATTEMPT_CONFLICT",
+        "STREAM_RANGE_QUARANTINE_COLLISION"
+      ],
+      "rejected": [
+        "STREAM_SOURCE_EXTENT_LIMIT_EXCEEDED"
+      ],
+      "retry": [
+        "ARTIFACT_IO_BEFORE_EXACT_SOURCE_HASH",
+        "JOURNAL_AMBIGUOUS_COMMIT_WITH_NO_EXACT_INTENDED_STATE"
+      ],
+      "newRowOrRangeAllowed": false
+    },
+    "k12": {
+      "id": "K12",
+      "seedId": "K12-STREAM-V0.7",
+      "q": 2,
+      "P": 8192,
+      "C": 4056,
+      "A": 8137,
+      "S": 8192,
+      "appended": 1,
+      "E": 8193,
+      "completedReads": [
+        4056,
+        4080
+      ],
+      "R": 8136,
+      "tailLoss": 1,
+      "terminal": "AUTHENTICATION_FAILURE",
+      "B": 8192,
+      "activeRange": {
+        "start": 8192,
+        "end": 8193,
+        "certainty": "EXACT_FORMAT_BOUNDARY"
+      },
+      "pause": "AFTER_END_TRANSACTION_AND_EXACT_READBACK_BEFORE_EVIDENCE_ACKNOWLEDGEMENT",
+      "persistenceExpected": {
+        "sealedValidOutcomes": 1,
+        "activeRanges": 1,
+        "streamingProcessingIntents": 0,
+        "sourceUnchanged": true,
+        "exactReplaySameReceipt": true,
+        "collisionCreatesNewState": false
+      },
+      "currentPhase": "K12-PERSISTENCE",
+      "consumerPhase": "DEFERRED_SEPARATE_APPROVAL_REQUIRED"
+    },
+    "tru03": {
+      "id": "TRU-03",
+      "microfileBranch": "INHERIT_V0_3_CASE_8_UNCHANGED",
+      "streamBranchSource": "V0_7_STREAM_RANGE_OVERRIDE",
+      "appendBytes": [
+        1,
+        4096,
+        8192
+      ],
+      "afterWitnessFreeze": true,
+      "appliesExactV07Matrix": true,
+      "sourceMutationAllowed": false,
+      "processingIntentCreated": false
+    }
+  },
+  "historicallyClosedBlockerIds": [
+    "REC-RDY-02-ACCOUNTABLE-ENGINEERING-SECURITY-REVIEW"
+  ],
+  "combinedBaselineInputDigests": {
+    "productDecisionsSha256": "2ad0e1c1b88b45028195de18fc4769753275505c4ae898d8b001807b730ef9e4",
+    "implementationBacklogSha256": "186d50a16b0f722481c72a098cc6d4eb531405e527932ca4b1c0461ce2110a2f",
+    "stageStatusSha256": "b2da5653e5992dab731611a10d5e1598aa77e5948e7e32865f302eecb1a31bcc"
+  },
+  "readinessLocks": {
+    "fullRecI3Completed": false,
+    "campaignReady": false,
+    "preflightEligible": false,
+    "pocRecoveryStatus": "BLOCKED_NOT_READY",
+    "k12PersistenceMayCloseK12Consumer": false,
+    "k12ConsumerDeferred": true,
+    "k12ConsumerRequiresSeparateApproval": true
+  },
+  "historicalV06ReviewEvidence": {
+    "reviewer": "GPT-5.6 Sol",
+    "organization": "OpenAI",
+    "role": "AI documentary advisory reviewer",
+    "reviewDate": "2026-08-12",
+    "reviewedCommit": "eca48ba62acd79007884710395cc40ea21a02611",
+    "formalReviewer": false,
+    "disposition": "CHANGES_REQUIRED",
+    "recRev2026081201Disposition": "CLOSED_BY_V0_6_EXACT_DECRYPT_FAILURE_OVERRIDE",
+    "recRev2026081202Disposition": "OPEN_BLOCKING",
+    "closesRecRdy02": false
+  },
+  "currentReviewState": {
+    "recRdy02": "CLOSED_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW",
+    "confirmedV5AdvisoryReview": {
+      "formalReviewer": false,
+      "disposition": "CLEAN",
+      "markdownSha256": "b70b1780976bd64ed0dd893ec2bc4544cee95b768c71bda498d9d53c7b1a6a6f",
+      "jsonSha256": "7f8ac61e9157ad864f1214bb2c6ab53e20e6fe29939d68af1438f8ae048c0deb"
+    },
+    "exactGovernanceCommitIndependentReview": "PENDING"
+  }
+}
