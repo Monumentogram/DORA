@@ -92,6 +92,17 @@ The prior author-local closure and acceptance mapping are superseded claims rath
 closure. Immediate lstat plus rename is not kernel-atomic no-replace proof; Android filesystem
 durability and every wider REC-I3 gate remain unproven.
 
+REC-I3 streaming Option A decision amendment, 5 September 2026: approved
+[DEC-045](stage0/DEC-045-POC-RECOVERY-STREAMING-AUTHENTICATED-TAIL.md) records the owner-selected
+authenticated-tail semantic from final proof `19807f6ea8166fff972e1537beeb131def8bfa1d` / tree
+`8920855c9b8642162e5df16204d796d51db4fa86`. The bounded synthetic/non-metric streaming slice is
+started by its additive scope; this resolves the owner A/B semantic choice, rejects Option B only
+for this scope, and does not complete implementation. `C` remains durable, `R` may include only
+independently authenticated contiguous oracle-equal bytes, and an unauthenticated/corrupt remainder
+is rejected for bounded quarantine. All ten `REC-RDY` blockers, aggregate counts, the Recovery
+preflight lock, active Gate Set/protocol, 8,160-byte/0.255-second bound and every campaign/admission
+flag remain unchanged. No device/process-death/durability campaign, production admission, schema or
+quarantine-mechanics implementation is authorized here.
 ## 1. Правила выполнения
 
 - `DONE` означает: артефакт существует, acceptance выполнен и evidence доступно в commit/CI/report.

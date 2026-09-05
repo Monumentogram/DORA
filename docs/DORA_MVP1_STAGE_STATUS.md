@@ -501,6 +501,21 @@ Three bounded phone runs were returned after two invalid pre-recording starts. R
   `685e759290f8987444280b05e69b9d4d0070424e`; exact-main post-merge CI then passed. Neither merge
   changed any Recovery authority flag or produced Recovery execution evidence.
 
+## REC-I3 streaming Option A decision, 5 September 2026
+
+`DEC-045` records the owner-selected authenticated-tail semantic against final proof
+`19807f6ea8166fff972e1537beeb131def8bfa1d` / tree `8920855c9b8642162e5df16204d796d51db4fa86`.
+Its additive bounded synthetic/non-metric streaming scope is started; implementation is not
+complete. The decision resolves the pending A/B semantic authority: independently authenticated
+pre-existing contiguous oracle-equal bytes may extend `R` beyond `C`; completed authenticated reads
+remain in `R` after a later authentication failure; `C` does not advance; and unauthenticated or
+corrupt remainder is rejected for bounded quarantine. Option B is rejected only for this scope.
+
+This status change preserves the active Gate Set/protocol, 8,160-byte/0.255-second bound, all ten
+`REC-RDY` blockers, `POC-RECOVERY-001` `BLOCKED / NOT_READY`, Recovery preflight ordering and every
+campaign/admission flag. No device/process-death/durability campaign, production admission, schema
+or quarantine-mechanics implementation is authorized.
+
 ## Next safe action
 
 The exact REC-I2A/REC-I2B integration and its accountable/independent review chain are complete on
