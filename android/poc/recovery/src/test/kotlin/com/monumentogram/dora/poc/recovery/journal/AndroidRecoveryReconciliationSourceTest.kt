@@ -31,6 +31,22 @@ import org.junit.Test
 
 class AndroidRecoveryReconciliationSourceTest {
     @Test
+    fun `actual source treats never-created quarantine namespace as empty`() {
+        val os =
+            InventoryOs().apply {
+                seed(emptyMap(), emptyMap())
+                removeQuarantineNamespace()
+            }
+        val inventory =
+            source(os)
+                .loadInventorySnapshot(
+                    RUN,
+                    RecoveryCandidateSnapshot(emptyList(), emptyList(), emptyList()),
+                )
+        assertTrue(inventory.quarantine.isEmpty())
+    }
+
+    @Test
     @Suppress("LongMethod")
     fun `actual source reports active taxonomy and pending completed and unreferenced quarantine`() {
         val os = InventoryOs()
@@ -242,6 +258,12 @@ class AndroidRecoveryReconciliationSourceTest {
 
         fun addActive(relative: String, bytes: ByteArray) {
             add(File(ROOT, "poc-recovery/v1/runs/${RUN.toCanonicalString()}"), relative, bytes)
+        }
+
+        fun removeQuarantineNamespace() {
+            val prefix = File(ROOT, "poc-recovery/v1/quarantine").path
+            stats.keys.filter { it.startsWith(prefix) }.forEach(stats::remove)
+            children.keys.filter { it.startsWith(prefix) }.forEach(children::remove)
         }
 
         fun unsafe(relativeDirectory: String) {

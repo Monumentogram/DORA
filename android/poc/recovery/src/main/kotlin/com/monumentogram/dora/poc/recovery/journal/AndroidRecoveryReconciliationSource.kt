@@ -197,7 +197,7 @@ private constructor(
         } catch (error: RecoveryUnsafePathException) {
             throw RecoverySourceAccessException(
                 RecoveryFailureDiagnostic.capture(
-                    RecoveryFailureCategory.UNSAFE_PARENT,
+                    error.category,
                     error,
                     RecoveryFailureStage.ARTIFACT_PATH,
                 ),

@@ -7,6 +7,7 @@ import android.system.OsConstants
 import com.monumentogram.dora.poc.recovery.candidate.QuarantinePathObservation
 import com.monumentogram.dora.poc.recovery.candidate.QuarantinePathState
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactBytes
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureCategory
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineIntentRow
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineStorage
 import com.monumentogram.dora.poc.recovery.contract.RunId
@@ -18,7 +19,10 @@ internal interface RecoveryReconciliationDescriptor
 
 internal data class RecoveryReconciliationStat(val type: BootstrapPathType, val size: Long = 0)
 
-internal class RecoveryUnsafePathException(message: String) : IllegalStateException(message)
+internal class RecoveryUnsafePathException(
+    message: String,
+    val category: RecoveryFailureCategory = RecoveryFailureCategory.UNSAFE_PARENT,
+) : IllegalStateException(message)
 
 /** Raw Android-Os-shaped seam. read uses POSIX semantics: positive progress, zero EOF. */
 internal interface RecoveryReconciliationOs {
@@ -98,7 +102,10 @@ internal constructor(
             BootstrapPathType.ABSENT -> false
             BootstrapPathType.REGULAR -> true
             else ->
-                throw RecoveryUnsafePathException("Unsafe Recovery active artifact: $relativeName")
+                throw RecoveryUnsafePathException(
+                    "Unsafe Recovery active artifact: $relativeName",
+                    RecoveryFailureCategory.CORRUPT_LEAF,
+                )
         }
     }
 
@@ -122,7 +129,10 @@ internal constructor(
                     ),
                 )
             else ->
-                throw RecoveryUnsafePathException("Unsafe Recovery active artifact: $relativeName")
+                throw RecoveryUnsafePathException(
+                    "Unsafe Recovery active artifact: $relativeName",
+                    RecoveryFailureCategory.CORRUPT_LEAF,
+                )
         }
     }
 
@@ -138,9 +148,13 @@ internal constructor(
     }
 
     /** Quarantine inventory is one level only and report-only. */
+    @Suppress("ReturnCount")
     fun listQuarantineInventory(runId: RunId): List<RecoveryInventoryArtifact> {
         val paths = paths(runId, "key-confirmation/run.kc", zeroDestination())
-        requireQuarantineAncestors(paths)
+        requireActiveBaseAncestors()
+        if (!optionalDirectory(File(root, "poc-recovery/v1/quarantine"))) return emptyList()
+        if (!optionalDirectory(paths.quarantineRunRoot)) return emptyList()
+        if (!optionalDirectory(paths.objectsRoot)) return emptyList()
         return os.list(paths.objectsRoot.path)
             .sorted()
             .map { childName ->
@@ -247,7 +261,8 @@ internal constructor(
                 }
                 else ->
                     throw RecoveryUnsafePathException(
-                        "Unsafe Recovery inventory object: $childName"
+                        "Unsafe Recovery inventory object: $childName",
+                        RecoveryFailureCategory.CORRUPT_LEAF,
                     )
             }
         }
@@ -371,10 +386,21 @@ internal constructor(
     }
 
     private fun requireActiveAncestors(paths: RecoveryReconciliationPaths) {
-        val base = File(root, "poc-recovery")
-        listOf(root, base, File(base, "v1"), File(base, "v1/runs"), paths.activeRunRoot)
-            .forEach(::requireDirectory)
+        requireActiveBaseAncestors()
+        requireDirectory(paths.activeRunRoot)
     }
+
+    private fun requireActiveBaseAncestors() {
+        val base = File(root, "poc-recovery")
+        listOf(root, base, File(base, "v1"), File(base, "v1/runs")).forEach(::requireDirectory)
+    }
+
+    private fun optionalDirectory(file: File): Boolean =
+        when (type(file)) {
+            BootstrapPathType.ABSENT -> false
+            BootstrapPathType.DIRECTORY -> true
+            else -> throw RecoveryUnsafePathException("Unsafe Recovery directory: ${file.name}")
+        }
 
     private fun requireQuarantineAncestors(paths: RecoveryReconciliationPaths) {
         val base = File(root, "poc-recovery")
@@ -418,12 +444,12 @@ internal constructor(
 
     private fun zeroDestination() = "objects/q-${"0".repeat(64)}.bin"
 
-    private fun requireSingleName(value: String) =
-        require(
-            value.isNotEmpty() && value != "." && value != ".." && '/' !in value && '\\' !in value
-        ) {
-            "Unsafe Recovery directory entry"
+    @Suppress("ComplexCondition")
+    private fun requireSingleName(value: String) {
+        if (value.isEmpty() || value == "." || value == ".." || '/' in value || '\\' in value) {
+            throw RecoveryUnsafePathException("Unsafe Recovery directory entry")
         }
+    }
 }
 
 private class AndroidRecoveryDescriptor(val value: FileDescriptor) :

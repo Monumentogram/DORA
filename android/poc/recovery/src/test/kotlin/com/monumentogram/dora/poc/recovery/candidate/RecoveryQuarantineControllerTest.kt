@@ -6,6 +6,7 @@ import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntentInpu
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineObservedState
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
+import com.monumentogram.dora.poc.recovery.storage.RecoveryUnsafePathException
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -93,6 +94,20 @@ class RecoveryQuarantineControllerTest {
     }
 
     @Test
+    fun `actual quarantine entry distinguishes unsafe paths from ordinary IO`() {
+        val prepareUnsafe = Fixture(storageFault = "prepare-unsafe").run()
+        assertTrue(prepareUnsafe is QuarantineResult.UnsafePath)
+        val inspectUnsafe = Fixture(storageFault = "inspect-unsafe").run()
+        assertTrue(inspectUnsafe is QuarantineResult.UnsafePath)
+        listOf("prepare-io" to QuarantineStep.PREPARE, "inspect-io" to QuarantineStep.Q02)
+            .forEach { (fault, step) ->
+                val result = Fixture(storageFault = fault).run() as QuarantineResult.RetryRequired
+                assertEquals(step, result.failedStep)
+                assertEquals(RecoveryFailureCategory.OPERATIONAL, result.diagnostic?.category)
+            }
+    }
+
+    @Test
     fun `all replay path states are fail closed except exact completed destination`() {
         val fixture = Fixture()
         fixture.run()
@@ -157,18 +172,33 @@ class RecoveryQuarantineControllerTest {
     }
 
     @Test
-    fun `Q01 Q05 and final readback failures never escape and keep unknown remainder`() {
+    fun `one readback lookup failure recovers and both failures retain exact prior remainder`() {
         listOf(
                 Fixture(transactionEndFault = 1, journalFault = "load-2") to QuarantineStep.Q01,
                 Fixture(transactionEndFault = 2, journalFault = "load-2") to QuarantineStep.Q05,
                 Fixture(journalFault = "load-2") to QuarantineStep.Q05,
             )
-            .forEach { (fixture, step) ->
-                val result = fixture.run() as QuarantineResult.RetryRequired
-                assertEquals(step, result.failedStep)
-                assertEquals(RecoveryFailureStage.JOURNAL, result.diagnostic?.stage)
-                assertTrue(result.remainder.completionCommit != QuarantineOperationState.CONFIRMED)
+            .forEach { (fixture, _) ->
+                assertTrue(fixture.run() is QuarantineResult.Completed)
+                assertTrue(fixture.journal.exactLoadCalls > 0)
+                assertEquals(fixture.journal.exactLoadCalls, fixture.journal.sourceLoadCalls)
             }
+        val ambiguous =
+            Fixture(journalFault = "both-load-2").run() as QuarantineResult.RetryRequired
+        assertEquals(QuarantineStep.Q05, ambiguous.failedStep)
+        assertEquals(RecoveryFailureStage.JOURNAL, ambiguous.diagnostic?.stage)
+        assertEquals(QuarantineOperationState.CONFIRMED, ambiguous.remainder.completionCommit)
+        val q01 =
+            Fixture(transactionEndFault = 1, journalFault = "both-load-2").run()
+                as QuarantineResult.RetryRequired
+        assertEquals(QuarantineStep.Q01, q01.failedStep)
+        assertEquals(QuarantineOperationState.OUTCOME_UNKNOWN, q01.remainder.intentCommit)
+        assertEquals(QuarantineOperationState.NOT_ATTEMPTED, q01.remainder.completionCommit)
+        val q05 =
+            Fixture(transactionEndFault = 2, journalFault = "both-load-2").run()
+                as QuarantineResult.RetryRequired
+        assertEquals(QuarantineStep.Q05, q05.failedStep)
+        assertEquals(QuarantineOperationState.OUTCOME_UNKNOWN, q05.remainder.completionCommit)
     }
 
     @Test
@@ -227,10 +257,14 @@ class RecoveryQuarantineControllerTest {
 
         override fun prepare(runId: RunId) {
             events += "prepare"
+            if (fault == "prepare-unsafe") throw RecoveryUnsafePathException("unsafe")
+            if (fault == "prepare-io") error("prepare io")
         }
 
         override fun inspect(row: RecoveryQuarantineIntentRow): QuarantinePathObservation {
             events += "inspect"
+            if (fault == "inspect-unsafe") throw RecoveryUnsafePathException("unsafe")
+            if (fault == "inspect-io") error("inspect io")
             return observation
         }
 
@@ -259,19 +293,32 @@ class RecoveryQuarantineControllerTest {
     ) : RecoveryQuarantineJournal {
         var row: RecoveryQuarantineIntentRow? = null
         private var transactionOrdinal = 0
-        private var loadCalls = 0
+        var exactLoadCalls = 0
+        var sourceLoadCalls = 0
 
         override fun load(intentId: Sha256Value): RecoveryQuarantineIntentRow? {
-            loadCalls++
-            if (fault == "load" || fault == "load-$loadCalls") error("load")
+            exactLoadCalls++
+            if (
+                fault == "load" ||
+                    fault == "load-$exactLoadCalls" ||
+                    fault == "both-load-$exactLoadCalls"
+            )
+                error("load")
             if (row != null) events += "load"
             return row?.takeIf { it.intentId == intentId }
         }
 
-        override fun loadBySource(input: RecoveryQuarantineIntentInput) = row?.takeIf {
-            it.input.runId == input.runId &&
-                it.input.candidate == input.candidate &&
-                it.input.sourceRelativeName == input.sourceRelativeName
+        override fun loadBySource(
+            input: RecoveryQuarantineIntentInput
+        ): RecoveryQuarantineIntentRow? {
+            sourceLoadCalls++
+            if (fault == "both-load-$exactLoadCalls") error("load unique")
+            return row?.takeIf {
+                it.input.runId == input.runId &&
+                    it.input.candidate == input.candidate &&
+                    it.input.sourceRelativeName == input.sourceRelativeName &&
+                    it.input.sourceSha256 == input.sourceSha256
+            }
         }
 
         override fun beginNonExclusive(): RecoveryQuarantineTransaction {
@@ -286,8 +333,7 @@ class RecoveryQuarantineControllerTest {
                 override fun insert(row: RecoveryQuarantineIntentRow) {
                     events += "insert"
                     if (fault == "insert-race") {
-                        val racedInput =
-                            row.input.copy(sourceSha256 = Sha256Value.calculate(byteArrayOf(99)))
+                        val racedInput = row.input.copy(sourceBytes = row.input.sourceBytes + 1UL)
                         this@Journal.row =
                             row.copy(
                                 intentId =

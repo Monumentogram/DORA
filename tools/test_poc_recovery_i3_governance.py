@@ -31,7 +31,14 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
             record["round3Correction"]["openFindingIds"],
         )
         self.assertFalse(record["round3Correction"]["actualEntryReviewClosureComplete"])
-        self.assertEqual("NOT_RUN", record["round3Correction"]["authorVerification"]["status"])
+        self.assertEqual("PASS", record["round3Correction"]["authorVerification"]["status"])
+        self.assertEqual(
+            list(governance.REC_I3_RECON_ROUND3_ACCEPTANCE_CASES),
+            [
+                item["id"]
+                for item in record["round3Correction"]["authorVerification"]["acceptanceCases"]
+            ],
+        )
         governance.validate_rec_i3_reconciliation_successor(publication=False)
 
         for mutation in ("verified", "closed", "missing", "clean", "review-closed"):
@@ -51,6 +58,23 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
                 "read_json",
                 return_value=changed,
             ), self.assertRaises(ValueError):
+                governance.validate_rec_i3_reconciliation_successor(publication=False)
+
+        for mutation in ("acceptance-missing", "acceptance-duplicate", "test-name-only"):
+            changed = copy.deepcopy(record)
+            cases = changed["round3Correction"]["authorVerification"]["acceptanceCases"]
+            if mutation == "acceptance-missing":
+                cases.pop()
+            elif mutation == "acceptance-duplicate":
+                cases[-1] = copy.deepcopy(cases[0])
+            else:
+                cases[0].pop("productionEntry")
+                cases[0].pop("assertion")
+            with self.subTest(mutation=mutation), patch.object(
+                governance,
+                "read_json",
+                return_value=changed,
+            ), self.assertRaisesRegex(ValueError, "production-entry acceptance mapping"):
                 governance.validate_rec_i3_reconciliation_successor(publication=False)
 
     def test_reconciliation_correction_scope_and_new_files_are_exactly_declared(self) -> None:

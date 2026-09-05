@@ -89,9 +89,11 @@ returned `REVISE` (P0/P1/P2 = 0/7/1). Author-local successor `a020944f0444edfcba
 then passed its reported host checks, but exact independent review also returned `REVISE`
 (P0/P1/P2 = 0/4/2). Its optional-quarantine/no-prefix retention, contextual taxonomy, confirmed-Q05
 remainder, evidence truth, row framing and production unique-readback findings remain open while
-round-three correction is `IN_PROGRESS`. The prior author-local closure and acceptance mapping are
-superseded claims rather than independent closure. Immediate lstat plus rename is not kernel-atomic
-no-replace proof; Android filesystem durability and every wider REC-I3 gate remain unproven.
+round-three correction is `IN_PROGRESS`. Round-three author tests now pass for the bounded
+production-entry repairs, while all six findings remain pending independent exact-candidate review.
+The prior author-local closure and acceptance mapping are superseded claims rather than independent
+closure. Immediate lstat plus rename is not kernel-atomic no-replace proof; Android filesystem
+durability and every wider REC-I3 gate remain unproven.
 
 ## 1. Правила выполнения
 

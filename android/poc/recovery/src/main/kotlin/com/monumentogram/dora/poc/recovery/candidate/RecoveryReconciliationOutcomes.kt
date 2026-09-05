@@ -25,6 +25,8 @@ internal enum class RecoveryFailureStage {
     MANIFEST_PAYLOAD_DECRYPT,
     MANIFEST_PLAINTEXT,
     MANIFEST_SEMANTICS,
+    CONFIRMATION_PAYLOAD_DECRYPT,
+    CONFIRMATION_PLAINTEXT,
     UNIT_PAYLOAD_DECRYPT,
     UNIT_PLAINTEXT,
     ARTIFACT_PATH,
@@ -74,7 +76,12 @@ internal object RecoveryAuthenticatedRowsDigest {
         if (rows.size > RecoveryContract.MAX_MANIFEST_ENTRIES) return null
         return try {
             val digest = java.security.MessageDigest.getInstance("SHA-256")
-            rows.forEach { row -> digest.update(encode(row)) }
+            digest.update(u32(rows.size))
+            rows.forEach { row ->
+                val encoded = encode(row)
+                digest.update(u32(encoded.size))
+                digest.update(encoded)
+            }
             Sha256Value.fromBytes(digest.digest())
         } catch (_: IllegalArgumentException) {
             null
@@ -83,6 +90,17 @@ internal object RecoveryAuthenticatedRowsDigest {
         } catch (_: ArithmeticException) {
             null
         }
+    }
+
+    @Suppress("MagicNumber")
+    private fun u32(value: Int): ByteArray {
+        require(value >= 0)
+        return byteArrayOf(
+            (value ushr 24).toByte(),
+            (value ushr 16).toByte(),
+            (value ushr 8).toByte(),
+            value.toByte(),
+        )
     }
 
     private fun encode(row: RecoveryMicrofileUnitRow): ByteArray {

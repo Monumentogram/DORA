@@ -184,10 +184,11 @@ second corrected head `5de34577295b5e5477970785f9472d51e21bfc43` received indepe
 review (P0/P1/P2 = 0/7/1). Author-local successor `a020944f0444edfcbabc4690d4a367b1cf9e83d7`
 passed its reported host checks, but its exact independent review returned `REVISE` (P0/P1/P2 =
 0/4/2). Round-three correction is in progress for optional namespace/result retention, contextual
-taxonomy, confirmed-Q05 truth, evidence truth, row framing and production unique readback. The prior
-local closure mapping is superseded, not independent closure. Host assertions do not establish
-Android runtime durability; immediate lstat plus rename is not kernel-atomic no-replace evidence,
-and no Recovery gate is unlocked.
+taxonomy, confirmed-Q05 truth, evidence truth, row framing and production unique readback.
+Round-three author tests pass for the bounded production-entry repairs, while all six findings
+remain pending independent exact-candidate review. The prior local closure mapping is superseded,
+not independent closure. Host assertions do not establish Android runtime durability; immediate
+lstat plus rename is not kernel-atomic no-replace evidence, and no Recovery gate is unlocked.
 
 ## Stage 00 closure
 

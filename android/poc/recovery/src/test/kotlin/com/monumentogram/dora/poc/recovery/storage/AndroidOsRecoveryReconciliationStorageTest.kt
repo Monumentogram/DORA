@@ -19,6 +19,42 @@ import org.junit.Test
 
 class AndroidOsRecoveryReconciliationStorageTest {
     @Test
+    fun `optional quarantine namespace absence is empty and unsafe ancestors are rejected`() {
+        val absent =
+            FakeOs().apply {
+                seed()
+                fixedDirectories().drop(5).forEach(stats::remove)
+            }
+        assertTrue(
+            AndroidOsRecoveryReconciliationStorage(ROOT, absent)
+                .listQuarantineInventory(RUN)
+                .isEmpty()
+        )
+        fixedDirectories().drop(5).forEach { unsafe ->
+            val os =
+                FakeOs().apply {
+                    seed()
+                    stats[unsafe] = RecoveryReconciliationStat(BootstrapPathType.SYMLINK)
+                }
+            assertThrows(RecoveryUnsafePathException::class.java) {
+                AndroidOsRecoveryReconciliationStorage(ROOT, os).listQuarantineInventory(RUN)
+            }
+        }
+    }
+
+    @Test
+    fun `unsafe inventory child name is a typed unsafe path`() {
+        val os =
+            FakeOs().apply {
+                seed()
+                directoryChildren[fixedDirectories().last()] = mutableListOf("../escape")
+            }
+        assertThrows(RecoveryUnsafePathException::class.java) {
+            AndroidOsRecoveryReconciliationStorage(ROOT, os).listQuarantineInventory(RUN)
+        }
+    }
+
+    @Test
     fun `actual inspect validates every fixed ancestor and rejects each symlink`() {
         fixedDirectories().forEach { unsafe ->
             val os = FakeOs().apply { seed(unsafe = unsafe) }

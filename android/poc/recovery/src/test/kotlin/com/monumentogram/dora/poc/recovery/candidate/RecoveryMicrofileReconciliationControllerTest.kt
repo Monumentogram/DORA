@@ -9,6 +9,7 @@ import com.monumentogram.dora.poc.recovery.contract.MicrofileAad
 import com.monumentogram.dora.poc.recovery.contract.PublicationAad
 import com.monumentogram.dora.poc.recovery.contract.PublicationKind
 import com.monumentogram.dora.poc.recovery.contract.RecoveryCandidate
+import com.monumentogram.dora.poc.recovery.contract.RecoveryContractException
 import com.monumentogram.dora.poc.recovery.contract.RecoveryManifest
 import com.monumentogram.dora.poc.recovery.contract.RecoveryManifestCodec
 import com.monumentogram.dora.poc.recovery.contract.RecoveryManifestEntry
@@ -39,6 +40,70 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class RecoveryMicrofileReconciliationControllerTest {
+    @Test
+    fun `authenticated row digest matches independent framed golden vectors`() {
+        fun row(
+            index: ULong,
+            start: ULong,
+            end: ULong,
+            ciphertextSha: String,
+            envelopeSha: String,
+            intent: String,
+        ) =
+            RecoveryMicrofileUnitRow(
+                "00010203-0405-0607-0809-0a0b0c0d0e0f",
+                "REC-MICROFILE-TINK",
+                index,
+                start,
+                end,
+                5UL,
+                "units/u-${index.toString().padStart(10, '0')}.ct",
+                160_033L,
+                Sha256Value.fromLowercaseHex(ciphertextSha),
+                "key-envelopes/u-${index.toString().padStart(10, '0')}.ks",
+                96L,
+                Sha256Value.fromLowercaseHex(envelopeSha),
+                index + 1UL,
+                Sha256Value.fromLowercaseHex(intent),
+            )
+        val first =
+            row(
+                0UL,
+                0UL,
+                160_000UL,
+                "ce1bcf79c256f4d5582a2c5daae3ff84e0a2f1f04826f44e11adf7df27f09c95",
+                "2ee69c48f8ae9c082d8cd5458ffc416e41986c44204cb10633401f5a135d0539",
+                "ce2b55e2df1aaf3158e65d1f9671d19963d833d45b534f3e087aafeaabe00d73",
+            )
+        val second =
+            row(
+                1UL,
+                160_000UL,
+                320_000UL,
+                "27a455ff2e74b09f6c846ff641afe5cd28d01a8b11bf1fe5a9888d9eae7bf93c",
+                "8d1ca8f9dc79757cbe07b34de69b814dd66e734f3dfc16a854b99996089104be",
+                "f519952da406d9465e4472b4887d558175eb8298c557d52f7c483259b215228b",
+            )
+        assertEquals(
+            "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+            RecoveryAuthenticatedRowsDigest.calculateOrNull(emptyList())?.toLowercaseHex(),
+        )
+        assertEquals(
+            "39889e479256df0a73b059a54c5923439bf5635d96cb4a01d227b81061cdcf27",
+            RecoveryAuthenticatedRowsDigest.calculateOrNull(listOf(first))?.toLowercaseHex(),
+        )
+        assertEquals(
+            "8a39648f7504639004169f6721ea7b737d8e8430ef38ff3361ce7e8bd8595bc2",
+            RecoveryAuthenticatedRowsDigest.calculateOrNull(listOf(first, second))
+                ?.toLowercaseHex(),
+        )
+        assertEquals(
+            "c0da485008eabf6a549cfe6ffb95a72b89a42fcf9d24b17ce032aa9917f66fba",
+            RecoveryAuthenticatedRowsDigest.calculateOrNull(listOf(second, first))
+                ?.toLowercaseHex(),
+        )
+    }
+
     @Test
     fun `actual Tink confirmation manifest and unit mint exact consumed prefix proof`() {
         val fixture = Fixture()
@@ -108,6 +173,17 @@ class RecoveryMicrofileReconciliationControllerTest {
                 result.prefix.manifestCiphertextSha256,
             )
         assertTrue(!result.capability.authorizes(changedCandidate))
+        val changedManifestDigest =
+            AuthenticatedMicrofilePrefix(
+                result.prefix.candidate,
+                result.prefix.runId,
+                result.prefix.manifestGenerationUsed,
+                result.prefix.authenticatedEndExclusive,
+                result.prefix.plaintextSnapshot(),
+                result.prefix.units,
+                Sha256Value.calculate(byteArrayOf(77)),
+            )
+        assertTrue(!result.capability.authorizes(changedManifestDigest))
 
         val row = result.prefix.units.single()
         val rowVariants =
@@ -161,6 +237,10 @@ class RecoveryMicrofileReconciliationControllerTest {
         val authenticated =
             fixture.reconcileFinalOrphan(false)
                 as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        assertEquals(
+            KeyRecoveryClassification.INCOMPLETE_KEY_BOOTSTRAP,
+            authenticated.classification,
+        )
         assertTrue(authenticated.quarantine is QuarantineResult.Completed)
         assertTrue("rename" in fixture.quarantineEvents)
 
@@ -168,8 +248,74 @@ class RecoveryMicrofileReconciliationControllerTest {
         val unverifiable =
             fixture.reconcileFinalOrphan(true)
                 as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        assertEquals(
+            KeyRecoveryClassification.INCOMPLETE_KEY_BOOTSTRAP,
+            unverifiable.classification,
+        )
+        assertEquals(RecoveryFailureStage.CONFIRMATION_PAYLOAD_DECRYPT, unverifiable.failure?.stage)
         assertEquals(null, unverifiable.quarantine)
         assertTrue(fixture.quarantineEvents.isEmpty())
+    }
+
+    @Test
+    fun `KCB05 alias unavailable and provider failures retain incomplete classification`() {
+        val unavailable =
+            Fixture()
+                .reconcileFinalOrphan(false, aliasFailure = GeneralSecurityException("missing"))
+                as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        val operational =
+            Fixture().reconcileFinalOrphan(false, aliasFailure = ProviderException("provider"))
+                as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        listOf(unavailable, operational).forEach {
+            assertEquals(KeyRecoveryClassification.INCOMPLETE_KEY_BOOTSTRAP, it.classification)
+            assertEquals(RecoveryFailureStage.ALIAS_OPEN, it.failure?.stage)
+            assertEquals(null, it.quarantine)
+        }
+        assertEquals(RecoveryFailureCategory.MISSING_ARTIFACT, unavailable.failure?.category)
+        assertEquals(RecoveryFailureCategory.OPERATIONAL, operational.failure?.category)
+    }
+
+    @Test
+    fun `KCB05 returned decrypt and plaintext failures retain exact confirmation diagnostics`() {
+        val fixture = Fixture()
+        val decrypt =
+            fixture.reconcileFinalOrphan(
+                false,
+                confirmationOutcome =
+                    KeyConfirmationDecryption.DecryptFailure(
+                        com.monumentogram.dora.poc.recovery.crypto.RecoveryDecryptFailureSignal
+                            .UNKNOWN,
+                        GeneralSecurityException("unknown"),
+                    ),
+            ) as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        val plaintext =
+            fixture.reconcileFinalOrphan(
+                false,
+                confirmationOutcome =
+                    KeyConfirmationDecryption.PlaintextContractFailure(
+                        RecoveryContractException("malformed")
+                    ),
+            ) as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        val mismatch =
+            fixture.reconcileFinalOrphan(
+                false,
+                confirmationOutcome =
+                    KeyConfirmationDecryption.Success(
+                        KeyConfirmationValue(
+                            RecoveryCandidate.MICROFILE,
+                            RunId.fromCanonicalString("10112233-4455-6677-8899-aabbccddeeff"),
+                        )
+                    ),
+            ) as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        assertEquals(RecoveryFailureStage.CONFIRMATION_PAYLOAD_DECRYPT, decrypt.failure?.stage)
+        assertEquals(RecoveryFailureCategory.UNKNOWN, decrypt.failure?.category)
+        assertEquals(RecoveryFailureStage.CONFIRMATION_PLAINTEXT, plaintext.failure?.stage)
+        assertEquals(RecoveryFailureCategory.STRUCTURAL, plaintext.failure?.category)
+        assertEquals(RecoveryFailureStage.CONFIRMATION_PLAINTEXT, mismatch.failure?.stage)
+        listOf(decrypt, plaintext, mismatch).forEach {
+            assertEquals(KeyRecoveryClassification.INCOMPLETE_KEY_BOOTSTRAP, it.classification)
+            assertEquals(null, it.quarantine)
+        }
     }
 
     @Test
@@ -223,6 +369,26 @@ class RecoveryMicrofileReconciliationControllerTest {
     }
 
     @Test
+    fun `no manifest retains pending replay and report-only observations`() {
+        val result =
+            Fixture().reconcileNoManifestWithInventory()
+                as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        assertEquals(1, result.quarantineOutcomes.size)
+        assertTrue(result.quarantineOutcomes.single() is QuarantineResult.Completed)
+        assertEquals(1, result.inventoryReports.size)
+        assertEquals("MissingManifestGeneration", result.failure?.type)
+    }
+
+    @Test
+    fun `candidate load failure retains already completed pending replay`() {
+        val result =
+            Fixture().reconcileCandidateFailureAfterPending()
+                as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        assertEquals(1, result.quarantineOutcomes.size)
+        assertTrue(result.quarantineOutcomes.single() is QuarantineResult.Completed)
+    }
+
+    @Test
     fun `actual Tink latest manifest authentication failure preserves prior generation`() {
         val fixture = Fixture()
         val result =
@@ -239,7 +405,12 @@ class RecoveryMicrofileReconciliationControllerTest {
             Fixture().reconcileWrongChainLatestManifest()
                 as MicrofileReconciliationResult.PartialPrefix
         assertEquals(1UL, result.capability.manifestGenerationUsed)
-        assertEquals(RecoveryFailureStage.MANIFEST_SEMANTICS, result.failure?.stage)
+        assertEquals(null, result.classification)
+        assertEquals(
+            RecoveryFailureStage.MANIFEST_SEMANTICS,
+            result.manifestRejections.single().diagnostic.stage,
+        )
+        assertEquals(2UL, result.manifestRejections.single().generation)
         assertTrue(result.capability.authorizes(result.prefix))
     }
 
@@ -256,6 +427,21 @@ class RecoveryMicrofileReconciliationControllerTest {
             assertEquals(RecoveryFailureStage.UNIT_PAYLOAD_DECRYPT, result.failure?.stage)
             assertTrue(result.capability.authorizes(result.prefix))
         }
+    }
+
+    @Test
+    fun `successful older fallback retains every newer rejection in descending order`() {
+        val result =
+            Fixture().reconcileThreeUnitsWithAuthFailure(-1, rejectManifestAbove = 1UL)
+                as MicrofileReconciliationResult.PartialPrefix
+        assertEquals(1UL, result.capability.manifestGenerationUsed)
+        assertEquals(null, result.classification)
+        assertEquals(listOf(3UL, 2UL), result.manifestRejections.map { it.generation })
+        assertTrue(
+            result.manifestRejections.all {
+                it.diagnostic.stage == RecoveryFailureStage.MANIFEST_PAYLOAD_DECRYPT
+            }
+        )
     }
 
     @Test
@@ -316,6 +502,93 @@ class RecoveryMicrofileReconciliationControllerTest {
                 )
                 .classification,
         )
+    }
+
+    @Test
+    fun `manifest primary uses same latest generation rejection and retains inventory`() {
+        val result =
+            Fixture()
+                .reconcileRejectedManifestWithInventory(
+                    RecoveryFailureDiagnostic(
+                        RecoveryFailureCategory.AUTHENTICATION_REJECTED,
+                        "auth",
+                        "rejected",
+                        RecoveryFailureStage.ENVELOPE_PARSE,
+                    )
+                ) as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        assertEquals(KeyRecoveryClassification.KEY_ENVELOPE_AUTH_FAILURE, result.classification)
+        assertEquals(result.failure, result.manifestRejections.single().diagnostic)
+        assertEquals(1UL, result.manifestRejections.single().generation)
+        assertEquals(1, result.inventoryReports.size)
+    }
+
+    @Test
+    fun `manifest context maps envelope signals only and preserves payload uncertainty`() {
+        val fixture = Fixture()
+        val cases =
+            listOf(
+                RecoveryFailureDiagnostic(
+                    RecoveryFailureCategory.MISSING_ARTIFACT,
+                    "missing",
+                    "missing",
+                    RecoveryFailureStage.ALIAS_OPEN,
+                ) to KeyRecoveryClassification.KEY_UNAVAILABLE,
+                RecoveryFailureDiagnostic(
+                    RecoveryFailureCategory.STRUCTURAL,
+                    "structural",
+                    "bad envelope",
+                    RecoveryFailureStage.ENVELOPE_PARSE,
+                ) to KeyRecoveryClassification.CORRUPT_KEY_ENVELOPE,
+                RecoveryFailureDiagnostic(
+                    RecoveryFailureCategory.UNKNOWN,
+                    "gse",
+                    "unknown payload",
+                    RecoveryFailureStage.MANIFEST_PAYLOAD_DECRYPT,
+                ) to null,
+            )
+        cases.forEach { (diagnostic, expected) ->
+            val result =
+                fixture.reconcileRejectedManifestWithInventory(diagnostic)
+                    as MicrofileReconciliationResult.NoAuthenticatedPrefix
+            assertEquals(expected, result.classification)
+            assertEquals(diagnostic, result.failure)
+            assertEquals(diagnostic, result.manifestRejections.single().diagnostic)
+        }
+    }
+
+    @Test
+    fun `manifest and unit artifact context distinguishes envelopes from ciphertext`() {
+        val fixture = Fixture()
+        val manifestEnvelope =
+            fixture.reconcileWithout("manifest-envelope")
+                as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        assertEquals(KeyRecoveryClassification.KEY_UNAVAILABLE, manifestEnvelope.classification)
+        assertEquals(RecoveryFailureStage.ENVELOPE_BINDING, manifestEnvelope.failure?.stage)
+        val manifestCiphertext =
+            fixture.reconcileWithout("manifest-ciphertext")
+                as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        assertEquals(null, manifestCiphertext.classification)
+        val unitEnvelope =
+            fixture.reconcileWithout("unit-envelope") as MicrofileReconciliationResult.PartialPrefix
+        assertEquals(KeyRecoveryClassification.KEY_UNAVAILABLE, unitEnvelope.classification)
+        val unitCiphertext =
+            fixture.reconcileWithout("unit-ciphertext")
+                as MicrofileReconciliationResult.PartialPrefix
+        assertEquals(null, unitCiphertext.classification)
+    }
+
+    @Test
+    fun `controller preserves unsafe path separately from ordinary artifact IO`() {
+        val unsafe =
+            Fixture().reconcileManifestSourceFailure(RecoveryFailureCategory.UNSAFE_PARENT)
+                as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        assertEquals(ReconciliationDiagnostic.UNSAFE_PATH, unsafe.diagnostic)
+        assertEquals(RecoveryFailureStage.ARTIFACT_PATH, unsafe.failure?.stage)
+        val io =
+            Fixture().reconcileManifestSourceFailure(RecoveryFailureCategory.OPERATIONAL)
+                as MicrofileReconciliationResult.NoAuthenticatedPrefix
+        assertEquals(ReconciliationDiagnostic.CRYPTO_OPERATIONAL, io.diagnostic)
+        assertEquals(RecoveryFailureStage.ARTIFACT_IO, io.failure?.stage)
     }
 
     @Test
@@ -587,11 +860,12 @@ class RecoveryMicrofileReconciliationControllerTest {
             pending: List<RecoveryQuarantineIntentRow> = emptyList(),
             inventory: List<RecoveryInventoryEntry> = emptyList(),
             reports: List<RecoveryReportOnlyInventoryEntry> = emptyList(),
+            candidateValue: RecoveryCandidateSnapshot = candidate,
         ) =
             object : RecoveryReconciliationSource {
                 override fun loadConfirmation(runId: RunId) = confirmationValue
 
-                override fun loadCandidate(runId: RunId) = candidate
+                override fun loadCandidate(runId: RunId) = candidateValue
 
                 override fun loadArtifact(runId: RunId, relativeName: String) =
                     artifacts[relativeName]
@@ -617,11 +891,14 @@ class RecoveryMicrofileReconciliationControllerTest {
 
         val quarantineEvents = mutableListOf<String>()
 
+        @Suppress("LongParameterList")
         fun reconcileFinalOrphan(
             corrupt: Boolean,
             unsafe: Boolean = false,
             oversize: Boolean = false,
             cryptoThrows: Boolean = false,
+            aliasFailure: Throwable? = null,
+            confirmationOutcome: KeyConfirmationDecryption? = null,
         ): MicrofileReconciliationResult {
             val bytes =
                 (if (oversize) ByteArray(513) else confirmationCiphertext.copyOf()).also {
@@ -642,7 +919,26 @@ class RecoveryMicrofileReconciliationControllerTest {
             val orphanController =
                 RecoveryMicrofileReconciliationController(
                     source(orphanConfirmation),
-                    if (!cryptoThrows) crypto
+                    if (!cryptoThrows && aliasFailure == null && confirmationOutcome == null) crypto
+                    else if (confirmationOutcome != null)
+                        object : RecoveryReconciliationCrypto by crypto {
+                            override fun authenticateConfirmationOrphan(
+                                expected: KeyConfirmationValue,
+                                ciphertext: ByteArray,
+                            ) = confirmationOutcome
+                        }
+                    else if (aliasFailure != null)
+                        AndroidRecoveryMicrofileCrypto(
+                            RecoveryRunAeadProvider(
+                                object : RecoveryRunAeadBackend {
+                                    override fun generateNew(keyUri: String) = Unit
+
+                                    override fun getAead(
+                                        keyUri: String
+                                    ): com.google.crypto.tink.Aead = throw aliasFailure
+                                }
+                            )
+                        )
                     else
                         object : RecoveryReconciliationCrypto by crypto {
                             override fun authenticateConfirmationOrphan(
@@ -711,6 +1007,114 @@ class RecoveryMicrofileReconciliationControllerTest {
                 .reconcile(run)
         }
 
+        fun reconcileNoManifestWithInventory(): MicrofileReconciliationResult {
+            val input =
+                RecoveryQuarantineIntentInput(
+                    RecoveryCandidate.MICROFILE,
+                    run,
+                    "stale.tmp",
+                    RecoveryQuarantineArtifactRole.UNKNOWN_REGULAR,
+                    1UL,
+                    Sha256Value.calculate(byteArrayOf(7)),
+                )
+            val pending =
+                RecoveryQuarantineIntentRow(
+                    com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntent.calculate(
+                        input
+                    ),
+                    input,
+                    RecoveryQuarantineObservedState.TEMP_ONLY,
+                    QuarantineBootstrapBinding.PRESENT,
+                    com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntent
+                        .destination(input),
+                    QuarantineIntentState.PENDING,
+                )
+            val report =
+                RecoveryReportOnlyInventoryEntry(
+                    "objects/q-${"2".repeat(64)}.bin",
+                    QuarantinePathState.OCCUPIED,
+                    1UL,
+                    Sha256Value.calculate(byteArrayOf(2)),
+                    false,
+                )
+            val quarantine =
+                RecoveryQuarantineController(
+                    MemoryQuarantineStorage(quarantineEvents),
+                    MemoryQuarantineJournal(quarantineEvents, pending),
+                ) {}
+            return RecoveryMicrofileReconciliationController(
+                    source(
+                        pending = listOf(pending),
+                        reports = listOf(report),
+                        candidateValue = candidate.copy(publications = emptyList()),
+                    ),
+                    crypto,
+                    com.monumentogram.dora.poc.recovery.controller
+                        .RecoveryKeyConfirmationController { runAead },
+                    quarantine,
+                )
+                .reconcile(run)
+        }
+
+        fun reconcileCandidateFailureAfterPending(): MicrofileReconciliationResult {
+            val input =
+                RecoveryQuarantineIntentInput(
+                    RecoveryCandidate.MICROFILE,
+                    run,
+                    "replay.tmp",
+                    RecoveryQuarantineArtifactRole.UNKNOWN_REGULAR,
+                    1UL,
+                    Sha256Value.calculate(byteArrayOf(4)),
+                )
+            val pending =
+                RecoveryQuarantineIntentRow(
+                    com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntent.calculate(
+                        input
+                    ),
+                    input,
+                    RecoveryQuarantineObservedState.TEMP_ONLY,
+                    QuarantineBootstrapBinding.PRESENT,
+                    com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntent
+                        .destination(input),
+                    QuarantineIntentState.PENDING,
+                )
+            val failing =
+                object : RecoveryReconciliationSource {
+                    override fun loadConfirmation(runId: RunId) = confirmation
+
+                    override fun loadCandidate(runId: RunId): RecoveryCandidateSnapshot =
+                        throw RecoverySourceAccessException(
+                            RecoveryFailureDiagnostic(
+                                RecoveryFailureCategory.OPERATIONAL,
+                                "candidate",
+                                "candidate load failed",
+                                RecoveryFailureStage.JOURNAL,
+                            ),
+                            IllegalStateException("candidate"),
+                        )
+
+                    override fun loadArtifact(
+                        runId: RunId,
+                        relativeName: String,
+                    ): RecoveryArtifactBytes? = artifacts[relativeName]
+
+                    override fun loadPendingQuarantine(runId: RunId) = listOf(pending)
+                }
+            val quarantine =
+                RecoveryQuarantineController(
+                    MemoryQuarantineStorage(quarantineEvents),
+                    MemoryQuarantineJournal(quarantineEvents, pending),
+                ) {}
+            return RecoveryMicrofileReconciliationController(
+                    failing,
+                    crypto,
+                    com.monumentogram.dora.poc.recovery.controller
+                        .RecoveryKeyConfirmationController { runAead },
+                    quarantine,
+                )
+                .reconcile(run)
+        }
+
         fun reconcileUnitFailure(
             diagnostic: RecoveryFailureDiagnostic
         ): MicrofileReconciliationResult.PartialPrefix {
@@ -731,6 +1135,87 @@ class RecoveryMicrofileReconciliationControllerTest {
                         .RecoveryKeyConfirmationController { runAead },
                 )
                 .reconcile(run) as MicrofileReconciliationResult.PartialPrefix
+        }
+
+        fun reconcileRejectedManifestWithInventory(
+            diagnostic: RecoveryFailureDiagnostic
+        ): MicrofileReconciliationResult {
+            val rejecting =
+                object : RecoveryReconciliationCrypto by crypto {
+                    override fun authenticateManifest(
+                        runId: RunId,
+                        publication: RecoveryManifestPublicationRow,
+                        previousDigest: Sha256Value,
+                        envelope: ByteArray,
+                        ciphertext: ByteArray,
+                    ) = ManifestAuthenticationOutcome.Rejected(diagnostic)
+                }
+            val report =
+                RecoveryReportOnlyInventoryEntry(
+                    "objects/q-${"1".repeat(64)}.bin",
+                    QuarantinePathState.OCCUPIED,
+                    1UL,
+                    Sha256Value.calculate(byteArrayOf(1)),
+                    false,
+                )
+            return RecoveryMicrofileReconciliationController(
+                    source(reports = listOf(report)),
+                    rejecting,
+                    com.monumentogram.dora.poc.recovery.controller
+                        .RecoveryKeyConfirmationController { runAead },
+                )
+                .reconcile(run)
+        }
+
+        fun reconcileWithout(role: String): MicrofileReconciliationResult {
+            val relative =
+                when (role) {
+                    "manifest-envelope" -> publication.keyEnvelopeRelativeName
+                    "manifest-ciphertext" -> publication.publicationRelativeName
+                    "unit-envelope" -> unitRow.keyEnvelopeRelativeName
+                    "unit-ciphertext" -> unitRow.ciphertextRelativeName
+                    else -> error("unknown role")
+                }
+            return controllerFor(candidate, artifacts - relative).reconcile(run)
+        }
+
+        fun reconcileManifestSourceFailure(
+            category: RecoveryFailureCategory
+        ): MicrofileReconciliationResult {
+            val diagnostic =
+                RecoveryFailureDiagnostic(
+                    category,
+                    "source",
+                    "source failure",
+                    if (category == RecoveryFailureCategory.OPERATIONAL)
+                        RecoveryFailureStage.ARTIFACT_IO
+                    else RecoveryFailureStage.ARTIFACT_PATH,
+                )
+            val failingSource =
+                object : RecoveryReconciliationSource {
+                    override fun loadConfirmation(runId: RunId) = confirmation
+
+                    override fun loadCandidate(runId: RunId) = candidate
+
+                    override fun loadArtifact(
+                        runId: RunId,
+                        relativeName: String,
+                    ): RecoveryArtifactBytes? {
+                        if (relativeName == publication.keyEnvelopeRelativeName)
+                            throw RecoverySourceAccessException(
+                                diagnostic,
+                                IllegalStateException("source"),
+                            )
+                        return artifacts[relativeName]
+                    }
+                }
+            return RecoveryMicrofileReconciliationController(
+                    failingSource,
+                    crypto,
+                    com.monumentogram.dora.poc.recovery.controller
+                        .RecoveryKeyConfirmationController { runAead },
+                )
+                .reconcile(run)
         }
 
         fun reconcileReportOnlyQuarantine(): MicrofileReconciliationResult {
@@ -904,7 +1389,10 @@ class RecoveryMicrofileReconciliationControllerTest {
         }
 
         @Suppress("LongMethod")
-        fun reconcileThreeUnitsWithAuthFailure(failureIndex: Int): MicrofileReconciliationResult {
+        fun reconcileThreeUnitsWithAuthFailure(
+            failureIndex: Int,
+            rejectManifestAbove: ULong? = null,
+        ): MicrofileReconciliationResult {
             val rows = mutableListOf<RecoveryMicrofileUnitRow>()
             val publications = mutableListOf<RecoveryManifestPublicationRow>()
             val allArtifacts = mutableMapOf<String, RecoveryArtifactBytes>()
@@ -1025,9 +1513,39 @@ class RecoveryMicrofileReconciliationControllerTest {
                     RecoveryArtifactBytes(pRow.publicationRelativeName, manifestCiphertextN)
                 previousDigest = pRow.publicationSha256
             }
+            val reconciliationCrypto =
+                if (rejectManifestAbove == null) crypto
+                else
+                    object : RecoveryReconciliationCrypto by crypto {
+                        override fun authenticateManifest(
+                            runId: RunId,
+                            publication: RecoveryManifestPublicationRow,
+                            previousDigest: Sha256Value,
+                            envelope: ByteArray,
+                            ciphertext: ByteArray,
+                        ): ManifestAuthenticationOutcome =
+                            if (publication.generation > rejectManifestAbove)
+                                ManifestAuthenticationOutcome.Rejected(
+                                    RecoveryFailureDiagnostic(
+                                        RecoveryFailureCategory.UNKNOWN,
+                                        "ManifestPayloadRejected",
+                                        "newer generation rejected",
+                                        RecoveryFailureStage.MANIFEST_PAYLOAD_DECRYPT,
+                                    )
+                                )
+                            else
+                                crypto.authenticateManifest(
+                                    runId,
+                                    publication,
+                                    previousDigest,
+                                    envelope,
+                                    ciphertext,
+                                )
+                    }
             return controllerFor(
                     candidate.copy(units = rows, publications = publications),
                     allArtifacts,
+                    reconciliationCrypto,
                 )
                 .reconcile(run)
         }
@@ -1145,6 +1663,7 @@ class RecoveryMicrofileReconciliationControllerTest {
         private fun controllerFor(
             snapshot: RecoveryCandidateSnapshot,
             values: Map<String, RecoveryArtifactBytes>,
+            reconciliationCrypto: RecoveryReconciliationCrypto = crypto,
         ) =
             RecoveryMicrofileReconciliationController(
                 object : RecoveryReconciliationSource {
@@ -1155,7 +1674,7 @@ class RecoveryMicrofileReconciliationControllerTest {
                     override fun loadArtifact(runId: RunId, relativeName: String) =
                         values[relativeName]
                 },
-                crypto,
+                reconciliationCrypto,
                 com.monumentogram.dora.poc.recovery.controller.RecoveryKeyConfirmationController {
                     runAead
                 },

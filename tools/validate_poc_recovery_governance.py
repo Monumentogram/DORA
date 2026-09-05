@@ -504,6 +504,13 @@ REC_I3_RECON_ROUND3_FINDINGS = (
     "P1-Q05-CONFIRMED-REMAINDER", "P1-EVIDENCE-TRUTH", "P2-ROW-DIGEST-FRAMING",
     "P2-PRODUCTION-UNIQUE-READBACK",
 )
+REC_I3_RECON_ROUND3_ACCEPTANCE_CASES = (
+    "OPTIONAL-NAMESPACE", "POST-INVENTORY-RETENTION", "CONTEXTUAL-TAXONOMY",
+    "MANIFEST-REJECTION-ORDER", "Q01-Q05-INDEPENDENT-READBACK",
+    "ROW-DIGEST-FRAMING", "PRODUCTION-UNIQUE-TUPLE", "PATH-IO-DISTINCTION",
+)
+REC_I3_RECON_ROUND3_STATE_COMMIT = "927a9a2946b79b29536b325956f90966c94f2af3"
+REC_I3_RECON_ROUND3_STATE_TREE = "0abc6990d2f18598cb3e3ced78a6eac5f041770f"
 REC_I3_RECON_ROUND2_STATE_COMMIT = "b645db8e31ad2eab7de71849082b29ce80f7b4ae"
 REC_I3_RECON_ROUND2_STATE_TREE = "c529c3e01776ede0ea9ccf7b7dbfc4ec583b4099"
 REC_I3_RECON_ROUND2_STATE_PATHS = (
@@ -5932,6 +5939,16 @@ def validate_rec_i3_reconciliation_successor(publication: bool) -> None:
     ))
     require(state_paths == set(REC_I3_RECON_ROUND2_STATE_PATHS),
             "REC-I3 round-two truth checkpoint contains implementation or unrelated paths")
+    require(git_is_ancestor(REC_I3_RECON_ROUND3_STATE_COMMIT, head)
+            and git_output("rev-parse", f"{REC_I3_RECON_ROUND3_STATE_COMMIT}^{{tree}}")
+            == REC_I3_RECON_ROUND3_STATE_TREE,
+            "REC-I3 round-three truth checkpoint identity drift")
+    round3_state_paths = set(git_path_records(
+        "diff", "--name-only", "-z",
+        f"{REC_I3_RECON_ROUND3_STATE_COMMIT}^", REC_I3_RECON_ROUND3_STATE_COMMIT,
+    ))
+    require(round3_state_paths == set(REC_I3_RECON_ROUND2_STATE_PATHS),
+            "REC-I3 round-three truth checkpoint contains implementation or unrelated paths")
     epoch_paths = set(git_path_records(
         "log", "--format=", "--name-only", "--no-renames", "-z",
         f"{REC_I3_RECON_PREDECESSOR_COMMIT}..{head}",
@@ -6003,6 +6020,17 @@ def validate_rec_i3_reconciliation_successor(publication: bool) -> None:
     require(isinstance(author_verification, dict)
             and author_verification.get("status") in {"NOT_RUN", "PASS"},
             "REC-I3 reconciliation author verification state invalid")
+    if author_verification.get("status") == "PASS":
+        cases = author_verification.get("acceptanceCases")
+        require(isinstance(cases, list)
+                and [item.get("id") for item in cases]
+                == list(REC_I3_RECON_ROUND3_ACCEPTANCE_CASES)
+                and all(isinstance(item.get("productionEntry"), str)
+                        and "." in item["productionEntry"]
+                        and isinstance(item.get("test"), str) and "." in item["test"]
+                        and isinstance(item.get("assertion"), str)
+                        and len(item["assertion"]) >= 32 for item in cases),
+                "REC-I3 round-three PASS lacks exact production-entry acceptance mapping")
     checks = record.get("checks", [])
     require(any(item.get("stage") == "HOST_SQLITE" and item.get("outcome") == "PASS"
                 for item in checks), "REC-I3 reconciliation exact host SQLite evidence missing")

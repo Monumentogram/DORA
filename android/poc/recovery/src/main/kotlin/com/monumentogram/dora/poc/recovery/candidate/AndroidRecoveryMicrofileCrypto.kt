@@ -64,7 +64,7 @@ internal constructor(
                 RecoveryFailureDiagnostic.capture(
                     error.toRecoveryDecryptFailureSignal().category(),
                     error,
-                    RecoveryFailureStage.UNIT_PAYLOAD_DECRYPT,
+                    RecoveryFailureStage.CONFIRMATION_PAYLOAD_DECRYPT,
                 ),
                 error,
             )
