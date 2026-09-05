@@ -1,8 +1,8 @@
 # Dora MVP 1 — REC-I3 processing-intent contract addition
 
-Scope ID: `rec-i3-processing-intent-contract-stage0-v0.1`  
-Date: 5 September 2026  
-Authority: `OWNER-AUTH-BATCH-20260819-01` / OD-15  
+Scope ID: `rec-i3-processing-intent-contract-stage0-v0.1`\
+Date: 5 September 2026\
+Authority: `OWNER-AUTH-BATCH-20260819-01` / OD-15\
 Predecessor: `3adacb7c2a52dba53604e7dde63bfad1feea96a3` / tree `072b9dc9abc65a2889c02f8c56142fd07d79f6ee`
 
 The authorized sequential microfile slice requires the exact inherited v0.3 processing-intent
