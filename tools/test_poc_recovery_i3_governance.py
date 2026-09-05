@@ -13,6 +13,17 @@ import validate_poc_recovery_governance as governance
 
 
 class RecoveryI3GovernanceTests(unittest.TestCase):
+    def test_reconciliation_epoch_exposes_only_declared_mutable_paths(self) -> None:
+        self.assertIn(
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/"
+            "candidate/RecoveryMicrofileReconciliationController.kt",
+            governance.REC_I3_CURRENT_MUTABLE_PATHS,
+        )
+        self.assertNotIn(
+            governance.REC_I3_MICROFILE_FROZEN_BOOTSTRAP_PATHS[0],
+            governance.REC_I3_CURRENT_MUTABLE_PATHS,
+        )
+
     def test_sequential_microfile_successor_has_exact_scope_sources_and_nonclaims(self) -> None:
         self.assertEqual(
             "4eab3eae72b9196fbd114339b9fe96bba7705f00",
@@ -20,7 +31,7 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
         )
         governance.validate_rec_i3_microfile_successor(publication=False)
         changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
-        changes["untracked"] = list(governance.REC_I3_MICROFILE_MUTABLE_PATHS)
+        changes["untracked"] = list(governance.REC_I3_RECON_MUTABLE_PATHS)
         governance.validate_rec_i3_changed_paths(changes)
         changes["untracked"] = [
             "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/FutureWriter.kt"

@@ -15,7 +15,7 @@ def quoted(name):
     assert m, name
     return m.group(1)
 
-run_ddl, unit_ddl, pub_ddl = map(triple, ("CREATE_RUN_TABLE", "CREATE_UNIT_TABLE", "CREATE_PUBLICATION_TABLE"))
+run_ddl, unit_ddl, pub_ddl, quarantine_ddl = map(triple, ("CREATE_RUN_TABLE", "CREATE_UNIT_TABLE", "CREATE_PUBLICATION_TABLE", "CREATE_QUARANTINE_TABLE"))
 index_ddl = quoted("CREATE_RUN_IDENTITY_INDEX")
 run_id = "00112233-4455-6677-8899-aabbccddeeff"
 candidate = "REC-MICROFILE-TINK"
@@ -52,6 +52,20 @@ def require_exact_v1(db):
         and triggers == []
     ):
         raise ValueError("Recovery journal v1 schema is not exact")
+
+def require_exact_v2(db):
+    expected = {
+        ("table", "recovery_run_bootstrap_v1"): run_ddl,
+        ("index", "recovery_run_candidate_v2"): index_ddl,
+        ("table", "recovery_microfile_unit_v2"): unit_ddl,
+        ("table", "recovery_manifest_publication_v2"): pub_ddl,
+    }
+    for (kind, name), ddl in expected.items():
+        row = db.execute("SELECT sql FROM sqlite_master WHERE type=? AND name=?", (kind, name)).fetchone()
+        if row is None or normalize_sql(row[0]).replace("( ", "(").replace(" )", ")") != normalize_sql(ddl).replace("( ", "(").replace(" )", ")"):
+            raise ValueError("Recovery journal v2 schema is not exact: " + name)
+    if db.execute("SELECT count(*) FROM sqlite_master WHERE type='trigger' AND name LIKE 'recovery_%'").fetchone()[0]:
+        raise ValueError("Recovery journal v2 has unexpected trigger")
 
 def bootstrap(db):
     db.execute(run_ddl); db.execute(index_ddl)
@@ -101,9 +115,11 @@ migration.execute(run_ddl)
 migration.execute("INSERT INTO recovery_run_bootstrap_v1 VALUES (?,?,?,?,?,?,?)",(run_id,candidate,"key-confirmation/run.kc",1,blob,blob,"VALID"))
 require_exact_v1(migration)
 migration.execute(index_ddl); migration.execute(unit_ddl); migration.execute(pub_ddl)
+require_exact_v2(migration)
+migration.execute(quarantine_ddl)
 assert migration.execute("SELECT candidate_id FROM recovery_run_bootstrap_v1 WHERE run_id=?",(run_id,)).fetchone() == (candidate,)
 assert "beginTransaction" not in re.search(r"fun migrateV1ToV2\(.*?\n    }", source, re.S).group(0)
-assert "oldVersion == 1 && newVersion == 2" in source and "UpgradePlan.REJECT" in source and "onDowngrade" in source
+assert "oldVersion == 1 && newVersion == 3" in source and "oldVersion == 2 && newVersion == 3" in source and "UpgradePlan.REJECT" in source and "onDowngrade" in source
 for required in ("PRAGMA table_info", "sqlite_master WHERE type='table'", "PRAGMA foreign_key_list", "type='trigger'", "PRAGMA index_list"):
     assert required in source, "production exact-v1 inspection missing: " + required
 
@@ -147,6 +163,32 @@ except sqlite3.OperationalError:
 assert rollback.execute("SELECT count(*) FROM recovery_run_bootstrap_v1").fetchone()[0] == 1
 assert rollback.execute("SELECT count(*) FROM sqlite_master WHERE name IN ('recovery_run_candidate_v2','recovery_microfile_unit_v2')").fetchone()[0] == 0
 
+direct=sqlite3.connect(":memory:"); direct.execute("PRAGMA foreign_keys=ON")
+direct.execute("CREATE TABLE android_metadata (locale TEXT)"); direct.execute("INSERT INTO android_metadata VALUES ('en_US')")
+bootstrap(direct); insert_children(direct); require_exact_v2(direct); direct.execute(quarantine_ddl)
+intent=bytes([2])*32
+direct.execute("""INSERT INTO recovery_quarantine_intent_v3 VALUES
+    (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+    (intent,run_id,candidate,"PRESENT",run_id,candidate,"MICROFILE_CIPHERTEXT","TEMP_ONLY",
+     "units/u-0000000000.ct.tmp","objects/q-"+intent.hex()+".bin",1,bytes([3])*32,"PENDING"))
+assert direct.execute("SELECT locale FROM android_metadata").fetchone() == ("en_US",)
+try:
+    direct.execute("""INSERT INTO recovery_quarantine_intent_v3 VALUES
+        (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (bytes([4])*32,run_id,candidate,"PRESENT",run_id,"REC-STREAM-TINK","UNKNOWN_REGULAR","UNKNOWN_OR_NON_ALLOWLISTED_NAME",
+         "x","objects/q-"+bytes([4]*32).hex()+".bin",0,blob,"PENDING"))
+    raise AssertionError("cross-candidate quarantine binding accepted")
+except sqlite3.IntegrityError:
+    pass
+
+malformed_v2=sqlite3.connect(":memory:"); malformed_v2.execute("PRAGMA foreign_keys=ON")
+bootstrap(malformed_v2); malformed_v2.execute(unit_ddl.replace(" CHECK(state='VALID')", "")); malformed_v2.execute(pub_ddl)
+try:
+    require_exact_v2(malformed_v2)
+    raise AssertionError("malformed v2 unexpectedly accepted")
+except ValueError:
+    pass
+
 with tempfile.TemporaryDirectory(prefix="dora-rec-i3-sqlite-") as temporary:
     database_path = pathlib.Path(temporary) / "journal.db"
     first = sqlite3.connect(database_path, timeout=0)
@@ -165,11 +207,12 @@ with tempfile.TemporaryDirectory(prefix="dora-rec-i3-sqlite-") as temporary:
         first.close()
         second.close()
 print("PASS host sqlite", sqlite3.sqlite_version)
-print("ddl_sha256", hashlib.sha256((run_ddl+index_ddl+unit_ddl+pub_ddl).encode()).hexdigest())
-print("fresh_v2_rows", 1, 1, 1)
+print("ddl_sha256", hashlib.sha256((run_ddl+index_ddl+unit_ddl+pub_ddl+quarantine_ddl).encode()).hexdigest())
+print("fresh_v3_rows", 1, 1, 1, 1)
 print("migration_preserved", run_id, candidate)
 print("cadence_boundaries", "5:160000", "15:480000", "30:960000")
 print("rejected", "cross_candidate", "bad_cadence", "oversized_unit", "wrong_publication_kind")
 print("failed_migration_rollback", "preserved_v1", "no_partial_v2")
 print("rejected_malformed_v1", *malformed_v1, "extra_index", "extra_trigger")
+print("v1_to_v2_to_v3", "PASS", "direct_v2_to_v3", "PASS", "platform_metadata_preserved", "PASS", "malformed_v2_rejected", "PASS")
 print("different_run_writer_serialization", "second_writer_locked")

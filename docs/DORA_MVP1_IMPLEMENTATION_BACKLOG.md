@@ -69,6 +69,15 @@ SQLite executes the production DDL and migration statements but is not Android r
 Reconciliation, quarantine, streaming, external control and campaign execution remain unfinished.
 `fullRecI3Completed=false`, all ten blockers and the Recovery preflight lock remain unchanged.
 
+REC-I3 reconciliation/quarantine amendment, 5 September 2026: the additive
+[scope](stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_RECONCILIATION_QUARANTINE_SCOPE_STAGE0_V0_1.md),
+[ADR-0004](adr/ADR-0004-poc-recovery-reconciliation-and-quarantine.md) and local evidence add the
+bounded authenticated microfile-prefix and durable quarantine controller. Host tests cover actual
+Tink authentication, replay ordering and exact SQLite v1-to-v2-to-v3 migration; compiled Android
+adapters and host fakes are not device durability proof. Streaming, external control and campaign
+execution remain unfinished. `fullRecI3Completed=false`, all ten blockers and every preflight,
+execution, measurement and production-admission lock remain unchanged.
+
 ## 1. Правила выполнения
 
 - `DONE` означает: артефакт существует, acceptance выполнен и evidence доступно в commit/CI/report.

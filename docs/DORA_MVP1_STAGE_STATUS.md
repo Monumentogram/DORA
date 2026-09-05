@@ -160,6 +160,21 @@ and campaign work are unfinished. `fullRecI3Completed=false`; all ten active blo
 `POC-RECOVERY-001` `BLOCKED / NOT_READY`, the Recovery preflight lock and every execution,
 measurement and production-admission nonclaim remain unchanged.
 
+## REC-I3 microfile reconciliation/quarantine amendment — 5 September 2026
+
+The additive
+[scope](stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_RECONCILIATION_QUARANTINE_SCOPE_STAGE0_V0_1.md)
+and [ADR-0004](adr/ADR-0004-poc-recovery-reconciliation-and-quarantine.md) record a bounded partial
+REC-I3 slice. It validates the confirmation root before unrelated candidate observations,
+authenticates the longest gap-free microfile prefix with actual typed Tink operations, and records
+stable quarantine intents before no-overwrite rename and both directory fsyncs. Schema v3 remains
+PoC-only at the existing database path and rejects malformed predecessor schemas.
+
+Host SQLite/fakes and compiled Android adapters do not prove Android runtime durability. The
+remaining REC-I3 harness, stream candidate, external controller and campaign work are unfinished.
+`fullRecI3Completed=false`; all ten active blockers, `POC-RECOVERY-001` `BLOCKED / NOT_READY`, and
+every preflight, execution, measurement and production-admission nonclaim remain unchanged.
+
 ## Stage 00 closure
 
 - Stage 00 is complete.

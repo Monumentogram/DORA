@@ -11,20 +11,27 @@ import com.monumentogram.dora.poc.recovery.storage.BootstrapPathType
 import com.monumentogram.dora.poc.recovery.storage.RecoveryBootstrapPathPolicy
 import java.io.File
 
+@Suppress("MagicNumber")
 internal object RecoveryJournalSchema {
-    const val VERSION = 2
+    const val VERSION = 3
     const val DATABASE_RELATIVE_NAME = "poc-recovery/v1/recovery-journal-v1.db"
     const val RUN_TABLE = "recovery_run_bootstrap_v1"
     const val UNIT_TABLE = "recovery_microfile_unit_v2"
     const val PUBLICATION_TABLE = "recovery_manifest_publication_v2"
+    const val QUARANTINE_TABLE = "recovery_quarantine_intent_v3"
 
     enum class UpgradePlan {
-        V1_TO_V2,
+        V1_TO_V3,
+        V2_TO_V3,
         REJECT,
     }
 
     fun upgradePlan(oldVersion: Int, newVersion: Int): UpgradePlan =
-        if (oldVersion == 1 && newVersion == 2) UpgradePlan.V1_TO_V2 else UpgradePlan.REJECT
+        when {
+            oldVersion == 1 && newVersion == 3 -> UpgradePlan.V1_TO_V3
+            oldVersion == 2 && newVersion == 3 -> UpgradePlan.V2_TO_V3
+            else -> UpgradePlan.REJECT
+        }
 
     const val CREATE_RUN_TABLE =
         """CREATE TABLE recovery_run_bootstrap_v1 (
@@ -69,12 +76,29 @@ internal object RecoveryJournalSchema {
         PRIMARY KEY(run_id,candidate_id,generation),
         FOREIGN KEY(run_id,candidate_id) REFERENCES recovery_run_bootstrap_v1(run_id,candidate_id) ON UPDATE RESTRICT ON DELETE RESTRICT
     )"""
+    const val CREATE_QUARANTINE_TABLE =
+        """CREATE TABLE recovery_quarantine_intent_v3 (
+        intent_id BLOB NOT NULL PRIMARY KEY CHECK(length(intent_id)=32),
+        run_id TEXT NOT NULL, candidate_id TEXT NOT NULL CHECK(candidate_id='REC-MICROFILE-TINK'),
+        bootstrap_binding TEXT NOT NULL CHECK(bootstrap_binding IN ('ABSENT','PRESENT')),
+        bootstrap_run_id TEXT, bootstrap_candidate_id TEXT,
+        artifact_role TEXT NOT NULL CHECK(artifact_role IN ('KEY_CONFIRMATION','MICROFILE_KEY_ENVELOPE','MICROFILE_CIPHERTEXT','MANIFEST_KEY_ENVELOPE','MANIFEST_CIPHERTEXT','UNKNOWN_REGULAR')),
+        observed_state TEXT NOT NULL CHECK(observed_state IN ('TEMP_ONLY','TEMP_AND_FINAL','FINAL_ORPHAN','SQLITE_POINTS_TO_TEMP','UNKNOWN_OR_NON_ALLOWLISTED_NAME')),
+        source_relative_name TEXT NOT NULL, destination_relative_name TEXT NOT NULL,
+        source_bytes INTEGER NOT NULL CHECK(source_bytes>=0), source_sha256 BLOB NOT NULL CHECK(length(source_sha256)=32),
+        state TEXT NOT NULL CHECK(state IN ('PENDING','COMPLETED')),
+        CHECK((bootstrap_binding='ABSENT' AND bootstrap_run_id IS NULL AND bootstrap_candidate_id IS NULL) OR
+              (bootstrap_binding='PRESENT' AND bootstrap_run_id=run_id AND bootstrap_candidate_id=candidate_id)),
+        UNIQUE(run_id,candidate_id,source_relative_name,source_sha256),
+        FOREIGN KEY(bootstrap_run_id,bootstrap_candidate_id) REFERENCES recovery_run_bootstrap_v1(run_id,candidate_id) ON UPDATE RESTRICT ON DELETE RESTRICT
+    )"""
 
-    fun createV2(database: SQLiteDatabase) {
+    fun createV3(database: SQLiteDatabase) {
         database.execSQL(CREATE_RUN_TABLE)
         database.execSQL(CREATE_RUN_IDENTITY_INDEX)
         database.execSQL(CREATE_UNIT_TABLE)
         database.execSQL(CREATE_PUBLICATION_TABLE)
+        database.execSQL(CREATE_QUARANTINE_TABLE)
     }
 
     fun migrateV1ToV2(database: SQLiteDatabase) {
@@ -82,6 +106,62 @@ internal object RecoveryJournalSchema {
         database.execSQL(CREATE_RUN_IDENTITY_INDEX)
         database.execSQL(CREATE_UNIT_TABLE)
         database.execSQL(CREATE_PUBLICATION_TABLE)
+    }
+
+    fun migrateV2ToV3(database: SQLiteDatabase) {
+        requireExactV2(database)
+        database.execSQL(CREATE_QUARANTINE_TABLE)
+    }
+
+    private fun requireExactV2(database: SQLiteDatabase) {
+        requireExactSql(database, "table", RUN_TABLE, CREATE_RUN_TABLE)
+        requireExactSql(database, "index", "recovery_run_candidate_v2", CREATE_RUN_IDENTITY_INDEX)
+        requireExactSql(database, "table", UNIT_TABLE, CREATE_UNIT_TABLE)
+        requireExactSql(database, "table", PUBLICATION_TABLE, CREATE_PUBLICATION_TABLE)
+        val recoveryObjects = mutableListOf<Pair<String, String>>()
+        database
+            .rawQuery(
+                "SELECT type,name FROM sqlite_master WHERE name LIKE 'recovery_%' ORDER BY type,name",
+                null,
+            )
+            .use { cursor ->
+                while (cursor.moveToNext()) recoveryObjects +=
+                    cursor.getString(0) to cursor.getString(1)
+            }
+        val expected =
+            listOf(
+                    "index" to "recovery_run_candidate_v2",
+                    "index" to "sqlite_autoindex_recovery_manifest_publication_v2_1",
+                    "index" to "sqlite_autoindex_recovery_microfile_unit_v2_1",
+                    "index" to "sqlite_autoindex_recovery_microfile_unit_v2_2",
+                    "index" to "sqlite_autoindex_recovery_run_bootstrap_v1_1",
+                    "table" to PUBLICATION_TABLE,
+                    "table" to UNIT_TABLE,
+                    "table" to RUN_TABLE,
+                )
+                .sortedWith(compareBy<Pair<String, String>> { it.first }.thenBy { it.second })
+        if (recoveryObjects != expected)
+            throw SQLiteException("Recovery journal v2 schema is not exact")
+    }
+
+    private fun requireExactSql(
+        database: SQLiteDatabase,
+        type: String,
+        name: String,
+        expected: String,
+    ) {
+        val actual =
+            database
+                .rawQuery(
+                    "SELECT sql FROM sqlite_master WHERE type=? AND name=?",
+                    arrayOf(type, name),
+                )
+                .use { cursor ->
+                    if (cursor.moveToFirst() && !cursor.isNull(0)) cursor.getString(0) else null
+                }
+        if (normalizeSql(actual) != normalizeSql(expected)) {
+            throw SQLiteException("Recovery journal v2 schema is not exact: $name")
+        }
     }
 
     @Suppress("CyclomaticComplexMethod", "LongMethod")
@@ -154,7 +234,8 @@ internal object RecoveryJournalSchema {
             count
         }
 
-    private fun normalizeSql(value: String?): String? = value?.trim()?.replace(Regex("\\s+"), " ")
+    private fun normalizeSql(value: String?): String? =
+        value?.trim()?.replace(Regex("\\s+"), " ")?.replace("( ", "(")?.replace(" )", ")")
 }
 
 internal object AndroidRecoveryJournalDatabase {
@@ -183,12 +264,16 @@ private class RecoveryJournalSqliteHelper(context: Context) :
         database.execSQL("PRAGMA wal_autocheckpoint=0")
     }
 
-    override fun onCreate(database: SQLiteDatabase) = RecoveryJournalSchema.createV2(database)
+    override fun onCreate(database: SQLiteDatabase) = RecoveryJournalSchema.createV3(database)
 
     override fun onUpgrade(database: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         when (RecoveryJournalSchema.upgradePlan(oldVersion, newVersion)) {
-            RecoveryJournalSchema.UpgradePlan.V1_TO_V2 ->
+            RecoveryJournalSchema.UpgradePlan.V1_TO_V3 -> {
                 RecoveryJournalSchema.migrateV1ToV2(database)
+                RecoveryJournalSchema.migrateV2ToV3(database)
+            }
+            RecoveryJournalSchema.UpgradePlan.V2_TO_V3 ->
+                RecoveryJournalSchema.migrateV2ToV3(database)
             RecoveryJournalSchema.UpgradePlan.REJECT ->
                 throw SQLiteException(
                     "PoC Recovery journal migration is not admitted: $oldVersion -> $newVersion"

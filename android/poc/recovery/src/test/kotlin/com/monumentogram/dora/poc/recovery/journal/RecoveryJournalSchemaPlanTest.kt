@@ -6,12 +6,16 @@ import org.junit.Test
 
 class RecoveryJournalSchemaPlanTest {
     @Test
-    fun `only exact one to two upgrade is selected`() {
+    fun `only exact one or two to three upgrades are selected`() {
         assertEquals(
-            RecoveryJournalSchema.UpgradePlan.V1_TO_V2,
-            RecoveryJournalSchema.upgradePlan(1, 2),
+            RecoveryJournalSchema.UpgradePlan.V1_TO_V3,
+            RecoveryJournalSchema.upgradePlan(1, 3),
         )
-        listOf(0 to 2, 1 to 3, 2 to 3, 2 to 1, 1 to 1).forEach { (old, new) ->
+        assertEquals(
+            RecoveryJournalSchema.UpgradePlan.V2_TO_V3,
+            RecoveryJournalSchema.upgradePlan(2, 3),
+        )
+        listOf(0 to 3, 1 to 2, 2 to 1, 1 to 1, 3 to 2).forEach { (old, new) ->
             assertEquals(
                 RecoveryJournalSchema.UpgradePlan.REJECT,
                 RecoveryJournalSchema.upgradePlan(old, new),
@@ -29,6 +33,11 @@ class RecoveryJournalSchemaPlanTest {
         assertTrue(
             RecoveryJournalSchema.CREATE_UNIT_TABLE.contains(
                 "plaintext_end - plaintext_start <= cadence_seconds * 32000"
+            )
+        )
+        assertTrue(
+            RecoveryJournalSchema.CREATE_QUARANTINE_TABLE.contains(
+                "state TEXT NOT NULL CHECK(state IN ('PENDING','COMPLETED'))"
             )
         )
     }
