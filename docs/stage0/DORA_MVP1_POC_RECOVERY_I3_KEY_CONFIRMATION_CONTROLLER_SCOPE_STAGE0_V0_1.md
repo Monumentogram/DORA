@@ -1,9 +1,9 @@
 # Dora MVP 1 — REC-I3 key-confirmation controller first slice
 
-Scope ID: `rec-i3-key-confirmation-controller-stage0-v0.1`  
-Backlog: `POC-RECOVERY-001` / partial `REC-I3`  
-Date: 5 September 2026  
-Authority: `OWNER-AUTH-BATCH-20260819-01` / [OD-15](DORA_MVP1_STAGE0_OWNER_DECISION_OD15.md)  
+Scope ID: `rec-i3-key-confirmation-controller-stage0-v0.1`\
+Backlog: `POC-RECOVERY-001` / partial `REC-I3`\
+Date: 5 September 2026\
+Authority: `OWNER-AUTH-BATCH-20260819-01` / [OD-15](DORA_MVP1_STAGE0_OWNER_DECISION_OD15.md)\
 Implementation base: `da1d9bd13b71d609fe7ec4ea62fe1e984f726040`
 
 ## 1. Accepted contract and boundary
