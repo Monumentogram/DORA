@@ -10,6 +10,7 @@ import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineJournal
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineTransaction
 import com.monumentogram.dora.poc.recovery.contract.RecoveryCandidate
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineArtifactRole
+import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntent
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntentInput
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineObservedState
 import com.monumentogram.dora.poc.recovery.contract.RunId
@@ -33,39 +34,100 @@ internal class AndroidRecoveryQuarantineJournal(context: Context) : RecoveryQuar
             .use { cursor ->
                 if (!cursor.moveToFirst()) null
                 else {
-                    val runId = RunId.fromCanonicalString(cursor.getString(1))
-                    val bootstrapBinding = QuarantineBootstrapBinding.valueOf(cursor.getString(3))
-                    val bootstrapRunId = if (cursor.isNull(4)) null else cursor.getString(4)
-                    val bootstrapCandidateId = if (cursor.isNull(5)) null else cursor.getString(5)
-                    check(
-                        (bootstrapBinding == QuarantineBootstrapBinding.ABSENT &&
-                            bootstrapRunId == null &&
-                            bootstrapCandidateId == null) ||
-                            (bootstrapBinding == QuarantineBootstrapBinding.PRESENT &&
-                                bootstrapRunId == runId.toCanonicalString() &&
-                                bootstrapCandidateId == cursor.getString(2))
-                    ) {
-                        "Quarantine bootstrap binding readback is inconsistent"
-                    }
-                    val input =
-                        RecoveryQuarantineIntentInput(
-                            RecoveryCandidate.fromContractId(cursor.getString(2)),
-                            runId,
-                            cursor.getString(8),
-                            RecoveryQuarantineArtifactRole.valueOf(cursor.getString(6)),
-                            cursor.getLong(10).toULong(),
-                            Sha256Value.fromBytes(cursor.getBlob(11)),
-                        )
-                    RecoveryQuarantineIntentRow(
-                        Sha256Value.fromBytes(cursor.getBlob(0)),
-                        input,
-                        RecoveryQuarantineObservedState.valueOf(cursor.getString(7)),
-                        bootstrapBinding,
-                        cursor.getString(9),
-                        QuarantineIntentState.valueOf(cursor.getString(12)),
-                    )
+                    val row = cursor.row()
+                    check(!cursor.moveToNext()) { "Ambiguous quarantine intent readback" }
+                    row
                 }
             }
+
+    override fun loadBySource(input: RecoveryQuarantineIntentInput): RecoveryQuarantineIntentRow? =
+        queryOne(
+            "run_id=? AND candidate_id=? AND source_relative_name=? AND hex(source_sha256)=?",
+            arrayOf(
+                input.runId.toCanonicalString(),
+                input.candidate.contractId,
+                input.sourceRelativeName,
+                input.sourceSha256.toLowercaseHex().uppercase(),
+            ),
+        )
+
+    override fun loadPending(runId: RunId): List<RecoveryQuarantineIntentRow> {
+        val rows = mutableListOf<RecoveryQuarantineIntentRow>()
+        AndroidRecoveryJournalDatabase.writable(applicationContext)
+            .query(
+                RecoveryJournalSchema.QUARANTINE_TABLE,
+                COLUMNS,
+                "run_id=? AND state='PENDING'",
+                arrayOf(runId.toCanonicalString()),
+                null,
+                null,
+                "intent_id ASC",
+            )
+            .use { cursor -> while (cursor.moveToNext()) rows += cursor.row() }
+        return java.util.Collections.unmodifiableList(rows)
+    }
+
+    private fun queryOne(selection: String, arguments: Array<String>) =
+        AndroidRecoveryJournalDatabase.writable(applicationContext)
+            .query(
+                RecoveryJournalSchema.QUARANTINE_TABLE,
+                COLUMNS,
+                selection,
+                arguments,
+                null,
+                null,
+                null,
+            )
+            .use { cursor ->
+                if (!cursor.moveToFirst()) null
+                else {
+                    val row = cursor.row()
+                    check(!cursor.moveToNext()) { "Ambiguous quarantine source readback" }
+                    row
+                }
+            }
+
+    private fun android.database.Cursor.row(): RecoveryQuarantineIntentRow {
+        val runId = RunId.fromCanonicalString(getString(1))
+        val input =
+            RecoveryQuarantineIntentInput(
+                RecoveryCandidate.fromContractId(getString(2)),
+                runId,
+                getString(8),
+                RecoveryQuarantineArtifactRole.valueOf(getString(6)),
+                getLong(10).toULong(),
+                Sha256Value.fromBytes(getBlob(11)),
+            )
+        val bootstrapBinding = QuarantineBootstrapBinding.valueOf(getString(3))
+        val bootstrapRunId = if (isNull(4)) null else getString(4)
+        val bootstrapCandidateId = if (isNull(5)) null else getString(5)
+        check(
+            (bootstrapBinding == QuarantineBootstrapBinding.ABSENT &&
+                bootstrapRunId == null &&
+                bootstrapCandidateId == null) ||
+                (bootstrapBinding == QuarantineBootstrapBinding.PRESENT &&
+                    bootstrapRunId == runId.toCanonicalString() &&
+                    bootstrapCandidateId == input.candidate.contractId)
+        ) {
+            "Quarantine bootstrap binding readback is inconsistent"
+        }
+        val row =
+            RecoveryQuarantineIntentRow(
+                Sha256Value.fromBytes(getBlob(0)),
+                input,
+                RecoveryQuarantineObservedState.valueOf(getString(7)),
+                bootstrapBinding,
+                getString(9),
+                QuarantineIntentState.valueOf(getString(12)),
+            )
+        check(row.intentId == RecoveryQuarantineIntent.calculate(input)) {
+            "Quarantine intent identity mismatch"
+        }
+        check(row.destinationRelativeName == RecoveryQuarantineIntent.destination(input)) {
+            "Quarantine destination identity mismatch"
+        }
+        return row
+    }
 
     override fun beginNonExclusive(): RecoveryQuarantineTransaction {
         val database = AndroidRecoveryJournalDatabase.writable(applicationContext)

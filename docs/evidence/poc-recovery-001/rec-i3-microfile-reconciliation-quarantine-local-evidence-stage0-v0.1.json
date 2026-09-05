@@ -30,35 +30,37 @@
     "measured": false
   },
   "sourceFiles": {
-    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationController.kt": "707b1ef59a9aa4d2733829a24d3321287642985c62c52a3ffd700b84a333afcb",
-    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryMicrofileReconciliation.kt": "b412f8d65268ffe7ff23708b8bdb48b9b0d158e5b9986926994c0044856562ca",
-    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryMicrofileCrypto.kt": "e4ce4bb92b24f7f10c795e8ff2374272891805037cb71e3dcd7c63f7f6cf5506",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationController.kt": "b530ec365dfad6b942f7f47d3fbe9432b596494e13dfb9b5c9b71055c69b30ea",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryMicrofileReconciliation.kt": "ead3173d7f2f7d2eaee23fe424a42c7d8e9043321aec33e34bda9f67137d13bd",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryMicrofileCrypto.kt": "df87c2af8817a3611cc5078977efdf8c0c86a445f96d3c8d6ad2e70e974fec9e",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationOutcomes.kt": "af17af560f04a7cbe3f7ea820167b48364de4c966f30ac76a12d53f69228bfee",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntent.kt": "6e8847fe67f5fb1a5dbb5d36a55d85d248885f7a1b11cceaac7d5c9acdf709d7",
-    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryJournalDatabase.kt": "7060fcbdc2e082cca0216680d826131d674a0dfe8698ebea9deb8b6e8e1eb564",
-    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryQuarantineJournal.kt": "a8c3e893346434c2d6023b538353a963dedf98b23e6da00943b0e376f6192e3a",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryJournalDatabase.kt": "5a0b466e89755e248d63c604c7d311fb4e02bd57e2ce2bacbae87f99a2c17acb",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryQuarantineJournal.kt": "787c6ee72c57483183253dc417a33f90165b5fa9e5fb495d571749aa4530c72b",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSource.kt": "19ee7111f08a6c7cdb7af1f4f6d9736ebc2b0610c17a5da03c137709d908917e",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryReconciliationPathPolicy.kt": "3845c5749cce09d83c8902c7640fdbffdf23518f6ba73e3dcc59405f23785be2",
-    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorage.kt": "afdeaa08c0fc6b4df7c065a3fe35a576260e497c17b65297c4b6b8c3328b5ddb",
-    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationControllerTest.kt": "b2b8d41c0e19757050fbaf60e5b1fe03fcc665d8ffb40162e1f21b832c0df870",
-    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryQuarantineControllerTest.kt": "d2c45ad7a15e4eb2598803184c3e942a00ae496a682b3372b67d415a7d5b8969",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorage.kt": "8503d12fd4a75d3a2a713e068c61cdf6ad9513477ed2027a6f5bac613ff22fc7",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationControllerTest.kt": "0f3fdb3cac15c31d5818ab754dbcf612c357d0d4f0fb94a4d0dfa447132d92be",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryQuarantineControllerTest.kt": "3af3e3287765d74ae3fcb69792e33bfd02d0ba8209abddeab6354272aed11b00",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationAcceptanceTest.kt": "ba04f8622565e0c0dbb3b36fb3f2d38aabb307395290afd8c051df18fcd26fbe",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntentTest.kt": "6896870663c59c81a7f80f801e39529cf76c93ea6887536568ae71e56788cfd8",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalSchemaPlanTest.kt": "74068644e879ba72ec285566336879eaee590c13c55a4bae94e35b712705dd38",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSourceTest.kt": "a3a2369019b349fb78d6c43518e4763f56a623debb6591791c358fcafd35f5f2",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryReconciliationPathPolicyTest.kt": "2619b4257729f8fa9aea54b0fbe2980197b814616d510543624846b578f3482e",
-    "tools/verify_rec_i3_microfile_sqlite.py": "6f9402bfd6ca72a0976827e08133f2d7e6b3267ac3830e4524ccfb364709722f"
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorageTest.kt": "a2291ef703b2758e7b2efe38a1719ce29fc83fc3b714ca1f62a3a8396843fa2c",
+    "tools/verify_rec_i3_microfile_sqlite.py": "c6a6c094731ca1cf7c4830e5c1aa162e631b4c2dff0f204f272e1a9e94885ad0"
   },
   "checks": [
     {
-      "command": "compile focused intent test before RecoveryQuarantineIntent existed",
-      "stage": "TDD_BEHAVIORAL_RED",
-      "outcome": "EXPECTED_COMPILE_FAILURE"
+      "command": "focused compile after capability/source API contract change",
+      "stage": "TDD_API_RED",
+      "outcome": "EXPECTED_COMPILE_FAILURE",
+      "claim": "compile/API RED only"
     },
     {
-      "command": "gradlew focused reconciliation quarantine intent path and schema tests",
-      "stage": "FOCUSED_GREEN",
-      "outcome": "PASS",
-      "tests": 17,
-      "failures": 0,
-      "errors": 0,
-      "skipped": 0
+      "command": "actual Tink corrupted latest manifest and unit ciphertext at indexes 0, middle and last",
+      "stage": "TDD_BEHAVIORAL_GREEN",
+      "outcome": "PASS"
     },
     {
       "command": "python tools/verify_rec_i3_microfile_sqlite.py",
@@ -69,10 +71,10 @@
       "ddlSha256": "19b75ecdd027d63f0ba28a09e6aa030ec4e2bb7ca6c8fe71286e0f03715d58fc"
     },
     {
-      "command": "gradlew spotlessCheck detekt :poc:recovery:testDebugUnitTest :poc:recovery:lintDebug :poc:recovery:compileReleaseKotlin :poc:recovery:recoveryI2bVerifyCryptoPolicy",
+      "command": "gradlew spotlessCheck detekt :poc:recovery:testDebugUnitTest :poc:recovery:lintDebug :poc:recovery:compileReleaseKotlin :poc:recovery:recoveryI2bVerifyCryptoPolicy --no-parallel",
       "stage": "FINAL",
       "outcome": "PASS",
-      "tests": 161,
+      "tests": 174,
       "failures": 0,
       "errors": 0,
       "skipped": 0
@@ -80,11 +82,7 @@
     {
       "command": "python tools/test_poc_recovery_i3_governance.py and exact candidate validator",
       "stage": "GOVERNANCE",
-      "outcome": "PASS",
-      "tests": 20,
-      "failures": 0,
-      "errors": 0,
-      "skipped": 0
+      "outcome": "PENDING"
     }
   ],
   "review": {
@@ -93,9 +91,11 @@
     "formalReviewer": false
   },
   "limitations": [
-    "Host JVM tests and fakes do not prove Android filesystem or SQLite durability.",
-    "The Android adapters compile but no device or emulator execution occurred.",
+    "Host JVM tests and injected descriptor/journal seams do not prove Android filesystem or SQLite durability.",
+    "The Android adapters compile and lint, but no device or emulator execution occurred.",
     "Immediate lstat plus rename does not provide a kernel atomic no-replace primitive.",
-    "Streaming, external orchestration, preflight and full REC-I3 remain unfinished."
-  ]
+    "Independent review of this corrected exact head, streaming, external orchestration, preflight and full REC-I3 remain unfinished."
+  ],
+  "correctionScopeFirstCommit": "e78571776d34756325289dcfcb3853c9696f3011",
+  "correctsReviewedCandidate": "dbbde0ef8e16cbac6cbe6f2ccbefde43e1853188"
 }

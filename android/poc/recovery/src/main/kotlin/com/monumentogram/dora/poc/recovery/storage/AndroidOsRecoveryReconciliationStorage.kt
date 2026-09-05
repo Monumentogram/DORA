@@ -6,18 +6,70 @@ import android.system.Os
 import android.system.OsConstants
 import com.monumentogram.dora.poc.recovery.candidate.QuarantinePathObservation
 import com.monumentogram.dora.poc.recovery.candidate.QuarantinePathState
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactBytes
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineIntentRow
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineStorage
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
+import java.io.ByteArrayOutputStream
+import java.io.Closeable
 import java.io.File
 import java.io.FileInputStream
 import java.security.MessageDigest
 
+internal interface RecoveryReadDescriptor : Closeable {
+    val regularFile: Boolean
+    val size: Long
+
+    fun read(buffer: ByteArray, offset: Int, length: Int): Int
+}
+
+internal fun interface RecoveryDescriptorOpener {
+    fun open(path: String): RecoveryReadDescriptor
+}
+
+@Suppress("MagicNumber")
+internal class RecoveryBoundedDescriptorReader(private val opener: RecoveryDescriptorOpener) {
+    fun read(path: String, maximumBytes: Long): ByteArray {
+        require(maximumBytes > 0)
+        return opener.open(path).use { descriptor ->
+            check(descriptor.regularFile && descriptor.size in 0..maximumBytes) {
+                "Recovery artifact exceeds its role bound"
+            }
+            val output = ByteArrayOutputStream(descriptor.size.toInt())
+            val buffer = ByteArray(minOf(8192, maximumBytes.toInt()))
+            var count = 0L
+            while (count < descriptor.size) {
+                val read =
+                    descriptor.read(
+                        buffer,
+                        0,
+                        minOf(buffer.size.toLong(), descriptor.size - count).toInt(),
+                    )
+                check(read > 0) { "Recovery artifact read made no progress" }
+                output.write(buffer, 0, read)
+                count += read
+            }
+            check(descriptor.read(buffer, 0, 1) == -1) {
+                "Recovery artifact grew during bounded read"
+            }
+            output.toByteArray()
+        }
+    }
+}
+
 @Suppress("TooManyFunctions", "MagicNumber")
-internal class AndroidOsRecoveryReconciliationStorage(context: Context) :
-    RecoveryQuarantineStorage {
-    private val root = context.applicationContext.noBackupFilesDir
+internal class AndroidOsRecoveryReconciliationStorage
+private constructor(
+    private val root: File,
+    private val boundedReader: RecoveryBoundedDescriptorReader,
+) : RecoveryQuarantineStorage {
+    constructor(
+        context: Context
+    ) : this(
+        context.applicationContext.noBackupFilesDir,
+        RecoveryBoundedDescriptorReader(AndroidRecoveryDescriptorOpener),
+    )
 
     override fun prepare(runId: RunId) {
         val paths =
@@ -32,6 +84,70 @@ internal class AndroidOsRecoveryReconciliationStorage(context: Context) :
         createDirectory(File(base, "quarantine"))
         createDirectory(paths.quarantineRunRoot)
         createDirectory(paths.objectsRoot)
+    }
+
+    fun activeArtifactExists(runId: RunId, relativeName: String): Boolean {
+        val paths = inspectionPaths(runId, relativeName)
+        validateParents(paths.activeRunRoot, paths.source)
+        return when (type(paths.source)) {
+            BootstrapPathType.ABSENT -> false
+            BootstrapPathType.REGULAR -> true
+            else -> error("Unsafe Recovery active artifact: $relativeName")
+        }
+    }
+
+    fun loadActiveArtifact(
+        runId: RunId,
+        relativeName: String,
+        maximumBytes: Long,
+    ): RecoveryArtifactBytes? {
+        require(maximumBytes > 0)
+        val paths = inspectionPaths(runId, relativeName)
+        validateParents(paths.activeRunRoot, paths.source)
+        if (type(paths.source) == BootstrapPathType.ABSENT) return null
+        check(type(paths.source) == BootstrapPathType.REGULAR) { "Unsafe Recovery active artifact" }
+        return RecoveryArtifactBytes(
+            relativeName,
+            boundedReader.read(paths.source.path, maximumBytes),
+        )
+    }
+
+    fun listActiveArtifacts(runId: RunId): List<RecoveryArtifactBytes> {
+        val runRoot = inspectionPaths(runId, "key-confirmation/run.kc").activeRunRoot
+        val result = mutableListOf<RecoveryArtifactBytes>()
+        fun visit(directory: File) {
+            val children = directory.listFiles() ?: error("Cannot enumerate Recovery directory")
+            for (child in children.sortedBy { it.name }) {
+                when (type(child)) {
+                    BootstrapPathType.DIRECTORY -> visit(child)
+                    BootstrapPathType.REGULAR -> {
+                        val relative = child.relativeTo(runRoot).invariantSeparatorsPath
+                        result +=
+                            RecoveryArtifactBytes(
+                                relative,
+                                boundedReader.read(child.path, MAX_ARTIFACT_BYTES),
+                            )
+                    }
+                    else -> error("Unsafe Recovery inventory object: ${child.name}")
+                }
+            }
+        }
+        visit(runRoot)
+        return java.util.Collections.unmodifiableList(result)
+    }
+
+    private fun inspectionPaths(runId: RunId, relativeName: String): RecoveryReconciliationPaths {
+        val paths =
+            RecoveryReconciliationPathPolicy.paths(
+                root,
+                runId,
+                relativeName,
+                "objects/q-${"0".repeat(64)}.bin",
+            )
+        val base = File(root, "poc-recovery")
+        listOf(root, base, File(base, "v1"), File(base, "v1/runs"), paths.activeRunRoot)
+            .forEach(::requireDirectory)
+        return paths
     }
 
     override fun inspect(row: RecoveryQuarantineIntentRow): QuarantinePathObservation {
@@ -150,4 +266,30 @@ internal class AndroidOsRecoveryReconciliationStorage(context: Context) :
         } catch (error: ErrnoException) {
             if (error.errno == OsConstants.ENOENT) BootstrapPathType.ABSENT else throw error
         }
+
+    private companion object {
+        const val MAX_ARTIFACT_BYTES = 1_048_576L
+    }
+}
+
+private object AndroidRecoveryDescriptorOpener : RecoveryDescriptorOpener {
+    override fun open(path: String): RecoveryReadDescriptor {
+        val descriptor =
+            Os.open(
+                path,
+                OsConstants.O_RDONLY or OsConstants.O_CLOEXEC or OsConstants.O_NOFOLLOW,
+                0,
+            )
+        val input = FileInputStream(descriptor)
+        val stat = Os.fstat(descriptor)
+        return object : RecoveryReadDescriptor {
+            override val regularFile = OsConstants.S_ISREG(stat.st_mode)
+            override val size = stat.st_size
+
+            override fun read(buffer: ByteArray, offset: Int, length: Int) =
+                input.read(buffer, offset, length)
+
+            override fun close() = input.close()
+        }
+    }
 }

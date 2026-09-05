@@ -67,6 +67,31 @@ def require_exact_v2(db):
     if db.execute("SELECT count(*) FROM sqlite_master WHERE type='trigger' AND name LIKE 'recovery_%'").fetchone()[0]:
         raise ValueError("Recovery journal v2 has unexpected trigger")
 
+def require_exact_v3(db):
+    expected = {
+        ("table", "recovery_run_bootstrap_v1"): run_ddl,
+        ("index", "recovery_run_candidate_v2"): index_ddl,
+        ("table", "recovery_microfile_unit_v2"): unit_ddl,
+        ("table", "recovery_manifest_publication_v2"): pub_ddl,
+        ("table", "recovery_quarantine_intent_v3"): quarantine_ddl,
+    }
+    for (kind, name), ddl in expected.items():
+        row = db.execute("SELECT sql FROM sqlite_master WHERE type=? AND name=?", (kind, name)).fetchone()
+        assert row and normalize_sql(row[0]).replace("( ", "(").replace(" )", ")") == normalize_sql(ddl).replace("( ", "(").replace(" )", ")")
+    attached = db.execute("SELECT type,name FROM sqlite_master WHERE name LIKE 'recovery_%' OR tbl_name LIKE 'recovery_%' ORDER BY type,name").fetchall()
+    expected_names = sorted([
+        ("table","recovery_run_bootstrap_v1"),("table","recovery_microfile_unit_v2"),
+        ("table","recovery_manifest_publication_v2"),("table","recovery_quarantine_intent_v3"),
+        ("index","recovery_run_candidate_v2"),
+        ("index","sqlite_autoindex_recovery_run_bootstrap_v1_1"),
+        ("index","sqlite_autoindex_recovery_microfile_unit_v2_1"),
+        ("index","sqlite_autoindex_recovery_microfile_unit_v2_2"),
+        ("index","sqlite_autoindex_recovery_manifest_publication_v2_1"),
+        ("index","sqlite_autoindex_recovery_quarantine_intent_v3_1"),
+        ("index","sqlite_autoindex_recovery_quarantine_intent_v3_2"),
+    ])
+    assert attached == expected_names
+
 def bootstrap(db):
     db.execute(run_ddl); db.execute(index_ddl)
     db.execute("INSERT INTO recovery_run_bootstrap_v1 VALUES (?,?,?,?,?,?,?)",
@@ -117,6 +142,9 @@ require_exact_v1(migration)
 migration.execute(index_ddl); migration.execute(unit_ddl); migration.execute(pub_ddl)
 require_exact_v2(migration)
 migration.execute(quarantine_ddl)
+migration.execute("PRAGMA user_version=3")
+require_exact_v3(migration)
+assert migration.execute("PRAGMA user_version").fetchone() == (3,)
 assert migration.execute("SELECT candidate_id FROM recovery_run_bootstrap_v1 WHERE run_id=?",(run_id,)).fetchone() == (candidate,)
 assert "beginTransaction" not in re.search(r"fun migrateV1ToV2\(.*?\n    }", source, re.S).group(0)
 assert "oldVersion == 1 && newVersion == 3" in source and "oldVersion == 2 && newVersion == 3" in source and "UpgradePlan.REJECT" in source and "onDowngrade" in source
@@ -165,7 +193,7 @@ assert rollback.execute("SELECT count(*) FROM sqlite_master WHERE name IN ('reco
 
 direct=sqlite3.connect(":memory:"); direct.execute("PRAGMA foreign_keys=ON")
 direct.execute("CREATE TABLE android_metadata (locale TEXT)"); direct.execute("INSERT INTO android_metadata VALUES ('en_US')")
-bootstrap(direct); insert_children(direct); require_exact_v2(direct); direct.execute(quarantine_ddl)
+bootstrap(direct); insert_children(direct); require_exact_v2(direct); direct.execute(quarantine_ddl); direct.execute("PRAGMA user_version=3"); require_exact_v3(direct)
 intent=bytes([2])*32
 direct.execute("""INSERT INTO recovery_quarantine_intent_v3 VALUES
     (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
@@ -180,6 +208,32 @@ try:
     raise AssertionError("cross-candidate quarantine binding accepted")
 except sqlite3.IntegrityError:
     pass
+direct.execute("""INSERT INTO recovery_quarantine_intent_v3 VALUES
+    (?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+    (bytes([5])*32,run_id,candidate,"ABSENT",None,None,"KEY_CONFIRMATION","FINAL_ORPHAN",
+     "key-confirmation/orphan","objects/q-"+bytes([5]*32).hex()+".bin",1,bytes([6])*32,"PENDING"))
+for mutation in ("duplicate_intent", "duplicate_source", "bad_state", "bad_digest"):
+    values = [bytes([7])*32,run_id,candidate,"ABSENT",None,None,"UNKNOWN_REGULAR","TEMP_ONLY",
+              "other.tmp","objects/q-"+bytes([7]*32).hex()+".bin",1,bytes([8])*32,"PENDING"]
+    if mutation == "duplicate_intent": values[0] = bytes([5])*32
+    if mutation == "duplicate_source": values[8] = "key-confirmation/orphan"; values[11] = bytes([6])*32
+    if mutation == "bad_state": values[12] = "UNKNOWN"
+    if mutation == "bad_digest": values[11] = b"short"
+    try:
+        direct.execute("INSERT INTO recovery_quarantine_intent_v3 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", values)
+        raise AssertionError(mutation + " accepted")
+    except sqlite3.IntegrityError:
+        pass
+
+attached_trigger=sqlite3.connect(":memory:"); attached_trigger.execute("PRAGMA foreign_keys=ON")
+bootstrap(attached_trigger); insert_children(attached_trigger); attached_trigger.execute(quarantine_ddl)
+attached_trigger.execute("CREATE TRIGGER innocent_name AFTER INSERT ON recovery_quarantine_intent_v3 BEGIN SELECT 1; END")
+trigger_rejected = False
+try:
+    require_exact_v3(attached_trigger)
+except AssertionError:
+    trigger_rejected = True
+assert trigger_rejected, "attached trigger accepted"
 
 malformed_v2=sqlite3.connect(":memory:"); malformed_v2.execute("PRAGMA foreign_keys=ON")
 bootstrap(malformed_v2); malformed_v2.execute(unit_ddl.replace(" CHECK(state='VALID')", "")); malformed_v2.execute(pub_ddl)
@@ -214,5 +268,5 @@ print("cadence_boundaries", "5:160000", "15:480000", "30:960000")
 print("rejected", "cross_candidate", "bad_cadence", "oversized_unit", "wrong_publication_kind")
 print("failed_migration_rollback", "preserved_v1", "no_partial_v2")
 print("rejected_malformed_v1", *malformed_v1, "extra_index", "extra_trigger")
-print("v1_to_v2_to_v3", "PASS", "direct_v2_to_v3", "PASS", "platform_metadata_preserved", "PASS", "malformed_v2_rejected", "PASS")
+print("v1_to_v2_to_v3", "PASS", "direct_v2_to_v3", "PASS", "platform_metadata_preserved", "PASS", "malformed_v2_rejected", "PASS", "exact_v3", "PASS", "nullable_binding_duplicates_constraints", "PASS")
 print("different_run_writer_serialization", "second_writer_locked")

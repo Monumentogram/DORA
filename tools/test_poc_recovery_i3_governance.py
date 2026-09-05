@@ -13,6 +13,27 @@ import validate_poc_recovery_governance as governance
 
 
 class RecoveryI3GovernanceTests(unittest.TestCase):
+    def test_reconciliation_correction_scope_and_new_files_are_exactly_declared(self) -> None:
+        self.assertEqual(
+            "e78571776d34756325289dcfcb3853c9696f3011",
+            governance.REC_I3_RECON_CORRECTION_COMMIT,
+        )
+        self.assertIn(governance.REC_I3_RECON_CORRECTION_PATH, governance.REC_I3_ALLOWED_PATHS)
+        expected_new = {
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationOutcomes.kt",
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSource.kt",
+            "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationAcceptanceTest.kt",
+            "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSourceTest.kt",
+            "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorageTest.kt",
+        }
+        self.assertTrue(expected_new <= set(governance.REC_I3_RECON_SOURCE_PATHS))
+        changes = {name: [] for name in ("committed", "staged", "unstaged", "untracked")}
+        changes["untracked"] = list(expected_new)
+        governance.validate_rec_i3_changed_paths(changes)
+        changes["untracked"] = [next(iter(expected_new)) + ".undeclared"]
+        with self.assertRaisesRegex(ValueError, "escapes exact scope"):
+            governance.validate_rec_i3_changed_paths(changes)
+
     def test_reconciliation_epoch_exposes_only_declared_mutable_paths(self) -> None:
         self.assertIn(
             "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/"

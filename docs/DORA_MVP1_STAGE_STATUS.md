@@ -175,6 +175,14 @@ remaining REC-I3 harness, stream candidate, external controller and campaign wor
 `fullRecI3Completed=false`; all ten active blockers, `POC-RECOVERY-001` `BLOCKED / NOT_READY`, and
 every preflight, execution, measurement and production-admission nonclaim remain unchanged.
 
+Independent review of the first reconciliation candidate required correction within this same
+bounded slice. The additive
+[correction scope](stage0/DORA_MVP1_POC_RECOVERY_I3_RECONCILIATION_REVIEW_CORRECTION_STAGE0_V0_1.md)
+records production-owned observation, exact capability binding, authenticated fallback, pending
+quarantine replay, immutable typed diagnostics, descriptor bounds and exact schema-v3 checks. The
+corrected exact head still requires independent review and CI; host assertions and compilation do
+not establish Android runtime durability or unlock any Recovery gate.
+
 ## Stage 00 closure
 
 - Stage 00 is complete.

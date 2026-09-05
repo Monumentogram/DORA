@@ -20,6 +20,7 @@ import com.monumentogram.dora.poc.recovery.crypto.RecoveryRunAeadProvider
 import com.monumentogram.dora.poc.recovery.crypto.RecoveryTinkRuntime
 
 /** Typed Tink/Android-Keystore adapter for the sequential candidate controller. */
+@Suppress("TooGenericExceptionCaught")
 internal class AndroidRecoveryMicrofileCrypto :
     RecoveryMicrofileCrypto, RecoveryReconciliationCrypto {
     private val runProvider = RecoveryRunAeadProvider(AndroidExistingRunAeadBackend)
@@ -50,6 +51,21 @@ internal class AndroidRecoveryMicrofileCrypto :
     ): ByteArray = keyset.encryptPublication(plaintext, aad)
 
     override fun authenticateManifest(
+        runId: RunId,
+        publication: RecoveryManifestPublicationRow,
+        previousDigest: com.monumentogram.dora.poc.recovery.contract.Sha256Value,
+        envelope: ByteArray,
+        ciphertext: ByteArray,
+    ): ManifestAuthenticationOutcome =
+        try {
+            ManifestAuthenticationOutcome.Authenticated(
+                authenticateManifestRaw(runId, publication, previousDigest, envelope, ciphertext)
+            )
+        } catch (error: Throwable) {
+            ManifestAuthenticationOutcome.Rejected(classifyCrypto(error))
+        }
+
+    private fun authenticateManifestRaw(
         runId: RunId,
         publication: RecoveryManifestPublicationRow,
         previousDigest: com.monumentogram.dora.poc.recovery.contract.Sha256Value,
@@ -89,6 +105,21 @@ internal class AndroidRecoveryMicrofileCrypto :
         previousDigest: com.monumentogram.dora.poc.recovery.contract.Sha256Value,
         envelope: ByteArray,
         ciphertext: ByteArray,
+    ): UnitAuthenticationOutcome =
+        try {
+            UnitAuthenticationOutcome.Authenticated(
+                authenticateUnitRaw(runId, unit, previousDigest, envelope, ciphertext)
+            )
+        } catch (error: Throwable) {
+            UnitAuthenticationOutcome.Rejected(classifyCrypto(error))
+        }
+
+    private fun authenticateUnitRaw(
+        runId: RunId,
+        unit: RecoveryMicrofileUnitRow,
+        previousDigest: com.monumentogram.dora.poc.recovery.contract.Sha256Value,
+        envelope: ByteArray,
+        ciphertext: ByteArray,
     ): ByteArray {
         val runAead = openRunAead(runId)
         val envelopeAad =
@@ -116,6 +147,32 @@ internal class AndroidRecoveryMicrofileCrypto :
                 previousDigest,
             )
         return keyset.decryptMicrofile(ciphertext, aad)
+    }
+
+    private fun classifyCrypto(error: Throwable): RecoveryFailureDiagnostic {
+        val category =
+            when (error) {
+                is com.monumentogram.dora.poc.recovery.crypto.RecoveryEncryptedKeysetParseException ->
+                    when (error.failure) {
+                        com.monumentogram.dora.poc.recovery.crypto
+                            .RecoveryEncryptedKeysetParseFailure
+                            .AUTHENTICATION_REJECTED ->
+                            RecoveryFailureCategory.AUTHENTICATION_REJECTED
+                        com.monumentogram.dora.poc.recovery.crypto
+                            .RecoveryEncryptedKeysetParseFailure
+                            .OPERATIONAL,
+                        com.monumentogram.dora.poc.recovery.crypto
+                            .RecoveryEncryptedKeysetParseFailure
+                            .UNKNOWN -> RecoveryFailureCategory.OPERATIONAL
+                        else -> RecoveryFailureCategory.STRUCTURAL
+                    }
+                is java.security.GeneralSecurityException ->
+                    RecoveryFailureCategory.AUTHENTICATION_REJECTED
+                is com.monumentogram.dora.poc.recovery.contract.RecoveryContractException ->
+                    RecoveryFailureCategory.STRUCTURAL
+                else -> RecoveryFailureCategory.OPERATIONAL
+            }
+        return RecoveryFailureDiagnostic.capture(category, error)
     }
 
     private object AndroidExistingRunAeadBackend : RecoveryRunAeadBackend {

@@ -78,6 +78,15 @@ adapters and host fakes are not device durability proof. Streaming, external con
 execution remain unfinished. `fullRecI3Completed=false`, all ten blockers and every preflight,
 execution, measurement and production-admission lock remain unchanged.
 
+The additive
+[review-correction scope](stage0/DORA_MVP1_POC_RECOVERY_I3_RECONCILIATION_REVIEW_CORRECTION_STAGE0_V0_1.md)
+supersedes the first local coverage claim after independent review found missing behavior inside
+that bounded slice. The corrected host boundary owns platform observations, binds publication
+authority to the candidate, manifest and ordered rows, preserves authenticated fallback prefixes,
+and exercises pending quarantine replay, typed failures, descriptor bounds and schema-v3
+validation. Independent review of the corrected exact head remains pending; Android filesystem
+durability and every wider REC-I3 gate remain unproven.
+
 ## 1. Правила выполнения
 
 - `DONE` означает: артефакт существует, acceptance выполнен и evidence доступно в commit/CI/report.

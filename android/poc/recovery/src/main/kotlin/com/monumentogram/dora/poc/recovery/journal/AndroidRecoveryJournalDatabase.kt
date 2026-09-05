@@ -99,6 +99,7 @@ internal object RecoveryJournalSchema {
         database.execSQL(CREATE_UNIT_TABLE)
         database.execSQL(CREATE_PUBLICATION_TABLE)
         database.execSQL(CREATE_QUARANTINE_TABLE)
+        requireExactV3(database)
     }
 
     fun migrateV1ToV2(database: SQLiteDatabase) {
@@ -111,9 +112,10 @@ internal object RecoveryJournalSchema {
     fun migrateV2ToV3(database: SQLiteDatabase) {
         requireExactV2(database)
         database.execSQL(CREATE_QUARANTINE_TABLE)
+        requireExactV3(database)
     }
 
-    private fun requireExactV2(database: SQLiteDatabase) {
+    private fun requireExactV2(database: SQLiteDatabase, allowV3: Boolean = false) {
         requireExactSql(database, "table", RUN_TABLE, CREATE_RUN_TABLE)
         requireExactSql(database, "index", "recovery_run_candidate_v2", CREATE_RUN_IDENTITY_INDEX)
         requireExactSql(database, "table", UNIT_TABLE, CREATE_UNIT_TABLE)
@@ -121,7 +123,9 @@ internal object RecoveryJournalSchema {
         val recoveryObjects = mutableListOf<Pair<String, String>>()
         database
             .rawQuery(
-                "SELECT type,name FROM sqlite_master WHERE name LIKE 'recovery_%' ORDER BY type,name",
+                "SELECT type,name FROM sqlite_master " +
+                    "WHERE name LIKE 'recovery_%' OR tbl_name LIKE 'recovery_%' " +
+                    "ORDER BY type,name",
                 null,
             )
             .use { cursor ->
@@ -129,19 +133,31 @@ internal object RecoveryJournalSchema {
                     cursor.getString(0) to cursor.getString(1)
             }
         val expected =
-            listOf(
-                    "index" to "recovery_run_candidate_v2",
-                    "index" to "sqlite_autoindex_recovery_manifest_publication_v2_1",
-                    "index" to "sqlite_autoindex_recovery_microfile_unit_v2_1",
-                    "index" to "sqlite_autoindex_recovery_microfile_unit_v2_2",
-                    "index" to "sqlite_autoindex_recovery_run_bootstrap_v1_1",
-                    "table" to PUBLICATION_TABLE,
-                    "table" to UNIT_TABLE,
-                    "table" to RUN_TABLE,
+            mutableListOf(
+                "index" to "recovery_run_candidate_v2",
+                "index" to "sqlite_autoindex_recovery_manifest_publication_v2_1",
+                "index" to "sqlite_autoindex_recovery_microfile_unit_v2_1",
+                "index" to "sqlite_autoindex_recovery_microfile_unit_v2_2",
+                "index" to "sqlite_autoindex_recovery_run_bootstrap_v1_1",
+                "table" to PUBLICATION_TABLE,
+                "table" to UNIT_TABLE,
+                "table" to RUN_TABLE,
+            )
+        if (allowV3)
+            expected +=
+                listOf(
+                    "index" to "sqlite_autoindex_recovery_quarantine_intent_v3_1",
+                    "index" to "sqlite_autoindex_recovery_quarantine_intent_v3_2",
+                    "table" to QUARANTINE_TABLE,
                 )
-                .sortedWith(compareBy<Pair<String, String>> { it.first }.thenBy { it.second })
+        expected.sortWith(compareBy<Pair<String, String>> { it.first }.thenBy { it.second })
         if (recoveryObjects != expected)
             throw SQLiteException("Recovery journal v2 schema is not exact")
+    }
+
+    fun requireExactV3(database: SQLiteDatabase) {
+        requireExactV2(database, allowV3 = true)
+        requireExactSql(database, "table", QUARANTINE_TABLE, CREATE_QUARANTINE_TABLE)
     }
 
     private fun requireExactSql(
@@ -265,6 +281,13 @@ private class RecoveryJournalSqliteHelper(context: Context) :
     }
 
     override fun onCreate(database: SQLiteDatabase) = RecoveryJournalSchema.createV3(database)
+
+    override fun onOpen(database: SQLiteDatabase) {
+        super.onOpen(database)
+        if (database.version == RecoveryJournalSchema.VERSION) {
+            RecoveryJournalSchema.requireExactV3(database)
+        }
+    }
 
     override fun onUpgrade(database: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         when (RecoveryJournalSchema.upgradePlan(oldVersion, newVersion)) {

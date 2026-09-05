@@ -39,7 +39,22 @@ internal interface RecoveryReconciliationSource {
     fun loadCandidate(runId: RunId): RecoveryCandidateSnapshot
 
     fun loadArtifact(runId: RunId, relativeName: String): RecoveryArtifactBytes?
+
+    fun loadPendingQuarantine(runId: RunId): List<RecoveryQuarantineIntentRow> = emptyList()
+
+    fun loadInventory(runId: RunId): List<RecoveryInventoryEntry> = emptyList()
 }
+
+internal class RecoverySourceAccessException(
+    val diagnostic: RecoveryFailureDiagnostic,
+    cause: Throwable,
+) : RuntimeException(diagnostic.message, cause)
+
+internal data class RecoveryInventoryEntry(
+    val input: RecoveryQuarantineIntentInput,
+    val observedState: RecoveryQuarantineObservedState,
+    val bootstrapBinding: QuarantineBootstrapBinding,
+)
 
 internal interface RecoveryReconciliationCrypto {
     fun authenticateConfirmationOrphan(
@@ -53,7 +68,7 @@ internal interface RecoveryReconciliationCrypto {
         previousDigest: Sha256Value,
         envelope: ByteArray,
         ciphertext: ByteArray,
-    ): RecoveryManifest
+    ): ManifestAuthenticationOutcome
 
     fun authenticateUnit(
         runId: RunId,
@@ -61,7 +76,7 @@ internal interface RecoveryReconciliationCrypto {
         previousDigest: Sha256Value,
         envelope: ByteArray,
         ciphertext: ByteArray,
-    ): ByteArray
+    ): UnitAuthenticationOutcome
 }
 
 internal enum class ReconciliationDiagnostic {
@@ -78,6 +93,7 @@ private val successfulAuthenticatedPrefixProof = Any()
 @Suppress("LongParameterList")
 internal class AuthenticatedMicrofilePrefixCapability
 internal constructor(
+    val candidate: RecoveryCandidate,
     val runId: RunId,
     val manifestGenerationUsed: ULong,
     val authenticatedUnitCount: Int,
@@ -94,24 +110,35 @@ internal constructor(
     }
 
     fun authorizes(prefix: AuthenticatedMicrofilePrefix): Boolean =
-        prefix.runId == runId &&
+        prefix.candidate == candidate &&
+            prefix.runId == runId &&
             prefix.manifestGenerationUsed == manifestGenerationUsed &&
             prefix.units.size == authenticatedUnitCount &&
             prefix.authenticatedEndExclusive == authenticatedEndExclusive &&
-            Sha256Value.calculate(prefix.plaintextSnapshot()) == authenticatedPlaintextSha256
+            Sha256Value.calculate(prefix.plaintextSnapshot()) == authenticatedPlaintextSha256 &&
+            prefix.manifestCiphertextSha256 == manifestCiphertextSha256 &&
+            prefix.orderedRowsDigest() == orderedAuthenticatedRowsDigest
 }
 
+@Suppress("LongParameterList")
 internal class AuthenticatedMicrofilePrefix(
+    val candidate: RecoveryCandidate,
     val runId: RunId,
     val manifestGenerationUsed: ULong,
     val authenticatedEndExclusive: ULong,
     plaintext: ByteArray,
     units: List<RecoveryMicrofileUnitRow>,
+    val manifestCiphertextSha256: Sha256Value,
 ) {
     private val bytes = plaintext.copyOf()
     val units: List<RecoveryMicrofileUnitRow> = Collections.unmodifiableList(ArrayList(units))
 
     fun plaintextSnapshot(): ByteArray = bytes.copyOf()
+
+    fun orderedRowsDigest(): Sha256Value =
+        Sha256Value.calculate(
+            units.flatMap { it.processingIntentId.toByteArray().asIterable() }.toByteArray()
+        )
 }
 
 internal sealed interface MicrofileReconciliationResult {
@@ -122,11 +149,13 @@ internal sealed interface MicrofileReconciliationResult {
         val confirmationDiagnostic: ConfirmationDiagnostic?,
         val diagnostic: ReconciliationDiagnostic?,
         val quarantine: QuarantineResult? = null,
+        val failure: RecoveryFailureDiagnostic? = null,
     ) : MicrofileReconciliationResult
 
     data class AuthenticatedPrefix(
         val prefix: AuthenticatedMicrofilePrefix,
         val capability: AuthenticatedMicrofilePrefixCapability,
+        val quarantineOutcomes: List<QuarantineResult> = emptyList(),
     ) : MicrofileReconciliationResult
 
     data class PartialPrefix(
@@ -134,6 +163,7 @@ internal sealed interface MicrofileReconciliationResult {
         val capability: AuthenticatedMicrofilePrefixCapability,
         val classification: KeyRecoveryClassification?,
         val diagnostic: ReconciliationDiagnostic,
+        val quarantineOutcomes: List<QuarantineResult> = emptyList(),
     ) : MicrofileReconciliationResult
 }
 
@@ -183,6 +213,10 @@ internal interface RecoveryQuarantineStorage {
 internal interface RecoveryQuarantineJournal {
     fun load(intentId: Sha256Value): RecoveryQuarantineIntentRow?
 
+    fun loadBySource(input: RecoveryQuarantineIntentInput): RecoveryQuarantineIntentRow? = null
+
+    fun loadPending(runId: RunId): List<RecoveryQuarantineIntentRow> = emptyList()
+
     fun beginNonExclusive(): RecoveryQuarantineTransaction
 }
 
@@ -219,8 +253,8 @@ internal enum class QuarantineOperationState {
 internal data class QuarantineRemainder(
     val intentCommit: QuarantineOperationState = QuarantineOperationState.NOT_ATTEMPTED,
     val rename: QuarantineOperationState = QuarantineOperationState.NOT_ATTEMPTED,
-    val sourceParentSync: Boolean = false,
-    val destinationParentSync: Boolean = false,
+    val sourceParentSync: QuarantineOperationState = QuarantineOperationState.NOT_ATTEMPTED,
+    val destinationParentSync: QuarantineOperationState = QuarantineOperationState.NOT_ATTEMPTED,
     val completionCommit: QuarantineOperationState = QuarantineOperationState.NOT_ATTEMPTED,
 )
 
@@ -228,13 +262,13 @@ internal sealed interface QuarantineResult {
     data class Completed(
         val row: RecoveryQuarantineIntentRow,
         val evidenceEmitted: Boolean,
-        val evidenceFailure: Throwable?,
+        val evidenceFailure: RecoveryFailureDiagnostic?,
         val remainder: QuarantineRemainder,
     ) : QuarantineResult
 
     data class RetryRequired(
         val failedStep: QuarantineStep,
-        val cause: Throwable?,
+        val diagnostic: RecoveryFailureDiagnostic?,
         val row: RecoveryQuarantineIntentRow?,
         val remainder: QuarantineRemainder,
     ) : QuarantineResult
@@ -282,9 +316,32 @@ internal class RecoveryQuarantineController(
                 RecoveryQuarantineIntent.destination(input),
                 QuarantineIntentState.PENDING,
             )
-        var row = journal.load(id)
+        var row =
+            try {
+                journal.load(id) ?: journal.loadBySource(input)
+            } catch (error: Throwable) {
+                return QuarantineResult.RetryRequired(
+                    QuarantineStep.Q01,
+                    RecoveryFailureDiagnostic.capture(RecoveryFailureCategory.OPERATIONAL, error),
+                    null,
+                    remainder,
+                )
+            }
         if (row == null) {
-            val transaction = journal.beginNonExclusive()
+            val transaction =
+                try {
+                    journal.beginNonExclusive()
+                } catch (error: Throwable) {
+                    return QuarantineResult.RetryRequired(
+                        QuarantineStep.Q01,
+                        RecoveryFailureDiagnostic.capture(
+                            RecoveryFailureCategory.OPERATIONAL,
+                            error,
+                        ),
+                        null,
+                        remainder,
+                    )
+                }
             var endAttempted = false
             try {
                 transaction.insert(proposed)
@@ -305,7 +362,10 @@ internal class RecoveryQuarantineController(
                 if (row == null)
                     return QuarantineResult.RetryRequired(
                         QuarantineStep.Q01,
-                        error,
+                        RecoveryFailureDiagnostic.capture(
+                            RecoveryFailureCategory.UNKNOWN_OUTCOME,
+                            error,
+                        ),
                         null,
                         remainder,
                     )
@@ -319,7 +379,17 @@ internal class RecoveryQuarantineController(
         ) {
             return QuarantineResult.RetryRequired(QuarantineStep.Q01, null, persisted, remainder)
         }
-        var observation = storage.inspect(persisted)
+        var observation =
+            try {
+                storage.inspect(persisted)
+            } catch (error: Throwable) {
+                return QuarantineResult.RetryRequired(
+                    QuarantineStep.Q02,
+                    RecoveryFailureDiagnostic.capture(RecoveryFailureCategory.OPERATIONAL, error),
+                    persisted,
+                    remainder,
+                )
+            }
         if (
             observation.source == QuarantinePathState.UNSAFE ||
                 observation.destination == QuarantinePathState.UNSAFE
@@ -330,6 +400,9 @@ internal class RecoveryQuarantineController(
             observation.source != QuarantinePathState.ABSENT &&
                 observation.destination != QuarantinePathState.ABSENT
         ) {
+            return QuarantineResult.Collision(persisted, observation)
+        }
+        if (observation.destination == QuarantinePathState.OCCUPIED) {
             return QuarantineResult.Collision(persisted, observation)
         }
         if (persisted.state == QuarantineIntentState.COMPLETED) {
@@ -360,12 +433,28 @@ internal class RecoveryQuarantineController(
             } catch (error: Throwable) {
                 return QuarantineResult.RetryRequired(
                     QuarantineStep.Q02,
-                    error,
+                    RecoveryFailureDiagnostic.capture(
+                        RecoveryFailureCategory.UNKNOWN_OUTCOME,
+                        error,
+                    ),
                     persisted,
                     remainder,
                 )
             }
-            observation = storage.inspect(persisted)
+            observation =
+                try {
+                    storage.inspect(persisted)
+                } catch (error: Throwable) {
+                    return QuarantineResult.RetryRequired(
+                        QuarantineStep.Q02,
+                        RecoveryFailureDiagnostic.capture(
+                            RecoveryFailureCategory.UNKNOWN_OUTCOME,
+                            error,
+                        ),
+                        persisted,
+                        remainder,
+                    )
+                }
         }
         if (
             observation !=
@@ -375,17 +464,37 @@ internal class RecoveryQuarantineController(
         }
         try {
             storage.fsyncSourceParent(persisted)
-            remainder = remainder.copy(sourceParentSync = true)
+            remainder = remainder.copy(sourceParentSync = QuarantineOperationState.CONFIRMED)
         } catch (error: Throwable) {
-            return QuarantineResult.RetryRequired(QuarantineStep.Q03, error, persisted, remainder)
+            return QuarantineResult.RetryRequired(
+                QuarantineStep.Q03,
+                RecoveryFailureDiagnostic.capture(RecoveryFailureCategory.UNKNOWN_OUTCOME, error),
+                persisted,
+                remainder.copy(sourceParentSync = QuarantineOperationState.OUTCOME_UNKNOWN),
+            )
         }
         try {
             storage.fsyncDestinationParent(persisted)
-            remainder = remainder.copy(destinationParentSync = true)
+            remainder = remainder.copy(destinationParentSync = QuarantineOperationState.CONFIRMED)
         } catch (error: Throwable) {
-            return QuarantineResult.RetryRequired(QuarantineStep.Q04, error, persisted, remainder)
+            return QuarantineResult.RetryRequired(
+                QuarantineStep.Q04,
+                RecoveryFailureDiagnostic.capture(RecoveryFailureCategory.UNKNOWN_OUTCOME, error),
+                persisted,
+                remainder.copy(destinationParentSync = QuarantineOperationState.OUTCOME_UNKNOWN),
+            )
         }
-        val completion = journal.beginNonExclusive()
+        val completion =
+            try {
+                journal.beginNonExclusive()
+            } catch (error: Throwable) {
+                return QuarantineResult.RetryRequired(
+                    QuarantineStep.Q05,
+                    RecoveryFailureDiagnostic.capture(RecoveryFailureCategory.OPERATIONAL, error),
+                    persisted,
+                    remainder,
+                )
+            }
         var completionEndAttempted = false
         try {
             completion.complete(id)
@@ -408,7 +517,15 @@ internal class RecoveryQuarantineController(
                     loaded.input != proposed.input ||
                     loaded.bootstrapBinding != proposed.bootstrapBinding
             ) {
-                return QuarantineResult.RetryRequired(QuarantineStep.Q05, error, loaded, remainder)
+                return QuarantineResult.RetryRequired(
+                    QuarantineStep.Q05,
+                    RecoveryFailureDiagnostic.capture(
+                        RecoveryFailureCategory.UNKNOWN_OUTCOME,
+                        error,
+                    ),
+                    loaded,
+                    remainder,
+                )
             }
             remainder = remainder.copy(completionCommit = QuarantineOperationState.CONFIRMED)
         }
@@ -429,7 +546,12 @@ internal class RecoveryQuarantineController(
             evidence.emit(row)
             QuarantineResult.Completed(row, true, null, remainder)
         } catch (error: Throwable) {
-            QuarantineResult.Completed(row, false, error, remainder)
+            QuarantineResult.Completed(
+                row,
+                false,
+                RecoveryFailureDiagnostic.capture(RecoveryFailureCategory.OPERATIONAL, error),
+                remainder,
+            )
         }
 }
 
@@ -455,9 +577,22 @@ internal class RecoveryMicrofileReconciliationController(
         "CyclomaticComplexMethod",
         "NestedBlockDepth",
         "LoopWithTooManyJumpStatements",
+        "ComplexCondition",
+        "SwallowedException",
     )
     private fun reconcileExclusive(runId: RunId): MicrofileReconciliationResult {
-        val confirmationSnapshot = source.loadConfirmation(runId)
+        val confirmationSnapshot =
+            try {
+                source.loadConfirmation(runId)
+            } catch (error: RecoverySourceAccessException) {
+                return noPrefix(
+                    diagnostic =
+                        if (error.diagnostic.category == RecoveryFailureCategory.UNSAFE_PARENT)
+                            ReconciliationDiagnostic.UNSAFE_PATH
+                        else ReconciliationDiagnostic.CRYPTO_OPERATIONAL,
+                    failure = error.diagnostic,
+                )
+            }
         when (val confirmation = confirmationController.evaluate(confirmationSnapshot)) {
             is ConfirmationResult.Absent -> return noPrefix()
             is ConfirmationResult.Rejected -> {
@@ -468,9 +603,38 @@ internal class RecoveryMicrofileReconciliationController(
                         confirmationSnapshot.finalArtifact != null
                 ) {
                     val artifact = confirmationSnapshot.finalArtifact
+                    if (
+                        !artifact.path.containedBeneathRunRoot ||
+                            !artifact.path.everyExistingComponentLstatObserved
+                    ) {
+                        return noPrefix(
+                            classification = confirmation.classification,
+                            diagnostic = ReconciliationDiagnostic.UNSAFE_PATH,
+                        )
+                    }
+                    if (
+                        !artifact.path.leafIsRegularFile || !artifact.path.noComponentOrLeafSymlink
+                    ) {
+                        return noPrefix(
+                            classification = KeyRecoveryClassification.CORRUPT_KEY_CONFIRMATION
+                        )
+                    }
                     val bytes = artifact.ciphertextSnapshot()
+                    if (bytes.isEmpty() || bytes.size > MAX_CONFIRMATION_CIPHERTEXT_BYTES) {
+                        return noPrefix(classification = confirmation.classification)
+                    }
                     val authenticated =
-                        crypto.authenticateConfirmationOrphan(confirmationSnapshot.expected, bytes)
+                        try {
+                            crypto.authenticateConfirmationOrphan(
+                                confirmationSnapshot.expected,
+                                bytes,
+                            )
+                        } catch (_: Throwable) {
+                            return noPrefix(
+                                classification = confirmation.classification,
+                                diagnostic = ReconciliationDiagnostic.CRYPTO_OPERATIONAL,
+                            )
+                        }
                     val quarantine =
                         if (
                             authenticated is KeyConfirmationDecryption.Success &&
@@ -500,7 +664,68 @@ internal class RecoveryMicrofileReconciliationController(
                 return noPrefix(confirmationDiagnostic = confirmation.diagnostic)
             is ConfirmationResult.Validated -> Unit
         }
-        val candidate = source.loadCandidate(runId)
+        val quarantineOutcomes = mutableListOf<QuarantineResult>()
+        val pendingRows =
+            try {
+                source.loadPendingQuarantine(runId)
+            } catch (error: RecoverySourceAccessException) {
+                return noPrefix(
+                    diagnostic = ReconciliationDiagnostic.LATER_JOURNAL_PREFIX_INVALID,
+                    failure = error.diagnostic,
+                )
+            }
+        pendingRows.forEach { pending ->
+            quarantineController
+                ?.quarantine(
+                    pending.input,
+                    pending.recordedObservedState,
+                    pending.bootstrapBinding,
+                )
+                ?.let(quarantineOutcomes::add)
+        }
+        val candidate =
+            try {
+                source.loadCandidate(runId)
+            } catch (error: RecoverySourceAccessException) {
+                return noPrefix(
+                    diagnostic = ReconciliationDiagnostic.LATER_JOURNAL_PREFIX_INVALID,
+                    failure = error.diagnostic,
+                )
+            }
+        val referenced = buildSet {
+            add("key-confirmation/run.kc")
+            candidate.units.forEach {
+                add(it.ciphertextRelativeName)
+                add(it.keyEnvelopeRelativeName)
+            }
+            candidate.publications.forEach {
+                add(it.publicationRelativeName)
+                add(it.keyEnvelopeRelativeName)
+            }
+        }
+        val inventory =
+            try {
+                source.loadInventory(runId)
+            } catch (error: RecoverySourceAccessException) {
+                return noPrefix(
+                    diagnostic = ReconciliationDiagnostic.UNSAFE_PATH,
+                    failure = error.diagnostic,
+                )
+            }
+        inventory
+            .filter {
+                it.input.sourceRelativeName.endsWith(".tmp") ||
+                    it.input.sourceRelativeName !in referenced
+            }
+            .forEach { entry ->
+                quarantineController
+                    ?.quarantine(
+                        entry.input,
+                        entry.observedState,
+                        entry.bootstrapBinding,
+                    )
+                    ?.let(quarantineOutcomes::add)
+            }
         val canonicalRun = runId.toCanonicalString()
         if (
             candidate.bootstrapRows.singleOrNull() !=
@@ -515,6 +740,10 @@ internal class RecoveryMicrofileReconciliationController(
         val validUnits = maximalValidUnits(candidate.units, canonicalRun)
         val laterRowsInvalid = validUnits.size != candidate.units.size
         val publications = candidate.publications.associateBy { it.generation }
+        val latestGeneration = candidate.publications.maxOfOrNull { it.generation } ?: 0UL
+        val publicationIssue =
+            publications.size != candidate.publications.size ||
+                latestGeneration > validUnits.size.toULong()
         var selected: Pair<RecoveryManifestPublicationRow, RecoveryManifest>? = null
         var generation = minOf(validUnits.size, RecoveryContract.MAX_MANIFEST_ENTRIES).toULong()
         while (generation > 0UL && selected == null) {
@@ -534,12 +763,20 @@ internal class RecoveryMicrofileReconciliationController(
                 ?: return noPrefix(
                     diagnostic = ReconciliationDiagnostic.MANIFEST_MISSING_OR_INVALID
                 )
+        val fallbackIssue = publicationIssue || publication.generation != latestGeneration
         val output = ByteArrayOutputStream()
         val authenticated = mutableListOf<RecoveryMicrofileUnitRow>()
         var failure: Pair<KeyRecoveryClassification?, ReconciliationDiagnostic>? = null
         for (unit in validUnits.take(manifest.entries.size)) {
-            val envelope = source.loadArtifact(runId, unit.keyEnvelopeRelativeName)
-            val ciphertext = source.loadArtifact(runId, unit.ciphertextRelativeName)
+            val loaded =
+                try {
+                    source.loadArtifact(runId, unit.keyEnvelopeRelativeName) to
+                        source.loadArtifact(runId, unit.ciphertextRelativeName)
+                } catch (error: RecoverySourceAccessException) {
+                    failure = null to ReconciliationDiagnostic.CRYPTO_OPERATIONAL
+                    break
+                }
+            val (envelope, ciphertext) = loaded
             if (
                 !matches(envelope, unit.keyEnvelopeBytes, unit.keyEnvelopeSha256) ||
                     !matches(ciphertext, unit.ciphertextBytes, unit.ciphertextSha256)
@@ -559,7 +796,7 @@ internal class RecoveryMicrofileReconciliationController(
                                     null to ReconciliationDiagnostic.LATER_JOURNAL_PREFIX_INVALID
                                 break
                             }
-                val plaintext =
+                val outcome =
                     crypto.authenticateUnit(
                         runId,
                         unit,
@@ -567,6 +804,23 @@ internal class RecoveryMicrofileReconciliationController(
                         envelope!!.snapshot(),
                         ciphertext!!.snapshot(),
                     )
+                val plaintext =
+                    when (outcome) {
+                        is UnitAuthenticationOutcome.Authenticated -> outcome.snapshot()
+                        is UnitAuthenticationOutcome.Rejected -> {
+                            failure =
+                                when (outcome.diagnostic.category) {
+                                    RecoveryFailureCategory.AUTHENTICATION_REJECTED ->
+                                        KeyRecoveryClassification.KEY_ENVELOPE_AUTH_FAILURE to
+                                            ReconciliationDiagnostic.UNIT_MISSING_OR_INVALID
+                                    RecoveryFailureCategory.STRUCTURAL ->
+                                        KeyRecoveryClassification.CORRUPT_KEY_ENVELOPE to
+                                            ReconciliationDiagnostic.UNIT_MISSING_OR_INVALID
+                                    else -> null to ReconciliationDiagnostic.CRYPTO_OPERATIONAL
+                                }
+                            break
+                        }
+                    }
                 if (
                     plaintext.size.toULong() !=
                         unit.plaintextEndExclusive - unit.plaintextStartInclusive
@@ -577,27 +831,34 @@ internal class RecoveryMicrofileReconciliationController(
                 output.write(plaintext)
                 authenticated += unit
             } catch (_: Throwable) {
-                failure =
-                    KeyRecoveryClassification.KEY_ENVELOPE_AUTH_FAILURE to
-                        ReconciliationDiagnostic.UNIT_MISSING_OR_INVALID
+                failure = null to ReconciliationDiagnostic.CRYPTO_OPERATIONAL
                 break
             }
         }
         val prefix = authenticatedPrefix(runId, publication, output.toByteArray(), authenticated)
         return if (
-            failure == null && !laterRowsInvalid && authenticated.size == manifest.entries.size
+            failure == null &&
+                !laterRowsInvalid &&
+                !fallbackIssue &&
+                authenticated.size == manifest.entries.size
         ) {
-            MicrofileReconciliationResult.AuthenticatedPrefix(prefix.first, prefix.second)
+            MicrofileReconciliationResult.AuthenticatedPrefix(
+                prefix.first,
+                prefix.second,
+                Collections.unmodifiableList(ArrayList(quarantineOutcomes)),
+            )
         } else {
             MicrofileReconciliationResult.PartialPrefix(
                 prefix.first,
                 prefix.second,
                 failure?.first,
                 failure?.second ?: ReconciliationDiagnostic.LATER_JOURNAL_PREFIX_INVALID,
+                Collections.unmodifiableList(ArrayList(quarantineOutcomes)),
             )
         }
     }
 
+    @Suppress("ReturnCount", "TooGenericExceptionCaught", "SwallowedException", "ComplexCondition")
     private fun authenticateManifestOrNull(
         runId: RunId,
         row: RecoveryManifestPublicationRow,
@@ -611,7 +872,7 @@ internal class RecoveryMicrofileReconciliationController(
         )
             return null
         return try {
-            val manifest =
+            val outcome =
                 crypto.authenticateManifest(
                     runId,
                     row,
@@ -619,8 +880,14 @@ internal class RecoveryMicrofileReconciliationController(
                     envelope!!.snapshot(),
                     ciphertext!!.snapshot(),
                 )
+            val manifest =
+                (outcome as? ManifestAuthenticationOutcome.Authenticated)?.manifest ?: return null
             if (
-                manifest.generation != row.generation ||
+                manifest.candidate != RecoveryCandidate.MICROFILE ||
+                    manifest.runId != runId ||
+                    manifest.generation != row.generation ||
+                    manifest.previousManifestCiphertextSha256 !=
+                        row.previousPublicationCiphertextSha256 ||
                     manifest.committedEndExclusive != row.committedEndExclusive ||
                     manifest.entries != units.map(::manifestEntry)
             )
@@ -631,7 +898,7 @@ internal class RecoveryMicrofileReconciliationController(
         }
     }
 
-    @Suppress("ComplexCondition")
+    @Suppress("ComplexCondition", "LoopWithTooManyJumpStatements")
     private fun maximalValidUnits(
         rows: List<RecoveryMicrofileUnitRow>,
         runId: String,
@@ -639,6 +906,7 @@ internal class RecoveryMicrofileReconciliationController(
         val result = mutableListOf<RecoveryMicrofileUnitRow>()
         var start = 0UL
         for (row in rows.sortedBy { it.unitIndex }) {
+            if (result.size == RecoveryContract.MAX_MANIFEST_ENTRIES) break
             val width = row.plaintextEndExclusive - row.plaintextStartInclusive
             if (
                 row.runId != runId ||
@@ -665,13 +933,22 @@ internal class RecoveryMicrofileReconciliationController(
     ): Pair<AuthenticatedMicrofilePrefix, AuthenticatedMicrofilePrefixCapability> {
         val end = units.lastOrNull()?.plaintextEndExclusive ?: 0UL
         val prefix =
-            AuthenticatedMicrofilePrefix(runId, publication.generation, end, plaintext, units)
+            AuthenticatedMicrofilePrefix(
+                RecoveryCandidate.MICROFILE,
+                runId,
+                publication.generation,
+                end,
+                plaintext,
+                units,
+                publication.publicationSha256,
+            )
         val rowsDigest =
             Sha256Value.calculate(
                 units.flatMap { it.processingIntentId.toByteArray().asIterable() }.toByteArray()
             )
         val capability =
             AuthenticatedMicrofilePrefixCapability(
+                RecoveryCandidate.MICROFILE,
                 runId,
                 publication.generation,
                 units.size,
@@ -706,11 +983,17 @@ internal class RecoveryMicrofileReconciliationController(
         confirmationDiagnostic: ConfirmationDiagnostic? = null,
         diagnostic: ReconciliationDiagnostic? = null,
         quarantine: QuarantineResult? = null,
+        failure: RecoveryFailureDiagnostic? = null,
     ) =
         MicrofileReconciliationResult.NoAuthenticatedPrefix(
             classification,
             confirmationDiagnostic,
             diagnostic,
             quarantine,
+            failure,
         )
+
+    private companion object {
+        const val MAX_CONFIRMATION_CIPHERTEXT_BYTES = 512
+    }
 }

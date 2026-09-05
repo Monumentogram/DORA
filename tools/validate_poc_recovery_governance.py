@@ -486,6 +486,9 @@ REC_I3_MICROFILE_MUTABLE_PATHS = tuple(
 REC_I3_RECON_PREDECESSOR_COMMIT = "3619a9c1d285e2a1c27133467a6b987d23174570"
 REC_I3_RECON_SCOPE_COMMIT = "b90305f1aa387c6668320b03e8aa33b754a7162a"
 REC_I3_RECON_SCOPE_TREE = "6bddf5cb44030b6975a3cc9e8807672d44953c79"
+REC_I3_RECON_CORRECTION_COMMIT = "e78571776d34756325289dcfcb3853c9696f3011"
+REC_I3_RECON_CORRECTION_TREE = "bead248da7e62a272c6319bf7c70f94536d18e21"
+REC_I3_RECON_CORRECTION_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_RECONCILIATION_REVIEW_CORRECTION_STAGE0_V0_1.md"
 REC_I3_RECON_SCOPE_PATH = "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_RECONCILIATION_QUARANTINE_SCOPE_STAGE0_V0_1.md"
 REC_I3_RECON_ADR_PATH = "docs/adr/ADR-0004-poc-recovery-reconciliation-and-quarantine.md"
 REC_I3_RECON_EVIDENCE_PATH = "docs/evidence/poc-recovery-001/rec-i3-microfile-reconciliation-quarantine-local-evidence-stage0-v0.1.json"
@@ -494,16 +497,21 @@ REC_I3_RECON_SOURCE_PATHS = (
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationController.kt",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryMicrofileReconciliation.kt",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryMicrofileCrypto.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationOutcomes.kt",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntent.kt",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryJournalDatabase.kt",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryQuarantineJournal.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSource.kt",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryReconciliationPathPolicy.kt",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorage.kt",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationControllerTest.kt",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryQuarantineControllerTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationAcceptanceTest.kt",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntentTest.kt",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalSchemaPlanTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSourceTest.kt",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryReconciliationPathPolicyTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorageTest.kt",
     "tools/verify_rec_i3_microfile_sqlite.py",
 )
 REC_I3_RECON_MUTABLE_PATHS = (
@@ -513,6 +521,7 @@ REC_I3_RECON_MUTABLE_PATHS = (
     "tools/test_poc_recovery_i3_governance.py",
     "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
     "docs/DORA_MVP1_STAGE_STATUS.md",
+    REC_I3_RECON_CORRECTION_PATH,
 )
 REC_I3_RECON_ALLOWED_PATHS = (
     *REC_I3_RECON_MUTABLE_PATHS,
@@ -532,6 +541,7 @@ REC_I3_RECON_ADDITIVE_PATHS = (
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryReconciliationPathPolicyTest.kt",
     REC_I3_RECON_SCOPE_PATH,
     REC_I3_RECON_ADR_PATH,
+    REC_I3_RECON_CORRECTION_PATH,
     REC_I3_RECON_EVIDENCE_PATH,
 )
 REC_I3_MICROFILE_ADDITIVE_PATHS = (
@@ -5861,6 +5871,20 @@ def validate_rec_i3_reconciliation_successor(publication: bool) -> None:
             and sha256(REC_I3_RECON_ADR_PATH)
             == "8f763bd5f65e3aec7c850685a1ed3fded5c540b9cd9481f2a3b97bb93d97c3ab",
             "REC-I3 immutable reconciliation scope or ADR changed")
+    require(git_is_ancestor(REC_I3_RECON_CORRECTION_COMMIT, head),
+            "REC-I3 reconciliation correction predates its scope")
+    require(git_output("rev-parse", f"{REC_I3_RECON_CORRECTION_COMMIT}^{{tree}}")
+            == REC_I3_RECON_CORRECTION_TREE,
+            "REC-I3 reconciliation correction scope tree drift")
+    correction_paths = set(git_path_records(
+        "diff", "--name-only", "-z",
+        f"{REC_I3_RECON_CORRECTION_COMMIT}^", REC_I3_RECON_CORRECTION_COMMIT,
+    ))
+    require(correction_paths == {REC_I3_RECON_CORRECTION_PATH},
+            "REC-I3 reconciliation correction scope contains implementation or unrelated paths")
+    require(sha256(REC_I3_RECON_CORRECTION_PATH)
+            == "e79b2298ce810c851a6acd40eefcc02c055f0ea15a0d7b34040377b77c97339c",
+            "REC-I3 immutable reconciliation correction scope changed")
     epoch_paths = set(git_path_records(
         "log", "--format=", "--name-only", "--no-renames", "-z",
         f"{REC_I3_RECON_PREDECESSOR_COMMIT}..{head}",

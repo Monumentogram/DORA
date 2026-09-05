@@ -131,7 +131,36 @@ class RecoveryQuarantineControllerTest {
         assertTrue(fixture.run() is QuarantineResult.RetryRequired)
     }
 
-    private class Fixture(evidenceFails: Boolean = false, storageFault: String? = null) {
+    @Test
+    fun `Q01 and Q05 end exceptions resolve only through exact durable readback`() {
+        for (ordinal in listOf(1, 2)) {
+            val fixture = Fixture(transactionEndFault = ordinal)
+            val result = fixture.run()
+            assertTrue(result is QuarantineResult.Completed)
+            assertEquals(QuarantineIntentState.COMPLETED, fixture.journal.row?.state)
+            assertEquals(
+                QuarantineOperationState.CONFIRMED,
+                (result as QuarantineResult.Completed).remainder.completionCommit,
+            )
+        }
+    }
+
+    @Test
+    fun `load and begin failures are immutable typed retry diagnostics`() {
+        val load = Fixture(journalFault = "load").run() as QuarantineResult.RetryRequired
+        assertEquals(QuarantineStep.Q01, load.failedStep)
+        assertEquals(RecoveryFailureCategory.OPERATIONAL, load.diagnostic?.category)
+        val begin = Fixture(journalFault = "begin").run() as QuarantineResult.RetryRequired
+        assertEquals(QuarantineStep.Q01, begin.failedStep)
+        assertEquals(RecoveryFailureCategory.OPERATIONAL, begin.diagnostic?.category)
+    }
+
+    private class Fixture(
+        evidenceFails: Boolean = false,
+        storageFault: String? = null,
+        transactionEndFault: Int? = null,
+        journalFault: String? = null,
+    ) {
         val events = mutableListOf<String>()
         val input =
             RecoveryQuarantineIntentInput(
@@ -143,7 +172,7 @@ class RecoveryQuarantineControllerTest {
                 Sha256Value.calculate(byteArrayOf(1)),
             )
         val storage = Storage(events, storageFault)
-        val journal = Journal(events)
+        val journal = Journal(events, transactionEndFault, journalFault)
         private val controller =
             RecoveryQuarantineController(storage, journal) {
                 events += "evidence"
@@ -192,16 +221,32 @@ class RecoveryQuarantineControllerTest {
         }
     }
 
-    private class Journal(private val events: MutableList<String>) : RecoveryQuarantineJournal {
+    private class Journal(
+        private val events: MutableList<String>,
+        private val endFaultOrdinal: Int? = null,
+        private val fault: String? = null,
+    ) : RecoveryQuarantineJournal {
         var row: RecoveryQuarantineIntentRow? = null
+        private var transactionOrdinal = 0
 
         override fun load(intentId: Sha256Value): RecoveryQuarantineIntentRow? {
+            if (fault == "load") error("load")
             if (row != null) events += "load"
-            return row
+            return row?.takeIf { it.intentId == intentId }
+        }
+
+        override fun loadBySource(input: RecoveryQuarantineIntentInput) = row?.takeIf {
+            it.input.runId == input.runId &&
+                it.input.candidate == input.candidate &&
+                it.input.sourceRelativeName == input.sourceRelativeName &&
+                it.input.sourceSha256 == input.sourceSha256
         }
 
         override fun beginNonExclusive(): RecoveryQuarantineTransaction {
+            if (fault == "begin") error("begin")
             events += "begin"
+            transactionOrdinal++
+            val ordinal = transactionOrdinal
             return object : RecoveryQuarantineTransaction {
                 private var inserted: RecoveryQuarantineIntentRow? = null
                 private var complete = false
@@ -224,6 +269,7 @@ class RecoveryQuarantineControllerTest {
                     events += "end"
                     inserted?.let { row = it }
                     if (complete) row = row?.copy(state = QuarantineIntentState.COMPLETED)
+                    if (endFaultOrdinal == ordinal) error("end outcome unknown")
                 }
             }
         }

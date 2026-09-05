@@ -3,16 +3,16 @@ package com.monumentogram.dora.poc.recovery.candidate
 import android.content.Context
 import com.monumentogram.dora.poc.recovery.controller.RecoveryKeyConfirmationController
 import com.monumentogram.dora.poc.recovery.journal.AndroidRecoveryQuarantineJournal
+import com.monumentogram.dora.poc.recovery.journal.AndroidRecoveryReconciliationSource
 import com.monumentogram.dora.poc.recovery.storage.AndroidOsRecoveryReconciliationStorage
 
 /**
- * Minimal Android composition boundary; snapshot acquisition remains caller-owned PoC
- * orchestration.
+ * Minimal Android composition boundary. Production snapshot acquisition is owned internally by the
+ * journal and descriptor-backed source.
  */
 internal object AndroidRecoveryMicrofileReconciliation {
     fun create(
         context: Context,
-        source: RecoveryReconciliationSource,
         evidence: RecoveryQuarantineEvidenceSink,
     ): RecoveryMicrofileReconciliationController {
         val quarantine =
@@ -22,7 +22,7 @@ internal object AndroidRecoveryMicrofileReconciliation {
                 evidence,
             )
         return RecoveryMicrofileReconciliationController(
-            source = source,
+            source = AndroidRecoveryReconciliationSource(context),
             crypto = AndroidRecoveryMicrofileCrypto(),
             confirmationController = RecoveryKeyConfirmationController(),
             quarantineController = quarantine,
