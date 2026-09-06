@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import os
 import re
 import subprocess
 import sys
@@ -1414,34 +1415,147 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             validate.assert_called_once_with(lifecycle)
 
     def test_local_v08_fixture_restores_verified_pull_request_source_head(self) -> None:
-        local = governance.collect_recovery_lifecycle_identity()
-        current_pull_request = governance.GitHubPullRequestContext(
-            repository=governance.GITHUB_REPOSITORY,
-            head_repository=governance.GITHUB_REPOSITORY,
-            head_ref=governance.REC_I3_OBSERVABLE_CONTROLLER_BRANCH,
-            head_sha=local.head,
-            base_ref=governance.GITHUB_BASE_BRANCH,
-            base_sha=governance.REC_I3_OBSERVABLE_CONTROLLER_BASE,
-            merge_ref="refs/pull/66/merge",
-            merge_sha="b" * 40,
-            number=66,
-            draft=False,
-            state="open",
-            merged=False,
-        )
-        merge_lifecycle = replace(
-            local,
-            head=current_pull_request.merge_sha,
-            github_pull_request_context=current_pull_request,
-        )
-        with patch.object(
-            governance,
-            "collect_recovery_lifecycle_identity",
-            return_value=merge_lifecycle,
-        ):
+        current = governance.collect_recovery_lifecycle_identity()
+        pull_request = current.github_pull_request_context
+        if pull_request is not None:
+            parents = tuple(
+                governance.git_output("show", "-s", "--format=%P", current.head).split()
+            )
+            self.assertEqual((pull_request.base_sha, pull_request.head_sha), parents)
+            self.assertNotEqual(current.head, pull_request.head_sha)
+            self.assertEqual(
+                governance.git_output("rev-parse", f"{current.head}^{{tree}}"),
+                governance.git_output("rev-parse", f"{pull_request.head_sha}^{{tree}}"),
+            )
+            self.assertEqual(
+                "",
+                governance.git_output(
+                    "rev-list",
+                    "--min-parents=2",
+                    f"{governance.REC_I3_OBSERVABLE_CONTROLLER_BASE}..{pull_request.head_sha}",
+                ),
+            )
+
             simulated = self.local_result_boundary_lifecycle()
-        self.assertEqual(local.head, simulated.head)
-        self.assertIsNone(simulated.github_pull_request_context)
+            self.assertEqual(pull_request.head_sha, simulated.head)
+            self.assertIsNone(simulated.github_pull_request_context)
+
+            wrong_event_path = Path(os.environ["RUNNER_TEMP"]) / "wrong-head-event.json"
+            governance.write_test_pull_request_event(
+                wrong_event_path,
+                number=pull_request.number,
+                head_ref=pull_request.head_ref,
+                head_sha=pull_request.base_sha,
+                base_sha=pull_request.base_sha,
+                merge_sha=pull_request.merge_sha,
+                draft=pull_request.draft,
+                state=pull_request.state,
+                merged=pull_request.merged,
+            )
+            wrong_environment = os.environ.copy()
+            wrong_environment["GITHUB_EVENT_PATH"] = str(wrong_event_path.resolve())
+            rejected = subprocess.run(
+                [sys.executable, "tools/validate_poc_recovery_governance.py", "--self-test"],
+                cwd=governance.ROOT,
+                env=wrong_environment,
+                check=False,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="strict",
+            )
+            self.assertNotEqual(0, rejected.returncode)
+            self.assertIn(
+                "GitHub merge-ref parent topology mismatch",
+                rejected.stdout + rejected.stderr,
+            )
+
+            with self.assertRaisesRegex(
+                ValueError, "REC-I3 result-boundary governance history must be linear"
+            ):
+                governance.validate_rec_i3_result_boundary(
+                    replace(simulated, head=current.head)
+                )
+            print("PASS retained observable-controller merge-ref source-head restoration")
+            return
+
+        source_head = current.head
+        main_head = governance.git_output("rev-parse", "refs/remotes/origin/main")
+        verified_base = governance.git_output("merge-base", main_head, source_head)
+        self.assertEqual(main_head, verified_base)
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-retained-merge-ref-") as temporary:
+            parent = Path(temporary)
+            repo = parent / "repo"
+            governance.test_git(
+                parent,
+                "clone",
+                "--shared",
+                "--no-checkout",
+                str(governance.ROOT),
+                str(repo),
+            )
+            source_tree = governance.test_git_text(
+                repo, "rev-parse", f"{source_head}^{{tree}}"
+            )
+            merge_head = governance.test_git_text(
+                repo,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                source_tree,
+                "-p",
+                verified_base,
+                "-p",
+                source_head,
+                input_data=b"retained synthetic GitHub merge ref\n",
+            )
+            governance.test_git(repo, "checkout", "--detach", "-q", merge_head)
+
+            runner_temp = parent / "runner-temp"
+            runner_temp.mkdir()
+            event_path = runner_temp / "event.json"
+            pull_request_number = 66
+            governance.write_test_pull_request_event(
+                event_path,
+                number=pull_request_number,
+                head_ref=governance.REC_I3_OBSERVABLE_CONTROLLER_BRANCH,
+                head_sha=source_head,
+                base_sha=verified_base,
+                merge_sha=merge_head,
+                draft=False,
+            )
+            child_environment = os.environ.copy()
+            for key in tuple(child_environment):
+                if key.startswith("GITHUB_") or key == "RUNNER_TEMP":
+                    child_environment.pop(key)
+            child_environment.update({
+                "GITHUB_EVENT_NAME": "pull_request",
+                "GITHUB_REPOSITORY": governance.GITHUB_REPOSITORY,
+                "GITHUB_WORKSPACE": str(repo.resolve()),
+                "RUNNER_TEMP": str(runner_temp.resolve()),
+                "GITHUB_EVENT_PATH": str(event_path.resolve()),
+                "GITHUB_HEAD_REF": governance.REC_I3_OBSERVABLE_CONTROLLER_BRANCH,
+                "GITHUB_BASE_REF": governance.GITHUB_BASE_BRANCH,
+                "GITHUB_REF": f"refs/pull/{pull_request_number}/merge",
+                "GITHUB_SHA": merge_head,
+            })
+            completed = subprocess.run(
+                [sys.executable, "tools/validate_poc_recovery_governance.py", "--self-test"],
+                cwd=repo,
+                env=child_environment,
+                check=False,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="strict",
+            )
+            self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
+            self.assertIn(
+                "PASS retained observable-controller merge-ref source-head restoration",
+                completed.stdout,
+            )
 
     def test_v08_profile_rejects_current_observable_pull_request_identity(self) -> None:
         lifecycle = self.local_result_boundary_lifecycle()
