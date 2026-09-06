@@ -1303,8 +1303,7 @@ internal class RecoveryStreamingReconciliationController(
                 )
             )
         }
-        if (!oracleExactReplayOutcome(outcome, request.oracle)) return journalStructural()
-        if (range != null && !exactReplayRange(outcome, range)) return journalStructural()
+        if (!exactReplayRows(outcome, range, request.oracle)) return journalStructural()
         val verified =
             try {
                 source.verifyReplayHashOnly(
@@ -1337,6 +1336,14 @@ internal class RecoveryStreamingReconciliationController(
             ) {}
             .complete(sourceDescriptorCloseFailed = false, evidenceSink)
     }
+
+    private fun exactReplayRows(
+        outcome: RecoveryStreamingOutcomeRow,
+        range: RecoveryStreamingRangeRow?,
+        oracle: RecoveryStreamingIntentBuilder.RecoveryStreamingOracle,
+    ): Boolean =
+        oracleExactReplayOutcome(outcome, oracle) &&
+            (range == null || exactReplayRange(outcome, range))
 
     private fun oracleExactReplayOutcome(
         outcome: RecoveryStreamingOutcomeRow,
