@@ -224,6 +224,78 @@ class AndroidRecoveryStreamingJournalTest {
     }
 
     @Test
+    fun `adapter strict decode failures stay structural through every keyed lookup and reconciliation`() {
+        val attempt = validAuthenticationFailure()
+        val malformedOutcome =
+            RecoveryStreamingSqlCodec.encodeOutcome(attempt.outcome)
+                .replaced(21, StreamingSqliteCell.Text("UNKNOWN"))
+        val malformedRange =
+            RecoveryStreamingSqlCodec.encodeRange(requireNotNull(attempt.range))
+                .replaced(16, StreamingSqliteCell.Text("UNKNOWN"))
+        val outcomeDecodeFailure = strictDecodeFailure {
+            RecoveryStreamingSqlCodec.decodeOutcome(malformedOutcome)
+        }
+        val rangeDecodeFailure = strictDecodeFailure {
+            RecoveryStreamingSqlCodec.decodeRange(malformedRange)
+        }
+
+        assertEquals(
+            RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL,
+            readFatal(
+                    AndroidRecoveryStreamingJournal(
+                            RecordingDatabase(outcomeIdFailure = outcomeDecodeFailure)
+                        )
+                        .outcomeById(attempt.outcome.outcomeId)
+                )
+                .classification,
+        )
+        assertEquals(
+            RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL,
+            readFatal(
+                    AndroidRecoveryStreamingJournal(
+                            RecordingDatabase(witnessFailure = outcomeDecodeFailure)
+                        )
+                        .outcomeByWitness(
+                            attempt.outcome.runId,
+                            attempt.outcome.checkpointIdentity,
+                            attempt.outcome.sourceWitnessId,
+                        )
+                )
+                .classification,
+        )
+        assertEquals(
+            RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL,
+            readFatal(
+                    AndroidRecoveryStreamingJournal(
+                            RecordingDatabase(rangeOutcomeFailure = rangeDecodeFailure)
+                        )
+                        .rangeByOutcome(attempt.outcome.outcomeId)
+                )
+                .classification,
+        )
+        assertEquals(
+            RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL,
+            fatal(
+                    AndroidRecoveryStreamingJournal(
+                            RecordingDatabase(rangeIdFailure = rangeDecodeFailure)
+                        )
+                        .persistOutcome(attempt)
+                )
+                .classification,
+        )
+        assertEquals(
+            RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL,
+            fatal(
+                    AndroidRecoveryStreamingJournal(
+                            RecordingDatabase(rangeSourceFailure = rangeDecodeFailure)
+                        )
+                        .persistOutcome(attempt)
+                )
+                .classification,
+        )
+    }
+
+    @Test
     fun `checkpoint decoder accepts q boundaries and rejects one over`() {
         listOf(0UL, 1UL, 2UL, 3UL, 28_236UL).forEachIndexed { index, segments ->
             val checkpoint = checkpointForSegments(index.toULong() + 1UL, segments)
@@ -405,17 +477,18 @@ class AndroidRecoveryStreamingJournalTest {
     fun `outcome ID witness and disagreeing lookup collisions classify without mutation`() {
         val attempt = validAuthenticationFailure()
         val other = validAuthenticationFailure(returnedDigest = "returned-other")
-        val cases =
-            listOf(
-                RecordingDatabase(outcomeIdOverride = listOf(other.outcome)),
-                RecordingDatabase(witnessOverride = listOf(other.outcome)),
-                RecordingDatabase(
-                    outcomeIdOverride = listOf(attempt.outcome),
-                    witnessOverride = listOf(other.outcome),
-                ),
+        val outcomeIdCollision = RecordingDatabase(outcomeIdOverride = listOf(other.outcome))
+        val witnessCollision = RecordingDatabase(witnessOverride = listOf(other.outcome))
+        val disagreement =
+            RecordingDatabase(
+                outcomeIdOverride = listOf(attempt.outcome),
+                witnessOverride = listOf(other.outcome),
             )
 
-        val results = cases.map { AndroidRecoveryStreamingJournal(it).persistOutcome(attempt) }
+        val results =
+            listOf(outcomeIdCollision, witnessCollision, disagreement).map {
+                AndroidRecoveryStreamingJournal(it).persistOutcome(attempt)
+            }
 
         assertEquals(
             RecoveryStreamingJournalClassification.JOURNAL_ATTEMPT_CONFLICT,
@@ -429,7 +502,26 @@ class AndroidRecoveryStreamingJournalTest {
             RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL,
             fatal(results[2]).classification,
         )
-        assertTrue(cases.all { it.transactionEvents.isEmpty() })
+        assertEquals(
+            listOf(RecoveryStreamingExistingEvidence.Outcome(other.outcome.outcomeId)),
+            fatal(results[0]).existingEvidence,
+        )
+        assertEquals(
+            listOf(RecoveryStreamingExistingEvidence.Outcome(other.outcome.outcomeId)),
+            fatal(results[1]).existingEvidence,
+        )
+        assertEquals(
+            listOf(
+                RecoveryStreamingExistingEvidence.Outcome(attempt.outcome.outcomeId),
+                RecoveryStreamingExistingEvidence.Outcome(other.outcome.outcomeId),
+            ),
+            fatal(results[2]).existingEvidence,
+        )
+        assertTrue(
+            listOf(outcomeIdCollision, witnessCollision, disagreement).all {
+                it.transactionEvents.isEmpty()
+            }
+        )
     }
 
     @Test
@@ -438,7 +530,7 @@ class AndroidRecoveryStreamingJournalTest {
         val range = requireNotNull(attempt.range)
         val otherRange = requireNotNull(validAuthenticationFailure(returnedDigest = "other").range)
         val idCollision = RecordingDatabase(rangeIdOverride = listOf(otherRange))
-        val sourceCollision = RecordingDatabase(rangeSourceOverride = listOf(otherRange))
+        val sourceTupleCollision = RecordingDatabase(rangeSourceOverride = listOf(otherRange))
         val missing =
             RecordingDatabase(
                 outcomeIdOverride = listOf(attempt.outcome),
@@ -458,15 +550,24 @@ class AndroidRecoveryStreamingJournalTest {
                 rangeOutcomeOverride = listOf(otherRange),
             )
 
+        val idCollisionResult = AndroidRecoveryStreamingJournal(idCollision).persistOutcome(attempt)
+        val sourceTupleCollisionResult =
+            AndroidRecoveryStreamingJournal(sourceTupleCollision).persistOutcome(attempt)
         assertEquals(
             RecoveryStreamingJournalClassification.STREAM_RANGE_QUARANTINE_COLLISION,
-            fatal(AndroidRecoveryStreamingJournal(idCollision).persistOutcome(attempt))
-                .classification,
+            fatal(idCollisionResult).classification,
         )
         assertEquals(
             RecoveryStreamingJournalClassification.STREAM_RANGE_QUARANTINE_COLLISION,
-            fatal(AndroidRecoveryStreamingJournal(sourceCollision).persistOutcome(attempt))
-                .classification,
+            fatal(sourceTupleCollisionResult).classification,
+        )
+        assertEquals(
+            listOf(RecoveryStreamingExistingEvidence.Range(otherRange.rangeIntentId)),
+            fatal(idCollisionResult).existingEvidence,
+        )
+        assertEquals(
+            listOf(RecoveryStreamingExistingEvidence.Range(otherRange.rangeIntentId)),
+            fatal(sourceTupleCollisionResult).existingEvidence,
         )
         assertEquals(
             RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL,
@@ -482,7 +583,7 @@ class AndroidRecoveryStreamingJournalTest {
             fatal(AndroidRecoveryStreamingJournal(mismatch).persistOutcome(attempt)).classification,
         )
         assertTrue(
-            listOf(idCollision, sourceCollision, missing, unexpected, mismatch).all {
+            listOf(idCollision, sourceTupleCollision, missing, unexpected, mismatch).all {
                 it.transactionEvents.isEmpty()
             }
         )
@@ -646,9 +747,17 @@ class AndroidRecoveryStreamingJournalTest {
     fun `operational reads and active range ordering fail closed`() {
         val first = validAuthenticationFailure()
         val second = validAuthenticationFailure(returnedDigest = "tied-range")
+        val ranges = listOf(requireNotNull(first.range), requireNotNull(second.range))
+        val expected =
+            ranges.sortedWith(
+                compareBy<RecoveryStreamingRangeRow> { it.rangeStart }
+                    .thenBy { it.rangeEnd }
+                    .thenBy { it.rangeIntentId.toLowercaseHex() }
+            )
+        val insertionOrder = expected.asReversed()
+        assertTrue(expected != insertionOrder)
         val database = RecordingDatabase()
-        database.ranges += requireNotNull(second.range)
-        database.ranges += requireNotNull(first.range)
+        database.ranges += insertionOrder
         val journal = AndroidRecoveryStreamingJournal(database)
 
         val read = journal.activeRanges(first.outcome.runId, "stream/stream.ct")
@@ -662,15 +771,7 @@ class AndroidRecoveryStreamingJournalTest {
         assertFalse(
             requireNotNull(first.range).rangeIntentId == requireNotNull(second.range).rangeIntentId
         )
-        assertEquals(
-            listOf(requireNotNull(first.range), requireNotNull(second.range))
-                .sortedWith(
-                    compareBy<RecoveryStreamingRangeRow> { it.rangeStart }
-                        .thenBy { it.rangeEnd }
-                        .thenBy { it.rangeIntentId.toLowercaseHex() }
-                ),
-            values,
-        )
+        assertEquals(expected, values)
 
         val failure =
             AndroidRecoveryStreamingJournal(
@@ -1079,6 +1180,17 @@ class AndroidRecoveryStreamingJournalTest {
         } catch (_: IllegalArgumentException) {}
     }
 
+    private fun strictDecodeFailure(block: () -> Unit): Throwable {
+        var failure: Throwable? = null
+        try {
+            decodeStreamingJournalRow(block)
+        } catch (thrown: Throwable) {
+            failure = thrown
+        }
+        assertTrue("Expected adapter strict decoding to fail", failure is IllegalStateException)
+        return requireNotNull(failure)
+    }
+
     private fun fatal(result: RecoveryStreamingJournalResult) =
         result as RecoveryStreamingJournalResult.Fatal
 
@@ -1110,10 +1222,14 @@ class AndroidRecoveryStreamingJournalTest {
         initialCheckpoints: List<RecoveryStreamingCheckpointRow> = emptyList(),
         private val failurePoint: FailurePoint = FailurePoint.NONE,
         private val outcomeIdOverride: List<RecoveryStreamingOutcomeRow>? = null,
+        private val outcomeIdFailure: Throwable? = null,
         private val witnessOverride: List<RecoveryStreamingOutcomeRow>? = null,
         private val rangeOutcomeOverride: List<RecoveryStreamingRangeRow>? = null,
+        private val rangeOutcomeFailure: Throwable? = null,
         private val rangeIdOverride: List<RecoveryStreamingRangeRow>? = null,
+        private val rangeIdFailure: Throwable? = null,
         private val rangeSourceOverride: List<RecoveryStreamingRangeRow>? = null,
+        private val rangeSourceFailure: Throwable? = null,
         private val conflictOutcome: RecoveryStreamingOutcomeRow? = null,
         private val witnessFailure: Throwable? = null,
     ) : RecoveryStreamingJournalDatabase {
@@ -1136,6 +1252,7 @@ class AndroidRecoveryStreamingJournalTest {
             queryEvents += "outcome-id"
             if (failurePoint == FailurePoint.LOOKUP) error("lookup")
             if (failurePoint == FailurePoint.READBACK && transactionEnded) error("readback")
+            outcomeIdFailure?.let { throw it }
             return outcomeIdOverride ?: outcomes.filter { it.outcomeId == id }
         }
 
@@ -1156,6 +1273,7 @@ class AndroidRecoveryStreamingJournalTest {
 
         override fun rangesByOutcome(outcomeId: Sha256Value): List<RecoveryStreamingRangeRow> {
             queryEvents += "range-outcome"
+            rangeOutcomeFailure?.let { throw it }
             return rangeOutcomeOverride ?: ranges.filter { it.outcomeId == outcomeId }
         }
 
@@ -1167,6 +1285,7 @@ class AndroidRecoveryStreamingJournalTest {
 
         override fun rangeByIntentId(id: Sha256Value): List<RecoveryStreamingRangeRow> {
             queryEvents += "range-id"
+            rangeIdFailure?.let { throw it }
             return rangeIdOverride ?: ranges.filter { it.rangeIntentId == id }
         }
 
@@ -1174,6 +1293,7 @@ class AndroidRecoveryStreamingJournalTest {
             row: RecoveryStreamingRangeRow
         ): List<RecoveryStreamingRangeRow> {
             queryEvents += "range-source"
+            rangeSourceFailure?.let { throw it }
             return rangeSourceOverride
                 ?: ranges.filter {
                     it.runId == row.runId &&
