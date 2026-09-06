@@ -238,13 +238,16 @@ class AndroidRecoveryStreamingJournalTest {
         val rangeDecodeFailure = strictDecodeFailure {
             RecoveryStreamingSqlCodec.decodeRange(malformedRange)
         }
+        val outcomeIdDatabase = RecordingDatabase(outcomeIdFailure = outcomeDecodeFailure)
+        val witnessDatabase = RecordingDatabase(witnessFailure = outcomeDecodeFailure)
+        val rangeOutcomeDatabase = RecordingDatabase(rangeOutcomeFailure = rangeDecodeFailure)
+        val rangeIdDatabase = RecordingDatabase(rangeIdFailure = rangeDecodeFailure)
+        val rangeSourceDatabase = RecordingDatabase(rangeSourceFailure = rangeDecodeFailure)
 
         assertEquals(
             RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL,
             readFatal(
-                    AndroidRecoveryStreamingJournal(
-                            RecordingDatabase(outcomeIdFailure = outcomeDecodeFailure)
-                        )
+                    AndroidRecoveryStreamingJournal(outcomeIdDatabase)
                         .outcomeById(attempt.outcome.outcomeId)
                 )
                 .classification,
@@ -252,9 +255,7 @@ class AndroidRecoveryStreamingJournalTest {
         assertEquals(
             RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL,
             readFatal(
-                    AndroidRecoveryStreamingJournal(
-                            RecordingDatabase(witnessFailure = outcomeDecodeFailure)
-                        )
+                    AndroidRecoveryStreamingJournal(witnessDatabase)
                         .outcomeByWitness(
                             attempt.outcome.runId,
                             attempt.outcome.checkpointIdentity,
@@ -266,33 +267,34 @@ class AndroidRecoveryStreamingJournalTest {
         assertEquals(
             RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL,
             readFatal(
-                    AndroidRecoveryStreamingJournal(
-                            RecordingDatabase(rangeOutcomeFailure = rangeDecodeFailure)
-                        )
+                    AndroidRecoveryStreamingJournal(rangeOutcomeDatabase)
                         .rangeByOutcome(attempt.outcome.outcomeId)
                 )
                 .classification,
         )
-        assertEquals(
-            RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL,
-            fatal(
-                    AndroidRecoveryStreamingJournal(
-                            RecordingDatabase(rangeIdFailure = rangeDecodeFailure)
-                        )
-                        .persistOutcome(attempt)
+        val reconciliationResults =
+            listOf(
+                    outcomeIdDatabase,
+                    witnessDatabase,
+                    rangeOutcomeDatabase,
+                    rangeIdDatabase,
+                    rangeSourceDatabase,
                 )
-                .classification,
-        )
-        assertEquals(
-            RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL,
-            fatal(
-                    AndroidRecoveryStreamingJournal(
-                            RecordingDatabase(rangeSourceFailure = rangeDecodeFailure)
-                        )
-                        .persistOutcome(attempt)
-                )
-                .classification,
-        )
+                .map { AndroidRecoveryStreamingJournal(it).persistOutcome(attempt) }
+        reconciliationResults.forEach { result ->
+            assertEquals(
+                RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL,
+                fatal(result).classification,
+            )
+        }
+        listOf(
+                outcomeIdDatabase,
+                witnessDatabase,
+                rangeOutcomeDatabase,
+                rangeIdDatabase,
+                rangeSourceDatabase,
+            )
+            .forEach { database -> assertTrue(database.transactionEvents.isEmpty()) }
     }
 
     @Test
