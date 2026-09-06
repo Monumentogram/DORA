@@ -3,6 +3,7 @@
 package com.monumentogram.dora.poc.recovery.candidate
 
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingCheckpointRow
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingExistingEvidence
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingIdentity
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournal
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalClassification
@@ -733,15 +734,35 @@ internal class RecoveryStreamingReconciliationController(
         ) { _, _ ->
             when (val chain = journal.checkpointChain(request.witness.runId)) {
                 is RecoveryStreamingJournalReadResult.Value -> {
-                    if (chain.value.isEmpty()) {
+                    val generation =
+                        chain.value.filter {
+                            it.generation == request.witness.checkpointGeneration
+                        }
+                    if (generation.isEmpty()) {
                         nonPersistable(
                             RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
                                 RecoveryStreamingResultStage.PREREQUISITE,
                                 RecoveryStreamingResultClassification.STREAM_CHECKPOINT_MISSING,
                             )
                         )
+                    } else if (
+                        generation.size != 1 ||
+                            generation.single().checkpointIdentity !=
+                                request.witness.checkpointIdentity
+                    ) {
+                        nonPersistable(
+                            RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
+                                RecoveryStreamingResultStage.PREREQUISITE,
+                                RecoveryStreamingResultClassification.STREAM_CHECKPOINT_SPLIT_BRAIN,
+                                generation.map {
+                                    RecoveryStreamingExistingEvidence.Checkpoint(
+                                        it.checkpointIdentity
+                                    )
+                                },
+                            )
+                        )
                     } else {
-                        error("Checkpoint selection is not implemented")
+                        authenticate(generation.single(), request.witness)
                     }
                 }
                 else -> nonPersistable(RecoveryStreamingJournalMapper.readFailure(chain))
@@ -753,4 +774,42 @@ internal class RecoveryStreamingReconciliationController(
         result: RecoveryStreamingReconciliationResult
     ): RecoveryStreamingReconciliationResult =
         RecoveryStreamingEvidenceFinalizer.nonPersistable(result, evidenceSink)
+
+    private fun authenticate(
+        checkpoint: RecoveryStreamingCheckpointRow,
+        witness: RecoveryStreamingWitnessInput,
+    ): RecoveryStreamingReconciliationResult =
+        when (checkpointAuthenticator.authenticate(checkpoint, witness)) {
+            RecoveryStreamingCheckpointAuthentication.Missing ->
+                fatal(RecoveryStreamingResultClassification.STREAM_CHECKPOINT_MISSING)
+            RecoveryStreamingCheckpointAuthentication.Structural ->
+                fatal(RecoveryStreamingResultClassification.STREAM_CHECKPOINT_STRUCTURAL)
+            RecoveryStreamingCheckpointAuthentication.Rejected ->
+                fatal(
+                    RecoveryStreamingResultClassification.STREAM_CHECKPOINT_AUTHENTICATION_REJECTED
+                )
+            RecoveryStreamingCheckpointAuthentication.Operational ->
+                nonPersistable(
+                    RecoveryStreamingReconciliationResult.Retry.of(
+                        RecoveryStreamingResultStage.PREREQUISITE,
+                        RecoveryStreamingResultClassification
+                            .STREAM_CHECKPOINT_AUTHENTICATION_OPERATIONAL,
+                        RecoveryStreamingSafeExceptionType.CRYPTO,
+                    )
+                )
+            RecoveryStreamingCheckpointAuthentication.UnsafePath ->
+                fatal(RecoveryStreamingResultClassification.UNSAFE_PATH)
+            is RecoveryStreamingCheckpointAuthentication.Ready ->
+                error("Authenticated controller continuation is not implemented")
+        }
+
+    private fun fatal(
+        classification: RecoveryStreamingResultClassification
+    ): RecoveryStreamingReconciliationResult =
+        nonPersistable(
+            RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
+                RecoveryStreamingResultStage.PREREQUISITE,
+                classification,
+            )
+        )
 }

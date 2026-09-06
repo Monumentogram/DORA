@@ -801,6 +801,47 @@ class RecoveryStreamingReconciliationControllerTest {
         assertEquals(0, journal.persistCalls)
     }
 
+    @Test
+    fun `controller authenticates the exact checkpoint and stops on rejected authentication`() {
+        val fixture = controllerFixture()
+        val events = mutableListOf<String>()
+        val journal = ControllerJournal(events).apply { checkpoints = listOf(fixture.checkpoint) }
+        val controller =
+            RecoveryStreamingReconciliationController(
+                journal,
+                NeverControllerSource(events),
+                RecoveryRunSingleWriterGuard {
+                    events += "lease-acquire"
+                    RecoveryRunWriterLease { events += "lease-release" }
+                },
+                RecoveryStreamingCheckpointAuthenticator { checkpoint, witness ->
+                    events += "authenticate"
+                    assertTrue(checkpoint === fixture.checkpoint)
+                    assertEquals(fixture.request.witness, witness)
+                    RecoveryStreamingCheckpointAuthentication.Rejected
+                },
+                RecoveryStreamingEvidenceSink { events += "evidence" },
+            )
+
+        val result = controller.recover(fixture.request)
+
+        assertEquals(
+            RecoveryStreamingResultClassification.STREAM_CHECKPOINT_AUTHENTICATION_REJECTED,
+            (result as RecoveryStreamingReconciliationResult.Fatal).classification,
+        )
+        assertEquals(
+            listOf(
+                "lease-acquire",
+                "checkpoint-chain",
+                "authenticate",
+                "evidence",
+                "lease-release",
+            ),
+            events,
+        )
+        assertEquals(0, journal.persistCalls)
+    }
+
     private fun render(mapping: RecoveryStreamingResultMapping): String =
         listOf(
                 mapping.disposition.name,
