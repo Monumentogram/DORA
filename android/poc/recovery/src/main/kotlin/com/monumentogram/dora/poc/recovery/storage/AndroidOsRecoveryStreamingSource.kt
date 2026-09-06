@@ -78,6 +78,7 @@ internal sealed interface RecoveryReplayHashOnlyResult {
     data class ExactStoredSourceMetadata(
         val observedBytes: ULong,
         val sourceSha256: Sha256Value,
+        val retainedRangeSha256: Sha256Value?,
     ) : RecoveryReplayHashOnlyResult
 
     data object SourceIdentityChanged : RecoveryReplayHashOnlyResult
@@ -352,7 +353,8 @@ internal class AndroidOsRecoveryStreamingSource(
                 outcome.checkpointGeneration,
                 outcome.checkpointIdentity,
             )
-            requireReplayRange(outcome, readJournal(journal.rangeByOutcome(outcome.outcomeId)))
+            val range = readJournal(journal.rangeByOutcome(outcome.outcomeId))
+            requireReplayRange(outcome, range)
             val sourcePath = requireSafeSourcePath(request.runId, request.sourceRelativeName)
 
             withOpened(sourcePath) { descriptor ->
@@ -368,9 +370,13 @@ internal class AndroidOsRecoveryStreamingSource(
                     ) {
                         RecoveryReplayHashOnlyResult.SourceIdentityChanged
                     } else {
+                        val retainedRangeSha256 = range?.let {
+                            scoped.sha256Range(it.rangeStart, it.rangeEnd)
+                        }
                         RecoveryReplayHashOnlyResult.ExactStoredSourceMetadata(
                             outcome.observedSourceBytes,
                             outcome.observedSourceSha256,
+                            retainedRangeSha256,
                         )
                     }
                 } catch (failure: Throwable) {

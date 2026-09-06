@@ -943,6 +943,7 @@ class AndroidOsRecoveryStreamingSourceTest {
         result as RecoveryReplayHashOnlyResult.ExactStoredSourceMetadata
         assertEquals(attempt.outcome.observedSourceBytes, result.observedBytes)
         assertEquals(attempt.outcome.observedSourceSha256, result.sourceSha256)
+        assertEquals(requireNotNull(attempt.range).rangeSha256, result.retainedRangeSha256)
         assertEquals(1, os.opens.size)
         assertEquals(1, os.closeCalls)
         assertEquals(value.size.toLong(), os.reads.last().offset)
@@ -1364,7 +1365,10 @@ class AndroidOsRecoveryStreamingSourceTest {
                 )
             return RecoveryStreamingOutcomeAttempt(
                 outcome,
-                RecoveryStreamingRangeRow.exact(outcome, sha("range")),
+                RecoveryStreamingRangeRow.exact(
+                    outcome,
+                    Sha256Value.calculate(value.copyOfRange(8_192, value.size)),
+                ),
                 com.monumentogram.dora.poc.recovery.contract.StreamSemanticOutcome.PERSISTED_VALID,
             )
         }

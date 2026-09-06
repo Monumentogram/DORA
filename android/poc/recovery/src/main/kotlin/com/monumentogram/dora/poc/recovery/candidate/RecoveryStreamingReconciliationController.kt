@@ -1325,6 +1325,7 @@ internal class RecoveryStreamingReconciliationController(
                 )
             )
         }
+        if (verified.retainedRangeSha256 != range?.rangeSha256) return journalStructural()
         return RecoveryStreamingPendingPersistedResult.exactReadback(
                 outcome,
                 range,

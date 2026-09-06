@@ -1253,7 +1253,7 @@ class RecoveryStreamingReconciliationControllerTest {
                     existingOutcome = case.canonical
                     existingRange = range
                 }
-            val source = ReplayControllerSource(events, case.canonical)
+            val source = ReplayControllerSource(events, case.canonical, range.rangeSha256)
             var evidence: RecoveryStreamingEvidenceEvent? = null
             val controller =
                 RecoveryStreamingReconciliationController(
@@ -1291,6 +1291,50 @@ class RecoveryStreamingReconciliationControllerTest {
             assertEquals(0, source.normalOpens)
             assertEquals(0, journal.persistCalls)
         }
+    }
+
+    @Test
+    fun `exact replay rejects self consistent altered range hash and identity`() {
+        val fixture = controllerFixture(acceptedEnd = 13_000)
+        val outcome = controllerTailRejectedOutcome(fixture)
+        val exactRange = requireNotNull(controllerRange(outcome, fixture.source))
+        val alteredRange = RecoveryStreamingRangeRow.exact(outcome, sha(205))
+        assertNotEquals(exactRange.rangeSha256, alteredRange.rangeSha256)
+        assertNotEquals(exactRange.rangeIntentId, alteredRange.rangeIntentId)
+        val events = mutableListOf<String>()
+        val journal =
+            ControllerJournal(events).apply {
+                checkpoints = listOf(fixture.checkpoint)
+                existingOutcome = outcome
+                existingRange = alteredRange
+            }
+        val source = ReplayControllerSource(events, outcome, exactRange.rangeSha256)
+        var evidence: RecoveryStreamingEvidenceEvent? = null
+        val controller =
+            RecoveryStreamingReconciliationController(
+                journal,
+                source,
+                RecoveryRunSingleWriterGuard {
+                    events += "lease-acquire"
+                    RecoveryRunWriterLease { events += "lease-release" }
+                },
+                RecoveryStreamingCheckpointAuthenticator { _, _ ->
+                    error("range replay must not touch prerequisites")
+                },
+                RecoveryStreamingEvidenceSink { evidence = it },
+            )
+
+        val result = controller.recover(fixture.request)
+
+        assertEquals(
+            RecoveryStreamingResultClassification.JOURNAL_STRUCTURAL,
+            (result as RecoveryStreamingReconciliationResult.Fatal).classification,
+        )
+        assertEquals(1, source.replayOpens)
+        assertEquals(0, source.normalOpens)
+        assertEquals(0, journal.persistCalls)
+        assertEquals(null, requireNotNull(evidence).outcomeId)
+        assertEquals(null, requireNotNull(evidence).rangeIntentId)
     }
 
     @Test
@@ -2418,6 +2462,7 @@ class RecoveryStreamingReconciliationControllerTest {
     private class ReplayControllerSource(
         private val events: MutableList<String>,
         private val outcome: RecoveryStreamingOutcomeRow,
+        private val retainedRangeSha256: Sha256Value? = null,
     ) : RecoveryStreamingSource {
         var normalOpens = 0
         var replayOpens = 0
@@ -2442,6 +2487,7 @@ class RecoveryStreamingReconciliationControllerTest {
                 RecoveryReplayHashOnlyResult.ExactStoredSourceMetadata(
                     outcome.observedSourceBytes,
                     outcome.observedSourceSha256,
+                    retainedRangeSha256,
                 )
             }
     }
