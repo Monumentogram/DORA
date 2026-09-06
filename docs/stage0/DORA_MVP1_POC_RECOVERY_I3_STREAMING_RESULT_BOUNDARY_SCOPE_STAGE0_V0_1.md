@@ -1,7 +1,7 @@
 # DORA MVP 1 — REC-I3 streaming result-boundary governance scope Stage 0 v0.1
 
-Status: **Governance only; v0.8 controller implementation blocked pending independent CLEAN review**  
-Base: 'e61d9b043fe83aebb674a126ea6aebce72be085b' / tree '85db58154681b17fe5e5101629bded91d48ca59a'  
+Status: **Governance only; v0.8 controller implementation blocked pending independent CLEAN review**
+Base: 'e61d9b043fe83aebb674a126ea6aebce72be085b' / tree '85db58154681b17fe5e5101629bded91d48ca59a'
 Authority: OD-15, DEC-046, DEC-047, ADR-0005, ADR-0006, Gate Set/protocol v0.8
 
 ## Exact ten-path patch

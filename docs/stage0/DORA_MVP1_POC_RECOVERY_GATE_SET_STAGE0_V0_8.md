@@ -1,7 +1,7 @@
 # DORA MVP 1 — PoC Recovery Gate Set Stage 0 v0.8
 
-Status: **Owner-confirmed prospective result-boundary governance; v0.8 controller implementation blocked pending independent CLEAN review**  
-Decision/ADR: 'DEC-047' / 'docs/adr/ADR-0006-rec-i3-streaming-result-boundary-and-evidence-delivery.md'  
+Status: **Owner-confirmed prospective result-boundary governance; v0.8 controller implementation blocked pending independent CLEAN review**
+Decision/ADR: 'DEC-047' / 'docs/adr/ADR-0006-rec-i3-streaming-result-boundary-and-evidence-delivery.md'
 Machine pair: 'poc-recovery-gate-set-stage0-v0.8.json' / 'poc-recovery-protocol-stage0-v0.8.json'
 
 v0.8 inherits every unchanged v0.7 semantic through exact SHA-256 pins and binds Task 5 base 'e61d9b043fe83aebb674a126ea6aebce72be085b' / tree '85db58154681b17fe5e5101629bded91d48ca59a'. All v0.1–v0.7 artifacts are immutable. Only the controller result vocabulary/mapping, strict references, receipt/evidence lifecycle, and legacy ambiguous-commit spelling are overridden.
