@@ -29,6 +29,7 @@ import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSource
 import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSourceException
 import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSourceFailure
 import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSourceLeaseAccess
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
@@ -1247,6 +1248,69 @@ class RecoveryStreamingReconciliationControllerTest {
         assertEquals(1, journal.persistCalls)
     }
 
+    @Test
+    fun `prerequisite adapter requires all exact artifacts before crypto`() {
+        val fixture = controllerFixture()
+        val artifacts =
+            mapOf(
+                RecoveryStreamingPrerequisiteArtifactKind.CHECKPOINT_KEY_ENVELOPE to
+                    RecoveryArtifactBytes(
+                        fixture.checkpoint.checkpointKeyEnvelopeRelativeName,
+                        fixture.checkpointEnvelope,
+                    ),
+                RecoveryStreamingPrerequisiteArtifactKind.CHECKPOINT_CIPHERTEXT to
+                    RecoveryArtifactBytes(
+                        fixture.checkpoint.checkpointRelativeName,
+                        fixture.checkpointArtifact,
+                    ),
+                RecoveryStreamingPrerequisiteArtifactKind.STREAM_KEY_ENVELOPE to
+                    RecoveryArtifactBytes(
+                        fixture.checkpoint.streamKeyEnvelopeRelativeName,
+                        fixture.streamEnvelope,
+                    ),
+            )
+        var cryptoCalls = 0
+        val opener = RecoveryStreamingPublicStreamOpener { _, _ -> error("unused") }
+        val crypto =
+            RecoveryStreamingPrerequisiteCrypto { checkpoint, checkpointEnvelope, ciphertext, streamEnvelope ->
+                cryptoCalls += 1
+                assertTrue(checkpoint === fixture.checkpoint)
+                assertArrayEquals(fixture.checkpointEnvelope, checkpointEnvelope)
+                assertArrayEquals(fixture.checkpointArtifact, ciphertext)
+                assertArrayEquals(fixture.streamEnvelope, streamEnvelope)
+                RecoveryStreamingCheckpointAuthentication.Ready(opener)
+            }
+        fun adapter(values: Map<RecoveryStreamingPrerequisiteArtifactKind, RecoveryArtifactBytes>) =
+            RecoveryStreamingCheckpointAuthenticatorAdapter(
+                RecoveryStreamingPrerequisiteSource { _, _, kind -> values[kind] },
+                crypto,
+            )
+
+        val ready = adapter(artifacts).authenticate(fixture.checkpoint, fixture.request.witness)
+        assertTrue(ready is RecoveryStreamingCheckpointAuthentication.Ready)
+        assertEquals(1, cryptoCalls)
+
+        val missing = adapter(artifacts - RecoveryStreamingPrerequisiteArtifactKind.STREAM_KEY_ENVELOPE)
+        assertTrue(
+            missing.authenticate(fixture.checkpoint, fixture.request.witness) ===
+                RecoveryStreamingCheckpointAuthentication.Missing
+        )
+        val corrupt =
+            adapter(
+                artifacts +
+                    (RecoveryStreamingPrerequisiteArtifactKind.CHECKPOINT_CIPHERTEXT to
+                        RecoveryArtifactBytes(
+                            fixture.checkpoint.checkpointRelativeName,
+                            fixture.checkpointArtifact.copyOf(1),
+                        ))
+            )
+        assertTrue(
+            corrupt.authenticate(fixture.checkpoint, fixture.request.witness) ===
+                RecoveryStreamingCheckpointAuthentication.Structural
+        )
+        assertEquals(1, cryptoCalls)
+    }
+
     private fun render(mapping: RecoveryStreamingResultMapping): String =
         listOf(
                 mapping.disposition.name,
@@ -1361,11 +1425,17 @@ class RecoveryStreamingReconciliationControllerTest {
         val checkpoint: RecoveryStreamingCheckpointRow,
         val source: ByteArray,
         val oracle: ByteArray,
+        val checkpointArtifact: ByteArray,
+        val checkpointEnvelope: ByteArray,
+        val streamEnvelope: ByteArray,
     )
 
     private fun controllerFixture(): ControllerFixture {
         val runId = RunId.fromBytes(ByteArray(16) { (it + 1).toByte() })
         val source = ByteArray(8_192) { ((it * 31 + 9) and 0xff).toByte() }
+        val checkpointArtifact = ByteArray(128) { ((it * 3 + 1) and 0xff).toByte() }
+        val checkpointEnvelope = ByteArray(96) { ((it * 5 + 2) and 0xff).toByte() }
+        val streamEnvelope = ByteArray(96) { ((it * 11 + 4) and 0xff).toByte() }
         val prefix = Sha256Value.calculate(source)
         val checkpointInput =
             RecoveryStreamingCheckpointIdentityInput(
@@ -1377,15 +1447,15 @@ class RecoveryStreamingReconciliationControllerTest {
                 committedEnd = 4_056UL,
                 checkpointRelativeName = "checkpoints/g-00000000000000000001.ct",
                 checkpointBytes = 128UL,
-                checkpointSha256 = sha(61),
+                checkpointSha256 = Sha256Value.calculate(checkpointArtifact),
                 checkpointEnvelopeRelativeName =
                     "key-envelopes/checkpoint-g-00000000000000000001.ks",
                 checkpointEnvelopeBytes = 96UL,
-                checkpointEnvelopeSha256 = sha(62),
+                checkpointEnvelopeSha256 = Sha256Value.calculate(checkpointEnvelope),
                 streamRelativeName = "stream/stream.ct",
                 streamEnvelopeRelativeName = "key-envelopes/stream.ks",
                 streamEnvelopeBytes = 96UL,
-                streamEnvelopeSha256 = sha(63),
+                streamEnvelopeSha256 = Sha256Value.calculate(streamEnvelope),
                 previousCheckpointSha256 = sha(0),
             )
         val checkpointIdentity = RecoveryStreamingIdentity.checkpoint(checkpointInput)
@@ -1438,6 +1508,9 @@ class RecoveryStreamingReconciliationControllerTest {
             checkpoint,
             source,
             oracleBytes,
+            checkpointArtifact,
+            checkpointEnvelope,
+            streamEnvelope,
         )
     }
 

@@ -706,6 +706,107 @@ internal fun interface RecoveryStreamingCheckpointAuthenticator {
     ): RecoveryStreamingCheckpointAuthentication
 }
 
+internal enum class RecoveryStreamingPrerequisiteArtifactKind {
+    CHECKPOINT_KEY_ENVELOPE,
+    CHECKPOINT_CIPHERTEXT,
+    STREAM_KEY_ENVELOPE,
+}
+
+internal fun interface RecoveryStreamingPrerequisiteSource {
+    fun load(
+        runId: com.monumentogram.dora.poc.recovery.contract.RunId,
+        relativeName: String,
+        kind: RecoveryStreamingPrerequisiteArtifactKind,
+    ): RecoveryArtifactBytes?
+}
+
+internal fun interface RecoveryStreamingPrerequisiteCrypto {
+    fun authenticate(
+        checkpoint: RecoveryStreamingCheckpointRow,
+        checkpointEnvelope: ByteArray,
+        checkpointCiphertext: ByteArray,
+        streamEnvelope: ByteArray,
+    ): RecoveryStreamingCheckpointAuthentication
+}
+
+internal class RecoveryStreamingCheckpointAuthenticatorAdapter(
+    private val source: RecoveryStreamingPrerequisiteSource,
+    private val crypto: RecoveryStreamingPrerequisiteCrypto,
+) : RecoveryStreamingCheckpointAuthenticator {
+    override fun authenticate(
+        checkpoint: RecoveryStreamingCheckpointRow,
+        witness: RecoveryStreamingWitnessInput,
+    ): RecoveryStreamingCheckpointAuthentication {
+        if (
+            checkpoint.runId != witness.runId ||
+                checkpoint.generation != witness.checkpointGeneration ||
+                checkpoint.checkpointIdentity != witness.checkpointIdentity
+        ) {
+            return RecoveryStreamingCheckpointAuthentication.Structural
+        }
+        val checkpointEnvelope =
+            exactArtifact(
+                checkpoint.runId,
+                checkpoint.checkpointKeyEnvelopeRelativeName,
+                RecoveryStreamingPrerequisiteArtifactKind.CHECKPOINT_KEY_ENVELOPE,
+            ) ?: return RecoveryStreamingCheckpointAuthentication.Missing
+        val checkpointCiphertext =
+            exactArtifact(
+                checkpoint.runId,
+                checkpoint.checkpointRelativeName,
+                RecoveryStreamingPrerequisiteArtifactKind.CHECKPOINT_CIPHERTEXT,
+            ) ?: return RecoveryStreamingCheckpointAuthentication.Missing
+        val streamEnvelope =
+            exactArtifact(
+                checkpoint.runId,
+                checkpoint.streamKeyEnvelopeRelativeName,
+                RecoveryStreamingPrerequisiteArtifactKind.STREAM_KEY_ENVELOPE,
+            ) ?: return RecoveryStreamingCheckpointAuthentication.Missing
+        if (
+            !checkpointEnvelope.matches(
+                checkpoint.checkpointKeyEnvelopeRelativeName,
+                checkpoint.checkpointKeyEnvelopeBytes,
+                checkpoint.checkpointKeyEnvelopeSha256,
+            ) ||
+                !checkpointCiphertext.matches(
+                    checkpoint.checkpointRelativeName,
+                    checkpoint.checkpointBytes,
+                    checkpoint.checkpointSha256,
+                ) ||
+                !streamEnvelope.matches(
+                    checkpoint.streamKeyEnvelopeRelativeName,
+                    checkpoint.streamKeyEnvelopeBytes,
+                    checkpoint.streamKeyEnvelopeSha256,
+                )
+        ) {
+            return RecoveryStreamingCheckpointAuthentication.Structural
+        }
+        return crypto.authenticate(
+            checkpoint,
+            checkpointEnvelope.snapshot(),
+            checkpointCiphertext.snapshot(),
+            streamEnvelope.snapshot(),
+        )
+    }
+
+    private fun exactArtifact(
+        runId: com.monumentogram.dora.poc.recovery.contract.RunId,
+        relativeName: String,
+        kind: RecoveryStreamingPrerequisiteArtifactKind,
+    ): RecoveryArtifactBytes? = source.load(runId, relativeName, kind)
+
+    private fun RecoveryArtifactBytes.matches(
+        expectedRelativeName: String,
+        expectedBytes: ULong,
+        expectedSha256: Sha256Value,
+    ): Boolean =
+        relativeName == expectedRelativeName &&
+            size >= 0L &&
+            size.toULong() == expectedBytes &&
+            sha256 == expectedSha256
+
+}
+
 internal data class RecoveryStreamingControllerRequest(
     val witness: RecoveryStreamingWitnessInput,
     val oracle: RecoveryStreamingIntentBuilder.RecoveryStreamingOracle,
