@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "scopeId": "rec-i3-key-confirmation-controller-stage0-v0.1",
+  "taskId": "REC-I3",
+  "sliceId": "REC-I3-KEY-CONFIRMATION-CONTROLLER-001",
+  "date": "2026-09-05",
+  "baseCommit": "da1d9bd13b71d609fe7ec4ea62fe1e984f726040",
+  "scopeFirstCommit": "455f587881cf2a32ed23105a05d53a47424f18bd",
+  "authorityRecord": "OWNER-AUTH-BATCH-20260819-01",
+  "protocolId": "poc-recovery-protocol-stage0-v0.6",
+  "scopeLocator": "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_KEY_CONFIRMATION_CONTROLLER_SCOPE_STAGE0_V0_1.md",
+  "claimCeiling": "PARTIAL_REC_I3_HOST_ONLY_PENDING_FULL_IMPLEMENTATION_AND_REVIEW",
+  "implementationStatus": "LOCAL_VERIFIED",
+  "fullRecI3Completed": false,
+  "recoveryPreflightUnlocked": false,
+  "readinessBlockersClosed": [],
+  "authority": {
+    "recI3ImplementationAllowed": true,
+    "recI3NonMetricVerificationAllowed": true,
+    "phaseAAllowed": false,
+    "executionAllowed": false,
+    "measuredExecutionAllowed": false,
+    "productionAdmissionAllowed": false
+  },
+  "execution": {
+    "device": false,
+    "emulator": false,
+    "preflight": false,
+    "faultCampaign": false,
+    "hardKill": false,
+    "measured": false
+  },
+  "sourceFiles": {
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/controller/RecoveryKeyConfirmationController.kt": "3df585f1a3cb2fe6dfc8670a9c835db4a8c85b4b128e1ac66aa05d63a4bf3925",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/controller/RecoveryKeyConfirmationControllerTest.kt": "32935757ce9369ea04b9f787e6f4769a34d5a68424fcd5f6f359890518572f93"
+  },
+  "checks": [
+    {
+      "command": "gradlew.bat :poc:recovery:testDebugUnitTest --offline --console=plain",
+      "stage": "BASELINE",
+      "outcome": "ENVIRONMENT_BLOCKED",
+      "detail": "No cached org.gradle.kotlin:gradle-kotlin-dsl-plugins:6.5.7; failed before compilation."
+    },
+    {
+      "command": "gradlew.bat :poc:recovery:testDebugUnitTest --console=plain",
+      "stage": "BASELINE",
+      "outcome": "PASS",
+      "tests": 91,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "detail": "Pinned tooling resolved without dependency or lock edits; unit-test task FROM-CACHE."
+    },
+    {
+      "command": "gradlew.bat :poc:recovery:testDebugUnitTest --tests '*RecoveryKeyConfirmationControllerTest' --console=plain",
+      "stage": "RED",
+      "outcome": "EXPECTED_TEST_FAILURE",
+      "tests": 14,
+      "failures": 14,
+      "detail": "Assertions failed against an Absent-only controller stub."
+    },
+    {
+      "command": "gradlew.bat :poc:recovery:testDebugUnitTest --tests '*RecoveryKeyConfirmationControllerTest' --console=plain",
+      "stage": "GREEN",
+      "outcome": "PASS",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "command": "gradlew.bat :poc:recovery:testDebugUnitTest spotlessCheck detekt :poc:recovery:lintDebug :poc:recovery:recoveryI2bVerifyCryptoPolicy --console=plain",
+      "stage": "FINAL",
+      "outcome": "PASS",
+      "tests": 105,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "command": "gradlew.bat --console=plain -PdoraRecoveryI2aGraphProbe=true :app:testDebugUnitTest :core:common:testDebugUnitTest :core:model:testDebugUnitTest :core:testing:testDebugUnitTest :app:compileDebugAndroidTestKotlin :app:lintDebug :core:common:lintDebug :core:model:lintDebug :core:testing:lintDebug :app:assembleDebug :poc:recovery:recoveryI2aResolveOwnedConfigurations",
+      "stage": "FINAL",
+      "outcome": "PASS",
+      "detail": "269 tasks; release R8 succeeds. The inherited graph task discards configuration cache with two known serialization diagnostics. Its historical scope/authority metadata is preserved; this is dependency/crypto regression evidence, not full REC-I3 graph or controller-retention verification.",
+      "configurationCount": 61,
+      "policyCoveredConfigurationCount": 34,
+      "policyCoveredJsr305ResolvedComponentCount": 0,
+      "policyCoveredPackagedJsr305ClassDefinitionCount": 0,
+      "graphReportSha256": "3ab12ef698e59f323e71431496d72debd5741669b395b8052ad41b9a8b8b34a7",
+      "recoveryDebugApkSha256": "a2e37bc17b05a87bbc7d0553ae0164088ad896ff1fccf459d693792e5294ea84",
+      "recoveryReleaseUnsignedApkSha256": "7dc17cb4034d967676c6212ff7890473a171566b0922fc4cd60299b7e451cb4a"
+    },
+    {
+      "command": "python tools/validate_stage00.py",
+      "stage": "FINAL",
+      "outcome": "PASS"
+    },
+    {
+      "command": "python tools/validate_poc_recovery_governance.py --self-test",
+      "stage": "FINAL",
+      "outcome": "PASS",
+      "detail": "197 inherited negative cases, 23 positive cases and 8 focused REC-I3 tests pass."
+    },
+    {
+      "command": "python tools/verify_poc_recovery_dependency_inventory.py",
+      "stage": "FINAL",
+      "outcome": "PASS",
+      "detail": "Static historical inventory validation; historical no-REC-I3-authority text belongs to predecessor evidence only."
+    },
+    {
+      "command": "python tools/check_poc_recovery_run_readiness.py",
+      "stage": "READINESS",
+      "outcome": "EXPECTED_TEST_FAILURE",
+      "detail": "Exit 1 is expected; all ten active Recovery blockers remain open."
+    },
+    {
+      "command": "python tools/verify_apk_native_alignment.py android/app/build/outputs/apk/debug/app-debug.apk",
+      "stage": "FINAL",
+      "outcome": "PASS",
+      "detail": "Four ABI entries for the one existing allowlisted native library."
+    },
+    {
+      "command": "zipalign -c -P 16 4 android/app/build/outputs/apk/debug/app-debug.apk",
+      "stage": "FINAL",
+      "outcome": "PASS"
+    },
+    {
+      "command": "gradlew.bat :poc:recovery:spotlessApply",
+      "stage": "ITERATION",
+      "outcome": "FAIL",
+      "detail": "Task selection failed; formatting is a root task. No source changes from the failed selection."
+    },
+    {
+      "command": "gradlew.bat :poc:recovery:testDebugUnitTest spotlessCheck detekt :poc:recovery:lintDebug :poc:recovery:recoveryI2bVerifyCryptoPolicy --console=plain",
+      "stage": "ITERATION",
+      "outcome": "FAIL",
+      "detail": "Initial Detekt run found four style issues; receipt predicate and nested test matrix simplified, two justified local ReturnCount suppressions retained. Final combined verification above passed."
+    },
+    {
+      "command": "python tools/test_poc_recovery_i3_governance.py RecoveryI3GovernanceTests.test_merge_only_predecessor_mutation_and_restore_is_rejected_for_local_and_pr_heads",
+      "stage": "REVIEW_RED",
+      "outcome": "EXPECTED_TEST_FAILURE",
+      "detail": "Independent P2 repro: two merge-resolution commits mutate then restore a frozen path while the inherited path collector returns no changes. Before the guard the regression fails because the expected ValueError is not raised."
+    },
+    {
+      "command": "python tools/validate_poc_recovery_governance.py --self-test",
+      "stage": "FINAL",
+      "outcome": "PASS",
+      "detail": "After REC-I3-only linear candidate-history guard, all legacy cases and nine focused tests pass. Actual PR source head is checked; the expected GitHub synthetic merge remains allowed. Kotlin and dependency inputs are unchanged, so Android checks are not repeated."
+    }
+  ],
+  "review": {
+    "independentAdvisory": "PENDING",
+    "accountable": "PENDING",
+    "formalReviewer": false
+  },
+  "limitations": [
+    "Supplied snapshot observations do not prove SQLite or physical filesystem durability.",
+    "Confirmation-only success is not run validity, publication authority or readiness.",
+    "The full REC-I3 harness/controller and refreshed graph/package/release-R8 review remain incomplete.",
+    "Historical REC-I1/REC-I2B records and reviewed implementation inputs remain byte-preserved.",
+    "No raw key, keyset, ciphertext, database, audio or private path is published in this record.",
+    "No PR was merged.",
+    "The inherited R8 probe retains the I2B crypto boundary; new controller retention and full REC-I3 package evidence are not claimed.",
+    "Local Android lint reports zero errors and two existing module warnings: NotShrinkingResources and MissingApplicationIcon."
+  ]
+}

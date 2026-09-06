@@ -78,11 +78,11 @@ def validate_screen_inventory() -> None:
 def validate_decisions() -> None:
     text = read_text("docs/DORA_MVP1_PRODUCT_DECISIONS.md")
     ids = re.findall(r"^## (DEC-\d{3})\.", text, flags=re.MULTILINE)
-    expected_ids = [f"DEC-{index:03d}" for index in range(1, 45)]
+    expected_ids = [f"DEC-{index:03d}" for index in range(1, 49)]
     if ids != expected_ids:
-        fail(f"Expected ordered product decisions DEC-001 through DEC-044, found {ids}")
+        fail(f"Expected ordered product decisions DEC-001 through DEC-048, found {ids}")
 
-    required_labels = (
+    historical_required_labels = (
         "Статус:",
         "Приоритет:",
         "Источник:",
@@ -95,11 +95,88 @@ def validate_decisions() -> None:
         "Обратимость:",
         "Связанные задачи:",
     )
+    current_required_labels = {
+        "DEC-045": (
+            "Status:",
+            "Priority:",
+            "Decision date:",
+            "Approved by:",
+            "Scope:",
+            "Decision source:",
+            "Proof basis:",
+            "Selected option:",
+            "Architecture and testing effects:",
+            "Reversibility:",
+            "Decision record:",
+            "Related work:",
+        ),
+        "DEC-046": (
+            "Status:",
+            "Priority:",
+            "Decision date:",
+            "Approved by:",
+            "Scope:",
+            "Baseline:",
+            "Decision packet:",
+            "Decision record:",
+            "Gate Set/protocol:",
+        ),
+        "DEC-047": (
+            "Status:",
+            "Priority:",
+            "Decision date:",
+            "Approved by:",
+            "Scope:",
+            "Decision record:",
+            "Gate Set/protocol:",
+        ),
+        "DEC-048": (
+            "Status:",
+            "Priority:",
+            "Decision date:",
+            "Approved by:",
+            "Scope:",
+            "Decision record:",
+        ),
+    }
     sections = re.split(r"(?=^## DEC-\d{3}\.)", text, flags=re.MULTILINE)[1:]
     for section, decision_id in zip(sections, ids, strict=True):
-        missing = [label for label in required_labels if label not in section]
-        if missing:
-            fail(f"{decision_id} is missing fields: {missing}")
+        expected_labels = current_required_labels.get(
+            decision_id,
+            historical_required_labels,
+        )
+        blocks = []
+        block = []
+        for line in section.splitlines()[1:]:
+            if line:
+                block.append(line)
+            elif block:
+                blocks.append(block)
+                block = []
+        if block:
+            blocks.append(block)
+        actual_labels = []
+        for index, candidate in enumerate(blocks):
+            matches = [
+                re.fullmatch(r"([^:\r\n]+):[ \t]+\S.*", line)
+                for line in candidate
+            ]
+            labels = [match.group(1) + ":" for match in matches if match]
+            if index == 0 or any(label in expected_labels for label in labels):
+                if len(labels) != len(candidate):
+                    fail(f"{decision_id} has malformed metadata block: {candidate!r}")
+                actual_labels.extend(labels)
+        if decision_id in current_required_labels:
+            valid_labels = tuple(actual_labels) == expected_labels
+        else:
+            valid_labels = tuple(
+                label for label in actual_labels if label in historical_required_labels
+            ) == historical_required_labels
+        if not valid_labels:
+            fail(
+                f"{decision_id} metadata fields must be exactly {expected_labels}, "
+                f"found {tuple(actual_labels)}"
+            )
 
 
 def validate_readiness() -> None:

@@ -1,0 +1,22 @@
+{
+  "schemaVersion":8,
+  "pocId":"POC-RECOVERY-001",
+  "gateSetVersion":"poc-recovery-stage0-v0.8",
+  "protocolId":"poc-recovery-protocol-stage0-v0.8",
+  "status":"OWNER_CONFIRMED_RESULT_BOUNDARY_GOVERNANCE_CLEAN_REVIEW_REQUIRED",
+  "normativeMarkdown":"docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_8.md",
+  "protocolLocator":"docs/stage0/poc-recovery-protocol-stage0-v0.8.json",
+  "decision":"DEC-047",
+  "adr":"docs/adr/ADR-0006-rec-i3-streaming-result-boundary-and-evidence-delivery.md",
+  "inheritsExactV07":{"baseCommit":"e61d9b043fe83aebb674a126ea6aebce72be085b","baseTree":"85db58154681b17fe5e5101629bded91d48ca59a","sha256":{"adr":"92d44d1405b3fed9ad3c6a50cc50a3667383a70852aceca443a64aa6702e8f02","gateMarkdown":"dc22c7a1643eae11efc8d5abc06194785afe1768afa8f5dd0f7d95f71f10ad5a","gate":"6d244cd2793bee7a3a0e63f880ac8f1d7c28e3ce4a2a98bef80263dffcafb929","protocol":"d1e5a59e2147055962f49fb901f1b7e8f7292c670219ed9b8ad1e86cd6ecd8e1","scope":"b18bf386d9e2593c32c27d66f6a2449221768541879416c2b469a9089195ba90"},"allUnchangedSemanticsInherited":true,"overriddenSections":["controller result boundary","existing evidence references","receipt cleanup and evidence delivery","ambiguous-commit outward spelling"],"immutableAuditArtifacts":"v0.1-through-v0.7","v07IdentifiersEmittedByV08":false},
+  "journalSchemaVersion":4,
+  "journalPath":"poc-recovery/v1/recovery-journal-v1.db",
+  "combinedBaseline":{"commit":"3c63ab09874f4d089e4363985aa8b5c99900c122","tree":"718eae8d8d619d17c25ac9d025e0e24db3d52f9e"},
+  "campaignCounts":{"mandatoryFaultRowCount":46,"phaseAInjectionCount":184,"fullPhysicalInjectionCount":138,"baseHardKillAttemptsPerCandidate":120},
+  "readinessLocks":{"fullRecI3Completed":false,"campaignReady":false,"preflightEligible":false,"pocRecoveryStatus":"BLOCKED_NOT_READY","k12ConsumerDeferred":true},
+  "authority":{"recI3ImplementationAllowed":true,"authoritySource":"OD-15","phaseAAllowed":false,"executionAllowed":false,"measuredExecutionAllowed":false,"productionAdmissionAllowed":false,"consumerAllowed":false,"crossProcessEnforcementClaimed":false,"rangeRetirementAllowed":false,"newDependencyAllowed":false,"mergeAllowedByThisGovernance":false},
+  "activeBlockers":["REC-RDY-01","REC-RDY-03","REC-RDY-04","REC-RDY-05","REC-RDY-06","REC-RDY-07","REC-RDY-08","REC-RDY-09","REC-RDY-10","REC-RDY-11"],
+  "historicalClosure":{"REC-RDY-02":"CLOSED_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW"},
+  "governancePatchAllowlist":["docs/adr/ADR-0006-rec-i3-streaming-result-boundary-and-evidence-delivery.md","docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_8.md","docs/stage0/poc-recovery-gate-set-stage0-v0.8.json","docs/stage0/poc-recovery-protocol-stage0-v0.8.json","docs/stage0/DORA_MVP1_POC_RECOVERY_I3_STREAMING_RESULT_BOUNDARY_SCOPE_STAGE0_V0_1.md","docs/DORA_MVP1_PRODUCT_DECISIONS.md","docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md","docs/DORA_MVP1_STAGE_STATUS.md","tools/validate_poc_recovery_governance.py","tools/test_poc_recovery_i3_governance.py"],
+  "streamingResultBoundaryGate":{"durableSchemaMutation":false,"durableOutcomeEnumMutation":false,"durableIdentityPreimageMutation":false,"newTableOrProviderAllowed":false,"newDependencyAllowed":false,"newRowOrRangeForNonPersistable":false,"localModeWithoutAccountNetworkGmsOrCloud":true,"exactGovernanceCommitIndependentCleanReview":"PENDING","implementationBeforeCleanReviewAllowed":false,"v08ControllerImplementationOrEvidenceProduced":false}
+}

@@ -35,6 +35,74 @@ physical evidence. The harness/controller, fresh REC-I3 graph, preflight and cam
 `TODO=9`, `READY=0`. This reconciliation performs no emulator/device execution and elevates no PoC
 state, PASS, readiness or admission.
 
+REC-I3 first-slice amendment, 5 September 2026: the
+[read-only key-confirmation controller scope](stage0/DORA_MVP1_POC_RECOVERY_I3_KEY_CONFIRMATION_CONTROLLER_SCOPE_STAGE0_V0_1.md)
+and [local evidence](evidence/poc-recovery-001/rec-i3-key-confirmation-controller-local-evidence-stage0-v0.1.json)
+supersede only the pre-slice blanket absence of a controller in the historical summary/table.
+The full harness, durable bootstrap/publication/journal/quarantine, exact package verification and
+required implementation review remain unfinished. This partial REC-I3 result closes no readiness
+blocker, unlocks no Recovery preflight and leaves `POC-RECOVERY-001` `BLOCKED / NOT_READY`, aggregate
+counts and every campaign/admission flag unchanged. Subsequent implementation slices remain under
+the same current OD-15 authority; the current task performs no PR merge.
+
+REC-I3 run-key bootstrap amendment, 5 September 2026: the additive
+[bootstrap scope](stage0/DORA_MVP1_POC_RECOVERY_I3_RUN_KEY_BOOTSTRAP_SCOPE_STAGE0_V0_2.md)
+and [local evidence](evidence/poc-recovery-001/rec-i3-run-key-bootstrap-local-evidence-stage0-v0.2.json)
+add the exact KC01–KC13 new-run controller, typed crypto boundary, minimal PoC Android `Os`
+publication adapter and versioned platform SQLite run-row journal. Host tests establish ordering,
+short-write/error/closure behavior and the post-KC12 capability boundary; they do not prove Android
+filesystem, Keystore or SQLite runtime behavior. Reconciliation, quarantine, candidate writers,
+external kill controller, full fresh graph/package/R8 review and accountable implementation review
+remain unfinished. All ten readiness blockers, aggregate counts, Recovery preflight lock and every
+campaign/admission flag remain unchanged. This task performs no device/emulator execution,
+preflight, hard kill, fault campaign, measurement, PR merge or future merged-main admission.
+
+REC-I3 sequential microfile amendment, 5 September 2026: the additive
+[scope](stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_PUBLICATION_SCOPE_STAGE0_V0_1.md),
+[clarification](stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_PUBLICATION_CLARIFICATION_STAGE0_V0_1.md)
+and [local evidence](evidence/poc-recovery-001/rec-i3-sequential-microfile-publication-local-evidence-stage0-v0.1.json)
+add a repeatable `REC-MICROFILE-TINK` unit plus cumulative-manifest writer through
+exact `MICRO-P01`–`P21`. The slice shares the bootstrap run lease and advances only the PoC journal
+to a non-destructive schema v2 in the existing database. Host tests exercise actual Tink
+round trips, sequential state, conservative failure remainders and exact processing intents; host
+SQLite executes the production DDL and migration statements but is not Android runtime proof.
+Reconciliation, quarantine, streaming, external control and campaign execution remain unfinished.
+`fullRecI3Completed=false`, all ten blockers and the Recovery preflight lock remain unchanged.
+
+REC-I3 reconciliation/quarantine amendment, 5 September 2026: the additive
+[scope](stage0/DORA_MVP1_POC_RECOVERY_I3_MICROFILE_RECONCILIATION_QUARANTINE_SCOPE_STAGE0_V0_1.md),
+[ADR-0004](adr/ADR-0004-poc-recovery-reconciliation-and-quarantine.md) and local evidence add the
+bounded authenticated microfile-prefix and durable quarantine controller. Host tests cover actual
+Tink authentication, replay ordering and exact SQLite v1-to-v2-to-v3 migration; compiled Android
+adapters and host fakes are not device durability proof. Streaming, external control and campaign
+execution remain unfinished. `fullRecI3Completed=false`, all ten blockers and every preflight,
+execution, measurement and production-admission lock remain unchanged.
+
+The additive
+[review-correction scope](stage0/DORA_MVP1_POC_RECOVERY_I3_RECONCILIATION_REVIEW_CORRECTION_STAGE0_V0_1.md)
+supersedes the first local coverage claim after independent review found missing behavior inside
+that bounded slice. The corrected host boundary owns platform observations, binds publication
+authority to the candidate, manifest and ordered rows, preserves authenticated fallback prefixes,
+and exercises pending quarantine replay, typed failures, descriptor bounds and schema-v3
+validation. Independent review of corrected head `5de34577295b5e5477970785f9472d51e21bfc43`
+returned `REVISE` (P0/P1/P2 = 0/7/1). Author-local successor `a020944f0444edfcbabc4690d4a367b1cf9e83d7`
+then passed its reported host checks, but exact independent review also returned `REVISE`
+(P0/P1/P2 = 0/4/2). The historical a020 six findings were pending then; ca2 closed optional-quarantine/no-prefix retention, confirmed-Q05 remainder, row framing and production unique-readback. Exact ca2 round-four truth preserves the immutable original `REVISE 0/3/0` review and its addendum-effective `REVISE 0/4/0` disposition. Independent review of `bc4f4423b535982956575f5a3480c9361eab6378` returned `REVISE 0/2/0`; the later reviewed successor `de735735ace6da3572c45dfdc58a8bbff98145b0` closed the four ca2 findings, the bc4 findings, and the duplicate-check acceptance gap, but found two distinct current P1s: zero-byte inventory regression and missing-final failure retention. The current author successor separates zero-permitting inventory reads from strict non-empty role reads and retains a durable-row missing final as primary with at most one temporary-observation secondary. Its 224 Android host tests and current governance checks are author evidence only; both new P1s remain open pending exact-candidate independent review. No readiness or execution authority changes, and all immutable ca2/addendum history and nonclaims remain recorded.
+The prior author-local closure and acceptance mapping are superseded claims rather than independent
+closure. Immediate lstat plus rename is not kernel-atomic no-replace proof; Android filesystem
+durability and every wider REC-I3 gate remain unproven.
+
+REC-I3 streaming Option A decision amendment, 5 September 2026: approved
+[DEC-045](stage0/DEC-045-POC-RECOVERY-STREAMING-AUTHENTICATED-TAIL.md) records the owner-selected
+authenticated-tail semantic from final proof `19807f6ea8166fff972e1537beeb131def8bfa1d` / tree
+`8920855c9b8642162e5df16204d796d51db4fa86`. The bounded synthetic/non-metric streaming slice is
+started by its additive scope; this resolves the owner A/B semantic choice, rejects Option B only
+for this scope, and does not complete implementation. `C` remains durable, `R` may include only
+independently authenticated contiguous oracle-equal bytes, and an unauthenticated/corrupt remainder
+is rejected for bounded quarantine. All ten `REC-RDY` blockers, aggregate counts, the Recovery
+preflight lock, active Gate Set/protocol, 8,160-byte/0.255-second bound and every campaign/admission
+flag remain unchanged. No device/process-death/durability campaign, production admission, schema or
+quarantine-mechanics implementation is authorized here.
 ## 1. Правила выполнения
 
 - `DONE` означает: артефакт существует, acceptance выполнен и evidence доступно в commit/CI/report.
@@ -162,3 +230,42 @@ These are not Ready until their stage dependencies pass.
 - status/backlog/DEC/ADR updated when outcome changes truth;
 - user/manual truth is never overwritten by a model result;
 - no merge to `main` from the current task unless the owner explicitly scopes that merge.
+
+
+## REC-I3 streaming persistence governance amendment — 6 September 2026
+
+Owner-confirmed `DEC-046`, accepted ADR-0005, and prospective Gate Set/protocol v0.7 pin the exact streaming persistence contract to combined baseline `3c63ab09874f4d089e4363985aa8b5c99900c122` / tree `718eae8d8d619d17c25ac9d025e0e24db3d52f9e`. The governance candidate adds schema-v4 migration, checkpoint/source-witness, sealed outcome/rejected-observation, exact/conservative ACTIVE retained-range, hash-only replay, K12-PERSISTENCE, and TRU-03 stream semantics only as a contract. It preserves the 46/184/138/120 campaign counts, keeps K12-CONSUMER deferred, and changes no v0.1-v0.6 artifact.
+
+Persistence source remains blocked until this exact eight-file governance commit receives an independent CLEAN review. `POC-RECOVERY-001` remains `BLOCKED / NOT_READY`; all ten active blockers remain open and `REC-RDY-02` remains historically closed. No device/emulator execution, Recovery preflight, process-death/fault/measured campaign, durability claim, PASS/READY, dependency/production admission, consumer intent, cross-process guarantee, retirement, or merge follows.
+
+## REC-I3 streaming result-boundary governance amendment — 6 September 2026
+
+'DEC-047', ADR-0006, and Gate Set/protocol v0.8 supersede v0.7 only for the controller result mapping, class-specific strict references, receipt lifecycle/evidence delivery, and legacy ambiguous-commit spelling. v0.7 remains byte-identical and immutable. The corrected boundary has twenty mappings, preserves canonical 'JOURNAL_OPERATIONAL', separates exact-readback receipt core from the final post-close/post-sink receipt, and promises one bounded caller-retryable attempt without autonomous delivery.
+
+This exact ten-path patch creates no v0.8 result-boundary/controller implementation, execution, or evidence. Later persistence source edits remain blocked pending independent CLEAN review. 'POC-RECOVERY-001' stays 'BLOCKED / NOT_READY'; ten blockers remain open, REC-RDY-02 remains historically closed, OD-15 flags and 46/184/138/120 counts remain unchanged, and no execution/admission/consumer/cross-process/retirement/merge claim follows.
+
+## REC-I3 proven-VALID-rollback correction — 6 September 2026
+
+'DEC-048' and ADR-0007 resolve only the outward representation of a semantic VALID attempt after both framework-proven rollback and reconciled absence. The existing 'Retry(JOURNAL, JOURNAL_OPERATIONAL, SQLITE)' mapping applies with no receipt, attempted IDs, references, admitted endpoint, success or ACTIVE claim. Absence without proven rollback stays 'JOURNAL_COMMIT_STATE_UNRESOLVED'; the 4/6/20/4 boundary and pinned v0.7/v0.8 artifacts remain unchanged.
+
+Independent focused review of the immutable amendment returned CLEAN before the affected mapping was enabled. No readiness, execution, campaign, production, consumer, retirement or merge status changes.
+
+## REC-I3 observable streaming controller local candidate — 6 September 2026
+
+The isolated `:poc:recovery` local candidate now composes the accepted v0.8 controller boundary with the existing one-descriptor streaming gateway, journal, Tink prerequisite crypto and bounded evidence port. Host tests cover the exact 4/6/20/4 mapping, constructor/reference invariants, read and precedence boundaries, replay/conflict/rollback outcomes, receipt/evidence ordering, sanitization, resource lifetime and zero-effect guards. Independent final review of immutable head `2f3d48cf813759e391a0281195b689cad1721b91` returned `REVISE 0/3/0`: persisted public evidence omitted mandatory safe positive facts, sealed replay touched prerequisite artifacts/Tink before outcome discovery, and replay did not bind oracle-derived row facts and identities to the supplied oracle. The first author-local repair projected the full sanitized positive evidence shape, discovered exact replay before the fresh-only prerequisite path, and reconstructed the oracle-bound outcome/range before source replay. Independent rereview of repaired head `7232c3f489908c6f7abdaeb2e2a1597996dc540f` then found that replay still trusted the stored retained-range hash. The current successor recomputes that exact range hash through the same frozen descriptor, compares it before receipt/evidence, and rejects a self-consistent altered hash and range identity. The focused Recovery tests, full Recovery JVM suite, Spotless, Detekt, Android lint and host SQLite schema-v4 verifier pass; exact source digests and commands are recorded in the local evidence JSON.
+
+The published `7d7b81bf593cd1fa348f04703e9e22278db6be22` candidate's CI exposed a governance-only omission: Stage 00 still required the registry to end at DEC-044 although the authoritative ordered registry ends at DEC-048. The current successor pins that exact terminal decision, invokes Stage 00 from the Recovery validator, and admits `tools/validate_stage00.py` only through the resulting exact 16-path observable-controller profile. Kotlin bytes and the reviewed Android evidence remain unchanged.
+
+Independent review of CI-correction head `5f897f585b7a4f2131324057823fb8ba5a42dde5` returned `REVISE 0/0/1/0`: its decision-label check used substring membership and could accept a required token in prose, a prefixed label, or an unknown metadata label. The current successor parses anchored field lines, preserves the ordered historical DEC-001–044 required schema, and enforces the exact ordered closed metadata blocks for DEC-045–048. Direct in-memory mutation tests cover relocation, prefix/misspelling, omission, extra metadata, the authoritative registry, and DEC-049 rejection.
+
+Exact PR merge-ref CI run `34034200851` then exposed a test-fixture isolation defect: v0.8 regression tests changed only the simulated branch and retained the current observable-controller pull-request identity. The production validator correctly rejected that mismatched head ref before the intended assertions. The test-only successor constructs simulated v0.8 local lifecycles without inherited pull-request context and separately pins rejection of the real mismatched context.
+
+Exact-head CI run `34035616019` showed that the first test-fixture repair cleared the verified pull-request context but retained GitHub's synthetic two-parent merge commit as the simulated-local HEAD. The production v0.8 linear-history guard correctly rejected that merge. The current test-only successor restores the verified pull-request source head before clearing context; an exact two-parent merge-ref regression reaches the real history check, proves the restored range contains no merge commit, and keeps the identity-drift negative control.
+
+Exact-head CI run `34036673882` is terminal `SUCCESS`; both `android-bootstrap` and `search-smoke` passed with the source-head fixture repair. Under the owner's recurrence-prevention amendment, the mocked source-head check is now replaced by a retained regression that creates an isolated real two-parent merge checkout and invokes the actual Recovery `--self-test` entry point. Its verified-PR leaf proves source-head restoration and retains actual-entrypoint rejection for a wrong event head plus rejection of a genuine merge treated as local history.
+
+Immutable review of retained-regression head `9111913753d40d9640ed07b43e0c6320290cf61e` returned `REVISE 0/0/1/0` because its two nested entrypoint subprocesses had no test-owned timeout, recursion guard, or descendant cleanup. The current test-only repair fails closed before local orchestration when PR event state lacks verified context, runs both children in bounded process groups, terminates their process trees on timeout or failure, and retains the successful leaf marker and both identity/history negatives.
+
+Immutable rereview of bounded-child head `2de6d8238d99e71ae573ffa29481a59e052c0efd` returned `REVISE 0/0/1/0` because Windows cleanup targeted the already-dead nonzero parent PID and could leave its grandchild alive. The current successor creates each Windows child suspended, assigns it to a kill-on-close Job Object before resuming it, and retains the Job handle through completion. Live controls prove both timeout and immediate nonzero-parent descendants are terminated, their delayed markers remain absent, and the temporary directories are removable; POSIX process-group cleanup is unchanged.
+
+This Job-bound retained-regression successor remains pending immutable independent review. `POC-RECOVERY-001` remains `BLOCKED / NOT_READY`; ten active blockers remain open, `REC-RDY-02` remains historically closed, and `fullRecI3Completed=false`. No device/emulator or preflight run, process-death/fault/measured campaign, Android durability claim, production/dependency admission, consumer intent, cross-process guarantee, range retirement, push, Pull Request edit, merge or next slice is claimed.

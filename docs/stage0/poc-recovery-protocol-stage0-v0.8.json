@@ -1,0 +1,375 @@
+{
+  "schemaVersion": 8,
+  "protocolId": "poc-recovery-protocol-stage0-v0.8",
+  "pocId": "POC-RECOVERY-001",
+  "gateSetLocator": "docs/stage0/poc-recovery-gate-set-stage0-v0.8.json",
+  "normativeMarkdown": "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_8.md",
+  "status": "OWNER_CONFIRMED_RESULT_BOUNDARY_GOVERNANCE_CLEAN_REVIEW_REQUIRED",
+  "implementationAllowed": false,
+  "executionAllowed": false,
+  "inheritsExactV07": {
+    "baseCommit": "e61d9b043fe83aebb674a126ea6aebce72be085b",
+    "baseTree": "85db58154681b17fe5e5101629bded91d48ca59a",
+    "sha256": {
+      "adr": "92d44d1405b3fed9ad3c6a50cc50a3667383a70852aceca443a64aa6702e8f02",
+      "gateMarkdown": "dc22c7a1643eae11efc8d5abc06194785afe1768afa8f5dd0f7d95f71f10ad5a",
+      "gate": "6d244cd2793bee7a3a0e63f880ac8f1d7c28e3ce4a2a98bef80263dffcafb929",
+      "protocol": "d1e5a59e2147055962f49fb901f1b7e8f7292c670219ed9b8ad1e86cd6ecd8e1",
+      "scope": "b18bf386d9e2593c32c27d66f6a2449221768541879416c2b469a9089195ba90"
+    },
+    "allUnchangedSemanticsInherited": true,
+    "overriddenSections": ["controller result boundary","existing evidence references","receipt cleanup and evidence delivery","ambiguous-commit outward spelling"],
+    "immutableAuditArtifacts": "v0.1-through-v0.7",
+    "v07IdentifiersEmittedByV08": false
+  },
+  "unchangedV07": {
+    "journalSchemaVersion": 4,
+    "journalPath": "poc-recovery/v1/recovery-journal-v1.db",
+    "combinedBaselineCommit": "3c63ab09874f4d089e4363985aa8b5c99900c122",
+    "combinedBaselineTree": "718eae8d8d619d17c25ac9d025e0e24db3d52f9e",
+    "campaignCounts": {"mandatoryFaultRowCount":46,"phaseAInjectionCount":184,"fullPhysicalInjectionCount":138,"baseHardKillAttemptsPerCandidate":120},
+    "readinessLocks": {"fullRecI3Completed":false,"campaignReady":false,"preflightEligible":false,"k12ConsumerDeferred":true},
+    "authority": {"recI3ImplementationAllowed":true,"authoritySource":"OD-15","phaseAAllowed":false,"executionAllowed":false,"measuredExecutionAllowed":false,"productionAdmissionAllowed":false,"consumerAllowed":false,"crossProcessEnforcementClaimed":false,"rangeRetirementAllowed":false,"newDependencyAllowed":false,"mergeAllowedByThisGovernance":false}
+  },
+  "streamingPersistenceV07": {
+    "database": {
+      "path": "poc-recovery/v1/recovery-journal-v1.db",
+      "userVersion": 4,
+      "preserveExactV1V2Objects": true,
+      "migrateValidV3QuarantineRowsByteForByte": true,
+      "newTables": [
+        "recovery_quarantine_intent_v4",
+        "recovery_stream_checkpoint_v4",
+        "recovery_stream_outcome_v4",
+        "recovery_stream_range_quarantine_v4"
+      ],
+      "newIndexes": [
+        "recovery_stream_active_range_v4"
+      ],
+      "triggers": [],
+      "views": [],
+      "downgradeAllowed": false,
+      "destructiveFallbackAllowed": false
+    },
+    "witness": {
+      "protocolId": "poc-recovery-protocol-stage0-v0.7",
+      "fields": [
+        "candidateId",
+        "runId",
+        "checkpointGeneration",
+        "checkpointIdentity",
+        "checkpointPrefixBytes",
+        "checkpointContextEnd",
+        "oracleIdentitySha256",
+        "acceptedEnd",
+        "oraclePlaintextSha256",
+        "preFaultSourceBytes",
+        "preFaultSourceSha256",
+        "controllerSnapshotSha256",
+        "sourceWitnessId"
+      ],
+      "validIntersection": "P<=S<=E_AND_SHA256_0_P_AND_0_S_ON_SAME_DESCRIPTOR",
+      "checkpointArtifactAloneProvesCurrentSourceC": false
+    },
+    "extent": {
+      "acceptedEndMax": 115200000,
+      "preFaultSourceMax": 115654656,
+      "observedSourceMax": 115662848,
+      "maxDeltaWhenEAtLeastS": 8192,
+      "acceptedMaximumPair": {
+        "S": 115654656,
+        "E": 115662848
+      },
+      "oneOverRejected": 115662849,
+      "unsignedOverflowRejected": true,
+      "narrowingRejected": true,
+      "decryptAfterFailureAllowed": false
+    },
+    "admission": {
+      "relations": [
+        "0<=C<=R<=A",
+        "A-R<=8160"
+      ],
+      "oracleEqualityRequired": true,
+      "completedPublicAuthenticatedReadsOnly": true,
+      "recoveredMinusCheckpointCap": null,
+      "checkpointAdvances": false,
+      "metadataAdopted": false,
+      "semanticCommitAdopted": false,
+      "processingIntentCreated": false
+    },
+    "boundary": {
+      "B0": 0,
+      "canonicalPositiveR": "R=4056+k*4080",
+      "canonicalBoundary": "B(R)=(1+k)*4096",
+      "authenticationFailure": "B(R)<=E",
+      "nonEmptyRange": "[B(R),E) when B(R)<E",
+      "emptyRemainder": "B(R)=E means null required-range fields and zero range rows",
+      "authenticatedEofRange": null
+    },
+    "preIntersection": {
+      "states": {
+        "preFaultSourceMatch": "UNPROVEN_OR_MISMATCH",
+        "checkpointIntersection": "CONTEXT_ONLY",
+        "terminal": "NOT_REACHED",
+        "recoveredEnd": null
+      },
+      "precedence": [
+        "STREAM_SOURCE_TRUNCATED",
+        "STREAM_CHECKPOINT_PREFIX_OUTSIDE_WITNESS",
+        "STREAM_SOURCE_PREFIX_IDENTITY_MISMATCH"
+      ],
+      "nonEmptyRange": "[0,E) CONSERVATIVE_WHOLE_SOURCE"
+    },
+    "postIntersection": {
+      "states": {
+        "preFaultSourceMatch": "VERIFIED_SAME_DESCRIPTOR",
+        "checkpointIntersection": "PROVEN",
+        "recoveredEnd": null
+      },
+      "precedence": [
+        "STREAM_RETURNED_BYTE_ORACLE_MISMATCH",
+        "STREAM_RECOVERED_BELOW_CHECKPOINT",
+        "STREAM_REMAINDER_BOUNDARY_UNPROVEN",
+        "STREAM_TAIL_BOUND_EXCEEDED"
+      ],
+      "rejectedObservationFields": [
+        "candidateR",
+        "completedCandidateSha256",
+        "oraclePrefixSha256",
+        "oraclePrefixEqual",
+        "comparedEnd",
+        "firstMismatchOffset",
+        "equalPrefixSha256",
+        "expectedByte",
+        "observedByte",
+        "AminusCandidateR",
+        "boundaryResult",
+        "boundaryBytes",
+        "rejectedObservationSha256"
+      ],
+      "allRejectedFieldsEnterOutcomeIdReadbackAndCollision": true,
+      "publicEvidenceExcludes": [
+        "completedCandidateSha256",
+        "oraclePrefixSha256",
+        "firstMismatchOffset",
+        "equalPrefixSha256",
+        "expectedByte",
+        "observedByte"
+      ]
+    },
+    "persistedDiagnosticMatrix": [
+      {
+        "branch": "PRE_INTERSECTION",
+        "classification": "STREAM_SOURCE_TRUNCATED",
+        "decision": "FATAL",
+        "stage": "STREAM_SOURCE_EXTENT",
+        "terminal": "NOT_REACHED",
+        "range": "[0,E) CONSERVATIVE_WHOLE_SOURCE if E>0 else none"
+      },
+      {
+        "branch": "PRE_INTERSECTION",
+        "classification": "STREAM_CHECKPOINT_PREFIX_OUTSIDE_WITNESS",
+        "decision": "FATAL",
+        "stage": "STREAM_CHECKPOINT",
+        "terminal": "NOT_REACHED",
+        "range": "[0,E) CONSERVATIVE_WHOLE_SOURCE if E>0 else none"
+      },
+      {
+        "branch": "PRE_INTERSECTION",
+        "classification": "STREAM_SOURCE_PREFIX_IDENTITY_MISMATCH",
+        "decision": "FATAL",
+        "stage": "STREAM_SOURCE_EXTENT",
+        "terminal": "NOT_REACHED",
+        "range": "[0,E) CONSERVATIVE_WHOLE_SOURCE if E>0 else none"
+      },
+      {
+        "branch": "POST_INTERSECTION",
+        "classification": "STREAM_RETURNED_BYTE_ORACLE_MISMATCH",
+        "decision": "FATAL",
+        "stage": "STREAM_PAYLOAD_DECRYPT",
+        "terminal": "COMPLETED_READ_REJECTED",
+        "range": "[0,E) CONSERVATIVE_WHOLE_SOURCE"
+      },
+      {
+        "branch": "POST_INTERSECTION",
+        "classification": "STREAM_RECOVERED_BELOW_CHECKPOINT",
+        "decision": "FATAL",
+        "stage": "STREAM_PAYLOAD_DECRYPT",
+        "terminal": "AUTHENTICATION_FAILURE_OR_AUTHENTICATED_EOF",
+        "range": "auth failure [0,E) CONSERVATIVE_WHOLE_SOURCE; EOF none"
+      },
+      {
+        "branch": "POST_INTERSECTION",
+        "classification": "STREAM_REMAINDER_BOUNDARY_UNPROVEN",
+        "decision": "FATAL",
+        "stage": "STREAM_PAYLOAD_DECRYPT",
+        "terminal": "AUTHENTICATION_FAILURE",
+        "range": "[B(C),E) CONSERVATIVE_PROVEN_CHECKPOINT_SUPERSET when B(C)<E else [0,E) CONSERVATIVE_WHOLE_SOURCE"
+      },
+      {
+        "branch": "POST_INTERSECTION",
+        "classification": "STREAM_TAIL_BOUND_EXCEEDED",
+        "decision": "REJECTED",
+        "stage": "STREAM_PAYLOAD_DECRYPT",
+        "terminal": "AUTHENTICATION_FAILURE_OR_AUTHENTICATED_EOF",
+        "range": "auth failure [B(candidateR),E) EXACT_FORMAT_BOUNDARY when B<E; B=E none; EOF none"
+      }
+    ],
+    "persistence": {
+      "outcomeState": "SEALED",
+      "rangeState": "ACTIVE",
+      "outcomeAndRangeSingleTransaction": true,
+      "exactReadbackBeforeReceipt": true,
+      "hashOnlyReplay": true,
+      "replayRunsTink": false,
+      "sameFileUnchanged": true,
+      "wholeObjectQuarantineQ01Q05Unchanged": true,
+      "rangeRetirementAllowed": false,
+      "crossProcessEnforcementClaimed": false
+    },
+    "nonPersistable": {
+      "fatal": [
+        "STREAM_CHECKPOINT_MISSING",
+        "STREAM_CHECKPOINT_STRUCTURAL",
+        "STREAM_CHECKPOINT_AUTHENTICATION_REJECTED",
+        "STREAM_CHECKPOINT_SPLIT_BRAIN",
+        "STREAM_SOURCE_WITNESS_MISSING",
+        "UNSAFE_PATH",
+        "STREAM_SOURCE_IDENTITY_CHANGED",
+        "JOURNAL_STRUCTURAL",
+        "JOURNAL_ATTEMPT_CONFLICT",
+        "STREAM_RANGE_QUARANTINE_COLLISION"
+      ],
+      "rejected": [
+        "STREAM_SOURCE_EXTENT_LIMIT_EXCEEDED"
+      ],
+      "retry": [
+        "ARTIFACT_IO_BEFORE_EXACT_SOURCE_HASH",
+        "JOURNAL_AMBIGUOUS_COMMIT_WITH_NO_EXACT_INTENDED_STATE"
+      ],
+      "newRowOrRangeAllowed": false
+    },
+    "k12": {
+      "id": "K12",
+      "seedId": "K12-STREAM-V0.7",
+      "q": 2,
+      "P": 8192,
+      "C": 4056,
+      "A": 8137,
+      "S": 8192,
+      "appended": 1,
+      "E": 8193,
+      "completedReads": [
+        4056,
+        4080
+      ],
+      "R": 8136,
+      "tailLoss": 1,
+      "terminal": "AUTHENTICATION_FAILURE",
+      "B": 8192,
+      "activeRange": {
+        "start": 8192,
+        "end": 8193,
+        "certainty": "EXACT_FORMAT_BOUNDARY"
+      },
+      "pause": "AFTER_END_TRANSACTION_AND_EXACT_READBACK_BEFORE_EVIDENCE_ACKNOWLEDGEMENT",
+      "persistenceExpected": {
+        "sealedValidOutcomes": 1,
+        "activeRanges": 1,
+        "streamingProcessingIntents": 0,
+        "sourceUnchanged": true,
+        "exactReplaySameReceipt": true,
+        "collisionCreatesNewState": false
+      },
+      "currentPhase": "K12-PERSISTENCE",
+      "consumerPhase": "DEFERRED_SEPARATE_APPROVAL_REQUIRED"
+    },
+    "tru03": {
+      "id": "TRU-03",
+      "microfileBranch": "INHERIT_V0_3_CASE_8_UNCHANGED",
+      "streamBranchSource": "V0_7_STREAM_RANGE_OVERRIDE",
+      "appendBytes": [
+        1,
+        4096,
+        8192
+      ],
+      "afterWitnessFreeze": true,
+      "appliesExactV07Matrix": true,
+      "sourceMutationAllowed": false,
+      "processingIntentCreated": false
+    }
+  },
+  "streamingResultBoundaryV08": {
+    "durableSchemaMutation": false,
+    "resultVariants": ["PersistedValid","Retry","Rejected","Fatal"],
+    "stages": ["LEASE","PREREQUISITE","SOURCE_PROOF","RANGE_ADMISSION","STREAM_READ","JOURNAL"],
+    "classifications": [
+      "STREAM_CHECKPOINT_MISSING","STREAM_CHECKPOINT_STRUCTURAL","STREAM_CHECKPOINT_AUTHENTICATION_REJECTED","STREAM_CHECKPOINT_AUTHENTICATION_OPERATIONAL","STREAM_CHECKPOINT_SPLIT_BRAIN","STREAM_SOURCE_WITNESS_MISSING","UNSAFE_PATH","STREAM_SOURCE_IDENTITY_CHANGED","STREAM_SOURCE_EXTENT_LIMIT_EXCEEDED","RUN_LEASE_CONTENDED","STREAM_ACTIVE_RANGE_DENIED","STREAM_ZERO_PROGRESS","STREAM_READ_CROSSES_ACCEPTED_END","STREAM_PUBLIC_READ_OPERATIONAL","JOURNAL_STRUCTURAL","JOURNAL_ATTEMPT_CONFLICT","STREAM_RANGE_QUARANTINE_COLLISION","ARTIFACT_IO_BEFORE_EXACT_SOURCE_HASH","JOURNAL_OPERATIONAL","JOURNAL_COMMIT_STATE_UNRESOLVED"
+    ],
+    "safeExceptionTypes": ["NONE","IO","CRYPTO","SQLITE"],
+    "safeExceptionOn": "RETRY_ONLY",
+    "durableOutcomeEnumMutation": false,
+    "durableIdentityPreimageMutation": false,
+    "newTableOrProviderAllowed": false,
+    "newRowOrRangeForNonPersistable": false,
+    "canonicalAmbiguousCommitClassification": "JOURNAL_COMMIT_STATE_UNRESOLVED",
+    "rejectedAliases": ["JOURNAL_AMBIGUOUS_COMMIT_WITH_NO_EXACT_INTENDED_STATE"],
+    "resultMappings": [
+      {"variant":"Fatal","stage":"PREREQUISITE","classification":"STREAM_CHECKPOINT_MISSING","safeExceptionTypes":[],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"NONE"},
+      {"variant":"Fatal","stage":"PREREQUISITE","classification":"STREAM_CHECKPOINT_STRUCTURAL","safeExceptionTypes":[],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"NONE"},
+      {"variant":"Fatal","stage":"PREREQUISITE","classification":"STREAM_CHECKPOINT_AUTHENTICATION_REJECTED","safeExceptionTypes":[],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"NONE"},
+      {"variant":"Retry","stage":"PREREQUISITE","classification":"STREAM_CHECKPOINT_AUTHENTICATION_OPERATIONAL","safeExceptionTypes":["CRYPTO"],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"NONE"},
+      {"variant":"Fatal","stage":"PREREQUISITE","classification":"STREAM_CHECKPOINT_SPLIT_BRAIN","safeExceptionTypes":[],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"STRICT_STREAM_CHECKPOINT_ONLY"},
+      {"variant":"Fatal","stage":"PREREQUISITE","classification":"STREAM_SOURCE_WITNESS_MISSING","safeExceptionTypes":[],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"NONE"},
+      {"variant":"Fatal","stage":"PREREQUISITE","classification":"UNSAFE_PATH","safeExceptionTypes":[],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"NONE"},
+      {"variant":"Fatal","stage":"SOURCE_PROOF","classification":"STREAM_SOURCE_IDENTITY_CHANGED","safeExceptionTypes":[],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"NONE"},
+      {"variant":"Rejected","stage":"SOURCE_PROOF","classification":"STREAM_SOURCE_EXTENT_LIMIT_EXCEEDED","safeExceptionTypes":[],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"NONE"},
+      {"variant":"Retry","stage":"LEASE","classification":"RUN_LEASE_CONTENDED","safeExceptionTypes":["NONE"],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"NONE"},
+      {"variant":"Fatal","stage":"RANGE_ADMISSION","classification":"STREAM_ACTIVE_RANGE_DENIED","safeExceptionTypes":[],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"STRICT_STREAM_RANGES_AND_PARENT_OUTCOMES_ONLY"},
+      {"variant":"Retry","stage":"STREAM_READ","classification":"STREAM_ZERO_PROGRESS","safeExceptionTypes":["NONE"],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"NONE"},
+      {"variant":"Fatal","stage":"STREAM_READ","classification":"STREAM_READ_CROSSES_ACCEPTED_END","safeExceptionTypes":[],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"NONE"},
+      {"variant":"Retry","stage":"STREAM_READ","classification":"STREAM_PUBLIC_READ_OPERATIONAL","safeExceptionTypes":["IO","CRYPTO"],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"NONE"},
+      {"variant":"Fatal","stage":"JOURNAL","classification":"JOURNAL_STRUCTURAL","safeExceptionTypes":[],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"NONE"},
+      {"variant":"Fatal","stage":"JOURNAL","classification":"JOURNAL_ATTEMPT_CONFLICT","safeExceptionTypes":[],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"STRICT_STREAM_OUTCOME_ONLY"},
+      {"variant":"Fatal","stage":"JOURNAL","classification":"STREAM_RANGE_QUARANTINE_COLLISION","safeExceptionTypes":[],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"STRICT_STREAM_OUTCOME_AND_RANGE_ONLY"},
+      {"variant":"Retry","stage":"SOURCE_PROOF","classification":"ARTIFACT_IO_BEFORE_EXACT_SOURCE_HASH","safeExceptionTypes":["IO"],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"NONE"},
+      {"variant":"Retry","stage":"JOURNAL","classification":"JOURNAL_OPERATIONAL","safeExceptionTypes":["SQLITE"],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"NONE"},
+      {"variant":"Retry","stage":"JOURNAL","classification":"JOURNAL_COMMIT_STATE_UNRESOLVED","safeExceptionTypes":["SQLITE"],"receipt":"FORBIDDEN","newRowOrRange":"FORBIDDEN","evidenceReferencePolicy":"ATTEMPTED_IDS_UNKNOWN_ALLOWED"}
+    ],
+    "behaviorAssertions": {
+      "zeroProgress":{"additionalRead":false,"returnedBufferRetained":false,"durableWrite":false},
+      "readCrossesAcceptedEnd":{"additionalRead":false,"returnedBufferRetained":false,"prefixComparedOrHashed":false,"requestSizeChanged":false,"durableWrite":false},
+      "activeRangeDenied":{"sourceOpen":false,"publicTink":false,"durableWrite":false}
+    },
+    "existingReferences": {
+      "kinds":["STREAM_CHECKPOINT","STREAM_OUTCOME","STREAM_RANGE"],
+      "idMappings":{"STREAM_CHECKPOINT":["checkpoint_identity","checkpoint_identity"],"STREAM_OUTCOME":["outcome_id","outcome_id"],"STREAM_RANGE":["range_intent_id","range_intent_id"]},
+      "perClassification":{"STREAM_CHECKPOINT_SPLIT_BRAIN":["STREAM_CHECKPOINT"],"JOURNAL_ATTEMPT_CONFLICT":["STREAM_OUTCOME"],"STREAM_RANGE_QUARANTINE_COLLISION":["STREAM_OUTCOME","STREAM_RANGE"],"STREAM_ACTIVE_RANGE_DENIED":["STREAM_OUTCOME","STREAM_RANGE"]},
+      "checkpointSqliteKeyUnchanged":true,"strictDecodedOnly":true,"malformedUnreadableOrInferredProducesReference":false,"deduplicated":true,"order":"RECORD_KIND_ORDINAL_THEN_EXISTING_ID_UNSIGNED_BYTE_ORDER","idByteOrder":"UNSIGNED_LEXICOGRAPHIC_32_BYTES"
+    },
+    "receipt": {
+      "internalReadbackReceiptCoreFields":["outcomeId","optionalRangeIntentId","replayed"],
+      "coreCreatedAtExactReadback":true,
+      "coreImmutable":true,
+      "eventKeyDerivedFromCoreIds":true,
+      "finalPublicReceiptFields":["outcomeId","optionalRangeIntentId","replayed","postReceiptCleanup","evidenceDelivery"],
+      "postReceiptCleanup":["NONE","PUBLIC_STREAM_CLOSE_FAILED","SOURCE_DESCRIPTOR_CLOSE_FAILED","PUBLIC_STREAM_AND_SOURCE_DESCRIPTOR_CLOSE_FAILED"],
+      "evidenceDelivery":["DELIVERED","PENDING"],
+      "publicStreamCloseBeforeDescriptorClose":true,
+      "oneMandatoryBoundedBestEffortSinkAttempt":true,
+      "finalReceiptConstructedAfterBothCloses":true,
+      "finalReceiptConstructedAfterSinkAttempt":true,
+      "finalReceiptImmutable":true,
+      "closeOrPendingPreservesPrimaryResultAndCoreIds":true,
+      "combinedCloseFailurePublicPrimary":true,
+      "callerRetryViaExactReplay":true,
+      "replayReemitsSameKey":true,
+      "replayCreatesNewRow":false,
+      "autonomousDeliveryGuarantee":false,
+      "outboxSchedulerProviderOrBackgroundAllowed":false
+    },
+    "nonPersistableEvidence":{"oneBoundedBestEffortAttempt":true,"afterOpenedResourcesClose":true,"beforeLeaseRelease":true,"failureChangesPrimaryResult":false,"failureStartsLoop":false},
+    "publicEventForbiddenFields":["path","exceptionText","exceptionImplementationType","stackTrace","plaintext","ciphertext","keysOrKeysets","databaseOrWal","returnedOrRejectedPlaintextDigests","mismatchOffset","expectedOrObservedByte"]
+  }
+}

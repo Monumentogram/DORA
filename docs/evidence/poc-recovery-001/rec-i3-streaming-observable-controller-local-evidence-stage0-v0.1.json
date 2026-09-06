@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "scopeId": "rec-i3-streaming-observable-controller-stage0-v0.1",
+  "taskId": "REC-I3",
+  "branch": "codex/rec-i3-streaming-observable-controller-v08",
+  "baseCommit": "406cba597c2db88712a7f3d96250e3583b43d28e",
+  "status": "LOCAL_VERIFIED",
+  "contractCounts": {
+    "publicResultVariants": 4,
+    "stages": 6,
+    "classifications": 20,
+    "retrySafeExceptionTypes": 4
+  },
+  "sourceFiles": {
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryStreamingReconciliation.kt": "b5f71c642e993827d85b3e0cbda7fd8d19ada34125fcdf9c6cb9aa7be6fc5c90",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationOutcomes.kt": "934af0b81d378b78bbb7ba80b82eb9dbf6b9bb430377a45a4e8be561257e0341",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingReconciliationController.kt": "509a22dce0b132d0a9a49c0bc345bbc3ad05af8541a7da6e6bb5d67a41d83660",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingTinkPrerequisiteCrypto.kt": "71e7ad545174a0de112b4eaf591b1b5df6b535ff4c50f62b7823ab2aa7e30502",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryStreamingSource.kt": "d120258a9b0afd831d410eb2fe3a883872be37f8d16ec4193d2a0e0c8a7ae8bb",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingReconciliationControllerTest.kt": "14d4b31ac5bebe9797f96397dd20d3b44b0292b15e5a41f83b1e955d16318aa1",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingTinkPrerequisiteCryptoTest.kt": "27e197cb6e86704c3208d8d6dce0b7cb0a2cd6b1ff0f8b0b31805383edaf2d48",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryStreamingSourceTest.kt": "869e0a5de6d3d0d88618c3ecdf28bce9a0d1e9e3211cc18261af8a8ce03fb9ad"
+  },
+  "checks": [
+    {
+      "stage": "STAGE00",
+      "command": "python tools/validate_stage00.py",
+      "outcome": "PASS"
+    },
+    {
+      "stage": "FOCUSED_JVM",
+      "command": "./gradlew :poc:recovery:testDebugUnitTest --tests '*RecoveryStreamingReconciliationControllerTest' --tests '*RecoveryStreamingTinkPrerequisiteCryptoTest' --tests '*AndroidOsRecoveryStreamingSourceTest'",
+      "outcome": "PASS"
+    },
+    {
+      "stage": "RECOVERY_JVM",
+      "command": "./gradlew :poc:recovery:testDebugUnitTest",
+      "outcome": "PASS"
+    },
+    {
+      "stage": "SPOTLESS",
+      "command": "./gradlew spotlessCheck",
+      "outcome": "PASS"
+    },
+    {
+      "stage": "DETEKT",
+      "command": "./gradlew detekt",
+      "outcome": "PASS"
+    },
+    {
+      "stage": "LINT",
+      "command": "./gradlew lint",
+      "outcome": "PASS"
+    },
+    {
+      "stage": "HOST_SQLITE",
+      "command": "python tools/verify_rec_i3_streaming_sqlite.py",
+      "outcome": "PASS"
+    }
+  ],
+  "limitations": [
+    "Independent review of immutable head 2f3d48cf813759e391a0281195b689cad1721b91 returned REVISE 0/3/0, and rereview of repaired head 7232c3f489908c6f7abdaeb2e2a1597996dc540f found that retained-range replay trusted the stored range hash; head 7d7b81bf593cd1fa348f04703e9e22278db6be22 repaired that gap and later CI exposed only a stale Stage 00 terminal-decision pin. CI-correction head 5f897f585b7a4f2131324057823fb8ba5a42dde5 received REVISE 0/0/1/0 because decision labels were tested as substrings; this successor enforces anchored ordered metadata fields for the exact DEC-001 through DEC-048 registry. PR merge-ref CI runs 34034200851 and 34035616019 exposed test-fixture leakage of the current pull-request identity and synthetic merge HEAD; run 34036673882 is terminal SUCCESS after restoring the verified linear source head. Immutable review of head 9111913753d40d9640ed07b43e0c6320290cf61e found unbounded nested children; rereview of head 2de6d8238d99e71ae573ffa29481a59e052c0efd found that Windows nonzero cleanup targeted a dead parent PID. The test-only successor preserves PR-context denial, the 180-second bound, the intended marker and identity/history negatives, and uses pre-resume assignment to a kill-on-close Windows Job Object so timeout and nonzero-parent descendants are both terminated before temporary cleanup. Independent review remains pending.",
+    "No device, emulator, Android runtime durability, process-death, preflight or measured campaign evidence was produced."
+  ],
+  "nonActions": {
+    "pushed": false,
+    "pullRequestOpenedOrEdited": false,
+    "merged": false,
+    "deviceOrEmulatorRun": false,
+    "preflightOrCampaignRun": false,
+    "productionWork": false,
+    "nextSliceStarted": false
+  }
+}
