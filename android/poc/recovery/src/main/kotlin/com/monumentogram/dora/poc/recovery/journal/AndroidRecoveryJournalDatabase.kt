@@ -1,18 +1,44 @@
 package com.monumentogram.dora.poc.recovery.journal
 
+import android.content.ContentValues
 import android.content.Context
+import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
 import android.system.ErrnoException
 import android.system.Os
 import android.system.OsConstants
+import com.monumentogram.dora.poc.recovery.contract.CanonicalSqliteText
+import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineMigrationRow
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingMigration
 import com.monumentogram.dora.poc.recovery.storage.BootstrapPathType
 import com.monumentogram.dora.poc.recovery.storage.RecoveryBootstrapPathPolicy
 import java.io.File
 
-@Suppress("MagicNumber")
+@Suppress("LargeClass", "MagicNumber", "TooManyFunctions")
 internal object RecoveryJournalSchema {
+    data class SqliteObject(val type: String, val name: String, val tableName: String)
+
+    enum class V3ToV4Step {
+        AFTER_PREFLIGHT,
+        AFTER_CREATE_QUARANTINE,
+        AFTER_COPY,
+        AFTER_DESTINATION_VERIFY,
+        AFTER_CREATE_CHECKPOINT,
+        AFTER_CREATE_OUTCOME,
+        AFTER_CREATE_RANGE,
+        AFTER_CREATE_RANGE_INDEX,
+        AFTER_DROP_V3,
+    }
+
+    fun interface V3ToV4Failpoint {
+        fun hit(step: V3ToV4Step)
+    }
+
+    val V3_TO_V4_STEPS = V3ToV4Step.entries.toList()
+    private val NO_MIGRATION_FAILPOINT = V3ToV4Failpoint {}
+
     const val VERSION = 4
     const val DATABASE_RELATIVE_NAME = "poc-recovery/v1/recovery-journal-v1.db"
     const val RUN_TABLE = "recovery_run_bootstrap_v1"
@@ -23,6 +49,82 @@ internal object RecoveryJournalSchema {
     const val STREAM_CHECKPOINT_TABLE = "recovery_stream_checkpoint_v4"
     const val STREAM_OUTCOME_TABLE = "recovery_stream_outcome_v4"
     const val STREAM_RANGE_TABLE = "recovery_stream_range_quarantine_v4"
+
+    val EXACT_V4_OBJECTS =
+        setOf(
+            SqliteObject("table", RUN_TABLE, RUN_TABLE),
+            SqliteObject("table", UNIT_TABLE, UNIT_TABLE),
+            SqliteObject("table", PUBLICATION_TABLE, PUBLICATION_TABLE),
+            SqliteObject("table", QUARANTINE_TABLE, QUARANTINE_TABLE),
+            SqliteObject("table", STREAM_CHECKPOINT_TABLE, STREAM_CHECKPOINT_TABLE),
+            SqliteObject("table", STREAM_OUTCOME_TABLE, STREAM_OUTCOME_TABLE),
+            SqliteObject("table", STREAM_RANGE_TABLE, STREAM_RANGE_TABLE),
+            SqliteObject("index", "recovery_run_candidate_v2", RUN_TABLE),
+            SqliteObject("index", "recovery_stream_active_range_v4", STREAM_RANGE_TABLE),
+            SqliteObject("index", "sqlite_autoindex_recovery_run_bootstrap_v1_1", RUN_TABLE),
+            SqliteObject("index", "sqlite_autoindex_recovery_microfile_unit_v2_1", UNIT_TABLE),
+            SqliteObject("index", "sqlite_autoindex_recovery_microfile_unit_v2_2", UNIT_TABLE),
+            SqliteObject(
+                "index",
+                "sqlite_autoindex_recovery_manifest_publication_v2_1",
+                PUBLICATION_TABLE,
+            ),
+            SqliteObject(
+                "index",
+                "sqlite_autoindex_recovery_quarantine_intent_v4_1",
+                QUARANTINE_TABLE,
+            ),
+            SqliteObject(
+                "index",
+                "sqlite_autoindex_recovery_quarantine_intent_v4_2",
+                QUARANTINE_TABLE,
+            ),
+            SqliteObject(
+                "index",
+                "sqlite_autoindex_recovery_stream_checkpoint_v4_1",
+                STREAM_CHECKPOINT_TABLE,
+            ),
+            SqliteObject(
+                "index",
+                "sqlite_autoindex_recovery_stream_checkpoint_v4_2",
+                STREAM_CHECKPOINT_TABLE,
+            ),
+            SqliteObject(
+                "index",
+                "sqlite_autoindex_recovery_stream_checkpoint_v4_3",
+                STREAM_CHECKPOINT_TABLE,
+            ),
+            SqliteObject(
+                "index",
+                "sqlite_autoindex_recovery_stream_outcome_v4_1",
+                STREAM_OUTCOME_TABLE,
+            ),
+            SqliteObject(
+                "index",
+                "sqlite_autoindex_recovery_stream_outcome_v4_2",
+                STREAM_OUTCOME_TABLE,
+            ),
+            SqliteObject(
+                "index",
+                "sqlite_autoindex_recovery_stream_outcome_v4_3",
+                STREAM_OUTCOME_TABLE,
+            ),
+            SqliteObject(
+                "index",
+                "sqlite_autoindex_recovery_stream_range_quarantine_v4_1",
+                STREAM_RANGE_TABLE,
+            ),
+            SqliteObject(
+                "index",
+                "sqlite_autoindex_recovery_stream_range_quarantine_v4_2",
+                STREAM_RANGE_TABLE,
+            ),
+            SqliteObject(
+                "index",
+                "sqlite_autoindex_recovery_stream_range_quarantine_v4_3",
+                STREAM_RANGE_TABLE,
+            ),
+        )
 
     enum class UpgradePlan {
         V1_TO_V4,
@@ -99,7 +201,8 @@ internal object RecoveryJournalSchema {
         FOREIGN KEY(bootstrap_run_id,bootstrap_candidate_id) REFERENCES recovery_run_bootstrap_v1(run_id,candidate_id) ON UPDATE RESTRICT ON DELETE RESTRICT
     )"""
 
-    const val CREATE_QUARANTINE_TABLE = """CREATE TABLE recovery_quarantine_intent_v4 (
+    const val CREATE_QUARANTINE_TABLE =
+        """CREATE TABLE recovery_quarantine_intent_v4 (
   intent_id BLOB NOT NULL PRIMARY KEY CHECK(length(intent_id)=32),
   run_id TEXT NOT NULL,
   candidate_id TEXT NOT NULL
@@ -135,7 +238,8 @@ internal object RecoveryJournalSchema {
     REFERENCES recovery_run_bootstrap_v1(run_id,candidate_id)
     ON UPDATE RESTRICT ON DELETE RESTRICT
 )"""
-    const val CREATE_STREAM_CHECKPOINT_TABLE = """CREATE TABLE recovery_stream_checkpoint_v4 (
+    const val CREATE_STREAM_CHECKPOINT_TABLE =
+        """CREATE TABLE recovery_stream_checkpoint_v4 (
   run_id TEXT NOT NULL,
   candidate_id TEXT NOT NULL CHECK(candidate_id='REC-STREAM-TINK'),
   publication_kind TEXT NOT NULL CHECK(publication_kind='CHECKPOINT'),
@@ -179,7 +283,8 @@ internal object RecoveryJournalSchema {
     REFERENCES recovery_run_bootstrap_v1(run_id,candidate_id)
     ON UPDATE RESTRICT ON DELETE RESTRICT
 )"""
-    const val CREATE_STREAM_OUTCOME_TABLE = """CREATE TABLE recovery_stream_outcome_v4 (
+    const val CREATE_STREAM_OUTCOME_TABLE =
+        """CREATE TABLE recovery_stream_outcome_v4 (
   outcome_id BLOB NOT NULL PRIMARY KEY CHECK(length(outcome_id)=32),
   run_id TEXT NOT NULL,
   candidate_id TEXT NOT NULL CHECK(candidate_id='REC-STREAM-TINK'),
@@ -470,7 +575,8 @@ internal object RecoveryJournalSchema {
        stream_ciphertext_prefix_bytes)
     ON UPDATE RESTRICT ON DELETE RESTRICT
 )"""
-    const val CREATE_STREAM_RANGE_TABLE = """CREATE TABLE recovery_stream_range_quarantine_v4 (
+    const val CREATE_STREAM_RANGE_TABLE =
+        """CREATE TABLE recovery_stream_range_quarantine_v4 (
   range_intent_id BLOB NOT NULL PRIMARY KEY CHECK(length(range_intent_id)=32),
   outcome_id BLOB NOT NULL UNIQUE CHECK(length(outcome_id)=32),
   run_id TEXT NOT NULL,
@@ -536,7 +642,8 @@ internal object RecoveryJournalSchema {
        required_range_start,required_range_certainty)
     ON UPDATE RESTRICT ON DELETE RESTRICT
 )"""
-    const val CREATE_STREAM_ACTIVE_RANGE_INDEX = """CREATE INDEX recovery_stream_active_range_v4
+    const val CREATE_STREAM_ACTIVE_RANGE_INDEX =
+        """CREATE INDEX recovery_stream_active_range_v4
 ON recovery_stream_range_quarantine_v4
   (run_id,candidate_id,source_relative_name,state,range_start,range_end)"""
 
@@ -620,20 +727,152 @@ ON recovery_stream_range_quarantine_v4
         requireExactSql(database, "table", QUARANTINE_V3_TABLE, CREATE_QUARANTINE_V3_TABLE)
     }
 
-
-    fun migrateV3ToV4(database: SQLiteDatabase) {
+    fun migrateV3ToV4(
+        database: SQLiteDatabase,
+        failpoint: V3ToV4Failpoint = NO_MIGRATION_FAILPOINT,
+    ) {
         requireExactV3(database)
+        require(rowCount(database, "PRAGMA foreign_key_check") == 0) {
+            "Recovery journal v3 contains foreign-key violations"
+        }
+        val sourceRows = readQuarantineRows(database, QUARANTINE_V3_TABLE)
+        val sourceDigest = RecoveryStreamingMigration.digest(sourceRows)
+        failpoint.hit(V3ToV4Step.AFTER_PREFLIGHT)
         database.execSQL(CREATE_QUARANTINE_TABLE)
-        database.execSQL(
-            "INSERT INTO $QUARANTINE_TABLE SELECT * FROM $QUARANTINE_V3_TABLE"
-        )
+        failpoint.hit(V3ToV4Step.AFTER_CREATE_QUARANTINE)
+        sourceRows.forEach { row ->
+            database.insertOrThrow(QUARANTINE_TABLE, null, row.toContentValues())
+        }
+        failpoint.hit(V3ToV4Step.AFTER_COPY)
+        val destinationRows = readQuarantineRows(database, QUARANTINE_TABLE)
+        if (
+            destinationRows.size != sourceRows.size ||
+                !RecoveryStreamingMigration.digest(destinationRows).contentEquals(sourceDigest)
+        ) {
+            throw SQLiteException("Recovery journal v3-to-v4 copy digest mismatch")
+        }
+        failpoint.hit(V3ToV4Step.AFTER_DESTINATION_VERIFY)
         database.execSQL(CREATE_STREAM_CHECKPOINT_TABLE)
+        failpoint.hit(V3ToV4Step.AFTER_CREATE_CHECKPOINT)
         database.execSQL(CREATE_STREAM_OUTCOME_TABLE)
+        failpoint.hit(V3ToV4Step.AFTER_CREATE_OUTCOME)
         database.execSQL(CREATE_STREAM_RANGE_TABLE)
+        failpoint.hit(V3ToV4Step.AFTER_CREATE_RANGE)
         database.execSQL(CREATE_STREAM_ACTIVE_RANGE_INDEX)
+        failpoint.hit(V3ToV4Step.AFTER_CREATE_RANGE_INDEX)
         database.execSQL("DROP TABLE $QUARANTINE_V3_TABLE")
+        failpoint.hit(V3ToV4Step.AFTER_DROP_V3)
         requireExactV4(database)
     }
+
+    private fun readQuarantineRows(
+        database: SQLiteDatabase,
+        table: String,
+    ): List<RecoveryQuarantineMigrationRow> =
+        database.rawQuery(quarantineMigrationQuery(table), null).use { cursor ->
+            buildList {
+                while (cursor.moveToNext()) add(cursor.toQuarantineMigrationRow())
+            }
+        }
+
+    private fun quarantineMigrationQuery(table: String): String {
+        require(table == QUARANTINE_V3_TABLE || table == QUARANTINE_TABLE)
+        val columns =
+            listOf(
+                "run_id",
+                "candidate_id",
+                "bootstrap_binding",
+                "bootstrap_run_id",
+                "bootstrap_candidate_id",
+                "artifact_role",
+                "observed_state",
+                "source_relative_name",
+                "destination_relative_name",
+                "state",
+            )
+        val textEvidence =
+            columns.joinToString(",") { column ->
+                "typeof($column) AS ${column}_type, CAST($column AS BLOB) AS ${column}_blob"
+            }
+        return "SELECT intent_id,run_id,candidate_id,bootstrap_binding,bootstrap_run_id," +
+            "bootstrap_candidate_id,artifact_role,observed_state,source_relative_name," +
+            "destination_relative_name,source_bytes,source_sha256,state,$textEvidence " +
+            "FROM $table ORDER BY intent_id ASC"
+    }
+
+    private fun Cursor.toQuarantineMigrationRow(): RecoveryQuarantineMigrationRow =
+        try {
+            RecoveryQuarantineMigrationRow(
+                    intentId = requiredBlob("intent_id"),
+                    runId = requiredCanonicalText("run_id", 64),
+                    candidateId = requiredCanonicalText("candidate_id", 64),
+                    bootstrapBinding = requiredCanonicalText("bootstrap_binding", 16),
+                    bootstrapRunId = nullableCanonicalText("bootstrap_run_id", 64),
+                    bootstrapCandidateId = nullableCanonicalText("bootstrap_candidate_id", 64),
+                    artifactRole = requiredCanonicalText("artifact_role", 64),
+                    observedState = requiredCanonicalText("observed_state", 64),
+                    sourceRelativeName = requiredCanonicalText("source_relative_name", 512),
+                    destinationRelativeName =
+                        requiredCanonicalText("destination_relative_name", 512),
+                    sourceBytes = getLong(getColumnIndexOrThrow("source_bytes")),
+                    sourceSha256 = requiredBlob("source_sha256"),
+                    state = requiredCanonicalText("state", 16),
+                )
+                .also { RecoveryStreamingMigration.digest(listOf(it)) }
+        } catch (failure: IllegalArgumentException) {
+            throw SQLiteException("Recovery journal v3 migration preflight failed", failure)
+        }
+
+    private fun Cursor.requiredBlob(column: String): ByteArray {
+        val index = getColumnIndexOrThrow(column)
+        require(!isNull(index) && getType(index) == Cursor.FIELD_TYPE_BLOB) {
+            "$column is not a BLOB"
+        }
+        return getBlob(index)
+    }
+
+    private fun Cursor.requiredCanonicalText(
+        column: String,
+        maximumBytes: Int,
+    ): CanonicalSqliteText {
+        val type = getString(getColumnIndexOrThrow("${column}_type"))
+        require(type == "text") { "$column is not SQLite TEXT" }
+        return CanonicalSqliteText.of(
+            getString(getColumnIndexOrThrow(column)),
+            getBlob(getColumnIndexOrThrow("${column}_blob")),
+            maximumBytes,
+        )
+    }
+
+    private fun Cursor.nullableCanonicalText(
+        column: String,
+        maximumBytes: Int,
+    ): CanonicalSqliteText? {
+        val index = getColumnIndexOrThrow(column)
+        val type = getString(getColumnIndexOrThrow("${column}_type"))
+        if (isNull(index)) {
+            require(type == "null") { "$column null has a non-null SQLite type" }
+            return null
+        }
+        return requiredCanonicalText(column, maximumBytes)
+    }
+
+    private fun RecoveryQuarantineMigrationRow.toContentValues() =
+        ContentValues().apply {
+            put("intent_id", intentId)
+            put("run_id", runId.value)
+            put("candidate_id", candidateId.value)
+            put("bootstrap_binding", bootstrapBinding.value)
+            put("bootstrap_run_id", bootstrapRunId?.value)
+            put("bootstrap_candidate_id", bootstrapCandidateId?.value)
+            put("artifact_role", artifactRole.value)
+            put("observed_state", observedState.value)
+            put("source_relative_name", sourceRelativeName.value)
+            put("destination_relative_name", destinationRelativeName.value)
+            put("source_bytes", sourceBytes)
+            put("source_sha256", sourceSha256)
+            put("state", state.value)
+        }
 
     fun requireExactV4(database: SQLiteDatabase) {
         requireExactSql(database, "table", RUN_TABLE, CREATE_RUN_TABLE)
@@ -644,9 +883,28 @@ ON recovery_stream_range_quarantine_v4
         requireExactSql(database, "table", STREAM_CHECKPOINT_TABLE, CREATE_STREAM_CHECKPOINT_TABLE)
         requireExactSql(database, "table", STREAM_OUTCOME_TABLE, CREATE_STREAM_OUTCOME_TABLE)
         requireExactSql(database, "table", STREAM_RANGE_TABLE, CREATE_STREAM_RANGE_TABLE)
-        requireExactSql(database, "index", "recovery_stream_active_range_v4", CREATE_STREAM_ACTIVE_RANGE_INDEX)
-        val forbidden = rowCount(database, "SELECT name FROM sqlite_master WHERE name='recovery_quarantine_intent_v3' OR ((type='trigger' OR type='view') AND (name LIKE 'recovery_%' OR tbl_name LIKE 'recovery_%'))")
-        if (forbidden != 0) throw SQLiteException("Recovery journal v4 schema is not exact")
+        requireExactSql(
+            database,
+            "index",
+            "recovery_stream_active_range_v4",
+            CREATE_STREAM_ACTIVE_RANGE_INDEX,
+        )
+        val objects = mutableListOf<SqliteObject>()
+        database
+            .rawQuery(
+                "SELECT type,name,tbl_name FROM sqlite_master " +
+                    "WHERE name LIKE 'recovery_%' OR tbl_name LIKE 'recovery_%'",
+                null,
+            )
+            .use { cursor ->
+                while (cursor.moveToNext()) {
+                    objects +=
+                        SqliteObject(cursor.getString(0), cursor.getString(1), cursor.getString(2))
+                }
+            }
+        if (objects.size != objects.toSet().size || objects.toSet() != EXACT_V4_OBJECTS) {
+            throw SQLiteException("Recovery journal v4 schema is not exact")
+        }
     }
 
     private fun requireExactSql(

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import copy
+import subprocess
+import sys
 import tempfile
 import unittest
 from dataclasses import replace
@@ -13,6 +15,19 @@ import validate_poc_recovery_governance as governance
 
 
 class RecoveryI3GovernanceTests(unittest.TestCase):
+    def test_streaming_sqlite_verifier_executes_exact_schema_and_migrations(self) -> None:
+        verifier = governance.ROOT / "tools/verify_rec_i3_streaming_sqlite.py"
+        self.assertTrue(verifier.is_file())
+        completed = subprocess.run(
+            [sys.executable, str(verifier)],
+            cwd=governance.ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
+        self.assertIn("PASS REC-I3 streaming SQLite schema v4", completed.stdout)
+
     def test_exact_streaming_persistence_profile_accepts_current_checkout(self) -> None:
         lifecycle = governance.collect_recovery_lifecycle_identity()
         self.assertEqual(governance.REC_I3_STREAMING_PERSISTENCE_BRANCH, lifecycle.branch)
