@@ -59,7 +59,7 @@
     }
   ],
   "limitations": [
-    "Independent review of immutable head 2f3d48cf813759e391a0281195b689cad1721b91 returned REVISE 0/3/0, and rereview of repaired head 7232c3f489908c6f7abdaeb2e2a1597996dc540f found that retained-range replay trusted the stored range hash; head 7d7b81bf593cd1fa348f04703e9e22278db6be22 repaired that gap and later CI exposed only a stale Stage 00 terminal-decision pin. This governance-only successor pins the complete ordered DEC-001 through DEC-048 registry and remains pending independent review and exact-head CI.",
+    "Independent review of immutable head 2f3d48cf813759e391a0281195b689cad1721b91 returned REVISE 0/3/0, and rereview of repaired head 7232c3f489908c6f7abdaeb2e2a1597996dc540f found that retained-range replay trusted the stored range hash; head 7d7b81bf593cd1fa348f04703e9e22278db6be22 repaired that gap and later CI exposed only a stale Stage 00 terminal-decision pin. CI-correction head 5f897f585b7a4f2131324057823fb8ba5a42dde5 received REVISE 0/0/1/0 because decision labels were tested as substrings; this successor enforces anchored ordered metadata fields for the exact DEC-001 through DEC-048 registry and remains pending independent review and exact-head CI.",
     "No device, emulator, Android runtime durability, process-death, preflight or measured campaign evidence was produced."
   ],
   "nonActions": {

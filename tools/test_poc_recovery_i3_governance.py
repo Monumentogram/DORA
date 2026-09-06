@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import re
 import subprocess
 import sys
 import tempfile
@@ -12,6 +13,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 import validate_poc_recovery_governance as governance
+import validate_stage00 as stage00
 
 
 class RecoveryI3GovernanceTests(unittest.TestCase):
@@ -1233,6 +1235,67 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             self.assertRaisesRegex(ValueError, "synthetic Stage 00 failure"),
         ):
             governance.validate_rec_i3_stage00_integrity()
+
+    def test_stage00_decision_metadata_requires_exact_anchored_ordered_fields(self) -> None:
+        text = stage00.read_text("docs/DORA_MVP1_PRODUCT_DECISIONS.md")
+        stage00.validate_decisions()
+
+        marker = "## DEC-048. REC-I3 proven rollback of semantic VALID"
+        prefix, separator, decision = text.partition(marker)
+        self.assertEqual(marker, separator)
+
+        def mutate_decision(pattern: str, replacement) -> str:
+            changed, count = re.subn(
+                pattern,
+                replacement,
+                decision,
+                count=1,
+                flags=re.MULTILINE,
+            )
+            self.assertEqual(1, count, pattern)
+            return prefix + separator + changed
+
+        moved_to_prose = mutate_decision(r"^Status:.*\n", "").replace(
+            "When a semantic VALID persistence attempt",
+            "This prose mentions Status: without defining a metadata field.\n\n"
+            "When a semantic VALID persistence attempt",
+            1,
+        )
+        mutations = {
+            "required-label-moved-into-prose": moved_to_prose,
+            "prefixed-label": mutate_decision(r"^Status:", "Not Status:"),
+            "misspelled-label": mutate_decision(r"^Status:", "Statu:"),
+            "missing-label": mutate_decision(r"^Decision record:.*\n", ""),
+            "extra-metadata-label": mutate_decision(
+                r"^Scope:.*\n",
+                lambda match: match.group(0) + "Unexpected field: forbidden\\\n",
+            ),
+            "historical-prefixed-label": re.sub(
+                r"^Статус:",
+                "Не Статус:",
+                text,
+                count=1,
+                flags=re.MULTILINE,
+            ),
+        }
+        for name, changed in mutations.items():
+            self.assertNotEqual(text, changed, name)
+            with (
+                self.subTest(mutation=name),
+                patch.object(stage00, "read_text", return_value=changed),
+                self.assertRaises(ValueError),
+            ):
+                stage00.validate_decisions()
+
+        with (
+            patch.object(
+                stage00,
+                "read_text",
+                return_value=text + "\n## DEC-049. Unapproved implicit extension\n",
+            ),
+            self.assertRaisesRegex(ValueError, "DEC-001 through DEC-048"),
+        ):
+            stage00.validate_decisions()
 
     def test_observable_controller_profile_is_additive_to_v08(self) -> None:
         old = governance.RecoveryLifecycleIdentity(
