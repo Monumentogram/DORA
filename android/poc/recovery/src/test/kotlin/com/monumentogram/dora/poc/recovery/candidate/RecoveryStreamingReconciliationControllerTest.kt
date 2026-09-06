@@ -1029,6 +1029,71 @@ class RecoveryStreamingReconciliationControllerTest {
         )
     }
 
+    @Test
+    fun `controller PRE truncation persists without public stream construction`() {
+        val fixture = controllerFixture()
+        val events = mutableListOf<String>()
+        val journal =
+            ControllerJournal(events).apply {
+                checkpoints = listOf(fixture.checkpoint)
+                persistBehavior = { attempt ->
+                    RecoveryStreamingJournalResult.Receipt(
+                        attempt.outcome.outcomeId,
+                        attempt.range?.rangeIntentId,
+                        replayed = false,
+                    )
+                }
+            }
+        val controller =
+            RecoveryStreamingReconciliationController(
+                journal,
+                FreshControllerSource(events, fixture.source.copyOf(8_191)),
+                RecoveryRunSingleWriterGuard {
+                    events += "lease-acquire"
+                    RecoveryRunWriterLease { events += "lease-release" }
+                },
+                RecoveryStreamingCheckpointAuthenticator { _, _ ->
+                    events += "authenticate"
+                    RecoveryStreamingCheckpointAuthentication.Ready(
+                        RecoveryStreamingPublicStreamOpener { _, _ ->
+                            events += "public-open"
+                            error("PRE selection must not construct public Tink")
+                        }
+                    )
+                },
+                RecoveryStreamingEvidenceSink { events += "evidence" },
+            )
+
+        val result =
+            controller.recover(fixture.request) as RecoveryStreamingReconciliationResult.Fatal
+
+        assertEquals(null, result.classification)
+        assertEquals(
+            StreamDiagnosticClassification.STREAM_SOURCE_TRUNCATED,
+            requireNotNull(result.persistedDiagnostic).diagnosticClassification,
+        )
+        assertEquals(1, journal.persistCalls)
+        assertEquals(0UL, requireNotNull(journal.lastAttempt).range?.rangeStart)
+        assertFalse(events.contains("public-open"))
+        assertEquals(
+            listOf(
+                "lease-acquire",
+                "checkpoint-chain",
+                "authenticate",
+                "outcome-witness",
+                "active-ranges",
+                "source-open",
+                "hash-8191",
+                "range-0-8191",
+                "persist",
+                "source-close",
+                "evidence",
+                "lease-release",
+            ),
+            events,
+        )
+    }
+
     private fun render(mapping: RecoveryStreamingResultMapping): String =
         listOf(
                 mapping.disposition.name,

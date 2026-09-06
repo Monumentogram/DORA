@@ -927,19 +927,39 @@ internal class RecoveryStreamingReconciliationController(
         opened: RecoveryOpenedStreamingSource,
     ): FreshExecution {
         val observedHash = opened.sha256Prefix(opened.observedBytes)
+        val truncated = opened.observedBytes < request.witness.preFaultSourceBytes
+        val checkpointOutsideWitness =
+            request.witness.checkpointPrefixBytes > request.witness.preFaultSourceBytes
+        val mayProvePrefixes = !truncated && !checkpointOutsideWitness
+        val checkpointPrefixMatches =
+            mayProvePrefixes &&
+                opened.sha256Prefix(request.witness.checkpointPrefixBytes) ==
+                    checkpoint.streamCiphertextPrefixSha256
+        val preFaultPrefixMatches =
+            mayProvePrefixes &&
+                opened.sha256Prefix(request.witness.preFaultSourceBytes) ==
+                    request.witness.preFaultSourceSha256
         val facts =
             RecoveryStreamingValidatedIntentFacts(
                 request.witness,
                 opened.observedBytes,
                 observedHash,
-                checkpointPrefixMatches =
-                    opened.sha256Prefix(request.witness.checkpointPrefixBytes) ==
-                        checkpoint.streamCiphertextPrefixSha256,
-                preFaultPrefixMatches =
-                    opened.sha256Prefix(request.witness.preFaultSourceBytes) ==
-                        request.witness.preFaultSourceSha256,
+                checkpointPrefixMatches,
+                preFaultPrefixMatches,
                 completed = null,
             )
+        if (
+            truncated ||
+                checkpointOutsideWitness ||
+                !checkpointPrefixMatches ||
+                !preFaultPrefixMatches
+        ) {
+            return persistFresh(
+                RecoveryStreamingIntentBuilder.buildOutcome(facts),
+                opened,
+                publicStream = null,
+            )
+        }
         val publicStream = opener.open(opened, request.witness)
         return when (
             val read =
@@ -964,7 +984,7 @@ internal class RecoveryStreamingReconciliationController(
     private fun persistFresh(
         outcome: RecoveryStreamingOutcomeRow,
         opened: RecoveryOpenedStreamingSource,
-        publicStream: RecoveryStreamingIntentBuilder.RecoveryStreamingPublicRead,
+        publicStream: RecoveryStreamingIntentBuilder.RecoveryStreamingPublicRead?,
     ): FreshExecution {
         val range =
             outcome.requiredRangeStart?.let { start ->
@@ -990,15 +1010,15 @@ internal class RecoveryStreamingReconciliationController(
                         outcome,
                         range,
                         resolution.receipt,
-                        publicStream::close,
+                        { publicStream?.close() },
                     )
                 )
             is RecoveryStreamingPersistenceResolution.Failed -> {
-                runCatching { publicStream.close() }
+                runCatching { publicStream?.close() }
                 FreshExecution.NonPersistable(resolution.result)
             }
             is RecoveryStreamingPersistenceResolution.ProvenRollback -> {
-                runCatching { publicStream.close() }
+                runCatching { publicStream?.close() }
                 FreshExecution.NonPersistable(journalStructural())
             }
         }
