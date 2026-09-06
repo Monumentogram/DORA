@@ -35,6 +35,230 @@ internal enum class RecoveryFailureStage {
     OPERATIONAL,
 }
 
+/** Closed v0.8 controller stage vocabulary. These values are never persisted in schema v4. */
+internal enum class RecoveryStreamingResultStage {
+    LEASE,
+    PREREQUISITE,
+    SOURCE_PROOF,
+    RANGE_ADMISSION,
+    STREAM_READ,
+    JOURNAL,
+}
+
+/** Closed v0.8 non-persistable controller classification vocabulary. */
+internal enum class RecoveryStreamingResultClassification {
+    STREAM_CHECKPOINT_MISSING,
+    STREAM_CHECKPOINT_STRUCTURAL,
+    STREAM_CHECKPOINT_AUTHENTICATION_REJECTED,
+    STREAM_CHECKPOINT_AUTHENTICATION_OPERATIONAL,
+    STREAM_CHECKPOINT_SPLIT_BRAIN,
+    STREAM_SOURCE_WITNESS_MISSING,
+    UNSAFE_PATH,
+    STREAM_SOURCE_IDENTITY_CHANGED,
+    STREAM_SOURCE_EXTENT_LIMIT_EXCEEDED,
+    RUN_LEASE_CONTENDED,
+    STREAM_ACTIVE_RANGE_DENIED,
+    STREAM_ZERO_PROGRESS,
+    STREAM_READ_CROSSES_ACCEPTED_END,
+    STREAM_PUBLIC_READ_OPERATIONAL,
+    JOURNAL_STRUCTURAL,
+    JOURNAL_ATTEMPT_CONFLICT,
+    STREAM_RANGE_QUARANTINE_COLLISION,
+    ARTIFACT_IO_BEFORE_EXACT_SOURCE_HASH,
+    JOURNAL_OPERATIONAL,
+    JOURNAL_COMMIT_STATE_UNRESOLVED,
+}
+
+/** A deliberately short exception projection. It is carried only by a retry mapping. */
+internal enum class RecoveryStreamingSafeExceptionType {
+    NONE,
+    IO,
+    CRYPTO,
+    SQLITE,
+}
+
+internal enum class RecoveryStreamingResultDisposition {
+    RETRY,
+    REJECTED,
+    FATAL,
+}
+
+/**
+ * The exhaustive v0.8 outward failure map. Durable v0.7 diagnostic classifications remain in
+ * [com.monumentogram.dora.poc.recovery.contract.StreamDiagnosticClassification].
+ */
+internal class RecoveryStreamingResultMapping
+private constructor(
+    val disposition: RecoveryStreamingResultDisposition,
+    val stage: RecoveryStreamingResultStage,
+    val classification: RecoveryStreamingResultClassification,
+    val allowedSafeExceptionTypes: Set<RecoveryStreamingSafeExceptionType>,
+) {
+    init {
+        kotlin.require(
+            (disposition == RecoveryStreamingResultDisposition.RETRY) ==
+                allowedSafeExceptionTypes.isNotEmpty()
+        ) {
+            "Safe exception types belong only to Retry"
+        }
+    }
+
+    companion object {
+        val entries: List<RecoveryStreamingResultMapping> =
+            listOf(
+                fatal(
+                    RecoveryStreamingResultStage.PREREQUISITE,
+                    RecoveryStreamingResultClassification.STREAM_CHECKPOINT_MISSING,
+                ),
+                fatal(
+                    RecoveryStreamingResultStage.PREREQUISITE,
+                    RecoveryStreamingResultClassification.STREAM_CHECKPOINT_STRUCTURAL,
+                ),
+                fatal(
+                    RecoveryStreamingResultStage.PREREQUISITE,
+                    RecoveryStreamingResultClassification.STREAM_CHECKPOINT_AUTHENTICATION_REJECTED,
+                ),
+                retry(
+                    RecoveryStreamingResultStage.PREREQUISITE,
+                    RecoveryStreamingResultClassification
+                        .STREAM_CHECKPOINT_AUTHENTICATION_OPERATIONAL,
+                    RecoveryStreamingSafeExceptionType.CRYPTO,
+                ),
+                fatal(
+                    RecoveryStreamingResultStage.PREREQUISITE,
+                    RecoveryStreamingResultClassification.STREAM_CHECKPOINT_SPLIT_BRAIN,
+                ),
+                fatal(
+                    RecoveryStreamingResultStage.PREREQUISITE,
+                    RecoveryStreamingResultClassification.STREAM_SOURCE_WITNESS_MISSING,
+                ),
+                fatal(
+                    RecoveryStreamingResultStage.PREREQUISITE,
+                    RecoveryStreamingResultClassification.UNSAFE_PATH,
+                ),
+                fatal(
+                    RecoveryStreamingResultStage.SOURCE_PROOF,
+                    RecoveryStreamingResultClassification.STREAM_SOURCE_IDENTITY_CHANGED,
+                ),
+                rejected(
+                    RecoveryStreamingResultStage.SOURCE_PROOF,
+                    RecoveryStreamingResultClassification.STREAM_SOURCE_EXTENT_LIMIT_EXCEEDED,
+                ),
+                retry(
+                    RecoveryStreamingResultStage.LEASE,
+                    RecoveryStreamingResultClassification.RUN_LEASE_CONTENDED,
+                    RecoveryStreamingSafeExceptionType.NONE,
+                ),
+                fatal(
+                    RecoveryStreamingResultStage.RANGE_ADMISSION,
+                    RecoveryStreamingResultClassification.STREAM_ACTIVE_RANGE_DENIED,
+                ),
+                retry(
+                    RecoveryStreamingResultStage.STREAM_READ,
+                    RecoveryStreamingResultClassification.STREAM_ZERO_PROGRESS,
+                    RecoveryStreamingSafeExceptionType.NONE,
+                ),
+                fatal(
+                    RecoveryStreamingResultStage.STREAM_READ,
+                    RecoveryStreamingResultClassification.STREAM_READ_CROSSES_ACCEPTED_END,
+                ),
+                retry(
+                    RecoveryStreamingResultStage.STREAM_READ,
+                    RecoveryStreamingResultClassification.STREAM_PUBLIC_READ_OPERATIONAL,
+                    RecoveryStreamingSafeExceptionType.IO,
+                    RecoveryStreamingSafeExceptionType.CRYPTO,
+                ),
+                fatal(
+                    RecoveryStreamingResultStage.JOURNAL,
+                    RecoveryStreamingResultClassification.JOURNAL_STRUCTURAL,
+                ),
+                fatal(
+                    RecoveryStreamingResultStage.JOURNAL,
+                    RecoveryStreamingResultClassification.JOURNAL_ATTEMPT_CONFLICT,
+                ),
+                fatal(
+                    RecoveryStreamingResultStage.JOURNAL,
+                    RecoveryStreamingResultClassification.STREAM_RANGE_QUARANTINE_COLLISION,
+                ),
+                retry(
+                    RecoveryStreamingResultStage.SOURCE_PROOF,
+                    RecoveryStreamingResultClassification.ARTIFACT_IO_BEFORE_EXACT_SOURCE_HASH,
+                    RecoveryStreamingSafeExceptionType.IO,
+                ),
+                retry(
+                    RecoveryStreamingResultStage.JOURNAL,
+                    RecoveryStreamingResultClassification.JOURNAL_OPERATIONAL,
+                    RecoveryStreamingSafeExceptionType.SQLITE,
+                ),
+                retry(
+                    RecoveryStreamingResultStage.JOURNAL,
+                    RecoveryStreamingResultClassification.JOURNAL_COMMIT_STATE_UNRESOLVED,
+                    RecoveryStreamingSafeExceptionType.SQLITE,
+                ),
+            )
+
+        private val byClassification =
+            entries.associateBy(RecoveryStreamingResultMapping::classification).also {
+                kotlin.require(it.size == RecoveryStreamingResultClassification.entries.size) {
+                    "Result mapping must cover every classification exactly once"
+                }
+            }
+
+        fun require(
+            stage: RecoveryStreamingResultStage,
+            classification: RecoveryStreamingResultClassification,
+            safeExceptionType: RecoveryStreamingSafeExceptionType?,
+        ): RecoveryStreamingResultMapping {
+            val mapping = byClassification.getValue(classification)
+            kotlin.require(mapping.stage == stage) { "Unlisted result stage/classification" }
+            if (mapping.disposition == RecoveryStreamingResultDisposition.RETRY) {
+                kotlin.require(safeExceptionType in mapping.allowedSafeExceptionTypes) {
+                    "Unlisted retry exception type"
+                }
+            } else {
+                kotlin.require(safeExceptionType == null) {
+                    "Rejected and Fatal cannot carry an exception type"
+                }
+            }
+            return mapping
+        }
+
+        private fun retry(
+            stage: RecoveryStreamingResultStage,
+            classification: RecoveryStreamingResultClassification,
+            vararg exceptionTypes: RecoveryStreamingSafeExceptionType,
+        ) =
+            RecoveryStreamingResultMapping(
+                RecoveryStreamingResultDisposition.RETRY,
+                stage,
+                classification,
+                exceptionTypes.toSet(),
+            )
+
+        private fun rejected(
+            stage: RecoveryStreamingResultStage,
+            classification: RecoveryStreamingResultClassification,
+        ) =
+            RecoveryStreamingResultMapping(
+                RecoveryStreamingResultDisposition.REJECTED,
+                stage,
+                classification,
+                emptySet(),
+            )
+
+        private fun fatal(
+            stage: RecoveryStreamingResultStage,
+            classification: RecoveryStreamingResultClassification,
+        ) =
+            RecoveryStreamingResultMapping(
+                RecoveryStreamingResultDisposition.FATAL,
+                stage,
+                classification,
+                emptySet(),
+            )
+    }
+}
+
 internal data class RecoveryFailureDiagnostic(
     val category: RecoveryFailureCategory,
     val type: String,
