@@ -1,7 +1,13 @@
 package com.monumentogram.dora.poc.recovery.candidate
 
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingExistingEvidence
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingIdentity
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingWitnessInput
+import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
+import com.monumentogram.dora.poc.recovery.contract.StreamDecision
+import com.monumentogram.dora.poc.recovery.contract.StreamDiagnosticClassification
+import com.monumentogram.dora.poc.recovery.contract.StreamTerminal
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
@@ -240,6 +246,144 @@ class RecoveryStreamingReconciliationControllerTest {
         )
     }
 
+    @Test
+    fun `intent core constructs the exact eight durable cells`() {
+        val cases =
+            listOf(
+                intentFacts(observedEnd = 8_191UL) to
+                    (StreamDecision.FATAL to
+                        StreamDiagnosticClassification.STREAM_SOURCE_TRUNCATED),
+                intentFacts(preFaultEnd = 4_096UL) to
+                    (StreamDecision.FATAL to
+                        StreamDiagnosticClassification.STREAM_CHECKPOINT_PREFIX_OUTSIDE_WITNESS),
+                intentFacts(checkpointPrefixMatches = false) to
+                    (StreamDecision.FATAL to
+                        StreamDiagnosticClassification.STREAM_SOURCE_PREFIX_IDENTITY_MISMATCH),
+                intentFacts(completed = mismatchRead(4_056UL)) to
+                    (StreamDecision.FATAL to
+                        StreamDiagnosticClassification.STREAM_RETURNED_BYTE_ORACLE_MISMATCH),
+                intentFacts(completed = equalRead(0UL, StreamTerminal.AUTHENTICATED_EOF)) to
+                    (StreamDecision.FATAL to
+                        StreamDiagnosticClassification.STREAM_RECOVERED_BELOW_CHECKPOINT),
+                intentFacts(completed = equalRead(4_057UL)) to
+                    (StreamDecision.FATAL to
+                        StreamDiagnosticClassification.STREAM_REMAINDER_BOUNDARY_UNPROVEN),
+                intentFacts(
+                    prefixBytes = 4_096UL,
+                    committedEnd = 0UL,
+                    acceptedEnd = 8_161UL,
+                    preFaultEnd = 4_096UL,
+                    observedEnd = 4_097UL,
+                    completed = equalRead(0UL),
+                ) to
+                    (StreamDecision.REJECTED to
+                        StreamDiagnosticClassification.STREAM_TAIL_BOUND_EXCEEDED),
+                intentFacts(completed = equalRead(8_136UL)) to
+                    (StreamDecision.VALID to StreamDiagnosticClassification.NONE),
+            )
+
+        cases.forEach { (facts, expected) ->
+            val outcome = RecoveryStreamingIntentBuilder.buildOutcome(facts)
+            assertEquals(expected.first, outcome.decision)
+            assertEquals(expected.second, outcome.diagnosticClassification)
+            assertEquals(
+                expected.first == StreamDecision.VALID,
+                outcome.recoveredEnd != null,
+            )
+        }
+    }
+
+    @Test
+    fun `intent core preserves precedence range boundaries and K12`() {
+        val preOverlap =
+            intentFacts(
+                preFaultEnd = 9_000UL,
+                observedEnd = 8_000UL,
+                checkpointPrefixMatches = false,
+                preFaultPrefixMatches = false,
+            )
+        assertEquals(
+            StreamDiagnosticClassification.STREAM_SOURCE_TRUNCATED,
+            RecoveryStreamingIntentBuilder.buildOutcome(preOverlap).diagnosticClassification,
+        )
+
+        val postOverlap =
+            intentFacts(
+                acceptedEnd = 20_000UL,
+                completed = mismatchRead(1UL),
+            )
+        assertEquals(
+            StreamDiagnosticClassification.STREAM_RETURNED_BYTE_ORACLE_MISMATCH,
+            RecoveryStreamingIntentBuilder.buildOutcome(postOverlap).diagnosticClassification,
+        )
+
+        val atBound =
+            RecoveryStreamingIntentBuilder.buildOutcome(
+                intentFacts(
+                    prefixBytes = 4_096UL,
+                    committedEnd = 0UL,
+                    acceptedEnd = 8_160UL,
+                    preFaultEnd = 4_096UL,
+                    observedEnd = 4_097UL,
+                    completed = equalRead(0UL),
+                )
+            )
+        val overBound =
+            RecoveryStreamingIntentBuilder.buildOutcome(
+                intentFacts(
+                    prefixBytes = 4_096UL,
+                    committedEnd = 0UL,
+                    acceptedEnd = 8_161UL,
+                    preFaultEnd = 4_096UL,
+                    observedEnd = 4_097UL,
+                    completed = equalRead(0UL),
+                )
+            )
+        assertEquals(StreamDecision.VALID, atBound.decision)
+        assertEquals(StreamDecision.REJECTED, overBound.decision)
+
+        val boundaryEqualsObserved =
+            RecoveryStreamingIntentBuilder.buildOutcome(
+                intentFacts(
+                    prefixBytes = 4_096UL,
+                    committedEnd = 0UL,
+                    acceptedEnd = 4_056UL,
+                    preFaultEnd = 4_096UL,
+                    observedEnd = 4_096UL,
+                    completed = equalRead(4_056UL),
+                )
+            )
+        assertEquals(null, boundaryEqualsObserved.requiredRangeStart)
+
+        val eof =
+            RecoveryStreamingIntentBuilder.buildOutcome(
+                intentFacts(completed = equalRead(8_136UL, StreamTerminal.AUTHENTICATED_EOF))
+            )
+        assertEquals(null, eof.requiredRangeStart)
+
+        val k12 =
+            RecoveryStreamingIntentBuilder.buildOutcome(intentFacts(completed = equalRead(8_136UL)))
+        assertEquals(StreamDecision.VALID, k12.decision)
+        assertEquals(8_136UL, k12.recoveredEnd)
+        assertEquals(8_192UL, k12.remainderBoundaryBytes)
+        assertEquals(8_192UL, k12.requiredRangeStart)
+        assertEquals(8_193UL, k12.observedSourceBytes)
+    }
+
+    @Test
+    fun `intent facts reject inconsistent witness and incomplete mismatch tuple`() {
+        val valid = intentFacts(completed = equalRead(8_136UL))
+        assertThrows(IllegalArgumentException::class.java) {
+            valid.copy(witness = valid.witness.copy(controllerSnapshotSha256 = sha(99)))
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            mismatchRead(4_056UL).copy(expectedOracleByte = null)
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            RecoveryStreamingIntentBuilder.buildOutcome(valid.copy(completed = equalRead(8_138UL)))
+        }
+    }
+
     private fun render(mapping: RecoveryStreamingResultMapping): String =
         listOf(
                 mapping.disposition.name,
@@ -258,4 +402,71 @@ class RecoveryStreamingReconciliationControllerTest {
 
     private fun sha(firstByte: Int): Sha256Value =
         Sha256Value.fromBytes(byteArrayOf(firstByte.toByte()) + ByteArray(31))
+
+    private fun equalRead(
+        end: ULong,
+        terminal: StreamTerminal = StreamTerminal.AUTHENTICATION_FAILURE,
+    ) =
+        RecoveryStreamingCompletedReadFacts(
+            candidateEnd = end,
+            completedPlaintextSha256 = sha((end % 251UL).toInt()),
+            oraclePrefixSha256 = sha((end % 251UL).toInt()),
+            oraclePrefixEqual = true,
+            terminal = terminal,
+        )
+
+    private fun mismatchRead(end: ULong) =
+        RecoveryStreamingCompletedReadFacts(
+            candidateEnd = end,
+            completedPlaintextSha256 = sha(10),
+            oraclePrefixSha256 = sha(11),
+            oraclePrefixEqual = false,
+            terminal = StreamTerminal.COMPLETED_READ_REJECTED,
+            firstMismatchOffset = 0UL,
+            equalPrefixSha256 = sha(0),
+            expectedOracleByte = 1U,
+            observedPlaintextByte = 2U,
+        )
+
+    @Suppress("LongParameterList")
+    private fun intentFacts(
+        prefixBytes: ULong = 8_192UL,
+        committedEnd: ULong = 4_056UL,
+        acceptedEnd: ULong = 8_137UL,
+        preFaultEnd: ULong = 8_192UL,
+        observedEnd: ULong = 8_193UL,
+        checkpointPrefixMatches: Boolean = true,
+        preFaultPrefixMatches: Boolean = true,
+        completed: RecoveryStreamingCompletedReadFacts? = null,
+    ): RecoveryStreamingValidatedIntentFacts {
+        val runId = RunId.fromBytes(ByteArray(16) { it.toByte() })
+        val oracleSha = sha(20)
+        val baseWitness =
+            RecoveryStreamingWitnessInput(
+                runId = runId,
+                checkpointGeneration = 1UL,
+                checkpointIdentity = sha(21),
+                checkpointPrefixBytes = prefixBytes,
+                checkpointContextEnd = committedEnd,
+                oracleIdentitySha256 =
+                    RecoveryStreamingIdentity.oracle(acceptedEnd, oracleSha, runId),
+                acceptedEnd = acceptedEnd,
+                oraclePlaintextSha256 = oracleSha,
+                preFaultSourceBytes = preFaultEnd,
+                preFaultSourceSha256 = sha(22),
+                controllerSnapshotSha256 = null,
+            )
+        val witness =
+            baseWitness.copy(
+                controllerSnapshotSha256 = RecoveryStreamingIdentity.controllerSnapshot(baseWitness)
+            )
+        return RecoveryStreamingValidatedIntentFacts(
+            witness = witness,
+            observedSourceBytes = observedEnd,
+            observedSourceSha256 = sha(23),
+            checkpointPrefixMatches = checkpointPrefixMatches,
+            preFaultPrefixMatches = preFaultPrefixMatches,
+            completed = completed,
+        )
+    }
 }
