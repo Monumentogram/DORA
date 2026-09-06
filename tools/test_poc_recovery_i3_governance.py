@@ -989,6 +989,25 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
                     path.parent.mkdir(parents=True, exist_ok=True)
                     path.write_text(relative, encoding="utf-8")
                 candidate = governance.commit_test_git_repo(repo, "exact governance delta")
+                clean_head = governance.test_git_text(repo, "rev-parse", "HEAD")
+                clean_changes = governance.collect_post_merge_changes(
+                    root=repo, merged_anchor=base
+                )
+                clean_tree_paths = governance.git_path_records(
+                    "diff", "--name-only", "--no-renames", "-z", base, clean_head,
+                    "--", root=repo,
+                )
+                clean_history_paths = governance.git_path_records(
+                    "log", "--format=", "--name-only", "--no-renames", "-z",
+                    f"{base}..{clean_head}", "--", root=repo,
+                )
+                clean_summary = governance.git_output(
+                    "log", "--format=", "--summary", "--find-renames",
+                    f"{base}..{clean_head}", "--", root=repo,
+                )
+                governance.validate_rec_i3_result_boundary_delta(
+                    clean_changes, clean_tree_paths, clean_history_paths, clean_summary
+                )
                 target = repo / governance.REC_I3_RESULT_BOUNDARY_PATHS[0]
                 if mutation == "staged":
                     target.write_text("staged", encoding="utf-8")
