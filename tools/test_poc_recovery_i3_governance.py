@@ -832,8 +832,15 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
         )
 
     def local_result_boundary_lifecycle(self) -> governance.RecoveryLifecycleIdentity:
+        current = governance.collect_recovery_lifecycle_identity()
+        source_head = (
+            current.github_pull_request_context.head_sha
+            if current.github_pull_request_context is not None
+            else current.head
+        )
         return replace(
-            governance.collect_recovery_lifecycle_identity(),
+            current,
+            head=source_head,
             branch=governance.REC_I3_RESULT_BOUNDARY_BRANCH,
             github_pull_request_context=None,
         )
@@ -1405,6 +1412,36 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
         with patch.object(governance, "validate_rec_i3_result_boundary") as validate:
             self.assertTrue(governance.validate_current_rec_i3_successor(lifecycle))
             validate.assert_called_once_with(lifecycle)
+
+    def test_local_v08_fixture_restores_verified_pull_request_source_head(self) -> None:
+        local = governance.collect_recovery_lifecycle_identity()
+        current_pull_request = governance.GitHubPullRequestContext(
+            repository=governance.GITHUB_REPOSITORY,
+            head_repository=governance.GITHUB_REPOSITORY,
+            head_ref=governance.REC_I3_OBSERVABLE_CONTROLLER_BRANCH,
+            head_sha=local.head,
+            base_ref=governance.GITHUB_BASE_BRANCH,
+            base_sha=governance.REC_I3_OBSERVABLE_CONTROLLER_BASE,
+            merge_ref="refs/pull/66/merge",
+            merge_sha="b" * 40,
+            number=66,
+            draft=False,
+            state="open",
+            merged=False,
+        )
+        merge_lifecycle = replace(
+            local,
+            head=current_pull_request.merge_sha,
+            github_pull_request_context=current_pull_request,
+        )
+        with patch.object(
+            governance,
+            "collect_recovery_lifecycle_identity",
+            return_value=merge_lifecycle,
+        ):
+            simulated = self.local_result_boundary_lifecycle()
+        self.assertEqual(local.head, simulated.head)
+        self.assertIsNone(simulated.github_pull_request_context)
 
     def test_v08_profile_rejects_current_observable_pull_request_identity(self) -> None:
         lifecycle = self.local_result_boundary_lifecycle()
