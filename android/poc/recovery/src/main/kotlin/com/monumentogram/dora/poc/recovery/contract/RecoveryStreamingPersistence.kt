@@ -248,46 +248,76 @@ data class RecoveryStreamingCheckpointRow(
         contractRequire(publicationKind == "CHECKPOINT" && state == "VALID") {
             "Checkpoint constants are invalid"
         }
-        contractRequire(generation in 1UL..Long.MAX_VALUE.toULong()) { "Checkpoint generation is invalid" }
+        contractRequire(generation in 1UL..Long.MAX_VALUE.toULong()) {
+            "Checkpoint generation is invalid"
+        }
         contractRequire(durableNonFinalSegmentCount <= 28_236UL) { "Segment count is invalid" }
         contractRequire(streamCiphertextPrefixBytes == durableNonFinalSegmentCount * 4_096UL) {
             "Checkpoint prefix is invalid"
         }
         contractRequire(
-            committedEnd == if (durableNonFinalSegmentCount < 2UL) 0UL else
-                4_056UL + (durableNonFinalSegmentCount - 2UL) * 4_080UL
-        ) { "Checkpoint committed end is invalid" }
+            committedEnd ==
+                if (durableNonFinalSegmentCount < 2UL) 0UL
+                else 4_056UL + (durableNonFinalSegmentCount - 2UL) * 4_080UL
+        ) {
+            "Checkpoint committed end is invalid"
+        }
         contractRequire(
-            checkpointRelativeName == String.format(Locale.ROOT, "checkpoints/g-%020d.ct", generation.toLong())
+            checkpointRelativeName ==
+                String.format(Locale.ROOT, "checkpoints/g-%020d.ct", generation.toLong())
         ) {
             "Checkpoint path is invalid"
         }
         contractRequire(
-            checkpointKeyEnvelopeRelativeName == String.format(
-                Locale.ROOT,
-                "key-envelopes/checkpoint-g-%020d.ks",
-                generation.toLong(),
-            )
+            checkpointKeyEnvelopeRelativeName ==
+                String.format(
+                    Locale.ROOT,
+                    "key-envelopes/checkpoint-g-%020d.ks",
+                    generation.toLong(),
+                )
         ) {
             "Checkpoint envelope path is invalid"
         }
-        contractRequire(streamCiphertextRelativeName == "stream/stream.ct") { "Stream path is invalid" }
-        contractRequire(streamKeyEnvelopeRelativeName == "key-envelopes/stream.ks") { "Stream envelope path is invalid" }
-        contractRequire(checkpointBytes > 0UL && checkpointKeyEnvelopeBytes > 0UL && streamKeyEnvelopeBytes > 0UL) {
+        contractRequire(streamCiphertextRelativeName == "stream/stream.ct") {
+            "Stream path is invalid"
+        }
+        contractRequire(streamKeyEnvelopeRelativeName == "key-envelopes/stream.ks") {
+            "Stream envelope path is invalid"
+        }
+        contractRequire(
+            checkpointBytes > 0UL &&
+                checkpointKeyEnvelopeBytes > 0UL &&
+                streamKeyEnvelopeBytes > 0UL
+        ) {
             "Checkpoint artifact bytes are invalid"
         }
-        contractRequire(checkpointIdentity == RecoveryStreamingIdentity.checkpoint(identityInput())) {
+        contractRequire(
+            checkpointIdentity == RecoveryStreamingIdentity.checkpoint(identityInput())
+        ) {
             "Checkpoint identity is invalid"
         }
     }
 
-    fun identityInput() = RecoveryStreamingCheckpointIdentityInput(
-        runId, generation, durableNonFinalSegmentCount, streamCiphertextPrefixBytes,
-        streamCiphertextPrefixSha256, committedEnd, checkpointRelativeName, checkpointBytes,
-        checkpointSha256, checkpointKeyEnvelopeRelativeName, checkpointKeyEnvelopeBytes,
-        checkpointKeyEnvelopeSha256, streamCiphertextRelativeName, streamKeyEnvelopeRelativeName,
-        streamKeyEnvelopeBytes, streamKeyEnvelopeSha256, previousCheckpointSha256,
-    )
+    fun identityInput() =
+        RecoveryStreamingCheckpointIdentityInput(
+            runId,
+            generation,
+            durableNonFinalSegmentCount,
+            streamCiphertextPrefixBytes,
+            streamCiphertextPrefixSha256,
+            committedEnd,
+            checkpointRelativeName,
+            checkpointBytes,
+            checkpointSha256,
+            checkpointKeyEnvelopeRelativeName,
+            checkpointKeyEnvelopeBytes,
+            checkpointKeyEnvelopeSha256,
+            streamCiphertextRelativeName,
+            streamKeyEnvelopeRelativeName,
+            streamKeyEnvelopeBytes,
+            streamKeyEnvelopeSha256,
+            previousCheckpointSha256,
+        )
 }
 
 /** Immutable, column-complete v4 outcome row. */
@@ -335,61 +365,154 @@ data class RecoveryStreamingOutcomeRow(
     val state: String = "SEALED",
 ) {
     init {
-        contractRequire(candidateId == RecoveryStreamingPersistenceV07.CANDIDATE_ID) { "Outcome candidate is invalid" }
-        contractRequire(checkpointArtifactState == "CRYPTOGRAPHICALLY_VALIDATED") { "Checkpoint state is invalid" }
-        contractRequire(witnessCapabilityState == "INTERNALLY_VERIFIED" && sourceRelativeName == "stream/stream.ct") {
+        contractRequire(candidateId == RecoveryStreamingPersistenceV07.CANDIDATE_ID) {
+            "Outcome candidate is invalid"
+        }
+        contractRequire(checkpointArtifactState == "CRYPTOGRAPHICALLY_VALIDATED") {
+            "Checkpoint state is invalid"
+        }
+        contractRequire(
+            witnessCapabilityState == "INTERNALLY_VERIFIED" &&
+                sourceRelativeName == "stream/stream.ct"
+        ) {
             "Outcome constants are invalid"
         }
-        contractRequire(!metadataAdopted && !semanticCommitAdopted && !processingIntentAdopted && state == "SEALED") {
+        contractRequire(
+            !metadataAdopted &&
+                !semanticCommitAdopted &&
+                !processingIntentAdopted &&
+                state == "SEALED"
+        ) {
             "Outcome adoption/state is invalid"
         }
-        contractRequire(checkpointGeneration > 0UL && checkpointContextEnd <= acceptedEnd) { "Outcome checkpoint fields are invalid" }
-        RecoveryStreamingRules.validateExtent(acceptedEnd, preFaultSourceBytes, observedSourceBytes)
-        contractRequire(sourceWitnessId == RecoveryStreamingIdentity.witness(witness())) { "Witness identity is invalid" }
-        val rejected = rejectedObservation?.let {
-            RecoveryStreamingIdentity.rejected(runId, checkpointIdentity, sourceWitnessId, observedSourceBytes, observedSourceSha256, it)
+        contractRequire(checkpointGeneration > 0UL && checkpointContextEnd <= acceptedEnd) {
+            "Outcome checkpoint fields are invalid"
         }
-        contractRequire(rejectedObservationSha256 == rejected) { "Rejected observation identity is invalid" }
-        contractRequire(outcomeId == RecoveryStreamingIdentity.outcome(identityInput())) { "Outcome identity is invalid" }
-        contractRequire((requiredRangeStart == null) == (requiredRangeCertainty == null)) { "Required range nullability is invalid" }
+        RecoveryStreamingRules.validateExtent(acceptedEnd, preFaultSourceBytes, observedSourceBytes)
+        contractRequire(
+            controllerSnapshotSha256 ==
+                RecoveryStreamingIdentity.controllerSnapshot(
+                    witness().copy(controllerSnapshotSha256 = null)
+                )
+        ) {
+            "Controller snapshot identity is invalid"
+        }
+        contractRequire(sourceWitnessId == RecoveryStreamingIdentity.witness(witness())) {
+            "Witness identity is invalid"
+        }
+        contractRequire(
+            oracleIdentitySha256 ==
+                RecoveryStreamingIdentity.oracle(acceptedEnd, oraclePlaintextSha256, runId)
+        ) {
+            "Oracle identity is invalid"
+        }
+        val rejected = rejectedObservation?.let {
+            RecoveryStreamingIdentity.rejected(
+                runId,
+                checkpointIdentity,
+                sourceWitnessId,
+                observedSourceBytes,
+                observedSourceSha256,
+                it,
+            )
+        }
+        contractRequire(rejectedObservationSha256 == rejected) {
+            "Rejected observation identity is invalid"
+        }
+        contractRequire(outcomeId == RecoveryStreamingIdentity.outcome(identityInput())) {
+            "Outcome identity is invalid"
+        }
+        contractRequire((requiredRangeStart == null) == (requiredRangeCertainty == null)) {
+            "Required range nullability is invalid"
+        }
+        RecoveryStreamingRowValidation.validateOutcome(this)
     }
 
-    fun witness() = RecoveryStreamingWitnessInput(
-        runId, checkpointGeneration, checkpointIdentity, checkpointPrefixBytes, checkpointContextEnd,
-        oracleIdentitySha256, acceptedEnd, oraclePlaintextSha256, preFaultSourceBytes,
-        preFaultSourceSha256, controllerSnapshotSha256,
-    )
+    fun witness() =
+        RecoveryStreamingWitnessInput(
+            runId,
+            checkpointGeneration,
+            checkpointIdentity,
+            checkpointPrefixBytes,
+            checkpointContextEnd,
+            oracleIdentitySha256,
+            acceptedEnd,
+            oraclePlaintextSha256,
+            preFaultSourceBytes,
+            preFaultSourceSha256,
+            controllerSnapshotSha256,
+        )
 
-    fun identityInput() = RecoveryStreamingOutcomeIdentityInput(
-        witness(), observedSourceBytes, observedSourceSha256, preFaultSourceMatch,
-        checkpointIntersection, decision, diagnosticBranch, terminal, recoveredEnd,
-        recoveredBeyondCheckpointBytes, tailLossBytes, returnedPlaintextSha256,
-        remainderBoundaryBytes, remainderCertainty, rejectedObservation, requiredRangeStart,
-        requiredRangeCertainty, diagnosticStage, diagnosticClassification,
-    )
+    fun identityInput() =
+        RecoveryStreamingOutcomeIdentityInput(
+            witness(),
+            observedSourceBytes,
+            observedSourceSha256,
+            preFaultSourceMatch,
+            checkpointIntersection,
+            decision,
+            diagnosticBranch,
+            terminal,
+            recoveredEnd,
+            recoveredBeyondCheckpointBytes,
+            tailLossBytes,
+            returnedPlaintextSha256,
+            remainderBoundaryBytes,
+            remainderCertainty,
+            rejectedObservation,
+            requiredRangeStart,
+            requiredRangeCertainty,
+            diagnosticStage,
+            diagnosticClassification,
+        )
 
     companion object {
         fun from(input: RecoveryStreamingOutcomeIdentityInput): RecoveryStreamingOutcomeRow {
             val witnessId = RecoveryStreamingIdentity.witness(input.witness)
-            val rejected = input.rejectedObservation?.let {
-                RecoveryStreamingIdentity.rejected(
-                    input.witness.runId, input.witness.checkpointIdentity, witnessId,
-                    input.observedSourceBytes, input.observedSourceSha256, it,
-                )
-            }
+            val rejected =
+                input.rejectedObservation?.let {
+                    RecoveryStreamingIdentity.rejected(
+                        input.witness.runId,
+                        input.witness.checkpointIdentity,
+                        witnessId,
+                        input.observedSourceBytes,
+                        input.observedSourceSha256,
+                        it,
+                    )
+                }
             return RecoveryStreamingOutcomeRow(
-                RecoveryStreamingIdentity.outcome(input), input.witness.runId,
-                input.witness.checkpointGeneration, input.witness.checkpointIdentity,
-                input.witness.checkpointContextEnd, input.witness.checkpointPrefixBytes, witnessId,
-                requireNotNull(input.witness.controllerSnapshotSha256), input.witness.oracleIdentitySha256,
-                input.witness.oraclePlaintextSha256, input.witness.acceptedEnd,
-                input.witness.preFaultSourceBytes, input.witness.preFaultSourceSha256,
-                input.observedSourceBytes, input.observedSourceSha256, input.preFaultSourceMatch,
-                input.checkpointIntersection, input.decision, input.diagnosticBranch, input.terminal,
-                input.recoveredEnd, input.recoveredBeyondCheckpointBytes, input.tailLossBytes,
-                input.returnedPlaintextSha256, input.remainderBoundaryBytes, input.remainderCertainty,
-                input.rejectedObservation, rejected, input.requiredRangeStart,
-                input.requiredRangeCertainty, input.diagnosticStage, input.diagnosticClassification,
+                RecoveryStreamingIdentity.outcome(input),
+                input.witness.runId,
+                input.witness.checkpointGeneration,
+                input.witness.checkpointIdentity,
+                input.witness.checkpointContextEnd,
+                input.witness.checkpointPrefixBytes,
+                witnessId,
+                requireNotNull(input.witness.controllerSnapshotSha256),
+                input.witness.oracleIdentitySha256,
+                input.witness.oraclePlaintextSha256,
+                input.witness.acceptedEnd,
+                input.witness.preFaultSourceBytes,
+                input.witness.preFaultSourceSha256,
+                input.observedSourceBytes,
+                input.observedSourceSha256,
+                input.preFaultSourceMatch,
+                input.checkpointIntersection,
+                input.decision,
+                input.diagnosticBranch,
+                input.terminal,
+                input.recoveredEnd,
+                input.recoveredBeyondCheckpointBytes,
+                input.tailLossBytes,
+                input.returnedPlaintextSha256,
+                input.remainderBoundaryBytes,
+                input.remainderCertainty,
+                input.rejectedObservation,
+                rejected,
+                input.requiredRangeStart,
+                input.requiredRangeCertainty,
+                input.diagnosticStage,
+                input.diagnosticClassification,
             )
         }
     }
@@ -416,33 +539,84 @@ data class RecoveryStreamingRangeRow(
     val state: String = "ACTIVE",
 ) {
     init {
-        contractRequire(candidateId == RecoveryStreamingPersistenceV07.CANDIDATE_ID && sourceRelativeName == "stream/stream.ct") {
+        contractRequire(
+            candidateId == RecoveryStreamingPersistenceV07.CANDIDATE_ID &&
+                sourceRelativeName == "stream/stream.ct"
+        ) {
             "Range constants are invalid"
         }
-        contractRequire(disposition == "RETAINED_IN_PLACE_DENY_APP_READS" && state == "ACTIVE") { "Range state is invalid" }
-        contractRequire(sourceBytes in 1UL..115_662_848UL && rangeEnd == sourceBytes && rangeStart < rangeEnd) { "Range bounds are invalid" }
-        contractRequire(rangeIntentId == RecoveryStreamingIdentity.range(identityInput())) { "Range identity is invalid" }
+        contractRequire(disposition == "RETAINED_IN_PLACE_DENY_APP_READS" && state == "ACTIVE") {
+            "Range state is invalid"
+        }
+        contractRequire(
+            sourceBytes in 1UL..115_662_848UL && rangeEnd == sourceBytes && rangeStart < rangeEnd
+        ) {
+            "Range bounds are invalid"
+        }
+        contractRequire(
+            certainty != StreamRangeCertainty.CONSERVATIVE_WHOLE_SOURCE || rangeStart == 0UL
+        ) {
+            "Whole-source range must start at zero"
+        }
+        RecoveryStreamingRowValidation.validateRangeMatrix(this)
+        contractRequire(rangeIntentId == RecoveryStreamingIdentity.range(identityInput())) {
+            "Range identity is invalid"
+        }
     }
 
-    fun identityInput() = RecoveryStreamingRangeIdentityInput(
-        runId, outcomeId, decision, diagnosticBranch, terminal, classification, sourceBytes,
-        sourceSha256, rangeStart, rangeEnd, rangeSha256, certainty,
-    )
+    fun identityInput() =
+        RecoveryStreamingRangeIdentityInput(
+            runId,
+            outcomeId,
+            decision,
+            diagnosticBranch,
+            terminal,
+            classification,
+            sourceBytes,
+            sourceSha256,
+            rangeStart,
+            rangeEnd,
+            rangeSha256,
+            certainty,
+        )
 
     companion object {
-        fun exact(outcome: RecoveryStreamingOutcomeRow, rangeSha256: Sha256Value): RecoveryStreamingRangeRow {
+        fun exact(
+            outcome: RecoveryStreamingOutcomeRow,
+            rangeSha256: Sha256Value,
+        ): RecoveryStreamingRangeRow {
             val start = requireNotNull(outcome.requiredRangeStart)
             val certainty = requireNotNull(outcome.requiredRangeCertainty)
-            val input = RecoveryStreamingRangeIdentityInput(
-                outcome.runId, outcome.outcomeId, outcome.decision, outcome.diagnosticBranch,
-                outcome.terminal, outcome.diagnosticClassification, outcome.observedSourceBytes,
-                outcome.observedSourceSha256, start, outcome.observedSourceBytes, rangeSha256, certainty,
-            )
+            val input =
+                RecoveryStreamingRangeIdentityInput(
+                    outcome.runId,
+                    outcome.outcomeId,
+                    outcome.decision,
+                    outcome.diagnosticBranch,
+                    outcome.terminal,
+                    outcome.diagnosticClassification,
+                    outcome.observedSourceBytes,
+                    outcome.observedSourceSha256,
+                    start,
+                    outcome.observedSourceBytes,
+                    rangeSha256,
+                    certainty,
+                )
             return RecoveryStreamingRangeRow(
-                RecoveryStreamingIdentity.range(input), input.outcomeId, input.runId, input.decision,
-                input.diagnosticBranch, input.terminal, input.classification, "stream/stream.ct",
-                input.observedSourceBytes, input.observedSourceSha256, input.rangeStart, input.rangeEnd,
-                input.rangeSha256, input.certainty,
+                RecoveryStreamingIdentity.range(input),
+                input.outcomeId,
+                input.runId,
+                input.decision,
+                input.diagnosticBranch,
+                input.terminal,
+                input.classification,
+                "stream/stream.ct",
+                input.observedSourceBytes,
+                input.observedSourceSha256,
+                input.rangeStart,
+                input.rangeEnd,
+                input.rangeSha256,
+                input.certainty,
             )
         }
     }
@@ -461,21 +635,57 @@ data class RecoveryStreamingOutcomeAttempt(
     val semanticOutcome: StreamSemanticOutcome,
 ) {
     init {
+        val expectedSemantic =
+            when (outcome.decision) {
+                StreamDecision.VALID -> StreamSemanticOutcome.PERSISTED_VALID
+                StreamDecision.REJECTED -> StreamSemanticOutcome.PERSISTED_REJECTED
+                StreamDecision.FATAL -> StreamSemanticOutcome.PERSISTED_FATAL
+            }
+        contractRequire(semanticOutcome == expectedSemantic) {
+            "Semantic outcome does not match parent"
+        }
         contractRequire((outcome.requiredRangeStart == null) == (range == null)) {
             "Outcome range presence is invalid"
         }
         if (range != null) {
-            contractRequire(range.outcomeId == outcome.outcomeId && range.runId == outcome.runId) {
-                "Range parent is invalid"
-            }
-            contractRequire(range.rangeStart == outcome.requiredRangeStart && range.certainty == outcome.requiredRangeCertainty) {
-                "Range requirements are invalid"
-            }
+            RecoveryStreamingRowValidation.validateParentChild(outcome, range)
         }
     }
 }
 
-sealed interface RecoveryStreamingJournalResult {
+internal enum class RecoveryStreamingJournalClassification {
+    JOURNAL_OPERATIONAL,
+    JOURNAL_COMMIT_STATE_UNRESOLVED,
+    JOURNAL_ATTEMPT_CONFLICT,
+    JOURNAL_STRUCTURAL,
+    STREAM_RANGE_QUARANTINE_COLLISION,
+    STREAM_CHECKPOINT_SPLIT_BRAIN,
+    STREAM_SOURCE_IDENTITY_CHANGED,
+}
+
+internal sealed interface RecoveryStreamingExistingEvidence {
+    val identity: Sha256Value
+
+    data class Checkpoint(override val identity: Sha256Value) : RecoveryStreamingExistingEvidence
+
+    data class Outcome(override val identity: Sha256Value) : RecoveryStreamingExistingEvidence
+
+    data class Range(override val identity: Sha256Value) : RecoveryStreamingExistingEvidence
+}
+
+internal sealed interface RecoveryStreamingJournalReadResult<out T> {
+    data class Value<T>(val value: T) : RecoveryStreamingJournalReadResult<T>
+
+    data class Retry(val classification: RecoveryStreamingJournalClassification) :
+        RecoveryStreamingJournalReadResult<Nothing>
+
+    data class Fatal(
+        val classification: RecoveryStreamingJournalClassification,
+        val existingEvidence: List<RecoveryStreamingExistingEvidence>,
+    ) : RecoveryStreamingJournalReadResult<Nothing>
+}
+
+internal sealed interface RecoveryStreamingJournalResult {
     data class CheckpointReceipt(
         val checkpointIdentity: Sha256Value,
         val replayed: Boolean,
@@ -489,21 +699,41 @@ sealed interface RecoveryStreamingJournalResult {
 
     data class Original(val semanticOutcome: StreamSemanticOutcome) : RecoveryStreamingJournalResult
 
-    data class Retry(val classification: String) : RecoveryStreamingJournalResult
+    data class Retry(
+        val classification: RecoveryStreamingJournalClassification,
+        val attemptedOutcomeId: Sha256Value? = null,
+        val attemptedRangeId: Sha256Value? = null,
+    ) : RecoveryStreamingJournalResult
 
-    data class Fatal(val classification: String, val existingIds: List<Sha256Value>) : RecoveryStreamingJournalResult
+    data class Fatal(
+        val classification: RecoveryStreamingJournalClassification,
+        val existingEvidence: List<RecoveryStreamingExistingEvidence>,
+    ) : RecoveryStreamingJournalResult
 }
 
-interface RecoveryStreamingJournal {
-    fun checkpointChain(runId: RunId): List<RecoveryStreamingCheckpointRow>
+internal interface RecoveryStreamingJournal {
+    fun checkpointChain(
+        runId: RunId
+    ): RecoveryStreamingJournalReadResult<List<RecoveryStreamingCheckpointRow>>
 
-    fun outcomeById(outcomeId: Sha256Value): RecoveryStreamingOutcomeRow?
+    fun outcomeById(
+        outcomeId: Sha256Value
+    ): RecoveryStreamingJournalReadResult<RecoveryStreamingOutcomeRow?>
 
-    fun outcomeByWitness(runId: RunId, witnessId: Sha256Value): RecoveryStreamingOutcomeRow?
+    fun outcomeByWitness(
+        runId: RunId,
+        checkpointIdentity: Sha256Value,
+        witnessId: Sha256Value,
+    ): RecoveryStreamingJournalReadResult<RecoveryStreamingOutcomeRow?>
 
-    fun rangeByOutcome(outcomeId: Sha256Value): RecoveryStreamingRangeRow?
+    fun rangeByOutcome(
+        outcomeId: Sha256Value
+    ): RecoveryStreamingJournalReadResult<RecoveryStreamingRangeRow?>
 
-    fun activeRanges(runId: RunId, sourceRelativeName: String): List<RecoveryStreamingRangeRow>
+    fun activeRanges(
+        runId: RunId,
+        sourceRelativeName: String,
+    ): RecoveryStreamingJournalReadResult<List<RecoveryStreamingRangeRow>>
 
     fun insertCheckpoint(row: RecoveryStreamingCheckpointRow): RecoveryStreamingJournalResult
 
@@ -680,6 +910,499 @@ object RecoveryStreamingRules {
     private const val MAX_PRE_FAULT_SOURCE = 115_654_656UL
     private const val MAX_OBSERVED_SOURCE = 115_662_848UL
     private const val MAX_SOURCE_APPEND = 8_192UL
+}
+
+@Suppress("CyclomaticComplexMethod", "LongMethod", "TooManyFunctions")
+internal object RecoveryStreamingRowValidation {
+    fun validateOutcome(row: RecoveryStreamingOutcomeRow) {
+        contractRequire(row.checkpointPrefixBytes <= 115_654_656UL) {
+            "Checkpoint prefix exceeds its bound"
+        }
+        contractRequire(row.checkpointPrefixBytes % 4_096UL == 0UL) {
+            "Checkpoint prefix is not segment aligned"
+        }
+        val checkpointSegmentCount = row.checkpointPrefixBytes / 4_096UL
+        contractRequire(checkpointSegmentCount <= 28_236UL) {
+            "Checkpoint segment count exceeds its bound"
+        }
+        val expectedCheckpointContextEnd =
+            if (checkpointSegmentCount < 2UL) {
+                0UL
+            } else {
+                4_056UL + (checkpointSegmentCount - 2UL) * 4_080UL
+            }
+        contractRequire(row.checkpointContextEnd == expectedCheckpointContextEnd) {
+            "Checkpoint prefix and context end disagree"
+        }
+        contractRequire(
+            row.requiredRangeStart == null || row.requiredRangeStart < row.observedSourceBytes
+        ) {
+            "Required range is empty or outside the source"
+        }
+        when (row.diagnosticBranch) {
+            StreamDiagnosticBranch.NONE -> validateValid(row)
+            StreamDiagnosticBranch.PRE_INTERSECTION -> validatePreIntersection(row)
+            StreamDiagnosticBranch.POST_INTERSECTION -> validatePostIntersection(row)
+        }
+    }
+
+    fun validateRangeMatrix(row: RecoveryStreamingRangeRow) {
+        val allowed =
+            when (row.decision) {
+                StreamDecision.VALID ->
+                    row.diagnosticBranch == StreamDiagnosticBranch.NONE &&
+                        row.terminal == StreamTerminal.AUTHENTICATION_FAILURE &&
+                        row.classification == StreamDiagnosticClassification.NONE &&
+                        row.certainty == StreamRangeCertainty.EXACT_FORMAT_BOUNDARY
+                StreamDecision.REJECTED ->
+                    row.diagnosticBranch == StreamDiagnosticBranch.POST_INTERSECTION &&
+                        row.terminal == StreamTerminal.AUTHENTICATION_FAILURE &&
+                        row.classification ==
+                            StreamDiagnosticClassification.STREAM_TAIL_BOUND_EXCEEDED &&
+                        row.certainty == StreamRangeCertainty.EXACT_FORMAT_BOUNDARY
+                StreamDecision.FATAL -> validateFatalRangeMatrix(row)
+            }
+        contractRequire(allowed) { "Range outcome matrix is invalid" }
+    }
+
+    fun validateParentChild(
+        outcome: RecoveryStreamingOutcomeRow,
+        range: RecoveryStreamingRangeRow,
+    ) {
+        contractRequire(range.outcomeId == outcome.outcomeId) {
+            "Range outcome identity is invalid"
+        }
+        contractRequire(range.runId == outcome.runId && range.candidateId == outcome.candidateId) {
+            "Range parent identity is invalid"
+        }
+        contractRequire(
+            range.decision == outcome.decision &&
+                range.diagnosticBranch == outcome.diagnosticBranch &&
+                range.terminal == outcome.terminal &&
+                range.classification == outcome.diagnosticClassification
+        ) {
+            "Range copied outcome fields are invalid"
+        }
+        contractRequire(
+            range.sourceRelativeName == outcome.sourceRelativeName &&
+                range.sourceBytes == outcome.observedSourceBytes &&
+                range.sourceSha256 == outcome.observedSourceSha256
+        ) {
+            "Range copied source fields are invalid"
+        }
+        contractRequire(
+            range.rangeStart == outcome.requiredRangeStart &&
+                range.rangeEnd == outcome.observedSourceBytes &&
+                range.certainty == outcome.requiredRangeCertainty
+        ) {
+            "Range requirement fields are invalid"
+        }
+    }
+
+    private fun validateValid(row: RecoveryStreamingOutcomeRow) {
+        contractRequire(
+            row.decision == StreamDecision.VALID &&
+                row.diagnosticStage == StreamDiagnosticStage.NONE &&
+                row.diagnosticClassification == StreamDiagnosticClassification.NONE
+        ) {
+            "VALID decision matrix is invalid"
+        }
+        contractRequire(
+            row.preFaultSourceMatch == StreamSourceMatch.VERIFIED_SAME_DESCRIPTOR &&
+                row.checkpointIntersection == StreamCheckpointIntersection.PROVEN &&
+                row.checkpointPrefixBytes <= row.preFaultSourceBytes &&
+                row.preFaultSourceBytes <= row.observedSourceBytes
+        ) {
+            "VALID source proof is invalid"
+        }
+        val recovered = requireValue(row.recoveredEnd, "VALID recovered end")
+        contractRequire(recovered in row.checkpointContextEnd..row.acceptedEnd) {
+            "VALID recovery algebra is invalid"
+        }
+        contractRequire(
+            row.recoveredBeyondCheckpointBytes == recovered - row.checkpointContextEnd
+        ) {
+            "VALID recovered-beyond-checkpoint arithmetic is invalid"
+        }
+        contractRequire(
+            row.tailLossBytes == row.acceptedEnd - recovered &&
+                requireValue(row.tailLossBytes, "VALID tail loss") <= 8_160UL
+        ) {
+            "VALID tail-loss arithmetic is invalid"
+        }
+        contractRequire(
+            row.returnedPlaintextSha256 != null &&
+                row.rejectedObservation == null &&
+                row.rejectedObservationSha256 == null
+        ) {
+            "VALID digest/rejected fields are invalid"
+        }
+        when (row.terminal) {
+            StreamTerminal.AUTHENTICATED_EOF -> {
+                contractRequire(
+                    row.remainderBoundaryBytes == null &&
+                        row.remainderCertainty == null &&
+                        row.requiredRangeStart == null &&
+                        row.requiredRangeCertainty == null
+                ) {
+                    "VALID EOF remainder is invalid"
+                }
+            }
+            StreamTerminal.AUTHENTICATION_FAILURE -> {
+                val boundary =
+                    RecoveryStreamingRules.deriveBoundary(recovered, row.observedSourceBytes)
+                val exact = boundary as? StreamBoundaryDerivation.Exact
+                contractRequire(
+                    exact != null &&
+                        row.remainderBoundaryBytes == exact.bytes &&
+                        row.remainderCertainty == StreamRangeCertainty.EXACT_FORMAT_BOUNDARY
+                ) {
+                    "VALID authentication-failure boundary is invalid"
+                }
+                val exactBytes = requireNotNull(exact).bytes
+                validateRequiredRange(
+                    row,
+                    exactBytes.takeIf { it < row.observedSourceBytes },
+                    StreamRangeCertainty.EXACT_FORMAT_BOUNDARY,
+                )
+            }
+            else -> contractRequire(false) { "VALID terminal is invalid" }
+        }
+    }
+
+    private fun validatePreIntersection(row: RecoveryStreamingOutcomeRow) {
+        contractRequire(
+            row.decision == StreamDecision.FATAL &&
+                row.terminal == StreamTerminal.NOT_REACHED &&
+                row.preFaultSourceMatch == StreamSourceMatch.UNPROVEN_OR_MISMATCH &&
+                row.checkpointIntersection == StreamCheckpointIntersection.CONTEXT_ONLY
+        ) {
+            "PRE_INTERSECTION base matrix is invalid"
+        }
+        requireNoRecoveredFields(row)
+        contractRequire(row.rejectedObservation == null && row.rejectedObservationSha256 == null) {
+            "PRE_INTERSECTION rejected fields are invalid"
+        }
+        when (row.diagnosticClassification) {
+            StreamDiagnosticClassification.STREAM_CHECKPOINT_PREFIX_OUTSIDE_WITNESS ->
+                contractRequire(
+                    row.diagnosticStage == StreamDiagnosticStage.STREAM_CHECKPOINT &&
+                        row.preFaultSourceBytes <= row.observedSourceBytes &&
+                        row.checkpointPrefixBytes > row.preFaultSourceBytes
+                ) {
+                    "Checkpoint-prefix diagnostic is invalid"
+                }
+            StreamDiagnosticClassification.STREAM_SOURCE_TRUNCATED ->
+                contractRequire(
+                    row.diagnosticStage == StreamDiagnosticStage.STREAM_SOURCE_EXTENT &&
+                        row.observedSourceBytes < row.preFaultSourceBytes
+                ) {
+                    "Source-truncated diagnostic is invalid"
+                }
+            StreamDiagnosticClassification.STREAM_SOURCE_PREFIX_IDENTITY_MISMATCH ->
+                contractRequire(
+                    row.diagnosticStage == StreamDiagnosticStage.STREAM_SOURCE_EXTENT &&
+                        row.checkpointPrefixBytes <= row.preFaultSourceBytes &&
+                        row.preFaultSourceBytes <= row.observedSourceBytes
+                ) {
+                    "Source-prefix diagnostic is invalid"
+                }
+            else -> contractRequire(false) { "PRE_INTERSECTION classification is invalid" }
+        }
+        validateRequiredRange(
+            row,
+            0UL.takeIf { row.observedSourceBytes > 0UL },
+            StreamRangeCertainty.CONSERVATIVE_WHOLE_SOURCE,
+        )
+    }
+
+    private fun validatePostIntersection(row: RecoveryStreamingOutcomeRow) {
+        contractRequire(
+            row.preFaultSourceMatch == StreamSourceMatch.VERIFIED_SAME_DESCRIPTOR &&
+                row.checkpointIntersection == StreamCheckpointIntersection.PROVEN &&
+                row.checkpointPrefixBytes <= row.preFaultSourceBytes &&
+                row.preFaultSourceBytes <= row.observedSourceBytes &&
+                row.diagnosticStage == StreamDiagnosticStage.STREAM_PAYLOAD_DECRYPT
+        ) {
+            "POST_INTERSECTION source proof is invalid"
+        }
+        requireNoRecoveredFields(row)
+        val observation = requireValue(row.rejectedObservation, "POST_INTERSECTION observation")
+        contractRequire(
+            observation.comparedEnd == observation.candidateEnd &&
+                observation.candidateEnd <= row.acceptedEnd
+        ) {
+            "Rejected compared extent is invalid"
+        }
+        contractRequire(
+            observation.observedTailLossBytes == row.acceptedEnd - observation.candidateEnd
+        ) {
+            "Rejected tail-loss arithmetic is invalid"
+        }
+        when (row.diagnosticClassification) {
+            StreamDiagnosticClassification.STREAM_RETURNED_BYTE_ORACLE_MISMATCH ->
+                validateOracleMismatch(row, observation)
+            StreamDiagnosticClassification.STREAM_RECOVERED_BELOW_CHECKPOINT ->
+                validateBelowCheckpoint(row, observation)
+            StreamDiagnosticClassification.STREAM_REMAINDER_BOUNDARY_UNPROVEN ->
+                validateUnprovenBoundary(row, observation)
+            StreamDiagnosticClassification.STREAM_TAIL_BOUND_EXCEEDED ->
+                validateTailRejection(row, observation)
+            else -> contractRequire(false) { "POST_INTERSECTION classification is invalid" }
+        }
+    }
+
+    private fun validateOracleMismatch(
+        row: RecoveryStreamingOutcomeRow,
+        observation: RecoveryStreamingRejectedObservationInput,
+    ) {
+        contractRequire(
+            row.decision == StreamDecision.FATAL &&
+                row.terminal == StreamTerminal.COMPLETED_READ_REJECTED &&
+                observation.candidateEnd > 0UL &&
+                !observation.oraclePrefixEqual &&
+                observation.completedPlaintextSha256 != observation.oraclePrefixSha256 &&
+                observation.firstMismatchOffset != null &&
+                observation.firstMismatchOffset < observation.candidateEnd &&
+                observation.equalPrefixSha256 != null &&
+                observation.expectedOracleByte != null &&
+                observation.observedPlaintextByte != null &&
+                observation.expectedOracleByte != observation.observedPlaintextByte &&
+                observation.boundaryResult == StreamBoundaryResult.NOT_EVALUATED_ORACLE_MISMATCH &&
+                observation.boundaryBytes == null &&
+                row.observedSourceBytes > 0UL
+        ) {
+            "Oracle-mismatch observation is invalid"
+        }
+        validateRequiredRange(row, 0UL, StreamRangeCertainty.CONSERVATIVE_WHOLE_SOURCE)
+    }
+
+    private fun validateBelowCheckpoint(
+        row: RecoveryStreamingOutcomeRow,
+        observation: RecoveryStreamingRejectedObservationInput,
+    ) {
+        contractRequire(
+            row.decision == StreamDecision.FATAL &&
+                row.terminal in
+                    setOf(
+                        StreamTerminal.AUTHENTICATED_EOF,
+                        StreamTerminal.AUTHENTICATION_FAILURE,
+                    ) &&
+                observation.candidateEnd < row.checkpointContextEnd
+        ) {
+            "Below-checkpoint observation is invalid"
+        }
+        requireEqualObservation(observation)
+        if (row.terminal == StreamTerminal.AUTHENTICATED_EOF) {
+            contractRequire(
+                observation.boundaryResult ==
+                    StreamBoundaryResult.NOT_APPLICABLE_AUTHENTICATED_EOF &&
+                    observation.boundaryBytes == null
+            ) {
+                "Below-checkpoint EOF boundary is invalid"
+            }
+            validateRequiredRange(row, null, StreamRangeCertainty.CONSERVATIVE_WHOLE_SOURCE)
+        } else {
+            validateBoundaryObservation(observation, row.observedSourceBytes)
+            contractRequire(row.observedSourceBytes > 0UL) {
+                "Below-checkpoint range requires source bytes"
+            }
+            validateRequiredRange(row, 0UL, StreamRangeCertainty.CONSERVATIVE_WHOLE_SOURCE)
+        }
+    }
+
+    private fun validateUnprovenBoundary(
+        row: RecoveryStreamingOutcomeRow,
+        observation: RecoveryStreamingRejectedObservationInput,
+    ) {
+        contractRequire(
+            row.decision == StreamDecision.FATAL &&
+                row.terminal == StreamTerminal.AUTHENTICATION_FAILURE &&
+                observation.candidateEnd >= row.checkpointContextEnd &&
+                row.observedSourceBytes > 0UL
+        ) {
+            "Unproven-boundary base matrix is invalid"
+        }
+        requireEqualObservation(observation)
+        val boundary =
+            RecoveryStreamingRules.deriveBoundary(observation.candidateEnd, row.observedSourceBytes)
+        contractRequire(boundary !is StreamBoundaryDerivation.Exact) {
+            "Unproven boundary is actually exact"
+        }
+        validateBoundaryObservation(observation, row.observedSourceBytes)
+        val checkpointBoundary =
+            RecoveryStreamingRules.deriveBoundary(row.checkpointContextEnd, row.observedSourceBytes)
+        val checkpointStart =
+            (checkpointBoundary as? StreamBoundaryDerivation.Exact)?.bytes?.takeIf {
+                it < row.observedSourceBytes
+            }
+        validateRequiredRange(
+            row,
+            checkpointStart ?: 0UL,
+            if (checkpointStart == null) StreamRangeCertainty.CONSERVATIVE_WHOLE_SOURCE
+            else StreamRangeCertainty.CONSERVATIVE_PROVEN_CHECKPOINT_SUPERSET,
+        )
+    }
+
+    private fun validateTailRejection(
+        row: RecoveryStreamingOutcomeRow,
+        observation: RecoveryStreamingRejectedObservationInput,
+    ) {
+        contractRequire(
+            row.decision == StreamDecision.REJECTED &&
+                row.terminal in
+                    setOf(
+                        StreamTerminal.AUTHENTICATED_EOF,
+                        StreamTerminal.AUTHENTICATION_FAILURE,
+                    ) &&
+                observation.candidateEnd >= row.checkpointContextEnd &&
+                observation.observedTailLossBytes > 8_160UL
+        ) {
+            "Tail-rejection base matrix is invalid"
+        }
+        requireEqualObservation(observation)
+        if (row.terminal == StreamTerminal.AUTHENTICATED_EOF) {
+            contractRequire(
+                observation.boundaryResult ==
+                    StreamBoundaryResult.NOT_APPLICABLE_AUTHENTICATED_EOF &&
+                    observation.boundaryBytes == null
+            ) {
+                "Tail-rejection EOF boundary is invalid"
+            }
+            validateRequiredRange(row, null, StreamRangeCertainty.EXACT_FORMAT_BOUNDARY)
+        } else {
+            val boundary =
+                RecoveryStreamingRules.deriveBoundary(
+                    observation.candidateEnd,
+                    row.observedSourceBytes,
+                )
+            val exact = boundary as? StreamBoundaryDerivation.Exact
+            contractRequire(
+                exact != null &&
+                    observation.boundaryResult == StreamBoundaryResult.EXACT_FORMAT_BOUNDARY &&
+                    observation.boundaryBytes == exact.bytes
+            ) {
+                "Tail-rejection boundary is invalid"
+            }
+            val exactBytes = requireNotNull(exact).bytes
+            validateRequiredRange(
+                row,
+                exactBytes.takeIf { it < row.observedSourceBytes },
+                StreamRangeCertainty.EXACT_FORMAT_BOUNDARY,
+            )
+        }
+    }
+
+    private fun validateFatalRangeMatrix(row: RecoveryStreamingRangeRow): Boolean =
+        when (row.diagnosticBranch) {
+            StreamDiagnosticBranch.PRE_INTERSECTION ->
+                row.terminal == StreamTerminal.NOT_REACHED &&
+                    row.classification in PRE_INTERSECTION_CLASSIFICATIONS &&
+                    row.certainty == StreamRangeCertainty.CONSERVATIVE_WHOLE_SOURCE
+            StreamDiagnosticBranch.POST_INTERSECTION ->
+                when (row.classification) {
+                    StreamDiagnosticClassification.STREAM_RETURNED_BYTE_ORACLE_MISMATCH ->
+                        row.terminal == StreamTerminal.COMPLETED_READ_REJECTED &&
+                            row.certainty == StreamRangeCertainty.CONSERVATIVE_WHOLE_SOURCE
+                    StreamDiagnosticClassification.STREAM_RECOVERED_BELOW_CHECKPOINT ->
+                        row.terminal == StreamTerminal.AUTHENTICATION_FAILURE &&
+                            row.certainty == StreamRangeCertainty.CONSERVATIVE_WHOLE_SOURCE
+                    StreamDiagnosticClassification.STREAM_REMAINDER_BOUNDARY_UNPROVEN ->
+                        row.terminal == StreamTerminal.AUTHENTICATION_FAILURE &&
+                            row.certainty in
+                                setOf(
+                                    StreamRangeCertainty.CONSERVATIVE_PROVEN_CHECKPOINT_SUPERSET,
+                                    StreamRangeCertainty.CONSERVATIVE_WHOLE_SOURCE,
+                                )
+                    else -> false
+                }
+            StreamDiagnosticBranch.NONE -> false
+        }
+
+    private fun validateBoundaryObservation(
+        observation: RecoveryStreamingRejectedObservationInput,
+        observedSourceBytes: ULong,
+    ) {
+        when (
+            val boundary =
+                RecoveryStreamingRules.deriveBoundary(observation.candidateEnd, observedSourceBytes)
+        ) {
+            StreamBoundaryDerivation.NonCanonicalCandidateEnd ->
+                contractRequire(
+                    observation.boundaryResult ==
+                        StreamBoundaryResult.NON_CANONICAL_CANDIDATE_END &&
+                        observation.boundaryBytes == null
+                ) {
+                    "Non-canonical boundary observation is invalid"
+                }
+            is StreamBoundaryDerivation.ExceedsObservedSource ->
+                contractRequire(
+                    observation.boundaryResult ==
+                        StreamBoundaryResult.BOUNDARY_EXCEEDS_OBSERVED_SOURCE &&
+                        observation.boundaryBytes == boundary.bytes
+                ) {
+                    "Exceeded boundary observation is invalid"
+                }
+            is StreamBoundaryDerivation.Exact ->
+                contractRequire(
+                    observation.boundaryResult == StreamBoundaryResult.EXACT_FORMAT_BOUNDARY &&
+                        observation.boundaryBytes == boundary.bytes
+                ) {
+                    "Exact boundary observation is invalid"
+                }
+        }
+    }
+
+    private fun requireEqualObservation(observation: RecoveryStreamingRejectedObservationInput) {
+        contractRequire(
+            observation.oraclePrefixEqual &&
+                observation.completedPlaintextSha256 == observation.oraclePrefixSha256 &&
+                observation.firstMismatchOffset == null &&
+                observation.equalPrefixSha256 == null &&
+                observation.expectedOracleByte == null &&
+                observation.observedPlaintextByte == null
+        ) {
+            "Oracle-equal rejected observation is invalid"
+        }
+    }
+
+    private fun requireNoRecoveredFields(row: RecoveryStreamingOutcomeRow) {
+        contractRequire(
+            row.recoveredEnd == null &&
+                row.recoveredBeyondCheckpointBytes == null &&
+                row.tailLossBytes == null &&
+                row.returnedPlaintextSha256 == null &&
+                row.remainderBoundaryBytes == null &&
+                row.remainderCertainty == null
+        ) {
+            "Diagnostic outcome contains admitted recovery fields"
+        }
+    }
+
+    private fun validateRequiredRange(
+        row: RecoveryStreamingOutcomeRow,
+        expectedStart: ULong?,
+        expectedCertainty: StreamRangeCertainty,
+    ) {
+        contractRequire(row.requiredRangeStart == expectedStart) {
+            "Required range start is invalid"
+        }
+        contractRequire(row.requiredRangeCertainty == expectedStart?.let { expectedCertainty }) {
+            "Required range certainty is invalid"
+        }
+    }
+
+    private fun <T : Any> requireValue(value: T?, label: String): T {
+        contractRequire(value != null) { "$label is missing" }
+        return requireNotNull(value)
+    }
+
+    private val PRE_INTERSECTION_CLASSIFICATIONS =
+        setOf(
+            StreamDiagnosticClassification.STREAM_CHECKPOINT_PREFIX_OUTSIDE_WITNESS,
+            StreamDiagnosticClassification.STREAM_SOURCE_TRUNCATED,
+            StreamDiagnosticClassification.STREAM_SOURCE_PREFIX_IDENTITY_MISMATCH,
+        )
 }
 
 @Suppress("LongParameterList")
