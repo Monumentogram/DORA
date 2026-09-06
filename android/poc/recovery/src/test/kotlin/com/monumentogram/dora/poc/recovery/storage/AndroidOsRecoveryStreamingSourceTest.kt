@@ -693,6 +693,67 @@ class AndroidOsRecoveryStreamingSourceTest {
     }
 
     @Test
+    fun `throwing invalidation observer still expires access and releases process lease`() {
+        val enteredJournal = CountDownLatch(1)
+        val releaseJournal = CountDownLatch(1)
+        val invalidationBlocked = CountDownLatch(1)
+        val observerFailure = IllegalStateException("observer")
+        val source =
+            AndroidOsRecoveryStreamingSource(
+                ROOT,
+                FakeJournal().apply {
+                    beforeCheckpoint = {
+                        enteredJournal.countDown()
+                        assertTrue(releaseJournal.await(5, TimeUnit.SECONDS))
+                    }
+                },
+                FakeOs().apply { seed(byteArrayOf(1)) },
+            )
+        val executor = Executors.newFixedThreadPool(2)
+        try {
+            lateinit var escaped: RecoveryStreamingSourceLeaseAccess
+            lateinit var operation: java.util.concurrent.Future<*>
+            val scope =
+                executor.submit<java.lang.Void> {
+                    RecoveryStreamingSourceControllerAccess.withNormalAccessForTest(
+                        RUN,
+                        ProcessRecoveryRunSingleWriterGuard,
+                        {
+                            invalidationBlocked.countDown()
+                            throw observerFailure
+                        },
+                    ) { access ->
+                        escaped = access
+                        operation = executor.submit {
+                            source.withSource(
+                                access,
+                                request(start = 0UL, end = 1UL, preFault = 1UL),
+                            ) {}
+                        }
+                        assertTrue(enteredJournal.await(5, TimeUnit.SECONDS))
+                    }
+                    null
+                }
+            assertTrue(enteredJournal.await(5, TimeUnit.SECONDS))
+            assertTrue(invalidationBlocked.await(5, TimeUnit.SECONDS))
+            releaseJournal.countDown()
+            operation.get(5, TimeUnit.SECONDS)
+            val failure =
+                assertThrows(java.util.concurrent.ExecutionException::class.java) {
+                    scope.get(5, TimeUnit.SECONDS)
+                }
+            assertEquals(observerFailure, failure.cause)
+            assertThrows(RecoveryStreamingSourceException::class.java) {
+                source.withSource(escaped, request(start = 0UL, end = 1UL, preFault = 1UL)) {}
+            }
+            requireNotNull(ProcessRecoveryRunSingleWriterGuard.tryAcquire(RUN)).close()
+        } finally {
+            releaseJournal.countDown()
+            executor.shutdownNow()
+        }
+    }
+
+    @Test
     fun `exceptional descriptor close retains same-run exclusion until scope release`() {
         val closeEntered = CountDownLatch(1)
         val releaseClose = CountDownLatch(1)

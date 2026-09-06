@@ -108,10 +108,15 @@ private class RecoveryStreamingLeaseBinding(val runId: RunId) {
         block()
     }
 
-    fun invalidate(onBlocked: (() -> Unit)? = null) {
+    fun invalidate(onBlocked: (() -> Unit)? = null): Throwable? {
         val acquired = operationLock.tryLock()
+        val observerFailure =
+            if (acquired) {
+                null
+            } else {
+                runCatching { onBlocked?.invoke() }.exceptionOrNull()
+            }
         if (!acquired) {
-            onBlocked?.invoke()
             operationLock.lock()
         }
         try {
@@ -119,6 +124,7 @@ private class RecoveryStreamingLeaseBinding(val runId: RunId) {
         } finally {
             operationLock.unlock()
         }
+        return observerFailure
     }
 }
 
@@ -207,16 +213,27 @@ private object RecoveryStreamingSourceAccessScope {
         val lease = guard.tryAcquire(runId) ?: deny(RecoveryStreamingSourceFailure.LEASE_BINDING)
         val binding = RecoveryStreamingLeaseBinding(runId)
         val outcome = runCatching { block(binding) }
-        binding.invalidate(onInvalidationBlocked)
+        val invalidationFailure = binding.invalidate(onInvalidationBlocked)
         val closeFailure = runCatching { lease.close() }.exceptionOrNull()
-        val primary = outcome.exceptionOrNull()
-        if (primary != null) {
-            closeFailure?.let(primary::addSuppressed)
-            throw primary
-        }
-        if (closeFailure != null) throw closeFailure
+        scopeFailure(outcome.exceptionOrNull(), invalidationFailure, closeFailure)?.let { throw it }
         return outcome.getOrThrow()
     }
+
+    private fun scopeFailure(
+        primary: Throwable?,
+        invalidationFailure: Throwable?,
+        closeFailure: Throwable?,
+    ): Throwable? =
+        when {
+            primary != null ->
+                primary.also {
+                    invalidationFailure?.let(primary::addSuppressed)
+                    closeFailure?.let(primary::addSuppressed)
+                }
+            invalidationFailure != null ->
+                invalidationFailure.also { closeFailure?.let(invalidationFailure::addSuppressed) }
+            else -> closeFailure
+        }
 }
 
 internal enum class RecoveryStreamingPathType {
