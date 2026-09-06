@@ -2,13 +2,17 @@ package com.monumentogram.dora.poc.recovery.candidate
 
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingExistingEvidence
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingIdentity
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalClassification
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalReadResult
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalResult
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingOutcomeAttempt
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingRangeRow
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingWitnessInput
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
 import com.monumentogram.dora.poc.recovery.contract.StreamDecision
 import com.monumentogram.dora.poc.recovery.contract.StreamDiagnosticClassification
+import com.monumentogram.dora.poc.recovery.contract.StreamSemanticOutcome
 import com.monumentogram.dora.poc.recovery.contract.StreamTerminal
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -614,6 +618,143 @@ class RecoveryStreamingReconciliationControllerTest {
         assertFalse(names.any { it.contains("path", ignoreCase = true) })
         assertFalse(names.any { it.contains("sha256", ignoreCase = true) })
         assertFalse(names.any { it.contains("byte", ignoreCase = true) })
+    }
+
+    @Test
+    fun `journal mapper preserves exact receipt rollback retry collision and ambiguity`() {
+        val outcome =
+            RecoveryStreamingIntentBuilder.buildOutcome(intentFacts(completed = equalRead(8_136UL)))
+        val range = RecoveryStreamingRangeRow.exact(outcome, sha(46))
+        val attempt =
+            RecoveryStreamingOutcomeAttempt(outcome, range, StreamSemanticOutcome.PERSISTED_VALID)
+
+        val exact =
+            RecoveryStreamingJournalMapper.resolve(
+                attempt,
+                RecoveryStreamingJournalResult.Receipt(
+                    outcome.outcomeId,
+                    range.rangeIntentId,
+                    replayed = false,
+                ),
+            ) as RecoveryStreamingPersistenceResolution.ExactReceipt
+        assertEquals(outcome.outcomeId, exact.receipt.outcomeId)
+
+        val rollback =
+            RecoveryStreamingJournalMapper.resolve(
+                attempt,
+                RecoveryStreamingJournalResult.Original(StreamSemanticOutcome.PERSISTED_VALID),
+            ) as RecoveryStreamingPersistenceResolution.ProvenRollback
+        assertEquals(StreamSemanticOutcome.PERSISTED_VALID, rollback.semanticOutcome)
+
+        val unresolved =
+            RecoveryStreamingJournalMapper.resolve(
+                attempt,
+                RecoveryStreamingJournalResult.Retry(
+                    RecoveryStreamingJournalClassification.JOURNAL_COMMIT_STATE_UNRESOLVED,
+                    attemptedOutcomeId = outcome.outcomeId,
+                    attemptedRangeId = range.rangeIntentId,
+                ),
+            ) as RecoveryStreamingPersistenceResolution.Failed
+        val retry = unresolved.result as RecoveryStreamingReconciliationResult.Retry
+        assertEquals(outcome.outcomeId, retry.attemptedOutcomeId)
+        assertEquals(range.rangeIntentId, retry.attemptedRangeId)
+
+        val collision =
+            RecoveryStreamingJournalMapper.resolve(
+                attempt,
+                RecoveryStreamingJournalResult.Fatal(
+                    RecoveryStreamingJournalClassification.STREAM_RANGE_QUARANTINE_COLLISION,
+                    listOf(
+                        RecoveryStreamingExistingEvidence.Range(sha(49)),
+                        RecoveryStreamingExistingEvidence.Outcome(sha(48)),
+                    ),
+                ),
+            ) as RecoveryStreamingPersistenceResolution.Failed
+        assertEquals(
+            listOf(
+                RecoveryStreamingExistingRecordKind.STREAM_OUTCOME,
+                RecoveryStreamingExistingRecordKind.STREAM_RANGE,
+            ),
+            (collision.result as RecoveryStreamingReconciliationResult.Fatal)
+                .existingEvidenceReferences
+                .map { it.recordKind },
+        )
+
+        val ambiguous =
+            RecoveryStreamingJournalMapper.readFailure(
+                RecoveryStreamingJournalReadResult.Fatal(
+                    RecoveryStreamingJournalClassification.JOURNAL_ATTEMPT_CONFLICT,
+                    listOf(
+                        RecoveryStreamingExistingEvidence.Outcome(sha(51)),
+                        RecoveryStreamingExistingEvidence.Outcome(sha(50)),
+                    ),
+                )
+            ) as RecoveryStreamingReconciliationResult.Fatal
+        assertEquals(
+            listOf(sha(50), sha(51)),
+            ambiguous.existingEvidenceReferences.map { it.existingId },
+        )
+    }
+
+    @Test
+    fun `journal mapper rejects inexact readback and maps every allowed journal failure`() {
+        val outcome =
+            RecoveryStreamingIntentBuilder.buildOutcome(intentFacts(completed = equalRead(8_136UL)))
+        val range = RecoveryStreamingRangeRow.exact(outcome, sha(52))
+        val attempt =
+            RecoveryStreamingOutcomeAttempt(outcome, range, StreamSemanticOutcome.PERSISTED_VALID)
+        val inexact =
+            RecoveryStreamingJournalMapper.resolve(
+                attempt,
+                RecoveryStreamingJournalResult.Receipt(
+                    sha(53),
+                    range.rangeIntentId,
+                    replayed = false,
+                ),
+            ) as RecoveryStreamingPersistenceResolution.Failed
+        assertEquals(
+            RecoveryStreamingResultClassification.JOURNAL_STRUCTURAL,
+            (inexact.result as RecoveryStreamingReconciliationResult.Fatal).classification,
+        )
+
+        val expected =
+            mapOf(
+                RecoveryStreamingJournalClassification.JOURNAL_OPERATIONAL to
+                    RecoveryStreamingResultClassification.JOURNAL_OPERATIONAL,
+                RecoveryStreamingJournalClassification.JOURNAL_COMMIT_STATE_UNRESOLVED to
+                    RecoveryStreamingResultClassification.JOURNAL_COMMIT_STATE_UNRESOLVED,
+                RecoveryStreamingJournalClassification.JOURNAL_ATTEMPT_CONFLICT to
+                    RecoveryStreamingResultClassification.JOURNAL_ATTEMPT_CONFLICT,
+                RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL to
+                    RecoveryStreamingResultClassification.JOURNAL_STRUCTURAL,
+                RecoveryStreamingJournalClassification.STREAM_RANGE_QUARANTINE_COLLISION to
+                    RecoveryStreamingResultClassification.STREAM_RANGE_QUARANTINE_COLLISION,
+                RecoveryStreamingJournalClassification.STREAM_CHECKPOINT_SPLIT_BRAIN to
+                    RecoveryStreamingResultClassification.STREAM_CHECKPOINT_SPLIT_BRAIN,
+                RecoveryStreamingJournalClassification.STREAM_SOURCE_IDENTITY_CHANGED to
+                    RecoveryStreamingResultClassification.STREAM_SOURCE_IDENTITY_CHANGED,
+            )
+        expected.forEach { (journal, outward) ->
+            val result =
+                when (journal) {
+                    RecoveryStreamingJournalClassification.JOURNAL_OPERATIONAL,
+                    RecoveryStreamingJournalClassification.JOURNAL_COMMIT_STATE_UNRESOLVED ->
+                        RecoveryStreamingJournalMapper.readFailure(
+                            RecoveryStreamingJournalReadResult.Retry(journal)
+                        )
+                    else ->
+                        RecoveryStreamingJournalMapper.readFailure(
+                            RecoveryStreamingJournalReadResult.Fatal(journal, emptyList())
+                        )
+                }
+            val actual =
+                when (result) {
+                    is RecoveryStreamingReconciliationResult.Retry -> result.classification
+                    is RecoveryStreamingReconciliationResult.Fatal -> result.classification
+                    else -> error("unexpected")
+                }
+            assertEquals(outward, actual)
+        }
     }
 
     private fun render(mapping: RecoveryStreamingResultMapping): String =

@@ -3,6 +3,10 @@
 package com.monumentogram.dora.poc.recovery.candidate
 
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingIdentity
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalClassification
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalReadResult
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalResult
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingOutcomeAttempt
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingOutcomeIdentityInput
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingOutcomeRow
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingRejectedObservationInput
@@ -18,6 +22,7 @@ import com.monumentogram.dora.poc.recovery.contract.StreamDiagnosticBranch
 import com.monumentogram.dora.poc.recovery.contract.StreamDiagnosticClassification
 import com.monumentogram.dora.poc.recovery.contract.StreamDiagnosticStage
 import com.monumentogram.dora.poc.recovery.contract.StreamRangeCertainty
+import com.monumentogram.dora.poc.recovery.contract.StreamSemanticOutcome
 import com.monumentogram.dora.poc.recovery.contract.StreamSourceMatch
 import com.monumentogram.dora.poc.recovery.contract.StreamTerminal
 import java.security.MessageDigest
@@ -512,4 +517,147 @@ internal object RecoveryStreamingIntentBuilder {
                 null -> error("Authentication failure is missing its boundary")
             }
         }
+}
+
+internal sealed interface RecoveryStreamingPersistenceResolution {
+    data class ExactReceipt(val receipt: RecoveryStreamingJournalResult.Receipt) :
+        RecoveryStreamingPersistenceResolution
+
+    data class ProvenRollback(val semanticOutcome: StreamSemanticOutcome) :
+        RecoveryStreamingPersistenceResolution
+
+    data class Failed(val result: RecoveryStreamingReconciliationResult) :
+        RecoveryStreamingPersistenceResolution
+}
+
+internal object RecoveryStreamingJournalMapper {
+    fun readFailure(
+        failure: RecoveryStreamingJournalReadResult<*>
+    ): RecoveryStreamingReconciliationResult =
+        when (failure) {
+            is RecoveryStreamingJournalReadResult.Value -> error("Value is not a journal failure")
+            is RecoveryStreamingJournalReadResult.Retry -> retry(failure.classification)
+            is RecoveryStreamingJournalReadResult.Fatal ->
+                fatal(failure.classification, failure.existingEvidence)
+        }
+
+    fun resolve(
+        attempt: RecoveryStreamingOutcomeAttempt,
+        result: RecoveryStreamingJournalResult,
+    ): RecoveryStreamingPersistenceResolution =
+        when (result) {
+            is RecoveryStreamingJournalResult.Receipt -> {
+                if (
+                    result.outcomeId == attempt.outcome.outcomeId &&
+                        result.rangeIntentId == attempt.range?.rangeIntentId
+                ) {
+                    RecoveryStreamingPersistenceResolution.ExactReceipt(result)
+                } else {
+                    failedStructural()
+                }
+            }
+            is RecoveryStreamingJournalResult.Original -> {
+                if (result.semanticOutcome == attempt.semanticOutcome) {
+                    RecoveryStreamingPersistenceResolution.ProvenRollback(result.semanticOutcome)
+                } else {
+                    failedStructural()
+                }
+            }
+            is RecoveryStreamingJournalResult.Retry -> {
+                if (retryAttemptMatches(attempt, result)) {
+                    RecoveryStreamingPersistenceResolution.Failed(
+                        retry(
+                            result.classification,
+                            result.attemptedOutcomeId,
+                            result.attemptedRangeId,
+                        )
+                    )
+                } else {
+                    failedStructural()
+                }
+            }
+            is RecoveryStreamingJournalResult.Fatal ->
+                RecoveryStreamingPersistenceResolution.Failed(
+                    fatal(result.classification, result.existingEvidence)
+                )
+            is RecoveryStreamingJournalResult.CheckpointReceipt -> failedStructural()
+        }
+
+    private fun retryAttemptMatches(
+        attempt: RecoveryStreamingOutcomeAttempt,
+        result: RecoveryStreamingJournalResult.Retry,
+    ): Boolean =
+        if (
+            result.classification ==
+                RecoveryStreamingJournalClassification.JOURNAL_COMMIT_STATE_UNRESOLVED
+        ) {
+            result.attemptedOutcomeId == attempt.outcome.outcomeId &&
+                result.attemptedRangeId == attempt.range?.rangeIntentId
+        } else {
+            result.attemptedOutcomeId == null && result.attemptedRangeId == null
+        }
+
+    private fun retry(
+        classification: RecoveryStreamingJournalClassification,
+        attemptedOutcomeId: Sha256Value? = null,
+        attemptedRangeId: Sha256Value? = null,
+    ): RecoveryStreamingReconciliationResult.Retry =
+        when (classification) {
+            RecoveryStreamingJournalClassification.JOURNAL_OPERATIONAL ->
+                RecoveryStreamingReconciliationResult.Retry.of(
+                    RecoveryStreamingResultStage.JOURNAL,
+                    RecoveryStreamingResultClassification.JOURNAL_OPERATIONAL,
+                    RecoveryStreamingSafeExceptionType.SQLITE,
+                )
+            RecoveryStreamingJournalClassification.JOURNAL_COMMIT_STATE_UNRESOLVED ->
+                RecoveryStreamingReconciliationResult.Retry.of(
+                    RecoveryStreamingResultStage.JOURNAL,
+                    RecoveryStreamingResultClassification.JOURNAL_COMMIT_STATE_UNRESOLVED,
+                    RecoveryStreamingSafeExceptionType.SQLITE,
+                    attemptedOutcomeId,
+                    attemptedRangeId,
+                )
+            else -> error("Fatal journal classification cannot be returned as Retry")
+        }
+
+    private fun fatal(
+        classification: RecoveryStreamingJournalClassification,
+        evidence:
+            List<com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingExistingEvidence>,
+    ): RecoveryStreamingReconciliationResult.Fatal {
+        val (stage, outward) =
+            when (classification) {
+                RecoveryStreamingJournalClassification.JOURNAL_ATTEMPT_CONFLICT ->
+                    RecoveryStreamingResultStage.JOURNAL to
+                        RecoveryStreamingResultClassification.JOURNAL_ATTEMPT_CONFLICT
+                RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL ->
+                    RecoveryStreamingResultStage.JOURNAL to
+                        RecoveryStreamingResultClassification.JOURNAL_STRUCTURAL
+                RecoveryStreamingJournalClassification.STREAM_RANGE_QUARANTINE_COLLISION ->
+                    RecoveryStreamingResultStage.JOURNAL to
+                        RecoveryStreamingResultClassification.STREAM_RANGE_QUARANTINE_COLLISION
+                RecoveryStreamingJournalClassification.STREAM_CHECKPOINT_SPLIT_BRAIN ->
+                    RecoveryStreamingResultStage.PREREQUISITE to
+                        RecoveryStreamingResultClassification.STREAM_CHECKPOINT_SPLIT_BRAIN
+                RecoveryStreamingJournalClassification.STREAM_SOURCE_IDENTITY_CHANGED ->
+                    RecoveryStreamingResultStage.SOURCE_PROOF to
+                        RecoveryStreamingResultClassification.STREAM_SOURCE_IDENTITY_CHANGED
+                RecoveryStreamingJournalClassification.JOURNAL_OPERATIONAL,
+                RecoveryStreamingJournalClassification.JOURNAL_COMMIT_STATE_UNRESOLVED ->
+                    error("Retry journal classification cannot be returned as Fatal")
+            }
+        return RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
+            stage,
+            outward,
+            evidence,
+        )
+    }
+
+    private fun failedStructural() =
+        RecoveryStreamingPersistenceResolution.Failed(
+            RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
+                RecoveryStreamingResultStage.JOURNAL,
+                RecoveryStreamingResultClassification.JOURNAL_STRUCTURAL,
+            )
+        )
 }
