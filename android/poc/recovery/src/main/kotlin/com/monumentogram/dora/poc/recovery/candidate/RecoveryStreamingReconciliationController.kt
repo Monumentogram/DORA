@@ -36,6 +36,8 @@ import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamReplayRequest
 import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingReplayAccess
 import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSource
 import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSourceControllerAccess
+import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSourceException
+import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSourceFailure
 import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSourceLeaseAccess
 import com.monumentogram.dora.poc.recovery.storage.STREAM_SOURCE_RELATIVE_NAME
 import java.security.MessageDigest
@@ -734,45 +736,57 @@ internal class RecoveryStreamingReconciliationController(
                 )
             )
         }
-        return RecoveryStreamingSourceControllerAccess.withControllerAccess(
-            request.witness.runId,
-            guard,
-        ) { normalAccess, replayAccess ->
-            when (val chain = journal.checkpointChain(request.witness.runId)) {
-                is RecoveryStreamingJournalReadResult.Value -> {
-                    val generation =
-                        chain.value.filter {
-                            it.generation == request.witness.checkpointGeneration
+        return try {
+            RecoveryStreamingSourceControllerAccess.withControllerAccess(
+                request.witness.runId,
+                guard,
+            ) { normalAccess, replayAccess ->
+                when (val chain = journal.checkpointChain(request.witness.runId)) {
+                    is RecoveryStreamingJournalReadResult.Value -> {
+                        val generation =
+                            chain.value.filter {
+                                it.generation == request.witness.checkpointGeneration
+                            }
+                        if (generation.isEmpty()) {
+                            nonPersistable(
+                                RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
+                                    RecoveryStreamingResultStage.PREREQUISITE,
+                                    RecoveryStreamingResultClassification.STREAM_CHECKPOINT_MISSING,
+                                )
+                            )
+                        } else if (
+                            generation.size != 1 ||
+                                generation.single().checkpointIdentity !=
+                                    request.witness.checkpointIdentity
+                        ) {
+                            nonPersistable(
+                                RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
+                                    RecoveryStreamingResultStage.PREREQUISITE,
+                                    RecoveryStreamingResultClassification
+                                        .STREAM_CHECKPOINT_SPLIT_BRAIN,
+                                    generation.map {
+                                        RecoveryStreamingExistingEvidence.Checkpoint(
+                                            it.checkpointIdentity
+                                        )
+                                    },
+                                )
+                            )
+                        } else {
+                            authenticate(generation.single(), request, normalAccess, replayAccess)
                         }
-                    if (generation.isEmpty()) {
-                        nonPersistable(
-                            RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
-                                RecoveryStreamingResultStage.PREREQUISITE,
-                                RecoveryStreamingResultClassification.STREAM_CHECKPOINT_MISSING,
-                            )
-                        )
-                    } else if (
-                        generation.size != 1 ||
-                            generation.single().checkpointIdentity !=
-                                request.witness.checkpointIdentity
-                    ) {
-                        nonPersistable(
-                            RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
-                                RecoveryStreamingResultStage.PREREQUISITE,
-                                RecoveryStreamingResultClassification.STREAM_CHECKPOINT_SPLIT_BRAIN,
-                                generation.map {
-                                    RecoveryStreamingExistingEvidence.Checkpoint(
-                                        it.checkpointIdentity
-                                    )
-                                },
-                            )
-                        )
-                    } else {
-                        authenticate(generation.single(), request, normalAccess, replayAccess)
                     }
+                    else -> nonPersistable(RecoveryStreamingJournalMapper.readFailure(chain))
                 }
-                else -> nonPersistable(RecoveryStreamingJournalMapper.readFailure(chain))
             }
+        } catch (failure: RecoveryStreamingSourceException) {
+            if (failure.failure != RecoveryStreamingSourceFailure.LEASE_BINDING) throw failure
+            nonPersistable(
+                RecoveryStreamingReconciliationResult.Retry.of(
+                    RecoveryStreamingResultStage.LEASE,
+                    RecoveryStreamingResultClassification.RUN_LEASE_CONTENDED,
+                    RecoveryStreamingSafeExceptionType.NONE,
+                )
+            )
         }
     }
 

@@ -1094,6 +1094,38 @@ class RecoveryStreamingReconciliationControllerTest {
         )
     }
 
+    @Test
+    fun `controller lease contention returns retry without journal source or write`() {
+        val events = mutableListOf<String>()
+        val journal = ControllerJournal(events)
+        val controller =
+            RecoveryStreamingReconciliationController(
+                journal,
+                NeverControllerSource(events),
+                RecoveryRunSingleWriterGuard {
+                    events += "lease-contended"
+                    null
+                },
+                RecoveryStreamingCheckpointAuthenticator { _, _ ->
+                    error("auth must not run")
+                },
+                RecoveryStreamingEvidenceSink { events += "evidence" },
+            )
+
+        val result =
+            controller.recover(controllerFixture().request)
+                as RecoveryStreamingReconciliationResult.Retry
+
+        assertEquals(RecoveryStreamingResultStage.LEASE, result.stage)
+        assertEquals(
+            RecoveryStreamingResultClassification.RUN_LEASE_CONTENDED,
+            result.classification,
+        )
+        assertEquals(RecoveryStreamingSafeExceptionType.NONE, result.safeExceptionType)
+        assertEquals(listOf("lease-contended", "evidence"), events)
+        assertEquals(0, journal.persistCalls)
+    }
+
     private fun render(mapping: RecoveryStreamingResultMapping): String =
         listOf(
                 mapping.disposition.name,
