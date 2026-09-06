@@ -243,3 +243,9 @@ Persistence source remains blocked until this exact eight-file governance commit
 'DEC-047', ADR-0006, and Gate Set/protocol v0.8 supersede v0.7 only for the controller result mapping, class-specific strict references, receipt lifecycle/evidence delivery, and legacy ambiguous-commit spelling. v0.7 remains byte-identical and immutable. The corrected boundary has twenty mappings, preserves canonical 'JOURNAL_OPERATIONAL', separates exact-readback receipt core from the final post-close/post-sink receipt, and promises one bounded caller-retryable attempt without autonomous delivery.
 
 This exact ten-path patch creates no v0.8 result-boundary/controller implementation, execution, or evidence. Later persistence source edits remain blocked pending independent CLEAN review. 'POC-RECOVERY-001' stays 'BLOCKED / NOT_READY'; ten blockers remain open, REC-RDY-02 remains historically closed, OD-15 flags and 46/184/138/120 counts remain unchanged, and no execution/admission/consumer/cross-process/retirement/merge claim follows.
+
+## REC-I3 proven-VALID-rollback correction — 6 September 2026
+
+'DEC-048' and ADR-0007 resolve only the outward representation of a semantic VALID attempt after both framework-proven rollback and reconciled absence. The existing 'Retry(JOURNAL, JOURNAL_OPERATIONAL, SQLITE)' mapping applies with no receipt, attempted IDs, references, admitted endpoint, success or ACTIVE claim. Absence without proven rollback stays 'JOURNAL_COMMIT_STATE_UNRESOLVED'; the 4/6/20/4 boundary and pinned v0.7/v0.8 artifacts remain unchanged.
+
+The implementation mapping remains gated pending independent focused CLEAN review of the immutable amendment. No readiness, execution, campaign, production, consumer, retirement or merge status changes.

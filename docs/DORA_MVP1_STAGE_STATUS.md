@@ -554,3 +554,9 @@ This is governance truth only until the exact eight-file commit receives an inde
 The owner-approved DEC-047/ADR-0006 and prospective Gate Set/protocol v0.8 change only the controller result/evidence boundary. They define twenty exact mappings, retain distinct known-operational and ambiguous journal retries, fix class-specific strict references, and split immutable exact-readback receipt core from the final post-close/post-sink receipt. One bounded sanitized sink attempt is required per invocation; PENDING is caller-retryable on exact replay with no autonomous guarantee.
 
 No v0.8 result-boundary/controller implementation, execution, or evidence was produced. The exact ten-path governance commit requires independent CLEAN review before later source edits. v0.7 remains immutable; schema v4 and durable semantics are unchanged. 'POC-RECOVERY-001' remains 'BLOCKED / NOT_READY'; all ten blockers, historical REC-RDY-02 closure, OD-15 flags, 46/184/138/120 counts, K12 deferral, and all execution/production/consumer/cross-process/retirement/merge prohibitions remain unchanged.
+
+## REC-I3 proven-VALID-rollback correction — 6 September 2026
+
+The Development Governor approved DEC-048/ADR-0007 under the owner's recorded delegation. A semantic VALID attempt with both framework-proven rollback and reconciled absence maps to the existing 'Retry(JOURNAL, JOURNAL_OPERATIONAL, SQLITE)' result with no persistence or ACTIVE claim. Absence without rollback proof remains ambiguous. The exact v0.8 4/6/20/4 boundary and pinned predecessor artifacts do not change.
+
+The affected controller mapping remains disabled until independent focused review returns CLEAN. 'POC-RECOVERY-001' remains 'BLOCKED / NOT_READY'; no execution, campaign, admission, consumer, retirement or merge authority follows.
