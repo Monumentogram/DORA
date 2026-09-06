@@ -31,10 +31,12 @@ import com.monumentogram.dora.poc.recovery.contract.StreamTerminal
 import com.monumentogram.dora.poc.recovery.coordination.RecoveryRunSingleWriterGuard
 import com.monumentogram.dora.poc.recovery.storage.RecoveryOpenedStreamingSource
 import com.monumentogram.dora.poc.recovery.storage.RecoveryReplayHashOnlyResult
+import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamOpenRequest
 import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamReplayRequest
 import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingReplayAccess
 import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSource
 import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSourceControllerAccess
+import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSourceLeaseAccess
 import com.monumentogram.dora.poc.recovery.storage.STREAM_SOURCE_RELATIVE_NAME
 import java.security.MessageDigest
 
@@ -735,7 +737,7 @@ internal class RecoveryStreamingReconciliationController(
         return RecoveryStreamingSourceControllerAccess.withControllerAccess(
             request.witness.runId,
             guard,
-        ) { _, replayAccess ->
+        ) { normalAccess, replayAccess ->
             when (val chain = journal.checkpointChain(request.witness.runId)) {
                 is RecoveryStreamingJournalReadResult.Value -> {
                     val generation =
@@ -766,7 +768,7 @@ internal class RecoveryStreamingReconciliationController(
                             )
                         )
                     } else {
-                        authenticate(generation.single(), request, replayAccess)
+                        authenticate(generation.single(), request, normalAccess, replayAccess)
                     }
                 }
                 else -> nonPersistable(RecoveryStreamingJournalMapper.readFailure(chain))
@@ -782,6 +784,7 @@ internal class RecoveryStreamingReconciliationController(
     private fun authenticate(
         checkpoint: RecoveryStreamingCheckpointRow,
         request: RecoveryStreamingControllerRequest,
+        normalAccess: RecoveryStreamingSourceLeaseAccess,
         replayAccess: RecoveryStreamingReplayAccess,
     ): RecoveryStreamingReconciliationResult =
         when (
@@ -807,11 +810,20 @@ internal class RecoveryStreamingReconciliationController(
             RecoveryStreamingCheckpointAuthentication.UnsafePath ->
                 fatal(RecoveryStreamingResultClassification.UNSAFE_PATH)
             is RecoveryStreamingCheckpointAuthentication.Ready ->
-                continueAuthenticated(request, replayAccess)
+                continueAuthenticated(
+                    checkpoint,
+                    request,
+                    authentication.publicStreamOpener,
+                    normalAccess,
+                    replayAccess,
+                )
         }
 
     private fun continueAuthenticated(
+        checkpoint: RecoveryStreamingCheckpointRow,
         request: RecoveryStreamingControllerRequest,
+        opener: RecoveryStreamingPublicStreamOpener,
+        normalAccess: RecoveryStreamingSourceLeaseAccess,
         replayAccess: RecoveryStreamingReplayAccess,
     ): RecoveryStreamingReconciliationResult {
         val existing =
@@ -827,21 +839,25 @@ internal class RecoveryStreamingReconciliationController(
                 else -> return nonPersistable(RecoveryStreamingJournalMapper.readFailure(result))
             }
         return if (existing == null) {
-            activeRangeOrFresh(request.witness)
+            activeRangeOrFresh(checkpoint, request, opener, normalAccess)
         } else {
             replay(existing, request, replayAccess)
         }
     }
 
     private fun activeRangeOrFresh(
-        witness: RecoveryStreamingWitnessInput
+        checkpoint: RecoveryStreamingCheckpointRow,
+        request: RecoveryStreamingControllerRequest,
+        opener: RecoveryStreamingPublicStreamOpener,
+        normalAccess: RecoveryStreamingSourceLeaseAccess,
     ): RecoveryStreamingReconciliationResult {
+        val witness = request.witness
         val ranges =
             when (val result = journal.activeRanges(witness.runId, STREAM_SOURCE_RELATIVE_NAME)) {
                 is RecoveryStreamingJournalReadResult.Value -> result.value
                 else -> return nonPersistable(RecoveryStreamingJournalMapper.readFailure(result))
             }
-        if (ranges.isEmpty()) error("Fresh controller continuation is not implemented")
+        if (ranges.isEmpty()) return recoverFresh(checkpoint, request, opener, normalAccess)
         val evidence = mutableListOf<RecoveryStreamingExistingEvidence>()
         ranges.forEach { range ->
             evidence += RecoveryStreamingExistingEvidence.Range(range.rangeIntentId)
@@ -861,6 +877,138 @@ internal class RecoveryStreamingReconciliationController(
                 evidence,
             )
         )
+    }
+
+    private fun recoverFresh(
+        checkpoint: RecoveryStreamingCheckpointRow,
+        request: RecoveryStreamingControllerRequest,
+        opener: RecoveryStreamingPublicStreamOpener,
+        normalAccess: RecoveryStreamingSourceLeaseAccess,
+    ): RecoveryStreamingReconciliationResult {
+        var execution: FreshExecution? = null
+        val closeFailure =
+            runCatching {
+                    source.withSource(
+                        normalAccess,
+                        RecoveryStreamOpenRequest(
+                            request.witness.runId,
+                            request.witness.checkpointGeneration,
+                            request.witness.checkpointIdentity,
+                            STREAM_SOURCE_RELATIVE_NAME,
+                            request.witness.acceptedEnd,
+                            request.witness.preFaultSourceBytes,
+                            requestedCiphertextStart = 0UL,
+                            requestedCiphertextEndExclusive = null,
+                        ),
+                    ) { opened ->
+                        execution = executeFresh(checkpoint, request, opener, opened)
+                    }
+                }
+                .exceptionOrNull()
+        return when (val completed = execution) {
+            is FreshExecution.Pending ->
+                completed.value.complete(closeFailure != null, evidenceSink)
+            is FreshExecution.NonPersistable -> nonPersistable(completed.result)
+            null ->
+                nonPersistable(
+                    RecoveryStreamingReconciliationResult.Retry.of(
+                        RecoveryStreamingResultStage.SOURCE_PROOF,
+                        RecoveryStreamingResultClassification.ARTIFACT_IO_BEFORE_EXACT_SOURCE_HASH,
+                        RecoveryStreamingSafeExceptionType.IO,
+                    )
+                )
+        }
+    }
+
+    private fun executeFresh(
+        checkpoint: RecoveryStreamingCheckpointRow,
+        request: RecoveryStreamingControllerRequest,
+        opener: RecoveryStreamingPublicStreamOpener,
+        opened: RecoveryOpenedStreamingSource,
+    ): FreshExecution {
+        val observedHash = opened.sha256Prefix(opened.observedBytes)
+        val facts =
+            RecoveryStreamingValidatedIntentFacts(
+                request.witness,
+                opened.observedBytes,
+                observedHash,
+                checkpointPrefixMatches =
+                    opened.sha256Prefix(request.witness.checkpointPrefixBytes) ==
+                        checkpoint.streamCiphertextPrefixSha256,
+                preFaultPrefixMatches =
+                    opened.sha256Prefix(request.witness.preFaultSourceBytes) ==
+                        request.witness.preFaultSourceSha256,
+                completed = null,
+            )
+        val publicStream = opener.open(opened, request.witness)
+        return when (
+            val read =
+                RecoveryStreamingIntentBuilder.RecoveryStreamingReadLoop.read(
+                    publicStream,
+                    request.oracle,
+                )
+        ) {
+            is RecoveryStreamingIntentBuilder.RecoveryStreamingReadExecution.Failed -> {
+                runCatching { publicStream.close() }
+                FreshExecution.NonPersistable(read.result)
+            }
+            is RecoveryStreamingIntentBuilder.RecoveryStreamingReadExecution.Completed ->
+                persistFresh(
+                    RecoveryStreamingIntentBuilder.buildOutcome(facts.copy(completed = read.facts)),
+                    opened,
+                    publicStream,
+                )
+        }
+    }
+
+    private fun persistFresh(
+        outcome: RecoveryStreamingOutcomeRow,
+        opened: RecoveryOpenedStreamingSource,
+        publicStream: RecoveryStreamingIntentBuilder.RecoveryStreamingPublicRead,
+    ): FreshExecution {
+        val range =
+            outcome.requiredRangeStart?.let { start ->
+                com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingRangeRow.exact(
+                    outcome,
+                    opened.sha256Range(start, outcome.observedSourceBytes),
+                )
+            }
+        val semantic =
+            when (outcome.decision) {
+                StreamDecision.VALID -> StreamSemanticOutcome.PERSISTED_VALID
+                StreamDecision.REJECTED -> StreamSemanticOutcome.PERSISTED_REJECTED
+                StreamDecision.FATAL -> StreamSemanticOutcome.PERSISTED_FATAL
+            }
+        val attempt = RecoveryStreamingOutcomeAttempt(outcome, range, semantic)
+        return when (
+            val resolution =
+                RecoveryStreamingJournalMapper.resolve(attempt, journal.persistOutcome(attempt))
+        ) {
+            is RecoveryStreamingPersistenceResolution.ExactReceipt ->
+                FreshExecution.Pending(
+                    RecoveryStreamingPendingPersistedResult.exactReadback(
+                        outcome,
+                        range,
+                        resolution.receipt,
+                        publicStream::close,
+                    )
+                )
+            is RecoveryStreamingPersistenceResolution.Failed -> {
+                runCatching { publicStream.close() }
+                FreshExecution.NonPersistable(resolution.result)
+            }
+            is RecoveryStreamingPersistenceResolution.ProvenRollback -> {
+                runCatching { publicStream.close() }
+                FreshExecution.NonPersistable(journalStructural())
+            }
+        }
+    }
+
+    private sealed interface FreshExecution {
+        data class Pending(val value: RecoveryStreamingPendingPersistedResult) : FreshExecution
+
+        data class NonPersistable(val result: RecoveryStreamingReconciliationResult) :
+            FreshExecution
     }
 
     private fun replay(

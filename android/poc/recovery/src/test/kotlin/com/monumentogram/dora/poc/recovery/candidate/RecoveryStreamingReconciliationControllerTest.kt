@@ -960,6 +960,75 @@ class RecoveryStreamingReconciliationControllerTest {
         assertEquals(0, journal.persistCalls)
     }
 
+    @Test
+    fun `controller fresh valid persists exact readback then closes emits and releases`() {
+        val fixture = controllerFixture()
+        val events = mutableListOf<String>()
+        val journal =
+            ControllerJournal(events).apply {
+                checkpoints = listOf(fixture.checkpoint)
+                persistBehavior = { attempt ->
+                    RecoveryStreamingJournalResult.Receipt(
+                        attempt.outcome.outcomeId,
+                        attempt.range?.rangeIntentId,
+                        replayed = false,
+                    )
+                }
+            }
+        val source = FreshControllerSource(events, fixture.source)
+        val controller =
+            RecoveryStreamingReconciliationController(
+                journal,
+                source,
+                RecoveryRunSingleWriterGuard {
+                    events += "lease-acquire"
+                    RecoveryRunWriterLease { events += "lease-release" }
+                },
+                RecoveryStreamingCheckpointAuthenticator { _, _ ->
+                    events += "authenticate"
+                    RecoveryStreamingCheckpointAuthentication.Ready(
+                        RecoveryStreamingPublicStreamOpener { _, _ ->
+                            events += "public-open"
+                            EventPublicRead(events, fixture.oracle)
+                        }
+                    )
+                },
+                RecoveryStreamingEvidenceSink { events += "evidence" },
+            )
+
+        val result =
+            controller.recover(fixture.request)
+                as RecoveryStreamingReconciliationResult.PersistedValid
+
+        assertFalse(result.receipt.replayed)
+        assertEquals(RecoveryStreamingPostReceiptCleanup.NONE, result.receipt.postReceiptCleanup)
+        assertEquals(RecoveryStreamingEvidenceDelivery.DELIVERED, result.receipt.evidenceDelivery)
+        assertEquals(1, source.normalOpens)
+        assertEquals(1, journal.persistCalls)
+        assertEquals(StreamDecision.VALID, requireNotNull(journal.lastAttempt).outcome.decision)
+        assertEquals(null, requireNotNull(journal.lastAttempt).range)
+        assertEquals(
+            listOf(
+                "lease-acquire",
+                "checkpoint-chain",
+                "authenticate",
+                "outcome-witness",
+                "active-ranges",
+                "source-open",
+                "hash-8192",
+                "hash-8192",
+                "hash-8192",
+                "public-open",
+                "persist",
+                "public-close",
+                "source-close",
+                "evidence",
+                "lease-release",
+            ),
+            events,
+        )
+    }
+
     private fun render(mapping: RecoveryStreamingResultMapping): String =
         listOf(
                 mapping.disposition.name,
@@ -1073,6 +1142,7 @@ class RecoveryStreamingReconciliationControllerTest {
         val request: RecoveryStreamingControllerRequest,
         val checkpoint: RecoveryStreamingCheckpointRow,
         val source: ByteArray,
+        val oracle: ByteArray,
     )
 
     private fun controllerFixture(): ControllerFixture {
@@ -1149,6 +1219,7 @@ class RecoveryStreamingReconciliationControllerTest {
             ),
             checkpoint,
             source,
+            oracleBytes,
         )
     }
 
@@ -1193,6 +1264,10 @@ class RecoveryStreamingReconciliationControllerTest {
         var existingRange: RecoveryStreamingRangeRow? = null
         var active = emptyList<RecoveryStreamingRangeRow>()
         var persistCalls = 0
+        var lastAttempt: RecoveryStreamingOutcomeAttempt? = null
+        var persistBehavior: (RecoveryStreamingOutcomeAttempt) -> RecoveryStreamingJournalResult = {
+            error("persistence must not run")
+        }
 
         override fun checkpointChain(runId: RunId) =
             RecoveryStreamingJournalReadResult.Value(checkpoints).also {
@@ -1229,7 +1304,9 @@ class RecoveryStreamingReconciliationControllerTest {
             attempt: RecoveryStreamingOutcomeAttempt
         ): RecoveryStreamingJournalResult {
             persistCalls += 1
-            error("persistence must not run")
+            lastAttempt = attempt
+            events += "persist"
+            return persistBehavior(attempt)
         }
     }
 
@@ -1282,6 +1359,80 @@ class RecoveryStreamingReconciliationControllerTest {
                     outcome.observedSourceSha256,
                 )
             }
+    }
+
+    private class FreshControllerSource(
+        private val events: MutableList<String>,
+        sourceBytes: ByteArray,
+    ) : RecoveryStreamingSource {
+        private val bytes = sourceBytes.copyOf()
+        var normalOpens = 0
+
+        override fun <T> withSource(
+            access: RecoveryStreamingSourceLeaseAccess,
+            request: RecoveryStreamOpenRequest,
+            block: (RecoveryOpenedStreamingSource) -> T,
+        ): T =
+            access.withBoundTo(request.runId) {
+                normalOpens += 1
+                events += "source-open"
+                try {
+                    block(
+                        object : RecoveryOpenedStreamingSource {
+                            override val observedBytes = bytes.size.toULong()
+
+                            override fun sha256Prefix(endExclusive: ULong): Sha256Value {
+                                events += "hash-$endExclusive"
+                                return Sha256Value.calculate(
+                                    bytes.copyOfRange(0, endExclusive.toInt())
+                                )
+                            }
+
+                            override fun sha256Range(
+                                startInclusive: ULong,
+                                endExclusive: ULong,
+                            ): Sha256Value {
+                                events += "range-$startInclusive-$endExclusive"
+                                return Sha256Value.calculate(
+                                    bytes.copyOfRange(
+                                        startInclusive.toInt(),
+                                        endExclusive.toInt(),
+                                    )
+                                )
+                            }
+
+                            override fun boundedInputStream() = bytes.inputStream()
+                        }
+                    )
+                } finally {
+                    events += "source-close"
+                }
+            }
+
+        override fun verifyReplayHashOnly(
+            access: RecoveryStreamingReplayAccess,
+            request: RecoveryStreamReplayRequest,
+        ): RecoveryReplayHashOnlyResult = error("fresh path must not replay")
+    }
+
+    private class EventPublicRead(
+        private val events: MutableList<String>,
+        bytes: ByteArray,
+    ) : RecoveryStreamingIntentBuilder.RecoveryStreamingPublicRead {
+        private val value = bytes.copyOf()
+        private var sourceOffset = 0
+
+        override fun read(destination: ByteArray, offset: Int, count: Int): Int {
+            if (sourceOffset == value.size) return -1
+            val returned = minOf(count, value.size - sourceOffset)
+            value.copyInto(destination, offset, sourceOffset, sourceOffset + returned)
+            sourceOffset += returned
+            return returned
+        }
+
+        override fun close() {
+            events += "public-close"
+        }
     }
 
     private sealed interface ReadStep {
