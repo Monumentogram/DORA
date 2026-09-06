@@ -29,4 +29,3 @@ The correction adds no variant, stage, classification, safe exception type, stor
 This ADR narrowly supersedes ADR-0005 transaction rule 7 for semantic VALID and clarifies how ADR-0006's existing `JOURNAL_OPERATIONAL` mapping applies. The accepted v0.7 and v0.8 Gate Set/protocol artifacts remain byte-identical historical predecessors; no pinned digest is rewritten.
 
 The implementation mapping remains disabled until an independent focused review returns CLEAN for the immutable governance amendment. No device, emulator, preflight, campaign, production admission, consumer intent, range retirement, push, PR, or merge authority follows.
-
