@@ -218,6 +218,144 @@ class RecoveryStreamingPersistenceTest {
         }
     }
 
+    @Test
+    fun `valid outcome and exact range identities match independent K12 vectors`() {
+        val fixture = identityFixture()
+        val returnedSha =
+            Sha256Value.fromLowercaseHex(
+                "9ecce40d9fb8a2dbaf0c8ea0e2a9934d1e7f48537ff1aee01e5f276fd5017107"
+            )
+        val observedSha =
+            Sha256Value.fromLowercaseHex(
+                "51fda1e0f65081a4816162e018ff2178e6b73d4e40a6a9833dc2274e11cb050e"
+            )
+        val outcome =
+            RecoveryStreamingOutcomeIdentityInput.validAuthenticationFailure(
+                witness = fixture,
+                observedSourceBytes = 8_193UL,
+                observedSourceSha256 = observedSha,
+                recoveredEnd = 8_136UL,
+                returnedPlaintextSha256 = returnedSha,
+                remainderBoundaryBytes = 8_192UL,
+            )
+        val outcomeId = RecoveryStreamingIdentity.outcome(outcome)
+        assertEquals(
+            "13a2c0ec08dda9d51d73426b905adda69c066fe6e61b4fdb62dd02d552b66cc2",
+            outcomeId.toLowercaseHex(),
+        )
+        val rangeSha =
+            Sha256Value.fromLowercaseHex(
+                "df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c"
+            )
+        val range =
+            RecoveryStreamingRangeIdentityInput.exact(
+                runId = fixture.runId,
+                outcomeId = outcomeId,
+                observedSourceBytes = 8_193UL,
+                observedSourceSha256 = observedSha,
+                rangeStart = 8_192UL,
+                rangeSha256 = rangeSha,
+            )
+        assertEquals(
+            "fca7e0aa19738b5cf69424455b2ca5c3fefc26e71e44d17f911742b95c137a3d",
+            RecoveryStreamingIdentity.range(range).toLowercaseHex(),
+        )
+    }
+
+    @Test
+    fun `q0 rejected observation identity preserves null framing`() {
+        val runId = RunId.fromBytes(ByteArray(16) { it.toByte() })
+        val empty = Sha256Value.calculate(ByteArray(0))
+        val oracleIdentity = RecoveryStreamingIdentity.oracle(8_161UL, empty, runId)
+        val baseWitness =
+            RecoveryStreamingWitnessInput(
+                runId,
+                1UL,
+                Sha256Value.fromLowercaseHex(
+                    "9bf08f4872756c258d96dc2ab021bdb5a2a50badac2b433cb64830759127f34e"
+                ),
+                0UL,
+                0UL,
+                oracleIdentity,
+                8_161UL,
+                empty,
+                0UL,
+                empty,
+                null,
+            )
+        val snapshot = RecoveryStreamingIdentity.controllerSnapshot(baseWitness)
+        val witness = baseWitness.copy(controllerSnapshotSha256 = snapshot)
+        val witnessId = RecoveryStreamingIdentity.witness(witness)
+        val observation =
+            RecoveryStreamingRejectedObservationInput(
+                0UL,
+                empty,
+                empty,
+                true,
+                0UL,
+                null,
+                null,
+                null,
+                null,
+                8_161UL,
+                StreamBoundaryResult.EXACT_FORMAT_BOUNDARY,
+                0UL,
+            )
+        val identity =
+            RecoveryStreamingIdentity.rejected(
+                runId,
+                witness.checkpointIdentity,
+                witnessId,
+                0UL,
+                empty,
+                observation,
+            )
+        assertEquals(
+            "43790fe45356886463857816cb0a6cb66acdda4dbf46fe4e4aa8825c881d7516",
+            identity.toLowercaseHex(),
+        )
+        assertNotEquals(
+            identity,
+            RecoveryStreamingIdentity.rejected(
+                runId,
+                witness.checkpointIdentity,
+                witnessId,
+                0UL,
+                empty,
+                observation.copy(boundaryBytes = null),
+            ),
+        )
+    }
+
+    private fun identityFixture(): RecoveryStreamingWitnessInput {
+        val runId = RunId.fromBytes(ByteArray(16) { it.toByte() })
+        val oracle = ByteArray(8_137) { ((17 * it + 3) and 0xff).toByte() }
+        val source = ByteArray(8_192) { ((29 * it + 7) and 0xff).toByte() }
+        val checkpointIdentity =
+            Sha256Value.fromLowercaseHex(
+                "a12456a5049063cb101139fe8d978b1f8f3eef59270879bd6266ce4026589549"
+            )
+        return RecoveryStreamingWitnessInput(
+            runId = runId,
+            checkpointGeneration = 1UL,
+            checkpointIdentity = checkpointIdentity,
+            checkpointPrefixBytes = 8_192UL,
+            checkpointContextEnd = 4_056UL,
+            oracleIdentitySha256 =
+                Sha256Value.fromLowercaseHex(
+                    "f0739c0b3ada861b9143a237916b7bdc684afc0e6b6740b26d9bae20c8e22145"
+                ),
+            acceptedEnd = 8_137UL,
+            oraclePlaintextSha256 = Sha256Value.calculate(oracle),
+            preFaultSourceBytes = 8_192UL,
+            preFaultSourceSha256 = Sha256Value.calculate(source),
+            controllerSnapshotSha256 =
+                Sha256Value.fromLowercaseHex(
+                    "bfd41fb93f2a04230891e502101bdcaf480d1a8ef79b1edcded8b85a5f2620f5"
+                ),
+        )
+    }
+
     private fun migrationRow(intent: ByteArray) =
         RecoveryQuarantineMigrationRow(
             intentId = intent,
