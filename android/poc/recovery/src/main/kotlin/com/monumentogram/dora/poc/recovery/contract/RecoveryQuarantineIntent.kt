@@ -6,6 +6,10 @@ enum class RecoveryQuarantineArtifactRole(val contractId: String) {
     MICROFILE_CIPHERTEXT("MICROFILE_CIPHERTEXT"),
     MANIFEST_KEY_ENVELOPE("MANIFEST_KEY_ENVELOPE"),
     MANIFEST_CIPHERTEXT("MANIFEST_CIPHERTEXT"),
+    STREAM_KEY_ENVELOPE("STREAM_KEY_ENVELOPE"),
+    STREAM_CIPHERTEXT("STREAM_CIPHERTEXT"),
+    CHECKPOINT_KEY_ENVELOPE("CHECKPOINT_KEY_ENVELOPE"),
+    CHECKPOINT_CIPHERTEXT("CHECKPOINT_CIPHERTEXT"),
     UNKNOWN_REGULAR("UNKNOWN_REGULAR"),
 }
 
@@ -26,7 +30,30 @@ data class RecoveryQuarantineIntentInput(
     val sourceSha256: Sha256Value,
 ) {
     init {
-        validateCandidateBinding(candidate, RecoveryCandidate.MICROFILE, "Quarantine intent")
+        val roleAllowed =
+            when (candidate) {
+                RecoveryCandidate.MICROFILE ->
+                    artifactRole in
+                        setOf(
+                            RecoveryQuarantineArtifactRole.KEY_CONFIRMATION,
+                            RecoveryQuarantineArtifactRole.MICROFILE_KEY_ENVELOPE,
+                            RecoveryQuarantineArtifactRole.MICROFILE_CIPHERTEXT,
+                            RecoveryQuarantineArtifactRole.MANIFEST_KEY_ENVELOPE,
+                            RecoveryQuarantineArtifactRole.MANIFEST_CIPHERTEXT,
+                            RecoveryQuarantineArtifactRole.UNKNOWN_REGULAR,
+                        )
+                RecoveryCandidate.STREAM ->
+                    artifactRole in
+                        setOf(
+                            RecoveryQuarantineArtifactRole.KEY_CONFIRMATION,
+                            RecoveryQuarantineArtifactRole.STREAM_KEY_ENVELOPE,
+                            RecoveryQuarantineArtifactRole.STREAM_CIPHERTEXT,
+                            RecoveryQuarantineArtifactRole.CHECKPOINT_KEY_ENVELOPE,
+                            RecoveryQuarantineArtifactRole.CHECKPOINT_CIPHERTEXT,
+                            RecoveryQuarantineArtifactRole.UNKNOWN_REGULAR,
+                        )
+            }
+        contractRequire(roleAllowed) { "Quarantine role does not belong to its candidate" }
         contractRequire(sourceRelativeName.isNotEmpty()) { "Quarantine source name is empty" }
         contractRequire(sourceRelativeName.length <= MAX_SOURCE_NAME_BYTES) {
             "Quarantine source name exceeds its bound"

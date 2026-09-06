@@ -2,6 +2,7 @@ package com.monumentogram.dora.poc.recovery.contract
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class RecoveryQuarantineIntentTest {
@@ -45,5 +46,37 @@ class RecoveryQuarantineIntentTest {
         val second = RecoveryQuarantineIntent.calculate(input)
         assertEquals(first, second)
         assertNotEquals(first, RecoveryQuarantineIntent.calculate(input.copy(sourceBytes = 2UL)))
+    }
+
+    @Test
+    fun `quarantine roles are closed over their candidate family`() {
+        RecoveryQuarantineIntentInput(
+            RecoveryCandidate.STREAM,
+            runId,
+            "stream/stream.ct.tmp",
+            RecoveryQuarantineArtifactRole.STREAM_CIPHERTEXT,
+            1UL,
+            sourceSha,
+        )
+        assertThrows(RecoveryContractException::class.java) {
+            RecoveryQuarantineIntentInput(
+                RecoveryCandidate.STREAM,
+                runId,
+                "units/u-0000000001.ct.tmp",
+                RecoveryQuarantineArtifactRole.MICROFILE_CIPHERTEXT,
+                1UL,
+                sourceSha,
+            )
+        }
+        assertThrows(RecoveryContractException::class.java) {
+            RecoveryQuarantineIntentInput(
+                RecoveryCandidate.MICROFILE,
+                runId,
+                "stream/stream.ct.tmp",
+                RecoveryQuarantineArtifactRole.STREAM_CIPHERTEXT,
+                1UL,
+                sourceSha,
+            )
+        }
     }
 }

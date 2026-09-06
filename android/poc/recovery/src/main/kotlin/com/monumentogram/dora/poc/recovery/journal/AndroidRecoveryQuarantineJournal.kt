@@ -61,7 +61,7 @@ internal class AndroidRecoveryQuarantineJournal(context: Context) : RecoveryQuar
             .query(
                 RecoveryJournalSchema.QUARANTINE_TABLE,
                 COLUMNS,
-                "run_id=?",
+                "run_id=? AND candidate_id='REC-MICROFILE-TINK'",
                 arrayOf(runId.toCanonicalString()),
                 null,
                 null,

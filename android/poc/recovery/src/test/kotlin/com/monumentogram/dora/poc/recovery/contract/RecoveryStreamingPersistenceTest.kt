@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod")
+
 package com.monumentogram.dora.poc.recovery.contract
 
 import org.junit.Assert.assertEquals
@@ -6,6 +8,73 @@ import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class RecoveryStreamingPersistenceTest {
+    @Test
+    fun `checkpoint oracle snapshot and witness identities match independent K12 vectors`() {
+        val runId = RunId.fromBytes(ByteArray(16) { it.toByte() })
+        val oracle = ByteArray(8_137) { ((17 * it + 3) and 0xff).toByte() }
+        val source = ByteArray(8_192) { ((29 * it + 7) and 0xff).toByte() }
+        val checkpoint =
+            RecoveryStreamingCheckpointIdentityInput(
+                runId = runId,
+                generation = 1UL,
+                durableNonFinalSegmentCount = 2UL,
+                streamCiphertextPrefixBytes = 8_192UL,
+                streamCiphertextPrefixSha256 = Sha256Value.calculate(source),
+                committedEnd = 4_056UL,
+                checkpointRelativeName = "checkpoints/g-00000000000000000001.ct",
+                checkpointBytes = 123UL,
+                checkpointSha256 = Sha256Value.calculate("checkpoint-ciphertext".toByteArray()),
+                checkpointEnvelopeRelativeName =
+                    "key-envelopes/checkpoint-g-00000000000000000001.ks",
+                checkpointEnvelopeBytes = 77UL,
+                checkpointEnvelopeSha256 =
+                    Sha256Value.calculate("checkpoint-envelope".toByteArray()),
+                streamRelativeName = "stream/stream.ct",
+                streamEnvelopeRelativeName = "key-envelopes/stream.ks",
+                streamEnvelopeBytes = 88UL,
+                streamEnvelopeSha256 = Sha256Value.calculate("stream-envelope".toByteArray()),
+                previousCheckpointSha256 = Sha256Value.ZERO,
+            )
+        val checkpointIdentity = RecoveryStreamingIdentity.checkpoint(checkpoint)
+        assertEquals(
+            "a12456a5049063cb101139fe8d978b1f8f3eef59270879bd6266ce4026589549",
+            checkpointIdentity.toLowercaseHex(),
+        )
+        val oracleSha = Sha256Value.calculate(oracle)
+        val oracleIdentity = RecoveryStreamingIdentity.oracle(8_137UL, oracleSha, runId)
+        assertEquals(
+            "f0739c0b3ada861b9143a237916b7bdc684afc0e6b6740b26d9bae20c8e22145",
+            oracleIdentity.toLowercaseHex(),
+        )
+        val witnessWithoutSnapshot =
+            RecoveryStreamingWitnessInput(
+                runId = runId,
+                checkpointGeneration = 1UL,
+                checkpointIdentity = checkpointIdentity,
+                checkpointPrefixBytes = 8_192UL,
+                checkpointContextEnd = 4_056UL,
+                oracleIdentitySha256 = oracleIdentity,
+                acceptedEnd = 8_137UL,
+                oraclePlaintextSha256 = oracleSha,
+                preFaultSourceBytes = 8_192UL,
+                preFaultSourceSha256 = Sha256Value.calculate(source),
+                controllerSnapshotSha256 = null,
+            )
+        val snapshot = RecoveryStreamingIdentity.controllerSnapshot(witnessWithoutSnapshot)
+        assertEquals(
+            "bfd41fb93f2a04230891e502101bdcaf480d1a8ef79b1edcded8b85a5f2620f5",
+            snapshot.toLowercaseHex(),
+        )
+        val witness =
+            RecoveryStreamingIdentity.witness(
+                witnessWithoutSnapshot.copy(controllerSnapshotSha256 = snapshot)
+            )
+        assertEquals(
+            "82406fdcf3536f816668e764c4209af35cc0fc96bb7ea1d41b6bb9a8e2fb9302",
+            witness.toLowercaseHex(),
+        )
+    }
+
     @Test
     fun `migration digest has independent unicode golden`() {
         val row = migrationRow(intent = sha256("intent"))
@@ -50,6 +119,102 @@ class RecoveryStreamingPersistenceTest {
         }
         assertThrows(IllegalArgumentException::class.java) {
             CanonicalSqliteText.of("é", "é".toByteArray(Charsets.UTF_8), 1)
+        }
+    }
+
+    @Test
+    fun `stream boundary and admission preserve exact precedence and tail gate`() {
+        assertEquals(
+            StreamBoundaryDerivation.Exact(0UL),
+            RecoveryStreamingRules.deriveBoundary(0UL, 0UL),
+        )
+        assertEquals(
+            StreamBoundaryDerivation.Exact(4_096UL),
+            RecoveryStreamingRules.deriveBoundary(4_056UL, 4_096UL),
+        )
+        assertEquals(
+            StreamBoundaryDerivation.Exact(8_192UL),
+            RecoveryStreamingRules.deriveBoundary(8_136UL, 8_192UL),
+        )
+        assertEquals(
+            StreamBoundaryDerivation.NonCanonicalCandidateEnd,
+            RecoveryStreamingRules.deriveBoundary(4_057UL, 8_192UL),
+        )
+        assertEquals(
+            StreamBoundaryDerivation.ExceedsObservedSource(8_192UL),
+            RecoveryStreamingRules.deriveBoundary(8_136UL, 8_191UL),
+        )
+
+        val valid =
+            RecoveryStreamingRules.classifyPostIntersection(
+                committedEnd = 4_056UL,
+                acceptedEnd = 16_296UL,
+                candidateEnd = 8_136UL,
+                oracleEqual = true,
+                terminal = StreamTerminal.AUTHENTICATION_FAILURE,
+                observedEnd = 8_193UL,
+            )
+        assertEquals(StreamDecision.VALID, valid.decision)
+        assertEquals(8_192UL, valid.requiredRangeStart)
+        assertEquals(8_193UL, valid.requiredRangeEnd)
+
+        val tail =
+            RecoveryStreamingRules.classifyPostIntersection(
+                committedEnd = 0UL,
+                acceptedEnd = 8_161UL,
+                candidateEnd = 0UL,
+                oracleEqual = true,
+                terminal = StreamTerminal.AUTHENTICATION_FAILURE,
+                observedEnd = 0UL,
+            )
+        assertEquals(StreamDecision.REJECTED, tail.decision)
+        assertEquals(StreamDiagnosticClassification.STREAM_TAIL_BOUND_EXCEEDED, tail.classification)
+        assertEquals(null, tail.requiredRangeStart)
+
+        val mismatchBeforeBelowC =
+            RecoveryStreamingRules.classifyPostIntersection(
+                committedEnd = 4_056UL,
+                acceptedEnd = 4_056UL,
+                candidateEnd = 1UL,
+                oracleEqual = false,
+                terminal = StreamTerminal.COMPLETED_READ_REJECTED,
+                observedEnd = 1UL,
+            )
+        assertEquals(
+            StreamDiagnosticClassification.STREAM_RETURNED_BYTE_ORACLE_MISMATCH,
+            mismatchBeforeBelowC.classification,
+        )
+        assertEquals(StreamDecision.FATAL, mismatchBeforeBelowC.decision)
+        assertEquals(
+            StreamRangeCertainty.CONSERVATIVE_WHOLE_SOURCE,
+            mismatchBeforeBelowC.requiredRangeCertainty,
+        )
+        val zeroCheckpointBoundary =
+            RecoveryStreamingRules.classifyPostIntersection(
+                committedEnd = 0UL,
+                acceptedEnd = 5_000UL,
+                candidateEnd = 4_057UL,
+                oracleEqual = true,
+                terminal = StreamTerminal.AUTHENTICATION_FAILURE,
+                observedEnd = 8_192UL,
+            )
+        assertEquals(StreamDecision.FATAL, zeroCheckpointBoundary.decision)
+        assertEquals(0UL, zeroCheckpointBoundary.requiredRangeStart)
+        assertEquals(
+            StreamRangeCertainty.CONSERVATIVE_PROVEN_CHECKPOINT_SUPERSET,
+            zeroCheckpointBoundary.requiredRangeCertainty,
+        )
+    }
+
+    @Test
+    fun `source extent permits truncation but bounds nonnegative append`() {
+        RecoveryStreamingRules.validateExtent(8_137UL, 8_192UL, 8_191UL)
+        RecoveryStreamingRules.validateExtent(8_137UL, 115_654_656UL, 115_662_848UL)
+        assertThrows(RecoveryContractException::class.java) {
+            RecoveryStreamingRules.validateExtent(8_137UL, 115_654_656UL, 115_662_849UL)
+        }
+        assertThrows(RecoveryContractException::class.java) {
+            RecoveryStreamingRules.validateExtent(8_137UL, 8_192UL, 16_385UL)
         }
     }
 
