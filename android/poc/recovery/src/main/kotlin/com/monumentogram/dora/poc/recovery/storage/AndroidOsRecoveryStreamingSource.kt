@@ -21,12 +21,11 @@ import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingRangeRow
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingRowValidation
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
-import com.monumentogram.dora.poc.recovery.coordination.RecoveryRunWriterLease
+import com.monumentogram.dora.poc.recovery.coordination.RecoveryRunSingleWriterGuard
 import java.io.File
 import java.io.FileDescriptor
 import java.io.InputStream
 import java.security.MessageDigest
-import java.util.concurrent.atomic.AtomicBoolean
 
 internal const val STREAM_SOURCE_RELATIVE_NAME = "stream/stream.ct"
 internal val STREAM_OPEN_FLAGS =
@@ -96,42 +95,91 @@ internal class RecoveryStreamingSourceException(
     val journalClassification: RecoveryStreamingJournalClassification? = null,
 ) : IllegalStateException("Recovery streaming source denied: $failure")
 
-private class RecoveryStreamingLeaseBinding(
-    val runId: RunId,
-    @Suppress("unused") val callerOwnedLease: RecoveryRunWriterLease,
-)
+private class RecoveryStreamingLeaseBinding(val runId: RunId) {
+    private var active = true
+
+    fun requireBoundTo(requestRunId: RunId) {
+        if (!active || runId != requestRunId) deny(RecoveryStreamingSourceFailure.LEASE_BINDING)
+    }
+
+    fun invalidate() {
+        active = false
+    }
+}
 
 internal class RecoveryStreamingSourceLeaseAccess
 private constructor(private val binding: RecoveryStreamingLeaseBinding) {
     internal fun requireBoundTo(runId: RunId) {
-        if (binding.runId != runId) deny(RecoveryStreamingSourceFailure.LEASE_BINDING)
+        binding.requireBoundTo(runId)
     }
 
     internal companion object {
-        fun issue(runId: RunId, lease: RecoveryRunWriterLease) =
-            RecoveryStreamingSourceLeaseAccess(RecoveryStreamingLeaseBinding(runId, lease))
+        fun <T> withScopedAccess(
+            runId: RunId,
+            guard: RecoveryRunSingleWriterGuard,
+            block: (RecoveryStreamingSourceLeaseAccess) -> T,
+        ): T =
+            RecoveryStreamingSourceAccessScope.withLease(runId, guard) { binding ->
+                block(RecoveryStreamingSourceLeaseAccess(binding))
+            }
     }
 }
 
 internal class RecoveryStreamingReplayAccess
 private constructor(private val binding: RecoveryStreamingLeaseBinding) {
     internal fun requireBoundTo(runId: RunId) {
-        if (binding.runId != runId) deny(RecoveryStreamingSourceFailure.LEASE_BINDING)
+        binding.requireBoundTo(runId)
     }
 
     internal companion object {
-        fun issue(runId: RunId, lease: RecoveryRunWriterLease) =
-            RecoveryStreamingReplayAccess(RecoveryStreamingLeaseBinding(runId, lease))
+        fun <T> withScopedAccess(
+            runId: RunId,
+            guard: RecoveryRunSingleWriterGuard,
+            block: (RecoveryStreamingReplayAccess) -> T,
+        ): T =
+            RecoveryStreamingSourceAccessScope.withLease(runId, guard) { binding ->
+                block(RecoveryStreamingReplayAccess(binding))
+            }
     }
 }
 
-/** Internal controller convention: the caller owns and closes the supplied run lease. */
 internal object RecoveryStreamingSourceControllerAccess {
-    fun normal(runId: RunId, lease: RecoveryRunWriterLease) =
-        RecoveryStreamingSourceLeaseAccess.issue(runId, lease)
+    fun <T> withNormalAccess(
+        runId: RunId,
+        guard: RecoveryRunSingleWriterGuard,
+        block: (RecoveryStreamingSourceLeaseAccess) -> T,
+    ): T = RecoveryStreamingSourceLeaseAccess.withScopedAccess(runId, guard, block)
 
-    fun replay(runId: RunId, lease: RecoveryRunWriterLease) =
-        RecoveryStreamingReplayAccess.issue(runId, lease)
+    fun <T> withReplayAccess(
+        runId: RunId,
+        guard: RecoveryRunSingleWriterGuard,
+        block: (RecoveryStreamingReplayAccess) -> T,
+    ): T = RecoveryStreamingReplayAccess.withScopedAccess(runId, guard, block)
+}
+
+private object RecoveryStreamingSourceAccessScope {
+    fun <T> withLease(
+        runId: RunId,
+        guard: RecoveryRunSingleWriterGuard,
+        block: (RecoveryStreamingLeaseBinding) -> T,
+    ): T {
+        val lease = guard.tryAcquire(runId) ?: deny(RecoveryStreamingSourceFailure.LEASE_BINDING)
+        val binding = RecoveryStreamingLeaseBinding(runId)
+        var primary: Throwable? = null
+        try {
+            return block(binding)
+        } catch (failure: Throwable) {
+            primary = failure
+            throw failure
+        } finally {
+            binding.invalidate()
+            try {
+                lease.close()
+            } catch (closeFailure: Throwable) {
+                primary?.addSuppressed(closeFailure) ?: throw closeFailure
+            }
+        }
+    }
 }
 
 internal enum class RecoveryStreamingPathType {
@@ -217,12 +265,16 @@ internal class AndroidOsRecoveryStreamingSource(
                     request.requestedCiphertextStart,
                     ceiling,
                 )
+            var primary: Throwable? = null
             try {
                 val result = block(scoped)
                 scoped.probeFrozenEnd()
                 result
+            } catch (failure: Throwable) {
+                primary = failure
+                throw failure
             } finally {
-                scoped.invalidate()
+                closeScoped(scoped, primary)
             }
         }
     }
@@ -245,6 +297,7 @@ internal class AndroidOsRecoveryStreamingSource(
             val extent = descriptor.frozenExtent
             requireReplayExtent(outcome, extent)
             val scoped = ScopedOpenedSource(descriptor, 0UL, extent)
+            var primary: Throwable? = null
             try {
                 val actual = scoped.sha256Range(0UL, extent)
                 if (
@@ -257,8 +310,11 @@ internal class AndroidOsRecoveryStreamingSource(
                         outcome.observedSourceSha256,
                     )
                 }
+            } catch (failure: Throwable) {
+                primary = failure
+                throw failure
             } finally {
-                scoped.invalidate()
+                closeScoped(scoped, primary)
             }
         }
     }
@@ -397,8 +453,8 @@ internal class AndroidOsRecoveryStreamingSource(
         requireAbsoluteWitnessBounds(request.acceptedEnd, request.preFaultSourceBytes)
         if (
             extent > MAX_OBSERVED_SOURCE ||
-                extent < request.preFaultSourceBytes ||
-                extent - request.preFaultSourceBytes > MAX_SOURCE_APPEND
+                (extent >= request.preFaultSourceBytes &&
+                    extent - request.preFaultSourceBytes > MAX_SOURCE_APPEND)
         ) {
             deny(RecoveryStreamingSourceFailure.SOURCE_STRUCTURAL)
         }
@@ -448,6 +504,14 @@ internal class AndroidOsRecoveryStreamingSource(
         }
     }
 
+    private fun closeScoped(scoped: ScopedOpenedSource, primary: Throwable?) {
+        try {
+            scoped.invalidateAndClose()
+        } catch (closeFailure: Throwable) {
+            primary?.addSuppressed(closeFailure) ?: throw closeFailure
+        }
+    }
+
     private fun <T> readJournal(result: RecoveryStreamingJournalReadResult<T>): T =
         when (result) {
             is RecoveryStreamingJournalReadResult.Value -> result.value
@@ -476,7 +540,7 @@ private class OwnedRecoveryStreamDescriptor(
     private val rawDescriptor: RecoveryStreamingRawDescriptor,
     override val frozenExtent: ULong,
 ) : RecoveryStreamDescriptor {
-    private val active = AtomicBoolean(true)
+    private var active = true
 
     override fun readAt(
         sourceOffset: ULong,
@@ -484,7 +548,7 @@ private class OwnedRecoveryStreamDescriptor(
         destinationOffset: Int,
         count: Int,
     ): Int {
-        requireActive()
+        check(active) { "Recovery stream descriptor is closed" }
         requireDestination(destination, destinationOffset, count)
         if (
             sourceOffset > frozenExtent ||
@@ -508,7 +572,7 @@ private class OwnedRecoveryStreamDescriptor(
     }
 
     fun probeFrozenEnd() {
-        requireActive()
+        check(active) { "Recovery stream descriptor is closed" }
         val progress = os.pread(rawDescriptor, ByteArray(1), 0, 1, frozenExtent.toLong())
         if (progress != 0) {
             deny(
@@ -519,12 +583,9 @@ private class OwnedRecoveryStreamDescriptor(
     }
 
     override fun close() {
-        check(active.compareAndSet(true, false)) { "Recovery stream descriptor already closed" }
+        if (!active) return
+        active = false
         os.close(rawDescriptor)
-    }
-
-    private fun requireActive() {
-        check(active.get()) { "Recovery stream descriptor is closed" }
     }
 
     private fun requireDestination(destination: ByteArray, offset: Int, count: Int) {
@@ -539,44 +600,59 @@ private class ScopedOpenedSource(
     private val publicStart: ULong,
     private val publicEnd: ULong,
 ) : RecoveryOpenedStreamingSource {
-    private val active = AtomicBoolean(true)
+    private val scopeLock = Any()
+    private var active = true
 
-    override val observedBytes: ULong = descriptor.frozenExtent
+    override val observedBytes: ULong
+        get() =
+            synchronized(scopeLock) {
+                requireActiveLocked()
+                descriptor.frozenExtent
+            }
 
     override fun sha256Prefix(endExclusive: ULong): Sha256Value = sha256Range(0UL, endExclusive)
 
-    override fun sha256Range(startInclusive: ULong, endExclusive: ULong): Sha256Value {
-        requireActive()
-        if (endExclusive < startInclusive || endExclusive > observedBytes) {
-            deny(RecoveryStreamingSourceFailure.INVALID_REQUEST)
+    override fun sha256Range(startInclusive: ULong, endExclusive: ULong): Sha256Value =
+        synchronized(scopeLock) {
+            requireActiveLocked()
+            val extent = descriptor.frozenExtent
+            if (endExclusive < startInclusive || endExclusive > extent) {
+                deny(RecoveryStreamingSourceFailure.INVALID_REQUEST)
+            }
+            val digest = MessageDigest.getInstance("SHA-256")
+            val buffer = ByteArray(HASH_CHUNK_BYTES)
+            var offset = startInclusive
+            while (offset < endExclusive) {
+                val remaining = endExclusive - offset
+                val count = minOf(remaining, HASH_CHUNK_BYTES.toULong()).toInt()
+                val progress = boundedReadLocked(offset, buffer, 0, count, endExclusive)
+                if (progress <= 0) deny(RecoveryStreamingSourceFailure.SOURCE_STRUCTURAL)
+                digest.update(buffer, 0, progress)
+                offset += progress.toULong()
+            }
+            if (endExclusive == extent) descriptor.probeFrozenEnd()
+            Sha256Value.fromBytes(digest.digest())
         }
-        val digest = MessageDigest.getInstance("SHA-256")
-        val buffer = ByteArray(HASH_CHUNK_BYTES)
-        var offset = startInclusive
-        while (offset < endExclusive) {
-            val remaining = endExclusive - offset
-            val count = minOf(remaining, HASH_CHUNK_BYTES.toULong()).toInt()
-            val progress = boundedRead(offset, buffer, 0, count, endExclusive)
-            if (progress <= 0) deny(RecoveryStreamingSourceFailure.SOURCE_STRUCTURAL)
-            digest.update(buffer, 0, progress)
-            offset += progress.toULong()
-        }
-        if (endExclusive == observedBytes) probeFrozenEnd()
-        return Sha256Value.fromBytes(digest.digest())
-    }
 
     override fun boundedInputStream(): InputStream {
-        requireActive()
-        return BoundedSourceInputStream(this, publicStart, publicEnd)
+        return synchronized(scopeLock) {
+            requireActiveLocked()
+            BoundedSourceInputStream(this, publicStart, publicEnd)
+        }
     }
 
-    fun invalidate() {
-        active.set(false)
+    fun invalidateAndClose() {
+        synchronized(scopeLock) {
+            active = false
+            descriptor.close()
+        }
     }
 
     fun probeFrozenEnd() {
-        requireActive()
-        descriptor.probeFrozenEnd()
+        synchronized(scopeLock) {
+            requireActiveLocked()
+            descriptor.probeFrozenEnd()
+        }
     }
 
     fun streamRead(
@@ -586,15 +662,17 @@ private class ScopedOpenedSource(
         count: Int,
         ceiling: ULong,
     ): Int {
-        requireActive()
-        return boundedRead(sourceOffset, destination, destinationOffset, count, ceiling)
+        return synchronized(scopeLock) {
+            requireActiveLocked()
+            boundedReadLocked(sourceOffset, destination, destinationOffset, count, ceiling)
+        }
     }
 
     fun requireActive() {
-        check(active.get()) { "Recovery streaming source scope is closed" }
+        synchronized(scopeLock) { requireActiveLocked() }
     }
 
-    private fun boundedRead(
+    private fun boundedReadLocked(
         sourceOffset: ULong,
         destination: ByteArray,
         destinationOffset: Int,
@@ -604,13 +682,17 @@ private class ScopedOpenedSource(
         requireDestination(destination, destinationOffset, count)
         if (
             count < 0 ||
-                ceiling > observedBytes ||
+                ceiling > descriptor.frozenExtent ||
                 sourceOffset > ceiling ||
                 count.toULong() > ceiling - sourceOffset
         ) {
             deny(RecoveryStreamingSourceFailure.INVALID_REQUEST)
         }
         return descriptor.readAt(sourceOffset, destination, destinationOffset, count)
+    }
+
+    private fun requireActiveLocked() {
+        check(active) { "Recovery streaming source scope is closed" }
     }
 
     private fun requireDestination(destination: ByteArray, offset: Int, count: Int) {

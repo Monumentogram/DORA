@@ -17,9 +17,12 @@ import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingWitnessInpu
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
 import com.monumentogram.dora.poc.recovery.coordination.ProcessRecoveryRunSingleWriterGuard
+import com.monumentogram.dora.poc.recovery.coordination.RecoveryRunSingleWriterGuard
 import com.monumentogram.dora.poc.recovery.coordination.RecoveryRunWriterLease
 import java.io.File
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -37,7 +40,7 @@ class AndroidOsRecoveryStreamingSourceTest {
         val source = AndroidOsRecoveryStreamingSource(ROOT, journal, os)
 
         val bytes =
-            source.withSource(normalAccess(), request(start = 1UL, end = 4UL)) { opened ->
+            source.withNormalSource(request(start = 1UL, end = 4UL)) { opened ->
                 assertEquals(4UL, opened.observedBytes)
                 opened.boundedInputStream().readBytes()
             }
@@ -69,10 +72,8 @@ class AndroidOsRecoveryStreamingSourceTest {
             val os = FakeOs(events).apply { seed(byteArrayOf(1)) }
             val failure =
                 assertThrows(RecoveryStreamingSourceException::class.java) {
-                    AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(events), os).withSource(
-                        normalAccess(),
-                        request(source = name, start = 0UL, end = 0UL),
-                    ) {}
+                    AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(events), os)
+                        .withNormalSource(request(source = name, start = 0UL, end = 0UL)) {}
                 }
             assertEquals(RecoveryStreamingSourceFailure.UNSAFE_PATH, failure.failure)
             assertTrue(events.isEmpty())
@@ -87,7 +88,7 @@ class AndroidOsRecoveryStreamingSourceTest {
                         FakeJournal(events),
                         FakeOs(events).apply { seed(byteArrayOf(1)) },
                     )
-                    .withSource(normalAccess(OTHER_RUN), request(start = 0UL, end = 0UL)) {}
+                    .withNormalSource(request(start = 0UL, end = 0UL), OTHER_RUN) {}
             }
         assertEquals(RecoveryStreamingSourceFailure.LEASE_BINDING, failure.failure)
         assertTrue(events.isEmpty())
@@ -110,7 +111,7 @@ class AndroidOsRecoveryStreamingSourceTest {
                     val failure =
                         assertThrows(RecoveryStreamingSourceException::class.java) {
                             AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(events), os)
-                                .withSource(normalAccess(), request(start = 0UL, end = 1UL)) {}
+                                .withNormalSource(request(start = 0UL, end = 1UL)) {}
                         }
                     assertEquals(RecoveryStreamingSourceFailure.UNSAFE_PATH, failure.failure)
                     assertTrue(os.opens.isEmpty())
@@ -128,10 +129,8 @@ class AndroidOsRecoveryStreamingSourceTest {
                 if (type == null) os.stats.remove(sourcePath())
                 else os.stats[sourcePath()] = RecoveryStreamingStat(type, 1L)
                 assertThrows(RecoveryStreamingSourceException::class.java) {
-                    AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(events), os).withSource(
-                        normalAccess(),
-                        request(start = 0UL, end = 1UL),
-                    ) {}
+                    AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(events), os)
+                        .withNormalSource(request(start = 0UL, end = 1UL)) {}
                 }
                 assertTrue(os.opens.isEmpty())
             }
@@ -144,7 +143,7 @@ class AndroidOsRecoveryStreamingSourceTest {
                     FakeJournal(normalizedEvents),
                     normalizedOs,
                 )
-                .withSource(normalAccess(), request(start = 0UL, end = 1UL)) {}
+                .withNormalSource(request(start = 0UL, end = 1UL)) {}
         }
         assertTrue(normalizedOs.lstats.isEmpty())
         assertTrue(normalizedOs.opens.isEmpty())
@@ -159,9 +158,8 @@ class AndroidOsRecoveryStreamingSourceTest {
             val os = FakeOs(events).apply { seed(ByteArray(8_193)) }
             val failure =
                 runCatching {
-                        AndroidOsRecoveryStreamingSource(ROOT, journal, os).withSource(
-                            normalAccess(),
-                            request(start = start, end = end, preFault = 8_192UL),
+                        AndroidOsRecoveryStreamingSource(ROOT, journal, os).withNormalSource(
+                            request(start = start, end = end, preFault = 8_192UL)
                         ) {}
                     }
                     .exceptionOrNull()
@@ -194,9 +192,8 @@ class AndroidOsRecoveryStreamingSourceTest {
 
         val failure =
             assertThrows(RecoveryStreamingSourceException::class.java) {
-                AndroidOsRecoveryStreamingSource(ROOT, journal, os).withSource(
-                    normalAccess(),
-                    request(start = 0UL, end = range.rangeStart, preFault = 8_192UL),
+                AndroidOsRecoveryStreamingSource(ROOT, journal, os).withNormalSource(
+                    request(start = 0UL, end = range.rangeStart, preFault = 8_192UL)
                 ) {}
             }
 
@@ -212,7 +209,7 @@ class AndroidOsRecoveryStreamingSourceTest {
         assertEquals(
             RecoveryStreamingSourceFailure.INVALID_REQUEST,
             assertThrows(RecoveryStreamingSourceException::class.java) {
-                    source.withSource(normalAccess(), request(start = 1UL, end = 0UL)) {}
+                    source.withNormalSource(request(start = 1UL, end = 0UL)) {}
                 }
                 .failure,
         )
@@ -233,9 +230,8 @@ class AndroidOsRecoveryStreamingSourceTest {
                 val journal = FakeJournal(failingEvents).apply { checkpointResult = result }
                 val failure =
                     assertThrows(RecoveryStreamingSourceException::class.java) {
-                        AndroidOsRecoveryStreamingSource(ROOT, journal, failingOs).withSource(
-                            normalAccess(),
-                            request(start = 0UL, end = 1UL),
+                        AndroidOsRecoveryStreamingSource(ROOT, journal, failingOs).withNormalSource(
+                            request(start = 0UL, end = 1UL)
                         ) {}
                     }
                 assertEquals(RecoveryStreamingSourceFailure.JOURNAL, failure.failure)
@@ -246,9 +242,8 @@ class AndroidOsRecoveryStreamingSourceTest {
         val mismatchOs = FakeOs(mismatchEvents).apply { seed(byteArrayOf(1)) }
         val mismatch = FakeJournal(mismatchEvents).apply { checkpoints = emptyList() }
         assertThrows(RecoveryStreamingSourceException::class.java) {
-            AndroidOsRecoveryStreamingSource(ROOT, mismatch, mismatchOs).withSource(
-                normalAccess(),
-                request(start = 0UL, end = 1UL),
+            AndroidOsRecoveryStreamingSource(ROOT, mismatch, mismatchOs).withNormalSource(
+                request(start = 0UL, end = 1UL)
             ) {}
         }
         assertTrue(mismatchOs.opens.isEmpty())
@@ -262,14 +257,13 @@ class AndroidOsRecoveryStreamingSourceTest {
                 stats[sourcePath()] =
                     RecoveryStreamingStat(RecoveryStreamingPathType.REGULAR, 115_662_848L)
             }
-        AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), accepted).withSource(
-            normalAccess(),
+        AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), accepted).withNormalSource(
             request(
                 accepted = 115_200_000UL,
                 preFault = 115_654_656UL,
                 start = 0UL,
                 end = 0UL,
-            ),
+            )
         ) {
             assertEquals(115_662_848UL, it.observedBytes)
         }
@@ -281,7 +275,6 @@ class AndroidOsRecoveryStreamingSourceTest {
                 ExtentCase(1L, 0UL, 115_200_001UL, 0),
                 ExtentCase(115_654_657L, 115_654_657UL, 0UL, 0),
                 ExtentCase(115_662_849L, 115_654_656UL, 0UL, 1),
-                ExtentCase(7L, 8UL, 0UL, 1),
                 ExtentCase(8_193L, 0UL, 0UL, 1),
             )
         invalid.forEach { case ->
@@ -292,14 +285,13 @@ class AndroidOsRecoveryStreamingSourceTest {
                         RecoveryStreamingStat(RecoveryStreamingPathType.REGULAR, case.extent)
                 }
             assertThrows(RecoveryStreamingSourceException::class.java) {
-                AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os).withSource(
-                    normalAccess(),
+                AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os).withNormalSource(
                     request(
                         accepted = case.acceptedEnd,
                         preFault = case.preFault,
                         start = 0UL,
                         end = 0UL,
-                    ),
+                    )
                 ) {}
             }
             assertEquals(case.closeCalls, os.closeCalls)
@@ -316,9 +308,8 @@ class AndroidOsRecoveryStreamingSourceTest {
                     fstatOverride = RecoveryStreamingStat(type, 1L)
                 }
             assertThrows(RecoveryStreamingSourceException::class.java) {
-                AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os).withSource(
-                    normalAccess(),
-                    request(start = 0UL, end = 1UL, preFault = 1UL),
+                AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os).withNormalSource(
+                    request(start = 0UL, end = 1UL, preFault = 1UL)
                 ) {}
             }
             assertEquals(1, os.closeCalls)
@@ -326,9 +317,8 @@ class AndroidOsRecoveryStreamingSourceTest {
 
         val beyond = FakeOs().apply { seed(byteArrayOf(1)) }
         assertThrows(RecoveryStreamingSourceException::class.java) {
-            AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), beyond).withSource(
-                normalAccess(),
-                request(start = 0UL, end = 2UL, preFault = 1UL),
+            AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), beyond).withNormalSource(
+                request(start = 0UL, end = 2UL, preFault = 1UL)
             ) {}
         }
         assertEquals(1, beyond.closeCalls)
@@ -341,9 +331,8 @@ class AndroidOsRecoveryStreamingSourceTest {
         assertEquals(
             "fstat",
             assertThrows(IllegalStateException::class.java) {
-                    AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), fstat).withSource(
-                        normalAccess(),
-                        request(start = 0UL, end = 1UL, preFault = 1UL),
+                    AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), fstat).withNormalSource(
+                        request(start = 0UL, end = 1UL, preFault = 1UL)
                     ) {}
                 }
                 .message,
@@ -361,9 +350,8 @@ class AndroidOsRecoveryStreamingSourceTest {
             }
         var leaked: RecoveryOpenedStreamingSource? = null
         var stream: java.io.InputStream? = null
-        AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os).withSource(
-            normalAccess(),
-            request(start = 5UL, end = 11UL, preFault = 32UL),
+        AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os).withNormalSource(
+            request(start = 5UL, end = 11UL, preFault = 32UL)
         ) {
             assertEquals(
                 Sha256Value.calculate(value.copyOfRange(3, 13)),
@@ -381,6 +369,7 @@ class AndroidOsRecoveryStreamingSourceTest {
         assertTrue(os.reads.map { it.offset }.containsAll(listOf(0L, 3L, 5L, 32L)))
         assertTrue(os.reads.all { it.descriptor === os.opens.single().descriptor })
         assertThrows(IllegalStateException::class.java) { leaked!!.sha256Prefix(1UL) }
+        assertThrows(IllegalStateException::class.java) { leaked!!.observedBytes }
         assertThrows(IllegalStateException::class.java) { stream!!.read() }
         assertFalse(
             RecoveryOpenedStreamingSource::class.java.methods.any {
@@ -392,9 +381,8 @@ class AndroidOsRecoveryStreamingSourceTest {
     @Test
     fun `bounded stream close is non-owning and zero or negative raw progress is rejected`() {
         val os = FakeOs().apply { seed(byteArrayOf(1, 2, 3)) }
-        AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os).withSource(
-            normalAccess(),
-            request(start = 0UL, end = 3UL, preFault = 3UL),
+        AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os).withNormalSource(
+            request(start = 0UL, end = 3UL, preFault = 3UL)
         ) { opened ->
             val first = opened.boundedInputStream()
             val second = opened.boundedInputStream()
@@ -412,9 +400,8 @@ class AndroidOsRecoveryStreamingSourceTest {
                     forcedProgress[0L] = invalidProgress
                 }
             assertThrows(RecoveryStreamingSourceException::class.java) {
-                AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), failing).withSource(
-                    normalAccess(),
-                    request(start = 0UL, end = 3UL, preFault = 3UL),
+                AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), failing).withNormalSource(
+                    request(start = 0UL, end = 3UL, preFault = 3UL)
                 ) {
                     it.boundedInputStream().read()
                 }
@@ -423,9 +410,8 @@ class AndroidOsRecoveryStreamingSourceTest {
         }
 
         val endpoint = FakeOs().apply { seed(byteArrayOf(1)) }
-        AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), endpoint).withSource(
-            normalAccess(),
-            request(start = 1UL, end = 1UL, preFault = 1UL),
+        AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), endpoint).withNormalSource(
+            request(start = 1UL, end = 1UL, preFault = 1UL)
         ) {
             assertEquals(-1, it.boundedInputStream().read())
         }
@@ -441,9 +427,8 @@ class AndroidOsRecoveryStreamingSourceTest {
                     forcedProgress[0L] = progress
                 }
             assertThrows(RecoveryStreamingSourceException::class.java) {
-                AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os).withSource(
-                    normalAccess(),
-                    request(start = 0UL, end = 1UL, preFault = 1UL),
+                AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os).withNormalSource(
+                    request(start = 0UL, end = 1UL, preFault = 1UL)
                 ) {
                     it.sha256Prefix(1UL)
                 }
@@ -462,9 +447,8 @@ class AndroidOsRecoveryStreamingSourceTest {
         assertEquals(
             RecoveryStreamingSourceFailure.SOURCE_CHANGED,
             assertThrows(RecoveryStreamingSourceException::class.java) {
-                    AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os).withSource(
-                        normalAccess(),
-                        request(start = 0UL, end = 3UL, preFault = 3UL),
+                    AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os).withNormalSource(
+                        request(start = 0UL, end = 3UL, preFault = 3UL)
                     ) {}
                 }
                 .failure,
@@ -475,6 +459,161 @@ class AndroidOsRecoveryStreamingSourceTest {
     }
 
     @Test
+    fun `truncated frozen extent remains callback visible but denies reads beyond it`() {
+        val os = FakeOs().apply { seed(byteArrayOf(1, 2, 3, 4)) }
+
+        AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os).withNormalSource(
+            request(accepted = 4UL, preFault = 8UL, start = 0UL, end = 4UL)
+        ) { opened ->
+            assertEquals(4UL, opened.observedBytes)
+            assertArrayEquals(byteArrayOf(1, 2, 3, 4), opened.boundedInputStream().readBytes())
+            assertThrows(RecoveryStreamingSourceException::class.java) {
+                opened.sha256Prefix(5UL)
+            }
+        }
+        assertEquals(1, os.closeCalls)
+    }
+
+    @Test
+    fun `pread and growth probe exceptions or negative progress close with primary suppression`() {
+        listOf("hash", "read", "probe").forEach { stage ->
+            val os =
+                FakeOs().apply {
+                    seed(byteArrayOf(1, 2, 3))
+                    throwOnPreadOffsets += if (stage == "probe") 3L else 0L
+                    failClose = true
+                }
+            val failure =
+                assertThrows(IllegalStateException::class.java) {
+                    AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os).withNormalSource(
+                        request(start = 0UL, end = 3UL, preFault = 3UL)
+                    ) { opened ->
+                        when (stage) {
+                            "hash" -> opened.sha256Prefix(3UL)
+                            "read" -> opened.boundedInputStream().read()
+                            else -> Unit
+                        }
+                    }
+                }
+            assertEquals("pread", failure.message)
+            assertEquals("close", failure.suppressed.single().message)
+            assertEquals(1, os.closeCalls)
+        }
+
+        val negativeProbe =
+            FakeOs().apply {
+                seed(byteArrayOf(1, 2, 3))
+                forcedProgress[3L] = -1
+            }
+        assertEquals(
+            RecoveryStreamingSourceFailure.SOURCE_STRUCTURAL,
+            assertThrows(RecoveryStreamingSourceException::class.java) {
+                    AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), negativeProbe)
+                        .withNormalSource(request(start = 0UL, end = 3UL, preFault = 3UL)) {}
+                }
+                .failure,
+        )
+        assertEquals(1, negativeProbe.closeCalls)
+    }
+
+    @Test
+    fun `scope keeps descriptor open for an in-flight read and rejects escaped reads`() {
+        val readEntered = CountDownLatch(1)
+        val allowRead = CountDownLatch(1)
+        val os =
+            FakeOs().apply {
+                seed(byteArrayOf(1))
+                beforePread = { offset ->
+                    if (offset == 0L) {
+                        readEntered.countDown()
+                        assertTrue(allowRead.await(5, TimeUnit.SECONDS))
+                    }
+                }
+            }
+        val source = AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os)
+        val executor = Executors.newFixedThreadPool(2)
+        try {
+            lateinit var escaped: java.io.InputStream
+            val sourceFuture =
+                executor.submit<java.lang.Void> {
+                    source.withNormalSource(request(start = 0UL, end = 1UL, preFault = 1UL)) {
+                        opened ->
+                        escaped = opened.boundedInputStream()
+                        executor.submit<Int> { escaped.read() }
+                        assertTrue(readEntered.await(5, TimeUnit.SECONDS))
+                    }
+                    null
+                }
+            assertTrue(readEntered.await(5, TimeUnit.SECONDS))
+            assertEquals(0, os.closeCalls)
+            allowRead.countDown()
+            sourceFuture.get(5, TimeUnit.SECONDS)
+            assertEquals(1, os.closeCalls)
+            assertThrows(IllegalStateException::class.java) { escaped.read() }
+        } finally {
+            executor.shutdownNow()
+        }
+    }
+
+    @Test
+    fun `controller scope issues only live run-bound tokens and releases after descriptor close`() {
+        val events = mutableListOf<String>()
+        val guard = RecordingGuard(events)
+        val source =
+            AndroidOsRecoveryStreamingSource(
+                ROOT,
+                FakeJournal(),
+                FakeOs(events).apply { seed(byteArrayOf(1)) },
+            )
+        var escaped: RecoveryStreamingSourceLeaseAccess? = null
+
+        RecoveryStreamingSourceControllerAccess.withNormalAccess(RUN, guard) { access ->
+            escaped = access
+            source.withSource(access, request(start = 0UL, end = 1UL, preFault = 1UL)) {}
+            assertEquals(listOf("acquire", "open", "close"), events)
+            assertThrows(RecoveryStreamingSourceException::class.java) {
+                source.withSource(
+                    access,
+                    request(runId = OTHER_RUN, start = 0UL, end = 1UL, preFault = 1UL),
+                ) {}
+            }
+        }
+        assertEquals(listOf("acquire", "open", "close", "release"), events)
+        assertThrows(RecoveryStreamingSourceException::class.java) {
+            source.withSource(
+                requireNotNull(escaped),
+                request(start = 0UL, end = 1UL, preFault = 1UL),
+            ) {}
+        }
+    }
+
+    @Test
+    fun `controller scope releases only after descriptor close on exceptional block and close paths`() {
+        listOf("block", "close").forEach { failureMode ->
+            val events = mutableListOf<String>()
+            val os =
+                FakeOs(events).apply {
+                    seed(byteArrayOf(1))
+                    failClose = failureMode == "close"
+                }
+            assertThrows(IllegalStateException::class.java) {
+                RecoveryStreamingSourceControllerAccess.withNormalAccess(
+                    RUN,
+                    RecordingGuard(events),
+                ) { access ->
+                    AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os).withSource(
+                        access,
+                        request(start = 0UL, end = 1UL, preFault = 1UL),
+                    ) {
+                        if (failureMode == "block") error("block")
+                    }
+                }
+            }
+            assertEquals(listOf("acquire", "open", "close", "release"), events)
+        }
+    }
+
+    @Test
     fun `open and close failures preserve exact ownership and suppression`() {
         val open =
             FakeOs().apply {
@@ -482,9 +621,8 @@ class AndroidOsRecoveryStreamingSourceTest {
                 failOpen = true
             }
         assertThrows(IllegalStateException::class.java) {
-            AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), open).withSource(
-                normalAccess(),
-                request(start = 0UL, end = 1UL, preFault = 1UL),
+            AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), open).withNormalSource(
+                request(start = 0UL, end = 1UL, preFault = 1UL)
             ) {}
         }
         assertEquals(0, open.closeCalls)
@@ -497,10 +635,8 @@ class AndroidOsRecoveryStreamingSourceTest {
         assertEquals(
             "close",
             assertThrows(IllegalStateException::class.java) {
-                    AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), closeOnly).withSource(
-                        normalAccess(),
-                        request(start = 0UL, end = 1UL, preFault = 1UL),
-                    ) {}
+                    AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), closeOnly)
+                        .withNormalSource(request(start = 0UL, end = 1UL, preFault = 1UL)) {}
                 }
                 .message,
         )
@@ -513,9 +649,8 @@ class AndroidOsRecoveryStreamingSourceTest {
             }
         val primary =
             assertThrows(IllegalArgumentException::class.java) {
-                AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), both).withSource(
-                    normalAccess(),
-                    request(start = 0UL, end = 1UL, preFault = 1UL),
+                AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), both).withNormalSource(
+                    request(start = 0UL, end = 1UL, preFault = 1UL)
                 ) {
                     throw IllegalArgumentException("block")
                 }
@@ -526,50 +661,52 @@ class AndroidOsRecoveryStreamingSourceTest {
     }
 
     @Test
-    fun `caller retains same-run lease through gateway close and later commit boundary`() {
-        val lease = requireNotNull(ProcessRecoveryRunSingleWriterGuard.tryAcquire(RUN))
-        val access = RecoveryStreamingSourceControllerAccess.normal(RUN, lease)
+    fun `controller scope retains same-run lease through gateway close and later commit boundary`() {
         val executor = Executors.newSingleThreadExecutor()
         try {
-            AndroidOsRecoveryStreamingSource(
-                    ROOT,
-                    FakeJournal(),
-                    FakeOs().apply { seed(byteArrayOf(1)) },
-                )
-                .withSource(access, request(start = 0UL, end = 1UL, preFault = 1UL)) {
-                    assertNull(
-                        executor
-                            .submit(
-                                java.util.concurrent.Callable {
-                                    ProcessRecoveryRunSingleWriterGuard.tryAcquire(RUN)
-                                }
-                            )
-                            .get()
+            RecoveryStreamingSourceControllerAccess.withNormalAccess(
+                RUN,
+                ProcessRecoveryRunSingleWriterGuard,
+            ) { access ->
+                AndroidOsRecoveryStreamingSource(
+                        ROOT,
+                        FakeJournal(),
+                        FakeOs().apply { seed(byteArrayOf(1)) },
                     )
-                    assertTrue(
-                        executor
-                            .submit(
-                                java.util.concurrent.Callable {
-                                    ProcessRecoveryRunSingleWriterGuard.tryAcquire(OTHER_RUN)
-                                        ?.also {
-                                            it.close()
-                                        }
-                                }
-                            )
-                            .get() != null
-                    )
-                }
-            assertNull(
-                executor
-                    .submit(
-                        java.util.concurrent.Callable {
-                            ProcessRecoveryRunSingleWriterGuard.tryAcquire(RUN)
-                        }
-                    )
-                    .get()
-            )
+                    .withSource(access, request(start = 0UL, end = 1UL, preFault = 1UL)) {
+                        assertNull(
+                            executor
+                                .submit(
+                                    java.util.concurrent.Callable {
+                                        ProcessRecoveryRunSingleWriterGuard.tryAcquire(RUN)
+                                    }
+                                )
+                                .get()
+                        )
+                        assertTrue(
+                            executor
+                                .submit(
+                                    java.util.concurrent.Callable {
+                                        ProcessRecoveryRunSingleWriterGuard.tryAcquire(OTHER_RUN)
+                                            ?.also {
+                                                it.close()
+                                            }
+                                    }
+                                )
+                                .get() != null
+                        )
+                        assertNull(
+                            executor
+                                .submit(
+                                    java.util.concurrent.Callable {
+                                        ProcessRecoveryRunSingleWriterGuard.tryAcquire(RUN)
+                                    }
+                                )
+                                .get()
+                        )
+                    }
+            }
         } finally {
-            lease.close()
             executor.shutdownNow()
         }
         val reacquired = requireNotNull(ProcessRecoveryRunSingleWriterGuard.tryAcquire(RUN))
@@ -577,19 +714,19 @@ class AndroidOsRecoveryStreamingSourceTest {
     }
 
     @Test
-    fun `gateway never closes caller lease and access constructors remain private`() {
-        var leaseCloses = 0
-        val lease = RecoveryRunWriterLease { leaseCloses++ }
-        AndroidOsRecoveryStreamingSource(
-                ROOT,
-                FakeJournal(),
-                FakeOs().apply { seed(byteArrayOf(1)) },
-            )
-            .withSource(
-                RecoveryStreamingSourceControllerAccess.normal(RUN, lease),
-                request(start = 0UL, end = 1UL, preFault = 1UL),
-            ) {}
-        assertEquals(0, leaseCloses)
+    fun `access constructors remain private and controller closes lease after scope`() {
+        val events = mutableListOf<String>()
+        RecoveryStreamingSourceControllerAccess.withNormalAccess(RUN, RecordingGuard(events)) {
+            access ->
+            AndroidOsRecoveryStreamingSource(
+                    ROOT,
+                    FakeJournal(),
+                    FakeOs(events).apply { seed(byteArrayOf(1)) },
+                )
+                .withSource(access, request(start = 0UL, end = 1UL, preFault = 1UL)) {}
+            assertEquals(listOf("acquire", "open", "close"), events)
+        }
+        assertEquals(listOf("acquire", "open", "close", "release"), events)
         assertTrue(
             RecoveryStreamingSourceLeaseAccess::class.java.declaredConstructors.all {
                 it.isSynthetic || java.lang.reflect.Modifier.isPrivate(it.modifiers)
@@ -600,8 +737,6 @@ class AndroidOsRecoveryStreamingSourceTest {
                 it.isSynthetic || java.lang.reflect.Modifier.isPrivate(it.modifiers)
             }
         )
-        lease.close()
-        assertEquals(1, leaseCloses)
     }
 
     @Test
@@ -624,10 +759,7 @@ class AndroidOsRecoveryStreamingSourceTest {
 
         val result =
             AndroidOsRecoveryStreamingSource(ROOT, journal, os)
-                .verifyReplayHashOnly(
-                    RecoveryStreamingSourceControllerAccess.replay(RUN, noOpLease()),
-                    RecoveryStreamReplayRequest(RUN, attempt.outcome.outcomeId),
-                )
+                .withReplayAccess(RecoveryStreamReplayRequest(RUN, attempt.outcome.outcomeId))
 
         result as RecoveryReplayHashOnlyResult.ExactStoredSourceMetadata
         assertEquals(attempt.outcome.observedSourceBytes, result.observedBytes)
@@ -655,10 +787,7 @@ class AndroidOsRecoveryStreamingSourceTest {
                     changedJournal,
                     FakeOs().apply { seed(changed) },
                 )
-                .verifyReplayHashOnly(
-                    RecoveryStreamingSourceControllerAccess.replay(RUN, noOpLease()),
-                    RecoveryStreamReplayRequest(RUN, attempt.outcome.outcomeId),
-                )
+                .withReplayAccess(RecoveryStreamReplayRequest(RUN, attempt.outcome.outcomeId))
         assertEquals(RecoveryReplayHashOnlyResult.SourceIdentityChanged, changedResult)
 
         val shorter = value.copyOf(value.size - 1)
@@ -668,10 +797,7 @@ class AndroidOsRecoveryStreamingSourceTest {
                     changedJournal,
                     FakeOs().apply { seed(shorter) },
                 )
-                .verifyReplayHashOnly(
-                    RecoveryStreamingSourceControllerAccess.replay(RUN, noOpLease()),
-                    RecoveryStreamReplayRequest(RUN, attempt.outcome.outcomeId),
-                )
+                .withReplayAccess(RecoveryStreamReplayRequest(RUN, attempt.outcome.outcomeId))
         assertEquals(RecoveryReplayHashOnlyResult.SourceIdentityChanged, shortened)
 
         val otherValue = value.copyOf().also { it[1] = (it[1] + 1).toByte() }
@@ -684,10 +810,7 @@ class AndroidOsRecoveryStreamingSourceTest {
             val os = FakeOs().apply { seed(value) }
             assertThrows(RecoveryStreamingSourceException::class.java) {
                 AndroidOsRecoveryStreamingSource(ROOT, journal, os)
-                    .verifyReplayHashOnly(
-                        RecoveryStreamingSourceControllerAccess.replay(RUN, noOpLease()),
-                        RecoveryStreamReplayRequest(RUN, attempt.outcome.outcomeId),
-                    )
+                    .withReplayAccess(RecoveryStreamReplayRequest(RUN, attempt.outcome.outcomeId))
             }
             assertTrue(os.opens.isEmpty())
         }
@@ -701,9 +824,9 @@ class AndroidOsRecoveryStreamingSourceTest {
         val crossOs = FakeOs(crossEvents).apply { seed(value) }
         assertThrows(RecoveryStreamingSourceException::class.java) {
             AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(crossEvents), crossOs)
-                .verifyReplayHashOnly(
-                    RecoveryStreamingSourceControllerAccess.replay(OTHER_RUN, noOpLease()),
+                .withReplayAccess(
                     RecoveryStreamReplayRequest(RUN, attempt.outcome.outcomeId),
+                    OTHER_RUN,
                 )
         }
         assertTrue(crossEvents.isEmpty())
@@ -729,9 +852,8 @@ class AndroidOsRecoveryStreamingSourceTest {
             val failure =
                 assertThrows(RecoveryStreamingSourceException::class.java) {
                     AndroidOsRecoveryStreamingSource(ROOT, journal, os)
-                        .verifyReplayHashOnly(
-                            RecoveryStreamingSourceControllerAccess.replay(RUN, noOpLease()),
-                            RecoveryStreamReplayRequest(RUN, attempt.outcome.outcomeId),
+                        .withReplayAccess(
+                            RecoveryStreamReplayRequest(RUN, attempt.outcome.outcomeId)
                         )
                 }
             assertEquals(RecoveryStreamingSourceFailure.JOURNAL, failure.failure)
@@ -782,6 +904,8 @@ class AndroidOsRecoveryStreamingSourceTest {
         val opens = mutableListOf<OpenCall>()
         val reads = mutableListOf<ReadCall>()
         val forcedProgress = mutableMapOf<Long, Int>()
+        val throwOnPreadOffsets = mutableSetOf<Long>()
+        var beforePread: ((Long) -> Unit)? = null
         var maximumRead = Int.MAX_VALUE
         var closeCalls = 0
         var failOpen = false
@@ -824,6 +948,8 @@ class AndroidOsRecoveryStreamingSourceTest {
         ): Int {
             val fake = descriptor as FakeDescriptor
             reads += ReadCall(fake, sourceOffset, count)
+            beforePread?.invoke(sourceOffset)
+            if (sourceOffset in throwOnPreadOffsets) error("pread")
             forcedProgress[sourceOffset]?.let {
                 return it
             }
@@ -840,6 +966,7 @@ class AndroidOsRecoveryStreamingSourceTest {
         }
 
         override fun close(descriptor: RecoveryStreamingRawDescriptor) {
+            events += "close"
             closeCalls++
             if (failClose) error("close")
         }
@@ -909,17 +1036,40 @@ class AndroidOsRecoveryStreamingSourceTest {
         }
     }
 
+    private class RecordingGuard(private val events: MutableList<String>) :
+        RecoveryRunSingleWriterGuard {
+        override fun tryAcquire(runId: RunId): RecoveryRunWriterLease? {
+            events += "acquire"
+            return RecoveryRunWriterLease { events += "release" }
+        }
+    }
+
+    private fun <T> AndroidOsRecoveryStreamingSource.withNormalSource(
+        request: RecoveryStreamOpenRequest,
+        scopeRunId: RunId = request.runId,
+        block: (RecoveryOpenedStreamingSource) -> T,
+    ): T =
+        RecoveryStreamingSourceControllerAccess.withNormalAccess(scopeRunId, noOpGuard) { access ->
+            withSource(access, request, block)
+        }
+
+    private fun AndroidOsRecoveryStreamingSource.withReplayAccess(
+        request: RecoveryStreamReplayRequest,
+        scopeRunId: RunId = request.runId,
+    ): RecoveryReplayHashOnlyResult =
+        RecoveryStreamingSourceControllerAccess.withReplayAccess(scopeRunId, noOpGuard) { access ->
+            verifyReplayHashOnly(access, request)
+        }
+
     private companion object {
         val ROOT = File("root").absoluteFile
         val RUN = RunId.fromCanonicalString("00112233-4455-6677-8899-aabbccddeeff")
         val OTHER_RUN = RunId.fromCanonicalString("10112233-4455-6677-8899-aabbccddeeff")
 
-        fun noOpLease() = RecoveryRunWriterLease {}
-
-        fun normalAccess(runId: RunId = RUN) =
-            RecoveryStreamingSourceControllerAccess.normal(runId, noOpLease())
+        val noOpGuard = RecoveryRunSingleWriterGuard { RecoveryRunWriterLease {} }
 
         fun request(
+            runId: RunId = RUN,
             source: String = "stream/stream.ct",
             accepted: ULong = 0UL,
             preFault: ULong = 0UL,
@@ -927,7 +1077,7 @@ class AndroidOsRecoveryStreamingSourceTest {
             end: ULong? = null,
         ) =
             RecoveryStreamOpenRequest(
-                RUN,
+                runId,
                 1UL,
                 checkpoint().checkpointIdentity,
                 source,
