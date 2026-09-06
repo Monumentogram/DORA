@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import copy
+import ctypes
 import os
 import re
 import signal
@@ -829,17 +830,113 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
 
 class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
     RETAINED_VALIDATOR_TIMEOUT_SECONDS = 180.0
+    WINDOWS_CREATE_SUSPENDED = 0x00000004
+
+    def create_windows_validator_job(self) -> int:
+        from ctypes import wintypes
+
+        class JobObjectBasicLimitInformation(ctypes.Structure):
+            _fields_ = [
+                ("per_process_user_time_limit", ctypes.c_longlong),
+                ("per_job_user_time_limit", ctypes.c_longlong),
+                ("limit_flags", wintypes.DWORD),
+                ("minimum_working_set_size", ctypes.c_size_t),
+                ("maximum_working_set_size", ctypes.c_size_t),
+                ("active_process_limit", wintypes.DWORD),
+                ("affinity", ctypes.c_size_t),
+                ("priority_class", wintypes.DWORD),
+                ("scheduling_class", wintypes.DWORD),
+            ]
+
+        class IoCounters(ctypes.Structure):
+            _fields_ = [
+                ("read_operation_count", ctypes.c_ulonglong),
+                ("write_operation_count", ctypes.c_ulonglong),
+                ("other_operation_count", ctypes.c_ulonglong),
+                ("read_transfer_count", ctypes.c_ulonglong),
+                ("write_transfer_count", ctypes.c_ulonglong),
+                ("other_transfer_count", ctypes.c_ulonglong),
+            ]
+
+        class JobObjectExtendedLimitInformation(ctypes.Structure):
+            _fields_ = [
+                ("basic_limit_information", JobObjectBasicLimitInformation),
+                ("io_info", IoCounters),
+                ("process_memory_limit", ctypes.c_size_t),
+                ("job_memory_limit", ctypes.c_size_t),
+                ("peak_process_memory_used", ctypes.c_size_t),
+                ("peak_job_memory_used", ctypes.c_size_t),
+            ]
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.CreateJobObjectW.argtypes = [ctypes.c_void_p, wintypes.LPCWSTR]
+        kernel32.CreateJobObjectW.restype = wintypes.HANDLE
+        kernel32.SetInformationJobObject.argtypes = [
+            wintypes.HANDLE,
+            ctypes.c_int,
+            ctypes.c_void_p,
+            wintypes.DWORD,
+        ]
+        kernel32.SetInformationJobObject.restype = wintypes.BOOL
+        kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+        kernel32.CloseHandle.restype = wintypes.BOOL
+
+        job = kernel32.CreateJobObjectW(None, None)
+        if not job:
+            raise ctypes.WinError(ctypes.get_last_error())
+        limits = JobObjectExtendedLimitInformation()
+        limits.basic_limit_information.limit_flags = 0x00002000
+        if not kernel32.SetInformationJobObject(
+            job,
+            9,
+            ctypes.byref(limits),
+            ctypes.sizeof(limits),
+        ):
+            error = ctypes.get_last_error()
+            kernel32.CloseHandle(job)
+            raise ctypes.WinError(error)
+        return int(job)
+
+    def assign_and_resume_windows_validator_child(
+        self, job: int, process: subprocess.Popen[str]
+    ) -> None:
+        from ctypes import wintypes
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.AssignProcessToJobObject.argtypes = [wintypes.HANDLE, wintypes.HANDLE]
+        kernel32.AssignProcessToJobObject.restype = wintypes.BOOL
+        process_handle = wintypes.HANDLE(int(process._handle))
+        if not kernel32.AssignProcessToJobObject(wintypes.HANDLE(job), process_handle):
+            raise ctypes.WinError(ctypes.get_last_error())
+        ntdll = ctypes.WinDLL("ntdll")
+        ntdll.NtResumeProcess.argtypes = [wintypes.HANDLE]
+        ntdll.NtResumeProcess.restype = wintypes.LONG
+        status = ntdll.NtResumeProcess(process_handle)
+        if status != 0:
+            raise OSError(f"NtResumeProcess failed with NTSTATUS 0x{status & 0xffffffff:08x}")
+
+    def close_windows_validator_job(self, job: int, *, terminate: bool) -> None:
+        from ctypes import wintypes
+
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        if terminate:
+            kernel32.TerminateJobObject.argtypes = [wintypes.HANDLE, wintypes.UINT]
+            kernel32.TerminateJobObject.restype = wintypes.BOOL
+            if not kernel32.TerminateJobObject(wintypes.HANDLE(job), 1):
+                raise ctypes.WinError(ctypes.get_last_error())
+        kernel32.CloseHandle.argtypes = [wintypes.HANDLE]
+        kernel32.CloseHandle.restype = wintypes.BOOL
+        if not kernel32.CloseHandle(wintypes.HANDLE(job)):
+            raise ctypes.WinError(ctypes.get_last_error())
 
     def terminate_validator_child_tree(
-        self, process: subprocess.Popen[str]
+        self,
+        process: subprocess.Popen[str],
+        windows_job: int | None,
     ) -> tuple[str, str]:
         if os.name == "nt":
-            subprocess.run(
-                ["taskkill", "/PID", str(process.pid), "/T", "/F"],
-                check=False,
-                capture_output=True,
-                timeout=10,
-            )
+            if windows_job is not None:
+                self.close_windows_validator_job(windows_job, terminate=True)
         else:
             try:
                 os.killpg(process.pid, signal.SIGKILL)
@@ -866,30 +963,51 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             "tools/validate_poc_recovery_governance.py",
             "--self-test",
         ]
-        process = subprocess.Popen(
-            child_command,
-            cwd=cwd,
-            env=environment,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            encoding="utf-8",
-            errors="strict",
-            start_new_session=os.name != "nt",
-            creationflags=(
-                subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0
-            ),
-        )
+        windows_job = self.create_windows_validator_job() if os.name == "nt" else None
+        try:
+            process = subprocess.Popen(
+                child_command,
+                cwd=cwd,
+                env=environment,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+                errors="strict",
+                start_new_session=os.name != "nt",
+                creationflags=(
+                    subprocess.CREATE_NEW_PROCESS_GROUP | self.WINDOWS_CREATE_SUSPENDED
+                    if os.name == "nt"
+                    else 0
+                ),
+            )
+        except BaseException:
+            if windows_job is not None:
+                self.close_windows_validator_job(windows_job, terminate=True)
+            raise
+        if windows_job is not None:
+            try:
+                self.assign_and_resume_windows_validator_child(windows_job, process)
+            except BaseException:
+                self.terminate_validator_child_tree(process, windows_job)
+                raise
         try:
             stdout, stderr = process.communicate(timeout=timeout_seconds)
         except subprocess.TimeoutExpired:
-            stdout, stderr = self.terminate_validator_child_tree(process)
+            stdout, stderr = self.terminate_validator_child_tree(process, windows_job)
+            windows_job = None
             self.fail(
                 f"validator child timed out after {timeout_seconds:g} seconds\n"
                 f"stdout:\n{stdout}\nstderr:\n{stderr}"
             )
+        except BaseException:
+            self.terminate_validator_child_tree(process, windows_job)
+            raise
         if process.returncode != 0:
-            self.terminate_validator_child_tree(process)
+            self.terminate_validator_child_tree(process, windows_job)
+            windows_job = None
+        elif windows_job is not None:
+            self.close_windows_validator_job(windows_job, terminate=False)
         return subprocess.CompletedProcess(
             child_command,
             process.returncode,
@@ -1535,6 +1653,33 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
                 )
             time.sleep(1.2)
             self.assertFalse(escaped_marker.exists())
+
+        with tempfile.TemporaryDirectory(
+            prefix="dora-rec-i3-retained-nonzero-"
+        ) as temporary:
+            failed_parent = Path(temporary)
+            escaped_marker = failed_parent / "nonzero-descendant-escaped.txt"
+            descendant_code = (
+                "import time; from pathlib import Path; time.sleep(1.0); "
+                f"Path({str(escaped_marker)!r}).write_text('escaped', encoding='utf-8')"
+            )
+            parent_code = (
+                "import subprocess, sys; "
+                f"subprocess.Popen([sys.executable, '-c', {descendant_code!r}], "
+                "stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, "
+                "stderr=subprocess.DEVNULL, close_fds=True); "
+                "raise SystemExit(7)"
+            )
+            failed = self.run_bounded_validator_child(
+                cwd=failed_parent,
+                environment=os.environ.copy(),
+                timeout_seconds=5.0,
+                command=[sys.executable, "-c", parent_code],
+            )
+            self.assertEqual(7, failed.returncode)
+            time.sleep(1.2)
+            self.assertFalse(escaped_marker.exists())
+        self.assertFalse(failed_parent.exists())
 
     def test_local_v08_fixture_restores_verified_pull_request_source_head(self) -> None:
         current = governance.collect_recovery_lifecycle_identity()
