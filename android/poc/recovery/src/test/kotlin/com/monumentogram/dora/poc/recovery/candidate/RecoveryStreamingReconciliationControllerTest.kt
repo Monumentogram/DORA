@@ -9,6 +9,7 @@ import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalClas
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalReadResult
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalResult
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingOutcomeAttempt
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingOutcomeRow
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingRangeRow
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingWitnessInput
 import com.monumentogram.dora.poc.recovery.contract.RunId
@@ -842,6 +843,61 @@ class RecoveryStreamingReconciliationControllerTest {
         assertEquals(0, journal.persistCalls)
     }
 
+    @Test
+    fun `controller exact replay rehashes once without public stream write or second source open`() {
+        val fixture = controllerFixture()
+        val events = mutableListOf<String>()
+        val outcome = controllerValidOutcome(fixture)
+        val journal =
+            ControllerJournal(events).apply {
+                checkpoints = listOf(fixture.checkpoint)
+                existingOutcome = outcome
+            }
+        val source = ReplayControllerSource(events, outcome)
+        val controller =
+            RecoveryStreamingReconciliationController(
+                journal,
+                source,
+                RecoveryRunSingleWriterGuard {
+                    events += "lease-acquire"
+                    RecoveryRunWriterLease { events += "lease-release" }
+                },
+                RecoveryStreamingCheckpointAuthenticator { _, _ ->
+                    events += "authenticate"
+                    RecoveryStreamingCheckpointAuthentication.Ready(
+                        RecoveryStreamingPublicStreamOpener { _, _ ->
+                            events += "public-open"
+                            error("replay must not open public Tink")
+                        }
+                    )
+                },
+                RecoveryStreamingEvidenceSink { events += "evidence" },
+            )
+
+        val result =
+            controller.recover(fixture.request)
+                as RecoveryStreamingReconciliationResult.PersistedValid
+
+        assertTrue(result.receipt.replayed)
+        assertEquals(outcome.outcomeId, result.receipt.outcomeId)
+        assertEquals(
+            listOf(
+                "lease-acquire",
+                "checkpoint-chain",
+                "authenticate",
+                "outcome-witness",
+                "range-outcome",
+                "replay-source-open",
+                "evidence",
+                "lease-release",
+            ),
+            events,
+        )
+        assertEquals(1, source.replayOpens)
+        assertEquals(0, source.normalOpens)
+        assertEquals(0, journal.persistCalls)
+    }
+
     private fun render(mapping: RecoveryStreamingResultMapping): String =
         listOf(
                 mapping.disposition.name,
@@ -1034,9 +1090,32 @@ class RecoveryStreamingReconciliationControllerTest {
         )
     }
 
+    private fun controllerValidOutcome(fixture: ControllerFixture): RecoveryStreamingOutcomeRow {
+        val witness = fixture.request.witness
+        return RecoveryStreamingIntentBuilder.buildOutcome(
+            RecoveryStreamingValidatedIntentFacts(
+                witness,
+                fixture.source.size.toULong(),
+                Sha256Value.calculate(fixture.source),
+                checkpointPrefixMatches = true,
+                preFaultPrefixMatches = true,
+                completed =
+                    RecoveryStreamingCompletedReadFacts(
+                        candidateEnd = witness.acceptedEnd,
+                        completedPlaintextSha256 = witness.oraclePlaintextSha256,
+                        oraclePrefixSha256 = witness.oraclePlaintextSha256,
+                        oraclePrefixEqual = true,
+                        terminal = StreamTerminal.AUTHENTICATED_EOF,
+                    ),
+            )
+        )
+    }
+
     private class ControllerJournal(private val events: MutableList<String>) :
         RecoveryStreamingJournal {
         var checkpoints = emptyList<RecoveryStreamingCheckpointRow>()
+        var existingOutcome: RecoveryStreamingOutcomeRow? = null
+        var existingRange: RecoveryStreamingRangeRow? = null
         var persistCalls = 0
 
         override fun checkpointChain(runId: RunId) =
@@ -1045,16 +1124,24 @@ class RecoveryStreamingReconciliationControllerTest {
             }
 
         override fun outcomeById(outcomeId: Sha256Value) =
-            RecoveryStreamingJournalReadResult.Value(null)
+            RecoveryStreamingJournalReadResult.Value(
+                    existingOutcome?.takeIf { it.outcomeId == outcomeId }
+                )
+                .also { events += "outcome-id" }
 
         override fun outcomeByWitness(
             runId: RunId,
             checkpointIdentity: Sha256Value,
             witnessId: Sha256Value,
-        ) = RecoveryStreamingJournalReadResult.Value(null)
+        ) =
+            RecoveryStreamingJournalReadResult.Value(existingOutcome).also {
+                events += "outcome-witness"
+            }
 
         override fun rangeByOutcome(outcomeId: Sha256Value) =
-            RecoveryStreamingJournalReadResult.Value(null)
+            RecoveryStreamingJournalReadResult.Value(existingRange).also {
+                events += "range-outcome"
+            }
 
         override fun activeRanges(runId: RunId, sourceRelativeName: String) =
             RecoveryStreamingJournalReadResult.Value(emptyList<RecoveryStreamingRangeRow>())
@@ -1088,6 +1175,37 @@ class RecoveryStreamingReconciliationControllerTest {
             events += "replay-open"
             error("replay source must not open")
         }
+    }
+
+    private class ReplayControllerSource(
+        private val events: MutableList<String>,
+        private val outcome: RecoveryStreamingOutcomeRow,
+    ) : RecoveryStreamingSource {
+        var normalOpens = 0
+        var replayOpens = 0
+
+        override fun <T> withSource(
+            access: RecoveryStreamingSourceLeaseAccess,
+            request: RecoveryStreamOpenRequest,
+            block: (RecoveryOpenedStreamingSource) -> T,
+        ): T {
+            normalOpens += 1
+            events += "normal-source-open"
+            error("replay must not use normal source")
+        }
+
+        override fun verifyReplayHashOnly(
+            access: RecoveryStreamingReplayAccess,
+            request: RecoveryStreamReplayRequest,
+        ): RecoveryReplayHashOnlyResult =
+            access.withBoundTo(request.runId) {
+                replayOpens += 1
+                events += "replay-source-open"
+                RecoveryReplayHashOnlyResult.ExactStoredSourceMetadata(
+                    outcome.observedSourceBytes,
+                    outcome.observedSourceSha256,
+                )
+            }
     }
 
     private sealed interface ReadStep {
