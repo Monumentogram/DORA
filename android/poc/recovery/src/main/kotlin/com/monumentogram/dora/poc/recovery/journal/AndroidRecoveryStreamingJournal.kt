@@ -543,7 +543,6 @@ private class AndroidSqliteRecoveryStreamingJournalDatabase(private val database
             arrayOf(id.sqliteHex()),
             null,
             RecoveryStreamingSqlCodec::decodeOutcome,
-            RecoveryStreamingJournalClassification.JOURNAL_ATTEMPT_CONFLICT,
         )
 
     override fun outcomesByWitness(
@@ -593,7 +592,6 @@ private class AndroidSqliteRecoveryStreamingJournalDatabase(private val database
             arrayOf(id.sqliteHex()),
             null,
             RecoveryStreamingSqlCodec::decodeRange,
-            RecoveryStreamingJournalClassification.STREAM_RANGE_QUARANTINE_COLLISION,
         )
 
     override fun rangesBySourceTuple(
@@ -616,7 +614,6 @@ private class AndroidSqliteRecoveryStreamingJournalDatabase(private val database
             ),
             null,
             RecoveryStreamingSqlCodec::decodeRange,
-            RecoveryStreamingJournalClassification.STREAM_RANGE_QUARANTINE_COLLISION,
         )
 
     override fun beginTransactionNonExclusive(): RecoveryStreamingJournalTransaction {
@@ -631,18 +628,14 @@ private class AndroidSqliteRecoveryStreamingJournalDatabase(private val database
         selectionArgs: Array<String>,
         orderBy: String?,
         decode: (List<StreamingSqliteCell>) -> T,
-        decodeFailureClassification: RecoveryStreamingJournalClassification =
-            RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL,
     ): List<T> =
         database.query(table, columns, selection, selectionArgs, null, null, orderBy).use { cursor
             ->
             buildList {
                 while (cursor.moveToNext()) {
                     add(
-                        try {
+                        decodeStreamingJournalRow {
                             decode(cursor.strictCells(columns))
-                        } catch (failure: IllegalArgumentException) {
-                            throw JournalStructuralException(decodeFailureClassification, failure)
                         }
                     )
                 }
@@ -727,10 +720,16 @@ private class AndroidSqliteRecoveryStreamingJournalDatabase(private val database
     }
 }
 
-private class JournalStructuralException(
-    val classification: RecoveryStreamingJournalClassification,
-    cause: Throwable,
-) : IllegalStateException(cause)
+internal fun <T> decodeStreamingJournalRow(decode: () -> T): T =
+    try {
+        decode()
+    } catch (failure: IllegalArgumentException) {
+        throw JournalStructuralException(failure)
+    }
+
+private class JournalStructuralException(cause: Throwable) : IllegalStateException(cause) {
+    val classification = RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL
+}
 
 private fun Sha256Value.sqliteHex(): String = toLowercaseHex().uppercase(Locale.ROOT)
 
@@ -797,6 +796,8 @@ internal class AndroidRecoveryStreamingJournal(
             guardedUniqueRead(database.outcomesByWitness(runId, checkpointIdentity, witnessId)) {
                 RecoveryStreamingExistingEvidence.Outcome(it.outcomeId)
             }
+        } catch (_: JournalStructuralException) {
+            readFatal(RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL)
         } catch (_: Exception) {
             RecoveryStreamingJournalReadResult.Retry(
                 RecoveryStreamingJournalClassification.JOURNAL_OPERATIONAL
@@ -874,7 +875,7 @@ internal class AndroidRecoveryStreamingJournal(
             ) {
                 RecoveryStreamingJournalResult.CheckpointReceipt(row.checkpointIdentity, true)
             } else {
-                fatalCheckpoints(sameGeneration + row)
+                fatalCheckpoints(sameGeneration)
             }
         }
         if (!isValidProposedCheckpoint(existing, row)) {

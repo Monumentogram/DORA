@@ -12,6 +12,7 @@ package com.monumentogram.dora.poc.recovery.journal
 
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingCheckpointIdentityInput
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingCheckpointRow
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingExistingEvidence
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingIdentity
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalClassification
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalReadResult
@@ -189,6 +190,37 @@ class AndroidRecoveryStreamingJournalTest {
             )
 
         mutations.forEach(::assertIllegalArgument)
+    }
+
+    @Test
+    fun `adapter strict decode failure stays structural through public witness lookup`() {
+        val malformed =
+            RecoveryStreamingSqlCodec.encodeOutcome(validAuthenticationFailure().outcome)
+                .replaced(21, StreamingSqliteCell.Text("UNKNOWN"))
+        val decodeFailure =
+            try {
+                decodeStreamingJournalRow {
+                    RecoveryStreamingSqlCodec.decodeOutcome(malformed)
+                }
+                fail("Expected strict decoding to fail")
+                error("unreachable")
+            } catch (failure: Throwable) {
+                failure
+            }
+        val attempt = validAuthenticationFailure()
+
+        val result =
+            AndroidRecoveryStreamingJournal(RecordingDatabase(witnessFailure = decodeFailure))
+                .outcomeByWitness(
+                    attempt.outcome.runId,
+                    attempt.outcome.checkpointIdentity,
+                    attempt.outcome.sourceWitnessId,
+                )
+
+        assertEquals(
+            RecoveryStreamingJournalClassification.JOURNAL_STRUCTURAL,
+            readFatal(result).classification,
+        )
     }
 
     @Test
@@ -604,19 +636,16 @@ class AndroidRecoveryStreamingJournalTest {
             RecoveryStreamingJournalClassification.STREAM_CHECKPOINT_SPLIT_BRAIN,
             fatal(splitResult).classification,
         )
+        assertEquals(
+            listOf(RecoveryStreamingExistingEvidence.Checkpoint(split.checkpointIdentity)),
+            fatal(splitResult).existingEvidence,
+        )
     }
 
     @Test
     fun `operational reads and active range ordering fail closed`() {
         val first = validAuthenticationFailure()
-        val second =
-            validAuthenticationFailure(
-                runSeed = 2,
-                observedEnd = 12_289UL,
-                recoveredEnd = 12_216UL,
-                acceptedEnd = 12_217UL,
-                preFaultEnd = 12_288UL,
-            )
+        val second = validAuthenticationFailure(returnedDigest = "tied-range")
         val database = RecordingDatabase()
         database.ranges += requireNotNull(second.range)
         database.ranges += requireNotNull(first.range)
@@ -624,12 +653,22 @@ class AndroidRecoveryStreamingJournalTest {
 
         val read = journal.activeRanges(first.outcome.runId, "stream/stream.ct")
         val values = (read as RecoveryStreamingJournalReadResult.Value).value
+        assertEquals(2, values.size)
         assertEquals(
-            values.sortedWith(
-                compareBy<RecoveryStreamingRangeRow> { it.rangeStart }
-                    .thenBy { it.rangeEnd }
-                    .thenBy { it.rangeIntentId.toLowercaseHex() }
-            ),
+            requireNotNull(first.range).rangeStart,
+            requireNotNull(second.range).rangeStart,
+        )
+        assertEquals(requireNotNull(first.range).rangeEnd, requireNotNull(second.range).rangeEnd)
+        assertFalse(
+            requireNotNull(first.range).rangeIntentId == requireNotNull(second.range).rangeIntentId
+        )
+        assertEquals(
+            listOf(requireNotNull(first.range), requireNotNull(second.range))
+                .sortedWith(
+                    compareBy<RecoveryStreamingRangeRow> { it.rangeStart }
+                        .thenBy { it.rangeEnd }
+                        .thenBy { it.rangeIntentId.toLowercaseHex() }
+                ),
             values,
         )
 
@@ -1076,6 +1115,7 @@ class AndroidRecoveryStreamingJournalTest {
         private val rangeIdOverride: List<RecoveryStreamingRangeRow>? = null,
         private val rangeSourceOverride: List<RecoveryStreamingRangeRow>? = null,
         private val conflictOutcome: RecoveryStreamingOutcomeRow? = null,
+        private val witnessFailure: Throwable? = null,
     ) : RecoveryStreamingJournalDatabase {
         val queryEvents = mutableListOf<String>()
         val transactionEvents = mutableListOf<String>()
@@ -1105,6 +1145,7 @@ class AndroidRecoveryStreamingJournalTest {
             witnessId: Sha256Value,
         ): List<RecoveryStreamingOutcomeRow> {
             queryEvents += "outcome-witness"
+            witnessFailure?.let { throw it }
             return witnessOverride
                 ?: outcomes.filter {
                     it.runId == runId &&
