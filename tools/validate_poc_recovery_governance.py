@@ -6178,14 +6178,24 @@ def validate_rec_i3_squash_main(lifecycle: RecoveryLifecycleIdentity) -> None:
         )
         for relative in REC_I3_SQUASH_MAIN_CORRECTION_PATHS:
             validate_rec_i3_regular_file(relative)
-        if integrated_correction_main:
+        if integrated_correction_main or pull_request is not None:
             require(
                 all(
                     not changes[layer]
                     for layer in ("staged", "unstaged", "untracked")
                 ),
-                f"REC-I3 integrated correction main checkout is dirty: {changes}",
+                f"REC-I3 correction integration checkout is dirty: {changes}",
             )
+        if pull_request is not None:
+            for relative in REC_I3_SQUASH_MAIN_CORRECTION_PATHS:
+                require(
+                    git_path_records("ls-tree", "-z", "HEAD", "--", relative)
+                    == git_path_records(
+                        "ls-tree", "-z", pull_request.head_sha, "--", relative
+                    ),
+                    "REC-I3 correction pull_request merge entry differs from its "
+                    f"declared head: {relative}",
+                )
     else:
         require(
             not changed_paths,

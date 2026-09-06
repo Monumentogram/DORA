@@ -1799,6 +1799,130 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             self.assertNotEqual(0, rejected.returncode)
             self.assertNotIn("squash-merged main validation passed", rejected.stdout)
 
+    def test_correction_pull_request_binds_head_entries_and_clean_layers(self) -> None:
+        integrated_main = "be37378ca88e0bd4aee1f2fe0c54362798bdef9d"
+        correction_branch = "codex/rec-i3-squash-main-governance-v01"
+        correction_root = Path(governance.__file__).resolve().parents[1]
+        correction_head = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=correction_root,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        correction_tree = subprocess.run(
+            ["git", "show", "-s", "--format=%T", correction_head],
+            cwd=correction_root,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        validator_source = str(Path(governance.__file__).resolve())
+        child_code = (
+            "import importlib.util, os, pathlib, sys; "
+            "source = pathlib.Path(sys.argv[1]); root = pathlib.Path(sys.argv[2]); "
+            "spec = importlib.util.spec_from_file_location('correction_pr_governance', source); "
+            "module = importlib.util.module_from_spec(spec); "
+            "sys.modules[spec.name] = module; spec.loader.exec_module(module); "
+            "module.ROOT = root; os.chdir(root); "
+            "sys.argv = ['validate_poc_recovery_governance.py']; "
+            "raise SystemExit(module.main())"
+        )
+        for case in ("clean", "unstaged", "merge-blob"):
+            with self.subTest(case=case), tempfile.TemporaryDirectory(
+                prefix="dora-rec-i3-correction-pr-"
+            ) as temporary:
+                parent = Path(temporary)
+                repo = parent / "repo"
+                governance.test_git(
+                    parent,
+                    "clone",
+                    "--shared",
+                    "--no-checkout",
+                    str(governance.ROOT),
+                    str(repo),
+                )
+                merge_tree = correction_tree
+                if case == "merge-blob":
+                    governance.test_git(repo, "checkout", "--detach", "-q", correction_head)
+                    test_path = repo / "tools/test_poc_recovery_i3_governance.py"
+                    test_path.write_bytes(test_path.read_bytes() + b"\n# synthetic merge-only drift\n")
+                    governance.test_git(repo, "add", "--", "tools/test_poc_recovery_i3_governance.py")
+                    merge_tree = governance.test_git_text(repo, "write-tree")
+                merge_head = governance.test_git_text(
+                    repo,
+                    "-c",
+                    "user.name=Dora Validator Test",
+                    "-c",
+                    "user.email=dora-validator@example.invalid",
+                    "commit-tree",
+                    merge_tree,
+                    "-p",
+                    integrated_main,
+                    "-p",
+                    correction_head,
+                    input_data=b"synthetic correction pull request merge\n",
+                )
+                governance.test_git(repo, "checkout", "--detach", "-q", merge_head)
+                if case == "unstaged":
+                    test_path = repo / "tools/test_poc_recovery_i3_governance.py"
+                    test_path.write_bytes(test_path.read_bytes() + b"\n# synthetic unstaged drift\n")
+
+                runner_temp = parent / "runner-temp"
+                runner_temp.mkdir()
+                event_path = runner_temp / "event.json"
+                pull_request_number = 68
+                governance.write_test_pull_request_event(
+                    event_path,
+                    number=pull_request_number,
+                    head_ref=correction_branch,
+                    head_sha=correction_head,
+                    base_sha=integrated_main,
+                    merge_sha=merge_head,
+                )
+                child_environment = os.environ.copy()
+                for key in tuple(child_environment):
+                    if key.startswith("GITHUB_") or key == "RUNNER_TEMP":
+                        child_environment.pop(key)
+                child_environment.update(
+                    {
+                        "GITHUB_EVENT_NAME": "pull_request",
+                        "GITHUB_REPOSITORY": governance.GITHUB_REPOSITORY,
+                        "GITHUB_WORKSPACE": str(repo.resolve()),
+                        "RUNNER_TEMP": str(runner_temp.resolve()),
+                        "GITHUB_EVENT_PATH": str(event_path.resolve()),
+                        "GITHUB_HEAD_REF": correction_branch,
+                        "GITHUB_BASE_REF": governance.GITHUB_BASE_BRANCH,
+                        "GITHUB_REF": f"refs/pull/{pull_request_number}/merge",
+                        "GITHUB_SHA": merge_head,
+                    }
+                )
+                completed = self.run_bounded_validator_child(
+                    cwd=repo,
+                    environment=child_environment,
+                    command=[sys.executable, "-c", child_code, validator_source, str(repo)],
+                )
+                if case == "clean":
+                    self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
+                    self.assertIn("squash-merged main", completed.stdout)
+                else:
+                    self.assertNotEqual(
+                        0,
+                        completed.returncode,
+                        f"{case} correction PR unexpectedly passed\n"
+                        + completed.stdout
+                        + completed.stderr,
+                    )
+                    expected_error = (
+                        "REC-I3 correction integration checkout is dirty"
+                        if case == "unstaged"
+                        else "REC-I3 correction pull_request merge entry differs"
+                    )
+                    self.assertIn(
+                        expected_error,
+                        completed.stdout + completed.stderr,
+                    )
+
     def test_e36_gapi_exact_local_and_stacked_pr_topologies_are_reachable(self) -> None:
         integrated_main = "be37378ca88e0bd4aee1f2fe0c54362798bdef9d"
         harness_head = "7a7036513f2eb460ed72136e1784d712c4aae42d"
