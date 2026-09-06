@@ -2,6 +2,8 @@ package com.monumentogram.dora.poc.recovery.candidate
 
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingExistingEvidence
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingIdentity
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalResult
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingRangeRow
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingWitnessInput
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
@@ -501,6 +503,117 @@ class RecoveryStreamingReconciliationControllerTest {
         assertEquals(17UL, completed.firstMismatchOffset)
         assertEquals(Sha256Value.calculate(returned), completed.completedPlaintextSha256)
         assertNotEquals(completed.completedPlaintextSha256, completed.oraclePrefixSha256)
+    }
+
+    @Test
+    fun `exact receipt readback closes resources before one sanitized evidence attempt`() {
+        val outcome =
+            RecoveryStreamingIntentBuilder.buildOutcome(intentFacts(completed = equalRead(8_136UL)))
+        val range = RecoveryStreamingRangeRow.exact(outcome, sha(41))
+        val order = mutableListOf<String>()
+        val pending =
+            RecoveryStreamingPendingPersistedResult.exactReadback(
+                outcome,
+                range,
+                RecoveryStreamingJournalResult.Receipt(
+                    outcome.outcomeId,
+                    range.rangeIntentId,
+                    replayed = false,
+                ),
+            ) {
+                order += "public-close"
+                error("public close")
+            }
+        order += "descriptor-close"
+        val result =
+            pending.complete(
+                sourceDescriptorCloseFailed = true,
+                evidenceSink =
+                    RecoveryStreamingEvidenceSink { event ->
+                        order += "evidence"
+                        assertEquals(outcome.outcomeId, event.outcomeId)
+                        assertEquals(range.rangeIntentId, event.rangeIntentId)
+                        assertEquals(StreamDecision.VALID, event.persistedDecision)
+                        assertEquals(
+                            RecoveryStreamingPostReceiptCleanup
+                                .PUBLIC_STREAM_AND_SOURCE_DESCRIPTOR_CLOSE_FAILED,
+                            event.postReceiptCleanup,
+                        )
+                        assertTrue(event.existingEvidenceReferences.isEmpty())
+                        error("sink unavailable")
+                    },
+            ) as RecoveryStreamingReconciliationResult.PersistedValid
+
+        assertEquals(listOf("public-close", "descriptor-close", "evidence"), order)
+        assertEquals(
+            RecoveryStreamingPostReceiptCleanup.PUBLIC_STREAM_AND_SOURCE_DESCRIPTOR_CLOSE_FAILED,
+            result.receipt.postReceiptCleanup,
+        )
+        assertEquals(RecoveryStreamingEvidenceDelivery.PENDING, result.receipt.evidenceDelivery)
+    }
+
+    @Test
+    fun `receipt core rejects anything except exact journal readback`() {
+        val outcome =
+            RecoveryStreamingIntentBuilder.buildOutcome(intentFacts(completed = equalRead(8_136UL)))
+        val range = RecoveryStreamingRangeRow.exact(outcome, sha(42))
+
+        assertThrows(IllegalArgumentException::class.java) {
+            RecoveryStreamingPendingPersistedResult.exactReadback(
+                outcome,
+                range,
+                RecoveryStreamingJournalResult.Receipt(
+                    sha(43),
+                    range.rangeIntentId,
+                    replayed = false,
+                ),
+            ) {}
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            RecoveryStreamingPendingPersistedResult.exactReadback(
+                outcome,
+                null,
+                RecoveryStreamingJournalResult.Receipt(
+                    outcome.outcomeId,
+                    range.rangeIntentId,
+                    replayed = false,
+                ),
+            ) {}
+        }
+    }
+
+    @Test
+    fun `nonpersistable evidence is attempted once without throwable or source fields`() {
+        val result =
+            RecoveryStreamingReconciliationResult.Retry.of(
+                RecoveryStreamingResultStage.JOURNAL,
+                RecoveryStreamingResultClassification.JOURNAL_COMMIT_STATE_UNRESOLVED,
+                RecoveryStreamingSafeExceptionType.SQLITE,
+                attemptedOutcomeId = sha(44),
+                attemptedRangeId = sha(45),
+            )
+        var attempts = 0
+        val returned =
+            RecoveryStreamingEvidenceFinalizer.nonPersistable(
+                result,
+                RecoveryStreamingEvidenceSink { event ->
+                    attempts += 1
+                    assertEquals(
+                        RecoveryStreamingResultClassification.JOURNAL_COMMIT_STATE_UNRESOLVED,
+                        event.classification,
+                    )
+                    assertEquals(sha(44), event.attemptedOutcomeId)
+                    error("sink unavailable")
+                },
+            )
+
+        assertTrue(returned === result)
+        assertEquals(1, attempts)
+        val names = RecoveryStreamingEvidenceEvent::class.java.declaredFields.map { it.name }
+        assertFalse(names.any { it.contains("throwable", ignoreCase = true) })
+        assertFalse(names.any { it.contains("path", ignoreCase = true) })
+        assertFalse(names.any { it.contains("sha256", ignoreCase = true) })
+        assertFalse(names.any { it.contains("byte", ignoreCase = true) })
     }
 
     private fun render(mapping: RecoveryStreamingResultMapping): String =

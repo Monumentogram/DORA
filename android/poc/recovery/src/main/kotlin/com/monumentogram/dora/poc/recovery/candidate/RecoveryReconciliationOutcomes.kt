@@ -4,7 +4,9 @@ import com.monumentogram.dora.poc.recovery.contract.BoundedBinaryWriter
 import com.monumentogram.dora.poc.recovery.contract.RecoveryContract
 import com.monumentogram.dora.poc.recovery.contract.RecoveryManifest
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingExistingEvidence
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalResult
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingOutcomeRow
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingRangeRow
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
 import com.monumentogram.dora.poc.recovery.contract.StreamDecision
 import com.monumentogram.dora.poc.recovery.contract.StreamDiagnosticBranch
@@ -292,6 +294,232 @@ internal data class RecoveryStreamingPersistenceReceipt(
     val postReceiptCleanup: RecoveryStreamingPostReceiptCleanup,
     val evidenceDelivery: RecoveryStreamingEvidenceDelivery,
 )
+
+/**
+ * Sanitized controller evidence. It deliberately contains neither exception text nor source data.
+ */
+internal class RecoveryStreamingEvidenceEvent
+private constructor(
+    val stage: RecoveryStreamingResultStage?,
+    val classification: RecoveryStreamingResultClassification?,
+    val safeExceptionType: RecoveryStreamingSafeExceptionType?,
+    val outcomeId: Sha256Value?,
+    val rangeIntentId: Sha256Value?,
+    val attemptedOutcomeId: Sha256Value?,
+    val attemptedRangeId: Sha256Value?,
+    val replayed: Boolean?,
+    val persistedDecision: StreamDecision?,
+    val diagnosticBranch: StreamDiagnosticBranch?,
+    val diagnosticStage: StreamDiagnosticStage?,
+    val diagnosticClassification: StreamDiagnosticClassification?,
+    val postReceiptCleanup: RecoveryStreamingPostReceiptCleanup?,
+    existingEvidenceReferences: List<RecoveryStreamingExistingEvidenceReference>,
+) {
+    val existingEvidenceReferences: List<RecoveryStreamingExistingEvidenceReference> =
+        Collections.unmodifiableList(ArrayList(existingEvidenceReferences))
+
+    companion object {
+        fun persisted(
+            row: RecoveryStreamingOutcomeRow,
+            receiptCore: RecoveryStreamingPersistenceReceiptCore,
+            cleanup: RecoveryStreamingPostReceiptCleanup,
+        ) =
+            RecoveryStreamingEvidenceEvent(
+                stage = null,
+                classification = null,
+                safeExceptionType = null,
+                outcomeId = receiptCore.outcomeId,
+                rangeIntentId = receiptCore.optionalRangeIntentId,
+                attemptedOutcomeId = null,
+                attemptedRangeId = null,
+                replayed = receiptCore.replayed,
+                persistedDecision = row.decision,
+                diagnosticBranch = row.diagnosticBranch,
+                diagnosticStage = row.diagnosticStage,
+                diagnosticClassification = row.diagnosticClassification,
+                postReceiptCleanup = cleanup,
+                existingEvidenceReferences = emptyList(),
+            )
+
+        fun nonPersistable(result: RecoveryStreamingReconciliationResult) =
+            when (result) {
+                is RecoveryStreamingReconciliationResult.PersistedValid ->
+                    error("Persisted result requires persisted evidence")
+                is RecoveryStreamingReconciliationResult.Retry ->
+                    RecoveryStreamingEvidenceEvent(
+                        result.stage,
+                        result.classification,
+                        result.safeExceptionType,
+                        null,
+                        null,
+                        result.attemptedOutcomeId,
+                        result.attemptedRangeId,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        result.existingEvidenceReferences,
+                    )
+                is RecoveryStreamingReconciliationResult.Rejected -> {
+                    require(result.persistedDiagnostic == null) {
+                        "Persisted result requires persisted evidence"
+                    }
+                    RecoveryStreamingEvidenceEvent(
+                        result.stage,
+                        result.classification,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        result.existingEvidenceReferences,
+                    )
+                }
+                is RecoveryStreamingReconciliationResult.Fatal -> {
+                    require(result.persistedDiagnostic == null) {
+                        "Persisted result requires persisted evidence"
+                    }
+                    RecoveryStreamingEvidenceEvent(
+                        result.stage,
+                        result.classification,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        result.existingEvidenceReferences,
+                    )
+                }
+            }
+    }
+}
+
+internal fun interface RecoveryStreamingEvidenceSink {
+    fun emit(event: RecoveryStreamingEvidenceEvent)
+}
+
+/** The journal receipt frozen before public-stream and source-descriptor cleanup begins. */
+internal data class RecoveryStreamingPersistenceReceiptCore(
+    val outcomeId: Sha256Value,
+    val optionalRangeIntentId: Sha256Value?,
+    val replayed: Boolean,
+)
+
+internal class RecoveryStreamingPendingPersistedResult
+private constructor(
+    private val row: RecoveryStreamingOutcomeRow,
+    private val receiptCore: RecoveryStreamingPersistenceReceiptCore,
+    private val publicStreamCloseFailed: Boolean,
+) {
+    private var completed = false
+
+    fun complete(
+        sourceDescriptorCloseFailed: Boolean,
+        evidenceSink: RecoveryStreamingEvidenceSink,
+    ): RecoveryStreamingReconciliationResult {
+        check(!completed) { "Persisted result finalization is single-use" }
+        completed = true
+        val cleanup = cleanup(publicStreamCloseFailed, sourceDescriptorCloseFailed)
+        val delivered =
+            runCatching {
+                    evidenceSink.emit(
+                        RecoveryStreamingEvidenceEvent.persisted(row, receiptCore, cleanup)
+                    )
+                }
+                .isSuccess
+        val receipt =
+            RecoveryStreamingPersistenceReceipt(
+                receiptCore.outcomeId,
+                receiptCore.optionalRangeIntentId,
+                receiptCore.replayed,
+                cleanup,
+                if (delivered) {
+                    RecoveryStreamingEvidenceDelivery.DELIVERED
+                } else {
+                    RecoveryStreamingEvidenceDelivery.PENDING
+                },
+            )
+        return when (row.decision) {
+            StreamDecision.VALID ->
+                RecoveryStreamingReconciliationResult.PersistedValid.from(row, receipt)
+            StreamDecision.REJECTED ->
+                RecoveryStreamingReconciliationResult.Rejected.persisted(row, receipt)
+            StreamDecision.FATAL ->
+                RecoveryStreamingReconciliationResult.Fatal.persisted(row, receipt)
+        }
+    }
+
+    companion object {
+        fun exactReadback(
+            row: RecoveryStreamingOutcomeRow,
+            range: RecoveryStreamingRangeRow?,
+            receipt: RecoveryStreamingJournalResult.Receipt,
+            closePublicStream: () -> Unit,
+        ): RecoveryStreamingPendingPersistedResult {
+            require(receipt.outcomeId == row.outcomeId) {
+                "Journal receipt outcome does not match the exact attempted row"
+            }
+            require(receipt.rangeIntentId == range?.rangeIntentId) {
+                "Journal receipt range does not match the exact attempted row"
+            }
+            require((row.requiredRangeStart == null) == (range == null)) {
+                "Exact attempted range presence does not match outcome"
+            }
+            require(range == null || range.outcomeId == row.outcomeId) {
+                "Exact attempted range has another parent"
+            }
+            val closeFailed = runCatching(closePublicStream).isFailure
+            return RecoveryStreamingPendingPersistedResult(
+                row,
+                RecoveryStreamingPersistenceReceiptCore(
+                    receipt.outcomeId,
+                    receipt.rangeIntentId,
+                    receipt.replayed,
+                ),
+                closeFailed,
+            )
+        }
+
+        private fun cleanup(
+            publicStreamCloseFailed: Boolean,
+            sourceDescriptorCloseFailed: Boolean,
+        ): RecoveryStreamingPostReceiptCleanup =
+            when {
+                publicStreamCloseFailed && sourceDescriptorCloseFailed ->
+                    RecoveryStreamingPostReceiptCleanup
+                        .PUBLIC_STREAM_AND_SOURCE_DESCRIPTOR_CLOSE_FAILED
+                publicStreamCloseFailed ->
+                    RecoveryStreamingPostReceiptCleanup.PUBLIC_STREAM_CLOSE_FAILED
+                sourceDescriptorCloseFailed ->
+                    RecoveryStreamingPostReceiptCleanup.SOURCE_DESCRIPTOR_CLOSE_FAILED
+                else -> RecoveryStreamingPostReceiptCleanup.NONE
+            }
+    }
+}
+
+internal object RecoveryStreamingEvidenceFinalizer {
+    fun nonPersistable(
+        result: RecoveryStreamingReconciliationResult,
+        evidenceSink: RecoveryStreamingEvidenceSink,
+    ): RecoveryStreamingReconciliationResult {
+        runCatching { evidenceSink.emit(RecoveryStreamingEvidenceEvent.nonPersistable(result)) }
+        return result
+    }
+}
 
 internal data class RecoveryStreamingExistingEvidenceReference(
     val recordKind: RecoveryStreamingExistingRecordKind,
