@@ -1133,7 +1133,18 @@ internal class RecoveryStreamingReconciliationController(
                 publicStream = null,
             )
         }
-        val publicStream = opener.open(opened, request.witness)
+        val publicStream =
+            try {
+                opener.open(opened, request.witness)
+            } catch (failure: RecoveryStreamingIntentBuilder.RecoveryStreamingPublicReadException) {
+                return FreshExecution.NonPersistable(
+                    RecoveryStreamingReconciliationResult.Retry.of(
+                        RecoveryStreamingResultStage.STREAM_READ,
+                        RecoveryStreamingResultClassification.STREAM_PUBLIC_READ_OPERATIONAL,
+                        failure.safeExceptionType,
+                    )
+                )
+            }
         return when (
             val read =
                 RecoveryStreamingIntentBuilder.RecoveryStreamingReadLoop.read(
@@ -1249,10 +1260,14 @@ internal class RecoveryStreamingReconciliationController(
             )
         }
         val verified =
-            source.verifyReplayHashOnly(
-                replayAccess,
-                RecoveryStreamReplayRequest(request.witness.runId, outcome.outcomeId),
-            )
+            try {
+                source.verifyReplayHashOnly(
+                    replayAccess,
+                    RecoveryStreamReplayRequest(request.witness.runId, outcome.outcomeId),
+                )
+            } catch (failure: RecoveryStreamingSourceException) {
+                return nonPersistable(mapSourceFailure(failure))
+            }
         if (
             verified !is RecoveryReplayHashOnlyResult.ExactStoredSourceMetadata ||
                 verified.observedBytes != outcome.observedSourceBytes ||

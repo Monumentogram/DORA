@@ -1245,6 +1245,98 @@ class RecoveryStreamingReconciliationControllerTest {
     }
 
     @Test
+    fun `public stream open crypto failure retries after source close without write`() {
+        val fixture = controllerFixture()
+        val events = mutableListOf<String>()
+        val journal = ControllerJournal(events).apply { checkpoints = listOf(fixture.checkpoint) }
+        val controller =
+            RecoveryStreamingReconciliationController(
+                journal,
+                FreshControllerSource(events, fixture.source),
+                RecoveryRunSingleWriterGuard { RecoveryRunWriterLease {} },
+                RecoveryStreamingCheckpointAuthenticator { _, _ ->
+                    RecoveryStreamingCheckpointAuthentication.Ready(
+                        RecoveryStreamingPublicStreamOpener { _, _ ->
+                            events += "public-open"
+                            throw RecoveryStreamingIntentBuilder.RecoveryStreamingPublicReadException(
+                                RecoveryStreamingSafeExceptionType.CRYPTO
+                            )
+                        }
+                    )
+                },
+                RecoveryStreamingEvidenceSink { events += "evidence" },
+            )
+
+        val result =
+            controller.recover(fixture.request) as RecoveryStreamingReconciliationResult.Retry
+
+        assertEquals(RecoveryStreamingResultStage.STREAM_READ, result.stage)
+        assertEquals(
+            RecoveryStreamingResultClassification.STREAM_PUBLIC_READ_OPERATIONAL,
+            result.classification,
+        )
+        assertEquals(RecoveryStreamingSafeExceptionType.CRYPTO, result.safeExceptionType)
+        assertTrue(events.indexOf("public-open") < events.indexOf("source-close"))
+        assertTrue(events.indexOf("source-close") < events.indexOf("evidence"))
+        assertEquals(0, journal.persistCalls)
+    }
+
+    @Test
+    fun `replay source identity exception maps without second source or write`() {
+        val fixture = controllerFixture()
+        val events = mutableListOf<String>()
+        val outcome = controllerValidOutcome(fixture)
+        val journal =
+            ControllerJournal(events).apply {
+                checkpoints = listOf(fixture.checkpoint)
+                existingOutcome = outcome
+            }
+        val source =
+            object : RecoveryStreamingSource {
+                override fun <T> withSource(
+                    access: RecoveryStreamingSourceLeaseAccess,
+                    request: RecoveryStreamOpenRequest,
+                    block: (RecoveryOpenedStreamingSource) -> T,
+                ): T = error("replay must not use normal source")
+
+                override fun verifyReplayHashOnly(
+                    access: RecoveryStreamingReplayAccess,
+                    request: RecoveryStreamReplayRequest,
+                ): RecoveryReplayHashOnlyResult {
+                    events += "replay-source-open"
+                    throw RecoveryStreamingSourceException(
+                        RecoveryStreamingSourceFailure.SOURCE_CHANGED
+                    )
+                }
+            }
+        val controller =
+            RecoveryStreamingReconciliationController(
+                journal,
+                source,
+                RecoveryRunSingleWriterGuard { RecoveryRunWriterLease {} },
+                RecoveryStreamingCheckpointAuthenticator { _, _ ->
+                    RecoveryStreamingCheckpointAuthentication.Ready(
+                        RecoveryStreamingPublicStreamOpener { _, _ ->
+                            error("replay must not open public stream")
+                        }
+                    )
+                },
+                RecoveryStreamingEvidenceSink { events += "evidence" },
+            )
+
+        val result =
+            controller.recover(fixture.request) as RecoveryStreamingReconciliationResult.Fatal
+
+        assertEquals(RecoveryStreamingResultStage.SOURCE_PROOF, result.stage)
+        assertEquals(
+            RecoveryStreamingResultClassification.STREAM_SOURCE_IDENTITY_CHANGED,
+            result.classification,
+        )
+        assertEquals(1, events.count { it == "replay-source-open" })
+        assertEquals(0, journal.persistCalls)
+    }
+
+    @Test
     fun `proven rollback and reconciled absence for semantic valid returns operational retry`() {
         val fixture = controllerFixture()
         val events = mutableListOf<String>()
