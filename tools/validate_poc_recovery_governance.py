@@ -6065,14 +6065,7 @@ def rec_i3_squash_main_protected_paths() -> set[str]:
     return protected_paths
 
 
-def validate_rec_i3_squash_main(lifecycle: RecoveryLifecycleIdentity) -> None:
-    validate_pinned_commit_identity(
-        collect_pinned_commit_identity(REC_I3_SQUASH_MAIN_ANCHOR, lifecycle.head),
-        expected_commit=REC_I3_SQUASH_MAIN_ANCHOR,
-        expected_tree=REC_I3_SQUASH_MAIN_TREE,
-        expected_parents=(REC_I3_SQUASH_MAIN_PARENT,),
-        label="REC-I3 squash-main anchor",
-    )
+def validate_rec_i3_reviewed_source_provenance() -> None:
     validate_pinned_commit_identity(
         collect_pinned_commit_identity(
             REC_I3_SQUASH_MAIN_REVIEWED_HEAD,
@@ -6081,11 +6074,21 @@ def validate_rec_i3_squash_main(lifecycle: RecoveryLifecycleIdentity) -> None:
         expected_commit=REC_I3_SQUASH_MAIN_REVIEWED_HEAD,
         expected_tree=REC_I3_SQUASH_MAIN_TREE,
         expected_parents=(REC_I3_SQUASH_MAIN_REVIEWED_PARENT,),
-        label="REC-I3 squash-main reviewed source",
+        label="REC-I3 historical reviewed source",
     )
     require(
         git_is_ancestor(REC_I3_SCOPE_COMMIT, REC_I3_SQUASH_MAIN_REVIEWED_HEAD),
-        "REC-I3 squash-main reviewed source omits the scope-first lineage",
+        "REC-I3 historical reviewed source omits the scope-first lineage",
+    )
+
+
+def validate_rec_i3_squash_main(lifecycle: RecoveryLifecycleIdentity) -> None:
+    validate_pinned_commit_identity(
+        collect_pinned_commit_identity(REC_I3_SQUASH_MAIN_ANCHOR, lifecycle.head),
+        expected_commit=REC_I3_SQUASH_MAIN_ANCHOR,
+        expected_tree=REC_I3_SQUASH_MAIN_TREE,
+        expected_parents=(REC_I3_SQUASH_MAIN_PARENT,),
+        label="REC-I3 squash-main anchor",
     )
     integrated_correction_main = (
         lifecycle.github_pull_request_context is None
@@ -6227,20 +6230,6 @@ def validate_rec_i3_e36_gapi(lifecycle: RecoveryLifecycleIdentity) -> None:
         expected_tree=REC_I3_E36_GAPI_TREE,
         expected_parents=(REC_I3_E36_GAPI_PARENT,),
         label="REC-I3 E36-GAPI harness head",
-    )
-    validate_pinned_commit_identity(
-        collect_pinned_commit_identity(
-            REC_I3_SQUASH_MAIN_REVIEWED_HEAD,
-            REC_I3_SQUASH_MAIN_REVIEWED_HEAD,
-        ),
-        expected_commit=REC_I3_SQUASH_MAIN_REVIEWED_HEAD,
-        expected_tree=REC_I3_SQUASH_MAIN_TREE,
-        expected_parents=(REC_I3_SQUASH_MAIN_REVIEWED_PARENT,),
-        label="REC-I3 E36-GAPI reviewed source",
-    )
-    require(
-        git_is_ancestor(REC_I3_SCOPE_COMMIT, REC_I3_SQUASH_MAIN_REVIEWED_HEAD),
-        "REC-I3 E36-GAPI reviewed source omits the scope-first lineage",
     )
     require(
         git_output(
@@ -10763,49 +10752,23 @@ def validate_rec_i3_result_boundary_fast_path() -> bool:
     return True
 
 
-def run_rec_i3_integrated_profile_self_tests(*, prefix: str, failure: str) -> None:
-    global ROOT
+def run_rec_i3_integrated_profile_self_tests(*, failure: str) -> None:
     import unittest
     import test_poc_recovery_i3_governance
 
-    integrated_root = ROOT
-    with tempfile.TemporaryDirectory(prefix=prefix) as temporary:
-        parent = Path(temporary)
-        source_repo = parent / "reviewed-source"
-        test_git(
-            parent,
-            "clone",
-            "--shared",
-            "--no-checkout",
-            str(integrated_root),
-            str(source_repo),
+    test_case = test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests
+    suite = unittest.TestSuite(
+        test_case(name)
+        for name in (
+            "test_source_equal_squash_merged_correction_main_is_exact_and_terminal",
+            "test_correction_pull_request_binds_head_entries_and_clean_layers",
+            "test_e36_gapi_exact_local_and_stacked_pr_topologies_are_reachable",
+            "test_squash_main_rejects_new_names_in_every_protected_change_layer",
+            "test_squash_main_github_push_rejects_missing_workspace",
+            "test_required_regular_file_rejects_missing_index_entry",
         )
-        test_git(
-            source_repo,
-            "checkout",
-            "-q",
-            "-B",
-            REC_I3_OBSERVABLE_CONTROLLER_BRANCH,
-            REC_I3_SQUASH_MAIN_REVIEWED_HEAD,
-        )
-        test_git(
-            source_repo,
-            "update-ref",
-            "refs/remotes/origin/main",
-            REC_I3_SQUASH_MAIN_PARENT,
-        )
-        test_governance = test_poc_recovery_i3_governance.governance
-        test_root = test_governance.ROOT
-        try:
-            ROOT = source_repo
-            test_governance.ROOT = source_repo
-            suite = unittest.defaultTestLoader.loadTestsFromTestCase(
-                test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests
-            )
-            successful = unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful()
-        finally:
-            test_governance.ROOT = test_root
-            ROOT = integrated_root
+    )
+    successful = unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful()
     require(successful, failure)
 
 
@@ -10816,7 +10779,6 @@ def validate_rec_i3_e36_gapi_fast_path() -> bool:
     validate_rec_i3_e36_gapi(lifecycle)
     if "--self-test" in sys.argv[1:]:
         run_rec_i3_integrated_profile_self_tests(
-            prefix="dora-rec-i3-e36-gapi-self-test-",
             failure="REC-I3 E36-GAPI regression self-tests failed",
         )
     print(
@@ -10834,7 +10796,6 @@ def validate_rec_i3_squash_main_fast_path() -> bool:
     validate_rec_i3_squash_main(lifecycle)
     if "--self-test" in sys.argv[1:]:
         run_rec_i3_integrated_profile_self_tests(
-            prefix="dora-rec-i3-squash-main-self-test-",
             failure="REC-I3 squash-main regression self-tests failed",
         )
     print(
