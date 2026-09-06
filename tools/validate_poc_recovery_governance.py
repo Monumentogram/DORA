@@ -6297,7 +6297,10 @@ def validate_rec_i3_result_boundary(lifecycle: RecoveryLifecycleIdentity) -> Non
         changes,
         committed_tree_paths,
         committed_history_paths,
-        git_output("diff", "--summary", REC_I3_RESULT_BOUNDARY_BASE, candidate_head),
+        git_output(
+            "log", "--format=", "--summary", "--find-renames",
+            f"{REC_I3_RESULT_BOUNDARY_BASE}..{candidate_head}", "--",
+        ),
     )
     for relative in REC_I3_RESULT_BOUNDARY_PATHS:
         validate_rec_i3_regular_file(relative)

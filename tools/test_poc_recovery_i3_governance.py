@@ -1007,7 +1007,10 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
                     "log", "--format=", "--name-only", "--no-renames", "-z",
                     f"{base}..{head}", "--", root=repo
                 )
-                summary = governance.git_output("diff", "--summary", base, head, root=repo)
+                summary = governance.git_output(
+                    "log", "--format=", "--summary", "--find-renames",
+                    f"{base}..{head}", "--", root=repo,
+                )
                 with self.assertRaisesRegex(ValueError, "exact committed ten-path delta|rename/delete"):
                     governance.validate_rec_i3_result_boundary_delta(
                         changes, tree_paths, history_paths, summary
