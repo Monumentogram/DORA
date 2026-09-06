@@ -905,7 +905,12 @@ internal class RecoveryStreamingReconciliationController(
                                 )
                             )
                         } else {
-                            authenticate(generation.single(), request, normalAccess, replayAccess)
+                            replayOrAuthenticate(
+                                generation.single(),
+                                request,
+                                normalAccess,
+                                replayAccess,
+                            )
                         }
                     }
                     else -> nonPersistable(RecoveryStreamingJournalMapper.readFailure(chain))
@@ -928,11 +933,35 @@ internal class RecoveryStreamingReconciliationController(
     ): RecoveryStreamingReconciliationResult =
         RecoveryStreamingEvidenceFinalizer.nonPersistable(result, evidenceSink)
 
-    private fun authenticate(
+    private fun replayOrAuthenticate(
         checkpoint: RecoveryStreamingCheckpointRow,
         request: RecoveryStreamingControllerRequest,
         normalAccess: RecoveryStreamingSourceLeaseAccess,
         replayAccess: RecoveryStreamingReplayAccess,
+    ): RecoveryStreamingReconciliationResult {
+        val existing =
+            when (
+                val result =
+                    journal.outcomeByWitness(
+                        request.witness.runId,
+                        request.witness.checkpointIdentity,
+                        RecoveryStreamingIdentity.witness(request.witness),
+                    )
+            ) {
+                is RecoveryStreamingJournalReadResult.Value -> result.value
+                else -> return nonPersistable(RecoveryStreamingJournalMapper.readFailure(result))
+            }
+        return if (existing == null) {
+            authenticate(checkpoint, request, normalAccess)
+        } else {
+            replay(existing, request, replayAccess)
+        }
+    }
+
+    private fun authenticate(
+        checkpoint: RecoveryStreamingCheckpointRow,
+        request: RecoveryStreamingControllerRequest,
+        normalAccess: RecoveryStreamingSourceLeaseAccess,
     ): RecoveryStreamingReconciliationResult =
         when (
             val authentication = checkpointAuthenticator.authenticate(checkpoint, request.witness)
@@ -962,7 +991,6 @@ internal class RecoveryStreamingReconciliationController(
                     request,
                     authentication.publicStreamOpener,
                     normalAccess,
-                    replayAccess,
                 )
         }
 
@@ -971,26 +999,8 @@ internal class RecoveryStreamingReconciliationController(
         request: RecoveryStreamingControllerRequest,
         opener: RecoveryStreamingPublicStreamOpener,
         normalAccess: RecoveryStreamingSourceLeaseAccess,
-        replayAccess: RecoveryStreamingReplayAccess,
-    ): RecoveryStreamingReconciliationResult {
-        val existing =
-            when (
-                val result =
-                    journal.outcomeByWitness(
-                        request.witness.runId,
-                        request.witness.checkpointIdentity,
-                        RecoveryStreamingIdentity.witness(request.witness),
-                    )
-            ) {
-                is RecoveryStreamingJournalReadResult.Value -> result.value
-                else -> return nonPersistable(RecoveryStreamingJournalMapper.readFailure(result))
-            }
-        return if (existing == null) {
-            activeRangeOrFresh(checkpoint, request, opener, normalAccess)
-        } else {
-            replay(existing, request, replayAccess)
-        }
-    }
+    ): RecoveryStreamingReconciliationResult =
+        activeRangeOrFresh(checkpoint, request, opener, normalAccess)
 
     private fun activeRangeOrFresh(
         checkpoint: RecoveryStreamingCheckpointRow,

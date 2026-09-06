@@ -946,6 +946,7 @@ class RecoveryStreamingReconciliationControllerTest {
             listOf(
                 "lease-acquire",
                 "checkpoint-chain",
+                "outcome-witness",
                 "authenticate",
                 "evidence",
                 "lease-release",
@@ -996,7 +997,6 @@ class RecoveryStreamingReconciliationControllerTest {
             listOf(
                 "lease-acquire",
                 "checkpoint-chain",
-                "authenticate",
                 "outcome-witness",
                 "range-outcome",
                 "replay-source-open",
@@ -1008,6 +1008,64 @@ class RecoveryStreamingReconciliationControllerTest {
         assertEquals(1, source.replayOpens)
         assertEquals(0, source.normalOpens)
         assertEquals(0, journal.persistCalls)
+    }
+
+    @Test
+    fun `exact replay through prerequisite adapter is hash only and never touches artifacts or crypto`() {
+        val fixture = controllerFixture()
+        val events = mutableListOf<String>()
+        val outcome = controllerValidOutcome(fixture)
+        val journal =
+            ControllerJournal(events).apply {
+                checkpoints = listOf(fixture.checkpoint)
+                existingOutcome = outcome
+            }
+        val source = ReplayControllerSource(events, outcome)
+        var prerequisiteReads = 0
+        var cryptoCalls = 0
+        val controller =
+            RecoveryStreamingReconciliationController(
+                journal,
+                source,
+                RecoveryRunSingleWriterGuard {
+                    events += "lease-acquire"
+                    RecoveryRunWriterLease { events += "lease-release" }
+                },
+                RecoveryStreamingCheckpointAuthenticatorAdapter(
+                    RecoveryStreamingPrerequisiteSource { _, _, _ ->
+                        prerequisiteReads += 1
+                        error("exact replay must not read prerequisite artifacts")
+                    },
+                    RecoveryStreamingPrerequisiteCrypto { _, _, _, _ ->
+                        cryptoCalls += 1
+                        error("exact replay must not run prerequisite crypto")
+                    },
+                ),
+                RecoveryStreamingEvidenceSink { events += "evidence" },
+            )
+
+        val result =
+            controller.recover(fixture.request)
+                as RecoveryStreamingReconciliationResult.PersistedValid
+
+        assertTrue(result.receipt.replayed)
+        assertEquals(0, prerequisiteReads)
+        assertEquals(0, cryptoCalls)
+        assertEquals(1, source.replayOpens)
+        assertEquals(0, source.normalOpens)
+        assertEquals(0, journal.persistCalls)
+        assertEquals(
+            listOf(
+                "lease-acquire",
+                "checkpoint-chain",
+                "outcome-witness",
+                "range-outcome",
+                "replay-source-open",
+                "evidence",
+                "lease-release",
+            ),
+            events,
+        )
     }
 
     @Test
@@ -1060,8 +1118,8 @@ class RecoveryStreamingReconciliationControllerTest {
             listOf(
                 "lease-acquire",
                 "checkpoint-chain",
-                "authenticate",
                 "outcome-witness",
+                "authenticate",
                 "active-ranges",
                 "outcome-id",
                 "evidence",
@@ -1123,8 +1181,8 @@ class RecoveryStreamingReconciliationControllerTest {
             listOf(
                 "lease-acquire",
                 "checkpoint-chain",
-                "authenticate",
                 "outcome-witness",
+                "authenticate",
                 "active-ranges",
                 "source-open",
                 "hash-8192",
@@ -1191,8 +1249,8 @@ class RecoveryStreamingReconciliationControllerTest {
             listOf(
                 "lease-acquire",
                 "checkpoint-chain",
-                "authenticate",
                 "outcome-witness",
+                "authenticate",
                 "active-ranges",
                 "source-open",
                 "hash-8191",
@@ -1290,8 +1348,8 @@ class RecoveryStreamingReconciliationControllerTest {
             listOf(
                 "lease-acquire",
                 "checkpoint-chain",
-                "authenticate",
                 "outcome-witness",
+                "authenticate",
                 "active-ranges",
                 "source-deny",
                 "evidence",
