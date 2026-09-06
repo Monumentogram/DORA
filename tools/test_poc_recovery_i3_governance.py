@@ -926,6 +926,16 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             lambda g, p: g["historicalClosure"].__setitem__("REC-RDY-02", "OPEN"),
             lambda g, p: g["readinessLocks"].__setitem__("pocRecoveryStatus", "READY"),
             lambda g, p: g.__setitem__("decision", "DEC-000"),
+            lambda g, p: (
+                g.__setitem__("journalSchemaVersion", 4.0),
+                p["unchangedV07"].__setitem__("journalSchemaVersion", 4.0),
+            ),
+            lambda g, p: p["streamingPersistenceV07"]["database"].__setitem__(
+                "userVersion", 4.0
+            ),
+            lambda g, p: p["streamingPersistenceV07"]["database"].__setitem__(
+                "preserveExactV1V2Objects", 1
+            ),
         )
         for mutation in mutations:
             with self.subTest(mutation=mutation):
@@ -1015,6 +1025,53 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
                     governance.validate_rec_i3_result_boundary_delta(
                         changes, tree_paths, history_paths, summary
                     )
+
+    def test_real_git_v08_history_summary_rejects_final_tree_neutral_delete_revert(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-v08-history-") as temporary:
+            repo, base = governance.initialize_test_git_repo(Path(temporary))
+            for relative in governance.REC_I3_RESULT_BOUNDARY_PATHS:
+                path = repo / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(relative, encoding="utf-8")
+            governance.commit_test_git_repo(repo, "exact governance delta")
+
+            def profile() -> tuple[dict[str, list[str]], list[str], list[str], str]:
+                head = governance.test_git_text(repo, "rev-parse", "HEAD")
+                return (
+                    governance.collect_post_merge_changes(root=repo, merged_anchor=base),
+                    governance.git_path_records(
+                        "diff", "--name-only", "--no-renames", "-z", base, head, "--",
+                        root=repo,
+                    ),
+                    governance.git_path_records(
+                        "log", "--format=", "--name-only", "--no-renames", "-z",
+                        f"{base}..{head}", "--", root=repo,
+                    ),
+                    governance.git_output(
+                        "log", "--format=", "--summary", "--find-renames",
+                        f"{base}..{head}", "--", root=repo,
+                    ),
+                )
+
+            governance.validate_rec_i3_result_boundary_delta(*profile())
+            target = repo / governance.REC_I3_RESULT_BOUNDARY_PATHS[0]
+            target.unlink()
+            deleted = governance.commit_test_git_repo(repo, "delete governance file")
+            governance.test_git(
+                repo, "-c", "user.name=Dora Validator Test", "-c",
+                "user.email=dora-validator@example.invalid",
+                "revert", "--no-edit", deleted,
+            )
+            changes, tree_paths, history_paths, summary = profile()
+            self.assertEqual(set(governance.REC_I3_RESULT_BOUNDARY_PATHS), set(tree_paths))
+            self.assertEqual(set(governance.REC_I3_RESULT_BOUNDARY_PATHS), set(history_paths))
+            self.assertFalse(changes["staged"] or changes["unstaged"] or changes["untracked"])
+            with self.assertRaisesRegex(
+                ValueError, "committed delta contains rename/delete/mode drift"
+            ):
+                governance.validate_rec_i3_result_boundary_delta(
+                    changes, tree_paths, history_paths, summary
+                )
 
     def test_v08_profile_is_distinct_and_preserves_mocked_v07_dispatch(self) -> None:
         base = governance.RecoveryLifecycleIdentity(

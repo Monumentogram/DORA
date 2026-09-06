@@ -5935,7 +5935,10 @@ def validate_rec_i3_result_boundary_contract(
         "pinned v0.7 protocol git object",
     )
     require(
-        protocol["streamingPersistenceV07"] == v07_protocol["streamingPersistenceV07"],
+        exact_json_value(
+            protocol["streamingPersistenceV07"],
+            v07_protocol["streamingPersistenceV07"],
+        ),
         "REC-I3 result-boundary inherited streamingPersistenceV07 deep-equality drift",
     )
     boundary = protocol["streamingResultBoundaryV08"]
@@ -6177,7 +6180,8 @@ def validate_rec_i3_result_boundary_contract(
         "REC-RDY-10", "REC-RDY-11",
     ]
     require(
-        gate["journalSchemaVersion"] == 4
+        type(gate["journalSchemaVersion"]) is int
+        and gate["journalSchemaVersion"] == 4
         and gate["journalPath"] == "poc-recovery/v1/recovery-journal-v1.db"
         and gate["combinedBaseline"] == {
             "commit": REC_I3_STREAMING_PERSISTENCE_BASE,
@@ -6198,7 +6202,8 @@ def validate_rec_i3_result_boundary_contract(
     require(
         protocol["implementationAllowed"] is False
         and protocol["executionAllowed"] is False
-        and protocol["unchangedV07"]["journalSchemaVersion"] == gate["journalSchemaVersion"]
+        and type(protocol["unchangedV07"]["journalSchemaVersion"]) is int
+        and protocol["unchangedV07"]["journalSchemaVersion"] == 4
         and protocol["unchangedV07"]["journalPath"] == gate["journalPath"]
         and protocol["unchangedV07"]["combinedBaselineCommit"]
         == gate["combinedBaseline"]["commit"]
