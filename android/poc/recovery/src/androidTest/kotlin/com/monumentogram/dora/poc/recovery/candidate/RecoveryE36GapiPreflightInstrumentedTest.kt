@@ -224,22 +224,24 @@ class RecoveryE36GapiPreflightInstrumentedTest {
         journal: AndroidRecoveryStreamingJournal,
         request: RecoveryStreamingControllerRequest,
     ) =
-        when (
-            val result =
-                journal.outcomeByWitness(
-                    request.witness.runId,
-                    request.witness.checkpointIdentity,
-                    RecoveryStreamingIdentity.witness(request.witness),
-                )
-        ) {
-            is RecoveryStreamingJournalReadResult.Value -> result.value
-            else -> null
-        }
+        exactJournalValue(
+            journal.outcomeByWitness(
+                request.witness.runId,
+                request.witness.checkpointIdentity,
+                RecoveryStreamingIdentity.witness(request.witness),
+            )
+        )
 
     private fun readRange(journal: AndroidRecoveryStreamingJournal, outcomeId: Sha256Value) =
-        when (val result = journal.rangeByOutcome(outcomeId)) {
+        exactJournalValue(journal.rangeByOutcome(outcomeId))
+
+    private fun <T> exactJournalValue(result: RecoveryStreamingJournalReadResult<T>): T =
+        when (result) {
             is RecoveryStreamingJournalReadResult.Value -> result.value
-            else -> null
+            is RecoveryStreamingJournalReadResult.Retry ->
+                error("journal-retry:${result.classification.name}")
+            is RecoveryStreamingJournalReadResult.Fatal ->
+                error("journal-fatal:${result.classification.name}")
         }
 
     private fun assertExactStoredFresh(
@@ -299,11 +301,7 @@ class RecoveryE36GapiPreflightInstrumentedTest {
         assertEquals(1, outcomeDeletes)
         assertEquals(1, checkpointDeletes)
         assertEquals(null, readOutcome(journal, request))
-        assertTrue(
-            (journal.checkpointChain(runId) as RecoveryStreamingJournalReadResult.Value)
-                .value
-                .isEmpty()
-        )
+        assertTrue(exactJournalValue(journal.checkpointChain(runId)).isEmpty())
         assertTrue(runDirectory.deleteRecursively())
         assertFalse(sourceFile.exists())
         assertFalse(runDirectory.exists())
@@ -367,9 +365,7 @@ class RecoveryE36GapiPreflightInstrumentedTest {
                 .put(
                     "apks",
                     JSONObject()
-                        .put("targetPath", targetApk.path)
                         .put("targetSha256", digest(targetApk.readBytes()))
-                        .put("testPath", testApk.path)
                         .put("testSha256", digest(testApk.readBytes())),
                 )
                 .put(
@@ -386,8 +382,17 @@ class RecoveryE36GapiPreflightInstrumentedTest {
                 .put(
                     "source",
                     JSONObject()
-                        .put("path", sourceFile.path)
-                        .put("existsAfterCleanup", sourceFile.exists()),
+                        .put("role", "stream/stream.ct")
+                        .put("bytes", 8_192)
+                        .put(
+                            "sha256",
+                            Sha256Value.calculate(
+                                    ByteArray(8_192) { ((it * 31 + 9) and 0xff).toByte() }
+                                )
+                                .toLowercaseHex(),
+                        )
+                        .put("fsyncSuccess", true)
+                        .put("absentAfterCleanup", !sourceFile.exists()),
                 )
                 .put(
                     "fresh",
