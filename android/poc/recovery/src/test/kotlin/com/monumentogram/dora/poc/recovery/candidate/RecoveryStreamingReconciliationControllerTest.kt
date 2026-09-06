@@ -1122,6 +1122,19 @@ class RecoveryStreamingReconciliationControllerTest {
                     ),
                 ),
                 OracleReplayCase(
+                    "mismatch-offset",
+                    validFixture,
+                    mismatch,
+                    RecoveryStreamingOutcomeRow.from(
+                        mismatch
+                            .identityInput()
+                            .copy(
+                                rejectedObservation =
+                                    mismatchObservation.copy(firstMismatchOffset = 18UL)
+                            )
+                    ),
+                ),
+                OracleReplayCase(
                     "mismatch-expected-byte",
                     validFixture,
                     mismatch,
@@ -1156,6 +1169,15 @@ class RecoveryStreamingReconciliationControllerTest {
 
         cases.forEach { case ->
             assertNotEquals(case.canonical.outcomeId, case.altered.outcomeId)
+            if (case.canonical.rejectedObservation == null) {
+                assertEquals(null, case.altered.rejectedObservation)
+                assertEquals(null, case.altered.rejectedObservationSha256)
+            } else {
+                assertNotEquals(
+                    case.canonical.rejectedObservationSha256,
+                    case.altered.rejectedObservationSha256,
+                )
+            }
             val canonicalRange = controllerRange(case.canonical, case.fixture.source)
             val alteredRange = controllerRange(case.altered, case.fixture.source)
             if (canonicalRange != null) {
