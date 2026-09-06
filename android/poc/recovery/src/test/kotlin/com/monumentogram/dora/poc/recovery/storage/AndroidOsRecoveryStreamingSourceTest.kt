@@ -271,11 +271,29 @@ class AndroidOsRecoveryStreamingSourceTest {
 
         val invalid =
             listOf(
-                ExtentCase(-1L, 0UL, 0UL, 1),
-                ExtentCase(1L, 0UL, 115_200_001UL, 0),
-                ExtentCase(115_654_657L, 115_654_657UL, 0UL, 0),
-                ExtentCase(115_662_849L, 115_654_656UL, 0UL, 1),
-                ExtentCase(8_193L, 0UL, 0UL, 1),
+                ExtentCase(-1L, 0UL, 0UL, 1, RecoveryStreamingSourceFailure.SOURCE_STRUCTURAL),
+                ExtentCase(
+                    1L,
+                    0UL,
+                    115_200_001UL,
+                    0,
+                    RecoveryStreamingSourceFailure.SOURCE_STRUCTURAL,
+                ),
+                ExtentCase(
+                    115_654_657L,
+                    115_654_657UL,
+                    0UL,
+                    0,
+                    RecoveryStreamingSourceFailure.SOURCE_STRUCTURAL,
+                ),
+                ExtentCase(
+                    115_662_849L,
+                    115_654_656UL,
+                    0UL,
+                    1,
+                    RecoveryStreamingSourceFailure.SOURCE_EXTENT_LIMIT,
+                ),
+                ExtentCase(8_193L, 0UL, 0UL, 1, RecoveryStreamingSourceFailure.SOURCE_EXTENT_LIMIT),
             )
         invalid.forEach { case ->
             val os =
@@ -284,16 +302,18 @@ class AndroidOsRecoveryStreamingSourceTest {
                     stats[sourcePath()] =
                         RecoveryStreamingStat(RecoveryStreamingPathType.REGULAR, case.extent)
                 }
-            assertThrows(RecoveryStreamingSourceException::class.java) {
-                AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os).withNormalSource(
-                    request(
-                        accepted = case.acceptedEnd,
-                        preFault = case.preFault,
-                        start = 0UL,
-                        end = 0UL,
-                    )
-                ) {}
-            }
+            val failure =
+                assertThrows(RecoveryStreamingSourceException::class.java) {
+                    AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os).withNormalSource(
+                        request(
+                            accepted = case.acceptedEnd,
+                            preFault = case.preFault,
+                            start = 0UL,
+                            end = 0UL,
+                        )
+                    ) {}
+                }
+            assertEquals(case.failure, failure.failure)
             assertEquals(case.closeCalls, os.closeCalls)
         }
     }
@@ -1051,6 +1071,7 @@ class AndroidOsRecoveryStreamingSourceTest {
         val preFault: ULong,
         val acceptedEnd: ULong,
         val closeCalls: Int,
+        val failure: RecoveryStreamingSourceFailure,
     )
 
     private class FakeDescriptor(val path: String) : RecoveryStreamingRawDescriptor

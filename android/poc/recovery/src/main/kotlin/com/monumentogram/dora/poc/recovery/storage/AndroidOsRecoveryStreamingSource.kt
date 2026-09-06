@@ -89,6 +89,7 @@ internal enum class RecoveryStreamingSourceFailure {
     UNSAFE_PATH,
     JOURNAL,
     ACTIVE_RANGE,
+    SOURCE_EXTENT_LIMIT,
     SOURCE_STRUCTURAL,
     SOURCE_CHANGED,
 }
@@ -518,7 +519,7 @@ internal class AndroidOsRecoveryStreamingSource(
                 (extent >= request.preFaultSourceBytes &&
                     extent - request.preFaultSourceBytes > MAX_SOURCE_APPEND)
         ) {
-            deny(RecoveryStreamingSourceFailure.SOURCE_STRUCTURAL)
+            deny(RecoveryStreamingSourceFailure.SOURCE_EXTENT_LIMIT)
         }
     }
 

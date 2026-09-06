@@ -1194,6 +1194,57 @@ class RecoveryStreamingReconciliationControllerTest {
     }
 
     @Test
+    fun `controller rejects source extent limit without public stream or write`() {
+        val fixture = controllerFixture()
+        val events = mutableListOf<String>()
+        val journal = ControllerJournal(events).apply { checkpoints = listOf(fixture.checkpoint) }
+        val source =
+            object : RecoveryStreamingSource {
+                override fun <T> withSource(
+                    access: RecoveryStreamingSourceLeaseAccess,
+                    request: RecoveryStreamOpenRequest,
+                    block: (RecoveryOpenedStreamingSource) -> T,
+                ): T {
+                    events += "source-deny"
+                    throw RecoveryStreamingSourceException(
+                        RecoveryStreamingSourceFailure.SOURCE_EXTENT_LIMIT
+                    )
+                }
+
+                override fun verifyReplayHashOnly(
+                    access: RecoveryStreamingReplayAccess,
+                    request: RecoveryStreamReplayRequest,
+                ): RecoveryReplayHashOnlyResult = error("replay must not run")
+            }
+        val controller =
+            RecoveryStreamingReconciliationController(
+                journal,
+                source,
+                RecoveryRunSingleWriterGuard { RecoveryRunWriterLease {} },
+                RecoveryStreamingCheckpointAuthenticator { _, _ ->
+                    RecoveryStreamingCheckpointAuthentication.Ready(
+                        RecoveryStreamingPublicStreamOpener { _, _ ->
+                            events += "public-open"
+                            error("extent denial must not open public stream")
+                        }
+                    )
+                },
+                RecoveryStreamingEvidenceSink { events += "evidence" },
+            )
+
+        val result =
+            controller.recover(fixture.request) as RecoveryStreamingReconciliationResult.Rejected
+
+        assertEquals(RecoveryStreamingResultStage.SOURCE_PROOF, result.stage)
+        assertEquals(
+            RecoveryStreamingResultClassification.STREAM_SOURCE_EXTENT_LIMIT_EXCEEDED,
+            result.classification,
+        )
+        assertEquals(listOf("checkpoint-chain", "outcome-witness", "active-ranges", "source-deny", "evidence"), events)
+        assertEquals(0, journal.persistCalls)
+    }
+
+    @Test
     fun `proven rollback and reconciled absence for semantic valid returns operational retry`() {
         val fixture = controllerFixture()
         val events = mutableListOf<String>()

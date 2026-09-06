@@ -1064,6 +1064,11 @@ internal class RecoveryStreamingReconciliationController(
                     RecoveryStreamingResultStage.RANGE_ADMISSION,
                     RecoveryStreamingResultClassification.STREAM_ACTIVE_RANGE_DENIED,
                 )
+            RecoveryStreamingSourceFailure.SOURCE_EXTENT_LIMIT ->
+                RecoveryStreamingReconciliationResult.Rejected.nonPersistable(
+                    RecoveryStreamingResultStage.SOURCE_PROOF,
+                    RecoveryStreamingResultClassification.STREAM_SOURCE_EXTENT_LIMIT_EXCEEDED,
+                )
             RecoveryStreamingSourceFailure.INVALID_REQUEST,
             RecoveryStreamingSourceFailure.SOURCE_STRUCTURAL ->
                 RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
