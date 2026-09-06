@@ -1294,6 +1294,54 @@ class RecoveryStreamingReconciliationControllerTest {
     }
 
     @Test
+    fun `zero progress and accepted end crossing close before evidence without write`() {
+        val fixture = controllerFixture()
+        val scenarios =
+            listOf(
+                RecoveryStreamingResultClassification.STREAM_ZERO_PROGRESS to
+                    ScriptedPublicRead(ReadStep.Zero),
+                RecoveryStreamingResultClassification.STREAM_READ_CROSSES_ACCEPTED_END to
+                    ScriptedPublicRead(
+                        ReadStep.Bytes(fixture.oracle.copyOfRange(0, 4_056)),
+                        ReadStep.Bytes(fixture.oracle.copyOfRange(4_056, 8_136)),
+                        ReadStep.Bytes(byteArrayOf(1)),
+                    ),
+            )
+        scenarios.forEach { (classification, publicRead) ->
+            val events = mutableListOf<String>()
+            val journal =
+                ControllerJournal(events).apply { checkpoints = listOf(fixture.checkpoint) }
+            val controller =
+                RecoveryStreamingReconciliationController(
+                    journal,
+                    FreshControllerSource(events, fixture.source),
+                    RecoveryRunSingleWriterGuard { RecoveryRunWriterLease {} },
+                    RecoveryStreamingCheckpointAuthenticator { _, _ ->
+                        RecoveryStreamingCheckpointAuthentication.Ready(
+                            RecoveryStreamingPublicStreamOpener { _, _ -> publicRead }
+                        )
+                    },
+                    RecoveryStreamingEvidenceSink { events += "evidence" },
+                )
+
+            val result = controller.recover(fixture.request)
+
+            assertEquals(
+                classification,
+                when (result) {
+                    is RecoveryStreamingReconciliationResult.Retry -> result.classification
+                    is RecoveryStreamingReconciliationResult.Fatal -> result.classification
+                    else -> error("Unexpected guard result")
+                },
+            )
+            assertEquals(0, journal.persistCalls)
+            assertTrue(events.indexOf("source-close") < events.indexOf("evidence"))
+        }
+        assertEquals(listOf(4_056), scenarios[0].second.requests)
+        assertEquals(listOf(4_056, 4_080, 4_080), scenarios[1].second.requests)
+    }
+
+    @Test
     fun `replay source identity exception maps without second source or write`() {
         val fixture = controllerFixture()
         val events = mutableListOf<String>()
