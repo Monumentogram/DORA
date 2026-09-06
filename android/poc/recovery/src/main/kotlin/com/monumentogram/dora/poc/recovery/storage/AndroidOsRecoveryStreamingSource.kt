@@ -26,6 +26,7 @@ import java.io.File
 import java.io.FileDescriptor
 import java.io.InputStream
 import java.security.MessageDigest
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
 
@@ -108,15 +109,10 @@ private class RecoveryStreamingLeaseBinding(val runId: RunId) {
         block()
     }
 
-    fun invalidate(onBlocked: (() -> Unit)? = null): Throwable? {
+    fun invalidate(onBlocked: CountDownLatch? = null) {
         val acquired = operationLock.tryLock()
-        val observerFailure =
-            if (acquired) {
-                null
-            } else {
-                runCatching { onBlocked?.invoke() }.exceptionOrNull()
-            }
         if (!acquired) {
+            onBlocked?.countDown()
             operationLock.lock()
         }
         try {
@@ -124,7 +120,6 @@ private class RecoveryStreamingLeaseBinding(val runId: RunId) {
         } finally {
             operationLock.unlock()
         }
-        return observerFailure
     }
 }
 
@@ -146,7 +141,7 @@ private constructor(private val binding: RecoveryStreamingLeaseBinding) {
         fun <T> withScopedAccessForTest(
             runId: RunId,
             guard: RecoveryRunSingleWriterGuard,
-            onInvalidationBlocked: () -> Unit,
+            onInvalidationBlocked: CountDownLatch,
             block: (RecoveryStreamingSourceLeaseAccess) -> T,
         ): T =
             RecoveryStreamingSourceAccessScope.withLease(
@@ -186,7 +181,7 @@ internal object RecoveryStreamingSourceControllerAccess {
     internal fun <T> withNormalAccessForTest(
         runId: RunId,
         guard: RecoveryRunSingleWriterGuard,
-        onInvalidationBlocked: () -> Unit,
+        onInvalidationBlocked: CountDownLatch,
         block: (RecoveryStreamingSourceLeaseAccess) -> T,
     ): T =
         RecoveryStreamingSourceLeaseAccess.withScopedAccessForTest(
@@ -207,33 +202,22 @@ private object RecoveryStreamingSourceAccessScope {
     fun <T> withLease(
         runId: RunId,
         guard: RecoveryRunSingleWriterGuard,
-        onInvalidationBlocked: (() -> Unit)? = null,
+        onInvalidationBlocked: CountDownLatch? = null,
         block: (RecoveryStreamingLeaseBinding) -> T,
     ): T {
         val lease = guard.tryAcquire(runId) ?: deny(RecoveryStreamingSourceFailure.LEASE_BINDING)
         val binding = RecoveryStreamingLeaseBinding(runId)
         val outcome = runCatching { block(binding) }
-        val invalidationFailure = binding.invalidate(onInvalidationBlocked)
+        binding.invalidate(onInvalidationBlocked)
         val closeFailure = runCatching { lease.close() }.exceptionOrNull()
-        scopeFailure(outcome.exceptionOrNull(), invalidationFailure, closeFailure)?.let { throw it }
+        val primary = outcome.exceptionOrNull()
+        if (primary != null) {
+            closeFailure?.let(primary::addSuppressed)
+            throw primary
+        }
+        if (closeFailure != null) throw closeFailure
         return outcome.getOrThrow()
     }
-
-    private fun scopeFailure(
-        primary: Throwable?,
-        invalidationFailure: Throwable?,
-        closeFailure: Throwable?,
-    ): Throwable? =
-        when {
-            primary != null ->
-                primary.also {
-                    invalidationFailure?.let(primary::addSuppressed)
-                    closeFailure?.let(primary::addSuppressed)
-                }
-            invalidationFailure != null ->
-                invalidationFailure.also { closeFailure?.let(invalidationFailure::addSuppressed) }
-            else -> closeFailure
-        }
 }
 
 internal enum class RecoveryStreamingPathType {
