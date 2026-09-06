@@ -98,7 +98,7 @@ internal class RecoveryStreamingSourceException(
     val journalClassification: RecoveryStreamingJournalClassification? = null,
 ) : IllegalStateException("Recovery streaming source denied: $failure")
 
-private class RecoveryStreamingLeaseBinding(val runId: RunId) {
+internal class RecoveryStreamingLeaseBinding(val runId: RunId) {
     private val operationLock = ReentrantLock()
     private var active = true
 
@@ -129,6 +129,9 @@ private constructor(private val binding: RecoveryStreamingLeaseBinding) {
         binding.withActiveOperation(runId, block)
 
     internal companion object {
+        fun controllerAccess(binding: RecoveryStreamingLeaseBinding) =
+            RecoveryStreamingSourceLeaseAccess(binding)
+
         fun <T> withScopedAccess(
             runId: RunId,
             guard: RecoveryRunSingleWriterGuard,
@@ -160,6 +163,9 @@ private constructor(private val binding: RecoveryStreamingLeaseBinding) {
         binding.withActiveOperation(runId, block)
 
     internal companion object {
+        fun controllerAccess(binding: RecoveryStreamingLeaseBinding) =
+            RecoveryStreamingReplayAccess(binding)
+
         fun <T> withScopedAccess(
             runId: RunId,
             guard: RecoveryRunSingleWriterGuard,
@@ -172,6 +178,18 @@ private constructor(private val binding: RecoveryStreamingLeaseBinding) {
 }
 
 internal object RecoveryStreamingSourceControllerAccess {
+    fun <T> withControllerAccess(
+        runId: RunId,
+        guard: RecoveryRunSingleWriterGuard,
+        block: (RecoveryStreamingSourceLeaseAccess, RecoveryStreamingReplayAccess) -> T,
+    ): T =
+        RecoveryStreamingSourceAccessScope.withLease(runId, guard) { binding ->
+            block(
+                RecoveryStreamingSourceLeaseAccess.controllerAccess(binding),
+                RecoveryStreamingReplayAccess.controllerAccess(binding),
+            )
+        }
+
     fun <T> withNormalAccess(
         runId: RunId,
         guard: RecoveryRunSingleWriterGuard,

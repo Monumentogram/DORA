@@ -626,6 +626,32 @@ class AndroidOsRecoveryStreamingSourceTest {
     }
 
     @Test
+    fun `controller access shares one same-run lease across normal replay and evidence lifetime`() {
+        val events = mutableListOf<String>()
+        val guard = RecordingGuard(events)
+        lateinit var escapedNormal: RecoveryStreamingSourceLeaseAccess
+        lateinit var escapedReplay: RecoveryStreamingReplayAccess
+
+        RecoveryStreamingSourceControllerAccess.withControllerAccess(RUN, guard) { normal, replay ->
+            escapedNormal = normal
+            escapedReplay = replay
+            normal.withBoundTo(RUN) { events += "normal" }
+            replay.withBoundTo(RUN) { events += "replay" }
+            events += "evidence"
+        }
+
+        assertEquals(listOf("acquire", "normal", "replay", "evidence", "release"), events)
+        assertThrows(RecoveryStreamingSourceException::class.java) {
+            escapedNormal.withBoundTo(RUN) {}
+        }
+        assertThrows(RecoveryStreamingSourceException::class.java) {
+            escapedReplay.withBoundTo(RUN) {}
+        }
+        assertEquals(1, events.count { it == "acquire" })
+        assertEquals(1, events.count { it == "release" })
+    }
+
+    @Test
     fun `escaped token operation holds the process lease through scope invalidation`() {
         val enteredJournal = CountDownLatch(1)
         val releaseJournal = CountDownLatch(1)
