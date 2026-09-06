@@ -520,6 +520,8 @@ class AndroidOsRecoveryStreamingSourceTest {
     fun `scope keeps descriptor open for an in-flight read and rejects escaped reads`() {
         val readEntered = CountDownLatch(1)
         val allowRead = CountDownLatch(1)
+        val closeEntered = CountDownLatch(1)
+        val allowClose = CountDownLatch(1)
         val os =
             FakeOs().apply {
                 seed(byteArrayOf(1))
@@ -529,17 +531,22 @@ class AndroidOsRecoveryStreamingSourceTest {
                         assertTrue(allowRead.await(5, TimeUnit.SECONDS))
                     }
                 }
+                beforeClose = {
+                    closeEntered.countDown()
+                    assertTrue(allowClose.await(5, TimeUnit.SECONDS))
+                }
             }
         val source = AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os)
         val executor = Executors.newFixedThreadPool(2)
         try {
             lateinit var escaped: java.io.InputStream
+            lateinit var read: java.util.concurrent.Future<Int>
             val sourceFuture =
                 executor.submit<java.lang.Void> {
                     source.withNormalSource(request(start = 0UL, end = 1UL, preFault = 1UL)) {
                         opened ->
                         escaped = opened.boundedInputStream()
-                        executor.submit<Int> { escaped.read() }
+                        read = executor.submit<Int> { escaped.read() }
                         assertTrue(readEntered.await(5, TimeUnit.SECONDS))
                     }
                     null
@@ -547,10 +554,15 @@ class AndroidOsRecoveryStreamingSourceTest {
             assertTrue(readEntered.await(5, TimeUnit.SECONDS))
             assertEquals(0, os.closeCalls)
             allowRead.countDown()
+            assertEquals(1, read.get(5, TimeUnit.SECONDS))
+            assertTrue(closeEntered.await(5, TimeUnit.SECONDS))
+            assertEquals(0, os.closeCalls)
+            allowClose.countDown()
             sourceFuture.get(5, TimeUnit.SECONDS)
             assertEquals(1, os.closeCalls)
             assertThrows(IllegalStateException::class.java) { escaped.read() }
         } finally {
+            allowClose.countDown()
             executor.shutdownNow()
         }
     }
@@ -574,7 +586,7 @@ class AndroidOsRecoveryStreamingSourceTest {
             assertThrows(RecoveryStreamingSourceException::class.java) {
                 source.withSource(
                     access,
-                    request(runId = OTHER_RUN, start = 0UL, end = 1UL, preFault = 1UL),
+                    request(start = 0UL, end = 1UL, preFault = 1UL).copy(runId = OTHER_RUN),
                 ) {}
             }
         }
@@ -610,6 +622,120 @@ class AndroidOsRecoveryStreamingSourceTest {
                 }
             }
             assertEquals(listOf("acquire", "open", "close", "release"), events)
+        }
+    }
+
+    @Test
+    fun `escaped token operation holds the process lease through scope invalidation`() {
+        val enteredJournal = CountDownLatch(1)
+        val releaseJournal = CountDownLatch(1)
+        val journal =
+            FakeJournal().apply {
+                beforeCheckpoint = {
+                    enteredJournal.countDown()
+                    assertTrue(releaseJournal.await(5, TimeUnit.SECONDS))
+                }
+            }
+        val source =
+            AndroidOsRecoveryStreamingSource(
+                ROOT,
+                journal,
+                FakeOs().apply { seed(byteArrayOf(1)) },
+            )
+        val executor = Executors.newFixedThreadPool(2)
+        val competingExecutor = Executors.newSingleThreadExecutor()
+        try {
+            lateinit var escaped: RecoveryStreamingSourceLeaseAccess
+            lateinit var operation: java.util.concurrent.Future<*>
+            val scope =
+                executor.submit<java.lang.Void> {
+                    RecoveryStreamingSourceControllerAccess.withNormalAccess(
+                        RUN,
+                        ProcessRecoveryRunSingleWriterGuard,
+                    ) { access ->
+                        escaped = access
+                        operation = executor.submit {
+                            source.withSource(
+                                access,
+                                request(start = 0UL, end = 1UL, preFault = 1UL),
+                            ) {}
+                        }
+                        assertTrue(enteredJournal.await(5, TimeUnit.SECONDS))
+                    }
+                    null
+                }
+            assertTrue(enteredJournal.await(5, TimeUnit.SECONDS))
+            assertFalse(scope.isDone)
+            val competing =
+                competingExecutor
+                    .submit(
+                        java.util.concurrent.Callable {
+                            ProcessRecoveryRunSingleWriterGuard.tryAcquire(RUN)
+                        }
+                    )
+                    .get()
+            assertNull(competing)
+            releaseJournal.countDown()
+            operation.get(5, TimeUnit.SECONDS)
+            scope.get(5, TimeUnit.SECONDS)
+            assertThrows(RecoveryStreamingSourceException::class.java) {
+                source.withSource(escaped, request(start = 0UL, end = 1UL, preFault = 1UL)) {}
+            }
+        } finally {
+            releaseJournal.countDown()
+            executor.shutdownNow()
+            competingExecutor.shutdownNow()
+        }
+    }
+
+    @Test
+    fun `exceptional descriptor close retains same-run exclusion until scope release`() {
+        val closeEntered = CountDownLatch(1)
+        val releaseClose = CountDownLatch(1)
+        val os =
+            FakeOs().apply {
+                seed(byteArrayOf(1))
+                failClose = true
+                beforeClose = {
+                    closeEntered.countDown()
+                    assertTrue(releaseClose.await(5, TimeUnit.SECONDS))
+                }
+            }
+        val scopeExecutor = Executors.newSingleThreadExecutor()
+        val competingExecutor = Executors.newSingleThreadExecutor()
+        try {
+            val scope =
+                scopeExecutor.submit<java.lang.Void> {
+                    RecoveryStreamingSourceControllerAccess.withNormalAccess(
+                        RUN,
+                        ProcessRecoveryRunSingleWriterGuard,
+                    ) { access ->
+                        AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os).withSource(
+                            access,
+                            request(start = 0UL, end = 1UL, preFault = 1UL),
+                        ) {}
+                    }
+                    null
+                }
+            assertTrue(closeEntered.await(5, TimeUnit.SECONDS))
+            assertNull(
+                competingExecutor
+                    .submit(
+                        java.util.concurrent.Callable {
+                            ProcessRecoveryRunSingleWriterGuard.tryAcquire(RUN)
+                        }
+                    )
+                    .get()
+            )
+            releaseClose.countDown()
+            assertThrows(java.util.concurrent.ExecutionException::class.java) {
+                scope.get(5, TimeUnit.SECONDS)
+            }
+            requireNotNull(ProcessRecoveryRunSingleWriterGuard.tryAcquire(RUN)).close()
+        } finally {
+            releaseClose.countDown()
+            scopeExecutor.shutdownNow()
+            competingExecutor.shutdownNow()
         }
     }
 
@@ -911,6 +1037,7 @@ class AndroidOsRecoveryStreamingSourceTest {
         var failOpen = false
         var failFstat = false
         var failClose = false
+        var beforeClose: (() -> Unit)? = null
         var fstatOverride: RecoveryStreamingStat? = null
 
         fun seed(value: ByteArray) {
@@ -966,6 +1093,7 @@ class AndroidOsRecoveryStreamingSourceTest {
         }
 
         override fun close(descriptor: RecoveryStreamingRawDescriptor) {
+            beforeClose?.invoke()
             events += "close"
             closeCalls++
             if (failClose) error("close")
@@ -983,11 +1111,13 @@ class AndroidOsRecoveryStreamingSourceTest {
             null
         var outcomeResult: RecoveryStreamingJournalReadResult<RecoveryStreamingOutcomeRow?>? = null
         var rangeResult: RecoveryStreamingJournalReadResult<RecoveryStreamingRangeRow?>? = null
+        var beforeCheckpoint: (() -> Unit)? = null
         var writeCalls = 0
 
         override fun checkpointChain(
             runId: RunId
         ): RecoveryStreamingJournalReadResult<List<RecoveryStreamingCheckpointRow>> {
+            beforeCheckpoint?.invoke()
             events += "checkpoint"
             return checkpointResult ?: RecoveryStreamingJournalReadResult.Value(checkpoints)
         }
@@ -1069,7 +1199,6 @@ class AndroidOsRecoveryStreamingSourceTest {
         val noOpGuard = RecoveryRunSingleWriterGuard { RecoveryRunWriterLease {} }
 
         fun request(
-            runId: RunId = RUN,
             source: String = "stream/stream.ct",
             accepted: ULong = 0UL,
             preFault: ULong = 0UL,
@@ -1077,7 +1206,7 @@ class AndroidOsRecoveryStreamingSourceTest {
             end: ULong? = null,
         ) =
             RecoveryStreamOpenRequest(
-                runId,
+                RUN,
                 1UL,
                 checkpoint().checkpointIdentity,
                 source,

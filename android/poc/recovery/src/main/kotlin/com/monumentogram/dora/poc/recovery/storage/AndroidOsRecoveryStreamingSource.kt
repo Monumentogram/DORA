@@ -96,22 +96,28 @@ internal class RecoveryStreamingSourceException(
 ) : IllegalStateException("Recovery streaming source denied: $failure")
 
 private class RecoveryStreamingLeaseBinding(val runId: RunId) {
+    private val operationLock = Any()
     private var active = true
 
-    fun requireBoundTo(requestRunId: RunId) {
-        if (!active || runId != requestRunId) deny(RecoveryStreamingSourceFailure.LEASE_BINDING)
-    }
+    fun <T> withActiveOperation(requestRunId: RunId, block: () -> T): T =
+        synchronized(operationLock) {
+            if (!active || runId != requestRunId) {
+                deny(RecoveryStreamingSourceFailure.LEASE_BINDING)
+            }
+            block()
+        }
 
     fun invalidate() {
-        active = false
+        synchronized(operationLock) {
+            active = false
+        }
     }
 }
 
 internal class RecoveryStreamingSourceLeaseAccess
 private constructor(private val binding: RecoveryStreamingLeaseBinding) {
-    internal fun requireBoundTo(runId: RunId) {
-        binding.requireBoundTo(runId)
-    }
+    internal fun <T> withBoundTo(runId: RunId, block: () -> T): T =
+        binding.withActiveOperation(runId, block)
 
     internal companion object {
         fun <T> withScopedAccess(
@@ -127,9 +133,8 @@ private constructor(private val binding: RecoveryStreamingLeaseBinding) {
 
 internal class RecoveryStreamingReplayAccess
 private constructor(private val binding: RecoveryStreamingLeaseBinding) {
-    internal fun requireBoundTo(runId: RunId) {
-        binding.requireBoundTo(runId)
-    }
+    internal fun <T> withBoundTo(runId: RunId, block: () -> T): T =
+        binding.withActiveOperation(runId, block)
 
     internal companion object {
         fun <T> withScopedAccess(
@@ -165,20 +170,16 @@ private object RecoveryStreamingSourceAccessScope {
     ): T {
         val lease = guard.tryAcquire(runId) ?: deny(RecoveryStreamingSourceFailure.LEASE_BINDING)
         val binding = RecoveryStreamingLeaseBinding(runId)
-        var primary: Throwable? = null
-        try {
-            return block(binding)
-        } catch (failure: Throwable) {
-            primary = failure
-            throw failure
-        } finally {
-            binding.invalidate()
-            try {
-                lease.close()
-            } catch (closeFailure: Throwable) {
-                primary?.addSuppressed(closeFailure) ?: throw closeFailure
-            }
+        val outcome = runCatching { block(binding) }
+        binding.invalidate()
+        val closeFailure = runCatching { lease.close() }.exceptionOrNull()
+        val primary = outcome.exceptionOrNull()
+        if (primary != null) {
+            closeFailure?.let(primary::addSuppressed)
+            throw primary
         }
+        if (closeFailure != null) throw closeFailure
+        return outcome.getOrThrow()
     }
 }
 
@@ -234,90 +235,96 @@ internal class AndroidOsRecoveryStreamingSource(
         access: RecoveryStreamingSourceLeaseAccess,
         request: RecoveryStreamOpenRequest,
         block: (RecoveryOpenedStreamingSource) -> T,
-    ): T {
-        access.requireBoundTo(request.runId)
-        requireNormalRequest(request)
-        val checkpoint =
-            requireCheckpoint(
-                request.runId,
-                request.checkpointGeneration,
-                request.checkpointIdentity,
-            )
-        if (checkpoint.streamCiphertextRelativeName != STREAM_SOURCE_RELATIVE_NAME) {
-            deny(RecoveryStreamingSourceFailure.JOURNAL)
-        }
-        val ranges =
-            readJournal(journal.activeRanges(request.runId, STREAM_SOURCE_RELATIVE_NAME)).toList()
-        requireStrictActiveRanges(request.runId, ranges)
-        requirePermittedRange(request, ranges)
-        val sourcePath = requireSafeSourcePath(request.runId, request.sourceRelativeName)
-
-        return withOpened(sourcePath) { descriptor ->
-            val extent = descriptor.frozenExtent
-            requireNormalExtent(request, extent)
-            val ceiling = request.requestedCiphertextEndExclusive ?: extent
-            if (ceiling > extent || request.requestedCiphertextStart > extent) {
-                deny(RecoveryStreamingSourceFailure.INVALID_REQUEST)
-            }
-            val scoped =
-                ScopedOpenedSource(
-                    descriptor,
-                    request.requestedCiphertextStart,
-                    ceiling,
+    ): T =
+        access.withBoundTo(request.runId) {
+            requireNormalRequest(request)
+            val checkpoint =
+                requireCheckpoint(
+                    request.runId,
+                    request.checkpointGeneration,
+                    request.checkpointIdentity,
                 )
-            var primary: Throwable? = null
-            try {
-                val result = block(scoped)
-                scoped.probeFrozenEnd()
-                result
-            } catch (failure: Throwable) {
-                primary = failure
-                throw failure
-            } finally {
-                closeScoped(scoped, primary)
+            if (checkpoint.streamCiphertextRelativeName != STREAM_SOURCE_RELATIVE_NAME) {
+                deny(RecoveryStreamingSourceFailure.JOURNAL)
+            }
+            val ranges =
+                readJournal(journal.activeRanges(request.runId, STREAM_SOURCE_RELATIVE_NAME))
+                    .toList()
+            requireStrictActiveRanges(request.runId, ranges)
+            requirePermittedRange(request, ranges)
+            val sourcePath = requireSafeSourcePath(request.runId, request.sourceRelativeName)
+
+            withOpened(sourcePath) { descriptor ->
+                val extent = descriptor.frozenExtent
+                requireNormalExtent(request, extent)
+                val ceiling = request.requestedCiphertextEndExclusive ?: extent
+                if (ceiling > extent || request.requestedCiphertextStart > extent) {
+                    deny(RecoveryStreamingSourceFailure.INVALID_REQUEST)
+                }
+                val scoped =
+                    ScopedOpenedSource(
+                        descriptor,
+                        request.requestedCiphertextStart,
+                        ceiling,
+                    )
+                var primary: Throwable? = null
+                try {
+                    val result = block(scoped)
+                    scoped.probeFrozenEnd()
+                    result
+                } catch (failure: Throwable) {
+                    primary = failure
+                    throw failure
+                } finally {
+                    closeScoped(scoped, primary)
+                }
             }
         }
-    }
 
     override fun verifyReplayHashOnly(
         access: RecoveryStreamingReplayAccess,
         request: RecoveryStreamReplayRequest,
-    ): RecoveryReplayHashOnlyResult {
-        access.requireBoundTo(request.runId)
-        requireExactSourceName(request.sourceRelativeName)
-        val outcome =
-            readJournal(journal.outcomeById(request.outcomeId))
-                ?: deny(RecoveryStreamingSourceFailure.JOURNAL)
-        requireReplayOutcome(request, outcome)
-        requireCheckpoint(outcome.runId, outcome.checkpointGeneration, outcome.checkpointIdentity)
-        requireReplayRange(outcome, readJournal(journal.rangeByOutcome(outcome.outcomeId)))
-        val sourcePath = requireSafeSourcePath(request.runId, request.sourceRelativeName)
+    ): RecoveryReplayHashOnlyResult =
+        access.withBoundTo(request.runId) {
+            requireExactSourceName(request.sourceRelativeName)
+            val outcome =
+                readJournal(journal.outcomeById(request.outcomeId))
+                    ?: deny(RecoveryStreamingSourceFailure.JOURNAL)
+            requireReplayOutcome(request, outcome)
+            requireCheckpoint(
+                outcome.runId,
+                outcome.checkpointGeneration,
+                outcome.checkpointIdentity,
+            )
+            requireReplayRange(outcome, readJournal(journal.rangeByOutcome(outcome.outcomeId)))
+            val sourcePath = requireSafeSourcePath(request.runId, request.sourceRelativeName)
 
-        return withOpened(sourcePath) { descriptor ->
-            val extent = descriptor.frozenExtent
-            requireReplayExtent(outcome, extent)
-            val scoped = ScopedOpenedSource(descriptor, 0UL, extent)
-            var primary: Throwable? = null
-            try {
-                val actual = scoped.sha256Range(0UL, extent)
-                if (
-                    extent != outcome.observedSourceBytes || actual != outcome.observedSourceSha256
-                ) {
-                    RecoveryReplayHashOnlyResult.SourceIdentityChanged
-                } else {
-                    RecoveryReplayHashOnlyResult.ExactStoredSourceMetadata(
-                        outcome.observedSourceBytes,
-                        outcome.observedSourceSha256,
-                    )
+            withOpened(sourcePath) { descriptor ->
+                val extent = descriptor.frozenExtent
+                requireReplayExtent(outcome, extent)
+                val scoped = ScopedOpenedSource(descriptor, 0UL, extent)
+                var primary: Throwable? = null
+                try {
+                    val actual = scoped.sha256Range(0UL, extent)
+                    if (
+                        extent != outcome.observedSourceBytes ||
+                            actual != outcome.observedSourceSha256
+                    ) {
+                        RecoveryReplayHashOnlyResult.SourceIdentityChanged
+                    } else {
+                        RecoveryReplayHashOnlyResult.ExactStoredSourceMetadata(
+                            outcome.observedSourceBytes,
+                            outcome.observedSourceSha256,
+                        )
+                    }
+                } catch (failure: Throwable) {
+                    primary = failure
+                    throw failure
+                } finally {
+                    closeScoped(scoped, primary)
                 }
-            } catch (failure: Throwable) {
-                primary = failure
-                throw failure
-            } finally {
-                closeScoped(scoped, primary)
             }
         }
-    }
 
     private fun requireNormalRequest(request: RecoveryStreamOpenRequest) {
         requireExactSourceName(request.sourceRelativeName)
