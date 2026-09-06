@@ -3,8 +3,16 @@ package com.monumentogram.dora.poc.recovery.candidate
 import com.monumentogram.dora.poc.recovery.contract.BoundedBinaryWriter
 import com.monumentogram.dora.poc.recovery.contract.RecoveryContract
 import com.monumentogram.dora.poc.recovery.contract.RecoveryManifest
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingExistingEvidence
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingOutcomeRow
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
+import com.monumentogram.dora.poc.recovery.contract.StreamDecision
+import com.monumentogram.dora.poc.recovery.contract.StreamDiagnosticBranch
+import com.monumentogram.dora.poc.recovery.contract.StreamDiagnosticClassification
+import com.monumentogram.dora.poc.recovery.contract.StreamDiagnosticStage
+import com.monumentogram.dora.poc.recovery.contract.StreamTerminal
 import com.monumentogram.dora.poc.recovery.contract.writeSha256
+import java.util.Collections
 
 internal enum class RecoveryFailureCategory {
     UNSAFE_PARENT,
@@ -256,6 +264,377 @@ private constructor(
                 classification,
                 emptySet(),
             )
+    }
+}
+
+internal enum class RecoveryStreamingPostReceiptCleanup {
+    NONE,
+    PUBLIC_STREAM_CLOSE_FAILED,
+    SOURCE_DESCRIPTOR_CLOSE_FAILED,
+    PUBLIC_STREAM_AND_SOURCE_DESCRIPTOR_CLOSE_FAILED,
+}
+
+internal enum class RecoveryStreamingEvidenceDelivery {
+    DELIVERED,
+    PENDING,
+}
+
+internal enum class RecoveryStreamingExistingRecordKind {
+    STREAM_CHECKPOINT,
+    STREAM_OUTCOME,
+    STREAM_RANGE,
+}
+
+internal data class RecoveryStreamingPersistenceReceipt(
+    val outcomeId: Sha256Value,
+    val optionalRangeIntentId: Sha256Value?,
+    val replayed: Boolean,
+    val postReceiptCleanup: RecoveryStreamingPostReceiptCleanup,
+    val evidenceDelivery: RecoveryStreamingEvidenceDelivery,
+)
+
+internal data class RecoveryStreamingExistingEvidenceReference(
+    val recordKind: RecoveryStreamingExistingRecordKind,
+    val existingId: Sha256Value,
+    val existingIdentitySha256: Sha256Value,
+) {
+    init {
+        require(existingId == existingIdentitySha256) {
+            "Streaming evidence reference ID and identity must be identical"
+        }
+    }
+}
+
+internal object RecoveryStreamingExistingEvidenceReferences {
+    fun forClassification(
+        classification: RecoveryStreamingResultClassification,
+        strictDecoded: List<RecoveryStreamingExistingEvidence>,
+    ): List<RecoveryStreamingExistingEvidenceReference> {
+        val allowedKinds = allowedKinds(classification)
+        val references = strictDecoded.map { evidence ->
+            val kind = evidence.kind()
+            require(kind in allowedKinds) { "Existing reference kind is forbidden" }
+            RecoveryStreamingExistingEvidenceReference(kind, evidence.identity, evidence.identity)
+        }
+        val deduplicated = references.distinctBy { it.recordKind to it.existingId }
+        val ordered =
+            deduplicated.sortedWith(
+                compareBy<RecoveryStreamingExistingEvidenceReference> { it.recordKind.ordinal }
+                    .thenComparator { left, right ->
+                        compareUnsigned(
+                            left.existingId.toByteArray(),
+                            right.existingId.toByteArray(),
+                        )
+                    }
+            )
+        return Collections.unmodifiableList(ordered)
+    }
+
+    private fun allowedKinds(
+        classification: RecoveryStreamingResultClassification
+    ): Set<RecoveryStreamingExistingRecordKind> =
+        when (classification) {
+            RecoveryStreamingResultClassification.STREAM_CHECKPOINT_SPLIT_BRAIN ->
+                setOf(RecoveryStreamingExistingRecordKind.STREAM_CHECKPOINT)
+            RecoveryStreamingResultClassification.JOURNAL_ATTEMPT_CONFLICT ->
+                setOf(RecoveryStreamingExistingRecordKind.STREAM_OUTCOME)
+            RecoveryStreamingResultClassification.STREAM_RANGE_QUARANTINE_COLLISION,
+            RecoveryStreamingResultClassification.STREAM_ACTIVE_RANGE_DENIED ->
+                setOf(
+                    RecoveryStreamingExistingRecordKind.STREAM_OUTCOME,
+                    RecoveryStreamingExistingRecordKind.STREAM_RANGE,
+                )
+            else -> emptySet()
+        }
+
+    private fun RecoveryStreamingExistingEvidence.kind(): RecoveryStreamingExistingRecordKind =
+        when (this) {
+            is RecoveryStreamingExistingEvidence.Checkpoint ->
+                RecoveryStreamingExistingRecordKind.STREAM_CHECKPOINT
+            is RecoveryStreamingExistingEvidence.Outcome ->
+                RecoveryStreamingExistingRecordKind.STREAM_OUTCOME
+            is RecoveryStreamingExistingEvidence.Range ->
+                RecoveryStreamingExistingRecordKind.STREAM_RANGE
+        }
+
+    private fun compareUnsigned(left: ByteArray, right: ByteArray): Int {
+        require(left.size == Sha256Value.SIZE_BYTES && right.size == Sha256Value.SIZE_BYTES)
+        left.indices.forEach { index ->
+            val comparison =
+                (left[index].toInt() and UNSIGNED_BYTE_MASK).compareTo(
+                    right[index].toInt() and UNSIGNED_BYTE_MASK
+                )
+            if (comparison != 0) return comparison
+        }
+        return 0
+    }
+
+    private const val UNSIGNED_BYTE_MASK = 0xff
+}
+
+internal class RecoveryStreamingRejectedObservation
+private constructor(
+    val candidateEnd: ULong,
+    val completedPlaintextSha256: Sha256Value,
+    val oraclePrefixSha256: Sha256Value,
+    val oraclePrefixEqual: Boolean,
+    val comparedEnd: ULong,
+    val firstMismatchOffset: ULong?,
+    val equalPrefixSha256: Sha256Value?,
+    val expectedOracleByte: UByte?,
+    val observedPlaintextByte: UByte?,
+    val observedTailLossBytes: ULong,
+    val boundaryResult: com.monumentogram.dora.poc.recovery.contract.StreamBoundaryResult,
+    val boundaryBytes: ULong?,
+    val rejectedObservationSha256: Sha256Value,
+) {
+    companion object {
+        fun fromPersisted(row: RecoveryStreamingOutcomeRow): RecoveryStreamingRejectedObservation {
+            val observation = requireNotNull(row.rejectedObservation)
+            return RecoveryStreamingRejectedObservation(
+                observation.candidateEnd,
+                observation.completedPlaintextSha256,
+                observation.oraclePrefixSha256,
+                observation.oraclePrefixEqual,
+                observation.comparedEnd,
+                observation.firstMismatchOffset,
+                observation.equalPrefixSha256,
+                observation.expectedOracleByte,
+                observation.observedPlaintextByte,
+                observation.observedTailLossBytes,
+                observation.boundaryResult,
+                observation.boundaryBytes,
+                requireNotNull(row.rejectedObservationSha256),
+            )
+        }
+    }
+}
+
+internal class RecoveryStreamingPersistedDiagnostic
+private constructor(
+    val receipt: RecoveryStreamingPersistenceReceipt,
+    val diagnosticBranch: StreamDiagnosticBranch,
+    val diagnosticStage: StreamDiagnosticStage,
+    val diagnosticClassification: StreamDiagnosticClassification,
+    val checkpointIntersectionProven: Boolean,
+    val provenCheckpointEnd: ULong?,
+    val rejectedObservation: RecoveryStreamingRejectedObservation?,
+) {
+    companion object {
+        fun from(
+            row: RecoveryStreamingOutcomeRow,
+            receipt: RecoveryStreamingPersistenceReceipt,
+            expectedDecision: StreamDecision,
+        ): RecoveryStreamingPersistedDiagnostic {
+            require(row.decision == expectedDecision) { "Persisted decision does not match result" }
+            validateReceipt(row, receipt)
+            val isPre = row.diagnosticBranch == StreamDiagnosticBranch.PRE_INTERSECTION
+            val isPost = row.diagnosticBranch == StreamDiagnosticBranch.POST_INTERSECTION
+            require(isPre || isPost) { "Persisted diagnostic branch is invalid" }
+            if (isPre) {
+                require(row.rejectedObservation == null) {
+                    "PRE diagnostic cannot carry observation"
+                }
+            } else {
+                require(row.rejectedObservation != null) { "POST diagnostic requires observation" }
+            }
+            return RecoveryStreamingPersistedDiagnostic(
+                receipt,
+                row.diagnosticBranch,
+                row.diagnosticStage,
+                row.diagnosticClassification,
+                isPost,
+                row.checkpointContextEnd.takeIf { isPost },
+                row.takeIf { isPost }?.let(RecoveryStreamingRejectedObservation::fromPersisted),
+            )
+        }
+
+        private fun validateReceipt(
+            row: RecoveryStreamingOutcomeRow,
+            receipt: RecoveryStreamingPersistenceReceipt,
+        ) {
+            require(receipt.outcomeId == row.outcomeId) { "Receipt outcome ID does not match row" }
+            require((receipt.optionalRangeIntentId == null) == (row.requiredRangeStart == null)) {
+                "Receipt range presence does not match row"
+            }
+        }
+    }
+}
+
+internal sealed interface RecoveryStreamingReconciliationResult {
+    class PersistedValid
+    private constructor(
+        val receipt: RecoveryStreamingPersistenceReceipt,
+        val acceptedEnd: ULong,
+        val committedEnd: ULong,
+        val recoveredEnd: ULong,
+        val terminal: StreamTerminal,
+    ) : RecoveryStreamingReconciliationResult {
+        companion object {
+            fun from(
+                row: RecoveryStreamingOutcomeRow,
+                receipt: RecoveryStreamingPersistenceReceipt,
+            ): PersistedValid {
+                require(row.decision == StreamDecision.VALID) { "Valid result requires VALID row" }
+                require(row.outcomeId == receipt.outcomeId) {
+                    "Receipt outcome ID does not match row"
+                }
+                require(
+                    (row.requiredRangeStart == null) == (receipt.optionalRangeIntentId == null)
+                ) {
+                    "Receipt range presence does not match row"
+                }
+                val recoveredEnd = requireNotNull(row.recoveredEnd)
+                require(
+                    row.checkpointContextEnd <= recoveredEnd && recoveredEnd <= row.acceptedEnd
+                ) {
+                    "Valid result endpoints are invalid"
+                }
+                require(row.acceptedEnd - recoveredEnd <= MAX_TAIL_LOSS) {
+                    "Valid result exceeds the tail bound"
+                }
+                require(
+                    row.terminal == StreamTerminal.AUTHENTICATED_EOF ||
+                        row.terminal == StreamTerminal.AUTHENTICATION_FAILURE
+                ) {
+                    "Valid result terminal is invalid"
+                }
+                require(
+                    row.terminal != StreamTerminal.AUTHENTICATED_EOF ||
+                        receipt.optionalRangeIntentId == null
+                ) {
+                    "Authenticated EOF cannot retain a child range"
+                }
+                return PersistedValid(
+                    receipt,
+                    row.acceptedEnd,
+                    row.checkpointContextEnd,
+                    recoveredEnd,
+                    row.terminal,
+                )
+            }
+
+            private const val MAX_TAIL_LOSS = 8_160UL
+        }
+    }
+
+    class Retry
+    private constructor(
+        val stage: RecoveryStreamingResultStage,
+        val classification: RecoveryStreamingResultClassification,
+        val safeExceptionType: RecoveryStreamingSafeExceptionType,
+        val attemptedOutcomeId: Sha256Value?,
+        val attemptedRangeId: Sha256Value?,
+        val existingEvidenceReferences: List<RecoveryStreamingExistingEvidenceReference>,
+    ) : RecoveryStreamingReconciliationResult {
+        companion object {
+            fun of(
+                stage: RecoveryStreamingResultStage,
+                classification: RecoveryStreamingResultClassification,
+                safeExceptionType: RecoveryStreamingSafeExceptionType,
+                attemptedOutcomeId: Sha256Value? = null,
+                attemptedRangeId: Sha256Value? = null,
+            ): Retry {
+                val mapping =
+                    RecoveryStreamingResultMapping.require(
+                        stage,
+                        classification,
+                        safeExceptionType,
+                    )
+                require(mapping.disposition == RecoveryStreamingResultDisposition.RETRY)
+                val unresolved =
+                    classification ==
+                        RecoveryStreamingResultClassification.JOURNAL_COMMIT_STATE_UNRESOLVED
+                require(unresolved || (attemptedOutcomeId == null && attemptedRangeId == null)) {
+                    "Attempted IDs belong only to unresolved commit state"
+                }
+                return Retry(
+                    stage,
+                    classification,
+                    safeExceptionType,
+                    attemptedOutcomeId,
+                    attemptedRangeId,
+                    emptyList(),
+                )
+            }
+        }
+    }
+
+    class Rejected
+    private constructor(
+        val stage: RecoveryStreamingResultStage?,
+        val classification: RecoveryStreamingResultClassification?,
+        val persistedDiagnostic: RecoveryStreamingPersistedDiagnostic?,
+        val existingEvidenceReferences: List<RecoveryStreamingExistingEvidenceReference>,
+    ) : RecoveryStreamingReconciliationResult {
+        companion object {
+            fun nonPersistable(
+                stage: RecoveryStreamingResultStage,
+                classification: RecoveryStreamingResultClassification,
+            ): Rejected {
+                val mapping = RecoveryStreamingResultMapping.require(stage, classification, null)
+                require(mapping.disposition == RecoveryStreamingResultDisposition.REJECTED)
+                return Rejected(stage, classification, null, emptyList())
+            }
+
+            fun persisted(
+                row: RecoveryStreamingOutcomeRow,
+                receipt: RecoveryStreamingPersistenceReceipt,
+            ): Rejected =
+                Rejected(
+                    null,
+                    null,
+                    RecoveryStreamingPersistedDiagnostic.from(
+                        row,
+                        receipt,
+                        StreamDecision.REJECTED,
+                    ),
+                    emptyList(),
+                )
+        }
+    }
+
+    class Fatal
+    private constructor(
+        val stage: RecoveryStreamingResultStage?,
+        val classification: RecoveryStreamingResultClassification?,
+        val persistedDiagnostic: RecoveryStreamingPersistedDiagnostic?,
+        val existingEvidenceReferences: List<RecoveryStreamingExistingEvidenceReference>,
+    ) : RecoveryStreamingReconciliationResult {
+        companion object {
+            fun nonPersistable(
+                stage: RecoveryStreamingResultStage,
+                classification: RecoveryStreamingResultClassification,
+                strictDecodedEvidence: List<RecoveryStreamingExistingEvidence> = emptyList(),
+            ): Fatal {
+                val mapping = RecoveryStreamingResultMapping.require(stage, classification, null)
+                require(mapping.disposition == RecoveryStreamingResultDisposition.FATAL)
+                return Fatal(
+                    stage,
+                    classification,
+                    null,
+                    RecoveryStreamingExistingEvidenceReferences.forClassification(
+                        classification,
+                        strictDecodedEvidence,
+                    ),
+                )
+            }
+
+            fun persisted(
+                row: RecoveryStreamingOutcomeRow,
+                receipt: RecoveryStreamingPersistenceReceipt,
+            ): Fatal =
+                Fatal(
+                    null,
+                    null,
+                    RecoveryStreamingPersistedDiagnostic.from(
+                        row,
+                        receipt,
+                        StreamDecision.FATAL,
+                    ),
+                    emptyList(),
+                )
+        }
     }
 }
 
