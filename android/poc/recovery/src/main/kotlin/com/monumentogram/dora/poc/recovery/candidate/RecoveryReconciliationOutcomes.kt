@@ -9,11 +9,16 @@ import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingExistingEvi
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalResult
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingOutcomeRow
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingRangeRow
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingRowValidation
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
+import com.monumentogram.dora.poc.recovery.contract.StreamBoundaryResult
+import com.monumentogram.dora.poc.recovery.contract.StreamCheckpointIntersection
 import com.monumentogram.dora.poc.recovery.contract.StreamDecision
 import com.monumentogram.dora.poc.recovery.contract.StreamDiagnosticBranch
 import com.monumentogram.dora.poc.recovery.contract.StreamDiagnosticClassification
 import com.monumentogram.dora.poc.recovery.contract.StreamDiagnosticStage
+import com.monumentogram.dora.poc.recovery.contract.StreamRangeCertainty
+import com.monumentogram.dora.poc.recovery.contract.StreamSourceMatch
 import com.monumentogram.dora.poc.recovery.contract.StreamTerminal
 import com.monumentogram.dora.poc.recovery.contract.writeSha256
 import java.util.Collections
@@ -314,6 +319,20 @@ private constructor(
     val diagnosticBranch: StreamDiagnosticBranch?,
     val diagnosticStage: StreamDiagnosticStage?,
     val diagnosticClassification: StreamDiagnosticClassification?,
+    val acceptedEnd: ULong?,
+    val checkpointContextEnd: ULong?,
+    val recoveredEnd: ULong?,
+    val recoveredBeyondCheckpointBytes: ULong?,
+    val tailLossBytes: ULong?,
+    val terminal: StreamTerminal?,
+    val preFaultSourceMatch: StreamSourceMatch?,
+    val checkpointIntersection: StreamCheckpointIntersection?,
+    val checkpointIntersectionProven: Boolean?,
+    val observationPresent: Boolean?,
+    val boundaryResult: StreamBoundaryResult?,
+    val rangeStart: ULong?,
+    val rangeEnd: ULong?,
+    val rangeCertainty: StreamRangeCertainty?,
     val postReceiptCleanup: RecoveryStreamingPostReceiptCleanup?,
     existingEvidenceReferences: List<RecoveryStreamingExistingEvidenceReference>,
 ) {
@@ -323,10 +342,15 @@ private constructor(
     companion object {
         fun persisted(
             row: RecoveryStreamingOutcomeRow,
+            range: RecoveryStreamingRangeRow?,
             receiptCore: RecoveryStreamingPersistenceReceiptCore,
             cleanup: RecoveryStreamingPostReceiptCleanup,
-        ) =
-            RecoveryStreamingEvidenceEvent(
+        ): RecoveryStreamingEvidenceEvent {
+            require((row.requiredRangeStart == null) == (range == null)) {
+                "Persisted evidence range presence does not match outcome"
+            }
+            range?.let { RecoveryStreamingRowValidation.validateParentChild(row, it) }
+            return RecoveryStreamingEvidenceEvent(
                 stage = null,
                 classification = null,
                 safeExceptionType = null,
@@ -339,9 +363,25 @@ private constructor(
                 diagnosticBranch = row.diagnosticBranch,
                 diagnosticStage = row.diagnosticStage,
                 diagnosticClassification = row.diagnosticClassification,
+                acceptedEnd = row.acceptedEnd,
+                checkpointContextEnd = row.checkpointContextEnd,
+                recoveredEnd = row.recoveredEnd,
+                recoveredBeyondCheckpointBytes = row.recoveredBeyondCheckpointBytes,
+                tailLossBytes = row.tailLossBytes,
+                terminal = row.terminal,
+                preFaultSourceMatch = row.preFaultSourceMatch,
+                checkpointIntersection = row.checkpointIntersection,
+                checkpointIntersectionProven =
+                    row.checkpointIntersection == StreamCheckpointIntersection.PROVEN,
+                observationPresent = row.rejectedObservation != null,
+                boundaryResult = row.rejectedObservation?.boundaryResult,
+                rangeStart = range?.rangeStart,
+                rangeEnd = range?.rangeEnd,
+                rangeCertainty = range?.certainty,
                 postReceiptCleanup = cleanup,
                 existingEvidenceReferences = emptyList(),
             )
+        }
 
         fun nonPersistable(result: RecoveryStreamingReconciliationResult) =
             when (result) {
@@ -349,20 +389,34 @@ private constructor(
                     error("Persisted result requires persisted evidence")
                 is RecoveryStreamingReconciliationResult.Retry ->
                     RecoveryStreamingEvidenceEvent(
-                        result.stage,
-                        result.classification,
-                        result.safeExceptionType,
-                        null,
-                        null,
-                        result.attemptedOutcomeId,
-                        result.attemptedRangeId,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        result.existingEvidenceReferences,
+                        stage = result.stage,
+                        classification = result.classification,
+                        safeExceptionType = result.safeExceptionType,
+                        outcomeId = null,
+                        rangeIntentId = null,
+                        attemptedOutcomeId = result.attemptedOutcomeId,
+                        attemptedRangeId = result.attemptedRangeId,
+                        replayed = null,
+                        persistedDecision = null,
+                        diagnosticBranch = null,
+                        diagnosticStage = null,
+                        diagnosticClassification = null,
+                        acceptedEnd = null,
+                        checkpointContextEnd = null,
+                        recoveredEnd = null,
+                        recoveredBeyondCheckpointBytes = null,
+                        tailLossBytes = null,
+                        terminal = null,
+                        preFaultSourceMatch = null,
+                        checkpointIntersection = null,
+                        checkpointIntersectionProven = null,
+                        observationPresent = null,
+                        boundaryResult = null,
+                        rangeStart = null,
+                        rangeEnd = null,
+                        rangeCertainty = null,
+                        postReceiptCleanup = null,
+                        existingEvidenceReferences = result.existingEvidenceReferences,
                     )
                 is RecoveryStreamingReconciliationResult.Rejected -> {
                     require(result.persistedDiagnostic == null) {
@@ -370,20 +424,34 @@ private constructor(
                     }
                     val original = result.originalDiagnostic
                     RecoveryStreamingEvidenceEvent(
-                        result.stage,
-                        result.classification,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        original?.diagnosticBranch,
-                        original?.diagnosticStage,
-                        original?.diagnosticClassification,
-                        null,
-                        result.existingEvidenceReferences,
+                        stage = result.stage,
+                        classification = result.classification,
+                        safeExceptionType = null,
+                        outcomeId = null,
+                        rangeIntentId = null,
+                        attemptedOutcomeId = null,
+                        attemptedRangeId = null,
+                        replayed = null,
+                        persistedDecision = null,
+                        diagnosticBranch = original?.diagnosticBranch,
+                        diagnosticStage = original?.diagnosticStage,
+                        diagnosticClassification = original?.diagnosticClassification,
+                        acceptedEnd = null,
+                        checkpointContextEnd = null,
+                        recoveredEnd = null,
+                        recoveredBeyondCheckpointBytes = null,
+                        tailLossBytes = null,
+                        terminal = null,
+                        preFaultSourceMatch = null,
+                        checkpointIntersection = null,
+                        checkpointIntersectionProven = null,
+                        observationPresent = null,
+                        boundaryResult = null,
+                        rangeStart = null,
+                        rangeEnd = null,
+                        rangeCertainty = null,
+                        postReceiptCleanup = null,
+                        existingEvidenceReferences = result.existingEvidenceReferences,
                     )
                 }
                 is RecoveryStreamingReconciliationResult.Fatal -> {
@@ -392,20 +460,34 @@ private constructor(
                     }
                     val original = result.originalDiagnostic
                     RecoveryStreamingEvidenceEvent(
-                        result.stage,
-                        result.classification,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null,
-                        original?.diagnosticBranch,
-                        original?.diagnosticStage,
-                        original?.diagnosticClassification,
-                        null,
-                        result.existingEvidenceReferences,
+                        stage = result.stage,
+                        classification = result.classification,
+                        safeExceptionType = null,
+                        outcomeId = null,
+                        rangeIntentId = null,
+                        attemptedOutcomeId = null,
+                        attemptedRangeId = null,
+                        replayed = null,
+                        persistedDecision = null,
+                        diagnosticBranch = original?.diagnosticBranch,
+                        diagnosticStage = original?.diagnosticStage,
+                        diagnosticClassification = original?.diagnosticClassification,
+                        acceptedEnd = null,
+                        checkpointContextEnd = null,
+                        recoveredEnd = null,
+                        recoveredBeyondCheckpointBytes = null,
+                        tailLossBytes = null,
+                        terminal = null,
+                        preFaultSourceMatch = null,
+                        checkpointIntersection = null,
+                        checkpointIntersectionProven = null,
+                        observationPresent = null,
+                        boundaryResult = null,
+                        rangeStart = null,
+                        rangeEnd = null,
+                        rangeCertainty = null,
+                        postReceiptCleanup = null,
+                        existingEvidenceReferences = result.existingEvidenceReferences,
                     )
                 }
             }
@@ -426,6 +508,7 @@ internal data class RecoveryStreamingPersistenceReceiptCore(
 internal class RecoveryStreamingPendingPersistedResult
 private constructor(
     private val row: RecoveryStreamingOutcomeRow,
+    private val range: RecoveryStreamingRangeRow?,
     private val receiptCore: RecoveryStreamingPersistenceReceiptCore,
     private val publicStreamCloseFailed: Boolean,
 ) {
@@ -441,7 +524,7 @@ private constructor(
         val delivered =
             runCatching {
                     evidenceSink.emit(
-                        RecoveryStreamingEvidenceEvent.persisted(row, receiptCore, cleanup)
+                        RecoveryStreamingEvidenceEvent.persisted(row, range, receiptCore, cleanup)
                     )
                 }
                 .isSuccess
@@ -489,6 +572,7 @@ private constructor(
             val closeFailed = runCatching(closePublicStream).isFailure
             return RecoveryStreamingPendingPersistedResult(
                 row,
+                range,
                 RecoveryStreamingPersistenceReceiptCore(
                     receipt.outcomeId,
                     receipt.rangeIntentId,

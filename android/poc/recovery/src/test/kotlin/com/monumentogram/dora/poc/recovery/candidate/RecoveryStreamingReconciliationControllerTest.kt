@@ -16,9 +16,14 @@ import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingRangeRow
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingWitnessInput
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
+import com.monumentogram.dora.poc.recovery.contract.StreamBoundaryResult
+import com.monumentogram.dora.poc.recovery.contract.StreamCheckpointIntersection
 import com.monumentogram.dora.poc.recovery.contract.StreamDecision
+import com.monumentogram.dora.poc.recovery.contract.StreamDiagnosticBranch
 import com.monumentogram.dora.poc.recovery.contract.StreamDiagnosticClassification
+import com.monumentogram.dora.poc.recovery.contract.StreamRangeCertainty
 import com.monumentogram.dora.poc.recovery.contract.StreamSemanticOutcome
+import com.monumentogram.dora.poc.recovery.contract.StreamSourceMatch
 import com.monumentogram.dora.poc.recovery.contract.StreamTerminal
 import com.monumentogram.dora.poc.recovery.coordination.RecoveryRunSingleWriterGuard
 import com.monumentogram.dora.poc.recovery.coordination.RecoveryRunWriterLease
@@ -575,6 +580,99 @@ class RecoveryStreamingReconciliationControllerTest {
     }
 
     @Test
+    fun `persisted evidence projects every safe ADR positive fact for all decisions`() {
+        val rows =
+            listOf(
+                RecoveryStreamingIntentBuilder.buildOutcome(
+                    intentFacts(completed = equalRead(8_136UL))
+                ),
+                RecoveryStreamingIntentBuilder.buildOutcome(
+                    intentFacts(
+                        prefixBytes = 4_096UL,
+                        committedEnd = 0UL,
+                        acceptedEnd = 8_161UL,
+                        preFaultEnd = 4_096UL,
+                        observedEnd = 4_097UL,
+                        completed = equalRead(0UL),
+                    )
+                ),
+                RecoveryStreamingIntentBuilder.buildOutcome(
+                    intentFacts(checkpointPrefixMatches = false)
+                ),
+                RecoveryStreamingIntentBuilder.buildOutcome(
+                    intentFacts(completed = mismatchRead(4_056UL))
+                ),
+            )
+        assertEquals(
+            listOf(
+                StreamDecision.VALID,
+                StreamDecision.REJECTED,
+                StreamDecision.FATAL,
+                StreamDecision.FATAL,
+            ),
+            rows.map { it.decision },
+        )
+        assertEquals(
+            listOf(
+                StreamDiagnosticBranch.NONE,
+                StreamDiagnosticBranch.POST_INTERSECTION,
+                StreamDiagnosticBranch.PRE_INTERSECTION,
+                StreamDiagnosticBranch.POST_INTERSECTION,
+            ),
+            rows.map { it.diagnosticBranch },
+        )
+
+        rows.forEachIndexed { index, row ->
+            val range =
+                row.requiredRangeStart?.let {
+                    RecoveryStreamingRangeRow.exact(row, sha(70 + index))
+                }
+            var delivered: RecoveryStreamingEvidenceEvent? = null
+            RecoveryStreamingPendingPersistedResult.exactReadback(
+                    row,
+                    range,
+                    RecoveryStreamingJournalResult.Receipt(
+                        row.outcomeId,
+                        range?.rangeIntentId,
+                        replayed = index % 2 == 0,
+                    ),
+                ) {}
+                .complete(false, RecoveryStreamingEvidenceSink { delivered = it })
+            val event = requireNotNull(delivered)
+            val observation = row.rejectedObservation
+
+            assertEquals(row.acceptedEnd, event.acceptedEnd)
+            assertEquals(row.checkpointContextEnd, event.checkpointContextEnd)
+            assertEquals(row.recoveredEnd, event.recoveredEnd)
+            assertEquals(row.recoveredBeyondCheckpointBytes, event.recoveredBeyondCheckpointBytes)
+            assertEquals(row.tailLossBytes, event.tailLossBytes)
+            assertEquals(row.terminal, event.terminal)
+            assertEquals(row.preFaultSourceMatch, event.preFaultSourceMatch)
+            assertEquals(row.checkpointIntersection, event.checkpointIntersection)
+            assertEquals(
+                row.checkpointIntersection == StreamCheckpointIntersection.PROVEN,
+                event.checkpointIntersectionProven,
+            )
+            assertEquals(row.diagnosticBranch, event.diagnosticBranch)
+            assertEquals(row.diagnosticStage, event.diagnosticStage)
+            assertEquals(row.diagnosticClassification, event.diagnosticClassification)
+            assertEquals(observation != null, event.observationPresent)
+            assertEquals(observation?.boundaryResult, event.boundaryResult)
+            assertEquals(range?.rangeStart, event.rangeStart)
+            assertEquals(range?.rangeEnd, event.rangeEnd)
+            assertEquals(range?.certainty, event.rangeCertainty)
+        }
+
+        val valid = rows[0]
+        assertEquals(StreamSourceMatch.VERIFIED_SAME_DESCRIPTOR, valid.preFaultSourceMatch)
+        assertEquals(StreamRangeCertainty.EXACT_FORMAT_BOUNDARY, valid.requiredRangeCertainty)
+        assertEquals(
+            StreamBoundaryResult.NOT_EVALUATED_ORACLE_MISMATCH,
+            rows[3].rejectedObservation?.boundaryResult,
+        )
+    }
+
+    @Test
     fun `receipt core rejects anything except exact journal readback`() {
         val outcome =
             RecoveryStreamingIntentBuilder.buildOutcome(intentFacts(completed = equalRead(8_136UL)))
@@ -635,7 +733,16 @@ class RecoveryStreamingReconciliationControllerTest {
         assertFalse(names.any { it.contains("throwable", ignoreCase = true) })
         assertFalse(names.any { it.contains("path", ignoreCase = true) })
         assertFalse(names.any { it.contains("sha256", ignoreCase = true) })
-        assertFalse(names.any { it.contains("byte", ignoreCase = true) })
+        assertEquals(
+            setOf("recoveredBeyondCheckpointBytes", "tailLossBytes"),
+            names.filter { it.contains("byte", ignoreCase = true) }.toSet(),
+        )
+        assertFalse(names.any { it.contains("mismatch", ignoreCase = true) })
+        assertFalse(names.any { it.contains("plaintext", ignoreCase = true) })
+        assertFalse(names.any { it.contains("ciphertext", ignoreCase = true) })
+        assertFalse(names.any { it.contains("key", ignoreCase = true) })
+        assertFalse(names.any { it.contains("database", ignoreCase = true) })
+        assertFalse(names.any { it.contains("wal", ignoreCase = true) })
     }
 
     @Test
