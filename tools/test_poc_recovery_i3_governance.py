@@ -1159,6 +1159,18 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             expected,
             "",
         )
+        missing_stage00 = [
+            path
+            for path in expected
+            if path != governance.REC_I3_STAGE00_VALIDATOR_PATH
+        ]
+        with self.assertRaisesRegex(ValueError, "exact committed path delta"):
+            governance.validate_rec_i3_observable_controller_delta(
+                {**clean, "committed": missing_stage00},
+                missing_stage00,
+                missing_stage00,
+                "",
+            )
         for layer in ("committed", "staged", "unstaged", "untracked"):
             with self.subTest(layer=layer):
                 changed = {key: list(value) for key, value in clean.items()}
@@ -1170,6 +1182,53 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
                         expected,
                         "",
                     )
+
+    def test_observable_controller_stage00_validator_is_exactly_pinned_and_invoked(self) -> None:
+        self.assertEqual(
+            "tools/validate_stage00.py",
+            governance.REC_I3_STAGE00_VALIDATOR_PATH,
+        )
+        self.assertEqual(16, len(governance.REC_I3_OBSERVABLE_CONTROLLER_PATHS))
+        self.assertIn(
+            governance.REC_I3_STAGE00_VALIDATOR_PATH,
+            governance.REC_I3_OBSERVABLE_CONTROLLER_PATHS,
+        )
+        self.assertEqual(
+            "python tools/validate_stage00.py",
+            governance.REC_I3_OBSERVABLE_CONTROLLER_CHECK_COMMANDS["STAGE00"],
+        )
+        success = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout="Stage 00 artifact validation passed\n",
+            stderr="",
+        )
+        with patch.object(governance.subprocess, "run", return_value=success) as run:
+            governance.validate_rec_i3_stage00_integrity()
+        run.assert_called_once_with(
+            [
+                sys.executable,
+                str(governance.ROOT / governance.REC_I3_STAGE00_VALIDATOR_PATH),
+            ],
+            cwd=governance.ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="strict",
+        )
+
+        failure = subprocess.CompletedProcess(
+            args=[],
+            returncode=1,
+            stdout="",
+            stderr="synthetic Stage 00 failure",
+        )
+        with (
+            patch.object(governance.subprocess, "run", return_value=failure),
+            self.assertRaisesRegex(ValueError, "synthetic Stage 00 failure"),
+        ):
+            governance.validate_rec_i3_stage00_integrity()
 
     def test_observable_controller_profile_is_additive_to_v08(self) -> None:
         old = governance.RecoveryLifecycleIdentity(
@@ -1252,11 +1311,13 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             patch.object(governance, "validate_rec_i3_regular_file"),
             patch.object(governance, "read_json", side_effect=read_profile),
             patch.object(governance, "validate_rec_i3_observable_controller_delta") as delta,
+            patch.object(governance, "validate_rec_i3_stage00_integrity") as stage00,
             patch.object(governance, "validate_rec_i3_result_boundary_contract") as contract,
             patch.object(governance, "validate_rec_i3_observable_controller_evidence") as evidence,
         ):
             governance.validate_rec_i3_observable_controller(lifecycle)
         delta.assert_called_once_with(changes, expected, expected, "")
+        stage00.assert_called_once_with()
         contract.assert_called_once()
         evidence.assert_called_once_with(self.observable_controller_evidence())
 

@@ -453,6 +453,7 @@ REC_I3_RESULT_BOUNDARY_PATHS = (
 REC_I3_OBSERVABLE_CONTROLLER_BRANCH = "codex/rec-i3-streaming-observable-controller-v08"
 REC_I3_OBSERVABLE_CONTROLLER_BASE = "406cba597c2db88712a7f3d96250e3583b43d28e"
 REC_I3_OBSERVABLE_CONTROLLER_BASE_TREE = "aabc8a047ff6648eb4f98c618d3c20bcfc632526"
+REC_I3_STAGE00_VALIDATOR_PATH = "tools/validate_stage00.py"
 REC_I3_OBSERVABLE_CONTROLLER_EVIDENCE_PATH = (
     "docs/evidence/poc-recovery-001/"
     "rec-i3-streaming-observable-controller-local-evidence-stage0-v0.1.json"
@@ -484,8 +485,10 @@ REC_I3_OBSERVABLE_CONTROLLER_PATHS = (
     REC_I3_OBSERVABLE_CONTROLLER_EVIDENCE_PATH,
     "tools/validate_poc_recovery_governance.py",
     "tools/test_poc_recovery_i3_governance.py",
+    REC_I3_STAGE00_VALIDATOR_PATH,
 )
 REC_I3_OBSERVABLE_CONTROLLER_CHECK_COMMANDS = {
+    "STAGE00": "python tools/validate_stage00.py",
     "FOCUSED_JVM": (
         "./gradlew :poc:recovery:testDebugUnitTest "
         "--tests '*RecoveryStreamingReconciliationControllerTest' "
@@ -6479,6 +6482,23 @@ def validate_rec_i3_observable_controller_evidence(record: dict[str, Any]) -> No
     )
 
 
+def validate_rec_i3_stage00_integrity() -> None:
+    completed = subprocess.run(
+        [sys.executable, str(ROOT / REC_I3_STAGE00_VALIDATOR_PATH)],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="strict",
+    )
+    details = (completed.stdout + completed.stderr).strip()
+    require(
+        completed.returncode == 0,
+        f"REC-I3 observable controller Stage 00 validation failed: {details}",
+    )
+
+
 def validate_rec_i3_observable_controller(lifecycle: RecoveryLifecycleIdentity) -> None:
     require(
         lifecycle.branch == REC_I3_OBSERVABLE_CONTROLLER_BRANCH,
@@ -6522,6 +6542,7 @@ def validate_rec_i3_observable_controller(lifecycle: RecoveryLifecycleIdentity) 
     )
     for relative in REC_I3_OBSERVABLE_CONTROLLER_PATHS:
         validate_rec_i3_regular_file(relative)
+    validate_rec_i3_stage00_integrity()
     for relative in REC_I3_OBSERVABLE_CONTROLLER_PINNED_PATHS:
         require(
             (ROOT / relative).read_bytes()
@@ -10189,8 +10210,9 @@ def validate_rec_i3_observable_controller_fast_path() -> bool:
         )
     print(
         "POC-RECOVERY-001 observable streaming controller validation passed; "
-        "exact branch/base, committed path profile, predecessor locks, contract, "
-        "source digests and local check evidence valid; immutable review remains pending"
+        "exact branch/base, committed 16-path profile, predecessor locks, contract, "
+        "Stage 00 pin, source digests and local check evidence valid; immutable review "
+        "remains pending"
     )
     return True
 

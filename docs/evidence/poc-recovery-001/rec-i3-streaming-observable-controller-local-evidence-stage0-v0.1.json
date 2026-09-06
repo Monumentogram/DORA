@@ -23,6 +23,11 @@
   },
   "checks": [
     {
+      "stage": "STAGE00",
+      "command": "python tools/validate_stage00.py",
+      "outcome": "PASS"
+    },
+    {
       "stage": "FOCUSED_JVM",
       "command": "./gradlew :poc:recovery:testDebugUnitTest --tests '*RecoveryStreamingReconciliationControllerTest' --tests '*RecoveryStreamingTinkPrerequisiteCryptoTest' --tests '*AndroidOsRecoveryStreamingSourceTest'",
       "outcome": "PASS"
@@ -54,7 +59,7 @@
     }
   ],
   "limitations": [
-    "Independent review of immutable head 2f3d48cf813759e391a0281195b689cad1721b91 returned REVISE 0/3/0, and rereview of repaired head 7232c3f489908c6f7abdaeb2e2a1597996dc540f found that retained-range replay trusted the stored range hash; this successor recomputes that hash through the same frozen descriptor and remains author-local pending immutable independent review and exact-head CI.",
+    "Independent review of immutable head 2f3d48cf813759e391a0281195b689cad1721b91 returned REVISE 0/3/0, and rereview of repaired head 7232c3f489908c6f7abdaeb2e2a1597996dc540f found that retained-range replay trusted the stored range hash; head 7d7b81bf593cd1fa348f04703e9e22278db6be22 repaired that gap and later CI exposed only a stale Stage 00 terminal-decision pin. This governance-only successor pins the complete ordered DEC-001 through DEC-048 registry and remains pending independent review and exact-head CI.",
     "No device, emulator, Android runtime durability, process-death, preflight or measured campaign evidence was produced."
   ],
   "nonActions": {

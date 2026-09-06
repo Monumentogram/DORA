@@ -78,11 +78,11 @@ def validate_screen_inventory() -> None:
 def validate_decisions() -> None:
     text = read_text("docs/DORA_MVP1_PRODUCT_DECISIONS.md")
     ids = re.findall(r"^## (DEC-\d{3})\.", text, flags=re.MULTILINE)
-    expected_ids = [f"DEC-{index:03d}" for index in range(1, 45)]
+    expected_ids = [f"DEC-{index:03d}" for index in range(1, 49)]
     if ids != expected_ids:
-        fail(f"Expected ordered product decisions DEC-001 through DEC-044, found {ids}")
+        fail(f"Expected ordered product decisions DEC-001 through DEC-048, found {ids}")
 
-    required_labels = (
+    historical_required_labels = (
         "Статус:",
         "Приоритет:",
         "Источник:",
@@ -95,8 +95,56 @@ def validate_decisions() -> None:
         "Обратимость:",
         "Связанные задачи:",
     )
+    current_required_labels = {
+        "DEC-045": (
+            "Status:",
+            "Priority:",
+            "Decision date:",
+            "Approved by:",
+            "Scope:",
+            "Decision source:",
+            "Proof basis:",
+            "Selected option:",
+            "Architecture and testing effects:",
+            "Reversibility:",
+            "Decision record:",
+            "Related work:",
+        ),
+        "DEC-046": (
+            "Status:",
+            "Priority:",
+            "Decision date:",
+            "Approved by:",
+            "Scope:",
+            "Baseline:",
+            "Decision packet:",
+            "Decision record:",
+            "Gate Set/protocol:",
+        ),
+        "DEC-047": (
+            "Status:",
+            "Priority:",
+            "Decision date:",
+            "Approved by:",
+            "Scope:",
+            "Decision record:",
+            "Gate Set/protocol:",
+        ),
+        "DEC-048": (
+            "Status:",
+            "Priority:",
+            "Decision date:",
+            "Approved by:",
+            "Scope:",
+            "Decision record:",
+        ),
+    }
     sections = re.split(r"(?=^## DEC-\d{3}\.)", text, flags=re.MULTILINE)[1:]
     for section, decision_id in zip(sections, ids, strict=True):
+        required_labels = current_required_labels.get(
+            decision_id,
+            historical_required_labels,
+        )
         missing = [label for label in required_labels if label not in section]
         if missing:
             fail(f"{decision_id} is missing fields: {missing}")
