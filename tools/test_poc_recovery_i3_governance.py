@@ -831,6 +831,13 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             copy.deepcopy(governance.read_json(governance.REC_I3_RESULT_BOUNDARY_PROTOCOL_PATH)),
         )
 
+    def local_result_boundary_lifecycle(self) -> governance.RecoveryLifecycleIdentity:
+        return replace(
+            governance.collect_recovery_lifecycle_identity(),
+            branch=governance.REC_I3_RESULT_BOUNDARY_BRANCH,
+            github_pull_request_context=None,
+        )
+
     def reject(self, mutation) -> None:
         gate, protocol = self.fixture()
         governance.validate_rec_i3_result_boundary_contract(gate, protocol)
@@ -1394,19 +1401,34 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
         self.assertTrue(governance.validate_current_rec_i3_successor(lifecycle))
 
     def test_exact_v08_profile_dispatch_is_preserved(self) -> None:
-        lifecycle = replace(
-            governance.collect_recovery_lifecycle_identity(),
-            branch=governance.REC_I3_RESULT_BOUNDARY_BRANCH,
-        )
+        lifecycle = self.local_result_boundary_lifecycle()
         with patch.object(governance, "validate_rec_i3_result_boundary") as validate:
             self.assertTrue(governance.validate_current_rec_i3_successor(lifecycle))
             validate.assert_called_once_with(lifecycle)
 
-    def test_exact_v08_profile_rejects_changed_v07_worktree_blob(self) -> None:
-        lifecycle = replace(
-            governance.collect_recovery_lifecycle_identity(),
-            branch=governance.REC_I3_RESULT_BOUNDARY_BRANCH,
+    def test_v08_profile_rejects_current_observable_pull_request_identity(self) -> None:
+        lifecycle = self.local_result_boundary_lifecycle()
+        current_pull_request = governance.GitHubPullRequestContext(
+            repository=governance.GITHUB_REPOSITORY,
+            head_repository=governance.GITHUB_REPOSITORY,
+            head_ref=governance.REC_I3_OBSERVABLE_CONTROLLER_BRANCH,
+            head_sha=lifecycle.head,
+            base_ref=governance.GITHUB_BASE_BRANCH,
+            base_sha=governance.REC_I3_OBSERVABLE_CONTROLLER_BASE,
+            merge_ref="refs/pull/66/merge",
+            merge_sha=lifecycle.head,
+            number=66,
+            draft=False,
+            state="open",
+            merged=False,
         )
+        with self.assertRaisesRegex(ValueError, "result-boundary pull_request identity drift"):
+            governance.validate_rec_i3_result_boundary(
+                replace(lifecycle, github_pull_request_context=current_pull_request)
+            )
+
+    def test_exact_v08_profile_rejects_changed_v07_worktree_blob(self) -> None:
+        lifecycle = self.local_result_boundary_lifecycle()
         target = next(iter(governance.REC_I3_RESULT_BOUNDARY_V07_SHA256))
         original = governance.sha256
         with (
@@ -1468,10 +1490,7 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             patch.object(
                 governance,
                 "collect_recovery_lifecycle_identity",
-                return_value=replace(
-                    governance.collect_recovery_lifecycle_identity(),
-                    branch=governance.REC_I3_RESULT_BOUNDARY_BRANCH,
-                ),
+                return_value=self.local_result_boundary_lifecycle(),
             ),
             patch.object(governance, "read_json", side_effect=legacy_absent),
             patch.object(governance, "read_text", side_effect=legacy_text_absent),
@@ -1508,10 +1527,7 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             patch.object(
                 governance,
                 "collect_recovery_lifecycle_identity",
-                return_value=replace(
-                    governance.collect_recovery_lifecycle_identity(),
-                    branch=governance.REC_I3_RESULT_BOUNDARY_BRANCH,
-                ),
+                return_value=self.local_result_boundary_lifecycle(),
             ),
             patch.object(governance, "collect_post_merge_changes", side_effect=clean_committed_profile),
             patch.object(governance, "validate_rec_i3_result_boundary_delta"),
@@ -1527,10 +1543,7 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             patch.object(
                 governance,
                 "collect_recovery_lifecycle_identity",
-                return_value=replace(
-                    governance.collect_recovery_lifecycle_identity(),
-                    branch=governance.REC_I3_RESULT_BOUNDARY_BRANCH,
-                ),
+                return_value=self.local_result_boundary_lifecycle(),
             ),
             patch.object(governance, "collect_post_merge_changes", side_effect=clean_committed_profile),
             patch.object(governance, "validate_rec_i3_result_boundary_delta"),
