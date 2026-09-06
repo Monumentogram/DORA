@@ -1,7 +1,10 @@
 package com.monumentogram.dora.poc.recovery.candidate
 
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingCheckpointIdentityInput
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingCheckpointRow
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingExistingEvidence
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingIdentity
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournal
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalClassification
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalReadResult
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalResult
@@ -14,6 +17,15 @@ import com.monumentogram.dora.poc.recovery.contract.StreamDecision
 import com.monumentogram.dora.poc.recovery.contract.StreamDiagnosticClassification
 import com.monumentogram.dora.poc.recovery.contract.StreamSemanticOutcome
 import com.monumentogram.dora.poc.recovery.contract.StreamTerminal
+import com.monumentogram.dora.poc.recovery.coordination.RecoveryRunSingleWriterGuard
+import com.monumentogram.dora.poc.recovery.coordination.RecoveryRunWriterLease
+import com.monumentogram.dora.poc.recovery.storage.RecoveryOpenedStreamingSource
+import com.monumentogram.dora.poc.recovery.storage.RecoveryReplayHashOnlyResult
+import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamOpenRequest
+import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamReplayRequest
+import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingReplayAccess
+import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSource
+import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSourceLeaseAccess
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
@@ -757,6 +769,38 @@ class RecoveryStreamingReconciliationControllerTest {
         }
     }
 
+    @Test
+    fun `controller checkpoint missing stops before auth source write and emits before lease release`() {
+        val events = mutableListOf<String>()
+        val journal = ControllerJournal(events)
+        val controller =
+            RecoveryStreamingReconciliationController(
+                journal,
+                NeverControllerSource(events),
+                RecoveryRunSingleWriterGuard {
+                    events += "lease-acquire"
+                    RecoveryRunWriterLease { events += "lease-release" }
+                },
+                RecoveryStreamingCheckpointAuthenticator { _, _ ->
+                    events += "authenticate"
+                    error("authentication must not run")
+                },
+                RecoveryStreamingEvidenceSink { events += "evidence" },
+            )
+
+        val result = controller.recover(controllerFixture().request)
+
+        assertEquals(
+            RecoveryStreamingResultClassification.STREAM_CHECKPOINT_MISSING,
+            (result as RecoveryStreamingReconciliationResult.Fatal).classification,
+        )
+        assertEquals(
+            listOf("lease-acquire", "checkpoint-chain", "evidence", "lease-release"),
+            events,
+        )
+        assertEquals(0, journal.persistCalls)
+    }
+
     private fun render(mapping: RecoveryStreamingResultMapping): String =
         listOf(
                 mapping.disposition.name,
@@ -864,6 +908,145 @@ class RecoveryStreamingReconciliationControllerTest {
         return base.copy(
             controllerSnapshotSha256 = RecoveryStreamingIdentity.controllerSnapshot(base)
         )
+    }
+
+    private data class ControllerFixture(
+        val request: RecoveryStreamingControllerRequest,
+        val checkpoint: RecoveryStreamingCheckpointRow,
+        val source: ByteArray,
+    )
+
+    private fun controllerFixture(): ControllerFixture {
+        val runId = RunId.fromBytes(ByteArray(16) { (it + 1).toByte() })
+        val source = ByteArray(8_192) { ((it * 31 + 9) and 0xff).toByte() }
+        val prefix = Sha256Value.calculate(source)
+        val checkpointInput =
+            RecoveryStreamingCheckpointIdentityInput(
+                runId,
+                generation = 1UL,
+                durableNonFinalSegmentCount = 2UL,
+                streamCiphertextPrefixBytes = 8_192UL,
+                streamCiphertextPrefixSha256 = prefix,
+                committedEnd = 4_056UL,
+                checkpointRelativeName = "checkpoints/g-00000000000000000001.ct",
+                checkpointBytes = 128UL,
+                checkpointSha256 = sha(61),
+                checkpointEnvelopeRelativeName =
+                    "key-envelopes/checkpoint-g-00000000000000000001.ks",
+                checkpointEnvelopeBytes = 96UL,
+                checkpointEnvelopeSha256 = sha(62),
+                streamRelativeName = "stream/stream.ct",
+                streamEnvelopeRelativeName = "key-envelopes/stream.ks",
+                streamEnvelopeBytes = 96UL,
+                streamEnvelopeSha256 = sha(63),
+                previousCheckpointSha256 = sha(0),
+            )
+        val checkpointIdentity = RecoveryStreamingIdentity.checkpoint(checkpointInput)
+        val checkpoint =
+            RecoveryStreamingCheckpointRow(
+                runId,
+                1UL,
+                2UL,
+                8_192UL,
+                prefix,
+                4_056UL,
+                checkpointInput.checkpointRelativeName,
+                checkpointInput.checkpointBytes,
+                checkpointInput.checkpointSha256,
+                checkpointInput.checkpointEnvelopeRelativeName,
+                checkpointInput.checkpointEnvelopeBytes,
+                checkpointInput.checkpointEnvelopeSha256,
+                checkpointInput.streamRelativeName,
+                checkpointInput.streamEnvelopeRelativeName,
+                checkpointInput.streamEnvelopeBytes,
+                checkpointInput.streamEnvelopeSha256,
+                checkpointInput.previousCheckpointSha256,
+                checkpointIdentity,
+            )
+        val oracleBytes = ByteArray(8_136) { ((it * 7 + 5) and 0xff).toByte() }
+        val oracleSha = Sha256Value.calculate(oracleBytes)
+        val witnessBase =
+            RecoveryStreamingWitnessInput(
+                runId,
+                1UL,
+                checkpointIdentity,
+                8_192UL,
+                4_056UL,
+                RecoveryStreamingIdentity.oracle(8_136UL, oracleSha, runId),
+                8_136UL,
+                oracleSha,
+                8_192UL,
+                prefix,
+                null,
+            )
+        val witness =
+            witnessBase.copy(
+                controllerSnapshotSha256 = RecoveryStreamingIdentity.controllerSnapshot(witnessBase)
+            )
+        return ControllerFixture(
+            RecoveryStreamingControllerRequest(
+                witness,
+                RecoveryStreamingIntentBuilder.RecoveryStreamingOracle.from(witness, oracleBytes),
+            ),
+            checkpoint,
+            source,
+        )
+    }
+
+    private class ControllerJournal(private val events: MutableList<String>) :
+        RecoveryStreamingJournal {
+        var checkpoints = emptyList<RecoveryStreamingCheckpointRow>()
+        var persistCalls = 0
+
+        override fun checkpointChain(runId: RunId) =
+            RecoveryStreamingJournalReadResult.Value(checkpoints).also {
+                events += "checkpoint-chain"
+            }
+
+        override fun outcomeById(outcomeId: Sha256Value) =
+            RecoveryStreamingJournalReadResult.Value(null)
+
+        override fun outcomeByWitness(
+            runId: RunId,
+            checkpointIdentity: Sha256Value,
+            witnessId: Sha256Value,
+        ) = RecoveryStreamingJournalReadResult.Value(null)
+
+        override fun rangeByOutcome(outcomeId: Sha256Value) =
+            RecoveryStreamingJournalReadResult.Value(null)
+
+        override fun activeRanges(runId: RunId, sourceRelativeName: String) =
+            RecoveryStreamingJournalReadResult.Value(emptyList<RecoveryStreamingRangeRow>())
+
+        override fun insertCheckpoint(row: RecoveryStreamingCheckpointRow) =
+            error("checkpoint insertion is forbidden")
+
+        override fun persistOutcome(
+            attempt: RecoveryStreamingOutcomeAttempt
+        ): RecoveryStreamingJournalResult {
+            persistCalls += 1
+            error("persistence must not run")
+        }
+    }
+
+    private class NeverControllerSource(private val events: MutableList<String>) :
+        RecoveryStreamingSource {
+        override fun <T> withSource(
+            access: RecoveryStreamingSourceLeaseAccess,
+            request: RecoveryStreamOpenRequest,
+            block: (RecoveryOpenedStreamingSource) -> T,
+        ): T {
+            events += "source-open"
+            error("source must not open")
+        }
+
+        override fun verifyReplayHashOnly(
+            access: RecoveryStreamingReplayAccess,
+            request: RecoveryStreamReplayRequest,
+        ): RecoveryReplayHashOnlyResult {
+            events += "replay-open"
+            error("replay source must not open")
+        }
     }
 
     private sealed interface ReadStep {

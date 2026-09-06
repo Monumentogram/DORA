@@ -2,7 +2,9 @@
 
 package com.monumentogram.dora.poc.recovery.candidate
 
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingCheckpointRow
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingIdentity
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournal
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalClassification
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalReadResult
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalResult
@@ -25,6 +27,10 @@ import com.monumentogram.dora.poc.recovery.contract.StreamRangeCertainty
 import com.monumentogram.dora.poc.recovery.contract.StreamSemanticOutcome
 import com.monumentogram.dora.poc.recovery.contract.StreamSourceMatch
 import com.monumentogram.dora.poc.recovery.contract.StreamTerminal
+import com.monumentogram.dora.poc.recovery.coordination.RecoveryRunSingleWriterGuard
+import com.monumentogram.dora.poc.recovery.storage.RecoveryOpenedStreamingSource
+import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSource
+import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSourceControllerAccess
 import java.security.MessageDigest
 
 internal data class RecoveryStreamingCompletedReadFacts(
@@ -660,4 +666,91 @@ internal object RecoveryStreamingJournalMapper {
                 RecoveryStreamingResultClassification.JOURNAL_STRUCTURAL,
             )
         )
+}
+
+internal interface RecoveryStreamingPublicStreamOpener {
+    fun open(
+        source: RecoveryOpenedStreamingSource,
+        witness: RecoveryStreamingWitnessInput,
+    ): RecoveryStreamingIntentBuilder.RecoveryStreamingPublicRead
+}
+
+internal sealed interface RecoveryStreamingCheckpointAuthentication {
+    data class Ready(val publicStreamOpener: RecoveryStreamingPublicStreamOpener) :
+        RecoveryStreamingCheckpointAuthentication
+
+    data object Missing : RecoveryStreamingCheckpointAuthentication
+
+    data object Structural : RecoveryStreamingCheckpointAuthentication
+
+    data object Rejected : RecoveryStreamingCheckpointAuthentication
+
+    data object Operational : RecoveryStreamingCheckpointAuthentication
+
+    data object UnsafePath : RecoveryStreamingCheckpointAuthentication
+}
+
+internal fun interface RecoveryStreamingCheckpointAuthenticator {
+    fun authenticate(
+        checkpoint: RecoveryStreamingCheckpointRow,
+        witness: RecoveryStreamingWitnessInput,
+    ): RecoveryStreamingCheckpointAuthentication
+}
+
+internal data class RecoveryStreamingControllerRequest(
+    val witness: RecoveryStreamingWitnessInput,
+    val oracle: RecoveryStreamingIntentBuilder.RecoveryStreamingOracle,
+) {
+    init {
+        require(witness.acceptedEnd == oracle.acceptedEnd) {
+            "Streaming oracle capability does not match witness"
+        }
+    }
+}
+
+internal class RecoveryStreamingReconciliationController(
+    private val journal: RecoveryStreamingJournal,
+    @Suppress("unused") private val source: RecoveryStreamingSource,
+    private val guard: RecoveryRunSingleWriterGuard,
+    @Suppress("unused")
+    private val checkpointAuthenticator: RecoveryStreamingCheckpointAuthenticator,
+    private val evidenceSink: RecoveryStreamingEvidenceSink,
+) {
+    fun recover(
+        request: RecoveryStreamingControllerRequest?
+    ): RecoveryStreamingReconciliationResult {
+        if (request == null) {
+            return nonPersistable(
+                RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
+                    RecoveryStreamingResultStage.PREREQUISITE,
+                    RecoveryStreamingResultClassification.STREAM_SOURCE_WITNESS_MISSING,
+                )
+            )
+        }
+        return RecoveryStreamingSourceControllerAccess.withControllerAccess(
+            request.witness.runId,
+            guard,
+        ) { _, _ ->
+            when (val chain = journal.checkpointChain(request.witness.runId)) {
+                is RecoveryStreamingJournalReadResult.Value -> {
+                    if (chain.value.isEmpty()) {
+                        nonPersistable(
+                            RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
+                                RecoveryStreamingResultStage.PREREQUISITE,
+                                RecoveryStreamingResultClassification.STREAM_CHECKPOINT_MISSING,
+                            )
+                        )
+                    } else {
+                        error("Checkpoint selection is not implemented")
+                    }
+                }
+                else -> nonPersistable(RecoveryStreamingJournalMapper.readFailure(chain))
+            }
+        }
+    }
+
+    private fun nonPersistable(
+        result: RecoveryStreamingReconciliationResult
+    ): RecoveryStreamingReconciliationResult =
+        RecoveryStreamingEvidenceFinalizer.nonPersistable(result, evidenceSink)
 }
