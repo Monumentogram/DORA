@@ -13,11 +13,11 @@
   },
   "sourceFiles": {
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryStreamingReconciliation.kt": "b5f71c642e993827d85b3e0cbda7fd8d19ada34125fcdf9c6cb9aa7be6fc5c90",
-    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationOutcomes.kt": "5a21d784428e24ede79dc94a5288f949f81482742a28dfda73ac020ed08af0a5",
-    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingReconciliationController.kt": "a106f1bf774b1f29b2ee784069857a66e30563f39df33f32839ac6dcbb321fd5",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationOutcomes.kt": "934af0b81d378b78bbb7ba80b82eb9dbf6b9bb430377a45a4e8be561257e0341",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingReconciliationController.kt": "2ce00348a8dc8c6a710dc28866a3e4c7f0f7c7009212302aa5b5776d34df88e2",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingTinkPrerequisiteCrypto.kt": "71e7ad545174a0de112b4eaf591b1b5df6b535ff4c50f62b7823ab2aa7e30502",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryStreamingSource.kt": "2724615772f4087216f9f8c8569fcbbc20bb7036f839ebce1a82caf366170ca5",
-    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingReconciliationControllerTest.kt": "79954b3bcc6ebd92b6e7ef8e5f23c9ca2a3574febd818cec65867e607c1b9be1",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingReconciliationControllerTest.kt": "3f4b4ecf9d030a73445afe71f29f141a584ea78fdce91d3655ff22c916faabfc",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingTinkPrerequisiteCryptoTest.kt": "27e197cb6e86704c3208d8d6dce0b7cb0a2cd6b1ff0f8b0b31805383edaf2d48",
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryStreamingSourceTest.kt": "a60502c51a67a021a2b1ba69b6a5bc7a81fe1e021175ef1cddf800e063acde83"
   },
@@ -54,7 +54,7 @@
     }
   ],
   "limitations": [
-    "Author-local host evidence; immutable independent implementation review and exact-head CI remain pending.",
+    "Independent review of immutable head 2f3d48cf813759e391a0281195b689cad1721b91 returned REVISE 0/3/0; this repaired successor remains author-local pending immutable independent review and exact-head CI.",
     "No device, emulator, Android runtime durability, process-death, preflight or measured campaign evidence was produced."
   ],
   "nonActions": {
