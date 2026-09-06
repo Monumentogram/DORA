@@ -1,3 +1,5 @@
+@file:Suppress("LargeClass", "LongMethod")
+
 package com.monumentogram.dora.poc.recovery.candidate
 
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingCheckpointIdentityInput
@@ -1240,7 +1242,16 @@ class RecoveryStreamingReconciliationControllerTest {
             RecoveryStreamingResultClassification.STREAM_SOURCE_EXTENT_LIMIT_EXCEEDED,
             result.classification,
         )
-        assertEquals(listOf("checkpoint-chain", "outcome-witness", "active-ranges", "source-deny", "evidence"), events)
+        assertEquals(
+            listOf(
+                "checkpoint-chain",
+                "outcome-witness",
+                "active-ranges",
+                "source-deny",
+                "evidence",
+            ),
+            events,
+        )
         assertEquals(0, journal.persistCalls)
     }
 
@@ -1258,9 +1269,10 @@ class RecoveryStreamingReconciliationControllerTest {
                     RecoveryStreamingCheckpointAuthentication.Ready(
                         RecoveryStreamingPublicStreamOpener { _, _ ->
                             events += "public-open"
-                            throw RecoveryStreamingIntentBuilder.RecoveryStreamingPublicReadException(
-                                RecoveryStreamingSafeExceptionType.CRYPTO
-                            )
+                            throw RecoveryStreamingIntentBuilder
+                                .RecoveryStreamingPublicReadException(
+                                    RecoveryStreamingSafeExceptionType.CRYPTO
+                                )
                         }
                     )
                 },
@@ -1515,7 +1527,11 @@ class RecoveryStreamingReconciliationControllerTest {
         var cryptoCalls = 0
         val opener = RecoveryStreamingPublicStreamOpener { _, _ -> error("unused") }
         val crypto =
-            RecoveryStreamingPrerequisiteCrypto { checkpoint, checkpointEnvelope, ciphertext, streamEnvelope ->
+            RecoveryStreamingPrerequisiteCrypto {
+                checkpoint,
+                checkpointEnvelope,
+                ciphertext,
+                streamEnvelope ->
                 cryptoCalls += 1
                 assertTrue(checkpoint === fixture.checkpoint)
                 assertArrayEquals(fixture.checkpointEnvelope, checkpointEnvelope)
@@ -1533,7 +1549,8 @@ class RecoveryStreamingReconciliationControllerTest {
         assertTrue(ready is RecoveryStreamingCheckpointAuthentication.Ready)
         assertEquals(1, cryptoCalls)
 
-        val missing = adapter(artifacts - RecoveryStreamingPrerequisiteArtifactKind.STREAM_KEY_ENVELOPE)
+        val missing =
+            adapter(artifacts - RecoveryStreamingPrerequisiteArtifactKind.STREAM_KEY_ENVELOPE)
         assertTrue(
             missing.authenticate(fixture.checkpoint, fixture.request.witness) ===
                 RecoveryStreamingCheckpointAuthentication.Missing
@@ -1551,6 +1568,27 @@ class RecoveryStreamingReconciliationControllerTest {
             corrupt.authenticate(fixture.checkpoint, fixture.request.witness) ===
                 RecoveryStreamingCheckpointAuthentication.Structural
         )
+        RecoveryStreamingPrerequisiteSourceFailure.entries.forEach { failure ->
+            val failed =
+                RecoveryStreamingCheckpointAuthenticatorAdapter(
+                    RecoveryStreamingPrerequisiteSource { _, _, _ ->
+                        throw RecoveryStreamingPrerequisiteSourceException(failure)
+                    },
+                    crypto,
+                )
+            val expected =
+                when (failure) {
+                    RecoveryStreamingPrerequisiteSourceFailure.UNSAFE_PATH ->
+                        RecoveryStreamingCheckpointAuthentication.UnsafePath
+                    RecoveryStreamingPrerequisiteSourceFailure.STRUCTURAL ->
+                        RecoveryStreamingCheckpointAuthentication.Structural
+                    RecoveryStreamingPrerequisiteSourceFailure.OPERATIONAL ->
+                        RecoveryStreamingCheckpointAuthentication.Operational
+                }
+            assertTrue(
+                failed.authenticate(fixture.checkpoint, fixture.request.witness) === expected
+            )
+        }
         assertEquals(1, cryptoCalls)
     }
 

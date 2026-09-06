@@ -1,3 +1,5 @@
+@file:Suppress("LongMethod", "LongParameterList")
+
 package com.monumentogram.dora.poc.recovery.candidate
 
 import com.monumentogram.dora.poc.recovery.contract.BoundedBinaryWriter

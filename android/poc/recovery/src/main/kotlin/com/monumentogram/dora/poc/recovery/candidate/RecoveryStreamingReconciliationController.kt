@@ -1,4 +1,10 @@
-@file:Suppress("LongParameterList")
+@file:Suppress(
+    "ComplexCondition",
+    "LongMethod",
+    "LongParameterList",
+    "ReturnCount",
+    "TooManyFunctions",
+)
 
 package com.monumentogram.dora.poc.recovery.candidate
 
@@ -720,6 +726,16 @@ internal fun interface RecoveryStreamingPrerequisiteSource {
     ): RecoveryArtifactBytes?
 }
 
+internal enum class RecoveryStreamingPrerequisiteSourceFailure {
+    UNSAFE_PATH,
+    STRUCTURAL,
+    OPERATIONAL,
+}
+
+internal class RecoveryStreamingPrerequisiteSourceException(
+    val failure: RecoveryStreamingPrerequisiteSourceFailure
+) : IllegalStateException("Recovery streaming prerequisite source failed: $failure")
+
 internal fun interface RecoveryStreamingPrerequisiteCrypto {
     fun authenticate(
         checkpoint: RecoveryStreamingCheckpointRow,
@@ -744,6 +760,23 @@ internal class RecoveryStreamingCheckpointAuthenticatorAdapter(
         ) {
             return RecoveryStreamingCheckpointAuthentication.Structural
         }
+        return try {
+            authenticateExact(checkpoint)
+        } catch (failure: RecoveryStreamingPrerequisiteSourceException) {
+            when (failure.failure) {
+                RecoveryStreamingPrerequisiteSourceFailure.UNSAFE_PATH ->
+                    RecoveryStreamingCheckpointAuthentication.UnsafePath
+                RecoveryStreamingPrerequisiteSourceFailure.STRUCTURAL ->
+                    RecoveryStreamingCheckpointAuthentication.Structural
+                RecoveryStreamingPrerequisiteSourceFailure.OPERATIONAL ->
+                    RecoveryStreamingCheckpointAuthentication.Operational
+            }
+        }
+    }
+
+    private fun authenticateExact(
+        checkpoint: RecoveryStreamingCheckpointRow
+    ): RecoveryStreamingCheckpointAuthentication {
         val checkpointEnvelope =
             exactArtifact(
                 checkpoint.runId,
@@ -804,7 +837,6 @@ internal class RecoveryStreamingCheckpointAuthenticatorAdapter(
             size >= 0L &&
             size.toULong() == expectedBytes &&
             sha256 == expectedSha256
-
 }
 
 internal data class RecoveryStreamingControllerRequest(
