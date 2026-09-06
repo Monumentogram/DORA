@@ -18,7 +18,9 @@ import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalResu
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingOutcomeAttempt
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingOutcomeIdentityInput
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingOutcomeRow
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingRangeRow
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingRejectedObservationInput
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingRowValidation
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingRules
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingWitnessInput
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
@@ -1301,6 +1303,8 @@ internal class RecoveryStreamingReconciliationController(
                 )
             )
         }
+        if (!oracleExactReplayOutcome(outcome, request.oracle)) return journalStructural()
+        if (range != null && !exactReplayRange(outcome, range)) return journalStructural()
         val verified =
             try {
                 source.verifyReplayHashOnly(
@@ -1334,8 +1338,72 @@ internal class RecoveryStreamingReconciliationController(
             .complete(sourceDescriptorCloseFailed = false, evidenceSink)
     }
 
+    private fun oracleExactReplayOutcome(
+        outcome: RecoveryStreamingOutcomeRow,
+        oracle: RecoveryStreamingIntentBuilder.RecoveryStreamingOracle,
+    ): Boolean {
+        val input = outcome.identityInput()
+        val canonicalObservation =
+            input.rejectedObservation?.let { observation ->
+                val oraclePrefix = oracle.prefixSha256(observation.candidateEnd)
+                val oracleEqual = observation.completedPlaintextSha256 == oraclePrefix
+                if (oracleEqual) {
+                    if (
+                        observation.firstMismatchOffset != null ||
+                            observation.equalPrefixSha256 != null ||
+                            observation.expectedOracleByte != null ||
+                            observation.observedPlaintextByte != null
+                    ) {
+                        return false
+                    }
+                    observation.copy(
+                        oraclePrefixSha256 = oraclePrefix,
+                        oraclePrefixEqual = true,
+                    )
+                } else {
+                    val mismatchOffset = observation.firstMismatchOffset ?: return false
+                    val observedByte = observation.observedPlaintextByte ?: return false
+                    val expectedByte = oracle.byteAt(mismatchOffset)
+                    if (expectedByte == observedByte) return false
+                    observation.copy(
+                        oraclePrefixSha256 = oraclePrefix,
+                        oraclePrefixEqual = false,
+                        equalPrefixSha256 = oracle.prefixSha256(mismatchOffset),
+                        expectedOracleByte = expectedByte,
+                    )
+                }
+            }
+        val canonical =
+            runCatching {
+                    RecoveryStreamingOutcomeRow.from(
+                        input.copy(
+                            returnedPlaintextSha256 =
+                                input.recoveredEnd?.let { oracle.prefixSha256(it) },
+                            rejectedObservation = canonicalObservation,
+                        )
+                    )
+                }
+                .getOrNull()
+        return outcome == canonical
+    }
+
+    private fun exactReplayRange(
+        outcome: RecoveryStreamingOutcomeRow,
+        range: RecoveryStreamingRangeRow,
+    ): Boolean =
+        runCatching {
+                RecoveryStreamingRowValidation.validateParentChild(outcome, range)
+                range == RecoveryStreamingRangeRow.exact(outcome, range.rangeSha256)
+            }
+            .getOrDefault(false)
+
     private fun journalStructural(): RecoveryStreamingReconciliationResult =
-        fatal(RecoveryStreamingResultClassification.JOURNAL_STRUCTURAL)
+        nonPersistable(
+            RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
+                RecoveryStreamingResultStage.JOURNAL,
+                RecoveryStreamingResultClassification.JOURNAL_STRUCTURAL,
+            )
+        )
 
     private fun fatal(
         classification: RecoveryStreamingResultClassification

@@ -1069,6 +1069,140 @@ class RecoveryStreamingReconciliationControllerTest {
     }
 
     @Test
+    fun `exact replay rejects self consistent rows whose oracle facts and identities differ`() {
+        val validFixture = controllerFixture()
+        val valid = controllerValidOutcome(validFixture)
+        val mismatch = controllerMismatchOutcome(validFixture)
+        val mismatchObservation = requireNotNull(mismatch.rejectedObservation)
+        val rejectedFixture = controllerFixture(acceptedEnd = 13_000)
+        val rejected = controllerTailRejectedOutcome(rejectedFixture)
+        val rejectedObservation = requireNotNull(rejected.rejectedObservation)
+        val wrongExpectedOracleByte =
+            generateSequence(
+                    (requireNotNull(mismatchObservation.expectedOracleByte).toInt() + 1) and 0xff
+                ) {
+                    (it + 1) and 0xff
+                }
+                .map { it.toUByte() }
+                .first { it != mismatchObservation.observedPlaintextByte }
+        val cases =
+            listOf(
+                OracleReplayCase(
+                    "valid-prefix-digest",
+                    validFixture,
+                    valid,
+                    RecoveryStreamingOutcomeRow.from(
+                        valid.identityInput().copy(returnedPlaintextSha256 = sha(201))
+                    ),
+                ),
+                OracleReplayCase(
+                    "mismatch-oracle-prefix",
+                    validFixture,
+                    mismatch,
+                    RecoveryStreamingOutcomeRow.from(
+                        mismatch
+                            .identityInput()
+                            .copy(
+                                rejectedObservation =
+                                    mismatchObservation.copy(oraclePrefixSha256 = sha(202))
+                            )
+                    ),
+                ),
+                OracleReplayCase(
+                    "mismatch-equal-prefix",
+                    validFixture,
+                    mismatch,
+                    RecoveryStreamingOutcomeRow.from(
+                        mismatch
+                            .identityInput()
+                            .copy(
+                                rejectedObservation =
+                                    mismatchObservation.copy(equalPrefixSha256 = sha(203))
+                            )
+                    ),
+                ),
+                OracleReplayCase(
+                    "mismatch-expected-byte",
+                    validFixture,
+                    mismatch,
+                    RecoveryStreamingOutcomeRow.from(
+                        mismatch
+                            .identityInput()
+                            .copy(
+                                rejectedObservation =
+                                    mismatchObservation.copy(
+                                        expectedOracleByte = wrongExpectedOracleByte
+                                    )
+                            )
+                    ),
+                ),
+                OracleReplayCase(
+                    "rejected-equal-observation",
+                    rejectedFixture,
+                    rejected,
+                    RecoveryStreamingOutcomeRow.from(
+                        rejected
+                            .identityInput()
+                            .copy(
+                                rejectedObservation =
+                                    rejectedObservation.copy(
+                                        completedPlaintextSha256 = sha(204),
+                                        oraclePrefixSha256 = sha(204),
+                                    )
+                            )
+                    ),
+                ),
+            )
+
+        cases.forEach { case ->
+            assertNotEquals(case.canonical.outcomeId, case.altered.outcomeId)
+            val canonicalRange = controllerRange(case.canonical, case.fixture.source)
+            val alteredRange = controllerRange(case.altered, case.fixture.source)
+            if (canonicalRange != null) {
+                assertNotEquals(
+                    canonicalRange.rangeIntentId,
+                    requireNotNull(alteredRange).rangeIntentId,
+                )
+            }
+            val events = mutableListOf<String>()
+            val journal =
+                ControllerJournal(events).apply {
+                    checkpoints = listOf(case.fixture.checkpoint)
+                    existingOutcome = case.altered
+                    existingRange = alteredRange
+                }
+            val source = ReplayControllerSource(events, case.altered)
+            var evidence: RecoveryStreamingEvidenceEvent? = null
+            val controller =
+                RecoveryStreamingReconciliationController(
+                    journal,
+                    source,
+                    RecoveryRunSingleWriterGuard {
+                        events += "lease-acquire"
+                        RecoveryRunWriterLease { events += "lease-release" }
+                    },
+                    RecoveryStreamingCheckpointAuthenticator { _, _ ->
+                        error("oracle-inconsistent replay must not touch prerequisites")
+                    },
+                    RecoveryStreamingEvidenceSink { evidence = it },
+                )
+
+            val result = controller.recover(case.fixture.request)
+
+            assertEquals(
+                "${case.name} must fail closed",
+                RecoveryStreamingResultClassification.JOURNAL_STRUCTURAL,
+                (result as RecoveryStreamingReconciliationResult.Fatal).classification,
+            )
+            assertEquals(0, source.replayOpens)
+            assertEquals(0, source.normalOpens)
+            assertEquals(0, journal.persistCalls)
+            assertEquals(null, requireNotNull(evidence).outcomeId)
+            assertEquals(null, requireNotNull(evidence).persistedDecision)
+        }
+    }
+
+    @Test
     fun `controller active range denial stops before source public stream and durable write`() {
         val fixture = controllerFixture()
         val events = mutableListOf<String>()
@@ -2040,6 +2174,81 @@ class RecoveryStreamingReconciliationControllerTest {
                 completed = null,
             )
         )
+
+    private fun controllerMismatchOutcome(fixture: ControllerFixture): RecoveryStreamingOutcomeRow {
+        val candidateEnd = 4_056
+        val mismatchOffset = 17
+        val returned = fixture.oracle.copyOfRange(0, candidateEnd)
+        returned[mismatchOffset] = (returned[mismatchOffset].toInt() xor 0xff).toByte()
+        return RecoveryStreamingIntentBuilder.buildOutcome(
+            RecoveryStreamingValidatedIntentFacts(
+                fixture.request.witness,
+                fixture.source.size.toULong(),
+                Sha256Value.calculate(fixture.source),
+                checkpointPrefixMatches = true,
+                preFaultPrefixMatches = true,
+                completed =
+                    RecoveryStreamingCompletedReadFacts(
+                        candidateEnd = candidateEnd.toULong(),
+                        completedPlaintextSha256 = Sha256Value.calculate(returned),
+                        oraclePrefixSha256 =
+                            fixture.request.oracle.prefixSha256(candidateEnd.toULong()),
+                        oraclePrefixEqual = false,
+                        terminal = StreamTerminal.COMPLETED_READ_REJECTED,
+                        firstMismatchOffset = mismatchOffset.toULong(),
+                        equalPrefixSha256 =
+                            fixture.request.oracle.prefixSha256(mismatchOffset.toULong()),
+                        expectedOracleByte =
+                            fixture.request.oracle.byteAt(mismatchOffset.toULong()),
+                        observedPlaintextByte = returned[mismatchOffset].toUByte(),
+                    ),
+            )
+        )
+    }
+
+    private fun controllerTailRejectedOutcome(
+        fixture: ControllerFixture
+    ): RecoveryStreamingOutcomeRow {
+        val candidateEnd = 4_056UL
+        val digest = fixture.request.oracle.prefixSha256(candidateEnd)
+        return RecoveryStreamingIntentBuilder.buildOutcome(
+            RecoveryStreamingValidatedIntentFacts(
+                fixture.request.witness,
+                fixture.source.size.toULong(),
+                Sha256Value.calculate(fixture.source),
+                checkpointPrefixMatches = true,
+                preFaultPrefixMatches = true,
+                completed =
+                    RecoveryStreamingCompletedReadFacts(
+                        candidateEnd = candidateEnd,
+                        completedPlaintextSha256 = digest,
+                        oraclePrefixSha256 = digest,
+                        oraclePrefixEqual = true,
+                        terminal = StreamTerminal.AUTHENTICATION_FAILURE,
+                    ),
+            )
+        )
+    }
+
+    private fun controllerRange(
+        outcome: RecoveryStreamingOutcomeRow,
+        source: ByteArray,
+    ): RecoveryStreamingRangeRow? =
+        outcome.requiredRangeStart?.let { start ->
+            RecoveryStreamingRangeRow.exact(
+                outcome,
+                Sha256Value.calculate(
+                    source.copyOfRange(start.toInt(), outcome.observedSourceBytes.toInt())
+                ),
+            )
+        }
+
+    private data class OracleReplayCase(
+        val name: String,
+        val fixture: ControllerFixture,
+        val canonical: RecoveryStreamingOutcomeRow,
+        val altered: RecoveryStreamingOutcomeRow,
+    )
 
     private class ControllerJournal(private val events: MutableList<String>) :
         RecoveryStreamingJournal {
