@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import ctypes
+import json
 import os
 import re
 import signal
@@ -738,6 +739,7 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
             source = repo / relative
             source.parent.mkdir(parents=True)
             source.write_text("source", encoding="utf-8")
+            governance.commit_test_git_repo(repo, "add regular source")
             with patch.object(governance, "ROOT", repo):
                 governance.validate_rec_i3_regular_file(relative)
                 blob = governance.test_git_text(repo, "hash-object", "-w", "--stdin", input_data=b"other.kt")
@@ -1673,6 +1675,217 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
                 "REC-I3 squash-main GitHub push identity drift",
                 rejected.stdout + rejected.stderr,
             )
+
+    def test_e36_gapi_exact_local_and_stacked_pr_topologies_are_reachable(self) -> None:
+        integrated_main = "be37378ca88e0bd4aee1f2fe0c54362798bdef9d"
+        harness_head = "7a7036513f2eb460ed72136e1784d712c4aae42d"
+        harness_tree = "04fa791843f2a0cb6ea4fe0ce3be1002b8ab2f3e"
+        harness_branch = "codex/rec-i3-e36-gapi-preflight-v01"
+        correction_branch = "codex/rec-i3-squash-main-governance-v01"
+        validator_source = str(Path(governance.__file__).resolve())
+        child_code = (
+            "import importlib.util, os, pathlib, sys; "
+            "source = pathlib.Path(sys.argv[1]); root = pathlib.Path(sys.argv[2]); "
+            "spec = importlib.util.spec_from_file_location('e36_governance', source); "
+            "module = importlib.util.module_from_spec(spec); "
+            "sys.modules[spec.name] = module; spec.loader.exec_module(module); "
+            "module.ROOT = root; os.chdir(root); "
+            "sys.argv = ['validate_poc_recovery_governance.py']; "
+            "raise SystemExit(module.main())"
+        )
+        self.assertEqual(
+            harness_tree,
+            governance.git_output("rev-parse", f"{harness_head}^{{tree}}"),
+        )
+
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-e36-profile-") as temporary:
+            parent = Path(temporary)
+            repo = parent / "repo"
+            governance.test_git(
+                parent,
+                "clone",
+                "--shared",
+                "--no-checkout",
+                str(governance.ROOT),
+                str(repo),
+            )
+            governance.test_git(repo, "checkout", "-q", "-B", harness_branch, harness_head)
+            child_environment = os.environ.copy()
+            for key in tuple(child_environment):
+                if key.startswith("GITHUB_") or key == "RUNNER_TEMP":
+                    child_environment.pop(key)
+            local = self.run_bounded_validator_child(
+                cwd=repo,
+                environment=child_environment,
+                command=[sys.executable, "-c", child_code, validator_source, str(repo)],
+            )
+            self.assertEqual(0, local.returncode, local.stdout + local.stderr)
+            self.assertIn("exact E36-GAPI harness", local.stdout)
+
+            correction_root = Path(governance.__file__).resolve().parents[1]
+            correction_head = subprocess.run(
+                ["git", "rev-parse", "HEAD"],
+                cwd=correction_root,
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout.strip()
+            governance.test_git(repo, "checkout", "-q", "-B", correction_branch, correction_head)
+            governance.test_git(
+                repo,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "merge",
+                "--no-ff",
+                "--no-edit",
+                harness_head,
+            )
+            merge_head = governance.test_git_text(repo, "rev-parse", "HEAD")
+            governance.test_git(repo, "checkout", "--detach", "-q", merge_head)
+            runner_temp = parent / "runner-temp"
+            runner_temp.mkdir()
+            event_path = runner_temp / "event.json"
+            pull_request_number = 67
+            event_path.write_text(
+                json.dumps(
+                    {
+                        "number": pull_request_number,
+                        "repository": {"full_name": governance.GITHUB_REPOSITORY},
+                        "pull_request": {
+                            "number": pull_request_number,
+                            "merge_commit_sha": merge_head,
+                            "draft": True,
+                            "state": "open",
+                            "merged": False,
+                            "head": {
+                                "ref": harness_branch,
+                                "sha": harness_head,
+                                "repo": {"full_name": governance.GITHUB_REPOSITORY},
+                            },
+                            "base": {
+                                "ref": correction_branch,
+                                "sha": correction_head,
+                                "repo": {"full_name": governance.GITHUB_REPOSITORY},
+                            },
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            child_environment.update(
+                {
+                    "GITHUB_EVENT_NAME": "pull_request",
+                    "GITHUB_REPOSITORY": governance.GITHUB_REPOSITORY,
+                    "GITHUB_WORKSPACE": str(repo.resolve()),
+                    "RUNNER_TEMP": str(runner_temp.resolve()),
+                    "GITHUB_EVENT_PATH": str(event_path.resolve()),
+                    "GITHUB_HEAD_REF": harness_branch,
+                    "GITHUB_BASE_REF": correction_branch,
+                    "GITHUB_REF": f"refs/pull/{pull_request_number}/merge",
+                    "GITHUB_SHA": merge_head,
+                }
+            )
+            stacked = self.run_bounded_validator_child(
+                cwd=repo,
+                environment=child_environment,
+                command=[sys.executable, "-c", child_code, validator_source, str(repo)],
+            )
+            self.assertEqual(0, stacked.returncode, stacked.stdout + stacked.stderr)
+            self.assertIn("exact E36-GAPI harness", stacked.stdout)
+
+            unrelated = replace(
+                governance.collect_recovery_lifecycle_identity(),
+                head=harness_head,
+                branch="codex/unrelated-descendant",
+                github_pull_request_context=None,
+            )
+            self.assertFalse(governance.rec_i3_squash_main_candidate(unrelated))
+
+    def test_squash_main_rejects_new_names_in_every_protected_change_layer(self) -> None:
+        empty = {layer: [] for layer in ("committed", "staged", "unstaged", "untracked")}
+        for layer in empty:
+            changes = copy.deepcopy(empty)
+            changes[layer] = [
+                "android/poc/recovery/src/main/synthetic-protected-bypass.kt"
+            ]
+            with self.subTest(layer=layer), self.assertRaisesRegex(
+                ValueError, "protected namespace"
+            ):
+                governance.validate_rec_i3_squash_main_protected_changes(
+                    changes,
+                    allowed_paths=set(governance.REC_I3_SQUASH_MAIN_CORRECTION_PATHS),
+                )
+
+    def test_squash_main_github_push_rejects_missing_workspace(self) -> None:
+        integrated_main = "be37378ca88e0bd4aee1f2fe0c54362798bdef9d"
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-missing-workspace-") as temporary:
+            parent = Path(temporary)
+            repo = parent / "repo"
+            governance.test_git(
+                parent,
+                "clone",
+                "--shared",
+                "--no-checkout",
+                str(governance.ROOT),
+                str(repo),
+            )
+            governance.test_git(repo, "checkout", "-q", "-B", "main", integrated_main)
+            child_environment = os.environ.copy()
+            for key in tuple(child_environment):
+                if key.startswith("GITHUB_") or key == "RUNNER_TEMP":
+                    child_environment.pop(key)
+            child_environment.update(
+                {
+                    "GITHUB_EVENT_NAME": "push",
+                    "GITHUB_REPOSITORY": governance.GITHUB_REPOSITORY,
+                    "GITHUB_REF": "refs/heads/main",
+                    "GITHUB_SHA": integrated_main,
+                }
+            )
+            validator_source = str(Path(governance.__file__).resolve())
+            child_code = (
+                "import importlib.util, os, pathlib, sys; "
+                "source = pathlib.Path(sys.argv[1]); root = pathlib.Path(sys.argv[2]); "
+                "spec = importlib.util.spec_from_file_location('workspace_governance', source); "
+                "module = importlib.util.module_from_spec(spec); "
+                "sys.modules[spec.name] = module; spec.loader.exec_module(module); "
+                "module.ROOT = root; os.chdir(root); "
+                "sys.argv = ['validate_poc_recovery_governance.py']; "
+                "raise SystemExit(module.main())"
+            )
+            rejected = self.run_bounded_validator_child(
+                cwd=repo,
+                environment=child_environment,
+                command=[sys.executable, "-c", child_code, validator_source, str(repo)],
+            )
+            self.assertNotEqual(0, rejected.returncode)
+            self.assertIn(
+                "REC-I3 squash-main GitHub push identity drift",
+                rejected.stdout + rejected.stderr,
+            )
+
+    def test_required_regular_file_rejects_missing_index_entry(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-missing-index-") as temporary:
+            parent = Path(temporary)
+            repo = parent / "repo"
+            governance.test_git(
+                parent,
+                "clone",
+                "--shared",
+                str(governance.ROOT),
+                str(repo),
+            )
+            relative = "tools/validate_poc_recovery_governance.py"
+            governance.test_git(repo, "rm", "--cached", "--", relative)
+            original_root = governance.ROOT
+            try:
+                governance.ROOT = repo
+                with self.assertRaisesRegex(ValueError, "non-regular Git entry"):
+                    governance.validate_rec_i3_regular_file(relative)
+            finally:
+                governance.ROOT = original_root
 
     def test_exact_v08_profile_dispatch_is_preserved(self) -> None:
         lifecycle = self.local_result_boundary_lifecycle()
