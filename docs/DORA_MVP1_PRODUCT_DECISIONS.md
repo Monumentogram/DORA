@@ -2,7 +2,7 @@
 
 Статус документа: единый реестр решений владельца продукта\
 Дата: 19 августа 2026 года\
-Последнее изменение: `DEC-045` records the Project owner's 2026-09-05 Option A selection for the bounded Stage 0 REC-I3 streaming-recovery semantic, makes a synthetic/non-metric streaming slice eligible under `OD-15`, and leaves `DEC-044`, the active Gate Set/protocol, all thresholds, the ten readiness blockers, Recovery Phase A/measured execution, PASS/READY and production admission unchanged\
+Последнее изменение: `DEC-047` records the 2026-09-06 prospective REC-I3 result/evidence boundary successor under the Development Governor delegation; v0.8 controller implementation remains blocked pending exact-governance CLEAN review, while schema v4, durable semantics, the ten readiness blockers, Recovery Phase A/measured execution, PASS/READY and production admission remain unchanged\
 Основание: Technical Plan §40 P1–P20, Design Spec §40.2 D-P1–D-P22 и owner approval record Stage 0A.
 
 `Provisional` означает, что рекомендуемый baseline можно использовать для обратимого PoC/bootstrap, но это не заменяет явное решение владельца. `Proposed` запрещает необратимые или пользовательские действия до утверждения. `Approved` означает прямое решение владельца в указанной области; оно не расширяет scope на production, Legal или release без явной формулировки. Статусы, повышенные owner-решением, ссылаются на соответствующий `OD-*`, владельца и дату.
@@ -881,3 +881,19 @@ candidate, while inheriting every other v0.6 semantic by exact hash. This confir
 production, dependency, processing, cross-process, retirement, push, PR or merge authority.
 
 This exact confirmation was supplied by the Project owner after the v5 packet received a CLEAN independent advisory review. The exact governance commit must receive a separate CLEAN review before any persistence source mutation. The current OD-15 REC-I3 implementation/non-metric/conditional-merge overlay remains the source of implementation authority; this decision does not elevate any execution or admission flag.
+
+## DEC-047. REC-I3 non-persistable reconciliation results and evidence delivery
+
+Status: Approved\
+Priority: P0\
+Decision date: 2026-09-06\
+Approved by: Project owner under the recorded Development Governor delegation\
+Scope: bounded Stage 0 REC-I3 controller result/evidence boundary only\
+Decision record: 'docs/adr/ADR-0006-rec-i3-streaming-result-boundary-and-evidence-delivery.md'\
+Gate Set/protocol: 'poc-recovery-stage0-v0.8' / 'poc-recovery-protocol-stage0-v0.8'
+
+DEC-047 is a narrow prospective successor to affected DEC-046/ADR-0005 boundary clauses. It fixes four result variants, six stages, twenty classifications, twenty total mappings, and retry-only safe exceptions. It preserves distinct 'JOURNAL_OPERATIONAL' for known journal failures, reserves 'JOURNAL_COMMIT_STATE_UNRESOLVED' for ambiguous commit/readback, adds operational checkpoint-authentication CRYPTO retry, and rejects only the long legacy ambiguous alias.
+
+Exact readback creates an immutable receipt core. After public-stream close, descriptor close, and one bounded sanitized sink attempt, the controller constructs the immutable final receipt with cleanup and DELIVERED/PENDING state. PENDING is caller-retryable through exact replay with the same event key and no new row; no autonomous delivery guarantee exists. Strict existing references use exact class-specific kinds and unsigned lexicographic 32-byte ID ordering.
+
+Schema v4, durable diagnostics/identities, DDL, migrations, replay hash, K12, source immutability, and Stage 0 authority remain unchanged. All v0.1–v0.7 artifacts are immutable. This governance patch creates no v0.8 result-boundary/controller implementation, execution, or evidence. Later source work remains blocked pending independent CLEAN review of the exact v0.8 governance commit; all readiness, campaign, execution, production, consumer, cross-process, retirement, PR, and merge prohibitions remain.

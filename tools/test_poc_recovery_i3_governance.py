@@ -29,9 +29,13 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
         self.assertIn("PASS REC-I3 streaming SQLite schema v4", completed.stdout)
 
     def test_exact_streaming_persistence_profile_accepts_current_checkout(self) -> None:
-        lifecycle = governance.collect_recovery_lifecycle_identity()
-        self.assertEqual(governance.REC_I3_STREAMING_PERSISTENCE_BRANCH, lifecycle.branch)
-        self.assertTrue(governance.validate_current_rec_i3_successor(lifecycle))
+        lifecycle = replace(
+            governance.collect_recovery_lifecycle_identity(),
+            branch=governance.REC_I3_STREAMING_PERSISTENCE_BRANCH,
+        )
+        with patch.object(governance, "validate_rec_i3_streaming_persistence") as validate:
+            self.assertTrue(governance.validate_current_rec_i3_successor(lifecycle))
+            validate.assert_called_once_with(lifecycle)
 
     def test_streaming_persistence_base_preserves_exact_streaming_integration(self) -> None:
         self.assertTrue(
@@ -810,6 +814,122 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
                 governance.validate_rec_i3_candidate_history(clean_pr)
                 governance.test_git(repo, "update-ref", "refs/heads/main", side1)
                 governance.validate_rec_i3_candidate_history(replace(local, head=side1))
+
+
+class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
+    def fixture(self) -> tuple[dict, dict]:
+        return (
+            copy.deepcopy(governance.read_json(governance.REC_I3_RESULT_BOUNDARY_GATE_PATH)),
+            copy.deepcopy(governance.read_json(governance.REC_I3_RESULT_BOUNDARY_PROTOCOL_PATH)),
+        )
+
+    def reject(self, mutation) -> None:
+        gate, protocol = self.fixture()
+        governance.validate_rec_i3_result_boundary_contract(gate, protocol)
+        mutation(gate, protocol)
+        with self.assertRaises(ValueError):
+            governance.validate_rec_i3_result_boundary_contract(gate, protocol)
+
+    def test_v08_accepts_twenty_path_total_mapping_and_retry_only_exceptions(self) -> None:
+        gate, protocol = self.fixture()
+        governance.validate_rec_i3_result_boundary_contract(gate, protocol)
+        boundary = protocol["streamingResultBoundaryV08"]
+        self.assertEqual((6, 20, 20), (
+            len(boundary["stages"]), len(boundary["classifications"]),
+            len(boundary["resultMappings"]),
+        ))
+        by_class = {item["classification"]: item for item in boundary["resultMappings"]}
+        self.assertEqual(["SQLITE"], by_class["JOURNAL_OPERATIONAL"]["safeExceptionTypes"])
+        self.assertEqual(["SQLITE"], by_class["JOURNAL_COMMIT_STATE_UNRESOLVED"]["safeExceptionTypes"])
+        self.assertEqual(["CRYPTO"], by_class["STREAM_CHECKPOINT_AUTHENTICATION_OPERATIONAL"]["safeExceptionTypes"])
+        self.assertEqual(
+            ["JOURNAL_AMBIGUOUS_COMMIT_WITH_NO_EXACT_INTENDED_STATE"],
+            boundary["rejectedAliases"],
+        )
+
+    def test_v08_rejects_mapping_exception_alias_and_reference_drift(self) -> None:
+        mutations = (
+            lambda g, p: p["inheritsExactV07"]["sha256"].__setitem__("protocol", "0" * 64),
+            lambda g, p: g.__setitem__("protocolLocator", "wrong.json"),
+            lambda g, p: p["streamingPersistenceV07"]["database"].__setitem__(
+                "userVersion", 5
+            ),
+            lambda g, p: p["streamingResultBoundaryV08"]["classifications"].pop(),
+            lambda g, p: p["streamingResultBoundaryV08"]["resultMappings"].append(
+                copy.deepcopy(p["streamingResultBoundaryV08"]["resultMappings"][0])
+            ),
+            lambda g, p: next(x for x in p["streamingResultBoundaryV08"]["resultMappings"]
+                              if x["variant"] == "Fatal")["safeExceptionTypes"].append("NONE"),
+            lambda g, p: next(x for x in p["streamingResultBoundaryV08"]["resultMappings"]
+                              if x["classification"] == "JOURNAL_OPERATIONAL").__setitem__(
+                                  "safeExceptionTypes", []),
+            lambda g, p: p["streamingResultBoundaryV08"]["rejectedAliases"].append("JOURNAL_OPERATIONAL"),
+            lambda g, p: p["streamingResultBoundaryV08"]["existingReferences"]["perClassification"][
+                "STREAM_ACTIVE_RANGE_DENIED"
+            ].append("STREAM_CHECKPOINT"),
+            lambda g, p: p["streamingResultBoundaryV08"]["existingReferences"].__setitem__(
+                "idByteOrder", "SIGNED_LEXICOGRAPHIC"),
+        )
+        for mutation in mutations:
+            with self.subTest(mutation=mutation):
+                self.reject(mutation)
+
+    def test_strict_json_rejects_duplicate_keys_and_non_finite_numbers(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-v08-json-") as temporary:
+            root = Path(temporary)
+            duplicate = root / "duplicate.json"
+            duplicate.write_text('{"a":1,"a":2}', encoding="utf-8")
+            non_finite = root / "non-finite.json"
+            non_finite.write_text('{"a":NaN}', encoding="utf-8")
+            with patch.object(governance, "ROOT", root):
+                with self.assertRaisesRegex(ValueError, "Duplicate JSON key"):
+                    governance.read_json("duplicate.json")
+                with self.assertRaisesRegex(ValueError, "Non-finite JSON number"):
+                    governance.read_json("non-finite.json")
+
+    def test_v08_rejects_read_receipt_delivery_and_authority_drift(self) -> None:
+        mutations = (
+            lambda g, p: p["streamingResultBoundaryV08"]["behaviorAssertions"]["zeroProgress"].__setitem__("additionalRead", True),
+            lambda g, p: p["streamingResultBoundaryV08"]["behaviorAssertions"]["readCrossesAcceptedEnd"].__setitem__("returnedBufferRetained", True),
+            lambda g, p: p["streamingResultBoundaryV08"]["behaviorAssertions"]["activeRangeDenied"].__setitem__("sourceOpen", True),
+            lambda g, p: p["streamingResultBoundaryV08"]["receipt"].__setitem__("coreCreatedAtExactReadback", False),
+            lambda g, p: p["streamingResultBoundaryV08"]["receipt"].__setitem__("finalReceiptConstructedAfterSinkAttempt", False),
+            lambda g, p: p["streamingResultBoundaryV08"]["receipt"].__setitem__("autonomousDeliveryGuarantee", True),
+            lambda g, p: g["governancePatchAllowlist"].append("android/app/Injected.kt"),
+            lambda g, p: g["campaignCounts"].__setitem__("mandatoryFaultRowCount", 45),
+            lambda g, p: g["campaignCounts"].__setitem__("mandatoryFaultRowCount", True),
+            lambda g, p: g["authority"].__setitem__("executionAllowed", True),
+        )
+        for mutation in mutations:
+            with self.subTest(mutation=mutation):
+                self.reject(mutation)
+
+    def test_v08_profile_is_distinct_and_preserves_mocked_v07_dispatch(self) -> None:
+        base = governance.RecoveryLifecycleIdentity(
+            "c" * 40, governance.REC_I3_STREAMING_PERSISTENCE_BRANCH,
+            None, None, None, None, (), None, None, False,
+        )
+        current = replace(base, branch=governance.REC_I3_RESULT_BOUNDARY_BRANCH)
+        self.assertTrue(governance.rec_i3_streaming_persistence_candidate(base))
+        self.assertFalse(governance.rec_i3_result_boundary_candidate(base))
+        self.assertTrue(governance.rec_i3_result_boundary_candidate(current))
+        self.assertFalse(governance.rec_i3_streaming_persistence_candidate(current))
+
+    def test_exact_v08_profile_accepts_current_checkout(self) -> None:
+        lifecycle = governance.collect_recovery_lifecycle_identity()
+        self.assertEqual(governance.REC_I3_RESULT_BOUNDARY_BRANCH, lifecycle.branch)
+        self.assertTrue(governance.validate_current_rec_i3_successor(lifecycle))
+
+    def test_exact_v08_profile_rejects_changed_v07_worktree_blob(self) -> None:
+        lifecycle = governance.collect_recovery_lifecycle_identity()
+        target = next(iter(governance.REC_I3_RESULT_BOUNDARY_V07_SHA256))
+        original = governance.sha256
+        with patch.object(
+            governance,
+            "sha256",
+            side_effect=lambda relative: "0" * 64 if relative == target else original(relative),
+        ), self.assertRaisesRegex(ValueError, "immutable v0.7 blob changed"):
+            governance.validate_rec_i3_result_boundary(lifecycle)
 
 
 if __name__ == "__main__":

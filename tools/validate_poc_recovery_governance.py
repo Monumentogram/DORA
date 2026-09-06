@@ -433,6 +433,35 @@ REC_I3_STREAMING_PERSISTENCE_GOVERNANCE_PATHS = (
     "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
     "docs/DORA_MVP1_STAGE_STATUS.md",
 )
+REC_I3_RESULT_BOUNDARY_BRANCH = "codex/rec-i3-streaming-result-boundary-governance-v08"
+REC_I3_RESULT_BOUNDARY_BASE = "e61d9b043fe83aebb674a126ea6aebce72be085b"
+REC_I3_RESULT_BOUNDARY_BASE_TREE = "85db58154681b17fe5e5101629bded91d48ca59a"
+REC_I3_RESULT_BOUNDARY_GATE_PATH = "docs/stage0/poc-recovery-gate-set-stage0-v0.8.json"
+REC_I3_RESULT_BOUNDARY_PROTOCOL_PATH = "docs/stage0/poc-recovery-protocol-stage0-v0.8.json"
+REC_I3_RESULT_BOUNDARY_PATHS = (
+    "docs/adr/ADR-0006-rec-i3-streaming-result-boundary-and-evidence-delivery.md",
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_8.md",
+    REC_I3_RESULT_BOUNDARY_GATE_PATH,
+    REC_I3_RESULT_BOUNDARY_PROTOCOL_PATH,
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_STREAMING_RESULT_BOUNDARY_SCOPE_STAGE0_V0_1.md",
+    "docs/DORA_MVP1_PRODUCT_DECISIONS.md",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    "tools/validate_poc_recovery_governance.py",
+    "tools/test_poc_recovery_i3_governance.py",
+)
+REC_I3_RESULT_BOUNDARY_V07_SHA256 = {
+    "docs/adr/ADR-0005-poc-recovery-streaming-persistence-and-range-quarantine.md":
+        "92d44d1405b3fed9ad3c6a50cc50a3667383a70852aceca443a64aa6702e8f02",
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_7.md":
+        "dc22c7a1643eae11efc8d5abc06194785afe1768afa8f5dd0f7d95f71f10ad5a",
+    "docs/stage0/poc-recovery-gate-set-stage0-v0.7.json":
+        "6d244cd2793bee7a3a0e63f880ac8f1d7c28e3ce4a2a98bef80263dffcafb929",
+    "docs/stage0/poc-recovery-protocol-stage0-v0.7.json":
+        "d1e5a59e2147055962f49fb901f1b7e8f7292c670219ed9b8ad1e86cd6ecd8e1",
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_STREAMING_PERSISTENCE_SCOPE_STAGE0_V0_1.md":
+        "b18bf386d9e2593c32c27d66f6a2449221768541879416c2b469a9089195ba90",
+}
 REC_I3_STREAMING_PERSISTENCE_IMPLEMENTATION_PATHS = (
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryJournalDatabase.kt",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntent.kt",
@@ -952,7 +981,23 @@ def read_text(relative: str) -> str:
 
 
 def read_json(relative: str) -> dict[str, Any]:
-    return json.loads(read_text(relative))
+    def reject_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            require(key not in result, f"Duplicate JSON key in {relative}: {key}")
+            result[key] = value
+        return result
+
+    def reject_non_finite(value: str) -> None:
+        raise ValueError(f"Non-finite JSON number in {relative}: {value}")
+
+    record = json.loads(
+        read_text(relative),
+        object_pairs_hook=reject_duplicates,
+        parse_constant=reject_non_finite,
+    )
+    require(isinstance(record, dict), f"JSON root is not an object: {relative}")
+    return record
 
 
 def sha256(relative: str) -> str:
@@ -5739,6 +5784,386 @@ def rec_i3_streaming_persistence_candidate(lifecycle: RecoveryLifecycleIdentity)
     return lifecycle.branch == REC_I3_STREAMING_PERSISTENCE_BRANCH
 
 
+def rec_i3_result_boundary_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
+    return lifecycle.branch == REC_I3_RESULT_BOUNDARY_BRANCH
+
+
+def validate_rec_i3_result_boundary_contract(
+    gate: dict[str, Any], protocol: dict[str, Any],
+) -> None:
+    require(
+        set(gate) == {
+            "schemaVersion", "pocId", "gateSetVersion", "protocolId", "status",
+            "normativeMarkdown", "protocolLocator", "decision", "adr", "inheritsExactV07",
+            "journalSchemaVersion", "journalPath", "combinedBaseline", "campaignCounts",
+            "readinessLocks", "authority", "activeBlockers", "historicalClosure",
+            "governancePatchAllowlist", "streamingResultBoundaryGate",
+        }
+        and set(protocol) == {
+            "schemaVersion", "protocolId", "pocId", "gateSetLocator",
+            "normativeMarkdown", "status", "implementationAllowed", "executionAllowed",
+            "inheritsExactV07", "unchangedV07", "streamingPersistenceV07",
+            "streamingResultBoundaryV08",
+        },
+        "REC-I3 result-boundary top-level schema drift",
+    )
+    expected_stages = {
+        "LEASE", "PREREQUISITE", "SOURCE_PROOF", "RANGE_ADMISSION", "STREAM_READ", "JOURNAL",
+    }
+    expected_classes = {
+        "STREAM_CHECKPOINT_MISSING", "STREAM_CHECKPOINT_STRUCTURAL",
+        "STREAM_CHECKPOINT_AUTHENTICATION_REJECTED",
+        "STREAM_CHECKPOINT_AUTHENTICATION_OPERATIONAL", "STREAM_CHECKPOINT_SPLIT_BRAIN",
+        "STREAM_SOURCE_WITNESS_MISSING", "UNSAFE_PATH", "STREAM_SOURCE_IDENTITY_CHANGED",
+        "STREAM_SOURCE_EXTENT_LIMIT_EXCEEDED", "RUN_LEASE_CONTENDED",
+        "STREAM_ACTIVE_RANGE_DENIED", "STREAM_ZERO_PROGRESS",
+        "STREAM_READ_CROSSES_ACCEPTED_END", "STREAM_PUBLIC_READ_OPERATIONAL",
+        "JOURNAL_STRUCTURAL", "JOURNAL_ATTEMPT_CONFLICT",
+        "STREAM_RANGE_QUARANTINE_COLLISION", "ARTIFACT_IO_BEFORE_EXACT_SOURCE_HASH",
+        "JOURNAL_OPERATIONAL", "JOURNAL_COMMIT_STATE_UNRESOLVED",
+    }
+    require(
+        gate["gateSetVersion"] == "poc-recovery-stage0-v0.8"
+        and gate["protocolId"] == protocol["protocolId"]
+        == "poc-recovery-protocol-stage0-v0.8"
+        and gate["protocolLocator"] == REC_I3_RESULT_BOUNDARY_PROTOCOL_PATH
+        and protocol["gateSetLocator"] == REC_I3_RESULT_BOUNDARY_GATE_PATH
+        and gate["normativeMarkdown"] == protocol["normativeMarkdown"]
+        == "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_8.md",
+        "REC-I3 result-boundary v0.8 identity or reciprocal locator drift",
+    )
+    expected_pins = {
+        "adr": REC_I3_RESULT_BOUNDARY_V07_SHA256[
+            "docs/adr/ADR-0005-poc-recovery-streaming-persistence-and-range-quarantine.md"
+        ],
+        "gateMarkdown": REC_I3_RESULT_BOUNDARY_V07_SHA256[
+            "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_7.md"
+        ],
+        "gate": REC_I3_RESULT_BOUNDARY_V07_SHA256[
+            "docs/stage0/poc-recovery-gate-set-stage0-v0.7.json"
+        ],
+        "protocol": REC_I3_RESULT_BOUNDARY_V07_SHA256[
+            "docs/stage0/poc-recovery-protocol-stage0-v0.7.json"
+        ],
+        "scope": REC_I3_RESULT_BOUNDARY_V07_SHA256[
+            "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_STREAMING_PERSISTENCE_SCOPE_STAGE0_V0_1.md"
+        ],
+    }
+    for inherited in (gate["inheritsExactV07"], protocol["inheritsExactV07"]):
+        require(
+            inherited["baseCommit"] == REC_I3_RESULT_BOUNDARY_BASE
+            and inherited["baseTree"] == REC_I3_RESULT_BOUNDARY_BASE_TREE
+            and inherited["sha256"] == expected_pins
+            and all(re.fullmatch(r"[0-9a-f]{64}", value) for value in inherited["sha256"].values())
+            and inherited["allUnchangedSemanticsInherited"] is True
+            and inherited["v07IdentifiersEmittedByV08"] is False,
+            "REC-I3 result-boundary exact v0.7 inheritance drift",
+        )
+    v07_protocol = read_json("docs/stage0/poc-recovery-protocol-stage0-v0.7.json")
+    require(
+        protocol["streamingPersistenceV07"] == v07_protocol["streamingPersistenceV07"],
+        "REC-I3 result-boundary inherited streamingPersistenceV07 deep-equality drift",
+    )
+    boundary = protocol["streamingResultBoundaryV08"]
+    require(
+        set(boundary) == {
+            "durableSchemaMutation", "resultVariants", "stages", "classifications",
+            "safeExceptionTypes", "safeExceptionOn", "durableOutcomeEnumMutation",
+            "durableIdentityPreimageMutation", "newTableOrProviderAllowed",
+            "newRowOrRangeForNonPersistable", "canonicalAmbiguousCommitClassification",
+            "rejectedAliases", "resultMappings", "behaviorAssertions", "existingReferences",
+            "receipt", "nonPersistableEvidence", "publicEventForbiddenFields",
+        }
+        and all(
+            boundary[field] is False
+            for field in (
+                "durableSchemaMutation", "durableOutcomeEnumMutation",
+                "durableIdentityPreimageMutation", "newTableOrProviderAllowed",
+                "newRowOrRangeForNonPersistable",
+            )
+        ),
+        "REC-I3 result-boundary object schema/neutrality drift",
+    )
+    require(
+        set(boundary["resultVariants"]) == {"PersistedValid", "Retry", "Rejected", "Fatal"}
+        and len(boundary["resultVariants"]) == 4
+        and set(boundary["stages"]) == expected_stages and len(boundary["stages"]) == 6
+        and set(boundary["classifications"]) == expected_classes
+        and len(boundary["classifications"]) == 20
+        and set(boundary["safeExceptionTypes"]) == {"NONE", "IO", "CRYPTO", "SQLITE"}
+        and len(boundary["safeExceptionTypes"]) == 4
+        and boundary["safeExceptionOn"] == "RETRY_ONLY",
+        "REC-I3 result-boundary closed vocabulary drift",
+    )
+    mappings = boundary["resultMappings"]
+    require(
+        len(mappings) == 20
+        and len({item["classification"] for item in mappings}) == 20
+        and {item["classification"] for item in mappings} == expected_classes,
+        "REC-I3 result-boundary mapping totality/uniqueness drift",
+    )
+    expected_retry = {
+        ("RUN_LEASE_CONTENDED", "LEASE"): ["NONE"],
+        ("STREAM_CHECKPOINT_AUTHENTICATION_OPERATIONAL", "PREREQUISITE"): ["CRYPTO"],
+        ("ARTIFACT_IO_BEFORE_EXACT_SOURCE_HASH", "SOURCE_PROOF"): ["IO"],
+        ("STREAM_ZERO_PROGRESS", "STREAM_READ"): ["NONE"],
+        ("STREAM_PUBLIC_READ_OPERATIONAL", "STREAM_READ"): ["IO", "CRYPTO"],
+        ("JOURNAL_OPERATIONAL", "JOURNAL"): ["SQLITE"],
+        ("JOURNAL_COMMIT_STATE_UNRESOLVED", "JOURNAL"): ["SQLITE"],
+    }
+    expected_variant_stage = {
+        "STREAM_CHECKPOINT_MISSING": ("Fatal", "PREREQUISITE"),
+        "STREAM_CHECKPOINT_STRUCTURAL": ("Fatal", "PREREQUISITE"),
+        "STREAM_CHECKPOINT_AUTHENTICATION_REJECTED": ("Fatal", "PREREQUISITE"),
+        "STREAM_CHECKPOINT_AUTHENTICATION_OPERATIONAL": ("Retry", "PREREQUISITE"),
+        "STREAM_CHECKPOINT_SPLIT_BRAIN": ("Fatal", "PREREQUISITE"),
+        "STREAM_SOURCE_WITNESS_MISSING": ("Fatal", "PREREQUISITE"),
+        "UNSAFE_PATH": ("Fatal", "PREREQUISITE"),
+        "STREAM_SOURCE_IDENTITY_CHANGED": ("Fatal", "SOURCE_PROOF"),
+        "STREAM_SOURCE_EXTENT_LIMIT_EXCEEDED": ("Rejected", "SOURCE_PROOF"),
+        "RUN_LEASE_CONTENDED": ("Retry", "LEASE"),
+        "STREAM_ACTIVE_RANGE_DENIED": ("Fatal", "RANGE_ADMISSION"),
+        "STREAM_ZERO_PROGRESS": ("Retry", "STREAM_READ"),
+        "STREAM_READ_CROSSES_ACCEPTED_END": ("Fatal", "STREAM_READ"),
+        "STREAM_PUBLIC_READ_OPERATIONAL": ("Retry", "STREAM_READ"),
+        "JOURNAL_STRUCTURAL": ("Fatal", "JOURNAL"),
+        "JOURNAL_ATTEMPT_CONFLICT": ("Fatal", "JOURNAL"),
+        "STREAM_RANGE_QUARANTINE_COLLISION": ("Fatal", "JOURNAL"),
+        "ARTIFACT_IO_BEFORE_EXACT_SOURCE_HASH": ("Retry", "SOURCE_PROOF"),
+        "JOURNAL_OPERATIONAL": ("Retry", "JOURNAL"),
+        "JOURNAL_COMMIT_STATE_UNRESOLVED": ("Retry", "JOURNAL"),
+    }
+    expected_reference_policy = dict.fromkeys(expected_classes, "NONE")
+    expected_reference_policy.update({
+        "STREAM_CHECKPOINT_SPLIT_BRAIN": "STRICT_STREAM_CHECKPOINT_ONLY",
+        "JOURNAL_ATTEMPT_CONFLICT": "STRICT_STREAM_OUTCOME_ONLY",
+        "STREAM_RANGE_QUARANTINE_COLLISION": "STRICT_STREAM_OUTCOME_AND_RANGE_ONLY",
+        "STREAM_ACTIVE_RANGE_DENIED": "STRICT_STREAM_RANGES_AND_PARENT_OUTCOMES_ONLY",
+        "JOURNAL_COMMIT_STATE_UNRESOLVED": "ATTEMPTED_IDS_UNKNOWN_ALLOWED",
+    })
+    for item in mappings:
+        require(
+            set(item) == {"variant", "stage", "classification", "safeExceptionTypes",
+                          "receipt", "newRowOrRange", "evidenceReferencePolicy"}
+            and item["receipt"] == "FORBIDDEN"
+            and item["newRowOrRange"] == "FORBIDDEN",
+            "REC-I3 result-boundary mapping schema/side-effect drift",
+        )
+        require(
+            (item["variant"], item["stage"])
+            == expected_variant_stage[item["classification"]]
+            and item["evidenceReferencePolicy"]
+            == expected_reference_policy[item["classification"]],
+            "REC-I3 result-boundary exact result/reference mapping drift",
+        )
+        if item["variant"] == "Retry":
+            require(
+                expected_retry.get((item["classification"], item["stage"]))
+                == item["safeExceptionTypes"],
+                "REC-I3 result-boundary retry exception mapping drift",
+            )
+        else:
+            require(item["safeExceptionTypes"] == [], "SafeExceptionType escaped Retry")
+    require(
+        boundary["rejectedAliases"] == [
+            "JOURNAL_AMBIGUOUS_COMMIT_WITH_NO_EXACT_INTENDED_STATE"
+        ]
+        and boundary["canonicalAmbiguousCommitClassification"]
+        == "JOURNAL_COMMIT_STATE_UNRESOLVED",
+        "REC-I3 result-boundary outward alias policy drift",
+    )
+    refs = boundary["existingReferences"]
+    require(
+        refs == {
+            "kinds": ["STREAM_CHECKPOINT", "STREAM_OUTCOME", "STREAM_RANGE"],
+            "idMappings": {
+                "STREAM_CHECKPOINT": ["checkpoint_identity", "checkpoint_identity"],
+                "STREAM_OUTCOME": ["outcome_id", "outcome_id"],
+                "STREAM_RANGE": ["range_intent_id", "range_intent_id"],
+            },
+            "perClassification": {
+                "STREAM_CHECKPOINT_SPLIT_BRAIN": ["STREAM_CHECKPOINT"],
+                "JOURNAL_ATTEMPT_CONFLICT": ["STREAM_OUTCOME"],
+                "STREAM_RANGE_QUARANTINE_COLLISION": ["STREAM_OUTCOME", "STREAM_RANGE"],
+                "STREAM_ACTIVE_RANGE_DENIED": ["STREAM_OUTCOME", "STREAM_RANGE"],
+            },
+            "checkpointSqliteKeyUnchanged": True,
+            "strictDecodedOnly": True,
+            "malformedUnreadableOrInferredProducesReference": False,
+            "deduplicated": True,
+            "order": "RECORD_KIND_ORDINAL_THEN_EXISTING_ID_UNSIGNED_BYTE_ORDER",
+            "idByteOrder": "UNSIGNED_LEXICOGRAPHIC_32_BYTES",
+        },
+        "REC-I3 result-boundary strict evidence-reference policy drift",
+    )
+    guards = boundary["behaviorAssertions"]
+    require(
+        guards["zeroProgress"] == {
+            "additionalRead": False, "returnedBufferRetained": False, "durableWrite": False
+        }
+        and guards["readCrossesAcceptedEnd"] == {
+            "additionalRead": False, "returnedBufferRetained": False,
+            "prefixComparedOrHashed": False, "requestSizeChanged": False, "durableWrite": False
+        }
+        and guards["activeRangeDenied"] == {
+            "sourceOpen": False, "publicTink": False, "durableWrite": False
+        },
+        "REC-I3 result-boundary no-I/O/no-write guard drift",
+    )
+    receipt = boundary["receipt"]
+    require(
+        receipt["coreCreatedAtExactReadback"] is True
+        and receipt["coreImmutable"] is True
+        and receipt["eventKeyDerivedFromCoreIds"] is True
+        and receipt["finalReceiptConstructedAfterBothCloses"] is True
+        and receipt["oneMandatoryBoundedBestEffortSinkAttempt"] is True
+        and receipt["finalReceiptConstructedAfterSinkAttempt"] is True
+        and receipt["finalReceiptImmutable"] is True
+        and receipt["closeOrPendingPreservesPrimaryResultAndCoreIds"] is True
+        and receipt["callerRetryViaExactReplay"] is True
+        and receipt["replayReemitsSameKey"] is True
+        and receipt["replayCreatesNewRow"] is False
+        and receipt["autonomousDeliveryGuarantee"] is False
+        and receipt["outboxSchedulerProviderOrBackgroundAllowed"] is False,
+        "REC-I3 result-boundary receipt/evidence delivery drift",
+    )
+    require(
+        gate["journalSchemaVersion"] == 4
+        and gate["journalPath"] == "poc-recovery/v1/recovery-journal-v1.db"
+        and gate["combinedBaseline"] == {
+            "commit": REC_I3_STREAMING_PERSISTENCE_BASE,
+            "tree": "718eae8d8d619d17c25ac9d025e0e24db3d52f9e",
+        }
+        and gate["campaignCounts"] == {
+            "mandatoryFaultRowCount": 46, "phaseAInjectionCount": 184,
+            "fullPhysicalInjectionCount": 138, "baseHardKillAttemptsPerCandidate": 120,
+        }
+        and gate["readinessLocks"]["fullRecI3Completed"] is False
+        and gate["readinessLocks"]["campaignReady"] is False
+        and gate["readinessLocks"]["preflightEligible"] is False
+        and gate["readinessLocks"]["k12ConsumerDeferred"] is True
+        and gate["governancePatchAllowlist"] == list(REC_I3_RESULT_BOUNDARY_PATHS)
+        and gate["authority"] == protocol["unchangedV07"]["authority"],
+        "REC-I3 result-boundary unchanged gate/authority/count drift",
+    )
+    require(
+        protocol["implementationAllowed"] is False
+        and protocol["executionAllowed"] is False
+        and protocol["unchangedV07"]["journalSchemaVersion"] == gate["journalSchemaVersion"]
+        and protocol["unchangedV07"]["journalPath"] == gate["journalPath"]
+        and protocol["unchangedV07"]["combinedBaselineCommit"]
+        == gate["combinedBaseline"]["commit"]
+        and protocol["unchangedV07"]["combinedBaselineTree"]
+        == gate["combinedBaseline"]["tree"]
+        and protocol["unchangedV07"]["campaignCounts"] == gate["campaignCounts"]
+        and protocol["unchangedV07"]["readinessLocks"] == {
+            key: gate["readinessLocks"][key]
+            for key in ("fullRecI3Completed", "campaignReady", "preflightEligible",
+                        "k12ConsumerDeferred")
+        }
+        and gate["streamingResultBoundaryGate"] == {
+            "durableSchemaMutation": False,
+            "durableOutcomeEnumMutation": False,
+            "durableIdentityPreimageMutation": False,
+            "newTableOrProviderAllowed": False,
+            "newDependencyAllowed": False,
+            "newRowOrRangeForNonPersistable": False,
+            "localModeWithoutAccountNetworkGmsOrCloud": True,
+            "exactGovernanceCommitIndependentCleanReview": "PENDING",
+            "implementationBeforeCleanReviewAllowed": False,
+            "v08ControllerImplementationOrEvidenceProduced": False,
+        },
+        "REC-I3 result-boundary inherited lock or gate assertion drift",
+    )
+    require(
+        type(gate["schemaVersion"]) is int
+        and type(protocol["schemaVersion"]) is int
+        and all(type(value) is int for value in gate["campaignCounts"].values())
+        and all(
+            type(value) is bool
+            for key, value in gate["readinessLocks"].items()
+            if key != "pocRecoveryStatus"
+        )
+        and isinstance(gate["readinessLocks"]["pocRecoveryStatus"], str)
+        and all(
+            type(value) is bool
+            for key, value in gate["authority"].items()
+            if key != "authoritySource"
+        )
+        and all(
+            type(value) is bool
+            for value in gate["streamingResultBoundaryGate"].values()
+            if not isinstance(value, str)
+        ),
+        "REC-I3 result-boundary scalar type drift",
+    )
+
+
+def validate_rec_i3_result_boundary(lifecycle: RecoveryLifecycleIdentity) -> None:
+    require(
+        lifecycle.branch == REC_I3_RESULT_BOUNDARY_BRANCH,
+        "REC-I3 result-boundary governance requires its exact branch",
+    )
+    candidate_head = (
+        lifecycle.github_pull_request_context.head_sha
+        if lifecycle.github_pull_request_context is not None else lifecycle.head
+    )
+    pull_request = lifecycle.github_pull_request_context
+    if pull_request is not None:
+        validate_rec_i2b_ksp_overlay_pull_request_core(pull_request)
+        require(
+            pull_request.head_ref == REC_I3_RESULT_BOUNDARY_BRANCH
+            and pull_request.base_ref == GITHUB_BASE_BRANCH
+            and pull_request.base_sha == REC_I3_RESULT_BOUNDARY_BASE
+            and pull_request.head_sha != REC_I3_RESULT_BOUNDARY_BASE
+            and pull_request.merge_sha == lifecycle.head,
+            "REC-I3 result-boundary pull_request identity drift",
+        )
+    require(
+        git_is_ancestor(REC_I3_RESULT_BOUNDARY_BASE, candidate_head)
+        and git_is_ancestor(
+            REC_I3_STREAMING_PERSISTENCE_GOVERNANCE_HEAD, REC_I3_RESULT_BOUNDARY_BASE
+        )
+        and git_output("rev-parse", f"{REC_I3_RESULT_BOUNDARY_BASE}^{{tree}}")
+        == REC_I3_RESULT_BOUNDARY_BASE_TREE,
+        "REC-I3 result-boundary base/descent identity drift",
+    )
+    require(
+        not git_output("rev-list", "--min-parents=2",
+                       f"{REC_I3_RESULT_BOUNDARY_BASE}..{candidate_head}"),
+        "REC-I3 result-boundary governance history must be linear",
+    )
+    changes = collect_post_merge_changes(merged_anchor=REC_I3_RESULT_BOUNDARY_BASE)
+    changed = set().union(*(set(paths) for paths in changes.values()))
+    require(
+        changed == set(REC_I3_RESULT_BOUNDARY_PATHS),
+        f"REC-I3 result-boundary delta is not the exact ten-path allowlist: {sorted(changed)}",
+    )
+    summary = git_output("diff", "--summary", REC_I3_RESULT_BOUNDARY_BASE, candidate_head)
+    require(
+        not any(
+            marker in line
+            for line in summary.splitlines()
+            for marker in ("rename ", "delete mode", "mode change")
+        ),
+        "REC-I3 result-boundary committed delta contains rename/delete/mode drift",
+    )
+    for relative in REC_I3_RESULT_BOUNDARY_PATHS:
+        validate_rec_i3_regular_file(relative)
+    for relative, expected in REC_I3_RESULT_BOUNDARY_V07_SHA256.items():
+        require(
+            sha256(relative) == expected
+            and (ROOT / relative).read_bytes()
+            == git_blob_bytes(f"{REC_I3_RESULT_BOUNDARY_BASE}:{relative}"),
+            f"REC-I3 immutable v0.7 blob changed: {relative}",
+        )
+    validate_rec_i3_result_boundary_contract(
+        read_json(REC_I3_RESULT_BOUNDARY_GATE_PATH),
+        read_json(REC_I3_RESULT_BOUNDARY_PROTOCOL_PATH),
+    )
+    print("PASS REC-I3 result-boundary governance v0.8; controller implementation/evidence blocked")
+
+
 def validate_rec_i3_streaming_persistence(lifecycle: RecoveryLifecycleIdentity) -> None:
     require(
         lifecycle.branch == REC_I3_STREAMING_PERSISTENCE_BRANCH,
@@ -6427,6 +6852,9 @@ def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | Non
     if not rec_i3_candidate():
         return False
     current = lifecycle or collect_recovery_lifecycle_identity()
+    if rec_i3_result_boundary_candidate(current):
+        validate_rec_i3_result_boundary(current)
+        return True
     if rec_i3_streaming_persistence_candidate(current):
         validate_rec_i3_streaming_persistence(current)
         return True
