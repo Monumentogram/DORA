@@ -1197,6 +1197,10 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             "python tools/validate_stage00.py",
             governance.REC_I3_OBSERVABLE_CONTROLLER_CHECK_COMMANDS["STAGE00"],
         )
+        governance.validate_rec_i3_regular_file(
+            governance.REC_I3_STAGE00_VALIDATOR_PATH,
+            expected_mode="100755",
+        )
         success = subprocess.CompletedProcess(
             args=[],
             returncode=0,

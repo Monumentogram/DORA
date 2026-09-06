@@ -6541,7 +6541,10 @@ def validate_rec_i3_observable_controller(lifecycle: RecoveryLifecycleIdentity) 
         ),
     )
     for relative in REC_I3_OBSERVABLE_CONTROLLER_PATHS:
-        validate_rec_i3_regular_file(relative)
+        validate_rec_i3_regular_file(
+            relative,
+            expected_mode=("100755" if relative == REC_I3_STAGE00_VALIDATOR_PATH else "100644"),
+        )
     validate_rec_i3_stage00_integrity()
     for relative in REC_I3_OBSERVABLE_CONTROLLER_PINNED_PATHS:
         require(
@@ -6948,7 +6951,7 @@ def validate_rec_i3_bootstrap_evidence(
             "REC-I3 bootstrap limitations are missing")
 
 
-def validate_rec_i3_regular_file(relative: str) -> None:
+def validate_rec_i3_regular_file(relative: str, *, expected_mode: str = "100644") -> None:
     path = ROOT / relative
     require(path.is_file() and path_is_within(path.resolve(strict=True), ROOT.resolve(strict=True)),
             f"REC-I3 file missing or outside repository: {relative}")
@@ -6957,7 +6960,7 @@ def validate_rec_i3_regular_file(relative: str) -> None:
     for revision in ("HEAD", ":"):
         records = (git_path_records("ls-tree", "-z", revision, "--", relative)
                    if revision != ":" else git_path_records("ls-files", "--stage", "-z", "--", relative))
-        require(all(item.startswith("100644 ") for item in records),
+        require(all(item.startswith(f"{expected_mode} ") for item in records),
                 f"REC-I3 non-regular Git entry: {relative}")
 
 
