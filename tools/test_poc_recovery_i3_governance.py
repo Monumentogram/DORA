@@ -936,6 +936,7 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             lambda g, p: p["streamingPersistenceV07"]["database"].__setitem__(
                 "preserveExactV1V2Objects", 1
             ),
+            lambda g, p: p["unchangedV07"].__setitem__("unexpected", False),
         )
         for mutation in mutations:
             with self.subTest(mutation=mutation):
@@ -1178,7 +1179,6 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             self.assertRaisesRegex(ValueError, "immutable v0.7 blob changed"),
         ):
             governance.main()
-
 
 if __name__ == "__main__":
     unittest.main()

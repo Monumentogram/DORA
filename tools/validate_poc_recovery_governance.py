@@ -6202,6 +6202,10 @@ def validate_rec_i3_result_boundary_contract(
     require(
         protocol["implementationAllowed"] is False
         and protocol["executionAllowed"] is False
+        and set(protocol["unchangedV07"]) == {
+            "journalSchemaVersion", "journalPath", "combinedBaselineCommit",
+            "combinedBaselineTree", "campaignCounts", "readinessLocks", "authority",
+        }
         and type(protocol["unchangedV07"]["journalSchemaVersion"]) is int
         and protocol["unchangedV07"]["journalSchemaVersion"] == 4
         and protocol["unchangedV07"]["journalPath"] == gate["journalPath"]
