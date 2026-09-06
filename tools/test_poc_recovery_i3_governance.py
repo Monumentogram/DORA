@@ -904,6 +904,115 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             with self.subTest(mutation=mutation):
                 self.reject(mutation)
 
+    def test_v08_rejects_paired_predecessor_policy_drift(self) -> None:
+        mutations = (
+            lambda g, p: (
+                g["authority"].__setitem__("executionAllowed", True),
+                p["unchangedV07"]["authority"].__setitem__("executionAllowed", True),
+            ),
+            lambda g, p: (
+                g["readinessLocks"].__setitem__("campaignReady", True),
+                p["unchangedV07"]["readinessLocks"].__setitem__("campaignReady", True),
+            ),
+            lambda g, p: (
+                g["campaignCounts"].__setitem__("phaseAInjectionCount", 185),
+                p["unchangedV07"]["campaignCounts"].__setitem__("phaseAInjectionCount", 185),
+            ),
+            lambda g, p: (
+                g.__setitem__("status", "READY"),
+                p.__setitem__("status", "READY"),
+            ),
+            lambda g, p: g["activeBlockers"].pop(),
+            lambda g, p: g["historicalClosure"].__setitem__("REC-RDY-02", "OPEN"),
+            lambda g, p: g["readinessLocks"].__setitem__("pocRecoveryStatus", "READY"),
+            lambda g, p: g.__setitem__("decision", "DEC-000"),
+        )
+        for mutation in mutations:
+            with self.subTest(mutation=mutation):
+                self.reject(mutation)
+
+    def test_v08_rejects_every_receipt_and_public_evidence_policy_mutation(self) -> None:
+        _, protocol = self.fixture()
+        receipt = protocol["streamingResultBoundaryV08"]["receipt"]
+        mutations = []
+        for key, value in receipt.items():
+            if type(value) is bool:
+                mutations.append(
+                    lambda g, p, field=key, original=value: p["streamingResultBoundaryV08"][
+                        "receipt"
+                    ].__setitem__(field, not original)
+                )
+            else:
+                mutations.append(
+                    lambda g, p, field=key: p["streamingResultBoundaryV08"]["receipt"][
+                        field
+                    ].append("UNEXPECTED")
+                )
+        for key, value in protocol["streamingResultBoundaryV08"]["nonPersistableEvidence"].items():
+            mutations.append(
+                lambda g, p, field=key, original=value: p["streamingResultBoundaryV08"][
+                    "nonPersistableEvidence"
+                ].__setitem__(field, not original)
+            )
+        mutations.extend((
+            lambda g, p: p["streamingResultBoundaryV08"]["publicEventForbiddenFields"].remove(
+                "plaintext"
+            ),
+            lambda g, p: p["streamingResultBoundaryV08"]["behaviorAssertions"][
+                "zeroProgress"
+            ].__setitem__("unexpected", False),
+            lambda g, p: p["inheritsExactV07"].__setitem__("unexpected", False),
+        ))
+        for index, mutation in enumerate(mutations):
+            with self.subTest(mutation=index):
+                self.reject(mutation)
+
+    def test_real_git_v08_delta_rejects_dirty_rename_delete_and_revert(self) -> None:
+        for mutation in ("staged", "unstaged", "untracked", "rename", "delete", "revert"):
+            with self.subTest(mutation=mutation), tempfile.TemporaryDirectory(
+                prefix="dora-rec-i3-v08-delta-"
+            ) as temporary:
+                repo, base = governance.initialize_test_git_repo(Path(temporary))
+                for relative in governance.REC_I3_RESULT_BOUNDARY_PATHS:
+                    path = repo / relative
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text(relative, encoding="utf-8")
+                candidate = governance.commit_test_git_repo(repo, "exact governance delta")
+                target = repo / governance.REC_I3_RESULT_BOUNDARY_PATHS[0]
+                if mutation == "staged":
+                    target.write_text("staged", encoding="utf-8")
+                    governance.test_git(repo, "add", str(target.relative_to(repo)))
+                elif mutation == "unstaged":
+                    target.write_text("unstaged", encoding="utf-8")
+                elif mutation == "untracked":
+                    (repo / "unexpected.txt").write_text("untracked", encoding="utf-8")
+                elif mutation == "rename":
+                    governance.test_git(repo, "mv", str(target.relative_to(repo)), "renamed.txt")
+                    governance.commit_test_git_repo(repo, "rename governance file")
+                elif mutation == "delete":
+                    target.unlink()
+                    governance.commit_test_git_repo(repo, "delete governance file")
+                else:
+                    governance.test_git(
+                        repo, "-c", "user.name=Dora Validator Test", "-c",
+                        "user.email=dora-validator@example.invalid",
+                        "revert", "--no-edit", candidate,
+                    )
+                head = governance.test_git_text(repo, "rev-parse", "HEAD")
+                changes = governance.collect_post_merge_changes(root=repo, merged_anchor=base)
+                tree_paths = governance.git_path_records(
+                    "diff", "--name-only", "--no-renames", "-z", base, head, "--", root=repo
+                )
+                history_paths = governance.git_path_records(
+                    "log", "--format=", "--name-only", "--no-renames", "-z",
+                    f"{base}..{head}", "--", root=repo
+                )
+                summary = governance.git_output("diff", "--summary", base, head, root=repo)
+                with self.assertRaisesRegex(ValueError, "exact committed ten-path delta|rename/delete"):
+                    governance.validate_rec_i3_result_boundary_delta(
+                        changes, tree_paths, history_paths, summary
+                    )
+
     def test_v08_profile_is_distinct_and_preserves_mocked_v07_dispatch(self) -> None:
         base = governance.RecoveryLifecycleIdentity(
             "c" * 40, governance.REC_I3_STREAMING_PERSISTENCE_BRANCH,
@@ -930,6 +1039,85 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             side_effect=lambda relative: "0" * 64 if relative == target else original(relative),
         ), self.assertRaisesRegex(ValueError, "immutable v0.7 blob changed"):
             governance.validate_rec_i3_result_boundary(lifecycle)
+
+    def test_main_dispatches_v08_before_any_legacy_static_artifact_read(self) -> None:
+        original = governance.read_json
+        original_text = governance.read_text
+        original_collect = governance.collect_post_merge_changes
+        allowed = {
+            governance.REC_I3_RESULT_BOUNDARY_GATE_PATH,
+            governance.REC_I3_RESULT_BOUNDARY_PROTOCOL_PATH,
+        }
+        reads: list[str] = []
+
+        def legacy_absent(relative: str) -> dict:
+            reads.append(relative)
+            if relative not in allowed:
+                raise FileNotFoundError(f"synthetic absent legacy artifact: {relative}")
+            return original(relative)
+
+        def clean_committed_profile(**kwargs) -> dict[str, list[str]]:
+            changes = original_collect(**kwargs)
+            for layer in ("staged", "unstaged", "untracked"):
+                changes[layer] = []
+            return changes
+
+        def legacy_text_absent(relative: str) -> str:
+            if relative not in allowed:
+                raise FileNotFoundError(f"synthetic absent legacy text artifact: {relative}")
+            return original_text(relative)
+
+        with (
+            patch.object(governance, "read_json", side_effect=legacy_absent),
+            patch.object(governance, "read_text", side_effect=legacy_text_absent),
+            patch.object(governance, "collect_post_merge_changes", side_effect=clean_committed_profile),
+            patch.object(sys, "argv", ["validate_poc_recovery_governance.py"]),
+        ):
+            self.assertEqual(0, governance.main())
+        self.assertEqual(
+            {
+                governance.REC_I3_RESULT_BOUNDARY_GATE_PATH,
+                governance.REC_I3_RESULT_BOUNDARY_PROTOCOL_PATH,
+            },
+            set(reads),
+        )
+
+    def test_main_v08_fast_path_rejects_protected_and_predecessor_mutations(self) -> None:
+        original_read = governance.read_json
+        original_collect = governance.collect_post_merge_changes
+
+        def clean_committed_profile(**kwargs) -> dict[str, list[str]]:
+            changes = original_collect(**kwargs)
+            for layer in ("staged", "unstaged", "untracked"):
+                changes[layer] = []
+            return changes
+
+        def mutated_gate(relative: str) -> dict:
+            record = copy.deepcopy(original_read(relative))
+            if relative == governance.REC_I3_RESULT_BOUNDARY_GATE_PATH:
+                record["authority"]["executionAllowed"] = True
+            return record
+
+        with (
+            patch.object(governance, "collect_post_merge_changes", side_effect=clean_committed_profile),
+            patch.object(governance, "read_json", side_effect=mutated_gate),
+            patch.object(sys, "argv", ["validate_poc_recovery_governance.py"]),
+            self.assertRaisesRegex(ValueError, "authority"),
+        ):
+            governance.main()
+
+        target = next(iter(governance.REC_I3_RESULT_BOUNDARY_V07_SHA256))
+        original_sha = governance.sha256
+        with (
+            patch.object(governance, "collect_post_merge_changes", side_effect=clean_committed_profile),
+            patch.object(
+                governance, "sha256",
+                side_effect=lambda relative: "0" * 64 if relative == target else original_sha(relative),
+            ),
+            patch.object(sys, "argv", ["validate_poc_recovery_governance.py"]),
+            self.assertRaisesRegex(ValueError, "immutable v0.7 blob changed"),
+        ):
+            governance.main()
 
 
 if __name__ == "__main__":

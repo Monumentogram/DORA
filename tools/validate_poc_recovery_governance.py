@@ -974,30 +974,49 @@ def require(condition: bool, message: str) -> None:
         raise ValueError(message)
 
 
+def exact_json_value(actual: Any, expected: Any) -> bool:
+    if type(actual) is not type(expected):
+        return False
+    if isinstance(expected, dict):
+        return set(actual) == set(expected) and all(
+            exact_json_value(actual[key], value) for key, value in expected.items()
+        )
+    if isinstance(expected, list):
+        return len(actual) == len(expected) and all(
+            exact_json_value(item, expected_item)
+            for item, expected_item in zip(actual, expected)
+        )
+    return actual == expected
+
+
 def read_text(relative: str) -> str:
     path = ROOT / relative
     require(path.is_file(), f"Missing required file: {relative}")
     return path.read_text(encoding="utf-8")
 
 
-def read_json(relative: str) -> dict[str, Any]:
+def strict_json_loads(text: str, label: str) -> dict[str, Any]:
     def reject_duplicates(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
         result: dict[str, Any] = {}
         for key, value in pairs:
-            require(key not in result, f"Duplicate JSON key in {relative}: {key}")
+            require(key not in result, f"Duplicate JSON key in {label}: {key}")
             result[key] = value
         return result
 
     def reject_non_finite(value: str) -> None:
-        raise ValueError(f"Non-finite JSON number in {relative}: {value}")
+        raise ValueError(f"Non-finite JSON number in {label}: {value}")
 
     record = json.loads(
-        read_text(relative),
+        text,
         object_pairs_hook=reject_duplicates,
         parse_constant=reject_non_finite,
     )
-    require(isinstance(record, dict), f"JSON root is not an object: {relative}")
+    require(isinstance(record, dict), f"JSON root is not an object: {label}")
     return record
+
+
+def read_json(relative: str) -> dict[str, Any]:
+    return strict_json_loads(read_text(relative), relative)
 
 
 def sha256(relative: str) -> str:
@@ -5788,6 +5807,32 @@ def rec_i3_result_boundary_candidate(lifecycle: RecoveryLifecycleIdentity) -> bo
     return lifecycle.branch == REC_I3_RESULT_BOUNDARY_BRANCH
 
 
+def validate_rec_i3_result_boundary_delta(
+    changes: dict[str, list[str]],
+    committed_tree_paths: list[str],
+    committed_history_paths: list[str],
+    committed_summary: str,
+) -> None:
+    expected = set(REC_I3_RESULT_BOUNDARY_PATHS)
+    require(
+        set(changes) == {"committed", "staged", "unstaged", "untracked"}
+        and set(changes["committed"]) == expected
+        and set(committed_tree_paths) == expected
+        and set(committed_history_paths) == expected
+        and all(not changes[layer] for layer in ("staged", "unstaged", "untracked")),
+        "REC-I3 result-boundary requires the exact committed ten-path delta and a clean index/worktree: "
+        f"{changes}",
+    )
+    require(
+        not any(
+            marker in line
+            for line in committed_summary.splitlines()
+            for marker in ("rename ", "delete mode", "mode change")
+        ),
+        "REC-I3 result-boundary committed delta contains rename/delete/mode drift",
+    )
+
+
 def validate_rec_i3_result_boundary_contract(
     gate: dict[str, Any], protocol: dict[str, Any],
 ) -> None:
@@ -5823,7 +5868,15 @@ def validate_rec_i3_result_boundary_contract(
         "JOURNAL_OPERATIONAL", "JOURNAL_COMMIT_STATE_UNRESOLVED",
     }
     require(
-        gate["gateSetVersion"] == "poc-recovery-stage0-v0.8"
+        gate["schemaVersion"] == 8
+        and protocol["schemaVersion"] == 8
+        and gate["pocId"] == protocol["pocId"] == "POC-RECOVERY-001"
+        and gate["status"] == protocol["status"]
+        == "OWNER_CONFIRMED_RESULT_BOUNDARY_GOVERNANCE_CLEAN_REVIEW_REQUIRED"
+        and gate["decision"] == "DEC-047"
+        and gate["adr"]
+        == "docs/adr/ADR-0006-rec-i3-streaming-result-boundary-and-evidence-delivery.md"
+        and gate["gateSetVersion"] == "poc-recovery-stage0-v0.8"
         and gate["protocolId"] == protocol["protocolId"]
         == "poc-recovery-protocol-stage0-v0.8"
         and gate["protocolLocator"] == REC_I3_RESULT_BOUNDARY_PROTOCOL_PATH
@@ -5851,15 +5904,36 @@ def validate_rec_i3_result_boundary_contract(
     }
     for inherited in (gate["inheritsExactV07"], protocol["inheritsExactV07"]):
         require(
-            inherited["baseCommit"] == REC_I3_RESULT_BOUNDARY_BASE
+            set(inherited) == {
+                "baseCommit", "baseTree", "sha256", "allUnchangedSemanticsInherited",
+                "overriddenSections", "immutableAuditArtifacts",
+                "v07IdentifiersEmittedByV08",
+            }
+            and set(inherited["sha256"]) == {
+                "adr", "gateMarkdown", "gate", "protocol", "scope",
+            }
+            and inherited["baseCommit"] == REC_I3_RESULT_BOUNDARY_BASE
             and inherited["baseTree"] == REC_I3_RESULT_BOUNDARY_BASE_TREE
             and inherited["sha256"] == expected_pins
             and all(re.fullmatch(r"[0-9a-f]{64}", value) for value in inherited["sha256"].values())
             and inherited["allUnchangedSemanticsInherited"] is True
+            and inherited["overriddenSections"] == [
+                "controller result boundary",
+                "existing evidence references",
+                "receipt cleanup and evidence delivery",
+                "ambiguous-commit outward spelling",
+            ]
+            and inherited["immutableAuditArtifacts"] == "v0.1-through-v0.7"
             and inherited["v07IdentifiersEmittedByV08"] is False,
             "REC-I3 result-boundary exact v0.7 inheritance drift",
         )
-    v07_protocol = read_json("docs/stage0/poc-recovery-protocol-stage0-v0.7.json")
+    v07_protocol = strict_json_loads(
+        git_blob_bytes(
+            f"{REC_I3_RESULT_BOUNDARY_BASE}:docs/stage0/"
+            "poc-recovery-protocol-stage0-v0.7.json"
+        ).decode("utf-8"),
+        "pinned v0.7 protocol git object",
+    )
     require(
         protocol["streamingPersistenceV07"] == v07_protocol["streamingPersistenceV07"],
         "REC-I3 result-boundary inherited streamingPersistenceV07 deep-equality drift",
@@ -5974,7 +6048,7 @@ def validate_rec_i3_result_boundary_contract(
     )
     refs = boundary["existingReferences"]
     require(
-        refs == {
+        exact_json_value(refs, {
             "kinds": ["STREAM_CHECKPOINT", "STREAM_OUTCOME", "STREAM_RANGE"],
             "idMappings": {
                 "STREAM_CHECKPOINT": ["checkpoint_identity", "checkpoint_identity"],
@@ -5993,40 +6067,115 @@ def validate_rec_i3_result_boundary_contract(
             "deduplicated": True,
             "order": "RECORD_KIND_ORDINAL_THEN_EXISTING_ID_UNSIGNED_BYTE_ORDER",
             "idByteOrder": "UNSIGNED_LEXICOGRAPHIC_32_BYTES",
-        },
+        }),
         "REC-I3 result-boundary strict evidence-reference policy drift",
     )
     guards = boundary["behaviorAssertions"]
     require(
-        guards["zeroProgress"] == {
-            "additionalRead": False, "returnedBufferRetained": False, "durableWrite": False
-        }
-        and guards["readCrossesAcceptedEnd"] == {
-            "additionalRead": False, "returnedBufferRetained": False,
-            "prefixComparedOrHashed": False, "requestSizeChanged": False, "durableWrite": False
-        }
-        and guards["activeRangeDenied"] == {
-            "sourceOpen": False, "publicTink": False, "durableWrite": False
-        },
+        exact_json_value(guards, {
+            "zeroProgress": {
+                "additionalRead": False, "returnedBufferRetained": False,
+                "durableWrite": False,
+            },
+            "readCrossesAcceptedEnd": {
+                "additionalRead": False, "returnedBufferRetained": False,
+                "prefixComparedOrHashed": False, "requestSizeChanged": False,
+                "durableWrite": False,
+            },
+            "activeRangeDenied": {
+                "sourceOpen": False, "publicTink": False, "durableWrite": False,
+            },
+        }),
         "REC-I3 result-boundary no-I/O/no-write guard drift",
     )
     receipt = boundary["receipt"]
     require(
-        receipt["coreCreatedAtExactReadback"] is True
-        and receipt["coreImmutable"] is True
-        and receipt["eventKeyDerivedFromCoreIds"] is True
-        and receipt["finalReceiptConstructedAfterBothCloses"] is True
-        and receipt["oneMandatoryBoundedBestEffortSinkAttempt"] is True
-        and receipt["finalReceiptConstructedAfterSinkAttempt"] is True
-        and receipt["finalReceiptImmutable"] is True
-        and receipt["closeOrPendingPreservesPrimaryResultAndCoreIds"] is True
-        and receipt["callerRetryViaExactReplay"] is True
-        and receipt["replayReemitsSameKey"] is True
-        and receipt["replayCreatesNewRow"] is False
-        and receipt["autonomousDeliveryGuarantee"] is False
-        and receipt["outboxSchedulerProviderOrBackgroundAllowed"] is False,
+        exact_json_value(receipt, {
+            "internalReadbackReceiptCoreFields": [
+                "outcomeId", "optionalRangeIntentId", "replayed",
+            ],
+            "coreCreatedAtExactReadback": True,
+            "coreImmutable": True,
+            "eventKeyDerivedFromCoreIds": True,
+            "finalPublicReceiptFields": [
+                "outcomeId", "optionalRangeIntentId", "replayed",
+                "postReceiptCleanup", "evidenceDelivery",
+            ],
+            "postReceiptCleanup": [
+                "NONE", "PUBLIC_STREAM_CLOSE_FAILED",
+                "SOURCE_DESCRIPTOR_CLOSE_FAILED",
+                "PUBLIC_STREAM_AND_SOURCE_DESCRIPTOR_CLOSE_FAILED",
+            ],
+            "evidenceDelivery": ["DELIVERED", "PENDING"],
+            "publicStreamCloseBeforeDescriptorClose": True,
+            "oneMandatoryBoundedBestEffortSinkAttempt": True,
+            "finalReceiptConstructedAfterBothCloses": True,
+            "finalReceiptConstructedAfterSinkAttempt": True,
+            "finalReceiptImmutable": True,
+            "closeOrPendingPreservesPrimaryResultAndCoreIds": True,
+            "combinedCloseFailurePublicPrimary": True,
+            "callerRetryViaExactReplay": True,
+            "replayReemitsSameKey": True,
+            "replayCreatesNewRow": False,
+            "autonomousDeliveryGuarantee": False,
+            "outboxSchedulerProviderOrBackgroundAllowed": False,
+        }),
         "REC-I3 result-boundary receipt/evidence delivery drift",
     )
+    require(
+        exact_json_value(boundary["nonPersistableEvidence"], {
+            "oneBoundedBestEffortAttempt": True,
+            "afterOpenedResourcesClose": True,
+            "beforeLeaseRelease": True,
+            "failureChangesPrimaryResult": False,
+            "failureStartsLoop": False,
+        })
+        and exact_json_value(boundary["publicEventForbiddenFields"], [
+            "path", "exceptionText", "exceptionImplementationType", "stackTrace",
+            "plaintext", "ciphertext", "keysOrKeysets", "databaseOrWal",
+            "returnedOrRejectedPlaintextDigests", "mismatchOffset",
+            "expectedOrObservedByte",
+        ]),
+        "REC-I3 result-boundary non-persistable evidence/public event drift",
+    )
+    expected_counts = {
+        "mandatoryFaultRowCount": 46,
+        "phaseAInjectionCount": 184,
+        "fullPhysicalInjectionCount": 138,
+        "baseHardKillAttemptsPerCandidate": 120,
+    }
+    expected_readiness = {
+        "fullRecI3Completed": False,
+        "campaignReady": False,
+        "preflightEligible": False,
+        "pocRecoveryStatus": "BLOCKED_NOT_READY",
+        "k12ConsumerDeferred": True,
+    }
+    expected_unchanged_readiness = {
+        key: expected_readiness[key]
+        for key in (
+            "fullRecI3Completed", "campaignReady", "preflightEligible",
+            "k12ConsumerDeferred",
+        )
+    }
+    expected_authority = {
+        "recI3ImplementationAllowed": True,
+        "authoritySource": "OD-15",
+        "phaseAAllowed": False,
+        "executionAllowed": False,
+        "measuredExecutionAllowed": False,
+        "productionAdmissionAllowed": False,
+        "consumerAllowed": False,
+        "crossProcessEnforcementClaimed": False,
+        "rangeRetirementAllowed": False,
+        "newDependencyAllowed": False,
+        "mergeAllowedByThisGovernance": False,
+    }
+    expected_blockers = [
+        "REC-RDY-01", "REC-RDY-03", "REC-RDY-04", "REC-RDY-05",
+        "REC-RDY-06", "REC-RDY-07", "REC-RDY-08", "REC-RDY-09",
+        "REC-RDY-10", "REC-RDY-11",
+    ]
     require(
         gate["journalSchemaVersion"] == 4
         and gate["journalPath"] == "poc-recovery/v1/recovery-journal-v1.db"
@@ -6034,16 +6183,16 @@ def validate_rec_i3_result_boundary_contract(
             "commit": REC_I3_STREAMING_PERSISTENCE_BASE,
             "tree": "718eae8d8d619d17c25ac9d025e0e24db3d52f9e",
         }
-        and gate["campaignCounts"] == {
-            "mandatoryFaultRowCount": 46, "phaseAInjectionCount": 184,
-            "fullPhysicalInjectionCount": 138, "baseHardKillAttemptsPerCandidate": 120,
-        }
-        and gate["readinessLocks"]["fullRecI3Completed"] is False
-        and gate["readinessLocks"]["campaignReady"] is False
-        and gate["readinessLocks"]["preflightEligible"] is False
-        and gate["readinessLocks"]["k12ConsumerDeferred"] is True
+        and exact_json_value(gate["campaignCounts"], expected_counts)
+        and exact_json_value(gate["readinessLocks"], expected_readiness)
+        and exact_json_value(gate["authority"], expected_authority)
+        and exact_json_value(gate["activeBlockers"], expected_blockers)
+        and len(set(gate["activeBlockers"])) == len(expected_blockers)
+        and exact_json_value(gate["historicalClosure"], {
+            "REC-RDY-02": "CLOSED_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW"
+        })
         and gate["governancePatchAllowlist"] == list(REC_I3_RESULT_BOUNDARY_PATHS)
-        and gate["authority"] == protocol["unchangedV07"]["authority"],
+        and exact_json_value(protocol["unchangedV07"]["authority"], expected_authority),
         "REC-I3 result-boundary unchanged gate/authority/count drift",
     )
     require(
@@ -6055,12 +6204,10 @@ def validate_rec_i3_result_boundary_contract(
         == gate["combinedBaseline"]["commit"]
         and protocol["unchangedV07"]["combinedBaselineTree"]
         == gate["combinedBaseline"]["tree"]
-        and protocol["unchangedV07"]["campaignCounts"] == gate["campaignCounts"]
-        and protocol["unchangedV07"]["readinessLocks"] == {
-            key: gate["readinessLocks"][key]
-            for key in ("fullRecI3Completed", "campaignReady", "preflightEligible",
-                        "k12ConsumerDeferred")
-        }
+        and exact_json_value(protocol["unchangedV07"]["campaignCounts"], expected_counts)
+        and exact_json_value(
+            protocol["unchangedV07"]["readinessLocks"], expected_unchanged_readiness
+        )
         and gate["streamingResultBoundaryGate"] == {
             "durableSchemaMutation": False,
             "durableOutcomeEnumMutation": False,
@@ -6120,6 +6267,10 @@ def validate_rec_i3_result_boundary(lifecycle: RecoveryLifecycleIdentity) -> Non
             "REC-I3 result-boundary pull_request identity drift",
         )
     require(
+        candidate_head != REC_I3_RESULT_BOUNDARY_BASE,
+        "REC-I3 result-boundary candidate HEAD must advance the exact base",
+    )
+    require(
         git_is_ancestor(REC_I3_RESULT_BOUNDARY_BASE, candidate_head)
         and git_is_ancestor(
             REC_I3_STREAMING_PERSISTENCE_GOVERNANCE_HEAD, REC_I3_RESULT_BOUNDARY_BASE
@@ -6134,19 +6285,19 @@ def validate_rec_i3_result_boundary(lifecycle: RecoveryLifecycleIdentity) -> Non
         "REC-I3 result-boundary governance history must be linear",
     )
     changes = collect_post_merge_changes(merged_anchor=REC_I3_RESULT_BOUNDARY_BASE)
-    changed = set().union(*(set(paths) for paths in changes.values()))
-    require(
-        changed == set(REC_I3_RESULT_BOUNDARY_PATHS),
-        f"REC-I3 result-boundary delta is not the exact ten-path allowlist: {sorted(changed)}",
+    committed_tree_paths = git_path_records(
+        "diff", "--name-only", "--no-renames", "-z",
+        REC_I3_RESULT_BOUNDARY_BASE, candidate_head, "--",
     )
-    summary = git_output("diff", "--summary", REC_I3_RESULT_BOUNDARY_BASE, candidate_head)
-    require(
-        not any(
-            marker in line
-            for line in summary.splitlines()
-            for marker in ("rename ", "delete mode", "mode change")
-        ),
-        "REC-I3 result-boundary committed delta contains rename/delete/mode drift",
+    committed_history_paths = git_path_records(
+        "log", "--format=", "--name-only", "--no-renames", "-z",
+        f"{REC_I3_RESULT_BOUNDARY_BASE}..{candidate_head}", "--",
+    )
+    validate_rec_i3_result_boundary_delta(
+        changes,
+        committed_tree_paths,
+        committed_history_paths,
+        git_output("diff", "--summary", REC_I3_RESULT_BOUNDARY_BASE, candidate_head),
     )
     for relative in REC_I3_RESULT_BOUNDARY_PATHS:
         validate_rec_i3_regular_file(relative)
@@ -9794,7 +9945,33 @@ def run_negative_tests() -> None:
             raise ValueError(f"Negative test unexpectedly passed: {name}")
 
 
+def validate_rec_i3_result_boundary_fast_path() -> bool:
+    lifecycle = collect_recovery_lifecycle_identity()
+    if not rec_i3_result_boundary_candidate(lifecycle):
+        return False
+    validate_rec_i3_result_boundary(lifecycle)
+    if "--self-test" in sys.argv[1:]:
+        import unittest
+        import test_poc_recovery_i3_governance
+
+        suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+            test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests
+        )
+        require(
+            unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful(),
+            "REC-I3 result-boundary mutation self-tests failed",
+        )
+    print(
+        "POC-RECOVERY-001 result-boundary governance v0.8 validation passed; "
+        "exact branch/base/ref and committed ten-path profile valid; v0.8 controller "
+        "implementation/evidence, execution, campaign, admission, consumer and merge remain blocked"
+    )
+    return True
+
+
 def main() -> int:
+    if validate_rec_i3_result_boundary_fast_path():
+        return 0
     gate = read_json(GATE_PATH)
     protocol = read_json(PROTOCOL_PATH)
     validate_all(gate, protocol)
