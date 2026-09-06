@@ -1195,7 +1195,13 @@ internal class RecoveryStreamingReconciliationController(
                             RecoveryStreamingSafeExceptionType.SQLITE,
                         )
                     } else {
-                        journalStructural()
+                        when (resolution.semanticOutcome) {
+                            StreamSemanticOutcome.PERSISTED_REJECTED ->
+                                RecoveryStreamingReconciliationResult.Rejected.original(outcome)
+                            StreamSemanticOutcome.PERSISTED_FATAL ->
+                                RecoveryStreamingReconciliationResult.Fatal.original(outcome)
+                            StreamSemanticOutcome.PERSISTED_VALID -> error("Handled above")
+                        }
                     }
                 )
             }

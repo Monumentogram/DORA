@@ -366,6 +366,7 @@ private constructor(
                     require(result.persistedDiagnostic == null) {
                         "Persisted result requires persisted evidence"
                     }
+                    val original = result.originalDiagnostic
                     RecoveryStreamingEvidenceEvent(
                         result.stage,
                         result.classification,
@@ -376,9 +377,9 @@ private constructor(
                         null,
                         null,
                         null,
-                        null,
-                        null,
-                        null,
+                        original?.diagnosticBranch,
+                        original?.diagnosticStage,
+                        original?.diagnosticClassification,
                         null,
                         result.existingEvidenceReferences,
                     )
@@ -387,6 +388,7 @@ private constructor(
                     require(result.persistedDiagnostic == null) {
                         "Persisted result requires persisted evidence"
                     }
+                    val original = result.originalDiagnostic
                     RecoveryStreamingEvidenceEvent(
                         result.stage,
                         result.classification,
@@ -397,9 +399,9 @@ private constructor(
                         null,
                         null,
                         null,
-                        null,
-                        null,
-                        null,
+                        original?.diagnosticBranch,
+                        original?.diagnosticStage,
+                        original?.diagnosticClassification,
                         null,
                         result.existingEvidenceReferences,
                     )
@@ -689,6 +691,43 @@ private constructor(
     }
 }
 
+internal class RecoveryStreamingOriginalDiagnostic
+private constructor(
+    val diagnosticBranch: StreamDiagnosticBranch,
+    val diagnosticStage: StreamDiagnosticStage,
+    val diagnosticClassification: StreamDiagnosticClassification,
+    val checkpointIntersectionProven: Boolean,
+    val provenCheckpointEnd: ULong?,
+    val rejectedObservation: RecoveryStreamingRejectedObservation?,
+) {
+    companion object {
+        fun from(
+            row: RecoveryStreamingOutcomeRow,
+            expectedDecision: StreamDecision,
+        ): RecoveryStreamingOriginalDiagnostic {
+            require(row.decision == expectedDecision) { "Original decision does not match result" }
+            val isPre = row.diagnosticBranch == StreamDiagnosticBranch.PRE_INTERSECTION
+            val isPost = row.diagnosticBranch == StreamDiagnosticBranch.POST_INTERSECTION
+            require(isPre || isPost) { "Original diagnostic branch is invalid" }
+            if (isPre) {
+                require(row.rejectedObservation == null) {
+                    "PRE diagnostic cannot carry observation"
+                }
+            } else {
+                require(row.rejectedObservation != null) { "POST diagnostic requires observation" }
+            }
+            return RecoveryStreamingOriginalDiagnostic(
+                row.diagnosticBranch,
+                row.diagnosticStage,
+                row.diagnosticClassification,
+                isPost,
+                row.checkpointContextEnd.takeIf { isPost },
+                row.takeIf { isPost }?.let(RecoveryStreamingRejectedObservation::fromPersisted),
+            )
+        }
+    }
+}
+
 internal sealed interface RecoveryStreamingReconciliationResult {
     class PersistedValid
     private constructor(
@@ -793,6 +832,7 @@ internal sealed interface RecoveryStreamingReconciliationResult {
         val stage: RecoveryStreamingResultStage?,
         val classification: RecoveryStreamingResultClassification?,
         val persistedDiagnostic: RecoveryStreamingPersistedDiagnostic?,
+        val originalDiagnostic: RecoveryStreamingOriginalDiagnostic?,
         val existingEvidenceReferences: List<RecoveryStreamingExistingEvidenceReference>,
     ) : RecoveryStreamingReconciliationResult {
         companion object {
@@ -802,7 +842,7 @@ internal sealed interface RecoveryStreamingReconciliationResult {
             ): Rejected {
                 val mapping = RecoveryStreamingResultMapping.require(stage, classification, null)
                 require(mapping.disposition == RecoveryStreamingResultDisposition.REJECTED)
-                return Rejected(stage, classification, null, emptyList())
+                return Rejected(stage, classification, null, null, emptyList())
             }
 
             fun persisted(
@@ -817,6 +857,16 @@ internal sealed interface RecoveryStreamingReconciliationResult {
                         receipt,
                         StreamDecision.REJECTED,
                     ),
+                    null,
+                    emptyList(),
+                )
+
+            fun original(row: RecoveryStreamingOutcomeRow): Rejected =
+                Rejected(
+                    null,
+                    null,
+                    null,
+                    RecoveryStreamingOriginalDiagnostic.from(row, StreamDecision.REJECTED),
                     emptyList(),
                 )
         }
@@ -827,6 +877,7 @@ internal sealed interface RecoveryStreamingReconciliationResult {
         val stage: RecoveryStreamingResultStage?,
         val classification: RecoveryStreamingResultClassification?,
         val persistedDiagnostic: RecoveryStreamingPersistedDiagnostic?,
+        val originalDiagnostic: RecoveryStreamingOriginalDiagnostic?,
         val existingEvidenceReferences: List<RecoveryStreamingExistingEvidenceReference>,
     ) : RecoveryStreamingReconciliationResult {
         companion object {
@@ -840,6 +891,7 @@ internal sealed interface RecoveryStreamingReconciliationResult {
                 return Fatal(
                     stage,
                     classification,
+                    null,
                     null,
                     RecoveryStreamingExistingEvidenceReferences.forClassification(
                         classification,
@@ -860,6 +912,16 @@ internal sealed interface RecoveryStreamingReconciliationResult {
                         receipt,
                         StreamDecision.FATAL,
                     ),
+                    null,
+                    emptyList(),
+                )
+
+            fun original(row: RecoveryStreamingOutcomeRow): Fatal =
+                Fatal(
+                    null,
+                    null,
+                    null,
+                    RecoveryStreamingOriginalDiagnostic.from(row, StreamDecision.FATAL),
                     emptyList(),
                 )
         }

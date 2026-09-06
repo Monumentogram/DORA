@@ -1249,6 +1249,106 @@ class RecoveryStreamingReconciliationControllerTest {
     }
 
     @Test
+    fun `proven rollback returns original rejected semantic without receipt`() {
+        val fixture = controllerFixture(acceptedEnd = 12_217)
+        val events = mutableListOf<String>()
+        val journal =
+            ControllerJournal(events).apply {
+                checkpoints = listOf(fixture.checkpoint)
+                persistBehavior = {
+                    RecoveryStreamingJournalResult.Original(
+                        StreamSemanticOutcome.PERSISTED_REJECTED
+                    )
+                }
+            }
+        val controller =
+            RecoveryStreamingReconciliationController(
+                journal,
+                FreshControllerSource(events, fixture.source),
+                RecoveryRunSingleWriterGuard { RecoveryRunWriterLease {} },
+                RecoveryStreamingCheckpointAuthenticator { _, _ ->
+                    RecoveryStreamingCheckpointAuthentication.Ready(
+                        RecoveryStreamingPublicStreamOpener { _, _ ->
+                            ScriptedPublicRead(
+                                ReadStep.Bytes(fixture.oracle.copyOfRange(0, 4_056)),
+                                ReadStep.AuthenticationFailure,
+                            )
+                        }
+                    )
+                },
+                RecoveryStreamingEvidenceSink { event ->
+                    assertEquals(null, event.outcomeId)
+                    assertEquals(null, event.rangeIntentId)
+                    assertEquals(null, event.persistedDecision)
+                    assertEquals(
+                        StreamDiagnosticClassification.STREAM_TAIL_BOUND_EXCEEDED,
+                        event.diagnosticClassification,
+                    )
+                },
+            )
+
+        val result =
+            controller.recover(fixture.request) as RecoveryStreamingReconciliationResult.Rejected
+
+        assertEquals(null, result.stage)
+        assertEquals(null, result.classification)
+        assertEquals(null, result.persistedDiagnostic)
+        assertEquals(
+            StreamDiagnosticClassification.STREAM_TAIL_BOUND_EXCEEDED,
+            requireNotNull(result.originalDiagnostic).diagnosticClassification,
+        )
+        assertEquals(1, journal.persistCalls)
+    }
+
+    @Test
+    fun `proven rollback returns original fatal semantic without receipt`() {
+        val fixture = controllerFixture()
+        val events = mutableListOf<String>()
+        val journal =
+            ControllerJournal(events).apply {
+                checkpoints = listOf(fixture.checkpoint)
+                persistBehavior = {
+                    RecoveryStreamingJournalResult.Original(StreamSemanticOutcome.PERSISTED_FATAL)
+                }
+            }
+        val changedSource = fixture.source.copyOf().also { it[0] = (it[0] + 1).toByte() }
+        val controller =
+            RecoveryStreamingReconciliationController(
+                journal,
+                FreshControllerSource(events, changedSource),
+                RecoveryRunSingleWriterGuard { RecoveryRunWriterLease {} },
+                RecoveryStreamingCheckpointAuthenticator { _, _ ->
+                    RecoveryStreamingCheckpointAuthentication.Ready(
+                        RecoveryStreamingPublicStreamOpener { _, _ ->
+                            error("PRE result must not open public stream")
+                        }
+                    )
+                },
+                RecoveryStreamingEvidenceSink { event ->
+                    assertEquals(null, event.outcomeId)
+                    assertEquals(null, event.rangeIntentId)
+                    assertEquals(null, event.persistedDecision)
+                    assertEquals(
+                        StreamDiagnosticClassification.STREAM_SOURCE_PREFIX_IDENTITY_MISMATCH,
+                        event.diagnosticClassification,
+                    )
+                },
+            )
+
+        val result =
+            controller.recover(fixture.request) as RecoveryStreamingReconciliationResult.Fatal
+
+        assertEquals(null, result.stage)
+        assertEquals(null, result.classification)
+        assertEquals(null, result.persistedDiagnostic)
+        assertEquals(
+            StreamDiagnosticClassification.STREAM_SOURCE_PREFIX_IDENTITY_MISMATCH,
+            requireNotNull(result.originalDiagnostic).diagnosticClassification,
+        )
+        assertEquals(1, journal.persistCalls)
+    }
+
+    @Test
     fun `prerequisite adapter requires all exact artifacts before crypto`() {
         val fixture = controllerFixture()
         val artifacts =
@@ -1430,7 +1530,7 @@ class RecoveryStreamingReconciliationControllerTest {
         val streamEnvelope: ByteArray,
     )
 
-    private fun controllerFixture(): ControllerFixture {
+    private fun controllerFixture(acceptedEnd: Int = 8_136): ControllerFixture {
         val runId = RunId.fromBytes(ByteArray(16) { (it + 1).toByte() })
         val source = ByteArray(8_192) { ((it * 31 + 9) and 0xff).toByte() }
         val checkpointArtifact = ByteArray(128) { ((it * 3 + 1) and 0xff).toByte() }
@@ -1480,7 +1580,7 @@ class RecoveryStreamingReconciliationControllerTest {
                 checkpointInput.previousCheckpointSha256,
                 checkpointIdentity,
             )
-        val oracleBytes = ByteArray(8_136) { ((it * 7 + 5) and 0xff).toByte() }
+        val oracleBytes = ByteArray(acceptedEnd) { ((it * 7 + 5) and 0xff).toByte() }
         val oracleSha = Sha256Value.calculate(oracleBytes)
         val witnessBase =
             RecoveryStreamingWitnessInput(
@@ -1489,8 +1589,8 @@ class RecoveryStreamingReconciliationControllerTest {
                 checkpointIdentity,
                 8_192UL,
                 4_056UL,
-                RecoveryStreamingIdentity.oracle(8_136UL, oracleSha, runId),
-                8_136UL,
+                RecoveryStreamingIdentity.oracle(acceptedEnd.toULong(), oracleSha, runId),
+                acceptedEnd.toULong(),
                 oracleSha,
                 8_192UL,
                 prefix,
@@ -1737,6 +1837,8 @@ class RecoveryStreamingReconciliationControllerTest {
         data object Zero : ReadStep
 
         data object Eof : ReadStep
+
+        data object AuthenticationFailure : ReadStep
     }
 
     private class ScriptedPublicRead(vararg steps: ReadStep) :
@@ -1759,6 +1861,9 @@ class RecoveryStreamingReconciliationControllerTest {
                 }
                 ReadStep.Zero -> 0
                 ReadStep.Eof -> -1
+                ReadStep.AuthenticationFailure ->
+                    throw RecoveryStreamingIntentBuilder
+                        .RecoveryStreamingAuthenticationFailureException()
             }
         }
 
