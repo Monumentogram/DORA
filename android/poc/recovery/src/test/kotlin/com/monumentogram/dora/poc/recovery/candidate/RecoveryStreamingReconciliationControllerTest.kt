@@ -898,6 +898,68 @@ class RecoveryStreamingReconciliationControllerTest {
         assertEquals(0, journal.persistCalls)
     }
 
+    @Test
+    fun `controller active range denial stops before source public stream and durable write`() {
+        val fixture = controllerFixture()
+        val events = mutableListOf<String>()
+        val parent = controllerPreFatalOutcome(fixture)
+        val range = RecoveryStreamingRangeRow.exact(parent, Sha256Value.calculate(fixture.source))
+        val journal =
+            ControllerJournal(events).apply {
+                checkpoints = listOf(fixture.checkpoint)
+                parentOutcome = parent
+                active = listOf(range)
+            }
+        val controller =
+            RecoveryStreamingReconciliationController(
+                journal,
+                NeverControllerSource(events),
+                RecoveryRunSingleWriterGuard {
+                    events += "lease-acquire"
+                    RecoveryRunWriterLease { events += "lease-release" }
+                },
+                RecoveryStreamingCheckpointAuthenticator { _, _ ->
+                    events += "authenticate"
+                    RecoveryStreamingCheckpointAuthentication.Ready(
+                        RecoveryStreamingPublicStreamOpener { _, _ ->
+                            events += "public-open"
+                            error("active denial must not open public Tink")
+                        }
+                    )
+                },
+                RecoveryStreamingEvidenceSink { events += "evidence" },
+            )
+
+        val result = controller.recover(fixture.request)
+
+        val fatal = result as RecoveryStreamingReconciliationResult.Fatal
+        assertEquals(
+            RecoveryStreamingResultClassification.STREAM_ACTIVE_RANGE_DENIED,
+            fatal.classification,
+        )
+        assertEquals(
+            listOf(
+                RecoveryStreamingExistingRecordKind.STREAM_OUTCOME,
+                RecoveryStreamingExistingRecordKind.STREAM_RANGE,
+            ),
+            fatal.existingEvidenceReferences.map { it.recordKind },
+        )
+        assertEquals(
+            listOf(
+                "lease-acquire",
+                "checkpoint-chain",
+                "authenticate",
+                "outcome-witness",
+                "active-ranges",
+                "outcome-id",
+                "evidence",
+                "lease-release",
+            ),
+            events,
+        )
+        assertEquals(0, journal.persistCalls)
+    }
+
     private fun render(mapping: RecoveryStreamingResultMapping): String =
         listOf(
                 mapping.disposition.name,
@@ -1111,11 +1173,25 @@ class RecoveryStreamingReconciliationControllerTest {
         )
     }
 
+    private fun controllerPreFatalOutcome(fixture: ControllerFixture) =
+        RecoveryStreamingIntentBuilder.buildOutcome(
+            RecoveryStreamingValidatedIntentFacts(
+                fixture.request.witness,
+                fixture.source.size.toULong(),
+                Sha256Value.calculate(fixture.source),
+                checkpointPrefixMatches = false,
+                preFaultPrefixMatches = true,
+                completed = null,
+            )
+        )
+
     private class ControllerJournal(private val events: MutableList<String>) :
         RecoveryStreamingJournal {
         var checkpoints = emptyList<RecoveryStreamingCheckpointRow>()
         var existingOutcome: RecoveryStreamingOutcomeRow? = null
+        var parentOutcome: RecoveryStreamingOutcomeRow? = null
         var existingRange: RecoveryStreamingRangeRow? = null
+        var active = emptyList<RecoveryStreamingRangeRow>()
         var persistCalls = 0
 
         override fun checkpointChain(runId: RunId) =
@@ -1125,7 +1201,7 @@ class RecoveryStreamingReconciliationControllerTest {
 
         override fun outcomeById(outcomeId: Sha256Value) =
             RecoveryStreamingJournalReadResult.Value(
-                    existingOutcome?.takeIf { it.outcomeId == outcomeId }
+                    (parentOutcome ?: existingOutcome)?.takeIf { it.outcomeId == outcomeId }
                 )
                 .also { events += "outcome-id" }
 
@@ -1144,7 +1220,7 @@ class RecoveryStreamingReconciliationControllerTest {
             }
 
         override fun activeRanges(runId: RunId, sourceRelativeName: String) =
-            RecoveryStreamingJournalReadResult.Value(emptyList<RecoveryStreamingRangeRow>())
+            RecoveryStreamingJournalReadResult.Value(active).also { events += "active-ranges" }
 
         override fun insertCheckpoint(row: RecoveryStreamingCheckpointRow) =
             error("checkpoint insertion is forbidden")

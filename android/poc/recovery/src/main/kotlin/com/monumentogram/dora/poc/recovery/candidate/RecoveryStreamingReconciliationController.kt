@@ -35,6 +35,7 @@ import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamReplayRequest
 import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingReplayAccess
 import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSource
 import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSourceControllerAccess
+import com.monumentogram.dora.poc.recovery.storage.STREAM_SOURCE_RELATIVE_NAME
 import java.security.MessageDigest
 
 internal data class RecoveryStreamingCompletedReadFacts(
@@ -826,10 +827,40 @@ internal class RecoveryStreamingReconciliationController(
                 else -> return nonPersistable(RecoveryStreamingJournalMapper.readFailure(result))
             }
         return if (existing == null) {
-            error("Fresh controller continuation is not implemented")
+            activeRangeOrFresh(request.witness)
         } else {
             replay(existing, request, replayAccess)
         }
+    }
+
+    private fun activeRangeOrFresh(
+        witness: RecoveryStreamingWitnessInput
+    ): RecoveryStreamingReconciliationResult {
+        val ranges =
+            when (val result = journal.activeRanges(witness.runId, STREAM_SOURCE_RELATIVE_NAME)) {
+                is RecoveryStreamingJournalReadResult.Value -> result.value
+                else -> return nonPersistable(RecoveryStreamingJournalMapper.readFailure(result))
+            }
+        if (ranges.isEmpty()) error("Fresh controller continuation is not implemented")
+        val evidence = mutableListOf<RecoveryStreamingExistingEvidence>()
+        ranges.forEach { range ->
+            evidence += RecoveryStreamingExistingEvidence.Range(range.rangeIntentId)
+            val parent =
+                when (val result = journal.outcomeById(range.outcomeId)) {
+                    is RecoveryStreamingJournalReadResult.Value -> result.value
+                    else ->
+                        return nonPersistable(RecoveryStreamingJournalMapper.readFailure(result))
+                }
+            if (parent?.outcomeId != range.outcomeId) return journalStructural()
+            evidence += RecoveryStreamingExistingEvidence.Outcome(parent.outcomeId)
+        }
+        return nonPersistable(
+            RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
+                RecoveryStreamingResultStage.RANGE_ADMISSION,
+                RecoveryStreamingResultClassification.STREAM_ACTIVE_RANGE_DENIED,
+                evidence,
+            )
+        )
     }
 
     private fun replay(
