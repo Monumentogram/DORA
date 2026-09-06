@@ -5,9 +5,11 @@ from __future__ import annotations
 import copy
 import os
 import re
+import signal
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from dataclasses import replace
 from pathlib import Path
@@ -826,6 +828,75 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
 
 
 class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
+    RETAINED_VALIDATOR_TIMEOUT_SECONDS = 180.0
+
+    def terminate_validator_child_tree(
+        self, process: subprocess.Popen[str]
+    ) -> tuple[str, str]:
+        if os.name == "nt":
+            subprocess.run(
+                ["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                check=False,
+                capture_output=True,
+                timeout=10,
+            )
+        else:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+        if process.poll() is None:
+            process.kill()
+        try:
+            return process.communicate(timeout=10)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            return process.communicate()
+
+    def run_bounded_validator_child(
+        self,
+        *,
+        cwd: Path,
+        environment: dict[str, str],
+        timeout_seconds: float = RETAINED_VALIDATOR_TIMEOUT_SECONDS,
+        command: list[str] | None = None,
+    ) -> subprocess.CompletedProcess[str]:
+        child_command = command or [
+            sys.executable,
+            "tools/validate_poc_recovery_governance.py",
+            "--self-test",
+        ]
+        process = subprocess.Popen(
+            child_command,
+            cwd=cwd,
+            env=environment,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="strict",
+            start_new_session=os.name != "nt",
+            creationflags=(
+                subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0
+            ),
+        )
+        try:
+            stdout, stderr = process.communicate(timeout=timeout_seconds)
+        except subprocess.TimeoutExpired:
+            stdout, stderr = self.terminate_validator_child_tree(process)
+            self.fail(
+                f"validator child timed out after {timeout_seconds:g} seconds\n"
+                f"stdout:\n{stdout}\nstderr:\n{stderr}"
+            )
+        if process.returncode != 0:
+            self.terminate_validator_child_tree(process)
+        return subprocess.CompletedProcess(
+            child_command,
+            process.returncode,
+            stdout,
+            stderr,
+        )
+
     def fixture(self) -> tuple[dict, dict]:
         return (
             copy.deepcopy(governance.read_json(governance.REC_I3_RESULT_BOUNDARY_GATE_PATH)),
@@ -1414,9 +1485,65 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             self.assertTrue(governance.validate_current_rec_i3_successor(lifecycle))
             validate.assert_called_once_with(lifecycle)
 
+    def test_retained_validator_child_is_bounded_and_pr_context_cannot_reenter(self) -> None:
+        current = governance.collect_recovery_lifecycle_identity()
+        with (
+            patch.dict(
+                os.environ,
+                {
+                    "GITHUB_EVENT_NAME": "pull_request",
+                    "GITHUB_HEAD_REF": governance.REC_I3_OBSERVABLE_CONTROLLER_BRANCH,
+                },
+                clear=False,
+            ),
+            patch.object(
+                governance,
+                "collect_recovery_lifecycle_identity",
+                return_value=replace(current, github_pull_request_context=None),
+            ),
+            patch.object(
+                tempfile,
+                "TemporaryDirectory",
+                side_effect=AssertionError("recursive local orchestration entered"),
+            ),
+            self.assertRaisesRegex(AssertionError, "verified pull_request context"),
+        ):
+            self.test_local_v08_fixture_restores_verified_pull_request_source_head()
+
+        with tempfile.TemporaryDirectory(
+            prefix="dora-rec-i3-retained-timeout-"
+        ) as temporary:
+            parent = Path(temporary)
+            escaped_marker = parent / "descendant-escaped.txt"
+            descendant_code = (
+                "import time; from pathlib import Path; time.sleep(1.0); "
+                f"Path({str(escaped_marker)!r}).write_text('escaped', encoding='utf-8')"
+            )
+            parent_code = (
+                "import subprocess, sys, time; "
+                f"subprocess.Popen([sys.executable, '-c', {descendant_code!r}]); "
+                "time.sleep(60)"
+            )
+            with self.assertRaisesRegex(
+                AssertionError, "validator child timed out after 0.2 seconds"
+            ):
+                self.run_bounded_validator_child(
+                    cwd=parent,
+                    environment=os.environ.copy(),
+                    timeout_seconds=0.2,
+                    command=[sys.executable, "-c", parent_code],
+                )
+            time.sleep(1.2)
+            self.assertFalse(escaped_marker.exists())
+
     def test_local_v08_fixture_restores_verified_pull_request_source_head(self) -> None:
         current = governance.collect_recovery_lifecycle_identity()
         pull_request = current.github_pull_request_context
+        if os.environ.get("GITHUB_HEAD_REF") or os.environ.get("GITHUB_EVENT_NAME") == "pull_request":
+            self.assertIsNotNone(
+                pull_request,
+                "retained validator child requires verified pull_request context",
+            )
         if pull_request is not None:
             parents = tuple(
                 governance.git_output("show", "-s", "--format=%P", current.head).split()
@@ -1454,15 +1581,9 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             )
             wrong_environment = os.environ.copy()
             wrong_environment["GITHUB_EVENT_PATH"] = str(wrong_event_path.resolve())
-            rejected = subprocess.run(
-                [sys.executable, "tools/validate_poc_recovery_governance.py", "--self-test"],
+            rejected = self.run_bounded_validator_child(
                 cwd=governance.ROOT,
-                env=wrong_environment,
-                check=False,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="strict",
+                environment=wrong_environment,
             )
             self.assertNotEqual(0, rejected.returncode)
             self.assertIn(
@@ -1541,15 +1662,9 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
                 "GITHUB_REF": f"refs/pull/{pull_request_number}/merge",
                 "GITHUB_SHA": merge_head,
             })
-            completed = subprocess.run(
-                [sys.executable, "tools/validate_poc_recovery_governance.py", "--self-test"],
+            completed = self.run_bounded_validator_child(
                 cwd=repo,
-                env=child_environment,
-                check=False,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="strict",
+                environment=child_environment,
             )
             self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
             self.assertIn(
