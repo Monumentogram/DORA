@@ -13,11 +13,29 @@ import validate_poc_recovery_governance as governance
 
 
 class RecoveryI3GovernanceTests(unittest.TestCase):
-    def test_exact_streaming_integration_profile_accepts_current_checkout(self) -> None:
+    def test_exact_streaming_persistence_profile_accepts_current_checkout(self) -> None:
         lifecycle = governance.collect_recovery_lifecycle_identity()
-        self.assertEqual(governance.REC_I3_STREAMING_INTEGRATION_BRANCH, lifecycle.branch)
-        governance.validate_rec_i3_streaming_integration_history(lifecycle.head)
+        self.assertEqual(governance.REC_I3_STREAMING_PERSISTENCE_BRANCH, lifecycle.branch)
         self.assertTrue(governance.validate_current_rec_i3_successor(lifecycle))
+
+    def test_streaming_persistence_base_preserves_exact_streaming_integration(self) -> None:
+        self.assertTrue(
+            governance.git_is_ancestor(
+                governance.REC_I3_STREAMING_INTEGRATION_HEAD,
+                governance.REC_I3_STREAMING_PERSISTENCE_BASE,
+            )
+        )
+        identity = governance.collect_pinned_commit_identity(
+            governance.REC_I3_STREAMING_PERSISTENCE_BASE,
+            governance.collect_recovery_lifecycle_identity().head,
+        )
+        governance.validate_pinned_commit_identity(
+            identity,
+            expected_commit=governance.REC_I3_STREAMING_PERSISTENCE_BASE,
+            expected_tree="718eae8d8d619d17c25ac9d025e0e24db3d52f9e",
+            expected_parents=(governance.REC_I3_STREAMING_INTEGRATION_HEAD,),
+            label="REC-I3 streaming persistence combined base",
+        )
 
     def test_streaming_integration_profile_rejects_branch_and_pr_identity_spoofing(self) -> None:
         base = governance.PinnedCommitIdentity(
@@ -289,9 +307,15 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
                 for item in record["round3Correction"]["authorVerification"]["acceptanceCases"]
             ],
         )
-        governance.validate_rec_i3_reconciliation_successor(
-            publication=False, epoch_head=governance.REC_I3_STREAMING_INTEGRATION_BASE
-        )
+        record["sourceFiles"] = {
+            path: governance.canonical_lf_sha256(path)
+            for path in governance.REC_I3_RECON_SOURCE_PATHS
+            if (governance.ROOT / path).exists()
+        }
+        with patch.object(governance, "read_json", return_value=record):
+            governance.validate_rec_i3_reconciliation_successor(
+                publication=False, epoch_head=governance.REC_I3_STREAMING_INTEGRATION_BASE
+            )
 
         for mutation in ("verified", "closed", "missing", "clean", "review-closed"):
             changed = copy.deepcopy(record)
@@ -397,13 +421,12 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
             ):
                 governance.validate_rec_i3_changed_paths(changes)
 
-    def test_current_bootstrap_validation_receives_reviewed_checkpoint_hashes(self) -> None:
-        expected = governance.rec_i3_bootstrap_checkpoint_hashes()
+    def test_persistence_profile_bypasses_legacy_bootstrap_dispatch(self) -> None:
         with patch.object(governance, "validate_rec_i3_bootstrap_evidence") as validator, patch.object(
             governance, "validate_rec_i3_microfile_successor"
         ):
             self.assertTrue(governance.validate_current_rec_i3_successor())
-        self.assertEqual(expected, validator.call_args.args[1])
+        validator.assert_not_called()
 
     def test_frozen_bootstrap_source_is_checked_against_reviewed_blob(self) -> None:
         governance.validate_rec_i3_frozen_bootstrap_sources()

@@ -419,6 +419,42 @@ REC_I3_STREAMING_INTEGRATION_CORRECTION_PATHS = (
     "tools/validate_poc_recovery_governance.py",
     "tools/test_poc_recovery_i3_governance.py",
 )
+REC_I3_STREAMING_PERSISTENCE_BRANCH = "codex/rec-i3-streaming-persistence-governance-v07"
+REC_I3_STREAMING_PERSISTENCE_BASE = "3c63ab09874f4d089e4363985aa8b5c99900c122"
+REC_I3_STREAMING_PERSISTENCE_GOVERNANCE_HEAD = "b59b9b355e390722a8141a6b5edc12bca2cf3531"
+REC_I3_STREAMING_PERSISTENCE_GOVERNANCE_TREE = "27232eec3e628794ac30e1cf83bd44c0868fbfee"
+REC_I3_STREAMING_PERSISTENCE_GOVERNANCE_PATHS = (
+    "docs/adr/ADR-0005-poc-recovery-streaming-persistence-and-range-quarantine.md",
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_7.md",
+    "docs/stage0/poc-recovery-gate-set-stage0-v0.7.json",
+    "docs/stage0/poc-recovery-protocol-stage0-v0.7.json",
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_STREAMING_PERSISTENCE_SCOPE_STAGE0_V0_1.md",
+    "docs/DORA_MVP1_PRODUCT_DECISIONS.md",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+)
+REC_I3_STREAMING_PERSISTENCE_IMPLEMENTATION_PATHS = (
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryJournalDatabase.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntent.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryQuarantineJournal.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationOutcomes.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryStreamingPersistence.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryStreamingJournal.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryStreamingSource.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingReconciliationController.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalSchemaPlanTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntentTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryQuarantineControllerTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSourceTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorageTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryStreamingPersistenceTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryStreamingJournalTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryStreamingSourceTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingReconciliationControllerTest.kt",
+    "tools/validate_poc_recovery_governance.py",
+    "tools/test_poc_recovery_i3_governance.py",
+    "tools/verify_rec_i3_streaming_sqlite.py",
+)
 REC_I3_BASE = "da1d9bd13b71d609fe7ec4ea62fe1e984f726040"
 REC_I3_BASE_TREE = "925bd08802fefc314742776d147771a92edfac70"
 REC_I3_BASE_PARENT = "e5f94e3f5afc3bf5aa61acaaa4960614dcb09209"
@@ -5699,6 +5735,101 @@ def rec_i3_streaming_integration_candidate(lifecycle: RecoveryLifecycleIdentity)
     return lifecycle.branch == REC_I3_STREAMING_INTEGRATION_BRANCH
 
 
+def rec_i3_streaming_persistence_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
+    return lifecycle.branch == REC_I3_STREAMING_PERSISTENCE_BRANCH
+
+
+def validate_rec_i3_streaming_persistence(lifecycle: RecoveryLifecycleIdentity) -> None:
+    require(
+        lifecycle.branch == REC_I3_STREAMING_PERSISTENCE_BRANCH,
+        "REC-I3 streaming persistence requires its exact authorized branch",
+    )
+    candidate_head = (
+        lifecycle.github_pull_request_context.head_sha
+        if lifecycle.github_pull_request_context is not None
+        else lifecycle.head
+    )
+    require(
+        git_is_ancestor(REC_I3_STREAMING_PERSISTENCE_GOVERNANCE_HEAD, candidate_head),
+        "REC-I3 streaming persistence omits the reviewed governance head",
+    )
+    require(
+        git_output("rev-parse", f"{REC_I3_STREAMING_PERSISTENCE_GOVERNANCE_HEAD}^{{tree}}")
+        == REC_I3_STREAMING_PERSISTENCE_GOVERNANCE_TREE,
+        "REC-I3 streaming persistence governance tree drift",
+    )
+    require(
+        not git_output(
+            "rev-list", "--min-parents=2",
+            f"{REC_I3_STREAMING_PERSISTENCE_BASE}..{candidate_head}",
+        ),
+        "REC-I3 streaming persistence history must be linear",
+    )
+    governance_paths = set(git_path_records(
+        "log", "--format=", "--name-only", "--no-renames", "-z",
+        f"{REC_I3_STREAMING_PERSISTENCE_BASE}..{REC_I3_STREAMING_PERSISTENCE_GOVERNANCE_HEAD}",
+    ))
+    require(
+        governance_paths == set(REC_I3_STREAMING_PERSISTENCE_GOVERNANCE_PATHS),
+        "REC-I3 streaming persistence governance path set drift",
+    )
+    changes = collect_post_merge_changes(
+        merged_anchor=REC_I3_STREAMING_PERSISTENCE_GOVERNANCE_HEAD
+    )
+    for layer, paths in changes.items():
+        forbidden = sorted(set(paths) - set(REC_I3_STREAMING_PERSISTENCE_IMPLEMENTATION_PATHS))
+        require(
+            not forbidden,
+            f"REC-I3 streaming persistence {layer} delta escapes exact scope: {forbidden}",
+        )
+    gate = read_json("docs/stage0/poc-recovery-gate-set-stage0-v0.7.json")
+    protocol = read_json("docs/stage0/poc-recovery-protocol-stage0-v0.7.json")
+    require(
+        gate["gateSetVersion"] == "poc-recovery-stage0-v0.7"
+        and protocol["protocolId"] == "poc-recovery-protocol-stage0-v0.7",
+        "REC-I3 streaming persistence active identity drift",
+    )
+    require(
+        gate["readinessLocks"]["fullRecI3Completed"] is False
+        and gate["readinessLocks"]["campaignReady"] is False
+        and gate["readinessLocks"]["preflightEligible"] is False
+        and gate["readinessLocks"]["k12ConsumerDeferred"] is True,
+        "REC-I3 streaming persistence readiness lock drift",
+    )
+    require(
+        protocol["faultCampaign"]["mandatoryFaultRowCount"] == 46
+        and protocol["faultCampaign"]["phaseAInjectionCount"] == 184
+        and protocol["faultCampaign"]["fullPhysicalInjectionCount"] == 138
+        and protocol["faultCampaign"]["baseHardKillAttemptsPerCandidate"] == 120,
+        "REC-I3 streaming persistence campaign count drift",
+    )
+    validate_pinned_commit_identity(
+        collect_pinned_commit_identity(
+            REC_I3_STREAMING_PERSISTENCE_BASE, candidate_head
+        ),
+        expected_commit=REC_I3_STREAMING_PERSISTENCE_BASE,
+        expected_tree="718eae8d8d619d17c25ac9d025e0e24db3d52f9e",
+        expected_parents=(REC_I3_STREAMING_INTEGRATION_HEAD,),
+        label="REC-I3 streaming persistence combined base",
+    )
+    require(
+        git_is_ancestor(REC_I3_STREAMING_INTEGRATION_HEAD, REC_I3_STREAMING_PERSISTENCE_BASE),
+        "REC-I3 streaming persistence base omits the exact streaming import",
+    )
+    base_correction_paths = set(git_path_records(
+        "log", "--format=", "--name-only", "--no-renames", "-z",
+        f"{REC_I3_STREAMING_INTEGRATION_HEAD}..{REC_I3_STREAMING_PERSISTENCE_BASE}",
+    ))
+    require(
+        base_correction_paths == set(REC_I3_STREAMING_INTEGRATION_CORRECTION_PATHS),
+        "REC-I3 streaming persistence combined-base correction drift",
+    )
+    print(
+        "PASS REC-I3 streaming persistence exact development profile; "
+        "full REC-I3/preflight/campaign blocked"
+    )
+
+
 def validate_rec_i3_streaming_integration_context(
     lifecycle: RecoveryLifecycleIdentity,
     base: PinnedCommitIdentity,
@@ -6296,6 +6427,9 @@ def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | Non
     if not rec_i3_candidate():
         return False
     current = lifecycle or collect_recovery_lifecycle_identity()
+    if rec_i3_streaming_persistence_candidate(current):
+        validate_rec_i3_streaming_persistence(current)
+        return True
     streaming_integration = rec_i3_streaming_integration_candidate(current)
     if streaming_integration:
         validate_rec_i3_streaming_integration_context(
