@@ -1104,6 +1104,51 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
         self.assertTrue(governance.rec_i3_result_boundary_candidate(current))
         self.assertFalse(governance.rec_i3_streaming_persistence_candidate(current))
 
+    def test_observable_controller_delta_requires_exact_clean_allowlist(self) -> None:
+        expected = list(governance.REC_I3_OBSERVABLE_CONTROLLER_PATHS)
+        clean = {
+            "committed": expected,
+            "staged": [],
+            "unstaged": [],
+            "untracked": [],
+        }
+        governance.validate_rec_i3_observable_controller_delta(
+            clean,
+            expected,
+            expected,
+            "",
+        )
+        for layer in ("committed", "staged", "unstaged", "untracked"):
+            with self.subTest(layer=layer):
+                changed = {key: list(value) for key, value in clean.items()}
+                changed[layer].append("unexpected.txt")
+                with self.assertRaisesRegex(ValueError, "exact committed path delta"):
+                    governance.validate_rec_i3_observable_controller_delta(
+                        changed,
+                        expected,
+                        expected,
+                        "",
+                    )
+
+    def test_observable_controller_profile_is_additive_to_v08(self) -> None:
+        old = governance.RecoveryLifecycleIdentity(
+            "c" * 40,
+            governance.REC_I3_RESULT_BOUNDARY_BRANCH,
+            None,
+            None,
+            None,
+            None,
+            (),
+            None,
+            None,
+            False,
+        )
+        current = replace(old, branch=governance.REC_I3_OBSERVABLE_CONTROLLER_BRANCH)
+        self.assertTrue(governance.rec_i3_result_boundary_candidate(old))
+        self.assertFalse(governance.rec_i3_observable_controller_candidate(old))
+        self.assertTrue(governance.rec_i3_observable_controller_candidate(current))
+        self.assertFalse(governance.rec_i3_result_boundary_candidate(current))
+
     def test_exact_v08_profile_accepts_current_checkout(self) -> None:
         lifecycle = governance.collect_recovery_lifecycle_identity()
         self.assertEqual(governance.REC_I3_RESULT_BOUNDARY_BRANCH, lifecycle.branch)

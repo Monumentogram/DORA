@@ -450,6 +450,41 @@ REC_I3_RESULT_BOUNDARY_PATHS = (
     "tools/validate_poc_recovery_governance.py",
     "tools/test_poc_recovery_i3_governance.py",
 )
+REC_I3_OBSERVABLE_CONTROLLER_BRANCH = "codex/rec-i3-streaming-observable-controller-v08"
+REC_I3_OBSERVABLE_CONTROLLER_BASE = "406cba597c2db88712a7f3d96250e3583b43d28e"
+REC_I3_OBSERVABLE_CONTROLLER_BASE_TREE = "aabc8a047ff6648eb4f98c618d3c20bcfc632526"
+REC_I3_OBSERVABLE_CONTROLLER_EVIDENCE_PATH = (
+    "docs/evidence/poc-recovery-001/"
+    "rec-i3-streaming-observable-controller-local-evidence-stage0-v0.1.json"
+)
+REC_I3_OBSERVABLE_CONTROLLER_SOURCE_PATHS = (
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/"
+    "AndroidRecoveryStreamingReconciliation.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/"
+    "RecoveryReconciliationOutcomes.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/"
+    "RecoveryStreamingReconciliationController.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/"
+    "RecoveryStreamingTinkPrerequisiteCrypto.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/"
+    "AndroidOsRecoveryStreamingSource.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/"
+    "RecoveryStreamingReconciliationControllerTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/"
+    "RecoveryStreamingTinkPrerequisiteCryptoTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/"
+    "AndroidOsRecoveryStreamingSourceTest.kt",
+)
+REC_I3_OBSERVABLE_CONTROLLER_PATHS = (
+    *REC_I3_OBSERVABLE_CONTROLLER_SOURCE_PATHS,
+    "docs/adr/ADR-0007-rec-i3-proven-valid-rollback-result.md",
+    "docs/DORA_MVP1_PRODUCT_DECISIONS.md",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    REC_I3_OBSERVABLE_CONTROLLER_EVIDENCE_PATH,
+    "tools/validate_poc_recovery_governance.py",
+    "tools/test_poc_recovery_i3_governance.py",
+)
 REC_I3_RESULT_BOUNDARY_V07_SHA256 = {
     "docs/adr/ADR-0005-poc-recovery-streaming-persistence-and-range-quarantine.md":
         "92d44d1405b3fed9ad3c6a50cc50a3667383a70852aceca443a64aa6702e8f02",
@@ -462,6 +497,14 @@ REC_I3_RESULT_BOUNDARY_V07_SHA256 = {
     "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_STREAMING_PERSISTENCE_SCOPE_STAGE0_V0_1.md":
         "b18bf386d9e2593c32c27d66f6a2449221768541879416c2b469a9089195ba90",
 }
+REC_I3_OBSERVABLE_CONTROLLER_PINNED_PATHS = (
+    *REC_I3_RESULT_BOUNDARY_V07_SHA256,
+    "docs/adr/ADR-0006-rec-i3-streaming-result-boundary-and-evidence-delivery.md",
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_8.md",
+    REC_I3_RESULT_BOUNDARY_GATE_PATH,
+    REC_I3_RESULT_BOUNDARY_PROTOCOL_PATH,
+    "docs/stage0/DORA_MVP1_POC_RECOVERY_I3_STREAMING_RESULT_BOUNDARY_SCOPE_STAGE0_V0_1.md",
+)
 REC_I3_STREAMING_PERSISTENCE_IMPLEMENTATION_PATHS = (
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryJournalDatabase.kt",
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntent.kt",
@@ -5805,6 +5848,36 @@ def rec_i3_streaming_persistence_candidate(lifecycle: RecoveryLifecycleIdentity)
 
 def rec_i3_result_boundary_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
     return lifecycle.branch == REC_I3_RESULT_BOUNDARY_BRANCH
+
+
+def rec_i3_observable_controller_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
+    return lifecycle.branch == REC_I3_OBSERVABLE_CONTROLLER_BRANCH
+
+
+def validate_rec_i3_observable_controller_delta(
+    changes: dict[str, list[str]],
+    committed_tree_paths: list[str],
+    committed_history_paths: list[str],
+    committed_summary: str,
+) -> None:
+    expected = set(REC_I3_OBSERVABLE_CONTROLLER_PATHS)
+    require(
+        set(changes) == {"committed", "staged", "unstaged", "untracked"}
+        and set(changes["committed"]) == expected
+        and set(committed_tree_paths) == expected
+        and set(committed_history_paths) == expected
+        and all(not changes[layer] for layer in ("staged", "unstaged", "untracked")),
+        "REC-I3 observable controller requires the exact committed path delta and a clean "
+        f"index/worktree: {changes}",
+    )
+    require(
+        not any(
+            marker in line
+            for line in committed_summary.splitlines()
+            for marker in ("rename ", "delete mode", "mode change")
+        ),
+        "REC-I3 observable controller committed delta contains rename/delete/mode drift",
+    )
 
 
 def validate_rec_i3_result_boundary_delta(
