@@ -559,4 +559,10 @@ No v0.8 result-boundary/controller implementation, execution, or evidence was pr
 
 The Development Governor approved DEC-048/ADR-0007 under the owner's recorded delegation. A semantic VALID attempt with both framework-proven rollback and reconciled absence maps to the existing 'Retry(JOURNAL, JOURNAL_OPERATIONAL, SQLITE)' result with no persistence or ACTIVE claim. Absence without rollback proof remains ambiguous. The exact v0.8 4/6/20/4 boundary and pinned predecessor artifacts do not change.
 
-The affected controller mapping remains disabled until independent focused review returns CLEAN. 'POC-RECOVERY-001' remains 'BLOCKED / NOT_READY'; no execution, campaign, admission, consumer, retirement or merge authority follows.
+Independent focused review returned CLEAN before the affected controller mapping was enabled. 'POC-RECOVERY-001' remains 'BLOCKED / NOT_READY'; no execution, campaign, admission, consumer, retirement or merge authority follows.
+
+## REC-I3 observable streaming controller local candidate — 6 September 2026
+
+The isolated `:poc:recovery` candidate implements the accepted v0.8 observable result, replay, receipt and bounded sanitized evidence boundary over the existing schema-v4 journal and one-descriptor streaming gateway. It preserves exact 4/6/20/4 public counts, strict decoded ordered/deduplicated references, exact-readback receipt core, caller-driven exact replay, same-run lease lifetime and guard no-effect behavior. Focused and full Recovery JVM tests, Spotless, Detekt, Android lint and the host SQLite verifier pass with synthetic fixtures; the versioned local evidence records exact source digests and commands.
+
+This is author-local host evidence pending immutable independent implementation review and exact-head CI. It is not Android runtime durability, device/emulator, preflight, process-death/fault or measured campaign evidence. `fullRecI3Completed=false`; `POC-RECOVERY-001` remains `BLOCKED / NOT_READY`, all ten active blockers remain open, `REC-RDY-02` remains historically closed, and every execution, production-admission, consumer, cross-process, retirement and merge nonclaim remains unchanged.

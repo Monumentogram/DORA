@@ -248,4 +248,10 @@ This exact ten-path patch creates no v0.8 result-boundary/controller implementat
 
 'DEC-048' and ADR-0007 resolve only the outward representation of a semantic VALID attempt after both framework-proven rollback and reconciled absence. The existing 'Retry(JOURNAL, JOURNAL_OPERATIONAL, SQLITE)' mapping applies with no receipt, attempted IDs, references, admitted endpoint, success or ACTIVE claim. Absence without proven rollback stays 'JOURNAL_COMMIT_STATE_UNRESOLVED'; the 4/6/20/4 boundary and pinned v0.7/v0.8 artifacts remain unchanged.
 
-The implementation mapping remains gated pending independent focused CLEAN review of the immutable amendment. No readiness, execution, campaign, production, consumer, retirement or merge status changes.
+Independent focused review of the immutable amendment returned CLEAN before the affected mapping was enabled. No readiness, execution, campaign, production, consumer, retirement or merge status changes.
+
+## REC-I3 observable streaming controller local candidate — 6 September 2026
+
+The isolated `:poc:recovery` local candidate now composes the accepted v0.8 controller boundary with the existing one-descriptor streaming gateway, journal, Tink prerequisite crypto and bounded evidence port. Host tests cover the exact 4/6/20/4 mapping, constructor/reference invariants, read and precedence boundaries, replay/conflict/rollback outcomes, receipt/evidence ordering, sanitization, resource lifetime and zero-effect guards. The focused Recovery tests, full Recovery JVM suite, Spotless, Detekt, Android lint and host SQLite schema-v4 verifier pass; exact source digests and commands are recorded in the local evidence JSON.
+
+This author-local result remains pending immutable independent implementation review and exact-head CI. `POC-RECOVERY-001` remains `BLOCKED / NOT_READY`; ten active blockers remain open, `REC-RDY-02` remains historically closed, and `fullRecI3Completed=false`. No device/emulator or preflight run, process-death/fault/measured campaign, Android durability claim, production/dependency admission, consumer intent, cross-process guarantee, range retirement, push, Pull Request, merge or next slice is claimed.

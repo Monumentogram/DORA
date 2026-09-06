@@ -1260,6 +1260,11 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
         contract.assert_called_once()
         evidence.assert_called_once_with(self.observable_controller_evidence())
 
+    def test_exact_observable_controller_profile_accepts_current_checkout(self) -> None:
+        lifecycle = governance.collect_recovery_lifecycle_identity()
+        self.assertEqual(governance.REC_I3_OBSERVABLE_CONTROLLER_BRANCH, lifecycle.branch)
+        self.assertTrue(governance.validate_current_rec_i3_successor(lifecycle))
+
     def test_exact_v08_profile_dispatch_is_preserved(self) -> None:
         lifecycle = replace(
             governance.collect_recovery_lifecycle_identity(),
