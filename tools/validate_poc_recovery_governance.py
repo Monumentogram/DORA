@@ -1417,13 +1417,17 @@ def collect_github_pull_request_context(
     require(repository == GITHUB_REPOSITORY and base_repository == GITHUB_REPOSITORY, "GitHub pull_request base repository mismatch")
     require(head_repository == GITHUB_REPOSITORY, "GitHub pull_request head repository is a fork")
     require(head_ref == github_head_ref == env.get("GITHUB_HEAD_REF"), "GitHub pull_request head ref mismatch")
-    expected_base_ref = (
-        REC_I3_SQUASH_MAIN_CORRECTION_BRANCH
-        if head_ref == REC_I3_E36_GAPI_BRANCH
-        else GITHUB_BASE_BRANCH
+    exact_e36_head = (
+        head_ref == REC_I3_E36_GAPI_BRANCH
+        and head_sha == REC_I3_E36_GAPI_HEAD
+    )
+    allowed_base_refs = (
+        {GITHUB_BASE_BRANCH, REC_I3_SQUASH_MAIN_CORRECTION_BRANCH}
+        if exact_e36_head
+        else {GITHUB_BASE_BRANCH}
     )
     require(
-        base_ref == expected_base_ref == env.get("GITHUB_BASE_REF"),
+        base_ref in allowed_base_refs and base_ref == env.get("GITHUB_BASE_REF"),
         "GitHub pull_request base ref mismatch",
     )
     require(FULL_SHA256_RE.fullmatch(head_sha or "") is not None, "GitHub pull_request head SHA is invalid")
@@ -1446,12 +1450,20 @@ def collect_github_pull_request_context(
         and git_output("rev-parse", "--verify", f"{head_sha}^{{commit}}", root=repository_root) == head_sha,
         "GitHub pull_request base or head commit is missing",
     )
+    if exact_e36_head and base_ref == GITHUB_BASE_BRANCH:
+        require(
+            rec_i3_integrated_correction_commit_candidate(
+                base_sha,
+                root=repository_root,
+            ),
+            "GitHub E36 pull_request main base is not the exact integrated correction",
+        )
     merge_parents = tuple(git_output("show", "-s", "--format=%P", head, root=repository_root).split())
     require(merge_parents == (base_sha, head_sha), "GitHub merge-ref parent topology mismatch")
     expected_merge_base = (
         REC_I3_SQUASH_MAIN_ANCHOR
-        if head_ref == REC_I3_E36_GAPI_BRANCH
-        and base_ref == REC_I3_SQUASH_MAIN_CORRECTION_BRANCH
+        if exact_e36_head
+        and base_ref in {GITHUB_BASE_BRANCH, REC_I3_SQUASH_MAIN_CORRECTION_BRANCH}
         else base_sha
     )
     require(
@@ -5909,6 +5921,53 @@ def rec_i3_observable_controller_candidate(lifecycle: RecoveryLifecycleIdentity)
     return lifecycle.branch == REC_I3_OBSERVABLE_CONTROLLER_BRANCH
 
 
+def rec_i3_integrated_correction_commit_candidate(
+    commit: str,
+    *,
+    root: Path | None = None,
+) -> bool:
+    repository_root = root or ROOT
+    if (
+        git_optional_output(
+            "rev-parse", "--verify", f"{commit}^{{commit}}", root=repository_root
+        )
+        != commit
+    ):
+        return False
+    parents = tuple(
+        (
+            git_optional_output(
+                "show", "-s", "--format=%P", commit, root=repository_root
+            )
+            or ""
+        ).split()
+    )
+    if parents != (REC_I3_SQUASH_MAIN_ANCHOR,):
+        return False
+    if set(
+        git_path_records(
+            "diff",
+            "--name-only",
+            "--no-renames",
+            "-z",
+            REC_I3_SQUASH_MAIN_ANCHOR,
+            commit,
+            "--",
+            root=repository_root,
+        )
+    ) != set(REC_I3_SQUASH_MAIN_CORRECTION_PATHS):
+        return False
+    return all(
+        len(records) == 1 and records[0].startswith("100644 ")
+        for records in (
+            git_path_records(
+                "ls-tree", "-z", commit, "--", relative, root=repository_root
+            )
+            for relative in REC_I3_SQUASH_MAIN_CORRECTION_PATHS
+        )
+    )
+
+
 def rec_i3_squash_main_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
     if (
         git_optional_output(
@@ -5926,6 +5985,8 @@ def rec_i3_squash_main_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
         )
     if lifecycle.head == REC_I3_SQUASH_MAIN_ANCHOR:
         return lifecycle.branch == GITHUB_BASE_BRANCH
+    if lifecycle.branch == GITHUB_BASE_BRANCH:
+        return rec_i3_integrated_correction_commit_candidate(lifecycle.head)
     return (
         lifecycle.branch == REC_I3_SQUASH_MAIN_CORRECTION_BRANCH
         and git_is_ancestor(REC_I3_SQUASH_MAIN_ANCHOR, lifecycle.head)
@@ -5938,7 +5999,8 @@ def rec_i3_e36_gapi_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
         return (
             pull_request.head_ref == REC_I3_E36_GAPI_BRANCH
             and pull_request.head_sha == REC_I3_E36_GAPI_HEAD
-            and pull_request.base_ref == REC_I3_SQUASH_MAIN_CORRECTION_BRANCH
+            and pull_request.base_ref
+            in {GITHUB_BASE_BRANCH, REC_I3_SQUASH_MAIN_CORRECTION_BRANCH}
         )
     return (
         lifecycle.branch == REC_I3_E36_GAPI_BRANCH
@@ -6025,6 +6087,16 @@ def validate_rec_i3_squash_main(lifecycle: RecoveryLifecycleIdentity) -> None:
         git_is_ancestor(REC_I3_SCOPE_COMMIT, REC_I3_SQUASH_MAIN_REVIEWED_HEAD),
         "REC-I3 squash-main reviewed source omits the scope-first lineage",
     )
+    integrated_correction_main = (
+        lifecycle.github_pull_request_context is None
+        and lifecycle.branch == GITHUB_BASE_BRANCH
+        and lifecycle.head != REC_I3_SQUASH_MAIN_ANCHOR
+    )
+    if integrated_correction_main:
+        require(
+            rec_i3_integrated_correction_commit_candidate(lifecycle.head),
+            "REC-I3 integrated correction main identity drift",
+        )
 
     pull_request = lifecycle.github_pull_request_context
     event_name = os.environ.get("GITHUB_EVENT_NAME", "")
@@ -6081,6 +6153,7 @@ def validate_rec_i3_squash_main(lifecycle: RecoveryLifecycleIdentity) -> None:
     correction_active = (
         lifecycle.branch == REC_I3_SQUASH_MAIN_CORRECTION_BRANCH
         or pull_request is not None
+        or integrated_correction_main
     )
     allowed_paths = correction_paths if correction_active else set()
     validate_rec_i3_squash_main_protected_changes(
@@ -6105,6 +6178,14 @@ def validate_rec_i3_squash_main(lifecycle: RecoveryLifecycleIdentity) -> None:
         )
         for relative in REC_I3_SQUASH_MAIN_CORRECTION_PATHS:
             validate_rec_i3_regular_file(relative)
+        if integrated_correction_main:
+            require(
+                all(
+                    not changes[layer]
+                    for layer in ("staged", "unstaged", "untracked")
+                ),
+                f"REC-I3 integrated correction main checkout is dirty: {changes}",
+            )
     else:
         require(
             not changed_paths,
@@ -6203,7 +6284,8 @@ def validate_rec_i3_e36_gapi(lifecycle: RecoveryLifecycleIdentity) -> None:
             and pull_request.head_repository == GITHUB_REPOSITORY
             and pull_request.head_ref == REC_I3_E36_GAPI_BRANCH
             and pull_request.head_sha == REC_I3_E36_GAPI_HEAD
-            and pull_request.base_ref == REC_I3_SQUASH_MAIN_CORRECTION_BRANCH
+            and pull_request.base_ref
+            in {GITHUB_BASE_BRANCH, REC_I3_SQUASH_MAIN_CORRECTION_BRANCH}
             and pull_request.draft is True
             and pull_request.state == "open"
             and pull_request.merged is False
@@ -6215,6 +6297,13 @@ def validate_rec_i3_e36_gapi(lifecycle: RecoveryLifecycleIdentity) -> None:
             git_is_ancestor(REC_I3_SQUASH_MAIN_ANCHOR, pull_request.base_sha),
             "REC-I3 E36-GAPI stacked base omits the integrated anchor",
         )
+        if pull_request.base_ref == GITHUB_BASE_BRANCH:
+            require(
+                rec_i3_integrated_correction_commit_candidate(
+                    pull_request.base_sha
+                ),
+                "REC-I3 E36-GAPI main base is not the exact integrated correction",
+            )
         base_paths = set(
             git_path_records(
                 "diff",

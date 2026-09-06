@@ -1676,6 +1676,129 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
                 rejected.stdout + rejected.stderr,
             )
 
+    def test_source_equal_squash_merged_correction_main_is_exact_and_terminal(self) -> None:
+        integrated_main = "be37378ca88e0bd4aee1f2fe0c54362798bdef9d"
+        correction_root = Path(governance.__file__).resolve().parents[1]
+        correction_source = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=correction_root,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        correction_tree = subprocess.run(
+            ["git", "show", "-s", "--format=%T", correction_source],
+            cwd=correction_root,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        validator_source = str(Path(governance.__file__).resolve())
+        child_code = (
+            "import importlib.util, os, pathlib, sys; "
+            "source = pathlib.Path(sys.argv[1]); root = pathlib.Path(sys.argv[2]); "
+            "spec = importlib.util.spec_from_file_location('correction_main_governance', source); "
+            "module = importlib.util.module_from_spec(spec); "
+            "sys.modules[spec.name] = module; spec.loader.exec_module(module); "
+            "module.ROOT = root; os.chdir(root); "
+            "sys.argv = ['validate_poc_recovery_governance.py']; "
+            "raise SystemExit(module.main())"
+        )
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-correction-main-") as temporary:
+            parent = Path(temporary)
+            repo = parent / "repo"
+            governance.test_git(
+                parent,
+                "clone",
+                "--shared",
+                "--no-checkout",
+                str(governance.ROOT),
+                str(repo),
+            )
+            squash_commit = governance.test_git_text(
+                repo,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                correction_tree,
+                "-p",
+                integrated_main,
+                input_data=b"synthetic source-equal squash correction\n",
+            )
+            governance.test_git(repo, "checkout", "-q", "-B", "main", squash_commit)
+            self.assertEqual(
+                correction_tree,
+                governance.test_git_text(repo, "rev-parse", f"{squash_commit}^{{tree}}"),
+            )
+            self.assertEqual(
+                integrated_main,
+                governance.test_git_text(repo, "show", "-s", "--format=%P", squash_commit),
+            )
+            self.assertEqual(
+                set(governance.REC_I3_SQUASH_MAIN_CORRECTION_PATHS),
+                set(
+                    governance.test_git_text(
+                        repo,
+                        "diff",
+                        "--name-only",
+                        integrated_main,
+                        squash_commit,
+                        "--",
+                    ).splitlines()
+                ),
+            )
+            child_environment = os.environ.copy()
+            for key in tuple(child_environment):
+                if key.startswith("GITHUB_") or key == "RUNNER_TEMP":
+                    child_environment.pop(key)
+            local = self.run_bounded_validator_child(
+                cwd=repo,
+                environment=child_environment,
+                command=[sys.executable, "-c", child_code, validator_source, str(repo)],
+            )
+            self.assertEqual(0, local.returncode, local.stdout + local.stderr)
+            self.assertIn("squash-merged main", local.stdout)
+
+            child_environment.update(
+                {
+                    "GITHUB_EVENT_NAME": "push",
+                    "GITHUB_REPOSITORY": governance.GITHUB_REPOSITORY,
+                    "GITHUB_WORKSPACE": str(repo.resolve()),
+                    "GITHUB_REF": "refs/heads/main",
+                    "GITHUB_SHA": squash_commit,
+                }
+            )
+            github = self.run_bounded_validator_child(
+                cwd=repo,
+                environment=child_environment,
+                command=[sys.executable, "-c", child_code, validator_source, str(repo)],
+            )
+            self.assertEqual(0, github.returncode, github.stdout + github.stderr)
+
+            later_descendant = governance.test_git_text(
+                repo,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                correction_tree,
+                "-p",
+                squash_commit,
+                input_data=b"synthetic later descendant\n",
+            )
+            governance.test_git(repo, "checkout", "-q", "-B", "main", later_descendant)
+            child_environment["GITHUB_SHA"] = later_descendant
+            rejected = self.run_bounded_validator_child(
+                cwd=repo,
+                environment=child_environment,
+                command=[sys.executable, "-c", child_code, validator_source, str(repo)],
+            )
+            self.assertNotEqual(0, rejected.returncode)
+            self.assertNotIn("squash-merged main validation passed", rejected.stdout)
+
     def test_e36_gapi_exact_local_and_stacked_pr_topologies_are_reachable(self) -> None:
         integrated_main = "be37378ca88e0bd4aee1f2fe0c54362798bdef9d"
         harness_head = "7a7036513f2eb460ed72136e1784d712c4aae42d"
@@ -1794,6 +1917,79 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             )
             self.assertEqual(0, stacked.returncode, stacked.stdout + stacked.stderr)
             self.assertIn("exact E36-GAPI harness", stacked.stdout)
+
+            correction_tree = subprocess.run(
+                ["git", "show", "-s", "--format=%T", correction_head],
+                cwd=correction_root,
+                check=True,
+                capture_output=True,
+                text=True,
+            ).stdout.strip()
+            integrated_correction = governance.test_git_text(
+                repo,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                correction_tree,
+                "-p",
+                integrated_main,
+                input_data=b"synthetic integrated correction\n",
+            )
+            governance.test_git(repo, "checkout", "-q", "-B", "main", integrated_correction)
+            governance.test_git(
+                repo,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "merge",
+                "--no-ff",
+                "--no-edit",
+                harness_head,
+            )
+            main_base_merge = governance.test_git_text(repo, "rev-parse", "HEAD")
+            governance.test_git(repo, "checkout", "--detach", "-q", main_base_merge)
+            event_path.write_text(
+                json.dumps(
+                    {
+                        "number": pull_request_number,
+                        "repository": {"full_name": governance.GITHUB_REPOSITORY},
+                        "pull_request": {
+                            "number": pull_request_number,
+                            "merge_commit_sha": main_base_merge,
+                            "draft": True,
+                            "state": "open",
+                            "merged": False,
+                            "head": {
+                                "ref": harness_branch,
+                                "sha": harness_head,
+                                "repo": {"full_name": governance.GITHUB_REPOSITORY},
+                            },
+                            "base": {
+                                "ref": "main",
+                                "sha": integrated_correction,
+                                "repo": {"full_name": governance.GITHUB_REPOSITORY},
+                            },
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            child_environment.update(
+                {
+                    "GITHUB_BASE_REF": "main",
+                    "GITHUB_SHA": main_base_merge,
+                }
+            )
+            main_base = self.run_bounded_validator_child(
+                cwd=repo,
+                environment=child_environment,
+                command=[sys.executable, "-c", child_code, validator_source, str(repo)],
+            )
+            self.assertEqual(0, main_base.returncode, main_base.stdout + main_base.stderr)
+            self.assertIn("exact E36-GAPI harness", main_base.stdout)
 
             unrelated = replace(
                 governance.collect_recovery_lifecycle_identity(),
