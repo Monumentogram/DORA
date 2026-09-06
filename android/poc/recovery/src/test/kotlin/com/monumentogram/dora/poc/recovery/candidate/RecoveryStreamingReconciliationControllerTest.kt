@@ -1203,6 +1203,75 @@ class RecoveryStreamingReconciliationControllerTest {
     }
 
     @Test
+    fun `exact replay accepts oracle exact rejected and mismatch observations with exact ranges`() {
+        val mismatchFixture = controllerFixture()
+        val rejectedFixture = controllerFixture(acceptedEnd = 13_000)
+        val cases =
+            listOf(
+                OracleReplayCase(
+                    "mismatch",
+                    mismatchFixture,
+                    controllerMismatchOutcome(mismatchFixture),
+                    controllerMismatchOutcome(mismatchFixture),
+                ),
+                OracleReplayCase(
+                    "rejected",
+                    rejectedFixture,
+                    controllerTailRejectedOutcome(rejectedFixture),
+                    controllerTailRejectedOutcome(rejectedFixture),
+                ),
+            )
+
+        cases.forEach { case ->
+            val events = mutableListOf<String>()
+            val range = requireNotNull(controllerRange(case.canonical, case.fixture.source))
+            val journal =
+                ControllerJournal(events).apply {
+                    checkpoints = listOf(case.fixture.checkpoint)
+                    existingOutcome = case.canonical
+                    existingRange = range
+                }
+            val source = ReplayControllerSource(events, case.canonical)
+            var evidence: RecoveryStreamingEvidenceEvent? = null
+            val controller =
+                RecoveryStreamingReconciliationController(
+                    journal,
+                    source,
+                    RecoveryRunSingleWriterGuard {
+                        RecoveryRunWriterLease { events += "lease-release" }
+                    },
+                    RecoveryStreamingCheckpointAuthenticator { _, _ ->
+                        error("exact replay must not touch prerequisites")
+                    },
+                    RecoveryStreamingEvidenceSink { evidence = it },
+                )
+
+            val result = controller.recover(case.fixture.request)
+
+            when (case.canonical.decision) {
+                StreamDecision.REJECTED ->
+                    assertTrue(
+                        (result as RecoveryStreamingReconciliationResult.Rejected)
+                            .persistedDiagnostic != null
+                    )
+                StreamDecision.FATAL ->
+                    assertTrue(
+                        (result as RecoveryStreamingReconciliationResult.Fatal)
+                            .persistedDiagnostic != null
+                    )
+                StreamDecision.VALID -> error("This matrix covers diagnostic observations")
+            }
+            val emitted = requireNotNull(evidence)
+            assertEquals(case.canonical.outcomeId, emitted.outcomeId)
+            assertEquals(range.rangeIntentId, emitted.rangeIntentId)
+            assertEquals(true, emitted.replayed)
+            assertEquals(1, source.replayOpens)
+            assertEquals(0, source.normalOpens)
+            assertEquals(0, journal.persistCalls)
+        }
+    }
+
+    @Test
     fun `controller active range denial stops before source public stream and durable write`() {
         val fixture = controllerFixture()
         val events = mutableListOf<String>()
