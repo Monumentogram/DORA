@@ -683,6 +683,22 @@ class RecoveryQuarantineMigrationRow(
 }
 
 object RecoveryStreamingMigration {
+    fun exactRowsEqual(
+        left: List<RecoveryQuarantineMigrationRow>,
+        right: List<RecoveryQuarantineMigrationRow>,
+    ): Boolean {
+        if (left.size != right.size) return false
+        val leftRows = left.sortedWith { first, second ->
+            compareBlobs(first.intentId, second.intentId)
+        }
+        val rightRows = right.sortedWith { first, second ->
+            compareBlobs(first.intentId, second.intentId)
+        }
+        return leftRows.indices.all { index ->
+            encode(leftRows[index]).contentEquals(encode(rightRows[index]))
+        }
+    }
+
     fun digest(rows: List<RecoveryQuarantineMigrationRow>): ByteArray {
         val ordered = rows.sortedWith { left, right -> compareBlobs(left.intentId, right.intentId) }
         val digest = MessageDigest.getInstance("SHA-256")

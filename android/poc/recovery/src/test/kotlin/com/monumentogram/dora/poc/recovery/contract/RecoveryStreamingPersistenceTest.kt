@@ -98,6 +98,11 @@ class RecoveryStreamingPersistenceTest {
             RecoveryStreamingMigration.digest(listOf(low)).toHex(),
             RecoveryStreamingMigration.digest(listOf(high)).toHex(),
         )
+        assertEquals(
+            true,
+            RecoveryStreamingMigration.exactRowsEqual(listOf(low, high), listOf(low, high)),
+        )
+        assertEquals(false, RecoveryStreamingMigration.exactRowsEqual(listOf(low), listOf(high)))
     }
 
     @Test

@@ -747,7 +747,8 @@ ON recovery_stream_range_quarantine_v4
         val destinationRows = readQuarantineRows(database, QUARANTINE_TABLE)
         if (
             destinationRows.size != sourceRows.size ||
-                !RecoveryStreamingMigration.digest(destinationRows).contentEquals(sourceDigest)
+                !RecoveryStreamingMigration.digest(destinationRows).contentEquals(sourceDigest) ||
+                !RecoveryStreamingMigration.exactRowsEqual(sourceRows, destinationRows)
         ) {
             throw SQLiteException("Recovery journal v3-to-v4 copy digest mismatch")
         }
@@ -814,7 +815,7 @@ ON recovery_stream_range_quarantine_v4
                     sourceRelativeName = requiredCanonicalText("source_relative_name", 512),
                     destinationRelativeName =
                         requiredCanonicalText("destination_relative_name", 512),
-                    sourceBytes = getLong(getColumnIndexOrThrow("source_bytes")),
+                    sourceBytes = requiredLong("source_bytes"),
                     sourceSha256 = requiredBlob("source_sha256"),
                     state = requiredCanonicalText("state", 16),
                 )
@@ -829,6 +830,14 @@ ON recovery_stream_range_quarantine_v4
             "$column is not a BLOB"
         }
         return getBlob(index)
+    }
+
+    private fun Cursor.requiredLong(column: String): Long {
+        val index = getColumnIndexOrThrow(column)
+        require(!isNull(index) && getType(index) == Cursor.FIELD_TYPE_INTEGER) {
+            "$column is not an INTEGER"
+        }
+        return getLong(index)
     }
 
     private fun Cursor.requiredCanonicalText(
