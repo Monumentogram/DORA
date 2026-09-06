@@ -26,6 +26,8 @@ import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamOpenRequest
 import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamReplayRequest
 import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingReplayAccess
 import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSource
+import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSourceException
+import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSourceFailure
 import com.monumentogram.dora.poc.recovery.storage.RecoveryStreamingSourceLeaseAccess
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -1124,6 +1126,125 @@ class RecoveryStreamingReconciliationControllerTest {
         assertEquals(RecoveryStreamingSafeExceptionType.NONE, result.safeExceptionType)
         assertEquals(listOf("lease-contended", "evidence"), events)
         assertEquals(0, journal.persistCalls)
+    }
+
+    @Test
+    fun `controller maps unsafe source denial without public stream write or receipt`() {
+        val fixture = controllerFixture()
+        val events = mutableListOf<String>()
+        val journal = ControllerJournal(events).apply { checkpoints = listOf(fixture.checkpoint) }
+        val source =
+            object : RecoveryStreamingSource {
+                override fun <T> withSource(
+                    access: RecoveryStreamingSourceLeaseAccess,
+                    request: RecoveryStreamOpenRequest,
+                    block: (RecoveryOpenedStreamingSource) -> T,
+                ): T =
+                    access.withBoundTo(request.runId) {
+                        events += "source-deny"
+                        throw RecoveryStreamingSourceException(
+                            RecoveryStreamingSourceFailure.UNSAFE_PATH
+                        )
+                    }
+
+                override fun verifyReplayHashOnly(
+                    access: RecoveryStreamingReplayAccess,
+                    request: RecoveryStreamReplayRequest,
+                ): RecoveryReplayHashOnlyResult = error("replay must not run")
+            }
+        val controller =
+            RecoveryStreamingReconciliationController(
+                journal,
+                source,
+                RecoveryRunSingleWriterGuard {
+                    events += "lease-acquire"
+                    RecoveryRunWriterLease { events += "lease-release" }
+                },
+                RecoveryStreamingCheckpointAuthenticator { _, _ ->
+                    events += "authenticate"
+                    RecoveryStreamingCheckpointAuthentication.Ready(
+                        RecoveryStreamingPublicStreamOpener { _, _ ->
+                            events += "public-open"
+                            error("unsafe source must not open public Tink")
+                        }
+                    )
+                },
+                RecoveryStreamingEvidenceSink { events += "evidence" },
+            )
+
+        val result =
+            controller.recover(fixture.request) as RecoveryStreamingReconciliationResult.Fatal
+
+        assertEquals(RecoveryStreamingResultClassification.UNSAFE_PATH, result.classification)
+        assertEquals(
+            listOf(
+                "lease-acquire",
+                "checkpoint-chain",
+                "authenticate",
+                "outcome-witness",
+                "active-ranges",
+                "source-deny",
+                "evidence",
+                "lease-release",
+            ),
+            events,
+        )
+        assertEquals(0, journal.persistCalls)
+    }
+
+    @Test
+    fun `proven rollback and reconciled absence for semantic valid returns operational retry`() {
+        val fixture = controllerFixture()
+        val events = mutableListOf<String>()
+        val journal =
+            ControllerJournal(events).apply {
+                checkpoints = listOf(fixture.checkpoint)
+                persistBehavior = {
+                    RecoveryStreamingJournalResult.Original(StreamSemanticOutcome.PERSISTED_VALID)
+                }
+            }
+        val controller =
+            RecoveryStreamingReconciliationController(
+                journal,
+                FreshControllerSource(events, fixture.source),
+                RecoveryRunSingleWriterGuard {
+                    events += "lease-acquire"
+                    RecoveryRunWriterLease { events += "lease-release" }
+                },
+                RecoveryStreamingCheckpointAuthenticator { _, _ ->
+                    events += "authenticate"
+                    RecoveryStreamingCheckpointAuthentication.Ready(
+                        RecoveryStreamingPublicStreamOpener { _, _ ->
+                            events += "public-open"
+                            EventPublicRead(events, fixture.oracle)
+                        }
+                    )
+                },
+                RecoveryStreamingEvidenceSink { event ->
+                    events += "evidence"
+                    assertEquals(null, event.outcomeId)
+                    assertEquals(null, event.rangeIntentId)
+                    assertEquals(null, event.attemptedOutcomeId)
+                    assertTrue(event.existingEvidenceReferences.isEmpty())
+                },
+            )
+
+        val result =
+            controller.recover(fixture.request) as RecoveryStreamingReconciliationResult.Retry
+
+        assertEquals(RecoveryStreamingResultStage.JOURNAL, result.stage)
+        assertEquals(
+            RecoveryStreamingResultClassification.JOURNAL_OPERATIONAL,
+            result.classification,
+        )
+        assertEquals(RecoveryStreamingSafeExceptionType.SQLITE, result.safeExceptionType)
+        assertEquals(null, result.attemptedOutcomeId)
+        assertEquals(null, result.attemptedRangeId)
+        assertTrue(result.existingEvidenceReferences.isEmpty())
+        assertTrue(events.indexOf("public-close") < events.indexOf("source-close"))
+        assertTrue(events.indexOf("source-close") < events.indexOf("evidence"))
+        assertTrue(events.indexOf("evidence") < events.indexOf("lease-release"))
+        assertEquals(1, journal.persistCalls)
     }
 
     private fun render(mapping: RecoveryStreamingResultMapping): String =

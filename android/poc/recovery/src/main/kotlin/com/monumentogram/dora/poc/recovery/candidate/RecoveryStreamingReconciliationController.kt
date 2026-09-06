@@ -923,7 +923,10 @@ internal class RecoveryStreamingReconciliationController(
             is FreshExecution.Pending ->
                 completed.value.complete(closeFailure != null, evidenceSink)
             is FreshExecution.NonPersistable -> nonPersistable(completed.result)
-            null ->
+            null -> {
+                if (closeFailure is RecoveryStreamingSourceException) {
+                    return nonPersistable(mapSourceFailure(closeFailure))
+                }
                 nonPersistable(
                     RecoveryStreamingReconciliationResult.Retry.of(
                         RecoveryStreamingResultStage.SOURCE_PROOF,
@@ -931,8 +934,58 @@ internal class RecoveryStreamingReconciliationController(
                         RecoveryStreamingSafeExceptionType.IO,
                     )
                 )
+            }
         }
     }
+
+    private fun mapSourceFailure(
+        failure: RecoveryStreamingSourceException
+    ): RecoveryStreamingReconciliationResult =
+        when (failure.failure) {
+            RecoveryStreamingSourceFailure.LEASE_BINDING ->
+                RecoveryStreamingReconciliationResult.Retry.of(
+                    RecoveryStreamingResultStage.LEASE,
+                    RecoveryStreamingResultClassification.RUN_LEASE_CONTENDED,
+                    RecoveryStreamingSafeExceptionType.NONE,
+                )
+            RecoveryStreamingSourceFailure.UNSAFE_PATH ->
+                RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
+                    RecoveryStreamingResultStage.PREREQUISITE,
+                    RecoveryStreamingResultClassification.UNSAFE_PATH,
+                )
+            RecoveryStreamingSourceFailure.SOURCE_CHANGED ->
+                RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
+                    RecoveryStreamingResultStage.SOURCE_PROOF,
+                    RecoveryStreamingResultClassification.STREAM_SOURCE_IDENTITY_CHANGED,
+                )
+            RecoveryStreamingSourceFailure.ACTIVE_RANGE ->
+                RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
+                    RecoveryStreamingResultStage.RANGE_ADMISSION,
+                    RecoveryStreamingResultClassification.STREAM_ACTIVE_RANGE_DENIED,
+                )
+            RecoveryStreamingSourceFailure.INVALID_REQUEST,
+            RecoveryStreamingSourceFailure.SOURCE_STRUCTURAL ->
+                RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
+                    RecoveryStreamingResultStage.PREREQUISITE,
+                    RecoveryStreamingResultClassification.STREAM_CHECKPOINT_STRUCTURAL,
+                )
+            RecoveryStreamingSourceFailure.JOURNAL -> {
+                val classification = requireNotNull(failure.journalClassification)
+                val mapped: RecoveryStreamingJournalReadResult<Nothing> =
+                    if (
+                        classification ==
+                            RecoveryStreamingJournalClassification.JOURNAL_OPERATIONAL ||
+                            classification ==
+                                RecoveryStreamingJournalClassification
+                                    .JOURNAL_COMMIT_STATE_UNRESOLVED
+                    ) {
+                        RecoveryStreamingJournalReadResult.Retry(classification)
+                    } else {
+                        RecoveryStreamingJournalReadResult.Fatal(classification, emptyList())
+                    }
+                RecoveryStreamingJournalMapper.readFailure(mapped)
+            }
+        }
 
     private fun executeFresh(
         checkpoint: RecoveryStreamingCheckpointRow,
@@ -1033,7 +1086,17 @@ internal class RecoveryStreamingReconciliationController(
             }
             is RecoveryStreamingPersistenceResolution.ProvenRollback -> {
                 runCatching { publicStream?.close() }
-                FreshExecution.NonPersistable(journalStructural())
+                FreshExecution.NonPersistable(
+                    if (resolution.semanticOutcome == StreamSemanticOutcome.PERSISTED_VALID) {
+                        RecoveryStreamingReconciliationResult.Retry.of(
+                            RecoveryStreamingResultStage.JOURNAL,
+                            RecoveryStreamingResultClassification.JOURNAL_OPERATIONAL,
+                            RecoveryStreamingSafeExceptionType.SQLITE,
+                        )
+                    } else {
+                        journalStructural()
+                    }
+                )
             }
         }
     }
