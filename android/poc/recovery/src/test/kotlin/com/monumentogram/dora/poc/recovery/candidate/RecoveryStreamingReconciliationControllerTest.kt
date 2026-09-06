@@ -10,6 +10,7 @@ import com.monumentogram.dora.poc.recovery.contract.StreamDiagnosticClassificati
 import com.monumentogram.dora.poc.recovery.contract.StreamTerminal
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -384,6 +385,124 @@ class RecoveryStreamingReconciliationControllerTest {
         }
     }
 
+    @Test
+    fun `public read loop keeps exact requests and counts only completed positive returns`() {
+        val oracleBytes = ByteArray(8_136) { ((it * 17 + 3) and 0xff).toByte() }
+        val stream =
+            ScriptedPublicRead(
+                ReadStep.Bytes(oracleBytes.copyOfRange(0, 4_056)),
+                ReadStep.Bytes(oracleBytes.copyOfRange(4_056, 8_136)),
+                ReadStep.Eof,
+            )
+
+        val result =
+            RecoveryStreamingIntentBuilder.RecoveryStreamingReadLoop.read(
+                stream,
+                RecoveryStreamingIntentBuilder.RecoveryStreamingOracle.from(
+                    readWitness(oracleBytes),
+                    oracleBytes,
+                ),
+            )
+
+        assertEquals(listOf(4_056, 4_080, 4_080), stream.requests)
+        val completed =
+            result as RecoveryStreamingIntentBuilder.RecoveryStreamingReadExecution.Completed
+        assertEquals(8_136UL, completed.facts.candidateEnd)
+        assertEquals(StreamTerminal.AUTHENTICATED_EOF, completed.facts.terminal)
+        assertEquals(Sha256Value.calculate(oracleBytes), completed.facts.completedPlaintextSha256)
+    }
+
+    @Test
+    fun `zero progress and accepted end crossing stop without a later read`() {
+        val zero = ScriptedPublicRead(ReadStep.Zero, ReadStep.Eof)
+        val zeroResult =
+            RecoveryStreamingIntentBuilder.RecoveryStreamingReadLoop.read(
+                zero,
+                RecoveryStreamingIntentBuilder.RecoveryStreamingOracle.from(
+                    readWitness(ByteArray(10)),
+                    ByteArray(10),
+                ),
+            )
+        val zeroFailure =
+            zeroResult as RecoveryStreamingIntentBuilder.RecoveryStreamingReadExecution.Failed
+        assertEquals(
+            RecoveryStreamingResultClassification.STREAM_ZERO_PROGRESS,
+            (zeroFailure.result as RecoveryStreamingReconciliationResult.Retry).classification,
+        )
+        assertEquals(listOf(4_056), zero.requests)
+
+        val crossingBytes = ByteArray(101) { 7 }
+        val crossing = ScriptedPublicRead(ReadStep.Bytes(crossingBytes), ReadStep.Eof)
+        val crossingResult =
+            RecoveryStreamingIntentBuilder.RecoveryStreamingReadLoop.read(
+                crossing,
+                RecoveryStreamingIntentBuilder.RecoveryStreamingOracle.from(
+                    readWitness(ByteArray(100)),
+                    ByteArray(100),
+                ),
+            )
+        val crossingFailure =
+            crossingResult as RecoveryStreamingIntentBuilder.RecoveryStreamingReadExecution.Failed
+        assertEquals(
+            RecoveryStreamingResultClassification.STREAM_READ_CROSSES_ACCEPTED_END,
+            (crossingFailure.result as RecoveryStreamingReconciliationResult.Fatal).classification,
+        )
+        assertEquals(listOf(4_056), crossing.requests)
+    }
+
+    @Test
+    fun `throwing public read discards its buffer and maps only safe operational type`() {
+        val oracleBytes = ByteArray(8_136) { 1 }
+        val stream =
+            ScriptedPublicRead(
+                ReadStep.Bytes(oracleBytes.copyOfRange(0, 4_056)),
+                ReadStep.ThrowAfterWrite(
+                    ByteArray(4_080) { 99 },
+                    RecoveryStreamingSafeExceptionType.CRYPTO,
+                ),
+                ReadStep.Eof,
+            )
+        val result =
+            RecoveryStreamingIntentBuilder.RecoveryStreamingReadLoop.read(
+                stream,
+                RecoveryStreamingIntentBuilder.RecoveryStreamingOracle.from(
+                    readWitness(oracleBytes),
+                    oracleBytes,
+                ),
+            )
+        val retry =
+            (result as RecoveryStreamingIntentBuilder.RecoveryStreamingReadExecution.Failed).result
+                as RecoveryStreamingReconciliationResult.Retry
+        assertEquals(
+            RecoveryStreamingResultClassification.STREAM_PUBLIC_READ_OPERATIONAL,
+            retry.classification,
+        )
+        assertEquals(RecoveryStreamingSafeExceptionType.CRYPTO, retry.safeExceptionType)
+        assertEquals(listOf(4_056, 4_080), stream.requests)
+    }
+
+    @Test
+    fun `mismatch retains the whole completed return and deterministic first mismatch`() {
+        val oracleBytes = ByteArray(4_056) { it.toByte() }
+        val returned = oracleBytes.copyOf().also { it[17] = (it[17] + 1).toByte() }
+        val result =
+            RecoveryStreamingIntentBuilder.RecoveryStreamingReadLoop.read(
+                ScriptedPublicRead(ReadStep.Bytes(returned), ReadStep.Eof),
+                RecoveryStreamingIntentBuilder.RecoveryStreamingOracle.from(
+                    readWitness(oracleBytes),
+                    oracleBytes,
+                ),
+            )
+        val completed =
+            (result as RecoveryStreamingIntentBuilder.RecoveryStreamingReadExecution.Completed)
+                .facts
+        assertEquals(4_056UL, completed.candidateEnd)
+        assertFalse(completed.oraclePrefixEqual)
+        assertEquals(17UL, completed.firstMismatchOffset)
+        assertEquals(Sha256Value.calculate(returned), completed.completedPlaintextSha256)
+        assertNotEquals(completed.completedPlaintextSha256, completed.oraclePrefixSha256)
+    }
+
     private fun render(mapping: RecoveryStreamingResultMapping): String =
         listOf(
                 mapping.disposition.name,
@@ -468,5 +587,67 @@ class RecoveryStreamingReconciliationControllerTest {
             preFaultPrefixMatches = preFaultPrefixMatches,
             completed = completed,
         )
+    }
+
+    private fun readWitness(oracleBytes: ByteArray): RecoveryStreamingWitnessInput {
+        val runId = RunId.fromBytes(ByteArray(16) { it.toByte() })
+        val oracleSha = Sha256Value.calculate(oracleBytes)
+        val base =
+            RecoveryStreamingWitnessInput(
+                runId = runId,
+                checkpointGeneration = 1UL,
+                checkpointIdentity = sha(31),
+                checkpointPrefixBytes = 0UL,
+                checkpointContextEnd = 0UL,
+                oracleIdentitySha256 =
+                    RecoveryStreamingIdentity.oracle(oracleBytes.size.toULong(), oracleSha, runId),
+                acceptedEnd = oracleBytes.size.toULong(),
+                oraclePlaintextSha256 = oracleSha,
+                preFaultSourceBytes = 0UL,
+                preFaultSourceSha256 = Sha256Value.calculate(byteArrayOf()),
+                controllerSnapshotSha256 = null,
+            )
+        return base.copy(
+            controllerSnapshotSha256 = RecoveryStreamingIdentity.controllerSnapshot(base)
+        )
+    }
+
+    private sealed interface ReadStep {
+        data class Bytes(val value: ByteArray) : ReadStep
+
+        data class ThrowAfterWrite(
+            val value: ByteArray,
+            val type: RecoveryStreamingSafeExceptionType,
+        ) : ReadStep
+
+        data object Zero : ReadStep
+
+        data object Eof : ReadStep
+    }
+
+    private class ScriptedPublicRead(vararg steps: ReadStep) :
+        RecoveryStreamingIntentBuilder.RecoveryStreamingPublicRead {
+        private val pending = ArrayDeque(steps.toList())
+        val requests = mutableListOf<Int>()
+
+        override fun read(destination: ByteArray, offset: Int, count: Int): Int {
+            requests += count
+            return when (val step = pending.removeFirst()) {
+                is ReadStep.Bytes -> {
+                    step.value.copyInto(destination, offset)
+                    step.value.size
+                }
+                is ReadStep.ThrowAfterWrite -> {
+                    step.value.copyInto(destination, offset)
+                    throw RecoveryStreamingIntentBuilder.RecoveryStreamingPublicReadException(
+                        step.type
+                    )
+                }
+                ReadStep.Zero -> 0
+                ReadStep.Eof -> -1
+            }
+        }
+
+        override fun close() = Unit
     }
 }

@@ -20,6 +20,7 @@ import com.monumentogram.dora.poc.recovery.contract.StreamDiagnosticStage
 import com.monumentogram.dora.poc.recovery.contract.StreamRangeCertainty
 import com.monumentogram.dora.poc.recovery.contract.StreamSourceMatch
 import com.monumentogram.dora.poc.recovery.contract.StreamTerminal
+import java.security.MessageDigest
 
 internal data class RecoveryStreamingCompletedReadFacts(
     val candidateEnd: ULong,
@@ -150,6 +151,194 @@ internal object RecoveryStreamingIntentBuilder {
                 )
             else -> postIntersection(facts)
         }
+    }
+
+    internal interface RecoveryStreamingPublicRead : AutoCloseable {
+        /** Returns a positive completed count, zero progress, or -1 for authenticated EOF. */
+        fun read(destination: ByteArray, offset: Int, count: Int): Int
+    }
+
+    internal class RecoveryStreamingPublicReadException(
+        val safeExceptionType: RecoveryStreamingSafeExceptionType
+    ) : RuntimeException() {
+        init {
+            require(
+                safeExceptionType == RecoveryStreamingSafeExceptionType.IO ||
+                    safeExceptionType == RecoveryStreamingSafeExceptionType.CRYPTO
+            ) {
+                "Public read operational failure must be IO or CRYPTO"
+            }
+        }
+    }
+
+    internal class RecoveryStreamingAuthenticationFailureException : RuntimeException()
+
+    internal class RecoveryStreamingOracle private constructor(private val bytes: ByteArray) {
+        val acceptedEnd: ULong = bytes.size.toULong()
+
+        fun firstMismatch(
+            start: ULong,
+            returned: ByteArray,
+            count: Int,
+        ): Int? {
+            val startIndex = start.toInt()
+            require(startIndex >= 0 && count in 0..returned.size)
+            require(startIndex + count <= bytes.size)
+            repeat(count) { offset ->
+                if (returned[offset] != bytes[startIndex + offset]) return offset
+            }
+            return null
+        }
+
+        fun prefixSha256(end: ULong): Sha256Value {
+            val endIndex = end.toInt()
+            require(endIndex >= 0 && endIndex <= bytes.size)
+            return Sha256Value.calculate(bytes.copyOfRange(0, endIndex))
+        }
+
+        fun byteAt(offset: ULong): UByte {
+            val index = offset.toInt()
+            require(index >= 0 && index < bytes.size)
+            return bytes[index].toUByte()
+        }
+
+        companion object {
+            fun from(
+                witness: RecoveryStreamingWitnessInput,
+                oracleBytes: ByteArray,
+            ): RecoveryStreamingOracle {
+                require(witness.acceptedEnd == oracleBytes.size.toULong()) {
+                    "Oracle bytes do not match accepted end"
+                }
+                require(witness.oraclePlaintextSha256 == Sha256Value.calculate(oracleBytes)) {
+                    "Oracle bytes do not match oracle digest"
+                }
+                require(
+                    witness.oracleIdentitySha256 ==
+                        RecoveryStreamingIdentity.oracle(
+                            witness.acceptedEnd,
+                            witness.oraclePlaintextSha256,
+                            witness.runId,
+                        )
+                ) {
+                    "Oracle bytes do not match oracle identity"
+                }
+                return RecoveryStreamingOracle(oracleBytes.copyOf())
+            }
+        }
+    }
+
+    internal sealed interface RecoveryStreamingReadExecution {
+        data class Completed(val facts: RecoveryStreamingCompletedReadFacts) :
+            RecoveryStreamingReadExecution
+
+        data class Failed(val result: RecoveryStreamingReconciliationResult) :
+            RecoveryStreamingReadExecution
+    }
+
+    internal object RecoveryStreamingReadLoop {
+        @Suppress("LoopWithTooManyJumpStatements")
+        fun read(
+            publicRead: RecoveryStreamingPublicRead,
+            oracle: RecoveryStreamingOracle,
+        ): RecoveryStreamingReadExecution {
+            val completedDigest = MessageDigest.getInstance("SHA-256")
+            var candidateEnd = 0UL
+            var firstRequest = true
+            while (true) {
+                val requested = if (firstRequest) FIRST_REQUEST_BYTES else LATER_REQUEST_BYTES
+                firstRequest = false
+                val buffer = ByteArray(requested)
+                val count =
+                    try {
+                        publicRead.read(buffer, 0, requested)
+                    } catch (_: RecoveryStreamingAuthenticationFailureException) {
+                        return completed(
+                            candidateEnd,
+                            completedDigest,
+                            oracle,
+                            StreamTerminal.AUTHENTICATION_FAILURE,
+                        )
+                    } catch (failure: RecoveryStreamingPublicReadException) {
+                        return RecoveryStreamingReadExecution.Failed(
+                            RecoveryStreamingReconciliationResult.Retry.of(
+                                RecoveryStreamingResultStage.STREAM_READ,
+                                RecoveryStreamingResultClassification
+                                    .STREAM_PUBLIC_READ_OPERATIONAL,
+                                failure.safeExceptionType,
+                            )
+                        )
+                    }
+                require(count in -1..requested) { "Public read returned an invalid count" }
+                if (count == -1) {
+                    return completed(
+                        candidateEnd,
+                        completedDigest,
+                        oracle,
+                        StreamTerminal.AUTHENTICATED_EOF,
+                    )
+                }
+                if (count == 0) {
+                    return RecoveryStreamingReadExecution.Failed(
+                        RecoveryStreamingReconciliationResult.Retry.of(
+                            RecoveryStreamingResultStage.STREAM_READ,
+                            RecoveryStreamingResultClassification.STREAM_ZERO_PROGRESS,
+                            RecoveryStreamingSafeExceptionType.NONE,
+                        )
+                    )
+                }
+                val nextEnd = candidateEnd + count.toULong()
+                if (nextEnd < candidateEnd || nextEnd > oracle.acceptedEnd) {
+                    return RecoveryStreamingReadExecution.Failed(
+                        RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
+                            RecoveryStreamingResultStage.STREAM_READ,
+                            RecoveryStreamingResultClassification.STREAM_READ_CROSSES_ACCEPTED_END,
+                        )
+                    )
+                }
+                completedDigest.update(buffer, 0, count)
+                val mismatch = oracle.firstMismatch(candidateEnd, buffer, count)
+                if (mismatch != null) {
+                    val mismatchOffset = candidateEnd + mismatch.toULong()
+                    return RecoveryStreamingReadExecution.Completed(
+                        RecoveryStreamingCompletedReadFacts(
+                            candidateEnd = nextEnd,
+                            completedPlaintextSha256 =
+                                Sha256Value.fromBytes(completedDigest.digest()),
+                            oraclePrefixSha256 = oracle.prefixSha256(nextEnd),
+                            oraclePrefixEqual = false,
+                            terminal = StreamTerminal.COMPLETED_READ_REJECTED,
+                            firstMismatchOffset = mismatchOffset,
+                            equalPrefixSha256 = oracle.prefixSha256(mismatchOffset),
+                            expectedOracleByte = oracle.byteAt(mismatchOffset),
+                            observedPlaintextByte = buffer[mismatch].toUByte(),
+                        )
+                    )
+                }
+                candidateEnd = nextEnd
+            }
+        }
+
+        private fun completed(
+            candidateEnd: ULong,
+            digest: MessageDigest,
+            oracle: RecoveryStreamingOracle,
+            terminal: StreamTerminal,
+        ): RecoveryStreamingReadExecution.Completed {
+            val completedSha256 = Sha256Value.fromBytes(digest.digest())
+            return RecoveryStreamingReadExecution.Completed(
+                RecoveryStreamingCompletedReadFacts(
+                    candidateEnd = candidateEnd,
+                    completedPlaintextSha256 = completedSha256,
+                    oraclePrefixSha256 = oracle.prefixSha256(candidateEnd),
+                    oraclePrefixEqual = true,
+                    terminal = terminal,
+                )
+            )
+        }
+
+        private const val FIRST_REQUEST_BYTES = 4_056
+        private const val LATER_REQUEST_BYTES = 4_080
     }
 
     private fun preIntersection(
