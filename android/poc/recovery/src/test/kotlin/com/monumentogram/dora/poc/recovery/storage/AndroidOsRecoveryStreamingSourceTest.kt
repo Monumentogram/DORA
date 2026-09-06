@@ -666,6 +666,9 @@ class AndroidOsRecoveryStreamingSourceTest {
                 }
             assertTrue(enteredJournal.await(5, TimeUnit.SECONDS))
             assertFalse(scope.isDone)
+            assertThrows(java.util.concurrent.TimeoutException::class.java) {
+                scope.get(100, TimeUnit.MILLISECONDS)
+            }
             val competing =
                 competingExecutor
                     .submit(
@@ -681,6 +684,7 @@ class AndroidOsRecoveryStreamingSourceTest {
             assertThrows(RecoveryStreamingSourceException::class.java) {
                 source.withSource(escaped, request(start = 0UL, end = 1UL, preFault = 1UL)) {}
             }
+            requireNotNull(ProcessRecoveryRunSingleWriterGuard.tryAcquire(RUN)).close()
         } finally {
             releaseJournal.countDown()
             executor.shutdownNow()
@@ -718,6 +722,9 @@ class AndroidOsRecoveryStreamingSourceTest {
                     null
                 }
             assertTrue(closeEntered.await(5, TimeUnit.SECONDS))
+            assertThrows(java.util.concurrent.TimeoutException::class.java) {
+                scope.get(100, TimeUnit.MILLISECONDS)
+            }
             assertNull(
                 competingExecutor
                     .submit(
