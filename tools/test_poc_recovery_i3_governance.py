@@ -1597,6 +1597,83 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
         self.assertEqual(governance.REC_I3_OBSERVABLE_CONTROLLER_BRANCH, lifecycle.branch)
         self.assertTrue(governance.validate_current_rec_i3_successor(lifecycle))
 
+    def test_exact_squash_merged_main_topology_passes_validator_entrypoint(self) -> None:
+        integrated_main = "be37378ca88e0bd4aee1f2fe0c54362798bdef9d"
+        reviewed_source = "89551b17a84bc090ccf1cd36d48aeb59afc403fa"
+        reviewed_tree = "4519cbf6fda95f8e39a36e3b2c0bf62fef4981db"
+        integrated_parent = "da1d9bd13b71d609fe7ec4ea62fe1e984f726040"
+        self.assertEqual(
+            reviewed_tree,
+            governance.git_output("rev-parse", f"{reviewed_source}^{{tree}}"),
+        )
+        self.assertEqual(
+            reviewed_tree,
+            governance.git_output("rev-parse", f"{integrated_main}^{{tree}}"),
+        )
+        self.assertEqual(
+            integrated_parent,
+            governance.git_output("show", "-s", "--format=%P", integrated_main),
+        )
+        self.assertFalse(governance.git_is_ancestor(reviewed_source, integrated_main))
+        self.assertFalse(governance.git_is_ancestor(governance.REC_I3_SCOPE_COMMIT, integrated_main))
+
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-squash-main-") as temporary:
+            parent = Path(temporary)
+            repo = parent / "repo"
+            governance.test_git(
+                parent,
+                "clone",
+                "--shared",
+                "--no-checkout",
+                str(governance.ROOT),
+                str(repo),
+            )
+            governance.test_git(repo, "checkout", "-q", "-B", "main", integrated_main)
+            child_environment = os.environ.copy()
+            for key in tuple(child_environment):
+                if key.startswith("GITHUB_") or key == "RUNNER_TEMP":
+                    child_environment.pop(key)
+            child_environment.update(
+                {
+                    "GITHUB_EVENT_NAME": "push",
+                    "GITHUB_REPOSITORY": governance.GITHUB_REPOSITORY,
+                    "GITHUB_WORKSPACE": str(repo.resolve()),
+                    "GITHUB_REF": "refs/heads/main",
+                    "GITHUB_SHA": integrated_main,
+                }
+            )
+            validator_source = str(Path(governance.__file__).resolve())
+            child_code = (
+                "import importlib.util, os, pathlib, sys; "
+                "source = pathlib.Path(sys.argv[1]); root = pathlib.Path(sys.argv[2]); "
+                "spec = importlib.util.spec_from_file_location('squash_main_governance', source); "
+                "module = importlib.util.module_from_spec(spec); "
+                "sys.modules[spec.name] = module; spec.loader.exec_module(module); "
+                "module.ROOT = root; os.chdir(root); "
+                "sys.argv = ['validate_poc_recovery_governance.py']; "
+                "raise SystemExit(module.main())"
+            )
+            completed = self.run_bounded_validator_child(
+                cwd=repo,
+                environment=child_environment,
+                command=[sys.executable, "-c", child_code, validator_source, str(repo)],
+            )
+            self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
+            self.assertIn("squash-merged main", completed.stdout)
+
+            wrong_ref_environment = child_environment.copy()
+            wrong_ref_environment["GITHUB_REF"] = "refs/heads/not-main"
+            rejected = self.run_bounded_validator_child(
+                cwd=repo,
+                environment=wrong_ref_environment,
+                command=[sys.executable, "-c", child_code, validator_source, str(repo)],
+            )
+            self.assertNotEqual(0, rejected.returncode)
+            self.assertIn(
+                "REC-I3 squash-main GitHub push identity drift",
+                rejected.stdout + rejected.stderr,
+            )
+
     def test_exact_v08_profile_dispatch_is_preserved(self) -> None:
         lifecycle = self.local_result_boundary_lifecycle()
         with patch.object(governance, "validate_rec_i3_result_boundary") as validate:

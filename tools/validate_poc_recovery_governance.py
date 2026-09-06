@@ -453,6 +453,16 @@ REC_I3_RESULT_BOUNDARY_PATHS = (
 REC_I3_OBSERVABLE_CONTROLLER_BRANCH = "codex/rec-i3-streaming-observable-controller-v08"
 REC_I3_OBSERVABLE_CONTROLLER_BASE = "406cba597c2db88712a7f3d96250e3583b43d28e"
 REC_I3_OBSERVABLE_CONTROLLER_BASE_TREE = "aabc8a047ff6648eb4f98c618d3c20bcfc632526"
+REC_I3_SQUASH_MAIN_ANCHOR = "be37378ca88e0bd4aee1f2fe0c54362798bdef9d"
+REC_I3_SQUASH_MAIN_TREE = "4519cbf6fda95f8e39a36e3b2c0bf62fef4981db"
+REC_I3_SQUASH_MAIN_PARENT = "da1d9bd13b71d609fe7ec4ea62fe1e984f726040"
+REC_I3_SQUASH_MAIN_REVIEWED_HEAD = "89551b17a84bc090ccf1cd36d48aeb59afc403fa"
+REC_I3_SQUASH_MAIN_REVIEWED_PARENT = "2de6d8238d99e71ae573ffa29481a59e052c0efd"
+REC_I3_SQUASH_MAIN_CORRECTION_BRANCH = "codex/rec-i3-squash-main-governance-v01"
+REC_I3_SQUASH_MAIN_CORRECTION_PATHS = (
+    "tools/test_poc_recovery_i3_governance.py",
+    "tools/validate_poc_recovery_governance.py",
+)
 REC_I3_STAGE00_VALIDATOR_PATH = "tools/validate_stage00.py"
 REC_I3_OBSERVABLE_CONTROLLER_EVIDENCE_PATH = (
     "docs/evidence/poc-recovery-001/"
@@ -5870,6 +5880,147 @@ def rec_i3_observable_controller_candidate(lifecycle: RecoveryLifecycleIdentity)
     return lifecycle.branch == REC_I3_OBSERVABLE_CONTROLLER_BRANCH
 
 
+def rec_i3_squash_main_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
+    return (
+        git_optional_output(
+            "rev-parse", "--verify", f"{REC_I3_SQUASH_MAIN_ANCHOR}^{{commit}}"
+        )
+        == REC_I3_SQUASH_MAIN_ANCHOR
+        and git_is_ancestor(REC_I3_SQUASH_MAIN_ANCHOR, lifecycle.head)
+    )
+
+
+def validate_rec_i3_squash_main(lifecycle: RecoveryLifecycleIdentity) -> None:
+    validate_pinned_commit_identity(
+        collect_pinned_commit_identity(REC_I3_SQUASH_MAIN_ANCHOR, lifecycle.head),
+        expected_commit=REC_I3_SQUASH_MAIN_ANCHOR,
+        expected_tree=REC_I3_SQUASH_MAIN_TREE,
+        expected_parents=(REC_I3_SQUASH_MAIN_PARENT,),
+        label="REC-I3 squash-main anchor",
+    )
+    validate_pinned_commit_identity(
+        collect_pinned_commit_identity(
+            REC_I3_SQUASH_MAIN_REVIEWED_HEAD,
+            REC_I3_SQUASH_MAIN_REVIEWED_HEAD,
+        ),
+        expected_commit=REC_I3_SQUASH_MAIN_REVIEWED_HEAD,
+        expected_tree=REC_I3_SQUASH_MAIN_TREE,
+        expected_parents=(REC_I3_SQUASH_MAIN_REVIEWED_PARENT,),
+        label="REC-I3 squash-main reviewed source",
+    )
+    require(
+        git_is_ancestor(REC_I3_SCOPE_COMMIT, REC_I3_SQUASH_MAIN_REVIEWED_HEAD),
+        "REC-I3 squash-main reviewed source omits the scope-first lineage",
+    )
+
+    pull_request = lifecycle.github_pull_request_context
+    event_name = os.environ.get("GITHUB_EVENT_NAME", "")
+    if pull_request is not None:
+        validate_rec_i2b_ksp_overlay_pull_request_core(pull_request)
+        require(
+            pull_request.head_ref == REC_I3_SQUASH_MAIN_CORRECTION_BRANCH
+            and pull_request.base_sha == REC_I3_SQUASH_MAIN_ANCHOR
+            and pull_request.merge_sha == lifecycle.head
+            and pull_request.head_sha != REC_I3_SQUASH_MAIN_ANCHOR
+            and lifecycle.branch == pull_request.head_ref
+            and git_output(
+                "merge-base", REC_I3_SQUASH_MAIN_ANCHOR, pull_request.head_sha
+            )
+            == REC_I3_SQUASH_MAIN_ANCHOR,
+            "REC-I3 squash-main correction pull_request identity drift",
+        )
+    else:
+        require(
+            event_name != "pull_request",
+            "REC-I3 squash-main pull_request event lacks verified context",
+        )
+        require(
+            lifecycle.branch in {
+                GITHUB_BASE_BRANCH,
+                REC_I3_SQUASH_MAIN_CORRECTION_BRANCH,
+            },
+            "REC-I3 squash-main requires protected main or its exact correction branch",
+        )
+        if event_name:
+            require(
+                lifecycle.branch == GITHUB_BASE_BRANCH
+                and event_name in {"push", "workflow_dispatch"}
+                and os.environ.get("GITHUB_REPOSITORY") == GITHUB_REPOSITORY
+                and Path(os.environ.get("GITHUB_WORKSPACE", "")).resolve()
+                == ROOT.resolve()
+                and os.environ.get("GITHUB_REF") == f"refs/heads/{GITHUB_BASE_BRANCH}"
+                and os.environ.get("GITHUB_SHA") == lifecycle.head,
+                "REC-I3 squash-main GitHub push identity drift",
+            )
+
+    anchor_paths = set(
+        git_path_records(
+            "diff",
+            "--name-only",
+            "--no-renames",
+            "-z",
+            REC_I3_SQUASH_MAIN_PARENT,
+            REC_I3_SQUASH_MAIN_ANCHOR,
+            "--",
+        )
+    )
+    correction_paths = set(REC_I3_SQUASH_MAIN_CORRECTION_PATHS)
+    require(
+        correction_paths < anchor_paths,
+        "REC-I3 squash-main correction paths are not contained by the reviewed payload",
+    )
+    predecessor_protected_paths = {
+        relative
+        for relative in git_path_records(
+            "ls-tree",
+            "-r",
+            "--name-only",
+            "-z",
+            REC_I3_SQUASH_MAIN_ANCHOR,
+            "--",
+        )
+        if path_is_rec_i2b_merged_main_protected(relative)
+    }
+    protected_paths = (anchor_paths | predecessor_protected_paths) - correction_paths
+    require(protected_paths, "REC-I3 squash-main protected path inventory is empty")
+    changes = collect_post_merge_changes(merged_anchor=REC_I3_SQUASH_MAIN_ANCHOR)
+    require(
+        set(changes) == {"committed", "staged", "unstaged", "untracked"},
+        "REC-I3 squash-main change inventory is incomplete",
+    )
+    protected_changes = {
+        layer: sorted(set(paths) & protected_paths)
+        for layer, paths in changes.items()
+        if set(paths) & protected_paths
+    }
+    require(
+        not protected_changes,
+        f"REC-I3 squash-main reviewed payload differs from its integrated anchor: {protected_changes}",
+    )
+    if (
+        lifecycle.head != REC_I3_SQUASH_MAIN_ANCHOR
+        or lifecycle.branch == REC_I3_SQUASH_MAIN_CORRECTION_BRANCH
+        or pull_request is not None
+    ):
+        changed_paths = {path for paths in changes.values() for path in paths}
+        require(
+            changed_paths == correction_paths,
+            f"REC-I3 squash-main correction is not the exact two-path delta: {sorted(changed_paths)}",
+        )
+        for relative in REC_I3_SQUASH_MAIN_CORRECTION_PATHS:
+            validate_rec_i3_regular_file(relative)
+    for relative in protected_paths:
+        require(
+            git_optional_output("rev-parse", f"HEAD:{relative}")
+            == git_output("rev-parse", f"{REC_I3_SQUASH_MAIN_ANCHOR}:{relative}"),
+            f"REC-I3 squash-main protected blob differs from its integrated anchor: {relative}",
+        )
+    print(
+        "PASS REC-I3 source-equal squash-merged main governance; "
+        "0D.5.3 component acceptance complete; full REC-I3 blocked"
+    )
+
+
 def validate_rec_i3_observable_controller_delta(
     changes: dict[str, list[str]],
     committed_tree_paths: list[str],
@@ -7271,6 +7422,9 @@ def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | Non
             else current.head
         )
         validate_rec_i3_streaming_integration_history(candidate_head)
+    elif rec_i3_squash_main_candidate(current):
+        validate_rec_i3_squash_main(current)
+        return True
     else:
         validate_rec_i3_context(current, collect_pinned_commit_identity(REC_I3_BASE, current.head),
                                 collect_pinned_commit_identity(REC_I3_SCOPE_COMMIT, current.head))
@@ -10244,10 +10398,71 @@ def validate_rec_i3_result_boundary_fast_path() -> bool:
     return True
 
 
+def validate_rec_i3_squash_main_fast_path() -> bool:
+    global ROOT
+    lifecycle = collect_recovery_lifecycle_identity()
+    if not rec_i3_squash_main_candidate(lifecycle):
+        return False
+    validate_rec_i3_squash_main(lifecycle)
+    if "--self-test" in sys.argv[1:]:
+        import unittest
+        import test_poc_recovery_i3_governance
+
+        integrated_root = ROOT
+        with tempfile.TemporaryDirectory(
+            prefix="dora-rec-i3-squash-main-self-test-"
+        ) as temporary:
+            parent = Path(temporary)
+            source_repo = parent / "reviewed-source"
+            test_git(
+                parent,
+                "clone",
+                "--shared",
+                "--no-checkout",
+                str(integrated_root),
+                str(source_repo),
+            )
+            test_git(
+                source_repo,
+                "checkout",
+                "-q",
+                "-B",
+                REC_I3_OBSERVABLE_CONTROLLER_BRANCH,
+                REC_I3_SQUASH_MAIN_REVIEWED_HEAD,
+            )
+            test_git(
+                source_repo,
+                "update-ref",
+                "refs/remotes/origin/main",
+                REC_I3_SQUASH_MAIN_PARENT,
+            )
+            test_governance = test_poc_recovery_i3_governance.governance
+            test_root = test_governance.ROOT
+            try:
+                ROOT = source_repo
+                test_governance.ROOT = source_repo
+                suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+                    test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests
+                )
+                successful = unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful()
+            finally:
+                test_governance.ROOT = test_root
+                ROOT = integrated_root
+        require(successful, "REC-I3 squash-main regression self-tests failed")
+    print(
+        "POC-RECOVERY-001 source-equal squash-merged main validation passed; "
+        "exact anchor/source tree, protected payload and correction scope valid; "
+        "0D.5.3 component acceptance complete; full REC-I3 blocked"
+    )
+    return True
+
+
 def main() -> int:
     if validate_rec_i3_observable_controller_fast_path():
         return 0
     if validate_rec_i3_result_boundary_fast_path():
+        return 0
+    if validate_rec_i3_squash_main_fast_path():
         return 0
     gate = read_json(GATE_PATH)
     protocol = read_json(PROTOCOL_PATH)
