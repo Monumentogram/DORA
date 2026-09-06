@@ -629,6 +629,7 @@ class AndroidOsRecoveryStreamingSourceTest {
     fun `escaped token operation holds the process lease through scope invalidation`() {
         val enteredJournal = CountDownLatch(1)
         val releaseJournal = CountDownLatch(1)
+        val invalidationBlocked = CountDownLatch(1)
         val journal =
             FakeJournal().apply {
                 beforeCheckpoint = {
@@ -649,9 +650,10 @@ class AndroidOsRecoveryStreamingSourceTest {
             lateinit var operation: java.util.concurrent.Future<*>
             val scope =
                 executor.submit<java.lang.Void> {
-                    RecoveryStreamingSourceControllerAccess.withNormalAccess(
+                    RecoveryStreamingSourceControllerAccess.withNormalAccessForTest(
                         RUN,
                         ProcessRecoveryRunSingleWriterGuard,
+                        { invalidationBlocked.countDown() },
                     ) { access ->
                         escaped = access
                         operation = executor.submit {
@@ -665,10 +667,8 @@ class AndroidOsRecoveryStreamingSourceTest {
                     null
                 }
             assertTrue(enteredJournal.await(5, TimeUnit.SECONDS))
+            assertTrue(invalidationBlocked.await(5, TimeUnit.SECONDS))
             assertFalse(scope.isDone)
-            assertThrows(java.util.concurrent.TimeoutException::class.java) {
-                scope.get(100, TimeUnit.MILLISECONDS)
-            }
             val competing =
                 competingExecutor
                     .submit(

@@ -26,6 +26,8 @@ import java.io.File
 import java.io.FileDescriptor
 import java.io.InputStream
 import java.security.MessageDigest
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 internal const val STREAM_SOURCE_RELATIVE_NAME = "stream/stream.ct"
 internal val STREAM_OPEN_FLAGS =
@@ -96,20 +98,26 @@ internal class RecoveryStreamingSourceException(
 ) : IllegalStateException("Recovery streaming source denied: $failure")
 
 private class RecoveryStreamingLeaseBinding(val runId: RunId) {
-    private val operationLock = Any()
+    private val operationLock = ReentrantLock()
     private var active = true
 
-    fun <T> withActiveOperation(requestRunId: RunId, block: () -> T): T =
-        synchronized(operationLock) {
-            if (!active || runId != requestRunId) {
-                deny(RecoveryStreamingSourceFailure.LEASE_BINDING)
-            }
-            block()
+    fun <T> withActiveOperation(requestRunId: RunId, block: () -> T): T = operationLock.withLock {
+        if (!active || runId != requestRunId) {
+            deny(RecoveryStreamingSourceFailure.LEASE_BINDING)
         }
+        block()
+    }
 
-    fun invalidate() {
-        synchronized(operationLock) {
+    fun invalidate(onBlocked: (() -> Unit)? = null) {
+        val acquired = operationLock.tryLock()
+        if (!acquired) {
+            onBlocked?.invoke()
+            operationLock.lock()
+        }
+        try {
             active = false
+        } finally {
+            operationLock.unlock()
         }
     }
 }
@@ -126,6 +134,20 @@ private constructor(private val binding: RecoveryStreamingLeaseBinding) {
             block: (RecoveryStreamingSourceLeaseAccess) -> T,
         ): T =
             RecoveryStreamingSourceAccessScope.withLease(runId, guard) { binding ->
+                block(RecoveryStreamingSourceLeaseAccess(binding))
+            }
+
+        fun <T> withScopedAccessForTest(
+            runId: RunId,
+            guard: RecoveryRunSingleWriterGuard,
+            onInvalidationBlocked: () -> Unit,
+            block: (RecoveryStreamingSourceLeaseAccess) -> T,
+        ): T =
+            RecoveryStreamingSourceAccessScope.withLease(
+                runId,
+                guard,
+                onInvalidationBlocked,
+            ) { binding ->
                 block(RecoveryStreamingSourceLeaseAccess(binding))
             }
     }
@@ -155,6 +177,19 @@ internal object RecoveryStreamingSourceControllerAccess {
         block: (RecoveryStreamingSourceLeaseAccess) -> T,
     ): T = RecoveryStreamingSourceLeaseAccess.withScopedAccess(runId, guard, block)
 
+    internal fun <T> withNormalAccessForTest(
+        runId: RunId,
+        guard: RecoveryRunSingleWriterGuard,
+        onInvalidationBlocked: () -> Unit,
+        block: (RecoveryStreamingSourceLeaseAccess) -> T,
+    ): T =
+        RecoveryStreamingSourceLeaseAccess.withScopedAccessForTest(
+            runId,
+            guard,
+            onInvalidationBlocked,
+            block,
+        )
+
     fun <T> withReplayAccess(
         runId: RunId,
         guard: RecoveryRunSingleWriterGuard,
@@ -166,12 +201,13 @@ private object RecoveryStreamingSourceAccessScope {
     fun <T> withLease(
         runId: RunId,
         guard: RecoveryRunSingleWriterGuard,
+        onInvalidationBlocked: (() -> Unit)? = null,
         block: (RecoveryStreamingLeaseBinding) -> T,
     ): T {
         val lease = guard.tryAcquire(runId) ?: deny(RecoveryStreamingSourceFailure.LEASE_BINDING)
         val binding = RecoveryStreamingLeaseBinding(runId)
         val outcome = runCatching { block(binding) }
-        binding.invalidate()
+        binding.invalidate(onInvalidationBlocked)
         val closeFailure = runCatching { lease.close() }.exceptionOrNull()
         val primary = outcome.exceptionOrNull()
         if (primary != null) {
