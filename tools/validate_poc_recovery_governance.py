@@ -485,6 +485,19 @@ REC_I3_OBSERVABLE_CONTROLLER_PATHS = (
     "tools/validate_poc_recovery_governance.py",
     "tools/test_poc_recovery_i3_governance.py",
 )
+REC_I3_OBSERVABLE_CONTROLLER_CHECK_COMMANDS = {
+    "FOCUSED_JVM": (
+        "./gradlew :poc:recovery:testDebugUnitTest "
+        "--tests '*RecoveryStreamingReconciliationControllerTest' "
+        "--tests '*RecoveryStreamingTinkPrerequisiteCryptoTest' "
+        "--tests '*AndroidOsRecoveryStreamingSourceTest'"
+    ),
+    "RECOVERY_JVM": "./gradlew :poc:recovery:testDebugUnitTest",
+    "SPOTLESS": "./gradlew spotlessCheck",
+    "DETEKT": "./gradlew detekt",
+    "LINT": "./gradlew lint",
+    "HOST_SQLITE": "python tools/verify_rec_i3_streaming_sqlite.py",
+}
 REC_I3_RESULT_BOUNDARY_V07_SHA256 = {
     "docs/adr/ADR-0005-poc-recovery-streaming-persistence-and-range-quarantine.md":
         "92d44d1405b3fed9ad3c6a50cc50a3667383a70852aceca443a64aa6702e8f02",
@@ -6400,6 +6413,131 @@ def validate_rec_i3_result_boundary(lifecycle: RecoveryLifecycleIdentity) -> Non
     print("PASS REC-I3 result-boundary governance v0.8; controller implementation/evidence blocked")
 
 
+def validate_rec_i3_observable_controller_evidence(record: dict[str, Any]) -> None:
+    require(
+        set(record) == {
+            "schemaVersion", "scopeId", "taskId", "branch", "baseCommit", "status",
+            "contractCounts", "sourceFiles", "checks", "limitations", "nonActions",
+        },
+        "REC-I3 observable controller evidence schema drift",
+    )
+    require(
+        record["schemaVersion"] == 1
+        and record["scopeId"] == "rec-i3-streaming-observable-controller-stage0-v0.1"
+        and record["taskId"] == "REC-I3"
+        and record["branch"] == REC_I3_OBSERVABLE_CONTROLLER_BRANCH
+        and record["baseCommit"] == REC_I3_OBSERVABLE_CONTROLLER_BASE
+        and record["status"] == "LOCAL_VERIFIED",
+        "REC-I3 observable controller evidence identity or status drift",
+    )
+    require(
+        record["contractCounts"] == {
+            "publicResultVariants": 4,
+            "stages": 6,
+            "classifications": 20,
+            "retrySafeExceptionTypes": 4,
+        },
+        "REC-I3 observable controller 4/6/20/4 contract drift",
+    )
+    expected_sources = {
+        path: canonical_lf_sha256(path)
+        for path in REC_I3_OBSERVABLE_CONTROLLER_SOURCE_PATHS
+    }
+    require(
+        record["sourceFiles"] == expected_sources,
+        "REC-I3 observable controller source digest mismatch",
+    )
+    checks = record["checks"]
+    require(
+        isinstance(checks, list)
+        and len(checks) == len(REC_I3_OBSERVABLE_CONTROLLER_CHECK_COMMANDS)
+        and all(
+            isinstance(item, dict)
+            and set(item) == {"stage", "command", "outcome"}
+            and item["outcome"] == "PASS"
+            for item in checks
+        ),
+        "REC-I3 observable controller check evidence malformed",
+    )
+    require(
+        {item["stage"]: item["command"] for item in checks}
+        == REC_I3_OBSERVABLE_CONTROLLER_CHECK_COMMANDS,
+        "REC-I3 observable controller check coverage or command drift",
+    )
+    require(record["limitations"], "REC-I3 observable controller limitations missing")
+    require(
+        record["nonActions"] == {
+            "pushed": False,
+            "pullRequestOpenedOrEdited": False,
+            "merged": False,
+            "deviceOrEmulatorRun": False,
+            "preflightOrCampaignRun": False,
+            "productionWork": False,
+            "nextSliceStarted": False,
+        },
+        "REC-I3 observable controller non-action boundary drift",
+    )
+
+
+def validate_rec_i3_observable_controller(lifecycle: RecoveryLifecycleIdentity) -> None:
+    require(
+        lifecycle.branch == REC_I3_OBSERVABLE_CONTROLLER_BRANCH,
+        "REC-I3 observable controller requires its exact branch",
+    )
+    candidate_head = (
+        lifecycle.github_pull_request_context.head_sha
+        if lifecycle.github_pull_request_context is not None else lifecycle.head
+    )
+    require(
+        candidate_head != REC_I3_OBSERVABLE_CONTROLLER_BASE
+        and git_is_ancestor(REC_I3_OBSERVABLE_CONTROLLER_BASE, candidate_head)
+        and git_output("rev-parse", f"{REC_I3_OBSERVABLE_CONTROLLER_BASE}^{{tree}}")
+        == REC_I3_OBSERVABLE_CONTROLLER_BASE_TREE,
+        "REC-I3 observable controller base/descent identity drift",
+    )
+    require(
+        not git_output(
+            "rev-list", "--min-parents=2",
+            f"{REC_I3_OBSERVABLE_CONTROLLER_BASE}..{candidate_head}",
+        ),
+        "REC-I3 observable controller history must be linear",
+    )
+    changes = collect_post_merge_changes(merged_anchor=REC_I3_OBSERVABLE_CONTROLLER_BASE)
+    tree_paths = git_path_records(
+        "diff", "--name-only", "--no-renames", "-z",
+        REC_I3_OBSERVABLE_CONTROLLER_BASE, candidate_head, "--",
+    )
+    history_paths = git_path_records(
+        "log", "--format=", "--name-only", "--no-renames", "-z",
+        f"{REC_I3_OBSERVABLE_CONTROLLER_BASE}..{candidate_head}", "--",
+    )
+    validate_rec_i3_observable_controller_delta(
+        changes,
+        tree_paths,
+        history_paths,
+        git_output(
+            "log", "--format=", "--summary", "--find-renames",
+            f"{REC_I3_OBSERVABLE_CONTROLLER_BASE}..{candidate_head}", "--",
+        ),
+    )
+    for relative in REC_I3_OBSERVABLE_CONTROLLER_PATHS:
+        validate_rec_i3_regular_file(relative)
+    for relative in REC_I3_OBSERVABLE_CONTROLLER_PINNED_PATHS:
+        require(
+            (ROOT / relative).read_bytes()
+            == git_blob_bytes(f"{REC_I3_OBSERVABLE_CONTROLLER_BASE}:{relative}"),
+            f"REC-I3 observable controller changed pinned predecessor: {relative}",
+        )
+    validate_rec_i3_result_boundary_contract(
+        read_json(REC_I3_RESULT_BOUNDARY_GATE_PATH),
+        read_json(REC_I3_RESULT_BOUNDARY_PROTOCOL_PATH),
+    )
+    validate_rec_i3_observable_controller_evidence(
+        read_json(REC_I3_OBSERVABLE_CONTROLLER_EVIDENCE_PATH)
+    )
+    print("PASS REC-I3 observable streaming controller exact local candidate; review pending")
+
+
 def validate_rec_i3_streaming_persistence(lifecycle: RecoveryLifecycleIdentity) -> None:
     require(
         lifecycle.branch == REC_I3_STREAMING_PERSISTENCE_BRANCH,
@@ -7088,6 +7226,9 @@ def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | Non
     if not rec_i3_candidate():
         return False
     current = lifecycle or collect_recovery_lifecycle_identity()
+    if rec_i3_observable_controller_candidate(current):
+        validate_rec_i3_observable_controller(current)
+        return True
     if rec_i3_result_boundary_candidate(current):
         validate_rec_i3_result_boundary(current)
         return True
@@ -10030,6 +10171,30 @@ def run_negative_tests() -> None:
             raise ValueError(f"Negative test unexpectedly passed: {name}")
 
 
+def validate_rec_i3_observable_controller_fast_path() -> bool:
+    lifecycle = collect_recovery_lifecycle_identity()
+    if not rec_i3_observable_controller_candidate(lifecycle):
+        return False
+    validate_rec_i3_observable_controller(lifecycle)
+    if "--self-test" in sys.argv[1:]:
+        import unittest
+        import test_poc_recovery_i3_governance
+
+        suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+            test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests
+        )
+        require(
+            unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful(),
+            "REC-I3 observable controller mutation self-tests failed",
+        )
+    print(
+        "POC-RECOVERY-001 observable streaming controller validation passed; "
+        "exact branch/base, committed path profile, predecessor locks, contract, "
+        "source digests and local check evidence valid; immutable review remains pending"
+    )
+    return True
+
+
 def validate_rec_i3_result_boundary_fast_path() -> bool:
     lifecycle = collect_recovery_lifecycle_identity()
     if not rec_i3_result_boundary_candidate(lifecycle):
@@ -10055,6 +10220,8 @@ def validate_rec_i3_result_boundary_fast_path() -> bool:
 
 
 def main() -> int:
+    if validate_rec_i3_observable_controller_fast_path():
+        return 0
     if validate_rec_i3_result_boundary_fast_path():
         return 0
     gate = read_json(GATE_PATH)

@@ -441,10 +441,16 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
                 governance.validate_rec_i3_changed_paths(changes)
 
     def test_persistence_profile_bypasses_legacy_bootstrap_dispatch(self) -> None:
-        with patch.object(governance, "validate_rec_i3_bootstrap_evidence") as validator, patch.object(
-            governance, "validate_rec_i3_microfile_successor"
+        lifecycle = replace(
+            governance.collect_recovery_lifecycle_identity(),
+            branch=governance.REC_I3_STREAMING_PERSISTENCE_BRANCH,
+        )
+        with (
+            patch.object(governance, "validate_rec_i3_bootstrap_evidence") as validator,
+            patch.object(governance, "validate_rec_i3_microfile_successor"),
+            patch.object(governance, "validate_rec_i3_streaming_persistence"),
         ):
-            self.assertTrue(governance.validate_current_rec_i3_successor())
+            self.assertTrue(governance.validate_current_rec_i3_successor(lifecycle))
         validator.assert_not_called()
 
     def test_frozen_bootstrap_source_is_checked_against_reviewed_blob(self) -> None:
@@ -830,6 +836,41 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             governance.validate_rec_i3_result_boundary_contract(gate, protocol)
 
+    def observable_controller_evidence(self) -> dict:
+        return {
+            "schemaVersion": 1,
+            "scopeId": "rec-i3-streaming-observable-controller-stage0-v0.1",
+            "taskId": "REC-I3",
+            "branch": governance.REC_I3_OBSERVABLE_CONTROLLER_BRANCH,
+            "baseCommit": governance.REC_I3_OBSERVABLE_CONTROLLER_BASE,
+            "status": "LOCAL_VERIFIED",
+            "contractCounts": {
+                "publicResultVariants": 4,
+                "stages": 6,
+                "classifications": 20,
+                "retrySafeExceptionTypes": 4,
+            },
+            "sourceFiles": {
+                path: governance.canonical_lf_sha256(path)
+                for path in governance.REC_I3_OBSERVABLE_CONTROLLER_SOURCE_PATHS
+            },
+            "checks": [
+                {"stage": stage, "command": command, "outcome": "PASS"}
+                for stage, command in
+                governance.REC_I3_OBSERVABLE_CONTROLLER_CHECK_COMMANDS.items()
+            ],
+            "limitations": ["Independent immutable review remains pending."],
+            "nonActions": {
+                "pushed": False,
+                "pullRequestOpenedOrEdited": False,
+                "merged": False,
+                "deviceOrEmulatorRun": False,
+                "preflightOrCampaignRun": False,
+                "productionWork": False,
+                "nextSliceStarted": False,
+            },
+        }
+
     def test_v08_accepts_twenty_path_total_mapping_and_retry_only_exceptions(self) -> None:
         gate, protocol = self.fixture()
         governance.validate_rec_i3_result_boundary_contract(gate, protocol)
@@ -1149,21 +1190,119 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
         self.assertTrue(governance.rec_i3_observable_controller_candidate(current))
         self.assertFalse(governance.rec_i3_result_boundary_candidate(current))
 
-    def test_exact_v08_profile_accepts_current_checkout(self) -> None:
-        lifecycle = governance.collect_recovery_lifecycle_identity()
-        self.assertEqual(governance.REC_I3_RESULT_BOUNDARY_BRANCH, lifecycle.branch)
-        self.assertTrue(governance.validate_current_rec_i3_successor(lifecycle))
+    def test_observable_controller_evidence_is_exact_and_mutation_sensitive(self) -> None:
+        record = self.observable_controller_evidence()
+        governance.validate_rec_i3_observable_controller_evidence(record)
+        mutations = (
+            lambda item: item["contractCounts"].__setitem__("classifications", 19),
+            lambda item: item["sourceFiles"].__setitem__(
+                governance.REC_I3_OBSERVABLE_CONTROLLER_SOURCE_PATHS[0], "0" * 64
+            ),
+            lambda item: item["checks"].pop(),
+            lambda item: item["checks"][0].__setitem__("command", "weaker check"),
+            lambda item: item["nonActions"].__setitem__("pushed", True),
+        )
+        for mutation in mutations:
+            with self.subTest(mutation=mutation):
+                changed = copy.deepcopy(record)
+                mutation(changed)
+                with self.assertRaises(ValueError):
+                    governance.validate_rec_i3_observable_controller_evidence(changed)
+
+    def test_observable_controller_dispatches_before_v08(self) -> None:
+        lifecycle = replace(
+            governance.collect_recovery_lifecycle_identity(),
+            branch=governance.REC_I3_OBSERVABLE_CONTROLLER_BRANCH,
+        )
+        with patch.object(
+            governance, "validate_rec_i3_observable_controller"
+        ) as validate:
+            self.assertTrue(governance.validate_current_rec_i3_successor(lifecycle))
+            validate.assert_called_once_with(lifecycle)
+
+    def test_observable_controller_profile_enforces_delta_pins_contract_and_evidence(self) -> None:
+        lifecycle = replace(
+            governance.collect_recovery_lifecycle_identity(),
+            branch=governance.REC_I3_OBSERVABLE_CONTROLLER_BRANCH,
+        )
+        expected = list(governance.REC_I3_OBSERVABLE_CONTROLLER_PATHS)
+        changes = {
+            "committed": expected,
+            "staged": [],
+            "unstaged": [],
+            "untracked": [],
+        }
+        original_read = governance.read_json
+
+        def read_profile(relative: str) -> dict:
+            if relative == governance.REC_I3_OBSERVABLE_CONTROLLER_EVIDENCE_PATH:
+                return self.observable_controller_evidence()
+            return original_read(relative)
+
+        def git_profile(*args: str) -> str:
+            if args[0] == "rev-parse":
+                return governance.REC_I3_OBSERVABLE_CONTROLLER_BASE_TREE
+            return ""
+
+        with (
+            patch.object(governance, "git_is_ancestor", return_value=True),
+            patch.object(governance, "git_output", side_effect=git_profile),
+            patch.object(governance, "git_path_records", return_value=expected),
+            patch.object(governance, "collect_post_merge_changes", return_value=changes),
+            patch.object(governance, "validate_rec_i3_regular_file"),
+            patch.object(governance, "read_json", side_effect=read_profile),
+            patch.object(governance, "validate_rec_i3_observable_controller_delta") as delta,
+            patch.object(governance, "validate_rec_i3_result_boundary_contract") as contract,
+            patch.object(governance, "validate_rec_i3_observable_controller_evidence") as evidence,
+        ):
+            governance.validate_rec_i3_observable_controller(lifecycle)
+        delta.assert_called_once_with(changes, expected, expected, "")
+        contract.assert_called_once()
+        evidence.assert_called_once_with(self.observable_controller_evidence())
+
+    def test_exact_v08_profile_dispatch_is_preserved(self) -> None:
+        lifecycle = replace(
+            governance.collect_recovery_lifecycle_identity(),
+            branch=governance.REC_I3_RESULT_BOUNDARY_BRANCH,
+        )
+        with patch.object(governance, "validate_rec_i3_result_boundary") as validate:
+            self.assertTrue(governance.validate_current_rec_i3_successor(lifecycle))
+            validate.assert_called_once_with(lifecycle)
 
     def test_exact_v08_profile_rejects_changed_v07_worktree_blob(self) -> None:
-        lifecycle = governance.collect_recovery_lifecycle_identity()
+        lifecycle = replace(
+            governance.collect_recovery_lifecycle_identity(),
+            branch=governance.REC_I3_RESULT_BOUNDARY_BRANCH,
+        )
         target = next(iter(governance.REC_I3_RESULT_BOUNDARY_V07_SHA256))
         original = governance.sha256
-        with patch.object(
-            governance,
-            "sha256",
-            side_effect=lambda relative: "0" * 64 if relative == target else original(relative),
-        ), self.assertRaisesRegex(ValueError, "immutable v0.7 blob changed"):
+        with (
+            patch.object(
+                governance,
+                "sha256",
+                side_effect=lambda relative: "0" * 64 if relative == target else original(relative),
+            ),
+            patch.object(governance, "validate_rec_i3_result_boundary_delta"),
+            patch.object(governance, "validate_rec_i3_regular_file"),
+            self.assertRaisesRegex(ValueError, "immutable v0.7 blob changed"),
+        ):
             governance.validate_rec_i3_result_boundary(lifecycle)
+
+    def test_main_dispatches_observable_controller_before_v08_and_legacy(self) -> None:
+        lifecycle = replace(
+            governance.collect_recovery_lifecycle_identity(),
+            branch=governance.REC_I3_OBSERVABLE_CONTROLLER_BRANCH,
+        )
+        with (
+            patch.object(governance, "collect_recovery_lifecycle_identity", return_value=lifecycle),
+            patch.object(governance, "validate_rec_i3_observable_controller") as validate,
+            patch.object(governance, "validate_rec_i3_result_boundary_fast_path") as old,
+            patch.object(governance, "read_json", side_effect=AssertionError("legacy read")),
+            patch.object(sys, "argv", ["validate_poc_recovery_governance.py"]),
+        ):
+            self.assertEqual(0, governance.main())
+        validate.assert_called_once_with(lifecycle)
+        old.assert_not_called()
 
     def test_main_dispatches_v08_before_any_legacy_static_artifact_read(self) -> None:
         original = governance.read_json
@@ -1193,9 +1332,18 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             return original_text(relative)
 
         with (
+            patch.object(
+                governance,
+                "collect_recovery_lifecycle_identity",
+                return_value=replace(
+                    governance.collect_recovery_lifecycle_identity(),
+                    branch=governance.REC_I3_RESULT_BOUNDARY_BRANCH,
+                ),
+            ),
             patch.object(governance, "read_json", side_effect=legacy_absent),
             patch.object(governance, "read_text", side_effect=legacy_text_absent),
             patch.object(governance, "collect_post_merge_changes", side_effect=clean_committed_profile),
+            patch.object(governance, "validate_rec_i3_result_boundary_delta"),
             patch.object(sys, "argv", ["validate_poc_recovery_governance.py"]),
         ):
             self.assertEqual(0, governance.main())
@@ -1224,7 +1372,16 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             return record
 
         with (
+            patch.object(
+                governance,
+                "collect_recovery_lifecycle_identity",
+                return_value=replace(
+                    governance.collect_recovery_lifecycle_identity(),
+                    branch=governance.REC_I3_RESULT_BOUNDARY_BRANCH,
+                ),
+            ),
             patch.object(governance, "collect_post_merge_changes", side_effect=clean_committed_profile),
+            patch.object(governance, "validate_rec_i3_result_boundary_delta"),
             patch.object(governance, "read_json", side_effect=mutated_gate),
             patch.object(sys, "argv", ["validate_poc_recovery_governance.py"]),
             self.assertRaisesRegex(ValueError, "authority"),
@@ -1234,7 +1391,16 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
         target = next(iter(governance.REC_I3_RESULT_BOUNDARY_V07_SHA256))
         original_sha = governance.sha256
         with (
+            patch.object(
+                governance,
+                "collect_recovery_lifecycle_identity",
+                return_value=replace(
+                    governance.collect_recovery_lifecycle_identity(),
+                    branch=governance.REC_I3_RESULT_BOUNDARY_BRANCH,
+                ),
+            ),
             patch.object(governance, "collect_post_merge_changes", side_effect=clean_committed_profile),
+            patch.object(governance, "validate_rec_i3_result_boundary_delta"),
             patch.object(
                 governance, "sha256",
                 side_effect=lambda relative: "0" * 64 if relative == target else original_sha(relative),
