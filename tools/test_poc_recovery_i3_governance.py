@@ -2120,6 +2120,203 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
                     )
                     self.assertIn(expected, completed.stdout)
 
+    def test_e36_post_merge_governance_is_object_closed_and_rejects_drift(self) -> None:
+        if os.environ.get("REC_I3_OBJECT_CLOSURE_CHILD") == "1":
+            return
+
+        integrated_harness = "3e7ce71410b9504bd08bfbcd1407c2e1f80ab8c6"
+        historical_harness = "7a7036513f2eb460ed72136e1784d712c4aae42d"
+        governance_root = Path(governance.__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-e36-object-closure-") as temporary:
+            parent = Path(temporary)
+            builder = parent / "builder"
+            governance.test_git(
+                parent,
+                "clone",
+                "--shared",
+                "--no-checkout",
+                str(governance_root),
+                str(builder),
+            )
+            governance.test_git(builder, "checkout", "--detach", "-q", integrated_harness)
+            for relative in governance.REC_I3_SQUASH_MAIN_CORRECTION_PATHS:
+                target = builder / relative
+                target.write_bytes((governance_root / relative).read_bytes())
+            governance.test_git(
+                builder,
+                "add",
+                "--",
+                *governance.REC_I3_SQUASH_MAIN_CORRECTION_PATHS,
+            )
+            source_tree = governance.test_git_text(builder, "write-tree")
+            source_head = governance.test_git_text(
+                builder,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                source_tree,
+                "-p",
+                integrated_harness,
+                input_data=b"synthetic post-merge governance source\n",
+            )
+            self.assertTrue(
+                governance.rec_i3_e36_post_merge_governance_source_candidate(
+                    source_head,
+                    integrated_harness,
+                    root=builder,
+                )
+            )
+
+            squash_head = governance.test_git_text(
+                builder,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                source_tree,
+                "-p",
+                integrated_harness,
+                input_data=b"synthetic post-merge governance squash\n",
+            )
+            self.assertTrue(
+                governance.rec_i3_e36_post_merge_governance_commit_candidate(
+                    squash_head,
+                    root=builder,
+                )
+            )
+
+            governance.test_git(builder, "checkout", "--detach", "-q", source_head)
+            extra = builder / "synthetic-extra.txt"
+            extra.write_text("extra\n", encoding="utf-8")
+            governance.test_git(builder, "add", "--", extra.name)
+            extra_tree = governance.test_git_text(builder, "write-tree")
+            extra_head = governance.test_git_text(
+                builder,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                extra_tree,
+                "-p",
+                integrated_harness,
+                input_data=b"synthetic post-merge governance extra path\n",
+            )
+            self.assertFalse(
+                governance.rec_i3_e36_post_merge_governance_commit_candidate(
+                    extra_head,
+                    root=builder,
+                )
+            )
+
+            governance.test_git(builder, "checkout", "--detach", "-q", source_head)
+            drift_path = builder / governance.REC_I3_E36_GAPI_PATHS[0]
+            drift_path.write_bytes(drift_path.read_bytes() + b"\n// synthetic drift\n")
+            governance.test_git(
+                builder, "add", "--", governance.REC_I3_E36_GAPI_PATHS[0]
+            )
+            drift_tree = governance.test_git_text(builder, "write-tree")
+            drift_head = governance.test_git_text(
+                builder,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                drift_tree,
+                "-p",
+                integrated_harness,
+                input_data=b"synthetic post-merge governance harness drift\n",
+            )
+            self.assertFalse(
+                governance.rec_i3_e36_post_merge_governance_commit_candidate(
+                    drift_head,
+                    root=builder,
+                )
+            )
+
+            remote = parent / "remote.git"
+            governance.test_git(parent, "init", "--bare", str(remote))
+            governance.test_git(
+                builder,
+                "push",
+                str(remote),
+                f"{squash_head}:refs/heads/main",
+            )
+            checkout = parent / "checkout"
+            governance.test_git(
+                parent,
+                "clone",
+                "--no-local",
+                "--single-branch",
+                "--branch",
+                "main",
+                str(remote),
+                str(checkout),
+            )
+            self.assertFalse((checkout / ".git/objects/info/alternates").exists())
+            self.assertNotEqual(
+                0,
+                subprocess.run(
+                    ["git", "cat-file", "-e", f"{historical_harness}^{{commit}}"],
+                    cwd=checkout,
+                    check=False,
+                    capture_output=True,
+                ).returncode,
+            )
+            self.assertNotEqual(
+                0,
+                subprocess.run(
+                    ["git", "cat-file", "-e", f"{source_head}^{{commit}}"],
+                    cwd=checkout,
+                    check=False,
+                    capture_output=True,
+                ).returncode,
+            )
+            self.assertNotEqual(
+                0,
+                subprocess.run(
+                    ["git", "show-ref", "--verify", "refs/heads/codex/rec-i3-e36-gapi-preflight-v01"],
+                    cwd=checkout,
+                    check=False,
+                    capture_output=True,
+                ).returncode,
+            )
+            refs = governance.test_git_text(
+                checkout, "for-each-ref", "--format=%(refname)"
+            ).splitlines()
+            self.assertFalse(any(ref.startswith("refs/pull/") for ref in refs))
+            self.assertFalse(any(governance.REC_I3_E36_GAPI_BRANCH in ref for ref in refs))
+            reflog_commits = governance.test_git_text(
+                checkout, "reflog", "--all", "--format=%H"
+            ).splitlines()
+            self.assertNotIn(source_head, reflog_commits)
+            self.assertNotIn(historical_harness, reflog_commits)
+            child_environment = os.environ.copy()
+            for key in tuple(child_environment):
+                if key.startswith("GITHUB_") or key == "RUNNER_TEMP":
+                    child_environment.pop(key)
+            child_environment.update(
+                {
+                    "REC_I3_OBJECT_CLOSURE_CHILD": "1",
+                    "GITHUB_EVENT_NAME": "push",
+                    "GITHUB_REPOSITORY": governance.GITHUB_REPOSITORY,
+                    "GITHUB_WORKSPACE": str(checkout.resolve()),
+                    "GITHUB_REF": "refs/heads/main",
+                    "GITHUB_SHA": squash_head,
+                }
+            )
+            completed = self.run_bounded_validator_child(
+                cwd=checkout,
+                environment=child_environment,
+                timeout_seconds=360.0,
+            )
+            self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
+            self.assertIn("exact E36-GAPI harness", completed.stdout)
+
     def test_e36_gapi_exact_local_and_stacked_pr_topologies_are_reachable(self) -> None:
         integrated_main = "be37378ca88e0bd4aee1f2fe0c54362798bdef9d"
         harness_head = "7a7036513f2eb460ed72136e1784d712c4aae42d"
