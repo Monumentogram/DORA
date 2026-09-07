@@ -460,6 +460,7 @@ REC_I3_SQUASH_MAIN_REVIEWED_HEAD = "89551b17a84bc090ccf1cd36d48aeb59afc403fa"
 REC_I3_SQUASH_MAIN_REVIEWED_PARENT = "2de6d8238d99e71ae573ffa29481a59e052c0efd"
 REC_I3_SQUASH_MAIN_CORRECTION_BRANCH = "codex/rec-i3-squash-main-governance-v01"
 REC_I3_HARNESS_MAIN_GOVERNANCE_BRANCH = "codex/rec-i3-harness-main-governance-v01"
+REC_I3_SQUASH_MAIN_INTEGRATED_CORRECTION = "02f71246e4024ce6a8246c853c2f08d989d99b01"
 REC_I3_SQUASH_MAIN_CORRECTION_PATHS = (
     "tools/test_poc_recovery_i3_governance.py",
     "tools/validate_poc_recovery_governance.py",
@@ -6029,6 +6030,50 @@ def rec_i3_harness_main_governance_commit_candidate(
     )
 
 
+def rec_i3_harness_main_governance_source_candidate(
+    commit: str,
+    base: str,
+    *,
+    root: Path | None = None,
+) -> bool:
+    repository_root = root or ROOT
+    if (
+        not rec_i3_integrated_correction_commit_candidate(base, root=repository_root)
+        or commit == base
+        or git_optional_output(
+            "rev-parse", "--verify", f"{commit}^{{commit}}", root=repository_root
+        )
+        != commit
+        or not git_is_ancestor(base, commit, root=repository_root)
+        or git_optional_output(
+            "rev-list", "--min-parents=2", f"{base}..{commit}", root=repository_root
+        )
+    ):
+        return False
+    if set(
+        git_path_records(
+            "diff",
+            "--name-only",
+            "--no-renames",
+            "-z",
+            base,
+            commit,
+            "--",
+            root=repository_root,
+        )
+    ) != set(REC_I3_SQUASH_MAIN_CORRECTION_PATHS):
+        return False
+    return all(
+        len(records) == 1 and records[0].startswith("100644 ")
+        for records in (
+            git_path_records(
+                "ls-tree", "-z", commit, "--", relative, root=repository_root
+            )
+            for relative in REC_I3_SQUASH_MAIN_CORRECTION_PATHS
+        )
+    )
+
+
 def rec_i3_integrated_governance_base_candidate(
     commit: str,
     *,
@@ -6128,8 +6173,9 @@ def rec_i3_squash_main_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
             pull_request.head_ref == REC_I3_HARNESS_MAIN_GOVERNANCE_BRANCH
             and pull_request.base_ref == GITHUB_BASE_BRANCH
             and rec_i3_integrated_correction_commit_candidate(pull_request.base_sha)
-            and rec_i3_harness_main_governance_commit_candidate(
-                pull_request.head_sha
+            and rec_i3_harness_main_governance_source_candidate(
+                pull_request.head_sha,
+                pull_request.base_sha,
             )
         )
         return original_correction or governance_successor
@@ -6144,7 +6190,10 @@ def rec_i3_squash_main_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
         )
         or (
             lifecycle.branch == REC_I3_HARNESS_MAIN_GOVERNANCE_BRANCH
-            and rec_i3_harness_main_governance_commit_candidate(lifecycle.head)
+            and rec_i3_harness_main_governance_source_candidate(
+                lifecycle.head,
+                REC_I3_SQUASH_MAIN_INTEGRATED_CORRECTION,
+            )
         )
     )
 
@@ -6283,8 +6332,9 @@ def validate_rec_i3_squash_main(lifecycle: RecoveryLifecycleIdentity) -> None:
             and pull_request.merge_sha == lifecycle.head
             and lifecycle.branch == pull_request.head_ref
             and rec_i3_integrated_correction_commit_candidate(pull_request.base_sha)
-            and rec_i3_harness_main_governance_commit_candidate(
-                pull_request.head_sha
+            and rec_i3_harness_main_governance_source_candidate(
+                pull_request.head_sha,
+                pull_request.base_sha,
             )
         )
         require(

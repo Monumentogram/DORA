@@ -2496,14 +2496,32 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
                 str(repo),
             )
             governance.test_git(repo, "checkout", "--detach", "-q", integrated_correction)
-            for relative in governance.REC_I3_SQUASH_MAIN_CORRECTION_PATHS:
-                (repo / relative).write_bytes((governance_root / relative).read_bytes())
+            first_path, second_path = governance.REC_I3_SQUASH_MAIN_CORRECTION_PATHS
+            (repo / first_path).write_bytes((governance_root / first_path).read_bytes())
             governance.test_git(
                 repo,
                 "add",
                 "--",
-                *governance.REC_I3_SQUASH_MAIN_CORRECTION_PATHS,
+                first_path,
             )
+            intermediate_tree = governance.test_git_text(repo, "write-tree")
+            intermediate_source = governance.test_git_text(
+                repo,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                intermediate_tree,
+                "-p",
+                integrated_correction,
+                input_data=b"synthetic harness-main governance intermediate\n",
+            )
+            governance.test_git(
+                repo, "checkout", "--detach", "-q", "-f", intermediate_source
+            )
+            (repo / second_path).write_bytes((governance_root / second_path).read_bytes())
+            governance.test_git(repo, "add", "--", second_path)
             governance_tree = governance.test_git_text(repo, "write-tree")
             governance_source = governance.test_git_text(
                 repo,
@@ -2514,7 +2532,7 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
                 "commit-tree",
                 governance_tree,
                 "-p",
-                integrated_correction,
+                intermediate_source,
                 input_data=b"synthetic harness-main governance source\n",
             )
             governance.test_git(
