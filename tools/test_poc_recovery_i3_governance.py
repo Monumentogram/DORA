@@ -2270,12 +2270,31 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             self.assertNotEqual(
                 0,
                 subprocess.run(
+                    ["git", "cat-file", "-e", f"{source_head}^{{commit}}"],
+                    cwd=checkout,
+                    check=False,
+                    capture_output=True,
+                ).returncode,
+            )
+            self.assertNotEqual(
+                0,
+                subprocess.run(
                     ["git", "show-ref", "--verify", "refs/heads/codex/rec-i3-e36-gapi-preflight-v01"],
                     cwd=checkout,
                     check=False,
                     capture_output=True,
                 ).returncode,
             )
+            refs = governance.test_git_text(
+                checkout, "for-each-ref", "--format=%(refname)"
+            ).splitlines()
+            self.assertFalse(any(ref.startswith("refs/pull/") for ref in refs))
+            self.assertFalse(any(governance.REC_I3_E36_GAPI_BRANCH in ref for ref in refs))
+            reflog_commits = governance.test_git_text(
+                checkout, "reflog", "--all", "--format=%H"
+            ).splitlines()
+            self.assertNotIn(source_head, reflog_commits)
+            self.assertNotIn(historical_harness, reflog_commits)
             child_environment = os.environ.copy()
             for key in tuple(child_environment):
                 if key.startswith("GITHUB_") or key == "RUNNER_TEMP":
