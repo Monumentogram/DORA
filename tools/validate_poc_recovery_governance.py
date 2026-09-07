@@ -11219,6 +11219,7 @@ def run_rec_i3_integrated_profile_self_tests(
         in {
             REC_I3_SQUASH_MAIN_CORRECTION_BRANCH,
             REC_I3_HARNESS_MAIN_GOVERNANCE_BRANCH,
+            REC_I3_HARNESS_SYNC_GOVERNANCE_BRANCH,
         }
     ):
         correction_head = pull_request.head_sha
@@ -11238,6 +11239,7 @@ def run_rec_i3_integrated_profile_self_tests(
             "test_e36_gapi_exact_local_and_stacked_pr_topologies_are_reachable",
             "test_e36_gapi_squash_main_is_exact_and_terminal",
             "test_harness_main_governance_transition_carries_exact_e36_squash",
+            "test_e36_reviewed_head_allows_only_exact_main_sync_wrapper",
             "test_squash_main_rejects_new_names_in_every_protected_change_layer",
             "test_squash_main_github_push_rejects_missing_workspace",
             "test_required_regular_file_rejects_missing_index_entry",
