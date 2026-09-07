@@ -10752,11 +10752,25 @@ def validate_rec_i3_result_boundary_fast_path() -> bool:
     return True
 
 
-def run_rec_i3_integrated_profile_self_tests(*, failure: str) -> None:
+def run_rec_i3_integrated_profile_self_tests(
+    lifecycle: RecoveryLifecycleIdentity,
+    *,
+    failure: str,
+) -> None:
     import unittest
     import test_poc_recovery_i3_governance
 
     test_case = test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests
+    pull_request = lifecycle.github_pull_request_context
+    if pull_request is not None and pull_request.head_ref == REC_I3_E36_GAPI_BRANCH:
+        correction_head = pull_request.base_sha
+    elif (
+        pull_request is not None
+        and pull_request.head_ref == REC_I3_SQUASH_MAIN_CORRECTION_BRANCH
+    ):
+        correction_head = pull_request.head_sha
+    else:
+        correction_head = lifecycle.head
     suite = unittest.TestSuite(
         test_case(name)
         for name in (
@@ -10768,7 +10782,12 @@ def run_rec_i3_integrated_profile_self_tests(*, failure: str) -> None:
             "test_required_regular_file_rejects_missing_index_entry",
         )
     )
-    successful = unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful()
+    previous_correction_head = test_case.INTEGRATED_CORRECTION_HEAD
+    test_case.INTEGRATED_CORRECTION_HEAD = correction_head
+    try:
+        successful = unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful()
+    finally:
+        test_case.INTEGRATED_CORRECTION_HEAD = previous_correction_head
     require(successful, failure)
 
 
@@ -10779,6 +10798,7 @@ def validate_rec_i3_e36_gapi_fast_path() -> bool:
     validate_rec_i3_e36_gapi(lifecycle)
     if "--self-test" in sys.argv[1:]:
         run_rec_i3_integrated_profile_self_tests(
+            lifecycle,
             failure="REC-I3 E36-GAPI regression self-tests failed",
         )
     print(
@@ -10796,6 +10816,7 @@ def validate_rec_i3_squash_main_fast_path() -> bool:
     validate_rec_i3_squash_main(lifecycle)
     if "--self-test" in sys.argv[1:]:
         run_rec_i3_integrated_profile_self_tests(
+            lifecycle,
             failure="REC-I3 squash-main regression self-tests failed",
         )
     print(

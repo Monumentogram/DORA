@@ -833,6 +833,20 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
 class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
     RETAINED_VALIDATOR_TIMEOUT_SECONDS = 180.0
     WINDOWS_CREATE_SUSPENDED = 0x00000004
+    INTEGRATED_CORRECTION_HEAD: str | None = None
+
+    @classmethod
+    def integrated_correction_head(cls) -> str:
+        if cls.INTEGRATED_CORRECTION_HEAD is not None:
+            return cls.INTEGRATED_CORRECTION_HEAD
+        correction_root = Path(governance.__file__).resolve().parents[1]
+        return subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=correction_root,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
 
     def create_windows_validator_job(self) -> int:
         from ctypes import wintypes
@@ -1680,13 +1694,7 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
     def test_source_equal_squash_merged_correction_main_is_exact_and_terminal(self) -> None:
         integrated_main = "be37378ca88e0bd4aee1f2fe0c54362798bdef9d"
         correction_root = Path(governance.__file__).resolve().parents[1]
-        correction_source = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=correction_root,
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
+        correction_source = self.integrated_correction_head()
         correction_tree = subprocess.run(
             ["git", "show", "-s", "--format=%T", correction_source],
             cwd=correction_root,
@@ -1804,13 +1812,7 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
         integrated_main = "be37378ca88e0bd4aee1f2fe0c54362798bdef9d"
         correction_branch = "codex/rec-i3-squash-main-governance-v01"
         correction_root = Path(governance.__file__).resolve().parents[1]
-        correction_head = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=correction_root,
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
+        correction_head = self.integrated_correction_head()
         correction_tree = subprocess.run(
             ["git", "show", "-s", "--format=%T", correction_head],
             cwd=correction_root,
@@ -1931,35 +1933,41 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
         harness_branch = "codex/rec-i3-e36-gapi-preflight-v01"
         harness_head = "7a7036513f2eb460ed72136e1784d712c4aae42d"
         correction_root = Path(governance.__file__).resolve().parents[1]
-        correction_head = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=correction_root,
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
-        correction_tree = subprocess.run(
-            ["git", "show", "-s", "--format=%T", correction_head],
-            cwd=correction_root,
-            check=True,
-            capture_output=True,
-            text=True,
-        ).stdout.strip()
-        validator_source = str(Path(governance.__file__).resolve())
-        child_code = (
-            "import importlib.util, os, pathlib, sys; "
-            "source = pathlib.Path(sys.argv[1]); root = pathlib.Path(sys.argv[2]); "
-            "sys.path.insert(0, str(source.parent)); "
-            "spec = importlib.util.spec_from_file_location"
-            "('validate_poc_recovery_governance', source); "
-            "module = importlib.util.module_from_spec(spec); "
-            "sys.modules[spec.name] = module; spec.loader.exec_module(module); "
-            "module.ROOT = root; os.chdir(root); "
-            "sys.argv = ['validate_poc_recovery_governance.py'] + sys.argv[3:]; "
-            "raise SystemExit(module.main())"
-        )
         with tempfile.TemporaryDirectory(prefix="dora-rec-i3-remote-objects-") as temporary:
             parent = Path(temporary)
+            builder = parent / "correction-builder"
+            governance.test_git(
+                parent,
+                "clone",
+                "--shared",
+                "--no-checkout",
+                str(correction_root),
+                str(builder),
+            )
+            builder_parent = governance.test_git_text(correction_root, "rev-parse", "HEAD")
+            governance.test_git(builder, "checkout", "--detach", "-q", builder_parent)
+            for relative in governance.REC_I3_SQUASH_MAIN_CORRECTION_PATHS:
+                target = builder / relative
+                target.write_bytes((correction_root / relative).read_bytes())
+            governance.test_git(
+                builder,
+                "add",
+                "--",
+                *governance.REC_I3_SQUASH_MAIN_CORRECTION_PATHS,
+            )
+            correction_tree = governance.test_git_text(builder, "write-tree")
+            correction_head = governance.test_git_text(
+                builder,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                correction_tree,
+                "-p",
+                builder_parent,
+                input_data=b"checkout-local correction source\n",
+            )
             remote = parent / "remote.git"
             governance.test_git(parent, "init", "--bare", str(remote))
             subprocess.run(
@@ -1971,7 +1979,7 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
                     f"{correction_head}:refs/heads/correction",
                     f"{harness_head}:refs/heads/harness",
                 ],
-                cwd=correction_root,
+                cwd=builder,
                 check=True,
                 capture_output=True,
             )
@@ -2092,7 +2100,10 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
                             "GITHUB_SHA": merge_head,
                         }
                     )
-                    command = [sys.executable, "-c", child_code, validator_source, str(repo)]
+                    command = [
+                        sys.executable,
+                        str(repo / "tools/validate_poc_recovery_governance.py"),
+                    ]
                     if case.endswith("self-test"):
                         command.append("--self-test")
                     completed = self.run_bounded_validator_child(
@@ -2156,13 +2167,7 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
             self.assertIn("exact E36-GAPI harness", local.stdout)
 
             correction_root = Path(governance.__file__).resolve().parents[1]
-            correction_head = subprocess.run(
-                ["git", "rev-parse", "HEAD"],
-                cwd=correction_root,
-                check=True,
-                capture_output=True,
-                text=True,
-            ).stdout.strip()
+            correction_head = self.integrated_correction_head()
             governance.test_git(repo, "checkout", "-q", "-B", correction_branch, correction_head)
             governance.test_git(
                 repo,
