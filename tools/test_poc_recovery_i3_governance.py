@@ -2690,6 +2690,149 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
                 )
             )
 
+    def test_e36_reviewed_head_allows_only_exact_main_sync_wrapper(self) -> None:
+        governance_base = "56d6ac509b4ddbee5ded5b99fcbb5c1315e52c3d"
+        harness_head = "7a7036513f2eb460ed72136e1784d712c4aae42d"
+        governance_root = Path(governance.__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-e36-sync-") as temporary:
+            parent = Path(temporary)
+            repo = parent / "repo"
+            governance.test_git(
+                parent,
+                "clone",
+                "--shared",
+                "--no-checkout",
+                str(governance_root),
+                str(repo),
+            )
+            governance.test_git(repo, "checkout", "--detach", "-q", governance_base)
+            for relative in governance.REC_I3_SQUASH_MAIN_CORRECTION_PATHS:
+                path = repo / relative
+                path.write_bytes(path.read_bytes() + b"\n# synthetic E36 sync governance\n")
+            governance.test_git(
+                repo,
+                "add",
+                "--",
+                *governance.REC_I3_SQUASH_MAIN_CORRECTION_PATHS,
+            )
+            governance_tree = governance.test_git_text(repo, "write-tree")
+            governance_successor = governance.test_git_text(
+                repo,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                governance_tree,
+                "-p",
+                governance_base,
+                input_data=b"synthetic E36 sync governance successor\n",
+            )
+            self.assertTrue(
+                governance.rec_i3_integrated_governance_base_candidate(
+                    governance_successor,
+                    root=repo,
+                )
+            )
+
+            governance.test_git(repo, "checkout", "--detach", "-q", governance_successor)
+            governance.test_git(
+                repo,
+                "checkout",
+                harness_head,
+                "--",
+                *governance.REC_I3_E36_GAPI_PATHS,
+            )
+            sync_tree = governance.test_git_text(repo, "write-tree")
+            sync_head = governance.test_git_text(
+                repo,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                sync_tree,
+                "-p",
+                harness_head,
+                "-p",
+                governance_successor,
+                input_data=b"synthetic merge main into reviewed E36 head\n",
+            )
+            self.assertTrue(
+                governance.rec_i3_e36_gapi_review_head_candidate(
+                    sync_head,
+                    governance_successor,
+                    root=repo,
+                )
+            )
+
+            wrong_parent_order = governance.test_git_text(
+                repo,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                sync_tree,
+                "-p",
+                governance_successor,
+                "-p",
+                harness_head,
+                input_data=b"synthetic wrong parent order\n",
+            )
+            self.assertFalse(
+                governance.rec_i3_e36_gapi_review_head_candidate(
+                    wrong_parent_order,
+                    governance_successor,
+                    root=repo,
+                )
+            )
+            later_descendant = governance.test_git_text(
+                repo,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                sync_tree,
+                "-p",
+                sync_head,
+                input_data=b"synthetic later reviewed-head descendant\n",
+            )
+            self.assertFalse(
+                governance.rec_i3_e36_gapi_review_head_candidate(
+                    later_descendant,
+                    governance_successor,
+                    root=repo,
+                )
+            )
+            governance.test_git(repo, "checkout", "--detach", "-q", sync_head)
+            extra_path = repo / "synthetic-e36-sync-extra.txt"
+            extra_path.write_text("extra\n", encoding="utf-8")
+            governance.test_git(repo, "add", "--", extra_path.name)
+            extra_tree = governance.test_git_text(repo, "write-tree")
+            extra_head = governance.test_git_text(
+                repo,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                extra_tree,
+                "-p",
+                harness_head,
+                "-p",
+                governance_successor,
+                input_data=b"synthetic extra path\n",
+            )
+            self.assertFalse(
+                governance.rec_i3_e36_gapi_review_head_candidate(
+                    extra_head,
+                    governance_successor,
+                    root=repo,
+                )
+            )
+
     def test_squash_main_rejects_new_names_in_every_protected_change_layer(self) -> None:
         empty = {layer: [] for layer in ("committed", "staged", "unstaged", "untracked")}
         for layer in empty:
