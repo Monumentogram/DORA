@@ -461,8 +461,12 @@ REC_I3_SQUASH_MAIN_REVIEWED_PARENT = "2de6d8238d99e71ae573ffa29481a59e052c0efd"
 REC_I3_SQUASH_MAIN_CORRECTION_BRANCH = "codex/rec-i3-squash-main-governance-v01"
 REC_I3_HARNESS_MAIN_GOVERNANCE_BRANCH = "codex/rec-i3-harness-main-governance-v01"
 REC_I3_HARNESS_SYNC_GOVERNANCE_BRANCH = "codex/rec-i3-harness-sync-governance-v01"
+REC_I3_E36_POST_MERGE_GOVERNANCE_BRANCH = (
+    "codex/rec-i3-e36-post-merge-selftest-v01"
+)
 REC_I3_SQUASH_MAIN_INTEGRATED_CORRECTION = "02f71246e4024ce6a8246c853c2f08d989d99b01"
 REC_I3_HARNESS_MAIN_GOVERNANCE_INTEGRATED = "56d6ac509b4ddbee5ded5b99fcbb5c1315e52c3d"
+REC_I3_E36_GAPI_INTEGRATED = "3e7ce71410b9504bd08bfbcd1407c2e1f80ab8c6"
 REC_I3_SQUASH_MAIN_CORRECTION_PATHS = (
     "tools/test_poc_recovery_i3_governance.py",
     "tools/validate_poc_recovery_governance.py",
@@ -6300,6 +6304,94 @@ def rec_i3_integrated_e36_gapi_commit_candidate(
     )
 
 
+def rec_i3_e36_post_merge_governance_source_candidate(
+    commit: str,
+    base: str,
+    *,
+    root: Path | None = None,
+) -> bool:
+    repository_root = root or ROOT
+    if (
+        base != REC_I3_E36_GAPI_INTEGRATED
+        or not rec_i3_integrated_e36_gapi_commit_candidate(
+            base, root=repository_root
+        )
+        or commit == base
+        or git_optional_output(
+            "rev-parse", "--verify", f"{commit}^{{commit}}", root=repository_root
+        )
+        != commit
+        or not git_is_ancestor(base, commit, root=repository_root)
+        or git_optional_output(
+            "rev-list", "--min-parents=2", f"{base}..{commit}", root=repository_root
+        )
+    ):
+        return False
+    if set(
+        git_path_records(
+            "diff",
+            "--name-only",
+            "--no-renames",
+            "-z",
+            base,
+            commit,
+            "--",
+            root=repository_root,
+        )
+    ) != set(REC_I3_SQUASH_MAIN_CORRECTION_PATHS):
+        return False
+    return all(
+        len(records) == 1 and records[0].startswith("100644 ")
+        for records in (
+            git_path_records(
+                "ls-tree", "-z", commit, "--", relative, root=repository_root
+            )
+            for relative in REC_I3_SQUASH_MAIN_CORRECTION_PATHS
+        )
+    )
+
+
+def rec_i3_e36_post_merge_governance_commit_candidate(
+    commit: str,
+    *,
+    root: Path | None = None,
+) -> bool:
+    repository_root = root or ROOT
+    if (
+        git_optional_output(
+            "rev-parse", "--verify", f"{commit}^{{commit}}", root=repository_root
+        )
+        != commit
+    ):
+        return False
+    parents = tuple(
+        (
+            git_optional_output(
+                "show", "-s", "--format=%P", commit, root=repository_root
+            )
+            or ""
+        ).split()
+    )
+    return (
+        parents == (REC_I3_E36_GAPI_INTEGRATED,)
+        and rec_i3_e36_post_merge_governance_source_candidate(
+            commit,
+            REC_I3_E36_GAPI_INTEGRATED,
+            root=repository_root,
+        )
+    )
+
+
+def rec_i3_e36_integrated_main_profile_candidate(
+    commit: str,
+    *,
+    root: Path | None = None,
+) -> bool:
+    return rec_i3_integrated_e36_gapi_commit_candidate(
+        commit, root=root
+    ) or rec_i3_e36_post_merge_governance_commit_candidate(commit, root=root)
+
+
 def rec_i3_squash_main_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
     if (
         git_optional_output(
@@ -6364,6 +6456,15 @@ def rec_i3_squash_main_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
 def rec_i3_e36_gapi_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
     pull_request = lifecycle.github_pull_request_context
     if pull_request is not None:
+        if pull_request.head_ref == REC_I3_E36_POST_MERGE_GOVERNANCE_BRANCH:
+            return (
+                pull_request.base_ref == GITHUB_BASE_BRANCH
+                and pull_request.base_sha == REC_I3_E36_GAPI_INTEGRATED
+                and rec_i3_e36_post_merge_governance_source_candidate(
+                    pull_request.head_sha,
+                    pull_request.base_sha,
+                )
+            )
         return (
             pull_request.head_ref == REC_I3_E36_GAPI_BRANCH
             and rec_i3_e36_gapi_review_head_candidate(
@@ -6386,9 +6487,14 @@ def rec_i3_e36_gapi_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
                 parents[1],
             )
         )
+    if lifecycle.branch == REC_I3_E36_POST_MERGE_GOVERNANCE_BRANCH:
+        return rec_i3_e36_post_merge_governance_source_candidate(
+            lifecycle.head,
+            REC_I3_E36_GAPI_INTEGRATED,
+        )
     return (
         lifecycle.branch == GITHUB_BASE_BRANCH
-        and rec_i3_integrated_e36_gapi_commit_candidate(lifecycle.head)
+        and rec_i3_e36_integrated_main_profile_candidate(lifecycle.head)
     )
 
 
@@ -6641,12 +6747,20 @@ def validate_rec_i3_e36_gapi(lifecycle: RecoveryLifecycleIdentity) -> None:
         label="REC-I3 E36-GAPI integrated anchor",
     )
     pull_request = lifecycle.github_pull_request_context
+    post_merge_governance = (
+        (
+            pull_request is not None
+            and pull_request.head_ref == REC_I3_E36_POST_MERGE_GOVERNANCE_BRANCH
+        )
+        or lifecycle.branch == REC_I3_E36_POST_MERGE_GOVERNANCE_BRANCH
+        or rec_i3_e36_post_merge_governance_commit_candidate(lifecycle.head)
+    )
     integrated_e36_main = (
         pull_request is None
         and lifecycle.branch == GITHUB_BASE_BRANCH
-        and rec_i3_integrated_e36_gapi_commit_candidate(lifecycle.head)
+        and rec_i3_e36_integrated_main_profile_candidate(lifecycle.head)
     )
-    if not integrated_e36_main:
+    if not integrated_e36_main and not post_merge_governance:
         validate_pinned_commit_identity(
             collect_pinned_commit_identity(REC_I3_E36_GAPI_HEAD, lifecycle.head),
             expected_commit=REC_I3_E36_GAPI_HEAD,
@@ -6669,10 +6783,10 @@ def validate_rec_i3_e36_gapi(lifecycle: RecoveryLifecycleIdentity) -> None:
     harness_paths = set(REC_I3_E36_GAPI_PATHS)
     if integrated_e36_main:
         require(
-            rec_i3_integrated_e36_gapi_commit_candidate(lifecycle.head),
+            rec_i3_e36_integrated_main_profile_candidate(lifecycle.head),
             "REC-I3 E36-GAPI integrated main identity drift",
         )
-    else:
+    elif not post_merge_governance:
         require(
             set(
                 git_path_records(
@@ -6708,9 +6822,23 @@ def validate_rec_i3_e36_gapi(lifecycle: RecoveryLifecycleIdentity) -> None:
                     and os.environ.get("GITHUB_SHA") == lifecycle.head,
                     "REC-I3 E36-GAPI integrated-main GitHub identity drift",
                 )
-            correction_base = git_output(
-                "show", "-s", "--format=%P", lifecycle.head
+            correction_base = (
+                None
+                if rec_i3_e36_post_merge_governance_commit_candidate(lifecycle.head)
+                else git_output("show", "-s", "--format=%P", lifecycle.head)
             )
+            allowed_paths = harness_paths | set(REC_I3_SQUASH_MAIN_CORRECTION_PATHS)
+        elif post_merge_governance:
+            require(
+                not os.environ.get("GITHUB_EVENT_NAME")
+                and lifecycle.branch == REC_I3_E36_POST_MERGE_GOVERNANCE_BRANCH
+                and rec_i3_e36_post_merge_governance_source_candidate(
+                    lifecycle.head,
+                    REC_I3_E36_GAPI_INTEGRATED,
+                ),
+                "REC-I3 E36-GAPI post-merge governance local identity drift",
+            )
+            correction_base = None
             allowed_paths = harness_paths | set(REC_I3_SQUASH_MAIN_CORRECTION_PATHS)
         else:
             require(
@@ -6722,29 +6850,53 @@ def validate_rec_i3_e36_gapi(lifecycle: RecoveryLifecycleIdentity) -> None:
             correction_base = None
             allowed_paths = harness_paths
     else:
-        reviewed_head_is_synced = pull_request.head_sha != REC_I3_E36_GAPI_HEAD
-        require(
-            pull_request.repository == GITHUB_REPOSITORY
-            and pull_request.head_repository == GITHUB_REPOSITORY
-            and pull_request.head_ref == REC_I3_E36_GAPI_BRANCH
-            and rec_i3_e36_gapi_review_head_candidate(
-                pull_request.head_sha,
-                pull_request.base_sha,
+        if post_merge_governance:
+            require(
+                pull_request.repository == GITHUB_REPOSITORY
+                and pull_request.head_repository == GITHUB_REPOSITORY
+                and pull_request.head_ref == REC_I3_E36_POST_MERGE_GOVERNANCE_BRANCH
+                and pull_request.base_ref == GITHUB_BASE_BRANCH
+                and pull_request.base_sha == REC_I3_E36_GAPI_INTEGRATED
+                and rec_i3_e36_post_merge_governance_source_candidate(
+                    pull_request.head_sha,
+                    pull_request.base_sha,
+                )
+                and pull_request.state == "open"
+                and pull_request.merged is False
+                and lifecycle.branch == REC_I3_E36_POST_MERGE_GOVERNANCE_BRANCH
+                and pull_request.merge_sha == lifecycle.head
+                and tuple(
+                    (git_optional_output("show", "-s", "--format=%P", lifecycle.head) or "").split()
+                )
+                == (pull_request.base_sha, pull_request.head_sha),
+                "REC-I3 E36-GAPI post-merge governance pull_request identity drift",
             )
-            and pull_request.base_ref
-            in {GITHUB_BASE_BRANCH, REC_I3_SQUASH_MAIN_CORRECTION_BRANCH}
-            and pull_request.draft is (not reviewed_head_is_synced)
-            and pull_request.state == "open"
-            and pull_request.merged is False
-            and lifecycle.branch == REC_I3_E36_GAPI_BRANCH
-            and pull_request.merge_sha == lifecycle.head,
-            "REC-I3 E36-GAPI stacked pull_request identity drift",
-        )
+            correction_base = None
+            allowed_paths = harness_paths | set(REC_I3_SQUASH_MAIN_CORRECTION_PATHS)
+        else:
+            reviewed_head_is_synced = pull_request.head_sha != REC_I3_E36_GAPI_HEAD
+            require(
+                pull_request.repository == GITHUB_REPOSITORY
+                and pull_request.head_repository == GITHUB_REPOSITORY
+                and pull_request.head_ref == REC_I3_E36_GAPI_BRANCH
+                and rec_i3_e36_gapi_review_head_candidate(
+                    pull_request.head_sha,
+                    pull_request.base_sha,
+                )
+                and pull_request.base_ref
+                in {GITHUB_BASE_BRANCH, REC_I3_SQUASH_MAIN_CORRECTION_BRANCH}
+                and pull_request.draft is (not reviewed_head_is_synced)
+                and pull_request.state == "open"
+                and pull_request.merged is False
+                and lifecycle.branch == REC_I3_E36_GAPI_BRANCH
+                and pull_request.merge_sha == lifecycle.head,
+                "REC-I3 E36-GAPI stacked pull_request identity drift",
+            )
         require(
             git_is_ancestor(REC_I3_SQUASH_MAIN_ANCHOR, pull_request.base_sha),
             "REC-I3 E36-GAPI stacked base omits the integrated anchor",
         )
-        if pull_request.base_ref == GITHUB_BASE_BRANCH:
+        if pull_request.base_ref == GITHUB_BASE_BRANCH and not post_merge_governance:
             require(
                 rec_i3_integrated_governance_base_candidate(
                     pull_request.base_sha
@@ -6773,11 +6925,17 @@ def validate_rec_i3_e36_gapi(lifecycle: RecoveryLifecycleIdentity) -> None:
             )
         )
         require(
-            base_paths == set(REC_I3_SQUASH_MAIN_CORRECTION_PATHS),
-            "REC-I3 E36-GAPI stacked base is not the exact correction scope",
+            base_paths
+            == (
+                harness_paths | set(REC_I3_SQUASH_MAIN_CORRECTION_PATHS)
+                if post_merge_governance
+                else set(REC_I3_SQUASH_MAIN_CORRECTION_PATHS)
+            ),
+            "REC-I3 E36-GAPI stacked base is not the exact admitted scope",
         )
-        correction_base = pull_request.base_sha
-        allowed_paths = harness_paths | set(REC_I3_SQUASH_MAIN_CORRECTION_PATHS)
+        if not post_merge_governance:
+            correction_base = pull_request.base_sha
+            allowed_paths = harness_paths | set(REC_I3_SQUASH_MAIN_CORRECTION_PATHS)
 
     changes = collect_post_merge_changes(merged_anchor=REC_I3_SQUASH_MAIN_ANCHOR)
     require(
@@ -6812,6 +6970,16 @@ def validate_rec_i3_e36_gapi(lifecycle: RecoveryLifecycleIdentity) -> None:
                 git_output("rev-parse", f"HEAD:{relative}")
                 == git_output("rev-parse", f"{correction_base}:{relative}"),
                 f"REC-I3 E36-GAPI correction-base blob drift: {relative}",
+            )
+    if pull_request is not None and post_merge_governance:
+        for relative in REC_I3_SQUASH_MAIN_CORRECTION_PATHS:
+            require(
+                git_path_records("ls-tree", "-z", "HEAD", "--", relative)
+                == git_path_records(
+                    "ls-tree", "-z", pull_request.head_sha, "--", relative
+                ),
+                "REC-I3 E36-GAPI post-merge governance pull_request entry differs "
+                f"from its declared head: {relative}",
             )
     for relative in allowed_paths:
         validate_rec_i3_regular_file(relative)
@@ -11201,6 +11369,42 @@ def validate_rec_i3_result_boundary_fast_path() -> bool:
     return True
 
 
+def rec_i3_integrated_profile_self_test_names(
+    *,
+    root: Path | None = None,
+) -> tuple[str, ...]:
+    repository_root = root or ROOT
+    common = (
+        "test_source_equal_squash_merged_correction_main_is_exact_and_terminal",
+        "test_correction_pull_request_binds_head_entries_and_clean_layers",
+        "test_e36_post_merge_governance_is_object_closed_and_rejects_drift",
+        "test_squash_main_rejects_new_names_in_every_protected_change_layer",
+        "test_squash_main_github_push_rejects_missing_workspace",
+        "test_required_regular_file_rejects_missing_index_entry",
+    )
+    historical_source_available = (
+        git_optional_output(
+            "rev-parse",
+            "--verify",
+            f"{REC_I3_E36_GAPI_HEAD}^{{commit}}",
+            root=repository_root,
+        )
+        == REC_I3_E36_GAPI_HEAD
+    )
+    if not historical_source_available:
+        return common
+    return (
+        common[:2]
+        + (
+            "test_e36_gapi_exact_local_and_stacked_pr_topologies_are_reachable",
+            "test_e36_gapi_squash_main_is_exact_and_terminal",
+            "test_harness_main_governance_transition_carries_exact_e36_squash",
+            "test_e36_reviewed_head_allows_only_exact_main_sync_wrapper",
+        )
+        + common[2:]
+    )
+
+
 def run_rec_i3_integrated_profile_self_tests(
     lifecycle: RecoveryLifecycleIdentity,
     *,
@@ -11214,6 +11418,21 @@ def run_rec_i3_integrated_profile_self_tests(
     if pull_request is not None and pull_request.head_ref == REC_I3_E36_GAPI_BRANCH:
         correction_head = pull_request.base_sha
     elif (
+        (
+            pull_request is not None
+            and pull_request.head_ref == REC_I3_E36_POST_MERGE_GOVERNANCE_BRANCH
+        )
+        or lifecycle.branch == REC_I3_E36_POST_MERGE_GOVERNANCE_BRANCH
+        or (
+            pull_request is None
+            and lifecycle.branch == GITHUB_BASE_BRANCH
+            and rec_i3_e36_integrated_main_profile_candidate(lifecycle.head)
+        )
+    ):
+        correction_head = git_output(
+            "show", "-s", "--format=%P", REC_I3_E36_GAPI_INTEGRATED
+        )
+    elif (
         pull_request is not None
         and pull_request.head_ref
         in {
@@ -11223,27 +11442,10 @@ def run_rec_i3_integrated_profile_self_tests(
         }
     ):
         correction_head = pull_request.head_sha
-    elif (
-        pull_request is None
-        and lifecycle.branch == GITHUB_BASE_BRANCH
-        and rec_i3_integrated_e36_gapi_commit_candidate(lifecycle.head)
-    ):
-        correction_head = git_output("show", "-s", "--format=%P", lifecycle.head)
     else:
         correction_head = lifecycle.head
     suite = unittest.TestSuite(
-        test_case(name)
-        for name in (
-            "test_source_equal_squash_merged_correction_main_is_exact_and_terminal",
-            "test_correction_pull_request_binds_head_entries_and_clean_layers",
-            "test_e36_gapi_exact_local_and_stacked_pr_topologies_are_reachable",
-            "test_e36_gapi_squash_main_is_exact_and_terminal",
-            "test_harness_main_governance_transition_carries_exact_e36_squash",
-            "test_e36_reviewed_head_allows_only_exact_main_sync_wrapper",
-            "test_squash_main_rejects_new_names_in_every_protected_change_layer",
-            "test_squash_main_github_push_rejects_missing_workspace",
-            "test_required_regular_file_rejects_missing_index_entry",
-        )
+        test_case(name) for name in rec_i3_integrated_profile_self_test_names()
     )
     previous_correction_head = test_case.INTEGRATED_CORRECTION_HEAD
     test_case.INTEGRATED_CORRECTION_HEAD = correction_head
