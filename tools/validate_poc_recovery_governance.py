@@ -5977,14 +5977,12 @@ def rec_i3_integrated_correction_commit_candidate(
     )
 
 
-def rec_i3_integrated_governance_base_candidate(
+def rec_i3_harness_main_governance_commit_candidate(
     commit: str,
     *,
     root: Path | None = None,
 ) -> bool:
     repository_root = root or ROOT
-    if rec_i3_integrated_correction_commit_candidate(commit, root=repository_root):
-        return True
     if (
         git_optional_output(
             "rev-parse", "--verify", f"{commit}^{{commit}}", root=repository_root
@@ -6028,6 +6026,19 @@ def rec_i3_integrated_governance_base_candidate(
             )
             for relative in REC_I3_SQUASH_MAIN_CORRECTION_PATHS
         )
+    )
+
+
+def rec_i3_integrated_governance_base_candidate(
+    commit: str,
+    *,
+    root: Path | None = None,
+) -> bool:
+    repository_root = root or ROOT
+    return rec_i3_integrated_correction_commit_candidate(
+        commit, root=repository_root
+    ) or rec_i3_harness_main_governance_commit_candidate(
+        commit, root=repository_root
     )
 
 
@@ -6117,7 +6128,9 @@ def rec_i3_squash_main_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
             pull_request.head_ref == REC_I3_HARNESS_MAIN_GOVERNANCE_BRANCH
             and pull_request.base_ref == GITHUB_BASE_BRANCH
             and rec_i3_integrated_correction_commit_candidate(pull_request.base_sha)
-            and rec_i3_integrated_governance_base_candidate(pull_request.head_sha)
+            and rec_i3_harness_main_governance_commit_candidate(
+                pull_request.head_sha
+            )
         )
         return original_correction or governance_successor
     if lifecycle.head == REC_I3_SQUASH_MAIN_ANCHOR:
@@ -6131,7 +6144,7 @@ def rec_i3_squash_main_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
         )
         or (
             lifecycle.branch == REC_I3_HARNESS_MAIN_GOVERNANCE_BRANCH
-            and rec_i3_integrated_governance_base_candidate(lifecycle.head)
+            and rec_i3_harness_main_governance_commit_candidate(lifecycle.head)
         )
     )
 
@@ -6270,7 +6283,9 @@ def validate_rec_i3_squash_main(lifecycle: RecoveryLifecycleIdentity) -> None:
             and pull_request.merge_sha == lifecycle.head
             and lifecycle.branch == pull_request.head_ref
             and rec_i3_integrated_correction_commit_candidate(pull_request.base_sha)
-            and rec_i3_integrated_governance_base_candidate(pull_request.head_sha)
+            and rec_i3_harness_main_governance_commit_candidate(
+                pull_request.head_sha
+            )
         )
         require(
             original_correction_pr or governance_successor_pr,

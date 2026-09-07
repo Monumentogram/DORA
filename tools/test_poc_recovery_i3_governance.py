@@ -2623,6 +2623,18 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
                     root=repo,
                 )
             )
+            self.assertTrue(
+                governance.rec_i3_harness_main_governance_commit_candidate(
+                    governance_main,
+                    root=repo,
+                )
+            )
+            self.assertFalse(
+                governance.rec_i3_harness_main_governance_commit_candidate(
+                    integrated_correction,
+                    root=repo,
+                )
+            )
 
             governance.test_git(
                 repo,
