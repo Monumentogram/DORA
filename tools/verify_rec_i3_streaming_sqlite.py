@@ -13,6 +13,11 @@ KOTLIN = ROOT / (
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/"
     "journal/AndroidRecoveryJournalDatabase.kt"
 )
+E36_PREFLIGHT = ROOT / (
+    "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/"
+    "candidate/RecoveryE36GapiPreflightInstrumentedTest.kt"
+)
+E36_SQLITE_RUNTIME_PIN = "4c318c054da39768340f059db5687051dde8a843"
 
 V4_NAMES = (
     "CREATE_QUARANTINE_TABLE",
@@ -99,6 +104,10 @@ def assert_android_configuration_uses_query_api() -> None:
         body,
         re.DOTALL,
     ), "wal_autocheckpoint must use the query API and verify SQLite accepted zero"
+    preflight = E36_PREFLIGHT.read_text(encoding="utf-8")
+    assert f'.put("integratedRuntimePin", "{E36_SQLITE_RUNTIME_PIN}")' in preflight, (
+        "E36 evidence must identify the exact SQLite-remediation runtime commit"
+    )
 
 
 def connect() -> sqlite3.Connection:
