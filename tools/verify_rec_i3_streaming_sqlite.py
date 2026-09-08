@@ -81,6 +81,26 @@ def production_sql() -> dict[str, str]:
     return result
 
 
+def assert_android_configuration_uses_query_api() -> None:
+    source = KOTLIN.read_text(encoding="utf-8")
+    on_configure = re.search(
+        r"override fun onConfigure\(database: SQLiteDatabase\) \{(.*?)\n    \}",
+        source,
+        re.DOTALL,
+    )
+    assert on_configure, "missing Recovery journal onConfigure"
+    body = on_configure.group(1)
+    assert 'execSQL("PRAGMA wal_autocheckpoint=0")' not in body, (
+        "wal_autocheckpoint returns data on Android and cannot use execSQL"
+    )
+    assert re.search(
+        r'rawQuery\("PRAGMA wal_autocheckpoint=0", null\)\.use \{ cursor ->.*?'
+        r'cursor\.moveToFirst\(\).*?cursor\.getInt\(0\) == 0',
+        body,
+        re.DOTALL,
+    ), "wal_autocheckpoint must use the query API and verify SQLite accepted zero"
+
+
 def connect() -> sqlite3.Connection:
     database = sqlite3.connect(":memory:")
     database.execute("PRAGMA foreign_keys=ON")
@@ -169,6 +189,7 @@ def assert_v4(database: sqlite3.Connection, sql: dict[str, str]) -> None:
 
 
 def verify() -> None:
+    assert_android_configuration_uses_query_api()
     sql = production_sql()
 
     fresh = connect()

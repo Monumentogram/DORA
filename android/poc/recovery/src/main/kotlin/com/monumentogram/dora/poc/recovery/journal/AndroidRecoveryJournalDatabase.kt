@@ -1033,7 +1033,11 @@ private class RecoveryJournalSqliteHelper(context: Context) :
     override fun onConfigure(database: SQLiteDatabase) {
         database.setForeignKeyConstraintsEnabled(true)
         database.execSQL("PRAGMA synchronous=FULL")
-        database.execSQL("PRAGMA wal_autocheckpoint=0")
+        database.rawQuery("PRAGMA wal_autocheckpoint=0", null).use { cursor ->
+            check(cursor.moveToFirst() && cursor.getInt(0) == 0) {
+                "Recovery journal could not disable WAL auto-checkpointing"
+            }
+        }
     }
 
     override fun onCreate(database: SQLiteDatabase) = RecoveryJournalSchema.createV4(database)
