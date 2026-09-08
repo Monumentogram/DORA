@@ -40,10 +40,14 @@ internal object RecoveryCheckpointAndroidTestFixture {
     fun bootstrap(context: Context, runId: RunId): BootstrapObservation {
         val evidence = mutableListOf<RecoveryBootstrapRunRow>()
         val result =
-            AndroidRecoveryKeyBootstrap
-                .controller(context, BootstrapEvidenceSink { evidence += it })
+            AndroidRecoveryKeyBootstrap.controller(
+                    context,
+                    BootstrapEvidenceSink { evidence += it },
+                )
                 .bootstrap(KeyConfirmationValue(RecoveryCandidate.STREAM, runId))
-        check(result is BootstrapResult.Committed) { "bootstrap-result:${result.javaClass.simpleName}" }
+        check(result is BootstrapResult.Committed) {
+            "bootstrap-result:${result.javaClass.simpleName}"
+        }
         check(result.completedSteps == BootstrapStep.entries)
         check(result.evidenceEmitted && result.evidenceFailure == null)
         check(evidence.size == 1)
@@ -112,13 +116,15 @@ internal object RecoveryCheckpointAndroidTestFixture {
         }
 
     fun bootstrapParentExists(context: Context, runId: RunId): Boolean =
-        AndroidRecoveryJournalDatabase.writable(context).rawQuery(
-            "SELECT COUNT(*) FROM recovery_run_bootstrap_v1 WHERE run_id=? AND candidate_id=?",
-            arrayOf(runId.toCanonicalString(), RecoveryCandidate.STREAM.contractId),
-        ).use { cursor ->
-            check(cursor.moveToFirst())
-            cursor.getInt(0) == 1
-        }
+        AndroidRecoveryJournalDatabase.writable(context)
+            .rawQuery(
+                "SELECT COUNT(*) FROM recovery_run_bootstrap_v1 WHERE run_id=? AND candidate_id=?",
+                arrayOf(runId.toCanonicalString(), RecoveryCandidate.STREAM.contractId),
+            )
+            .use { cursor ->
+                check(cursor.moveToFirst())
+                cursor.getInt(0) == 1
+            }
 
     fun cleanup(context: Context, runId: RunId): CleanupObservation {
         val database = AndroidRecoveryJournalDatabase.writable(context)

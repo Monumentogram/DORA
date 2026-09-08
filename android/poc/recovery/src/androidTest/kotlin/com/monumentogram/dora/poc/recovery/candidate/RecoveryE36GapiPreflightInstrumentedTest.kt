@@ -8,9 +8,9 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingCheckpointRow
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingIdentity
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalReadResult
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalResult
-import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingIdentity
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingWitnessInput
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
@@ -161,7 +161,17 @@ class RecoveryE36GapiPreflightInstrumentedTest {
 
             val cleanup = cleanup(context, journal, runId, request, sourceFile, runDirectory)
             cleaned = true
-            emitStatus(revision, context, sourceFile, port, bootstrap, fresh, replay, denied, cleanup)
+            emitStatus(
+                revision,
+                context,
+                sourceFile,
+                port,
+                bootstrap,
+                fresh,
+                replay,
+                denied,
+                cleanup,
+            )
         } finally {
             if (!cleaned) RecoveryCheckpointAndroidTestFixture.cleanupBestEffort(context, runId)
         }
