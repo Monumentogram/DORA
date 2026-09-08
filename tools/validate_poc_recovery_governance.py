@@ -520,6 +520,29 @@ REC_I3_E36_GUARD_PATHS = (
     *REC_I3_E36_GUARD_IMPLEMENTATION_PATHS,
     *REC_I3_E36_GUARD_GOVERNANCE_PATHS,
 )
+REC_I3_E36_SQLITE_BRANCH = "codex/rec-i3-e36-sqlite-pragma-fix-v02"
+REC_I3_E36_SQLITE_BASE = "ffd6e6d0fa160d76861bc20cc029f9970b6b9eb9"
+REC_I3_E36_SQLITE_BASE_TREE = "27a1892870c4e234c5f5cb6ff6b65f90c318e57b"
+REC_I3_E36_SQLITE_BASE_PARENT = REC_I3_E36_GUARD_BASE
+REC_I3_E36_SQLITE_IMPLEMENTATION_COMMIT = "a8db1aaf6bd035cecceab2769ebcec10b2db250b"
+REC_I3_E36_SQLITE_RUNTIME_TREE = "1fe89c91d24f6c8e55fc54aad313f01f036c9854"
+REC_I3_E36_SQLITE_IMPLEMENTATION_PATHS = (
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/"
+    "journal/AndroidRecoveryJournalDatabase.kt",
+    "tools/verify_rec_i3_streaming_sqlite.py",
+)
+REC_I3_E36_SQLITE_IMPLEMENTATION_BLOBS = {
+    REC_I3_E36_SQLITE_IMPLEMENTATION_PATHS[0]: "f4aa9496793b21f1b0f4c76d77ab75c11e4f18f2",
+    REC_I3_E36_SQLITE_IMPLEMENTATION_PATHS[1]: "73ebbdcc874bd1e9211f601d5c6b48aa23f28d27",
+}
+REC_I3_E36_SQLITE_GOVERNANCE_PATHS = (
+    "tools/test_poc_recovery_i3_governance.py",
+    "tools/validate_poc_recovery_governance.py",
+)
+REC_I3_E36_SQLITE_PATHS = (
+    *REC_I3_E36_SQLITE_IMPLEMENTATION_PATHS,
+    *REC_I3_E36_SQLITE_GOVERNANCE_PATHS,
+)
 REC_I3_STAGE00_VALIDATOR_PATH = "tools/validate_stage00.py"
 REC_I3_OBSERVABLE_CONTROLLER_EVIDENCE_PATH = (
     "docs/evidence/poc-recovery-001/"
@@ -6666,6 +6689,236 @@ def rec_i3_e36_guard_remediation_candidate(
     )
 
 
+def rec_i3_e36_sqlite_implementation_blobs_match(
+    commit: str,
+    *,
+    root: Path | None = None,
+) -> bool:
+    repository_root = root or ROOT
+    return all(
+        git_path_records(
+            "ls-tree", "-z", commit, "--", relative, root=repository_root
+        )
+        == [f"100644 blob {blob}\t{relative}"]
+        for relative, blob in REC_I3_E36_SQLITE_IMPLEMENTATION_BLOBS.items()
+    )
+
+
+def rec_i3_e36_sqlite_implementation_commit_candidate(
+    commit: str,
+    *,
+    root: Path | None = None,
+) -> bool:
+    repository_root = root or ROOT
+    return (
+        commit == REC_I3_E36_SQLITE_IMPLEMENTATION_COMMIT
+        and git_optional_output(
+            "rev-parse", "--verify", f"{commit}^{{commit}}", root=repository_root
+        )
+        == commit
+        and tuple(
+            (
+                git_optional_output(
+                    "show", "-s", "--format=%P", commit, root=repository_root
+                )
+                or ""
+            ).split()
+        )
+        == (REC_I3_E36_SQLITE_BASE,)
+        and set(
+            git_path_records(
+                "diff",
+                "--name-only",
+                "--no-renames",
+                "-z",
+                REC_I3_E36_SQLITE_BASE,
+                commit,
+                "--",
+                root=repository_root,
+            )
+        )
+        == set(REC_I3_E36_SQLITE_IMPLEMENTATION_PATHS)
+        and rec_i3_e36_sqlite_implementation_blobs_match(
+            commit, root=repository_root
+        )
+        and git_optional_output(
+            "rev-parse",
+            f"{commit}:android/poc/recovery/src/main",
+            root=repository_root,
+        )
+        == REC_I3_E36_SQLITE_RUNTIME_TREE
+    )
+
+
+def rec_i3_e36_sqlite_governance_paths_are_regular(
+    commit: str,
+    *,
+    root: Path | None = None,
+) -> bool:
+    repository_root = root or ROOT
+    return all(
+        len(records) == 1 and records[0].startswith("100644 ")
+        for records in (
+            git_path_records(
+                "ls-tree", "-z", commit, "--", relative, root=repository_root
+            )
+            for relative in REC_I3_E36_SQLITE_GOVERNANCE_PATHS
+        )
+    )
+
+
+def rec_i3_e36_sqlite_remediation_source_candidate(
+    commit: str,
+    base: str,
+    *,
+    root: Path | None = None,
+) -> bool:
+    repository_root = root or ROOT
+    if (
+        base != REC_I3_E36_SQLITE_BASE
+        or not rec_i3_e36_guard_remediation_main_candidate(
+            base, root=repository_root
+        )
+        or not rec_i3_e36_sqlite_implementation_commit_candidate(
+            REC_I3_E36_SQLITE_IMPLEMENTATION_COMMIT,
+            root=repository_root,
+        )
+        or git_optional_output(
+            "rev-parse", "--verify", f"{commit}^{{commit}}", root=repository_root
+        )
+        != commit
+    ):
+        return False
+    parents = tuple(
+        (
+            git_optional_output(
+                "show", "-s", "--format=%P", commit, root=repository_root
+            )
+            or ""
+        ).split()
+    )
+    return (
+        parents == (REC_I3_E36_SQLITE_IMPLEMENTATION_COMMIT,)
+        and set(
+            git_path_records(
+                "diff",
+                "--name-only",
+                "--no-renames",
+                "-z",
+                REC_I3_E36_SQLITE_IMPLEMENTATION_COMMIT,
+                commit,
+                "--",
+                root=repository_root,
+            )
+        )
+        == set(REC_I3_E36_SQLITE_GOVERNANCE_PATHS)
+        and set(
+            git_path_records(
+                "diff",
+                "--name-only",
+                "--no-renames",
+                "-z",
+                base,
+                commit,
+                "--",
+                root=repository_root,
+            )
+        )
+        == set(REC_I3_E36_SQLITE_PATHS)
+        and rec_i3_e36_sqlite_implementation_blobs_match(
+            commit, root=repository_root
+        )
+        and rec_i3_e36_sqlite_governance_paths_are_regular(
+            commit, root=repository_root
+        )
+        and git_optional_output(
+            "rev-parse",
+            f"{commit}:android/poc/recovery/src/main",
+            root=repository_root,
+        )
+        == REC_I3_E36_SQLITE_RUNTIME_TREE
+    )
+
+
+def rec_i3_e36_sqlite_remediation_main_candidate(
+    commit: str,
+    *,
+    root: Path | None = None,
+) -> bool:
+    repository_root = root or ROOT
+    if (
+        git_optional_output(
+            "rev-parse", "--verify", f"{commit}^{{commit}}", root=repository_root
+        )
+        != commit
+    ):
+        return False
+    parents = tuple(
+        (
+            git_optional_output(
+                "show", "-s", "--format=%P", commit, root=repository_root
+            )
+            or ""
+        ).split()
+    )
+    return (
+        parents == (REC_I3_E36_SQLITE_BASE,)
+        and rec_i3_e36_guard_remediation_main_candidate(
+            REC_I3_E36_SQLITE_BASE, root=repository_root
+        )
+        and set(
+            git_path_records(
+                "diff",
+                "--name-only",
+                "--no-renames",
+                "-z",
+                REC_I3_E36_SQLITE_BASE,
+                commit,
+                "--",
+                root=repository_root,
+            )
+        )
+        == set(REC_I3_E36_SQLITE_PATHS)
+        and rec_i3_e36_sqlite_implementation_blobs_match(
+            commit, root=repository_root
+        )
+        and rec_i3_e36_sqlite_governance_paths_are_regular(
+            commit, root=repository_root
+        )
+        and git_optional_output(
+            "rev-parse",
+            f"{commit}:android/poc/recovery/src/main",
+            root=repository_root,
+        )
+        == REC_I3_E36_SQLITE_RUNTIME_TREE
+    )
+
+
+def rec_i3_e36_sqlite_remediation_candidate(
+    lifecycle: RecoveryLifecycleIdentity,
+) -> bool:
+    pull_request = lifecycle.github_pull_request_context
+    if pull_request is not None:
+        return (
+            pull_request.head_ref == REC_I3_E36_SQLITE_BRANCH
+            and pull_request.base_ref == GITHUB_BASE_BRANCH
+            and pull_request.base_sha == REC_I3_E36_SQLITE_BASE
+            and rec_i3_e36_sqlite_remediation_source_candidate(
+                pull_request.head_sha,
+                pull_request.base_sha,
+            )
+        )
+    if lifecycle.branch == REC_I3_E36_SQLITE_BRANCH:
+        return rec_i3_e36_sqlite_remediation_source_candidate(
+            lifecycle.head,
+            REC_I3_E36_SQLITE_BASE,
+        )
+    return (
+        lifecycle.branch == GITHUB_BASE_BRANCH
+        and rec_i3_e36_sqlite_remediation_main_candidate(lifecycle.head)
+    )
+
+
 def rec_i3_squash_main_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
     if (
         git_optional_output(
@@ -7365,6 +7618,110 @@ def validate_rec_i3_e36_guard_remediation(
         "PASS REC-I3 exact E36 guard remediation profile; accepted emulator identity, "
         "host regressions and Tier-A recovery instrumentation compilation are pinned; "
         "production recovery runtime unchanged; device preflight remains pending"
+    )
+
+
+def validate_rec_i3_e36_sqlite_remediation(
+    lifecycle: RecoveryLifecycleIdentity,
+) -> None:
+    validate_pinned_commit_identity(
+        collect_pinned_commit_identity(REC_I3_E36_SQLITE_BASE, lifecycle.head),
+        expected_commit=REC_I3_E36_SQLITE_BASE,
+        expected_tree=REC_I3_E36_SQLITE_BASE_TREE,
+        expected_parents=(REC_I3_E36_SQLITE_BASE_PARENT,),
+        label="REC-I3 E36 SQLite remediation base",
+    )
+    pull_request = lifecycle.github_pull_request_context
+    integrated_main = pull_request is None and lifecycle.branch == GITHUB_BASE_BRANCH
+    candidate_head = pull_request.head_sha if pull_request is not None else lifecycle.head
+    if integrated_main:
+        require(
+            rec_i3_e36_sqlite_remediation_main_candidate(lifecycle.head),
+            "REC-I3 E36 SQLite remediation integrated-main identity drift",
+        )
+        event_name = os.environ.get("GITHUB_EVENT_NAME", "")
+        if event_name:
+            workspace = os.environ.get("GITHUB_WORKSPACE", "")
+            require(
+                event_name in {"push", "workflow_dispatch"}
+                and os.environ.get("GITHUB_REPOSITORY") == GITHUB_REPOSITORY
+                and bool(workspace)
+                and Path(workspace).resolve() == ROOT.resolve()
+                and os.environ.get("GITHUB_REF")
+                == f"refs/heads/{GITHUB_BASE_BRANCH}"
+                and os.environ.get("GITHUB_SHA") == lifecycle.head,
+                "REC-I3 E36 SQLite remediation integrated-main GitHub identity drift",
+            )
+    elif pull_request is None:
+        require(
+            not os.environ.get("GITHUB_EVENT_NAME")
+            and lifecycle.branch == REC_I3_E36_SQLITE_BRANCH
+            and rec_i3_e36_sqlite_remediation_source_candidate(
+                lifecycle.head,
+                REC_I3_E36_SQLITE_BASE,
+            ),
+            "REC-I3 E36 SQLite remediation local identity drift",
+        )
+    else:
+        require(
+            pull_request.repository == GITHUB_REPOSITORY
+            and pull_request.head_repository == GITHUB_REPOSITORY
+            and pull_request.head_ref == REC_I3_E36_SQLITE_BRANCH
+            and pull_request.base_ref == GITHUB_BASE_BRANCH
+            and pull_request.base_sha == REC_I3_E36_SQLITE_BASE
+            and rec_i3_e36_sqlite_remediation_source_candidate(
+                pull_request.head_sha,
+                pull_request.base_sha,
+            )
+            and pull_request.draft is False
+            and pull_request.state == "open"
+            and pull_request.merged is False
+            and lifecycle.branch == REC_I3_E36_SQLITE_BRANCH
+            and pull_request.merge_sha == lifecycle.head
+            and tuple(
+                (
+                    git_optional_output(
+                        "show", "-s", "--format=%P", lifecycle.head
+                    )
+                    or ""
+                ).split()
+            )
+            == (pull_request.base_sha, pull_request.head_sha)
+            and git_output("rev-parse", f"{lifecycle.head}^{{tree}}")
+            == git_output("rev-parse", f"{pull_request.head_sha}^{{tree}}"),
+            "REC-I3 E36 SQLite remediation pull_request identity drift",
+        )
+
+    require(
+        git_output(
+            "rev-parse", f"{candidate_head}:android/poc/recovery/src/main"
+        )
+        == REC_I3_E36_SQLITE_RUNTIME_TREE,
+        "REC-I3 E36 SQLite remediation runtime tree drift",
+    )
+    require(
+        rec_i3_e36_sqlite_implementation_blobs_match(candidate_head),
+        "REC-I3 E36 SQLite remediation implementation blob drift",
+    )
+    require(
+        rec_i3_e36_sqlite_governance_paths_are_regular(candidate_head),
+        "REC-I3 E36 SQLite remediation governance path mode drift",
+    )
+    changes = collect_post_merge_changes(merged_anchor=REC_I3_E36_SQLITE_BASE)
+    require(
+        set(changes) == {"committed", "staged", "unstaged", "untracked"},
+        "REC-I3 E36 SQLite remediation change inventory is incomplete",
+    )
+    require(
+        set(changes["committed"]) == set(REC_I3_E36_SQLITE_PATHS)
+        and all(not changes[layer] for layer in ("staged", "unstaged", "untracked")),
+        f"REC-I3 E36 SQLite remediation checkout is not the exact clean profile: {changes}",
+    )
+    for relative in REC_I3_E36_SQLITE_PATHS:
+        validate_rec_i3_regular_file(relative)
+    print(
+        "PASS REC-I3 exact E36 SQLite remediation profile; WAL auto-checkpoint uses "
+        "the Android query API with retained zero readback; non-measured preflight pending"
     )
 
 
@@ -8769,6 +9126,9 @@ def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | Non
             else current.head
         )
         validate_rec_i3_streaming_integration_history(candidate_head)
+    elif rec_i3_e36_sqlite_remediation_candidate(current):
+        validate_rec_i3_e36_sqlite_remediation(current)
+        return True
     elif rec_i3_e36_guard_remediation_candidate(current):
         validate_rec_i3_e36_guard_remediation(current)
         return True
@@ -11862,6 +12222,30 @@ def validate_rec_i3_e36_guard_remediation_fast_path() -> bool:
     return True
 
 
+def run_rec_i3_e36_sqlite_remediation_self_tests() -> None:
+    import unittest
+    import test_poc_recovery_i3_governance
+
+    test_case = test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests
+    suite = unittest.TestSuite(
+        [test_case("test_e36_sqlite_pragma_remediation_is_object_closed_and_squash_safe")]
+    )
+    require(
+        unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful(),
+        "REC-I3 E36 SQLite remediation regression self-test failed",
+    )
+
+
+def validate_rec_i3_e36_sqlite_remediation_fast_path() -> bool:
+    lifecycle = collect_recovery_lifecycle_identity()
+    if not rec_i3_e36_sqlite_remediation_candidate(lifecycle):
+        return False
+    validate_rec_i3_e36_sqlite_remediation(lifecycle)
+    if "--self-test" in sys.argv[1:]:
+        run_rec_i3_e36_sqlite_remediation_self_tests()
+    return True
+
+
 def validate_rec_i3_e36_gapi_fast_path() -> bool:
     lifecycle = collect_recovery_lifecycle_identity()
     if not rec_i3_e36_gapi_candidate(lifecycle):
@@ -11902,6 +12286,8 @@ def main() -> int:
     if validate_rec_i3_observable_controller_fast_path():
         return 0
     if validate_rec_i3_result_boundary_fast_path():
+        return 0
+    if validate_rec_i3_e36_sqlite_remediation_fast_path():
         return 0
     if validate_rec_i3_e36_guard_remediation_fast_path():
         return 0
