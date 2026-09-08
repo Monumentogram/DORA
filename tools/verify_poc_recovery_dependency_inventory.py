@@ -25,8 +25,11 @@ from typing import Any
 from validate_poc_recovery_governance import (
     AUTHORIZATION_ID,
     AUTHORIZATION_PATH,
+    collect_recovery_lifecycle_identity,
+    rec_i3_v7_candidate,
     validate_authorization_record,
     validate_current_rec_i2b_reviewed_successor,
+    validate_rec_i3_v7,
     validate_recovery_build_text,
 )
 
@@ -756,7 +759,12 @@ def validate_static(
 ) -> bool:
     """Validate the active v0.6 packet and its exact recovery-only boundary."""
 
-    rec_i2b_mode = validate_current_rec_i2b_reviewed_successor()
+    lifecycle = collect_recovery_lifecycle_identity()
+    if rec_i3_v7_candidate(lifecycle):
+        validate_rec_i3_v7(lifecycle)
+        rec_i2b_mode = True
+    else:
+        rec_i2b_mode = validate_current_rec_i2b_reviewed_successor()
     require(inventory["schemaVersion"] == 4, "Dependency inventory schema drift")
     require(inventory["rootCoordinate"] == "com.google.crypto.tink:tink-android:1.23.0", "Root coordinate drift")
     require(inventory["dependencyAdmission"] is False and inventory["runtimeGraphModified"] is False, "Inventory admitted a runtime graph")

@@ -576,6 +576,7 @@ REC_I3_V7_PATHS = (
     "tools/test_poc_recovery_i3_governance.py",
     "tools/test_rec_i3_preserve_and_cleanup.py",
     "tools/validate_poc_recovery_governance.py",
+    "tools/verify_poc_recovery_dependency_inventory.py",
     "tools/verify_rec_i3_streaming_sqlite.py",
 )
 REC_I3_E36_SQLITE_POST_MERGE_BASE = "d843953be3d5da56198e57ad52c3dd05f71091d9"
@@ -12839,6 +12840,7 @@ def run_rec_i3_v7_self_tests() -> None:
             "test_streaming_sqlite_verifier_executes_exact_schema_and_migrations",
             "test_v7_preflight_bootstraps_before_checkpoint_and_cleans_parent",
             "test_v7_long_path_preservation_and_independent_cleanup",
+            "test_v7_dependency_inventory_dispatches_through_the_v7_profile",
         )
     )
     require(

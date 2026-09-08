@@ -82,6 +82,16 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
         )
         self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
 
+    def test_v7_dependency_inventory_dispatches_through_the_v7_profile(self) -> None:
+        inventory = governance.ROOT / "tools/verify_poc_recovery_dependency_inventory.py"
+        source = inventory.read_text(encoding="utf-8")
+        self.assertIn("if rec_i3_v7_candidate(lifecycle):", source)
+        self.assertIn("validate_rec_i3_v7(lifecycle)", source)
+        self.assertIn(
+            "tools/verify_poc_recovery_dependency_inventory.py",
+            governance.REC_I3_V7_PATHS,
+        )
+
     def test_exact_streaming_persistence_profile_accepts_current_checkout(self) -> None:
         lifecycle = replace(
             governance.collect_recovery_lifecycle_identity(),
