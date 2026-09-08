@@ -34,6 +34,53 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
         )
         self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
         self.assertIn("PASS REC-I3 streaming SQLite schema v4", completed.stdout)
+        self.assertIn(
+            "orphan checkpoint rejected; bootstrap parent accepted",
+            completed.stdout,
+        )
+
+    def test_v7_preflight_bootstraps_before_checkpoint_and_cleans_parent(self) -> None:
+        preflight = (
+            governance.ROOT
+            / "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/"
+            "candidate/RecoveryE36GapiPreflightInstrumentedTest.kt"
+        ).read_text(encoding="utf-8")
+        bootstrap = "RecoveryCheckpointAndroidTestFixture.bootstrap(context, runId)"
+        insert = "val checkpointInsert = journal.insertCheckpoint(checkpoint)"
+        diagnostic = 'println("INSTRUMENTATION_CHECKPOINT_INSERT $checkpointInsertDiagnostic")'
+        receipt = "assertTrue(checkpointInsert is RecoveryStreamingJournalResult.CheckpointReceipt)"
+        self.assertEqual(1, preflight.count("@Test"))
+        self.assertLess(preflight.index(bootstrap), preflight.index(insert))
+        self.assertLess(preflight.index(diagnostic), preflight.index(receipt))
+        self.assertNotIn("isCheckpointReceipt", preflight)
+
+        fixture = (
+            governance.ROOT
+            / "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/"
+            "candidate/RecoveryCheckpointAndroidTestFixture.kt"
+        ).read_text(encoding="utf-8")
+        self.assertIn("AndroidRecoveryKeyBootstrap", fixture)
+        self.assertIn("KeyConfirmationValue(RecoveryCandidate.STREAM, runId)", fixture)
+        deletes = [
+            'database.delete("recovery_stream_range_quarantine_v4"',
+            'database.delete("recovery_stream_outcome_v4"',
+            'database.delete("recovery_stream_checkpoint_v4"',
+            'database.delete("recovery_run_bootstrap_v1"',
+        ]
+        positions = [fixture.index(value) for value in deletes]
+        self.assertEqual(sorted(positions), positions)
+
+    @unittest.skipUnless(os.name == "nt", "PowerShell/robocopy regression is Windows-only")
+    def test_v7_long_path_preservation_and_independent_cleanup(self) -> None:
+        test_script = governance.ROOT / "tools/test_rec_i3_preserve_and_cleanup.py"
+        completed = subprocess.run(
+            [sys.executable, str(test_script), "-v"],
+            cwd=governance.ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
 
     def test_exact_streaming_persistence_profile_accepts_current_checkout(self) -> None:
         lifecycle = replace(

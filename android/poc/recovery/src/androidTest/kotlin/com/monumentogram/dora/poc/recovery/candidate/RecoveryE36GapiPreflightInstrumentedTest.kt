@@ -7,10 +7,10 @@ import android.security.keystore.KeyProperties
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingCheckpointIdentityInput
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingCheckpointRow
-import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingIdentity
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalReadResult
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingJournalResult
+import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingIdentity
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingWitnessInput
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
@@ -56,21 +56,42 @@ class RecoveryE36GapiPreflightInstrumentedTest {
         val runId = RunId.fromBytes(ByteArray(16) { (it + 1).toByte() })
         val sourceBytes = ByteArray(8_192) { ((it * 31 + 9) and 0xff).toByte() }
         val oracleBytes = ByteArray(8_136) { ((it * 7 + 5) and 0xff).toByte() }
-        val runDirectory =
-            File(context.noBackupFilesDir, "poc-recovery/v1/runs/${runId.toCanonicalString()}")
+        val runDirectory = RecoveryCheckpointAndroidTestFixture.runDirectory(context, runId)
         val sourceFile = File(runDirectory, "stream/stream.ct")
         val events = mutableListOf<RecoveryStreamingEvidenceEvent>()
         val port = CountingAuthenticator(oracleBytes)
         var cleaned = false
 
+        RecoveryCheckpointAndroidTestFixture.cleanupBestEffort(context, runId)
         try {
+            val bootstrap = RecoveryCheckpointAndroidTestFixture.bootstrap(context, runId)
             sourceFile.parentFile!!.mkdirs()
             sourceFile.outputStream().use { stream ->
                 stream.write(sourceBytes)
                 stream.fd.sync()
             }
-            val checkpoint = checkpoint(runId, sourceBytes)
-            assertTrue(journal.insertCheckpoint(checkpoint).isCheckpointReceipt())
+            val checkpoint = RecoveryCheckpointAndroidTestFixture.checkpoint(runId, sourceBytes)
+            val checkpointInsert = journal.insertCheckpoint(checkpoint)
+            val checkpointInsertDiagnostic =
+                JSONObject().put("resultType", checkpointInsert.javaClass.simpleName)
+            when (checkpointInsert) {
+                is RecoveryStreamingJournalResult.Retry ->
+                    checkpointInsertDiagnostic.put(
+                        "classification",
+                        checkpointInsert.classification.name,
+                    )
+                is RecoveryStreamingJournalResult.Fatal ->
+                    checkpointInsertDiagnostic.put(
+                        "classification",
+                        checkpointInsert.classification.name,
+                    )
+                else -> checkpointInsertDiagnostic.put("classification", JSONObject.NULL)
+            }
+            println("INSTRUMENTATION_CHECKPOINT_INSERT $checkpointInsertDiagnostic")
+            assertTrue(checkpointInsert is RecoveryStreamingJournalResult.CheckpointReceipt)
+            checkpointInsert as RecoveryStreamingJournalResult.CheckpointReceipt
+            assertEquals(checkpoint.checkpointIdentity, checkpointInsert.checkpointIdentity)
+            assertFalse(checkpointInsert.replayed)
             val request = request(checkpoint, runId, oracleBytes, sourceBytes)
             val controller =
                 RecoveryStreamingReconciliationController(
@@ -140,56 +161,10 @@ class RecoveryE36GapiPreflightInstrumentedTest {
 
             val cleanup = cleanup(context, journal, runId, request, sourceFile, runDirectory)
             cleaned = true
-            emitStatus(revision, context, sourceFile, port, fresh, replay, denied, cleanup)
+            emitStatus(revision, context, sourceFile, port, bootstrap, fresh, replay, denied, cleanup)
         } finally {
-            if (!cleaned) cleanupBestEffort(context, runId, runDirectory)
+            if (!cleaned) RecoveryCheckpointAndroidTestFixture.cleanupBestEffort(context, runId)
         }
-    }
-
-    private fun checkpoint(runId: RunId, source: ByteArray): RecoveryStreamingCheckpointRow {
-        val checkpointBytes = ByteArray(128) { (it * 3 + 1).toByte() }
-        val checkpointEnvelope = ByteArray(96) { (it * 5 + 2).toByte() }
-        val streamEnvelope = ByteArray(96) { (it * 11 + 4).toByte() }
-        val input =
-            RecoveryStreamingCheckpointIdentityInput(
-                runId,
-                1UL,
-                2UL,
-                8_192UL,
-                Sha256Value.calculate(source),
-                4_056UL,
-                "checkpoints/g-00000000000000000001.ct",
-                128UL,
-                Sha256Value.calculate(checkpointBytes),
-                "key-envelopes/checkpoint-g-00000000000000000001.ks",
-                96UL,
-                Sha256Value.calculate(checkpointEnvelope),
-                "stream/stream.ct",
-                "key-envelopes/stream.ks",
-                96UL,
-                Sha256Value.calculate(streamEnvelope),
-                Sha256Value.calculate(ByteArray(32)),
-            )
-        return RecoveryStreamingCheckpointRow(
-            runId,
-            1UL,
-            2UL,
-            8_192UL,
-            input.streamCiphertextPrefixSha256,
-            4_056UL,
-            input.checkpointRelativeName,
-            input.checkpointBytes,
-            input.checkpointSha256,
-            input.checkpointEnvelopeRelativeName,
-            input.checkpointEnvelopeBytes,
-            input.checkpointEnvelopeSha256,
-            input.streamRelativeName,
-            input.streamEnvelopeRelativeName,
-            input.streamEnvelopeBytes,
-            input.streamEnvelopeSha256,
-            input.previousCheckpointSha256,
-            RecoveryStreamingIdentity.checkpoint(input),
-        )
     }
 
     private fun request(
@@ -279,12 +254,6 @@ class RecoveryE36GapiPreflightInstrumentedTest {
         assertTrue(event.existingEvidenceReferences.isEmpty())
     }
 
-    private data class Cleanup(
-        val checkpointDeletes: Int,
-        val outcomeDeletes: Int,
-        val rangeDeletes: Int,
-    )
-
     private fun cleanup(
         context: android.content.Context,
         journal: AndroidRecoveryStreamingJournal,
@@ -292,34 +261,20 @@ class RecoveryE36GapiPreflightInstrumentedTest {
         request: RecoveryStreamingControllerRequest,
         sourceFile: File,
         runDirectory: File,
-    ): Cleanup {
-        val database = AndroidRecoveryJournalDatabase.writable(context)
-        val run = arrayOf(runId.toCanonicalString())
-        val rangeDeletes = database.delete("recovery_stream_range_quarantine_v4", "run_id=?", run)
-        val outcomeDeletes = database.delete("recovery_stream_outcome_v4", "run_id=?", run)
-        val checkpointDeletes = database.delete("recovery_stream_checkpoint_v4", "run_id=?", run)
-        assertEquals(0, rangeDeletes)
-        assertEquals(1, outcomeDeletes)
-        assertEquals(1, checkpointDeletes)
+    ): RecoveryCheckpointAndroidTestFixture.CleanupObservation {
+        val cleanup = RecoveryCheckpointAndroidTestFixture.cleanup(context, runId)
+        assertEquals(0, cleanup.rangeDeletes)
+        assertEquals(1, cleanup.outcomeDeletes)
+        assertEquals(1, cleanup.checkpointDeletes)
+        assertEquals(1, cleanup.bootstrapDeletes)
+        assertTrue(cleanup.aliasExistedBefore)
+        assertTrue(cleanup.aliasAbsentAfter)
+        assertTrue(cleanup.runDirectoryAbsentAfter)
         assertEquals(null, readOutcome(journal, request))
         assertTrue(exactJournalValue(journal.checkpointChain(runId)).isEmpty())
-        assertTrue(runDirectory.deleteRecursively())
         assertFalse(sourceFile.exists())
         assertFalse(runDirectory.exists())
-        return Cleanup(checkpointDeletes, outcomeDeletes, rangeDeletes)
-    }
-
-    private fun cleanupBestEffort(
-        context: android.content.Context,
-        runId: RunId,
-        runDirectory: File,
-    ) {
-        val database = AndroidRecoveryJournalDatabase.writable(context)
-        val run = arrayOf(runId.toCanonicalString())
-        database.delete("recovery_stream_range_quarantine_v4", "run_id=?", run)
-        database.delete("recovery_stream_outcome_v4", "run_id=?", run)
-        database.delete("recovery_stream_checkpoint_v4", "run_id=?", run)
-        runDirectory.deleteRecursively()
+        return cleanup
     }
 
     private fun emitStatus(
@@ -327,10 +282,11 @@ class RecoveryE36GapiPreflightInstrumentedTest {
         context: android.content.Context,
         sourceFile: File,
         port: CountingAuthenticator,
+        bootstrap: RecoveryCheckpointAndroidTestFixture.BootstrapObservation,
         fresh: RecoveryStreamingReconciliationResult.PersistedValid,
         replay: RecoveryStreamingReconciliationResult.PersistedValid,
         denied: RecoveryStreamingReconciliationResult.Fatal,
-        cleanup: Cleanup,
+        cleanup: RecoveryCheckpointAndroidTestFixture.CleanupObservation,
     ) {
         val sqlite = AndroidRecoveryJournalDatabase.writable(context)
         val provider = KeyStore.getInstance("AndroidKeyStore").provider.name
@@ -357,6 +313,34 @@ class RecoveryE36GapiPreflightInstrumentedTest {
                 .put("sqlitePragmas", JSONObject(pragmas))
                 .put("keystoreProvider", provider)
                 .put("keystoreAlgorithm", KeyProperties.KEY_ALGORITHM_AES)
+                .put(
+                    "bootstrap",
+                    JSONObject()
+                        .put(
+                            "completedSteps",
+                            bootstrap.committed.completedSteps.joinToString(",") { it.name },
+                        )
+                        .put("evidenceEmitted", bootstrap.committed.evidenceEmitted)
+                        .put("runId", bootstrap.evidence.runId)
+                        .put("candidateId", bootstrap.evidence.candidateId)
+                        .put(
+                            "keyConfirmationRelativeName",
+                            bootstrap.evidence.keyConfirmationRelativeName,
+                        )
+                        .put("keyConfirmationBytes", bootstrap.evidence.keyConfirmationBytes)
+                        .put(
+                            "keyConfirmationSha256",
+                            bootstrap.evidence.keyConfirmationSha256.toLowercaseHex(),
+                        )
+                        .put(
+                            "canonicalAliasSha256",
+                            bootstrap.evidence.canonicalAliasSha256.toLowercaseHex(),
+                        )
+                        .put(
+                            "keyConfirmationState",
+                            bootstrap.evidence.keyConfirmationState.name,
+                        ),
+                )
                 .put(
                     "packages",
                     JSONObject()
@@ -417,6 +401,10 @@ class RecoveryE36GapiPreflightInstrumentedTest {
                         .put("checkpointDeletes", cleanup.checkpointDeletes)
                         .put("outcomeDeletes", cleanup.outcomeDeletes)
                         .put("rangeDeletes", cleanup.rangeDeletes)
+                        .put("bootstrapDeletes", cleanup.bootstrapDeletes)
+                        .put("aliasExistedBefore", cleanup.aliasExistedBefore)
+                        .put("aliasAbsentAfter", cleanup.aliasAbsentAfter)
+                        .put("runDirectoryAbsentAfter", cleanup.runDirectoryAbsentAfter)
                         .put("complete", true),
                 )
         println("INSTRUMENTATION_STATUS $payload")
@@ -467,6 +455,4 @@ class RecoveryE36GapiPreflightInstrumentedTest {
             )
         }
     }
-
-    private fun Any.isCheckpointReceipt() = this.javaClass.simpleName == "CheckpointReceipt"
 }
