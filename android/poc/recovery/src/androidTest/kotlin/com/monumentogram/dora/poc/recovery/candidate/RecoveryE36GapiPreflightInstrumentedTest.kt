@@ -41,13 +41,14 @@ class RecoveryE36GapiPreflightInstrumentedTest {
         require(arguments.getString("pocRecoveryE36GapiPreflight") == "true") {
             "pocRecoveryE36GapiPreflight=true is required"
         }
-        require(Build.VERSION.SDK_INT == 36) { "API 36 is required" }
-        require(Build.FINGERPRINT.contains("generic", ignoreCase = true)) {
-            "E36-GAPI emulator fingerprint is required"
-        }
-        require(Build.PRODUCT.contains("sdk", ignoreCase = true)) {
-            "Google APIs SDK product is required"
-        }
+        RecoveryE36GapiDeviceIdentityGuard.requireAccepted(
+            RecoveryE36GapiDeviceIdentity(
+                api = Build.VERSION.SDK_INT,
+                fingerprint = Build.FINGERPRINT,
+                product = Build.PRODUCT,
+                primaryAbi = Build.SUPPORTED_ABIS.firstOrNull().orEmpty(),
+            )
+        )
         val revision = requireHarnessRevision(arguments.getString("recoveryHarnessRevision"))
 
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()

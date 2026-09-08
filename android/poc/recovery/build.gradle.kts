@@ -37,6 +37,12 @@ android {
             }
         }
     }
+
+    sourceSets {
+        val sharedIdentitySource = file("src/sharedTest/kotlin").absolutePath
+        getByName("test").kotlin.directories.add(sharedIdentitySource)
+        getByName("androidTest").kotlin.directories.add(sharedIdentitySource)
+    }
 }
 
 dependencies {
