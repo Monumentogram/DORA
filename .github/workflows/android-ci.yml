@@ -114,6 +114,7 @@ jobs:
           :poc:search:testDebugUnitTest
           :app:compileDebugAndroidTestKotlin
           :poc:capture:compileDebugAndroidTestKotlin
+          :poc:recovery:compileDebugAndroidTestKotlin
           :poc:search:compileDebugAndroidTestKotlin
           :app:lintDebug
           :core:common:lintDebug
