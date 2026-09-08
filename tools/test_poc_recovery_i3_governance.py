@@ -2465,6 +2465,183 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
                 )
             )
 
+    def test_e36_sqlite_pragma_remediation_is_object_closed_and_squash_safe(self) -> None:
+        governance_root = Path(governance.__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory(prefix="dora-rec-i3-e36-sqlite-remediation-") as temporary:
+            parent = Path(temporary)
+            builder = parent / "builder"
+            governance.test_git(
+                parent,
+                "clone",
+                "--shared",
+                "--no-checkout",
+                str(governance_root),
+                str(builder),
+            )
+            governance.test_git(
+                builder,
+                "checkout",
+                "--detach",
+                "-q",
+                governance.REC_I3_E36_SQLITE_BASE,
+            )
+            governance.test_git(
+                builder,
+                "checkout",
+                governance.REC_I3_E36_SQLITE_IMPLEMENTATION_COMMIT,
+                "--",
+                *governance.REC_I3_E36_SQLITE_IMPLEMENTATION_PATHS,
+            )
+            governance.test_git(
+                builder,
+                "add",
+                "--",
+                *governance.REC_I3_E36_SQLITE_IMPLEMENTATION_PATHS,
+            )
+            implementation_tree = governance.test_git_text(builder, "write-tree")
+            implementation_commit = governance.test_git_text(
+                builder,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                implementation_tree,
+                "-p",
+                governance.REC_I3_E36_SQLITE_BASE,
+                input_data=b"synthetic E36 SQLite implementation\n",
+            )
+            original_implementation_commit = (
+                governance.REC_I3_E36_SQLITE_IMPLEMENTATION_COMMIT
+            )
+            self.addCleanup(
+                setattr,
+                governance,
+                "REC_I3_E36_SQLITE_IMPLEMENTATION_COMMIT",
+                original_implementation_commit,
+            )
+            governance.REC_I3_E36_SQLITE_IMPLEMENTATION_COMMIT = implementation_commit
+            self.assertTrue(
+                governance.rec_i3_e36_sqlite_implementation_commit_candidate(
+                    implementation_commit,
+                    root=builder,
+                )
+            )
+
+            governance.test_git(builder, "checkout", "--detach", "-q", implementation_commit)
+            for relative in governance.REC_I3_E36_SQLITE_EVIDENCE_PATHS:
+                target = builder / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes((governance_root / relative).read_bytes())
+            governance.test_git(
+                builder,
+                "add",
+                "--",
+                *governance.REC_I3_E36_SQLITE_EVIDENCE_PATHS,
+            )
+            evidence_tree = governance.test_git_text(builder, "write-tree")
+            evidence_commit = governance.test_git_text(
+                builder,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                evidence_tree,
+                "-p",
+                implementation_commit,
+                input_data=b"synthetic E36 SQLite evidence identity\n",
+            )
+            original_evidence_commit = governance.REC_I3_E36_SQLITE_EVIDENCE_COMMIT
+            self.addCleanup(
+                setattr,
+                governance,
+                "REC_I3_E36_SQLITE_EVIDENCE_COMMIT",
+                original_evidence_commit,
+            )
+            governance.REC_I3_E36_SQLITE_EVIDENCE_COMMIT = evidence_commit
+            self.assertTrue(
+                governance.rec_i3_e36_sqlite_evidence_commit_candidate(
+                    evidence_commit,
+                    root=builder,
+                )
+            )
+
+            governance.test_git(builder, "checkout", "--detach", "-q", evidence_commit)
+            for relative in governance.REC_I3_E36_SQLITE_GOVERNANCE_PATHS:
+                target = builder / relative
+                target.write_bytes((governance_root / relative).read_bytes())
+            governance.test_git(
+                builder,
+                "add",
+                "--",
+                *governance.REC_I3_E36_SQLITE_GOVERNANCE_PATHS,
+            )
+            source_tree = governance.test_git_text(builder, "write-tree")
+            source_head = governance.test_git_text(
+                builder,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                source_tree,
+                "-p",
+                evidence_commit,
+                input_data=b"synthetic E36 SQLite governance successor\n",
+            )
+            self.assertTrue(
+                governance.rec_i3_e36_sqlite_remediation_source_candidate(
+                    source_head,
+                    governance.REC_I3_E36_SQLITE_BASE,
+                    root=builder,
+                )
+            )
+
+            squash_head = governance.test_git_text(
+                builder,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                source_tree,
+                "-p",
+                governance.REC_I3_E36_SQLITE_BASE,
+                input_data=b"synthetic E36 SQLite squash main\n",
+            )
+            self.assertTrue(
+                governance.rec_i3_e36_sqlite_remediation_main_candidate(
+                    squash_head,
+                    root=builder,
+                )
+            )
+
+            governance.test_git(builder, "checkout", "--detach", "-q", source_head)
+            extra = builder / "synthetic-extra.txt"
+            extra.write_text("extra\n", encoding="utf-8")
+            governance.test_git(builder, "add", "--", extra.name)
+            extra_tree = governance.test_git_text(builder, "write-tree")
+            extra_source = governance.test_git_text(
+                builder,
+                "-c",
+                "user.name=Dora Validator Test",
+                "-c",
+                "user.email=dora-validator@example.invalid",
+                "commit-tree",
+                extra_tree,
+                "-p",
+                evidence_commit,
+                input_data=b"synthetic E36 SQLite extra path\n",
+            )
+            self.assertFalse(
+                governance.rec_i3_e36_sqlite_remediation_source_candidate(
+                    extra_source,
+                    governance.REC_I3_E36_SQLITE_BASE,
+                    root=builder,
+                )
+            )
+
     def test_e36_gapi_exact_local_and_stacked_pr_topologies_are_reachable(self) -> None:
         integrated_main = "be37378ca88e0bd4aee1f2fe0c54362798bdef9d"
         harness_head = "7a7036513f2eb460ed72136e1784d712c4aae42d"
