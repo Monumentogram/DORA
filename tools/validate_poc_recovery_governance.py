@@ -560,6 +560,25 @@ REC_I3_E36_SQLITE_PATHS = (
 REC_I3_E36_SQLITE_POST_MERGE_BRANCH = (
     "codex/rec-i3-e36-sqlite-postmerge-selftest-v01"
 )
+REC_I3_V7_BRANCH = "codex/rec-i3-v7-bootstrap-preservation-fix"
+REC_I3_V7_BASE = "c473a6f3877f60a1c1686e676606affd4fc66334"
+REC_I3_V7_BASE_TREE = "f91bf89c08f0cfb26f53d1bed588d397ead208c9"
+REC_I3_V7_BASE_PARENT = "d843953be3d5da56198e57ad52c3dd05f71091d9"
+REC_I3_V7_PATHS = (
+    "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/"
+    "candidate/RecoveryCheckpointAndroidTestFixture.kt",
+    "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/"
+    "candidate/RecoveryCheckpointForeignKeyInstrumentedTest.kt",
+    "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/"
+    "candidate/RecoveryE36GapiPreflightInstrumentedTest.kt",
+    "docs/superpowers/plans/2026-09-08-rec-i3-v7-bootstrap-preservation-repair.md",
+    "tools/rec_i3_preserve_and_cleanup.ps1",
+    "tools/test_poc_recovery_i3_governance.py",
+    "tools/test_rec_i3_preserve_and_cleanup.py",
+    "tools/validate_poc_recovery_governance.py",
+    "tools/verify_poc_recovery_dependency_inventory.py",
+    "tools/verify_rec_i3_streaming_sqlite.py",
+)
 REC_I3_E36_SQLITE_POST_MERGE_BASE = "d843953be3d5da56198e57ad52c3dd05f71091d9"
 REC_I3_E36_SQLITE_POST_MERGE_BASE_TREE = "5c2ec91631bffacfc90509ebae75d6879dfd60f9"
 REC_I3_E36_SQLITE_POST_MERGE_BASE_PARENT = REC_I3_E36_SQLITE_BASE
@@ -7220,6 +7239,46 @@ def rec_i3_e36_sqlite_post_merge_candidate(
     )
 
 
+def rec_i3_v7_source_candidate(commit: str, *, root: Path | None = None) -> bool:
+    repository_root = root or ROOT
+    if (
+        git_optional_output("rev-parse", "--verify", f"{commit}^{{commit}}", root=repository_root)
+        != commit
+        or not git_is_ancestor(REC_I3_V7_BASE, commit, root=repository_root)
+        or commit == REC_I3_V7_BASE
+    ):
+        return False
+    changed = set(
+        git_path_records(
+            "diff", "--name-only", "--no-renames", "-z", REC_I3_V7_BASE, commit, "--",
+            root=repository_root,
+        )
+    )
+    if changed != set(REC_I3_V7_PATHS):
+        return False
+    return all(
+        len(git_path_records("ls-tree", "-z", commit, "--", relative, root=repository_root)) == 1
+        and git_path_records("ls-tree", "-z", commit, "--", relative, root=repository_root)[0]
+        .startswith(f"100644 blob ")
+        for relative in REC_I3_V7_PATHS
+    )
+
+
+def rec_i3_v7_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
+    pull_request = lifecycle.github_pull_request_context
+    if pull_request is not None:
+        return (
+            pull_request.head_ref == REC_I3_V7_BRANCH
+            and pull_request.base_ref == GITHUB_BASE_BRANCH
+            and pull_request.base_sha == REC_I3_V7_BASE
+            and rec_i3_v7_source_candidate(pull_request.head_sha)
+        )
+    return (
+        lifecycle.branch in {REC_I3_V7_BRANCH, GITHUB_BASE_BRANCH}
+        and rec_i3_v7_source_candidate(lifecycle.head)
+    )
+
+
 def rec_i3_squash_main_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
     if (
         git_optional_output(
@@ -8117,6 +8176,122 @@ def validate_rec_i3_e36_sqlite_post_merge(
     print(
         "PASS REC-I3 E36 SQLite post-merge self-test correction; immutable fixture is "
         "reconstructed from accepted-tree bytes; non-measured preflight pending"
+    )
+
+
+def validate_rec_i3_v7(lifecycle: RecoveryLifecycleIdentity) -> None:
+    validate_pinned_commit_identity(
+        collect_pinned_commit_identity(REC_I3_V7_BASE, lifecycle.head),
+        expected_commit=REC_I3_V7_BASE,
+        expected_tree=REC_I3_V7_BASE_TREE,
+        expected_parents=(REC_I3_V7_BASE_PARENT,),
+        label="REC-I3 V7 repair base",
+    )
+    pull_request = lifecycle.github_pull_request_context
+    candidate_head = pull_request.head_sha if pull_request is not None else lifecycle.head
+    if pull_request is not None:
+        require(
+            pull_request.repository == GITHUB_REPOSITORY
+            and pull_request.head_repository == GITHUB_REPOSITORY
+            and pull_request.head_ref == REC_I3_V7_BRANCH
+            and pull_request.base_ref == GITHUB_BASE_BRANCH
+            and pull_request.base_sha == REC_I3_V7_BASE
+            and pull_request.draft is False
+            and pull_request.state == "open"
+            and pull_request.merged is False
+            and lifecycle.branch == REC_I3_V7_BRANCH
+            and pull_request.merge_sha == lifecycle.head
+            and tuple((git_optional_output("show", "-s", "--format=%P", lifecycle.head) or "").split())
+            == (pull_request.base_sha, pull_request.head_sha)
+            and git_output("rev-parse", f"{lifecycle.head}^{{tree}}")
+            == git_output("rev-parse", f"{pull_request.head_sha}^{{tree}}"),
+            "REC-I3 V7 pull_request identity drift",
+        )
+    elif lifecycle.branch == REC_I3_V7_BRANCH:
+        require(
+            not os.environ.get("GITHUB_EVENT_NAME")
+            and rec_i3_v7_source_candidate(lifecycle.head),
+            "REC-I3 V7 local identity drift",
+        )
+    else:
+        require(
+            lifecycle.branch == GITHUB_BASE_BRANCH
+            and rec_i3_v7_source_candidate(lifecycle.head),
+            "REC-I3 V7 integrated-main identity drift",
+        )
+        if os.environ.get("GITHUB_EVENT_NAME"):
+            workspace = os.environ.get("GITHUB_WORKSPACE", "")
+            require(
+                os.environ.get("GITHUB_EVENT_NAME") in {"push", "workflow_dispatch"}
+                and os.environ.get("GITHUB_REPOSITORY") == GITHUB_REPOSITORY
+                and bool(workspace)
+                and Path(workspace).resolve() == ROOT.resolve()
+                and os.environ.get("GITHUB_REF") == f"refs/heads/{GITHUB_BASE_BRANCH}"
+                and os.environ.get("GITHUB_SHA") == lifecycle.head,
+                "REC-I3 V7 integrated-main GitHub identity drift",
+            )
+    require(rec_i3_v7_source_candidate(candidate_head), "REC-I3 V7 source profile drift")
+    require(
+        git_output("rev-parse", f"{candidate_head}:android/poc/recovery/src/main")
+        == git_output("rev-parse", f"{REC_I3_V7_BASE}:android/poc/recovery/src/main"),
+        "REC-I3 V7 changed production Recovery source",
+    )
+    changes = collect_post_merge_changes(merged_anchor=REC_I3_V7_BASE)
+    require(
+        set(changes) == {"committed", "staged", "unstaged", "untracked"}
+        and set(changes["committed"]) == set(REC_I3_V7_PATHS)
+        and all(not changes[layer] for layer in ("staged", "unstaged", "untracked")),
+        f"REC-I3 V7 repair is not the exact clean profile: {changes}",
+    )
+    for relative in REC_I3_V7_PATHS:
+        validate_rec_i3_regular_file(relative)
+
+    preflight = read_text(REC_I3_E36_SQLITE_EVIDENCE_PATHS[0])
+    require(preflight.count("@Test") == 1, "REC-I3 V7 changed the one-test preflight boundary")
+    bootstrap = "RecoveryCheckpointAndroidTestFixture.bootstrap(context, runId)"
+    insert = "val checkpointInsert = journal.insertCheckpoint(checkpoint)"
+    diagnostic = 'println("INSTRUMENTATION_CHECKPOINT_INSERT $checkpointInsertDiagnostic")'
+    receipt_assertion = (
+        "assertTrue(checkpointInsert is RecoveryStreamingJournalResult.CheckpointReceipt)"
+    )
+    require(
+        bootstrap in preflight
+        and insert in preflight
+        and diagnostic in preflight
+        and receipt_assertion in preflight
+        and preflight.index(bootstrap) < preflight.index(insert)
+        and preflight.index(diagnostic) < preflight.index(receipt_assertion)
+        and "isCheckpointReceipt" not in preflight,
+        "REC-I3 V7 preflight bootstrap or safe first-result diagnostics drift",
+    )
+    fixture = read_text(REC_I3_V7_PATHS[0])
+    deletion_order = (
+        'database.delete("recovery_stream_range_quarantine_v4"',
+        'database.delete("recovery_stream_outcome_v4"',
+        'database.delete("recovery_stream_checkpoint_v4"',
+        'database.delete("recovery_run_bootstrap_v1"',
+    )
+    require(
+        "AndroidRecoveryKeyBootstrap" in fixture
+        and "KeyConfirmationValue(RecoveryCandidate.STREAM, runId)" in fixture
+        and all(value in fixture for value in deletion_order)
+        and list(map(fixture.index, deletion_order)) == sorted(map(fixture.index, deletion_order)),
+        "REC-I3 V7 production bootstrap fixture or child-before-parent cleanup drift",
+    )
+    preservation = read_text("tools/rec_i3_preserve_and_cleanup.ps1")
+    require(
+        "Invoke-Robocopy" in preservation
+        and "$result -lt 0 -or $result -gt 7" in preservation
+        and "originalPath = $originalPath" in preservation
+        and "finally" in preservation
+        and "cleanupAttempted = $true" in preservation
+        and 'Invoke-AdbObserved @("shell", "pm", "path", $package)' in preservation
+        and "PACKAGE_CLEANUP_UNVERIFIED" in preservation,
+        "REC-I3 V7 preservation or independent cleanup contract drift",
+    )
+    print(
+        "PASS REC-I3 V7 bootstrap/preservation repair profile; production source unchanged, "
+        "Android execution pending"
     )
 
 
@@ -12654,6 +12829,36 @@ def validate_rec_i3_e36_sqlite_post_merge_fast_path() -> bool:
     return True
 
 
+def run_rec_i3_v7_self_tests() -> None:
+    import unittest
+    import test_poc_recovery_i3_governance
+
+    test_case = test_poc_recovery_i3_governance.RecoveryI3GovernanceTests
+    suite = unittest.TestSuite(
+        test_case(name)
+        for name in (
+            "test_streaming_sqlite_verifier_executes_exact_schema_and_migrations",
+            "test_v7_preflight_bootstraps_before_checkpoint_and_cleans_parent",
+            "test_v7_long_path_preservation_and_independent_cleanup",
+            "test_v7_dependency_inventory_dispatches_through_the_v7_profile",
+        )
+    )
+    require(
+        unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful(),
+        "REC-I3 V7 regression self-tests failed",
+    )
+
+
+def validate_rec_i3_v7_fast_path() -> bool:
+    lifecycle = collect_recovery_lifecycle_identity()
+    if not rec_i3_v7_candidate(lifecycle):
+        return False
+    validate_rec_i3_v7(lifecycle)
+    if "--self-test" in sys.argv[1:]:
+        run_rec_i3_v7_self_tests()
+    return True
+
+
 def validate_rec_i3_e36_gapi_fast_path() -> bool:
     lifecycle = collect_recovery_lifecycle_identity()
     if not rec_i3_e36_gapi_candidate(lifecycle):
@@ -12691,6 +12896,8 @@ def validate_rec_i3_squash_main_fast_path() -> bool:
 
 
 def main() -> int:
+    if validate_rec_i3_v7_fast_path():
+        return 0
     if validate_rec_i3_observable_controller_fast_path():
         return 0
     if validate_rec_i3_result_boundary_fast_path():

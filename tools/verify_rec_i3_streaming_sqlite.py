@@ -197,6 +197,46 @@ def assert_v4(database: sqlite3.Connection, sql: dict[str, str]) -> None:
         assert normalized(actual_sql[object_name]) == normalized(sql[name])
 
 
+def assert_checkpoint_requires_bootstrap_parent(database: sqlite3.Connection) -> None:
+    checkpoint = (
+        "run-stream-parent", "REC-STREAM-TINK", "CHECKPOINT", 1, 0, 0,
+        b"p" * 32, 0, "checkpoints/g-00000000000000000001.ct", 1, b"c" * 32,
+        "key-envelopes/checkpoint-g-00000000000000000001.ks", 1, b"e" * 32,
+        "stream/stream.ct", "key-envelopes/stream.ks", 1, b"s" * 32,
+        b"z" * 32, b"i" * 32, "VALID",
+    )
+    insert_checkpoint = "INSERT INTO recovery_stream_checkpoint_v4 VALUES (" + ",".join("?" * 21) + ")"
+
+    try:
+        database.execute(insert_checkpoint, checkpoint)
+    except sqlite3.IntegrityError as error:
+        assert "FOREIGN KEY constraint failed" in str(error)
+    else:
+        raise AssertionError("orphan checkpoint insert did not fail its bootstrap foreign key")
+
+    database.execute(
+        "INSERT INTO recovery_run_bootstrap_v1 VALUES (?,?,?,?,?,?,?)",
+        (
+            "run-stream-parent", "REC-STREAM-TINK", "key-confirmation/run.kc", 1,
+            b"k" * 32, b"a" * 32, "VALID",
+        ),
+    )
+    database.execute(insert_checkpoint, checkpoint)
+    assert database.execute(
+        "SELECT COUNT(*) FROM recovery_stream_checkpoint_v4 WHERE run_id=? AND candidate_id=?",
+        checkpoint[:2],
+    ).fetchone()[0] == 1
+    database.execute(
+        "DELETE FROM recovery_stream_checkpoint_v4 WHERE run_id=? AND candidate_id=?",
+        checkpoint[:2],
+    )
+    database.execute(
+        "DELETE FROM recovery_run_bootstrap_v1 WHERE run_id=? AND candidate_id=?",
+        checkpoint[:2],
+    )
+    assert database.execute("PRAGMA foreign_key_check").fetchall() == []
+
+
 def verify() -> None:
     assert_android_configuration_uses_query_api()
     sql = production_sql()
@@ -207,6 +247,7 @@ def verify() -> None:
         fresh.execute(sql[name])
     fresh.execute("PRAGMA user_version=4")
     assert_v4(fresh, sql)
+    assert_checkpoint_requires_bootstrap_parent(fresh)
 
     for old in (1, 2, 3):
         database = connect()
@@ -242,4 +283,7 @@ def verify() -> None:
 
 if __name__ == "__main__":
     verify()
-    print(f"PASS REC-I3 streaming SQLite schema v4 ({sqlite3.sqlite_version})")
+    print(
+        f"PASS REC-I3 streaming SQLite schema v4 ({sqlite3.sqlite_version}); "
+        "orphan checkpoint rejected; bootstrap parent accepted"
+    )
