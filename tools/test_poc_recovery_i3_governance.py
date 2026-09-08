@@ -2485,13 +2485,17 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
                 "-q",
                 governance.REC_I3_E36_SQLITE_BASE,
             )
-            governance.test_git(
-                builder,
-                "checkout",
-                governance.REC_I3_E36_SQLITE_IMPLEMENTATION_COMMIT,
-                "--",
-                *governance.REC_I3_E36_SQLITE_IMPLEMENTATION_PATHS,
-            )
+            runtime_pin_prelude = b'''E36_PREFLIGHT = ROOT / (\n    "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/"\n    "candidate/RecoveryE36GapiPreflightInstrumentedTest.kt"\n)\nE36_SQLITE_RUNTIME_PIN = "4c318c054da39768340f059db5687051dde8a843"\n\n'''
+            runtime_pin_assertion = b'''    preflight = E36_PREFLIGHT.read_text(encoding="utf-8")\n    assert f'.put("integratedRuntimePin", "{E36_SQLITE_RUNTIME_PIN}")' in preflight, (\n        "E36 evidence must identify the exact SQLite-remediation runtime commit"\n    )\n'''
+            for relative in governance.REC_I3_E36_SQLITE_IMPLEMENTATION_PATHS:
+                target = builder / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                content = (governance_root / relative).read_bytes().replace(b"\r\n", b"\n")
+                if relative == "tools/verify_rec_i3_streaming_sqlite.py":
+                    content = content.replace(runtime_pin_prelude, b"\n").replace(
+                        runtime_pin_assertion, b""
+                    )
+                target.write_bytes(content)
             governance.test_git(
                 builder,
                 "add",
