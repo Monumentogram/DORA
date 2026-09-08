@@ -13,6 +13,11 @@ KOTLIN = ROOT / (
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/"
     "journal/AndroidRecoveryJournalDatabase.kt"
 )
+E36_PREFLIGHT = ROOT / (
+    "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/"
+    "candidate/RecoveryE36GapiPreflightInstrumentedTest.kt"
+)
+E36_SQLITE_RUNTIME_PIN = "4c318c054da39768340f059db5687051dde8a843"
 
 V4_NAMES = (
     "CREATE_QUARANTINE_TABLE",
@@ -79,6 +84,30 @@ def production_sql() -> dict[str, str]:
     for name, block in zip(V4_NAMES, adr_blocks, strict=True):
         assert normalized(result[name]) == normalized(block), f"{name} differs from the ADR"
     return result
+
+
+def assert_android_configuration_uses_query_api() -> None:
+    source = KOTLIN.read_text(encoding="utf-8")
+    on_configure = re.search(
+        r"override fun onConfigure\(database: SQLiteDatabase\) \{(.*?)\n    \}",
+        source,
+        re.DOTALL,
+    )
+    assert on_configure, "missing Recovery journal onConfigure"
+    body = on_configure.group(1)
+    assert 'execSQL("PRAGMA wal_autocheckpoint=0")' not in body, (
+        "wal_autocheckpoint returns data on Android and cannot use execSQL"
+    )
+    assert re.search(
+        r'rawQuery\("PRAGMA wal_autocheckpoint=0", null\)\.use \{ cursor ->.*?'
+        r'cursor\.moveToFirst\(\).*?cursor\.getInt\(0\) == 0',
+        body,
+        re.DOTALL,
+    ), "wal_autocheckpoint must use the query API and verify SQLite accepted zero"
+    preflight = E36_PREFLIGHT.read_text(encoding="utf-8")
+    assert f'.put("integratedRuntimePin", "{E36_SQLITE_RUNTIME_PIN}")' in preflight, (
+        "E36 evidence must identify the exact SQLite-remediation runtime commit"
+    )
 
 
 def connect() -> sqlite3.Connection:
@@ -169,6 +198,7 @@ def assert_v4(database: sqlite3.Connection, sql: dict[str, str]) -> None:
 
 
 def verify() -> None:
+    assert_android_configuration_uses_query_api()
     sql = production_sql()
 
     fresh = connect()

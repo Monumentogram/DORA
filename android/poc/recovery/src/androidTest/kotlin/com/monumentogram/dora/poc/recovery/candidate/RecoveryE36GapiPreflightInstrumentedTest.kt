@@ -346,7 +346,7 @@ class RecoveryE36GapiPreflightInstrumentedTest {
         val testApk = File(instrument.context.applicationInfo.sourceDir)
         val payload =
             JSONObject()
-                .put("integratedRuntimePin", "be37378ca88e0bd4aee1f2fe0c54362798bdef9d")
+                .put("integratedRuntimePin", "4c318c054da39768340f059db5687051dde8a843")
                 .put("harnessRevision", revision)
                 .put("sqliteVersion", scalar(sqlite, "select sqlite_version()"))
                 .put("sqliteSourceId", scalar(sqlite, "select sqlite_source_id()"))
