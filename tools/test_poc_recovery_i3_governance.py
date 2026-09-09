@@ -207,15 +207,28 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
                         "-p", parents[0], "-p", parents[1],
                         input_data=b"invalid synthetic V10 PR merge\n",
                     )
-                    bad_lifecycle = replace(
-                        lifecycle,
-                        head=bad_merge,
-                        github_pull_request_context=replace(context, merge_sha=bad_merge),
-                    )
-                    with self.subTest(label=label), patch.dict(
-                        os.environ, {"GITHUB_SHA": bad_merge}
-                    ):
-                        self.assert_v10_rejected(bad_lifecycle)
+                    governance.test_git(repo, "checkout", "-q", "--detach", bad_merge)
+                    try:
+                        bad_lifecycle = replace(
+                            lifecycle,
+                            head=bad_merge,
+                            github_pull_request_context=replace(context, merge_sha=bad_merge),
+                        )
+                        with self.subTest(label=label), patch.dict(
+                            os.environ, {"GITHUB_SHA": bad_merge}
+                        ):
+                            self.assertEqual(
+                                bad_merge,
+                                governance.git_output("rev-parse", "HEAD"),
+                                "topology negative must execute from its constructed merge",
+                            )
+                            self.assertFalse(governance.rec_i3_v10_candidate(bad_lifecycle))
+                            with self.assertRaisesRegex(
+                                ValueError, "REC-I3 V10 pull_request identity drift"
+                            ):
+                                governance.validate_rec_i3_v10(bad_lifecycle)
+                    finally:
+                        governance.test_git(repo, "checkout", "-q", "--detach", merge)
 
     def test_v10_dependency_entry_validates_profile_and_static_mutations(self) -> None:
         import verify_poc_recovery_dependency_inventory as inventory
