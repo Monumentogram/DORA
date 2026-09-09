@@ -50,10 +50,67 @@ class RecI3V8RunnerTests(unittest.TestCase):
         self.git_log = self.root / "git.log"
         self.emulator_started = self.root / "emulator-started.txt"
         self.gradle_marker = self.root / "gradle-started.txt"
+        self.apk_lifecycle_log = self.root / "apk-lifecycle.jsonl"
+        self.apk_lifecycle = self.root / "apk-lifecycle.py"
+        # Model the installed AGP/UTP side effect only for cleanup-ownership regressions.
+        self.apk_lifecycle.write_text(
+            "import json, os, sys\n"
+            "from pathlib import Path\n"
+            "state_path = Path(os.environ['FAKE_APK_STATE'])\n"
+            "installed = set(json.loads(state_path.read_text()) if state_path.exists() else [])\n"
+            "packages = ['com.monumentogram.dora.poc.recovery', 'com.monumentogram.dora.poc.recovery.test']\n"
+            "args = sys.argv[1:]\n"
+            "def record(event, **fields):\n"
+            "    with Path(os.environ['FAKE_APK_LIFECYCLE_LOG']).open('a', encoding='utf-8') as stream:\n"
+            "        stream.write(json.dumps(dict(event=event, installed=sorted(installed), **fields)) + '\\n')\n"
+            "def save():\n"
+            "    state_path.write_text(json.dumps(sorted(installed)), encoding='utf-8')\n"
+            "if args[0] == 'connected':\n"
+            "    installed.update(packages)\n"
+            "    record('connected-install')\n"
+            "    if '-Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true' not in args[1:]:\n"
+            "        installed.difference_update(packages)\n"
+            "        record('utp-default-removal')\n"
+            "    else:\n"
+            "        record('utp-retained-for-helper')\n"
+            "    save()\n"
+            "elif args[2] == 'uninstall':\n"
+            "    package = args[3]\n"
+            "    if package not in installed:\n"
+            "        record('uninstall-not-installed', package=package)\n"
+            "        print('Failure [DELETE_FAILED_INTERNAL_ERROR: package not installed]', file=sys.stderr)\n"
+            "        sys.exit(1)\n"
+            "    installed.remove(package)\n"
+            "    save()\n"
+            "    preserved = bool(list(Path(os.environ['FAKE_EVIDENCE']).glob('REC-I3-V8-PRESERVED-*/PRESERVATION_MANIFEST.json')))\n"
+            "    if os.environ['FAKE_APK_UNINSTALL_ERROR'] == '1':\n"
+            "        record('helper-uninstall-error', package=package, preserved=preserved)\n"
+            "        print('Failure [forced helper uninstall error after removal]', file=sys.stderr)\n"
+            "        sys.exit(17)\n"
+            "    record('helper-uninstall-success', package=package, preserved=preserved)\n"
+            "    print('Success')\n"
+            "elif args[3:5] == ['pm', 'path']:\n"
+            "    package = args[5]\n"
+            "    record('pm-path', package=package)\n"
+            "    if package in installed:\n"
+            "        print('package:/data/app/' + package + '/base.apk')\n"
+            "    else:\n"
+            "        sys.exit(1)\n"
+            "elif args[3:6] == ['pm', 'list', 'packages']:\n"
+            "    record('pm-list')\n"
+            "    for package in sorted(installed):\n"
+            "        print('package:' + package)\n"
+            "else:\n"
+            "    raise SystemExit('unexpected stateful fake arguments: ' + repr(args))\n",
+            encoding="utf-8",
+        )
         self.adb = self.toolchain / "platform-tools" / "adb.cmd"
         self.adb.write_text(
             "@echo off\r\n"
             "echo %*>>\"%FAKE_ADB_LOG%\"\r\n"
+            "if \"%FAKE_APK_LIFECYCLE%\"==\"1\" if \"%3\"==\"uninstall\" goto stateful\r\n"
+            "if \"%FAKE_APK_LIFECYCLE%\"==\"1\" if \"%4 %5\"==\"pm path\" goto stateful\r\n"
+            "if \"%FAKE_APK_LIFECYCLE%\"==\"1\" if \"%4 %5 %6\"==\"pm list packages\" goto stateful\r\n"
             "if \"%FAKE_ADB_FAILURE%\"==\"final_logcat\" if \"%3 %4\"==\"logcat -d\" exit /b 9\r\n"
             "if \"%FAKE_ADB_FAILURE%\"==\"final_logcat_timeout\" if \"%3 %4\"==\"logcat -d\" ping 127.0.0.1 -n 70 >nul\r\n"
             "if \"%3\"==\"devices\" (\r\n"
@@ -71,7 +128,10 @@ class RecI3V8RunnerTests(unittest.TestCase):
             "if \"%4 %5\"==\"pm path\" if \"%FAKE_ADB_IDENTITY%\"==\"preflight_path_permission\" if not exist \"%FAKE_UNINSTALLED_PREFIX%-%6\" (echo SecurityException: permission denied 1>&2& exit /b 1)\r\n"
             "if \"%5\"==\"path\" (if \"%FAKE_ADB_IDENTITY%\"==\"package_present\" (echo package:/data/app/present.apk& exit /b 0) else (exit /b 1))\r\n"
             "if \"%5 %6\"==\"list packages\" if \"%FAKE_ADB_IDENTITY%\"==\"package_present\" echo package:com.monumentogram.dora.poc.recovery\r\n"
-            "exit /b 0\r\n",
+            "exit /b 0\r\n"
+            ":stateful\r\n"
+            "\"%DORA_REC_I3_PYTHON_PATH%\" \"%FAKE_APK_LIFECYCLE_SCRIPT%\" %*\r\n"
+            "exit /b %errorlevel%\r\n",
             encoding="utf-8",
         )
         self.emulator = self.toolchain / "emulator" / "emulator.cmd"
@@ -92,6 +152,7 @@ class RecI3V8RunnerTests(unittest.TestCase):
             "echo %*| findstr /c:\"connectedDebugAndroidTest\" >nul || exit /b 0\r\n"
             "if not exist \"%DORA_REC_I3_EXPECTED_LEDGER%\" exit /b 91\r\n"
             "echo started>\"%FAKE_GRADLE_MARKER%\"\r\n"
+            "if \"%FAKE_APK_LIFECYCLE%\"==\"1\" \"%DORA_REC_I3_PYTHON_PATH%\" \"%FAKE_APK_LIFECYCLE_SCRIPT%\" connected %*\r\n"
             "if defined FAKE_METADATA_REPORT_BLOCKER \"%DORA_REC_I3_PYTHON_PATH%\" \"%FAKE_METADATA_REPORT_BLOCKER%\"\r\n"
             "if defined FAKE_DELETE_PRESERVER del /q \"%FAKE_DELETE_PRESERVER%\"\r\n"
             "if not \"%FAKE_GRADLE_DELAY%\"==\"0\" ping 127.0.0.1 -n 6 >nul\r\n"
@@ -120,6 +181,8 @@ class RecI3V8RunnerTests(unittest.TestCase):
     def tearDown(self) -> None:
         if os.environ.get("DORA_KEEP_RUNNER_FIXTURE") != "1":
             shutil.rmtree(self.root, ignore_errors=True)
+        else:
+            print(f"RETAINED_FIXTURE {self.id()} {self.root}", flush=True)
 
     @property
     def ledger(self) -> Path:
@@ -148,6 +211,8 @@ class RecI3V8RunnerTests(unittest.TestCase):
         delete_preserver: bool = False,
         block_metadata_report: bool = False,
         block_fallback_artifacts: bool = False,
+        apk_lifecycle: bool = False,
+        apk_uninstall_error: bool = False,
     ) -> subprocess.CompletedProcess[str]:
         environment = os.environ.copy()
         environment.update(
@@ -157,6 +222,12 @@ class RecI3V8RunnerTests(unittest.TestCase):
                 "TEMP": str(self.root / "tmp"),
                 "TMP": str(self.root / "tmp"),
                 "FAKE_ADB_LOG": str(self.adb_log),
+                "FAKE_APK_LIFECYCLE": "1" if apk_lifecycle else "0",
+                "FAKE_APK_LIFECYCLE_SCRIPT": str(self.apk_lifecycle),
+                "FAKE_APK_LIFECYCLE_LOG": str(self.apk_lifecycle_log),
+                "FAKE_APK_STATE": str(self.root / "installed-packages.json"),
+                "FAKE_APK_UNINSTALL_ERROR": "1" if apk_uninstall_error else "0",
+                "FAKE_EVIDENCE": str(self.evidence),
                 "FAKE_UNINSTALLED_PREFIX": str(self.root / "uninstalled"),
                 "FAKE_EMULATOR_LOG": str(self.root / "emulator.log"),
                 "FAKE_EMULATOR_STARTED": str(self.emulator_started),
@@ -210,7 +281,87 @@ class RecI3V8RunnerTests(unittest.TestCase):
             "-AcceptedCommit", accepted_commit or self.commit,
             "-AcceptedTree", accepted_tree or self.tree,
         ]
-        return subprocess.run(command, text=True, capture_output=True, env=environment, timeout=90)
+        completed = subprocess.run(command, text=True, capture_output=True, env=environment, timeout=90)
+        if os.environ.get("DORA_KEEP_RUNNER_FIXTURE") == "1":
+            invocation = len(list(self.root.glob("runner-*.stdout"))) + 1
+            (self.root / f"runner-{invocation}.stdout").write_text(completed.stdout, encoding="utf-8")
+            (self.root / f"runner-{invocation}.stderr").write_text(completed.stderr, encoding="utf-8")
+            (self.root / f"runner-{invocation}.json").write_text(
+                json.dumps({"command": command, "exitCode": completed.returncode}, indent=2),
+                encoding="utf-8",
+            )
+        return completed
+
+    def test_connected_apks_are_removed_by_helper_after_preservation(self) -> None:
+        # Omitting the invocation-only UTP option removes APKs before the helper and must fail cleanup.
+        completed = self.invoke(apk_lifecycle=True)
+        observation = json.loads(
+            next(self.evidence.glob("REC-I3-V8-CLEANUP-*.json")).read_text(encoding="utf-8-sig")
+        )
+        self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr + json.dumps(observation))
+        self.assertTrue(observation["copySucceeded"])
+        self.assertIsNone(observation["cleanupFailure"])
+        self.assertTrue(observation["cleanupAttempted"])
+        self.assertEqual(2, len(observation["packageCleanup"]))
+        for record in observation["packageCleanup"]:
+            self.assertTrue(record["packageAbsentObserved"])
+            # Every successful cleanup command retains its own exit, timeout and both output streams.
+            expected = {
+                "forceStop": (0, ""), "uninstall": (0, "Success"),
+                "transportProbe": (0, "device"), "postUninstallQuery": (1, ""),
+                "packageList": (0, "" if record["package"].endswith(".test") else
+                                "package:com.monumentogram.dora.poc.recovery.test"),
+            }
+            for prefix, (exit_code, output) in expected.items():
+                self.assertTrue(record[prefix + "Attempted"])
+                self.assertEqual(exit_code, record[prefix + "ExitCode"])
+                self.assertFalse(record[prefix + "TimedOut"])
+                self.assertEqual(output, record[prefix + "Output"])
+                self.assertEqual("", record[prefix + "ErrorOutput"])
+        self.assertEqual(0, observation["emulatorCleanup"]["exitCode"])
+        self.assertFalse(observation["emulatorCleanup"]["timedOut"])
+        self.assertEqual("", observation["emulatorCleanup"]["output"])
+        self.assertEqual("", observation["emulatorCleanup"]["errorOutput"])
+        option = "-Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true"
+        commands = self.gradle_log.read_text(encoding="utf-8").splitlines()
+        connected = [line for line in commands if "connectedDebugAndroidTest" in line]
+        self.assertEqual(1, len(connected))
+        self.assertEqual(1, connected[0].split().count(option))
+        assembly = [line for line in commands if "assembleDebug" in line]
+        self.assertEqual(2, len(assembly))
+        self.assertTrue(all(option not in line for line in assembly))
+        events = [json.loads(line) for line in self.apk_lifecycle_log.read_text().splitlines()]
+        installed = next(index for index, event in enumerate(events) if event["event"] == "connected-install")
+        self.assertTrue(all(event["installed"] == [] for event in events[:installed]))
+        self.assertEqual(4, len(events[:installed]))
+        removals = [event for event in events if event["event"] == "helper-uninstall-success"]
+        self.assertEqual(2, len(removals))
+        self.assertTrue(all(event["preserved"] for event in removals))
+        self.assertNotIn("utp-default-removal", [event["event"] for event in events])
+        self.assertEqual([], events[-1]["installed"])
+        self.assertEqual([], list(self.evidence.glob("REC-I3-V8-CLEANUP-FALLBACK-*")))
+
+    def test_helper_uninstall_error_remains_unverified_despite_empty_queries(self) -> None:
+        # Treating a nonzero uninstall as success merely because later queries are empty must fail.
+        completed = self.invoke(apk_lifecycle=True, apk_uninstall_error=True)
+        self.assertNotEqual(0, completed.returncode)
+        observation = json.loads(
+            next(self.evidence.glob("REC-I3-V8-CLEANUP-*.json")).read_text(encoding="utf-8-sig")
+        )
+        self.assertTrue(observation["copySucceeded"])
+        self.assertEqual("PACKAGE_CLEANUP_UNVERIFIED", observation["cleanupFailure"])
+        self.assertEqual(2, len(observation["packageCleanup"]))
+        for record in observation["packageCleanup"]:
+            self.assertEqual(17, record["uninstallExitCode"])
+            self.assertIn("forced helper uninstall error after removal", record["uninstallErrorOutput"])
+            self.assertEqual(1, record["postUninstallQueryExitCode"])
+            self.assertEqual("", record["postUninstallQueryOutput"])
+            self.assertEqual("", record["postUninstallQueryErrorOutput"])
+            self.assertFalse(record["packageAbsentObserved"])
+        self.assertEqual("", observation["packageCleanup"][-1]["packageListOutput"])
+        report = json.loads(next(self.evidence.glob("REC-I3-V8-REPORT-*.json")).read_text(encoding="utf-8-sig"))
+        self.assertNotEqual(0, report["cleanupExitCode"])
+        self.assertEqual("PRESERVATION_OR_CLEANUP_FAILED", report["primaryFailure"])
 
     def test_rejects_identity_and_dirty_failures_before_instrumentation(self) -> None:
         for mutation in ("commit", "tree", "dirty"):

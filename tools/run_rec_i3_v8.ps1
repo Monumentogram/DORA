@@ -296,6 +296,8 @@ try {
         "--offline", "--no-daemon", "--no-configuration-cache",
         ":poc:recovery:connectedDebugAndroidTest",
         "--serial", $Serial,
+        # The finally helper owns observed APK removal after evidence preservation.
+        "-Pandroid.injected.androidTest.leaveApksInstalledAfterRun=true",
         "-Pandroid.testInstrumentationRunnerArguments.class=$connectedSelector",
         "-Pandroid.testInstrumentationRunnerArguments.pocRecoveryE36GapiPreflight=true",
         "-Pandroid.testInstrumentationRunnerArguments.recoveryHarnessRevision=$AcceptedCommit"
