@@ -8360,12 +8360,14 @@ def validate_rec_i3_v8(lifecycle: RecoveryLifecycleIdentity) -> None:
         "DORA_REC_I3_V8_ATTEMPT_LEDGER_V1", "[System.IO.FileMode]::CreateNew", "$stream.Flush($true)",
         "HEAD_IDENTITY_MISMATCH", "TREE_IDENTITY_MISMATCH", "CHECKOUT_NOT_CLEAN",
         "ATTEMPT_LEDGER_ALREADY_EXISTS", "ATTEMPT_CONSUMED_EXECUTION_UNKNOWN",
-        "$env:ANDROID_SERIAL = $Serial", '"--serial", $Serial',
+        "$env:ANDROID_SERIAL = $Serial",
         "[string]::IsNullOrWhiteSpace($pathRecord.errorOutput)",
         '"-AttemptId", $attemptId, "-Serial", $Serial', "finally",
         "DORA_REC_I3_RUNNER_CLEANUP_FALLBACK_V1", 'REC-I3-V8-CLEANUP-FALLBACK-$attemptId',
     ):
         require(fragment in runner, f"REC-I3 V8 runner safeguard missing: {fragment}")
+    require(not re.search(r'["\']--serial["\']\s*,\s*\$Serial\b', runner),
+            "REC-I3 V8 runner reintroduces defective AGP --serial option")
     require(runner.index("Write-CreateNewJson $ledgerPath $ledger")
             < runner.index('$gradleResult = Invoke-BoundedCommand "connected-gradle"'),
             "REC-I3 V8 connected attempt launched before durable ledger")

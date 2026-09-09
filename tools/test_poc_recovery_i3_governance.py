@@ -148,6 +148,25 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
                         self.assertEqual(0, governance.main())
                     self.assertIn("V8 bounded tooling profile", output.getvalue())
 
+    def test_v8_serial_routing_rejects_agp_serial_reintroduction(self) -> None:
+        # Reintroducing the defective AGP --serial pair must fail the real V8 validator.
+        with self.v8_repository() as repo:
+            lifecycle = governance.collect_recovery_lifecycle_identity()
+            governance.validate_rec_i3_v8(lifecycle)
+            runner = repo / "tools/run_rec_i3_v8.ps1"
+            repaired = runner.read_text(encoding="utf-8")
+            marker = '        ":poc:recovery:connectedDebugAndroidTest",\n'
+            self.assertEqual(1, repaired.count(marker))
+            runner.write_text(
+                repaired.replace(marker, marker + '        "--serial", $Serial,\n'),
+                encoding="utf-8",
+            )
+            governance.commit_test_git_repo(repo, "reintroduce defective AGP serial route")
+            mutated = governance.collect_recovery_lifecycle_identity()
+            self.assertTrue(governance.rec_i3_v8_candidate(mutated))
+            with self.assertRaisesRegex(ValueError, "AGP --serial option"):
+                governance.validate_rec_i3_v8(mutated)
+
     def test_v8_rejects_wrong_branch_and_each_nonlocal_detached_context(self) -> None:
         # A source-only bypass must not authorize an arbitrary branch or partial CI identity.
         self.assertTrue(callable(getattr(governance, "rec_i3_v8_candidate", None)), "V8 candidate missing")

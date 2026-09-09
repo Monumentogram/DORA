@@ -536,7 +536,7 @@ class RecI3V8RunnerTests(unittest.TestCase):
 
     def test_success_binds_serial_streams_output_and_records_preflights(self) -> None:
         completed = self.invoke()
-        # Dropping serial ownership, streamed logs, or any preflight result must fail the host-run contract.
+        # Reintroducing the defective AGP --serial pair must fail while environment/ADB ownership stays exact.
         self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
         self.assertTrue(self.ledger.is_file())
         ledger = json.loads(self.ledger.read_text(encoding="utf-8-sig"))
@@ -547,7 +547,7 @@ class RecI3V8RunnerTests(unittest.TestCase):
         self.assertEqual(0, completion["gradleExitCode"])
         gradle_log = self.gradle_log.read_text(encoding="utf-8")
         self.assertIn(f"ANDROID_SERIAL={SERIAL}", gradle_log)
-        self.assertIn(f"--serial {SERIAL}", gradle_log)
+        self.assertNotIn(f"--serial {SERIAL}", gradle_log)
         self.assertIn(":poc:recovery:connectedDebugAndroidTest", gradle_log)
         self.assertIn("--offline --no-daemon --no-configuration-cache", gradle_log)
         self.assertIn(
