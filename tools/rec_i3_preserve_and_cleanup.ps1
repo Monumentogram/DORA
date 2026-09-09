@@ -24,7 +24,7 @@ $cleanupFailure = $null
 $exitCode = 0
 $stagingDirectory = $null
 $packageCleanup = @()
-$emulatorCleanup = [ordered]@{ attempted = $false; exitCode = $null; output = $null }
+$emulatorCleanup = [ordered]@{ attempted = $false; exitCode = $null; output = $null; errorOutput = $null }
 $externalTimeoutSeconds = if ($env:DORA_REC_I3_HELPER_COMMAND_TIMEOUT_SECONDS) { [int]$env:DORA_REC_I3_HELPER_COMMAND_TIMEOUT_SECONDS } else { 120 }
 $robocopyPath = if ($env:DORA_REC_I3_ROBOCOPY_PATH) { $env:DORA_REC_I3_ROBOCOPY_PATH } else { "robocopy.exe" }
 
@@ -231,22 +231,27 @@ try {
             forceStopExitCode = $null
             forceStopTimedOut = $false
             forceStopOutput = $null
+            forceStopErrorOutput = $null
             uninstallAttempted = $true
             uninstallExitCode = $null
             uninstallTimedOut = $false
             uninstallOutput = $null
+            uninstallErrorOutput = $null
             transportProbeAttempted = $true
             transportProbeExitCode = $null
             transportProbeTimedOut = $false
             transportProbeOutput = $null
+            transportProbeErrorOutput = $null
             postUninstallQueryAttempted = $true
             postUninstallQueryExitCode = $null
             postUninstallQueryTimedOut = $false
             postUninstallQueryOutput = $null
+            postUninstallQueryErrorOutput = $null
             packageListAttempted = $true
             packageListExitCode = $null
             packageListTimedOut = $false
             packageListOutput = $null
+            packageListErrorOutput = $null
             packageAbsentObserved = $false
         }
         try {
@@ -254,35 +259,42 @@ try {
             $record.forceStopExitCode = $forceStop.exitCode
             $record.forceStopTimedOut = $forceStop.timedOut
             $record.forceStopOutput = $forceStop.output
+            $record.forceStopErrorOutput = $forceStop.errorOutput
         } catch { $record.forceStopOutput = $_.Exception.GetType().Name }
         try {
             $uninstall = Invoke-AdbObserved @("uninstall", $package)
             $record.uninstallExitCode = $uninstall.exitCode
             $record.uninstallTimedOut = $uninstall.timedOut
             $record.uninstallOutput = $uninstall.output
+            $record.uninstallErrorOutput = $uninstall.errorOutput
         } catch { $record.uninstallOutput = $_.Exception.GetType().Name }
         try {
             $transport = Invoke-AdbObserved @("get-state")
             $record.transportProbeExitCode = $transport.exitCode
             $record.transportProbeTimedOut = $transport.timedOut
             $record.transportProbeOutput = $transport.output
+            $record.transportProbeErrorOutput = $transport.errorOutput
         } catch { $record.transportProbeOutput = $_.Exception.GetType().Name }
         try {
             $postUninstall = Invoke-AdbObserved @("shell", "pm", "path", $package)
             $record.postUninstallQueryExitCode = $postUninstall.exitCode
             $record.postUninstallQueryTimedOut = $postUninstall.timedOut
             $record.postUninstallQueryOutput = $postUninstall.output
+            $record.postUninstallQueryErrorOutput = $postUninstall.errorOutput
         } catch { $record.postUninstallQueryOutput = $_.Exception.GetType().Name }
         try {
             $packageList = Invoke-AdbObserved @("shell", "pm", "list", "packages")
             $record.packageListExitCode = $packageList.exitCode
             $record.packageListTimedOut = $packageList.timedOut
             $record.packageListOutput = $packageList.output
+            $record.packageListErrorOutput = $packageList.errorOutput
         } catch { $record.packageListOutput = $_.Exception.GetType().Name }
 
         $listedPackages = @($record.packageListOutput -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ })
         $exactPackageListed = $listedPackages -contains "package:$package"
-        $pathAbsentForm = $record.postUninstallQueryExitCode -in @(0, 1) -and [string]::IsNullOrWhiteSpace($record.postUninstallQueryOutput)
+        $pathAbsentForm = $record.postUninstallQueryExitCode -in @(0, 1) -and
+            [string]::IsNullOrWhiteSpace($record.postUninstallQueryOutput) -and
+            [string]::IsNullOrWhiteSpace($record.postUninstallQueryErrorOutput)
         $record.packageAbsentObserved =
             $record.forceStopExitCode -eq 0 -and
             $record.uninstallExitCode -eq 0 -and
@@ -302,6 +314,7 @@ try {
             $emulatorCleanup.exitCode = $emulator.exitCode
             $emulatorCleanup.timedOut = $emulator.timedOut
             $emulatorCleanup.output = $emulator.output
+            $emulatorCleanup.errorOutput = $emulator.errorOutput
         } catch { $emulatorCleanup.output = $_.Exception.GetType().Name }
         if ($emulatorCleanup.timedOut -or $emulatorCleanup.exitCode -ne 0) { $cleanupFailure = "EMULATOR_CLEANUP_UNVERIFIED" }
     }

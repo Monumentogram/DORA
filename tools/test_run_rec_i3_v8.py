@@ -29,6 +29,7 @@ def git(root: Path, *args: str) -> str:
 class RecI3V8RunnerTests(unittest.TestCase):
     def setUp(self) -> None:
         self.root = Path(tempfile.mkdtemp(prefix=".tmp-rec-i3-v8-runner-"))
+        (self.root / "tmp").mkdir()
         self.repo = self.root / "repo"
         self.repo.mkdir()
         (self.repo / "tools").mkdir()
@@ -144,12 +145,15 @@ class RecI3V8RunnerTests(unittest.TestCase):
         completion_failure: bool = False,
         delete_preserver: bool = False,
         block_metadata_report: bool = False,
+        block_fallback_artifacts: bool = False,
     ) -> subprocess.CompletedProcess[str]:
         environment = os.environ.copy()
         environment.update(
             {
                 "ANDROID_SDK_ROOT": str(self.toolchain),
                 "ANDROID_HOME": str(self.root / "wrong-sdk-root"),
+                "TEMP": str(self.root / "tmp"),
+                "TMP": str(self.root / "tmp"),
                 "FAKE_ADB_LOG": str(self.adb_log),
                 "FAKE_EMULATOR_LOG": str(self.root / "emulator.log"),
                 "FAKE_EMULATOR_STARTED": str(self.emulator_started),
@@ -178,14 +182,21 @@ class RecI3V8RunnerTests(unittest.TestCase):
             environment["FAKE_DELETE_PRESERVER"] = str(
                 self.repo / "tools" / "rec_i3_preserve_and_cleanup.ps1"
             )
-        if block_metadata_report:
+        if block_metadata_report or block_fallback_artifacts:
             blocker_script = self.root / "block-metadata-report.py"
+            block_operation = (
+                "target = evidence / f'REC-I3-V8-CLEANUP-FALLBACK-v8-{stamp}'\n"
+                "target.mkdir()\n"
+                "(target / 'sentinel.txt').write_text('retain prior evidence', encoding='utf-8')\n"
+                if block_fallback_artifacts else
+                "(evidence / f'REC-I3-V8-METADATA-FAILURE-{stamp}.json').mkdir()\n"
+            )
             blocker_script.write_text(
                 "from pathlib import Path\n"
                 f"evidence = Path({str(self.evidence)!r})\n"
                 "raw = next(evidence.glob('REC-I3-V8-RAW-*'))\n"
                 "stamp = raw.name.removeprefix('REC-I3-V8-RAW-')\n"
-                "(evidence / f'REC-I3-V8-METADATA-FAILURE-{stamp}.json').mkdir()\n",
+                + block_operation,
                 encoding="utf-8",
             )
             environment["FAKE_METADATA_REPORT_BLOCKER"] = str(blocker_script)
@@ -324,7 +335,7 @@ class RecI3V8RunnerTests(unittest.TestCase):
         completed = self.invoke(delete_preserver=True)
         # Losing the helper process after execution must activate coordinator-owned bounded cleanup.
         self.assertNotEqual(0, completed.returncode)
-        fallback = self.evidence / "REC-I3-V8-CLEANUP-FALLBACK.json"
+        fallback = next(self.evidence.glob("REC-I3-V8-CLEANUP-FALLBACK-*/observation.json"))
         self.assertTrue(fallback.is_file())
         observation = json.loads(fallback.read_text(encoding="utf-8-sig"))
         self.assertTrue(observation["cleanupAttempted"])
@@ -349,12 +360,60 @@ class RecI3V8RunnerTests(unittest.TestCase):
         # Killing the helper before its observation must still run independently bounded package and emulator cleanup.
         self.assertNotEqual(0, completed.returncode)
         observation = json.loads(
-            (self.evidence / "REC-I3-V8-CLEANUP-FALLBACK.json").read_text(encoding="utf-8-sig")
+            next(self.evidence.glob("REC-I3-V8-CLEANUP-FALLBACK-*/observation.json")).read_text(encoding="utf-8-sig")
         )
         self.assertTrue(observation["cleanupAttempted"])
         self.assertEqual(2, len(observation["packageCleanup"]))
         for package in observation["packageCleanup"]:
             self.assertEqual(5, len(package["commands"]))
+        self.assertEqual(0, observation["emulatorCleanup"]["exitCode"])
+        calls = self.adb_log.read_text().splitlines()
+        for package in ("com.monumentogram.dora.poc.recovery", "com.monumentogram.dora.poc.recovery.test"):
+            self.assertIn(f"-s {SERIAL} uninstall {package}", calls)
+        self.assertIn(f"-s {SERIAL} emu kill", calls)
+
+    def test_repeated_preparation_fallback_retains_each_attempt_identity_and_log_set(self) -> None:
+        first = self.invoke(governance_exit=7, helper_watchdog=1)
+        # Reusing shared fallback filenames must not erase a prior non-consuming preparation attempt.
+        self.assertNotEqual(0, first.returncode)
+        self.assertFalse(self.ledger.exists())
+        first_artifacts = {
+            path: path.read_bytes()
+            for path in self.evidence.rglob("*")
+            if path.is_file() and "fallback" in str(path.relative_to(self.evidence)).lower()
+        }
+        second = self.invoke(governance_exit=7, helper_watchdog=1)
+        self.assertNotEqual(0, second.returncode)
+        self.assertFalse(self.ledger.exists())
+        observations = list(self.evidence.glob("REC-I3-V8-CLEANUP-FALLBACK-*/observation.json"))
+        self.assertEqual(2, len(observations), first.stdout + first.stderr + second.stdout + second.stderr)
+        attempts = set()
+        for path in observations:
+            observation = json.loads(path.read_text(encoding="utf-8-sig"))
+            attempts.add(observation["attemptId"])
+            self.assertEqual(self.commit, observation["acceptedCommit"])
+            self.assertEqual(self.tree, observation["acceptedTree"])
+            self.assertEqual(SERIAL, observation["serial"])
+            self.assertEqual(11, len(list(path.parent.glob("*.log"))))
+            self.assertEqual(11, len(list(path.parent.glob("*.log.stderr"))))
+            self.assertTrue(all(log.is_file() for log in path.parent.glob("*.log")))
+        self.assertEqual(2, len(attempts))
+        self.assertTrue(first_artifacts)
+        for path, contents in first_artifacts.items():
+            self.assertEqual(contents, path.read_bytes(), str(path))
+
+    def test_fallback_artifact_collision_retains_prior_files_and_still_cleans(self) -> None:
+        completed = self.invoke(helper_watchdog=1, block_fallback_artifacts=True)
+        # Refusing to replace an existing attempt directory must neither touch its files nor skip cleanup.
+        self.assertNotEqual(0, completed.returncode)
+        prior = next(self.evidence.glob("REC-I3-V8-CLEANUP-FALLBACK-*"))
+        self.assertEqual(["sentinel.txt"], sorted(path.name for path in prior.iterdir()))
+        self.assertEqual("retain prior evidence", (prior / "sentinel.txt").read_text())
+        relocated = list((self.root / "tmp").glob("DORA-REC-I3-CLEANUP-*/observation.json"))
+        self.assertEqual(1, len(relocated), completed.stdout + completed.stderr)
+        observation = json.loads(relocated[0].read_text(encoding="utf-8-sig"))
+        self.assertIn("FALLBACK_ATTEMPT_ALREADY_EXISTS", observation["evidenceFailure"])
+        self.assertEqual(self.commit, observation["acceptedCommit"])
         self.assertEqual(0, observation["emulatorCleanup"]["exitCode"])
         calls = self.adb_log.read_text().splitlines()
         for package in ("com.monumentogram.dora.poc.recovery", "com.monumentogram.dora.poc.recovery.test"):

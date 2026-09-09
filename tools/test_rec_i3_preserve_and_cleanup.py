@@ -47,6 +47,7 @@ class PreserveAndCleanupTests(unittest.TestCase):
             "if \"%FAKE_ADB_MODE%\"==\"transport_fail\" if \"%3\"==\"get-state\" (echo offline& exit /b 1)\r\n"
             "if \"%FAKE_ADB_MODE%\"==\"permission\" if \"%5\"==\"path\" (echo Security exception& exit /b 1)\r\n"
             "if \"%FAKE_ADB_MODE%\"==\"permission\" if \"%6\"==\"packages\" (echo Security exception& exit /b 1)\r\n"
+            "if \"%FAKE_ADB_MODE%\"==\"path_stderr_permission\" if \"%5\"==\"path\" (echo Security exception: path denied 1>&2& exit /b 1)\r\n"
             "if \"%3\"==\"get-state\" echo device\r\n"
             "exit /b 0\r\n",
             encoding="utf-8",
@@ -200,6 +201,23 @@ class PreserveAndCleanupTests(unittest.TestCase):
                 self.assertTrue(any(call.endswith("emu kill") for call in calls), calls)
                 if phase != "Report":
                     self.assertTrue(self.read_observation()["cleanupAttempted"])
+
+    def test_path_query_stderr_permission_is_retained_and_never_proves_absence(self) -> None:
+        completed = self.invoke(adb_mode="path_stderr_permission")
+        # Discarding path-query stderr must not turn an exit-1 permission failure into accepted absence.
+        observation = self.read_observation()
+        self.assertNotEqual(0, completed.returncode, completed.stdout + completed.stderr)
+        self.assertEqual("PACKAGE_CLEANUP_UNVERIFIED", observation["cleanupFailure"])
+        for record in observation["packageCleanup"]:
+            self.assertEqual(0, record["transportProbeExitCode"])
+            self.assertEqual(0, record["packageListExitCode"])
+            self.assertEqual(1, record["postUninstallQueryExitCode"])
+            self.assertEqual("", record["postUninstallQueryOutput"])
+            self.assertIn("Security exception: path denied", record["postUninstallQueryErrorOutput"])
+            self.assertFalse(record["packageAbsentObserved"])
+            for operation in ("forceStop", "uninstall", "transportProbe", "postUninstallQuery", "packageList"):
+                self.assertIn(f"{operation}ErrorOutput", record)
+        self.assertIn("errorOutput", observation["emulatorCleanup"])
 
     def test_robocopy_timeout_unwinds_into_complete_cleanup(self) -> None:
         completed = self.invoke(helper_timeout=1, robocopy_mode="hang")

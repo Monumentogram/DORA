@@ -141,6 +141,21 @@ function Write-CreateNewJson([string]$Path, [object]$Value) {
 }
 
 function Invoke-RunnerCleanupFallback {
+    $fallbackPath = Join-Path $evidenceFull "REC-I3-V8-CLEANUP-FALLBACK-$attemptId"
+    $evidenceFailure = $null
+    try {
+        if (Test-Path -LiteralPath $fallbackPath) { throw "FALLBACK_ATTEMPT_ALREADY_EXISTS" }
+        Write-CreateNewJson "$fallbackPath.lock" ([ordered]@{
+            attemptId = $attemptId; acceptedCommit = $AcceptedCommit; acceptedTree = $AcceptedTree
+        })
+        New-Item -ItemType Directory -Path $fallbackPath -ErrorAction Stop | Out-Null
+    } catch {
+        # Refuse prior artifacts, but do not let evidence allocation prevent bounded cleanup.
+        $evidenceFailure = $_.Exception.Message
+        $fallbackPath = Join-Path ([System.IO.Path]::GetTempPath()) "DORA-REC-I3-CLEANUP-$attemptId-$([Guid]::NewGuid().ToString('N'))"
+        New-Item -ItemType Directory -Path $fallbackPath -ErrorAction Stop | Out-Null
+        Write-Warning "FALLBACK_EVIDENCE_RELOCATED:$fallbackPath; $evidenceFailure"
+    }
     $packages = @()
     foreach ($package in $packageNames.Split(',')) {
         $record = [ordered]@{ package = $package; commands = @() }
@@ -152,7 +167,7 @@ function Invoke-RunnerCleanupFallback {
             [ordered]@{ name = "pm-list"; arguments = @("-s", $Serial, "shell", "pm", "list", "packages") }
         )) {
             try {
-                $record.commands += Invoke-BoundedCommand "fallback-$($operation.name)-$($package.Replace('.', '-'))" $adbPath $operation.arguments $repositoryFull (Join-Path $evidenceFull "fallback-$($operation.name)-$($package.Replace('.', '-')).log") 60
+                $record.commands += Invoke-BoundedCommand "fallback-$($operation.name)-$($package.Replace('.', '-'))" $adbPath $operation.arguments $repositoryFull (Join-Path $fallbackPath "fallback-$($operation.name)-$($package.Replace('.', '-')).log") 60
             } catch {
                 $record.commands += [ordered]@{ name = $operation.name; exitCode = $null; timedOut = $false; launchFailure = $_.Exception.Message }
             }
@@ -160,18 +175,23 @@ function Invoke-RunnerCleanupFallback {
         $packages += $record
     }
     try {
-        $emulator = Invoke-BoundedCommand "fallback-emulator-kill" $adbPath @("-s", $Serial, "emu", "kill") $repositoryFull (Join-Path $evidenceFull "fallback-emulator-kill.log") 60
+        $emulator = Invoke-BoundedCommand "fallback-emulator-kill" $adbPath @("-s", $Serial, "emu", "kill") $repositoryFull (Join-Path $fallbackPath "fallback-emulator-kill.log") 60
     } catch {
         $emulator = [ordered]@{ exitCode = $null; timedOut = $false; launchFailure = $_.Exception.Message }
     }
     $observation = [ordered]@{
         schema = "DORA_REC_I3_RUNNER_CLEANUP_FALLBACK_V1"
+        attemptId = $attemptId
+        acceptedCommit = $AcceptedCommit
+        acceptedTree = $AcceptedTree
+        evidenceDirectory = $fallbackPath
+        evidenceFailure = $evidenceFailure
         cleanupAttempted = $true
         serial = $Serial
         packageCleanup = $packages
         emulatorCleanup = $emulator
     }
-    Write-JsonFile (Join-Path $evidenceFull "REC-I3-V8-CLEANUP-FALLBACK.json") $observation
+    Write-CreateNewJson (Join-Path $fallbackPath "observation.json") $observation
     return $observation
 }
 
