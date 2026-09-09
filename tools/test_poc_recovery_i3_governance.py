@@ -28,9 +28,144 @@ V8_REPAIRED_HOST_TEST = (
     "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/"
     "storage/AndroidOsRecoveryStreamingSourceTest.kt"
 )
+V10_CHECKPOINT_FIXTURE = (
+    "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/"
+    "candidate/RecoveryCheckpointAndroidTestFixture.kt"
+)
+V10_PLAN = "docs/superpowers/plans/2026-09-09-rec-i3-v8-host-run-contract-repair.md"
+V10_CANDIDATE_PATHS = (
+    V10_CHECKPOINT_FIXTURE,
+    "tools/test_poc_recovery_i3_governance.py",
+    "tools/validate_poc_recovery_governance.py",
+    V10_PLAN,
+)
 
 
 class RecoveryI3GovernanceTests(unittest.TestCase):
+    def test_v10_genesis_fixture_uses_zero_predecessor_for_identity_and_row(self) -> None:
+        fixture = governance.read_text(V10_CHECKPOINT_FIXTURE)
+        identity_input = re.search(
+            r"val input\s*=\s*RecoveryStreamingCheckpointIdentityInput\((.*?)\n\s*\)",
+            fixture,
+            re.DOTALL,
+        )
+        self.assertIsNotNone(identity_input, "shared checkpoint identity input missing")
+        self.assertEqual(1, identity_input.group(1).count("Sha256Value.ZERO"))
+        self.assertRegex(identity_input.group(1), r"Sha256Value\.ZERO,\s*$")
+        self.assertNotIn("Sha256Value.calculate(ByteArray(32))", fixture)
+        self.assertIn(
+            "input.previousCheckpointSha256,\n"
+            "            RecoveryStreamingIdentity.checkpoint(input),",
+            fixture,
+        )
+
+    @contextmanager
+    def v10_repository(self):
+        """Exact V10 fixture correction above the immutable V8/V9 source base."""
+        source = governance.ROOT
+        with tempfile.TemporaryDirectory(prefix="dora-v10-governance-") as temporary:
+            repo = Path(temporary) / "repo"
+            git_pointer = source / ".git"
+            git_directory = (
+                source / git_pointer.read_text(encoding="utf-8").strip().removeprefix("gitdir: ")
+            ).resolve() if git_pointer.is_file() else git_pointer.resolve()
+            common_pointer = git_directory / "commondir"
+            common_directory = (
+                git_directory / common_pointer.read_text(encoding="utf-8").strip()
+            ).resolve() if common_pointer.is_file() else git_directory
+            repo.mkdir()
+            governance.test_git(repo, "init", "-q")
+            (repo / ".git/objects/info/alternates").write_text(
+                (common_directory / "objects").as_posix() + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            governance.test_git(
+                repo,
+                "checkout",
+                "-q",
+                "-B",
+                "codex/rec-i3-v10-genesis-fixture-fix",
+                "6a33fc5d9560c163e34f840faf60ab9f86f2ad1b",
+            )
+            for relative in V10_CANDIDATE_PATHS:
+                target = repo / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source / relative, target)
+                if relative != V10_CHECKPOINT_FIXTURE:
+                    with target.open("a", encoding="utf-8") as stream:
+                        stream.write("\n<!-- V10 fixture -->\n" if target.suffix == ".md" else "\n# V10 fixture\n")
+            governance.commit_test_git_repo(repo, "synthetic bounded V10 fixture candidate")
+            with patch.object(governance, "ROOT", repo), patch.dict(os.environ, {
+                key: "" for key in governance.REC_I3_V8_GITHUB_CONTEXT_KEYS
+            }):
+                yield repo
+
+    def assert_v10_rejected(self) -> None:
+        lifecycle = governance.collect_recovery_lifecycle_identity()
+        self.assertFalse(governance.rec_i3_v10_candidate(lifecycle))
+        with self.assertRaises((ValueError, subprocess.CalledProcessError)):
+            governance.validate_rec_i3_v10(lifecycle)
+
+    def test_v10_exact_cumulative_fixture_correction_is_admitted_and_pinned(self) -> None:
+        self.assertTrue(
+            callable(getattr(governance, "rec_i3_v10_source_candidate", None)),
+            "V10 source candidate missing",
+        )
+        with self.v10_repository() as repo:
+            lifecycle = governance.collect_recovery_lifecycle_identity()
+            base = "6a33fc5d9560c163e34f840faf60ab9f86f2ad1b"
+            self.assertEqual(set(V10_CANDIDATE_PATHS), set(governance.REC_I3_V10_PATHS))
+            self.assertEqual(
+                set(V10_CANDIDATE_PATHS),
+                set(governance.git_path_records(
+                    "diff", "--name-only", "--no-renames", "-z", base, lifecycle.head, "--"
+                )),
+            )
+            self.assertEqual(
+                [V10_CHECKPOINT_FIXTURE],
+                governance.git_path_records(
+                    "diff", "--name-only", "--no-renames", "-z", base, lifecycle.head,
+                    "--", "android",
+                ),
+            )
+            self.assertEqual(
+                governance.REC_I3_V10_FIXTURE_BLOB,
+                governance.git_output("rev-parse", f"HEAD:{V10_CHECKPOINT_FIXTURE}"),
+            )
+            self.assertEqual(
+                governance.git_output("rev-parse", f"{base}:.github"),
+                governance.git_output("rev-parse", "HEAD:.github"),
+            )
+            self.assertTrue(governance.rec_i3_v10_source_candidate(lifecycle.head))
+            self.assertTrue(governance.rec_i3_v10_candidate(lifecycle))
+            governance.validate_rec_i3_v10(lifecycle)
+            with patch.object(sys, "argv", ["governance"]), redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(0, governance.main())
+            self.assertIn("V10 genesis fixture correction", output.getvalue())
+
+    def test_v10_rejects_fixture_and_out_of_scope_drift(self) -> None:
+        mutations = {
+            "fixture": V10_CHECKPOINT_FIXTURE,
+            "production": (
+                "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/"
+                "journal/AndroidRecoveryStreamingJournal.kt"
+            ),
+            "workflow": ".github/workflows/android-ci.yml",
+            "extra": "unauthorized.txt",
+        }
+        for mutation, relative in mutations.items():
+            with self.subTest(mutation=mutation), self.v10_repository() as repo:
+                target = repo / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                with target.open("a", encoding="utf-8") as stream:
+                    stream.write("\n// unauthorized V10 drift\n")
+                governance.commit_test_git_repo(repo, mutation)
+                self.assertFalse(governance.rec_i3_v10_source_candidate(
+                    governance.git_output("rev-parse", "HEAD")
+                ))
+                self.assert_v10_rejected()
+
     @contextmanager
     def v8_repository(self):
         """Real baseline objects, eight tooling files and the exact host-test repair."""
