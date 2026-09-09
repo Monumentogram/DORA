@@ -43,11 +43,22 @@ class PreserveAndCleanupTests(unittest.TestCase):
         self.fake_adb.write_text(
             "@echo off\r\n"
             "echo %*>>\"%FAKE_ADB_LOG%\"\r\n"
+            "if \"%FAKE_ADB_MODE%\"==\"hang_first\" if \"%3 %4\"==\"shell am\" if not exist \"%FAKE_ADB_HANG_MARKER%\" (echo hung>\"%FAKE_ADB_HANG_MARKER%\"& ping 127.0.0.1 -n 6 >nul)\r\n"
             "if \"%FAKE_ADB_MODE%\"==\"transport_fail\" if \"%3\"==\"get-state\" (echo offline& exit /b 1)\r\n"
             "if \"%FAKE_ADB_MODE%\"==\"permission\" if \"%5\"==\"path\" (echo Security exception& exit /b 1)\r\n"
             "if \"%FAKE_ADB_MODE%\"==\"permission\" if \"%6\"==\"packages\" (echo Security exception& exit /b 1)\r\n"
             "if \"%3\"==\"get-state\" echo device\r\n"
             "exit /b 0\r\n",
+            encoding="utf-8",
+        )
+        self.robocopy_log = self.root / "robocopy.log"
+        self.fake_robocopy = self.root / "fake-robocopy.cmd"
+        self.fake_robocopy.write_text(
+            "@echo off\r\n"
+            "echo %*>>\"%FAKE_ROBOCOPY_LOG%\"\r\n"
+            "if \"%FAKE_ROBOCOPY_MODE%\"==\"hang\" (ping 127.0.0.1 -n 6 >nul& exit /b 16)\r\n"
+            "robocopy.exe %*\r\n"
+            "exit /b %errorlevel%\r\n",
             encoding="utf-8",
         )
         self.payloads = {
@@ -69,6 +80,8 @@ class PreserveAndCleanupTests(unittest.TestCase):
         attempt: str = ATTEMPT,
         adb_mode: str = "absent",
         injection: str | None = None,
+        helper_timeout: int = 30,
+        robocopy_mode: str = "normal",
     ) -> subprocess.CompletedProcess[str]:
         command = [
             "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
@@ -88,6 +101,11 @@ class PreserveAndCleanupTests(unittest.TestCase):
         environment = os.environ.copy()
         environment["FAKE_ADB_LOG"] = str(self.adb_log)
         environment["FAKE_ADB_MODE"] = adb_mode
+        environment["FAKE_ADB_HANG_MARKER"] = str(self.root / "adb-hang.marker")
+        environment["FAKE_ROBOCOPY_LOG"] = str(self.robocopy_log)
+        environment["FAKE_ROBOCOPY_MODE"] = robocopy_mode
+        environment["DORA_REC_I3_ROBOCOPY_PATH"] = str(self.fake_robocopy)
+        environment["DORA_REC_I3_HELPER_COMMAND_TIMEOUT_SECONDS"] = str(helper_timeout)
         return subprocess.run(command, text=True, capture_output=True, env=environment, timeout=90)
 
     def read_observation(self) -> dict:
@@ -182,6 +200,28 @@ class PreserveAndCleanupTests(unittest.TestCase):
                 self.assertTrue(any(call.endswith("emu kill") for call in calls), calls)
                 if phase != "Report":
                     self.assertTrue(self.read_observation()["cleanupAttempted"])
+
+    def test_robocopy_timeout_unwinds_into_complete_cleanup(self) -> None:
+        completed = self.invoke(helper_timeout=1, robocopy_mode="hang")
+        # An unbounded preservation copy must not prevent the helper finally path from reaching every cleanup action.
+        self.assertNotEqual(0, completed.returncode)
+        calls = self.adb_calls()
+        self.assertTrue(any(" uninstall " in f" {call} " for call in calls), calls)
+        self.assertTrue(any(call.endswith("emu kill") for call in calls), calls)
+        observation = self.read_observation()
+        self.assertIn("TIMEOUT", observation["copyFailure"])
+        self.assertTrue(observation["cleanupAttempted"])
+
+    def test_one_adb_timeout_does_not_block_later_cleanup_or_observation(self) -> None:
+        completed = self.invoke(adb_mode="hang_first", helper_timeout=1)
+        # One hung cleanup command must not block later package probes, emulator shutdown, or durable observation.
+        self.assertNotEqual(0, completed.returncode)
+        calls = self.adb_calls()
+        self.assertTrue(any("pm list packages" in call for call in calls), calls)
+        self.assertTrue(any(call.endswith("emu kill") for call in calls), calls)
+        observation = self.read_observation()
+        self.assertTrue(observation["packageCleanup"][0]["forceStopTimedOut"])
+        self.assertEqual("PACKAGE_CLEANUP_UNVERIFIED", observation["cleanupFailure"])
 
 
 if __name__ == "__main__":

@@ -37,6 +37,7 @@ $rawPath = Join-Path $evidenceFull "REC-I3-V8-RAW-$timestamp"
 $preservedPath = Join-Path $evidenceFull "REC-I3-V8-PRESERVED-$timestamp"
 $observationPath = Join-Path $evidenceFull "REC-I3-V8-CLEANUP-$timestamp.json"
 $ledgerPath = Join-Path $evidenceFull "REC-I3-V8-ATTEMPT-$AcceptedCommit.json"
+$completionPath = Join-Path $evidenceFull "REC-I3-V8-COMPLETION-$AcceptedCommit.json"
 $preflightPath = Join-Path $rawPath "preflight.json"
 $reportPath = Join-Path $evidenceFull "REC-I3-V8-REPORT-$timestamp.json"
 $startedEmulator = $false
@@ -133,10 +134,45 @@ function Invoke-Preflight([string]$Name, [string]$FilePath, [string[]]$Arguments
     return $record
 }
 
-function Write-LedgerCreateNew([object]$Value) {
+function Write-CreateNewJson([string]$Path, [object]$Value) {
     $bytes = [System.Text.UTF8Encoding]::new($false).GetBytes((($Value | ConvertTo-Json -Depth 10) + [Environment]::NewLine))
-    $stream = [System.IO.File]::Open($ledgerPath, [System.IO.FileMode]::CreateNew, [System.IO.FileAccess]::Write, [System.IO.FileShare]::Read)
+    $stream = [System.IO.File]::Open($Path, [System.IO.FileMode]::CreateNew, [System.IO.FileAccess]::Write, [System.IO.FileShare]::Read)
     try { $stream.Write($bytes, 0, $bytes.Length); $stream.Flush($true) } finally { $stream.Dispose() }
+}
+
+function Invoke-RunnerCleanupFallback {
+    $packages = @()
+    foreach ($package in $packageNames.Split(',')) {
+        $record = [ordered]@{ package = $package; commands = @() }
+        foreach ($operation in @(
+            [ordered]@{ name = "force-stop"; arguments = @("-s", $Serial, "shell", "am", "force-stop", $package) },
+            [ordered]@{ name = "uninstall"; arguments = @("-s", $Serial, "uninstall", $package) },
+            [ordered]@{ name = "transport"; arguments = @("-s", $Serial, "get-state") },
+            [ordered]@{ name = "pm-path"; arguments = @("-s", $Serial, "shell", "pm", "path", $package) },
+            [ordered]@{ name = "pm-list"; arguments = @("-s", $Serial, "shell", "pm", "list", "packages") }
+        )) {
+            try {
+                $record.commands += Invoke-BoundedCommand "fallback-$($operation.name)-$($package.Replace('.', '-'))" $adbPath $operation.arguments $repositoryFull (Join-Path $evidenceFull "fallback-$($operation.name)-$($package.Replace('.', '-')).log") 60
+            } catch {
+                $record.commands += [ordered]@{ name = $operation.name; exitCode = $null; timedOut = $false; launchFailure = $_.Exception.Message }
+            }
+        }
+        $packages += $record
+    }
+    try {
+        $emulator = Invoke-BoundedCommand "fallback-emulator-kill" $adbPath @("-s", $Serial, "emu", "kill") $repositoryFull (Join-Path $evidenceFull "fallback-emulator-kill.log") 60
+    } catch {
+        $emulator = [ordered]@{ exitCode = $null; timedOut = $false; launchFailure = $_.Exception.Message }
+    }
+    $observation = [ordered]@{
+        schema = "DORA_REC_I3_RUNNER_CLEANUP_FALLBACK_V1"
+        cleanupAttempted = $true
+        serial = $Serial
+        packageCleanup = $packages
+        emulatorCleanup = $emulator
+    }
+    Write-JsonFile (Join-Path $evidenceFull "REC-I3-V8-CLEANUP-FALLBACK.json") $observation
+    return $observation
 }
 
 try {
@@ -230,9 +266,8 @@ try {
         avdName = $AvdName
         state = "ATTEMPT_CONSUMED_EXECUTION_UNKNOWN"
         launchRecord = [ordered]@{ createdUtc = [DateTime]::UtcNow.ToString("o"); instrumentationAttemptCount = 1 }
-        completion = $null
     }
-    Write-LedgerCreateNew $ledger
+    Write-CreateNewJson $ledgerPath $ledger
     $ledgerCreated = $true
     $env:ANDROID_SERIAL = $Serial
     $gradleArguments = @(
@@ -244,42 +279,85 @@ try {
         "-Pandroid.testInstrumentationRunnerArguments.recoveryHarnessRevision=$AcceptedCommit"
     )
     $gradleResult = Invoke-BoundedCommand "connected-gradle" $gradlePath $gradleArguments (Join-Path $repositoryFull "android") (Join-Path $rawPath "connected-gradle.log")
-    [void](Invoke-BoundedCommand "logcat-dump" $adbPath @("-s", $Serial, "logcat", "-d", "-v", "threadtime") $repositoryFull (Join-Path $rawPath "logcat-final.log") 60)
-    $ledger.completion = [ordered]@{
+    $logcatResult = Invoke-BoundedCommand "logcat-dump" $adbPath @("-s", $Serial, "logcat", "-d", "-v", "threadtime", "System.out:I", "AndroidJUnitRunner:I", "TestRunner:I", "*:S") $repositoryFull (Join-Path $rawPath "logcat-final.log") 60
+    Write-JsonFile (Join-Path $rawPath "final-logcat-result.json") $logcatResult
+    $completion = [ordered]@{
+        schema = "DORA_REC_I3_V8_ATTEMPT_COMPLETION_V1"
+        state = if (-not $gradleResult.timedOut -and $gradleResult.exitCode -eq 0) { "ATTEMPT_CONSUMED_COMPLETED" } else { "ATTEMPT_CONSUMED_EXECUTION_UNKNOWN" }
+        acceptedCommit = $AcceptedCommit
+        acceptedTree = $AcceptedTree
         observedUtc = [DateTime]::UtcNow.ToString("o")
         gradleExitCode = $gradleResult.exitCode
         timedOut = $gradleResult.timedOut
         firstCheckpointDiagnostic = @($gradleResult.output -split "`r?`n" | Where-Object { $_ -match 'INSTRUMENTATION_CHECKPOINT_INSERT' } | Select-Object -First 1)
     }
-    if (-not $gradleResult.timedOut -and $gradleResult.exitCode -eq 0) { $ledger.state = "ATTEMPT_CONSUMED_COMPLETED" }
-    Write-JsonFile $ledgerPath $ledger
+    if ($env:DORA_REC_I3_INJECT_COMPLETION_FAILURE -eq "1") { throw "INJECTED_COMPLETION_PERSISTENCE_FAILURE" }
+    Write-CreateNewJson $completionPath $completion
     if ($gradleResult.timedOut) { throw "CONNECTED_GRADLE_TIMEOUT" }
     if ($gradleResult.exitCode -ne 0) { throw "CONNECTED_GRADLE_FAILED:$($gradleResult.exitCode)" }
+    if ($logcatResult.timedOut) { throw "FINAL_LOGCAT_TIMEOUT" }
+    if ($logcatResult.exitCode -ne 0) { throw "FINAL_LOGCAT_FAILED:$($logcatResult.exitCode)" }
 } catch {
     $exitCode = 1
     $primaryFailure = "$($_.Exception.Message) at line $($_.InvocationInfo.ScriptLineNumber)"
 } finally {
-    if ($deviceIdentityVerified -and (Test-Path -LiteralPath $rawPath -PathType Container) -and (Test-Path -LiteralPath $buildRoot -PathType Container)) {
-        $metadataDestination = Join-Path $buildRoot "rec-i3-v8-run-metadata-$attemptId"
-        [System.IO.Directory]::CreateDirectory($metadataDestination) | Out-Null
-        $metadataCopy = Invoke-BoundedCommand "metadata-copy" "robocopy.exe" @($rawPath, $metadataDestination, "/E", "/COPY:DAT", "/DCOPY:DAT", "/R:2", "/W:1", "/XJ", "/NJH", "/NJS", "/NFL", "/NDL") $repositoryFull (Join-Path $evidenceFull "REC-I3-V8-METADATA-COPY-$timestamp.log") 120
-        if ($metadataCopy.timedOut -or $null -eq $metadataCopy.exitCode -or $metadataCopy.exitCode -gt 7) {
-            if ($exitCode -eq 0) { $exitCode = 1; $primaryFailure = "METADATA_COPY_FAILED" }
+    if ($deviceIdentityVerified) {
+        try {
+            if ((Test-Path -LiteralPath $rawPath -PathType Container) -and (Test-Path -LiteralPath $buildRoot -PathType Container)) {
+                $metadataDestination = if ($env:DORA_REC_I3_METADATA_DESTINATION) { $env:DORA_REC_I3_METADATA_DESTINATION } else { Join-Path $buildRoot "rec-i3-v8-run-metadata-$attemptId" }
+                [System.IO.Directory]::CreateDirectory($metadataDestination) | Out-Null
+                $metadataCopy = Invoke-BoundedCommand "metadata-copy" "robocopy.exe" @($rawPath, $metadataDestination, "/E", "/COPY:DAT", "/DCOPY:DAT", "/R:2", "/W:1", "/XJ", "/NJH", "/NJS", "/NFL", "/NDL") $repositoryFull (Join-Path $evidenceFull "REC-I3-V8-METADATA-COPY-$timestamp.log") 120
+                if ($metadataCopy.timedOut -or $null -eq $metadataCopy.exitCode -or $metadataCopy.exitCode -gt 7) { throw "METADATA_COPY_FAILED" }
+            }
+        } catch {
+            if ($exitCode -eq 0) { $exitCode = 1; $primaryFailure = "METADATA_PREPARATION_FAILED:$($_.Exception.Message)" }
+            try {
+                Write-JsonFile (Join-Path $evidenceFull "REC-I3-V8-METADATA-FAILURE-$timestamp.json") ([ordered]@{ schema = "DORA_REC_I3_V8_METADATA_FAILURE_V1"; message = $_.Exception.Message })
+            } catch {
+                Write-Warning "METADATA_FAILURE_REPORT_UNAVAILABLE:$($_.Exception.Message)"
+            }
+        } finally {
+            $preserveArguments = @(
+                "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $preservationPath,
+                "-SourcePath", $buildRoot, "-EvidenceRoot", $preservedPath,
+                "-StagingRoot", $stagingFull, "-ObservationPath", $observationPath,
+                "-AdbPath", $adbPath, "-PackageNames", $packageNames,
+                "-AttemptId", $attemptId, "-Serial", $Serial
+            )
+            $preserveArguments += "-StopEmulator"
+            try {
+                $helperWatchdogSeconds = if ($env:DORA_REC_I3_HELPER_WATCHDOG_SECONDS) { [int]$env:DORA_REC_I3_HELPER_WATCHDOG_SECONDS } else { 1800 }
+                $cleanupResult = Invoke-BoundedCommand "preservation-cleanup" (Get-Process -Id $PID).Path $preserveArguments $repositoryFull (Join-Path $evidenceFull "REC-I3-V8-PRESERVATION-$timestamp.log") $helperWatchdogSeconds
+            } catch {
+                $cleanupResult = [ordered]@{ exitCode = $null; timedOut = $false; launchFailure = $_.Exception.Message }
+            } finally {
+                $observationPresent = Test-Path -LiteralPath $observationPath -PathType Leaf
+                if ($cleanupResult.timedOut -or -not $observationPresent) {
+                    [void](Invoke-RunnerCleanupFallback)
+                    if ($exitCode -eq 0) { $exitCode = 1; $primaryFailure = "HELPER_DID_NOT_COMPLETE_CLEANUP" }
+                }
+            }
+            if ($cleanupResult.timedOut -or $cleanupResult.exitCode -ne 0) {
+                if ($exitCode -eq 0) { $exitCode = 1; $primaryFailure = "PRESERVATION_OR_CLEANUP_FAILED" }
+            }
         }
-        $preserveArguments = @(
-            "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $preservationPath,
-            "-SourcePath", $buildRoot, "-EvidenceRoot", $preservedPath,
-            "-StagingRoot", $stagingFull, "-ObservationPath", $observationPath,
-            "-AdbPath", $adbPath, "-PackageNames", $packageNames,
-            "-AttemptId", $attemptId, "-Serial", $Serial
-        )
-        if ($startedEmulator) { $preserveArguments += "-StopEmulator" }
-        $cleanupResult = Invoke-BoundedCommand "preservation-cleanup" (Get-Process -Id $PID).Path $preserveArguments $repositoryFull (Join-Path $evidenceFull "REC-I3-V8-PRESERVATION-$timestamp.log")
-        if ($cleanupResult.timedOut -or $cleanupResult.exitCode -ne 0) {
-            if ($exitCode -eq 0) { $exitCode = 1; $primaryFailure = "PRESERVATION_OR_CLEANUP_FAILED" }
+    } else {
+        $ownedProcessStopAttempted = $false
+        if ($null -ne $ownedEmulatorProcess) {
+            $ownedProcessStopAttempted = $true
+            Stop-ProcessTreeBounded $ownedEmulatorProcess.Id
         }
-    } elseif ($null -ne $ownedEmulatorProcess) {
-        Stop-ProcessTreeBounded $ownedEmulatorProcess.Id
+        Write-JsonFile $observationPath ([ordered]@{
+            schema = "DORA_REC_I3_CLEANUP_OBSERVATION_V2"
+            attemptId = $attemptId
+            serial = $Serial
+            copySucceeded = $false
+            copyFailure = "DEVICE_IDENTITY_NOT_VERIFIED"
+            cleanupFailure = "CLEANUP_INTENTIONALLY_NOT_RUN_ON_UNVERIFIED_TARGET"
+            cleanupAttempted = $false
+            packageCleanup = @()
+            emulatorCleanup = [ordered]@{ attempted = $false; ownedProcessStopAttempted = $ownedProcessStopAttempted }
+        })
     }
     try {
         if ($env:DORA_REC_I3_INJECT_REPORT_FAILURE -eq "1") { throw "INJECTED_REPORTING_FAILURE" }

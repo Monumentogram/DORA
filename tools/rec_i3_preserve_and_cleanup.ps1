@@ -25,6 +25,8 @@ $exitCode = 0
 $stagingDirectory = $null
 $packageCleanup = @()
 $emulatorCleanup = [ordered]@{ attempted = $false; exitCode = $null; output = $null }
+$externalTimeoutSeconds = if ($env:DORA_REC_I3_HELPER_COMMAND_TIMEOUT_SECONDS) { [int]$env:DORA_REC_I3_HELPER_COMMAND_TIMEOUT_SECONDS } else { 120 }
+$robocopyPath = if ($env:DORA_REC_I3_ROBOCOPY_PATH) { $env:DORA_REC_I3_ROBOCOPY_PATH } else { "robocopy.exe" }
 
 function Convert-ToExtendedPath([string]$Path) {
     $full = [System.IO.Path]::GetFullPath($Path)
@@ -47,19 +49,61 @@ function Get-Sha256([string]$Path) {
     }
 }
 
-function Invoke-Robocopy([string]$From, [string]$To) {
-    & robocopy.exe $From $To /E /COPY:DAT /DCOPY:DAT /R:2 /W:1 /XJ /NJH /NJS /NFL /NDL | Out-Null
-    $result = $LASTEXITCODE
-    if ($result -lt 0 -or $result -gt 7) {
-        throw "ROBOCOPY_FAILED:$result"
+function Convert-ToPsLiteral([string]$Value) {
+    return "'" + $Value.Replace("'", "''") + "'"
+}
+
+function Stop-ProcessTreeBounded([int]$ProcessId) {
+    try {
+        $killer = Start-Process -FilePath "taskkill.exe" -ArgumentList @("/PID", "$ProcessId", "/T", "/F") -PassThru -WindowStyle Hidden
+        if (-not $killer.WaitForExit(10000)) { try { $killer.Kill() } catch {} }
+    } catch { try { Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue } catch {} }
+}
+
+function Invoke-ExternalObserved([string]$FilePath, [string[]]$Arguments) {
+    $stdoutPath = [System.IO.Path]::GetTempFileName()
+    $stderrPath = [System.IO.Path]::GetTempFileName()
+    try {
+        $argumentText = "@(" + (($Arguments | ForEach-Object { Convert-ToPsLiteral $_ }) -join ",") + ")"
+        $scriptText = "`$ErrorActionPreference='Continue'; `$ProgressPreference='SilentlyContinue'; & $(Convert-ToPsLiteral $FilePath) $argumentText; if (`$null -eq `$LASTEXITCODE) { exit 0 } else { exit `$LASTEXITCODE }"
+        $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($scriptText))
+        $hostPowerShell = (Get-Process -Id $PID).Path
+        $process = Start-Process -FilePath $hostPowerShell -ArgumentList @("-NoProfile", "-NonInteractive", "-EncodedCommand", $encoded) -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath -PassThru -WindowStyle Hidden
+        $processHandle = $process.Handle
+        $completed = $process.WaitForExit([Math]::Max(1, $externalTimeoutSeconds) * 1000)
+        if (-not $completed) {
+            Stop-ProcessTreeBounded $process.Id
+            $process.WaitForExit(10000) | Out-Null
+        } else { $process.WaitForExit() }
+        $process.Refresh()
+        [string]$stdout = Get-Content -Raw -LiteralPath $stdoutPath
+        [string]$stderr = Get-Content -Raw -LiteralPath $stderrPath
+        if ($null -eq $stdout) { $stdout = "" }
+        if ($null -eq $stderr) { $stderr = "" }
+        return [ordered]@{
+            exitCode = if ($completed) { [int]$process.ExitCode } else { $null }
+            timedOut = -not $completed
+            output = $stdout.Trim()
+            errorOutput = $stderr.Trim()
+        }
+    } finally {
+        try { [System.IO.File]::Delete($stdoutPath) } catch {}
+        try { [System.IO.File]::Delete($stderrPath) } catch {}
     }
-    return $result
+}
+
+function Invoke-Robocopy([string]$From, [string]$To) {
+    $observed = Invoke-ExternalObserved $robocopyPath @($From, $To, "/E", "/COPY:DAT", "/DCOPY:DAT", "/R:2", "/W:1", "/XJ", "/NJH", "/NJS", "/NFL", "/NDL")
+    if ($observed.timedOut) { throw "ROBOCOPY_TIMEOUT" }
+    if ($observed.exitCode -lt 0 -or $observed.exitCode -gt 7) {
+        throw "ROBOCOPY_FAILED:$($observed.exitCode)"
+    }
+    return $observed.exitCode
 }
 
 function Invoke-AdbObserved([string[]]$Arguments) {
     $bound = @("-s", $Serial) + $Arguments
-    $output = (& $AdbPath @bound 2>&1 | Out-String).Trim()
-    return [ordered]@{ exitCode = $LASTEXITCODE; output = $output }
+    return Invoke-ExternalObserved $AdbPath $bound
 }
 
 function Get-RelativeFiles([string]$RootPath) {
@@ -185,44 +229,54 @@ try {
             package = $package
             forceStopAttempted = $true
             forceStopExitCode = $null
+            forceStopTimedOut = $false
             forceStopOutput = $null
             uninstallAttempted = $true
             uninstallExitCode = $null
+            uninstallTimedOut = $false
             uninstallOutput = $null
             transportProbeAttempted = $true
             transportProbeExitCode = $null
+            transportProbeTimedOut = $false
             transportProbeOutput = $null
             postUninstallQueryAttempted = $true
             postUninstallQueryExitCode = $null
+            postUninstallQueryTimedOut = $false
             postUninstallQueryOutput = $null
             packageListAttempted = $true
             packageListExitCode = $null
+            packageListTimedOut = $false
             packageListOutput = $null
             packageAbsentObserved = $false
         }
         try {
             $forceStop = Invoke-AdbObserved @("shell", "am", "force-stop", $package)
             $record.forceStopExitCode = $forceStop.exitCode
+            $record.forceStopTimedOut = $forceStop.timedOut
             $record.forceStopOutput = $forceStop.output
         } catch { $record.forceStopOutput = $_.Exception.GetType().Name }
         try {
             $uninstall = Invoke-AdbObserved @("uninstall", $package)
             $record.uninstallExitCode = $uninstall.exitCode
+            $record.uninstallTimedOut = $uninstall.timedOut
             $record.uninstallOutput = $uninstall.output
         } catch { $record.uninstallOutput = $_.Exception.GetType().Name }
         try {
             $transport = Invoke-AdbObserved @("get-state")
             $record.transportProbeExitCode = $transport.exitCode
+            $record.transportProbeTimedOut = $transport.timedOut
             $record.transportProbeOutput = $transport.output
         } catch { $record.transportProbeOutput = $_.Exception.GetType().Name }
         try {
             $postUninstall = Invoke-AdbObserved @("shell", "pm", "path", $package)
             $record.postUninstallQueryExitCode = $postUninstall.exitCode
+            $record.postUninstallQueryTimedOut = $postUninstall.timedOut
             $record.postUninstallQueryOutput = $postUninstall.output
         } catch { $record.postUninstallQueryOutput = $_.Exception.GetType().Name }
         try {
             $packageList = Invoke-AdbObserved @("shell", "pm", "list", "packages")
             $record.packageListExitCode = $packageList.exitCode
+            $record.packageListTimedOut = $packageList.timedOut
             $record.packageListOutput = $packageList.output
         } catch { $record.packageListOutput = $_.Exception.GetType().Name }
 
@@ -242,12 +296,14 @@ try {
     }
     if ($StopEmulator) {
         $emulatorCleanup.attempted = $true
+        $emulatorCleanup.timedOut = $false
         try {
             $emulator = Invoke-AdbObserved @("emu", "kill")
             $emulatorCleanup.exitCode = $emulator.exitCode
+            $emulatorCleanup.timedOut = $emulator.timedOut
             $emulatorCleanup.output = $emulator.output
         } catch { $emulatorCleanup.output = $_.Exception.GetType().Name }
-        if ($emulatorCleanup.exitCode -ne 0) { $cleanupFailure = "EMULATOR_CLEANUP_UNVERIFIED" }
+        if ($emulatorCleanup.timedOut -or $emulatorCleanup.exitCode -ne 0) { $cleanupFailure = "EMULATOR_CLEANUP_UNVERIFIED" }
     }
     if ($InjectReportFailure) {
         $reportingFailure = "INJECTED_REPORT_FAILURE"

@@ -28,14 +28,15 @@ def git(root: Path, *args: str) -> str:
 
 class RecI3V8RunnerTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.root = Path(tempfile.mkdtemp(prefix=".tmp-rec-i3-v8-runner-", dir=ROOT))
+        self.root = Path(tempfile.mkdtemp(prefix=".tmp-rec-i3-v8-runner-"))
         self.repo = self.root / "repo"
         self.repo.mkdir()
         (self.repo / "tools").mkdir()
         (self.repo / "android").mkdir()
         shutil.copy2(PRESERVER, self.repo / "tools" / PRESERVER.name)
         (self.repo / "tools" / "validate_poc_recovery_governance.py").write_text(
-            "print('synthetic governance pass')\n", encoding="utf-8"
+            "import os\nprint('synthetic governance pass')\nraise SystemExit(int(os.environ.get('FAKE_GOVERNANCE_EXIT', '0')))\n",
+            encoding="utf-8",
         )
         (self.repo / "tools" / "verify_poc_recovery_dependency_inventory.py").write_text(
             "print('synthetic dependency pass')\n", encoding="utf-8"
@@ -52,6 +53,8 @@ class RecI3V8RunnerTests(unittest.TestCase):
         self.adb.write_text(
             "@echo off\r\n"
             "echo %*>>\"%FAKE_ADB_LOG%\"\r\n"
+            "if \"%FAKE_ADB_FAILURE%\"==\"final_logcat\" if \"%3 %4\"==\"logcat -d\" exit /b 9\r\n"
+            "if \"%FAKE_ADB_FAILURE%\"==\"final_logcat_timeout\" if \"%3 %4\"==\"logcat -d\" ping 127.0.0.1 -n 70 >nul\r\n"
             "if \"%3\"==\"devices\" (\r\n"
             "  echo List of devices attached\r\n"
             "  if exist \"%FAKE_EMULATOR_STARTED%\" echo %2 device\r\n"
@@ -86,6 +89,8 @@ class RecI3V8RunnerTests(unittest.TestCase):
             "echo %*| findstr /c:\"connectedDebugAndroidTest\" >nul || exit /b 0\r\n"
             "if not exist \"%DORA_REC_I3_EXPECTED_LEDGER%\" exit /b 91\r\n"
             "echo started>\"%FAKE_GRADLE_MARKER%\"\r\n"
+            "if defined FAKE_METADATA_REPORT_BLOCKER \"%DORA_REC_I3_PYTHON_PATH%\" \"%FAKE_METADATA_REPORT_BLOCKER%\"\r\n"
+            "if defined FAKE_DELETE_PRESERVER del /q \"%FAKE_DELETE_PRESERVER%\"\r\n"
             "if not \"%FAKE_GRADLE_DELAY%\"==\"0\" ping 127.0.0.1 -n 6 >nul\r\n"
             "echo STREAM_LINE_ONE\r\n"
             "echo STREAM_LINE_TWO\r\n"
@@ -117,6 +122,10 @@ class RecI3V8RunnerTests(unittest.TestCase):
     def ledger(self) -> Path:
         return self.evidence / f"REC-I3-V8-ATTEMPT-{self.commit}.json"
 
+    @property
+    def completion(self) -> Path:
+        return self.evidence / f"REC-I3-V8-COMPLETION-{self.commit}.json"
+
     def invoke(
         self,
         *,
@@ -127,6 +136,14 @@ class RecI3V8RunnerTests(unittest.TestCase):
         identity_mode: str = "valid",
         command_timeout: int = 30,
         gradle_delay: bool = False,
+        governance_exit: int = 0,
+        final_logcat_failure: bool = False,
+        final_logcat_timeout: bool = False,
+        helper_watchdog: int = 1800,
+        metadata_destination: Path | None = None,
+        completion_failure: bool = False,
+        delete_preserver: bool = False,
+        block_metadata_report: bool = False,
     ) -> subprocess.CompletedProcess[str]:
         environment = os.environ.copy()
         environment.update(
@@ -141,15 +158,37 @@ class RecI3V8RunnerTests(unittest.TestCase):
                 "FAKE_GRADLE_EXIT": str(gradle_exit),
                 "FAKE_GRADLE_DELAY": "1" if gradle_delay else "0",
                 "FAKE_ADB_IDENTITY": identity_mode,
+                "FAKE_ADB_FAILURE": "final_logcat_timeout" if final_logcat_timeout else "final_logcat" if final_logcat_failure else "none",
+                "FAKE_GOVERNANCE_EXIT": str(governance_exit),
                 "FAKE_GIT_LOG": str(self.git_log),
                 "DORA_REC_I3_GIT_PATH": str(self.git_wrapper),
                 "DORA_REC_I3_PYTHON_PATH": sys.executable,
                 "DORA_REC_I3_EXPECTED_LEDGER": str(self.ledger),
                 "DORA_REC_I3_COMMAND_TIMEOUT_SECONDS": str(command_timeout),
+                "DORA_REC_I3_HELPER_WATCHDOG_SECONDS": str(helper_watchdog),
             }
         )
         if report_failure:
             environment["DORA_REC_I3_INJECT_REPORT_FAILURE"] = "1"
+        if metadata_destination:
+            environment["DORA_REC_I3_METADATA_DESTINATION"] = str(metadata_destination)
+        if completion_failure:
+            environment["DORA_REC_I3_INJECT_COMPLETION_FAILURE"] = "1"
+        if delete_preserver:
+            environment["FAKE_DELETE_PRESERVER"] = str(
+                self.repo / "tools" / "rec_i3_preserve_and_cleanup.ps1"
+            )
+        if block_metadata_report:
+            blocker_script = self.root / "block-metadata-report.py"
+            blocker_script.write_text(
+                "from pathlib import Path\n"
+                f"evidence = Path({str(self.evidence)!r})\n"
+                "raw = next(evidence.glob('REC-I3-V8-RAW-*'))\n"
+                "stamp = raw.name.removeprefix('REC-I3-V8-RAW-')\n"
+                "(evidence / f'REC-I3-V8-METADATA-FAILURE-{stamp}.json').mkdir()\n",
+                encoding="utf-8",
+            )
+            environment["FAKE_METADATA_REPORT_BLOCKER"] = str(blocker_script)
         command = [
             "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(RUNNER),
             "-Repository", str(self.repo), "-EvidenceBase", str(self.evidence),
@@ -193,8 +232,11 @@ class RecI3V8RunnerTests(unittest.TestCase):
         self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
         self.assertTrue(self.ledger.is_file())
         ledger = json.loads(self.ledger.read_text(encoding="utf-8-sig"))
-        self.assertEqual("ATTEMPT_CONSUMED_COMPLETED", ledger["state"])
-        self.assertEqual(0, ledger["completion"]["gradleExitCode"])
+        self.assertEqual("ATTEMPT_CONSUMED_EXECUTION_UNKNOWN", ledger["state"])
+        self.assertNotIn("completion", ledger)
+        completion = json.loads(self.completion.read_text(encoding="utf-8-sig"))
+        self.assertEqual("ATTEMPT_CONSUMED_COMPLETED", completion["state"])
+        self.assertEqual(0, completion["gradleExitCode"])
         gradle_log = self.gradle_log.read_text(encoding="utf-8")
         self.assertIn(f"ANDROID_SERIAL={SERIAL}", gradle_log)
         self.assertIn(f"--serial {SERIAL}", gradle_log)
@@ -230,7 +272,7 @@ class RecI3V8RunnerTests(unittest.TestCase):
         self.assertIn(f"-avd dora_api36_recovery -port {SERIAL.removeprefix('emulator-')}", emulator_args)
         self.assertEqual(
             ["INSTRUMENTATION_CHECKPOINT_INSERT synthetic"],
-            ledger["completion"]["firstCheckpointDiagnostic"],
+            completion["firstCheckpointDiagnostic"],
         )
 
     def test_atomic_attempt_ledger_blocks_second_launch_and_interruption_stays_unknown(self) -> None:
@@ -261,8 +303,129 @@ class RecI3V8RunnerTests(unittest.TestCase):
         self.assertNotEqual(0, completed.returncode)
         ledger = json.loads(self.ledger.read_text(encoding="utf-8-sig"))
         self.assertEqual("ATTEMPT_CONSUMED_EXECUTION_UNKNOWN", ledger["state"])
-        self.assertTrue(ledger["completion"]["timedOut"])
+        completion = json.loads(self.completion.read_text(encoding="utf-8-sig"))
+        self.assertTrue(completion["timedOut"])
         self.assertTrue(any(self.evidence.glob("REC-I3-V8-CLEANUP-*.json")))
+
+    def test_metadata_filesystem_failure_cannot_skip_cleanup(self) -> None:
+        blocker = self.root / "metadata-is-a-file"
+        blocker.write_text("not a directory", encoding="utf-8")
+        completed = self.invoke(metadata_destination=blocker)
+        # An actual metadata directory failure after execution must still uninstall and stop the emulator.
+        self.assertNotEqual(0, completed.returncode)
+        observation = json.loads(
+            next(self.evidence.glob("REC-I3-V8-CLEANUP-*.json")).read_text(encoding="utf-8-sig")
+        )
+        self.assertTrue(observation["cleanupAttempted"])
+        self.assertTrue(observation["emulatorCleanup"]["attempted"])
+        self.assertTrue(any(" uninstall " in f" {line} " for line in self.adb_log.read_text().splitlines()))
+
+    def test_helper_launch_failure_uses_independent_cleanup_fallback(self) -> None:
+        completed = self.invoke(delete_preserver=True)
+        # Losing the helper process after execution must activate coordinator-owned bounded cleanup.
+        self.assertNotEqual(0, completed.returncode)
+        fallback = self.evidence / "REC-I3-V8-CLEANUP-FALLBACK.json"
+        self.assertTrue(fallback.is_file())
+        observation = json.loads(fallback.read_text(encoding="utf-8-sig"))
+        self.assertTrue(observation["cleanupAttempted"])
+        self.assertTrue(any("emu kill" in line for line in self.adb_log.read_text().splitlines()))
+
+    def test_metadata_failure_report_write_cannot_bypass_cleanup(self) -> None:
+        blocker = self.root / "metadata-is-a-file"
+        blocker.write_text("not a directory", encoding="utf-8")
+        completed = self.invoke(metadata_destination=blocker, block_metadata_report=True)
+        # A second filesystem exception while reporting metadata failure must still reach cleanup.
+        self.assertNotEqual(0, completed.returncode)
+        calls = self.adb_log.read_text().splitlines()
+        for package in ("com.monumentogram.dora.poc.recovery", "com.monumentogram.dora.poc.recovery.test"):
+            self.assertIn(f"-s {SERIAL} uninstall {package}", calls, completed.stdout + completed.stderr)
+        self.assertIn(f"-s {SERIAL} emu kill", calls)
+        observations = list(self.evidence.glob("REC-I3-V8-CLEANUP-*.json"))
+        self.assertEqual(1, len(observations))
+        self.assertTrue(json.loads(observations[0].read_text(encoding="utf-8-sig"))["cleanupAttempted"])
+
+    def test_helper_watchdog_timeout_uses_independent_cleanup_fallback(self) -> None:
+        completed = self.invoke(helper_watchdog=1)
+        # Killing the helper before its observation must still run independently bounded package and emulator cleanup.
+        self.assertNotEqual(0, completed.returncode)
+        observation = json.loads(
+            (self.evidence / "REC-I3-V8-CLEANUP-FALLBACK.json").read_text(encoding="utf-8-sig")
+        )
+        self.assertTrue(observation["cleanupAttempted"])
+        self.assertEqual(2, len(observation["packageCleanup"]))
+        for package in observation["packageCleanup"]:
+            self.assertEqual(5, len(package["commands"]))
+        self.assertEqual(0, observation["emulatorCleanup"]["exitCode"])
+        calls = self.adb_log.read_text().splitlines()
+        for package in ("com.monumentogram.dora.poc.recovery", "com.monumentogram.dora.poc.recovery.test"):
+            self.assertIn(f"-s {SERIAL} uninstall {package}", calls)
+        self.assertIn(f"-s {SERIAL} emu kill", calls)
+
+    def test_preparation_failure_without_build_tree_records_cleanup_for_started_or_online_target(self) -> None:
+        for already_online in (False, True):
+            with self.subTest(already_online=already_online):
+                shutil.rmtree(self.evidence, ignore_errors=True)
+                self.emulator_started.unlink(missing_ok=True)
+                self.adb_log.unlink(missing_ok=True)
+                if already_online:
+                    self.emulator_started.write_text("present", encoding="utf-8")
+                completed = self.invoke(governance_exit=7)
+                # Early governance failure must not depend on a generated build tree to record cleanup truth.
+                self.assertNotEqual(0, completed.returncode)
+                observation_path = next(self.evidence.glob("REC-I3-V8-CLEANUP-*.json"))
+                observation = json.loads(observation_path.read_text(encoding="utf-8-sig"))
+                self.assertTrue(observation["cleanupAttempted"])
+                self.assertTrue(observation["emulatorCleanup"]["attempted"])
+
+    def test_successful_already_online_authorized_emulator_is_stopped(self) -> None:
+        self.emulator_started.write_text("present", encoding="utf-8")
+        completed = self.invoke()
+        # Reusing a verified authorized emulator must not weaken the inherited stop-and-verify contract.
+        self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
+        observation = json.loads(
+            next(self.evidence.glob("REC-I3-V8-CLEANUP-*.json")).read_text(encoding="utf-8-sig")
+        )
+        self.assertTrue(observation["emulatorCleanup"]["attempted"])
+        self.assertTrue(any(line.endswith("emu kill") for line in self.adb_log.read_text().splitlines()))
+
+    def test_completion_persistence_failure_preserves_create_once_launch_ledger(self) -> None:
+        completed = self.invoke(completion_failure=True)
+        # Completion write failure must never truncate the durable create-once launch record or permit a retry.
+        self.assertNotEqual(0, completed.returncode)
+        launch = json.loads(self.ledger.read_text(encoding="utf-8-sig"))
+        self.assertEqual("ATTEMPT_CONSUMED_EXECUTION_UNKNOWN", launch["state"])
+        self.assertEqual(1, launch["launchRecord"]["instrumentationAttemptCount"])
+        second = self.invoke()
+        self.assertNotEqual(0, second.returncode)
+
+    def test_required_final_logcat_failure_is_durable_and_fails_run_after_cleanup(self) -> None:
+        completed = self.invoke(final_logcat_failure=True)
+        # Discarding final-logcat failure must not allow a false-success host report.
+        self.assertNotEqual(0, completed.returncode)
+        raw = next(self.evidence.glob("REC-I3-V8-RAW-*"))
+        result = json.loads((raw / "final-logcat-result.json").read_text(encoding="utf-8-sig"))
+        self.assertEqual(9, result["exitCode"])
+        self.assertFalse(result["timedOut"])
+        completion = json.loads(self.completion.read_text(encoding="utf-8-sig"))
+        self.assertEqual(0, completion["gradleExitCode"])
+        self.assertTrue(any(self.evidence.glob("REC-I3-V8-CLEANUP-*.json")))
+
+    def test_required_final_logcat_timeout_preserves_instrumentation_result_and_cleanup(self) -> None:
+        completed = self.invoke(final_logcat_timeout=True)
+        # A timed-out required logcat must fail the host run without changing a completed instrumentation outcome.
+        self.assertNotEqual(0, completed.returncode)
+        raw = next(self.evidence.glob("REC-I3-V8-RAW-*"))
+        result = json.loads((raw / "final-logcat-result.json").read_text(encoding="utf-8-sig"))
+        self.assertIsNone(result["exitCode"])
+        self.assertTrue(result["timedOut"])
+        completion = json.loads(self.completion.read_text(encoding="utf-8-sig"))
+        self.assertEqual(0, completion["gradleExitCode"])
+        self.assertEqual("ATTEMPT_CONSUMED_COMPLETED", completion["state"])
+        observation = json.loads(
+            next(self.evidence.glob("REC-I3-V8-CLEANUP-*.json")).read_text(encoding="utf-8-sig")
+        )
+        self.assertTrue(observation["cleanupAttempted"])
+        self.assertEqual(0, observation["emulatorCleanup"]["exitCode"])
 
 
 if __name__ == "__main__":
