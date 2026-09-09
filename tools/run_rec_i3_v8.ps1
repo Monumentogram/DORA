@@ -271,7 +271,9 @@ try {
         $listRecord = Invoke-BoundedCommand "package-list-$label" $adbPath @("-s", $Serial, "shell", "pm", "list", "packages") $repositoryFull (Join-Path $rawPath "package-list-$label.log")
         Save-Preflight $listRecord
         $listed = @($listRecord.output -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ })
-        $pathAbsent = $pathRecord.exitCode -in @(0, 1) -and [string]::IsNullOrWhiteSpace($pathRecord.output)
+        $pathAbsent = $pathRecord.exitCode -in @(0, 1) -and
+            [string]::IsNullOrWhiteSpace($pathRecord.output) -and
+            [string]::IsNullOrWhiteSpace($pathRecord.errorOutput)
         if ($pathRecord.timedOut -or $listRecord.timedOut -or $listRecord.exitCode -ne 0 -or -not $pathAbsent -or $listed -contains "package:$package") {
             throw "PACKAGE_ABSENCE_UNVERIFIED:$package"
         }

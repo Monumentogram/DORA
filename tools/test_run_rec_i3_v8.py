@@ -67,6 +67,8 @@ class RecI3V8RunnerTests(unittest.TestCase):
             "if \"%5\"==\"ro.product.cpu.abi\" (if \"%FAKE_ADB_IDENTITY%\"==\"bad_abi\" (echo arm64-v8a) else (echo x86_64))\r\n"
             "if \"%5\"==\"ro.build.fingerprint\" (if \"%FAKE_ADB_IDENTITY%\"==\"bad_fingerprint\" (echo wrong/fingerprint) else (echo " + FINGERPRINT + "))\r\n"
             "if \"%3 %4 %5\"==\"emu avd name\" (if \"%FAKE_ADB_IDENTITY%\"==\"bad_avd\" (echo wrong_avd) else (echo dora_api36_recovery))\r\n"
+            "if \"%3\"==\"uninstall\" echo uninstalled>\"%FAKE_UNINSTALLED_PREFIX%-%4\"\r\n"
+            "if \"%4 %5\"==\"pm path\" if \"%FAKE_ADB_IDENTITY%\"==\"preflight_path_permission\" if not exist \"%FAKE_UNINSTALLED_PREFIX%-%6\" (echo SecurityException: permission denied 1>&2& exit /b 1)\r\n"
             "if \"%5\"==\"path\" (if \"%FAKE_ADB_IDENTITY%\"==\"package_present\" (echo package:/data/app/present.apk& exit /b 0) else (exit /b 1))\r\n"
             "if \"%5 %6\"==\"list packages\" if \"%FAKE_ADB_IDENTITY%\"==\"package_present\" echo package:com.monumentogram.dora.poc.recovery\r\n"
             "exit /b 0\r\n",
@@ -155,6 +157,7 @@ class RecI3V8RunnerTests(unittest.TestCase):
                 "TEMP": str(self.root / "tmp"),
                 "TMP": str(self.root / "tmp"),
                 "FAKE_ADB_LOG": str(self.adb_log),
+                "FAKE_UNINSTALLED_PREFIX": str(self.root / "uninstalled"),
                 "FAKE_EMULATOR_LOG": str(self.root / "emulator.log"),
                 "FAKE_EMULATOR_STARTED": str(self.emulator_started),
                 "FAKE_GRADLE_LOG": str(self.gradle_log),
@@ -236,6 +239,48 @@ class RecI3V8RunnerTests(unittest.TestCase):
                 self.assertNotEqual(0, completed.returncode)
                 self.assertFalse(self.gradle_marker.exists())
                 self.assertFalse(self.ledger.exists())
+
+    def test_preflight_path_permission_stderr_blocks_launch_and_still_cleans(self) -> None:
+        # Ignoring stderr on empty exit-1 pm path would consume the attempt despite unverified absence.
+        completed = self.invoke(identity_mode="preflight_path_permission")
+        self.assertNotEqual(0, completed.returncode, completed.stdout + completed.stderr)
+        report = json.loads(
+            next(self.evidence.glob("REC-I3-V8-REPORT-*.json")).read_text(encoding="utf-8-sig")
+        )
+        self.assertIn("PACKAGE_ABSENCE_UNVERIFIED", report["primaryFailure"])
+        self.assertFalse(self.ledger.exists())
+        self.assertFalse(self.gradle_marker.exists())
+        self.assertNotIn("connectedDebugAndroidTest", self.gradle_log.read_text(encoding="utf-8"))
+        raw = next(self.evidence.glob("REC-I3-V8-RAW-*"))
+        preflight = json.loads((raw / "preflight.json").read_text(encoding="utf-8-sig"))
+        path_record = next(item for item in preflight["commands"] if item["name"].startswith("package-path-"))
+        self.assertEqual(1, path_record["exitCode"])
+        self.assertEqual("", path_record["output"])
+        self.assertIn("SecurityException: permission denied", path_record["errorOutput"])
+        self.assertIn(
+            "SecurityException: permission denied",
+            Path(path_record["logPath"] + ".stderr").read_text(encoding="utf-8-sig"),
+        )
+        list_record = next(item for item in preflight["commands"] if item["name"].startswith("package-list-"))
+        self.assertEqual(0, list_record["exitCode"])
+        self.assertEqual("", list_record["output"])
+        self.assertEqual("", list_record["errorOutput"])
+        observation = json.loads(
+            next(self.evidence.glob("REC-I3-V8-CLEANUP-*.json")).read_text(encoding="utf-8-sig")
+        )
+        self.assertTrue(observation["cleanupAttempted"])
+        self.assertEqual(2, len(observation["packageCleanup"]))
+        for record in observation["packageCleanup"]:
+            self.assertEqual(1, record["postUninstallQueryExitCode"])
+            self.assertEqual("", record["postUninstallQueryOutput"])
+            self.assertEqual("", record["postUninstallQueryErrorOutput"])
+            self.assertTrue(record["packageAbsentObserved"])
+        calls = self.adb_log.read_text(encoding="utf-8").splitlines()
+        for package in ("com.monumentogram.dora.poc.recovery", "com.monumentogram.dora.poc.recovery.test"):
+            self.assertIn(f"-s {SERIAL} shell am force-stop {package}", calls)
+            uninstall_index = calls.index(f"-s {SERIAL} uninstall {package}")
+            self.assertIn(f"-s {SERIAL} shell pm path {package}", calls[uninstall_index + 1:])
+        self.assertIn(f"-s {SERIAL} emu kill", calls)
 
     def test_success_binds_serial_streams_output_and_records_preflights(self) -> None:
         completed = self.invoke()
