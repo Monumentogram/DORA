@@ -48,6 +48,8 @@ $preflightCommands = @()
 $ledgerCreated = $false
 $deviceIdentityVerified = $false
 $ownedEmulatorProcess = $null
+$gradleResult = $null
+$secondaryFailures = @()
 
 function Write-JsonFile([string]$Path, [object]$Value) {
     $parent = [System.IO.Path]::GetDirectoryName([System.IO.Path]::GetFullPath($Path))
@@ -77,6 +79,9 @@ function Stop-ProcessTreeBounded([int]$ProcessId) {
         $killer = Start-Process -FilePath "taskkill.exe" -ArgumentList @("/PID", "$ProcessId", "/T", "/F") -PassThru -WindowStyle Hidden
         if (-not $killer.WaitForExit(10000)) { try { $killer.Kill() } catch {} }
     } catch {
+        Write-Warning "PROCESS_TREE_STOP_FAILED:$($_.Exception.Message)"
+    } finally {
+        # taskkill can return a nonzero exit without throwing (for example, access denied).
         try { Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue } catch {}
     }
 }
@@ -90,34 +95,77 @@ function Invoke-BoundedCommand(
     [int]$TimeoutSeconds = $commandTimeoutSeconds
 ) {
     $stderrPath = "$LogPath.stderr"
+    $nativeResultPath = "$LogPath.native.json"
     $argumentText = "@(" + (($Arguments | ForEach-Object { Convert-ToPsLiteral $_ }) -join ",") + ")"
-    $scriptText = "`$ErrorActionPreference='Continue'; `$ProgressPreference='SilentlyContinue'; Set-Location -LiteralPath $(Convert-ToPsLiteral $WorkingDirectory); & $(Convert-ToPsLiteral $FilePath) $argumentText; if (`$null -eq `$LASTEXITCODE) { exit 0 } else { exit `$LASTEXITCODE }"
+    # Keep native stderr non-terminating on PS5.1; only setup/invocation errors are launch failures.
+    $scriptText = @"
+`$ErrorActionPreference='Stop'; `$ProgressPreference='SilentlyContinue'
+`$PSNativeCommandUseErrorActionPreference=`$false
+`$native=[ordered]@{exitCode=`$null; launchFailure=`$null}
+try {
+    Set-Location -LiteralPath $(Convert-ToPsLiteral $WorkingDirectory)
+    `$command=Get-Command -Name $(Convert-ToPsLiteral $FilePath) -CommandType Application -ErrorAction Stop
+    `$LASTEXITCODE=`$null; `$Error.Clear(); `$ErrorActionPreference='Continue'
+    & `$command $argumentText
+    `$native.exitCode=`$LASTEXITCODE
+    `$invokeErrors=@(`$Error | Where-Object { `$_.FullyQualifiedErrorId -notmatch '^NativeCommandError' })
+    `$ErrorActionPreference='Stop'
+    if (`$invokeErrors.Count) { throw ((`$invokeErrors | Out-String).Trim()) }
+    if (`$null -eq `$native.exitCode) { throw 'NATIVE_EXIT_NOT_OBSERVED' }
+} catch {
+    `$native.launchFailure=`$_.ToString()
+    [Console]::Error.WriteLine(`$native.launchFailure)
+}
+[IO.File]::WriteAllText($(Convert-ToPsLiteral $nativeResultPath), (`$native | ConvertTo-Json), [Text.UTF8Encoding]::new(`$false))
+if (`$native.launchFailure) { exit 125 }
+exit `$native.exitCode
+"@
     $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($scriptText))
-    $hostPowerShell = (Get-Process -Id $PID).Path
-    $process = Start-Process -FilePath $hostPowerShell -ArgumentList @("-NoProfile", "-NonInteractive", "-EncodedCommand", $encoded) -RedirectStandardOutput $LogPath -RedirectStandardError $stderrPath -PassThru -WindowStyle Hidden
-    $processHandle = $process.Handle
-    $completed = $process.WaitForExit([Math]::Max(1, $TimeoutSeconds) * 1000)
-    if (-not $completed) {
-        Stop-ProcessTreeBounded $process.Id
-        $process.WaitForExit(10000) | Out-Null
-    } else {
-        $process.WaitForExit()
+    $process = $null
+    $completed = $false
+    $timedOut = $false
+    $native = [ordered]@{ exitCode = $null; launchFailure = $null }
+    $wrapperExitCode = $null
+    try {
+        if ((Test-Path -LiteralPath $LogPath -PathType Container) -or (Test-Path -LiteralPath $stderrPath -PathType Container)) { throw "COMMAND_LOG_PATH_IS_DIRECTORY:$LogPath" }
+        $hostPowerShell = (Get-Process -Id $PID).Path
+        $process = Start-Process -FilePath $hostPowerShell -ArgumentList @("-NoProfile", "-NonInteractive", "-EncodedCommand", $encoded) -RedirectStandardOutput $LogPath -RedirectStandardError $stderrPath -PassThru -WindowStyle Hidden
+        $processHandle = $process.Handle
+        $completed = $process.WaitForExit([Math]::Max(1, $TimeoutSeconds) * 1000)
+        $timedOut = -not $completed
+        if ($completed) { $process.WaitForExit(); $process.Refresh(); $wrapperExitCode = $process.ExitCode }
+        if ($completed) {
+            if (-not (Test-Path -LiteralPath $nativeResultPath -PathType Leaf)) { throw "NATIVE_OBSERVATION_MISSING:wrapperExit=$wrapperExitCode" }
+            $native = Get-Content -Raw -Encoding UTF8 -LiteralPath $nativeResultPath | ConvertFrom-Json
+        }
+    } catch {
+        $native.launchFailure = $_.ToString()
+    } finally {
+        if ($null -ne $process -and -not $completed) {
+            Stop-ProcessTreeBounded $process.Id
+            $process.WaitForExit(10000) | Out-Null
+        }
     }
-    $process.Refresh()
-    [string]$stdout = if (Test-Path -LiteralPath $LogPath) { Get-Content -Raw -LiteralPath $LogPath } else { "" }
-    [string]$stderr = if (Test-Path -LiteralPath $stderrPath) { Get-Content -Raw -LiteralPath $stderrPath } else { "" }
+    [string]$stdout = if (Test-Path -LiteralPath $LogPath -PathType Leaf) { Get-Content -Raw -LiteralPath $LogPath } else { "" }
+    [string]$stderr = if (Test-Path -LiteralPath $stderrPath -PathType Leaf) { Get-Content -Raw -LiteralPath $stderrPath } else { "" }
     if ($null -eq $stdout) { $stdout = "" }
     if ($null -eq $stderr) { $stderr = "" }
-    if ($stderr) { Add-Content -LiteralPath $LogPath -Value $stderr -Encoding UTF8 }
     return [ordered]@{
         name = $Name
         executable = $FilePath
         arguments = @($Arguments)
-        exitCode = if ($completed) { [int]$process.ExitCode } else { $null }
-        timedOut = -not $completed
+        workingDirectory = $WorkingDirectory
+        exitCode = $native.exitCode
+        wrapperExitCode = $wrapperExitCode
+        wrapperProcessId = if ($null -ne $process) { $process.Id } else { $null }
+        wrapperExited = ($null -eq $process -or $process.HasExited)
+        launchFailure = $native.launchFailure
+        timedOut = $timedOut
         output = $stdout.Trim()
         errorOutput = $stderr.Trim()
         logPath = $LogPath
+        stderrPath = $stderrPath
+        nativeResultPath = $nativeResultPath
     }
 }
 
@@ -129,6 +177,7 @@ function Save-Preflight([object]$Record) {
 function Invoke-Preflight([string]$Name, [string]$FilePath, [string[]]$Arguments, [string]$WorkingDirectory = $repositoryFull) {
     $record = Invoke-BoundedCommand $Name $FilePath $Arguments $WorkingDirectory (Join-Path $rawPath "$Name.log")
     Save-Preflight $record
+    if ($record.launchFailure) { throw "PREFLIGHT_LAUNCH_FAILED:${Name}:$($record.launchFailure)" }
     if ($record.timedOut) { throw "PREFLIGHT_TIMEOUT:$Name" }
     if ($record.exitCode -ne 0) { throw "PREFLIGHT_FAILED:${Name}:$($record.exitCode)" }
     return $record
@@ -274,7 +323,7 @@ try {
         $pathAbsent = $pathRecord.exitCode -in @(0, 1) -and
             [string]::IsNullOrWhiteSpace($pathRecord.output) -and
             [string]::IsNullOrWhiteSpace($pathRecord.errorOutput)
-        if ($pathRecord.timedOut -or $listRecord.timedOut -or $listRecord.exitCode -ne 0 -or -not $pathAbsent -or $listed -contains "package:$package") {
+        if ($pathRecord.launchFailure -or $listRecord.launchFailure -or $pathRecord.timedOut -or $listRecord.timedOut -or $listRecord.exitCode -ne 0 -or -not $pathAbsent -or $listed -contains "package:$package") {
             throw "PACKAGE_ABSENCE_UNVERIFIED:$package"
         }
     }
@@ -303,27 +352,50 @@ try {
         "-Pandroid.testInstrumentationRunnerArguments.recoveryHarnessRevision=$AcceptedCommit"
     )
     $gradleResult = Invoke-BoundedCommand "connected-gradle" $gradlePath $gradleArguments (Join-Path $repositoryFull "android") (Join-Path $rawPath "connected-gradle.log")
-    $logcatResult = Invoke-BoundedCommand "logcat-dump" $adbPath @("-s", $Serial, "logcat", "-d", "-v", "threadtime", "System.out:I", "AndroidJUnitRunner:I", "TestRunner:I", "*:S") $repositoryFull (Join-Path $rawPath "logcat-final.log") 60
-    Write-JsonFile (Join-Path $rawPath "final-logcat-result.json") $logcatResult
+    if ($gradleResult.launchFailure) { $primaryFailure = "CONNECTED_GRADLE_LAUNCH_FAILED:$($gradleResult.launchFailure)" }
+    elseif ($gradleResult.timedOut) { $primaryFailure = "CONNECTED_GRADLE_TIMEOUT" }
+    elseif ($gradleResult.exitCode -ne 0) { $primaryFailure = "CONNECTED_GRADLE_FAILED:$($gradleResult.exitCode)" }
+    if ($primaryFailure) { $exitCode = 1 }
     $completion = [ordered]@{
         schema = "DORA_REC_I3_V8_ATTEMPT_COMPLETION_V1"
-        state = if (-not $gradleResult.timedOut -and $gradleResult.exitCode -eq 0) { "ATTEMPT_CONSUMED_COMPLETED" } else { "ATTEMPT_CONSUMED_EXECUTION_UNKNOWN" }
+        state = if (-not $gradleResult.launchFailure -and -not $gradleResult.timedOut -and $gradleResult.exitCode -eq 0) { "ATTEMPT_CONSUMED_COMPLETED" } else { "ATTEMPT_CONSUMED_EXECUTION_UNKNOWN" }
         acceptedCommit = $AcceptedCommit
         acceptedTree = $AcceptedTree
         observedUtc = [DateTime]::UtcNow.ToString("o")
         gradleExitCode = $gradleResult.exitCode
         timedOut = $gradleResult.timedOut
         firstCheckpointDiagnostic = @($gradleResult.output -split "`r?`n" | Where-Object { $_ -match 'INSTRUMENTATION_CHECKPOINT_INSERT' } | Select-Object -First 1)
+        connectedResult = $gradleResult
+        primaryFailure = $primaryFailure
     }
-    if ($env:DORA_REC_I3_INJECT_COMPLETION_FAILURE -eq "1") { throw "INJECTED_COMPLETION_PERSISTENCE_FAILURE" }
-    Write-CreateNewJson $completionPath $completion
-    if ($gradleResult.timedOut) { throw "CONNECTED_GRADLE_TIMEOUT" }
-    if ($gradleResult.exitCode -ne 0) { throw "CONNECTED_GRADLE_FAILED:$($gradleResult.exitCode)" }
-    if ($logcatResult.timedOut) { throw "FINAL_LOGCAT_TIMEOUT" }
-    if ($logcatResult.exitCode -ne 0) { throw "FINAL_LOGCAT_FAILED:$($logcatResult.exitCode)" }
+    # Persist observed execution before any secondary capture; independent receipts survive one blocked path.
+    foreach ($destination in @((Join-Path $rawPath "connected-result.json"), $completionPath)) {
+        try {
+            if ($destination -eq $completionPath -and $env:DORA_REC_I3_INJECT_COMPLETION_FAILURE -eq "1") { throw "INJECTED_COMPLETION_PERSISTENCE_FAILURE" }
+            Write-CreateNewJson $destination $completion
+        } catch {
+            $exitCode = 1
+            $secondaryFailures += [ordered]@{ stage = "connected-result-persistence"; path = $destination; message = $_.ToString() }
+        }
+    }
+    $logcatResult = $null
+    try {
+        $logcatResult = Invoke-BoundedCommand "logcat-dump" $adbPath @("-s", $Serial, "logcat", "-d", "-v", "threadtime", "System.out:I", "AndroidJUnitRunner:I", "TestRunner:I", "*:S") $repositoryFull (Join-Path $rawPath "logcat-final.log") 60
+        Write-JsonFile (Join-Path $rawPath "final-logcat-result.json") $logcatResult
+        if ($logcatResult.launchFailure) { throw "FINAL_LOGCAT_LAUNCH_FAILED:$($logcatResult.launchFailure)" }
+        if ($logcatResult.timedOut) { throw "FINAL_LOGCAT_TIMEOUT" }
+        if ($logcatResult.exitCode -ne 0) { throw "FINAL_LOGCAT_FAILED:$($logcatResult.exitCode)" }
+    } catch {
+        $exitCode = 1
+        $secondaryFailures += [ordered]@{ stage = "final-logcat"; message = $_.ToString(); command = $logcatResult }
+    }
+    if ($secondaryFailures.Count) {
+        Write-CreateNewJson (Join-Path $evidenceFull "REC-I3-V8-SECONDARY-$timestamp.json") ([ordered]@{ connectedResult = $gradleResult; primaryFailure = $primaryFailure; failures = $secondaryFailures })
+    }
 } catch {
     $exitCode = 1
-    $primaryFailure = "$($_.Exception.Message) at line $($_.InvocationInfo.ScriptLineNumber)"
+    if ($null -eq $gradleResult) { $primaryFailure = "$($_.Exception.Message) at line $($_.InvocationInfo.ScriptLineNumber)" }
+    else { $secondaryFailures += [ordered]@{ stage = "reporting"; message = $_.ToString() } }
 } finally {
     if ($deviceIdentityVerified) {
         try {
@@ -331,7 +403,7 @@ try {
                 $metadataDestination = if ($env:DORA_REC_I3_METADATA_DESTINATION) { $env:DORA_REC_I3_METADATA_DESTINATION } else { Join-Path $buildRoot "rec-i3-v8-run-metadata-$attemptId" }
                 [System.IO.Directory]::CreateDirectory($metadataDestination) | Out-Null
                 $metadataCopy = Invoke-BoundedCommand "metadata-copy" "robocopy.exe" @($rawPath, $metadataDestination, "/E", "/COPY:DAT", "/DCOPY:DAT", "/R:2", "/W:1", "/XJ", "/NJH", "/NJS", "/NFL", "/NDL") $repositoryFull (Join-Path $evidenceFull "REC-I3-V8-METADATA-COPY-$timestamp.log") 120
-                if ($metadataCopy.timedOut -or $null -eq $metadataCopy.exitCode -or $metadataCopy.exitCode -gt 7) { throw "METADATA_COPY_FAILED" }
+                if ($metadataCopy.launchFailure -or $metadataCopy.timedOut -or $null -eq $metadataCopy.exitCode -or $metadataCopy.exitCode -gt 7) { throw "METADATA_COPY_FAILED" }
             }
         } catch {
             if ($exitCode -eq 0) { $exitCode = 1; $primaryFailure = "METADATA_PREPARATION_FAILED:$($_.Exception.Message)" }
@@ -361,7 +433,7 @@ try {
                     if ($exitCode -eq 0) { $exitCode = 1; $primaryFailure = "HELPER_DID_NOT_COMPLETE_CLEANUP" }
                 }
             }
-            if ($cleanupResult.timedOut -or $cleanupResult.exitCode -ne 0) {
+            if ($cleanupResult.launchFailure -or $cleanupResult.timedOut -or $cleanupResult.exitCode -ne 0) {
                 if ($exitCode -eq 0) { $exitCode = 1; $primaryFailure = "PRESERVATION_OR_CLEANUP_FAILED" }
             }
         }
@@ -392,15 +464,22 @@ try {
             attemptId = $attemptId
             ledgerCreated = $ledgerCreated
             primaryFailure = $primaryFailure
+            connectedResult = $gradleResult
+            secondaryFailures = $secondaryFailures
             cleanupExitCode = if ($null -ne $cleanupResult) { $cleanupResult.exitCode } else { $null }
             exitCode = $exitCode
         })
     } catch {
         $reportFailure = $_.Exception.Message
-        [System.IO.File]::WriteAllText((Join-Path $evidenceFull "REPORTING_FAILURE.txt"), $reportFailure + [Environment]::NewLine)
-        if ($exitCode -eq 0) { $exitCode = 1; $primaryFailure = $reportFailure }
+        $exitCode = 1
+        $secondaryFailures += [ordered]@{ stage = "final-report"; message = $reportFailure }
+        Write-JsonFile (Join-Path $evidenceFull "REPORTING_FAILURE.txt") ([ordered]@{ connectedResult = $gradleResult; primaryFailure = $primaryFailure; secondaryFailures = $secondaryFailures; exitCode = $exitCode })
     }
 }
 
-if ($exitCode -ne 0) { Write-Error $primaryFailure; exit $exitCode }
+if ($exitCode -ne 0) {
+    $failureMessage = if ($primaryFailure) { $primaryFailure } else { "EVIDENCE_OR_REPORTING_FAILED:$(($secondaryFailures | ConvertTo-Json -Depth 12 -Compress))" }
+    Write-Error $failureMessage -ErrorAction Continue
+    exit $exitCode
+}
 Write-Output "REC_I3_V8_HOST_RUN_COMPLETE $reportPath"

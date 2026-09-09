@@ -155,10 +155,10 @@ class RecI3V8RunnerTests(unittest.TestCase):
             "if \"%FAKE_APK_LIFECYCLE%\"==\"1\" \"%DORA_REC_I3_PYTHON_PATH%\" \"%FAKE_APK_LIFECYCLE_SCRIPT%\" connected %*\r\n"
             "if defined FAKE_METADATA_REPORT_BLOCKER \"%DORA_REC_I3_PYTHON_PATH%\" \"%FAKE_METADATA_REPORT_BLOCKER%\"\r\n"
             "if defined FAKE_DELETE_PRESERVER del /q \"%FAKE_DELETE_PRESERVER%\"\r\n"
+            "echo INSTRUMENTATION_CHECKPOINT_INSERT synthetic\r\n"
             "if not \"%FAKE_GRADLE_DELAY%\"==\"0\" ping 127.0.0.1 -n 6 >nul\r\n"
             "echo STREAM_LINE_ONE\r\n"
             "echo STREAM_LINE_TWO\r\n"
-            "echo INSTRUMENTATION_CHECKPOINT_INSERT synthetic\r\n"
             "exit /b %FAKE_GRADLE_EXIT%\r\n",
             encoding="utf-8",
         )
@@ -213,6 +213,8 @@ class RecI3V8RunnerTests(unittest.TestCase):
         block_fallback_artifacts: bool = False,
         apk_lifecycle: bool = False,
         apk_uninstall_error: bool = False,
+        python_path: Path | None = None,
+        block_logcat: str | None = None,
     ) -> subprocess.CompletedProcess[str]:
         environment = os.environ.copy()
         environment.update(
@@ -240,7 +242,7 @@ class RecI3V8RunnerTests(unittest.TestCase):
                 "FAKE_GOVERNANCE_EXIT": str(governance_exit),
                 "FAKE_GIT_LOG": str(self.git_log),
                 "DORA_REC_I3_GIT_PATH": str(self.git_wrapper),
-                "DORA_REC_I3_PYTHON_PATH": sys.executable,
+                "DORA_REC_I3_PYTHON_PATH": str(python_path) if python_path else sys.executable,
                 "DORA_REC_I3_EXPECTED_LEDGER": str(self.ledger),
                 "DORA_REC_I3_COMMAND_TIMEOUT_SECONDS": str(command_timeout),
                 "DORA_REC_I3_HELPER_WATCHDOG_SECONDS": str(helper_watchdog),
@@ -256,6 +258,14 @@ class RecI3V8RunnerTests(unittest.TestCase):
             environment["FAKE_DELETE_PRESERVER"] = str(
                 self.repo / "tools" / "rec_i3_preserve_and_cleanup.ps1"
             )
+        if block_logcat:
+            blocker_script = self.root / "block-logcat.py"
+            blocker_script.write_text(
+                "from pathlib import Path\n"
+                f"raw = next(Path({str(self.evidence)!r}).glob('REC-I3-V8-RAW-*'))\n"
+                f"(raw / {block_logcat!r}).mkdir()\n", encoding="utf-8",
+            )
+            environment["FAKE_METADATA_REPORT_BLOCKER"] = str(blocker_script)
         if block_metadata_report or block_fallback_artifacts:
             blocker_script = self.root / "block-metadata-report.py"
             block_operation = (
@@ -275,22 +285,113 @@ class RecI3V8RunnerTests(unittest.TestCase):
             )
             environment["FAKE_METADATA_REPORT_BLOCKER"] = str(blocker_script)
         command = [
-            "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(RUNNER),
+            os.environ.get("DORA_REC_I3_TEST_POWERSHELL", "powershell.exe"), "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(RUNNER),
             "-Repository", str(self.repo), "-EvidenceBase", str(self.evidence),
             "-StagingRoot", str(self.staging), "-Serial", SERIAL,
             "-AcceptedCommit", accepted_commit or self.commit,
             "-AcceptedTree", accepted_tree or self.tree,
         ]
-        completed = subprocess.run(command, text=True, capture_output=True, env=environment, timeout=90)
+        raw_completed = subprocess.run(command, capture_output=True, env=environment, timeout=90)
+        completed = subprocess.CompletedProcess(command, raw_completed.returncode,
+                                               raw_completed.stdout.decode("oem", errors="replace"),
+                                               raw_completed.stderr.decode("oem", errors="replace"))
         if os.environ.get("DORA_KEEP_RUNNER_FIXTURE") == "1":
             invocation = len(list(self.root.glob("runner-*.stdout"))) + 1
+            (self.root / f"runner-{invocation}.stdout.raw").write_bytes(raw_completed.stdout)
+            (self.root / f"runner-{invocation}.stderr.raw").write_bytes(raw_completed.stderr)
             (self.root / f"runner-{invocation}.stdout").write_text(completed.stdout, encoding="utf-8")
             (self.root / f"runner-{invocation}.stderr").write_text(completed.stderr, encoding="utf-8")
             (self.root / f"runner-{invocation}.json").write_text(
                 json.dumps({"command": command, "exitCode": completed.returncode}, indent=2),
                 encoding="utf-8",
             )
+            if self.evidence.is_dir():
+                shutil.copytree(self.evidence, self.root / f"invocation-{invocation}-evidence")
         return completed
+
+    def test_missing_python_fails_preflight_without_consuming_attempt(self) -> None:
+        # Inventing native exit 0 after command resolution failure must never launch connected Gradle.
+        invalid = self.root / "invalid-python.exe"
+        invalid.write_bytes(b"This is not an executable image.")
+        for executable in (self.root / "missing-python.exe", invalid):
+            with self.subTest(executable=executable.name):
+                completed = self.invoke(python_path=executable)
+                self.assertNotEqual(0, completed.returncode)
+                self.assertFalse(self.ledger.exists())
+                self.assertFalse(self.gradle_marker.exists())
+                raw = sorted(self.evidence.glob("REC-I3-V8-RAW-*"))[-1]
+                records = json.loads((raw / "preflight.json").read_text(encoding="utf-8-sig"))["commands"]
+                result = next(record for record in records if record["name"] == "governance")
+                self.assertEqual(str(executable), result["executable"])
+                self.assertIsNone(result["exitCode"])
+                self.assertTrue(result["wrapperExited"])
+                probe = subprocess.run(["powershell.exe", "-NoProfile", "-Command",
+                                        f"if (Get-Process -Id {result['wrapperProcessId']} -ErrorAction SilentlyContinue) {{ exit 1 }}"],
+                                       capture_output=True, timeout=10)
+                self.assertEqual(0, probe.returncode, "owned command wrapper survived its bounded call")
+                if executable == invalid and Path(os.environ.get("DORA_REC_I3_TEST_POWERSHELL", "")).name.lower() == "pwsh.exe":
+                    # PS7 can remain inside invalid-PE launch until the watchdog; do not invent a native exit.
+                    self.assertTrue(result["timedOut"] or result["launchFailure"])
+                else:
+                    self.assertFalse(result["timedOut"])
+                    self.assertTrue(result["launchFailure"])
+                    self.assertTrue(result["errorOutput"])
+
+    def test_native_nonzero_and_stderr_success_remain_native_observations(self) -> None:
+        # A native exit and ordinary native stderr must not be mislabeled as a launch exception.
+        wrapper = self.root / "python-with-stderr.cmd"
+        wrapper.write_text('@echo off\necho native diagnostic 1>&2\n"' + sys.executable + '" %*\nexit /b %errorlevel%\n')
+        completed = self.invoke(python_path=wrapper, governance_exit=7)
+        self.assertNotEqual(0, completed.returncode)
+        self.assertFalse(self.ledger.exists())
+        raw = next(self.evidence.glob("REC-I3-V8-RAW-*"))
+        records = json.loads((raw / "preflight.json").read_text(encoding="utf-8-sig"))["commands"]
+        result = next(record for record in records if record["name"] == "governance")
+        self.assertEqual(7, result["exitCode"])
+        self.assertIn("launchFailure", result)
+        self.assertIsNone(result["launchFailure"])
+        self.assertIn("native diagnostic", result["errorOutput"])
+        completed = self.invoke(python_path=wrapper)
+        self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
+        raw = sorted(self.evidence.glob("REC-I3-V8-RAW-*"))[-1]
+        records = json.loads((raw / "preflight.json").read_text(encoding="utf-8-sig"))["commands"]
+        result = next(record for record in records if record["name"] == "governance")
+        self.assertEqual(0, result["exitCode"])
+        self.assertIsNone(result["launchFailure"])
+        self.assertIn("native diagnostic", result["errorOutput"])
+
+    def assert_logcat_secondary_failure(self, target: str, *, gradle_exit: int = 23, timeout: bool = False) -> None:
+        completed = self.invoke(block_logcat=target, gradle_exit=gradle_exit,
+                                command_timeout=1 if timeout else 30, gradle_delay=timeout)
+        self.assertNotEqual(0, completed.returncode)
+        self.assertTrue(self.completion.is_file(), completed.stdout + completed.stderr)
+        completion = json.loads(self.completion.read_text(encoding="utf-8-sig"))
+        self.assertEqual(None if timeout else gradle_exit, completion["gradleExitCode"])
+        self.assertEqual(timeout, completion["timedOut"])
+        self.assertEqual(["INSTRUMENTATION_CHECKPOINT_INSERT synthetic"], completion["firstCheckpointDiagnostic"])
+        report = json.loads(next(self.evidence.glob("REC-I3-V8-REPORT-*.json")).read_text(encoding="utf-8-sig"))
+        self.assertEqual(None if timeout else gradle_exit, report["connectedResult"]["exitCode"])
+        self.assertEqual(timeout, report["connectedResult"]["timedOut"])
+        self.assertTrue(report["secondaryFailures"])
+        self.assertEqual(0, report["cleanupExitCode"])
+        if gradle_exit or timeout:
+            self.assertIn("CONNECTED_GRADLE_TIMEOUT" if timeout else "CONNECTED_GRADLE_FAILED:23", report["primaryFailure"])
+        else:
+            self.assertIsNone(report["primaryFailure"])
+
+    def test_blocked_logcat_receipt_retains_failed_connected_outcome(self) -> None:
+        # Moving durable completion after a fallible logcat write loses the known exit and first diagnostic.
+        self.assert_logcat_secondary_failure("final-logcat-result.json")
+
+    def test_logcat_wrapper_setup_failure_retains_failed_connected_outcome(self) -> None:
+        # A log redirection setup exception must not replace a previously observed native Gradle failure.
+        self.assert_logcat_secondary_failure("logcat-final.log")
+
+    def test_logcat_reporting_failure_after_native_success_still_fails_run(self) -> None:
+        self.assert_logcat_secondary_failure("final-logcat-result.json", gradle_exit=0)
+
+    def test_logcat_reporting_failure_retains_connected_timeout(self) -> None:
+        self.assert_logcat_secondary_failure("final-logcat-result.json", timeout=True)
 
     def test_connected_apks_are_removed_by_helper_after_preservation(self) -> None:
         # Omitting the invocation-only UTP option removes APKs before the helper and must fail cleanup.

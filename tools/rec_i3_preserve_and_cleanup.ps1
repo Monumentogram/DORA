@@ -24,6 +24,8 @@ $cleanupFailure = $null
 $exitCode = 0
 $stagingDirectory = $null
 $packageCleanup = @()
+$copyCommands = @()
+$copyEvidenceDirectory = $null
 $emulatorCleanup = [ordered]@{ attempted = $false; exitCode = $null; output = $null; errorOutput = $null }
 $externalTimeoutSeconds = if ($env:DORA_REC_I3_HELPER_COMMAND_TIMEOUT_SECONDS) { [int]$env:DORA_REC_I3_HELPER_COMMAND_TIMEOUT_SECONDS } else { 120 }
 $robocopyPath = if ($env:DORA_REC_I3_ROBOCOPY_PATH) { $env:DORA_REC_I3_ROBOCOPY_PATH } else { "robocopy.exe" }
@@ -57,45 +59,118 @@ function Stop-ProcessTreeBounded([int]$ProcessId) {
     try {
         $killer = Start-Process -FilePath "taskkill.exe" -ArgumentList @("/PID", "$ProcessId", "/T", "/F") -PassThru -WindowStyle Hidden
         if (-not $killer.WaitForExit(10000)) { try { $killer.Kill() } catch {} }
-    } catch { try { Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue } catch {} }
+    } catch { Write-Warning "PROCESS_TREE_STOP_FAILED:$($_.Exception.Message)" }
+    finally {
+        # A failed taskkill exit must not leave the wrapper holding command pipes open.
+        try { Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue } catch {}
+    }
 }
 
-function Invoke-ExternalObserved([string]$FilePath, [string[]]$Arguments) {
-    $stdoutPath = [System.IO.Path]::GetTempFileName()
-    $stderrPath = [System.IO.Path]::GetTempFileName()
+function Invoke-ExternalObserved([string]$FilePath, [string[]]$Arguments, [string]$LogPath = "") {
+    $stdoutPath = $LogPath
+    $stderrPath = $null
+    $nativeResultPath = $null
+    $native = [ordered]@{ exitCode = $null; launchFailure = $null }
+    $process = $null
+    $completed = $false
+    $timedOut = $false
+    $wrapperExitCode = $null
     try {
+        if (-not $stdoutPath) { $stdoutPath = [System.IO.Path]::GetTempFileName() }
+        $stderrPath = "$stdoutPath.stderr"
+        $nativeResultPath = "$stdoutPath.native.json"
+        if ((Test-Path -LiteralPath $stdoutPath -PathType Container) -or (Test-Path -LiteralPath $stderrPath -PathType Container)) { throw "COMMAND_LOG_PATH_IS_DIRECTORY:$stdoutPath" }
         $argumentText = "@(" + (($Arguments | ForEach-Object { Convert-ToPsLiteral $_ }) -join ",") + ")"
-        $scriptText = "`$ErrorActionPreference='Continue'; `$ProgressPreference='SilentlyContinue'; & $(Convert-ToPsLiteral $FilePath) $argumentText; if (`$null -eq `$LASTEXITCODE) { exit 0 } else { exit `$LASTEXITCODE }"
+        # Native stderr is not a launch exception in either supported PowerShell host.
+        $scriptText = @"
+`$ErrorActionPreference='Stop'; `$ProgressPreference='SilentlyContinue'
+`$PSNativeCommandUseErrorActionPreference=`$false
+`$native=[ordered]@{exitCode=`$null; launchFailure=`$null}
+try {
+    `$command=Get-Command -Name $(Convert-ToPsLiteral $FilePath) -CommandType Application -ErrorAction Stop
+    `$LASTEXITCODE=`$null; `$Error.Clear(); `$ErrorActionPreference='Continue'
+    & `$command $argumentText
+    `$native.exitCode=`$LASTEXITCODE
+    `$invokeErrors=@(`$Error | Where-Object { `$_.FullyQualifiedErrorId -notmatch '^NativeCommandError' })
+    `$ErrorActionPreference='Stop'
+    if (`$invokeErrors.Count) { throw ((`$invokeErrors | Out-String).Trim()) }
+    if (`$null -eq `$native.exitCode) { throw 'NATIVE_EXIT_NOT_OBSERVED' }
+} catch {
+    `$native.launchFailure=`$_.ToString()
+    [Console]::Error.WriteLine(`$native.launchFailure)
+}
+[IO.File]::WriteAllText($(Convert-ToPsLiteral $nativeResultPath), (`$native | ConvertTo-Json), [Text.UTF8Encoding]::new(`$false))
+if (`$native.launchFailure) { exit 125 }
+exit `$native.exitCode
+"@
         $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($scriptText))
         $hostPowerShell = (Get-Process -Id $PID).Path
         $process = Start-Process -FilePath $hostPowerShell -ArgumentList @("-NoProfile", "-NonInteractive", "-EncodedCommand", $encoded) -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath -PassThru -WindowStyle Hidden
         $processHandle = $process.Handle
         $completed = $process.WaitForExit([Math]::Max(1, $externalTimeoutSeconds) * 1000)
-        if (-not $completed) {
+        $timedOut = -not $completed
+        if ($completed) {
+            $process.WaitForExit()
+            $process.Refresh()
+            $wrapperExitCode = $process.ExitCode
+            if (-not (Test-Path -LiteralPath $nativeResultPath -PathType Leaf)) { throw "NATIVE_OBSERVATION_MISSING:wrapperExit=$wrapperExitCode" }
+            $native = Get-Content -Raw -Encoding UTF8 -LiteralPath $nativeResultPath | ConvertFrom-Json
+        }
+    } catch {
+        $native.launchFailure = $_.ToString()
+    } finally {
+        if ($null -ne $process -and -not $completed) {
             Stop-ProcessTreeBounded $process.Id
             $process.WaitForExit(10000) | Out-Null
-        } else { $process.WaitForExit() }
-        $process.Refresh()
-        [string]$stdout = Get-Content -Raw -LiteralPath $stdoutPath
-        [string]$stderr = Get-Content -Raw -LiteralPath $stderrPath
-        if ($null -eq $stdout) { $stdout = "" }
-        if ($null -eq $stderr) { $stderr = "" }
-        return [ordered]@{
-            exitCode = if ($completed) { [int]$process.ExitCode } else { $null }
-            timedOut = -not $completed
-            output = $stdout.Trim()
-            errorOutput = $stderr.Trim()
         }
-    } finally {
-        try { [System.IO.File]::Delete($stdoutPath) } catch {}
-        try { [System.IO.File]::Delete($stderrPath) } catch {}
+    }
+    [string]$stdout = if ($stdoutPath -and (Test-Path -LiteralPath $stdoutPath -PathType Leaf)) { Get-Content -Raw -LiteralPath $stdoutPath } else { "" }
+    [string]$stderr = if ($stderrPath -and (Test-Path -LiteralPath $stderrPath -PathType Leaf)) { Get-Content -Raw -LiteralPath $stderrPath } else { "" }
+    if ($null -eq $stdout) { $stdout = "" }
+    if ($null -eq $stderr) { $stderr = "" }
+    return [ordered]@{
+        executable = $FilePath
+        arguments = @($Arguments)
+        exitCode = $native.exitCode
+        wrapperExitCode = $wrapperExitCode
+        wrapperProcessId = if ($null -ne $process) { $process.Id } else { $null }
+        wrapperExited = ($null -eq $process -or $process.HasExited)
+        launchFailure = $native.launchFailure
+        timedOut = $timedOut
+        output = $stdout.Trim()
+        errorOutput = $stderr.Trim()
+        logPath = $stdoutPath
+        stderrPath = $stderrPath
+        nativeResultPath = $nativeResultPath
     }
 }
 
-function Invoke-Robocopy([string]$From, [string]$To) {
-    $observed = Invoke-ExternalObserved $robocopyPath @($From, $To, "/E", "/COPY:DAT", "/DCOPY:DAT", "/R:2", "/W:1", "/XJ", "/NJH", "/NJS", "/NFL", "/NDL")
+function Write-CopyReceipt([string]$Path, [object]$Value) {
+    $bytes = [Text.UTF8Encoding]::new($false).GetBytes((($Value | ConvertTo-Json -Depth 8) + [Environment]::NewLine))
+    $stream = [IO.File]::Open($Path, [IO.FileMode]::CreateNew, [IO.FileAccess]::Write, [IO.FileShare]::Read)
+    try { $stream.Write($bytes, 0, $bytes.Length); $stream.Flush($true) } finally { $stream.Dispose() }
+}
+
+function Invoke-Robocopy([string]$Name, [string]$From, [string]$To) {
+    $observed = Invoke-ExternalObserved $robocopyPath @($From, $To, "/E", "/COPY:DAT", "/DCOPY:DAT", "/R:2", "/W:1", "/XJ", "/NJH", "/NJS", "/NFL", "/NDL") (Join-Path $copyEvidenceDirectory "$Name.log")
+    $observed.name = $Name
+    $observed.attemptId = $AttemptId
+    $observed.receiptPath = Join-Path $copyEvidenceDirectory "$Name.json"
+    $observed.receiptWriteFailure = $null
+    $script:copyCommands += $observed
+    try {
+        Write-CopyReceipt $observed.receiptPath $observed
+    } catch {
+        $observed.receiptWriteFailure = $_.ToString()
+        $script:reportingFailure = "COPY_RECEIPT_WRITE_FAILED:$($observed.receiptWriteFailure)"
+        # The main cleanup observation also retains this full result if a receipt destination is blocked.
+        $observed.receiptPath = Join-Path $copyEvidenceDirectory "$Name-fallback-$([Guid]::NewGuid().ToString('N')).json"
+        try { Write-CopyReceipt $observed.receiptPath $observed }
+        catch { $script:reportingFailure += "; COPY_RECEIPT_FALLBACK_FAILED:$($_.ToString())" }
+    }
+    if ($observed.launchFailure) { throw "ROBOCOPY_LAUNCH_FAILED:$($observed.launchFailure)" }
     if ($observed.timedOut) { throw "ROBOCOPY_TIMEOUT" }
-    if ($observed.exitCode -lt 0 -or $observed.exitCode -gt 7) {
+    if ($null -eq $observed.exitCode -or $observed.exitCode -lt 0 -or $observed.exitCode -gt 7) {
         throw "ROBOCOPY_FAILED:$($observed.exitCode)"
     }
     return $observed.exitCode
@@ -133,6 +208,22 @@ try {
     $sourceFull = [System.IO.Path]::GetFullPath($SourcePath)
     $evidenceFull = [System.IO.Path]::GetFullPath($EvidenceRoot)
     $stagingFull = [System.IO.Path]::GetFullPath($StagingRoot)
+    # Allocate receipts inside the outer try so allocation failure can never skip finally cleanup.
+    $receiptName = "rec-i3-copy-$AttemptId-$([Guid]::NewGuid().ToString('N'))"
+    try {
+        $copyEvidenceDirectory = Join-Path ([IO.Path]::GetDirectoryName([IO.Path]::GetFullPath($ObservationPath))) $receiptName
+        foreach ($copyRoot in @($sourceFull, $evidenceFull, $stagingFull)) {
+            if ($copyEvidenceDirectory.StartsWith($copyRoot.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)) { throw "COPY_RECEIPTS_INSIDE_COPIED_TREE" }
+        }
+        New-Item -ItemType Directory -Path $copyEvidenceDirectory -ErrorAction Stop | Out-Null
+    } catch {
+        $reportingFailure = "COPY_RECEIPT_ALLOCATION_FAILED:$($_.ToString())"
+        $copyEvidenceDirectory = Join-Path ([IO.Path]::GetTempPath()) $receiptName
+        foreach ($copyRoot in @($sourceFull, $evidenceFull, $stagingFull)) {
+            if ($copyEvidenceDirectory.StartsWith($copyRoot.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)) { throw "COPY_RECEIPT_FALLBACK_INSIDE_COPIED_TREE" }
+        }
+        New-Item -ItemType Directory -Path $copyEvidenceDirectory -ErrorAction Stop | Out-Null
+    }
     if (-not [System.IO.Directory]::Exists((Convert-ToExtendedPath $sourceFull))) {
         throw "SOURCE_DIRECTORY_MISSING"
     }
@@ -152,7 +243,7 @@ try {
     [System.IO.Directory]::CreateDirectory((Convert-ToExtendedPath $resolvedStagingDirectory)) | Out-Null
 
     if ($InjectSourceFailure) { throw "INJECTED_SOURCE_FAILURE" }
-    [void](Invoke-Robocopy $sourceFull $resolvedStagingDirectory)
+    [void](Invoke-Robocopy "source-to-stage" $sourceFull $resolvedStagingDirectory)
     if ($InjectCopyFailure -or $InjectStageFailure) { throw "INJECTED_STAGE_FAILURE" }
     if ([System.IO.Directory]::Exists((Convert-ToExtendedPath $evidenceFull))) {
         $existingEvidence = @(Get-RelativeFiles $evidenceFull)
@@ -160,7 +251,7 @@ try {
     } else {
         [System.IO.Directory]::CreateDirectory((Convert-ToExtendedPath $evidenceFull)) | Out-Null
     }
-    [void](Invoke-Robocopy $resolvedStagingDirectory $evidenceFull)
+    [void](Invoke-Robocopy "stage-to-evidence" $resolvedStagingDirectory $evidenceFull)
     if ($InjectEvidenceFailure) { throw "INJECTED_EVIDENCE_FAILURE" }
 
     $sourceFiles = @(Get-RelativeFiles $sourceFull)
@@ -212,6 +303,7 @@ try {
         stagedRelativePaths = $stagedPaths
         evidenceRelativePaths = $evidencePaths
         files = $files
+        copyCommands = $copyCommands
     }
     $manifestPath = [System.IO.Path]::Combine($evidenceFull, "PRESERVATION_MANIFEST.json")
     [System.IO.File]::WriteAllText(
@@ -256,6 +348,7 @@ try {
         }
         try {
             $forceStop = Invoke-AdbObserved @("shell", "am", "force-stop", $package)
+            $record.forceStopCommand = $forceStop
             $record.forceStopExitCode = $forceStop.exitCode
             $record.forceStopTimedOut = $forceStop.timedOut
             $record.forceStopOutput = $forceStop.output
@@ -263,6 +356,7 @@ try {
         } catch { $record.forceStopOutput = $_.Exception.GetType().Name }
         try {
             $uninstall = Invoke-AdbObserved @("uninstall", $package)
+            $record.uninstallCommand = $uninstall
             $record.uninstallExitCode = $uninstall.exitCode
             $record.uninstallTimedOut = $uninstall.timedOut
             $record.uninstallOutput = $uninstall.output
@@ -270,6 +364,7 @@ try {
         } catch { $record.uninstallOutput = $_.Exception.GetType().Name }
         try {
             $transport = Invoke-AdbObserved @("get-state")
+            $record.transportProbeCommand = $transport
             $record.transportProbeExitCode = $transport.exitCode
             $record.transportProbeTimedOut = $transport.timedOut
             $record.transportProbeOutput = $transport.output
@@ -277,6 +372,7 @@ try {
         } catch { $record.transportProbeOutput = $_.Exception.GetType().Name }
         try {
             $postUninstall = Invoke-AdbObserved @("shell", "pm", "path", $package)
+            $record.postUninstallQueryCommand = $postUninstall
             $record.postUninstallQueryExitCode = $postUninstall.exitCode
             $record.postUninstallQueryTimedOut = $postUninstall.timedOut
             $record.postUninstallQueryOutput = $postUninstall.output
@@ -284,6 +380,7 @@ try {
         } catch { $record.postUninstallQueryOutput = $_.Exception.GetType().Name }
         try {
             $packageList = Invoke-AdbObserved @("shell", "pm", "list", "packages")
+            $record.packageListCommand = $packageList
             $record.packageListExitCode = $packageList.exitCode
             $record.packageListTimedOut = $packageList.timedOut
             $record.packageListOutput = $packageList.output
@@ -311,6 +408,7 @@ try {
         $emulatorCleanup.timedOut = $false
         try {
             $emulator = Invoke-AdbObserved @("emu", "kill")
+            $emulatorCleanup.command = $emulator
             $emulatorCleanup.exitCode = $emulator.exitCode
             $emulatorCleanup.timedOut = $emulator.timedOut
             $emulatorCleanup.output = $emulator.output
@@ -328,6 +426,8 @@ try {
         serial = $Serial
         copySucceeded = $copySucceeded
         copyFailure = $copyFailure
+        copyCommands = $copyCommands
+        copyEvidenceDirectory = $copyEvidenceDirectory
         reportingFailure = $reportingFailure
         cleanupFailure = $cleanupFailure
         stagingPath = $stagingDirectory
@@ -345,10 +445,19 @@ try {
             [System.Text.UTF8Encoding]::new($false)
         )
     } catch {
-        $reportingFailure = $_.Exception.Message
+        $reportingFailure = "$reportingFailure; OBSERVATION_WRITE_FAILED:$($_.Exception.Message)"
+        $observation.reportingFailure = $reportingFailure
         if ($exitCode -eq 0) { $exitCode = 1 }
+        if ($copyEvidenceDirectory) {
+            try {
+                $fallbackObservationPath = Join-Path $copyEvidenceDirectory "cleanup-observation-$([Guid]::NewGuid().ToString('N')).json"
+                Write-CopyReceipt $fallbackObservationPath $observation
+                Write-Warning "CLEANUP_OBSERVATION_RELOCATED:$fallbackObservationPath"
+            } catch { Write-Warning "CLEANUP_OBSERVATION_FALLBACK_FAILED:$($_.ToString())" }
+        }
     }
     if ($null -ne $cleanupFailure -and $exitCode -eq 0) { $exitCode = 2 }
+    if ($null -ne $reportingFailure -and $exitCode -eq 0) { $exitCode = 1 }
 }
 
 if ($exitCode -ne 0) {

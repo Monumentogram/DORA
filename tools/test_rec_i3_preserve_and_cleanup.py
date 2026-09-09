@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -34,6 +35,7 @@ def long_directory(root: Path, label: str) -> Path:
 class PreserveAndCleanupTests(unittest.TestCase):
     def setUp(self) -> None:
         self.root = Path(tempfile.mkdtemp(prefix="dora-rec-i3-v2-"))
+        (self.root / "tmp").mkdir()
         self.source = long_directory(self.root, "source")
         self.destination = long_directory(self.root, "destination")
         self.staging = self.root / "stage"
@@ -57,6 +59,13 @@ class PreserveAndCleanupTests(unittest.TestCase):
         self.fake_robocopy.write_text(
             "@echo off\r\n"
             "echo %*>>\"%FAKE_ROBOCOPY_LOG%\"\r\n"
+            "echo copy stdout diagnostic\r\n"
+            "echo copy stderr diagnostic 1>&2\r\n"
+            "if \"%FAKE_ROBOCOPY_MODE%\"==\"fail\" exit /b 16\r\n"
+            "if \"%FAKE_ROBOCOPY_MODE%\"==\"fail_second\" if exist \"%FAKE_COPY_MARKER%\" exit /b 16\r\n"
+            "if \"%FAKE_ROBOCOPY_MODE%\"==\"hang_second\" if exist \"%FAKE_COPY_MARKER%\" (ping 127.0.0.1 -n 6 >nul& exit /b 16)\r\n"
+            "echo copied>\"%FAKE_COPY_MARKER%\"\r\n"
+            "if defined FAKE_COPY_BLOCKER \"%FAKE_PYTHON%\" \"%FAKE_COPY_BLOCKER%\"\r\n"
             "if \"%FAKE_ROBOCOPY_MODE%\"==\"hang\" (ping 127.0.0.1 -n 6 >nul& exit /b 16)\r\n"
             "robocopy.exe %*\r\n"
             "exit /b %errorlevel%\r\n",
@@ -73,7 +82,10 @@ class PreserveAndCleanupTests(unittest.TestCase):
                 stream.write(payload)
 
     def tearDown(self) -> None:
-        shutil.rmtree(extended(self.root), ignore_errors=True)
+        if os.environ.get("DORA_KEEP_HELPER_FIXTURE") == "1":
+            print(f"RETAINED_FIXTURE {self.id()} {self.root}", flush=True)
+        else:
+            shutil.rmtree(extended(self.root), ignore_errors=True)
 
     def invoke(
         self,
@@ -83,9 +95,11 @@ class PreserveAndCleanupTests(unittest.TestCase):
         injection: str | None = None,
         helper_timeout: int = 30,
         robocopy_mode: str = "normal",
+        missing_copy: bool = False,
+        block_receipt: bool = False,
     ) -> subprocess.CompletedProcess[str]:
         command = [
-            "powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass",
+            os.environ.get("DORA_REC_I3_TEST_POWERSHELL", "powershell.exe"), "-NoProfile", "-ExecutionPolicy", "Bypass",
             "-File", str(SCRIPT),
             "-SourcePath", str(self.source),
             "-EvidenceRoot", str(self.destination),
@@ -100,14 +114,137 @@ class PreserveAndCleanupTests(unittest.TestCase):
         if injection:
             command.append(f"-Inject{injection}Failure")
         environment = os.environ.copy()
+        environment["TEMP"] = str(self.root / "tmp")
+        environment["TMP"] = str(self.root / "tmp")
         environment["FAKE_ADB_LOG"] = str(self.adb_log)
         environment["FAKE_ADB_MODE"] = adb_mode
         environment["FAKE_ADB_HANG_MARKER"] = str(self.root / "adb-hang.marker")
         environment["FAKE_ROBOCOPY_LOG"] = str(self.robocopy_log)
         environment["FAKE_ROBOCOPY_MODE"] = robocopy_mode
-        environment["DORA_REC_I3_ROBOCOPY_PATH"] = str(self.fake_robocopy)
+        environment["DORA_REC_I3_ROBOCOPY_PATH"] = str(self.root / "missing-copy.exe" if missing_copy else self.fake_robocopy)
+        environment["FAKE_COPY_MARKER"] = str(self.root / "copy.marker")
+        if block_receipt:
+            blocker = self.root / "block-copy-receipt.py"
+            blocker.write_text(
+                "from pathlib import Path\n"
+                f"parent = Path({str(self.observation.parent)!r})\n"
+                "for directory in parent.glob('rec-i3-copy-*'):\n"
+                "    (directory / 'source-to-stage.json').mkdir(exist_ok=True)\n", encoding="utf-8",
+            )
+            environment["FAKE_COPY_BLOCKER"] = str(blocker)
+            environment["FAKE_PYTHON"] = sys.executable
         environment["DORA_REC_I3_HELPER_COMMAND_TIMEOUT_SECONDS"] = str(helper_timeout)
-        return subprocess.run(command, text=True, capture_output=True, env=environment, timeout=90)
+        raw_completed = subprocess.run(command, capture_output=True, env=environment, timeout=90)
+        completed = subprocess.CompletedProcess(command, raw_completed.returncode,
+                                               raw_completed.stdout.decode("oem", errors="replace"),
+                                               raw_completed.stderr.decode("oem", errors="replace"))
+        if os.environ.get("DORA_KEEP_HELPER_FIXTURE") == "1":
+            invocation = len(list(self.root.glob("helper-*.stdout"))) + 1
+            (self.root / f"helper-{invocation}.stdout.raw").write_bytes(raw_completed.stdout)
+            (self.root / f"helper-{invocation}.stderr.raw").write_bytes(raw_completed.stderr)
+            (self.root / f"helper-{invocation}.stdout").write_text(completed.stdout, encoding="utf-8")
+            (self.root / f"helper-{invocation}.stderr").write_text(completed.stderr, encoding="utf-8")
+            (self.root / f"helper-{invocation}.json").write_text(json.dumps({"command": command, "exitCode": completed.returncode}), encoding="utf-8")
+            if self.observation.parent.is_dir():
+                shutil.copytree(self.observation.parent, self.root / f"invocation-{invocation}-observations")
+        return completed
+
+    def assert_copy_receipt(self, record: dict, operation: str) -> None:
+        self.assertEqual(operation, record["name"])
+        self.assertEqual(ATTEMPT, record["attemptId"])
+        self.assertEqual(str(self.fake_robocopy), record["executable"])
+        self.assertEqual(["/E", "/COPY:DAT", "/DCOPY:DAT", "/R:2", "/W:1", "/XJ", "/NJH", "/NJS", "/NFL", "/NDL"], record["arguments"][2:])
+        self.assertIn("copy stdout diagnostic", Path(record["logPath"]).read_text(encoding="utf-8-sig"))
+        self.assertIn("copy stderr diagnostic", Path(record["stderrPath"]).read_text(encoding="utf-8-sig"))
+        self.assertFalse(Path(record["logPath"]).is_relative_to(self.source))
+        self.assertEqual(record, json.loads(Path(record["receiptPath"]).read_text(encoding="utf-8-sig")))
+
+    def test_copy_hop_receipts_survive_success_and_repeated_attempt(self) -> None:
+        # Discarding either copy result or reusing receipt names loses command evidence despite equal file hashes.
+        completed = self.invoke()
+        self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
+        records = self.read_observation().get("copyCommands", [])
+        self.assertEqual(2, len(records))
+        self.assertEqual(str(self.source), records[0]["arguments"][0])
+        self.assertEqual(self.read_observation()["stagingPath"], records[0]["arguments"][1])
+        self.assertEqual(records[0]["arguments"][1], records[1]["arguments"][0])
+        self.assertEqual(str(self.destination), records[1]["arguments"][1])
+        for record, name in zip(records, ("source-to-stage", "stage-to-evidence")):
+            self.assert_copy_receipt(record, name)
+            self.assertEqual(1, record["exitCode"])
+            self.assertFalse(record["timedOut"])
+            self.assertIsNone(record["launchFailure"])
+        saved = {path: path.read_bytes() for path in self.observation.parent.rglob("*") if path.is_file() and path != self.observation}
+        self.assertNotEqual(0, self.invoke().returncode)
+        for path, content in saved.items():
+            self.assertEqual(content, path.read_bytes())
+
+    def test_failed_copy_diagnostics_survive_each_hop(self) -> None:
+        # A generic copy error must not erase the failing operation, exact exit, stdout or stderr.
+        for mode, count in (("fail", 1), ("fail_second", 2)):
+            with self.subTest(mode=mode):
+                self.staging = self.root / mode
+                (self.root / "copy.marker").unlink(missing_ok=True)
+                completed = self.invoke(robocopy_mode=mode)
+                self.assertNotEqual(0, completed.returncode)
+                records = self.read_observation().get("copyCommands", [])
+                self.assertEqual(count, len(records))
+                self.assert_copy_receipt(records[-1], "source-to-stage" if count == 1 else "stage-to-evidence")
+                self.assertEqual(16, records[-1]["exitCode"])
+                self.assertFalse(records[-1]["timedOut"])
+                self.assertTrue(self.read_observation()["cleanupAttempted"])
+
+    def test_copy_timeout_receipt_retains_diagnostics_for_each_hop(self) -> None:
+        for mode, count in (("hang", 1), ("hang_second", 2)):
+            with self.subTest(mode=mode):
+                self.staging = self.root / mode
+                (self.root / "copy.marker").unlink(missing_ok=True)
+                completed = self.invoke(robocopy_mode=mode, helper_timeout=1)
+                self.assertNotEqual(0, completed.returncode)
+                records = self.read_observation().get("copyCommands", [])
+                self.assertEqual(count, len(records))
+                self.assert_copy_receipt(records[-1], "source-to-stage" if count == 1 else "stage-to-evidence")
+                self.assertIsNone(records[-1]["exitCode"])
+                self.assertTrue(records[-1]["timedOut"])
+                self.assertTrue(self.read_observation()["cleanupAttempted"])
+
+    def test_missing_copy_executable_retains_launch_failure_and_cleanup(self) -> None:
+        completed = self.invoke(missing_copy=True)
+        self.assertNotEqual(0, completed.returncode)
+        observation = self.read_observation()
+        records = observation.get("copyCommands", [])
+        self.assertEqual(1, len(records))
+        self.assertIsNone(records[0]["exitCode"])
+        self.assertFalse(records[0]["timedOut"])
+        self.assertIn("missing-copy.exe", records[0]["launchFailure"])
+        self.assertTrue(Path(records[0]["stderrPath"]).read_bytes())
+        self.assertTrue(observation["cleanupAttempted"])
+
+    def test_copy_receipt_write_failure_is_reported_after_cleanup(self) -> None:
+        # Failure to write one receipt must fail preservation truthfully while finally still performs cleanup.
+        completed = self.invoke(block_receipt=True)
+        self.assertNotEqual(0, completed.returncode)
+        observation = self.read_observation()
+        self.assertTrue(observation["reportingFailure"])
+        self.assertTrue(observation["cleanupAttempted"])
+        self.assertTrue(all(record["packageAbsentObserved"] for record in observation["packageCleanup"]))
+        self.assertEqual(0, observation["emulatorCleanup"]["exitCode"])
+        self.assertTrue(observation["copyCommands"])
+        self.assertTrue(Path(observation["copyCommands"][0]["logPath"]).is_file())
+
+    def test_copy_receipt_allocation_failure_retains_cleanup_and_reporting_error(self) -> None:
+        # A blocked observation parent must not prevent cleanup or lose the receipt-allocation error.
+        self.observation.parent.write_text("blocked observation parent", encoding="utf-8")
+        completed = self.invoke()
+        self.assertNotEqual(0, completed.returncode)
+        self.assertIn(f"-s {SERIAL} emu kill", self.adb_calls())
+        fallback = list((self.root / "tmp").glob("rec-i3-copy-*/cleanup-observation-*.json"))
+        self.assertEqual(1, len(fallback), completed.stdout + completed.stderr)
+        observation = json.loads(fallback[0].read_text(encoding="utf-8-sig"))
+        self.assertIn("COPY_RECEIPT_ALLOCATION_FAILED", observation["reportingFailure"])
+        self.assertIn("OBSERVATION_WRITE_FAILED", observation["reportingFailure"])
+        self.assertTrue(observation["cleanupAttempted"])
+        self.assertEqual(2, len(observation["copyCommands"]))
 
     def read_observation(self) -> dict:
         return json.loads(self.observation.read_text(encoding="utf-8-sig"))
