@@ -6,13 +6,20 @@ param(
     [Parameter(Mandatory = $true)][string]$ObservationPath,
     [Parameter(Mandatory = $true)][string]$AdbPath,
     [Parameter(Mandatory = $true)][string]$PackageNames,
+    [Parameter(Mandatory = $true)][string]$AttemptId,
+    [Parameter(Mandatory = $true)][string]$Serial,
     [switch]$StopEmulator,
-    [switch]$InjectCopyFailure
+    [switch]$InjectCopyFailure,
+    [switch]$InjectSourceFailure,
+    [switch]$InjectStageFailure,
+    [switch]$InjectEvidenceFailure,
+    [switch]$InjectReportFailure
 )
 
 $ErrorActionPreference = "Stop"
 $copySucceeded = $false
 $copyFailure = $null
+$reportingFailure = $null
 $cleanupFailure = $null
 $exitCode = 0
 $stagingDirectory = $null
@@ -50,11 +57,35 @@ function Invoke-Robocopy([string]$From, [string]$To) {
 }
 
 function Invoke-AdbObserved([string[]]$Arguments) {
-    $output = (& $AdbPath @Arguments 2>&1 | Out-String).Trim()
+    $bound = @("-s", $Serial) + $Arguments
+    $output = (& $AdbPath @bound 2>&1 | Out-String).Trim()
     return [ordered]@{ exitCode = $LASTEXITCODE; output = $output }
 }
 
+function Get-RelativeFiles([string]$RootPath) {
+    $rootExtended = Convert-ToExtendedPath $RootPath
+    $rootPrefix = $rootExtended.TrimEnd('\') + '\'
+    $records = @()
+    foreach ($fileExtended in [System.IO.Directory]::EnumerateFiles($rootExtended, "*", [System.IO.SearchOption]::AllDirectories)) {
+        if (-not $fileExtended.StartsWith($rootPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "FILE_ESCAPE"
+        }
+        $relative = $fileExtended.Substring($rootPrefix.Length).Replace('\', '/')
+        $records += [ordered]@{
+            relativePath = $relative
+            fullPath = [System.IO.Path]::Combine($RootPath, $relative.Replace('/', '\'))
+        }
+    }
+    return @($records | Sort-Object { $_.relativePath })
+}
+
 try {
+    if ($AttemptId -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$') {
+        throw "ATTEMPT_ID_UNSAFE"
+    }
+    if ([string]::IsNullOrWhiteSpace($Serial)) {
+        throw "SERIAL_REQUIRED"
+    }
     $sourceFull = [System.IO.Path]::GetFullPath($SourcePath)
     $evidenceFull = [System.IO.Path]::GetFullPath($EvidenceRoot)
     $stagingFull = [System.IO.Path]::GetFullPath($StagingRoot)
@@ -65,59 +96,83 @@ try {
         throw "STAGING_ROOT_NOT_SHORT"
     }
     [System.IO.Directory]::CreateDirectory((Convert-ToExtendedPath $stagingFull)) | Out-Null
-    $stagingDirectory = Join-Path $stagingFull "rec-i3-preservation"
+    $stagingDirectory = Join-Path $stagingFull "rec-i3-preservation-$AttemptId"
     $resolvedStagingDirectory = [System.IO.Path]::GetFullPath($stagingDirectory)
     $stagingPrefix = $stagingFull.TrimEnd('\') + '\'
     if (-not $resolvedStagingDirectory.StartsWith($stagingPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
         throw "STAGING_DIRECTORY_ESCAPE"
     }
     if ([System.IO.Directory]::Exists((Convert-ToExtendedPath $resolvedStagingDirectory))) {
-        Remove-Item -LiteralPath (Convert-ToExtendedPath $resolvedStagingDirectory) -Recurse -Force
+        throw "STAGING_ATTEMPT_ALREADY_EXISTS"
     }
     [System.IO.Directory]::CreateDirectory((Convert-ToExtendedPath $resolvedStagingDirectory)) | Out-Null
 
+    if ($InjectSourceFailure) { throw "INJECTED_SOURCE_FAILURE" }
     [void](Invoke-Robocopy $sourceFull $resolvedStagingDirectory)
-    if ($InjectCopyFailure) { throw "INJECTED_COPY_FAILURE" }
-    [System.IO.Directory]::CreateDirectory((Convert-ToExtendedPath $evidenceFull)) | Out-Null
+    if ($InjectCopyFailure -or $InjectStageFailure) { throw "INJECTED_STAGE_FAILURE" }
+    if ([System.IO.Directory]::Exists((Convert-ToExtendedPath $evidenceFull))) {
+        $existingEvidence = @(Get-RelativeFiles $evidenceFull)
+        if ($existingEvidence.Count -ne 0) { throw "EVIDENCE_ROOT_NOT_EMPTY" }
+    } else {
+        [System.IO.Directory]::CreateDirectory((Convert-ToExtendedPath $evidenceFull)) | Out-Null
+    }
     [void](Invoke-Robocopy $resolvedStagingDirectory $evidenceFull)
+    if ($InjectEvidenceFailure) { throw "INJECTED_EVIDENCE_FAILURE" }
+
+    $sourceFiles = @(Get-RelativeFiles $sourceFull)
+    $stagedFiles = @(Get-RelativeFiles $resolvedStagingDirectory)
+    $evidenceFiles = @(Get-RelativeFiles $evidenceFull)
+    $sourcePaths = @($sourceFiles | ForEach-Object { $_.relativePath })
+    $stagedPaths = @($stagedFiles | ForEach-Object { $_.relativePath })
+    $evidencePaths = @($evidenceFiles | ForEach-Object { $_.relativePath })
+    if (($sourcePaths -join "`n") -ne ($stagedPaths -join "`n") -or ($sourcePaths -join "`n") -ne ($evidencePaths -join "`n")) {
+        throw "PRESERVATION_RELATIVE_PATH_SET_MISMATCH"
+    }
 
     $files = @()
-    $stageExtended = Convert-ToExtendedPath $resolvedStagingDirectory
-    $stageExtendedPrefix = $stageExtended.TrimEnd('\') + '\'
-    foreach ($stagedExtended in [System.IO.Directory]::EnumerateFiles($stageExtended, "*", [System.IO.SearchOption]::AllDirectories)) {
-        if (-not $stagedExtended.StartsWith($stageExtendedPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
-            throw "STAGED_FILE_ESCAPE"
+    foreach ($relative in $sourcePaths) {
+        $nativeRelative = $relative.Replace('/', '\')
+        $originalPath = [System.IO.Path]::Combine($sourceFull, $nativeRelative)
+        $stagedPath = [System.IO.Path]::Combine($resolvedStagingDirectory, $nativeRelative)
+        $preservedPath = [System.IO.Path]::Combine($evidenceFull, $nativeRelative)
+        $sourceBytes = [System.IO.FileInfo]::new((Convert-ToExtendedPath $originalPath)).Length
+        $stagedBytes = [System.IO.FileInfo]::new((Convert-ToExtendedPath $stagedPath)).Length
+        $evidenceBytes = [System.IO.FileInfo]::new((Convert-ToExtendedPath $preservedPath)).Length
+        $sourceHash = Get-Sha256 $originalPath
+        $stagedHash = Get-Sha256 $stagedPath
+        $evidenceHash = Get-Sha256 $preservedPath
+        if ($sourceBytes -ne $stagedBytes -or $sourceBytes -ne $evidenceBytes -or $sourceHash -ne $stagedHash -or $sourceHash -ne $evidenceHash) {
+            throw "PRESERVATION_CONTENT_MISMATCH:$relative"
         }
-        $relative = $stagedExtended.Substring($stageExtendedPrefix.Length)
-        $relativePortable = $relative.Replace('\', '/')
-        $stagedPath = [System.IO.Path]::Combine($resolvedStagingDirectory, $relative)
-        $originalPath = [System.IO.Path]::Combine($sourceFull, $relative)
-        $preservedPath = [System.IO.Path]::Combine($evidenceFull, $relative)
-        $stageHash = Get-Sha256 $stagedPath
-        $preservedHash = Get-Sha256 $preservedPath
-        if ($stageHash -ne $preservedHash) { throw "PRESERVED_HASH_MISMATCH:$relativePortable" }
         $files += [ordered]@{
-            relativePath = $relativePortable
+            relativePath = $relative
             originalPath = $originalPath
             stagedPath = $stagedPath
             preservedPath = $preservedPath
-            bytes = [System.IO.FileInfo]::new((Convert-ToExtendedPath $stagedPath)).Length
-            sha256 = $stageHash
+            sourceBytes = $sourceBytes
+            stagedBytes = $stagedBytes
+            evidenceBytes = $evidenceBytes
+            sourceSha256 = $sourceHash
+            stagedSha256 = $stagedHash
+            evidenceSha256 = $evidenceHash
         }
     }
     $manifest = [ordered]@{
-        schema = "DORA_REC_I3_PRESERVATION_V1"
+        schema = "DORA_REC_I3_PRESERVATION_V2"
+        attemptId = $AttemptId
         sourcePath = $sourceFull
         evidenceRoot = $evidenceFull
         stagingPath = $resolvedStagingDirectory
         copySucceeded = $true
+        sourceRelativePaths = $sourcePaths
+        stagedRelativePaths = $stagedPaths
+        evidenceRelativePaths = $evidencePaths
         files = $files
     }
-    $manifestJson = $manifest | ConvertTo-Json -Depth 8
     $manifestPath = [System.IO.Path]::Combine($evidenceFull, "PRESERVATION_MANIFEST.json")
     [System.IO.File]::WriteAllText(
         (Convert-ToExtendedPath $manifestPath),
-        $manifestJson + [Environment]::NewLine,
+        (($manifest | ConvertTo-Json -Depth 8) + [Environment]::NewLine),
         [System.Text.UTF8Encoding]::new($false)
     )
     $copySucceeded = $true
@@ -134,41 +189,55 @@ try {
             uninstallAttempted = $true
             uninstallExitCode = $null
             uninstallOutput = $null
+            transportProbeAttempted = $true
+            transportProbeExitCode = $null
+            transportProbeOutput = $null
             postUninstallQueryAttempted = $true
             postUninstallQueryExitCode = $null
             postUninstallQueryOutput = $null
+            packageListAttempted = $true
+            packageListExitCode = $null
+            packageListOutput = $null
             packageAbsentObserved = $false
         }
         try {
             $forceStop = Invoke-AdbObserved @("shell", "am", "force-stop", $package)
             $record.forceStopExitCode = $forceStop.exitCode
             $record.forceStopOutput = $forceStop.output
-        } catch {
-            $record.forceStopOutput = $_.Exception.GetType().Name
-        }
+        } catch { $record.forceStopOutput = $_.Exception.GetType().Name }
         try {
             $uninstall = Invoke-AdbObserved @("uninstall", $package)
             $record.uninstallExitCode = $uninstall.exitCode
             $record.uninstallOutput = $uninstall.output
-        } catch {
-            $record.uninstallOutput = $_.Exception.GetType().Name
-        }
+        } catch { $record.uninstallOutput = $_.Exception.GetType().Name }
+        try {
+            $transport = Invoke-AdbObserved @("get-state")
+            $record.transportProbeExitCode = $transport.exitCode
+            $record.transportProbeOutput = $transport.output
+        } catch { $record.transportProbeOutput = $_.Exception.GetType().Name }
         try {
             $postUninstall = Invoke-AdbObserved @("shell", "pm", "path", $package)
             $record.postUninstallQueryExitCode = $postUninstall.exitCode
             $record.postUninstallQueryOutput = $postUninstall.output
-            $record.packageAbsentObserved =
-                ($postUninstall.exitCode -eq 0 -and [string]::IsNullOrWhiteSpace($postUninstall.output))
-        } catch {
-            $record.postUninstallQueryOutput = $_.Exception.GetType().Name
-        }
-        if (
-            $record.forceStopExitCode -ne 0 -or
-            $record.uninstallExitCode -ne 0 -or
-            -not $record.packageAbsentObserved
-        ) {
-            $cleanupFailure = "PACKAGE_CLEANUP_UNVERIFIED"
-        }
+        } catch { $record.postUninstallQueryOutput = $_.Exception.GetType().Name }
+        try {
+            $packageList = Invoke-AdbObserved @("shell", "pm", "list", "packages")
+            $record.packageListExitCode = $packageList.exitCode
+            $record.packageListOutput = $packageList.output
+        } catch { $record.packageListOutput = $_.Exception.GetType().Name }
+
+        $listedPackages = @($record.packageListOutput -split "`r?`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+        $exactPackageListed = $listedPackages -contains "package:$package"
+        $pathAbsentForm = $record.postUninstallQueryExitCode -in @(0, 1) -and [string]::IsNullOrWhiteSpace($record.postUninstallQueryOutput)
+        $record.packageAbsentObserved =
+            $record.forceStopExitCode -eq 0 -and
+            $record.uninstallExitCode -eq 0 -and
+            $record.transportProbeExitCode -eq 0 -and
+            $record.transportProbeOutput.Trim() -eq "device" -and
+            $record.packageListExitCode -eq 0 -and
+            -not $exactPackageListed -and
+            $pathAbsentForm
+        if (-not $record.packageAbsentObserved) { $cleanupFailure = "PACKAGE_CLEANUP_UNVERIFIED" }
         $packageCleanup += $record
     }
     if ($StopEmulator) {
@@ -177,17 +246,20 @@ try {
             $emulator = Invoke-AdbObserved @("emu", "kill")
             $emulatorCleanup.exitCode = $emulator.exitCode
             $emulatorCleanup.output = $emulator.output
-        } catch {
-            $emulatorCleanup.output = $_.Exception.GetType().Name
-        }
-        if ($emulatorCleanup.exitCode -ne 0) {
-            $cleanupFailure = "EMULATOR_CLEANUP_UNVERIFIED"
-        }
+        } catch { $emulatorCleanup.output = $_.Exception.GetType().Name }
+        if ($emulatorCleanup.exitCode -ne 0) { $cleanupFailure = "EMULATOR_CLEANUP_UNVERIFIED" }
+    }
+    if ($InjectReportFailure) {
+        $reportingFailure = "INJECTED_REPORT_FAILURE"
+        if ($exitCode -eq 0) { $exitCode = 1 }
     }
     $observation = [ordered]@{
-        schema = "DORA_REC_I3_CLEANUP_OBSERVATION_V1"
+        schema = "DORA_REC_I3_CLEANUP_OBSERVATION_V2"
+        attemptId = $AttemptId
+        serial = $Serial
         copySucceeded = $copySucceeded
         copyFailure = $copyFailure
+        reportingFailure = $reportingFailure
         cleanupFailure = $cleanupFailure
         stagingPath = $stagingDirectory
         stagingRetained = ($null -ne $stagingDirectory -and [System.IO.Directory]::Exists((Convert-ToExtendedPath $stagingDirectory)))
@@ -195,18 +267,23 @@ try {
         packageCleanup = $packageCleanup
         emulatorCleanup = $emulatorCleanup
     }
-    $observationFull = [System.IO.Path]::GetFullPath($ObservationPath)
-    [System.IO.Directory]::CreateDirectory((Convert-ToExtendedPath ([System.IO.Path]::GetDirectoryName($observationFull)))) | Out-Null
-    [System.IO.File]::WriteAllText(
-        (Convert-ToExtendedPath $observationFull),
-        (($observation | ConvertTo-Json -Depth 8) + [Environment]::NewLine),
-        [System.Text.UTF8Encoding]::new($false)
-    )
+    try {
+        $observationFull = [System.IO.Path]::GetFullPath($ObservationPath)
+        [System.IO.Directory]::CreateDirectory((Convert-ToExtendedPath ([System.IO.Path]::GetDirectoryName($observationFull)))) | Out-Null
+        [System.IO.File]::WriteAllText(
+            (Convert-ToExtendedPath $observationFull),
+            (($observation | ConvertTo-Json -Depth 8) + [Environment]::NewLine),
+            [System.Text.UTF8Encoding]::new($false)
+        )
+    } catch {
+        $reportingFailure = $_.Exception.Message
+        if ($exitCode -eq 0) { $exitCode = 1 }
+    }
     if ($null -ne $cleanupFailure -and $exitCode -eq 0) { $exitCode = 2 }
 }
 
 if ($exitCode -ne 0) {
-    $reportedFailure = if ($null -ne $copyFailure) { $copyFailure } else { $cleanupFailure }
+    $reportedFailure = if ($null -ne $copyFailure) { $copyFailure } elseif ($null -ne $cleanupFailure) { $cleanupFailure } else { $reportingFailure }
     Write-Error $reportedFailure
     exit $exitCode
 }
