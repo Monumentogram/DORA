@@ -101,8 +101,8 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
             }):
                 yield repo
 
-    def assert_v10_rejected(self) -> None:
-        lifecycle = governance.collect_recovery_lifecycle_identity()
+    def assert_v10_rejected(self, lifecycle=None) -> None:
+        lifecycle = lifecycle or governance.collect_recovery_lifecycle_identity()
         self.assertFalse(governance.rec_i3_v10_candidate(lifecycle))
         with self.assertRaises((ValueError, subprocess.CalledProcessError)):
             governance.validate_rec_i3_v10(lifecycle)
@@ -143,6 +143,117 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
             with patch.object(sys, "argv", ["governance"]), redirect_stdout(io.StringIO()) as output:
                 self.assertEqual(0, governance.main())
             self.assertIn("V10 genesis fixture correction", output.getvalue())
+
+    def test_v10_pull_request_binds_current_main_and_rejects_identity_topology_drift(self) -> None:
+        with self.v10_repository() as repo:
+            source = governance.git_output("rev-parse", "HEAD")
+            tree = governance.git_output("rev-parse", "HEAD^{tree}")
+            base = "55940df0c95e919a00708ae57e1b8aa23d89b6de"
+            merge = governance.test_git_text(
+                repo,
+                "-c", "user.name=Dora Test",
+                "-c", "user.email=dora@example.invalid",
+                "commit-tree", tree, "-p", base, "-p", source,
+                input_data=b"synthetic V10 PR merge\n",
+            )
+            governance.test_git(repo, "checkout", "-q", "--detach", merge)
+            event_path = repo.parent / "event.json"
+            governance.write_test_pull_request_event(
+                event_path,
+                number=90,
+                head_ref="codex/rec-i3-v10-genesis-fixture-fix",
+                head_sha=source,
+                base_sha=base,
+                merge_sha=merge,
+                draft=False,
+            )
+            environment = {
+                "GITHUB_EVENT_NAME": "pull_request",
+                "GITHUB_REPOSITORY": "Monumentogram/DORA",
+                "GITHUB_WORKSPACE": str(repo),
+                "GITHUB_REF": "refs/pull/90/merge",
+                "GITHUB_SHA": merge,
+                "GITHUB_HEAD_REF": "codex/rec-i3-v10-genesis-fixture-fix",
+                "GITHUB_BASE_REF": "main",
+                "RUNNER_TEMP": str(repo.parent),
+                "GITHUB_EVENT_PATH": str(event_path),
+            }
+            with patch.dict(os.environ, environment):
+                lifecycle = governance.collect_recovery_lifecycle_identity()
+                self.assertTrue(governance.rec_i3_v10_source_candidate(source))
+                self.assertTrue(governance.rec_i3_v10_candidate(lifecycle))
+                governance.validate_rec_i3_v10(lifecycle)
+                context = lifecycle.github_pull_request_context
+                for field, value in (
+                    ("base_sha", governance.REC_I3_V10_BASE),
+                    ("base_ref", "codex/stacked"),
+                    ("head_ref", governance.REC_I3_V8_BRANCH),
+                ):
+                    with self.subTest(field=field):
+                        self.assert_v10_rejected(replace(
+                            lifecycle,
+                            github_pull_request_context=replace(context, **{field: value}),
+                        ))
+                for label, merge_tree, parents in (
+                    ("reversed parents", tree, (source, base)),
+                    ("wrong tree", governance.git_output("rev-parse", f"{base}^{{tree}}"),
+                     (base, source)),
+                ):
+                    bad_merge = governance.test_git_text(
+                        repo,
+                        "-c", "user.name=Dora Test",
+                        "-c", "user.email=dora@example.invalid",
+                        "commit-tree", merge_tree,
+                        "-p", parents[0], "-p", parents[1],
+                        input_data=b"invalid synthetic V10 PR merge\n",
+                    )
+                    bad_lifecycle = replace(
+                        lifecycle,
+                        head=bad_merge,
+                        github_pull_request_context=replace(context, merge_sha=bad_merge),
+                    )
+                    with self.subTest(label=label), patch.dict(
+                        os.environ, {"GITHUB_SHA": bad_merge}
+                    ):
+                        self.assert_v10_rejected(bad_lifecycle)
+
+    def test_v10_dependency_entry_validates_profile_and_static_mutations(self) -> None:
+        import verify_poc_recovery_dependency_inventory as inventory
+
+        with self.v10_repository() as repo, ExitStack() as stack:
+            original_root = inventory.ROOT
+            for name, value in tuple(vars(inventory).items()):
+                if isinstance(value, Path) and value.is_relative_to(original_root):
+                    stack.enter_context(patch.object(
+                        inventory, name, repo / value.relative_to(original_root)
+                    ))
+            stack.enter_context(patch.object(sys, "argv", ["inventory"]))
+            with redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(0, inventory.main())
+            self.assertIn("V10 genesis fixture correction", output.getvalue())
+            self.assertIn("dependency/IP static validation passed", output.getvalue())
+            documents = [inventory.read_json(path) for path in (
+                inventory.INVENTORY_PATH,
+                inventory.LICENSE_PATH,
+                inventory.AUTHENTICITY_PATH,
+                inventory.JSR305_EXCLUSION_PATH,
+                inventory.READINESS_PATH,
+                inventory.REVIEW_ROLES_PATH,
+            )]
+            for mutation in ("admission", "graph", "native", "signature", "hash"):
+                records = copy.deepcopy(documents)
+                if mutation == "admission":
+                    records[0]["dependencyAdmission"] = True
+                elif mutation == "graph":
+                    records[0]["graphEdges"].pop()
+                elif mutation == "native":
+                    records[0]["artifacts"][0]["jar"]["nativeEntries"] = 1
+                elif mutation == "signature":
+                    records[2]["components"][0]["jar"]["detachedSignature"]["result"] = "INVALID"
+                elif mutation == "hash":
+                    records[0]["artifacts"][0]["jar"]["sha256"] = "0" * 64
+                with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                    inventory.validate_static(*records)
 
     def test_v10_rejects_fixture_and_out_of_scope_drift(self) -> None:
         mutations = {

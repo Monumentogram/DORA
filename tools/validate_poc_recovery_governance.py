@@ -566,6 +566,7 @@ REC_I3_V10_BRANCH = "codex/rec-i3-v10-genesis-fixture-fix"
 REC_I3_V10_BASE = "6a33fc5d9560c163e34f840faf60ab9f86f2ad1b"
 REC_I3_V10_BASE_TREE = "6ed3722280d2ac38fbb96c048ef30ea5cf795be4"
 REC_I3_V10_BASE_PARENT = "2800f8f2aa6ec2130d0d800382a375919f2cd226"
+REC_I3_V10_PR_BASE = "55940df0c95e919a00708ae57e1b8aa23d89b6de"
 REC_I3_V10_FIXTURE_PATH = (
     "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/"
     "candidate/RecoveryCheckpointAndroidTestFixture.kt"
@@ -7339,7 +7340,7 @@ def validate_rec_i3_v10_identity(lifecycle: RecoveryLifecycleIdentity) -> None:
             and pull_request.head_repository == GITHUB_REPOSITORY
             and pull_request.head_ref == REC_I3_V10_BRANCH
             and pull_request.base_ref == GITHUB_BASE_BRANCH
-            and pull_request.base_sha == REC_I3_V10_BASE
+            and pull_request.base_sha == REC_I3_V10_PR_BASE
             and pull_request.draft is False
             and pull_request.state == "open"
             and pull_request.merged is False
@@ -10067,9 +10068,12 @@ def validate_rec_i3_reconciliation_successor(
 
 
 def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | None = None) -> bool:
+    current = lifecycle or collect_recovery_lifecycle_identity()
+    if rec_i3_v10_candidate(current):
+        validate_rec_i3_v10(current)
+        return True
     if not rec_i3_candidate():
         return False
-    current = lifecycle or collect_recovery_lifecycle_identity()
     if rec_i3_observable_controller_candidate(current):
         validate_rec_i3_observable_controller(current)
         return True
