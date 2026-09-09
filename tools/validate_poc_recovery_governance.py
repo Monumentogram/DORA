@@ -565,6 +565,13 @@ REC_I3_V8_BRANCH = "codex/rec-i3-v8-host-runner-fix"
 REC_I3_V8_BASE = "55940df0c95e919a00708ae57e1b8aa23d89b6de"
 REC_I3_V8_BASE_TREE = "e153e50b7dc8d5651c3ac136efb1bfeaa1f56b16"
 REC_I3_V8_BASE_PARENT = "c473a6f3877f60a1c1686e676606affd4fc66334"
+# Owner-approved CI publication repair: one host-test blob, with the entire Android tree pinned.
+REC_I3_V8_HOST_TEST_PATH = (
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/"
+    "storage/AndroidOsRecoveryStreamingSourceTest.kt"
+)
+REC_I3_V8_HOST_TEST_BLOB = "8a415e99abd3862346b245bcc381c276c9746cf9"
+REC_I3_V8_ANDROID_TREE = "1ba6e1f65c009361b0882bac941ef9fd5dac021b"
 REC_I3_V8_PATHS = (
     "tools/run_rec_i3_v8.ps1",
     "tools/test_run_rec_i3_v8.py",
@@ -574,6 +581,7 @@ REC_I3_V8_PATHS = (
     "tools/test_poc_recovery_i3_governance.py",
     "tools/verify_poc_recovery_dependency_inventory.py",
     "docs/superpowers/plans/2026-09-09-rec-i3-v8-host-run-contract-repair.md",
+    REC_I3_V8_HOST_TEST_PATH,
 )
 REC_I3_V8_GITHUB_CONTEXT_KEYS = (
     "GITHUB_EVENT_NAME", "GITHUB_HEAD_REF", "GITHUB_BASE_REF", "GITHUB_REF",
@@ -7259,7 +7267,7 @@ def rec_i3_e36_sqlite_post_merge_candidate(
 
 
 def rec_i3_v8_source_candidate(commit: str, *, root: Path | None = None) -> bool:
-    """Recognize only the exact committed tooling scope above the immutable runtime base."""
+    """Recognize exact tooling scope and one pinned host-test repair above the immutable base."""
     repository_root = root or ROOT
     if (
         git_optional_output("rev-parse", "--verify", f"{REC_I3_V8_BASE}^{{commit}}", root=repository_root)
@@ -7271,6 +7279,10 @@ def rec_i3_v8_source_candidate(commit: str, *, root: Path | None = None) -> bool
         or git_optional_output("rev-parse", "--verify", f"{commit}^{{commit}}", root=repository_root) != commit
         or commit == REC_I3_V8_BASE
         or not git_is_ancestor(REC_I3_V8_BASE, commit, root=repository_root)
+        or git_optional_output("rev-parse", f"{commit}:android", root=repository_root)
+        != REC_I3_V8_ANDROID_TREE
+        or git_optional_output("rev-parse", f"{commit}:{REC_I3_V8_HOST_TEST_PATH}", root=repository_root)
+        != REC_I3_V8_HOST_TEST_BLOB
     ):
         return False
     changed = set(git_path_records("diff", "--name-only", "--no-renames", "-z",
@@ -7345,16 +7357,17 @@ def validate_rec_i3_v8_identity(lifecycle: RecoveryLifecycleIdentity) -> None:
         set(changes) == {"committed", "staged", "unstaged", "untracked"}
         and set(changes["committed"]) == set(REC_I3_V8_PATHS)
         and all(not changes[layer] for layer in ("staged", "unstaged", "untracked")),
-        f"REC-I3 V8 tooling is not the exact clean profile: {changes}",
+        f"REC-I3 V8 tooling/host-test repair is not the exact clean profile: {changes}",
     )
     for relative in REC_I3_V8_PATHS:
         validate_rec_i3_regular_file(relative)
-    # Whole Android and workflow trees include runtime, instrumentation/shared tests,
-    # build/dependency lock/verification inputs and every production module.
-    for relative in ("android", ".github"):
-        require(git_output("rev-parse", f"{candidate_head}:{relative}")
-                == git_output("rev-parse", f"{REC_I3_V8_BASE}:{relative}"),
-                f"REC-I3 V8 protected tree drift: {relative}")
+    # Pin the whole amended Android tree: only the reviewed host-test blob differs from base.
+    # Runtime, instrumentation/shared tests and all build/dependency inputs remain protected.
+    require(git_output("rev-parse", f"{candidate_head}:android") == REC_I3_V8_ANDROID_TREE,
+            "REC-I3 V8 protected tree drift: android")
+    require(git_output("rev-parse", f"{candidate_head}:.github")
+            == git_output("rev-parse", f"{REC_I3_V8_BASE}:.github"),
+            "REC-I3 V8 protected tree drift: .github")
 
 
 def rec_i3_v8_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
@@ -8358,7 +8371,8 @@ def validate_rec_i3_v8(lifecycle: RecoveryLifecycleIdentity) -> None:
             "REC-I3 V8 connected attempt launched before durable ledger")
     require(not re.search(r"\bgit(?:\.exe)?\s+(?:fetch|checkout|reset|clean)\b", runner, re.IGNORECASE),
             "REC-I3 V8 runner mutates checkout")
-    print("PASS REC-I3 V8 bounded tooling profile; runtime, Android instrumentation/shared tests, "
+    print("PASS REC-I3 V8 bounded tooling profile; exact host-test publication repair admitted; "
+          "runtime, Android instrumentation/shared tests, "
           "dependencies and workflows unchanged; "
           "no production admission or Android acceptance; 0D.6 OPEN; POC-RECOVERY-001 BLOCKED / NOT_READY")
 

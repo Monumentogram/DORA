@@ -24,10 +24,16 @@ import validate_poc_recovery_governance as governance
 import validate_stage00 as stage00
 
 
+V8_REPAIRED_HOST_TEST = (
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/"
+    "storage/AndroidOsRecoveryStreamingSourceTest.kt"
+)
+
+
 class RecoveryI3GovernanceTests(unittest.TestCase):
     @contextmanager
     def v8_repository(self):
-        """Real baseline objects plus the eight proposed tooling files; no Android tools."""
+        """Real baseline objects, eight tooling files and the exact host-test repair."""
         source = governance.ROOT
         paths = (
             "tools/run_rec_i3_v8.ps1",
@@ -60,6 +66,8 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
                 # A harmless fixture comment makes the exact delta independent of dirty/clean execution.
                 with target.open("a", encoding="utf-8") as stream:
                     stream.write("\n<!-- V8 fixture -->\n" if target.suffix == ".md" else "\n# V8 fixture\n")
+            # The approved Android blob must remain exact, without the tooling fixture comments.
+            shutil.copyfile(source / V8_REPAIRED_HOST_TEST, repo / V8_REPAIRED_HOST_TEST)
             governance.commit_test_git_repo(repo, "synthetic bounded V8 tooling candidate")
             with patch.object(governance, "ROOT", repo), patch.dict(os.environ, {
                 key: "" for key in (
@@ -75,6 +83,54 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
         self.assertFalse(governance.rec_i3_v8_candidate(lifecycle))
         with self.assertRaises((ValueError, subprocess.CalledProcessError)):
             governance.validate_rec_i3_v8(lifecycle)
+
+    def test_v8_host_test_publication_repair_is_exact(self) -> None:
+        # Admit the reviewed repair while proving all other Android and workflow bytes stay baseline.
+        with self.v8_repository() as repo:
+            lifecycle = governance.collect_recovery_lifecycle_identity()
+            base = "55940df0c95e919a00708ae57e1b8aa23d89b6de"
+            self.assertEqual([V8_REPAIRED_HOST_TEST], governance.git_path_records(
+                "diff", "--name-only", "--no-renames", "-z", base, lifecycle.head, "--", "android"))
+            self.assertEqual(governance.git_output("rev-parse", f"{base}:.github"),
+                             governance.git_output("rev-parse", "HEAD:.github"))
+            self.assertNotEqual(governance.git_output("rev-parse", f"{base}:{V8_REPAIRED_HOST_TEST}"),
+                                governance.git_output("rev-parse", f"HEAD:{V8_REPAIRED_HOST_TEST}"))
+            self.assertTrue(governance.rec_i3_v8_source_candidate(lifecycle.head))
+            self.assertTrue(governance.rec_i3_v8_candidate(lifecycle))
+            governance.validate_rec_i3_v8(lifecycle)
+            self.assertEqual(9, len(governance.REC_I3_V8_PATHS))
+            self.assertEqual(governance.REC_I3_V8_ANDROID_TREE,
+                             governance.git_output("rev-parse", "HEAD:android"))
+            self.assertEqual(governance.REC_I3_V8_HOST_TEST_BLOB,
+                             governance.git_output("rev-parse", f"HEAD:{V8_REPAIRED_HOST_TEST}"))
+
+    def test_v8_rejects_unapproved_android_and_workflow_blobs(self) -> None:
+        # A path exception must not admit the old race, another repair, or any other Android change.
+        mutations = {
+            "baseline-host-test": V8_REPAIRED_HOST_TEST,
+            "changed-repaired-host-test": V8_REPAIRED_HOST_TEST,
+            "other-host-test": "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/"
+                               "poc/recovery/storage/RecoveryCandidatePathPolicyTest.kt",
+            "runtime": "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/"
+                       "poc/recovery/storage/AndroidOsRecoveryStreamingSource.kt",
+            "instrumentation": "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/"
+                               "poc/recovery/candidate/RecoveryE36GapiPreflightInstrumentedTest.kt",
+            "shared-test": "android/poc/recovery/src/sharedTest/kotlin/com/monumentogram/dora/"
+                           "poc/recovery/candidate/RecoveryE36GapiDeviceIdentityGuard.kt",
+            "workflow": ".github/workflows/android-ci.yml",
+        }
+        for mutation, relative in mutations.items():
+            with self.subTest(mutation=mutation), self.v8_repository() as repo:
+                target = repo / relative
+                if mutation == "baseline-host-test":
+                    target.write_bytes(governance.git_blob_bytes(
+                        f"55940df0c95e919a00708ae57e1b8aa23d89b6de:{relative}"))
+                else:
+                    target.write_bytes(target.read_bytes() + b"\n// unauthorized blob mutation\n")
+                governance.commit_test_git_repo(repo, mutation)
+                lifecycle = governance.collect_recovery_lifecycle_identity()
+                self.assertFalse(governance.rec_i3_v8_source_candidate(lifecycle.head))
+                self.assert_v8_rejected(lifecycle)
 
     def test_v8_detached_host_run_contract(self) -> None:
         # Omitting V8 dispatch or accepting detached only in candidate selection breaks this test.
