@@ -40,7 +40,7 @@
 - Modify: `tools/validate_poc_recovery_governance.py`
 - Modify: `tools/test_poc_recovery_i3_governance.py`
 - Modify: `tools/verify_poc_recovery_dependency_inventory.py`
-- Include unchanged-as-requirements: `docs/superpowers/plans/2026-09-09-rec-i3-v8-host-run-contract-repair.md`
+- Modify completion record and exact-path clarification: `docs/superpowers/plans/2026-09-09-rec-i3-v8-host-run-contract-repair.md`
 
 **Interfaces:**
 - `tools/run_rec_i3_v8.ps1` consumes mandatory `Repository`, `EvidenceBase`, `StagingRoot`, `Serial`, `AcceptedCommit`, and `AcceptedTree`; optional `AvdName` defaults to `dora_api36_recovery`.
@@ -48,11 +48,11 @@
 - Governance exposes `REC_I3_V8_BRANCH`, `REC_I3_V8_BASE`, `REC_I3_V8_PATHS`, `rec_i3_v8_source_candidate`, `rec_i3_v8_candidate`, `validate_rec_i3_v8`, and a V8 self-test fast path before V7/legacy dispatch.
 - The runner emits timestamped raw and preserved directories, a cleanup observation outside the source tree, and one commit-specific attempt ledger under `EvidenceBase`.
 
-- [ ] **Step 1: Write failing preservation and cleanup regressions.**
+- [x] **Step 1: Write failing preservation and cleanup regressions.**
 
   Add executable tests that require: a serial prefix on every fake ADB call; a unique `AttemptId` staging directory; refusal on a reused staging identifier without deleting its sentinel; source, staged, and evidence hashes and byte sizes in every manifest record; exact relative-path-set equality; cleanup after injected source/stage/evidence/report failures; and classification that distinguishes healthy-transport package absence from transport or permission failure. Name the production change each test protects in a comment before the assertion.
 
-- [ ] **Step 2: Run the preservation regressions and capture RED.**
+- [x] **Step 2: Run the preservation regressions and capture RED.**
 
   Run:
 
@@ -62,15 +62,15 @@
 
   Expected: new tests fail because V1 has no `AttemptId`/`Serial`, deletes the constant staging directory, omits source hashes, and treats ADB results without an independent transport/package listing proof.
 
-- [ ] **Step 3: Implement the minimal V2 preservation/cleanup behavior and make the focused tests green.**
+- [x] **Step 3: Implement the minimal V2 preservation/cleanup behavior and make the focused tests green.**
 
   Do not call `Remove-Item` on an existing attempt directory. Validate `AttemptId` with a conservative allowlist such as `^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$`; create `<StagingRoot>\rec-i3-preservation-<AttemptId>` only when absent. Prefix every ADB call with `-s,$Serial`. Record transport probe, `pm path`, and exact `pm list packages` observations; mark absence only when transport and package-list commands succeed, the list lacks the exact package, and `pm path` is empty with only the platform-observed absent exit forms accepted. Preserve all raw exit codes/output and keep ambiguous cases `PACKAGE_CLEANUP_UNVERIFIED`.
 
-- [ ] **Step 4: Write failing runner regressions.**
+- [x] **Step 4: Write failing runner regressions.**
 
   Add host tests using a temporary fake repository/toolchain and fake executables. They must prove the runner: never contains or invokes `git fetch`, `git checkout`, `git reset`, or `git clean`; rejects wrong commit/tree/dirty state before instrumentation; captures every preflight command exit code; binds the serial through `ANDROID_SERIAL`, the AGP connected-test `--serial` option, logcat, package checks, preservation, uninstall, and emulator kill; writes command output incrementally; atomically creates the commit-specific attempt ledger before fake connected Gradle starts; blocks a second invocation when that ledger exists; leaves a conservative consumed/unknown state if the fake Gradle is interrupted or times out; and still invokes preservation/cleanup when metadata/reporting fails. Tests must never start a real emulator or Gradle.
 
-- [ ] **Step 5: Run the runner regressions and capture RED.**
+- [x] **Step 5: Run the runner regressions and capture RED.**
 
   Run:
 
@@ -80,15 +80,15 @@
 
   Expected: FAIL because `tools/run_rec_i3_v8.ps1` does not exist.
 
-- [ ] **Step 6: Implement the minimal repository-owned runner and make its tests green.**
+- [x] **Step 6: Implement the minimal repository-owned runner and make its tests green.**
 
   Validate exact HEAD/tree/cleanliness without switching the checkout. Start the named AVD hidden only when the exact serial is absent, record emulator stdout/stderr, wait on boot/device predicates with a bounded condition loop, and reject any extra online device. Create raw evidence before preparation. Use a streaming logged-command helper that appends each line before returning. Atomically create the ledger with `FileMode.CreateNew` immediately before connected Gradle launch and update it after completion without erasing the conservative launch record. Run preservation/cleanup first in `finally`; write any reporting-copy failure separately without suppressing cleanup outcomes.
 
-- [ ] **Step 7: Write failing V8 governance regressions, including detached identity.**
+- [x] **Step 7: Write failing V8 governance regressions, including detached identity.**
 
   Build temporary Git fixtures that assert the exact V8 delta is recognized on `codex/rec-i3-v8-host-runner-fix`, integrated `main`, and a local detached checkout, while unrelated branches, dirty trees, extra/missing paths, changed production Recovery source, GitHub detached context, and unpinned ancestry fail closed. Add source checks requiring V2 manifest/cleanup schemas, no staging deletion, serial binding, durable attempt ledger creation before connected Gradle invocation, and runner absence of checkout mutation commands.
 
-- [ ] **Step 8: Run the focused governance regressions and capture RED.**
+- [x] **Step 8: Run the focused governance regressions and capture RED.**
 
   Run:
 
@@ -98,7 +98,7 @@
 
   Expected: FAIL because no V8 candidate/profile exists.
 
-- [ ] **Step 9: Implement the exact V8 governance profile and make focused tests green.**
+- [x] **Step 9: Implement the exact V8 governance profile and make focused tests green.**
 
   Root the profile at `55940df0c95e919a00708ae57e1b8aa23d89b6de`. Local detached acceptance is allowed only when there is no GitHub event/PR context and `rec_i3_v8_source_candidate(lifecycle.head)` proves the exact V8 committed path set; integrated/main and feature-branch paths retain their corresponding identity checks. Preserve the V7 fast path and historical profiles unchanged.
 
@@ -118,7 +118,9 @@
 
 - [ ] **Step 11: Commit and report.**
 
-  Commit only the seven listed files on `codex/rec-i3-v8-host-runner-fix`. Write the implementation report to the task report path supplied by the coordinator, including RED and GREEN commands/outcomes, exact commit(s), files changed, self-review, and concerns. Do not run emulator/instrumentation, push, merge, package, upload, or modify V6/V7 evidence.
+  The cumulative V8 delta from `55940df0c95e919a00708ae57e1b8aa23d89b6de` must contain exactly the eight listed regular `100644` files, including this plan. This corrects the stale seven-file wording according to the recorded exact-path ruling. Commit only the paths assigned to each implementer on `codex/rec-i3-v8-host-runner-fix`. Write the implementation report to the task report path supplied by the coordinator, including RED and GREEN commands/outcomes, exact commit(s), files changed, self-review, and concerns. Do not run emulator/instrumentation, push, merge, package, upload, or modify V6/V7 evidence.
+
+**Verified implementation checkpoints:** Task 1a's runner/helper and host regressions were reviewed through `a724776d9124282bf37b2233d80625f1aa977ca5`. Task 1c's preflight permission-stderr predicate and covering regression were reviewed at `086bcf5c58fa905f0feb97d708f6aab0ef38b933`; both stderr-aware cleanup and per-attempt fallback records are retained. Task 1b recorded eight expected RED failures for absent V8 candidate/validation APIs before implementation. These host-tool checkpoints do not complete independent whole-candidate review or Android acceptance; V6 remains FAIL, V7 remains PREPARATION_BLOCKED with zero instrumentation attempts and cleanup UNVERIFIED, `0D.6` remains OPEN, and `POC-RECOVERY-001` remains BLOCKED / NOT_READY.
 
 ### Task 2: Independently review and freeze the immutable candidate
 
