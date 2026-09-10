@@ -582,7 +582,7 @@ REC_I3_V11_BRANCH = "codex/rec-i3-v11-sqlite-openparams-full"
 REC_I3_V11_BASE = "e0e8b0e2e4ae210dc72b4042c42c526fec003b6a"
 REC_I3_V11_BASE_TREE = "54dc2737a5c75652fb8213a6c70665c57fdf496b"
 REC_I3_V11_BASE_PARENT = "abd4ff405415fc1331c12fd26c6fa0b406ab9850"
-REC_I3_V11_PR_BASE = "430e194409d08b32881ac40faf253e56d6875b4a"
+REC_I3_V11_PR_BASE = "55940df0c95e919a00708ae57e1b8aa23d89b6de"
 REC_I3_V11_JOURNAL_PATH = (
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/"
     "journal/AndroidRecoveryJournalDatabase.kt"

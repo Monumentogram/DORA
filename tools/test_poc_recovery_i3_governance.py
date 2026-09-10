@@ -150,7 +150,7 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
         with self.v11_repository() as repo:
             source = governance.git_output("rev-parse", "HEAD")
             tree = governance.git_output("rev-parse", "HEAD^{tree}")
-            base = "430e194409d08b32881ac40faf253e56d6875b4a"
+            base = "55940df0c95e919a00708ae57e1b8aa23d89b6de"
             merge = governance.test_git_text(
                 repo,
                 "-c", "user.name=Dora Test",
