@@ -302,8 +302,7 @@ class RecoveryE36GapiPreflightInstrumentedTest {
         val provider = KeyStore.getInstance("AndroidKeyStore").provider.name
         val pragmaNames =
             listOf("journal_mode", "synchronous", "wal_autocheckpoint", "foreign_keys")
-        val pragmaObservations =
-            pragmaNames.associateWith { name -> observePragma(sqlite, name) }
+        val pragmaObservations = pragmaNames.associateWith { name -> observePragma(sqlite, name) }
         val queryFailureClassifications =
             JSONObject()
                 .put(
@@ -359,13 +358,13 @@ class RecoveryE36GapiPreflightInstrumentedTest {
                 )
                 .put("queryFailureClassifications", queryFailureClassifications)
         println("INSTRUMENTATION_SQLITE_PRAGMAS_DIAGNOSTIC $sqliteDiagnostic")
-        val pragmaFailures =
-            pragmaObservations.filterValues { it.failureClassification != null }
+        val pragmaFailures = pragmaObservations.filterValues { it.failureClassification != null }
         require(pragmaFailures.isEmpty()) {
             "sqlite-pragma-query-failed:${pragmaFailures.keys.sorted().joinToString(",")}"
         }
-        val pragmas =
-            pragmaObservations.mapValues { (_, observation) -> requireNotNull(observation.value) }
+        val pragmas = pragmaObservations.mapValues { (_, observation) ->
+            requireNotNull(observation.value)
+        }
         require(pragmas["journal_mode"].equals("wal", true))
         require(pragmas["synchronous"] in setOf("2", "full"))
         require(pragmas["wal_autocheckpoint"] == "0")
