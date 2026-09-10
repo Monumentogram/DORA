@@ -1025,14 +1025,18 @@ internal object AndroidRecoveryJournalDatabase {
 }
 
 private class RecoveryJournalSqliteHelper(context: Context) :
-    SQLiteOpenHelper(context, databasePath(context).path, null, RecoveryJournalSchema.VERSION) {
-    init {
-        setWriteAheadLoggingEnabled(true)
-    }
+    SQLiteOpenHelper(
+        context,
+        databasePath(context).path,
+        RecoveryJournalSchema.VERSION,
+        SQLiteDatabase.OpenParams.Builder()
+            .addOpenFlags(SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING)
+            .setSynchronousMode(SQLiteDatabase.SYNC_MODE_FULL)
+            .build(),
+    ) {
 
     override fun onConfigure(database: SQLiteDatabase) {
         database.setForeignKeyConstraintsEnabled(true)
-        database.execSQL("PRAGMA synchronous=FULL")
         database.rawQuery("PRAGMA wal_autocheckpoint=0", null).use { cursor ->
             check(cursor.moveToFirst() && cursor.getInt(0) == 0) {
                 "Recovery journal could not disable WAL auto-checkpointing"
