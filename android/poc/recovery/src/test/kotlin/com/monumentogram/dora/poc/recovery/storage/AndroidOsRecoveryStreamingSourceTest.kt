@@ -22,6 +22,7 @@ import com.monumentogram.dora.poc.recovery.coordination.RecoveryRunWriterLease
 import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
+import java.util.concurrent.FutureTask
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
@@ -560,13 +561,13 @@ class AndroidOsRecoveryStreamingSourceTest {
         val executor = Executors.newFixedThreadPool(2)
         try {
             lateinit var escaped: java.io.InputStream
-            lateinit var read: java.util.concurrent.Future<Int>
+            val read = FutureTask<Int> { escaped.read() }
             val sourceFuture =
                 executor.submit<java.lang.Void> {
                     source.withNormalSource(request(start = 0UL, end = 1UL, preFault = 1UL)) {
                         opened ->
                         escaped = opened.boundedInputStream()
-                        read = executor.submit<Int> { escaped.read() }
+                        executor.execute(read)
                         assertTrue(readEntered.await(5, TimeUnit.SECONDS))
                     }
                     null
