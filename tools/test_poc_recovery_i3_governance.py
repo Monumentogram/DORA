@@ -39,9 +39,259 @@ V10_CANDIDATE_PATHS = (
     "tools/validate_poc_recovery_governance.py",
     V10_PLAN,
 )
+V11_JOURNAL = (
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/"
+    "journal/AndroidRecoveryJournalDatabase.kt"
+)
+V11_SQLITE_VERIFIER = "tools/verify_rec_i3_streaming_sqlite.py"
+V11_PLAN = "docs/superpowers/plans/2026-09-10-rec-i3-v11-sqlite-openparams-full.md"
+V11_CANDIDATE_PATHS = (
+    V11_JOURNAL,
+    V11_SQLITE_VERIFIER,
+    "tools/test_poc_recovery_i3_governance.py",
+    "tools/validate_poc_recovery_governance.py",
+    V11_PLAN,
+)
 
 
 class RecoveryI3GovernanceTests(unittest.TestCase):
+    @contextmanager
+    def v11_repository(self):
+        """Exact V11 FULL-sync OpenParams correction above immutable V10."""
+        source = governance.ROOT
+        with tempfile.TemporaryDirectory(prefix="dora-v11-governance-") as temporary:
+            repo = Path(temporary) / "repo"
+            git_pointer = source / ".git"
+            git_directory = (
+                source / git_pointer.read_text(encoding="utf-8").strip().removeprefix("gitdir: ")
+            ).resolve() if git_pointer.is_file() else git_pointer.resolve()
+            common_pointer = git_directory / "commondir"
+            common_directory = (
+                git_directory / common_pointer.read_text(encoding="utf-8").strip()
+            ).resolve() if common_pointer.is_file() else git_directory
+            repo.mkdir()
+            governance.test_git(repo, "init", "-q")
+            (repo / ".git/objects/info/alternates").write_text(
+                (common_directory / "objects").as_posix() + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+            governance.test_git(
+                repo,
+                "checkout",
+                "-q",
+                "-B",
+                "codex/rec-i3-v11-sqlite-openparams-full",
+                "e0e8b0e2e4ae210dc72b4042c42c526fec003b6a",
+            )
+            for relative in V11_CANDIDATE_PATHS:
+                target = repo / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source / relative, target)
+                if relative in {
+                    "tools/test_poc_recovery_i3_governance.py",
+                    "tools/validate_poc_recovery_governance.py",
+                }:
+                    with target.open("a", encoding="utf-8") as stream:
+                        stream.write("\n# V11 governance fixture\n")
+            governance.commit_test_git_repo(repo, "synthetic bounded V11 OpenParams candidate")
+            with patch.object(governance, "ROOT", repo), patch.dict(os.environ, {
+                key: "" for key in governance.REC_I3_V8_GITHUB_CONTEXT_KEYS
+            }):
+                yield repo
+
+    def assert_v11_rejected(self, lifecycle=None) -> None:
+        lifecycle = lifecycle or governance.collect_recovery_lifecycle_identity()
+        self.assertFalse(governance.rec_i3_v11_candidate(lifecycle))
+        with self.assertRaises((ValueError, subprocess.CalledProcessError)):
+            governance.validate_rec_i3_v11(lifecycle)
+
+    def test_v11_exact_openparams_successor_is_admitted_and_pinned(self) -> None:
+        self.assertTrue(
+            callable(getattr(governance, "rec_i3_v11_source_candidate", None)),
+            "V11 source candidate missing",
+        )
+        with self.v11_repository() as repo:
+            lifecycle = governance.collect_recovery_lifecycle_identity()
+            base = "e0e8b0e2e4ae210dc72b4042c42c526fec003b6a"
+            self.assertEqual(set(V11_CANDIDATE_PATHS), set(governance.REC_I3_V11_PATHS))
+            self.assertEqual(
+                set(V11_CANDIDATE_PATHS),
+                set(governance.git_path_records(
+                    "diff", "--name-only", "--no-renames", "-z", base, lifecycle.head, "--"
+                )),
+            )
+            self.assertEqual(
+                [V11_JOURNAL],
+                governance.git_path_records(
+                    "diff", "--name-only", "--no-renames", "-z", base, lifecycle.head,
+                    "--", "android",
+                ),
+            )
+            for relative, expected in governance.REC_I3_V11_PINNED_BLOBS.items():
+                self.assertEqual(expected, governance.git_output("rev-parse", f"HEAD:{relative}"))
+            self.assertEqual(
+                governance.REC_I3_V10_FIXTURE_BLOB,
+                governance.git_output("rev-parse", f"HEAD:{V10_CHECKPOINT_FIXTURE}"),
+            )
+            self.assertEqual(
+                governance.git_output("rev-parse", f"{base}:.github"),
+                governance.git_output("rev-parse", "HEAD:.github"),
+            )
+            self.assertTrue(governance.rec_i3_v11_source_candidate(lifecycle.head))
+            self.assertTrue(governance.rec_i3_v11_candidate(lifecycle))
+            governance.validate_rec_i3_v11(lifecycle)
+            with patch.object(sys, "argv", ["governance"]), redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(0, governance.main())
+            self.assertIn("V11 SQLite OpenParams FULL correction", output.getvalue())
+            self.assertIn("V10 remains FAIL", output.getvalue())
+
+    def test_v11_pull_request_binds_current_main_and_rejects_identity_topology_drift(self) -> None:
+        with self.v11_repository() as repo:
+            source = governance.git_output("rev-parse", "HEAD")
+            tree = governance.git_output("rev-parse", "HEAD^{tree}")
+            base = "430e194409d08b32881ac40faf253e56d6875b4a"
+            merge = governance.test_git_text(
+                repo,
+                "-c", "user.name=Dora Test",
+                "-c", "user.email=dora@example.invalid",
+                "commit-tree", tree, "-p", base, "-p", source,
+                input_data=b"synthetic V11 PR merge\n",
+            )
+            governance.test_git(repo, "checkout", "-q", "--detach", merge)
+            event_path = repo.parent / "event.json"
+            governance.write_test_pull_request_event(
+                event_path,
+                number=91,
+                head_ref="codex/rec-i3-v11-sqlite-openparams-full",
+                head_sha=source,
+                base_sha=base,
+                merge_sha=merge,
+                draft=False,
+            )
+            environment = {
+                "GITHUB_EVENT_NAME": "pull_request",
+                "GITHUB_REPOSITORY": "Monumentogram/DORA",
+                "GITHUB_WORKSPACE": str(repo),
+                "GITHUB_REF": "refs/pull/91/merge",
+                "GITHUB_SHA": merge,
+                "GITHUB_HEAD_REF": "codex/rec-i3-v11-sqlite-openparams-full",
+                "GITHUB_BASE_REF": "main",
+                "RUNNER_TEMP": str(repo.parent),
+                "GITHUB_EVENT_PATH": str(event_path),
+            }
+            with patch.dict(os.environ, environment):
+                lifecycle = governance.collect_recovery_lifecycle_identity()
+                self.assertTrue(governance.rec_i3_v11_source_candidate(source))
+                self.assertTrue(governance.rec_i3_v11_candidate(lifecycle))
+                governance.validate_rec_i3_v11(lifecycle)
+                context = lifecycle.github_pull_request_context
+                for field, value in (
+                    ("base_sha", governance.REC_I3_V11_BASE),
+                    ("base_ref", "codex/stacked"),
+                    ("head_ref", governance.REC_I3_V10_BRANCH),
+                ):
+                    with self.subTest(field=field):
+                        self.assert_v11_rejected(replace(
+                            lifecycle,
+                            github_pull_request_context=replace(context, **{field: value}),
+                        ))
+                for label, merge_tree, parents in (
+                    ("reversed parents", tree, (source, base)),
+                    ("wrong tree", governance.git_output("rev-parse", f"{base}^{{tree}}"),
+                     (base, source)),
+                ):
+                    bad_merge = governance.test_git_text(
+                        repo,
+                        "-c", "user.name=Dora Test",
+                        "-c", "user.email=dora@example.invalid",
+                        "commit-tree", merge_tree,
+                        "-p", parents[0], "-p", parents[1],
+                        input_data=b"invalid synthetic V11 PR merge\n",
+                    )
+                    governance.test_git(repo, "checkout", "-q", "--detach", bad_merge)
+                    try:
+                        with self.subTest(label=label), patch.dict(
+                            os.environ, {"GITHUB_SHA": bad_merge}
+                        ):
+                            self.assertEqual(
+                                bad_merge,
+                                governance.git_output("rev-parse", "HEAD"),
+                                "topology negative must execute from its constructed merge",
+                            )
+                            bad_lifecycle = replace(
+                                lifecycle,
+                                head=bad_merge,
+                                github_pull_request_context=replace(
+                                    context, merge_sha=bad_merge
+                                ),
+                            )
+                            self.assert_v11_rejected(bad_lifecycle)
+                    finally:
+                        governance.test_git(repo, "checkout", "-q", "--detach", merge)
+
+    def test_v11_dependency_entry_validates_profile_and_static_mutations(self) -> None:
+        import verify_poc_recovery_dependency_inventory as inventory
+
+        with self.v11_repository() as repo, ExitStack() as stack:
+            original_root = inventory.ROOT
+            for name, value in tuple(vars(inventory).items()):
+                if isinstance(value, Path) and value.is_relative_to(original_root):
+                    stack.enter_context(patch.object(
+                        inventory, name, repo / value.relative_to(original_root)
+                    ))
+            stack.enter_context(patch.object(sys, "argv", ["inventory"]))
+            with redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(0, inventory.main())
+            self.assertIn("V11 SQLite OpenParams FULL correction", output.getvalue())
+            self.assertIn("dependency/IP static validation passed", output.getvalue())
+            documents = [inventory.read_json(path) for path in (
+                inventory.INVENTORY_PATH,
+                inventory.LICENSE_PATH,
+                inventory.AUTHENTICITY_PATH,
+                inventory.JSR305_EXCLUSION_PATH,
+                inventory.READINESS_PATH,
+                inventory.REVIEW_ROLES_PATH,
+            )]
+            for mutation in ("admission", "graph", "native", "signature", "hash"):
+                records = copy.deepcopy(documents)
+                if mutation == "admission":
+                    records[0]["dependencyAdmission"] = True
+                elif mutation == "graph":
+                    records[0]["graphEdges"].pop()
+                elif mutation == "native":
+                    records[0]["artifacts"][0]["jar"]["nativeEntries"] = 1
+                elif mutation == "signature":
+                    records[2]["components"][0]["jar"]["detachedSignature"]["result"] = "INVALID"
+                elif mutation == "hash":
+                    records[0]["artifacts"][0]["jar"]["sha256"] = "0" * 64
+                with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                    inventory.validate_static(*records)
+
+    def test_v11_rejects_pinned_source_and_out_of_scope_drift(self) -> None:
+        mutations = {
+            "journal": V11_JOURNAL,
+            "verifier": V11_SQLITE_VERIFIER,
+            "plan": V11_PLAN,
+            "instrumentation": (
+                "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/"
+                "recovery/candidate/RecoveryE36GapiPreflightInstrumentedTest.kt"
+            ),
+            "workflow": ".github/workflows/android-ci.yml",
+            "extra": "unauthorized.txt",
+        }
+        for mutation, relative in mutations.items():
+            with self.subTest(mutation=mutation), self.v11_repository() as repo:
+                target = repo / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                with target.open("a", encoding="utf-8") as stream:
+                    stream.write("\n// unauthorized V11 drift\n")
+                governance.commit_test_git_repo(repo, mutation)
+                self.assertFalse(governance.rec_i3_v11_source_candidate(
+                    governance.git_output("rev-parse", "HEAD")
+                ))
+                self.assert_v11_rejected()
+
     def test_v10_genesis_fixture_uses_zero_predecessor_for_identity_and_row(self) -> None:
         fixture = governance.read_text(V10_CHECKPOINT_FIXTURE)
         identity_input = re.search(
