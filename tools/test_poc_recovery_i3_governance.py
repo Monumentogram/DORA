@@ -221,6 +221,16 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
                 '.put("database", sqlite)\n'
                 '                .put("connectionIdentity", "UNOBSERVED")',
             ),
+            "additional-direct-target-scalar-query": source.replace(
+                "val queryFailureClassifications =",
+                'val unexpectedPragma = scalar(sqlite, "PRAGMA journal_mode")\n'
+                '        val queryFailureClassifications =',
+            ),
+            "unapproved-database-accumulate": source.replace(
+                '.put("connectionIdentity", "UNOBSERVED")',
+                '.accumulate("database", sqlite)\n'
+                '                .put("connectionIdentity", "UNOBSERVED")',
+            ),
         }
         for mutation, candidate in mutations.items():
             with self.subTest(mutation=mutation):

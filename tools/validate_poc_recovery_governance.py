@@ -8745,6 +8745,15 @@ def validate_rec_i3_v11_diagnostic_text(preflight: str) -> None:
         len(pragma_invocations) == len(pragma_definitions) + 1,
         "REC-I3 V11 diagnostic has an additional direct PRAGMA query",
     )
+    direct_target_pragma_sql = re.compile(
+        r'["\']\s*PRAGMA\s+(?:journal_mode|synchronous|wal_autocheckpoint|foreign_keys)\b',
+        re.IGNORECASE,
+    )
+    require(
+        preflight.count('"PRAGMA $name"') == 1
+        and direct_target_pragma_sql.search(preflight) is None,
+        "REC-I3 V11 diagnostic has a direct target-PRAGMA SQL query",
+    )
     observation = re.search(
         r"private fun observePragma\(.*?\n        \}\n\n    private fun scalar",
         preflight,
@@ -8809,6 +8818,34 @@ def validate_rec_i3_v11_diagnostic_text(preflight: str) -> None:
                     return source[opening_parenthesis + 1:position]
         return source[opening_parenthesis + 1:]
 
+    def kotlin_top_level_operations(source: str) -> tuple[str, ...]:
+        operations: list[str] = []
+        depth = 0
+        quote = ""
+        escaped = False
+        position = 0
+        while position < len(source):
+            character = source[position]
+            if quote:
+                if escaped:
+                    escaped = False
+                elif character == "\\":
+                    escaped = True
+                elif character == quote:
+                    quote = ""
+            elif character in {'"', "'"}:
+                quote = character
+            elif character == "(":
+                depth += 1
+            elif character == ")":
+                depth -= 1
+            elif character == "." and depth == 0:
+                operation = re.match(r"\.([A-Za-z_][A-Za-z0-9_]*)\s*\(", source[position:])
+                if operation is not None:
+                    operations.append(operation.group(1))
+            position += 1
+        return tuple(operations)
+
     pragma_assertion_tokens = re.compile(
         r'\b(?:pragma|pragmaNames|pragmaObservations|pragmas|sqliteDiagnostic|'
         r'queryFailureClassifications)\b|'
@@ -8823,6 +8860,8 @@ def validate_rec_i3_v11_diagnostic_text(preflight: str) -> None:
         )
 
     diagnostic = body[diagnostic_start:marker_position + len(marker)]
+    builder_start = diagnostic.find("JSONObject()") + len("JSONObject()")
+    builder_chain = diagnostic[builder_start:diagnostic.find(marker)]
     diagnostic_fields = re.findall(r'\.put\(\s*"([^"]+)"', diagnostic)
     expected_diagnostic_fields = (
         "harnessRevision",
@@ -8860,7 +8899,9 @@ def validate_rec_i3_v11_diagnostic_text(preflight: str) -> None:
         '.put("queryFailureClassifications",queryFailureClassifications)',
     )
     require(
-        tuple(diagnostic_fields) == expected_diagnostic_fields
+        builder_start >= len("JSONObject()")
+        and kotlin_top_level_operations(builder_chain) == ("put",) * len(expected_diagnostic_fields)
+        and tuple(diagnostic_fields) == expected_diagnostic_fields
         and all(call in compact_diagnostic for call in expected_diagnostic_calls),
         "REC-I3 V11 diagnostic field/expression allow-list drift",
     )
