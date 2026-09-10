@@ -587,17 +587,23 @@ REC_I3_V11_JOURNAL_PATH = (
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/"
     "journal/AndroidRecoveryJournalDatabase.kt"
 )
+REC_I3_V11_PREFLIGHT_PATH = (
+    "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/"
+    "candidate/RecoveryE36GapiPreflightInstrumentedTest.kt"
+)
 REC_I3_V11_SQLITE_VERIFIER_PATH = "tools/verify_rec_i3_streaming_sqlite.py"
 REC_I3_V11_PLAN_PATH = (
     "docs/superpowers/plans/2026-09-10-rec-i3-v11-sqlite-openparams-full.md"
 )
 REC_I3_V11_PINNED_BLOBS = {
     REC_I3_V11_JOURNAL_PATH: "0c300bf0f11f828cbc1ac26ffb80cd944648235a",
+    REC_I3_V11_PREFLIGHT_PATH: "9ef9fe83e0def1bcabc4e270cdb4277c28b88d77",
     REC_I3_V11_SQLITE_VERIFIER_PATH: "e05ae0ec28054df070d68fdcc4449608d353f880",
-    REC_I3_V11_PLAN_PATH: "0adb1357f2a7c9287757253f2af478a4417081cc",
+    REC_I3_V11_PLAN_PATH: "cbc7df80dc7e609131172bbceb48c2f551e1b944",
 }
 REC_I3_V11_PATHS = (
     REC_I3_V11_JOURNAL_PATH,
+    REC_I3_V11_PREFLIGHT_PATH,
     REC_I3_V11_SQLITE_VERIFIER_PATH,
     "tools/test_poc_recovery_i3_governance.py",
     "tools/validate_poc_recovery_governance.py",
@@ -7343,7 +7349,7 @@ def rec_i3_v11_source_candidate(commit: str, *, root: Path | None = None) -> boo
     if (
         changed != set(REC_I3_V11_PATHS)
         or not history <= set(REC_I3_V11_PATHS)
-        or android_changed != [REC_I3_V11_JOURNAL_PATH]
+        or android_changed != [REC_I3_V11_PREFLIGHT_PATH, REC_I3_V11_JOURNAL_PATH]
         or git_optional_output("rev-parse", f"{commit}:.github", root=repository_root)
         != git_optional_output("rev-parse", f"{REC_I3_V11_BASE}:.github", root=repository_root)
     ):
@@ -7442,7 +7448,7 @@ def validate_rec_i3_v11_identity(lifecycle: RecoveryLifecycleIdentity) -> None:
         git_path_records(
             "diff", "--name-only", "--no-renames", "-z",
             REC_I3_V11_BASE, candidate_head, "--", "android",
-        ) == [REC_I3_V11_JOURNAL_PATH],
+        ) == [REC_I3_V11_PREFLIGHT_PATH, REC_I3_V11_JOURNAL_PATH],
         "REC-I3 V11 protected Android boundary drift",
     )
     require(
@@ -8713,6 +8719,125 @@ def validate_rec_i3_v8_contract_sources() -> None:
             "REC-I3 V8 runner mutates checkout")
 
 
+def validate_rec_i3_v11_diagnostic_text(preflight: str) -> None:
+    """Validate the bounded, sanitized pre-assert SQLite diagnostic source contract."""
+    emit_status = re.search(
+        r"private fun emitStatus\(.*?\n    \}\n\n    private fun requireHarnessRevision",
+        preflight,
+        re.DOTALL,
+    )
+    require(emit_status is not None, "REC-I3 V11 E36 status emitter missing")
+    body = emit_status.group(0)
+    pragma_names = re.search(
+        r'val pragmaNames\s*=\s*listOf\(\s*"journal_mode",\s*"synchronous",\s*'
+        r'"wal_autocheckpoint",\s*"foreign_keys"\s*\)',
+        body,
+        re.DOTALL,
+    )
+    require(
+        pragma_names is not None
+        and body.count("pragmaNames.associateWith { name -> observePragma(sqlite, name) }") == 1,
+        "REC-I3 V11 diagnostic must collect each exact ordinary PRAGMA once",
+    )
+    observation = re.search(
+        r"private fun observePragma\(.*?\n        \}\n\n    private fun scalar",
+        preflight,
+        re.DOTALL,
+    )
+    require(
+        observation is not None
+        and observation.group(0).count("pragma(database, name)") == 1
+        and "catch (error: RuntimeException)" in observation.group(0)
+        and '"SQLITE_EXCEPTION"' in observation.group(0)
+        and '"ILLEGAL_STATE"' in observation.group(0)
+        and '"RUNTIME_EXCEPTION"' in observation.group(0)
+        and "value = null" in observation.group(0)
+        and ".message" not in observation.group(0)
+        and "stackTrace" not in observation.group(0),
+        "REC-I3 V11 diagnostic query failure classification drift",
+    )
+    diagnostic_start = body.find("val sqliteDiagnostic")
+    marker = 'println("INSTRUMENTATION_SQLITE_PRAGMAS_DIAGNOSTIC $sqliteDiagnostic")'
+    marker_position = body.find(marker)
+    failure_gate = "require(pragmaFailures.isEmpty()) {"
+    failure_position = body.find(failure_gate)
+    status_position = body.find('println("INSTRUMENTATION_STATUS $payload")')
+    requirements = (
+        'require(pragmas["journal_mode"].equals("wal", true))',
+        'require(pragmas["synchronous"] in setOf("2", "full"))',
+        'require(pragmas["wal_autocheckpoint"] == "0")',
+        'require(pragmas["foreign_keys"] == "1")',
+    )
+    requirement_positions = [body.find(item) for item in requirements]
+    require(
+        diagnostic_start >= 0
+        and marker_position > diagnostic_start
+        and failure_position > marker_position
+        and all(position > failure_position for position in requirement_positions)
+        and status_position > max(requirement_positions)
+        and all(body.count(item) == 1 for item in requirements),
+        "REC-I3 V11 diagnostic/assertion/failure ordering or strict requirements drift",
+    )
+    diagnostic = body[diagnostic_start:marker_position + len(marker)]
+    required_fields = (
+        '.put("harnessRevision", revision)',
+        '.put("phase", "post_fixture_cleanup_pre_pragma_assertions")',
+        '.put("apiLevel", Build.VERSION.SDK_INT)',
+        '.put("threadId", android.os.Process.myTid())',
+        '.put("currentThreadInTransaction", sqlite.inTransaction())',
+        '.put("databaseOpen", sqlite.isOpen)',
+        '.put("databaseReadOnly", sqlite.isReadOnly)',
+        '"databaseWriteAheadLoggingEnabled"',
+        "sqlite.isWriteAheadLoggingEnabled",
+        '.put("connectionIdentity", "UNOBSERVED")',
+        '.put("queryContext", "ordinary_rawQuery")',
+        '.put("queryFailureClassifications", queryFailureClassifications)',
+    )
+    require(
+        all(field in diagnostic for field in required_fields),
+        "REC-I3 V11 diagnostic required field drift",
+    )
+    for name in ("journal_mode", "synchronous", "wal_autocheckpoint", "foreign_keys"):
+        require(
+            re.search(
+                rf'\.put\(\s*"{name}",\s*pragmaObservations\.getValue\("{name}"\)'
+                rf'\.value\s*\?:\s*JSONObject\.NULL',
+                diagnostic,
+                re.DOTALL,
+            ) is not None
+            and re.search(
+                rf'\.put\(\s*"{name}",\s*pragmaObservations\.getValue\("{name}"\)'
+                rf'\.failureClassification\s*\?:\s*JSONObject\.NULL',
+                body[:diagnostic_start],
+                re.DOTALL,
+            ) is not None,
+            f"REC-I3 V11 diagnostic value/failure field drift: {name}",
+        )
+    require(
+        "pragmaObservations.filterValues { it.failureClassification != null }" in body
+        and '"sqlite-pragma-query-failed:${pragmaFailures.keys.sorted().joinToString(",")}"' in body,
+        "REC-I3 V11 diagnostic query failures do not fail closed after emission",
+    )
+    unsafe_fragments = (
+        "sqlite.path",
+        "database.path",
+        ".message",
+        "stackTrace",
+        "printStackTrace",
+        "toString()",
+        "sourceDir",
+        "fingerprint",
+        "recordContents",
+    )
+    require(
+        not any(fragment in diagnostic for fragment in unsafe_fragments)
+        and " PASS " not in marker
+        and "SUCCESS" not in marker
+        and "INSTRUMENTATION_STATUS" not in marker,
+        "REC-I3 V11 diagnostic leaks unsafe data or carries success semantics",
+    )
+
+
 def validate_rec_i3_v11(lifecycle: RecoveryLifecycleIdentity) -> None:
     validate_rec_i3_v11_identity(lifecycle)
     validate_rec_i3_v8_contract_sources()
@@ -8769,14 +8894,17 @@ def validate_rec_i3_v11(lifecycle: RecoveryLifecycleIdentity) -> None:
     require(
         "preserving the V10 failure evidence" in plan
         and "V11 does not broaden the autocheckpoint behavior" in plan
-        and "No instrumentation assertion" in plan,
+        and "INSTRUMENTATION_SQLITE_PRAGMAS_DIAGNOSTIC" in plan
+        and "all six bounded V11 paths" in plan
+        and "not a same-connection atomic snapshot" in plan,
         "REC-I3 V11 plan/status boundary drift",
     )
+    validate_rec_i3_v11_diagnostic_text(read_text(REC_I3_V11_PREFLIGHT_PATH))
     print(
         "PASS REC-I3 V11 SQLite OpenParams FULL correction; WAL and synchronous FULL are "
         "selected before pooled connections open; old connection-local synchronous assignment "
-        "absent; foreign-key/autocheckpoint observation and instrumentation assertion unchanged; "
-        "exact five-path boundary; V10 remains FAIL; no Android acceptance; 0D.6 OPEN; "
+        "absent; pre-assert SQLite diagnostic admitted with strict requirements unchanged; "
+        "exact six-path boundary; V10 remains FAIL; no Android acceptance; 0D.6 OPEN; "
         "POC-RECOVERY-001 BLOCKED / NOT_READY"
     )
 

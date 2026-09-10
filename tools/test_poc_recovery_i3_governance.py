@@ -43,10 +43,15 @@ V11_JOURNAL = (
     "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/"
     "journal/AndroidRecoveryJournalDatabase.kt"
 )
+V11_PREFLIGHT = (
+    "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/"
+    "candidate/RecoveryE36GapiPreflightInstrumentedTest.kt"
+)
 V11_SQLITE_VERIFIER = "tools/verify_rec_i3_streaming_sqlite.py"
 V11_PLAN = "docs/superpowers/plans/2026-09-10-rec-i3-v11-sqlite-openparams-full.md"
 V11_CANDIDATE_PATHS = (
     V11_JOURNAL,
+    V11_PREFLIGHT,
     V11_SQLITE_VERIFIER,
     "tools/test_poc_recovery_i3_governance.py",
     "tools/validate_poc_recovery_governance.py",
@@ -122,7 +127,7 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
                 )),
             )
             self.assertEqual(
-                [V11_JOURNAL],
+                [V11_PREFLIGHT, V11_JOURNAL],
                 governance.git_path_records(
                     "diff", "--name-only", "--no-renames", "-z", base, lifecycle.head,
                     "--", "android",
@@ -145,6 +150,68 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
                 self.assertEqual(0, governance.main())
             self.assertIn("V11 SQLite OpenParams FULL correction", output.getvalue())
             self.assertIn("V10 remains FAIL", output.getvalue())
+
+    def test_v11_sqlite_diagnostic_is_complete_pre_assert_and_fail_closed(self) -> None:
+        """Missing, late, unsafe, or success-bearing pre-assert diagnostics are rejected."""
+        validator = getattr(governance, "validate_rec_i3_v11_diagnostic_text", None)
+        self.assertTrue(callable(validator), "V11 diagnostic governance admission missing")
+        validator(governance.read_text(V11_PREFLIGHT))
+
+    def test_v11_sqlite_diagnostic_rejects_contract_mutations(self) -> None:
+        """Each required diagnostic/query/failure/requirement boundary is mutation-sensitive."""
+        source = governance.read_text(V11_PREFLIGHT)
+        validator = getattr(governance, "validate_rec_i3_v11_diagnostic_text", None)
+        self.assertTrue(callable(validator), "V11 diagnostic governance admission missing")
+        mutations = {
+            "diagnostic-after-assertion": source.replace(
+                'println("INSTRUMENTATION_SQLITE_PRAGMAS_DIAGNOSTIC $sqliteDiagnostic")\n'
+                '        val pragmaFailures',
+                'val pragmaFailures',
+            ).replace(
+                'require(pragmas["journal_mode"].equals("wal", true))',
+                'require(pragmas["journal_mode"].equals("wal", true))\n'
+                '        println("INSTRUMENTATION_SQLITE_PRAGMAS_DIAGNOSTIC $sqliteDiagnostic")',
+            ),
+            "omitted-field": source.replace(
+                '.put("queryContext", "ordinary_rawQuery")',
+                '',
+            ),
+            "success-on-query-failure": source.replace(
+                'require(pragmaFailures.isEmpty()) {',
+                'if (pragmaFailures.isNotEmpty()) println("query-failure-ignored")\n        if (false) {',
+            ),
+            "unsafe-database-path": source.replace(
+                '.put("connectionIdentity", "UNOBSERVED")',
+                '.put("databasePath", sqlite.path)\n'
+                '                .put("connectionIdentity", "UNOBSERVED")',
+            ),
+            "unsafe-exception-text": source.replace(
+                '.put("connectionIdentity", "UNOBSERVED")',
+                '.put("failureDetail", error.message)\n'
+                '                .put("connectionIdentity", "UNOBSERVED")',
+            ),
+            "weakened-autocheckpoint": source.replace(
+                'require(pragmas["wal_autocheckpoint"] == "0")',
+                'require(pragmas["wal_autocheckpoint"] != null)',
+            ),
+            "omitted-query": source.replace(
+                '"journal_mode", "synchronous", "wal_autocheckpoint", "foreign_keys"',
+                '"journal_mode", "synchronous", "wal_autocheckpoint"',
+            ),
+            "duplicated-query": source.replace(
+                '"journal_mode", "synchronous", "wal_autocheckpoint", "foreign_keys"',
+                '"journal_mode", "synchronous", "wal_autocheckpoint", "foreign_keys", "foreign_keys"',
+            ),
+            "success-bearing-marker": source.replace(
+                '"INSTRUMENTATION_SQLITE_PRAGMAS_DIAGNOSTIC $sqliteDiagnostic"',
+                '"INSTRUMENTATION_SQLITE_PRAGMAS_DIAGNOSTIC PASS $sqliteDiagnostic"',
+            ),
+        }
+        for mutation, candidate in mutations.items():
+            with self.subTest(mutation=mutation):
+                self.assertNotEqual(source, candidate, "mutation fixture did not alter source")
+                with self.assertRaises(ValueError):
+                    validator(candidate)
 
     def test_v11_pull_request_binds_current_main_and_rejects_identity_topology_drift(self) -> None:
         with self.v11_repository() as repo:
@@ -273,10 +340,7 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
             "journal": V11_JOURNAL,
             "verifier": V11_SQLITE_VERIFIER,
             "plan": V11_PLAN,
-            "instrumentation": (
-                "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/"
-                "recovery/candidate/RecoveryE36GapiPreflightInstrumentedTest.kt"
-            ),
+            "instrumentation": V11_PREFLIGHT,
             "workflow": ".github/workflows/android-ci.yml",
             "extra": "unauthorized.txt",
         }

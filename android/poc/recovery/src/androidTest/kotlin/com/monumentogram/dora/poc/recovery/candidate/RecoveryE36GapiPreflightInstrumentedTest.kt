@@ -300,9 +300,72 @@ class RecoveryE36GapiPreflightInstrumentedTest {
     ) {
         val sqlite = AndroidRecoveryJournalDatabase.writable(context)
         val provider = KeyStore.getInstance("AndroidKeyStore").provider.name
-        val pragmas =
+        val pragmaNames =
             listOf("journal_mode", "synchronous", "wal_autocheckpoint", "foreign_keys")
-                .associateWith { pragma(sqlite, it) }
+        val pragmaObservations =
+            pragmaNames.associateWith { name -> observePragma(sqlite, name) }
+        val queryFailureClassifications =
+            JSONObject()
+                .put(
+                    "journal_mode",
+                    pragmaObservations.getValue("journal_mode").failureClassification
+                        ?: JSONObject.NULL,
+                )
+                .put(
+                    "synchronous",
+                    pragmaObservations.getValue("synchronous").failureClassification
+                        ?: JSONObject.NULL,
+                )
+                .put(
+                    "wal_autocheckpoint",
+                    pragmaObservations.getValue("wal_autocheckpoint").failureClassification
+                        ?: JSONObject.NULL,
+                )
+                .put(
+                    "foreign_keys",
+                    pragmaObservations.getValue("foreign_keys").failureClassification
+                        ?: JSONObject.NULL,
+                )
+        val sqliteDiagnostic =
+            JSONObject()
+                .put("harnessRevision", revision)
+                .put("phase", "post_fixture_cleanup_pre_pragma_assertions")
+                .put("apiLevel", Build.VERSION.SDK_INT)
+                .put("threadId", android.os.Process.myTid())
+                .put("currentThreadInTransaction", sqlite.inTransaction())
+                .put("databaseOpen", sqlite.isOpen)
+                .put("databaseReadOnly", sqlite.isReadOnly)
+                .put(
+                    "databaseWriteAheadLoggingEnabled",
+                    sqlite.isWriteAheadLoggingEnabled,
+                )
+                .put("connectionIdentity", "UNOBSERVED")
+                .put("queryContext", "ordinary_rawQuery")
+                .put(
+                    "journal_mode",
+                    pragmaObservations.getValue("journal_mode").value ?: JSONObject.NULL,
+                )
+                .put(
+                    "synchronous",
+                    pragmaObservations.getValue("synchronous").value ?: JSONObject.NULL,
+                )
+                .put(
+                    "wal_autocheckpoint",
+                    pragmaObservations.getValue("wal_autocheckpoint").value ?: JSONObject.NULL,
+                )
+                .put(
+                    "foreign_keys",
+                    pragmaObservations.getValue("foreign_keys").value ?: JSONObject.NULL,
+                )
+                .put("queryFailureClassifications", queryFailureClassifications)
+        println("INSTRUMENTATION_SQLITE_PRAGMAS_DIAGNOSTIC $sqliteDiagnostic")
+        val pragmaFailures =
+            pragmaObservations.filterValues { it.failureClassification != null }
+        require(pragmaFailures.isEmpty()) {
+            "sqlite-pragma-query-failed:${pragmaFailures.keys.sorted().joinToString(",")}"
+        }
+        val pragmas =
+            pragmaObservations.mapValues { (_, observation) -> requireNotNull(observation.value) }
         require(pragmas["journal_mode"].equals("wal", true))
         require(pragmas["synchronous"] in setOf("2", "full"))
         require(pragmas["wal_autocheckpoint"] == "0")
@@ -426,6 +489,22 @@ class RecoveryE36GapiPreflightInstrumentedTest {
     private fun pragma(database: android.database.sqlite.SQLiteDatabase, name: String) =
         scalar(database, "PRAGMA $name")
 
+    private fun observePragma(
+        database: android.database.sqlite.SQLiteDatabase,
+        name: String,
+    ): SqlitePragmaObservation =
+        try {
+            SqlitePragmaObservation(value = pragma(database, name), failureClassification = null)
+        } catch (error: RuntimeException) {
+            val classification =
+                when (error) {
+                    is android.database.sqlite.SQLiteException -> "SQLITE_EXCEPTION"
+                    is IllegalStateException -> "ILLEGAL_STATE"
+                    else -> "RUNTIME_EXCEPTION"
+                }
+            SqlitePragmaObservation(value = null, failureClassification = classification)
+        }
+
     private fun scalar(database: android.database.sqlite.SQLiteDatabase, sql: String): String =
         database.rawQuery(sql, null).use { cursor ->
             check(cursor.moveToFirst())
@@ -439,6 +518,11 @@ class RecoveryE36GapiPreflightInstrumentedTest {
 
     private fun digest(bytes: ByteArray): String =
         MessageDigest.getInstance("SHA-256").digest(bytes).joinToString("") { "%02x".format(it) }
+
+    private data class SqlitePragmaObservation(
+        val value: String?,
+        val failureClassification: String?,
+    )
 
     private class CountingAuthenticator(private val oracle: ByteArray) :
         RecoveryStreamingCheckpointAuthenticator {
