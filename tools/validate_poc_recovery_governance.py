@@ -8739,6 +8739,12 @@ def validate_rec_i3_v11_diagnostic_text(preflight: str) -> None:
         and body.count("pragmaNames.associateWith { name -> observePragma(sqlite, name) }") == 1,
         "REC-I3 V11 diagnostic must collect each exact ordinary PRAGMA once",
     )
+    pragma_invocations = re.findall(r"\bpragma\s*\(", preflight)
+    pragma_definitions = re.findall(r"\bfun\s+pragma\s*\(", preflight)
+    require(
+        len(pragma_invocations) == len(pragma_definitions) + 1,
+        "REC-I3 V11 diagnostic has an additional direct PRAGMA query",
+    )
     observation = re.search(
         r"private fun observePragma\(.*?\n        \}\n\n    private fun scalar",
         preflight,
@@ -8778,34 +8784,89 @@ def validate_rec_i3_v11_diagnostic_text(preflight: str) -> None:
         and all(body.count(item) == 1 for item in requirements),
         "REC-I3 V11 diagnostic/assertion/failure ordering or strict requirements drift",
     )
+
+    def kotlin_call_arguments(source: str, opening_parenthesis: int) -> str:
+        depth = 0
+        quote = ""
+        escaped = False
+        for position in range(opening_parenthesis, len(source)):
+            character = source[position]
+            if quote:
+                if escaped:
+                    escaped = False
+                elif character == "\\":
+                    escaped = True
+                elif character == quote:
+                    quote = ""
+                continue
+            if character in {'"', "'"}:
+                quote = character
+            elif character == "(":
+                depth += 1
+            elif character == ")":
+                depth -= 1
+                if depth == 0:
+                    return source[opening_parenthesis + 1:position]
+        return source[opening_parenthesis + 1:]
+
+    pragma_assertion_tokens = re.compile(
+        r'\b(?:pragma|pragmaNames|pragmaObservations|pragmas|sqliteDiagnostic|'
+        r'queryFailureClassifications)\b|'
+        r'"(?:journal_mode|synchronous|wal_autocheckpoint|foreign_keys)"'
+    )
+    pre_marker = body[:marker_position]
+    for assertion in re.finditer(r"\b(?:require|check|assert[A-Za-z0-9_]*)\s*\(", pre_marker):
+        arguments = kotlin_call_arguments(pre_marker, assertion.end() - 1)
+        require(
+            pragma_assertion_tokens.search(arguments) is None,
+            "REC-I3 V11 PRAGMA-dependent assertion occurs before diagnostic emission",
+        )
+
     diagnostic = body[diagnostic_start:marker_position + len(marker)]
-    required_fields = (
-        '.put("harnessRevision", revision)',
-        '.put("phase", "post_fixture_cleanup_pre_pragma_assertions")',
-        '.put("apiLevel", Build.VERSION.SDK_INT)',
-        '.put("threadId", android.os.Process.myTid())',
-        '.put("currentThreadInTransaction", sqlite.inTransaction())',
-        '.put("databaseOpen", sqlite.isOpen)',
-        '.put("databaseReadOnly", sqlite.isReadOnly)',
-        '"databaseWriteAheadLoggingEnabled"',
-        "sqlite.isWriteAheadLoggingEnabled",
-        '.put("connectionIdentity", "UNOBSERVED")',
-        '.put("queryContext", "ordinary_rawQuery")',
-        '.put("queryFailureClassifications", queryFailureClassifications)',
+    diagnostic_fields = re.findall(r'\.put\(\s*"([^"]+)"', diagnostic)
+    expected_diagnostic_fields = (
+        "harnessRevision",
+        "phase",
+        "apiLevel",
+        "threadId",
+        "currentThreadInTransaction",
+        "databaseOpen",
+        "databaseReadOnly",
+        "databaseWriteAheadLoggingEnabled",
+        "connectionIdentity",
+        "queryContext",
+        "journal_mode",
+        "synchronous",
+        "wal_autocheckpoint",
+        "foreign_keys",
+        "queryFailureClassifications",
+    )
+    compact_diagnostic = re.sub(r",\)", ")", re.sub(r"\s+", "", diagnostic))
+    expected_diagnostic_calls = (
+        '.put("harnessRevision",revision)',
+        '.put("phase","post_fixture_cleanup_pre_pragma_assertions")',
+        '.put("apiLevel",Build.VERSION.SDK_INT)',
+        '.put("threadId",android.os.Process.myTid())',
+        '.put("currentThreadInTransaction",sqlite.inTransaction())',
+        '.put("databaseOpen",sqlite.isOpen)',
+        '.put("databaseReadOnly",sqlite.isReadOnly)',
+        '.put("databaseWriteAheadLoggingEnabled",sqlite.isWriteAheadLoggingEnabled)',
+        '.put("connectionIdentity","UNOBSERVED")',
+        '.put("queryContext","ordinary_rawQuery")',
+        '.put("journal_mode",pragmaObservations.getValue("journal_mode").value?:JSONObject.NULL)',
+        '.put("synchronous",pragmaObservations.getValue("synchronous").value?:JSONObject.NULL)',
+        '.put("wal_autocheckpoint",pragmaObservations.getValue("wal_autocheckpoint").value?:JSONObject.NULL)',
+        '.put("foreign_keys",pragmaObservations.getValue("foreign_keys").value?:JSONObject.NULL)',
+        '.put("queryFailureClassifications",queryFailureClassifications)',
     )
     require(
-        all(field in diagnostic for field in required_fields),
-        "REC-I3 V11 diagnostic required field drift",
+        tuple(diagnostic_fields) == expected_diagnostic_fields
+        and all(call in compact_diagnostic for call in expected_diagnostic_calls),
+        "REC-I3 V11 diagnostic field/expression allow-list drift",
     )
     for name in ("journal_mode", "synchronous", "wal_autocheckpoint", "foreign_keys"):
         require(
             re.search(
-                rf'\.put\(\s*"{name}",\s*pragmaObservations\.getValue\("{name}"\)'
-                rf'\.value\s*\?:\s*JSONObject\.NULL',
-                diagnostic,
-                re.DOTALL,
-            ) is not None
-            and re.search(
                 rf'\.put\(\s*"{name}",\s*pragmaObservations\.getValue\("{name}"\)'
                 rf'\.failureClassification\s*\?:\s*JSONObject\.NULL',
                 body[:diagnostic_start],

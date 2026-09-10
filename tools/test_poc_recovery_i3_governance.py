@@ -206,6 +206,21 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
                 '"INSTRUMENTATION_SQLITE_PRAGMAS_DIAGNOSTIC $sqliteDiagnostic"',
                 '"INSTRUMENTATION_SQLITE_PRAGMAS_DIAGNOSTIC PASS $sqliteDiagnostic"',
             ),
+            "additional-direct-target-query": source.replace(
+                "val queryFailureClassifications =",
+                'val unexpectedPragma = pragma(sqlite, "journal_mode")\n'
+                '        val queryFailureClassifications =',
+            ),
+            "pragma-assertion-before-diagnostic": source.replace(
+                "val queryFailureClassifications =",
+                'check(pragmaObservations.getValue("journal_mode").value != null)\n'
+                '        val queryFailureClassifications =',
+            ),
+            "unapproved-database-field": source.replace(
+                '.put("connectionIdentity", "UNOBSERVED")',
+                '.put("database", sqlite)\n'
+                '                .put("connectionIdentity", "UNOBSERVED")',
+            ),
         }
         for mutation, candidate in mutations.items():
             with self.subTest(mutation=mutation):
