@@ -611,6 +611,8 @@ REC_I3_V11_PATHS = (
 )
 REC_I3_V11_OWNED_HANDLE_BASE = "d309cda52e7307506726712be0f61f444643e43c"
 REC_I3_V11_OWNED_HANDLE_BASE_TREE = "0d4c71ef1e131ef9873bc259a0bb56e696b0d539"
+REC_I3_V11_OWNED_HANDLE_INITIAL = "da4869b65d1fd1273df19dd822c72436a81bbdd3"
+REC_I3_V11_OWNED_HANDLE_INITIAL_TREE = "9142a6c266e678f5c77b6389eb203d9867065ed8"
 REC_I3_V11_OWNED_HANDLE_BRANCH = "fix/rec-i3-v11-owned-handle-cleanup"
 REC_I3_V11_OWNED_HANDLE_PATHS = (
     "tools/rec_i3_owned_process.psm1",
@@ -618,6 +620,7 @@ REC_I3_V11_OWNED_HANDLE_PATHS = (
     "tools/run_rec_i3_v8.ps1",
     "tools/rec_i3_preserve_and_cleanup.ps1",
     "tools/test_run_rec_i3_v8.py",
+    "tools/verify_poc_recovery_dependency_inventory.py",
     "tools/validate_poc_recovery_governance.py",
     "tools/test_poc_recovery_i3_governance.py",
 )
@@ -636,8 +639,6 @@ REC_I3_V8_PATHS = (
     "tools/test_run_rec_i3_v8.py",
     "tools/rec_i3_preserve_and_cleanup.ps1",
     "tools/test_rec_i3_preserve_and_cleanup.py",
-    "tools/rec_i3_owned_process.psm1",
-    "tools/test_rec_i3_owned_process.ps1",
     "tools/validate_poc_recovery_governance.py",
     "tools/test_poc_recovery_i3_governance.py",
     "tools/verify_poc_recovery_dependency_inventory.py",
@@ -7376,16 +7377,23 @@ def rec_i3_v11_source_candidate(commit: str, *, root: Path | None = None) -> boo
 
 
 def rec_i3_v11_owned_handle_source_candidate(commit: str, *, root: Path | None = None) -> bool:
-    """Recognize the one bounded retained-handle cleanup child of immutable d309."""
+    """Recognize the reviewed two-commit retained-handle cleanup chain above immutable d309."""
     repository_root = root or ROOT
     if (
         git_optional_output("rev-parse", f"{REC_I3_V11_OWNED_HANDLE_BASE}^{{tree}}", root=repository_root)
         != REC_I3_V11_OWNED_HANDLE_BASE_TREE
-        or git_optional_output("show", "-s", "--format=%P", commit, root=repository_root)
+        or git_optional_output("rev-parse", f"{REC_I3_V11_OWNED_HANDLE_INITIAL}^{{tree}}", root=repository_root)
+        != REC_I3_V11_OWNED_HANDLE_INITIAL_TREE
+        or git_optional_output("show", "-s", "--format=%P", REC_I3_V11_OWNED_HANDLE_INITIAL, root=repository_root)
         != REC_I3_V11_OWNED_HANDLE_BASE
+        or git_optional_output("show", "-s", "--format=%P", commit, root=repository_root)
+        != REC_I3_V11_OWNED_HANDLE_INITIAL
         or set(git_path_records("diff", "--name-only", "--no-renames", "-z",
                                 REC_I3_V11_OWNED_HANDLE_BASE, commit, "--", root=repository_root))
         != set(REC_I3_V11_OWNED_HANDLE_PATHS)
+        or not set(git_path_records("log", "--format=", "--name-only", "--no-renames", "-z",
+                                    f"{REC_I3_V11_OWNED_HANDLE_BASE}..{commit}", "--", root=repository_root))
+        <= set(REC_I3_V11_OWNED_HANDLE_PATHS)
         or git_path_records("diff", "--name-only", "--no-renames", "-z",
                             REC_I3_V11_OWNED_HANDLE_BASE, commit, "--", "android", root=repository_root)
         or git_optional_output("rev-parse", f"{commit}:.github", root=repository_root)
@@ -7426,13 +7434,18 @@ def validate_rec_i3_v11_owned_handle(lifecycle: RecoveryLifecycleIdentity) -> No
             and all(not changes[layer] for layer in ("staged", "unstaged", "untracked")),
             f"REC-I3 V11 owned-handle checkout is not clean/exact: {changes}")
     validate_rec_i3_v8_contract_sources()
+    validate_rec_i3_v11_owned_handle_contract_sources()
+
+
+def rec_i3_v11_owned_handle_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
+    candidate = (lifecycle.github_pull_request_context.head_sha
+                 if lifecycle.github_pull_request_context is not None else lifecycle.head)
+    return rec_i3_v11_owned_handle_source_candidate(candidate)
 
 
 def validate_rec_i3_v11_owned_handle_fast_path() -> bool:
     lifecycle = collect_recovery_lifecycle_identity()
-    candidate = (lifecycle.github_pull_request_context.head_sha
-                 if lifecycle.github_pull_request_context is not None else lifecycle.head)
-    if not rec_i3_v11_owned_handle_source_candidate(candidate):
+    if not rec_i3_v11_owned_handle_candidate(lifecycle):
         return False
     validate_rec_i3_v11_owned_handle(lifecycle)
     return True
@@ -8776,14 +8789,6 @@ def validate_rec_i3_v8_contract_sources() -> None:
     ):
         require(fragment in preservation, f"REC-I3 V8 preservation safeguard missing: {fragment}")
     require("Remove-Item" not in preservation, "REC-I3 V8 preservation deletes prior staging")
-    owned_process = read_text("tools/rec_i3_owned_process.psm1")
-    require(all(item in owned_process for item in (
-        "SafeProcessHandle", "GetProcessId", "GetProcessTimes", "QueryFullProcessImageNameW",
-        "TerminateProcess", "OWNED_CLOSURE_TIME_CONTRADICTION", "EXITED_DURING_TERMINATION",
-        "capturedAncestry", "terminationAttempted", "terminationSucceeded", "absenceObserved",
-    )), "REC-I3 owned-process same-handle contract drift")
-    require("taskkill" not in owned_process and re.search(r"\bStop-Process\b", owned_process) is None,
-            "REC-I3 owned-process PID/tree termination reintroduced")
     runner = read_text("tools/run_rec_i3_v8.ps1")
     for fragment in (
         "DORA_REC_I3_V8_ATTEMPT_LEDGER_V1", "[System.IO.FileMode]::CreateNew", "$stream.Flush($true)",
@@ -8800,16 +8805,33 @@ def validate_rec_i3_v8_contract_sources() -> None:
     require(runner.index("Write-CreateNewJson $ledgerPath $ledger")
             < runner.index('$gradleResult = Invoke-BoundedCommand "connected-gradle"'),
             "REC-I3 V8 connected attempt launched before durable ledger")
-    require("Import-Module (Join-Path $PSScriptRoot 'rec_i3_owned_process.psm1')" in runner
-            and "Stop-RecI3OwnedProcessClosure" in runner
-            and "taskkill" not in runner and re.search(r"\bStop-Process\b", runner) is None,
-            "REC-I3 V8 runner retained-handle cleanup drift")
-    require("Import-Module (Join-Path $PSScriptRoot 'rec_i3_owned_process.psm1')" in preservation
-            and "Stop-RecI3OwnedProcessClosure" in preservation
-            and "taskkill" not in preservation and re.search(r"\bStop-Process\b", preservation) is None,
-            "REC-I3 V8 preservation retained-handle cleanup drift")
     require(not re.search(r"\bgit(?:\.exe)?\s+(?:fetch|checkout|reset|clean)\b", runner, re.IGNORECASE),
             "REC-I3 V8 runner mutates checkout")
+
+
+def validate_rec_i3_v11_owned_handle_contract_sources() -> None:
+    owned_process = read_text("tools/rec_i3_owned_process.psm1")
+    require(all(item in owned_process for item in (
+        "SafeProcessHandle", "GetProcessId", "GetProcessTimes", "QueryFullProcessImageNameW",
+        "TerminateProcess", "OWNED_DESCENDANT_SNAPSHOT_REPLACEMENT", "PROCESS32_NEXT_FAILED",
+        "EXITED_DURING_TERMINATION", "TERMINATION_EXIT_UNCERTAIN", "capturedAncestry",
+        "terminationAttempted", "terminationSucceeded", "absenceObserved", "stablePasses",
+    )), "REC-I3 owned-process same-handle/reconciliation contract drift")
+    require("taskkill" not in owned_process and re.search(r"\bStop-Process\b", owned_process) is None,
+            "REC-I3 owned-process PID/tree termination reintroduced")
+    runner = read_text("tools/run_rec_i3_v8.ps1")
+    preservation = read_text("tools/rec_i3_preserve_and_cleanup.ps1")
+    for label, source in (("runner", runner), ("preservation", preservation)):
+        require("Import-Module (Join-Path $PSScriptRoot 'rec_i3_owned_process.psm1')" in source
+                and "Stop-RecI3OwnedProcessClosure" in source
+                and "OWNED_PROCESS_BINDING_UNAVAILABLE" in source
+                and "OWNED_PROCESS_CLEANUP_EXCEPTION" in source
+                and "taskkill" not in source and re.search(r"\bStop-Process\b", source) is None,
+                f"REC-I3 V11 {label} retained-handle cleanup drift")
+    inventory = read_text("tools/verify_poc_recovery_dependency_inventory.py")
+    require("rec_i3_v11_owned_handle_candidate" in inventory
+            and "validate_rec_i3_v11_owned_handle" in inventory,
+            "REC-I3 V11 dependency verifier successor routing drift")
 
 
 def validate_rec_i3_v11_diagnostic_text(preflight: str) -> None:

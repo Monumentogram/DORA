@@ -36,7 +36,17 @@ class RecI3V8RunnerTests(unittest.TestCase):
             capture_output=True, text=True, timeout=30,
         )
         self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
-        self.assertIn("validated descendant closure", completed.stdout)
+        self.assertIn("reconciled descendant closure", completed.stdout)
+
+    def test_owned_handle_callers_preserve_binding_and_cleanup_uncertainty(self) -> None:
+        runner = RUNNER.read_text(encoding="utf-8")
+        helper = PRESERVER.read_text(encoding="utf-8")
+        for name, source in (("runner", runner), ("helper", helper)):
+            self.assertRegex(source, r"\$processBinding\s*=\s*\$null")
+            self.assertIn("OWNED_PROCESS_BINDING_UNAVAILABLE", source, name)
+            self.assertIn("OWNED_PROCESS_CLEANUP_EXCEPTION", source, name)
+        self.assertIn("ownedStop = $ownedStop", runner)
+        self.assertIn("ownedStopFailure = $ownedStopFailure", runner)
 
     def setUp(self) -> None:
         self.root = Path(tempfile.mkdtemp(prefix=".tmp-rec-i3-v8-runner-"))
@@ -227,6 +237,7 @@ class RecI3V8RunnerTests(unittest.TestCase):
         apk_uninstall_error: bool = False,
         python_path: Path | None = None,
         block_logcat: str | None = None,
+        runner_path: Path | None = None,
     ) -> subprocess.CompletedProcess[str]:
         environment = os.environ.copy()
         environment.update(
@@ -297,7 +308,7 @@ class RecI3V8RunnerTests(unittest.TestCase):
             )
             environment["FAKE_METADATA_REPORT_BLOCKER"] = str(blocker_script)
         command = [
-            os.environ.get("DORA_REC_I3_TEST_POWERSHELL", "powershell.exe"), "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(RUNNER),
+            os.environ.get("DORA_REC_I3_TEST_POWERSHELL", "powershell.exe"), "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(runner_path or RUNNER),
             "-Repository", str(self.repo), "-EvidenceBase", str(self.evidence),
             "-StagingRoot", str(self.staging), "-Serial", SERIAL,
             "-AcceptedCommit", accepted_commit or self.commit,
@@ -320,6 +331,51 @@ class RecI3V8RunnerTests(unittest.TestCase):
             if self.evidence.is_dir():
                 shutil.copytree(self.evidence, self.root / f"invocation-{invocation}-evidence")
         return completed
+
+    def fault_runner(self, module_suffix: str) -> Path:
+        fault_root = self.root / "fault-runner"
+        fault_root.mkdir()
+        runner = fault_root / RUNNER.name
+        module = fault_root / OWNED_PROCESS.name
+        shutil.copy2(RUNNER, runner)
+        module.write_text(OWNED_PROCESS.read_text(encoding="utf-8") + module_suffix, encoding="utf-8")
+        return runner
+
+    def test_binding_acquisition_failure_after_launch_is_durable(self) -> None:
+        runner = self.fault_runner(
+            "\nfunction New-RecI3OwnedProcessBinding([Diagnostics.Process]$Process){throw 'SYNTHETIC_BINDING_ACQUISITION_FAILURE'}\n"
+            "Export-ModuleMember -Function New-RecI3OwnedProcessBinding,Stop-RecI3OwnedProcessClosure\n"
+        )
+        completed = self.invoke(runner_path=runner)
+        self.assertNotEqual(0, completed.returncode)
+        raw = next(self.evidence.glob("REC-I3-V8-RAW-*"))
+        record = json.loads((raw / "preflight.json").read_text(encoding="utf-8-sig"))["commands"][0]
+        self.assertIsInstance(record["wrapperProcessId"], int)
+        self.assertFalse(record["ownedCleanup"]["cleanupCertain"])
+        self.assertIn("OWNED_PROCESS_BINDING_UNAVAILABLE", record["ownedCleanup"]["failures"])
+        self.assertIn("SYNTHETIC_BINDING_ACQUISITION_FAILURE", record["launchFailure"])
+        report = json.loads(next(self.evidence.glob("REC-I3-V8-REPORT-*.json")).read_text(encoding="utf-8-sig"))
+        self.assertIn("PREFLIGHT_LAUNCH_FAILED", report["primaryFailure"])
+
+    def test_post_termination_wait_failure_result_reaches_durable_report(self) -> None:
+        runner = self.fault_runner(
+            "\nfunction Stop-RecI3OwnedProcessClosure([object]$RootBinding,[int]$GraceMilliseconds=0,[int]$ForceWaitMilliseconds=0){"
+            "[ordered]@{cleanupCertain=$false;failures=@('OWNED_INSTANCE_EXIT_UNCERTAIN:WAIT_FAILED:synthetic');"
+            "results=@([ordered]@{terminationAttempted=$true;terminationSucceeded=$true;terminationError='WAIT_FAILED:synthetic';"
+            "absenceObserved=$false;unknown=$true;state='TERMINATION_EXIT_UNCERTAIN';exitCode=$null})}}\n"
+            "Export-ModuleMember -Function New-RecI3OwnedProcessBinding,Stop-RecI3OwnedProcessClosure\n"
+        )
+        completed = self.invoke(runner_path=runner, command_timeout=1, gradle_delay=True)
+        self.assertNotEqual(0, completed.returncode)
+        report = json.loads(next(self.evidence.glob("REC-I3-V8-REPORT-*.json")).read_text(encoding="utf-8-sig"))
+        cleanup = report["connectedResult"]["ownedCleanup"]
+        self.assertFalse(cleanup["cleanupCertain"])
+        outcome = cleanup["results"][0]
+        self.assertTrue(outcome["terminationAttempted"])
+        self.assertTrue(outcome["terminationSucceeded"])
+        self.assertIn("WAIT_FAILED", outcome["terminationError"])
+        self.assertIsNone(outcome["exitCode"])
+        self.assertTrue(outcome["unknown"])
 
     def test_missing_python_fails_preflight_without_consuming_attempt(self) -> None:
         # Inventing native exit 0 after command resolution failure must never launch connected Gradle.

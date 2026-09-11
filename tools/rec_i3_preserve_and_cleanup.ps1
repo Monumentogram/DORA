@@ -67,6 +67,7 @@ function Invoke-ExternalObserved([string]$FilePath, [string[]]$Arguments, [strin
     $timedOut = $false
     $wrapperExitCode = $null
     $cleanupResult = $null
+    $processBinding = $null
     try {
         if (-not $stdoutPath) { $stdoutPath = [System.IO.Path]::GetTempFileName() }
         $stderrPath = "$stdoutPath.stderr"
@@ -112,17 +113,26 @@ exit `$native.exitCode
         $native.launchFailure = $_.ToString()
     } finally {
         if ($null -ne $process -and -not $completed) {
-            $cleanupResult = Stop-RecI3OwnedProcessClosure $processBinding 1000 10000
-            if (-not $cleanupResult.cleanupCertain) { $native.launchFailure = 'OWNED_WRAPPER_CLEANUP_UNCERTAIN' }
+            try {
+                if ($null -eq $processBinding) {
+                    $cleanupResult = [ordered]@{ cleanupCertain=$false; failures=@('OWNED_PROCESS_BINDING_UNAVAILABLE'); results=@() }
+                } else {
+                    $cleanupResult = Stop-RecI3OwnedProcessClosure $processBinding 1000 10000
+                }
+                if (-not $cleanupResult.cleanupCertain) { $native.launchFailure = @($native.launchFailure,"OWNED_WRAPPER_CLEANUP_UNCERTAIN:$(@($cleanupResult.failures)-join'; ')"|Where-Object{$_})-join'; ' }
+            } catch {
+                $cleanupResult = [ordered]@{ cleanupCertain=$false; failures=@("OWNED_PROCESS_CLEANUP_EXCEPTION:$($_.Exception.Message)"); results=@() }
+                $native.launchFailure = @($native.launchFailure,"OWNED_WRAPPER_CLEANUP_UNCERTAIN:$($cleanupResult.failures[0])"|Where-Object{$_})-join'; '
+            }
         }
     }
     [string]$stdout = if ($stdoutPath -and (Test-Path -LiteralPath $stdoutPath -PathType Leaf)) { Get-Content -Raw -LiteralPath $stdoutPath } else { "" }
     [string]$stderr = if ($stderrPath -and (Test-Path -LiteralPath $stderrPath -PathType Leaf)) { Get-Content -Raw -LiteralPath $stderrPath } else { "" }
     if ($null -eq $stdout) { $stdout = "" }
     if ($null -eq $stderr) { $stderr = "" }
-    $wrapperProcessId = if ($null -ne $process) { $process.Id } else { $null }
-    $wrapperExited = ($null -eq $process -or $process.HasExited)
-    if ($null -ne $process) { $process.Dispose() }
+    $wrapperProcessId = if ($null -ne $process) { try{$process.Id}catch{$null} } else { $null }
+    $wrapperExited = if($null-eq$process){$true}else{try{[bool]$process.HasExited}catch{$null}}
+    if ($null -ne $process) { try{$process.Dispose()}catch{$native.launchFailure=@($native.launchFailure,"PROCESS_DISPOSE_UNCERTAIN:$($_.Exception.Message)"|Where-Object{$_})-join'; '} }
     return [ordered]@{
         executable = $FilePath
         arguments = @($Arguments)

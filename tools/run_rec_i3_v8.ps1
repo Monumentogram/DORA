@@ -51,6 +51,8 @@ $ownedEmulatorProcess = $null
 $ownedEmulatorBinding = $null
 $gradleResult = $null
 $secondaryFailures = @()
+$ownedStop = $null
+$ownedStopFailure = $null
 
 function Write-JsonFile([string]$Path, [object]$Value) {
     $parent = [System.IO.Path]::GetDirectoryName([System.IO.Path]::GetFullPath($Path))
@@ -118,6 +120,7 @@ exit `$native.exitCode
     $native = [ordered]@{ exitCode = $null; launchFailure = $null }
     $wrapperExitCode = $null
     $cleanupResult = $null
+    $processBinding = $null
     try {
         if ((Test-Path -LiteralPath $LogPath -PathType Container) -or (Test-Path -LiteralPath $stderrPath -PathType Container)) { throw "COMMAND_LOG_PATH_IS_DIRECTORY:$LogPath" }
         $hostPowerShell = (Get-Process -Id $PID).Path
@@ -134,17 +137,26 @@ exit `$native.exitCode
         $native.launchFailure = $_.ToString()
     } finally {
         if ($null -ne $process -and -not $completed) {
-            $cleanupResult = Stop-RecI3OwnedProcessClosure $processBinding 1000 10000
-            if (-not $cleanupResult.cleanupCertain) { $native.launchFailure = 'OWNED_WRAPPER_CLEANUP_UNCERTAIN' }
+            try {
+                if ($null -eq $processBinding) {
+                    $cleanupResult = [ordered]@{ cleanupCertain=$false; failures=@('OWNED_PROCESS_BINDING_UNAVAILABLE'); results=@() }
+                } else {
+                    $cleanupResult = Stop-RecI3OwnedProcessClosure $processBinding 1000 10000
+                }
+                if (-not $cleanupResult.cleanupCertain) { $native.launchFailure = @($native.launchFailure,"OWNED_WRAPPER_CLEANUP_UNCERTAIN:$(@($cleanupResult.failures)-join'; ')"|Where-Object{$_})-join'; ' }
+            } catch {
+                $cleanupResult = [ordered]@{ cleanupCertain=$false; failures=@("OWNED_PROCESS_CLEANUP_EXCEPTION:$($_.Exception.Message)"); results=@() }
+                $native.launchFailure = @($native.launchFailure,"OWNED_WRAPPER_CLEANUP_UNCERTAIN:$($cleanupResult.failures[0])"|Where-Object{$_})-join'; '
+            }
         }
     }
     [string]$stdout = if (Test-Path -LiteralPath $LogPath -PathType Leaf) { Get-Content -Raw -LiteralPath $LogPath } else { "" }
     [string]$stderr = if (Test-Path -LiteralPath $stderrPath -PathType Leaf) { Get-Content -Raw -LiteralPath $stderrPath } else { "" }
     if ($null -eq $stdout) { $stdout = "" }
     if ($null -eq $stderr) { $stderr = "" }
-    $wrapperProcessId = if ($null -ne $process) { $process.Id } else { $null }
-    $wrapperExited = ($null -eq $process -or $process.HasExited)
-    if ($null -ne $process) { $process.Dispose() }
+    $wrapperProcessId = if ($null -ne $process) { try{$process.Id}catch{$null} } else { $null }
+    $wrapperExited = if($null-eq$process){$true}else{try{[bool]$process.HasExited}catch{$null}}
+    if ($null -ne $process) { try{$process.Dispose()}catch{$native.launchFailure=@($native.launchFailure,"PROCESS_DISPOSE_UNCERTAIN:$($_.Exception.Message)"|Where-Object{$_})-join'; '} }
     return [ordered]@{
         name = $Name
         executable = $FilePath
@@ -437,9 +449,15 @@ try {
         $ownedProcessStopAttempted = $false
         if ($null -ne $ownedEmulatorProcess) {
             $ownedProcessStopAttempted = $true
-            if ($null -eq $ownedEmulatorBinding) { throw 'OWNED_EMULATOR_BINDING_MISSING' }
-            $ownedStop = Stop-RecI3OwnedProcessClosure $ownedEmulatorBinding 1000 10000
-            if (-not $ownedStop.cleanupCertain) { throw 'OWNED_EMULATOR_CLEANUP_UNCERTAIN' }
+            try {
+                if ($null -eq $ownedEmulatorBinding) { throw 'OWNED_PROCESS_BINDING_UNAVAILABLE:EMULATOR' }
+                $ownedStop = Stop-RecI3OwnedProcessClosure $ownedEmulatorBinding 1000 10000
+                if (-not $ownedStop.cleanupCertain) { throw "OWNED_EMULATOR_CLEANUP_UNCERTAIN:$(@($ownedStop.failures)-join'; ')" }
+            } catch {
+                $ownedStopFailure = "OWNED_PROCESS_CLEANUP_EXCEPTION:$($_.Exception.Message)"
+                $exitCode = 1
+                if($null-eq$primaryFailure){$primaryFailure=$ownedStopFailure}else{$secondaryFailures += [ordered]@{stage='owned-emulator-cleanup';message=$ownedStopFailure}}
+            }
         }
         Write-JsonFile $observationPath ([ordered]@{
             schema = "DORA_REC_I3_CLEANUP_OBSERVATION_V2"
@@ -450,7 +468,7 @@ try {
             cleanupFailure = "CLEANUP_INTENTIONALLY_NOT_RUN_ON_UNVERIFIED_TARGET"
             cleanupAttempted = $false
             packageCleanup = @()
-            emulatorCleanup = [ordered]@{ attempted = $false; ownedProcessStopAttempted = $ownedProcessStopAttempted }
+            emulatorCleanup = [ordered]@{ attempted = $false; ownedProcessStopAttempted = $ownedProcessStopAttempted; ownedStop = $ownedStop; ownedStopFailure = $ownedStopFailure }
         })
     }
     try {
@@ -465,6 +483,8 @@ try {
             connectedResult = $gradleResult
             secondaryFailures = $secondaryFailures
             cleanupExitCode = if ($null -ne $cleanupResult) { $cleanupResult.exitCode } else { $null }
+            ownedStop = $ownedStop
+            ownedStopFailure = $ownedStopFailure
             exitCode = $exitCode
         })
     } catch {

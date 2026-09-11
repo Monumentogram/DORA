@@ -630,16 +630,125 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
                 self.assert_v10_rejected()
 
     @contextmanager
+    def owned_handle_repository(self):
+        """Exact reviewed da4869 child with the bounded aggregate successor delta."""
+        source = governance.ROOT
+        with tempfile.TemporaryDirectory(prefix="dora-owned-handle-governance-") as temporary:
+            repo = Path(temporary) / "repo"
+            git_pointer = source / ".git"
+            git_directory = (source / git_pointer.read_text(encoding="utf-8").strip().removeprefix("gitdir: ")).resolve() if git_pointer.is_file() else git_pointer.resolve()
+            common_pointer = git_directory / "commondir"
+            common_directory = (git_directory / common_pointer.read_text(encoding="utf-8").strip()).resolve() if common_pointer.is_file() else git_directory
+            repo.mkdir()
+            governance.test_git(repo, "init", "-q")
+            (repo / ".git/objects/info/alternates").write_text(
+                (common_directory / "objects").as_posix() + "\n", encoding="utf-8", newline="\n")
+            governance.test_git(repo, "checkout", "-q", "-B", governance.REC_I3_V11_OWNED_HANDLE_BRANCH,
+                                governance.REC_I3_V11_OWNED_HANDLE_INITIAL)
+            for relative in governance.REC_I3_V11_OWNED_HANDLE_PATHS:
+                target = repo / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source / relative, target)
+            governance.commit_test_git_repo(repo, "synthetic reviewed owned-handle correction")
+            with patch.object(governance, "ROOT", repo), patch.dict(os.environ, {
+                key: "" for key in governance.REC_I3_V8_GITHUB_CONTEXT_KEYS
+            }):
+                yield repo
+
+    def test_owned_handle_successor_exact_chain_drift_and_dependency_routing(self) -> None:
+        import verify_poc_recovery_dependency_inventory as inventory
+
+        self.assertNotIn("tools/rec_i3_owned_process.psm1", governance.REC_I3_V8_PATHS)
+        self.assertNotIn("tools/test_rec_i3_owned_process.ps1", governance.REC_I3_V8_PATHS)
+        with self.owned_handle_repository() as repo, ExitStack() as stack:
+            lifecycle = governance.collect_recovery_lifecycle_identity()
+            self.assertTrue(governance.rec_i3_v11_owned_handle_candidate(lifecycle))
+            governance.validate_rec_i3_v11_owned_handle(lifecycle)
+            candidate = lifecycle.head
+            tree = governance.git_output("rev-parse", "HEAD^{tree}")
+            wrong_parent = governance.test_git_text(
+                repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
+                "commit-tree", tree, "-p", governance.REC_I3_V11_OWNED_HANDLE_BASE,
+                input_data=b"wrong correction parent\n")
+            wrong_tree = governance.test_git_text(
+                repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
+                "commit-tree", governance.REC_I3_V11_OWNED_HANDLE_BASE_TREE,
+                "-p", governance.REC_I3_V11_OWNED_HANDLE_INITIAL,
+                input_data=b"wrong correction tree\n")
+            self.assertFalse(governance.rec_i3_v11_owned_handle_source_candidate(wrong_parent))
+            self.assertFalse(governance.rec_i3_v11_owned_handle_source_candidate(wrong_tree))
+            merge = governance.test_git_text(
+                repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
+                "commit-tree", tree, "-p", governance.REC_I3_V11_OWNED_HANDLE_BASE,
+                "-p", candidate, input_data=b"synthetic owned-handle PR merge\n")
+            context = governance.GitHubPullRequestContext(
+                repository=governance.GITHUB_REPOSITORY,
+                head_repository=governance.GITHUB_REPOSITORY,
+                head_ref=governance.REC_I3_V11_OWNED_HANDLE_BRANCH,
+                head_sha=candidate,
+                base_ref=governance.GITHUB_BASE_BRANCH,
+                base_sha=governance.REC_I3_V11_OWNED_HANDLE_BASE,
+                merge_ref="refs/pull/82/merge", merge_sha=merge, number=82,
+                draft=False, state="open", merged=False)
+            pr_lifecycle = replace(lifecycle, head=merge, github_pull_request_context=context)
+            governance.validate_rec_i3_v11_owned_handle(pr_lifecycle)
+            with self.assertRaisesRegex(ValueError, "pull-request identity drift"):
+                governance.validate_rec_i3_v11_owned_handle(replace(
+                    pr_lifecycle,
+                    github_pull_request_context=replace(context, head_ref="unrelated"),
+                ))
+            original_root = inventory.ROOT
+            for name, value in tuple(vars(inventory).items()):
+                if isinstance(value, Path) and value.is_relative_to(original_root):
+                    stack.enter_context(patch.object(inventory, name, repo / value.relative_to(original_root)))
+            stack.enter_context(patch.object(sys, "argv", ["inventory"]))
+            with redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(0, inventory.main())
+            self.assertIn("V11 retained-handle successor dependency/IP static validation passed", output.getvalue())
+
+            with patch.object(governance, "REC_I3_V11_OWNED_HANDLE_INITIAL_TREE", "0" * 40):
+                self.assertFalse(governance.rec_i3_v11_owned_handle_candidate(lifecycle))
+            module_path = repo / "tools/rec_i3_owned_process.psm1"
+            original = module_path.read_bytes()
+            module_path.write_bytes(original + b"\n# dirty\n")
+            with self.assertRaisesRegex(ValueError, "checkout is not clean/exact"):
+                governance.validate_rec_i3_v11_owned_handle(lifecycle)
+            module_path.write_bytes(original)
+
+            governance.test_git(repo, "update-index", "--chmod=+x", "tools/rec_i3_owned_process.psm1")
+            mode_tree = governance.test_git_text(repo, "write-tree")
+            mode_commit = governance.test_git_text(
+                repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
+                "commit-tree", mode_tree, "-p", governance.REC_I3_V11_OWNED_HANDLE_INITIAL,
+                input_data=b"mode drift\n")
+            self.assertFalse(governance.rec_i3_v11_owned_handle_source_candidate(mode_commit))
+            governance.test_git(repo, "update-index", "--chmod=-x", "tools/rec_i3_owned_process.psm1")
+
+            extra_path = repo / "unauthorized.txt"
+            extra_path.write_text("unauthorized\n", encoding="utf-8")
+            governance.test_git(repo, "add", "unauthorized.txt")
+            extra_tree = governance.test_git_text(repo, "write-tree")
+            extra_commit = governance.test_git_text(
+                repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
+                "commit-tree", extra_tree, "-p", governance.REC_I3_V11_OWNED_HANDLE_INITIAL,
+                input_data=b"extra path\n")
+            self.assertFalse(governance.rec_i3_v11_owned_handle_source_candidate(extra_commit))
+            governance.test_git(repo, "rm", "--cached", "-q", "unauthorized.txt")
+            extra_path.unlink()
+
+            governance.test_git(repo, "checkout", "-q", "-B", "unrelated")
+            with self.assertRaisesRegex(ValueError, "local branch identity drift"):
+                governance.validate_rec_i3_v11_owned_handle(governance.collect_recovery_lifecycle_identity())
+
+    @contextmanager
     def v8_repository(self):
-        """Real baseline objects, eight tooling files and the exact host-test repair."""
+        """Real baseline objects, historical tooling files and the exact host-test repair."""
         source = governance.ROOT
         paths = (
             "tools/run_rec_i3_v8.ps1",
             "tools/test_run_rec_i3_v8.py",
             "tools/rec_i3_preserve_and_cleanup.ps1",
             "tools/test_rec_i3_preserve_and_cleanup.py",
-            "tools/rec_i3_owned_process.psm1",
-            "tools/test_rec_i3_owned_process.ps1",
             "tools/validate_poc_recovery_governance.py",
             "tools/test_poc_recovery_i3_governance.py",
             "tools/verify_poc_recovery_dependency_inventory.py",

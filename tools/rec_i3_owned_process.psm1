@@ -30,16 +30,19 @@ public static class DoraRecI3OwnedProcessNative {
 if (-not ('DoraRecI3ParentSnapshot' -as [type])) {
     Add-Type -TypeDefinition @'
 using System; using System.Collections.Generic; using System.ComponentModel; using System.Runtime.InteropServices;
+public sealed class DoraRecI3ParentSnapshotResult { public long CapturedAtFileTimeUtc; public Dictionary<int,int> Parents; }
 public static class DoraRecI3ParentSnapshot {
  [StructLayout(LayoutKind.Sequential,CharSet=CharSet.Unicode)] struct E {public uint size,usage,pid;public IntPtr heap;public uint module,threads,parent;public int pri;public uint flags;[MarshalAs(UnmanagedType.ByValTStr,SizeConst=260)]public string exe;}
  [DllImport("kernel32.dll",SetLastError=true)]static extern IntPtr CreateToolhelp32Snapshot(uint f,uint p);[DllImport("kernel32.dll",CharSet=CharSet.Unicode,SetLastError=true)]static extern bool Process32FirstW(IntPtr h,ref E e);[DllImport("kernel32.dll",CharSet=CharSet.Unicode,SetLastError=true)]static extern bool Process32NextW(IntPtr h,ref E e);[DllImport("kernel32.dll")]static extern bool CloseHandle(IntPtr h);
- public static Dictionary<int,int> Parents(){IntPtr h=CreateToolhelp32Snapshot(2,0);if(h==new IntPtr(-1))throw new Win32Exception(Marshal.GetLastWin32Error());try{var d=new Dictionary<int,int>();var e=new E();e.size=(uint)Marshal.SizeOf(typeof(E));if(!Process32FirstW(h,ref e))throw new Win32Exception(Marshal.GetLastWin32Error());do{d[(int)e.pid]=(int)e.parent;e.size=(uint)Marshal.SizeOf(typeof(E));}while(Process32NextW(h,ref e));return d;}finally{CloseHandle(h);}}
+ [DllImport("kernel32.dll")]static extern void GetSystemTimePreciseAsFileTime(out System.Runtime.InteropServices.ComTypes.FILETIME t);
+ static long FileTime(){System.Runtime.InteropServices.ComTypes.FILETIME t;GetSystemTimePreciseAsFileTime(out t);return ((long)(uint)t.dwHighDateTime<<32)|(uint)t.dwLowDateTime;}
+ public static DoraRecI3ParentSnapshotResult Snapshot(){IntPtr h=CreateToolhelp32Snapshot(2,0);if(h==new IntPtr(-1))throw new Win32Exception(Marshal.GetLastWin32Error(),"PROCESS_SNAPSHOT_FAILED");long captured=FileTime();try{var d=new Dictionary<int,int>();var e=new E();e.size=(uint)Marshal.SizeOf(typeof(E));if(!Process32FirstW(h,ref e)){int firstError=Marshal.GetLastWin32Error();if(firstError!=18)throw new Win32Exception(firstError,"PROCESS32_FIRST_FAILED");return new DoraRecI3ParentSnapshotResult{CapturedAtFileTimeUtc=captured,Parents=d};}while(true){d[(int)e.pid]=(int)e.parent;e.size=(uint)Marshal.SizeOf(typeof(E));if(Process32NextW(h,ref e))continue;int nextError=Marshal.GetLastWin32Error();if(nextError!=18)throw new Win32Exception(nextError,"PROCESS32_NEXT_FAILED");break;}return new DoraRecI3ParentSnapshotResult{CapturedAtFileTimeUtc=captured,Parents=d};}finally{if(!CloseHandle(h))throw new Win32Exception(Marshal.GetLastWin32Error(),"PROCESS_SNAPSHOT_CLOSE_FAILED");}}
 }
 '@
 }
 
 function ConvertTo-RecI3Identity([object]$Native,[int]$ParentProcessId) {
-    [ordered]@{ processId=[int]$Native.ProcessId; parentProcessId=$ParentProcessId; executablePath=[IO.Path]::GetFullPath([string]$Native.ExecutablePath); creationTimeUtc=[DateTime]::FromFileTimeUtc([int64]$Native.CreationFileTimeUtc).ToString('o') }
+    [ordered]@{ processId=[int]$Native.ProcessId; parentProcessId=$ParentProcessId; executablePath=[IO.Path]::GetFullPath([string]$Native.ExecutablePath); creationTimeUtc=[DateTime]::FromFileTimeUtc([int64]$Native.CreationFileTimeUtc).ToString('o'); creationFileTimeUtc=[int64]$Native.CreationFileTimeUtc }
 }
 
 function Test-RecI3Identity([object]$Expected,[object]$Actual) {
@@ -50,11 +53,28 @@ function Test-RecI3Identity([object]$Expected,[object]$Actual) {
     $true
 }
 
+function Test-RecI3ObservedChildBinding([object]$FirstSnapshot,[object]$ConfirmationSnapshot,[object]$ParentIdentity,[object]$ChildIdentity) {
+    $childId=[int]$ChildIdentity.processId;$parentId=[int]$ParentIdentity.processId
+    if($null-eq$FirstSnapshot.parents-or-not$FirstSnapshot.parents.ContainsKey($childId)-or[int]$FirstSnapshot.parents[$childId]-ne$parentId){throw 'OWNED_DESCENDANT_FIRST_PARENT_UNPROVEN'}
+    if($ChildIdentity.creationFileTimeUtc-isnot[long]-or$FirstSnapshot.capturedAtFileTimeUtc-isnot[long]-or[int64]$ChildIdentity.creationFileTimeUtc-gt[int64]$FirstSnapshot.capturedAtFileTimeUtc){throw 'OWNED_DESCENDANT_SNAPSHOT_REPLACEMENT'}
+    if($null-eq$ConfirmationSnapshot.parents-or-not$ConfirmationSnapshot.parents.ContainsKey($childId)-or[int]$ConfirmationSnapshot.parents[$childId]-ne$parentId){throw 'OWNED_DESCENDANT_PARENT_CONFIRMATION_UNCERTAIN'}
+    $true
+}
+
+function Get-RecI3ParentSnapshot {
+    $snapshot=[DoraRecI3ParentSnapshot]::Snapshot()
+    [ordered]@{capturedAtFileTimeUtc=[int64]$snapshot.CapturedAtFileTimeUtc;parents=$snapshot.Parents}
+}
+
 function New-RecI3OwnedProcessBinding([Diagnostics.Process]$Process) {
     $handle=$Process.SafeHandle
     if($null-eq$handle-or$handle.IsInvalid-or$handle.IsClosed){throw 'OWNED_PROCESS_HANDLE_INVALID'}
     $identity=ConvertTo-RecI3Identity ([DoraRecI3OwnedProcessNative]::Identity($handle)) $PID
     [ordered]@{ process=$Process; safeHandle=$handle; capturedIdentity=$identity; ancestry=$null; identitySource='RETAINED_SAFE_PROCESS_HANDLE' }
+}
+
+function New-RecI3TerminationExitUncertainResult([object]$Captured,[object]$Fresh,[bool]$TerminationSucceeded,[string]$TerminationError,[string]$WaitError) {
+    [ordered]@{capturedIdentity=$Captured;freshIdentity=$Fresh;terminationAttempted=$true;terminationSucceeded=$TerminationSucceeded;terminationError=@($TerminationError,$WaitError|Where-Object{$null-ne$_})-join'; ';absenceObserved=$false;replacementObserved=$false;unknown=$true;state='TERMINATION_EXIT_UNCERTAIN';exitCode=$null}
 }
 
 function Stop-RecI3OwnedProcess([object]$Binding,[int]$GraceMilliseconds=1000,[int]$ForceWaitMilliseconds=10000) {
@@ -64,39 +84,53 @@ function Stop-RecI3OwnedProcess([object]$Binding,[int]$GraceMilliseconds=1000,[i
     $null=Test-RecI3Identity $captured $fresh
     $error=$null;$succeeded=$false
     try{[DoraRecI3OwnedProcessNative]::Terminate($h,125);$succeeded=$true}catch{$error=$_.Exception.Message}
-    $exited=[DoraRecI3OwnedProcessNative]::Wait($h,[uint32][Math]::Max(1,$ForceWaitMilliseconds))
-    if(-not$exited){throw 'OWNED_PROCESS_EXIT_UNCERTAIN'}
+    $waitError=$null;$exited=$false
+    try{$exited=[DoraRecI3OwnedProcessNative]::Wait($h,[uint32][Math]::Max(1,$ForceWaitMilliseconds))}catch{$waitError=$_.Exception.Message}
+    if($null-ne$waitError-or-not$exited){return New-RecI3TerminationExitUncertainResult $captured $fresh $succeeded $error $(if($null-ne$waitError){$waitError}else{'OWNED_PROCESS_EXIT_UNOBSERVED'})}
     if($null-ne$error){return [ordered]@{capturedIdentity=$captured;freshIdentity=$fresh;terminationAttempted=$true;terminationSucceeded=$false;terminationError=$error;absenceObserved=$true;replacementObserved=$false;unknown=$false;state='EXITED_DURING_TERMINATION';exitCode=[DoraRecI3OwnedProcessNative]::ExitCode($h)}}
     [ordered]@{capturedIdentity=$captured;freshIdentity=$fresh;terminationAttempted=$true;terminationSucceeded=$succeeded;terminationError=$null;absenceObserved=$true;replacementObserved=$false;unknown=$false;state='TERMINATED';exitCode=[DoraRecI3OwnedProcessNative]::ExitCode($h)}
 }
 
 function Stop-RecI3OwnedProcessClosure([object]$RootBinding,[int]$GraceMilliseconds=1000,[int]$ForceWaitMilliseconds=10000) {
+    if($null-eq$RootBinding){return [ordered]@{rootIdentity=$null;capturedCount=0;capturedAncestry=@();results=@();failures=@('OWNED_PROCESS_BINDING_UNAVAILABLE');snapshotPasses=0;stablePasses=0;cleanupCertain=$false}}
     $bindings=[Collections.Generic.List[object]]::new();$bindings.Add($RootBinding)
     $failures=[Collections.Generic.List[string]]::new()
-    try{$parents=[DoraRecI3ParentSnapshot]::Parents()}catch{throw "OWNED_CLOSURE_SNAPSHOT_UNCERTAIN:$($_.Exception.Message)"}
-    for($index=0;$index-lt$bindings.Count;$index++){
-        $parent=$bindings[$index]
-        foreach($entry in @($parents.GetEnumerator()|Where-Object{$_.Value-eq$parent.capturedIdentity.processId})){
-            $p=$null
-            try{
-                $p=[Diagnostics.Process]::GetProcessById([int]$entry.Key);$child=New-RecI3OwnedProcessBinding $p
-                $childTime=[datetime]::ParseExact($child.capturedIdentity.creationTimeUtc,'o',[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::RoundtripKind)
-                $parentTime=[datetime]::ParseExact($parent.capturedIdentity.creationTimeUtc,'o',[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::RoundtripKind)
-                if($childTime-lt$parentTime){throw 'OWNED_CLOSURE_TIME_CONTRADICTION'}
-                $child.capturedIdentity.parentProcessId=[int]$parent.capturedIdentity.processId
-                $child.ancestry=[ordered]@{parentIdentity=$parent.capturedIdentity;childIdentity=$child.capturedIdentity;capturedFrom='TOOLHELP_PARENT_SNAPSHOT'}
-                $bindings.Add($child)
-            }catch{if($null-ne$p){$p.Dispose()};$failures.Add("OWNED_DESCENDANT_CAPTURE_UNCERTAIN:$($entry.Key):$($_.Exception.Message)")}
+    $known=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal);$null=$known.Add("$($RootBinding.capturedIdentity.processId)|$($RootBinding.capturedIdentity.creationFileTimeUtc)")
+    $snapshotPasses=0;$stablePasses=0;$deadline=[DateTime]::UtcNow.AddMilliseconds([Math]::Max(250,[Math]::Min(2000,$GraceMilliseconds)))
+    do{
+        $added=0;$snapshotPasses++
+        try{$first=Get-RecI3ParentSnapshot}catch{$failures.Add("OWNED_CLOSURE_SNAPSHOT_UNCERTAIN:$($_.Exception.Message)");break}
+        for($index=0;$index-lt$bindings.Count;$index++){
+            $parent=$bindings[$index]
+            foreach($entry in @($first.parents.GetEnumerator()|Where-Object{$_.Value-eq$parent.capturedIdentity.processId})){
+                $p=$null;$child=$null;$key=$null
+                try{
+                    $p=[Diagnostics.Process]::GetProcessById([int]$entry.Key);$child=New-RecI3OwnedProcessBinding $p;$key="$($child.capturedIdentity.processId)|$($child.capturedIdentity.creationFileTimeUtc)"
+                    if($known.Contains($key)){$p.Dispose();continue}
+                    $parentFresh=ConvertTo-RecI3Identity ([DoraRecI3OwnedProcessNative]::Identity($parent.safeHandle)) ([int]$parent.capturedIdentity.parentProcessId);$null=Test-RecI3Identity $parent.capturedIdentity $parentFresh
+                    if([DoraRecI3OwnedProcessNative]::Wait($parent.safeHandle,0)-or[DoraRecI3OwnedProcessNative]::Wait($child.safeHandle,0)){throw 'OWNED_DESCENDANT_EXITED_DURING_BINDING'}
+                    $confirmation=Get-RecI3ParentSnapshot
+                    $childFresh=ConvertTo-RecI3Identity ([DoraRecI3OwnedProcessNative]::Identity($child.safeHandle)) ([int]$parent.capturedIdentity.processId);$null=Test-RecI3Identity $child.capturedIdentity $childFresh
+                    $null=Test-RecI3ObservedChildBinding $first $confirmation $parent.capturedIdentity $child.capturedIdentity
+                    if([DoraRecI3OwnedProcessNative]::Wait($parent.safeHandle,0)-or[DoraRecI3OwnedProcessNative]::Wait($child.safeHandle,0)){throw 'OWNED_DESCENDANT_EXITED_DURING_CONFIRMATION'}
+                    $child.capturedIdentity.parentProcessId=[int]$parent.capturedIdentity.processId
+                    $child.ancestry=[ordered]@{parentIdentity=$parent.capturedIdentity;childIdentity=$child.capturedIdentity;capturedFrom='CONFIRMED_TOOLHELP_PARENT_SNAPSHOT';firstSnapshotFileTimeUtc=$first.capturedAtFileTimeUtc;confirmationSnapshotFileTimeUtc=$confirmation.capturedAtFileTimeUtc}
+                    $null=$known.Add($key);$bindings.Add($child);$added++
+                }catch{if($null-ne$p-and($null-eq$key-or-not$known.Contains($key))){$p.Dispose()};$failures.Add("OWNED_DESCENDANT_CAPTURE_UNCERTAIN:$($entry.Key):$($_.Exception.Message)")}
+            }
         }
-    }
+        if($added-eq0){$stablePasses++}else{$stablePasses=0}
+        if($stablePasses-lt2){Start-Sleep -Milliseconds 25}
+    }while($stablePasses-lt2-and[DateTime]::UtcNow-lt$deadline)
+    if($stablePasses-lt2){$failures.Add('OWNED_CLOSURE_RECONCILIATION_UNCERTAIN')}
     $results=[Collections.Generic.List[object]]::new()
     try{
         for($index=$bindings.Count-1;$index-ge0;$index--){
-            try{$grace=if($index-eq0){$GraceMilliseconds}else{0};$results.Add((Stop-RecI3OwnedProcess $bindings[$index] $grace $ForceWaitMilliseconds))}
+            try{$grace=if($index-eq0){$GraceMilliseconds}else{0};$result=Stop-RecI3OwnedProcess $bindings[$index] $grace $ForceWaitMilliseconds;$results.Add($result);if($result.unknown-or-not$result.absenceObserved){$failures.Add("OWNED_INSTANCE_EXIT_UNCERTAIN:$($bindings[$index].capturedIdentity.processId):$($result.terminationError)")}}
             catch{$failures.Add("OWNED_INSTANCE_CLEANUP_UNCERTAIN:$($bindings[$index].capturedIdentity.processId):$($_.Exception.Message)")}
         }
     }finally{foreach($binding in $bindings){if($binding-ne$RootBinding){try{$binding.process.Dispose()}catch{$failures.Add("OWNED_INSTANCE_DISPOSE_UNCERTAIN:$($binding.capturedIdentity.processId)")}}}}
-    [ordered]@{rootIdentity=$RootBinding.capturedIdentity;capturedCount=[int]$bindings.Count;capturedAncestry=@($bindings|ForEach-Object{$_.ancestry});results=@($results);failures=@($failures);cleanupCertain=($failures.Count-eq0-and@($results|Where-Object{-not$_.absenceObserved-or$_.unknown}).Count-eq0)}
+    [ordered]@{rootIdentity=$RootBinding.capturedIdentity;capturedCount=[int]$bindings.Count;capturedAncestry=@($bindings|ForEach-Object{$_.ancestry});results=@($results);failures=@($failures);snapshotPasses=$snapshotPasses;stablePasses=$stablePasses;cleanupCertain=($failures.Count-eq0-and@($results|Where-Object{-not$_.absenceObserved-or$_.unknown}).Count-eq0)}
 }
 
-Export-ModuleMember -Function New-RecI3OwnedProcessBinding,Stop-RecI3OwnedProcess,Stop-RecI3OwnedProcessClosure,Test-RecI3Identity
+Export-ModuleMember -Function New-RecI3OwnedProcessBinding,Stop-RecI3OwnedProcess,Stop-RecI3OwnedProcessClosure,Test-RecI3Identity,Test-RecI3ObservedChildBinding,New-RecI3TerminationExitUncertainResult
