@@ -741,6 +741,210 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
                 governance.validate_rec_i3_v11_owned_handle(governance.collect_recovery_lifecycle_identity())
 
     @contextmanager
+    def path_identity_repository(self):
+        """Exact non-merge child of 2c with only the bounded eight-path source successor."""
+        source = governance.ROOT
+        with tempfile.TemporaryDirectory(prefix="dora-path-identity-governance-") as temporary:
+            repo = Path(temporary) / "repo"
+            git_pointer = source / ".git"
+            git_directory = (source / git_pointer.read_text(encoding="utf-8").strip().removeprefix("gitdir: ")).resolve() if git_pointer.is_file() else git_pointer.resolve()
+            common_pointer = git_directory / "commondir"
+            common_directory = (git_directory / common_pointer.read_text(encoding="utf-8").strip()).resolve() if common_pointer.is_file() else git_directory
+            repo.mkdir()
+            governance.test_git(repo, "init", "-q")
+            (repo / ".git/objects/info/alternates").write_text(
+                (common_directory / "objects").as_posix() + "\n", encoding="utf-8", newline="\n")
+            governance.test_git(repo, "checkout", "-q", "-B", governance.REC_I3_V11_PATH_IDENTITY_BRANCH,
+                                governance.REC_I3_V11_PATH_IDENTITY_BASE)
+            for relative in governance.REC_I3_V11_PATH_IDENTITY_PATHS:
+                target = repo / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source / relative, target)
+            governance.commit_test_git_repo(repo, "synthetic path identity successor")
+            with patch.object(governance, "ROOT", repo), patch.dict(os.environ, {
+                key: "" for key in governance.REC_I3_V8_GITHUB_CONTEXT_KEYS
+            }):
+                yield repo
+
+    def test_path_identity_successor_exact_chain_contract_and_dependency_routing(self) -> None:
+        import verify_poc_recovery_dependency_inventory as inventory
+
+        with self.path_identity_repository() as repo, ExitStack() as stack:
+            lifecycle = governance.collect_recovery_lifecycle_identity()
+            self.assertTrue(governance.rec_i3_v11_path_identity_candidate(lifecycle))
+            governance.validate_rec_i3_v11_path_identity(lifecycle)
+            for relative, marker in (
+                ("tools/rec_i3_owned_process.psm1", "ConvertFrom-RecI3WrapperClosureTargetCleanup"),
+                ("tools/run_rec_i3_v8.ps1", "targetStdoutSalvageComplete"),
+                ("tools/rec_i3_preserve_and_cleanup.ps1", "$outerFailureState"),
+            ):
+                target = repo / relative
+                original_source = target.read_text(encoding="utf-8")
+                self.assertIn(marker, original_source)
+                target.write_text(original_source.replace(marker, "REMOVED_WAVE2_MARKER"), encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "contract drift"):
+                    governance.validate_rec_i3_v11_path_identity_contract_sources()
+                target.write_text(original_source, encoding="utf-8")
+            candidate = lifecycle.head
+            tree = governance.git_output("rev-parse", "HEAD^{tree}")
+            self.assertEqual(
+                "2c1b30c7204c62314f47aae618564897e9179183",
+                governance.test_git_text(repo, "show", "-s", "--format=%P", candidate),
+            )
+            wrong_parent = governance.test_git_text(
+                repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
+                "commit-tree", tree, "-p", governance.REC_I3_V11_OWNED_HANDLE_SHUTDOWN_BASE,
+                input_data=b"wrong path identity parent\n")
+            descendant = governance.test_git_text(
+                repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
+                "commit-tree", tree, "-p", candidate, input_data=b"arbitrary descendant\n")
+            wrong_tree = governance.test_git_text(
+                repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
+                "commit-tree", governance.REC_I3_V11_PATH_IDENTITY_BASE_TREE,
+                "-p", governance.REC_I3_V11_PATH_IDENTITY_BASE, input_data=b"wrong tree\n")
+            self.assertFalse(governance.rec_i3_v11_path_identity_source_candidate(wrong_parent))
+            self.assertFalse(governance.rec_i3_v11_path_identity_source_candidate(descendant))
+            self.assertFalse(governance.rec_i3_v11_path_identity_source_candidate(wrong_tree))
+
+            authorized_pr_base = "55940df0c95e919a00708ae57e1b8aa23d89b6de"
+            historical_source_anchor = "d309cda52e7307506726712be0f61f444643e43c"
+            authorized_head_ref = "fix/rec-i3-v11-owned-handle-cleanup"
+            pull_request_number = 82
+            runner_temp = repo.parent / "runner-temp"
+            runner_temp.mkdir()
+            event_path = runner_temp / "event.json"
+
+            def pull_request_environment(merge_sha: str, *, head_ref: str | None = None) -> dict[str, str]:
+                exact_head_ref = head_ref or authorized_head_ref
+                return {
+                    "GITHUB_EVENT_NAME": "pull_request",
+                    "GITHUB_HEAD_REF": exact_head_ref,
+                    "GITHUB_BASE_REF": "main",
+                    "GITHUB_REF": f"refs/pull/{pull_request_number}/merge",
+                    "GITHUB_SHA": merge_sha,
+                    "GITHUB_REPOSITORY": "Monumentogram/DORA",
+                    "GITHUB_WORKSPACE": str(repo.resolve()),
+                    "GITHUB_ACTIONS": "true",
+                    "GITHUB_EVENT_PATH": str(event_path.resolve()),
+                    "RUNNER_TEMP": str(runner_temp.resolve()),
+                }
+
+            def write_event(*, base_sha: str, head_sha: str = candidate,
+                            head_ref: str | None = None, merge_sha: str | None = None) -> None:
+                governance.write_test_pull_request_event(
+                    event_path,
+                    number=pull_request_number,
+                    head_ref=head_ref or authorized_head_ref,
+                    head_sha=head_sha,
+                    base_sha=base_sha,
+                    merge_sha=merge_sha,
+                    draft=False,
+                    state="open",
+                    merged=False,
+                )
+
+            merge = governance.test_git_text(
+                repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
+                "commit-tree", tree, "-p", authorized_pr_base,
+                "-p", candidate, input_data=b"synthetic exact path identity PR merge\n")
+            governance.test_git(repo, "checkout", "-q", "--detach", merge)
+            write_event(base_sha=authorized_pr_base, merge_sha=merge)
+            with patch.dict(os.environ, pull_request_environment(merge)):
+                pr_lifecycle = governance.collect_recovery_lifecycle_identity()
+                self.assertEqual(authorized_pr_base, pr_lifecycle.github_pull_request_context.base_sha)
+                self.assertEqual(candidate, pr_lifecycle.github_pull_request_context.head_sha)
+                self.assertEqual((authorized_pr_base, candidate), tuple(
+                    governance.test_git_text(repo, "show", "-s", "--format=%P", merge).split()))
+                governance.validate_rec_i3_v11_path_identity(pr_lifecycle)
+
+            wrong_base_merge = governance.test_git_text(
+                repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
+                "commit-tree", tree, "-p", historical_source_anchor,
+                "-p", candidate, input_data=b"synthetic wrong-base path identity PR merge\n")
+            governance.test_git(repo, "checkout", "-q", "--detach", wrong_base_merge)
+            write_event(base_sha=historical_source_anchor, merge_sha=wrong_base_merge)
+            with patch.dict(os.environ, pull_request_environment(wrong_base_merge)):
+                wrong_base_lifecycle = governance.collect_recovery_lifecycle_identity()
+                with self.assertRaisesRegex(ValueError, "pull-request identity drift"):
+                    governance.validate_rec_i3_v11_path_identity(wrong_base_lifecycle)
+
+            wrong_second_parent = governance.test_git_text(
+                repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
+                "commit-tree", tree, "-p", authorized_pr_base, "-p", historical_source_anchor,
+                input_data=b"synthetic wrong-second-parent merge\n")
+            reversed_merge = governance.test_git_text(
+                repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
+                "commit-tree", tree, "-p", candidate, "-p", authorized_pr_base,
+                input_data=b"synthetic reversed-parent merge\n")
+            for invalid_merge in (wrong_second_parent, reversed_merge):
+                governance.test_git(repo, "checkout", "-q", "--detach", invalid_merge)
+                write_event(base_sha=authorized_pr_base, merge_sha=invalid_merge)
+                with patch.dict(os.environ, pull_request_environment(invalid_merge)):
+                    with self.assertRaisesRegex(ValueError, "merge-ref parent topology mismatch"):
+                        governance.collect_recovery_lifecycle_identity()
+
+            wrong_head = governance.test_git_text(
+                repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
+                "commit-tree", tree, "-p", candidate, input_data=b"synthetic unreviewed PR head\n")
+            wrong_head_merge = governance.test_git_text(
+                repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
+                "commit-tree", tree, "-p", authorized_pr_base, "-p", wrong_head,
+                input_data=b"synthetic wrong-head path identity PR merge\n")
+            governance.test_git(repo, "checkout", "-q", "--detach", wrong_head_merge)
+            write_event(base_sha=authorized_pr_base, head_sha=wrong_head, merge_sha=wrong_head_merge)
+            with patch.dict(os.environ, pull_request_environment(wrong_head_merge)):
+                wrong_head_lifecycle = governance.collect_recovery_lifecycle_identity()
+                with self.assertRaisesRegex(ValueError, "source identity drift"):
+                    governance.validate_rec_i3_v11_path_identity(wrong_head_lifecycle)
+
+            governance.test_git(repo, "checkout", "-q", "--detach", merge)
+            event_path.write_text('{"number":82}', encoding="utf-8")
+            with patch.dict(os.environ, pull_request_environment(merge)):
+                with self.assertRaisesRegex(ValueError, "event payload is incomplete"):
+                    governance.collect_recovery_lifecycle_identity()
+            write_event(base_sha=authorized_pr_base, head_ref="unrelated", merge_sha=merge)
+            with patch.dict(os.environ, pull_request_environment(merge)):
+                with self.assertRaisesRegex(ValueError, "head ref mismatch"):
+                    governance.collect_recovery_lifecycle_identity()
+
+            governance.test_git(repo, "checkout", "-q", governance.REC_I3_V11_PATH_IDENTITY_BRANCH)
+
+            original_root = inventory.ROOT
+            for name, value in tuple(vars(inventory).items()):
+                if isinstance(value, Path) and value.is_relative_to(original_root):
+                    stack.enter_context(patch.object(inventory, name, repo / value.relative_to(original_root)))
+            stack.enter_context(patch.object(sys, "argv", ["inventory"]))
+            with redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(0, inventory.main())
+            self.assertIn("V11 path-identity successor dependency/IP static validation passed", output.getvalue())
+
+            module_path = repo / "tools/rec_i3_owned_process.psm1"
+            original = module_path.read_bytes()
+            module_path.write_bytes(original + b"\n# dirty\n")
+            with self.assertRaisesRegex(ValueError, "checkout is not clean/exact"):
+                governance.validate_rec_i3_v11_path_identity(lifecycle)
+            module_path.write_bytes(original)
+
+            governance.test_git(repo, "update-index", "--chmod=+x", "tools/rec_i3_owned_process.psm1")
+            mode_tree = governance.test_git_text(repo, "write-tree")
+            mode_commit = governance.test_git_text(
+                repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
+                "commit-tree", mode_tree, "-p", governance.REC_I3_V11_PATH_IDENTITY_BASE,
+                input_data=b"mode drift\n")
+            self.assertFalse(governance.rec_i3_v11_path_identity_source_candidate(mode_commit))
+            governance.test_git(repo, "update-index", "--chmod=-x", "tools/rec_i3_owned_process.psm1")
+
+            extra_path = repo / "unauthorized.txt"
+            extra_path.write_text("unauthorized\n", encoding="utf-8")
+            governance.test_git(repo, "add", "unauthorized.txt")
+            extra_tree = governance.test_git_text(repo, "write-tree")
+            extra_commit = governance.test_git_text(
+                repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
+                "commit-tree", extra_tree, "-p", governance.REC_I3_V11_PATH_IDENTITY_BASE,
+                input_data=b"extra path\n")
+            self.assertFalse(governance.rec_i3_v11_path_identity_source_candidate(extra_commit))
+
+    @contextmanager
     def v8_repository(self):
         """Real baseline objects, historical tooling files and the exact host-test repair."""
         source = governance.ROOT

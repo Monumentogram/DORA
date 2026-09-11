@@ -628,6 +628,11 @@ REC_I3_V11_OWNED_HANDLE_PATHS = (
     "tools/validate_poc_recovery_governance.py",
     "tools/test_poc_recovery_i3_governance.py",
 )
+REC_I3_V11_PATH_IDENTITY_BASE = "2c1b30c7204c62314f47aae618564897e9179183"
+REC_I3_V11_PATH_IDENTITY_BASE_TREE = "dd798a27871c357215a66d3ac07a7fae18b6d978"
+REC_I3_V11_PATH_IDENTITY_BASE_PARENT = REC_I3_V11_OWNED_HANDLE_SHUTDOWN_BASE
+REC_I3_V11_PATH_IDENTITY_BRANCH = REC_I3_V11_OWNED_HANDLE_BRANCH
+REC_I3_V11_PATH_IDENTITY_PATHS = REC_I3_V11_OWNED_HANDLE_PATHS
 REC_I3_V8_BASE = "55940df0c95e919a00708ae57e1b8aa23d89b6de"
 REC_I3_V8_BASE_TREE = "e153e50b7dc8d5651c3ac136efb1bfeaa1f56b16"
 REC_I3_V8_BASE_PARENT = "c473a6f3877f60a1c1686e676606affd4fc66334"
@@ -7463,6 +7468,131 @@ def validate_rec_i3_v11_owned_handle_fast_path() -> bool:
     return True
 
 
+def rec_i3_v11_path_identity_source_candidate(commit: str, *, root: Path | None = None) -> bool:
+    """Recognize only the exact non-merge eight-path child of accepted source 2c."""
+    repository_root = root or ROOT
+    if (
+        git_optional_output("rev-parse", f"{REC_I3_V11_PATH_IDENTITY_BASE}^{{tree}}", root=repository_root)
+        != REC_I3_V11_PATH_IDENTITY_BASE_TREE
+        or git_optional_output("show", "-s", "--format=%P", REC_I3_V11_PATH_IDENTITY_BASE,
+                               root=repository_root) != REC_I3_V11_PATH_IDENTITY_BASE_PARENT
+        or not rec_i3_v11_owned_handle_source_candidate(REC_I3_V11_PATH_IDENTITY_BASE,
+                                                         root=repository_root)
+        or git_optional_output("show", "-s", "--format=%P", commit, root=repository_root)
+        != REC_I3_V11_PATH_IDENTITY_BASE
+        or set(git_path_records("diff", "--name-only", "--no-renames", "-z",
+                                REC_I3_V11_PATH_IDENTITY_BASE, commit, "--",
+                                root=repository_root)) != set(REC_I3_V11_PATH_IDENTITY_PATHS)
+        or set(git_path_records("diff", "--name-only", "--no-renames", "-z",
+                                REC_I3_V11_OWNED_HANDLE_BASE, commit, "--",
+                                root=repository_root)) != set(REC_I3_V11_PATH_IDENTITY_PATHS)
+        or not set(git_path_records("log", "--format=", "--name-only", "--no-renames", "-z",
+                                    f"{REC_I3_V11_OWNED_HANDLE_BASE}..{commit}", "--",
+                                    root=repository_root)) <= set(REC_I3_V11_PATH_IDENTITY_PATHS)
+        or git_path_records("diff", "--name-only", "--no-renames", "-z",
+                            REC_I3_V11_OWNED_HANDLE_BASE, commit, "--", "android",
+                            root=repository_root)
+        or git_optional_output("rev-parse", f"{commit}:.github", root=repository_root)
+        != git_optional_output("rev-parse", f"{REC_I3_V11_OWNED_HANDLE_BASE}:.github",
+                               root=repository_root)
+    ):
+        return False
+    return all(
+        len(records := git_path_records("ls-tree", "-z", commit, "--", relative,
+                                        root=repository_root)) == 1
+        and records[0].startswith("100644 blob ")
+        for relative in REC_I3_V11_PATH_IDENTITY_PATHS
+    )
+
+
+def validate_rec_i3_v11_path_identity_contract_sources() -> None:
+    owned_process = read_text("tools/rec_i3_owned_process.psm1")
+    require(all(item in owned_process for item in (
+        "GetFileInformationByHandle", "GetFinalPathNameByHandleW", "FileShare.Read",
+        "SHA256.Create", "OWNED_PROCESS_EXECUTABLE_REPARSE_PATH",
+        "OWNED_PROCESS_EXECUTABLE_RACE_UNCERTAIN", "physicalId", "executableBinding",
+        "Test-RecI3ExecutableFileBinding", "CONFIGURED_TO_RETAINED_NATIVE_VERIFIED",
+        "ConvertTo-RecI3WindowsCommandLine", "Confirm-RecI3ObservedTargetStartedReceipt",
+        "Confirm-RecI3ObservedTargetFailureReceipt", "Confirm-RecI3ObservedTargetReceipt",
+        "rawExitType", "creationFileTimeUtc", "laterAuditRequired", "rootAbsenceObserved",
+        "Test-RecI3SerializedCleanup", "cleanup result relationship contradictory",
+        "ConvertFrom-RecI3WrapperClosureTargetCleanup", "TARGET_NOT_RECONCILED_IN_WRAPPER_CLOSURE",
+        "rootAbsentMatches", "cleanup observed exit outcome contradictory",
+        "WRAPPER_CLOSURE_COVERAGE_UNCERTAIN",
+    )), "REC-I3 V11 coherent executable-file binding contract drift")
+    require("GetProcessById" in owned_process and "TerminateProcess" in owned_process
+            and "taskkill" not in owned_process
+            and re.search(r"\bStop-Process\b", owned_process) is None,
+            "REC-I3 V11 retained same-handle termination contract drift")
+    for relative, label in (("tools/run_rec_i3_v8.ps1", "runner"),
+                            ("tools/rec_i3_preserve_and_cleanup.ps1", "preservation")):
+        source = read_text(relative)
+        require(all(item in source for item in (
+            "targetConfiguredBinding", "targetNativeBinding", "targetBindingProof",
+            "targetStarted", "targetProcessId", "wrapperStarted", "wrapperIdentity",
+            "invocationArtifactBinding", "New-RecI3OwnedProcessBinding",
+            "Stop-RecI3OwnedProcessClosure", "Confirm-RecI3ObservedTargetReceipt",
+            "Confirm-RecI3ObservedTargetStartedReceipt", "nativeStartedPath",
+            "rawExitValue", "rawExitType", "targetStdoutComplete", "targetStderrComplete",
+            "firstFailure", "ConvertTo-Json -Depth 20", "LATER_PROCESS_AUDIT_REQUIRED",
+            "$outerFailureState", "outerFirstFailure", "innerFirstFailure",
+            "targetStdoutSalvageComplete", "targetStdoutSalvageError",
+            "TARGET_STDOUT_SALVAGE_FAILED", "ConvertFrom-RecI3WrapperClosureTargetCleanup",
+        )) and "[bool]$native.targetStarted" not in source
+            and "$native.targetCleanup=$cleanupResult" not in source
+            and "taskkill" not in source and re.search(r"\bStop-Process\b", source) is None,
+                f"REC-I3 V11 {label} target/wrapper executable binding contract drift")
+    inventory = read_text("tools/verify_poc_recovery_dependency_inventory.py")
+    require("rec_i3_v11_path_identity_candidate" in inventory
+            and "validate_rec_i3_v11_path_identity" in inventory,
+            "REC-I3 V11 path-identity dependency verifier routing drift")
+
+
+def validate_rec_i3_v11_path_identity(lifecycle: RecoveryLifecycleIdentity) -> None:
+    pull_request = lifecycle.github_pull_request_context
+    checked_out_branch = git_output("branch", "--show-current")
+    if pull_request is None:
+        require(lifecycle.branch == checked_out_branch
+                and lifecycle.branch in {REC_I3_V11_PATH_IDENTITY_BRANCH, ""},
+                "REC-I3 V11 path-identity local branch identity drift")
+        candidate_head = lifecycle.head
+    else:
+        require(pull_request.repository == GITHUB_REPOSITORY
+                and pull_request.head_repository == GITHUB_REPOSITORY
+                and pull_request.head_ref == REC_I3_V11_PATH_IDENTITY_BRANCH
+                and pull_request.base_ref == GITHUB_BASE_BRANCH
+                and pull_request.base_sha == REC_I3_V11_PR_BASE
+                and pull_request.draft is False and pull_request.state == "open"
+                and pull_request.merged is False
+                and tuple(git_output("show", "-s", "--format=%P", lifecycle.head).split())
+                == (pull_request.base_sha, pull_request.head_sha),
+                "REC-I3 V11 path-identity pull-request identity drift")
+        candidate_head = pull_request.head_sha
+    require(rec_i3_v11_path_identity_source_candidate(candidate_head),
+            "REC-I3 V11 path-identity source identity drift")
+    changes = collect_post_merge_changes(merged_anchor=REC_I3_V11_PATH_IDENTITY_BASE)
+    require(set(changes["committed"]) == set(REC_I3_V11_PATH_IDENTITY_PATHS)
+            and all(not changes[layer] for layer in ("staged", "unstaged", "untracked")),
+            f"REC-I3 V11 path-identity checkout is not clean/exact: {changes}")
+    validate_rec_i3_v8_contract_sources()
+    validate_rec_i3_v11_owned_handle_contract_sources()
+    validate_rec_i3_v11_path_identity_contract_sources()
+
+
+def rec_i3_v11_path_identity_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
+    candidate = (lifecycle.github_pull_request_context.head_sha
+                 if lifecycle.github_pull_request_context is not None else lifecycle.head)
+    return rec_i3_v11_path_identity_source_candidate(candidate)
+
+
+def validate_rec_i3_v11_path_identity_fast_path() -> bool:
+    lifecycle = collect_recovery_lifecycle_identity()
+    if not rec_i3_v11_path_identity_candidate(lifecycle):
+        return False
+    validate_rec_i3_v11_path_identity(lifecycle)
+    return True
+
+
 def validate_rec_i3_v11_identity(lifecycle: RecoveryLifecycleIdentity) -> None:
     """Bind V11 to exact source, branch/CI identity, topology, and cleanliness."""
     require(lifecycle.head == git_output("rev-parse", "HEAD"),
@@ -13976,6 +14106,9 @@ def validate_rec_i3_squash_main_fast_path() -> bool:
 
 
 def main() -> int:
+    if validate_rec_i3_v11_path_identity_fast_path():
+        print("POC-RECOVERY-001 governance path-identity successor validation passed")
+        return 0
     if validate_rec_i3_v11_owned_handle_fast_path():
         print("POC-RECOVERY-001 governance retained-handle cleanup validation passed")
         return 0

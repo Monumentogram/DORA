@@ -26,6 +26,7 @@ from validate_poc_recovery_governance import (
     AUTHORIZATION_ID,
     AUTHORIZATION_PATH,
     collect_recovery_lifecycle_identity,
+    rec_i3_v11_path_identity_candidate,
     rec_i3_v11_owned_handle_candidate,
     rec_i3_v7_candidate,
     rec_i3_v8_candidate,
@@ -34,6 +35,7 @@ from validate_poc_recovery_governance import (
     validate_rec_i3_v7,
     validate_rec_i3_v8,
     validate_rec_i3_v11_owned_handle,
+    validate_rec_i3_v11_path_identity,
     validate_recovery_build_text,
 )
 
@@ -764,7 +766,10 @@ def validate_static(
     """Validate the active v0.6 packet and its exact recovery-only boundary."""
 
     lifecycle = collect_recovery_lifecycle_identity()
-    if rec_i3_v11_owned_handle_candidate(lifecycle):
+    if rec_i3_v11_path_identity_candidate(lifecycle):
+        validate_rec_i3_v11_path_identity(lifecycle)
+        rec_i2b_mode = True
+    elif rec_i3_v11_owned_handle_candidate(lifecycle):
         validate_rec_i3_v11_owned_handle(lifecycle)
         rec_i2b_mode = True
     elif rec_i3_v8_candidate(lifecycle):
@@ -1181,6 +1186,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     lifecycle = collect_recovery_lifecycle_identity()
+    path_identity_mode = rec_i3_v11_path_identity_candidate(lifecycle)
     owned_handle_mode = rec_i3_v11_owned_handle_candidate(lifecycle)
     v8_mode = rec_i3_v8_candidate(lifecycle)
     v7_mode = rec_i3_v7_candidate(lifecycle)
@@ -1201,6 +1207,8 @@ def main() -> int:
     if args.online:
         verify_online(inventory, license_notice, authenticity, jsr305_exclusion)
         print("Verified 8 exact external JAR/POM coordinates online plus immutable JetBrains LICENSE/NOTICE bytes: artifact hashes, publisher checksums, full-fingerprint detached OpenPGP cryptography and identity metadata, signed source JARs for the six multisource coordinates, POM graph/licenses, no native payload, exact Tink JSR305 annotation-only classification, and exact-commit LICENSE/NOTICE SHA-256; temporary files removed")
+    elif path_identity_mode:
+        print("POC-RECOVERY-001 V11 path-identity successor dependency/IP static validation passed; the exact eight-path direct-child source boundary and every existing inventory, digest, publisher-signature, graph, license, JSR305, and non-admission assertion remain exact (use --online for artifact/signature and immutable LICENSE/NOTICE revalidation)")
     elif owned_handle_mode:
         print("POC-RECOVERY-001 V11 retained-handle successor dependency/IP static validation passed; every existing inventory, digest, publisher-signature, graph, license, JSR305, and non-admission assertion remains exact (use --online for artifact/signature and immutable LICENSE/NOTICE revalidation)")
     elif v8_mode:

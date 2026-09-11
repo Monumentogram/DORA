@@ -49,6 +49,11 @@ $ledgerCreated = $false
 $deviceIdentityVerified = $false
 $ownedEmulatorProcess = $null
 $ownedEmulatorBinding = $null
+$ownedEmulatorConfiguredBinding = $null
+$ownedEmulatorInvocationArtifactBinding = $null
+$ownedEmulatorBindingFailure = $null
+$ownedEmulatorProcessId = $null
+$ownedEmulatorDisposeFailure = $null
 $gradleResult = $null
 $secondaryFailures = @()
 $ownedStop = $null
@@ -59,7 +64,7 @@ function Write-JsonFile([string]$Path, [object]$Value) {
     [System.IO.Directory]::CreateDirectory($parent) | Out-Null
     [System.IO.File]::WriteAllText(
         [System.IO.Path]::GetFullPath($Path),
-        (($Value | ConvertTo-Json -Depth 12) + [Environment]::NewLine),
+        (($Value | ConvertTo-Json -Depth 20) + [Environment]::NewLine),
         [System.Text.UTF8Encoding]::new($false)
     )
 }
@@ -88,75 +93,114 @@ function Invoke-BoundedCommand(
     [int]$TimeoutSeconds = $commandTimeoutSeconds
 ) {
     $stderrPath = "$LogPath.stderr"
-    $nativeResultPath = "$LogPath.native.json"
-    $argumentText = "@(" + (($Arguments | ForEach-Object { Convert-ToPsLiteral $_ }) -join ",") + ")"
+    $nativeStartedPath = "$LogPath.native.started.json"
+    $nativeResultPath = "$LogPath.native.completed.json"
+    $resolvedCommand = Get-Command -Name $FilePath -CommandType Application -ErrorAction Stop
+    $invocationArtifactPath = [IO.Path]::GetFullPath([string]$resolvedCommand.Source)
+    $invocationArtifactBinding = Get-RecI3ExecutableFileBinding $invocationArtifactPath $null 'CONFIGURED_INVOCATION_ARTIFACT'
+    if([IO.Path]::GetExtension($invocationArtifactPath)-in @('.cmd','.bat')){
+        $targetConfiguredPath=[IO.Path]::GetFullPath($env:ComSpec)
+        $cmdArguments=@($Arguments|ForEach-Object{$value=[string]$_;if($value-match'[\s"&|<>^]'){'"'+$value.Replace('"','""')+'"'}else{$value}})
+        $targetArguments=@('/d','/s','/c',('""'+$invocationArtifactPath+'" '+($cmdArguments-join' ')+'"'))
+        $targetArgumentLine='/d /s /c ""'+$invocationArtifactPath+'" '+($cmdArguments-join' ')+'"'
+    }else{$targetConfiguredPath=$invocationArtifactPath;$targetArguments=@($Arguments);$targetArgumentLine=ConvertTo-RecI3WindowsCommandLine $targetArguments}
+    $targetConfiguredBinding = Get-RecI3ExecutableFileBinding $targetConfiguredPath $null 'CONFIGURED_TARGET'
+    $configuredBindingJson=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes(($targetConfiguredBinding|ConvertTo-Json -Depth 6 -Compress)))
+    $artifactBindingJson=[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes(($invocationArtifactBinding|ConvertTo-Json -Depth 6 -Compress)))
+    $targetStdoutPath="$LogPath.target.stdout";$targetStderrPath="$LogPath.target.stderr"
     # Keep native stderr non-terminating on PS5.1; only setup/invocation errors are launch failures.
     $scriptText = @"
 `$ErrorActionPreference='Stop'; `$ProgressPreference='SilentlyContinue'
 `$PSNativeCommandUseErrorActionPreference=`$false
-`$native=[ordered]@{exitCode=`$null; launchFailure=`$null}
+    Import-Module $(Convert-ToPsLiteral (Join-Path $PSScriptRoot 'rec_i3_owned_process.psm1')) -Force
+function Write-NativeCreateOnce([string]`$Path,[object]`$Value){`$bytes=[Text.UTF8Encoding]::new(`$false).GetBytes(((`$Value|ConvertTo-Json -Depth 20)+[Environment]::NewLine));`$stream=[IO.File]::Open(`$Path,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::Read);try{`$stream.Write(`$bytes,0,`$bytes.Length);`$stream.Flush(`$true)}finally{`$stream.Dispose()}}
+function Set-FirstFailure([string]`$Message){if([string]::IsNullOrWhiteSpace(`$native.firstFailure)){`$native.firstFailure=`$Message};`$native.launchFailure=@(`$native.launchFailure,`$Message|Where-Object{`$_})-join'; '}
+    `$native=[ordered]@{receiptPhase='INITIALIZED';exitCode=`$null;rawExitValue=`$null;rawExitType=`$null;firstFailure=`$null;launchFailure=`$null;targetStarted=`$null;targetProcessId=`$null;targetConfiguredPath=$(Convert-ToPsLiteral $targetConfiguredPath);targetConfiguredBinding=`$null;targetNativeIdentity=`$null;targetNativeBinding=`$null;targetBindingProof=[ordered]@{stage='NOT_STARTED';verified=`$false;error=`$null};targetCleanup=`$null;targetExitCaptureError=`$null;targetDisposeError=`$null;targetStdoutComplete=`$null;targetStderrComplete=`$null;targetStdoutReadError=`$null;targetStderrReadError=`$null;invocationArtifactPath=$(Convert-ToPsLiteral $invocationArtifactPath);invocationArtifactBinding=`$null;targetStdoutPath=$(Convert-ToPsLiteral $targetStdoutPath);targetStderrPath=$(Convert-ToPsLiteral $targetStderrPath)}
+    `$target=`$null;`$targetBinding=`$null
 try {
     Set-Location -LiteralPath $(Convert-ToPsLiteral $WorkingDirectory)
-    `$command=Get-Command -Name $(Convert-ToPsLiteral $FilePath) -CommandType Application -ErrorAction Stop
-    `$LASTEXITCODE=`$null; `$Error.Clear(); `$ErrorActionPreference='Continue'
-    & `$command $argumentText
-    `$native.exitCode=`$LASTEXITCODE
-    `$invokeErrors=@(`$Error | Where-Object { `$_.FullyQualifiedErrorId -notmatch '^NativeCommandError' })
-    `$ErrorActionPreference='Stop'
-    if (`$invokeErrors.Count) { throw ((`$invokeErrors | Out-String).Trim()) }
-    if (`$null -eq `$native.exitCode) { throw 'NATIVE_EXIT_NOT_OBSERVED' }
+    `$native.targetConfiguredBinding=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($(Convert-ToPsLiteral $configuredBindingJson)))|ConvertFrom-Json
+    `$native.invocationArtifactBinding=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($(Convert-ToPsLiteral $artifactBindingJson)))|ConvertFrom-Json
+    `$target=Start-Process -FilePath $(Convert-ToPsLiteral $targetConfiguredPath) -ArgumentList $(Convert-ToPsLiteral $targetArgumentLine) -RedirectStandardOutput $(Convert-ToPsLiteral $targetStdoutPath) -RedirectStandardError $(Convert-ToPsLiteral $targetStderrPath) -PassThru -WindowStyle Hidden
+    `$native.targetStarted=`$true;`$native.targetProcessId=[int]`$target.Id;`$native.targetBindingProof.stage='TARGET_BINDING'
+    `$targetBinding=New-RecI3OwnedProcessBinding `$target `$native.targetConfiguredBinding
+    `$native.targetNativeIdentity=`$targetBinding.capturedIdentity;`$native.targetNativeBinding=`$targetBinding.nativeExecutableBinding;`$native.targetBindingProof=`$targetBinding.executableBindingProof
+    `$native.receiptPhase='STARTED';Write-NativeCreateOnce $(Convert-ToPsLiteral $nativeStartedPath) `$native
+    `$target.WaitForExit();try{`$target.Refresh();`$raw=`$target.ExitCode;if(`$null-eq`$raw){throw 'TARGET_EXIT_MISSING'};if(`$raw-isnot[int]){throw "TARGET_EXIT_NOT_INT32:`$(`$raw.GetType().FullName)"};`$native.rawExitValue=`$raw;`$native.rawExitType=`$raw.GetType().FullName;`$native.exitCode=`$raw}catch{`$native.rawExitValue=`$null;`$native.rawExitType=`$null;`$native.exitCode=`$null;`$native.targetExitCaptureError=`$_.Exception.Message;Set-FirstFailure "TARGET_EXIT_CAPTURE_FAILED:`$(`$_.Exception.Message)"}
 } catch {
-    `$native.launchFailure=`$_.ToString()
-    [Console]::Error.WriteLine(`$native.launchFailure)
+    Set-FirstFailure `$_.ToString()
+    if(`$native.targetStarted-and-not`$native.targetBindingProof.verified){`$native.targetBindingProof.error=`$_.Exception.Message}
+    if(`$native.targetStarted-and`$null-eq`$native.targetExitCaptureError){`$native.targetExitCaptureError='TARGET_EXIT_UNOBSERVED_DUE_TO_PRIOR_FAILURE'}
+} finally {
+    if(`$null-ne`$target){
+        try{if(`$null-eq`$targetBinding){`$native.targetCleanup=[ordered]@{rootIdentity=`$null;cleanupCertain=`$false;laterAuditRequired=`$true;rootAbsenceObserved=`$false;failures=@('OWNED_TARGET_BINDING_UNAVAILABLE');results=@();state='OWNED_TARGET_BINDING_UNAVAILABLE'}}elseif(-not`$target.HasExited){`$native.targetCleanup=Stop-RecI3OwnedProcessClosure `$targetBinding 1000 10000}else{`$native.targetCleanup=[ordered]@{rootIdentity=`$targetBinding.capturedIdentity;cleanupCertain=`$false;laterAuditRequired=`$true;rootAbsenceObserved=`$true;failures=@('LATER_PROCESS_AUDIT_REQUIRED');results=@();state='TARGET_ROOT_EXITED_CLOSURE_UNAUDITED'}}}catch{`$native.targetCleanup=[ordered]@{rootIdentity=if(`$null-ne`$targetBinding){`$targetBinding.capturedIdentity}else{`$null};cleanupCertain=`$false;laterAuditRequired=`$true;rootAbsenceObserved=`$false;failures=@("OWNED_TARGET_CLEANUP_EXCEPTION:`$(`$_.Exception.Message)");results=@();state='OWNED_TARGET_CLEANUP_UNCERTAIN'};Set-FirstFailure "OWNED_TARGET_CLEANUP_UNCERTAIN:`$(`$_.Exception.Message)"}
+    }
+    try{if(Test-Path -LiteralPath $(Convert-ToPsLiteral $targetStdoutPath) -PathType Leaf){[Console]::Out.Write([IO.File]::ReadAllText($(Convert-ToPsLiteral $targetStdoutPath)));`$native.targetStdoutComplete=`$true}else{throw 'TARGET_STDOUT_MISSING'}}catch{`$native.targetStdoutComplete=`$false;`$native.targetStdoutReadError=`$_.Exception.Message;Set-FirstFailure "TARGET_STDOUT_READ_FAILED:`$(`$_.Exception.Message)"}
+    try{if(Test-Path -LiteralPath $(Convert-ToPsLiteral $targetStderrPath) -PathType Leaf){[Console]::Error.Write([IO.File]::ReadAllText($(Convert-ToPsLiteral $targetStderrPath)));`$native.targetStderrComplete=`$true}else{throw 'TARGET_STDERR_MISSING'}}catch{`$native.targetStderrComplete=`$false;`$native.targetStderrReadError=`$_.Exception.Message;Set-FirstFailure "TARGET_STDERR_READ_FAILED:`$(`$_.Exception.Message)"}
+    if(`$null-ne`$target){try{`$target.Dispose()}catch{`$native.targetDisposeError=`$_.Exception.Message;Set-FirstFailure "TARGET_PROCESS_DISPOSE_UNCERTAIN:`$(`$_.Exception.Message)"}}
+    `$native.receiptPhase='COMPLETED';try{Write-NativeCreateOnce $(Convert-ToPsLiteral $nativeResultPath) `$native}catch{Set-FirstFailure "NATIVE_RESULT_PUBLICATION_FAILED:`$(`$_.Exception.Message)";[Console]::Error.WriteLine(`$native.launchFailure)}
 }
-[IO.File]::WriteAllText($(Convert-ToPsLiteral $nativeResultPath), (`$native | ConvertTo-Json), [Text.UTF8Encoding]::new(`$false))
 if (`$native.launchFailure) { exit 125 }
+if (`$null-eq`$native.exitCode) { exit 125 }
 exit `$native.exitCode
 "@
     $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($scriptText))
     $process = $null
     $completed = $false
     $timedOut = $false
-    $native = [ordered]@{ exitCode = $null; launchFailure = $null }
+    $native = [ordered]@{ receiptPhase='UNKNOWN';exitCode=$null;rawExitValue=$null;rawExitType=$null;firstFailure=$null;launchFailure=$null;targetStarted=$null;targetProcessId=$null;targetConfiguredPath=$targetConfiguredPath;targetConfiguredBinding=$targetConfiguredBinding;targetNativeIdentity=$null;targetNativeBinding=$null;targetBindingProof=[ordered]@{stage='NOT_STARTED';verified=$false;error=$null};targetCleanup=$null;targetExitCaptureError=$null;targetDisposeError=$null;targetStdoutComplete=$null;targetStderrComplete=$null;targetStdoutReadError=$null;targetStderrReadError=$null;invocationArtifactPath=$invocationArtifactPath;invocationArtifactBinding=$invocationArtifactBinding;targetStdoutPath=$targetStdoutPath;targetStderrPath=$targetStderrPath }
+    $outerFailureState=[ordered]@{firstFailure=$null;failures=[Collections.Generic.List[string]]::new()}
+    $addOuterFailure={param([string]$Message) if(-not[string]::IsNullOrWhiteSpace($Message)){if($null-eq$outerFailureState.firstFailure){$outerFailureState.firstFailure=$Message};$outerFailureState.failures.Add($Message)}}
     $wrapperExitCode = $null
     $cleanupResult = $null
     $processBinding = $null
+    $wrapperStarted = $false
+    $wrapperDisposeFailure=$null
     try {
         if ((Test-Path -LiteralPath $LogPath -PathType Container) -or (Test-Path -LiteralPath $stderrPath -PathType Container)) { throw "COMMAND_LOG_PATH_IS_DIRECTORY:$LogPath" }
         $hostPowerShell = (Get-Process -Id $PID).Path
         $process = Start-Process -FilePath $hostPowerShell -ArgumentList @("-NoProfile", "-NonInteractive", "-EncodedCommand", $encoded) -RedirectStandardOutput $LogPath -RedirectStandardError $stderrPath -PassThru -WindowStyle Hidden
-        $processBinding = New-RecI3OwnedProcessBinding $process
+        $wrapperStarted = $true
+        try{$processBinding = New-RecI3OwnedProcessBinding $process}catch{&$addOuterFailure $_.ToString()}
         $completed = $process.WaitForExit([Math]::Max(1, $TimeoutSeconds) * 1000)
         $timedOut = -not $completed
         if ($completed) { $process.WaitForExit(); $process.Refresh(); $wrapperExitCode = $process.ExitCode }
-        if ($completed) {
-            if (-not (Test-Path -LiteralPath $nativeResultPath -PathType Leaf)) { throw "NATIVE_OBSERVATION_MISSING:wrapperExit=$wrapperExitCode" }
-            $native = Get-Content -Raw -Encoding UTF8 -LiteralPath $nativeResultPath | ConvertFrom-Json
-        }
     } catch {
-        $native.launchFailure = $_.ToString()
+        &$addOuterFailure $_.ToString()
     } finally {
         if ($null -ne $process -and -not $completed) {
             try {
                 if ($null -eq $processBinding) {
-                    $cleanupResult = [ordered]@{ cleanupCertain=$false; failures=@('OWNED_PROCESS_BINDING_UNAVAILABLE'); results=@() }
+                    $cleanupResult = [ordered]@{ cleanupCertain=$false;laterAuditRequired=$true;rootAbsenceObserved=$false;failures=@('OWNED_PROCESS_BINDING_UNAVAILABLE');results=@();state='OWNED_WRAPPER_BINDING_UNAVAILABLE' }
                 } else {
                     $cleanupResult = Stop-RecI3OwnedProcessClosure $processBinding 1000 10000
                 }
-                if (-not $cleanupResult.cleanupCertain) { $native.launchFailure = @($native.launchFailure,"OWNED_WRAPPER_CLEANUP_UNCERTAIN:$(@($cleanupResult.failures)-join'; ')"|Where-Object{$_})-join'; ' }
+                if (-not $cleanupResult.cleanupCertain) { &$addOuterFailure "OWNED_WRAPPER_CLEANUP_UNCERTAIN:$(@($cleanupResult.failures)-join'; ')" }
             } catch {
-                $cleanupResult = [ordered]@{ cleanupCertain=$false; failures=@("OWNED_PROCESS_CLEANUP_EXCEPTION:$($_.Exception.Message)"); results=@() }
-                $native.launchFailure = @($native.launchFailure,"OWNED_WRAPPER_CLEANUP_UNCERTAIN:$($cleanupResult.failures[0])"|Where-Object{$_})-join'; '
+                $cleanupResult = [ordered]@{ cleanupCertain=$false;laterAuditRequired=$true;rootAbsenceObserved=$false;failures=@("OWNED_PROCESS_CLEANUP_EXCEPTION:$($_.Exception.Message)");results=@();state='OWNED_WRAPPER_CLEANUP_UNCERTAIN' }
+                &$addOuterFailure "OWNED_WRAPPER_CLEANUP_UNCERTAIN:$($cleanupResult.failures[0])"
             }
         }
     }
+    $nativeReceiptStatus='MISSING'
+    if(Test-Path -LiteralPath $nativeResultPath -PathType Leaf){
+        try{$candidate=Get-Content -Raw -Encoding UTF8 -LiteralPath $nativeResultPath|ConvertFrom-Json;try{$null=Confirm-RecI3ObservedTargetReceipt $candidate $targetConfiguredBinding $invocationArtifactBinding;$nativeReceiptStatus='COMPLETED_VALID'}catch{$null=Confirm-RecI3ObservedTargetFailureReceipt $candidate $targetConfiguredBinding $invocationArtifactBinding;$nativeReceiptStatus='COMPLETED_FAILURE_VALID'};$native=$candidate}catch{&$addOuterFailure "NATIVE_RESULT_READBACK_INVALID:$($_.Exception.Message)";$nativeReceiptStatus='COMPLETED_INVALID'}
+    }elseif(Test-Path -LiteralPath $nativeStartedPath -PathType Leaf){
+        try{$candidate=Get-Content -Raw -Encoding UTF8 -LiteralPath $nativeStartedPath|ConvertFrom-Json;$null=Confirm-RecI3ObservedTargetStartedReceipt $candidate $targetConfiguredBinding $invocationArtifactBinding;$native=$candidate;&$addOuterFailure 'NATIVE_COMPLETION_RECEIPT_MISSING';$nativeReceiptStatus='STARTED_VALID_COMPLETION_MISSING'}catch{&$addOuterFailure "NATIVE_STARTED_READBACK_INVALID:$($_.Exception.Message)";$nativeReceiptStatus='STARTED_INVALID'}
+    }else{&$addOuterFailure "NATIVE_OBSERVATION_MISSING:wrapperExit=$wrapperExitCode"}
+    if($null-eq$native.targetCleanup-and$null-ne$cleanupResult){$native.targetCleanup=ConvertFrom-RecI3WrapperClosureTargetCleanup $native.targetNativeIdentity $cleanupResult}
+    if($timedOut){$native.exitCode=$null;$native.rawExitValue=$null;$native.rawExitType=$null;if($null-eq$native.targetExitCaptureError){$native.targetExitCaptureError='WRAPPER_TIMEOUT_EXIT_UNOBSERVED'};&$addOuterFailure 'WRAPPER_TIMEOUT'}
     [string]$stdout = if (Test-Path -LiteralPath $LogPath -PathType Leaf) { Get-Content -Raw -LiteralPath $LogPath } else { "" }
     [string]$stderr = if (Test-Path -LiteralPath $stderrPath -PathType Leaf) { Get-Content -Raw -LiteralPath $stderrPath } else { "" }
     if ($null -eq $stdout) { $stdout = "" }
     if ($null -eq $stderr) { $stderr = "" }
     $wrapperProcessId = if ($null -ne $process) { try{$process.Id}catch{$null} } else { $null }
     $wrapperExited = if($null-eq$process){$true}else{try{[bool]$process.HasExited}catch{$null}}
-    if ($null -ne $process) { try{$process.Dispose()}catch{$native.launchFailure=@($native.launchFailure,"PROCESS_DISPOSE_UNCERTAIN:$($_.Exception.Message)"|Where-Object{$_})-join'; '} }
+    if ($null -ne $process) { try{$process.Dispose()}catch{$wrapperDisposeFailure=$_.Exception.Message;&$addOuterFailure "PROCESS_DISPOSE_UNCERTAIN:$($_.Exception.Message)"} }
+    $readTargetStream={param([string]$Path,[string]$Label) $result=[ordered]@{text='';complete=$false;error=$null};try{if(-not(Test-Path -LiteralPath $Path -PathType Leaf)){throw "${Label}_MISSING"};$result.text=[IO.File]::ReadAllText($Path);$result.complete=$true}catch{$result.error=$_.Exception.Message};$result}
+    $targetStdoutSalvage=&$readTargetStream $targetStdoutPath 'TARGET_STDOUT_SALVAGE';$targetStderrSalvage=&$readTargetStream $targetStderrPath 'TARGET_STDERR_SALVAGE'
+    if(-not$targetStdoutSalvage.complete){&$addOuterFailure "TARGET_STDOUT_SALVAGE_FAILED:$($targetStdoutSalvage.error)"};if(-not$targetStderrSalvage.complete){&$addOuterFailure "TARGET_STDERR_SALVAGE_FAILED:$($targetStderrSalvage.error)"}
+    $innerFirstFailure=$native.firstFailure;$innerLaunchFailure=$native.launchFailure;$outerFailureText=@($outerFailureState.failures)-join'; ';$combinedFailures=@($outerFailureText,$innerLaunchFailure|Where-Object{-not[string]::IsNullOrWhiteSpace([string]$_)});$native.firstFailure=if($null-ne$outerFailureState.firstFailure){$outerFailureState.firstFailure}else{$innerFirstFailure};$native.launchFailure=if($combinedFailures.Count){$combinedFailures-join'; '}else{$null}
     return [ordered]@{
         name = $Name
         executable = $FilePath
@@ -164,9 +208,42 @@ exit `$native.exitCode
         workingDirectory = $WorkingDirectory
         exitCode = $native.exitCode
         wrapperExitCode = $wrapperExitCode
+        wrapperStarted = $wrapperStarted
         wrapperProcessId = $wrapperProcessId
         wrapperExited = $wrapperExited
+        wrapperIdentity = if($null-ne$processBinding){$processBinding.capturedIdentity}else{$null}
+        wrapperBindingProof = if($null-ne$processBinding){$processBinding.executableBindingProof}else{[ordered]@{stage=if($wrapperStarted){'WRAPPER_BINDING'}else{'NOT_STARTED'};verified=$false;error=$native.launchFailure}}
+        wrapperDisposeFailure = $wrapperDisposeFailure
+        receiptPhase = $native.receiptPhase
+        nativeReceiptStatus = $nativeReceiptStatus
+        targetStarted = $native.targetStarted
+        targetProcessId = $native.targetProcessId
+        targetConfiguredPath = $native.targetConfiguredPath
+        targetConfiguredBinding = $native.targetConfiguredBinding
+        targetNativeIdentity = $native.targetNativeIdentity
+        targetNativeBinding = $native.targetNativeBinding
+        targetBindingProof = $native.targetBindingProof
+        targetCleanup = $native.targetCleanup
+        targetExitCaptureError = $native.targetExitCaptureError
+        rawExitValue = $native.rawExitValue
+        rawExitType = $native.rawExitType
+        targetDisposeError = $native.targetDisposeError
+        targetStdoutReadError = $native.targetStdoutReadError
+        targetStderrReadError = $native.targetStderrReadError
+        targetStdoutComplete = $native.targetStdoutComplete
+        targetStderrComplete = $native.targetStderrComplete
+        targetOutput = $targetStdoutSalvage.text
+        targetErrorOutput = $targetStderrSalvage.text
+        targetStdoutSalvageComplete = $targetStdoutSalvage.complete
+        targetStdoutSalvageError = $targetStdoutSalvage.error
+        targetStderrSalvageComplete = $targetStderrSalvage.complete
+        targetStderrSalvageError = $targetStderrSalvage.error
+        invocationArtifactPath = $native.invocationArtifactPath
+        invocationArtifactBinding = $native.invocationArtifactBinding
         ownedCleanup = $cleanupResult
+        firstFailure = $native.firstFailure
+        outerFirstFailure = $outerFailureState.firstFailure
+        innerFirstFailure = $innerFirstFailure
         launchFailure = $native.launchFailure
         timedOut = $timedOut
         output = $stdout.Trim()
@@ -174,6 +251,7 @@ exit `$native.exitCode
         logPath = $LogPath
         stderrPath = $stderrPath
         nativeResultPath = $nativeResultPath
+        nativeStartedPath = $nativeStartedPath
     }
 }
 
@@ -192,7 +270,7 @@ function Invoke-Preflight([string]$Name, [string]$FilePath, [string[]]$Arguments
 }
 
 function Write-CreateNewJson([string]$Path, [object]$Value) {
-    $bytes = [System.Text.UTF8Encoding]::new($false).GetBytes((($Value | ConvertTo-Json -Depth 10) + [Environment]::NewLine))
+    $bytes = [System.Text.UTF8Encoding]::new($false).GetBytes((($Value | ConvertTo-Json -Depth 20) + [Environment]::NewLine))
     $stream = [System.IO.File]::Open($Path, [System.IO.FileMode]::CreateNew, [System.IO.FileAccess]::Write, [System.IO.FileShare]::Read)
     try { $stream.Write($bytes, 0, $bytes.Length); $stream.Flush($true) } finally { $stream.Dispose() }
 }
@@ -280,9 +358,14 @@ try {
     if ($online -notcontains $Serial) {
         $emulatorStdout = Join-Path $rawPath "emulator-stdout.log"
         $emulatorStderr = Join-Path $rawPath "emulator-stderr.log"
-        $ownedEmulatorProcess = Start-Process -FilePath $emulatorPath -ArgumentList @("-avd", $AvdName, "-port", "$emulatorPort", "-no-window", "-no-audio", "-no-boot-anim") -RedirectStandardOutput $emulatorStdout -RedirectStandardError $emulatorStderr -PassThru -WindowStyle Hidden
-        $ownedEmulatorBinding = New-RecI3OwnedProcessBinding $ownedEmulatorProcess
+        $ownedEmulatorInvocationArtifactBinding=Get-RecI3ExecutableFileBinding $emulatorPath $null 'CONFIGURED_EMULATOR_INVOCATION_ARTIFACT'
+        $emulatorArguments=@("-avd",$AvdName,"-port","$emulatorPort","-no-window","-no-audio","-no-boot-anim")
+        if([IO.Path]::GetExtension($emulatorPath)-in@('.cmd','.bat')){$emulatorLaunchPath=[IO.Path]::GetFullPath($env:ComSpec);$quotedEmulatorArguments=@($emulatorArguments|ForEach-Object{$value=[string]$_;if($value-match'[\s"&|<>^]'){'"'+$value.Replace('"','""')+'"'}else{$value}});$emulatorLaunchArguments=@('/d','/s','/c',('""'+[IO.Path]::GetFullPath($emulatorPath)+'" '+($quotedEmulatorArguments-join' ')+'"'));$emulatorArgumentLine='/d /s /c ""'+[IO.Path]::GetFullPath($emulatorPath)+'" '+($quotedEmulatorArguments-join' ')+'"'}else{$emulatorLaunchPath=[IO.Path]::GetFullPath($emulatorPath);$emulatorLaunchArguments=$emulatorArguments;$emulatorArgumentLine=ConvertTo-RecI3WindowsCommandLine $emulatorLaunchArguments}
+        $ownedEmulatorConfiguredBinding=Get-RecI3ExecutableFileBinding $emulatorLaunchPath $null 'CONFIGURED_EMULATOR_TARGET'
+        $ownedEmulatorProcess = Start-Process -FilePath $emulatorLaunchPath -ArgumentList $emulatorArgumentLine -RedirectStandardOutput $emulatorStdout -RedirectStandardError $emulatorStderr -PassThru -WindowStyle Hidden
         $startedEmulator = $true
+        $ownedEmulatorProcessId=[int]$ownedEmulatorProcess.Id
+        try{$ownedEmulatorBinding = New-RecI3OwnedProcessBinding $ownedEmulatorProcess $ownedEmulatorConfiguredBinding}catch{$ownedEmulatorBindingFailure=$_.ToString();throw}
         $bootDeadline = [DateTime]::UtcNow.AddSeconds([Math]::Min($commandTimeoutSeconds, 300))
         do {
             Start-Sleep -Milliseconds 250
@@ -468,9 +551,10 @@ try {
             cleanupFailure = "CLEANUP_INTENTIONALLY_NOT_RUN_ON_UNVERIFIED_TARGET"
             cleanupAttempted = $false
             packageCleanup = @()
-            emulatorCleanup = [ordered]@{ attempted = $false; ownedProcessStopAttempted = $ownedProcessStopAttempted; ownedStop = $ownedStop; ownedStopFailure = $ownedStopFailure }
+            emulatorCleanup = [ordered]@{ attempted = $false; ownedProcessStopAttempted = $ownedProcessStopAttempted; started=$startedEmulator;processId=$ownedEmulatorProcessId;invocationArtifactBinding=$ownedEmulatorInvocationArtifactBinding;configuredBinding=$ownedEmulatorConfiguredBinding;retainedBinding=if($null-ne$ownedEmulatorBinding){$ownedEmulatorBinding.capturedIdentity}else{$null};bindingFailure=$ownedEmulatorBindingFailure;stdoutPath=if($startedEmulator){$emulatorStdout}else{$null};stderrPath=if($startedEmulator){$emulatorStderr}else{$null}; ownedStop = $ownedStop; ownedStopFailure = $ownedStopFailure }
         })
     }
+    if($null-ne$ownedEmulatorProcess){try{$ownedEmulatorProcess.Dispose()}catch{$ownedEmulatorDisposeFailure=$_.Exception.Message;$exitCode=1;if($null-eq$primaryFailure){$primaryFailure="OWNED_EMULATOR_DISPOSE_UNCERTAIN:$ownedEmulatorDisposeFailure"}else{$secondaryFailures += [ordered]@{stage='owned-emulator-dispose';message=$ownedEmulatorDisposeFailure}}}}
     try {
         if ($env:DORA_REC_I3_INJECT_REPORT_FAILURE -eq "1") { throw "INJECTED_REPORTING_FAILURE" }
         Write-JsonFile $reportPath ([ordered]@{
@@ -485,6 +569,13 @@ try {
             cleanupExitCode = if ($null -ne $cleanupResult) { $cleanupResult.exitCode } else { $null }
             ownedStop = $ownedStop
             ownedStopFailure = $ownedStopFailure
+            startedEmulator = $startedEmulator
+            ownedEmulatorProcessId = $ownedEmulatorProcessId
+            ownedEmulatorConfiguredBinding = $ownedEmulatorConfiguredBinding
+            ownedEmulatorInvocationArtifactBinding = $ownedEmulatorInvocationArtifactBinding
+            ownedEmulatorRetainedIdentity = if($null-ne$ownedEmulatorBinding){$ownedEmulatorBinding.capturedIdentity}else{$null}
+            ownedEmulatorBindingFailure = $ownedEmulatorBindingFailure
+            ownedEmulatorDisposeFailure = $ownedEmulatorDisposeFailure
             exitCode = $exitCode
         })
     } catch {

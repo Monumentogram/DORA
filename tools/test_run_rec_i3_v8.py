@@ -45,6 +45,10 @@ class RecI3V8RunnerTests(unittest.TestCase):
             self.assertRegex(source, r"\$processBinding\s*=\s*\$null")
             self.assertIn("OWNED_PROCESS_BINDING_UNAVAILABLE", source, name)
             self.assertIn("OWNED_PROCESS_CLEANUP_EXCEPTION", source, name)
+            self.assertIn("Confirm-RecI3ObservedTargetReceipt $candidate $targetConfiguredBinding $invocationArtifactBinding", source, name)
+            self.assertIn("Confirm-RecI3ObservedTargetStartedReceipt $candidate", source, name)
+            self.assertIn("Confirm-RecI3ObservedTargetFailureReceipt $candidate", source, name)
+            self.assertIn("ConvertTo-Json -Depth 20", source, name)
         self.assertIn("ownedStop = $ownedStop", runner)
         self.assertIn("ownedStopFailure = $ownedStopFailure", runner)
 
@@ -341,6 +345,77 @@ class RecI3V8RunnerTests(unittest.TestCase):
         module.write_text(OWNED_PROCESS.read_text(encoding="utf-8") + module_suffix, encoding="utf-8")
         return runner
 
+    def fault_runner_source(self, old: str, new: str) -> Path:
+        fault_root = self.root / "fault-runner-source"
+        fault_root.mkdir()
+        runner = fault_root / RUNNER.name
+        source = RUNNER.read_text(encoding="utf-8")
+        self.assertEqual(1, source.count(old), old)
+        runner.write_text(source.replace(old, new), encoding="utf-8")
+        shutil.copy2(OWNED_PROCESS, fault_root / OWNED_PROCESS.name)
+        return runner
+
+    def fault_helper(self, module_suffix: str = "", source_replacement: tuple[str, str] | None = None) -> Path:
+        fault_root = self.root / f"fault-helper-{len(list(self.root.glob('fault-helper-*')))}"
+        fault_root.mkdir()
+        helper = fault_root / PRESERVER.name
+        source = PRESERVER.read_text(encoding="utf-8")
+        if source_replacement:
+            old, new = source_replacement
+            self.assertEqual(1, source.count(old), old)
+            source = source.replace(old, new)
+        helper.write_text(source, encoding="utf-8")
+        (fault_root / OWNED_PROCESS.name).write_text(
+            OWNED_PROCESS.read_text(encoding="utf-8") + module_suffix, encoding="utf-8"
+        )
+        return helper
+
+    def invoke_helper_fault(
+        self, helper: Path, *, timeout: int = 30, copy_mode: str = "normal"
+    ) -> tuple[subprocess.CompletedProcess[str], dict]:
+        ordinal = len(list(self.root.glob("helper-source-*")))
+        source = self.root / f"helper-source-{ordinal}"
+        source.mkdir()
+        (source / "payload.txt").write_text("bounded helper fixture", encoding="utf-8")
+        destination = self.root / f"helper-evidence-{ordinal}"
+        observation = self.root / f"helper-observations-{ordinal}" / "cleanup.json"
+        staging = self.root / f"helper-staging-{ordinal}"
+        robocopy = self.root / f"helper-robocopy-{ordinal}.cmd"
+        marker = self.root / f"helper-copy-{ordinal}.marker"
+        robocopy.write_text(
+            "@echo off\r\n"
+            "if \"%FAKE_HELPER_COPY_MODE%\"==\"hang\" ping 127.0.0.1 -n 6 >nul\r\n"
+            "robocopy.exe %*\r\n"
+            "exit /b %errorlevel%\r\n",
+            encoding="utf-8",
+        )
+        environment = os.environ.copy()
+        environment.update({
+            "TEMP": str(self.root / "tmp"), "TMP": str(self.root / "tmp"),
+            "DORA_REC_I3_ROBOCOPY_PATH": str(robocopy),
+            "DORA_REC_I3_HELPER_COMMAND_TIMEOUT_SECONDS": str(timeout),
+            "FAKE_HELPER_COPY_MODE": copy_mode, "FAKE_ADB_LOG": str(self.adb_log),
+            "FAKE_ADB_MODE": "absent", "FAKE_ADB_IDENTITY": "valid",
+            "FAKE_APK_LIFECYCLE": "0", "FAKE_EMULATOR_STARTED": str(self.emulator_started),
+            "FAKE_UNINSTALLED_PREFIX": str(self.root / "helper-uninstalled"),
+            "FAKE_COPY_MARKER": str(marker),
+        })
+        command = [
+            os.environ.get("DORA_REC_I3_TEST_POWERSHELL", "powershell.exe"),
+            "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(helper),
+            "-SourcePath", str(source), "-EvidenceRoot", str(destination),
+            "-StagingRoot", str(staging), "-ObservationPath", str(observation),
+            "-AdbPath", str(self.adb), "-PackageNames",
+            "com.monumentogram.dora.poc.recovery,com.monumentogram.dora.poc.recovery.test",
+            "-AttemptId", f"wave2-{ordinal}", "-Serial", SERIAL, "-StopEmulator",
+        ]
+        raw = subprocess.run(command, capture_output=True, env=environment, timeout=90)
+        completed = subprocess.CompletedProcess(
+            command, raw.returncode, raw.stdout.decode("oem", errors="replace"),
+            raw.stderr.decode("oem", errors="replace"),
+        )
+        return completed, json.loads(observation.read_text(encoding="utf-8-sig"))
+
     def test_binding_acquisition_failure_after_launch_is_durable(self) -> None:
         runner = self.fault_runner(
             "\nfunction New-RecI3OwnedProcessBinding([Diagnostics.Process]$Process){throw 'SYNTHETIC_BINDING_ACQUISITION_FAILURE'}\n"
@@ -351,11 +426,146 @@ class RecI3V8RunnerTests(unittest.TestCase):
         raw = next(self.evidence.glob("REC-I3-V8-RAW-*"))
         record = json.loads((raw / "preflight.json").read_text(encoding="utf-8-sig"))["commands"][0]
         self.assertIsInstance(record["wrapperProcessId"], int)
-        self.assertFalse(record["ownedCleanup"]["cleanupCertain"])
+        self.assertFalse(record["targetCleanup"]["cleanupCertain"])
         self.assertIn("OWNED_PROCESS_BINDING_UNAVAILABLE", record["ownedCleanup"]["failures"])
         self.assertIn("SYNTHETIC_BINDING_ACQUISITION_FAILURE", record["launchFailure"])
         report = json.loads(next(self.evidence.glob("REC-I3-V8-REPORT-*.json")).read_text(encoding="utf-8-sig"))
         self.assertIn("PREFLIGHT_LAUNCH_FAILED", report["primaryFailure"])
+
+    def test_wrapper_binding_failure_cannot_be_erased_by_valid_target_receipt(self) -> None:
+        runner = self.fault_runner(
+            "\n$script:OriginalNewRecI3OwnedProcessBinding=${function:New-RecI3OwnedProcessBinding}\n"
+            "function New-RecI3OwnedProcessBinding([Diagnostics.Process]$Process,[object]$ConfiguredExecutableBinding=$null,[object]$InventoryExecutableBinding=$null){"
+            "if($null-eq$ConfiguredExecutableBinding){throw 'SYNTHETIC_WRAPPER_BINDING_FAILURE'};"
+            "& $script:OriginalNewRecI3OwnedProcessBinding $Process $ConfiguredExecutableBinding $InventoryExecutableBinding}\n"
+            "Export-ModuleMember -Function Get-RecI3ExecutableFileBinding,New-RecI3OwnedProcessBinding,Stop-RecI3OwnedProcessClosure,Confirm-RecI3ObservedTargetReceipt,Confirm-RecI3ObservedTargetStartedReceipt,Confirm-RecI3ObservedTargetFailureReceipt,ConvertTo-RecI3WindowsCommandLine,ConvertFrom-RecI3WrapperClosureTargetCleanup\n"
+        )
+        completed = self.invoke(runner_path=runner)
+        self.assertNotEqual(0, completed.returncode)
+        raw = next(self.evidence.glob("REC-I3-V8-RAW-*"))
+        record = json.loads((raw / "preflight.json").read_text(encoding="utf-8-sig"))["commands"][0]
+        self.assertEqual("COMPLETED_VALID", record["nativeReceiptStatus"])
+        self.assertTrue(record["targetStarted"])
+        self.assertEqual(0, record["exitCode"])
+        self.assertIn("SYNTHETIC_WRAPPER_BINDING_FAILURE", record["outerFirstFailure"])
+        self.assertIn("SYNTHETIC_WRAPPER_BINDING_FAILURE", record["launchFailure"])
+        self.assertIsNone(record["innerFirstFailure"])
+
+    def test_outer_target_stream_salvage_failure_is_explicit(self) -> None:
+        old = "$result.text=[IO.File]::ReadAllText($Path);$result.complete=$true"
+        runner = self.fault_runner_source(old, "$result.text=if($Label-ceq'TARGET_STDOUT_SALVAGE'){throw 'SYNTHETIC_TARGET_STDOUT_SALVAGE_FAILURE'}else{[IO.File]::ReadAllText($Path)};$result.complete=$true")
+        completed = self.invoke(runner_path=runner)
+        self.assertNotEqual(0, completed.returncode)
+        raw = next(self.evidence.glob("REC-I3-V8-RAW-*"))
+        record = json.loads((raw / "preflight.json").read_text(encoding="utf-8-sig"))["commands"][0]
+        self.assertFalse(record["targetStdoutSalvageComplete"])
+        self.assertIn("SYNTHETIC_TARGET_STDOUT_SALVAGE_FAILURE", record["targetStdoutSalvageError"])
+        self.assertIn("SYNTHETIC_TARGET_STDOUT_SALVAGE_FAILURE", record["launchFailure"])
+
+    def test_helper_outer_failures_and_salvage_are_durable(self) -> None:
+        binding_suffix = (
+            "\n$script:OriginalNewRecI3OwnedProcessBinding=${function:New-RecI3OwnedProcessBinding}\n"
+            "function New-RecI3OwnedProcessBinding([Diagnostics.Process]$Process,[object]$ConfiguredExecutableBinding=$null,[object]$InventoryExecutableBinding=$null){"
+            "if($null-eq$ConfiguredExecutableBinding){throw 'SYNTHETIC_WRAPPER_BINDING_FAILURE'};"
+            "& $script:OriginalNewRecI3OwnedProcessBinding $Process $ConfiguredExecutableBinding $InventoryExecutableBinding}\n"
+            "Export-ModuleMember -Function Get-RecI3ExecutableFileBinding,New-RecI3OwnedProcessBinding,Stop-RecI3OwnedProcessClosure,Confirm-RecI3ObservedTargetReceipt,Confirm-RecI3ObservedTargetStartedReceipt,Confirm-RecI3ObservedTargetFailureReceipt,ConvertTo-RecI3WindowsCommandLine,ConvertFrom-RecI3WrapperClosureTargetCleanup\n"
+        )
+        completed, observation = self.invoke_helper_fault(self.fault_helper(binding_suffix))
+        self.assertNotEqual(0, completed.returncode)
+        binding_record = observation["copyCommands"][0]
+        self.assertEqual("COMPLETED_VALID", binding_record["nativeReceiptStatus"])
+        self.assertIn("SYNTHETIC_WRAPPER_BINDING_FAILURE", binding_record["outerFirstFailure"])
+        old = "$result.text=[IO.File]::ReadAllText($Path);$result.complete=$true"
+        new = "$result.text=if($Label-ceq'TARGET_STDOUT_SALVAGE'){throw 'SYNTHETIC_TARGET_STDOUT_SALVAGE_FAILURE'}else{[IO.File]::ReadAllText($Path)};$result.complete=$true"
+        completed, observation = self.invoke_helper_fault(self.fault_helper(source_replacement=(old, new)))
+        self.assertNotEqual(0, completed.returncode)
+        salvage_record = observation["copyCommands"][0]
+        self.assertFalse(salvage_record["targetStdoutSalvageComplete"])
+        self.assertIn("SYNTHETIC_TARGET_STDOUT_SALVAGE_FAILURE", salvage_record["targetStdoutSalvageError"])
+
+    def test_helper_timeout_cleanup_uncertainty_and_exception_are_durable(self) -> None:
+        variants = (
+            "$result=& $script:OriginalStopRecI3OwnedProcessClosure $RootBinding $GraceMilliseconds $ForceWaitMilliseconds;$result.cleanupCertain=$false;$result.laterAuditRequired=$true;$result.rootAbsenceObserved=$false;$result.failures=@($result.failures,'SYNTHETIC_CLEANUP_UNCERTAIN'|Where-Object{$_});$result.state='OWNED_CLOSURE_UNCERTAIN';$result",
+            "$null=& $script:OriginalStopRecI3OwnedProcessClosure $RootBinding $GraceMilliseconds $ForceWaitMilliseconds;throw 'SYNTHETIC_CLEANUP_EXCEPTION'",
+        )
+        for body in variants:
+            suffix = (
+                "\n$script:OriginalStopRecI3OwnedProcessClosure=${function:Stop-RecI3OwnedProcessClosure}\n"
+                "function Stop-RecI3OwnedProcessClosure([object]$RootBinding,[int]$GraceMilliseconds=0,[int]$ForceWaitMilliseconds=0){" + body + "}\n"
+                "Export-ModuleMember -Function Get-RecI3ExecutableFileBinding,New-RecI3OwnedProcessBinding,Stop-RecI3OwnedProcessClosure,Confirm-RecI3ObservedTargetReceipt,Confirm-RecI3ObservedTargetStartedReceipt,Confirm-RecI3ObservedTargetFailureReceipt,ConvertTo-RecI3WindowsCommandLine,ConvertFrom-RecI3WrapperClosureTargetCleanup\n"
+            )
+            completed, observation = self.invoke_helper_fault(
+                self.fault_helper(suffix), timeout=1, copy_mode="hang"
+            )
+            self.assertNotEqual(0, completed.returncode)
+            record = observation["copyCommands"][0]
+            self.assertTrue(record["timedOut"])
+            self.assertIn("SYNTHETIC_CLEANUP", record["launchFailure"])
+            self.assertTrue(record["outerFirstFailure"])
+            self.assertIsNone(record["exitCode"])
+
+    def test_native_bounded_target_binding_is_distinct_from_wrapper(self) -> None:
+        completed = self.invoke(governance_exit=7)
+        self.assertNotEqual(0, completed.returncode)
+        raw = next(self.evidence.glob("REC-I3-V8-RAW-*"))
+        records = json.loads((raw / "preflight.json").read_text(encoding="utf-8-sig"))["commands"]
+        record = next(item for item in records if item["name"] == "governance")
+        self.assertTrue(record["wrapperStarted"])
+        self.assertIsInstance(record["wrapperProcessId"], int)
+        self.assertTrue(record["targetStarted"])
+        self.assertIsInstance(record["targetProcessId"], int)
+        self.assertNotEqual(record["wrapperProcessId"], record["targetProcessId"])
+        self.assertEqual(str(Path(sys.executable)), record["targetConfiguredPath"])
+        self.assertEqual(str(Path(sys.executable)), record["targetConfiguredBinding"]["rawPath"])
+        self.assertTrue(record["targetBindingProof"]["verified"])
+        self.assertEqual(
+            record["targetConfiguredBinding"]["physicalId"],
+            record["targetNativeBinding"]["physicalId"],
+        )
+        self.assertEqual(
+            record["targetConfiguredBinding"]["sha256"],
+            record["targetNativeBinding"]["sha256"],
+        )
+        self.assertIsNone(record["targetBindingProof"]["error"])
+
+    def test_runner_preserves_python_script_path_with_spaces_and_batch_control(self) -> None:
+        spaced_repo = self.root / "repo path with spaces"
+        self.repo.rename(spaced_repo)
+        self.repo = spaced_repo
+        completed = self.invoke()
+        self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
+        raw = next(self.evidence.glob("REC-I3-V8-RAW-*"))
+        records = json.loads((raw / "preflight.json").read_text(encoding="utf-8-sig"))["commands"]
+        governance = next(item for item in records if item["name"] == "governance")
+        self.assertEqual(0, governance["exitCode"], completed.stdout + completed.stderr)
+        self.assertIn("synthetic governance pass", governance["output"])
+        self.assertTrue(any("devices" in line for line in self.adb_log.read_text().splitlines()))
+        cleanup = json.loads(next(self.evidence.glob("REC-I3-V8-CLEANUP-*.json")).read_text(encoding="utf-8-sig"))
+        self.assertTrue(cleanup["copySucceeded"], "helper lost a spaced source/evidence/staging argument")
+        self.assertTrue(any(self.evidence.glob("REC-I3-V8-PRESERVED-*/PRESERVATION_MANIFEST.json")))
+
+    def test_post_start_target_binding_failure_preserves_partial_facts(self) -> None:
+        runner = self.fault_runner(
+            "\n$script:OriginalNewRecI3OwnedProcessBinding=${function:New-RecI3OwnedProcessBinding}\n"
+            "function New-RecI3OwnedProcessBinding([Diagnostics.Process]$Process,[object]$ConfiguredExecutableBinding=$null,[object]$InventoryExecutableBinding=$null){"
+            "if($null-ne$ConfiguredExecutableBinding){throw 'SYNTHETIC_TARGET_BINDING_FAILURE'};"
+            "& $script:OriginalNewRecI3OwnedProcessBinding $Process $ConfiguredExecutableBinding $InventoryExecutableBinding}\n"
+            "Export-ModuleMember -Function Get-RecI3ExecutableFileBinding,New-RecI3OwnedProcessBinding,Stop-RecI3OwnedProcessClosure\n"
+        )
+        completed = self.invoke(runner_path=runner)
+        self.assertNotEqual(0, completed.returncode)
+        raw = next(self.evidence.glob("REC-I3-V8-RAW-*"))
+        record = json.loads((raw / "preflight.json").read_text(encoding="utf-8-sig"))["commands"][0]
+        self.assertTrue(record["wrapperStarted"])
+        self.assertIsInstance(record["wrapperProcessId"], int)
+        self.assertTrue(record["targetStarted"])
+        self.assertIsInstance(record["targetProcessId"], int)
+        self.assertEqual("TARGET_BINDING", record["targetBindingProof"]["stage"])
+        self.assertIn("SYNTHETIC_TARGET_BINDING_FAILURE", record["targetBindingProof"]["error"])
+        self.assertIsNone(record["exitCode"])
+        self.assertIsInstance(record["output"], str)
+        self.assertIsInstance(record["errorOutput"], str)
+        self.assertFalse(record["targetCleanup"]["cleanupCertain"])
 
     def test_post_termination_wait_failure_result_reaches_durable_report(self) -> None:
         runner = self.fault_runner(
@@ -467,6 +677,31 @@ class RecI3V8RunnerTests(unittest.TestCase):
         self.assertIsNone(result["launchFailure"])
         self.assertIn("native diagnostic", result["errorOutput"])
 
+    def test_actual_caller_null_exit_is_not_coerced_to_success(self) -> None:
+        runner = self.fault_runner_source("`$raw=`$target.ExitCode;", "`$raw=`$null;")
+        completed = self.invoke(runner_path=runner)
+        self.assertNotEqual(0, completed.returncode)
+        raw = next(self.evidence.glob("REC-I3-V8-RAW-*"))
+        records = json.loads((raw / "preflight.json").read_text(encoding="utf-8-sig"))["commands"]
+        observed = records[0]
+        self.assertIsNone(observed["exitCode"])
+        self.assertIsNone(observed["rawExitValue"])
+        self.assertIsNone(observed["rawExitType"])
+        self.assertIn("TARGET_EXIT", observed["targetExitCaptureError"])
+
+    def test_completion_receipt_publication_failure_retains_started_receipt(self) -> None:
+        old = "try{Write-NativeCreateOnce $(Convert-ToPsLiteral $nativeResultPath) `$native}catch"
+        runner = self.fault_runner_source(old, "try{throw 'SYNTHETIC_RESULT_PUBLICATION_FAILURE'}catch")
+        completed = self.invoke(runner_path=runner)
+        self.assertNotEqual(0, completed.returncode)
+        raw = next(self.evidence.glob("REC-I3-V8-RAW-*"))
+        record = json.loads((raw / "preflight.json").read_text(encoding="utf-8-sig"))["commands"][0]
+        self.assertEqual("STARTED_VALID_COMPLETION_MISSING", record["nativeReceiptStatus"])
+        self.assertTrue(record["targetStarted"])
+        self.assertIsInstance(record["targetProcessId"], int)
+        self.assertIsNone(record["exitCode"])
+        self.assertIn("NATIVE_COMPLETION_RECEIPT_MISSING", record["launchFailure"])
+
     def assert_logcat_secondary_failure(self, target: str, *, gradle_exit: int = 23, timeout: bool = False) -> None:
         completed = self.invoke(block_logcat=target, gradle_exit=gradle_exit,
                                 command_timeout=1 if timeout else 30, gradle_delay=timeout)
@@ -526,6 +761,18 @@ class RecI3V8RunnerTests(unittest.TestCase):
                 self.assertFalse(record[prefix + "TimedOut"])
                 self.assertEqual(output, record[prefix + "Output"])
                 self.assertEqual("", record[prefix + "ErrorOutput"])
+            command = record["forceStopCommand"]
+            self.assertTrue(command["wrapperStarted"])
+            self.assertTrue(command["targetStarted"])
+            self.assertIsInstance(command["wrapperProcessId"], int)
+            self.assertIsInstance(command["targetProcessId"], int)
+            self.assertNotEqual(command["wrapperProcessId"], command["targetProcessId"])
+            self.assertEqual(str(self.adb), command["invocationArtifactPath"])
+            self.assertTrue(command["targetBindingProof"]["verified"])
+            self.assertEqual(
+                command["targetConfiguredBinding"]["physicalId"],
+                command["targetNativeBinding"]["physicalId"],
+            )
         self.assertEqual(0, observation["emulatorCleanup"]["exitCode"])
         self.assertFalse(observation["emulatorCleanup"]["timedOut"])
         self.assertEqual("", observation["emulatorCleanup"]["output"])
@@ -720,6 +967,20 @@ class RecI3V8RunnerTests(unittest.TestCase):
         self.assertEqual("ATTEMPT_CONSUMED_EXECUTION_UNKNOWN", ledger["state"])
         completion = json.loads(self.completion.read_text(encoding="utf-8-sig"))
         self.assertTrue(completion["timedOut"])
+        connected = completion["connectedResult"]
+        self.assertTrue(connected["targetStarted"])
+        self.assertIsInstance(connected["targetProcessId"], int)
+        self.assertIsNotNone(connected["targetNativeBinding"])
+        self.assertIsNone(connected["exitCode"])
+        self.assertIsNotNone(connected["targetExitCaptureError"])
+        self.assertIn("targetOutput", connected)
+        self.assertIn("targetErrorOutput", connected)
+        self.assertIsInstance(connected["targetCleanup"]["cleanupCertain"], bool)
+        self.assertIn("laterAuditRequired", connected["targetCleanup"])
+        if connected["targetCleanup"]["results"]:
+            nested = connected["targetCleanup"]["results"][0]
+            self.assertIsInstance(nested["capturedIdentity"]["processId"], int)
+            self.assertIsInstance(nested["terminationAttempted"], bool)
         self.assertTrue(any(self.evidence.glob("REC-I3-V8-CLEANUP-*.json")))
 
     def test_metadata_filesystem_failure_cannot_skip_cleanup(self) -> None:
