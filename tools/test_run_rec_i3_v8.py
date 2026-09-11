@@ -377,6 +377,26 @@ class RecI3V8RunnerTests(unittest.TestCase):
         self.assertIsNone(outcome["exitCode"])
         self.assertTrue(outcome["unknown"])
 
+    def test_post_termination_exit_code_failure_result_reaches_durable_report(self) -> None:
+        runner = self.fault_runner(
+            "\nfunction Stop-RecI3OwnedProcessClosure([object]$RootBinding,[int]$GraceMilliseconds=0,[int]$ForceWaitMilliseconds=0){"
+            "[ordered]@{cleanupCertain=$true;failures=@();"
+            "results=@([ordered]@{terminationAttempted=$true;terminationSucceeded=$true;terminationError=$null;"
+            "absenceObserved=$true;unknown=$false;state='TERMINATED_EXIT_CODE_UNCERTAIN';exitCode=$null;"
+            "exitCodeCaptureError='EXIT_CODE_FAILED:synthetic'})}}\n"
+            "Export-ModuleMember -Function New-RecI3OwnedProcessBinding,Stop-RecI3OwnedProcessClosure\n"
+        )
+        completed = self.invoke(runner_path=runner, command_timeout=1, gradle_delay=True)
+        self.assertNotEqual(0, completed.returncode)
+        report = json.loads(next(self.evidence.glob("REC-I3-V8-REPORT-*.json")).read_text(encoding="utf-8-sig"))
+        outcome = report["connectedResult"]["ownedCleanup"]["results"][0]
+        self.assertTrue(outcome["terminationAttempted"])
+        self.assertTrue(outcome["terminationSucceeded"])
+        self.assertTrue(outcome["absenceObserved"])
+        self.assertFalse(outcome["unknown"])
+        self.assertIsNone(outcome["exitCode"])
+        self.assertIn("EXIT_CODE_FAILED", outcome["exitCodeCaptureError"])
+
     def test_missing_python_fails_preflight_without_consuming_attempt(self) -> None:
         # Inventing native exit 0 after command resolution failure must never launch connected Gradle.
         invalid = self.root / "invalid-python.exe"

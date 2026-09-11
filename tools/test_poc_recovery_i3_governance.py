@@ -631,7 +631,7 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
 
     @contextmanager
     def owned_handle_repository(self):
-        """Exact reviewed da4869 child with the bounded aggregate successor delta."""
+        """Exact reviewed 0819 child with the bounded aggregate successor delta."""
         source = governance.ROOT
         with tempfile.TemporaryDirectory(prefix="dora-owned-handle-governance-") as temporary:
             repo = Path(temporary) / "repo"
@@ -644,7 +644,7 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
             (repo / ".git/objects/info/alternates").write_text(
                 (common_directory / "objects").as_posix() + "\n", encoding="utf-8", newline="\n")
             governance.test_git(repo, "checkout", "-q", "-B", governance.REC_I3_V11_OWNED_HANDLE_BRANCH,
-                                governance.REC_I3_V11_OWNED_HANDLE_INITIAL)
+                                governance.REC_I3_V11_OWNED_HANDLE_CORRECTION_BASE)
             for relative in governance.REC_I3_V11_OWNED_HANDLE_PATHS:
                 target = repo / relative
                 target.parent.mkdir(parents=True, exist_ok=True)
@@ -668,12 +668,12 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
             tree = governance.git_output("rev-parse", "HEAD^{tree}")
             wrong_parent = governance.test_git_text(
                 repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
-                "commit-tree", tree, "-p", governance.REC_I3_V11_OWNED_HANDLE_BASE,
+                "commit-tree", tree, "-p", governance.REC_I3_V11_OWNED_HANDLE_INITIAL,
                 input_data=b"wrong correction parent\n")
             wrong_tree = governance.test_git_text(
                 repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
                 "commit-tree", governance.REC_I3_V11_OWNED_HANDLE_BASE_TREE,
-                "-p", governance.REC_I3_V11_OWNED_HANDLE_INITIAL,
+                "-p", governance.REC_I3_V11_OWNED_HANDLE_CORRECTION_BASE,
                 input_data=b"wrong correction tree\n")
             self.assertFalse(governance.rec_i3_v11_owned_handle_source_candidate(wrong_parent))
             self.assertFalse(governance.rec_i3_v11_owned_handle_source_candidate(wrong_tree))
@@ -719,7 +719,7 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
             mode_tree = governance.test_git_text(repo, "write-tree")
             mode_commit = governance.test_git_text(
                 repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
-                "commit-tree", mode_tree, "-p", governance.REC_I3_V11_OWNED_HANDLE_INITIAL,
+                "commit-tree", mode_tree, "-p", governance.REC_I3_V11_OWNED_HANDLE_CORRECTION_BASE,
                 input_data=b"mode drift\n")
             self.assertFalse(governance.rec_i3_v11_owned_handle_source_candidate(mode_commit))
             governance.test_git(repo, "update-index", "--chmod=-x", "tools/rec_i3_owned_process.psm1")
@@ -730,7 +730,7 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
             extra_tree = governance.test_git_text(repo, "write-tree")
             extra_commit = governance.test_git_text(
                 repo, "-c", "user.name=Dora Test", "-c", "user.email=dora@example.invalid",
-                "commit-tree", extra_tree, "-p", governance.REC_I3_V11_OWNED_HANDLE_INITIAL,
+                "commit-tree", extra_tree, "-p", governance.REC_I3_V11_OWNED_HANDLE_CORRECTION_BASE,
                 input_data=b"extra path\n")
             self.assertFalse(governance.rec_i3_v11_owned_handle_source_candidate(extra_commit))
             governance.test_git(repo, "rm", "--cached", "-q", "unauthorized.txt")

@@ -613,6 +613,8 @@ REC_I3_V11_OWNED_HANDLE_BASE = "d309cda52e7307506726712be0f61f444643e43c"
 REC_I3_V11_OWNED_HANDLE_BASE_TREE = "0d4c71ef1e131ef9873bc259a0bb56e696b0d539"
 REC_I3_V11_OWNED_HANDLE_INITIAL = "da4869b65d1fd1273df19dd822c72436a81bbdd3"
 REC_I3_V11_OWNED_HANDLE_INITIAL_TREE = "9142a6c266e678f5c77b6389eb203d9867065ed8"
+REC_I3_V11_OWNED_HANDLE_CORRECTION_BASE = "0819a9fa7764a8b462b69abc520b98a63c508a08"
+REC_I3_V11_OWNED_HANDLE_CORRECTION_BASE_TREE = "d955c6111194acadb9908e8dad05d37518fb49c4"
 REC_I3_V11_OWNED_HANDLE_BRANCH = "fix/rec-i3-v11-owned-handle-cleanup"
 REC_I3_V11_OWNED_HANDLE_PATHS = (
     "tools/rec_i3_owned_process.psm1",
@@ -7377,7 +7379,7 @@ def rec_i3_v11_source_candidate(commit: str, *, root: Path | None = None) -> boo
 
 
 def rec_i3_v11_owned_handle_source_candidate(commit: str, *, root: Path | None = None) -> bool:
-    """Recognize the reviewed two-commit retained-handle cleanup chain above immutable d309."""
+    """Recognize the explicit retained-handle cleanup correction chain above immutable d309."""
     repository_root = root or ROOT
     if (
         git_optional_output("rev-parse", f"{REC_I3_V11_OWNED_HANDLE_BASE}^{{tree}}", root=repository_root)
@@ -7386,8 +7388,12 @@ def rec_i3_v11_owned_handle_source_candidate(commit: str, *, root: Path | None =
         != REC_I3_V11_OWNED_HANDLE_INITIAL_TREE
         or git_optional_output("show", "-s", "--format=%P", REC_I3_V11_OWNED_HANDLE_INITIAL, root=repository_root)
         != REC_I3_V11_OWNED_HANDLE_BASE
-        or git_optional_output("show", "-s", "--format=%P", commit, root=repository_root)
+        or git_optional_output("rev-parse", f"{REC_I3_V11_OWNED_HANDLE_CORRECTION_BASE}^{{tree}}", root=repository_root)
+        != REC_I3_V11_OWNED_HANDLE_CORRECTION_BASE_TREE
+        or git_optional_output("show", "-s", "--format=%P", REC_I3_V11_OWNED_HANDLE_CORRECTION_BASE, root=repository_root)
         != REC_I3_V11_OWNED_HANDLE_INITIAL
+        or git_optional_output("show", "-s", "--format=%P", commit, root=repository_root)
+        != REC_I3_V11_OWNED_HANDLE_CORRECTION_BASE
         or set(git_path_records("diff", "--name-only", "--no-renames", "-z",
                                 REC_I3_V11_OWNED_HANDLE_BASE, commit, "--", root=repository_root))
         != set(REC_I3_V11_OWNED_HANDLE_PATHS)
