@@ -18,6 +18,8 @@ try {
   if(-not$postTerminateWaitFailure.terminationAttempted-or-not$postTerminateWaitFailure.terminationSucceeded-or-not$postTerminateWaitFailure.unknown-or$postTerminateWaitFailure.absenceObserved-or$postTerminateWaitFailure.state-cne'TERMINATION_EXIT_UNCERTAIN'-or$postTerminateWaitFailure.terminationError-cnotmatch'WAIT_FAILED'){throw 'POST_TERMINATION_WAIT_FAILURE_NOT_PRESERVED'}
   $bindingUnavailable=Stop-RecI3OwnedProcessClosure $null 0 1
   if($bindingUnavailable.cleanupCertain-or$bindingUnavailable.failures-cnotcontains'OWNED_PROCESS_BINDING_UNAVAILABLE'){throw 'BINDING_ACQUISITION_FAILURE_FALSE_PASS'}
+  $budgetDeadline=100000L;foreach($now in @(10000L,50000L,99999L)){$step=Get-RecI3ShutdownBudgetStep $budgetDeadline $now 10000 1;if($step.exhausted-or-not$step.continueDiscovery-or$step.clampedWaitMilliseconds-le0){throw 'CONTINUOUS_ADDITION_BUDGET_PREMATURELY_EXHAUSTED'}}
+  $exhausted=Get-RecI3ShutdownBudgetStep $budgetDeadline 100000L 10000 1;if(-not$exhausted.exhausted-or$exhausted.continueDiscovery-or$exhausted.clampedWaitMilliseconds-ne0){throw 'CONTINUOUS_ADDITION_BUDGET_DID_NOT_EXPIRE'}
   $p=Start-Process -FilePath $env:ComSpec -ArgumentList @('/d','/c','ping 127.0.0.1 -n 30 >nul') -PassThru -WindowStyle Hidden;$children+=,$p
   $b=New-RecI3OwnedProcessBinding $p
   $wrong=[ordered]@{};foreach($k in $b.capturedIdentity.Keys){$wrong[$k]=$b.capturedIdentity[$k]};$wrong.executablePath='C:\Windows\System32\notepad.exe'

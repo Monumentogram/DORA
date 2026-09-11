@@ -397,6 +397,25 @@ class RecI3V8RunnerTests(unittest.TestCase):
         self.assertIsNone(outcome["exitCode"])
         self.assertIn("EXIT_CODE_FAILED", outcome["exitCodeCaptureError"])
 
+    def test_shutdown_budget_exhaustion_reaches_durable_report(self) -> None:
+        runner = self.fault_runner(
+            "\nfunction Stop-RecI3OwnedProcessClosure([object]$RootBinding,[int]$GraceMilliseconds=0,[int]$ForceWaitMilliseconds=0){"
+            "[ordered]@{cleanupCertain=$false;budgetExhausted=$true;shutdownBudgetMilliseconds=1000;"
+            "unresolvedIdentities=@($RootBinding.capturedIdentity);failures=@('OWNED_CLOSURE_SHUTDOWN_BUDGET_EXHAUSTED');"
+            "results=@([ordered]@{capturedIdentity=$RootBinding.capturedIdentity;terminationAttempted=$false;"
+            "terminationSucceeded=$false;terminationError='OWNED_CLOSURE_SHUTDOWN_BUDGET_EXHAUSTED';"
+            "absenceObserved=$false;unknown=$true;state='NOT_ATTEMPTED_BUDGET_EXHAUSTED';exitCode=$null})}}\n"
+            "Export-ModuleMember -Function New-RecI3OwnedProcessBinding,Stop-RecI3OwnedProcessClosure\n"
+        )
+        completed = self.invoke(runner_path=runner, command_timeout=1, gradle_delay=True)
+        self.assertNotEqual(0, completed.returncode)
+        cleanup = json.loads(next(self.evidence.glob("REC-I3-V8-REPORT-*.json")).read_text(encoding="utf-8-sig"))["connectedResult"]["ownedCleanup"]
+        self.assertTrue(cleanup["budgetExhausted"])
+        self.assertFalse(cleanup["cleanupCertain"])
+        self.assertEqual(1, len(cleanup["unresolvedIdentities"]))
+        self.assertFalse(cleanup["results"][0]["terminationAttempted"])
+        self.assertTrue(cleanup["results"][0]["unknown"])
+
     def test_missing_python_fails_preflight_without_consuming_attempt(self) -> None:
         # Inventing native exit 0 after command resolution failure must never launch connected Gradle.
         invalid = self.root / "invalid-python.exe"

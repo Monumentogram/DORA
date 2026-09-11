@@ -615,6 +615,8 @@ REC_I3_V11_OWNED_HANDLE_INITIAL = "da4869b65d1fd1273df19dd822c72436a81bbdd3"
 REC_I3_V11_OWNED_HANDLE_INITIAL_TREE = "9142a6c266e678f5c77b6389eb203d9867065ed8"
 REC_I3_V11_OWNED_HANDLE_CORRECTION_BASE = "0819a9fa7764a8b462b69abc520b98a63c508a08"
 REC_I3_V11_OWNED_HANDLE_CORRECTION_BASE_TREE = "d955c6111194acadb9908e8dad05d37518fb49c4"
+REC_I3_V11_OWNED_HANDLE_SHUTDOWN_BASE = "26c9d7e50a8c8955a2626eada6fd66a138819141"
+REC_I3_V11_OWNED_HANDLE_SHUTDOWN_BASE_TREE = "4d9bdf0a05e5421dec9db5bfa0085cbd41d0b5e7"
 REC_I3_V11_OWNED_HANDLE_BRANCH = "fix/rec-i3-v11-owned-handle-cleanup"
 REC_I3_V11_OWNED_HANDLE_PATHS = (
     "tools/rec_i3_owned_process.psm1",
@@ -7392,8 +7394,12 @@ def rec_i3_v11_owned_handle_source_candidate(commit: str, *, root: Path | None =
         != REC_I3_V11_OWNED_HANDLE_CORRECTION_BASE_TREE
         or git_optional_output("show", "-s", "--format=%P", REC_I3_V11_OWNED_HANDLE_CORRECTION_BASE, root=repository_root)
         != REC_I3_V11_OWNED_HANDLE_INITIAL
-        or git_optional_output("show", "-s", "--format=%P", commit, root=repository_root)
+        or git_optional_output("rev-parse", f"{REC_I3_V11_OWNED_HANDLE_SHUTDOWN_BASE}^{{tree}}", root=repository_root)
+        != REC_I3_V11_OWNED_HANDLE_SHUTDOWN_BASE_TREE
+        or git_optional_output("show", "-s", "--format=%P", REC_I3_V11_OWNED_HANDLE_SHUTDOWN_BASE, root=repository_root)
         != REC_I3_V11_OWNED_HANDLE_CORRECTION_BASE
+        or git_optional_output("show", "-s", "--format=%P", commit, root=repository_root)
+        != REC_I3_V11_OWNED_HANDLE_SHUTDOWN_BASE
         or set(git_path_records("diff", "--name-only", "--no-renames", "-z",
                                 REC_I3_V11_OWNED_HANDLE_BASE, commit, "--", root=repository_root))
         != set(REC_I3_V11_OWNED_HANDLE_PATHS)

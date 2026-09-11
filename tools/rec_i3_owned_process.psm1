@@ -120,31 +120,47 @@ function Add-RecI3ObservedDescendants([Collections.Generic.List[object]]$Binding
     [int]$added
 }
 
+function Get-RecI3ShutdownBudgetStep([int64]$DeadlineTicks,[int64]$NowTicks,[int]$RequestedWaitMilliseconds,[int]$AddedCount) {
+    if($RequestedWaitMilliseconds-lt0-or$AddedCount-lt0){throw 'OWNED_CLOSURE_BUDGET_INPUT_INVALID'}
+    $remainingTicks=$DeadlineTicks-$NowTicks
+    if($remainingTicks-le0){return [ordered]@{exhausted=$true;remainingMilliseconds=0;clampedWaitMilliseconds=0;continueDiscovery=$false}}
+    $remainingMilliseconds=[int][Math]::Max(1,[Math]::Floor($remainingTicks/[TimeSpan]::TicksPerMillisecond))
+    [ordered]@{exhausted=$false;remainingMilliseconds=$remainingMilliseconds;clampedWaitMilliseconds=[int][Math]::Min($RequestedWaitMilliseconds,$remainingMilliseconds);continueDiscovery=($AddedCount-gt0)}
+}
+
+function New-RecI3BudgetExhaustedResult([object]$Captured) {
+    [ordered]@{capturedIdentity=$Captured;freshIdentity=$null;terminationAttempted=$false;terminationSucceeded=$false;terminationError='OWNED_CLOSURE_SHUTDOWN_BUDGET_EXHAUSTED';absenceObserved=$false;replacementObserved=$false;unknown=$true;state='NOT_ATTEMPTED_BUDGET_EXHAUSTED';exitCode=$null;exitCodeCaptureError=$null}
+}
+
 function Stop-RecI3OwnedProcessClosure([object]$RootBinding,[int]$GraceMilliseconds=1000,[int]$ForceWaitMilliseconds=10000) {
-    if($null-eq$RootBinding){return [ordered]@{rootIdentity=$null;capturedCount=0;capturedAncestry=@();results=@();failures=@('OWNED_PROCESS_BINDING_UNAVAILABLE');snapshotPasses=0;stablePasses=0;cleanupCertain=$false}}
+    if($null-eq$RootBinding){return [ordered]@{rootIdentity=$null;capturedCount=0;capturedAncestry=@();results=@();unresolvedIdentities=@();failures=@('OWNED_PROCESS_BINDING_UNAVAILABLE');snapshotPasses=0;stablePasses=0;shutdownBudgetMilliseconds=[Math]::Max(1,$ForceWaitMilliseconds);budgetExhausted=$false;cleanupCertain=$false}}
     $bindings=[Collections.Generic.List[object]]::new();$bindings.Add($RootBinding)
     $failures=[Collections.Generic.List[string]]::new()
     $known=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal);$null=$known.Add("$($RootBinding.capturedIdentity.processId)|$($RootBinding.capturedIdentity.creationFileTimeUtc)")
-    $snapshotPasses=0;$stablePasses=0;$deadline=[DateTime]::UtcNow.AddMilliseconds([Math]::Max(250,[Math]::Min(2000,$GraceMilliseconds)))
+    $shutdownBudgetMilliseconds=[Math]::Max(1,$ForceWaitMilliseconds);$shutdownDeadline=[DateTime]::UtcNow.AddMilliseconds($shutdownBudgetMilliseconds);$preDeadline=[DateTime]::UtcNow.AddMilliseconds([Math]::Max(250,[Math]::Min(2000,$GraceMilliseconds)));if($preDeadline-gt$shutdownDeadline){$preDeadline=$shutdownDeadline}
+    $snapshotPasses=0;$stablePasses=0
     do{
         $added=0;$snapshotPasses++
         try{$added=Add-RecI3ObservedDescendants $bindings $known $failures}catch{$failures.Add("OWNED_CLOSURE_SNAPSHOT_UNCERTAIN:$($_.Exception.Message)");break}
         if($added-eq0){$stablePasses++}else{$stablePasses=0}
-        if([DateTime]::UtcNow-lt$deadline){Start-Sleep -Milliseconds 25}
-    }while([DateTime]::UtcNow-lt$deadline)
+        if([DateTime]::UtcNow-lt$preDeadline){Start-Sleep -Milliseconds 25}
+    }while([DateTime]::UtcNow-lt$preDeadline-and[DateTime]::UtcNow-lt$shutdownDeadline)
     if($stablePasses-lt2){$failures.Add('OWNED_CLOSURE_PRE_SHUTDOWN_RECONCILIATION_UNCERTAIN')}
-    $results=[Collections.Generic.List[object]]::new()
+    $results=[Collections.Generic.List[object]]::new();$resolved=[Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal);$budgetExhausted=$false
     try{
         $index=$bindings.Count-1
         while($index-ge0){
-            try{$snapshotPasses++;$added=Add-RecI3ObservedDescendants $bindings $known $failures;if($added-gt0){$index=$bindings.Count-1;continue}}catch{$failures.Add("OWNED_CLOSURE_SHUTDOWN_SNAPSHOT_UNCERTAIN:$($_.Exception.Message)")}
-            try{$result=Stop-RecI3OwnedProcess $bindings[$index] 0 $ForceWaitMilliseconds;$results.Add($result);if($result.unknown-or-not$result.absenceObserved){$failures.Add("OWNED_INSTANCE_EXIT_UNCERTAIN:$($bindings[$index].capturedIdentity.processId):$($result.terminationError)")}}
+            $step=Get-RecI3ShutdownBudgetStep $shutdownDeadline.Ticks ([DateTime]::UtcNow.Ticks) $ForceWaitMilliseconds 0;if($step.exhausted){$budgetExhausted=$true;break}
+            try{$snapshotPasses++;$added=Add-RecI3ObservedDescendants $bindings $known $failures}catch{$added=0;$failures.Add("OWNED_CLOSURE_SHUTDOWN_SNAPSHOT_UNCERTAIN:$($_.Exception.Message)")}
+            $step=Get-RecI3ShutdownBudgetStep $shutdownDeadline.Ticks ([DateTime]::UtcNow.Ticks) $ForceWaitMilliseconds $added;if($step.exhausted){$budgetExhausted=$true;break};if($step.continueDiscovery){$index=$bindings.Count-1;continue}
+            try{$result=Stop-RecI3OwnedProcess $bindings[$index] 0 $step.clampedWaitMilliseconds;$results.Add($result);$null=$resolved.Add("$($bindings[$index].capturedIdentity.processId)|$($bindings[$index].capturedIdentity.creationFileTimeUtc)");if($result.unknown-or-not$result.absenceObserved){$failures.Add("OWNED_INSTANCE_EXIT_UNCERTAIN:$($bindings[$index].capturedIdentity.processId):$($result.terminationError)")}}
             catch{$failures.Add("OWNED_INSTANCE_CLEANUP_UNCERTAIN:$($bindings[$index].capturedIdentity.processId):$($_.Exception.Message)")}
             $index--
         }
-        $postStable=0;for($post=0;$post-lt2;$post++){$snapshotPasses++;try{$added=Add-RecI3ObservedDescendants $bindings $known $failures;if($added-eq0){$postStable++}else{$failures.Add('OWNED_DESCENDANT_OBSERVED_AFTER_PARENT_SHUTDOWN')}}catch{$failures.Add("OWNED_CLOSURE_POST_SHUTDOWN_SNAPSHOT_UNCERTAIN:$($_.Exception.Message)")};Start-Sleep -Milliseconds 25};if($postStable-ne2){$failures.Add('OWNED_CLOSURE_POST_SHUTDOWN_RECONCILIATION_UNCERTAIN')}
+        $postStable=0;for($post=0;$post-lt2;$post++){$step=Get-RecI3ShutdownBudgetStep $shutdownDeadline.Ticks ([DateTime]::UtcNow.Ticks) 25 0;if($step.exhausted){$budgetExhausted=$true;break};$snapshotPasses++;try{$added=Add-RecI3ObservedDescendants $bindings $known $failures;if($added-eq0){$postStable++}else{$failures.Add('OWNED_DESCENDANT_OBSERVED_AFTER_PARENT_SHUTDOWN')}}catch{$failures.Add("OWNED_CLOSURE_POST_SHUTDOWN_SNAPSHOT_UNCERTAIN:$($_.Exception.Message)")};Start-Sleep -Milliseconds $step.clampedWaitMilliseconds};if($postStable-ne2){$failures.Add('OWNED_CLOSURE_POST_SHUTDOWN_RECONCILIATION_UNCERTAIN')}
     }finally{foreach($binding in $bindings){if($binding-ne$RootBinding){try{$binding.process.Dispose()}catch{$failures.Add("OWNED_INSTANCE_DISPOSE_UNCERTAIN:$($binding.capturedIdentity.processId)")}}}}
-    [ordered]@{rootIdentity=$RootBinding.capturedIdentity;capturedCount=[int]$bindings.Count;capturedAncestry=@($bindings|ForEach-Object{$_.ancestry});results=@($results);failures=@($failures);snapshotPasses=$snapshotPasses;stablePasses=$stablePasses;cleanupCertain=($failures.Count-eq0-and@($results|Where-Object{-not$_.absenceObserved-or$_.unknown}).Count-eq0)}
+    $unresolved=@($bindings|Where-Object{-not$resolved.Contains("$($_.capturedIdentity.processId)|$($_.capturedIdentity.creationFileTimeUtc)")});if($budgetExhausted){$failures.Add('OWNED_CLOSURE_SHUTDOWN_BUDGET_EXHAUSTED');foreach($binding in $unresolved){$results.Add((New-RecI3BudgetExhaustedResult $binding.capturedIdentity))}}
+    [ordered]@{rootIdentity=$RootBinding.capturedIdentity;capturedCount=[int]$bindings.Count;capturedAncestry=@($bindings|ForEach-Object{$_.ancestry});results=@($results);unresolvedIdentities=@($unresolved|ForEach-Object{$_.capturedIdentity});failures=@($failures);snapshotPasses=$snapshotPasses;stablePasses=$stablePasses;shutdownBudgetMilliseconds=$shutdownBudgetMilliseconds;budgetExhausted=[bool]$budgetExhausted;cleanupCertain=($failures.Count-eq0-and-not$budgetExhausted-and$unresolved.Count-eq0-and@($results|Where-Object{-not$_.absenceObserved-or$_.unknown}).Count-eq0)}
 }
 
-Export-ModuleMember -Function New-RecI3OwnedProcessBinding,Stop-RecI3OwnedProcess,Stop-RecI3OwnedProcessClosure,Test-RecI3Identity,Test-RecI3ObservedChildBinding,New-RecI3TerminationExitUncertainResult
+Export-ModuleMember -Function New-RecI3OwnedProcessBinding,Stop-RecI3OwnedProcess,Stop-RecI3OwnedProcessClosure,Test-RecI3Identity,Test-RecI3ObservedChildBinding,New-RecI3TerminationExitUncertainResult,Get-RecI3ShutdownBudgetStep
