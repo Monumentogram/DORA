@@ -638,6 +638,8 @@ class RecoveryI3GovernanceTests(unittest.TestCase):
             "tools/test_run_rec_i3_v8.py",
             "tools/rec_i3_preserve_and_cleanup.ps1",
             "tools/test_rec_i3_preserve_and_cleanup.py",
+            "tools/rec_i3_owned_process.psm1",
+            "tools/test_rec_i3_owned_process.ps1",
             "tools/validate_poc_recovery_governance.py",
             "tools/test_poc_recovery_i3_governance.py",
             "tools/verify_poc_recovery_dependency_inventory.py",

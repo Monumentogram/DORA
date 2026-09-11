@@ -55,16 +55,7 @@ function Convert-ToPsLiteral([string]$Value) {
     return "'" + $Value.Replace("'", "''") + "'"
 }
 
-function Stop-ProcessTreeBounded([int]$ProcessId) {
-    try {
-        $killer = Start-Process -FilePath "taskkill.exe" -ArgumentList @("/PID", "$ProcessId", "/T", "/F") -PassThru -WindowStyle Hidden
-        if (-not $killer.WaitForExit(10000)) { try { $killer.Kill() } catch {} }
-    } catch { Write-Warning "PROCESS_TREE_STOP_FAILED:$($_.Exception.Message)" }
-    finally {
-        # A failed taskkill exit must not leave the wrapper holding command pipes open.
-        try { Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue } catch {}
-    }
-}
+Import-Module (Join-Path $PSScriptRoot 'rec_i3_owned_process.psm1') -Force
 
 function Invoke-ExternalObserved([string]$FilePath, [string[]]$Arguments, [string]$LogPath = "") {
     $stdoutPath = $LogPath
@@ -75,6 +66,7 @@ function Invoke-ExternalObserved([string]$FilePath, [string[]]$Arguments, [strin
     $completed = $false
     $timedOut = $false
     $wrapperExitCode = $null
+    $cleanupResult = $null
     try {
         if (-not $stdoutPath) { $stdoutPath = [System.IO.Path]::GetTempFileName() }
         $stderrPath = "$stdoutPath.stderr"
@@ -106,7 +98,7 @@ exit `$native.exitCode
         $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($scriptText))
         $hostPowerShell = (Get-Process -Id $PID).Path
         $process = Start-Process -FilePath $hostPowerShell -ArgumentList @("-NoProfile", "-NonInteractive", "-EncodedCommand", $encoded) -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath -PassThru -WindowStyle Hidden
-        $processHandle = $process.Handle
+        $processBinding = New-RecI3OwnedProcessBinding $process
         $completed = $process.WaitForExit([Math]::Max(1, $externalTimeoutSeconds) * 1000)
         $timedOut = -not $completed
         if ($completed) {
@@ -120,21 +112,25 @@ exit `$native.exitCode
         $native.launchFailure = $_.ToString()
     } finally {
         if ($null -ne $process -and -not $completed) {
-            Stop-ProcessTreeBounded $process.Id
-            $process.WaitForExit(10000) | Out-Null
+            $cleanupResult = Stop-RecI3OwnedProcessClosure $processBinding 1000 10000
+            if (-not $cleanupResult.cleanupCertain) { $native.launchFailure = 'OWNED_WRAPPER_CLEANUP_UNCERTAIN' }
         }
     }
     [string]$stdout = if ($stdoutPath -and (Test-Path -LiteralPath $stdoutPath -PathType Leaf)) { Get-Content -Raw -LiteralPath $stdoutPath } else { "" }
     [string]$stderr = if ($stderrPath -and (Test-Path -LiteralPath $stderrPath -PathType Leaf)) { Get-Content -Raw -LiteralPath $stderrPath } else { "" }
     if ($null -eq $stdout) { $stdout = "" }
     if ($null -eq $stderr) { $stderr = "" }
+    $wrapperProcessId = if ($null -ne $process) { $process.Id } else { $null }
+    $wrapperExited = ($null -eq $process -or $process.HasExited)
+    if ($null -ne $process) { $process.Dispose() }
     return [ordered]@{
         executable = $FilePath
         arguments = @($Arguments)
         exitCode = $native.exitCode
         wrapperExitCode = $wrapperExitCode
-        wrapperProcessId = if ($null -ne $process) { $process.Id } else { $null }
-        wrapperExited = ($null -eq $process -or $process.HasExited)
+        wrapperProcessId = $wrapperProcessId
+        wrapperExited = $wrapperExited
+        ownedCleanup = $cleanupResult
         launchFailure = $native.launchFailure
         timedOut = $timedOut
         output = $stdout.Trim()

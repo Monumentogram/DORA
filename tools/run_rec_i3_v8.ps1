@@ -48,6 +48,7 @@ $preflightCommands = @()
 $ledgerCreated = $false
 $deviceIdentityVerified = $false
 $ownedEmulatorProcess = $null
+$ownedEmulatorBinding = $null
 $gradleResult = $null
 $secondaryFailures = @()
 
@@ -74,17 +75,7 @@ function Get-Sha256([string]$Path) {
     } finally { $sha.Dispose() }
 }
 
-function Stop-ProcessTreeBounded([int]$ProcessId) {
-    try {
-        $killer = Start-Process -FilePath "taskkill.exe" -ArgumentList @("/PID", "$ProcessId", "/T", "/F") -PassThru -WindowStyle Hidden
-        if (-not $killer.WaitForExit(10000)) { try { $killer.Kill() } catch {} }
-    } catch {
-        Write-Warning "PROCESS_TREE_STOP_FAILED:$($_.Exception.Message)"
-    } finally {
-        # taskkill can return a nonzero exit without throwing (for example, access denied).
-        try { Stop-Process -Id $ProcessId -Force -ErrorAction SilentlyContinue } catch {}
-    }
-}
+Import-Module (Join-Path $PSScriptRoot 'rec_i3_owned_process.psm1') -Force
 
 function Invoke-BoundedCommand(
     [string]$Name,
@@ -126,11 +117,12 @@ exit `$native.exitCode
     $timedOut = $false
     $native = [ordered]@{ exitCode = $null; launchFailure = $null }
     $wrapperExitCode = $null
+    $cleanupResult = $null
     try {
         if ((Test-Path -LiteralPath $LogPath -PathType Container) -or (Test-Path -LiteralPath $stderrPath -PathType Container)) { throw "COMMAND_LOG_PATH_IS_DIRECTORY:$LogPath" }
         $hostPowerShell = (Get-Process -Id $PID).Path
         $process = Start-Process -FilePath $hostPowerShell -ArgumentList @("-NoProfile", "-NonInteractive", "-EncodedCommand", $encoded) -RedirectStandardOutput $LogPath -RedirectStandardError $stderrPath -PassThru -WindowStyle Hidden
-        $processHandle = $process.Handle
+        $processBinding = New-RecI3OwnedProcessBinding $process
         $completed = $process.WaitForExit([Math]::Max(1, $TimeoutSeconds) * 1000)
         $timedOut = -not $completed
         if ($completed) { $process.WaitForExit(); $process.Refresh(); $wrapperExitCode = $process.ExitCode }
@@ -142,14 +134,17 @@ exit `$native.exitCode
         $native.launchFailure = $_.ToString()
     } finally {
         if ($null -ne $process -and -not $completed) {
-            Stop-ProcessTreeBounded $process.Id
-            $process.WaitForExit(10000) | Out-Null
+            $cleanupResult = Stop-RecI3OwnedProcessClosure $processBinding 1000 10000
+            if (-not $cleanupResult.cleanupCertain) { $native.launchFailure = 'OWNED_WRAPPER_CLEANUP_UNCERTAIN' }
         }
     }
     [string]$stdout = if (Test-Path -LiteralPath $LogPath -PathType Leaf) { Get-Content -Raw -LiteralPath $LogPath } else { "" }
     [string]$stderr = if (Test-Path -LiteralPath $stderrPath -PathType Leaf) { Get-Content -Raw -LiteralPath $stderrPath } else { "" }
     if ($null -eq $stdout) { $stdout = "" }
     if ($null -eq $stderr) { $stderr = "" }
+    $wrapperProcessId = if ($null -ne $process) { $process.Id } else { $null }
+    $wrapperExited = ($null -eq $process -or $process.HasExited)
+    if ($null -ne $process) { $process.Dispose() }
     return [ordered]@{
         name = $Name
         executable = $FilePath
@@ -157,8 +152,9 @@ exit `$native.exitCode
         workingDirectory = $WorkingDirectory
         exitCode = $native.exitCode
         wrapperExitCode = $wrapperExitCode
-        wrapperProcessId = if ($null -ne $process) { $process.Id } else { $null }
-        wrapperExited = ($null -eq $process -or $process.HasExited)
+        wrapperProcessId = $wrapperProcessId
+        wrapperExited = $wrapperExited
+        ownedCleanup = $cleanupResult
         launchFailure = $native.launchFailure
         timedOut = $timedOut
         output = $stdout.Trim()
@@ -273,6 +269,7 @@ try {
         $emulatorStdout = Join-Path $rawPath "emulator-stdout.log"
         $emulatorStderr = Join-Path $rawPath "emulator-stderr.log"
         $ownedEmulatorProcess = Start-Process -FilePath $emulatorPath -ArgumentList @("-avd", $AvdName, "-port", "$emulatorPort", "-no-window", "-no-audio", "-no-boot-anim") -RedirectStandardOutput $emulatorStdout -RedirectStandardError $emulatorStderr -PassThru -WindowStyle Hidden
+        $ownedEmulatorBinding = New-RecI3OwnedProcessBinding $ownedEmulatorProcess
         $startedEmulator = $true
         $bootDeadline = [DateTime]::UtcNow.AddSeconds([Math]::Min($commandTimeoutSeconds, 300))
         do {
@@ -440,7 +437,9 @@ try {
         $ownedProcessStopAttempted = $false
         if ($null -ne $ownedEmulatorProcess) {
             $ownedProcessStopAttempted = $true
-            Stop-ProcessTreeBounded $ownedEmulatorProcess.Id
+            if ($null -eq $ownedEmulatorBinding) { throw 'OWNED_EMULATOR_BINDING_MISSING' }
+            $ownedStop = Stop-RecI3OwnedProcessClosure $ownedEmulatorBinding 1000 10000
+            if (-not $ownedStop.cleanupCertain) { throw 'OWNED_EMULATOR_CLEANUP_UNCERTAIN' }
         }
         Write-JsonFile $observationPath ([ordered]@{
             schema = "DORA_REC_I3_CLEANUP_OBSERVATION_V2"

@@ -15,6 +15,8 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 RUNNER = ROOT / "tools" / "run_rec_i3_v8.ps1"
 PRESERVER = ROOT / "tools" / "rec_i3_preserve_and_cleanup.ps1"
+OWNED_PROCESS = ROOT / "tools" / "rec_i3_owned_process.psm1"
+OWNED_PROCESS_TEST = ROOT / "tools" / "test_rec_i3_owned_process.ps1"
 SERIAL = "emulator-5554"
 FINGERPRINT = "google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys"
 
@@ -27,6 +29,15 @@ def git(root: Path, *args: str) -> str:
 
 
 class RecI3V8RunnerTests(unittest.TestCase):
+    def test_retained_handle_identity_and_descendant_closure(self) -> None:
+        completed = subprocess.run(
+            [os.environ.get("DORA_REC_I3_TEST_POWERSHELL", "powershell.exe"),
+             "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(OWNED_PROCESS_TEST)],
+            capture_output=True, text=True, timeout=30,
+        )
+        self.assertEqual(0, completed.returncode, completed.stdout + completed.stderr)
+        self.assertIn("validated descendant closure", completed.stdout)
+
     def setUp(self) -> None:
         self.root = Path(tempfile.mkdtemp(prefix=".tmp-rec-i3-v8-runner-"))
         (self.root / "tmp").mkdir()
@@ -35,6 +46,7 @@ class RecI3V8RunnerTests(unittest.TestCase):
         (self.repo / "tools").mkdir()
         (self.repo / "android").mkdir()
         shutil.copy2(PRESERVER, self.repo / "tools" / PRESERVER.name)
+        shutil.copy2(OWNED_PROCESS, self.repo / "tools" / OWNED_PROCESS.name)
         (self.repo / "tools" / "validate_poc_recovery_governance.py").write_text(
             "import os\nprint('synthetic governance pass')\nraise SystemExit(int(os.environ.get('FAKE_GOVERNANCE_EXIT', '0')))\n",
             encoding="utf-8",
