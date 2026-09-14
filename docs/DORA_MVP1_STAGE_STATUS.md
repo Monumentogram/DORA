@@ -1,5 +1,14 @@
 # Dora MVP 1 — Stage Status
 
+Current internal alpha E36 campaign amendment, 14 September 2026: the
+[campaign owner decision](stage0/DORA_0D6_ALPHA_E36_CAMPAIGN_OWNER_DECISION_20260914.md)
+authorizes separate admission and execution of the 414 prepared E36 base cases
+(270 faults, 144 hard kills). Human review is not required for this bounded scope;
+all technical gates remain. The three retained d3bc6ac preflights passed with cleanup
+accounted for. Campaign execution is not yet evidenced by this source amendment.
+Full Recovery/0D.6, D2 and other physical/API requirements remain NOT PASSED.
+Earlier preflight-only decisions and their immutable packets remain historical.
+
 Current internal alpha preflight amendment, 14 September 2026: the
 [owner decision](stage0/DORA_0D6_ALPHA_PREFLIGHT_OWNER_DECISION_20260914.md) removes
 mandatory accountable human review only from the three named E36-GAPI preflights.

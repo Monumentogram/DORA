@@ -50,6 +50,18 @@ CANDIDATES = ("REC-STREAM-TINK", "REC-MICROFILE-TINK")
 ALPHA_PREFLIGHT_PAYLOADS = frozenset({"SUPPLEMENTAL_SQLITE", "JOURNAL_CONNECTIONS", "PLATFORM_PREREQUISITES"})
 ALPHA_DECISION_PATH = "docs/stage0/DORA_0D6_ALPHA_PREFLIGHT_OWNER_DECISION_20260914.md"
 ALPHA_DECISION_SHA256 = "06dede52bd599ae12903dd9f336774c804bee97724cede208e4e64b9b5f64dde"
+ALPHA_CAMPAIGN_DECISION_PATH = "docs/stage0/DORA_0D6_ALPHA_E36_CAMPAIGN_OWNER_DECISION_20260914.md"
+ALPHA_CAMPAIGN_DECISION_SHA256 = "bce9a5eba35fba937ad589a0166a8ca1166fbb89e0b71c24407d2fed1601f96d"
+ALPHA_PREFLIGHT_SOURCE = {
+    "commit": "d3bc6aca800ac0dedd82124aabd8d25eff50c262",
+    "tree": "1f4575a98ce02ecd01ae0cceaa1373e4f5ee41a9",
+    "appApkSha256": "8b1f79aec975c02021c7f58f5218da91f9e9585dbe8bbbd0844647c5b0c1d2de",
+    "testApkSha256": "effd7e29c7dc7a4d8adc7a7057b1d90f5a58340b11c8755aff26cf71c39e0dfe",
+}
+ALPHA_PREFLIGHT_RESULTS_SHA256 = "30eb1ec31e5a4d466d3ade60516ac5b2b2cb9ed63bba81f748191c1e6bc66c08"
+ALPHA_PREFLIGHT_HANDOFF_SHA256 = "d54a7e954cc6180736258d8cab34dee97e0dc158a4ca1ee06c4df27b1aa8a5eb"
+ALPHA_PREFLIGHT_EQUIVALENCE_SHA256 = "497e2f46b9b4853b12e0fb473c5f2e2f57ee3dbab4583f392db8096b59ac11e4"
+E36_FINGERPRINT = "google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys"
 
 
 def accepted_alpha_source() -> dict[str, str]:
@@ -87,6 +99,139 @@ def validate_alpha_preflight(plan: dict[str, Any], gate: dict[str, Any], payload
             and proof.get("sha256") == ALPHA_DECISION_SHA256
             and hashlib.sha256(path.read_bytes()).hexdigest() == ALPHA_DECISION_SHA256,
             "Owner decision artifact is not the pinned repository decision")
+
+
+def _alpha_preflight_root() -> Path:
+    return Path(__file__).resolve().parents[3] / "0D6-CLOSURE-20260914" / "alpha-preflight-20260914"
+
+
+def _verify_alpha_descriptor(root: Path, descriptor: Any, relative: str, expected_sha256: str) -> Path:
+    require(isinstance(descriptor, dict) and descriptor.get("relativePath") == relative
+            and descriptor.get("sha256") == expected_sha256, "Retained preflight descriptor mismatch " + relative)
+    path = root / relative
+    require(path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() == expected_sha256,
+            "Retained preflight artifact hash mismatch " + relative)
+    return path
+
+
+def _verify_preflight_artifact(root: Path, descriptor: Any) -> None:
+    require(isinstance(descriptor, dict) and set(descriptor) == {"bytes", "path", "sha256"}, "Malformed retained preflight artifact descriptor")
+    relative = descriptor["path"].replace("\\", "/")
+    require(relative and not relative.startswith("/") and not any(part in ("", ".", "..") for part in relative.split("/")),
+            "Unsafe retained preflight artifact path")
+    path = root.joinpath(*relative.split("/"))
+    require(path.is_file() and path.stat().st_size == descriptor["bytes"] and hashlib.sha256(path.read_bytes()).hexdigest() == descriptor["sha256"],
+            "Retained preflight artifact hash mismatch " + relative)
+
+
+def validate_alpha_campaign(plan: dict[str, Any], gate: dict[str, Any]) -> None:
+    """Verify the separate E36 campaign decision and immutable preflight history."""
+    decision = gate.get("alphaCampaign")
+    require(isinstance(decision, dict) and decision.get("decisionId") == "DORA_0D6_ALPHA_E36_CAMPAIGN_20260914"
+            and decision.get("scope") == "INTERNAL_ALPHA_E36_CAMPAIGN", "Wrong alpha campaign decision scope")
+    require(decision.get("source") == plan["source"] == accepted_alpha_source(), "Alpha campaign source/APKs are not the exact accepted successor")
+    require(decision.get("historicalSource") == ALPHA_PREFLIGHT_SOURCE, "Historical preflight source mismatch")
+    require(gate.get("supportedPayloads") == ["CAMPAIGN"], "Alpha campaign payload scope drift")
+    require(gate.get("environment") == "E36-GAPI" and gate.get("deviceFingerprint") == E36_FINGERPRINT,
+            "Alpha campaign requires exact E36 profile")
+    require(gate.get("physicalAuthorization", {}).get("authorized") is False, "Alpha campaign physical scope forbidden")
+    accountable = gate.get("accountableReview", {})
+    require(gate.get("accountableReviewApproved") is False and accountable.get("formalReviewer") is False
+            and accountable.get("reviewer") is None and accountable.get("reviewedCommit") is None,
+            "Alpha campaign must not fabricate accountable review")
+    proof = gate.get("proofs", {}).get("ownerDecision", {})
+    expected_decision = Path(__file__).resolve().parents[1] / ALPHA_CAMPAIGN_DECISION_PATH
+    require(isinstance(proof.get("path"), str) and Path(proof["path"]).resolve() == expected_decision.resolve()
+            and expected_decision.is_file() and proof.get("sha256") == ALPHA_CAMPAIGN_DECISION_SHA256
+            and hashlib.sha256(expected_decision.read_bytes()).hexdigest() == ALPHA_CAMPAIGN_DECISION_SHA256,
+            "Owner decision artifact is not the pinned campaign decision")
+
+    retained = gate.get("retainedPreflight")
+    root = _alpha_preflight_root()
+    require(isinstance(retained, dict) and retained.get("root") == str(root.resolve()) and root.is_dir(),
+            "Retained preflight root mismatch")
+    handoff_path = _verify_alpha_descriptor(root, retained.get("handoff"), "CAMPAIGN-HANDOFF.json", ALPHA_PREFLIGHT_HANDOFF_SHA256)
+    results_path = _verify_alpha_descriptor(root, retained.get("results"), "preflight-results.json", ALPHA_PREFLIGHT_RESULTS_SHA256)
+    _verify_alpha_descriptor(root, retained.get("sourceBuildEquivalence"), "raw/source-build-equivalence.json", ALPHA_PREFLIGHT_EQUIVALENCE_SHA256)
+    handoff = json.loads(handoff_path.read_bytes())
+    results = json.loads(results_path.read_bytes())
+    require(handoff.get("source") == results.get("source") == ALPHA_PREFLIGHT_SOURCE and handoff.get("preflightPassed") is True
+            and handoff.get("faults") == {"planned": 270, "executed": 0} and handoff.get("hardKills") == {"planned": 144, "executed": 0},
+            "Retained preflight handoff contents mismatch")
+    expected_attempts = {
+        "D3BC6AC-SUPPLEMENTAL_SQLITE-03": "SUPPLEMENTAL_SQLITE",
+        "D3BC6AC-JOURNAL_CONNECTIONS-03": "JOURNAL_CONNECTIONS",
+        "D3BC6AC-PLATFORM_PREREQUISITES-04": "PLATFORM_PREREQUISITES",
+    }
+    attempts = results.get("attempts")
+    require(results.get("schema") == "DORA_0D6_ALPHA_PREFLIGHT_OBSERVED_RESULTS_V1" and results.get("source") == ALPHA_PREFLIGHT_SOURCE
+            and results.get("aggregatePreflightPassed") is True and results.get("campaignAuthorized") is False
+            and isinstance(attempts, list) and len(attempts) == 3, "Retained preflight assessments mismatch")
+    require(handoff.get("preflightResults") == {"path": "preflight-results.json", "sha256": ALPHA_PREFLIGHT_RESULTS_SHA256},
+            "Retained preflight handoff result binding mismatch")
+    for descriptor in results.get("admissionPackets", []) + [results.get("packet")]:
+        _verify_preflight_artifact(root, descriptor)
+    seen = set()
+    for attempt in attempts:
+        identity = attempt.get("attemptId")
+        require(identity in expected_attempts and identity not in seen and attempt.get("payload") == expected_attempts[identity]
+                and attempt.get("status") == "PASS" and attempt.get("cleanupResult") == "VERIFIED"
+                and attempt.get("errors") == attempt.get("failures") == attempt.get("skips") == 0
+                and attempt.get("executedTests") == attempt.get("successfulTests") == 1
+                and attempt.get("instrumentationNativeExit") == attempt.get("launcherNativeExit") == attempt.get("adbRootExit") == 0,
+                "Retained preflight assessment invalid")
+        seen.add(identity)
+        for descriptor in attempt.get("evidence", []) + attempt.get("environmentReceipts", []) + [attempt.get("shutdownResolution"), attempt.get("packet")]:
+            _verify_preflight_artifact(root, descriptor)
+    require(seen == set(expected_attempts), "Retained preflight assessment coverage mismatch")
+
+    equivalence = decision.get("sourceEquivalence", {})
+    require(equivalence.get("historicalSource") == decision["historicalSource"]
+            and equivalence.get("successorSource") == decision["source"] and equivalence.get("apkPairUnchanged") is True,
+            "Campaign source equivalence binding mismatch")
+    successor = equivalence["successorSource"]
+    require(successor["appApkSha256"] == ALPHA_PREFLIGHT_SOURCE["appApkSha256"]
+            and successor["testApkSha256"] == ALPHA_PREFLIGHT_SOURCE["testApkSha256"], "Campaign APK equivalence mismatch")
+    equivalence_proof = equivalence.get("proof", {})
+    require(isinstance(equivalence_proof.get("path"), str) and Path(equivalence_proof["path"]).is_file()
+            and hashlib.sha256(Path(equivalence_proof["path"]).read_bytes()).hexdigest() == equivalence_proof.get("sha256"),
+            "Campaign source equivalence proof mismatch")
+    equivalence_data = json.loads(Path(equivalence_proof["path"]).read_bytes())
+    require(equivalence_data.get("historicalSource") == ALPHA_PREFLIGHT_SOURCE and equivalence_data.get("successorSource") == plan["source"]
+            and equivalence_data.get("apkPairUnchanged") is True and equivalence_data.get("buildInputsUnchanged") is True
+            and equivalence_data.get("androidTreeBefore") == equivalence_data.get("androidTreeAfter")
+            and isinstance(equivalence_data.get("changedPaths"), list), "Campaign source equivalence contents mismatch")
+    hex_value(equivalence_data["androidTreeBefore"], 40)
+
+    require(plan.get("phase") == "PHASE_A" and isinstance(plan.get("executionId"), str), "Campaign namespace missing")
+    execution_id = safe_id(plan["executionId"])
+    entries = plan.get("entries", [])
+    selected = [entry for entry in entries if entry.get("environment") == "E36-GAPI"]
+    require(len(selected) == 414 and sum(entry.get("kind") == "FAULT" for entry in selected) == 270
+            and sum(entry.get("kind") == "HARD_KILL" for entry in selected) == 144, "Campaign E36 population mismatch")
+    original_entries = handoff.get("entries")
+    normalized_entries = []
+    for entry in selected:
+        base = entry.get("baseAttemptId")
+        legacy_run_id = hashlib.sha256(f"{plan['scheduleSeed']}:{base}".encode()).digest()[:16].hex()
+        normalized = {key: value for key, value in entry.items() if key not in ("attemptId", "baseAttemptId", "runId")}
+        normalized.update(attemptId=base, runId=legacy_run_id)
+        normalized_entries.append(normalized)
+    require(original_entries == normalized_entries, "Campaign entries differ from the retained original E36 schedule")
+    attempt_ids = [entry.get("attemptId") for entry in selected]
+    base_ids = [entry.get("baseAttemptId") for entry in selected]
+    require(len(attempt_ids) == len(set(attempt_ids)) == len(base_ids) == len(set(base_ids)) == 414
+            and gate.get("supportedAttemptIds") == attempt_ids,
+            "Campaign supported attempt scope mismatch")
+    all_base_ids = {entry.get("baseAttemptId") for entry in entries}
+    for entry in entries:
+        base = entry.get("baseAttemptId")
+        legacy_run_id = hashlib.sha256(f"{plan['scheduleSeed']}:{base}".encode()).digest()[:16].hex()
+        fresh_run_id = hashlib.sha256(f"{execution_id}:{base}:{legacy_run_id}".encode()).hexdigest()[:32]
+        require(isinstance(base, str) and entry.get("attemptId") == execution_id + "-" + base
+                and entry["attemptId"] not in all_base_ids and entry.get("runId") == fresh_run_id
+                and entry["runId"] != legacy_run_id, "Campaign attempt identity is not fresh")
+
 
 
 def require(condition: bool, reason: str) -> None:
@@ -161,7 +306,7 @@ def load_contract(root: Path) -> tuple[dict[int, Any], dict[str, str]]:
     return contracts, pins
 
 
-def build_plan(root: Path, phase: str, source: dict[str, str], seed: int) -> dict[str, Any]:
+def build_plan(root: Path, phase: str, source: dict[str, str], seed: int, execution_id: str | None = None) -> dict[str, Any]:
     require(phase in ("PHASE_A", "FULL_PHYSICAL"), "Unknown campaign phase")
     require(set(source) == {"commit", "tree", "appApkSha256", "testApkSha256"}, "Incomplete source binding")
     for key, value in source.items():
@@ -248,15 +393,27 @@ def build_plan(root: Path, phase: str, source: dict[str, str], seed: int) -> dic
     entries.sort(key=lambda item: hashlib.sha256(f"{seed}:{item['attemptId']}".encode()).digest())
     for item in entries:
         item["fixtureSha256"] = fixture_digest(item["seed"], item["plaintextBytes"])
-    return {"schema": SCHEMA, "phase": phase, "protocolId": PROTOCOL, "source": source,
+    if execution_id is not None:
+        execution_id = safe_id(execution_id)
+        for item in entries:
+            base_attempt_id, base_run_id = item["attemptId"], item["runId"]
+            attempt_id = execution_id + "-" + base_attempt_id
+            safe_id(attempt_id)
+            item["baseAttemptId"] = base_attempt_id
+            item["attemptId"] = attempt_id
+            item["runId"] = hashlib.sha256(f"{execution_id}:{base_attempt_id}:{base_run_id}".encode()).hexdigest()[:32]
+    plan = {"schema": SCHEMA, "phase": phase, "protocolId": PROTOCOL, "source": source,
             "scheduleSeed": seed, "fixtureAlgorithm": "BYTE_I_EQUALS_SEED_PLUS_31_I_PLUS_17_FLOOR_I_DIV_256_MOD_256",
             "protocolPins": pins, "canonicalCounts": p8["unchangedV07"]["campaignCounts"],
             "entries": entries, "automaticReplacementAllowed": False,
             "executionAuthorizedByPlan": False}
+    if execution_id is not None:
+        plan["executionId"] = execution_id
+    return plan
 
 
 def validate_plan(root: Path, plan: dict[str, Any]) -> None:
-    expected = build_plan(root, plan["phase"], plan["source"], plan["scheduleSeed"])
+    expected = build_plan(root, plan["phase"], plan["source"], plan["scheduleSeed"], plan.get("executionId"))
     require(plan == expected, "Plan differs from immutable protocol-derived schedule or source pins")
 
 
@@ -602,11 +759,17 @@ def validate_execution_gate(plan: dict[str, Any], gate: dict[str, Any], session:
     require(parser_path.is_file() and hashlib.sha256(parser_path.read_bytes()).hexdigest() == gate.get("instrumentationParserSha256"), "Instrumentation parser is not the reviewed pinned file")
     require(payload in ("CAMPAIGN", "SUPPLEMENTAL_SQLITE", "PLATFORM_PREREQUISITES", "JOURNAL_CONNECTIONS"), "Unknown fixed payload")
     preflight = payload != "CAMPAIGN"
-    alpha = "alphaPreflight" in gate
-    if alpha:
+    alpha_preflight = "alphaPreflight" in gate
+    alpha_campaign = "alphaCampaign" in gate
+    require(not (alpha_preflight and alpha_campaign), "Ambiguous simultaneous alpha admissions")
+    if alpha_preflight:
         validate_alpha_preflight(plan, gate, payload)
+    if alpha_campaign:
+        require(payload == "CAMPAIGN", "Alpha campaign cannot admit preflight payloads")
+        validate_alpha_campaign(plan, gate)
     if preflight:
         require(payload in gate.get("supportedPayloads", []), "Fixed preflight payload not reviewed")
+    alpha = alpha_preflight or alpha_campaign
     review_flags = () if alpha else ("accountableReviewApproved",)
     for key in ("executionAuthorized", "implementationVerified", "independentReviewClean") + review_flags + ("exactHeadCiPassed", "graphAndR8Verified") + (() if preflight else ("preflightPassed",)):
         require(gate.get(key) is True, key + " gate unsatisfied")
@@ -619,7 +782,7 @@ def validate_execution_gate(plan: dict[str, Any], gate: dict[str, Any], session:
     # accepted evidence. This tool does not create a human attestation.
     proofs = gate.get("proofs", {})
     review_proofs = () if alpha else ("accountableReview",)
-    for key in ("implementation", "independentReview") + review_proofs + ("ci", "graphAndR8", "ownerInstruction") + (() if preflight else ("preflight",)):
+    for key in ("implementation", "independentReview") + review_proofs + ("ci", "graphAndR8", "ownerInstruction") + (() if preflight or alpha_campaign else ("preflight",)):
         proof = proofs.get(key, {})
         require(isinstance(proof.get("path"), str), "Missing prerequisite artifact " + key)
         path = Path(proof["path"])

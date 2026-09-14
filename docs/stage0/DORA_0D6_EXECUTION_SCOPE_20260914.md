@@ -1,5 +1,13 @@
 # Stage 0D.6 scoped execution instruction — 14 September 2026
 
+Subsequent bounded amendment: the [E36 campaign owner decision](DORA_0D6_ALPHA_E36_CAMPAIGN_OWNER_DECISION_20260914.md)
+now authorizes the prepared 414 E36 base entries and protocol-compliant invalid
+hard-kill replacements without mandatory human review or routine repeat permission.
+This separate campaign path supersedes the prior stop-after-preflights instruction.
+Technical checks, evidence applicability, exact ownership, retention, negative-case
+product outcomes and full physical/API requirements remain unchanged. The earlier
+preflight-only decision and the following historical scope text are preserved.
+
 Current bounded amendment: the [internal alpha owner decision](DORA_0D6_ALPHA_PREFLIGHT_OWNER_DECISION_20260914.md)
 removes the mandatory human-review prerequisite for the three named E36-GAPI preflights.
 Technical gates remain required. This task stops at preflight results and campaign handoff;

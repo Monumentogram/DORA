@@ -152,6 +152,163 @@ class AlphaPreflightAdmission(unittest.TestCase):
 
 
 @unittest.skipIf(campaign is None, "Implementation not yet present")
+class AlphaCampaignAdmission(unittest.TestCase):
+    """The E36 campaign is a separate, bounded admission path."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.execution_id = "E36-CAMPAIGN-20260914"
+        self.source = {"commit": "4" * 40, "tree": "9" * 40,
+                       "appApkSha256": "8b1f79aec975c02021c7f58f5218da91f9e9585dbe8bbbd0844647c5b0c1d2de",
+                       "testApkSha256": "effd7e29c7dc7a4d8adc7a7057b1d90f5a58340b11c8755aff26cf71c39e0dfe"}
+        self.plan = campaign.build_plan(ROOT, "PHASE_A", self.source, 20260914, self.execution_id)
+        self.selected = [entry for entry in self.plan["entries"] if entry["environment"] == "E36-GAPI"]
+        self.preflight_root = (ROOT.parents[1] / "0D6-CLOSURE-20260914" / "alpha-preflight-20260914").resolve()
+        self.decision = ROOT / "docs/stage0/DORA_0D6_ALPHA_E36_CAMPAIGN_OWNER_DECISION_20260914.md"
+        proof_path = Path(self.temp.name) / "technical-evidence.txt"
+        proof_path.write_text("synthetic technical evidence\n", encoding="utf-8")
+        proof = {"path": str(proof_path), "sha256": hashlib.sha256(proof_path.read_bytes()).hexdigest()}
+        historical = {
+            "commit": "d3bc6aca800ac0dedd82124aabd8d25eff50c262",
+            "tree": "1f4575a98ce02ecd01ae0cceaa1373e4f5ee41a9",
+            "appApkSha256": "8b1f79aec975c02021c7f58f5218da91f9e9585dbe8bbbd0844647c5b0c1d2de",
+            "testApkSha256": "effd7e29c7dc7a4d8adc7a7057b1d90f5a58340b11c8755aff26cf71c39e0dfe",
+        }
+        equivalence_path = Path(self.temp.name) / "source-equivalence.json"
+        equivalence = {
+            "historicalSource": historical, "successorSource": copy.deepcopy(self.source),
+            "apkPairUnchanged": True, "androidTreeBefore": "c" * 40, "androidTreeAfter": "c" * 40,
+            "buildInputsUnchanged": True, "changedPaths": ["tools/recovery_campaign.py"],
+        }
+        equivalence_path.write_bytes(campaign.canonical(equivalence) + b"\n")
+        self.gate = {
+            "schema": "DORA_RECOVERY_CAMPAIGN_EXECUTION_GATE_V1",
+            "source": copy.deepcopy(self.source), "manifestSha256": campaign.digest_json(self.plan),
+            "driverSha256": hashlib.sha256(Path(campaign.__file__).read_bytes()).hexdigest(),
+            "instrumentationParserSha256": hashlib.sha256((ROOT / "tools/recovery_instrumentation_status.py").read_bytes()).hexdigest(),
+            "executionAuthorized": True, "implementationVerified": True, "independentReviewClean": True,
+            "exactHeadCiPassed": True, "graphAndR8Verified": True, "preflightPassed": True,
+            "accountableReviewApproved": False,
+            "accountableReview": {"formalReviewer": False, "reviewer": None, "reviewedCommit": None},
+            "physicalAuthorization": {"authorized": False}, "ownerInstructionReference": "owner campaign instruction",
+            "environment": "E36-GAPI",
+            "deviceFingerprint": "google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+            "supportedPayloads": ["CAMPAIGN"], "supportedAttemptIds": [entry["attemptId"] for entry in self.selected],
+            "alphaCampaign": {
+                "decisionId": "DORA_0D6_ALPHA_E36_CAMPAIGN_20260914", "scope": "INTERNAL_ALPHA_E36_CAMPAIGN",
+                "source": copy.deepcopy(self.source), "historicalSource": historical,
+                "sourceEquivalence": {"historicalSource": historical, "successorSource": copy.deepcopy(self.source),
+                                      "apkPairUnchanged": True,
+                                      "proof": {"path": str(equivalence_path),
+                                                "sha256": hashlib.sha256(equivalence_path.read_bytes()).hexdigest()}},
+            },
+            "retainedPreflight": {
+                "root": str(self.preflight_root),
+                "handoff": {"relativePath": "CAMPAIGN-HANDOFF.json", "sha256": "d54a7e954cc6180736258d8cab34dee97e0dc158a4ca1ee06c4df27b1aa8a5eb"},
+                "results": {"relativePath": "preflight-results.json", "sha256": "30eb1ec31e5a4d466d3ade60516ac5b2b2cb9ed63bba81f748191c1e6bc66c08"},
+                "sourceBuildEquivalence": {"relativePath": "raw/source-build-equivalence.json", "sha256": "497e2f46b9b4853b12e0fb473c5f2e2f57ee3dbab4583f392db8096b59ac11e4"},
+            },
+            "proofs": {key: copy.deepcopy(proof) for key in ("implementation", "independentReview", "ci", "graphAndR8", "ownerInstruction")},
+        }
+        self.gate["proofs"]["ownerDecision"] = {"path": str(self.decision),
+                                                    "sha256": hashlib.sha256(self.decision.read_bytes()).hexdigest()}
+        source_probe = patch.object(campaign, "accepted_alpha_source", return_value=copy.deepcopy(self.source), create=True)
+        source_probe.start()
+        self.addCleanup(source_probe.stop)
+
+    def check(self):
+        campaign.validate_execution_gate(self.plan, self.gate, payload="CAMPAIGN")
+
+    def test_valid_campaign_admits_exact_e36_base_population(self):
+        self.assertEqual(414, len(self.selected))
+        self.assertEqual(270, sum(entry["kind"] == "FAULT" for entry in self.selected))
+        self.assertEqual(144, sum(entry["kind"] == "HARD_KILL" for entry in self.selected))
+        self.check()
+
+    def test_campaign_rejects_missing_or_mismatched_decision_preflight_or_manifest(self):
+        original = copy.deepcopy(self.gate)
+        for mutation in (
+                lambda g: g.pop("alphaCampaign"),
+                lambda g: g["alphaCampaign"].update(scope="ALL_ALPHA"),
+                lambda g: g.update(alphaPreflight={}),
+                lambda g: g["retainedPreflight"].pop("results"),
+                lambda g: g["retainedPreflight"]["handoff"].update(sha256="0" * 64),
+                lambda g: g.update(manifestSha256="0" * 64)):
+            self.gate = copy.deepcopy(original)
+            mutation(self.gate)
+            with self.assertRaises(ValueError):
+                self.check()
+
+    def test_campaign_rejects_source_apk_and_e36_profile_drift(self):
+        original = copy.deepcopy(self.gate)
+        for field in self.source:
+            self.gate = copy.deepcopy(original)
+            self.gate["alphaCampaign"]["source"][field] = "0" * len(SOURCE[field])
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                self.check()
+            self.gate = copy.deepcopy(original)
+            self.gate["source"][field] = "0" * len(SOURCE[field])
+            with self.subTest(gate_field=field), self.assertRaises(ValueError):
+                self.check()
+        self.gate = copy.deepcopy(original)
+        self.gate["environment"] = "D2"
+        with self.assertRaises(ValueError):
+            self.check()
+
+    def test_campaign_rejects_foreign_duplicate_and_out_of_scope_attempts(self):
+        original = copy.deepcopy(self.gate)
+        for changed in (
+                original["supportedAttemptIds"] + ["foreign-attempt"],
+                original["supportedAttemptIds"] + [original["supportedAttemptIds"][0]],
+                [entry["baseAttemptId"] for entry in self.selected],
+        ):
+            self.gate = copy.deepcopy(original)
+            self.gate["supportedAttemptIds"] = changed
+            with self.assertRaises(ValueError):
+                self.check()
+
+    def test_campaign_rejects_fresh_namespace_with_a_different_original_schedule(self):
+        changed = campaign.build_plan(ROOT, "PHASE_A", self.source, 20260913, self.execution_id)
+        self.plan = changed
+        self.gate["manifestSha256"] = campaign.digest_json(changed)
+        self.gate["supportedAttemptIds"] = [entry["attemptId"] for entry in changed["entries"] if entry["environment"] == "E36-GAPI"]
+        with self.assertRaises(ValueError):
+            self.check()
+
+    def test_preflight_gate_rejects_campaign_payload(self):
+        preflight = AlphaPreflightAdmission()
+        preflight.setUp()
+        self.addCleanup(preflight.doCleanups)
+        with self.assertRaises(ValueError):
+            preflight.check("CAMPAIGN")
+
+    def test_execution_namespace_preserves_recipes_and_rejects_identity_drift(self):
+        legacy = campaign.build_plan(ROOT, "PHASE_A", self.source, 20260914)
+        self.assertNotIn("executionId", legacy)
+        self.assertTrue(all("baseAttemptId" not in entry for entry in legacy["entries"]))
+        by_base = {entry["attemptId"]: entry for entry in legacy["entries"]}
+        self.assertEqual([entry["baseAttemptId"] for entry in self.plan["entries"]], [entry["attemptId"] for entry in legacy["entries"]])
+        self.assertTrue(all(entry["attemptId"] not in by_base and entry["runId"] != by_base[entry["baseAttemptId"]]["runId"]
+                            for entry in self.plan["entries"]))
+        for entry in self.plan["entries"]:
+            base = by_base[entry["baseAttemptId"]]
+            self.assertEqual({key: entry[key] for key in base if key not in ("attemptId", "runId")},
+                             {key: entry[key] for key in entry if key not in ("attemptId", "baseAttemptId", "runId")})
+        campaign.validate_plan(ROOT, self.plan)
+        drift = copy.deepcopy(self.plan)
+        drift["entries"][0]["attemptId"] = drift["entries"][0]["baseAttemptId"]
+        with self.assertRaises(ValueError):
+            campaign.validate_plan(ROOT, drift)
+        drift = copy.deepcopy(self.plan)
+        drift["entries"][0]["runId"] = "0" * 32
+        self.plan = drift
+        self.gate["manifestSha256"] = campaign.digest_json(drift)
+        with self.assertRaises(ValueError):
+            self.check()
+
+
+@unittest.skipIf(campaign is None, "Implementation not yet present")
 class CampaignContract(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
