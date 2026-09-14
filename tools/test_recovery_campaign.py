@@ -3,6 +3,7 @@ import copy
 import importlib
 import tempfile
 import hashlib
+import json
 import subprocess
 import unittest
 from unittest.mock import patch
@@ -687,7 +688,8 @@ class CampaignContract(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             transport = FakeTransport()
             transport.directory = Path(temporary)
-            observation = {"retentionSnapshotConsistent": True, "retentionArtifacts": [artifact]}
+            observation = {"retentionSnapshotConsistent": True, "retentionArtifacts": [artifact],
+                           "artifactManifestSha256": campaign.android_artifact_manifest_sha256([artifact])}
             receipt = campaign.retain_evidence(transport, self.plan, entry, observation, "retained")
             self.assertEqual(1, receipt["retainedArtifactCount"])
             self.assertEqual(data, (Path(temporary) / "retained/0000.bin").read_bytes())
@@ -763,6 +765,108 @@ def load_tests(loader, tests, pattern):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return unittest.TestSuite([tests, loader.loadTestsFromModule(module)])
+
+
+class OwnedAdbReadonlyRetry(unittest.TestCase):
+    """All subprocess calls are mocked; no ADB server or device is contacted."""
+    def make_transport(self):
+        directory = Path(tempfile.mkdtemp())
+        transport = object.__new__(campaign.OwnedAdbTransport)
+        transport.adb, transport.session, transport.directory, transport.sequence = Path("adb"), {"adbPort": 5037, "serial": "emulator-5556"}, directory, 0
+        return transport
+
+    @staticmethod
+    def completed(code, stdout=b"", stderr=b""):
+        return subprocess.CompletedProcess([], code, stdout, stderr)
+
+    def test_crlf_retry_preserves_two_native_receipts(self):
+        transport = self.make_transport()
+        args = ["shell", "run-as", campaign.PACKAGE, "stat", "-c", "%F", "files/campaign"]
+        first = self.completed(1, b"", b"* daemon still not running\r\nerror: cannot connect to daemon at tcp:127.0.0.1:5037: cannot connect\r\n")
+        with patch.object(campaign.subprocess, "run", side_effect=[first, self.completed(0, b"directory\n")]) as native:
+            self.assertEqual(transport.run(args, "retention-stat", retry_readonly_connection_once=True).stdout, b"directory\n")
+        self.assertEqual(native.call_count, 2)
+        self.assertEqual(transport.sequence, 2)
+        self.assertEqual(json.loads((transport.directory / "001-retention-stat.result.json").read_text()), {"nativeExit": 1, "timedOut": False})
+        self.assertEqual(json.loads((transport.directory / "002-retention-stat.result.json").read_text()), {"nativeExit": 0, "timedOut": False})
+
+    def test_repeated_failure_and_nonmatching_failures_stop_without_extra_retry(self):
+        args = ["shell", "run-as", campaign.PACKAGE, "stat", "-c", "%F", "files/campaign"]
+        eligible = self.completed(1, b"", b"* daemon still not running\r\nerror: cannot connect to daemon at tcp:127.0.0.1:5037: cannot connect\r\n")
+        transport = self.make_transport()
+        with patch.object(campaign.subprocess, "run", side_effect=[eligible, eligible]) as native:
+            with self.assertRaises(ValueError): transport.run(args, "retention-stat", retry_readonly_connection_once=True)
+        self.assertEqual(native.call_count, 2)
+        for response in (self.completed(1, b"", b"* daemon still not running\r\nerror: cannot connect to daemon at tcp:127.0.0.1:5038: cannot connect\r\n"), self.completed(1, b"partial", b"* daemon still not running\r\nerror: cannot connect to daemon at tcp:127.0.0.1:5037: cannot connect\r\n"), self.completed(2, b"", b"* daemon still not running\r\nerror: cannot connect to daemon at tcp:127.0.0.1:5037: cannot connect\r\n")):
+            transport = self.make_transport()
+            with patch.object(campaign.subprocess, "run", return_value=response) as native:
+                with self.assertRaises(ValueError): transport.run(args, "retention-stat", retry_readonly_connection_once=True)
+            self.assertEqual(native.call_count, 1)
+
+    def test_timeout_mutation_and_default_verification_do_not_retry(self):
+        args = ["shell", "run-as", campaign.PACKAGE, "stat", "-c", "%F", "files/campaign"]
+        transport = self.make_transport()
+        with patch.object(campaign.subprocess, "run", side_effect=subprocess.TimeoutExpired(args, 30)) as native:
+            with self.assertRaises(ValueError): transport.run(args, "retention-stat", retry_readonly_connection_once=True)
+        self.assertEqual(native.call_count, 1)
+        transport = self.make_transport()
+        with patch.object(campaign.subprocess, "run") as native:
+            with self.assertRaises(ValueError): transport.run(["shell", "run-as", campaign.PACKAGE, "kill", "-9", "42"], "sigkill", retry_readonly_connection_once=True)
+        native.assert_not_called()
+        transport = self.make_transport()
+        failed = self.completed(1, b"", b"* daemon still not running\r\nerror: cannot connect to daemon at tcp:127.0.0.1:5037: cannot connect\r\n")
+        with patch.object(campaign.subprocess, "run", return_value=failed) as native:
+            with self.assertRaises(ValueError): transport.run(["get-state"], "device-state")
+        self.assertEqual(native.call_count, 1)
+
+    def test_all_three_eligible_shapes_and_unsafe_or_instrumentation_rejection(self):
+        shapes = [
+            ["shell", "run-as", campaign.PACKAGE, "stat", "-c", "%F", "files/campaign"],
+            ["exec-out", "run-as", campaign.PACKAGE, "head", "-c", "1", "files/campaign/a"],
+            ["exec-out", "run-as", campaign.PACKAGE, "readlink", "-n", "files/campaign/a"],
+        ]
+        failed = self.completed(1, b"", b"* daemon still not running\r\nerror: cannot connect to daemon at tcp:127.0.0.1:5037: cannot connect\r\n")
+        for args in shapes:
+            transport = self.make_transport()
+            with patch.object(campaign.subprocess, "run", side_effect=[failed, self.completed(0)]) as native:
+                transport.run(args, "retention-read", retry_readonly_connection_once=True)
+            self.assertEqual(native.call_count, 2)
+        for args in (["shell", "run-as", campaign.PACKAGE, "stat", "-c", "%F", "files/../campaign"], ["exec-out", "run-as", campaign.PACKAGE, "head", "-c", "-1", "files/campaign/a"], ["exec-out", "run-as", campaign.PACKAGE, "readlink", "files/campaign/a"], ["shell", "am", "instrument", "-w"]):
+            transport = self.make_transport()
+            with patch.object(campaign.subprocess, "run") as native:
+                with self.assertRaises(ValueError): transport.run(args, "forbidden", retry_readonly_connection_once=True)
+            native.assert_not_called()
+
+    def test_retain_evidence_marks_stat_head_and_readlink_retryable(self):
+        class Transport:
+            def __init__(self, directory): self.directory, self.calls = directory, []
+            def run(self, arguments, label, **kwargs):
+                self.calls.append((arguments, kwargs))
+                if "stat" in arguments:
+                    value = b"symbolic link\n" if arguments[-1].endswith("a-link") else b"directory\n" if arguments[-1] != "files/campaign/id/z-rows.json" else b"regular file\n"
+                else: value = b""
+                return subprocess.CompletedProcess([], 0, value, b"")
+        artifacts = [
+            {"relativePath": "files/campaign/id/a-link", "bytes": 0, "sha256": hashlib.sha256(b"").hexdigest(), "role": "RETAINED_RAW_ARTIFACT", "kind": "SYMLINK_TARGET_TEXT"},
+            {"relativePath": "files/campaign/id/z-rows.json", "bytes": 0, "sha256": hashlib.sha256(b"").hexdigest(), "role": "CONSISTENT_JOURNAL_SNAPSHOT"},
+        ]
+        observation = {"retentionArtifacts": artifacts, "retentionSnapshotConsistent": True, "artifactManifestSha256": campaign.android_artifact_manifest_sha256(artifacts), "classification": "VALID"}
+        transport = Transport(Path(tempfile.mkdtemp()))
+        campaign.retain_evidence(transport, {"source": SOURCE}, {"attemptId": "id", "runId": "0" * 32}, observation, "DEFAULT")
+        self.assertTrue(any(call[0][0] == "shell" and call[1].get("retry_readonly_connection_once") is True for call in transport.calls))
+        self.assertTrue(any("head" in call[0] and call[1].get("retry_readonly_connection_once") is True for call in transport.calls))
+        self.assertTrue(any("readlink" in call[0] and call[1].get("retry_readonly_connection_once") is True for call in transport.calls))
+
+
+class AndroidWireRetentionManifest(unittest.TestCase):
+    def test_android_slash_escaped_wire_manifest_and_declared_digest_are_required(self):
+        artifacts = [{"bytes": 0, "relativePath": "files/campaign/id/rows.json", "role": "CONSISTENT_JOURNAL_SNAPSHOT", "sha256": hashlib.sha256(b"").hexdigest()}]
+        digest = campaign.android_artifact_manifest_sha256(artifacts)
+        self.assertNotEqual(digest, campaign.digest_json(artifacts))
+        self.assertEqual(digest, hashlib.sha256(b'[{"bytes":0,"relativePath":"files\\/campaign\\/id\\/rows.json","role":"CONSISTENT_JOURNAL_SNAPSHOT","sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}]').hexdigest())
+        self.assertEqual(campaign.digest_json({"a": "/"}), hashlib.sha256(b'{"a":"/"}').hexdigest())
+        with self.assertRaises(ValueError):
+            campaign.retain_evidence(type("T", (), {"directory": Path(tempfile.mkdtemp())})(), {"source": SOURCE}, {"attemptId": "id", "runId": "0" * 32}, {"retentionArtifacts": artifacts, "retentionSnapshotConsistent": True, "artifactManifestSha256": "0" * 64}, "DEFAULT")
 
 
 if __name__ == "__main__":

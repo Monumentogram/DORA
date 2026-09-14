@@ -841,6 +841,16 @@ def kill_arguments(pid: int, observed_pid: str, observed_cmdline: str) -> list[s
     return ["shell", "run-as", PACKAGE, "kill", "-9", str(pid)]
 
 
+def readonly_retention_arguments(arguments: list[str]) -> bool:
+    """The only idempotent app-private reads eligible for one client retry."""
+    safe_path = lambda value: isinstance(value, str) and re.fullmatch(r"[A-Za-z0-9_./-]{1,300}", value) is not None and not any(part in ("", ".", "..") for part in value.split("/"))
+    if arguments[:4] == ["shell", "run-as", PACKAGE, "stat"]:
+        return len(arguments) == 7 and arguments[4:6] == ["-c", "%F"] and safe_path(arguments[6])
+    if arguments[:4] == ["exec-out", "run-as", PACKAGE, "head"]:
+        return len(arguments) == 7 and arguments[4] == "-c" and arguments[5].isdigit() and safe_path(arguments[6])
+    return len(arguments) == 6 and arguments[:5] == ["exec-out", "run-as", PACKAGE, "readlink", "-n"] and safe_path(arguments[5])
+
+
 class OwnedAdbTransport:
     """Bounded client commands only; existing launcher owns all host services."""
 
@@ -852,7 +862,17 @@ class OwnedAdbTransport:
     def argv(self, arguments: list[str]) -> list[str]:
         return owned_adb_command(self.adb, self.session["adbPort"], ["-s", self.session["serial"], *arguments])
 
-    def run(self, arguments: list[str], label: str, timeout: int = 30, require_success: bool = True) -> subprocess.CompletedProcess:
+    def _predispatch_readonly_connection_failure(self, label: str) -> bool:
+        prefix = self.directory / f"{self.sequence:03d}-{safe_id(label)}"
+        result = json.loads(prefix.with_suffix(".result.json").read_text(encoding="utf-8"))
+        stderr = prefix.with_suffix(".stderr").read_bytes().replace(b"\r\n", b"\n")
+        expected = b"* daemon still not running\nerror: cannot connect to daemon at tcp:127.0.0.1:" + str(self.session["adbPort"]).encode("ascii") + b":"
+        return result == {"nativeExit": 1, "timedOut": False} and not prefix.with_suffix(".stdout").read_bytes() and stderr.startswith(expected)
+
+    def run(self, arguments: list[str], label: str, timeout: int = 30, require_success: bool = True,
+            retry_readonly_connection_once: bool = False) -> subprocess.CompletedProcess:
+        if retry_readonly_connection_once:
+            require(require_success and readonly_retention_arguments(arguments), "Readonly connection retry is limited to successful raw-retention reads")
         self.sequence += 1
         prefix = self.directory / f"{self.sequence:03d}-{safe_id(label)}"
         argv = self.argv(arguments)
@@ -868,8 +888,13 @@ class OwnedAdbTransport:
         prefix.with_suffix(".stdout").write_bytes(completed.stdout)
         prefix.with_suffix(".stderr").write_bytes(completed.stderr)
         save_new(prefix.with_suffix(".result.json"), {"nativeExit": completed.returncode, "timedOut": False})
-        if require_success:
+        if require_success and not retry_readonly_connection_once:
             require(completed.returncode == 0, "ADB operation failed: " + label)
+        if retry_readonly_connection_once and completed.returncode != 0:
+            if self._predispatch_readonly_connection_failure(label):
+                return self.run(arguments, label, timeout=timeout, require_success=True,
+                                retry_readonly_connection_once=False)
+            require(False, "ADB operation failed: " + label)
         return completed
 
     def verify_device(self, source: dict[str, str]) -> None:
@@ -947,10 +972,33 @@ def retention_path(entry: dict[str, Any], artifact: dict[str, Any]) -> str:
     return relative
 
 
+def android_artifact_manifest_sha256(artifacts: list[dict[str, Any]]) -> str:
+    """Match the Android adapter's explicit JSONObject.quote wire canonical form."""
+    require(isinstance(artifacts, list), "Raw retention manifest missing")
+    fields = []
+    paths = []
+    for artifact in artifacts:
+        require(isinstance(artifact, dict), "Malformed raw retention artifact")
+        relative = artifact.get("relativePath")
+        role = artifact.get("role")
+        size = artifact.get("bytes")
+        digest = artifact.get("sha256")
+        require(isinstance(relative, str) and isinstance(role, str) and type(size) is int and size >= 0, "Malformed raw retention artifact")
+        hex_value(digest, 64)
+        paths.append(relative)
+        # Android JSONObject.quote escapes slash in this adapter's JSON wire
+        # form.  Paths are ASCII-constrained by retention_path below.
+        quote = lambda value: json.dumps(value, ensure_ascii=True, separators=(",", ":")).replace("/", "\\/")
+        fields.append("{\"bytes\":" + str(size) + ",\"relativePath\":" + quote(relative) + ",\"role\":" + quote(role) + ",\"sha256\":" + quote(digest) + "}")
+    require(paths == sorted(paths), "Raw retention manifest order differs from Android wire order")
+    return hashlib.sha256(("[" + ",".join(fields) + "]").encode("ascii")).hexdigest()
+
+
 def retain_evidence(transport: OwnedAdbTransport, plan: dict[str, Any], entry: dict[str, Any], observation: dict[str, Any], label: str) -> dict[str, Any]:
     artifacts = observation.get("retentionArtifacts")
     require(isinstance(artifacts, list) and 1 <= len(artifacts) <= 1024, "Raw retention manifest missing; cleanup forbidden")
     require(observation.get("retentionSnapshotConsistent") is True, "Consistent journal/evidence snapshot not proved; cleanup forbidden")
+    require(observation.get("artifactManifestSha256") == android_artifact_manifest_sha256(artifacts), "Raw retention manifest digest differs from Android wire manifest")
     paths = [retention_path(entry, artifact) for artifact in artifacts]
     require(len(set(paths)) == len(paths) and sum(item["bytes"] for item in artifacts) <= 256 * 1024 * 1024, "Duplicate or oversized raw retention set")
     require(any(item.get("role") == "CONSISTENT_JOURNAL_SNAPSHOT" for item in artifacts), "Raw consistent journal snapshot missing; cleanup forbidden")
@@ -963,14 +1011,17 @@ def retain_evidence(transport: OwnedAdbTransport, plan: dict[str, Any], entry: d
         parts = relative.split("/")
         for end in range(1, len(parts) + 1):
             current = "/".join(parts[:end])
-            kind = transport.run(["shell", "run-as", PACKAGE, "stat", "-c", "%F", current], "retention-stat").stdout.decode().strip()
+            kind = transport.run(["shell", "run-as", PACKAGE, "stat", "-c", "%F", current], "retention-stat",
+                                 retry_readonly_connection_once=True).stdout.decode().strip()
             leaf_kind = "symbolic link" if artifact.get("kind") == "SYMLINK_TARGET_TEXT" else "regular file"
             require(kind == (leaf_kind if end == len(parts) else "directory"), "Nonregular retained artifact or unexpected symlink")
         if artifact.get("kind") == "SYMLINK_TARGET_TEXT":
             require(artifact["bytes"] <= 4096, "Unbounded symbolic link target text")
-            data = transport.run(["exec-out", "run-as", PACKAGE, "readlink", "-n", relative], "retention-link-text").stdout
+            data = transport.run(["exec-out", "run-as", PACKAGE, "readlink", "-n", relative], "retention-link-text",
+                                 retry_readonly_connection_once=True).stdout
         else:
-            data = transport.run(["exec-out", "run-as", PACKAGE, "head", "-c", str(artifact["bytes"] + 1), relative], "retention-read", timeout=60).stdout
+            data = transport.run(["exec-out", "run-as", PACKAGE, "head", "-c", str(artifact["bytes"] + 1), relative], "retention-read",
+                                 timeout=60, retry_readonly_connection_once=True).stdout
         require(len(data) == artifact["bytes"] and hashlib.sha256(data).hexdigest() == artifact["sha256"], "Retained raw artifact changed or digest mismatch")
         target = directory / (f"{number:04d}.bin")
         with target.open("xb") as stream:
@@ -979,7 +1030,7 @@ def retain_evidence(transport: OwnedAdbTransport, plan: dict[str, Any], entry: d
             os.fsync(stream.fileno())
         index.append(dict(artifact, hostFile=target.name))
     receipt = {"schema": "DORA_RECOVERY_HOST_RETENTION_V1", "source": plan["source"], "manifestSha256": digest_json(plan),
-               "attemptId": entry["attemptId"], "artifactManifestSha256": digest_json(artifacts),
+               "attemptId": entry["attemptId"], "artifactManifestSha256": android_artifact_manifest_sha256(artifacts),
                "retainedArtifactCount": len(index), "outcome": observation.get("classification", "PREPARED"), "index": index}
     path = directory / "retention-receipt.json"
     save_new(path, receipt)
