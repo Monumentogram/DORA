@@ -76,6 +76,14 @@ class CandidateProfileTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "undeclared paths"):
             self.check()
 
+    def test_rejects_owner_decision_change_in_metadata_child(self):
+        self.write("docs/stage0/DORA_0D6_ALPHA_PREFLIGHT_OWNER_DECISION_20260914.md",
+                   "unreviewed replacement decision\n")
+        self.git("add", "docs")
+        self.git("commit", "--amend", "--no-edit", "-q")
+        with self.assertRaisesRegex(ValueError, "undeclared paths"):
+            subject.alpha_preflight_source(root=self.root, profile=self.profile)
+
     def test_rejects_missing_maintenance_file(self):
         self.git("rm", "-q", "metadata.txt")
         self.git("commit", "--amend", "--no-edit", "-q")

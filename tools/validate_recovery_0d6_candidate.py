@@ -13,14 +13,12 @@ ROOT = Path(__file__).resolve().parents[1]
 BRANCH = "codex/0d6-device-preflight-campaign"
 REPOSITORY = "Monumentogram/DORA"
 PR_BASE = "55940df0c95e919a00708ae57e1b8aa23d89b6de"
-IMPLEMENTATION_COMMIT = "86fe55994b6f71ac59ef2cff03e837a3bc92e536"
-IMPLEMENTATION_TREE = "73cb71f36da657ddd399ae6117571e4f686031e5"
+IMPLEMENTATION_COMMIT = "703d67761e700a068264ec4bffec79534e138421"
+IMPLEMENTATION_TREE = "01dfd6d9bcab19a124b887ed894feeba1d16c68b"
 # Pin the immutable implementation parent after source freeze; never pin this file's own commit.
 MAINTENANCE_PATHS = frozenset({
     "tools/validate_recovery_0d6_candidate.py",
     "tools/test_validate_recovery_0d6_candidate.py",
-    "tools/validate_poc_recovery_governance.py",
-    "tools/verify_poc_recovery_dependency_inventory.py",
 })
 
 
