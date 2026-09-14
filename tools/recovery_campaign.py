@@ -15,6 +15,7 @@ import json
 import os
 import queue
 import re
+import runpy
 import subprocess
 import sys
 import threading
@@ -46,6 +47,46 @@ KILL_PROOFS = (
     "externalEnvelopeComplete",
 )
 CANDIDATES = ("REC-STREAM-TINK", "REC-MICROFILE-TINK")
+ALPHA_PREFLIGHT_PAYLOADS = frozenset({"SUPPLEMENTAL_SQLITE", "JOURNAL_CONNECTIONS", "PLATFORM_PREREQUISITES"})
+ALPHA_DECISION_PATH = "docs/stage0/DORA_0D6_ALPHA_PREFLIGHT_OWNER_DECISION_20260914.md"
+ALPHA_DECISION_SHA256 = "06dede52bd599ae12903dd9f336774c804bee97724cede208e4e64b9b5f64dde"
+
+
+def accepted_alpha_source() -> dict[str, str]:
+    # Load the exact sibling even under Python -I; no ambient import path.
+    validator = Path(__file__).resolve().with_name("validate_recovery_0d6_candidate.py")
+    return runpy.run_path(str(validator))["alpha_preflight_source"]()
+
+
+def validate_alpha_preflight(plan: dict[str, Any], gate: dict[str, Any], payload: str) -> None:
+    """Integrity and scope of the owner's specific amendment, never human approval."""
+    decision = gate.get("alphaPreflight")
+    require(isinstance(decision, dict), "Alpha preflight decision binding missing")
+    require(decision.get("decisionId") == "DORA_0D6_ALPHA_PREFLIGHT_20260914"
+            and decision.get("scope") == "INTERNAL_ALPHA_E36_PREFLIGHT_ONLY", "Wrong alpha decision scope")
+    require(decision.get("source") == plan["source"], "Alpha decision source/APK mismatch")
+    require(plan["source"] == accepted_alpha_source(), "Alpha source/APKs are not the exact accepted successor")
+    require(payload in ALPHA_PREFLIGHT_PAYLOADS, "Alpha decision cannot admit CAMPAIGN or another payload")
+    allowed = gate.get("supportedPayloads")
+    require(isinstance(allowed, list) and len(allowed) == 3 and set(allowed) == ALPHA_PREFLIGHT_PAYLOADS,
+            "Alpha payload scope drift")
+    require(gate.get("supportedAttemptIds") == [], "Alpha decision cannot admit campaign attempts")
+    require(gate.get("environment") == "E36-GAPI" and gate.get("deviceFingerprint") ==
+            "google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+            "Alpha decision requires exact E36 profile; physical profiles excluded")
+    require(gate.get("physicalAuthorization", {}).get("authorized") is False, "Alpha physical scope forbidden")
+    accountable = gate.get("accountableReview", {})
+    require(gate.get("accountableReviewApproved") is False and accountable.get("formalReviewer") is False
+            and accountable.get("reviewer") is None and accountable.get("reviewedCommit") is None,
+            "Alpha decision must not fabricate accountable review")
+    proof = gate.get("proofs", {}).get("ownerDecision", {})
+    require(isinstance(proof.get("path"), str), "Missing fixed owner decision artifact")
+    path = Path(proof["path"])
+    expected = Path(__file__).resolve().parents[1] / ALPHA_DECISION_PATH
+    require(path.resolve() == expected.resolve() and path.is_file()
+            and proof.get("sha256") == ALPHA_DECISION_SHA256
+            and hashlib.sha256(path.read_bytes()).hexdigest() == ALPHA_DECISION_SHA256,
+            "Owner decision artifact is not the pinned repository decision")
 
 
 def require(condition: bool, reason: str) -> None:
@@ -561,18 +602,24 @@ def validate_execution_gate(plan: dict[str, Any], gate: dict[str, Any], session:
     require(parser_path.is_file() and hashlib.sha256(parser_path.read_bytes()).hexdigest() == gate.get("instrumentationParserSha256"), "Instrumentation parser is not the reviewed pinned file")
     require(payload in ("CAMPAIGN", "SUPPLEMENTAL_SQLITE", "PLATFORM_PREREQUISITES", "JOURNAL_CONNECTIONS"), "Unknown fixed payload")
     preflight = payload != "CAMPAIGN"
+    alpha = "alphaPreflight" in gate
+    if alpha:
+        validate_alpha_preflight(plan, gate, payload)
     if preflight:
         require(payload in gate.get("supportedPayloads", []), "Fixed preflight payload not reviewed")
-    for key in ("executionAuthorized", "implementationVerified", "independentReviewClean", "accountableReviewApproved", "exactHeadCiPassed", "graphAndR8Verified") + (() if preflight else ("preflightPassed",)):
+    review_flags = () if alpha else ("accountableReviewApproved",)
+    for key in ("executionAuthorized", "implementationVerified", "independentReviewClean") + review_flags + ("exactHeadCiPassed", "graphAndR8Verified") + (() if preflight else ("preflightPassed",)):
         require(gate.get(key) is True, key + " gate unsatisfied")
     require(isinstance(gate.get("ownerInstructionReference"), str) and gate["ownerInstructionReference"], "Missing owner instruction source")
     accountable = gate.get("accountableReview", {})
-    require(accountable.get("formalReviewer") is True and accountable.get("reviewedCommit") == plan["source"]["commit"] and bool(accountable.get("reviewer")), "Missing exact accountable review identity")
+    if not alpha:
+        require(accountable.get("formalReviewer") is True and accountable.get("reviewedCommit") == plan["source"]["commit"] and bool(accountable.get("reviewer")), "Missing exact accountable review identity")
     # These files are the concrete reviewable prerequisite packet; booleans by
     # themselves never authorize execution. The coordinator supplies truthful
     # accepted evidence. This tool does not create a human attestation.
     proofs = gate.get("proofs", {})
-    for key in ("implementation", "independentReview", "accountableReview", "ci", "graphAndR8", "ownerInstruction") + (() if preflight else ("preflight",)):
+    review_proofs = () if alpha else ("accountableReview",)
+    for key in ("implementation", "independentReview") + review_proofs + ("ci", "graphAndR8", "ownerInstruction") + (() if preflight else ("preflight",)):
         proof = proofs.get(key, {})
         require(isinstance(proof.get("path"), str), "Missing prerequisite artifact " + key)
         path = Path(proof["path"])

@@ -56,6 +56,19 @@ class CandidateProfileTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "tree drift"):
             self.check()
 
+    def test_alpha_source_comes_from_actual_clean_exact_candidate(self):
+        actual = subject.alpha_preflight_source(root=self.root, profile=self.profile)
+        self.assertEqual(self.candidate, actual["commit"])
+        self.assertEqual(self.git("rev-parse", "HEAD^{tree}"), actual["tree"])
+        self.write("runtime.txt", "unreviewed runtime\n")
+        with self.assertRaisesRegex(ValueError, "dirty"):
+            subject.alpha_preflight_source(root=self.root, profile=self.profile)
+
+    def test_alpha_source_rejects_later_candidate_even_with_unchanged_tree(self):
+        self.git("commit", "--allow-empty", "-qm", "unreviewed successor")
+        with self.assertRaisesRegex(ValueError, "not direct"):
+            subject.alpha_preflight_source(root=self.root, profile=self.profile)
+
     def test_rejects_runtime_change_in_metadata_commit(self):
         self.write("runtime.txt", "changed runtime\n")
         self.git("add", "runtime.txt")

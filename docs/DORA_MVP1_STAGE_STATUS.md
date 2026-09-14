@@ -1,5 +1,13 @@
 # Dora MVP 1 — Stage Status
 
+Current internal alpha preflight amendment, 14 September 2026: the
+[owner decision](stage0/DORA_0D6_ALPHA_PREFLIGHT_OWNER_DECISION_20260914.md) removes
+mandatory accountable human review only from the three named E36-GAPI preflights.
+Exact successor source/CI, technical review, APK identity and runtime evidence remain
+required. The original unapproved packet is preserved. Full preflight is unpassed
+until all three exact tests and cleanup are evidenced in the private successor report.
+The 414-entry campaign, physical/API requirements, full Recovery and 0D.6 remain unclosed.
+
 Current 0D.6 amendment, 14 September 2026: the
 [scoped owner execution instruction](stage0/DORA_0D6_EXECUTION_SCOPE_20260914.md) authorizes
 plan-and-execute preparation and conditional synthetic campaigns on task-owned emulators after

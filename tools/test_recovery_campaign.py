@@ -25,6 +25,132 @@ class CampaignPresence(unittest.TestCase):
         self.assertIsNotNone(campaign, "Missing protocol-derived campaign planner/evaluator")
 
 
+class AlphaPreflightAdmission(unittest.TestCase):
+    """Real packet admission; fixture evidence never asserts a human review."""
+
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.proof = Path(self.temp.name) / "technical-evidence.txt"
+        self.proof.write_text("synthetic technical evidence\n", encoding="utf-8")
+        self.decision = ROOT / "docs/stage0/DORA_0D6_ALPHA_PREFLIGHT_OWNER_DECISION_20260914.md"
+        self.payloads = ["SUPPLEMENTAL_SQLITE", "JOURNAL_CONNECTIONS", "PLATFORM_PREREQUISITES"]
+        self.plan = {"source": SOURCE}
+        # Isolate Git discovery only. The exact-profile validator has separate
+        # real-Git tests; every packet field/proof is validated by real code here.
+        source_probe = patch.object(campaign, "accepted_alpha_source", return_value=copy.deepcopy(SOURCE), create=True)
+        source_probe.start()
+        self.addCleanup(source_probe.stop)
+        proof = {"path": str(self.proof), "sha256": hashlib.sha256(self.proof.read_bytes()).hexdigest()}
+        self.gate = {
+            "schema": "DORA_RECOVERY_CAMPAIGN_EXECUTION_GATE_V1",
+            "source": copy.deepcopy(SOURCE), "manifestSha256": campaign.digest_json(self.plan),
+            "driverSha256": hashlib.sha256(Path(campaign.__file__).read_bytes()).hexdigest(),
+            "instrumentationParserSha256": hashlib.sha256((ROOT / "tools/recovery_instrumentation_status.py").read_bytes()).hexdigest(),
+            "executionAuthorized": True, "implementationVerified": True, "independentReviewClean": True,
+            "exactHeadCiPassed": True, "graphAndR8Verified": True, "accountableReviewApproved": False,
+            "accountableReview": {"formalReviewer": False, "reviewer": None, "reviewedCommit": None},
+            "preflightPassed": False, "physicalAuthorization": {"authorized": False},
+            "ownerInstructionReference": "synthetic owner instruction fixture",
+            "environment": "E36-GAPI",
+            "deviceFingerprint": "google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys",
+            "supportedPayloads": self.payloads, "supportedAttemptIds": [],
+            "alphaPreflight": {"decisionId": "DORA_0D6_ALPHA_PREFLIGHT_20260914",
+                               "scope": "INTERNAL_ALPHA_E36_PREFLIGHT_ONLY", "source": copy.deepcopy(SOURCE)},
+            "proofs": {key: copy.deepcopy(proof) for key in
+                       ("implementation", "independentReview", "ci", "graphAndR8", "ownerInstruction")},
+        }
+        self.gate["proofs"]["ownerDecision"] = {
+            "path": str(self.decision), "sha256": hashlib.sha256(self.decision.read_bytes()).hexdigest()}
+
+    def check(self, payload="SUPPLEMENTAL_SQLITE", session=None):
+        campaign.validate_execution_gate(self.plan, self.gate, session, payload)
+
+    def test_valid_alpha_packet_admits_exactly_three_preflights_without_human_review(self):
+        for payload in self.payloads:
+            with self.subTest(payload=payload):
+                self.check(payload)
+
+    def test_alpha_rejects_missing_wrong_scope_or_arbitrary_decision(self):
+        original = copy.deepcopy(self.gate)
+        for mutation in (lambda g: g["alphaPreflight"].pop("decisionId"),
+                         lambda g: g["alphaPreflight"].update(scope="ALL_ALPHA"),
+                         lambda g: g["proofs"].pop("ownerDecision"),
+                         lambda g: g["proofs"]["ownerDecision"].update(path=str(self.proof)),
+                         lambda g: g["proofs"]["ownerDecision"].update(sha256="0" * 64),
+                         lambda g: g.update(alphaPreflight=True)):
+            self.gate = copy.deepcopy(original)
+            mutation(self.gate)
+            with self.assertRaises(ValueError):
+                self.check()
+
+    def test_alpha_rejects_source_apk_manifest_driver_parser_and_proof_mismatches(self):
+        original = copy.deepcopy(self.gate)
+        for field in SOURCE:
+            self.gate = copy.deepcopy(original)
+            self.gate["alphaPreflight"]["source"][field] = "0" * len(SOURCE[field])
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                self.check()
+        for field in ("manifestSha256", "driverSha256", "instrumentationParserSha256"):
+            self.gate = copy.deepcopy(original)
+            self.gate[field] = "0" * 64
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                self.check()
+        for key in ("implementation", "independentReview", "ci", "graphAndR8", "ownerInstruction"):
+            self.gate = copy.deepcopy(original)
+            self.gate["proofs"][key]["sha256"] = "0" * 64
+            with self.subTest(proof=key), self.assertRaises(ValueError):
+                self.check()
+
+    def test_alpha_rejects_campaign_physical_and_expanded_payload_scope(self):
+        with self.assertRaises(ValueError):
+            self.check("CAMPAIGN")
+        original = copy.deepcopy(self.gate)
+        for environment in ("D1", "D2", "D5"):
+            self.gate = copy.deepcopy(original)
+            self.gate["environment"] = environment
+            with self.subTest(environment=environment), self.assertRaises(ValueError):
+                self.check()
+        self.gate = copy.deepcopy(original)
+        self.gate["supportedPayloads"].append("CAMPAIGN")
+        with self.assertRaises(ValueError):
+            self.check()
+        self.gate = copy.deepcopy(original)
+        self.gate["supportedAttemptIds"] = ["PA-STREAM-K01-E36-GAPI-01"]
+        with self.assertRaises(ValueError):
+            self.check()
+
+    def test_alpha_cannot_fabricate_human_approval_or_remove_technical_gates(self):
+        original = copy.deepcopy(self.gate)
+        for field in ("implementationVerified", "independentReviewClean", "exactHeadCiPassed", "graphAndR8Verified"):
+            self.gate = copy.deepcopy(original)
+            self.gate[field] = False
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                self.check()
+        self.gate = copy.deepcopy(original)
+        self.gate["accountableReviewApproved"] = True
+        with self.assertRaises(ValueError):
+            self.check()
+
+    def test_legacy_missing_review_still_refused(self):
+        self.gate.pop("alphaPreflight")
+        with self.assertRaisesRegex(ValueError, "accountableReviewApproved gate unsatisfied"):
+            self.check()
+
+    def test_alpha_rejects_self_consistent_unrelated_source_or_apks(self):
+        for field in SOURCE:
+            with self.subTest(field=field):
+                original = copy.deepcopy(self.gate)
+                self.plan = {"source": copy.deepcopy(SOURCE)}
+                self.plan["source"][field] = "0" * len(SOURCE[field])
+                self.gate["source"] = copy.deepcopy(self.plan["source"])
+                self.gate["alphaPreflight"]["source"] = copy.deepcopy(self.plan["source"])
+                self.gate["manifestSha256"] = campaign.digest_json(self.plan)
+                with self.assertRaisesRegex(ValueError, "exact accepted successor"):
+                    self.check()
+                self.gate = original
+
+
 @unittest.skipIf(campaign is None, "Implementation not yet present")
 class CampaignContract(unittest.TestCase):
     @classmethod

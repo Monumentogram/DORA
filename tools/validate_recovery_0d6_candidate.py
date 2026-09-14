@@ -107,3 +107,16 @@ def validate_current() -> bool:
         )), "0D.6 unsupported GitHub event context")
     validate(profile, head=source, pull_request=pr)
     return True
+
+
+def alpha_preflight_source(*, root: Path = ROOT, profile: Profile | None = None) -> dict[str, str]:
+    """Actual clean exact metadata child and APKs; packet agreement alone is insufficient."""
+    accepted = active_profile() if profile is None else profile
+    require(accepted is not None, "No exact alpha source profile")
+    validate(accepted, root=root)
+    return {
+        "commit": git("rev-parse", "HEAD", root=root),
+        "tree": git("rev-parse", "HEAD^{tree}", root=root),
+        "appApkSha256": "8b1f79aec975c02021c7f58f5218da91f9e9585dbe8bbbd0844647c5b0c1d2de",
+        "testApkSha256": "effd7e29c7dc7a4d8adc7a7057b1d90f5a58340b11c8755aff26cf71c39e0dfe",
+    }

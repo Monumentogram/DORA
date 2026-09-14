@@ -491,6 +491,11 @@ Kafka, service mesh, отдельный vector DB, Kubernetes, event sourcing в
 
 ### 14.3. Durable write protocol
 
+Scoped amendment (14 September 2026): the [internal alpha owner decision](stage0/DORA_0D6_ALPHA_PREFLIGHT_OWNER_DECISION_20260914.md)
+removes mandatory accountable human review only for the three named E36-GAPI preflight
+payloads. Technical acceptance, exact-source CI, advisory evidence, physical/API criteria
+and the legacy/default gates remain intact. It authorizes no campaign or stage closure.
+
 1. До включения микрофона создать `RecordingSession` и `AudioSegment(status=CAPTURING)` в одной SQLCipher transaction.
 2. Создать случайный per-segment DEK; keyset обернуть KEK из Android Keystore. StrongBox использовать, если доступен, с обычным hardware/software Keystore fallback — не блокировать устройство.
 3. Писать ciphertext в `segment-{uuid}.part` через Tink Streaming AEAD; AAD содержит `formatVersion|sessionId|segmentId|sampleRate|channelCount`.

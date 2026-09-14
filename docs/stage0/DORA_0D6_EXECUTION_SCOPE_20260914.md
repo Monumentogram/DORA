@@ -1,5 +1,11 @@
 # Stage 0D.6 scoped execution instruction — 14 September 2026
 
+Current bounded amendment: the [internal alpha owner decision](DORA_0D6_ALPHA_PREFLIGHT_OWNER_DECISION_20260914.md)
+removes the mandatory human-review prerequisite for the three named E36-GAPI preflights.
+Technical gates remain required. This task stops at preflight results and campaign handoff;
+it does not execute the 414 E36 campaign entries. The earlier conditional campaign scope
+below is historical context and is not admitted by the alpha-preflight exception.
+
 This additive record summarizes the project owner's current plan-and-execute instruction for
 Stage **0D.6 — Device preflight and fault campaign**. The complete instruction, implementation
 plan, closure matrix and raw evidence are retained in the private work package. Earlier owner
