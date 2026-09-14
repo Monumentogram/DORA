@@ -14106,6 +14106,26 @@ def validate_rec_i3_squash_main_fast_path() -> bool:
 
 
 def main() -> int:
+    from validate_recovery_0d6_candidate import validate_current as validate_0d6_candidate
+
+    if validate_0d6_candidate():
+        gate = read_json(GATE_PATH)
+        protocol = read_json(PROTOCOL_PATH)
+        validate_all(gate, protocol)
+        validate_readiness_and_evidence(gate)
+        validate_active_metadata()
+        if "--self-test" in sys.argv[1:]:
+            import unittest
+            import test_validate_recovery_0d6_candidate
+            import test_recovery_campaign
+            suite = unittest.TestSuite([
+                unittest.defaultTestLoader.loadTestsFromModule(test_validate_recovery_0d6_candidate),
+                unittest.defaultTestLoader.loadTestsFromModule(test_recovery_campaign),
+            ])
+            require(unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful(),
+                    "0D.6 profile/campaign host regression failed")
+        print("PASS 0D.6 exact source-profile governance; execution readiness remains fail-closed")
+        return 0
     if validate_rec_i3_v11_path_identity_fast_path():
         print("POC-RECOVERY-001 governance path-identity successor validation passed")
         return 0
