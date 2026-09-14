@@ -1,5 +1,16 @@
 # Dora MVP 1 — Stage Status
 
+Current 0D.6 amendment, 14 September 2026: the
+[scoped owner execution instruction](stage0/DORA_0D6_EXECUTION_SCOPE_20260914.md) authorizes
+plan-and-execute preparation and conditional synthetic campaigns on task-owned emulators after
+applicable gates. It supersedes the older blanket statement that no emulator campaign authority
+exists, while preserving all historical false flags and evidence. Original attempt05 remains a
+narrow PASS on `4375b829db7dffef66036e5589e3ffe5961733dc`; complete preflight, applicable fault
+and hard-kill campaigns, full Recovery and 0D.6 are not passed. The successor adds a separate
+canonical SQLite diagnostic, streaming publication and manifest-driven campaign preparation.
+Exact successor review/CI/runtime evidence must be assessed separately; no PR merge or production
+admission follows. Older dated sections below retain their contemporaneous scope and results.
+
 Updated: 19 August 2026
 Baseline: `1be83e2940a09f7b23e33b4cdf3827de2690f3fd`
 Stage 00 merge commit: `a4aae302f9033e5471f6759f513e7e351c375a72`

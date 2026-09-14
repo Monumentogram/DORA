@@ -10,6 +10,27 @@ class RecoveryCandidatePathPolicyTest {
     private val run = RunId.fromCanonicalString("00112233-4455-6677-8899-aabbccddeeff")
 
     @Test
+    fun `stream setup and checkpoint publication paths are admitted exactly`() {
+        listOf(
+                "stream/stream.ct",
+                "key-envelopes/stream.ks",
+                "checkpoints/g-00000000000000000001.ct",
+                "key-envelopes/checkpoint-g-00000000000000000001.ks",
+            )
+            .flatMap { listOf(it, "$it.tmp") }
+            .forEach { name ->
+                val paths = RecoveryCandidatePathPolicy.paths(File("root"), run, name)
+                assertEquals(File(paths.runRoot, name), paths.artifact)
+            }
+        listOf("stream/other.ct", "checkpoints/g-1.ct", "stream/stream.ct.tmp.tmp").forEach { name
+            ->
+            assertThrows(IllegalArgumentException::class.java) {
+                RecoveryCandidatePathPolicy.paths(File("root"), run, name)
+            }
+        }
+    }
+
+    @Test
     fun `exact canonical final and temporary names remain under run root`() {
         listOf(
                 "units/u-0000000000.ct",

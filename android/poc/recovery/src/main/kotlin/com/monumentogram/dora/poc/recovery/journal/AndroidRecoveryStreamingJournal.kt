@@ -523,7 +523,7 @@ internal interface RecoveryStreamingJournalTransaction {
     fun end()
 }
 
-private class AndroidSqliteRecoveryStreamingJournalDatabase(private val database: SQLiteDatabase) :
+internal class AndroidSqliteRecoveryStreamingJournalDatabase(private val database: SQLiteDatabase) :
     RecoveryStreamingJournalDatabase {
     override fun checkpoints(runId: RunId): List<RecoveryStreamingCheckpointRow> =
         query(
