@@ -6,6 +6,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
+import android.os.Build
 import android.system.ErrnoException
 import android.system.Os
 import android.system.OsConstants
@@ -1024,7 +1025,14 @@ internal object AndroidRecoveryJournalDatabase {
     }
 }
 
-private class RecoveryJournalSqliteHelper(context: Context) :
+// This API restriction is PoC-only; it does not change the application's minSdk 28 contract.
+internal fun requireRecoveryJournalApi(apiLevel: Int) {
+    check(apiLevel >= Build.VERSION_CODES.TIRAMISU) {
+        "PoC Recovery journal requires API 33 for per-connection WAL configuration"
+    }
+}
+
+internal class RecoveryJournalSqliteHelper(context: Context) :
     SQLiteOpenHelper(
         context,
         databasePath(context).path,
@@ -1037,10 +1045,10 @@ private class RecoveryJournalSqliteHelper(context: Context) :
 
     override fun onConfigure(database: SQLiteDatabase) {
         database.setForeignKeyConstraintsEnabled(true)
-        database.rawQuery("PRAGMA wal_autocheckpoint=0", null).use { cursor ->
-            check(cursor.moveToFirst() && cursor.getInt(0) == 0) {
-                "Recovery journal could not disable WAL auto-checkpointing"
-            }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            database.execPerConnectionSQL("PRAGMA wal_autocheckpoint=0", null)
+        } else {
+            requireRecoveryJournalApi(Build.VERSION.SDK_INT)
         }
     }
 
@@ -1082,6 +1090,7 @@ private class RecoveryJournalSqliteHelper(context: Context) :
         private const val DIRECTORY_MODE_OWNER_ONLY = 0x1c0
 
         fun databasePath(context: Context): File {
+            requireRecoveryJournalApi(Build.VERSION.SDK_INT)
             val file = File(context.noBackupFilesDir, RecoveryJournalSchema.DATABASE_RELATIVE_NAME)
             val fixed = File(context.noBackupFilesDir, "poc-recovery")
             val version = File(fixed, "v1")
