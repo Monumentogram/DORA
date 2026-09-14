@@ -1183,8 +1183,6 @@ def execute_one(root: Path, plan: dict[str, Any], gate: dict[str, Any], session:
             subresults[-1]["assessment"] = evaluate_attempt(dict(entry, mutationVariants=[variant]), branch)
             save_new(directory / "result.json", subresults[-1])
             result.update(branch)
-            if assessment["verdict"] == "FAIL":
-                break
         result["mutationVariantResults"] = subresults
         if len(subresults) != len(entry["mutationVariants"]) and not any(s["assessment"]["verdict"] == "FAIL" for s in subresults):
             result["status"] = "UNTESTED"

@@ -164,7 +164,6 @@ class AlphaCampaignAdmission(unittest.TestCase):
                        "testApkSha256": "effd7e29c7dc7a4d8adc7a7057b1d90f5a58340b11c8755aff26cf71c39e0dfe"}
         self.plan = campaign.build_plan(ROOT, "PHASE_A", self.source, 20260914, self.execution_id)
         self.selected = [entry for entry in self.plan["entries"] if entry["environment"] == "E36-GAPI"]
-        self.preflight_root = (ROOT.parents[1] / "0D6-CLOSURE-20260914" / "alpha-preflight-20260914").resolve()
         self.decision = ROOT / "docs/stage0/DORA_0D6_ALPHA_E36_CAMPAIGN_OWNER_DECISION_20260914.md"
         proof_path = Path(self.temp.name) / "technical-evidence.txt"
         proof_path.write_text("synthetic technical evidence\n", encoding="utf-8")
@@ -175,6 +174,49 @@ class AlphaCampaignAdmission(unittest.TestCase):
             "appApkSha256": "8b1f79aec975c02021c7f58f5218da91f9e9585dbe8bbbd0844647c5b0c1d2de",
             "testApkSha256": "effd7e29c7dc7a4d8adc7a7057b1d90f5a58340b11c8755aff26cf71c39e0dfe",
         }
+        self.preflight_root = Path(self.temp.name) / "retained-preflight"
+        self.unavailable_private_root = Path(self.temp.name) / "private-package-unavailable"
+
+        def artifact(relative, value):
+            path = self.preflight_root.joinpath(*relative.split("/"))
+            path.parent.mkdir(parents=True, exist_ok=True)
+            data = campaign.canonical(value) + b"\n"
+            path.write_bytes(data)
+            return {"bytes": len(data), "path": relative, "sha256": hashlib.sha256(data).hexdigest()}
+
+        old_plan = campaign.build_plan(ROOT, "PHASE_A", historical, 20260914)
+        old_entries = [entry for entry in old_plan["entries"] if entry["environment"] == "E36-GAPI"]
+        source_equivalence = artifact("raw/source-build-equivalence.json", {"historical": historical})
+        top_packet = artifact("packets/retained-packet.json", {"packet": "retained"})
+        expected_attempts = (
+            ("D3BC6AC-SUPPLEMENTAL_SQLITE-03", "SUPPLEMENTAL_SQLITE"),
+            ("D3BC6AC-JOURNAL_CONNECTIONS-03", "JOURNAL_CONNECTIONS"),
+            ("D3BC6AC-PLATFORM_PREREQUISITES-04", "PLATFORM_PREREQUISITES"),
+        )
+        attempts = []
+        for number, (attempt_id, payload) in enumerate(expected_attempts):
+            prefix = "raw/assessment-" + str(number)
+            attempts.append({
+                "attemptId": attempt_id, "payload": payload, "status": "PASS", "cleanupResult": "VERIFIED",
+                "errors": 0, "failures": 0, "skips": 0, "executedTests": 1, "successfulTests": 1,
+                "instrumentationNativeExit": 0, "launcherNativeExit": 0, "adbRootExit": 0,
+                "evidence": [artifact(prefix + "-evidence.json", {"kind": "evidence", "attempt": attempt_id})],
+                "environmentReceipts": [artifact(prefix + "-environment.json", {"kind": "environment", "attempt": attempt_id})],
+                "shutdownResolution": artifact(prefix + "-cleanup.json", {"kind": "cleanup", "attempt": attempt_id}),
+                "packet": artifact(prefix + "-packet.json", {"kind": "packet", "attempt": attempt_id}),
+            })
+        results = {
+            "schema": "DORA_0D6_ALPHA_PREFLIGHT_OBSERVED_RESULTS_V1", "source": historical,
+            "aggregatePreflightPassed": True, "campaignAuthorized": False, "attempts": attempts,
+            "admissionPackets": [top_packet], "packet": top_packet,
+        }
+        results_descriptor = artifact("preflight-results.json", results)
+        handoff = {
+            "source": historical, "preflightPassed": True, "faults": {"planned": 270, "executed": 0},
+            "hardKills": {"planned": 144, "executed": 0}, "entries": old_entries,
+            "preflightResults": {"path": "preflight-results.json", "sha256": results_descriptor["sha256"]},
+        }
+        handoff_descriptor = artifact("CAMPAIGN-HANDOFF.json", handoff)
         equivalence_path = Path(self.temp.name) / "source-equivalence.json"
         equivalence = {
             "historicalSource": historical, "successorSource": copy.deepcopy(self.source),
@@ -205,9 +247,9 @@ class AlphaCampaignAdmission(unittest.TestCase):
             },
             "retainedPreflight": {
                 "root": str(self.preflight_root),
-                "handoff": {"relativePath": "CAMPAIGN-HANDOFF.json", "sha256": "d54a7e954cc6180736258d8cab34dee97e0dc158a4ca1ee06c4df27b1aa8a5eb"},
-                "results": {"relativePath": "preflight-results.json", "sha256": "30eb1ec31e5a4d466d3ade60516ac5b2b2cb9ed63bba81f748191c1e6bc66c08"},
-                "sourceBuildEquivalence": {"relativePath": "raw/source-build-equivalence.json", "sha256": "497e2f46b9b4853b12e0fb473c5f2e2f57ee3dbab4583f392db8096b59ac11e4"},
+                "handoff": {"relativePath": "CAMPAIGN-HANDOFF.json", "sha256": handoff_descriptor["sha256"]},
+                "results": {"relativePath": "preflight-results.json", "sha256": results_descriptor["sha256"]},
+                "sourceBuildEquivalence": {"relativePath": "raw/source-build-equivalence.json", "sha256": source_equivalence["sha256"]},
             },
             "proofs": {key: copy.deepcopy(proof) for key in ("implementation", "independentReview", "ci", "graphAndR8", "ownerInstruction")},
         }
@@ -216,15 +258,37 @@ class AlphaCampaignAdmission(unittest.TestCase):
         source_probe = patch.object(campaign, "accepted_alpha_source", return_value=copy.deepcopy(self.source), create=True)
         source_probe.start()
         self.addCleanup(source_probe.stop)
+        root_probe = patch.object(campaign, "_alpha_preflight_root", return_value=self.preflight_root)
+        root_probe.start()
+        self.addCleanup(root_probe.stop)
+        for name, value in (("ALPHA_PREFLIGHT_RESULTS_SHA256", results_descriptor["sha256"]),
+                            ("ALPHA_PREFLIGHT_HANDOFF_SHA256", handoff_descriptor["sha256"]),
+                            ("ALPHA_PREFLIGHT_EQUIVALENCE_SHA256", source_equivalence["sha256"])):
+            constant_probe = patch.object(campaign, name, value)
+            constant_probe.start()
+            self.addCleanup(constant_probe.stop)
 
     def check(self):
         campaign.validate_execution_gate(self.plan, self.gate, payload="CAMPAIGN")
 
     def test_valid_campaign_admits_exact_e36_base_population(self):
+        self.assertFalse(self.unavailable_private_root.exists())
         self.assertEqual(414, len(self.selected))
         self.assertEqual(270, sum(entry["kind"] == "FAULT" for entry in self.selected))
         self.assertEqual(144, sum(entry["kind"] == "HARD_KILL" for entry in self.selected))
         self.check()
+
+    def test_campaign_rehashes_tampered_retained_raw_witness(self):
+        witness = self.preflight_root / "raw" / "assessment-0-evidence.json"
+        witness.write_bytes(b"tampered")
+        with self.assertRaises(ValueError):
+            self.check()
+
+    def test_campaign_rejects_missing_retained_raw_witness(self):
+        witness = self.preflight_root / "raw" / "assessment-0-cleanup.json"
+        witness.unlink()
+        with self.assertRaises(ValueError):
+            self.check()
 
     def test_campaign_rejects_missing_or_mismatched_decision_preflight_or_manifest(self):
         original = copy.deepcopy(self.gate)
@@ -421,6 +485,88 @@ class CampaignContract(unittest.TestCase):
         self.assertEqual(["PREPARE", "RETAIN"], calls)
         self.assertFalse(result["rawRetentionComplete"])
         self.assertEqual("UNVERIFIED_STOP_NO_AUTOMATIC_RETRY", result["cleanupResult"])
+
+    def test_complete_product_failure_continues_each_preplanned_variant(self):
+        entry = next(e for e in self.plan["entries"] if e.get("caseId") == "COR-03" and e["environment"] == "E36-GAPI")
+        calls = []
+
+        class Transport:
+            def __init__(self, _adb, _session, directory):
+                self.directory = directory
+
+            def verify_device(self, _source):
+                pass
+
+            def extract_prefix(self, selected, observed, label="recovered"):
+                path = self.directory / (label + ".pcm")
+                path.write_bytes(campaign.fixture_bytes(selected["seed"], observed["recoveredEnd"]))
+                return path
+
+        def operation(_transport, _plan, _entry, operation_name, variant):
+            calls.append((operation_name, variant))
+            if operation_name == "RECOVER":
+                return {"recoveredEnd": 0, "receiptIdentity": "stable-receipt", "classification": "CORRUPTION_REJECTED"}
+            if operation_name == "CLEANUP":
+                return {"cleanupComplete": True}
+            return {}
+
+        def retention(_transport, _plan, _entry, _observation, label):
+            return {"label": label}
+
+        with tempfile.TemporaryDirectory() as directory, \
+                patch.object(campaign, "validate_plan"), patch.object(campaign, "validate_execution_gate"), \
+                patch.object(campaign, "OwnedAdbTransport", Transport), \
+                patch.object(campaign, "run_operation", operation), patch.object(campaign, "retain_evidence", retention):
+            result = campaign.execute_one(ROOT, self.plan,
+                {"supportedAttemptIds": [entry["attemptId"]], "instrumentationParserSha256": "a" * 64},
+                {"environment": "E36-GAPI"}, Path("unused-adb"), entry["attemptId"], Path(directory) / "attempt")
+
+        self.assertEqual(entry["mutationVariants"], result["startedVariants"])
+        self.assertEqual(len(entry["mutationVariants"]), len(result["mutationVariantResults"]))
+        self.assertTrue(all(item["assessment"]["verdict"] == "FAIL" for item in result["mutationVariantResults"]))
+        self.assertEqual(len(entry["mutationVariants"]), sum(name == "CLEANUP" for name, _variant in calls))
+        self.assertTrue(result["rawRetentionComplete"])
+        self.assertEqual("VERIFIED", result["cleanupResult"])
+
+    def test_controller_exception_stops_after_preserving_current_variant(self):
+        entry = next(e for e in self.plan["entries"] if e.get("caseId") == "COR-03" and e["environment"] == "E36-GAPI")
+        calls = []
+
+        class Transport:
+            def __init__(self, _adb, _session, directory):
+                self.directory = directory
+
+            def verify_device(self, _source):
+                pass
+
+            def extract_prefix(self, selected, observed, label="recovered"):
+                path = self.directory / (label + ".pcm")
+                path.write_bytes(campaign.fixture_bytes(selected["seed"], observed["recoveredEnd"]))
+                return path
+
+        def operation(_transport, _plan, _entry, operation_name, variant):
+            calls.append((operation_name, variant))
+            if operation_name == "RECOVER":
+                return {"recoveredEnd": 0, "receiptIdentity": "stable-receipt", "classification": "CORRUPTION_REJECTED"}
+            if operation_name == "CLEANUP":
+                raise ValueError("synthetic controller cleanup failure")
+            return {}
+
+        with tempfile.TemporaryDirectory() as directory, \
+                patch.object(campaign, "validate_plan"), patch.object(campaign, "validate_execution_gate"), \
+                patch.object(campaign, "OwnedAdbTransport", Transport), \
+                patch.object(campaign, "run_operation", operation), \
+                patch.object(campaign, "retain_evidence", return_value={"receipt": "retained"}):
+            output = Path(directory) / "attempt"
+            result = campaign.execute_one(ROOT, self.plan,
+                {"supportedAttemptIds": [entry["attemptId"]], "instrumentationParserSha256": "a" * 64},
+                {"environment": "E36-GAPI"}, Path("unused-adb"), entry["attemptId"], output)
+            self.assertTrue((output / "attempt-result.json").is_file())
+
+        self.assertEqual([entry["mutationVariants"][0]], result["startedVariants"])
+        self.assertEqual("UNVERIFIED_STOP_NO_AUTOMATIC_RETRY", result["cleanupResult"])
+        self.assertIn("controller cleanup failure", result["controllerError"])
+        self.assertFalse(any(variant != entry["mutationVariants"][0] for _name, variant in calls))
 
     def test_transport_never_uses_local_server_autostart_path(self):
         self.assertTrue(callable(getattr(campaign, "owned_adb_command", None)), "Owned transport missing")
