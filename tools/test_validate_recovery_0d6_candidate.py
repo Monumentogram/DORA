@@ -125,6 +125,13 @@ class CandidateProfileTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "undeclared paths"):
             subject.alpha_preflight_source(root=self.root, profile=self.profile)
 
+    def test_rejects_repair_applicability_behavior_change_in_metadata_child(self):
+        self.write("tools/recovery_alpha_repair.py", "unreviewed repaired-APK admission\n")
+        self.git("add", "tools")
+        self.git("commit", "--amend", "--no-edit", "-q")
+        with self.assertRaisesRegex(ValueError, "undeclared paths"):
+            self.check()
+
     def test_rejects_executable_metadata_mode(self):
         self.git("update-index", "--chmod=+x", "validator.txt")
         self.git("commit", "--amend", "--no-edit", "-q")
