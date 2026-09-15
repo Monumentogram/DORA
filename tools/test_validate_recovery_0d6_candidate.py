@@ -133,8 +133,8 @@ class CandidateProfileTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "undeclared paths"):
             self.check()
 
-    def test_rejects_prefix_admission_behavior_change_in_metadata_child(self):
-        self.write("tools/recovery_alpha_prefix_repair.py", "unreviewed prefix admission\n")
+    def test_rejects_capture_admission_behavior_change_in_metadata_child(self):
+        self.write("tools/recovery_alpha_prefix_repair.py", "unreviewed capture admission\n")
         self.git("add", "tools")
         self.git("commit", "--amend", "--no-edit", "-q")
         with self.assertRaisesRegex(ValueError, "undeclared paths"):
