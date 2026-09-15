@@ -756,6 +756,260 @@ class RecoveryStreamingTinkPrerequisiteCryptoTest {
     }
 
     @Test
+    fun `authenticated unsafe checkpoint reaches controller without stream access or writes`() {
+        for (name in listOf("stream/stream.ct", "key-envelopes/stream.ks")) {
+            for (replacement in listOf("/x/", "../")) {
+                val fixture =
+                    tinkFixture(
+                        checkpointPlaintextTransform = {
+                            mutateCheckpointName(it, name, replacement)
+                        }
+                    )
+                val loaded = mutableListOf<String>()
+                val artifacts =
+                    mapOf(
+                        fixture.row.checkpointKeyEnvelopeRelativeName to fixture.checkpointEnvelope,
+                        fixture.row.checkpointRelativeName to fixture.checkpointCiphertext,
+                        fixture.row.streamKeyEnvelopeRelativeName to fixture.streamEnvelope,
+                    )
+                val kinds =
+                    mapOf(
+                        fixture.row.checkpointKeyEnvelopeRelativeName to
+                            RecoveryStreamingPrerequisiteArtifactKind.CHECKPOINT_KEY_ENVELOPE,
+                        fixture.row.checkpointRelativeName to
+                            RecoveryStreamingPrerequisiteArtifactKind.CHECKPOINT_CIPHERTEXT,
+                        fixture.row.streamKeyEnvelopeRelativeName to
+                            RecoveryStreamingPrerequisiteArtifactKind.STREAM_KEY_ENVELOPE,
+                    )
+                var sourceOpens = 0
+                var replayReads = 0
+                var checkpointWrites = 0
+                var outcomeWrites = 0
+                val chain = listOf(fixture.row)
+                val journal =
+                    object : RecoveryStreamingJournal {
+                        override fun checkpointChain(runId: RunId) =
+                            RecoveryStreamingJournalReadResult.Value(chain).also {
+                                assertEquals(fixture.row.runId, runId)
+                            }
+
+                        override fun outcomeById(
+                            outcomeId: Sha256Value
+                        ): RecoveryStreamingJournalReadResult<RecoveryStreamingOutcomeRow?> =
+                            error("No unsafe checkpoint outcome")
+
+                        override fun outcomeByWitness(
+                            runId: RunId,
+                            checkpointIdentity: Sha256Value,
+                            witnessId: Sha256Value,
+                        ): RecoveryStreamingJournalReadResult<RecoveryStreamingOutcomeRow?> {
+                            assertEquals(fixture.row.runId, runId)
+                            assertEquals(fixture.row.checkpointIdentity, checkpointIdentity)
+                            assertEquals(
+                                RecoveryStreamingIdentity.witness(fixture.witness),
+                                witnessId,
+                            )
+                            return RecoveryStreamingJournalReadResult.Value(null)
+                        }
+
+                        override fun rangeByOutcome(
+                            outcomeId: Sha256Value
+                        ): RecoveryStreamingJournalReadResult<RecoveryStreamingRangeRow?> =
+                            error("No unsafe checkpoint range")
+
+                        override fun activeRanges(
+                            runId: RunId,
+                            sourceRelativeName: String,
+                        ): RecoveryStreamingJournalReadResult<List<RecoveryStreamingRangeRow>> =
+                            error("No source or range access before prerequisite acceptance")
+
+                        override fun insertCheckpoint(
+                            row: RecoveryStreamingCheckpointRow
+                        ): RecoveryStreamingJournalResult {
+                            checkpointWrites++
+                            error("No implicit checkpoint write")
+                        }
+
+                        override fun persistOutcome(
+                            attempt: RecoveryStreamingOutcomeAttempt
+                        ): RecoveryStreamingJournalResult {
+                            outcomeWrites++
+                            error("No outcome or range write")
+                        }
+                    }
+                val source =
+                    object : RecoveryStreamingSource {
+                        override fun <T> withSource(
+                            access: RecoveryStreamingSourceLeaseAccess,
+                            request: RecoveryStreamOpenRequest,
+                            block: (RecoveryOpenedStreamingSource) -> T,
+                        ): T {
+                            sourceOpens++
+                            error("Unsafe checkpoint must not open or read stream")
+                        }
+
+                        override fun verifyReplayHashOnly(
+                            access: RecoveryStreamingReplayAccess,
+                            request: RecoveryStreamReplayRequest,
+                        ): RecoveryReplayHashOnlyResult {
+                            replayReads++
+                            error("Unsafe checkpoint must not read replay source")
+                        }
+                    }
+                val androidSource =
+                    AndroidRecoveryStreamingPrerequisiteSource { run, relativeName, maxBytes ->
+                        assertEquals(fixture.row.runId, run)
+                        assertEquals(16L * 1_024L * 1_024L, maxBytes)
+                        loaded += relativeName
+                        RecoveryArtifactBytes(relativeName, artifacts.getValue(relativeName))
+                    }
+                val authenticator =
+                    RecoveryStreamingCheckpointAuthenticatorAdapter(
+                        RecoveryStreamingPrerequisiteSource { run, relativeName, kind ->
+                            assertEquals(kinds.getValue(relativeName), kind)
+                            androidSource.load(run, relativeName, kind)
+                        },
+                        RecoveryStreamingTinkPrerequisiteCrypto(fixture.runProvider::openExisting),
+                    )
+                val controller =
+                    RecoveryStreamingReconciliationController(
+                        journal,
+                        source,
+                        RecoveryRunSingleWriterGuard { RecoveryRunWriterLease {} },
+                        authenticator,
+                        RecoveryStreamingEvidenceSink {},
+                    )
+                val request =
+                    RecoveryStreamingControllerRequest(
+                        fixture.witness,
+                        RecoveryStreamingIntentBuilder.RecoveryStreamingOracle.from(
+                            fixture.witness,
+                            fixture.plaintext,
+                        ),
+                    )
+                val results = (1..2).map { controller.recover(request) }
+                for (result in results) {
+                    assertTrue(result is RecoveryStreamingReconciliationResult.Fatal)
+                    val fatal = result as RecoveryStreamingReconciliationResult.Fatal
+                    assertEquals(RecoveryStreamingResultStage.PREREQUISITE, fatal.stage)
+                    assertEquals(
+                        RecoveryStreamingResultClassification.UNSAFE_PATH,
+                        fatal.classification,
+                    )
+                    assertEquals(null, fatal.persistedDiagnostic)
+                    assertEquals(null, fatal.originalDiagnostic)
+                    assertTrue(fatal.existingEvidenceReferences.isEmpty())
+                }
+                assertEquals(artifacts.keys.toList() + artifacts.keys.toList(), loaded)
+                assertEquals(listOf(fixture.row), chain)
+                assertEquals(0, sourceOpens)
+                assertEquals(0, replayReads)
+                assertEquals(0, checkpointWrites)
+                assertEquals(0, outcomeWrites)
+            }
+        }
+    }
+
+    @Test
+    fun `authenticated checkpoint invalid relative names preserve unsafe path classification`() {
+        for (name in listOf("stream/stream.ct", "key-envelopes/stream.ks")) {
+            for (replacement in listOf("/x/", "../")) {
+                val fixture =
+                    tinkFixture(
+                        checkpointPlaintextTransform = {
+                            mutateCheckpointName(it, name, replacement)
+                        }
+                    )
+                val crypto =
+                    RecoveryStreamingTinkPrerequisiteCrypto(fixture.runProvider::openExisting)
+                assertEquals(
+                    RecoveryStreamingCheckpointAuthentication.UnsafePath,
+                    crypto.authenticate(
+                        fixture.row,
+                        fixture.checkpointEnvelope,
+                        fixture.checkpointCiphertext,
+                        fixture.streamEnvelope,
+                    ),
+                )
+            }
+        }
+    }
+
+    @Test
+    fun `authenticated malformed checkpoint remains structural`() {
+        val transforms: List<(ByteArray) -> ByteArray> =
+            listOf(
+                { bytes -> bytes.copyOf().also { it[0] = (it[0].toInt() xor 1).toByte() } },
+                { bytes -> bytes + byteArrayOf(0) },
+                { bytes -> bytes.copyOf(bytes.size - 1) },
+                { _ -> ByteArray(524_289) },
+                { bytes ->
+                    mutateCheckpointName(bytes, "stream/stream.ct", "../").also {
+                        it[0] = (it[0].toInt() xor 1).toByte()
+                    }
+                },
+            )
+        for (transform in transforms) {
+            val fixture = tinkFixture(checkpointPlaintextTransform = transform)
+            assertEquals(
+                RecoveryStreamingCheckpointAuthentication.Structural,
+                RecoveryStreamingTinkPrerequisiteCrypto(fixture.runProvider::openExisting)
+                    .authenticate(
+                        fixture.row,
+                        fixture.checkpointEnvelope,
+                        fixture.checkpointCiphertext,
+                        fixture.streamEnvelope,
+                    ),
+            )
+        }
+    }
+
+    @Test
+    fun `authenticated path failure precedes stream envelope parsing`() {
+        for (unsafe in listOf(false, true)) {
+            val fixture =
+                tinkFixture(
+                    checkpointPlaintextTransform = {
+                        if (unsafe) mutateCheckpointName(it, "stream/stream.ct", "../") else it
+                    }
+                )
+            assertEquals(
+                if (unsafe) RecoveryStreamingCheckpointAuthentication.UnsafePath
+                else RecoveryStreamingCheckpointAuthentication.Structural,
+                RecoveryStreamingTinkPrerequisiteCrypto(fixture.runProvider::openExisting)
+                    .authenticate(
+                        fixture.row,
+                        fixture.checkpointEnvelope,
+                        fixture.checkpointCiphertext,
+                        byteArrayOf(0),
+                    ),
+            )
+        }
+    }
+
+    @Test
+    fun `unauthenticated checkpoint cannot claim an embedded path failure`() {
+        val fixture =
+            tinkFixture(
+                checkpointPlaintextTransform = {
+                    mutateCheckpointName(it, "stream/stream.ct", "../")
+                }
+            )
+        val damaged = fixture.checkpointCiphertext.copyOf()
+        damaged[damaged.lastIndex] = (damaged.last().toInt() xor 1).toByte()
+        assertEquals(
+            RecoveryStreamingCheckpointAuthentication.Rejected,
+            RecoveryStreamingTinkPrerequisiteCrypto(fixture.runProvider::openExisting)
+                .authenticate(
+                    fixture.row,
+                    fixture.checkpointEnvelope,
+                    damaged,
+                    fixture.streamEnvelope,
+                ),
+        )
+    }
+
+    @Test
     fun `tink prerequisite authenticates exact checkpoint and exposes descriptor stream`() {
         val fixture = tinkFixture()
         val crypto = RecoveryStreamingTinkPrerequisiteCrypto(fixture.runProvider::openExisting)
@@ -794,7 +1048,17 @@ class RecoveryStreamingTinkPrerequisiteCryptoTest {
             ) === RecoveryStreamingCheckpointAuthentication.Rejected
         )
 
-        val mismatchFixture = tinkFixture(checkpointEnvelopeBytesDelta = 1UL)
+        val mismatchFixture =
+            tinkFixture(
+                checkpointPlaintextTransform = { bytes ->
+                    val checkpoint = RecoveryCheckpointCodec.decode(bytes)
+                    RecoveryCheckpointCodec.encode(
+                        checkpoint.copy(
+                            streamKeyEnvelopeBytes = checkpoint.streamKeyEnvelopeBytes + 1UL
+                        )
+                    )
+                }
+            )
         val mismatchCrypto =
             RecoveryStreamingTinkPrerequisiteCrypto(mismatchFixture.runProvider::openExisting)
         assertTrue(
@@ -834,12 +1098,30 @@ class RecoveryStreamingTinkPrerequisiteCryptoTest {
             override fun boundedInputStream() = bytes.inputStream()
         }
 
+    private fun mutateCheckpointName(
+        bytes: ByteArray,
+        name: String,
+        replacement: String,
+    ): ByteArray {
+        val encoded = name.toByteArray(Charsets.US_ASCII)
+        val offset =
+            bytes.indices
+                .filter { start ->
+                    start + encoded.size <= bytes.size &&
+                        encoded.indices.all { bytes[start + it] == encoded[it] }
+                }
+                .single()
+        return bytes.copyOf().also {
+            replacement.toByteArray(Charsets.US_ASCII).copyInto(it, offset)
+        }
+    }
+
     private fun tinkFixture(
-        checkpointEnvelopeBytesDelta: ULong = 0UL,
         generation: ULong = 1UL,
         previous: Sha256Value = Sha256Value.ZERO,
         sameStream: TinkFixture? = null,
         plaintextBytes: Int = 8_136,
+        checkpointPlaintextTransform: (ByteArray) -> ByteArray = { it },
     ): TinkFixture {
         val runId = RunId.fromBytes(ByteArray(16) { (it + 7).toByte() })
         val backend = RecordingRunAeadBackend()
@@ -880,7 +1162,7 @@ class RecoveryStreamingTinkPrerequisiteCryptoTest {
                 2UL,
                 8_192UL,
                 4_056UL,
-                streamEnvelope.size.toULong() + checkpointEnvelopeBytesDelta,
+                streamEnvelope.size.toULong(),
                 Sha256Value.calculate(streamEnvelope),
                 "stream/stream.ct",
                 "key-envelopes/stream.ks",
@@ -909,11 +1191,14 @@ class RecoveryStreamingTinkPrerequisiteCryptoTest {
                 4_056UL,
                 previous,
             )
+        val checkpointPlaintext =
+            checkpointPlaintextTransform(RecoveryCheckpointCodec.encode(checkpoint))
         val checkpointCiphertext =
-            checkpointKeyset.encryptPublication(
-                RecoveryCheckpointCodec.encode(checkpoint),
-                checkpointPublicationAad,
-            )
+            checkpointKeyset.encryptPublication(checkpointPlaintext, checkpointPublicationAad)
+        assertArrayEquals(
+            checkpointPlaintext,
+            checkpointKeyset.decryptPublication(checkpointCiphertext, checkpointPublicationAad),
+        )
         val input =
             RecoveryStreamingCheckpointIdentityInput(
                 runId,

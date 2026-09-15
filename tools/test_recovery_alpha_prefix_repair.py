@@ -738,4 +738,243 @@ class CaptureRepairTests(unittest.TestCase):
         with self.assertRaises(ValueError):self.fixture.check()
 
 
+
+
+class StreamPathSuccessorTests(unittest.TestCase):
+    def setUp(self):
+        self.old=CombinedAdmissionTests();self.old.setUp();self.addCleanup(self.old.doCleanups)
+        f=self.old
+        self.old_profile=f.profile
+        self.old_binding=copy.deepcopy(f.binding)
+        self.old_capture=copy.deepcopy(f.api['ALPHA_CAPTURE_REPAIR_BINDING'])
+        self.historical=copy.deepcopy(f.gate['alphaPreflight']['sourceRepair'])
+        self.base='4'*40;self.base_tree='5'*40
+        self.profile=candidate.Profile('6'*40,'7'*40,candidate.MAINTENANCE_PATHS)
+        self.source=dict(commit='8'*40,tree='9'*40,appApkSha256='2'*64,testApkSha256='3'*64)
+        self.paths=frozenset(subject.PREFIX+part+'/'+subject.PACKAGE+name for part,name in (
+            ('main','contract/RecoveryBinary.kt'),('main','contract/RecoveryRecords.kt'),
+            ('main','candidate/RecoveryStreamingTinkPrerequisiteCrypto.kt'),
+            ('test','candidate/RecoveryStreamingTinkPrerequisiteCryptoTest.kt')))
+        for entries in (f.facts.before,f.facts.after,f.capture.before,f.capture.after):
+            for p in self.paths:entries[p]=dict(mode='100644',type='blob',object='1'*40)
+        self.before=copy.deepcopy(f.capture.after);self.after=copy.deepcopy(self.before)
+        self.changed=self.paths|subject.CAPTURE_HOST_PATHS
+        for p in self.changed:self.after[p]=dict(mode='100644',type='blob',object='7'*40)
+        self.api=f.api
+        self.api.update(active_profile=lambda:self.profile,
+            ALPHA_PREFIX_REPAIR_BINDING={k:self.source[k] for k in ('appApkSha256','testApkSha256')})
+        self.original_git=self.api['git']
+        self.api['git']=self.git
+        patch.object(candidate,'git',side_effect=self.git).start()
+        constants=dict(STREAM_PATH_BASELINE_COMMIT=self.base,STREAM_PATH_BASELINE_TREE=self.base_tree,
+            STREAM_PATH_OLD_IMPLEMENTATION_COMMIT=self.old_profile.implementation_commit,
+            STREAM_PATH_OLD_IMPLEMENTATION_TREE=self.old_profile.implementation_tree,
+            STREAM_PATH_OLD_PREFIX_BINDING=self.old_binding,STREAM_PATH_OLD_CAPTURE_BINDING=self.old_capture)
+        for key,value in constants.items():patch.object(subject,key,value,create=True).start()
+        self.overrides={}
+        self.metadata=f.capture.metadata_after+'ALPHA_STREAM_PATH_REPAIR_BINDING={}\n'
+        self.proof=dict(schema='DORA_RECOVERY_STREAM_PATH_REPAIR_APPLICABILITY_V1',scope=subject.SCOPE,
+            baseline=dict(commit=self.base,tree=self.base_tree),
+            implementation=dict(commit=self.profile.implementation_commit,tree=self.profile.implementation_tree),
+            apkPair={k:self.source[k] for k in ('appApkSha256','testApkSha256')},
+            sourceDelta=[dict(path=p,before=self.before[p],after=self.after[p]) for p in sorted(self.changed)],
+            historicalApplicability=self.historical,captureRepair=copy.deepcopy(f.proof['captureRepair']),
+            frozenSelection=f.frozen_descriptor,independentReview=f.review,
+            historicalPreflightReusable=False,requiredFreshPreflight=f.proof['requiredFreshPreflight'],
+            contract='AUTHENTICATED_CHECKPOINT_EMBEDDED_PATH_TO_EXISTING_UNSAFE_PATH')
+        self.plan=dict(source=self.source)
+        self.gate=copy.deepcopy(f.gate);self.gate['source']=self.source;self.gate['alphaPreflight']['source']=self.source
+        self.bind()
+
+    def git(self,*args,root):
+        if args in self.overrides:return self.overrides[args]
+        fixed={('merge-base',subject.BASELINE_COMMIT,self.profile.implementation_commit):subject.BASELINE_COMMIT,
+               ('rev-parse',self.base+'^{tree}'):self.base_tree,
+               ('merge-base',self.base,self.profile.implementation_commit):self.base,
+               ('rev-parse',self.profile.implementation_commit+'^{tree}'):self.profile.implementation_tree,
+               ('rev-parse','HEAD'):self.source['commit'],('rev-parse',self.source['commit']):self.source['commit'],
+               ('rev-parse','HEAD^{tree}'):self.source['tree'],('branch','--show-current'):candidate.BRANCH,
+               ('show','-s','--format=%P',self.source['commit']):self.profile.implementation_commit,
+               ('rev-list','--min-parents=2',self.profile.implementation_commit+'..'+self.source['commit']):'',
+               ('diff-tree','--no-commit-id','--name-only','--no-renames','-z','-r',self.source['commit']):'\0'.join(sorted(candidate.MAINTENANCE_PATHS))+'\0',
+               ('status','--porcelain'):'',
+               ('show',self.base+':tools/validate_recovery_0d6_candidate.py'):self.old.capture.metadata_after,
+               ('show',self.profile.implementation_commit+':tools/validate_recovery_0d6_candidate.py'):self.old.capture.metadata_after,
+               ('show','HEAD:tools/validate_recovery_0d6_candidate.py'):self.metadata}
+        if args in fixed:return fixed[args]
+        if len(args)==4 and args[:3]==('ls-tree',self.source['commit'],'--'):
+            return '100644 blob '+'9'*40+'\t'+args[3]
+        for revision,entries in ((self.base,self.before),(self.profile.implementation_commit,self.after)):
+            if args==('ls-tree','-r','-z',revision):
+                return ''.join(f"{v['mode']} {v['type']} {v['object']}\t{p}\0" for p,v in sorted(entries.items()))
+        return self.original_git(*args,root=root)
+
+    def bind(self):
+        descriptor=self.old.write('stream-path-proof.json',self.proof)
+        self.api['ALPHA_PREFIX_REPAIR_BINDING']['applicabilitySha256']=descriptor['sha256']
+        self.api['ALPHA_STREAM_PATH_REPAIR_BINDING']=dict(proofSha256=descriptor['sha256'])
+        self.gate['alphaPreflight']['sourceRepair']=descriptor
+
+    def check(self):subject.validate_preflight(self.plan,self.gate)
+
+    def test_exact_successor_with_unchanged_historical_proofs_accepts_static_only(self):
+        self.check()
+        gate=copy.deepcopy(self.gate);decision=gate.pop('alphaPreflight');decision['scope']=subject.SCOPE
+        selection=copy.deepcopy(self.old.frozen);selection['executionId']='FRESH-PATH'
+        gate.update(alphaReduced=decision,supportedPayloads=['CAMPAIGN'],reducedSelection=selection)
+        with self.assertRaisesRegex(ValueError,'Malformed descriptor'):subject.validate(self.plan,gate)
+
+    def test_inert_facts_builder_recomputes_document_and_historical_controls(self):
+        proof,frozen,controls=subject.stream_path_facts(self.api,self.profile,
+            self.api['ALPHA_PREFIX_REPAIR_BINDING'],self.historical,self.proof['captureRepair'],self.old.review)
+        self.assertEqual(self.proof,proof)
+        self.assertEqual(self.old.frozen,frozen)
+        self.assertEqual(self.old.capture.new,controls)
+
+    def test_successor_preflight_origin_uses_historical_controls_and_current_pair(self):
+        files={}
+        for name in ('adb.exe','python.exe','app.apk','test.apk'):
+            p=self.old.root/name;p.write_text('new exact '+name);files[name]=p
+        for constant,name in (('ADB_SHA256','adb.exe'),('PYTHON_SHA256','python.exe')):
+            patch.object(subject,constant,subject.file_sha(files[name])).start()
+        for key,name in (('appApkSha256','app.apk'),('testApkSha256','test.apk')):
+            self.source[key]=subject.file_sha(files[name]);self.api['ALPHA_PREFIX_REPAIR_BINDING'][key]=self.source[key]
+            self.proof['apkPair'][key]=self.source[key]
+        self.bind();self.check()
+        plan=self.old.write('origin-plan.json',self.plan);gate=self.old.write('origin-gate.json',self.gate)
+        launcher=self.old.capture.new['Invoke-0D6Campaign.ps1']
+        pin=dict(schema='DORA_0D6_PRIVATE_LAUNCH_PIN_V1',sourceRoot=str(subject.ROOT),
+            ownerSessionId='PATH-FRESH',launcherSha256=launcher['sha256'],
+            pythonPath=str(files['python.exe']),pythonSha256=subject.PYTHON_SHA256,
+            appApkPath=str(files['app.apk']),testApkPath=str(files['test.apk']),
+            driverSha256=subject.file_sha(subject.ROOT/'tools/recovery_campaign.py'),
+            planPath=plan['path'],planFileSha256=plan['sha256'],gatePath=gate['path'],gateFileSha256=gate['sha256'])
+        attempt=dict(ownerSessionId='PATH-FRESH',payload='JOURNAL_CONNECTIONS',pin=self.old.write('origin-pin.json',pin))
+        receipt=json.loads(Path(self.old.capture.test_manifest['receipt']['path']).read_bytes())
+        launch=dict(argv=[receipt['argv'][0],'-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass',
+            '-File',launcher['path'],'-PinPath',attempt['pin']['path'],'-ApprovedPinSha256',attempt['pin']['sha256'],'-Execute'])
+        native=dict(argv=[str(files['adb.exe'])]+subject.instrument_arguments('JOURNAL_CONNECTIONS',self.source))
+        original=subject.runpy.run_path
+        def execute_gate(p,g,payload):
+            self.assertEqual('JOURNAL_CONNECTIONS',payload)
+            subject.validate_preflight(p,g)
+        def run_path(path):
+            if Path(path)==subject.ROOT/'tools/recovery_campaign.py':return dict(validate_execution_gate=execute_gate)
+            return original(path)
+        with patch.object(subject.runpy,'run_path',side_effect=run_path):
+            subject.validate_preflight_origin(attempt,pin,native,launch,self.source)
+            launch['argv'][7]=self.old.capture.old['Invoke-0D6Campaign.ps1']['path']
+            with self.assertRaises(ValueError):subject.validate_preflight_origin(attempt,pin,native,launch,self.source)
+
+    def test_historical_controls_receipts_and_review_are_rehashed(self):
+        self.check()
+        paths=[Path(self.old.capture.new['rec_i3_owned_process.psm1']['path']),
+               Path(self.old.capture.test_manifest['receipt']['path']),Path(self.old.review['path'])]
+        for path in paths:
+            data=path.read_bytes();path.write_bytes(data+b'drift')
+            try:
+                with self.assertRaises(ValueError):self.check()
+            finally:path.write_bytes(data)
+            self.check()
+
+    def test_both_current_routes_reject_legacy_preflight_source(self):
+        self.check()
+        transcript=FreshPreflightTests();transcript.setUp();self.addCleanup(transcript.doCleanups)
+        gate=copy.deepcopy(self.gate);decision=gate.pop('alphaPreflight');decision['scope']=subject.SCOPE
+        selection=copy.deepcopy(self.old.frozen);selection['executionId']='FRESH-PATH'
+        gate.update(alphaReduced=decision,supportedPayloads=['CAMPAIGN'],reducedSelection=selection)
+        decision['freshPreflight']=transcript.write('old-source-proof.json',transcript.proof)
+        with self.assertRaisesRegex(ValueError,'Fresh preflight source'):subject.validate(self.plan,gate)
+
+    def test_malformed_successor_binding_never_falls_back(self):
+        self.check()
+        for binding in (None,{},dict(proofSha256='0'*64),dict(proofSha256=self.api['ALPHA_PREFIX_REPAIR_BINDING']['applicabilitySha256'],extra=True)):
+            self.api['ALPHA_STREAM_PATH_REPAIR_BINDING']=binding
+            with self.assertRaises(ValueError):self.check()
+        self.api.pop('ALPHA_STREAM_PATH_REPAIR_BINDING')
+        with self.assertRaises(ValueError):self.check()
+
+    def test_each_missing_extra_deleted_or_nonregular_source_change_rejects(self):
+        self.check();original=copy.deepcopy(self.after)
+        for p in self.changed:
+            self.after=copy.deepcopy(original);self.after[p]=self.before[p]
+            with self.assertRaises(ValueError):self.check()
+        for p in ('android/build.gradle.kts','tools/recovery_campaign.py','docs/adr/other.md'):
+            self.after=copy.deepcopy(original);self.after[p]=dict(mode='100644',type='blob',object='8'*40)
+            with self.assertRaises(ValueError):self.check()
+        p=sorted(self.paths)[0]
+        for mode in (None,'100755','120000'):
+            self.after=copy.deepcopy(original)
+            if mode is None:del self.after[p]
+            else:self.after[p]['mode']=mode
+            with self.assertRaises(ValueError):self.check()
+
+    def test_rehashed_wrong_historical_proofs_and_capture_binding_reject(self):
+        self.check();original=copy.deepcopy(self.proof)
+        old=json.loads(Path(self.historical['path']).read_bytes());old['historicalPreflightReusable']=True
+        self.proof['historicalApplicability']=self.old.write('false-history.json',old);self.bind()
+        with self.assertRaises(ValueError):self.check()
+        self.proof=original;self.bind();self.check()
+        self.api['ALPHA_CAPTURE_REPAIR_BINDING']=dict(self.old_capture,launcherSha256='f'*64)
+        with self.assertRaises(ValueError):self.check()
+
+    def test_current_source_proof_apks_preflight_and_authority_fields_are_exact(self):
+        self.check();original=copy.deepcopy(self.proof)
+        for field,value in (('apkPair',self.old_capture),('historicalPreflightReusable',True),('contract','ALLOW_NEW_FAILURES'),('sourceDelta',[]),('coverage',True)):
+            self.proof=dict(original,**{field:value});self.bind()
+            with self.assertRaises(ValueError):self.check()
+        self.proof=original;self.bind();self.check()
+        self.gate['source']=dict(self.source,appApkSha256=self.old_binding['appApkSha256'])
+        with self.assertRaises(ValueError):self.check()
+
+    def test_new_metadata_binding_cannot_mask_behavior_or_other_binding_changes(self):
+        self.check();original=self.metadata
+        for content in (original.replace('return True','return False'),
+                        original+'ALPHA_REDUCED_REPAIR_BINDING={}\n',
+                        original.replace('ALPHA_STREAM_PATH_REPAIR_BINDING={}','ALPHA_STREAM_PATH_REPAIR_BINDING=unsafe_call()'),
+                        original+'ALPHA_STREAM_PATH_REPAIR_BINDING={}\n'):
+            self.metadata=content
+            with self.assertRaises(ValueError):self.check()
+        self.metadata=original
+
+    def test_wrong_baseline_ancestry_and_dirty_current_candidate_reject(self):
+        self.check()
+        for query,value in ((('rev-parse',self.base+'^{tree}'),'f'*40),
+                            (('merge-base',self.base,self.profile.implementation_commit),'f'*40),
+                            (('status','--porcelain'),' M runtime.kt'),
+                            (('show','-s','--format=%P',self.source['commit']),'f'*40)):
+            self.overrides[query]=value
+            with self.assertRaises(ValueError):self.check()
+            self.overrides.clear()
+
+
+class StreamPathNoFallbackTests(unittest.TestCase):
+    def test_new_binding_duplicate_dictionary_key_is_not_an_exact_literal(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);(root/'tools').mkdir()
+            (root/'tools/validate_recovery_0d6_candidate.py').write_text(
+                'ALPHA_STREAM_PATH_REPAIR_BINDING={"proofSha256":"'+'a'*64+'","proofSha256":"'+'b'*64+'"}\n')
+            with patch.object(subject,'ROOT',root),self.assertRaises(ValueError):subject.candidate_api()
+
+    def test_new_binding_call_rejected_before_metadata_side_effect(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);(root/'tools').mkdir();marker=root/'executed'
+            metadata=root/'tools/validate_recovery_0d6_candidate.py'
+            metadata.write_text('from pathlib import Path\n'
+                'def payload():\n'
+                f'    Path({str(marker)!r}).write_text("executed")\n'
+                '    return {"proofSha256":"'+'a'*64+'"}\n'
+                'ALPHA_STREAM_PATH_REPAIR_BINDING=payload()\n')
+            rejected=False
+            with patch.object(subject,'ROOT',root):
+                try:subject.candidate_api()
+                except ValueError:rejected=True
+            self.assertFalse(marker.exists(), 'Metadata binding executed before rejection')
+            self.assertTrue(rejected)
+
+    def test_new_empty_binding_cannot_authorize_old_route(self):
+        fixture=CombinedAdmissionTests();fixture.setUp();self.addCleanup(fixture.doCleanups)
+        fixture.api['ALPHA_STREAM_PATH_REPAIR_BINDING']={}
+        with self.assertRaises(ValueError):fixture.check()
+
 if __name__=='__main__':unittest.main()

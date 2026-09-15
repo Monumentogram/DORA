@@ -9,6 +9,7 @@ import com.monumentogram.dora.poc.recovery.contract.PublicationKind
 import com.monumentogram.dora.poc.recovery.contract.RecoveryCandidate
 import com.monumentogram.dora.poc.recovery.contract.RecoveryCheckpoint
 import com.monumentogram.dora.poc.recovery.contract.RecoveryCheckpointCodec
+import com.monumentogram.dora.poc.recovery.contract.RecoveryCheckpointPathException
 import com.monumentogram.dora.poc.recovery.contract.RecoveryContract
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingCheckpointRow
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
@@ -95,6 +96,8 @@ internal class RecoveryStreamingTinkPrerequisiteCrypto(
         val decoded =
             try {
                 RecoveryCheckpointCodec.decode(plaintext)
+            } catch (_: RecoveryCheckpointPathException) {
+                return RecoveryStreamingCheckpointAuthentication.UnsafePath
             } catch (_: Throwable) {
                 return RecoveryStreamingCheckpointAuthentication.Structural
             }

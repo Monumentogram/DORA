@@ -82,12 +82,124 @@ CAPTURE_OLD_CONTROLS = {
 }
 
 
+STREAM_PATH_BASELINE_COMMIT = 'e4e6e7a7c0268dd887466966eb67281daebe0fcd'
+STREAM_PATH_BASELINE_TREE = 'cfd0c417c613101007d77952812b60a433668bec'
+STREAM_PATH_OLD_IMPLEMENTATION_COMMIT = '3dfa2c64cf5081db2476f97feb99f0646b8ac3b2'
+STREAM_PATH_OLD_IMPLEMENTATION_TREE = '174c33111dac169a859957d818d442353ecfd2f4'
+STREAM_PATH_OLD_PREFIX_BINDING = dict(CAPTURE_APK_PAIR,
+    applicabilitySha256='14753576a41201dbc852aecb454effe3ba002bfa6aaa7f30c784c25ffa651f34')
+STREAM_PATH_OLD_CAPTURE_BINDING = dict(
+    launcherSha256='e05118d721969e3fa61c92de63295827e31be13332099cbc558e25713d2d8e20',
+    ownedProcessModuleSha256='448156a49c923180d5d21556f1e55820e60e6ae4a0a0da89abc694a3d5847609',
+    proofSha256='71aa2e83ba149e0303b4d40849f8054ffed566ce34a50a681906c8bfaf7354b5')
+STREAM_PATH_ANDROID_PATHS = frozenset(PREFIX+part+'/'+PACKAGE+name for part,name in (
+    ('main','contract/RecoveryBinary.kt'), ('main','contract/RecoveryRecords.kt'),
+    ('main','candidate/RecoveryStreamingTinkPrerequisiteCrypto.kt'),
+    ('test','candidate/RecoveryStreamingTinkPrerequisiteCryptoTest.kt')))
+
+
+def stream_path_binding(api):
+    key='ALPHA_STREAM_PATH_REPAIR_BINDING'
+    if key not in api:return None
+    value=api[key]
+    require(isinstance(value,dict) and set(value)=={'proofSha256'}
+            and isinstance(value['proofSha256'],str) and re.fullmatch('[0-9a-f]{64}',value['proofSha256']),
+            'Malformed STREAM path repair binding')
+    return value
+
+
+def stream_path_metadata_literal(text):
+    """Reject executable/ambiguous new binding before candidate_api executes metadata."""
+    parsed=ast.parse(text)
+    key='ALPHA_STREAM_PATH_REPAIR_BINDING'
+    writes=[n for n in ast.walk(parsed) if isinstance(n,ast.Name) and n.id==key and isinstance(n.ctx,ast.Store)]
+    if not writes:return
+    assignments=[n for n in parsed.body if isinstance(n,ast.Assign) and len(n.targets)==1
+                 and isinstance(n.targets[0],ast.Name) and n.targets[0].id==key]
+    require(len(writes)==len(assignments)==1,'Ambiguous STREAM path metadata binding')
+    require(isinstance(assignments[0].value,ast.Dict) and len(assignments[0].value.keys)==1,
+            'STREAM path binding must be an exact one-key literal')
+    try:value=ast.literal_eval(assignments[0].value)
+    except (ValueError,TypeError,SyntaxError) as exc:raise ValueError('Nonliteral STREAM path metadata binding') from exc
+    stream_path_binding({key:value})
+
+
+def validate_stream_path_proof(api, profile, binding, proof, descriptor, review):
+    """Current successor facts and immutable historical proofs have distinct contexts."""
+    path_binding=stream_path_binding(api)
+    require(path_binding is not None and descriptor['sha256']==path_binding['proofSha256']
+            ==binding['applicabilitySha256'], 'STREAM path applicability pin mismatch')
+    expected,frozen,controls=stream_path_facts(api,profile,binding,proof.get('historicalApplicability'),
+                                             proof.get('captureRepair'),review)
+    capture_metadata_shape(api,profile,stream_path=True)
+    require(proof==expected,'STREAM path applicability differs from recomputed source facts')
+    return frozen,controls
+
+
+def stream_path_facts(api, profile, binding, historical_descriptor, capture_descriptor, review):
+    """Build inert facts before metadata freeze; not candidate or runtime admission."""
+    require(capture_binding(api)==STREAM_PATH_OLD_CAPTURE_BINDING, 'Historical capture binding changed')
+    require(all(isinstance(binding.get(k),str) and re.fullmatch('[0-9a-f]{64}',binding[k])
+                for k in ('appApkSha256','testApkSha256')), 'Malformed new APK pair')
+    legacy=legacy_api();git=api['git']
+    require(git('rev-parse',STREAM_PATH_BASELINE_COMMIT+'^{tree}',root=ROOT)==STREAM_PATH_BASELINE_TREE
+            and git('merge-base',STREAM_PATH_BASELINE_COMMIT,profile.implementation_commit,root=ROOT)==STREAM_PATH_BASELINE_COMMIT,
+            'STREAM path baseline or ancestry mismatch')
+    before=legacy['tree_entries'](git,STREAM_PATH_BASELINE_COMMIT)
+    after=legacy['tree_entries'](git,profile.implementation_commit)
+    paths=sorted(p for p in before.keys()|after.keys() if before.get(p)!=after.get(p))
+    require(set(paths)==STREAM_PATH_ANDROID_PATHS|CAPTURE_HOST_PATHS, 'STREAM path repair differs from exact six-file delta')
+    for p in paths:
+        require(all(tree.get(p,{}).get('mode')=='100644' and tree[p]['type']=='blob' for tree in (before,after)),
+                'STREAM path source is deleted or nonregular')
+    require(isinstance(historical_descriptor,dict)
+            and historical_descriptor.get('sha256')==STREAM_PATH_OLD_PREFIX_BINDING['applicabilitySha256'],
+            'Historical prefix applicability pin mismatch')
+    historical=capture_json(historical_descriptor)
+    require(isinstance(historical,dict), 'Malformed historical prefix applicability')
+    old_profile=type('HistoricalProfile',(),dict(implementation_commit=STREAM_PATH_OLD_IMPLEMENTATION_COMMIT,
+                                              implementation_tree=STREAM_PATH_OLD_IMPLEMENTATION_TREE))()
+    require(git('rev-parse',old_profile.implementation_commit+'^{tree}',root=ROOT)==old_profile.implementation_tree,
+            'Historical implementation tree changed')
+    old_capture=historical.get('captureRepair')
+    require(old_capture==capture_descriptor, 'Historical capture descriptor changed')
+    capture_document=capture_json(old_capture)
+    # The fixed historical digest authenticates its old root as provenance. It
+    # never claims that the current source checkout has the historical path.
+    old_root=capture_document.get('sourceRoot')
+    require(isinstance(old_root,str) and Path(old_root).is_absolute(), 'Historical capture root missing')
+    controls=_validate_capture_repair_at(api,old_profile,STREAM_PATH_OLD_PREFIX_BINDING,old_capture,
+                                       old_root,STREAM_PATH_BASELINE_COMMIT)
+    old_expected=applicability_facts(api,old_profile,STREAM_PATH_OLD_PREFIX_BINDING)
+    frozen_descriptor=historical.get('frozenSelection')
+    frozen=json.loads(legacy['read_proof'](frozen_descriptor,legacy['FROZEN_SELECTION_SHA256']))
+    old_review=historical.get('independentReview');capture_file(old_review)
+    old_expected.update(captureRepair=old_capture,frozenSelection=frozen_descriptor,independentReview=old_review)
+    require(historical==old_expected,'Historical prefix applicability differs from original source facts')
+    capture_file(review)
+    methods=[]
+    for p,method in sorted(legacy['PREFLIGHT_METHODS'].items()):
+        require(after.get(p,{}).get('mode')=='100644' and after[p]['type']=='blob','Preflight method source missing')
+        methods.append(dict(path=p,method=method,source=after[p]))
+    expected=dict(schema='DORA_RECOVERY_STREAM_PATH_REPAIR_APPLICABILITY_V1',scope=SCOPE,
+        baseline=dict(commit=STREAM_PATH_BASELINE_COMMIT,tree=STREAM_PATH_BASELINE_TREE),
+        implementation=dict(commit=profile.implementation_commit,tree=profile.implementation_tree),
+        apkPair={k:binding[k] for k in ('appApkSha256','testApkSha256')},
+        sourceDelta=[dict(path=p,before=before[p],after=after[p]) for p in paths],
+        historicalApplicability=historical_descriptor,captureRepair=old_capture,frozenSelection=frozen_descriptor,
+        independentReview=review,historicalPreflightReusable=False,requiredFreshPreflight=methods,
+        contract='AUTHENTICATED_CHECKPOINT_EMBEDDED_PATH_TO_EXISTING_UNSAFE_PATH')
+    return expected,frozen,controls
+
+
 def legacy_api():
     return runpy.run_path(str(ROOT/'tools/recovery_alpha_repair.py'))
 
 
 def candidate_api():
-    return runpy.run_path(str(ROOT/'tools/validate_recovery_0d6_candidate.py'))
+    metadata=ROOT/'tools/validate_recovery_0d6_candidate.py'
+    stream_path_metadata_literal(metadata.read_text(encoding='utf-8'))
+    return runpy.run_path(str(metadata))
 
 
 def applicability_facts(api, profile, binding):
@@ -124,6 +236,7 @@ def applicability_facts(api, profile, binding):
 def validate_source(plan, gate, decision_key):
     api = candidate_api()
     capture_binding(api)
+    path_binding=stream_path_binding(api)
     binding = api.get('ALPHA_PREFIX_REPAIR_BINDING')
     require(isinstance(binding, dict) and set(binding) == {'appApkSha256','testApkSha256','applicabilitySha256'}
             and all(isinstance(x,str) and re.fullmatch('[0-9a-f]{64}',x) for x in binding.values()),
@@ -141,6 +254,10 @@ def validate_source(plan, gate, decision_key):
             'Prefix applicability pin mismatch')
     proof = read_proof(proof_descriptor)
     require(isinstance(proof,dict), 'Malformed prefix applicability')
+    if path_binding is not None:
+        frozen,_=validate_stream_path_proof(api,profile,binding,proof,proof_descriptor,
+                                            gate.get('proofs',{}).get('independentReview'))
+        return source,frozen
     expected = applicability_facts(api,profile,binding)
     capture = proof.get('captureRepair')
     validate_capture_repair(api,profile,binding,capture)
@@ -236,8 +353,9 @@ def capture_json(descriptor):
     return read_proof(descriptor)
 
 
-def capture_metadata_shape(api, profile):
+def capture_metadata_shape(api, profile, *, metadata_head='HEAD', stream_path=False):
     names = {'IMPLEMENTATION_COMMIT','IMPLEMENTATION_TREE','ALPHA_PREFIX_REPAIR_BINDING','ALPHA_CAPTURE_REPAIR_BINDING'}
+    if stream_path:names.add('ALPHA_STREAM_PATH_REPAIR_BINDING')
     def body(revision):
         parsed = ast.parse(api['git']('show',revision+':tools/validate_recovery_0d6_candidate.py',root=ROOT))
         kept=[];seen=set()
@@ -250,7 +368,7 @@ def capture_metadata_shape(api, profile):
             else:kept.append(node)
         parsed.body=kept
         return ast.dump(parsed,include_attributes=False)
-    require(body(profile.implementation_commit) == body('HEAD'), 'Capture metadata behavior differs from implementation')
+    require(body(profile.implementation_commit) == body(metadata_head), 'Capture metadata behavior differs from implementation')
 
 
 def capture_native_interval(receipt):
@@ -268,6 +386,10 @@ def capture_native_interval(receipt):
 
 
 def validate_capture_repair(api, profile, prefix_binding, descriptor):
+    return _validate_capture_repair_at(api,profile,prefix_binding,descriptor,str(ROOT),'HEAD')
+
+
+def _validate_capture_repair_at(api, profile, prefix_binding, descriptor, source_root, metadata_head):
     binding = capture_binding(api)
     require(isinstance(descriptor,dict) and descriptor.get('sha256') == binding['proofSha256'], 'Capture proof pin mismatch')
     proof = capture_json(descriptor)
@@ -284,7 +406,7 @@ def validate_capture_repair(api, profile, prefix_binding, descriptor):
         require(all(tree.get(p,{}).get('mode')=='100644' and tree[p]['type']=='blob' for tree in (before,after)),
                 'Capture source is deleted or nonregular')
     require({k:prefix_binding.get(k) for k in CAPTURE_APK_PAIR} == CAPTURE_APK_PAIR, 'Capture APK context changed')
-    capture_metadata_shape(api,profile)
+    capture_metadata_shape(api,profile,metadata_head=metadata_head)
     require(isinstance(proof,dict), 'Malformed capture proof')
     old=proof.get('oldControls');new=proof.get('newControls')
     parents=[]
@@ -343,7 +465,7 @@ def validate_capture_repair(api, profile, prefix_binding, descriptor):
         require(isinstance(red,list) and 0<len(red)<=32, 'Capture original RED provenance missing')
         for f in red:capture_file(f)
     capture_file(proof.get('independentReview'))
-    expected=dict(schema='DORA_RECOVERY_CAPTURE_REPAIR_V1',sourceRoot=str(ROOT),
+    expected=dict(schema='DORA_RECOVERY_CAPTURE_REPAIR_V1',sourceRoot=source_root,
         baseline=dict(commit=CAPTURE_BASELINE_COMMIT,tree=CAPTURE_BASELINE_TREE),
         implementation=dict(commit=profile.implementation_commit,tree=profile.implementation_tree),apkPair=CAPTURE_APK_PAIR,
         sourceDelta=[dict(path=p,before=before[p],after=after[p]) for p in paths],
@@ -371,7 +493,11 @@ def validate_preflight_origin(attempt, pin, native, launcher, source):
             and source_proof_descriptor.get('sha256')==api.get('ALPHA_PREFIX_REPAIR_BINDING',{}).get('applicabilitySha256'),
             'Preflight capture applicability pin mismatch')
     source_proof=read_proof(source_proof_descriptor)
-    controls=validate_capture_repair(api,api['active_profile'](),api['ALPHA_PREFIX_REPAIR_BINDING'],source_proof.get('captureRepair'))
+    if stream_path_binding(api) is not None:
+        _,controls=validate_stream_path_proof(api,api['active_profile'](),api['ALPHA_PREFIX_REPAIR_BINDING'],
+            source_proof,source_proof_descriptor,origin_gate.get('proofs',{}).get('independentReview'))
+    else:
+        controls=validate_capture_repair(api,api['active_profile'](),api['ALPHA_PREFIX_REPAIR_BINDING'],source_proof.get('captureRepair'))
     control=controls['Invoke-0D6Campaign.ps1']
     require(Path(args[7])==Path(control['path']) and file_sha(args[0]) == POWERSHELL_SHA256
             and file_sha(args[7]) == control['sha256'] and pin.get('launcherSha256') == control['sha256'],
