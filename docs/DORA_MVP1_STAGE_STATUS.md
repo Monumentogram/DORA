@@ -1,5 +1,20 @@
 # Dora MVP 1 — Stage Status
 
+Current reduced internal-alpha amendment, 15 September 2026: the
+[reduced owner decision](stage0/DORA_0D6_ALPHA_REDUCED_SCOPE_OWNER_DECISION_20260915.md)
+sets the immediate E36 milestone to 114 requirements (90 fault, 24 main hard-kill;
+165 complete variant evaluations). The other 300 E36 repetitions are deferred;
+the original 414/600 accounting and historical verdicts remain unchanged.
+Status: `ALPHA_E36_CHECKS_INCOMPLETE`, `0D.6 OPEN`. Exact-source CI for the previous
+56f39fe retention repair passed; subsequent admission/launcher changes require
+applicable successor verification. Private execution evidence retains the original
+K08 FAIL, its INCONCLUSIVE supplement and a later 11-case batch (9 PASS, 2 FAIL),
+whose per-case cleanup completed but final logcat capture left terminal UNCERTAIN.
+No reduced milestone completion is asserted here. API33 is the alpha floor;
+API33 compatibility remains UNVERIFIED and authorized physical-phone smoke checks
+remain pending. Android9–12 alpha compatibility is deferred; historical D1 and
+global build settings are unchanged. Earlier amendments below are historical.
+
 Current internal alpha E36 campaign amendment, 14 September 2026: the
 [campaign owner decision](stage0/DORA_0D6_ALPHA_E36_CAMPAIGN_OWNER_DECISION_20260914.md)
 authorizes separate admission and execution of the 414 prepared E36 base cases

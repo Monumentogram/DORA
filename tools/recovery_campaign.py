@@ -61,7 +61,25 @@ ALPHA_PREFLIGHT_SOURCE = {
 ALPHA_PREFLIGHT_RESULTS_SHA256 = "30eb1ec31e5a4d466d3ade60516ac5b2b2cb9ed63bba81f748191c1e6bc66c08"
 ALPHA_PREFLIGHT_HANDOFF_SHA256 = "d54a7e954cc6180736258d8cab34dee97e0dc158a4ca1ee06c4df27b1aa8a5eb"
 ALPHA_PREFLIGHT_EQUIVALENCE_SHA256 = "497e2f46b9b4853b12e0fb473c5f2e2f57ee3dbab4583f392db8096b59ac11e4"
+ALPHA_PREFLIGHT_FULL_PLAN_RELATIVE_PATH = "execution-packet-d3bc6ac-v5/phase_a-d3bc6ac.json"
+ALPHA_PREFLIGHT_FULL_PLAN_SHA256 = "a365d571394e76a7e29bc728a9013bcc58260a2953ef023188bdcc7ae5400876"
 E36_FINGERPRINT = "google/sdk_gphone64_x86_64/emu64xa:16/BE2A.250530.026.F3/13894323:userdebug/dev-keys"
+ALPHA_REDUCED_DECISION_ID = "DORA_0D6_ALPHA_REDUCED_SCOPE_20260915"
+ALPHA_REDUCED_SCOPE = "INTERNAL_ALPHA_E36_REDUCED_114"
+ALPHA_REDUCED_DECISION_PATH = "docs/stage0/DORA_0D6_ALPHA_REDUCED_SCOPE_OWNER_DECISION_20260915.md"
+ALPHA_REDUCED_DECISION_SHA256 = "39d340cc6fe55ce8d467ccca7b13607127a7e7c4fdc9c5f00a010055e92a2091"
+REDUCED_FAULT_CASES = (
+    "COR-01", "COR-02", "COR-03", "COR-04", "COR-05", "COR-06",
+    "TRU-01", "TRU-02", "TRU-03", "KEY-01", "KEY-02", "KEY-03",
+    "KEY-04", "KEY-05", "KEY-06", "KEY-07", "SPL-01", "SPL-02",
+    "SPL-03", "SPL-04", "SPL-05", "RBK-01", "RBK-02", "PAR-01",
+    "QUA-01", "QUA-02", "QUA-03", "IDE-01", "IDE-02", "EVT-01",
+    "CLN-01", "CLN-02", "CLN-03", "KCB-01", "KCB-02", "KCB-03",
+    "KCB-04", "KCB-05", "KCB-06", "KCF-01", "KCF-02", "KCF-03",
+    "KCF-04", "KCF-05", "KCF-06", "KCF-07",
+)
+REDUCED_HARD_KILL_STRATA = tuple(f"K{number:02d}" for number in range(1, 13))
+REDUCED_MICRO_K08_BASE_ATTEMPT_ID = "PA-MICROFILE-K08-E36-GAPI-05"
 
 
 def accepted_alpha_source() -> dict[str, str]:
@@ -124,28 +142,8 @@ def _verify_preflight_artifact(root: Path, descriptor: Any) -> None:
             "Retained preflight artifact hash mismatch " + relative)
 
 
-def validate_alpha_campaign(plan: dict[str, Any], gate: dict[str, Any]) -> None:
-    """Verify the separate E36 campaign decision and immutable preflight history."""
-    decision = gate.get("alphaCampaign")
-    require(isinstance(decision, dict) and decision.get("decisionId") == "DORA_0D6_ALPHA_E36_CAMPAIGN_20260914"
-            and decision.get("scope") == "INTERNAL_ALPHA_E36_CAMPAIGN", "Wrong alpha campaign decision scope")
-    require(decision.get("source") == plan["source"] == accepted_alpha_source(), "Alpha campaign source/APKs are not the exact accepted successor")
-    require(decision.get("historicalSource") == ALPHA_PREFLIGHT_SOURCE, "Historical preflight source mismatch")
-    require(gate.get("supportedPayloads") == ["CAMPAIGN"], "Alpha campaign payload scope drift")
-    require(gate.get("environment") == "E36-GAPI" and gate.get("deviceFingerprint") == E36_FINGERPRINT,
-            "Alpha campaign requires exact E36 profile")
-    require(gate.get("physicalAuthorization", {}).get("authorized") is False, "Alpha campaign physical scope forbidden")
-    accountable = gate.get("accountableReview", {})
-    require(gate.get("accountableReviewApproved") is False and accountable.get("formalReviewer") is False
-            and accountable.get("reviewer") is None and accountable.get("reviewedCommit") is None,
-            "Alpha campaign must not fabricate accountable review")
-    proof = gate.get("proofs", {}).get("ownerDecision", {})
-    expected_decision = Path(__file__).resolve().parents[1] / ALPHA_CAMPAIGN_DECISION_PATH
-    require(isinstance(proof.get("path"), str) and Path(proof["path"]).resolve() == expected_decision.resolve()
-            and expected_decision.is_file() and proof.get("sha256") == ALPHA_CAMPAIGN_DECISION_SHA256
-            and hashlib.sha256(expected_decision.read_bytes()).hexdigest() == ALPHA_CAMPAIGN_DECISION_SHA256,
-            "Owner decision artifact is not the pinned campaign decision")
-
+def validate_retained_alpha_preflight(gate: dict[str, Any]) -> dict[str, Any]:
+    """Verify the three immutable preflight assessments reused by alpha scopes."""
     retained = gate.get("retainedPreflight")
     root = _alpha_preflight_root()
     require(isinstance(retained, dict) and retained.get("root") == str(root.resolve()) and root.is_dir(),
@@ -184,10 +182,13 @@ def validate_alpha_campaign(plan: dict[str, Any], gate: dict[str, Any]) -> None:
         for descriptor in attempt.get("evidence", []) + attempt.get("environmentReceipts", []) + [attempt.get("shutdownResolution"), attempt.get("packet")]:
             _verify_preflight_artifact(root, descriptor)
     require(seen == set(expected_attempts), "Retained preflight assessment coverage mismatch")
+    return handoff
 
+
+def validate_alpha_source_equivalence(plan: dict[str, Any], decision: dict[str, Any]) -> None:
     equivalence = decision.get("sourceEquivalence", {})
-    require(equivalence.get("historicalSource") == decision["historicalSource"]
-            and equivalence.get("successorSource") == decision["source"] and equivalence.get("apkPairUnchanged") is True,
+    require(equivalence.get("historicalSource") == ALPHA_PREFLIGHT_SOURCE
+            and equivalence.get("successorSource") == plan["source"] and equivalence.get("apkPairUnchanged") is True,
             "Campaign source equivalence binding mismatch")
     successor = equivalence["successorSource"]
     require(successor["appApkSha256"] == ALPHA_PREFLIGHT_SOURCE["appApkSha256"]
@@ -202,6 +203,32 @@ def validate_alpha_campaign(plan: dict[str, Any], gate: dict[str, Any]) -> None:
             and equivalence_data.get("androidTreeBefore") == equivalence_data.get("androidTreeAfter")
             and isinstance(equivalence_data.get("changedPaths"), list), "Campaign source equivalence contents mismatch")
     hex_value(equivalence_data["androidTreeBefore"], 40)
+
+
+def validate_alpha_campaign(plan: dict[str, Any], gate: dict[str, Any]) -> None:
+    """Verify the separate E36 campaign decision and immutable preflight history."""
+    decision = gate.get("alphaCampaign")
+    require(isinstance(decision, dict) and decision.get("decisionId") == "DORA_0D6_ALPHA_E36_CAMPAIGN_20260914"
+            and decision.get("scope") == "INTERNAL_ALPHA_E36_CAMPAIGN", "Wrong alpha campaign decision scope")
+    require(decision.get("source") == plan["source"] == accepted_alpha_source(), "Alpha campaign source/APKs are not the exact accepted successor")
+    require(decision.get("historicalSource") == ALPHA_PREFLIGHT_SOURCE, "Historical preflight source mismatch")
+    require(gate.get("supportedPayloads") == ["CAMPAIGN"], "Alpha campaign payload scope drift")
+    require(gate.get("environment") == "E36-GAPI" and gate.get("deviceFingerprint") == E36_FINGERPRINT,
+            "Alpha campaign requires exact E36 profile")
+    require(gate.get("physicalAuthorization", {}).get("authorized") is False, "Alpha campaign physical scope forbidden")
+    accountable = gate.get("accountableReview", {})
+    require(gate.get("accountableReviewApproved") is False and accountable.get("formalReviewer") is False
+            and accountable.get("reviewer") is None and accountable.get("reviewedCommit") is None,
+            "Alpha campaign must not fabricate accountable review")
+    proof = gate.get("proofs", {}).get("ownerDecision", {})
+    expected_decision = Path(__file__).resolve().parents[1] / ALPHA_CAMPAIGN_DECISION_PATH
+    require(isinstance(proof.get("path"), str) and Path(proof["path"]).resolve() == expected_decision.resolve()
+            and expected_decision.is_file() and proof.get("sha256") == ALPHA_CAMPAIGN_DECISION_SHA256
+            and hashlib.sha256(expected_decision.read_bytes()).hexdigest() == ALPHA_CAMPAIGN_DECISION_SHA256,
+            "Owner decision artifact is not the pinned campaign decision")
+
+    handoff = validate_retained_alpha_preflight(gate)
+    validate_alpha_source_equivalence(plan, decision)
 
     require(plan.get("phase") == "PHASE_A" and isinstance(plan.get("executionId"), str), "Campaign namespace missing")
     execution_id = safe_id(plan["executionId"])
@@ -415,6 +442,184 @@ def build_plan(root: Path, phase: str, source: dict[str, str], seed: int, execut
 def validate_plan(root: Path, plan: dict[str, Any]) -> None:
     expected = build_plan(root, plan["phase"], plan["source"], plan["scheduleSeed"], plan.get("executionId"))
     require(plan == expected, "Plan differs from immutable protocol-derived schedule or source pins")
+
+
+def _base_attempt_id(entry: dict[str, Any]) -> str:
+    base = entry.get("baseAttemptId", entry.get("attemptId"))
+    return safe_id(base)
+
+
+def _reduced_requirement_id(entry: dict[str, Any]) -> str:
+    if entry.get("kind") == "FAULT":
+        return "FAULT:%s:%s" % (entry.get("candidateId"), entry.get("caseId"))
+    return "HARD_KILL:%s:%s" % (entry.get("candidateId"), entry.get("stratumId"))
+
+
+def _reduced_entry_binding(original: dict[str, Any], execution: dict[str, Any]) -> dict[str, Any]:
+    require(_base_attempt_id(original) == _base_attempt_id(execution), "Reduced source/execution base identity mismatch")
+    original_fields = {key: value for key, value in original.items() if key not in ("attemptId", "baseAttemptId", "runId")}
+    execution_fields = {key: value for key, value in execution.items() if key not in ("attemptId", "baseAttemptId", "runId")}
+    require(original_fields == execution_fields, "Reduced execution recipe or fixture drift")
+    return {
+        "requirementId": _reduced_requirement_id(original),
+        "originalBaseAttemptId": _base_attempt_id(original),
+        "attemptId": execution["attemptId"],
+        "runId": execution["runId"],
+        "candidateId": original["candidateId"],
+        "kind": original["kind"],
+        "caseId" if original["kind"] == "FAULT" else "stratumId": original.get("caseId", original.get("stratumId")),
+        "slot": original["slot"],
+        "seed": original["seed"],
+        "fixtureSha256": original["fixtureSha256"],
+        "plaintextBytes": original["plaintextBytes"],
+        "mutationVariants": original["mutationVariants"],
+        "originalEntrySha256": digest_json(original),
+        "executionEntrySha256": digest_json(execution),
+    }
+
+
+def build_reduced_e36_selection(original_plan: dict[str, Any], execution_plan: dict[str, Any],
+                                completed_base_attempt_ids: tuple[str, ...] | list[str] = ()) -> dict[str, Any]:
+    """Build the fixed 114-base E36 subset from its immutable 600-plan source."""
+    require(original_plan.get("phase") == execution_plan.get("phase") == "PHASE_A", "Reduced scope requires PHASE_A plans")
+    require("executionId" not in original_plan and isinstance(execution_plan.get("executionId"), str),
+            "Reduced scope requires legacy source and fresh execution namespaces")
+    require(original_plan.get("scheduleSeed") == execution_plan.get("scheduleSeed"),
+            "Reduced source/execution schedule identity mismatch")
+    originals = original_plan.get("entries")
+    executions = execution_plan.get("entries")
+    require(isinstance(originals, list) and isinstance(executions, list) and len(originals) == len(executions) == 600,
+            "Reduced scope requires the complete canonical 600-plan")
+    original_e36 = [entry for entry in originals if entry.get("environment") == "E36-GAPI"]
+    require(len(original_e36) == 414, "Reduced source plan E36 population mismatch")
+    original_by_base = {_base_attempt_id(entry): entry for entry in originals}
+    execution_by_base = {_base_attempt_id(entry): entry for entry in executions}
+    require(len(original_by_base) == len(originals) == len(execution_by_base)
+            and set(original_by_base) == set(execution_by_base), "Reduced plan base mapping mismatch")
+    completed = list(completed_base_attempt_ids)
+    require(all(isinstance(value, str) for value in completed) and len(completed) == len(set(completed)),
+            "Reduced completed base identities are malformed or duplicate")
+    completed_set = set(completed)
+    require(completed_set <= {_base_attempt_id(entry) for entry in original_e36}, "Reduced completed base identity is outside E36")
+
+    selected: list[dict[str, Any]] = []
+    for candidate in CANDIDATES:
+        for case in REDUCED_FAULT_CASES:
+            if candidate == CANDIDATES[0] and case in ("COR-04", "COR-05"):
+                continue
+            choices = [entry for entry in original_e36 if entry.get("kind") == "FAULT"
+                       and entry.get("candidateId") == candidate and entry.get("caseId") == case]
+            require(choices, "Reduced fault requirement missing from source plan")
+            selected.append(next((entry for entry in choices if _base_attempt_id(entry) in completed_set), choices[0]))
+        for stratum in REDUCED_HARD_KILL_STRATA:
+            choices = [entry for entry in original_e36 if entry.get("kind") == "HARD_KILL"
+                       and entry.get("candidateId") == candidate and entry.get("stratumId") == stratum]
+            require(choices, "Reduced hard-kill requirement missing from source plan")
+            if candidate == CANDIDATES[1] and stratum == "K08":
+                selected.append(next(entry for entry in choices if _base_attempt_id(entry) == REDUCED_MICRO_K08_BASE_ATTEMPT_ID))
+            else:
+                selected.append(next((entry for entry in choices if _base_attempt_id(entry) in completed_set), choices[0]))
+    order = {_base_attempt_id(entry): index for index, entry in enumerate(originals)}
+    selected.sort(key=lambda entry: order[_base_attempt_id(entry)])
+    selected_bases = [_base_attempt_id(entry) for entry in selected]
+    require(len(selected_bases) == len(set(selected_bases)) == 114
+            and sum(entry["kind"] == "FAULT" for entry in selected) == 90
+            and sum(entry["kind"] == "HARD_KILL" for entry in selected) == 24
+            and REDUCED_MICRO_K08_BASE_ATTEMPT_ID in selected_bases,
+            "Reduced source selection population mismatch")
+    bindings = [_reduced_entry_binding(entry, execution_by_base[_base_attempt_id(entry)]) for entry in selected]
+    require(sum(len(binding["mutationVariants"]) for binding in bindings) == 165,
+            "Reduced selection variant population mismatch")
+    return {
+        "schema": "DORA_RECOVERY_REDUCED_E36_SELECTION_V1",
+        "scope": ALPHA_REDUCED_SCOPE,
+        "originalPlanManifestSha256": digest_json(original_plan),
+        "originalPlanSource": original_plan["source"],
+        "originalScheduleSeed": original_plan["scheduleSeed"],
+        "executionPlanManifestSha256": digest_json(execution_plan),
+        "executionPlanSource": execution_plan["source"],
+        "executionId": execution_plan["executionId"],
+        "completedBaseAttemptIds": [
+            _base_attempt_id(entry) for entry in original_e36 if _base_attempt_id(entry) in completed_set
+        ],
+        "selectedCompletedBaseAttemptIds": [base for base in selected_bases if base in completed_set],
+        "originalBaseAttemptIds": selected_bases,
+        "supportedAttemptIds": [binding["attemptId"] for binding in bindings],
+        "faultBaseCount": 90,
+        "hardKillBaseCount": 24,
+        "variantCount": 165,
+        "entries": bindings,
+    }
+
+
+def validate_reduced_e36_selection(original_plan: dict[str, Any], execution_plan: dict[str, Any], selection: dict[str, Any]) -> None:
+    require(isinstance(selection, dict), "Reduced selection missing")
+    expected = build_reduced_e36_selection(original_plan, execution_plan, selection.get("completedBaseAttemptIds", ()))
+    require(selection == expected, "Reduced selection differs from immutable source mapping")
+
+
+def validate_alpha_reduced(plan: dict[str, Any], gate: dict[str, Any]) -> None:
+    """Admit only the separately authorized, source-bound E36 reduced subset."""
+    require("alphaPreflight" not in gate and "alphaCampaign" not in gate,
+            "Ambiguous simultaneous alpha admissions")
+    decision = gate.get("alphaReduced")
+    require(isinstance(decision, dict) and decision.get("decisionId") == ALPHA_REDUCED_DECISION_ID
+            and decision.get("scope") == ALPHA_REDUCED_SCOPE, "Wrong alpha reduced decision scope")
+    require(plan.get("source") == gate.get("source") == decision.get("source") == accepted_alpha_source(),
+            "Alpha reduced source/APKs are not the exact accepted successor")
+    require(decision.get("historicalSource") == ALPHA_PREFLIGHT_SOURCE,
+            "Alpha reduced historical preflight source mismatch")
+    require(gate.get("supportedPayloads") == ["CAMPAIGN"], "Alpha reduced payload scope drift")
+    require(gate.get("environment") == "E36-GAPI" and gate.get("deviceFingerprint") == E36_FINGERPRINT,
+            "Alpha reduced scope requires exact E36 profile")
+    require(gate.get("physicalAuthorization", {}).get("authorized") is False, "Alpha reduced physical scope forbidden")
+    accountable = gate.get("accountableReview", {})
+    require(gate.get("accountableReviewApproved") is False and accountable.get("formalReviewer") is False
+            and accountable.get("reviewer") is None and accountable.get("reviewedCommit") is None,
+            "Alpha reduced admission must not fabricate accountable review")
+    root = Path(__file__).resolve().parents[1]
+    proof = gate.get("proofs", {}).get("ownerDecision", {})
+    decision_path = root / ALPHA_REDUCED_DECISION_PATH
+    require(isinstance(proof.get("path"), str) and Path(proof["path"]).resolve() == decision_path.resolve()
+            and decision_path.is_file() and proof.get("sha256") == ALPHA_REDUCED_DECISION_SHA256
+            and hashlib.sha256(decision_path.read_bytes()).hexdigest() == ALPHA_REDUCED_DECISION_SHA256,
+            "Alpha reduced owner decision proof mismatch")
+    handoff = validate_retained_alpha_preflight(gate)
+    validate_alpha_source_equivalence(plan, decision)
+    validate_plan(root, plan)
+    selection = gate.get("reducedSelection")
+    require(isinstance(selection, dict) and selection.get("scope") == ALPHA_REDUCED_SCOPE,
+            "Alpha reduced selection missing")
+    require(decision.get("selectionManifestSha256") == digest_json(selection)
+            and decision.get("originalPlanManifestSha256") == selection.get("originalPlanManifestSha256"),
+            "Alpha reduced decision selection binding mismatch")
+    require(decision.get("originalPlanSource") == selection.get("originalPlanSource")
+            and selection.get("executionPlanSource") == plan["source"],
+            "Alpha reduced source plan binding mismatch")
+    require(selection.get("originalPlanSource") == ALPHA_PREFLIGHT_SOURCE,
+            "Alpha reduced original source plan mismatch")
+    retained_root = _alpha_preflight_root()
+    retained_original_path = retained_root / ALPHA_PREFLIGHT_FULL_PLAN_RELATIVE_PATH
+    require(retained_original_path.is_file()
+            and hashlib.sha256(retained_original_path.read_bytes()).hexdigest() == ALPHA_PREFLIGHT_FULL_PLAN_SHA256,
+            "Alpha reduced pinned original full-plan evidence mismatch")
+    original = json.loads(retained_original_path.read_bytes())
+    validate_plan(root, original)
+    require(digest_json(original) == selection.get("originalPlanManifestSha256")
+            and original.get("source") == ALPHA_PREFLIGHT_SOURCE
+            and original.get("scheduleSeed") == selection.get("originalScheduleSeed"),
+            "Alpha reduced original plan manifest mismatch")
+    original_e36 = [entry for entry in original["entries"] if entry.get("environment") == "E36-GAPI"]
+    require(handoff.get("entries") == original_e36, "Alpha reduced original E36 schedule differs from retained handoff")
+    original_proof = gate.get("proofs", {}).get("originalPlan", {})
+    require(isinstance(original_proof.get("path"), str) and Path(original_proof["path"]).resolve() == retained_original_path.resolve()
+            and original_proof.get("sha256") == ALPHA_PREFLIGHT_FULL_PLAN_SHA256
+            and original_proof.get("manifestSha256") == selection.get("originalPlanManifestSha256"),
+            "Alpha reduced original plan evidence proof mismatch")
+    validate_reduced_e36_selection(original, plan, selection)
+    require(gate.get("supportedAttemptIds") == selection["supportedAttemptIds"]
+            and gate.get("supportedBaseAttemptIds") == selection["originalBaseAttemptIds"],
+            "Alpha reduced supported attempt scope mismatch")
 
 
 def request_for(plan: dict[str, Any], entry: dict[str, Any], operation: str, variant: str) -> dict[str, Any]:
@@ -761,15 +966,19 @@ def validate_execution_gate(plan: dict[str, Any], gate: dict[str, Any], session:
     preflight = payload != "CAMPAIGN"
     alpha_preflight = "alphaPreflight" in gate
     alpha_campaign = "alphaCampaign" in gate
-    require(not (alpha_preflight and alpha_campaign), "Ambiguous simultaneous alpha admissions")
+    alpha_reduced = "alphaReduced" in gate
+    require(sum((alpha_preflight, alpha_campaign, alpha_reduced)) <= 1, "Ambiguous simultaneous alpha admissions")
     if alpha_preflight:
         validate_alpha_preflight(plan, gate, payload)
     if alpha_campaign:
         require(payload == "CAMPAIGN", "Alpha campaign cannot admit preflight payloads")
         validate_alpha_campaign(plan, gate)
+    if alpha_reduced:
+        require(payload == "CAMPAIGN", "Alpha reduced scope cannot admit preflight payloads")
+        validate_alpha_reduced(plan, gate)
     if preflight:
         require(payload in gate.get("supportedPayloads", []), "Fixed preflight payload not reviewed")
-    alpha = alpha_preflight or alpha_campaign
+    alpha = alpha_preflight or alpha_campaign or alpha_reduced
     review_flags = () if alpha else ("accountableReviewApproved",)
     for key in ("executionAuthorized", "implementationVerified", "independentReviewClean") + review_flags + ("exactHeadCiPassed", "graphAndR8Verified") + (() if preflight else ("preflightPassed",)):
         require(gate.get(key) is True, key + " gate unsatisfied")
@@ -782,7 +991,7 @@ def validate_execution_gate(plan: dict[str, Any], gate: dict[str, Any], session:
     # accepted evidence. This tool does not create a human attestation.
     proofs = gate.get("proofs", {})
     review_proofs = () if alpha else ("accountableReview",)
-    for key in ("implementation", "independentReview") + review_proofs + ("ci", "graphAndR8", "ownerInstruction") + (() if preflight or alpha_campaign else ("preflight",)):
+    for key in ("implementation", "independentReview") + review_proofs + ("ci", "graphAndR8", "ownerInstruction") + (() if preflight or alpha_campaign or alpha_reduced else ("preflight",)):
         proof = proofs.get(key, {})
         require(isinstance(proof.get("path"), str), "Missing prerequisite artifact " + key)
         path = Path(proof["path"])

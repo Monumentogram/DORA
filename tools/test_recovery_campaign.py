@@ -869,5 +869,143 @@ class AndroidWireRetentionManifest(unittest.TestCase):
             campaign.retain_evidence(type("T", (), {"directory": Path(tempfile.mkdtemp())})(), {"source": SOURCE}, {"attemptId": "id", "runId": "0" * 32}, {"retentionArtifacts": artifacts, "retentionSnapshotConsistent": True, "artifactManifestSha256": "0" * 64}, "DEFAULT")
 
 
+class ReducedE36Selection(unittest.TestCase):
+    """The reduced internal scope is a manifest over the immutable 600-plan."""
+
+    def setUp(self):
+        self.campaign_fixture = AlphaCampaignAdmission()
+        self.campaign_fixture.setUp()
+        self.addCleanup(self.campaign_fixture.doCleanups)
+        self.source = self.campaign_fixture.source
+        historical = self.campaign_fixture.gate["alphaCampaign"]["historicalSource"]
+        self.original = campaign.build_plan(ROOT, "PHASE_A", historical, 20260914)
+        self.execution = campaign.build_plan(ROOT, "PHASE_A", self.source, 20260914, "E36RED01")
+        self.original_packet = self.campaign_fixture.preflight_root / "execution-packet-d3bc6ac-v5" / "phase_a-d3bc6ac.json"
+        self.original_packet.parent.mkdir(parents=True, exist_ok=True)
+        self.original_packet.write_bytes(campaign.canonical(self.original))
+        plan_pin = patch.object(campaign, "ALPHA_PREFLIGHT_FULL_PLAN_SHA256",
+                                hashlib.sha256(self.original_packet.read_bytes()).hexdigest())
+        plan_pin.start()
+        self.addCleanup(plan_pin.stop)
+
+    def test_selects_the_exact_reduced_population_and_maps_fresh_identity(self):
+        selection = campaign.build_reduced_e36_selection(self.original, self.execution, ())
+        self.assertEqual(selection["scope"], "INTERNAL_ALPHA_E36_REDUCED_114")
+        self.assertEqual((selection["faultBaseCount"], selection["hardKillBaseCount"], selection["variantCount"]), (90, 24, 165))
+        self.assertEqual(len(selection["entries"]), 114)
+        anchor = next(entry for entry in selection["entries"] if entry["originalBaseAttemptId"] == "PA-MICROFILE-K08-E36-GAPI-05")
+        self.assertEqual(anchor["attemptId"], "E36RED01-PA-MICROFILE-K08-E36-GAPI-05")
+        self.assertEqual(selection["originalPlanManifestSha256"], campaign.digest_json(self.original))
+        campaign.validate_reduced_e36_selection(self.original, self.execution, selection)
+
+    def test_completed_original_bases_are_preferred_without_replacing_the_mandatory_k08_slot(self):
+        choices = [entry["attemptId"] for entry in self.original["entries"]
+                   if entry["environment"] == "E36-GAPI" and entry["kind"] == "FAULT"
+                   and entry["candidateId"] == "REC-STREAM-TINK" and entry["caseId"] == "COR-01"]
+        preferred = choices[-1]
+        alternate_k08 = next(entry["attemptId"] for entry in self.original["entries"]
+                             if entry["environment"] == "E36-GAPI" and entry["kind"] == "HARD_KILL"
+                             and entry["candidateId"] == "REC-MICROFILE-TINK" and entry["stratumId"] == "K08"
+                             and entry["attemptId"] != "PA-MICROFILE-K08-E36-GAPI-05")
+        selection = campaign.build_reduced_e36_selection(self.original, self.execution, [preferred, alternate_k08])
+        selected = next(entry for entry in selection["entries"] if entry["requirementId"] == "FAULT:REC-STREAM-TINK:COR-01")
+        self.assertEqual(selected["originalBaseAttemptId"], preferred)
+        self.assertIn("PA-MICROFILE-K08-E36-GAPI-05", selection["originalBaseAttemptIds"])
+        self.assertIn(alternate_k08, selection["completedBaseAttemptIds"])
+        self.assertNotIn(alternate_k08, selection["selectedCompletedBaseAttemptIds"])
+
+    def test_rejects_unknown_duplicate_unselected_and_identity_drift(self):
+        selection = campaign.build_reduced_e36_selection(self.original, self.execution, ())
+        for mutation in (
+            lambda s: s["originalBaseAttemptIds"].append("PA-STREAM-BOGUS-E36-GAPI-01"),
+            lambda s: s["originalBaseAttemptIds"].append(s["originalBaseAttemptIds"][0]),
+            lambda s: s["entries"].pop(),
+            lambda s: s["entries"][0].update(attemptId="E36RED01-PA-STREAM-IDENTITY-DRIFT-E36-GAPI-01"),
+        ):
+            altered = copy.deepcopy(selection)
+            mutation(altered)
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                campaign.validate_reduced_e36_selection(self.original, self.execution, altered)
+
+    def test_reduced_admission_binds_the_selection_and_excludes_other_alpha_modes(self):
+        selection = campaign.build_reduced_e36_selection(self.original, self.execution, ())
+        proof_dir = Path(tempfile.mkdtemp())
+        self.addCleanup(lambda: __import__("shutil").rmtree(proof_dir, ignore_errors=True))
+        owner = ROOT / "docs/stage0/DORA_0D6_ALPHA_REDUCED_SCOPE_OWNER_DECISION_20260915.md"
+        proof = {"path": str(owner), "sha256": hashlib.sha256(owner.read_bytes()).hexdigest()}
+        original_plan = self.original_packet
+        original_plan_proof = {"path": str(original_plan), "sha256": hashlib.sha256(original_plan.read_bytes()).hexdigest(),
+                               "manifestSha256": campaign.digest_json(self.original)}
+        gate = copy.deepcopy(self.campaign_fixture.gate)
+        campaign_decision = gate.pop("alphaCampaign")
+        gate.update({
+            "manifestSha256": campaign.digest_json(self.execution),
+            "supportedAttemptIds": selection["supportedAttemptIds"],
+            "supportedBaseAttemptIds": selection["originalBaseAttemptIds"],
+            "reducedSelection": selection,
+            "alphaReduced": {
+                "decisionId": "DORA_0D6_ALPHA_REDUCED_SCOPE_20260915",
+                "scope": "INTERNAL_ALPHA_E36_REDUCED_114", "source": copy.deepcopy(self.source),
+                "historicalSource": copy.deepcopy(campaign_decision["historicalSource"]),
+                "sourceEquivalence": copy.deepcopy(campaign_decision["sourceEquivalence"]),
+                "originalPlanSource": copy.deepcopy(self.original["source"]),
+                "originalPlanManifestSha256": selection["originalPlanManifestSha256"],
+                "selectionManifestSha256": campaign.digest_json(selection),
+            },
+        })
+        gate["proofs"].update({"ownerDecision": proof, "originalPlan": original_plan_proof})
+        campaign.validate_alpha_reduced(self.execution, gate)
+        campaign.validate_execution_gate(self.execution, gate)
+        alternate_seed = 20260913
+        alternate_original = campaign.build_plan(ROOT, "PHASE_A", self.original["source"], alternate_seed)
+        alternate_execution = campaign.build_plan(ROOT, "PHASE_A", self.source, alternate_seed, "E36RED02")
+        alternate_selection = campaign.build_reduced_e36_selection(alternate_original, alternate_execution, ())
+        alternate_plan = proof_dir / "self-consistent-wrong-original-plan.json"
+        alternate_plan.write_bytes(campaign.canonical(alternate_original))
+        alternate_gate = copy.deepcopy(gate)
+        alternate_gate["manifestSha256"] = campaign.digest_json(alternate_execution)
+        alternate_gate["supportedAttemptIds"] = alternate_selection["supportedAttemptIds"]
+        alternate_gate["supportedBaseAttemptIds"] = alternate_selection["originalBaseAttemptIds"]
+        alternate_gate["reducedSelection"] = alternate_selection
+        alternate_gate["alphaReduced"].update(
+            originalPlanManifestSha256=alternate_selection["originalPlanManifestSha256"],
+            selectionManifestSha256=campaign.digest_json(alternate_selection))
+        alternate_gate["proofs"]["originalPlan"] = {
+            "path": str(alternate_plan), "sha256": hashlib.sha256(alternate_plan.read_bytes()).hexdigest(),
+            "manifestSha256": alternate_selection["originalPlanManifestSha256"],
+        }
+        with self.assertRaises(ValueError):
+            campaign.validate_alpha_reduced(alternate_execution, alternate_gate)
+        for mutation in (
+                lambda g: g["retainedPreflight"].pop("results"),
+                lambda g: g["alphaReduced"]["source"].update(appApkSha256="0" * 64),
+                lambda g: g["alphaReduced"].pop("sourceEquivalence"),
+                lambda g: g["reducedSelection"]["entries"][0]["mutationVariants"].pop(),
+                lambda g: g["supportedAttemptIds"].append("E36RED01-PA-FOREIGN-E36-GAPI-01"),
+                lambda g: g["proofs"]["ownerDecision"].update(path=str(original_plan), sha256=hashlib.sha256(original_plan.read_bytes()).hexdigest())):
+            altered = copy.deepcopy(gate)
+            mutation(altered)
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                campaign.validate_alpha_reduced(self.execution, altered)
+        historical_drift = copy.deepcopy(self.original)
+        historical_drift["entries"][0]["seed"] += 1
+        original_plan.write_bytes(campaign.canonical(historical_drift))
+        gate["proofs"]["originalPlan"]["sha256"] = hashlib.sha256(original_plan.read_bytes()).hexdigest()
+        with self.assertRaises(ValueError):
+            campaign.validate_alpha_reduced(self.execution, gate)
+        gate["alphaCampaign"] = {}
+        with self.assertRaises(ValueError):
+            campaign.validate_alpha_reduced(self.execution, gate)
+
+    def test_selection_retains_a_distinct_historical_source_plan_binding(self):
+        historical = {"commit": "5" * 40, "tree": "8" * 40,
+                      "appApkSha256": "c" * 64, "testApkSha256": "d" * 64}
+        original = campaign.build_plan(ROOT, "PHASE_A", historical, 20260914)
+        selection = campaign.build_reduced_e36_selection(original, self.execution, ())
+        self.assertEqual(selection["originalPlanSource"], historical)
+        self.assertEqual(selection["executionPlanSource"], self.source)
+        campaign.validate_reduced_e36_selection(original, self.execution, selection)
+
+
 if __name__ == "__main__":
     unittest.main()
