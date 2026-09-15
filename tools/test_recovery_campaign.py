@@ -760,11 +760,14 @@ def load_tests(loader, tests, pattern):
     # The existing governance --self-test includes this module; therefore the
     # independently owned raw instrumentation transcript suite is included too.
     import importlib.util
-    path = Path(__file__).with_name("test_recovery_instrumentation_status.py")
-    spec = importlib.util.spec_from_file_location("test_recovery_instrumentation_status", path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return unittest.TestSuite([tests, loader.loadTestsFromModule(module)])
+    suites = [tests]
+    for name in ("test_recovery_instrumentation_status", "test_recovery_alpha_repair"):
+        path = Path(__file__).with_name(name + ".py")
+        spec = importlib.util.spec_from_file_location(name, path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        suites.append(loader.loadTestsFromModule(module))
+    return unittest.TestSuite(suites)
 
 
 class OwnedAdbReadonlyRetry(unittest.TestCase):

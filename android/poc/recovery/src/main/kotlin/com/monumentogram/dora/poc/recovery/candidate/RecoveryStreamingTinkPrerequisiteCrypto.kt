@@ -38,6 +38,22 @@ internal class RecoveryStreamingTinkPrerequisiteCrypto(
         checkpointEnvelope: ByteArray,
         checkpointCiphertext: ByteArray,
         streamEnvelope: ByteArray,
+    ): RecoveryStreamingCheckpointAuthentication =
+        authenticateArtifact(
+            checkpoint.checkpointPlaintext(),
+            checkpointEnvelope,
+            checkpointCiphertext,
+            streamEnvelope,
+        )
+
+    /**
+     * Strict artifact authentication without constructing or publishing a committed journal row.
+     */
+    internal fun authenticateArtifact(
+        checkpoint: RecoveryCheckpoint,
+        checkpointEnvelope: ByteArray,
+        checkpointCiphertext: ByteArray,
+        streamEnvelope: ByteArray,
     ): RecoveryStreamingCheckpointAuthentication {
         val runAead =
             try {
@@ -82,7 +98,7 @@ internal class RecoveryStreamingTinkPrerequisiteCrypto(
             } catch (_: Throwable) {
                 return RecoveryStreamingCheckpointAuthentication.Structural
             }
-        if (decoded != checkpoint.checkpointPlaintext()) {
+        if (decoded != checkpoint) {
             return RecoveryStreamingCheckpointAuthentication.Structural
         }
         val streamKeyset =
@@ -122,7 +138,7 @@ internal class RecoveryStreamingTinkPrerequisiteCrypto(
                 RecoveryStreamingCheckpointAuthentication.Structural
         }
 
-    private fun checkpointEnvelopeAad(checkpoint: RecoveryStreamingCheckpointRow) =
+    private fun checkpointEnvelopeAad(checkpoint: RecoveryCheckpoint) =
         KeyEnvelopeAad(
             RecoveryCandidate.STREAM,
             checkpoint.runId,
@@ -130,27 +146,27 @@ internal class RecoveryStreamingTinkPrerequisiteCrypto(
             checkpoint.generation,
             KeyEnvelopeAad.NOT_APPLICABLE_UNIT_INDEX,
             0UL,
-            checkpoint.committedEnd,
+            checkpoint.committedEndExclusive,
             0UL,
-            checkpoint.previousCheckpointSha256,
+            checkpoint.previousCheckpointCiphertextSha256,
         )
 
-    private fun checkpointPublicationAad(checkpoint: RecoveryStreamingCheckpointRow) =
+    private fun checkpointPublicationAad(checkpoint: RecoveryCheckpoint) =
         PublicationAad(
             RecoveryCandidate.STREAM,
             checkpoint.runId,
             PublicationKind.CHECKPOINT,
             checkpoint.generation,
-            if (checkpoint.committedEnd == 0UL) {
+            if (checkpoint.committedEndExclusive == 0UL) {
                 PublicationAad.EMPTY_TERMINAL_UNIT_INDEX
             } else {
                 checkpoint.durableNonFinalSegmentCount - 1UL
             },
-            checkpoint.committedEnd,
-            checkpoint.previousCheckpointSha256,
+            checkpoint.committedEndExclusive,
+            checkpoint.previousCheckpointCiphertextSha256,
         )
 
-    private fun streamEnvelopeAad(checkpoint: RecoveryStreamingCheckpointRow) =
+    private fun streamEnvelopeAad(checkpoint: RecoveryCheckpoint) =
         KeyEnvelopeAad(
             RecoveryCandidate.STREAM,
             checkpoint.runId,

@@ -1290,6 +1290,10 @@ private class Campaign(private val context: Context, private val request: JSONOb
                     lastStreamingEvent = it
                     evidence(it)
                 },
+                AndroidRecoveryStreamingReconciliation.orphanHandler(
+                    context,
+                    orphanAuthenticationObserved = { lastCheckpointAuthentication = it },
+                ),
             )
         return controller.recover(
             RecoveryStreamingControllerRequest(

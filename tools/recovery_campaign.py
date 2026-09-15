@@ -85,7 +85,10 @@ REDUCED_MICRO_K08_BASE_ATTEMPT_ID = "PA-MICROFILE-K08-E36-GAPI-05"
 def accepted_alpha_source() -> dict[str, str]:
     # Load the exact sibling even under Python -I; no ambient import path.
     validator = Path(__file__).resolve().with_name("validate_recovery_0d6_candidate.py")
-    return runpy.run_path(str(validator))["alpha_preflight_source"]()
+    api = runpy.run_path(str(validator))
+    require("ALPHA_REDUCED_REPAIR_BINDING" not in api,
+            "Repaired source profile is restricted to reduced sourceRepair admission")
+    return api["alpha_preflight_source"]()
 
 
 def validate_alpha_preflight(plan: dict[str, Any], gate: dict[str, Any], payload: str) -> None:
@@ -558,6 +561,12 @@ def validate_reduced_e36_selection(original_plan: dict[str, Any], execution_plan
     require(selection == expected, "Reduced selection differs from immutable source mapping")
 
 
+def validate_alpha_repair(plan: dict[str, Any], gate: dict[str, Any]) -> None:
+    """Separate, exact repaired-APK applicability; never used for other scopes."""
+    validator = runpy.run_path(str(Path(__file__).with_name("recovery_alpha_repair.py")))
+    validator["validate"](plan, gate)
+
+
 def validate_alpha_reduced(plan: dict[str, Any], gate: dict[str, Any]) -> None:
     """Admit only the separately authorized, source-bound E36 reduced subset."""
     require("alphaPreflight" not in gate and "alphaCampaign" not in gate,
@@ -565,8 +574,13 @@ def validate_alpha_reduced(plan: dict[str, Any], gate: dict[str, Any]) -> None:
     decision = gate.get("alphaReduced")
     require(isinstance(decision, dict) and decision.get("decisionId") == ALPHA_REDUCED_DECISION_ID
             and decision.get("scope") == ALPHA_REDUCED_SCOPE, "Wrong alpha reduced decision scope")
-    require(plan.get("source") == gate.get("source") == decision.get("source") == accepted_alpha_source(),
+    repair = "sourceRepair" in decision
+    require(not repair or "sourceEquivalence" not in decision, "Ambiguous alpha reduced source admission")
+    require(plan.get("source") == gate.get("source") == decision.get("source"),
             "Alpha reduced source/APKs are not the exact accepted successor")
+    if not repair:
+        require(plan.get("source") == accepted_alpha_source(),
+                "Alpha reduced source/APKs are not the exact accepted successor")
     require(decision.get("historicalSource") == ALPHA_PREFLIGHT_SOURCE,
             "Alpha reduced historical preflight source mismatch")
     require(gate.get("supportedPayloads") == ["CAMPAIGN"], "Alpha reduced payload scope drift")
@@ -585,7 +599,8 @@ def validate_alpha_reduced(plan: dict[str, Any], gate: dict[str, Any]) -> None:
             and hashlib.sha256(decision_path.read_bytes()).hexdigest() == ALPHA_REDUCED_DECISION_SHA256,
             "Alpha reduced owner decision proof mismatch")
     handoff = validate_retained_alpha_preflight(gate)
-    validate_alpha_source_equivalence(plan, decision)
+    if not repair:
+        validate_alpha_source_equivalence(plan, decision)
     validate_plan(root, plan)
     selection = gate.get("reducedSelection")
     require(isinstance(selection, dict) and selection.get("scope") == ALPHA_REDUCED_SCOPE,
@@ -620,6 +635,8 @@ def validate_alpha_reduced(plan: dict[str, Any], gate: dict[str, Any]) -> None:
     require(gate.get("supportedAttemptIds") == selection["supportedAttemptIds"]
             and gate.get("supportedBaseAttemptIds") == selection["originalBaseAttemptIds"],
             "Alpha reduced supported attempt scope mismatch")
+    if repair:
+        validate_alpha_repair(plan, gate)
 
 
 def request_for(plan: dict[str, Any], entry: dict[str, Any], operation: str, variant: str) -> dict[str, Any]:

@@ -859,6 +859,7 @@ internal class RecoveryStreamingReconciliationController(
     @Suppress("unused")
     private val checkpointAuthenticator: RecoveryStreamingCheckpointAuthenticator,
     private val evidenceSink: RecoveryStreamingEvidenceSink,
+    private val orphanHandler: RecoveryStreamingOrphanHandler? = null,
 ) {
     fun recover(
         request: RecoveryStreamingControllerRequest?
@@ -884,10 +885,12 @@ internal class RecoveryStreamingReconciliationController(
                             }
                         if (generation.isEmpty()) {
                             nonPersistable(
-                                RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
-                                    RecoveryStreamingResultStage.PREREQUISITE,
-                                    RecoveryStreamingResultClassification.STREAM_CHECKPOINT_MISSING,
-                                )
+                                orphanHandler?.reconcile(request.witness, chain.value)
+                                    ?: RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
+                                        RecoveryStreamingResultStage.PREREQUISITE,
+                                        RecoveryStreamingResultClassification
+                                            .STREAM_CHECKPOINT_MISSING,
+                                    )
                             )
                         } else if (
                             generation.size != 1 ||

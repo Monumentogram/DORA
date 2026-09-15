@@ -137,6 +137,47 @@ internal constructor(
         }
     }
 
+    /** Reads only the deterministic checkpoint destination named by an exact journal intent. */
+    fun loadQuarantinedCheckpoint(row: RecoveryQuarantineIntentRow): RecoveryArtifactBytes {
+        val role = row.input.artifactRole
+        require(
+            row.input.candidate ==
+                com.monumentogram.dora.poc.recovery.contract.RecoveryCandidate.STREAM
+        )
+        require(
+            role ==
+                com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineArtifactRole
+                    .CHECKPOINT_CIPHERTEXT ||
+                role ==
+                    com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineArtifactRole
+                        .CHECKPOINT_KEY_ENVELOPE
+        )
+        require(
+            row.intentId ==
+                com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntent.calculate(
+                    row.input
+                )
+        )
+        require(
+            row.destinationRelativeName ==
+                com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntent.destination(
+                    row.input
+                )
+        )
+        val paths = paths(row)
+        requireAllAncestors(paths)
+        val bytes =
+            readExact(
+                paths.destination,
+                row.input.sourceBytes.toLong(),
+                RecoveryArtifactRoleBounds.maximumFor(row.input.sourceRelativeName),
+            )
+        if (Sha256Value.calculate(bytes) != row.input.sourceSha256) {
+            throw structuralArtifactFailure("Quarantine checkpoint changed")
+        }
+        return RecoveryArtifactBytes(row.input.sourceRelativeName, bytes)
+    }
+
     @Suppress("TooGenericExceptionCaught")
     private fun loadRegularArtifact(
         source: File,
@@ -349,8 +390,14 @@ internal constructor(
             OsConstants.O_RDONLY or OsConstants.O_CLOEXEC or OsConstants.O_NOFOLLOW,
         ) { descriptor ->
             val stat = os.fstat(descriptor)
-            check(stat.type == BootstrapPathType.REGULAR && stat.size == expectedBytes) {
-                "Recovery artifact identity size changed"
+            if (stat.type != BootstrapPathType.REGULAR) {
+                throw RecoveryUnsafePathException(
+                    "Recovery artifact changed to an unsafe leaf type",
+                    RecoveryFailureCategory.CORRUPT_LEAF,
+                )
+            }
+            if (stat.size != expectedBytes) {
+                throw structuralArtifactFailure("Recovery artifact identity size changed")
             }
             readExactOpened(descriptor, expectedBytes)
         }

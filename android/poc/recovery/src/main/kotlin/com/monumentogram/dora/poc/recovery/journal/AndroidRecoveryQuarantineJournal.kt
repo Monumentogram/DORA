@@ -51,6 +51,17 @@ internal class AndroidRecoveryQuarantineJournal(context: Context) : RecoveryQuar
             ),
         )
 
+    /** Exact named lookup for checkpoint quarantine replay; ambiguous versions fail closed. */
+    fun loadStreamingCheckpointSource(
+        runId: RunId,
+        relativeName: String,
+    ): RecoveryQuarantineIntentRow? =
+        queryOne(
+            "run_id=? AND candidate_id='REC-STREAM-TINK' AND source_relative_name=?",
+            arrayOf(runId.toCanonicalString(), relativeName),
+            streaming = true,
+        )
+
     override fun loadPending(runId: RunId): List<RecoveryQuarantineIntentRow> {
         return loadAll(runId).filter { it.state == QuarantineIntentState.PENDING }
     }
@@ -71,7 +82,7 @@ internal class AndroidRecoveryQuarantineJournal(context: Context) : RecoveryQuar
         return java.util.Collections.unmodifiableList(rows)
     }
 
-    private fun queryOne(selection: String, arguments: Array<String>) =
+    private fun queryOne(selection: String, arguments: Array<String>, streaming: Boolean = false) =
         AndroidRecoveryJournalDatabase.writable(applicationContext)
             .query(
                 RecoveryJournalSchema.QUARANTINE_TABLE,
@@ -83,55 +94,14 @@ internal class AndroidRecoveryQuarantineJournal(context: Context) : RecoveryQuar
                 null,
             )
             .use { cursor ->
-                if (!cursor.moveToFirst()) null
+                if (streaming) RecoveryStreamingQuarantineReadback.read(cursor)
+                else if (!cursor.moveToFirst()) null
                 else {
                     val row = cursor.row()
                     check(!cursor.moveToNext()) { "Ambiguous quarantine source readback" }
                     row
                 }
             }
-
-    private fun android.database.Cursor.row(): RecoveryQuarantineIntentRow {
-        val runId = RunId.fromCanonicalString(getString(1))
-        val input =
-            RecoveryQuarantineIntentInput(
-                RecoveryCandidate.fromContractId(getString(2)),
-                runId,
-                getString(8),
-                RecoveryQuarantineArtifactRole.valueOf(getString(6)),
-                getLong(10).toULong(),
-                Sha256Value.fromBytes(getBlob(11)),
-            )
-        val bootstrapBinding = QuarantineBootstrapBinding.valueOf(getString(3))
-        val bootstrapRunId = if (isNull(4)) null else getString(4)
-        val bootstrapCandidateId = if (isNull(5)) null else getString(5)
-        check(
-            (bootstrapBinding == QuarantineBootstrapBinding.ABSENT &&
-                bootstrapRunId == null &&
-                bootstrapCandidateId == null) ||
-                (bootstrapBinding == QuarantineBootstrapBinding.PRESENT &&
-                    bootstrapRunId == runId.toCanonicalString() &&
-                    bootstrapCandidateId == input.candidate.contractId)
-        ) {
-            "Quarantine bootstrap binding readback is inconsistent"
-        }
-        val row =
-            RecoveryQuarantineIntentRow(
-                Sha256Value.fromBytes(getBlob(0)),
-                input,
-                RecoveryQuarantineObservedState.valueOf(getString(7)),
-                bootstrapBinding,
-                getString(9),
-                QuarantineIntentState.valueOf(getString(12)),
-            )
-        check(row.intentId == RecoveryQuarantineIntent.calculate(input)) {
-            "Quarantine intent identity mismatch"
-        }
-        check(row.destinationRelativeName == RecoveryQuarantineIntent.destination(input)) {
-            "Quarantine destination identity mismatch"
-        }
-        return row
-    }
 
     override fun beginNonExclusive(): RecoveryQuarantineTransaction {
         val database = AndroidRecoveryJournalDatabase.writable(applicationContext)
@@ -204,4 +174,74 @@ internal class AndroidRecoveryQuarantineJournal(context: Context) : RecoveryQuar
                 "state",
             )
     }
+}
+
+/** The named replay query must reject every second source version, even if each row is valid. */
+internal class RecoveryStreamingQuarantineReadbackException : RuntimeException()
+
+internal object RecoveryStreamingQuarantineReadback {
+    @Suppress("SwallowedException")
+    fun read(cursor: android.database.Cursor): RecoveryQuarantineIntentRow? {
+        if (!cursor.moveToFirst()) return null
+        val row =
+            try {
+                cursor.row(streaming = true)
+            } catch (_: IllegalArgumentException) {
+                throw RecoveryStreamingQuarantineReadbackException()
+            }
+        if (cursor.moveToNext()) throw RecoveryStreamingQuarantineReadbackException()
+        return row
+    }
+}
+
+@Suppress("MagicNumber")
+private fun android.database.Cursor.row(streaming: Boolean = false): RecoveryQuarantineIntentRow {
+    val runId = RunId.fromCanonicalString(getString(1))
+    val input =
+        RecoveryQuarantineIntentInput(
+            RecoveryCandidate.fromContractId(getString(2)),
+            runId,
+            getString(8),
+            RecoveryQuarantineArtifactRole.valueOf(getString(6)),
+            getLong(10).toULong(),
+            Sha256Value.fromBytes(getBlob(11)),
+        )
+    val bootstrapBinding = QuarantineBootstrapBinding.valueOf(getString(3))
+    val bootstrapRunId = if (isNull(4)) null else getString(4)
+    val bootstrapCandidateId = if (isNull(5)) null else getString(5)
+    checkReadback(
+        streaming,
+        (bootstrapBinding == QuarantineBootstrapBinding.ABSENT &&
+            bootstrapRunId == null &&
+            bootstrapCandidateId == null) ||
+            (bootstrapBinding == QuarantineBootstrapBinding.PRESENT &&
+                bootstrapRunId == runId.toCanonicalString() &&
+                bootstrapCandidateId == input.candidate.contractId),
+    ) {
+        "Quarantine bootstrap binding readback is inconsistent"
+    }
+    val row =
+        RecoveryQuarantineIntentRow(
+            Sha256Value.fromBytes(getBlob(0)),
+            input,
+            RecoveryQuarantineObservedState.valueOf(getString(7)),
+            bootstrapBinding,
+            getString(9),
+            QuarantineIntentState.valueOf(getString(12)),
+        )
+    checkReadback(streaming, row.intentId == RecoveryQuarantineIntent.calculate(input)) {
+        "Quarantine intent identity mismatch"
+    }
+    checkReadback(
+        streaming,
+        row.destinationRelativeName == RecoveryQuarantineIntent.destination(input),
+    ) {
+        "Quarantine destination identity mismatch"
+    }
+    return row
+}
+
+private inline fun checkReadback(streaming: Boolean, valid: Boolean, message: () -> String) {
+    if (streaming && !valid) throw RecoveryStreamingQuarantineReadbackException()
+    if (!streaming) check(valid, message)
 }
