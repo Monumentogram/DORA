@@ -1,9 +1,12 @@
 """Admission for the approved surviving STREAM checkpoint-prefix repair."""
 from pathlib import Path
+import ast
+import datetime
 import hashlib
 import json
 import re
 import runpy
+import stat
 
 ROOT = Path(__file__).resolve().parents[1]
 PREFLIGHT_SELECTORS = {
@@ -63,6 +66,20 @@ LAUNCHER_SHA256 = '51d6a19a2b6361c2b91a15fe02df7dc337469177913b8361c6397acc07707
 ADB_SHA256 = 'b4a6b455702684652cccf7b46258b29e653538904359a58fd4931cf3ef286b3f'
 POWERSHELL_SHA256 = '8bb6fa8c283b4d92120b1ef249a9b311b0f804d4cabbe9981159976c8be76a5e'
 PYTHON_SHA256 = '1a03cb7cb09e29053ae71a0d0e28555fe0ff3d22bb3a476eb9cc0d3899e73456'
+CAPTURE_BASELINE_COMMIT = 'eda7a904fde8e1de211fa666b8e7d09e8d252b0d'
+CAPTURE_BASELINE_TREE = '92c1db823a7d9f966a26e8a934f19c5601048dd0'
+CAPTURE_HOST_PATHS = frozenset({'tools/recovery_alpha_prefix_repair.py',
+                                'tools/test_recovery_alpha_prefix_repair.py'})
+CAPTURE_APK_PAIR = dict(appApkSha256='2283d9d7dfad04c23df93b726e67864be9158013908d1b8404de12d2b706477a',
+                        testApkSha256='0a0fee0650e3cad105cd675c685e4d002d6c59da5d7efced4cfa30f412ddd48b')
+CAPTURE_OLD_CONTROLS = {
+    'Invoke-0D6Campaign.ps1': LAUNCHER_SHA256,
+    'Attempt05-Lifecycle-Functions.ps1': 'c9f34eddb60f4d28b6979dc5dd21ae20125fe003ffee4a92f71b92b5e7558256',
+    'Campaign-Checkpoint.ps1': 'a18a9803bf583f5559f36cf6296a4757e333a3abafcab18400bd595c12aaaf79',
+    'Logcat-Capture.ps1': '285040dbb3b2a9db2b0c21ba6871e09ceee8394f7b8f842d08b94e2753daeddb',
+    'rec_i3_owned_process.psm1': '2c39aeb771cab4a2cdf4b8663365ecda2c1675e3f36d026d01065de7657cfdcf',
+    'Shutdown-Member-Resolution.ps1': '9d004cf9184f0c7d222bd88131e8abfa7c5697502288a2f28a4e7b768ef0e6ac',
+}
 
 
 def legacy_api():
@@ -106,6 +123,7 @@ def applicability_facts(api, profile, binding):
 
 def validate_source(plan, gate, decision_key):
     api = candidate_api()
+    capture_binding(api)
     binding = api.get('ALPHA_PREFIX_REPAIR_BINDING')
     require(isinstance(binding, dict) and set(binding) == {'appApkSha256','testApkSha256','applicabilitySha256'}
             and all(isinstance(x,str) and re.fullmatch('[0-9a-f]{64}',x) for x in binding.values()),
@@ -124,6 +142,9 @@ def validate_source(plan, gate, decision_key):
     proof = read_proof(proof_descriptor)
     require(isinstance(proof,dict), 'Malformed prefix applicability')
     expected = applicability_facts(api,profile,binding)
+    capture = proof.get('captureRepair')
+    validate_capture_repair(api,profile,binding,capture)
+    expected['captureRepair'] = capture
     legacy = legacy_api()
     frozen_descriptor = proof.get('frozenSelection')
     frozen = json.loads(legacy['read_proof'](frozen_descriptor,legacy['FROZEN_SELECTION_SHA256']))
@@ -185,6 +206,152 @@ def file_sha(path):
         return hashlib.file_digest(stream,'sha256').hexdigest()
 
 
+def capture_binding(api):
+    binding = api.get('ALPHA_CAPTURE_REPAIR_BINDING')
+    require(isinstance(binding,dict) and set(binding) == {'launcherSha256','ownedProcessModuleSha256','proofSha256'}
+            and all(isinstance(v,str) and re.fullmatch('[0-9a-f]{64}',v) for v in binding.values()),
+            'Exact capture repair pins are not installed')
+    return binding
+
+
+def capture_file(descriptor):
+    require(isinstance(descriptor,dict) and set(descriptor) == {'path','sha256'}
+            and isinstance(descriptor['path'],str) and isinstance(descriptor['sha256'],str)
+            and re.fullmatch('[0-9a-f]{64}',descriptor['sha256']), 'Malformed capture descriptor')
+    path = Path(descriptor['path'])
+    require(path.is_absolute() and '..' not in path.parts, 'Foreign capture path')
+    for p in (path,*path.parents):
+        require(p.exists(), 'Missing capture path')
+        metadata = p.lstat()
+        require(not stat.S_ISLNK(metadata.st_mode)
+                and not getattr(metadata,'st_file_attributes',0) & stat.FILE_ATTRIBUTE_REPARSE_POINT,
+                'Reparse capture path')
+    require(stat.S_ISREG(path.stat().st_mode) and file_sha(path) == descriptor['sha256'],
+            'Capture file hash or regular-file mismatch')
+    return path
+
+
+def capture_json(descriptor):
+    capture_file(descriptor)
+    return read_proof(descriptor)
+
+
+def capture_metadata_shape(api, profile):
+    names = {'IMPLEMENTATION_COMMIT','IMPLEMENTATION_TREE','ALPHA_PREFIX_REPAIR_BINDING','ALPHA_CAPTURE_REPAIR_BINDING'}
+    def body(revision):
+        parsed = ast.parse(api['git']('show',revision+':tools/validate_recovery_0d6_candidate.py',root=ROOT))
+        kept=[];seen=set()
+        for node in parsed.body:
+            if isinstance(node,ast.Assign) and len(node.targets)==1 and isinstance(node.targets[0],ast.Name) and node.targets[0].id in names:
+                require(node.targets[0].id not in seen, 'Duplicate capture metadata assignment')
+                seen.add(node.targets[0].id)
+                # Metadata must be inert constants, never a call evaluated during import.
+                ast.literal_eval(node.value)
+            else:kept.append(node)
+        parsed.body=kept
+        return ast.dump(parsed,include_attributes=False)
+    require(body(profile.implementation_commit) == body('HEAD'), 'Capture metadata behavior differs from implementation')
+
+
+def capture_native_interval(receipt):
+    times=[]
+    for key in ('startedAtUtc','endedAtUtc'):
+        value=receipt.get(key)
+        require(isinstance(value,str), 'Capture native timestamp missing')
+        try:
+            parsed=datetime.datetime.fromisoformat(value.replace('Z','+00:00'))
+        except ValueError as exc:
+            raise ValueError('Invalid capture native UTC timestamp') from exc
+        require(parsed.utcoffset()==datetime.timedelta(0), 'Capture native timestamp is not UTC')
+        times.append(parsed)
+    require(times[0]<=times[1], 'Reversed capture native interval')
+
+
+def validate_capture_repair(api, profile, prefix_binding, descriptor):
+    binding = capture_binding(api)
+    require(isinstance(descriptor,dict) and descriptor.get('sha256') == binding['proofSha256'], 'Capture proof pin mismatch')
+    proof = capture_json(descriptor)
+    git=api['git']
+    require(git('rev-parse',CAPTURE_BASELINE_COMMIT+'^{tree}',root=ROOT) == CAPTURE_BASELINE_TREE
+            and git('merge-base',CAPTURE_BASELINE_COMMIT,profile.implementation_commit,root=ROOT) == CAPTURE_BASELINE_COMMIT,
+            'Capture source baseline or ancestry mismatch')
+    legacy=legacy_api()
+    before=legacy['tree_entries'](git,CAPTURE_BASELINE_COMMIT)
+    after=legacy['tree_entries'](git,profile.implementation_commit)
+    paths=sorted(p for p in before.keys() | after.keys() if before.get(p) != after.get(p))
+    require(set(paths) == CAPTURE_HOST_PATHS, 'Capture repair differs from exact host-only delta')
+    for p in paths:
+        require(all(tree.get(p,{}).get('mode')=='100644' and tree[p]['type']=='blob' for tree in (before,after)),
+                'Capture source is deleted or nonregular')
+    require({k:prefix_binding.get(k) for k in CAPTURE_APK_PAIR} == CAPTURE_APK_PAIR, 'Capture APK context changed')
+    capture_metadata_shape(api,profile)
+    require(isinstance(proof,dict), 'Malformed capture proof')
+    old=proof.get('oldControls');new=proof.get('newControls')
+    parents=[]
+    for controls in (old,new):
+        require(isinstance(controls,dict) and set(controls)==set(CAPTURE_OLD_CONTROLS), 'Capture controls must be the exact six siblings')
+        group=set()
+        for name,d in controls.items():
+            p=capture_file(d)
+            require(p.name==name, 'Capture control basename mismatch')
+            group.add(p.parent.resolve())
+        require(len(group)==1, 'Capture controls have foreign parents')
+        parents.append(group.pop())
+    require(parents[0]!=parents[1], 'Capture successor overwrites historical controls')
+    require({n:d['sha256'] for n,d in old.items()}==CAPTURE_OLD_CONTROLS, 'Historical capture controls changed')
+    expected_hashes=dict(CAPTURE_OLD_CONTROLS)
+    expected_hashes.update({'Invoke-0D6Campaign.ps1':binding['launcherSha256'],
+                           'rec_i3_owned_process.psm1':binding['ownedProcessModuleSha256']})
+    require(all(expected_hashes[n]!=CAPTURE_OLD_CONTROLS[n] for n in ('Invoke-0D6Campaign.ps1','rec_i3_owned_process.psm1'))
+            and {n:d['sha256'] for n,d in new.items()}==expected_hashes,
+            'Capture successor identity mismatch or historical launcher fallback')
+    tests=proof.get('nativeTests')
+    require(isinstance(tests,list) and 0<len(tests)<=16, 'Missing bounded capture native tests')
+    manifest_paths=set();receipt_paths=set()
+    for d in tests:
+        test=capture_json(d)
+        manifest_path=Path(d['path']).resolve()
+        require(manifest_path not in manifest_paths, 'Duplicate capture native manifest')
+        manifest_paths.add(manifest_path)
+        require(isinstance(test,dict) and set(test)=={'schema','controlsBefore','controlsAfter','testFilesBefore',
+                    'testFilesAfter','receipt','redEvidence'} and test['schema']=='DORA_CAPTURE_NATIVE_TEST_V1'
+                and test['controlsBefore']==test['controlsAfter']==new, 'Capture tested controls differ from final embedded controls')
+        files=test['testFilesBefore']
+        require(isinstance(files,list) and 0<len(files)<=32 and files==test['testFilesAfter'], 'Capture test script identity drift')
+        script_paths=[str(capture_file(f)) for f in files]
+        require(len(set(script_paths))==len(script_paths), 'Duplicate capture test script')
+        receipt=capture_json(test['receipt'])
+        receipt_path=Path(test['receipt']['path']).resolve()
+        require(receipt_path not in receipt_paths, 'Duplicate capture native receipt')
+        receipt_paths.add(receipt_path)
+        require(isinstance(receipt,dict) and type(receipt.get('nativeExitCode')) is int and receipt['nativeExitCode']==0
+                and receipt.get('timedOut',False) is False and isinstance(receipt.get('argv'),list)
+                and all(isinstance(arg,str) for arg in receipt['argv'])
+                and any(p in receipt['argv'] for p in script_paths)
+                and isinstance(receipt.get('startedAtUtc'),str) and isinstance(receipt.get('endedAtUtc'),str),
+                'Capture native test failed or command lacks pinned script')
+        argv=receipt['argv']
+        require(len(argv)>=10 and argv[1:7]==['-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File']
+                and argv.count('-File')==1 and argv[7] in script_paths and Path(argv[7]).suffix.lower()=='.ps1',
+                'Capture native test invocation differs from exact PowerShell script origin')
+        capture_file(dict(path=argv[0],sha256=POWERSHELL_SHA256))
+        require(argv.count('-ModulePath')==1 and argv.index('-ModulePath')+1<len(argv)
+                and argv[argv.index('-ModulePath')+1]==new['rec_i3_owned_process.psm1']['path'],
+                'Capture native tested module differs from final embedded module')
+        capture_native_interval(receipt)
+        red=test['redEvidence']
+        require(isinstance(red,list) and 0<len(red)<=32, 'Capture original RED provenance missing')
+        for f in red:capture_file(f)
+    capture_file(proof.get('independentReview'))
+    expected=dict(schema='DORA_RECOVERY_CAPTURE_REPAIR_V1',sourceRoot=str(ROOT),
+        baseline=dict(commit=CAPTURE_BASELINE_COMMIT,tree=CAPTURE_BASELINE_TREE),
+        implementation=dict(commit=profile.implementation_commit,tree=profile.implementation_tree),apkPair=CAPTURE_APK_PAIR,
+        sourceDelta=[dict(path=p,before=before[p],after=after[p]) for p in paths],
+        oldControls=old,newControls=new,nativeTests=tests,independentReview=proof['independentReview'])
+    require(proof==expected, 'Capture proof differs from exact source and control facts')
+    return new
+
+
 def validate_preflight_origin(attempt, pin, native, launcher, source):
     require(pin.get('schema') == 'DORA_0D6_PRIVATE_LAUNCH_PIN_V1'
             and pin.get('ownerSessionId') == attempt['ownerSessionId']
@@ -194,8 +361,21 @@ def validate_preflight_origin(attempt, pin, native, launcher, source):
     require(len(args) == 13 and args[1:7] == ['-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File']
             and args[8:] == ['-PinPath',attempt['pin']['path'],'-ApprovedPinSha256',attempt['pin']['sha256'],'-Execute'],
             'Foreign preflight launcher command')
-    require(file_sha(args[0]) == POWERSHELL_SHA256 and file_sha(args[7]) == LAUNCHER_SHA256
-            and pin.get('launcherSha256') == LAUNCHER_SHA256, 'Preflight launcher identity drift')
+    api=candidate_api()
+    capture_binding(api)
+    # The actual preflight gate below revalidates the entire source profile. This
+    # independent origin check binds its private launcher path before gate entry.
+    origin_gate=read_proof(dict(path=pin['gatePath'],sha256=pin['gateFileSha256']))
+    source_proof_descriptor=origin_gate.get('alphaPreflight',{}).get('sourceRepair')
+    require(isinstance(source_proof_descriptor,dict)
+            and source_proof_descriptor.get('sha256')==api.get('ALPHA_PREFIX_REPAIR_BINDING',{}).get('applicabilitySha256'),
+            'Preflight capture applicability pin mismatch')
+    source_proof=read_proof(source_proof_descriptor)
+    controls=validate_capture_repair(api,api['active_profile'](),api['ALPHA_PREFIX_REPAIR_BINDING'],source_proof.get('captureRepair'))
+    control=controls['Invoke-0D6Campaign.ps1']
+    require(Path(args[7])==Path(control['path']) and file_sha(args[0]) == POWERSHELL_SHA256
+            and file_sha(args[7]) == control['sha256'] and pin.get('launcherSha256') == control['sha256'],
+            'Preflight launcher identity drift')
     require(file_sha(native['argv'][0]) == ADB_SHA256, 'Preflight ADB identity drift')
     require(pin.get('pythonSha256') == PYTHON_SHA256 and file_sha(pin['pythonPath']) == PYTHON_SHA256,
             'Preflight Python identity drift')

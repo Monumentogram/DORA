@@ -228,8 +228,10 @@ class CombinedAdmissionTests(unittest.TestCase):
         self.legacy['FROZEN_SELECTION_SHA256']=self.frozen_descriptor['sha256']
         patch.object(subject,'legacy_api',return_value=self.legacy).start()
         self.review=self.write('review.md','Exact combined source review')
+        self.facts.after['tools/test_recovery_alpha_prefix_repair.py']=dict(mode='100644',type='blob',object='4'*40)
+        self.capture=CaptureControlFixture(self,self.root,self.api,self.profile,self.binding,self.facts.after)
         self.proof=subject.applicability_facts(self.api,self.profile,self.binding)
-        self.proof.update(frozenSelection=self.frozen_descriptor,independentReview=self.review)
+        self.proof.update(frozenSelection=self.frozen_descriptor,independentReview=self.review,captureRepair=self.capture.descriptor)
         self.plan=dict(source=self.source)
         self.gate=dict(source=self.source,environment='E36-GAPI',supportedAttemptIds=[],
                        physicalAuthorization=dict(authorized=False),proofs=dict(independentReview=self.review),
@@ -323,10 +325,12 @@ class PrefixRouteTests(unittest.TestCase):
 
 class PreflightOriginTests(unittest.TestCase):
     def setUp(self):
+        legacy=subject.legacy_api()
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
         self.root=Path(self.temp.name);self.repo=self.root/'repo';(self.repo/'tools').mkdir(parents=True)
         self.addCleanup(patch.stopall)
         patch.object(subject,'ROOT',self.repo).start()
+        patch.object(subject,'legacy_api',return_value=legacy).start()
         self.files={}
         for name in ('powershell.exe','adb.exe','python.exe','launcher.ps1','app.apk','test.apk'):
             p=self.root/name;p.write_bytes(('exact fixture '+name).encode());self.files[name]=p
@@ -335,8 +339,17 @@ class PreflightOriginTests(unittest.TestCase):
                               ('PYTHON_SHA256','python.exe'),('LAUNCHER_SHA256','launcher.ps1')):
             patch.object(subject,constant,subject.file_sha(self.files[name])).start()
         self.source=dict(commit='a'*40,tree='b'*40,appApkSha256=subject.file_sha(self.files['app.apk']),testApkSha256=subject.file_sha(self.files['test.apk']))
+        prefix={k:self.source[k] for k in ('appApkSha256','testApkSha256')}
+        profile=SimpleNamespace(implementation_commit='c'*40,implementation_tree='d'*40)
+        self.api=dict(git=lambda *a,**k:None,active_profile=lambda:profile,ALPHA_PREFIX_REPAIR_BINDING=prefix)
+        self.capture=CaptureControlFixture(self,self.root,self.api,profile,prefix,powershell=self.files['powershell.exe'])
+        patch.object(subject,'candidate_api',return_value=self.api).start()
+        self.files['launcher.ps1']=Path(self.capture.new['Invoke-0D6Campaign.ps1']['path'])
+        patch.object(subject,'LAUNCHER_SHA256',subject.file_sha(self.files['launcher.ps1'])).start()
+        source_proof=self.capture.write('applicability.json',dict(captureRepair=self.capture.descriptor))
+        prefix['applicabilitySha256']=source_proof['sha256']
         self.plan=dict(source=self.source)
-        self.gate=dict(source=self.source,alphaPreflight=dict(source=self.source),scopeProof='exact')
+        self.gate=dict(source=self.source,alphaPreflight=dict(source=self.source,sourceRepair=source_proof),scopeProof='exact')
         self.plan_path=self.root/'plan.json';self.gate_path=self.root/'gate.json'
         self.plan_path.write_text(json.dumps(self.plan));self.gate_path.write_text(json.dumps(self.gate))
         self.pin=dict(schema='DORA_0D6_PRIVATE_LAUNCH_PIN_V1',source=self.source,sourceRoot=str(self.repo),
@@ -424,9 +437,17 @@ class CompleteFreshPreflightTests(unittest.TestCase):
         for name in ('powershell.exe','adb.exe','python.exe','launcher.ps1','app.apk','test.apk'):
             p=root/name;p.write_bytes(('complete origin '+name).encode());files[name]=p
         source=dict(transcript.source,appApkSha256=subject.file_sha(files['app.apk']),testApkSha256=subject.file_sha(files['test.apk']))
+        prefix={k:source[k] for k in ('appApkSha256','testApkSha256')}
+        profile=SimpleNamespace(implementation_commit='c'*40,implementation_tree='d'*40)
+        api=dict(git=lambda *a,**k:None,active_profile=lambda:profile,ALPHA_PREFIX_REPAIR_BINDING=prefix)
+        capture=CaptureControlFixture(self,root,api,profile,prefix,powershell=files['powershell.exe'])
+        files['launcher.ps1']=Path(capture.new['Invoke-0D6Campaign.ps1']['path'])
+        source_proof=capture.write('applicability.json',dict(captureRepair=capture.descriptor))
+        prefix['applicabilitySha256']=source_proof['sha256']
         plan=dict(source=source);gate=gate_fixture.gate
         gate.update(source=source,manifestSha256=fixtures.campaign.digest_json(plan))
         gate['alphaPreflight']['source']=source
+        gate['alphaPreflight']['sourceRepair']=source_proof
         plan_d=transcript.write('complete-plan.json',plan);gate_d=transcript.write('complete-gate.json',gate)
         for attempt in transcript.proof['attempts']:
             payload=attempt['payload'];owner=attempt['ownerSessionId']
@@ -450,12 +471,14 @@ class CompleteFreshPreflightTests(unittest.TestCase):
             return original_run_path(path)
         with patch.object(subject,'validate_preflight_origin',side_effect=real_origin) as origin, \
              patch.object(subject.runpy,'run_path',side_effect=route), \
-             patch.object(fixtures.campaign,'accepted_alpha_source',return_value=source), \
+             patch.object(subject,'candidate_api',return_value=api), \
+             patch.object(fixtures.campaign,'validate_alpha_prefix_preflight') as static_source, \
              patch.object(subject,'POWERSHELL_SHA256',subject.file_sha(files['powershell.exe'])), \
              patch.object(subject,'ADB_SHA256',subject.file_sha(files['adb.exe'])), \
              patch.object(subject,'PYTHON_SHA256',subject.file_sha(files['python.exe'])), \
              patch.object(subject,'LAUNCHER_SHA256',subject.file_sha(files['launcher.ps1'])):
             transcript.check();self.assertEqual(3,origin.call_count)
+            self.assertEqual(3,static_source.call_count)
             gate['exactHeadCiPassed']=False
             gate_d=transcript.write('complete-gate.json',gate)
             attempt=transcript.proof['attempts'][0]
@@ -464,6 +487,255 @@ class CompleteFreshPreflightTests(unittest.TestCase):
             launcher=json.loads(Path(attempt['launcherReceipt']['path']).read_bytes());launcher['argv'][11]=attempt['pin']['sha256']
             attempt['launcherReceipt']=transcript.write(Path(attempt['launcherReceipt']['path']).name,launcher)
             with self.assertRaisesRegex(ValueError,'exactHeadCiPassed'):transcript.check()
+
+
+class ProductionCaptureControlPinsTests(unittest.TestCase):
+    def test_every_production_control_pin_is_canonical_sha256(self):
+        # Check the real constants, without the synthetic fixture's pin patches.
+        for name,digest in subject.CAPTURE_OLD_CONTROLS.items():
+            with self.subTest(control=name):
+                self.assertIsInstance(digest,str)
+                self.assertRegex(digest,r'\A[0-9a-f]{64}\Z')
+
+
+class CaptureControlFixture:
+    """Real inert control files; Git discovery alone is synthetic."""
+    baseline='eda7a904fde8e1de211fa666b8e7d09e8d252b0d'
+    tree='92c1db823a7d9f966a26e8a934f19c5601048dd0'
+    paths=('tools/recovery_alpha_prefix_repair.py','tools/test_recovery_alpha_prefix_repair.py')
+    names=('Invoke-0D6Campaign.ps1','Attempt05-Lifecycle-Functions.ps1','Campaign-Checkpoint.ps1',
+           'Logcat-Capture.ps1','rec_i3_owned_process.psm1','Shutdown-Member-Resolution.ps1')
+
+    def __init__(self, test, root, api, profile, prefix, entries=None, powershell=None):
+        self.root=root/'capture';self.root.mkdir()
+        self.api=api;self.profile=profile;self.prefix=prefix
+        self.old={};self.new={}
+        for dirname, mapping in (('old',self.old),('new',self.new)):
+            folder=self.root/dirname;folder.mkdir()
+            for name in self.names:
+                p=folder/name
+                p.write_text(('new ' if dirname=='new' and name in (self.names[0],self.names[4]) else 'old ')+name)
+                mapping[name]=dict(path=str(p),sha256=subject.file_sha(p))
+        # Production old hashes are fixed. Synthetic byte identities are isolated here.
+        patcher=patch.object(subject,'CAPTURE_OLD_CONTROLS',{n:d['sha256'] for n,d in self.old.items()},create=True)
+        patcher.start();test.addCleanup(patcher.stop)
+        if powershell is None:
+            powershell=self.root/'powershell.exe';powershell.write_text('inert native fixture')
+        patcher=patch.object(subject,'POWERSHELL_SHA256',subject.file_sha(powershell))
+        patcher.start();test.addCleanup(patcher.stop)
+        patcher=patch.object(subject,'CAPTURE_APK_PAIR',{k:prefix[k] for k in ('appApkSha256','testApkSha256')})
+        patcher.start();test.addCleanup(patcher.stop)
+        blob=lambda x:dict(mode='100644',type='blob',object=x*40)
+        self.after=copy.deepcopy(entries or {})
+        for p in self.paths:self.after.setdefault(p,blob('2'))
+        self.before=copy.deepcopy(self.after)
+        for p in self.paths:self.before[p]=blob('1')
+        self.metadata_before='IMPLEMENTATION_COMMIT="old"\nIMPLEMENTATION_TREE="old"\nALPHA_PREFIX_REPAIR_BINDING={}\ndef validate(): return True\n'
+        self.metadata_after=self.metadata_before+'ALPHA_CAPTURE_REPAIR_BINDING={}\n'
+        original_git=api['git']
+        def git(*args,root):
+            if args==('rev-parse',self.baseline+'^{tree}'):return self.tree
+            if args==('merge-base',self.baseline,profile.implementation_commit):return self.baseline
+            for commit,tree in ((self.baseline,self.before),(profile.implementation_commit,self.after)):
+                if args==('ls-tree','-r','-z',commit):
+                    return ''.join(f"{v['mode']} {v['type']} {v['object']}\t{p}\0" for p,v in sorted(tree.items()))
+            if args==('show',profile.implementation_commit+':tools/validate_recovery_0d6_candidate.py'):return self.metadata_before
+            if args==('show','HEAD:tools/validate_recovery_0d6_candidate.py'):return self.metadata_after
+            return original_git(*args,root=root)
+        api['git']=git
+        test_script=self.root/'test-capture.ps1';test_script.write_text('# inert fixture, never executed')
+        test_descriptor=dict(path=str(test_script),sha256=subject.file_sha(test_script))
+        receipt=self.write('native.json',dict(nativeExitCode=0,
+            argv=[str(powershell),'-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',
+                  str(test_script),'-ModulePath',self.new['rec_i3_owned_process.psm1']['path']],
+            startedAtUtc='2026-09-15T00:00:00Z',endedAtUtc='2026-09-15T00:00:01Z'))
+        red=self.write('original-red.json',dict(nativeExitCode=1,reason='demonstrated original capture loss'))
+        self.test_manifest=dict(schema='DORA_CAPTURE_NATIVE_TEST_V1',controlsBefore=self.new,controlsAfter=self.new,
+            testFilesBefore=[test_descriptor],testFilesAfter=[test_descriptor],receipt=receipt,redEvidence=[red])
+        test_manifest=self.write('native-manifest.json',self.test_manifest)
+        review=self.write('review.json',dict(disposition='CLEAN',scope='exact six inert fixture controls'))
+        self.proof=dict(schema='DORA_RECOVERY_CAPTURE_REPAIR_V1',sourceRoot=str(subject.ROOT),
+            baseline=dict(commit=self.baseline,tree=self.tree),
+            implementation=dict(commit=profile.implementation_commit,tree=profile.implementation_tree),
+            apkPair={k:prefix[k] for k in ('appApkSha256','testApkSha256')},
+            sourceDelta=[dict(path=p,before=self.before[p],after=self.after[p]) for p in sorted(self.paths)],
+            oldControls=self.old,newControls=self.new,nativeTests=[test_manifest],independentReview=review)
+        self.bind()
+
+    def write(self,name,value):
+        p=self.root/name;p.write_text(json.dumps(value,sort_keys=True));return dict(path=str(p),sha256=subject.file_sha(p))
+
+    def bind(self):
+        self.descriptor=self.write('proof.json',self.proof)
+        previous=self.api.get('ALPHA_CAPTURE_REPAIR_BINDING',{})
+        self.api['ALPHA_CAPTURE_REPAIR_BINDING']=dict(
+            launcherSha256=self.new.get(self.names[0],{}).get('sha256',previous.get('launcherSha256')),
+            ownedProcessModuleSha256=self.new.get(self.names[4],{}).get('sha256',previous.get('ownedProcessModuleSha256')),
+            proofSha256=self.descriptor['sha256'])
+
+    def check(self):return subject.validate_capture_repair(self.api,self.profile,self.prefix,self.descriptor)
+
+
+class CaptureRepairTests(unittest.TestCase):
+    def setUp(self):
+        self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
+        self.root=Path(self.temp.name)
+        self.profile=SimpleNamespace(implementation_commit='a'*40,implementation_tree='b'*40)
+        self.prefix=dict(appApkSha256='c'*64,testApkSha256='d'*64)
+        def unexpected(*args,**kwargs):self.fail('Unexpected Git query '+repr(args))
+        self.api=dict(git=unexpected)
+        self.fixture=CaptureControlFixture(self,self.root,self.api,self.profile,self.prefix)
+
+    def test_pinned_six_controls_host_only_delta_and_review_are_accepted(self):
+        result=self.fixture.check()
+        self.assertEqual(self.fixture.new,result)
+
+    def test_missing_binding_never_falls_back_to_old_launcher(self):
+        del self.api['ALPHA_CAPTURE_REPAIR_BINDING']
+        with self.assertRaisesRegex(ValueError,'capture repair pins'):self.fixture.check()
+
+    def test_old_source_gate_without_capture_binding_is_closed(self):
+        old=CombinedAdmissionTests();old.setUp();self.addCleanup(old.doCleanups)
+        old.api.pop('ALPHA_CAPTURE_REPAIR_BINDING',None)
+        with self.assertRaisesRegex(ValueError,'capture repair pins'):old.check()
+
+    def test_control_tamper_missing_extra_foreign_sibling_and_basename_rejected(self):
+        for mode in ('tamper','missing','extra','parent','basename'):
+            with self.subTest(mode=mode):
+                original=copy.deepcopy(self.fixture.proof)
+                desc=self.fixture.new[self.fixture.names[4]];p=Path(desc['path']);data=p.read_bytes()
+                if mode=='tamper':p.write_bytes(data+b'drift')
+                elif mode=='missing':del self.fixture.proof['newControls'][self.fixture.names[4]]
+                elif mode=='extra':self.fixture.proof['newControls']['extra.ps1']=desc
+                else:
+                    q=self.root/(p.name if mode=='parent' else 'wrong.psm1');q.write_bytes(data)
+                    desc['path']=str(q)
+                self.fixture.bind()
+                with self.assertRaises(ValueError):self.fixture.check()
+                p.write_bytes(data);self.fixture.proof=original;self.fixture.new=original['newControls'];self.fixture.bind()
+
+    def test_unrelated_control_changes_and_old_launcher_fallback_rejected(self):
+        for name in (self.fixture.names[1],self.fixture.names[0]):
+            original=copy.deepcopy(self.fixture.proof)
+            p=Path(self.fixture.new[name]['path'])
+            p.write_text('changed unrelated' if name==self.fixture.names[1] else 'old '+name)
+            self.fixture.new[name]['sha256']=subject.file_sha(p);self.fixture.bind()
+            with self.assertRaises(ValueError):self.fixture.check()
+            self.fixture.proof=original;self.fixture.new=original['newControls']
+
+    def test_foreign_source_apk_implementation_and_self_consistent_delta_rejected(self):
+        for field,value in (('sourceRoot',str(self.root)),('apkPair',dict(self.prefix,appApkSha256='f'*64)),
+                            ('implementation',dict(commit='f'*40,tree='e'*40)),('sourceDelta',[])):
+            original=copy.deepcopy(self.fixture.proof);self.fixture.proof[field]=value;self.fixture.bind()
+            with self.assertRaises(ValueError):self.fixture.check()
+            self.fixture.proof=original;self.fixture.bind()
+        self.fixture.after['android/build.gradle.kts']=dict(mode='100644',type='blob',object='9'*40)
+        with self.assertRaisesRegex(ValueError,'host-only'):self.fixture.check()
+
+    def test_native_failure_review_tamper_and_metadata_behavior_rejected(self):
+        p=Path(self.fixture.test_manifest['receipt']['path'])
+        receipt=json.loads(p.read_bytes());receipt['nativeExitCode']=2
+        self.fixture.test_manifest['receipt']=self.fixture.write(p.name,receipt)
+        self.fixture.proof['nativeTests'][0]=self.fixture.write('native-manifest.json',self.fixture.test_manifest);self.fixture.bind()
+        with self.assertRaises(ValueError):self.fixture.check()
+        receipt['nativeExitCode']=0
+        self.fixture.test_manifest['receipt']=self.fixture.write(p.name,receipt)
+        self.fixture.proof['nativeTests'][0]=self.fixture.write('native-manifest.json',self.fixture.test_manifest);self.fixture.bind()
+        self.fixture.metadata_after=self.fixture.metadata_before.replace('return True','return False')+'ALPHA_CAPTURE_REPAIR_BINDING={}\n'
+        with self.assertRaisesRegex(ValueError,'metadata behavior'):self.fixture.check()
+        self.fixture.metadata_after=self.fixture.metadata_before+'ALPHA_CAPTURE_REPAIR_BINDING={}\n'
+        Path(self.fixture.proof['independentReview']['path']).write_text('changed review')
+        with self.assertRaises(ValueError):self.fixture.check()
+
+    def test_final_embedded_controls_scripts_and_red_provenance_must_match_test_manifests(self):
+        original=copy.deepcopy(self.fixture.test_manifest)
+        for field,value in (('controlsBefore',self.fixture.old),('controlsAfter',self.fixture.old),
+                            ('testFilesAfter',[]),('redEvidence',[])):
+            self.fixture.check()
+            manifest=copy.deepcopy(original);manifest[field]=value
+            self.fixture.proof['nativeTests'][0]=self.fixture.write('native-manifest.json',manifest);self.fixture.bind()
+            with self.assertRaises(ValueError):self.fixture.check()
+            self.fixture.proof['nativeTests'][0]=self.fixture.write('native-manifest.json',original);self.fixture.bind()
+        script=Path(original['testFilesBefore'][0]['path']);script.write_text('changed test')
+        with self.assertRaisesRegex(ValueError,'hash'):self.fixture.check()
+
+    def test_success_receipt_without_invoked_pinned_test_script_rejected(self):
+        receipt=self.fixture.write('native.json',dict(nativeExitCode=0,argv=['unrelated-tests'],
+            startedAtUtc='2026-09-15T00:00:00Z',endedAtUtc='2026-09-15T00:00:01Z'))
+        self.fixture.test_manifest['receipt']=receipt
+        self.fixture.proof['nativeTests'][0]=self.fixture.write('native-manifest.json',self.fixture.test_manifest);self.fixture.bind()
+        with self.assertRaisesRegex(ValueError,'command lacks pinned script'):self.fixture.check()
+
+    def test_self_consistent_success_for_another_module_is_rejected(self):
+        receipt=json.loads(Path(self.fixture.test_manifest['receipt']['path']).read_bytes())
+        receipt['argv'][-1]=self.fixture.old['rec_i3_owned_process.psm1']['path']
+        self.fixture.test_manifest['receipt']=self.fixture.write('native.json',receipt)
+        self.fixture.proof['nativeTests'][0]=self.fixture.write('native-manifest.json',self.fixture.test_manifest);self.fixture.bind()
+        with self.assertRaisesRegex(ValueError,'tested module'):self.fixture.check()
+
+    def test_native_boolean_exit_duplicate_module_and_invalid_utc_interval_rejected(self):
+        original=json.loads(Path(self.fixture.test_manifest['receipt']['path']).read_bytes())
+        for field,value in (('nativeExitCode',False),('timedOut',0),
+                            ('argv',original['argv']+original['argv'][-2:]),
+                            ('startedAtUtc','not-a-time'),('startedAtUtc','2026-09-15T00:00:02Z'),
+                            ('startedAtUtc','2026-09-15T00:00:00'),('startedAtUtc','2026-09-15T00:00:00+03:00')):
+            receipt=dict(original,**{field:value})
+            self.fixture.test_manifest['receipt']=self.fixture.write('native.json',receipt)
+            self.fixture.proof['nativeTests'][0]=self.fixture.write('native-manifest.json',self.fixture.test_manifest);self.fixture.bind()
+            with self.subTest(field=field,value=value),self.assertRaises(ValueError):self.fixture.check()
+
+    def test_native_origin_cannot_carry_unused_script_or_unpinned_executable(self):
+        original=json.loads(Path(self.fixture.test_manifest['receipt']['path']).read_bytes())
+        for mode in ('executable','unused-script','prefix','extra-file'):
+            receipt=copy.deepcopy(original)
+            if mode=='executable':receipt['argv'][0]=self.fixture.new[self.fixture.names[0]]['path']
+            elif mode=='unused-script':receipt['argv'][7]='unrelated.ps1';receipt['argv'].append(original['argv'][7])
+            elif mode=='prefix':receipt['argv'][6]='-Command'
+            else:receipt['argv']+=['-File','another.ps1']
+            self.fixture.test_manifest['receipt']=self.fixture.write('native.json',receipt)
+            self.fixture.proof['nativeTests'][0]=self.fixture.write('native-manifest.json',self.fixture.test_manifest);self.fixture.bind()
+            with self.subTest(mode=mode),self.assertRaises(ValueError):self.fixture.check()
+
+    def test_duplicate_native_manifest_or_receipt_cannot_inflate_tests(self):
+        original=copy.deepcopy(self.fixture.proof['nativeTests'])
+        self.fixture.proof['nativeTests']*=2;self.fixture.bind()
+        with self.assertRaisesRegex(ValueError,'Duplicate'):self.fixture.check()
+        second=self.fixture.write('same-receipt-manifest.json',self.fixture.test_manifest)
+        self.fixture.proof['nativeTests']=original+[second];self.fixture.bind()
+        with self.assertRaisesRegex(ValueError,'Duplicate'):self.fixture.check()
+
+    def test_sixteen_distinct_native_runs_are_bounded_and_seventeen_rejected(self):
+        receipt=json.loads(Path(self.fixture.test_manifest['receipt']['path']).read_bytes())
+        self.fixture.proof['nativeTests']=[]
+        for index in range(16):
+            manifest=copy.deepcopy(self.fixture.test_manifest)
+            manifest['receipt']=self.fixture.write(f'native-{index}.json',receipt)
+            self.fixture.proof['nativeTests'].append(self.fixture.write(f'run-{index}.json',manifest))
+        self.fixture.bind();self.fixture.check()
+        self.fixture.proof['nativeTests'].append(self.fixture.proof['nativeTests'][0]);self.fixture.bind()
+        with self.assertRaisesRegex(ValueError,'bounded capture native tests'):self.fixture.check()
+
+    def test_reparse_control_parent_and_nonregular_files_are_rejected(self):
+        original=Path.lstat;parent=Path(self.fixture.new[self.fixture.names[0]]['path']).parent
+        def reparse(p,*args,**kwargs):
+            result=original(p,*args,**kwargs)
+            if p==parent:return SimpleNamespace(st_mode=result.st_mode,st_file_attributes=1024)
+            return result
+        with patch.object(Path,'lstat',reparse):
+            with self.assertRaisesRegex(ValueError,'Reparse'):self.fixture.check()
+        p=Path(self.fixture.new[self.fixture.names[0]]['path']);p.unlink();p.mkdir()
+        with self.assertRaises(ValueError):self.fixture.check()
+
+    def test_binding_cannot_add_whitelist_or_change_old_reduced_metadata(self):
+        binding=self.api['ALPHA_CAPTURE_REPAIR_BINDING']
+        for key,value in (('allowedLaunchers',[]),('proofSha256','0'*64),('ownedProcessModuleSha256','1'*64)):
+            original=copy.deepcopy(binding);binding[key]=value
+            with self.assertRaises(ValueError):self.fixture.check()
+            binding.clear();binding.update(original)
+        self.fixture.metadata_after+='ALPHA_REDUCED_REPAIR_BINDING={}\n'
+        with self.assertRaisesRegex(ValueError,'metadata behavior'):self.fixture.check()
+        self.fixture.metadata_after=self.fixture.metadata_before+'ALPHA_CAPTURE_REPAIR_BINDING=unsafe_call()\n'
+        with self.assertRaises(ValueError):self.fixture.check()
 
 
 if __name__=='__main__':unittest.main()
