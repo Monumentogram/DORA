@@ -105,6 +105,14 @@ class CandidateProfileTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "undeclared paths"):
             subject.alpha_preflight_source(root=self.root, profile=self.profile)
 
+    def test_rejects_reduced_scope_decision_change_in_metadata_child(self):
+        self.write("docs/stage0/DORA_0D6_ALPHA_REDUCED_SCOPE_OWNER_DECISION_20260915.md",
+                   "unreviewed replacement for the reduced selection authority\n")
+        self.git("add", "docs")
+        self.git("commit", "--amend", "--no-edit", "-q")
+        with self.assertRaisesRegex(ValueError, "undeclared paths"):
+            subject.alpha_preflight_source(root=self.root, profile=self.profile)
+
     def test_rejects_grandchild_even_with_unchanged_tree(self):
         self.git("commit", "--allow-empty", "-qm", "not direct")
         with self.assertRaisesRegex(ValueError, "not direct"):
