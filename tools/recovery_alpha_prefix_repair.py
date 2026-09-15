@@ -27,6 +27,7 @@ PREFIX = 'android/poc/recovery/src/'
 PACKAGE = 'kotlin/com/monumentogram/dora/poc/recovery/'
 ANDROID_REPAIR_PATHS = frozenset(PREFIX+part+'/'+PACKAGE+path for part,path in (
     ('androidTest','candidate/RecoveryCampaignInstrumentedTest.kt'),
+    ('androidTest','candidate/RecoveryCampaignRunSnapshot.kt'),
     ('androidTest','journal/RecoveryJournalConnectionConfigurationTest.kt'),
     ('androidTest','journal/RecoveryStreamPrefixMigrationVerification.kt'),
     ('main','candidate/RecoveryArtifactSizeLimitObservation.kt'),
@@ -39,8 +40,10 @@ ANDROID_REPAIR_PATHS = frozenset(PREFIX+part+'/'+PACKAGE+path for part,path in (
     ('main','storage/AndroidOsRecoveryReconciliationStorage.kt'),
     ('sharedTest','candidate/RecoveryCampaignParserClassification.kt'),
     ('sharedTest','candidate/RecoveryCampaignConfirmationAccess.kt'),
+    ('sharedTest','candidate/RecoveryCampaignJournalRows.kt'),
     ('test','candidate/RecoveryCampaignParserClassificationTest.kt'),
     ('test','candidate/RecoveryCampaignConfirmationAccessTest.kt'),
+    ('test','candidate/RecoveryCampaignJournalRowsTest.kt'),
     ('test','candidate/RecoveryStreamPrefixControllerCryptoTest.kt'),
     ('test','candidate/RecoveryStreamingSurvivingPrefixTest.kt'),
     ('test','journal/AndroidRecoveryReconciliationSourceTest.kt'),

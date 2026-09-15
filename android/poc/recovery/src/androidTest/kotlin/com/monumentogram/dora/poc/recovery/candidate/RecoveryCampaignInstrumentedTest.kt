@@ -1147,6 +1147,7 @@ private class Campaign(private val context: Context, private val request: JSONOb
             }
         val expectedIntents =
             if (candidate == RecoveryCandidate.MICROFILE) committed.toInt() / 160000 else 0
+        val committedRowsAfter = committedRowIdentities()
         emit(
             "RESULT",
             JSONObject()
@@ -1195,7 +1196,22 @@ private class Campaign(private val context: Context, private val request: JSONOb
                                     RecoveryStreamingCheckpointAuthentication.Structural ||
                                 rejectedMicrofileEnvelopeBeforePayload),
                 )
-                .put("implicitCommitCount", (committedRowIdentities() - committedRowsBefore).size)
+                .put("implicitCommitCount", committedRowsAfter.addedSince(committedRowsBefore))
+                .put(
+                    "committedRowObservation",
+                    JSONObject()
+                        .put(
+                            "meaning",
+                            if (candidate == RecoveryCandidate.STREAM)
+                                "RAW_CHECKPOINT_SQLITE_ROWS_NOT_SEMANTIC_VALIDATION"
+                            else "PROCESSING_INTENT_IDENTITIES",
+                        )
+                        .put("beforeRowCount", committedRowsBefore.rowCount)
+                        .put("afterRowCount", committedRowsAfter.rowCount)
+                        .put("beforeSha256", committedRowsBefore.sha256)
+                        .put("afterSha256", committedRowsAfter.sha256)
+                        .put("removedRowCount", committedRowsBefore.addedSince(committedRowsAfter)),
+                )
                 .put("retainedForReconciliation", artifactsBefore == allArtifacts().values.sorted())
                 .put(
                     "tailClassification",
@@ -1495,18 +1511,20 @@ private class Campaign(private val context: Context, private val request: JSONOb
                 if (error.errno == android.system.OsConstants.ENOENT) 0 else throw error
             }
 
-    private fun committedRowIdentities(): Set<String> =
+    private fun committedRowIdentities(): RecoveryCampaignJournalObservation =
         if (candidate == RecoveryCandidate.MICROFILE) {
-            AndroidRecoveryMicrofileJournal(context)
-                .loadSnapshot(run)
-                .units
-                .map { it.processingIntentId.toString() }
-                .toSet()
+            RecoveryCampaignJournalRows.identities(
+                AndroidRecoveryMicrofileJournal(context).loadSnapshot(run).units.map {
+                    it.processingIntentId.toString()
+                }
+            )
         } else {
-            val rows =
-                AndroidRecoveryStreamingJournal(context).checkpointChain(run)
-                    as RecoveryStreamingJournalReadResult.Value
-            rows.value.map { it.checkpointIdentity.toLowercaseHex() }.toSet()
+            // Corrupt committed metadata must remain observable before and after the real
+            // controller rejects it. A semantic decoder cannot be the diagnostic reader.
+            RecoveryCampaignJournalRows.checkpoints(run) { table, selection, arguments ->
+                AndroidRecoveryJournalDatabase.writable(context)
+                    .query(table, null, selection, arguments, null, null, null)
+            }
         }
 
     private fun allArtifacts(): Map<String, String> = buildMap {

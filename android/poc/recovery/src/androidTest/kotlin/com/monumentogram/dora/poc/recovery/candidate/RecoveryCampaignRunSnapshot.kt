@@ -67,6 +67,18 @@ internal object RecoveryCampaignRunSnapshot {
                                     Cursor.FIELD_TYPE_NULL -> cell.put("value", JSONObject.NULL)
                                     Cursor.FIELD_TYPE_INTEGER ->
                                         cell.put("value", cursor.getLong(i))
+                                    Cursor.FIELD_TYPE_FLOAT ->
+                                        cell
+                                            .put(
+                                                "encoding",
+                                                RecoveryCampaignJournalRows.REAL_ENCODING,
+                                            )
+                                            .put(
+                                                "value",
+                                                RecoveryCampaignJournalRows.encodeReal(
+                                                    cursor.getDouble(i)
+                                                ),
+                                            )
                                     Cursor.FIELD_TYPE_STRING ->
                                         cell.put("value", cursor.getString(i))
                                     Cursor.FIELD_TYPE_BLOB ->
@@ -119,6 +131,16 @@ internal object RecoveryCampaignRunSnapshot {
                         when (cell.getInt("type")) {
                             Cursor.FIELD_TYPE_NULL -> values.putNull(column)
                             Cursor.FIELD_TYPE_INTEGER -> values.put(column, cell.getLong("value"))
+                            Cursor.FIELD_TYPE_FLOAT -> {
+                                check(
+                                    cell.getString("encoding") ==
+                                        RecoveryCampaignJournalRows.REAL_ENCODING
+                                )
+                                values.put(
+                                    column,
+                                    RecoveryCampaignJournalRows.decodeReal(cell.getString("value")),
+                                )
+                            }
                             Cursor.FIELD_TYPE_STRING -> values.put(column, cell.getString("value"))
                             Cursor.FIELD_TYPE_BLOB ->
                                 values.put(

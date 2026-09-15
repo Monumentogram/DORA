@@ -182,7 +182,7 @@ class PrefixApplicabilityFactsTests(unittest.TestCase):
         result=self.check()
         self.assertFalse(result['historicalPreflightReusable'])
         self.assertEqual(3,len(result['requiredFreshPreflight']))
-        self.assertEqual(23,len(result['sourceDelta']))
+        self.assertEqual(26,len(result['sourceDelta']))
         self.assertEqual(subject.BASELINE_COMMIT,result['baseline']['commit'])
 
     def test_unrelated_build_dependency_decision_or_missing_repair_rejected(self):
