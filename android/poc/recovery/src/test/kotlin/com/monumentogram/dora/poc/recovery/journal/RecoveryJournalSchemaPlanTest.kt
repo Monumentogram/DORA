@@ -29,7 +29,7 @@ class RecoveryJournalSchemaPlanTest {
 
     @Test
     fun `schema four defines exact persistent object families`() {
-        assertEquals(4, RecoveryJournalSchema.VERSION)
+        assertEquals(5, RecoveryJournalSchema.VERSION)
         assertEquals("recovery_quarantine_intent_v3", RecoveryJournalSchema.QUARANTINE_V3_TABLE)
         assertEquals("recovery_quarantine_intent_v4", RecoveryJournalSchema.QUARANTINE_TABLE)
         assertEquals("recovery_stream_checkpoint_v4", RecoveryJournalSchema.STREAM_CHECKPOINT_TABLE)

@@ -14,6 +14,16 @@ import validate_recovery_0d6_candidate as candidate
 
 
 class HistoricalRouteTests(unittest.TestCase):
+    def test_legacy_fixture_stays_on_legacy_route_with_successor_binding_installed(self):
+        with patch.object(candidate, 'ALPHA_PREFIX_REPAIR_BINDING', {}, create=True):
+            fixture = ExactRepairProfileTests()
+            fixture.setUp()
+            try:
+                self.assertNotIn('ALPHA_PREFIX_REPAIR_BINDING', fixture.api)
+                fixture.test_exact_profile_and_recomputed_applicability_accept()
+            finally:
+                fixture.doCleanups()
+
     def test_repaired_profile_cannot_enter_unchanged_apk_scope(self):
         with patch.object(campaign.runpy, 'run_path', return_value={
                 'ALPHA_REDUCED_REPAIR_BINDING': {}, 'alpha_preflight_source': lambda: {'would': 'accept'}}):
@@ -41,6 +51,9 @@ class ExactRepairProfileTests(unittest.TestCase):
         patch.object(candidate, 'git', side_effect=self.git).start()
         self.api = dict(candidate.__dict__, ALPHA_REDUCED_REPAIR_BINDING=self.binding,
                         active_profile=lambda: self.profile)
+        # This fixture proves the historical SPL route even when the active
+        # metadata installs the separately tested prefix-repair successor.
+        self.api.pop('ALPHA_PREFIX_REPAIR_BINDING', None)
         patch.object(repair, 'candidate_api', return_value=self.api).start()
         self.source = dict(commit=self.head, tree=self.head_tree,
                            appApkSha256=self.binding['appApkSha256'], testApkSha256=self.binding['testApkSha256'])

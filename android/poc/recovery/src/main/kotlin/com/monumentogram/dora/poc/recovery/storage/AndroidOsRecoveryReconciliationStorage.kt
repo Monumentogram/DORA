@@ -25,6 +25,13 @@ internal class RecoveryUnsafePathException(
     val category: RecoveryFailureCategory = RecoveryFailureCategory.UNSAFE_PARENT,
 ) : IllegalStateException(message)
 
+/** Only a regular descriptor whose observed extent exceeds its unchanged read cap. */
+internal class RecoveryArtifactSizeLimitException(
+    val relativeName: String,
+    val observedBytes: Long,
+    val maximumBytes: Long,
+) : IllegalStateException("Recovery artifact exceeds its upper bound")
+
 internal class RecoveryArtifactAccessException(
     val presence: RecoveryArtifactPresence,
     val structural: Boolean,
@@ -189,6 +196,7 @@ internal constructor(
                 relativeName,
                 readBoundedBody(
                     source,
+                    relativeName,
                     minOf(maximumBytes, RecoveryArtifactRoleBounds.maximumFor(relativeName)),
                 ),
             )
@@ -232,6 +240,7 @@ internal constructor(
                                 "objects/$childName",
                                 readBoundedInventory(
                                     child,
+                                    "objects/$childName",
                                     RecoveryArtifactRoleBounds.maximumFor("unknown.bin"),
                                 ),
                             ),
@@ -320,6 +329,7 @@ internal constructor(
                                 relative,
                                 readBoundedInventory(
                                     child,
+                                    relative,
                                     RecoveryArtifactRoleBounds.maximumFor(relative),
                                 ),
                             ),
@@ -355,14 +365,18 @@ internal constructor(
             else -> QuarantinePathState.UNSAFE
         }
 
-    private fun readBoundedBody(file: File, maximumBytes: Long): ByteArray =
-        readBounded(file, maximumBytes, minimumBytes = 1L)
+    private fun readBoundedBody(file: File, relativeName: String, maximumBytes: Long): ByteArray =
+        readBounded(file, relativeName, maximumBytes, minimumBytes = 1L)
 
-    private fun readBoundedInventory(file: File, maximumBytes: Long): ByteArray =
-        readBounded(file, maximumBytes, minimumBytes = 0L)
+    private fun readBoundedInventory(
+        file: File,
+        relativeName: String,
+        maximumBytes: Long,
+    ): ByteArray = readBounded(file, relativeName, maximumBytes, minimumBytes = 0L)
 
     private fun readBounded(
         file: File,
+        relativeName: String,
         maximumBytes: Long,
         minimumBytes: Long,
     ): ByteArray =
@@ -377,8 +391,15 @@ internal constructor(
                     RecoveryFailureCategory.CORRUPT_LEAF,
                 )
             }
-            if (stat.size !in minimumBytes..maximumBytes) {
-                throw structuralArtifactFailure("Recovery artifact exceeds its role bound")
+            if (stat.size > maximumBytes) {
+                throw RecoveryArtifactAccessException(
+                    RecoveryArtifactPresence.PRESENT,
+                    true,
+                    RecoveryArtifactSizeLimitException(relativeName, stat.size, maximumBytes),
+                )
+            }
+            if (stat.size < minimumBytes) {
+                throw structuralArtifactFailure("Recovery artifact is below its minimum bound")
             }
             readExactOpened(descriptor, stat.size)
         }

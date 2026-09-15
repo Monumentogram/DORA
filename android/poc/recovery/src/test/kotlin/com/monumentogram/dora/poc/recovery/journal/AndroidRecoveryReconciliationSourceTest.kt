@@ -2,6 +2,7 @@ package com.monumentogram.dora.poc.recovery.journal
 
 import android.database.Cursor
 import com.monumentogram.dora.poc.recovery.bootstrap.KeyConfirmationState
+import com.monumentogram.dora.poc.recovery.candidate.AndroidRecoveryMicrofileCrypto
 import com.monumentogram.dora.poc.recovery.candidate.AndroidRecoveryMicrofileReconciliation
 import com.monumentogram.dora.poc.recovery.candidate.CandidateBootstrapRow
 import com.monumentogram.dora.poc.recovery.candidate.ManifestAuthenticationOutcome
@@ -12,6 +13,10 @@ import com.monumentogram.dora.poc.recovery.candidate.QuarantinePathState
 import com.monumentogram.dora.poc.recovery.candidate.QuarantineResult
 import com.monumentogram.dora.poc.recovery.candidate.ReconciliationDiagnostic
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactContext
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactSizeLimitObservation
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryCampaignParserClassification
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryCampaignParserFault
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryCampaignParserRequest
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryCandidateSnapshot
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureCategory
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureStage
@@ -27,10 +32,15 @@ import com.monumentogram.dora.poc.recovery.candidate.RecoveryReconciliationCrypt
 import com.monumentogram.dora.poc.recovery.candidate.RecoverySourceAccessException
 import com.monumentogram.dora.poc.recovery.candidate.UnitAuthenticationOutcome
 import com.monumentogram.dora.poc.recovery.contract.KeyConfirmationValue
+import com.monumentogram.dora.poc.recovery.contract.KeyEnvelopeAad
+import com.monumentogram.dora.poc.recovery.contract.KeyEnvelopeTargetKind
 import com.monumentogram.dora.poc.recovery.contract.KeyRecoveryClassification
+import com.monumentogram.dora.poc.recovery.contract.PublicationAad
 import com.monumentogram.dora.poc.recovery.contract.PublicationKind
 import com.monumentogram.dora.poc.recovery.contract.RecoveryCandidate
+import com.monumentogram.dora.poc.recovery.contract.RecoveryContract
 import com.monumentogram.dora.poc.recovery.contract.RecoveryManifest
+import com.monumentogram.dora.poc.recovery.contract.RecoveryManifestCodec
 import com.monumentogram.dora.poc.recovery.contract.RecoveryManifestEntry
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineArtifactRole
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntent
@@ -44,6 +54,7 @@ import com.monumentogram.dora.poc.recovery.controller.StoredKeyConfirmationIdent
 import com.monumentogram.dora.poc.recovery.crypto.KeyConfirmationDecryption
 import com.monumentogram.dora.poc.recovery.crypto.RecordingRunAeadBackend
 import com.monumentogram.dora.poc.recovery.crypto.RecoveryRunAeadProvider
+import com.monumentogram.dora.poc.recovery.crypto.RecoveryTinkRuntime
 import com.monumentogram.dora.poc.recovery.storage.AndroidOsRecoveryReconciliationStorage
 import com.monumentogram.dora.poc.recovery.storage.BootstrapPathType
 import com.monumentogram.dora.poc.recovery.storage.RecoveryArtifactRoleBounds
@@ -60,6 +71,224 @@ import org.junit.Test
 
 @Suppress("LargeClass")
 class AndroidRecoveryReconciliationSourceTest {
+    @Test
+    fun `PAR01 actual source preserves exact upper bound observation for body and inventory`() {
+        val name = RecoveryRelativeNames.manifestCiphertext(3UL)
+        for (inventory in listOf(false, true)) {
+            val os = InventoryOs().apply { seed(mapOf(name to ByteArray(524_322)), emptyMap()) }
+            val failure = assertThrowsSource {
+                if (inventory) source(os).loadInventory(RUN)
+                else source(os).loadArtifact(RUN, name, RecoveryArtifactContext.MANIFEST_CIPHERTEXT)
+            }
+            assertEquals(RecoveryFailureCategory.STRUCTURAL, failure.diagnostic.category)
+            assertEquals(RecoveryFailureStage.ARTIFACT_PATH, failure.diagnostic.stage)
+            assertEquals(
+                RecoveryArtifactSizeLimitObservation(name, 524_322L, 262_144L),
+                failure.diagnostic.artifactSizeLimit,
+            )
+            assertFalse(os.events.any { it.startsWith("os.read:$name:") })
+            assertEquals(1, os.events.count { it.startsWith("os.close:$name:") })
+        }
+    }
+
+    @Test
+    fun `PAR01 negative size empty unsafe EOF growth and operational faults never imply oversize`() {
+        FinalControl.entries
+            .filter { it != FinalControl.FSTAT_OVERSIZE }
+            .forEach { control ->
+                val bytes = if (control == FinalControl.EMPTY) ByteArray(0) else byteArrayOf(1)
+                val os = InventoryOs().apply { seed(mapOf(CONFIRMATION_NAME to bytes), emptyMap()) }
+                control.configure(os)
+                val failure = assertThrowsSource { source(os).loadConfirmation(RUN) }
+                assertEquals(control.name, null, failure.diagnostic.artifactSizeLimit)
+            }
+    }
+
+    @Test
+    @Suppress("LongMethod")
+    fun `PAR01 real Tink oversized manifest reaches composed controller without fabricated prefix`() {
+        val provider = RecoveryRunAeadProvider(RecordingRunAeadBackend())
+        val runAead = provider.openExisting(RUN)
+        val confirmation = KeyConfirmationValue(RecoveryCandidate.MICROFILE, RUN)
+        val confirmationBytes = runAead.encryptKeyConfirmation(confirmation)
+        val previous = Sha256Value.calculate(byteArrayOf(7))
+        val envelopeAad =
+            KeyEnvelopeAad(
+                RecoveryCandidate.MICROFILE,
+                RUN,
+                KeyEnvelopeTargetKind.MANIFEST,
+                3UL,
+                KeyEnvelopeAad.NOT_APPLICABLE_UNIT_INDEX,
+                0UL,
+                480_000UL,
+                0UL,
+                previous,
+            )
+        val publicationAad =
+            PublicationAad(
+                RecoveryCandidate.MICROFILE,
+                RUN,
+                PublicationKind.MANIFEST,
+                3UL,
+                2UL,
+                480_000UL,
+                previous,
+            )
+        val plaintext = ByteArray(RecoveryContract.MAX_MANIFEST_PLAINTEXT_BYTES + 1)
+        val keyset = RecoveryTinkRuntime.newAeadKeyset(envelopeAad)
+        val envelope = keyset.serializeEncrypted(runAead)
+        val ciphertext = keyset.encryptPublication(plaintext, publicationAad)
+        val reopened = RecoveryTinkRuntime.parseEncryptedAeadKeyset(envelope, runAead, envelopeAad)
+        assertTrue(reopened.decryptPublication(ciphertext, publicationAad).contentEquals(plaintext))
+        val row =
+            RecoveryManifestPublicationRow(
+                RUN.toCanonicalString(),
+                RecoveryCandidate.MICROFILE.contractId,
+                PublicationKind.MANIFEST,
+                3UL,
+                480_000UL,
+                RecoveryRelativeNames.manifestCiphertext(3UL),
+                ciphertext.size.toLong(),
+                Sha256Value.calculate(ciphertext),
+                RecoveryRelativeNames.manifestKeyEnvelope(3UL),
+                envelope.size.toLong(),
+                Sha256Value.calculate(envelope),
+                previous,
+            )
+        val crypto = AndroidRecoveryMicrofileCrypto(provider)
+        val originalManifest =
+            RecoveryManifest.create(
+                RecoveryCandidate.MICROFILE,
+                RUN,
+                3UL,
+                previous,
+                480_000UL,
+                List(3) { index ->
+                    RecoveryManifestEntry(
+                        index.toULong(),
+                        (index * 160_000).toULong(),
+                        ((index + 1) * 160_000).toULong(),
+                        5UL,
+                        160_033UL,
+                        Sha256Value.calculate(byteArrayOf(index.toByte())),
+                        300UL,
+                        Sha256Value.calculate(byteArrayOf((index + 3).toByte())),
+                        RecoveryRelativeNames.microfileCiphertext(index.toULong()),
+                        RecoveryRelativeNames.microfileKeyEnvelope(index.toULong()),
+                    )
+                },
+            )
+        val originalKeyset = RecoveryTinkRuntime.newAeadKeyset(envelopeAad)
+        val originalEnvelope = originalKeyset.serializeEncrypted(runAead)
+        val originalCiphertext =
+            originalKeyset.encryptPublication(
+                RecoveryManifestCodec.encode(originalManifest),
+                publicationAad,
+            )
+        val originalRow =
+            row.copy(
+                publicationBytes = originalCiphertext.size.toLong(),
+                publicationSha256 = Sha256Value.calculate(originalCiphertext),
+                keyEnvelopeBytes = originalEnvelope.size.toLong(),
+                keyEnvelopeSha256 = Sha256Value.calculate(originalEnvelope),
+            )
+        val originalResult =
+            crypto.authenticateManifest(
+                RUN,
+                originalRow,
+                previous,
+                originalEnvelope,
+                originalCiphertext,
+            ) as ManifestAuthenticationOutcome.Authenticated
+        assertEquals(3, originalResult.manifest.entries.size)
+        assertEquals(480_000UL, originalResult.manifest.committedEndExclusive)
+        val parsed =
+            crypto.authenticateManifest(RUN, row, previous, envelope, ciphertext)
+                as ManifestAuthenticationOutcome.Rejected
+        assertEquals(RecoveryFailureStage.MANIFEST_PLAINTEXT, parsed.diagnostic.stage)
+        assertEquals(RecoveryFailureCategory.STRUCTURAL, parsed.diagnostic.category)
+        val os =
+            InventoryOs().apply {
+                seed(
+                    mapOf(
+                        CONFIRMATION_NAME to confirmationBytes,
+                        row.publicationRelativeName to ciphertext,
+                        row.keyEnvelopeRelativeName to envelope,
+                    ),
+                    emptyMap(),
+                )
+            }
+        val snapshot =
+            RecoveryCandidateSnapshot(
+                listOf(
+                    CandidateBootstrapRow(
+                        RUN.toCanonicalString(),
+                        RecoveryCandidate.MICROFILE.contractId,
+                        KeyConfirmationState.VALID,
+                    )
+                ),
+                emptyList(),
+                listOf(row),
+            )
+        val controller =
+            RecoveryMicrofileReconciliationController(
+                source(os, { storedConfirmation(confirmationBytes) }, { snapshot }, { true }),
+                crypto,
+                RecoveryKeyConfirmationController(provider::openExisting),
+            )
+        repeat(2) {
+            val result =
+                controller.reconcile(RUN) as MicrofileReconciliationResult.NoAuthenticatedPrefix
+            assertEquals(null, result.classification)
+            assertEquals(ReconciliationDiagnostic.LATER_JOURNAL_PREFIX_INVALID, result.diagnostic)
+            assertEquals(
+                RecoveryArtifactSizeLimitObservation(
+                    row.publicationRelativeName,
+                    ciphertext.size.toLong(),
+                    262_144L,
+                ),
+                result.failure?.artifactSizeLimit,
+            )
+            assertTrue(result.manifestRejections.isEmpty())
+            assertTrue(result.quarantineOutcomes.isEmpty())
+            assertTrue(
+                RecoveryCampaignParserClassification.isExactOversizedManifest(
+                    RecoveryCampaignParserRequest(
+                        RecoveryCandidate.MICROFILE,
+                        RUN,
+                        "PAR-01",
+                        "OVERSIZED",
+                        480_000UL,
+                    ),
+                    snapshot.publications,
+                    RecoveryCampaignParserFault(
+                        "PAR-01",
+                        "OVERSIZED",
+                        3L,
+                        row.publicationRelativeName,
+                        row.keyEnvelopeRelativeName,
+                        row.publicationBytes,
+                        row.publicationSha256.toLowercaseHex(),
+                        row.keyEnvelopeBytes,
+                        row.keyEnvelopeSha256.toLowercaseHex(),
+                        plaintext.size,
+                        true,
+                        true,
+                        true,
+                        true,
+                    ),
+                    result.failure,
+                )
+            )
+        }
+        assertFalse(os.events.any { it.startsWith("os.read:${row.publicationRelativeName}:") })
+        assertFalse(os.events.any { it.startsWith("os.rename:") || it.startsWith("os.fsync:") })
+        assertEquals(
+            2,
+            os.events.count { it.startsWith("os.close:${row.publicationRelativeName}:") },
+        )
+    }
+
     @Test
     fun `bootstrap cursor decoder returns null for zero rows`() {
         val probe = CursorProbe(emptyList())

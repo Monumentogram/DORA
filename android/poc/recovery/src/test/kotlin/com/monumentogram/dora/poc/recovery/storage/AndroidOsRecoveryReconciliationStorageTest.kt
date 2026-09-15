@@ -33,6 +33,100 @@ import org.junit.Test
 
 class AndroidOsRecoveryReconciliationStorageTest {
     @Test
+    fun `PAR01 oversized manifest has a distinct upper bound failure before any read`() {
+        for (inventory in listOf(false, true)) {
+            val os = oversizedManifest()
+            val storage = AndroidOsRecoveryReconciliationStorage(ROOT, os)
+            val failure =
+                assertThrows(RecoveryArtifactAccessException::class.java) {
+                    if (inventory) storage.listActiveInventory(RUN)
+                    else storage.loadActiveArtifact(RUN, MANIFEST_NAME, 1_048_576L)
+                }
+            assertTrue(failure.structural)
+            assertEquals("RecoveryArtifactSizeLimitException", failure.cause?.javaClass?.simpleName)
+            assertEquals(0, os.actualReadCalls)
+            assertEquals(1, os.closeCalls)
+        }
+    }
+
+    @Test
+    fun `PAR01 oversized inventory keeps its typed failure when descriptor close fails`() {
+        val os = oversizedManifest().apply { fail = "close" }
+        val failure =
+            assertThrows(RecoveryArtifactAccessException::class.java) {
+                AndroidOsRecoveryReconciliationStorage(ROOT, os).listActiveInventory(RUN)
+            }
+        assertEquals("RecoveryArtifactSizeLimitException", failure.cause?.javaClass?.simpleName)
+        assertEquals("close", failure.suppressed.single().message)
+        assertEquals(0, os.actualReadCalls)
+        assertEquals(1, os.closeCalls)
+    }
+
+    @Test
+    fun `PAR01 exact manifest bound remains readable and one byte above fails before reading`() {
+        for (size in listOf(262_144, 262_145)) {
+            val os = oversizedManifest()
+            val path = File(fixedDirectories()[4], MANIFEST_NAME).path
+            os.stats[path] = RecoveryReconciliationStat(BootstrapPathType.REGULAR, size.toLong())
+            os.bytes[path] = ByteArray(size) { 7 }
+            val storage = AndroidOsRecoveryReconciliationStorage(ROOT, os)
+            if (size == 262_144) {
+                val artifact =
+                    requireNotNull(storage.loadActiveArtifact(RUN, MANIFEST_NAME, 1_048_576L))
+                assertEquals(size.toLong(), artifact.size)
+                assertEquals(Sha256Value.calculate(os.bytes.getValue(path)), artifact.sha256)
+                assertEquals(2, os.actualReadCalls)
+            } else {
+                val failure =
+                    assertThrows(RecoveryArtifactAccessException::class.java) {
+                            storage.loadActiveArtifact(RUN, MANIFEST_NAME, 1_048_576L)
+                        }
+                        .cause as RecoveryArtifactSizeLimitException
+                assertEquals(MANIFEST_NAME, failure.relativeName)
+                assertEquals(262_145L, failure.observedBytes)
+                assertEquals(262_144L, failure.maximumBytes)
+                assertEquals(0, os.actualReadCalls)
+            }
+            assertEquals(1, os.closeCalls)
+        }
+    }
+
+    @Test
+    fun `PAR01 STREAM checkpoint ciphertext of oversized plaintext retains its separate read cap`() {
+        val name = "checkpoints/g-00000000000000000003.ct"
+        val os =
+            FakeOs().apply {
+                seed()
+                stats[File(fixedDirectories()[4], "checkpoints").path] =
+                    RecoveryReconciliationStat(BootstrapPathType.DIRECTORY)
+                val path = File(fixedDirectories()[4], name).path
+                bytes[path] = ByteArray(524_322) { 9 }
+                stats[path] = RecoveryReconciliationStat(BootstrapPathType.REGULAR, 524_322L)
+            }
+        val artifact =
+            requireNotNull(
+                AndroidOsRecoveryReconciliationStorage(ROOT, os)
+                    .loadActiveArtifact(RUN, name, 16_777_216L)
+            )
+        assertEquals(524_322L, artifact.size)
+        assertEquals(Sha256Value.calculate(ByteArray(524_322) { 9 }), artifact.sha256)
+        assertEquals(2, os.actualReadCalls)
+        assertEquals(1, os.closeCalls)
+    }
+
+    private fun oversizedManifest(): FakeOs =
+        FakeOs().apply {
+            seed()
+            val runRoot = fixedDirectories()[4]
+            val directory = File(runRoot, "manifests").path
+            directoryChildren[runRoot] = mutableListOf("manifests")
+            directoryChildren[directory] = mutableListOf(MANIFEST_NAME.substringAfter('/'))
+            stats[directory] = RecoveryReconciliationStat(BootstrapPathType.DIRECTORY)
+            stats[File(runRoot, MANIFEST_NAME).path] =
+                RecoveryReconciliationStat(BootstrapPathType.REGULAR, 524_322L)
+        }
+
+    @Test
     fun `SPL01 actual storage classifies zero short and long completed destinations as structural`() {
         val actualFailures = mutableListOf<RecoveryStreamingOrphanFailure>()
         for (size in listOf(0, 2, 4)) {
@@ -593,6 +687,7 @@ class AndroidOsRecoveryReconciliationStorageTest {
     }
 
     private companion object {
+        const val MANIFEST_NAME = "manifests/g-00000000000000000003.ct"
         val ROOT = File("root").absoluteFile
         val RUN = RunId.fromCanonicalString("00112233-4455-6677-8899-aabbccddeeff")
 

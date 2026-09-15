@@ -756,24 +756,27 @@ private class Campaign(private val context: Context, private val request: JSONOb
         val accepted = state().getLong("acceptedEnd").toULong()
         val committed = state().getLong("committedEnd").toULong()
         val output = File(directory, "recovered.pcm")
-        var keySnapshot =
+        val confirmationLoad = RecoveryCampaignConfirmationAccess.load {
             AndroidRecoveryReconciliationSource(context)
                 .loadConfirmation(run)
                 .copy(expected = confirmation)
+        }
+        var keySnapshot = (confirmationLoad as? RecoveryCampaignConfirmationLoad.Loaded)?.snapshot
         if (case == "KEY-04" || case == "KCF-05") {
             check(state().getBoolean("faultInjected"))
-            val row = requireNotNull(keySnapshot.durableRow)
+            val snapshot = requireNotNull(keySnapshot)
+            val row = requireNotNull(snapshot.durableRow)
             check(
                 row.ciphertextSha256.toLowercaseHex() ==
                     state().getString("controlledReplacementIdentity")
             )
             keySnapshot =
-                keySnapshot.copy(
+                snapshot.copy(
                     controlledReplacement =
                         ControlledKey04Replacement(attempt, confirmation.canonicalAlias, row)
                 )
         }
-        val key = RecoveryKeyConfirmationController().evaluate(keySnapshot)
+        val key = keySnapshot?.let { RecoveryKeyConfirmationController().evaluate(it) }
         var classification: String
         var recovered = 0UL
         var authenticated = false
@@ -782,7 +785,11 @@ private class Campaign(private val context: Context, private val request: JSONOb
         var microfileControllerObservation: JSONObject? = null
         var manifestRejectionObservations = JSONArray()
         var rejectedMicrofileEnvelopeBeforePayload = false
-        if (
+        if (confirmationLoad is RecoveryCampaignConfirmationLoad.MissingFinal) {
+            classification = confirmationLoad.classification.name
+            underlyingDiagnostic = confirmationLoad.sourceFailure.diagnostic.stage.name
+            FileOutputStream(output, false).use { it.fd.sync() }
+        } else if (
             key is ConfirmationResult.Rejected ||
                 case == "KCF-04" &&
                     key is ConfirmationResult.Unclassified &&
@@ -801,7 +808,9 @@ private class Campaign(private val context: Context, private val request: JSONOb
                 check(facts.getBoolean("storedCiphertextIdentityUpdatedAndReadBack"))
                 check(
                     facts.getString("replacementConfirmationSha256") ==
-                        requireNotNull(keySnapshot.durableRow).ciphertextSha256.toLowercaseHex()
+                        requireNotNull(requireNotNull(keySnapshot).durableRow)
+                            .ciphertextSha256
+                            .toLowercaseHex()
                 )
                 underlyingDiagnostic = (key as ConfirmationResult.Unclassified).diagnostic.name
                 classification = "KEY_UNAVAILABLE_KEY_MISMATCH"
@@ -837,10 +846,17 @@ private class Campaign(private val context: Context, private val request: JSONOb
                         else -> "CONCURRENT_WRITER"
                     }
                 underlyingDiagnostic = classification
+                val controllerFailure =
+                    when (result) {
+                        is MicrofileReconciliationResult.PartialPrefix -> result.failure
+                        is MicrofileReconciliationResult.NoAuthenticatedPrefix -> result.failure
+                        else -> null
+                    }
                 microfileControllerObservation =
                     JSONObject()
                         .put("resultType", result.javaClass.simpleName)
                         .put("classification", classification)
+                        .put("failure", recoveryFailureObservation(controllerFailure))
                 val rejections =
                     when (result) {
                         is MicrofileReconciliationResult.AuthenticatedPrefix ->
@@ -862,6 +878,12 @@ private class Campaign(private val context: Context, private val request: JSONOb
                                 .put("stage", rejection.diagnostic.stage.name)
                                 .put("category", rejection.diagnostic.category.name)
                                 .put("failureType", rejection.diagnostic.type)
+                                .put(
+                                    "artifactSizeLimit",
+                                    artifactSizeLimitObservation(
+                                        rejection.diagnostic.artifactSizeLimit
+                                    ),
+                                )
                         }
                     )
                 val mutation = state().optJSONObject("artifactMutationFacts")
@@ -878,6 +900,23 @@ private class Campaign(private val context: Context, private val request: JSONOb
                     } else null
                 val targetRejection = target?.let { row ->
                     rejections.singleOrNull { it.generation == row.generation }
+                }
+                if (
+                    case == "PAR-01" &&
+                        request.getString("mutationVariant") == "OVERSIZED" &&
+                        mutation != null &&
+                        state().optBoolean("faultInjected") &&
+                        exactOversizedManifest(
+                            publicationsBefore,
+                            mutation,
+                            targetRejection?.diagnostic ?: controllerFailure,
+                        )
+                ) {
+                    classification = "OVERSIZED_MANIFEST"
+                    microfileControllerObservation.put(
+                        "campaignClassificationBasis",
+                        "EXACT_TARGET_TYPED_UPPER_BOUND_AND_AUTHENTICATED_OVERSIZED_INJECTION",
+                    )
                 }
                 if (targetRejection != null && mutation != null) {
                     val failure = targetRejection.diagnostic
@@ -916,11 +955,9 @@ private class Campaign(private val context: Context, private val request: JSONOb
                                     RecoveryFailureStage.MANIFEST_PLAINTEXT,
                                     RecoveryFailureStage.MANIFEST_SEMANTICS,
                                 )
-                        val boundedSourceRejected =
-                            failure.stage == RecoveryFailureStage.ARTIFACT_PATH
                         if (
                             plaintextBytes > RecoveryContract.MAX_MANIFEST_PLAINTEXT_BYTES &&
-                                (parserRejected || boundedSourceRejected)
+                                parserRejected
                         ) {
                             classification = "OVERSIZED_MANIFEST"
                             microfileControllerObservation.put(
@@ -1134,6 +1171,13 @@ private class Campaign(private val context: Context, private val request: JSONOb
                 )
                 .put("manifestRejections", manifestRejectionObservations)
                 .put(
+                    "keyConfirmationSourceFailure",
+                    confirmationSourceFailureObservation(
+                        (confirmationLoad as? RecoveryCampaignConfirmationLoad.MissingFinal)
+                            ?.sourceFailure
+                    ),
+                )
+                .put(
                     "keyAuthenticationFailureObserved",
                     key is ConfirmationResult.Rejected && key.phase == ConfirmationPhase.KEY04 ||
                         key is ConfirmationResult.Unclassified &&
@@ -1193,6 +1237,81 @@ private class Campaign(private val context: Context, private val request: JSONOb
                 .put("unsafePathOpens", 0)
                 .put("receiptIdentity", receipt)
                 .put("returnedPrefixArtifact", "campaign/$attempt/recovered.pcm"),
+        )
+    }
+
+    private fun artifactSizeLimitObservation(size: RecoveryArtifactSizeLimitObservation?): Any =
+        size?.let {
+            JSONObject()
+                .put("relativeName", it.relativeName)
+                .put("observedBytes", it.observedBytes)
+                .put("maximumBytes", it.maximumBytes)
+        } ?: JSONObject.NULL
+
+    private fun recoveryFailureObservation(failure: RecoveryFailureDiagnostic?): Any =
+        failure?.let {
+            JSONObject()
+                .put("stage", it.stage.name)
+                .put("category", it.category.name)
+                .put("failureType", it.type)
+                .put("message", it.message)
+                .put("artifactSizeLimit", artifactSizeLimitObservation(it.artifactSizeLimit))
+        } ?: JSONObject.NULL
+
+    private fun confirmationSourceFailureObservation(failure: RecoverySourceAccessException?): Any =
+        failure?.let {
+            JSONObject()
+                .put("sourceFailureType", it.javaClass.name)
+                .put("primary", recoveryFailureObservation(it.diagnostic))
+                .put("context", sourceFailureContextObservation(it.context))
+                .put("secondary", recoveryFailureObservation(it.secondaryDiagnostic))
+                .put("secondaryContext", sourceFailureContextObservation(it.secondaryContext))
+        } ?: JSONObject.NULL
+
+    private fun sourceFailureContextObservation(context: RecoverySourceFailureContext?): Any =
+        context?.let {
+            JSONObject()
+                .put("bootstrapRowState", it.bootstrapRowState?.name ?: JSONObject.NULL)
+                .put("artifactContext", it.artifactContext?.name ?: JSONObject.NULL)
+                .put("relativeName", it.relativeName ?: JSONObject.NULL)
+                .put("artifactPresence", it.artifactPresence.name)
+                .put("confirmationFinalPresence", it.confirmationFinalPresence.name)
+        } ?: JSONObject.NULL
+
+    private fun exactOversizedManifest(
+        publications: List<RecoveryManifestPublicationRow>,
+        mutation: JSONObject,
+        failure: RecoveryFailureDiagnostic?,
+    ): Boolean {
+        // Recheck the exact run/attempt/seed/fixture/source binding before using retained fault
+        // facts.
+        validateState()
+        return RecoveryCampaignParserClassification.isExactOversizedManifest(
+            RecoveryCampaignParserRequest(
+                candidate,
+                run,
+                case,
+                request.getString("mutationVariant"),
+                state().getLong("committedEnd").toULong(),
+            ),
+            publications,
+            RecoveryCampaignParserFault(
+                mutation.getString("caseId"),
+                mutation.getString("mutationVariant"),
+                mutation.getLong("generation"),
+                mutation.getString("targetName"),
+                mutation.getString("targetEnvelopeName"),
+                mutation.getLong("afterCiphertextBytes"),
+                mutation.getString("afterCiphertextSha256"),
+                mutation.getLong("afterEnvelopeBytes"),
+                mutation.getString("afterEnvelopeSha256"),
+                mutation.getInt("faultPlaintextBytes"),
+                mutation.optBoolean("originalPublicationAuthenticated"),
+                mutation.optBoolean("originalPublicationParsed"),
+                mutation.optBoolean("faultPublicationDecryptSucceeded"),
+                mutation.optBoolean("outerMetadataUpdated"),
+            ),
+            failure,
         )
     }
 

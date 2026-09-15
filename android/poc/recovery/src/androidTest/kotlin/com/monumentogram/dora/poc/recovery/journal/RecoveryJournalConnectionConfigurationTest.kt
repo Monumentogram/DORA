@@ -23,6 +23,7 @@ class RecoveryJournalConnectionConfigurationTest {
     @Test
     @SdkSuppress(minSdkVersion = 33)
     fun primaryAndConcurrentReaderKeepConfigurationAfterReopen() = withIsolatedContext { context ->
+        RecoveryStreamPrefixMigrationVerification.verify(context)
         repeat(2) {
             RecoveryJournalSqliteHelper(context).use { helper ->
                 val database = helper.writableDatabase

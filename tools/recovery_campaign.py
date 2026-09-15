@@ -86,9 +86,14 @@ def accepted_alpha_source() -> dict[str, str]:
     # Load the exact sibling even under Python -I; no ambient import path.
     validator = Path(__file__).resolve().with_name("validate_recovery_0d6_candidate.py")
     api = runpy.run_path(str(validator))
-    require("ALPHA_REDUCED_REPAIR_BINDING" not in api,
+    require("ALPHA_REDUCED_REPAIR_BINDING" not in api and "ALPHA_PREFIX_REPAIR_BINDING" not in api,
             "Repaired source profile is restricted to reduced sourceRepair admission")
     return api["alpha_preflight_source"]()
+
+
+def validate_alpha_prefix_preflight(plan: dict[str, Any], gate: dict[str, Any]) -> None:
+    validator = runpy.run_path(str(Path(__file__).with_name("recovery_alpha_prefix_repair.py")))
+    validator["validate_preflight"](plan, gate)
 
 
 def validate_alpha_preflight(plan: dict[str, Any], gate: dict[str, Any], payload: str) -> None:
@@ -98,7 +103,10 @@ def validate_alpha_preflight(plan: dict[str, Any], gate: dict[str, Any], payload
     require(decision.get("decisionId") == "DORA_0D6_ALPHA_PREFLIGHT_20260914"
             and decision.get("scope") == "INTERNAL_ALPHA_E36_PREFLIGHT_ONLY", "Wrong alpha decision scope")
     require(decision.get("source") == plan["source"], "Alpha decision source/APK mismatch")
-    require(plan["source"] == accepted_alpha_source(), "Alpha source/APKs are not the exact accepted successor")
+    if "sourceRepair" in decision:
+        validate_alpha_prefix_preflight(plan, gate)
+    else:
+        require(plan["source"] == accepted_alpha_source(), "Alpha source/APKs are not the exact accepted successor")
     require(payload in ALPHA_PREFLIGHT_PAYLOADS, "Alpha decision cannot admit CAMPAIGN or another payload")
     allowed = gate.get("supportedPayloads")
     require(isinstance(allowed, list) and len(allowed) == 3 and set(allowed) == ALPHA_PREFLIGHT_PAYLOADS,

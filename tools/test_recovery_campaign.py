@@ -761,7 +761,8 @@ def load_tests(loader, tests, pattern):
     # independently owned raw instrumentation transcript suite is included too.
     import importlib.util
     suites = [tests]
-    for name in ("test_recovery_instrumentation_status", "test_recovery_alpha_repair"):
+    for name in ("test_recovery_instrumentation_status", "test_recovery_alpha_repair",
+                 "test_recovery_alpha_prefix_repair", "test_rec_stream_prefix_schema"):
         path = Path(__file__).with_name(name + ".py")
         spec = importlib.util.spec_from_file_location(name, path)
         module = importlib.util.module_from_spec(spec)

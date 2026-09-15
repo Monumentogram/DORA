@@ -137,6 +137,10 @@ def validate(plan, gate):
             and gate.get("physicalAuthorization", {}).get("authorized") is False,
             "Repair applicability is restricted to reduced E36 campaign scope")
     api = candidate_api()
+    if "ALPHA_PREFIX_REPAIR_BINDING" in api:
+        successor = runpy.run_path(str(ROOT / "tools/recovery_alpha_prefix_repair.py"))
+        successor["validate"](plan, gate)
+        return
     binding = api.get("ALPHA_REDUCED_REPAIR_BINDING")
     require(isinstance(binding, dict) and set(binding) == {"appApkSha256", "testApkSha256", "applicabilitySha256"}
             and all(isinstance(value, str) and re.fullmatch(r"[0-9a-f]{64}", value) for value in binding.values()),
