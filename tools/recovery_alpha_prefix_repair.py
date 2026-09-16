@@ -97,6 +97,115 @@ STREAM_PATH_ANDROID_PATHS = frozenset(PREFIX+part+'/'+PACKAGE+name for part,name
     ('main','candidate/RecoveryStreamingTinkPrerequisiteCrypto.kt'),
     ('test','candidate/RecoveryStreamingTinkPrerequisiteCryptoTest.kt')))
 
+COLLECTOR_BASELINE_COMMIT = '45d31930d7810e1e92fdecac22eed46084907ad3'
+COLLECTOR_BASELINE_TREE = '556ff38870e372a93a8f11ee9d19f7ad6d883815'
+COLLECTOR_OLD_IMPLEMENTATION_COMMIT = '5189299c68a2fcd095d8bdaeb4f26648d6f2d8fd'
+COLLECTOR_OLD_IMPLEMENTATION_TREE = 'ea4a064183fb27312a88045a9d46d3c39225cbed'
+COLLECTOR_OLD_PREFIX_BINDING = dict(
+    appApkSha256='c9c88abbd2b043d70e3db092f208d3a493ac62c05b94d0187fd63b4ceaa61ed1',
+    testApkSha256='0a0fee0650e3cad105cd675c685e4d002d6c59da5d7efced4cfa30f412ddd48b',
+    applicabilitySha256='d68e2a70a058787a99a56fb5d178adc6d36b48548e2f539efb73b1a3a16eda27')
+COLLECTOR_NATIVE_SCENARIOS = frozenset(('delayed','missed','capacity','lifetime','owner','image',
+                                      'startup','deadline','identity','streams','historical','query'))
+
+
+def collector_query_binding(api):
+    key='ALPHA_COLLECTOR_QUERY_BINDING'
+    if key not in api:return None
+    value=api[key]
+    require(isinstance(value,dict) and set(value)=={'proofSha256','ownedProcessModuleSha256'}
+            and all(isinstance(v,str) and re.fullmatch('[0-9a-f]{64}',v) for v in value.values()),
+            'Malformed collector query binding')
+    return value
+
+
+def collector_query_metadata_literal(text):
+    parsed=ast.parse(text);key='ALPHA_COLLECTOR_QUERY_BINDING'
+    writes=[n for n in ast.walk(parsed) if isinstance(n,ast.Name) and n.id==key and isinstance(n.ctx,ast.Store)]
+    if not writes:return
+    assignments=[n for n in parsed.body if isinstance(n,ast.Assign) and len(n.targets)==1
+                 and isinstance(n.targets[0],ast.Name) and n.targets[0].id==key]
+    require(len(writes)==len(assignments)==1,'Ambiguous collector query metadata binding')
+    require(isinstance(assignments[0].value,ast.Dict) and len(assignments[0].value.keys)==2,
+            'Collector query binding must be an exact two-key literal')
+    try:value=ast.literal_eval(assignments[0].value)
+    except (ValueError,TypeError,SyntaxError) as exc:raise ValueError('Nonliteral collector query binding') from exc
+    collector_query_binding({key:value})
+
+
+def collector_launcher_bytes(old_controls, module_sha256):
+    """The launcher changes only its literal embedded module digest."""
+    data=capture_file(old_controls['Invoke-0D6Campaign.ps1']).read_bytes()
+    old=old_controls['rec_i3_owned_process.psm1']['sha256'].upper().encode('ascii')
+    require(data.count(old)==1,'Historical launcher module literal is not unique')
+    return data.replace(old,module_sha256.upper().encode('ascii'))
+
+
+def collector_query_facts(api, profile, binding, historical_descriptor, controls, tests, review):
+    """Admit only a host collector derivative; rehash the unchanged Android lineage."""
+    query_binding=collector_query_binding(api)
+    require(query_binding is not None, 'Missing collector query binding')
+    require(stream_path_binding(api)==dict(proofSha256=COLLECTOR_OLD_PREFIX_BINDING['applicabilitySha256']),
+            'Historical STREAM path binding changed')
+    git=api['git'];legacy=legacy_api()
+    require(git('rev-parse',COLLECTOR_BASELINE_COMMIT+'^{tree}',root=ROOT)==COLLECTOR_BASELINE_TREE
+            and git('merge-base',COLLECTOR_BASELINE_COMMIT,profile.implementation_commit,root=ROOT)==COLLECTOR_BASELINE_COMMIT,
+            'Collector source baseline or ancestry mismatch')
+    before=legacy['tree_entries'](git,COLLECTOR_BASELINE_COMMIT)
+    after=legacy['tree_entries'](git,profile.implementation_commit)
+    paths=sorted(p for p in before.keys()|after.keys() if before.get(p)!=after.get(p))
+    require(set(paths)==CAPTURE_HOST_PATHS,'Collector repair differs from exact host-only delta')
+    for p in paths:
+        require(all(tree.get(p,{}).get('mode')=='100644' and tree[p]['type']=='blob' for tree in (before,after)),
+                'Collector source is deleted or nonregular')
+    pair={k:COLLECTOR_OLD_PREFIX_BINDING[k] for k in ('appApkSha256','testApkSha256')}
+    require({k:binding.get(k) for k in pair}==pair,'Collector repair changes APK pair')
+    require(isinstance(historical_descriptor,dict)
+            and historical_descriptor.get('sha256')==COLLECTOR_OLD_PREFIX_BINDING['applicabilitySha256'],
+            'Historical STREAM path applicability pin mismatch')
+    historical=capture_json(historical_descriptor)
+    old_profile=type('HistoricalProfile',(),dict(implementation_commit=COLLECTOR_OLD_IMPLEMENTATION_COMMIT,
+                                              implementation_tree=COLLECTOR_OLD_IMPLEMENTATION_TREE))()
+    require(git('rev-parse',old_profile.implementation_commit+'^{tree}',root=ROOT)==old_profile.implementation_tree,
+            'Historical STREAM path implementation tree changed')
+    expected,frozen,old_controls=stream_path_facts(api,old_profile,COLLECTOR_OLD_PREFIX_BINDING,
+        historical.get('historicalApplicability'),historical.get('captureRepair'),historical.get('independentReview'))
+    capture_metadata_shape(api,old_profile,metadata_head=COLLECTOR_BASELINE_COMMIT,stream_path=True)
+    require(historical==expected,'Historical STREAM path applicability differs from source facts')
+    require(isinstance(controls,dict) and set(controls)==set(old_controls),'Collector controls must be exact six siblings')
+    launcher_hash=hashlib.sha256(collector_launcher_bytes(old_controls,query_binding['ownedProcessModuleSha256'])).hexdigest()
+    parents=set()
+    for name,d in controls.items():
+        p=capture_file(d);require(p.name==name,'Collector control basename mismatch');parents.add(p.parent.resolve())
+        expected_hash=(query_binding['ownedProcessModuleSha256'] if name=='rec_i3_owned_process.psm1'
+                       else launcher_hash if name=='Invoke-0D6Campaign.ps1' else old_controls[name]['sha256'])
+        require(d['sha256']==expected_hash,'Unrelated collector control changed')
+    require(len(parents)==1 and parents.isdisjoint({Path(d['path']).resolve().parent for d in old_controls.values()})
+            and controls['rec_i3_owned_process.psm1']['sha256']!=old_controls['rec_i3_owned_process.psm1']['sha256'],
+            'Collector successor overwrites or reuses historical module')
+    require(isinstance(tests,dict) and set(tests)==COLLECTOR_NATIVE_SCENARIOS,'Missing exact collector native scenarios')
+    validate_capture_native_tests(list(tests.values()),controls)
+    capture_file(review)
+    result=dict(schema='DORA_RECOVERY_COLLECTOR_QUERY_REPAIR_V1',scope=SCOPE,sourceRoot=str(ROOT),
+        baseline=dict(commit=COLLECTOR_BASELINE_COMMIT,tree=COLLECTOR_BASELINE_TREE),
+        implementation=dict(commit=profile.implementation_commit,tree=profile.implementation_tree),apkPair=pair,
+        sourceDelta=[dict(path=p,before=before[p],after=after[p]) for p in paths],
+        historicalApplicability=historical_descriptor,oldControls=old_controls,newControls=controls,
+        nativeTests=tests,independentReview=review,frozenSelection=historical['frozenSelection'],
+        historicalPreflightReusable=False,requiredFreshPreflight=historical['requiredFreshPreflight'])
+    return result,frozen,controls
+
+
+def validate_collector_query_proof(api, profile, binding, proof, descriptor, review):
+    query_binding=collector_query_binding(api)
+    require(query_binding is not None and descriptor['sha256']==query_binding['proofSha256']
+            ==binding['applicabilitySha256'],'Collector applicability pin mismatch')
+    expected,frozen,controls=collector_query_facts(api,profile,binding,proof.get('historicalApplicability'),
+        proof.get('newControls'),proof.get('nativeTests'),review)
+    capture_metadata_shape(api,profile,stream_path=True,collector_query=True)
+    require(proof==expected,'Collector applicability differs from recomputed source facts')
+    return frozen,controls
+
 
 def stream_path_binding(api):
     key='ALPHA_STREAM_PATH_REPAIR_BINDING'
@@ -199,6 +308,7 @@ def legacy_api():
 def candidate_api():
     metadata=ROOT/'tools/validate_recovery_0d6_candidate.py'
     stream_path_metadata_literal(metadata.read_text(encoding='utf-8'))
+    collector_query_metadata_literal(metadata.read_text(encoding='utf-8'))
     return runpy.run_path(str(metadata))
 
 
@@ -237,6 +347,7 @@ def validate_source(plan, gate, decision_key):
     api = candidate_api()
     capture_binding(api)
     path_binding=stream_path_binding(api)
+    query_binding=collector_query_binding(api)
     binding = api.get('ALPHA_PREFIX_REPAIR_BINDING')
     require(isinstance(binding, dict) and set(binding) == {'appApkSha256','testApkSha256','applicabilitySha256'}
             and all(isinstance(x,str) and re.fullmatch('[0-9a-f]{64}',x) for x in binding.values()),
@@ -254,6 +365,10 @@ def validate_source(plan, gate, decision_key):
             'Prefix applicability pin mismatch')
     proof = read_proof(proof_descriptor)
     require(isinstance(proof,dict), 'Malformed prefix applicability')
+    if query_binding is not None:
+        frozen,_=validate_collector_query_proof(api,profile,binding,proof,proof_descriptor,
+                                              gate.get('proofs',{}).get('independentReview'))
+        return source,frozen
     if path_binding is not None:
         frozen,_=validate_stream_path_proof(api,profile,binding,proof,proof_descriptor,
                                             gate.get('proofs',{}).get('independentReview'))
@@ -353,9 +468,10 @@ def capture_json(descriptor):
     return read_proof(descriptor)
 
 
-def capture_metadata_shape(api, profile, *, metadata_head='HEAD', stream_path=False):
+def capture_metadata_shape(api, profile, *, metadata_head='HEAD', stream_path=False, collector_query=False):
     names = {'IMPLEMENTATION_COMMIT','IMPLEMENTATION_TREE','ALPHA_PREFIX_REPAIR_BINDING','ALPHA_CAPTURE_REPAIR_BINDING'}
     if stream_path:names.add('ALPHA_STREAM_PATH_REPAIR_BINDING')
+    if collector_query:names.add('ALPHA_COLLECTOR_QUERY_BINDING')
     def body(revision):
         parsed = ast.parse(api['git']('show',revision+':tools/validate_recovery_0d6_candidate.py',root=ROOT))
         kept=[];seen=set()
@@ -387,6 +503,45 @@ def capture_native_interval(receipt):
 
 def validate_capture_repair(api, profile, prefix_binding, descriptor):
     return _validate_capture_repair_at(api,profile,prefix_binding,descriptor,str(ROOT),'HEAD')
+
+
+def validate_capture_native_tests(tests, new):
+    require(isinstance(tests,list) and 0<len(tests)<=16, 'Missing bounded capture native tests')
+    manifest_paths=set();receipt_paths=set()
+    for d in tests:
+        test=capture_json(d)
+        manifest_path=Path(d['path']).resolve()
+        require(manifest_path not in manifest_paths, 'Duplicate capture native manifest')
+        manifest_paths.add(manifest_path)
+        require(isinstance(test,dict) and set(test)=={'schema','controlsBefore','controlsAfter','testFilesBefore',
+                    'testFilesAfter','receipt','redEvidence'} and test['schema']=='DORA_CAPTURE_NATIVE_TEST_V1'
+                and test['controlsBefore']==test['controlsAfter']==new, 'Capture tested controls differ from final embedded controls')
+        files=test['testFilesBefore']
+        require(isinstance(files,list) and 0<len(files)<=32 and files==test['testFilesAfter'], 'Capture test script identity drift')
+        script_paths=[str(capture_file(f)) for f in files]
+        require(len(set(script_paths))==len(script_paths), 'Duplicate capture test script')
+        receipt=capture_json(test['receipt'])
+        receipt_path=Path(test['receipt']['path']).resolve()
+        require(receipt_path not in receipt_paths, 'Duplicate capture native receipt')
+        receipt_paths.add(receipt_path)
+        require(isinstance(receipt,dict) and type(receipt.get('nativeExitCode')) is int and receipt['nativeExitCode']==0
+                and receipt.get('timedOut',False) is False and isinstance(receipt.get('argv'),list)
+                and all(isinstance(arg,str) for arg in receipt['argv'])
+                and any(p in receipt['argv'] for p in script_paths)
+                and isinstance(receipt.get('startedAtUtc'),str) and isinstance(receipt.get('endedAtUtc'),str),
+                'Capture native test failed or command lacks pinned script')
+        argv=receipt['argv']
+        require(len(argv)>=10 and argv[1:7]==['-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File']
+                and argv.count('-File')==1 and argv[7] in script_paths and Path(argv[7]).suffix.lower()=='.ps1',
+                'Capture native test invocation differs from exact PowerShell script origin')
+        capture_file(dict(path=argv[0],sha256=POWERSHELL_SHA256))
+        require(argv.count('-ModulePath')==1 and argv.index('-ModulePath')+1<len(argv)
+                and argv[argv.index('-ModulePath')+1]==new['rec_i3_owned_process.psm1']['path'],
+                'Capture native tested module differs from final embedded module')
+        capture_native_interval(receipt)
+        red=test['redEvidence']
+        require(isinstance(red,list) and 0<len(red)<=32, 'Capture original RED provenance missing')
+        for f in red:capture_file(f)
 
 
 def _validate_capture_repair_at(api, profile, prefix_binding, descriptor, source_root, metadata_head):
@@ -428,42 +583,7 @@ def _validate_capture_repair_at(api, profile, prefix_binding, descriptor, source
             and {n:d['sha256'] for n,d in new.items()}==expected_hashes,
             'Capture successor identity mismatch or historical launcher fallback')
     tests=proof.get('nativeTests')
-    require(isinstance(tests,list) and 0<len(tests)<=16, 'Missing bounded capture native tests')
-    manifest_paths=set();receipt_paths=set()
-    for d in tests:
-        test=capture_json(d)
-        manifest_path=Path(d['path']).resolve()
-        require(manifest_path not in manifest_paths, 'Duplicate capture native manifest')
-        manifest_paths.add(manifest_path)
-        require(isinstance(test,dict) and set(test)=={'schema','controlsBefore','controlsAfter','testFilesBefore',
-                    'testFilesAfter','receipt','redEvidence'} and test['schema']=='DORA_CAPTURE_NATIVE_TEST_V1'
-                and test['controlsBefore']==test['controlsAfter']==new, 'Capture tested controls differ from final embedded controls')
-        files=test['testFilesBefore']
-        require(isinstance(files,list) and 0<len(files)<=32 and files==test['testFilesAfter'], 'Capture test script identity drift')
-        script_paths=[str(capture_file(f)) for f in files]
-        require(len(set(script_paths))==len(script_paths), 'Duplicate capture test script')
-        receipt=capture_json(test['receipt'])
-        receipt_path=Path(test['receipt']['path']).resolve()
-        require(receipt_path not in receipt_paths, 'Duplicate capture native receipt')
-        receipt_paths.add(receipt_path)
-        require(isinstance(receipt,dict) and type(receipt.get('nativeExitCode')) is int and receipt['nativeExitCode']==0
-                and receipt.get('timedOut',False) is False and isinstance(receipt.get('argv'),list)
-                and all(isinstance(arg,str) for arg in receipt['argv'])
-                and any(p in receipt['argv'] for p in script_paths)
-                and isinstance(receipt.get('startedAtUtc'),str) and isinstance(receipt.get('endedAtUtc'),str),
-                'Capture native test failed or command lacks pinned script')
-        argv=receipt['argv']
-        require(len(argv)>=10 and argv[1:7]==['-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File']
-                and argv.count('-File')==1 and argv[7] in script_paths and Path(argv[7]).suffix.lower()=='.ps1',
-                'Capture native test invocation differs from exact PowerShell script origin')
-        capture_file(dict(path=argv[0],sha256=POWERSHELL_SHA256))
-        require(argv.count('-ModulePath')==1 and argv.index('-ModulePath')+1<len(argv)
-                and argv[argv.index('-ModulePath')+1]==new['rec_i3_owned_process.psm1']['path'],
-                'Capture native tested module differs from final embedded module')
-        capture_native_interval(receipt)
-        red=test['redEvidence']
-        require(isinstance(red,list) and 0<len(red)<=32, 'Capture original RED provenance missing')
-        for f in red:capture_file(f)
+    validate_capture_native_tests(tests,new)
     capture_file(proof.get('independentReview'))
     expected=dict(schema='DORA_RECOVERY_CAPTURE_REPAIR_V1',sourceRoot=source_root,
         baseline=dict(commit=CAPTURE_BASELINE_COMMIT,tree=CAPTURE_BASELINE_TREE),
@@ -493,7 +613,10 @@ def validate_preflight_origin(attempt, pin, native, launcher, source):
             and source_proof_descriptor.get('sha256')==api.get('ALPHA_PREFIX_REPAIR_BINDING',{}).get('applicabilitySha256'),
             'Preflight capture applicability pin mismatch')
     source_proof=read_proof(source_proof_descriptor)
-    if stream_path_binding(api) is not None:
+    if collector_query_binding(api) is not None:
+        _,controls=validate_collector_query_proof(api,api['active_profile'](),api['ALPHA_PREFIX_REPAIR_BINDING'],
+            source_proof,source_proof_descriptor,origin_gate.get('proofs',{}).get('independentReview'))
+    elif stream_path_binding(api) is not None:
         _,controls=validate_stream_path_proof(api,api['active_profile'](),api['ALPHA_PREFIX_REPAIR_BINDING'],
             source_proof,source_proof_descriptor,origin_gate.get('proofs',{}).get('independentReview'))
     else:

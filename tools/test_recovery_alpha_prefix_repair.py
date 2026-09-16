@@ -223,6 +223,7 @@ class CombinedAdmissionTests(unittest.TestCase):
         self.api=dict(candidate.__dict__,active_profile=lambda:self.profile,ALPHA_PREFIX_REPAIR_BINDING=self.binding)
         # This fixture describes the historical prefix/capture context only.
         self.api.pop('ALPHA_STREAM_PATH_REPAIR_BINDING', None)
+        self.api.pop('ALPHA_COLLECTOR_QUERY_BINDING', None)
         patch.object(subject,'candidate_api',return_value=self.api).start()
         self.legacy=subject.legacy_api()
         self.frozen=dict(executionId='E36RED01',variantCount=165,entries=[dict(slot=1,mutationVariants=['DEFAULT'],attemptId='old',runId='old',executionEntrySha256='old')])
@@ -988,5 +989,177 @@ class StreamPathNoFallbackTests(unittest.TestCase):
         fixture=CombinedAdmissionTests();fixture.setUp();self.addCleanup(fixture.doCleanups)
         fixture.api['ALPHA_STREAM_PATH_REPAIR_BINDING']={}
         with self.assertRaises(ValueError):fixture.check()
+
+class CollectorQuerySuccessorTests(unittest.TestCase):
+    def setUp(self):
+        self.old=StreamPathSuccessorTests();self.old.setUp();self.addCleanup(self.old.doCleanups)
+        old=self.old
+        self.historical=copy.deepcopy(old.gate['alphaPreflight']['sourceRepair'])
+        self.old_binding=copy.deepcopy(old.api['ALPHA_PREFIX_REPAIR_BINDING'])
+        self.base=old.source['commit'];self.base_tree=old.source['tree']
+        self.profile=candidate.Profile('b'*40,'c'*40,candidate.MAINTENANCE_PATHS)
+        self.source=dict(old.source,commit='d'*40,tree='e'*40)
+        self.before=copy.deepcopy(old.after);self.after=copy.deepcopy(self.before)
+        for p in subject.CAPTURE_HOST_PATHS:self.after[p]=dict(mode='100644',type='blob',object='a'*40)
+        self.api=dict(old.api,git=self.git,active_profile=lambda:self.profile,
+                      ALPHA_PREFIX_REPAIR_BINDING=copy.deepcopy(self.old_binding))
+        self.overrides={};self.metadata=old.metadata+'ALPHA_COLLECTOR_QUERY_BINDING={}\n'
+        patch.object(candidate,'git',side_effect=self.git).start()
+        patch.object(subject,'candidate_api',return_value=self.api).start()
+        for key,value in dict(COLLECTOR_BASELINE_COMMIT=self.base,COLLECTOR_BASELINE_TREE=self.base_tree,
+            COLLECTOR_OLD_IMPLEMENTATION_COMMIT=old.profile.implementation_commit,
+            COLLECTOR_OLD_IMPLEMENTATION_TREE=old.profile.implementation_tree,
+            COLLECTOR_OLD_PREFIX_BINDING=self.old_binding).items():
+            patch.object(subject,key,value,create=True).start()
+        folder=old.old.root/'query-controls';folder.mkdir();self.controls={}
+        self.launcher_bytes=b'exact synthetic launcher pin replacement'
+        patch.object(subject,'collector_launcher_bytes',return_value=self.launcher_bytes).start()
+        for name,descriptor in old.old.capture.new.items():
+            data=Path(descriptor['path']).read_bytes()
+            if name=='rec_i3_owned_process.psm1':data+=b' query diagnostic successor'
+            if name=='Invoke-0D6Campaign.ps1':data=self.launcher_bytes
+            p=folder/name;p.write_bytes(data)
+            self.controls[name]=dict(path=str(p),sha256=subject.file_sha(p))
+        self.tests={}
+        for scenario in ('delayed','missed','capacity','lifetime','owner','image','startup','deadline','identity','streams','historical','query'):
+            manifest=copy.deepcopy(old.old.capture.test_manifest)
+            manifest.update(controlsBefore=self.controls,controlsAfter=self.controls)
+            receipt=json.loads(Path(manifest['receipt']['path']).read_bytes())
+            receipt['argv'][-1]=self.controls['rec_i3_owned_process.psm1']['path']
+            receipt['argv']+=['-Scenario',scenario]
+            manifest['receipt']=old.old.write('query-'+scenario+'-receipt.json',receipt)
+            self.tests[scenario]=old.old.write('query-'+scenario+'-manifest.json',manifest)
+        self.plan=dict(source=self.source);self.gate=copy.deepcopy(old.gate)
+        self.gate['source']=self.source;self.gate['alphaPreflight']['source']=self.source
+        self.refresh()
+
+    def git(self,*args,root):
+        if args in self.overrides:return self.overrides[args]
+        fixed={('rev-parse',self.base+'^{tree}'):self.base_tree,
+            ('merge-base',self.base,self.profile.implementation_commit):self.base,
+            ('rev-parse',self.profile.implementation_commit+'^{tree}'):self.profile.implementation_tree,
+            ('rev-parse','HEAD'):self.source['commit'],('rev-parse',self.source['commit']):self.source['commit'],
+            ('rev-parse','HEAD^{tree}'):self.source['tree'],('branch','--show-current'):candidate.BRANCH,
+            ('show','-s','--format=%P',self.source['commit']):self.profile.implementation_commit,
+            ('rev-list','--min-parents=2',self.profile.implementation_commit+'..'+self.source['commit']):'',
+            ('diff-tree','--no-commit-id','--name-only','--no-renames','-z','-r',self.source['commit']):'\0'.join(sorted(candidate.MAINTENANCE_PATHS))+'\0',
+            ('status','--porcelain'):'',
+            ('show',self.base+':tools/validate_recovery_0d6_candidate.py'):self.old.metadata,
+            ('show',self.profile.implementation_commit+':tools/validate_recovery_0d6_candidate.py'):self.old.metadata,
+            ('show','HEAD:tools/validate_recovery_0d6_candidate.py'):self.metadata}
+        if args in fixed:return fixed[args]
+        if len(args)==4 and args[:3]==('ls-tree',self.source['commit'],'--'):
+            return '100644 blob '+'e'*40+'\t'+args[3]
+        for revision,entries in ((self.base,self.before),(self.profile.implementation_commit,self.after)):
+            if args==('ls-tree','-r','-z',revision):
+                return ''.join(f"{v['mode']} {v['type']} {v['object']}\t{p}\0" for p,v in sorted(entries.items()))
+        return self.old.git(*args,root=root)
+
+    def refresh(self):
+        self.api['ALPHA_COLLECTOR_QUERY_BINDING']=dict(proofSha256='0'*64,
+            ownedProcessModuleSha256=self.controls['rec_i3_owned_process.psm1']['sha256'])
+        self.proof,_,_=subject.collector_query_facts(self.api,self.profile,self.api['ALPHA_PREFIX_REPAIR_BINDING'],
+            self.historical,self.controls,self.tests,self.old.old.review)
+        self.bind()
+
+    def bind(self):
+        d=self.old.old.write('query-proof.json',self.proof)
+        self.api['ALPHA_PREFIX_REPAIR_BINDING']['applicabilitySha256']=d['sha256']
+        self.api['ALPHA_COLLECTOR_QUERY_BINDING']['proofSha256']=d['sha256']
+        self.gate['alphaPreflight']['sourceRepair']=d
+
+    def check(self):subject.validate_preflight(self.plan,self.gate)
+
+    def test_host_only_successor_revalidates_history_and_returns_new_controls(self):
+        self.check()
+        _,controls=subject.validate_collector_query_proof(self.api,self.profile,
+            self.api['ALPHA_PREFIX_REPAIR_BINDING'],self.proof,self.gate['alphaPreflight']['sourceRepair'],self.old.old.review)
+        self.assertEqual(self.controls,controls)
+        self.assertFalse(self.proof['historicalPreflightReusable'])
+        self.assertEqual(self.old_binding['applicabilitySha256'],self.historical['sha256'])
+
+    def test_malformed_missing_or_foreign_binding_never_falls_back(self):
+        self.check();original=copy.deepcopy(self.api['ALPHA_COLLECTOR_QUERY_BINDING'])
+        for value in (None,{},dict(original,extra=True),dict(original,proofSha256='f'*64)):
+            self.api['ALPHA_COLLECTOR_QUERY_BINDING']=value
+            with self.assertRaises(ValueError):self.check()
+        self.api.pop('ALPHA_COLLECTOR_QUERY_BINDING')
+        with self.assertRaises(ValueError):self.check()
+
+    def test_android_build_fixture_and_driver_changes_are_not_host_repair(self):
+        original=copy.deepcopy(self.after)
+        for path in ('android/build.gradle.kts','tools/recovery_campaign.py',next(iter(subject.STREAM_PATH_ANDROID_PATHS))):
+            self.after=copy.deepcopy(original);self.after[path]=dict(mode='100644',type='blob',object='f'*40)
+            with self.assertRaisesRegex(ValueError,'host-only'):self.refresh()
+        self.after=original
+        p=next(iter(subject.CAPTURE_HOST_PATHS));self.after[p]=self.before[p]
+        with self.assertRaisesRegex(ValueError,'host-only'):self.refresh()
+
+    def test_same_module_changed_other_control_and_foreign_sibling_rejected(self):
+        original=copy.deepcopy(self.controls)
+        for mode in ('same-module','other-control','foreign-parent'):
+            self.controls=copy.deepcopy(original)
+            name='rec_i3_owned_process.psm1' if mode=='same-module' else 'Logcat-Capture.ps1'
+            p=Path(self.controls[name]['path']);data=p.read_bytes()
+            if mode=='same-module':p.write_bytes(Path(self.old.old.capture.new[name]['path']).read_bytes())
+            elif mode=='other-control':p.write_bytes(data+b'changed')
+            else:
+                p=self.old.old.root/name;p.write_bytes(data);self.controls[name]['path']=str(p)
+            self.controls[name]['sha256']=subject.file_sha(p)
+            with self.assertRaises(ValueError):self.refresh()
+            Path(original[name]['path']).write_bytes(data)
+
+    def test_missing_or_duplicate_native_scenarios_and_failed_receipt_rejected(self):
+        original=copy.deepcopy(self.tests)
+        self.tests.pop('query')
+        with self.assertRaises(ValueError):self.refresh()
+        self.tests=copy.deepcopy(original);self.tests['query']=self.tests['delayed']
+        with self.assertRaises(ValueError):self.refresh()
+        self.tests=original
+        manifest=json.loads(Path(self.tests['query']['path']).read_bytes())
+        receipt=json.loads(Path(manifest['receipt']['path']).read_bytes());receipt['nativeExitCode']=2
+        manifest['receipt']=self.old.old.write('query-failed.json',receipt)
+        self.tests['query']=self.old.old.write('query-failed-manifest.json',manifest)
+        with self.assertRaises(ValueError):self.refresh()
+
+    def test_rehashed_claims_cannot_change_apks_history_or_authority(self):
+        self.check();original=copy.deepcopy(self.proof)
+        for key,value in (('apkPair',dict(self.proof['apkPair'],appApkSha256='f'*64)),
+                          ('historicalPreflightReusable',True),('sourceDelta',[]),('coverageGranted',True)):
+            self.proof=dict(original,**{key:value});self.bind()
+            with self.assertRaises(ValueError):self.check()
+        self.proof=original;self.bind()
+        self.api['ALPHA_STREAM_PATH_REPAIR_BINDING']=dict(proofSha256='f'*64)
+        with self.assertRaises(ValueError):self.check()
+
+    def test_metadata_cannot_change_behavior_or_execute_binding(self):
+        self.check();original=self.metadata
+        for value in (original.replace('return True','return False'),original+'ALPHA_COLLECTOR_QUERY_BINDING={}\n',
+                      original.replace('ALPHA_COLLECTOR_QUERY_BINDING={}','ALPHA_COLLECTOR_QUERY_BINDING=unsafe_call()')):
+            self.metadata=value
+            with self.assertRaises(ValueError):self.check()
+
+
+class CollectorQueryLiteralTests(unittest.TestCase):
+    def test_launcher_derivative_is_only_exact_embedded_module_digest(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'Invoke-0D6Campaign.ps1'
+            original=b"if(hash-ne'"+b'A'*64+b"'){throw 'mismatch'}\r\n"
+            path.write_bytes(original)
+            controls={'Invoke-0D6Campaign.ps1':dict(path=str(path),sha256=subject.file_sha(path)),
+                      'rec_i3_owned_process.psm1':dict(sha256='a'*64)}
+            self.assertEqual(original.replace(b'A'*64,b'B'*64),subject.collector_launcher_bytes(controls,'b'*64))
+            for data in (b'no embedded digest',original+original):
+                path.write_bytes(data);controls['Invoke-0D6Campaign.ps1']['sha256']=subject.file_sha(path)
+                with self.assertRaises(ValueError):subject.collector_launcher_bytes(controls,'b'*64)
+
+    def test_binding_rejected_before_metadata_execution(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);(root/'tools').mkdir();marker=root/'executed'
+            metadata=root/'tools/validate_recovery_0d6_candidate.py'
+            metadata.write_text(f'from pathlib import Path\nALPHA_COLLECTOR_QUERY_BINDING=Path({str(marker)!r}).touch()\n')
+            with patch.object(subject,'ROOT',root),self.assertRaises(ValueError):subject.candidate_api()
+            self.assertFalse(marker.exists())
+
 
 if __name__=='__main__':unittest.main()
