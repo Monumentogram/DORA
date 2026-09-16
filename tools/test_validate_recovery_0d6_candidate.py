@@ -140,6 +140,14 @@ class CandidateProfileTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "undeclared paths"):
             self.check()
 
+    def test_rejects_stream_path_crypto_change_in_metadata_child(self):
+        self.write("android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingTinkPrerequisiteCrypto.kt",
+                   "unreviewed checkpoint authentication change\n")
+        self.git("add", "android")
+        self.git("commit", "--amend", "--no-edit", "-q")
+        with self.assertRaisesRegex(ValueError, "undeclared paths"):
+            self.check()
+
     def test_rejects_executable_metadata_mode(self):
         self.git("update-index", "--chmod=+x", "validator.txt")
         self.git("commit", "--amend", "--no-edit", "-q")
