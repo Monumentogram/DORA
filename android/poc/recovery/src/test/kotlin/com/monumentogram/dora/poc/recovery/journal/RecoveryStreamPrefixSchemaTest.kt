@@ -6,8 +6,8 @@ import org.junit.Test
 
 class RecoveryStreamPrefixSchemaTest {
     @Test
-    fun `current schema admits non destructive upgrade from every supported historical version`() {
-        assertEquals(5, RecoveryJournalSchema.VERSION)
+    fun `current schema retains the historical route through stream prefix schema five`() {
+        assertEquals(6, RecoveryJournalSchema.VERSION)
         (1..4).forEach { old ->
             assertNotEquals(
                 RecoveryJournalSchema.UpgradePlan.REJECT,

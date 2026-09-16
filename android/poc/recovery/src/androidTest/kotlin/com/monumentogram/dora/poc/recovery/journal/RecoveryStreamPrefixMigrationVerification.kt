@@ -52,8 +52,8 @@ internal object RecoveryStreamPrefixMigrationVerification {
         repeat(2) {
             RecoveryJournalSqliteHelper(context).use { helper ->
                 val database = helper.writableDatabase
-                assertEquals(5, database.version)
-                RecoveryJournalSchema.requireExactV5(database)
+                assertEquals(6, database.version)
+                RecoveryJournalSchema.requireExactV6(database)
                 assertEquals(before, rows(database))
                 val journal =
                     AndroidRecoveryStreamingJournal(

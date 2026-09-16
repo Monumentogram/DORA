@@ -40,7 +40,7 @@ internal object RecoveryJournalSchema {
     val V3_TO_V4_STEPS = V3ToV4Step.entries.toList()
     private val NO_MIGRATION_FAILPOINT = V3ToV4Failpoint {}
 
-    const val VERSION = 5
+    const val VERSION = 6
     const val DATABASE_RELATIVE_NAME = "poc-recovery/v1/recovery-journal-v1.db"
     const val RUN_TABLE = "recovery_run_bootstrap_v1"
     const val UNIT_TABLE = "recovery_microfile_unit_v2"
@@ -132,15 +132,17 @@ internal object RecoveryJournalSchema {
         V2_TO_V4,
         V3_TO_V4,
         V4_TO_V5,
+        V5_TO_V6,
         REJECT,
     }
 
     fun upgradePlan(oldVersion: Int, newVersion: Int): UpgradePlan =
         when {
-            oldVersion == 1 && newVersion in 4..5 -> UpgradePlan.V1_TO_V4
-            oldVersion == 2 && newVersion in 4..5 -> UpgradePlan.V2_TO_V4
-            oldVersion == 3 && newVersion in 4..5 -> UpgradePlan.V3_TO_V4
-            oldVersion == 4 && newVersion == 5 -> UpgradePlan.V4_TO_V5
+            oldVersion == 1 && newVersion in 4..6 -> UpgradePlan.V1_TO_V4
+            oldVersion == 2 && newVersion in 4..6 -> UpgradePlan.V2_TO_V4
+            oldVersion == 3 && newVersion in 4..6 -> UpgradePlan.V3_TO_V4
+            oldVersion == 4 && newVersion in 5..6 -> UpgradePlan.V4_TO_V5
+            oldVersion == 5 && newVersion == 6 -> UpgradePlan.V5_TO_V6
             else -> UpgradePlan.REJECT
         }
 
@@ -892,12 +894,23 @@ ON recovery_stream_range_quarantine_v4
     fun requireExactV5(database: SQLiteDatabase) =
         requireExactStreaming(database, RecoveryStreamPrefixSchema.CREATE_OUTCOME_TABLE)
 
-    private fun requireExactStreaming(database: SQLiteDatabase, outcomeSql: String) {
+    fun requireExactV6(database: SQLiteDatabase) =
+        requireExactStreaming(
+            database,
+            RecoveryStreamPrefixSchema.CREATE_OUTCOME_TABLE,
+            RecoveryMicrofileDispositionSchema.CREATE_QUARANTINE_TABLE,
+        )
+
+    private fun requireExactStreaming(
+        database: SQLiteDatabase,
+        outcomeSql: String,
+        quarantineSql: String = CREATE_QUARANTINE_TABLE,
+    ) {
         requireExactSql(database, "table", RUN_TABLE, CREATE_RUN_TABLE)
         requireExactSql(database, "index", "recovery_run_candidate_v2", CREATE_RUN_IDENTITY_INDEX)
         requireExactSql(database, "table", UNIT_TABLE, CREATE_UNIT_TABLE)
         requireExactSql(database, "table", PUBLICATION_TABLE, CREATE_PUBLICATION_TABLE)
-        requireExactSql(database, "table", QUARANTINE_TABLE, CREATE_QUARANTINE_TABLE)
+        requireExactSql(database, "table", QUARANTINE_TABLE, quarantineSql)
         requireExactSql(database, "table", STREAM_CHECKPOINT_TABLE, CREATE_STREAM_CHECKPOINT_TABLE)
         requireExactSql(database, "table", STREAM_OUTCOME_TABLE, outcomeSql)
         requireExactSql(database, "table", STREAM_RANGE_TABLE, CREATE_STREAM_RANGE_TABLE)
@@ -1060,15 +1073,17 @@ internal class RecoveryJournalSqliteHelper(context: Context) :
         }
     }
 
-    override fun onCreate(database: SQLiteDatabase) = RecoveryStreamPrefixSchema.create(database)
+    override fun onCreate(database: SQLiteDatabase) =
+        RecoveryMicrofileDispositionSchema.create(database)
 
     override fun onOpen(database: SQLiteDatabase) {
         super.onOpen(database)
         if (database.version == RecoveryJournalSchema.VERSION) {
-            RecoveryJournalSchema.requireExactV5(database)
+            RecoveryJournalSchema.requireExactV6(database)
         }
     }
 
+    @Suppress("MagicNumber") // Exact historical schema versions define this migration route.
     override fun onUpgrade(database: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         when (RecoveryJournalSchema.upgradePlan(oldVersion, newVersion)) {
             RecoveryJournalSchema.UpgradePlan.V1_TO_V4 -> {
@@ -1083,13 +1098,14 @@ internal class RecoveryJournalSqliteHelper(context: Context) :
             RecoveryJournalSchema.UpgradePlan.V3_TO_V4 ->
                 RecoveryJournalSchema.migrateV3ToV4(database)
             RecoveryJournalSchema.UpgradePlan.V4_TO_V5 -> Unit
+            RecoveryJournalSchema.UpgradePlan.V5_TO_V6 -> Unit
             RecoveryJournalSchema.UpgradePlan.REJECT ->
                 throw SQLiteException(
                     "PoC Recovery journal migration is not admitted: $oldVersion -> $newVersion"
                 )
         }
-        if (newVersion == RecoveryJournalSchema.VERSION)
-            RecoveryStreamPrefixSchema.migrate(database)
+        if (oldVersion < 5 && newVersion >= 5) RecoveryStreamPrefixSchema.migrate(database)
+        if (newVersion == 6) RecoveryMicrofileDispositionSchema.migrate(database)
     }
 
     override fun onDowngrade(database: SQLiteDatabase, oldVersion: Int, newVersion: Int): Unit =

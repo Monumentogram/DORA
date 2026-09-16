@@ -35,6 +35,7 @@ import com.monumentogram.dora.poc.recovery.contract.KeyConfirmationValue
 import com.monumentogram.dora.poc.recovery.contract.KeyEnvelopeAad
 import com.monumentogram.dora.poc.recovery.contract.KeyEnvelopeTargetKind
 import com.monumentogram.dora.poc.recovery.contract.KeyRecoveryClassification
+import com.monumentogram.dora.poc.recovery.contract.MicrofileAad
 import com.monumentogram.dora.poc.recovery.contract.PublicationAad
 import com.monumentogram.dora.poc.recovery.contract.PublicationKind
 import com.monumentogram.dora.poc.recovery.contract.RecoveryCandidate
@@ -64,13 +65,780 @@ import com.monumentogram.dora.poc.recovery.storage.RecoveryReconciliationStat
 import java.io.File
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Proxy
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 @Suppress("LargeClass")
 class AndroidRecoveryReconciliationSourceTest {
+    @Test
+    @Suppress("LongMethod")
+    fun `retained source missing or foreign bootstrap fails before named intent and file access`() {
+        val bytes = byteArrayOf(1, 2, 3)
+        val name = RecoveryRelativeNames.microfileCiphertext(1UL)
+        val original =
+            RecoveryQuarantineIntentInput(
+                RecoveryCandidate.MICROFILE,
+                RUN,
+                name,
+                RecoveryQuarantineArtifactRole.MICROFILE_CIPHERTEXT,
+                3UL,
+                Sha256Value.calculate(bytes),
+            )
+        val intent =
+            RecoveryQuarantineIntentRow(
+                RecoveryQuarantineIntent.calculate(original),
+                original,
+                RecoveryQuarantineObservedState.REFERENCED_REJECTED,
+                QuarantineBootstrapBinding.PRESENT,
+                RecoveryQuarantineIntent.destination(original),
+                QuarantineIntentState.COMPLETED,
+            )
+        val otherRun = RunId.fromCanonicalString("10112233-4455-6677-8899-aabbccddeeff")
+        for (kind in listOf("absent", "foreign-run", "foreign-candidate")) {
+            val os =
+                InventoryOs().apply {
+                    seed(emptyMap(), mapOf(intent.destinationRelativeName to bytes))
+                }
+            var namedReads = 0
+            val value =
+                when (kind) {
+                    "foreign-run" -> KeyConfirmationValue(RecoveryCandidate.MICROFILE, otherRun)
+                    else -> KeyConfirmationValue(RecoveryCandidate.STREAM, RUN)
+                }
+            val bootstrap =
+                if (kind == "absent") null
+                else
+                    StoredKeyConfirmationIdentity(
+                        value,
+                        CONFIRMATION_NAME,
+                        3,
+                        Sha256Value.calculate(bytes),
+                        value.canonicalAliasSha256,
+                    )
+            val source =
+                AndroidRecoveryReconciliationSource(
+                    loadBootstrap = {
+                        assertEquals(RUN, it)
+                        bootstrap
+                    },
+                    loadSnapshot = { error("Retained read must not load a candidate snapshot") },
+                    loadPending = { error("Retained read must not execute pending recovery") },
+                    loadAllIntents = { error("Retained read must not scan all intents") },
+                    storage = AndroidOsRecoveryReconciliationStorage(ROOT, os),
+                    aliasExists = { error("Retained bytes do not grant cryptographic authority") },
+                    loadRetained = { _, _ ->
+                        namedReads++
+                        intent
+                    },
+                )
+            val failure = assertThrowsSource {
+                source.loadRetainedArtifact(original, RecoveryArtifactContext.UNIT_CIPHERTEXT)
+            }
+            assertEquals(RecoveryFailureCategory.STRUCTURAL, failure.diagnostic.category)
+            assertEquals(RecoveryFailureStage.JOURNAL, failure.diagnostic.stage)
+            assertEquals(0, namedReads)
+            assertTrue(os.events.isEmpty())
+            assertTrue(os.listed.isEmpty())
+        }
+    }
+
+    @Test
+    fun `schema6 fresh controller resumes dependents only from exact completed rejected evidence`() {
+        for (mutation in
+            listOf(
+                DispositionMutation.FLIP,
+                DispositionMutation.TRUNCATE,
+                DispositionMutation.SWAP,
+            )) {
+            val fixture = DispositionFixture(mutation)
+            fixture.journal.pauseAfterFirstCompleted = true
+            fixture.reconcile()
+            assertEquals(1, fixture.journal.rows.size)
+            val rejected = fixture.journal.rows.values.single()
+            assertEquals(fixture.units[1].ciphertextRelativeName, rejected.input.sourceRelativeName)
+            assertEquals(
+                RecoveryQuarantineObservedState.REFERENCED_REJECTED,
+                rejected.recordedObservedState,
+            )
+            assertEquals(QuarantineIntentState.COMPLETED, rejected.state)
+            val container =
+                fixture.os.dispositionQuarantineBytes().getValue(rejected.destinationRelativeName)
+            assertEquals(rejected.input.sourceBytes, container.size.toULong())
+            assertEquals(rejected.input.sourceSha256, Sha256Value.calculate(container))
+            assertTrue(
+                fixture.units[1].keyEnvelopeRelativeName in fixture.os.dispositionActiveBytes()
+            )
+            fixture.journal.pauseAfterFirstCompleted = false
+
+            assertDispositionPrefix(fixture.reconcile(), 4, fixture)
+            fixture.assertDisposition(mutation)
+            assertEquals(rejected, fixture.journal.rows.getValue(rejected.intentId))
+            val completedRows = fixture.journal.rows.toMap()
+            val retained = fixture.os.dispositionQuarantineBytes()
+            val commits = fixture.journal.commits
+            assertDispositionPrefix(fixture.reconcile(), 4, fixture)
+            assertEquals(completedRows, fixture.journal.rows)
+            assertEquals(commits, fixture.journal.commits)
+            assertDispositionBytes(retained, fixture.os.dispositionQuarantineBytes())
+        }
+    }
+
+    @Test
+    fun `schema6 changed rejected container cannot authorize unfinished dependent dispositions after restart`() {
+        val fixture = DispositionFixture(DispositionMutation.FLIP)
+        fixture.journal.pauseAfterFirstCompleted = true
+        fixture.reconcile()
+        assertEquals(1, fixture.journal.rows.size)
+        val rejected = fixture.journal.rows.values.single()
+        assertEquals(QuarantineIntentState.COMPLETED, rejected.state)
+        val tampered =
+            fixture.os.dispositionQuarantineBytes().getValue(rejected.destinationRelativeName) +
+                byteArrayOf(91)
+        fixture.os.dispositionReplaceQuarantine(rejected.destinationRelativeName, tampered)
+        val active = fixture.os.dispositionActiveBytes()
+        val rows = fixture.journal.rows.toMap()
+        val commits = fixture.journal.commits
+        fixture.journal.pauseAfterFirstCompleted = false
+        val result = fixture.reconcile()
+        when (result) {
+            is MicrofileReconciliationResult.PartialPrefix -> {
+                assertTrue(result.prefix.authenticatedEndExclusive <= 4UL)
+                assertEquals(RecoveryFailureCategory.STRUCTURAL, result.failure?.category)
+            }
+            is MicrofileReconciliationResult.NoAuthenticatedPrefix ->
+                assertEquals(RecoveryFailureCategory.STRUCTURAL, result.failure?.category)
+            else -> error("Changed retained proof must not complete recovery: $result")
+        }
+        assertEquals(rows, fixture.journal.rows)
+        assertEquals(commits, fixture.journal.commits)
+        assertDispositionBytes(active, fixture.os.dispositionActiveBytes())
+        assertArrayEquals(
+            tampered,
+            fixture.os.dispositionQuarantineBytes().getValue(rejected.destinationRelativeName),
+        )
+        fixture.assertOriginalJournalRows()
+    }
+
+    // Insert inside AndroidRecoveryReconciliationSourceTest, before its first @Test.
+    // Additional imports: contract.MicrofileAad and org.junit.Assert.assertArrayEquals.
+    // Not compiled or executed. Requires InventoryOs additions supplied alongside this fragment.
+
+    @Test
+    fun `schema6 three unit fixture authenticates before any mutation with no quarantine`() {
+        val fixture = DispositionFixture(DispositionMutation.NONE)
+        assertDispositionPrefix(fixture.reconcile(), 12, fixture)
+        assertTrue(fixture.journal.rows.isEmpty())
+        assertTrue(fixture.os.dispositionQuarantineBytes().isEmpty())
+        assertDispositionBytes(fixture.originalBytes, fixture.os.dispositionActiveBytes())
+    }
+
+    @Test
+    fun `schema6 real Tink appended U1 recovers original twelve bytes and replays completed intent`() {
+        verifyDispositionCase(DispositionMutation.APPEND, 12)
+    }
+
+    @Test
+    fun `schema6 real Tink flipped U1 retains four byte prefix without adopting corrupt bytes`() {
+        verifyDispositionCase(DispositionMutation.FLIP, 4)
+    }
+
+    @Test
+    fun `schema6 real Tink truncated U1 retains four byte prefix without skipping the unit`() {
+        verifyDispositionCase(DispositionMutation.TRUNCATE, 4)
+    }
+
+    @Test
+    fun `schema6 real Tink swapped U1 and U2 are separately rejected and never reordered`() {
+        verifyDispositionCase(DispositionMutation.SWAP, 4)
+    }
+
+    private fun verifyDispositionCase(mutation: DispositionMutation, expectedEnd: Int) {
+        val fixture = DispositionFixture(mutation)
+        val first = fixture.reconcile()
+        assertDispositionPrefix(first, expectedEnd, fixture)
+        fixture.assertDisposition(mutation)
+        val rows = fixture.journal.rows.toMap()
+        val destinations = fixture.os.dispositionQuarantineBytes()
+        val active = fixture.os.dispositionActiveBytes()
+        val commits = fixture.journal.commits
+        fixture.os.events.clear()
+
+        // New source/controller/crypto instances, same durable state and actual retained bytes.
+        val replay = fixture.reconcile()
+        assertDispositionPrefix(replay, expectedEnd, fixture)
+        assertEquals(rows, fixture.journal.rows)
+        assertEquals(commits, fixture.journal.commits)
+        assertDispositionBytes(destinations, fixture.os.dispositionQuarantineBytes())
+        assertDispositionBytes(active, fixture.os.dispositionActiveBytes())
+        assertFalse(
+            fixture.os.events.any { it.startsWith("os.rename:") || it.startsWith("os.fsync:") }
+        )
+        fixture.assertOriginalJournalRows()
+    }
+
+    @Test
+    fun `schema6 retained tail mutation rejects previous completed proof although original prefix still matches`() {
+        val fixture = DispositionFixture(DispositionMutation.APPEND)
+        assertDispositionPrefix(fixture.reconcile(), 12, fixture)
+        assertDispositionPrefix(fixture.reconcile(), 12, fixture)
+        val row = fixture.journal.rows.values.single()
+        val retained = fixture.os.dispositionQuarantineBytes().getValue(row.destinationRelativeName)
+        val original = fixture.originalBytes.getValue(row.input.sourceRelativeName)
+        assertArrayEquals(original, retained.copyOfRange(0, original.size))
+        retained[retained.lastIndex] = (retained.last().toInt() xor 1).toByte()
+        fixture.os.dispositionReplaceQuarantine(row.destinationRelativeName, retained)
+        val rows = fixture.journal.rows.toMap()
+        val active = fixture.os.dispositionActiveBytes()
+        val commits = fixture.journal.commits
+
+        val failed = fixture.reconcile()
+        when (failed) {
+            is MicrofileReconciliationResult.PartialPrefix -> {
+                assertTrue(failed.prefix.authenticatedEndExclusive <= 4UL)
+                assertArrayEquals(
+                    fixture.plaintext.copyOf(failed.prefix.authenticatedEndExclusive.toInt()),
+                    failed.prefix.plaintextSnapshot(),
+                )
+                assertTrue(failed.capability.authorizes(failed.prefix))
+                assertEquals(RecoveryFailureCategory.STRUCTURAL, failed.failure?.category)
+            }
+            is MicrofileReconciliationResult.NoAuthenticatedPrefix ->
+                assertEquals(RecoveryFailureCategory.STRUCTURAL, failed.failure?.category)
+            else -> error("Altered full retained container must not authenticate: $failed")
+        }
+        assertEquals(rows, fixture.journal.rows)
+        assertEquals(commits, fixture.journal.commits)
+        assertDispositionBytes(active, fixture.os.dispositionActiveBytes())
+        assertArrayEquals(
+            retained,
+            fixture.os.dispositionQuarantineBytes().getValue(row.destinationRelativeName),
+        )
+        fixture.assertOriginalJournalRows()
+    }
+
+    @Test
+    fun `schema6 active operational unsafe or missing U1 never fabricates rejected bytes`() {
+        for (fault in listOf("operational", "unsafe", "missing")) {
+            val fixture = DispositionFixture(DispositionMutation.NONE)
+            val name = fixture.units[1].ciphertextRelativeName
+            when (fault) {
+                "operational" -> fixture.os.descriptorFault(name, DescriptorFault.READ_THROW)
+                "unsafe" -> fixture.os.setType(name, BootstrapPathType.SYMLINK)
+                "missing" -> fixture.os.dispositionRemoveActive(name)
+            }
+            val before = fixture.os.dispositionActiveBytes()
+            val result = fixture.reconcile()
+            val failure =
+                when (result) {
+                    is MicrofileReconciliationResult.NoAuthenticatedPrefix -> result.failure
+                    is MicrofileReconciliationResult.PartialPrefix -> result.failure
+                    else -> error("Unexpected authenticated damaged source for $fault: $result")
+                }
+            assertEquals(
+                when (fault) {
+                    "operational" -> RecoveryFailureCategory.OPERATIONAL
+                    "unsafe" -> RecoveryFailureCategory.CORRUPT_LEAF
+                    else -> RecoveryFailureCategory.MISSING_ARTIFACT
+                },
+                failure?.category,
+            )
+            assertTrue(fixture.journal.rows.isEmpty())
+            assertTrue(fixture.os.dispositionQuarantineBytes().isEmpty())
+            assertDispositionBytes(before, fixture.os.dispositionActiveBytes())
+            fixture.assertOriginalJournalRows()
+        }
+    }
+
+    private fun assertDispositionPrefix(
+        result: MicrofileReconciliationResult,
+        expectedEnd: Int,
+        fixture: DispositionFixture,
+    ) {
+        val (prefix, capability) =
+            when (result) {
+                is MicrofileReconciliationResult.AuthenticatedPrefix ->
+                    result.prefix to result.capability
+                is MicrofileReconciliationResult.PartialPrefix -> result.prefix to result.capability
+                else -> error("Missing real authenticated prefix: $result")
+            }
+        assertEquals(expectedEnd.toULong(), prefix.authenticatedEndExclusive)
+        assertArrayEquals(fixture.plaintext.copyOf(expectedEnd), prefix.plaintextSnapshot())
+        assertEquals(fixture.units.take(expectedEnd / 4), prefix.units)
+        assertEquals(
+            Sha256Value.calculate(fixture.plaintext.copyOf(expectedEnd)),
+            capability.authenticatedPlaintextSha256,
+        )
+        assertEquals(expectedEnd.toULong(), capability.authenticatedEndExclusive)
+        assertEquals(expectedEnd / 4, capability.authenticatedUnitCount)
+        assertTrue(capability.authorizes(prefix))
+        if (expectedEnd < 12) assertTrue(result is MicrofileReconciliationResult.PartialPrefix)
+        fixture.assertOriginalJournalRows()
+    }
+
+    private fun assertDispositionBytes(
+        expected: Map<String, ByteArray>,
+        actual: Map<String, ByteArray>,
+    ) {
+        assertEquals(expected.keys, actual.keys)
+        expected.forEach { (name, bytes) -> assertArrayEquals(name, bytes, actual.getValue(name)) }
+    }
+
+    private enum class DispositionMutation {
+        NONE,
+        APPEND,
+        FLIP,
+        TRUNCATE,
+        SWAP,
+    }
+
+    private class DispositionFixture(mutation: DispositionMutation) {
+        val plaintext = byteArrayOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+        private val provider = RecoveryRunAeadProvider(RecordingRunAeadBackend())
+        private val runAead = provider.openExisting(RUN)
+        private val confirmation = KeyConfirmationValue(RecoveryCandidate.MICROFILE, RUN)
+        private val confirmationBytes = runAead.encryptKeyConfirmation(confirmation)
+        val units = mutableListOf<RecoveryMicrofileUnitRow>()
+        private val publications = mutableListOf<RecoveryManifestPublicationRow>()
+        val originalBytes = linkedMapOf<String, ByteArray>()
+        private val expectedUnits: List<RecoveryMicrofileUnitRow>
+        private val expectedPublications: List<RecoveryManifestPublicationRow>
+        private val candidate: RecoveryCandidateSnapshot
+        private val faultedBytes: Map<String, ByteArray>
+        val os = InventoryOs()
+        val journal = DispositionJournal()
+        private val emitted = mutableListOf<RecoveryQuarantineIntentRow>()
+
+        init {
+            originalBytes[CONFIRMATION_NAME] = confirmationBytes.copyOf()
+            var previous = Sha256Value.ZERO
+            repeat(3) { index ->
+                val generation = (index + 1).toULong()
+                val start = (index * 4).toULong()
+                val end = start + 4UL
+                val envelopeAad =
+                    KeyEnvelopeAad(
+                        RecoveryCandidate.MICROFILE,
+                        RUN,
+                        KeyEnvelopeTargetKind.MICROFILE,
+                        generation,
+                        index.toULong(),
+                        start,
+                        end,
+                        5UL,
+                        previous,
+                    )
+                val keyset = RecoveryTinkRuntime.newAeadKeyset(envelopeAad)
+                val envelope = keyset.serializeEncrypted(runAead)
+                val ciphertext =
+                    keyset.encryptMicrofile(
+                        plaintext.copyOfRange(index * 4, index * 4 + 4),
+                        MicrofileAad(
+                            RecoveryCandidate.MICROFILE,
+                            RUN,
+                            generation,
+                            index.toULong(),
+                            start,
+                            end,
+                            5UL,
+                            previous,
+                        ),
+                    )
+                val unit =
+                    RecoveryMicrofileUnitRow(
+                        RUN.toCanonicalString(),
+                        RecoveryCandidate.MICROFILE.contractId,
+                        index.toULong(),
+                        start,
+                        end,
+                        5UL,
+                        RecoveryRelativeNames.microfileCiphertext(index.toULong()),
+                        ciphertext.size.toLong(),
+                        Sha256Value.calculate(ciphertext),
+                        RecoveryRelativeNames.microfileKeyEnvelope(index.toULong()),
+                        envelope.size.toLong(),
+                        Sha256Value.calculate(envelope),
+                        generation,
+                        Sha256Value.calculate(byteArrayOf((70 + index).toByte())),
+                    )
+                units += unit
+                originalBytes[unit.ciphertextRelativeName] = ciphertext.copyOf()
+                originalBytes[unit.keyEnvelopeRelativeName] = envelope.copyOf()
+                val manifest =
+                    RecoveryManifest.create(
+                        RecoveryCandidate.MICROFILE,
+                        RUN,
+                        generation,
+                        previous,
+                        end,
+                        units.map { row ->
+                            RecoveryManifestEntry(
+                                row.unitIndex,
+                                row.plaintextStartInclusive,
+                                row.plaintextEndExclusive,
+                                row.cadenceSeconds,
+                                row.ciphertextBytes.toULong(),
+                                row.ciphertextSha256,
+                                row.keyEnvelopeBytes.toULong(),
+                                row.keyEnvelopeSha256,
+                                row.ciphertextRelativeName,
+                                row.keyEnvelopeRelativeName,
+                            )
+                        },
+                    )
+                val manifestEnvelopeAad =
+                    KeyEnvelopeAad(
+                        RecoveryCandidate.MICROFILE,
+                        RUN,
+                        KeyEnvelopeTargetKind.MANIFEST,
+                        generation,
+                        KeyEnvelopeAad.NOT_APPLICABLE_UNIT_INDEX,
+                        0UL,
+                        end,
+                        0UL,
+                        previous,
+                    )
+                val manifestKeyset = RecoveryTinkRuntime.newAeadKeyset(manifestEnvelopeAad)
+                val manifestEnvelope = manifestKeyset.serializeEncrypted(runAead)
+                val manifestCiphertext =
+                    manifestKeyset.encryptPublication(
+                        RecoveryManifestCodec.encode(manifest),
+                        PublicationAad(
+                            RecoveryCandidate.MICROFILE,
+                            RUN,
+                            PublicationKind.MANIFEST,
+                            generation,
+                            generation - 1UL,
+                            end,
+                            previous,
+                        ),
+                    )
+                val publication =
+                    RecoveryManifestPublicationRow(
+                        RUN.toCanonicalString(),
+                        RecoveryCandidate.MICROFILE.contractId,
+                        PublicationKind.MANIFEST,
+                        generation,
+                        end,
+                        RecoveryRelativeNames.manifestCiphertext(generation),
+                        manifestCiphertext.size.toLong(),
+                        Sha256Value.calculate(manifestCiphertext),
+                        RecoveryRelativeNames.manifestKeyEnvelope(generation),
+                        manifestEnvelope.size.toLong(),
+                        Sha256Value.calculate(manifestEnvelope),
+                        previous,
+                    )
+                publications += publication
+                originalBytes[publication.publicationRelativeName] = manifestCiphertext.copyOf()
+                originalBytes[publication.keyEnvelopeRelativeName] = manifestEnvelope.copyOf()
+                previous = publication.publicationSha256
+            }
+            expectedUnits = units.toList()
+            expectedPublications = publications.toList()
+            candidate =
+                RecoveryCandidateSnapshot(
+                    listOf(
+                        CandidateBootstrapRow(
+                            RUN.toCanonicalString(),
+                            RecoveryCandidate.MICROFILE.contractId,
+                            KeyConfirmationState.VALID,
+                        )
+                    ),
+                    expectedUnits.toList(),
+                    expectedPublications.toList(),
+                )
+            // From this point onward neither published hashes nor manifest contents are recomputed.
+            val active = originalBytes.mapValues { it.value.copyOf() }.toMutableMap()
+            val u1 = units[1].ciphertextRelativeName
+            val u2 = units[2].ciphertextRelativeName
+            when (mutation) {
+                DispositionMutation.NONE -> Unit
+                DispositionMutation.APPEND -> active[u1] = active.getValue(u1) + byteArrayOf(90)
+                DispositionMutation.FLIP ->
+                    active[u1] =
+                        active.getValue(u1).copyOf().apply {
+                            this[lastIndex] = (last().toInt() xor 1).toByte()
+                        }
+                DispositionMutation.TRUNCATE ->
+                    active[u1] = active.getValue(u1).copyOf(active.getValue(u1).size / 2)
+                DispositionMutation.SWAP -> {
+                    active[u1] = originalBytes.getValue(u2).copyOf()
+                    active[u2] = originalBytes.getValue(u1).copyOf()
+                }
+            }
+            faultedBytes = active.mapValues { it.value.copyOf() }
+            os.seed(active, emptyMap())
+        }
+
+        fun reconcile(): MicrofileReconciliationResult {
+            val storage = AndroidOsRecoveryReconciliationStorage(ROOT, os)
+            val source =
+                AndroidRecoveryReconciliationSource(
+                    loadBootstrap = { run ->
+                        assertEquals(RUN, run)
+                        StoredKeyConfirmationIdentity(
+                            confirmation,
+                            CONFIRMATION_NAME,
+                            confirmationBytes.size.toLong(),
+                            Sha256Value.calculate(confirmationBytes),
+                            confirmation.canonicalAliasSha256,
+                        )
+                    },
+                    loadSnapshot = { run ->
+                        assertEquals(RUN, run)
+                        candidate
+                    },
+                    loadPending = journal::loadPending,
+                    loadAllIntents = journal::loadAll,
+                    storage = storage,
+                    aliasExists = { run ->
+                        assertEquals(RUN, run)
+                        true
+                    },
+                    loadRetained = journal::loadNamed,
+                )
+            return RecoveryMicrofileReconciliationController(
+                    source,
+                    AndroidRecoveryMicrofileCrypto(provider),
+                    RecoveryKeyConfirmationController(provider::openExisting),
+                    RecoveryQuarantineController(
+                        storage,
+                        journal,
+                        RecoveryQuarantineEvidenceSink(emitted::add),
+                    ),
+                )
+                .reconcile(RUN)
+        }
+
+        @Suppress("LongMethod")
+        fun assertDisposition(mutation: DispositionMutation) {
+            val expected = linkedMapOf<String, RecoveryQuarantineObservedState>()
+            expected[units[1].ciphertextRelativeName] =
+                RecoveryQuarantineObservedState.REFERENCED_REJECTED
+            if (mutation != DispositionMutation.APPEND) {
+                expected[units[1].keyEnvelopeRelativeName] =
+                    RecoveryQuarantineObservedState.REFERENCED_DEPENDENT
+                expected[units[2].ciphertextRelativeName] =
+                    if (mutation == DispositionMutation.SWAP)
+                        RecoveryQuarantineObservedState.REFERENCED_REJECTED
+                    else RecoveryQuarantineObservedState.REFERENCED_DEPENDENT
+                expected[units[2].keyEnvelopeRelativeName] =
+                    RecoveryQuarantineObservedState.REFERENCED_DEPENDENT
+                for (publication in publications.drop(1)) {
+                    expected[publication.publicationRelativeName] =
+                        RecoveryQuarantineObservedState.REFERENCED_DEPENDENT
+                    expected[publication.keyEnvelopeRelativeName] =
+                        RecoveryQuarantineObservedState.REFERENCED_DEPENDENT
+                }
+            }
+            assertEquals(if (mutation == DispositionMutation.APPEND) 1 else 8, journal.rows.size)
+            assertEquals(
+                expected,
+                journal.rows.values.associate {
+                    it.input.sourceRelativeName to it.recordedObservedState
+                },
+            )
+            val active = os.dispositionActiveBytes()
+            val destinations = os.dispositionQuarantineBytes()
+            assertEquals(originalBytes.keys - expected.keys, active.keys)
+            active.forEach { (name, actual) ->
+                assertArrayEquals(name, originalBytes.getValue(name), actual)
+            }
+            assertEquals(
+                journal.rows.values.map { it.destinationRelativeName }.toSet(),
+                destinations.keys,
+            )
+            journal.rows.values.forEach { row ->
+                val name = row.input.sourceRelativeName
+                val full = faultedBytes.getValue(name)
+                assertEquals(QuarantineIntentState.COMPLETED, row.state)
+                assertEquals(QuarantineBootstrapBinding.PRESENT, row.bootstrapBinding)
+                assertEquals(RecoveryCandidate.MICROFILE, row.input.candidate)
+                assertEquals(RUN, row.input.runId)
+                assertEquals(roleFor(name), row.input.artifactRole)
+                assertEquals(full.size.toULong(), row.input.sourceBytes)
+                assertEquals(Sha256Value.calculate(full), row.input.sourceSha256)
+                assertEquals(RecoveryQuarantineIntent.calculate(row.input), row.intentId)
+                assertEquals(
+                    RecoveryQuarantineIntent.destination(row.input),
+                    row.destinationRelativeName,
+                )
+                assertArrayEquals(name, full, destinations.getValue(row.destinationRelativeName))
+                if (
+                    row.recordedObservedState ==
+                        RecoveryQuarantineObservedState.REFERENCED_DEPENDENT
+                )
+                    assertArrayEquals(name, originalBytes.getValue(name), full)
+            }
+            assertTrue(emitted.all { it.state == QuarantineIntentState.COMPLETED })
+            assertEquals(journal.rows.keys, emitted.map { it.intentId }.toSet())
+            assertOriginalJournalRows()
+        }
+
+        private fun roleFor(name: String) =
+            when {
+                units.any { it.ciphertextRelativeName == name } ->
+                    RecoveryQuarantineArtifactRole.MICROFILE_CIPHERTEXT
+                units.any { it.keyEnvelopeRelativeName == name } ->
+                    RecoveryQuarantineArtifactRole.MICROFILE_KEY_ENVELOPE
+                publications.any { it.publicationRelativeName == name } ->
+                    RecoveryQuarantineArtifactRole.MANIFEST_CIPHERTEXT
+                publications.any { it.keyEnvelopeRelativeName == name } ->
+                    RecoveryQuarantineArtifactRole.MANIFEST_KEY_ENVELOPE
+                else -> error("No original artifact: $name")
+            }
+
+        fun assertOriginalJournalRows() {
+            assertEquals(expectedUnits, candidate.units)
+            assertEquals(expectedPublications, candidate.publications)
+            assertEquals(
+                listOf(4UL, 8UL, 12UL),
+                candidate.publications.map { it.committedEndExclusive },
+            )
+            assertEquals(listOf(0UL, 1UL, 2UL), candidate.units.map { it.unitIndex })
+            assertEquals(12UL, candidate.publications.last().committedEndExclusive)
+        }
+    }
+
+    private class DispositionJournal : RecoveryQuarantineJournal {
+        val rows = linkedMapOf<Sha256Value, RecoveryQuarantineIntentRow>()
+        var pauseAfterFirstCompleted = false
+        var commits = 0
+            private set
+
+        override fun load(intentId: Sha256Value) = rows[intentId]
+
+        override fun loadBySource(input: RecoveryQuarantineIntentInput) =
+            rows.values.singleOrNull {
+                it.input.runId == input.runId &&
+                    it.input.candidate == input.candidate &&
+                    it.input.sourceRelativeName == input.sourceRelativeName &&
+                    it.input.sourceSha256 == input.sourceSha256
+            }
+
+        fun loadAll(run: RunId) = rows.values.filter { it.input.runId == run }.toList()
+
+        override fun loadPending(runId: RunId) =
+            loadAll(runId).filter { it.state == QuarantineIntentState.PENDING }
+
+        fun loadNamed(run: RunId, name: String): RecoveryQuarantineIntentRow? {
+            val named = loadAll(run).filter { it.input.sourceRelativeName == name }
+            check(named.size <= 1) { "Ambiguous retained source" }
+            return named.singleOrNull()
+        }
+
+        override fun beginNonExclusive(): RecoveryQuarantineTransaction {
+            if (
+                pauseAfterFirstCompleted &&
+                    rows.size == 1 &&
+                    rows.values.single().state == QuarantineIntentState.COMPLETED
+            )
+                error("Synthetic interruption after first rejected completion")
+            return object : RecoveryQuarantineTransaction {
+                private val proposed = rows.toMutableMap()
+                private var successful = false
+
+                override fun insert(row: RecoveryQuarantineIntentRow) {
+                    check(row.intentId !in proposed)
+                    check(loadBySource(row.input) == null)
+                    proposed[row.intentId] = row
+                }
+
+                override fun complete(intentId: Sha256Value) {
+                    val prior = proposed.getValue(intentId)
+                    check(prior.state == QuarantineIntentState.PENDING)
+                    proposed[intentId] = prior.copy(state = QuarantineIntentState.COMPLETED)
+                }
+
+                override fun markSuccessful() {
+                    successful = true
+                }
+
+                override fun end() {
+                    if (successful) {
+                        rows.clear()
+                        rows.putAll(proposed)
+                        commits++
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    fun `named retained source returns only original bytes and normal source stays absent`() {
+        val originalBytes = byteArrayOf(1, 2, 3)
+        val full = originalBytes + byteArrayOf(4, 5)
+        val name = RecoveryRelativeNames.microfileCiphertext(1UL)
+        val row =
+            intent(name, full, QuarantineIntentState.COMPLETED)
+                .copy(recordedObservedState = RecoveryQuarantineObservedState.REFERENCED_REJECTED)
+        val os =
+            InventoryOs().apply { seed(emptyMap(), mapOf(row.destinationRelativeName to full)) }
+        var queries = 0
+        val source =
+            retainedSource(os) { run, selectedName ->
+                assertEquals(RUN, run)
+                assertEquals(name, selectedName)
+                queries++
+                row
+            }
+        val original =
+            row.input.copy(sourceBytes = 3UL, sourceSha256 = Sha256Value.calculate(originalBytes))
+        val bytes = source.loadRetainedArtifact(original, RecoveryArtifactContext.UNIT_CIPHERTEXT)
+        assertNotNull("Named retained evidence port unavailable", bytes)
+        assertArrayEquals(originalBytes, requireNotNull(bytes).snapshot())
+        assertEquals(1, queries)
+        assertNull(source.loadArtifact(RUN, name, RecoveryArtifactContext.UNIT_CIPHERTEXT))
+        assertTrue(os.listed.isEmpty())
+    }
+
+    @Test
+    fun `retained journal malformed result is structural while query failure remains operational`() {
+        val row =
+            intent(
+                RecoveryRelativeNames.microfileCiphertext(1UL),
+                byteArrayOf(1),
+                QuarantineIntentState.COMPLETED,
+            )
+        for (malformed in listOf(false, true)) {
+            val os = InventoryOs().apply { seed(emptyMap(), emptyMap()) }
+            val source =
+                retainedSource(os) { _, _ ->
+                    if (malformed) throw RecoveryMicrofileQuarantineReadbackException()
+                    else throw android.database.sqlite.SQLiteException("query failed")
+                }
+            val failure = assertThrowsSource {
+                source.loadRetainedArtifact(row.input, RecoveryArtifactContext.UNIT_CIPHERTEXT)
+            }
+            assertEquals(
+                if (malformed) RecoveryFailureCategory.STRUCTURAL
+                else RecoveryFailureCategory.OPERATIONAL,
+                failure.diagnostic.category,
+            )
+            assertEquals(RecoveryFailureStage.JOURNAL, failure.diagnostic.stage)
+            assertTrue(os.events.isEmpty())
+        }
+    }
+
+    private fun retainedSource(
+        os: InventoryOs,
+        lookup: (RunId, String) -> RecoveryQuarantineIntentRow?,
+    ) =
+        AndroidRecoveryReconciliationSource(
+            loadBootstrap = { storedConfirmation(byteArrayOf(9)) },
+            loadSnapshot = { error("No inventory query during retained read") },
+            loadPending = { emptyList() },
+            loadAllIntents = { error("No all-intents query during retained read") },
+            storage = AndroidOsRecoveryReconciliationStorage(ROOT, os),
+            aliasExists = { true },
+            loadRetained = lookup,
+        )
+
     @Test
     fun `PAR01 actual source preserves exact upper bound observation for body and inventory`() {
         val name = RecoveryRelativeNames.manifestCiphertext(3UL)
@@ -913,7 +1681,13 @@ class AndroidRecoveryReconciliationSourceTest {
         val events = fixture.eventsSnapshot()
         val targetClose = events.indexOfLast { it.startsWith(fixture.targetClosePrefix()) }
         assertTrue(targetClose >= 0)
-        assertTrue(events.drop(targetClose + 1).all { it.startsWith("os.lstat:") })
+        // Missing older generations may now check the separate retained-evidence port.
+        // Its bootstrap lookup cannot cause any further descriptor read or crypto call here.
+        assertTrue(
+            events.drop(targetClose + 1).all {
+                it.startsWith("os.lstat:") || it == "journal.bootstrap"
+            }
+        )
         assertFalse(events.any { it.startsWith("crypto.manifest:") })
     }
 
@@ -1705,6 +2479,44 @@ class AndroidRecoveryReconciliationSourceTest {
     private class Descriptor(val path: String, val id: Int) : RecoveryReconciliationDescriptor
 
     private class InventoryOs : RecoveryReconciliationOs {
+        // Insert inside the existing private InventoryOs in
+        // AndroidRecoveryReconciliationSourceTest.
+        // These test-only methods expose copies and mutate already existing entries, avoiding
+        // duplicate
+        // directory children from calling addActive repeatedly. All reads under test still use real
+        // storage.
+
+        fun dispositionActiveBytes(): Map<String, ByteArray> =
+            dispositionBytes(File(ROOT, "poc-recovery/v1/runs/${RUN.toCanonicalString()}"))
+
+        fun dispositionQuarantineBytes(): Map<String, ByteArray> =
+            dispositionBytes(File(ROOT, "poc-recovery/v1/quarantine/${RUN.toCanonicalString()}"))
+
+        private fun dispositionBytes(root: File): Map<String, ByteArray> {
+            val prefix = root.path + File.separator
+            return data
+                .filterKeys { it.startsWith(prefix) }
+                .mapKeys { (path, _) ->
+                    path.removePrefix(prefix).replace(File.separatorChar, '/')
+                }
+                .mapValues { it.value.copyOf() }
+        }
+
+        fun dispositionReplaceQuarantine(relative: String, bytes: ByteArray) {
+            val path =
+                File(ROOT, "poc-recovery/v1/quarantine/${RUN.toCanonicalString()}/$relative").path
+            check(stats[path]?.type == BootstrapPathType.REGULAR && path in data)
+            stats[path] = RecoveryReconciliationStat(BootstrapPathType.REGULAR, bytes.size.toLong())
+            data[path] = bytes.copyOf()
+        }
+
+        fun dispositionRemoveActive(relative: String) {
+            val path = activePath(relative)
+            check(stats.remove(path) != null)
+            check(data.remove(path) != null)
+            children[requireNotNull(File(path).parentFile).path]?.remove(File(path).name)
+        }
+
         private val stats = mutableMapOf<String, RecoveryReconciliationStat>()
         private val data = mutableMapOf<String, ByteArray>()
         private val children = mutableMapOf<String, MutableList<String>>()

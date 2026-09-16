@@ -66,6 +66,20 @@ internal class AndroidRecoveryQuarantineJournal(context: Context) : RecoveryQuar
         return loadAll(runId).filter { it.state == QuarantineIntentState.PENDING }
     }
 
+    /** Separate exact named query; every second version rejects the whole read. */
+    fun loadMicrofileSource(runId: RunId, relativeName: String): RecoveryQuarantineIntentRow? =
+        AndroidRecoveryJournalDatabase.writable(applicationContext)
+            .query(
+                RecoveryJournalSchema.QUARANTINE_TABLE,
+                COLUMNS,
+                "run_id=? AND candidate_id='REC-MICROFILE-TINK' AND source_relative_name=?",
+                arrayOf(runId.toCanonicalString(), relativeName),
+                null,
+                null,
+                null,
+            )
+            .use(RecoveryMicrofileQuarantineReadback::read)
+
     fun loadAll(runId: RunId): List<RecoveryQuarantineIntentRow> {
         val rows = mutableListOf<RecoveryQuarantineIntentRow>()
         AndroidRecoveryJournalDatabase.writable(applicationContext)
@@ -190,6 +204,47 @@ internal object RecoveryStreamingQuarantineReadback {
                 throw RecoveryStreamingQuarantineReadbackException()
             }
         if (cursor.moveToNext()) throw RecoveryStreamingQuarantineReadbackException()
+        return row
+    }
+}
+
+internal class RecoveryMicrofileQuarantineReadbackException : RuntimeException()
+
+internal object RecoveryMicrofileQuarantineReadback {
+    @Suppress("MagicNumber", "SwallowedException", "ThrowsCount")
+    fun read(cursor: android.database.Cursor): RecoveryQuarantineIntentRow? {
+        if (!cursor.moveToFirst()) return null
+        val row =
+            try {
+                require(cursor.columnCount == 13)
+                for (column in 0..12) {
+                    val expected =
+                        when (column) {
+                            0,
+                            11 -> android.database.Cursor.FIELD_TYPE_BLOB
+                            10 -> android.database.Cursor.FIELD_TYPE_INTEGER
+                            else -> android.database.Cursor.FIELD_TYPE_STRING
+                        }
+                    require(cursor.getType(column) == expected)
+                }
+                cursor.row().also {
+                    require(
+                        it.input.candidate == RecoveryCandidate.MICROFILE &&
+                            it.bootstrapBinding == QuarantineBootstrapBinding.PRESENT &&
+                            it.state == QuarantineIntentState.COMPLETED &&
+                            it.recordedObservedState in
+                                setOf(
+                                    RecoveryQuarantineObservedState.REFERENCED_REJECTED,
+                                    RecoveryQuarantineObservedState.REFERENCED_DEPENDENT,
+                                )
+                    )
+                }
+            } catch (_: IllegalArgumentException) {
+                throw RecoveryMicrofileQuarantineReadbackException()
+            } catch (_: IllegalStateException) {
+                throw RecoveryMicrofileQuarantineReadbackException()
+            }
+        if (cursor.moveToNext()) throw RecoveryMicrofileQuarantineReadbackException()
         return row
     }
 }

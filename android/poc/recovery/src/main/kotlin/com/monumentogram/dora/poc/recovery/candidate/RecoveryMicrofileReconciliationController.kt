@@ -47,6 +47,12 @@ internal interface RecoveryReconciliationSource {
 
     fun loadPendingQuarantine(runId: RunId): List<RecoveryQuarantineIntentRow> = emptyList()
 
+    /** Optional separate evidence port. Normal artifact loading remains active-only. */
+    fun loadRetainedArtifact(
+        original: RecoveryQuarantineIntentInput,
+        context: RecoveryArtifactContext,
+    ): RecoveryArtifactBytes? = null
+
     fun loadInventory(runId: RunId): List<RecoveryInventoryEntry> = emptyList()
 
     fun loadInventorySnapshot(
@@ -267,7 +273,28 @@ internal data class RecoveryQuarantineIntentRow(
     val bootstrapBinding: QuarantineBootstrapBinding,
     val destinationRelativeName: String,
     val state: QuarantineIntentState,
-)
+) {
+    init {
+        if (
+            recordedObservedState == RecoveryQuarantineObservedState.REFERENCED_REJECTED ||
+                recordedObservedState == RecoveryQuarantineObservedState.REFERENCED_DEPENDENT
+        ) {
+            require(
+                input.candidate == RecoveryCandidate.MICROFILE &&
+                    bootstrapBinding == QuarantineBootstrapBinding.PRESENT &&
+                    input.artifactRole in
+                        setOf(
+                            RecoveryQuarantineArtifactRole.MICROFILE_CIPHERTEXT,
+                            RecoveryQuarantineArtifactRole.MICROFILE_KEY_ENVELOPE,
+                            RecoveryQuarantineArtifactRole.MANIFEST_CIPHERTEXT,
+                            RecoveryQuarantineArtifactRole.MANIFEST_KEY_ENVELOPE,
+                        )
+            ) {
+                "Referenced quarantine requires a MICROFILE bootstrap and role"
+            }
+        }
+    }
+}
 
 internal data class QuarantinePathObservation(
     val source: QuarantinePathState,
@@ -1018,6 +1045,8 @@ internal class RecoveryMicrofileReconciliationController(
             )
         }
         val validUnits = maximalValidUnits(candidate.units, canonicalRun)
+        val retainedArtifacts =
+            RecoveryMicrofileReferencedArtifacts(source, quarantineController, quarantineOutcomes)
         val laterRowsInvalid = validUnits.size != candidate.units.size
         val publications = candidate.publications.associateBy { it.generation }
         val latestGeneration = candidate.publications.maxOfOrNull { it.generation } ?: 0UL
@@ -1056,7 +1085,12 @@ internal class RecoveryMicrofileReconciliationController(
                         )
                 } else {
                     val attempt =
-                        authenticateManifest(runId, row, validUnits.take(generation.toInt()))
+                        authenticateManifest(
+                            runId,
+                            row,
+                            validUnits.take(generation.toInt()),
+                            retainedArtifacts,
+                        )
                     selected = attempt.value
                     if (attempt.failure != null) {
                         manifestRejections +=
@@ -1114,15 +1148,11 @@ internal class RecoveryMicrofileReconciliationController(
         for (unit in validUnits.take(manifest.entries.size)) {
             val loaded =
                 try {
-                    source.loadArtifact(
-                        runId,
-                        unit.keyEnvelopeRelativeName,
-                        RecoveryArtifactContext.UNIT_KEY_ENVELOPE,
+                    retainedArtifacts.loadUnit(
+                        RecoveryMicrofileReferencedArtifacts.unitEnvelope(runId, unit)
                     ) to
-                        source.loadArtifact(
-                            runId,
-                            unit.ciphertextRelativeName,
-                            RecoveryArtifactContext.UNIT_CIPHERTEXT,
+                        retainedArtifacts.loadUnit(
+                            RecoveryMicrofileReferencedArtifacts.unitCiphertext(runId, unit)
                         )
                 } catch (error: RecoverySourceAccessException) {
                     failure =
@@ -1235,6 +1265,33 @@ internal class RecoveryMicrofileReconciliationController(
                 break
             }
         }
+        val failedUnit = validUnits.getOrNull(authenticated.size)
+        if (
+            failure != null &&
+                failedUnit != null &&
+                (retainedArtifacts.wasRejected(
+                    RecoveryMicrofileReferencedArtifacts.unitCiphertext(runId, failedUnit)
+                ) ||
+                    retainedArtifacts.wasRejected(
+                        RecoveryMicrofileReferencedArtifacts.unitEnvelope(runId, failedUnit)
+                    ))
+        ) {
+            val dispositionFailure =
+                retainDependentMembers(
+                    runId,
+                    failedUnit,
+                    validUnits.take(manifest.entries.size),
+                    publications,
+                    publication.generation,
+                    retainedArtifacts,
+                )
+            if (dispositionFailure != null) {
+                failureDetail = dispositionFailure
+                failure =
+                    classifyEnvelopeContext(dispositionFailure) to
+                        artifactResultDiagnostic(dispositionFailure)
+            }
+        }
         val prefix = authenticatedPrefix(runId, publication, output.toByteArray(), authenticated)
         return if (
             failure == null &&
@@ -1280,18 +1337,15 @@ internal class RecoveryMicrofileReconciliationController(
         runId: RunId,
         row: RecoveryManifestPublicationRow,
         units: List<RecoveryMicrofileUnitRow>,
+        retainedArtifacts: RecoveryMicrofileReferencedArtifacts,
     ): ManifestAttempt {
         val loaded =
             try {
-                source.loadArtifact(
-                    runId,
-                    row.keyEnvelopeRelativeName,
-                    RecoveryArtifactContext.MANIFEST_KEY_ENVELOPE,
+                retainedArtifacts.loadOriginal(
+                    RecoveryMicrofileReferencedArtifacts.manifestEnvelope(runId, row)
                 ) to
-                    source.loadArtifact(
-                        runId,
-                        row.publicationRelativeName,
-                        RecoveryArtifactContext.MANIFEST_CIPHERTEXT,
+                    retainedArtifacts.loadOriginal(
+                        RecoveryMicrofileReferencedArtifacts.manifestCiphertext(runId, row)
                     )
             } catch (error: RecoverySourceAccessException) {
                 return ManifestAttempt(null, error.diagnostic)
@@ -1363,6 +1417,69 @@ internal class RecoveryMicrofileReconciliationController(
                     RecoveryFailureStage.OPERATIONAL,
                 ),
             )
+        }
+    }
+
+    /**
+     * The selected authenticated manifest proves unit membership; each publication proves itself.
+     */
+    @Suppress(
+        "ReturnCount",
+        "LongMethod",
+        "LoopWithTooManyJumpStatements",
+        "LongParameterList",
+        "CyclomaticComplexMethod",
+    )
+    private fun retainDependentMembers(
+        runId: RunId,
+        failed: RecoveryMicrofileUnitRow,
+        units: List<RecoveryMicrofileUnitRow>,
+        publications: Map<ULong, RecoveryManifestPublicationRow>,
+        selectedGeneration: ULong,
+        retained: RecoveryMicrofileReferencedArtifacts,
+    ): RecoveryFailureDiagnostic? {
+        val dependentPublications = mutableListOf<RecoveryManifestPublicationRow>()
+        for (generation in failed.manifestGeneration..selectedGeneration) {
+            val row = publications[generation] ?: continue
+            val previous =
+                if (generation == 1UL) Sha256Value.ZERO
+                else publications[generation - 1UL]?.publicationSha256
+            if (previous == null || row.previousPublicationCiphertextSha256 != previous) continue
+            val attempt = authenticateManifest(runId, row, units.take(generation.toInt()), retained)
+            if (attempt.value != null) dependentPublications += row
+        }
+        return try {
+            for (unit in units.filter { it.unitIndex >= failed.unitIndex }) {
+                if (
+                    !retained.retainDependent(
+                        RecoveryMicrofileReferencedArtifacts.unitCiphertext(runId, unit)
+                    )
+                )
+                    return null
+                if (
+                    !retained.retainDependent(
+                        RecoveryMicrofileReferencedArtifacts.unitEnvelope(runId, unit)
+                    )
+                )
+                    return null
+            }
+            for (row in dependentPublications) {
+                if (
+                    !retained.retainDependent(
+                        RecoveryMicrofileReferencedArtifacts.manifestCiphertext(runId, row)
+                    )
+                )
+                    return null
+                if (
+                    !retained.retainDependent(
+                        RecoveryMicrofileReferencedArtifacts.manifestEnvelope(runId, row)
+                    )
+                )
+                    return null
+            }
+            null
+        } catch (error: RecoverySourceAccessException) {
+            error.diagnostic
         }
     }
 

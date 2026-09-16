@@ -119,6 +119,272 @@ GIT_QUERY_OLD_COLLECTOR_BINDING = dict(
     ownedProcessModuleSha256='95c5fd53561a5cb0a087aa0109ded39f6845c44c59cae3cdc4ae572e8f1ab45d')
 
 
+# MICROFILE schema 6 is a new Android lineage, not a host-only Git-query repair.
+MICROFILE_DISPOSITION_BASELINE_COMMIT = '88ea99747da4178aa60aca04b73d16679d603cd1'
+MICROFILE_DISPOSITION_BASELINE_TREE = 'aedbff90ad4fbd68bd377df364b66463519219f4'
+MICROFILE_DISPOSITION_OLD_IMPLEMENTATION_COMMIT = '0e83515058615cffde58335724fa14a466c48bf6'
+MICROFILE_DISPOSITION_OLD_IMPLEMENTATION_TREE = '98123ff75274cb5b78eb77152ed2ddccb659f9a8'
+MICROFILE_DISPOSITION_OLD_PREFIX_BINDING = dict(COLLECTOR_OLD_PREFIX_BINDING,
+    applicabilitySha256='1e4e334cdad477495366a1f6b295f1da23455d5793246df22357829fc825acc6')
+MICROFILE_DISPOSITION_OLD_GIT_BINDING = dict(
+    proofSha256=MICROFILE_DISPOSITION_OLD_PREFIX_BINDING['applicabilitySha256'],
+    lifecycleLibrarySha256='2a3fc3f1d84c24194fee78b6e8975f056f35ac71ce06110bd65f03b1fb5ab2c8')
+MICROFILE_DISPOSITION_PROPOSAL_SHA256 = 'b4731330482017700d77a1348aec436b3859a6aac47bcc1ea8deb72114ddb4c1'
+MICROFILE_DISPOSITION_DECISION_SHA256 = '80ec478bd6078520fceec075f42c26d2797a7078ac9824bba64616562d7713b1'
+MICROFILE_DISPOSITION_ANDROID_PATHS = frozenset(PREFIX+part+'/'+PACKAGE+name for part,name in (
+    ('androidTest','journal/RecoveryJournalConnectionConfigurationTest.kt'),
+    ('androidTest','journal/RecoveryStreamPrefixMigrationVerification.kt'),
+    ('androidTest','journal/RecoveryMicrofileDispositionMigrationVerification.kt'),
+    ('main','candidate/RecoveryMicrofileReconciliationController.kt'),
+    ('main','candidate/RecoveryMicrofileReferencedArtifacts.kt'),
+    ('main','contract/RecoveryQuarantineIntent.kt'),
+    ('main','journal/AndroidRecoveryJournalDatabase.kt'),
+    ('main','journal/AndroidRecoveryQuarantineJournal.kt'),
+    ('main','journal/AndroidRecoveryReconciliationSource.kt'),
+    ('main','journal/RecoveryMicrofileDispositionSchema.kt'),
+    ('main','storage/AndroidOsRecoveryReconciliationStorage.kt'),
+    ('test','candidate/RecoveryMicrofileReferencedIntentTest.kt'),
+    ('test','journal/AndroidRecoveryReconciliationSourceTest.kt'),
+    ('test','journal/RecoveryJournalSchemaPlanTest.kt'),
+    ('test','journal/RecoveryStreamPrefixSchemaTest.kt'),
+    ('test','journal/RecoveryMicrofileDispositionSchemaTest.kt'),
+    ('test','journal/RecoveryMicrofileQuarantineReadbackTest.kt'),
+    ('test','storage/AndroidOsRecoveryReconciliationStorageTest.kt'),
+))
+MICROFILE_DISPOSITION_ADDED_PATHS = frozenset(PREFIX+part+'/'+PACKAGE+name for part,name in (
+    ('androidTest','journal/RecoveryMicrofileDispositionMigrationVerification.kt'),
+    ('main','candidate/RecoveryMicrofileReferencedArtifacts.kt'),
+    ('main','journal/RecoveryMicrofileDispositionSchema.kt'),
+    ('test','candidate/RecoveryMicrofileReferencedIntentTest.kt'),
+    ('test','journal/RecoveryMicrofileDispositionSchemaTest.kt'),
+    ('test','journal/RecoveryMicrofileQuarantineReadbackTest.kt'),
+)) | frozenset({'docs/adr/ADR-0009-microfile-referenced-quarantine.md',
+               'tools/test_rec_microfile_disposition_schema.py'})
+MICROFILE_DISPOSITION_PATHS = MICROFILE_DISPOSITION_ANDROID_PATHS | CAPTURE_HOST_PATHS | frozenset({
+    'docs/adr/ADR-0009-microfile-referenced-quarantine.md',
+    'docs/DORA_MVP1_PRODUCT_DECISIONS.md',
+    'docs/DORA_MVP1_STAGE_STATUS.md',
+    'docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md',
+    'tools/test_rec_microfile_disposition_schema.py',
+})
+
+
+def microfile_disposition_binding(api):
+    key='ALPHA_MICROFILE_DISPOSITION_BINDING'
+    if key not in api:return None
+    value=api[key]
+    require(isinstance(value,dict) and set(value)=={'proofSha256'}
+            and isinstance(value['proofSha256'],str) and re.fullmatch('[0-9a-f]{64}',value['proofSha256']),
+            'Malformed MICROFILE disposition binding')
+    return value
+
+
+def microfile_disposition_metadata_literal(text):
+    parsed=ast.parse(text);key='ALPHA_MICROFILE_DISPOSITION_BINDING'
+    writes=[n for n in ast.walk(parsed) if isinstance(n,ast.Name) and n.id==key and isinstance(n.ctx,ast.Store)]
+    if not writes:return
+    assignments=[n for n in parsed.body if isinstance(n,ast.Assign) and len(n.targets)==1
+                 and isinstance(n.targets[0],ast.Name) and n.targets[0].id==key]
+    require(len(writes)==len(assignments)==1,'Ambiguous MICROFILE disposition metadata binding')
+    require(isinstance(assignments[0].value,ast.Dict) and len(assignments[0].value.keys)==1,
+            'MICROFILE disposition binding must be an exact one-key literal')
+    try:value=ast.literal_eval(assignments[0].value)
+    except (ValueError,TypeError,SyntaxError) as exc:raise ValueError('Nonliteral MICROFILE disposition binding') from exc
+    microfile_disposition_binding({key:value})
+
+
+def microfile_disposition_facts(api, profile, binding, historical_descriptor, owner_proposal,
+                               owner_decision, build, apks, review):
+    """Recompute immutable ancestry; return static facts, never runtime or coverage admission.
+
+    build is the actual closed build manifest, not a synthetic PASS assertion. The
+    independently pinned technical review must bind it and both rehashed APK files
+    to this exact implementation. Build/APK provenance is reviewed before metadata
+    freeze; this function checks those exact links, not Gradle logs heuristically.
+    """
+    require(microfile_disposition_binding(api) is not None,'Missing MICROFILE disposition binding')
+    require(git_query_binding(api)==MICROFILE_DISPOSITION_OLD_GIT_BINDING,
+            'Historical Git query binding changed')
+    git=api['git'];legacy=legacy_api()
+    require(git('rev-parse',MICROFILE_DISPOSITION_BASELINE_COMMIT+'^{tree}',root=ROOT)
+                ==MICROFILE_DISPOSITION_BASELINE_TREE
+            and git('merge-base',MICROFILE_DISPOSITION_BASELINE_COMMIT,profile.implementation_commit,root=ROOT)
+                ==MICROFILE_DISPOSITION_BASELINE_COMMIT
+            and git('rev-parse',profile.implementation_commit+'^{tree}',root=ROOT)==profile.implementation_tree,
+            'MICROFILE disposition baseline, ancestry or implementation tree mismatch')
+    before=legacy['tree_entries'](git,MICROFILE_DISPOSITION_BASELINE_COMMIT)
+    after=legacy['tree_entries'](git,profile.implementation_commit)
+    paths=sorted(p for p in before.keys()|after.keys() if before.get(p)!=after.get(p))
+    require(set(paths)==MICROFILE_DISPOSITION_PATHS,'MICROFILE disposition differs from exact source delta')
+    for p in paths:
+        require(after.get(p,{}).get('mode')=='100644' and after[p]['type']=='blob',
+                'MICROFILE disposition source is deleted or nonregular')
+        if p in MICROFILE_DISPOSITION_ADDED_PATHS:
+            require(p not in before,'MICROFILE disposition added path already existed')
+        else:
+            require(before.get(p,{}).get('mode')=='100644' and before[p]['type']=='blob',
+                    'MICROFILE disposition original source is missing or nonregular')
+    require(isinstance(historical_descriptor,dict)
+            and historical_descriptor.get('sha256')==MICROFILE_DISPOSITION_OLD_PREFIX_BINDING['applicabilitySha256'],
+            'Historical Git query applicability pin mismatch')
+    historical=capture_json(historical_descriptor)
+    old_profile=type('HistoricalProfile',(),dict(
+        implementation_commit=MICROFILE_DISPOSITION_OLD_IMPLEMENTATION_COMMIT,
+        implementation_tree=MICROFILE_DISPOSITION_OLD_IMPLEMENTATION_TREE))()
+    require(git('rev-parse',old_profile.implementation_commit+'^{tree}',root=ROOT)==old_profile.implementation_tree,
+            'Historical Git query implementation tree changed')
+    expected,frozen,controls=git_query_facts(api,old_profile,MICROFILE_DISPOSITION_OLD_PREFIX_BINDING,
+        historical.get('historicalApplicability'),historical.get('newControls'),historical.get('nativeTest'),
+        historical.get('independentReview'))
+    capture_metadata_shape(api,old_profile,metadata_head=MICROFILE_DISPOSITION_BASELINE_COMMIT,
+                           stream_path=True,collector_query=True,git_query=True)
+    require(historical==expected,'Historical Git query applicability differs from original source facts')
+    # Exact historical descriptors and six tested bytes: no new launcher derivation.
+    for descriptor in controls.values():capture_file(descriptor)
+    require(isinstance(owner_proposal,dict) and owner_proposal.get('sha256')==MICROFILE_DISPOSITION_PROPOSAL_SHA256,
+            'MICROFILE disposition owner proposal pin mismatch')
+    capture_file(owner_proposal)
+    require(isinstance(owner_decision,dict) and owner_decision.get('sha256')==MICROFILE_DISPOSITION_DECISION_SHA256,
+            'MICROFILE disposition owner decision pin mismatch')
+    decision=capture_json(owner_decision)
+    require(decision.get('approvedProposal')==owner_proposal,'MICROFILE disposition owner proposal link changed')
+    require(decision.get('schema')=='DORA_EXPLICIT_OWNER_DECISION_V1'
+            and decision.get('exactUserReply')=='Одобряю предложение schema 6'
+            and decision.get('schemaVersion')==6 and decision.get('sharedSchema5Preserved') is True
+            and decision.get('runtimeAcceptanceGranted') is False
+            and decision.get('productFailuresReclassified') is False
+            and decision.get('scope')==['MICROFILE TRU-03','MICROFILE COR-01','MICROFILE COR-04','MICROFILE TRU-02'],
+            'MICROFILE disposition explicit owner decision scope mismatch')
+    capture_file(build)
+    pair_keys={'appApkSha256','testApkSha256'}
+    require(isinstance(apks,dict) and set(apks)==pair_keys,'MICROFILE disposition exact APK descriptors required')
+    pair={}
+    for key,descriptor in apks.items():
+        capture_file(descriptor)
+        pair[key]=descriptor['sha256']
+    require(pair=={key:binding.get(key) for key in pair_keys},'MICROFILE disposition APK pair differs from binding')
+    validate_microfile_disposition_build(api,after,build,pair,owner_decision)
+    implementation=dict(commit=profile.implementation_commit,tree=profile.implementation_tree)
+    technical=capture_json(review)
+    require(technical==dict(schema='DORA_MICROFILE_DISPOSITION_TECHNICAL_REVIEW_V1',
+        implementation=implementation,ownerProposal=owner_proposal,ownerDecision=owner_decision,
+        build=build,apks=apks,independentTechnicalReview=True,buildAndApkSourceVerified=True,
+        historicalCoverageAutomaticallyGranted=False,runtimeAdmissionGranted=False),
+        'MICROFILE disposition technical review source/build/APK linkage mismatch')
+    methods=[]
+    for p,method in sorted(legacy['PREFLIGHT_METHODS'].items()):
+        require(after.get(p,{}).get('mode')=='100644' and after[p]['type']=='blob','Preflight method source missing')
+        methods.append(dict(path=p,method=method,source=after[p]))
+    require(len(methods)==3,'MICROFILE disposition requires three fresh preflight methods')
+    result=dict(schema='DORA_RECOVERY_MICROFILE_DISPOSITION_APPLICABILITY_V1',scope=SCOPE,
+        baseline=dict(commit=MICROFILE_DISPOSITION_BASELINE_COMMIT,tree=MICROFILE_DISPOSITION_BASELINE_TREE),
+        implementation=implementation,apkPair=pair,apks=apks,build=build,
+        sourceDelta=[dict(path=p,before=before.get(p),after=after[p]) for p in paths],
+        historicalApplicability=historical_descriptor,controls=controls,
+        ownerProposal=owner_proposal,ownerDecision=owner_decision,independentReview=review,
+        frozenSelection=historical['frozenSelection'],historicalPreflightReusable=False,
+        requiredFreshPreflight=methods,contract='MICROFILE_REFERENCED_DISPOSITION_SHARED_SCHEMA_6',
+        historicalCoverageAutomaticallyGranted=False)
+    return result,frozen,controls
+
+
+def validate_microfile_disposition_proof(api, profile, binding, proof, descriptor, review):
+    new_binding=microfile_disposition_binding(api)
+    require(new_binding is not None and descriptor['sha256']==new_binding['proofSha256']
+            ==binding['applicabilitySha256'],'MICROFILE disposition applicability pin mismatch')
+    expected,frozen,controls=microfile_disposition_facts(api,profile,binding,
+        proof.get('historicalApplicability'),proof.get('ownerProposal'),proof.get('ownerDecision'),
+        proof.get('build'),proof.get('apks'),review)
+    capture_metadata_shape(api,profile,stream_path=True,collector_query=True,git_query=True,
+                           microfile_disposition=True)
+    require(proof==expected,'MICROFILE disposition applicability differs from recomputed source facts')
+    return frozen,controls
+
+
+def validate_microfile_disposition_build(api, after, descriptor, pair, owner_decision):
+    """Read only frozen copies; current source must match those tested bytes and Git blobs."""
+    import xml.etree.ElementTree as ET
+    build=capture_json(descriptor);base=Path(descriptor['path']).resolve().parent
+    require(build.get('schema')=='DORA_MICROFILE_SCHEMA6_LOCAL_PASS_SNAPSHOT_V1'
+            and build.get('baselineCommit')==MICROFILE_DISPOSITION_BASELINE_COMMIT
+            and Path(build.get('sourceRoot','')).resolve()==ROOT.resolve()
+            and build.get('schemaVersion')==6 and build.get('hostSchemaTests')==10
+            and build.get('deviceCoverageGranted') is False and build.get('ciPassed') is False
+            and build.get('apkPair')==pair
+            and build.get('sourcePaths')==sorted(MICROFILE_DISPOSITION_ANDROID_PATHS),
+            'MICROFILE disposition build scope/source/APK mismatch')
+    owner=build.get('ownerDecision',{})
+    require({k:owner.get(k) for k in ('path','sha256')}==owner_decision,'Build owner decision differs')
+    files=build.get('files');require(isinstance(files,list) and 20<=len(files)<=512,'Unbounded build inventory')
+    copies={};seen=set()
+    for row in files:
+        require(isinstance(row,dict) and set(row)=={'source','copy'},'Malformed build inventory row')
+        source=row['source'];copy=row['copy']
+        require(all(isinstance(d,dict) and set(d)=={'path','bytes','sha256'}
+                    and type(d['bytes']) is int and d['bytes']>=0 for d in (source,copy)),
+                'Malformed build file descriptor')
+        p=capture_file({k:copy[k] for k in ('path','sha256')})
+        require(p.resolve().is_relative_to(base) and p.resolve() not in seen
+                and p.stat().st_size==copy['bytes']==source['bytes']
+                and copy['sha256']==source['sha256'],'Build copied bytes or location differ')
+        seen.add(p.resolve());original=Path(source['path'])
+        require(original.is_absolute() and original not in copies,'Duplicate or relative build original')
+        copies[original]=(p,source)
+    for relative in sorted(MICROFILE_DISPOSITION_ANDROID_PATHS|{'tools/test_rec_microfile_disposition_schema.py'}):
+        source=ROOT/relative
+        require(source in copies,'Build missing exact source snapshot: '+relative)
+        p,original=copies[source]
+        capture_file({k:original[k] for k in ('path','sha256')})
+        # Git's path-aware clean conversion handles the repository's unchanged
+        # CRLF policy; --hash-object has no -w and never changes the object store.
+        require(api['git']('hash-object','--path='+relative,str(p),root=ROOT)==after[relative]['object'],
+                'Build source snapshot differs from implementation blob: '+relative)
+    for key,relative in (
+        ('appApkSha256','android/poc/recovery/build/outputs/apk/debug/recovery-debug.apk'),
+        ('testApkSha256','android/poc/recovery/build/outputs/apk/androidTest/debug/recovery-debug-androidTest.apk')):
+        require(ROOT/relative in copies and copies[ROOT/relative][1]['sha256']==pair[key],
+                'Build APK copy differs from installed pair')
+    tasks=['spotlessCheck','detekt',':poc:recovery:testDebugUnitTest',
+        ':poc:recovery:compileDebugAndroidTestKotlin',':poc:recovery:lintDebug',
+        ':poc:recovery:assembleDebug',':poc:recovery:assembleDebugAndroidTest']
+    phase=build.get('phase');require(isinstance(phase,str) and re.fullmatch('verify-[0-9]{2}',phase),'Build phase invalid')
+    def named(name):
+        found=[(p,s) for original,(p,s) in copies.items() if original.name==name]
+        require(len(found)==1,'Missing or ambiguous build evidence: '+name)
+        return found[0]
+    def receipt(stem,cwd):
+        p,_=named(stem+'.receipt.json');value=json.loads(p.read_text(encoding='utf-8-sig'))
+        require(type(value.get('nativeExitCode')) is int and value['nativeExitCode']==0
+                and value.get('timedOut',False) is False and Path(value.get('cwd','')).resolve()==cwd.resolve(),
+                'Build native receipt failure or cwd mismatch')
+        capture_native_interval(value)
+        p,_=named(stem+'.started.json');started=json.loads(p.read_text(encoding='utf-8-sig'))
+        require(all(started.get(k)==value.get(k) for k in ('argv','cwd','startedAtUtc')),'Build native started/receipt mismatch')
+        named(stem+'.stderr.log');named(stem+'.stdout.log')
+        return value
+    native=receipt('schema6-'+phase,ROOT/'android');argv=native.get('argv',[])
+    require(len(argv)==17 and Path(argv[0]).name.lower()=='cmd.exe'
+            and argv[1:9]==['/d','/c','gradlew.bat','--no-daemon','--offline','--no-configuration-cache','--max-workers=2','--init-script']
+            and argv[10:]==tasks and Path(argv[9]) in copies,'Build native task invocation mismatch')
+    p,_=named('schema6-'+phase+'.stdout.log');stdout=p.read_text(encoding='utf-8-sig')
+    require('BUILD SUCCESSFUL' in stdout and all('> Task '+(t if t.startswith(':') else ':'+t) in stdout for t in tasks),
+            'Build task completion missing')
+    host=receipt('schema6-host-green-03',ROOT);argv=host.get('argv',[])
+    require(len(argv)==11 and argv[1:]==['-X','utf8','-m','unittest','discover','-s','tools','-p','test_rec_*schema.py','-v'],
+            'Host schema test invocation mismatch')
+    p,_=named('schema6-host-green-03.stderr.log');text=p.read_text(encoding='utf-8-sig')
+    require(re.search(r'Ran 10 tests in .*\r?\n\r?\nOK\s*$',text) is not None,'Host schema test result missing')
+    counts=dict(tests=0,failures=0,errors=0,skipped=0);xml_count=0
+    report_root=ROOT/'android/poc/recovery/build/test-results/testDebugUnitTest'
+    for original,(p,_) in copies.items():
+        if original.parent==report_root and original.name.startswith('TEST-') and original.suffix=='.xml':
+            suite=ET.parse(p).getroot();xml_count+=1
+            require(suite.tag=='testsuite','Foreign JVM report')
+            for key in counts:counts[key]+=int(suite.attrib[key])
+    require(xml_count>0 and counts==build.get('counts') and counts['tests']>0
+            and all(counts[k]==0 for k in ('failures','errors','skipped')),'Build JVM report counts mismatch')
+
+
 def git_query_binding(api):
     key='ALPHA_GIT_QUERY_BINDING'
     if key not in api:return None
@@ -417,6 +683,7 @@ def candidate_api():
     stream_path_metadata_literal(metadata.read_text(encoding='utf-8'))
     collector_query_metadata_literal(metadata.read_text(encoding='utf-8'))
     git_query_metadata_literal(metadata.read_text(encoding='utf-8'))
+    microfile_disposition_metadata_literal(metadata.read_text(encoding='utf-8'))
     return runpy.run_path(str(metadata))
 
 
@@ -473,6 +740,10 @@ def validate_source(plan, gate, decision_key):
             'Prefix applicability pin mismatch')
     proof = read_proof(proof_descriptor)
     require(isinstance(proof,dict), 'Malformed prefix applicability')
+    if microfile_disposition_binding(api) is not None:
+        frozen,_=validate_microfile_disposition_proof(api,profile,binding,proof,proof_descriptor,
+                                                   gate.get('proofs',{}).get('independentReview'))
+        return source,frozen
     if git_query_binding(api) is not None:
         frozen,_=validate_git_query_proof(api,profile,binding,proof,proof_descriptor,
                                         gate.get('proofs',{}).get('independentReview'))
@@ -580,11 +851,12 @@ def capture_json(descriptor):
     return read_proof(descriptor)
 
 
-def capture_metadata_shape(api, profile, *, metadata_head='HEAD', stream_path=False, collector_query=False, git_query=False):
+def capture_metadata_shape(api, profile, *, metadata_head='HEAD', stream_path=False, collector_query=False, git_query=False, microfile_disposition=False):
     names = {'IMPLEMENTATION_COMMIT','IMPLEMENTATION_TREE','ALPHA_PREFIX_REPAIR_BINDING','ALPHA_CAPTURE_REPAIR_BINDING'}
     if stream_path:names.add('ALPHA_STREAM_PATH_REPAIR_BINDING')
     if collector_query:names.add('ALPHA_COLLECTOR_QUERY_BINDING')
     if git_query:names.add('ALPHA_GIT_QUERY_BINDING')
+    if microfile_disposition:names.add('ALPHA_MICROFILE_DISPOSITION_BINDING')
     def body(revision):
         parsed = ast.parse(api['git']('show',revision+':tools/validate_recovery_0d6_candidate.py',root=ROOT))
         kept=[];seen=set()
@@ -726,7 +998,10 @@ def validate_preflight_origin(attempt, pin, native, launcher, source):
             and source_proof_descriptor.get('sha256')==api.get('ALPHA_PREFIX_REPAIR_BINDING',{}).get('applicabilitySha256'),
             'Preflight capture applicability pin mismatch')
     source_proof=read_proof(source_proof_descriptor)
-    if git_query_binding(api) is not None:
+    if microfile_disposition_binding(api) is not None:
+        _,controls=validate_microfile_disposition_proof(api,api['active_profile'](),api['ALPHA_PREFIX_REPAIR_BINDING'],
+            source_proof,source_proof_descriptor,origin_gate.get('proofs',{}).get('independentReview'))
+    elif git_query_binding(api) is not None:
         _,controls=validate_git_query_proof(api,api['active_profile'](),api['ALPHA_PREFIX_REPAIR_BINDING'],
             source_proof,source_proof_descriptor,origin_gate.get('proofs',{}).get('independentReview'))
     elif collector_query_binding(api) is not None:

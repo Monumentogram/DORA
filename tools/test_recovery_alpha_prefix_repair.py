@@ -225,6 +225,7 @@ class CombinedAdmissionTests(unittest.TestCase):
         self.api.pop('ALPHA_STREAM_PATH_REPAIR_BINDING', None)
         self.api.pop('ALPHA_COLLECTOR_QUERY_BINDING', None)
         self.api.pop('ALPHA_GIT_QUERY_BINDING', None)
+        self.api.pop('ALPHA_MICROFILE_DISPOSITION_BINDING', None)
         patch.object(subject,'candidate_api',return_value=self.api).start()
         self.legacy=subject.legacy_api()
         self.frozen=dict(executionId='E36RED01',variantCount=165,entries=[dict(slot=1,mutationVariants=['DEFAULT'],attemptId='old',runId='old',executionEntrySha256='old')])
@@ -1302,6 +1303,322 @@ class GitQueryLiteralTests(unittest.TestCase):
                 f'from pathlib import Path\nALPHA_GIT_QUERY_BINDING=Path({str(marker)!r}).touch()\n')
             with patch.object(subject,'ROOT',root),self.assertRaises(ValueError):subject.candidate_api()
             self.assertFalse(marker.exists())
+
+
+class MicrofileDispositionSuccessorTests(unittest.TestCase):
+    """Synthetic source/evidence graph; no Git, Android or native subprocesses."""
+    def setUp(self):
+        self.old=GitQuerySuccessorTests();self.old.setUp();self.addCleanup(self.old.doCleanups)
+        old=self.old
+        self.write=old.old.old.old.write
+        self.root=old.old.old.old.root
+        # Distinct from every older synthetic revision, including STREAM's 4/5.
+        self.base='ba'*20;self.base_tree='bb'*20
+        self.profile=candidate.Profile('ab'*20,'ac'*20,candidate.MAINTENANCE_PATHS)
+        self.source=dict(old.source,commit='ad'*20,tree='ae'*20)
+        self.before=copy.deepcopy(old.after)
+        # Added schema files are genuinely absent in the old tree.
+        for p in subject.MICROFILE_DISPOSITION_PATHS-subject.MICROFILE_DISPOSITION_ADDED_PATHS:
+            self.before.setdefault(p,dict(mode='100644',type='blob',object='af'*20))
+        self.after=copy.deepcopy(self.before)
+        for p in subject.MICROFILE_DISPOSITION_PATHS:
+            self.after[p]=dict(mode='100644',type='blob',object='bc'*20)
+        self.overrides={}
+        self.api=dict(old.api,git=self.git,active_profile=lambda:self.profile,
+                      ALPHA_PREFIX_REPAIR_BINDING=copy.deepcopy(old.api['ALPHA_PREFIX_REPAIR_BINDING']))
+        self.metadata=old.metadata+'ALPHA_MICROFILE_DISPOSITION_BINDING={}\n'
+        for key,value in dict(MICROFILE_DISPOSITION_BASELINE_COMMIT=self.base,
+            MICROFILE_DISPOSITION_BASELINE_TREE=self.base_tree,
+            MICROFILE_DISPOSITION_OLD_IMPLEMENTATION_COMMIT=old.profile.implementation_commit,
+            MICROFILE_DISPOSITION_OLD_IMPLEMENTATION_TREE=old.profile.implementation_tree,
+            MICROFILE_DISPOSITION_OLD_PREFIX_BINDING=copy.deepcopy(old.api['ALPHA_PREFIX_REPAIR_BINDING']),
+            MICROFILE_DISPOSITION_OLD_GIT_BINDING=copy.deepcopy(old.api['ALPHA_GIT_QUERY_BINDING'])).items():
+            p=patch.object(subject,key,value);p.start();self.addCleanup(p.stop)
+        for p in (patch.object(candidate,'git',side_effect=self.git),
+                  patch.object(subject,'candidate_api',return_value=self.api)):
+            p.start();self.addCleanup(p.stop)
+        # Build parsing is exercised with real files below. Here isolate recursive
+        # historical source/control admission, without constructing a second tree.
+        p=patch.object(subject,'validate_microfile_disposition_build')
+        p.start();self.addCleanup(p.stop)
+        self.historical=copy.deepcopy(old.gate['alphaPreflight']['sourceRepair'])
+        self.controls=copy.deepcopy(old.controls)
+        self.proposal=self.write('micro-proposal.txt','Exact synthetic approved proposal')
+        self.decision=self.write('micro-owner.json',dict(approvedProposal=self.proposal,
+            schema='DORA_EXPLICIT_OWNER_DECISION_V1',exactUserReply='Одобряю предложение schema 6',
+            schemaVersion=6,sharedSchema5Preserved=True,runtimeAcceptanceGranted=False,
+            productFailuresReclassified=False,
+            scope=['MICROFILE TRU-03','MICROFILE COR-01','MICROFILE COR-04','MICROFILE TRU-02']))
+        for key,value in dict(MICROFILE_DISPOSITION_PROPOSAL_SHA256=self.proposal['sha256'],
+                              MICROFILE_DISPOSITION_DECISION_SHA256=self.decision['sha256']).items():
+            p=patch.object(subject,key,value);p.start();self.addCleanup(p.stop)
+        self.apks={}
+        for key in ('appApkSha256','testApkSha256'):
+            self.apks[key]=self.write('micro-'+key+'.apk','fresh binary '+key)
+            self.source[key]=self.apks[key]['sha256']
+            self.api['ALPHA_PREFIX_REPAIR_BINDING'][key]=self.source[key]
+        self.build=self.write('micro-build.json',dict(schema='SYNTHETIC_BUILD',nativeExitCode=0))
+        self.review_value=dict(schema='DORA_MICROFILE_DISPOSITION_TECHNICAL_REVIEW_V1',
+            implementation=dict(commit=self.profile.implementation_commit,tree=self.profile.implementation_tree),
+            ownerProposal=self.proposal,ownerDecision=self.decision,build=self.build,apks=self.apks,
+            independentTechnicalReview=True,buildAndApkSourceVerified=True,
+            historicalCoverageAutomaticallyGranted=False,runtimeAdmissionGranted=False)
+        self.review=self.write('micro-review.json',self.review_value)
+        self.api['ALPHA_MICROFILE_DISPOSITION_BINDING']=dict(proofSha256='0'*64)
+        self.plan=dict(source=self.source);self.gate=copy.deepcopy(old.gate)
+        self.gate['source']=self.source;self.gate['alphaPreflight']['source']=self.source
+        self.gate['proofs']['independentReview']=self.review
+        self.refresh()
+
+    def git(self,*args,root):
+        if args in self.overrides:return self.overrides[args]
+        fixed={('rev-parse',self.base+'^{tree}'):self.base_tree,
+            ('merge-base',self.base,self.profile.implementation_commit):self.base,
+            ('rev-parse',self.profile.implementation_commit+'^{tree}'):self.profile.implementation_tree,
+            ('rev-parse','HEAD'):self.source['commit'],('rev-parse',self.source['commit']):self.source['commit'],
+            ('rev-parse','HEAD^{tree}'):self.source['tree'],('branch','--show-current'):candidate.BRANCH,
+            ('show','-s','--format=%P',self.source['commit']):self.profile.implementation_commit,
+            ('rev-list','--min-parents=2',self.profile.implementation_commit+'..'+self.source['commit']):'',
+            ('diff-tree','--no-commit-id','--name-only','--no-renames','-z','-r',self.source['commit']):'\0'.join(sorted(candidate.MAINTENANCE_PATHS))+'\0',
+            ('status','--porcelain'):'',
+            ('show',self.base+':tools/validate_recovery_0d6_candidate.py'):self.old.metadata,
+            ('show',self.profile.implementation_commit+':tools/validate_recovery_0d6_candidate.py'):self.old.metadata,
+            ('show','HEAD:tools/validate_recovery_0d6_candidate.py'):self.metadata}
+        if args in fixed:return fixed[args]
+        if len(args)==4 and args[:3]==('ls-tree',self.source['commit'],'--'):
+            return '100644 blob '+'bc'*20+'\t'+args[3]
+        for revision,entries in ((self.base,self.before),(self.profile.implementation_commit,self.after)):
+            if args==('ls-tree','-r','-z',revision):
+                return ''.join(f"{v['mode']} {v['type']} {v['object']}\t{p}\0" for p,v in sorted(entries.items()))
+        return self.old.git(*args,root=root)
+
+    def refresh(self):
+        self.proof,_,_=subject.microfile_disposition_facts(self.api,self.profile,
+            self.api['ALPHA_PREFIX_REPAIR_BINDING'],self.historical,self.proposal,self.decision,
+            self.build,self.apks,self.review)
+        self.bind()
+
+    def bind(self):
+        d=self.write('micro-proof.json',self.proof)
+        self.api['ALPHA_PREFIX_REPAIR_BINDING']['applicabilitySha256']=d['sha256']
+        self.api['ALPHA_MICROFILE_DISPOSITION_BINDING']['proofSha256']=d['sha256']
+        self.gate['alphaPreflight']['sourceRepair']=d
+
+    def check(self):subject.validate_preflight(self.plan,self.gate)
+
+    def test_exact_scope_preserves_all_recursive_native_controls_and_selection(self):
+        self.check()
+        self.assertEqual(self.old.proof['frozenSelection'],self.proof['frozenSelection'])
+        self.assertEqual(self.controls,self.proof['controls'])
+        self.assertFalse(self.proof['historicalPreflightReusable'])
+        self.assertEqual(3,len(self.proof['requiredFreshPreflight']))
+        self.assertEqual(subject.MICROFILE_DISPOSITION_PATHS,
+                         {row['path'] for row in self.proof['sourceDelta']})
+        self.assertEqual(self.before,self.old.after | {
+            p:v for p,v in self.before.items() if p not in self.old.after})
+
+    def test_wrong_ancestry_tree_extra_deleted_and_mode_are_rejected(self):
+        self.check()
+        for command in (('merge-base',self.base,self.profile.implementation_commit),
+                        ('rev-parse',self.base+'^{tree}'),
+                        ('rev-parse',self.profile.implementation_commit+'^{tree}')):
+            self.overrides[command]='f'*40
+            with self.assertRaises(ValueError):self.refresh()
+            self.overrides.clear()
+        original=copy.deepcopy(self.after)
+        changes=[('android/build.gradle.kts',dict(mode='100644',type='blob',object='f'*40))]
+        changes += [(next(iter(subject.MICROFILE_DISPOSITION_PATHS)),None)]
+        changes += [(next(iter(subject.MICROFILE_DISPOSITION_PATHS)),dict(mode=mode,type=kind,object='f'*40))
+                    for mode,kind in (('120000','blob'),('100755','blob'),('160000','commit'))]
+        for p,value in changes:
+            self.after=copy.deepcopy(original)
+            if value is None:self.after.pop(p)
+            else:self.after[p]=value
+            with self.assertRaises(ValueError):self.refresh()
+        self.after=original;self.check()
+
+    def test_apk_pair_review_build_and_owner_are_bound(self):
+        self.check()
+        for field in ('appApkSha256','testApkSha256'):
+            original=self.api['ALPHA_PREFIX_REPAIR_BINDING'][field]
+            self.api['ALPHA_PREFIX_REPAIR_BINDING'][field]='e'*64
+            with self.assertRaises(ValueError):self.refresh()
+            self.api['ALPHA_PREFIX_REPAIR_BINDING'][field]=original
+        for field in ('proposal','decision','build','review'):
+            original=getattr(self,field)
+            setattr(self,field,dict(original,sha256='e'*64))
+            with self.assertRaises(ValueError):self.refresh()
+            setattr(self,field,original)
+        for key,value in (('implementation',dict(commit='f'*40,tree='e'*40)),
+                          ('buildAndApkSourceVerified',False),('runtimeAdmissionGranted',True)):
+            self.review=self.write('micro-bad-review.json',dict(self.review_value,**{key:value}))
+            with self.assertRaises(ValueError):self.refresh()
+        self.review=self.write('micro-review.json',self.review_value);self.check()
+
+    def test_historical_binding_and_proof_cannot_fallback(self):
+        self.check()
+        original=copy.deepcopy(self.api['ALPHA_MICROFILE_DISPOSITION_BINDING'])
+        for value in (None,{},dict(proofSha256='e'*64),dict(original,extra=True)):
+            self.api['ALPHA_MICROFILE_DISPOSITION_BINDING']=value
+            with self.assertRaises(ValueError):self.check()
+        self.api['ALPHA_MICROFILE_DISPOSITION_BINDING']=original
+        old=copy.deepcopy(self.api['ALPHA_GIT_QUERY_BINDING'])
+        self.api['ALPHA_GIT_QUERY_BINDING']=dict(old,lifecycleLibrarySha256='f'*64)
+        with self.assertRaises(ValueError):self.refresh()
+        self.api['ALPHA_GIT_QUERY_BINDING']=old
+        original=copy.deepcopy(self.proof)
+        for key,value in (('controls',{}),('historicalPreflightReusable',True),('sourceDelta',[]),
+                          ('frozenSelection',{}),('coverageGranted',True)):
+            self.proof=dict(original,**{key:value});self.bind()
+            with self.assertRaises(ValueError):self.check()
+        self.proof=original;self.bind();self.check()
+        p=Path(self.controls['Attempt05-Lifecycle-Functions.ps1']['path'])
+        p.write_bytes(p.read_bytes()+b' changed')
+        with self.assertRaises(ValueError):self.check()
+
+    def test_metadata_executable_or_duplicate_changes_are_not_admitted(self):
+        self.check();original=self.metadata
+        for value in (original+'side_effect()\n',original+'ALPHA_MICROFILE_DISPOSITION_BINDING={}\n',
+                      original.replace('ALPHA_MICROFILE_DISPOSITION_BINDING={}',
+                                       'ALPHA_MICROFILE_DISPOSITION_BINDING=side_effect()')):
+            self.metadata=value
+            with self.assertRaises((ValueError,TypeError)):self.check()
+        self.metadata=original;self.check()
+
+    def test_campaign_still_needs_three_fresh_preflights_and_original_selection(self):
+        self.check();gate=copy.deepcopy(self.gate)
+        decision=gate.pop('alphaPreflight');decision['scope']=subject.SCOPE
+        frozen=self.old.old.old.old.frozen
+        selection=copy.deepcopy(frozen);selection['executionId']='MICROFILE-FRESH'
+        gate.update(alphaReduced=decision,supportedPayloads=['CAMPAIGN'],reducedSelection=selection)
+        with self.assertRaisesRegex(ValueError,'Malformed descriptor'):subject.validate(self.plan,gate)
+        gate['reducedSelection']['slots']=[]
+        with self.assertRaises(ValueError):subject.validate(self.plan,gate)
+
+
+class MicrofileDispositionLiteralTests(unittest.TestCase):
+    def test_inert_single_literal_only(self):
+        key='ALPHA_MICROFILE_DISPOSITION_BINDING'
+        subject.microfile_disposition_metadata_literal(key+'={"proofSha256":"'+'a'*64+'"}\n')
+        for value in ('{}','None','payload()',
+                      '{"proofSha256":"'+'a'*64+'","proofSha256":"'+'b'*64+'"}'):
+            with self.assertRaises(ValueError):subject.microfile_disposition_metadata_literal(key+'='+value)
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);(root/'tools').mkdir();marker=root/'executed'
+            (root/'tools/validate_recovery_0d6_candidate.py').write_text(
+                f'from pathlib import Path\n{key}=Path({str(marker)!r}).touch()\n')
+            with patch.object(subject,'ROOT',root),self.assertRaises(ValueError):subject.candidate_api()
+            self.assertFalse(marker.exists())
+
+
+class MicrofileDispositionBuildTests(unittest.TestCase):
+    def setUp(self):
+        self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
+        self.root=Path(self.temp.name)/'source';self.root.mkdir()
+        self.snapshot=Path(self.temp.name)/'snapshot';self.snapshot.mkdir()
+        p=patch.object(subject,'ROOT',self.root);p.start();self.addCleanup(p.stop)
+        self.files=[];self.after={};self.copy_index=0
+        self.objects={};self.git_overrides={}
+        for path in sorted(subject.MICROFILE_DISPOSITION_ANDROID_PATHS|{'tools/test_rec_microfile_disposition_schema.py'}):
+            row=self.add(self.root/path,'exact source '+path)
+            self.after[path]=dict(mode='100644',type='blob',object=hashlib.sha1(path.encode()).hexdigest())
+            self.objects[('--path='+path,row['copy']['path'])]=self.after[path]['object']
+        self.pair={}
+        for key,path in (
+            ('appApkSha256','android/poc/recovery/build/outputs/apk/debug/recovery-debug.apk'),
+            ('testApkSha256','android/poc/recovery/build/outputs/apk/androidTest/debug/recovery-debug-androidTest.apk')):
+            self.pair[key]=self.add(self.root/path,'apk '+key)['source']['sha256']
+        self.owner=self.descriptor(self.snapshot/'owner.json','approved owner')
+        tasks=['spotlessCheck','detekt',':poc:recovery:testDebugUnitTest',
+            ':poc:recovery:compileDebugAndroidTestKotlin',':poc:recovery:lintDebug',
+            ':poc:recovery:assembleDebug',':poc:recovery:assembleDebugAndroidTest']
+        init=self.root/'init.gradle';self.add(init,'exact init')
+        self.native=dict(argv=['cmd.exe','/d','/c','gradlew.bat','--no-daemon','--offline',
+            '--no-configuration-cache','--max-workers=2','--init-script',str(init),*tasks],
+            cwd=str(self.root/'android'),startedAtUtc='2026-09-16T01:00:00+00:00',
+            endedAtUtc='2026-09-16T01:01:00+00:00',nativeExitCode=0)
+        self.add_receipt('schema6-verify-02',self.native,
+            '\n'.join('> Task '+(t if t.startswith(':') else ':'+t) for t in tasks)+'\nBUILD SUCCESSFUL\n','')
+        host=dict(self.native,argv=['python.exe','-X','utf8','-m','unittest','discover','-s','tools',
+                                   '-p','test_rec_*schema.py','-v'],cwd=str(self.root))
+        self.add_receipt('schema6-host-green-03',host,'','Ran 10 tests in 1.0s\n\nOK\n')
+        self.add(self.root/'android/poc/recovery/build/test-results/testDebugUnitTest/TEST-real.xml',
+                 '<testsuite tests="449" failures="0" errors="0" skipped="0"/>')
+        self.value=dict(schema='DORA_MICROFILE_SCHEMA6_LOCAL_PASS_SNAPSHOT_V1',phase='verify-02',
+            baselineCommit=subject.MICROFILE_DISPOSITION_BASELINE_COMMIT,sourceRoot=str(self.root),
+            schemaVersion=6,hostSchemaTests=10,deviceCoverageGranted=False,ciPassed=False,
+            apkPair=self.pair,sourcePaths=sorted(subject.MICROFILE_DISPOSITION_ANDROID_PATHS),
+            ownerDecision=dict(self.owner,bytes=(self.snapshot/'owner.json').stat().st_size),
+            counts=dict(tests=449,failures=0,errors=0,skipped=0),files=self.files)
+        self.api={'git':self.git}
+
+    def descriptor(self,path,data):
+        path.parent.mkdir(parents=True,exist_ok=True)
+        path.write_text(data,encoding='utf-8')
+        return dict(path=str(path),sha256=subject.file_sha(path))
+
+    def add(self,path,text):
+        self.copy_index+=1
+        original=self.descriptor(path,text);original['bytes']=path.stat().st_size
+        copy_path=self.snapshot/(str(self.copy_index)+'-'+path.name)
+        copy_path.write_bytes(path.read_bytes())
+        copied=dict(path=str(copy_path),sha256=subject.file_sha(copy_path),bytes=copy_path.stat().st_size)
+        row=dict(source=original,copy=copied);self.files.append(row);return row
+
+    def add_receipt(self,stem,native,stdout,stderr):
+        raw=self.root/'native'
+        self.add(raw/(stem+'.receipt.json'),json.dumps(native))
+        self.add(raw/(stem+'.started.json'),json.dumps({k:native[k] for k in ('argv','cwd','startedAtUtc')}))
+        self.add(raw/(stem+'.stdout.log'),stdout);self.add(raw/(stem+'.stderr.log'),stderr)
+
+    def git(self,*args,root):
+        self.assertEqual(self.root,root);self.assertEqual('hash-object',args[0])
+        key=args[1:]
+        return self.git_overrides.get(key,self.objects[key])
+
+    def check(self):
+        d=self.descriptor(self.snapshot/'MANIFEST.json',json.dumps(self.value))
+        subject.validate_microfile_disposition_build(self.api,self.after,d,self.pair,self.owner)
+
+    def replace_copy(self,name,value):
+        row=next(r for r in self.files if Path(r['source']['path']).name==name)
+        data=json.dumps(value).encode()
+        Path(row['copy']['path']).write_bytes(data)
+        for key in ('source','copy'):
+            row[key].update(bytes=len(data),sha256=hashlib.sha256(data).hexdigest())
+
+    def test_closed_real_file_fixture_accepts_without_subprocesses(self):self.check()
+
+    def test_missing_source_blob_drift_and_changed_copy_are_rejected(self):
+        self.check();row=self.files.pop(0)
+        with self.assertRaises(ValueError):self.check()
+        self.files.insert(0,row);self.git_overrides[next(iter(self.objects))]='f'*40
+        with self.assertRaises(ValueError):self.check()
+        self.git_overrides.clear()
+        Path(row['copy']['path']).write_bytes(b'changed')
+        with self.assertRaises(ValueError):self.check()
+
+    def test_native_failure_or_removed_task_does_not_become_build_pass(self):
+        self.check()
+        for native in (dict(self.native,nativeExitCode=1),dict(self.native,argv=self.native['argv'][:-1])):
+            self.replace_copy('schema6-verify-02.receipt.json',native)
+            self.replace_copy('schema6-verify-02.started.json',
+                              {k:native[k] for k in ('argv','cwd','startedAtUtc')})
+            with self.assertRaises(ValueError):self.check()
+        self.replace_copy('schema6-verify-02.receipt.json',self.native)
+        self.replace_copy('schema6-verify-02.started.json',
+                          {k:self.native[k] for k in ('argv','cwd','startedAtUtc')})
+        self.check()
+
+    def test_apk_counts_and_device_credit_cannot_drift(self):
+        self.check()
+        for key,value in (('apkPair',dict(self.pair,appApkSha256='e'*64)),
+                          ('counts',dict(tests=449,failures=1,errors=0,skipped=0)),
+                          ('deviceCoverageGranted',True),('sourcePaths',[])):
+            original=self.value[key];self.value[key]=value
+            with self.assertRaises(ValueError):self.check()
+            self.value[key]=original
+        self.check()
 
 
 if __name__=='__main__':unittest.main()

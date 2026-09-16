@@ -1,5 +1,13 @@
 # Dora MVP 1 — Executable Backlog
 
+Reduced-alpha update, 16 September 2026: owner-approved
+[ADR-0009](adr/ADR-0009-microfile-referenced-quarantine.md) removes the contract-decision
+blocker for four MICROFILE recipes. The implementation must preserve STREAM schema 5,
+prove exact schema 6 migration and retained-evidence replay, receive exact source/APK
+admission, and execute fresh affected attempts with unchanged oracle and loss limits.
+Historical evidence remains source-bound. This work grants no aggregate PASS;
+`POC-RECOVERY-001` and the 114/165 milestone remain incomplete.
+
 Current 0D.6 amendment, 14 September 2026: `POC-RECOVERY-001` remains **BLOCKED / NOT_READY**
 for full closure. The [current scoped instruction](stage0/DORA_0D6_EXECUTION_SCOPE_20260914.md)
 adds conditional synthetic emulator campaign authority after applicable prerequisites; historical

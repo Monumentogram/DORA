@@ -26,12 +26,437 @@ import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineObservedSt
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
 import java.io.File
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+@Suppress("LargeClass")
 class AndroidOsRecoveryReconciliationStorageTest {
+    @Test
+    fun `retained entrypoint enforces exact role cap and rejects cap plus one before any read`() {
+        for ((name, role, cap) in retainedRoleCases()) for (size in listOf(cap, cap + 1)) {
+            val container = ByteArray(size) { 7 }
+            val (os, row) = retainedBoundaryFixture(name, role, container)
+            val original =
+                row.input.copy(
+                    sourceBytes = 3UL,
+                    sourceSha256 = Sha256Value.calculate(byteArrayOf(7, 7, 7)),
+                )
+            val storage = AndroidOsRecoveryReconciliationStorage(ROOT, os)
+            if (size == cap) {
+                assertArrayEquals(
+                    byteArrayOf(7, 7, 7),
+                    storage.loadQuarantinedMicrofileExtent(row, original).snapshot(),
+                )
+                assertEquals(2, os.actualReadCalls) // full content and the EOF probe
+                assertEquals(1, os.closeCalls)
+            } else {
+                assertTrue(
+                    assertThrows(RecoveryArtifactAccessException::class.java) {
+                            storage.loadQuarantinedMicrofileExtent(row, original)
+                        }
+                        .structural
+                )
+                assertEquals(0, os.actualReadCalls)
+                assertEquals(0, os.closeCalls)
+            }
+            assertTrue(os.lists.isEmpty())
+            val path =
+                File(fixedDirectories().last(), row.destinationRelativeName.substringAfter('/'))
+                    .path
+            assertArrayEquals(container, os.bytes.getValue(path))
+        }
+    }
+
+    @Test
+    fun `retained entrypoint closes each opened descriptor and preserves exact failure type`() {
+        for (fault in listOf("fstat-unsafe", "eof", "growth", "read+close", "close", "open")) {
+            val (os, row) =
+                retainedBoundaryFixture(
+                    "units/u-0000000001.ct",
+                    RecoveryQuarantineArtifactRole.MICROFILE_CIPHERTEXT,
+                    byteArrayOf(1, 2, 3),
+                )
+            when (fault) {
+                "fstat-unsafe" -> os.fstatType = BootstrapPathType.SYMLINK
+                "eof" -> os.scriptedReads = listOf(0)
+                "growth" -> os.scriptedReads = listOf(3, 1)
+                else -> os.fail = fault
+            }
+            val failure =
+                assertThrows(IllegalStateException::class.java) {
+                    AndroidOsRecoveryReconciliationStorage(ROOT, os)
+                        .loadQuarantinedMicrofileExtent(row, row.input)
+                }
+            when (fault) {
+                "fstat-unsafe" -> {
+                    assertTrue(failure is RecoveryUnsafePathException)
+                    assertEquals(
+                        RecoveryFailureCategory.CORRUPT_LEAF,
+                        (failure as RecoveryUnsafePathException).category,
+                    )
+                    assertEquals(0, os.actualReadCalls)
+                }
+                "eof",
+                "growth" -> {
+                    assertTrue(failure is RecoveryArtifactAccessException)
+                    assertTrue((failure as RecoveryArtifactAccessException).structural)
+                    assertEquals(if (fault == "eof") 1 else 2, os.actualReadCalls)
+                }
+                "read+close" -> {
+                    assertEquals("read", failure.message)
+                    assertEquals(listOf("close"), failure.suppressed.map { it.message })
+                    assertEquals(1, os.actualReadCalls)
+                }
+                "close" -> {
+                    assertEquals("close", failure.message)
+                    assertEquals(2, os.actualReadCalls)
+                }
+                "open" -> {
+                    assertEquals("open", failure.message)
+                    assertEquals(0, os.actualReadCalls)
+                }
+            }
+            assertEquals(if (fault == "open") 0 else 1, os.closeCalls)
+            assertTrue(os.lists.isEmpty())
+        }
+    }
+
+    private fun retainedRoleCases() =
+        listOf(
+            Triple(
+                "units/u-0000000001.ct",
+                RecoveryQuarantineArtifactRole.MICROFILE_CIPHERTEXT,
+                960_256,
+            ),
+            Triple(
+                "key-envelopes/u-0000000001.ks",
+                RecoveryQuarantineArtifactRole.MICROFILE_KEY_ENVELOPE,
+                65_536,
+            ),
+            Triple(
+                "manifests/g-00000000000000000001.ct",
+                RecoveryQuarantineArtifactRole.MANIFEST_CIPHERTEXT,
+                262_144,
+            ),
+            Triple(
+                "key-envelopes/manifest-g-00000000000000000001.ks",
+                RecoveryQuarantineArtifactRole.MANIFEST_KEY_ENVELOPE,
+                65_536,
+            ),
+        )
+
+    private fun retainedBoundaryFixture(
+        name: String,
+        role: RecoveryQuarantineArtifactRole,
+        bytes: ByteArray,
+    ): Pair<FakeOs, RecoveryQuarantineIntentRow> {
+        val input =
+            RecoveryQuarantineIntentInput(
+                RecoveryCandidate.MICROFILE,
+                RUN,
+                name,
+                role,
+                bytes.size.toULong(),
+                Sha256Value.calculate(bytes),
+            )
+        val row =
+            RecoveryQuarantineIntentRow(
+                RecoveryQuarantineIntent.calculate(input),
+                input,
+                RecoveryQuarantineObservedState.REFERENCED_REJECTED,
+                QuarantineBootstrapBinding.PRESENT,
+                RecoveryQuarantineIntent.destination(input),
+                QuarantineIntentState.COMPLETED,
+            )
+        val os =
+            FakeOs().apply {
+                seed()
+                for (directory in listOf("units", "key-envelopes", "manifests")) stats[
+                    File(fixedDirectories()[4], directory).path] =
+                    RecoveryReconciliationStat(BootstrapPathType.DIRECTORY)
+                addQuarantine(row.destinationRelativeName.substringAfter('/'), bytes.copyOf())
+            }
+        return os to row
+    }
+
+    @Test
+    fun `verified retained mismatch marker requires a complete exact container and successful close`() {
+        val originalBytes = byteArrayOf(1, 2, 3)
+        for (container in listOf(byteArrayOf(1, 9, 3), byteArrayOf(1))) {
+            val (os, row) =
+                retainedBoundaryFixture(
+                    "units/u-0000000001.ct",
+                    RecoveryQuarantineArtifactRole.MICROFILE_CIPHERTEXT,
+                    container,
+                )
+            val original =
+                row.input.copy(
+                    sourceBytes = 3UL,
+                    sourceSha256 = Sha256Value.calculate(originalBytes),
+                )
+            val failure =
+                assertThrows(RecoveryArtifactAccessException::class.java) {
+                    AndroidOsRecoveryReconciliationStorage(ROOT, os)
+                        .loadQuarantinedMicrofileExtent(row, original)
+                }
+            val marker = failure.cause as RecoveryRetainedOriginalMismatch
+            assertEquals(row, marker.retained)
+            assertEquals(original, marker.original)
+            assertEquals(2, os.actualReadCalls)
+            assertEquals(1, os.closeCalls)
+        }
+    }
+
+    @Test
+    fun `changed retained tail or incomplete IO can never mint verified mismatch marker`() {
+        for (fault in
+            listOf("tail", "short", "missing", "unsafe", "read", "close", "pending", "collision")) {
+            val full = byteArrayOf(1, 2, 3, 90)
+            val (os, completed) =
+                retainedBoundaryFixture(
+                    "units/u-0000000001.ct",
+                    RecoveryQuarantineArtifactRole.MICROFILE_CIPHERTEXT,
+                    full,
+                )
+            val row =
+                if (fault == "pending") completed.copy(state = QuarantineIntentState.PENDING)
+                else completed
+            // For IO/close, valid full identity but invalid original hash would otherwise issue a
+            // marker.
+            val expectedOriginal =
+                if (fault in listOf("read", "close")) byteArrayOf(1, 9, 3) else byteArrayOf(1, 2, 3)
+            val original =
+                row.input.copy(
+                    sourceBytes = 3UL,
+                    sourceSha256 = Sha256Value.calculate(expectedOriginal),
+                )
+            val path =
+                File(fixedDirectories().last(), row.destinationRelativeName.substringAfter('/'))
+                    .path
+            when (fault) {
+                "tail" -> os.bytes[path] = byteArrayOf(1, 2, 3, 91)
+                "short" -> {
+                    os.bytes[path] = byteArrayOf(1, 2)
+                    os.stats[path] = RecoveryReconciliationStat(BootstrapPathType.REGULAR, 2)
+                }
+                "missing" -> {
+                    os.stats.remove(path)
+                    os.bytes.remove(path)
+                }
+                "unsafe" -> os.fstatType = BootstrapPathType.SYMLINK
+                "read",
+                "close" -> os.fail = fault
+                "collision" -> {
+                    val active = File(fixedDirectories()[4], original.sourceRelativeName).path
+                    os.stats[active] = RecoveryReconciliationStat(BootstrapPathType.REGULAR, 4)
+                    os.bytes[active] = full.copyOf()
+                }
+            }
+            val failure =
+                assertThrows(Exception::class.java) {
+                    AndroidOsRecoveryReconciliationStorage(ROOT, os)
+                        .loadQuarantinedMicrofileExtent(row, original)
+                }
+            assertTrue(
+                "Unverified $fault must not authorize dependency resumption",
+                failure.cause !is RecoveryRetainedOriginalMismatch,
+            )
+            assertEquals(
+                if (fault in listOf("pending", "missing", "collision")) 0 else 1,
+                os.closeCalls,
+            )
+        }
+    }
+
+    @Test
+    fun `dependent retained object must match entire original identity`() {
+        val originalBytes = byteArrayOf(1, 2, 3)
+        for (appended in listOf(false, true)) {
+            val (os, rejected) =
+                referencedDestination(
+                    if (appended) originalBytes + byteArrayOf(4) else originalBytes
+                )
+            val row =
+                rejected.copy(
+                    recordedObservedState = RecoveryQuarantineObservedState.REFERENCED_DEPENDENT
+                )
+            val original =
+                row.input.copy(
+                    sourceBytes = 3UL,
+                    sourceSha256 = Sha256Value.calculate(originalBytes),
+                )
+            val storage = AndroidOsRecoveryReconciliationStorage(ROOT, os)
+            if (appended) {
+                assertTrue(
+                    assertThrows(RecoveryArtifactAccessException::class.java) {
+                            storage.loadQuarantinedMicrofileExtent(row, original)
+                        }
+                        .structural
+                )
+                assertEquals(0, os.actualReadCalls)
+            } else
+                assertArrayEquals(
+                    originalBytes,
+                    storage.loadQuarantinedMicrofileExtent(row, original).snapshot(),
+                )
+        }
+    }
+
+    @Test
+    fun `self consistent retained role must still match canonical original name`() {
+        for (name in
+            listOf(
+                "unknown.bin",
+                "units/u-1.ct",
+                "units/u-9999999999.ct",
+                "manifests/g-00000000000000000001.ct",
+            )) {
+            val (os, row) = referencedDestination(byteArrayOf(1, 2, 3), name)
+            val failure =
+                assertThrows(RecoveryArtifactAccessException::class.java) {
+                    AndroidOsRecoveryReconciliationStorage(ROOT, os)
+                        .loadQuarantinedMicrofileExtent(row, row.input)
+                }
+            assertTrue(failure.structural)
+            assertEquals(0, os.actualReadCalls)
+            assertEquals(0, os.closeCalls)
+        }
+    }
+
+    @Test
+    fun `referenced reader returns original extent and keeps entire appended container`() {
+        val originalBytes = byteArrayOf(1, 2, 3)
+        val container = originalBytes + byteArrayOf(90, 91)
+        val (os, row) = referencedDestination(container)
+        val original =
+            row.input.copy(sourceBytes = 3UL, sourceSha256 = Sha256Value.calculate(originalBytes))
+        val storage = AndroidOsRecoveryReconciliationStorage(ROOT, os)
+        val actual = storage.loadQuarantinedMicrofileExtent(row, original)
+        assertNotNull("Completed retained original extent is unavailable", actual)
+        assertArrayEquals(originalBytes, requireNotNull(actual).snapshot())
+        assertArrayEquals(
+            container,
+            os.bytes.getValue(
+                File(fixedDirectories().last(), row.destinationRelativeName.substringAfter('/'))
+                    .path
+            ),
+        )
+        assertNull(storage.loadActiveArtifact(RUN, original.sourceRelativeName, 1_048_576L))
+        assertEquals(1, os.closeCalls)
+        assertTrue(os.lists.isEmpty())
+    }
+
+    @Test
+    fun `retained prefix match cannot bypass full container hash length or original extent`() {
+        val originalBytes = byteArrayOf(1, 2, 3)
+        val container = originalBytes + byteArrayOf(90, 91)
+        for (mutation in
+            listOf("tail", "short", "long", "original-hash", "original-length", "missing")) {
+            val (os, row) = referencedDestination(container)
+            val original =
+                row.input.copy(
+                    sourceBytes = if (mutation == "original-length") 6UL else 3UL,
+                    sourceSha256 =
+                        Sha256Value.calculate(
+                            if (mutation == "original-hash") byteArrayOf(3, 2, 1) else originalBytes
+                        ),
+                )
+            val path =
+                File(fixedDirectories().last(), row.destinationRelativeName.substringAfter('/'))
+                    .path
+            val altered =
+                when (mutation) {
+                    "tail" -> originalBytes + byteArrayOf(90, 92)
+                    "short" -> container.copyOf(4)
+                    "long" -> container + byteArrayOf(92)
+                    else -> container
+                }
+            os.bytes[path] = altered
+            os.stats[path] =
+                RecoveryReconciliationStat(BootstrapPathType.REGULAR, altered.size.toLong())
+            if (mutation == "missing") {
+                os.bytes.remove(path)
+                os.stats.remove(path)
+            }
+            assertThrows("Unsafe retained case: $mutation", IllegalStateException::class.java) {
+                AndroidOsRecoveryReconciliationStorage(ROOT, os)
+                    .loadQuarantinedMicrofileExtent(row, original)
+            }
+            assertTrue(os.lists.isEmpty())
+        }
+    }
+
+    @Test
+    fun `retained reader rejects pending orphan wrong run role identity and active collision before read`() {
+        val (unused, canonical) = referencedDestination(byteArrayOf(1, 2, 3))
+        assertEquals(0, unused.actualReadCalls)
+        val original = canonical.input
+        val wrongRun = RunId.fromCanonicalString("10112233-4455-6677-8899-aabbccddeeff")
+        val changes =
+            listOf(
+                canonical.copy(state = QuarantineIntentState.PENDING),
+                canonical.copy(
+                    recordedObservedState = RecoveryQuarantineObservedState.FINAL_ORPHAN
+                ),
+                canonical.copy(intentId = Sha256Value.ZERO),
+                canonical.copy(destinationRelativeName = "objects/q-${"0".repeat(64)}.bin"),
+                canonical.copy(input = original.copy(runId = wrongRun)),
+                canonical.copy(
+                    input =
+                        original.copy(
+                            artifactRole = RecoveryQuarantineArtifactRole.MANIFEST_CIPHERTEXT
+                        )
+                ),
+            )
+        for (row in changes) {
+            val (os, _) = referencedDestination(byteArrayOf(1, 2, 3))
+            assertThrows(IllegalStateException::class.java) {
+                AndroidOsRecoveryReconciliationStorage(ROOT, os)
+                    .loadQuarantinedMicrofileExtent(row, original)
+            }
+            assertEquals(0, os.actualReadCalls)
+        }
+        val (os, row) = referencedDestination(byteArrayOf(1, 2, 3))
+        val path = File(fixedDirectories()[4], row.input.sourceRelativeName).path
+        os.stats[path] = RecoveryReconciliationStat(BootstrapPathType.REGULAR, 3)
+        os.bytes[path] = byteArrayOf(1, 2, 3)
+        assertThrows(IllegalStateException::class.java) {
+            AndroidOsRecoveryReconciliationStorage(ROOT, os)
+                .loadQuarantinedMicrofileExtent(row, original)
+        }
+        assertEquals(0, os.actualReadCalls)
+    }
+
+    private fun referencedDestination(
+        container: ByteArray,
+        name: String = "units/u-0000000001.ct",
+    ): Pair<FakeOs, RecoveryQuarantineIntentRow> {
+        val original = row(container).input.copy(sourceRelativeName = name)
+        val intent =
+            RecoveryQuarantineIntentRow(
+                RecoveryQuarantineIntent.calculate(original),
+                original,
+                RecoveryQuarantineObservedState.REFERENCED_REJECTED,
+                QuarantineBootstrapBinding.PRESENT,
+                RecoveryQuarantineIntent.destination(original),
+                QuarantineIntentState.COMPLETED,
+            )
+        val os =
+            FakeOs().apply {
+                seed()
+                for (directory in listOf("units", "manifests", "key-envelopes")) stats[
+                    File(fixedDirectories()[4], directory).path] =
+                    RecoveryReconciliationStat(BootstrapPathType.DIRECTORY)
+                addQuarantine(intent.destinationRelativeName.substringAfter('/'), container)
+            }
+        return os to intent
+    }
+
     @Test
     fun `PAR01 oversized manifest has a distinct upper bound failure before any read`() {
         for (inventory in listOf(false, true)) {

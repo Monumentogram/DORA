@@ -1,5 +1,16 @@
 # Dora MVP 1 — Stage Status
 
+Current reduced-alpha amendment, 16 September 2026: the owner approved
+[MICROFILE schema 6](adr/ADR-0009-microfile-referenced-quarantine.md). Implementation
+adds exact migration and a separate authenticated-extent path for referenced quarantine.
+Fresh source/APK admission and affected runtime attempts remain required; no schema 6
+campaign credit is asserted by this amendment. Earlier 20/114 requirements and 32/165
+variant evaluations remain historical evidence on their original source and require
+an applicability assessment after this shared-schema change. Source `88ea997` passed
+its three E36 preflights with verified cleanup, establishing the repaired collector path;
+those preflights do not admit the subsequent schema 6 APKs. Status remains
+`ALPHA_E36_CHECKS_INCOMPLETE`, `0D.6 OPEN`.
+
 Current reduced internal-alpha amendment, 15 September 2026: the
 [reduced owner decision](stage0/DORA_0D6_ALPHA_REDUCED_SCOPE_OWNER_DECISION_20260915.md)
 sets the immediate E36 milestone to 114 requirements (90 fault, 24 main hard-kill;
