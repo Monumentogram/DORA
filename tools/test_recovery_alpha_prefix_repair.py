@@ -221,6 +221,8 @@ class CombinedAdmissionTests(unittest.TestCase):
         self.addCleanup(patch.stopall)
         patch.object(candidate,'git',side_effect=self.git).start()
         self.api=dict(candidate.__dict__,active_profile=lambda:self.profile,ALPHA_PREFIX_REPAIR_BINDING=self.binding)
+        # This fixture describes the historical prefix/capture context only.
+        self.api.pop('ALPHA_STREAM_PATH_REPAIR_BINDING', None)
         patch.object(subject,'candidate_api',return_value=self.api).start()
         self.legacy=subject.legacy_api()
         self.frozen=dict(executionId='E36RED01',variantCount=165,entries=[dict(slot=1,mutationVariants=['DEFAULT'],attemptId='old',runId='old',executionEntrySha256='old')])
@@ -946,6 +948,16 @@ class StreamPathSuccessorTests(unittest.TestCase):
             self.overrides[query]=value
             with self.assertRaises(ValueError):self.check()
             self.overrides.clear()
+
+
+class StreamPathFixtureIsolationTests(unittest.TestCase):
+    def test_historical_fixture_is_independent_of_installed_successor_metadata(self):
+        binding=dict(proofSha256='f'*64)
+        with patch.object(candidate,'ALPHA_STREAM_PATH_REPAIR_BINDING',binding,create=True):
+            fixture=CombinedAdmissionTests();fixture.setUp();self.addCleanup(fixture.doCleanups)
+            self.assertNotIn('ALPHA_STREAM_PATH_REPAIR_BINDING',fixture.api)
+            self.assertEqual(binding,candidate.ALPHA_STREAM_PATH_REPAIR_BINDING)
+            fixture.check()
 
 
 class StreamPathNoFallbackTests(unittest.TestCase):
