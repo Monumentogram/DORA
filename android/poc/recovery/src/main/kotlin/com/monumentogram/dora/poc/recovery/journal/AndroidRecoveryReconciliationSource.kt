@@ -8,6 +8,7 @@ import com.monumentogram.dora.poc.recovery.candidate.QuarantinePathState
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactBytes
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactContext
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactPresence
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactSizeLimitObservation
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryBootstrapRowState
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryCandidateSnapshot
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureCategory
@@ -31,6 +32,7 @@ import com.monumentogram.dora.poc.recovery.controller.KeyConfirmationSnapshot
 import com.monumentogram.dora.poc.recovery.controller.StoredKeyConfirmationIdentity
 import com.monumentogram.dora.poc.recovery.storage.AndroidOsRecoveryReconciliationStorage
 import com.monumentogram.dora.poc.recovery.storage.RecoveryArtifactAccessException
+import com.monumentogram.dora.poc.recovery.storage.RecoveryArtifactSizeLimitException
 import com.monumentogram.dora.poc.recovery.storage.RecoveryUnsafePathException
 
 /**
@@ -304,11 +306,12 @@ private constructor(
         } catch (error: RecoveryArtifactAccessException) {
             throw RecoverySourceAccessException(
                 RecoveryFailureDiagnostic.capture(
-                    if (error.structural) RecoveryFailureCategory.STRUCTURAL
-                    else RecoveryFailureCategory.OPERATIONAL,
-                    error.cause ?: error,
-                    failureStage(context, error.structural),
-                ),
+                        if (error.structural) RecoveryFailureCategory.STRUCTURAL
+                        else RecoveryFailureCategory.OPERATIONAL,
+                        error.cause ?: error,
+                        failureStage(context, error.structural),
+                    )
+                    .copy(artifactSizeLimit = sizeLimitObservation(error.cause)),
                 error,
                 failureContext(
                     rowState,
@@ -334,6 +337,11 @@ private constructor(
                     finalPresence,
                 ),
             )
+        }
+
+    private fun sizeLimitObservation(cause: Throwable?): RecoveryArtifactSizeLimitObservation? =
+        (cause as? RecoveryArtifactSizeLimitException)?.let {
+            RecoveryArtifactSizeLimitObservation(it.relativeName, it.observedBytes, it.maximumBytes)
         }
 
     private fun failureStage(

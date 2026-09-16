@@ -1,5 +1,16 @@
 # Dora MVP 1 — Executable Backlog
 
+Current 0D.6 amendment, 14 September 2026: `POC-RECOVERY-001` remains **BLOCKED / NOT_READY**
+for full closure. The [current scoped instruction](stage0/DORA_0D6_EXECUTION_SCOPE_20260914.md)
+adds conditional synthetic emulator campaign authority after applicable prerequisites; historical
+authority/readiness snapshots below are unchanged. Preserve the original attempt05 narrow PASS
+on source `4375b829db7dffef66036e5589e3ffe5961733dc`. The successor work covers supplemental
+canonical SQLite diagnostics, streaming publication and explicit campaign preparation. Complete
+exact-candidate implementation/evidence review, preflight, separate fault/hard-kill execution and
+mandatory physical evidence still govern closure. The original template counts and the expanded
+per-candidate counts are both recorded in the scoped instruction. No aggregate backlog status,
+full Recovery PASS, 0D.6 PASS or production admission is elevated by source preparation.
+
 Версия: Stage 0D post-PR43 main integration / REC-I2A-I2B merged / REC-I3 implementation authority / bounded E-slot checks / Recovery campaign hold\
 Дата: 19 августа 2026 года\
 Owner approvals effective: 4 августа 2026 года (`OD-01`–`OD-10`), 11 августа 2026 года (`OD-11`–`OD-13`), historical recovery constraints / prospective `REC-JSR305-EXCLUDE-001` 12 августа 2026 года (`OD-14`), exact pure-foundation `REC-I1-AUTH-20260813-01`, and current `OWNER-AUTH-BATCH-20260819-01` / `OD-15` on 19 августа 2026 года (REC-I3 implementation/non-metric verification/conditional merge; bounded non-measured E-slot functional/fault/compatibility/preflight checks after exact-pin availability and task prerequisites; no Recovery Phase A/measured campaign or production admission)\

@@ -1,5 +1,48 @@
 # Dora MVP 1 — Stage Status
 
+Current reduced internal-alpha amendment, 15 September 2026: the
+[reduced owner decision](stage0/DORA_0D6_ALPHA_REDUCED_SCOPE_OWNER_DECISION_20260915.md)
+sets the immediate E36 milestone to 114 requirements (90 fault, 24 main hard-kill;
+165 complete variant evaluations). The other 300 E36 repetitions are deferred;
+the original 414/600 accounting and historical verdicts remain unchanged.
+Status: `ALPHA_E36_CHECKS_INCOMPLETE`, `0D.6 OPEN`. Exact-source CI for the previous
+56f39fe retention repair passed; subsequent admission/launcher changes require
+applicable successor verification. Private execution evidence retains the original
+K08 FAIL, its INCONCLUSIVE supplement and a later 11-case batch (9 PASS, 2 FAIL),
+whose per-case cleanup completed but final logcat capture left terminal UNCERTAIN.
+No reduced milestone completion is asserted here. API33 is the alpha floor;
+API33 compatibility remains UNVERIFIED and authorized physical-phone smoke checks
+remain pending. Android9–12 alpha compatibility is deferred; historical D1 and
+global build settings are unchanged. Earlier amendments below are historical.
+
+Current internal alpha E36 campaign amendment, 14 September 2026: the
+[campaign owner decision](stage0/DORA_0D6_ALPHA_E36_CAMPAIGN_OWNER_DECISION_20260914.md)
+authorizes separate admission and execution of the 414 prepared E36 base cases
+(270 faults, 144 hard kills). Human review is not required for this bounded scope;
+all technical gates remain. The three retained d3bc6ac preflights passed with cleanup
+accounted for. Campaign execution is not yet evidenced by this source amendment.
+Full Recovery/0D.6, D2 and other physical/API requirements remain NOT PASSED.
+Earlier preflight-only decisions and their immutable packets remain historical.
+
+Current internal alpha preflight amendment, 14 September 2026: the
+[owner decision](stage0/DORA_0D6_ALPHA_PREFLIGHT_OWNER_DECISION_20260914.md) removes
+mandatory accountable human review only from the three named E36-GAPI preflights.
+Exact successor source/CI, technical review, APK identity and runtime evidence remain
+required. The original unapproved packet is preserved. Full preflight is unpassed
+until all three exact tests and cleanup are evidenced in the private successor report.
+The 414-entry campaign, physical/API requirements, full Recovery and 0D.6 remain unclosed.
+
+Current 0D.6 amendment, 14 September 2026: the
+[scoped owner execution instruction](stage0/DORA_0D6_EXECUTION_SCOPE_20260914.md) authorizes
+plan-and-execute preparation and conditional synthetic campaigns on task-owned emulators after
+applicable gates. It supersedes the older blanket statement that no emulator campaign authority
+exists, while preserving all historical false flags and evidence. Original attempt05 remains a
+narrow PASS on `4375b829db7dffef66036e5589e3ffe5961733dc`; complete preflight, applicable fault
+and hard-kill campaigns, full Recovery and 0D.6 are not passed. The successor adds a separate
+canonical SQLite diagnostic, streaming publication and manifest-driven campaign preparation.
+Exact successor review/CI/runtime evidence must be assessed separately; no PR merge or production
+admission follows. Older dated sections below retain their contemporaneous scope and results.
+
 Updated: 19 August 2026
 Baseline: `1be83e2940a09f7b23e33b4cdf3827de2690f3fd`
 Stage 00 merge commit: `a4aae302f9033e5471f6759f513e7e351c375a72`

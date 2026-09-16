@@ -6,6 +6,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
+import android.os.Build
 import android.system.ErrnoException
 import android.system.Os
 import android.system.OsConstants
@@ -39,7 +40,7 @@ internal object RecoveryJournalSchema {
     val V3_TO_V4_STEPS = V3ToV4Step.entries.toList()
     private val NO_MIGRATION_FAILPOINT = V3ToV4Failpoint {}
 
-    const val VERSION = 4
+    const val VERSION = 5
     const val DATABASE_RELATIVE_NAME = "poc-recovery/v1/recovery-journal-v1.db"
     const val RUN_TABLE = "recovery_run_bootstrap_v1"
     const val UNIT_TABLE = "recovery_microfile_unit_v2"
@@ -130,14 +131,16 @@ internal object RecoveryJournalSchema {
         V1_TO_V4,
         V2_TO_V4,
         V3_TO_V4,
+        V4_TO_V5,
         REJECT,
     }
 
     fun upgradePlan(oldVersion: Int, newVersion: Int): UpgradePlan =
         when {
-            oldVersion == 1 && newVersion == 4 -> UpgradePlan.V1_TO_V4
-            oldVersion == 2 && newVersion == 4 -> UpgradePlan.V2_TO_V4
-            oldVersion == 3 && newVersion == 4 -> UpgradePlan.V3_TO_V4
+            oldVersion == 1 && newVersion in 4..5 -> UpgradePlan.V1_TO_V4
+            oldVersion == 2 && newVersion in 4..5 -> UpgradePlan.V2_TO_V4
+            oldVersion == 3 && newVersion in 4..5 -> UpgradePlan.V3_TO_V4
+            oldVersion == 4 && newVersion == 5 -> UpgradePlan.V4_TO_V5
             else -> UpgradePlan.REJECT
         }
 
@@ -883,14 +886,20 @@ ON recovery_stream_range_quarantine_v4
             put("state", state.value)
         }
 
-    fun requireExactV4(database: SQLiteDatabase) {
+    fun requireExactV4(database: SQLiteDatabase) =
+        requireExactStreaming(database, CREATE_STREAM_OUTCOME_TABLE)
+
+    fun requireExactV5(database: SQLiteDatabase) =
+        requireExactStreaming(database, RecoveryStreamPrefixSchema.CREATE_OUTCOME_TABLE)
+
+    private fun requireExactStreaming(database: SQLiteDatabase, outcomeSql: String) {
         requireExactSql(database, "table", RUN_TABLE, CREATE_RUN_TABLE)
         requireExactSql(database, "index", "recovery_run_candidate_v2", CREATE_RUN_IDENTITY_INDEX)
         requireExactSql(database, "table", UNIT_TABLE, CREATE_UNIT_TABLE)
         requireExactSql(database, "table", PUBLICATION_TABLE, CREATE_PUBLICATION_TABLE)
         requireExactSql(database, "table", QUARANTINE_TABLE, CREATE_QUARANTINE_TABLE)
         requireExactSql(database, "table", STREAM_CHECKPOINT_TABLE, CREATE_STREAM_CHECKPOINT_TABLE)
-        requireExactSql(database, "table", STREAM_OUTCOME_TABLE, CREATE_STREAM_OUTCOME_TABLE)
+        requireExactSql(database, "table", STREAM_OUTCOME_TABLE, outcomeSql)
         requireExactSql(database, "table", STREAM_RANGE_TABLE, CREATE_STREAM_RANGE_TABLE)
         requireExactSql(
             database,
@@ -1024,28 +1033,39 @@ internal object AndroidRecoveryJournalDatabase {
     }
 }
 
-private class RecoveryJournalSqliteHelper(context: Context) :
-    SQLiteOpenHelper(context, databasePath(context).path, null, RecoveryJournalSchema.VERSION) {
-    init {
-        setWriteAheadLoggingEnabled(true)
+// This API restriction is PoC-only; it does not change the application's minSdk 28 contract.
+internal fun requireRecoveryJournalApi(apiLevel: Int) {
+    check(apiLevel >= Build.VERSION_CODES.TIRAMISU) {
+        "PoC Recovery journal requires API 33 for per-connection WAL configuration"
     }
+}
+
+internal class RecoveryJournalSqliteHelper(context: Context) :
+    SQLiteOpenHelper(
+        context,
+        databasePath(context).path,
+        RecoveryJournalSchema.VERSION,
+        SQLiteDatabase.OpenParams.Builder()
+            .addOpenFlags(SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING)
+            .setSynchronousMode(SQLiteDatabase.SYNC_MODE_FULL)
+            .build(),
+    ) {
 
     override fun onConfigure(database: SQLiteDatabase) {
         database.setForeignKeyConstraintsEnabled(true)
-        database.execSQL("PRAGMA synchronous=FULL")
-        database.rawQuery("PRAGMA wal_autocheckpoint=0", null).use { cursor ->
-            check(cursor.moveToFirst() && cursor.getInt(0) == 0) {
-                "Recovery journal could not disable WAL auto-checkpointing"
-            }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            database.execPerConnectionSQL("PRAGMA wal_autocheckpoint=0", null)
+        } else {
+            requireRecoveryJournalApi(Build.VERSION.SDK_INT)
         }
     }
 
-    override fun onCreate(database: SQLiteDatabase) = RecoveryJournalSchema.createV4(database)
+    override fun onCreate(database: SQLiteDatabase) = RecoveryStreamPrefixSchema.create(database)
 
     override fun onOpen(database: SQLiteDatabase) {
         super.onOpen(database)
         if (database.version == RecoveryJournalSchema.VERSION) {
-            RecoveryJournalSchema.requireExactV4(database)
+            RecoveryJournalSchema.requireExactV5(database)
         }
     }
 
@@ -1062,11 +1082,14 @@ private class RecoveryJournalSqliteHelper(context: Context) :
             }
             RecoveryJournalSchema.UpgradePlan.V3_TO_V4 ->
                 RecoveryJournalSchema.migrateV3ToV4(database)
+            RecoveryJournalSchema.UpgradePlan.V4_TO_V5 -> Unit
             RecoveryJournalSchema.UpgradePlan.REJECT ->
                 throw SQLiteException(
                     "PoC Recovery journal migration is not admitted: $oldVersion -> $newVersion"
                 )
         }
+        if (newVersion == RecoveryJournalSchema.VERSION)
+            RecoveryStreamPrefixSchema.migrate(database)
     }
 
     override fun onDowngrade(database: SQLiteDatabase, oldVersion: Int, newVersion: Int): Unit =
@@ -1078,6 +1101,7 @@ private class RecoveryJournalSqliteHelper(context: Context) :
         private const val DIRECTORY_MODE_OWNER_ONLY = 0x1c0
 
         fun databasePath(context: Context): File {
+            requireRecoveryJournalApi(Build.VERSION.SDK_INT)
             val file = File(context.noBackupFilesDir, RecoveryJournalSchema.DATABASE_RELATIVE_NAME)
             val fixed = File(context.noBackupFilesDir, "poc-recovery")
             val version = File(fixed, "v1")

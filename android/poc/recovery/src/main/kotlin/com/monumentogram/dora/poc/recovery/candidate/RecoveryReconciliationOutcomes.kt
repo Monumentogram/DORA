@@ -1019,6 +1019,7 @@ internal data class RecoveryFailureDiagnostic(
     val type: String,
     val message: String,
     val stage: RecoveryFailureStage = RecoveryFailureStage.OPERATIONAL,
+    val artifactSizeLimit: RecoveryArtifactSizeLimitObservation? = null,
 ) {
     companion object {
         fun capture(

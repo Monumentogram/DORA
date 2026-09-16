@@ -86,8 +86,27 @@ def production_sql() -> dict[str, str]:
     return result
 
 
-def assert_android_configuration_uses_query_api() -> None:
+def assert_android_configuration_uses_open_params_and_per_connection_api() -> None:
     source = KOTLIN.read_text(encoding="utf-8")
+    helper = re.search(
+        r"(?:private|internal) class RecoveryJournalSqliteHelper\(context: Context\)\s*:\s*"
+        r"SQLiteOpenHelper\((.*?)\)\s*\{",
+        source,
+        re.DOTALL,
+    )
+    assert helper, "missing Recovery journal SQLiteOpenHelper construction"
+    constructor = helper.group(1)
+    assert re.search(
+        r"SQLiteDatabase\.OpenParams\.Builder\(\).*?"
+        r"\.addOpenFlags\(SQLiteDatabase\.ENABLE_WRITE_AHEAD_LOGGING\).*?"
+        r"\.setSynchronousMode\(SQLiteDatabase\.SYNC_MODE_FULL\).*?"
+        r"\.build\(\)",
+        constructor,
+        re.DOTALL,
+    ), "Recovery journal must select WAL and synchronous FULL in pre-open OpenParams"
+    assert "setWriteAheadLoggingEnabled(true)" not in source, (
+        "Recovery journal WAL selection must be part of pre-open OpenParams"
+    )
     on_configure = re.search(
         r"override fun onConfigure\(database: SQLiteDatabase\) \{(.*?)\n    \}",
         source,
@@ -95,15 +114,22 @@ def assert_android_configuration_uses_query_api() -> None:
     )
     assert on_configure, "missing Recovery journal onConfigure"
     body = on_configure.group(1)
+    assert 'execSQL("PRAGMA synchronous=FULL")' not in body, (
+        "connection-local synchronous assignment cannot configure every WAL pool connection"
+    )
     assert 'execSQL("PRAGMA wal_autocheckpoint=0")' not in body, (
         "wal_autocheckpoint returns data on Android and cannot use execSQL"
     )
+    assert 'database.setForeignKeyConstraintsEnabled(true)' in body
+    assert 'database.execPerConnectionSQL("PRAGMA wal_autocheckpoint=0", null)' in body, (
+        "wal_autocheckpoint must configure current and future pooled connections"
+    )
+    assert 'rawQuery("PRAGMA wal_autocheckpoint=0"' not in body
+    assert 'Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU' in body
     assert re.search(
-        r'rawQuery\("PRAGMA wal_autocheckpoint=0", null\)\.use \{ cursor ->.*?'
-        r'cursor\.moveToFirst\(\).*?cursor\.getInt\(0\) == 0',
-        body,
-        re.DOTALL,
-    ), "wal_autocheckpoint must use the query API and verify SQLite accepted zero"
+        r'fun databasePath\(context: Context\): File \{\s*'
+        r'requireRecoveryJournalApi\(Build.VERSION.SDK_INT\)', source
+    ), "unsupported APIs must fail before journal filesystem preparation"
     preflight = E36_PREFLIGHT.read_text(encoding="utf-8")
     assert f'.put("integratedRuntimePin", "{E36_SQLITE_RUNTIME_PIN}")' in preflight, (
         "E36 evidence must identify the exact SQLite-remediation runtime commit"
@@ -238,7 +264,7 @@ def assert_checkpoint_requires_bootstrap_parent(database: sqlite3.Connection) ->
 
 
 def verify() -> None:
-    assert_android_configuration_uses_query_api()
+    assert_android_configuration_uses_open_params_and_per_connection_api()
     sql = production_sql()
 
     fresh = connect()

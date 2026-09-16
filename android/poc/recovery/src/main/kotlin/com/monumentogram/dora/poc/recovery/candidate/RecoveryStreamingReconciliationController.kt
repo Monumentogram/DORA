@@ -106,6 +106,17 @@ internal data class RecoveryStreamingValidatedIntentFacts(
     val preFaultPrefixMatches: Boolean,
     val completed: RecoveryStreamingCompletedReadFacts?,
 ) {
+    val survivingCheckpointPrefix: Boolean
+        get() =
+            witness.checkpointPrefixBytes <= observedSourceBytes &&
+                observedSourceBytes < witness.preFaultSourceBytes &&
+                checkpointPrefixMatches
+
+    val sourceMatch: StreamSourceMatch
+        get() =
+            if (survivingCheckpointPrefix) StreamSourceMatch.VERIFIED_SURVIVING_CHECKPOINT_PREFIX
+            else StreamSourceMatch.VERIFIED_SAME_DESCRIPTOR
+
     init {
         require(
             witness.controllerSnapshotSha256 ==
@@ -159,7 +170,8 @@ internal object RecoveryStreamingIntentBuilder {
             facts.observedSourceBytes,
         )
         return when {
-            facts.observedSourceBytes < facts.witness.preFaultSourceBytes ->
+            facts.observedSourceBytes < facts.witness.preFaultSourceBytes &&
+                !facts.survivingCheckpointPrefix ->
                 preIntersection(
                     facts,
                     StreamDiagnosticStage.STREAM_SOURCE_EXTENT,
@@ -171,7 +183,8 @@ internal object RecoveryStreamingIntentBuilder {
                     StreamDiagnosticStage.STREAM_CHECKPOINT,
                     StreamDiagnosticClassification.STREAM_CHECKPOINT_PREFIX_OUTSIDE_WITNESS,
                 )
-            !facts.checkpointPrefixMatches || !facts.preFaultPrefixMatches ->
+            !facts.checkpointPrefixMatches ||
+                (!facts.preFaultPrefixMatches && !facts.survivingCheckpointPrefix) ->
                 preIntersection(
                     facts,
                     StreamDiagnosticStage.STREAM_SOURCE_EXTENT,
@@ -436,7 +449,7 @@ internal object RecoveryStreamingIntentBuilder {
                 witness = facts.witness,
                 observedSourceBytes = facts.observedSourceBytes,
                 observedSourceSha256 = facts.observedSourceSha256,
-                preFaultSourceMatch = StreamSourceMatch.VERIFIED_SAME_DESCRIPTOR,
+                preFaultSourceMatch = facts.sourceMatch,
                 checkpointIntersection = StreamCheckpointIntersection.PROVEN,
                 decision = StreamDecision.VALID,
                 diagnosticBranch = StreamDiagnosticBranch.NONE,
@@ -468,7 +481,7 @@ internal object RecoveryStreamingIntentBuilder {
                 witness = facts.witness,
                 observedSourceBytes = facts.observedSourceBytes,
                 observedSourceSha256 = facts.observedSourceSha256,
-                preFaultSourceMatch = StreamSourceMatch.VERIFIED_SAME_DESCRIPTOR,
+                preFaultSourceMatch = facts.sourceMatch,
                 checkpointIntersection = StreamCheckpointIntersection.PROVEN,
                 decision = admission.decision,
                 diagnosticBranch = StreamDiagnosticBranch.POST_INTERSECTION,
@@ -859,6 +872,7 @@ internal class RecoveryStreamingReconciliationController(
     @Suppress("unused")
     private val checkpointAuthenticator: RecoveryStreamingCheckpointAuthenticator,
     private val evidenceSink: RecoveryStreamingEvidenceSink,
+    private val orphanHandler: RecoveryStreamingOrphanHandler? = null,
 ) {
     fun recover(
         request: RecoveryStreamingControllerRequest?
@@ -884,10 +898,12 @@ internal class RecoveryStreamingReconciliationController(
                             }
                         if (generation.isEmpty()) {
                             nonPersistable(
-                                RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
-                                    RecoveryStreamingResultStage.PREREQUISITE,
-                                    RecoveryStreamingResultClassification.STREAM_CHECKPOINT_MISSING,
-                                )
+                                orphanHandler?.reconcile(request.witness, chain.value)
+                                    ?: RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
+                                        RecoveryStreamingResultStage.PREREQUISITE,
+                                        RecoveryStreamingResultClassification
+                                            .STREAM_CHECKPOINT_MISSING,
+                                    )
                             )
                         } else if (
                             generation.size != 1 ||
@@ -1147,13 +1163,16 @@ internal class RecoveryStreamingReconciliationController(
         val truncated = opened.observedBytes < request.witness.preFaultSourceBytes
         val checkpointOutsideWitness =
             request.witness.checkpointPrefixBytes > request.witness.preFaultSourceBytes
-        val mayProvePrefixes = !truncated && !checkpointOutsideWitness
+        val mayProveCheckpoint =
+            !checkpointOutsideWitness &&
+                request.witness.checkpointPrefixBytes <= opened.observedBytes
         val checkpointPrefixMatches =
-            mayProvePrefixes &&
+            mayProveCheckpoint &&
                 opened.sha256Prefix(request.witness.checkpointPrefixBytes) ==
                     checkpoint.streamCiphertextPrefixSha256
         val preFaultPrefixMatches =
-            mayProvePrefixes &&
+            !truncated &&
+                !checkpointOutsideWitness &&
                 opened.sha256Prefix(request.witness.preFaultSourceBytes) ==
                     request.witness.preFaultSourceSha256
         val facts =
@@ -1166,10 +1185,9 @@ internal class RecoveryStreamingReconciliationController(
                 completed = null,
             )
         if (
-            truncated ||
-                checkpointOutsideWitness ||
+            checkpointOutsideWitness ||
                 !checkpointPrefixMatches ||
-                !preFaultPrefixMatches
+                (!preFaultPrefixMatches && !facts.survivingCheckpointPrefix)
         ) {
             return persistFresh(
                 RecoveryStreamingIntentBuilder.buildOutcome(facts),

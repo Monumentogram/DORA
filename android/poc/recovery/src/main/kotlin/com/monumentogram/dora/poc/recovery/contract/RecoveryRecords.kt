@@ -2,6 +2,10 @@ package com.monumentogram.dora.poc.recovery.contract
 
 import java.util.Collections
 
+/** A bounded decoded checkpoint names an object outside its exact canonical identity. */
+class RecoveryCheckpointPathException internal constructor(cause: RecoveryContractException) :
+    RecoveryContractException("Checkpoint contains a non-canonical relative name", cause)
+
 data class RecoveryCheckpoint(
     val candidate: RecoveryCandidate,
     val runId: RunId,
@@ -38,8 +42,12 @@ data class RecoveryCheckpoint(
             "Checkpoint committed end does not match the one-segment-lookahead contract"
         }
         validatePlaintextEnd(committedEndExclusive, "Checkpoint committed end")
-        RecoveryRelativeNames.validateStreamCiphertext(streamCiphertextRelativeName)
-        RecoveryRelativeNames.validateStreamKeyEnvelope(streamKeyEnvelopeRelativeName)
+        try {
+            RecoveryRelativeNames.validateStreamCiphertext(streamCiphertextRelativeName)
+            RecoveryRelativeNames.validateStreamKeyEnvelope(streamKeyEnvelopeRelativeName)
+        } catch (failure: RecoveryContractException) {
+            throw RecoveryCheckpointPathException(failure)
+        }
     }
 }
 

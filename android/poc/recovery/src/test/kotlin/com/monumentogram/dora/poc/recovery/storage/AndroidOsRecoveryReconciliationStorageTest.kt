@@ -1,9 +1,23 @@
 package com.monumentogram.dora.poc.recovery.storage
 
+import com.monumentogram.dora.poc.recovery.candidate.AndroidRecoveryStreamingOrphanArtifacts
 import com.monumentogram.dora.poc.recovery.candidate.QuarantineBootstrapBinding
 import com.monumentogram.dora.poc.recovery.candidate.QuarantineIntentState
 import com.monumentogram.dora.poc.recovery.candidate.QuarantinePathState
+import com.monumentogram.dora.poc.recovery.candidate.QuarantineResult
+import com.monumentogram.dora.poc.recovery.candidate.QuarantineStep
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureCategory
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineController
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineEvidenceSink
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineIntentRow
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineJournal
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineTransaction
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryStreamingOrphanAccessException
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryStreamingOrphanFailure
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryStreamingReconciliationResult
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryStreamingResultClassification
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryStreamingResultStage
+import com.monumentogram.dora.poc.recovery.candidate.RecoveryStreamingSafeExceptionType
 import com.monumentogram.dora.poc.recovery.contract.RecoveryCandidate
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineArtifactRole
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntent
@@ -18,6 +32,356 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class AndroidOsRecoveryReconciliationStorageTest {
+    @Test
+    fun `PAR01 oversized manifest has a distinct upper bound failure before any read`() {
+        for (inventory in listOf(false, true)) {
+            val os = oversizedManifest()
+            val storage = AndroidOsRecoveryReconciliationStorage(ROOT, os)
+            val failure =
+                assertThrows(RecoveryArtifactAccessException::class.java) {
+                    if (inventory) storage.listActiveInventory(RUN)
+                    else storage.loadActiveArtifact(RUN, MANIFEST_NAME, 1_048_576L)
+                }
+            assertTrue(failure.structural)
+            assertEquals("RecoveryArtifactSizeLimitException", failure.cause?.javaClass?.simpleName)
+            assertEquals(0, os.actualReadCalls)
+            assertEquals(1, os.closeCalls)
+        }
+    }
+
+    @Test
+    fun `PAR01 oversized inventory keeps its typed failure when descriptor close fails`() {
+        val os = oversizedManifest().apply { fail = "close" }
+        val failure =
+            assertThrows(RecoveryArtifactAccessException::class.java) {
+                AndroidOsRecoveryReconciliationStorage(ROOT, os).listActiveInventory(RUN)
+            }
+        assertEquals("RecoveryArtifactSizeLimitException", failure.cause?.javaClass?.simpleName)
+        assertEquals("close", failure.suppressed.single().message)
+        assertEquals(0, os.actualReadCalls)
+        assertEquals(1, os.closeCalls)
+    }
+
+    @Test
+    fun `PAR01 exact manifest bound remains readable and one byte above fails before reading`() {
+        for (size in listOf(262_144, 262_145)) {
+            val os = oversizedManifest()
+            val path = File(fixedDirectories()[4], MANIFEST_NAME).path
+            os.stats[path] = RecoveryReconciliationStat(BootstrapPathType.REGULAR, size.toLong())
+            os.bytes[path] = ByteArray(size) { 7 }
+            val storage = AndroidOsRecoveryReconciliationStorage(ROOT, os)
+            if (size == 262_144) {
+                val artifact =
+                    requireNotNull(storage.loadActiveArtifact(RUN, MANIFEST_NAME, 1_048_576L))
+                assertEquals(size.toLong(), artifact.size)
+                assertEquals(Sha256Value.calculate(os.bytes.getValue(path)), artifact.sha256)
+                assertEquals(2, os.actualReadCalls)
+            } else {
+                val failure =
+                    assertThrows(RecoveryArtifactAccessException::class.java) {
+                            storage.loadActiveArtifact(RUN, MANIFEST_NAME, 1_048_576L)
+                        }
+                        .cause as RecoveryArtifactSizeLimitException
+                assertEquals(MANIFEST_NAME, failure.relativeName)
+                assertEquals(262_145L, failure.observedBytes)
+                assertEquals(262_144L, failure.maximumBytes)
+                assertEquals(0, os.actualReadCalls)
+            }
+            assertEquals(1, os.closeCalls)
+        }
+    }
+
+    @Test
+    fun `PAR01 STREAM checkpoint ciphertext of oversized plaintext retains its separate read cap`() {
+        val name = "checkpoints/g-00000000000000000003.ct"
+        val os =
+            FakeOs().apply {
+                seed()
+                stats[File(fixedDirectories()[4], "checkpoints").path] =
+                    RecoveryReconciliationStat(BootstrapPathType.DIRECTORY)
+                val path = File(fixedDirectories()[4], name).path
+                bytes[path] = ByteArray(524_322) { 9 }
+                stats[path] = RecoveryReconciliationStat(BootstrapPathType.REGULAR, 524_322L)
+            }
+        val artifact =
+            requireNotNull(
+                AndroidOsRecoveryReconciliationStorage(ROOT, os)
+                    .loadActiveArtifact(RUN, name, 16_777_216L)
+            )
+        assertEquals(524_322L, artifact.size)
+        assertEquals(Sha256Value.calculate(ByteArray(524_322) { 9 }), artifact.sha256)
+        assertEquals(2, os.actualReadCalls)
+        assertEquals(1, os.closeCalls)
+    }
+
+    private fun oversizedManifest(): FakeOs =
+        FakeOs().apply {
+            seed()
+            val runRoot = fixedDirectories()[4]
+            val directory = File(runRoot, "manifests").path
+            directoryChildren[runRoot] = mutableListOf("manifests")
+            directoryChildren[directory] = mutableListOf(MANIFEST_NAME.substringAfter('/'))
+            stats[directory] = RecoveryReconciliationStat(BootstrapPathType.DIRECTORY)
+            stats[File(runRoot, MANIFEST_NAME).path] =
+                RecoveryReconciliationStat(BootstrapPathType.REGULAR, 524_322L)
+        }
+
+    @Test
+    fun `SPL01 actual storage classifies zero short and long completed destinations as structural`() {
+        val actualFailures = mutableListOf<RecoveryStreamingOrphanFailure>()
+        for (size in listOf(0, 2, 4)) {
+            val (os, row) = orphanDestination(ByteArray(size))
+            val failure =
+                assertThrows(RecoveryStreamingOrphanAccessException::class.java) {
+                    orphanLoad(os, row)
+                }
+            actualFailures += failure.failure
+            assertEquals(1, os.closeCalls)
+            assertEquals(0, os.actualReadCalls)
+            assertTrue(os.lists.isEmpty())
+        }
+        assertEquals(List(3) { RecoveryStreamingOrphanFailure.ARTIFACT_STRUCTURAL }, actualFailures)
+        val result = actualFailures.first().result() as RecoveryStreamingReconciliationResult.Fatal
+        assertEquals(RecoveryStreamingResultStage.PREREQUISITE, result.stage)
+        assertEquals(
+            RecoveryStreamingResultClassification.STREAM_CHECKPOINT_STRUCTURAL,
+            result.classification,
+        )
+    }
+
+    @Test
+    fun `SPL01 actual fstat leaf change is unsafe before content read`() {
+        for (type in
+            listOf(
+                BootstrapPathType.DIRECTORY,
+                BootstrapPathType.SYMLINK,
+                BootstrapPathType.OTHER,
+            )) {
+            val (os, row) = orphanDestination(byteArrayOf(1, 2, 3))
+            os.fstatType = type
+            val failure =
+                assertThrows(RecoveryStreamingOrphanAccessException::class.java) {
+                    orphanLoad(os, row)
+                }
+            assertEquals(RecoveryStreamingOrphanFailure.UNSAFE_PATH, failure.failure)
+            assertEquals(1, os.closeCalls)
+            assertEquals(0, os.actualReadCalls)
+            assertTrue(os.lists.isEmpty())
+        }
+    }
+
+    @Test
+    fun `SPL01 actual framework open fstat read and close exceptions remain operational`() {
+        for (operation in listOf("open", "fstat", "read", "close")) {
+            val (os, row) = orphanDestination(byteArrayOf(1, 2, 3))
+            os.fail = operation
+            val failure =
+                assertThrows(RecoveryStreamingOrphanAccessException::class.java) {
+                    orphanLoad(os, row)
+                }
+            assertEquals(
+                operation,
+                RecoveryStreamingOrphanFailure.ARTIFACT_OPERATIONAL,
+                failure.failure,
+            )
+            val result = failure.failure.result() as RecoveryStreamingReconciliationResult.Retry
+            assertEquals(
+                RecoveryStreamingResultClassification.ARTIFACT_IO_BEFORE_EXACT_SOURCE_HASH,
+                result.classification,
+            )
+            assertEquals(RecoveryStreamingSafeExceptionType.IO, result.safeExceptionType)
+            assertEquals(if (operation == "open") 0 else 1, os.closeCalls)
+        }
+    }
+
+    @Test
+    fun `shared MICROFILE exact reads type size conflicts and preserve primary over close`() {
+        for (size in listOf(0, 2, 4)) {
+            val os =
+                FakeOs().apply {
+                    seed(source = ByteArray(size))
+                    fail = "close"
+                }
+            val failure =
+                assertThrows(RecoveryArtifactAccessException::class.java) {
+                    AndroidOsRecoveryReconciliationStorage(ROOT, os).inspect(row())
+                }
+            assertTrue(failure.structural)
+            assertEquals("close", failure.suppressed.single().message)
+            assertEquals(1, os.closeCalls)
+            assertEquals(0, os.actualReadCalls)
+        }
+    }
+
+    @Test
+    fun `shared MICROFILE Q02 retains unsafe leaf and operational framework classifications`() {
+        val row = row().copy(state = QuarantineIntentState.COMPLETED)
+        val unsafe =
+            FakeOs().apply {
+                seed(destination = byteArrayOf(1, 2, 3))
+                fstatType = BootstrapPathType.OTHER
+            }
+        val result = quarantineExisting(unsafe, row) as QuarantineResult.UnsafePath
+        assertEquals(QuarantineStep.Q02, result.failedStep)
+        assertEquals(RecoveryFailureCategory.CORRUPT_LEAF, result.diagnostic.category)
+        assertEquals(1, unsafe.closeCalls)
+        assertEquals(0, unsafe.actualReadCalls)
+        for (operation in listOf("open", "fstat", "read", "close")) {
+            val os =
+                FakeOs().apply {
+                    seed(destination = byteArrayOf(1, 2, 3))
+                    fail = operation
+                }
+            val failed = quarantineExisting(os, row) as QuarantineResult.RetryRequired
+            assertEquals(QuarantineStep.Q02, failed.failedStep)
+            assertEquals(RecoveryFailureCategory.OPERATIONAL, failed.diagnostic?.category)
+            assertEquals(if (operation == "open") 0 else 1, os.closeCalls)
+        }
+    }
+
+    private fun quarantineExisting(os: FakeOs, row: RecoveryQuarantineIntentRow): QuarantineResult {
+        val journal =
+            object : RecoveryQuarantineJournal {
+                override fun load(intentId: Sha256Value) = row
+
+                override fun loadBySource(input: RecoveryQuarantineIntentInput) = row
+
+                override fun beginNonExclusive(): RecoveryQuarantineTransaction =
+                    error("No new transaction")
+            }
+        return RecoveryQuarantineController(
+                AndroidOsRecoveryReconciliationStorage(ROOT, os),
+                journal,
+                RecoveryQuarantineEvidenceSink { error("No completion evidence") },
+            )
+            .quarantine(row.input, row.recordedObservedState, row.bootstrapBinding)
+    }
+
+    private fun orphanDestination(bytes: ByteArray): Pair<FakeOs, RecoveryQuarantineIntentRow> {
+        val input =
+            RecoveryQuarantineIntentInput(
+                RecoveryCandidate.STREAM,
+                RUN,
+                "checkpoints/g-00000000000000000001.ct",
+                RecoveryQuarantineArtifactRole.CHECKPOINT_CIPHERTEXT,
+                3UL,
+                Sha256Value.calculate(byteArrayOf(1, 2, 3)),
+            )
+        val row =
+            RecoveryQuarantineIntentRow(
+                RecoveryQuarantineIntent.calculate(input),
+                input,
+                RecoveryQuarantineObservedState.FINAL_ORPHAN,
+                QuarantineBootstrapBinding.PRESENT,
+                RecoveryQuarantineIntent.destination(input),
+                QuarantineIntentState.COMPLETED,
+            )
+        val os =
+            FakeOs().apply {
+                seed()
+                stats[File(fixedDirectories()[4], "checkpoints").path] =
+                    RecoveryReconciliationStat(BootstrapPathType.DIRECTORY)
+                addQuarantine(row.destinationRelativeName.removePrefix("objects/"), bytes)
+            }
+        return os to row
+    }
+
+    private fun orphanLoad(os: FakeOs, row: RecoveryQuarantineIntentRow) {
+        val storage = AndroidOsRecoveryReconciliationStorage(ROOT, os)
+        AndroidRecoveryStreamingOrphanArtifacts(
+                storage::loadActiveArtifact,
+                { _, _ -> row },
+                storage::inspect,
+                storage::loadQuarantinedCheckpoint,
+            )
+            .load(RUN, row.input.sourceRelativeName, row.input.artifactRole)
+    }
+
+    @Test
+    fun `SPL01 exact checkpoint destination is byte bound and never inventoried`() {
+        val expected = byteArrayOf(1, 2, 3)
+        val input =
+            RecoveryQuarantineIntentInput(
+                RecoveryCandidate.STREAM,
+                RUN,
+                "checkpoints/g-00000000000000000001.ct",
+                RecoveryQuarantineArtifactRole.CHECKPOINT_CIPHERTEXT,
+                3UL,
+                Sha256Value.calculate(expected),
+            )
+        val row =
+            RecoveryQuarantineIntentRow(
+                RecoveryQuarantineIntent.calculate(input),
+                input,
+                RecoveryQuarantineObservedState.FINAL_ORPHAN,
+                QuarantineBootstrapBinding.PRESENT,
+                RecoveryQuarantineIntent.destination(input),
+                QuarantineIntentState.COMPLETED,
+            )
+        val os =
+            FakeOs().apply {
+                seed()
+                stats[File(fixedDirectories()[4], "checkpoints").path] =
+                    RecoveryReconciliationStat(BootstrapPathType.DIRECTORY)
+                addQuarantine(row.destinationRelativeName.removePrefix("objects/"), expected)
+            }
+        val storage = AndroidOsRecoveryReconciliationStorage(ROOT, os)
+        val artifact = storage.loadQuarantinedCheckpoint(row)
+        assertEquals(input.sourceRelativeName, artifact.relativeName)
+        assertEquals(input.sourceSha256, artifact.sha256)
+        assertEquals(3L, artifact.size)
+        assertEquals(1, os.closeCalls)
+        assertTrue(os.lists.isEmpty())
+        os.bytes[
+                File(fixedDirectories()[7], row.destinationRelativeName.removePrefix("objects/"))
+                    .path] = byteArrayOf(3, 2, 1)
+        val changed =
+            assertThrows(RecoveryArtifactAccessException::class.java) {
+                storage.loadQuarantinedCheckpoint(row)
+            }
+        assertTrue(changed.structural)
+        assertEquals(2, os.closeCalls)
+    }
+
+    @Test
+    fun `SPL01 destination loader rejects wrong role identity path and unsafe ancestor`() {
+        val os = FakeOs().apply { seed() }
+        val storage = AndroidOsRecoveryReconciliationStorage(ROOT, os)
+        assertThrows(IllegalArgumentException::class.java) {
+            storage.loadQuarantinedCheckpoint(row())
+        }
+        val input =
+            RecoveryQuarantineIntentInput(
+                RecoveryCandidate.STREAM,
+                RUN,
+                "checkpoints/g-00000000000000000001.ct",
+                RecoveryQuarantineArtifactRole.CHECKPOINT_CIPHERTEXT,
+                3UL,
+                Sha256Value.calculate(byteArrayOf(1, 2, 3)),
+            )
+        val row =
+            RecoveryQuarantineIntentRow(
+                RecoveryQuarantineIntent.calculate(input),
+                input,
+                RecoveryQuarantineObservedState.FINAL_ORPHAN,
+                QuarantineBootstrapBinding.PRESENT,
+                RecoveryQuarantineIntent.destination(input),
+                QuarantineIntentState.COMPLETED,
+            )
+        assertThrows(IllegalArgumentException::class.java) {
+            storage.loadQuarantinedCheckpoint(
+                row.copy(destinationRelativeName = "objects/../escape")
+            )
+        }
+        assertTrue(os.lstats.isEmpty())
+        os.stats[fixedDirectories()[6]] = RecoveryReconciliationStat(BootstrapPathType.SYMLINK)
+        assertThrows(RecoveryUnsafePathException::class.java) {
+            storage.loadQuarantinedCheckpoint(row)
+        }
+        assertEquals(0, os.closeCalls)
+        assertTrue(os.lists.isEmpty())
+    }
+
     @Test
     fun `optional quarantine namespace absence is empty and unsafe ancestors are rejected`() {
         val absent =
@@ -223,6 +587,8 @@ class AndroidOsRecoveryReconciliationStorageTest {
         var readCall = 0
         var fail: String? = null
         var closeCalls = 0
+        var actualReadCalls = 0
+        var fstatType: BootstrapPathType? = null
 
         fun seed(
             unsafe: String? = null,
@@ -280,7 +646,9 @@ class AndroidOsRecoveryReconciliationStorageTest {
             descriptor: RecoveryReconciliationDescriptor
         ): RecoveryReconciliationStat {
             if (fail == "fstat") error("fstat")
-            return requireNotNull(stats[(descriptor as Descriptor).path])
+            return requireNotNull(stats[(descriptor as Descriptor).path]).let {
+                it.copy(type = fstatType ?: it.type)
+            }
         }
 
         @Suppress("ReturnCount")
@@ -290,6 +658,7 @@ class AndroidOsRecoveryReconciliationStorageTest {
             offset: Int,
             count: Int,
         ): Int {
+            actualReadCalls++
             if (fail == "read" || fail == "read+close") error("read")
             scriptedReads?.getOrNull(readCall++)?.let { scripted ->
                 if (scripted > 0) repeat(scripted.coerceAtMost(count)) { buffer[offset + it] = 1 }
@@ -318,6 +687,7 @@ class AndroidOsRecoveryReconciliationStorageTest {
     }
 
     private companion object {
+        const val MANIFEST_NAME = "manifests/g-00000000000000000003.ct"
         val ROOT = File("root").absoluteFile
         val RUN = RunId.fromCanonicalString("00112233-4455-6677-8899-aabbccddeeff")
 
