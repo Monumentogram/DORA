@@ -166,6 +166,7 @@ MICROFILE_DISPOSITION_PATHS = MICROFILE_DISPOSITION_ANDROID_PATHS | CAPTURE_HOST
     'docs/DORA_MVP1_STAGE_STATUS.md',
     'docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md',
     'tools/test_rec_microfile_disposition_schema.py',
+    'tools/validate_stage00.py',
 })
 
 
@@ -217,12 +218,13 @@ def microfile_disposition_facts(api, profile, binding, historical_descriptor, ow
     paths=sorted(p for p in before.keys()|after.keys() if before.get(p)!=after.get(p))
     require(set(paths)==MICROFILE_DISPOSITION_PATHS,'MICROFILE disposition differs from exact source delta')
     for p in paths:
-        require(after.get(p,{}).get('mode')=='100644' and after[p]['type']=='blob',
+        mode='100755' if p=='tools/validate_stage00.py' else '100644'
+        require(after.get(p,{}).get('mode')==mode and after[p]['type']=='blob',
                 'MICROFILE disposition source is deleted or nonregular')
         if p in MICROFILE_DISPOSITION_ADDED_PATHS:
             require(p not in before,'MICROFILE disposition added path already existed')
         else:
-            require(before.get(p,{}).get('mode')=='100644' and before[p]['type']=='blob',
+            require(before.get(p,{}).get('mode')==mode and before[p]['type']=='blob',
                     'MICROFILE disposition original source is missing or nonregular')
     require(isinstance(historical_descriptor,dict)
             and historical_descriptor.get('sha256')==MICROFILE_DISPOSITION_OLD_PREFIX_BINDING['applicabilitySha256'],

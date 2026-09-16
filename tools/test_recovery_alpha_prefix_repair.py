@@ -1319,10 +1319,12 @@ class MicrofileDispositionSuccessorTests(unittest.TestCase):
         self.before=copy.deepcopy(old.after)
         # Added schema files are genuinely absent in the old tree.
         for p in subject.MICROFILE_DISPOSITION_PATHS-subject.MICROFILE_DISPOSITION_ADDED_PATHS:
-            self.before.setdefault(p,dict(mode='100644',type='blob',object='af'*20))
+            mode='100755' if p=='tools/validate_stage00.py' else '100644'
+            self.before.setdefault(p,dict(mode=mode,type='blob',object='af'*20))
         self.after=copy.deepcopy(self.before)
         for p in subject.MICROFILE_DISPOSITION_PATHS:
-            self.after[p]=dict(mode='100644',type='blob',object='bc'*20)
+            mode='100755' if p=='tools/validate_stage00.py' else '100644'
+            self.after[p]=dict(mode=mode,type='blob',object='bc'*20)
         self.overrides={}
         self.api=dict(old.api,git=self.git,active_profile=lambda:self.profile,
                       ALPHA_PREFIX_REPAIR_BINDING=copy.deepcopy(old.api['ALPHA_PREFIX_REPAIR_BINDING']))
@@ -1428,7 +1430,8 @@ class MicrofileDispositionSuccessorTests(unittest.TestCase):
         original=copy.deepcopy(self.after)
         changes=[('android/build.gradle.kts',dict(mode='100644',type='blob',object='f'*40))]
         changes += [(next(iter(subject.MICROFILE_DISPOSITION_PATHS)),None)]
-        changes += [(next(iter(subject.MICROFILE_DISPOSITION_PATHS)),dict(mode=mode,type=kind,object='f'*40))
+        nonexecutable=sorted(subject.MICROFILE_DISPOSITION_PATHS-{'tools/validate_stage00.py'})[0]
+        changes += [(nonexecutable,dict(mode=mode,type=kind,object='f'*40))
                     for mode,kind in (('120000','blob'),('100755','blob'),('160000','commit'))]
         for p,value in changes:
             self.after=copy.deepcopy(original)
@@ -1436,6 +1439,16 @@ class MicrofileDispositionSuccessorTests(unittest.TestCase):
             else:self.after[p]=value
             with self.assertRaises(ValueError):self.refresh()
         self.after=original;self.check()
+
+    def test_stage00_executable_mode_is_preserved_on_both_sides(self):
+        self.check()
+        for entries in (self.before,self.after):
+            row=entries['tools/validate_stage00.py']
+            for mode in ('100644','120000','160000'):
+                row['mode']=mode
+                with self.assertRaises(ValueError):self.refresh()
+            row['mode']='100755'
+        self.check()
 
     def test_apk_pair_review_build_and_owner_are_bound(self):
         self.check()

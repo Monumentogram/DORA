@@ -913,9 +913,12 @@ DEC-048 preserves the closed four variants, six stages, twenty classifications a
 
 ## DEC-049. MICROFILE referenced quarantine on shared schema 6
 
-Status: Approved by the Project owner on 2026-09-16. Scope: isolated Stage 0
-Recovery PoC, INTERNAL_ALPHA_E36_REDUCED_114. Decision record:
-[ADR-0009](adr/ADR-0009-microfile-referenced-quarantine.md).
+Status: Approved\
+Priority: P0\
+Decision date: 2026-09-16\
+Approved by: Project owner\
+Scope: isolated Stage 0 Recovery PoC, INTERNAL_ALPHA_E36_REDUCED_114\
+Decision record: [ADR-0009](adr/ADR-0009-microfile-referenced-quarantine.md)
 
 Preserve accepted STREAM schema 5 definitions and identities while adding the exact
 transactional 5→6 quarantine-constraint migration. Supported older databases follow
