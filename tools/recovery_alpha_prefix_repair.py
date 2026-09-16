@@ -108,6 +108,113 @@ COLLECTOR_OLD_PREFIX_BINDING = dict(
 COLLECTOR_NATIVE_SCENARIOS = frozenset(('delayed','missed','capacity','lifetime','owner','image',
                                       'startup','deadline','identity','streams','historical','query'))
 
+GIT_QUERY_BASELINE_COMMIT = 'cd24fa9eeab36909e3712ccf01953beba4946dd1'
+GIT_QUERY_BASELINE_TREE = 'f76cfb837a24f9a73826dbe439481ea439072a12'
+GIT_QUERY_OLD_IMPLEMENTATION_COMMIT = '908dc6f563823280a2fe7d60428b164aa6e72fc4'
+GIT_QUERY_OLD_IMPLEMENTATION_TREE = '453c73bc90328b5f37f16c972c2a1c9ac53eddd8'
+GIT_QUERY_OLD_PREFIX_BINDING = dict(COLLECTOR_OLD_PREFIX_BINDING,
+    applicabilitySha256='5691aa633ee88b375b072b154e4a83c820f4ef59d2c9bc3576f5475a00c468e1')
+GIT_QUERY_OLD_COLLECTOR_BINDING = dict(
+    proofSha256=GIT_QUERY_OLD_PREFIX_BINDING['applicabilitySha256'],
+    ownedProcessModuleSha256='95c5fd53561a5cb0a087aa0109ded39f6845c44c59cae3cdc4ae572e8f1ab45d')
+
+
+def git_query_binding(api):
+    key='ALPHA_GIT_QUERY_BINDING'
+    if key not in api:return None
+    value=api[key]
+    require(isinstance(value,dict) and set(value)=={'proofSha256','lifecycleLibrarySha256'}
+            and all(isinstance(v,str) and re.fullmatch('[0-9a-f]{64}',v) for v in value.values()),
+            'Malformed Git query binding')
+    return value
+
+
+def git_query_metadata_literal(text):
+    parsed=ast.parse(text);key='ALPHA_GIT_QUERY_BINDING'
+    writes=[n for n in ast.walk(parsed) if isinstance(n,ast.Name) and n.id==key and isinstance(n.ctx,ast.Store)]
+    if not writes:return
+    assignments=[n for n in parsed.body if isinstance(n,ast.Assign) and len(n.targets)==1
+                 and isinstance(n.targets[0],ast.Name) and n.targets[0].id==key]
+    require(len(writes)==len(assignments)==1,'Ambiguous Git query metadata binding')
+    require(isinstance(assignments[0].value,ast.Dict) and len(assignments[0].value.keys)==2,
+            'Git query binding must be an exact two-key literal')
+    try:value=ast.literal_eval(assignments[0].value)
+    except (ValueError,TypeError,SyntaxError) as exc:raise ValueError('Nonliteral Git query binding') from exc
+    git_query_binding({key:value})
+
+
+def git_query_launcher_bytes(old_controls, library_sha256):
+    """Preserve the launcher except its exact lifecycle library digest."""
+    data=capture_file(old_controls['Invoke-0D6Campaign.ps1']).read_bytes()
+    old=old_controls['Attempt05-Lifecycle-Functions.ps1']['sha256'].upper().encode('ascii')
+    require(data.count(old)==1,'Historical launcher lifecycle literal is not unique')
+    return data.replace(old,library_sha256.upper().encode('ascii'))
+
+
+def git_query_facts(api, profile, binding, historical_descriptor, controls, native_test, review):
+    query_binding=git_query_binding(api)
+    require(query_binding is not None,'Missing Git query binding')
+    require(collector_query_binding(api)==GIT_QUERY_OLD_COLLECTOR_BINDING,
+            'Historical collector binding changed')
+    git=api['git'];legacy=legacy_api()
+    require(git('rev-parse',GIT_QUERY_BASELINE_COMMIT+'^{tree}',root=ROOT)==GIT_QUERY_BASELINE_TREE
+            and git('merge-base',GIT_QUERY_BASELINE_COMMIT,profile.implementation_commit,root=ROOT)==GIT_QUERY_BASELINE_COMMIT,
+            'Git query source baseline or ancestry mismatch')
+    before=legacy['tree_entries'](git,GIT_QUERY_BASELINE_COMMIT)
+    after=legacy['tree_entries'](git,profile.implementation_commit)
+    paths=sorted(p for p in before.keys()|after.keys() if before.get(p)!=after.get(p))
+    require(set(paths)==CAPTURE_HOST_PATHS,'Git query repair differs from exact host-only delta')
+    for p in paths:
+        require(all(tree.get(p,{}).get('mode')=='100644' and tree[p]['type']=='blob' for tree in (before,after)),
+                'Git query source is deleted or nonregular')
+    pair={k:GIT_QUERY_OLD_PREFIX_BINDING[k] for k in ('appApkSha256','testApkSha256')}
+    require({k:binding.get(k) for k in pair}==pair,'Git query repair changes APK pair')
+    require(isinstance(historical_descriptor,dict)
+            and historical_descriptor.get('sha256')==GIT_QUERY_OLD_PREFIX_BINDING['applicabilitySha256'],
+            'Historical collector applicability pin mismatch')
+    historical=capture_json(historical_descriptor)
+    old_profile=type('HistoricalProfile',(),dict(implementation_commit=GIT_QUERY_OLD_IMPLEMENTATION_COMMIT,
+                                              implementation_tree=GIT_QUERY_OLD_IMPLEMENTATION_TREE))()
+    require(git('rev-parse',old_profile.implementation_commit+'^{tree}',root=ROOT)==old_profile.implementation_tree,
+            'Historical collector implementation tree changed')
+    expected,frozen,old_controls=collector_query_facts(api,old_profile,GIT_QUERY_OLD_PREFIX_BINDING,
+        historical.get('historicalApplicability'),historical.get('newControls'),historical.get('nativeTests'),
+        historical.get('independentReview'))
+    capture_metadata_shape(api,old_profile,metadata_head=GIT_QUERY_BASELINE_COMMIT,stream_path=True,collector_query=True)
+    require(historical==expected,'Historical collector applicability differs from source facts')
+    require(isinstance(controls,dict) and set(controls)==set(old_controls),'Git query controls must be exact six siblings')
+    launcher_hash=hashlib.sha256(git_query_launcher_bytes(old_controls,query_binding['lifecycleLibrarySha256'])).hexdigest()
+    parents=set()
+    for name,d in controls.items():
+        p=capture_file(d);require(p.name==name,'Git query control basename mismatch');parents.add(p.parent.resolve())
+        expected_hash=(query_binding['lifecycleLibrarySha256'] if name=='Attempt05-Lifecycle-Functions.ps1'
+                       else launcher_hash if name=='Invoke-0D6Campaign.ps1' else old_controls[name]['sha256'])
+        require(d['sha256']==expected_hash,'Unrelated Git query control changed')
+    require(len(parents)==1 and parents.isdisjoint({Path(d['path']).resolve().parent for d in old_controls.values()})
+            and controls['Attempt05-Lifecycle-Functions.ps1']['sha256']!=old_controls['Attempt05-Lifecycle-Functions.ps1']['sha256'],
+            'Git query successor overwrites or reuses historical library')
+    validate_capture_native_tests([native_test],controls)
+    capture_file(review)
+    result=dict(schema='DORA_RECOVERY_GIT_QUERY_REPAIR_V1',scope=SCOPE,sourceRoot=str(ROOT),
+        baseline=dict(commit=GIT_QUERY_BASELINE_COMMIT,tree=GIT_QUERY_BASELINE_TREE),
+        implementation=dict(commit=profile.implementation_commit,tree=profile.implementation_tree),apkPair=pair,
+        sourceDelta=[dict(path=p,before=before[p],after=after[p]) for p in paths],
+        historicalApplicability=historical_descriptor,oldControls=old_controls,newControls=controls,
+        nativeTest=native_test,independentReview=review,frozenSelection=historical['frozenSelection'],
+        historicalPreflightReusable=False,requiredFreshPreflight=historical['requiredFreshPreflight'])
+    return result,frozen,controls
+
+
+def validate_git_query_proof(api, profile, binding, proof, descriptor, review):
+    query_binding=git_query_binding(api)
+    require(query_binding is not None and descriptor['sha256']==query_binding['proofSha256']
+            ==binding['applicabilitySha256'],'Git query applicability pin mismatch')
+    expected,frozen,controls=git_query_facts(api,profile,binding,proof.get('historicalApplicability'),
+        proof.get('newControls'),proof.get('nativeTest'),review)
+    capture_metadata_shape(api,profile,stream_path=True,collector_query=True,git_query=True)
+    require(proof==expected,'Git query applicability differs from recomputed source facts')
+    return frozen,controls
+
 
 def collector_query_binding(api):
     key='ALPHA_COLLECTOR_QUERY_BINDING'
@@ -309,6 +416,7 @@ def candidate_api():
     metadata=ROOT/'tools/validate_recovery_0d6_candidate.py'
     stream_path_metadata_literal(metadata.read_text(encoding='utf-8'))
     collector_query_metadata_literal(metadata.read_text(encoding='utf-8'))
+    git_query_metadata_literal(metadata.read_text(encoding='utf-8'))
     return runpy.run_path(str(metadata))
 
 
@@ -365,6 +473,10 @@ def validate_source(plan, gate, decision_key):
             'Prefix applicability pin mismatch')
     proof = read_proof(proof_descriptor)
     require(isinstance(proof,dict), 'Malformed prefix applicability')
+    if git_query_binding(api) is not None:
+        frozen,_=validate_git_query_proof(api,profile,binding,proof,proof_descriptor,
+                                        gate.get('proofs',{}).get('independentReview'))
+        return source,frozen
     if query_binding is not None:
         frozen,_=validate_collector_query_proof(api,profile,binding,proof,proof_descriptor,
                                               gate.get('proofs',{}).get('independentReview'))
@@ -468,10 +580,11 @@ def capture_json(descriptor):
     return read_proof(descriptor)
 
 
-def capture_metadata_shape(api, profile, *, metadata_head='HEAD', stream_path=False, collector_query=False):
+def capture_metadata_shape(api, profile, *, metadata_head='HEAD', stream_path=False, collector_query=False, git_query=False):
     names = {'IMPLEMENTATION_COMMIT','IMPLEMENTATION_TREE','ALPHA_PREFIX_REPAIR_BINDING','ALPHA_CAPTURE_REPAIR_BINDING'}
     if stream_path:names.add('ALPHA_STREAM_PATH_REPAIR_BINDING')
     if collector_query:names.add('ALPHA_COLLECTOR_QUERY_BINDING')
+    if git_query:names.add('ALPHA_GIT_QUERY_BINDING')
     def body(revision):
         parsed = ast.parse(api['git']('show',revision+':tools/validate_recovery_0d6_candidate.py',root=ROOT))
         kept=[];seen=set()
@@ -613,7 +726,10 @@ def validate_preflight_origin(attempt, pin, native, launcher, source):
             and source_proof_descriptor.get('sha256')==api.get('ALPHA_PREFIX_REPAIR_BINDING',{}).get('applicabilitySha256'),
             'Preflight capture applicability pin mismatch')
     source_proof=read_proof(source_proof_descriptor)
-    if collector_query_binding(api) is not None:
+    if git_query_binding(api) is not None:
+        _,controls=validate_git_query_proof(api,api['active_profile'](),api['ALPHA_PREFIX_REPAIR_BINDING'],
+            source_proof,source_proof_descriptor,origin_gate.get('proofs',{}).get('independentReview'))
+    elif collector_query_binding(api) is not None:
         _,controls=validate_collector_query_proof(api,api['active_profile'](),api['ALPHA_PREFIX_REPAIR_BINDING'],
             source_proof,source_proof_descriptor,origin_gate.get('proofs',{}).get('independentReview'))
     elif stream_path_binding(api) is not None:

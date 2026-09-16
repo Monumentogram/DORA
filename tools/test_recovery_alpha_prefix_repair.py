@@ -224,6 +224,7 @@ class CombinedAdmissionTests(unittest.TestCase):
         # This fixture describes the historical prefix/capture context only.
         self.api.pop('ALPHA_STREAM_PATH_REPAIR_BINDING', None)
         self.api.pop('ALPHA_COLLECTOR_QUERY_BINDING', None)
+        self.api.pop('ALPHA_GIT_QUERY_BINDING', None)
         patch.object(subject,'candidate_api',return_value=self.api).start()
         self.legacy=subject.legacy_api()
         self.frozen=dict(executionId='E36RED01',variantCount=165,entries=[dict(slot=1,mutationVariants=['DEFAULT'],attemptId='old',runId='old',executionEntrySha256='old')])
@@ -1158,6 +1159,147 @@ class CollectorQueryLiteralTests(unittest.TestCase):
             root=Path(directory);(root/'tools').mkdir();marker=root/'executed'
             metadata=root/'tools/validate_recovery_0d6_candidate.py'
             metadata.write_text(f'from pathlib import Path\nALPHA_COLLECTOR_QUERY_BINDING=Path({str(marker)!r}).touch()\n')
+            with patch.object(subject,'ROOT',root),self.assertRaises(ValueError):subject.candidate_api()
+            self.assertFalse(marker.exists())
+
+
+class GitQuerySuccessorTests(unittest.TestCase):
+    def setUp(self):
+        self.old=CollectorQuerySuccessorTests();self.old.setUp();self.addCleanup(self.old.doCleanups)
+        old=self.old
+        self.historical=copy.deepcopy(old.gate['alphaPreflight']['sourceRepair'])
+        self.old_binding=copy.deepcopy(old.api['ALPHA_PREFIX_REPAIR_BINDING'])
+        self.base=old.source['commit'];self.base_tree=old.source['tree']
+        self.profile=candidate.Profile('2'*40,'3'*40,candidate.MAINTENANCE_PATHS)
+        self.source=dict(old.source,commit='4'*40,tree='5'*40)
+        self.before=copy.deepcopy(old.after);self.after=copy.deepcopy(self.before)
+        for p in subject.CAPTURE_HOST_PATHS:self.after[p]=dict(mode='100644',type='blob',object='6'*40)
+        self.api=dict(old.api,git=self.git,active_profile=lambda:self.profile,
+                      ALPHA_PREFIX_REPAIR_BINDING=copy.deepcopy(self.old_binding))
+        self.metadata=old.metadata+'ALPHA_GIT_QUERY_BINDING={}\n'
+        patch.object(candidate,'git',side_effect=self.git).start()
+        patch.object(subject,'candidate_api',return_value=self.api).start()
+        for key,value in dict(GIT_QUERY_BASELINE_COMMIT=self.base,GIT_QUERY_BASELINE_TREE=self.base_tree,
+            GIT_QUERY_OLD_IMPLEMENTATION_COMMIT=old.profile.implementation_commit,
+            GIT_QUERY_OLD_IMPLEMENTATION_TREE=old.profile.implementation_tree,
+            GIT_QUERY_OLD_PREFIX_BINDING=self.old_binding,
+            GIT_QUERY_OLD_COLLECTOR_BINDING=copy.deepcopy(old.api['ALPHA_COLLECTOR_QUERY_BINDING'])).items():
+            patch.object(subject,key,value,create=True).start()
+        folder=old.old.old.root/'git-controls';folder.mkdir();self.controls={}
+        self.launcher_bytes=b'exact synthetic lifecycle digest replacement'
+        patch.object(subject,'git_query_launcher_bytes',return_value=self.launcher_bytes,create=True).start()
+        for name,descriptor in old.controls.items():
+            data=Path(descriptor['path']).read_bytes()
+            if name=='Attempt05-Lifecycle-Functions.ps1':data+=b' suspended Git query'
+            if name=='Invoke-0D6Campaign.ps1':data=self.launcher_bytes
+            p=folder/name;p.write_bytes(data)
+            self.controls[name]=dict(path=str(p),sha256=subject.file_sha(p))
+        manifest=json.loads(Path(old.tests['query']['path']).read_bytes())
+        manifest.update(controlsBefore=self.controls,controlsAfter=self.controls)
+        receipt=json.loads(Path(manifest['receipt']['path']).read_bytes())
+        at=receipt['argv'].index('-ModulePath')+1;receipt['argv'][at]=self.controls['rec_i3_owned_process.psm1']['path']
+        manifest['receipt']=old.old.old.write('git-native-receipt.json',receipt)
+        self.native=old.old.old.write('git-native-manifest.json',manifest)
+        self.plan=dict(source=self.source);self.gate=copy.deepcopy(old.gate)
+        self.gate['source']=self.source;self.gate['alphaPreflight']['source']=self.source
+        self.api['ALPHA_GIT_QUERY_BINDING']=dict(proofSha256='0'*64,
+            lifecycleLibrarySha256=self.controls['Attempt05-Lifecycle-Functions.ps1']['sha256'])
+        self.refresh()
+
+    def git(self,*args,root):
+        fixed={('rev-parse',self.base+'^{tree}'):self.base_tree,
+            ('merge-base',self.base,self.profile.implementation_commit):self.base,
+            ('rev-parse',self.profile.implementation_commit+'^{tree}'):self.profile.implementation_tree,
+            ('rev-parse','HEAD'):self.source['commit'],('rev-parse',self.source['commit']):self.source['commit'],
+            ('rev-parse','HEAD^{tree}'):self.source['tree'],('branch','--show-current'):candidate.BRANCH,
+            ('show','-s','--format=%P',self.source['commit']):self.profile.implementation_commit,
+            ('rev-list','--min-parents=2',self.profile.implementation_commit+'..'+self.source['commit']):'',
+            ('diff-tree','--no-commit-id','--name-only','--no-renames','-z','-r',self.source['commit']):'\0'.join(sorted(candidate.MAINTENANCE_PATHS))+'\0',
+            ('status','--porcelain'):'',
+            ('show',self.base+':tools/validate_recovery_0d6_candidate.py'):self.old.metadata,
+            ('show',self.profile.implementation_commit+':tools/validate_recovery_0d6_candidate.py'):self.old.metadata,
+            ('show','HEAD:tools/validate_recovery_0d6_candidate.py'):self.metadata}
+        if args in fixed:return fixed[args]
+        if len(args)==4 and args[:3]==('ls-tree',self.source['commit'],'--'):
+            return '100644 blob '+'e'*40+'\t'+args[3]
+        for revision,entries in ((self.base,self.before),(self.profile.implementation_commit,self.after)):
+            if args==('ls-tree','-r','-z',revision):
+                return ''.join(f"{v['mode']} {v['type']} {v['object']}\t{p}\0" for p,v in sorted(entries.items()))
+        return self.old.git(*args,root=root)
+
+    def refresh(self):
+        self.proof,_,_=subject.git_query_facts(self.api,self.profile,self.api['ALPHA_PREFIX_REPAIR_BINDING'],
+            self.historical,self.controls,self.native,self.old.old.old.review)
+        self.bind()
+
+    def bind(self):
+        descriptor=self.old.old.old.write('git-proof.json',self.proof)
+        self.api['ALPHA_PREFIX_REPAIR_BINDING']['applicabilitySha256']=descriptor['sha256']
+        self.api['ALPHA_GIT_QUERY_BINDING']['proofSha256']=descriptor['sha256']
+        self.gate['alphaPreflight']['sourceRepair']=descriptor
+
+    def check(self):subject.validate_preflight(self.plan,self.gate)
+
+    def test_exact_git_successor_rehashes_collector_history(self):
+        self.check()
+        _,controls=subject.validate_git_query_proof(self.api,self.profile,self.api['ALPHA_PREFIX_REPAIR_BINDING'],
+            self.proof,self.gate['alphaPreflight']['sourceRepair'],self.old.old.old.review)
+        self.assertEqual(self.controls,controls)
+        self.assertEqual(self.old.controls['rec_i3_owned_process.psm1']['sha256'],controls['rec_i3_owned_process.psm1']['sha256'])
+        self.assertFalse(self.proof['historicalPreflightReusable'])
+
+    def test_malformed_binding_and_changed_history_cannot_fallback(self):
+        self.check();original=copy.deepcopy(self.api['ALPHA_GIT_QUERY_BINDING'])
+        for value in (None,{},dict(original,extra=True),dict(original,proofSha256='f'*64)):
+            self.api['ALPHA_GIT_QUERY_BINDING']=value
+            with self.assertRaises(ValueError):self.check()
+        self.api['ALPHA_GIT_QUERY_BINDING']=original
+        self.api['ALPHA_COLLECTOR_QUERY_BINDING']=dict(proofSha256='f'*64,ownedProcessModuleSha256='e'*64)
+        with self.assertRaises(ValueError):self.check()
+
+    def test_unrelated_source_or_native_module_change_is_rejected(self):
+        self.check()
+        self.after['android/build.gradle.kts']=dict(mode='100644',type='blob',object='7'*40)
+        with self.assertRaisesRegex(ValueError,'host-only'):self.refresh()
+        self.after.pop('android/build.gradle.kts')
+        path=Path(self.controls['rec_i3_owned_process.psm1']['path']);path.write_bytes(path.read_bytes()+b'changed')
+        self.controls[path.name]['sha256']=subject.file_sha(path)
+        with self.assertRaisesRegex(ValueError,'control'):self.refresh()
+
+    def test_original_native_success_and_exact_proof_are_required(self):
+        self.check();original=copy.deepcopy(self.proof)
+        for key,value in (('historicalPreflightReusable',True),('sourceDelta',[]),('coverageGranted',True)):
+            self.proof=dict(original,**{key:value});self.bind()
+            with self.assertRaises(ValueError):self.check()
+        self.proof=original;self.bind()
+        manifest=json.loads(Path(self.native['path']).read_bytes())
+        receipt=json.loads(Path(manifest['receipt']['path']).read_bytes());receipt['nativeExitCode']=1
+        manifest['receipt']=self.old.old.old.write('git-failed-native.json',receipt)
+        self.native=self.old.old.old.write('git-failed-manifest.json',manifest)
+        with self.assertRaises(ValueError):self.refresh()
+
+    def test_metadata_behavior_is_not_admitted(self):
+        self.check()
+        self.metadata+='dangerous_call()\n'
+        with self.assertRaisesRegex(ValueError,'behavior'):self.check()
+
+
+class GitQueryLiteralTests(unittest.TestCase):
+    def test_only_single_exact_library_digest_can_change_in_launcher(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'Invoke-0D6Campaign.ps1';data=b"pin='"+b'A'*64+b"'\n"
+            path.write_bytes(data)
+            controls={'Invoke-0D6Campaign.ps1':dict(path=str(path),sha256=subject.file_sha(path)),
+                      'Attempt05-Lifecycle-Functions.ps1':dict(sha256='a'*64)}
+            self.assertEqual(data.replace(b'A'*64,b'B'*64),subject.git_query_launcher_bytes(controls,'b'*64))
+            path.write_bytes(data+data);controls[path.name]['sha256']=subject.file_sha(path)
+            with self.assertRaises(ValueError):subject.git_query_launcher_bytes(controls,'b'*64)
+
+    def test_nonliteral_git_binding_is_rejected_before_execution(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);(root/'tools').mkdir();marker=root/'executed'
+            (root/'tools/validate_recovery_0d6_candidate.py').write_text(
+                f'from pathlib import Path\nALPHA_GIT_QUERY_BINDING=Path({str(marker)!r}).touch()\n')
             with patch.object(subject,'ROOT',root),self.assertRaises(ValueError):subject.candidate_api()
             self.assertFalse(marker.exists())
 
