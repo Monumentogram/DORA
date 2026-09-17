@@ -226,6 +226,7 @@ class CombinedAdmissionTests(unittest.TestCase):
         self.api.pop('ALPHA_COLLECTOR_QUERY_BINDING', None)
         self.api.pop('ALPHA_GIT_QUERY_BINDING', None)
         self.api.pop('ALPHA_MICROFILE_DISPOSITION_BINDING', None)
+        self.api.pop('ALPHA_MICROFILE_TRU03_BINDING', None)
         patch.object(subject,'candidate_api',return_value=self.api).start()
         self.legacy=subject.legacy_api()
         self.frozen=dict(executionId='E36RED01',variantCount=165,entries=[dict(slot=1,mutationVariants=['DEFAULT'],attemptId='old',runId='old',executionEntrySha256='old')])
@@ -1634,4 +1635,568 @@ class MicrofileDispositionBuildTests(unittest.TestCase):
         self.check()
 
 
+
+def historical_tru03_metadata_fixture(text):
+    """Project only fixture metadata fields; production validators stay untouched."""
+    import ast
+    historical = {
+        'IMPLEMENTATION_COMMIT': '4279bcd7ad50d5d3f284640602f3e1fc6f351a31',
+        'IMPLEMENTATION_TREE': 'f2d8ee2ec9a721f963855421a2d5f61f6ba9f9e3',
+        'ALPHA_PREFIX_REPAIR_BINDING': {
+            'appApkSha256': '7cce368663e0de0ae287a38c234bab2c6140588a8fa2af3dbf1e883a18f8f064',
+            'testApkSha256': '5ed8ca5ede2e0ca12dc23824833ee1c00cbaaf665f78847114f3cb8fc9a2a4b5',
+            'applicabilitySha256': 'b71860d73c63bd0215590e9a916dbad3c131a9045da1de1bcb56f8a01e9ba315'}}
+    projected = set(historical) | {'ALPHA_MICROFILE_TRU03_BINDING'}
+    tree = ast.parse(text); lines = text.splitlines(keepends=True); found = set()
+    for node in reversed(tree.body):
+        if isinstance(node, ast.Assign) and len(node.targets)==1 and isinstance(node.targets[0], ast.Name):
+            name = node.targets[0].id
+            if name in projected:
+                if name in found: raise AssertionError('Duplicate fixture metadata field')
+                found.add(name)
+                # Require inert assignments even though only fixed fixture literals survive.
+                ast.literal_eval(node.value)
+                lines[node.lineno-1:node.end_lineno] = ([name+' = '+json.dumps(historical[name],indent=4)+'\n'] if name in historical else [])
+    if not set(historical)<=found: raise AssertionError('Missing fixture metadata field')
+    def retained(source):
+        parsed=ast.parse(source)
+        parsed.body=[node for node in parsed.body if not (isinstance(node,ast.Assign) and len(node.targets)==1 and isinstance(node.targets[0],ast.Name) and node.targets[0].id in projected)]
+        return ast.dump(parsed,include_attributes=False)
+    result=''.join(lines)
+    if retained(text)!=retained(result): raise AssertionError('Fixture projection changed behavior')
+    return result
+
+
+class Tru03PreimportTests(unittest.TestCase):
+    """Synthetic native Git transport; real bootstrap/metadata loader, no Git mutation."""
+    def setUp(self):
+        self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
+        self.root=Path(self.temp.name);(self.root/'tools').mkdir()
+        self.addCleanup(patch.stopall)
+        patch.object(subject,'ROOT',self.root).start()
+        self.base='3abf0f45ae637c5dedde5550b4bd19eb99f1ac5e'
+        self.impl='1'*40;self.head='2'*40;self.itree='3'*40;self.htree='4'*40
+        self.base_text=historical_tru03_metadata_fixture(Path(candidate.__file__).read_text(encoding='utf-8'))
+        self.text=self.base_text.replace('4279bcd7ad50d5d3f284640602f3e1fc6f351a31',self.impl).replace('f2d8ee2ec9a721f963855421a2d5f61f6ba9f9e3',self.itree)
+        self.text=self.text.replace('b71860d73c63bd0215590e9a916dbad3c131a9045da1de1bcb56f8a01e9ba315','a'*64)
+        self.text=self.text.replace('ALPHA_MICROFILE_DISPOSITION_BINDING = {\n    "proofSha256": "'+'a'*64+'"','ALPHA_MICROFILE_DISPOSITION_BINDING = {\n    "proofSha256": "b71860d73c63bd0215590e9a916dbad3c131a9045da1de1bcb56f8a01e9ba315"')
+        self.text+='\nALPHA_MICROFILE_TRU03_BINDING = {"proofSha256": "'+'a'*64+'"}\n'
+        self.sentinel=self.root/'EXECUTION_MUST_NOT_HAPPEN'
+        self.paths={'android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignInstrumentedTest.kt','tools/recovery_campaign.py','tools/test_recovery_microfile_tru03.py','tools/recovery_alpha_prefix_repair.py','tools/test_recovery_alpha_prefix_repair.py'}
+        self.metadata='tools/validate_recovery_0d6_candidate.py';self.metadata_test='tools/test_validate_recovery_0d6_candidate.py'
+        self.before={p:self.entry(b'old') for p in self.paths if p!='tools/test_recovery_microfile_tru03.py'}
+        self.before.update({self.metadata:self.entry(self.base_text.encode()),self.metadata_test:self.entry(b'old tests')})
+        self.after=dict(self.before,**{p:self.entry(b'new') for p in self.paths})
+        self.queries=[];self.overrides={};self.seal()
+        patch.object(subject,'_tru03_git',side_effect=self.git,create=True).start()
+    @staticmethod
+    def entry(data):return dict(mode='100644',type='blob',object=hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest())
+    def seal(self):
+        (self.root/self.metadata).write_text(self.text,encoding='utf-8',newline='\n')
+        self.current=dict(self.after,**{self.metadata:self.entry(self.text.encode()),self.metadata_test:self.entry(b'new tests')})
+    def git(self,*args,root):
+        self.assertEqual(Path(root),self.root);self.queries.append(args)
+        if args in self.overrides:return self.overrides[args]
+        fixed={('rev-parse','--show-toplevel'):str(self.root),('rev-parse','HEAD'):self.head,
+            ('rev-parse','HEAD^{tree}'):self.htree,('status','--porcelain'):'',('branch','--show-current'):'',
+            ('rev-parse',self.base+'^{tree}'):'e85965dd6058b242a70c87a8c48c34ecbf20312b',
+            ('merge-base',self.base,self.head):self.base,
+            ('show','-s','--format=%P',self.head):self.impl,
+            ('show','-s','--format=%P',self.impl):self.base,
+            ('rev-parse',self.impl+'^{tree}'):self.itree,
+            ('show',self.impl+':'+self.metadata):self.base_text,
+            ('show',self.base+':'+self.metadata):self.base_text}
+        if args in fixed:return fixed[args]
+        if len(args)==3 and args[:2]==('ls-tree','-rz'):
+            entries={self.base:self.before,self.impl:self.after,self.head:self.current}[args[2]]
+            return ''.join(e['mode']+' '+e['type']+' '+e['object']+'\t'+p+'\0' for p,e in sorted(entries.items()))
+        if len(args)==4 and args[0]=='ls-tree' and args[2]=='--':
+            entry=self.current[args[3]]
+            return entry['mode']+' '+entry['type']+' '+entry['object']+'\t'+args[3]
+        if len(args)==3 and args[0]=='hash-object' and args[1].startswith('--path='):
+            return self.entry(Path(args[2]).read_bytes())['object']
+        raise AssertionError('Unexpected native query '+repr(args))
+    def test_metadata_execution_is_rejected_before_runpy(self):
+        self.text+='\nPath('+repr(str(self.sentinel))+').write_text("executed")\n';self.seal()
+        with self.assertRaisesRegex(ValueError,'TRU03_METADATA_BEHAVIOR'):
+            subject.candidate_api()
+        self.assertFalse(self.sentinel.exists())
+    def test_missing_binding_native_descendant_rejected(self):
+        self.text=self.text[:self.text.index('\nALPHA_MICROFILE_TRU03_BINDING')];self.seal()
+        with self.assertRaisesRegex(ValueError,'TRU03_METADATA_BINDING_REQUIRED'):subject.bootstrap_current_metadata()
+    def test_exact_native_child_bootstrap_without_loading_metadata(self):
+        with patch.object(subject.runpy,'run_path',side_effect=AssertionError('bootstrap must not load metadata')):
+            facts=subject.bootstrap_current_metadata()
+        self.assertEqual(facts['route'],'TRU03');self.assertEqual(facts['implementation'],dict(commit=self.impl,tree=self.itree))
+    def test_exact_path_and_mode_negatives(self):
+        good=copy.deepcopy(self.after)
+        for mutation in ('extra','missing','mode','deleted','existing_new'):
+            with self.subTest(mutation=mutation):
+                self.after=copy.deepcopy(good);before=copy.deepcopy(self.before)
+                if mutation=='extra':self.after['unexpected.py']=self.entry(b'new')
+                elif mutation=='missing':self.after['tools/recovery_campaign.py']=self.before['tools/recovery_campaign.py']
+                elif mutation=='mode':self.after['tools/recovery_campaign.py']['mode']='100755'
+                elif mutation=='deleted':self.after.pop('tools/recovery_campaign.py')
+                else:self.before['tools/test_recovery_microfile_tru03.py']=self.entry(b'old')
+                self.seal()
+                with self.assertRaisesRegex(ValueError,'TRU03_IMPLEMENTATION_(DELTA|MODE|ADDED_PATH)'):subject.bootstrap_current_metadata()
+                self.before=before
+        self.after=good
+    def test_literal_mutation_rejected_without_execution(self):
+        good=self.text
+        for statement in ('ALPHA_MICROFILE_TRU03_BINDING["proofSha256"] = "b"*64',
+            'alias = ALPHA_MICROFILE_TRU03_BINDING', 'del ALPHA_MICROFILE_TRU03_BINDING',
+            'ALPHA_MICROFILE_TRU03_BINDING = {"proofSha256": "a"*64}'):
+            with self.subTest(statement=statement):
+                self.text=good+'\n'+statement+'\n';self.seal()
+                with self.assertRaisesRegex(ValueError,'TRU03_METADATA_LITERAL'):subject.bootstrap_current_metadata()
+
+    def campaign_fixture(self):
+        """Real campaign/prefix modules; only native Git transport is synthetic."""
+        import runpy
+        import subprocess
+        original_run=runpy.run_path
+        for name in ('recovery_campaign.py','recovery_alpha_prefix_repair.py','recovery_instrumentation_status.py'):
+            target=self.root/'tools'/name
+            target.write_bytes(Path(subject.__file__).with_name(name).read_bytes())
+            if 'tools/'+name in self.after:self.after['tools/'+name]=self.entry(target.read_bytes())
+        self.seal()
+        campaign=SimpleNamespace(**original_run(str(self.root/'tools/recovery_campaign.py')))
+        self.loads=[]
+        def native(argv,**kwargs):
+            self.assertEqual(argv[:3],['git','-c','safe.directory='+self.root.as_posix()])
+            environment=kwargs.pop('env');self.assertEqual(environment.get('GIT_OPTIONAL_LOCKS'),'0')
+            self.assertEqual(kwargs,dict(cwd=self.root,check=True,text=True,capture_output=True))
+            return SimpleNamespace(stdout=self.git(*argv[3:],root=self.root))
+        def tracked(path,*args,**kwargs):
+            self.loads.append(Path(path).name)
+            return original_run(path,*args,**kwargs)
+        patch.object(subprocess,'run',side_effect=native).start()
+        patch.object(runpy,'run_path',side_effect=tracked).start()
+        return campaign
+
+    def assert_no_metadata_loaded(self):
+        self.assertIn('recovery_alpha_prefix_repair.py',self.loads)
+        self.assertNotIn('validate_recovery_0d6_candidate.py',self.loads)
+        self.assertNotIn('recovery_alpha_repair.py',self.loads)
+        self.assertFalse(self.sentinel.exists())
+
+    def test_real_reduced_entry_rejects_executable_metadata_before_legacy_import(self):
+        campaign=self.campaign_fixture()
+        self.text+='\nPath('+repr(str(self.sentinel))+').write_text("executed")\n';self.seal()
+        with self.assertRaisesRegex(ValueError,'TRU03_METADATA_BEHAVIOR'):
+            campaign.validate_alpha_repair({},dict(alphaReduced={}))
+        self.assert_no_metadata_loaded()
+
+    def test_real_preflight_entry_rejects_deleted_binding_before_import(self):
+        campaign=self.campaign_fixture()
+        self.text=self.text[:self.text.index('\nALPHA_MICROFILE_TRU03_BINDING')];self.seal()
+        with self.assertRaisesRegex(ValueError,'TRU03_METADATA_BINDING_REQUIRED'):
+            campaign.validate_alpha_prefix_preflight({},dict(alphaPreflight={}))
+        self.assert_no_metadata_loaded()
+
+    def test_real_generic_entry_requires_proof_without_loading_valid_child(self):
+        campaign=self.campaign_fixture()
+        with self.assertRaisesRegex(ValueError,'TRU03_SOURCE_REPAIR_REQUIRED'):
+            campaign.accepted_alpha_source()
+        self.assertEqual(self.loads,[])
+        self.assertFalse(self.sentinel.exists())
+
+    def test_unchanged_scope_rejects_repair_markers_without_import_or_git(self):
+        campaign=self.campaign_fixture()
+        metadata=self.root/self.metadata
+        for name in ('ALPHA_REDUCED_REPAIR_BINDING','ALPHA_PREFIX_REPAIR_BINDING','ALPHA_MICROFILE_TRU03_BINDING'):
+            metadata.write_text(name+' = unexpected_call()\n',encoding='utf-8')
+            with self.subTest(name=name), patch.object(campaign.accepted_alpha_source.__globals__['subprocess'],'run',side_effect=AssertionError('no native call for denied scope')):
+                with self.assertRaisesRegex(ValueError,'restricted to reduced'):
+                    campaign.accepted_alpha_source()
+            self.assertEqual(self.loads,[])
+
+    def test_execution_gate_omitted_source_repair_rejects_marker_before_code_loading(self):
+        campaign=self.campaign_fixture()
+        source=dict(commit=self.head,tree=self.htree,appApkSha256='a'*64,testApkSha256='b'*64)
+        plan=dict(source=source)
+        gate=dict(schema='DORA_RECOVERY_CAMPAIGN_EXECUTION_GATE_V1',manifestSha256=campaign.digest_json(plan),
+            source=source,driverSha256=subject.file_sha(self.root/'tools/recovery_campaign.py'),
+            instrumentationParserSha256=subject.file_sha(self.root/'tools/recovery_instrumentation_status.py'),
+            alphaReduced=dict(decisionId=campaign.ALPHA_REDUCED_DECISION_ID,scope=campaign.ALPHA_REDUCED_SCOPE,source=source))
+        self.text+='\nPath('+repr(str(self.sentinel))+').write_text("executed")\n';self.seal()
+        with self.assertRaisesRegex(ValueError,'TRU03_SOURCE_REPAIR_REQUIRED'):
+            campaign.validate_execution_gate(plan,gate)
+        self.assertEqual(self.loads,[])
+        self.assertFalse(self.sentinel.exists())
+
+    def test_preflight_omitted_source_repair_and_deleted_binding_still_rejects_before_import(self):
+        campaign=self.campaign_fixture()
+        source=dict(commit=self.head,tree=self.htree)
+        import ast
+        tree=ast.parse(self.text)
+        markers={'ALPHA_REDUCED_REPAIR_BINDING','ALPHA_PREFIX_REPAIR_BINDING','ALPHA_MICROFILE_TRU03_BINDING'}
+        tree.body=[node for node in tree.body if not (isinstance(node,ast.Assign)
+            and any(isinstance(target,ast.Name) and target.id in markers for target in node.targets))]
+        self.text=ast.unparse(tree);self.seal()
+        gate=dict(alphaPreflight=dict(decisionId='DORA_0D6_ALPHA_PREFLIGHT_20260914',
+            scope='INTERNAL_ALPHA_E36_PREFLIGHT_ONLY',source=source))
+        with self.assertRaisesRegex(ValueError,'TRU03_METADATA_BINDING_REQUIRED'):
+            campaign.validate_alpha_preflight(dict(source=source),gate,'SUPPLEMENTAL_SQLITE')
+        self.assert_no_metadata_loaded()
+
+    def test_reduced_wrapper_valid_bootstrap_delegates_to_real_prefix_without_legacy(self):
+        campaign=self.campaign_fixture()
+        # An intentionally invalid reduced scope isolates the real next callee;
+        # it is not a complete gate fixture or a successful source proof.
+        with self.assertRaisesRegex(ValueError,'Prefix applicability is restricted to reduced E36 campaign scope'):
+            campaign.validate_alpha_repair({},dict(alphaReduced={}))
+        self.assert_no_metadata_loaded()
+
+    def test_independent_build_policy_is_mandatory_and_cannot_be_supplied_by_document(self):
+        with self.assertRaisesRegex(ValueError,'TRU03_FIXED_SOURCE_ROOT'):
+            subject._tru03_build_context({'trusted':True},{},{},{},{})
+
+    def test_administrative_facts_at_implementation_needs_no_metadata_child(self):
+        # Component validators are isolated here; this proves order/API only,
+        # never admission or a successful historical/build proof validation.
+        self.overrides[('rev-parse','HEAD')]=self.impl
+        self.overrides[('rev-parse','HEAD^{tree}')]=self.itree
+        names={node.targets[0].id for node in subject.ast.parse(self.base_text).body
+            if isinstance(node,subject.ast.Assign) and len(node.targets)==1
+            and isinstance(node.targets[0],subject.ast.Name)
+            and node.targets[0].id.startswith('ALPHA_') and node.targets[0].id.endswith('_BINDING')}
+        _,bindings=subject._tru03_metadata_body(self.base_text,names)
+        apks={}
+        for key in ('appApkSha256','testApkSha256'):
+            path=self.root/key;path.write_bytes(key.encode())
+            apks[key]=dict(path=str(path),sha256=subject.file_sha(path))
+        path=self.root/'build.json';path.write_text('{}')
+        build=dict(path=str(path),sha256=subject.file_sha(path))
+        with patch.object(subject,'validate_tru03_predecessor',return_value=dict(inheritedBindings=bindings)), \
+             patch.object(subject,'validate_tru03_authorization'), \
+             patch.object(subject,'_tru03_build_context',side_effect=ValueError('COMPONENT_CONTEXT_REACHED')), \
+             patch.object(subject,'bootstrap_current_metadata',side_effect=AssertionError('M does not exist')):
+            with self.assertRaisesRegex(ValueError,'COMPONENT_CONTEXT_REACHED'):
+                subject.microfile_tru03_facts({},SimpleNamespace(implementation_commit=self.impl,implementation_tree=self.itree),
+                    {k:v['sha256'] for k,v in apks.items()},{},build,apks,{}, {})
+
+
+class Tru03DispatchTests(unittest.TestCase):
+    """Actual dispatch functions, isolated component-validation stop sentinel."""
+    class StopAtNewProof(Exception):pass
+    def setUp(self):
+        self.fixture=MicrofileDispositionSuccessorTests();self.fixture.setUp()
+        self.addCleanup(self.fixture.doCleanups);f=self.fixture
+        proof=dict(schema=subject.TRU03_SCHEMA)
+        descriptor=f.write('tru03-route.json',proof)
+        f.api[subject.TRU03_BINDING_KEY]=dict(proofSha256=descriptor['sha256'])
+        f.api['ALPHA_PREFIX_REPAIR_BINDING']['applicabilitySha256']=descriptor['sha256']
+        f.gate['alphaPreflight']['sourceRepair']=descriptor
+        for name in ('validate_microfile_disposition_proof','validate_git_query_proof','validate_collector_query_proof','validate_stream_path_proof'):
+            p=patch.object(subject,name,side_effect=AssertionError('Historical fallback called'))
+            p.start();self.addCleanup(p.stop)
+        p=patch.object(subject,'validate_microfile_tru03_proof',side_effect=self.StopAtNewProof('exact new route'))
+        self.target=p.start();self.addCleanup(p.stop)
+
+    def test_source_dispatch_selects_new_route_before_inherited_old_binding(self):
+        f=self.fixture
+        with self.assertRaisesRegex(self.StopAtNewProof,'exact new route'):
+            subject.validate_source(f.plan,f.gate,'alphaPreflight')
+        self.target.assert_called_once()
+
+    def test_origin_dispatch_selects_new_route_before_inherited_old_binding(self):
+        f=self.fixture;gate=f.write('tru03-origin-gate.json',f.gate)
+        attempt=dict(ownerSessionId='synthetic-owner',pin=dict(path='synthetic-pin',sha256='1'*64))
+        pin=dict(schema='DORA_0D6_PRIVATE_LAUNCH_PIN_V1',ownerSessionId=attempt['ownerSessionId'],
+            sourceRoot=str(subject.ROOT.resolve()),gatePath=gate['path'],gateFileSha256=gate['sha256'])
+        launcher=dict(argv=['powershell','-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',
+            'launcher','-PinPath',attempt['pin']['path'],'-ApprovedPinSha256',attempt['pin']['sha256'],'-Execute'])
+        with self.assertRaisesRegex(self.StopAtNewProof,'exact new route'):
+            subject.validate_preflight_origin(attempt,pin,{},launcher,f.source)
+        self.target.assert_called_once()
+
+    def test_new_binding_cannot_downgrade_to_old_proof_schema(self):
+        f=self.fixture
+        descriptor=f.write('tru03-wrong-route.json',dict(schema='DORA_RECOVERY_MICROFILE_DISPOSITION_APPLICABILITY_V1'))
+        f.gate['alphaPreflight']['sourceRepair']=descriptor
+        f.api[subject.TRU03_BINDING_KEY]['proofSha256']=descriptor['sha256']
+        f.api['ALPHA_PREFIX_REPAIR_BINDING']['applicabilitySha256']=descriptor['sha256']
+        with self.assertRaisesRegex(ValueError,'TRU03_PROOF_SCHEMA'):
+            subject.validate_source(f.plan,f.gate,'alphaPreflight')
+        self.target.assert_not_called()
+
+
+class Tru03ExactProofTests(unittest.TestCase):
+    """Isolate final proof equality after component checks; never an admission."""
+    def test_integer_zero_cannot_substitute_for_false_runtime_credit_flag(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'proof.json'
+            expected=dict(schema=subject.TRU03_SCHEMA,independentReview={},runtimeAdmissionGranted=False)
+            actual=dict(expected,runtimeAdmissionGranted=0)
+            path.write_text(json.dumps(actual),encoding='utf-8')
+            descriptor=dict(path=str(path),sha256=subject.file_sha(path))
+            api={subject.TRU03_BINDING_KEY:dict(proofSha256=descriptor['sha256'])}
+            binding=dict(applicabilitySha256=descriptor['sha256'])
+            with patch.object(subject,'microfile_tru03_facts',return_value=(expected,{},{})), \
+                 patch.object(subject,'validate_tru03_metadata_shape'):
+                with self.assertRaisesRegex(ValueError,'TRU03_EXACT_PROOF'):
+                    subject.validate_microfile_tru03_proof(api,None,binding,actual,descriptor,{})
+
+    def test_exact_typed_proof_returns_only_verified_component_results(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'proof.json'
+            expected=dict(schema=subject.TRU03_SCHEMA,independentReview={},runtimeAdmissionGranted=False)
+            path.write_text(json.dumps(expected),encoding='utf-8')
+            descriptor=dict(path=str(path),sha256=subject.file_sha(path))
+            api={subject.TRU03_BINDING_KEY:dict(proofSha256=descriptor['sha256'])}
+            binding=dict(applicabilitySha256=descriptor['sha256'])
+            with patch.object(subject,'microfile_tru03_facts',return_value=(expected,{'frozen':'verified'},{'control':'verified'})) as facts, \
+                 patch.object(subject,'validate_tru03_metadata_shape') as metadata:
+                self.assertEqual(subject.validate_microfile_tru03_proof(api,None,binding,expected,descriptor,{}),
+                    ({'frozen':'verified'},{'control':'verified'}))
+                facts.assert_called_once();metadata.assert_called_once()
+
+    def test_duplicate_or_nonfinite_new_json_rejected_after_correct_byte_binding(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'proof.json'
+            for raw,label in (('{"key":1,"key":2}','TRU03_DUPLICATE_JSON_KEY'),
+                              ('{"key":NaN}','TRU03_NONFINITE_JSON'),
+                              ('{"key":Infinity}','TRU03_NONFINITE_JSON')):
+                with self.subTest(raw=raw):
+                    path.write_text(raw,encoding='utf-8')
+                    with self.assertRaisesRegex(ValueError,label):
+                        subject._tru03_json(dict(path=str(path),sha256=subject.file_sha(path)))
+
+
+class Tru03HistoricalLoaderTests(unittest.TestCase):
+    """Bound files and native transport; loader failures before any runpy call.
+
+    Synthetic proof/build and three inert Python bytes have fixture-only policy
+    hash substitutions. No old proof/loader is executed or claimed verified.
+    """
+    def setUp(self):
+        self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
+        self.root=Path(self.temp.name)/'old-source';(self.root/'tools').mkdir(parents=True)
+        self.entries={}
+        pins={}
+        for relative in subject.TRU03_VALIDATION_FILES:
+            path=self.root/relative;path.write_bytes(('# synthetic inert loader '+relative+'\n').encode())
+            pins[relative]=subject.file_sha(path)
+            self.entries[relative]=Tru03PreimportTests.entry(path.read_bytes())
+        p=patch.object(subject,'TRU03_VALIDATION_FILES',pins);p.start();self.addCleanup(p.stop)
+        self.build=self.write('build.json',dict(sourceRoot=str(self.root)))
+        self.proof=self.write('proof.json',dict(build=self.build,independentReview=dict(path='not-loaded',sha256=subject.TRU03_OLD_REVIEW_SHA)))
+        self.predecessor=dict(sourceRoot=str(self.root),finalSource=subject.TRU03_OLD_SOURCE,
+            implementation=subject.TRU03_OLD_IMPLEMENTATION,applicability=self.proof,
+            validationFiles={p:dict(path=str(self.root/p),sha256=s) for p,s in subject.TRU03_VALIDATION_FILES.items()})
+        self.overrides={}
+        for name,value in (('TRU03_OLD_BUILD_SHA',self.build['sha256']),('TRU03_OLD_PROOF_SHA',self.proof['sha256'])):
+            p=patch.object(subject,name,value);p.start();self.addCleanup(p.stop)
+        p=patch.object(subject,'_tru03_git',side_effect=self.git);p.start();self.addCleanup(p.stop)
+        p=patch.object(subject.runpy,'run_path',side_effect=AssertionError('LOAD_REACHED_AFTER_CHECKS'))
+        self.loader=p.start();self.addCleanup(p.stop)
+    def write(self,name,value):
+        path=Path(self.temp.name)/name;path.write_text(json.dumps(value),encoding='utf-8')
+        return dict(path=str(path),sha256=subject.file_sha(path))
+    def git(self,*args,root):
+        self.assertEqual(root,self.root)
+        if args in self.overrides:return self.overrides[args]
+        fixed={('rev-parse','--show-toplevel'):str(self.root),('status','--porcelain'):'',
+            ('rev-parse','HEAD'):subject.TRU03_BASELINE_COMMIT,('rev-parse','HEAD^{tree}'):subject.TRU03_BASELINE_TREE}
+        if args in fixed:return fixed[args]
+        if args==('ls-tree','-rz',subject.TRU03_BASELINE_COMMIT):
+            return ''.join(e['mode']+' '+e['type']+' '+e['object']+'\t'+p+'\0' for p,e in sorted(self.entries.items()))
+        if args[0]=='hash-object':return Tru03PreimportTests.entry(Path(args[2]).read_bytes())['object']
+        raise AssertionError(args)
+    def test_all_three_bound_fixture_files_verified_before_natural_loader(self):
+        with self.assertRaisesRegex(AssertionError,'LOAD_REACHED_AFTER_CHECKS'):
+            subject.load_tru03_predecessor_context(self.predecessor)
+        self.loader.assert_called_once_with(str(self.root/'tools/recovery_alpha_prefix_repair.py'))
+    def test_wrong_native_identity_rejected_before_loader(self):
+        self.overrides[('rev-parse','HEAD')]='f'*40
+        with self.assertRaisesRegex(ValueError,'TRU03_PREDECESSOR_SOURCE'):
+            subject.load_tru03_predecessor_context(self.predecessor)
+        self.loader.assert_not_called()
+    def test_same_current_root_and_extra_loader_rejected_before_loader(self):
+        with patch.object(subject,'ROOT',self.root),self.assertRaisesRegex(ValueError,'TRU03_PREDECESSOR_ROOT'):
+            subject.load_tru03_predecessor_context(self.predecessor)
+        self.predecessor['validationFiles']['unexpected.py']={}
+        with self.assertRaisesRegex(ValueError,'TRU03_PREDECESSOR_LOADER_SET'):
+            subject.load_tru03_predecessor_context(self.predecessor)
+        self.loader.assert_not_called()
+    def test_any_of_three_loader_bytes_or_native_blobs_reject_before_execution(self):
+        for relative in subject.TRU03_VALIDATION_FILES:
+            with self.subTest(path=relative,mutation='bytes'):
+                path=self.root/relative;raw=path.read_bytes();path.write_bytes(raw+b'\n# tamper')
+                with self.assertRaises(ValueError):subject.load_tru03_predecessor_context(self.predecessor)
+                self.loader.assert_not_called();path.write_bytes(raw)
+            with self.subTest(path=relative,mutation='blob'):
+                original=self.entries[relative]['object'];self.entries[relative]['object']='f'*40
+                with self.assertRaisesRegex(ValueError,'TRU03_SOURCE_BLOB'):
+                    subject.load_tru03_predecessor_context(self.predecessor)
+                self.loader.assert_not_called();self.entries[relative]['object']=original
+
+
 if __name__=='__main__':unittest.main()
+
+
+class Tru03PinnedContextTests(unittest.TestCase):
+    """Synthetic files, only native Windows/Java leaf transports substituted."""
+    def setUp(self):
+        import os
+        self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
+        base=Path(self.temp.name);self.root=base/'source';self.root.mkdir()
+        self.policy=copy.deepcopy(subject.TRU03_FIXED_MACHINE_POLICY)
+        p=self.policy;self.wrapper=p['wrapper'];home=base/'home';home.mkdir()
+        self.cache=home/'.gradle/wrapper/dists/gradle-fixed/cache';self.cache.mkdir(parents=True)
+        self.distribution=self.cache/'gradle-fixed';(self.distribution/'lib').mkdir(parents=True)
+        (self.distribution/'init.d').mkdir()
+        def write(path,data=b'fixed synthetic policy bytes'):
+            path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(data);return subject.tru03_desc(path)
+        self.write=write
+        for key in ('python','cmd','java','recorder','runner'):p['tools'][key]=write(base/'tools'/key)
+        p['tools']['javaHome']=str(base/'java');p['tools']['androidSdkRoot']=str(base/'sdk')
+        p['generator']=write(base/'generator.py');p['jdkRelease']=write(base/'release')
+        # Actual reviewed template bytes and actual renderer; no renderer mock.
+        template=Path(subject.TRU03_FIXED_MACHINE_POLICY['template']['path']).read_bytes()
+        p['template']=write(base/'template.gradle',template)
+        p['planned']=dict(sourceRoot=str(self.root),snapshotRoot=str(base/'snapshot'),rawRoot=str(base/'raw'),phase='verify-01')
+        p['renderedInitSha256']=hashlib.sha256(subject._tru03_render_init(template,self.root,base/'raw','verify-01')).hexdigest()
+        p['identity']=dict(Identity='FIXTURE\\owner',UserProfile=str(home),Home=None)
+        p['java']=dict(userHome=str(home),javaHome=p['tools']['javaHome'],version='fixture')
+        p['exactThreeOverrides']=dict(ANDROID_HOME=p['tools']['androidSdkRoot'],JAVA_HOME=p['tools']['javaHome'],PYTHONUTF8='1')
+        p['environment'].update(sourceRoot=str(self.root),javaHome=p['tools']['javaHome'],androidHome=p['tools']['androidSdkRoot'],pythonPath=p['tools']['python']['path'],gradleUserHome=str(home/'.gradle'))
+        for relative in self.wrapper['files']:
+            self.wrapper['files'][relative]=write(self.root/'android'/relative)
+        self.wrapper['projectProperties']=write(self.root/'android/gradle.properties')
+        self.wrapper['launcher']=write(self.distribution/'lib/gradle-launcher-fixture.jar')
+        self.wrapper['okMarker']=write(self.cache/'gradle-fixed.zip.ok',b'')
+        self.wrapper.update(selectedCacheRoot=str(self.cache),selectedDistribution=str(self.distribution),selectedUserHome=str(home/'.gradle'))
+        self.wrapper['cacheInventory']=subject._tru03_policy_inventory(self.cache)
+        write(self.distribution/'init.d/readme.txt')
+        p['userConfiguration']['initializerDirectories']=[subject._tru03_policy_inventory(home/'.gradle/init.d'),subject._tru03_policy_inventory(self.distribution/'init.d')]
+        self.java={'user.home':str(home),'java.home':p['tools']['javaHome'],'java.version':'fixture'}
+        for name,value in [('ROOT',self.root),('TRU03_FIXED_MACHINE_POLICY',p)]:
+            patcher=patch.object(subject,name,value);patcher.start();self.addCleanup(patcher.stop)
+        env=patch.dict(os.environ,{'USERPROFILE':str(home)},clear=True);env.start();self.addCleanup(env.stop)
+        identity=patch.object(subject,'_tru03_normal_identity',return_value=p['identity']['Identity']);self.identity=identity.start();self.addCleanup(identity.stop)
+        java=patch.object(subject,'_tru03_java_properties',return_value=self.java);self.probe=java.start();self.addCleanup(java.stop)
+
+    def test_policy_is_computed_without_build_document(self):
+        value=subject._tru03_fixed_build_policy()
+        self.assertEqual(value['tools'],self.policy['tools'])
+        self.assertEqual(value['generator'],self.policy['generator'])
+        self.assertEqual(value['wrapperDistribution'],str(self.distribution))
+        env=self.probe.call_args.args[2]
+        self.assertEqual(set(env),{'USERPROFILE','ANDROID_HOME','JAVA_HOME','PYTHONUTF8'})
+        self.assertEqual(hashlib.sha256(value['initBytes']).hexdigest(),self.policy['renderedInitSha256'])
+
+    def test_java_and_native_identity_are_independent_of_environment_claims(self):
+        self.identity.return_value='FIXTURE\\other'
+        with self.assertRaisesRegex(ValueError,'TRU03_NORMAL_WINDOWS_IDENTITY'):subject._tru03_fixed_build_policy()
+        self.identity.return_value=self.policy['identity']['Identity'];self.java['user.home']='C:\\'
+        with self.assertRaisesRegex(ValueError,'TRU03_JAVA_POLICY_PROPERTIES'):subject._tru03_fixed_build_policy()
+
+    def test_environment_injection_cannot_be_resealed_as_policy(self):
+        import os
+        for key in ('HOME','GRADLE_USER_HOME','GRADLE_HOME','PYTHONPATH','PYTHONHOME','JAVA_OPTS','GRADLE_OPTS','JAVA_TOOL_OPTIONS','JDK_JAVA_OPTIONS','_JAVA_OPTIONS'):
+            with self.subTest(key=key),patch.dict(os.environ,{key:'unreviewed'}),self.assertRaisesRegex(ValueError,'TRU03_UNREVIEWED_ENVIRONMENT:'+key):
+                subject._tru03_fixed_build_policy()
+
+    def test_tool_bytes_wrapper_bytes_and_local_config_are_not_document_authority(self):
+        for path in (Path(self.policy['tools']['runner']['path']),self.root/'android/gradle/wrapper/gradle-wrapper.properties'):
+            with self.subTest(path=path):
+                old=path.read_bytes();path.write_bytes(b'changed')
+                with self.assertRaises(ValueError):subject._tru03_fixed_build_policy()
+                path.write_bytes(old)
+        self.write(self.root/'android/local.properties')
+        with self.assertRaisesRegex(ValueError,'TRU03_UNREVIEWED_LOCAL_PROPERTIES'):subject._tru03_fixed_build_policy()
+
+    def test_wrapper_ambiguity_and_initializer_additions_fail_exact_guards(self):
+        extra=self.cache/'other';extra.mkdir()
+        with self.assertRaisesRegex(ValueError,'TRU03_WRAPPER_CACHE_SELECTION'):subject._tru03_fixed_build_policy()
+        extra.rmdir();extra=self.distribution/'lib/gradle-launcher-extra.jar';extra.write_bytes(b'extra')
+        with self.assertRaisesRegex(ValueError,'TRU03_WRAPPER_SINGLE_LAUNCHER'):subject._tru03_fixed_build_policy()
+        extra.unlink();extra=self.distribution/'init.d/inject.gradle';extra.write_bytes(b'println 1')
+        with self.assertRaisesRegex(ValueError,'TRU03_INITIALIZER_INVENTORY'):subject._tru03_fixed_build_policy()
+
+
+class Tru03ContextBindingTests(unittest.TestCase):
+    """Constructor integration with synthetic native tree transport and files."""
+    def setUp(self):
+        self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
+        base=Path(self.temp.name);self.root=base/'source';self.root.mkdir();self.snapshot=base/'snapshot';self.snapshot.mkdir()
+        self.manifest=self.snapshot/'MANIFEST.json';self.manifest.write_text('{"phase":"verify-01"}')
+        self.descriptor=dict(path=str(self.manifest),sha256=subject.file_sha(self.manifest))
+        self.identity=dict(commit='a'*40,tree='b'*40);self.before={};self.after={}
+        self.policy=dict(sourceRoot=str(self.root),snapshotRoot=str(self.snapshot),rawRoot=str(base/'raw'),phase='verify-01',tools={},environment={},generator={},initBytes=b'fixed',wrapperDistribution=str(base/'wrapper'))
+        for name,value in [('ROOT',self.root),('_tru03_fixed_build_policy',lambda:self.policy),('_tru03_source_identity',lambda root:dict(self.identity)),('_tru03_implementation',lambda impl,root:(self.before,self.after,[]))]:
+            p=patch.object(subject,name,value);p.start();self.addCleanup(p.stop)
+    def context(self):return subject._tru03_build_context(self.descriptor,dict(commit='a'*40,tree='b'*40),self.before,self.after,{})
+
+    def test_clean_implementation_context_never_imports_metadata(self):
+        with patch.object(subject,'candidate_api',side_effect=AssertionError('METADATA_EXECUTED')),patch.object(subject,'bootstrap_current_metadata',side_effect=AssertionError('M_REQUIRED')):
+            context=self.context();context.native_check();self.assertEqual(context.metadata_current,{})
+
+    def test_manifest_location_phase_and_hash_are_fixed(self):
+        self.descriptor['path']=str(self.snapshot/'elsewhere.json')
+        with self.assertRaisesRegex(ValueError,'TRU03_FIXED_BUILD_DESCRIPTOR'):self.context()
+        self.descriptor['path']=str(self.manifest);self.manifest.write_text('{"phase":"verify-02"}')
+        self.descriptor['sha256']=subject.file_sha(self.manifest)
+        with self.assertRaisesRegex(ValueError,'TRU03_FIXED_BUILD_PHASE'):self.context()
+
+    def test_post_context_identity_and_document_drift_rejected(self):
+        context=self.context();self.identity['commit']='c'*40
+        with self.assertRaisesRegex(ValueError,'TRU03_BUILD_SOURCE_CHANGED'):context.native_check()
+        self.identity['commit']='a'*40;self.manifest.write_text('{"phase":"verify-01","tamper":true}')
+        with self.assertRaises(ValueError):context.native_check()
+
+    def test_native_copy_path_and_blob_transport_are_exact(self):
+        relative='tools/recovery_campaign.py';self.after[relative]=dict(mode='100644',type='blob',object='c'*40)
+        context=self.context();path=self.snapshot/'source'/relative;path.parent.mkdir(parents=True);path.write_bytes(b'copied')
+        with patch.object(subject,'_tru03_git',return_value='c'*40) as git:
+            self.assertEqual(context.blob_for_copy(relative,path),'c'*40)
+            git.assert_called_once_with('hash-object','--path='+relative,str(path),root=self.root)
+        with self.assertRaisesRegex(ValueError,'TRU03_COPY_FIXED_PATH'):context.blob_for_copy(relative,self.snapshot/'elsewhere.py')
+        with self.assertRaisesRegex(ValueError,'TRU03_COPY_NATIVE_PATH'):context.blob_for_copy('../elsewhere',path)
+
+    def test_metadata_child_requires_bootstrap_and_binds_both_current_files(self):
+        self.identity=dict(commit='d'*40,tree='e'*40)
+        for relative in subject.TRU03_METADATA_PATHS:
+            path=self.root/relative;path.parent.mkdir(parents=True,exist_ok=True);path.write_text('# current metadata')
+        result=dict(route='TRU03',source=self.identity,implementation=dict(commit='a'*40,tree='b'*40))
+        with patch.object(subject,'bootstrap_current_metadata',return_value=result) as bootstrap:
+            context=self.context();self.assertEqual(set(context.metadata_current),subject.TRU03_METADATA_PATHS)
+            self.assertGreaterEqual(bootstrap.call_count,2)
+            next(iter(context.metadata_current.values()))['sha256']='0'*64
+            with self.assertRaisesRegex(ValueError,'TRU03_CONTEXT_METADATA_CHANGED'):context.native_check()
+
+
+class Tru03InstalledMetadataFixtureIsolationTests(unittest.TestCase):
+    def test_historical_context_does_not_inherit_installed_tru03_binding(self):
+        installed = dict(proofSha256='f'*64)
+        with patch.object(candidate, 'ALPHA_MICROFILE_TRU03_BINDING', installed, create=True):
+            fixture = CombinedAdmissionTests(); fixture.setUp()
+            self.addCleanup(fixture.doCleanups)
+            self.assertNotIn('ALPHA_MICROFILE_TRU03_BINDING', fixture.api)
+            self.assertEqual(candidate.ALPHA_MICROFILE_TRU03_BINDING, installed)
+            fixture.check()
+
+    def test_native_fixture_stays_unbound_at_i_with_installed_tru03_metadata(self):
+        import ast
+        text = Path(candidate.__file__).read_text(encoding='utf-8')
+        lines = text.splitlines(keepends=True)
+        for node in reversed(ast.parse(text).body):
+            if isinstance(node, ast.Assign) and len(node.targets)==1 and isinstance(node.targets[0], ast.Name):
+                name=node.targets[0].id
+                if name == 'ALPHA_MICROFILE_TRU03_BINDING':
+                    lines[node.lineno-1:node.end_lineno]=[]
+                elif name in ('IMPLEMENTATION_COMMIT', 'IMPLEMENTATION_TREE'):
+                    lines[node.lineno-1:node.end_lineno]=[name+' = '+repr('e'*40)+'\n']
+        installed=''.join(lines)+'\nALPHA_MICROFILE_TRU03_BINDING = {"proofSha256": "'+'f'*64+'"}\n'
+        with tempfile.TemporaryDirectory() as directory:
+            path=Path(directory)/'installed.py';path.write_text(installed,encoding='utf-8')
+            with patch.object(candidate,'__file__',str(path)):
+                fixture=Tru03PreimportTests();fixture.setUp()
+                self.addCleanup(fixture.doCleanups)
+                self.assertIsNone(subject.microfile_tru03_metadata_literal(fixture.base_text))
+                fixture.test_exact_native_child_bootstrap_without_loading_metadata()
+                fixture.test_metadata_execution_is_rejected_before_runpy()
+            self.assertEqual(path.read_text(encoding='utf-8'),installed)

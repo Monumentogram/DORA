@@ -20,6 +20,7 @@ import com.monumentogram.dora.poc.recovery.contract.MicrofileAad
 import com.monumentogram.dora.poc.recovery.contract.RecoveryCandidate
 import com.monumentogram.dora.poc.recovery.contract.RecoveryContract
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineArtifactRole
+import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntent
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntentInput
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineObservedState
 import com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingCheckpointRow
@@ -522,6 +523,19 @@ private class Campaign(private val context: Context, private val request: JSONOb
                 case in setOf("KEY-05", "KEY-06", "PAR-01", "COR-06")
         )
             prepared.put("recoveryCheckpointSelection", checkpointSelection(checkpoint()))
+        if (candidate == RecoveryCandidate.MICROFILE && case == "TRU-03") {
+            val baseline = microfileTru03Baseline()
+            val original =
+                requireNotNull(
+                    AndroidOsRecoveryReconciliationStorage(context)
+                        .loadActiveArtifact(run, baseline.getString("sourceRelativeName"), 960256L)
+                )
+            check(original.size.toLong() == baseline.getLong("sourceBytes"))
+            check(original.sha256.toLowercaseHex() == baseline.getString("sourceSha256"))
+            check(!state().has("microfileTru03Baseline"))
+            saveState(state().put("microfileTru03Baseline", baseline))
+            prepared.put("microfileTru03Baseline", baseline)
+        }
         emit("RESULT", prepared)
     }
 
@@ -1083,6 +1097,10 @@ private class Campaign(private val context: Context, private val request: JSONOb
                 "CLN-03" -> if (state().optBoolean("faultInjected")) "KEY_UNAVAILABLE" else "VALID"
                 else -> "VALID"
             }
+        val microfileTru03Observation =
+            if (candidate == RecoveryCandidate.MICROFILE && case == "TRU-03")
+                observeMicrofileTru03()
+            else null
         val caseSatisfied =
             when (case) {
                 "COR-01",
@@ -1114,7 +1132,12 @@ private class Campaign(private val context: Context, private val request: JSONOb
                 "TRU-03" ->
                     if (candidate == RecoveryCandidate.STREAM)
                         authenticated && recovered <= accepted
-                    else recovered < committed
+                    else
+                        authenticated &&
+                            recovered == committed &&
+                            committed == accepted &&
+                            classification == "VALID" &&
+                            microfileTru03Observation?.optBoolean("verified", false) == true
                 "SPL-05",
                 "QUA-01",
                 "QUA-02",
@@ -1237,6 +1260,7 @@ private class Campaign(private val context: Context, private val request: JSONOb
                     state().optJSONObject("confirmationMutationFacts") ?: JSONObject.NULL,
                 )
                 .put("quarantineObservation", quarantineObservation())
+                .put("microfileTru03Observation", microfileTru03Observation ?: JSONObject.NULL)
                 .put("controllerEventGapObserved", case == "EVT-01" && committed > 0UL)
                 .put("rangeStart", lastStreamingEvent?.rangeStart?.toLong() ?: JSONObject.NULL)
                 .put("rangeEnd", lastStreamingEvent?.rangeEnd?.toLong() ?: JSONObject.NULL)
@@ -1254,6 +1278,155 @@ private class Campaign(private val context: Context, private val request: JSONOb
                 .put("receiptIdentity", receipt)
                 .put("returnedPrefixArtifact", "campaign/$attempt/recovered.pcm"),
         )
+    }
+
+    /** PREPARE captures this before mutation; RECOVER only compares the original journal. */
+    private fun microfileTru03Baseline(): JSONObject {
+        check(candidate == RecoveryCandidate.MICROFILE && case == "TRU-03")
+        check(AndroidRecoveryJournalDatabase.writable(context).version == 6)
+        val snapshot = AndroidRecoveryMicrofileJournal(context).loadSnapshot(run)
+        val unit = snapshot.units.single { it.unitIndex == 1UL }
+        check(snapshot.units.size == 3 && unit.ciphertextRelativeName == "units/u-0000000001.ct")
+        check(unit.plaintextStartInclusive == 160000UL && unit.plaintextEndExclusive == 320000UL)
+        val committed = state().getLong("committedEnd")
+        check(committed == 480000L && state().getLong("acceptedEnd") == committed)
+        check(snapshot.units.maxOf { it.plaintextEndExclusive }.toLong() == committed)
+        val identities = committedRowIdentities()
+        return JSONObject()
+            .put("schema", "DORA_MICROFILE_TRU03_BASELINE_V1")
+            .put("runId", runHex)
+            .put("candidateId", candidate.contractId)
+            .put("acceptedEnd", committed)
+            .put("committedEnd", committed)
+            .put("sourceRelativeName", unit.ciphertextRelativeName)
+            .put("sourceBytes", unit.ciphertextBytes)
+            .put("sourceSha256", unit.ciphertextSha256.toLowercaseHex())
+            .put("processingIntentCount", identities.rowCount)
+            .put("processingIntentSha256", identities.sha256)
+    }
+
+    /**
+     * Observation cannot create quarantine, restore an object, or grant plaintext authentication.
+     */
+    @Suppress("CyclomaticComplexMethod")
+    private fun observeMicrofileTru03(): JSONObject =
+        try {
+            val baseline = state().getJSONObject("microfileTru03Baseline")
+            val current = microfileTru03Baseline()
+            val keys = current.keys().asSequence().toSet()
+            check(baseline.keys().asSequence().toSet() == keys)
+            check(keys.all { baseline.get(it).toString() == current.get(it).toString() })
+            val facts = state().getJSONObject("artifactMutationFacts")
+            check(facts.getString("recipe") == "TRU-03")
+            check(facts.getString("relativeName") == baseline.getString("sourceRelativeName"))
+            check(facts.getLong("beforeBytes") == baseline.getLong("sourceBytes"))
+            check(facts.getString("beforeSha256") == baseline.getString("sourceSha256"))
+            check(facts.getLong("afterBytes") == facts.getLong("beforeBytes") + 1)
+            val rows = quarantineRows()
+            val row = rows.single()
+            val expected =
+                RecoveryQuarantineIntentInput(
+                    candidate,
+                    run,
+                    baseline.getString("sourceRelativeName"),
+                    RecoveryQuarantineArtifactRole.MICROFILE_CIPHERTEXT,
+                    facts.getLong("afterBytes").toULong(),
+                    Sha256Value.fromLowercaseHex(facts.getString("afterSha256")),
+                )
+            check(row.input == expected)
+            check(row.intentId == RecoveryQuarantineIntent.calculate(expected))
+            check(row.destinationRelativeName == RecoveryQuarantineIntent.destination(expected))
+            check(row.state == QuarantineIntentState.COMPLETED)
+            check(row.bootstrapBinding == QuarantineBootstrapBinding.PRESENT)
+            check(row.recordedObservedState == RecoveryQuarantineObservedState.REFERENCED_REJECTED)
+            val original =
+                expected.copy(
+                    sourceBytes = baseline.getLong("sourceBytes").toULong(),
+                    sourceSha256 = Sha256Value.fromLowercaseHex(baseline.getString("sourceSha256")),
+                )
+            // This separate production source checks exact named row/bootstrap/full container and
+            // original extent. Real controller AEAD happened above and remains independently
+            // required.
+            val extent =
+                requireNotNull(
+                    AndroidRecoveryReconciliationSource(context)
+                        .loadRetainedArtifact(original, RecoveryArtifactContext.UNIT_CIPHERTEXT)
+                )
+            check(
+                extent.size.toULong() == original.sourceBytes &&
+                    extent.sha256 == original.sourceSha256
+            )
+            val full =
+                readMicrofileTru03Container(
+                    File(quarantineRoot, row.destinationRelativeName),
+                    expected.sourceBytes.toLong(),
+                )
+            check(Sha256Value.calculate(full) == expected.sourceSha256)
+            check(full.last() == 0x5a.toByte())
+            check(Sha256Value.calculate(full.copyOf(full.size - 1)) == original.sourceSha256)
+            check(
+                !AndroidOsRecoveryReconciliationStorage(context)
+                    .activeArtifactExists(run, expected.sourceRelativeName)
+            )
+            JSONObject()
+                .put("schema", "DORA_MICROFILE_TRU03_RETAINED_V1")
+                .put("verified", true)
+                .put("journalSchemaVersion", 6)
+                .put("baseline", current)
+                .put("intentId", row.intentId.toLowercaseHex())
+                .put("destinationRelativeName", row.destinationRelativeName)
+                .put("candidateId", candidate.contractId)
+                .put("runId", runHex)
+                .put("sourceRelativeName", expected.sourceRelativeName)
+                .put("artifactRole", expected.artifactRole.contractId)
+                .put("bootstrapBinding", row.bootstrapBinding.name)
+                .put("state", row.state.name)
+                .put("observedState", row.recordedObservedState.name)
+                .put("rowCount", rows.size)
+                .put("containerBytes", full.size)
+                .put("containerSha256", Sha256Value.calculate(full).toLowercaseHex())
+                .put("originalExtentBytes", extent.size)
+                .put("originalExtentSha256", extent.sha256.toLowercaseHex())
+                .put("appendByte", full.last().toInt() and 0xff)
+                .put("sourceAbsent", true)
+                .put("processingIntentCount", current.getInt("processingIntentCount"))
+                .put("processingIntentSha256", current.getString("processingIntentSha256"))
+        } catch (error: Exception) {
+            JSONObject()
+                .put("verified", false)
+                .put("observerFailureType", error.javaClass.simpleName)
+        }
+
+    private fun readMicrofileTru03Container(file: File, expectedBytes: Long): ByteArray {
+        check(expectedBytes in 2L..960256L)
+        check(
+            android.system.OsConstants.S_ISDIR(android.system.Os.lstat(quarantineRoot.path).st_mode)
+        )
+        check(
+            android.system.OsConstants.S_ISDIR(
+                android.system.Os.lstat(requireNotNull(file.parentFile).path).st_mode
+            )
+        )
+        val flags =
+            android.system.OsConstants.O_RDONLY or
+                android.system.OsConstants.O_CLOEXEC or
+                android.system.OsConstants.O_NOFOLLOW
+        val descriptor = android.system.Os.open(file.path, flags, 0)
+        try {
+            val stat = android.system.Os.fstat(descriptor)
+            check(android.system.OsConstants.S_ISREG(stat.st_mode) && stat.st_size == expectedBytes)
+            val bytes = ByteArray(expectedBytes.toInt())
+            var offset = 0
+            while (offset < bytes.size) {
+                val count = android.system.Os.read(descriptor, bytes, offset, bytes.size - offset)
+                check(count > 0)
+                offset += count
+            }
+            check(android.system.Os.read(descriptor, ByteArray(1), 0, 1) == 0)
+            return bytes
+        } finally {
+            android.system.Os.close(descriptor)
+        }
     }
 
     private fun artifactSizeLimitObservation(size: RecoveryArtifactSizeLimitObservation?): Any =

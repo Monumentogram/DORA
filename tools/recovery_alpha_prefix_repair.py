@@ -7,6 +7,7 @@ import json
 import re
 import runpy
 import stat
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 PREFLIGHT_SELECTORS = {
@@ -676,17 +677,984 @@ def stream_path_facts(api, profile, binding, historical_descriptor, capture_desc
     return expected,frozen,controls
 
 
+# Explicit TRU03 successor. Historical schema validators above remain unchanged.
+TRU03_BASELINE_COMMIT = '3abf0f45ae637c5dedde5550b4bd19eb99f1ac5e'
+TRU03_BASELINE_TREE = 'e85965dd6058b242a70c87a8c48c34ecbf20312b'
+TRU03_OLD_IMPLEMENTATION = dict(commit='4279bcd7ad50d5d3f284640602f3e1fc6f351a31',
+    tree='f2d8ee2ec9a721f963855421a2d5f61f6ba9f9e3')
+TRU03_OLD_SOURCE = dict(commit=TRU03_BASELINE_COMMIT,tree=TRU03_BASELINE_TREE,
+    appApkSha256='7cce368663e0de0ae287a38c234bab2c6140588a8fa2af3dbf1e883a18f8f064',
+    testApkSha256='5ed8ca5ede2e0ca12dc23824833ee1c00cbaaf665f78847114f3cb8fc9a2a4b5')
+TRU03_OLD_PROOF_SHA = 'b71860d73c63bd0215590e9a916dbad3c131a9045da1de1bcb56f8a01e9ba315'
+TRU03_OLD_BUILD_SHA = 'a3cd848a3dd2419dfe5c911d35d2d44b013b39886a235420dfacf734c66ce78c'
+TRU03_OLD_REVIEW_SHA = 'd31587e94d5099bad722c90613dfd360a8e92b42e9c587ea7c83fd3c10045d49'
+TRU03_VALIDATION_FILES = {
+    'tools/recovery_alpha_prefix_repair.py':'bdb4866a127c09e587925d67de78fcbd6101f8c70234aa29c3c1928ec62910fe',
+    'tools/validate_recovery_0d6_candidate.py':'089217e05054b89b87aaf5c753e802b56c42d07757f9ad2dfcd28383f3ed8705',
+    'tools/recovery_alpha_repair.py':'d21c97942dace722c83bd3a6564c53682351ec869efa0f324f3ecff2f5f62468'}
+TRU03_IMPLEMENTATION_PATHS = frozenset({
+    PREFIX+'androidTest/'+PACKAGE+'candidate/RecoveryCampaignInstrumentedTest.kt',
+    'tools/recovery_campaign.py','tools/test_recovery_microfile_tru03.py',
+    'tools/recovery_alpha_prefix_repair.py','tools/test_recovery_alpha_prefix_repair.py'})
+TRU03_METADATA_PATHS = frozenset({'tools/validate_recovery_0d6_candidate.py',
+    'tools/test_validate_recovery_0d6_candidate.py'})
+TRU03_BINDING_KEY = 'ALPHA_MICROFILE_TRU03_BINDING'
+TRU03_SCHEMA = 'DORA_RECOVERY_MICROFILE_TRU03_APPLICABILITY_V1'
+
+
+def _tru03_git(*args, root):
+    """Native bootstrap: never acquire Git code or root from repository metadata."""
+    import subprocess
+    try:
+        return subprocess.run(['git','-c','safe.directory='+Path(root).resolve().as_posix(),*args],
+            cwd=root,check=True,capture_output=True,text=True,
+            env=dict(__import__('os').environ,GIT_OPTIONAL_LOCKS='0')).stdout.rstrip('\r\n')
+    except (OSError,subprocess.CalledProcessError) as error:
+        raise ValueError('TRU03_NATIVE_GIT_FAILED') from error
+
+
+def _tru03_regular(path):
+    path=Path(path)
+    require(path.is_absolute() and '..' not in path.parts,'TRU03_ABSOLUTE_PATH')
+    for item in (path,*path.parents):
+        metadata=item.lstat()
+        require(not stat.S_ISLNK(metadata.st_mode)
+            and not getattr(metadata,'st_file_attributes',0)&stat.FILE_ATTRIBUTE_REPARSE_POINT,
+            'TRU03_REPARSE_PATH')
+    require(stat.S_ISREG(path.stat().st_mode),'TRU03_REGULAR_FILE')
+    return path
+
+
+def _tru03_json(descriptor):
+    path=capture_file(descriptor)
+    require(path.stat().st_size<=16*1024*1024,'TRU03_BOUNDED_JSON')
+    def unique(pairs):
+        value={}
+        for key,item in pairs:
+            require(key not in value,'TRU03_DUPLICATE_JSON_KEY');value[key]=item
+        return value
+    raw=path.read_bytes()
+    require(hashlib.sha256(raw).hexdigest()==descriptor['sha256'],'TRU03_JSON_CHANGED')
+    def nonfinite(value):raise ValueError('TRU03_NONFINITE_JSON')
+    return json.loads(raw,object_pairs_hook=unique,parse_constant=nonfinite)
+
+
+def _tru03_document_equal(actual,expected):
+    """Exact new-schema scalar types: JSON false/true are never integer 0/1."""
+    if type(actual) is not type(expected):return False
+    if isinstance(expected,dict):
+        return actual.keys()==expected.keys() and all(_tru03_document_equal(actual[k],v) for k,v in expected.items())
+    if isinstance(expected,list):
+        return len(actual)==len(expected) and all(_tru03_document_equal(a,b) for a,b in zip(actual,expected))
+    return actual==expected
+
+
+def _tru03_tree(revision,root):
+    entries={}
+    for record in _tru03_git('ls-tree','-rz',revision,root=root).split('\0'):
+        if not record:continue
+        header,path=record.split('\t',1);mode,kind,object_id=header.split()
+        require(path not in entries and re.fullmatch('[0-9a-f]{40}',object_id), 'TRU03_TREE_ENTRY')
+        entries[path]=dict(mode=mode,type=kind,object=object_id)
+    return entries
+
+
+def _tru03_source_identity(root):
+    root=Path(root)
+    require(root.is_absolute() and root.resolve()==root,'TRU03_CANONICAL_ROOT')
+    require(Path(_tru03_git('rev-parse','--show-toplevel',root=root))==root,'TRU03_NATIVE_ROOT')
+    require(not _tru03_git('status','--porcelain',root=root),'TRU03_DIRTY_SOURCE')
+    head=_tru03_git('rev-parse','HEAD',root=root);tree=_tru03_git('rev-parse','HEAD^{tree}',root=root)
+    require(re.fullmatch('[0-9a-f]{40}',head) and re.fullmatch('[0-9a-f]{40}',tree),'TRU03_NATIVE_IDENTITY')
+    return dict(commit=head,tree=tree)
+
+
+def _tru03_file_blob(path,relative,entry,root):
+    path=_tru03_regular(path)
+    require(entry is not None and entry['mode']=='100644' and entry['type']=='blob','TRU03_SOURCE_MODE')
+    require(_tru03_git('hash-object','--path='+relative,str(path),root=root)==entry['object'],'TRU03_SOURCE_BLOB')
+    return dict(path=str(path),sha256=file_sha(path))
+
+
+def _tru03_implementation(implementation,root):
+    require(isinstance(implementation,dict) and set(implementation)=={'commit','tree'}
+        and all(isinstance(v,str) and re.fullmatch('[0-9a-f]{40}',v) for v in implementation.values()),
+        'TRU03_IMPLEMENTATION_IDENTITY')
+    commit=implementation['commit']
+    require(_tru03_git('rev-parse',TRU03_BASELINE_COMMIT+'^{tree}',root=root)==TRU03_BASELINE_TREE
+        and _tru03_git('show','-s','--format=%P',commit,root=root)==TRU03_BASELINE_COMMIT
+        and _tru03_git('rev-parse',commit+'^{tree}',root=root)==implementation['tree'],'TRU03_IMPLEMENTATION_PARENT_TREE')
+    before=_tru03_tree(TRU03_BASELINE_COMMIT,root);after=_tru03_tree(commit,root)
+    paths=sorted(p for p in before.keys()|after.keys() if before.get(p)!=after.get(p))
+    require(set(paths)==TRU03_IMPLEMENTATION_PATHS,'TRU03_IMPLEMENTATION_DELTA')
+    for path in paths:
+        require(after.get(path,{}).get('mode')=='100644' and after[path]['type']=='blob','TRU03_IMPLEMENTATION_MODE')
+        if path=='tools/test_recovery_microfile_tru03.py':
+            require(path not in before,'TRU03_IMPLEMENTATION_ADDED_PATH')
+        else:
+            require(before.get(path,{}).get('mode')=='100644' and before[path]['type']=='blob','TRU03_IMPLEMENTATION_MODE')
+    return before,after,[dict(path=p,before=before.get(p),after=after[p]) for p in paths]
+
+
+def microfile_tru03_binding(api):
+    if TRU03_BINDING_KEY not in api:return None
+    value=api[TRU03_BINDING_KEY]
+    require(isinstance(value,dict) and set(value)=={'proofSha256'} and isinstance(value['proofSha256'],str)
+        and re.fullmatch('[0-9a-f]{64}',value['proofSha256']),'TRU03_METADATA_LITERAL')
+    return value
+
+
+def microfile_tru03_metadata_literal(text):
+    parsed=ast.parse(text);names=[node for node in ast.walk(parsed) if isinstance(node,ast.Name) and node.id==TRU03_BINDING_KEY]
+    if not names:return None
+    assignments=[node for node in parsed.body if isinstance(node,ast.Assign) and len(node.targets)==1
+        and isinstance(node.targets[0],ast.Name) and node.targets[0].id==TRU03_BINDING_KEY]
+    require(len(names)==len(assignments)==1 and isinstance(names[0].ctx,ast.Store),'TRU03_METADATA_LITERAL')
+    value=assignments[0].value
+    require(isinstance(value,ast.Dict) and len(value.keys)==1,'TRU03_METADATA_LITERAL')
+    try:return microfile_tru03_binding({TRU03_BINDING_KEY:ast.literal_eval(value)})
+    except (ValueError,TypeError,SyntaxError) as error:raise ValueError('TRU03_METADATA_LITERAL') from error
+
+
+def _tru03_metadata_body(text,names):
+    parsed=ast.parse(text);values={};kept=[]
+    for node in parsed.body:
+        if isinstance(node,ast.Assign) and len(node.targets)==1 and isinstance(node.targets[0],ast.Name) and node.targets[0].id in names:
+            key=node.targets[0].id;require(key not in values,'TRU03_METADATA_LITERAL')
+            try:values[key]=ast.literal_eval(node.value)
+            except (ValueError,TypeError,SyntaxError) as error:raise ValueError('TRU03_METADATA_LITERAL') from error
+        else:kept.append(node)
+    parsed.body=kept
+    return ast.dump(parsed,include_attributes=False),values
+
+
+def validate_tru03_metadata_shape(api,profile,metadata_head='HEAD'):
+    # api is intentionally not a source of executable bootstrap helpers.
+    root=ROOT;implementation=dict(commit=profile.implementation_commit,tree=profile.implementation_tree)
+    before=_tru03_git('show',implementation['commit']+':tools/validate_recovery_0d6_candidate.py',root=root)
+    after=_tru03_git('show',metadata_head+':tools/validate_recovery_0d6_candidate.py',root=root)
+    return _tru03_metadata_shape_text(before,after,implementation)
+
+
+def _tru03_metadata_shape_text(before,after,implementation):
+    names={'IMPLEMENTATION_COMMIT','IMPLEMENTATION_TREE','ALPHA_PREFIX_REPAIR_BINDING',TRU03_BINDING_KEY}
+    require(microfile_tru03_metadata_literal(before) is None,'TRU03_IMPLEMENTATION_ALREADY_BOUND')
+    binding=microfile_tru03_metadata_literal(after)
+    require(binding is not None,'TRU03_METADATA_BINDING_REQUIRED')
+    old_body,old_values=_tru03_metadata_body(before,names);new_body,new_values=_tru03_metadata_body(after,names)
+    require(set(old_values)==names-{TRU03_BINDING_KEY} and set(new_values)==names,'TRU03_METADATA_LITERAL')
+    require(old_body==new_body,'TRU03_METADATA_BEHAVIOR')
+    require(new_values['IMPLEMENTATION_COMMIT']==implementation['commit']
+        and new_values['IMPLEMENTATION_TREE']==implementation['tree'],'TRU03_METADATA_IMPLEMENTATION')
+    prefix=new_values['ALPHA_PREFIX_REPAIR_BINDING']
+    require(isinstance(prefix,dict) and set(prefix)=={'appApkSha256','testApkSha256','applicabilitySha256'}
+        and all(isinstance(v,str) and re.fullmatch('[0-9a-f]{64}',v) for v in prefix.values()),'TRU03_METADATA_PREFIX')
+    require(prefix['applicabilitySha256']==binding['proofSha256'],'TRU03_METADATA_PROOF_HASH')
+    return new_values
+
+
+def bootstrap_current_metadata(proof=None):
+    root=ROOT;identity=_tru03_source_identity(root);head=identity['commit']
+    entries=_tru03_tree(head,root);path='tools/validate_recovery_0d6_candidate.py'
+    descriptor=_tru03_file_blob(root/path,path,entries.get(path),root)
+    raw=(root/path).read_bytes();require(len(raw)<=1024*1024,'TRU03_METADATA_SIZE')
+    text=raw.decode('utf-8');parsed=ast.parse(text)
+    claimed=any(isinstance(n,ast.Name) and n.id==TRU03_BINDING_KEY for n in ast.walk(parsed))
+    proof_claim=isinstance(proof,dict) and proof.get('schema')==TRU03_SCHEMA
+    ancestor=_tru03_git('merge-base',TRU03_BASELINE_COMMIT,head,root=root)
+    descendant=head!=TRU03_BASELINE_COMMIT and ancestor==TRU03_BASELINE_COMMIT
+    if not descendant:
+        require(not claimed and not proof_claim,'TRU03_CONTEXT_MISMATCH')
+        require(_tru03_source_identity(root)==identity and file_sha(root/path)==descriptor['sha256'],'TRU03_SOURCE_CHANGED')
+        return dict(route='HISTORICAL',source=identity,metadata=descriptor)
+    parent=_tru03_git('show','-s','--format=%P',head,root=root)
+    require(re.fullmatch('[0-9a-f]{40}',parent) is not None,'TRU03_METADATA_PARENT')
+    implementation=dict(commit=parent,tree=_tru03_git('rev-parse',parent+'^{tree}',root=root))
+    _,after,delta=_tru03_implementation(implementation,root)
+    changed={p for p in entries.keys()|after.keys() if entries.get(p)!=after.get(p)}
+    require(changed==TRU03_METADATA_PATHS and all(entries[p]['mode']=='100644'
+        and entries[p]['type']=='blob' for p in changed),'TRU03_METADATA_PATHS')
+    before=_tru03_git('show',parent+':'+path,root=root)
+    values=_tru03_metadata_shape_text(before,text,implementation)
+    require(_tru03_source_identity(root)==identity and file_sha(root/path)==descriptor['sha256'],'TRU03_SOURCE_CHANGED')
+    return dict(route='TRU03',source=identity,implementation=implementation,sourceDelta=delta,
+        metadata=descriptor,literals=values)
+
+
+def load_tru03_predecessor_context(predecessor):
+    require(isinstance(predecessor,dict) and set(predecessor)=={'sourceRoot','finalSource','implementation','validationFiles','applicability'},'TRU03_PREDECESSOR_SHAPE')
+    require(predecessor['finalSource']==TRU03_OLD_SOURCE and predecessor['implementation']==TRU03_OLD_IMPLEMENTATION
+        and predecessor['applicability'].get('sha256')==TRU03_OLD_PROOF_SHA,'TRU03_PREDECESSOR_PINS')
+    proof=_tru03_json(predecessor['applicability'])
+    require(proof['build']['sha256']==TRU03_OLD_BUILD_SHA and proof['independentReview']['sha256']==TRU03_OLD_REVIEW_SHA,'TRU03_PREDECESSOR_COMPONENT_PINS')
+    build=_tru03_json(proof['build']);root=Path(build['sourceRoot'])
+    require(predecessor['sourceRoot']==str(root) and root.is_absolute() and root.resolve()==root
+        and root!=ROOT.resolve(),'TRU03_PREDECESSOR_ROOT')
+    require(predecessor['validationFiles']=={p:dict(path=str(root/p),sha256=s) for p,s in TRU03_VALIDATION_FILES.items()},'TRU03_PREDECESSOR_LOADER_SET')
+    identity=_tru03_source_identity(root)
+    require(identity==dict(commit=TRU03_BASELINE_COMMIT,tree=TRU03_BASELINE_TREE),'TRU03_PREDECESSOR_SOURCE')
+    entries=_tru03_tree(TRU03_BASELINE_COMMIT,root)
+    for relative,descriptor in predecessor['validationFiles'].items():
+        capture_file(descriptor);_tru03_file_blob(root/relative,relative,entries.get(relative),root)
+    # Only after all three native/blob/hash checks. Natural __file__, no init_globals.
+    old=runpy.run_path(str(root/'tools/recovery_alpha_prefix_repair.py'))
+    api=old['candidate_api']();profile=api['active_profile']()
+    require(old['ROOT']==root and api['ROOT']==root
+        and profile.implementation_commit==TRU03_OLD_IMPLEMENTATION['commit']
+        and profile.implementation_tree==TRU03_OLD_IMPLEMENTATION['tree']
+        and profile.maintenance_paths==TRU03_METADATA_PATHS
+        and profile.base_commit=='55940df0c95e919a00708ae57e1b8aa23d89b6de'
+        and TRU03_BINDING_KEY not in api,'TRU03_PREDECESSOR_PROFILE')
+    api['validate'](profile,root=root,head=TRU03_BASELINE_COMMIT)
+    return dict(root=root,identity=identity,old=old,api=api,profile=profile,proof=proof,predecessor=predecessor)
+
+
+def validate_tru03_predecessor(predecessor):
+    context=load_tru03_predecessor_context(predecessor);old=context['old'];api=context['api'];proof=context['proof']
+    frozen,controls=old['validate_microfile_disposition_proof'](api,context['profile'],
+        api['ALPHA_PREFIX_REPAIR_BINDING'],proof,predecessor['applicability'],proof['independentReview'])
+    require(_tru03_source_identity(context['root'])==context['identity'],'TRU03_PREDECESSOR_CHANGED')
+    entries=_tru03_tree(TRU03_BASELINE_COMMIT,context['root'])
+    for relative,descriptor in predecessor['validationFiles'].items():
+        capture_file(descriptor);_tru03_file_blob(context['root']/relative,relative,entries.get(relative),context['root'])
+    return dict(frozen=frozen,controls=controls,proof=proof,
+        inheritedBindings={k:v for k,v in api.items() if k.startswith('ALPHA_') and k.endswith('_BINDING')})
+
+
+def tru03_route_required(api,proof,profile):
+    binding=microfile_tru03_binding(api)
+    claimed=isinstance(proof,dict) and proof.get('schema')==TRU03_SCHEMA
+    # Every public entry reaches candidate_api's independent native ancestry
+    # bootstrap first; this predicate cannot downgrade a rejected descendant.
+    require(not claimed or binding is not None,'TRU03_METADATA_BINDING_REQUIRED')
+    if binding is not None:
+        require(claimed,'TRU03_PROOF_SCHEMA');return True
+    return False
+
+
+def validate_tru03_authorization(descriptor,predecessor):
+    value=_tru03_json(descriptor)
+    reduced=value.get('reducedOwnerDecision')
+    require(isinstance(reduced,dict) and reduced.get('sha256')==
+        '39d340cc6fe55ce8d467ccca7b13607127a7e7c4fdc9c5f00a010055e92a2091','TRU03_INHERITED_OWNER')
+    capture_file(reduced)
+    proof=predecessor['proof'];decision=_tru03_json(proof['ownerDecision'])
+    require(proof['ownerDecision']['sha256']==MICROFILE_DISPOSITION_DECISION_SHA256
+        and proof['ownerProposal']['sha256']==MICROFILE_DISPOSITION_PROPOSAL_SHA256
+        and decision['approvedProposal']==proof['ownerProposal']
+        and decision['schema']=='DORA_EXPLICIT_OWNER_DECISION_V1'
+        and decision['exactUserReply']=='Одобряю предложение schema 6'
+        and type(decision['schemaVersion']) is int and decision['schemaVersion']==6
+        and decision['sharedSchema5Preserved'] is True and decision['runtimeAcceptanceGranted'] is False
+        and decision['productFailuresReclassified'] is False
+        and decision['scope']==['MICROFILE TRU-03','MICROFILE COR-01','MICROFILE COR-04','MICROFILE TRU-02'],
+        'TRU03_INHERITED_SCHEMA6_AUTHORITY')
+    capture_file(proof['ownerProposal'])
+    expected=dict(schema='DORA_MICROFILE_TRU03_INHERITED_AUTHORIZATION_V1',scope=SCOPE,
+        baseline=dict(commit=TRU03_BASELINE_COMMIT,tree=TRU03_BASELINE_TREE),
+        reducedOwnerDecision=reduced,schema6OwnerDecision=proof['ownerDecision'],schema6OwnerProposal=proof['ownerProposal'],
+        repairScope='MICROFILE_TRU03_AUTHENTICATED_RETAINED_APPEND',
+        sourceBoundary='FIXED_FIVE_PATH_TRU03_IMPLEMENTATION_AND_TWO_PATH_METADATA',
+        prerequisite='CLOSE_AND_PRESERVE_113_FROZEN_SOURCE_REQUIREMENTS',schemaVersion=6,
+        sharedSchema5Preserved=True,originalProductFailuresPreserved=True,newOwnerApprovalRequired=False,
+        runtimeAdmissionGranted=False,historicalCoverageAutomaticallyGranted=False,prMergeAuthorized=False,
+        privateEvidencePublicationAuthorized=False)
+    require(_tru03_document_equal(value,expected),'TRU03_AUTHORIZATION_SHAPE')
+    return value
+
+
+# Strict B replay segment copied from independently prepared inert parser.
+TRU03_BASELINE = dict(commit='3abf0f45ae637c5dedde5550b4bd19eb99f1ac5e', tree='e85965dd6058b242a70c87a8c48c34ecbf20312b')
+TRU03_HARNESS = 'android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignInstrumentedTest.kt'
+TRU03_B_IMPLEMENTATION_PATHS = tuple(sorted((TRU03_HARNESS, 'tools/recovery_campaign.py', 'tools/test_recovery_microfile_tru03.py', 'tools/recovery_alpha_prefix_repair.py', 'tools/test_recovery_alpha_prefix_repair.py')))
+TRU03_B_METADATA_PATHS = ('tools/test_validate_recovery_0d6_candidate.py', 'tools/validate_recovery_0d6_candidate.py')
+TRU03_TASKS = ('spotlessCheck','detekt',':poc:recovery:testDebugUnitTest',':poc:recovery:compileDebugAndroidTestKotlin',':poc:recovery:lintDebug',':poc:recovery:assembleDebug',':poc:recovery:assembleDebugAndroidTest')
+TRU03_HOST_MODULES = ('test_recovery_microfile_tru03','test_recovery_campaign','test_rec_microfile_disposition_schema','test_recovery_alpha_prefix_repair','test_recovery_alpha_repair','test_validate_recovery_0d6_candidate')
+TRU03_BUILD_KEYS = set('schema phase sourceRoot baseline sourceState authorization androidSchemaVersion implementationPaths androidDeltaPaths sourceFiles inputFiles localProperties evidence tools environment detektTransport jvmCounts jvmEvidence hostCounts apkPair generator deviceCoverageGranted ciPassed runtimeAdmissionGranted'.split())
+TRU03_ENV_KEYS = set('schema sourceRoot androidHome javaHome pythonPath pythonPathOverride pythonHomeOverride gradleUserHome userGradleProperties userInitScripts'.split())
+TRU03_APK_PATHS = dict(appApkSha256='android/poc/recovery/build/outputs/apk/debug/recovery-debug.apk', testApkSha256='android/poc/recovery/build/outputs/apk/androidTest/debug/recovery-debug-androidTest.apk')
+
+
+def tru03_require(ok, label):
+    if not ok:
+        raise ValueError(label)
+
+
+def tru03_exact(value, keys, label):
+    tru03_require(type(value) is dict and set(value) == set(keys), label)
+
+
+def tru03_json_bytes(raw):
+    tru03_require(type(raw) is bytes and len(raw) <= 32 * 1024 * 1024, 'JSON_BOUND')
+    def pairs(items):
+        result = {}
+        for key, value in items:
+            tru03_require(key not in result, 'JSON_DUPLICATE_KEY')
+            result[key] = value
+        return result
+    def bad_constant(value):
+        raise ValueError('JSON_NONFINITE')
+    try:
+        return json.loads(raw.decode('utf-8-sig'), object_pairs_hook=pairs, parse_constant=bad_constant)
+    except (UnicodeError, json.JSONDecodeError) as error:
+        raise ValueError('JSON_INVALID') from error
+
+
+def tru03_regular(path):
+    tru03_require(type(path) is str and Path(path).is_absolute() and '..' not in Path(path).parts, 'FILE_ABSOLUTE_PATH')
+    p = Path(path)
+    for part in (p, *p.parents):
+        s = part.lstat()
+        tru03_require(not stat.S_ISLNK(s.st_mode) and not (getattr(s, 'st_file_attributes', 0) & 0x400), 'FILE_REPARSE_COMPONENT')
+    tru03_require(stat.S_ISREG(p.stat().st_mode), 'FILE_REGULAR')
+    tru03_require(p.resolve() == p, 'FILE_CANONICAL')
+    return p
+
+
+def tru03_file(d, sized=True):
+    tru03_exact(d, ('path','bytes','sha256') if sized else ('path','sha256'), 'FILE_DESCRIPTOR')
+    tru03_require(type(d['sha256']) is str and re.fullmatch('[0-9a-f]{64}', d['sha256']), 'FILE_DESCRIPTOR')
+    if sized:
+        tru03_require(type(d['bytes']) is int and d['bytes'] >= 0, 'FILE_DESCRIPTOR')
+    p = tru03_regular(d['path']); before = p.stat(); data = p.read_bytes(); after = p.stat()
+    tru03_require((before.st_dev,before.st_ino,before.st_size,before.st_mtime_ns) == (after.st_dev,after.st_ino,after.st_size,after.st_mtime_ns), 'FILE_READ_DRIFT')
+    tru03_require(hashlib.sha256(data).hexdigest() == d['sha256'] and (not sized or len(data) == d['bytes']), 'FILE_DIGEST_OR_LENGTH')
+    return data
+
+
+def tru03_desc(p, sized=True):
+    p = tru03_regular(str(p)); data = p.read_bytes()
+    result = dict(path=str(p), sha256=hashlib.sha256(data).hexdigest())
+    if sized: result['bytes'] = len(data)
+    return result
+
+
+def tru03_time(text):
+    try:
+        value = datetime.datetime.fromisoformat(text.replace('Z', '+00:00'))
+        tru03_require(value.tzinfo is not None and value.utcoffset() is not None, 'NATIVE_TIME')
+        return value
+    except (TypeError, AttributeError, ValueError) as error:
+        raise ValueError('NATIVE_TIME') from error
+
+
+def tru03_native(started, receipt, argv, cwd):
+    tru03_exact(started, ('argv','cwd','startedAtUtc'), 'NATIVE_KEYS')
+    tru03_exact(receipt, ('argv','cwd','startedAtUtc','nativeExitCode','endedAtUtc'), 'NATIVE_KEYS')
+    tru03_require(type(receipt['nativeExitCode']) is int and receipt['nativeExitCode'] == 0, 'NATIVE_EXIT')
+    tru03_require(type(argv) is list and all(type(a) is str for a in argv) and started['argv'] == receipt['argv'] == argv and started['cwd'] == receipt['cwd'] == cwd and started['startedAtUtc'] == receipt['startedAtUtc'], 'NATIVE_CONTEXT')
+    begin, end = tru03_time(receipt['startedAtUtc']), tru03_time(receipt['endedAtUtc'])
+    tru03_require(begin <= end, 'NATIVE_TIME')
+    return begin, end
+
+
+def tru03_jvm_xml(documents):
+    tru03_require(type(documents) is list and documents, 'JVM_XML_EMPTY')
+    total = dict(tests=0, failures=0, errors=0, skipped=0); suites = set(); identities = set()
+    for raw in documents:
+        tru03_require(b'<!DOCTYPE' not in raw and b'<!ENTITY' not in raw, 'JVM_XML_ENTITY')
+        try: suite = ET.fromstring(raw)
+        except ET.ParseError as error: raise ValueError('JVM_XML_INVALID') from error
+        tru03_require(suite.tag == 'testsuite' and suite.get('name') and suite.get('name') not in suites, 'JVM_DUPLICATE_SUITE')
+        suites.add(suite.get('name')); tests = suite.findall('testcase')
+        tru03_require(len(tests) > 0 and len(suite.findall('.//testcase')) == len(tests), 'JVM_CASE_STRUCTURE')
+        counts = {}
+        for key in total:
+            text = suite.get(key, '')
+            tru03_require(re.fullmatch('[0-9]+', text) is not None, 'JVM_COUNT_TYPE')
+            counts[key] = int(text)
+        tru03_require(counts == dict(tests=len(tests), failures=0, errors=0, skipped=0), 'JVM_COUNTS')
+        for case in tests:
+            identity = (case.get('classname'), case.get('name'))
+            tru03_require(all(identity) and identity not in identities, 'JVM_DUPLICATE_CASE')
+            identities.add(identity)
+            tru03_require(not any(case.findall(tag) for tag in ('failure','error','skipped')) and not any(suite.findall('.//'+tag) for tag in ('failure','error','skipped')), 'JVM_FAILED_CASE')
+        total['tests'] += len(tests)
+    return total
+
+
+def tru03_host_counts(log):
+    tru03_require(type(log) is str, 'HOST_TEXT')
+    # Semantic parsing only. The original complete log bytes remain hash-bound.
+    log = log.replace('\r\n', '\n')
+    rows = re.findall(r'^([^\n]+) \(([^\n]+)\) \.\.\. (.+)$', log, re.M)
+    totals = re.findall(r'^Ran ([0-9]+) tests? in .+$', log, re.M)
+    tru03_require(len(totals) == 1 and int(totals[0]) == len(rows) > 0 and log.rstrip().endswith('\nOK'), 'HOST_TERMINAL_COUNT')
+    tru03_require(all(outcome == 'ok' for _,_,outcome in rows), 'HOST_NONPASS')
+    for module in TRU03_HOST_MODULES:
+        tru03_require(any(identity.startswith(module+'.') for _,identity,_ in rows), 'HOST_MISSING_MODULE:'+module)
+    tru03_require('_FailedTest' not in log and 'Traceback (most recent call last)' not in log, 'HOST_LOADER_ERROR')
+    return dict(methods=len(rows), failures=0, errors=0, skipped=0)
+
+
+def tru03_gradle_log(log, evidence):
+    tru03_exact(evidence, ('kind','taskOutcome','origin','executionPolicy'), 'JVM_EVIDENCE_KEYS')
+    tru03_require(evidence == dict(kind='CURRENT_EXECUTION',taskOutcome='EXECUTED',origin=None,executionPolicy='FORCE_RECOVERY_JVM_TASK'), 'JVM_CURRENT_ONLY')
+    tru03_require(re.search(r'^BUILD SUCCESSFUL(?: .*)?$', log, re.M) and 'BUILD FAILED' not in log, 'GRADLE_SUCCESS')
+    for task in TRU03_TASKS:
+        name = task if task.startswith(':') else ':'+task
+        matches = re.findall(r'^> Task '+re.escape(name)+r'(?: ([A-Z-]+))?\s*$', log, re.M)
+        tru03_require(len(matches) == 1, 'GRADLE_TASK:'+task)
+        if task == ':poc:recovery:testDebugUnitTest':
+            tru03_require(matches == [''], 'JVM_NOT_EXECUTED')
+        else:
+            tru03_require(matches[0] not in ('FAILED','SKIPPED'), 'GRADLE_TASK:'+task)
+
+
+def tru03_tree_delta(before, after):
+    tru03_require(type(before) is dict and type(after) is dict, 'IMPLEMENTATION_TREE_TYPE')
+    delta = sorted(p for p in set(before)|set(after) if before.get(p) != after.get(p))
+    tru03_require(delta == list(TRU03_B_IMPLEMENTATION_PATHS), 'IMPLEMENTATION_EXACT_FIVE_PATHS')
+    for path in delta:
+        old, new = before.get(path), after.get(path)
+        for item in (old,new):
+            if item is not None:
+                tru03_exact(item, ('mode','type','object'), 'IMPLEMENTATION_ENTRY')
+                tru03_require(item['mode']=='100644' and item['type']=='blob' and re.fullmatch('[0-9a-f]{40}',item['object']), 'IMPLEMENTATION_MODE_BLOB')
+        tru03_require(new is not None and ((old is None) == (path=='tools/test_recovery_microfile_tru03.py')), 'IMPLEMENTATION_BASELINE_PRESENCE')
+    return [dict(path=p,before=before.get(p),after=after[p]) for p in delta]
+
+
+def tru03_dependency_paths(root, tree):
+    """Fixed source/config rules; data never supplies an input allowlist."""
+    root = Path(root); android = root/'android'
+    regular = []
+    for p in android.rglob('*'):
+        if p.is_file() and 'build' not in p.relative_to(android).parts:
+            regular.append(p.relative_to(root).as_posix())
+    kotlin = sorted(p for p in regular if '/src/' in p and p.endswith('.kt'))
+    gradle = sorted(p for p in regular if p.endswith('.gradle.kts'))
+    required = set(kotlin+gradle)
+    required.update(p for p in regular if p.startswith(('android/poc/recovery/src/','android/build-logic/src/')))
+    required.update(p for p in tree if p.startswith('android/') and (p.endswith('.lockfile') or '/gradle/dependency-locks/' in p))
+    required.update(p for p in tree if Path(p).name=='.gitattributes')
+    required.update('android/'+p for p in ('settings.gradle.kts','build.gradle.kts','gradle.properties','gradlew','gradlew.bat','gradle/wrapper/gradle-wrapper.jar','gradle/wrapper/gradle-wrapper.properties','gradle/libs.versions.toml','gradle/verification-metadata.xml','config/detekt/detekt.yml','build-logic/settings.gradle.kts','build-logic/build.gradle.kts','poc/vpn-contract-kernel/settings.gradle.kts','poc/vpn-contract-kernel/build.gradle.kts'))
+    required.update('tools/'+m+'.py' for m in TRU03_HOST_MODULES)
+    required.update('tools/'+m+'.py' for m in ('recovery_campaign','recovery_alpha_prefix_repair','recovery_alpha_repair','validate_recovery_0d6_candidate','recovery_instrumentation_status','test_recovery_instrumentation_status','test_rec_stream_prefix_schema','verify_rec_i3_streaming_sqlite'))
+    required.update('docs/stage0/'+p for p in ('DORA_0D6_ALPHA_PREFLIGHT_OWNER_DECISION_20260914.md','DORA_0D6_ALPHA_E36_CAMPAIGN_OWNER_DECISION_20260914.md','DORA_0D6_ALPHA_REDUCED_SCOPE_OWNER_DECISION_20260915.md'))
+    required.update('docs/stage0/poc-recovery-protocol-stage0-v0.'+str(n)+'.json' for n in range(3,9))
+    required.add('docs/adr/ADR-0005-poc-recovery-streaming-persistence-and-range-quarantine.md')
+    tru03_require(set(kotlin+gradle) <= set(tree), 'INPUT_UNTRACKED_SELECTED_SOURCE')
+    tru03_require(required <= set(tree), 'INPUT_REQUIRED_PATH_MISSING:'+','.join(sorted(required-set(tree))))
+    for path in required: tru03_regular(str(root/path))
+    return dict(inputs=sorted(required-set(TRU03_B_IMPLEMENTATION_PATHS)),detekt=kotlin,spotlessKotlin=kotlin,spotlessGradle=gradle)
+
+
+class Tru03BuildContext:
+    """Trusted-code boundary, not a document schema or proof-controlled policy.
+
+    native_check verifies actual source HEAD/parent/tree/delta/index and metadata
+    phase; blob_for_copy performs native hash-object --path without -w. Policy
+    descriptors/bytes must be fixed by the independently reviewed caller.
+    """
+    def __init__(self, *, root, snapshot_root, raw_root, authorization, generator,
+                 baseline_entries, target_entries, blob_for_copy, native_check,
+                 tools, environment, init_bytes, metadata_current=None):
+        self.root=Path(root); self.snapshot_root=Path(snapshot_root); self.raw_root=Path(raw_root)
+        self.authorization=authorization; self.generator=generator
+        self.baseline_entries=baseline_entries; self.target_entries=target_entries
+        self.blob_for_copy=blob_for_copy; self.native_check=native_check
+        self.tools=tools; self.environment=environment; self.init_bytes=init_bytes
+        self.metadata_current={} if metadata_current is None else metadata_current
+
+
+def tru03_pair(pair, source, copy):
+    tru03_exact(pair, ('source','copy'), 'COPY_PAIR_KEYS')
+    tru03_require(pair['source']['path']==str(source) and pair['copy']['path']==str(copy), 'COPY_EXACT_PATH')
+    original=tru03_file(pair['source']); copied=tru03_file(pair['copy'])
+    tru03_require(original==copied, 'COPY_BYTES_DIFFER')
+    return copied
+
+
+def validate_microfile_tru03_build(build, context):
+    """Return recomputed B facts. CURRENT_EXECUTION only; no I/V/P/M in B."""
+    c=context; root=c.root; snapshot=c.snapshot_root
+    c.native_check()
+    tru03_exact(build, TRU03_BUILD_KEYS, 'BUILD_EXACT_KEYS')
+    tru03_require(build['schema']=='DORA_MICROFILE_TRU03_TESTED_BUILD_SNAPSHOT_V1' and re.fullmatch('verify-[0-9]{2}',build['phase']), 'BUILD_SCHEMA_PHASE')
+    tru03_require(build['baseline']==TRU03_BASELINE and build['sourceState']=='PRECOMMIT_EXACT_FIVE_PATH_DELTA' and build['sourceRoot']==str(root) and type(build['androidSchemaVersion']) is int and build['androidSchemaVersion']==6, 'BUILD_SOURCE_CONTEXT')
+    tru03_require(root.is_absolute() and snapshot.is_absolute() and root!=snapshot and not snapshot.is_relative_to(root), 'BUILD_ROOT_SEPARATION')
+    tru03_require(build['implementationPaths']==list(TRU03_B_IMPLEMENTATION_PATHS) and build['androidDeltaPaths']==[TRU03_HARNESS], 'BUILD_IMPLEMENTATION_SCOPE')
+    tru03_require(all(build[k] is False for k in ('deviceCoverageGranted','ciPassed','runtimeAdmissionGranted')), 'BUILD_NO_COVERAGE')
+    tru03_require(build['authorization']==c.authorization and build['generator']==c.generator, 'BUILD_TRUSTED_AUTHORITY_GENERATOR')
+    tru03_file(build['authorization'],False);tru03_file(build['generator'])
+    delta=tru03_tree_delta(c.baseline_entries,c.target_entries)
+    selection=tru03_dependency_paths(root,c.target_entries)
+    for key,paths,subdir in [('sourceFiles',list(TRU03_B_IMPLEMENTATION_PATHS),'source'),('inputFiles',selection['inputs'],'inputs')]:
+        rows=build[key];tru03_require(type(rows) is list and [x.get('path') for x in rows]==paths, 'BUILD_EXACT_'+key)
+        for row in rows:
+            tru03_exact(row,('path','before','after','source','copy'),'SOURCE_ROW_KEYS');p=row['path']
+            tru03_require(row['before']==c.baseline_entries.get(p) and row['after']==c.target_entries[p], 'SOURCE_TREE_ENTRY')
+            tru03_require(key!='inputFiles' or row['before']==row['after'], 'INPUT_CHANGED')
+            tru03_require(row['source']['path']==str(root/p) and row['copy']['path']==str(snapshot/subdir/p), 'SOURCE_COPY_PATH')
+            copied=tru03_file(row['copy'])
+            if p in c.metadata_current:
+                tru03_require(p in TRU03_B_METADATA_PATHS and c.metadata_current[p]==tru03_desc(root/p), 'METADATA_CURRENT_BINDING')
+                tru03_require(row['source']['bytes']==len(copied) and row['source']['sha256']==hashlib.sha256(copied).hexdigest(), 'METADATA_IMPLEMENTATION_COPY')
+            else:tru03_require(tru03_file(row['source'])==copied,'SOURCE_COPY_DRIFT')
+            tru03_require(c.blob_for_copy(p,Path(row['copy']['path']))==row['after']['object'], 'SOURCE_PATH_AWARE_BLOB')
+    tru03_require(build['tools']==c.tools, 'BUILD_TOOL_POLICY')
+    tru03_exact(build['tools'],('python','cmd','java','recorder','runner','androidSdkRoot','javaHome'),'BUILD_TOOL_KEYS')
+    for k in ('python','cmd','java','recorder','runner'):tru03_file(build['tools'][k])
+    environment=tru03_json_bytes(tru03_file(build['environment']))
+    tru03_exact(environment,TRU03_ENV_KEYS,'ENVIRONMENT_KEYS')
+    tru03_require(environment==c.environment and environment['schema']=='DORA_MICROFILE_TRU03_BUILD_ENVIRONMENT_V1' and environment['sourceRoot']==str(root), 'ENVIRONMENT_TRUSTED_CURRENT_POLICY')
+    tru03_require(environment['androidHome']==c.tools['androidSdkRoot'] and environment['javaHome']==c.tools['javaHome'] and environment['pythonPath']==c.tools['python']['path'], 'ENVIRONMENT_TOOL_CONTEXT')
+    for k in ('pythonPathOverride','pythonHomeOverride'):tru03_require(environment[k] is None or type(environment[k]) is str,'ENVIRONMENT_OVERRIDE_TYPE')
+    tru03_require(type(environment['gradleUserHome']) is str and Path(environment['gradleUserHome']).is_absolute(),'ENVIRONMENT_EXISTING_GRADLE_HOME')
+    if environment['userGradleProperties'] is not None:tru03_file(environment['userGradleProperties'])
+    scripts=environment['userInitScripts'];tru03_require(type(scripts) is list and [x['path'] for x in scripts]==sorted(set(x['path'] for x in scripts)),'ENVIRONMENT_INIT_ORDER')
+    for script in scripts:tru03_file(script)
+    lp=root/'android/local.properties'
+    if lp.exists():tru03_pair(build['localProperties'],lp,snapshot/'inputs/android/local.properties')
+    else:tru03_require(build['localProperties'] is None,'LOCAL_PROPERTIES_ABSENT')
+    transport=build['detektTransport'];tru03_exact(transport,('manifest','initScript','argumentFile'),'TRANSPORT_KEYS')
+    for item in transport.values():tru03_require(Path(item['path']).parent==snapshot/'transport','TRANSPORT_COPY_PATH')
+    init=tru03_file(transport['initScript']);tru03_require(init==c.init_bytes,'TRANSPORT_REVIEWED_INIT')
+    tr=tru03_json_bytes(tru03_file(transport['manifest']))
+    tru03_exact(tr,('schema','originalMain','originalArguments','argumentFile','classpath','sourceCount','repositoryConfigurationChanged','sourceSelectionChanged'),'TRANSPORT_MANIFEST_KEYS')
+    tru03_require(tr['schema']=='DORA_DETEKT_EXACT_ARGUMENT_TRANSPORT_V1' and tr['originalMain']=='io.gitlab.arturbosch.detekt.cli.Main' and tr['repositoryConfigurationChanged'] is False and tr['sourceSelectionChanged'] is False,'TRANSPORT_SEMANTICS')
+    args=tr['originalArguments'];tru03_require(type(args) is list and len(args)==5 and args[0]=='--input' and args[2:] == ['--config',str(root/'android/config/detekt/detekt.yml'),'--build-upon-default-config'],'TRANSPORT_ARGUMENTS')
+    selected=args[1].split(',');tru03_require(len(selected)==len(set(selected)) and set(selected)=={str(root/p) for p in selection['detekt']} and type(tr['sourceCount']) is int and tr['sourceCount']==len(selected),'TRANSPORT_ACTUAL_SELECTION')
+    tru03_require(tr['argumentFile']==str(c.raw_root/('tru03-detekt-'+build['phase']+'.arguments.txt')),'TRANSPORT_EXACT_ORIGINAL_ARGUMENT_PATH')
+    quote=lambda value:'"'+value.replace('\\','\\\\').replace('"','\\"')+'"'
+    expected=('\n'.join(quote(x) for x in [tr['originalMain']]+args)+'\n').encode()
+    tru03_require(tru03_file(transport['argumentFile'])==expected==tru03_regular(tr['argumentFile']).read_bytes(),'TRANSPORT_ARGUMENT_FILE')
+    tru03_require(type(tr['classpath']) is list and tr['classpath'] and len(tr['classpath'])==len(set(tr['classpath'])),'TRANSPORT_CLASSPATH')
+    for path in tr['classpath']:tru03_regular(path)
+    evidence=build['evidence'];tru03_exact(evidence,('gradle','host','jvmXml','lint','apks'),'EVIDENCE_KEYS')
+    runs={};times={}
+    phase=build['phase'];host_stem='tru03-host-'+phase;gradle_stem='tru03-'+phase
+    for kind,stem in [('gradle',gradle_stem),('host',host_stem)]:
+        record=evidence[kind];tru03_exact(record,('started','receipt','stdout','stderr'),'RUN_KEYS');data={}
+        for key,suffix in [('started','.started.json'),('receipt','.receipt.json'),('stdout','.stdout.log'),('stderr','.stderr.log')]:
+            tru03_require(record[key]['path']==str(snapshot/'raw'/(stem+suffix)),'RUN_COPY_STEM')
+            data[key]=tru03_file(record[key]);tru03_require(data[key]==tru03_regular(str(c.raw_root/(stem+suffix))).read_bytes(),'RUN_ORIGINAL_COPY')
+        started=tru03_json_bytes(data['started']);receipt=tru03_json_bytes(data['receipt'])
+        if kind=='gradle':
+            argv=[c.tools['cmd']['path'],'/d','/c','gradlew.bat','--no-daemon','--offline','--no-configuration-cache','--max-workers=2','--init-script']
+            tru03_require(len(receipt['argv'])==17,'GRADLE_ARGV_LENGTH');original_init=receipt['argv'][9]
+            tru03_require(original_init==str(c.raw_root/('tru03-detekt-'+phase+'.init.gradle')),'INIT_EXACT_ORIGINAL_PATH')
+            tru03_require(tru03_regular(original_init).read_bytes()==init,'INIT_ORIGINAL_COPY')
+            argv += [original_init]+list(TRU03_TASKS);cwd=str(root/'android')
+        else:argv=[c.tools['python']['path'],'-X','utf8','-B','-m','unittest','-v']+list(TRU03_HOST_MODULES);cwd=str(root/'tools')
+        times[kind]=tru03_native(started,receipt,argv,cwd);runs[kind]=(data,receipt)
+    tru03_gradle_log(runs['gradle'][0]['stdout'].decode('utf-8-sig'),build['jvmEvidence'])
+    host_counts=tru03_host_counts((runs['host'][0]['stdout']+runs['host'][0]['stderr']).decode('utf-8-sig'))
+    tru03_require(build['hostCounts']==host_counts and all(type(v) is int for v in build['hostCounts'].values()),'HOST_COUNTS_EXACT')
+    env_time=Path(build['environment']['path']).stat().st_mtime
+    tru03_require(env_time<=min(t[0].timestamp() for t in times.values()),'ENVIRONMENT_NOT_PREEXECUTION')
+    xmlroot=root/'android/poc/recovery/build/test-results/testDebugUnitTest';xmls=sorted(xmlroot.glob('TEST-*.xml'))
+    tru03_require(xmls and [x['source']['path'] for x in evidence['jvmXml']]==[str(x) for x in xmls],'JVM_EXACT_REPORT_CENSUS')
+    documents=[]
+    for row,p in zip(evidence['jvmXml'],xmls):
+        documents.append(tru03_pair(row,p,snapshot/'reports/jvm'/p.name))
+        tru03_require(times['gradle'][0].timestamp()<=p.stat().st_mtime<=times['gradle'][1].timestamp(),'JVM_REPORT_NOT_FROM_RUN')
+    jvm_counts=tru03_jvm_xml(documents)
+    tru03_require(build['jvmCounts']==jvm_counts and all(type(v) is int for v in build['jvmCounts'].values()),'JVM_COUNTS_EXACT')
+    lintroot=root/'android/poc/recovery/build/reports';lintfiles=sorted(lintroot.glob('lint-results-debug.*'))
+    tru03_require(lintfiles and [x['source']['path'] for x in evidence['lint']]==[str(x) for x in lintfiles] and any(p.suffix=='.xml' for p in lintfiles),'LINT_EXACT_REPORT_CENSUS')
+    for row,p in zip(evidence['lint'],lintfiles):
+        raw=tru03_pair(row,p,snapshot/'reports/lint'/p.name)
+        if p.suffix=='.xml':
+            tru03_require(b'<!DOCTYPE' not in raw and b'<!ENTITY' not in raw,'LINT_ENTITY');xml=ET.fromstring(raw)
+            tru03_require(xml.tag=='issues' and all(x.get('severity','').lower() not in ('error','fatal') for x in xml.findall('issue')),'LINT_ERRORS')
+    tru03_exact(evidence['apks'],TRU03_APK_PATHS,'APK_KEYS');apk_pair={};apks={}
+    for key,relative in TRU03_APK_PATHS.items():
+        p=root/relative;raw=tru03_pair(evidence['apks'][key],p,snapshot/'apks'/p.name)
+        tru03_require(raw,'APK_EMPTY');apk_pair[key]=hashlib.sha256(raw).hexdigest();apks[key]={k:v for k,v in evidence['apks'][key]['copy'].items() if k!='bytes'}
+    tru03_require(build['apkPair']==apk_pair,'APK_PAIR_EXACT')
+    c.native_check()
+    return dict(sourceDelta=delta,jvmCounts=jvm_counts,jvmEvidence=build['jvmEvidence'],hostCounts=host_counts,apkPair=apk_pair,apks=apks,hostReceipt={k:v for k,v in evidence['host']['receipt'].items() if k!='bytes'},gradleReceipt={k:v for k,v in evidence['gradle']['receipt'].items() if k!='bytes'},newJvmMethodExecutions=jvm_counts['tests'],hostInvocationCount=host_counts['methods'],hostUniqueSemanticMethods=None)
+
+
+
+
+TRU03_INIT_TEMPLATE_SHA='8e672f6930595c31fa1760e07198a26554e09635646fa91bd174203ea388fdb4'
+TRU03_INIT_OLD_ROOT='C:/Users/vinzer/Documents/DORA-Android-Test/.worktrees/reduced114-stream-path-repair/android'
+TRU03_INIT_OLD_RAW='C:/Users/vinzer/Documents/DORA-Android-Test/0D6-E36-CAMPAIGN-20260914/raw'
+# Reviewed machine/control constants. No policy document is executed or trusted at runtime.
+TRU03_FIXED_MACHINE_POLICY = {'controlReviewSha256': 'e5296635738d912abe96aa2147ff66d0f0ff80d24300ab44f41b3066472dff4e',
+ 'environment': {'androidHome': 'C:\\Users\\vinzer\\AppData\\Local\\Android\\Sdk',
+                 'gradleUserHome': 'C:\\Users\\vinzer\\.gradle',
+                 'javaHome': 'C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.20.101-hotspot',
+                 'pythonHomeOverride': None,
+                 'pythonPath': 'C:\\Users\\vinzer\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe',
+                 'pythonPathOverride': None,
+                 'schema': 'DORA_MICROFILE_TRU03_BUILD_ENVIRONMENT_V1',
+                 'sourceRoot': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\.worktrees\\reduced114-micro-tru03',
+                 'userGradleProperties': None,
+                 'userInitScripts': []},
+ 'exactThreeOverrides': {'ANDROID_HOME': 'C:\\Users\\vinzer\\AppData\\Local\\Android\\Sdk',
+                         'JAVA_HOME': 'C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.20.101-hotspot',
+                         'PYTHONUTF8': '1'},
+ 'generator': {'bytes': 12199,
+               'path': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\m605-host\\held04\\tru03-build-freeze-candidate-01\\private_freezers_tru03_02.py',
+               'sha256': '4b5a9e1ca120c85269639c447711abb7aecbdc2f1d0615b2fa6c0b865fa48f94'},
+ 'identity': {'Home': None, 'Identity': 'ASUS-TUF-F15\\vinzer', 'UserProfile': 'C:\\Users\\vinzer'},
+ 'independentReviewSha256': '8db1587e04521cb4d1ee5767a775272d8c1f398745cacf093d9604a1249d3d8f',
+ 'java': {'javaHome': 'C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.20.101-hotspot',
+          'userHome': 'C:\\Users\\vinzer',
+          'version': '17.0.20.1'},
+ 'jdkRelease': {'bytes': 1674,
+                'path': 'C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.20.101-hotspot\\release',
+                'sha256': '171abb6be50980aeed01365f3032cb7a1bc6126ca48a5eed5ba87ac3e000f7a5'},
+ 'planned': {'allPathsAbsent': True,
+             'created': False,
+             'phase': 'verify-04',
+             'rawRoot': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\0D6-E36-CAMPAIGN-20260914\\reduced-114\\tru03-source-iteration-20260917-02\\raw\\verify-04',
+             'snapshotRoot': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\m605-host\\held04\\tru03-b04',
+             'sourceRoot': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\.worktrees\\reduced114-micro-tru03'},
+ 'renderedInitSha256': '2f4644f9f94620961c3bfb09c515604174be512d9304561f549071116e9c665c',
+ 'template': {'bytes': 2235,
+              'path': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\0D6-E36-CAMPAIGN-20260914\\reduced-114\\resume-20260916-main-01\\schema6-detekt-verify-02.init.gradle',
+              'sha256': '8e672f6930595c31fa1760e07198a26554e09635646fa91bd174203ea388fdb4'},
+ 'tools': {'androidSdkRoot': 'C:\\Users\\vinzer\\AppData\\Local\\Android\\Sdk',
+           'cmd': {'bytes': 344064,
+                   'path': 'C:\\Windows\\System32\\cmd.exe',
+                   'sha256': '97ac98b1a92c286054cce55239cfccdfc23a5517bd07fe693072c9ca96c7dabb'},
+           'java': {'bytes': 50296,
+                    'path': 'C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.20.101-hotspot\\bin\\java.exe',
+                    'sha256': '1977f302375adbb920d41dac65c7e22eb9c2ed8e1e8d6258964154ff16f14406'},
+           'javaHome': 'C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.20.101-hotspot',
+           'python': {'bytes': 107312,
+                      'path': 'C:\\Users\\vinzer\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\python.exe',
+                      'sha256': '1a03cb7cb09e29053ae71a0d0e28555fe0ff3d22bb3a476eb9cc0d3899e73456'},
+           'recorder': {'bytes': 1270,
+                        'path': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\0D6-E36-CAMPAIGN-20260914\\run_recorded.py',
+                        'sha256': 'c1c212f3f1a3e3fd9b289db0e804b7912867dd3d859bda550ffae98f3add7184'},
+           'runner': {'bytes': 5795,
+                      'path': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\m605-host\\held04\\tru03-build-freeze-candidate-01\\build_runner_tru03_02.py',
+                      'sha256': '3a6885871e05fef50d70a3f3cf011cce7eef8c718e2342c00a13170ef4de3425'}},
+ 'userConfiguration': {'effectiveScripts': [],
+                       'initGradleKtsPresent': False,
+                       'initGradlePresent': False,
+                       'initializerDirectories': [{'entries': [],
+                                                   'exists': False,
+                                                   'path': 'C:\\Users\\vinzer\\.gradle\\init.d'},
+                                                  {'entries': [{'file': {'bytes': 119,
+                                                                         'path': 'C:\\Users\\vinzer\\.gradle\\wrapper\\dists\\gradle-9.5.0-bin\\bvnork1r7n8i6kp5cnkibsc9q\\gradle-9.5.0\\init.d\\readme.txt',
+                                                                         'sha256': '16cf9450804c97d225bac3e2512583b628a139179fe9c6151d1a23166b66cd23'},
+                                                                'kind': 'file',
+                                                                'name': 'readme.txt'}],
+                                                   'exists': True,
+                                                   'path': 'C:\\Users\\vinzer\\.gradle\\wrapper\\dists\\gradle-9.5.0-bin\\bvnork1r7n8i6kp5cnkibsc9q\\gradle-9.5.0\\init.d'}],
+                       'userGradleProperties': None},
+ 'wrapper': {'cacheHash': 'bvnork1r7n8i6kp5cnkibsc9q',
+             'cacheHashAlgorithm': 'positive BigInteger(MD5(safe distribution URI ASCII string encoded '
+                                   'UTF-8)).toString(36)',
+             'cacheInventory': {'entries': [{'file': None, 'kind': 'directory', 'name': 'gradle-9.5.0'},
+                                            {'file': {'bytes': 0,
+                                                      'path': 'C:\\Users\\vinzer\\.gradle\\wrapper\\dists\\gradle-9.5.0-bin\\bvnork1r7n8i6kp5cnkibsc9q\\gradle-9.5.0-bin.zip.lck',
+                                                      'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+                                             'kind': 'file',
+                                             'name': 'gradle-9.5.0-bin.zip.lck'},
+                                            {'file': {'bytes': 0,
+                                                      'path': 'C:\\Users\\vinzer\\.gradle\\wrapper\\dists\\gradle-9.5.0-bin\\bvnork1r7n8i6kp5cnkibsc9q\\gradle-9.5.0-bin.zip.ok',
+                                                      'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+                                             'kind': 'file',
+                                             'name': 'gradle-9.5.0-bin.zip.ok'}],
+                                'exists': True,
+                                'path': 'C:\\Users\\vinzer\\.gradle\\wrapper\\dists\\gradle-9.5.0-bin\\bvnork1r7n8i6kp5cnkibsc9q'},
+             'distributionSha256Sum': '553c78f50dafcd54d65b9a444649057857469edf836431389695608536d6b746',
+             'distributionUrl': 'https://services.gradle.org/distributions/gradle-9.5.0-bin.zip',
+             'exactSingleDirectory': True,
+             'exactSingleLauncher': True,
+             'files': {'gradle/wrapper/gradle-wrapper.jar': {'bytes': 48462,
+                                                             'path': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\.worktrees\\reduced114-stream-path-repair\\android\\gradle\\wrapper\\gradle-wrapper.jar',
+                                                             'sha256': '497c8c2a7e5031f6aa847f88104aa80a93532ec32ee17bdb8d1d2f67a194a9c7'},
+                       'gradle/wrapper/gradle-wrapper.properties': {'bytes': 370,
+                                                                    'path': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\.worktrees\\reduced114-stream-path-repair\\android\\gradle\\wrapper\\gradle-wrapper.properties',
+                                                                    'sha256': '5d6b7e5139b01fed9bed54b04c55e5910115897d370eb451b5f597c9ad0b51cd'},
+                       'gradlew': {'bytes': 8654,
+                                   'path': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\.worktrees\\reduced114-stream-path-repair\\android\\gradlew',
+                                   'sha256': 'ab5c0cad16305af2e619c159c1f58dd68d07fab9c11e36701e109c0277407f7a'},
+                       'gradlew.bat': {'bytes': 2846,
+                                       'path': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\.worktrees\\reduced114-stream-path-repair\\android\\gradlew.bat',
+                                       'sha256': '475c4f08cd57cf2faa819e7f36d72aa93f0ad646ea23a8f7fa3ef54dee1cbc52'}},
+             'fullExpandedDistributionAuthenticated': False,
+             'inventoryScope': 'exact selected cached root, wrapper launch/configuration and initializer '
+                               'policy; not full expanded-cache content',
+             'launcher': {'bytes': 347634,
+                          'path': 'C:\\Users\\vinzer\\.gradle\\wrapper\\dists\\gradle-9.5.0-bin\\bvnork1r7n8i6kp5cnkibsc9q\\gradle-9.5.0\\lib\\gradle-launcher-9.5.0.jar',
+                          'sha256': 'bf27d49e9a613436ecf1df1c8c926e3f804023ad00b66933b57340067443b2ed'},
+             'okMarker': {'bytes': 0,
+                          'path': 'C:\\Users\\vinzer\\.gradle\\wrapper\\dists\\gradle-9.5.0-bin\\bvnork1r7n8i6kp5cnkibsc9q\\gradle-9.5.0-bin.zip.ok',
+                          'sha256': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'},
+             'projectGradleJavaHomePresent': False,
+             'projectJvmArgsHomeOverridePresent': False,
+             'projectProperties': {'bytes': 276,
+                                   'path': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\.worktrees\\reduced114-stream-path-repair\\android\\gradle.properties',
+                                   'sha256': '326161064800d2647a4518ba6f4af06875a6cb164745c205202da738dc4aa260'},
+             'projectSystemPropertyKeys': [],
+             'retainedZip': None,
+             'selectedCacheRoot': 'C:\\Users\\vinzer\\.gradle\\wrapper\\dists\\gradle-9.5.0-bin\\bvnork1r7n8i6kp5cnkibsc9q',
+             'selectedDistribution': 'C:\\Users\\vinzer\\.gradle\\wrapper\\dists\\gradle-9.5.0-bin\\bvnork1r7n8i6kp5cnkibsc9q\\gradle-9.5.0',
+             'selectedUserHome': 'C:\\Users\\vinzer\\.gradle',
+             'selectionBasis': 'normal Java user.home; no CLI -g/-D, no project systemProp override, no '
+                               'environment override',
+             'zipChecksumRevalidated': False}}
+
+def _tru03_render_init(template, source_root, raw_root, phase):
+    require(hashlib.sha256(template).hexdigest()==TRU03_INIT_TEMPLATE_SHA,'INIT_TEMPLATE_PIN')
+    require(re.fullmatch('verify-[0-9]{2}',phase) and Path(source_root).is_absolute() and Path(raw_root).is_absolute(),'INIT_PATH_PHASE')
+    paths=[(Path(source_root)/'android').as_posix(),Path(raw_root).as_posix()]
+    require(all(not any(x in p for x in ("'",'\n','\r','\\')) for p in paths),'INIT_PATH_QUOTING')
+    text=template.decode('utf-8')
+    for before,after in [(TRU03_INIT_OLD_ROOT,paths[0]),(TRU03_INIT_OLD_RAW,paths[1]),('schema6-detekt-verify-02','tru03-detekt-'+phase)]:
+        require(before in text,'INIT_TEMPLATE_SUBSTITUTION');text=text.replace(before,after)
+    newline='\r\n' if '\r\n' in text else '\n'
+    # Existing Detekt transport remains byte-equivalent modulo three literal
+    # substitutions. Only the explicitly reviewed recovery JVM task is forced.
+    block='''gradle.projectsEvaluated {
+    def expectedRoot = new File('%s').canonicalFile
+    if (gradle.rootProject.projectDir.canonicalFile != expectedRoot) return
+    def recoveryJvm = gradle.rootProject.project(':poc:recovery').tasks.named('testDebugUnitTest').get()
+    recoveryJvm.outputs.upToDateWhen { false }
+    recoveryJvm.outputs.doNotCacheIf("TRU03 current JVM execution") { true }
+}
+''' % paths[0]
+    return (text+newline+block.replace('\n',newline)).encode('utf-8')
+
+
+def _tru03_policy_directory(path):
+    path=Path(path)
+    require(path.is_absolute() and path.resolve()==path and '..' not in path.parts,'TRU03_POLICY_DIRECTORY')
+    for item in (path,*path.parents):
+        info=item.lstat()
+        require(stat.S_ISDIR(info.st_mode) and not stat.S_ISLNK(info.st_mode)
+            and not getattr(info,'st_file_attributes',0)&stat.FILE_ATTRIBUTE_REPARSE_POINT,'TRU03_POLICY_REPARSE_DIRECTORY')
+    return path
+
+
+def _tru03_policy_inventory(path):
+    path=Path(path)
+    if not path.exists():
+        require(not path.is_symlink(),'TRU03_POLICY_REPARSE_DIRECTORY')
+        _tru03_policy_directory(path.parent)
+        return dict(path=str(path),exists=False,entries=[])
+    _tru03_policy_directory(path);entries=[]
+    for child in sorted(path.iterdir(),key=lambda p:p.name):
+        info=child.lstat()
+        require(not stat.S_ISLNK(info.st_mode) and not getattr(info,'st_file_attributes',0)&stat.FILE_ATTRIBUTE_REPARSE_POINT,'TRU03_POLICY_REPARSE_DIRECTORY')
+        if child.is_dir():
+            _tru03_policy_directory(child);kind='directory';descriptor=None
+        else:
+            kind='file';descriptor=tru03_desc(_tru03_regular(child))
+        entries.append(dict(name=child.name,kind=kind,file=descriptor))
+    return dict(path=str(path),exists=True,entries=entries)
+
+
+def _tru03_normal_identity():
+    # Native token identity, not USERNAME/USERDOMAIN supplied by a document.
+    import ctypes
+    require(__import__('os').name=='nt','TRU03_NORMAL_WINDOWS_IDENTITY')
+    size=ctypes.c_ulong(512);buffer=ctypes.create_unicode_buffer(size.value)
+    require(bool(ctypes.windll.secur32.GetUserNameExW(2,buffer,ctypes.byref(size))),'TRU03_NORMAL_WINDOWS_IDENTITY')
+    return buffer.value
+
+
+def _tru03_java_properties(java,root,environment):
+    import subprocess
+    result=subprocess.run([java,'-XshowSettings:properties','-version'],cwd=root,env=environment,
+        capture_output=True,check=False,creationflags=getattr(subprocess,'CREATE_NO_WINDOW',0))
+    require(result.returncode==0,'TRU03_JAVA_POLICY_PROBE')
+    result_text=(result.stdout+result.stderr).decode('utf-8',errors='strict');values={}
+    for key in ('user.home','java.home','java.version'):
+        matches=re.findall(r'^\s*'+re.escape(key)+r' = (.+?)\s*$',result_text,re.MULTILINE)
+        require(len(matches)==1,'TRU03_JAVA_POLICY_PROPERTIES');values[key]=matches[0]
+    return values
+
+
+def _tru03_fixed_build_policy():
+    """Fresh native/configuration checks against code constants, never B policy.
+
+    The selected wrapper cache is launch/configuration policy, not an assertion
+    that every expanded distribution byte was authenticated. No wrapper runs.
+    """
+    import os
+    p=json.loads(json.dumps(TRU03_FIXED_MACHINE_POLICY));root=Path(p['planned']['sourceRoot'])
+    require(ROOT==root and root.resolve()==root,'TRU03_FIXED_SOURCE_ROOT')
+    _tru03_policy_directory(root)
+    require(_tru03_normal_identity()==p['identity']['Identity'],'TRU03_NORMAL_WINDOWS_IDENTITY')
+    require(os.environ.get('USERPROFILE')==p['identity']['UserProfile'],'TRU03_USER_PROFILE')
+    for key in ('HOME','GRADLE_USER_HOME','GRADLE_HOME','PYTHONPATH','PYTHONHOME','JAVA_OPTS','GRADLE_OPTS','JAVA_TOOL_OPTIONS','JDK_JAVA_OPTIONS','_JAVA_OPTIONS'):
+        require(os.environ.get(key) is None,'TRU03_UNREVIEWED_ENVIRONMENT:'+key)
+    for key in ('python','cmd','java','recorder','runner'):tru03_file(p['tools'][key])
+    for key in ('generator','template','jdkRelease'):tru03_file(p[key])
+    environment=dict(os.environ);environment.update(p['exactThreeOverrides'])
+    java=_tru03_java_properties(p['tools']['java']['path'],root,environment)
+    require(java=={'user.home':p['java']['userHome'],'java.home':p['java']['javaHome'],'java.version':p['java']['version']},'TRU03_JAVA_POLICY_PROPERTIES')
+    wrapper=p['wrapper']
+    # Exact unchanged wrapper/project inputs fix URL and precedence; selected
+    # cached path was derived independently from Java home + MD5/base36 URI.
+    for relative,descriptor in wrapper['files'].items():
+        observed=dict(descriptor,path=str(root/'android'/relative));tru03_file(observed)
+    tru03_file(dict(wrapper['projectProperties'],path=str(root/'android/gradle.properties')))
+    require(not (root/'android/local.properties').exists() and not (root/'android/local.properties').is_symlink(),'TRU03_UNREVIEWED_LOCAL_PROPERTIES')
+    require(_tru03_policy_inventory(wrapper['selectedCacheRoot'])==wrapper['cacheInventory'],'TRU03_WRAPPER_CACHE_SELECTION')
+    distribution=_tru03_policy_directory(wrapper['selectedDistribution'])
+    launchers=sorted(distribution.joinpath('lib').glob('gradle-launcher-*.jar'))
+    require([str(x) for x in launchers]==[wrapper['launcher']['path']],'TRU03_WRAPPER_SINGLE_LAUNCHER')
+    tru03_file(wrapper['launcher']);tru03_file(wrapper['okMarker'])
+    home=_tru03_policy_directory(wrapper['selectedUserHome'])
+    for name in ('gradle.properties','init.gradle','init.gradle.kts'):
+        path=home/name;require(not path.exists() and not path.is_symlink(),'TRU03_UNREVIEWED_USER_CONFIGURATION')
+    for inventory in p['userConfiguration']['initializerDirectories']:
+        require(_tru03_policy_inventory(inventory['path'])==inventory,'TRU03_INITIALIZER_INVENTORY')
+    template=tru03_file(p['template'])
+    init_bytes=_tru03_render_init(template,root,Path(p['planned']['rawRoot']),p['planned']['phase'])
+    require(hashlib.sha256(init_bytes).hexdigest()==p['renderedInitSha256'],'TRU03_RENDERED_INIT_PIN')
+    return dict(sourceRoot=str(root),snapshotRoot=p['planned']['snapshotRoot'],rawRoot=p['planned']['rawRoot'],
+        phase=p['planned']['phase'],tools=p['tools'],environment=p['environment'],generator=p['generator'],
+        initBytes=init_bytes,wrapperDistribution=wrapper['selectedDistribution'])
+
+
+def _tru03_build_context(build_descriptor,implementation,before,after,authorization):
+    policy=_tru03_fixed_build_policy();root=Path(policy['sourceRoot'])
+    snapshot=Path(policy['snapshotRoot']);raw=Path(policy['rawRoot'])
+    require(type(build_descriptor) is dict and set(build_descriptor)=={'path','sha256'}
+        and build_descriptor['path']==str(snapshot/'MANIFEST.json'),'TRU03_FIXED_BUILD_DESCRIPTOR')
+    document=_tru03_json(build_descriptor)
+    require(document.get('phase')==policy['phase'],'TRU03_FIXED_BUILD_PHASE')
+    identity=_tru03_source_identity(root)
+    native_before,native_after,_=_tru03_implementation(implementation,root)
+    require(before==native_before and after==native_after,'TRU03_CONTEXT_NATIVE_TREES')
+    metadata_current={}
+    if identity==implementation:
+        # Administrative construction at clean I: unchanged old metadata data;
+        # no candidate_api, no bootstrap requiring M, no temporary monkeypatch.
+        pass
+    else:
+        metadata=bootstrap_current_metadata()
+        require(metadata['route']=='TRU03' and metadata['source']==identity
+            and metadata['implementation']==implementation,'TRU03_CONTEXT_METADATA_CHILD')
+        for relative in sorted(TRU03_METADATA_PATHS):
+            metadata_current[relative]=tru03_desc(_tru03_regular(root/relative))
+    def native_check():
+        require(_tru03_fixed_build_policy()==policy,'TRU03_BUILD_POLICY_CHANGED')
+        require(_tru03_source_identity(root)==identity,'TRU03_BUILD_SOURCE_CHANGED')
+        b,a,_=_tru03_implementation(implementation,root)
+        require(b==before and a==after,'TRU03_CONTEXT_NATIVE_TREES')
+        if metadata_current:
+            metadata=bootstrap_current_metadata()
+            require(metadata['source']==identity and metadata['implementation']==implementation,'TRU03_CONTEXT_METADATA_CHILD')
+            for relative,descriptor in metadata_current.items():
+                require(tru03_desc(root/relative)==descriptor,'TRU03_CONTEXT_METADATA_CHANGED')
+        require(_tru03_json(build_descriptor)==document,'TRU03_BUILD_DOCUMENT_CHANGED')
+    def blob_for_copy(relative,path):
+        require(type(relative) is str and relative in after,'TRU03_COPY_NATIVE_PATH')
+        subdir='source' if relative in TRU03_IMPLEMENTATION_PATHS else 'inputs'
+        require(Path(path)==snapshot/subdir/relative,'TRU03_COPY_FIXED_PATH')
+        path=_tru03_regular(path)
+        result=_tru03_git('hash-object','--path='+relative,str(path),root=root)
+        require(re.fullmatch('[0-9a-f]{40}',result),'TRU03_COPY_NATIVE_BLOB')
+        return result
+    result=Tru03BuildContext(root=root,snapshot_root=snapshot,raw_root=raw,authorization=authorization,
+        generator=policy['generator'],baseline_entries=before,target_entries=after,blob_for_copy=blob_for_copy,
+        native_check=native_check,tools=policy['tools'],environment=policy['environment'],init_bytes=policy['initBytes'],
+        metadata_current=metadata_current)
+    result.wrapper_distribution=Path(policy['wrapperDistribution']) if 'wrapperDistribution' in policy else None
+    native_check()
+    return result
+
+
+
+def microfile_tru03_facts(api,profile,prefix_binding,predecessor,build,apks,authorization,review):
+    """Construct P from I and components before M; no metadata mutation/import.
+
+    api remains an interface-compatibility argument, never bootstrap authority.
+    Runtime proof/binding equality belongs in validate_microfile_tru03_proof.
+    """
+    implementation=dict(commit=profile.implementation_commit,tree=profile.implementation_tree)
+    before,after,delta=_tru03_implementation(implementation,ROOT)
+    identity=_tru03_source_identity(ROOT)
+    if identity['commit']==implementation['commit']:
+        require(identity['tree']==implementation['tree'],'TRU03_IMPLEMENTATION_CHECKOUT')
+    else:
+        context=bootstrap_current_metadata()
+        require(context['route']=='TRU03' and context['implementation']==implementation,'TRU03_FACTS_CONTEXT')
+    historical=validate_tru03_predecessor(predecessor)
+    # The implementation's metadata is unchanged baseline data, parsed inertly.
+    baseline_text=_tru03_git('show',TRU03_BASELINE_COMMIT+':tools/validate_recovery_0d6_candidate.py',root=ROOT)
+    all_names=set(historical['inheritedBindings'])
+    _,inherited=_tru03_metadata_body(baseline_text,all_names)
+    require(inherited==historical['inheritedBindings'],'TRU03_INHERITED_BINDINGS')
+    validate_tru03_authorization(authorization,historical)
+    pair_keys={'appApkSha256','testApkSha256'}
+    require(isinstance(prefix_binding,dict) and set(prefix_binding) in (pair_keys,pair_keys|{'applicabilitySha256'})
+        and isinstance(apks,dict) and set(apks)==pair_keys,'TRU03_APK_SHAPE')
+    for descriptor in apks.values():capture_file(descriptor)
+    pair={k:apks[k]['sha256'] for k in pair_keys}
+    require(pair=={k:prefix_binding[k] for k in pair_keys},'TRU03_APK_PAIR')
+    document=_tru03_json(build)
+    build_context=_tru03_build_context(build,implementation,before,after,authorization)
+    observed=validate_microfile_tru03_build(document,build_context)
+    require(observed['sourceDelta']==delta and observed['apkPair']==pair and observed['apks']==apks,'TRU03_BUILD_COMPONENTS')
+    technical=_tru03_json(review)
+    expected_review=dict(schema='DORA_MICROFILE_TRU03_TECHNICAL_REVIEW_V1',
+        baseline=dict(commit=TRU03_BASELINE_COMMIT,tree=TRU03_BASELINE_TREE),implementation=implementation,
+        predecessorApplicability=predecessor['applicability'],authorization=authorization,build=build,
+        sourceDelta=delta,apkPair=pair,apks=apks,hostReceipt=observed['hostReceipt'],gradleReceipt=observed['gradleReceipt'],
+        jvmCounts=observed['jvmCounts'],jvmEvidence=observed['jvmEvidence'],hostCounts=observed['hostCounts'],
+        independentTechnicalReview=True,testedCopiesMatchImplementation=True,historicalProofRevalidated=True,
+        originalProductFailuresPreserved=True,runtimeAdmissionGranted=False,historicalCoverageAutomaticallyGranted=False)
+    require(_tru03_document_equal(technical,expected_review),'TRU03_TECHNICAL_REVIEW')
+    methods=[]
+    for path,method in sorted(legacy_api()['PREFLIGHT_METHODS'].items()):
+        require(after.get(path,{}).get('mode')=='100644' and after[path]['type']=='blob','TRU03_PREFLIGHT_METHOD')
+        methods.append(dict(path=path,method=method,source=after[path]))
+    require(len(methods)==3,'TRU03_PREFLIGHT_METHODS')
+    for descriptor in historical['controls'].values():capture_file(descriptor)
+    require(_tru03_source_identity(ROOT)==identity,'TRU03_FACTS_SOURCE_CHANGED')
+    expected=dict(schema=TRU03_SCHEMA,scope=SCOPE,
+        contract='MICROFILE_TRU03_AUTHENTICATED_RETAINED_APPEND_SHARED_SCHEMA_6',
+        baseline=dict(commit=TRU03_BASELINE_COMMIT,tree=TRU03_BASELINE_TREE),implementation=implementation,
+        sourceDelta=delta,predecessor=predecessor,build=build,apks=apks,apkPair=pair,
+        authorization=authorization,independentReview=review,controls=historical['controls'],
+        frozenSelection=historical['proof']['frozenSelection'],requiredFreshPreflight=methods,
+        historicalPreflightReusable=False,historicalCoverageAutomaticallyGranted=False,runtimeAdmissionGranted=False)
+    return expected,historical['frozen'],historical['controls']
+
+
+def validate_microfile_tru03_proof(api,profile,binding,proof,descriptor,review):
+    value=microfile_tru03_binding(api)
+    require(value is not None and isinstance(descriptor,dict)
+        and descriptor.get('sha256')==value['proofSha256']==binding['applicabilitySha256'],'TRU03_PROOF_HASH')
+    actual=_tru03_json(descriptor)
+    require(actual==proof and proof.get('schema')==TRU03_SCHEMA
+        and proof.get('independentReview')==review,'TRU03_PROOF_SCHEMA_OR_REVIEW')
+    expected,frozen,controls=microfile_tru03_facts(api,profile,binding,proof.get('predecessor'),
+        proof.get('build'),proof.get('apks'),proof.get('authorization'),review)
+    validate_tru03_metadata_shape(api,profile)
+    require(_tru03_document_equal(proof,expected),'TRU03_EXACT_PROOF')
+    return frozen,controls
+
+
+def _tru03_route_hint(descriptor):
+    if descriptor is None:return None
+    proof=read_proof(descriptor)
+    return _tru03_json(descriptor) if isinstance(proof,dict) and proof.get('schema')==TRU03_SCHEMA else proof
+
+
 def legacy_api():
     return runpy.run_path(str(ROOT/'tools/recovery_alpha_repair.py'))
 
 
-def candidate_api():
+def candidate_api(proof=None):
+    context=bootstrap_current_metadata(proof)
+    require(context['route']!='TRU03' or isinstance(proof,dict) and proof.get('schema')==TRU03_SCHEMA,
+        'TRU03_SOURCE_REPAIR_REQUIRED')
     metadata=ROOT/'tools/validate_recovery_0d6_candidate.py'
     stream_path_metadata_literal(metadata.read_text(encoding='utf-8'))
     collector_query_metadata_literal(metadata.read_text(encoding='utf-8'))
     git_query_metadata_literal(metadata.read_text(encoding='utf-8'))
     microfile_disposition_metadata_literal(metadata.read_text(encoding='utf-8'))
-    return runpy.run_path(str(metadata))
+    microfile_tru03_metadata_literal(metadata.read_text(encoding='utf-8'))
+    require(file_sha(metadata)==context['metadata']['sha256'],'TRU03_SOURCE_CHANGED')
+    result=runpy.run_path(str(metadata))
+    require(file_sha(metadata)==context['metadata']['sha256'],'TRU03_SOURCE_CHANGED')
+    return result
 
 
 def applicability_facts(api, profile, binding):
@@ -721,7 +1689,8 @@ def applicability_facts(api, profile, binding):
 
 
 def validate_source(plan, gate, decision_key):
-    api = candidate_api()
+    hint=_tru03_route_hint(gate.get(decision_key,{}).get('sourceRepair'))
+    api = candidate_api(hint)
     capture_binding(api)
     path_binding=stream_path_binding(api)
     query_binding=collector_query_binding(api)
@@ -742,6 +1711,10 @@ def validate_source(plan, gate, decision_key):
             'Prefix applicability pin mismatch')
     proof = read_proof(proof_descriptor)
     require(isinstance(proof,dict), 'Malformed prefix applicability')
+    if tru03_route_required(api,proof,profile):
+        frozen,_=validate_microfile_tru03_proof(api,profile,binding,proof,proof_descriptor,
+            gate.get('proofs',{}).get('independentReview'))
+        return source,frozen
     if microfile_disposition_binding(api) is not None:
         frozen,_=validate_microfile_disposition_proof(api,profile,binding,proof,proof_descriptor,
                                                    gate.get('proofs',{}).get('independentReview'))
@@ -990,7 +1963,9 @@ def validate_preflight_origin(attempt, pin, native, launcher, source):
     require(len(args) == 13 and args[1:7] == ['-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File']
             and args[8:] == ['-PinPath',attempt['pin']['path'],'-ApprovedPinSha256',attempt['pin']['sha256'],'-Execute'],
             'Foreign preflight launcher command')
-    api=candidate_api()
+    origin_gate=read_proof(dict(path=pin['gatePath'],sha256=pin['gateFileSha256']))
+    hint=_tru03_route_hint(origin_gate.get('alphaPreflight',{}).get('sourceRepair'))
+    api=candidate_api(hint)
     capture_binding(api)
     # The actual preflight gate below revalidates the entire source profile. This
     # independent origin check binds its private launcher path before gate entry.
@@ -1000,7 +1975,10 @@ def validate_preflight_origin(attempt, pin, native, launcher, source):
             and source_proof_descriptor.get('sha256')==api.get('ALPHA_PREFIX_REPAIR_BINDING',{}).get('applicabilitySha256'),
             'Preflight capture applicability pin mismatch')
     source_proof=read_proof(source_proof_descriptor)
-    if microfile_disposition_binding(api) is not None:
+    if tru03_route_required(api,source_proof,api['active_profile']()):
+        _,controls=validate_microfile_tru03_proof(api,api['active_profile'](),api['ALPHA_PREFIX_REPAIR_BINDING'],
+            source_proof,source_proof_descriptor,origin_gate.get('proofs',{}).get('independentReview'))
+    elif microfile_disposition_binding(api) is not None:
         _,controls=validate_microfile_disposition_proof(api,api['active_profile'](),api['ALPHA_PREFIX_REPAIR_BINDING'],
             source_proof,source_proof_descriptor,origin_gate.get('proofs',{}).get('independentReview'))
     elif git_query_binding(api) is not None:

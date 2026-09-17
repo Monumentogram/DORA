@@ -82,9 +82,61 @@ REDUCED_HARD_KILL_STRATA = tuple(f"K{number:02d}" for number in range(1, 13))
 REDUCED_MICRO_K08_BASE_ATTEMPT_ID = "PA-MICROFILE-K08-E36-GAPI-05"
 
 
+def _alpha_preimport_bootstrap(source_repair=None):
+    """Fixed sibling only, under externally reviewed exact-source execution context.
+
+    Gate hashes are compared later; they never provide this root or native loader.
+    Native byte/blob checks detect drift, not independent trust in arbitrary code.
+    """
+    import stat
+    root=Path(__file__).resolve().parents[1]
+    def git(*arguments):
+        try:
+            return subprocess.run(['git','-c','safe.directory='+root.as_posix(),*arguments],
+                cwd=root,check=True,text=True,capture_output=True,
+                env=dict(os.environ,GIT_OPTIONAL_LOCKS='0')).stdout.rstrip('\r\n')
+        except (OSError,subprocess.CalledProcessError) as error:
+            raise ValueError('TRU03_CAMPAIGN_NATIVE_GIT_FAILED') from error
+    require(Path(git('rev-parse','--show-toplevel'))==root and not git('status','--porcelain'),
+        'TRU03_CAMPAIGN_NATIVE_SOURCE')
+    identity=(git('rev-parse','HEAD'),git('rev-parse','HEAD^{tree}'))
+    relative='tools/recovery_alpha_prefix_repair.py';path=root/relative
+    for item in (path,*path.parents):
+        state=item.lstat()
+        require(not stat.S_ISLNK(state.st_mode)
+            and not getattr(state,'st_file_attributes',0)&stat.FILE_ATTRIBUTE_REPARSE_POINT,
+            'TRU03_CAMPAIGN_REPARSE')
+    require(stat.S_ISREG(path.stat().st_mode) and path.stat().st_size<=2*1024*1024,
+        'TRU03_CAMPAIGN_PREFIX_FILE')
+    entry=git('ls-tree',identity[0],'--',relative).split('\t')
+    require(len(entry)==2 and entry[1]==relative and entry[0].startswith('100644 blob '),
+        'TRU03_CAMPAIGN_PREFIX_MODE')
+    require(git('hash-object','--path='+relative,str(path))==entry[0].split()[2],
+        'TRU03_CAMPAIGN_PREFIX_BLOB')
+    digest=hashlib.sha256(path.read_bytes()).hexdigest()
+    api=runpy.run_path(str(path))
+    proof=api['_tru03_route_hint'](source_repair)
+    context=api['bootstrap_current_metadata'](proof)
+    require(identity==(git('rev-parse','HEAD'),git('rev-parse','HEAD^{tree}'))
+        and not git('status','--porcelain') and hashlib.sha256(path.read_bytes()).hexdigest()==digest,
+        'TRU03_CAMPAIGN_SOURCE_CHANGED')
+    return api,context
+
+
 def accepted_alpha_source() -> dict[str, str]:
-    # Load the exact sibling even under Python -I; no ambient import path.
+    # This entry cannot admit any repaired profile. Reject inert repair markers
+    # before code loading; absence of a marker still requires the native guard.
+    import ast
     validator = Path(__file__).resolve().with_name("validate_recovery_0d6_candidate.py")
+    metadata = ast.parse(validator.read_text(encoding="utf-8"))
+    repair_names = {"ALPHA_REDUCED_REPAIR_BINDING", "ALPHA_PREFIX_REPAIR_BINDING",
+                    "ALPHA_MICROFILE_TRU03_BINDING"}
+    require(not any(isinstance(node, ast.Name) and node.id in repair_names
+                    for node in ast.walk(metadata)),
+            "TRU03_SOURCE_REPAIR_REQUIRED: Repaired source profile is restricted to reduced sourceRepair admission")
+    _,context=_alpha_preimport_bootstrap()
+    require(context["route"]!="TRU03", "TRU03_SOURCE_REPAIR_REQUIRED")
+    # Load the exact sibling even under Python -I; no ambient import path.
     api = runpy.run_path(str(validator))
     require("ALPHA_REDUCED_REPAIR_BINDING" not in api and "ALPHA_PREFIX_REPAIR_BINDING" not in api,
             "Repaired source profile is restricted to reduced sourceRepair admission")
@@ -92,7 +144,7 @@ def accepted_alpha_source() -> dict[str, str]:
 
 
 def validate_alpha_prefix_preflight(plan: dict[str, Any], gate: dict[str, Any]) -> None:
-    validator = runpy.run_path(str(Path(__file__).with_name("recovery_alpha_prefix_repair.py")))
+    validator,_=_alpha_preimport_bootstrap(gate.get("alphaPreflight",{}).get("sourceRepair"))
     validator["validate_preflight"](plan, gate)
 
 
@@ -571,6 +623,10 @@ def validate_reduced_e36_selection(original_plan: dict[str, Any], execution_plan
 
 def validate_alpha_repair(plan: dict[str, Any], gate: dict[str, Any]) -> None:
     """Separate, exact repaired-APK applicability; never used for other scopes."""
+    prefix,context=_alpha_preimport_bootstrap(gate.get("alphaReduced",{}).get("sourceRepair"))
+    if context["route"]=="TRU03":
+        prefix["validate"](plan,gate)
+        return
     validator = runpy.run_path(str(Path(__file__).with_name("recovery_alpha_repair.py")))
     validator["validate"](plan, gate)
 
@@ -713,6 +769,74 @@ def validate_checkpoint_selection(before: dict[str, Any], after: dict[str, Any],
     require(type(after["acceptedEnd"]) is int and 0 <= after["checkpointContextEnd"] <= after["acceptedEnd"] <= entry["plaintextBytes"], "Selection watermark invalid")
 
 
+def microfile_tru03_retained_append(entry: dict[str, Any], observed: dict[str, Any], result: dict[str, Any]) -> bool:
+    """ADR-0009: authenticate original bytes, never promote the appended object.
+
+    These exact observations supplement the independently retained raw bytes;
+    they do not replace raw retention or authorize execution on an old source.
+    """
+    try:
+        baseline = result["hostMicrofileTru03Baseline"]
+        replay = result["microfileTru03Replay"]
+        require(isinstance(baseline, dict) and isinstance(replay, dict), "Append evidence type")
+        require(entry["candidateId"] == CANDIDATES[1] and entry["mutationVariants"] == ["DEFAULT"], "Append recipe scope")
+        require(baseline["schema"] == "DORA_MICROFILE_TRU03_BASELINE_V1", "Append baseline schema")
+        require(baseline["runId"] == entry["runId"] and baseline["candidateId"] == CANDIDATES[1], "Append baseline owner")
+        hex_value(entry["runId"], 32)
+        count = entry["plaintextBytes"] // 160000
+        require(entry["plaintextBytes"] == 480000, "Original scheduled fixture")
+        require(all(type(baseline[k]) is int for k in ("acceptedEnd", "committedEnd", "sourceBytes", "processingIntentCount")), "Typed baseline")
+        require(baseline["acceptedEnd"] == baseline["committedEnd"] == entry["plaintextBytes"], "Original committed baseline")
+        require(baseline["sourceRelativeName"] == "units/u-0000000001.ct" and 0 < baseline["sourceBytes"] < 960256, "Exact U1 extent")
+        require(baseline["processingIntentCount"] == count, "Original processing intents")
+        for key in ("sourceSha256", "processingIntentSha256"):
+            hex_value(baseline[key], 64)
+        require(result.get("hostOracleEqual") is True and result.get("hostReplayOracleEqual") is True, "Independent first and replay oracles")
+        first_proof = observed["microfileTru03Observation"]
+        require(isinstance(first_proof, dict) and first_proof == replay["microfileTru03Observation"], "Stable complete retained identity")
+        hex_value(observed["receiptIdentity"], 64)
+        require(replay["receiptIdentity"] == observed["receiptIdentity"], "Stable recovery receipt")
+        for value in (observed, replay):
+            require(all(type(value[k]) is int for k in ("acceptedEnd", "committedEnd", "recoveredEnd", "processingIntentCount", "implicitCommitCount")), "Typed recovery")
+            require(value["acceptedEnd"] == value["committedEnd"] == value["recoveredEnd"] == baseline["committedEnd"], "Only full original plaintext")
+            require(value["classification"] == "VALID" and all(value[k] is True for k in ("authenticated", "contiguous", "caseOracleSatisfied")), "Actual authenticated prefix")
+            require(value["microfileControllerObservation"] == dict(resultType="AuthenticatedPrefix", classification="VALID", failure=None), "Actual controller result")
+            require(value["processingIntentCount"] == count and value["implicitCommitCount"] == 0, "No new processing intent")
+            require(all(type(value[k]) is int and value[k] == 0 for k in ("duplicateProcessingIntents", "missingProcessingIntents", "microphoneOpens", "unsafePathOpens")), "No extra side effects")
+            journal = value["committedRowObservation"]
+            require(all(type(journal[k]) is int for k in ("beforeRowCount", "afterRowCount", "removedRowCount")), "Typed row observation")
+            require(journal["beforeRowCount"] == journal["afterRowCount"] == count and journal["removedRowCount"] == 0, "Original row set")
+            require(journal["beforeSha256"] == journal["afterSha256"] == baseline["processingIntentSha256"], "Original intent identities")
+            facts = value["artifactMutationFacts"]
+            require(facts["recipe"] == "TRU-03" and facts["relativeName"] == baseline["sourceRelativeName"] and facts["recoveryVerdictClaimed"] is False, "Exact injection")
+            require(all(type(facts[k]) is int for k in ("beforeBytes", "afterBytes", "affectedPlaintextStart")), "Typed injection")
+            require(facts["beforeBytes"] == baseline["sourceBytes"] and facts["afterBytes"] == baseline["sourceBytes"] + 1 and facts["affectedPlaintextStart"] == 160000, "Unchanged one-byte recipe")
+            require(facts["beforeSha256"] == baseline["sourceSha256"], "Original ciphertext identity")
+            hex_value(facts["afterSha256"], 64)
+            proof = value["microfileTru03Observation"]
+            require(proof["schema"] == "DORA_MICROFILE_TRU03_RETAINED_V1" and proof["baseline"] == baseline, "Exact schema6 baseline binding")
+            require(proof.get("verified") is True, "Completed retained observation")
+            for key in ("journalSchemaVersion", "rowCount", "containerBytes", "originalExtentBytes", "appendByte", "processingIntentCount"):
+                require(type(proof[key]) is int, "Typed retained evidence")
+            require(proof["journalSchemaVersion"] == 6 and proof["rowCount"] == 1 and proof["appendByte"] == 0x5a, "Schema and tail")
+            require(proof["candidateId"] == CANDIDATES[1] and proof["runId"] == entry["runId"] and proof["sourceRelativeName"] == baseline["sourceRelativeName"], "Exact retained owner")
+            require(proof["artifactRole"] == "MICROFILE_CIPHERTEXT" and proof["bootstrapBinding"] == "PRESENT" and proof["state"] == "COMPLETED" and proof["observedState"] == "REFERENCED_REJECTED" and proof["sourceAbsent"] is True, "Rejected object remains quarantined")
+            require(proof["containerBytes"] == facts["afterBytes"] and proof["containerSha256"] == facts["afterSha256"], "Full appended container identity")
+            require(proof["originalExtentBytes"] == baseline["sourceBytes"] and proof["originalExtentSha256"] == baseline["sourceSha256"], "Only original ciphertext extent")
+            require(proof["processingIntentCount"] == count and proof["processingIntentSha256"] == baseline["processingIntentSha256"], "Retained original intents")
+            def lp(text: str) -> bytes:
+                data = text.encode("ascii")
+                return len(data).to_bytes(2, "big") + data
+            encoded = (lp("poc-recovery-protocol-stage0-v0.6") + lp(CANDIDATES[1]) + bytes.fromhex(entry["runId"]) +
+                       lp(baseline["sourceRelativeName"]) + lp("MICROFILE_CIPHERTEXT") +
+                       facts["afterBytes"].to_bytes(8, "big") + bytes.fromhex(facts["afterSha256"]))
+            identity = hashlib.sha256(encoded).hexdigest()
+            require(proof["intentId"] == identity and proof["destinationRelativeName"] == "objects/q-" + identity + ".bin", "Exact deterministic quarantine identity")
+        return True
+    except (KeyError, TypeError, ValueError, AttributeError, OverflowError):
+        return False
+
+
 def fault_predicate_failures(entry: dict[str, Any], observed: dict[str, Any], result: dict[str, Any]) -> list[str]:
     if entry["kind"] != "FAULT":
         return []
@@ -792,7 +916,7 @@ def fault_predicate_failures(entry: dict[str, Any], observed: dict[str, Any], re
                 check(classification in ("STREAM_SOURCE_TRUNCATED", "STREAM_CHECKPOINT_PREFIX_OUTSIDE_WITNESS", "STREAM_SOURCE_PREFIX_IDENTITY_MISMATCH", "STREAM_RETURNED_BYTE_ORACLE_MISMATCH", "STREAM_RECOVERED_BELOW_CHECKPOINT"), "EXPLICIT_V07_DIAGNOSTIC_REQUIRED")
                 check(start == 0 and observed.get("rangeEnd") == end and certainty == "CONSERVATIVE_WHOLE_SOURCE", "DIAGNOSTIC_WHOLE_SOURCE_RANGE_REQUIRED")
         else:
-            check(bounded and r < c and classification != "VALID", "UNAUTHENTICATED_APPEND_MUST_NOT_BECOME_HEALTHY_UNIT")
+            check(microfile_tru03_retained_append(entry, observed, result), "SCHEMA6_EXACT_RETAINED_APPEND_AND_REPLAY_REQUIRED")
     elif case in ("SPL-01", "SPL-03"):
         check(observed.get("implicitCommitCount") == 0, "ORPHAN_OR_AHEAD_PUBLICATION_MUST_NOT_COMMIT")
         check(observed.get("retainedForReconciliation") is True, "UNCOMMITTED_GENERATION_MUST_BE_RETAINED")
@@ -1416,6 +1540,8 @@ def execute_one(root: Path, plan: dict[str, Any], gate: dict[str, Any], session:
                 result["hostCommittedEnd"] = barrier.get("committedEnd")
             else:
                 prepared = run_operation(transport, plan, entry, "PREPARE", variant)
+                if entry["candidateId"] == CANDIDATES[1] and entry.get("caseId") == "TRU-03":
+                    result["hostMicrofileTru03Baseline"] = prepared.get("microfileTru03Baseline")
                 if prepared.get("externalAnchor") is not None:
                     validate_external_anchor(prepared["externalAnchor"], entry)
                     entry = dict(entry, externalAnchor=prepared["externalAnchor"])
@@ -1452,6 +1578,8 @@ def execute_one(root: Path, plan: dict[str, Any], gate: dict[str, Any], session:
                                         and replay.get("classification") == observed.get("classification")
                                         and replay_equal and prefix.read_bytes() == replay_prefix.read_bytes())
             branch = dict(result, candidateResult=observed, hostOracleEqual=equal)
+            if entry["candidateId"] == CANDIDATES[1] and entry.get("caseId") == "TRU-03":
+                branch.update(microfileTru03Replay=replay, hostReplayOracleEqual=replay_equal)
             assessment = evaluate_attempt(dict(entry, mutationVariants=[variant]), branch)
             subresults.append({"variant": variant, "result": branch, "assessment": assessment})
             save_new(directory / "result-before-cleanup.json", subresults[-1])
