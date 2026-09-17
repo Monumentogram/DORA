@@ -776,15 +776,44 @@ def _tru03_file_blob(path,relative,entry,root):
     return dict(path=str(path),sha256=file_sha(path))
 
 
+def _tru03_repair_anchor(root):
+    """One fixed pushed history anchor, inspected natively before metadata load."""
+    implementation = dict(commit='3b29e249aeaeb945341b0c5b62d5a059a40ff79a',
+        tree='85ac1791142715b05c852e81191726f4256abd6e')
+    metadata_commit = '887111ee020f4073a2a40989f3bba99d3115304f'
+    metadata_tree = '85b5432772bbf22c2854fb100c89e68bb925a3bf'
+    require(_tru03_git('show','-s','--format=%P',metadata_commit,root=root)==implementation['commit']
+        and _tru03_git('rev-parse',metadata_commit+'^{tree}',root=root)==metadata_tree,
+        'TRU03_REPAIR_ANCHOR_IDENTITY')
+    baseline,original,_ = _tru03_implementation(implementation,root)
+    anchor = _tru03_tree(metadata_commit,root)
+    changed = {p for p in original.keys()|anchor.keys() if original.get(p)!=anchor.get(p)}
+    require(changed==TRU03_METADATA_PATHS and all(anchor[p]['mode']=='100644'
+        and anchor[p]['type']=='blob' for p in changed),'TRU03_REPAIR_ANCHOR_METADATA_PATHS')
+    path = 'tools/validate_recovery_0d6_candidate.py'
+    before = _tru03_git('show',implementation['commit']+':'+path,root=root)
+    after = _tru03_git('show',metadata_commit+':'+path,root=root)
+    _tru03_metadata_shape_text(before,after,implementation)
+    return baseline,anchor
+
+
 def _tru03_implementation(implementation,root):
     require(isinstance(implementation,dict) and set(implementation)=={'commit','tree'}
         and all(isinstance(v,str) and re.fullmatch('[0-9a-f]{40}',v) for v in implementation.values()),
         'TRU03_IMPLEMENTATION_IDENTITY')
     commit=implementation['commit']
+    parent = _tru03_git('show','-s','--format=%P',commit,root=root)
     require(_tru03_git('rev-parse',TRU03_BASELINE_COMMIT+'^{tree}',root=root)==TRU03_BASELINE_TREE
-        and _tru03_git('show','-s','--format=%P',commit,root=root)==TRU03_BASELINE_COMMIT
+        and parent in (TRU03_BASELINE_COMMIT,'887111ee020f4073a2a40989f3bba99d3115304f')
         and _tru03_git('rev-parse',commit+'^{tree}',root=root)==implementation['tree'],'TRU03_IMPLEMENTATION_PARENT_TREE')
     before=_tru03_tree(TRU03_BASELINE_COMMIT,root);after=_tru03_tree(commit,root)
+    if parent != TRU03_BASELINE_COMMIT:
+        baseline,anchor = _tru03_repair_anchor(root)
+        require(before==baseline and all(after.get(p)==before.get(p) for p in TRU03_METADATA_PATHS),
+            'TRU03_REPAIR_METADATA_RESET')
+        changed = {p for p in anchor.keys()|after.keys() if anchor.get(p)!=after.get(p)}
+        require(changed==TRU03_METADATA_PATHS|{'tools/recovery_alpha_prefix_repair.py',
+            'tools/test_recovery_alpha_prefix_repair.py'},'TRU03_REPAIR_EXACT_PARENT_DELTA')
     paths=sorted(p for p in before.keys()|after.keys() if before.get(p)!=after.get(p))
     require(set(paths)==TRU03_IMPLEMENTATION_PATHS,'TRU03_IMPLEMENTATION_DELTA')
     for path in paths:
@@ -1274,7 +1303,7 @@ TRU03_INIT_TEMPLATE_SHA='8e672f6930595c31fa1760e07198a26554e09635646fa91bd174203
 TRU03_INIT_OLD_ROOT='C:/Users/vinzer/Documents/DORA-Android-Test/.worktrees/reduced114-stream-path-repair/android'
 TRU03_INIT_OLD_RAW='C:/Users/vinzer/Documents/DORA-Android-Test/0D6-E36-CAMPAIGN-20260914/raw'
 # Reviewed machine/control constants. No policy document is executed or trusted at runtime.
-TRU03_FIXED_MACHINE_POLICY = {'controlReviewSha256': 'e5296635738d912abe96aa2147ff66d0f0ff80d24300ab44f41b3066472dff4e',
+TRU03_FIXED_MACHINE_POLICY = {'controlReviewSha256': '63cc93b49a22a92d6bb7c9fd9169f93409dffefbac9771b6fbca72f8320a5241',
  'environment': {'androidHome': 'C:\\Users\\vinzer\\AppData\\Local\\Android\\Sdk',
                  'gradleUserHome': 'C:\\Users\\vinzer\\.gradle',
                  'javaHome': 'C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.20.101-hotspot',
@@ -1288,9 +1317,9 @@ TRU03_FIXED_MACHINE_POLICY = {'controlReviewSha256': 'e5296635738d912abe96aa2147
  'exactThreeOverrides': {'ANDROID_HOME': 'C:\\Users\\vinzer\\AppData\\Local\\Android\\Sdk',
                          'JAVA_HOME': 'C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.20.101-hotspot',
                          'PYTHONUTF8': '1'},
- 'generator': {'bytes': 12199,
-               'path': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\m605-host\\held04\\tru03-build-freeze-candidate-01\\private_freezers_tru03_02.py',
-               'sha256': '4b5a9e1ca120c85269639c447711abb7aecbdc2f1d0615b2fa6c0b865fa48f94'},
+ 'generator': {'bytes': 12405,
+               'path': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\m605-host\\held04\\tru03-build-freeze-candidate-01\\private_freezers_tru03_03.py',
+               'sha256': 'c541a0499b57fce199fa353c16cdf05ec6d6c8a755b339b621c4060b072be3c7'},
  'identity': {'Home': None, 'Identity': 'ASUS-TUF-F15\\vinzer', 'UserProfile': 'C:\\Users\\vinzer'},
  'independentReviewSha256': '8db1587e04521cb4d1ee5767a775272d8c1f398745cacf093d9604a1249d3d8f',
  'java': {'javaHome': 'C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.20.101-hotspot',
@@ -1301,11 +1330,11 @@ TRU03_FIXED_MACHINE_POLICY = {'controlReviewSha256': 'e5296635738d912abe96aa2147
                 'sha256': '171abb6be50980aeed01365f3032cb7a1bc6126ca48a5eed5ba87ac3e000f7a5'},
  'planned': {'allPathsAbsent': True,
              'created': False,
-             'phase': 'verify-04',
-             'rawRoot': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\0D6-E36-CAMPAIGN-20260914\\reduced-114\\tru03-source-iteration-20260917-02\\raw\\verify-04',
-             'snapshotRoot': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\m605-host\\held04\\tru03-b04',
+             'phase': 'verify-05',
+             'rawRoot': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\0D6-E36-CAMPAIGN-20260914\\reduced-114\\tru03-source-iteration-20260917-03\\raw\\verify-05',
+             'snapshotRoot': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\m605-host\\held04\\tru03-b05',
              'sourceRoot': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\.worktrees\\reduced114-micro-tru03'},
- 'renderedInitSha256': '2f4644f9f94620961c3bfb09c515604174be512d9304561f549071116e9c665c',
+ 'renderedInitSha256': 'a1e5083249f682f00d556d5469fd2672b4d367094f28a1a8010c2a3003b717f4',
  'template': {'bytes': 2235,
               'path': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\0D6-E36-CAMPAIGN-20260914\\reduced-114\\resume-20260916-main-01\\schema6-detekt-verify-02.init.gradle',
               'sha256': '8e672f6930595c31fa1760e07198a26554e09635646fa91bd174203ea388fdb4'},
@@ -1323,9 +1352,9 @@ TRU03_FIXED_MACHINE_POLICY = {'controlReviewSha256': 'e5296635738d912abe96aa2147
            'recorder': {'bytes': 1270,
                         'path': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\0D6-E36-CAMPAIGN-20260914\\run_recorded.py',
                         'sha256': 'c1c212f3f1a3e3fd9b289db0e804b7912867dd3d859bda550ffae98f3add7184'},
-           'runner': {'bytes': 5795,
-                      'path': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\m605-host\\held04\\tru03-build-freeze-candidate-01\\build_runner_tru03_02.py',
-                      'sha256': '3a6885871e05fef50d70a3f3cf011cce7eef8c718e2342c00a13170ef4de3425'}},
+           'runner': {'bytes': 5717,
+                      'path': 'C:\\Users\\vinzer\\Documents\\DORA-Android-Test\\m605-host\\held04\\tru03-build-freeze-candidate-01\\build_runner_tru03_03.py',
+                      'sha256': '66fc860efbb7be81a7987e0227a74460f9c4ed82f13d4e5ab12da830f0b97986'}},
  'userConfiguration': {'effectiveScripts': [],
                        'initGradleKtsPresent': False,
                        'initGradlePresent': False,

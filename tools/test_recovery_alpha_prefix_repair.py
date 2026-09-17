@@ -2054,8 +2054,14 @@ class Tru03PinnedContextTests(unittest.TestCase):
         for key in ('python','cmd','java','recorder','runner'):p['tools'][key]=write(base/'tools'/key)
         p['tools']['javaHome']=str(base/'java');p['tools']['androidSdkRoot']=str(base/'sdk')
         p['generator']=write(base/'generator.py');p['jdkRelease']=write(base/'release')
-        # Actual reviewed template bytes and actual renderer; no renderer mock.
-        template=Path(subject.TRU03_FIXED_MACHINE_POLICY['template']['path']).read_bytes()
+        # Synthetic template and scoped pin keep this fixture portable while
+        # exercising the real renderer and every fixed-policy validation guard.
+        template=("// synthetic renderer fixture\n"
+                  +subject.TRU03_INIT_OLD_ROOT+"\n"
+                  +subject.TRU03_INIT_OLD_RAW+"\n"
+                  +"schema6-detekt-verify-02\n").encode('utf-8')
+        template_pin=patch.object(subject,'TRU03_INIT_TEMPLATE_SHA',hashlib.sha256(template).hexdigest())
+        template_pin.start();self.addCleanup(template_pin.stop)
         p['template']=write(base/'template.gradle',template)
         p['planned']=dict(sourceRoot=str(self.root),snapshotRoot=str(base/'snapshot'),rawRoot=str(base/'raw'),phase='verify-01')
         p['renderedInitSha256']=hashlib.sha256(subject._tru03_render_init(template,self.root,base/'raw','verify-01')).hexdigest()
@@ -2116,6 +2122,18 @@ class Tru03PinnedContextTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'TRU03_WRAPPER_SINGLE_LAUNCHER'):subject._tru03_fixed_build_policy()
         extra.unlink();extra=self.distribution/'init.d/inject.gradle';extra.write_bytes(b'println 1')
         with self.assertRaisesRegex(ValueError,'TRU03_INITIALIZER_INVENTORY'):subject._tru03_fixed_build_policy()
+
+
+    def test_synthetic_template_and_rendered_bytes_keep_exact_pins(self):
+        template=Path(self.policy['template']['path']);original=template.read_bytes()
+        template.write_bytes(original+b'// changed\n')
+        self.policy['template']=subject.tru03_desc(template)
+        with self.assertRaisesRegex(ValueError,'INIT_TEMPLATE_PIN'):
+            subject._tru03_fixed_build_policy()
+        template.write_bytes(original);self.policy['template']=subject.tru03_desc(template)
+        self.policy['renderedInitSha256']='0'*64
+        with self.assertRaisesRegex(ValueError,'TRU03_RENDERED_INIT_PIN'):
+            subject._tru03_fixed_build_policy()
 
 
 class Tru03ContextBindingTests(unittest.TestCase):
@@ -2200,3 +2218,174 @@ class Tru03InstalledMetadataFixtureIsolationTests(unittest.TestCase):
                 fixture.test_exact_native_child_bootstrap_without_loading_metadata()
                 fixture.test_metadata_execution_is_rejected_before_runpy()
             self.assertEqual(path.read_text(encoding='utf-8'),installed)
+
+
+class Tru03AppendHistoryTests(unittest.TestCase):
+    BASE = '3abf0f45ae637c5dedde5550b4bd19eb99f1ac5e'
+    BT = 'e85965dd6058b242a70c87a8c48c34ecbf20312b'
+    I2 = '3b29e249aeaeb945341b0c5b62d5a059a40ff79a'
+    IT = '85ac1791142715b05c852e81191726f4256abd6e'
+    M2 = '887111ee020f4073a2a40989f3bba99d3115304f'
+    MT = '85b5432772bbf22c2854fb100c89e68bb925a3bf'
+    PREFIX = 'tools/recovery_alpha_prefix_repair.py'
+    TEST = 'tools/test_recovery_alpha_prefix_repair.py'
+    META = 'tools/validate_recovery_0d6_candidate.py'
+    META_TEST = 'tools/test_validate_recovery_0d6_candidate.py'
+    I3 = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    I3T = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
+
+    def setUp(self):
+        import runpy
+        _tru03_append_target = Path(__file__).with_name('recovery_alpha_prefix_repair.py')
+        self.api = runpy.run_path(str(_tru03_append_target))
+        self.ns = self.api['_tru03_implementation'].__globals__
+        self.paths = self.api['TRU03_IMPLEMENTATION_PATHS']
+
+        def entry(n):
+            return dict(mode='100644', type='blob', object='%040x' % n)
+        baseline = {p: entry(i + 1) for i, p in enumerate(sorted(self.paths)) if p != 'tools/test_recovery_microfile_tru03.py'}
+        baseline.update({self.META: entry(10), self.META_TEST: entry(11), 'unrelated': entry(12)})
+        first = copy.deepcopy(baseline)
+        for i, p in enumerate(sorted(self.paths)):
+            first[p] = entry(i + 100)
+        metadata = copy.deepcopy(first)
+        metadata[self.META] = entry(200)
+        metadata[self.META_TEST] = entry(201)
+        repair = copy.deepcopy(first)
+        repair[self.PREFIX] = entry(300)
+        repair[self.TEST] = entry(301)
+        self.entries = {self.BASE: baseline, self.I2: first, self.M2: metadata, self.I3: repair}
+        self.parents = {self.I2: self.BASE, self.M2: self.I2, self.I3: self.M2}
+        self.trees = {self.BASE: self.BT, self.I2: self.IT, self.M2: self.MT, self.I3: self.I3T}
+        self.before = "IMPLEMENTATION_COMMIT = 'old'\nIMPLEMENTATION_TREE = 'oldtree'\nALPHA_PREFIX_REPAIR_BINDING = {}\nUNCHANGED = 7\n"
+        self.after = "IMPLEMENTATION_COMMIT = %r\nIMPLEMENTATION_TREE = %r\nALPHA_PREFIX_REPAIR_BINDING = {'appApkSha256': '%s', 'testApkSha256': '%s', 'applicabilitySha256': '%s'}\nALPHA_MICROFILE_TRU03_BINDING = {'proofSha256': '%s'}\nUNCHANGED = 7\n" % (self.I2, self.IT, '1' * 64, '2' * 64, '3' * 64, '3' * 64)
+        self.ns['_tru03_git'] = self.git
+        self.ns['_tru03_tree'] = lambda rev, root: copy.deepcopy(self.entries[rev])
+
+    def git(self, *args, root):
+        if args[0] == 'rev-parse':
+            return self.trees[args[1].removesuffix('^{tree}')]
+        if args[:3] == ('show', '-s', '--format=%P'):
+            return self.parents[args[3]]
+        if args[0] == 'show':
+            rev, path = args[1].split(':', 1)
+            self.assertEqual(path, self.META)
+            return self.after if rev == self.M2 else self.before
+        self.fail('Unexpected native command ' + repr(args))
+
+    def validate(self, commit=None):
+        if commit is None:
+            commit = self.I3
+        return self.api['_tru03_implementation'](dict(commit=commit, tree=self.trees[commit]), Path('synthetic-root'))
+
+    def test_append_only_reset_metadata_positive(self):
+        before, after, delta = self.validate()
+        self.assertEqual(before, self.entries[self.BASE])
+        self.assertEqual(after, self.entries[self.I3])
+        self.assertEqual({r['path'] for r in delta}, self.paths)
+
+    def test_original_direct_baseline_route_unchanged(self):
+        self.assertEqual(self.validate(self.I2)[1], self.entries[self.I2])
+
+    def test_reject_wrong_or_merge_parent(self):
+        for value in (self.BASE + ' ' + self.M2, 'c' * 40):
+            with self.subTest(parent=value):
+                self.parents[self.I3] = value
+                with self.assertRaisesRegex(ValueError, 'TRU03_IMPLEMENTATION_PARENT_TREE'):
+                    self.validate()
+
+    def test_reject_fixed_anchor_graph_and_tree_drift(self):
+        mutations = [(self.parents, self.M2, 'c' * 40), (self.parents, self.I2, 'c' * 40), (self.trees, self.M2, 'c' * 40), (self.trees, self.I2, 'c' * 40)]
+        for target, key, value in mutations:
+            with self.subTest(key=key, target='parents' if target is self.parents else 'trees'):
+                old = target[key]
+                target[key] = value
+                with self.assertRaises(ValueError):
+                    self.validate()
+                target[key] = old
+
+    def test_reject_anchor_metadata_path_or_shape_drift(self):
+        old = copy.deepcopy(self.entries[self.M2])
+        self.entries[self.M2]['unrelated']['object'] = 'd' * 40
+        with self.assertRaisesRegex(ValueError, 'TRU03_REPAIR_ANCHOR_METADATA_PATHS'):
+            self.validate()
+        self.entries[self.M2] = old
+        for after, label in [(self.before, 'TRU03_METADATA_BINDING_REQUIRED'), (self.after + 'execute_untrusted()\n', 'TRU03_METADATA_BEHAVIOR')]:
+            with self.subTest(label=label):
+                old_text = self.after
+                self.after = after
+                with self.assertRaisesRegex(ValueError, label):
+                    self.validate()
+                self.after = old_text
+
+    def test_reject_metadata_not_reset(self):
+        for path in (self.META, self.META_TEST):
+            with self.subTest(path=path):
+                old = self.entries[self.I3][path]
+                self.entries[self.I3][path] = self.entries[self.M2][path]
+                with self.assertRaisesRegex(ValueError, 'TRU03_REPAIR_METADATA_RESET'):
+                    self.validate()
+                self.entries[self.I3][path] = old
+
+    def test_reject_extra_runtime_or_missing_repair_delta(self):
+        runtime = next((p for p in self.paths if p.startswith('android/')))
+        for path, value in [(runtime, {'mode': '100644', 'type': 'blob', 'object': 'e' * 40}), ('unrelated', {'mode': '100644', 'type': 'blob', 'object': 'e' * 40}), (self.TEST, self.entries[self.M2][self.TEST])]:
+            with self.subTest(path=path):
+                old = self.entries[self.I3][path]
+                self.entries[self.I3][path] = value
+                with self.assertRaisesRegex(ValueError, 'TRU03_REPAIR_EXACT_PARENT_DELTA'):
+                    self.validate()
+                self.entries[self.I3][path] = old
+
+    def test_reject_source_mode_change(self):
+        self.entries[self.I3][self.PREFIX]['mode'] = '100755'
+        with self.assertRaisesRegex(ValueError, 'TRU03_IMPLEMENTATION_MODE'):
+            self.validate()
+
+    def prepare_child(self, text):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        root = Path(self.temp.name).resolve()
+        (root / 'tools').mkdir()
+        path = root / 'tools/validate_recovery_0d6_candidate.py'
+        path.write_text(text, encoding='utf-8')
+        child = 'f' * 40
+        tree = 'e' * 40
+        self.parents[child] = self.I3
+        self.trees[child] = tree
+        self.entries[child] = dict(self.entries[self.I3])
+        for p in (self.META, self.META_TEST):
+            self.entries[child][p] = dict(mode='100644', type='blob', object='f' * 40)
+        real = self.git
+
+        def git(*args, root):
+            if args[0] == 'merge-base':
+                return self.BASE
+            return real(*args, root=root)
+        self.ns.update(ROOT=root, _tru03_git=git, _tru03_source_identity=lambda root: dict(commit=child, tree=tree), _tru03_file_blob=lambda *a: dict(path=str(path), sha256=self.api['file_sha'](path)))
+        self.loads = []
+
+        def forbidden(*args, **kwargs):
+            self.loads.append(args)
+            raise AssertionError('METADATA_EXECUTION_SENTINEL')
+        self.ns['runpy'] = SimpleNamespace(run_path=forbidden)
+
+    def test_bad_ancestry_rejects_before_metadata_execution(self):
+        self.prepare_child(self.after + 'raise RuntimeError("must not execute")\n')
+        self.parents[self.I3] = 'c' * 40
+        with self.assertRaisesRegex(ValueError, 'TRU03_IMPLEMENTATION_PARENT_TREE'):
+            self.api['candidate_api'](dict(schema=self.api['TRU03_SCHEMA']))
+        self.assertEqual(self.loads, [])
+
+    def test_missing_binding_rejects_without_source_repair_or_import(self):
+        self.prepare_child(self.before)
+        with self.assertRaisesRegex(ValueError, 'TRU03_METADATA_BINDING_REQUIRED'):
+            self.api['candidate_api']()
+        self.assertEqual(self.loads, [])
+
+    def test_executable_child_rejects_before_import(self):
+        text = self.after.replace(self.I2, self.I3).replace(self.IT, self.I3T) + 'raise RuntimeError("must not execute")\n'
+        self.prepare_child(text)
+        with self.assertRaisesRegex(ValueError, 'TRU03_METADATA_BEHAVIOR'):
+            self.api['candidate_api'](dict(schema=self.api['TRU03_SCHEMA']))
+        self.assertEqual(self.loads, [])
