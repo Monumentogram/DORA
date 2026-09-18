@@ -94,6 +94,7 @@ class CandidateProfileTests(unittest.TestCase):
     def test_rejects_physical_runtime_change_in_metadata_child(self):
         paths = (
             'tools/recovery_physical.py',
+            'tools/test_recovery_physical.py',
             'android/poc/recovery/src/sharedTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryPhysicalDeviceIdentityGuard.kt',
         )
         for path in paths:
