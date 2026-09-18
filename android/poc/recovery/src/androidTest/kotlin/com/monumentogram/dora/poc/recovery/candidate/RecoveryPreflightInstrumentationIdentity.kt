@@ -12,23 +12,27 @@ internal object RecoveryPreflightInstrumentationIdentity {
 
     fun requireAccepted(arguments: Bundle) {
         val profile = arguments.getString("recoveryDeviceProfile")
-        val actual =
-            RecoveryE36GapiDeviceIdentity(
-                Build.VERSION.SDK_INT,
-                Build.FINGERPRINT,
-                Build.PRODUCT,
-                Build.SUPPORTED_ABIS.firstOrNull().orEmpty(),
-            )
-        val expected =
-            if (profile == null) null
-            else
+        if (profile == RecoveryPhysicalDeviceIdentityGuard.PROFILE) {
+            requirePhysical(arguments)
+        } else {
+            val actual =
                 RecoveryE36GapiDeviceIdentity(
-                    API33,
-                    requireNotNull(arguments.getString("recoveryExpectedFingerprint")),
-                    requireNotNull(arguments.getString("recoveryExpectedProduct")),
-                    "x86_64",
+                    Build.VERSION.SDK_INT,
+                    Build.FINGERPRINT,
+                    Build.PRODUCT,
+                    Build.SUPPORTED_ABIS.firstOrNull().orEmpty(),
                 )
-        RecoveryPreflightDeviceIdentityGuard.requireAccepted(actual, profile, expected)
+            val expected =
+                if (profile == null) null
+                else
+                    RecoveryE36GapiDeviceIdentity(
+                        API33,
+                        requireNotNull(arguments.getString("recoveryExpectedFingerprint")),
+                        requireNotNull(arguments.getString("recoveryExpectedProduct")),
+                        "x86_64",
+                    )
+            RecoveryPreflightDeviceIdentityGuard.requireAccepted(actual, profile, expected)
+        }
         if (profile != null) {
             val instrumentation = InstrumentationRegistry.getInstrumentation()
             for ((key, context) in
@@ -46,5 +50,38 @@ internal object RecoveryPreflightInstrumentationIdentity {
                 }
             }
         }
+    }
+
+    private fun requirePhysical(arguments: Bundle) {
+        val actual =
+            RecoveryPhysicalDeviceIdentity(
+                Build.VERSION.SDK_INT,
+                Build.FINGERPRINT,
+                Build.PRODUCT,
+                Build.SUPPORTED_ABIS.firstOrNull().orEmpty(),
+                Build.MODEL,
+                Build.MANUFACTURER,
+                Build.TYPE,
+                Build.VERSION.RELEASE,
+                Build.DEVICE,
+            )
+        val expected =
+            RecoveryPhysicalDeviceIdentity(
+                requireNotNull(arguments.getString("recoveryExpectedApi")).toIntOrNull()
+                    ?: throw IllegalArgumentException("Expected API is required"),
+                requireNotNull(arguments.getString("recoveryExpectedFingerprint")),
+                requireNotNull(arguments.getString("recoveryExpectedProduct")),
+                requireNotNull(arguments.getString("recoveryExpectedAbi")),
+                requireNotNull(arguments.getString("recoveryExpectedModel")),
+                requireNotNull(arguments.getString("recoveryExpectedManufacturer")),
+                requireNotNull(arguments.getString("recoveryExpectedBuildType")),
+                requireNotNull(arguments.getString("recoveryExpectedRelease")),
+                requireNotNull(arguments.getString("recoveryExpectedDevice")),
+            )
+        RecoveryPhysicalDeviceIdentityGuard.requireAccepted(
+            actual,
+            RecoveryPhysicalDeviceIdentityGuard.PROFILE,
+            expected,
+        )
     }
 }

@@ -67,6 +67,9 @@ jobs:
       - name: Verify bounded API33 harness controls
         run: python3 -B -m unittest discover -s tools -p test_recovery_api33.py
 
+      - name: Verify exact physical harness controls
+        run: python3 -B -m unittest discover -s tools -p test_recovery_physical.py
+
       - name: Verify exact recovery dependency inventory
         run: python3 tools/verify_poc_recovery_dependency_inventory.py --online
 

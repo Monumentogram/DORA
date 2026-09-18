@@ -1314,6 +1314,15 @@ private class Campaign(private val context: Context, private val request: JSONOb
                 .apply {
                     if (normalCompletion)
                         put("streamTerminal", lastStreamingEvent?.terminal?.name ?: JSONObject.NULL)
+                    if (candidate == RecoveryCandidate.STREAM && stratum == "K12")
+                        put(
+                            "streamPersistenceObservation",
+                            RecoveryCampaignStreamPersistenceObservation.observe(
+                                context,
+                                run,
+                                candidate,
+                            ),
+                        )
                 },
         )
     }
