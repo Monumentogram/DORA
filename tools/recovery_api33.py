@@ -287,7 +287,7 @@ def run_payload(root: Path, packet: dict, packet_sha: str, session: dict, payloa
         transport.verify_device(packet['source'])
         for prop, expected in [('ro.build.version.sdk', '33'), ('ro.product.name', packet['environment']['product']),
                                ('ro.product.cpu.abi', 'x86_64')]:
-            require(transport.run(['shell', 'getprop', prop], prop).stdout.decode().strip() == expected, 'Runtime identity drift')
+            require(transport.run(['shell', 'getprop', prop], prop.replace('.', '-')).stdout.decode().strip() == expected, 'Runtime identity drift')
         validate_expiry(session['expiresAtUtc'])
         if payload in list(PAYLOADS)[:3]:
             record['actualAndroidCommands'] = 1
