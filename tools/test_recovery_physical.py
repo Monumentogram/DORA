@@ -179,11 +179,15 @@ class PhysicalTests(unittest.TestCase):
             ('exec-out', 'run-as', package, 'cat', '/proc/123/cmdline'): (package + '\x00').encode(),
             ('exec-out', 'run-as', package, 'cat', '/proc/123/status'): b'Name:\tprobe\nUid:\t10123\t10123\t10123\t10123\n',
             ('exec-out', 'run-as', package, 'cat', '/proc/123/attr/current'): (target + '\n').encode(),
+            ('exec-out', 'run-as', package, 'cat', '/proc/123/stat'):
+                ('123 (probe) S ' + '0 ' * 18 + '12345 0\n').encode(),
+            ('shell', '/system/bin/ps', '-ww', '-p', '123', '-o', 'PID,UID,LABEL,NAME'):
+                ('PID UID LABEL NAME\n123 10123 ' + target + ' ' + package + '\n').encode(),
             ('shell', 'run-as', package, 'id', '-u'): b'10123\n',
             ('shell', 'run-as', package, 'cat', '/proc/self/attr/current'): (sender + '\n').encode(),
         }
         class Transport:
-            def run(self, arguments, label):
+            def run(self, arguments, label, **kwargs):
                 return subprocess.CompletedProcess(arguments, 0, responses[tuple(arguments)], b'')
         self.assertEqual(sender, physical.live_signal_identity(Transport(), 123, 10123,
                              target, digest, 'test', sender)['senderContext'])
@@ -262,6 +266,8 @@ class PhysicalTests(unittest.TestCase):
                 result='PASS',countedAsCoverage=False,targetPid=123,targetUid=10123,
                 senderUid=10123,targetCmdline=physical.PACKAGE,
                 targetContext='u:r:untrusted_app:s0:c1',senderContext='u:r:runas_app:s0:c1',
+                observationMethod='SHELL_PS_WIDE_EXACT_PID_V1',targetStartTimeTicks=12345,
+                observationElapsedSeconds=1.0,naturalTimeoutObserved=False,
                 selinux='Enforcing',killSha256='b'*64,
                 signalCommand=['shell','run-as',physical.PACKAGE,'/system/bin/kill','-9','123'],
                 signalStdoutHex='',signalStderrHex='',evidence=[ready,command])
@@ -286,5 +292,171 @@ class PhysicalTests(unittest.TestCase):
             p['files']=[item];p['proofs']['review']=review;p['controllerProof']=item
             with self.assertRaises(ValueError): physical.require_controller_for_payload(p,'P35-06')
 
+
+
+class PhysicalObservationRepairTests(unittest.TestCase):
+    target='u:r:untrusted_app:s0:c162,c256,c512,c768'
+    sender='u:r:runas_app:s0:c162,c256,c512,c768'
+    def transport(self):
+        package=physical.PACKAGE
+        stat=('123 (poco probe) S '+'0 '*18+'98765 0\n').encode()
+        responses={
+            ('shell','getenforce'): b'Enforcing\n',
+            ('shell','sha256sum','/system/bin/kill'): ('a'*64+'  /system/bin/kill\n').encode(),
+            ('shell','pidof',package):b'123\n',
+            ('exec-out','run-as',package,'cat','/proc/123/cmdline'):(package+'\x00').encode(),
+            ('exec-out','run-as',package,'cat','/proc/123/status'):b'Name:\tprobe\nUid:\t10162\t10162\t10162\t10162\n',
+            ('exec-out','run-as',package,'cat','/proc/123/attr/current'):b'cat: /proc/123/attr/current: Permission denied\n',
+            ('exec-out','run-as',package,'cat','/proc/123/stat'):stat,
+            ('shell','/system/bin/ps','-ww','-p','123','-o','PID,UID,LABEL,NAME'):
+                ('  PID UID LABEL NAME\n123 10162 '+self.target+' '+package+'\n').encode(),
+            ('shell','run-as',package,'id','-u'):b'10162\n',
+            ('shell','run-as',package,'cat','/proc/self/attr/current'):(self.sender+'\x00').encode(),
+        }
+        class Transport:
+            calls=[]
+            def run(inner,arguments,label,**kwargs):
+                inner.calls.append((tuple(arguments),label))
+                value=responses[tuple(arguments)]
+                if isinstance(value,list):value=value.pop(0)
+                if isinstance(value,subprocess.CompletedProcess):return value
+                return subprocess.CompletedProcess(arguments,0,value,b'')
+        return Transport(),responses
+    def test_wide_shell_observation_replaces_denied_run_as_context(self):
+        transport,_=self.transport()
+        identity=physical.live_signal_identity(transport,123,10162,self.target,'a'*64,'test',self.sender)
+        self.assertEqual(self.target,identity['targetContext'])
+        self.assertEqual(98765,identity['targetStartTimeTicks'])
+        self.assertEqual('SHELL_PS_WIDE_EXACT_PID_V1',identity['observationMethod'])
+        self.assertFalse(any('attr/current' in arg and '/proc/123/' in arg for args,_ in transport.calls for arg in args))
+    def test_observer_denial_in_stdout_with_native_zero_is_unavailable(self):
+        transport,responses=self.transport()
+        key=('shell','/system/bin/ps','-ww','-p','123','-o','PID,UID,LABEL,NAME')
+        responses[key]=b'cat: /proc/123/attr/current: Permission denied\n'
+        with self.assertRaisesRegex(ValueError,'OBSERVATION_UNAVAILABLE'):
+            physical.live_signal_identity(transport,123,10162,self.target,'a'*64,'test',self.sender)
+    def test_ps_exact_pid_uid_context_and_unambiguous_full_record(self):
+        key=('shell','/system/bin/ps','-ww','-p','123','-o','PID,UID,LABEL,NAME')
+        for mutation in ['pid','uid','context','truncated','duplicate','header','empty','native','stderr']:
+            with self.subTest(mutation=mutation):
+                transport,responses=self.transport();valid=responses[key]
+                changes={'pid':valid.replace(b'123 10162',b'124 10162'),
+                    'uid':valid.replace(b'123 10162',b'123 10163'),
+                    'context':valid.replace(b'c768',b'c769'),
+                    'truncated':valid.replace(b'c512,c768',b'c512,...'),
+                    'duplicate':valid+valid.splitlines()[1]+b'\n',
+                    'header':valid.replace(b'LABEL',b'CONTEXT'),'empty':b'',
+                    'native':subprocess.CompletedProcess([],1,valid,b''),
+                    'stderr':subprocess.CompletedProcess([],0,valid,b'Permission denied')}
+                responses[key]=changes[mutation]
+                with self.assertRaises(ValueError):
+                    physical.live_signal_identity(transport,123,10162,self.target,'a'*64,'test',self.sender)
+    def test_process_replacement_between_identity_reads_is_rejected(self):
+        transport,responses=self.transport()
+        key=('exec-out','run-as',physical.PACKAGE,'cat','/proc/123/stat')
+        responses[key]=[responses[key],responses[key].replace(b'98765',b'98766')]
+        with self.assertRaisesRegex(ValueError,'PROCESS_REPLACED'):
+            physical.live_signal_identity(transport,123,10162,self.target,'a'*64,'test',self.sender)
+
+class PhysicalSuccessorGateTests(unittest.TestCase):
+    def test_signal_requires_clean_native_success(self):
+        self.assertTrue(callable(getattr(physical,'signal_succeeded',None)))
+        self.assertTrue(physical.signal_succeeded(subprocess.CompletedProcess([],0,b'',b'')))
+        for code,out,err in [(0,b'Permission denied',b''),(0,b'',b'Operation not permitted'),(1,b'',b''),(0,b'unknown output',b'')]:
+            self.assertFalse(physical.signal_succeeded(subprocess.CompletedProcess([],code,out,err)))
+    def test_preflight_reuse_preserves_original_source_and_requires_review(self):
+        self.assertTrue(callable(getattr(physical,'preflight_packet',None)))
+        p=packet()
+        self.assertEqual(p,physical.preflight_packet(p))
+        with TemporaryDirectory() as directory:
+            folder=Path(directory)
+            def put(name,value):
+                path=folder/name;path.write_text(json.dumps(value));return physical.descriptor(path)
+            prior=packet(); prior['harnessSourceCommit']='4'*40;prior['source']['commit']='4'*40
+            prior_item=put('prior.json',prior)
+            proof=dict(schema='DORA_PHYSICAL_PREFLIGHT_REUSE_V1',priorPacket=prior_item,source=p['source'],
+                executionId=p['executionId'],environment=p['environment'],priorPrerequisites=None,reviewedDiff=None)
+            proof_item=put('reuse.json',proof)
+            p['preflightReuse']=proof_item;p['files']=[proof_item,prior_item]
+            review=put('review.json',dict(verdict='APPROVED',files=[]))
+            p['proofs']={'review':review}
+            with self.assertRaises(ValueError):physical.preflight_packet(p)
+            p['files']=[]
+            with self.assertRaises(ValueError):physical.preflight_packet(p)
+
+    def test_reviewed_host_only_preflight_transfer_and_negative_controls(self):
+        with TemporaryDirectory() as directory:
+            folder=Path(directory)
+            def put(name,value):
+                path=folder/name;path.write_text(value if isinstance(value,str) else json.dumps(value));return physical.descriptor(path)
+            p=packet();prior=packet();prior['harnessSourceCommit']='4'*40;prior['source']['commit']='4'*40
+            prior_item=put('prior.json',prior);previous=put('prerequisites.json',[]);delta=put('diff.txt','reviewed host delta')
+            proof=dict(schema='DORA_PHYSICAL_PREFLIGHT_REUSE_V1',priorPacket=prior_item,source=p['source'],
+                executionId=p['executionId'],environment=p['environment'],priorPrerequisites=previous,reviewedDiff=delta)
+            module=Path(physical.__file__).read_text(encoding='utf-8')
+            changed=['tools/recovery_physical.py','tools/test_recovery_physical.py']
+            def git(root,*args):
+                if args[0]=='merge-base':return ''
+                if args[0]=='show':return module
+                if '--name-only' in args:return '\n'.join(changed)
+                return 'reviewed host delta'
+            def bind():
+                item=put('reuse.json',proof)
+                p['preflightReuse']=item;p['files']=[item,prior_item,previous,delta]
+                p['proofs']={'review':put('review.json',dict(verdict='APPROVED',files=p['files']))}
+            with patch.object(physical,'PREFLIGHT_COMMIT','4'*40),patch.object(physical,'PREFLIGHT_PACKET_SHA',prior_item['sha256']),patch.object(physical,'git',side_effect=git):
+                bind();self.assertEqual(prior,physical.preflight_packet(p))
+                changed.append('android/poc/recovery/src/main/Changed.kt')
+                with self.assertRaisesRegex(ValueError,'Android or contract'):physical.preflight_packet(p)
+                changed.pop()
+                module=module.replace("'SQLite revision drift'","'altered SQLite validation'")
+                with self.assertRaisesRegex(ValueError,'Preflight implementation changed'):physical.preflight_packet(p)
+                module=Path(physical.__file__).read_text(encoding='utf-8')
+                module=module.replace("PREFIX = 'com.monumentogram.dora.poc.recovery.'", "PREFIX = 'changed.'")
+                with self.assertRaisesRegex(ValueError,'Preflight implementation changed'):physical.preflight_packet(p)
+                module=Path(physical.__file__).read_text(encoding='utf-8')
+                p['source']['testApkSha256']='9'*64;proof['source']=p['source'];bind()
+                with self.assertRaisesRegex(ValueError,'APK drift'):physical.preflight_packet(p)
+                p['source']['testApkSha256']=prior['source']['testApkSha256'];bind()
+                p['environment']['fingerprint']='changed';proof['environment']=p['environment'];bind()
+                with self.assertRaisesRegex(ValueError,'environment drift'):physical.preflight_packet(p)
+                p['environment']=prior['environment'];proof['environment']=p['environment'];bind()
+                (folder/'diff.txt').write_text('tampered')
+                with self.assertRaisesRegex(ValueError,'digest mismatch'):physical.preflight_packet(p)
+
+class PhysicalKillEnvelopeTests(unittest.TestCase):
+    def run_envelope(self, death=None, elapsed=1, output=b''):
+        with TemporaryDirectory() as directory:
+            class Transport:
+                def __init__(self):self.directory=Path(directory);self.signals=0
+                def run(self,arguments,label,*args,**kwargs):
+                    if label=='sigkill':
+                        self.signals+=1
+                        return subprocess.CompletedProcess([],0,b'',b'')
+                    if label=='death-confirmation':return death or subprocess.CompletedProcess([],1,b'',b'')
+                    return subprocess.CompletedProcess([],0,b'Enforcing',b'')
+            transport=Transport()
+            def kill(wrapper,*args):
+                wrapper.run(['shell','run-as',physical.PACKAGE,'kill','-9','123'],'sigkill')
+                wrapper.run(['shell','pidof',physical.PACKAGE],'death-confirmation',require_success=False)
+                (transport.directory/'kill-instrument.stdout').write_bytes(output)
+                return {'complete':True}
+            controller=dict(kind='RUN_AS_EXACT_PID_SIGKILL',targetUid=10162,targetContext='target',senderContext='sender',killSha256='a'*64)
+            with patch.object(physical.campaign,'run_kill',side_effect=kill),patch.object(physical,'live_signal_identity',return_value={}),patch.object(physical.campaign,'parse_events',return_value=[{'eventType':'ERROR'}] if b'ERROR' in output else []),patch.object(physical.time,'monotonic',side_effect=[0,elapsed,elapsed,elapsed]):
+                try:return physical.run_physical_kill(transport,{}, {},'DEFAULT',controller)
+                finally:self.signals=transport.signals
+
+    def test_death_requires_clean_absence(self):
+        self.assertEqual({'complete':True},self.run_envelope())
+        for death in [subprocess.CompletedProcess([],1,b'',b'Permission denied'),subprocess.CompletedProcess([],0,b'',b''),subprocess.CompletedProcess([],1,b'123',b'')]:
+            with self.assertRaisesRegex(ValueError,'DEATH_OBSERVATION'):self.run_envelope(death=death)
+
+    def test_expired_attempt_cannot_dispatch(self):
+        with self.assertRaisesRegex(ValueError,'BARRIER_EXPIRED'):self.run_envelope(elapsed=91)
+        self.assertEqual(0,self.signals)
+
+    def test_timeout_error_and_graceful_completion_cannot_be_credited(self):
+        for output in [b'ERROR',b'External controller did not kill the paused process',b'INSTRUMENTATION_STATUS_CODE: 0\n']:
+            with self.assertRaisesRegex(ValueError,'BARRIER_COMPLETED'):self.run_envelope(output=output)
 
 if __name__ == '__main__': unittest.main()

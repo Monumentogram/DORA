@@ -8,6 +8,7 @@ ADB server/emulator and never installs or uninstalls packages.
 from __future__ import annotations
 
 import argparse
+import ast
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -35,6 +36,8 @@ from recovery_instrumentation_status import validate_instrumentation_success
 SCHEMA = 'DORA_PHYSICAL_NINE_V1'
 APP_COMMIT = '79d930d73ce7836c3cf5bec10be85f800936e829'
 APP_SHA = '9dd8f1dfd05ad4404e9c52ad5e7b11b575e6ba03bcba87a176bd953ddc649a7c'
+PREFLIGHT_COMMIT = '00d9fdbe1c5578f0703c7275a6fa59646516a4ef'
+PREFLIGHT_PACKET_SHA = '3692a3468229ad76f575a09e97bf7ab80c3f685da65ec2680b25bad6402e1871'
 PACKAGE = campaign.PACKAGE
 PREFIX = 'com.monumentogram.dora.poc.recovery.'
 PAYLOADS = {
@@ -151,6 +154,11 @@ def require_controller_for_payload(packet: dict, payload: str) -> None:
             and proof['countedAsCoverage'] is False
             and proof['targetUid'] > 10000 and proof['senderUid'] == proof['targetUid']
             and proof['targetCmdline'] == PACKAGE and proof['targetContext'].startswith('u:r:untrusted_app')
+            and proof.get('observationMethod') == 'SHELL_PS_WIDE_EXACT_PID_V1'
+            and type(proof.get('targetStartTimeTicks')) is int and proof['targetStartTimeTicks'] > 0
+            and type(proof.get('observationElapsedSeconds')) in (int,float)
+            and 0 <= proof['observationElapsedSeconds'] < 10
+            and proof.get('naturalTimeoutObserved') is False
             and isinstance(proof.get('senderContext'), str) and proof['senderContext'].startswith('u:r:')
             and proof['selinux'] == 'Enforcing', 'Invalid non-root controller evidence')
     require(type(proof['targetPid']) is int and proof['targetPid'] > 1
@@ -224,36 +232,93 @@ def validate_probe_target(ready: dict, nonce: str, pid_text: str, cmdline: bytes
     campaign.kill_arguments(ready['pid'], pid_text, cmdline.decode('utf-8'))
 
 
+def observation_output(transport, arguments: list[str], label: str) -> bytes:
+    """exec-out may return native zero with a remote error in stdout."""
+    try:
+        result = transport.run(arguments, label, require_success=False)
+    except (OSError, subprocess.SubprocessError, ValueError) as error:
+        raise ValueError('OBSERVATION_UNAVAILABLE:' + label + ':' + str(error)) from error
+    require(result.returncode == 0 and not result.stderr.strip()
+            and re.search(rb'permission denied|operation not permitted|no such (?:file|process)|'
+                          rb'unknown (?:option|command)|bad (?:option|pid)|not found|usage:',
+                          result.stdout, re.I) is None,
+            'OBSERVATION_UNAVAILABLE:' + label)
+    return result.stdout
+
+
+def process_start_time(value: bytes, pid: int) -> int:
+    match = re.fullmatch(rb'([0-9]+) \(.*\) ([A-Za-z] .+)\r?\n?', value)
+    require(match is not None and int(match[1]) == pid, 'IDENTITY_MISMATCH:stat PID')
+    fields = match[2].split()
+    require(len(fields) >= 20 and fields[19].isdigit() and int(fields[19]) > 0,
+            'OBSERVATION_UNAVAILABLE:stat starttime')
+    return int(fields[19])
+
+
+def process_context(value: bytes, pid: int, uid: int, context: str) -> str:
+    try:
+        lines = value.decode('utf-8', errors='strict').splitlines()
+    except UnicodeError as error:
+        raise ValueError('OBSERVATION_UNAVAILABLE:ps encoding') from error
+    require(len(lines) == 2 and lines[0].split() == ['PID', 'UID', 'LABEL', 'NAME'],
+            'OBSERVATION_UNAVAILABLE:ps incomplete or ambiguous')
+    fields = lines[1].split()
+    require(len(fields) == 4 and fields[0].isdigit() and fields[1].isdigit(),
+            'OBSERVATION_UNAVAILABLE:ps fields')
+    require(re.fullmatch(r'u:r:untrusted_app(?:_[0-9]+)?:s0(?::c[0-9]+(?:,c[0-9]+)*)?', fields[2])
+            is not None, 'OBSERVATION_UNAVAILABLE:ps context malformed or truncated')
+    require(int(fields[0]) == pid and int(fields[1]) == uid and fields[3] == PACKAGE,
+            'IDENTITY_MISMATCH:ps PID/UID/package')
+    require(fields[2] == context, 'IDENTITY_MISMATCH:target SELinux context')
+    return fields[2]
+
+
+def signal_succeeded(result) -> bool:
+    return result.returncode == 0 and not result.stdout.strip() and not result.stderr.strip()
+
+
 def live_signal_identity(transport, pid: int, expected_uid: int, expected_context: str,
                          expected_kill_sha: str, label: str,
                          expected_sender_context: str | None = None) -> dict:
     """Read every mutable signal premise immediately before one exact PID signal."""
+    began = time.monotonic()
+    require(type(pid) is int and pid > 1, 'Invalid target PID')
     require(type(expected_uid) is int and expected_uid > 10000, 'Unprivileged target UID required')
-    require(transport.run(['shell', 'getenforce'], label + '-selinux').stdout.strip() == b'Enforcing',
+    def observe(arguments, suffix):
+        return observation_output(transport, arguments, label + '-' + suffix)
+    require(observe(['shell', 'getenforce'], 'selinux').strip() == b'Enforcing',
             'SELinux no longer enforcing')
-    kill_hash = transport.run(['shell', 'sha256sum', '/system/bin/kill'], label + '-kill-hash').stdout.decode().split()
+    kill_hash = observe(['shell', 'sha256sum', '/system/bin/kill'], 'kill-hash').decode().split()
     require(kill_hash == [expected_kill_sha, '/system/bin/kill'], 'Stock signal binary drift')
-    pid_text = transport.run(['shell', 'pidof', PACKAGE], label + '-pid').stdout.decode()
-    cmdline = transport.run(['exec-out', 'run-as', PACKAGE, 'cat', f'/proc/{pid}/cmdline'],
-                            label + '-cmdline').stdout
-    campaign.kill_arguments(pid, pid_text, cmdline.decode('utf-8'))
-    status = transport.run(['exec-out', 'run-as', PACKAGE, 'cat', f'/proc/{pid}/status'],
-                           label + '-status').stdout.decode('utf-8')
-    uid = re.search(r'^Uid:\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s*$', status, re.M)
-    require(uid is not None and all(int(x) == expected_uid for x in uid.groups()), 'Live target UID drift')
-    context = transport.run(['exec-out', 'run-as', PACKAGE, 'cat', f'/proc/{pid}/attr/current'],
-                            label + '-context').stdout.decode('utf-8').strip('\x00\r\n ')
-    require(context == expected_context and context.startswith('u:r:untrusted_app'),
-            'Live target context drift')
-    sender = transport.run(['shell', 'run-as', PACKAGE, 'id', '-u'], label + '-sender-uid').stdout.decode().strip()
+    start_command = ['exec-out', 'run-as', PACKAGE, 'cat', f'/proc/{pid}/stat']
+    started = process_start_time(observe(start_command, 'starttime'), pid)
+    def target_observation(suffix):
+        pid_text = observe(['shell', 'pidof', PACKAGE], suffix + '-pid').decode('utf-8')
+        cmdline = observe(['exec-out', 'run-as', PACKAGE, 'cat', f'/proc/{pid}/cmdline'], suffix + '-cmdline')
+        campaign.kill_arguments(pid, pid_text, cmdline.decode('utf-8'))
+        status = observe(['exec-out', 'run-as', PACKAGE, 'cat', f'/proc/{pid}/status'], suffix + '-status').decode('utf-8')
+        uid = re.findall(r'^Uid:\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s*$', status, re.M)
+        require(len(uid) == 1 and all(int(x) == expected_uid for x in uid[0]), 'IDENTITY_MISMATCH:target UID')
+        return process_context(observe(['shell', '/system/bin/ps', '-ww', '-p', str(pid),
+            '-o', 'PID,UID,LABEL,NAME'], suffix + '-context'), pid, expected_uid, expected_context)
+    context = target_observation('initial')
+    sender = observe(['shell', 'run-as', PACKAGE, 'id', '-u'], 'sender-uid').decode().strip()
     require(sender.isdecimal() and int(sender) == expected_uid, 'Sender/target UID mismatch')
-    sender_context = transport.run(['shell', 'run-as', PACKAGE, 'cat', '/proc/self/attr/current'],
-                                   label + '-sender-context').stdout.decode().strip('\x00\r\n ')
-    require(sender_context.startswith('u:r:') and (expected_sender_context is None
+    sender_context = observe(['shell', 'run-as', PACKAGE, 'cat', '/proc/self/attr/current'],
+                            'sender-context').decode().strip('\x00\r\n ')
+    require(re.fullmatch(r'u:r:runas_app:s0(?::c[0-9]+(?:,c[0-9]+)*)?', sender_context) is not None
+            and (expected_sender_context is None
             or sender_context == expected_sender_context), 'Sender SELinux context drift')
+    target_observation('final')
+    require(process_start_time(observe(start_command, 'starttime-final'), pid) == started,
+            'PROCESS_REPLACED:target starttime changed')
+    elapsed = time.monotonic() - began
+    require(elapsed < 10, 'OBSERVATION_UNAVAILABLE:identity observation exceeded ten seconds')
     return dict(targetPid=pid, targetUid=expected_uid, targetCmdline=PACKAGE,
                 targetContext=context, senderUid=int(sender), senderContext=sender_context,
-                selinux='Enforcing', killSha256=expected_kill_sha)
+                selinux='Enforcing', killSha256=expected_kill_sha,
+                targetStartTimeTicks=started, observationMethod='SHELL_PS_WIDE_EXACT_PID_V1',
+                observationElapsedSeconds=elapsed)
 
 
 def run_probe(root: Path, packet: dict, packet_sha: str, session: dict, output: Path) -> dict:
@@ -303,7 +368,7 @@ def run_probe(root: Path, packet: dict, packet_sha: str, session: dict, output: 
                     stdout.write(line); stdout.flush(); lines.put(line)
                 lines.put(None)
             reader=threading.Thread(target=capture,daemon=True); reader.start()
-            deadline=time.monotonic()+20; ready=None; start=[]
+            deadline=time.monotonic()+20; ready=None; ready_at=None; start=[]
             while time.monotonic()<deadline:
                 try: line=lines.get(timeout=max(.01,deadline-time.monotonic()))
                 except queue.Empty: break
@@ -311,6 +376,7 @@ def run_probe(root: Path, packet: dict, packet_sha: str, session: dict, output: 
                 start.append(line)
                 marker=b'INSTRUMENTATION_STATUS: stream=PHYSICAL_SIGKILL_PROBE_READY '
                 if line.startswith(marker):
+                    ready_at=time.monotonic()
                     try: ready=json.loads(line[len(marker):].strip())
                     except (ValueError, UnicodeError) as error: result['controllerError']='Malformed READY: '+str(error)
                     break
@@ -318,7 +384,7 @@ def run_probe(root: Path, packet: dict, packet_sha: str, session: dict, output: 
             start_valid=(sum(line.startswith(f'INSTRUMENTATION_STATUS: class={cls}'.encode()) for line in start) == 1
                     and sum(line.startswith(f'INSTRUMENTATION_STATUS: test={method}'.encode()) for line in start) == 1
                     and sum(line.startswith(b'INSTRUMENTATION_STATUS_CODE: 1') for line in start) == 1)
-            signal=None
+            signal=None; signal_accepted=False
             try:
                 require(ready is not None and start_valid, 'Probe READY or selector start missing')
                 campaign.save_new(output/'probe-ready.json',ready)
@@ -327,32 +393,42 @@ def run_probe(root: Path, packet: dict, packet_sha: str, session: dict, output: 
                 validate_probe_target(ready,nonce,pid_text,cmdline)
                 identity=live_signal_identity(transport, ready['pid'], ready['uid'], ready['selinuxContext'],
                                               result['killSha256'], 'probe-presignal')
+                campaign.save_new(output/'probe-identity.json',identity)
                 result.update(identity)
+                require(ready_at is not None and time.monotonic()-ready_at < 15,
+                        'OBSERVATION_UNAVAILABLE:READY too old for bounded probe')
                 signal_command=['shell','run-as',PACKAGE,'/system/bin/kill','-9',str(ready['pid'])]
                 result['signalCommand']=signal_command
                 signal=transport.run(signal_command, 'probe-sigkill', require_success=False)
                 result['signalExit']=signal.returncode
                 result['signalStdoutHex']=signal.stdout.hex()
                 result['signalStderrHex']=signal.stderr.hex()
+                require(signal_succeeded(signal), 'SIGNAL_REJECTED:nonzero exit or diagnostic output')
+                signal_accepted=True
             except (ValueError, OSError, subprocess.SubprocessError, KeyError, TypeError) as error:
                 # A capability check can fail without killing the probe. Retain the
                 # exact transport receipts and wait for the Android-side timeout.
                 result['controllerError']=str(error)
+                category=str(error).split(':',1)[0]
+                result['failureStage']=category if category in ('OBSERVATION_UNAVAILABLE',
+                    'IDENTITY_MISMATCH','PROCESS_REPLACED','SIGNAL_REJECTED') else 'IDENTITY_MISMATCH'
                 receipts=sorted(output.glob('*.result.json'))
                 if receipts:
                     native=read(receipts[-1])
                     stderr=receipts[-1].with_name(receipts[-1].name.replace('.result.json','.stderr')).read_bytes()
+                    failed_stdout=receipts[-1].with_name(receipts[-1].name.replace('.result.json','.stdout')).read_bytes()
                     result['controllerFailureNativeExit']=native.get('nativeExit')
                     result['controllerFailureTimedOut']=native.get('timedOut')
                     result['controllerFailureStderrHex']=stderr.hex()
-                    result['knownCapabilityDenial']=native.get('timedOut') is False and \
-                        type(native.get('nativeExit')) is int and native['nativeExit'] != 0 and \
-                        re.search(b'permission denied|operation not permitted', stderr, re.I) is not None
-            if signal is not None and signal.returncode==0:
+                    result['controllerFailureStdoutHex']=failed_stdout.hex()
+                    result['observationDenied']=signal is None and re.search(
+                        b'permission denied|operation not permitted', stderr+failed_stdout, re.I) is not None
+            if signal_accepted:
                 deadline=time.monotonic()+5
                 while time.monotonic()<deadline:
                     death=transport.run(['shell','pidof',PACKAGE],'probe-death',require_success=False)
-                    if death.returncode==1 and not death.stdout.strip(): result['deathConfirmed']=True; break
+                    if death.returncode==1 and not death.stdout.strip() and not death.stderr.strip():
+                        result['deathConfirmed']=True; break
                     time.sleep(.1)
             # Any unconfirmed signal or missing READY leaves the Android test to
             # reach its own 30-second timeout before the host client is reaped.
@@ -361,6 +437,9 @@ def run_probe(root: Path, packet: dict, packet_sha: str, session: dict, output: 
             require(not reader.is_alive(),'Probe output incomplete')
             result['instrumentationExit']=process.returncode
             transcript=(output/'probe.stdout').read_bytes()
+            result['naturalTimeoutObserved']=b'PHYSICAL_SIGKILL_PROBE_TIMEOUT ' in transcript
+            require(not result['deathConfirmed'] or not result['naturalTimeoutObserved'],
+                    'DEATH_UNCONFIRMED:natural timeout cannot prove SIGKILL')
             marker=b'INSTRUMENTATION_STATUS: stream=PHYSICAL_SIGKILL_PROBE_READY '
             ready_count=sum(line.startswith(marker) for line in transcript.splitlines())
             require(ready_count <= 1 and (ready_count == 1 or ready is None),
@@ -371,19 +450,20 @@ def run_probe(root: Path, packet: dict, packet_sha: str, session: dict, output: 
             require(transport.run(['shell','getenforce'],'selinux-after').stdout.strip()==b'Enforcing','SELinux changed')
             transport.verify_device(packet['source'])
             result['boundedMeasurementComplete']=True
-            if signal is not None and signal.returncode==0 and result['deathConfirmed']:
+            if signal_accepted and result['deathConfirmed']:
                 result['status']='SUPPORTED'
-            elif signal is not None and signal.returncode!=0 and re.search(b'permission denied|operation not permitted',
+            elif signal is not None and not signal_accepted and re.search(b'permission denied|operation not permitted',
                                                      signal.stderr + signal.stdout, re.I):
                 require(b'PHYSICAL_SIGKILL_PROBE_TIMEOUT ' in transcript, 'Denied signal lacks natural probe timeout')
                 result['status']='DENIED'
-            elif signal is None and result.get('knownCapabilityDenial') is True:
-                result['status']='UNSUPPORTED'
             else:
                 result['status']='INCONCLUSIVE'
+                if signal_accepted and not result['deathConfirmed']:
+                    result['failureStage']='DEATH_UNCONFIRMED'
             result['result']='PASS' if result['status'] in ('SUPPORTED','DENIED','UNSUPPORTED') else 'INCONCLUSIVE'
     except (ValueError,OSError,subprocess.SubprocessError,KeyError) as error:
         result['error']=str(error)
+        if str(error).startswith('DEATH_UNCONFIRMED:'):result['failureStage']='DEATH_UNCONFIRMED'
     finally:
         if process is not None and process.poll() is None:
             # Only this retained host ADB client, never the Android process or another service.
@@ -580,20 +660,77 @@ def verify_observations(packet: dict, payload: str, observations: list[dict]) ->
         require(value['keystore']['cleanupAliasAbsent'] is True and value['filesystem']['cleanupOwnedNamespaceAbsent'] is True, 'Platform synthetic cleanup incomplete')
 
 
+def preflight_packet(packet: dict) -> dict:
+    """Reuse exact predecessor evidence under a reviewed host-only source delta."""
+    if 'preflightReuse' not in packet:
+        return packet
+    item = packet['preflightReuse']
+    proof = read(verify_file(item))
+    require(proof.get('schema') == 'DORA_PHYSICAL_PREFLIGHT_REUSE_V1'
+            and proof.get('source') == packet['source']
+            and proof.get('executionId') == packet['executionId']
+            and proof.get('environment') == packet['environment'], 'Preflight reuse successor mismatch')
+    prior_item = proof['priorPacket']
+    require(prior_item['sha256'] == PREFLIGHT_PACKET_SHA, 'Unreviewed physical predecessor packet')
+    prior = read(verify_file(prior_item))
+    validate_contract(prior)
+    require(prior['harnessSourceCommit'] == PREFLIGHT_COMMIT, 'Wrong physical predecessor source')
+    require(prior['environment'] == packet['environment'], 'Preflight reuse environment drift')
+    require(all(prior['source'][field] == packet['source'][field]
+                for field in ('appApkSha256','testApkSha256')), 'Preflight reuse APK drift')
+    review = read(verify_file(packet['proofs']['review']))
+    required = [item,prior_item,proof['priorPrerequisites'],proof['reviewedDiff']]
+    require(review['verdict'] == 'APPROVED' and all(value in packet['files'] and value in review['files']
+                for value in required), 'Preflight reuse proof or reviewed inputs not pinned')
+    for value in required: verify_file(value)
+    root = Path(__file__).resolve().parents[1]
+    git(root,'merge-base','--is-ancestor',PREFLIGHT_COMMIT,packet['harnessSourceCommit'])
+    changed = set(git(root,'diff','--name-only',PREFLIGHT_COMMIT,packet['harnessSourceCommit']).splitlines())
+    allowed = {'tools/recovery_physical.py','tools/test_recovery_physical.py',
+               'tools/validate_recovery_0d6_candidate.py','tools/test_validate_recovery_0d6_candidate.py'}
+    require(bool(changed) and changed <= allowed, 'Preflight reuse changed Android or contract inputs')
+    diff = git(root,'diff','--binary','--no-ext-diff',PREFLIGHT_COMMIT,packet['harnessSourceCommit'])
+    require(verify_file(proof['reviewedDiff']).read_text(encoding='utf-8') == diff,
+            'Preflight reuse reviewed diff mismatch')
+    before = ast.parse(git(root,'show',PREFLIGHT_COMMIT+':tools/recovery_physical.py'))
+    after = ast.parse(Path(__file__).read_text(encoding='utf-8'))
+    functions = {'validate_contract','validate_fixed_status','selected_completion','fixed_completion',
+                 'preflight_scoped_cleanup','fixed_command','verify_observations'}
+    constants = {'PAYLOADS','PREFIX','PACKAGE','APP_SHA','APP_COMMIT'}
+    def semantics(module):
+        result = {node.name:ast.dump(node,include_attributes=False) for node in module.body
+                if isinstance(node,ast.FunctionDef) and node.name in functions}
+        result.update({target.id:ast.dump(node.value,include_attributes=False) for node in module.body
+                       if isinstance(node,ast.Assign) for target in node.targets
+                       if isinstance(target,ast.Name) and target.id in constants})
+        return result
+    require(semantics(before) == semantics(after) and len(semantics(before)) == len(functions | constants),
+            'Preflight implementation changed')
+    return prior
+
+
 def verify_preflights(packet: dict, prerequisites: list[dict]) -> None:
     require(len(prerequisites) == 3, 'Three physical preflights required')
+    expected = preflight_packet(packet)
+    if 'preflightReuse' in packet:
+        proof = read(verify_file(packet['preflightReuse']))
+        require(prerequisites == read(verify_file(proof['priorPrerequisites'])),
+                'Preflight reuse evidence set changed')
     for payload, item in zip(list(PAYLOADS)[:3], prerequisites):
         record_path = verify_file(item['record']); terminal_path = verify_file(item['terminal'])
         raw_path = verify_file(item['instrumentationStdout'])
         require(record_path.parent.name == 'p' and terminal_path == record_path.parent.parent/'terminal.json'
                 and raw_path.parent == record_path.parent, 'Mixed preflight evidence')
         record=read(record_path); terminal=read(terminal_path)
-        verify_observations(packet, payload, validate_fixed_status(raw_path.read_bytes(), payload))
+        require(terminal['record'] == item['record'], 'Preflight terminal record pin mismatch')
+        if 'preflightReuse' in packet:
+            require(record['packetSha256'] == PREFLIGHT_PACKET_SHA, 'Preflight predecessor packet drift')
+        verify_observations(expected, payload, validate_fixed_status(raw_path.read_bytes(), payload))
         require(terminal['cleanupResult'] == 'VERIFIED' and terminal['failure'] is None
-                and terminal['payload'] == payload and terminal['source'] == packet['source']
+                and terminal['payload'] == payload and terminal['source'] == expected['source']
                 and terminal['packetSha256'] == record['packetSha256'], 'Preflight cleanup incomplete')
         require(record['payload'] == payload and record['result'] == 'PASS' and record['executed'] is True
-                and record['source'] == packet['source'] and record['environment'] == packet['environment']
+                and record['source'] == expected['source'] and record['environment'] == expected['environment']
                 and record['rawRetentionComplete'] is True, 'Missing applicable physical preflight')
 
 
@@ -683,24 +820,45 @@ def run_operation(transport, plan: dict, entry: dict, operation: str, variant: s
 def run_physical_kill(transport, plan: dict, entry: dict, variant: str, controller: dict) -> dict:
     require(controller['kind'] == 'RUN_AS_EXACT_PID_SIGKILL', 'Unsupported physical controller')
     signal_receipts = []
+    # Starting before instrumentation makes this a conservative upper bound on
+    # barrier age, including queued output and the inherited initial PID reads.
+    began = time.monotonic()
     class ExactSignalTransport:
         def __getattr__(self,name): return getattr(transport,name)
         def run(self,arguments,label,*args,**kwargs):
             if label == 'sigkill':
+                require(time.monotonic() - began < 90, 'BARRIER_EXPIRED:attempt exceeded dispatch budget')
                 require(arguments[:5] == ['shell','run-as',PACKAGE,'kill','-9'] and len(arguments) == 6, 'Unexpected kill command')
                 pid = int(arguments[5])
                 identity = live_signal_identity(transport, pid, controller['targetUid'],
                     controller['targetContext'], controller['killSha256'], 'presignal',
                     controller['senderContext'])
                 campaign.save_new(transport.directory / 'physical-presignal.json', identity)
+                require(time.monotonic() - began < 90, 'BARRIER_EXPIRED:identity exceeded dispatch budget')
                 arguments = ['shell','run-as',PACKAGE,'/system/bin/kill','-9',arguments[5]]
-                signal = transport.run(arguments,label,*args,require_success=False)
+                signal = transport.run(arguments,label,*args,timeout=5,require_success=False)
                 signal_receipts.append(signal)
-                require(signal.returncode == 0, 'Physical SIGKILL native exit nonzero')
+                require(signal_succeeded(signal), 'SIGNAL_REJECTED:nonzero exit or diagnostic output')
+                elapsed = time.monotonic() - began
+                require(elapsed < 100, 'BARRIER_EXPIRED:signal completion exceeded budget')
+                campaign.save_new(transport.directory / 'physical-dispatch.json',
+                    dict(attemptElapsedSeconds=elapsed,dispatchBudgetSeconds=90,barrierLifetimeSeconds=120))
                 return signal
+            if label == 'death-confirmation':
+                result = transport.run(arguments,label,*args,**kwargs)
+                live = result.returncode == 0 and re.fullmatch(rb'[1-9][0-9]*',result.stdout.strip()) is not None
+                absent = result.returncode == 1 and not result.stdout.strip()
+                require(not result.stderr.strip() and (live or absent), 'DEATH_OBSERVATION_UNAVAILABLE')
+                return result
             return transport.run(arguments,label,*args,**kwargs)
     proofs = campaign.run_kill(ExactSignalTransport(),plan,entry,variant)
     require(len(signal_receipts) == 1, 'Exact one signal required')
+    output = (transport.directory / 'kill-instrument.stdout').read_bytes()
+    events = campaign.parse_events(output,entry,'WRITE_UNTIL_BARRIER')
+    require(not any(event['eventType'] in ('ERROR','RESULT') for event in events)
+            and b'External controller did not kill the paused process' not in output
+            and not re.search(rb'INSTRUMENTATION_STATUS_CODE: (?:0|-[0-9]+)',output),
+            'BARRIER_COMPLETED:timeout, error or graceful test completion')
     require(transport.run(['shell','getenforce'], 'selinux-after').stdout.strip() == b'Enforcing', 'SELinux changed')
     return proofs
 
