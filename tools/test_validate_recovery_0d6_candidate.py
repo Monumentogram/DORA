@@ -81,6 +81,7 @@ class CandidateProfileTests(unittest.TestCase):
         paths = (
             'tools/recovery_api33.py',
             'tools/test_recovery_api33.py',
+            'tools/recovery_instrumentation_status.py',
             'android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignNormalStream.kt',
         )
         for path in paths:
