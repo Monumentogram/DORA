@@ -120,6 +120,7 @@ private class Campaign(private val context: Context, private val request: JSONOb
     private var lastStreamingEvent: RecoveryStreamingEvidenceEvent? = null
     private val case = request.optString("caseId")
     private val stratum = if (case == "EVT-01") "K10" else request.optString("stratumId")
+    private val normalCompletion = request.optBoolean("normalCompletion", false)
     private val supportedFaults =
         setOf(
             "KEY-01",
@@ -174,6 +175,11 @@ private class Campaign(private val context: Context, private val request: JSONOb
             RecoveryCampaignFixture.digest(seed, length).toLowercaseHex() ==
                 request.getString("fixtureSha256")
         )
+        if (request.has("normalCompletion")) {
+            require(request.get("normalCompletion") == true)
+            require(case.isEmpty() && stratum == "K08" && length == 480000)
+            require(operation in setOf("PREPARE", "RECOVER", "CLEANUP"))
+        }
         require(!(candidate == RecoveryCandidate.STREAM && case in setOf("COR-04", "COR-05"))) {
             "Microfile-only recipe"
         }
@@ -228,6 +234,7 @@ private class Campaign(private val context: Context, private val request: JSONOb
         "CyclomaticComplexMethod",
         "NestedBlockDepth",
         "ComplexCondition",
+        "ReturnCount", // Separate terminal bootstrap/collision and explicit normal fixtures.
     ) // Explicit protocol barriers.
     private fun prepare(kill: Boolean) {
         check(!directory.exists() && !root.exists()) { "Fresh immutable attempt required" }
@@ -265,6 +272,25 @@ private class Campaign(private val context: Context, private val request: JSONOb
         }
         val boot = AndroidRecoveryKeyBootstrap.controller(context) {}.bootstrap(confirmation)
         check(boot is BootstrapResult.Committed) { "Real bootstrap did not commit" }
+        if (normalCompletion && candidate == RecoveryCandidate.STREAM) {
+            val checkpoint =
+                RecoveryCampaignNormalStream.publish(
+                    context,
+                    confirmation,
+                    boot.publicationCapability,
+                    RecoveryCampaignFixture.bytes(seed, 0, length),
+                )
+            freezeStream(length.toULong(), checkpoint)
+            emit(
+                "RESULT",
+                JSONObject()
+                    .put("prepared", true)
+                    .put("acceptedEnd", length)
+                    .put("committedEnd", checkpoint.committedEnd.toLong())
+                    .put("gracefulFinalizeCompleted", true),
+            )
+            return
+        }
         if (candidate == RecoveryCandidate.MICROFILE) {
             val k12 = kill && stratum == "K12"
             require(if (k12) length == 360000 else length > 0 && length % 160000 == 0) {
@@ -1102,68 +1128,76 @@ private class Campaign(private val context: Context, private val request: JSONOb
                 observeMicrofileTru03()
             else null
         val caseSatisfied =
-            when (case) {
-                "COR-01",
-                "COR-04",
-                "TRU-02",
-                "SPL-02" ->
-                    recovered <=
-                        state()
-                            .getJSONObject("artifactMutationFacts")
-                            .getLong("affectedPlaintextStart")
-                            .toULong() && recovered < committed
-                "COR-02" -> recovered < committed
-                "COR-03",
-                "COR-05",
-                "COR-06" -> recovered < committed
-                "PAR-01" ->
-                    when (request.getString("mutationVariant")) {
-                        "UNSAFE_PATH",
-                        "TRAVERSAL_PATH",
-                        "SYMLINK" -> classification.contains("UNSAFE")
-                        "OVERSIZED" ->
-                            classification.contains("OVERSIZED") ||
-                                classification.contains("STRUCTURAL")
-                        else ->
-                            classification.contains("MALFORMED") ||
-                                classification.contains("STRUCTURAL") ||
-                                recovered < committed
+            if (normalCompletion) {
+                classification == "VALID" &&
+                    authenticated &&
+                    accepted == length.toULong() &&
+                    recovered == accepted &&
+                    (candidate == RecoveryCandidate.MICROFILE ||
+                        lastStreamingEvent?.terminal?.name == "AUTHENTICATED_EOF")
+            } else
+                when (case) {
+                    "COR-01",
+                    "COR-04",
+                    "TRU-02",
+                    "SPL-02" ->
+                        recovered <=
+                            state()
+                                .getJSONObject("artifactMutationFacts")
+                                .getLong("affectedPlaintextStart")
+                                .toULong() && recovered < committed
+                    "COR-02" -> recovered < committed
+                    "COR-03",
+                    "COR-05",
+                    "COR-06" -> recovered < committed
+                    "PAR-01" ->
+                        when (request.getString("mutationVariant")) {
+                            "UNSAFE_PATH",
+                            "TRAVERSAL_PATH",
+                            "SYMLINK" -> classification.contains("UNSAFE")
+                            "OVERSIZED" ->
+                                classification.contains("OVERSIZED") ||
+                                    classification.contains("STRUCTURAL")
+                            else ->
+                                classification.contains("MALFORMED") ||
+                                    classification.contains("STRUCTURAL") ||
+                                    recovered < committed
+                        }
+                    "TRU-03" ->
+                        if (candidate == RecoveryCandidate.STREAM)
+                            authenticated && recovered <= accepted
+                        else
+                            authenticated &&
+                                recovered == committed &&
+                                committed == accepted &&
+                                classification == "VALID" &&
+                                microfileTru03Observation?.optBoolean("verified", false) == true
+                    "SPL-05",
+                    "QUA-01",
+                    "QUA-02",
+                    "QUA-03",
+                    "IDE-02" -> {
+                        val rows = quarantineRows()
+                        rows.size == 1 &&
+                            rows.single().state == QuarantineIntentState.COMPLETED &&
+                            recovered >= committed
                     }
-                "TRU-03" ->
-                    if (candidate == RecoveryCandidate.STREAM)
-                        authenticated && recovered <= accepted
-                    else
-                        authenticated &&
-                            recovered == committed &&
-                            committed == accepted &&
-                            classification == "VALID" &&
-                            microfileTru03Observation?.optBoolean("verified", false) == true
-                "SPL-05",
-                "QUA-01",
-                "QUA-02",
-                "QUA-03",
-                "IDE-02" -> {
-                    val rows = quarantineRows()
-                    rows.size == 1 &&
-                        rows.single().state == QuarantineIntentState.COMPLETED &&
-                        recovered >= committed
+                    "RBK-01",
+                    "RBK-02" -> rollbackObservation?.getBoolean("externalRollbackDetected") == true
+                    "SPL-01",
+                    "SPL-03",
+                    "SPL-04" -> recovered < committed
+                    "TRU-01" -> authenticated && recovered >= committed
+                    "CLN-02" ->
+                        if (!state().has("cleanupFacts")) classification == "VALID"
+                        else
+                            state()
+                                .getJSONObject("cleanupFacts")
+                                .getBoolean("deletionDeniedByPlatform") && classification == "VALID"
+                    else ->
+                        classification == expected &&
+                            (expected != "VALID" || committed <= recovered && recovered <= accepted)
                 }
-                "RBK-01",
-                "RBK-02" -> rollbackObservation?.getBoolean("externalRollbackDetected") == true
-                "SPL-01",
-                "SPL-03",
-                "SPL-04" -> recovered < committed
-                "TRU-01" -> authenticated && recovered >= committed
-                "CLN-02" ->
-                    if (!state().has("cleanupFacts")) classification == "VALID"
-                    else
-                        state()
-                            .getJSONObject("cleanupFacts")
-                            .getBoolean("deletionDeniedByPlatform") && classification == "VALID"
-                else ->
-                    classification == expected &&
-                        (expected != "VALID" || committed <= recovered && recovered <= accepted)
-            }
         val intents =
             AndroidRecoveryMicrofileJournal(context).loadSnapshot(run).units.map {
                 it.processingIntentId
@@ -1276,7 +1310,11 @@ private class Campaign(private val context: Context, private val request: JSONOb
                 .put("microphoneOpens", 0)
                 .put("unsafePathOpens", 0)
                 .put("receiptIdentity", receipt)
-                .put("returnedPrefixArtifact", "campaign/$attempt/recovered.pcm"),
+                .put("returnedPrefixArtifact", "campaign/$attempt/recovered.pcm")
+                .apply {
+                    if (normalCompletion)
+                        put("streamTerminal", lastStreamingEvent?.terminal?.name ?: JSONObject.NULL)
+                },
         )
     }
 
@@ -1615,6 +1653,7 @@ private class Campaign(private val context: Context, private val request: JSONOb
     }
 
     private fun saveState(value: JSONObject) {
+        if (normalCompletion) value.put("normalCompletion", true)
         value
             .put("attemptId", attempt)
             .put("runId", runHex)
@@ -1637,6 +1676,7 @@ private class Campaign(private val context: Context, private val request: JSONOb
             s.getString(field) == request.getString(field)
         )
         check(s.getInt("seed") == seed)
+        check(s.optBoolean("normalCompletion", false) == normalCompletion)
         check(
             s.getString("harnessRevision") == harnessRevision &&
                 s.getString("manifestSha256") == manifestSha256

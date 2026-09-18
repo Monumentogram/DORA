@@ -35,14 +35,7 @@ class RecoveryPlatformPrerequisitesInstrumentedTest {
     fun syntheticKeystoreLifecycleAndFilesystemPrerequisites() {
         val arguments = InstrumentationRegistry.getArguments()
         require(arguments.getString("pocRecoveryPlatformPrerequisites") == "true")
-        RecoveryE36GapiDeviceIdentityGuard.requireAccepted(
-            RecoveryE36GapiDeviceIdentity(
-                Build.VERSION.SDK_INT,
-                Build.FINGERPRINT,
-                Build.PRODUCT,
-                Build.SUPPORTED_ABIS.firstOrNull().orEmpty(),
-            )
-        )
+        RecoveryPreflightInstrumentationIdentity.requireAccepted(arguments)
         val revision = requireNotNull(arguments.getString("recoveryHarnessRevision"))
         require(Regex("[0-9a-f]{40}").matches(revision))
         val instrument = InstrumentationRegistry.getInstrumentation()

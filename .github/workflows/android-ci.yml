@@ -64,6 +64,9 @@ jobs:
       - name: Validate recovery governance package
         run: python3 tools/validate_poc_recovery_governance.py --self-test
 
+      - name: Verify bounded API33 harness controls
+        run: python3 -B -m unittest discover -s tools -p test_recovery_api33.py
+
       - name: Verify exact recovery dependency inventory
         run: python3 tools/verify_poc_recovery_dependency_inventory.py --online
 
@@ -126,6 +129,7 @@ jobs:
           :app:assembleDebug
           :poc:capture:assembleDebug
           :poc:recovery:assembleDebug
+          :poc:recovery:assembleDebugAndroidTest
           :poc:search:assembleDebug
 
       - name: Verify locked search dependency artifact inventory

@@ -44,14 +44,7 @@ class RecoveryE36GapiPreflightInstrumentedTest {
         require(arguments.getString("pocRecoveryE36GapiSupplementalSqlitePreflight") == "true") {
             "pocRecoveryE36GapiSupplementalSqlitePreflight=true is required"
         }
-        RecoveryE36GapiDeviceIdentityGuard.requireAccepted(
-            RecoveryE36GapiDeviceIdentity(
-                api = Build.VERSION.SDK_INT,
-                fingerprint = Build.FINGERPRINT,
-                product = Build.PRODUCT,
-                primaryAbi = Build.SUPPORTED_ABIS.firstOrNull().orEmpty(),
-            )
-        )
+        RecoveryPreflightInstrumentationIdentity.requireAccepted(arguments)
         val revision = requireHarnessRevision(arguments.getString("recoveryHarnessRevision"))
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
         val instrument = InstrumentationRegistry.getInstrumentation()
