@@ -98,6 +98,14 @@ class CandidateProfileTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "undeclared paths"):
             subject.alpha_preflight_source(root=self.root, profile=self.profile)
 
+    def test_rejects_api33_identity_guard_change_in_metadata_child(self):
+        path = 'android/poc/recovery/src/sharedTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryPreflightDeviceIdentityGuard.kt'
+        self.write(path, 'unreviewed identity admission change\n')
+        self.git('add', path)
+        self.git('commit', '--amend', '--no-edit', '-q')
+        with self.assertRaisesRegex(ValueError, 'undeclared paths'):
+            self.check()
+
     def test_rejects_missing_maintenance_file(self):
         self.git("rm", "-q", "metadata.txt")
         self.git("commit", "--amend", "--no-edit", "-q")
