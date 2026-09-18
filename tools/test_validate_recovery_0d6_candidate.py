@@ -77,6 +77,19 @@ class CandidateProfileTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "undeclared paths"):
             self.check()
 
+    def test_rejects_api33_runtime_change_in_metadata_child(self):
+        paths = (
+            'tools/recovery_api33.py',
+            'tools/test_recovery_api33.py',
+            'android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignNormalStream.kt',
+        )
+        for path in paths:
+            self.write(path, 'unreviewed API33 runtime change\n')
+        self.git('add', *paths)
+        self.git('commit', '--amend', '--no-edit', '-q')
+        with self.assertRaisesRegex(ValueError, 'undeclared paths'):
+            self.check()
+
     def test_rejects_owner_decision_change_in_metadata_child(self):
         self.write("docs/stage0/DORA_0D6_ALPHA_PREFLIGHT_OWNER_DECISION_20260914.md",
                    "unreviewed replacement decision\n")
