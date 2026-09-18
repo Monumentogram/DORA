@@ -161,6 +161,7 @@ def validate_admission(root: Path, packet: dict) -> None:
             and signatures['targetPackage'] == PACKAGE, 'APK target/signature mismatch')
     for item in signatures['evidence']: verify_file(item)
     require(packet['plan'] == build_plan(root, packet), 'API33 schedule/fixture/recipe drift')
+    preflight_packet(packet)
 
 
 def validate_fixed_status(output: bytes, payload: str) -> list[dict]:
@@ -199,7 +200,21 @@ def verify_observations(packet: dict, payload: str, observations: list[dict]) ->
         require(value['apks'] == {'targetSha256': APP_SHA, 'testSha256': packet['source']['testApkSha256']}, 'SQLite APK drift')
         require(value['harnessRevision'] == packet['harnessSourceCommit'], 'SQLite revision drift')
         options = value['sqliteCompileOptionsRaw']
-        require(isinstance(options, list) and len(options) > 0 and value['sqliteCompileOptionsQueryFailed'] is False, 'SQLite metadata absent')
+        require(isinstance(options, list) and all(isinstance(row, str) for row in options)
+                and value['sqliteCompileOptionsQueryFailed'] is False, 'SQLite metadata query or rows invalid')
+        require(type(value['sqliteCompileOptionsCount']) is int and value['sqliteCompileOptionsCount'] == len(options),
+                'SQLite option count mismatch')
+        canonical = ('\n'.join(sorted(options)) + '\n').encode('utf-8')
+        require(value['sqliteCompileOptionsCanonicalSha256'] == hashlib.sha256(canonical).hexdigest(),
+                'SQLite canonical digest mismatch')
+        for field in ('sqliteVersion', 'sqliteSourceId'):
+            require(isinstance(value[field], str) and bool(value[field]) and value[field + 'QueryFailed'] is False,
+                    'SQLite version/source query failed')
+        pragmas = value['sqlitePragmaObservations']
+        require(set(value['sqlitePragmaQueryFailures']) == {'journal_mode', 'synchronous', 'wal_autocheckpoint', 'foreign_keys'}
+                and all(v is None for v in value['sqlitePragmaQueryFailures'].values()), 'SQLite pragma query failed')
+        require(pragmas['journal_mode'].lower() == 'wal' and pragmas['synchronous'] in ('2', 'full')
+                and pragmas['wal_autocheckpoint'] == '0' and pragmas['foreign_keys'] == '1', 'SQLite pragma mismatch')
     elif payload == 'F33-03':
         value = observations[0]
         require(value['status'] == 'PASS' and value['api'] == 33 and value['deviceFingerprint'] == packet['environment']['fingerprint'], 'Platform prerequisites failed')
@@ -208,8 +223,42 @@ def verify_observations(packet: dict, payload: str, observations: list[dict]) ->
         require(value['keystore']['cleanupAliasAbsent'] is True and value['filesystem']['cleanupOwnedNamespaceAbsent'] is True, 'Platform synthetic cleanup incomplete')
 
 
+SQLITE_PREFLIGHT_PACKET_SHA = '88b7096ccc8f6a89ec3f8149770aad2400361d8afea151bcd6e5717e41334d58'
+SQLITE_PREFLIGHT_COMMIT = 'fd3f46b3f8b07250c6e981ed05c7998fb640c643'
+
+
+def preflight_packet(packet: dict) -> dict:
+    if 'preflightReuse' not in packet:
+        return packet
+    proof_descriptor = packet['preflightReuse']
+    proof = read(verify_file(proof_descriptor))
+    require(proof.get('schema') == 'DORA_API33_PREFLIGHT_REUSE_V1', 'Wrong preflight reuse schema')
+    prior_descriptor = proof['priorPacket']
+    require(prior_descriptor['sha256'] == SQLITE_PREFLIGHT_PACKET_SHA, 'Unreviewed predecessor packet')
+    prior = read(verify_file(prior_descriptor))
+    validate_contract(prior)
+    require(prior['harnessSourceCommit'] == SQLITE_PREFLIGHT_COMMIT, 'Wrong predecessor source')
+    require(prior['environment'] == packet['environment'], 'Preflight reuse environment drift')
+    for field in ('appApkSha256', 'testApkSha256'):
+        require(prior['source'][field] == packet['source'][field], 'Preflight reuse APK drift')
+    require(prior['launcher'] == packet['launcher'], 'Preflight reuse launcher drift')
+    require(proof_descriptor in packet['files'] and prior_descriptor in packet['files'], 'Preflight reuse proof not pinned')
+    review = read(verify_file(packet['proofs']['review']))
+    require(review['verdict'] == 'APPROVED' and proof_descriptor in review['files']
+            and prior_descriptor in review['files'], 'Preflight reuse not reviewed')
+    root = Path(__file__).resolve().parents[1]
+    git(root, 'merge-base', '--is-ancestor', SQLITE_PREFLIGHT_COMMIT, packet['harnessSourceCommit'])
+    allowed = {'tools/recovery_api33.py', 'tools/test_recovery_api33.py',
+               'tools/validate_recovery_0d6_candidate.py', 'tools/test_validate_recovery_0d6_candidate.py'}
+    changed = set(git(root, 'diff', '--name-only', SQLITE_PREFLIGHT_COMMIT, packet['harnessSourceCommit']).splitlines())
+    require(bool(changed) and changed <= allowed, 'Preflight reuse changed Android or other contract inputs')
+    return prior
+
+
 def verify_preflights(packet: dict, prerequisites: list[dict]) -> None:
     require(len(prerequisites) == 3, 'All three API33 preflights required')
+    expected = preflight_packet(packet)
+    reuse = 'preflightReuse' in packet
     for payload, item in zip(list(PAYLOADS)[:3], prerequisites):
         record_path = verify_file(item['record'])
         terminal_path = verify_file(item['terminal'])
@@ -218,16 +267,22 @@ def verify_preflights(packet: dict, prerequisites: list[dict]) -> None:
                 and raw_path.parent == record_path.parent, 'Mixed preflight attempt evidence')
         record = read(record_path)
         terminal = read(terminal_path)
-        require(terminal['cleanupResult'] == 'VERIFIED' and terminal['failure'] is None
+        observations = validate_fixed_status(raw_path.read_bytes(), payload)
+        verify_observations(expected, payload, observations)
+        corrected_empty = (reuse and payload == 'F33-01' and record['result'] == 'FAIL'
+                           and record.get('error') == 'SQLite metadata absent'
+                           and observations[0]['sqliteCompileOptionsRaw'] == []
+                           and terminal['failure'] == 'PAYLOAD_EXIT:2')
+        require(terminal['cleanupResult'] == 'VERIFIED' and (terminal['failure'] is None or corrected_empty)
                 and terminal['bootstrap'] is False and terminal['payload'] == payload
-                and terminal['source'] == packet['source']
+                and terminal['source'] == expected['source']
                 and terminal['packetSha256'] == record['packetSha256'], 'Preflight launcher cleanup incomplete')
-        raw = raw_path.read_bytes()
-        verify_observations(packet, payload, validate_fixed_status(raw, payload))
-        require(record['payload'] == payload and record['result'] == 'PASS' and record['executed'] is True
-                and record['source'] == packet['source'] and record['environment'] == packet['environment']
+        if reuse:
+            require(record['packetSha256'] == SQLITE_PREFLIGHT_PACKET_SHA, 'Preflight predecessor packet drift')
+        require(record['payload'] == payload and (record['result'] == 'PASS' or corrected_empty)
+                and record['executed'] is True and record['source'] == expected['source']
+                and record['environment'] == expected['environment']
                 and record['rawRetentionComplete'] is True, 'Missing applicable API33 preflight')
-
 
 def assess(entry: dict, result: dict) -> dict:
     assessment = campaign.evaluate_attempt(entry, result)

@@ -1,6 +1,7 @@
 """Negative controls for the bounded API33 route; no devices or services."""
 import copy
 import base64
+import hashlib
 from contextlib import ExitStack
 from datetime import datetime, timezone, timedelta
 import unittest
@@ -327,6 +328,201 @@ class PayloadOrchestrationTests(unittest.TestCase):
         self.assertEqual(['RECOVER', 'RECOVER', 'CLEANUP'],
                          [call[1] for call in self.calls if call[0] == 'operation'])
         self.assertIn('WATERMARKS_MISSING_OR_INVALID', record['assessment']['failures'])
+
+
+class SqliteReuseTests(unittest.TestCase):
+    def setUp(self):
+        Api33AdmissionTests.setUp(self)
+
+    def sqlite_observation(self, options=()):
+        rows = list(options)
+        return dict(device={'sdk': 33, 'fingerprint': self.packet['environment']['fingerprint']},
+                    apks={'targetSha256': api.APP_SHA, 'testSha256': self.packet['source']['testApkSha256']},
+                    harnessRevision=self.packet['harnessSourceCommit'],
+                    sqliteVersion='3.39.2', sqliteSourceId='synthetic-source-id',
+                    sqliteVersionQueryFailed=False, sqliteSourceIdQueryFailed=False,
+                    sqlitePragmaObservations={'journal_mode': 'wal', 'synchronous': '2',
+                                              'wal_autocheckpoint': '0', 'foreign_keys': '1'},
+                    sqlitePragmaQueryFailures={key: None for key in
+                                               ('journal_mode', 'synchronous', 'wal_autocheckpoint', 'foreign_keys')},
+                    sqliteCompileOptionsRaw=rows, sqliteCompileOptionsQueryFailed=False,
+                    sqliteCompileOptionsCount=len(rows),
+                    sqliteCompileOptionsCanonicalSha256=hashlib.sha256(
+                        ('\n'.join(sorted(rows)) + '\n').encode()).hexdigest())
+
+    def test_empty_compile_options_is_canonical_success(self):
+        observation = self.sqlite_observation()
+        self.assertEqual(hashlib.sha256(b'\n').hexdigest(),
+                         observation['sqliteCompileOptionsCanonicalSha256'])
+        api.verify_observations(self.packet, 'F33-01', [observation, copy.deepcopy(observation)])
+
+    def test_duplicate_unsorted_rows_preserve_canonical_digest(self):
+        observation = self.sqlite_observation(['Z=1', 'A=1', 'A=1'])
+        self.assertEqual(3, observation['sqliteCompileOptionsCount'])
+        api.verify_observations(self.packet, 'F33-01', [observation, copy.deepcopy(observation)])
+
+    def test_sqlite_identity_digest_count_and_query_failures_rejected(self):
+        valid = self.sqlite_observation()
+        bad_values = [
+            {'sqliteCompileOptionsRaw': [42]},
+            {'sqliteCompileOptionsCount': 1},
+            {'sqliteCompileOptionsCount': True},
+            {'sqliteCompileOptionsCanonicalSha256': '0' * 64},
+            {'sqliteCompileOptionsQueryFailed': True},
+            {'sqliteVersion': None},
+            {'sqliteVersionQueryFailed': True},
+            {'sqliteSourceId': None},
+            {'sqliteSourceIdQueryFailed': True},
+            {'sqlitePragmaObservations': dict(valid['sqlitePragmaObservations'], journal_mode='delete')},
+            {'sqlitePragmaQueryFailures': dict(valid['sqlitePragmaQueryFailures'], journal_mode='error')},
+        ]
+        for changes in bad_values:
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                observation = dict(valid, **changes)
+                api.verify_observations(self.packet, 'F33-01', [observation, copy.deepcopy(observation)])
+
+    def reuse_items(self, root, source, environment, *, packet_sha, sqlite):
+        items = []
+        for payload in list(api.PAYLOADS)[:3]:
+            attempt = root / payload
+            evidence = attempt / 'p'
+            evidence.mkdir(parents=True)
+            record_path = evidence / 'record.json'
+            terminal_path = attempt / 'terminal.json'
+            raw_path = evidence / 'instrumentation.stdout'
+            failed = payload == 'F33-01'
+            record_path.write_text(json.dumps(dict(payload=payload, result='FAIL' if failed else 'PASS',
+                                                   error='SQLite metadata absent' if failed else None,
+                                                   executed=True, source=source, environment=environment,
+                                                   packetSha256=packet_sha, rawRetentionComplete=True)))
+            terminal_path.write_text(json.dumps(dict(cleanupResult='VERIFIED',
+                                                     failure='PAYLOAD_EXIT:2' if failed else None,
+                                                     bootstrap=False, payload=payload,
+                                                     source=source, packetSha256=packet_sha)))
+            output = InstrumentationTests().output(payload)
+            if failed:
+                output = output.replace(b'{}', json.dumps(sqlite, separators=(',', ':')).encode())
+            raw_path.write_bytes(output)
+            items.append(dict(record=api.descriptor(record_path), terminal=api.descriptor(terminal_path),
+                              instrumentationStdout=api.descriptor(raw_path)))
+        return items
+
+    def test_reuse_accepts_only_original_host_failure_with_successful_raw_sqlite(self):
+        prior = copy.deepcopy(self.packet)
+        current = copy.deepcopy(prior)
+        current['source'] = dict(prior['source'], commit='4' * 40, tree='5' * 40)
+        current['harnessSourceCommit'] = '4' * 40
+        current['preflightReuse'] = {'path': 'synthetic-reuse-proof', 'sha256': 'b' * 64}
+        sqlite = self.sqlite_observation()
+        with tempfile.TemporaryDirectory() as td:
+            items = self.reuse_items(Path(td), prior['source'], prior['environment'],
+                                     packet_sha=getattr(api, 'SQLITE_PREFLIGHT_PACKET_SHA', 'a' * 64),
+                                     sqlite=sqlite)
+            def check_observations(packet, payload, observations):
+                if payload == 'F33-01':
+                    original_verify(packet, payload, observations)
+            original_verify = api.verify_observations
+            with patch.object(api, 'preflight_packet', return_value=prior), \
+                 patch.object(api, 'verify_observations', side_effect=check_observations) as observations:
+                api.verify_preflights(current, items)
+                self.assertEqual(['F33-01', 'F33-02', 'F33-03'],
+                                 [call.args[1] for call in observations.call_args_list])
+                record_path = Path(items[0]['record']['path'])
+                original = json.loads(record_path.read_text())
+                for changed in [dict(error='other failure'), dict(result='PASS'), dict(executed=False)]:
+                    record_path.write_text(json.dumps(dict(original, **changed)))
+                    items[0]['record'] = api.descriptor(record_path)
+                    with self.subTest(changed=changed), self.assertRaises(ValueError):
+                        api.verify_preflights(current, items)
+                record_path.write_text(json.dumps(original))
+                items[0]['record'] = api.descriptor(record_path)
+                terminal_path = Path(items[0]['terminal']['path'])
+                terminal = json.loads(terminal_path.read_text())
+                for changed in [dict(failure='OTHER'), dict(cleanupResult='UNCERTAIN')]:
+                    terminal_path.write_text(json.dumps(dict(terminal, **changed)))
+                    items[0]['terminal'] = api.descriptor(terminal_path)
+                    with self.subTest(changed=changed), self.assertRaises(ValueError):
+                        api.verify_preflights(current, items)
+
+
+class PreflightReuseProofTests(unittest.TestCase):
+    def make_fixture(self, directory, *, prior_changes=None, current_changes=None,
+                     review_files=True, packet_files=True, prior_digest=None,
+                     changed_paths='tools/recovery_api33.py\ntools/test_recovery_api33.py'):
+        admission = Api33AdmissionTests()
+        admission.setUp()
+        prior = admission.packet
+        prior['launcher'] = {'path': str(directory / 'launcher'), 'sha256': 'a' * 64}
+        if prior_changes:
+            prior_changes(prior)
+        prior_path = directory / 'prior-packet.json'
+        prior_path.write_text(json.dumps(prior))
+        prior_descriptor = api.descriptor(prior_path)
+        proof_path = directory / 'reuse-proof.json'
+        proof_path.write_text(json.dumps(dict(schema='DORA_API33_PREFLIGHT_REUSE_V1',
+                                              priorPacket=dict(prior_descriptor,
+                                                               sha256=prior_digest or prior_descriptor['sha256']))))
+        proof_descriptor = api.descriptor(proof_path)
+        review_path = directory / 'review.json'
+        review_path.write_text(json.dumps(dict(verdict='APPROVED',
+                                               files=[proof_descriptor, prior_descriptor] if review_files else [])))
+        current = copy.deepcopy(prior)
+        current['source'].update(commit='4' * 40, tree='5' * 40)
+        current['harnessSourceCommit'] = '4' * 40
+        current['preflightReuse'] = proof_descriptor
+        current['files'] = [proof_descriptor, prior_descriptor] if packet_files else []
+        current['proofs'] = {'review': api.descriptor(review_path)}
+        if current_changes:
+            current_changes(current)
+        return prior, current, prior_descriptor, changed_paths
+
+    def check_fixture(self, *, expected_error=None, **fixture_args):
+        with tempfile.TemporaryDirectory() as td:
+            prior, current, descriptor, changed_paths = self.make_fixture(Path(td), **fixture_args)
+            def git_result(_root, *args):
+                if args[0] == 'merge-base':
+                    return ''
+                self.assertEqual(('diff', '--name-only', '1' * 40, '4' * 40), args)
+                return changed_paths
+            with patch.object(api, 'SQLITE_PREFLIGHT_PACKET_SHA', descriptor['sha256']), \
+                 patch.object(api, 'SQLITE_PREFLIGHT_COMMIT', '1' * 40), \
+                 patch.object(api, 'git', side_effect=git_result):
+                if expected_error:
+                    with self.assertRaisesRegex(ValueError, expected_error):
+                        api.preflight_packet(current)
+                else:
+                    self.assertEqual(prior, api.preflight_packet(current))
+
+    def test_valid_reviewed_pinned_predecessor(self):
+        self.check_fixture()
+
+    def test_packet_pin_and_exact_predecessor_source(self):
+        self.check_fixture(prior_digest='f' * 64, expected_error='Unreviewed predecessor packet')
+        self.check_fixture(prior_changes=lambda prior: prior.update(
+            harnessSourceCommit='2' * 40, source=dict(prior['source'], commit='2' * 40)),
+            expected_error='Wrong predecessor source')
+
+    def test_environment_apk_and_launcher_drift(self):
+        mutations = [
+            (lambda current: current['environment'].update(product='other'), 'environment drift'),
+            (lambda current: current['source'].update(appApkSha256='f' * 64), 'APK drift'),
+            (lambda current: current['source'].update(testApkSha256='f' * 64), 'APK drift'),
+            (lambda current: current.update(launcher={'path': 'other', 'sha256': 'f' * 64}), 'launcher drift'),
+        ]
+        for mutation, error in mutations:
+            with self.subTest(error=error, mutation=mutation):
+                self.check_fixture(current_changes=mutation, expected_error=error)
+
+    def test_unpinned_or_unreviewed_proof_and_android_diff(self):
+        self.check_fixture(packet_files=False, expected_error='not pinned')
+        self.check_fixture(review_files=False, expected_error='not reviewed')
+        self.check_fixture(changed_paths='android/poc/recovery/build.gradle.kts',
+                           expected_error='changed Android')
+        self.check_fixture(changed_paths='', expected_error='changed Android')
+
+    def test_no_reuse_returns_current_packet_identity(self):
+        packet = {'schema': api.SCHEMA}
+        self.assertIs(packet, api.preflight_packet(packet))
 
 
 if __name__ == '__main__': unittest.main()
