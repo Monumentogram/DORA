@@ -805,8 +805,11 @@ def k12_failures(entry: dict, observed: dict, replay: dict | None = None) -> lis
             failures.append('K12_ZERO_COUNTERS')
     if stream:
         for value in (observed, replay):
+            # SEALED_VALID forbids rejectedObservation. boundaryResult describes
+            # that rejected-only observation; the persisted active range carries
+            # the valid outcome's exact boundary independently.
             if (value.get('rangeStart'), value.get('rangeEnd'), value.get('rangeCertainty'),
-                value.get('boundaryResult')) != (8192, 8193, 'EXACT_FORMAT_BOUNDARY', 'EXACT_FORMAT_BOUNDARY'):
+                value.get('boundaryResult')) != (8192, 8193, 'EXACT_FORMAT_BOUNDARY', None):
                 failures.append('K12_RANGE')
             if value.get('sourceUnchanged') is not True or any(
                     type(value.get(key)) is not int or value[key] != exact

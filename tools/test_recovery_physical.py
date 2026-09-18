@@ -127,7 +127,7 @@ class PhysicalTests(unittest.TestCase):
             processingIntentCount=0, duplicateProcessingIntents=0,
             missingProcessingIntents=0, implicitCommitCount=0,
             rangeStart=8192, rangeEnd=8193,
-            rangeCertainty='EXACT_FORMAT_BOUNDARY', boundaryResult='EXACT_FORMAT_BOUNDARY',
+            rangeCertainty='EXACT_FORMAT_BOUNDARY', boundaryResult=None,
             sourceUnchanged=True,
             sourceBytes=8192, preFaultSourceBytes=8192,
             currentSourceBytes=8193, observedSourceBytes=8193, receiptIdentity='a' * 64,
@@ -135,6 +135,14 @@ class PhysicalTests(unittest.TestCase):
                 activeRanges=1, activeRangeStart=8192, activeRangeEnd=8193,
                 activeRangeCertainty='EXACT_FORMAT_BOUNDARY', persistedStateDigest='b' * 64))
         self.assertEqual([], physical.k12_failures(entry, observed, copy.deepcopy(observed)))
+        # SEALED_VALID has no rejectedObservation. Its independent active range
+        # carries the boundary; rejected-observation metadata would contradict it.
+        for field, value in [('rangeStart', 8191), ('rangeEnd', 8194),
+                             ('rangeCertainty', 'UNKNOWN'),
+                             ('boundaryResult', 'EXACT_FORMAT_BOUNDARY')]:
+            bad_replay = copy.deepcopy(observed)
+            bad_replay[field] = value
+            self.assertTrue(physical.k12_failures(entry, observed, bad_replay), field)
         for field, value in [('acceptedEnd', 8138), ('committedEnd', 4057),
                              ('recoveredEnd', 8137), ('processingIntentCount', 1),
                              ('duplicateProcessingIntents', 1), ('missingProcessingIntents', 1),
