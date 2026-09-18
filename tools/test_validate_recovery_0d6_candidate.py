@@ -91,6 +91,18 @@ class CandidateProfileTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'undeclared paths'):
             self.check()
 
+    def test_rejects_physical_runtime_change_in_metadata_child(self):
+        paths = (
+            'tools/recovery_physical.py',
+            'android/poc/recovery/src/sharedTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryPhysicalDeviceIdentityGuard.kt',
+        )
+        for path in paths:
+            self.write(path, 'unreviewed physical runtime change\n')
+        self.git('add', *paths)
+        self.git('commit', '--amend', '--no-edit', '-q')
+        with self.assertRaisesRegex(ValueError, 'undeclared paths'):
+            self.check()
+
     def test_rejects_owner_decision_change_in_metadata_child(self):
         self.write("docs/stage0/DORA_0D6_ALPHA_PREFLIGHT_OWNER_DECISION_20260914.md",
                    "unreviewed replacement decision\n")
