@@ -164,6 +164,7 @@ class PayloadOrchestrationTests(unittest.TestCase):
         Api33AdmissionTests.setUp(self)
         self.root = Path(__file__).resolve().parents[1]
         self.packet['plan'] = api.build_plan(self.root, self.packet)
+        self.packet['externalKillController'] = {'kind': 'synthetic-fixed-controller'}
         self.packet_sha = 'a' * 64
         self.calls = []
 
@@ -259,7 +260,8 @@ class PayloadOrchestrationTests(unittest.TestCase):
                     def retain(_transport, _plan, _entry, _observation, label):
                         calls.append(('retain', label))
                         return {'retained': True}
-                    def kill(_transport, _plan, _entry, _variant):
+                    def kill(_transport, _plan, _entry, _variant, controller):
+                        self.assertEqual(self.packet['externalKillController'], controller)
                         calls.append(('kill', payload))
                         api.campaign.save_new(output / 'kill-native-exit.json',
                                               {'barrier': {'acceptedEnd': entry['plaintextBytes']}})
@@ -269,7 +271,7 @@ class PayloadOrchestrationTests(unittest.TestCase):
                         stack.enter_context(patch.object(api.campaign, 'retain_evidence', side_effect=retain))
                         stack.enter_context(patch.object(api.campaign, 'compare_prefix', return_value=True))
                         if entry['kind'] == 'HARD_KILL':
-                            stack.enter_context(patch.object(api.campaign, 'run_kill', side_effect=kill))
+                            stack.enter_context(patch.object(api, 'run_api33_kill', side_effect=kill))
                         record = api.run_payload(self.root, self.packet, self.packet_sha, session, payload, output, prerequisites)
             files = {path.name: json.loads(path.read_text()) for path in output.glob('*.json')}
             self.assertTrue((output / 'SHA256SUMS.txt').is_file())
@@ -523,6 +525,240 @@ class PreflightReuseProofTests(unittest.TestCase):
     def test_no_reuse_returns_current_packet_identity(self):
         packet = {'schema': api.SCHEMA}
         self.assertIs(packet, api.preflight_packet(packet))
+
+
+class Api33ControllerKillTests(unittest.TestCase):
+    def setUp(self):
+        self.path = '/system/xbin/su'
+        self.digest = 'a' * 64
+        self.controller = {'kind': 'STOCK_USERDEBUG_SU_EXACT_PID_SIGKILL',
+                           'path': self.path, 'sha256': self.digest, 'killPath': '/system/bin/kill', 'killSha256': self.digest}
+        self.calls = []
+        self.sha_output = self.digest.encode() + b'  ' + self.path.encode() + b'\n'
+        self.uid_output = b'0\n'
+        self.enforce_output = b'Enforcing\n'
+
+        class Transport:
+            adb = Path('synthetic-adb')
+            session = {'serial': 'emulator-5560'}
+            instrumentation_parser_sha256 = 'b' * 64
+
+            def argv(inner, arguments):
+                self.calls.append(('argv', tuple(arguments)))
+                return ['synthetic-adb', *arguments]
+
+            def run(inner, arguments, label, timeout=30, require_success=True):
+                self.calls.append(('run', label, tuple(arguments)))
+                if 'sha256sum' in arguments:
+                    output = self.sha_output if arguments[-1] == self.path else self.digest.encode() + b'  /system/bin/kill\n'
+                elif 'id' in arguments and '-u' in arguments:
+                    output = self.uid_output
+                elif 'getenforce' in arguments:
+                    output = self.enforce_output
+                else:
+                    output = b'ordinary command\n'
+                return subprocess.CompletedProcess(arguments, 0, output)
+
+        self.transport = Transport()
+        self.proofs = {key: True for key in api.campaign.KILL_PROOFS}
+
+    def run_proxy(self, callback):
+        with patch.object(api.campaign, 'run_kill', side_effect=callback) as inherited:
+            result = api.run_api33_kill(self.transport, {}, {'kind':'HARD_KILL','environment':'API33-GAPI','stratumId':'K08','candidateId':api.campaign.CANDIDATES[0]}, 'DEFAULT', self.controller)
+        self.assertEqual(1, inherited.call_count)
+        return result
+
+    def test_only_exact_sigkill_command_is_substituted(self):
+        def inherited(proxy, plan, entry, variant):
+            self.assertEqual(['synthetic-adb', 'shell', 'echo', 'ordinary'],
+                             proxy.argv(['shell', 'echo', 'ordinary']))
+            self.assertEqual(b'ordinary command\n',
+                             proxy.run(['shell', 'echo', 'ordinary'], 'ordinary').stdout)
+            args = ['shell', 'run-as', api.PACKAGE, 'kill', '-9', '1234']
+            proxy.run(args, 'ordinary-kill-label')
+            proxy.run(args, 'sigkill')
+            return self.proofs
+        self.assertEqual(self.proofs, self.run_proxy(inherited))
+        commands = [(call[1], call[2]) for call in self.calls if call[0] == 'run']
+        self.assertIn(('ordinary', ('shell', 'echo', 'ordinary')), commands)
+        self.assertIn(('ordinary-kill-label', ('shell', 'run-as', api.PACKAGE, 'kill', '-9', '1234')),
+                      commands)
+        self.assertIn(('sigkill', ('shell', self.path, '0', '/system/bin/kill', '-9', '1234')), commands)
+        self.assertNotIn(('sigkill', ('shell', 'run-as', api.PACKAGE, 'kill', '-9', '1234')), commands)
+        self.assertGreaterEqual(sum(1 for label, args in commands if 'getenforce' in args), 2)
+
+    def test_proxy_rejects_mutated_signal_boundary(self):
+        invalid = [
+            ['shell', 'run-as', api.PACKAGE, 'kill', '-9', '0'],
+            ['shell', 'run-as', api.PACKAGE, 'kill', '-9', '-1'],
+            ['shell', 'run-as', api.PACKAGE, 'kill', '-9', '1'],
+            ['shell', 'run-as', api.PACKAGE, 'kill', '-9', 'abc'],
+            ['shell', 'run-as', 'foreign.package', 'kill', '-9', '1234'],
+            ['shell', 'run-as', api.PACKAGE, 'kill', '-9', '1234', 'extra'],
+        ]
+        for args in invalid:
+            with self.subTest(args=args):
+                self.calls.clear()
+                def inherited(proxy, *_):
+                    with self.assertRaises(ValueError):
+                        proxy.run(args, 'sigkill')
+                    return self.proofs
+                self.run_proxy(inherited)
+                self.assertFalse(any(call[0] == 'run' and call[1] == 'sigkill'
+                                     for call in self.calls))
+
+    def test_bad_controller_capability_stops_before_campaign(self):
+        scenarios = [dict(sha_output=b'f' * 64 + b'  /system/xbin/su\n'),
+                     dict(uid_output=b'2000\n'),
+                     dict(enforce_output=b'Permissive\n')]
+        for changes in scenarios:
+            with self.subTest(changes=changes):
+                self.sha_output = self.digest.encode() + b'  ' + self.path.encode() + b'\n'
+                self.uid_output = b'0\n'
+                self.enforce_output = b'Enforcing\n'
+                self.__dict__.update(changes)
+                self.calls.clear()
+                with patch.object(api.campaign, 'run_kill') as inherited, \
+                     self.assertRaises(ValueError):
+                    api.run_api33_kill(self.transport, {}, {'kind':'HARD_KILL','environment':'API33-GAPI','stratumId':'K08','candidateId':api.campaign.CANDIDATES[0]}, 'DEFAULT', self.controller)
+                inherited.assert_not_called()
+
+    def test_unapproved_controller_identity_stops_before_campaign(self):
+        for changed in [dict(kind='OTHER'), dict(path='/data/local/tmp/su'), dict(sha256='f')]:
+            with self.subTest(changed=changed), \
+                 patch.object(api.campaign, 'run_kill') as inherited, \
+                 self.assertRaises(ValueError):
+                api.run_api33_kill(self.transport, {}, {'kind':'HARD_KILL','environment':'API33-GAPI','stratumId':'K08','candidateId':api.campaign.CANDIDATES[0]}, 'DEFAULT', dict(self.controller, **changed))
+            inherited.assert_not_called()
+
+    def test_enforcing_must_still_hold_after_inherited_kill(self):
+        def inherited(*_):
+            self.enforce_output = b'Permissive\n'
+            return self.proofs
+        with patch.object(api.campaign, 'run_kill', side_effect=inherited) as campaign_kill, \
+             self.assertRaises(ValueError):
+            api.run_api33_kill(self.transport, {}, {'kind':'HARD_KILL','environment':'API33-GAPI','stratumId':'K08','candidateId':api.campaign.CANDIDATES[0]}, 'DEFAULT', self.controller)
+        campaign_kill.assert_called_once()
+
+
+class ExternalControllerAdmissionTests(unittest.TestCase):
+    def fixture(self, directory, *, contents=None, controller_changes=None,
+                proof_changes=None, fact_changes=None, pinned=True, reviewed=True,
+                foreign_retention=False, foreign_cleanup=False):
+        admission = Api33AdmissionTests()
+        admission.setUp()
+        packet = admission.packet
+        controller = dict(kind='STOCK_USERDEBUG_SU_EXACT_PID_SIGKILL',
+                          path='/system/xbin/su', sha256='a' * 64,
+                          killPath='/system/bin/kill', killSha256='b' * 64)
+        if controller_changes:
+            controller.update(controller_changes)
+        packet['externalKillController'] = controller
+        evidence = dict(suPath='/system/xbin/su\n',
+                        suSha='a' * 64 + '  /system/xbin/su\n',
+                        rootIdentity='uid=0(root) gid=0(root)\n',
+                        enforcing='Enforcing\n', policy='synthetic policy evidence\n',
+                        killSha='b' * 64 + '  /system/bin/kill\n',
+                        priorFailure=json.dumps(dict(error='ADB operation failed: sigkill')),
+                        retention=json.dumps(dict(complete=True)),
+                        cleanup=json.dumps(dict(cleanupResult='VERIFIED', failure=None)))
+        evidence.update(contents or {})
+        diagnostic_dir = directory / 'diag'
+        diagnostic_dir.mkdir()
+        labels = dict(suPath=('023', 'su-path'), suSha=('024', 'su-binary-sha'),
+                      rootIdentity=('025', 'userdebug-controller-identity'),
+                      enforcing=('017', 'selinux-mode'), policy=('022', 'platform-policy'),
+                      killSha=('021', 'kill-binary-sha'))
+        facts = {label: {'nativeExit': 1 if key == 'suSha' else 0,
+                         'stdoutSha256': hashlib.sha256(evidence[key].encode()).hexdigest()}
+                 for key, (_, label) in labels.items()}
+        for label, changes in (fact_changes or {}).items():
+            facts[label].update(changes)
+        diagnostic = dict(noInstrumentation=True, noSignals=True, retentionComplete=True, facts=facts)
+        if 'diagnostic' in evidence:
+            diagnostic.update(json.loads(evidence.pop('diagnostic')))
+        proof = dict(schema='DORA_API33_STOCK_CONTROLLER_V1', environment=packet['environment'],
+                     controller=controller)
+        for name, value in evidence.items():
+            if name in labels:
+                number, label = labels[name]
+                path = diagnostic_dir / (number + '-' + label + '.stdout')
+            elif name == 'retention':
+                path = (directory / 'foreign' if foreign_retention else diagnostic_dir) / 'retention-receipt.json'
+            elif name == 'cleanup':
+                path = (directory / 'foreign' if foreign_cleanup else directory) / 'terminal.json'
+            else:
+                path = directory / 'prior' / 'record.json'
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(value.encode())
+            proof[name] = api.descriptor(path)
+        diagnostic_path = diagnostic_dir / 'diagnosis.json'
+        diagnostic_path.write_text(json.dumps(diagnostic))
+        proof['diagnostic'] = api.descriptor(diagnostic_path)
+        if proof_changes:
+            proof.update(proof_changes)
+        proof_path = directory / 'controller-proof.json'
+        proof_path.write_text(json.dumps(proof))
+        descriptor = api.descriptor(proof_path)
+        packet['externalControllerEvidence'] = descriptor
+        packet['files'] = [descriptor] if pinned else []
+        review = {'files': [descriptor] if reviewed else []}
+        return packet, review
+
+    def check(self, expected_error=None, **fixture_args):
+        with tempfile.TemporaryDirectory() as td:
+            packet, review = self.fixture(Path(td), **fixture_args)
+            if expected_error:
+                with self.assertRaisesRegex(ValueError, expected_error):
+                    api.validate_external_controller(packet, review)
+            else:
+                api.validate_external_controller(packet, review)
+
+    def test_pinned_reviewed_exact_controller_evidence(self):
+        self.check()
+
+    def test_mismatched_or_unpinned_unreviewed_proof(self):
+        self.check(proof_changes={'environment': {'api': 34}}, expected_error='environment')
+        self.check(proof_changes={'schema': 'OTHER'}, expected_error='environment')
+        self.check(pinned=False, expected_error='pinned and reviewed')
+        self.check(reviewed=False, expected_error='pinned and reviewed')
+
+    def test_bad_controller_path_hash_root_and_enforcing(self):
+        self.check(controller_changes={'path': '/data/local/tmp/su'}, expected_error='authority')
+        self.check(controller_changes={'sha256': 'G' * 64}, expected_error='authority')
+        self.check(controller_changes={'killPath': '/data/local/tmp/kill'}, expected_error='authority')
+        self.check(controller_changes={'killSha256': 'G' * 64}, expected_error='authority')
+        self.check(contents={'suPath': '/system/bin/su\n'}, expected_error='path mismatch')
+        self.check(contents={'suSha': 'f' * 64 + '  /system/xbin/su\n'}, expected_error='hash mismatch')
+        self.check(contents={'killSha': 'f' * 64 + '  /system/bin/kill\n'}, expected_error='kill binary hash')
+        self.check(contents={'rootIdentity': 'uid=2000(shell)\n'}, expected_error='root identity')
+        self.check(contents={'enforcing': 'Permissive\n'}, expected_error='not enforcing')
+
+    def test_failed_diagnostic_retention_prior_error_or_cleanup(self):
+        self.check(contents={'diagnostic': json.dumps(dict(noInstrumentation=True,
+                                                           noSignals=True, retentionComplete=False))},
+                   expected_error='diagnostic incomplete')
+        self.check(contents={'priorFailure': json.dumps(dict(error='other failure'))},
+                   expected_error='failure not retained')
+        self.check(contents={'retention': json.dumps(dict(complete=False))},
+                   expected_error='failure not retained')
+        self.check(contents={'cleanup': json.dumps(dict(cleanupResult='UNCERTAIN'))},
+                   expected_error='failure not retained')
+        self.check(contents={'cleanup': json.dumps(dict(cleanupResult='VERIFIED', failure='ERROR'))},
+                   expected_error='failure not retained')
+        self.check(foreign_retention=True, expected_error='different attempts')
+        self.check(foreign_cleanup=True, expected_error='different attempts')
+
+    def test_diagnostic_commands_are_linked_to_one_successful_attempt(self):
+        self.check(fact_changes={'su-path': {'nativeExit': 1}}, expected_error='command failed')
+        self.check(fact_changes={'userdebug-controller-identity': {'nativeExit': 1}},
+                   expected_error='command failed')
+        self.check(fact_changes={'selinux-mode': {'nativeExit': 1}}, expected_error='command failed')
+        self.check(fact_changes={'platform-policy': {'nativeExit': 1}}, expected_error='command failed')
+        self.check(fact_changes={'kill-binary-sha': {'nativeExit': 1}}, expected_error='command failed')
+        self.check(fact_changes={'su-binary-sha': {'nativeExit': 2}}, expected_error='command failed')
+        self.check(fact_changes={'su-path': {'stdoutSha256': 'f' * 64}}, expected_error='stdout drifted')
+        self.check(fact_changes={'kill-binary-sha': {'stdoutSha256': 'f' * 64}}, expected_error='stdout drifted')
 
 
 if __name__ == '__main__': unittest.main()

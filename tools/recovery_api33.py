@@ -129,6 +129,52 @@ def git(root: Path, *args: str) -> str:
                           check=True, capture_output=True, text=True).stdout.strip()
 
 
+def validate_external_controller(packet: dict, review: dict) -> None:
+    descriptor = packet['externalControllerEvidence']
+    require(descriptor in packet['files'] and descriptor in review['files'], 'External controller proof not pinned and reviewed')
+    proof = read(verify_file(descriptor))
+    require(proof['schema'] == 'DORA_API33_STOCK_CONTROLLER_V1' and proof['environment'] == packet['environment'],
+            'External controller environment mismatch')
+    controller = packet['externalKillController']
+    require(controller == proof['controller'] and controller['kind'] == 'STOCK_USERDEBUG_SU_EXACT_PID_SIGKILL'
+            and controller['path'] in ('/system/xbin/su', '/system/bin/su')
+            and re.fullmatch(r'[0-9a-f]{64}', controller['sha256']) is not None
+            and controller['killPath'] == '/system/bin/kill'
+            and re.fullmatch(r'[0-9a-f]{64}', controller['killSha256']) is not None,
+            'Invalid stock controller authority')
+    files = {key: verify_file(proof[key]) for key in
+             ('diagnostic', 'suPath', 'suSha', 'rootIdentity', 'enforcing', 'policy', 'killSha',
+              'priorFailure', 'retention', 'cleanup')}
+    diagnosis = read(files['diagnostic'])
+    require(files['diagnostic'].name == 'diagnosis.json', 'Foreign diagnostic summary')
+    for key, label in (('suPath', 'su-path'), ('suSha', 'su-binary-sha'),
+                       ('rootIdentity', 'userdebug-controller-identity'), ('enforcing', 'selinux-mode'),
+                       ('policy', 'platform-policy'), ('killSha', 'kill-binary-sha')):
+        path = files[key]
+        require(path.parent == files['diagnostic'].parent
+                and re.fullmatch(r'[0-9]{3}-' + re.escape(label) + r'\.stdout', path.name) is not None,
+                'Controller stdout outside diagnostic attempt')
+        fact = diagnosis['facts'][label]
+        require(fact['nativeExit'] in ((0, 1) if key == 'suSha' else (0,))
+                and fact['stdoutSha256'] == sha(path), 'Controller diagnostic command failed or stdout drifted')
+    require(files['suPath'].read_text().strip() == controller['path'], 'Stock controller path mismatch')
+    hashes = [line.split() for line in files['suSha'].read_text().splitlines()]
+    require([controller['sha256'], controller['path']] in hashes, 'Stock controller hash mismatch')
+    kill_hashes = [line.split() for line in files['killSha'].read_text().splitlines()]
+    require([controller['killSha256'], controller['killPath']] in kill_hashes, 'Stock kill binary hash mismatch')
+    require(re.match(r'uid=0\b', files['rootIdentity'].read_text()) is not None, 'Stock controller root identity missing')
+    require(files['enforcing'].read_text().strip() == 'Enforcing', 'Controller evidence is not enforcing')
+    require(diagnosis['noInstrumentation'] is True and diagnosis['noSignals'] is True
+            and diagnosis['retentionComplete'] is True, 'Bounded diagnostic incomplete')
+    require(files['retention'].parent == files['diagnostic'].parent
+            and files['cleanup'].parent == files['diagnostic'].parent.parent
+            and files['cleanup'].name == 'terminal.json', 'Retention and cleanup belong to different attempts')
+    require(read(files['priorFailure'])['error'] == 'ADB operation failed: sigkill'
+            and read(files['retention'])['complete'] is True
+            and read(files['cleanup'])['cleanupResult'] == 'VERIFIED'
+            and read(files['cleanup'])['failure'] is None, 'Prior external failure not retained and cleaned')
+
+
 def validate_admission(root: Path, packet: dict) -> None:
     validate_contract(packet)
     require(git(root, 'rev-parse', 'HEAD') == packet['harnessSourceCommit'], 'Harness checkout mismatch')
@@ -152,6 +198,7 @@ def validate_admission(root: Path, packet: dict) -> None:
             'Independent technical review missing')
     for item in proofs['review']['files']: verify_file(item)
     require(descriptor(Path(__file__)) in proofs['review']['files'], 'API33 runner not reviewed')
+    validate_external_controller(packet, proofs['review'])
     require(proofs['checks']['passed'] is True, 'Required local checks incomplete')
     for item in proofs['checks']['evidence']: verify_file(item)
     signatures = proofs['signatures']
@@ -314,6 +361,40 @@ def run_operation(transport, plan: dict, entry: dict, operation: str, variant: s
     return results[0]
 
 
+def run_api33_kill(transport, plan: dict, entry: dict, variant: str, controller: dict) -> dict:
+    require(controller.get('kind') == 'STOCK_USERDEBUG_SU_EXACT_PID_SIGKILL'
+            and controller.get('path') in ('/system/xbin/su', '/system/bin/su')
+            and re.fullmatch(r'[0-9a-f]{64}', controller.get('sha256', '')) is not None,
+            'Invalid exact stock external controller')
+    require(controller.get('killPath') == '/system/bin/kill' and re.fullmatch(r'[0-9a-f]{64}', controller.get('killSha256', '')) is not None, 'Invalid stock signal binary')
+    require(entry['kind'] == 'HARD_KILL' and entry['environment'] == 'API33-GAPI' and entry['stratumId'] == 'K08' and entry['candidateId'] in campaign.CANDIDATES, 'External controller outside API33 kill scope')
+    path = controller['path']
+    observed_sha = transport.run(['shell', 'sha256sum', path], 'su-binary-sha').stdout.decode().split()
+    require(observed_sha == [controller['sha256'], path], 'Stock controller binary drift')
+    require(transport.run(['shell', 'sha256sum', controller['killPath']], 'kill-binary-sha').stdout.decode().split() == [controller['killSha256'], controller['killPath']], 'Stock signal binary drift')
+    require(transport.run(['shell', path, '0', 'id', '-u'], 'su-uid').stdout.strip() == b'0', 'Stock controller UID unavailable')
+    require(transport.run(['shell', 'getenforce'], 'selinux-before-kill').stdout.strip() == b'Enforcing', 'SELinux must remain enforcing')
+
+    class ExactSignalTransport:
+        def __getattr__(self, name):
+            return getattr(transport, name)
+
+        def run(self, arguments, label, *args, **kwargs):
+            if label == 'sigkill':
+                require(len(arguments) == 6 and arguments[:5] == ['shell', 'run-as', PACKAGE, 'kill', '-9']
+                        and isinstance(arguments[5], str) and re.fullmatch(r'[1-9][0-9]*', arguments[5]) is not None
+                        and 1 < int(arguments[5]) <= 2147483647, 'Unexpected external signal target or command')
+                arguments = ['shell', path, '0', controller['killPath'], '-9', arguments[5]]
+            return transport.run(arguments, label, *args, **kwargs)
+
+    # The inherited controller still proves exact PID/cmdline/aliveness at the
+    # original barrier, sends SIGKILL, and independently observes death. Only
+    # the stock userdebug process used to send that signal differs on API33.
+    proofs = campaign.run_kill(ExactSignalTransport(), plan, entry, variant)
+    require(transport.run(['shell', 'getenforce'], 'selinux-after-kill').stdout.strip() == b'Enforcing', 'SELinux changed during kill')
+    return proofs
+
+
 def run_payload(root: Path, packet: dict, packet_sha: str, session: dict, payload: str, output: Path,
                 prerequisites: list[dict]) -> dict:
     validate_admission(root, packet)
@@ -372,7 +453,7 @@ def run_payload(root: Path, packet: dict, packet_sha: str, session: dict, payloa
                 campaign.retain_evidence(transport, plan, entry, prepared, 'before-recovery')
             else:
                 record['actualAndroidCommands'] += 1
-                result['kill'] = campaign.run_kill(transport, plan, entry, variant)
+                result['kill'] = run_api33_kill(transport, plan, entry, variant, packet['externalKillController'])
                 record['executed'] = True
                 barrier = read(output / 'kill-native-exit.json')['barrier']
                 result.update(hostAcceptedEnd=barrier['acceptedEnd'], hostCommittedEnd=barrier.get('committedEnd'))
