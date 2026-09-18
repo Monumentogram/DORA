@@ -6,6 +6,27 @@ Date: 18 September 2026
 Base: `main@55940df0c95e919a00708ae57e1b8aa23d89b6de`  
 State: **PREPARATION_ONLY / BLOCKED_BEFORE_AUDIO_RETRIEVAL**
 
+## R2 candidate update — 18 September 2026
+
+The original 3.0 RU/EN entries in the historical v0.1 proposal were never
+`EVALUATION_APPROVED`, no 3.0 bytes were downloaded and no 3.0 ASR/device run occurred.
+
+They are now `SUPERSEDED_AS_CANDIDATE`.
+
+The current proposed candidates are:
+
+- `Common Voice Spontaneous Speech 5.0 - Russian`, locale `ru`,
+  MDC ID `cmu5mg3pr00simh07epeylc55`;
+- `Common Voice Spontaneous Speech 5.0 - English`, locale `en`,
+  MDC ID `cmu5nqn1h00vwmi07b4dbk085`.
+
+The exact admission state and pending owner/Legal-IP decisions are governed by
+[DORA_ALPHA_ASR_DATA_ADMISSION_STAGE0_V0_1.md](DORA_ALPHA_ASR_DATA_ADMISSION_STAGE0_V0_1.md) and
+[DORA_ALPHA_ASR_DATA_OWNER_DECISION_V0_1.md](DORA_ALPHA_ASR_DATA_OWNER_DECISION_V0_1.md).
+
+Nothing in this update authorizes dataset download, 5.1B, model selection, runner implementation
+or device execution.
+
 ## 1. Purpose
 
 Prepare the smallest useful RU/EN evaluation set for the first bounded local-ASR run without
@@ -43,35 +64,24 @@ The following are out of scope:
 - raw audio, transcripts, participant metadata or selected clips in Git, Git LFS or GitHub Actions.
 
 Because controlled non-public storage and a named data custodian are not yet operational, **no
-audio may be retrieved by this task until the gates in section 6 are satisfied**.
+audio may be retrieved by this task until the admission gates are satisfied**.
 
-## 4. Proposed public source for the first RU/EN pilot
+## 4. Current proposed public source
 
-Use one dataset family/release for both languages to reduce avoidable source differences:
+Use one current dataset family/release for both languages:
 
-| Locale | Exact candidate | Task / format | Catalogue license | Catalogue size | State |
-|---|---|---|---|---:|---|
-| `ru` | Mozilla Common Voice Spontaneous Speech 3.0 — Russian | ASR / MP3 | CC0-1.0 | 62.64 MB | `PROPOSED` |
-| `en` | Mozilla Common Voice Spontaneous Speech 3.0 — English | ASR / MP3 | CC0-1.0 | 459.05 MB | `PROPOSED` |
+| Locale | Exact candidate | MDC ID | Task / format | Licence | Published size | State |
+|---|---|---|---|---|---:|---|
+| `ru` | Common Voice Spontaneous Speech 5.0 - Russian | `cmu5mg3pr00simh07epeylc55` | ASR / MP3 | CC0-1.0 | 88.72 MB | `PROPOSED` |
+| `en` | Common Voice Spontaneous Speech 5.0 - English | `cmu5nqn1h00vwmi07b4dbk085` | ASR / MP3 | CC0-1.0 | 519.05 MB | `PROPOSED` |
 
-Canonical metadata sources checked for this proposal:
+Both are part of `sps-corpus-5.0-2026-09-11` and published by MDC on 17 September 2026.
 
-- Mozilla Common Voice / Mozilla Data Collective dataset catalogue:
-  `https://commonvoice.mozilla.org/en/datasets`;
-- Common Voice Legal Terms, effective 31 October 2025:
-  `https://commonvoice.mozilla.org/terms`.
-
-The current Common Voice terms expose datasets through Mozilla Data Collective under CC0 unless
-otherwise specified and impose dataset-use constraints including no speaker identification and no
-re-hosting/re-sharing of the dataset. Dora therefore sets
-`publicRedistributionAllowed=false` for this pilot even when the underlying licence is CC0.
-
-This section is metadata research only. It does **not** move either dataset from `PROPOSED` to
-`EVALUATION_APPROVED`.
+This candidate freeze does **not** move either dataset to `EVALUATION_APPROVED`.
 
 ## 5. Minimal exploratory pilot set
 
-After section 6 is satisfied, materialize exactly **48 clips**:
+After admission is satisfied, materialize exactly **48 clips**:
 
 - 24 Russian clips;
 - 24 English clips;
@@ -99,26 +109,26 @@ manifest. Keep only the fields required to evaluate ASR and reproduce the select
 
 ## 6. Gates before audio retrieval
 
-All of the following are required. Missing evidence means `BLOCKED`, not PASS.
+All of the following are required. Missing evidence means blocked, not PASS.
 
-1. The exact RU and EN Mozilla Data Collective dataset pages/file identities are recorded.
-2. The exact applicable licence/terms snapshot is retained with an immutable digest.
-3. Product/Legal/IP records `EVALUATION_APPROVED` for these exact dataset releases and this ASR
-   evaluation purpose.
-4. A data custodian is assigned in controlled private evidence.
-5. Controlled non-public storage, access and deletion procedure are operational.
-6. Retrieval/storage does not use Git, Git LFS, GitHub Actions artifacts, personal messaging or an
-   unapproved personal cloud location.
+1. Exact RU/EN MDC IDs and applicable public metadata are frozen.
+2. Product owner approves the owner-controlled values in the owner-decision packet.
+3. A named Legal/IP reviewer records the exact dataset evaluation-right disposition required by
+   `GOV-IP-001`.
+4. A data custodian is assigned.
+5. Controlled non-public storage and access are operational.
+6. The required synthetic/non-sensitive controlled-storage deletion/access dry-run passes.
 7. The collection/materialization plan names retention and deletion checkpoints before download.
-8. No model/runtime execution occurs as part of satisfying these data gates.
+8. The applicable MDC/Data Consumer terms are accepted only by an authorized role.
+9. No model/runtime or device execution occurs as part of satisfying these data gates.
 
 ## 7. Private selected-set manifest
 
 The controlled manifest must contain, at minimum:
 
-- dataset id and exact release/version;
+- dataset ID and exact release/version;
 - locale and upstream split;
-- opaque Dora sample id;
+- opaque Dora sample ID;
 - upstream relative path retained only in controlled evidence;
 - audio byte length and SHA-256;
 - reference-text SHA-256 plus controlled reference text;
@@ -150,7 +160,7 @@ proves all of the following:
   bounds;
 - exact source/release/licence/terms pins are present;
 - `trainingAllowed=false` and `publicRedistributionAllowed=false`;
-- no duplicate sample id, audio digest or upstream path;
+- no duplicate sample ID, audio digest or upstream path;
 - no forbidden contributor/demographic/private-location fields;
 - the selection recomputes deterministically from the frozen candidate list;
 - the aggregate manifest digest matches the recorded value.
@@ -160,18 +170,16 @@ No Android/device test is required for substage 5.1. Device execution belongs to
 
 ## 9. Exit and claim ceiling
 
-This document starts 5.1 but does not close it.
+Current state:
 
-Current result after this document:
-
-- source family: proposed;
+- 3.0 candidates: `SUPERSEDED_AS_CANDIDATE`;
+- 5.0 RU/EN candidates: `PROPOSED`;
 - data retrieval: `NOT_RUN`;
 - selected-set manifest: `NOT_CREATED`;
-- external data rights: `NOT_APPROVED`;
+- Legal/IP evaluation approval: `BLOCKED`;
 - controlled storage/custodian: `BLOCKED`;
-- 5.1 overall: `BLOCKED / IN_PROGRESS`;
+- 5.1A: `BLOCKED_LEGAL_IP` with owner-controlled decisions also pending;
 - 5.4 device ASR: `NOT_AUTHORIZED`.
 
-The next evidence-producing action is to satisfy section 6 and then materialize the exact 48-clip
-manifest once. Re-running or expanding Recovery, creating hundreds of ASR cases, or collecting new
-private speech is not part of this task.
+Do not begin 5.1B, 5.2, dataset/model download or device execution until the admission record's
+mandatory gates are closed.
