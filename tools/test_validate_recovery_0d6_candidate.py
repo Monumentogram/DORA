@@ -105,6 +105,14 @@ class CandidateProfileTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'undeclared paths'):
             self.check()
 
+    def test_rejects_closeout_status_change_in_metadata_child(self):
+        path = 'docs/DORA_MVP1_STAGE_STATUS.md'
+        self.write(path, 'unreviewed alteration to the pinned closeout\n')
+        self.git('add', path)
+        self.git('commit', '--amend', '--no-edit', '-q')
+        with self.assertRaisesRegex(ValueError, 'undeclared paths'):
+            self.check()
+
     def test_rejects_product_evidence_change_in_metadata_child(self):
         path = 'android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationOutcomes.kt'
         self.write(path, 'unreviewed product evidence change\n')
