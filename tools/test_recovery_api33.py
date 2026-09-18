@@ -1,0 +1,764 @@
+"""Negative controls for the bounded API33 route; no devices or services."""
+import copy
+import base64
+import hashlib
+from contextlib import ExitStack
+from datetime import datetime, timezone, timedelta
+import unittest
+from unittest.mock import patch
+from pathlib import Path
+import tempfile
+import json
+import subprocess
+import recovery_api33 as api
+
+
+class Api33AdmissionTests(unittest.TestCase):
+    def setUp(self):
+        self.packet = {
+            "schema": api.SCHEMA, "executionId": "F34-01",
+            "appSourceCommit": api.APP_COMMIT,
+            "harnessSourceCommit": "1" * 40,
+            "source": {"commit": "1" * 40, "tree": "2" * 40,
+                       "appApkSha256": api.APP_SHA, "testApkSha256": "3" * 64},
+            "environment": {"profile": "API33-GAPI", "api": 33, "abi": "x86_64",
+                            "fingerprint": "google/test:13/test/userdebug", "product": "test",
+                            "serial": "emulator-5560", "avdName": "api33_fixture", "adbPort": 5037},
+            "payloads": list(api.PAYLOADS),
+        }
+
+    def test_exact_api33_contract(self):
+        api.validate_contract(self.packet)
+
+    def test_wrong_api_abi_or_missing_identity(self):
+        for field, value in [("api", 36), ("api", True), ("abi", "arm64-v8a"),
+                             ("fingerprint", ""), ("product", ""), ("profile", "E36-GAPI")]:
+            with self.subTest(field=field, value=value):
+                bad = copy.deepcopy(self.packet); bad["environment"][field] = value
+                with self.assertRaises(ValueError): api.validate_contract(bad)
+
+    def test_rejects_app_replacement_and_harness_mislabel(self):
+        for key in ("appApkSha256", "commit"):
+            bad = copy.deepcopy(self.packet); bad["source"][key] = "4" * len(bad["source"][key])
+            with self.assertRaises(ValueError): api.validate_contract(bad)
+        bad = copy.deepcopy(self.packet); bad["appSourceCommit"] = "4" * 40
+        with self.assertRaises(ValueError): api.validate_contract(bad)
+
+    def test_rejects_expanded_or_missing_payload(self):
+        for values in [list(api.PAYLOADS) + ["K12"], list(api.PAYLOADS)[:-1], ["F33-01"] * 7]:
+            bad = copy.deepcopy(self.packet); bad["payloads"] = values
+            with self.assertRaises(ValueError): api.validate_contract(bad)
+
+    def test_live_identity_must_equal_every_pinned_field(self):
+        api.validate_live(self.packet, self.packet["environment"])
+        for key in ("api", "abi", "fingerprint", "product", "serial", "avdName", "adbPort"):
+            wrong = dict(self.packet["environment"]); wrong[key] = "wrong"
+            with self.assertRaises(ValueError): api.validate_live(self.packet, wrong)
+
+    def test_fresh_session_only(self):
+        from datetime import datetime, timezone, timedelta
+        now = datetime.now(timezone.utc)
+        api.validate_expiry((now + timedelta(seconds=120)).isoformat(), now)
+        for seconds in (-1, 301):
+            with self.assertRaises(ValueError): api.validate_expiry((now + timedelta(seconds=seconds)).isoformat(), now)
+
+    def test_flat_endpoint_cannot_override_admitted_device(self):
+        self.packet['adb'] = {'sha256': 'a' * 64}
+        env = self.packet['environment']
+        session = dict(environment=env, serial=env['serial'], adbPort=env['adbPort'],
+                       deviceFingerprint=env['fingerprint'], avdName=env['avdName'], adbSha256='a' * 64)
+        api.validate_session_endpoint(self.packet, session)
+        for key in ('serial', 'adbPort', 'deviceFingerprint', 'avdName', 'adbSha256'):
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                api.validate_session_endpoint(self.packet, dict(session, **{key: 'wrong'}))
+
+    def test_normal_plan_reuses_fixture_and_exact_k08_barriers(self):
+        plan = api.build_plan(Path(__file__).resolve().parents[1], self.packet)
+        self.assertEqual(4, len(plan['entries']))
+        for normal, kill in zip(plan['entries'][:2], plan['entries'][2:]):
+            self.assertEqual('NORMAL', normal['kind'])
+            self.assertEqual('HARD_KILL', kill['kind'])
+            self.assertNotEqual(normal['attemptId'], kill['attemptId'])
+            self.assertNotEqual(normal['runId'], kill['runId'])
+            for field in ('plaintextBytes', 'fixtureSha256', 'seed', 'publicBarrier', 'stratumId'):
+                self.assertEqual(normal[field], kill[field])
+
+    def test_preflight_requires_final_cleanup_and_original_status(self):
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            items = []
+            for payload in list(api.PAYLOADS)[:3]:
+                attempt = root / payload; (attempt / 'p').mkdir(parents=True)
+                rec = attempt / 'p/record.json'
+                rec.write_text(json.dumps(dict(payload=payload, result='PASS', executed=True,
+                    packetSha256='a' * 64, rawRetentionComplete=True, source=self.packet['source'], environment=self.packet['environment'])))
+                term = attempt / 'terminal.json'
+                terminal = dict(cleanupResult='VERIFIED', failure=None, bootstrap=False,
+                                packetSha256='a' * 64, source=self.packet['source'], payload=payload)
+                term.write_text(json.dumps(terminal))
+                raw = attempt / 'p/instrumentation.stdout'; raw.write_bytes(InstrumentationTests().output(payload))
+                items.append(dict(record=api.descriptor(rec), terminal=api.descriptor(term), instrumentationStdout=api.descriptor(raw)))
+            with patch.object(api, 'verify_observations'):
+                api.verify_preflights(self.packet, items)
+                term.write_text(json.dumps(dict(terminal, cleanupResult='UNCERTAIN')))
+                items[-1]['terminal'] = api.descriptor(term)
+                with self.assertRaisesRegex(ValueError, 'cleanup'): api.verify_preflights(self.packet, items)
+                term.write_text(json.dumps(terminal))
+                items[-1]['terminal'] = api.descriptor(term)
+                raw.write_bytes(InstrumentationTests().output('F33-03', -3))
+                items[-1]['instrumentationStdout'] = api.descriptor(raw)
+                with self.assertRaises(ValueError): api.verify_preflights(self.packet, items)
+
+    def test_normal_rejects_short_prefix_and_requires_authenticated_eof(self):
+        entry = dict(kind='NORMAL', plaintextBytes=480000, candidateId=api.campaign.CANDIDATES[0])
+        observation = dict(acceptedEnd=480000, committedEnd=473256, recoveredEnd=480000, streamTerminal='AUTHENTICATED_EOF')
+        def generic(*args): return dict(verdict='PASS', failures=[])
+        with patch.object(api.campaign, 'evaluate_attempt', side_effect=generic):
+            result = dict(status='VALID', candidateResult=observation)
+            self.assertEqual('PASS', api.assess(entry, result)['verdict'])
+            for changed in [dict(recoveredEnd=473256), dict(streamTerminal='TRUNCATED')]:
+                bad = dict(result, candidateResult=dict(observation, **changed))
+                self.assertEqual('FAIL', api.assess(entry, bad)['verdict'])
+
+    def test_normal_cannot_dispatch_fault_or_external_barrier(self):
+        for operation in ('FAULT', 'WRITE_UNTIL_BARRIER'):
+            with self.assertRaises(ValueError): api.run_operation(None, {}, {'kind': 'NORMAL'}, operation, 'DEFAULT')
+
+    def test_valid_kill_missing_candidate_remains_original_fail(self):
+        entry = api.build_plan(Path(__file__).resolve().parents[1], self.packet)['entries'][2]
+        result = dict(attemptId=entry['attemptId'], status='VALID', candidateResult=None,
+                      kill={key: True for key in api.campaign.KILL_PROOFS}, cleanupResult='UNVERIFIED')
+        self.assertEqual('FAIL', api.assess(entry, result)['verdict'])
+
+
+class InstrumentationTests(unittest.TestCase):
+    def output(self, payload, code=0):
+        selector, _, markers = api.PAYLOADS[payload]
+        cls, method = selector.split('#')
+        fields = f'INSTRUMENTATION_STATUS: class={cls}\nINSTRUMENTATION_STATUS: test={method}\nINSTRUMENTATION_STATUS: numtests=1\nINSTRUMENTATION_STATUS: current=1\n'
+        observations = ''.join('INSTRUMENTATION_STATUS: stream=' + m + '{}\nINSTRUMENTATION_STATUS_CODE: 0\n' for m in markers)
+        return (fields + 'INSTRUMENTATION_STATUS_CODE: 1\n' + observations + fields + f'INSTRUMENTATION_STATUS_CODE: {code}\nINSTRUMENTATION_CODE: -1\n').encode()
+
+    def test_all_three_exact_success_and_sqlite_two_markers(self):
+        for key in list(api.PAYLOADS)[:3]: api.validate_fixed_status(self.output(key), key)
+
+    def test_skip_failure_missing_terminal_wrong_selector_never_pass(self):
+        payload = 'F33-02'; good = self.output(payload)
+        for bad in [self.output(payload, -3), self.output(payload, -2), b'OK (0 tests)\nINSTRUMENTATION_CODE: -1\n',
+                    good.replace(b'primaryAndConcurrentReaderKeepConfigurationAfterReopen', b'wrong'),
+                    good.replace(b'INSTRUMENTATION_CODE: -1\n', b'')]:
+            with self.assertRaises(ValueError): api.validate_fixed_status(bad, payload)
+
+    def test_sqlite_missing_duplicate_observation_rejected(self):
+        good = self.output('F33-01')
+        marker = api.PAYLOADS['F33-01'][2][0]
+        bundle = ('INSTRUMENTATION_STATUS: stream=' + marker + '{}\nINSTRUMENTATION_STATUS_CODE: 0\n').encode()
+        for bad in [good.replace(bundle, b''), good.replace(bundle, bundle * 2)]:
+            with self.assertRaises(ValueError): api.validate_fixed_status(bad, 'F33-01')
+
+
+class PayloadOrchestrationTests(unittest.TestCase):
+    """Exercise the admitted runner with an owned, device-free transport."""
+
+    def setUp(self):
+        Api33AdmissionTests.setUp(self)
+        self.root = Path(__file__).resolve().parents[1]
+        self.packet['plan'] = api.build_plan(self.root, self.packet)
+        self.packet['externalKillController'] = {'kind': 'synthetic-fixed-controller'}
+        self.packet_sha = 'a' * 64
+        self.calls = []
+
+    def run_synthetic(self, payload, *, fail_at=None, operation_results=None):
+        with tempfile.TemporaryDirectory() as td:
+            directory = Path(td)
+            adb = directory / 'adb'; adb.write_bytes(b'synthetic adb')
+            launcher = directory / 'launcher'; launcher.write_bytes(b'synthetic launcher')
+            receipt = directory / 'launcher-receipt.json'
+            self.packet['adb'] = api.descriptor(adb)
+            self.packet['launcher'] = api.descriptor(launcher)
+            receipt.write_text(json.dumps(dict(packetSha256=self.packet_sha, payload=payload,
+                                               launcherSha256=self.packet['launcher']['sha256'])))
+            env = self.packet['environment']
+            session = dict(schema='DORA_API33_OWNED_SESSION_V1', ownershipVerified=True,
+                           packetSha256=self.packet_sha, payload=payload, source=self.packet['source'],
+                           environment=env, serial=env['serial'], adbPort=env['adbPort'],
+                           deviceFingerprint=env['fingerprint'], avdName=env['avdName'],
+                           adbSha256=self.packet['adb']['sha256'], launcherReceipt=api.descriptor(receipt),
+                           expiresAtUtc=(datetime.now(timezone.utc) + timedelta(minutes=2)).isoformat())
+            calls = self.calls
+            entry = next((item for item in self.packet['plan']['entries'] if item['attemptId'].endswith(payload)), None)
+            prerequisites = []
+            if entry is not None:
+                for preflight in list(api.PAYLOADS)[:3]:
+                    attempt = directory / preflight
+                    evidence = attempt / 'p'
+                    evidence.mkdir(parents=True)
+                    record_path = evidence / 'record.json'
+                    terminal_path = attempt / 'terminal.json'
+                    stdout_path = evidence / 'instrumentation.stdout'
+                    record_path.write_text(json.dumps(dict(payload=preflight, result='PASS', executed=True,
+                                                           source=self.packet['source'], environment=env,
+                                                           packetSha256=self.packet_sha, rawRetentionComplete=True)))
+                    terminal_path.write_text(json.dumps(dict(cleanupResult='VERIFIED', failure=None,
+                                                             bootstrap=False, payload=preflight,
+                                                             source=self.packet['source'], packetSha256=self.packet_sha)))
+                    stdout_path.write_bytes(InstrumentationTests().output(preflight))
+                    prerequisites.append(dict(record=api.descriptor(record_path),
+                                              terminal=api.descriptor(terminal_path),
+                                              instrumentationStdout=api.descriptor(stdout_path)))
+
+            class Transport:
+                def __init__(self, adb_path, owned_session, output):
+                    self.adb, self.session, self.directory = adb_path, owned_session, output
+
+                def verify_device(self, source):
+                    calls.append(('verify', source))
+
+                def run(self, arguments, label, timeout=30, require_success=True):
+                    api.campaign.safe_id(label)  # same dispatch label boundary as OwnedAdbTransport
+                    calls.append(('run', label, tuple(arguments)))
+                    if fail_at == label:
+                        raise ValueError('Bounded ADB operation timeout; preserve evidence and stop')
+                    if arguments[:2] == ['shell', 'getprop']:
+                        values = {'ro.build.version.sdk': '33', 'ro.product.name': env['product'],
+                                  'ro.product.cpu.abi': 'x86_64'}
+                        return subprocess.CompletedProcess(arguments, 0, values[arguments[2]].encode())
+                    if label == 'instrumentation':
+                        return subprocess.CompletedProcess(arguments, 0, InstrumentationTests().output(payload))
+                    encoded = arguments[arguments.index('recoveryCampaignRequest') + 1]
+                    request = json.loads(base64.b64decode(encoded))
+                    operation = request['operation']
+                    calls.append(('operation', operation, request))
+                    event = dict(schema='DORA_RECOVERY_CAMPAIGN_EVENT_V1', eventType='RESULT',
+                                 operation=operation, attemptId=entry['attemptId'],
+                                 candidateId=entry['candidateId'], runId=entry['runId'])
+                    event.update((operation_results or {}).get(operation, {}))
+                    selector = api.campaign.SELECTOR
+                    cls, method = selector.split('#')
+                    lines = (f'INSTRUMENTATION_STATUS: class={cls}\nINSTRUMENTATION_STATUS: test={method}\n'
+                             'INSTRUMENTATION_STATUS: numtests=1\nINSTRUMENTATION_STATUS: current=1\n'
+                             'INSTRUMENTATION_STATUS_CODE: 1\n'
+                             'INSTRUMENTATION_STATUS: stream=DORA_RECOVERY_CAMPAIGN_EVENT '
+                             + json.dumps(event, separators=(',', ':')) + '\n'
+                             'INSTRUMENTATION_STATUS_CODE: 0\n'
+                             f'INSTRUMENTATION_STATUS: class={cls}\nINSTRUMENTATION_STATUS: test={method}\n'
+                             'INSTRUMENTATION_STATUS: numtests=1\nINSTRUMENTATION_STATUS: current=1\n'
+                             'INSTRUMENTATION_STATUS_CODE: 0\nINSTRUMENTATION_CODE: -1\n')
+                    return subprocess.CompletedProcess(arguments, 0, lines.encode())
+
+                def extract_prefix(self, selected, observed, label='recovered'):
+                    calls.append(('prefix', label))
+                    path = self.directory / (label + '.pcm')
+                    path.write_bytes(b'synthetic prefix')
+                    return path
+
+            output = directory / 'attempt'
+            with patch.object(api, 'validate_admission'), patch.object(api.campaign, 'OwnedAdbTransport', Transport):
+                if entry is None:
+                    record = api.run_payload(self.root, self.packet, self.packet_sha, session, payload, output, [])
+                else:
+                    def retain(_transport, _plan, _entry, _observation, label):
+                        calls.append(('retain', label))
+                        return {'retained': True}
+                    def kill(_transport, _plan, _entry, _variant, controller):
+                        self.assertEqual(self.packet['externalKillController'], controller)
+                        calls.append(('kill', payload))
+                        api.campaign.save_new(output / 'kill-native-exit.json',
+                                              {'barrier': {'acceptedEnd': entry['plaintextBytes']}})
+                        return {key: True for key in api.campaign.KILL_PROOFS}
+                    with ExitStack() as stack:
+                        stack.enter_context(patch.object(api, 'verify_observations'))
+                        stack.enter_context(patch.object(api.campaign, 'retain_evidence', side_effect=retain))
+                        stack.enter_context(patch.object(api.campaign, 'compare_prefix', return_value=True))
+                        if entry['kind'] == 'HARD_KILL':
+                            stack.enter_context(patch.object(api, 'run_api33_kill', side_effect=kill))
+                        record = api.run_payload(self.root, self.packet, self.packet_sha, session, payload, output, prerequisites)
+            files = {path.name: json.loads(path.read_text()) for path in output.glob('*.json')}
+            self.assertTrue((output / 'SHA256SUMS.txt').is_file())
+            return record, files
+
+    def test_fixed_preflight_dispatches_after_all_runtime_identity_checks(self):
+        record, files = self.run_synthetic('F33-02')
+        self.assertEqual('PASS', record['result'])
+        self.assertEqual(1, record['actualAndroidCommands'])
+        self.assertEqual(['ro-build-version-sdk', 'ro-product-name', 'ro-product-cpu-abi', 'instrumentation'],
+                         [call[1] for call in self.calls if call[0] == 'run'])
+        self.assertEqual('F33-02', files['record.json']['payload'])
+
+    def test_normal_prepare_recover_replay_retention_then_cleanup(self):
+        entry = self.packet['plan']['entries'][0]
+        extent = entry['plaintextBytes']
+        recovered = dict(acceptedEnd=extent, committedEnd=473256, recoveredEnd=extent,
+                         receiptIdentity='receipt', classification='VALID',
+                         authenticated=True, contiguous=True, caseOracleSatisfied=True,
+                         duplicateProcessingIntents=0, missingProcessingIntents=0,
+                         microphoneOpens=0, unsafePathOpens=0, processingIntentCount=0,
+                         sourceUnchanged=True, streamTerminal='AUTHENTICATED_EOF')
+        record, files = self.run_synthetic('F33-04', operation_results={
+            'PREPARE': {'acceptedEnd': extent}, 'RECOVER': recovered, 'CLEANUP': {'cleanupComplete': True}})
+        operations = [call for call in self.calls if call[0] == 'operation']
+        self.assertEqual(['PREPARE', 'RECOVER', 'RECOVER', 'CLEANUP'], [call[1] for call in operations])
+        self.assertTrue(all(call[2]['normalCompletion'] for call in operations))
+        self.assertEqual('VERIFIED', record['cleanupResult'])
+        self.assertEqual('PASS', record['result'])
+        self.assertEqual(4, record['actualAndroidCommands'])
+        self.assertTrue(files['attempt-result.json']['candidateResult']['repeatStable'])
+        self.assertEqual(['before-recovery', 'before-final-cleanup'],
+                         [call[1] for call in self.calls if call[0] == 'retain'])
+
+    def test_timeout_before_instrumentation_records_zero_attempted_commands(self):
+        record, files = self.run_synthetic('F33-02', fail_at='ro-product-name')
+        self.assertEqual(0, record['actualAndroidCommands'])
+        self.assertEqual('INCONCLUSIVE', record['result'])
+        self.assertIn('timeout', record['error'])
+        self.assertNotIn('observations.json', files)
+
+    def test_timeout_after_instrumentation_dispatch_preserves_attempt_count(self):
+        record, files = self.run_synthetic('F33-02', fail_at='instrumentation')
+        self.assertEqual(1, record['actualAndroidCommands'])
+        self.assertEqual('INCONCLUSIVE', record['result'])
+        self.assertFalse(record['rawRetentionComplete'])
+        self.assertFalse(files['record.json']['executed'])
+
+    def test_valid_kill_candidate_failure_keeps_fail_envelope(self):
+        record, files = self.run_synthetic('F33-06', operation_results={
+            'RECOVER': {'recoveredEnd': 0}, 'CLEANUP': {'cleanupComplete': True}})
+        self.assertEqual('FAIL', record['result'])
+        self.assertEqual('VALID', files['attempt-result.json']['status'])
+        self.assertTrue(all(files['attempt-result.json']['kill'].values()))
+        self.assertEqual('VERIFIED', record['cleanupResult'])
+        self.assertEqual(['RECOVER', 'RECOVER', 'CLEANUP'],
+                         [call[1] for call in self.calls if call[0] == 'operation'])
+        self.assertIn('WATERMARKS_MISSING_OR_INVALID', record['assessment']['failures'])
+
+
+class SqliteReuseTests(unittest.TestCase):
+    def setUp(self):
+        Api33AdmissionTests.setUp(self)
+
+    def sqlite_observation(self, options=()):
+        rows = list(options)
+        return dict(device={'sdk': 33, 'fingerprint': self.packet['environment']['fingerprint']},
+                    apks={'targetSha256': api.APP_SHA, 'testSha256': self.packet['source']['testApkSha256']},
+                    harnessRevision=self.packet['harnessSourceCommit'],
+                    sqliteVersion='3.39.2', sqliteSourceId='synthetic-source-id',
+                    sqliteVersionQueryFailed=False, sqliteSourceIdQueryFailed=False,
+                    sqlitePragmaObservations={'journal_mode': 'wal', 'synchronous': '2',
+                                              'wal_autocheckpoint': '0', 'foreign_keys': '1'},
+                    sqlitePragmaQueryFailures={key: None for key in
+                                               ('journal_mode', 'synchronous', 'wal_autocheckpoint', 'foreign_keys')},
+                    sqliteCompileOptionsRaw=rows, sqliteCompileOptionsQueryFailed=False,
+                    sqliteCompileOptionsCount=len(rows),
+                    sqliteCompileOptionsCanonicalSha256=hashlib.sha256(
+                        ('\n'.join(sorted(rows)) + '\n').encode()).hexdigest())
+
+    def test_empty_compile_options_is_canonical_success(self):
+        observation = self.sqlite_observation()
+        self.assertEqual(hashlib.sha256(b'\n').hexdigest(),
+                         observation['sqliteCompileOptionsCanonicalSha256'])
+        api.verify_observations(self.packet, 'F33-01', [observation, copy.deepcopy(observation)])
+
+    def test_duplicate_unsorted_rows_preserve_canonical_digest(self):
+        observation = self.sqlite_observation(['Z=1', 'A=1', 'A=1'])
+        self.assertEqual(3, observation['sqliteCompileOptionsCount'])
+        api.verify_observations(self.packet, 'F33-01', [observation, copy.deepcopy(observation)])
+
+    def test_sqlite_identity_digest_count_and_query_failures_rejected(self):
+        valid = self.sqlite_observation()
+        bad_values = [
+            {'sqliteCompileOptionsRaw': [42]},
+            {'sqliteCompileOptionsCount': 1},
+            {'sqliteCompileOptionsCount': True},
+            {'sqliteCompileOptionsCanonicalSha256': '0' * 64},
+            {'sqliteCompileOptionsQueryFailed': True},
+            {'sqliteVersion': None},
+            {'sqliteVersionQueryFailed': True},
+            {'sqliteSourceId': None},
+            {'sqliteSourceIdQueryFailed': True},
+            {'sqlitePragmaObservations': dict(valid['sqlitePragmaObservations'], journal_mode='delete')},
+            {'sqlitePragmaQueryFailures': dict(valid['sqlitePragmaQueryFailures'], journal_mode='error')},
+        ]
+        for changes in bad_values:
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                observation = dict(valid, **changes)
+                api.verify_observations(self.packet, 'F33-01', [observation, copy.deepcopy(observation)])
+
+    def reuse_items(self, root, source, environment, *, packet_sha, sqlite):
+        items = []
+        for payload in list(api.PAYLOADS)[:3]:
+            attempt = root / payload
+            evidence = attempt / 'p'
+            evidence.mkdir(parents=True)
+            record_path = evidence / 'record.json'
+            terminal_path = attempt / 'terminal.json'
+            raw_path = evidence / 'instrumentation.stdout'
+            failed = payload == 'F33-01'
+            record_path.write_text(json.dumps(dict(payload=payload, result='FAIL' if failed else 'PASS',
+                                                   error='SQLite metadata absent' if failed else None,
+                                                   executed=True, source=source, environment=environment,
+                                                   packetSha256=packet_sha, rawRetentionComplete=True)))
+            terminal_path.write_text(json.dumps(dict(cleanupResult='VERIFIED',
+                                                     failure='PAYLOAD_EXIT:2' if failed else None,
+                                                     bootstrap=False, payload=payload,
+                                                     source=source, packetSha256=packet_sha)))
+            output = InstrumentationTests().output(payload)
+            if failed:
+                output = output.replace(b'{}', json.dumps(sqlite, separators=(',', ':')).encode())
+            raw_path.write_bytes(output)
+            items.append(dict(record=api.descriptor(record_path), terminal=api.descriptor(terminal_path),
+                              instrumentationStdout=api.descriptor(raw_path)))
+        return items
+
+    def test_reuse_accepts_only_original_host_failure_with_successful_raw_sqlite(self):
+        prior = copy.deepcopy(self.packet)
+        current = copy.deepcopy(prior)
+        current['source'] = dict(prior['source'], commit='4' * 40, tree='5' * 40)
+        current['harnessSourceCommit'] = '4' * 40
+        current['preflightReuse'] = {'path': 'synthetic-reuse-proof', 'sha256': 'b' * 64}
+        sqlite = self.sqlite_observation()
+        with tempfile.TemporaryDirectory() as td:
+            items = self.reuse_items(Path(td), prior['source'], prior['environment'],
+                                     packet_sha=getattr(api, 'SQLITE_PREFLIGHT_PACKET_SHA', 'a' * 64),
+                                     sqlite=sqlite)
+            def check_observations(packet, payload, observations):
+                if payload == 'F33-01':
+                    original_verify(packet, payload, observations)
+            original_verify = api.verify_observations
+            with patch.object(api, 'preflight_packet', return_value=prior), \
+                 patch.object(api, 'verify_observations', side_effect=check_observations) as observations:
+                api.verify_preflights(current, items)
+                self.assertEqual(['F33-01', 'F33-02', 'F33-03'],
+                                 [call.args[1] for call in observations.call_args_list])
+                record_path = Path(items[0]['record']['path'])
+                original = json.loads(record_path.read_text())
+                for changed in [dict(error='other failure'), dict(result='PASS'), dict(executed=False)]:
+                    record_path.write_text(json.dumps(dict(original, **changed)))
+                    items[0]['record'] = api.descriptor(record_path)
+                    with self.subTest(changed=changed), self.assertRaises(ValueError):
+                        api.verify_preflights(current, items)
+                record_path.write_text(json.dumps(original))
+                items[0]['record'] = api.descriptor(record_path)
+                terminal_path = Path(items[0]['terminal']['path'])
+                terminal = json.loads(terminal_path.read_text())
+                for changed in [dict(failure='OTHER'), dict(cleanupResult='UNCERTAIN')]:
+                    terminal_path.write_text(json.dumps(dict(terminal, **changed)))
+                    items[0]['terminal'] = api.descriptor(terminal_path)
+                    with self.subTest(changed=changed), self.assertRaises(ValueError):
+                        api.verify_preflights(current, items)
+
+
+class PreflightReuseProofTests(unittest.TestCase):
+    def make_fixture(self, directory, *, prior_changes=None, current_changes=None,
+                     review_files=True, packet_files=True, prior_digest=None,
+                     changed_paths='tools/recovery_api33.py\ntools/test_recovery_api33.py'):
+        admission = Api33AdmissionTests()
+        admission.setUp()
+        prior = admission.packet
+        prior['launcher'] = {'path': str(directory / 'launcher'), 'sha256': 'a' * 64}
+        if prior_changes:
+            prior_changes(prior)
+        prior_path = directory / 'prior-packet.json'
+        prior_path.write_text(json.dumps(prior))
+        prior_descriptor = api.descriptor(prior_path)
+        proof_path = directory / 'reuse-proof.json'
+        proof_path.write_text(json.dumps(dict(schema='DORA_API33_PREFLIGHT_REUSE_V1',
+                                              priorPacket=dict(prior_descriptor,
+                                                               sha256=prior_digest or prior_descriptor['sha256']))))
+        proof_descriptor = api.descriptor(proof_path)
+        review_path = directory / 'review.json'
+        review_path.write_text(json.dumps(dict(verdict='APPROVED',
+                                               files=[proof_descriptor, prior_descriptor] if review_files else [])))
+        current = copy.deepcopy(prior)
+        current['source'].update(commit='4' * 40, tree='5' * 40)
+        current['harnessSourceCommit'] = '4' * 40
+        current['preflightReuse'] = proof_descriptor
+        current['files'] = [proof_descriptor, prior_descriptor] if packet_files else []
+        current['proofs'] = {'review': api.descriptor(review_path)}
+        if current_changes:
+            current_changes(current)
+        return prior, current, prior_descriptor, changed_paths
+
+    def check_fixture(self, *, expected_error=None, **fixture_args):
+        with tempfile.TemporaryDirectory() as td:
+            prior, current, descriptor, changed_paths = self.make_fixture(Path(td), **fixture_args)
+            def git_result(_root, *args):
+                if args[0] == 'merge-base':
+                    return ''
+                self.assertEqual(('diff', '--name-only', '1' * 40, '4' * 40), args)
+                return changed_paths
+            with patch.object(api, 'SQLITE_PREFLIGHT_PACKET_SHA', descriptor['sha256']), \
+                 patch.object(api, 'SQLITE_PREFLIGHT_COMMIT', '1' * 40), \
+                 patch.object(api, 'git', side_effect=git_result):
+                if expected_error:
+                    with self.assertRaisesRegex(ValueError, expected_error):
+                        api.preflight_packet(current)
+                else:
+                    self.assertEqual(prior, api.preflight_packet(current))
+
+    def test_valid_reviewed_pinned_predecessor(self):
+        self.check_fixture()
+
+    def test_packet_pin_and_exact_predecessor_source(self):
+        self.check_fixture(prior_digest='f' * 64, expected_error='Unreviewed predecessor packet')
+        self.check_fixture(prior_changes=lambda prior: prior.update(
+            harnessSourceCommit='2' * 40, source=dict(prior['source'], commit='2' * 40)),
+            expected_error='Wrong predecessor source')
+
+    def test_environment_apk_and_launcher_drift(self):
+        mutations = [
+            (lambda current: current['environment'].update(product='other'), 'environment drift'),
+            (lambda current: current['source'].update(appApkSha256='f' * 64), 'APK drift'),
+            (lambda current: current['source'].update(testApkSha256='f' * 64), 'APK drift'),
+            (lambda current: current.update(launcher={'path': 'other', 'sha256': 'f' * 64}), 'launcher drift'),
+        ]
+        for mutation, error in mutations:
+            with self.subTest(error=error, mutation=mutation):
+                self.check_fixture(current_changes=mutation, expected_error=error)
+
+    def test_unpinned_or_unreviewed_proof_and_android_diff(self):
+        self.check_fixture(packet_files=False, expected_error='not pinned')
+        self.check_fixture(review_files=False, expected_error='not reviewed')
+        self.check_fixture(changed_paths='android/poc/recovery/build.gradle.kts',
+                           expected_error='changed Android')
+        self.check_fixture(changed_paths='', expected_error='changed Android')
+
+    def test_no_reuse_returns_current_packet_identity(self):
+        packet = {'schema': api.SCHEMA}
+        self.assertIs(packet, api.preflight_packet(packet))
+
+
+class Api33ControllerKillTests(unittest.TestCase):
+    def setUp(self):
+        self.path = '/system/xbin/su'
+        self.digest = 'a' * 64
+        self.controller = {'kind': 'STOCK_USERDEBUG_SU_EXACT_PID_SIGKILL',
+                           'path': self.path, 'sha256': self.digest, 'killPath': '/system/bin/kill', 'killSha256': self.digest}
+        self.calls = []
+        self.sha_output = self.digest.encode() + b'  ' + self.path.encode() + b'\n'
+        self.uid_output = b'0\n'
+        self.enforce_output = b'Enforcing\n'
+
+        class Transport:
+            adb = Path('synthetic-adb')
+            session = {'serial': 'emulator-5560'}
+            instrumentation_parser_sha256 = 'b' * 64
+
+            def argv(inner, arguments):
+                self.calls.append(('argv', tuple(arguments)))
+                return ['synthetic-adb', *arguments]
+
+            def run(inner, arguments, label, timeout=30, require_success=True):
+                self.calls.append(('run', label, tuple(arguments)))
+                if 'sha256sum' in arguments:
+                    output = self.sha_output if arguments[-1] == self.path else self.digest.encode() + b'  /system/bin/kill\n'
+                elif 'id' in arguments and '-u' in arguments:
+                    output = self.uid_output
+                elif 'getenforce' in arguments:
+                    output = self.enforce_output
+                else:
+                    output = b'ordinary command\n'
+                return subprocess.CompletedProcess(arguments, 0, output)
+
+        self.transport = Transport()
+        self.proofs = {key: True for key in api.campaign.KILL_PROOFS}
+
+    def run_proxy(self, callback):
+        with patch.object(api.campaign, 'run_kill', side_effect=callback) as inherited:
+            result = api.run_api33_kill(self.transport, {}, {'kind':'HARD_KILL','environment':'API33-GAPI','stratumId':'K08','candidateId':api.campaign.CANDIDATES[0]}, 'DEFAULT', self.controller)
+        self.assertEqual(1, inherited.call_count)
+        return result
+
+    def test_only_exact_sigkill_command_is_substituted(self):
+        def inherited(proxy, plan, entry, variant):
+            self.assertEqual(['synthetic-adb', 'shell', 'echo', 'ordinary'],
+                             proxy.argv(['shell', 'echo', 'ordinary']))
+            self.assertEqual(b'ordinary command\n',
+                             proxy.run(['shell', 'echo', 'ordinary'], 'ordinary').stdout)
+            args = ['shell', 'run-as', api.PACKAGE, 'kill', '-9', '1234']
+            proxy.run(args, 'ordinary-kill-label')
+            proxy.run(args, 'sigkill')
+            return self.proofs
+        self.assertEqual(self.proofs, self.run_proxy(inherited))
+        commands = [(call[1], call[2]) for call in self.calls if call[0] == 'run']
+        self.assertIn(('ordinary', ('shell', 'echo', 'ordinary')), commands)
+        self.assertIn(('ordinary-kill-label', ('shell', 'run-as', api.PACKAGE, 'kill', '-9', '1234')),
+                      commands)
+        self.assertIn(('sigkill', ('shell', self.path, '0', '/system/bin/kill', '-9', '1234')), commands)
+        self.assertNotIn(('sigkill', ('shell', 'run-as', api.PACKAGE, 'kill', '-9', '1234')), commands)
+        self.assertGreaterEqual(sum(1 for label, args in commands if 'getenforce' in args), 2)
+
+    def test_proxy_rejects_mutated_signal_boundary(self):
+        invalid = [
+            ['shell', 'run-as', api.PACKAGE, 'kill', '-9', '0'],
+            ['shell', 'run-as', api.PACKAGE, 'kill', '-9', '-1'],
+            ['shell', 'run-as', api.PACKAGE, 'kill', '-9', '1'],
+            ['shell', 'run-as', api.PACKAGE, 'kill', '-9', 'abc'],
+            ['shell', 'run-as', 'foreign.package', 'kill', '-9', '1234'],
+            ['shell', 'run-as', api.PACKAGE, 'kill', '-9', '1234', 'extra'],
+        ]
+        for args in invalid:
+            with self.subTest(args=args):
+                self.calls.clear()
+                def inherited(proxy, *_):
+                    with self.assertRaises(ValueError):
+                        proxy.run(args, 'sigkill')
+                    return self.proofs
+                self.run_proxy(inherited)
+                self.assertFalse(any(call[0] == 'run' and call[1] == 'sigkill'
+                                     for call in self.calls))
+
+    def test_bad_controller_capability_stops_before_campaign(self):
+        scenarios = [dict(sha_output=b'f' * 64 + b'  /system/xbin/su\n'),
+                     dict(uid_output=b'2000\n'),
+                     dict(enforce_output=b'Permissive\n')]
+        for changes in scenarios:
+            with self.subTest(changes=changes):
+                self.sha_output = self.digest.encode() + b'  ' + self.path.encode() + b'\n'
+                self.uid_output = b'0\n'
+                self.enforce_output = b'Enforcing\n'
+                self.__dict__.update(changes)
+                self.calls.clear()
+                with patch.object(api.campaign, 'run_kill') as inherited, \
+                     self.assertRaises(ValueError):
+                    api.run_api33_kill(self.transport, {}, {'kind':'HARD_KILL','environment':'API33-GAPI','stratumId':'K08','candidateId':api.campaign.CANDIDATES[0]}, 'DEFAULT', self.controller)
+                inherited.assert_not_called()
+
+    def test_unapproved_controller_identity_stops_before_campaign(self):
+        for changed in [dict(kind='OTHER'), dict(path='/data/local/tmp/su'), dict(sha256='f')]:
+            with self.subTest(changed=changed), \
+                 patch.object(api.campaign, 'run_kill') as inherited, \
+                 self.assertRaises(ValueError):
+                api.run_api33_kill(self.transport, {}, {'kind':'HARD_KILL','environment':'API33-GAPI','stratumId':'K08','candidateId':api.campaign.CANDIDATES[0]}, 'DEFAULT', dict(self.controller, **changed))
+            inherited.assert_not_called()
+
+    def test_enforcing_must_still_hold_after_inherited_kill(self):
+        def inherited(*_):
+            self.enforce_output = b'Permissive\n'
+            return self.proofs
+        with patch.object(api.campaign, 'run_kill', side_effect=inherited) as campaign_kill, \
+             self.assertRaises(ValueError):
+            api.run_api33_kill(self.transport, {}, {'kind':'HARD_KILL','environment':'API33-GAPI','stratumId':'K08','candidateId':api.campaign.CANDIDATES[0]}, 'DEFAULT', self.controller)
+        campaign_kill.assert_called_once()
+
+
+class ExternalControllerAdmissionTests(unittest.TestCase):
+    def fixture(self, directory, *, contents=None, controller_changes=None,
+                proof_changes=None, fact_changes=None, pinned=True, reviewed=True,
+                foreign_retention=False, foreign_cleanup=False):
+        admission = Api33AdmissionTests()
+        admission.setUp()
+        packet = admission.packet
+        controller = dict(kind='STOCK_USERDEBUG_SU_EXACT_PID_SIGKILL',
+                          path='/system/xbin/su', sha256='a' * 64,
+                          killPath='/system/bin/kill', killSha256='b' * 64)
+        if controller_changes:
+            controller.update(controller_changes)
+        packet['externalKillController'] = controller
+        evidence = dict(suPath='/system/xbin/su\n',
+                        suSha='a' * 64 + '  /system/xbin/su\n',
+                        rootIdentity='uid=0(root) gid=0(root)\n',
+                        enforcing='Enforcing\n', policy='synthetic policy evidence\n',
+                        killSha='b' * 64 + '  /system/bin/kill\n',
+                        priorFailure=json.dumps(dict(error='ADB operation failed: sigkill')),
+                        retention=json.dumps(dict(complete=True)),
+                        cleanup=json.dumps(dict(cleanupResult='VERIFIED', failure=None)))
+        evidence.update(contents or {})
+        diagnostic_dir = directory / 'diag'
+        diagnostic_dir.mkdir()
+        labels = dict(suPath=('023', 'su-path'), suSha=('024', 'su-binary-sha'),
+                      rootIdentity=('025', 'userdebug-controller-identity'),
+                      enforcing=('017', 'selinux-mode'), policy=('022', 'platform-policy'),
+                      killSha=('021', 'kill-binary-sha'))
+        facts = {label: {'nativeExit': 1 if key == 'suSha' else 0,
+                         'stdoutSha256': hashlib.sha256(evidence[key].encode()).hexdigest()}
+                 for key, (_, label) in labels.items()}
+        for label, changes in (fact_changes or {}).items():
+            facts[label].update(changes)
+        diagnostic = dict(noInstrumentation=True, noSignals=True, retentionComplete=True, facts=facts)
+        if 'diagnostic' in evidence:
+            diagnostic.update(json.loads(evidence.pop('diagnostic')))
+        proof = dict(schema='DORA_API33_STOCK_CONTROLLER_V1', environment=packet['environment'],
+                     controller=controller)
+        for name, value in evidence.items():
+            if name in labels:
+                number, label = labels[name]
+                path = diagnostic_dir / (number + '-' + label + '.stdout')
+            elif name == 'retention':
+                path = (directory / 'foreign' if foreign_retention else diagnostic_dir) / 'retention-receipt.json'
+            elif name == 'cleanup':
+                path = (directory / 'foreign' if foreign_cleanup else directory) / 'terminal.json'
+            else:
+                path = directory / 'prior' / 'record.json'
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(value.encode())
+            proof[name] = api.descriptor(path)
+        diagnostic_path = diagnostic_dir / 'diagnosis.json'
+        diagnostic_path.write_text(json.dumps(diagnostic))
+        proof['diagnostic'] = api.descriptor(diagnostic_path)
+        if proof_changes:
+            proof.update(proof_changes)
+        proof_path = directory / 'controller-proof.json'
+        proof_path.write_text(json.dumps(proof))
+        descriptor = api.descriptor(proof_path)
+        packet['externalControllerEvidence'] = descriptor
+        packet['files'] = [descriptor] if pinned else []
+        review = {'files': [descriptor] if reviewed else []}
+        return packet, review
+
+    def check(self, expected_error=None, **fixture_args):
+        with tempfile.TemporaryDirectory() as td:
+            packet, review = self.fixture(Path(td), **fixture_args)
+            if expected_error:
+                with self.assertRaisesRegex(ValueError, expected_error):
+                    api.validate_external_controller(packet, review)
+            else:
+                api.validate_external_controller(packet, review)
+
+    def test_pinned_reviewed_exact_controller_evidence(self):
+        self.check()
+
+    def test_mismatched_or_unpinned_unreviewed_proof(self):
+        self.check(proof_changes={'environment': {'api': 34}}, expected_error='environment')
+        self.check(proof_changes={'schema': 'OTHER'}, expected_error='environment')
+        self.check(pinned=False, expected_error='pinned and reviewed')
+        self.check(reviewed=False, expected_error='pinned and reviewed')
+
+    def test_bad_controller_path_hash_root_and_enforcing(self):
+        self.check(controller_changes={'path': '/data/local/tmp/su'}, expected_error='authority')
+        self.check(controller_changes={'sha256': 'G' * 64}, expected_error='authority')
+        self.check(controller_changes={'killPath': '/data/local/tmp/kill'}, expected_error='authority')
+        self.check(controller_changes={'killSha256': 'G' * 64}, expected_error='authority')
+        self.check(contents={'suPath': '/system/bin/su\n'}, expected_error='path mismatch')
+        self.check(contents={'suSha': 'f' * 64 + '  /system/xbin/su\n'}, expected_error='hash mismatch')
+        self.check(contents={'killSha': 'f' * 64 + '  /system/bin/kill\n'}, expected_error='kill binary hash')
+        self.check(contents={'rootIdentity': 'uid=2000(shell)\n'}, expected_error='root identity')
+        self.check(contents={'enforcing': 'Permissive\n'}, expected_error='not enforcing')
+
+    def test_failed_diagnostic_retention_prior_error_or_cleanup(self):
+        self.check(contents={'diagnostic': json.dumps(dict(noInstrumentation=True,
+                                                           noSignals=True, retentionComplete=False))},
+                   expected_error='diagnostic incomplete')
+        self.check(contents={'priorFailure': json.dumps(dict(error='other failure'))},
+                   expected_error='failure not retained')
+        self.check(contents={'retention': json.dumps(dict(complete=False))},
+                   expected_error='failure not retained')
+        self.check(contents={'cleanup': json.dumps(dict(cleanupResult='UNCERTAIN'))},
+                   expected_error='failure not retained')
+        self.check(contents={'cleanup': json.dumps(dict(cleanupResult='VERIFIED', failure='ERROR'))},
+                   expected_error='failure not retained')
+        self.check(foreign_retention=True, expected_error='different attempts')
+        self.check(foreign_cleanup=True, expected_error='different attempts')
+
+    def test_diagnostic_commands_are_linked_to_one_successful_attempt(self):
+        self.check(fact_changes={'su-path': {'nativeExit': 1}}, expected_error='command failed')
+        self.check(fact_changes={'userdebug-controller-identity': {'nativeExit': 1}},
+                   expected_error='command failed')
+        self.check(fact_changes={'selinux-mode': {'nativeExit': 1}}, expected_error='command failed')
+        self.check(fact_changes={'platform-policy': {'nativeExit': 1}}, expected_error='command failed')
+        self.check(fact_changes={'kill-binary-sha': {'nativeExit': 1}}, expected_error='command failed')
+        self.check(fact_changes={'su-binary-sha': {'nativeExit': 2}}, expected_error='command failed')
+        self.check(fact_changes={'su-path': {'stdoutSha256': 'f' * 64}}, expected_error='stdout drifted')
+        self.check(fact_changes={'kill-binary-sha': {'stdoutSha256': 'f' * 64}}, expected_error='stdout drifted')
+
+
+if __name__ == '__main__': unittest.main()

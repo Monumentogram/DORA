@@ -46,6 +46,37 @@ import org.junit.Test
 
 class RecoveryStreamingReconciliationControllerTest {
     @Test
+    fun `SPL01 missing publication must authenticate its retained artifact before returning`() {
+        val events = mutableListOf<String>()
+        val fixture = controllerFixture()
+        val journal = ControllerJournal(events)
+        val controller =
+            RecoveryStreamingReconciliationController(
+                journal,
+                NeverControllerSource(events),
+                RecoveryRunSingleWriterGuard { RecoveryRunWriterLease {} },
+                RecoveryStreamingCheckpointAuthenticator { _, _ ->
+                    error("Missing row cannot authenticate as committed")
+                },
+                RecoveryStreamingEvidenceSink {},
+                RecoveryStreamingOrphanHandler { witness, chain ->
+                    assertEquals(fixture.request.witness, witness)
+                    assertTrue(chain.isEmpty())
+                    events += "authenticate-retained-checkpoint"
+                    RecoveryStreamingReconciliationResult.Fatal.nonPersistable(
+                        RecoveryStreamingResultStage.PREREQUISITE,
+                        RecoveryStreamingResultClassification.STREAM_CHECKPOINT_MISSING,
+                    )
+                },
+            )
+        controller.recover(fixture.request)
+        assertTrue(
+            "SPL01 must reach authentication, not return before inspecting its orphan",
+            events.contains("authenticate-retained-checkpoint"),
+        )
+    }
+
+    @Test
     fun `v08 result vocabulary and all twenty outward mappings are closed`() {
         assertEquals(
             listOf(

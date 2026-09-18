@@ -491,6 +491,27 @@ Kafka, service mesh, отдельный vector DB, Kubernetes, event sourcing в
 
 ### 14.3. Durable write protocol
 
+Reduced internal-alpha amendment (15 September 2026): the
+[successor owner decision](stage0/DORA_0D6_ALPHA_REDUCED_SCOPE_OWNER_DECISION_20260915.md)
+sets the immediate emulator verification milestone to 114 original E36 requirements
+with every variant retained, deferring 300 repetitions while preserving full 414/600
+accounting and acceptance. The alpha floor is API33; Android9–12 compatibility is
+deferred for this alpha. API33 and authorized physical-phone smokes have separate
+evidence gates. Historical D1 requirements and global minSdk remain unchanged.
+`ALPHA_E36_CHECKS_COMPLETE` denotes bounded verification coverage only; full Recovery
+and 0D.6 remain open until their original gates are met.
+
+Subsequent scoped amendment (14 September 2026): the [E36 campaign owner decision](stage0/DORA_0D6_ALPHA_E36_CAMPAIGN_OWNER_DECISION_20260914.md)
+separately authorizes all 414 prepared E36-GAPI base entries without mandatory human
+review, subject to exact technical/source/CI/preflight/ownership and retention gates.
+The preflight-only decision below remains preserved. Required destructive-case product
+failures, replacement caps, physical/API requirements and full-stage criteria are unchanged.
+
+Scoped amendment (14 September 2026): the [internal alpha owner decision](stage0/DORA_0D6_ALPHA_PREFLIGHT_OWNER_DECISION_20260914.md)
+removes mandatory accountable human review only for the three named E36-GAPI preflight
+payloads. Technical acceptance, exact-source CI, advisory evidence, physical/API criteria
+and the legacy/default gates remain intact. It authorizes no campaign or stage closure.
+
 1. До включения микрофона создать `RecordingSession` и `AudioSegment(status=CAPTURING)` в одной SQLCipher transaction.
 2. Создать случайный per-segment DEK; keyset обернуть KEK из Android Keystore. StrongBox использовать, если доступен, с обычным hardware/software Keystore fallback — не блокировать устройство.
 3. Писать ciphertext в `segment-{uuid}.part` через Tink Streaming AEAD; AAD содержит `formatVersion|sessionId|segmentId|sampleRate|channelCount`.

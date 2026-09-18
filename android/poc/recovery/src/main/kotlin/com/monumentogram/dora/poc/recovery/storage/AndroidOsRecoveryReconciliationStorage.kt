@@ -4,6 +4,8 @@ import android.content.Context
 import android.system.ErrnoException
 import android.system.Os
 import android.system.OsConstants
+import com.monumentogram.dora.poc.recovery.candidate.QuarantineBootstrapBinding
+import com.monumentogram.dora.poc.recovery.candidate.QuarantineIntentState
 import com.monumentogram.dora.poc.recovery.candidate.QuarantinePathObservation
 import com.monumentogram.dora.poc.recovery.candidate.QuarantinePathState
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactBytes
@@ -11,6 +13,12 @@ import com.monumentogram.dora.poc.recovery.candidate.RecoveryArtifactPresence
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryFailureCategory
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineIntentRow
 import com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineStorage
+import com.monumentogram.dora.poc.recovery.contract.RecoveryCandidate
+import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineArtifactRole
+import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntent
+import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntentInput
+import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineObservedState
+import com.monumentogram.dora.poc.recovery.contract.RecoveryRelativeNames
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
 import java.io.File
@@ -18,12 +26,32 @@ import java.io.FileDescriptor
 
 internal interface RecoveryReconciliationDescriptor
 
+private val verifiedRetainedContainerProof = Any()
+
+/** Only this storage file can issue proof; it grants no authenticated plaintext. */
+internal class RecoveryRetainedOriginalMismatch(
+    val original: RecoveryQuarantineIntentInput,
+    val retained: RecoveryQuarantineIntentRow,
+    proof: Any,
+) : IllegalStateException("Verified rejected container does not contain the original extent") {
+    init {
+        require(proof === verifiedRetainedContainerProof)
+    }
+}
+
 internal data class RecoveryReconciliationStat(val type: BootstrapPathType, val size: Long = 0)
 
 internal class RecoveryUnsafePathException(
     message: String,
     val category: RecoveryFailureCategory = RecoveryFailureCategory.UNSAFE_PARENT,
 ) : IllegalStateException(message)
+
+/** Only a regular descriptor whose observed extent exceeds its unchanged read cap. */
+internal class RecoveryArtifactSizeLimitException(
+    val relativeName: String,
+    val observedBytes: Long,
+    val maximumBytes: Long,
+) : IllegalStateException("Recovery artifact exceeds its upper bound")
 
 internal class RecoveryArtifactAccessException(
     val presence: RecoveryArtifactPresence,
@@ -137,6 +165,157 @@ internal constructor(
         }
     }
 
+    /**
+     * Separate evidence read. Full retained bytes are checked before slicing the original extent.
+     */
+    @Suppress(
+        "CyclomaticComplexMethod",
+        "ThrowsCount",
+    ) // Keep all evidence-admission checks explicit.
+    fun loadQuarantinedMicrofileExtent(
+        row: RecoveryQuarantineIntentRow,
+        original: RecoveryQuarantineIntentInput,
+    ): RecoveryArtifactBytes {
+        val input = row.input
+        val maximum = RecoveryArtifactRoleBounds.maximumFor(original.sourceRelativeName)
+        val admitted =
+            original.candidate == RecoveryCandidate.MICROFILE &&
+                canonicalMicrofileName(original) &&
+                input.candidate == original.candidate &&
+                input.runId == original.runId &&
+                input.sourceRelativeName == original.sourceRelativeName &&
+                input.artifactRole == original.artifactRole &&
+                original.artifactRole in
+                    setOf(
+                        RecoveryQuarantineArtifactRole.MICROFILE_CIPHERTEXT,
+                        RecoveryQuarantineArtifactRole.MICROFILE_KEY_ENVELOPE,
+                        RecoveryQuarantineArtifactRole.MANIFEST_CIPHERTEXT,
+                        RecoveryQuarantineArtifactRole.MANIFEST_KEY_ENVELOPE,
+                    ) &&
+                row.state == QuarantineIntentState.COMPLETED &&
+                row.bootstrapBinding == QuarantineBootstrapBinding.PRESENT &&
+                row.recordedObservedState in
+                    setOf(
+                        RecoveryQuarantineObservedState.REFERENCED_REJECTED,
+                        RecoveryQuarantineObservedState.REFERENCED_DEPENDENT,
+                    ) &&
+                row.intentId == RecoveryQuarantineIntent.calculate(input) &&
+                row.destinationRelativeName == RecoveryQuarantineIntent.destination(input) &&
+                original.sourceBytes > 0UL &&
+                original.sourceBytes <= maximum.toULong() &&
+                input.sourceBytes <= maximum.toULong() &&
+                (row.recordedObservedState !=
+                    RecoveryQuarantineObservedState.REFERENCED_DEPENDENT ||
+                    (input.sourceBytes == original.sourceBytes &&
+                        input.sourceSha256 == original.sourceSha256))
+        if (!admitted)
+            throw structuralArtifactFailure("Retained MICROFILE identity is not admitted")
+        val paths = paths(row)
+        requireAllAncestors(paths)
+        when (type(paths.source)) {
+            BootstrapPathType.ABSENT -> Unit
+            BootstrapPathType.REGULAR ->
+                throw structuralArtifactFailure("Retained source is still active")
+            else ->
+                throw RecoveryUnsafePathException(
+                    "Unsafe retained source",
+                    RecoveryFailureCategory.CORRUPT_LEAF,
+                )
+        }
+        when (type(paths.destination)) {
+            BootstrapPathType.REGULAR -> Unit
+            BootstrapPathType.ABSENT ->
+                throw structuralArtifactFailure("Retained destination is missing")
+            else ->
+                throw RecoveryUnsafePathException(
+                    "Unsafe retained destination",
+                    RecoveryFailureCategory.CORRUPT_LEAF,
+                )
+        }
+        val full = readExact(paths.destination, input.sourceBytes.toLong(), maximum)
+        if (Sha256Value.calculate(full) != input.sourceSha256)
+            throw structuralArtifactFailure("Full retained container changed")
+        if (original.sourceBytes > input.sourceBytes)
+            throw RecoveryArtifactAccessException(
+                RecoveryArtifactPresence.PRESENT,
+                true,
+                RecoveryRetainedOriginalMismatch(original, row, verifiedRetainedContainerProof),
+            )
+        val extent = full.copyOfRange(0, original.sourceBytes.toInt())
+        if (Sha256Value.calculate(extent) != original.sourceSha256)
+            throw RecoveryArtifactAccessException(
+                RecoveryArtifactPresence.PRESENT,
+                true,
+                RecoveryRetainedOriginalMismatch(original, row, verifiedRetainedContainerProof),
+            )
+        return RecoveryArtifactBytes(original.sourceRelativeName, extent)
+    }
+
+    @Suppress("ReturnCount", "SwallowedException")
+    private fun canonicalMicrofileName(input: RecoveryQuarantineIntentInput): Boolean {
+        val number =
+            Regex("[0-9]+").findAll(input.sourceRelativeName).singleOrNull()?.value?.toULongOrNull()
+                ?: return false
+        return try {
+            val expected =
+                when (input.artifactRole) {
+                    RecoveryQuarantineArtifactRole.MICROFILE_CIPHERTEXT ->
+                        RecoveryRelativeNames.microfileCiphertext(number)
+                    RecoveryQuarantineArtifactRole.MICROFILE_KEY_ENVELOPE ->
+                        RecoveryRelativeNames.microfileKeyEnvelope(number)
+                    RecoveryQuarantineArtifactRole.MANIFEST_CIPHERTEXT ->
+                        RecoveryRelativeNames.manifestCiphertext(number)
+                    RecoveryQuarantineArtifactRole.MANIFEST_KEY_ENVELOPE ->
+                        RecoveryRelativeNames.manifestKeyEnvelope(number)
+                    else -> return false
+                }
+            input.sourceRelativeName == expected
+        } catch (_: IllegalArgumentException) {
+            false
+        }
+    }
+
+    /** Reads only the deterministic checkpoint destination named by an exact journal intent. */
+    fun loadQuarantinedCheckpoint(row: RecoveryQuarantineIntentRow): RecoveryArtifactBytes {
+        val role = row.input.artifactRole
+        require(
+            row.input.candidate ==
+                com.monumentogram.dora.poc.recovery.contract.RecoveryCandidate.STREAM
+        )
+        require(
+            role ==
+                com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineArtifactRole
+                    .CHECKPOINT_CIPHERTEXT ||
+                role ==
+                    com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineArtifactRole
+                        .CHECKPOINT_KEY_ENVELOPE
+        )
+        require(
+            row.intentId ==
+                com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntent.calculate(
+                    row.input
+                )
+        )
+        require(
+            row.destinationRelativeName ==
+                com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntent.destination(
+                    row.input
+                )
+        )
+        val paths = paths(row)
+        requireAllAncestors(paths)
+        val bytes =
+            readExact(
+                paths.destination,
+                row.input.sourceBytes.toLong(),
+                RecoveryArtifactRoleBounds.maximumFor(row.input.sourceRelativeName),
+            )
+        if (Sha256Value.calculate(bytes) != row.input.sourceSha256) {
+            throw structuralArtifactFailure("Quarantine checkpoint changed")
+        }
+        return RecoveryArtifactBytes(row.input.sourceRelativeName, bytes)
+    }
+
     @Suppress("TooGenericExceptionCaught")
     private fun loadRegularArtifact(
         source: File,
@@ -148,6 +327,7 @@ internal constructor(
                 relativeName,
                 readBoundedBody(
                     source,
+                    relativeName,
                     minOf(maximumBytes, RecoveryArtifactRoleBounds.maximumFor(relativeName)),
                 ),
             )
@@ -191,6 +371,7 @@ internal constructor(
                                 "objects/$childName",
                                 readBoundedInventory(
                                     child,
+                                    "objects/$childName",
                                     RecoveryArtifactRoleBounds.maximumFor("unknown.bin"),
                                 ),
                             ),
@@ -279,6 +460,7 @@ internal constructor(
                                 relative,
                                 readBoundedInventory(
                                     child,
+                                    relative,
                                     RecoveryArtifactRoleBounds.maximumFor(relative),
                                 ),
                             ),
@@ -314,14 +496,18 @@ internal constructor(
             else -> QuarantinePathState.UNSAFE
         }
 
-    private fun readBoundedBody(file: File, maximumBytes: Long): ByteArray =
-        readBounded(file, maximumBytes, minimumBytes = 1L)
+    private fun readBoundedBody(file: File, relativeName: String, maximumBytes: Long): ByteArray =
+        readBounded(file, relativeName, maximumBytes, minimumBytes = 1L)
 
-    private fun readBoundedInventory(file: File, maximumBytes: Long): ByteArray =
-        readBounded(file, maximumBytes, minimumBytes = 0L)
+    private fun readBoundedInventory(
+        file: File,
+        relativeName: String,
+        maximumBytes: Long,
+    ): ByteArray = readBounded(file, relativeName, maximumBytes, minimumBytes = 0L)
 
     private fun readBounded(
         file: File,
+        relativeName: String,
         maximumBytes: Long,
         minimumBytes: Long,
     ): ByteArray =
@@ -336,8 +522,15 @@ internal constructor(
                     RecoveryFailureCategory.CORRUPT_LEAF,
                 )
             }
-            if (stat.size !in minimumBytes..maximumBytes) {
-                throw structuralArtifactFailure("Recovery artifact exceeds its role bound")
+            if (stat.size > maximumBytes) {
+                throw RecoveryArtifactAccessException(
+                    RecoveryArtifactPresence.PRESENT,
+                    true,
+                    RecoveryArtifactSizeLimitException(relativeName, stat.size, maximumBytes),
+                )
+            }
+            if (stat.size < minimumBytes) {
+                throw structuralArtifactFailure("Recovery artifact is below its minimum bound")
             }
             readExactOpened(descriptor, stat.size)
         }
@@ -349,8 +542,14 @@ internal constructor(
             OsConstants.O_RDONLY or OsConstants.O_CLOEXEC or OsConstants.O_NOFOLLOW,
         ) { descriptor ->
             val stat = os.fstat(descriptor)
-            check(stat.type == BootstrapPathType.REGULAR && stat.size == expectedBytes) {
-                "Recovery artifact identity size changed"
+            if (stat.type != BootstrapPathType.REGULAR) {
+                throw RecoveryUnsafePathException(
+                    "Recovery artifact changed to an unsafe leaf type",
+                    RecoveryFailureCategory.CORRUPT_LEAF,
+                )
+            }
+            if (stat.size != expectedBytes) {
+                throw structuralArtifactFailure("Recovery artifact identity size changed")
             }
             readExactOpened(descriptor, expectedBytes)
         }

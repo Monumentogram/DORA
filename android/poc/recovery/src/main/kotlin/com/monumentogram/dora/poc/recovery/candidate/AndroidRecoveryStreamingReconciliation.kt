@@ -14,6 +14,8 @@ internal object AndroidRecoveryStreamingReconciliation {
     fun create(
         context: Context,
         evidence: RecoveryStreamingEvidenceSink,
+        quarantineEvidence: RecoveryQuarantineEvidenceSink = RecoveryQuarantineEvidenceSink {},
+        orphanAuthenticationObserved: (RecoveryStreamingCheckpointAuthentication) -> Unit = {},
     ): RecoveryStreamingReconciliationController {
         val applicationContext = context.applicationContext
         val journal = AndroidRecoveryStreamingJournal(applicationContext)
@@ -27,6 +29,35 @@ internal object AndroidRecoveryStreamingReconciliation {
                 RecoveryStreamingTinkPrerequisiteCrypto(),
             ),
             evidence,
+            orphanHandler(applicationContext, quarantineEvidence, orphanAuthenticationObserved),
+        )
+    }
+
+    /** Shared by Android composition and the campaign's exporting controller. */
+    @Suppress("LongMethod", "SwallowedException", "ThrowsCount")
+    fun orphanHandler(
+        context: Context,
+        quarantineEvidence: RecoveryQuarantineEvidenceSink = RecoveryQuarantineEvidenceSink {},
+        orphanAuthenticationObserved: (RecoveryStreamingCheckpointAuthentication) -> Unit = {},
+    ): RecoveryStreamingOrphanHandler {
+        val applicationContext = context.applicationContext
+        val storage = AndroidOsRecoveryReconciliationStorage(applicationContext)
+        val quarantineJournal =
+            com.monumentogram.dora.poc.recovery.journal.AndroidRecoveryQuarantineJournal(
+                applicationContext
+            )
+        val orphanArtifacts =
+            AndroidRecoveryStreamingOrphanArtifacts(
+                storage::loadActiveArtifact,
+                quarantineJournal::loadStreamingCheckpointSource,
+                storage::inspect,
+                storage::loadQuarantinedCheckpoint,
+            )
+        return RecoveryStreamingOrphanReconciler(
+            orphanArtifacts,
+            RecoveryStreamingTinkPrerequisiteCrypto(),
+            RecoveryQuarantineController(storage, quarantineJournal, quarantineEvidence),
+            orphanAuthenticationObserved,
         )
     }
 }

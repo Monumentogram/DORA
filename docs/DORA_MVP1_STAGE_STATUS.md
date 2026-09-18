@@ -1,5 +1,139 @@
 # Dora MVP 1 — Stage Status
 
+## Current alpha Recovery closeout — 18 September 2026
+
+The agreed internal-alpha Recovery checks are complete under the existing
+[reduced owner decision](stage0/DORA_0D6_ALPHA_REDUCED_SCOPE_OWNER_DECISION_20260915.md).
+This is a documentary reconciliation of accepted evidence, with no new Android run,
+APK or runtime/harness change. **Full 0D.6 remains OPEN; POC-RECOVERY-001 remains
+BLOCKED / NOT_READY for full closure.** No new machine status is introduced.
+
+| Accepted block | Coverage | Original results and applicability |
+|---|---|---|
+| Reduced E36 | `ALPHA_E36_CHECKS_COMPLETE`: 114/114 requirements, 165/165 variants | 121 original PASS and 44 expected negative FAIL with individual acceptance grounds. 113 requirements / 164 variants carried to the accepted app source; final TRU-03 adds 1/1. Original failures are not relabelled. |
+| API33 | 7/7 executed and credited, PASS | Three preflights plus normal/recover/replay and K08 for both candidates. Source-bound preflight reuse and the recorded SQLite host reassessment remain explicit; historical failed/blocked attempts are preserved. |
+| POCO M5 Android14/API34 | 9/9 credited, PASS by final assessment | Five P35 PASS reused without rerun; four new P36 K08/K12 executions. Original P36 records remain 3 PASS + 1 host-assertion FAIL; only STREAM K12 receives a separately reviewed offline derived PASS. |
+
+These denominators have different units and are not added together. E36's 139 newly
+proven variant executions complete the earlier 19/26 baseline, whereas final-source
+applicability uses 113/164 predecessor results plus one fresh TRU-03 result. Neither
+accounting view means 165 fresh runs on the final host commit.
+
+Accepted app source is `79d930d73ce7836c3cf5bec10be85f800936e829`, app APK SHA-256
+`9dd8f1dfd05ad4404e9c52ad5e7b11b575e6ba03bcba87a176bd953ddc649a7c`.
+API33 host source is `fb2645358223487bcaa7c1fa0bfa8c8b2be9f9c5`; POCO measurements
+retain `50682b72e3c63969d6890966263dcbd90e023f71`, while final host assessment is
+`a2e65467596f4c6314f560e6f8ad8a6d3e1ae6aa`. Documentary successors inherit these exact
+runtime identities; they do not redate or rebuild the APKs. Accepted exact-source CI:
+[E36](https://github.com/Monumentogram/DORA/actions/runs/35283391149),
+[API33](https://github.com/Monumentogram/DORA/actions/runs/35328837109),
+[POCO assessment](https://github.com/Monumentogram/DORA/actions/runs/35352207747).
+The documentary successor's exact commit/CI is recorded in PR #86 and the private closeout.
+
+Private evidence locators (names and hashes only; no private files published):
+
+| Accepted artifact | SHA-256 |
+|---|---|
+| E36 `E36-COMPLETION-20260918-01/COMPLETION.json` | `51731f78d104798e2b180d88ab9c14d873e2052533c71a5e585512269c1e2dcf` |
+| `API33-REVIEW.zip` | `f5061753d494ec076ec9beb63590a9ce8f19d83560ed3d8d2d6251101d7b11c2` |
+| `PHYSICAL-POCO-M5-FOUR-CHECKS.zip` | `358a34d237447d4e573e7f61460f98061091abfa2a614e9bfdbcba6a1d7e1161` |
+| Nested prior `PHYSICAL-POCO-M5-REVIEW.zip` | `c21d75562cb83c75c432adb1cd5c77d94f7ddf8577685af7c7c0d19e733ef854` |
+
+The accepted POCO audit already checked 897 outer and 114 nested checksums, independent
+PCM oracles/replay, all seven external SIGKILL proofs and verified cleanup. Stock
+`ps` independently observed exact PID/UID/full context/starttime; external `run-as`
+SIGKILL and death before timeout were proven without root. This closeout relies on
+that accepted audit and does not repeat it. All accepted blocks retain their recorded
+cleanup; POCO owned packages were removed and owned ADB closed. Earlier UNCERTAIN
+records remain historical, not retroactively repaired.
+
+STREAM K12 originally failed only two `K12_RANGE` host assertions. VALID forbids
+`rejectedObservation` in `RecoveryStreamingPersistence.kt`, and
+`RecoveryReconciliationOutcomes.kt` derives nullable `boundaryResult` from it.
+The corrected host therefore requires null while retaining A/C/R=8137/4056/8136,
+ACTIVE [8192,8193), one SEALED_VALID, zero intents, stable digest, oracle and replay.
+The original FAIL and terminal remain sealed; derived PASS is an offline assessment
+of the same bytes, not a product fix or a new device execution.
+
+### Remaining full 0D.6 scope and claim boundaries
+
+| Item | Disposition at this closeout | Governing basis |
+|---|---|---|
+| Selected E36 coverage, API33 seven checks, one authorized phone's preflights and six scenarios | Completed for the agreed alpha; exact-source applicability retained | [Reduced owner decision](stage0/DORA_0D6_ALPHA_REDUCED_SCOPE_OWNER_DECISION_20260915.md), accepted artifacts above |
+| STREAM K12-PERSISTENCE | Completed in the agreed alpha; no consumer completion inferred | [v0.7 effective K12](stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_7.md#effective-k12-and-tru-03), POCO derived assessment |
+| Other 300 E36 bases/repetitions | Explicitly `DEFERRED_FROM_ALPHA`; original 414/600 ledgers and existing outcomes preserved | [Reduced owner decision](stage0/DORA_0D6_ALPHA_REDUCED_SCOPE_OWNER_DECISION_20260915.md) |
+| Full D1/D2/D5 physical matrix and additional OEM/endurance coverage | Explicitly deferred beyond alpha; the single POCO result does not close the full matrix | [Reduced owner decision](stage0/DORA_0D6_ALPHA_REDUCED_SCOPE_OWNER_DECISION_20260915.md), [Test Strategy TS-LIFECYCLE/TS-FGS](DORA_MVP1_TEST_STRATEGY.md) |
+| Android9–12 compatibility / historical D1 API28–30 | Explicitly deferred for alpha; global minSdk28 and full D1 requirements unchanged | [Technical Plan §14.3](DORA_MVP1_TECHNICAL_PLAN.md#143-durable-write-protocol), [SQLite PoC decision](REC-I3-SQLITE-PER-CONNECTION-POC-DECISION.md) |
+| K12-CONSUMER, retirement and broader consumer enforcement | Deferred; separate scope/approval required, not implied by persistence evidence | [v0.7 streaming persistence and K12](stage0/DORA_MVP1_POC_RECOVERY_GATE_SET_STAGE0_V0_7.md#effective-k12-and-tru-03) |
+| Full Phase A/fault/hard-kill verdict and original validity minima | Not closed. Reduced coverage does not complete the original denominators or establish full Recovery PASS; historical full verdict remains FAIL | [Execution scope](stage0/DORA_0D6_EXECUTION_SCOPE_20260914.md): 360 expanded Phase A faults, 270 full-physical faults; separate 120 hard-kill bases per candidate; canonical 46/184/138 metadata preserved |
+| Complete REC-I3 implementation/evidence review and final applicable graph/package/R8 Product-IP disposition for full closure | Not closed by this alpha milestone. Existing source-scoped approvals remain valid only for their inputs; do not reimpose accountable human review on the already accepted reduced alpha | [Execution scope](stage0/DORA_0D6_EXECUTION_SCOPE_20260914.md), [reduced review exception](stage0/DORA_0D6_ALPHA_REDUCED_SCOPE_OWNER_DECISION_20260915.md) |
+| Final ADR-AUDIO-001, dependency/production Legal-Security admission and whole-app readiness | Not closed; subsequent stage/release decisions remain separate | [Technical Plan](DORA_MVP1_TECHNICAL_PLAN.md), [Test Strategy](DORA_MVP1_TEST_STRATEGY.md), [execution-scope claim ceiling](stage0/DORA_0D6_EXECUTION_SCOPE_20260914.md) |
+
+The legacy readiness checker still refuses its historical package. Its old missing-harness,
+preflight and authority wording is not a current description of the accepted alpha evidence;
+neither this document nor the documentary CI changes those machine gates. No production
+admission, full Recovery PASS, full 0D.6 COMPLETE or app readiness is claimed. Any work in
+the remaining scope needs a separate next task. PR #86 stays draft without merge.
+
+## Historical snapshots — 16 September 2026 and earlier
+
+The following dated statements retain their then-current scope. Incomplete/unverified/pending
+alpha statements are superseded by the 18 September closeout above, not current blockers.
+
+Historical reduced-alpha amendment, 16 September 2026: the owner approved
+[MICROFILE schema 6](adr/ADR-0009-microfile-referenced-quarantine.md). Implementation
+adds exact migration and a separate authenticated-extent path for referenced quarantine.
+Fresh source/APK admission and affected runtime attempts remain required; no schema 6
+campaign credit is asserted by this amendment. Earlier 20/114 requirements and 32/165
+variant evaluations remain historical evidence on their original source and require
+an applicability assessment after this shared-schema change. Source `88ea997` passed
+its three E36 preflights with verified cleanup, establishing the repaired collector path;
+those preflights do not admit the subsequent schema 6 APKs. Status remains
+`ALPHA_E36_CHECKS_INCOMPLETE`, `0D.6 OPEN`.
+
+Historical reduced internal-alpha amendment, 15 September 2026: the
+[reduced owner decision](stage0/DORA_0D6_ALPHA_REDUCED_SCOPE_OWNER_DECISION_20260915.md)
+sets the immediate E36 milestone to 114 requirements (90 fault, 24 main hard-kill;
+165 complete variant evaluations). The other 300 E36 repetitions are deferred;
+the original 414/600 accounting and historical verdicts remain unchanged.
+Status: `ALPHA_E36_CHECKS_INCOMPLETE`, `0D.6 OPEN`. Exact-source CI for the previous
+56f39fe retention repair passed; subsequent admission/launcher changes require
+applicable successor verification. Private execution evidence retains the original
+K08 FAIL, its INCONCLUSIVE supplement and a later 11-case batch (9 PASS, 2 FAIL),
+whose per-case cleanup completed but final logcat capture left terminal UNCERTAIN.
+No reduced milestone completion is asserted here. API33 is the alpha floor;
+API33 compatibility remains UNVERIFIED and authorized physical-phone smoke checks
+remain pending. Android9–12 alpha compatibility is deferred; historical D1 and
+global build settings are unchanged. Earlier amendments below are historical.
+
+Historical internal alpha E36 campaign amendment, 14 September 2026: the
+[campaign owner decision](stage0/DORA_0D6_ALPHA_E36_CAMPAIGN_OWNER_DECISION_20260914.md)
+authorizes separate admission and execution of the 414 prepared E36 base cases
+(270 faults, 144 hard kills). Human review is not required for this bounded scope;
+all technical gates remain. The three retained d3bc6ac preflights passed with cleanup
+accounted for. Campaign execution is not yet evidenced by this source amendment.
+Full Recovery/0D.6, D2 and other physical/API requirements remain NOT PASSED.
+Earlier preflight-only decisions and their immutable packets remain historical.
+
+Historical internal alpha preflight amendment, 14 September 2026: the
+[owner decision](stage0/DORA_0D6_ALPHA_PREFLIGHT_OWNER_DECISION_20260914.md) removes
+mandatory accountable human review only from the three named E36-GAPI preflights.
+Exact successor source/CI, technical review, APK identity and runtime evidence remain
+required. The original unapproved packet is preserved. Full preflight is unpassed
+until all three exact tests and cleanup are evidenced in the private successor report.
+The 414-entry campaign, physical/API requirements, full Recovery and 0D.6 remain unclosed.
+
+Historical 0D.6 amendment, 14 September 2026: the
+[scoped owner execution instruction](stage0/DORA_0D6_EXECUTION_SCOPE_20260914.md) authorizes
+plan-and-execute preparation and conditional synthetic campaigns on task-owned emulators after
+applicable gates. It supersedes the older blanket statement that no emulator campaign authority
+exists, while preserving all historical false flags and evidence. Original attempt05 remains a
+narrow PASS on `4375b829db7dffef66036e5589e3ffe5961733dc`; complete preflight, applicable fault
+and hard-kill campaigns, full Recovery and 0D.6 are not passed. The successor adds a separate
+canonical SQLite diagnostic, streaming publication and manifest-driven campaign preparation.
+Exact successor review/CI/runtime evidence must be assessed separately; no PR merge or production
+admission follows. Older dated sections below retain their contemporaneous scope and results.
+
 Updated: 19 August 2026
 Baseline: `1be83e2940a09f7b23e33b4cdf3827de2690f3fd`
 Stage 00 merge commit: `a4aae302f9033e5471f6759f513e7e351c375a72`

@@ -82,7 +82,7 @@ internal object RecoveryCheckpointAndroidTestFixture {
                 "key-envelopes/stream.ks",
                 96UL,
                 Sha256Value.calculate(streamEnvelope),
-                Sha256Value.calculate(ByteArray(32)),
+                Sha256Value.ZERO,
             )
         return RecoveryStreamingCheckpointRow(
             runId,
