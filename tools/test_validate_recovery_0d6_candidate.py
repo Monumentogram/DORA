@@ -105,6 +105,14 @@ class CandidateProfileTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'undeclared paths'):
             self.check()
 
+    def test_rejects_product_evidence_change_in_metadata_child(self):
+        path = 'android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationOutcomes.kt'
+        self.write(path, 'unreviewed product evidence change\n')
+        self.git('add', path)
+        self.git('commit', '--amend', '--no-edit', '-q')
+        with self.assertRaisesRegex(ValueError, 'undeclared paths'):
+            self.check()
+
     def test_rejects_owner_decision_change_in_metadata_child(self):
         self.write("docs/stage0/DORA_0D6_ALPHA_PREFLIGHT_OWNER_DECISION_20260914.md",
                    "unreviewed replacement decision\n")
