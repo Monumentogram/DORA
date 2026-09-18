@@ -424,6 +424,44 @@ class PhysicalSuccessorGateTests(unittest.TestCase):
                 (folder/'diff.txt').write_text('tampered')
                 with self.assertRaisesRegex(ValueError,'digest mismatch'):physical.preflight_packet(p)
 
+class PhysicalControllerReuseTests(unittest.TestCase):
+    def test_exact_probe_transfer_and_negative_controls(self):
+        p=packet();self.assertEqual(p['source'],physical.controller_source(p))
+        with TemporaryDirectory() as directory:
+            folder=Path(directory)
+            def put(name,value):
+                path=folder/name;path.write_text(value if isinstance(value,str) else json.dumps(value));return physical.descriptor(path)
+            prior=packet();prior['harnessSourceCommit']=physical.CONTROLLER_COMMIT;prior['source']['commit']=physical.CONTROLLER_COMMIT
+            prior_item=put('packet.json',prior);delta=put('diff.txt','reviewed framing repair')
+            ownership=put('owned.json',dict(source=prior['source']))
+            record=put('record.json',dict(source=prior['source'],packetSha256=prior_item['sha256'],status='SUPPORTED'))
+            terminal=put('terminal.json',dict(source=prior['source'],record=record,ownershipProof=ownership,cleanupResult='VERIFIED',packagesPreservedOwned=True,failure=None))
+            reuse=dict(schema='DORA_PHYSICAL_CONTROLLER_REUSE_V1',source=p['source'],environment=p['environment'],executionId=p['executionId'],priorPacket=prior_item,measurementSource=prior['source'],reviewedDiff=delta,ownership=ownership,record=record,priorTerminal=terminal)
+            item=put('reuse.json',reuse);p['controllerReuse']=item;p['controllerProof']=record
+            p['files']=[item,prior_item,delta,ownership,terminal,record]
+            review=dict(verdict='APPROVED',files=p['files'][:]);p['proofs']={'review':put('review.json',review)}
+            module=Path(physical.__file__).read_text(encoding='utf-8');changed=['tools/recovery_physical.py']
+            def git(root,*args):
+                if args[0]=='merge-base':return ''
+                if args[0]=='show':return module
+                if '--name-only' in args:return '\n'.join(changed)
+                return 'reviewed framing repair'
+            with patch.object(physical,'CONTROLLER_PACKET_SHA',prior_item['sha256']),patch.object(physical,'git',side_effect=git):
+                self.assertEqual(prior['source'],physical.controller_source(p))
+                changed.append('android/changed.kt')
+                with self.assertRaisesRegex(ValueError,'Android or contract'):physical.controller_source(p)
+                changed.pop();module=module.replace('timeoutSeconds=45','timeoutSeconds=44')
+                with self.assertRaisesRegex(ValueError,'probe semantics changed'):physical.controller_source(p)
+                module=Path(physical.__file__).read_text(encoding='utf-8')
+                review['files'].remove(ownership);p['proofs']['review']=put('review.json',review)
+                with self.assertRaisesRegex(ValueError,'not reviewed and pinned'):physical.controller_source(p)
+                review['files'].append(ownership);p['proofs']['review']=put('review.json',review)
+                p['controllerProof']=ownership
+                with self.assertRaisesRegex(ValueError,'not reviewed and pinned'):physical.controller_source(p)
+                p['controllerProof']=record
+                (folder/'owned.json').write_text('{}')
+                with self.assertRaisesRegex(ValueError,'digest mismatch'):physical.controller_source(p)
+
 class PhysicalKillEnvelopeTests(unittest.TestCase):
     def run_envelope(self, death=None, elapsed=1, output=b''):
         with TemporaryDirectory() as directory:
@@ -451,12 +489,18 @@ class PhysicalKillEnvelopeTests(unittest.TestCase):
         for death in [subprocess.CompletedProcess([],1,b'',b'Permission denied'),subprocess.CompletedProcess([],0,b'',b''),subprocess.CompletedProcess([],1,b'123',b'')]:
             with self.assertRaisesRegex(ValueError,'DEATH_OBSERVATION'):self.run_envelope(death=death)
 
+    def test_instrumentation_event_status_zero_is_not_junit_completion(self):
+        output=(b'INSTRUMENTATION_STATUS: stream=DORA_RECOVERY_CAMPAIGN_EVENT {}\n'
+                b'INSTRUMENTATION_STATUS_CODE: 0\n'
+                b'INSTRUMENTATION_RESULT: shortMsg=Process crashed.\nINSTRUMENTATION_CODE: 0\n')
+        self.assertEqual({'complete':True},self.run_envelope(output=output))
+
     def test_expired_attempt_cannot_dispatch(self):
         with self.assertRaisesRegex(ValueError,'BARRIER_EXPIRED'):self.run_envelope(elapsed=91)
         self.assertEqual(0,self.signals)
 
     def test_timeout_error_and_graceful_completion_cannot_be_credited(self):
-        for output in [b'ERROR',b'External controller did not kill the paused process',b'INSTRUMENTATION_STATUS_CODE: 0\n']:
+        for output in [b'ERROR',b'External controller did not kill the paused process',b'INSTRUMENTATION_CODE: -1\n']:
             with self.assertRaisesRegex(ValueError,'BARRIER_COMPLETED'):self.run_envelope(output=output)
 
 if __name__ == '__main__': unittest.main()

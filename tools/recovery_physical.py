@@ -38,6 +38,8 @@ APP_COMMIT = '79d930d73ce7836c3cf5bec10be85f800936e829'
 APP_SHA = '9dd8f1dfd05ad4404e9c52ad5e7b11b575e6ba03bcba87a176bd953ddc649a7c'
 PREFLIGHT_COMMIT = '00d9fdbe1c5578f0703c7275a6fa59646516a4ef'
 PREFLIGHT_PACKET_SHA = '3692a3468229ad76f575a09e97bf7ab80c3f685da65ec2680b25bad6402e1871'
+CONTROLLER_COMMIT = 'e86af1f53671c6655afbd7a91a03d78462de5dbd'
+CONTROLLER_PACKET_SHA = 'cd2a12a79b2548f77ca6f23a8a162f84a60ee3aadd57ea3420646a6c78ad3c5a'
 PACKAGE = campaign.PACKAGE
 PREFIX = 'com.monumentogram.dora.poc.recovery.'
 PAYLOADS = {
@@ -144,9 +146,10 @@ def require_controller_for_payload(packet: dict, payload: str) -> None:
     item = packet.get('controllerProof')
     require(isinstance(item, dict) and item in packet['files'], 'Physical SIGKILL proof missing')
     proof = read(verify_file(item))
+    expected_source = controller_source(packet)
     require(proof['schema'] == 'DORA_PHYSICAL_SIGKILL_PROBE_V1'
             and proof['status'] == 'SUPPORTED' and proof['environment'] == packet['environment']
-            and proof['source'] == packet['source'], 'Controller proof does not apply')
+            and proof['source'] == expected_source, 'Controller proof does not apply')
     require(proof['kind'] == 'RUN_AS_EXACT_PID_SIGKILL' and proof['noRoot'] is True
             and proof['signalExit'] == 0 and proof['deathConfirmed'] is True
             and proof['boundedMeasurementComplete'] is True and proof['rawRetentionComplete'] is True
@@ -210,6 +213,55 @@ def require_controller_for_payload(packet: dict, payload: str) -> None:
     require(re.fullmatch(r'[0-9a-f]{64}', proof['killSha256']) is not None, 'Missing signal executable pin')
     review = read(verify_file(packet['proofs']['review']))
     require(item in review['files'], 'Controller proof not technically reviewed')
+
+
+def controller_source(packet: dict) -> dict:
+    """Preserve one successful probe and its live installation across framing repair."""
+    if 'controllerReuse' not in packet: return packet['source']
+    item = packet['controllerReuse']; reuse = read(verify_file(item))
+    require(reuse.get('schema') == 'DORA_PHYSICAL_CONTROLLER_REUSE_V1'
+            and reuse.get('source') == packet['source']
+            and reuse.get('environment') == packet['environment']
+            and reuse.get('executionId') == packet['executionId'], 'Controller reuse successor drift')
+    prior_item = reuse['priorPacket']; prior = read(verify_file(prior_item))
+    require(prior_item['sha256'] == CONTROLLER_PACKET_SHA
+            and prior['harnessSourceCommit'] == CONTROLLER_COMMIT,
+            'Controller reuse predecessor drift')
+    require(reuse['measurementSource'] == prior['source'] and prior['environment'] == packet['environment']
+            and all(prior['source'][k] == packet['source'][k] for k in ('appApkSha256','testApkSha256')),
+            'Controller reuse identity or APK drift')
+    required = [item,prior_item,reuse['reviewedDiff'],reuse['ownership'],reuse['priorTerminal'],reuse['record']]
+    review = read(verify_file(packet['proofs']['review']))
+    require(review['verdict'] == 'APPROVED' and packet['controllerProof'] == reuse['record']
+            and all(value in packet['files'] and value in review['files'] for value in required),
+            'Controller reuse inputs not reviewed and pinned')
+    for value in required: verify_file(value)
+    record=read(verify_file(reuse['record'])); terminal=read(verify_file(reuse['priorTerminal']))
+    ownership=read(verify_file(reuse['ownership']))
+    require(all(v['source'] == prior['source'] for v in (record,terminal,ownership))
+            and record['packetSha256'] == prior_item['sha256'] and record['status'] == 'SUPPORTED'
+            and terminal['record'] == reuse['record'] and terminal['ownershipProof'] == reuse['ownership']
+            and terminal['cleanupResult'] == 'VERIFIED' and terminal['packagesPreservedOwned'] is True
+            and terminal['failure'] is None, 'Controller reuse original ownership or probe drift')
+    root=Path(__file__).resolve().parents[1]; before_commit=prior['harnessSourceCommit']
+    git(root,'merge-base','--is-ancestor',before_commit,packet['harnessSourceCommit'])
+    changed=set(git(root,'diff','--name-only',before_commit,packet['harnessSourceCommit']).splitlines())
+    require(bool(changed) and changed <= {'tools/recovery_physical.py','tools/test_recovery_physical.py',
+            'tools/validate_recovery_0d6_candidate.py','tools/test_validate_recovery_0d6_candidate.py'},
+            'Controller reuse changed Android or contract inputs')
+    require(verify_file(reuse['reviewedDiff']).read_text(encoding='utf-8') ==
+            git(root,'diff','--binary','--no-ext-diff',before_commit,packet['harnessSourceCommit']),
+            'Controller reuse reviewed diff mismatch')
+    before=ast.parse(git(root,'show',before_commit+':tools/recovery_physical.py'))
+    after=ast.parse(Path(__file__).read_text(encoding='utf-8'))
+    names={'run_probe','live_signal_identity','observation_output','process_start_time',
+           'process_context','signal_succeeded','validate_probe_target','validate_session_endpoint'}
+    def semantics(module):
+        return {n.name:ast.dump(n,include_attributes=False) for n in module.body
+                if isinstance(n,ast.FunctionDef) and n.name in names}
+    require(semantics(before) == semantics(after) and len(semantics(before)) == len(names),
+            'Controller reuse probe semantics changed')
+    return prior['source']
 
 
 def precheck_payload(packet: dict, payload: str, prerequisites: list[dict] | None) -> None:
@@ -526,6 +578,7 @@ def validate_admission(root: Path, packet: dict) -> None:
     require(identity['environment'] == packet['environment'] and identity['ownerAuthorized'] is True
             and identity.get('source') == packet['source'], 'Physical owner/measurement mismatch')
     require(packet['identityProof'] in packet['files'] and packet['identityProof'] in proofs['review']['files'], 'Identity proof not reviewed')
+    if 'controllerReuse' in packet: controller_source(packet)
 
 
 def validate_fixed_status(output: bytes, payload: str) -> list[dict]:
@@ -857,7 +910,7 @@ def run_physical_kill(transport, plan: dict, entry: dict, variant: str, controll
     events = campaign.parse_events(output,entry,'WRITE_UNTIL_BARRIER')
     require(not any(event['eventType'] in ('ERROR','RESULT') for event in events)
             and b'External controller did not kill the paused process' not in output
-            and not re.search(rb'INSTRUMENTATION_STATUS_CODE: (?:0|-[0-9]+)',output),
+            and not re.search(rb'^INSTRUMENTATION_CODE: -1\s*$',output,re.M),
             'BARRIER_COMPLETED:timeout, error or graceful test completion')
     require(transport.run(['shell','getenforce'], 'selinux-after').stdout.strip() == b'Enforcing', 'SELinux changed')
     return proofs
