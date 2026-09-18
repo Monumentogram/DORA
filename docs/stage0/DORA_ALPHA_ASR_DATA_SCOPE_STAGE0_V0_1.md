@@ -25,7 +25,7 @@ The exact admission state is governed by
 [DORA_ALPHA_ASR_DATA_OWNER_DECISION_V0_1.md](DORA_ALPHA_ASR_DATA_OWNER_DECISION_V0_1.md), and
 [DORA_ALPHA_ASR_DATA_LEGAL_IP_REVIEW_V0_1.md](DORA_ALPHA_ASR_DATA_LEGAL_IP_REVIEW_V0_1.md).
 
-The Project Owner policy decisions are approved. Legal/IP and Stage-0 Engineering/Security reviewer assignments remain open, and the required synthetic storage/access/deletion dry-run has not yet run.
+The Project Owner policy decisions and internal Stage-0 Legal/IP + Engineering/Security review are approved. Both exact 5.0 candidates are `EVALUATION_APPROVED` for bounded internal Alpha evaluation only. The single remaining pre-download engineering gate is `SYNTHETIC_STORAGE_ACCESS_DELETION_DRY_RUN`.
 
 Nothing in this update authorizes dataset download, 5.1B, model selection, runner implementation
 or device execution.
@@ -78,12 +78,12 @@ Use one current dataset family/release for both languages:
 
 | Locale | Exact candidate | MDC ID | Task / format | Licence | Published size | State |
 |---|---|---|---|---|---:|---|
-| `ru` | Common Voice Spontaneous Speech 5.0 - Russian | `cmu5mg3pr00simh07epeylc55` | ASR / MP3 | CC0-1.0 | 88.72 MB | `PROPOSED` |
-| `en` | Common Voice Spontaneous Speech 5.0 - English | `cmu5nqn1h00vwmi07b4dbk085` | ASR / MP3 | CC0-1.0 | 519.05 MB | `PROPOSED` |
+| `ru` | Common Voice Spontaneous Speech 5.0 - Russian | `cmu5mg3pr00simh07epeylc55` | ASR / MP3 | CC0-1.0 | 88.72 MB | `EVALUATION_APPROVED / DOWNLOAD_BLOCKED_STORAGE_DRY_RUN` |
+| `en` | Common Voice Spontaneous Speech 5.0 - English | `cmu5nqn1h00vwmi07b4dbk085` | ASR / MP3 | CC0-1.0 | 519.05 MB | `EVALUATION_APPROVED / DOWNLOAD_BLOCKED_STORAGE_DRY_RUN` |
 
 Both are part of `sps-corpus-5.0-2026-09-11` and published by MDC on 17 September 2026.
 
-This candidate freeze does **not** move either dataset to `EVALUATION_APPROVED`.
+The Project Owner internal Stage-0 review recorded on 18 September 2026 moves both exact candidates to `EVALUATION_APPROVED` for this bounded Alpha evaluation only. Download remains blocked until the storage dry-run passes.
 
 ## 5. Minimal exploratory pilot set
 
@@ -119,19 +119,14 @@ All of the following are required. Missing evidence means blocked, not PASS.
 
 1. Exact RU/EN MDC IDs and applicable public metadata are frozen — **satisfied**.
 2. Project Owner policy values are approved — **satisfied 18 September 2026**.
-3. A named Legal/IP reviewer records the exact dataset evaluation-right disposition required by
-   `GOV-IP-001` — **open**.
-4. A named Stage-0 Engineering/Security reviewer is recorded for exact provenance and handling;
-   current Data/ASR governance does not require a distinct person, but explicit assignment is
-   required — **open**.
-5. The approved custodian/storage/access policy is instantiated in a compliant concrete private
-   storage location — **not run**.
-6. The required synthetic/non-sensitive controlled-storage deletion/access dry-run passes —
-   **not run**.
-7. The approved retention/deletion policy is attached to the materialization record — **policy
-   approved; execution pending**.
-8. The applicable MDC/Data Consumer terms are accepted only by an authorized role after review —
-   **not run**.
+3. Project Owner is explicitly assigned as Legal/IP Reviewer — **satisfied**.
+4. Project Owner is explicitly assigned as Stage-0 Engineering/Security Reviewer — **satisfied**.
+5. Internal exact-scope Alpha data review — **APPROVE**.
+6. `SYNTHETIC_STORAGE_ACCESS_DELETION_DRY_RUN` in the approved controlled-storage class —
+   **NOT_RUN / BLOCKING**.
+7. Applicable MDC/Data Consumer License acceptance occurs only in the later authorized download
+   transaction and must be retained as controlled evidence.
+8. Archive identity/SHA-256 is captured immediately after authorized download and before ASR use.
 9. No model/runtime or device execution occurs as part of satisfying these data gates.
 
 ## 7. Private selected-set manifest
@@ -185,14 +180,15 @@ No Android/device test is required for substage 5.1. Device execution belongs to
 Current state:
 
 - 3.0 candidates: `SUPERSEDED_AS_CANDIDATE`;
-- 5.0 RU/EN candidates: `PROPOSED`;
+- 5.0 RU/EN candidates: `EVALUATION_APPROVED / DOWNLOAD_BLOCKED_STORAGE_DRY_RUN`;
 - data retrieval: `NOT_RUN`;
 - selected-set manifest: `NOT_CREATED`;
 - owner-controlled decisions: `APPROVED`;
-- Legal/IP evaluation approval: `BLOCKED / REVIEWER_UNASSIGNED`;
-- Stage-0 Engineering/Security reviewer: `UNASSIGNED`;
-- custodian/storage/access policy: `APPROVED`, concrete storage dry-run pending;
-- 5.1A: `BLOCKED_LEGAL_IP`;
+- internal Stage-0 Legal/IP review: `APPROVED`;
+- internal Stage-0 Engineering/Security review: `APPROVED`;
+- custodian/storage/access policy: `APPROVED`;
+- `SYNTHETIC_STORAGE_ACCESS_DELETION_DRY_RUN`: `NOT_RUN / BLOCKING`;
+- 5.1A: `BLOCKED_STORAGE_DRY_RUN`;
 - 5.4 device ASR: `NOT_AUTHORIZED`.
 
 Do not begin 5.1B, 5.2, dataset/model download or device execution until the admission record's

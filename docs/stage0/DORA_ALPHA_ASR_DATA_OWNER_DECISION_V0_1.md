@@ -150,35 +150,41 @@ The owner accepts these as mandatory constraints of the proposed use:
   dataset licence;
 - no bypass of access controls.
 
-## 10. Separately gated authority
+## 10. Stage-0 review role assignment and boundary
 
-### Legal/IP
+The Project Owner explicitly assigns the Project Owner to the required bounded Alpha reviewer
+functions for these exact datasets:
 
-`LEGAL_IP_APPROVAL = BLOCKED`
+```text
+PROJECT_OWNER = Product Owner
+PROJECT_OWNER = Legal/IP Reviewer
+PROJECT_OWNER = Stage-0 Engineering/Security Reviewer
+SCOPE = BOUNDED_INTERNAL_ALPHA_ASR_EVALUATION_ONLY
+RU_MDC_ID = cmu5mg3pr00simh07epeylc55
+EN_MDC_ID = cmu5nqn1h00vwmi07b4dbk085
+```
 
-The owner approval above does not replace `GOV-IP-001`.
+General Data/ASR governance does not require these Stage-0 functions to be held by different
+people. This explicit assignment does not inherit or alter any Recovery reviewer rule.
 
-A named Legal/IP reviewer must still interpret the exact Common Voice/MDC terms,
-redistribution/attribution and dataset compatibility for this bounded evaluation.
+The completed internal review is recorded in
+[DORA_ALPHA_ASR_DATA_LEGAL_IP_REVIEW_V0_1.md](DORA_ALPHA_ASR_DATA_LEGAL_IP_REVIEW_V0_1.md).
 
-### Engineering/Security
+Boundary:
 
-The general `GOV-IP-001` policy also names Engineering/Security reviewer functions for artifact
-state transitions and provenance. This owner decision does not silently assign those roles.
-
-For this dataset task, general governance does not state that Legal/IP and Engineering/Security
-must be different people. A package-specific independence rule exists for Recovery, but no such
-distinct-reviewer rule was found for this Common Voice dataset scope.
-
-Any person serving multiple reviewer roles must be explicitly named for each role; prior Recovery
-assignments do not carry over automatically.
+- Stage-0 bounded Alpha evaluation only;
+- no production Legal or production Security approval;
+- no production admission;
+- no redistribution or public re-hosting/re-sharing;
+- no re-identification;
+- no dataset download until the storage dry-run passes.
 
 ### Production admission
 
 `NOT_APPLICABLE_TO_5.1A`
 
-Production Legal/Security/dependency admission is a later gate and is not imposed on this bounded
-Stage-0 internal evaluation.
+Production Legal/Security/dependency admission remains a later gate and is not imposed on this
+bounded Stage-0 internal evaluation.
 
 ## 11. Owner decision record
 

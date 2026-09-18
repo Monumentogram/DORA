@@ -1,11 +1,11 @@
 # DORA Alpha ASR 5.1A — bounded data admission
 
-Task: `5.1A-L — Legal/IP Review Preparation`  
+Task: `5.1A-R3 — Project Owner Alpha Data Review`  
 Backlog: `POC-DATA-001`  
 Date: 18 September 2026  
-Predecessor: `d04966b37cd95a74795d057d8c68d331fd5b91a9`  
-Candidate profile: `dora-alpha-asr-data-admission-v0.3`  
-Result: **BLOCKED_LEGAL_IP**
+Predecessor: `170f073c2b401cdae7c966fa5ea0bdc3a1744bff`  
+Candidate profile: `dora-alpha-asr-data-admission-v0.4`  
+Result: **BLOCKED_STORAGE_DRY_RUN**
 
 ## 1. Scope and chronology
 
@@ -37,7 +37,7 @@ No 5.0 dataset bytes have been downloaded.
 | License | CC0-1.0 | CC0-1.0 |
 | Archive filename | `PENDING_DOWNLOAD_VERIFICATION` | `common-voice-spontaneous-speech-5-0-engl-97a82389.tar.gz` |
 | Archive SHA-256 | `PENDING_DOWNLOAD_VERIFICATION` | `PENDING_DOWNLOAD_VERIFICATION` |
-| State | `PROPOSED` | `PROPOSED` |
+| State | `EVALUATION_APPROVED / DOWNLOAD_BLOCKED_STORAGE_DRY_RUN` | `EVALUATION_APPROVED / DOWNLOAD_BLOCKED_STORAGE_DRY_RUN` |
 
 Archive hashes are post-authorized-download provenance evidence and are not fabricated as a
 pre-download requirement.
@@ -78,10 +78,17 @@ It assigns:
 - Engineering owner: exact artifact/digest and technical obligations;
 - Security owner: security/evidence handling.
 
-No named Common Voice Legal/IP reviewer is currently assigned.
+For this exact bounded Alpha scope, the Project Owner explicitly assigns:
+
+- `PROJECT_OWNER = Product Owner`;
+- `PROJECT_OWNER = Legal/IP Reviewer`;
+- `PROJECT_OWNER = Stage-0 Engineering/Security Reviewer`.
 
 No general dataset rule requires reviewer-role separation. Recovery contains a package-specific
-distinct Engineering/Security requirement, which does not transfer automatically to this scope.
+distinct Engineering/Security requirement, which does not transfer to this Data/ASR scope.
+
+The internal Alpha review is recorded as `FINAL_DECISION = APPROVE` in
+[DORA_ALPHA_ASR_DATA_LEGAL_IP_REVIEW_V0_1.md](DORA_ALPHA_ASR_DATA_LEGAL_IP_REVIEW_V0_1.md).
 
 ## 5. Owner gate
 
@@ -107,35 +114,33 @@ location must still be instantiated and the required synthetic access/deletion d
 
 `OWNER_APPROVED != EVALUATION_APPROVED`
 
-## 6. Legal/IP gate
+## 6. Internal Stage-0 review gate — CLOSED
 
-`LEGAL_IP_REVIEWER = UNASSIGNED`
+The Project Owner is explicitly assigned as Product Owner, Legal/IP Reviewer and Stage-0
+Engineering/Security Reviewer for this exact bounded Alpha scope.
 
-`LEGAL_IP_APPROVAL = BLOCKED`
+Review result:
 
-The short review packet is:
-[DORA_ALPHA_ASR_DATA_LEGAL_IP_REVIEW_V0_1.md](DORA_ALPHA_ASR_DATA_LEGAL_IP_REVIEW_V0_1.md).
+- `INTERNAL_ALPHA_EVALUATION = APPROVE`;
+- `CC0_COMPATIBILITY = ACCEPT`;
+- `MDC_TERMS_COMPATIBILITY = ACCEPT`;
+- `NO_REIDENTIFICATION = ACKNOWLEDGE`;
+- `NO_PUBLIC_REHOSTING = ACKNOWLEDGE`;
+- `CONTROLLED_STORAGE = ACCEPT`;
+- `RETENTION_POLICY = ACCEPT`;
+- `EVIDENCE_BOUNDARY = ACCEPT`;
+- `PROVENANCE_CONTROLS = ACCEPT`;
+- `ENGINEERING_SECURITY_BOUNDARY = ACCEPT`;
+- `RAW_DATA_PUBLIC_EVIDENCE = PROHIBITED`;
+- `PRODUCTION_ADMISSION = NOT_REVIEWED`;
+- `FINAL_DECISION = APPROVE`.
 
-A named human Legal/IP reviewer must be assigned by the Project Owner and must return an exact-scope
-decision for the two MDC IDs, CC0-1.0, current MDC Data Consumer Terms, and any access-step licence
-text.
+The exact candidates are therefore `EVALUATION_APPROVED` for bounded internal Stage-0 Alpha
+evaluation only.
 
-Engineering cannot self-approve this legal/data-rights interpretation.
-
-## 7. Engineering/Security gate
-
-General `GOV-IP-001` includes Engineering/Security reviewer functions in artifact state and
-provenance.
-
-For this dataset scope:
-
-- Engineering/Security is separate from the Legal/IP opinion;
-- no general rule requires a distinct second person;
-- one human may serve multiple roles only if explicitly assigned to each role;
-- prior Recovery reviewer assignments do not carry over;
-- exact archive digest remains `PENDING_DOWNLOAD_VERIFICATION` until an authorized download.
-
-No Engineering/Security reviewer is silently assigned by this document.
+This is not production Legal/Security approval. Exact archive SHA-256 remains
+`PENDING_DOWNLOAD_VERIFICATION` until the later authorized download and is checked before ASR
+use.
 
 ## 8. Current mandatory pre-download gates
 
@@ -143,14 +148,13 @@ No Engineering/Security reviewer is silently assigned by this document.
 |---|---|
 | Exact RU/EN 5.0 candidate IDs and public terms | PASS |
 | Owner-controlled policy decisions | PASS |
-| Named Legal/IP reviewer | BLOCKED |
-| Legal/IP exact-scope decision | BLOCKED |
-| Named Engineering/Security reviewer function for artifact/provenance state | BLOCKED / UNASSIGNED |
-| Concrete controlled-storage instance conforming to approved class | NOT_RUN |
-| Synthetic access/deletion dry-run in that controlled storage | NOT_RUN |
-| Applicable Data Consumer License/click-through acceptance by authorized custodian | NOT_RUN |
-| Dataset download | NOT_AUTHORIZED |
-| Archive SHA-256 | PENDING_DOWNLOAD_VERIFICATION |
+| Stage-0 Legal/IP reviewer assignment | PASS |
+| Stage-0 Legal/IP exact-scope decision | PASS |
+| Stage-0 Engineering/Security reviewer assignment and boundary | PASS |
+| `SYNTHETIC_STORAGE_ACCESS_DELETION_DRY_RUN` | NOT_RUN / BLOCKING |
+| Applicable Data Consumer License/click-through acceptance | PENDING_AT_AUTHORIZED_DOWNLOAD |
+| Dataset download | NOT_AUTHORIZED_UNTIL_DRY_RUN |
+| Archive identity/SHA-256 | PENDING_DOWNLOAD_VERIFICATION |
 
 Production admission is not a 5.1A pre-download gate.
 
@@ -158,26 +162,30 @@ Production admission is not a 5.1A pre-download gate.
 
 ### RU
 
-`PROPOSED / BLOCKED_LEGAL_IP`
+`EVALUATION_APPROVED / DOWNLOAD_BLOCKED_STORAGE_DRY_RUN`
 
 ### EN
 
-`PROPOSED / BLOCKED_LEGAL_IP`
+`EVALUATION_APPROVED / DOWNLOAD_BLOCKED_STORAGE_DRY_RUN`
 
 ### Overall
 
-**`5.1A = BLOCKED_LEGAL_IP`**
+**`5.1A = BLOCKED_STORAGE_DRY_RUN`**
 
-Owner-controlled decisions are closed. The dataset candidates remain `PROPOSED` because the
-mandatory named Legal/IP reviewer and exact-scope decision are absent.
+The owner and internal Stage-0 review gates are closed. The only remaining engineering gate before
+dataset download is `SYNTHETIC_STORAGE_ACCESS_DELETION_DRY_RUN`.
 
-No dataset download, 5.1B, model work, runner implementation or device execution is authorized.
+MDC/Data Consumer License acceptance is a transactional access condition at the later authorized
+download; it must be retained as controlled evidence and must not materially conflict with the
+reviewed scope. Archive identity/SHA-256 is captured immediately after that authorized download and
+before ASR use.
+
+No dataset download, 5.1B, model work, runner implementation or device execution is authorized by
+this review.
 
 ## 10. Next safe action
 
-The next safe action is reviewer assignment and return of the exact Legal/IP decision form.
+Execute exactly one minimal synthetic storage/access/deletion dry-run in the approved
+`LOCAL_PRIVATE_CONTROLLED_STORAGE`.
 
-After the required reviewer function(s) approve the exact scope, instantiate the approved
-`LOCAL_PRIVATE_CONTROLLED_STORAGE` and run the single synthetic access/deletion dry-run.
-
-Do not start 5.1B in this task.
+Do not start 5.1B until that dry-run passes.

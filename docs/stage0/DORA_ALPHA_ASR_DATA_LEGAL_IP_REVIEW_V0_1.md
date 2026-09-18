@@ -1,8 +1,8 @@
 # DORA Alpha ASR Data Legal/IP Review v0.1
 
-Task: `5.1A-L — Legal/IP Review Preparation`  
+Task: `5.1A-R3 — Project Owner Alpha Data Review`  
 Date: 18 September 2026  
-State: **REVIEW_PREPARED / LEGAL_IP_REVIEWER_UNASSIGNED**  
+State: **INTERNAL_ALPHA_REVIEW_APPROVED / STORAGE_DRY_RUN_PENDING**  
 Admission record: [DORA_ALPHA_ASR_DATA_ADMISSION_STAGE0_V0_1.md](DORA_ALPHA_ASR_DATA_ADMISSION_STAGE0_V0_1.md)  
 Owner decision: [DORA_ALPHA_ASR_DATA_OWNER_DECISION_V0_1.md](DORA_ALPHA_ASR_DATA_OWNER_DECISION_V0_1.md)
 
@@ -194,73 +194,93 @@ reviewer to be different people for datasets. The explicit `distinct accountable
 Engineering/Security reviewer` language found in the policy is Recovery-specific and is not
 silently generalized to Common Voice.
 
-Therefore:
+Therefore, for this exact bounded Alpha scope the Project Owner explicitly assigns the Project
+Owner role to all three Stage-0 reviewer functions:
 
-- one person may hold multiple reviewer roles only if the Project Owner explicitly assigns that
-  person to each role;
-- a prior Recovery reviewer has no authority here merely because they reviewed Recovery;
-- this packet does not assign any reviewer.
+```text
+PROJECT_OWNER = Product Owner
+PROJECT_OWNER = Legal/IP Reviewer
+PROJECT_OWNER = Stage-0 Engineering/Security Reviewer
+SCOPE = BOUNDED_INTERNAL_ALPHA_ASR_EVALUATION_ONLY
+RU_MDC_ID = cmu5mg3pr00simh07epeylc55
+EN_MDC_ID = cmu5nqn1h00vwmi07b4dbk085
+```
 
-## 9. Reviewer assignment status
+This assignment is Stage-0 Alpha only. It grants no production authority, redistribution,
+public re-hosting/re-sharing, or re-identification authority. No separate external reviewer is
+required by the applicable Data/ASR governance for this scope.
 
-`LEGAL_IP_REVIEWER = UNASSIGNED`
+## 9. Internal Alpha review
 
-No current DORA Data/ASR governance record names a Legal/IP reviewer for these two Common Voice
-datasets.
+The Project Owner, acting in the explicitly assigned Stage-0 roles above, reviews the exact
+Mozilla/MDC evidence and records:
 
-The Project Owner must explicitly assign a named human to:
+1. **CC0-1.0 — ACCEPT.** Both exact candidates are published as CC0-1.0.
+2. **ASR evaluation use — ACCEPT.** The dataset purpose expressly includes evaluating ASR models;
+   DORA narrows its use to bounded internal evaluation.
+3. **MDC/Data Consumer terms — ACCEPT for this scope.** DORA will stay within the applicable
+   Data Consumer License and MDC supplemental terms.
+4. **No speaker re-identification — ACKNOWLEDGE.** DORA will not attempt identity matching or
+   persistent voice identity.
+5. **No public re-hosting/re-sharing — ACKNOWLEDGE.** Dataset bytes remain private and are never
+   published or mirrored.
+6. **Reasonable safeguards — ACCEPT.** The owner-approved controlled-storage/access policy is
+   designed for this requirement.
+7. **Controlled private storage — ACCEPT.** Only `LOCAL_PRIVATE_CONTROLLED_STORAGE` may hold raw
+   pilot bytes; its operational dry-run remains a separate pre-download gate.
+8. **Custodian-only access — ACCEPT.**
+9. **Raw audio public evidence — PROHIBITED.**
+10. **Raw transcript/source excerpts public evidence — PROHIBITED.**
+11. **Retention — ACCEPT.** Raw pilot copies are retained only through the 5.1-5.5 evaluation and
+    deleted within 30 calendar days after final 5.5 assessment, or earlier if external terms
+    require.
+12. **Provenance — ACCEPT.** Actual archive identity and SHA-256 are captured immediately after an
+    authorized download and before ASR use. No pre-download digest is fabricated.
 
-`Legal/IP Reviewer — Common Voice 5.0 RU/EN bounded internal Alpha ASR evaluation`
+No unresolved term in the reviewed public Mozilla/MDC material prevents this bounded Alpha
+approval. Any additional dataset-specific click-through presented during authorized access must
+match this approved scope; a materially conflicting term fails closed before bytes are used.
 
-If the same human will also satisfy the Engineering/Security reviewer function, that second role
-must be explicitly assigned as well. Role separation is not mandated by the general dataset policy,
-but role assignment cannot be inferred.
-
-## 10. Legal/IP decision form
-
-Do not pre-fill approval.
+## 10. Recorded decision
 
 ```text
 DORA_ALPHA_ASR_DATA_LEGAL_IP_DECISION_V0_1
 
-REVIEWER_NAME =
-REVIEWER_ROLE = Legal/IP Reviewer
-REVIEW_DATE =
+REVIEWER_NAME = Project Owner
+REVIEWER_ROLE = Legal/IP Reviewer; Stage-0 Engineering/Security Reviewer
+REVIEW_DATE = 2026-09-18
 
 RU_MDC_ID = cmu5mg3pr00simh07epeylc55
 EN_MDC_ID = cmu5nqn1h00vwmi07b4dbk085
 
-INTERNAL_ALPHA_EVALUATION =
-[APPROVE / REJECT]
-
-CC0_COMPATIBILITY =
-[ACCEPT / REJECT]
-
-MDC_TERMS_COMPATIBILITY =
-[ACCEPT / REJECT]
-
-NO_REIDENTIFICATION =
-[ACKNOWLEDGE]
-
-NO_PUBLIC_REHOSTING =
-[ACKNOWLEDGE]
-
-CONTROLLED_STORAGE =
-[ACCEPT / REJECT]
-
-RETENTION_POLICY =
-[ACCEPT / REJECT]
-
-RAW_DATA_PUBLIC_EVIDENCE =
-[PROHIBITED]
-
-PRODUCTION_ADMISSION =
-[NOT_REVIEWED]
+INTERNAL_ALPHA_EVALUATION = APPROVE
+CC0_COMPATIBILITY = ACCEPT
+MDC_TERMS_COMPATIBILITY = ACCEPT
+NO_REIDENTIFICATION = ACKNOWLEDGE
+NO_PUBLIC_REHOSTING = ACKNOWLEDGE
+CONTROLLED_STORAGE = ACCEPT
+RETENTION_POLICY = ACCEPT
+EVIDENCE_BOUNDARY = ACCEPT
+PROVENANCE_CONTROLS = ACCEPT
+ENGINEERING_SECURITY_BOUNDARY = ACCEPT
+RAW_DATA_PUBLIC_EVIDENCE = PROHIBITED
+PRODUCTION_ADMISSION = NOT_REVIEWED
+FINAL_DECISION = APPROVE
 
 CONDITIONS =
+- SYNTHETIC_STORAGE_ACCESS_DELETION_DRY_RUN must PASS before dataset download.
+- Applicable MDC/Data Consumer License text must be accepted by the authorized custodian at the
+  later access/download step and must not materially conflict with this reviewed scope.
+- Archive identity and SHA-256 must be captured immediately after authorized download and before
+  ASR use.
+
 DECISION_NOTES =
+Bounded internal Stage-0 Alpha evaluation only. No production use, redistribution, public
+re-hosting/re-sharing, re-identification, model training/fine-tuning, or indefinite retention.
 ```
 
-An `APPROVE` decision in this form resolves the Legal/IP interpretation only for this exact
-bounded Alpha scope. It does not itself prove the synthetic storage deletion/access dry-run,
-authorize production use, or supply post-download archive hashes.
+This decision moves the exact RU/EN dataset candidates to `EVALUATION_APPROVED` for the bounded
+Stage-0 Alpha evaluation only. Dataset download remains blocked until the single approved
+synthetic storage/access/deletion dry-run passes.
+
+Production Legal/Security remains not reviewed and is not implied by this decision.
