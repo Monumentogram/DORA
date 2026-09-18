@@ -20,9 +20,12 @@ The current proposed candidates are:
 - `Common Voice Spontaneous Speech 5.0 - English`, locale `en`,
   MDC ID `cmu5nqn1h00vwmi07b4dbk085`.
 
-The exact admission state and pending owner/Legal-IP decisions are governed by
-[DORA_ALPHA_ASR_DATA_ADMISSION_STAGE0_V0_1.md](DORA_ALPHA_ASR_DATA_ADMISSION_STAGE0_V0_1.md) and
-[DORA_ALPHA_ASR_DATA_OWNER_DECISION_V0_1.md](DORA_ALPHA_ASR_DATA_OWNER_DECISION_V0_1.md).
+The exact admission state is governed by
+[DORA_ALPHA_ASR_DATA_ADMISSION_STAGE0_V0_1.md](DORA_ALPHA_ASR_DATA_ADMISSION_STAGE0_V0_1.md),
+[DORA_ALPHA_ASR_DATA_OWNER_DECISION_V0_1.md](DORA_ALPHA_ASR_DATA_OWNER_DECISION_V0_1.md), and
+[DORA_ALPHA_ASR_DATA_LEGAL_IP_REVIEW_V0_1.md](DORA_ALPHA_ASR_DATA_LEGAL_IP_REVIEW_V0_1.md).
+
+The Project Owner policy decisions are approved. Legal/IP and Stage-0 Engineering/Security reviewer assignments remain open, and the required synthetic storage/access/deletion dry-run has not yet run.
 
 Nothing in this update authorizes dataset download, 5.1B, model selection, runner implementation
 or device execution.
@@ -63,8 +66,11 @@ The following are out of scope:
 - persistent speaker identity or attempts to identify dataset speakers;
 - raw audio, transcripts, participant metadata or selected clips in Git, Git LFS or GitHub Actions.
 
-Because controlled non-public storage and a named data custodian are not yet operational, **no
-audio may be retrieved by this task until the admission gates are satisfied**.
+The Project Owner has assigned `Project Owner / Data Custodian` and approved
+`LOCAL_PRIVATE_CONTROLLED_STORAGE` with `CUSTODIAN_ONLY` access. The concrete controlled-storage
+instance has not yet passed the required synthetic access/deletion dry-run, and the required
+Data/ASR reviewer roles remain unassigned. **No audio may be retrieved until the remaining
+admission gates are satisfied**.
 
 ## 4. Current proposed public source
 
@@ -111,15 +117,21 @@ manifest. Keep only the fields required to evaluate ASR and reproduce the select
 
 All of the following are required. Missing evidence means blocked, not PASS.
 
-1. Exact RU/EN MDC IDs and applicable public metadata are frozen.
-2. Product owner approves the owner-controlled values in the owner-decision packet.
+1. Exact RU/EN MDC IDs and applicable public metadata are frozen — **satisfied**.
+2. Project Owner policy values are approved — **satisfied 18 September 2026**.
 3. A named Legal/IP reviewer records the exact dataset evaluation-right disposition required by
-   `GOV-IP-001`.
-4. A data custodian is assigned.
-5. Controlled non-public storage and access are operational.
-6. The required synthetic/non-sensitive controlled-storage deletion/access dry-run passes.
-7. The collection/materialization plan names retention and deletion checkpoints before download.
-8. The applicable MDC/Data Consumer terms are accepted only by an authorized role.
+   `GOV-IP-001` — **open**.
+4. A named Stage-0 Engineering/Security reviewer is recorded for exact provenance and handling;
+   current Data/ASR governance does not require a distinct person, but explicit assignment is
+   required — **open**.
+5. The approved custodian/storage/access policy is instantiated in a compliant concrete private
+   storage location — **not run**.
+6. The required synthetic/non-sensitive controlled-storage deletion/access dry-run passes —
+   **not run**.
+7. The approved retention/deletion policy is attached to the materialization record — **policy
+   approved; execution pending**.
+8. The applicable MDC/Data Consumer terms are accepted only by an authorized role after review —
+   **not run**.
 9. No model/runtime or device execution occurs as part of satisfying these data gates.
 
 ## 7. Private selected-set manifest
@@ -176,9 +188,11 @@ Current state:
 - 5.0 RU/EN candidates: `PROPOSED`;
 - data retrieval: `NOT_RUN`;
 - selected-set manifest: `NOT_CREATED`;
-- Legal/IP evaluation approval: `BLOCKED`;
-- controlled storage/custodian: `BLOCKED`;
-- 5.1A: `BLOCKED_LEGAL_IP` with owner-controlled decisions also pending;
+- owner-controlled decisions: `APPROVED`;
+- Legal/IP evaluation approval: `BLOCKED / REVIEWER_UNASSIGNED`;
+- Stage-0 Engineering/Security reviewer: `UNASSIGNED`;
+- custodian/storage/access policy: `APPROVED`, concrete storage dry-run pending;
+- 5.1A: `BLOCKED_LEGAL_IP`;
 - 5.4 device ASR: `NOT_AUTHORIZED`.
 
 Do not begin 5.1B, 5.2, dataset/model download or device execution until the admission record's
