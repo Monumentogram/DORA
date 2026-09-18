@@ -1,28 +1,36 @@
 # DORA Alpha ASR Data Owner Decision v0.1
 
-Task: `5.1A-R2 — Exact Common Voice 5.0 Candidate Freeze + Owner Decision Packet`  
+Task: `5.1A-L — Legal/IP Review Preparation`  
 Date: 18 September 2026  
-State: **PROPOSED / OWNER_DECISION_REQUIRED**  
-Admission record: [DORA_ALPHA_ASR_DATA_ADMISSION_STAGE0_V0_1.md](DORA_ALPHA_ASR_DATA_ADMISSION_STAGE0_V0_1.md)
+State: **APPROVED_BY_PROJECT_OWNER**  
+Admission record: [DORA_ALPHA_ASR_DATA_ADMISSION_STAGE0_V0_1.md](DORA_ALPHA_ASR_DATA_ADMISSION_STAGE0_V0_1.md)  
+Legal/IP packet: [DORA_ALPHA_ASR_DATA_LEGAL_IP_REVIEW_V0_1.md](DORA_ALPHA_ASR_DATA_LEGAL_IP_REVIEW_V0_1.md)
 
 ## 1. Decision scope
 
-This packet contains only owner-controlled choices needed to prepare the bounded internal Alpha
-ASR data path. It does not replace the mandatory `GOV-IP-001` Legal/IP review and does not
-authorize production admission.
+The Project Owner explicitly approves the owner-controlled values below for:
 
-## 2. Dataset and purpose
+`BOUNDED_INTERNAL_ALPHA_ASR_EVALUATION_ONLY`
 
-**RECOMMENDED VALUE**
+This approval is limited to the Stage-0 Alpha data path. It does **not** constitute Legal/IP
+approval, `EVALUATION_APPROVED`, production admission, dataset download authorization before
+remaining pre-download gates, redistribution, public hosting, re-identification or unlimited
+retention.
 
-Approve as the exact proposed Alpha evaluation inputs:
+`OWNER_APPROVED != EVALUATION_APPROVED`
+
+## 2. Exact datasets and purpose
+
+**APPROVED**
+
+Use as the exact proposed Alpha evaluation inputs:
 
 - `Common Voice Spontaneous Speech 5.0 - Russian`
-  - MDC ID: `cmu5mg3pr00simh07epeylc55`
   - locale: `ru`
+  - MDC ID: `cmu5mg3pr00simh07epeylc55`
 - `Common Voice Spontaneous Speech 5.0 - English`
-  - MDC ID: `cmu5nqn1h00vwmi07b4dbk085`
   - locale: `en`
+  - MDC ID: `cmu5nqn1h00vwmi07b4dbk085`
 
 Purpose:
 
@@ -31,21 +39,17 @@ Purpose:
 No production admission, training/fine-tuning/model improvement, speaker identity, public
 redistribution or re-hosting is implied.
 
-Decision state: **PENDING_OWNER**
-
 ## 3. Pilot size
 
-**RECOMMENDED VALUE**
+**APPROVED**
 
 `48 clips total = 24 RU + 24 EN`
 
 Do not expand this pilot in 5.1A/5.1B.
 
-Decision state: **PENDING_OWNER**
-
 ## 4. Custodian
 
-**RECOMMENDED VALUE**
+**APPROVED**
 
 Assign the Alpha role:
 
@@ -53,21 +57,19 @@ Assign the Alpha role:
 
 Responsibilities:
 
-- accept the applicable MDC/Data Consumer terms only after the mandatory Legal/IP review has
-  cleared the exact evaluation use;
+- accept applicable MDC/Data Consumer terms only after the mandatory Legal/IP review has cleared
+  the exact evaluation use;
 - control dataset access;
 - preserve exact provenance and the controlled manifest;
 - enforce the approved retention window;
 - initiate deletion at expiry/termination;
 - record deletion result and unresolved failures.
 
-This packet does not self-assign the role.
+This is a role assignment for this bounded Alpha scope only.
 
-Decision state: **PENDING_OWNER**
+## 5. Storage class
 
-## 5. Storage
-
-**RECOMMENDED VALUE**
+**APPROVED**
 
 `LOCAL_PRIVATE_CONTROLLED_STORAGE`
 
@@ -84,60 +86,59 @@ Required properties:
 - raw transcripts/source excerpts never included in public evidence;
 - copy inventory, expiry and deletion can be verified.
 
-No concrete machine path is approved by this document.
-
-Decision state: **PENDING_OWNER**
+No concrete machine path is approved by this document. Instantiation of a compliant concrete
+location remains an operational pre-download control.
 
 ## 6. Access
 
-**RECOMMENDED VALUE**
+**APPROVED**
 
 `CUSTODIAN_ONLY`
 
 No additional person, automation or service receives raw dataset access until explicitly
-authorized. The later ASR test process must be authorized as a bounded custodian-controlled
-process before it receives the selected pilot inputs.
-
-Decision state: **PENDING_OWNER**
+authorized. A later ASR test process must be separately authorized as a bounded,
+custodian-controlled process before receiving selected pilot inputs.
 
 ## 7. Retention
 
-**RECOMMENDED VALUE**
+**APPROVED**
+
+`ACTIVE_THROUGH_5_5_THEN_DELETE_WITHIN_30_CALENDAR_DAYS`
+
+Policy:
 
 - retain raw pilot copies only while the 5.1-5.5 Alpha ASR evaluation is active;
-- after the final 5.5 assessment, delete raw pilot dataset copies within **30 calendar days**;
+- after final 5.5 assessment, delete raw pilot dataset copies within 30 calendar days;
 - delete earlier when no longer required;
-- a stricter MDC/account/Data Consumer License requirement always wins;
+- a stricter MDC/account/Data Consumer License requirement wins;
 - derived non-sensitive aggregate metrics and approved non-linkable provenance hashes may remain as
   DORA evidence;
 - no indefinite retention.
 
-Decision state: **PENDING_OWNER**
+## 8. Pre-download synthetic deletion/access dry-run
 
-## 8. Pre-download deletion/access dry-run
+**APPROVED AS REQUIRED CONTROL**
 
-**RECOMMENDED VALUE**
+`PRE_DOWNLOAD_SYNTHETIC_DELETION_DRY_RUN = REQUIRED`
 
-Require one synthetic/non-sensitive dry-run in the approved
-`LOCAL_PRIVATE_CONTROLLED_STORAGE` **before downloading any real pilot dataset bytes**.
+Before downloading any real pilot dataset bytes, the approved
+`LOCAL_PRIVATE_CONTROLLED_STORAGE` must demonstrate:
 
-The dry-run must prove:
-
-1. the controlled directory/storage object can be created;
+1. a controlled directory/storage object can be created;
 2. access is restricted to the approved role/process;
 3. a synthetic non-sensitive fixture can be written;
 4. its SHA-256 can be recorded;
 5. the fixture can be deleted;
-6. absence can be verified after deletion;
+6. absence can be verified;
 7. no raw fixture remains in the Git repository, worktree, PR/CI artifact or public/shared evidence.
+
+This owner decision requires the dry-run; it does not claim that the dry-run has already occurred.
 
 No Android/device test is involved.
 
-Decision state: **PENDING_OWNER**
-
 ## 9. External restrictions accepted as constraints
 
-These are not optional owner choices; they are constraints of the proposed use:
+The owner accepts these as mandatory constraints of the proposed use:
 
 - no attempt to identify or re-identify speakers;
 - no redistribution;
@@ -155,33 +156,33 @@ These are not optional owner choices; they are constraints of the proposed use:
 
 `LEGAL_IP_APPROVAL = BLOCKED`
 
-Existing `GOV-IP-001` requires a named Legal/IP reviewer for exact terms, redistribution,
-attribution and dataset/consent compatibility. The Product owner names that reviewer; this packet
-does not invent one and does not treat owner approval as Legal/IP approval.
+The owner approval above does not replace `GOV-IP-001`.
 
-**REQUIRED SEPARATE ACTION**
+A named Legal/IP reviewer must still interpret the exact Common Voice/MDC terms,
+redistribution/attribution and dataset compatibility for this bounded evaluation.
 
-Name a Legal/IP reviewer and obtain an exact-scope disposition for:
+### Engineering/Security
 
-- RU MDC ID `cmu5mg3pr00simh07epeylc55`;
-- EN MDC ID `cmu5nqn1h00vwmi07b4dbk085`;
-- CC0-1.0;
-- MDC Data Consumer Terms last updated 6 May 2026;
-- any dataset access-step licence text;
-- bounded internal Alpha ASR evaluation;
-- no re-identification/rehosting/redistribution;
-- proposed local controlled-copy and retention/deletion handling.
+The general `GOV-IP-001` policy also names Engineering/Security reviewer functions for artifact
+state transitions and provenance. This owner decision does not silently assign those roles.
+
+For this dataset task, general governance does not state that Legal/IP and Engineering/Security
+must be different people. A package-specific independence rule exists for Recovery, but no such
+distinct-reviewer rule was found for this Common Voice dataset scope.
+
+Any person serving multiple reviewer roles must be explicitly named for each role; prior Recovery
+assignments do not carry over automatically.
 
 ### Production admission
 
 `NOT_APPLICABLE_TO_5.1A`
 
-Production Legal/Security/dependency admission is a later gate and does not need to be completed
-for this bounded Stage-0 internal evaluation.
+Production Legal/Security/dependency admission is a later gate and is not imposed on this bounded
+Stage-0 internal evaluation.
 
-## 11. Approval block
+## 11. Owner decision record
 
-The owner may approve these owner-controlled values without redesigning the policy:
+The Project Owner explicitly approved:
 
 ```text
 DORA_ALPHA_ASR_DATA_OWNER_DECISION_V0_1
@@ -193,9 +194,15 @@ STORAGE_CLASS = LOCAL_PRIVATE_CONTROLLED_STORAGE
 ACCESS = CUSTODIAN_ONLY
 RETENTION = ACTIVE_THROUGH_5_5_THEN_DELETE_WITHIN_30_CALENDAR_DAYS
 PRE_DOWNLOAD_SYNTHETIC_DELETION_DRY_RUN = REQUIRED
-
-This approval does not grant LEGAL_IP_APPROVAL, production admission,
-dataset download before the dry-run, model download, 5.1B, 5.2 or device execution.
 ```
 
-Until explicit owner approval is recorded, every field above remains proposed.
+Approval boundary:
+
+- only `BOUNDED_INTERNAL_ALPHA_ASR_EVALUATION_ONLY`;
+- no Legal/IP approval;
+- no production use;
+- no redistribution/public hosting;
+- no re-identification;
+- no raw data in Git/CI/public evidence;
+- no unlimited retention;
+- no download until the remaining pre-download gates close.
