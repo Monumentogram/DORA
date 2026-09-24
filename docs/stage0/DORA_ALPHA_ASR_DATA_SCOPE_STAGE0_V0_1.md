@@ -4,9 +4,11 @@ Task: `POC-DATA-001` / operational Alpha substage `5.1`
 Profile: `dora-alpha-asr-data-v0.1`  
 Date: 24 September 2026\
 Base: `main@55940df0c95e919a00708ae57e1b8aa23d89b6de`  
-State: **5.1A PASS / 5.1B PASS (MANIFEST_CONTRACT_AND_VALIDATOR_READY) / DATASET_DOWNLOAD NOT_RUN**
+State: **5.1 PASS (bounded Alpha data only) / 5.1C PASS (ACTUAL_48_CLIP_CORPUS_MATERIALIZED) / 5.2 NOT_STARTED**
 
 ## R2 candidate update — 18 September 2026
+
+Historical admission chronology; current materialization status is recorded in sections 9-10.
 
 The original 3.0 RU/EN entries in the historical v0.1 proposal were never
 `EVALUATION_APPROVED`, no 3.0 bytes were downloaded and no 3.0 ASR/device run occurred.
@@ -70,8 +72,8 @@ The Project Owner has assigned `Project Owner / Data Custodian` and approved
 `LOCAL_PRIVATE_CONTROLLED_STORAGE` with `CUSTODIAN_ONLY` access. The required Data/ASR reviewer
 roles are assigned to the Project Owner and the internal review is approved. The concrete
 controlled-storage instance passed the synthetic access/deletion dry-run on 24 September 2026.
-**Audio retrieval still requires a later explicitly scoped task**. The separately authorized
-5.1B contract and validator are now ready, using generated synthetic metadata only; see
+The separately authorized 5.1C continuation has now materialized the actual pilot in that
+controlled storage. The 5.1B contract and validator remain unchanged; see
 [the 5.1B contract](DORA_ALPHA_ASR_DATA_MANIFEST_CONTRACT_STAGE0_V0_1.md).
 
 ## 4. Current proposed public source
@@ -80,12 +82,12 @@ Use one current dataset family/release for both languages:
 
 | Locale | Exact candidate | MDC ID | Task / format | Licence | Published size | State |
 |---|---|---|---|---|---:|---|
-| `ru` | Common Voice Spontaneous Speech 5.0 - Russian | `cmu5mg3pr00simh07epeylc55` | ASR / MP3 | CC0-1.0 | 88.72 MB | `EVALUATION_APPROVED / STORAGE_DRY_RUN_PASS / DOWNLOAD_NOT_RUN` |
-| `en` | Common Voice Spontaneous Speech 5.0 - English | `cmu5nqn1h00vwmi07b4dbk085` | ASR / MP3 | CC0-1.0 | 519.05 MB | `EVALUATION_APPROVED / STORAGE_DRY_RUN_PASS / DOWNLOAD_NOT_RUN` |
+| `ru` | Common Voice Spontaneous Speech 5.0 - Russian | `cmu5mg3pr00simh07epeylc55` | ASR / MP3 | CC0-1.0 | 88.72 MB | `EVALUATION_APPROVED / ACTUAL_PILOT_MATERIALIZED` |
+| `en` | Common Voice Spontaneous Speech 5.0 - English | `cmu5nqn1h00vwmi07b4dbk085` | ASR / MP3 | CC0-1.0 | 519.05 MB | `EVALUATION_APPROVED / ACTUAL_PILOT_MATERIALIZED` |
 
 Both are part of `sps-corpus-5.0-2026-09-11` and published by MDC on 17 September 2026.
 
-The Project Owner internal Stage-0 review recorded on 18 September 2026 moves both exact candidates to `EVALUATION_APPROVED` for this bounded Alpha evaluation only. The storage dry-run is now PASS; dataset download remains NOT_RUN and outside task 5.1A-S.
+The Project Owner internal Stage-0 review recorded on 18 September 2026 moves both exact candidates to `EVALUATION_APPROVED` for this bounded Alpha evaluation only. The storage dry-run is PASS. Dataset retrieval was outside task 5.1A-S and was subsequently completed by the Project Owner under the explicitly authorized 5.1C continuation.
 
 ## 5. Minimal exploratory pilot set
 
@@ -126,9 +128,9 @@ All of the following are required. Missing evidence means blocked, not PASS.
 5. Internal exact-scope Alpha data review — **APPROVE**.
 6. `SYNTHETIC_STORAGE_ACCESS_DELETION_DRY_RUN` in the approved controlled-storage class —
    **PASS on 24 September 2026**, with evidence in the admission record.
-7. Applicable MDC/Data Consumer License acceptance occurs only in the later authorized download
-   transaction and must be retained as controlled evidence.
-8. Archive identity/SHA-256 is captured immediately after authorized download and before ASR use.
+7. Applicable MDC/Data Consumer License acceptance is retained as controlled evidence from the
+   authorized human access/download continuation; its evidence limitations are recorded below.
+8. Actual archive identity/SHA-256 is captured and reverified before materialization and any ASR use.
 9. No model/runtime or device execution occurs as part of satisfying these data gates.
 
 ## 7. Private selected-set manifest
@@ -187,10 +189,10 @@ No Android/device test is required for substage 5.1. Device execution belongs to
 Current state:
 
 - 3.0 candidates: `SUPERSEDED_AS_CANDIDATE`;
-- 5.0 RU/EN candidates: `EVALUATION_APPROVED / STORAGE_DRY_RUN_PASS / DOWNLOAD_NOT_RUN`;
-- data retrieval: `NOT_RUN`;
-- actual candidate inventory: `NOT_CREATED`;
-- actual 48-clip selected-set manifest: `NOT_CREATED`;
+- 5.0 RU/EN candidates: `EVALUATION_APPROVED / ACTUAL_PILOT_MATERIALIZED`;
+- data retrieval: `COMPLETED_BY_PROJECT_OWNER / CONTROLLED_TRANSFER_VERIFIED`;
+- actual candidate inventory: `FROZEN / COMPLETE_PROVIDER_TEST_SPLITS`;
+- actual 48-clip selected-set manifest: `MATERIALIZED / VALIDATOR_PASS`;
 - owner-controlled decisions: `APPROVED`;
 - internal Stage-0 Legal/IP review: `APPROVED`;
 - internal Stage-0 Engineering/Security review: `APPROVED`;
@@ -198,13 +200,71 @@ Current state:
 - `SYNTHETIC_STORAGE_ACCESS_DELETION_DRY_RUN`: `PASS`;
 - 5.1A: `PASS`;
 - 5.1B: `PASS / MANIFEST_CONTRACT_AND_VALIDATOR_READY`;
+- 5.1C: `PASS / ACTUAL_48_CLIP_CORPUS_MATERIALIZED`;
+- 5.1: `PASS / BOUNDED_ALPHA_DATA_SCOPE_ONLY`;
 - 5.2: `NOT_STARTED`;
-- archive hashes: `PENDING_DOWNLOAD_VERIFICATION`;
+- archive hashes: `VERIFIED`;
 - production admission: unchanged;
 - 5.4 device ASR: `NOT_AUTHORIZED`.
 
 Task 5.1B ends with contract/validator readiness only, supported by
 [synthetic host evidence](../evidence/poc-data-001/alpha-asr-pilot-manifest-validator-local-evidence-stage0-v0.1.json).
-This is not corpus materialization or ASR quality evidence. Dataset download remains `NOT_RUN`.
-Do not begin 5.2, dataset/model download or device execution without later explicit scope
-and the applicable remaining gates.
+That historical record remains tooling evidence only. Actual 5.1C materialization is recorded
+separately below. Do not begin 5.2, model download or device execution without later explicit
+scope and the applicable remaining gates.
+
+
+## 10. 5.1C actual materialization — 24 September 2026
+
+The Project Owner completed official MDC human access and downloaded the two exact approved
+5.0 archives. Source and controlled-destination byte sizes/SHA-256 matched; only then were the
+Downloads copies deleted and their absence verified. Both archives and all extracted files
+remain in the approved EFS-protected, custodian-only storage outside Git/worktrees and the
+checked sync/public roots. No dataset was downloaded again by the materializer.
+
+[Sanitized actual materialization evidence](../evidence/poc-data-001/alpha-asr-actual-pilot-materialization-stage0-v0.1.json)
+records actual archive basenames, bytes, hashes, decoder provenance and aggregate results.
+The actual downloaded basenames differ from the earlier public catalogue display names;
+owner attestation, official browser referrer, download basename, internal release/locale and
+provider split counts corroborate identity. No publisher-signed checksum comparison is claimed.
+
+| Check | RU | EN |
+|---|---:|---:|
+| Provider index rows | 783 | 5898 |
+| Complete provider test inventory | 385 | 357 |
+| Successfully probed and fully decoded | 385 | 357 |
+| Eligible under unchanged 5.1B rules | 214 | 244 |
+| Deterministically selected | 24 | 24 |
+
+All archive members passed traversal/link/device/type checks before controlled extraction;
+gzip integrity passed. Only exact provider test rows entered the inventory. FFmpeg/ffprobe
+9.0.2 from the explicitly owner-authorized user-scope `Gyan.FFmpeg` WinGet installation proved
+MP3 metadata and full decode-to-null, with file-only input and bounded execution. Measured
+durations, rounded half up to milliseconds, matched provider durations for every test row.
+No PCM files, ASR output or model were created. This host utility is not an admitted production
+dependency.
+
+The complete 742-row inventory was frozen before selection. The unchanged first-24-per-locale
+algorithm selected 48 unique clips without substitutions. The existing validator CLI returned
+PASS against the actual private inventory/manifest; all 21 existing host tests passed.
+Full-inventory membership was also independently compared with every provider test row.
+The validator's own `audioDecodedByValidator=false` and `inventoryCompletenessVerified=false`
+remain unchanged; separate materialization evidence establishes those external facts.
+
+Controlled reference text, consent/legal-basis and lifecycle/copy records are present separately
+from the validator projection. Retention remains
+`ACTIVE_THROUGH_5_5_THEN_DELETE_WITHIN_30_CALENDAR_DAYS`, or earlier when no longer required or
+applicable terms require it. Selected audio references the existing protected extracted files.
+No raw audio, transcripts, TSV, actual inventory/manifest, selected source locators, contributor
+metadata, private paths or decoder binaries are published.
+
+Terms evidence consists of the Project Owner's dated confirmation of completed official human
+access/download plus retrieved [official MDC consumer terms](https://mozilladatacollective.com/terms/consumers)
+and the dataset-specific conditions observed on the official pages. It does not fabricate an
+acceptance-screen capture or precise acceptance timestamp. The private evidence digest binds
+both manifest inputs. No newly conflicting condition was discovered.
+
+The section 8 acceptance criteria and separate controlled lifecycle obligations are satisfied:
+`5.1 = PASS` for this bounded exploratory Alpha data pilot only. Full POC-DATA/POC-ASR readiness,
+ASR quality, representative-language claims, production admission and Recovery are unchanged.
+`5.2 = NOT_STARTED`; `MODEL_DOWNLOAD = NOT_RUN`; `ASR_INFERENCE = NOT_RUN`.
