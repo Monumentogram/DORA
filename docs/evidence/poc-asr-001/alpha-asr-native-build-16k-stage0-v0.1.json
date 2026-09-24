@@ -1,0 +1,964 @@
+{
+  "evidenceVersion": "dora-alpha-asr-native-build-16k-stage0-v0.1",
+  "task": "5.3B",
+  "date": "2026-09-24",
+  "verdict": "PASS / ISOLATED_WHISPER_CPP_ANDROID_16K_CANDIDATE_VERIFIED",
+  "authority": "Project Owner explicit 5.3B toolchain installation and broader reproducible-cache cleanup scope; no production admission",
+  "branch": "chat/alpha-asr-runner-scope",
+  "headBefore": "a2b22ad1e350db387acb2367743194991ac5511e",
+  "source": {
+    "repository": "https://github.com/ggml-org/whisper.cpp.git",
+    "tag": "v1.9.4",
+    "tagObject": "7d75b14994ae7f59623e2471445e2355fe506ed2",
+    "resolvedCommit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+    "detachedHead": true,
+    "cleanBeforeAndAfterBothBuilds": true,
+    "localSourcePatches": false,
+    "acquisitionCommand": [
+      "git",
+      "-c",
+      "core.autocrlf=false",
+      "clone",
+      "--depth",
+      "1",
+      "--branch",
+      "v1.9.4",
+      "https://github.com/ggml-org/whisper.cpp.git",
+      "WORKSPACE/source"
+    ]
+  },
+  "storageClass": "LOCAL_PRIVATE_BUILD_WORKSPACE_OUTSIDE_DORA_AND_ALL_WORKTREES",
+  "pathSymbols": {
+    "WORKSPACE": "task-owned local nonsynced source/build/evidence directory",
+    "SDK_ROOT": "existing configured SDK root",
+    "DORA_ROOT": "current Dora checkout",
+    "PYTHON": "CPython 3.12.14"
+  },
+  "toolchain": {
+    "host": "Windows x86_64",
+    "sdkmanager": "22.0",
+    "ndkPackage": "ndk;28.2.13676358",
+    "ndkRevision": "28.2.13676358",
+    "ndkRelease": "r28c",
+    "ndkPath": "SDK_ROOT/ndk/28.2.13676358",
+    "ndkSourceProperties": "Pkg.Desc = Android NDK\nPkg.Revision = 28.2.13676358\nPkg.BaseRevision = 28.2.13676358\nPkg.ReleaseName = r28c\n",
+    "ndkSourcePropertiesSha256": "c00aa236fdb205e9be9edd9e2169763e48aca52735efff4e16f34205d49783b5",
+    "cmakePackage": "cmake;3.22.1",
+    "androidToolchainPath": "SDK_ROOT/ndk/28.2.13676358/build/cmake/android.toolchain.cmake",
+    "androidToolchainSha256": "dbad92d9dcfea0d32b7c5e5f82f5072d878ded5d46a5d3f1f581ea108ca7fe89",
+    "tools": {
+      "clang": {
+        "path": "SDK_ROOT/ndk/28.2.13676358/toolchains/llvm/prebuilt/windows-x86_64/bin/clang.exe",
+        "version": "Android (13624864, based on r530567e) clang version 19.0.1 (https://android.googlesource.com/toolchain/llvm-project 97a699bf4812a18fb657c2779f5296a4ab2694d2)",
+        "sha256": "7d31c6f6fad98987b6c9d21b800afaa8b3e37f052e94aaddc941d42ff2a35579"
+      },
+      "clang++": {
+        "path": "SDK_ROOT/ndk/28.2.13676358/toolchains/llvm/prebuilt/windows-x86_64/bin/clang++.exe",
+        "version": "Android (13624864, based on r530567e) clang version 19.0.1 (https://android.googlesource.com/toolchain/llvm-project 97a699bf4812a18fb657c2779f5296a4ab2694d2)",
+        "sha256": "1c7792ef6df195b6af5919071a9ca7850bcb850153f02bed9c7d642e266c4ff3"
+      },
+      "llvm-readelf": {
+        "path": "SDK_ROOT/ndk/28.2.13676358/toolchains/llvm/prebuilt/windows-x86_64/bin/llvm-readelf.exe",
+        "version": "LLVM 19.0.1; Android llvm-r530567; revision 97a699bf4812a18fb657c2779f5296a4ab2694d2",
+        "sha256": "2646e382d8b2559b5c4ae91e9a98e187ed9bd59f23936054d424049ef795ba5e"
+      },
+      "llvm-objcopy": {
+        "path": "SDK_ROOT/ndk/28.2.13676358/toolchains/llvm/prebuilt/windows-x86_64/bin/llvm-objcopy.exe",
+        "version": "LLVM 19.0.1; Android llvm-r530567; revision 97a699bf4812a18fb657c2779f5296a4ab2694d2",
+        "sha256": "e47bd9ad686780554d5ffccf66ddd8114f48bc669fa9db2bdc66b9643cfe493c"
+      },
+      "cmake": {
+        "path": "SDK_ROOT/cmake/3.22.1/bin/cmake.exe",
+        "version": "cmake version 3.22.1-g37088a8-dirty\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).",
+        "sha256": "41d609bae2a65a9a8e2060bb222d6e031d33c0546054d354137eb490933cb8ac"
+      },
+      "ninja": {
+        "path": "SDK_ROOT/cmake/3.22.1/bin/ninja.exe",
+        "version": "1.10.2",
+        "sha256": "d5d6705439aac3162ff6cfb1509246cdbbecaf9d10d7c846713af2c07d8d7ee8"
+      }
+    },
+    "buildTools": "36.0.0",
+    "zipalign": {
+      "path": "SDK_ROOT/build-tools/36.0.0/zipalign.exe",
+      "sha256": "c503c7da88bd4f6cddbcc8d3febd41e1e5022a525147f05f8caf4602353409c0",
+      "supportedPageSizesKiB": [
+        4,
+        16,
+        64
+      ],
+      "versionIdentity": "SDK Build-tools 36.0.0; no standalone zipalign version flag"
+    }
+  },
+  "androidBaselineUnchanged": {
+    "agp": "9.3.1",
+    "compileSdk": 36,
+    "targetSdk": 36,
+    "minSdk": 28
+  },
+  "target": {
+    "abi": "arm64-v8a",
+    "androidApi": 28,
+    "cpuArchitecture": "armv8-a",
+    "configuration": "Release",
+    "stl": "c++_shared",
+    "target": "whisper",
+    "backend": "CPU only",
+    "optionalAccelerators": false,
+    "examplesTestsServer": false,
+    "compilerCache": false,
+    "customPageSizeLinkerFlags": false,
+    "pageSizeRule": "NDK r28c defaults; actual ELF headers verified"
+  },
+  "buildFixture": {
+    "cmakeLists": "cmake_minimum_required(VERSION 3.22)\nproject(dora_stage0_native_candidate LANGUAGES C CXX)\nadd_subdirectory(\"${WHISPER_SOURCE}\" whisper EXCLUDE_FROM_ALL)\n",
+    "sha256": "0e559eba96bd9daad691be34e2458a30c012356b09555f091fcd4663819bcdcb",
+    "reason": "Supported subdirectory mode avoids standalone package.json generation inside upstream source; only whisper target and dependencies are built."
+  },
+  "builds": [
+    {
+      "build": 1,
+      "configureCommand": [
+        "SDK_ROOT/cmake/3.22.1/bin/cmake.exe",
+        "-S",
+        "WORKSPACE/cmake-fixture",
+        "-B",
+        "WORKSPACE/build-1",
+        "-G",
+        "Ninja",
+        "-DCMAKE_MAKE_PROGRAM=SDK_ROOT/cmake/3.22.1/bin/ninja.exe",
+        "-DCMAKE_TOOLCHAIN_FILE=SDK_ROOT/ndk/28.2.13676358/build/cmake/android.toolchain.cmake",
+        "-DANDROID_ABI=arm64-v8a",
+        "-DANDROID_PLATFORM=android-28",
+        "-DANDROID_STL=c++_shared",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DWHISPER_SOURCE=WORKSPACE/source",
+        "-DBUILD_SHARED_LIBS=ON",
+        "-DWHISPER_BUILD_IS_DEV=OFF",
+        "-DWHISPER_BUILD_TESTS=OFF",
+        "-DWHISPER_BUILD_EXAMPLES=OFF",
+        "-DWHISPER_BUILD_SERVER=OFF",
+        "-DWHISPER_CURL=OFF",
+        "-DWHISPER_SDL2=OFF",
+        "-DWHISPER_COREML=OFF",
+        "-DWHISPER_OPENVINO=OFF",
+        "-DWHISPER_VITISAI=OFF",
+        "-DGGML_NATIVE=OFF",
+        "-DGGML_CPU=ON",
+        "-DGGML_CPU_ARM_ARCH=armv8-a",
+        "-DGGML_CPU_ALL_VARIANTS=OFF",
+        "-DGGML_BACKEND_DL=OFF",
+        "-DGGML_OPENMP=OFF",
+        "-DGGML_CCACHE=OFF",
+        "-DGGML_CUDA=OFF",
+        "-DGGML_METAL=OFF",
+        "-DGGML_ACCELERATE=OFF",
+        "-DGGML_BLAS=OFF",
+        "-DGGML_VULKAN=OFF",
+        "-DGGML_OPENCL=OFF",
+        "-DGGML_RPC=OFF",
+        "-DGGML_BUILD_TESTS=OFF",
+        "-DGGML_BUILD_EXAMPLES=OFF"
+      ],
+      "buildCommand": [
+        "SDK_ROOT/cmake/3.22.1/bin/cmake.exe",
+        "--build",
+        "WORKSPACE/build-1",
+        "--target",
+        "whisper",
+        "--parallel",
+        "2"
+      ],
+      "configureExitCode": 0,
+      "buildExitCode": 0,
+      "sourceCleanBeforeAndAfter": true,
+      "nativeOutputs": [
+        {
+          "filename": "libc++_shared.so",
+          "bytes": 9236352,
+          "sha256": "ab4e6c71b96b851de45a8a9bd86369e7dbc2130a44b3b4520564be94847910f2"
+        },
+        {
+          "filename": "libggml-base.so",
+          "bytes": 5905736,
+          "sha256": "df51d9b82f478cce93a4e3b68b4fc046ad8ebec4d98135b8ff322c910c89c1ac"
+        },
+        {
+          "filename": "libggml-cpu.so",
+          "bytes": 4467344,
+          "sha256": "01842a3bc8436a2deda623238cb038171dc9576fc6b8f19c3c05f2b07b33600b"
+        },
+        {
+          "filename": "libggml.so",
+          "bytes": 533824,
+          "sha256": "d578fa0e96f4409cf38e6567849f66594c9d28dd7d47fac0276c5aaf48392965"
+        },
+        {
+          "filename": "libwhisper.so",
+          "bytes": 7175280,
+          "sha256": "79ffb4c9e33f32f31a39fbd36ba46809b3d74c043c8094406425e152cf6eeadc"
+        }
+      ],
+      "package": {
+        "filename": "native-fixture-1.aligned.apk",
+        "bytes": 27360758,
+        "sha256": "e4c1e593b4f5dacbb5104962210170919d66f306fdbbfe75be353654c8ac5ebb",
+        "nativeCount": 5,
+        "basenameCount": 5,
+        "abi": "arm64-v8a",
+        "entries": [
+          {
+            "name": "lib/arm64-v8a/libc++_shared.so",
+            "compression": "STORED",
+            "dataOffset": 16384,
+            "alignmentRemainder": 0
+          },
+          {
+            "name": "lib/arm64-v8a/libggml-base.so",
+            "compression": "STORED",
+            "dataOffset": 9256960,
+            "alignmentRemainder": 0
+          },
+          {
+            "name": "lib/arm64-v8a/libggml-cpu.so",
+            "compression": "STORED",
+            "dataOffset": 15171584,
+            "alignmentRemainder": 0
+          },
+          {
+            "name": "lib/arm64-v8a/libggml.so",
+            "compression": "STORED",
+            "dataOffset": 19644416,
+            "alignmentRemainder": 0
+          },
+          {
+            "name": "lib/arm64-v8a/libwhisper.so",
+            "compression": "STORED",
+            "dataOffset": 20185088,
+            "alignmentRemainder": 0
+          }
+        ],
+        "zipalign": "PASS",
+        "doraVerifier": "PASS",
+        "installableProductApk": false
+      },
+      "verificationCommands": [
+        [
+          "SDK_ROOT/build-tools/36.0.0/zipalign.exe",
+          "-P",
+          "16",
+          "4",
+          "WORKSPACE/native-fixture-1.unaligned.apk",
+          "WORKSPACE/native-fixture-1.aligned.apk"
+        ],
+        [
+          "SDK_ROOT/build-tools/36.0.0/zipalign.exe",
+          "-c",
+          "-P",
+          "16",
+          "-v",
+          "4",
+          "WORKSPACE/native-fixture-1.aligned.apk"
+        ],
+        [
+          "PYTHON",
+          "-B",
+          "DORA_ROOT/tools/verify_apk_native_alignment.py",
+          "WORKSPACE/native-fixture-1.aligned.apk",
+          "--allowlist",
+          "WORKSPACE/native-allowlist-1.txt"
+        ]
+      ]
+    },
+    {
+      "build": 2,
+      "configureCommand": [
+        "SDK_ROOT/cmake/3.22.1/bin/cmake.exe",
+        "-S",
+        "WORKSPACE/cmake-fixture",
+        "-B",
+        "WORKSPACE/build-2",
+        "-G",
+        "Ninja",
+        "-DCMAKE_MAKE_PROGRAM=SDK_ROOT/cmake/3.22.1/bin/ninja.exe",
+        "-DCMAKE_TOOLCHAIN_FILE=SDK_ROOT/ndk/28.2.13676358/build/cmake/android.toolchain.cmake",
+        "-DANDROID_ABI=arm64-v8a",
+        "-DANDROID_PLATFORM=android-28",
+        "-DANDROID_STL=c++_shared",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DWHISPER_SOURCE=WORKSPACE/source",
+        "-DBUILD_SHARED_LIBS=ON",
+        "-DWHISPER_BUILD_IS_DEV=OFF",
+        "-DWHISPER_BUILD_TESTS=OFF",
+        "-DWHISPER_BUILD_EXAMPLES=OFF",
+        "-DWHISPER_BUILD_SERVER=OFF",
+        "-DWHISPER_CURL=OFF",
+        "-DWHISPER_SDL2=OFF",
+        "-DWHISPER_COREML=OFF",
+        "-DWHISPER_OPENVINO=OFF",
+        "-DWHISPER_VITISAI=OFF",
+        "-DGGML_NATIVE=OFF",
+        "-DGGML_CPU=ON",
+        "-DGGML_CPU_ARM_ARCH=armv8-a",
+        "-DGGML_CPU_ALL_VARIANTS=OFF",
+        "-DGGML_BACKEND_DL=OFF",
+        "-DGGML_OPENMP=OFF",
+        "-DGGML_CCACHE=OFF",
+        "-DGGML_CUDA=OFF",
+        "-DGGML_METAL=OFF",
+        "-DGGML_ACCELERATE=OFF",
+        "-DGGML_BLAS=OFF",
+        "-DGGML_VULKAN=OFF",
+        "-DGGML_OPENCL=OFF",
+        "-DGGML_RPC=OFF",
+        "-DGGML_BUILD_TESTS=OFF",
+        "-DGGML_BUILD_EXAMPLES=OFF"
+      ],
+      "buildCommand": [
+        "SDK_ROOT/cmake/3.22.1/bin/cmake.exe",
+        "--build",
+        "WORKSPACE/build-2",
+        "--target",
+        "whisper",
+        "--parallel",
+        "2"
+      ],
+      "configureExitCode": 0,
+      "buildExitCode": 0,
+      "sourceCleanBeforeAndAfter": true,
+      "nativeOutputs": [
+        {
+          "filename": "libc++_shared.so",
+          "bytes": 9236352,
+          "sha256": "ab4e6c71b96b851de45a8a9bd86369e7dbc2130a44b3b4520564be94847910f2"
+        },
+        {
+          "filename": "libggml-base.so",
+          "bytes": 5905736,
+          "sha256": "966d5f150749b720c75a32e2d1b0cf3473ca06e6634f044cb870baab9ddfff47"
+        },
+        {
+          "filename": "libggml-cpu.so",
+          "bytes": 4467344,
+          "sha256": "98e34bf1fcedab26fa11d22d4f97c55c187cde1ea7a8882d130f739eff42a8f4"
+        },
+        {
+          "filename": "libggml.so",
+          "bytes": 533824,
+          "sha256": "f7e9e1a48f3e8bcac70ad01d48d83706c5211a92fce76823d61124da4c01763b"
+        },
+        {
+          "filename": "libwhisper.so",
+          "bytes": 7175280,
+          "sha256": "8f4d569085a26bc9bbf89eca19bc2aa43228f4574693cfb1fe0f6643677ec01a"
+        }
+      ],
+      "package": {
+        "filename": "native-fixture-2.aligned.apk",
+        "bytes": 27360758,
+        "sha256": "6be05721d8a41e89d9a99f52628be3e8c516db66bdb2840b92f4e192f4c0bd33",
+        "nativeCount": 5,
+        "basenameCount": 5,
+        "abi": "arm64-v8a",
+        "entries": [
+          {
+            "name": "lib/arm64-v8a/libc++_shared.so",
+            "compression": "STORED",
+            "dataOffset": 16384,
+            "alignmentRemainder": 0
+          },
+          {
+            "name": "lib/arm64-v8a/libggml-base.so",
+            "compression": "STORED",
+            "dataOffset": 9256960,
+            "alignmentRemainder": 0
+          },
+          {
+            "name": "lib/arm64-v8a/libggml-cpu.so",
+            "compression": "STORED",
+            "dataOffset": 15171584,
+            "alignmentRemainder": 0
+          },
+          {
+            "name": "lib/arm64-v8a/libggml.so",
+            "compression": "STORED",
+            "dataOffset": 19644416,
+            "alignmentRemainder": 0
+          },
+          {
+            "name": "lib/arm64-v8a/libwhisper.so",
+            "compression": "STORED",
+            "dataOffset": 20185088,
+            "alignmentRemainder": 0
+          }
+        ],
+        "zipalign": "PASS",
+        "doraVerifier": "PASS",
+        "installableProductApk": false
+      },
+      "verificationCommands": [
+        [
+          "SDK_ROOT/build-tools/36.0.0/zipalign.exe",
+          "-P",
+          "16",
+          "4",
+          "WORKSPACE/native-fixture-2.unaligned.apk",
+          "WORKSPACE/native-fixture-2.aligned.apk"
+        ],
+        [
+          "SDK_ROOT/build-tools/36.0.0/zipalign.exe",
+          "-c",
+          "-P",
+          "16",
+          "-v",
+          "4",
+          "WORKSPACE/native-fixture-2.aligned.apk"
+        ],
+        [
+          "PYTHON",
+          "-B",
+          "DORA_ROOT/tools/verify_apk_native_alignment.py",
+          "WORKSPACE/native-fixture-2.aligned.apk",
+          "--allowlist",
+          "WORKSPACE/native-allowlist-2.txt"
+        ]
+      ]
+    }
+  ],
+  "effectiveCompileExamples": [
+    "SDK_ROOT\\ndk\\28.2.13676358\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\clang.exe --target=aarch64-none-linux-android28 --sysroot=SDK_ROOT/ndk/28.2.13676358/toolchains/llvm/prebuilt/windows-x86_64/sysroot -DGGML_BUILD -DGGML_SCHED_MAX_COPIES=4 -DGGML_SHARED -D_GNU_SOURCE -D_XOPEN_SOURCE=600 -Dggml_base_EXPORTS -IWORKSPACE/source/ggml/src/. -IWORKSPACE/build-1/whisper/ggml/src -IWORKSPACE/source/ggml/src/../include -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security  -O3 -DNDEBUG  -fPIC -Wshadow -Wstrict-prototypes -Wpointer-arith -Wmissing-prototypes -Werror=implicit-int -Werror=implicit-function-declaration -Wall -Wextra -Wpedantic -Wcast-qual -Wno-unused-function -Wunreachable-code-break -Wunreachable-code-return -Wdouble-promotion -pthread -std=gnu11 -o whisper\\ggml\\src\\CMakeFiles\\ggml-base.dir\\ggml.c.o -c WORKSPACE\\source\\ggml\\src\\ggml.c",
+    "SDK_ROOT\\ndk\\28.2.13676358\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin\\clang++.exe --target=aarch64-none-linux-android28 --sysroot=SDK_ROOT/ndk/28.2.13676358/toolchains/llvm/prebuilt/windows-x86_64/sysroot -DGGML_BACKEND_SHARED -DGGML_SHARED -DGGML_USE_CPU -DWHISPER_BUILD -DWHISPER_SHARED -DWHISPER_VERSION=\\\"1.9.4\\\" -Dwhisper_EXPORTS -IWORKSPACE/source/src/. -IWORKSPACE/source/src/../include -IWORKSPACE/source/ggml/src/../include -g -DANDROID -fdata-sections -ffunction-sections -funwind-tables -fstack-protector-strong -no-canonical-prefixes -D_FORTIFY_SOURCE=2 -Wformat -Werror=format-security   -O3 -DNDEBUG  -fPIC -Wmissing-declarations -Wmissing-noreturn -Wall -Wextra -Wpedantic -Wcast-qual -Wno-unused-function -pthread -o whisper\\src\\CMakeFiles\\whisper.dir\\whisper.cpp.o -c WORKSPACE\\source\\src\\whisper.cpp"
+  ],
+  "nativeLibraries": [
+    {
+      "filename": "libc++_shared.so",
+      "bytes": 9236352,
+      "sha256": "ab4e6c71b96b851de45a8a9bd86369e7dbc2130a44b3b4520564be94847910f2",
+      "elfClass": "ELF64",
+      "machine": "AArch64",
+      "soname": "libc++_shared.so",
+      "needed": [
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "ptLoad": [
+        {
+          "offset": "0x000000",
+          "virtualAddress": "0x0000000000000000",
+          "fileSize": "0x0988a0",
+          "memorySize": "0x0988a0",
+          "flags": "R",
+          "alignment": "0x4000",
+          "result": "PASS"
+        },
+        {
+          "offset": "0x0988a0",
+          "virtualAddress": "0x000000000009c8a0",
+          "fileSize": "0x08eff8",
+          "memorySize": "0x08eff8",
+          "flags": "R E",
+          "alignment": "0x4000",
+          "result": "PASS"
+        },
+        {
+          "offset": "0x127898",
+          "virtualAddress": "0x000000000012f898",
+          "fileSize": "0x009b98",
+          "memorySize": "0x00a768",
+          "flags": "RW",
+          "alignment": "0x4000",
+          "result": "PASS"
+        },
+        {
+          "offset": "0x131430",
+          "virtualAddress": "0x000000000013d430",
+          "fileSize": "0x000238",
+          "memorySize": "0x007d20",
+          "flags": "RW",
+          "alignment": "0x4000",
+          "result": "PASS"
+        }
+      ],
+      "origin": "PINNED_NDK_RUNTIME"
+    },
+    {
+      "filename": "libggml-base.so",
+      "bytes": 5905736,
+      "sha256": "df51d9b82f478cce93a4e3b68b4fc046ad8ebec4d98135b8ff322c910c89c1ac",
+      "elfClass": "ELF64",
+      "machine": "AArch64",
+      "soname": "libggml-base.so",
+      "needed": [
+        "libm.so",
+        "libdl.so",
+        "libc++_shared.so",
+        "libc.so"
+      ],
+      "ptLoad": [
+        {
+          "offset": "0x000000",
+          "virtualAddress": "0x0000000000000000",
+          "fileSize": "0x0c52d0",
+          "memorySize": "0x0c52d0",
+          "flags": "R E",
+          "alignment": "0x4000",
+          "result": "PASS"
+        },
+        {
+          "offset": "0x0c52d0",
+          "virtualAddress": "0x00000000000c92d0",
+          "fileSize": "0x0026c0",
+          "memorySize": "0x002d30",
+          "flags": "RW",
+          "alignment": "0x4000",
+          "result": "PASS"
+        },
+        {
+          "offset": "0x0c7990",
+          "virtualAddress": "0x00000000000cf990",
+          "fileSize": "0x0000d8",
+          "memorySize": "0x000b10",
+          "flags": "RW",
+          "alignment": "0x4000",
+          "result": "PASS"
+        }
+      ],
+      "origin": "PINNED_UPSTREAM_SOURCE_BUILD"
+    },
+    {
+      "filename": "libggml-cpu.so",
+      "bytes": 4467344,
+      "sha256": "01842a3bc8436a2deda623238cb038171dc9576fc6b8f19c3c05f2b07b33600b",
+      "elfClass": "ELF64",
+      "machine": "AArch64",
+      "soname": "libggml-cpu.so",
+      "needed": [
+        "libggml-base.so",
+        "libm.so",
+        "libc++_shared.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "ptLoad": [
+        {
+          "offset": "0x000000",
+          "virtualAddress": "0x0000000000000000",
+          "fileSize": "0x0d2b80",
+          "memorySize": "0x0d2b80",
+          "flags": "R E",
+          "alignment": "0x4000",
+          "result": "PASS"
+        },
+        {
+          "offset": "0x0d2b80",
+          "virtualAddress": "0x00000000000d6b80",
+          "fileSize": "0x001d60",
+          "memorySize": "0x002480",
+          "flags": "RW",
+          "alignment": "0x4000",
+          "result": "PASS"
+        },
+        {
+          "offset": "0x0d48e0",
+          "virtualAddress": "0x00000000000dc8e0",
+          "fileSize": "0x0000e0",
+          "memorySize": "0x081368",
+          "flags": "RW",
+          "alignment": "0x4000",
+          "result": "PASS"
+        }
+      ],
+      "origin": "PINNED_UPSTREAM_SOURCE_BUILD"
+    },
+    {
+      "filename": "libggml.so",
+      "bytes": 533824,
+      "sha256": "d578fa0e96f4409cf38e6567849f66594c9d28dd7d47fac0276c5aaf48392965",
+      "elfClass": "ELF64",
+      "machine": "AArch64",
+      "soname": "libggml.so",
+      "needed": [
+        "libggml-cpu.so",
+        "libggml-base.so",
+        "libm.so",
+        "libc++_shared.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "ptLoad": [
+        {
+          "offset": "0x000000",
+          "virtualAddress": "0x0000000000000000",
+          "fileSize": "0x00d8f0",
+          "memorySize": "0x00d8f0",
+          "flags": "R E",
+          "alignment": "0x4000",
+          "result": "PASS"
+        },
+        {
+          "offset": "0x00d8f0",
+          "virtualAddress": "0x00000000000118f0",
+          "fileSize": "0x0005b8",
+          "memorySize": "0x000710",
+          "flags": "RW",
+          "alignment": "0x4000",
+          "result": "PASS"
+        },
+        {
+          "offset": "0x00dea8",
+          "virtualAddress": "0x0000000000015ea8",
+          "fileSize": "0x000020",
+          "memorySize": "0x0008a8",
+          "flags": "RW",
+          "alignment": "0x4000",
+          "result": "PASS"
+        }
+      ],
+      "origin": "PINNED_UPSTREAM_SOURCE_BUILD"
+    },
+    {
+      "filename": "libwhisper.so",
+      "bytes": 7175280,
+      "sha256": "79ffb4c9e33f32f31a39fbd36ba46809b3d74c043c8094406425e152cf6eeadc",
+      "elfClass": "ELF64",
+      "machine": "AArch64",
+      "soname": "libwhisper.so",
+      "needed": [
+        "libggml.so",
+        "libggml-cpu.so",
+        "libggml-base.so",
+        "libm.so",
+        "libc++_shared.so",
+        "libdl.so",
+        "libc.so"
+      ],
+      "ptLoad": [
+        {
+          "offset": "0x000000",
+          "virtualAddress": "0x0000000000000000",
+          "fileSize": "0x079020",
+          "memorySize": "0x079020",
+          "flags": "R E",
+          "alignment": "0x4000",
+          "result": "PASS"
+        },
+        {
+          "offset": "0x079020",
+          "virtualAddress": "0x000000000007d020",
+          "fileSize": "0x001df8",
+          "memorySize": "0x001fe0",
+          "flags": "RW",
+          "alignment": "0x4000",
+          "result": "PASS"
+        },
+        {
+          "offset": "0x07ae18",
+          "virtualAddress": "0x0000000000082e18",
+          "fileSize": "0x000038",
+          "memorySize": "0x001c70",
+          "flags": "RW",
+          "alignment": "0x4000",
+          "result": "PASS"
+        }
+      ],
+      "origin": "PINNED_UPSTREAM_SOURCE_BUILD"
+    }
+  ],
+  "dependencyClosure": {
+    "result": "PASS",
+    "root": "libwhisper.so",
+    "packaged": [
+      "libc++_shared.so",
+      "libggml-base.so",
+      "libggml-cpu.so",
+      "libggml.so",
+      "libwhisper.so"
+    ],
+    "platformDependencies": [
+      "libc.so",
+      "libdl.so",
+      "libm.so"
+    ],
+    "platformEvidence": "NDK API28 aarch64 sysroot stubs; Android platform libraries remain external",
+    "unexpected": []
+  },
+  "elfVerification": {
+    "result": "PASS",
+    "librariesPerBuild": 5,
+    "ptLoadSegmentsPerBuild": 16,
+    "allAlignments": "0x4000",
+    "offsetVaddrCongruenceBytes": 16384,
+    "tools": [
+      "NDK llvm-readelf --file-header --program-headers --dynamic --wide",
+      "unchanged DORA ELF parser and APK verifier"
+    ],
+    "scope": "Static ELF/ZIP layout; no Android load/runtime execution"
+  },
+  "reproducibility": {
+    "result": "NON_BIT_IDENTICAL_EXPLAINED",
+    "method": "All original bytes outside .debug_info/.debug_str/.note.gnu.build-id are identical; both llvm-objcopy --strip-debug --remove-section=.note.gnu.build-id copies are byte-identical. Packaged originals retained unchanged.",
+    "libraries": [
+      {
+        "filename": "libggml-base.so",
+        "build1Sha256": "df51d9b82f478cce93a4e3b68b4fc046ad8ebec4d98135b8ff322c910c89c1ac",
+        "build2Sha256": "966d5f150749b720c75a32e2d1b0cf3473ca06e6634f044cb870baab9ddfff47",
+        "bitIdentical": false,
+        "onlyDifferingSections": [
+          ".note.gnu.build-id",
+          ".debug_info",
+          ".debug_str"
+        ],
+        "allOtherBytesIdentical": true,
+        "debugStringMultisetEqualAfterBuildPathNormalization": true,
+        "comparisonOnlyStrippedSha256": "9f015124f2989f83f51f6032a62fb1a3000e9dd18a09e900d93fd3902f8d272a",
+        "comparisonOnlyStrippedBytesIdentical": true,
+        "packagedOriginalsUnmodified": true,
+        "byteSizesEqual": true
+      },
+      {
+        "filename": "libggml-cpu.so",
+        "build1Sha256": "01842a3bc8436a2deda623238cb038171dc9576fc6b8f19c3c05f2b07b33600b",
+        "build2Sha256": "98e34bf1fcedab26fa11d22d4f97c55c187cde1ea7a8882d130f739eff42a8f4",
+        "bitIdentical": false,
+        "onlyDifferingSections": [
+          ".note.gnu.build-id",
+          ".debug_info",
+          ".debug_str"
+        ],
+        "allOtherBytesIdentical": true,
+        "debugStringMultisetEqualAfterBuildPathNormalization": true,
+        "comparisonOnlyStrippedSha256": "d78310cd0bd240c273ac489efbe3e155b7ecc6c01ffb775550160de0da18e41b",
+        "comparisonOnlyStrippedBytesIdentical": true,
+        "packagedOriginalsUnmodified": true,
+        "byteSizesEqual": true
+      },
+      {
+        "filename": "libggml.so",
+        "build1Sha256": "d578fa0e96f4409cf38e6567849f66594c9d28dd7d47fac0276c5aaf48392965",
+        "build2Sha256": "f7e9e1a48f3e8bcac70ad01d48d83706c5211a92fce76823d61124da4c01763b",
+        "bitIdentical": false,
+        "onlyDifferingSections": [
+          ".note.gnu.build-id",
+          ".debug_info",
+          ".debug_str"
+        ],
+        "allOtherBytesIdentical": true,
+        "debugStringMultisetEqualAfterBuildPathNormalization": true,
+        "comparisonOnlyStrippedSha256": "c0789cb9147fc5e78a389d76c629923d8e2afdc61876bce4ae23a4fb64bc493c",
+        "comparisonOnlyStrippedBytesIdentical": true,
+        "packagedOriginalsUnmodified": true,
+        "byteSizesEqual": true
+      },
+      {
+        "filename": "libwhisper.so",
+        "build1Sha256": "79ffb4c9e33f32f31a39fbd36ba46809b3d74c043c8094406425e152cf6eeadc",
+        "build2Sha256": "8f4d569085a26bc9bbf89eca19bc2aa43228f4574693cfb1fe0f6643677ec01a",
+        "bitIdentical": false,
+        "onlyDifferingSections": [
+          ".note.gnu.build-id",
+          ".debug_info",
+          ".debug_str"
+        ],
+        "allOtherBytesIdentical": true,
+        "debugStringMultisetEqualAfterBuildPathNormalization": true,
+        "comparisonOnlyStrippedSha256": "66a512a29bee8cf96d8f3d3f9b2ae955e1b64d7f1194bfe1adc8744ad607f017",
+        "comparisonOnlyStrippedBytesIdentical": true,
+        "packagedOriginalsUnmodified": true,
+        "byteSizesEqual": true
+      }
+    ],
+    "ndkRuntimeBitIdentical": true,
+    "structuralAndPackagingChecksBothPass": true
+  },
+  "diskCleanup": {
+    "ownerAuthorized": true,
+    "diskBeforeInventory": {
+      "total": 214623780864,
+      "used": 212103925760,
+      "free": 2519855104
+    },
+    "diskImmediatelyBeforeCleanup": {
+      "total": 214623780864,
+      "used": 212114669568,
+      "free": 2509111296
+    },
+    "items": [
+      {
+        "category": "system-image",
+        "path": "${SDK_ROOT}/system-images/android-36/google_apis/x86_64",
+        "packageId": "system-images;android-36;google_apis;x86_64",
+        "revision": "7",
+        "bytes": 4585408955,
+        "action": "DELETE",
+        "reason": "Historical API36 x86_64 image; no emulator running; not needed for 5.3B; reinstallable; AVD config retained."
+      },
+      {
+        "category": "emulator",
+        "path": "${SDK_ROOT}/emulator",
+        "packageId": "emulator",
+        "revision": "37.1.11",
+        "bytes": 1082790554,
+        "action": "DELETE",
+        "reason": "No emulator process; static native build does not use emulator; reinstallable."
+      },
+      {
+        "category": "gradle-cache",
+        "path": "${USERPROFILE}/.gradle/caches/9.5.0",
+        "bytes": 997315089,
+        "action": "DELETE",
+        "reason": "Reproducible cache, no Java/Gradle process; broader owner authorization permits regeneration to reach headroom target; configurations/distributions preserved."
+      },
+      {
+        "category": "gradle-cache",
+        "path": "${USERPROFILE}/.gradle/caches/9.5.1",
+        "bytes": 951001076,
+        "action": "DELETE",
+        "reason": "Reproducible cache, no Java/Gradle process; broader owner authorization permits regeneration to reach headroom target; configurations/distributions preserved."
+      },
+      {
+        "category": "gradle-cache",
+        "path": "${USERPROFILE}/.gradle/caches/build-cache-1",
+        "bytes": 370104990,
+        "action": "DELETE",
+        "reason": "Reproducible cache, no Java/Gradle process; broader owner authorization permits regeneration to reach headroom target; configurations/distributions preserved."
+      },
+      {
+        "category": "gradle-cache",
+        "path": "${USERPROFILE}/.gradle/caches/modules-2",
+        "bytes": 786541533,
+        "action": "DELETE",
+        "reason": "Reproducible cache, no Java/Gradle process; broader owner authorization permits regeneration to reach headroom target; configurations/distributions preserved."
+      }
+    ],
+    "logicalBytesRemoved": 8773162197,
+    "diskAfterCleanup": {
+      "total": 214623780864,
+      "used": 203289919488,
+      "free": 11333861376
+    },
+    "diskAfterNdkInstall": {
+      "free": 9053655040,
+      "total": 214623780864,
+      "used": 205570125824
+    },
+    "freeAfterVerification": 8846741504,
+    "preferredPreinstallHeadroomBytes": 10737418240,
+    "headroomMet": true,
+    "freeDeltaIncludesBackgroundActivity": true,
+    "avdRetained": true,
+    "historicalAvdRequiresImageAndEmulatorReinstall": true,
+    "gradleDistributionsConfigurationAndKeyringsRetained": true,
+    "priorEvidenceHashesVerified": true,
+    "noUserDocumentsKeysOrSourceDeleted": true,
+    "temporaryFilesAndRecycleBinDeleted": false,
+    "windowsTempInventory": "INACCESSIBLE_WITHOUT_ELEVATION_KEPT",
+    "recycleBinAccessibleBytesPreserved": 1563649432,
+    "priorFailedInstallAttempts": 2,
+    "priorFailure": "DISK_FULL_DURING_NDK_EXTRACTION; local diagnostics preserved",
+    "successfulNdkInstallAfterCleanup": true
+  },
+  "protectedFiles": {
+    "android/native-libs-allowlist.txt": {
+      "workingCopySha256": "1d0b0fa79333156a3dfce30d50a9a928951cd16bdbc21f4c45f728f686876625",
+      "gitBlobLfSha256": "1d0b0fa79333156a3dfce30d50a9a928951cd16bdbc21f4c45f728f686876625",
+      "unchanged": true
+    },
+    "tools/verify_apk_native_alignment.py": {
+      "workingCopySha256": "ac0be0a30ae858e28d5797815f6a41d84da5f6a3b8d7b18acf5da25920c345af",
+      "gitBlobLfSha256": "ac0be0a30ae858e28d5797815f6a41d84da5f6a3b8d7b18acf5da25920c345af",
+      "unchanged": true
+    },
+    "tools/alpha_asr_eval_text_contract.py": {
+      "workingCopySha256": "490b4f659aef99da413e68cab5ffa187b1e8fd7229e7d7265367f2d14e577ff0",
+      "gitBlobLfSha256": "490b4f659aef99da413e68cab5ffa187b1e8fd7229e7d7265367f2d14e577ff0",
+      "unchanged": true
+    },
+    "tools/asr_i1_synthetic_scoring_oracle/src/main/java/com/monumentogram/dora/stage0/asr/i1/AsrSyntheticScoringOracle.java": {
+      "workingCopySha256": "b2d2525ff0d71c15fdef931c005975f8610f5c5054e8e1f2b10f0f3740db9903",
+      "gitBlobLfSha256": "a2b3e37305f24f91a8ace00f5f824d1d13effda94248c15b31aa31db78c76125",
+      "unchanged": true
+    }
+  },
+  "checks": {
+    "sourceIdentity": "PASS",
+    "nativeBuilds": 2,
+    "dependencyClosure": "PASS",
+    "elf16KiB": "PASS",
+    "zipalign16KiB": "PASS_BOTH_PACKAGES",
+    "storedCompressionAndIndependentZipOffsetCheck": "PASS_ALL_5_PER_PACKAGE",
+    "doraVerifier": "PASS_BOTH_PACKAGES",
+    "synthetic53ARegression": {
+      "command": "PYTHON -B -m unittest discover -s tools -p test_alpha_asr_eval_text_contract.py",
+      "tests": 22,
+      "result": "PASS",
+      "realCorpusUsed": false
+    },
+    "jsonMarkdownScopePrivacy": "PASS",
+    "gitDiffCheck": "PASS",
+    "independentAdvisoryReview": {
+      "result": "NO_P0_P1",
+      "scope": "Read-only source pin, both native packages/ELFs/hashes, dependency closure, reproducibility and evidence claim ceiling",
+      "p2Corrections": [
+        "Renamed size equality field to byteSizesEqual",
+        "Preserved compiler macro escaping while sanitizing only path prefixes"
+      ],
+      "productionAdmission": false
+    }
+  },
+  "licensesAndAdmission": {
+    "whisperCpp": "MIT; exact runtime evaluation pin from 5.2 retained",
+    "libcxx": "NDK-provided libc++_shared.so; exact package/digest recorded, NDK distributed notices retained locally; not locally rebuilt",
+    "toolchainInstallation": "Owner-authorized official SDK packages",
+    "productionAdmission": false,
+    "nativeBinariesPublished": false
+  },
+  "privacy": {
+    "rawLogsAndPersonalPathsPublic": false,
+    "actualModelCorpusTranscriptsPrivateManifestsAccessed": false,
+    "deviceIdentifiersPublished": false,
+    "containsPersonalData": false,
+    "containsSecret": false,
+    "dedicatedSecretScannerUsed": false,
+    "scanMethod": "Changed-content pattern scan plus manual scope review"
+  },
+  "status": {
+    "5.1": "PASS_BOUNDED_ALPHA_DATA_SCOPE_ONLY",
+    "5.2": "PASS / MODEL_ARTIFACT_AND_RUNTIME_SOURCE_PINNED_FOR_STAGE0_EVALUATION",
+    "5.3A": "PASS / VERSIONED_ASR_EVALUATION_CONTRACT_READY",
+    "5.3B": "PASS / ISOLATED_WHISPER_CPP_ANDROID_16K_CANDIDATE_VERIFIED",
+    "5.3C": "NOT_STARTED",
+    "5.3": "NOT_COMPLETE",
+    "5.4": "NOT_AUTHORIZED",
+    "NATIVE_RUNTIME_BINARY": "BUILT_ISOLATED_NOT_PRODUCT_ADMITTED",
+    "ANDROID_ARM64_BUILD": "PASS",
+    "ANDROID_16K_ELF_VERIFICATION": "PASS",
+    "ANDROID_16K_PACKAGE_ALIGNMENT": "PASS",
+    "MODEL_QUALITY": "NOT_EVALUATED",
+    "POC_ASR": "BLOCKED_NOT_READY_NOT_RUN",
+    "MODEL_LOAD": "NOT_RUN",
+    "ASR_INFERENCE": "NOT_RUN",
+    "REAL_CORPUS_WER": "NOT_RUN",
+    "RTF": "NOT_RUN",
+    "PSS": "NOT_RUN",
+    "NATIVE_HEAP_CAMPAIGN": "NOT_RUN",
+    "THERMAL": "NOT_RUN",
+    "DEVICE_RUNTIME": "NOT_RUN",
+    "POCO": "NOT_RUN",
+    "RECOVERY": "NOT_RUN"
+  },
+  "publication": {
+    "requested": "ONE_ATOMIC_COMMIT_AND_PUSH_NO_PR",
+    "ci": "NOT_RUN_NO_APPLICABLE_PUSH_WORKFLOW",
+    "prCreated": false,
+    "pr86Touched": false,
+    "merged": false
+  },
+  "limitations": [
+    "No JNI/product integration, installable application, model load, inference or runtime/device proof.",
+    "Lib-only ZIP fixture has no manifest, dex or signature and is not an installable APK.",
+    "Original binaries are not bit-identical: only DWARF/build-id differ; comparison copies never replace packaged originals.",
+    "NDK libc++ is a pinned SDK prebuilt, not a locally source-built output.",
+    "Future runtime, quality, performance and production license/security/admission gates remain separate."
+  ]
+}

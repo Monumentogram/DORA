@@ -1,5 +1,29 @@
 # Dora MVP 1 — Executable Backlog
 
+## Alpha ASR 5.3B isolated native candidate amendment — 24 September 2026
+
+The owner's explicit resumed 5.3B scope authorized reproducible SDK/cache cleanup, installation
+of NDK 28.2.13676358, and an isolated Android arm64-v8a/API28 candidate from the exact 5.2 pin.
+See the [native build record](stage0/DORA_ALPHA_ASR_NATIVE_BUILD_STAGE0_V0_1.md) and
+[sanitized evidence](evidence/poc-asr-001/alpha-asr-native-build-16k-stage0-v0.1.json).
+
+5.3B = PASS / ISOLATED_WHISPER_CPP_ANDROID_16K_CANDIDATE_VERIFIED.
+Two clean source builds and both package fixtures passed full five-library dependency closure,
+ELF64/AArch64, all sixteen PT_LOAD 16-KiB checks, zipalign and the unchanged Dora verifier.
+Reproducibility is NON_BIT_IDENTICAL_EXPLAINED: only DWARF/build-id differ; other original bytes
+and comparison copies without debug/build-id match. NDK libc++ is separately pinned.
+NATIVE_RUNTIME_BINARY = BUILT_ISOLATED_NOT_PRODUCT_ADMITTED. The fixture is a lib-only ZIP,
+not an installable app or Android runtime/load proof. Production native allowlist is unchanged.
+
+5.1/5.2/5.3A remain PASS within their existing bounded scopes. 5.3C = NOT_STARTED;
+5.4 = NOT_AUTHORIZED; overall 5.3 is not complete. ASR_INFERENCE, MODEL_LOAD, DEVICE_RUNTIME,
+real WER, RTF/PSS/thermal, POCO and Recovery = NOT_RUN; MODEL_QUALITY = NOT_EVALUATED.
+Full POC-ASR-001 remains BLOCKED / NOT_READY / NOT_RUN; no production admission is granted.
+The following sections are immutable historical states. This amendment supersedes only the
+older absence of a bounded isolated native build; historical counts and Recovery are unchanged.
+Publication is one atomic task-branch commit/push, no PR or merge; PR #86 is out of scope.
+
+
 ## Alpha ASR 5.3A host contract amendment — 24 September 2026
 
 The owner's explicit 5.3A instruction freezes the
