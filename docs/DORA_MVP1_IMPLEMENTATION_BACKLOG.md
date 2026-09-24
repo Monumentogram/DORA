@@ -1,5 +1,31 @@
 # Dora MVP 1 — Executable Backlog
 
+## Alpha ASR 5.3A host contract amendment — 24 September 2026
+
+The owner's explicit 5.3A instruction freezes the
+[bounded evaluation contract](stage0/DORA_ALPHA_ASR_EVAL_CONTRACT_STAGE0_V0_1.md) under
+[ADR-0008](adr/ADR-0008-alpha-asr-evaluation-contract.md), with
+[synthetic host evidence](evidence/poc-asr-001/alpha-asr-eval-contract-local-evidence-stage0-v0.1.json).
+This additive entry supersedes only historical blanket absence of bounded data/model/text
+contracts: 5.1 is PASS_BOUNDED_ALPHA_DATA_SCOPE_ONLY and
+[5.2](stage0/DORA_ALPHA_ASR_MODEL_ADMISSION_STAGE0_V0_1.md) is
+PASS / MODEL_ARTIFACT_AND_RUNTIME_SOURCE_PINNED_FOR_STAGE0_EVALUATION.
+
+5.3A = PASS / VERSIONED_ASR_EVALUATION_CONTRACT_READY.
+VERSIONED_TOKENIZATION_AND_NORMALIZATION_CONTRACT_NOT_APPROVED is closed only for the bounded
+48-clip RU/EN pilot. Original I1 evidence and Java source remain unchanged. RU/EN normalized WER
+gates stay 20%/18%; no mixed/noisy/speakerphone claim. Timestamp quality is NOT_EVALUABLE,
+both timestamp gates NOT_EVALUATED, RTF/PSS/native-heap thresholds PROPOSED_NOT_APPROVED.
+
+5.3B = NOT_STARTED; 5.3C = NOT_STARTED; overall 5.3 is not complete; 5.4 = NOT_AUTHORIZED;
+ASR_INFERENCE = NOT_RUN; MODEL_QUALITY = NOT_EVALUATED. Full POC-ASR-001 stays
+BLOCKED / NOT_READY / NOT_RUN. No model/audio/private-manifest access, native build, real WER,
+Android/Gradle/device/POCO/Recovery execution, production admission or merge occurs.
+Historical sections and backlog counts remain unchanged. Publication is one task-branch
+commit/push without PR or merge, as explicitly instructed.
+
+
+
 Версия: Stage 0D post-PR43 main integration / REC-I2A-I2B merged / REC-I3 implementation authority / bounded E-slot checks / Recovery campaign hold\
 Дата: 19 августа 2026 года\
 Owner approvals effective: 4 августа 2026 года (`OD-01`–`OD-10`), 11 августа 2026 года (`OD-11`–`OD-13`), historical recovery constraints / prospective `REC-JSR305-EXCLUDE-001` 12 августа 2026 года (`OD-14`), exact pure-foundation `REC-I1-AUTH-20260813-01`, and current `OWNER-AUTH-BATCH-20260819-01` / `OD-15` on 19 августа 2026 года (REC-I3 implementation/non-metric verification/conditional merge; bounded non-measured E-slot functional/fault/compatibility/preflight checks after exact-pin availability and task prerequisites; no Recovery Phase A/measured campaign or production admission)\

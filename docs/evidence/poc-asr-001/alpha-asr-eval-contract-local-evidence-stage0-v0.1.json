@@ -1,0 +1,278 @@
+{
+  "schemaVersion": "dora-alpha-asr-eval-contract-local-evidence-stage0-v0.1",
+  "recordType": "SYNTHETIC_HOST_CONTRACT_ONLY",
+  "recordedDate": "2026-09-24",
+  "task": "5.3A",
+  "verdict": "PASS",
+  "disposition": "VERSIONED_ASR_EVALUATION_CONTRACT_READY",
+  "closedBlocker": "VERSIONED_TOKENIZATION_AND_NORMALIZATION_CONTRACT_NOT_APPROVED",
+  "closureScope": "BOUNDED_48_CLIP_RU_EN_ALPHA_TEXT_CONTRACT_ONLY",
+  "sourceBaseline": {
+    "repository": "Monumentogram/DORA",
+    "branch": "chat/alpha-asr-runner-scope",
+    "headBefore": "8487eb847f9e5e6116ea9ae1503068037fdbd580",
+    "remotePredecessorVerified": true,
+    "remoteTargetAbsentBeforeCreation": true,
+    "initialTrackedAndStagedChanges": 0,
+    "unrelatedUserAttachmentDirectoryPreserved": true,
+    "containingCommitBindsRecord": true
+  },
+  "profile": {
+    "profileId": "dora-alpha-asr-eval-profile-v0.1",
+    "contractVersion": "dora-alpha-asr-eval-result-v0.1",
+    "normalizationVersion": "dora-alpha-asr-normalization-v0.1",
+    "pythonSemanticProfile": "cpython-3.12-unicode-15.0.0",
+    "upstreamRepository": "openai/whisper",
+    "upstreamRevision": "86098128c0b4f24f0e2aa2994de830614b474227",
+    "upstreamPath": "whisper/normalizers/basic.py",
+    "upstreamSourceSha256": "4742eaa040e0657fa1247a1361e0d856c62317a43326ea59a40c2e9edd8d2c38",
+    "upstreamOptions": {
+      "removeDiacritics": false,
+      "splitLetters": false
+    },
+    "oracleIdentity": "com.monumentogram.dora.stage0.asr.i1.AsrSyntheticScoringOracle",
+    "oracleSchemaVersion": 1,
+    "oracleSourceSha256": "a2b3e37305f24f91a8ace00f5f824d1d13effda94248c15b31aa31db78c76125",
+    "selectedManifestSha256": "5d9e12fa76e9db54bc69bbd22396dbec733348db97bba353361ac701af64061c",
+    "modelArtifact": "ggml-base-q5_1.bin",
+    "modelSha256": "422f1ae452ade6f30a004d7e5c6a43195e4433bc370bf23fac9cc591f01a8898",
+    "runtimeSourceVersion": "ggml-org/whisper.cpp v1.9.4",
+    "runtimeSourceCommit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+    "gateSetVersion": "stage0-v0.1",
+    "languageGates": {
+      "ru": {
+        "errors": 20,
+        "referenceTokens": 100
+      },
+      "en": {
+        "errors": 18,
+        "referenceTokens": 100
+      }
+    },
+    "rawWerRole": "DIAGNOSTIC_ONLY",
+    "normalizedWerRole": "LANGUAGE_QUALITY_METRIC",
+    "unclaimedGates": [
+      "MIXED_RU_EN",
+      "NOISY",
+      "SPEAKERPHONE"
+    ],
+    "timestampReferenceState": "NOT_AVAILABLE_IN_5_1_CORPUS",
+    "timestampQuality": "NOT_EVALUABLE",
+    "timestampMedianGate": "NOT_EVALUATED",
+    "timestampP95Gate": "NOT_EVALUATED",
+    "rtfThresholdState": "PROPOSED_NOT_APPROVED",
+    "memoryThresholdState": "PROPOSED_NOT_APPROVED"
+  },
+  "implementationPins": [
+    {
+      "path": "tools/alpha_asr_eval_text_contract.py",
+      "sha256": "490b4f659aef99da413e68cab5ffa187b1e8fd7229e7d7265367f2d14e577ff0",
+      "bytes": 14735
+    },
+    {
+      "path": "tools/test_alpha_asr_eval_text_contract.py",
+      "sha256": "649442ce34bc094b59fe9348bef1bef1cbfc55b131088bcd6c2964cce96db6e8",
+      "bytes": 16585
+    },
+    {
+      "path": "tools/verify_alpha_asr_normalizer_parity.py",
+      "sha256": "a1d81da2d1141d13a98b9247290eb542aee87d2db306e6139fac7a47c1ade6e4",
+      "bytes": 3542
+    },
+    {
+      "path": "docs/stage0/DORA_ALPHA_ASR_EVAL_CONTRACT_STAGE0_V0_1.md",
+      "sha256": "cd3cec90fa53ec9501f93169243f3f06c0980a7fd5b6b11f6a75f851c825dfa7",
+      "bytes": 17609
+    },
+    {
+      "path": "docs/adr/ADR-0008-alpha-asr-evaluation-contract.md",
+      "sha256": "c7f9d8d507bc355a13e446c58e749f3c9cb920b7998b298199ae909a10d57523",
+      "bytes": 2482
+    },
+    {
+      "path": "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+      "sha256": "aa47c20e11f489cc7f7b2b06c1cde616ea95005ef530db9d89571a048a05f784",
+      "bytes": 46078
+    },
+    {
+      "path": "docs/DORA_MVP1_STAGE_STATUS.md",
+      "sha256": "98b73de75f2ae996a23326f7aa9b12ce1c31185f45a2448da06b227eb6fe3095",
+      "bytes": 63733
+    }
+  ],
+  "oracleSourceUnchanged": true,
+  "oracleHashDefinition": "SHA256_OF_LF_GIT_BLOB_BYTES",
+  "oracleTestSourceSha256": "cb88755fdbf3441506186e36c2081c14a18e886b51540f394062d90795340493",
+  "windowsCheckoutCrLfEqualsPinnedLfBlob": true,
+  "environment": {
+    "pythonImplementation": "CPython",
+    "pythonVersion": "3.12.14",
+    "unicodeDatabase": "15.0.0",
+    "javaCompiler": "javac 17.0.10",
+    "javaReleaseTarget": 17,
+    "platform": "Windows"
+  },
+  "dependencyBoundary": {
+    "implementation": "PYTHON_STANDARD_LIBRARY_ONLY",
+    "runtimePackagesAdded": [],
+    "nativeBinariesAdded": [],
+    "modelsAdded": [],
+    "werAlgorithmAdded": false,
+    "normalizerPackageDependencyAdded": false
+  },
+  "tests": {
+    "command": "python -B -m unittest discover -s tools -p 'test_alpha_asr*.py' -v",
+    "total": 43,
+    "newContractTests": 22,
+    "existingSyntheticManifestRegressionTests": 21,
+    "result": "PASS",
+    "redBeforeImplementation": "16_TESTS_FAILED_MISSING_IMPLEMENTATION",
+    "parityVerifierRedBeforeImplementation": "MISSING_PARITY_VERIFIER",
+    "existingJavaOracleTests": "POC_ASR_I1_SYNTHETIC_SCORING_ORACLE_TESTS_OK",
+    "javaCommand": "javac --release 17 -encoding UTF-8 -Xlint:all -Werror",
+    "javaExecution": "java -ea -Xverify:all",
+    "syntheticJavaTokenBridgeCases": 4,
+    "positiveCoverage": [
+      "EN_CASE_PUNCTUATION",
+      "RU_CASE_PUNCTUATION",
+      "UNICODE_WHITESPACE",
+      "ANGLE_SQUARE_PAREN_REMOVAL",
+      "NFKC",
+      "SYMBOL_CURRENCY_REMOVAL",
+      "COMPOSED_DIACRITICS",
+      "EMPTY_HYPOTHESIS_DELETIONS",
+      "RAW_NORMALIZED_INDEPENDENCE",
+      "RU_20_PERCENT_INCLUSIVE",
+      "EN_18_PERCENT_INCLUSIVE",
+      "EXACT_AGGREGATE_RATIO",
+      "FUTURE_TYPED_OBSERVATIONS",
+      "FAILED_ATTEMPTS_RETAINED_WITHOUT_SCORE"
+    ],
+    "negativeCoverage": [
+      "NULL_WRONG_TYPES",
+      "UNPAIRED_SURROGATES",
+      "UNSUPPORTED_LOCALE",
+      "UNSUPPORTED_VERSION_PROFILE_PIN_DRIFT",
+      "UNKNOWN_FIELDS_AT_EVERY_DEPTH",
+      "MALFORMED_HASH_CASE_ID",
+      "EMPTY_NORMALIZED_REFERENCE",
+      "ORACLE_INPUT_LIMITS",
+      "INCONSISTENT_SD_I_COUNTS",
+      "INCONSISTENT_WER_CONTRIBUTIONS",
+      "TIMESTAMP_PASS_REJECTED",
+      "PERFORMANCE_PASS_REJECTED",
+      "INVALID_OBSERVATION_TYPES_STATES",
+      "UNICODE_PROFILE_DRIFT"
+    ]
+  },
+  "parity": {
+    "result": "PASS",
+    "upstreamSourceSha256": "4742eaa040e0657fa1247a1361e0d856c62317a43326ea59a40c2e9edd8d2c38",
+    "fixtureCount": 4698,
+    "literalKnownAnswers": 26,
+    "fixtureResultsSha256": "842e986fada2142ab3f9f8f4eae901ca26a68eb575c8393efff77575c989957b",
+    "thirdPartyImportOmitted": "regex",
+    "splitLetters": false,
+    "normalizerAstChanged": false,
+    "realCorpusCases": 0
+  },
+  "determinism": {
+    "inProcessPreparationRepeats": 100,
+    "parityRepeats": 3,
+    "uniqueParityOutputs": 1,
+    "profileCliRepeats": 5,
+    "uniqueProfileCliOutputs": 1,
+    "profileCliStdoutSha256": "40c66f5b98a9b869b0a33fdb76bd09b38142ec7f8c2691ba27db4fcfe1ec057e"
+  },
+  "staticValidation": {
+    "state": "PASS",
+    "jsonProfileValidation": "PASS",
+    "markdownFenceAndLocalLinks": "PASS",
+    "pythonSyntaxAndStdlibImports": "PASS",
+    "gitDiffCheck": "PASS",
+    "changedFileScope": "PASS_8_PATHS",
+    "secretPrivateDataScan": "PASS_CHANGED_CONTENT_PATTERNS_AND_MANUAL_REVIEW",
+    "dedicatedSecretScannerUsed": false,
+    "historicalBaselinePreserved": "PASS_ADDITIVE_ONLY",
+    "existingOracleSourceAndTests": "UNCHANGED_VERIFIED_AGAINST_PREDECESSOR_GIT_BLOBS",
+    "evidenceReview": "AUTHOR_SCHEMA_PINS_CLAIMS_PRIVACY_CHECK",
+    "initialStagedFormattingCheck": "FAILED_TRAILING_WHITESPACE_EOF_BLANKS_AND_EVIDENCE_CRLF",
+    "formattingRemediation": "LF_SINGLE_FINAL_NEWLINE_NO_TRAILING_WHITESPACE_NO_SEMANTIC_CHANGE"
+  },
+  "independentReview": {
+    "state": "CLEAN_NO_ACTIONABLE_P0_P1_P2",
+    "reviewType": "AI_READ_ONLY_WORKTREE_ADVISORY",
+    "formalReviewer": false,
+    "commitReviewClaimed": false,
+    "reviewedSourceFiles": 7,
+    "p0": 0,
+    "p1": 0,
+    "p2": 0,
+    "sourcePinsSha256": "574ab8a8bfbd77f76c5c0192ad304c1357a346e9fc4fc5c966fc00906365f3af",
+    "independentPythonTestsPassed": 21,
+    "independentParityFixturesPassed": 4698,
+    "independentJavaBridge": "BLOCKED_BY_READ_ONLY_TEMP_DIRECTORY_RESTRICTION",
+    "parentJavaBridgeAndExistingOracleSuite": "PASS_ELEVATED_HOST_ONLY",
+    "declinedToJudge": [
+      "Forthcoming evidence JSON; checked separately by author.",
+      "Actual corpus membership/transcriptions; not accessed or evaluated.",
+      "Native execution, inference quality, performance/device readiness, campaign completeness, CI and production admission; out of scope."
+    ],
+    "disposition": "SUITABLE_FOR_ATOMIC_5_3A_COMMIT_AFTER_FINAL_EVIDENCE_AND_SCOPE_CHECKS"
+  },
+  "privacyAndScope": {
+    "testData": "GENERATED_SYNTHETIC_TEXT_ONLY",
+    "actualAudioClipsRead": 0,
+    "actualReferenceTranscriptsRead": 0,
+    "actualHypothesesRead": 0,
+    "privateManifestsRead": 0,
+    "modelBytesRead": 0,
+    "modelInferenceRuns": 0,
+    "nativeBuilds": 0,
+    "androidGradleBuilds": 0,
+    "pocoDeviceTests": 0,
+    "recoveryTests": 0,
+    "realCorpusWerMeasurements": 0,
+    "timestampQualityMeasurements": 0,
+    "rtfPssThermalMeasurements": 0,
+    "privatePerCaseRecordsPublished": 0,
+    "actualSelectedUpstreamPathsPublished": 0,
+    "privateStorageLocatorsPublished": 0,
+    "containsPersonalData": false,
+    "containsSecret": false,
+    "scanMethod": "CHANGED_CONTENT_PATTERN_SCAN_PLUS_MANUAL_SCOPE_REVIEW",
+    "dedicatedSecretScannerUsed": false
+  },
+  "status": {
+    "5.1": "PASS_BOUNDED_ALPHA_DATA_SCOPE_ONLY",
+    "5.2": "PASS / MODEL_ARTIFACT_AND_RUNTIME_SOURCE_PINNED_FOR_STAGE0_EVALUATION",
+    "5.3A": "PASS / VERSIONED_ASR_EVALUATION_CONTRACT_READY",
+    "5.3B": "NOT_STARTED",
+    "5.3C": "NOT_STARTED",
+    "5.3": "NOT_COMPLETE",
+    "5.4": "NOT_AUTHORIZED",
+    "ASR_INFERENCE": "NOT_RUN",
+    "MODEL_QUALITY": "NOT_EVALUATED",
+    "REAL_CORPUS_WER": "NOT_RUN",
+    "TIMESTAMP_QUALITY": "NOT_EVALUABLE",
+    "TIMESTAMP_MEDIAN_GATE": "NOT_EVALUATED",
+    "TIMESTAMP_P95_GATE": "NOT_EVALUATED",
+    "RTF_THRESHOLD_STATE": "PROPOSED_NOT_APPROVED",
+    "MEMORY_THRESHOLD_STATE": "PROPOSED_NOT_APPROVED",
+    "POC_ASR": "BLOCKED_NOT_READY_NOT_RUN"
+  },
+  "publication": {
+    "requested": "ONE_ATOMIC_COMMIT_AND_PUSH_NO_PR",
+    "ci": "NOT_RUN_NO_APPLICABLE_PUSH_WORKFLOW",
+    "pullRequestOpened": false,
+    "merged": false
+  },
+  "limitations": [
+    "Host semantics only; no ASR, quality, native, device or production evidence.",
+    "Parity omits the pinned source's unused regex import; normalizer AST is unchanged.",
+    "Oracle hashes bind Git LF bytes; Windows CRLF checkout is content-equivalent.",
+    "Future caller must verify private manifest membership and complete language coverage.",
+    "Mechanical acoustic enum bucket never establishes a protected acoustic slice.",
+    "Full POC-ASR readiness and future execution remain gated."
+  ]
+}
