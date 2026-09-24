@@ -1,11 +1,11 @@
 # DORA Alpha ASR 5.1A — bounded data admission
 
-Task: `5.1A-R3 — Project Owner Alpha Data Review`  
+Task: `5.1A-S — SYNTHETIC_STORAGE_ACCESS_DELETION_DRY_RUN`\
 Backlog: `POC-DATA-001`  
-Date: 18 September 2026  
-Predecessor: `170f073c2b401cdae7c966fa5ea0bdc3a1744bff`  
+Date: 24 September 2026\
+Predecessor: `1abd4e5c37b18b2c866d8271dfac4b2cd714cdc6`\
 Candidate profile: `dora-alpha-asr-data-admission-v0.4`  
-Result: **BLOCKED_STORAGE_DRY_RUN**
+Result: **PASS — 5.1A only; dataset download NOT_RUN; 5.1B NOT_STARTED**
 
 ## 1. Scope and chronology
 
@@ -37,7 +37,7 @@ No 5.0 dataset bytes have been downloaded.
 | License | CC0-1.0 | CC0-1.0 |
 | Archive filename | `PENDING_DOWNLOAD_VERIFICATION` | `common-voice-spontaneous-speech-5-0-engl-97a82389.tar.gz` |
 | Archive SHA-256 | `PENDING_DOWNLOAD_VERIFICATION` | `PENDING_DOWNLOAD_VERIFICATION` |
-| State | `EVALUATION_APPROVED / DOWNLOAD_BLOCKED_STORAGE_DRY_RUN` | `EVALUATION_APPROVED / DOWNLOAD_BLOCKED_STORAGE_DRY_RUN` |
+| State | `EVALUATION_APPROVED / STORAGE_DRY_RUN_PASS / DOWNLOAD_NOT_RUN` | `EVALUATION_APPROVED / STORAGE_DRY_RUN_PASS / DOWNLOAD_NOT_RUN` |
 
 Archive hashes are post-authorized-download provenance evidence and are not fabricated as a
 pre-download requirement.
@@ -109,8 +109,9 @@ Scope:
 
 Therefore all owner-controlled **policy decisions** in the R2 packet are closed.
 
-This does not mean all pre-download controls are executed: a concrete compliant controlled
-location must still be instantiated and the required synthetic access/deletion dry-run must pass.
+The concrete controlled location and required synthetic access/deletion dry-run passed on
+24 September 2026; section 11 records the bounded operational evidence. Dataset download remains
+`NOT_RUN` and requires a later explicitly scoped task.
 
 `OWNER_APPROVED != EVALUATION_APPROVED`
 
@@ -151,9 +152,9 @@ use.
 | Stage-0 Legal/IP reviewer assignment | PASS |
 | Stage-0 Legal/IP exact-scope decision | PASS |
 | Stage-0 Engineering/Security reviewer assignment and boundary | PASS |
-| `SYNTHETIC_STORAGE_ACCESS_DELETION_DRY_RUN` | NOT_RUN / BLOCKING |
+| `SYNTHETIC_STORAGE_ACCESS_DELETION_DRY_RUN` | PASS |
 | Applicable Data Consumer License/click-through acceptance | PENDING_AT_AUTHORIZED_DOWNLOAD |
-| Dataset download | NOT_AUTHORIZED_UNTIL_DRY_RUN |
+| Dataset download | NOT_RUN / OUTSIDE_THIS_TASK |
 | Archive identity/SHA-256 | PENDING_DOWNLOAD_VERIFICATION |
 
 Production admission is not a 5.1A pre-download gate.
@@ -162,18 +163,19 @@ Production admission is not a 5.1A pre-download gate.
 
 ### RU
 
-`EVALUATION_APPROVED / DOWNLOAD_BLOCKED_STORAGE_DRY_RUN`
+`EVALUATION_APPROVED / STORAGE_DRY_RUN_PASS / DOWNLOAD_NOT_RUN`
 
 ### EN
 
-`EVALUATION_APPROVED / DOWNLOAD_BLOCKED_STORAGE_DRY_RUN`
+`EVALUATION_APPROVED / STORAGE_DRY_RUN_PASS / DOWNLOAD_NOT_RUN`
 
 ### Overall
 
-**`5.1A = BLOCKED_STORAGE_DRY_RUN`**
+**`5.1A = PASS`**
 
-The owner and internal Stage-0 review gates are closed. The only remaining engineering gate before
-dataset download is `SYNTHETIC_STORAGE_ACCESS_DELETION_DRY_RUN`.
+The owner, internal Stage-0 review and synthetic storage/access/deletion gates are closed for
+this bounded Alpha scope. `SYNTHETIC_STORAGE_ACCESS_DELETION_DRY_RUN = PASS`.
+Dataset download is `NOT_RUN`; `5.1B = NOT_STARTED`. Production admission remains unchanged.
 
 MDC/Data Consumer License acceptance is a transactional access condition at the later authorized
 download; it must be retained as controlled evidence and must not materially conflict with the
@@ -185,7 +187,48 @@ this review.
 
 ## 10. Next safe action
 
-Execute exactly one minimal synthetic storage/access/deletion dry-run in the approved
-`LOCAL_PRIVATE_CONTROLLED_STORAGE`.
+Stop after recording this dry-run. A later explicitly scoped task is required for dataset
+download or 5.1B, including the applicable MDC/Data Consumer License acceptance at access.
 
-Do not start 5.1B until that dry-run passes.
+## 11. 5.1A-S operational evidence — 24 September 2026
+
+Previous state: `5.1A = BLOCKED_STORAGE_DRY_RUN`.
+
+[Sanitized local evidence](../evidence/poc-data-001/alpha-asr-synthetic-storage-dry-run-stage0-v0.1.json)
+records only booleans, counts, status, timestamp, generic storage/location classes and a synthetic
+fixture digest. No Windows identity, personal path, raw ACL identity or dataset content is published.
+
+The local PowerShell dry-run checked canonical path ancestry (rejecting reparse points and Git
+ancestors), all registered DORA worktrees, OneDrive environment/account roots, registered Windows
+sync roots, Dropbox configuration, Google Drive presence, public directories and ordinary disk
+shares. Standard Windows administrative shares are not public/shared evidence locations; this
+check does not claim isolation from operating-system administrative privileges.
+
+Only the new controlled directory received a protected DACL with one current-custodian Allow
+entry and child inheritance. No repository or system-wide ACL changed. EFS was enabled only for
+that directory; both its encrypted attribute and the written fixture's encrypted attribute were
+verified. Volume-wide encryption was not asserted. The fixture was created without overwriting
+an existing file, hashed, read back byte-for-byte, deleted, and checked for absence. Its only
+on-disk location was the controlled directory; it was never staged, copied to public evidence or
+uploaded to CI. Git status and index were compared before and after the dry-run, before these
+documentation edits.
+
+| Check | Observed result | Verdict |
+|---|---|---|
+| STORAGE-01 | Controlled directory created | PASS |
+| STORAGE-02 | Outside repository and every registered project worktree | PASS |
+| STORAGE-03 | Outside synced/public/shared evidence locations | PASS |
+| STORAGE-04 | ACL inheritance disabled | PASS |
+| STORAGE-05 | Current custodian is the only Allow principal; unexpected count 0 | PASS |
+| STORAGE-06 | 58-byte non-sensitive synthetic fixture written | PASS |
+| STORAGE-07 | SHA-256 computed and retained in sanitized JSON evidence | PASS |
+| STORAGE-08 | Readback matched every byte | PASS |
+| STORAGE-09 | Owned fixture deleted | PASS |
+| STORAGE-10 | Final absence verified with Test-Path | PASS |
+| STORAGE-11 | Git status and index unchanged by the dry-run | PASS |
+| STORAGE-12 | No fixture in repository, index, untracked files, public evidence or CI artifact | PASS |
+
+This proves the local synthetic lifecycle and logical absence, not physical flash overwrite,
+backup/provider deletion, corpus readiness or production admission. Retention remains
+`ACTIVE_THROUGH_5_5_THEN_DELETE_WITHIN_30_CALENDAR_DAYS`. No dataset bytes were downloaded;
+archive hashes remain `PENDING_DOWNLOAD_VERIFICATION`; 5.1B remains `NOT_STARTED`.

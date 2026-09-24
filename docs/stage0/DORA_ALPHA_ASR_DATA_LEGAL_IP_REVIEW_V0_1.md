@@ -2,7 +2,7 @@
 
 Task: `5.1A-R3 — Project Owner Alpha Data Review`  
 Date: 18 September 2026  
-State: **INTERNAL_ALPHA_REVIEW_APPROVED / STORAGE_DRY_RUN_PENDING**  
+State: **INTERNAL_ALPHA_REVIEW_APPROVED / STORAGE_DRY_RUN_PASS**\
 Admission record: [DORA_ALPHA_ASR_DATA_ADMISSION_STAGE0_V0_1.md](DORA_ALPHA_ASR_DATA_ADMISSION_STAGE0_V0_1.md)  
 Owner decision: [DORA_ALPHA_ASR_DATA_OWNER_DECISION_V0_1.md](DORA_ALPHA_ASR_DATA_OWNER_DECISION_V0_1.md)
 
@@ -280,7 +280,9 @@ re-hosting/re-sharing, re-identification, model training/fine-tuning, or indefin
 ```
 
 This decision moves the exact RU/EN dataset candidates to `EVALUATION_APPROVED` for the bounded
-Stage-0 Alpha evaluation only. Dataset download remains blocked until the single approved
-synthetic storage/access/deletion dry-run passes.
+Stage-0 Alpha evaluation only. The single approved synthetic storage/access/deletion dry-run
+passed on 24 September 2026 under task 5.1A-S; its operational evidence is linked from the
+admission record. The review decision and conditions above are unchanged. Dataset download is
+`NOT_RUN`, 5.1B is `NOT_STARTED`, and archive hashes remain `PENDING_DOWNLOAD_VERIFICATION`.
 
 Production Legal/Security remains not reviewed and is not implied by this decision.
