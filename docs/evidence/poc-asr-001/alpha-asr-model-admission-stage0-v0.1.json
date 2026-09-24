@@ -1,0 +1,401 @@
+{
+  "recordId": "DORA-ALPHA-ASR-MODEL-ADMISSION-STAGE0-V0.1",
+  "task": "5.2",
+  "recordType": "ARTIFACT_AND_SOURCE_ADMISSION_ONLY_NOT_A_BENCHMARK",
+  "recordedAtUtc": "2026-09-24T11:48:54.703210+00:00",
+  "predecessorCommit": "6d2b2bfdecb7cd79afd3ab61ff0e32b9fec0c811",
+  "branch": "chat/alpha-asr-model-scope",
+  "scope": "BOUNDED_INTERNAL_ALPHA_ASR_EVALUATION_ONLY",
+  "verdict": "MODEL_ARTIFACT_AND_RUNTIME_SOURCE_PINNED_FOR_STAGE0_EVALUATION",
+  "containsPersonalData": false,
+  "containsSecret": false,
+  "status": {
+    "5.1": "PASS_BOUNDED_ALPHA_DATA_SCOPE_ONLY",
+    "5.2": "PASS / MODEL_ARTIFACT_AND_RUNTIME_SOURCE_PINNED_FOR_STAGE0_EVALUATION",
+    "5.3": "NOT_STARTED",
+    "5.4": "NOT_AUTHORIZED",
+    "MODEL_DOWNLOAD": "PASS_EXACT_ARTIFACT_VERIFIED",
+    "MODEL_QUALITY": "NOT_EVALUATED",
+    "WER": "NOT_RUN",
+    "RTF": "NOT_RUN",
+    "PSS": "NOT_RUN",
+    "THERMAL": "NOT_RUN",
+    "ASR_INFERENCE": "NOT_RUN",
+    "NATIVE_RUNTIME_BINARY": "NOT_BUILT",
+    "ANDROID_16K_ELF_VERIFICATION": "DEFERRED_TO_5.3",
+    "DEVICE_RUNTIME": "NOT_RUN",
+    "PRODUCTION_ADMISSION": "UNCHANGED"
+  },
+  "model": {
+    "assetId": "whisper-base-multilingual-ggml-q5_1",
+    "family": "OpenAI Whisper multilingual BASE",
+    "multilingual": true,
+    "boundedLanguages": [
+      "ru",
+      "en"
+    ],
+    "quantization": "q5_1",
+    "filename": "ggml-base-q5_1.bin",
+    "bytes": 59707625,
+    "sha256": "422f1ae452ade6f30a004d7e5c6a43195e4433bc370bf23fac9cc591f01a8898",
+    "repository": "https://huggingface.co/ggerganov/whisper.cpp",
+    "immutableRevision": "5359861c739e955e79d9a303bcbc70fb988958b1",
+    "artifactUrl": "https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-base-q5_1.bin",
+    "upstreamLfsSha256": "422f1ae452ade6f30a004d7e5c6a43195e4433bc370bf23fac9cc591f01a8898",
+    "upstreamLfsPointerGitBlobSha1": "4947e22c7365d941a9864b2d0f9f474a505cf39b",
+    "upstreamReadmeArtifactSha1": "a3733eda680ef76256db5fc5dd9de8629e62c5e7",
+    "licenseId": "MIT",
+    "acquisition": {
+      "sourceUrl": "https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-base-q5_1.bin",
+      "sourceRevision": "5359861c739e955e79d9a303bcbc70fb988958b1",
+      "acquisitionStartedAtUtc": "2026-09-24T11:45:04.514120+00:00",
+      "acquisitionCompletedAtUtc": "2026-09-24T11:45:09.513561+00:00",
+      "artifact": "ggml-base-q5_1.bin",
+      "bytes": 59707625,
+      "acquiredSha256": "422f1ae452ade6f30a004d7e5c6a43195e4433bc370bf23fac9cc591f01a8898",
+      "controlledCopySha256": "422f1ae452ade6f30a004d7e5c6a43195e4433bc370bf23fac9cc591f01a8898",
+      "sha1": "a3733eda680ef76256db5fc5dd9de8629e62c5e7",
+      "contentType": "application/octet-stream",
+      "downloadHashMatch": true,
+      "postCopyHashMatch": true,
+      "nativeBinaryDownloaded": false,
+      "downloadedModelCount": 1
+    },
+    "sanity": {
+      "checkedAtUtc": "2026-09-24T11:47:10.593123+00:00",
+      "verdict": "PASS_NON_INFERENCE_ARTIFACT_SANITY",
+      "regularFile": true,
+      "notHtmlOrExecutableContainer": true,
+      "magicHex": "0x67676d6c",
+      "header": {
+        "nVocab": 51865,
+        "nAudioContext": 1500,
+        "nAudioState": 512,
+        "nAudioHead": 8,
+        "nAudioLayer": 6,
+        "nTextContext": 448,
+        "nTextState": 512,
+        "nTextHead": 8,
+        "nTextLayer": 6,
+        "nMels": 80,
+        "encodedFtype": 1009
+      },
+      "quantizationVersionInArtifact": 1,
+      "decodedFtype": 9,
+      "decodedQuantization": "Q5_1",
+      "melDimensions": [
+        80,
+        201
+      ],
+      "storedVocabularyEntries": 50257,
+      "maxVocabularyEntryBytes": 33,
+      "tensorCount": 245,
+      "tensorTypes": {
+        "F32": 146,
+        "F16": 2,
+        "Q5_1": 97
+      },
+      "tensorElementCount": 72593920,
+      "tensorPayloadBytes": 59123072,
+      "exactEndOfFile": true,
+      "nativeModelLoaderInvoked": false,
+      "inferenceRun": false,
+      "method": "Bounded little-endian header, mel, vocabulary and tensor-record walk; F32/F16/Q5_1 block byte sizes from pinned upstream definitions; payload skipped as data; no dequantization or native execution."
+    }
+  },
+  "provenance": {
+    "openaiRepository": "https://github.com/openai/whisper",
+    "openaiSourceRevision": "86098128c0b4f24f0e2aa2994de830614b474227",
+    "originalCheckpoint": "base.pt",
+    "originalCheckpointSha256FromUpstream": "ed3a0b6b1c0edf879ad9b11b1af5a0e6ab5db9205f891f668f8b0e6c6326e34e",
+    "originalCheckpointHashStatus": "UPSTREAM_REFERENCE_ONLY_NOT_DOWNLOADED_OR_LOCALLY_VERIFIED",
+    "conversionChain": "OpenAI base.pt -> whisper.cpp convert-pt-to-ggml.py with tokenizer/mel assets -> whisper.cpp quantize q5_1 -> official preconverted HF artifact",
+    "conversionToolReferenceCommit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+    "conversionToolReferencePaths": [
+      "models/convert-pt-to-ggml.py",
+      "examples/quantize/quantize.cpp"
+    ],
+    "historicalProducerToolCommit": null,
+    "historicalProducerToolCommitReason": "Not published in reviewed upstream model card/history; reference tool pin is not asserted as the 2023 producer. No bit-for-bit reproduction claim.",
+    "obtainedPreconverted": true,
+    "reproducedLocally": false,
+    "upstreamAcceptanceCommit": "d148abaa5548d0deea3cf8075f0fd3376e483c8f",
+    "upstreamAcceptanceReference": "https://huggingface.co/ggerganov/whisper.cpp/discussions/5",
+    "embeddedAssets": [
+      "model hyperparameters",
+      "mel filters",
+      "tokenizer vocabulary",
+      "quantized and floating-point tensors"
+    ],
+    "additionalTokenizerOrConfigDownloads": false,
+    "inputContract": "Whisper upstream 80-bin log-mel, 1500 audio context; preprocessing remains a 5.3 runner responsibility."
+  },
+  "licenseReview": {
+    "state": "EVALUATION_APPROVED",
+    "reviewedAtUtc": "2026-09-24T11:44:27.822921+00:00",
+    "authority": "Project Owner task 5.2 instruction under established bounded Stage-0 Product, Legal/IP and Engineering/Security roles",
+    "scope": "BOUNDED_INTERNAL_ALPHA_ASR_EVALUATION_ONLY",
+    "originalWeights": {
+      "licenseId": "MIT",
+      "copyright": "Copyright (c) 2022 OpenAI",
+      "licenseSource": {
+        "url": "https://raw.githubusercontent.com/openai/whisper/86098128c0b4f24f0e2aa2994de830614b474227/LICENSE",
+        "bytes": 1063,
+        "sha256": "b5d65a59060e68c4ff940e1eddfa6f94b2d68fdf58ed7f4dd57721c997e35e9d"
+      },
+      "weightsApplicabilitySource": {
+        "url": "https://raw.githubusercontent.com/openai/whisper/86098128c0b4f24f0e2aa2994de830614b474227/README.md",
+        "bytes": 8246,
+        "sha256": "38c180c2a8d8ba628a3e131ad42bf06c8a51bb681efb30fbe28d5a0f4b65f288"
+      }
+    },
+    "runtimeSource": {
+      "licenseId": "MIT",
+      "copyright": "Copyright (c) 2023-2026 The ggml authors",
+      "licenseSource": {
+        "url": "https://raw.githubusercontent.com/ggml-org/whisper.cpp/927cfce34f31707e17f2bff35c349632fb9e2c3a/LICENSE",
+        "bytes": 1078,
+        "sha256": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d"
+      }
+    },
+    "convertedWeights": {
+      "licenseId": "MIT",
+      "declarationSource": {
+        "url": "https://huggingface.co/ggerganov/whisper.cpp/raw/5359861c739e955e79d9a303bcbc70fb988958b1/README.md",
+        "bytes": 3196,
+        "sha256": "21fd967098804f33fc84e803fb0e5ab7666d71801f4027cf28a65e7af09c1758"
+      },
+      "standaloneLicenseFileInModelRepo": false,
+      "basis": "Pinned converted-model card declares MIT and attributes OpenAI Whisper; original MIT license text and runtime MIT notice are preserved locally."
+    },
+    "rights": {
+      "internalEvaluation": "PERMITTED_BY_MIT_SUBJECT_TO_COPYRIGHT_AND_PERMISSION_NOTICE",
+      "commercialUse": "PERMITTED_BY_MIT_SUBJECT_TO_COPYRIGHT_AND_PERMISSION_NOTICE",
+      "modificationAndQuantization": "PERMITTED_BY_MIT_SUBJECT_TO_COPYRIGHT_AND_PERMISSION_NOTICE",
+      "redistribution": "PERMITTED_BY_MIT_SUBJECT_TO_COPYRIGHT_AND_PERMISSION_NOTICE",
+      "mirroring": "PERMITTED_BY_MIT_SUBJECT_TO_COPYRIGHT_AND_PERMISSION_NOTICE",
+      "sublicensing": "PERMITTED_BY_MIT_SUBJECT_TO_COPYRIGHT_AND_PERMISSION_NOTICE"
+    },
+    "projectRedistributionAuthorized": false,
+    "gated": false,
+    "loginOrClickThroughRequired": false,
+    "modelSpecificUseOrGeographicRestrictionFound": false,
+    "separateNoticeFileRequiredByReviewedTexts": false,
+    "noticeObligation": "Preserve complete applicable MIT copyright, permission and warranty-disclaimer texts with copies/substantial portions. Local controlled copies retain both exact LICENSE texts; future packaging/mirroring needs its own project admission and notices.",
+    "sourceOfferOrShareAlikeRequired": false,
+    "modelCard": {
+      "url": "https://raw.githubusercontent.com/openai/whisper/86098128c0b4f24f0e2aa2994de830614b474227/model-card.md",
+      "bytes": 7307,
+      "sha256": "3c2dc15e0c4bf2f1067db8530b1ecd6675abb431c4bc09fad3bc4453434f3333"
+    },
+    "trainingDataStatement": "Upstream reports 680,000 hours of Internet audio/transcripts. This review records the publisher statement, not an independent training-data rights audit.",
+    "knownLimits": [
+      "Uneven accuracy across languages, accents and demographic groups",
+      "Hallucination and repetition can occur",
+      "No DORA RU/EN quality or performance measured",
+      "Do not infer speaker attributes; consent and high-risk-use cautions remain applicable"
+    ],
+    "outputRights": "No inference/output in 5.2; MIT is not a guarantee that future outputs are free of third-party rights.",
+    "scopeDisposition": "No material model-specific license conflict found for bounded internal evaluation. No production Legal/Security or distribution approval is granted."
+  },
+  "runtimeSource": {
+    "project": "ggml-org/whisper.cpp",
+    "repository": "https://github.com/ggml-org/whisper.cpp",
+    "tag": "v1.9.4",
+    "tagObjectSha": "7d75b14994ae7f59623e2471445e2355fe506ed2",
+    "commit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+    "releasePublishedAtUtc": "2026-09-11T05:31:55Z",
+    "releaseUrl": "https://github.com/ggml-org/whisper.cpp/releases/tag/v1.9.4",
+    "tagVerification": "ANNOTATED_TAG_DEREFERENCED_TO_EXPECTED_COMMIT; TAG_UNSIGNED",
+    "licenseId": "MIT",
+    "importedIntoDora": false,
+    "android": {
+      "sourceSupport": "PROSPECTIVE_SOURCE_ONLY",
+      "examplePath": "examples/whisper.android",
+      "declaredAbis": [
+        "arm64-v8a",
+        "armeabi-v7a",
+        "x86",
+        "x86_64"
+      ],
+      "arm64V8aDeclared": true,
+      "buildMechanism": "Gradle externalNativeBuild + CMake + Android NDK; source-built shared libraries from src/whisper.cpp, jni.c and bundled ggml",
+      "ndkVersionInExample": "25.2.9519653",
+      "compileSdkInExample": 34,
+      "targetSdkInExample": 34,
+      "minSdkInExample": 26,
+      "cmakeMinimum": "3.10",
+      "cppStandard": 17,
+      "arm64Targets": [
+        "whisper_v8fp16_va (-march=armv8.2-a+fp16)",
+        "whisper (default)"
+      ],
+      "buildExecuted": false,
+      "nativePrebuiltDownloaded": false,
+      "compatibilityBoundary": "Upstream example settings are evidence, not DORA settings. Future 5.3 must pin suitable toolchain, validate CPU dispatch, actual ELF/ZIP alignment and runtime. NDK r25 example is not 16-KiB evidence."
+    }
+  },
+  "storage": {
+    "class": "LOCAL_PRIVATE_CONTROLLED_STORAGE",
+    "evidenceLocator": "controlled:alpha-asr-model-5.2-v0.1",
+    "outsideRepositoryAndWorktrees": true,
+    "outsideSyncAndPublicLocations": true,
+    "publicShareCreated": false,
+    "protectedAclCurrentUserOnly": true,
+    "modelInGitOrLfs": false,
+    "modelInCiArtifacts": false,
+    "modelInRemoteAttachments": false,
+    "separateFromRawAudio": true,
+    "retention": "Retain only for authorized bounded evaluation; Project Owner/custodian must revoke and remove both acquisition and controlled copies when rejected, revoked, or evaluation retention ends. No production reuse.",
+    "inventory": "One distinct model artifact, two byte-identical local copies; public source/license metadata and local verification scripts; no private corpus or native executable."
+  },
+  "supplyChain": {
+    "modelTreatment": "UNTRUSTED_DATA_NOT_EXECUTABLE",
+    "canonicalMetadataResolvedBeforeDownload": true,
+    "licenseReviewBeforeDownload": true,
+    "lfsHashVerified": true,
+    "readmeSha1Verified": true,
+    "postCopyRehashEqual": true,
+    "executableWrapperAdded": false,
+    "nativeBinaryDownloaded": false,
+    "sourceCodeExecuted": false,
+    "malwareOrCveClearanceClaimed": false,
+    "replacementRule": "Any digest, model revision/variant, quantization or runtime-source change requires new exact admission; do not silently fall back.",
+    "fallback": "STOP_AND_RETURN_EVIDENCE; no alternative download or inference authorized",
+    "signatureBoundary": "SHA-256 equality establishes identity against upstream LFS metadata, not a signed build attestation or parser safety proof."
+  },
+  "verification": {
+    "upstreamMetadata": "PASS",
+    "licenses": "PASS_BOUNDED_EVALUATION_SCOPE",
+    "sizeAndSha256": "PASS",
+    "postCopyRehash": "PASS",
+    "artifactSanity": "PASS",
+    "checkerSha256": "e6f79bde41ad3558d62836e9eb656cf3843fc9ac4eb91108bfcb49530707412a",
+    "checkerLocator": "controlled:alpha-asr-model-5.2-v0.1/artifact-checker",
+    "ci": "NOT_RUN",
+    "excludedRuns": [
+      "ASR inference",
+      "48-clip transcription",
+      "WER/quality benchmark",
+      "Android/Gradle/device tests",
+      "Recovery tests"
+    ],
+    "hostStatic": {
+      "checkedAtUtc": "2026-09-24T11:52:54.815074+00:00",
+      "verdict": "PASS",
+      "checkCount": 34,
+      "checks": [
+        "JSON strict parse, unique keys",
+        "docs/stage0/DORA_ALPHA_ASR_MODEL_ADMISSION_STAGE0_V0_1.md UTF-8/LF/final newline",
+        "docs/stage0/DORA_ALPHA_ASR_MODEL_ADMISSION_STAGE0_V0_1.md no trailing whitespace",
+        "docs/stage0/DORA_ALPHA_ASR_MODEL_ADMISSION_STAGE0_V0_1.md text only",
+        "docs/stage0/DORA_ALPHA_ASR_MODEL_ADMISSION_STAGE0_V0_1.md no local paths, private corpus or credential material",
+        "docs/evidence/poc-asr-001/alpha-asr-model-admission-stage0-v0.1.json UTF-8/LF/final newline",
+        "docs/evidence/poc-asr-001/alpha-asr-model-admission-stage0-v0.1.json no trailing whitespace",
+        "docs/evidence/poc-asr-001/alpha-asr-model-admission-stage0-v0.1.json text only",
+        "docs/evidence/poc-asr-001/alpha-asr-model-admission-stage0-v0.1.json no local paths, private corpus or credential material",
+        "Markdown balanced code spans",
+        "Markdown headings and table separators",
+        "Markdown relative link DORA_MVP1_IP_ASSET_POLICY.md",
+        "Markdown relative link ../DORA_MVP1_TECHNICAL_PLAN.md",
+        "Markdown relative link ../DORA_MVP1_IMPLEMENTATION_READINESS.md",
+        "Markdown relative link ../DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+        "Markdown relative link DORA_MVP1_POC_GATES.md",
+        "Markdown relative link DORA_ALPHA_ASR_DATA_SCOPE_STAGE0_V0_1.md",
+        "Markdown relative link ../evidence/poc-asr-001/i1-synthetic-scoring-oracle-local-evidence-stage0-v0.1.json",
+        "Markdown relative link ../evidence/poc-asr-001/alpha-asr-model-admission-stage0-v0.1.json",
+        "Immutable HF revision and exact primary",
+        "Public bytes/digest equal official LFS and acquired/controlled copies",
+        "Fresh size/hash models",
+        "Fresh size/hash acquisition",
+        "Sanity evidence equals actual local result",
+        "Pre-download license review ordering",
+        "License text hashes and pinned source files",
+        "Runtime full expected commit/tag",
+        "Status claim ceiling",
+        "Markdown exact evidence identity",
+        "Exact branch and uncommitted base",
+        "No existing tracked file edits",
+        "Changed scope limited to two records and preserved attachments",
+        "No tracked exact model or native/runtime weight payload",
+        "git diff --check"
+      ],
+      "markdownValidation": "UTF-8, heading/table structure, balanced code spans and local link targets; no Markdown linter installed",
+      "secretPrivacyReview": "Pattern scan and manual content review; only public upstream metadata and aggregate local verification facts",
+      "changedFileScope": [
+        "docs/stage0/DORA_ALPHA_ASR_MODEL_ADMISSION_STAGE0_V0_1.md",
+        "docs/evidence/poc-asr-001/alpha-asr-model-admission-stage0-v0.1.json"
+      ]
+    },
+    "publicRecordsCheckerSha256": "2cdec7db6fdfb0b7dd8a43e7da87c7084d49c98e26fe8b597e7d0057f605e75f",
+    "independentReview": {
+      "verdict": "READY_FOR_BOUNDED_5.2_ADMISSION",
+      "actionableP0P1P2Findings": 0,
+      "scope": "Read-only review of two new records, official source metadata, IP policy, claim ceiling and provenance limitations"
+    }
+  },
+  "limitations": [
+    "Historical converter/quantizer build revision and full reproducibility attestation are not published; admission relies on canonical maintainer-accepted preconverted bytes and exact upstream hashes.",
+    "Artifact quantization version is 1 (ftype 1009), while pinned reference quantizer emits version 2. Runtime source decodes the version and Q5_1 type; static record layout checks pass. Actual native loading is not tested.",
+    "Prospective arm64 source support does not prove a working DORA/POCO native runtime or 16-KiB support.",
+    "Production provenance, dependency/SBOM/security and legal reviews remain separate gates."
+  ],
+  "sourceEvidence": {
+    "runtime__examples__quantize__quantize.cpp": {
+      "url": "https://raw.githubusercontent.com/ggml-org/whisper.cpp/927cfce34f31707e17f2bff35c349632fb9e2c3a/examples/quantize/quantize.cpp",
+      "bytes": 8213,
+      "sha256": "ab95fe726971332446f6100e18924b181b07b4f0823a2cade685cc8ed9a4b78b"
+    },
+    "runtime__examples__whisper.android__lib__build.gradle": {
+      "url": "https://raw.githubusercontent.com/ggml-org/whisper.cpp/927cfce34f31707e17f2bff35c349632fb9e2c3a/examples/whisper.android/lib/build.gradle",
+      "bytes": 2170,
+      "sha256": "1396b1c359fac8bb1063539f368203ea9bda7858d0467b05cb1a577ed98d9d7c"
+    },
+    "runtime__examples__whisper.android__lib__src__main__jni__whisper__CMakeLists.txt": {
+      "url": "https://raw.githubusercontent.com/ggml-org/whisper.cpp/927cfce34f31707e17f2bff35c349632fb9e2c3a/examples/whisper.android/lib/src/main/jni/whisper/CMakeLists.txt",
+      "bytes": 2922,
+      "sha256": "ce49e1bf5733a3aad27c983ead31534cb85bfcb4ac9b5c7a9c85df74767f7293"
+    },
+    "runtime__examples__whisper.android__README.md": {
+      "url": "https://raw.githubusercontent.com/ggml-org/whisper.cpp/927cfce34f31707e17f2bff35c349632fb9e2c3a/examples/whisper.android/README.md",
+      "bytes": 973,
+      "sha256": "d5f21c58873eb598b223949e4a55b509973af88d0ddcdccc73f579fa5fbf5672"
+    },
+    "runtime__ggml__include__ggml.h": {
+      "url": "https://raw.githubusercontent.com/ggml-org/whisper.cpp/927cfce34f31707e17f2bff35c349632fb9e2c3a/ggml/include/ggml.h",
+      "bytes": 113310,
+      "sha256": "34192eac913444df9dc1d23025a618448cdee1ee7d78597af4979d8edc77b695"
+    },
+    "runtime__ggml__src__ggml-common.h": {
+      "url": "https://raw.githubusercontent.com/ggml-org/whisper.cpp/927cfce34f31707e17f2bff35c349632fb9e2c3a/ggml/src/ggml-common.h",
+      "bytes": 135161,
+      "sha256": "0061131b615c5721fc88a78feeb22c1f8c450f1c2646a317d80796a653bf595c"
+    },
+    "runtime__models__convert-pt-to-ggml.py": {
+      "url": "https://raw.githubusercontent.com/ggml-org/whisper.cpp/927cfce34f31707e17f2bff35c349632fb9e2c3a/models/convert-pt-to-ggml.py",
+      "bytes": 10613,
+      "sha256": "e874333f95c52725c23541b39e71594e01442a2a687c96e2e882493c45b887a2"
+    },
+    "runtime__models__README.md": {
+      "url": "https://raw.githubusercontent.com/ggml-org/whisper.cpp/927cfce34f31707e17f2bff35c349632fb9e2c3a/models/README.md",
+      "bytes": 5745,
+      "sha256": "bad04fef13f1556cc9cc93c46022e47dbcea94814032faaa4aac2e168314b2b7"
+    },
+    "runtime__src__whisper.cpp": {
+      "url": "https://raw.githubusercontent.com/ggml-org/whisper.cpp/927cfce34f31707e17f2bff35c349632fb9e2c3a/src/whisper.cpp",
+      "bytes": 341491,
+      "sha256": "c48686fbc2cba1b0ac0f9c8e964188c691e67fff5906f2629f3223ff64f92d16"
+    },
+    "openai__whisper____init__.py": {
+      "url": "https://raw.githubusercontent.com/openai/whisper/86098128c0b4f24f0e2aa2994de830614b474227/whisper/__init__.py",
+      "bytes": 7432,
+      "sha256": "79ecbed714783b6230931a3dba6d5da6d386e2d44f9fc27256e4fc72751e1f62"
+    },
+    "hf__pointer.txt": {
+      "url": "https://huggingface.co/ggerganov/whisper.cpp/raw/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-base-q5_1.bin",
+      "bytes": 133,
+      "sha256": "aff0311ce386655c69562ca7945a8c18ab5513c9a1bb85079167630eca6aa097"
+    }
+  },
+  "unresolvedP0P1Blockers": []
+}
