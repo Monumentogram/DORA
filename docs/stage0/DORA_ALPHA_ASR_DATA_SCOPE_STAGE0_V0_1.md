@@ -4,7 +4,7 @@ Task: `POC-DATA-001` / operational Alpha substage `5.1`
 Profile: `dora-alpha-asr-data-v0.1`  
 Date: 24 September 2026\
 Base: `main@55940df0c95e919a00708ae57e1b8aa23d89b6de`  
-State: **5.1A PASS / DATASET_DOWNLOAD NOT_RUN / 5.1B NOT_STARTED**
+State: **5.1A PASS / 5.1B PASS (MANIFEST_CONTRACT_AND_VALIDATOR_READY) / DATASET_DOWNLOAD NOT_RUN**
 
 ## R2 candidate update — 18 September 2026
 
@@ -70,7 +70,9 @@ The Project Owner has assigned `Project Owner / Data Custodian` and approved
 `LOCAL_PRIVATE_CONTROLLED_STORAGE` with `CUSTODIAN_ONLY` access. The required Data/ASR reviewer
 roles are assigned to the Project Owner and the internal review is approved. The concrete
 controlled-storage instance passed the synthetic access/deletion dry-run on 24 September 2026.
-**Audio retrieval and 5.1B require a later explicitly scoped task**.
+**Audio retrieval still requires a later explicitly scoped task**. The separately authorized
+5.1B contract and validator are now ready, using generated synthetic metadata only; see
+[the 5.1B contract](DORA_ALPHA_ASR_DATA_MANIFEST_CONTRACT_STAGE0_V0_1.md).
 
 ## 4. Current proposed public source
 
@@ -100,8 +102,8 @@ Selection must be deterministic and must not cherry-pick successful recognitions
 
 1. Build the candidate list from the pinned release/split after the filters above.
 2. For every candidate compute
-   `SHA-256("dora-alpha-asr-v0.1\\0" + locale + "\\0" + upstreamRelativePath)`.
-3. Sort ascending by that digest.
+   `SHA-256(UTF8("dora-alpha-asr-v0.1") || 0x00 || UTF8(locale) || 0x00 || UTF8(upstreamRelativePath))`.
+3. Sort ascending by the raw 32-byte digest, then exact UTF-8 path bytes for a tie.
 4. Select the first 24 per locale.
 5. Freeze the selected-set manifest before any ASR candidate is executed.
 
@@ -149,6 +151,11 @@ The controlled manifest must contain, at minimum:
 - storage class/evidence locator;
 - creation/expiry/deletion state.
 
+The 5.1B validator consumes a closed metadata projection of the candidate inventory and
+selected manifest. Controlled reference text and lifecycle/consent records remain separate;
+they are not fields in those two validator inputs. Its exact contract is defined in
+[DORA_ALPHA_ASR_DATA_MANIFEST_CONTRACT_STAGE0_V0_1.md](DORA_ALPHA_ASR_DATA_MANIFEST_CONTRACT_STAGE0_V0_1.md).
+
 The public repository may later contain only a Git-safe projection: release identities, counts,
 licence/terms references, the aggregate selected-manifest digest, limitations and result totals.
 It must not contain selected audio, raw reference transcripts, contributor metadata, private
@@ -182,17 +189,22 @@ Current state:
 - 3.0 candidates: `SUPERSEDED_AS_CANDIDATE`;
 - 5.0 RU/EN candidates: `EVALUATION_APPROVED / STORAGE_DRY_RUN_PASS / DOWNLOAD_NOT_RUN`;
 - data retrieval: `NOT_RUN`;
-- selected-set manifest: `NOT_CREATED`;
+- actual candidate inventory: `NOT_CREATED`;
+- actual 48-clip selected-set manifest: `NOT_CREATED`;
 - owner-controlled decisions: `APPROVED`;
 - internal Stage-0 Legal/IP review: `APPROVED`;
 - internal Stage-0 Engineering/Security review: `APPROVED`;
 - custodian/storage/access policy: `APPROVED`;
 - `SYNTHETIC_STORAGE_ACCESS_DELETION_DRY_RUN`: `PASS`;
 - 5.1A: `PASS`;
-- 5.1B: `NOT_STARTED`;
+- 5.1B: `PASS / MANIFEST_CONTRACT_AND_VALIDATOR_READY`;
+- 5.2: `NOT_STARTED`;
 - archive hashes: `PENDING_DOWNLOAD_VERIFICATION`;
 - production admission: unchanged;
 - 5.4 device ASR: `NOT_AUTHORIZED`.
 
-Task 5.1A-S ends with its synthetic storage evidence. Do not begin 5.1B, 5.2, dataset/model
-download or device execution without later explicit scope and the applicable remaining gates.
+Task 5.1B ends with contract/validator readiness only, supported by
+[synthetic host evidence](../evidence/poc-data-001/alpha-asr-pilot-manifest-validator-local-evidence-stage0-v0.1.json).
+This is not corpus materialization or ASR quality evidence. Dataset download remains `NOT_RUN`.
+Do not begin 5.2, dataset/model download or device execution without later explicit scope
+and the applicable remaining gates.

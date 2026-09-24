@@ -1,0 +1,115 @@
+{
+  "actualState": {
+    "5.1A": "PASS",
+    "5.1B": "PASS_MANIFEST_CONTRACT_AND_VALIDATOR_READY",
+    "5.2": "NOT_STARTED",
+    "ACTUAL_48_CLIP_MANIFEST": "NOT_CREATED",
+    "ACTUAL_CANDIDATE_INVENTORY": "NOT_CREATED",
+    "ARCHIVE_HASHES": "PENDING_DOWNLOAD_VERIFICATION",
+    "ASR_QUALITY_CLAIMS": "NONE",
+    "DATASET_DOWNLOAD": "NOT_RUN"
+  },
+  "baseCommit": "a50a1707524ebb07300de8c31fc64f689f71062f",
+  "claim": "MANIFEST_CONTRACT_AND_VALIDATOR_READY",
+  "implementationPins": [
+    {
+      "bytes": 12341,
+      "path": "tools/alpha_asr_pilot_manifest.py",
+      "sha256": "dea7a8bdf651372052d89b0338b41a2c5cb7373696335ed8de47adbb8cba64b9"
+    },
+    {
+      "bytes": 20803,
+      "path": "tools/test_alpha_asr_pilot_manifest.py",
+      "sha256": "b9e00347f9669f573ecffa9b7e67735ef67e25ef03a7ce46dcc8d02e8b11c28c"
+    },
+    {
+      "bytes": 13651,
+      "path": "docs/stage0/DORA_ALPHA_ASR_DATA_MANIFEST_CONTRACT_STAGE0_V0_1.md",
+      "sha256": "3a9699ae5ea4f380dd2641840d9ce6cba0dc51c73229c86443abd21290289826"
+    },
+    {
+      "bytes": 10421,
+      "path": "docs/stage0/DORA_ALPHA_ASR_DATA_SCOPE_STAGE0_V0_1.md",
+      "sha256": "1ff5f4203fbac1b43c6dd22e0ce17b9e05a1a7a48bcf3d5182e3051a7e4a942f"
+    }
+  ],
+  "notExecuted": [
+    "MDC_AUTHENTICATION",
+    "TERMS_ACCEPTANCE",
+    "DATASET_DOWNLOAD",
+    "AUDIO_EXTRACTION_OR_DECODE",
+    "ACTUAL_CORPUS_MATERIALIZATION",
+    "ANDROID_OR_GRADLE_TESTS",
+    "RECOVERY_TESTS",
+    "DEVICE_TESTS",
+    "MODEL_TESTS",
+    "EXISTING_SYNTHETIC_MANIFEST_VALIDATOR_TESTS",
+    "CI_WORKFLOW_DISPATCH"
+  ],
+  "profileId": "dora-alpha-asr-pilot-manifest-v0.1",
+  "publicationBoundary": {
+    "actualInputsInGitOrCi": false,
+    "containingGitTreeBindsRecord": true,
+    "privateLocatorsInEvidence": false,
+    "rawAudioOrTranscriptsInEvidence": false
+  },
+  "readOnlyReview": {
+    "environmentLimitation": "READ_ONLY_SANDBOX_CANNOT_CREATE_TEMPORARY_CLI_FIXTURES",
+    "formalHumanReview": false,
+    "p0": 0,
+    "p1": 0,
+    "primaryHostSuiteIncludingCli": "PASS_21_OF_21",
+    "result": "NO_ACTIONABLE_FINDINGS",
+    "reviewerHostTestsEnvironmentBlocked": 1,
+    "reviewerHostTestsPassed": 20
+  },
+  "recordType": "SYNTHETIC_HOST_MANIFEST_CONTRACT_AND_VALIDATOR_EVIDENCE",
+  "recordedDate": "2026-09-24",
+  "result": "PASS",
+  "schemaVersion": 1,
+  "syntheticCampaign": {
+    "actualDatasetProvenance": false,
+    "audioDecodedByValidator": false,
+    "candidateCounts": {
+      "en": 30,
+      "ru": 30
+    },
+    "candidateInventorySha256": "3ef08ba752f5f98112765c4a57006ec7f34a36f2d65ab9ccd8292ae15caf8cf8",
+    "fixtureClass": "GENERATED_NON_SENSITIVE_METADATA_ONLY",
+    "inventoryCompletenessVerified": false,
+    "manifestSha256": "7858bedee6ed261f206823eeb51192f65aa214175ed72211f57c66e48842c29d",
+    "rawAudioOrTranscriptUsed": false,
+    "selectedCounts": {
+      "en": 24,
+      "ru": 24
+    }
+  },
+  "task": "5.1B",
+  "unchangedBoundaries": {
+    "androidRuntime": true,
+    "ciWorkflows": true,
+    "existingAsrScoringOracleAndEvidence": true,
+    "existingSyntheticManifestValidatorAndSchemaTests": true,
+    "modelsAndRunners": true,
+    "productionAdmission": true,
+    "recovery": true
+  },
+  "validation": {
+    "command": "python -B -m unittest tools.test_alpha_asr_pilot_manifest -v",
+    "dependencies": "PYTHON_STANDARD_LIBRARY_ONLY",
+    "deterministicProcessRuns": 2,
+    "errors": 0,
+    "failures": 0,
+    "independentKnownAnswer": "POWERSHELL_DOTNET_SHA256_FIRST_24_PER_LOCALE",
+    "inputPermutation": "PASS",
+    "negativeControls": "PASS",
+    "parameterizedSubtests": 78,
+    "positiveControls": "PASS",
+    "readOnlyContentFreeCli": "PASS",
+    "runtime": "CPython 3.12.14",
+    "syntaxCompile": "PASS",
+    "syntheticOutputSha256": "2c3c77bcfbd2ba0f3bc07a75669074a2b9a16610a03fad20eddb370defda7292",
+    "tests": 21,
+    "uniqueOutputSha256Count": 1
+  }
+}
