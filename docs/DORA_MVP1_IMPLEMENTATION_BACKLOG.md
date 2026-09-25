@@ -1,5 +1,31 @@
 # Dora MVP 1 — Executable Backlog
 
+## Alpha ASR 5.3C bounded runner preflight amendment — 25 September 2026
+
+The owner authorized continuing the six preserved local files, exact r28c installation,
+isolated physical-device model initialization and one atomic task-branch commit/push.
+See the [runner/preflight technical record](stage0/DORA_ALPHA_ASR_RUNNER_PREFLIGHT_STAGE0_V0_1.md)
+and [sanitized evidence](evidence/poc-asr-001/alpha-asr-runner-preflight-stage0-v0.1.json).
+
+5.3C = PASS / BOUNDED_ASR_RUNNER_INTEGRATION_PREFLIGHT_READY.
+The exact 5.2 model/source and 5.3B toolchain passed identity checks. Two isolated native builds,
+actual ELF/dependency/16-KiB package checks, 44 runner tests and 22 unchanged 5.3A regressions
+(including Java oracle/bridge) passed. On authorized Android 14/API34 arm64, one model context
+initialization returned typed SUCCESS; live cancellation and timeout returned their typed outcomes.
+All three outcomes survived reopen/replay without another native start. Device cleanup = VERIFIED.
+Independent read-only review and final privacy/scope checks precede publication.
+
+5.3A and 5.3B retain their existing bounded PASS. Overall 5.3 = PRE_5_4_PREPARATION_COMPLETE,
+not full ASR PoC completion. 5.4 = NOT_AUTHORIZED; ASR_INFERENCE and WER = NOT_RUN;
+RU/EN, RTF/PSS/native-heap/thermal = NOT_EVALUATED. Corpus/transcript access and published private
+attempt rows/hypotheses = 0. Production integration/admission = false. Static 16-KiB compatibility
+does not establish 16-KiB-device runtime support. Full POC-ASR remains BLOCKED / NOT_READY.
+The following sections remain immutable historical states; this amendment supersedes only their
+absence of the bounded runner/model-init proof. Historical counts and Recovery are unchanged.
+No PR or merge; PR #86 is untouched. The production allowlist, native verifier, 5.3A contracts,
+Java oracle and 5.3B evidence remain unchanged.
+
+
 ## Alpha ASR 5.3B isolated native candidate amendment — 24 September 2026
 
 The owner's explicit resumed 5.3B scope authorized reproducible SDK/cache cleanup, installation
