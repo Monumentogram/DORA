@@ -1,5 +1,34 @@
 # Dora MVP 1 — Stage Status
 
+## Alpha ASR 5.6B SMALL governance freeze — 25 September 2026
+
+5.6B = PASS / SMALL_Q5_1_EVALUATION_DATA_AND_RESOURCE_GATES_FROZEN.
+See the [approved governance contract](stage0/DORA_ALPHA_ASR_SMALL_EVALUATION_GOVERNANCE_STAGE0_V0_1.md)
+and [machine-readable freeze](evidence/poc-asr-001/alpha-asr-small-evaluation-governance-stage0-v0.1.json).
+The owner prospectively approves minimum necessary reuse of controlled Common Voice 5.0 RU/EN
+archives/inventories for one future bounded SMALL acceptance campaign and its audit, with the
+unchanged absolute deletion deadline 2026-10-25. If work cannot finish before it, stop and execute
+the existing deletion obligation with receipts; no retention extension or current private access.
+
+Fresh acceptance is exactly 24 RU + 24 EN after mandatory original-48 source/audio-digest,
+prior evaluation/tuning, duplicate-audio and development-set exclusions. Freeze the unchanged
+SHA-256 key family, bytewise tie-break, first 24 per locale and RU24-then-EN24 order. No tuning,
+quality-based substitution or original-48 regression reuse is approved. Pool availability is unverified.
+For SMALL on POCO M5 only: normalized aggregate WER RU <=20%, EN <=18%; all inference RTF gates
+must pass (duration-weighted <=2.0, nearest-rank p95 <=4.0, maximum <=6.0); maximum cold load
+<=15000000 us; observed PSS <=1610612736 bytes; sampled native heap <=1342177280 bytes.
+End-to-end latency is diagnostic only. Require zero evidenced OOM, no SEVERE-or-worse thermal
+status, complete telemetry with existing valid-gap rules, complete attempts and no quality retries.
+600/605-second timeout/alarm remain safety controls, not performance budgets.
+
+All private corpus/reference/result access, decode, model load, inference, device and subset
+materialization counts are zero. No model bytes read. These are approved rules, not measured PASS.
+5.6A/5.6A.1 admission and historical BASE rejection remain unchanged. Earlier pending-decision and
+blocked-attempt sections remain historical; this amendment updates only current governance truth.
+POC-ASR-001 stays BLOCKED / NOT_READY; no production/all-device support claim. 5.6C is
+NOT_STARTED / NOT_AUTHORIZED. No PR/merge; PR #86, Recovery and production code remain untouched.
+
+
 ## Alpha ASR 5.6A.1 controlled model storage remediation — 25 September 2026
 
 5.6A.1 = PASS / CONTROLLED_MODEL_STORAGE_ESTABLISHED_SMALL_Q5_1_BYTES_VERIFIED.
