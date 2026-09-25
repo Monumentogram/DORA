@@ -1,5 +1,30 @@
 # Dora MVP 1 — Stage Status
 
+## Alpha ASR 5.6A.1 controlled model storage remediation — 25 September 2026
+
+5.6A.1 = PASS / CONTROLLED_MODEL_STORAGE_ESTABLISHED_SMALL_Q5_1_BYTES_VERIFIED.
+Current 5.6A = PASS / SMALL_Q5_1_ARTIFACT_ADMITTED_PRE_RUN_PACKAGE_READY.
+See the [remediation report](stage0/DORA_ALPHA_ASR_NEXT_CANDIDATE_STORAGE_REMEDIATION_STAGE0_V0_1.md)
+and [byte/storage evidence](evidence/poc-asr-001/alpha-asr-next-candidate-storage-remediation-stage0-v0.1.json).
+The explicitly authorized replacement owner-only LOCAL_PRIVATE_CONTROLLED_STORAGE holds exactly
+one ggml-small-q5_1.bin, 190085487 bytes, from HF revision f281eb45af861ab5e5297d23694b7d46e090c02c.
+Complete acquisition and post-promotion SHA-256 both equal
+ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb. Static GGML parsing verifies
+multilingual SMALL/q5_1 and all 479 tensor names/shapes/types with exact EOF. Pinned whisper.cpp
+927cfce34f31707e17f2bff35c349632fb9e2c3a is unchanged; no static incompatibility was demonstrated.
+
+The preceding blocked 5.6A attempt remains immutable history; this additive result resolves only
+its model-storage/actual-byte blocker. Artifact admission is not quality/device/production PASS.
+Private corpus/reference/hypothesis/result access, audio decode, inference, native model load,
+device execution and new subset materialization are all zero. Original BASE remains VALID_FAIL /
+REJECTED_FOR_BOUNDED_ALPHA_QUALITY_GATE. Historical 5.2–5.5, normalizer/oracle/runner/native code,
+production allowlist, Recovery and PR #86 remain unchanged; no PR or merge.
+Data reuse/retention, fresh 24 RU + 24 EN holdout and numeric RTF/PSS/native-heap decisions remain
+pending owner approval. Private-data deletion deadline remains 2026-10-25, without extension.
+POC-ASR-001 remains BLOCKED / NOT_READY. 5.6B and 5.6C are NOT_STARTED / NOT_AUTHORIZED.
+The following dated amendments are preserved historical states, including the blocked first attempt.
+
+
 ## Alpha ASR 5.6A next-candidate admission / pre-run package — 25 September 2026
 
 5.6A = BLOCKED / CONTROLLED_MODEL_STORAGE_UNAVAILABLE_ARTIFACT_BYTES_UNVERIFIED.
