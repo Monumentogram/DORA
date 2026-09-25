@@ -1,5 +1,33 @@
 # Dora MVP 1 — Stage Status
 
+## Alpha ASR 5.5 evidence assessment amendment — 25 September 2026
+
+5.5 = PASS / CURRENT_MODEL_REJECTED_NEXT_CANDIDATE_REQUIRED. See the
+[assessment report](stage0/DORA_ALPHA_ASR_ASSESSMENT_STAGE0_V0_1.md) and
+[sanitized aggregate assessment](evidence/poc-asr-001/alpha-asr-assessment-stage0-v0.1.json).
+All 48 retained primary attempts (24 RU / 24 EN) independently reconcile through the unchanged
+5.3A normalizer and Java oracle. No common evaluation defect was demonstrated. RU 30.5000%
+(87/19/16; 400 reference tokens) and EN 18.4300% (44/8/2; 293 reference tokens) remain FAIL.
+CURRENT_MODEL_QUALITY_RESULT = VALID_FAIL; the exact base-q5_1 model/runtime/decoding profile
+is REJECTED_FOR_BOUNDED_ALPHA_QUALITY_GATE. This is not a conclusion about other candidates.
+
+Recommended next experiment: same whisper.cpp runtime plus one separately admitted higher-capacity
+multilingual Whisper artifact, with a prospectively frozen protocol and valid held-out design.
+No exact artifact selected, admission started, model downloaded, inference run or decoder tuned.
+RTF/PSS/native-heap numeric thresholds remain PROPOSED_NOT_APPROVED; the owner proposal is not approval.
+RETENTION_ACTION_REQUIRED: authorize any follow-on reuse/extension explicitly, or delete retained
+corpus and derived private evidence by 25 October 2026 under the existing 30-calendar-day obligation.
+No deletion during assessment and no silent retention extension.
+
+5.1/5.2 retain bounded PASS; 5.3 retains PRE_5_4_PREPARATION_COMPLETE; original 5.4 evidence and
+its campaign PASS/quality FAIL split remain unchanged. POC-ASR-001 remains BLOCKED / NOT_READY
+because the current exact candidate failed both approved quality gates and alternate evidence is absent.
+Fresh host/scoring/parity and required offline Android checks passed; CI NOT_RUN. Production admission
+is false. PR #86, Recovery and production allowlist are untouched; no PR or merge.
+The following sections are preserved historical states; this amendment supersedes only the earlier
+5.5 NOT_RUN/model-disposition-deferred state and evaluates the existing retention obligation.
+
+
 ## Alpha ASR 5.4 bounded POCO campaign amendment — 25 September 2026
 
 The owner authorized the exact original 5.1C transfer, frozen 48-clip physical POCO M5 campaign

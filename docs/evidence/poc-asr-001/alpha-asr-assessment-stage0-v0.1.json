@@ -1,0 +1,645 @@
+{
+  "schemaVersion": 1,
+  "profileId": "dora-alpha-asr-assessment-v0.1",
+  "date": "2026-09-25",
+  "result": "PASS / CURRENT_MODEL_REJECTED_NEXT_CANDIDATE_REQUIRED",
+  "repository": {
+    "branch": "chat/alpha-asr-runner-scope",
+    "requiredStartingHead": "59b825b16847401ac94242b74fd142b5347126b3",
+    "startingLocalAndFetchedRemoteMatch": true,
+    "startingTrackedAndStagedState": "CLEAN",
+    "atomicCommitPolicy": 1,
+    "pullRequestCreated": false,
+    "mergePerformed": false
+  },
+  "reconciliation": {
+    "caseCount": 48,
+    "languageCounts": {
+      "en": 24,
+      "ru": 24
+    },
+    "attempts": {
+      "allAttemptsRetained": true,
+      "cancelled": 0,
+      "failed": 0,
+      "invalid": 0,
+      "primary": 48,
+      "qualityRetries": 0,
+      "retries": 0,
+      "succeeded": 48,
+      "timeouts": 0
+    },
+    "totals": {
+      "en": {
+        "cases": 24,
+        "normalized": {
+          "deletions": 8,
+          "errors": 54,
+          "hypothesisTokens": 287,
+          "insertions": 2,
+          "referenceTokens": 293,
+          "substitutions": 44,
+          "wer": 0.18430034129692832
+        },
+        "raw": {
+          "deletions": 8,
+          "errors": 66,
+          "hypothesisTokens": 274,
+          "insertions": 2,
+          "referenceTokens": 280,
+          "substitutions": 56,
+          "wer": 0.2357142857142857
+        }
+      },
+      "ru": {
+        "cases": 24,
+        "normalized": {
+          "deletions": 19,
+          "errors": 122,
+          "hypothesisTokens": 397,
+          "insertions": 16,
+          "referenceTokens": 400,
+          "substitutions": 87,
+          "wer": 0.305
+        },
+        "raw": {
+          "deletions": 18,
+          "errors": 151,
+          "hypothesisTokens": 389,
+          "insertions": 17,
+          "referenceTokens": 390,
+          "substitutions": 116,
+          "wer": 0.3871794871794872
+        }
+      }
+    },
+    "frozenFilesVerified": 59,
+    "privateFilesVerified": 745
+  },
+  "integrity": {
+    "publicEvidenceFileHashes": {
+      "docs/evidence/poc-asr-001/alpha-asr-campaign-stage0-v0.1.json": "c7ab64feea51eb3d411cdf213524532aabce0b146674c01cecdc32e9054b730c",
+      "docs/evidence/poc-asr-001/alpha-asr-decoding-profile-stage0-v0.1.json": "c76324845171c680bd984784e8f1fca13d95b3f0918619dfb5ff53c70ed9c442",
+      "docs/evidence/poc-asr-001/alpha-asr-eval-contract-local-evidence-stage0-v0.1.json": "1eac552f46136071ebb02bf0fbfbd1a2e380bb0f2aea0050b9494b01bcfe5052",
+      "docs/evidence/poc-asr-001/alpha-asr-measurement-protocol-stage0-v0.1.json": "9101c18fa020f8fd0a3ebba47b70c055c4724dc50e2a7900e5d0bef57d5b99c1",
+      "docs/evidence/poc-asr-001/alpha-asr-model-admission-stage0-v0.1.json": "465ee6382e4c884402375237a51adbeb8b3a831ca3fee5a3c831b70713e67864",
+      "docs/evidence/poc-asr-001/alpha-asr-native-build-16k-stage0-v0.1.json": "11a07e39987e968158d506a8d0d9d6402e69e1941a387a9f94e36de2f834408a",
+      "docs/evidence/poc-asr-001/alpha-asr-runner-preflight-stage0-v0.1.json": "249a95c4e4a892e158eb0c2e624c0e9e2b72df145a78f9c28d9b9b511db1b1ba",
+      "docs/evidence/poc-asr-001/i1-synthetic-scoring-oracle-local-evidence-stage0-v0.1.json": "fcf7363b578f57a3931dfbbf2d6c1ec60c3896bcd062fb175c629aff6f6d6d04",
+      "docs/stage0/DORA_ALPHA_ASR_CAMPAIGN_STAGE0_V0_1.md": "9be7fcb1727c3729f99b543ae8df7536617290df96c951dc73d9685fda88d3f3",
+      "tools/alpha_asr_campaign.py": "e0261fadf0c01cdc2e634108f7c464ca07f2ae3baa68ac6884dc06e43e799709",
+      "tools/alpha_asr_campaign_device.py": "e0200b3a063659c0041a2d081a7151a7f57407ae015738e8a9fbdb6fae0cadf2",
+      "tools/alpha_asr_campaign_import.py": "338ed7bcb30917d91951fffb49745c3aec39724f8aade0ae5ccf878f3a60860d",
+      "tools/alpha_asr_campaign_native/CMakeLists.txt": "8e3ec4062b5ca3e2b860dae768f71438e9fccd3151d7f69233f0ff2a8f112ca9",
+      "tools/alpha_asr_campaign_native/CampaignOracle.java": "abc51d8d08651f288ded482816350b680eae07ab3e47c8b9dc0d331d72e04270",
+      "tools/alpha_asr_campaign_native/decode.c": "0fc06284bb8bce924bd2cc28c2fd0c9b39cd02f0b06a766d13251b9a0224346c",
+      "tools/alpha_asr_campaign_native/main.cpp": "b642497a5f50676f6b643303ad272e78c6f158359d5a480f2f18f16a779f29bf",
+      "tools/run_alpha_asr_campaign.py": "c9b1116e03a8bb1377169c3a8c929ddc1c933f84a7f5a7a587b67f205b14e45f",
+      "tools/test_alpha_asr_campaign.py": "5b0acc72c2838e07b5a12391d647db7aa1e8061b7120bb2d5a99cf66af81fa69"
+    },
+    "hashDefinition": "SHA256_EXACT_PRE_ASSESSMENT_WORKING_FILE_BYTES",
+    "protectedFiles": {
+      "android/native-libs-allowlist.txt": "1d0b0fa79333156a3dfce30d50a9a928951cd16bdbc21f4c45f728f686876625",
+      "docs/evidence/poc-asr-001/alpha-asr-native-build-16k-stage0-v0.1.json": "11a07e39987e968158d506a8d0d9d6402e69e1941a387a9f94e36de2f834408a",
+      "docs/stage0/DORA_ALPHA_ASR_EVAL_CONTRACT_STAGE0_V0_1.md": "cd3cec90fa53ec9501f93169243f3f06c0980a7fd5b6b11f6a75f851c825dfa7",
+      "docs/stage0/DORA_ALPHA_ASR_NATIVE_BUILD_STAGE0_V0_1.md": "7c5f5c5c661caf42d915110c22e23f76309268658ab61d962bcdec0f55bee64b",
+      "tools/alpha_asr_eval_text_contract.py": "490b4f659aef99da413e68cab5ffa187b1e8fd7229e7d7265367f2d14e577ff0",
+      "tools/asr_i1_synthetic_scoring_oracle/src/main/java/com/monumentogram/dora/stage0/asr/i1/AsrSyntheticScoringOracle.java": "b2d2525ff0d71c15fdef931c005975f8610f5c5054e8e1f2b10f0f3740db9903",
+      "tools/asr_i1_synthetic_scoring_oracle/src/test/java/com/monumentogram/dora/stage0/asr/i1/AsrSyntheticScoringOracleTest.java": "ff7c67b258a8281091bd28fc34d50ebb1596705c08aaee8ddfbc2ecdd95e6def",
+      "tools/test_alpha_asr_eval_text_contract.py": "649442ce34bc094b59fe9348bef1bef1cbfc55b131088bcd6c2964cce96db6e8",
+      "tools/verify_apk_native_alignment.py": "ac0be0a30ae858e28d5797815f6a41d84da5f6a3b8d7b18acf5da25920c345af"
+    },
+    "oracleLfGitBlobSha256": "a2b3e37305f24f91a8ace00f5f824d1d13effda94248c15b31aa31db78c76125",
+    "privateRecordsOpenedReadOnly": true,
+    "originalEvidenceUnchanged": true,
+    "pr86": {
+      "state": "open",
+      "headSha": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+      "baseSha": "55940df0c95e919a00708ae57e1b8aa23d89b6de",
+      "updatedAt": "2026-09-18T14:29:02Z",
+      "merged": false
+    },
+    "recoveryUnchanged": true,
+    "productionAllowlistUnchanged": true
+  },
+  "commonDefectAudit": {
+    "status": "COMPLETE / NO_COMMON_EVALUATION_DEFECT_DEMONSTRATED",
+    "confirmedCommonDefect": false,
+    "affectedCases": 0,
+    "checks": [
+      {
+        "area": "MP3 decode to mono float32 16 kHz",
+        "finding": "Frozen native main uses ma_decoder_config_init(ma_format_f32,1,16000); pinned miniaudio implementation, no replacement decoder. Header-only inspection independently accounts for all encoded frames.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "Channel and sample-rate handling",
+        "finding": "All 48 retained MP3s are mono 32000 Hz. Default miniaudio conversion produces 16000 Hz; no stereo cancellation or channel selection applies to these inputs.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "End-of-audio and truncation",
+        "finding": "The read loop appends got frames before checking MA_AT_END, including the final partial block. The 60-second safety cap cannot affect these <=20-second clips. No malformed/truncated MP3 frame or unparsed audio bytes were found.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "Decoded frame count",
+        "finding": "For 48/48, retained decodedFrames equals the exact MPEG frame sample count rescaled from 32000 to 16000 Hz, and decoded duration equals frozen manifest durationMs. Zero frame deficit; no new decode was executed.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "Locale binding",
+        "finding": "Manifest, transfer binding, journal identity/request, stored result and fresh scoring preparation agree for all 24 RU and 24 EN; execute validates and forwards the explicit locale.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "translate=false",
+        "finding": "Frozen resolved profiles and native parameters both disable translation for RU and EN.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "detect_language=false",
+        "finding": "Frozen resolved profiles and native parameters disable language detection; explicit locale is authoritative.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "no_context=true",
+        "finding": "Native parameters and both resolved profiles set no_context=true.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "Fresh process/context",
+        "finding": "Each execute starts a native process and main initializes/frees its own model context; 48 distinct retained PIDs, nonoverlapping measurement intervals, and 48 verified case cleanups support isolation.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "initial_prompt=null",
+        "finding": "initial_prompt and prompt_tokens are null, prompt_n_tokens=0 in the source and frozen profiles. No cross-case prompt is supplied.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "Segment concatenation",
+        "finding": "Native writer emits every segment in ascending index with fwrite of exact segment bytes, no separators, trimming or correction. It checks write/close errors. Segment-level bytes are not separately retained, so this point is source-supported, not a new segment replay.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "Unicode and encoding",
+        "finding": "Hypothesis is strict UTF-8 from original bytes; reference SHA binds exact UTF-8. Length-framed Java input uses UTF-8 bytes and validates complete consumption. No replacement decoding is used in Python.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "Reference loading",
+        "finding": "Independent resolver requires exactly one hash-matching string under the intended case binding; all 48 exact reference hashes, transfer files and original archive match.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "Normalization",
+        "finding": "5.3A source unchanged; CPython 3.12 / Unicode 15.0.0 contract enforced. Fresh 4698-fixture parity against the exact pinned upstream source passed; all 48 fresh preparations equal retained four-stream records.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "Java token-array bridge",
+        "finding": "Unchanged Java oracle and bridge freshly compiled for Java 17; all four length-prefixed arrays sent directly from fresh preparation. Original Java suite and synthetic bridge tests passed; all 48 raw/normalized counts match.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "S/D/I aggregation",
+        "finding": "Assessment sums fresh oracle S/D/I and reference tokens independently of campaign aggregate(). Both raw and normalized language totals equal public 5.4. Integer gate comparisons remain unchanged.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "Accidental trimming/insertion",
+        "finding": "Reference loading, strict byte decoding, native fwrite and fresh token preparation preserve exact text before the specified frozen normalization; fresh and retained text hashes and token arrays agree.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "Stale output/replay/contamination",
+        "finding": "Case directories use exclusive creation, native outputs use wx, audio/model transfer hashes are checked, salvage hashes bind retrieved output and cleanup removes each case. Journal, terminal, files and 48 unique intended identities agree with ordinal=1 and no extra case directories.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "Campaign order/state leak",
+        "finding": "Journal sequence equals the frozen RU24-then-EN24 manifest; one process/context per case. No context reuse found. Fixed language order still confounds language with time for observational performance comparisons; randomization was not retroactively introduced.",
+        "confirmedDefect": false
+      },
+      {
+        "area": "Selected-file/reference pairing",
+        "finding": "All selected audio byte/hash identities and transfer reference keys/locales/upstream bindings match the original selected manifest; no substitutions, retries or pairing mismatch.",
+        "confirmedDefect": false
+      }
+    ],
+    "audioAudit": {
+      "cases": 48,
+      "channelCounts": {
+        "[1]": 48
+      },
+      "decodedMinusEncodedResampledFrames": {
+        "0": 48
+      },
+      "decodedMinusManifestDurationMs": {
+        "max": 0.0,
+        "min": 0.0
+      },
+      "distinctRetainedProcessIds": 48,
+      "nonoverlappingMeasurementIntervals": true,
+      "sourceRateCounts": {
+        "32000": 48
+      },
+      "xingFrameCount": 0
+    },
+    "limits": "Source and retained evidence assessment, not proof of absence of every possible acoustic/runtime defect. No new decoding, inference or parameter sweep."
+  },
+  "distribution": {
+    "en": {
+      "aboveGateEquivalentRatioCases": 10,
+      "durationBins": {
+        "1-5 s": {
+          "cases": 7,
+          "normalized": {
+            "deletions": 1,
+            "errors": 14,
+            "hypothesisTokens": 33,
+            "insertions": 1,
+            "referenceTokens": 33,
+            "substitutions": 12,
+            "wer": 0.42424242424242425
+          },
+          "raw": {
+            "deletions": 0,
+            "errors": 15,
+            "hypothesisTokens": 33,
+            "insertions": 1,
+            "referenceTokens": 32,
+            "substitutions": 14,
+            "wer": 0.46875
+          }
+        },
+        ">10-15 s": {
+          "cases": 4,
+          "normalized": {
+            "deletions": 2,
+            "errors": 17,
+            "hypothesisTokens": 74,
+            "insertions": 1,
+            "referenceTokens": 75,
+            "substitutions": 14,
+            "wer": 0.22666666666666666
+          },
+          "raw": {
+            "deletions": 2,
+            "errors": 21,
+            "hypothesisTokens": 69,
+            "insertions": 0,
+            "referenceTokens": 71,
+            "substitutions": 19,
+            "wer": 0.29577464788732394
+          }
+        },
+        ">15-20 s": {
+          "cases": 3,
+          "normalized": {
+            "deletions": 2,
+            "errors": 5,
+            "hypothesisTokens": 83,
+            "insertions": 0,
+            "referenceTokens": 85,
+            "substitutions": 3,
+            "wer": 0.058823529411764705
+          },
+          "raw": {
+            "deletions": 2,
+            "errors": 7,
+            "hypothesisTokens": 78,
+            "insertions": 0,
+            "referenceTokens": 80,
+            "substitutions": 5,
+            "wer": 0.0875
+          }
+        },
+        ">5-10 s": {
+          "cases": 10,
+          "normalized": {
+            "deletions": 3,
+            "errors": 18,
+            "hypothesisTokens": 97,
+            "insertions": 0,
+            "referenceTokens": 100,
+            "substitutions": 15,
+            "wer": 0.18
+          },
+          "raw": {
+            "deletions": 4,
+            "errors": 23,
+            "hypothesisTokens": 94,
+            "insertions": 1,
+            "referenceTokens": 97,
+            "substitutions": 18,
+            "wer": 0.23711340206185566
+          }
+        }
+      },
+      "editShares": {
+        "deletions": 0.14814814814814814,
+        "insertions": 0.037037037037037035,
+        "substitutions": 0.8148148148148148
+      },
+      "topOneErrorShare": 0.09259259259259259,
+      "topOneErrors": 5,
+      "topQuartileCases": 6,
+      "topQuartileErrorShare": 0.5555555555555556,
+      "topQuartileErrors": 30,
+      "topThreeErrorShare": 0.2777777777777778,
+      "topThreeErrors": 15,
+      "zeroErrorCases": 9
+    },
+    "ru": {
+      "aboveGateEquivalentRatioCases": 21,
+      "durationBins": {
+        "1-5 s": {
+          "cases": 4,
+          "normalized": {
+            "deletions": 1,
+            "errors": 10,
+            "hypothesisTokens": 24,
+            "insertions": 1,
+            "referenceTokens": 24,
+            "substitutions": 8,
+            "wer": 0.4166666666666667
+          },
+          "raw": {
+            "deletions": 1,
+            "errors": 13,
+            "hypothesisTokens": 24,
+            "insertions": 1,
+            "referenceTokens": 24,
+            "substitutions": 11,
+            "wer": 0.5416666666666666
+          }
+        },
+        ">10-15 s": {
+          "cases": 3,
+          "normalized": {
+            "deletions": 5,
+            "errors": 24,
+            "hypothesisTokens": 69,
+            "insertions": 4,
+            "referenceTokens": 70,
+            "substitutions": 15,
+            "wer": 0.34285714285714286
+          },
+          "raw": {
+            "deletions": 3,
+            "errors": 24,
+            "hypothesisTokens": 67,
+            "insertions": 3,
+            "referenceTokens": 67,
+            "substitutions": 18,
+            "wer": 0.3582089552238806
+          }
+        },
+        ">15-20 s": {
+          "cases": 5,
+          "normalized": {
+            "deletions": 4,
+            "errors": 33,
+            "hypothesisTokens": 162,
+            "insertions": 5,
+            "referenceTokens": 161,
+            "substitutions": 24,
+            "wer": 0.20496894409937888
+          },
+          "raw": {
+            "deletions": 5,
+            "errors": 49,
+            "hypothesisTokens": 159,
+            "insertions": 5,
+            "referenceTokens": 159,
+            "substitutions": 39,
+            "wer": 0.3081761006289308
+          }
+        },
+        ">5-10 s": {
+          "cases": 12,
+          "normalized": {
+            "deletions": 9,
+            "errors": 55,
+            "hypothesisTokens": 142,
+            "insertions": 6,
+            "referenceTokens": 145,
+            "substitutions": 40,
+            "wer": 0.3793103448275862
+          },
+          "raw": {
+            "deletions": 9,
+            "errors": 65,
+            "hypothesisTokens": 139,
+            "insertions": 8,
+            "referenceTokens": 140,
+            "substitutions": 48,
+            "wer": 0.4642857142857143
+          }
+        }
+      },
+      "editShares": {
+        "deletions": 0.1557377049180328,
+        "insertions": 0.13114754098360656,
+        "substitutions": 0.7131147540983607
+      },
+      "topOneErrorShare": 0.09016393442622951,
+      "topOneErrors": 11,
+      "topQuartileCases": 6,
+      "topQuartileErrorShare": 0.4426229508196721,
+      "topQuartileErrors": 54,
+      "topThreeErrorShare": 0.2459016393442623,
+      "topThreeErrors": 30,
+      "zeroErrorCases": 0
+    }
+  },
+  "durationBinBasis": "Frozen manifest original durationMs; [1000,5000], (5000,10000], (10000,15000], (15000,20000]",
+  "distributionNotes": {
+    "perCaseRatio": "Diagnostic only; not an approved per-case gate.",
+    "concentration": "Rank cases by normalized error count descending; exactly six of 24 per locale. Ties at cutoff do not change the summed error count. No case IDs published.",
+    "interpretation": "RU errors occur in all 24 cases; EN errors in 15/24. No single case or top three account for a majority of either language total. EN top six account for 55.5556%; all cases remain included.",
+    "populationClaims": false
+  },
+  "currentCandidate": {
+    "artifact": "ggml-base-q5_1.bin",
+    "bytes": 59707625,
+    "sha256": "422f1ae452ade6f30a004d7e5c6a43195e4433bc370bf23fac9cc591f01a8898",
+    "runtimeRepository": "ggml-org/whisper.cpp",
+    "runtimeTag": "v1.9.4",
+    "runtimeCommit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+    "decodingProfileSha256": "cd53fda162402675f54875de470b01c303f0ede9a2e0cefd6f1056e8fa381d39",
+    "measurementProtocolSha256": "0f1e456fb4b4b0da28a209abe94e42fe7a0ca599e5c5c794db16a6abe478b116",
+    "selectedManifestSha256": "5d9e12fa76e9db54bc69bbd22396dbec733348db97bba353361ac701af64061c",
+    "qualityResult": "VALID_FAIL",
+    "disposition": "REJECTED_FOR_BOUNDED_ALPHA_QUALITY_GATE",
+    "scope": "This exact candidate/profile on bounded 5.1 corpus only",
+    "ru": {
+      "gatePercent": 20,
+      "maximumIntegerErrors": 80,
+      "observedErrors": 122,
+      "excessErrors": 42,
+      "gate": "FAIL"
+    },
+    "en": {
+      "gatePercent": 18,
+      "maximumIntegerErrors": 52,
+      "observedErrors": 54,
+      "excessErrors": 2,
+      "gate": "FAIL"
+    }
+  },
+  "performanceMemory": {
+    "observedDevice": "POCO M5",
+    "rtf": {
+      "median": 0.6756,
+      "p95NearestRank": 2.0015,
+      "maximum": 2.8373,
+      "durationWeighted": 0.5901
+    },
+    "maximumObservedPssBytes": 158107648,
+    "maximumSampledNativeHeapBytes": 728918776,
+    "oom": "NOT_OBSERVED / NO_SYSTEM_WIDE_OOM_TRACE",
+    "thermal": "NONE -> NONE -> NONE",
+    "severeOrWorse": false,
+    "timestampQuality": "NOT_EVALUABLE",
+    "numericGate": "NOT_EVALUATED / PROPOSED_NOT_APPROVED",
+    "ownerProposal": {
+      "state": "PROPOSED_FOR_OWNER_DECISION",
+      "purpose": "Before the next measured comparison, precommit device-tier and metric-specific numeric limits so post-result threshold selection cannot admit a favored candidate.",
+      "rtfDefinition": "Per-case inferenceElapsedMicros / decodedAudioDurationMicros, excluding model load/decode/persistence; separately report cold model load and end-to-end latency. Fix median, nearest-rank p95, maximum and duration-weighted aggregate plus exact gate statistic(s).",
+      "memoryDefinition": "Separate maximum observed PSS and mallinfo().uordblks allocated heap in bytes, 100-ms samples, <=1000-ms valid gaps, decode-through-release window; sampled maxima are not continuous peaks and PSS/heap must not be added or treated as interchangeable.",
+      "ownerMustDecide": [
+        "Target device tier and user wait-time requirement",
+        "Numeric RTF limits and whether p95/maximum/weighted values are gates or diagnostics",
+        "Separate PSS/native-heap ceilings and required OS/background headroom",
+        "Cold-load/end-to-end limits, missing telemetry and OOM/thermal invalidation policy",
+        "Timing of approval relative to artifact admission and campaign freeze"
+      ],
+      "numericLimitsApproved": false,
+      "existingGateSemanticsChanged": false,
+      "productionPromise": false
+    }
+  },
+  "nextExperiment": {
+    "options": [
+      {
+        "id": "A",
+        "direction": "SAME_RUNTIME_HIGHER_CAPACITY_MULTILINGUAL_WHISPER",
+        "hypothesis": "The exact base/q5 capacity-quality tradeoff limits this bounded result; a higher-capacity artifact may improve quality, with unknown device cost.",
+        "informationGain": "Highest first-test comparability: changes the artifact while keeping runtime architecture and frozen decoding semantics. If quantization also changes, capacity and quantization effects remain confounded; do not claim to isolate either cause.",
+        "implementationDelta": "Separate artifact admission and explicit new candidate identity/profile version for model-bound fields; retain current native adapter and whisper.cpp commit when compatible. Any required code/runtime change must be prospectively documented as a confounder.",
+        "artifactLicenseWork": "Future exact authoritative source, upstream revision, conversion/quantization provenance, bytes, SHA-256, license/redistribution notices and compatibility/build/ABI/16-KiB checks. No exact downloadable artifact selected or admission started here.",
+        "resourceDirection": "Expected increase in storage, computation and working memory from greater capacity; an unmeasured hypothesis. POCO M5 suitability is unknown.",
+        "tests": "Quality first; device fitness remains a separate mandatory result.",
+        "heldConstant": "Runtime commit, CPU architecture/threads, decoder parameters, locale policy, input conversion, normalizer, Java oracle, RU/EN gates, measurement definitions and controlled device conditions.",
+        "newEvidence": "Prospectively frozen single-candidate protocol, admitted exact artifact, approved resource criteria, explicit data/retention authority and held-out evaluation design; full attempts, quality, timing/memory/thermal, cleanup and privacy evidence."
+      },
+      {
+        "id": "B",
+        "direction": "ALTERNATIVE_LOCAL_SHERPA_ONNX_COMPATIBLE_ASR",
+        "hypothesis": "An independently chosen local ASR architecture may offer a different RU/EN quality/resource tradeoff.",
+        "informationGain": "Independent family comparison, but runtime, preprocessing, tokenizer and decoding differences make causal attribution harder.",
+        "implementationDelta": "New isolated adapter and family-specific frontend/decoder, output binding, lifecycle and instrumentation validation.",
+        "artifactLicenseWork": "Admit exact RU/EN-capable weights, graph/tokenizer/config and runtime separately, including source, digest, license/redistribution and Android ABI/16-KiB evidence.",
+        "resourceDirection": "Unknown and model/backend dependent; neither smaller nor faster is assumed.",
+        "tests": "Quality and local device fitness.",
+        "heldConstant": "Consent-governed evaluation design, reference authority, frozen normalization/oracle/gates, device and comparable measurement definitions; model-specific frontend differences explicit.",
+        "newEvidence": "Frontend/decoder synthetic correctness, model-language coverage, frozen adapter/configuration and complete local quality/resource campaign evidence."
+      },
+      {
+        "id": "C",
+        "direction": "VOSK_SMALL_WEAK_DEVICE_FALLBACK",
+        "hypothesis": "A small language-specific candidate may provide useful processing within a weaker-device budget; improved RU/EN quality is not assumed.",
+        "informationGain": "Tests resource fallback viability, not the leading explanation for the current quality miss.",
+        "implementationDelta": "Separate Vosk adapter and explicit per-language package selection; validate streaming/finalization and exact result text assembly.",
+        "artifactLicenseWork": "Separate exact RU and EN artifact provenance, bytes/digests and package-specific licenses, runtime/ABI and redistribution review.",
+        "resourceDirection": "Lower resource demand is the fallback hypothesis; no DORA measurements or guaranteed savings are available.",
+        "tests": "Primarily weak-device fitness/fallback; quality must still be measured against approved criteria.",
+        "heldConstant": "Selected language, authorized evaluation data, reference/scoring/gates and device measurement definitions; no unapproved relaxation of RU/EN gates.",
+        "newEvidence": "Each admitted language package must have full result completeness, WER, memory/latency/thermal and finalization evidence; mixed-language behavior needs separate scope."
+      },
+      {
+        "id": "D",
+        "direction": "FASTER_WHISPER_LARGER_WHISPER_HYBRID_REFERENCE",
+        "hypothesis": "A larger server-side Whisper route, including the plan direction large-v3-turbo, may establish a useful quality reference under a different compute budget.",
+        "informationGain": "Quality reference and opt-in hybrid feasibility; cannot establish local-core fitness or isolate model capacity from runtime differences.",
+        "implementationDelta": "Separate consented server adapter, versioned worker environment, protected transfer/result binding and deletion receipts; runtime-specific defaults frozen explicitly.",
+        "artifactLicenseWork": "Admit exact model conversion/weights, CTranslate2/faster-whisper runtime, licenses/digests and server data-handling scope independently.",
+        "resourceDirection": "Moves heavy inference to server resources; network delay, server memory/compute/cost and client overhead require new measurements.",
+        "tests": "Hybrid quality reference and fallback strategy, not an assumed local replacement.",
+        "heldConstant": "Exact references, normalizer/oracle and quality gates on an explicitly consented evaluation design; report changed runtime/hardware and transmission boundaries.",
+        "newEvidence": "Explicit cloud/reference consent and retention authority, server identity, quality and operational measurements, transfer/security/deletion receipts; zero upload in 5.5."
+      }
+    ],
+    "recommended": "A",
+    "selectedExactArtifact": null,
+    "artifactAdmissionStarted": false,
+    "executed": false,
+    "reason": "Minimizes runtime/implementation confounders while testing a higher-capacity quality hypothesis; no evidence that an alternate candidate will pass.",
+    "evaluationDiscipline": "No decoder/model search on the 48 evaluated clips. Any reuse requires explicit scope/retention authority and is a bounded regression comparison, not a fresh blind holdout. Establish a separate consented development/tuning set and untouched evaluation set for tuned or selected models; preregister one candidate/profile and preserve all attempts.",
+    "sourceReview": "Technical Plan section 15, plus official project documentation only; no artifact selection or license admission performed.",
+    "sources": [
+      "https://github.com/ggml-org/whisper.cpp",
+      "https://github.com/k2-fsa/sherpa-onnx",
+      "https://alphacephei.com/vosk/models",
+      "https://github.com/SYSTRAN/faster-whisper"
+    ]
+  },
+  "checks": {
+    "asrHostTests": {
+      "passed": 99,
+      "failed": 0,
+      "skipped": 0
+    },
+    "normalizerParity": {
+      "passed": 4698,
+      "sourceSha256": "4742eaa040e0657fa1247a1361e0d856c62317a43326ea59a40c2e9edd8d2c38",
+      "resultsSha256": "842e986fada2142ab3f9f8f4eae901ca26a68eb575c8393efff77575c989957b"
+    },
+    "javaOracleSuite": "PASS / POC_ASR_I1_SYNTHETIC_SCORING_ORACLE_TESTS_OK",
+    "stage00ArtifactValidation": "PASS",
+    "productionApkNativeVerifier": "PASS / FOUR_ABI_ENTRIES / ONE_ALLOWLISTED_LIBRARY",
+    "apkZipalign16KiB": "PASS",
+    "androidOfflineBaseline": "PASS / BUILD_SUCCESSFUL / 197_TASKS / 5_EXECUTED / 192_UP_TO_DATE",
+    "ci": "NOT_RUN / NO_PR / NO_MATCHING_TASK_BRANCH_PUSH_TRIGGER"
+  },
+  "privacy": {
+    "newInference": 0,
+    "newAudioDecode": 0,
+    "downloadedModels": 0,
+    "publicHypotheses": 0,
+    "publicReferences": 0,
+    "publicPerCaseRows": 0,
+    "publicSampleIds": 0,
+    "publicPrivatePaths": 0,
+    "publicClips": 0,
+    "privateAssessment": "OWNER_ONLY_LOCAL_ACL_OUTSIDE_GIT"
+  },
+  "retention": {
+    "policy": "ACTIVE_THROUGH_5_5_THEN_DELETE_WITHIN_30_CALENDAR_DAYS",
+    "assessmentCompletionDate": "2026-09-25",
+    "defaultDeletionDeadline": "2026-10-25",
+    "action": "RETENTION_ACTION_REQUIRED",
+    "deletedDuringAssessment": false,
+    "extensionAuthorized": false,
+    "ownerDecision": "Explicitly authorize any follow-on alternate-model reuse and revised purpose/scope/copies/access/expiry/deletion receipts before such reuse or extension; otherwise delete retained corpus and derived private evidence by 2026-10-25 under existing obligation. Recommendation alone is not retention authority."
+  },
+  "scope": {
+    "stage54Unchanged": true,
+    "stage55AssessmentOnly": true,
+    "productionAdmission": false,
+    "pr86Untouched": true,
+    "recoveryUntouched": true,
+    "mergePerformed": false
+  },
+  "status": {
+    "5.1": "PASS_BOUNDED_ALPHA_DATA_SCOPE_ONLY",
+    "5.2": "PASS / MODEL_ARTIFACT_AND_RUNTIME_SOURCE_PINNED_FOR_STAGE0_EVALUATION",
+    "5.3": "PRE_5_4_PREPARATION_COMPLETE",
+    "5.4": "PASS / BOUNDED_POCO_48_CLIP_CAMPAIGN_COMPLETE",
+    "5.5": "PASS / CURRENT_MODEL_REJECTED_NEXT_CANDIDATE_REQUIRED",
+    "POC-ASR-001": "BLOCKED / NOT_READY"
+  }
+}
