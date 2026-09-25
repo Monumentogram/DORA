@@ -1,5 +1,25 @@
 # Dora MVP 1 — Stage Status
 
+## ASR 5.6C.1.1 exact recovery and init readiness — 25 September 2026
+
+`5.6C.1.1 = PASS / EXACT_CORPUS_RECOVERED_FRESH_HOLDOUT_MATERIALIZED_SMALL_PREFLIGHT_READY`.
+Both exact historical RU/EN archive bytes were recovered through owner-authenticated
+official MDC downloads. The unchanged metadata CLI reproduces all prior digests;
+exactly the previous 24 RU + 24 EN are materialized with matching audio/reference
+hashes and a complete private pre-inference freeze. Exact SMALL and pinned native
+artifacts pass hash checks; model-init-only execution on POCO M5 succeeds and
+task-owned process/file cleanup verifies. ASR inference and whisper_full remain zero.
+
+Resulting `5.6C.1 = PASS / FRESH_48_HOLDOUT_MATERIALIZED_SMALL_MODEL_INIT_PREFLIGHT_READY`.
+`5.6C.2 = NOT_STARTED / NOT_AUTHORIZED`; `POC-ASR-001 = BLOCKED / NOT_READY`.
+Historical BASE remains `VALID_FAIL / REJECTED_FOR_BOUNDED_ALPHA_QUALITY_GATE`.
+The 422 ms diagnostic initialization observation does not satisfy the campaign
+cold-load gate. Retention deadline stays 2026-10-25. No selector, runtime, gate,
+Recovery or production-admission change follows. Historical BLOCKED evidence remains
+unchanged. See the [source recovery report](stage0/DORA_ALPHA_ASR_SMALL_HOLDOUT_SOURCE_RECOVERY_STAGE0_V0_1.md)
+and [aggregate evidence](evidence/poc-asr-001/alpha-asr-small-holdout-source-recovery-stage0-v0.1.json).
+
+
 ## ASR 5.6C.1 holdout preparation — 25 September 2026
 
 `5.6C.1 = BLOCKED / FRESH_HOLDOUT_SOURCE_UNAVAILABLE_ON_THIS_DEVICE`. The new exclusion-aware
