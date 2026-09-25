@@ -1,5 +1,24 @@
 # Dora MVP 1 — Executable Backlog
 
+## ASR 5.6C.2A SMALL operator/profile freeze — 25 September 2026
+
+`5.6C.2A = PASS / SMALL_CAMPAIGN_OPERATOR_AND_EVALUATION_PROFILE_FROZEN`.
+The additive SMALL evaluator binds the exact fresh acceptance/model/freeze and
+unchanged decoding/measurement identities. Integer/exact-ratio quality and resource
+predicates, one-primary-attempt policy, safe stop and pre-result dispositions are
+frozen and validated with generated host fixtures. Historical BASE operators,
+normalization, Java oracle, native runtime, gates and all earlier evidence remain
+unchanged. Execution completion and candidate acceptance are separate results.
+
+No private data, model bytes or device were accessed; model load, audio decode,
+ASR inference, whisper_full and measured attempts are all zero. This preparation
+does not establish SMALL quality, resource fitness or production readiness.
+`5.6C.2B = NOT_STARTED / NOT_AUTHORIZED`; `POC-ASR-001 = BLOCKED / NOT_READY`.
+Retention remains 2026-10-25. See the
+[operator report](stage0/DORA_ALPHA_ASR_SMALL_CAMPAIGN_OPERATOR_STAGE0_V0_1.md) and
+[aggregate evidence](evidence/poc-asr-001/alpha-asr-small-campaign-operator-stage0-v0.1.json).
+
+
 ## ASR 5.6C.1.1 exact recovery and init readiness — 25 September 2026
 
 `5.6C.1.1 = PASS / EXACT_CORPUS_RECOVERED_FRESH_HOLDOUT_MATERIALIZED_SMALL_PREFLIGHT_READY`.
