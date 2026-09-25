@@ -1,5 +1,30 @@
 # Dora MVP 1 — Executable Backlog
 
+## Alpha ASR 5.6A next-candidate admission / pre-run package — 25 September 2026
+
+5.6A = BLOCKED / CONTROLLED_MODEL_STORAGE_UNAVAILABLE_ARTIFACT_BYTES_UNVERIFIED.
+See the [admission and owner-decision package](stage0/DORA_ALPHA_ASR_NEXT_CANDIDATE_ADMISSION_STAGE0_V0_1.md)
+and [sanitized evidence](evidence/poc-asr-001/alpha-asr-next-candidate-admission-stage0-v0.1.json).
+The selected target is multilingual ggml-small-q5_1.bin at immutable HF revision
+f281eb45af861ab5e5297d23694b7d46e090c02c, upstream size 190085487 bytes and expected SHA-256
+ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb.
+Public metadata, license and pinned-runtime source were reviewed. The existing controlled model
+store is not established on this host; no model download occurred. Actual bytes/hash/header are
+unverified, so artifact admission is blocked. Establish the existing model store (or separately
+authorize a storage boundary), then complete byte/hash/non-inference checks in a later task.
+
+Fresh untouched 24 RU + 24 EN acceptance data, exclusion of the original 48, and separate tuning
+data if needed remain PROPOSED_NOT_APPROVED; no subset was materialized. Data reuse/retention and
+numeric RTF/PSS/native-heap gates require explicit owner decisions before the next comparison.
+Current retention remains ACTIVE_THROUGH_5_5_THEN_DELETE_WITHIN_30_CALENDAR_DAYS, completion
+2026-09-25 and default deletion deadline 2026-10-25. No extension or follow-on reuse is approved.
+Private-data access/audio decode/inference/device execution are all zero. The original BASE
+candidate remains VALID_FAIL / REJECTED_FOR_BOUNDED_ALPHA_QUALITY_GATE; 5.4/5.5 are unchanged.
+POC-ASR-001 stays BLOCKED / NOT_READY; quality/device/production admission is not granted.
+5.6B and any new campaign are NOT_STARTED / NOT_AUTHORIZED. No PR/merge; PR #86 and Recovery untouched.
+The following dated amendments remain historical; this one updates only next-candidate status.
+
+
 ## Alpha ASR 5.5 evidence assessment amendment — 25 September 2026
 
 5.5 = PASS / CURRENT_MODEL_REJECTED_NEXT_CANDIDATE_REQUIRED. See the

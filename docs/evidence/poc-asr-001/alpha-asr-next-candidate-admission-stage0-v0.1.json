@@ -1,0 +1,663 @@
+{
+  "recordId": "DORA-ALPHA-ASR-NEXT-CANDIDATE-ADMISSION-STAGE0-V0.1",
+  "task": "5.6A",
+  "recordedAtUtc": "2026-09-25T15:05:29.508273+03:00",
+  "recordType": "BLOCKED_ARTIFACT_ADMISSION_WITH_PROSPECTIVE_PRE_RUN_PACKAGE",
+  "scope": "STAGE0_ADMISSION_CHECKS_AND_PROPOSALS_ONLY_NO_CAMPAIGN",
+  "verdict": "BLOCKED / CONTROLLED_MODEL_STORAGE_UNAVAILABLE_ARTIFACT_BYTES_UNVERIFIED",
+  "artifactAdmitted": false,
+  "preRunProposalPackage": "PREPARED_NOT_APPROVED",
+  "repository": {
+    "name": "Monumentogram/DORA",
+    "branch": "chat/alpha-asr-runner-scope",
+    "requiredStartingHead": "3485a5a7d81bbafbca11422a4ad9f29208bc4ba3",
+    "observedStartingHead": "3485a5a7d81bbafbca11422a4ad9f29208bc4ba3",
+    "fetchedRemoteStartingHead": "3485a5a7d81bbafbca11422a4ad9f29208bc4ba3",
+    "initialIndexAndWorktree": "CLEAN"
+  },
+  "candidate": {
+    "repository": "ggerganov/whisper.cpp",
+    "revision": "f281eb45af861ab5e5297d23694b7d46e090c02c",
+    "filename": "ggml-small-q5_1.bin",
+    "sourceUrl": "https://huggingface.co/ggerganov/whisper.cpp/resolve/f281eb45af861ab5e5297d23694b7d46e090c02c/ggml-small-q5_1.bin",
+    "upstreamBytes": 190085487,
+    "expectedSha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb",
+    "upstreamLfsSha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb",
+    "lfsPointerGitBlob": "87631c52c89d37ed2337a46ec4a009976db1f3f4",
+    "metadataRevisionMatches": true,
+    "expectedVsUpstreamDigest": "MATCH",
+    "downloadState": "NOT_DOWNLOADED",
+    "observedBytes": null,
+    "computedSha256": null,
+    "expectedVsObservedDigest": "NOT_EVALUATED",
+    "intendedIdentity": {
+      "family": "OpenAI Whisper",
+      "capacity": "SMALL",
+      "multilingual": true,
+      "quantization": "q5_1"
+    },
+    "observedBinaryIdentity": null,
+    "binaryParseState": "NOT_RUN",
+    "fallbackArtifactSelected": false,
+    "selectionRationale": "Keep Whisper family and q5_1 while changing BASE to SMALL capacity; does not isolate every causal difference."
+  },
+  "historicalCandidate": {
+    "filename": "ggml-base-q5_1.bin",
+    "sha256": "422f1ae452ade6f30a004d7e5c6a43195e4433bc370bf23fac9cc591f01a8898",
+    "qualityResult": "VALID_FAIL",
+    "disposition": "REJECTED_FOR_BOUNDED_ALPHA_QUALITY_GATE",
+    "reclassified": false
+  },
+  "provenance": {
+    "state": "PUBLIC_SOURCES_VERIFIED_LOCAL_ARTIFACT_BINDING_PENDING",
+    "originalRepository": "openai/whisper",
+    "originalSourceRevision": "86098128c0b4f24f0e2aa2994de830614b474227",
+    "originalCheckpoint": "small.pt",
+    "originalCheckpointUpstreamSha256": "9ecf779972d90ba49c06d968637d720dd632c55bbf19d441fb42bf17a411e794",
+    "originalCheckpointLocallyVerified": false,
+    "conversionLineage": "OpenAI small.pt with tokenizer/mel assets -> convert-pt-to-ggml.py -> whisper.cpp q5_1 quantizer -> canonical HF preconverted artifact",
+    "referenceToolCommit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+    "historicalProducerToolCommit": null,
+    "historicalProducerLimitation": "Exact historical converter/quantizer build is not published in reviewed sources; reference tool pin is not asserted to be producer; no bit-for-bit reproduction.",
+    "quantizedCollectionAcceptanceCommit": "d148abaa5548d0deea3cf8075f0fd3376e483c8f",
+    "localConversionRun": false,
+    "signatureAttestationClaimed": false,
+    "trainingDataRightsIndependentlyAudited": false
+  },
+  "licenseReview": {
+    "state": "PUBLIC_TERMS_VERIFIED_FOR_BOUNDED_ADMISSION_SCOPE",
+    "scopeAuthority": "Explicit owner 5.6A instruction; no production or private-data reuse approval",
+    "originalWeightsLicense": "MIT",
+    "convertedWeightsLicense": "MIT",
+    "runtimeLicense": "MIT",
+    "originalNotice": "Copyright (c) 2022 OpenAI",
+    "runtimeNotice": "Copyright (c) 2023-2026 The ggml authors",
+    "fullLicenseTextSources": [
+      "openai-LICENSE",
+      "runtime-LICENSE"
+    ],
+    "weightsApplicabilitySource": "openai-README.md",
+    "convertedDeclarationSource": "hf-card.md",
+    "standaloneModelRepositoryLicenseFile": false,
+    "permittedSubjectToNotices": [
+      "internal evaluation",
+      "commercial use",
+      "modification",
+      "conversion/quantization",
+      "copying",
+      "redistribution",
+      "mirroring",
+      "sublicensing"
+    ],
+    "noticeObligation": "Preserve complete applicable copyright and MIT permission/warranty-disclaimer texts with authorized copies, plus upstream conversion attribution.",
+    "sourceOfferRequired": false,
+    "shareAlikeRequired": false,
+    "separateNoticeFileRequired": false,
+    "gated": false,
+    "private": false,
+    "modelSpecificRestrictionFound": false,
+    "projectRedistributionAuthorized": false,
+    "productionApproval": false,
+    "privateDataReuseAuthorized": false,
+    "licenseSnapshotsRetainedLocally": true,
+    "modelCopyNoticeCheck": "NOT_APPLICABLE_NO_MODEL_DOWNLOADED"
+  },
+  "runtime": {
+    "repository": "ggml-org/whisper.cpp",
+    "version": "v1.9.4",
+    "commit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+    "changed": false,
+    "compatibilityConclusion": "NO_INCOMPATIBILITY_DEMONSTRATED_BY_PINNED_SOURCE_INSPECTION; ACTUAL_ARTIFACT_FORMAT_AND_LOAD_UNVERIFIED",
+    "sourceFacts": {
+      "smallAudioLayers": 12,
+      "multilingualVocabularyMinimum": 51865,
+      "fileTypeRemainderFactor": 1000,
+      "q5_1FileType": 9,
+      "q5_1TensorType": 7,
+      "q5_1BlockElements": 32,
+      "q5_1BlockBytes": 24
+    },
+    "modelLoaderInvoked": false,
+    "nativeBuildRun": false,
+    "deviceFitness": "NOT_EVALUATED",
+    "abiAnd16KiBRuntime": "NOT_EVALUATED_FOR_THIS_CANDIDATE",
+    "incompatibilityPolicy": "BLOCKED / RUNTIME_CHANGE_REQUIRES_SEPARATE_SCOPE; no runtime patch, upgrade or alternative candidate"
+  },
+  "storage": {
+    "requiredClass": "LOCAL_PRIVATE_CONTROLLED_STORAGE",
+    "existingModelBoundaryAvailableOnHost": false,
+    "ownerClarification": "Probably on another device; exact location not established.",
+    "downloadedArtifactDisposition": "NOT_DOWNLOADED_NO_NEW_MODEL_COPY",
+    "newModelCopyCount": 0,
+    "newStoreCreated": false,
+    "outsideGitLfsActionsRequired": true,
+    "modelInGitOrLfs": false,
+    "modelInActionsArtifacts": false,
+    "publicMetadataSnapshots": "LOCAL_TASK_SCRATCH_OUTSIDE_REPOSITORY; PUBLIC_SOURCE_TEXT_ONLY",
+    "resumeRequirement": "Establish the existing controlled model store, or obtain explicit separately scoped storage authorization, then verify complete actual model bytes and static structure."
+  },
+  "operationCounts": {
+    "privateDataAccess": 0,
+    "newAudioDecode": 0,
+    "asrInference": 0,
+    "deviceExecution": 0,
+    "modelDownloads": 0,
+    "nativeModelLoads": 0,
+    "newSubsetsMaterialized": 0
+  },
+  "operationCountBoundary": "Private-data access counts retained private file-content opens/use. Directory/file-name discovery occurred, including an initial broad workspace listing; no private archive/inventory/clip/reference/hypothesis/per-case-result content was opened.",
+  "retention": {
+    "policy": "ACTIVE_THROUGH_5_5_THEN_DELETE_WITHIN_30_CALENDAR_DAYS",
+    "assessmentCompletionDate": "2026-09-25",
+    "defaultDeletionDeadline": "2026-10-25",
+    "extensionApproved": false,
+    "followOnReuseApproved": false,
+    "retainedDataOpened": false,
+    "deletionPerformed": false,
+    "withoutLaterApproval": "Existing deletion obligation remains authoritative."
+  },
+  "dataOwnerDecision": {
+    "id": "ASR-5.6A-DATA-REUSE-RETENTION-PROPOSAL-01",
+    "state": "PENDING_OWNER_DECISION",
+    "approver": null,
+    "approvedAt": null,
+    "newExpiry": null,
+    "purpose": "One bounded internal SMALL acceptance campaign; no training, production or redistribution.",
+    "scope": "Eligible unused Common Voice Spontaneous Speech 5.0 test-split records sufficient for 24 RU + 24 EN, selected audio/references, exclusion identities and necessary private audit/results.",
+    "copiesDecision": "Explicitly enumerate source archives/inventories/extractions, original and new selected copies, derived evidence/journals, temporary device copies and backups; retain only necessary classes.",
+    "access": "Project Owner/Data Custodian plus separately authorized bounded test process only.",
+    "expiryDecision": "Absolute expiry and assessment endpoint per copy class; current 2026-10-25 deadline persists absent explicit extension and stricter terms win.",
+    "receipts": [
+      "opaque copy ID and class",
+      "custodian",
+      "trigger and deadline",
+      "deletion time and method",
+      "verified absence across host/device/temp/cache/backups",
+      "failures and remediation"
+    ],
+    "separateDecisions": [
+      "development/tuning data scope",
+      "original-48 bounded regression reuse"
+    ]
+  },
+  "heldOutProposal": {
+    "state": "PROPOSED_NOT_APPROVED_NOT_MATERIALIZED",
+    "ruCount": 24,
+    "enCount": 24,
+    "availabilityVerified": false,
+    "eligibility": "Existing exact dataset/test-split, duration 1000..20000 ms inclusive, reference and decode validity after explicit reuse authority.",
+    "exclude": "Original 48 source identities and audio digests; all known previously evaluated/tuning records; duplicate audio; approved participant-disjointness controls where available without re-identification.",
+    "selection": "After exclusions use existing v0.1 SHA-256 domain/locale/upstream-relative-path key, raw key ascending then UTF-8 path bytes; first 24 per language; RU then EN. Successor exclusion-aware contract/validator must be separately frozen.",
+    "freezeBeforeInference": [
+      "candidate identity",
+      "profile",
+      "exclusion-set digest",
+      "eligible-pool digest",
+      "selection contract",
+      "selected-manifest digest",
+      "resource decisions",
+      "data/retention authority"
+    ],
+    "tuning": "Separate authorized development set disjoint from acceptance; acceptance never used for decoder/prompt/suppression/VAD/language-policy search or candidate selection.",
+    "old48Reuse": "Only later explicitly authorized bounded regression comparison; not fresh blind holdout.",
+    "limitations": [
+      "Small bounded sample, not population representativeness",
+      "Participant-disjointness not asserted without lawful evidence",
+      "Fixed language order retains time/order confounder"
+    ]
+  },
+  "frozenEvaluation": {
+    "normalizer": "UNCHANGED_5.3A",
+    "javaOracle": "UNCHANGED",
+    "ruNormalizedWerPercentLimit": 20,
+    "enNormalizedWerPercentLimit": 18,
+    "aggregation": "Sum S+D+I divided by total reference tokens; exact integer comparison; complete cases required.",
+    "decodingProfileReference": "docs/evidence/poc-asr-001/alpha-asr-decoding-profile-stage0-v0.1.json",
+    "measurementProtocolReference": "docs/evidence/poc-asr-001/alpha-asr-measurement-protocol-stage0-v0.1.json",
+    "nextCandidateProfile": "MUST_BE_SEPARATELY_FROZEN; no historical profile edits",
+    "timestampQuality": "NOT_EVALUABLE"
+  },
+  "resourceOwnerDecision": {
+    "id": "ASR-5.6A-RESOURCE-GATES-PROPOSAL-01",
+    "state": "PROPOSED_NOT_APPROVED",
+    "approver": null,
+    "approvedAt": null,
+    "derivedFrom54Observations": false,
+    "targetTier": null,
+    "inferenceOnlyRtf": {
+      "definition": "inferenceElapsedMicros / decodedAudioDurationMicros; whisper_full only",
+      "gatedStatistics": null,
+      "numericLimits": null,
+      "languageApplication": null
+    },
+    "coldModelLoad": {
+      "definition": "Monotonic microseconds around whisper_init_from_file_with_params; fresh process/context",
+      "gated": null,
+      "statistic": null,
+      "limitMicros": null
+    },
+    "endToEndLatency": {
+      "startEvent": null,
+      "endEvent": null,
+      "includedWork": null,
+      "gated": null,
+      "statistic": null,
+      "limitMicros": null,
+      "state": "OWNER_MUST_DEFINE_SEPARATE_BOUNDARY_NOT_INFERRED_FROM_RTF"
+    },
+    "pss": {
+      "definition": "Maximum observed process Pss KiB*1024",
+      "limitBytes": null,
+      "application": null,
+      "continuousPeakClaimed": false
+    },
+    "nativeAllocatedHeap": {
+      "definition": "Maximum sampled mallinfo().uordblks bytes",
+      "limitBytes": null,
+      "application": null,
+      "equatedWithPss": false
+    },
+    "oom": {
+      "proposal": "Zero evidenced OOM for acceptance; approve attribution/ambiguous-exit handling before campaign. Preserve incomplete attempts, do not infer OOM solely from missing output."
+    },
+    "thermal": {
+      "existingRule": "Observed status >=3 stops and retains operational failure; no temperature threshold",
+      "ownerDecision": "Ratify next-campaign invalidation and controlled restart policy."
+    },
+    "telemetry": {
+      "memoryIntervalMs": 100,
+      "memoryMaximumGapMs": 1000,
+      "thermalPollDelayMs": 1000,
+      "thermalMaximumGapMs": 3000,
+      "window": "Before decode until after whisper_free",
+      "ownerDecision": "Ratify required streams/coverage; missing required metrics block comparison; separately scope added end-to-end/OOM evidence."
+    },
+    "operationalTimeoutNotAcceptanceThreshold": {
+      "timeoutSeconds": 600,
+      "nativeAlarmSeconds": 605
+    }
+  },
+  "protectedHistoricalFiles": {
+    "android/native-libs-allowlist.txt": {
+      "bytes": 182,
+      "sha256": "1d0b0fa79333156a3dfce30d50a9a928951cd16bdbc21f4c45f728f686876625",
+      "gitBlob": "a2ba150a576923fbf877450e9e05bfa7d8b79ee0"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-assessment-stage0-v0.1.json": {
+      "bytes": 31673,
+      "sha256": "a1cc46148c15b6cdf66bf3e966df907f7eee6a8265db3fe12105f0eccd4a6d46",
+      "gitBlob": "5bd738b2949b4369d89d349ad088a21bec8af0e0"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-campaign-stage0-v0.1.json": {
+      "bytes": 11615,
+      "sha256": "c7ab64feea51eb3d411cdf213524532aabce0b146674c01cecdc32e9054b730c",
+      "gitBlob": "37198ab28e3ba4db7ecaa61f87aeb8f567a1360f"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-decoding-profile-stage0-v0.1.json": {
+      "bytes": 3506,
+      "sha256": "c76324845171c680bd984784e8f1fca13d95b3f0918619dfb5ff53c70ed9c442",
+      "gitBlob": "d17c02f4845d98c13288ce7f3ea491b85424ee51"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-eval-contract-local-evidence-stage0-v0.1.json": {
+      "bytes": 10910,
+      "sha256": "1eac552f46136071ebb02bf0fbfbd1a2e380bb0f2aea0050b9494b01bcfe5052",
+      "gitBlob": "6fcca5de7d36a151c3199c112bb7ecc5378e1e3c"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-measurement-protocol-stage0-v0.1.json": {
+      "bytes": 2865,
+      "sha256": "9101c18fa020f8fd0a3ebba47b70c055c4724dc50e2a7900e5d0bef57d5b99c1",
+      "gitBlob": "6fd3b274b6141c40bc7749016fa3f0d307ea682d"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-model-admission-stage0-v0.1.json": {
+      "bytes": 20860,
+      "sha256": "465ee6382e4c884402375237a51adbeb8b3a831ca3fee5a3c831b70713e67864",
+      "gitBlob": "fc813c7fac33b06ea88c64c74de33d2f73d2b489"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-native-build-16k-stage0-v0.1.json": {
+      "bytes": 35206,
+      "sha256": "11a07e39987e968158d506a8d0d9d6402e69e1941a387a9f94e36de2f834408a",
+      "gitBlob": "c657c347a7216dae93bc4b4dce9198f3be2804b2"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-runner-preflight-stage0-v0.1.json": {
+      "bytes": 29358,
+      "sha256": "249a95c4e4a892e158eb0c2e624c0e9e2b72df145a78f9c28d9b9b511db1b1ba",
+      "gitBlob": "1b23e0da9c1a504aef98895d72bb0f76235d6bec"
+    },
+    "docs/evidence/poc-asr-001/i1-synthetic-scoring-oracle-local-evidence-stage0-v0.1.json": {
+      "bytes": 14621,
+      "sha256": "fcf7363b578f57a3931dfbbf2d6c1ec60c3896bcd062fb175c629aff6f6d6d04",
+      "gitBlob": "59522138ff8d078cabadc2890733ff743d26563f"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_ASSESSMENT_STAGE0_V0_1.md": {
+      "bytes": 22251,
+      "sha256": "82ab1533df8daae2d4a490d1122980039cb90b4f6185c39724dd5cf2bb5c4048",
+      "gitBlob": "018e8d003d31ceecb320b69b39e397d956b62f94"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_CAMPAIGN_STAGE0_V0_1.md": {
+      "bytes": 11490,
+      "sha256": "9be7fcb1727c3729f99b543ae8df7536617290df96c951dc73d9685fda88d3f3",
+      "gitBlob": "28ff99f1e259d9449db67317a9af28f94c87f044"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_DATA_ADMISSION_STAGE0_V0_1.md": {
+      "bytes": 10301,
+      "sha256": "8f4db64d5136fa11d8c807ab9351774d76a9fda0267a8ce5f6921ee32bd3bbb2",
+      "gitBlob": "e09eb8662ce9291550c608f89450b18e98878647"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_DATA_LEGAL_IP_REVIEW_V0_1.md": {
+      "bytes": 11508,
+      "sha256": "7f440d2b62c07bcfbaefa8d7ca11742f0f4c6d290c513fc4b615ed08fbed39d3",
+      "gitBlob": "e15825266e2c2dc065102dec2c585301d13232df"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_DATA_MANIFEST_CONTRACT_STAGE0_V0_1.md": {
+      "bytes": 13651,
+      "sha256": "3a9699ae5ea4f380dd2641840d9ce6cba0dc51c73229c86443abd21290289826",
+      "gitBlob": "85634b8bb8ef8e1796963d7ee32cff360c9c836f"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_DATA_OWNER_DECISION_V0_1.md": {
+      "bytes": 6807,
+      "sha256": "e1a59cbb8b195a51f44c87540b554ef03e6ff3f1dbd86a4f992eb5dd53733be6",
+      "gitBlob": "06a236a79f36b3e166b1948518fe2f81ad05746f"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_DATA_SCOPE_STAGE0_V0_1.md": {
+      "bytes": 14479,
+      "sha256": "197c98cc33141269f57273036d8c03b28e9dcdfb5b3ff6d1129718e40858c633",
+      "gitBlob": "ab83ff92c4d6071d3ed29dd5d45e07c074336b99"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_EVAL_CONTRACT_STAGE0_V0_1.md": {
+      "bytes": 17609,
+      "sha256": "cd3cec90fa53ec9501f93169243f3f06c0980a7fd5b6b11f6a75f851c825dfa7",
+      "gitBlob": "bb336276e097b731061e34a7e5e53ad634c8de77"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_MODEL_ADMISSION_STAGE0_V0_1.md": {
+      "bytes": 12044,
+      "sha256": "263ff9f157d344d19d71cb387b46d2d6b38281809af38a2db23566435615c903",
+      "gitBlob": "8f4d0937734714e30556540ea0d633a3baf55df9"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_NATIVE_BUILD_STAGE0_V0_1.md": {
+      "bytes": 14373,
+      "sha256": "7c5f5c5c661caf42d915110c22e23f76309268658ab61d962bcdec0f55bee64b",
+      "gitBlob": "0283d7dcc8a807a8e42cf21d82f15cb7c417579e"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_RUNNER_PREFLIGHT_STAGE0_V0_1.md": {
+      "bytes": 11953,
+      "sha256": "e65ec1e469ca02de191bc1570c7bcd549a03cbf70faf8fa0b3fc60f931ce6935",
+      "gitBlob": "dc52b715154b6360f47c8c6aea36d6634907c907"
+    },
+    "tools/alpha_asr_android_preflight.py": {
+      "bytes": 11709,
+      "sha256": "8c4835c5d8b196592e3e17ad1c59176bb05461f52952e1da900f35385b495e41",
+      "gitBlob": "e5c1f6d88b2af8986d10396925c665ccd75eb15d"
+    },
+    "tools/alpha_asr_campaign.py": {
+      "bytes": 7274,
+      "sha256": "e0261fadf0c01cdc2e634108f7c464ca07f2ae3baa68ac6884dc06e43e799709",
+      "gitBlob": "041b6041affc19cd8676ead3748921472956786a"
+    },
+    "tools/alpha_asr_campaign_device.py": {
+      "bytes": 10598,
+      "sha256": "e0200b3a063659c0041a2d081a7151a7f57407ae015738e8a9fbdb6fae0cadf2",
+      "gitBlob": "74f2e43a20fe55d59910c2a1d56b3ef6e318d533"
+    },
+    "tools/alpha_asr_campaign_import.py": {
+      "bytes": 7920,
+      "sha256": "338ed7bcb30917d91951fffb49745c3aec39724f8aade0ae5ccf878f3a60860d",
+      "gitBlob": "33a6cf59fa09c669314549b3cac5a9c41a35d1ad"
+    },
+    "tools/alpha_asr_campaign_native/CMakeLists.txt": {
+      "bytes": 1327,
+      "sha256": "8e3ec4062b5ca3e2b860dae768f71438e9fccd3151d7f69233f0ff2a8f112ca9",
+      "gitBlob": "b81bf83b7887c103b0e253fed5c78766369ebbbe"
+    },
+    "tools/alpha_asr_campaign_native/CampaignOracle.java": {
+      "bytes": 1621,
+      "sha256": "abc51d8d08651f288ded482816350b680eae07ab3e47c8b9dc0d331d72e04270",
+      "gitBlob": "82fd8a1bac13be900ad625d9dd23beacb9b585d6"
+    },
+    "tools/alpha_asr_campaign_native/decode.c": {
+      "bytes": 229,
+      "sha256": "0fc06284bb8bce924bd2cc28c2fd0c9b39cd02f0b06a766d13251b9a0224346c",
+      "gitBlob": "000329022068edc49c3c56ad9b96fd3afdb4477e"
+    },
+    "tools/alpha_asr_campaign_native/main.cpp": {
+      "bytes": 7112,
+      "sha256": "b642497a5f50676f6b643303ad272e78c6f158359d5a480f2f18f16a779f29bf",
+      "gitBlob": "f3341ffbee228e315c6cd670a194df8cff0e18cf"
+    },
+    "tools/alpha_asr_eval_text_contract.py": {
+      "bytes": 14735,
+      "sha256": "490b4f659aef99da413e68cab5ffa187b1e8fd7229e7d7265367f2d14e577ff0",
+      "gitBlob": "225266072d7e8f3c57bb170596a6c3fd1529dbd6"
+    },
+    "tools/alpha_asr_native_preflight/CMakeLists.txt": {
+      "bytes": 1007,
+      "sha256": "0d631f38acd3b470ad4085fcb6e89c01c3dbb7b5d1cd79d7827481b1262ea63a",
+      "gitBlob": "690362910faf6144f2f337aa018011e1ba0c166e"
+    },
+    "tools/alpha_asr_native_preflight/main.cpp": {
+      "bytes": 1630,
+      "sha256": "0c0152c872ea3318b1d45888e4a2f0ea06c58c286f28ccf534f5a28bc8846127",
+      "gitBlob": "681a3f70d9a207f4a4c5b12c826c02b1dacfd260"
+    },
+    "tools/alpha_asr_pilot_manifest.py": {
+      "bytes": 12341,
+      "sha256": "dea7a8bdf651372052d89b0338b41a2c5cb7373696335ed8de47adbb8cba64b9",
+      "gitBlob": "785fc08762ec56555790fdbee8f69a5b3085c6ef"
+    },
+    "tools/alpha_asr_runner.py": {
+      "bytes": 8288,
+      "sha256": "19a83632c7b9752e429ef6807b30720fa4a7d0aa408cc8d341038bbf619baf51",
+      "gitBlob": "0ada745129fe3e0363d660d715701fd2f1f5824b"
+    },
+    "tools/alpha_asr_runner_store.py": {
+      "bytes": 6667,
+      "sha256": "89ce31cd1658bc6c90389afa35d4eab7c94b9bdbcf98b8cde27a4b1eb9da7b93",
+      "gitBlob": "aabcd46196d5ade8580cd4a37fefc2b478d75083"
+    },
+    "tools/asr_i1_synthetic_scoring_oracle/src/main/java/com/monumentogram/dora/stage0/asr/i1/AsrSyntheticScoringOracle.java": {
+      "bytes": 29949,
+      "sha256": "b2d2525ff0d71c15fdef931c005975f8610f5c5054e8e1f2b10f0f3740db9903",
+      "gitBlob": "b38cc9be851088dbf83a4160f248f318cbbd47f1"
+    },
+    "tools/asr_i1_synthetic_scoring_oracle/src/test/java/com/monumentogram/dora/stage0/asr/i1/AsrSyntheticScoringOracleTest.java": {
+      "bytes": 29863,
+      "sha256": "ff7c67b258a8281091bd28fc34d50ebb1596705c08aaee8ddfbc2ecdd95e6def",
+      "gitBlob": "ae3b3cf7b69ae6a366e69cb7fd6de67320cdafd7"
+    },
+    "tools/battery_campaign_oracle/src/main/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracle.java": {
+      "bytes": 55561,
+      "sha256": "62e203ba494d7e108a9de82498ae54b572b5282749b046e0eb891689d0917ab4",
+      "gitBlob": "50b1eb9849238cc8fbb418a348f136f759a25904"
+    },
+    "tools/battery_campaign_oracle/src/test/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracleTest.java": {
+      "bytes": 49464,
+      "sha256": "31d7cf12b5bd89d97d155f1a990e25acdd26b181eed0d10394cc7c14eb7c3e61",
+      "gitBlob": "03e0f8a3f787a0e33b8c56881d45dab9ca8fd063"
+    },
+    "tools/run_alpha_asr_campaign.py": {
+      "bytes": 18870,
+      "sha256": "c9b1116e03a8bb1377169c3a8c929ddc1c933f84a7f5a7a587b67f205b14e45f",
+      "gitBlob": "ba47f5cca270be2308898c61ab2399cf5f8a5924"
+    },
+    "tools/test_alpha_asr_campaign.py": {
+      "bytes": 7759,
+      "sha256": "5b0acc72c2838e07b5a12391d647db7aa1e8061b7120bb2d5a99cf66af81fa69",
+      "gitBlob": "af0db14342524fd3e02888c0b5b9fb8c9bd282bd"
+    },
+    "tools/test_alpha_asr_eval_text_contract.py": {
+      "bytes": 16585,
+      "sha256": "649442ce34bc094b59fe9348bef1bef1cbfc55b131088bcd6c2964cce96db6e8",
+      "gitBlob": "a10a285562eb145dd1560e81f008a565d58caac0"
+    },
+    "tools/test_alpha_asr_pilot_manifest.py": {
+      "bytes": 20803,
+      "sha256": "b9e00347f9669f573ecffa9b7e67735ef67e25ef03a7ce46dcc8d02e8b11c28c",
+      "gitBlob": "0d9719096d5f06053896bd42af551e7a1e39606a"
+    },
+    "tools/test_alpha_asr_runner.py": {
+      "bytes": 19067,
+      "sha256": "8c1f6dd478e74165e136b86936cd95881ca8f18c150bb80c02308d3fc25fc8bd",
+      "gitBlob": "cb75bb58349d5ce46263bc2af0bf69d1c2785fd7"
+    },
+    "tools/verify_alpha_asr_normalizer_parity.py": {
+      "bytes": 3542,
+      "sha256": "a1d81da2d1141d13a98b9247290eb542aee87d2db306e6139fac7a47c1ade6e4",
+      "gitBlob": "f4fc292b009d236eac1652f2a74fd55574abdbea"
+    }
+  },
+  "protectedFileHashAlgorithm": "SHA-256 of actual checkout bytes; Git blob identity recorded separately",
+  "verification": {
+    "state": "PASS_FOR_BLOCKED_DOCUMENTATION_PACKAGE_ONLY",
+    "sourceMetadataAndExpectedDigest": "PASS",
+    "publicLicenseAndLineageReview": "PASS_WITH_HISTORICAL_PRODUCER_LIMITATION",
+    "actualArtifactHash": "NOT_RUN_STORAGE_BLOCKED",
+    "staticArtifactParse": "NOT_RUN_STORAGE_BLOCKED",
+    "pinnedRuntimeSourceReview": "PASS_SOURCE_INSPECTION_ONLY",
+    "ci": "NOT_RUN",
+    "androidGradleTests": "NOT_RUN_DOCS_ONLY",
+    "asrCampaignTests": "NOT_RUN",
+    "recoveryTests": "NOT_RUN",
+    "repositoryValidator": {
+      "result": "PASS",
+      "checkCount": 7,
+      "command": "python -B tools/validate_stage00.py"
+    },
+    "protectedFiles": {
+      "historical54And55Unchanged": true,
+      "count": 45,
+      "result": "PASS",
+      "normalizerOracleRunnerNativeSourceAndProductionAllowlistUnchanged": true
+    },
+    "hostStatic": {
+      "checks": [
+        "Exact four-file change scope and clean pre-commit index",
+        "Status/backlog original bytes preserved by insertion",
+        "Strict JSON unique keys and finite values",
+        "UTF-8 text, final newline and whitespace",
+        "Markdown code spans and local links",
+        "New-record private-path/credential pattern scan and manual content review",
+        "Upstream API and LFS pointer identity/size/digest consistency",
+        "Public source snapshot byte counts and SHA-256",
+        "BLOCKED/null/proposal/claim-ceiling consistency",
+        "git diff --check"
+      ],
+      "priorCheckerIssue": "Initial local-path regex falsely matched https://; checker corrected and rerun successfully. No document privacy leak found.",
+      "checkerLocator": "local:5.6A-public-scratch/validate_record.py",
+      "result": "PASS",
+      "checkerSha256": "687461cc5be151934c8ff447004dbd8202af4b96a0e45da77a6c219dc8f3ab3d"
+    },
+    "independentReview": {
+      "scope": "Four-file pending change, task instructions and public metadata; independent 45 protected-hash equality and diff check",
+      "result": "NO_ACTIONABLE_FINDINGS"
+    }
+  },
+  "publication": {
+    "phase": "PRE_COMMIT_EVIDENCE_FREEZE",
+    "authorizedBranch": "chat/alpha-asr-runner-scope",
+    "authorizedCommitCount": 1,
+    "commitMessage": "docs(asr): record blocked 5.6A admission and pre-run package",
+    "commitSha": null,
+    "pushState": "PENDING_AT_EVIDENCE_FREEZE",
+    "handoffRule": "Final commit and fetched remote HEAD supplied after push; no self-referential commit SHA fabricated.",
+    "prCreated": false,
+    "mergePerformed": false,
+    "pr86Touched": false,
+    "recoveryModified": false
+  },
+  "changedFiles": [
+    "docs/stage0/DORA_ALPHA_ASR_NEXT_CANDIDATE_ADMISSION_STAGE0_V0_1.md",
+    "docs/evidence/poc-asr-001/alpha-asr-next-candidate-admission-stage0-v0.1.json",
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md"
+  ],
+  "blockers": [
+    {
+      "code": "CONTROLLED_MODEL_STORAGE_UNAVAILABLE_ARTIFACT_BYTES_UNVERIFIED",
+      "detail": "Required existing storage boundary not established on this host; owner says probably on another device. No download allowed elsewhere. Actual size, full computed SHA-256 and container identity absent."
+    }
+  ],
+  "claimCeiling": {
+    "qualityPass": false,
+    "deviceFitnessPass": false,
+    "productionAdmission": false,
+    "nextCampaignAuthorized": false,
+    "stage56B": "NOT_STARTED_NOT_AUTHORIZED",
+    "pocAsr001": "BLOCKED / NOT_READY"
+  },
+  "sourceEvidence": {
+    "hf-metadata.json": {
+      "url": "https://huggingface.co/api/models/ggerganov/whisper.cpp/revision/f281eb45af861ab5e5297d23694b7d46e090c02c?blobs=true",
+      "bytes": 8800,
+      "sha256": "88beaa8ead7c76a4678d8e9a5e51e6d53364e18739e08be9142c69ede909398b"
+    },
+    "hf-card.md": {
+      "url": "https://huggingface.co/ggerganov/whisper.cpp/raw/f281eb45af861ab5e5297d23694b7d46e090c02c/README.md",
+      "bytes": 1177,
+      "sha256": "dfe40b857cc716bf9a7a834ec1a5c230c2dfa0e2074aa196767e7ef5e895047d"
+    },
+    "hf-pointer.txt": {
+      "url": "https://huggingface.co/ggerganov/whisper.cpp/raw/f281eb45af861ab5e5297d23694b7d46e090c02c/ggml-small-q5_1.bin",
+      "bytes": 134,
+      "sha256": "d3158e0e4f18e08e6338c89c106b0fdb89615fee40bf9f552a8867ec25e973c9"
+    },
+    "hf-discussion.json": {
+      "url": "https://huggingface.co/api/models/ggerganov/whisper.cpp/discussions/5",
+      "bytes": 5478,
+      "sha256": "d70cbe3d5db994f212ff00e86556788b12181746e12ca615e9c9ff25f5e51a74"
+    },
+    "openai-LICENSE": {
+      "url": "https://raw.githubusercontent.com/openai/whisper/86098128c0b4f24f0e2aa2994de830614b474227/LICENSE",
+      "bytes": 1063,
+      "sha256": "b5d65a59060e68c4ff940e1eddfa6f94b2d68fdf58ed7f4dd57721c997e35e9d"
+    },
+    "openai-README.md": {
+      "url": "https://raw.githubusercontent.com/openai/whisper/86098128c0b4f24f0e2aa2994de830614b474227/README.md",
+      "bytes": 8246,
+      "sha256": "38c180c2a8d8ba628a3e131ad42bf06c8a51bb681efb30fbe28d5a0f4b65f288"
+    },
+    "openai-whisper-__init__.py": {
+      "url": "https://raw.githubusercontent.com/openai/whisper/86098128c0b4f24f0e2aa2994de830614b474227/whisper/__init__.py",
+      "bytes": 7432,
+      "sha256": "79ecbed714783b6230931a3dba6d5da6d386e2d44f9fc27256e4fc72751e1f62"
+    },
+    "openai-model-card.md": {
+      "url": "https://raw.githubusercontent.com/openai/whisper/86098128c0b4f24f0e2aa2994de830614b474227/model-card.md",
+      "bytes": 7307,
+      "sha256": "3c2dc15e0c4bf2f1067db8530b1ecd6675abb431c4bc09fad3bc4453434f3333"
+    },
+    "runtime-LICENSE": {
+      "url": "https://raw.githubusercontent.com/ggml-org/whisper.cpp/927cfce34f31707e17f2bff35c349632fb9e2c3a/LICENSE",
+      "bytes": 1078,
+      "sha256": "94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d"
+    },
+    "runtime-models-README.md": {
+      "url": "https://raw.githubusercontent.com/ggml-org/whisper.cpp/927cfce34f31707e17f2bff35c349632fb9e2c3a/models/README.md",
+      "bytes": 5745,
+      "sha256": "bad04fef13f1556cc9cc93c46022e47dbcea94814032faaa4aac2e168314b2b7"
+    },
+    "runtime-models-convert-pt-to-ggml.py": {
+      "url": "https://raw.githubusercontent.com/ggml-org/whisper.cpp/927cfce34f31707e17f2bff35c349632fb9e2c3a/models/convert-pt-to-ggml.py",
+      "bytes": 10613,
+      "sha256": "e874333f95c52725c23541b39e71594e01442a2a687c96e2e882493c45b887a2"
+    },
+    "runtime-examples-quantize-quantize.cpp": {
+      "url": "https://raw.githubusercontent.com/ggml-org/whisper.cpp/927cfce34f31707e17f2bff35c349632fb9e2c3a/examples/quantize/quantize.cpp",
+      "bytes": 8213,
+      "sha256": "ab95fe726971332446f6100e18924b181b07b4f0823a2cade685cc8ed9a4b78b"
+    },
+    "runtime-ggml-include-ggml.h": {
+      "url": "https://raw.githubusercontent.com/ggml-org/whisper.cpp/927cfce34f31707e17f2bff35c349632fb9e2c3a/ggml/include/ggml.h",
+      "bytes": 113310,
+      "sha256": "34192eac913444df9dc1d23025a618448cdee1ee7d78597af4979d8edc77b695"
+    },
+    "runtime-ggml-src-ggml-common.h": {
+      "url": "https://raw.githubusercontent.com/ggml-org/whisper.cpp/927cfce34f31707e17f2bff35c349632fb9e2c3a/ggml/src/ggml-common.h",
+      "bytes": 135161,
+      "sha256": "0061131b615c5721fc88a78feeb22c1f8c450f1c2646a317d80796a653bf595c"
+    },
+    "runtime-src-whisper.cpp": {
+      "url": "https://raw.githubusercontent.com/ggml-org/whisper.cpp/927cfce34f31707e17f2bff35c349632fb9e2c3a/src/whisper.cpp",
+      "bytes": 341491,
+      "sha256": "c48686fbc2cba1b0ac0f9c8e964188c691e67fff5906f2629f3223ff64f92d16"
+    }
+  }
+}
