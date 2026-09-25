@@ -1,5 +1,25 @@
 # Dora MVP 1 — Stage Status
 
+## ASR 5.6C.1 holdout preparation — 25 September 2026
+
+`5.6C.1 = BLOCKED / FRESH_HOLDOUT_SOURCE_UNAVAILABLE_ON_THIS_DEVICE`. The new exclusion-aware
+metadata validator passes; pinned inventory/original48 authority matches. After
+332 unique exclusions, 190 RU and 220 EN candidates remain; the deterministic
+metadata selection is 24 RU + 24 EN. Materialized counts are 0/0: the owner confirms
+the complete controlled corpus is on another device, while this host has only the
+original48 transfer subset. Private metadata is retained under owner-only storage,
+with deletion deadline 2026-10-25. Full pre-inference freeze and POCO SMALL init
+preflight are not run; ASR inference remains zero.
+
+`5.6C.2 = NOT_STARTED / NOT_AUTHORIZED`; `POC-ASR-001 = BLOCKED / NOT_READY`.
+Historical BASE remains `VALID_FAIL / REJECTED_FOR_BOUNDED_ALPHA_QUALITY_GATE`.
+Source availability must be resolved within the existing retention authority before
+materialization/freeze and device preflight can resume. No runtime/profile/threshold,
+Recovery or production-admission change follows. See the
+[5.6C.1 report](stage0/DORA_ALPHA_ASR_SMALL_HOLDOUT_PREFLIGHT_STAGE0_V0_1.md) and
+[aggregate evidence](evidence/poc-asr-001/alpha-asr-small-holdout-preflight-stage0-v0.1.json).
+
+
 ## Alpha ASR 5.6B SMALL governance freeze — 25 September 2026
 
 5.6B = PASS / SMALL_Q5_1_EVALUATION_DATA_AND_RESOURCE_GATES_FROZEN.
