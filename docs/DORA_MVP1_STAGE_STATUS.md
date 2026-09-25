@@ -1,5 +1,34 @@
 # Dora MVP 1 — Stage Status
 
+## Alpha ASR 5.4 bounded POCO campaign amendment — 25 September 2026
+
+The owner authorized the exact original 5.1C transfer, frozen 48-clip physical POCO M5 campaign
+and one atomic task-branch commit/push. See the [campaign report](stage0/DORA_ALPHA_ASR_CAMPAIGN_STAGE0_V0_1.md)
+and [sanitized aggregate evidence](evidence/poc-asr-001/alpha-asr-campaign-stage0-v0.1.json).
+
+5.1C_TRANSFER_IMPORT = PASS / VERIFIED_ON_LAPTOP (48/48 audio, references and original duration
+bindings; no replacement, rematerialization or reselection). The missing-private-corpus blocker
+is resolved. Synthetic full inference passed before code/config freeze and selected corpus access.
+5.4 = PASS / BOUNDED_POCO_48_CLIP_CAMPAIGN_COMPLETE: 24 RU + 24 EN, 48 successful primary attempts,
+zero retries/failures/invalid/timeouts/cancellations; device cleanup VERIFIED.
+
+Quality remains separate from execution: RU normalized WER 30.5000%, gate FAIL;
+EN normalized WER 18.4300%, gate FAIL. Complete-language S/D/I sums and
+reference counts are in aggregate evidence. Raw WER is diagnostic only. RTF/PSS/native-heap
+numeric gates are NOT_EVALUATED / PROPOSED_NOT_APPROVED. Thermal maximum is NONE,
+with no SEVERE-or-worse observation. Timestamp quality is NOT_EVALUABLE; timestamp gates NOT_EVALUATED.
+
+5.1 and 5.2 retain bounded PASS; 5.3 retains PRE_5_4_PREPARATION_COMPLETE and its unchanged
+historical model-init/lifecycle semantics. 5.5 = NOT_RUN; full POC-ASR-001 remains BLOCKED / NOT_READY;
+model disposition is deferred to 5.5. No production integration/admission or 16-KiB runtime claim.
+99 ASR tests, scoped offline Android baseline checks and native/synthetic checks passed.
+Only sanitized aggregates are published. Private corpus/evidence remain retained through 5.5.
+PR #86, Recovery, production allowlist and all historical text/counts are unchanged. No PR or merge.
+The following entries are historical states; this amendment supersedes only the earlier absence
+of authority and evidence for bounded task 5.4.
+
+
+
 ## Alpha ASR 5.3C bounded runner preflight amendment — 25 September 2026
 
 The owner authorized continuing the six preserved local files, exact r28c installation,
