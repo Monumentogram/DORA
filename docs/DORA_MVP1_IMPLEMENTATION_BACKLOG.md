@@ -1,5 +1,18 @@
 # Dora MVP 1 — Executable Backlog
 
+## ASR SMALL q8 admission and operator source 5.6D.2 — 27 September 2026
+
+`PASS / SMALL_Q8_ARTIFACT_INIT_OPERATOR_READY`. Exact small q8_0 artifact264464607bytes, static479tensors,
+one model download, one init SUCCESS, one no-model lifecycle hold/cancellation probe; cleanup VERIFIED.
+ASR/whisper_full0, corpus/reference transfers during init0, measured campaign invocations0.
+Exact accepted ARM82 reuse and16KiB packaging checks PASS; actual device pages4096, actual16KiB runtime NOT_RUN.
+98 targeted host tests (15 new), Stage00 checks7/7 and Gradle197tasks PASS.
+Operator SOURCE ready. Immutable execution envelope is sealed only AFTER this operator commit and pinned in5.6D.3;
+it is not claimed frozen here. Stage5 remains NOT_PASS; POC-ASR-001 BLOCKED / NOT_READY pending measured gates.
+Historical results, Recovery0D.6 and PR#86 unchanged. Previous entries below remain byte-identical.
+See [5.6D.2 report](stage0/DORA_ASR_SMALL_Q8_ADMISSION_STAGE0_V0_1.md)
+and [sanitized evidence](evidence/poc-asr-001/asr-small-q8-admission-stage0-v0.1.json).
+
 ## ASR expanded holdout 5.6D.1 — 27 September 2026
 
 `PASS / UNTOUCHED_EXPANDED_HOLDOUT_AVAILABLE`. Owner-authorized new RU CV27 test + retained EN SPS5 train:
