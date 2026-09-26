@@ -1,5 +1,25 @@
 # Dora MVP 1 — Stage Status
 
+## ASR 5.6C.2B measured SMALL terminal result — 26 September 2026
+
+`5.6C.2B = INCOMPLETE / BOUNDED_SMALL_POCO_CAMPAIGN_STOPPED`.
+Frozen candidate disposition: `VALID_FAIL / REJECTED_FOR_BOUNDED_ALPHA_RESOURCE_GATE`.
+One real v0.3 API invocation; 19 primary attempts;
+RU 19/24 and EN 0/24 completed;
+zero retries. Quality NOT_EVALUABLE; resources FAIL.
+Decisive resource failures: RTF_MAXIMUM.
+The unchanged frozen evaluator produced the disposition; host-only preparation
+corrections changed no model/data/source semantics, gates or attempt policy.
+Frozen cleanup: VERIFIED; marker/journal/terminal and private audit evidence retained.
+5.6C.2 measured completion is INCOMPLETE; 5.6C has a terminal outcome.
+Stage 5 and Group B remain NOT_PASS; POC-ASR-001 remains BLOCKED / NOT_READY.
+Recovery stays 0D.6 = ALPHA CLOSED / FULL OPEN; PR #86 stays OPEN, DRAFT, UNMERGED, untouched.
+Next: Assess the measured resource rejection and decide a separately scoped, prospectively frozen candidate/runtime experiment. Do not rerun this campaign or tune on this holdout.
+See the [measured campaign report](stage0/DORA_ALPHA_ASR_SMALL_MEASURED_CAMPAIGN_STAGE0_V0_1.md)
+and [aggregate evidence](evidence/poc-asr-001/alpha-asr-small-measured-campaign-stage0-v0.1.json).
+All earlier dated sections below remain historical evidence.
+
+
 ## ASR 5.6C.2A.3 private storage ACL diagnosis — 26 September 2026
 
 `5.6C.2A.3 = PASS / PRIVATE_STORAGE_BOUNDARY_READY`.

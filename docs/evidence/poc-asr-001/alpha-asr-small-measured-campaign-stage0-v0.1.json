@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 1,
+  "task": "5.6C.2B",
+  "recordedAtUtc": "2026-09-26T15:35:22.672476+00:00",
+  "verdict": "INCOMPLETE / BOUNDED_SMALL_POCO_CAMPAIGN_STOPPED",
+  "candidateDisposition": "VALID_FAIL / REJECTED_FOR_BOUNDED_ALPHA_RESOURCE_GATE",
+  "operator": {
+    "id": "dora-alpha-asr-small-campaign-operator-v0.3",
+    "commit": "9d92549b504d04e4b9022ce1f4fae793a7c4bdd0",
+    "parent": "5c148a966a927842d15aa470d62b3629f62e354e",
+    "operatorCanonicalSha256": "e07f881b11fce21fed27c93178524279af641abb716343c7333884bdc21fea96",
+    "rawPinsVerified": 77,
+    "frozenSourceModified": false,
+    "verifyRepository": "PASS"
+  },
+  "repository": {
+    "branch": "chat/alpha-asr-runner-scope",
+    "canonicalBase": "eb375b01df2ab199291daa4f0460987f25fff6d3",
+    "isolatedExecutionOnly": true,
+    "isolatedPushes": 0
+  },
+  "frozenInputs": {
+    "modelArtifact": "ggml-small-q5_1.bin",
+    "modelBytes": 190085487,
+    "modelSha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb",
+    "selectedRu": 24,
+    "selectedEn": 24,
+    "manifestSha256": "2cb05132de945fe8a1b281e79efd8efa15d9b9b94c0326f6572a594e0c74e9bb",
+    "retentionDeadline": "2026-10-25"
+  },
+  "nonSemanticPreparation": {
+    "frozenWorkingTreeBytesRestored": true,
+    "semanticSourceChanges": 0,
+    "freshIndexInitializedFromFrozenTree": true,
+    "existingIndexRewritten": false,
+    "processLocalPowerShellModuleIsolation": true,
+    "newProtectedOwnerOnlyDirectories": 2,
+    "existingAclChanges": 0
+  },
+  "prelaunch": {
+    "result": "PASS / READY_FOR_SINGLE_CAMPAIGN_INVOCATION",
+    "gates": {
+      "repository": "PASS",
+      "emptyPrivateWorkAndOneShotState": "PASS",
+      "frozenVerifyInputs": "PASS",
+      "oracleCompilation": "PASS",
+      "physicalPocoM5Identity": "PASS",
+      "initialThermal": "PASS"
+    },
+    "selectedCounts": {
+      "ru": 24,
+      "en": 24
+    },
+    "selectedContentIdentities": 96,
+    "elapsedSeconds": 216.813,
+    "physicalDevice": "POCO M5"
+  },
+  "measuredResult": {
+    "task": "5.6C.2B",
+    "frozenTerminalAggregate": {
+      "attemptCount": 19,
+      "candidate": "VALID_FAIL / REJECTED_FOR_BOUNDED_ALPHA_RESOURCE_GATE",
+      "cleanup": "VERIFIED",
+      "endToEndRole": "DIAGNOSTIC_ONLY",
+      "execution": "INCOMPLETE / BOUNDED_SMALL_POCO_CAMPAIGN_STOPPED",
+      "languages": {
+        "en": {
+          "completedValidCases": 0,
+          "gate": "NOT_EVALUABLE",
+          "normalized": {
+            "errors": 0,
+            "referenceTokens": 0
+          },
+          "raw": {
+            "errors": 0,
+            "referenceTokens": 0
+          }
+        },
+        "ru": {
+          "completedValidCases": 19,
+          "gate": "NOT_EVALUABLE",
+          "normalized": {
+            "errors": 65,
+            "referenceTokens": 369
+          },
+          "raw": {
+            "errors": 102,
+            "referenceTokens": 360
+          }
+        }
+      },
+      "profileId": "dora-alpha-asr-small-eval-profile-v0.1",
+      "profileSha256": "217b5662bfd22520779a2df2551f553cb17e97e11f0273e8238682a5f4b7f69f",
+      "quality": "NOT_EVALUABLE",
+      "qualityComplete": false,
+      "resource": "FAIL",
+      "resourceFailures": [
+        "RTF_MAXIMUM"
+      ],
+      "rtf": {
+        "p95Rank": 46,
+        "state": "NOT_EVALUABLE"
+      },
+      "scope": "PHYSICAL_POCO_M5_BOUNDED_STAGE_0_ONLY",
+      "timestampQuality": "NOT_EVALUABLE"
+    },
+    "terminalAggregateSha256": "b4a51b8474c6c0aa226e626e4eb662bd881d79578a687ca03ee349b272deb568",
+    "campaignApiInvocations": 1,
+    "journalAttempts": 19,
+    "finishedJournalRecords": 19,
+    "runningJournalRecords": 0,
+    "retryCount": 0,
+    "languages": {
+      "en": {
+        "completed": 0,
+        "gate": "NOT_EVALUABLE",
+        "errors": 0,
+        "referenceTokens": 0,
+        "observedWerPercent": null,
+        "completeLanguageCoverage": false
+      },
+      "ru": {
+        "completed": 19,
+        "gate": "NOT_EVALUABLE",
+        "errors": 65,
+        "referenceTokens": 369,
+        "observedWerPercent": 17.615176151761517,
+        "completeLanguageCoverage": false
+      }
+    },
+    "resources": {
+      "weightedRtf": {
+        "observed": null,
+        "limit": 2.0,
+        "gate": "NOT_EVALUABLE"
+      },
+      "p95Rtf": {
+        "observed": null,
+        "limit": 4.0,
+        "gate": "NOT_EVALUABLE",
+        "rank": 46
+      },
+      "maximumRtf": {
+        "observed": {
+          "numerator": 17681893,
+          "denominator": 2916000,
+          "display": 6.063749314128944
+        },
+        "limit": 6.0,
+        "gate": "FAIL"
+      },
+      "coldLoadMicros": {
+        "observed": 324106,
+        "limit": 15000000,
+        "gate": "NOT_EVALUABLE"
+      },
+      "peakPssBytes": {
+        "observed": 360809472,
+        "limit": 1610612736,
+        "gate": "NOT_EVALUABLE"
+      },
+      "peakNativeHeapBytes": {
+        "observed": 933925816,
+        "limit": 1342177280,
+        "gate": "NOT_EVALUABLE"
+      },
+      "evidencedOomEvents": {
+        "observed": 0,
+        "limit": 0,
+        "gate": "NOT_EVALUABLE"
+      },
+      "maximumThermalStatus": {
+        "observed": 0,
+        "forbiddenMinimum": 3,
+        "gate": "NOT_EVALUABLE"
+      },
+      "telemetry": {
+        "validPrimaryAttempts": 19,
+        "requiredPrimaryAttempts": 48,
+        "gate": "NOT_EVALUABLE"
+      }
+    },
+    "fullResourceCoverage": false,
+    "frozenEvaluatorReplay": "PASS",
+    "compatibleEvidenceCompleteFlags": [
+      true,
+      false
+    ],
+    "warmupStarted": true,
+    "warmupCompleted": true,
+    "codecCompleted": true,
+    "perCaseCleanupVerified": 19,
+    "campaignCleanup": "VERIFIED",
+    "markerJournalTerminalPreserved": true
+  },
+  "executionTiming": {
+    "startedUtc": "2026-09-26T14:06:37.934721+00:00",
+    "endedUtc": "2026-09-26T15:33:44.325427+00:00",
+    "elapsedSeconds": 5226.359
+  },
+  "cleanup": {
+    "frozenDeviceCleanup": "VERIFIED",
+    "hostCampaignProcess": "EXITED",
+    "markerJournalTerminal": "PRESERVED",
+    "privateAuditEvidence": "PRESERVED",
+    "historicalPrelaunchEvidence": "PRESERVED",
+    "retentionExtended": false,
+    "readOnlyObserverProcess": "EXITED"
+  },
+  "forbiddenOperations": {
+    "operatorChanges": 0,
+    "v04Created": 0,
+    "thresholdChanges": 0,
+    "tuning": 0,
+    "reselection": 0,
+    "corpusRematerialization": 0,
+    "unauthorizedRetries": 0,
+    "secondCampaignInvocation": 0,
+    "canonicalBranchResetRewrite": 0,
+    "isolatedPushes": 0,
+    "recoveryExecution": 0,
+    "pr86Changes": 0,
+    "merges": 0
+  },
+  "stageEffect": {
+    "5.6C.2B": "INCOMPLETE / BOUNDED_SMALL_POCO_CAMPAIGN_STOPPED",
+    "5.6C.2": "MEASURED_EXECUTION_INCOMPLETE_WITH_TERMINAL_DISPOSITION",
+    "5.6C": "Measured outcome recorded; candidate disposition is separate from execution completion.",
+    "Stage5": "NOT_PASS",
+    "GroupB": "NOT_PASS",
+    "POC-ASR-001": "BLOCKED / NOT_READY",
+    "recovery": "0D.6 = ALPHA CLOSED / FULL OPEN"
+  },
+  "nextStep": "Assess the measured resource rejection and decide a separately scoped, prospectively frozen candidate/runtime experiment. Do not rerun this campaign or tune on this holdout.",
+  "validation": {
+    "result": "PASS",
+    "strictJson": "PASS",
+    "markdownReferencesPrivacy": "PASS",
+    "linksChecked": 7,
+    "diffCheck": "PASS",
+    "stage00": "PASS",
+    "stage00Checks": 7,
+    "exactChangedFiles": [
+      "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+      "docs/DORA_MVP1_STAGE_STATUS.md",
+      "docs/evidence/poc-asr-001/alpha-asr-small-measured-campaign-stage0-v0.1.json",
+      "docs/stage0/DORA_ALPHA_ASR_SMALL_MEASURED_CAMPAIGN_STAGE0_V0_1.md"
+    ],
+    "unchangedBaselineFiles": 607,
+    "priorStatusBacklogBytesPreserved": true,
+    "frozenUniquePinsUnchanged": 77,
+    "frozenEvaluatorReplay": "PASS",
+    "stage00LogSha256": "aa91b8825bae531d45780489e43353aaec1a1be73bc78b7d8f123d6f07ee53a8"
+  },
+  "ci": "NOT_DISPATCHED; branch does not match configured push triggers; no PR requested.",
+  "changedFiles": [
+    "docs/stage0/DORA_ALPHA_ASR_SMALL_MEASURED_CAMPAIGN_STAGE0_V0_1.md",
+    "docs/evidence/poc-asr-001/alpha-asr-small-measured-campaign-stage0-v0.1.json",
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md"
+  ],
+  "publication": {
+    "atomicResultCommits": 1,
+    "actualCommitAndRemoteHead": "REPORTED_AFTER_NORMAL_PUSH"
+  },
+  "pr86Readback": {
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "updatedAt": "2026-09-18T14:29:02Z",
+    "writes": 0
+  }
+}
