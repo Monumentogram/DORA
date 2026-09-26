@@ -1,5 +1,17 @@
 # Dora MVP 1 — Stage Status
 
+## ASR Stage5 terminal closeout 5.6D.3 — 27 September2026
+
+Stage5 `PASS / BOUNDED_ALPHA_LOCAL_ASR_CANDIDATE_ADMITTED`; POC-ASR-001 `PASS / BOUNDED_ALPHA_ONLY`.
+Small q8_0 `PASS / ACCEPTED_FOR_BOUNDED_ALPHA_ON_POCO_M5`. One campaign invocation, 48 primary attempts, zero retries/replacements;
+RU 24/24 (36/191 = 18.848168%, PASS), EN 24/24 (31/333 = 9.309309%, PASS).
+Cleanup VERIFIED; no historical rescoring, tuning, threshold/normalizer/runtime change or next model campaign.
+5.6D.1 data PASS and5.6D.2 admission PASS remain immutable. All48 new cases are consumed.
+Recovery0D.6 and PR#86 unchanged. Previous entries below remain byte-identical.
+Next: Stage6 may consume this bounded POCO admission while preserving all limitations; do not generalize it to production.
+See [terminal report](stage0/DORA_ASR_SMALL_Q8_STAGE5_CLOSEOUT_STAGE0_V0_1.md)
+and [sanitized evidence](evidence/poc-asr-001/asr-small-q8-stage5-closeout-stage0-v0.1.json).
+
 ## ASR SMALL q8 admission and operator source 5.6D.2 — 27 September 2026
 
 `PASS / SMALL_Q8_ARTIFACT_INIT_OPERATOR_READY`. Exact small q8_0 artifact264464607bytes, static479tensors,
