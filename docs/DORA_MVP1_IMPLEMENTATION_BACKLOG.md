@@ -1,5 +1,25 @@
 # Dora MVP 1 — Executable Backlog
 
+## ASR-SMALL-ARM82-01 execution — 26 September 2026
+
+`BLOCKED / INSUFFICIENT_FRESH_HOLDOUT_AFTER_PARTICIPANT_EXCLUSION`.
+Physical POCO M5 ISA admission PASS: ASIMD, FPHP, ASIMDHP and ASIMDDP present.
+Exact admitted source/test metadata leaves at most RU 8 and EN 69 after verified exclusions;
+RU has at most 9 records before other eligibility checks after lawful prior-participant exclusion.
+The frozen minimum is 24 per language. No selection/materialization, ARM82 build or campaign
+was performed; API invocations 0/1, attempts/retries/inference 0, evaluator not invoked.
+Candidate disposition NOT_FORMED; quality/resources NOT_EVALUABLE. Probe cleanup VERIFIED.
+This is a proven frozen data-contract blocker, requiring a prospective owner data-authority
+revision before execution can resume; do not waive exclusions or substitute cases here.
+Historical SMALL remains VALID_FAIL / REJECTED_FOR_BOUNDED_ALPHA_RESOURCE_GATE.
+ASR-SMALL-ARM82-01 BLOCKED / NOT_EXECUTED; Stage 5/Group B NOT_PASS;
+POC-ASR-001 BLOCKED / NOT_READY; 5.6C.2B/5.6C.2 measured completion remains INCOMPLETE.
+Recovery stays 0D.6 = ALPHA CLOSED / FULL OPEN; PR #86 OPEN, DRAFT, UNMERGED, untouched.
+See [execution blocker report](stage0/DORA_ASR_SMALL_ARM82_01_EXECUTION_STAGE0_V0_1.md)
+and [aggregate evidence](evidence/poc-asr-001/asr-small-arm82-01-execution-stage0-v0.1.json).
+All earlier dated sections remain historical evidence.
+
+
 ## ASR SMALL resource postmortem and next experiment — 26 September 2026
 
 `PASS / SMALL_RESOURCE_FAILURE_ASSESSED_NEXT_EXPERIMENT_FROZEN`.

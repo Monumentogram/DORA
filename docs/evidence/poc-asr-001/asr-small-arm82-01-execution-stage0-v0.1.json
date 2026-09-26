@@ -1,0 +1,415 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "ASR-SMALL-ARM82-01",
+  "date": "2026-09-26",
+  "result": "BLOCKED / INSUFFICIENT_FRESH_HOLDOUT_AFTER_PARTICIPANT_EXCLUSION",
+  "executionState": "NOT_EXECUTED / FROZEN_CONTRACT_HARD_BLOCKER",
+  "candidateDisposition": "NOT_FORMED / EVALUATOR_NOT_INVOKED",
+  "authority": {
+    "sourceCommit": "8181ca3d4ae8ad5757b4f6c4f1e1a03ec7205a7e",
+    "contractCanonicalSha256": "32b2e6516a600f656f4e414e291b871327821c481c57732cbb41b43b401d789a",
+    "participantRule": "Exclude using legitimately available pseudonymous metadata; otherwise disclose limitation without re-identification.",
+    "shortageRule": "STOP_NO_SUBSTITUTION_OR_RULE_RELAXATION",
+    "interpretation": "Exclude overlap with the previously selected BASE48 and SMALL48 wherever lawful participant metadata exists. The ARM82-specific clause is not replaced by the older development-only wording.",
+    "semanticChanges": 0,
+    "measuredCampaignAuthorizedConditionally": true
+  },
+  "isa": {
+    "checkedUtc": "2026-09-26T16:32:28.158466+00:00",
+    "device": {
+      "ro.product.model": "22071219CG",
+      "ro.product.marketname": "POCO M5",
+      "ro.product.device": "stone",
+      "ro.product.cpu.abi": "arm64-v8a",
+      "ro.kernel.qemu": "",
+      "ro.build.version.sdk": "34"
+    },
+    "probe": {
+      "sourceSha256": "48cd84c2fd808dbee341e5a2bd9b74cd65c946133b69abc6e00b1a8cb1084d0b",
+      "binaryBytes": 6600,
+      "binarySha256": "c7d09c7eb9c7779618ce559987aaa1e7e9b84e5795df031a333d24eaaa58ffb1",
+      "architecture": "baseline armv8-a",
+      "androidApi": 28,
+      "optimization": "O0; vectorization disabled",
+      "compiler": "Android (13624864, based on r530567e) clang version 19.0.1 (https://android.googlesource.com/toolchain/llvm-project 97a699bf4812a18fb657c2779f5296a4ab2694d2)",
+      "disassemblySha256": "2c40568d41649ca06a3b03ba3ab7dc4e715ee5b4407327fa4c31da42f661c718"
+    },
+    "capabilities": {
+      "atHwcap": 1155071,
+      "atHwcapHex": "0x119fff",
+      "readErrno": 0,
+      "HWCAP_ASIMD": 2,
+      "HWCAP_FPHP": 512,
+      "HWCAP_ASIMDHP": 1024,
+      "HWCAP_ASIMDDP": 1048576,
+      "requiredMask": 1050114,
+      "admitted": true
+    },
+    "cleanupVerified": true,
+    "asrInference": 0,
+    "specializedRuntimeExecutions": 0
+  },
+  "build": {
+    "state": "NOT_STARTED_DUE_TO_DATA_HARD_BLOCKER",
+    "runtimeRevision": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+    "toolchainContract": {
+      "ndk": "28.2.13676358",
+      "clang": "19.0.1",
+      "cmake": "3.22.1",
+      "ninja": "1.10.2"
+    },
+    "singleBuildDelta": "GGML_CPU_ARM_ARCH: armv8-a -> armv8.2-a+fp16+dotprod",
+    "cmakeOptionsContract": {
+      "ANDROID_ABI": "arm64-v8a",
+      "ANDROID_PLATFORM": "android-28",
+      "ANDROID_STL": "c++_shared",
+      "CMAKE_BUILD_TYPE": "Release",
+      "GGML_NATIVE": "OFF",
+      "GGML_CPU": "ON",
+      "GGML_CPU_ARM_ARCH": "armv8.2-a+fp16+dotprod",
+      "GGML_CPU_ALL_VARIANTS": "OFF",
+      "GGML_CPU_REPACK": "ON",
+      "GGML_CPU_KLEIDIAI": "OFF",
+      "GGML_BACKEND_DL": "OFF",
+      "GGML_OPENMP": "OFF",
+      "GGML_BLAS": "OFF",
+      "GGML_LTO": "OFF",
+      "GGML_CCACHE": "OFF",
+      "GGML_CUDA": "OFF",
+      "GGML_METAL": "OFF",
+      "GGML_ACCELERATE": "OFF",
+      "GGML_VULKAN": "OFF",
+      "GGML_OPENCL": "OFF",
+      "GGML_RPC": "OFF",
+      "GGML_OPENVINO": "OFF",
+      "GGML_HEXAGON": "OFF",
+      "GGML_SYCL": "OFF",
+      "GGML_WEBGPU": "OFF",
+      "GGML_HIP": "OFF",
+      "GGML_MUSA": "OFF",
+      "GGML_ZDNN": "OFF",
+      "GGML_ZENDNN": "OFF",
+      "GGML_VIRTGPU": "OFF",
+      "GGML_VIRTGPU_BACKEND": "OFF",
+      "GGML_ET": "OFF",
+      "GGML_LLAMAFILE": "OFF",
+      "GGML_BUILD_TESTS": "OFF",
+      "GGML_BUILD_EXAMPLES": "OFF",
+      "WHISPER_BUILD_IS_DEV": "OFF",
+      "WHISPER_BUILD_TESTS": "OFF",
+      "WHISPER_BUILD_EXAMPLES": "OFF",
+      "WHISPER_BUILD_SERVER": "OFF",
+      "WHISPER_CURL": "OFF",
+      "WHISPER_SDL2": "OFF",
+      "WHISPER_COREML": "OFF",
+      "WHISPER_OPENVINO": "OFF",
+      "WHISPER_VITISAI": "OFF",
+      "BUILD_SHARED_LIBS": "ON"
+    },
+    "upstreamPatches": 0,
+    "runtimeBuildCount": 0,
+    "nativeArtifacts": [],
+    "specializedInstructionEvidence": "NOT_PRODUCED",
+    "nativeDependencyClosure": "NOT_EVALUATED",
+    "native16KiBCompatibility": "NOT_EVALUATED",
+    "note": "The baseline capability probe is not the ARM82 ASR runtime."
+  },
+  "holdout": {
+    "asrInference": 0,
+    "audioDecode": 0,
+    "selected": {
+      "ru": 0,
+      "en": 0
+    },
+    "referencesInspectedForSelection": 0,
+    "priorSelectedCounts": {
+      "base": 48,
+      "small": 48,
+      "total": 96
+    },
+    "locales": {
+      "ru": {
+        "inventoryCount": 385,
+        "participantMetadataAvailable": true,
+        "missingParticipantMetadata": 0,
+        "uniqueParticipants": 12,
+        "priorEvaluationParticipants": 7,
+        "exclusionCountsOverlapping": {
+          "priorParticipant": 376,
+          "priorSource": 48,
+          "priorAudio": 48,
+          "baseIneligible": 171
+        },
+        "eligibleCount": 8,
+        "eligiblePoolSha256": "57e7fee38ce86b1aec2d7a274f430aa631d0c60f3268ae67843f859a3696679b",
+        "exclusionSetSha256": "8d8cf38c7c9d2eeb11642dea29fa2afc3b019fff14485a256cc9aa4f72659209",
+        "required": 24,
+        "sufficient": false,
+        "archiveSha256Verified": "aa0910f5fef7f24afccf5bca075995f0b7a970d96da72626c80507d629d05a6f"
+      },
+      "en": {
+        "inventoryCount": 357,
+        "participantMetadataAvailable": true,
+        "missingParticipantMetadata": 0,
+        "uniqueParticipants": 62,
+        "priorEvaluationParticipants": 25,
+        "exclusionCountsOverlapping": {
+          "baseIneligible": 113,
+          "priorParticipant": 276,
+          "priorSource": 48,
+          "priorAudio": 48
+        },
+        "eligibleCount": 69,
+        "eligiblePoolSha256": "4f715b28b25b6e111b7632fabfa121d782708dd25bcd46fa2936730641247c26",
+        "exclusionSetSha256": "5464489659ee2f5219f97296b80089fb76a964a68a9fa049d0fae2d082b6b4bd",
+        "required": 24,
+        "sufficient": true,
+        "archiveSha256Verified": "390b5a54c9afe0cc01da039ad206248f85682f247dd2b27d4cc0ab9a68e860b6"
+      }
+    },
+    "transcriptsDecodedOrRetained": 0,
+    "result": "BLOCKED_INSUFFICIENT_FRESH_HOLDOUT",
+    "selectionPerformed": false,
+    "materialized": {
+      "ru": 0,
+      "en": 0
+    },
+    "selectionManifestSha256": null,
+    "materializationFreezeSha256": null,
+    "inventoryCanonicalSha256": "ad454b162fab7dea96c28612a374fcae79040346dae5ee2916b3c4482b3ec041",
+    "baseSelectedManifestCanonicalSha256": "5d9e12fa76e9db54bc69bbd22396dbec733348db97bba353361ac701af64061c",
+    "smallMetadataSelectedManifestCanonicalSha256": "695f1e147fe968c8f75e7bea5e7a6edfd20f50e939c0bdbc2064d3a7db7d1947",
+    "smallMaterializedManifestCanonicalSha256": "2cb05132de945fe8a1b281e79efd8efa15d9b9b94c0326f6572a594e0c74e9bb",
+    "proof": {
+      "ruTotalTestRecords": 385,
+      "ruRecordsWithPriorParticipant": 376,
+      "ruMaximumBeforeAllOtherExclusions": 9,
+      "ruFinalEligible": 8,
+      "ruRequired": 24,
+      "argument": "Even retaining every other RU record yields only 9 < 24. Further exclusions can only decrease this bound.",
+      "hostBuildPathAclOrToolingRepairCanIncreasePool": false
+    },
+    "method": "Exact archive byte hashes and pinned complete candidate inventory; read only client_id, audio_file, duration_ms and split through the admitted selective byte TSV parser. No transcription, prompt or demographic field decoded or retained. Match source paths exactly; compare pseudonymous participants in memory; exclude prior source/audio/participants; exclude all members of repeated remaining audio-digest groups; evaluate unchanged eligibility.",
+    "pseudonymousIdentifiersPublished": 0,
+    "participantMetadataMissing": 0,
+    "retentionDeadline": "2026-10-25",
+    "retentionExtension": false,
+    "smallSelectedExcluded": 48,
+    "unexecutedSmallSelectionsAlsoExcluded": 29,
+    "eligibleCountMeaning": "Upper bound after verified BASE48/SMALL48 source, audio, participant, eligibility and duplicate exclusions; any additional prior-use exclusion can only reduce these counts.",
+    "additionalPriorUseLedgerExhaustivelyReconciled": false,
+    "additionalPriorUseEffect": "Cannot remedy RU shortage; no absence of other uses or final untouched pool admission is claimed."
+  },
+  "campaign": {
+    "apiInvocations": 0,
+    "invocationBudget": 1,
+    "claimCreated": false,
+    "journalCreated": false,
+    "terminalMeasuredAggregateCreated": false,
+    "primaryAttempts": 0,
+    "retries": 0,
+    "ruCompleted": 0,
+    "enCompleted": 0,
+    "warmupInferences": 0,
+    "holdoutInferences": 0,
+    "asrInferencesTotal": 0,
+    "codecChecks": 0,
+    "cleanup": "NOT_APPLICABLE_CAMPAIGN_NOT_STARTED",
+    "isaProbeCleanup": "VERIFIED",
+    "hostProbeProcessExited": true
+  },
+  "evaluation": {
+    "evaluatorInvoked": false,
+    "candidateDisposition": "NOT_FORMED / EVALUATOR_NOT_INVOKED",
+    "quality": {
+      "state": "NOT_EVALUABLE",
+      "ruCompleted": 0,
+      "enCompleted": 0,
+      "ruNormalizedWerPercent": null,
+      "enNormalizedWerPercent": null,
+      "ruGate": "NOT_EVALUABLE",
+      "enGate": "NOT_EVALUABLE",
+      "rawWer": "NOT_EVALUABLE"
+    },
+    "resources": {
+      "state": "NOT_EVALUABLE",
+      "telemetryValidAttempts": 0,
+      "telemetryRequiredAttempts": 48,
+      "telemetryComplete": false,
+      "gates": {
+        "weightedRtf": {
+          "observed": null,
+          "status": "NOT_EVALUABLE"
+        },
+        "p95Rtf": {
+          "observed": null,
+          "status": "NOT_EVALUABLE"
+        },
+        "maximumRtf": {
+          "observed": null,
+          "status": "NOT_EVALUABLE"
+        },
+        "coldLoadMicros": {
+          "observed": null,
+          "status": "NOT_EVALUABLE"
+        },
+        "peakPssBytes": {
+          "observed": null,
+          "status": "NOT_EVALUABLE"
+        },
+        "peakNativeHeapBytes": {
+          "observed": null,
+          "status": "NOT_EVALUABLE"
+        },
+        "evidencedOom": {
+          "observed": null,
+          "status": "NOT_EVALUABLE"
+        },
+        "maximumThermal": {
+          "observed": null,
+          "status": "NOT_EVALUABLE"
+        }
+      },
+      "telemetryGate": "NOT_EVALUABLE"
+    },
+    "frozenCriteria": {
+      "quality": {
+        "ruNormalizedWerPercentMaximum": 20,
+        "enNormalizedWerPercentMaximum": 18,
+        "aggregation": "Sum normalized S+D+I / sum reference tokens; integer cross-products; not per-case average.",
+        "requiredCasesPerLanguage": 24,
+        "bothLanguagesMustPass": true,
+        "rawWer": "DIAGNOSTIC_ONLY",
+        "timestampQuality": "NOT_EVALUABLE"
+      },
+      "resources": {
+        "weightedRtfMaximum": 2,
+        "p95RtfMaximum": 4,
+        "p95NearestRankAt48": 46,
+        "maximumCaseRtf": 6,
+        "coldLoadMicrosMaximum": 15000000,
+        "pssBytesMaximum": 1610612736,
+        "nativeHeapBytesMaximum": 1342177280,
+        "evidencedOomMaximum": 0,
+        "thermalForbiddenMinimum": 3,
+        "requiredValidAttempts": 48,
+        "resourceTelemetryCompleteRequired": true,
+        "endToEndLatency": "DIAGNOSTIC_ONLY"
+      },
+      "telemetry": {
+        "memorySamplingTargetMs": 100,
+        "memoryMaximumGapMs": 1000,
+        "thermalPollingDelayMs": 1000,
+        "thermalMaximumGapMs": 3000,
+        "window": "Before decode through after model free; synchronous load/inference/free samples.",
+        "memorySources": "smaps_rollup Pss KiB*1024; mallinfo().uordblks bytes; never add them.",
+        "peaks": "MAXIMUM_OBSERVED_SAMPLE_NOT_CONTINUOUS_HIGH_WATER_MARK"
+      },
+      "disposition": "Same quality/resource completeness and positive-failure precedence as frozen SMALL evaluator; new profile identities only."
+    },
+    "historicalResourceGatesCanonicalSha256": "fdfb56b56429c07a99538c92d87f9ea8570c723cc67f5e5eb02915d97557ccd1"
+  },
+  "historicalSmall": {
+    "result": "INCOMPLETE / BOUNDED_SMALL_POCO_CAMPAIGN_STOPPED",
+    "candidateDisposition": "VALID_FAIL / REJECTED_FOR_BOUNDED_ALPHA_RESOURCE_GATE",
+    "reinterpreted": false,
+    "rerun": false
+  },
+  "scopeCounts": {
+    "oldHoldoutReruns": 0,
+    "configurationSweeps": 0,
+    "threadSweeps": 0,
+    "tuning": 0,
+    "thresholdChanges": 0,
+    "modelChanges": 0,
+    "decodingChanges": 0,
+    "unauthorizedRetries": 0,
+    "secondCampaignInvocation": 0,
+    "recoveryChanges": 0,
+    "pr86Changes": 0,
+    "merges": 0
+  },
+  "additionalCounts": {
+    "asrInference": 0,
+    "baselineDeviceProbeExecutions": 1,
+    "specializedRuntimeExecutions": 0,
+    "modelLoads": 0,
+    "modelDownloads": 0,
+    "newAudioDecodes": 0,
+    "holdoutMaterializations": 0,
+    "productionAndroidChanges": 0,
+    "historicalOperatorChanges": 0,
+    "newExecutionBindings": 0
+  },
+  "audit": {
+    "poolAuditScriptSha256": "85b37799bc554996efc879411b132ce06b7196a41aa3cbf38bd4ec2fd98cae0f",
+    "poolReceiptSha256": "d8418f31174f678184883662849bbdc12283aa6cd91207528fcf9167c46eb9e5",
+    "isaReceiptSha256": "277fc2b2fc02c7d68f503bf3c67dcc08ccf1a1cf88be3fe1c07e75c3d3b12409",
+    "staticAndParserChecks": {
+      "selectiveParserSyntheticFixtures": 3,
+      "allPassed": true,
+      "referencesDecodedOrRetained": 0,
+      "probeArchitecture": "AArch64",
+      "probeLoadAlignment": "0x4000",
+      "probeOnlyNeededLibrary": "libc.so"
+    },
+    "probeSource": "#include <sys/auxv.h>\n#include <asm/hwcap.h>\n#include <errno.h>\n#include <stdio.h>\n#include <stdint.h>\n\nint main(void) {\n    errno = 0;\n    const unsigned long caps = getauxval(AT_HWCAP);\n    const int read_errno = errno;\n    const unsigned long required = HWCAP_ASIMD | HWCAP_FPHP | HWCAP_ASIMDHP | HWCAP_ASIMDDP;\n    printf(\"{\\\"atHwcap\\\":%lu,\\\"atHwcapHex\\\":\\\"0x%lx\\\",\\\"readErrno\\\":%d,\"\n           \"\\\"HWCAP_ASIMD\\\":%lu,\\\"HWCAP_FPHP\\\":%lu,\\\"HWCAP_ASIMDHP\\\":%lu,\"\n           \"\\\"HWCAP_ASIMDDP\\\":%lu,\\\"requiredMask\\\":%lu,\\\"admitted\\\":%s}\\n\",\n           caps, caps, read_errno, caps & HWCAP_ASIMD, caps & HWCAP_FPHP,\n           caps & HWCAP_ASIMDHP, caps & HWCAP_ASIMDDP, required,\n           read_errno == 0 && (caps & required) == required ? \"true\" : \"false\");\n    return read_errno == 0 ? 0 : 2;\n}\n",
+    "probeCompileArguments": [
+      "clang",
+      "--target=aarch64-none-linux-android28",
+      "-march=armv8-a",
+      "-O0",
+      "-fno-vectorize",
+      "-fno-slp-vectorize",
+      "-fPIE",
+      "-pie",
+      "-Wl,-z,max-page-size=16384",
+      "hwcap_probe.c",
+      "-o",
+      "hwcap-probe"
+    ],
+    "privateSampleIdentitiesOrTranscriptsPublished": false,
+    "independentReview": {
+      "result": "CONFIRMED_HARD_BLOCKER",
+      "method": "Independent selective byte TSV projector and independent eligibility calculation; no audit parser/helper reused.",
+      "verifiedTestRecords": 742,
+      "ruParticipantOnlyUpperBound": 9,
+      "ruAfterVerifiedExclusions": 8,
+      "enAfterVerifiedExclusions": 69,
+      "poolDigestsMatch": true,
+      "globalDuplicateAudioGroups": 0,
+      "participantMetadataMissingOrPlaceholder": 0,
+      "metadataDurationsMatchInventory": 742,
+      "priorSourceIdentitiesDistinct": 96,
+      "priorAudioDigestsDistinct": 96,
+      "asrInference": 0,
+      "mutations": 0
+    }
+  },
+  "stageEffect": {
+    "experiment": "BLOCKED / NOT_EXECUTED",
+    "stage5": "NOT_PASS",
+    "groupB": "NOT_PASS",
+    "POC-ASR-001": "BLOCKED / NOT_READY",
+    "5.6C.2B": "INCOMPLETE",
+    "recovery": "0D.6 = ALPHA CLOSED / FULL OPEN"
+  },
+  "publication": {
+    "branch": "chat/alpha-asr-runner-scope",
+    "headBefore": "8181ca3d4ae8ad5757b4f6c4f1e1a03ec7205a7e",
+    "changedFiles": [
+      "docs/stage0/DORA_ASR_SMALL_ARM82_01_EXECUTION_STAGE0_V0_1.md",
+      "docs/evidence/poc-asr-001/asr-small-arm82-01-execution-stage0-v0.1.json",
+      "docs/DORA_MVP1_STAGE_STATUS.md",
+      "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md"
+    ],
+    "commitPolicy": "One atomic result commit; normal push; no merge.",
+    "pr86": {
+      "state": "OPEN",
+      "draft": true,
+      "merged": false,
+      "modified": false
+    }
+  },
+  "nextStep": "Owner must prospectively revise the holdout authority to supply at least 24 eligible participant-disjoint RU records before any implementation or measured campaign can resume; retain model/runtime/decoding and numeric gates. No revision or replacement experiment is enacted here."
+}
