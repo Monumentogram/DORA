@@ -1,0 +1,1787 @@
+{
+  "schemaVersion": 1,
+  "recordedUtc": "2026-09-26T18:22:51.165670+00:00",
+  "result": "BLOCKED / INSUFFICIENT_UNTOUCHED_HOLDOUT",
+  "acceptedHead": "9a17523062a7ffe11ba40c8e267f18513d8dcb65",
+  "branch": "chat/alpha-asr-runner-scope",
+  "historicalExperiment": "ASR-SMALL-ARM82-01",
+  "historicalExecution": "INCOMPLETE / BOUNDED_SMALL_POCO_CAMPAIGN_STOPPED",
+  "historicalCandidateDisposition": "VALID_FAIL / REJECTED_FOR_BOUNDED_ALPHA_QUALITY_GATE",
+  "forensics": {
+    "acceptedHead": "9a17523062a7ffe11ba40c8e267f18513d8dcb65",
+    "cases": [
+      {
+        "caseWerPercent": 24.324324324324323,
+        "deletions": null,
+        "deletionsBounds": [
+          2,
+          5
+        ],
+        "durationMicros": 16776000,
+        "editCompositionState": "BOUNDS_ONLY_ALIGNMENT_NOT_RETAINED",
+        "errorSharePercent": 12.32876712328767,
+        "errors": 9,
+        "insertions": null,
+        "insertionsBounds": [
+          0,
+          3
+        ],
+        "normalizedHypothesisTokens": 35,
+        "normalizedReferenceTokens": 37,
+        "ordinal": 1,
+        "participant": "P1",
+        "referenceSharePercent": 10.601719197707736,
+        "substitutions": null,
+        "substitutionsBounds": [
+          1,
+          7
+        ]
+      },
+      {
+        "caseWerPercent": 20.0,
+        "deletions": null,
+        "deletionsBounds": [
+          0,
+          1
+        ],
+        "durationMicros": 8496000,
+        "editCompositionState": "BOUNDS_ONLY_ALIGNMENT_NOT_RETAINED",
+        "errorSharePercent": 2.73972602739726,
+        "errors": 2,
+        "insertions": null,
+        "insertionsBounds": [
+          0,
+          1
+        ],
+        "normalizedHypothesisTokens": 10,
+        "normalizedReferenceTokens": 10,
+        "ordinal": 2,
+        "participant": "P1",
+        "referenceSharePercent": 2.865329512893983,
+        "substitutions": null,
+        "substitutionsBounds": [
+          0,
+          2
+        ]
+      },
+      {
+        "caseWerPercent": 17.073170731707318,
+        "deletions": null,
+        "deletionsBounds": [
+          2,
+          4
+        ],
+        "durationMicros": 19620000,
+        "editCompositionState": "BOUNDS_ONLY_ALIGNMENT_NOT_RETAINED",
+        "errorSharePercent": 9.58904109589041,
+        "errors": 7,
+        "insertions": null,
+        "insertionsBounds": [
+          0,
+          2
+        ],
+        "normalizedHypothesisTokens": 39,
+        "normalizedReferenceTokens": 41,
+        "ordinal": 3,
+        "participant": "P1",
+        "referenceSharePercent": 11.74785100286533,
+        "substitutions": null,
+        "substitutionsBounds": [
+          1,
+          5
+        ]
+      },
+      {
+        "caseWerPercent": 50.0,
+        "deletions": null,
+        "deletionsBounds": [
+          2,
+          4
+        ],
+        "durationMicros": 7236000,
+        "editCompositionState": "BOUNDS_ONLY_ALIGNMENT_NOT_RETAINED",
+        "errorSharePercent": 9.58904109589041,
+        "errors": 7,
+        "insertions": null,
+        "insertionsBounds": [
+          0,
+          2
+        ],
+        "normalizedHypothesisTokens": 12,
+        "normalizedReferenceTokens": 14,
+        "ordinal": 4,
+        "participant": "P1",
+        "referenceSharePercent": 4.011461318051576,
+        "substitutions": null,
+        "substitutionsBounds": [
+          1,
+          5
+        ]
+      },
+      {
+        "caseWerPercent": 16.216216216216218,
+        "deletions": null,
+        "deletionsBounds": [
+          0,
+          3
+        ],
+        "durationMicros": 18756000,
+        "editCompositionState": "BOUNDS_ONLY_ALIGNMENT_NOT_RETAINED",
+        "errorSharePercent": 8.219178082191782,
+        "errors": 6,
+        "insertions": null,
+        "insertionsBounds": [
+          0,
+          3
+        ],
+        "normalizedHypothesisTokens": 37,
+        "normalizedReferenceTokens": 37,
+        "ordinal": 5,
+        "participant": "P1",
+        "referenceSharePercent": 10.601719197707736,
+        "substitutions": null,
+        "substitutionsBounds": [
+          0,
+          6
+        ]
+      },
+      {
+        "caseWerPercent": 0.0,
+        "deletions": 0,
+        "deletionsBounds": [
+          0,
+          0
+        ],
+        "durationMicros": 5040000,
+        "editCompositionState": "UNIQUE_FROM_RETAINED_COUNTS",
+        "errorSharePercent": 0.0,
+        "errors": 0,
+        "insertions": 0,
+        "insertionsBounds": [
+          0,
+          0
+        ],
+        "normalizedHypothesisTokens": 4,
+        "normalizedReferenceTokens": 4,
+        "ordinal": 6,
+        "participant": "P2",
+        "referenceSharePercent": 1.146131805157593,
+        "substitutions": 0,
+        "substitutionsBounds": [
+          0,
+          0
+        ]
+      },
+      {
+        "caseWerPercent": 25.0,
+        "deletions": 0,
+        "deletionsBounds": [
+          0,
+          0
+        ],
+        "durationMicros": 5040000,
+        "editCompositionState": "UNIQUE_FROM_RETAINED_COUNTS",
+        "errorSharePercent": 1.36986301369863,
+        "errors": 1,
+        "insertions": 0,
+        "insertionsBounds": [
+          0,
+          0
+        ],
+        "normalizedHypothesisTokens": 4,
+        "normalizedReferenceTokens": 4,
+        "ordinal": 7,
+        "participant": "P1",
+        "referenceSharePercent": 1.146131805157593,
+        "substitutions": 1,
+        "substitutionsBounds": [
+          1,
+          1
+        ]
+      },
+      {
+        "caseWerPercent": 31.25,
+        "deletions": null,
+        "deletionsBounds": [
+          0,
+          1
+        ],
+        "durationMicros": 11988000,
+        "editCompositionState": "BOUNDS_ONLY_ALIGNMENT_NOT_RETAINED",
+        "errorSharePercent": 6.8493150684931505,
+        "errors": 5,
+        "insertions": null,
+        "insertionsBounds": [
+          2,
+          3
+        ],
+        "normalizedHypothesisTokens": 18,
+        "normalizedReferenceTokens": 16,
+        "ordinal": 8,
+        "participant": "P1",
+        "referenceSharePercent": 4.584527220630372,
+        "substitutions": null,
+        "substitutionsBounds": [
+          1,
+          3
+        ]
+      },
+      {
+        "caseWerPercent": 57.142857142857146,
+        "deletions": null,
+        "deletionsBounds": [
+          1,
+          2
+        ],
+        "durationMicros": 8388000,
+        "editCompositionState": "BOUNDS_ONLY_ALIGNMENT_NOT_RETAINED",
+        "errorSharePercent": 5.47945205479452,
+        "errors": 4,
+        "insertions": null,
+        "insertionsBounds": [
+          0,
+          1
+        ],
+        "normalizedHypothesisTokens": 6,
+        "normalizedReferenceTokens": 7,
+        "ordinal": 9,
+        "participant": "P1",
+        "referenceSharePercent": 2.005730659025788,
+        "substitutions": null,
+        "substitutionsBounds": [
+          1,
+          3
+        ]
+      },
+      {
+        "caseWerPercent": 18.181818181818183,
+        "deletions": null,
+        "deletionsBounds": [
+          0,
+          1
+        ],
+        "durationMicros": 10944000,
+        "editCompositionState": "BOUNDS_ONLY_ALIGNMENT_NOT_RETAINED",
+        "errorSharePercent": 2.73972602739726,
+        "errors": 2,
+        "insertions": null,
+        "insertionsBounds": [
+          0,
+          1
+        ],
+        "normalizedHypothesisTokens": 11,
+        "normalizedReferenceTokens": 11,
+        "ordinal": 10,
+        "participant": "P3",
+        "referenceSharePercent": 3.151862464183381,
+        "substitutions": null,
+        "substitutionsBounds": [
+          0,
+          2
+        ]
+      },
+      {
+        "caseWerPercent": 0.0,
+        "deletions": 0,
+        "deletionsBounds": [
+          0,
+          0
+        ],
+        "durationMicros": 3096000,
+        "editCompositionState": "UNIQUE_FROM_RETAINED_COUNTS",
+        "errorSharePercent": 0.0,
+        "errors": 0,
+        "insertions": 0,
+        "insertionsBounds": [
+          0,
+          0
+        ],
+        "normalizedHypothesisTokens": 4,
+        "normalizedReferenceTokens": 4,
+        "ordinal": 11,
+        "participant": "P2",
+        "referenceSharePercent": 1.146131805157593,
+        "substitutions": 0,
+        "substitutionsBounds": [
+          0,
+          0
+        ]
+      },
+      {
+        "caseWerPercent": 6.666666666666667,
+        "deletions": 1,
+        "deletionsBounds": [
+          1,
+          1
+        ],
+        "durationMicros": 13680000,
+        "editCompositionState": "UNIQUE_FROM_RETAINED_COUNTS",
+        "errorSharePercent": 1.36986301369863,
+        "errors": 1,
+        "insertions": 0,
+        "insertionsBounds": [
+          0,
+          0
+        ],
+        "normalizedHypothesisTokens": 14,
+        "normalizedReferenceTokens": 15,
+        "ordinal": 12,
+        "participant": "P1",
+        "referenceSharePercent": 4.2979942693409745,
+        "substitutions": 0,
+        "substitutionsBounds": [
+          0,
+          0
+        ]
+      },
+      {
+        "caseWerPercent": 13.333333333333334,
+        "deletions": null,
+        "deletionsBounds": [
+          0,
+          1
+        ],
+        "durationMicros": 10548000,
+        "editCompositionState": "BOUNDS_ONLY_ALIGNMENT_NOT_RETAINED",
+        "errorSharePercent": 2.73972602739726,
+        "errors": 2,
+        "insertions": null,
+        "insertionsBounds": [
+          0,
+          1
+        ],
+        "normalizedHypothesisTokens": 15,
+        "normalizedReferenceTokens": 15,
+        "ordinal": 13,
+        "participant": "P3",
+        "referenceSharePercent": 4.2979942693409745,
+        "substitutions": null,
+        "substitutionsBounds": [
+          0,
+          2
+        ]
+      },
+      {
+        "caseWerPercent": 0.0,
+        "deletions": 0,
+        "deletionsBounds": [
+          0,
+          0
+        ],
+        "durationMicros": 8496000,
+        "editCompositionState": "UNIQUE_FROM_RETAINED_COUNTS",
+        "errorSharePercent": 0.0,
+        "errors": 0,
+        "insertions": 0,
+        "insertionsBounds": [
+          0,
+          0
+        ],
+        "normalizedHypothesisTokens": 14,
+        "normalizedReferenceTokens": 14,
+        "ordinal": 14,
+        "participant": "P2",
+        "referenceSharePercent": 4.011461318051576,
+        "substitutions": 0,
+        "substitutionsBounds": [
+          0,
+          0
+        ]
+      },
+      {
+        "caseWerPercent": 50.0,
+        "deletions": null,
+        "deletionsBounds": [
+          5,
+          8
+        ],
+        "durationMicros": 15480000,
+        "editCompositionState": "BOUNDS_ONLY_ALIGNMENT_NOT_RETAINED",
+        "errorSharePercent": 15.068493150684931,
+        "errors": 11,
+        "insertions": null,
+        "insertionsBounds": [
+          0,
+          3
+        ],
+        "normalizedHypothesisTokens": 17,
+        "normalizedReferenceTokens": 22,
+        "ordinal": 15,
+        "participant": "P1",
+        "referenceSharePercent": 6.303724928366762,
+        "substitutions": null,
+        "substitutionsBounds": [
+          0,
+          6
+        ]
+      },
+      {
+        "caseWerPercent": 5.882352941176471,
+        "deletions": 0,
+        "deletionsBounds": [
+          0,
+          0
+        ],
+        "durationMicros": 15228000,
+        "editCompositionState": "UNIQUE_FROM_RETAINED_COUNTS",
+        "errorSharePercent": 1.36986301369863,
+        "errors": 1,
+        "insertions": 0,
+        "insertionsBounds": [
+          0,
+          0
+        ],
+        "normalizedHypothesisTokens": 17,
+        "normalizedReferenceTokens": 17,
+        "ordinal": 16,
+        "participant": "P2",
+        "referenceSharePercent": 4.871060171919771,
+        "substitutions": 1,
+        "substitutionsBounds": [
+          1,
+          1
+        ]
+      },
+      {
+        "caseWerPercent": 11.764705882352942,
+        "deletions": 1,
+        "deletionsBounds": [
+          1,
+          1
+        ],
+        "durationMicros": 11196000,
+        "editCompositionState": "UNIQUE_FROM_RETAINED_COUNTS",
+        "errorSharePercent": 2.73972602739726,
+        "errors": 2,
+        "insertions": 0,
+        "insertionsBounds": [
+          0,
+          0
+        ],
+        "normalizedHypothesisTokens": 16,
+        "normalizedReferenceTokens": 17,
+        "ordinal": 17,
+        "participant": "P1",
+        "referenceSharePercent": 4.871060171919771,
+        "substitutions": 1,
+        "substitutionsBounds": [
+          1,
+          1
+        ]
+      },
+      {
+        "caseWerPercent": 0.0,
+        "deletions": 0,
+        "deletionsBounds": [
+          0,
+          0
+        ],
+        "durationMicros": 5796000,
+        "editCompositionState": "UNIQUE_FROM_RETAINED_COUNTS",
+        "errorSharePercent": 0.0,
+        "errors": 0,
+        "insertions": 0,
+        "insertionsBounds": [
+          0,
+          0
+        ],
+        "normalizedHypothesisTokens": 8,
+        "normalizedReferenceTokens": 8,
+        "ordinal": 18,
+        "participant": "P2",
+        "referenceSharePercent": 2.292263610315186,
+        "substitutions": 0,
+        "substitutionsBounds": [
+          0,
+          0
+        ]
+      },
+      {
+        "caseWerPercent": 0.0,
+        "deletions": 0,
+        "deletionsBounds": [
+          0,
+          0
+        ],
+        "durationMicros": 6120000,
+        "editCompositionState": "UNIQUE_FROM_RETAINED_COUNTS",
+        "errorSharePercent": 0.0,
+        "errors": 0,
+        "insertions": 0,
+        "insertionsBounds": [
+          0,
+          0
+        ],
+        "normalizedHypothesisTokens": 9,
+        "normalizedReferenceTokens": 9,
+        "ordinal": 19,
+        "participant": "P2",
+        "referenceSharePercent": 2.5787965616045847,
+        "substitutions": 0,
+        "substitutionsBounds": [
+          0,
+          0
+        ]
+      },
+      {
+        "caseWerPercent": 16.666666666666668,
+        "deletions": 1,
+        "deletionsBounds": [
+          1,
+          1
+        ],
+        "durationMicros": 10440000,
+        "editCompositionState": "UNIQUE_FROM_RETAINED_COUNTS",
+        "errorSharePercent": 2.73972602739726,
+        "errors": 2,
+        "insertions": 0,
+        "insertionsBounds": [
+          0,
+          0
+        ],
+        "normalizedHypothesisTokens": 11,
+        "normalizedReferenceTokens": 12,
+        "ordinal": 20,
+        "participant": "P1",
+        "referenceSharePercent": 3.438395415472779,
+        "substitutions": 1,
+        "substitutionsBounds": [
+          1,
+          1
+        ]
+      },
+      {
+        "caseWerPercent": 28.571428571428573,
+        "deletions": 2,
+        "deletionsBounds": [
+          2,
+          2
+        ],
+        "durationMicros": 7524000,
+        "editCompositionState": "UNIQUE_FROM_RETAINED_COUNTS",
+        "errorSharePercent": 2.73972602739726,
+        "errors": 2,
+        "insertions": 0,
+        "insertionsBounds": [
+          0,
+          0
+        ],
+        "normalizedHypothesisTokens": 5,
+        "normalizedReferenceTokens": 7,
+        "ordinal": 21,
+        "participant": "P3",
+        "referenceSharePercent": 2.005730659025788,
+        "substitutions": 0,
+        "substitutionsBounds": [
+          0,
+          0
+        ]
+      },
+      {
+        "caseWerPercent": 33.333333333333336,
+        "deletions": 0,
+        "deletionsBounds": [
+          0,
+          0
+        ],
+        "durationMicros": 5472000,
+        "editCompositionState": "UNIQUE_FROM_RETAINED_COUNTS",
+        "errorSharePercent": 1.36986301369863,
+        "errors": 1,
+        "insertions": 0,
+        "insertionsBounds": [
+          0,
+          0
+        ],
+        "normalizedHypothesisTokens": 3,
+        "normalizedReferenceTokens": 3,
+        "ordinal": 22,
+        "participant": "P3",
+        "referenceSharePercent": 0.8595988538681948,
+        "substitutions": 1,
+        "substitutionsBounds": [
+          1,
+          1
+        ]
+      },
+      {
+        "caseWerPercent": 20.0,
+        "deletions": null,
+        "deletionsBounds": [
+          0,
+          1
+        ],
+        "durationMicros": 6804000,
+        "editCompositionState": "BOUNDS_ONLY_ALIGNMENT_NOT_RETAINED",
+        "errorSharePercent": 2.73972602739726,
+        "errors": 2,
+        "insertions": null,
+        "insertionsBounds": [
+          0,
+          1
+        ],
+        "normalizedHypothesisTokens": 10,
+        "normalizedReferenceTokens": 10,
+        "ordinal": 23,
+        "participant": "P4",
+        "referenceSharePercent": 2.865329512893983,
+        "substitutions": null,
+        "substitutionsBounds": [
+          0,
+          2
+        ]
+      },
+      {
+        "caseWerPercent": 40.0,
+        "deletions": null,
+        "deletionsBounds": [
+          2,
+          4
+        ],
+        "durationMicros": 9360000,
+        "editCompositionState": "BOUNDS_ONLY_ALIGNMENT_NOT_RETAINED",
+        "errorSharePercent": 8.219178082191782,
+        "errors": 6,
+        "insertions": null,
+        "insertionsBounds": [
+          0,
+          2
+        ],
+        "normalizedHypothesisTokens": 13,
+        "normalizedReferenceTokens": 15,
+        "ordinal": 24,
+        "participant": "P1",
+        "referenceSharePercent": 4.2979942693409745,
+        "substitutions": null,
+        "substitutionsBounds": [
+          0,
+          4
+        ]
+      }
+    ],
+    "composition": {
+      "bounds": {
+        "deletions": [
+          19,
+          40
+        ],
+        "insertions": [
+          2,
+          23
+        ],
+        "substitutions": [
+          10,
+          52
+        ]
+      },
+      "exactComposition": "NOT_RETAINED; no authorization to rescore. Bounds are joint constraints, not independent measured edit counts.",
+      "method": "Only integer identities E=S+D+I and referenceTokens-hypothesisTokens=D-I; no token alignment, oracle call or historical rescoring.",
+      "uniqueCaseCount": 12
+    },
+    "distribution": {
+      "durationBuckets": [
+        {
+          "aggregateWerPercent": 20.21276595744681,
+          "bucket": "at_or_below_median",
+          "cases": 12,
+          "errors": 19,
+          "referenceTokens": 94
+        },
+        {
+          "aggregateWerPercent": 21.176470588235293,
+          "bucket": "above_median",
+          "cases": 12,
+          "errors": 54,
+          "referenceTokens": 255
+        }
+      ],
+      "durationMedianMicros": 8928000.0,
+      "durationVersusCaseWerPearson": 0.10339980521231674,
+      "durationVersusErrorCountPearson": 0.6400196880309457,
+      "errorHistogram": {
+        "0": 5,
+        "1": 4,
+        "11": 1,
+        "2": 7,
+        "4": 1,
+        "5": 1,
+        "6": 2,
+        "7": 2,
+        "9": 1
+      },
+      "nonzeroErrorCases": 19,
+      "topCases": [
+        {
+          "errors": 11,
+          "ordinal": 15
+        },
+        {
+          "errors": 9,
+          "ordinal": 1
+        },
+        {
+          "errors": 7,
+          "ordinal": 3
+        },
+        {
+          "errors": 7,
+          "ordinal": 4
+        },
+        {
+          "errors": 6,
+          "ordinal": 5
+        }
+      ],
+      "topShares": {
+        "1": {
+          "errors": 11,
+          "sharePercent": 15.068493150684931
+        },
+        "3": {
+          "errors": 27,
+          "sharePercent": 36.986301369863014
+        },
+        "5": {
+          "errors": 40,
+          "sharePercent": 54.794520547945204
+        }
+      },
+      "zeroErrorCases": 5
+    },
+    "emptyReference": {
+      "actualNormalizerTrace": [
+        {
+          "characters": 19,
+          "event": "line",
+          "line": 133,
+          "nextSourceLine": "value = re.sub(r\"[<\\[][^>\\]]*[>\\]]\", \"\", value)",
+          "whitespaceTokens": 2
+        },
+        {
+          "characters": 0,
+          "event": "line",
+          "line": 134,
+          "nextSourceLine": "value = re.sub(r\"\\(([^)]+?)\\)\", \"\", value)",
+          "whitespaceTokens": 0
+        },
+        {
+          "characters": 0,
+          "event": "line",
+          "line": 135,
+          "nextSourceLine": "value = \"\".join(\" \" if unicodedata.category(ch)[0] in \"MSP\" else ch",
+          "whitespaceTokens": 0
+        },
+        {
+          "characters": 0,
+          "event": "line",
+          "line": 136,
+          "nextSourceLine": "for ch in unicodedata.normalize(\"NFKC\", value))",
+          "whitespaceTokens": 0
+        },
+        {
+          "characters": 0,
+          "event": "line",
+          "line": 135,
+          "nextSourceLine": "value = \"\".join(\" \" if unicodedata.category(ch)[0] in \"MSP\" else ch",
+          "whitespaceTokens": 0
+        },
+        {
+          "characters": 0,
+          "event": "line",
+          "line": 137,
+          "nextSourceLine": "return re.sub(r\"\\s+\", \" \", value.lower())  # No strip: upstream preserves edge spaces.",
+          "whitespaceTokens": 0
+        },
+        {
+          "characters": 0,
+          "event": "return",
+          "line": 137,
+          "nextSourceLine": "return re.sub(r\"\\s+\", \" \", value.lower())  # No strip: upstream preserves edge spaces.",
+          "whitespaceTokens": 0
+        }
+      ],
+      "eligibilityWasRawStripOnly": true,
+      "historicalReferenceChanged": false,
+      "languageOrdinal": 4,
+      "normalizedReferenceTokens": 0,
+      "ordinal": 28,
+      "rawEndsWith": "]",
+      "rawReferenceNonempty": true,
+      "rawReferenceTokens": 2,
+      "rawStartsWith": "["
+    },
+    "feasibility": {
+      "counts": {
+        "en": 137,
+        "ru": 0
+      },
+      "eligiblePoolSha256": "e04697ca0f42dcb991fe7743c75533c4ae6309725d6bfc716fe4069867651adb",
+      "independentChecks": {
+        "participantsAcrossInventory": {
+          "en": 78,
+          "ru": 4
+        },
+        "participantsRemaining": {
+          "en": 49,
+          "ru": 0
+        },
+        "zeroNormalizedReferenceAcrossInventory": {
+          "en": 60,
+          "ru": 0
+        }
+      },
+      "inventorySha256": "8a83d61bd9b0e79fd058b179f4e46c829e4188ce1aaceaad9849e70746c9c170",
+      "journals": [
+        {
+          "allCorpusCasesCovered": true,
+          "rows": 48,
+          "sha256": "233416bf45fab84fa6261e64cfb6221aa2f64d74394e62c593d429d555d6379d"
+        },
+        {
+          "allCorpusCasesCovered": true,
+          "rows": 1,
+          "sha256": "6ff60b46dc9daa23c440bc704d155fa1250fdea6f2da2efc71cbec768fa60bbc"
+        },
+        {
+          "allCorpusCasesCovered": true,
+          "rows": 19,
+          "sha256": "7a5fcdb32dcc4fd7e5e1e7487d2b589a64f2e44127e3dc93e87b1235bc1f85d0"
+        },
+        {
+          "allCorpusCasesCovered": true,
+          "rows": 28,
+          "sha256": "2fdf33a4f0ca4c05f6124f17d302e82e4117317cf673ddc62434d9d237fe41a1"
+        }
+      ],
+      "newHoldoutSelected": false,
+      "normalizedCountsSha256": "778e5bab191d6b8f0b1818222efb82dbab65f552580d8520af0f98c6f2eb1bd9",
+      "otherKnownDevelopmentOrTuningUses": 0,
+      "priorAudioSetSha256": "e4d0e554f2667004e86398c798d1546f49eb62355f896e3e462c596362fd6b4a",
+      "priorParticipantCount": 55,
+      "priorParticipantsSha256": "102942dbfdd99f8b3b052c4ed90f6560a074065cf26497b4966a28faa9df7ec4",
+      "priorSelectedAudioDigests": 144,
+      "priorSelectedRecords": 144,
+      "priorSourceSetSha256": "f106691915eabb3781c5da934b97d779541087d435e0d17361318e238d8a398a",
+      "priorUnexecutedSelectionsExcluded": 49,
+      "sourceAuthoritySha256": "0701b85521b3fb167271c11635b59a113ff543a88d302acd867ff3069d9a5d87",
+      "steps": [
+        {
+          "remaining": {
+            "en": 548,
+            "ru": 71
+          },
+          "step": "complete_current_dev_inventory"
+        },
+        {
+          "remaining": {
+            "en": 548,
+            "ru": 71
+          },
+          "removed": {
+            "en": 0,
+            "ru": 0
+          },
+          "step": "BASE48_SMALL48_source_audio"
+        },
+        {
+          "remaining": {
+            "en": 524,
+            "ru": 47
+          },
+          "removed": {
+            "en": 24,
+            "ru": 24
+          },
+          "step": "all_ARM82_dev48_source_audio_including_unexecuted"
+        },
+        {
+          "remaining": {
+            "en": 171,
+            "ru": 0
+          },
+          "removed": {
+            "en": 353,
+            "ru": 47
+          },
+          "step": "all_historical_participants"
+        },
+        {
+          "remaining": {
+            "en": 154,
+            "ru": 0
+          },
+          "removed": {
+            "en": 17,
+            "ru": 0
+          },
+          "step": "normalized_reference_token_count_at_least_one"
+        },
+        {
+          "remaining": {
+            "en": 137,
+            "ru": 0
+          },
+          "removed": {
+            "en": 17,
+            "ru": 0
+          },
+          "step": "existing_duration_source_decode_raw_validity"
+        },
+        {
+          "remaining": {
+            "en": 137,
+            "ru": 0
+          },
+          "removed": {
+            "en": 0,
+            "ru": 0
+          },
+          "step": "all_members_of_duplicate_audio_groups"
+        }
+      ],
+      "priorSelectionsWithoutValidScore": 50,
+      "arm82UnexecutedENSelections": 20,
+      "arm82ExecutedInvalidENSelections": 1
+    },
+    "label": "POSTMORTEM_DIAGNOSTIC_ONLY",
+    "participants": [
+      {
+        "cases": 13,
+        "errorSharePercent": 86.3013698630137,
+        "errors": 63,
+        "participant": "P1",
+        "referenceSharePercent": 70.77363896848138,
+        "referenceTokens": 247,
+        "werPercent": 25.506072874493928
+      },
+      {
+        "cases": 6,
+        "errorSharePercent": 1.36986301369863,
+        "errors": 1,
+        "participant": "P2",
+        "referenceSharePercent": 16.045845272206304,
+        "referenceTokens": 56,
+        "werPercent": 1.7857142857142858
+      },
+      {
+        "cases": 4,
+        "errorSharePercent": 9.58904109589041,
+        "errors": 7,
+        "participant": "P3",
+        "referenceSharePercent": 10.315186246418339,
+        "referenceTokens": 36,
+        "werPercent": 19.444444444444443
+      },
+      {
+        "cases": 1,
+        "errorSharePercent": 2.73972602739726,
+        "errors": 2,
+        "participant": "P4",
+        "referenceSharePercent": 2.865329512893983,
+        "referenceTokens": 10,
+        "werPercent": 20.0
+      }
+    ],
+    "reconciliation": {
+      "candidate": "VALID_FAIL / REJECTED_FOR_BOUNDED_ALPHA_QUALITY_GATE",
+      "completedEN": 3,
+      "completedRU": 24,
+      "en": "NOT_EVALUABLE",
+      "errors": 73,
+      "errorsAboveIntegerGate": 4,
+      "maxGateCompatibleIntegerErrors": 69,
+      "quality": "FAIL",
+      "referenceTokens": 349,
+      "resources": "NOT_EVALUABLE",
+      "werPercent": 20.916905444126076
+    },
+    "scope": {
+      "asrInference": 0,
+      "deviceExecution": 0,
+      "newSelections": 0,
+      "oldHoldoutReruns": 0,
+      "oracleRescoring": 0,
+      "tuning": 0
+    }
+  },
+  "newEligibility": {
+    "invariant": "NORMALIZED_REFERENCE_TOKEN_COUNT >= 1",
+    "implementation": "tools/alpha_asr_prospective_reference_eligibility.py",
+    "implementationPin": {
+      "bytes": 2407,
+      "sha256": "e4f7ad1fecf6656f4b83ecd517cfb00c2573a3352038488ff9843671cfc56a8d"
+    },
+    "normalizerFile": "tools/alpha_asr_eval_text_contract.py",
+    "normalizerPin": {
+      "bytes": 14735,
+      "sha256": "490b4f659aef99da413e68cab5ffa187b1e8fd7229e7d7265367f2d14e577ff0"
+    },
+    "function": "alpha_asr_eval_text_contract.normalized_tokens",
+    "placement": "Exact reference binding and normalized token check before deterministic ranking, selection and freeze.",
+    "scope": "Prospective only; historical dev48 and eligibility remain unchanged. Future selection entry point is alpha_asr_prospective_reference_eligibility.select.",
+    "emptyReferenceAction": "EXCLUDE_BEFORE_RANK",
+    "badReferenceIdentityAction": "STOP_REFERENCE_BINDING_MISMATCH"
+  },
+  "candidateConsidered": {
+    "artifact": "ggml-small-q8_0.bin",
+    "bytes": 264464607,
+    "modelDownloaded": false,
+    "pointerUrl": "https://huggingface.co/ggerganov/whisper.cpp/raw/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-small-q8_0.bin",
+    "repository": "ggerganov/whisper.cpp",
+    "revision": "5359861c739e955e79d9a303bcbc70fb988958b1",
+    "sha256": "49c8fb02b65e6049d5fa6c04f81f53b867b5ec9540406812c643f177317f779f",
+    "state": "CONDITIONAL_PREFERENCE_ONLY_NOT_FROZEN",
+    "license": "MIT",
+    "principalVariable": "Small weight quantization q5_1 -> q8_0; same multilingual Small capacity and frozen runtime/decoding.",
+    "artifactIncreaseBytes": 74379120,
+    "rationale": "Higher precision is a plausible isolated test of quantization loss with a smaller storage/memory increase than F16 Small or Medium. No causal evidence that quantization caused the four-error miss; no guaranteed RU/EN WER or RTF improvement.",
+    "resourceCaveat": "Actual complete ARM82 resource gate was NOT_EVALUABLE. Extra artifact bytes are not a peak-heap prediction. Must pass unchanged full resource gates on a new untouched holdout.",
+    "freezeAllowed": false,
+    "modelMaterialized": false,
+    "newExperimentId": null
+  },
+  "otherArtifactsConsidered": [
+    {
+      "artifact": "ggml-small.bin",
+      "bytes": 487601967,
+      "modelDownloaded": false,
+      "pointerUrl": "https://huggingface.co/ggerganov/whisper.cpp/raw/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-small.bin",
+      "repository": "ggerganov/whisper.cpp",
+      "revision": "5359861c739e955e79d9a303bcbc70fb988958b1",
+      "sha256": "1be3a9b2063867b937e64e2ec7483364a79917e157fa98c5d94b5c1fffea987b",
+      "license": "MIT",
+      "state": "NOT_SELECTED_NOT_FROZEN",
+      "artifactIncreaseBytes": 297516480
+    },
+    {
+      "artifact": "ggml-medium-q5_0.bin",
+      "bytes": 539212467,
+      "modelDownloaded": false,
+      "pointerUrl": "https://huggingface.co/ggerganov/whisper.cpp/raw/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-medium-q5_0.bin",
+      "repository": "ggerganov/whisper.cpp",
+      "revision": "5359861c739e955e79d9a303bcbc70fb988958b1",
+      "sha256": "19fea4b380c3a618ec4723c3eef2eb785ffba0d0538cf43f8f235e7b3b34220f",
+      "license": "MIT",
+      "state": "NOT_SELECTED_NOT_FROZEN",
+      "artifactIncreaseBytes": 349126980
+    }
+  ],
+  "observations": [
+    "73 errors across 19 of 24 cases, with five zero-error cases.",
+    "Participant P1 supplies 63/73 errors and 247/349 reference tokens.",
+    "Top five cases supply 40/73 errors.",
+    "Complete current dev RU inventory has four participants; all four are consumed.",
+    "EN04 square-bracket removal alone reduces raw nonempty reference to empty."
+  ],
+  "hypotheses": [
+    "Participant/acoustic/linguistic characteristics may influence concentration; no causal separation is possible from four participants and these retained totals.",
+    "Q8_0 may recover precision lost in Q5_1; the 4-error marginal miss does not establish quantization causality or transfer to another holdout."
+  ],
+  "changesRelativeToAcceptedExperiment": [
+    "Prospective reference eligibility adds normalized token count >=1 using the unchanged normalizer.",
+    "Prior-use exclusions now include all ARM82 dev48 source/audio/participant identities, including 20 unexecuted EN selections and the executed-invalid EN04.",
+    "Read-only forensic/pool evidence and candidate comparison added; latest status/backlog records the holdout blocker."
+  ],
+  "explicitlyUnchanged": {
+    "model": {
+      "artifact": "ggml-small-q5_1.bin",
+      "bytes": 190085487,
+      "sha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb"
+    },
+    "runtimeCommit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+    "runtimeVersion": "v1.9.4",
+    "runtimeConfiguration": {
+      "acceleratorAndThreadSweepsAllowed": false,
+      "adapterSource": "tools/alpha_asr_campaign_native/main.cpp unchanged; fresh process/context for every case.",
+      "backend": "ggml CPU",
+      "capabilityCheck": "Baseline-compatible check before executing specialized code; absent/unknown support stops, no fallback.",
+      "cmakeOptions": {
+        "ANDROID_ABI": "arm64-v8a",
+        "ANDROID_PLATFORM": "android-28",
+        "ANDROID_STL": "c++_shared",
+        "BUILD_SHARED_LIBS": "ON",
+        "CMAKE_BUILD_TYPE": "Release",
+        "GGML_ACCELERATE": "OFF",
+        "GGML_BACKEND_DL": "OFF",
+        "GGML_BLAS": "OFF",
+        "GGML_BUILD_EXAMPLES": "OFF",
+        "GGML_BUILD_TESTS": "OFF",
+        "GGML_CCACHE": "OFF",
+        "GGML_CPU": "ON",
+        "GGML_CPU_ALL_VARIANTS": "OFF",
+        "GGML_CPU_ARM_ARCH": "armv8.2-a+fp16+dotprod",
+        "GGML_CPU_KLEIDIAI": "OFF",
+        "GGML_CPU_REPACK": "ON",
+        "GGML_CUDA": "OFF",
+        "GGML_ET": "OFF",
+        "GGML_HEXAGON": "OFF",
+        "GGML_HIP": "OFF",
+        "GGML_LLAMAFILE": "OFF",
+        "GGML_LTO": "OFF",
+        "GGML_METAL": "OFF",
+        "GGML_MUSA": "OFF",
+        "GGML_NATIVE": "OFF",
+        "GGML_OPENCL": "OFF",
+        "GGML_OPENMP": "OFF",
+        "GGML_OPENVINO": "OFF",
+        "GGML_RPC": "OFF",
+        "GGML_SYCL": "OFF",
+        "GGML_VIRTGPU": "OFF",
+        "GGML_VIRTGPU_BACKEND": "OFF",
+        "GGML_VULKAN": "OFF",
+        "GGML_WEBGPU": "OFF",
+        "GGML_ZDNN": "OFF",
+        "GGML_ZENDNN": "OFF",
+        "WHISPER_BUILD_EXAMPLES": "OFF",
+        "WHISPER_BUILD_IS_DEV": "OFF",
+        "WHISPER_BUILD_SERVER": "OFF",
+        "WHISPER_BUILD_TESTS": "OFF",
+        "WHISPER_COREML": "OFF",
+        "WHISPER_CURL": "OFF",
+        "WHISPER_OPENVINO": "OFF",
+        "WHISPER_SDL2": "OFF",
+        "WHISPER_VITISAI": "OFF"
+      },
+      "compile": "Release -O3 -DNDEBUG; existing NDK flags retained; no additional fast-math/LTO/i8mm/SVE.",
+      "computeThreads": 4,
+      "decodingProfile": {
+        "base": "whisper_full_default_params(WHISPER_SAMPLING_GREEDY)",
+        "contextParams": {
+          "dtw_aheads": {
+            "heads": null,
+            "n_heads": 0
+          },
+          "dtw_aheads_preset": "WHISPER_AHEADS_NONE",
+          "dtw_mem_size": 134217728,
+          "dtw_n_top": -1,
+          "dtw_token_timestamps": false,
+          "flash_attn": true,
+          "gpu_device": 0,
+          "use_gpu": false
+        },
+        "resolvedWhisperFullParams": {
+          "en": {
+            "abort_callback": null,
+            "abort_callback_user_data": null,
+            "audio_ctx": 0,
+            "beam_search.beam_size": -1,
+            "beam_search.patience": -1,
+            "carry_initial_prompt": false,
+            "debug_mode": false,
+            "detect_language": false,
+            "duration_ms": 0,
+            "encoder_begin_callback": null,
+            "encoder_begin_callback_user_data": null,
+            "entropy_thold": 2.4000001,
+            "grammar_penalty": 100,
+            "grammar_rules": null,
+            "greedy.best_of": 5,
+            "i_start_rule": 0,
+            "initial_prompt": null,
+            "language": "en",
+            "length_penalty": -1,
+            "logits_filter_callback": null,
+            "logits_filter_callback_user_data": null,
+            "logprob_thold": -1,
+            "max_initial_ts": 1,
+            "max_len": 0,
+            "max_tokens": 0,
+            "n_grammar_rules": 0,
+            "n_max_text_ctx": 16384,
+            "n_threads": 4,
+            "new_segment_callback": null,
+            "new_segment_callback_user_data": null,
+            "no_context": true,
+            "no_speech_thold": 0.600000024,
+            "no_timestamps": false,
+            "offset_ms": 0,
+            "print_progress": false,
+            "print_realtime": false,
+            "print_special": false,
+            "print_timestamps": false,
+            "progress_callback": null,
+            "progress_callback_user_data": null,
+            "prompt_n_tokens": 0,
+            "prompt_tokens": null,
+            "single_segment": false,
+            "split_on_word": false,
+            "strategy": "WHISPER_SAMPLING_GREEDY",
+            "suppress_blank": true,
+            "suppress_nst": false,
+            "suppress_regex": null,
+            "tdrz_enable": false,
+            "temperature": 0,
+            "temperature_inc": 0,
+            "thold_pt": 0.00999999978,
+            "thold_ptsum": 0.00999999978,
+            "token_timestamps": false,
+            "translate": false,
+            "vad": false,
+            "vad_model_path": null,
+            "vad_params.max_speech_duration_s": 3.40282347e+38,
+            "vad_params.min_silence_duration_ms": 100,
+            "vad_params.min_speech_duration_ms": 250,
+            "vad_params.samples_overlap": 0.100000001,
+            "vad_params.speech_pad_ms": 30,
+            "vad_params.threshold": 0.5
+          },
+          "ru": {
+            "abort_callback": null,
+            "abort_callback_user_data": null,
+            "audio_ctx": 0,
+            "beam_search.beam_size": -1,
+            "beam_search.patience": -1,
+            "carry_initial_prompt": false,
+            "debug_mode": false,
+            "detect_language": false,
+            "duration_ms": 0,
+            "encoder_begin_callback": null,
+            "encoder_begin_callback_user_data": null,
+            "entropy_thold": 2.4000001,
+            "grammar_penalty": 100,
+            "grammar_rules": null,
+            "greedy.best_of": 5,
+            "i_start_rule": 0,
+            "initial_prompt": null,
+            "language": "ru",
+            "length_penalty": -1,
+            "logits_filter_callback": null,
+            "logits_filter_callback_user_data": null,
+            "logprob_thold": -1,
+            "max_initial_ts": 1,
+            "max_len": 0,
+            "max_tokens": 0,
+            "n_grammar_rules": 0,
+            "n_max_text_ctx": 16384,
+            "n_threads": 4,
+            "new_segment_callback": null,
+            "new_segment_callback_user_data": null,
+            "no_context": true,
+            "no_speech_thold": 0.600000024,
+            "no_timestamps": false,
+            "offset_ms": 0,
+            "print_progress": false,
+            "print_realtime": false,
+            "print_special": false,
+            "print_timestamps": false,
+            "progress_callback": null,
+            "progress_callback_user_data": null,
+            "prompt_n_tokens": 0,
+            "prompt_tokens": null,
+            "single_segment": false,
+            "split_on_word": false,
+            "strategy": "WHISPER_SAMPLING_GREEDY",
+            "suppress_blank": true,
+            "suppress_nst": false,
+            "suppress_regex": null,
+            "tdrz_enable": false,
+            "temperature": 0,
+            "temperature_inc": 0,
+            "thold_pt": 0.00999999978,
+            "thold_ptsum": 0.00999999978,
+            "token_timestamps": false,
+            "translate": false,
+            "vad": false,
+            "vad_model_path": null,
+            "vad_params.max_speech_duration_s": 3.40282347e+38,
+            "vad_params.min_silence_duration_ms": 100,
+            "vad_params.min_speech_duration_ms": 250,
+            "vad_params.samples_overlap": 0.100000001,
+            "vad_params.speech_pad_ms": 30,
+            "vad_params.threshold": 0.5
+          }
+        },
+        "runtimeCommit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+        "version": "dora-alpha-asr-decoding-v0.1"
+      },
+      "decodingProfileCanonicalSha256": "cd53fda162402675f54875de470b01c303f0ede9a2e0cefd6f1056e8fa381d39",
+      "flashAttention": true,
+      "hardwarePrerequisites": [
+        "Physical POCO M5",
+        "arm64-v8a",
+        "HWCAP_ASIMD",
+        "HWCAP_FPHP",
+        "HWCAP_ASIMDHP",
+        "HWCAP_ASIMDDP"
+      ],
+      "historicalProtocolFields": "Use measurement definitions; acceptance limits are explicitly restated here, not historical proposed gate fields.",
+      "license": "MIT",
+      "measurementProtocolCanonicalSha256": "0f1e456fb4b4b0da28a209abe94e42fe7a0ca599e5c5c794db16a6abe478b116",
+      "repository": "ggml-org/whisper.cpp",
+      "revision": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+      "scheduling": {
+        "affinity": "Default/inherited; no taskset or explicit pinning.",
+        "meaning": "Inherited/default; no priority or governor changes.",
+        "poll": 50,
+        "priority": 0,
+        "strictCpu": false
+      },
+      "singleBuildDelta": "GGML_CPU_ARM_ARCH: armv8-a -> armv8.2-a+fp16+dotprod",
+      "tag": "v1.9.4",
+      "toolchain": {
+        "clang": "19.0.1",
+        "cmake": "3.22.1",
+        "ndk": "28.2.13676358",
+        "ninja": "1.10.2"
+      },
+      "upstreamSourcePatches": 0,
+      "useGpu": false
+    },
+    "cmakeOptions": {
+      "ANDROID_ABI": "arm64-v8a",
+      "ANDROID_PLATFORM": "android-28",
+      "ANDROID_STL": "c++_shared",
+      "BUILD_SHARED_LIBS": "ON",
+      "CMAKE_BUILD_TYPE": "Release",
+      "GGML_ACCELERATE": "OFF",
+      "GGML_BACKEND_DL": "OFF",
+      "GGML_BLAS": "OFF",
+      "GGML_BUILD_EXAMPLES": "OFF",
+      "GGML_BUILD_TESTS": "OFF",
+      "GGML_CCACHE": "OFF",
+      "GGML_CPU": "ON",
+      "GGML_CPU_ALL_VARIANTS": "OFF",
+      "GGML_CPU_ARM_ARCH": "armv8.2-a+fp16+dotprod",
+      "GGML_CPU_KLEIDIAI": "OFF",
+      "GGML_CPU_REPACK": "ON",
+      "GGML_CUDA": "OFF",
+      "GGML_ET": "OFF",
+      "GGML_HEXAGON": "OFF",
+      "GGML_HIP": "OFF",
+      "GGML_LLAMAFILE": "OFF",
+      "GGML_LTO": "OFF",
+      "GGML_METAL": "OFF",
+      "GGML_MUSA": "OFF",
+      "GGML_NATIVE": "OFF",
+      "GGML_OPENCL": "OFF",
+      "GGML_OPENMP": "OFF",
+      "GGML_OPENVINO": "OFF",
+      "GGML_RPC": "OFF",
+      "GGML_SYCL": "OFF",
+      "GGML_VIRTGPU": "OFF",
+      "GGML_VIRTGPU_BACKEND": "OFF",
+      "GGML_VULKAN": "OFF",
+      "GGML_WEBGPU": "OFF",
+      "GGML_ZDNN": "OFF",
+      "GGML_ZENDNN": "OFF",
+      "WHISPER_BUILD_EXAMPLES": "OFF",
+      "WHISPER_BUILD_IS_DEV": "OFF",
+      "WHISPER_BUILD_SERVER": "OFF",
+      "WHISPER_BUILD_TESTS": "OFF",
+      "WHISPER_COREML": "OFF",
+      "WHISPER_CURL": "OFF",
+      "WHISPER_OPENVINO": "OFF",
+      "WHISPER_SDL2": "OFF",
+      "WHISPER_VITISAI": "OFF"
+    },
+    "toolchain": {
+      "clang": "19.0.1",
+      "cmake": "3.22.1",
+      "ndk": "28.2.13676358",
+      "ninja": "1.10.2"
+    },
+    "nativeArtifacts": {
+      "dora-asr-campaign": {
+        "bytes": 2668424,
+        "sha256": "59e46efd284e88f84641b30f3aa5d8fe4f1dcf62b8424b48edb7330637223951"
+      },
+      "libc++_shared.so": {
+        "bytes": 9236352,
+        "sha256": "ab4e6c71b96b851de45a8a9bd86369e7dbc2130a44b3b4520564be94847910f2"
+      },
+      "libggml-base.so": {
+        "bytes": 5904504,
+        "sha256": "ef2fab9ca78cb998feed953755c394d46cd5182b355909032415e79ad522e049"
+      },
+      "libggml-cpu.so": {
+        "bytes": 4699840,
+        "sha256": "ab61e958ed28b6ec9ef1c92bd141f99149bb02e6147c1d710824565bdb2c7a14"
+      },
+      "libggml.so": {
+        "bytes": 533264,
+        "sha256": "032f86f3f42ba9dedeac0f7f0b69c818917c6ddab6da98b677f2cef6dbea4f97"
+      },
+      "libwhisper.so": {
+        "bytes": 7176544,
+        "sha256": "b67a219f3610f9085a75fe4dd7c2c11a18edea60068e63c2f4b63c330d5f96e3"
+      }
+    },
+    "evaluationCriteria": {
+      "quality": {
+        "ruNormalizedWerPercentMaximum": 20,
+        "enNormalizedWerPercentMaximum": 18,
+        "aggregation": "Sum normalized S+D+I / sum reference tokens; integer cross-products; not per-case average.",
+        "requiredCasesPerLanguage": 24,
+        "bothLanguagesMustPass": true,
+        "rawWer": "DIAGNOSTIC_ONLY",
+        "timestampQuality": "NOT_EVALUABLE"
+      },
+      "resources": {
+        "weightedRtfMaximum": 2,
+        "p95RtfMaximum": 4,
+        "p95NearestRankAt48": 46,
+        "maximumCaseRtf": 6,
+        "coldLoadMicrosMaximum": 15000000,
+        "pssBytesMaximum": 1610612736,
+        "nativeHeapBytesMaximum": 1342177280,
+        "evidencedOomMaximum": 0,
+        "thermalForbiddenMinimum": 3,
+        "requiredValidAttempts": 48,
+        "resourceTelemetryCompleteRequired": true,
+        "endToEndLatency": "DIAGNOSTIC_ONLY"
+      },
+      "telemetry": {
+        "memorySamplingTargetMs": 100,
+        "memoryMaximumGapMs": 1000,
+        "thermalPollingDelayMs": 1000,
+        "thermalMaximumGapMs": 3000,
+        "window": "Before decode through after model free; synchronous load/inference/free samples.",
+        "memorySources": "smaps_rollup Pss KiB*1024; mallinfo().uordblks bytes; never add them.",
+        "peaks": "MAXIMUM_OBSERVED_SAMPLE_NOT_CONTINUOUS_HIGH_WATER_MARK"
+      },
+      "disposition": "Same quality/resource completeness and positive-failure precedence as frozen SMALL evaluator; new profile identities only."
+    },
+    "profile": {
+      "allDeviceSupport": false,
+      "attemptPolicy": "ONE_PRIMARY_PER_CASE_NO_AUTOMATIC_RETRY_STOP_ON_INVALID_ATTEMPT",
+      "campaignVersion": "dora-asr-small-arm82-01-campaign-v0.1",
+      "decodingProfileSha256": "cd53fda162402675f54875de470b01c303f0ede9a2e0cefd6f1056e8fa381d39",
+      "endToEndRole": "DIAGNOSTIC_ONLY",
+      "governanceCommit": "dd1468dcaace9699e64b1945f83a9b532205d435",
+      "languageGates": {
+        "en": {
+          "errors": 18,
+          "referenceTokens": 100
+        },
+        "ru": {
+          "errors": 20,
+          "referenceTokens": 100
+        }
+      },
+      "measurementProtocolSha256": "0f1e456fb4b4b0da28a209abe94e42fe7a0ca599e5c5c794db16a6abe478b116",
+      "medianRtfRole": "DIAGNOSTIC_ONLY",
+      "modelArtifact": "ggml-small-q5_1.bin",
+      "modelBytes": 190085487,
+      "modelSha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb",
+      "normalizationVersion": "dora-alpha-asr-normalization-v0.1",
+      "oracleIdentity": "com.monumentogram.dora.stage0.asr.i1.AsrSyntheticScoringOracle",
+      "oracleSchemaVersion": 1,
+      "oracleSourceSha256": "a2b3e37305f24f91a8ace00f5f824d1d13effda94248c15b31aa31db78c76125",
+      "order": [
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en"
+      ],
+      "privateFreezeSha256": "cf74da20a1c230fe7fcf02c672757236555d485dd0495fa3517b7c04e7e4fd90",
+      "productionAdmission": false,
+      "profileId": "dora-asr-small-arm82-01-eval-profile-v0.1",
+      "pythonSemanticProfile": "cpython-3.12-unicode-15.0.0",
+      "rawWerRole": "DIAGNOSTIC_ONLY",
+      "resourceGateSha256": "fdfb56b56429c07a99538c92d87f9ea8570c723cc67f5e5eb02915d97557ccd1",
+      "resourceGateVersion": "dora-alpha-asr-small-poco-m5-resource-gates-v0.1",
+      "resourceGates": {
+        "coldLoadMicros": 15000000,
+        "evidencedOomEvents": 0,
+        "forbiddenThermalMinimum": 3,
+        "maximumRtf": 6,
+        "memoryMaximumGapMs": 1000,
+        "memoryTargetMs": 100,
+        "nativeHeapBytes": 1342177280,
+        "p95Rank": 46,
+        "p95Rtf": 4,
+        "pssBytes": 1610612736,
+        "thermalDelayMs": 1000,
+        "thermalMaximumGapMs": 3000,
+        "weightedRtf": 2
+      },
+      "retentionDeadline": "2026-10-25",
+      "runtimeSourceCommit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+      "runtimeSourceVersion": "ggml-org/whisper.cpp v1.9.4",
+      "scope": "PHYSICAL_POCO_M5_BOUNDED_STAGE_0_ONLY",
+      "selectedManifestSha256": "36a40fa210aee48e7b63372f6cc89471d58bfc9ecc5db87738989086b69c0e7c",
+      "selectionContractSha256": "0701b85521b3fb167271c11635b59a113ff543a88d302acd867ff3069d9a5d87",
+      "sourceRecoveryCommit": "aa4e65cf4510f055260dca6a7e6e8f26916f732e",
+      "timestampQuality": "NOT_EVALUABLE",
+      "transferIndexSha256": "6d72cdee1caca61dc078d84b253afce6f20f82719e7e26b2d28f1f03995b022b",
+      "upstreamOptions": {
+        "removeDiacritics": false,
+        "splitLetters": false
+      },
+      "upstreamRepository": "openai/whisper",
+      "upstreamRevision": "86098128c0b4f24f0e2aa2994de830614b474227",
+      "upstreamSourceSha256": "4742eaa040e0657fa1247a1361e0d856c62317a43326ea59a40c2e9edd8d2c38",
+      "warmup": "ONE_GENERATED_3_SECOND_SILENCE_FULL_INFERENCE_BEFORE_CORPUS"
+    },
+    "profileSha256": "48f90d80d90f69e37e27a49f8187dc55217284ef807da5f118e787708d485c99",
+    "dataSourceAuthoritySha256": "0701b85521b3fb167271c11635b59a113ff543a88d302acd867ff3069d9a5d87",
+    "sourceRelease": "sps-corpus-5.0-2026-09-11",
+    "partition": "dev",
+    "durationMsInclusive": [
+      1000,
+      20000
+    ],
+    "selection": "Same hash rank; 24 per language; no duration balancing/manual replacement; shortage stops.",
+    "lifecycle": "Fresh process/context per case; same full audio context; deterministic generated 3-second silence warmup for a future authorized campaign only.",
+    "retryPolicy": "One primary attempt per selected case; zero retries, no replacement; durable one-shot journal.",
+    "stopConditions": "Inherited fatal input/runtime/telemetry/cleanup conditions and positive resource-failure stop; completed-language failure remains decisive.",
+    "normalization": "dora-alpha-asr-normalization-v0.1; CPython3.12/Unicode15.0; exact existing normalized_tokens; no normalizer/oracle edits.",
+    "retentionDeadline": "2026-10-25",
+    "storage": "LOCAL_PRIVATE_CONTROLLED_STORAGE_OWNER_ONLY",
+    "prospectiveCampaignInvocationBudgetIfLaterAuthorized": 1,
+    "campaignsAuthorizedThisTask": 0,
+    "historicalResults": "Unchanged; no rescoring, case repair, deletion or reinterpretation.",
+    "scopeBoundaries": "No Recovery, PR86, Android production/runtime, model build, device, merge or historical artifact changes."
+  },
+  "privateAudit": {
+    "identifyingTableFilePin": {
+      "bytes": 15157,
+      "sha256": "d21e478c6cdc7a0ea3fc41962991af7c0da6fc3d8586fd417001f0c613b896ff"
+    },
+    "poolAuditFilePin": {
+      "bytes": 184683,
+      "sha256": "d559cb9118eb5f5c0f9ca18a1a0bf7f1ba6d16e03f3ee42f068026a6bf42137f"
+    },
+    "access": "Owner-only retained private storage; identifying table has sample IDs/participant hashes, no transcript publication. Public tables use ordinal and report-local P1-P4 labels.",
+    "editDecompositionLimitation": "Separate S/D/I were not retained; no response authorizing frozen-oracle reconstruction was received. Twelve cases are uniquely determined by retained count arithmetic; others have bounds only."
+  },
+  "scopeCounts": {
+    "measuredAsrInference": 0,
+    "allAsrInference": 0,
+    "deviceExecution": 0,
+    "oldHoldoutReruns": 0,
+    "historicalOracleRescoring": 0,
+    "newHoldoutSelections": 0,
+    "newModelDownloads": 0,
+    "modelChanges": 0,
+    "decodingChanges": 0,
+    "thresholdChanges": 0,
+    "configurationSweeps": 0,
+    "threadSweeps": 0,
+    "tuning": 0,
+    "campaignInvocations": 0,
+    "retries": 0,
+    "recoveryChanges": 0,
+    "pr86Changes": 0,
+    "merges": 0
+  },
+  "stageEffect": {
+    "ASR-SMALL-ARM82-01": "TERMINAL / MEASURED; accepted VALID_FAIL unchanged",
+    "nextExperiment": "NOT_FROZEN / INSUFFICIENT_UNTOUCHED_HOLDOUT",
+    "Stage5": "NOT_PASS",
+    "GroupB": "NOT_PASS",
+    "POC-ASR-001": "BLOCKED / NOT_READY"
+  },
+  "nextAction": "Obtain owner authorization for the narrowest expansion of data-source/partition authority, preserving participant isolation and the new normalized-reference rule, before admitting/selecting any new holdout or freezing a Q8_0 experiment.",
+  "changedFiles": [
+    "docs/stage0/DORA_ASR_ARM82_QUALITY_FORENSICS_STAGE0_V0_1.md",
+    "docs/evidence/poc-asr-001/asr-arm82-quality-forensics-stage0-v0.1.json",
+    "tools/alpha_asr_prospective_reference_eligibility.py",
+    "tools/test_alpha_asr_prospective_reference_eligibility.py",
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md"
+  ],
+  "poolIndependentVerification": {
+    "fullArchiveDevInventoryReconciled": {
+      "en": 548,
+      "ru": 71
+    },
+    "helperAppliedWithoutRanking": true,
+    "newSelections": 0,
+    "result": {
+      "en": 137,
+      "ru": 0
+    },
+    "sourceReferencesHashChecked": 619,
+    "steps": [
+      {
+        "check": "prior_BASE_SMALL_source",
+        "remaining": {
+          "en": 548,
+          "ru": 71
+        },
+        "removed": {
+          "en": 0,
+          "ru": 0
+        }
+      },
+      {
+        "check": "prior_BASE_SMALL_audio",
+        "remaining": {
+          "en": 548,
+          "ru": 71
+        },
+        "removed": {
+          "en": 0,
+          "ru": 0
+        }
+      },
+      {
+        "check": "consumed_dev48_source",
+        "remaining": {
+          "en": 524,
+          "ru": 47
+        },
+        "removed": {
+          "en": 24,
+          "ru": 24
+        }
+      },
+      {
+        "check": "consumed_dev48_audio",
+        "remaining": {
+          "en": 524,
+          "ru": 47
+        },
+        "removed": {
+          "en": 0,
+          "ru": 0
+        }
+      },
+      {
+        "check": "prior_BASE_SMALL_participants",
+        "remaining": {
+          "en": 498,
+          "ru": 47
+        },
+        "removed": {
+          "en": 26,
+          "ru": 0
+        }
+      },
+      {
+        "check": "consumed_dev48_participants",
+        "remaining": {
+          "en": 171,
+          "ru": 0
+        },
+        "removed": {
+          "en": 327,
+          "ru": 47
+        }
+      },
+      {
+        "check": "normalized_empty_reference",
+        "remaining": {
+          "en": 154,
+          "ru": 0
+        },
+        "removed": {
+          "en": 17,
+          "ru": 0
+        }
+      },
+      {
+        "check": "duration_below_1000ms",
+        "remaining": {
+          "en": 153,
+          "ru": 0
+        },
+        "removed": {
+          "en": 1,
+          "ru": 0
+        }
+      },
+      {
+        "check": "duration_above_20000ms",
+        "remaining": {
+          "en": 137,
+          "ru": 0
+        },
+        "removed": {
+          "en": 16,
+          "ru": 0
+        }
+      },
+      {
+        "check": "source_or_raw_reference_or_decode_invalid",
+        "remaining": {
+          "en": 137,
+          "ru": 0
+        },
+        "removed": {
+          "en": 0,
+          "ru": 0
+        }
+      },
+      {
+        "check": "duplicate_audio_all_group_members",
+        "remaining": {
+          "en": 137,
+          "ru": 0
+        },
+        "removed": {
+          "en": 0,
+          "ru": 0
+        }
+      }
+    ]
+  },
+  "validation": {
+    "hostTests": 191,
+    "hostTestsResult": "PASS",
+    "newGeneratedTests": 9,
+    "hostTestsLogPin": {
+      "bytes": 27737,
+      "sha256": "372ffe0b9b1af978535eaa8e9bba1eecc621012e0338a3f371cbf31d91c2752e"
+    },
+    "stage00Gradle": "PASS",
+    "stage00GradleLogPin": {
+      "bytes": 13096,
+      "sha256": "cab2c77b0ba1e7fa2f94bf5f8d2d41fda254eabc2b63a2c06bae05fdb94171e0"
+    },
+    "stage00ArtifactValidator": "PASS",
+    "apkNativeAlignment": "PASS",
+    "strictJson": "PASS",
+    "privacy": "PASS",
+    "markdownReferences": "PASS",
+    "gitDiffCheck": "PASS",
+    "historicalTrackedFilesByteIdentical": 619,
+    "historicalStatusBacklogBytesPreserved": true,
+    "historicalPrivateFilesByteIdentical": 1003
+  }
+}

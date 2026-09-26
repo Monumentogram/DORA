@@ -1,5 +1,21 @@
 # Dora MVP 1 — Executable Backlog
 
+## ASR ARM82 quality forensics — 26 September 2026
+
+`BLOCKED / INSUFFICIENT_UNTOUCHED_HOLDOUT`. Read-only reconciliation preserves RU24/24,
+73/349=20.916905% FAIL (integer gate maximum69, four errors over); EN3/24 and aggregate resources NOT_EVALUABLE.
+Accepted ASR-SMALL-ARM82-01 VALID_FAIL / REJECTED_FOR_BOUNDED_ALPHA_QUALITY_GATE remains unchanged.
+Errors concentrate in P1 (63/73); EN04's bracket-only raw reference normalizes empty.
+Prospective eligibility now requires NORMALIZED_REFERENCE_TOKEN_COUNT >=1 using the exact frozen normalizer before ranking.
+All144 selected records/audio digests and55 participants are excluded, including all unexecuted selections.
+Same admitted dev authority leaves RU0/EN137: no new holdout selected, no successor experiment frozen.
+Small q8_0 is the conditional next artifact preference only. No inference, rerun, tuning, threshold/model/decoding change.
+Stage5/GroupB remain NOT_PASS; POC-ASR-001 BLOCKED / NOT_READY. Historical sections below remain intact.
+Next: owner-authorized narrow data-source/partition expansion while preserving participant isolation and corrected eligibility.
+See [forensic report](stage0/DORA_ASR_ARM82_QUALITY_FORENSICS_STAGE0_V0_1.md)
+and [sanitized evidence](evidence/poc-asr-001/asr-arm82-quality-forensics-stage0-v0.1.json).
+
+
 ## ASR-SMALL-ARM82-01 measured terminal — 26 September 2026
 
 `INCOMPLETE / BOUNDED_SMALL_POCO_CAMPAIGN_STOPPED`.
