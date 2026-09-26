@@ -1,5 +1,25 @@
 # Dora MVP 1 — Stage Status
 
+## ASR 5.6C.2B pre-campaign schema blocker — 26 September 2026
+
+`5.6C.2B = BLOCKED / FROZEN_OPERATOR_PRIVATE_MANIFEST_SCHEMA_MISMATCH`.
+All three private metadata canonical identities match, but the exact admitted
+materialized manifest lacks the top-level `samples` field required by the frozen
+operator. Verification stopped before the campaign marker, model/audio/reference
+reads or device access. Primary attempts: 0; completed RU/EN: 0/0; inference: 0.
+Quality and resources are NOT_EVALUABLE; SMALL candidate disposition is
+`INCONCLUSIVE / CAMPAIGN_EVIDENCE_INCOMPLETE`.
+
+No retry, schema remapping, operator change or corpus modification occurred.
+Separate compatibility-remediation scope and review are required before another
+execution decision. Prior 5.6C.2A host/synthetic PASS remains historical evidence,
+not proof of compatibility with the actual private package. POC-ASR-001 remains
+BLOCKED / NOT_READY; Stage 5 and Group B are not marked PASS. Recovery remains
+0D.6 = ALPHA CLOSED / FULL OPEN; PR #86 stays draft and unmerged. See the
+[result report](stage0/DORA_ALPHA_ASR_SMALL_CAMPAIGN_RESULT_STAGE0_V0_1.md) and
+[aggregate evidence](evidence/poc-asr-001/alpha-asr-small-campaign-result-stage0-v0.1.json).
+
+
 ## ASR 5.6C.2A SMALL operator/profile freeze — 25 September 2026
 
 `5.6C.2A = PASS / SMALL_CAMPAIGN_OPERATOR_AND_EVALUATION_PROFILE_FROZEN`.
