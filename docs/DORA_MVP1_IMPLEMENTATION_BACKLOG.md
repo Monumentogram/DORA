@@ -1,5 +1,25 @@
 # Dora MVP 1 — Executable Backlog
 
+## ASR-SMALL-ARM82-01 measured terminal — 26 September 2026
+
+`INCOMPLETE / BOUNDED_SMALL_POCO_CAMPAIGN_STOPPED`.
+Candidate: `VALID_FAIL / REJECTED_FOR_BOUNDED_ALPHA_QUALITY_GATE`. One API invocation, 28 primary attempts,
+zero retries; RU 24/24, EN 3/24; cleanup VERIFIED.
+Quality FAIL; resources NOT_EVALUABLE.
+Owner-authorized data revision uses the same exact SPS5.0 dev partition for both languages:
+eligible RU51/EN408 after all exclusions, selected RU24/EN24, zero prior participant/source/audio overlap.
+Source/materialization/operator/binary identities were frozen before inference.
+Exact ARM82 build and preflight PASS; unchanged SMALL q5_1, CPU4, decoding and thresholds.
+The old test-only blocker and historical SMALL VALID_FAIL remain unchanged.
+ASR-SMALL-ARM82-01 is now TERMINAL / MEASURED; Stage5/GroupB NOT_PASS;
+POC-ASR-001 BLOCKED / NOT_READY. Historical 5.6C.2B remains INCOMPLETE.
+Recovery stays 0D.6 = ALPHA CLOSED / FULL OPEN; PR #86 OPEN, DRAFT, UNMERGED, untouched.
+Next: Assess the RU quality rejection and normalized-empty reference stop, then prospectively freeze one next candidate experiment and reference-eligibility correction on a new untouched holdout; do not rerun this campaign.
+See [measured result and revised data authority](stage0/DORA_ASR_SMALL_ARM82_01_MEASURED_STAGE0_V0_1.md)
+and [aggregate evidence](evidence/poc-asr-001/asr-small-arm82-01-measured-stage0-v0.1.json).
+All earlier dated sections remain historical evidence.
+
+
 ## ASR-SMALL-ARM82-01 execution — 26 September 2026
 
 `BLOCKED / INSUFFICIENT_FRESH_HOLDOUT_AFTER_PARTICIPANT_EXCLUSION`.

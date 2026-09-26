@@ -1,0 +1,1280 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "ASR-SMALL-ARM82-01",
+  "recordedUtc": "2026-09-26T17:44:01.708100+00:00",
+  "result": "INCOMPLETE / BOUNDED_SMALL_POCO_CAMPAIGN_STOPPED",
+  "candidateDisposition": "VALID_FAIL / REJECTED_FOR_BOUNDED_ALPHA_QUALITY_GATE",
+  "authority": {
+    "baseCommit": "cfe27f84a0b843ea33f1fe7a89dd13601a555a63",
+    "branch": "chat/alpha-asr-runner-scope",
+    "parentContractCanonicalSha256": "32b2e6516a600f656f4e414e291b871327821c481c57732cbb41b43b401d789a",
+    "ownerRevision": "Latest explicit owner instruction prospectively authorizes dev partition expansion and one measured campaign after preflight; no other experiment field changes.",
+    "dataAuthorityBaseFieldMeaning": "ownerRevisionAuthorityCommit in the immutable local data document denotes the source base for the owner instruction, not a commit that already contains this revision.",
+    "historicalBlocker": "BLOCKED / INSUFFICIENT_FRESH_HOLDOUT_AFTER_PARTICIPANT_EXCLUSION remains valid for the old test-only authority.",
+    "historicalSmallDisposition": "VALID_FAIL / REJECTED_FOR_BOUNDED_ALPHA_RESOURCE_GATE"
+  },
+  "dataAuthority": {
+    "asrInferenceBeforeAuthority": 0,
+    "attribution": "CC0 imposes no attribution condition; retain Mozilla Common Voice credit. MDC no re-identification/no rehosting or resharing restrictions remain in force.",
+    "change": "Both languages use the exact same release dev partition instead of test; all non-data contract fields unchanged.",
+    "copyClasses": [
+      "TEMPORARY_DEV_AUDIO_FOR_VALIDITY_CHECK",
+      "PRIVATE_METADATA_AND_EXCLUSIONS",
+      "SELECTED48_AUDIO_REFERENCE",
+      "MANIFEST_TRANSFER_FREEZE",
+      "CAMPAIGN_EVIDENCE"
+    ],
+    "dataAuthorityId": "dora-asr-small-arm82-dev-data-v0.1",
+    "eligibility": {
+      "audioValidation": "Same hash-pinned FFmpeg9.0.2 full decode to null, error fatal, one thread, file protocol only.",
+      "duration": "FFprobe format seconds rounded HALF_UP to milliseconds; independently compare provider duration.",
+      "durationMsInclusive": [
+        1000,
+        20000
+      ],
+      "reference": "Exact UTF8 source bytes; nonempty stripped string; no semantic quality filtering.",
+      "split": "dev"
+    },
+    "exclusions": [
+      "All BASE48 and SMALL48 source identities",
+      "All prior audio SHA256",
+      "All participants of either historical selection across languages",
+      "Every other legitimately identified prior use",
+      "Every member of repeated-audio groups among otherwise eligible remaining candidates"
+    ],
+    "experimentId": "ASR-SMALL-ARM82-01",
+    "extension": false,
+    "frozenUtc": "2026-09-26T17:17:09.844816+00:00",
+    "license": "CC0-1.0",
+    "ownerRevisionAuthorityCommit": "cfe27f84a0b843ea33f1fe7a89dd13601a555a63",
+    "parentContractSha256": "32b2e6516a600f656f4e414e291b871327821c481c57732cbb41b43b401d789a",
+    "participantMetadataSemantics": "client_id is the same-release hashed user UUID; compare exact values across both languages; hash again for private exclusion bookkeeping, no identity inference.",
+    "partition": "dev",
+    "priorUseEvidence": {
+      "baseManifestSha256": "5d9e12fa76e9db54bc69bbd22396dbec733348db97bba353361ac701af64061c",
+      "journals": [
+        {
+          "allCorpusCasesCoveredByExclusions": true,
+          "distinctCorpusCases": 48,
+          "sha256": "233416bf45fab84fa6261e64cfb6221aa2f64d74394e62c593d429d555d6379d",
+          "verifiedGeneratedSilenceRows": 0
+        },
+        {
+          "allCorpusCasesCoveredByExclusions": true,
+          "distinctCorpusCases": 0,
+          "sha256": "6ff60b46dc9daa23c440bc704d155fa1250fdea6f2da2efc71cbec768fa60bbc",
+          "verifiedGeneratedSilenceRows": 1
+        },
+        {
+          "allCorpusCasesCoveredByExclusions": true,
+          "distinctCorpusCases": 19,
+          "sha256": "7a5fcdb32dcc4fd7e5e1e7487d2b589a64f2e44127e3dc93e87b1235bc1f85d0",
+          "verifiedGeneratedSilenceRows": 0
+        }
+      ],
+      "knownAdditionalDevelopmentOrTuningUses": 0,
+      "priorUseLedgerSha256": "75e21945e36ca5a0497db0364d9c44fc86d99f95c022a9b232527698bf78e296",
+      "smallManifestSha256": "695f1e147fe968c8f75e7bea5e7a6edfd20f50e939c0bdbc2064d3a7db7d1947"
+    },
+    "publicRedistributionAllowed": false,
+    "purpose": "BOUNDED_INTERNAL_ALPHA_ASR_EVALUATION_ONLY",
+    "rank": "SHA256(UTF8(dora-alpha-asr-v0.1) || NUL || UTF8(locale) || NUL || exact UTF8(upstreamRelativePath)), raw digest then path bytes ascending",
+    "release": "sps-corpus-5.0-2026-09-11",
+    "retentionDeadline": "2026-10-25",
+    "selection": {
+      "durationBalancing": false,
+      "en": 24,
+      "manualReplacement": false,
+      "order": "RU24_THEN_EN24",
+      "ru": 24,
+      "shortage": "STOP_NO_SUBSTITUTION"
+    },
+    "selectorSha256": "dcd214d5488ee2950d8c6f807ca5f96a3a6ab686b976f4163cb961533c11e1ae",
+    "source": "Common Voice Spontaneous Speech 5.0",
+    "sourceSearch": "Priority1 sufficient provisionally; validate all dev records before selection. Priorities2/3 unnecessary if final pool sufficient.",
+    "sources": [
+      {
+        "archiveBytes": 93031233,
+        "archiveIdentity": "1789489294410-sps-corpus-5.0-2026-09-11-ru.tar.gz",
+        "archiveSha256": "aa0910f5fef7f24afccf5bca075995f0b7a970d96da72626c80507d629d05a6f",
+        "canonicalUrl": "https://mozilladatacollective.com/datasets/cmu5mg3pr00simh07epeylc55",
+        "datasetId": "cmu5mg3pr00simh07epeylc55",
+        "licenseId": "CC0-1.0",
+        "locale": "ru",
+        "release": "sps-corpus-5.0-2026-09-11",
+        "version": "5.0"
+      },
+      {
+        "archiveBytes": 544267165,
+        "archiveIdentity": "1789489472613-sps-corpus-5.0-2026-09-11-en.tar.gz",
+        "archiveSha256": "390b5a54c9afe0cc01da039ad206248f85682f247dd2b27d4cc0ab9a68e860b6",
+        "canonicalUrl": "https://mozilladatacollective.com/datasets/cmu5nqn1h00vwmi07b4dbk085",
+        "datasetId": "cmu5nqn1h00vwmi07b4dbk085",
+        "licenseId": "CC0-1.0",
+        "locale": "en",
+        "release": "sps-corpus-5.0-2026-09-11",
+        "version": "5.0"
+      }
+    ],
+    "storageClass": "LOCAL_PRIVATE_CONTROLLED_STORAGE_OWNER_ONLY",
+    "termsEvidenceSha256": "9437304c571ea80c0d8287af5fe63e83434a74191ef4e3904086f5848a0e7dba",
+    "termsMaterialSha256": "b1201c0422168728915dcae5f33681e03538821010429ac988bd5a66563b2f75",
+    "trainingAllowed": false
+  },
+  "holdout": {
+    "asrInference": 0,
+    "authoritySha256": "0701b85521b3fb167271c11635b59a113ff543a88d302acd867ff3069d9a5d87",
+    "contentFilesVerified": 96,
+    "dataFreezeSha256": "cf74da20a1c230fe7fcf02c672757236555d485dd0495fa3517b7c04e7e4fd90",
+    "duplicateRows": 0,
+    "eligibleCounts": {
+      "en": 408,
+      "ru": 51
+    },
+    "eligiblePoolSha256": "90a783c9b4deacbc07b4c525d34c575d023d384d8e4ac2f7604c6e6bf628e5fd",
+    "exclusionSetSha256": "5bada500706c776048640b239e8e92253bc8874c5b0a226f168d408763796772",
+    "failedDevAudio": 0,
+    "freezeCompletedUtc": "2026-09-26T17:18:09.926505+00:00",
+    "knownAdditionalPriorUses": 0,
+    "manifestSha256": "36a40fa210aee48e7b63372f6cc89471d58bfc9ecc5db87738989086b69c0e7c",
+    "priorAudioCount": 96,
+    "priorParticipantCount": 32,
+    "priorParticipantsSha256": "2edfe34e9902259e3c3a0328f0816e5079bb226a90bede06c928798ea151ca63",
+    "priorSourceCount": 96,
+    "result": "PASS_FRESH_DEV48_MATERIALIZED_AND_FROZEN",
+    "retainedAsrJournalsReconciled": 3,
+    "selectedCounts": {
+      "en": 24,
+      "ru": 24
+    },
+    "selectedParticipantOverlap": 0,
+    "selectedParticipants": {
+      "en": 19,
+      "ru": 4
+    },
+    "selectedPriorAudioOverlap": 0,
+    "selectedPriorSourceOverlap": 0,
+    "selectionByTranscriptMeaning": false,
+    "source": "Common Voice Spontaneous Speech5.0 dev both languages",
+    "sourceIndexes": [
+      {
+        "archiveSha256": "aa0910f5fef7f24afccf5bca075995f0b7a970d96da72626c80507d629d05a6f",
+        "devRows": 71,
+        "indexSha256": "045b18d249cc06a275217e56962e6bb3abc9ef3d637f6c35831cd19b9eb04c5e",
+        "locale": "ru",
+        "providerRows": 783,
+        "readmeSha256": "9f9ca407b3b76e291fc46c9fff7ec26b0e790080576a13394969b17b2b6c113f"
+      },
+      {
+        "archiveSha256": "390b5a54c9afe0cc01da039ad206248f85682f247dd2b27d4cc0ab9a68e860b6",
+        "devRows": 548,
+        "indexSha256": "e7db9c37c200342505bf796bdeef305e5aaf3d52bccff2698bec07eced705f46",
+        "locale": "en",
+        "providerRows": 5898,
+        "readmeSha256": "e12ae1bda5c0bda0e8ba5504937d90285d18d90a61fcdf39774706d2545b9dd4"
+      }
+    ],
+    "temporaryDevAudioRemoved": 619,
+    "transferSha256": "6d72cdee1caca61dc078d84b253afce6f20f82719e7e26b2d28f1f03995b022b",
+    "validatedDevAudio": 619
+  },
+  "executionFreeze": {
+    "asrInferenceBeforeFreeze": 0,
+    "baseCommit": "cfe27f84a0b843ea33f1fe7a89dd13601a555a63",
+    "buildSha256": "5c72f19bb657925138c7579c1cce7443a942f883ab448b4c6a98a65db8ea399e",
+    "campaignInvocationBudget": 1,
+    "experimentId": "ASR-SMALL-ARM82-01",
+    "frozenUtc": "2026-09-26T17:28:34.872930+00:00",
+    "historicalFiles": {
+      "docs/evidence/poc-asr-001/alpha-asr-decoding-profile-stage0-v0.1.json": {
+        "bytes": 3506,
+        "sha256": "c76324845171c680bd984784e8f1fca13d95b3f0918619dfb5ff53c70ed9c442"
+      },
+      "docs/evidence/poc-asr-001/alpha-asr-measurement-protocol-stage0-v0.1.json": {
+        "bytes": 2865,
+        "sha256": "9101c18fa020f8fd0a3ebba47b70c055c4724dc50e2a7900e5d0bef57d5b99c1"
+      },
+      "docs/evidence/poc-asr-001/alpha-asr-native-build-16k-stage0-v0.1.json": {
+        "bytes": 35206,
+        "sha256": "11a07e39987e968158d506a8d0d9d6402e69e1941a387a9f94e36de2f834408a"
+      },
+      "docs/evidence/poc-asr-001/alpha-asr-small-evaluation-governance-stage0-v0.1.json": {
+        "bytes": 31576,
+        "sha256": "f8140496aac3972b6a8eb6dd62c3fe5305141a2e8d8c613e36768f1727b5f3b5"
+      },
+      "docs/evidence/poc-asr-001/asr-small-resource-postmortem-next-experiment-stage0-v0.1.json": {
+        "bytes": 73363,
+        "sha256": "925184f7bac9bdbbc1444f6333d63355aa42eab92ab95a1d5bdb512403f9794c"
+      },
+      "tools/alpha_asr_campaign.py": {
+        "bytes": 7274,
+        "sha256": "e0261fadf0c01cdc2e634108f7c464ca07f2ae3baa68ac6884dc06e43e799709"
+      },
+      "tools/alpha_asr_campaign_device.py": {
+        "bytes": 10598,
+        "sha256": "e0200b3a063659c0041a2d081a7151a7f57407ae015738e8a9fbdb6fae0cadf2"
+      },
+      "tools/alpha_asr_campaign_import.py": {
+        "bytes": 7920,
+        "sha256": "338ed7bcb30917d91951fffb49745c3aec39724f8aade0ae5ccf878f3a60860d"
+      },
+      "tools/alpha_asr_campaign_native/CMakeLists.txt": {
+        "bytes": 1327,
+        "sha256": "8e3ec4062b5ca3e2b860dae768f71438e9fccd3151d7f69233f0ff2a8f112ca9"
+      },
+      "tools/alpha_asr_campaign_native/CampaignOracle.java": {
+        "bytes": 1621,
+        "sha256": "abc51d8d08651f288ded482816350b680eae07ab3e47c8b9dc0d331d72e04270"
+      },
+      "tools/alpha_asr_campaign_native/decode.c": {
+        "bytes": 229,
+        "sha256": "0fc06284bb8bce924bd2cc28c2fd0c9b39cd02f0b06a766d13251b9a0224346c"
+      },
+      "tools/alpha_asr_campaign_native/main.cpp": {
+        "bytes": 7112,
+        "sha256": "b642497a5f50676f6b643303ad272e78c6f158359d5a480f2f18f16a779f29bf"
+      },
+      "tools/alpha_asr_eval_text_contract.py": {
+        "bytes": 14735,
+        "sha256": "490b4f659aef99da413e68cab5ffa187b1e8fd7229e7d7265367f2d14e577ff0"
+      },
+      "tools/alpha_asr_pilot_manifest.py": {
+        "bytes": 12341,
+        "sha256": "dea7a8bdf651372052d89b0338b41a2c5cb7373696335ed8de47adbb8cba64b9"
+      },
+      "tools/alpha_asr_small_acceptance_manifest.py": {
+        "bytes": 9876,
+        "sha256": "e0c02989fe50ac51df70a4a577119a9cac831cef04d84dab415454a117ac0d1e"
+      },
+      "tools/alpha_asr_small_campaign.py": {
+        "bytes": 12993,
+        "sha256": "a923710537f846e8d6894e45a1feb139c63de8702220c6e21bd5d34723383536"
+      },
+      "tools/asr_i1_synthetic_scoring_oracle/src/main/java/com/monumentogram/dora/stage0/asr/i1/AsrSyntheticScoringOracle.java": {
+        "bytes": 29949,
+        "sha256": "b2d2525ff0d71c15fdef931c005975f8610f5c5054e8e1f2b10f0f3740db9903"
+      },
+      "tools/run_alpha_asr_campaign.py": {
+        "bytes": 18870,
+        "sha256": "c9b1116e03a8bb1377169c3a8c929ddc1c933f84a7f5a7a587b67f205b14e45f"
+      },
+      "tools/run_alpha_asr_small_campaign.py": {
+        "bytes": 17189,
+        "sha256": "72b703f51f34394e8cf0f5f367306cbfc5b805a61eb4a9020efd99c0d47575a7"
+      },
+      "tools/run_alpha_asr_small_campaign_v2.py": {
+        "bytes": 13692,
+        "sha256": "5a247f3eba9c9b9699d4597f8925684053b915de99ddf224485a2f91aab0244f"
+      },
+      "tools/run_alpha_asr_small_campaign_v3.py": {
+        "bytes": 15573,
+        "sha256": "2020a57547daadad0e295190b07b260dca0146fec2c1b45622536358efaf0f69"
+      },
+      "tools/test_alpha_asr_pilot_manifest.py": {
+        "bytes": 20803,
+        "sha256": "b9e00347f9669f573ecffa9b7e67735ef67e25ef03a7ce46dcc8d02e8b11c28c"
+      },
+      "tools/test_alpha_asr_small_campaign_v2.py": {
+        "bytes": 17093,
+        "sha256": "13342ef8c9d0005dba18ffed6347e158b30a18c6fe92bf45811c3e4fde8d981b"
+      },
+      "tools/test_alpha_asr_small_campaign_v3.py": {
+        "bytes": 29706,
+        "sha256": "a77a8e1b3bf8e8e6028c604e22ffa70cba21f456ac6c929a4035f3fce68c9ab9"
+      }
+    },
+    "isaAdmission": {
+      "asrInference": 0,
+      "capabilities": {
+        "HWCAP_ASIMD": 2,
+        "HWCAP_ASIMDDP": 1048576,
+        "HWCAP_ASIMDHP": 1024,
+        "HWCAP_FPHP": 512,
+        "admitted": true,
+        "atHwcap": 1155071,
+        "atHwcapHex": "0x119fff",
+        "readErrno": 0,
+        "requiredMask": 1050114
+      },
+      "checkedUtc": "2026-09-26T16:32:28.158466+00:00",
+      "cleanupVerified": true,
+      "device": {
+        "ro.build.version.sdk": "34",
+        "ro.kernel.qemu": "",
+        "ro.product.cpu.abi": "arm64-v8a",
+        "ro.product.device": "stone",
+        "ro.product.marketname": "POCO M5",
+        "ro.product.model": "22071219CG"
+      },
+      "probe": {
+        "androidApi": 28,
+        "architecture": "baseline armv8-a",
+        "binaryBytes": 6600,
+        "binarySha256": "c7d09c7eb9c7779618ce559987aaa1e7e9b84e5795df031a333d24eaaa58ffb1",
+        "compiler": "Android (13624864, based on r530567e) clang version 19.0.1 (https://android.googlesource.com/toolchain/llvm-project 97a699bf4812a18fb657c2779f5296a4ab2694d2)",
+        "disassemblySha256": "2c40568d41649ca06a3b03ba3ab7dc4e715ee5b4407327fa4c31da42f661c718",
+        "optimization": "O0; vectorization disabled",
+        "sourceSha256": "48cd84c2fd808dbee341e5a2bd9b74cd65c946133b69abc6e00b1a8cb1084d0b"
+      },
+      "specializedRuntimeExecutions": 0
+    },
+    "model": {
+      "artifact": "ggml-small-q5_1.bin",
+      "bytes": 190085487,
+      "sha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb"
+    },
+    "operatorFiles": {
+      "alpha_asr_small_arm82_binding.py": {
+        "bytes": 12977,
+        "sha256": "a336d10b0b11aaa4cb4299648a4ae2d8aed5e05721df4db2557373fe796653d6"
+      },
+      "build_arm82.py": {
+        "bytes": 6240,
+        "sha256": "7b722f7023b84f1e3cb5512d901be27e1c75a8fc6247dd943bcc897dff5f1e25"
+      },
+      "ctx.py": {
+        "bytes": 2013,
+        "sha256": "9ea6d1993c71df5f842da537aee7cc36a901d69dbfc2d7174102eb95ea5089a4"
+      },
+      "materialize.py": {
+        "bytes": 16188,
+        "sha256": "0db496326658f61afa2b810bf79d2679ce59bb0f8f41ce0b847838668b9265e2"
+      },
+      "selector.py": {
+        "bytes": 2530,
+        "sha256": "dcd214d5488ee2950d8c6f807ca5f96a3a6ab686b976f4163cb961533c11e1ae"
+      },
+      "test_alpha_asr_small_arm82_binding.py": {
+        "bytes": 4398,
+        "sha256": "68f3e308b9ba6d6773a4fd7924ea8a99043f101805db53c5c8b189ef94759444"
+      },
+      "test_selector.py": {
+        "bytes": 2579,
+        "sha256": "e10e9168449ebef48d8fcb4f0f5f133cbdae1bbbdc459792cceb6879167eb476"
+      }
+    },
+    "operatorId": "dora-asr-small-arm82-01-operator-v0.1",
+    "parentContractSha256": "32b2e6516a600f656f4e414e291b871327821c481c57732cbb41b43b401d789a",
+    "privateDocuments": {
+      "candidate-inventory.json": "8a83d61bd9b0e79fd058b179f4e46c829e4188ce1aaceaad9849e70746c9c170",
+      "data-authority.json": "0701b85521b3fb167271c11635b59a113ff543a88d302acd867ff3069d9a5d87",
+      "data-freeze.json": "cf74da20a1c230fe7fcf02c672757236555d485dd0495fa3517b7c04e7e4fd90",
+      "exclusion-audit.json": "6d68fc634594dd501e51d64e72f7c1f4cf4feda90076f6a23dbd342cc36e1113",
+      "prior-use-coverage.json": "d64718c9673350d12d5d836dd0db895d8cb8c15cf7353342046177f9a0b63337",
+      "selected-manifest.json": "36a40fa210aee48e7b63372f6cc89471d58bfc9ecc5db87738989086b69c0e7c",
+      "transfer-index.json": "6d72cdee1caca61dc078d84b253afce6f20f82719e7e26b2d28f1f03995b022b"
+    },
+    "profile": {
+      "allDeviceSupport": false,
+      "attemptPolicy": "ONE_PRIMARY_PER_CASE_NO_AUTOMATIC_RETRY_STOP_ON_INVALID_ATTEMPT",
+      "campaignVersion": "dora-asr-small-arm82-01-campaign-v0.1",
+      "decodingProfileSha256": "cd53fda162402675f54875de470b01c303f0ede9a2e0cefd6f1056e8fa381d39",
+      "endToEndRole": "DIAGNOSTIC_ONLY",
+      "governanceCommit": "dd1468dcaace9699e64b1945f83a9b532205d435",
+      "languageGates": {
+        "en": {
+          "errors": 18,
+          "referenceTokens": 100
+        },
+        "ru": {
+          "errors": 20,
+          "referenceTokens": 100
+        }
+      },
+      "measurementProtocolSha256": "0f1e456fb4b4b0da28a209abe94e42fe7a0ca599e5c5c794db16a6abe478b116",
+      "medianRtfRole": "DIAGNOSTIC_ONLY",
+      "modelArtifact": "ggml-small-q5_1.bin",
+      "modelBytes": 190085487,
+      "modelSha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb",
+      "normalizationVersion": "dora-alpha-asr-normalization-v0.1",
+      "oracleIdentity": "com.monumentogram.dora.stage0.asr.i1.AsrSyntheticScoringOracle",
+      "oracleSchemaVersion": 1,
+      "oracleSourceSha256": "a2b3e37305f24f91a8ace00f5f824d1d13effda94248c15b31aa31db78c76125",
+      "order": [
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "ru",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en",
+        "en"
+      ],
+      "privateFreezeSha256": "cf74da20a1c230fe7fcf02c672757236555d485dd0495fa3517b7c04e7e4fd90",
+      "productionAdmission": false,
+      "profileId": "dora-asr-small-arm82-01-eval-profile-v0.1",
+      "pythonSemanticProfile": "cpython-3.12-unicode-15.0.0",
+      "rawWerRole": "DIAGNOSTIC_ONLY",
+      "resourceGateSha256": "fdfb56b56429c07a99538c92d87f9ea8570c723cc67f5e5eb02915d97557ccd1",
+      "resourceGateVersion": "dora-alpha-asr-small-poco-m5-resource-gates-v0.1",
+      "resourceGates": {
+        "coldLoadMicros": 15000000,
+        "evidencedOomEvents": 0,
+        "forbiddenThermalMinimum": 3,
+        "maximumRtf": 6,
+        "memoryMaximumGapMs": 1000,
+        "memoryTargetMs": 100,
+        "nativeHeapBytes": 1342177280,
+        "p95Rank": 46,
+        "p95Rtf": 4,
+        "pssBytes": 1610612736,
+        "thermalDelayMs": 1000,
+        "thermalMaximumGapMs": 3000,
+        "weightedRtf": 2
+      },
+      "retentionDeadline": "2026-10-25",
+      "runtimeSourceCommit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+      "runtimeSourceVersion": "ggml-org/whisper.cpp v1.9.4",
+      "scope": "PHYSICAL_POCO_M5_BOUNDED_STAGE_0_ONLY",
+      "selectedManifestSha256": "36a40fa210aee48e7b63372f6cc89471d58bfc9ecc5db87738989086b69c0e7c",
+      "selectionContractSha256": "0701b85521b3fb167271c11635b59a113ff543a88d302acd867ff3069d9a5d87",
+      "sourceRecoveryCommit": "aa4e65cf4510f055260dca6a7e6e8f26916f732e",
+      "timestampQuality": "NOT_EVALUABLE",
+      "transferIndexSha256": "6d72cdee1caca61dc078d84b253afce6f20f82719e7e26b2d28f1f03995b022b",
+      "upstreamOptions": {
+        "removeDiacritics": false,
+        "splitLetters": false
+      },
+      "upstreamRepository": "openai/whisper",
+      "upstreamRevision": "86098128c0b4f24f0e2aa2994de830614b474227",
+      "upstreamSourceSha256": "4742eaa040e0657fa1247a1361e0d856c62317a43326ea59a40c2e9edd8d2c38",
+      "warmup": "ONE_GENERATED_3_SECOND_SILENCE_FULL_INFERENCE_BEFORE_CORPUS"
+    },
+    "profileSha256": "48f90d80d90f69e37e27a49f8187dc55217284ef807da5f118e787708d485c99",
+    "publicationAuthority": "Owner requires no preparation commits. This exclusive fsync freeze precedes all inference; source bytes and base commit are pinned here, then preserved in the one terminal repository commit.",
+    "retentionDeadline": "2026-10-25",
+    "runtimeConfiguration": {
+      "acceleratorAndThreadSweepsAllowed": false,
+      "adapterSource": "tools/alpha_asr_campaign_native/main.cpp unchanged; fresh process/context for every case.",
+      "backend": "ggml CPU",
+      "capabilityCheck": "Baseline-compatible check before executing specialized code; absent/unknown support stops, no fallback.",
+      "cmakeOptions": {
+        "ANDROID_ABI": "arm64-v8a",
+        "ANDROID_PLATFORM": "android-28",
+        "ANDROID_STL": "c++_shared",
+        "BUILD_SHARED_LIBS": "ON",
+        "CMAKE_BUILD_TYPE": "Release",
+        "GGML_ACCELERATE": "OFF",
+        "GGML_BACKEND_DL": "OFF",
+        "GGML_BLAS": "OFF",
+        "GGML_BUILD_EXAMPLES": "OFF",
+        "GGML_BUILD_TESTS": "OFF",
+        "GGML_CCACHE": "OFF",
+        "GGML_CPU": "ON",
+        "GGML_CPU_ALL_VARIANTS": "OFF",
+        "GGML_CPU_ARM_ARCH": "armv8.2-a+fp16+dotprod",
+        "GGML_CPU_KLEIDIAI": "OFF",
+        "GGML_CPU_REPACK": "ON",
+        "GGML_CUDA": "OFF",
+        "GGML_ET": "OFF",
+        "GGML_HEXAGON": "OFF",
+        "GGML_HIP": "OFF",
+        "GGML_LLAMAFILE": "OFF",
+        "GGML_LTO": "OFF",
+        "GGML_METAL": "OFF",
+        "GGML_MUSA": "OFF",
+        "GGML_NATIVE": "OFF",
+        "GGML_OPENCL": "OFF",
+        "GGML_OPENMP": "OFF",
+        "GGML_OPENVINO": "OFF",
+        "GGML_RPC": "OFF",
+        "GGML_SYCL": "OFF",
+        "GGML_VIRTGPU": "OFF",
+        "GGML_VIRTGPU_BACKEND": "OFF",
+        "GGML_VULKAN": "OFF",
+        "GGML_WEBGPU": "OFF",
+        "GGML_ZDNN": "OFF",
+        "GGML_ZENDNN": "OFF",
+        "WHISPER_BUILD_EXAMPLES": "OFF",
+        "WHISPER_BUILD_IS_DEV": "OFF",
+        "WHISPER_BUILD_SERVER": "OFF",
+        "WHISPER_BUILD_TESTS": "OFF",
+        "WHISPER_COREML": "OFF",
+        "WHISPER_CURL": "OFF",
+        "WHISPER_OPENVINO": "OFF",
+        "WHISPER_SDL2": "OFF",
+        "WHISPER_VITISAI": "OFF"
+      },
+      "compile": "Release -O3 -DNDEBUG; existing NDK flags retained; no additional fast-math/LTO/i8mm/SVE.",
+      "computeThreads": 4,
+      "decodingProfile": {
+        "base": "whisper_full_default_params(WHISPER_SAMPLING_GREEDY)",
+        "contextParams": {
+          "dtw_aheads": {
+            "heads": null,
+            "n_heads": 0
+          },
+          "dtw_aheads_preset": "WHISPER_AHEADS_NONE",
+          "dtw_mem_size": 134217728,
+          "dtw_n_top": -1,
+          "dtw_token_timestamps": false,
+          "flash_attn": true,
+          "gpu_device": 0,
+          "use_gpu": false
+        },
+        "resolvedWhisperFullParams": {
+          "en": {
+            "abort_callback": null,
+            "abort_callback_user_data": null,
+            "audio_ctx": 0,
+            "beam_search.beam_size": -1,
+            "beam_search.patience": -1,
+            "carry_initial_prompt": false,
+            "debug_mode": false,
+            "detect_language": false,
+            "duration_ms": 0,
+            "encoder_begin_callback": null,
+            "encoder_begin_callback_user_data": null,
+            "entropy_thold": 2.4000001,
+            "grammar_penalty": 100,
+            "grammar_rules": null,
+            "greedy.best_of": 5,
+            "i_start_rule": 0,
+            "initial_prompt": null,
+            "language": "en",
+            "length_penalty": -1,
+            "logits_filter_callback": null,
+            "logits_filter_callback_user_data": null,
+            "logprob_thold": -1,
+            "max_initial_ts": 1,
+            "max_len": 0,
+            "max_tokens": 0,
+            "n_grammar_rules": 0,
+            "n_max_text_ctx": 16384,
+            "n_threads": 4,
+            "new_segment_callback": null,
+            "new_segment_callback_user_data": null,
+            "no_context": true,
+            "no_speech_thold": 0.600000024,
+            "no_timestamps": false,
+            "offset_ms": 0,
+            "print_progress": false,
+            "print_realtime": false,
+            "print_special": false,
+            "print_timestamps": false,
+            "progress_callback": null,
+            "progress_callback_user_data": null,
+            "prompt_n_tokens": 0,
+            "prompt_tokens": null,
+            "single_segment": false,
+            "split_on_word": false,
+            "strategy": "WHISPER_SAMPLING_GREEDY",
+            "suppress_blank": true,
+            "suppress_nst": false,
+            "suppress_regex": null,
+            "tdrz_enable": false,
+            "temperature": 0,
+            "temperature_inc": 0,
+            "thold_pt": 0.00999999978,
+            "thold_ptsum": 0.00999999978,
+            "token_timestamps": false,
+            "translate": false,
+            "vad": false,
+            "vad_model_path": null,
+            "vad_params.max_speech_duration_s": 3.40282347e+38,
+            "vad_params.min_silence_duration_ms": 100,
+            "vad_params.min_speech_duration_ms": 250,
+            "vad_params.samples_overlap": 0.100000001,
+            "vad_params.speech_pad_ms": 30,
+            "vad_params.threshold": 0.5
+          },
+          "ru": {
+            "abort_callback": null,
+            "abort_callback_user_data": null,
+            "audio_ctx": 0,
+            "beam_search.beam_size": -1,
+            "beam_search.patience": -1,
+            "carry_initial_prompt": false,
+            "debug_mode": false,
+            "detect_language": false,
+            "duration_ms": 0,
+            "encoder_begin_callback": null,
+            "encoder_begin_callback_user_data": null,
+            "entropy_thold": 2.4000001,
+            "grammar_penalty": 100,
+            "grammar_rules": null,
+            "greedy.best_of": 5,
+            "i_start_rule": 0,
+            "initial_prompt": null,
+            "language": "ru",
+            "length_penalty": -1,
+            "logits_filter_callback": null,
+            "logits_filter_callback_user_data": null,
+            "logprob_thold": -1,
+            "max_initial_ts": 1,
+            "max_len": 0,
+            "max_tokens": 0,
+            "n_grammar_rules": 0,
+            "n_max_text_ctx": 16384,
+            "n_threads": 4,
+            "new_segment_callback": null,
+            "new_segment_callback_user_data": null,
+            "no_context": true,
+            "no_speech_thold": 0.600000024,
+            "no_timestamps": false,
+            "offset_ms": 0,
+            "print_progress": false,
+            "print_realtime": false,
+            "print_special": false,
+            "print_timestamps": false,
+            "progress_callback": null,
+            "progress_callback_user_data": null,
+            "prompt_n_tokens": 0,
+            "prompt_tokens": null,
+            "single_segment": false,
+            "split_on_word": false,
+            "strategy": "WHISPER_SAMPLING_GREEDY",
+            "suppress_blank": true,
+            "suppress_nst": false,
+            "suppress_regex": null,
+            "tdrz_enable": false,
+            "temperature": 0,
+            "temperature_inc": 0,
+            "thold_pt": 0.00999999978,
+            "thold_ptsum": 0.00999999978,
+            "token_timestamps": false,
+            "translate": false,
+            "vad": false,
+            "vad_model_path": null,
+            "vad_params.max_speech_duration_s": 3.40282347e+38,
+            "vad_params.min_silence_duration_ms": 100,
+            "vad_params.min_speech_duration_ms": 250,
+            "vad_params.samples_overlap": 0.100000001,
+            "vad_params.speech_pad_ms": 30,
+            "vad_params.threshold": 0.5
+          }
+        },
+        "runtimeCommit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+        "version": "dora-alpha-asr-decoding-v0.1"
+      },
+      "decodingProfileCanonicalSha256": "cd53fda162402675f54875de470b01c303f0ede9a2e0cefd6f1056e8fa381d39",
+      "flashAttention": true,
+      "hardwarePrerequisites": [
+        "Physical POCO M5",
+        "arm64-v8a",
+        "HWCAP_ASIMD",
+        "HWCAP_FPHP",
+        "HWCAP_ASIMDHP",
+        "HWCAP_ASIMDDP"
+      ],
+      "historicalProtocolFields": "Use measurement definitions; acceptance limits are explicitly restated here, not historical proposed gate fields.",
+      "license": "MIT",
+      "measurementProtocolCanonicalSha256": "0f1e456fb4b4b0da28a209abe94e42fe7a0ca599e5c5c794db16a6abe478b116",
+      "repository": "ggml-org/whisper.cpp",
+      "revision": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+      "scheduling": {
+        "affinity": "Default/inherited; no taskset or explicit pinning.",
+        "meaning": "Inherited/default; no priority or governor changes.",
+        "poll": 50,
+        "priority": 0,
+        "strictCpu": false
+      },
+      "singleBuildDelta": "GGML_CPU_ARM_ARCH: armv8-a -> armv8.2-a+fp16+dotprod",
+      "tag": "v1.9.4",
+      "toolchain": {
+        "clang": "19.0.1",
+        "cmake": "3.22.1",
+        "ndk": "28.2.13676358",
+        "ninja": "1.10.2"
+      },
+      "upstreamSourcePatches": 0,
+      "useGpu": false
+    },
+    "sourceReadmePins": {
+      "en": {
+        "bytes": 6073,
+        "sha256": "e12ae1bda5c0bda0e8ba5504937d90285d18d90a61fcdf39774706d2545b9dd4"
+      },
+      "ru": {
+        "bytes": 6235,
+        "sha256": "9f9ca407b3b76e291fc46c9fff7ec26b0e790080576a13394969b17b2b6c113f"
+      }
+    },
+    "sourceReview": {
+      "hostTestsPassed": 182,
+      "priorUseUncoveredAudio": 0,
+      "priorUseUncoveredSources": 0,
+      "result": "NO_MATERIAL_BLOCKERS",
+      "reviewedBindingSha256": "a336d10b0b11aaa4cb4299648a4ae2d8aed5e05721df4db2557373fe796653d6"
+    },
+    "validationCadence": "Full source/data/model/native/profile/content/ACL validation before warmup, before each primary case and after final case. Same v0.3 ACL predicates batched in one host process; no device scheduling or measured-window change."
+  },
+  "executionFreezeCanonicalSha256": "e9db2cc5e6e5f09cd6ca670d44089a13c03d8260baf1641becc0b63c48d63780",
+  "runtimeBuild": {
+    "abi": "arm64-v8a",
+    "adapterSourcePins": {
+      "CMakeLists.txt": {
+        "bytes": 1327,
+        "sha256": "8e3ec4062b5ca3e2b860dae768f71438e9fccd3151d7f69233f0ff2a8f112ca9"
+      },
+      "CampaignOracle.java": {
+        "bytes": 1621,
+        "sha256": "abc51d8d08651f288ded482816350b680eae07ab3e47c8b9dc0d331d72e04270"
+      },
+      "decode.c": {
+        "bytes": 229,
+        "sha256": "0fc06284bb8bce924bd2cc28c2fd0c9b39cd02f0b06a766d13251b9a0224346c"
+      },
+      "main.cpp": {
+        "bytes": 7112,
+        "sha256": "b642497a5f50676f6b643303ad272e78c6f158359d5a480f2f18f16a779f29bf"
+      }
+    },
+    "api": 28,
+    "artifacts": {
+      "dora-asr-campaign": {
+        "bytes": 2668424,
+        "sha256": "59e46efd284e88f84641b30f3aa5d8fe4f1dcf62b8424b48edb7330637223951"
+      },
+      "libc++_shared.so": {
+        "bytes": 9236352,
+        "sha256": "ab4e6c71b96b851de45a8a9bd86369e7dbc2130a44b3b4520564be94847910f2"
+      },
+      "libggml-base.so": {
+        "bytes": 5904504,
+        "sha256": "ef2fab9ca78cb998feed953755c394d46cd5182b355909032415e79ad522e049"
+      },
+      "libggml-cpu.so": {
+        "bytes": 4699840,
+        "sha256": "ab61e958ed28b6ec9ef1c92bd141f99149bb02e6147c1d710824565bdb2c7a14"
+      },
+      "libggml.so": {
+        "bytes": 533264,
+        "sha256": "032f86f3f42ba9dedeac0f7f0b69c818917c6ddab6da98b677f2cef6dbea4f97"
+      },
+      "libwhisper.so": {
+        "bytes": 7176544,
+        "sha256": "b67a219f3610f9085a75fe4dd7c2c11a18edea60068e63c2f4b63c330d5f96e3"
+      }
+    },
+    "cacheSha256": "555612e4dfccc6c8ba18bbe44b7c0c152abb80d52dea6700d01366170982bb13",
+    "cmakeOptions": {
+      "ANDROID_ABI": "arm64-v8a",
+      "ANDROID_PLATFORM": "android-28",
+      "ANDROID_STL": "c++_shared",
+      "BUILD_SHARED_LIBS": "ON",
+      "CMAKE_BUILD_TYPE": "Release",
+      "GGML_ACCELERATE": "OFF",
+      "GGML_BACKEND_DL": "OFF",
+      "GGML_BLAS": "OFF",
+      "GGML_BUILD_EXAMPLES": "OFF",
+      "GGML_BUILD_TESTS": "OFF",
+      "GGML_CCACHE": "OFF",
+      "GGML_CPU": "ON",
+      "GGML_CPU_ALL_VARIANTS": "OFF",
+      "GGML_CPU_ARM_ARCH": "armv8.2-a+fp16+dotprod",
+      "GGML_CPU_KLEIDIAI": "OFF",
+      "GGML_CPU_REPACK": "ON",
+      "GGML_CUDA": "OFF",
+      "GGML_ET": "OFF",
+      "GGML_HEXAGON": "OFF",
+      "GGML_HIP": "OFF",
+      "GGML_LLAMAFILE": "OFF",
+      "GGML_LTO": "OFF",
+      "GGML_METAL": "OFF",
+      "GGML_MUSA": "OFF",
+      "GGML_NATIVE": "OFF",
+      "GGML_OPENCL": "OFF",
+      "GGML_OPENMP": "OFF",
+      "GGML_OPENVINO": "OFF",
+      "GGML_RPC": "OFF",
+      "GGML_SYCL": "OFF",
+      "GGML_VIRTGPU": "OFF",
+      "GGML_VIRTGPU_BACKEND": "OFF",
+      "GGML_VULKAN": "OFF",
+      "GGML_WEBGPU": "OFF",
+      "GGML_ZDNN": "OFF",
+      "GGML_ZENDNN": "OFF",
+      "WHISPER_BUILD_EXAMPLES": "OFF",
+      "WHISPER_BUILD_IS_DEV": "OFF",
+      "WHISPER_BUILD_SERVER": "OFF",
+      "WHISPER_BUILD_TESTS": "OFF",
+      "WHISPER_COREML": "OFF",
+      "WHISPER_CURL": "OFF",
+      "WHISPER_OPENVINO": "OFF",
+      "WHISPER_SDL2": "OFF",
+      "WHISPER_VITISAI": "OFF"
+    },
+    "compileCommandsSha256": "e2dad9d86a7eabb4358279c498cfdc41aba7da6770c9fdadef5d3619673ce910",
+    "configurationSweeps": 0,
+    "dependencyClosure": "PASS",
+    "elf16KiBAlignment": "PASS",
+    "elfChecks": {
+      "dora-asr-campaign": {
+        "elf": "ELF64 AArch64",
+        "loadAlignments": [
+          "0x4000",
+          "0x4000",
+          "0x4000"
+        ],
+        "needed": [
+          "libwhisper.so",
+          "libdl.so",
+          "libm.so",
+          "libc++_shared.so",
+          "libc.so"
+        ]
+      },
+      "libc++_shared.so": {
+        "elf": "ELF64 AArch64",
+        "loadAlignments": [
+          "0x4000",
+          "0x4000",
+          "0x4000",
+          "0x4000"
+        ],
+        "needed": [
+          "libc.so",
+          "libm.so",
+          "libdl.so"
+        ]
+      },
+      "libggml-base.so": {
+        "elf": "ELF64 AArch64",
+        "loadAlignments": [
+          "0x4000",
+          "0x4000",
+          "0x4000"
+        ],
+        "needed": [
+          "libm.so",
+          "libdl.so",
+          "libc++_shared.so",
+          "libc.so"
+        ]
+      },
+      "libggml-cpu.so": {
+        "elf": "ELF64 AArch64",
+        "loadAlignments": [
+          "0x4000",
+          "0x4000",
+          "0x4000"
+        ],
+        "needed": [
+          "libggml-base.so",
+          "libm.so",
+          "libc++_shared.so",
+          "libdl.so",
+          "libc.so"
+        ]
+      },
+      "libggml.so": {
+        "elf": "ELF64 AArch64",
+        "loadAlignments": [
+          "0x4000",
+          "0x4000",
+          "0x4000"
+        ],
+        "needed": [
+          "libggml-cpu.so",
+          "libggml-base.so",
+          "libm.so",
+          "libc++_shared.so",
+          "libdl.so",
+          "libc.so"
+        ]
+      },
+      "libwhisper.so": {
+        "elf": "ELF64 AArch64",
+        "loadAlignments": [
+          "0x4000",
+          "0x4000",
+          "0x4000"
+        ],
+        "needed": [
+          "libggml.so",
+          "libggml-cpu.so",
+          "libggml-base.so",
+          "libm.so",
+          "libc++_shared.so",
+          "libdl.so",
+          "libc.so"
+        ]
+      }
+    },
+    "reproducibility": "Exact source/toolchain/commands/outputs pinned; one build as owner requires, no second-build bit-for-bit claim.",
+    "result": "PASS_FROZEN_ARM82_BINARY_ADMISSION",
+    "runtime16KiBDeviceTest": "NOT_RUN_PHYSICAL_POCO_HAS_4K_PAGES",
+    "runtimeBuildCount": 1,
+    "runtimeCommit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+    "runtimeVersion": "v1.9.4",
+    "singleBuildDelta": "GGML_CPU_ARM_ARCH: armv8-a -> armv8.2-a+fp16+dotprod",
+    "sourceCleanAfterBuild": true,
+    "sourcePatches": 0,
+    "specializedInstructions": {
+      "disassemblySha256": "9a23ca5d3dabb8df68d6b947b625c2dd1e514c81dbe49c73e62e705e07e4527c",
+      "fp16VectorFmla": 8,
+      "sdotOrUdot": 917
+    },
+    "toolchain": {
+      "clang": "19.0.1",
+      "cmake": "3.22.1",
+      "ndk": "28.2.13676358",
+      "ninja": "1.10.2"
+    },
+    "zipalign16KiB": "PASS"
+  },
+  "hostMaterializationDecoder": {
+    "ffmpeg": {
+      "bytes": 227823104,
+      "sha256": "589e50b766d251afdf181dd664d40bd94407e200b019989fd7468c7d118a28d0"
+    },
+    "ffprobe": {
+      "bytes": 227621376,
+      "sha256": "02264dfa4f56baaa31e443ece8aa16d397f6b008200e7fd184d22b9009e75fd3"
+    }
+  },
+  "preflight": {
+    "all96ContentIdentities": "PASS",
+    "asrInference": 0,
+    "campaignApiInvocations": 0,
+    "cleanup": "VERIFIED",
+    "completedUtc": "2026-09-26T17:29:08.041151+00:00",
+    "decodingProfiles": "PASS",
+    "executionFreezeSha256": "e9db2cc5e6e5f09cd6ca670d44089a13c03d8260baf1641becc0b63c48d63780",
+    "holdoutInference": 0,
+    "hostProcessExited": true,
+    "isa": "PASS_ACCEPTED_PHYSICAL_HWCAP_EVIDENCE_REVALIDATED_DEVICE_PROPERTIES",
+    "model": "PASS",
+    "nativeBinaries": "PASS",
+    "oneShotWorkState": "EMPTY",
+    "operatorSource": "PASS",
+    "oracleGeneratedFixture": "PASS",
+    "physicalDevice": "POCO M5",
+    "privateStorage": "PASS",
+    "resourceGates": "PASS",
+    "result": "PASS_NON_MEASURED_PREFLIGHT",
+    "retentionDeadline": "2026-10-25",
+    "runtimeSource": "PASS",
+    "sourceDataExclusions": "PASS",
+    "syntheticDecodedFrames": 48000,
+    "thermalStatus": 0
+  },
+  "frozenEvaluationCriteria": {
+    "quality": {
+      "ruNormalizedWerPercentMaximum": 20,
+      "enNormalizedWerPercentMaximum": 18,
+      "aggregation": "Sum normalized S+D+I / sum reference tokens; integer cross-products; not per-case average.",
+      "requiredCasesPerLanguage": 24,
+      "bothLanguagesMustPass": true,
+      "rawWer": "DIAGNOSTIC_ONLY",
+      "timestampQuality": "NOT_EVALUABLE"
+    },
+    "resources": {
+      "weightedRtfMaximum": 2,
+      "p95RtfMaximum": 4,
+      "p95NearestRankAt48": 46,
+      "maximumCaseRtf": 6,
+      "coldLoadMicrosMaximum": 15000000,
+      "pssBytesMaximum": 1610612736,
+      "nativeHeapBytesMaximum": 1342177280,
+      "evidencedOomMaximum": 0,
+      "thermalForbiddenMinimum": 3,
+      "requiredValidAttempts": 48,
+      "resourceTelemetryCompleteRequired": true,
+      "endToEndLatency": "DIAGNOSTIC_ONLY"
+    },
+    "telemetry": {
+      "memorySamplingTargetMs": 100,
+      "memoryMaximumGapMs": 1000,
+      "thermalPollingDelayMs": 1000,
+      "thermalMaximumGapMs": 3000,
+      "window": "Before decode through after model free; synchronous load/inference/free samples.",
+      "memorySources": "smaps_rollup Pss KiB*1024; mallinfo().uordblks bytes; never add them.",
+      "peaks": "MAXIMUM_OBSERVED_SAMPLE_NOT_CONTINUOUS_HIGH_WATER_MARK"
+    },
+    "disposition": "Same quality/resource completeness and positive-failure precedence as frozen SMALL evaluator; new profile identities only."
+  },
+  "measurement": {
+    "apiInvocationReceiptSha256": "eadf15cc13e821a7965b308b036c2bfc1998882565563fff98b93c4ffb16d18d",
+    "campaign": {
+      "apiInvocations": 1,
+      "cleanup": "VERIFIED",
+      "codecDecodeOnly": 1,
+      "enCompleted": 3,
+      "finishedJournalRows": 28,
+      "holdoutInferences": 28,
+      "perCaseCleanupVerified": 28,
+      "preflightSyntheticDecodeOnly": 1,
+      "primaryAttempts": 28,
+      "retries": 0,
+      "ruCompleted": 24,
+      "runningJournalRows": 0,
+      "totalAsrInferences": 29,
+      "warmupInferences": 1
+    },
+    "campaignMarker": {
+      "bytes": 308,
+      "sha256": "3612a53ba9dc9924de345e95f9fc82ed1a894380641232ce520b6d410855e1c9"
+    },
+    "candidateDisposition": "VALID_FAIL / REJECTED_FOR_BOUNDED_ALPHA_QUALITY_GATE",
+    "evaluatorReconciliation": "PASS_BYTE_EQUIVALENT_CANONICAL_RESULT",
+    "frozenTerminalAggregate": {
+      "attemptCount": 28,
+      "candidate": "VALID_FAIL / REJECTED_FOR_BOUNDED_ALPHA_QUALITY_GATE",
+      "cleanup": "VERIFIED",
+      "endToEndRole": "DIAGNOSTIC_ONLY",
+      "execution": "INCOMPLETE / BOUNDED_SMALL_POCO_CAMPAIGN_STOPPED",
+      "languages": {
+        "en": {
+          "completedValidCases": 3,
+          "gate": "NOT_EVALUABLE",
+          "normalized": {
+            "errors": 1,
+            "referenceTokens": 13
+          },
+          "raw": {
+            "errors": 2,
+            "referenceTokens": 13
+          }
+        },
+        "ru": {
+          "completedValidCases": 24,
+          "gate": "FAIL",
+          "normalized": {
+            "errors": 73,
+            "referenceTokens": 349
+          },
+          "raw": {
+            "errors": 133,
+            "referenceTokens": 344
+          }
+        }
+      },
+      "profileId": "dora-asr-small-arm82-01-eval-profile-v0.1",
+      "profileSha256": "48f90d80d90f69e37e27a49f8187dc55217284ef807da5f118e787708d485c99",
+      "quality": "FAIL",
+      "qualityComplete": false,
+      "resource": "NOT_EVALUABLE",
+      "resourceFailures": [],
+      "rtf": {
+        "p95Rank": 46,
+        "state": "NOT_EVALUABLE"
+      },
+      "scope": "PHYSICAL_POCO_M5_BOUNDED_STAGE_0_ONLY",
+      "timestampQuality": "NOT_EVALUABLE"
+    },
+    "journal": {
+      "bytes": 212992,
+      "sha256": "2fdf33a4f0ca4c05f6124f17d302e82e4117317cf673ddc62434d9d237fe41a1"
+    },
+    "launcherSha256": "268e328e39f7d7cb6b793fb59f308bbd72988012df9dbb2e8744fbe2521a107c",
+    "quality": {
+      "en": {
+        "completedValidCases": 3,
+        "gate": "NOT_EVALUABLE",
+        "maximumWerPercent": 18,
+        "normalized": {
+          "errors": 1,
+          "referenceTokens": 13
+        },
+        "observedNormalizedWerPercent": 7.6923076923076925,
+        "raw": {
+          "errors": 2,
+          "referenceTokens": 13
+        }
+      },
+      "ru": {
+        "completedValidCases": 24,
+        "gate": "FAIL",
+        "maximumWerPercent": 20,
+        "normalized": {
+          "errors": 73,
+          "referenceTokens": 349
+        },
+        "observedNormalizedWerPercent": 20.916905444126076,
+        "raw": {
+          "errors": 133,
+          "referenceTokens": 344
+        }
+      }
+    },
+    "reconcilesWithEvidenceCompleteValues": [
+      true,
+      false
+    ],
+    "resources": {
+      "coldLoadMicros": {
+        "gate": "NOT_EVALUABLE",
+        "maximum": 15000000,
+        "observed": 277978
+      },
+      "evidencedOomEvents": {
+        "gate": "NOT_EVALUABLE",
+        "maximum": 0,
+        "observed": 0
+      },
+      "maximumRtf": {
+        "exactRatio": {
+          "denominator": 3096000,
+          "numerator": 14282969
+        },
+        "gate": "NOT_EVALUABLE",
+        "maximum": 6.0,
+        "observed": 4.613362080103359
+      },
+      "maximumThermalStatus": {
+        "gate": "NOT_EVALUABLE",
+        "observed": 0,
+        "strictlyBelow": 3
+      },
+      "p95Rtf": {
+        "gate": "NOT_EVALUABLE",
+        "maximum": 4.0,
+        "observed": null,
+        "rank": 46
+      },
+      "peakNativeHeapBytes": {
+        "gate": "NOT_EVALUABLE",
+        "maximum": 1342177280,
+        "observed": 934189144
+      },
+      "peakPssBytes": {
+        "gate": "NOT_EVALUABLE",
+        "maximum": 1610612736,
+        "observed": 360818688
+      },
+      "telemetry": {
+        "gate": "NOT_EVALUABLE",
+        "required": 48,
+        "validAttempts": 27,
+        "rawTelemetryValidAttempts": 28,
+        "validAttemptDefinition": "Frozen case_resources validity, including required SUCCEEDED state; raw telemetry alone is counted separately."
+      },
+      "weightedRtf": {
+        "gate": "NOT_EVALUABLE",
+        "maximum": 2.0,
+        "observed": null
+      }
+    },
+    "result": "INCOMPLETE / BOUNDED_SMALL_POCO_CAMPAIGN_STOPPED",
+    "terminalAggregateCanonicalSha256": "259cde62898e8d06b73500a962da8c6c850debd07883476f9d1af05e9a86f220",
+    "terminalAggregateFile": {
+      "bytes": 854,
+      "sha256": "cb237a248cdf91e8584ab9e215565d5656fe09cfe5719e0213310acf385f5c35"
+    }
+  },
+  "stopDiagnosis": {
+    "cleanup": "VERIFIED",
+    "decodedFrames": 88128,
+    "inferenceMicros": 14316316,
+    "locale": "en",
+    "memoryMaxGapMicros": 118260,
+    "memoryWindowAndGapValid": true,
+    "nativeCode": 0,
+    "nativeStderrBytes": 0,
+    "observationReceiptExists": true,
+    "ordinal": 28,
+    "prepareCaseResult": "INVALID_EMPTY_NORMALIZED_REFERENCE",
+    "referenceNormalizedTokenCount": 0,
+    "referenceRawTokenCount": 2,
+    "thermalMaxGapMicros": 1110000,
+    "thermalWindowAndGapValid": true
+  },
+  "cleanup": {
+    "campaignCleanup": "VERIFIED",
+    "campaignMarkerJournalTerminalPreserved": true,
+    "checkedUtc": "2026-09-26T17:43:17.826601+00:00",
+    "finalDeviceCampaignDirectoryCount": 0,
+    "finalThermalStatus": 0,
+    "historicalPrivateFilesUnchanged": 308,
+    "hostCampaignProcessExited": true,
+    "perCaseCleanupVerified": 28,
+    "preflightCleanup": "VERIFIED",
+    "result": "VERIFIED"
+  },
+  "scopeCounts": {
+    "oldHoldoutReruns": 0,
+    "tuning": 0,
+    "thresholdChanges": 0,
+    "modelChanges": 0,
+    "decodingChanges": 0,
+    "configurationSweeps": 0,
+    "threadSweeps": 0,
+    "unauthorizedRetries": 0,
+    "secondCampaignInvocation": 0,
+    "recoveryChanges": 0,
+    "pr86Changes": 0,
+    "merges": 0,
+    "runtimeSourcePatches": 0
+  },
+  "stageEffect": {
+    "ASR-SMALL-ARM82-01": "INCOMPLETE / BOUNDED_SMALL_POCO_CAMPAIGN_STOPPED",
+    "candidate": "VALID_FAIL / REJECTED_FOR_BOUNDED_ALPHA_QUALITY_GATE",
+    "stage5": "NOT_PASS",
+    "groupB": "NOT_PASS",
+    "POC-ASR-001": "BLOCKED / NOT_READY",
+    "historical5.6C.2B": "INCOMPLETE / BOUNDED_SMALL_POCO_CAMPAIGN_STOPPED",
+    "Recovery": "0D.6 = ALPHA CLOSED / FULL OPEN",
+    "productionAdmission": false
+  },
+  "validation": {
+    "generatedHostTestsPassed": 182,
+    "independentPreExecutionReview": "PASS",
+    "stage00GradleHostBuildChecks": "PASS",
+    "stage00Validator": "PASS",
+    "stage00ApkNativeAlignment": "PASS",
+    "privateHistoricalFilesUnchanged": 308,
+    "baselineFilesUnchangedExceptAdditiveStatusBacklog": 613,
+    "privacyPolicy": "No sample identities, transcripts, per-person identities, private paths, device serials or content are published."
+  },
+  "publishedOperatorSources": {
+    "tools/asr_small_arm82_v01/alpha_asr_small_arm82_binding.py": {
+      "bytes": 12977,
+      "sha256": "a336d10b0b11aaa4cb4299648a4ae2d8aed5e05721df4db2557373fe796653d6"
+    },
+    "tools/asr_small_arm82_v01/test_alpha_asr_small_arm82_binding.py": {
+      "bytes": 4398,
+      "sha256": "68f3e308b9ba6d6773a4fd7924ea8a99043f101805db53c5c8b189ef94759444"
+    },
+    "tools/asr_small_arm82_v01/selector.py": {
+      "bytes": 2530,
+      "sha256": "dcd214d5488ee2950d8c6f807ca5f96a3a6ab686b976f4163cb961533c11e1ae"
+    },
+    "tools/asr_small_arm82_v01/test_selector.py": {
+      "bytes": 2579,
+      "sha256": "e10e9168449ebef48d8fcb4f0f5f133cbdae1bbbdc459792cceb6879167eb476"
+    }
+  },
+  "nextAction": "Assess the RU quality rejection and normalized-empty reference stop, then prospectively freeze one next candidate experiment and reference-eligibility correction on a new untouched holdout; do not rerun this campaign."
+}
