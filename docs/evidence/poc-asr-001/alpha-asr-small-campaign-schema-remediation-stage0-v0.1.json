@@ -1,0 +1,750 @@
+{
+  "schemaVersion": 1,
+  "task": "5.6C.2A.1",
+  "verdict": "PASS / PRIVATE_MANIFEST_OPERATOR_COMPATIBILITY_REMEDIATED",
+  "recordedAtUtc": "2026-09-26T11:03:56.479418+00:00",
+  "repository": {
+    "branch": "chat/alpha-asr-runner-scope",
+    "headBefore": "bdbdaca73c8e0fd9b297bde560cda4442892bd6d",
+    "freshlyFetchedRemoteHeadBefore": "bdbdaca73c8e0fd9b297bde560cda4442892bd6d",
+    "requiredParent": "d79c71eedf49bf43ee95735ae67f3acbd39f1404",
+    "trackedAndUntrackedCleanBeforeWork": true,
+    "atomicCommitCount": 1,
+    "historyRewritten": false
+  },
+  "operatorId": "dora-alpha-asr-small-campaign-operator-v0.2",
+  "operatorFiles": {
+    "tools/alpha_asr_small_campaign.py": {
+      "bytes": 12993,
+      "sha256": "a923710537f846e8d6894e45a1feb139c63de8702220c6e21bd5d34723383536"
+    },
+    "tools/alpha_asr_small_acceptance_manifest.py": {
+      "bytes": 9876,
+      "sha256": "e0c02989fe50ac51df70a4a577119a9cac831cef04d84dab415454a117ac0d1e"
+    },
+    "tools/alpha_asr_pilot_manifest.py": {
+      "bytes": 12341,
+      "sha256": "dea7a8bdf651372052d89b0338b41a2c5cb7373696335ed8de47adbb8cba64b9"
+    },
+    "tools/run_alpha_asr_small_campaign_v2.py": {
+      "bytes": 13692,
+      "sha256": "5a247f3eba9c9b9699d4597f8925684053b915de99ddf224485a2f91aab0244f"
+    },
+    "tools/test_alpha_asr_small_campaign_v2.py": {
+      "bytes": 17093,
+      "sha256": "13342ef8c9d0005dba18ffed6347e158b30a18c6fe92bf45811c3e4fde8d981b"
+    }
+  },
+  "operatorCanonicalSha256": "f96127249cbc7cef3a504caefe4704e2932bd268dd43a7811a2021459bab60b1",
+  "operatorHashDefinition": "SHA-256 of sorted-key compact UTF-8 JSON operatorFiles map; allow_nan=False; each file entry contains bytes and raw-file sha256.",
+  "historicalOperator": {
+    "commit": "d79c71eedf49bf43ee95735ae67f3acbd39f1404",
+    "operatorId": "dora-alpha-asr-small-campaign-v0.1",
+    "operatorCanonicalSha256": "8d5574d0365c3796f8d73d00cd47fbec557d54ce7f28893c883bb45635141b3c",
+    "threeFrozenFilesUnchanged": true,
+    "original2APass": "HISTORICAL_HOST_SYNTHETIC_EVIDENCE"
+  },
+  "historicalBlockedResult": {
+    "commit": "bdbdaca73c8e0fd9b297bde560cda4442892bd6d",
+    "reportAndEvidenceUnchanged": true,
+    "verdict": "BLOCKED / FROZEN_OPERATOR_PRIVATE_MANIFEST_SCHEMA_MISMATCH",
+    "role": "HISTORICAL_PRE_START_EVIDENCE"
+  },
+  "rootCause": "The old operator uses manifest[\"samples\"] on the independently pinned materialized document. Selected metadata exposes samples; materialized metadata exposes bindings. The failure was a consumer schema mismatch, not corpus corruption or a model/quality/resource failure.",
+  "documentCanonicalSha256": {
+    "selection": "695f1e147fe968c8f75e7bea5e7a6edfd20f50e939c0bdbc2064d3a7db7d1947",
+    "materialized": "2cb05132de945fe8a1b281e79efd8efa15d9b9b94c0326f6572a594e0c74e9bb",
+    "transfer": "95c26be0501172196587181b3f46705b65237bde879a0e3ee8eb748cee2e1a87",
+    "freeze": "eb088082b2cde6d2bc2649e6cb6d67a92d3a68ad447a8a7331eec58c2794bcaa"
+  },
+  "schema": {
+    "selection": {
+      "profileId": "dora-alpha-asr-small-acceptance-manifest-v0.1",
+      "recordArray": "samples",
+      "records": 48,
+      "authority": "Exact canonical identity, selection contract, selected counts, locale/rank/key/order"
+    },
+    "materialized": {
+      "profileId": "dora-alpha-asr-small-materialized-holdout-v0.1",
+      "recordArray": "bindings",
+      "records": 48,
+      "authority": "Exact separate identity; strict top-level/nested schema; case/source/rank/key/duration/size/hash equality"
+    },
+    "transfer": {
+      "profileId": "dora-alpha-asr-small-acceptance-transfer-v0.1",
+      "recordArray": "files",
+      "records": 97,
+      "contentFileRecords": 96,
+      "materializedManifestRecords": 1,
+      "authority": "Exact identity and exact path-to-byte-count/hash map, including raw materialized JSON bytes"
+    },
+    "freeze": {
+      "profileId": "dora-alpha-asr-small-pre-inference-freeze-v0.1",
+      "authority": "Exact identity and all selection/materialization/transfer/model/runtime/governance/retention bindings"
+    },
+    "selfDigestRule": "Only selection and materialized exclude manifestSha256 and require its exact value; transfer and freeze hash the entire canonical object.",
+    "configAuthorityOverride": false,
+    "privatePackageRewritten": false
+  },
+  "actualPrivatePackagePreflight": {
+    "task": "5.6C.2A.1",
+    "metadataReadCount": 4,
+    "state": "PASS",
+    "operatorFiles": {
+      "tools/alpha_asr_small_campaign.py": {
+        "bytes": 12993,
+        "sha256": "a923710537f846e8d6894e45a1feb139c63de8702220c6e21bd5d34723383536"
+      },
+      "tools/alpha_asr_small_acceptance_manifest.py": {
+        "bytes": 9876,
+        "sha256": "e0c02989fe50ac51df70a4a577119a9cac831cef04d84dab415454a117ac0d1e"
+      },
+      "tools/alpha_asr_pilot_manifest.py": {
+        "bytes": 12341,
+        "sha256": "dea7a8bdf651372052d89b0338b41a2c5cb7373696335ed8de47adbb8cba64b9"
+      },
+      "tools/run_alpha_asr_small_campaign_v2.py": {
+        "bytes": 13692,
+        "sha256": "5a247f3eba9c9b9699d4597f8925684053b915de99ddf224485a2f91aab0244f"
+      },
+      "tools/test_alpha_asr_small_campaign_v2.py": {
+        "bytes": 17093,
+        "sha256": "13342ef8c9d0005dba18ffed6347e158b30a18c6fe92bf45811c3e4fde8d981b"
+      }
+    },
+    "operatorCanonicalSha256": "f96127249cbc7cef3a504caefe4704e2932bd268dd43a7811a2021459bab60b1",
+    "baselineHead": "bdbdaca73c8e0fd9b297bde560cda4442892bd6d",
+    "baselineAllTrackedFilesPreserved": 599,
+    "untrackedDelta": "EXACT_TWO_SUCCESSOR_FILES",
+    "invocation": "PURE_SUCCESSOR_VERIFY_METADATA_WITH_EXTERNAL_BASELINE_AND_SOURCE_HASH_GUARDS",
+    "publishedCheckoutFileWrapperInvoked": false,
+    "result": {
+      "result": "PASS",
+      "claim": "PINNED_PRIVATE_PACKAGE_METADATA_COMPATIBLE",
+      "operatorId": "dora-alpha-asr-small-campaign-operator-v0.2",
+      "documentCanonicalSha256": {
+        "selection": "695f1e147fe968c8f75e7bea5e7a6edfd20f50e939c0bdbc2064d3a7db7d1947",
+        "materialized": "2cb05132de945fe8a1b281e79efd8efa15d9b9b94c0326f6572a594e0c74e9bb",
+        "transfer": "95c26be0501172196587181b3f46705b65237bde879a0e3ee8eb748cee2e1a87",
+        "freeze": "eb088082b2cde6d2bc2649e6cb6d67a92d3a68ad447a8a7331eec58c2794bcaa"
+      },
+      "sampleCount": 48,
+      "selectedCounts": {
+        "ru": 24,
+        "en": 24
+      },
+      "crossBoundCases": 48,
+      "materializedBindings": 48,
+      "contentFileBindings": 96,
+      "transferRecords": 97,
+      "selectionOrder": "RU24_THEN_EN24_FROZEN_RANK_ORDER",
+      "evaluationProfileSha256": "217b5662bfd22520779a2df2551f553cb17e97e11f0273e8238682a5f4b7f69f",
+      "contentIntegrityReverified": false,
+      "measuredExecution": "BLOCKED / NOT_AUTHORIZED"
+    },
+    "metadataBytesUnchangedSinceInspection": true,
+    "privateIdentifiersAbsentFromSuccessorSource": true,
+    "completedUtc": "2026-09-26T10:29:17.237671+00:00"
+  },
+  "preflightBoundary": {
+    "actualMetadataCompatibility": "PASS",
+    "pureSuccessorFunction": "verify_metadata",
+    "guard": "Before live reads: required HEAD/parent/branch, all 599 original file bytes, exact two new source files, and successor source hash map; all source hashes rechecked afterward.",
+    "publishedCheckoutFileWrapper": "Not invoked live before publication: it requires the final clean successor commit and report. Its Git/evidence/file gates and four-file read boundary are tested with generated fixtures.",
+    "contentIntegrityClaim": "Metadata cross-binding only. No current audio/reference/model content integrity claim; no execution readiness or authorization is inferred.",
+    "metadataBytesUnchangedBetweenInspectionAndPreflight": true
+  },
+  "evaluationProfile": {
+    "profileId": "dora-alpha-asr-small-eval-profile-v0.1",
+    "campaignVersion": "dora-alpha-asr-small-campaign-v0.1",
+    "normalizationVersion": "dora-alpha-asr-normalization-v0.1",
+    "pythonSemanticProfile": "cpython-3.12-unicode-15.0.0",
+    "upstreamRepository": "openai/whisper",
+    "upstreamRevision": "86098128c0b4f24f0e2aa2994de830614b474227",
+    "upstreamSourceSha256": "4742eaa040e0657fa1247a1361e0d856c62317a43326ea59a40c2e9edd8d2c38",
+    "upstreamOptions": {
+      "removeDiacritics": false,
+      "splitLetters": false
+    },
+    "oracleIdentity": "com.monumentogram.dora.stage0.asr.i1.AsrSyntheticScoringOracle",
+    "oracleSchemaVersion": 1,
+    "oracleSourceSha256": "a2b3e37305f24f91a8ace00f5f824d1d13effda94248c15b31aa31db78c76125",
+    "selectedManifestSha256": "2cb05132de945fe8a1b281e79efd8efa15d9b9b94c0326f6572a594e0c74e9bb",
+    "transferIndexSha256": "95c26be0501172196587181b3f46705b65237bde879a0e3ee8eb748cee2e1a87",
+    "privateFreezeSha256": "eb088082b2cde6d2bc2649e6cb6d67a92d3a68ad447a8a7331eec58c2794bcaa",
+    "selectionContractSha256": "4db7c7d67aac03504a1233f0f59cfe1bedee414917f28e2c915d337d404638ff",
+    "governanceCommit": "dd1468dcaace9699e64b1945f83a9b532205d435",
+    "sourceRecoveryCommit": "aa4e65cf4510f055260dca6a7e6e8f26916f732e",
+    "modelArtifact": "ggml-small-q5_1.bin",
+    "modelBytes": 190085487,
+    "modelSha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb",
+    "runtimeSourceVersion": "ggml-org/whisper.cpp v1.9.4",
+    "runtimeSourceCommit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+    "decodingProfileSha256": "cd53fda162402675f54875de470b01c303f0ede9a2e0cefd6f1056e8fa381d39",
+    "measurementProtocolSha256": "0f1e456fb4b4b0da28a209abe94e42fe7a0ca599e5c5c794db16a6abe478b116",
+    "resourceGateVersion": "dora-alpha-asr-small-poco-m5-resource-gates-v0.1",
+    "resourceGateSha256": "fdfb56b56429c07a99538c92d87f9ea8570c723cc67f5e5eb02915d97557ccd1",
+    "languageGates": {
+      "ru": {
+        "errors": 20,
+        "referenceTokens": 100
+      },
+      "en": {
+        "errors": 18,
+        "referenceTokens": 100
+      }
+    },
+    "resourceGates": {
+      "weightedRtf": 2,
+      "p95Rtf": 4,
+      "p95Rank": 46,
+      "maximumRtf": 6,
+      "coldLoadMicros": 15000000,
+      "pssBytes": 1610612736,
+      "nativeHeapBytes": 1342177280,
+      "evidencedOomEvents": 0,
+      "forbiddenThermalMinimum": 3,
+      "memoryTargetMs": 100,
+      "memoryMaximumGapMs": 1000,
+      "thermalDelayMs": 1000,
+      "thermalMaximumGapMs": 3000
+    },
+    "attemptPolicy": "ONE_PRIMARY_PER_CASE_NO_AUTOMATIC_RETRY_STOP_ON_INVALID_ATTEMPT",
+    "order": [
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "ru",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en",
+      "en"
+    ],
+    "warmup": "ONE_GENERATED_3_SECOND_SILENCE_FULL_INFERENCE_BEFORE_CORPUS",
+    "rawWerRole": "DIAGNOSTIC_ONLY",
+    "medianRtfRole": "DIAGNOSTIC_ONLY",
+    "endToEndRole": "DIAGNOSTIC_ONLY",
+    "timestampQuality": "NOT_EVALUABLE",
+    "scope": "PHYSICAL_POCO_M5_BOUNDED_STAGE_0_ONLY",
+    "productionAdmission": false,
+    "allDeviceSupport": false,
+    "retentionDeadline": "2026-10-25"
+  },
+  "evaluationProfileSha256": "217b5662bfd22520779a2df2551f553cb17e97e11f0273e8238682a5f4b7f69f",
+  "evaluationProfileUnchanged": true,
+  "qualityAndResourceGatesUnchanged": true,
+  "frozenAdditionalAuthorities": {
+    "selectionContractSha256": "4db7c7d67aac03504a1233f0f59cfe1bedee414917f28e2c915d337d404638ff",
+    "candidateInventorySha256": "ad454b162fab7dea96c28612a374fcae79040346dae5ee2916b3c4482b3ec041",
+    "originalManifestSha256": "5d9e12fa76e9db54bc69bbd22396dbec733348db97bba353361ac701af64061c"
+  },
+  "operationCounts": {
+    "actualCampaignAttempts": 0,
+    "campaignStartedMarkers": 0,
+    "attemptJournals": 0,
+    "modelByteReads": 0,
+    "modelLoads": 0,
+    "audioContentReads": 0,
+    "referenceContentReads": 0,
+    "audioDecode": 0,
+    "asrInference": 0,
+    "whisperFull": 0,
+    "deviceConnections": 0,
+    "deviceExecutions": 0,
+    "adbExecutions": 0,
+    "codecWarmup": 0,
+    "thresholdChanges": 0,
+    "candidateTuning": 0,
+    "reselection": 0,
+    "rematerialization": 0,
+    "privatePackageWrites": 0
+  },
+  "operationCountBasis": "This task inspected exactly four metadata files twice. Pure parser has no filesystem/device operations; actual preflight read allowlist contains only those four files. Tests use generated metadata and host Java oracle fixtures. No campaign call, marker/journal creation or private write occurred.",
+  "privateMetadataReads": {
+    "schemaInspection": 4,
+    "actualCompatibilityPreflight": 4,
+    "total": 8,
+    "contentReads": 0,
+    "countMeaning": "Document file content reads; reparsing in-memory metadata and ACL/stat checks are not additional reads."
+  },
+  "protectedHistoricalFiles": {
+    "android/native-libs-allowlist.txt": {
+      "bytes": 182,
+      "sha256": "1d0b0fa79333156a3dfce30d50a9a928951cd16bdbc21f4c45f728f686876625",
+      "gitBlob": "a2ba150a576923fbf877450e9e05bfa7d8b79ee0"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-assessment-stage0-v0.1.json": {
+      "bytes": 31673,
+      "sha256": "a1cc46148c15b6cdf66bf3e966df907f7eee6a8265db3fe12105f0eccd4a6d46",
+      "gitBlob": "5bd738b2949b4369d89d349ad088a21bec8af0e0"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-campaign-stage0-v0.1.json": {
+      "bytes": 11615,
+      "sha256": "c7ab64feea51eb3d411cdf213524532aabce0b146674c01cecdc32e9054b730c",
+      "gitBlob": "37198ab28e3ba4db7ecaa61f87aeb8f567a1360f"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-decoding-profile-stage0-v0.1.json": {
+      "bytes": 3506,
+      "sha256": "c76324845171c680bd984784e8f1fca13d95b3f0918619dfb5ff53c70ed9c442",
+      "gitBlob": "d17c02f4845d98c13288ce7f3ea491b85424ee51"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-eval-contract-local-evidence-stage0-v0.1.json": {
+      "bytes": 10910,
+      "sha256": "1eac552f46136071ebb02bf0fbfbd1a2e380bb0f2aea0050b9494b01bcfe5052",
+      "gitBlob": "6fcca5de7d36a151c3199c112bb7ecc5378e1e3c"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-measurement-protocol-stage0-v0.1.json": {
+      "bytes": 2865,
+      "sha256": "9101c18fa020f8fd0a3ebba47b70c055c4724dc50e2a7900e5d0bef57d5b99c1",
+      "gitBlob": "6fd3b274b6141c40bc7749016fa3f0d307ea682d"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-model-admission-stage0-v0.1.json": {
+      "bytes": 20860,
+      "sha256": "465ee6382e4c884402375237a51adbeb8b3a831ca3fee5a3c831b70713e67864",
+      "gitBlob": "fc813c7fac33b06ea88c64c74de33d2f73d2b489"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-native-build-16k-stage0-v0.1.json": {
+      "bytes": 35206,
+      "sha256": "11a07e39987e968158d506a8d0d9d6402e69e1941a387a9f94e36de2f834408a",
+      "gitBlob": "c657c347a7216dae93bc4b4dce9198f3be2804b2"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-next-candidate-admission-stage0-v0.1.json": {
+      "bytes": 31414,
+      "sha256": "fc7cba975e5e834bf874cff88745d88a0c44435be59a7fbf1add06617660524c",
+      "gitBlob": "ed6314993e5257c06c41468b01e8fe6e3d1d57ae"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-next-candidate-storage-remediation-stage0-v0.1.json": {
+      "bytes": 29024,
+      "sha256": "da34a9560ec2b96c095e180d2b0aec0821d889c2ac829712f45232c7f7e0eb1a",
+      "gitBlob": "a4612de66ffcd22d7b1ea24f5dfe587cbb871fa8"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-runner-preflight-stage0-v0.1.json": {
+      "bytes": 29358,
+      "sha256": "249a95c4e4a892e158eb0c2e624c0e9e2b72df145a78f9c28d9b9b511db1b1ba",
+      "gitBlob": "1b23e0da9c1a504aef98895d72bb0f76235d6bec"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-small-campaign-operator-stage0-v0.1.json": {
+      "bytes": 31420,
+      "sha256": "18becb82e26835722e1beccb00edf6cbb4b7c7325c539fdc031671348827029e",
+      "gitBlob": "3e0ba344df62f5507a1f1cb94067f2e7df220d40"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-small-campaign-result-stage0-v0.1.json": {
+      "bytes": 29144,
+      "sha256": "0fb1c331fbbf3af820b4fdc20f668025f95b2a0db101a11e14a986d5cf70d984",
+      "gitBlob": "49da8224c1aa953cefe30b4b281709e03e5c262d"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-small-evaluation-governance-stage0-v0.1.json": {
+      "bytes": 31576,
+      "sha256": "f8140496aac3972b6a8eb6dd62c3fe5305141a2e8d8c613e36768f1727b5f3b5",
+      "gitBlob": "961ed67b3da21967497a9ed5c1be176f27fcde27"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-small-holdout-preflight-stage0-v0.1.json": {
+      "bytes": 26176,
+      "sha256": "b1dc0359d43d12ec892ea14e846723db164df5229edf781e68b0104e251659f1",
+      "gitBlob": "8b62aa93fe51f327d5b10a4b74b2523a3738a28f"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-small-holdout-source-recovery-stage0-v0.1.json": {
+      "bytes": 36132,
+      "sha256": "044380436b4aa9cc0b23dbc21d86c14b3f8159a22a92aab305d8646c8260de3c",
+      "gitBlob": "1f2273900d58b290547488d73ac85801331dd971"
+    },
+    "docs/evidence/poc-asr-001/i1-synthetic-scoring-oracle-local-evidence-stage0-v0.1.json": {
+      "bytes": 14621,
+      "sha256": "fcf7363b578f57a3931dfbbf2d6c1ec60c3896bcd062fb175c629aff6f6d6d04",
+      "gitBlob": "59522138ff8d078cabadc2890733ff743d26563f"
+    },
+    "docs/evidence/poc-data-001/alpha-asr-actual-pilot-materialization-stage0-v0.1.json": {
+      "bytes": 8887,
+      "sha256": "7c8338b904a8e9adc8e7d62ce66c345350e0eace2c76309808756c03d1f177c6",
+      "gitBlob": "4e6f17c87c5ee2940007d8083aed640d95d844ce"
+    },
+    "docs/evidence/poc-data-001/alpha-asr-pilot-manifest-validator-local-evidence-stage0-v0.1.json": {
+      "bytes": 3845,
+      "sha256": "b480b2879073fe6eecdb48c96ec30ed3963a503e291ed4342ac253bed2fde6ec",
+      "gitBlob": "2c50466e530c0b1bb9e3b084e878b7e8759fec11"
+    },
+    "docs/evidence/poc-data-001/alpha-asr-synthetic-storage-dry-run-stage0-v0.1.json": {
+      "bytes": 848,
+      "sha256": "3dce78abda49868937658905a15e1745cfd8d7a2a663af6c4d698a30e2e48cf9",
+      "gitBlob": "391257dd9627247df95769df0fc51af7362b2a06"
+    },
+    "docs/evidence/poc-data-001/control-plane-dry-run-local-evidence-stage0-v0.1.json": {
+      "bytes": 7934,
+      "sha256": "6ff46c2d0dc7a2e898c97be9a89c82aa61d61e72ffa3714a1858405fedaf9f5c",
+      "gitBlob": "fa90b9706f5ad98fe038bcf39e9330850cbed1bf"
+    },
+    "docs/evidence/poc-data-001/control-plane-synthetic-manifest-stage0-v0.1.json": {
+      "bytes": 11427,
+      "sha256": "5ce259432d77c8876f6b7c5e8ab6981d4312c1fbc18cdf6c84a97023d450ec72",
+      "gitBlob": "b4b5fafc0313db3756566e0bb0c6057614b273df"
+    },
+    "docs/evidence/poc-data-001/reviews/poc-data-control-plane-independent-advisory-closure-20260818.json": {
+      "bytes": 4176,
+      "sha256": "f4ad6d955d99746eee586dda7c4553acc1190ac7911329297fd8324c017d4ceb",
+      "gitBlob": "6db337daaa3a60b50cf24d73fa9a882ee593dc8a"
+    },
+    "docs/evidence/poc-data-001/synthetic-public-manifest-validator-local-evidence-stage0-v0.1.json": {
+      "bytes": 16884,
+      "sha256": "96df57742faf73bdb1607f537f17db2a1a3c0108421deadc194814c15eb30941",
+      "gitBlob": "31c4e552a92d3b994b17d880f0cf6d23158a89c2"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_ASSESSMENT_STAGE0_V0_1.md": {
+      "bytes": 22251,
+      "sha256": "82ab1533df8daae2d4a490d1122980039cb90b4f6185c39724dd5cf2bb5c4048",
+      "gitBlob": "018e8d003d31ceecb320b69b39e397d956b62f94"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_CAMPAIGN_STAGE0_V0_1.md": {
+      "bytes": 11490,
+      "sha256": "9be7fcb1727c3729f99b543ae8df7536617290df96c951dc73d9685fda88d3f3",
+      "gitBlob": "28ff99f1e259d9449db67317a9af28f94c87f044"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_DATA_ADMISSION_STAGE0_V0_1.md": {
+      "bytes": 10301,
+      "sha256": "8f4db64d5136fa11d8c807ab9351774d76a9fda0267a8ce5f6921ee32bd3bbb2",
+      "gitBlob": "e09eb8662ce9291550c608f89450b18e98878647"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_DATA_LEGAL_IP_REVIEW_V0_1.md": {
+      "bytes": 11508,
+      "sha256": "7f440d2b62c07bcfbaefa8d7ca11742f0f4c6d290c513fc4b615ed08fbed39d3",
+      "gitBlob": "e15825266e2c2dc065102dec2c585301d13232df"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_DATA_MANIFEST_CONTRACT_STAGE0_V0_1.md": {
+      "bytes": 13651,
+      "sha256": "3a9699ae5ea4f380dd2641840d9ce6cba0dc51c73229c86443abd21290289826",
+      "gitBlob": "85634b8bb8ef8e1796963d7ee32cff360c9c836f"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_DATA_OWNER_DECISION_V0_1.md": {
+      "bytes": 6807,
+      "sha256": "e1a59cbb8b195a51f44c87540b554ef03e6ff3f1dbd86a4f992eb5dd53733be6",
+      "gitBlob": "06a236a79f36b3e166b1948518fe2f81ad05746f"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_DATA_SCOPE_STAGE0_V0_1.md": {
+      "bytes": 14479,
+      "sha256": "197c98cc33141269f57273036d8c03b28e9dcdfb5b3ff6d1129718e40858c633",
+      "gitBlob": "ab83ff92c4d6071d3ed29dd5d45e07c074336b99"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_EVAL_CONTRACT_STAGE0_V0_1.md": {
+      "bytes": 17609,
+      "sha256": "cd3cec90fa53ec9501f93169243f3f06c0980a7fd5b6b11f6a75f851c825dfa7",
+      "gitBlob": "bb336276e097b731061e34a7e5e53ad634c8de77"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_MODEL_ADMISSION_STAGE0_V0_1.md": {
+      "bytes": 12044,
+      "sha256": "263ff9f157d344d19d71cb387b46d2d6b38281809af38a2db23566435615c903",
+      "gitBlob": "8f4d0937734714e30556540ea0d633a3baf55df9"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_NATIVE_BUILD_STAGE0_V0_1.md": {
+      "bytes": 14373,
+      "sha256": "7c5f5c5c661caf42d915110c22e23f76309268658ab61d962bcdec0f55bee64b",
+      "gitBlob": "0283d7dcc8a807a8e42cf21d82f15cb7c417579e"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_NEXT_CANDIDATE_ADMISSION_STAGE0_V0_1.md": {
+      "bytes": 17875,
+      "sha256": "731ab4c455dce84e55293e4f9b06a158aec03898a95b64f39921f99b5098ba1a",
+      "gitBlob": "6ed78e72dee5b48303719a5953f3b3ea86a8049f"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_NEXT_CANDIDATE_STORAGE_REMEDIATION_STAGE0_V0_1.md": {
+      "bytes": 8830,
+      "sha256": "57c6dd049ff5ea90fa30289d779212ce82efa9b481e3dba3a990bd6642defbea",
+      "gitBlob": "e300f91725668bc819acc70ad221330bffc6f3fb"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_RUNNER_PREFLIGHT_STAGE0_V0_1.md": {
+      "bytes": 11953,
+      "sha256": "e65ec1e469ca02de191bc1570c7bcd549a03cbf70faf8fa0b3fc60f931ce6935",
+      "gitBlob": "dc52b715154b6360f47c8c6aea36d6634907c907"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_SMALL_CAMPAIGN_OPERATOR_STAGE0_V0_1.md": {
+      "bytes": 11609,
+      "sha256": "e986c310584ecfbaf401210c9cd592c6a914f8674001c16312d2e0f4061d1c0c",
+      "gitBlob": "490203ec8eb9749fd8972d6f216b04cb89666b3e"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_SMALL_CAMPAIGN_RESULT_STAGE0_V0_1.md": {
+      "bytes": 8161,
+      "sha256": "cd3debe36c4cfaa47c5703df83cce333829d92f36068b3243f937648932af636",
+      "gitBlob": "50e47a5c44e0ae2bec459cb4726b8bfa673a7441"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_SMALL_EVALUATION_GOVERNANCE_STAGE0_V0_1.md": {
+      "bytes": 13350,
+      "sha256": "dd02cf2d45625a164ad135c34696ada39b3a396d0a7d0e47b1ce4a6fd2e30576",
+      "gitBlob": "060e28a9608467d8cffeb758ea682fad469a1fe1"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_SMALL_HOLDOUT_PREFLIGHT_STAGE0_V0_1.md": {
+      "bytes": 8885,
+      "sha256": "779b3e2cd486f6f4e7120b78554b54d25aeb5671daad3a36c7a681f7d724d9e9",
+      "gitBlob": "789c41419f57cc076a472225ab140b5b6073f408"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_SMALL_HOLDOUT_SOURCE_RECOVERY_STAGE0_V0_1.md": {
+      "bytes": 12037,
+      "sha256": "db5511becfe1bebe36fc6caa04cd399f1e17a606aeaf8fc8ebf4068d9ed4c7fe",
+      "gitBlob": "4ff8941f1be384d214700cd784781294d3f1fe73"
+    },
+    "tools/alpha_asr_android_preflight.py": {
+      "bytes": 11709,
+      "sha256": "8c4835c5d8b196592e3e17ad1c59176bb05461f52952e1da900f35385b495e41",
+      "gitBlob": "e5c1f6d88b2af8986d10396925c665ccd75eb15d"
+    },
+    "tools/alpha_asr_campaign.py": {
+      "bytes": 7274,
+      "sha256": "e0261fadf0c01cdc2e634108f7c464ca07f2ae3baa68ac6884dc06e43e799709",
+      "gitBlob": "041b6041affc19cd8676ead3748921472956786a"
+    },
+    "tools/alpha_asr_campaign_device.py": {
+      "bytes": 10598,
+      "sha256": "e0200b3a063659c0041a2d081a7151a7f57407ae015738e8a9fbdb6fae0cadf2",
+      "gitBlob": "74f2e43a20fe55d59910c2a1d56b3ef6e318d533"
+    },
+    "tools/alpha_asr_campaign_import.py": {
+      "bytes": 7920,
+      "sha256": "338ed7bcb30917d91951fffb49745c3aec39724f8aade0ae5ccf878f3a60860d",
+      "gitBlob": "33a6cf59fa09c669314549b3cac5a9c41a35d1ad"
+    },
+    "tools/alpha_asr_campaign_native/CMakeLists.txt": {
+      "bytes": 1327,
+      "sha256": "8e3ec4062b5ca3e2b860dae768f71438e9fccd3151d7f69233f0ff2a8f112ca9",
+      "gitBlob": "b81bf83b7887c103b0e253fed5c78766369ebbbe"
+    },
+    "tools/alpha_asr_campaign_native/CampaignOracle.java": {
+      "bytes": 1621,
+      "sha256": "abc51d8d08651f288ded482816350b680eae07ab3e47c8b9dc0d331d72e04270",
+      "gitBlob": "82fd8a1bac13be900ad625d9dd23beacb9b585d6"
+    },
+    "tools/alpha_asr_campaign_native/decode.c": {
+      "bytes": 229,
+      "sha256": "0fc06284bb8bce924bd2cc28c2fd0c9b39cd02f0b06a766d13251b9a0224346c",
+      "gitBlob": "000329022068edc49c3c56ad9b96fd3afdb4477e"
+    },
+    "tools/alpha_asr_campaign_native/main.cpp": {
+      "bytes": 7112,
+      "sha256": "b642497a5f50676f6b643303ad272e78c6f158359d5a480f2f18f16a779f29bf",
+      "gitBlob": "f3341ffbee228e315c6cd670a194df8cff0e18cf"
+    },
+    "tools/alpha_asr_eval_text_contract.py": {
+      "bytes": 14735,
+      "sha256": "490b4f659aef99da413e68cab5ffa187b1e8fd7229e7d7265367f2d14e577ff0",
+      "gitBlob": "225266072d7e8f3c57bb170596a6c3fd1529dbd6"
+    },
+    "tools/alpha_asr_native_preflight/CMakeLists.txt": {
+      "bytes": 1007,
+      "sha256": "0d631f38acd3b470ad4085fcb6e89c01c3dbb7b5d1cd79d7827481b1262ea63a",
+      "gitBlob": "690362910faf6144f2f337aa018011e1ba0c166e"
+    },
+    "tools/alpha_asr_native_preflight/main.cpp": {
+      "bytes": 1630,
+      "sha256": "0c0152c872ea3318b1d45888e4a2f0ea06c58c286f28ccf534f5a28bc8846127",
+      "gitBlob": "681a3f70d9a207f4a4c5b12c826c02b1dacfd260"
+    },
+    "tools/alpha_asr_pilot_manifest.py": {
+      "bytes": 12341,
+      "sha256": "dea7a8bdf651372052d89b0338b41a2c5cb7373696335ed8de47adbb8cba64b9",
+      "gitBlob": "785fc08762ec56555790fdbee8f69a5b3085c6ef"
+    },
+    "tools/alpha_asr_runner.py": {
+      "bytes": 8288,
+      "sha256": "19a83632c7b9752e429ef6807b30720fa4a7d0aa408cc8d341038bbf619baf51",
+      "gitBlob": "0ada745129fe3e0363d660d715701fd2f1f5824b"
+    },
+    "tools/alpha_asr_runner_store.py": {
+      "bytes": 6667,
+      "sha256": "89ce31cd1658bc6c90389afa35d4eab7c94b9bdbcf98b8cde27a4b1eb9da7b93",
+      "gitBlob": "aabcd46196d5ade8580cd4a37fefc2b478d75083"
+    },
+    "tools/alpha_asr_small_acceptance_manifest.py": {
+      "bytes": 9876,
+      "sha256": "e0c02989fe50ac51df70a4a577119a9cac831cef04d84dab415454a117ac0d1e",
+      "gitBlob": "5d4581f63b69ecbbb0bc5aefc9020922d52f92c6"
+    },
+    "tools/alpha_asr_small_campaign.py": {
+      "bytes": 12993,
+      "sha256": "a923710537f846e8d6894e45a1feb139c63de8702220c6e21bd5d34723383536",
+      "gitBlob": "c70550ceda74300906ddd79fe1359ed22c495f20"
+    },
+    "tools/asr_i1_synthetic_scoring_oracle/src/main/java/com/monumentogram/dora/stage0/asr/i1/AsrSyntheticScoringOracle.java": {
+      "bytes": 29949,
+      "sha256": "b2d2525ff0d71c15fdef931c005975f8610f5c5054e8e1f2b10f0f3740db9903",
+      "gitBlob": "b38cc9be851088dbf83a4160f248f318cbbd47f1"
+    },
+    "tools/asr_i1_synthetic_scoring_oracle/src/test/java/com/monumentogram/dora/stage0/asr/i1/AsrSyntheticScoringOracleTest.java": {
+      "bytes": 29863,
+      "sha256": "ff7c67b258a8281091bd28fc34d50ebb1596705c08aaee8ddfbc2ecdd95e6def",
+      "gitBlob": "ae3b3cf7b69ae6a366e69cb7fd6de67320cdafd7"
+    },
+    "tools/battery_campaign_oracle/src/main/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracle.java": {
+      "bytes": 55561,
+      "sha256": "62e203ba494d7e108a9de82498ae54b572b5282749b046e0eb891689d0917ab4",
+      "gitBlob": "50b1eb9849238cc8fbb418a348f136f759a25904"
+    },
+    "tools/battery_campaign_oracle/src/test/java/com/monumentogram/dora/stage0/battery/BatteryCampaignOracleTest.java": {
+      "bytes": 49464,
+      "sha256": "31d7cf12b5bd89d97d155f1a990e25acdd26b181eed0d10394cc7c14eb7c3e61",
+      "gitBlob": "03e0f8a3f787a0e33b8c56881d45dab9ca8fd063"
+    },
+    "tools/run_alpha_asr_campaign.py": {
+      "bytes": 18870,
+      "sha256": "c9b1116e03a8bb1377169c3a8c929ddc1c933f84a7f5a7a587b67f205b14e45f",
+      "gitBlob": "ba47f5cca270be2308898c61ab2399cf5f8a5924"
+    },
+    "tools/run_alpha_asr_small_campaign.py": {
+      "bytes": 17189,
+      "sha256": "72b703f51f34394e8cf0f5f367306cbfc5b805a61eb4a9020efd99c0d47575a7",
+      "gitBlob": "e069cf1b826e3fba63254f1bf5e0d35bdd779b0d"
+    },
+    "tools/test_alpha_asr_campaign.py": {
+      "bytes": 7759,
+      "sha256": "5b0acc72c2838e07b5a12391d647db7aa1e8061b7120bb2d5a99cf66af81fa69",
+      "gitBlob": "af0db14342524fd3e02888c0b5b9fb8c9bd282bd"
+    },
+    "tools/test_alpha_asr_eval_text_contract.py": {
+      "bytes": 16585,
+      "sha256": "649442ce34bc094b59fe9348bef1bef1cbfc55b131088bcd6c2964cce96db6e8",
+      "gitBlob": "a10a285562eb145dd1560e81f008a565d58caac0"
+    },
+    "tools/test_alpha_asr_pilot_manifest.py": {
+      "bytes": 20803,
+      "sha256": "b9e00347f9669f573ecffa9b7e67735ef67e25ef03a7ce46dcc8d02e8b11c28c",
+      "gitBlob": "0d9719096d5f06053896bd42af551e7a1e39606a"
+    },
+    "tools/test_alpha_asr_runner.py": {
+      "bytes": 19067,
+      "sha256": "8c1f6dd478e74165e136b86936cd95881ca8f18c150bb80c02308d3fc25fc8bd",
+      "gitBlob": "cb75bb58349d5ce46263bc2af0bf69d1c2785fd7"
+    },
+    "tools/test_alpha_asr_small_acceptance_manifest.py": {
+      "bytes": 8904,
+      "sha256": "336add2312ef11c3c662e9e287ac295b8fe38dbd5f718c393f113b89650d4823",
+      "gitBlob": "684626b8e7cde4df0e278dd45098eb99885741dc"
+    },
+    "tools/test_alpha_asr_small_campaign.py": {
+      "bytes": 32190,
+      "sha256": "0c16c91c8a2a50631f64099fb186d891a7a9c352f0172afd3583ff90025d50f1",
+      "gitBlob": "c7dfa7a8416b6ad716f0903955f798282cf54ac8"
+    },
+    "tools/verify_alpha_asr_normalizer_parity.py": {
+      "bytes": 3542,
+      "sha256": "a1d81da2d1141d13a98b9247290eb542aee87d2db306e6139fac7a47c1ade6e4",
+      "gitBlob": "f4fc292b009d236eac1652f2a74fd55574abdbea"
+    }
+  },
+  "allTrackedPreservation": {
+    "baselineFiles": 599,
+    "unchangedFilesRequired": 597,
+    "immutableBaselineCanonicalSha256": "17403140dcb7a5f97cee29044ecb72fd5bf74ffcd35defdffc6d5cbd628fa286",
+    "statusBacklog": "Additive insertion; all prior bytes retained in original order"
+  },
+  "validation": {
+    "successorSyntheticTests": {
+      "count": 38,
+      "result": "PASS"
+    },
+    "smallHostTests": {
+      "result": "PASS",
+      "exitCode": 0,
+      "count": 99,
+      "elapsedMilliseconds": 5453
+    },
+    "allAsrHostTests": {
+      "result": "PASS",
+      "exitCode": 0,
+      "count": 212,
+      "elapsedMilliseconds": 11609
+    },
+    "historicalAsrTests": 174,
+    "stage00": "PASS_ALL_7_CHECKS",
+    "strictJson": "PASS",
+    "referencesPrivacy": "PASS",
+    "gitDiffCheck": "PASS",
+    "exactSixFileScope": "PASS",
+    "protectedHistoricalBlobs": "PASS",
+    "initialRed": "32 tests failed because the successor did not exist; production implementation followed.",
+    "retainedHostFailure": {
+      "test": "test_java_oracle_scoring_parity",
+      "suite": "99 SMALL host tests",
+      "failure": "subprocess.TimeoutExpired in unchanged Java CampaignOracle invocation",
+      "disposition": "Retained in local host log; no source or timeout change. Fresh required host suites rerun and passed. Cause not established.",
+      "measuredCampaignRetry": false,
+      "elapsedMilliseconds": 1374422
+    },
+    "ci": "NOT_DISPATCHED; current chat branch does not match configured push branch/tag triggers; no PR created.",
+    "androidGradleDevice": "NOT_RUN; no Android/runtime/build-input changes"
+  },
+  "independentReview": {
+    "result": "NO_ACTIONABLE_FINDINGS",
+    "scope": "Successor source, generated tests and sanitized actual-schema receipt; no private package/model/device access."
+  },
+  "scope": {
+    "5.6C.2B": "BLOCKED / NOT_AUTHORIZED",
+    "newExecutionAuthorizationIssued": false,
+    "measuredApi": "Unconditionally rejects all calls, including the historical authorization token.",
+    "POC-ASR-001": "BLOCKED / NOT_READY",
+    "stage5PassClaimed": false,
+    "groupBPassClaimed": false,
+    "recovery": "0D.6 = ALPHA CLOSED / FULL OPEN",
+    "recoveryModified": false,
+    "pr86": {
+      "url": "https://github.com/Monumentogram/DORA/pull/86",
+      "state": "OPEN",
+      "draft": true,
+      "merged": false,
+      "modified": false,
+      "verification": "Read-only GitHub get_pr_info in this task"
+    },
+    "prCreated": false,
+    "mergePerformed": false
+  },
+  "remainingBlocker": "No schema compatibility blocker remains. Measured 5.6C.2B execution requires a separate explicit owner decision and future execution scope; this successor provides metadata verification only.",
+  "retentionDeadline": "2026-10-25",
+  "retentionExtended": false,
+  "publication": {
+    "phase": "PRE_COMMIT_EVIDENCE_FREEZE",
+    "commitCount": 1,
+    "commitMessage": "stage0(asr): add SMALL metadata compatibility successor",
+    "actualCommitAndRemoteHead": "RETURNED_AFTER_PUSH"
+  },
+  "changedFiles": [
+    "tools/run_alpha_asr_small_campaign_v2.py",
+    "tools/test_alpha_asr_small_campaign_v2.py",
+    "docs/stage0/DORA_ALPHA_ASR_SMALL_CAMPAIGN_SCHEMA_REMEDIATION_STAGE0_V0_1.md",
+    "docs/evidence/poc-asr-001/alpha-asr-small-campaign-schema-remediation-stage0-v0.1.json",
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md"
+  ]
+}

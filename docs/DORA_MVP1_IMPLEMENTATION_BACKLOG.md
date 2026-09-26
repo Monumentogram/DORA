@@ -1,5 +1,24 @@
 # Dora MVP 1 — Executable Backlog
 
+## ASR 5.6C.2A.1 metadata compatibility remediation — 26 September 2026
+
+`5.6C.2A.1 = PASS / PRIVATE_MANIFEST_OPERATOR_COMPATIBILITY_REMEDIATED`.
+The additive v0.2 operator distinguishes selected `samples`, materialized
+`bindings`, transfer records and freeze. Actual controlled metadata passed all
+four pinned identities and exact 48-case cross-binding (24 RU + 24 EN; 97 transfer
+records). Metadata reads: 8; all content/model/device/execution/write counters: 0.
+38 successor tests, 99 SMALL host tests, 212 ASR host tests and Stage00 pass.
+The historical three-file operator and blocked result remain unchanged; prior
+5.6C.2A PASS and 5.6C.2B BLOCKED retain their historical meanings.
+
+**5.6C.2B remains BLOCKED / NOT_AUTHORIZED after this task.** No new execution
+authorization is issued; the successor's measured API rejects every call.
+POC-ASR-001 remains BLOCKED / NOT_READY; Stage 5 and Group B are not marked PASS.
+Recovery remains 0D.6 = ALPHA CLOSED / FULL OPEN; PR #86 is draft and unmerged.
+See the [remediation report](stage0/DORA_ALPHA_ASR_SMALL_CAMPAIGN_SCHEMA_REMEDIATION_STAGE0_V0_1.md)
+and [aggregate evidence](evidence/poc-asr-001/alpha-asr-small-campaign-schema-remediation-stage0-v0.1.json).
+
+
 ## ASR 5.6C.2B pre-campaign schema blocker — 26 September 2026
 
 `5.6C.2B = BLOCKED / FROZEN_OPERATOR_PRIVATE_MANIFEST_SCHEMA_MISMATCH`.
