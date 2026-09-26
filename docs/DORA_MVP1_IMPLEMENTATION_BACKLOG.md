@@ -1,5 +1,27 @@
 # Dora MVP 1 — Executable Backlog
 
+## ASR 5.6C.2A.3 private storage ACL diagnosis — 26 September 2026
+
+`5.6C.2A.3 = PASS / PRIVATE_STORAGE_BOUNDARY_READY`.
+The preceding v0.3 call stopped before its marker with PRIVATE_STORAGE_ACL_INVALID:
+one API call, zero primary attempts, no journal/terminal aggregate, evaluator not
+reached, quality/resources NOT_EVALUABLE, candidate disposition NOT FORMED.
+Diagnosis identifies ACL_QUERY_FAILURE at the acceptance-root query: a Windows
+PowerShell module-loading failure through the inherited Python environment.
+The admitted protected owner-only acceptance root and all 111 descendants pass.
+Process-local module-path isolation restores the unchanged v0.3 storage check.
+Existing ACL changes: 0; one new empty future work boundary has its own protected
+owner-only DACL. v0.3 is retained byte-identical; no v0.4 is created.
+233 applicable host tests and Stage00 pass; 16 campaign-API tests were excluded.
+All actual campaign/content/model/device counters in this task are zero.
+**5.6C.2B remains BLOCKED / NOT_AUTHORIZED.** POC-ASR-001 stays BLOCKED / NOT_READY;
+Stage 5 and Group B are not PASS. Recovery stays 0D.6 = ALPHA CLOSED / FULL OPEN;
+PR #86 remains OPEN, draft, unmerged and untouched. See the
+[ACL remediation report](stage0/DORA_ALPHA_ASR_SMALL_PRIVATE_STORAGE_ACL_REMEDIATION_STAGE0_V0_1.md)
+and [aggregate evidence](evidence/poc-asr-001/alpha-asr-small-private-storage-acl-remediation-stage0-v0.1.json).
+
+
+
 ## ASR 5.6C.2A.2 execution-capable successor freeze — 26 September 2026
 
 `5.6C.2A.2 = PASS / EXECUTION_CAPABLE_SMALL_SUCCESSOR_OPERATOR_FROZEN`.
