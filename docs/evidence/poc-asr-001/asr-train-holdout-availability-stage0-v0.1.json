@@ -1,0 +1,384 @@
+{
+  "schemaVersion": 1,
+  "auditId": "ASR-TRAIN-HOLDOUT-AVAILABILITY-20260926",
+  "verdict": "BLOCKED / INSUFFICIENT_UNTOUCHED_HOLDOUT_AFTER_TRAIN_AUDIT",
+  "branch": "chat/alpha-asr-runner-scope",
+  "startHead": "2b50043e5422af1fe3f9af8ef1ac0f57b32044f9",
+  "exactParent": "2b50043e5422af1fe3f9af8ef1ac0f57b32044f9",
+  "authorization": {
+    "authority": "PROJECT_OWNER_EXPLICIT_TASK_AUTHORIZATION",
+    "scope": "SAME_RETAINED_SPS5_TRAIN_HOLDOUT_AVAILABILITY_AUDIT_ONLY",
+    "purpose": "BOUNDED_INTERNAL_ALPHA_ASR_EVALUATION_ONLY",
+    "release": "sps-corpus-5.0-2026-09-11",
+    "partition": "train",
+    "license": "CC0-1.0",
+    "custodian": "Project Owner / Data Custodian",
+    "storage": "EXISTING_LOCAL_PRIVATE_CONTROLLED_STORAGE_OWNER_ONLY",
+    "access": "CUSTODIAN_ONLY",
+    "retentionDeadline": "2026-10-25",
+    "retentionExtension": false,
+    "termsEvidenceSha256": "9437304c571ea80c0d8287af5fe63e83434a74191ef4e3904086f5848a0e7dba",
+    "termsMaterialSha256": "b1201c0422168728915dcae5f33681e03538821010429ac988bd5a66563b2f75",
+    "termsConstraints": "Same MDC terms; no identification, redistribution, rehosting or resharing.",
+    "experimentFreezeAuthorized": false,
+    "asrInferenceAuthorized": false
+  },
+  "retainedDatasets": [
+    {
+      "archiveBytes": 93031233,
+      "archiveIdentity": "1789489294410-sps-corpus-5.0-2026-09-11-ru.tar.gz",
+      "archiveSha256": "aa0910f5fef7f24afccf5bca075995f0b7a970d96da72626c80507d629d05a6f",
+      "datasetId": "cmu5mg3pr00simh07epeylc55",
+      "licenseId": "CC0-1.0",
+      "locale": "ru",
+      "release": "sps-corpus-5.0-2026-09-11"
+    },
+    {
+      "archiveBytes": 544267165,
+      "archiveIdentity": "1789489472613-sps-corpus-5.0-2026-09-11-en.tar.gz",
+      "archiveSha256": "390b5a54c9afe0cc01da039ad206248f85682f247dd2b27d4cc0ab9a68e860b6",
+      "datasetId": "cmu5nqn1h00vwmi07b4dbk085",
+      "licenseId": "CC0-1.0",
+      "locale": "en",
+      "release": "sps-corpus-5.0-2026-09-11"
+    }
+  ],
+  "independentProviderInventory": [
+    {
+      "archiveSha256": "aa0910f5fef7f24afccf5bca075995f0b7a970d96da72626c80507d629d05a6f",
+      "exactTrainRows": 0,
+      "indexSha256": "045b18d249cc06a275217e56962e6bb3abc9ef3d637f6c35831cd19b9eb04c5e",
+      "literalProviderSplitCounts": {
+        "": 327,
+        "dev": 71,
+        "test": 385
+      },
+      "locale": "ru",
+      "providerRows": 783
+    },
+    {
+      "archiveSha256": "390b5a54c9afe0cc01da039ad206248f85682f247dd2b27d4cc0ab9a68e860b6",
+      "exactTrainRows": 1569,
+      "indexSha256": "e7db9c37c200342505bf796bdeef305e5aaf3d52bccff2698bec07eced705f46",
+      "literalProviderSplitCounts": {
+        "": 3424,
+        "dev": 548,
+        "test": 357,
+        "train": 1569
+      },
+      "locale": "en",
+      "providerRows": 5898
+    }
+  ],
+  "partitionInterpretation": "Exact provider split value train only. Blank split is not train. No inference of train membership by subtracting dev/test.",
+  "historicalExclusionAuthority": {
+    "audio": 144,
+    "participant": 55,
+    "source": 144,
+    "ledgerFiles": 1,
+    "journalsReconciled": 4,
+    "coverage": "All BASE48 + SMALL48 + ARM82 48 selections, executed or unexecuted, valid or invalid.",
+    "largerAuthoritativeSetWins": true,
+    "additionalIdentitiesFound": 0,
+    "participantKeysPrivateOnly": true
+  },
+  "sequentialExclusions": [
+    {
+      "remaining": {
+        "en": 1569,
+        "ru": 0
+      },
+      "step": "complete_train_inventory"
+    },
+    {
+      "remaining": {
+        "en": 1569,
+        "ru": 0
+      },
+      "removed": {
+        "en": 0,
+        "ru": 0
+      },
+      "step": "historical_source"
+    },
+    {
+      "remaining": {
+        "en": 1569,
+        "ru": 0
+      },
+      "removed": {
+        "en": 0,
+        "ru": 0
+      },
+      "step": "historical_audio_digest"
+    },
+    {
+      "remaining": {
+        "en": 1443,
+        "ru": 0
+      },
+      "removed": {
+        "en": 126,
+        "ru": 0
+      },
+      "step": "historical_participant"
+    },
+    {
+      "remaining": {
+        "en": 1335,
+        "ru": 0
+      },
+      "removed": {
+        "en": 108,
+        "ru": 0
+      },
+      "step": "normalized_reference_token_count_at_least_one"
+    },
+    {
+      "remaining": {
+        "en": 1335,
+        "ru": 0
+      },
+      "removed": {
+        "en": 0,
+        "ru": 0
+      },
+      "step": "existing_raw_source_decode_validity"
+    },
+    {
+      "remaining": {
+        "en": 1112,
+        "ru": 0
+      },
+      "removed": {
+        "en": 223,
+        "ru": 0
+      },
+      "step": "duration_1000_to_20000_ms_inclusive"
+    },
+    {
+      "remaining": {
+        "en": 1112,
+        "ru": 0
+      },
+      "removed": {
+        "en": 0,
+        "ru": 0
+      },
+      "step": "all_members_of_duplicate_audio_groups"
+    }
+  ],
+  "eligibleParticipants": {
+    "en": 224,
+    "ru": 0
+  },
+  "exclusionAccounting": "First applicable step only; counts remaining after each step. Duplicate groups exclude every member among otherwise eligible records across both languages.",
+  "referenceAdmission": {
+    "rule": "NORMALIZED_REFERENCE_TOKEN_COUNT >= 1",
+    "exactSourceReferenceSha256BoundBeforeNormalization": true,
+    "implementation": "alpha_asr_eval_text_contract.normalized_tokens",
+    "version": "dora-alpha-asr-normalization-v0.1",
+    "environment": "CPython 3.12 / Unicode 15.0.0",
+    "referenceRepair": false,
+    "transcriptMeaningInspected": false,
+    "referenceBytesBound": 1569,
+    "normalizerFile": {
+      "bytes": 14735,
+      "sha256": "490b4f659aef99da413e68cab5ffa187b1e8fd7229e7d7265367f2d14e577ff0"
+    }
+  },
+  "sourceAndDecode": {
+    "archivesHashAndSizeVerified": true,
+    "indexesHashVerified": true,
+    "completeTrainAudioMembersHashed": 1569,
+    "independentByteAndCsvParsersAgree": true,
+    "hostProbeCalls": 1335,
+    "hostFullDecodeToNullCalls": 1335,
+    "decodePolicy": "Same pinned FFmpeg/FFprobe 9.0.2; file protocol; strict errors; one decode thread; no PCM retained.",
+    "durationPolicy": "Same probe seconds rounded HALF_UP to milliseconds; exact provider duration equality; inclusive 1000..20000.",
+    "decodeScope": "Only cases surviving historical source/audio/participant and normalized-reference exclusions.",
+    "temporaryCandidateCopiesDeleted": 1335,
+    "remainingTemporaryAudioCopies": 0
+  },
+  "outcome": {
+    "canFormRu24En24": false,
+    "rankingOccurred": false,
+    "holdoutManifestFrozen": false,
+    "selected": {
+      "en": 0,
+      "ru": 0
+    },
+    "selectedAudioMaterialized": {
+      "en": 0,
+      "ru": 0
+    },
+    "selectedReferencesMaterialized": {
+      "en": 0,
+      "ru": 0
+    },
+    "experimentFrozen": false
+  },
+  "scopeCounts": {
+    "allAsrInference": 0,
+    "measuredAsrInference": 0,
+    "deviceExecution": 0,
+    "modelDownloads": 0,
+    "datasetDownloads": 0,
+    "testCandidateCampaigns": 0,
+    "historicalRescoring": 0,
+    "thresholdChanges": 0,
+    "decodingChanges": 0,
+    "threadCountChanges": 0,
+    "participantPolicyRelaxations": 0,
+    "productionRuntimeChanges": 0,
+    "recoveryChanges": 0,
+    "pr86Changes": 0,
+    "newPullRequests": 0,
+    "merges": 0
+  },
+  "privateEvidenceWholeFilePins": {
+    "audit-authority.json": {
+      "bytes": 5168,
+      "sha256": "f807718a4f9f6615a7135dc78245974e5b654581f520b05184cecb862d0d481e"
+    },
+    "candidate-inventory.json": {
+      "bytes": 914464,
+      "sha256": "cc29c452e8a8307c6ac46a4c5a52c4dd127673897d2d68c4cbd21194cbd9bf46"
+    },
+    "decode-audit.json": {
+      "bytes": 425786,
+      "sha256": "2fb5637009bfd6eeb20b1de3e9bbfaadc07b5910cb86a691f131066c5f7ac7c3"
+    },
+    "historical-private-baseline.json": {
+      "bytes": 282227,
+      "sha256": "2c86112bee7f246b8a4ce689100da530cd38ed51181b5528354625ae06588cf9"
+    },
+    "pool-audit.json": {
+      "bytes": 992121,
+      "sha256": "158f888c8e0091cc4df532640748d115df75b64f0d3ca81a6e29f9a240773e7f"
+    },
+    "prior-use-authority.json": {
+      "bytes": 29444,
+      "sha256": "148265d6e39737a523d38a5bf2f88be34cba7888dd22a999366c5024ce4d01a2"
+    },
+    "reference-bindings.json": {
+      "bytes": 547606,
+      "sha256": "8f8e85f25bc49104a51d38804c0a051f4716b482f19a12ef1007ab511fd46062"
+    },
+    "verification.json": {
+      "bytes": 370,
+      "sha256": "be9ce5b2de33764e5c5f0414b199b2bf82f176fa33858de2069fb7918e37c79c"
+    }
+  },
+  "privateBoundary": "Only whole-file audit pins and non-identifying aggregates are public. Audio, references, participant keys, source records and private locators remain in controlled storage.",
+  "validation": {
+    "syntheticHostTests": {
+      "failures": 0,
+      "runs": [
+        {
+          "exitCode": 0,
+          "log": {
+            "bytes": 2889,
+            "sha256": "d8298579a4105474ac28f1a4cd76c6fa8f58f46c2f7e6dee9abb63f2a2862cc0"
+          },
+          "modules": [
+            "test_alpha_asr_train_holdout_audit",
+            "test_alpha_asr_prospective_reference_eligibility"
+          ],
+          "tests": 15
+        },
+        {
+          "exitCode": 0,
+          "log": {
+            "bytes": 803,
+            "sha256": "76d0dc702f1a48fbeecad64b934c79f27522862167ea16e131419dc8f5c3f4ce"
+          },
+          "modules": [
+            "test_selector"
+          ],
+          "tests": 5
+        }
+      ],
+      "testsPassed": 20
+    },
+    "independentRecount": {
+      "antiReuseSourceAudioParticipant": "PASS",
+      "checks": 18,
+      "independentSequentialRecount": "PASS",
+      "inputImmutability": "PASS",
+      "literalProviderTrainInventory": "PASS",
+      "noManifestNoFreezeNoTemporaryAudio": "PASS",
+      "privateHistoricalFilesUnchanged": 1732,
+      "privateVerification": {
+        "bytes": 370,
+        "sha256": "be9ce5b2de33764e5c5f0414b199b2bf82f176fa33858de2069fb7918e37c79c"
+      },
+      "realRankFunctionTrap": "PASS_NO_RANK_CALLS",
+      "referenceSha256AndProductionNormalizer": "PASS",
+      "result": "PASS",
+      "strictJson": "PASS"
+    },
+    "determinism": "PASS_REVERSED_COMPLETE_INVENTORY",
+    "inputImmutability": "PASS",
+    "historicalPrivateFilesByteIdentical": 1732,
+    "acceptedTrackedFilesBaseline": 625,
+    "historicalTrackedFilesExceptAdditiveStatusBacklog": "PASS",
+    "statusBacklogOriginalBytesRestorableByRemovingExactInsertion": "PASS",
+    "strictJson": "PASS",
+    "publicPrivateBoundary": "PASS",
+    "gitDiffCheck": "PASS",
+    "review": "Focused independent helper/test static review: no concrete correctness or privacy defects.",
+    "androidDeviceTestsRun": 0,
+    "broadTestCampaignsRun": 0
+  },
+  "auditReproducibility": {
+    "privateOrchestrationFile": {
+      "bytes": 20579,
+      "sha256": "9148d3d25571a02f57a074b9a4a8e572addc4c30f0cd6e0ed3f855eab2d46204"
+    },
+    "retainedByteParserSource": {
+      "bytes": 12978,
+      "sha256": "885b072b0823d7a226f54e663c3dd6330364159063ca4a2000aaf6a325c6bd3b"
+    },
+    "independentInventoryVerifier": {
+      "bytes": 1381,
+      "sha256": "31e34d5b75ae139e872e636be0ecffb60a78301dfa9a2bb70d4e1e33b938b7a3"
+    },
+    "independentAuditVerifier": {
+      "bytes": 3465,
+      "sha256": "84efbf3fb0547a594b8559f14c06172ee2b0df6187aca196aa7d8cde527d703e"
+    },
+    "trainHelper": {
+      "bytes": 4116,
+      "sha256": "0df5a7329dade939bf675730397cef1134f38a7575ac9e03d32dd8e8f2d4669c"
+    },
+    "historicalSelector": {
+      "bytes": 2530,
+      "sha256": "dcd214d5488ee2950d8c6f807ca5f96a3a6ab686b976f4163cb961533c11e1ae"
+    }
+  },
+  "historicalState": {
+    "ARM82_RU": "73/349 = 20.916905% VALID_FAIL",
+    "ARM82_EN": "3/24 NOT_EVALUABLE",
+    "BASE_SMALL_results": "UNCHANGED",
+    "q5_1_runtime_thresholds_decoding_threads_normalizer_oracle": "UNCHANGED",
+    "Recovery_0D6": "ALPHA CLOSED / FULL OPEN; untouched",
+    "PR86": "Untouched; no PR operations"
+  },
+  "claimLimits": {
+    "Stage5": "NOT_PASS",
+    "POC-ASR-001": "BLOCKED / NOT_READY",
+    "dataAuthorityReadyForQ8Freeze": false,
+    "blankSplitAdmitted": false,
+    "differentSourceReleaseOrPartitionAttempted": false
+  },
+  "changedFiles": [
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+    "docs/stage0/DORA_ASR_TRAIN_HOLDOUT_AVAILABILITY_STAGE0_V0_1.md",
+    "docs/evidence/poc-asr-001/asr-train-holdout-availability-stage0-v0.1.json",
+    "tools/alpha_asr_train_holdout_audit.py",
+    "tools/test_alpha_asr_train_holdout_audit.py"
+  ],
+  "nextAction": "STOP: the authorized same-release train audit is exhausted. Project Owner must decide a separately authorized data-authority next step that preserves every isolation rule; no further source/partition audit, q8_0 experiment freeze or execution is authorized by this result."
+}

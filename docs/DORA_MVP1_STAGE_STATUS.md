@@ -1,5 +1,20 @@
 # Dora MVP 1 — Stage Status
 
+## ASR train holdout availability audit — 26 September 2026
+
+`BLOCKED / INSUFFICIENT_UNTOUCHED_HOLDOUT_AFTER_TRAIN_AUDIT`.
+Same retained SPS5.0 release/archives, owner-authorized provider train only: complete RU0/EN1569;
+after all exclusions RU0/EN1112, eligible participants RU0/EN224. Empty provider split is not train.
+All144 historical sources/audio digests and55 participants remain excluded, including unexecuted selections.
+No ranking, selection, holdout manifest, q8_0 experiment freeze, inference, device execution or download.
+Prospective reference rule remains NORMALIZED_REFERENCE_TOKEN_COUNT >=1 with the unchanged normalizer.
+Historical ARM82 RU73/349=20.916905% VALID_FAIL; EN3/24 NOT_EVALUABLE; BASE/SMALL unchanged.
+Stage5 remains NOT_PASS; POC-ASR-001 BLOCKED / NOT_READY. Recovery0D.6 and PR#86 untouched.
+Next: STOP; Project Owner must separately authorize any further data-authority work preserving every isolation rule.
+No q8_0 freeze or execution follows from this audit. Historical entries below remain byte-for-byte intact.
+See [train audit report](stage0/DORA_ASR_TRAIN_HOLDOUT_AVAILABILITY_STAGE0_V0_1.md)
+and [sanitized evidence](evidence/poc-asr-001/asr-train-holdout-availability-stage0-v0.1.json).
+
 ## ASR ARM82 quality forensics — 26 September 2026
 
 `BLOCKED / INSUFFICIENT_UNTOUCHED_HOLDOUT`. Read-only reconciliation preserves RU24/24,
