@@ -1,5 +1,18 @@
 # Dora MVP 1 — Stage Status
 
+## ASR expanded holdout 5.6D.1 — 27 September 2026
+
+`PASS / UNTOUCHED_EXPANDED_HOLDOUT_AVAILABLE`. Owner-authorized new RU CV27 test + retained EN SPS5 train:
+eligible RU10326/EN1112, provider participant keys RU2233/EN224. Frozen exactly RU24+EN24;
+all48 immediately consumed, known historical source/audio/provider-key overlap0.
+Cross-corpus real-world participant equality UNKNOWN; no identification or inferred mapping.
+Exact references bound before unchanged normalization; all selected normalized counts>=1.
+No model download/freeze, device operation or inference in this data phase.
+Stage5 remains NOT_PASS pending the already-authorized q8 artifact/init/operator/campaign closeout.
+Historical results, Recovery0D.6 and PR#86 unchanged. Previous entries below remain byte-identical.
+See [5.6D.1 report](stage0/DORA_ASR_EXPANDED_HOLDOUT_STAGE0_V0_1.md)
+and [sanitized evidence](evidence/poc-asr-001/asr-expanded-holdout-stage0-v0.1.json).
+
 ## ASR train holdout availability audit — 26 September 2026
 
 `BLOCKED / INSUFFICIENT_UNTOUCHED_HOLDOUT_AFTER_TRAIN_AUDIT`.
