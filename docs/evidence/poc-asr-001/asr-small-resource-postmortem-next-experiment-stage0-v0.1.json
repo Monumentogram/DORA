@@ -1,0 +1,1928 @@
+{
+  "schemaVersion": 1,
+  "task": "ASR_RESOURCE_FAILURE_POSTMORTEM_NEXT_EXPERIMENT",
+  "result": "PASS / SMALL_RESOURCE_FAILURE_ASSESSED_NEXT_EXPERIMENT_FROZEN",
+  "recordedAtUtc": "2026-09-26T16:08:23.411915+00:00",
+  "repository": {
+    "branch": "chat/alpha-asr-runner-scope",
+    "headBefore": "e12f66f1507d87b00f91070342128e054b274aac",
+    "freshRemoteMatched": true,
+    "initialCleanIncludingUntracked": true
+  },
+  "previousFrozenResult": {
+    "execution": "INCOMPLETE / BOUNDED_SMALL_POCO_CAMPAIGN_STOPPED",
+    "candidateDisposition": "VALID_FAIL / REJECTED_FOR_BOUNDED_ALPHA_RESOURCE_GATE",
+    "quality": "NOT_EVALUABLE",
+    "resource": "FAIL",
+    "resourceFailures": [
+      "RTF_MAXIMUM"
+    ],
+    "campaignInvocations": 1,
+    "primaryAttempts": 19,
+    "retries": 0,
+    "ruCompleted": 19,
+    "enCompleted": 0,
+    "cleanup": "VERIFIED",
+    "evidenceSha256": "4a54dbfa6394f837ebd2ee1217214a9bf2ae94adc00b018e2a569341fbf25be3",
+    "terminalAggregateSha256": "b4a51b8474c6c0aa226e626e4eb662bd881d79578a687ca03ee349b272deb568",
+    "reinterpreted": false
+  },
+  "diagnostics": {
+    "label": "POSTMORTEM_DIAGNOSTIC_ONLY",
+    "attemptsAnalyzed": 19,
+    "rows": [
+      {
+        "ordinal": 1,
+        "label": "RU attempt 01",
+        "locale": "ru",
+        "audioDurationMicros": 14256000,
+        "inferenceMicros": 20297822,
+        "rtf": 1.4238090628507296,
+        "rtfExact": {
+          "numerator": 10148911,
+          "denominator": 7128000
+        },
+        "coldLoadMicros": 253669,
+        "decodeMicros": 18984,
+        "peakPssBytes": 360298496,
+        "peakNativeHeapBytes": 932875128,
+        "memorySamples": 192,
+        "maximumMemoryGapMicros": 127201,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 22,
+        "maximumThermalGapMicros": 1094000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 20716829,
+        "gapFromPreviousNativeWindowMicros": null
+      },
+      {
+        "ordinal": 2,
+        "label": "RU attempt 02",
+        "locale": "ru",
+        "audioDurationMicros": 3996000,
+        "inferenceMicros": 19132333,
+        "rtf": 4.787871121121121,
+        "rtfExact": {
+          "numerator": 19132333,
+          "denominator": 3996000
+        },
+        "coldLoadMicros": 250853,
+        "decodeMicros": 6504,
+        "peakPssBytes": 359491584,
+        "peakNativeHeapBytes": 931823480,
+        "memorySamples": 181,
+        "maximumMemoryGapMicros": 114726,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 21,
+        "maximumThermalGapMicros": 1078000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 19456275,
+        "gapFromPreviousNativeWindowMicros": 218691468
+      },
+      {
+        "ordinal": 3,
+        "label": "RU attempt 03",
+        "locale": "ru",
+        "audioDurationMicros": 5940000,
+        "inferenceMicros": 19395802,
+        "rtf": 3.265286531986532,
+        "rtfExact": {
+          "numerator": 9697901,
+          "denominator": 2970000
+        },
+        "coldLoadMicros": 251540,
+        "decodeMicros": 7323,
+        "peakPssBytes": 359565312,
+        "peakNativeHeapBytes": 932085592,
+        "memorySamples": 184,
+        "maximumMemoryGapMicros": 117251,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 21,
+        "maximumThermalGapMicros": 1079000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 19756012,
+        "gapFromPreviousNativeWindowMicros": 219601241
+      },
+      {
+        "ordinal": 4,
+        "label": "RU attempt 04",
+        "locale": "ru",
+        "audioDurationMicros": 17388000,
+        "inferenceMicros": 21309799,
+        "rtf": 1.2255462962962962,
+        "rtfExact": {
+          "numerator": 132359,
+          "denominator": 108000
+        },
+        "coldLoadMicros": 254067,
+        "decodeMicros": 23525,
+        "peakPssBytes": 360551424,
+        "peakNativeHeapBytes": 933922712,
+        "memorySamples": 201,
+        "maximumMemoryGapMicros": 122005,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 23,
+        "maximumThermalGapMicros": 1094000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 21747220,
+        "gapFromPreviousNativeWindowMicros": 219258581
+      },
+      {
+        "ordinal": 5,
+        "label": "RU attempt 05",
+        "locale": "ru",
+        "audioDurationMicros": 5940000,
+        "inferenceMicros": 19586389,
+        "rtf": 3.2973718855218856,
+        "rtfExact": {
+          "numerator": 19586389,
+          "denominator": 5940000
+        },
+        "coldLoadMicros": 250595,
+        "decodeMicros": 9270,
+        "peakPssBytes": 359543808,
+        "peakNativeHeapBytes": 932087000,
+        "memorySamples": 186,
+        "maximumMemoryGapMicros": 115180,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 21,
+        "maximumThermalGapMicros": 1079000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 19979812,
+        "gapFromPreviousNativeWindowMicros": 218199444
+      },
+      {
+        "ordinal": 6,
+        "label": "RU attempt 06",
+        "locale": "ru",
+        "audioDurationMicros": 4068000,
+        "inferenceMicros": 18961837,
+        "rtf": 4.661218534906588,
+        "rtfExact": {
+          "numerator": 18961837,
+          "denominator": 4068000
+        },
+        "coldLoadMicros": 253058,
+        "decodeMicros": 5442,
+        "peakPssBytes": 359417856,
+        "peakNativeHeapBytes": 931823448,
+        "memorySamples": 180,
+        "maximumMemoryGapMicros": 121957,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 21,
+        "maximumThermalGapMicros": 1094000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 19358312,
+        "gapFromPreviousNativeWindowMicros": 218967070
+      },
+      {
+        "ordinal": 7,
+        "label": "RU attempt 07",
+        "locale": "ru",
+        "audioDurationMicros": 8676000,
+        "inferenceMicros": 20282827,
+        "rtf": 2.3378085523282617,
+        "rtfExact": {
+          "numerator": 20282827,
+          "denominator": 8676000
+        },
+        "coldLoadMicros": 251536,
+        "decodeMicros": 11102,
+        "peakPssBytes": 359712768,
+        "peakNativeHeapBytes": 932611800,
+        "memorySamples": 192,
+        "maximumMemoryGapMicros": 121127,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 22,
+        "maximumThermalGapMicros": 1079000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 20654634,
+        "gapFromPreviousNativeWindowMicros": 219307886
+      },
+      {
+        "ordinal": 8,
+        "label": "RU attempt 08",
+        "locale": "ru",
+        "audioDurationMicros": 6588000,
+        "inferenceMicros": 19127005,
+        "rtf": 2.9033098057073468,
+        "rtfExact": {
+          "numerator": 3825401,
+          "denominator": 1317600
+        },
+        "coldLoadMicros": 254587,
+        "decodeMicros": 8126,
+        "peakPssBytes": 359606272,
+        "peakNativeHeapBytes": 932085720,
+        "memorySamples": 183,
+        "maximumMemoryGapMicros": 115122,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 21,
+        "maximumThermalGapMicros": 1110000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 19554946,
+        "gapFromPreviousNativeWindowMicros": 218595928
+      },
+      {
+        "ordinal": 9,
+        "label": "RU attempt 09",
+        "locale": "ru",
+        "audioDurationMicros": 18360000,
+        "inferenceMicros": 21211528,
+        "rtf": 1.155311982570806,
+        "rtfExact": {
+          "numerator": 2651441,
+          "denominator": 2295000
+        },
+        "coldLoadMicros": 255927,
+        "decodeMicros": 23080,
+        "peakPssBytes": 360782848,
+        "peakNativeHeapBytes": 933922936,
+        "memorySamples": 201,
+        "maximumMemoryGapMicros": 115727,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 22,
+        "maximumThermalGapMicros": 1094000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 21598101,
+        "gapFromPreviousNativeWindowMicros": 218189920
+      },
+      {
+        "ordinal": 10,
+        "label": "RU attempt 10",
+        "locale": "ru",
+        "audioDurationMicros": 5076000,
+        "inferenceMicros": 18197078,
+        "rtf": 3.584924743892829,
+        "rtfExact": {
+          "numerator": 9098539,
+          "denominator": 2538000
+        },
+        "coldLoadMicros": 255522,
+        "decodeMicros": 6183,
+        "peakPssBytes": 359249920,
+        "peakNativeHeapBytes": 932077560,
+        "memorySamples": 174,
+        "maximumMemoryGapMicros": 118869,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 20,
+        "maximumThermalGapMicros": 1094000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 18566589,
+        "gapFromPreviousNativeWindowMicros": 218680911
+      },
+      {
+        "ordinal": 11,
+        "label": "RU attempt 11",
+        "locale": "ru",
+        "audioDurationMicros": 11340000,
+        "inferenceMicros": 20362269,
+        "rtf": 1.7956145502645502,
+        "rtfExact": {
+          "numerator": 6787423,
+          "denominator": 3780000
+        },
+        "coldLoadMicros": 255322,
+        "decodeMicros": 14500,
+        "peakPssBytes": 360096768,
+        "peakNativeHeapBytes": 932873976,
+        "memorySamples": 194,
+        "maximumMemoryGapMicros": 119572,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 22,
+        "maximumThermalGapMicros": 1109000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 20771974,
+        "gapFromPreviousNativeWindowMicros": 219409816
+      },
+      {
+        "ordinal": 12,
+        "label": "RU attempt 12",
+        "locale": "ru",
+        "audioDurationMicros": 10368000,
+        "inferenceMicros": 19718111,
+        "rtf": 1.901823977623457,
+        "rtfExact": {
+          "numerator": 19718111,
+          "denominator": 10368000
+        },
+        "coldLoadMicros": 255177,
+        "decodeMicros": 12867,
+        "peakPssBytes": 360049664,
+        "peakNativeHeapBytes": 932611288,
+        "memorySamples": 187,
+        "maximumMemoryGapMicros": 116057,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 21,
+        "maximumThermalGapMicros": 1110000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 20052231,
+        "gapFromPreviousNativeWindowMicros": 218029975
+      },
+      {
+        "ordinal": 13,
+        "label": "RU attempt 13",
+        "locale": "ru",
+        "audioDurationMicros": 4896000,
+        "inferenceMicros": 17979920,
+        "rtf": 3.6723692810457518,
+        "rtfExact": {
+          "numerator": 224749,
+          "denominator": 61200
+        },
+        "coldLoadMicros": 255040,
+        "decodeMicros": 6025,
+        "peakPssBytes": 359504896,
+        "peakNativeHeapBytes": 932077432,
+        "memorySamples": 172,
+        "maximumMemoryGapMicros": 116006,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 20,
+        "maximumThermalGapMicros": 1125000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 18360358,
+        "gapFromPreviousNativeWindowMicros": 218332786
+      },
+      {
+        "ordinal": 14,
+        "label": "RU attempt 14",
+        "locale": "ru",
+        "audioDurationMicros": 13356000,
+        "inferenceMicros": 20826435,
+        "rtf": 1.5593317610062893,
+        "rtfExact": {
+          "numerator": 198347,
+          "denominator": 127200
+        },
+        "coldLoadMicros": 254649,
+        "decodeMicros": 16572,
+        "peakPssBytes": 360167424,
+        "peakNativeHeapBytes": 932874072,
+        "memorySamples": 198,
+        "maximumMemoryGapMicros": 118063,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 22,
+        "maximumThermalGapMicros": 1094000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 21241506,
+        "gapFromPreviousNativeWindowMicros": 218954122
+      },
+      {
+        "ordinal": 15,
+        "label": "RU attempt 15",
+        "locale": "ru",
+        "audioDurationMicros": 13536000,
+        "inferenceMicros": 20757617,
+        "rtf": 1.533511894208038,
+        "rtfExact": {
+          "numerator": 20757617,
+          "denominator": 13536000
+        },
+        "coldLoadMicros": 254034,
+        "decodeMicros": 16427,
+        "peakPssBytes": 360217600,
+        "peakNativeHeapBytes": 932875608,
+        "memorySamples": 197,
+        "maximumMemoryGapMicros": 114724,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 22,
+        "maximumThermalGapMicros": 1094000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 21113110,
+        "gapFromPreviousNativeWindowMicros": 218812597
+      },
+      {
+        "ordinal": 16,
+        "label": "RU attempt 16",
+        "locale": "ru",
+        "audioDurationMicros": 17820000,
+        "inferenceMicros": 20799529,
+        "rtf": 1.1672014029180695,
+        "rtfExact": {
+          "numerator": 20799529,
+          "denominator": 17820000
+        },
+        "coldLoadMicros": 254406,
+        "decodeMicros": 22015,
+        "peakPssBytes": 360648704,
+        "peakNativeHeapBytes": 933922808,
+        "memorySamples": 197,
+        "maximumMemoryGapMicros": 115029,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 22,
+        "maximumThermalGapMicros": 1094000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 21142626,
+        "gapFromPreviousNativeWindowMicros": 219149229
+      },
+      {
+        "ordinal": 17,
+        "label": "RU attempt 17",
+        "locale": "ru",
+        "audioDurationMicros": 6120000,
+        "inferenceMicros": 18897141,
+        "rtf": 3.087768137254902,
+        "rtfExact": {
+          "numerator": 6299047,
+          "denominator": 2040000
+        },
+        "coldLoadMicros": 324106,
+        "decodeMicros": 7627,
+        "peakPssBytes": 359649280,
+        "peakNativeHeapBytes": 932084824,
+        "memorySamples": 180,
+        "maximumMemoryGapMicros": 118551,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 20,
+        "maximumThermalGapMicros": 1094000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 19373836,
+        "gapFromPreviousNativeWindowMicros": 218478118
+      },
+      {
+        "ordinal": 18,
+        "label": "RU attempt 18",
+        "locale": "ru",
+        "audioDurationMicros": 18396000,
+        "inferenceMicros": 22453828,
+        "rtf": 1.220582083061535,
+        "rtfExact": {
+          "numerator": 5613457,
+          "denominator": 4599000
+        },
+        "coldLoadMicros": 264897,
+        "decodeMicros": 23187,
+        "peakPssBytes": 360809472,
+        "peakNativeHeapBytes": 933925816,
+        "memorySamples": 212,
+        "maximumMemoryGapMicros": 118189,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 24,
+        "maximumThermalGapMicros": 1110000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 22823729,
+        "gapFromPreviousNativeWindowMicros": 218315990
+      },
+      {
+        "ordinal": 19,
+        "label": "RU attempt 19",
+        "locale": "ru",
+        "audioDurationMicros": 2916000,
+        "inferenceMicros": 17681893,
+        "rtf": 6.063749314128944,
+        "rtfExact": {
+          "numerator": 17681893,
+          "denominator": 2916000
+        },
+        "coldLoadMicros": 257571,
+        "decodeMicros": 3676,
+        "peakPssBytes": 359204864,
+        "peakNativeHeapBytes": 931811320,
+        "memorySamples": 169,
+        "maximumMemoryGapMicros": 113533,
+        "maximumThermalStatus": 0,
+        "thermalSamples": 19,
+        "maximumThermalGapMicros": 1094000,
+        "evidencedOomCount": 0,
+        "cleanup": "VERIFIED",
+        "freshProcessContext": true,
+        "state": "SUCCEEDED",
+        "resourceTelemetryValid": true,
+        "resourceFailures": [
+          "RTF_MAXIMUM"
+        ],
+        "nativeStderrBytes": 0,
+        "nativeMeasurementWindowMicros": 18019776,
+        "gapFromPreviousNativeWindowMicros": 218402848
+      }
+    ],
+    "rtf": {
+      "min": 1.155311982570806,
+      "median": 2.3378085523282617,
+      "mean": 2.665495311510207,
+      "max": 6.063749314128944,
+      "nearestRankPercentiles": {
+        "50": 2.3378085523282617,
+        "75": 3.584924743892829,
+        "90": 4.787871121121121,
+        "95": 6.063749314128944
+      }
+    },
+    "countAbove": {
+      "2": 10,
+      "4": 3,
+      "6": 1
+    },
+    "topFiveByRtf": [
+      19,
+      2,
+      6,
+      13,
+      10
+    ],
+    "observed19DurationWeightedRtf": 1.9942188948136865,
+    "durationSeconds": {
+      "min": 2.916,
+      "median": 8.676,
+      "mean": 9.949263157894737,
+      "max": 18.396,
+      "nearestRankPercentiles": {
+        "50": 8.676,
+        "75": 14.256,
+        "90": 18.36,
+        "95": 18.396
+      }
+    },
+    "inferenceSeconds": {
+      "min": 17.681893,
+      "median": 19.718111,
+      "mean": 19.84100857894737,
+      "max": 22.453828,
+      "nearestRankPercentiles": {
+        "50": 19.718111,
+        "75": 20.799529,
+        "90": 21.309799,
+        "95": 22.453828
+      }
+    },
+    "durationVsRtf": {
+      "pearsonR": -0.9027553106047491,
+      "linearSlope": -0.23807248637403006,
+      "linearIntercept": 5.0341411290997415,
+      "rSquared": 0.8149671508250771
+    },
+    "durationVsInferenceSeconds": {
+      "pearsonR": 0.9127126734732283,
+      "linearSlope": 0.20937861054298693,
+      "linearIntercept": 17.75784568302084,
+      "rSquared": 0.8330444243186478
+    },
+    "ordinalVsRtf": {
+      "pearsonR": -0.047863110914200986,
+      "linearSlope": -0.012205933545360577,
+      "linearIntercept": 2.7875546469638133,
+      "rSquared": 0.0022908773863851055
+    },
+    "durationBins": [
+      {
+        "durationSeconds": "1-5",
+        "count": 4,
+        "rtf": {
+          "min": 3.6723692810457518,
+          "median": 4.724544828013855,
+          "mean": 4.796302062800601,
+          "max": 6.063749314128944,
+          "nearestRankPercentiles": {
+            "50": 4.661218534906588,
+            "75": 4.787871121121121,
+            "90": 6.063749314128944,
+            "95": 6.063749314128944
+          }
+        }
+      },
+      {
+        "durationSeconds": "5-10",
+        "count": 6,
+        "rtf": {
+          "min": 2.3378085523282617,
+          "median": 3.176527334620717,
+          "mean": 3.079411609448626,
+          "max": 3.584924743892829,
+          "nearestRankPercentiles": {
+            "50": 3.087768137254902,
+            "75": 3.2973718855218856,
+            "90": 3.584924743892829,
+            "95": 3.584924743892829
+          }
+        }
+      },
+      {
+        "durationSeconds": "10-15",
+        "count": 5,
+        "rtf": {
+          "min": 1.4238090628507296,
+          "median": 1.5593317610062893,
+          "mean": 1.6428182491906127,
+          "max": 1.901823977623457,
+          "nearestRankPercentiles": {
+            "50": 1.5593317610062893,
+            "75": 1.7956145502645502,
+            "90": 1.901823977623457,
+            "95": 1.901823977623457
+          }
+        }
+      },
+      {
+        "durationSeconds": "15-20",
+        "count": 4,
+        "rtf": {
+          "min": 1.155311982570806,
+          "median": 1.1938917429898024,
+          "mean": 1.1921604412116766,
+          "max": 1.2255462962962962,
+          "nearestRankPercentiles": {
+            "50": 1.1672014029180695,
+            "75": 1.220582083061535,
+            "90": 1.2255462962962962,
+            "95": 1.2255462962962962
+          }
+        }
+      }
+    ],
+    "distinctProcesses": 19,
+    "positiveIntercaseGaps": true,
+    "privateFileCountVerified": 308,
+    "privateBytesUnchanged": true,
+    "journalIntegrity": "PASS",
+    "terminalAggregateSha256": "b4a51b8474c6c0aa226e626e4eb662bd881d79578a687ca03ee349b272deb568"
+  },
+  "numericContext": {
+    "label": "POSTMORTEM_DIAGNOSTIC_ONLY",
+    "rawThermalReconciliation": "PASS",
+    "powerSnapshots": 38,
+    "usbPoweredValues": [
+      "true"
+    ],
+    "batteryLevelRange": [
+      100,
+      100
+    ],
+    "batteryTemperatureTenthsCelsiusRange": [
+      290,
+      310
+    ],
+    "decodeMicrosRange": [
+      3676,
+      23525
+    ],
+    "intercaseNativeGapSecondsRange": [
+      218.029975,
+      219.601241
+    ],
+    "memoryGapMicrosMaximum": 127201,
+    "thermalGapMicrosMaximum": 1125000,
+    "ordinalVsInferenceSecondsPearsonR": 0.025426854375819208,
+    "limitations": [
+      "No retained CPU frequencies, scheduler trace, core residency, utilization or whisper encoder/decoder phase timings.",
+      "Thermal NONE does not prove absence of all DVFS or power throttling; battery temperature is not CPU temperature.",
+      "Stopped RU-only prefix; not a random complete sample and no EN performance inference."
+    ]
+  },
+  "runtimeAudit": {
+    "label": "STATIC_RUNTIME_AUDIT",
+    "sourceCommit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+    "sourceClean": true,
+    "sixNativeArtifactsMatchHistoricalCampaign": true,
+    "nativeArtifacts": {
+      "dora-asr-campaign": {
+        "bytes": 2668416,
+        "sha256": "f2d40f2cb76317a59d11f66fcfcf8d965d29e872e5e10f519de32eaa51bfbda4"
+      },
+      "libc++_shared.so": {
+        "bytes": 9236352,
+        "sha256": "ab4e6c71b96b851de45a8a9bd86369e7dbc2130a44b3b4520564be94847910f2"
+      },
+      "libggml-base.so": {
+        "bytes": 5903584,
+        "sha256": "5bd358344b8b35ccbf06138ecb11ccb9ddb5f2b329622c160d0a5c09dec9e2ee"
+      },
+      "libggml-cpu.so": {
+        "bytes": 4464840,
+        "sha256": "02d8d610a4956787550fd941cf7906079ef4d15cc620dc7ab8f056c0e729a3b6"
+      },
+      "libggml.so": {
+        "bytes": 533072,
+        "sha256": "c4eedfb37fe6739b2d86104dd763edd6522f21d6e2c188d99c6c93f9742a9a1c"
+      },
+      "libwhisper.so": {
+        "bytes": 7176376,
+        "sha256": "47992c25b9a7f7532ecd593be5dabca109599ac1a6371f25ccdf070521e78bba"
+      }
+    },
+    "actualCmakeCache": {
+      "ANDROID_ABI": "arm64-v8a",
+      "ANDROID_PLATFORM": "android-28",
+      "ANDROID_STL": "c++_shared",
+      "CMAKE_BUILD_TYPE": "Release",
+      "GGML_ACCELERATE": "OFF",
+      "GGML_ALL_WARNINGS_3RD_PARTY": "OFF",
+      "GGML_AMX_BF16": "OFF",
+      "GGML_AMX_INT8": "OFF",
+      "GGML_AMX_TILE": "OFF",
+      "GGML_AVX": "OFF",
+      "GGML_AVX2": "OFF",
+      "GGML_AVX512": "OFF",
+      "GGML_AVX512_BF16": "OFF",
+      "GGML_AVX512_VBMI": "OFF",
+      "GGML_AVX512_VNNI": "OFF",
+      "GGML_AVX_VNNI": "OFF",
+      "GGML_BACKEND_DIR": "",
+      "GGML_BACKEND_DL": "OFF",
+      "GGML_BIN_INSTALL_DIR": "bin",
+      "GGML_BLAS": "OFF",
+      "GGML_BLAS_VENDOR": "Generic",
+      "GGML_BMI2": "OFF",
+      "GGML_BUILD_EXAMPLES": "OFF",
+      "GGML_BUILD_TESTS": "OFF",
+      "GGML_CCACHE": "OFF",
+      "GGML_CPU": "ON",
+      "GGML_CPU_ALL_VARIANTS": "OFF",
+      "GGML_CPU_ARM_ARCH": "armv8-a",
+      "GGML_CPU_HBM": "OFF",
+      "GGML_CPU_KLEIDIAI": "OFF",
+      "GGML_CPU_POWERPC_CPUTYPE": "",
+      "GGML_CPU_REPACK": "ON",
+      "GGML_CUDA": "OFF",
+      "GGML_CUDA_COMPRESSION_MODE": "size",
+      "GGML_CUDA_FA": "ON",
+      "GGML_CUDA_FA_ALL_QUANTS": "OFF",
+      "GGML_CUDA_FORCE_CUBLAS": "OFF",
+      "GGML_CUDA_FORCE_MMQ": "OFF",
+      "GGML_CUDA_GRAPHS": "OFF",
+      "GGML_CUDA_NCCL": "ON",
+      "GGML_CUDA_NO_PEER_COPY": "OFF",
+      "GGML_CUDA_NO_VMM": "OFF",
+      "GGML_ET": "OFF",
+      "GGML_ET_SYSEMU": "OFF",
+      "GGML_F16C": "OFF",
+      "GGML_FMA": "OFF",
+      "GGML_GPROF": "OFF",
+      "GGML_HEXAGON": "OFF",
+      "GGML_HIP": "OFF",
+      "GGML_HIP_EXPORT_METRICS": "OFF",
+      "GGML_HIP_GRAPHS": "ON",
+      "GGML_HIP_MMQ_MFMA": "ON",
+      "GGML_HIP_NO_VMM": "ON",
+      "GGML_HIP_RCCL": "OFF",
+      "GGML_INCLUDE_INSTALL_DIR": "include",
+      "GGML_LASX": "ON",
+      "GGML_LIB_INSTALL_DIR": "lib",
+      "GGML_LLAMAFILE": "OFF",
+      "GGML_LSX": "ON",
+      "GGML_LTO": "OFF",
+      "GGML_METAL": "OFF",
+      "GGML_METAL_EMBED_LIBRARY": "OFF",
+      "GGML_METAL_MACOSX_VERSION_MIN": "",
+      "GGML_METAL_NDEBUG": "OFF",
+      "GGML_METAL_SHADER_DEBUG": "OFF",
+      "GGML_METAL_STD": "",
+      "GGML_METAL_TARGET_OS": "macos",
+      "GGML_MUSA": "OFF",
+      "GGML_MUSA_GRAPHS": "OFF",
+      "GGML_MUSA_MUDNN_COPY": "OFF",
+      "GGML_NATIVE": "OFF",
+      "GGML_OPENCL": "OFF",
+      "GGML_OPENCL_EMBED_KERNELS": "ON",
+      "GGML_OPENCL_PROFILING": "OFF",
+      "GGML_OPENCL_TARGET_VERSION": "300",
+      "GGML_OPENCL_USE_ADRENO_KERNELS": "ON",
+      "GGML_OPENMP": "OFF",
+      "GGML_OPENMP_FETCH": "OFF",
+      "GGML_OPENVINO": "OFF",
+      "GGML_RPC": "OFF",
+      "GGML_RVV": "ON",
+      "GGML_RV_ZFH": "ON",
+      "GGML_RV_ZICBOP": "ON",
+      "GGML_RV_ZIHINTPAUSE": "ON",
+      "GGML_RV_ZVFBFWMA": "OFF",
+      "GGML_RV_ZVFH": "ON",
+      "GGML_SCHED_MAX_COPIES": "4",
+      "GGML_SCHED_NO_REALLOC": "OFF",
+      "GGML_SSE42": "OFF",
+      "GGML_STATIC": "OFF",
+      "GGML_SYCL": "OFF",
+      "GGML_SYCL_DEVICE_ARCH": "",
+      "GGML_SYCL_DNN": "ON",
+      "GGML_SYCL_F16": "OFF",
+      "GGML_SYCL_GRAPH": "ON",
+      "GGML_SYCL_HOST_MEM_FALLBACK": "ON",
+      "GGML_SYCL_SUPPORT_LEVEL_ZERO_API": "ON",
+      "GGML_SYCL_TARGET": "INTEL",
+      "GGML_VIRTGPU": "OFF",
+      "GGML_VIRTGPU_BACKEND": "OFF",
+      "GGML_VULKAN": "OFF",
+      "GGML_VULKAN_CHECK_RESULTS": "OFF",
+      "GGML_VULKAN_DEBUG": "OFF",
+      "GGML_VULKAN_MEMORY_DEBUG": "OFF",
+      "GGML_VULKAN_RUN_TESTS": "OFF",
+      "GGML_VULKAN_SHADERS_GEN_TOOLCHAIN": "",
+      "GGML_VULKAN_SHADER_DEBUG_INFO": "OFF",
+      "GGML_VULKAN_VALIDATE": "OFF",
+      "GGML_VXE": "OFF",
+      "GGML_WEBGPU": "OFF",
+      "GGML_WEBGPU_CPU_PROFILE": "OFF",
+      "GGML_WEBGPU_DEBUG": "OFF",
+      "GGML_WEBGPU_GPU_PROFILE": "OFF",
+      "GGML_WEBGPU_JSPI": "ON",
+      "GGML_XTHEADVECTOR": "OFF",
+      "GGML_ZDNN": "OFF",
+      "GGML_ZENDNN": "OFF",
+      "WHISPER_ALL_WARNINGS": "ON",
+      "WHISPER_ALL_WARNINGS_3RD_PARTY": "OFF",
+      "WHISPER_BIN_INSTALL_DIR": "bin",
+      "WHISPER_BUILD_EXAMPLES": "OFF",
+      "WHISPER_BUILD_IS_DEV": "OFF",
+      "WHISPER_BUILD_SERVER": "OFF",
+      "WHISPER_BUILD_TESTS": "OFF",
+      "WHISPER_COREML": "OFF",
+      "WHISPER_COREML_ALLOW_FALLBACK": "OFF",
+      "WHISPER_CURL": "OFF",
+      "WHISPER_FATAL_WARNINGS": "OFF",
+      "WHISPER_INCLUDE_INSTALL_DIR": "include",
+      "WHISPER_LIB_INSTALL_DIR": "lib",
+      "WHISPER_OPENVINO": "OFF",
+      "WHISPER_SANITIZE_ADDRESS": "OFF",
+      "WHISPER_SANITIZE_THREAD": "OFF",
+      "WHISPER_SANITIZE_UNDEFINED": "OFF",
+      "WHISPER_SDL2": "OFF",
+      "WHISPER_USE_SYSTEM_GGML": "OFF",
+      "WHISPER_USE_SYSTEM_LLAMA": "OFF",
+      "WHISPER_VITISAI": "OFF",
+      "GGML_AVAILABLE_BACKENDS": "ggml-cpu",
+      "GGML_COMPILER_SUPPORTS_FP16_FORMAT_I3E": "",
+      "GGML_CUDA_COMPRESSION_MODE-STRINGS": "none;speed;balance;size",
+      "GGML_OPENMP_ENABLED": "OFF",
+      "HAVE_DOTPROD": "",
+      "HAVE_FMA": "1",
+      "HAVE_FP16_VECTOR_ARITHMETIC": "",
+      "HAVE_MATMUL_INT8": "",
+      "HAVE_SME": "",
+      "HAVE_SVE": ""
+    },
+    "compilerFeatureMacros": {
+      "armv8-a": [
+        "#define __ARM_FEATURE_FMA 1",
+        "#define __ARM_NEON 1"
+      ],
+      "armv8.2-a+fp16+dotprod": [
+        "#define __ARM_FEATURE_DOTPROD 1",
+        "#define __ARM_FEATURE_FMA 1",
+        "#define __ARM_FEATURE_FP16_VECTOR_ARITHMETIC 1",
+        "#define __ARM_NEON 1"
+      ]
+    },
+    "retainedCpuBinaryInstructionCounts": {
+      "integerDot": 0,
+      "fp16VectorFma": 0,
+      "fp32VectorFma": 553
+    },
+    "sourceFileSha256": {
+      "src/whisper.cpp": "c48686fbc2cba1b0ac0f9c8e964188c691e67fff5906f2629f3223ff64f92d16",
+      "include/whisper.h": "a7d19f7feb5be52426628ff07e0602de28a30dc4312d0d0603e1e536753f76dd",
+      "ggml/src/ggml-cpu/CMakeLists.txt": "7047ffbecbc58e0eed61e7db0c804398968c056e91c292966a9a8c53ec5e7970",
+      "ggml/src/ggml-cpu/arch/arm/quants.c": "9fccd3897db24c9df89b8431b588175894e5f54697cf45768d0c6e6c5544093e",
+      "ggml/src/ggml-cpu/simd-mappings.h": "d1ca849419a643d4304d82d3921d11b02722ccf69d607a86c2c579b864f700b2",
+      "ggml/src/ggml-cpu/ggml-cpu-impl.h": "e7008069e3e46f1db5e3d2eaafb4ddec3c7d0ece5c0454f99c5a8e33a50f20ba",
+      "ggml/src/ggml-cpu/ggml-cpu.c": "839197aab9a2fb3c509221699e2810a4c4f3f3043416f55e653c380a46ed74cf",
+      "examples/whisper.android/lib/src/main/jni/whisper/CMakeLists.txt": "ce49e1bf5733a3aad27c983ead31534cb85bfcb4ac9b5c7a9c85df74767f7293"
+    },
+    "hostCompilerPreprocessingOnly": true,
+    "androidExecutions": 0
+  },
+  "decisiveCase": {
+    "sanitizedOrdinal": 19,
+    "classification": "REPRESENTATIVE_OF_SYSTEMIC_PERFORMANCE",
+    "meaning": "Short-input RTF tail of near-constant per-clip compute; not an isolated absolute-latency stall.",
+    "precedingOrdinals": [
+      17,
+      18
+    ],
+    "nextAttemptExecuted": false,
+    "telemetryAnomalyFound": false,
+    "differentLifecycleFound": false
+  },
+  "rootCauseAssessment": [
+    {
+      "confidence": "HIGH",
+      "cause": "Systemic short-input RTF pressure from substantial per-clip compute cost in this exact configuration.",
+      "evidence": "Decisive clip shortest in both audio and inference; inference range 17.681893-22.453828 seconds; 10/19 above RTF2, 3/19 above RTF4.",
+      "limit": "Not a claim about every SMALL/runtime combination or EN."
+    },
+    {
+      "confidence": "MEDIUM",
+      "cause": "Full default 30-second context computation is the likely structural contributor.",
+      "evidence": "audio_ctx=0, n_audio_ctx=1500, fixed-width convolution/encoder/cross graphs and padded input in pinned source.",
+      "limit": "No encoder/decoder phase timing or invocation counts; fitted intercept is not a measured phase."
+    },
+    {
+      "confidence": "MEDIUM",
+      "cause": "Conservative ARMv8-a kernels plausibly add avoidable cost.",
+      "evidence": "Cache/macros/disassembly exclude DOTPROD/FP16 vector FMA; Q5_1/F16 fallback source paths verified.",
+      "limit": "Omission is proven; causal magnitude of enabling paths is unknown."
+    },
+    {
+      "confidence": "LOW",
+      "cause": "Thread scheduling, core residency, frequency scaling or contention.",
+      "evidence": "Four unpinned threads on a heterogeneous CPU; no relevant retained trace.",
+      "limit": "No causal claim or empirically optimal thread count."
+    },
+    {
+      "confidence": "LOW",
+      "cause": "Case-specific acoustics/token generation.",
+      "evidence": "No transcript-based analysis; failed RTF case is fastest absolute inference.",
+      "limit": "Cannot assign an acoustic cause."
+    }
+  ],
+  "actualRuntime": {
+    "computeThreads": 4,
+    "backend": "CPU_ONLY",
+    "useGpu": false,
+    "flashAttention": true,
+    "audioContext": 0,
+    "modelAudioContext": 1500,
+    "modelWindowSeconds": 30,
+    "decodingProfileCanonicalSha256": "cd53fda162402675f54875de470b01c303f0ede9a2e0cefd6f1056e8fa381d39",
+    "defaultPriority": 0,
+    "defaultPolling": 50,
+    "strictCpu": false,
+    "affinity": "INHERITED_DEFAULT_NOT_INSTRUMENTED",
+    "openmp": false,
+    "freshProcesses": 19,
+    "retries": 0,
+    "acceleratorsUsed": [],
+    "availableButNotUsed": [
+      "ARM FP16/DOTPROD kernels",
+      "Optional Vulkan/OpenCL source backends",
+      "audio_ctx override"
+    ],
+    "hypothetical": [
+      "Different thread count or affinity advantage",
+      "GPU/NNAPI/NPU advantage",
+      "Reduced-context advantage",
+      "Persistent model serving advantage"
+    ]
+  },
+  "options": {
+    "label": "POSTMORTEM_DIAGNOSTIC_ONLY",
+    "considered": [
+      {
+        "id": "A",
+        "selected": true,
+        "candidate": "Whisper multilingual SMALL q5_1; ARMv8.2 FP16/DOTPROD CPU build",
+        "ruQuality": "Same model capacity/decoding; gate unknown; numeric kernels can change outputs.",
+        "enQuality": "No SMALL EN measurements exist; gate unknown.",
+        "expectedRtf": "Improvement plausible from proven omitted instruction paths; magnitude and gate success unknown.",
+        "memory": "Broadly similar expected; not measured.",
+        "coldLoad": "Same model bytes; broadly similar expected, not measured.",
+        "androidArm64": "Existing API28 adapter; specialized ISA requires actual device capability preflight.",
+        "offline": true,
+        "integrationComplexity": "LOW; isolated runtime rebuild and successor identity binding.",
+        "implementationRisk": "LOW_TO_MEDIUM; binary compatibility and numeric differences require verification.",
+        "licenses": "MIT model and whisper.cpp; existing NDK/miniaudio notices retained.",
+        "timeToTest": "Shortest credible new experiment using existing admitted model, toolchain and adapter.",
+        "normalizerEvaluatorReuse": "Unchanged semantics; new model-independent runtime/manifest identity binding.",
+        "boundedAlphaPassLikelihood": "UNKNOWN; strongest next-test rationale among these options, not a measured probability.",
+        "reason": "Directly evidenced unused CPU paths, preserves capacity and full audio context."
+      },
+      {
+        "id": "B",
+        "selected": false,
+        "candidate": "Whisper multilingual BASE q5_1, ggml-base-q5_1.bin",
+        "modelSha256": "422f1ae452ade6f30a004d7e5c6a43195e4433bc370bf23fac9cc591f01a8898",
+        "ruQuality": "Prior distinct holdout 30.5% normalized WER: FAIL.",
+        "enQuality": "Prior distinct holdout 54/293 = 18.4300%: FAIL.",
+        "expectedRtf": "Faster historical observation, not controlled cross-model speedup.",
+        "memory": "Lower historical observation.",
+        "coldLoad": "Lower historical observation.",
+        "androidArm64": "Already exercised through same adapter.",
+        "offline": true,
+        "integrationComplexity": "LOW",
+        "implementationRisk": "LOW integration; material quality risk.",
+        "licenses": "MIT model/runtime.",
+        "timeToTest": "Quick; weak reason to consume another holdout.",
+        "normalizerEvaluatorReuse": "FULL",
+        "boundedAlphaPassLikelihood": "Low relative confidence because prior RU quality materially failed; no numeric probability.",
+        "reason": "Smaller capacity offers speed but direct prior quality counterevidence; tiny lacks a stronger quality case."
+      },
+      {
+        "id": "C",
+        "selected": false,
+        "candidate": "Whisper multilingual SMALL q8_0, ggml-small-q8_0.bin",
+        "ruQuality": "Potential quantization-quality benefit unknown.",
+        "enQuality": "Potential benefit unknown.",
+        "expectedRtf": "Kernel-dependent; no retained evidence quantization/bandwidth is the dominant bottleneck.",
+        "memory": "Expected increase in weight storage/working set.",
+        "coldLoad": "More bytes; no demonstrated load advantage.",
+        "androidArm64": "Same runtime family; new artifact admission required.",
+        "offline": true,
+        "integrationComplexity": "LOW_TO_MEDIUM",
+        "implementationRisk": "New artifact, unpredictable speed-quality tradeoff.",
+        "licenses": "MIT family; exact new artifact provenance/notices would need checking.",
+        "timeToTest": "Additional artifact work versus selected retained model.",
+        "normalizerEvaluatorReuse": "FULL",
+        "boundedAlphaPassLikelihood": "UNKNOWN; less evidence for a speed benefit than A.",
+        "reason": "Quantization change alone does not establish removal of near-constant full-window compute."
+      },
+      {
+        "id": "D",
+        "selected": false,
+        "candidate": "Parakeet-TDT 0.6B v3 INT8 via sherpa-onnx CPU",
+        "ruQuality": "Upstream language support; DORA quality unknown.",
+        "enQuality": "Upstream language support; DORA quality unknown.",
+        "expectedRtf": "Alternative FastConformer/TDT design; no POCO measurement.",
+        "memory": "Unknown POCO working set; larger model not presumed cheaper.",
+        "coldLoad": "Unknown.",
+        "androidArm64": "Official sherpa Android path exists; exact package/device fit not established.",
+        "offline": true,
+        "integrationComplexity": "HIGH relative to A; ONNX/frontend/tokenizer/decoder adapter and ABI evidence.",
+        "implementationRisk": "HIGHER; new implementation and conversion proof.",
+        "licenses": "Apache-2.0 sherpa runtime, CC-BY-4.0 original model; converted artifact/attribution review needed.",
+        "timeToTest": "Slower due new adapter/artifact/16-KiB work.",
+        "normalizerEvaluatorReuse": "Scoring reusable; new output binding required.",
+        "boundedAlphaPassLikelihood": "UNKNOWN; promising reserve, no device evidence.",
+        "reason": "Realistic local alternative, but wider integration scope than the evidenced CPU rebuild."
+      }
+    ],
+    "selectedCount": 1
+  },
+  "prospectiveExperiment": {
+    "id": "ASR-SMALL-ARM82-01",
+    "version": 1,
+    "state": "FROZEN / NOT_EXECUTED",
+    "authority": "Current owner postmortem and exactly-one-next-experiment selection instruction; execution belongs to the next separately authorized task.",
+    "hypothesis": "A specialized ARM CPU build can reduce the observed full-context per-clip inference cost without reducing model capacity or shortening audio context.",
+    "claim": "Prospectively frozen experiment, not a promised speedup, quality PASS, new binary admission or production dependency.",
+    "candidate": {
+      "family": "OpenAI Whisper multilingual SMALL",
+      "artifact": "ggml-small-q5_1.bin",
+      "quantization": "q5_1",
+      "bytes": 190085487,
+      "sha256": "ae85e4a935d7a567bd102fe55afc16bb595bdb618e11b2fc7591bc08120411bb",
+      "sourceRepository": "ggerganov/whisper.cpp",
+      "sourceRevision": "f281eb45af861ab5e5297d23694b7d46e090c02c",
+      "sourceUrl": "https://huggingface.co/ggerganov/whisper.cpp/resolve/f281eb45af861ab5e5297d23694b7d46e090c02c/ggml-small-q5_1.bin",
+      "license": "MIT",
+      "newConversionAllowed": false
+    },
+    "runtime": {
+      "repository": "ggml-org/whisper.cpp",
+      "tag": "v1.9.4",
+      "revision": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+      "license": "MIT",
+      "upstreamSourcePatches": 0,
+      "backend": "ggml CPU",
+      "computeThreads": 4,
+      "useGpu": false,
+      "flashAttention": true,
+      "scheduling": {
+        "priority": 0,
+        "meaning": "Inherited/default; no priority or governor changes.",
+        "poll": 50,
+        "strictCpu": false,
+        "affinity": "Default/inherited; no taskset or explicit pinning."
+      },
+      "toolchain": {
+        "ndk": "28.2.13676358",
+        "clang": "19.0.1",
+        "cmake": "3.22.1",
+        "ninja": "1.10.2"
+      },
+      "cmakeOptions": {
+        "ANDROID_ABI": "arm64-v8a",
+        "ANDROID_PLATFORM": "android-28",
+        "ANDROID_STL": "c++_shared",
+        "CMAKE_BUILD_TYPE": "Release",
+        "GGML_NATIVE": "OFF",
+        "GGML_CPU": "ON",
+        "GGML_CPU_ARM_ARCH": "armv8.2-a+fp16+dotprod",
+        "GGML_CPU_ALL_VARIANTS": "OFF",
+        "GGML_CPU_REPACK": "ON",
+        "GGML_CPU_KLEIDIAI": "OFF",
+        "GGML_BACKEND_DL": "OFF",
+        "GGML_OPENMP": "OFF",
+        "GGML_BLAS": "OFF",
+        "GGML_LTO": "OFF",
+        "GGML_CCACHE": "OFF",
+        "GGML_CUDA": "OFF",
+        "GGML_METAL": "OFF",
+        "GGML_ACCELERATE": "OFF",
+        "GGML_VULKAN": "OFF",
+        "GGML_OPENCL": "OFF",
+        "GGML_RPC": "OFF",
+        "GGML_OPENVINO": "OFF",
+        "GGML_HEXAGON": "OFF",
+        "GGML_SYCL": "OFF",
+        "GGML_WEBGPU": "OFF",
+        "GGML_HIP": "OFF",
+        "GGML_MUSA": "OFF",
+        "GGML_ZDNN": "OFF",
+        "GGML_ZENDNN": "OFF",
+        "GGML_VIRTGPU": "OFF",
+        "GGML_VIRTGPU_BACKEND": "OFF",
+        "GGML_ET": "OFF",
+        "GGML_LLAMAFILE": "OFF",
+        "GGML_BUILD_TESTS": "OFF",
+        "GGML_BUILD_EXAMPLES": "OFF",
+        "WHISPER_BUILD_IS_DEV": "OFF",
+        "WHISPER_BUILD_TESTS": "OFF",
+        "WHISPER_BUILD_EXAMPLES": "OFF",
+        "WHISPER_BUILD_SERVER": "OFF",
+        "WHISPER_CURL": "OFF",
+        "WHISPER_SDL2": "OFF",
+        "WHISPER_COREML": "OFF",
+        "WHISPER_OPENVINO": "OFF",
+        "WHISPER_VITISAI": "OFF",
+        "BUILD_SHARED_LIBS": "ON"
+      },
+      "singleBuildDelta": "GGML_CPU_ARM_ARCH: armv8-a -> armv8.2-a+fp16+dotprod",
+      "compile": "Release -O3 -DNDEBUG; existing NDK flags retained; no additional fast-math/LTO/i8mm/SVE.",
+      "adapterSource": "tools/alpha_asr_campaign_native/main.cpp unchanged; fresh process/context for every case.",
+      "decodingProfileCanonicalSha256": "cd53fda162402675f54875de470b01c303f0ede9a2e0cefd6f1056e8fa381d39",
+      "decodingProfile": {
+        "base": "whisper_full_default_params(WHISPER_SAMPLING_GREEDY)",
+        "contextParams": {
+          "dtw_aheads": {
+            "heads": null,
+            "n_heads": 0
+          },
+          "dtw_aheads_preset": "WHISPER_AHEADS_NONE",
+          "dtw_mem_size": 134217728,
+          "dtw_n_top": -1,
+          "dtw_token_timestamps": false,
+          "flash_attn": true,
+          "gpu_device": 0,
+          "use_gpu": false
+        },
+        "resolvedWhisperFullParams": {
+          "en": {
+            "abort_callback": null,
+            "abort_callback_user_data": null,
+            "audio_ctx": 0,
+            "beam_search.beam_size": -1,
+            "beam_search.patience": -1,
+            "carry_initial_prompt": false,
+            "debug_mode": false,
+            "detect_language": false,
+            "duration_ms": 0,
+            "encoder_begin_callback": null,
+            "encoder_begin_callback_user_data": null,
+            "entropy_thold": 2.4000001,
+            "grammar_penalty": 100,
+            "grammar_rules": null,
+            "greedy.best_of": 5,
+            "i_start_rule": 0,
+            "initial_prompt": null,
+            "language": "en",
+            "length_penalty": -1,
+            "logits_filter_callback": null,
+            "logits_filter_callback_user_data": null,
+            "logprob_thold": -1,
+            "max_initial_ts": 1,
+            "max_len": 0,
+            "max_tokens": 0,
+            "n_grammar_rules": 0,
+            "n_max_text_ctx": 16384,
+            "n_threads": 4,
+            "new_segment_callback": null,
+            "new_segment_callback_user_data": null,
+            "no_context": true,
+            "no_speech_thold": 0.600000024,
+            "no_timestamps": false,
+            "offset_ms": 0,
+            "print_progress": false,
+            "print_realtime": false,
+            "print_special": false,
+            "print_timestamps": false,
+            "progress_callback": null,
+            "progress_callback_user_data": null,
+            "prompt_n_tokens": 0,
+            "prompt_tokens": null,
+            "single_segment": false,
+            "split_on_word": false,
+            "strategy": "WHISPER_SAMPLING_GREEDY",
+            "suppress_blank": true,
+            "suppress_nst": false,
+            "suppress_regex": null,
+            "tdrz_enable": false,
+            "temperature": 0,
+            "temperature_inc": 0,
+            "thold_pt": 0.00999999978,
+            "thold_ptsum": 0.00999999978,
+            "token_timestamps": false,
+            "translate": false,
+            "vad": false,
+            "vad_model_path": null,
+            "vad_params.max_speech_duration_s": 3.40282347e+38,
+            "vad_params.min_silence_duration_ms": 100,
+            "vad_params.min_speech_duration_ms": 250,
+            "vad_params.samples_overlap": 0.100000001,
+            "vad_params.speech_pad_ms": 30,
+            "vad_params.threshold": 0.5
+          },
+          "ru": {
+            "abort_callback": null,
+            "abort_callback_user_data": null,
+            "audio_ctx": 0,
+            "beam_search.beam_size": -1,
+            "beam_search.patience": -1,
+            "carry_initial_prompt": false,
+            "debug_mode": false,
+            "detect_language": false,
+            "duration_ms": 0,
+            "encoder_begin_callback": null,
+            "encoder_begin_callback_user_data": null,
+            "entropy_thold": 2.4000001,
+            "grammar_penalty": 100,
+            "grammar_rules": null,
+            "greedy.best_of": 5,
+            "i_start_rule": 0,
+            "initial_prompt": null,
+            "language": "ru",
+            "length_penalty": -1,
+            "logits_filter_callback": null,
+            "logits_filter_callback_user_data": null,
+            "logprob_thold": -1,
+            "max_initial_ts": 1,
+            "max_len": 0,
+            "max_tokens": 0,
+            "n_grammar_rules": 0,
+            "n_max_text_ctx": 16384,
+            "n_threads": 4,
+            "new_segment_callback": null,
+            "new_segment_callback_user_data": null,
+            "no_context": true,
+            "no_speech_thold": 0.600000024,
+            "no_timestamps": false,
+            "offset_ms": 0,
+            "print_progress": false,
+            "print_realtime": false,
+            "print_special": false,
+            "print_timestamps": false,
+            "progress_callback": null,
+            "progress_callback_user_data": null,
+            "prompt_n_tokens": 0,
+            "prompt_tokens": null,
+            "single_segment": false,
+            "split_on_word": false,
+            "strategy": "WHISPER_SAMPLING_GREEDY",
+            "suppress_blank": true,
+            "suppress_nst": false,
+            "suppress_regex": null,
+            "tdrz_enable": false,
+            "temperature": 0,
+            "temperature_inc": 0,
+            "thold_pt": 0.00999999978,
+            "thold_ptsum": 0.00999999978,
+            "token_timestamps": false,
+            "translate": false,
+            "vad": false,
+            "vad_model_path": null,
+            "vad_params.max_speech_duration_s": 3.40282347e+38,
+            "vad_params.min_silence_duration_ms": 100,
+            "vad_params.min_speech_duration_ms": 250,
+            "vad_params.samples_overlap": 0.100000001,
+            "vad_params.speech_pad_ms": 30,
+            "vad_params.threshold": 0.5
+          }
+        },
+        "runtimeCommit": "927cfce34f31707e17f2bff35c349632fb9e2c3a",
+        "version": "dora-alpha-asr-decoding-v0.1"
+      },
+      "measurementProtocolCanonicalSha256": "0f1e456fb4b4b0da28a209abe94e42fe7a0ca599e5c5c794db16a6abe478b116",
+      "historicalProtocolFields": "Use measurement definitions; acceptance limits are explicitly restated here, not historical proposed gate fields.",
+      "hardwarePrerequisites": [
+        "Physical POCO M5",
+        "arm64-v8a",
+        "HWCAP_ASIMD",
+        "HWCAP_FPHP",
+        "HWCAP_ASIMDHP",
+        "HWCAP_ASIMDDP"
+      ],
+      "capabilityCheck": "Baseline-compatible check before executing specialized code; absent/unknown support stops, no fallback.",
+      "acceleratorAndThreadSweepsAllowed": false
+    },
+    "data": {
+      "selectionId": "dora-alpha-asr-small-arm82-acceptance-selection-v0.1",
+      "ru": 24,
+      "en": 24,
+      "total": 48,
+      "source": "Common Voice Spontaneous Speech 5.0",
+      "release": "sps-corpus-5.0-2026-09-11",
+      "split": "test",
+      "datasetIds": {
+        "ru": "cmu5mg3pr00simh07epeylc55",
+        "en": "cmu5nqn1h00vwmi07b4dbk085"
+      },
+      "terms": "Bind exact already admitted archive/terms evidence; no new data source or license assumed.",
+      "durationMsInclusive": [
+        1000,
+        20000
+      ],
+      "eligibility": "Same valid decode, nonempty reference, provenance/path/content constraints as 5.1B/5.6B.",
+      "excludeAllPreviouslySelected": {
+        "base": 48,
+        "small": 48,
+        "includesUnexecutedSmall": 29
+      },
+      "exclusionKeys": [
+        "Exact source identity",
+        "Audio content SHA-256"
+      ],
+      "additionalExclusions": [
+        "Any other evaluation/tuning/development use",
+        "All members of repeated audio-digest groups"
+      ],
+      "participantOverlap": "Exclude using legitimately available pseudonymous metadata; otherwise disclose limitation without re-identification.",
+      "ranking": "SHA256(UTF8(dora-alpha-asr-v0.1) || NUL || UTF8(locale) || NUL || exact UTF8(upstreamRelativePath)); raw digest ascending then exact path bytes.",
+      "selection": "First 24 eligible per language after every exclusion; no duration balancing or result-dependent selection.",
+      "order": "RU24_THEN_EN24",
+      "onInsufficientPool": "STOP_NO_SUBSTITUTION_OR_RULE_RELAXATION",
+      "freshness": "No prior ASR inference; do not reuse either historical holdout, even for regression or tuning.",
+      "storage": "Existing owner-only local private boundary outside Git; no cloud/public sharing.",
+      "retentionDeadline": "2026-10-25",
+      "retentionExtension": false,
+      "availabilityClaimed": false,
+      "materializedInThisTask": false
+    },
+    "evaluation": {
+      "quality": {
+        "ruNormalizedWerPercentMaximum": 20,
+        "enNormalizedWerPercentMaximum": 18,
+        "aggregation": "Sum normalized S+D+I / sum reference tokens; integer cross-products; not per-case average.",
+        "requiredCasesPerLanguage": 24,
+        "bothLanguagesMustPass": true,
+        "rawWer": "DIAGNOSTIC_ONLY",
+        "timestampQuality": "NOT_EVALUABLE"
+      },
+      "resources": {
+        "weightedRtfMaximum": 2,
+        "p95RtfMaximum": 4,
+        "p95NearestRankAt48": 46,
+        "maximumCaseRtf": 6,
+        "coldLoadMicrosMaximum": 15000000,
+        "pssBytesMaximum": 1610612736,
+        "nativeHeapBytesMaximum": 1342177280,
+        "evidencedOomMaximum": 0,
+        "thermalForbiddenMinimum": 3,
+        "requiredValidAttempts": 48,
+        "resourceTelemetryCompleteRequired": true,
+        "endToEndLatency": "DIAGNOSTIC_ONLY"
+      },
+      "telemetry": {
+        "memorySamplingTargetMs": 100,
+        "memoryMaximumGapMs": 1000,
+        "thermalPollingDelayMs": 1000,
+        "thermalMaximumGapMs": 3000,
+        "window": "Before decode through after model free; synchronous load/inference/free samples.",
+        "memorySources": "smaps_rollup Pss KiB*1024; mallinfo().uordblks bytes; never add them.",
+        "peaks": "MAXIMUM_OBSERVED_SAMPLE_NOT_CONTINUOUS_HIGH_WATER_MARK"
+      },
+      "disposition": "Same quality/resource completeness and positive-failure precedence as frozen SMALL evaluator; new profile identities only."
+    },
+    "scoring": {
+      "normalizer": "dora-alpha-asr-normalization-v0.1",
+      "options": {
+        "removeDiacritics": false,
+        "splitLetters": false
+      },
+      "pythonSemanticProfile": "cpython-3.12-unicode-15.0.0",
+      "oracleSourceLfSha256": "a2b3e37305f24f91a8ace00f5f824d1d13effda94248c15b31aa31db78c76125",
+      "normalizerAndOracleChanges": 0
+    },
+    "attemptPolicy": {
+      "campaignInvocations": 1,
+      "primaryAttemptsPerSelectedCase": 1,
+      "automaticRetries": 0,
+      "qualityRetries": 0,
+      "infrastructureRetries": 0,
+      "caseReplacements": 0,
+      "codecCheck": "One pinned upstream decode-only check",
+      "warmup": "One deterministic generated 3-second silence full inference; no per-case warmup.",
+      "holdoutInferenceBeforeCampaign": 0,
+      "unscoredHoldoutRuns": 0,
+      "durableClaimAndJournal": true,
+      "timeoutSeconds": 600,
+      "nativeAlarmSeconds": 605,
+      "stops": [
+        "Identity/input/profile drift",
+        "Invalid output or quality evidence",
+        "Missing/invalid required telemetry",
+        "Cleanup failure",
+        "Timeout or ambiguous termination",
+        "Positive OOM",
+        "Thermal status >=3",
+        "Positive per-case resource breach"
+      ],
+      "qualityRule": "No stop/retry for poor per-case WER; unchanged complete-language aggregation and full-campaign rules.",
+      "partialEvidence": "Preserve; incomplete coverage cannot PASS, positive gate failure retains VALID_FAIL."
+    },
+    "beforeFirstInferenceIncludingWarmup": [
+      "Separate successor execution binding; historical v0.3 and evidence unchanged.",
+      "Verify source/build/device ISA capability, dependency closure and ELF/16-KiB package checks.",
+      "Verify model identity, private storage/retention, decoder and complete resolved profile.",
+      "Freeze new operator commit/source pins, all native byte hashes, selection/exclusion/pool/manifest digests and this contract digest.",
+      "Use only generated synthetic host checks and non-holdout preflight; no configuration search.",
+      "Stop if deadline, lawful source identity or hardware prerequisites cannot be met; no alternative candidate/configuration."
+    ],
+    "futureIdentityPins": {
+      "state": "REQUIRED_OUTPUTS_OF_NEXT_MATERIALIZATION_BEFORE_ANY_INFERENCE",
+      "items": [
+        "Operator commit/source pins",
+        "Native binary byte hashes",
+        "Exclusion/pool/manifest digests"
+      ],
+      "fabricatedHere": false
+    },
+    "nextTask": "Implement isolated successor binding and ARM82 build, materialize fresh exclusion-verified RU24+EN24, preflight/freeze actual identities, then one separately authorized POCO M5 campaign and terminal publication."
+  },
+  "prospectiveExperimentCanonicalSha256": "32b2e6516a600f656f4e414e291b871327821c481c57732cbb41b43b401d789a",
+  "historicalResourceGatesCanonicalSha256": "fdfb56b56429c07a99538c92d87f9ea8570c723cc67f5e5eb02915d97557ccd1",
+  "historicalFiles": {
+    "docs/adr/ADR-0008-alpha-asr-evaluation-contract.md": {
+      "bytes": 2482,
+      "sha256": "c7f9d8d507bc355a13e446c58e749f3c9cb920b7998b298199ae909a10d57523"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-assessment-stage0-v0.1.json": {
+      "bytes": 31673,
+      "sha256": "a1cc46148c15b6cdf66bf3e966df907f7eee6a8265db3fe12105f0eccd4a6d46"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-campaign-stage0-v0.1.json": {
+      "bytes": 11615,
+      "sha256": "c7ab64feea51eb3d411cdf213524532aabce0b146674c01cecdc32e9054b730c"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-decoding-profile-stage0-v0.1.json": {
+      "bytes": 3506,
+      "sha256": "c76324845171c680bd984784e8f1fca13d95b3f0918619dfb5ff53c70ed9c442"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-eval-contract-local-evidence-stage0-v0.1.json": {
+      "bytes": 10910,
+      "sha256": "1eac552f46136071ebb02bf0fbfbd1a2e380bb0f2aea0050b9494b01bcfe5052"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-measurement-protocol-stage0-v0.1.json": {
+      "bytes": 2865,
+      "sha256": "9101c18fa020f8fd0a3ebba47b70c055c4724dc50e2a7900e5d0bef57d5b99c1"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-model-admission-stage0-v0.1.json": {
+      "bytes": 20860,
+      "sha256": "465ee6382e4c884402375237a51adbeb8b3a831ca3fee5a3c831b70713e67864"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-native-build-16k-stage0-v0.1.json": {
+      "bytes": 35206,
+      "sha256": "11a07e39987e968158d506a8d0d9d6402e69e1941a387a9f94e36de2f834408a"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-next-candidate-admission-stage0-v0.1.json": {
+      "bytes": 31414,
+      "sha256": "fc7cba975e5e834bf874cff88745d88a0c44435be59a7fbf1add06617660524c"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-next-candidate-storage-remediation-stage0-v0.1.json": {
+      "bytes": 29024,
+      "sha256": "da34a9560ec2b96c095e180d2b0aec0821d889c2ac829712f45232c7f7e0eb1a"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-runner-preflight-stage0-v0.1.json": {
+      "bytes": 29358,
+      "sha256": "249a95c4e4a892e158eb0c2e624c0e9e2b72df145a78f9c28d9b9b511db1b1ba"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-small-campaign-execution-operator-stage0-v0.1.json": {
+      "bytes": 40425,
+      "sha256": "4b8deacc01e296bfbbab463655d6f17d3cf83b7e4572ddeb3941f1b397428c8a"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-small-campaign-operator-stage0-v0.1.json": {
+      "bytes": 31420,
+      "sha256": "18becb82e26835722e1beccb00edf6cbb4b7c7325c539fdc031671348827029e"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-small-campaign-result-stage0-v0.1.json": {
+      "bytes": 29144,
+      "sha256": "0fb1c331fbbf3af820b4fdc20f668025f95b2a0db101a11e14a986d5cf70d984"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-small-campaign-schema-remediation-stage0-v0.1.json": {
+      "bytes": 34418,
+      "sha256": "9199f8932672869a1df348af3cb13962174420359323f9610260e797c5560c8d"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-small-evaluation-governance-stage0-v0.1.json": {
+      "bytes": 31576,
+      "sha256": "f8140496aac3972b6a8eb6dd62c3fe5305141a2e8d8c613e36768f1727b5f3b5"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-small-holdout-preflight-stage0-v0.1.json": {
+      "bytes": 26176,
+      "sha256": "b1dc0359d43d12ec892ea14e846723db164df5229edf781e68b0104e251659f1"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-small-holdout-source-recovery-stage0-v0.1.json": {
+      "bytes": 36132,
+      "sha256": "044380436b4aa9cc0b23dbc21d86c14b3f8159a22a92aab305d8646c8260de3c"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-small-measured-campaign-stage0-v0.1.json": {
+      "bytes": 8485,
+      "sha256": "4a54dbfa6394f837ebd2ee1217214a9bf2ae94adc00b018e2a569341fbf25be3"
+    },
+    "docs/evidence/poc-asr-001/alpha-asr-small-private-storage-acl-remediation-stage0-v0.1.json": {
+      "bytes": 38049,
+      "sha256": "f2df0138866cebee366914ce5259d36fdf8794b38734099107e27957de1bd9e9"
+    },
+    "docs/evidence/poc-asr-001/i1-synthetic-scoring-oracle-local-evidence-stage0-v0.1.json": {
+      "bytes": 14621,
+      "sha256": "fcf7363b578f57a3931dfbbf2d6c1ec60c3896bcd062fb175c629aff6f6d6d04"
+    },
+    "docs/evidence/poc-data-001/alpha-asr-actual-pilot-materialization-stage0-v0.1.json": {
+      "bytes": 8887,
+      "sha256": "7c8338b904a8e9adc8e7d62ce66c345350e0eace2c76309808756c03d1f177c6"
+    },
+    "docs/evidence/poc-data-001/alpha-asr-pilot-manifest-validator-local-evidence-stage0-v0.1.json": {
+      "bytes": 3845,
+      "sha256": "b480b2879073fe6eecdb48c96ec30ed3963a503e291ed4342ac253bed2fde6ec"
+    },
+    "docs/evidence/poc-data-001/alpha-asr-synthetic-storage-dry-run-stage0-v0.1.json": {
+      "bytes": 848,
+      "sha256": "3dce78abda49868937658905a15e1745cfd8d7a2a663af6c4d698a30e2e48cf9"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_ASSESSMENT_STAGE0_V0_1.md": {
+      "bytes": 22251,
+      "sha256": "82ab1533df8daae2d4a490d1122980039cb90b4f6185c39724dd5cf2bb5c4048"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_CAMPAIGN_STAGE0_V0_1.md": {
+      "bytes": 11490,
+      "sha256": "9be7fcb1727c3729f99b543ae8df7536617290df96c951dc73d9685fda88d3f3"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_DATA_ADMISSION_STAGE0_V0_1.md": {
+      "bytes": 10301,
+      "sha256": "8f4db64d5136fa11d8c807ab9351774d76a9fda0267a8ce5f6921ee32bd3bbb2"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_DATA_LEGAL_IP_REVIEW_V0_1.md": {
+      "bytes": 11508,
+      "sha256": "7f440d2b62c07bcfbaefa8d7ca11742f0f4c6d290c513fc4b615ed08fbed39d3"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_DATA_MANIFEST_CONTRACT_STAGE0_V0_1.md": {
+      "bytes": 13651,
+      "sha256": "3a9699ae5ea4f380dd2641840d9ce6cba0dc51c73229c86443abd21290289826"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_DATA_OWNER_DECISION_V0_1.md": {
+      "bytes": 6807,
+      "sha256": "e1a59cbb8b195a51f44c87540b554ef03e6ff3f1dbd86a4f992eb5dd53733be6"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_DATA_SCOPE_STAGE0_V0_1.md": {
+      "bytes": 14479,
+      "sha256": "197c98cc33141269f57273036d8c03b28e9dcdfb5b3ff6d1129718e40858c633"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_EVAL_CONTRACT_STAGE0_V0_1.md": {
+      "bytes": 17609,
+      "sha256": "cd3cec90fa53ec9501f93169243f3f06c0980a7fd5b6b11f6a75f851c825dfa7"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_MODEL_ADMISSION_STAGE0_V0_1.md": {
+      "bytes": 12044,
+      "sha256": "263ff9f157d344d19d71cb387b46d2d6b38281809af38a2db23566435615c903"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_NATIVE_BUILD_STAGE0_V0_1.md": {
+      "bytes": 14373,
+      "sha256": "7c5f5c5c661caf42d915110c22e23f76309268658ab61d962bcdec0f55bee64b"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_NEXT_CANDIDATE_ADMISSION_STAGE0_V0_1.md": {
+      "bytes": 17875,
+      "sha256": "731ab4c455dce84e55293e4f9b06a158aec03898a95b64f39921f99b5098ba1a"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_NEXT_CANDIDATE_STORAGE_REMEDIATION_STAGE0_V0_1.md": {
+      "bytes": 8830,
+      "sha256": "57c6dd049ff5ea90fa30289d779212ce82efa9b481e3dba3a990bd6642defbea"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_RUNNER_PREFLIGHT_STAGE0_V0_1.md": {
+      "bytes": 11953,
+      "sha256": "e65ec1e469ca02de191bc1570c7bcd549a03cbf70faf8fa0b3fc60f931ce6935"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_SMALL_CAMPAIGN_EXECUTION_OPERATOR_STAGE0_V0_1.md": {
+      "bytes": 11477,
+      "sha256": "764d6d19eaf0fac23f65da6a6681a29cd305bb51c6b806c054d2708abc8919ae"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_SMALL_CAMPAIGN_OPERATOR_STAGE0_V0_1.md": {
+      "bytes": 11609,
+      "sha256": "e986c310584ecfbaf401210c9cd592c6a914f8674001c16312d2e0f4061d1c0c"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_SMALL_CAMPAIGN_RESULT_STAGE0_V0_1.md": {
+      "bytes": 8161,
+      "sha256": "cd3debe36c4cfaa47c5703df83cce333829d92f36068b3243f937648932af636"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_SMALL_CAMPAIGN_SCHEMA_REMEDIATION_STAGE0_V0_1.md": {
+      "bytes": 6978,
+      "sha256": "b9ba2b4bf39077f363481edf5346fe831e3664f40851cc27d84776993bd66bb3"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_SMALL_EVALUATION_GOVERNANCE_STAGE0_V0_1.md": {
+      "bytes": 13350,
+      "sha256": "dd02cf2d45625a164ad135c34696ada39b3a396d0a7d0e47b1ce4a6fd2e30576"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_SMALL_HOLDOUT_PREFLIGHT_STAGE0_V0_1.md": {
+      "bytes": 8885,
+      "sha256": "779b3e2cd486f6f4e7120b78554b54d25aeb5671daad3a36c7a681f7d724d9e9"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_SMALL_HOLDOUT_SOURCE_RECOVERY_STAGE0_V0_1.md": {
+      "bytes": 12037,
+      "sha256": "db5511becfe1bebe36fc6caa04cd399f1e17a606aeaf8fc8ebf4068d9ed4c7fe"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_SMALL_MEASURED_CAMPAIGN_STAGE0_V0_1.md": {
+      "bytes": 6312,
+      "sha256": "336970d6ee187d8012470e08c4eef866264074984804321e69accb63a96a79ed"
+    },
+    "docs/stage0/DORA_ALPHA_ASR_SMALL_PRIVATE_STORAGE_ACL_REMEDIATION_STAGE0_V0_1.md": {
+      "bytes": 11105,
+      "sha256": "6be8252ec3bcd598b24f9aebba1cd06aaa3e035e2658ce34918a94baf6a2c99b"
+    },
+    "tools/alpha_asr_android_preflight.py": {
+      "bytes": 11709,
+      "sha256": "8c4835c5d8b196592e3e17ad1c59176bb05461f52952e1da900f35385b495e41"
+    },
+    "tools/alpha_asr_campaign.py": {
+      "bytes": 7274,
+      "sha256": "e0261fadf0c01cdc2e634108f7c464ca07f2ae3baa68ac6884dc06e43e799709"
+    },
+    "tools/alpha_asr_campaign_device.py": {
+      "bytes": 10598,
+      "sha256": "e0200b3a063659c0041a2d081a7151a7f57407ae015738e8a9fbdb6fae0cadf2"
+    },
+    "tools/alpha_asr_campaign_import.py": {
+      "bytes": 7920,
+      "sha256": "338ed7bcb30917d91951fffb49745c3aec39724f8aade0ae5ccf878f3a60860d"
+    },
+    "tools/alpha_asr_campaign_native/CMakeLists.txt": {
+      "bytes": 1327,
+      "sha256": "8e3ec4062b5ca3e2b860dae768f71438e9fccd3151d7f69233f0ff2a8f112ca9"
+    },
+    "tools/alpha_asr_campaign_native/CampaignOracle.java": {
+      "bytes": 1621,
+      "sha256": "abc51d8d08651f288ded482816350b680eae07ab3e47c8b9dc0d331d72e04270"
+    },
+    "tools/alpha_asr_campaign_native/decode.c": {
+      "bytes": 229,
+      "sha256": "0fc06284bb8bce924bd2cc28c2fd0c9b39cd02f0b06a766d13251b9a0224346c"
+    },
+    "tools/alpha_asr_campaign_native/main.cpp": {
+      "bytes": 7112,
+      "sha256": "b642497a5f50676f6b643303ad272e78c6f158359d5a480f2f18f16a779f29bf"
+    },
+    "tools/alpha_asr_eval_text_contract.py": {
+      "bytes": 14735,
+      "sha256": "490b4f659aef99da413e68cab5ffa187b1e8fd7229e7d7265367f2d14e577ff0"
+    },
+    "tools/alpha_asr_native_preflight/CMakeLists.txt": {
+      "bytes": 1007,
+      "sha256": "0d631f38acd3b470ad4085fcb6e89c01c3dbb7b5d1cd79d7827481b1262ea63a"
+    },
+    "tools/alpha_asr_native_preflight/main.cpp": {
+      "bytes": 1630,
+      "sha256": "0c0152c872ea3318b1d45888e4a2f0ea06c58c286f28ccf534f5a28bc8846127"
+    },
+    "tools/alpha_asr_pilot_manifest.py": {
+      "bytes": 12341,
+      "sha256": "dea7a8bdf651372052d89b0338b41a2c5cb7373696335ed8de47adbb8cba64b9"
+    },
+    "tools/alpha_asr_runner.py": {
+      "bytes": 8288,
+      "sha256": "19a83632c7b9752e429ef6807b30720fa4a7d0aa408cc8d341038bbf619baf51"
+    },
+    "tools/alpha_asr_runner_store.py": {
+      "bytes": 6667,
+      "sha256": "89ce31cd1658bc6c90389afa35d4eab7c94b9bdbcf98b8cde27a4b1eb9da7b93"
+    },
+    "tools/alpha_asr_small_acceptance_manifest.py": {
+      "bytes": 9876,
+      "sha256": "e0c02989fe50ac51df70a4a577119a9cac831cef04d84dab415454a117ac0d1e"
+    },
+    "tools/alpha_asr_small_campaign.py": {
+      "bytes": 12993,
+      "sha256": "a923710537f846e8d6894e45a1feb139c63de8702220c6e21bd5d34723383536"
+    },
+    "tools/asr_i1_synthetic_scoring_oracle/src/main/java/com/monumentogram/dora/stage0/asr/i1/AsrSyntheticScoringOracle.java": {
+      "bytes": 29949,
+      "sha256": "b2d2525ff0d71c15fdef931c005975f8610f5c5054e8e1f2b10f0f3740db9903"
+    },
+    "tools/asr_i1_synthetic_scoring_oracle/src/test/java/com/monumentogram/dora/stage0/asr/i1/AsrSyntheticScoringOracleTest.java": {
+      "bytes": 29863,
+      "sha256": "ff7c67b258a8281091bd28fc34d50ebb1596705c08aaee8ddfbc2ecdd95e6def"
+    },
+    "tools/run_alpha_asr_campaign.py": {
+      "bytes": 18870,
+      "sha256": "c9b1116e03a8bb1377169c3a8c929ddc1c933f84a7f5a7a587b67f205b14e45f"
+    },
+    "tools/run_alpha_asr_small_campaign.py": {
+      "bytes": 17189,
+      "sha256": "72b703f51f34394e8cf0f5f367306cbfc5b805a61eb4a9020efd99c0d47575a7"
+    },
+    "tools/run_alpha_asr_small_campaign_v2.py": {
+      "bytes": 13692,
+      "sha256": "5a247f3eba9c9b9699d4597f8925684053b915de99ddf224485a2f91aab0244f"
+    },
+    "tools/run_alpha_asr_small_campaign_v3.py": {
+      "bytes": 15573,
+      "sha256": "2020a57547daadad0e295190b07b260dca0146fec2c1b45622536358efaf0f69"
+    },
+    "tools/test_alpha_asr_campaign.py": {
+      "bytes": 7759,
+      "sha256": "5b0acc72c2838e07b5a12391d647db7aa1e8061b7120bb2d5a99cf66af81fa69"
+    },
+    "tools/test_alpha_asr_eval_text_contract.py": {
+      "bytes": 16585,
+      "sha256": "649442ce34bc094b59fe9348bef1bef1cbfc55b131088bcd6c2964cce96db6e8"
+    },
+    "tools/test_alpha_asr_pilot_manifest.py": {
+      "bytes": 20803,
+      "sha256": "b9e00347f9669f573ecffa9b7e67735ef67e25ef03a7ce46dcc8d02e8b11c28c"
+    },
+    "tools/test_alpha_asr_runner.py": {
+      "bytes": 19067,
+      "sha256": "8c1f6dd478e74165e136b86936cd95881ca8f18c150bb80c02308d3fc25fc8bd"
+    },
+    "tools/test_alpha_asr_small_acceptance_manifest.py": {
+      "bytes": 8904,
+      "sha256": "336add2312ef11c3c662e9e287ac295b8fe38dbd5f718c393f113b89650d4823"
+    },
+    "tools/test_alpha_asr_small_campaign.py": {
+      "bytes": 32190,
+      "sha256": "0c16c91c8a2a50631f64099fb186d891a7a9c352f0172afd3583ff90025d50f1"
+    },
+    "tools/test_alpha_asr_small_campaign_v2.py": {
+      "bytes": 17093,
+      "sha256": "13342ef8c9d0005dba18ffed6347e158b30a18c6fe92bf45811c3e4fde8d981b"
+    },
+    "tools/test_alpha_asr_small_campaign_v3.py": {
+      "bytes": 29706,
+      "sha256": "a77a8e1b3bf8e8e6028c604e22ffa70cba21f456ac6c929a4035f3fce68c9ab9"
+    },
+    "tools/verify_alpha_asr_normalizer_parity.py": {
+      "bytes": 3542,
+      "sha256": "a1d81da2d1141d13a98b9247290eb542aee87d2db306e6139fac7a47c1ade6e4"
+    }
+  },
+  "privacy": {
+    "projection": "Explicit owner-authorized sanitized attempt ordinals and numeric observations only.",
+    "sampleIdentitiesPublished": 0,
+    "transcriptsPublished": 0,
+    "privatePathsPublished": 0,
+    "sensitiveSourceMetadataPublished": 0,
+    "transcriptsUsedForOptimization": 0,
+    "retainedEvidenceModified": false
+  },
+  "scopeCounts": {
+    "asrInference": 0,
+    "deviceExecution": 0,
+    "currentHoldoutReruns": 0,
+    "tuningOnCurrentHoldout": 0,
+    "thresholdChanges": 0,
+    "recoveryChanges": 0,
+    "pr86Changes": 0,
+    "merges": 0,
+    "modelLoads": 0,
+    "newAudioDecodes": 0,
+    "modelDownloads": 0,
+    "newHoldoutMaterializations": 0
+  },
+  "stageEffect": {
+    "5.6C.2B": "INCOMPLETE / BOUNDED_SMALL_POCO_CAMPAIGN_STOPPED",
+    "5.6C.2": "INCOMPLETE",
+    "nextExperiment": "FROZEN / NOT_EXECUTED",
+    "Stage5": "NOT_PASS",
+    "GroupB": "NOT_PASS",
+    "POC-ASR-001": "BLOCKED / NOT_READY",
+    "Recovery": "0D.6 = ALPHA CLOSED / FULL OPEN"
+  },
+  "pr86": {
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "updatedAt": "2026-09-18T14:29:02Z",
+    "head": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+    "base": "55940df0c95e919a00708ae57e1b8aa23d89b6de",
+    "changes": 0
+  },
+  "validation": {
+    "result": "PASS",
+    "strictJson": "PASS",
+    "diagnosticArithmeticAndRawReconciliation": "PASS",
+    "prospectiveContractDigest": "PASS",
+    "oneSelectedExperiment": "PASS",
+    "unchangedQualityResourceThresholds": "PASS",
+    "historicalFilesAndRecoveryRawBytes": "PASS",
+    "unchangedBaselineFiles": 609,
+    "additiveStatusBacklogBytesPreserved": true,
+    "privateRetainedFilesUnchanged": 308,
+    "privacyAndReferences": "PASS",
+    "localLinksChecked": 7,
+    "diffCheck": "PASS",
+    "stage00": "PASS",
+    "stage00Checks": 7,
+    "exactChangedFiles": [
+      "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+      "docs/DORA_MVP1_STAGE_STATUS.md",
+      "docs/evidence/poc-asr-001/asr-small-resource-postmortem-next-experiment-stage0-v0.1.json",
+      "docs/stage0/DORA_ASR_SMALL_RESOURCE_POSTMORTEM_NEXT_EXPERIMENT_STAGE0_V0_1.md"
+    ],
+    "pr86Readback": "OPEN_DRAFT_UNMERGED_UNCHANGED",
+    "androidAndInferenceChecksRun": 0,
+    "stage00LogSha256": "aa91b8825bae531d45780489e43353aaec1a1be73bc78b7d8f123d6f07ee53a8"
+  },
+  "changedFiles": [
+    "docs/stage0/DORA_ASR_SMALL_RESOURCE_POSTMORTEM_NEXT_EXPERIMENT_STAGE0_V0_1.md",
+    "docs/evidence/poc-asr-001/asr-small-resource-postmortem-next-experiment-stage0-v0.1.json",
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md"
+  ],
+  "publication": {
+    "atomicCommits": 1,
+    "push": "NORMAL",
+    "merge": false,
+    "actualCommitAndRemoteHead": "REPORTED_IN_HANDOFF"
+  },
+  "ci": "NOT_DISPATCHED_NO_APPLICABLE_BRANCH_PUSH_TRIGGER"
+}

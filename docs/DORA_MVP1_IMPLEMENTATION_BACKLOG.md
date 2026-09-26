@@ -1,5 +1,26 @@
 # Dora MVP 1 — Executable Backlog
 
+## ASR SMALL resource postmortem and next experiment — 26 September 2026
+
+`PASS / SMALL_RESOURCE_FAILURE_ASSESSED_NEXT_EXPERIMENT_FROZEN`.
+All 19 retained attempts analyzed read-only. The decisive RU attempt 19 is the shortest
+audio and fastest absolute inference: evidence supports systemic short-input RTF pressure,
+not an isolated latency stall. Historical SMALL remains VALID_FAIL for its frozen resource gate.
+Selected exactly one next experiment: `ASR-SMALL-ARM82-01`, same multilingual SMALL q5_1,
+whisper.cpp v1.9.4 rebuilt for `armv8.2-a+fp16+dotprod`, CPU-only, 4 threads;
+unchanged decoding/full context, normalizer/oracle and quality/resource thresholds.
+Require a new untouched RU24+EN24 holdout excluding all BASE48 and consumed SMALL48.
+Next: implement the isolated successor binding/build, materialize/preflight/freeze,
+then one separately authorized physical POCO M5 campaign. No configuration search.
+This task performed zero ASR inference, device execution, holdout reruns or tuning.
+5.6C.2B/5.6C.2 measured completion remain INCOMPLETE; next experiment FROZEN / NOT_EXECUTED.
+Stage 5/Group B remain NOT_PASS; POC-ASR-001 BLOCKED / NOT_READY.
+Recovery stays 0D.6 = ALPHA CLOSED / FULL OPEN; PR #86 OPEN, DRAFT, UNMERGED, untouched.
+See [postmortem and prospective contract](stage0/DORA_ASR_SMALL_RESOURCE_POSTMORTEM_NEXT_EXPERIMENT_STAGE0_V0_1.md)
+and [decision evidence](evidence/poc-asr-001/asr-small-resource-postmortem-next-experiment-stage0-v0.1.json).
+All earlier dated sections remain historical evidence.
+
+
 ## ASR 5.6C.2B measured SMALL terminal result — 26 September 2026
 
 `5.6C.2B = INCOMPLETE / BOUNDED_SMALL_POCO_CAMPAIGN_STOPPED`.
