@@ -1,5 +1,24 @@
 # Dora MVP 1 — Executable Backlog
 
+## ASR 5.6C.2A.2 execution-capable successor freeze — 26 September 2026
+
+`5.6C.2A.2 = PASS / EXECUTION_CAPABLE_SMALL_SUCCESSOR_OPERATOR_FROZEN`.
+The additive v0.3 operator composes unchanged v0.2 metadata authority with unchanged
+v0.1 one-shot measurement/evaluation semantics. Its seven-field locator config
+forbids caller bindings and SHA overrides; cases are derived from pinned metadata.
+Future execution requires `OWNER_AUTHORIZED_5.6C.2B_V03` and a separately reviewed
+commit/owner decision. The token in source is not authorization; CLI is information-only.
+
+37 generated v0.3 tests, 136 SMALL host tests, 249 ASR host tests and Stage00 pass.
+Actual private metadata reads: 0; all real content/model/device/execution/write
+counters: 0. Historical v0.1/v0.2 files and BLOCKED 5.6C.2B evidence are unchanged.
+**5.6C.2B = BLOCKED / NOT_AUTHORIZED**; no measured quality/resource result is added.
+POC-ASR-001 remains BLOCKED / NOT_READY; Stage 5 and Group B are not marked PASS.
+Recovery stays 0D.6 = ALPHA CLOSED / FULL OPEN; PR #86 remains draft and unmerged.
+See the [execution operator report](stage0/DORA_ALPHA_ASR_SMALL_CAMPAIGN_EXECUTION_OPERATOR_STAGE0_V0_1.md)
+and [aggregate evidence](evidence/poc-asr-001/alpha-asr-small-campaign-execution-operator-stage0-v0.1.json).
+
+
 ## ASR 5.6C.2A.1 metadata compatibility remediation — 26 September 2026
 
 `5.6C.2A.1 = PASS / PRIVATE_MANIFEST_OPERATOR_COMPATIBILITY_REMEDIATED`.
