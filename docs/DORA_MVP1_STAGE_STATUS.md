@@ -1,5 +1,42 @@
 # Dora MVP 1 — Stage Status
 
+## Current 11.1C policy/design evidence — 27 September 2026
+
+[Policy/design package](design/DORA_CLOUD_ALPHA_PRIVACY_RETENTION_CONTROL_V0_1.md) and
+[machine-readable evidence](contracts/DORA_CLOUD_ALPHA_PRIVACY_RETENTION_CONTROL_V0_1.json)
+bind the accepted repaired baseline `5015e1cd7db7c37315dba41503f6962e3db82408`.
+
+**11.1C = PARTIAL / DESIGN_PACKAGE_COMPLETE_WITH_BLOCKING_APPROVAL_AND_POLICY_DECISIONS.**
+Data-flow inventory, RU/EN unavailable-state disclosure, 56 artifact/holder lifecycle cells,
+installation/credential/key-custody and consent/deletion-ledger proposals, and four RDY risk
+dispositions exist. They supply no qualified Privacy/Legal/Security approval or runtime proof.
+
+| Gate | Before | Current | Exact remaining evidence |
+|---|---|---|---|
+| CLD-ADM-PRIVACY-001 | BLOCKED | BLOCKED | PC-01 qualified actual-scope approval; PC-02 provider/service/location/terms/subprocessor/data-use fact pack |
+| CLD-ADM-RETENTION-001 | PARTIALLY_SATISFIED | PARTIALLY_SATISFIED | RT-01 approved periods/triggers; RT-02 backups/replicas/receipt coverage and suppression horizon |
+| CLD-ADM-CONTROL-001 | OPEN | BLOCKED | SC-01 accepted bounded design/credential parameters/key-custody ADR; SC-02 PRIVACY and RETENTION dependencies |
+
+Existing local retention remains until explicit deletion; automatic retention OFF, numeric catalog
+unavailable. No Cloud TTL, legal entity, region, qualified signature or identity provider invented.
+The user-visible 0.1 notice has no enabled Cloud grant action; actual profile/approval gaps block it.
+New design choices remain proposals pending SC-01; no owner DEC/ADR is silently superseded.
+
+Effective 39-gate counts: **5 SATISFIED / 1 PARTIALLY_SATISFIED / 5 OPEN / 3 BLOCKED /
+25 NOT_RUN**. Only CONTROL changes status relative to repaired 6.2. EVALUATION and PROVIDER
+remain OPEN; ADMISSION remains BLOCKED and is the output of 6.3. All five 6.3 predecessors remain.
+6.1/6.2 remain PASS; SCOPE/GAPS remain SATISFIED. Frozen 6.2C and 6.2 matrix/evidence are unchanged.
+AWS SELECTED_ALPHA_PLATFORM; AWS_TECHNICAL_ADMISSION NOT_RUN; FIRST_REAL_AUDIO_ADMISSION NOT_READY;
+CLOUD_RUNTIME NOT_IMPLEMENTED; CLOUD_ALPHA_ACCEPTANCE NOT_RUN; 6.2D and 6.3 BLOCKED.
+
+**Next task: 11.1C owner/qualified Privacy-Legal-Security review of PC-01/02, RT-01/02,
+SC-01/02 with scope-specific documentary evidence.** This package starts no further task.
+Runtime/device tests NOT_RUN / NOT_REQUIRED; Recovery/Stage5/PR86 unchanged; no implementation,
+campaign, AWS API, real audio or merge. Publication requires one docs-only commit, push, exact
+remote re-fetch and existing Sheet changed-cell readback; final task report supplies the receipt.
+
+Earlier sections below remain historical snapshots, including their former next-step wording.
+
 ## Current Alpha readiness 6.2 — 27 September 2026
 
 [Versioned disposition](stage0/DORA_ALPHA_READINESS_GAP_DISPOSITION_V0_1.md),
