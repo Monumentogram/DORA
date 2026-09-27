@@ -1,5 +1,24 @@
 # Dora MVP 1 — Product Decisions
 
+## Current first-Alpha owner scope overlay — 27 September 2026
+
+APPROVED_BY_PROJECT_OWNER for first internal Alpha only. The
+[versioned scope](product/DORA_ALPHA_SCOPE_V0_1.md) and
+[AWS owner decision](stage0/DORA_AWS_SELECTED_FOR_ALPHA_OWNER_DECISION_V0_1.md) record the explicit instruction;
+[ADR-0010](adr/ADR-0010-first-alpha-scope-and-aws-platform.md) records the architecture/roadmap amendment.
+AWS = SELECTED_ALPHA_PLATFORM; AWS_TECHNICAL_ADMISSION = NOT_RUN.
+Cloud ASR is required, Local installation optional, Cloud-only supported; approved original-audio,
+consent, immutable-version and user-edit contracts remain unchanged. All 14 Cloud exits remain.
+First-Alpha speaker/protocol/decision/task/summary/LLM/embedding capabilities are
+explicitly deferred, preserving broader MVP requirements and roadmap 13–19. Stage 18 supplies
+required Alpha Cloud services before Stage 12. Support is bounded to POCO M5 / Android 14 API 34 /
+arm64-v8a / RU and EN; no mixed-language, all-device or production claim.
+This scope overlay does not change the ordered DEC-001–DEC-048 registry or any historical approval;
+DEC-010/011/012 privacy/region/retention and later admission gates remain unresolved.
+6.1 docs closure is conditional on publication and Sheet readback as recorded in the scope.
+6.3 stays BLOCKED; first real audio NOT_READY; runtime NOT_IMPLEMENTED; acceptance NOT_RUN.
+
+
 Статус документа: единый реестр решений владельца продукта\
 Дата: 19 августа 2026 года\
 Последнее изменение: `DEC-048` records the 2026-09-06 narrow REC-I3 proven-VALID-rollback correction under the Development Governor delegation; its implementation mapping remains disabled pending independent CLEAN review, while the exact v0.8 4/6/20/4 boundary, schema v4, durable semantics, readiness blockers, Recovery execution, PASS/READY and production admission remain unchanged\

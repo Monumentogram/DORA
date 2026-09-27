@@ -1,5 +1,48 @@
 # Dora MVP 1 — Executable Backlog
 
+## First Alpha scope 6.1 and AWS owner selection — 27 September 2026
+
+[Scope MD](product/DORA_ALPHA_SCOPE_V0_1.md), [scope JSON](contracts/DORA_ALPHA_SCOPE_V0_1.json),
+[owner decision](stage0/DORA_AWS_SELECTED_FOR_ALPHA_OWNER_DECISION_V0_1.md), [ADR-0010](adr/ADR-0010-first-alpha-scope-and-aws-platform.md) and
+[current gate evidence](evidence/alpha-scope-6.1-closeout-v0.1.json) are the current prospective authority.
+
+`6.1 = PASS / ALPHA_SCOPE_AND_SUPPORTED_ENVIRONMENT_FROZEN` and
+`CLD-ADM-SCOPE-001 = SATISFIED` (specification evidence only). Publication closure requires
+this atomic docs commit to be pushed, exact remote HEAD confirmed and the existing Alpha Sheet
+updated/read back; the final task report and Sheet are the exact-commit closure receipt.
+
+`AWS = SELECTED_ALPHA_PLATFORM`: owner-approved one-platform Alpha selection after
+`18.1A = PASS / MARKET_AND_PRICING_DATASET_READY` and
+`18.1B = PASS / TCO_AND_ALPHA_PROVIDER_ECONOMICS_READY` (owner-confirmed independent review;
+live Sheet evidence is referenced in the owner record). Some multi-provider choices have lower
+raw cash TCO; AWS is not claimed cheapest overall. Provider-neutral ASR/diarization/LLM/embeddings
+and practical storage/queue/job boundaries remain required; AWS-specific types stop at adapters.
+
+IN: user-started foreground microphone recording with Pause/Resume/Stop, durable original audio,
+accepted bounded Recovery and VAD/chunk contracts, RU/EN Cloud ASR, offline recording, consent,
+transcript/version/provenance, timestamps only in proven scope, edits, original-audio reprocessing,
+local history/lexical search, explicit active-version export, deletion/privacy and Cloud safety controls.
+OPTIONAL: exact bounded Stage 5 Local candidate; no forced Local install for Cloud-only.
+DEFERRED: speaker/diarization flows, protocol, decisions, tasks, summaries, LLM, embeddings/semantic
+search, voice biometrics, connectors, team sync, billing and public release. Stages 13–19 remain;
+Stage 18 Cloud services/operations are necessary before Stage 12 Alpha acceptance.
+Support: POCO M5 / Android 14 API 34 / arm64-v8a / RU and EN only. Mixed RU/EN is not guaranteed;
+minSdk 28 is compatibility only; Stage 5 timestamps NOT_EVALUABLE and actual 16KiB runtime NOT_RUN.
+
+`AWS_TECHNICAL_ADMISSION = NOT_RUN`; `FIRST_REAL_AUDIO_ADMISSION = NOT_READY`;
+`CLOUD_RUNTIME = NOT_IMPLEMENTED`; `CLOUD_ALPHA_ACCEPTANCE = NOT_RUN`.
+6.2D remains BLOCKED / technical admission NOT_RUN; exact AWS service/configuration/model/region
+remain unadmitted. 11.1C remains the privacy/retention/control policy-design prerequisite.
+6.3 remains BLOCKED by GAPS, PRIVACY, RETENTION, CONTROL, EVALUATION and PROVIDER (all
+`CLD-ADM-…-001`); ADMISSION is its own output. Effective gate counts: 4 SATISFIED, 1 PARTIAL,
+7 OPEN, 2 BLOCKED, 25 NOT_RUN. Only SCOPE changes; frozen 6.2C and historical evidence remain intact.
+
+**Next task: 6.2 — close remaining Alpha readiness/gap disposition.** Not executed here.
+Stage6/Group B stay in progress; no implementation, real Cloud audio, new campaign, Recovery,
+main change, PR #86 change or merge. Earlier dated entries below are historical snapshots and
+retain their original next-step/provider wording; the current overlay supersedes only prospective status.
+
+
 ## Alpha Cloud admission gates 6.2C — 27 September 2026
 
 [Human contract](contracts/DORA_CLOUD_ALPHA_ADMISSION_GATES_V0_1.md) and
