@@ -10,8 +10,8 @@
   "decision_md": "docs/stage0/DORA_ALPHA_READINESS_GAP_DISPOSITION_V0_1.md",
   "decision_md_sha256": "bb5d14f4fbd563f0794df5f322c20ce754e3d87a730060323950a5ec5af8356b",
   "previous_effective_overlay": "docs/evidence/alpha-scope-6.1-closeout-v0.1.json",
-  "previous_effective_overlay_sha256": "3a5443db26b1ab3c0cc20f86b0b864b470039c548a6969dd79c967a31a231db3",
-  "frozen_gate_contract_sha256": "3f30a50696897395a5940c4258a0c59bd14388579ed5cfe399000680be49974e",
+  "previous_effective_overlay_sha256": "8bc8b2653712189381b84763b48e06d45216184f2d948116292a63930d54f273",
+  "frozen_gate_contract_sha256": "3a03cffa43a0f2743da54b0d47f050f4ac06a260f8e63b66ef60869107a8e350",
   "gate_overrides": [
     {
       "gate_id": "CLD-ADM-GAPS-001",
