@@ -1,5 +1,19 @@
 # Dora MVP 1 — Stage Status
 
+## Alpha Cloud execution boundary 6.1C — 27 September 2026
+
+Owner-approved architecture: `6.1C = DORA_CONTROLLED_BACKEND_SELECTED`, recorded in
+[ADR-0009](adr/ADR-0009-alpha-cloud-execution-boundary.md). DORA backend is the mandatory
+Alpha Cloud/file-ASR control plane; original audio passes through authorized DORA-controlled
+storage and a replaceable `CloudAsrProvider`. Provider/model remain NOT SELECTED;
+Cloud runtime/backend remain NOT IMPLEMENTED and runtime acceptance NOT_RUN.
+
+Closure result `PASS / DORA_CONTROLLED_BACKEND_SELECTED` requires this commit to be pushed
+and the existing Alpha Sheet updated/read back; independent verification remains required.
+The immediate next architecture gate is `6.2C — Cloud readiness / admission gates` (PLANNED).
+7.2C, 7.2E, 9.2C and 18.1C remain NOT STARTED; 11.1C/CLOUD-02 and runtime gates remain open.
+The three approved ASR contracts, Recovery/PR #86 and all historical evidence are unchanged.
+
 ## ASR Stage5 terminal closeout 5.6D.3 — 27 September2026
 
 Stage5 `PASS / BOUNDED_ALPHA_LOCAL_ASR_CANDIDATE_ADMITTED`; POC-ASR-001 `PASS / BOUNDED_ALPHA_ONLY`.

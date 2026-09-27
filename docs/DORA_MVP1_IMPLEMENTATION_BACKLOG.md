@@ -1,5 +1,25 @@
 # Dora MVP 1 — Executable Backlog
 
+## Alpha Cloud execution boundary 6.1C — 27 September 2026
+
+[ADR-0009](adr/ADR-0009-alpha-cloud-execution-boundary.md) records the owner-approved
+`DORA_CONTROLLED_BACKEND_SELECTED` decision. Boundary selection no longer blocks planning;
+commit/push and existing Sheet update/readback are required for stage closure, subject to
+independent verification. This selects no provider/model and admits no Cloud implementation.
+
+| Alpha roadmap item | Dependency / next action | Status |
+|---|---|---|
+| 6.2C | Define Cloud readiness/admission gates against accepted ADR-0009 and 6.1A/B; retain bounded Stage 5 limitations. | PLANNED |
+| 7.2C | After 6.3, define the server-side CloudAsrProvider port and adapter contract under ADR-0009 and 6.1B. | NOT STARTED |
+| 7.2E | After 6.3 and BE-AUTH-001, define DORA identity/ownership/consent enforcement under ADR-0009; local core stays account-free. | NOT STARTED |
+| 9.2C | After 7.2C–E, 8.4C, 18.1C and 11.1C, implement authorized original-audio upload to DORA-controlled storage under ADR-0009. | NOT STARTED |
+| 18.1C | After readiness/admission, privacy/auth/retention gates and separate provider admission, implement DORA backend/storage/worker and provider adapter under ADR-0009. | NOT STARTED |
+
+Resolve only CLOUD-01 boundary selection with published evidence; preserve its history.
+11.1C/CLOUD-02 and 12.1C/12.4C runtime acceptance remain unresolved. Immediate next gate:
+`6.2C — Cloud readiness / admission gates`; it is not started here. Historical entries below
+remain unchanged; Cloud runtime is NOT IMPLEMENTED.
+
 ## ASR Stage5 terminal closeout 5.6D.3 — 27 September2026
 
 Stage5 `PASS / BOUNDED_ALPHA_LOCAL_ASR_CANDIDATE_ADMITTED`; POC-ASR-001 `PASS / BOUNDED_ALPHA_ONLY`.
