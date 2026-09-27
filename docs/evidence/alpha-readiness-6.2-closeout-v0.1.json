@@ -1,0 +1,893 @@
+{
+  "schema_version": "1.0",
+  "assessment_date": "2026-09-27",
+  "baseline_commit": "373da3a4c73a576c6cf5ae196def41d54fbe81b8",
+  "branch": "chat/alpha-asr-runner-scope",
+  "initial_remote_head": "373da3a4c73a576c6cf5ae196def41d54fbe81b8",
+  "initial_working_tree": "CLEAN",
+  "decision_contract": "docs/contracts/DORA_ALPHA_READINESS_GAP_DISPOSITION_V0_1.json",
+  "decision_contract_sha256": "a3c36d48877fa0e8e385392da3e6e2c19fe49ff99c1ca45535dc225baa391149",
+  "decision_md": "docs/stage0/DORA_ALPHA_READINESS_GAP_DISPOSITION_V0_1.md",
+  "decision_md_sha256": "bb5d14f4fbd563f0794df5f322c20ce754e3d87a730060323950a5ec5af8356b",
+  "previous_effective_overlay": "docs/evidence/alpha-scope-6.1-closeout-v0.1.json",
+  "previous_effective_overlay_sha256": "3a5443db26b1ab3c0cc20f86b0b864b470039c548a6969dd79c967a31a231db3",
+  "frozen_gate_contract_sha256": "3f30a50696897395a5940c4258a0c59bd14388579ed5cfe399000680be49974e",
+  "gate_overrides": [
+    {
+      "gate_id": "CLD-ADM-GAPS-001",
+      "previous_status": "OPEN",
+      "current_status": "SATISFIED",
+      "blocking": false,
+      "dependencies": [
+        "CLD-ADM-SCOPE-001"
+      ],
+      "evidence": [
+        "docs/stage0/DORA_ALPHA_READINESS_GAP_DISPOSITION_V0_1.md",
+        "docs/contracts/DORA_ALPHA_READINESS_GAP_DISPOSITION_V0_1.json"
+      ],
+      "criteria_mapping": {
+        "1": "All five readiness domains independently dispositioned; every IN/OPTIONAL capability traced.",
+        "2": "Every unresolved mandatory gap has exact action,pre-code prerequisite,owner and implementation/acceptance deadline; scope limitations are6.1-owned.",
+        "3": "Historical source pins and unchanged-byte checks; accepted Recovery/Stage5 reused; no campaign or waiver."
+      }
+    }
+  ],
+  "effective_gate_statuses": {
+    "CLD-ADM-ARCH-001": "SATISFIED",
+    "CLD-ADM-CONSENT-001": "SATISFIED",
+    "CLD-ADM-DATA-001": "SATISFIED",
+    "CLD-ADM-SCOPE-001": "SATISFIED",
+    "CLD-ADM-GAPS-001": "SATISFIED",
+    "CLD-ADM-PRIVACY-001": "BLOCKED",
+    "CLD-ADM-RETENTION-001": "PARTIALLY_SATISFIED",
+    "CLD-ADM-CONTROL-001": "OPEN",
+    "CLD-ADM-EVALUATION-001": "OPEN",
+    "CLD-ADM-PROVIDER-001": "OPEN",
+    "CLD-ADM-ADMISSION-001": "BLOCKED",
+    "CLD-ADM-API-001": "OPEN",
+    "CLD-ADM-AUTH-001": "NOT_RUN",
+    "CLD-ADM-CONSENT-RUNTIME-001": "NOT_RUN",
+    "CLD-ADM-SECRETS-001": "NOT_RUN",
+    "CLD-ADM-UPLOAD-001": "NOT_RUN",
+    "CLD-ADM-CRYPTO-001": "NOT_RUN",
+    "CLD-ADM-RETENTION-RUNTIME-001": "NOT_RUN",
+    "CLD-ADM-DATA-RUNTIME-001": "NOT_RUN",
+    "CLD-ADM-FAILURE-001": "NOT_RUN",
+    "CLD-ADM-QUEUE-001": "NOT_RUN",
+    "CLD-ADM-BACKGROUND-001": "NOT_RUN",
+    "CLD-ADM-ADAPTER-001": "NOT_RUN",
+    "CLD-ADM-COST-001": "NOT_RUN",
+    "CLD-ADM-OBSERVABILITY-001": "NOT_RUN",
+    "CLD-ADM-SECURITY-001": "NOT_RUN",
+    "CLD-ADM-RESULT-001": "NOT_RUN",
+    "CLD-ADM-MERGE-001": "NOT_RUN",
+    "CLD-ADM-LOCAL-001": "NOT_RUN",
+    "CLD-ADM-OFFLINE-001": "NOT_RUN",
+    "CLD-ADM-DELETE-001": "NOT_RUN",
+    "CLD-ADM-HARNESS-001": "NOT_RUN",
+    "CLD-ADM-UX-001": "NOT_RUN",
+    "CLD-ADM-HISTORY-001": "NOT_RUN",
+    "CLD-ADM-EXPORT-001": "NOT_RUN",
+    "CLD-ADM-OPERATIONS-001": "NOT_RUN",
+    "CLD-ADM-SUPPLY-001": "OPEN",
+    "CLD-ADM-EXIT-001": "NOT_RUN",
+    "CLD-ADM-RELEASE-001": "OPEN"
+  },
+  "effective_status_counts": {
+    "SATISFIED": 5,
+    "BLOCKED": 2,
+    "PARTIALLY_SATISFIED": 1,
+    "OPEN": 6,
+    "NOT_RUN": 25
+  },
+  "all_dispositions": [
+    {
+      "gap_id": "GAP-CAP-01",
+      "capability_ids": [
+        "ALPHA-REC-001"
+      ],
+      "disposition": "REUSE_WITH_LIMITATION",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Reuse now at 6.2; remaining work GAP-CAP-02/03 before affected Stage 8 code/acceptance.",
+      "next_evidence_required": "Carry exact observations and limitations into Stage 8 evidence; do not rerun old PoC."
+    },
+    {
+      "gap_id": "GAP-CAP-02",
+      "capability_ids": [
+        "ALPHA-REC-001",
+        "ALPHA-REC-002",
+        "ALPHA-REC-003"
+      ],
+      "disposition": "REQUIRED_BEFORE_IMPLEMENTATION",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before 8.1 format/writer integration and before 8.3 capture controls.",
+      "next_evidence_required": "Record compatible format/reader/writer, pause/resume intervals (RDY-004), marker applicability/contract if exposed (RDY-003), notification command idempotency (RDY-022), finalize ownership (RDY-023), storage budgets, calibrated capture-stop versus finalize timestamps. Before 8.6 freeze valid-state repetitions and sample-gap tolerance; unresolved Proposed predicate stays non-passing."
+    },
+    {
+      "gap_id": "GAP-CAP-03",
+      "capability_ids": [
+        "ALPHA-REC-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "During 8.6 acceptance; must pass before 12.1/12.4 Alpha acceptance.",
+      "next_evidence_required": "Exact build on POCO M5 Android14/API34 arm64-v8a, firmware/power/radio/thermal states pinned; dedicated uninterrupted 3600-s screen-off slice with no charging/calls; valid-state Start/Stop >=99.5% in prospectively frozen suite, zero whole-session loss/corruption/unexplained dropped intervals, visible notification, WAV/sample/hash/finalize and deletion verification. Test pause/resume, route/audio conflicts, mic revoke, restricted battery and user/OS stop; never auto-restart mic. Preserve every invalid attempt."
+    },
+    {
+      "gap_id": "GAP-REC-01",
+      "capability_ids": [
+        "ALPHA-REC-002"
+      ],
+      "disposition": "REUSE_ACCEPTED_EVIDENCE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Reuse at 6.2 and carry exact source/APK boundary into 8.1/8.5.",
+      "next_evidence_required": "Use accepted source 79d930d73ce7836c3cf5bec10be85f800936e829, APK SHA256 9dd8f1dfd05ad4404e9c52ad5e7b11b575e6ba03bcba87a176bd953ddc649a7c, document commit b951bc454d550e33669ebf4f276a4b09177a99ca; preserve original negatives and K12 reassessment lineage."
+    },
+    {
+      "gap_id": "GAP-REC-02",
+      "capability_ids": [
+        "ALPHA-REC-001",
+        "ALPHA-REC-002",
+        "ALPHA-OFFLINE-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Integration contract before 8.1; affected product fault/replay acceptance at 8.5, before 8.6.",
+      "next_evidence_required": "Validate exact integration diff and supported faults: committed prefix/authentication, replay/idempotency, key-loss/quarantine, crash during finalize, no silent deletion or automatic mic restart. Revalidate changed consumer access including K12-consumer if introduced; do not reopen accepted 0D.6 campaign."
+    },
+    {
+      "gap_id": "GAP-VAD-01",
+      "capability_ids": [
+        "ALPHA-REC-003"
+      ],
+      "disposition": "REUSE_WITH_LIMITATION",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Reuse in 8.4 design; unresolved acoustic/device gates GAP-VAD-02/03.",
+      "next_evidence_required": "Retain host fixtures as design/regression references only; harness 2-s pre-roll/1.5-s overlap is not an admitted acoustic profile."
+    },
+    {
+      "gap_id": "GAP-VAD-02",
+      "capability_ids": [
+        "ALPHA-REC-003"
+      ],
+      "disposition": "REQUIRED_BEFORE_IMPLEMENTATION",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before affected acoustic engine/profile implementation in 8.4.",
+      "next_evidence_required": "Record artifact/hash/provenance/license, thresholds/hysteresis/onset/pre-roll/overlap and realtime budget; approve rights/consent/access/retention and immutable RU/EN quiet/noise/short-pause/continuous-speech fixtures. Bind prospective expected outcomes to 89.5/90/90.5 and resume 89.9 cases. No threshold tuning from acceptance results."
+    },
+    {
+      "gap_id": "GAP-VAD-03",
+      "capability_ids": [
+        "ALPHA-REC-003",
+        "ALPHA-CONSENT-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "8.4/8.4C acceptance and physical confirmation at 8.6; before 12.1/12.4.",
+      "next_evidence_required": "On exact admitted POCO build prove boundary <= +/-0.5 s after silence decision, 100% cancellation on resume before 90 s including 89.9, acoustic onset retained, no false split/merge on frozen noise/short-pause fixtures, fresh cap <=600 s+one frame with 1.5-2.0 s overlap, no unexplained drops/duplicates or missed realtime deadlines; stable logical recording/source identity across chunks, one authorization unit."
+    },
+    {
+      "gap_id": "GAP-SEARCH-01",
+      "capability_ids": [
+        "ALPHA-SEARCH-001",
+        "ALPHA-HISTORY-001"
+      ],
+      "disposition": "REUSE_WITH_LIMITATION",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Reuse for minimal lexical-search design; GAP-SEARCH-02/03 before code/acceptance.",
+      "next_evidence_required": "Use fixture/query/plan lessons; keep FAIL, targeted run, final observations and v5 INCONCLUSIVE visible."
+    },
+    {
+      "gap_id": "GAP-SEARCH-02",
+      "capability_ids": [
+        "ALPHA-SEARCH-001"
+      ],
+      "disposition": "REQUIRED_BEFORE_IMPLEMENTATION",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before10.2 implementation chooses/adopts actual search dependency/schema.",
+      "next_evidence_required": "Review exact pinned components/licenses/security/ABI as applicable; approve active-version/deletion/migration/rebuild schema. Freeze actual-build POCO10k/1M query plan and paired storage/update criteria. Carry OptionB predicates unchanged as candidate baseline; explicit prospective owner decision binds them to Alpha build/device before measurement or records justified replacement criteria. Unresolved predicate blocks acceptance; no benchmark authorized here."
+    },
+    {
+      "gap_id": "GAP-SEARCH-03",
+      "capability_ids": [
+        "ALPHA-SEARCH-001",
+        "ALPHA-HISTORY-001",
+        "ALPHA-EDIT-001",
+        "ALPHA-DELETE-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "10.2 acceptance, then 10.3C integration before 12.1/12.4.",
+      "next_evidence_required": "Run actual Alpha search on synthetic10k conversations/1M segments on pinned POCO: p95<200ms, p99<500ms; correct filters/source, RU/EN lexical/prefix/names/date/special/adversarial queries; zero query injection/crash/stale successful results/mapping loss; add/update/filter/delete, deterministic rebuild and crash/restart reindex. Version switch/concurrent edits/deletion/late callbacks cannot resurrect rejected text. Evaluate paired storage/update overhead under GAP-SEARCH-02 protocol (OptionB numeric values retained in SEARCH_V2); no silent unmeasured gate."
+    },
+    {
+      "gap_id": "GAP-BAT-01",
+      "capability_ids": [
+        "ALPHA-REC-001",
+        "ALPHA-REC-003",
+        "ALPHA-ASR-002"
+      ],
+      "disposition": "REUSE_WITH_LIMITATION",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Reuse comparator semantics in future approved measurement protocol.",
+      "next_evidence_required": "Keep NO_FULL_POC_VERDICT; never treat Capture C charging or Stage 5 short inference telemetry as energy proof."
+    },
+    {
+      "gap_id": "GAP-BAT-02",
+      "capability_ids": [
+        "ALPHA-REC-001",
+        "ALPHA-REC-003",
+        "ALPHA-ASR-002"
+      ],
+      "disposition": "REQUIRED_BEFORE_IMPLEMENTATION",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before implementing/enabling concurrent ML scheduling; measurement protocol frozen before 8.6 energy acceptance.",
+      "next_evidence_required": "Keep heavy ASR serialized/post-record or deferred while recording; approve priority, low-battery/thermal response and capture preservation before scheduler code. Freeze calibrated minimal AudioRecord+FGS comparator, 3600-s slices, >=3 controlled repeats, screen-off/on and Battery Saver applicability, identical power/radio/brightness/temperature, thermal sampling, aggregation, provenance and trace retention. If mWh unavailable, obtain prospective owner-approved alternative; percent-only data cannot silently pass relative energy."
+    },
+    {
+      "gap_id": "GAP-BAT-03",
+      "capability_ids": [
+        "ALPHA-REC-001",
+        "ALPHA-REC-003",
+        "ALPHA-ASR-002"
+      ],
+      "disposition": "REQUIRED_BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Capture/VAD energy/thermal required at 8.6; integrated admitted workload at 12.1 before 12.4 Alpha acceptance.",
+      "next_evidence_required": "On POCO execute prospectively approved3600-s paired capture baseline with>=3 controlled repeats per required slice; capture-only<=1.25x minimal baseline, zero dropped frames and no SEVERE thermal. Measure capture+VAD and actual allowed ML/post-record modes; no invented absolute drain threshold or VAD/ML ratio. Enforce scheduling policy, preserve raw invalid outcomes; absent physical data or unresolved predicate blocks acceptance."
+    },
+    {
+      "gap_id": "GAP-OFF-00",
+      "capability_ids": [
+        "ALPHA-OFFLINE-001"
+      ],
+      "disposition": "REUSE_WITH_LIMITATION",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Reuse as references; ten split rows below carry runtime obligations.",
+      "next_evidence_required": "Use known-answer semantic fixtures without claiming runtime zero calls or closing historical OFF-RDY blockers."
+    },
+    {
+      "gap_id": "GAP-OFF-01",
+      "capability_ids": [
+        "ALPHA-REC-001",
+        "ALPHA-OFFLINE-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "During8.6, then 11.2C before 12.1/12.4",
+      "next_evidence_required": "Fresh install/no Local model/no account/network denied: user Start/Pause/Resume/Stop produces durable original audio; no login/GMS/DNS/remote config dependency or forced model download."
+    },
+    {
+      "gap_id": "GAP-OFF-02",
+      "capability_ids": [
+        "ALPHA-REC-002",
+        "ALPHA-OFFLINE-001",
+        "ALPHA-REPROCESS-001",
+        "ALPHA-DELETE-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "At8.2C/8.5 integration; before affected9.x integration and all first-real-audio gates",
+      "next_evidence_required": "Exact original audio identity/hash survives wait, process death, restart, low/full storage and Cloud failures until explicit deletion; storage exhaustion stops honestly without removing prior audio. Audio-only deletion retains text/edits; absent source blocks reprocess, never substitutes text."
+    },
+    {
+      "gap_id": "GAP-OFF-03",
+      "capability_ids": [
+        "ALPHA-OFFLINE-001",
+        "ALPHA-CONSENT-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "9.2D acceptance before 9.x integration and first real audio",
+      "next_evidence_required": "PENDING/DEFERRED persist across restart and policy change; zero audio bytes; ASK once per logical recording, selected batch snapshot only, MANUAL_ONLY no automatic dispatch."
+    },
+    {
+      "gap_id": "GAP-OFF-04",
+      "capability_ids": [
+        "ALPHA-OFFLINE-001",
+        "ALPHA-CONSENT-001",
+        "ALPHA-OPS-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "9.2D durable queue acceptance before 9.x integration; device restart at 11.2C",
+      "next_evidence_required": "Persist action/idempotency/source/authorization/prompt/revocation/deferred state; restart/crash/duplicate enqueue yields at most one accepted effect and no duplicate winning result/billing. Invalid grants remain blocked."
+    },
+    {
+      "gap_id": "GAP-OFF-05",
+      "capability_ids": [
+        "ALPHA-OFFLINE-001",
+        "ALPHA-CONSENT-001",
+        "ALPHA-REPROCESS-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Host reconnect at 9.2D; physical reconnect at 11.2C; before first real audio and 12.1C",
+      "next_evidence_required": "Offline-to-online and interrupted upload/retry recheck current owner/consent at every dispatch/chunk; preserve source/version/idempotency, selected batch; bounded retry and cancel; no auto provider/region switch or duplicate result/cost."
+    },
+    {
+      "gap_id": "GAP-OFF-06",
+      "capability_ids": [
+        "ALPHA-OFFLINE-001",
+        "ALPHA-CONSENT-001",
+        "ALPHA-OPS-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before first real Cloud audio upload and before internal Alpha acceptance",
+      "next_evidence_required": "Deterministic rejection matrix plus calibrated app-attributed runtime denial/egress ledger: PENDING/DEFERRED/MANUAL_ONLY without action, revoked/stale grants, cross-owner, chunk/retry/dispatch emit zero unauthorized audio bytes. Forbidden offline network attempts must be zero; distinguish attempts from transferred bytes."
+    },
+    {
+      "gap_id": "GAP-OFF-07",
+      "capability_ids": [
+        "ALPHA-ASR-002",
+        "ALPHA-OFFLINE-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Exact package admission before 9.1C integration; lifecycle acceptance before 11.2C",
+      "next_evidence_required": "Pin accepted Small q8_0/runtime/hash and permitted distribution; implement no-model/later install/update/removal/integrity/version/size/in-use states; absent/corrupt model never blocks recording or Cloud-only; no evaluation-only redistribution assumption."
+    },
+    {
+      "gap_id": "GAP-OFF-08",
+      "capability_ids": [
+        "ALPHA-ASR-002",
+        "ALPHA-LANG-001",
+        "ALPHA-OFFLINE-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Installed-package9.1C/11.2C acceptance before 12.1C/12.4C",
+      "next_evidence_required": "Only when admitted Local installed: prove RU/EN separately offline without account/network/GMS on POCO, or explicit wait choice; input is original audio, edits survive; no new mixed/timestamp/all-device/actual 16KiB claim."
+    },
+    {
+      "gap_id": "GAP-OFF-09",
+      "capability_ids": [
+        "ALPHA-OFFLINE-001",
+        "ALPHA-ASR-002",
+        "ALPHA-HISTORY-001",
+        "ALPHA-SEARCH-001",
+        "ALPHA-EXPORT-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "No-account dependencies excluded before affected code; runtime independence at 11.2C before 12.1/12.4",
+      "next_evidence_required": "Audit exact merged manifest/dependency graph/APK; calibrated network-denial monitor plus no-account/GMS-unavailable evidence for capture/storage/history/search/edit/copy/export and installed Local. Bind method/environment/probe calibration; a GMS-equipped POCO with no such condition cannot prove no-GMS. If suitable method/environment unavailable, 11.2C/Alpha stays blocked until evidence or explicit versioned owner scope decision. No all-D4-device support inference."
+    },
+    {
+      "gap_id": "GAP-OFF-10",
+      "capability_ids": [
+        "ALPHA-REC-001",
+        "ALPHA-OFFLINE-001",
+        "ALPHA-OPS-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Capture constraints at 8.6; queue/background physical acceptance at 11.2C before 12.1C/12.4C",
+      "next_evidence_required": "Document supported Android scheduler/FGS limits and verify backgrounding, process death, reboot, force-stop, battery restrictions, network constraints and cancellation on POCO. Pending/deferred authorization survives; no automatic mic restart, no endless-service workaround; unavailable execution is a truthful waiting state."
+    },
+    {
+      "gap_id": "GAP-OFF-11",
+      "capability_ids": [
+        "ALPHA-OFFLINE-001",
+        "ALPHA-ASR-002"
+      ],
+      "disposition": "REQUIRED_BEFORE_IMPLEMENTATION",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before11.2C acceptance harness/monitor integration and before any device/network/model campaign.",
+      "next_evidence_required": "Freeze synthetic fixtures/scenarios/fault profile, calibrated app-attributed OS/firewall denial monitor with pre/post canaries and eight call kinds, redacted ledger retention/deletion, exact manifest/dependencies/APK and allowed no-GMS method. Obtain separately scoped implementation and execution authorization. Map every OFF-RDY in the crosswalk; none is silently closed."
+    },
+    {
+      "gap_id": "GAP-ASR-01",
+      "capability_ids": [
+        "ALPHA-ASR-002",
+        "ALPHA-LANG-001",
+        "ALPHA-TIME-001"
+      ],
+      "disposition": "REUSE_ACCEPTED_EVIDENCE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Reuse6.2; package/integration proof atGAP-OFF-07/08.",
+      "next_evidence_required": "Do not rerun Stage 5; do not export its private data or expand its2026-10-25 retention deadline. Evaluation evidence is not redistribution authorization; missing timestamps remain explicit."
+    },
+    {
+      "gap_id": "GAP-FOUND-01",
+      "capability_ids": [
+        "ALPHA-REC-001",
+        "ALPHA-DATA-001"
+      ],
+      "disposition": "REQUIRED_BEFORE_IMPLEMENTATION",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before7.1 internal distribution/identity commitment and each newly introduced dependency integration.",
+      "next_evidence_required": "Versioned internal ID/signing/custody decision, exact dependency/SBOM/license/security/build pins; native ABI/ELF/APK and required runtime checks before integration. Stage 5 actual 16KiB remains NOT_RUN; exclude unsupported environments per6.1, never claim packaging proves runtime. New artifacts get separate admission; public identity/store controls remain19."
+    },
+    {
+      "gap_id": "GAP-ENTRY-PRIVACY",
+      "capability_ids": [
+        "ALPHA-CONSENT-001",
+        "ALPHA-DELETE-001",
+        "ALPHA-ASR-001"
+      ],
+      "disposition": "REQUIRED_BEFORE_IMPLEMENTATION",
+      "blocking": true,
+      "blocks_6_3": true,
+      "exact_deadline_gate": "Before6.3; 11.1C policy/design prerequisite",
+      "next_evidence_required": "Reviewed disclosure text/version, data-flow map and privacy/legal decision; Candidate/provider terms and data-use/subprocessor/location evidence bound to scope, then revalidated for selected provider. All frozen criteria apply unchanged."
+    },
+    {
+      "gap_id": "GAP-ENTRY-RETENTION",
+      "capability_ids": [
+        "ALPHA-DELETE-001",
+        "ALPHA-OFFLINE-001",
+        "ALPHA-DATA-001"
+      ],
+      "disposition": "REQUIRED_BEFORE_IMPLEMENTATION",
+      "blocking": true,
+      "blocks_6_3": true,
+      "exact_deadline_gate": "Before6.3; 11.1C policy/design prerequisite",
+      "next_evidence_required": "Approved per-artifact/per-holder lifecycle matrix; Versioned Cloud period/trigger decision plus backup/replica and receipt semantics. All frozen criteria apply unchanged."
+    },
+    {
+      "gap_id": "GAP-ENTRY-CONTROL",
+      "capability_ids": [
+        "ALPHA-CONSENT-001",
+        "ALPHA-OPS-001"
+      ],
+      "disposition": "REQUIRED_BEFORE_IMPLEMENTATION",
+      "blocking": true,
+      "blocks_6_3": true,
+      "exact_deadline_gate": "Before6.3; 11.1C policy/design prerequisite",
+      "next_evidence_required": "Accepted bounded Alpha security/identity/key-custody design with reviewer and risk dispositions; Approved consent/deletion ledger and ownership model; runtime proof remains separate. All frozen criteria apply unchanged."
+    },
+    {
+      "gap_id": "GAP-ENTRY-EVALUATION",
+      "capability_ids": [
+        "ALPHA-ASR-001",
+        "ALPHA-LANG-001",
+        "ALPHA-TIME-001"
+      ],
+      "disposition": "REQUIRED_BEFORE_IMPLEMENTATION",
+      "blocking": true,
+      "blocks_6_3": true,
+      "exact_deadline_gate": "Before6.3; 6.2D technical admission prerequisite",
+      "next_evidence_required": "Versioned provider comparison protocol and approved thresholds; Dataset provenance/authorization manifest and synthetic test envelope; no benchmarks are run in 6.2C. All frozen criteria apply unchanged."
+    },
+    {
+      "gap_id": "GAP-ENTRY-PROVIDER",
+      "capability_ids": [
+        "ALPHA-ASR-001",
+        "ALPHA-LANG-001",
+        "ALPHA-TIME-001"
+      ],
+      "disposition": "REQUIRED_BEFORE_IMPLEMENTATION",
+      "blocking": true,
+      "blocks_6_3": true,
+      "exact_deadline_gate": "Before6.3; 6.2D technical admission prerequisite",
+      "next_evidence_required": "Reproducible per-language/per-function evaluation and accepted decision; Provider documentation/terms snapshots and cost/privacy/retention/availability review; Replaceability assessment and admitted configuration identity. All frozen criteria apply unchanged."
+    },
+    {
+      "gap_id": "GAP-PRODUCT-DATA",
+      "capability_ids": [
+        "ALPHA-DATA-001",
+        "ALPHA-REPROCESS-001",
+        "ALPHA-TIME-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before9.x integration/first real audio; 12.1C/12.4C",
+      "next_evidence_required": "Immutable original-audio and transcript versions; source/action/attempt/provider/model provenance; metadata/timestamp availability explicit; missing/deleted source refuses reprocessing. Execute every linked frozen gate criterion, required evidence and dependency unchanged."
+    },
+    {
+      "gap_id": "GAP-PRODUCT-EDIT",
+      "capability_ids": [
+        "ALPHA-EDIT-001",
+        "ALPHA-REPROCESS-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "9.4C before first real audio and internal Alpha acceptance",
+      "next_evidence_required": "USER EDIT>CLOUD>LOCAL proposal priority; ambiguous mapping review; activation checks latest edit revision; concurrent/stale results cannot overwrite accepted edits. Execute every linked frozen gate criterion, required evidence and dependency unchanged."
+    },
+    {
+      "gap_id": "GAP-PRODUCT-HISTORY",
+      "capability_ids": [
+        "ALPHA-HISTORY-001",
+        "ALPHA-SEARCH-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "10.3C before 12.1C/12.4C",
+      "next_evidence_required": "Atomic active revision, consistent history/search; restart reindex; deletion and rejected/late results cannot resurrect text. Execute every linked frozen gate criterion, required evidence and dependency unchanged."
+    },
+    {
+      "gap_id": "GAP-PRODUCT-EXPORT",
+      "capability_ids": [
+        "ALPHA-EXPORT-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "11.3C before 12.1C/12.4C",
+      "next_evidence_required": "Explicit revision-consistent active transcript export with edits/provenance, temp-copy rules and independent export authorization. Execute every linked frozen gate criterion, required evidence and dependency unchanged."
+    },
+    {
+      "gap_id": "GAP-PRODUCT-DELETE",
+      "capability_ids": [
+        "ALPHA-DELETE-001",
+        "ALPHA-DATA-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before first real audio; 11.1C runtime before 12.1C/12.4C",
+      "next_evidence_required": "Implement approved lifecycle/key/receipt controls; local success is not remote deletion; tombstones survive late callbacks/restore; audio-only preserves text. Execute every linked frozen gate criterion, required evidence and dependency unchanged."
+    },
+    {
+      "gap_id": "GAP-PRODUCT-OPS",
+      "capability_ids": [
+        "ALPHA-OPS-001",
+        "ALPHA-ASR-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Implementation contracts before 9.2C integration; all applicable frozen first-audio gates before real audio; 12.1C/12.4C",
+      "next_evidence_required": "Exact backend/auth/upload/provider boundaries, replaceability, quotas/cost, bounded retries, content-free telemetry, stop/restore/change-invalidation and supply provenance. Execute every linked frozen gate criterion, required evidence and dependency unchanged."
+    },
+    {
+      "gap_id": "GAP-PRODUCT-UX",
+      "capability_ids": [
+        "ALPHA-CONSENT-001",
+        "ALPHA-REC-001",
+        "ALPHA-ASR-002"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Approved design/strings before affected UI code; UX runtime before first real audio and 12.1C/12.4C",
+      "next_evidence_required": "Honest waiting/model/source/permission/error states; no accidental opt-in; RU/EN accessible critical flows and scope comprehension. RDY-015/019/024/025/027 require bounded UI decisions/fixtures; do not silently import broad custom UI ambitions. Execute every linked frozen gate criterion, required evidence and dependency unchanged."
+    },
+    {
+      "gap_id": "GAP-PRODUCT-HARNESS",
+      "capability_ids": [
+        "ALPHA-ASR-001",
+        "ALPHA-OFFLINE-001",
+        "ALPHA-OPS-001"
+      ],
+      "disposition": "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE",
+      "blocking": true,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Harness contract before affected integration; first-audio prerequisites and 12.1C/12.4C exact-build acceptance",
+      "next_evidence_required": "Reproducible network/clock/provider/consent/fault fixtures, per-case critical suite, no skip/retry-green, all 14 Cloud exits and applicable physical evidence. Failure preserves audio, Local result, active text and edits. Execute every linked frozen gate criterion, required evidence and dependency unchanged."
+    },
+    {
+      "gap_id": "GAP-SCOPE-DIAR-001",
+      "capability_ids": [
+        "ALPHA-DIAR-001"
+      ],
+      "disposition": "DEFERRED_BY_ALPHA_SCOPE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before any scope expansion/release in the linked future roadmap lane; versioned owner decision required.",
+      "next_evidence_required": "Reopen affected evidence/dependencies prospectively only if owner changes6.1 scope; do not implement or benchmark this capability in6.2."
+    },
+    {
+      "gap_id": "GAP-SCOPE-PROTOCOL-001",
+      "capability_ids": [
+        "ALPHA-PROTOCOL-001"
+      ],
+      "disposition": "DEFERRED_BY_ALPHA_SCOPE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before any scope expansion/release in the linked future roadmap lane; versioned owner decision required.",
+      "next_evidence_required": "Reopen affected evidence/dependencies prospectively only if owner changes6.1 scope; do not implement or benchmark this capability in6.2."
+    },
+    {
+      "gap_id": "GAP-SCOPE-DECISION-001",
+      "capability_ids": [
+        "ALPHA-DECISION-001"
+      ],
+      "disposition": "DEFERRED_BY_ALPHA_SCOPE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before any scope expansion/release in the linked future roadmap lane; versioned owner decision required.",
+      "next_evidence_required": "Reopen affected evidence/dependencies prospectively only if owner changes6.1 scope; do not implement or benchmark this capability in6.2."
+    },
+    {
+      "gap_id": "GAP-SCOPE-TASK-001",
+      "capability_ids": [
+        "ALPHA-TASK-001"
+      ],
+      "disposition": "DEFERRED_BY_ALPHA_SCOPE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before any scope expansion/release in the linked future roadmap lane; versioned owner decision required.",
+      "next_evidence_required": "Reopen affected evidence/dependencies prospectively only if owner changes6.1 scope; do not implement or benchmark this capability in6.2."
+    },
+    {
+      "gap_id": "GAP-SCOPE-SUMMARY-001",
+      "capability_ids": [
+        "ALPHA-SUMMARY-001"
+      ],
+      "disposition": "DEFERRED_BY_ALPHA_SCOPE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before any scope expansion/release in the linked future roadmap lane; versioned owner decision required.",
+      "next_evidence_required": "Reopen affected evidence/dependencies prospectively only if owner changes6.1 scope; do not implement or benchmark this capability in6.2."
+    },
+    {
+      "gap_id": "GAP-SCOPE-LLM-001",
+      "capability_ids": [
+        "ALPHA-LLM-001"
+      ],
+      "disposition": "DEFERRED_BY_ALPHA_SCOPE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before any scope expansion/release in the linked future roadmap lane; versioned owner decision required.",
+      "next_evidence_required": "Reopen affected evidence/dependencies prospectively only if owner changes6.1 scope; do not implement or benchmark this capability in6.2."
+    },
+    {
+      "gap_id": "GAP-SCOPE-EMBED-001",
+      "capability_ids": [
+        "ALPHA-EMBED-001"
+      ],
+      "disposition": "DEFERRED_BY_ALPHA_SCOPE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before any scope expansion/release in the linked future roadmap lane; versioned owner decision required.",
+      "next_evidence_required": "Reopen affected evidence/dependencies prospectively only if owner changes6.1 scope; do not implement or benchmark this capability in6.2."
+    },
+    {
+      "gap_id": "GAP-SCOPE-BIOMETRIC-001",
+      "capability_ids": [
+        "ALPHA-BIOMETRIC-001"
+      ],
+      "disposition": "DEFERRED_BY_ALPHA_SCOPE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before any scope expansion/release in the linked future roadmap lane; versioned owner decision required.",
+      "next_evidence_required": "Reopen affected evidence/dependencies prospectively only if owner changes6.1 scope; do not implement or benchmark this capability in6.2."
+    },
+    {
+      "gap_id": "GAP-SCOPE-CONNECT-001",
+      "capability_ids": [
+        "ALPHA-CONNECT-001"
+      ],
+      "disposition": "DEFERRED_BY_ALPHA_SCOPE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before any scope expansion/release in the linked future roadmap lane; versioned owner decision required.",
+      "next_evidence_required": "Reopen affected evidence/dependencies prospectively only if owner changes6.1 scope; do not implement or benchmark this capability in6.2."
+    },
+    {
+      "gap_id": "GAP-SCOPE-TEAM-001",
+      "capability_ids": [
+        "ALPHA-TEAM-001"
+      ],
+      "disposition": "DEFERRED_BY_ALPHA_SCOPE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before any scope expansion/release in the linked future roadmap lane; versioned owner decision required.",
+      "next_evidence_required": "Reopen affected evidence/dependencies prospectively only if owner changes6.1 scope; do not implement or benchmark this capability in6.2."
+    },
+    {
+      "gap_id": "GAP-SCOPE-BILLING-001",
+      "capability_ids": [
+        "ALPHA-BILLING-001"
+      ],
+      "disposition": "DEFERRED_BY_ALPHA_SCOPE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before any scope expansion/release in the linked future roadmap lane; versioned owner decision required.",
+      "next_evidence_required": "Reopen affected evidence/dependencies prospectively only if owner changes6.1 scope; do not implement or benchmark this capability in6.2."
+    },
+    {
+      "gap_id": "GAP-SCOPE-RELEASE-001",
+      "capability_ids": [
+        "ALPHA-RELEASE-001"
+      ],
+      "disposition": "DEFERRED_BY_ALPHA_SCOPE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before any scope expansion/release in the linked future roadmap lane; versioned owner decision required.",
+      "next_evidence_required": "Reopen affected evidence/dependencies prospectively only if owner changes6.1 scope; do not implement or benchmark this capability in6.2."
+    },
+    {
+      "gap_id": "GAP-SCOPE-MIXED-001",
+      "capability_ids": [
+        "ALPHA-MIXED-001"
+      ],
+      "disposition": "NOT_APPLICABLE_BY_ALPHA_SCOPE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before any scope expansion/release in the linked future roadmap lane; versioned owner decision required.",
+      "next_evidence_required": "Reopen affected evidence/dependencies prospectively only if owner changes6.1 scope; do not implement or benchmark this capability in6.2."
+    },
+    {
+      "gap_id": "GAP-SCOPE-DEVICE-001",
+      "capability_ids": [
+        "ALPHA-DEVICE-001"
+      ],
+      "disposition": "NOT_APPLICABLE_BY_ALPHA_SCOPE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before any scope expansion/release in the linked future roadmap lane; versioned owner decision required.",
+      "next_evidence_required": "Reopen affected evidence/dependencies prospectively only if owner changes6.1 scope; do not implement or benchmark this capability in6.2."
+    },
+    {
+      "gap_id": "GAP-SCOPE-INPUT-001",
+      "capability_ids": [
+        "ALPHA-INPUT-001"
+      ],
+      "disposition": "NOT_APPLICABLE_BY_ALPHA_SCOPE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before any scope expansion/release in the linked future roadmap lane; versioned owner decision required.",
+      "next_evidence_required": "Reopen affected evidence/dependencies prospectively only if owner changes6.1 scope; do not implement or benchmark this capability in6.2."
+    },
+    {
+      "gap_id": "GAP-SCOPE-MULTI-001",
+      "capability_ids": [
+        "ALPHA-MULTI-001"
+      ],
+      "disposition": "NOT_APPLICABLE_BY_ALPHA_SCOPE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before any scope expansion/release in the linked future roadmap lane; versioned owner decision required.",
+      "next_evidence_required": "Reopen affected evidence/dependencies prospectively only if owner changes6.1 scope; do not implement or benchmark this capability in6.2."
+    },
+    {
+      "gap_id": "GAP-SCOPE-REALTIME-001",
+      "capability_ids": [
+        "ALPHA-REALTIME-001"
+      ],
+      "disposition": "NOT_APPLICABLE_BY_ALPHA_SCOPE",
+      "blocking": false,
+      "blocks_6_3": false,
+      "exact_deadline_gate": "Before any scope expansion/release in the linked future roadmap lane; versioned owner decision required.",
+      "next_evidence_required": "Reopen affected evidence/dependencies prospectively only if owner changes6.1 scope; do not implement or benchmark this capability in6.2."
+    }
+  ],
+  "disposition_counts": {
+    "DEFERRED_BY_ALPHA_SCOPE": 12,
+    "NOT_APPLICABLE_BY_ALPHA_SCOPE": 5,
+    "REQUIRED_BEFORE_IMPLEMENTATION": 11,
+    "REQUIRED_BEFORE_INTERNAL_ALPHA_ACCEPTANCE": 1,
+    "REQUIRED_DURING_IMPLEMENTATION_ACCEPTANCE": 22,
+    "REUSE_ACCEPTED_EVIDENCE": 2,
+    "REUSE_WITH_LIMITATION": 5
+  },
+  "remaining_6_3_predecessor_blockers": [
+    "CLD-ADM-PRIVACY-001",
+    "CLD-ADM-RETENTION-001",
+    "CLD-ADM-CONTROL-001",
+    "CLD-ADM-EVALUATION-001",
+    "CLD-ADM-PROVIDER-001"
+  ],
+  "remaining_downstream_blocking_gaps": [
+    "GAP-CAP-02",
+    "GAP-CAP-03",
+    "GAP-REC-02",
+    "GAP-VAD-02",
+    "GAP-VAD-03",
+    "GAP-SEARCH-02",
+    "GAP-SEARCH-03",
+    "GAP-BAT-02",
+    "GAP-BAT-03",
+    "GAP-OFF-01",
+    "GAP-OFF-02",
+    "GAP-OFF-03",
+    "GAP-OFF-04",
+    "GAP-OFF-05",
+    "GAP-OFF-06",
+    "GAP-OFF-07",
+    "GAP-OFF-08",
+    "GAP-OFF-09",
+    "GAP-OFF-10",
+    "GAP-OFF-11",
+    "GAP-FOUND-01",
+    "GAP-PRODUCT-DATA",
+    "GAP-PRODUCT-EDIT",
+    "GAP-PRODUCT-HISTORY",
+    "GAP-PRODUCT-EXPORT",
+    "GAP-PRODUCT-DELETE",
+    "GAP-PRODUCT-OPS",
+    "GAP-PRODUCT-UX",
+    "GAP-PRODUCT-HARNESS"
+  ],
+  "historical_poc_verdicts_unchanged": true,
+  "recovery_unchanged": true,
+  "stage5_unchanged": true,
+  "no_runtime_or_device_campaign_ran": true,
+  "android_or_runtime_sources_changed": false,
+  "boundary_statuses": {
+    "6.1": "PASS / ALPHA_SCOPE_AND_SUPPORTED_ENVIRONMENT_FROZEN",
+    "AWS": "SELECTED_ALPHA_PLATFORM",
+    "AWS_TECHNICAL_ADMISSION": "NOT_RUN",
+    "FIRST_REAL_AUDIO_ADMISSION": "NOT_READY",
+    "CLOUD_RUNTIME": "NOT_IMPLEMENTED",
+    "CLOUD_ALPHA_ACCEPTANCE": "NOT_RUN",
+    "CLOUD_IMPLEMENTATION_ADMISSION": "NOT_READY",
+    "CLD-ADM-SCOPE-001": "SATISFIED",
+    "6.2": "PASS / ALPHA_READINESS_GAPS_DISPOSITIONED",
+    "6.2D": "BLOCKED / TECHNICAL_ADMISSION_NOT_RUN",
+    "6.3": "BLOCKED",
+    "18.1A": "PASS / MARKET_AND_PRICING_DATASET_READY",
+    "18.1B": "PASS / TCO_AND_ALPHA_PROVIDER_ECONOMICS_READY",
+    "CLD-ADM-GAPS-001": "SATISFIED"
+  },
+  "closure": {
+    "result_if_publication_and_readback_succeed": "PASS / ALPHA_READINESS_GAPS_DISPOSITIONED",
+    "required": [
+      "docs_validation_pass",
+      "atomic_docs_only_commit",
+      "push",
+      "exact_remote_head",
+      "sheet_update",
+      "all_changed_cells_readback"
+    ]
+  },
+  "post_publication_receipt": "Final task report and existing Google Sheet bind the exact containing commit,parent,remote HEAD and all changed-cell readback; these external actions are not pre-certified here.",
+  "next_step": "11.1C policy/design — PRIVACY/RETENTION/CONTROL prerequisites; NOT_STARTED_BY_THIS_TASK",
+  "validation": {
+    "status": "PASS",
+    "docs_checks_passed": 17,
+    "checks": [
+      "strict JSON; exact baseline and branch",
+      "unique gap IDs; one valid disposition and complete exact gate/action/owner per row",
+      "all 34 capabilities traced; all IN/OPTIONAL have explicit remaining implementation/acceptance obligations",
+      "five readiness domains; ten offline behaviors; ten OFF-RDY and thirty RDY crosswalks",
+      "MD/JSON complete row and normative parity; frozen GAPS criteria verbatim",
+      "every authoritative source SHA256 bound to baseline; accepted private Recovery index/closeout pins verified read-only",
+      "only effective GAPS gate changes; exact 39-gate counts 5/1/6/2/25",
+      "linked Cloud criteria/dependencies/required-before unchanged; all14 exits preserved",
+      "five exact 6.3 predecessor blockers; runtime acceptance not promoted to pre-code blocker",
+      "Cloud gate,gap,capability and milestone dependency graphs acyclic",
+      "exact six docs-only paths; no runtime,Android,Recovery or Stage5 source/evidence changed",
+      "all three roadmap/readiness edits additive; complete historical bytes preserved",
+      "closeout contains every disposition and exact remaining downstream blockers",
+      "closeout MD/JSON SHA256 binding",
+      "all new local Markdown links resolve",
+      "unchanged admission boundaries; no execution claims; publication/readback explicitly conditional",
+      "git diff whitespace check"
+    ],
+    "stage00_artifact_checks": "PASS / 7_OF_7",
+    "row_count": 58,
+    "capability_count": 34,
+    "in_optional_capability_count": 17,
+    "downstream_blocking_gaps": 29,
+    "runtime_device_tests": "NOT_RUN / NOT_REQUIRED",
+    "ci": "NOT_RUN_IN_THIS_DOCS_TASK",
+    "review": "LOCAL_DOCUMENT_REVIEW; no independent or human approval claimed"
+  }
+}

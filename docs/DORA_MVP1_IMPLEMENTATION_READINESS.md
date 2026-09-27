@@ -1,5 +1,50 @@
 # Dora MVP 1 — Implementation Readiness Review
 
+## Current Alpha readiness 6.2 — 27 September 2026
+
+[Versioned disposition](stage0/DORA_ALPHA_READINESS_GAP_DISPOSITION_V0_1.md),
+[machine matrix](contracts/DORA_ALPHA_READINESS_GAP_DISPOSITION_V0_1.json) and
+[current additive gate evidence](evidence/alpha-readiness-6.2-closeout-v0.1.json)
+supersede only the prospective current state in earlier snapshots below.
+
+`6.1 = PASS / ALPHA_SCOPE_AND_SUPPORTED_ENVIRONMENT_FROZEN` remains accepted.
+`6.2 = PASS / ALPHA_READINESS_GAPS_DISPOSITIONED` and `CLD-ADM-GAPS-001 = SATISFIED`
+close disposition only, conditional on this atomic docs commit being pushed, exact remote HEAD
+confirmed and all changed Sheet cells read back. Final task report and Sheet carry that receipt.
+
+Capture: reuse bounded Samsung observations; clean 60-minute screen-off/POCO evidence required
+at 8.6, with format/lifecycle/measurement decisions before affected code. VAD: reuse host mechanics;
+artifact/profile/governed-corpus admission before 8.4, physical acoustic/realtime proof at 8.4/8.6.
+Search: reuse 10k/1M mechanics/observations; product dependency/schema/protocol admission before
+10.2, actual-build correctness/latency/storage/update and version/deletion acceptance at 10.2/10.3C.
+Battery: comparator only; capture-first scheduling/protocol before affected code, physical
+capture/VAD energy at 8.6 and integrated energy/thermal before 12.1/12.4. Offline is split into
+recording, preservation, deferred state, persistent queue, reconnect, unauthorized upload,
+optional package, installed Local ASR, no-account/no-GMS and OS/background evidence at 8/9/11/12.
+No unresolved item is waived or assigned an unspecified future date; see exact matrix gates.
+
+Recovery remains `0D.6 = ALPHA CLOSED / FULL OPEN`, reused without a rerun; product integration
+is separately gated. Stage 5 remains `PASS / BOUNDED_ALPHA_LOCAL_ASR_CANDIDATE_ADMITTED`,
+optional exact POCO/Small q8_0 scope; timestamp quality NOT_EVALUABLE, actual 16KiB runtime NOT_RUN.
+All historical PoC DONE/INCONCLUSIVE/FAIL/BLOCKED/TODO and frozen 6.2C bytes remain unchanged.
+
+`AWS = SELECTED_ALPHA_PLATFORM`; `AWS_TECHNICAL_ADMISSION = NOT_RUN`;
+`FIRST_REAL_AUDIO_ADMISSION = NOT_READY`; `CLOUD_RUNTIME = NOT_IMPLEMENTED`;
+`CLOUD_ALPHA_ACCEPTANCE = NOT_RUN`; `CLOUD_IMPLEMENTATION_ADMISSION = NOT_READY`.
+`6.2D = BLOCKED`; `6.3 = BLOCKED`. Remaining 6.3 predecessor gates are PRIVACY, RETENTION,
+CONTROL, EVALUATION and PROVIDER (all `CLD-ADM-...-001`); ADMISSION is the output of 6.3.
+Only GAPS changes relative to 6.1: **5 SATISFIED / 1 PARTIALLY_SATISFIED / 6 OPEN /
+2 BLOCKED / 25 NOT_RUN**. All first-audio gates and all 14 Cloud exits remain mandatory.
+
+**Next task: 11.1C policy/design — resolve CLD-ADM-PRIVACY-001, CLD-ADM-RETENTION-001
+and CLD-ADM-CONTROL-001 prerequisites.** Then separately 6.2D and 6.3. Nothing is started here.
+Stage 6 / Group B remain in progress. No runtime/device campaign, Android/runtime source edit,
+main change, PR #86 operation or merge. Runtime/device tests = `NOT_RUN / NOT_REQUIRED`.
+
+Earlier dated sections below are preserved historical snapshots, including their old next-step
+wording. The matrix is the explicit prospective first-Alpha applicability/sequencing overlay;
+it does not pass the broader full-MVP PoCs or authorize implementation before 6.3.
+
 Статус документа: Stage 00 review with active Stage 0 integration/authority reconciliation\
 Дата: 19 августа 2026 года\
 Recovery governance amendment: active protocol v0.6 under Proposed `DEC-044`/historical `OD-14` remains byte- and semantics-stable. PR #38 source-equal protected squash merge added the exact REC-I2A resolved-graph/package/R8 and scoped Product/IP proof plus the reviewed REC-I2B Tink runtime; PR #50 changed only post-squash validator dispatch and restored green exact-main CI without changing runtime/evidence. Novikova Katerina's governance and exact REC-I2B accountable review records remain bounded to their exact targets; the governance disposition remains `APPROVE_FOR_SEPARATE_IMPLEMENTATION_REVIEW`, and no Rambus corporate approval is claimed. `REC-RDY-02=CLOSED_DISTINCT_ACCOUNTABLE_FORMAL_HUMAN_REVIEW`; ten other `REC-RDY` blockers remain open. Excluded JSR-305 terms remain uninterpreted and use/distribution unapproved; REC-I2A/REC-I2B are not dependency or production admission\
