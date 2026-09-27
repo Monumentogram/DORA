@@ -1,5 +1,33 @@
 # Dora MVP 1 — Stage Status
 
+## Alpha Cloud admission gates 6.2C — 27 September 2026
+
+[Human contract](contracts/DORA_CLOUD_ALPHA_ADMISSION_GATES_V0_1.md) and
+[machine matrix](contracts/DORA_CLOUD_ALPHA_ADMISSION_GATES_V0_1.json) freeze the complete gate set.
+`6.2C = PASS / CLOUD_ALPHA_ADMISSION_GATES_FROZEN` is the closure result only after this atomic
+docs commit is pushed, remote HEAD confirmed, and the existing Sheet updated/read back for it.
+Until that external receipt exists, stage closure is pending; contract approval is not runtime admission.
+
+Cloud implementation admission = **NOT READY / BLOCKED BY OPEN ADMISSION GATES**.
+First real Cloud audio admission = **NOT READY**. Cloud Alpha acceptance = **NOT_RUN / NOT READY**.
+Provider/model = **NOT SELECTED**. Cloud runtime = **NOT IMPLEMENTED**; runtime tests = **NOT_RUN**.
+
+6.3 remains BLOCKED. Minimum predecessor blockers (all prefixed `CLD-ADM-`, suffixed `-001`):
+SCOPE (6.1), GAPS (6.2), PRIVACY and RETENTION (11.1C policy), CONTROL (11.1C/BE-AUTH design),
+EVALUATION and PROVIDER (live 6.2D per-function admission). ADMISSION is 6.3's own output.
+Full Alpha runtime tests are subsequent acceptance gates, not prerequisites to writing code.
+Policy/design work in later-numbered ownership lanes precedes 6.3; implementation follows it.
+
+Immediate next task: **6.1 — formal Alpha scope/support decision** (`CLD-ADM-SCOPE-001`), required
+to determine applicable gaps and per-function 6.2D admission. Do not execute it in 6.2C.
+The live Sheet's newly present 6.2D is retained: ASR plus any other AI actually included by 6.1
+needs its own admitted provider/model or explicit local/deferred disposition; no single vendor default.
+CLOUD-01 stays closed for boundary selection; CLOUD-02 stays blocked; CLOUD-03 stays NOT_RUN.
+
+Stage 5 remains PASS / BOUNDED_ALPHA_LOCAL_ASR_CANDIDATE_ADMITTED, exact POCO scope only.
+Recovery, PR #86 and historical evidence are unchanged. Earlier dated sections below are historical
+snapshots; this section supersedes their prospective “6.2C next” planning, not their measurements.
+
 ## Alpha Cloud execution boundary 6.1C — 27 September 2026
 
 Owner-approved architecture: `6.1C = DORA_CONTROLLED_BACKEND_SELECTED`, recorded in

@@ -1,0 +1,1956 @@
+{
+  "schema_version": "1.0",
+  "contract_version": "0.1",
+  "status": "APPROVED FOR ALPHA ARCHITECTURE / ADMISSION",
+  "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957",
+  "human_authority": "docs/contracts/DORA_CLOUD_ALPHA_ADMISSION_GATES_V0_1.md",
+  "assessment_date": "2026-09-27",
+  "closure": {
+    "result_if_all_conditions_succeed": "6.2C = PASS / CLOUD_ALPHA_ADMISSION_GATES_FROZEN",
+    "assertion": "Conditional until publication, remote verification, Sheet update and validated readback; consult the external closure record for this exact commit.",
+    "required": [
+      "complete_and_valid_contract",
+      "docs_only_commit",
+      "push_succeeded",
+      "remote_head_confirmed",
+      "sheet_updated",
+      "sheet_readback_validated",
+      "no_runtime_changes",
+      "no_provider_or_model_selection"
+    ]
+  },
+  "provider": "NOT SELECTED",
+  "model": "NOT SELECTED",
+  "cloud_runtime": "NOT IMPLEMENTED",
+  "cloud_runtime_tests": "NOT_RUN",
+  "implementation_admission": "NOT READY",
+  "first_real_audio_admission": "NOT READY",
+  "cloud_alpha_acceptance": "NOT_RUN / NOT READY",
+  "statuses": [
+    "SATISFIED",
+    "PARTIALLY_SATISFIED",
+    "OPEN",
+    "BLOCKED",
+    "NOT_RUN",
+    "NOT_APPLICABLE"
+  ],
+  "required_before_levels": [
+    "BEFORE_PROVIDER_ADMISSION",
+    "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+    "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+    "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+    "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+    "BEFORE_PUBLIC_RELEASE"
+  ],
+  "gate_sets": {
+    "implementation_entry": [
+      "CLD-ADM-ARCH-001",
+      "CLD-ADM-CONSENT-001",
+      "CLD-ADM-DATA-001",
+      "CLD-ADM-SCOPE-001",
+      "CLD-ADM-GAPS-001",
+      "CLD-ADM-PRIVACY-001",
+      "CLD-ADM-RETENTION-001",
+      "CLD-ADM-CONTROL-001",
+      "CLD-ADM-EVALUATION-001",
+      "CLD-ADM-PROVIDER-001",
+      "CLD-ADM-ADMISSION-001"
+    ],
+    "provider_admission": [
+      "CLD-ADM-ARCH-001",
+      "CLD-ADM-CONSENT-001",
+      "CLD-ADM-SCOPE-001",
+      "CLD-ADM-PRIVACY-001",
+      "CLD-ADM-RETENTION-001",
+      "CLD-ADM-EVALUATION-001",
+      "CLD-ADM-PROVIDER-001"
+    ],
+    "first_real_audio": [
+      "CLD-ADM-ARCH-001",
+      "CLD-ADM-CONSENT-001",
+      "CLD-ADM-DATA-001",
+      "CLD-ADM-PRIVACY-001",
+      "CLD-ADM-RETENTION-001",
+      "CLD-ADM-CONTROL-001",
+      "CLD-ADM-PROVIDER-001",
+      "CLD-ADM-ADMISSION-001",
+      "CLD-ADM-API-001",
+      "CLD-ADM-AUTH-001",
+      "CLD-ADM-CONSENT-RUNTIME-001",
+      "CLD-ADM-SECRETS-001",
+      "CLD-ADM-UPLOAD-001",
+      "CLD-ADM-CRYPTO-001",
+      "CLD-ADM-RETENTION-RUNTIME-001",
+      "CLD-ADM-DATA-RUNTIME-001",
+      "CLD-ADM-FAILURE-001",
+      "CLD-ADM-QUEUE-001",
+      "CLD-ADM-ADAPTER-001",
+      "CLD-ADM-COST-001",
+      "CLD-ADM-OBSERVABILITY-001",
+      "CLD-ADM-SECURITY-001",
+      "CLD-ADM-RESULT-001",
+      "CLD-ADM-MERGE-001",
+      "CLD-ADM-OFFLINE-001",
+      "CLD-ADM-DELETE-001",
+      "CLD-ADM-HARNESS-001",
+      "CLD-ADM-UX-001",
+      "CLD-ADM-OPERATIONS-001",
+      "CLD-ADM-SUPPLY-001"
+    ],
+    "runtime_integration": [
+      "CLD-ADM-ARCH-001",
+      "CLD-ADM-CONSENT-001",
+      "CLD-ADM-DATA-001",
+      "CLD-ADM-CONTROL-001",
+      "CLD-ADM-PROVIDER-001",
+      "CLD-ADM-ADMISSION-001",
+      "CLD-ADM-API-001",
+      "CLD-ADM-AUTH-001",
+      "CLD-ADM-CONSENT-RUNTIME-001",
+      "CLD-ADM-SECRETS-001",
+      "CLD-ADM-UPLOAD-001",
+      "CLD-ADM-CRYPTO-001",
+      "CLD-ADM-RETENTION-RUNTIME-001",
+      "CLD-ADM-DATA-RUNTIME-001",
+      "CLD-ADM-FAILURE-001",
+      "CLD-ADM-QUEUE-001",
+      "CLD-ADM-ADAPTER-001",
+      "CLD-ADM-RESULT-001",
+      "CLD-ADM-DELETE-001",
+      "CLD-ADM-HARNESS-001",
+      "CLD-ADM-SUPPLY-001"
+    ],
+    "internal_alpha": [
+      "CLD-ADM-ARCH-001",
+      "CLD-ADM-CONSENT-001",
+      "CLD-ADM-DATA-001",
+      "CLD-ADM-SCOPE-001",
+      "CLD-ADM-GAPS-001",
+      "CLD-ADM-PRIVACY-001",
+      "CLD-ADM-RETENTION-001",
+      "CLD-ADM-CONTROL-001",
+      "CLD-ADM-EVALUATION-001",
+      "CLD-ADM-PROVIDER-001",
+      "CLD-ADM-ADMISSION-001",
+      "CLD-ADM-API-001",
+      "CLD-ADM-AUTH-001",
+      "CLD-ADM-CONSENT-RUNTIME-001",
+      "CLD-ADM-SECRETS-001",
+      "CLD-ADM-UPLOAD-001",
+      "CLD-ADM-CRYPTO-001",
+      "CLD-ADM-RETENTION-RUNTIME-001",
+      "CLD-ADM-DATA-RUNTIME-001",
+      "CLD-ADM-FAILURE-001",
+      "CLD-ADM-QUEUE-001",
+      "CLD-ADM-BACKGROUND-001",
+      "CLD-ADM-ADAPTER-001",
+      "CLD-ADM-COST-001",
+      "CLD-ADM-OBSERVABILITY-001",
+      "CLD-ADM-SECURITY-001",
+      "CLD-ADM-RESULT-001",
+      "CLD-ADM-MERGE-001",
+      "CLD-ADM-LOCAL-001",
+      "CLD-ADM-OFFLINE-001",
+      "CLD-ADM-DELETE-001",
+      "CLD-ADM-HARNESS-001",
+      "CLD-ADM-UX-001",
+      "CLD-ADM-HISTORY-001",
+      "CLD-ADM-EXPORT-001",
+      "CLD-ADM-OPERATIONS-001",
+      "CLD-ADM-SUPPLY-001",
+      "CLD-ADM-EXIT-001"
+    ],
+    "public_release": [
+      "CLD-ADM-ARCH-001",
+      "CLD-ADM-CONSENT-001",
+      "CLD-ADM-DATA-001",
+      "CLD-ADM-SCOPE-001",
+      "CLD-ADM-GAPS-001",
+      "CLD-ADM-PRIVACY-001",
+      "CLD-ADM-RETENTION-001",
+      "CLD-ADM-CONTROL-001",
+      "CLD-ADM-EVALUATION-001",
+      "CLD-ADM-PROVIDER-001",
+      "CLD-ADM-ADMISSION-001",
+      "CLD-ADM-API-001",
+      "CLD-ADM-AUTH-001",
+      "CLD-ADM-CONSENT-RUNTIME-001",
+      "CLD-ADM-SECRETS-001",
+      "CLD-ADM-UPLOAD-001",
+      "CLD-ADM-CRYPTO-001",
+      "CLD-ADM-RETENTION-RUNTIME-001",
+      "CLD-ADM-DATA-RUNTIME-001",
+      "CLD-ADM-FAILURE-001",
+      "CLD-ADM-QUEUE-001",
+      "CLD-ADM-BACKGROUND-001",
+      "CLD-ADM-ADAPTER-001",
+      "CLD-ADM-COST-001",
+      "CLD-ADM-OBSERVABILITY-001",
+      "CLD-ADM-SECURITY-001",
+      "CLD-ADM-RESULT-001",
+      "CLD-ADM-MERGE-001",
+      "CLD-ADM-LOCAL-001",
+      "CLD-ADM-OFFLINE-001",
+      "CLD-ADM-DELETE-001",
+      "CLD-ADM-HARNESS-001",
+      "CLD-ADM-UX-001",
+      "CLD-ADM-HISTORY-001",
+      "CLD-ADM-EXPORT-001",
+      "CLD-ADM-OPERATIONS-001",
+      "CLD-ADM-SUPPLY-001",
+      "CLD-ADM-EXIT-001",
+      "CLD-ADM-RELEASE-001"
+    ]
+  },
+  "gates": [
+    {
+      "gate_id": "CLD-ADM-ARCH-001",
+      "name": "Architecture authority",
+      "purpose": "Keep the accepted execution and original-audio boundary.",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_PROVIDER_ADMISSION",
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "DORA-controlled backend is mandatory for Alpha file ASR; CloudAsrProvider isolates providers",
+        "Original audio is input; direct Android-to-provider file ASR is not admitted",
+        "Provider/model are NOT SELECTED at this baseline; no runtime admission is inferred"
+      ],
+      "required_evidence": [
+        "Accepted ADR and compatibility review against product/data contracts"
+      ],
+      "dependencies": [],
+      "roadmap_tasks": [
+        "6.1C"
+      ],
+      "owner_domain": "Architecture / Project Owner",
+      "current_status": "SATISFIED",
+      "blocking": false,
+      "blocking_reason": "",
+      "next_action": "Retain this authority; re-review affected gates on a versioned change.",
+      "current_evidence": [
+        {
+          "path": "docs/adr/ADR-0009-alpha-cloud-execution-boundary.md",
+          "section": "Decision; Decision scope; Audio data plane; Provider abstraction",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        },
+        {
+          "path": "docs/contracts/DORA_ASR_DATA_AND_VERSIONING_CONTRACT_V0_1.md",
+          "section": "Cloud adapter and execution boundary",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        }
+      ]
+    },
+    {
+      "gate_id": "CLD-ADM-CONSENT-001",
+      "name": "Product and consent specification",
+      "purpose": "Freeze intended authorization behavior separately from enforcement.",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_PROVIDER_ADMISSION",
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "ALWAYS, ASK_EACH_RECORDING and MANUAL_ONLY remain unchanged",
+        "One logical recording is one authorization unit; ASK prompts at most once automatically across chunks/restarts",
+        "PENDING and DEFERRED upload zero bytes; DEFERRED survives reconnect/restart/policy change",
+        "Batch consent authorizes only its selected snapshot; explicit manual action only intended recordings",
+        "INHERITED_ALWAYS, EXPLICITLY_APPROVED and MANUAL_USER_ACTION require current unrevoked scope; zero bytes before valid authorization"
+      ],
+      "required_evidence": [
+        "Approved product policy and recording-state tables",
+        "Declarative deterministic consent scenarios (not execution evidence)"
+      ],
+      "dependencies": [],
+      "roadmap_tasks": [
+        "6.1A",
+        "6.1B"
+      ],
+      "owner_domain": "Product / Android / Backend",
+      "current_status": "SATISFIED",
+      "blocking": false,
+      "blocking_reason": "",
+      "next_action": "Retain this authority; re-review affected gates on a versioned change.",
+      "current_evidence": [
+        {
+          "path": "docs/product/DORA_ASR_USER_SCENARIOS_V0_1.md",
+          "section": "Cloud upload policies; Batch after an offline period; Preference changes and cancellation",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        },
+        {
+          "path": "docs/contracts/DORA_ASR_DATA_AND_VERSIONING_CONTRACT_V0_1.md",
+          "section": "User policy and consent scope; Recording-level authorization",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        },
+        {
+          "path": "docs/product/DORA_ASR_USER_SCENARIOS_V0_1.feature",
+          "section": "ASK decline never repeatedly prompts; Batch selection uploads only selected recordings; Revocation prevents further bytes",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        }
+      ]
+    },
+    {
+      "gate_id": "CLD-ADM-DATA-001",
+      "name": "Data and versioning specification",
+      "purpose": "Preserve original audio, raw results and user authority.",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Original Audio -> Cloud Authorization -> ASR Versions -> User Edits -> Active Transcript",
+        "Immutable Local/Cloud raw ASR outputs; active pointer; separate edit provenance and semantic/audio anchors",
+        "Original audio identity and provider/model provenance are retained; unavailable versions explicitly unknown",
+        "USER EDIT > CLOUD ASR > LOCAL ASR is proposal priority; unsafe mapping requires review; no silent overwrite"
+      ],
+      "required_evidence": [
+        "Accepted identities, versions, edits, activation and deletion contract"
+      ],
+      "dependencies": [],
+      "roadmap_tasks": [
+        "6.1B"
+      ],
+      "owner_domain": "Data / Android / Architecture",
+      "current_status": "SATISFIED",
+      "blocking": false,
+      "blocking_reason": "",
+      "next_action": "Retain this authority; re-review affected gates on a versioned change.",
+      "current_evidence": [
+        {
+          "path": "docs/contracts/DORA_ASR_DATA_AND_VERSIONING_CONTRACT_V0_1.md",
+          "section": "Relationship and identities; Transcript versions; User edits and anchors; Deletion and retention compatibility",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        }
+      ]
+    },
+    {
+      "gate_id": "CLD-ADM-SCOPE-001",
+      "name": "Alpha scope and supported environment",
+      "purpose": "Determine what must be admitted, including conditional AI capabilities.",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_PROVIDER_ADMISSION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Versioned list of Alpha functions, devices, languages and support limits approved",
+        "Each AI function has a required/local/deferred disposition; diarization, LLM and embeddings are not silently added or excluded",
+        "Consume Stage 5 bounded POCO evidence without production/all-device/all-language extrapolation; timestamp and 16-KiB limitations remain explicit"
+      ],
+      "required_evidence": [
+        "Approved 6.1 scope decision and capability table",
+        "Traceability to bounded Stage 5 closeout and unresolved limitations"
+      ],
+      "dependencies": [],
+      "roadmap_tasks": [
+        "6.1"
+      ],
+      "owner_domain": "Project Owner / Product",
+      "current_status": "OPEN",
+      "blocking": true,
+      "blocking_reason": "Live 6.1 is in progress; formal overall Alpha scope/support decision is absent.",
+      "next_action": "6.1: produce and review the required evidence; Live 6.1 is in progress; formal overall Alpha scope/support decision is absent.",
+      "current_evidence": [
+        {
+          "path": "docs/product/DORA_ASR_USER_SCENARIOS_V0_1.md",
+          "section": "Verified starting state; Alpha acceptance and sequencing",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        },
+        {
+          "path": "docs/stage0/DORA_ASR_SMALL_Q8_STAGE5_CLOSEOUT_STAGE0_V0_1.md",
+          "section": "Stage5 closure and Stage6 handoff",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        }
+      ]
+    },
+    {
+      "gate_id": "CLD-ADM-GAPS-001",
+      "name": "Non-Cloud readiness disposition",
+      "purpose": "Keep broader Stage 0 readiness visible without rerunning campaigns.",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "For approved Alpha scope, applicable capture/VAD/search/energy/offline evidence and mandatory gaps are individually dispositioned",
+        "Each unresolved mandatory gap has accepted bounded limitation/owner decision or required evidence before its affected implementation",
+        "Preserve Recovery and historical failures; no blanket re-run or silent waiver"
+      ],
+      "required_evidence": [
+        "Versioned 6.2 evidence applicability and mandatory-gap decision"
+      ],
+      "dependencies": [
+        "CLD-ADM-SCOPE-001"
+      ],
+      "roadmap_tasks": [
+        "6.2"
+      ],
+      "owner_domain": "Technical lead / QA / Project Owner",
+      "current_status": "OPEN",
+      "blocking": true,
+      "blocking_reason": "Live 6.2 is in progress; no complete Alpha-specific gap disposition exists.",
+      "next_action": "6.2: produce and review the required evidence; Live 6.2 is in progress; no complete Alpha-specific gap disposition exists.",
+      "current_evidence": [
+        {
+          "path": "docs/DORA_MVP1_IMPLEMENTATION_READINESS.md",
+          "section": "9. Go/no-go для следующего чата; 3. Перекрёстная проверка и вопросы",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        }
+      ]
+    },
+    {
+      "gate_id": "CLD-ADM-PRIVACY-001",
+      "name": "Privacy and disclosure policy",
+      "purpose": "Resolve processing scope before implementation and data transfer.",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_PROVIDER_ADMISSION",
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Approved data-flow inventory states what leaves device, destination/service role, purpose and applicable controller/processor responsibilities",
+        "Versioned user-visible disclosure covers provider/subprocessors, data location, retention, deletion and revocation; revocation is not retroactive erasure",
+        "ASR processing consent does not authorize training, human review or unrelated artifacts",
+        "Provider/region changes cannot silently expand grants; no location inference from VPN",
+        "Record qualified owner approval for actual scope; this gate contract supplies no legal approval"
+      ],
+      "required_evidence": [
+        "Reviewed disclosure text/version, data-flow map and privacy/legal decision",
+        "Candidate/provider terms and data-use/subprocessor/location evidence bound to scope, then revalidated for selected provider"
+      ],
+      "dependencies": [
+        "CLD-ADM-SCOPE-001",
+        "CLD-ADM-CONSENT-001"
+      ],
+      "roadmap_tasks": [
+        "11.1C",
+        "CLOUD-02",
+        "BE-LEGAL-001",
+        "BE-CONSENT-001"
+      ],
+      "owner_domain": "Product / Privacy / Legal",
+      "current_status": "BLOCKED",
+      "blocking": true,
+      "blocking_reason": "No approved Alpha Cloud disclosure/legal/data-use package; DEC-010/011 remain Proposed and CLOUD-02 is BLOCKED.",
+      "next_action": "11.1C, CLOUD-02, BE-LEGAL-001, BE-CONSENT-001: produce and review the required evidence; No approved Alpha Cloud disclosure/legal/data-use package; DEC-010/011 remain Proposed and CLOUD-02 is BLOCKED.",
+      "current_evidence": [
+        {
+          "path": "docs/DORA_MVP1_PRODUCT_DECISIONS.md",
+          "section": "DEC-010; DEC-011; DEC-014; DEC-039",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        },
+        {
+          "path": "docs/adr/ADR-0009-alpha-cloud-execution-boundary.md",
+          "section": "Retention and deletion",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        }
+      ]
+    },
+    {
+      "gate_id": "CLD-ADM-RETENTION-001",
+      "name": "Retention and deletion policy",
+      "purpose": "Resolve every stored copy and its deletion semantics.",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_PROVIDER_ADMISSION",
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Preserve approved local default: original audio until explicit deletion; automatic retention OFF with unapproved numeric catalog unavailable",
+        "Approve actual periods/triggers for DORA objects, provider copies, job metadata, transcripts, caches, logs, backups and replicas; no arbitrary TTL from recommendations",
+        "Define deletion propagation, receipt scope, failure/retry, late callbacks, restore suppression and source-unavailable behavior",
+        "Consent revocation != deletion; local deletion != proof of remote deletion; disclose limits of provider receipts",
+        "Audio-only deletion preserves transcripts/edits; whole recording deletion uses exact disclosed cascade"
+      ],
+      "required_evidence": [
+        "Approved per-artifact/per-holder lifecycle matrix",
+        "Versioned Cloud period/trigger decision plus backup/replica and receipt semantics"
+      ],
+      "dependencies": [
+        "CLD-ADM-SCOPE-001"
+      ],
+      "roadmap_tasks": [
+        "11.1C",
+        "8.2C",
+        "CLOUD-02",
+        "BE-DELETE-001"
+      ],
+      "owner_domain": "Privacy / Backend / Storage / Project Owner",
+      "current_status": "PARTIALLY_SATISFIED",
+      "blocking": true,
+      "blocking_reason": "Local policy is approved, but Cloud periods, provider retention, backup behavior and remote receipts remain unresolved under DEC-012.",
+      "next_action": "11.1C, 8.2C, CLOUD-02, BE-DELETE-001: produce and review the required evidence; Local policy is approved, but Cloud periods, provider retention, backup behavior and remote receipts remain unresolved under DEC-012.",
+      "current_evidence": [
+        {
+          "path": "docs/DORA_MVP1_PRODUCT_DECISIONS.md",
+          "section": "DEC-012; DEC-013",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        },
+        {
+          "path": "docs/design/DORA_MVP1_STORAGE_RETENTION_DELETE_CONTRACT.md",
+          "section": "Normative principles and defaults; Remote deletion states and transitions",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        }
+      ]
+    },
+    {
+      "gate_id": "CLD-ADM-CONTROL-001",
+      "name": "Cloud security and ownership design",
+      "purpose": "Close the pre-code trust/key/identity design questions.",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Reviewed design defines caller/installation identity and server-issued credentials, optional future accounts, ownership, refresh/revocation and replay protection; no identity provider chosen here",
+        "Resolve payload protection, encryption at rest, key custody/worker decrypt access and audit; no unproved E2EE claim",
+        "Specify independent server authorization, upload authority revocation, consent ledger and durable deletion ledger",
+        "Bounded threat/design review dispositions RDY-011/012/013/018 and identifies testable controls, owners and residual risks; unresolved blocking risks prevent entry",
+        "Recording, offline use and Local ASR do not require a Cloud account"
+      ],
+      "required_evidence": [
+        "Accepted bounded Alpha security/identity/key-custody design with reviewer and risk dispositions",
+        "Approved consent/deletion ledger and ownership model; runtime proof remains separate"
+      ],
+      "dependencies": [
+        "CLD-ADM-PRIVACY-001",
+        "CLD-ADM-RETENTION-001"
+      ],
+      "roadmap_tasks": [
+        "11.1C",
+        "BE-AUTH-001",
+        "BE-API-001",
+        "BE-DELETE-001"
+      ],
+      "owner_domain": "Security / Backend architecture",
+      "current_status": "OPEN",
+      "blocking": true,
+      "blocking_reason": "ADR-0009 specifies responsibilities, but does not resolve credential mechanism, key custody, consent/deletion ledgers or bounded design review.",
+      "next_action": "11.1C, BE-AUTH-001, BE-API-001, BE-DELETE-001: produce and review the required evidence; ADR-0009 specifies responsibilities, but does not resolve credential mechanism, key custody, consent/deletion ledgers or bounded design review.",
+      "current_evidence": [
+        {
+          "path": "docs/DORA_MVP1_IMPLEMENTATION_READINESS.md",
+          "section": "RDY-011; RDY-012; RDY-013; RDY-018",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        },
+        {
+          "path": "docs/adr/ADR-0009-alpha-cloud-execution-boundary.md",
+          "section": "Identity principle; Audio data plane",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        }
+      ]
+    },
+    {
+      "gate_id": "CLD-ADM-EVALUATION-001",
+      "name": "Provider evaluation protocol and data admission",
+      "purpose": "Prevent API availability being mistaken for quality admission.",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_PROVIDER_ADMISSION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Freeze RU and EN quality/latency/timestamp metrics, test slices, thresholds, failure criteria and repeat policy prospectively; historical Stage 5 thresholds are not automatically Cloud thresholds",
+        "Declare diarization applicability from 6.1; if required freeze capability/quality criteria; explicit non-applicability requires scope evidence",
+        "Every evaluation dataset has rights and Cloud-processing authorization for its exact destination; local PoC permission does not authorize third-party upload",
+        "External synthetic tests need reviewed terms, non-sensitive generated fixtures, secure test-only credentials, budget and allowed destination; mocks stay isolated",
+        "Test protocol covers error classes, limits, long/partial audio, replacement feasibility and per-function quality for other in-scope AI functions"
+      ],
+      "required_evidence": [
+        "Versioned provider comparison protocol and approved thresholds",
+        "Dataset provenance/authorization manifest and synthetic test envelope; no benchmarks are run in 6.2C"
+      ],
+      "dependencies": [
+        "CLD-ADM-SCOPE-001"
+      ],
+      "roadmap_tasks": [
+        "6.2D",
+        "BE-PROVIDER-001",
+        "BE-PROVIDER-002"
+      ],
+      "owner_domain": "ML / QA / Privacy / Project Owner",
+      "current_status": "OPEN",
+      "blocking": true,
+      "blocking_reason": "No 6.2D Cloud evaluation protocol/dataset admission exists; existing Local ASR campaigns cannot be repurposed silently.",
+      "next_action": "6.2D, BE-PROVIDER-001, BE-PROVIDER-002: produce and review the required evidence; No 6.2D Cloud evaluation protocol/dataset admission exists; existing Local ASR campaigns cannot be repurposed silently.",
+      "current_evidence": [
+        {
+          "path": "docs/adr/ADR-0009-alpha-cloud-execution-boundary.md",
+          "section": "Provider abstraction",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        }
+      ]
+    },
+    {
+      "gate_id": "CLD-ADM-PROVIDER-001",
+      "name": "Provider and model admission",
+      "purpose": "Require an explicit per-function admission with reproducible evidence.",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_PROVIDER_ADMISSION",
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Cloud ASR RU and EN each meet frozen quality criteria; latency and timestamp availability/quality assessed; diarization evaluated if scope requires",
+        "Audio formats/duration/size limits, API stability/versioning, normalized errors, rate limits and availability documented/tested",
+        "Exact provider/model version or honest unavailable identity, cost, privacy, retention, training/data-use, location and terms/licensing evidence accepted",
+        "Replacement feasibility demonstrated against CloudAsrProvider; successful API call alone is insufficient",
+        "For every other AI function in approved 6.1 scope, 6.2D records its own admitted provider/model or explicit local/deferred disposition; factuality/hallucination evidence where relevant",
+        "Admission record names decision authority, evidence, date, limitations and change/revalidation triggers; no provider/model chosen in 6.2C"
+      ],
+      "required_evidence": [
+        "Reproducible per-language/per-function evaluation and accepted decision",
+        "Provider documentation/terms snapshots and cost/privacy/retention/availability review",
+        "Replaceability assessment and admitted configuration identity"
+      ],
+      "dependencies": [
+        "CLD-ADM-EVALUATION-001",
+        "CLD-ADM-PRIVACY-001",
+        "CLD-ADM-RETENTION-001"
+      ],
+      "roadmap_tasks": [
+        "6.2D",
+        "18.1",
+        "BE-PROVIDER-001",
+        "BE-PROVIDER-002"
+      ],
+      "owner_domain": "ML / Backend / Privacy / Project Owner",
+      "current_status": "OPEN",
+      "blocking": true,
+      "blocking_reason": "Provider = NOT SELECTED; Model = NOT SELECTED; live 6.2D is PLANNED / NOT RUN.",
+      "next_action": "6.2D, 18.1, BE-PROVIDER-001, BE-PROVIDER-002: produce and review the required evidence; Provider = NOT SELECTED; Model = NOT SELECTED; live 6.2D is PLANNED / NOT RUN.",
+      "current_evidence": [
+        {
+          "path": "docs/adr/ADR-0009-alpha-cloud-execution-boundary.md",
+          "section": "Provider abstraction; Decision scope",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        }
+      ]
+    },
+    {
+      "gate_id": "CLD-ADM-ADMISSION-001",
+      "name": "Development admission and exact baseline",
+      "purpose": "Make 6.3 the final explicit entry decision, not a circular prerequisite.",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "All other implementation-entry gates satisfied or eligible entry-only waiver explicitly approved",
+        "Record Stage 0 go/no-go, approved scope, exact development commit/branch, CI evidence and integration plan",
+        "6.3 may close after its predecessor decisions; it does not require already implemented Alpha-exit tests",
+        "No merge of PR #86 is authorized by this contract"
+      ],
+      "required_evidence": [
+        "Versioned 6.3 admission decision plus exact-baseline CI and unresolved-gate ledger"
+      ],
+      "dependencies": [
+        "CLD-ADM-ARCH-001",
+        "CLD-ADM-CONSENT-001",
+        "CLD-ADM-DATA-001",
+        "CLD-ADM-SCOPE-001",
+        "CLD-ADM-GAPS-001",
+        "CLD-ADM-PRIVACY-001",
+        "CLD-ADM-RETENTION-001",
+        "CLD-ADM-CONTROL-001",
+        "CLD-ADM-EVALUATION-001",
+        "CLD-ADM-PROVIDER-001"
+      ],
+      "roadmap_tasks": [
+        "6.3"
+      ],
+      "owner_domain": "Project Owner / Technical lead",
+      "current_status": "BLOCKED",
+      "blocking": true,
+      "blocking_reason": "6.3 remains blocked by SCOPE, GAPS, PRIVACY, RETENTION, CONTROL, EVALUATION and PROVIDER; exact-base admission/CI decision is not recorded.",
+      "next_action": "6.3: produce and review the required evidence; 6.3 remains blocked by SCOPE, GAPS, PRIVACY, RETENTION, CONTROL, EVALUATION and PROVIDER; exact-base admission/CI decision is not recorded.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-API-001",
+      "name": "Versioned API and job contract",
+      "purpose": "Keep DORA logical identity authoritative.",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Freeze processing_job_id, processing_action_id, recording_id, source_audio_version, idempotency_key, attempt_id, provider_request_id and asr_result_id relationships",
+        "Define create job, upload authorization, processing state, retrieval, cancel, retry, unknown-outcome reconciliation, duplicates and stale responses",
+        "Stable normalized errors, bounded request/response sizes and schema compatibility; provider wire format remains behind CloudAsrProvider",
+        "One logical action has one idempotency key across retries; explicit reprocess creates new action; IDs alone never prove ownership"
+      ],
+      "required_evidence": [
+        "Reviewed versioned API/state contract and generated contract fixtures"
+      ],
+      "dependencies": [
+        "CLD-ADM-ADMISSION-001"
+      ],
+      "roadmap_tasks": [
+        "7.2C",
+        "7.2E",
+        "BE-API-001"
+      ],
+      "owner_domain": "Backend / Android",
+      "current_status": "OPEN",
+      "blocking": true,
+      "blocking_reason": "Conceptual API/job identities exist; implementation-ready schemas and compatibility fixtures are absent.",
+      "next_action": "7.2C, 7.2E, BE-API-001: produce and review the required evidence; Conceptual API/job identities exist; implementation-ready schemas and compatibility fixtures are absent.",
+      "current_evidence": [
+        {
+          "path": "docs/contracts/DORA_ASR_DATA_AND_VERSIONING_CONTRACT_V0_1.md",
+          "section": "Jobs, queue, idempotency and state",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        },
+        {
+          "path": "docs/DORA_MVP1_TECHNICAL_PLAN.md",
+          "section": "28. API contracts",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        }
+      ]
+    },
+    {
+      "gate_id": "CLD-ADM-AUTH-001",
+      "name": "Identity and ownership enforcement",
+      "purpose": "Prevent cross-owner access across all operations.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Server authenticates caller and binds installation/device where used; optional account linking cannot transfer ownership implicitly",
+        "Server-issued credentials have verified issue/expiry/refresh/rotation/revocation lifecycle and replay resistance where applicable",
+        "Recording, job, object, result and deletion operations reject cross-user/cross-device access; caller-supplied owner IDs cannot override verified identity",
+        "Local recording/offline/Local ASR work without Cloud account"
+      ],
+      "required_evidence": [
+        "Credential lifecycle and adversarial cross-owner tests on admitted build/configuration"
+      ],
+      "dependencies": [
+        "CLD-ADM-CONTROL-001",
+        "CLD-ADM-API-001"
+      ],
+      "roadmap_tasks": [
+        "7.2E",
+        "18.1C",
+        "BE-AUTH-001"
+      ],
+      "owner_domain": "Backend / Security / Android",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No Cloud authentication/ownership runtime or executed evidence.",
+      "next_action": "7.2E, 18.1C, BE-AUTH-001: produce and review the required evidence; No Cloud authentication/ownership runtime or executed evidence.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-CONSENT-RUNTIME-001",
+      "name": "Runtime consent enforcement",
+      "purpose": "Prove zero unauthorized upload bytes in every dispatch path.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Persist authorization/disclosure receipt before any outbound audio; backend independently checks current scope/ownership",
+        "Recheck each chunk, retry, renewed upload authority and processing dispatch; stale token/queue cannot bypass revocation",
+        "Prove all three policies and five recording authorization states, batch selected snapshot, prompt-once and durable DEFERRED",
+        "Leaving ALWAYS invalidates unstarted inherited work; explicit grants retain only unrevoked disclosed scope; revocation stops further bytes"
+      ],
+      "required_evidence": [
+        "Deterministic byte-counter, backend rejection and revocation-race tests for every outbound path"
+      ],
+      "dependencies": [
+        "CLD-ADM-CONSENT-001",
+        "CLD-ADM-AUTH-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "roadmap_tasks": [
+        "9.2C",
+        "9.2D",
+        "11.1C",
+        "18.1C"
+      ],
+      "owner_domain": "Android / Backend / QA",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "Only declarative scenarios exist; executable consent/byte-count evidence is absent.",
+      "next_action": "9.2C, 9.2D, 11.1C, 18.1C: produce and review the required evidence; Only declarative scenarios exist; executable consent/byte-count evidence is absent.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-SECRETS-001",
+      "name": "Privileged secrets protection",
+      "purpose": "Keep provider credentials out of clients and public artifacts.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Privileged provider credentials MUST NOT be present in Android/APK/client configuration",
+        "Server-side secret storage uses least privilege, rotation, revocation and separate environments",
+        "Application logs, crash reports, CI output, build artifacts and temporary URLs cannot leak credentials",
+        "Review credential provisioning/incident procedures and CI/build leak checks; no secrets provisioned in 6.2C"
+      ],
+      "required_evidence": [
+        "Server configuration review, rotation/revocation test and APK/config/build/log secret scan"
+      ],
+      "dependencies": [
+        "CLD-ADM-CONTROL-001",
+        "CLD-ADM-ADMISSION-001"
+      ],
+      "roadmap_tasks": [
+        "18.1C",
+        "11.1C"
+      ],
+      "owner_domain": "Backend / Security / Release",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No admitted server secret lifecycle or built Cloud-client leak evidence.",
+      "next_action": "18.1C, 11.1C: produce and review the required evidence; No admitted server secret lifecycle or built Cloud-client leak evidence.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-UPLOAD-001",
+      "name": "Storage and scoped upload authorization",
+      "purpose": "Bind every byte to current authorization and the intended source.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "DORA-controlled storage; authority scoped to owner/recording/job/source-audio version, operation and expiry",
+        "Enforce revocation, size/content/checksum constraints and authenticated secure transport; no public bucket/object access",
+        "A still-valid temporary credential cannot bypass revoked recording consent; demonstrate this on selected mechanism",
+        "Retry/resume/renewal and duplicate prevention preserve identity; no provider/storage vendor selected here",
+        "Chunk manifest completeness/order/digests verified before dispatch; malicious content, path/object substitution and oversized/decompression inputs rejected"
+      ],
+      "required_evidence": [
+        "Storage ACL/configuration and byte-boundary revocation tests",
+        "Interrupted/resumed/duplicate/malformed upload integration tests with checksums"
+      ],
+      "dependencies": [
+        "CLD-ADM-AUTH-001",
+        "CLD-ADM-CONSENT-RUNTIME-001",
+        "CLD-ADM-SECRETS-001",
+        "CLD-ADM-CRYPTO-001",
+        "CLD-ADM-API-001"
+      ],
+      "roadmap_tasks": [
+        "9.2C",
+        "8.4C",
+        "18.1C"
+      ],
+      "owner_domain": "Backend / Storage / Android",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No storage mechanism, runtime authorization or revocation proof exists.",
+      "next_action": "9.2C, 8.4C, 18.1C: produce and review the required evidence; No storage mechanism, runtime authorization or revocation proof exists.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-CRYPTO-001",
+      "name": "Payload transport and key protection",
+      "purpose": "Protect audio, transcripts and credentials across storage/worker boundaries.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Validate secure transport, certificate/endpoint identity and fail-closed behavior for Android/storage/backend/provider/result paths",
+        "Implement reviewed encryption-at-rest/key-custody, worker access, least privilege and environment separation",
+        "Verify access audit, key rotation/revocation, temporary plaintext cleanup and failure paths; no unsupported E2EE/erasure claim",
+        "No silent region/fallback switch outside consent; distinguish unavailable network from authenticated endpoint"
+      ],
+      "required_evidence": [
+        "Transport/adversarial certificate tests and key/access configuration review",
+        "Worker temporary-data and revoked-key tests"
+      ],
+      "dependencies": [
+        "CLD-ADM-CONTROL-001",
+        "CLD-ADM-SECRETS-001"
+      ],
+      "roadmap_tasks": [
+        "11.1C",
+        "18.1C"
+      ],
+      "owner_domain": "Security / Backend / Storage",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No bounded implemented Cloud payload/key/transport evidence.",
+      "next_action": "11.1C, 18.1C: produce and review the required evidence; No bounded implemented Cloud payload/key/transport evidence.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-RETENTION-RUNTIME-001",
+      "name": "Retention enforcement and remote deletion",
+      "purpose": "Prove actual cleanup and honest receipts before handling real audio.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Execute approved lifecycles for original audio, DORA objects, provider copies, metadata, transcripts, caches and logs",
+        "Verify deletion propagation/receipt authenticity and exact scope; backup/replica limits disclosed",
+        "Durable retries and reconciliation preserve local/remote outcome distinction through failure/restart",
+        "Tombstones prevent late callbacks or restored backups resurrecting deleted content; deletion cleanup can proceed after processing consent revocation under separately valid deletion authority"
+      ],
+      "required_evidence": [
+        "Controlled-clock retention tests and end-to-end receipt/failed-delete/restore tests",
+        "Provider deletion assurance bound to approved scope and limitations"
+      ],
+      "dependencies": [
+        "CLD-ADM-RETENTION-001",
+        "CLD-ADM-AUTH-001",
+        "CLD-ADM-PROVIDER-001",
+        "CLD-ADM-DELETE-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "roadmap_tasks": [
+        "11.1C",
+        "18.1C",
+        "BE-DELETE-001"
+      ],
+      "owner_domain": "Backend / Storage / Privacy / QA",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No approved implemented lifecycle or remote deletion receipt tests.",
+      "next_action": "11.1C, 18.1C, BE-DELETE-001: produce and review the required evidence; No approved implemented lifecycle or remote deletion receipt tests.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-DATA-RUNTIME-001",
+      "name": "Durable versions and atomic activation",
+      "purpose": "Implement the accepted data invariant without destructive migrations.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Persist original-audio identity, immutable Local/Cloud versions, edits, provenance and active pointer",
+        "Logical recording/chunk/source bindings survive restart; all IDs/reference integrity validated",
+        "Atomic activation checks latest revision and tombstones; failures cannot orphan edits",
+        "Upgrade/downgrade/rollback strategy preserves retained data, queue, consent and deletion state; no destructive fallback"
+      ],
+      "required_evidence": [
+        "Persistence, transaction fault and migration/rollback fixtures with invariant assertions"
+      ],
+      "dependencies": [
+        "CLD-ADM-DATA-001",
+        "CLD-ADM-ADMISSION-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "roadmap_tasks": [
+        "7.2D",
+        "8.2C",
+        "8.4C"
+      ],
+      "owner_domain": "Android / Data / Backend",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No Cloud versioned storage integration or migration evidence.",
+      "next_action": "7.2D, 8.2C, 8.4C: produce and review the required evidence; No Cloud versioned storage integration or migration evidence.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-FAILURE-001",
+      "name": "Idempotency and failure safety",
+      "purpose": "Bound uncertainty and preserve all successful data.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Inject network loss, interrupted upload, backend/Android/worker restart, provider timeout, 4xx, 5xx and 429",
+        "Cover duplicate requests/callbacks, late callbacks, cancel during upload/processing and authorization revocation",
+        "Same action/idempotency across retries; reconcile unknown provider outcome before resubmission; no competing result/billing effects",
+        "Bounded retry/backoff/Retry-After, leases and budgets; nonretryable auth/schema errors require correction",
+        "Every failure preserves original audio, Local transcript, active transcript and user edits; explicit deletion remains a distinct user operation"
+      ],
+      "required_evidence": [
+        "Deterministic fault matrix with state/identity/cost and four data-preservation assertions"
+      ],
+      "dependencies": [
+        "CLD-ADM-API-001",
+        "CLD-ADM-DATA-RUNTIME-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "roadmap_tasks": [
+        "9.2C",
+        "9.2E",
+        "18.1C",
+        "12.1C"
+      ],
+      "owner_domain": "Backend / Android / QA",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "Failure semantics are documented, not executed in Cloud runtime.",
+      "next_action": "9.2C, 9.2E, 18.1C, 12.1C: produce and review the required evidence; Failure semantics are documented, not executed in Cloud runtime.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-QUEUE-001",
+      "name": "Offline queue and reconnect",
+      "purpose": "Keep authorization durable and reconnect non-authorizing.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Durable pending queue, action identity, deduplication, cancellation, authorization and DEFERRED survive app/device restart",
+        "Reconnect revalidates source/current grant; NEVER creates consent",
+        "MANUAL_ONLY never autonomously uploads; ALWAYS does not unnecessarily reprompt; ASK automatically prompts once per logical recording",
+        "Batch Process all/Select/Not now applies to selected snapshot; deferred items excluded from new automatic batch"
+      ],
+      "required_evidence": [
+        "Restart/reconnect/batch/policy tests with durable state, prompt counts and upload-byte assertions"
+      ],
+      "dependencies": [
+        "CLD-ADM-CONSENT-RUNTIME-001",
+        "CLD-ADM-DATA-RUNTIME-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "roadmap_tasks": [
+        "9.2D",
+        "11.2C"
+      ],
+      "owner_domain": "Android / QA",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No executed durable Cloud queue evidence.",
+      "next_action": "9.2D, 11.2C: produce and review the required evidence; No executed durable Cloud queue evidence.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-BACKGROUND-001",
+      "name": "Android background execution",
+      "purpose": "Validate scheduling within declared Alpha platform constraints.",
+      "required_before": [
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Verify backgrounding, process death, reboot, network constraints, battery restrictions and user cancellation",
+        "Document Android scheduler and applicable foreground-service constraints; no invented endless service exemption",
+        "Large upload interruption resumes only with current authority; force-stop/reboot recovery never silently restarts microphone",
+        "Test declared API/OEM/device scope; simulated reboot abstraction cannot alone prove physical behavior"
+      ],
+      "required_evidence": [
+        "Versioned scheduling policy and host plus applicable Android/device execution evidence"
+      ],
+      "dependencies": [
+        "CLD-ADM-QUEUE-001",
+        "CLD-ADM-FAILURE-001"
+      ],
+      "roadmap_tasks": [
+        "11.2C",
+        "9.2C",
+        "12.1C"
+      ],
+      "owner_domain": "Android / QA",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No Cloud scheduling implementation or device/background acceptance run.",
+      "next_action": "11.2C, 9.2C, 12.1C: produce and review the required evidence; No Cloud scheduling implementation or device/background acceptance run.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-ADAPTER-001",
+      "name": "Replaceable CloudAsrProvider implementation",
+      "purpose": "Contain provider-specific protocol and error behavior.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Provider request/response schemas, errors, IDs, limits and metadata terminate inside adapter",
+        "Core consumes normalized job/result/provenance/usage and explicit missing metadata",
+        "Contract tests swap controlled provider implementations without changing core; production Alpha may have one admitted provider",
+        "Only admitted provider/model/scope routed; no implicit fallback to another service"
+      ],
+      "required_evidence": [
+        "Boundary/dependency review and adapter contract/replacement tests"
+      ],
+      "dependencies": [
+        "CLD-ADM-PROVIDER-001",
+        "CLD-ADM-API-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "roadmap_tasks": [
+        "7.2C",
+        "18.1C"
+      ],
+      "owner_domain": "Backend",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "CloudAsrProvider is an architectural requirement, not an implemented port.",
+      "next_action": "7.2C, 18.1C: produce and review the required evidence; CloudAsrProvider is an architectural requirement, not an implemented port.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-COST-001",
+      "name": "Cost, quotas and abuse controls",
+      "purpose": "Prevent unbounded cost before real processing.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Account request count, processed duration, uploaded bytes, provider usage and estimated/actual cost where available",
+        "Versioned per-user/device/project quota strategy, retry budget and rate-limit behavior enforced before costly work",
+        "Duplicate/unknown outcomes cannot multiply spend; fail closed on exhausted budget; kill switch and abuse limits available",
+        "Alpha operational budget approved by responsible owner; commercial pricing plans remain out of scope"
+      ],
+      "required_evidence": [
+        "Usage reconciliation and quota/rate-limit/retry amplification tests against configured budget"
+      ],
+      "dependencies": [
+        "CLD-ADM-PROVIDER-001",
+        "CLD-ADM-API-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "roadmap_tasks": [
+        "18.2C",
+        "18.1C"
+      ],
+      "owner_domain": "Backend / Operations",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No operational accounting, budget enforcement or cost-amplification evidence.",
+      "next_action": "18.2C, 18.1C: produce and review the required evidence; No operational accounting, budget enforcement or cost-amplification evidence.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-OBSERVABILITY-001",
+      "name": "Content-free operational observability",
+      "purpose": "Trace jobs without leaking private content or credentials.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Correlate job/recording safely with upload/processing durations, provider/model, error class, retry count, transitions, quota and cost/usage",
+        "Redact audio, transcript, edits, names, paths, URIs, object keys, credentials and sensitive stable identifiers from public logs/telemetry",
+        "Use scoped opaque correlation with controlled access/retention; diagnostics/export preview cannot leak content",
+        "Inject failures and verify redaction across client/backend/worker/provider errors and crash logs"
+      ],
+      "required_evidence": [
+        "Telemetry field/access/retention inventory and synthetic log-leak tests",
+        "Operational queries demonstrating safe correlation and error diagnosis"
+      ],
+      "dependencies": [
+        "CLD-ADM-PRIVACY-001",
+        "CLD-ADM-RETENTION-001",
+        "CLD-ADM-API-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "roadmap_tasks": [
+        "18.2C",
+        "11.1C"
+      ],
+      "owner_domain": "Operations / Backend / Privacy",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No implemented Cloud telemetry or redaction evidence.",
+      "next_action": "18.2C, 11.1C: produce and review the required evidence; No implemented Cloud telemetry or redaction evidence.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-SECURITY-001",
+      "name": "Bounded Alpha threat verification",
+      "purpose": "Validate defenses before real user data crosses the boundary.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Bounded review covers unauthorized upload, IDOR/cross-owner access, stolen upload authority, replay and secret leaks",
+        "Cover oversized/malformed audio, abuse/cost amplification, stale result injection, logging leakage, deletion/resurrection races and provider response spoofing where applicable",
+        "Every blocking finding fixed and verified; residual limitations explicitly reviewed by accountable owner",
+        "Review authenticates callbacks/result origins and restricts worker egress/input references; no arbitrary URL/SSRF destination or cross-region fallback",
+        "Evidence scope/date/build/configuration recorded; no formal external security audit claim"
+      ],
+      "required_evidence": [
+        "Threat register mapped to implemented controls and negative tests, with reviewer disposition"
+      ],
+      "dependencies": [
+        "CLD-ADM-CONTROL-001",
+        "CLD-ADM-UPLOAD-001",
+        "CLD-ADM-AUTH-001",
+        "CLD-ADM-SECRETS-001",
+        "CLD-ADM-COST-001",
+        "CLD-ADM-OBSERVABILITY-001",
+        "CLD-ADM-RESULT-001",
+        "CLD-ADM-DELETE-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "roadmap_tasks": [
+        "11.1C",
+        "12.1C",
+        "18.1C"
+      ],
+      "owner_domain": "Security / QA",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No bounded implemented Cloud threat verification exists.",
+      "next_action": "11.1C, 12.1C, 18.1C: produce and review the required evidence; No bounded implemented Cloud threat verification exists.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-RESULT-001",
+      "name": "Cloud result validation",
+      "purpose": "Do not automatically activate a provider response.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Validate job identity, original source version/digest, action/generation, provider result identity and authenticated origin",
+        "Reject invalid schema/size/segment ranges and incomplete/failed results as complete active text",
+        "Check latest edit revision and deletion/cancellation/tombstone state at atomic activation",
+        "Invalid/stale/duplicate results cannot regress active text or resurrect deleted content; raw valid versions retained as appropriate"
+      ],
+      "required_evidence": [
+        "Forged/mismatched/partial/oversized/stale/duplicate result and activation-race tests"
+      ],
+      "dependencies": [
+        "CLD-ADM-DATA-RUNTIME-001",
+        "CLD-ADM-API-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "roadmap_tasks": [
+        "9.2E",
+        "7.2D",
+        "18.1C"
+      ],
+      "owner_domain": "Android / Backend / Data",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No executed result validation or atomic activation evidence.",
+      "next_action": "9.2E, 7.2D, 18.1C: produce and review the required evidence; No executed result validation or atomic activation evidence.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-MERGE-001",
+      "name": "Edit-preserving merge and review",
+      "purpose": "Preserve user truth across reprocessing and concurrent edits.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Test no edits, clean mapping, ambiguous mapping, edits during processing and edits during review",
+        "Unsafe mapping keeps correction and active text, marks conflict and requires review",
+        "With edits present, wait for explicit proposal acceptance against latest revision; correction replacement requires explicit conflict-level choice and preserves history",
+        "Cloud result rejected or failed leaves original audio/Local/active/edits unchanged; never use Local text as ASR input"
+      ],
+      "required_evidence": [
+        "Deterministic semantic/audio-anchor merge fixtures and concurrent activation tests"
+      ],
+      "dependencies": [
+        "CLD-ADM-RESULT-001",
+        "CLD-ADM-DATA-RUNTIME-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "roadmap_tasks": [
+        "9.4C",
+        "12.1C"
+      ],
+      "owner_domain": "Android / Data / QA",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No implemented merge/review or preservation test evidence.",
+      "next_action": "9.4C, 12.1C: produce and review the required evidence; No implemented merge/review or preservation test evidence.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-LOCAL-001",
+      "name": "Optional Local package and account-free operation",
+      "purpose": "Cloud admission must not make Local installation mandatory.",
+      "required_before": [
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Cloud-only user can operate online and record offline without downloading Local",
+        "Optional Local can be installed later or removed without breaking recording; install/update integrity/version/size/in-use states are safe",
+        "Installed Local ASR works offline without account/network/GMS; user may choose wait instead",
+        "Existing bounded Stage 5 result is not proof of product integration or new devices/languages"
+      ],
+      "required_evidence": [
+        "Cloud-only, later install/removal and installed Local offline acceptance runs in declared scope"
+      ],
+      "dependencies": [
+        "CLD-ADM-DATA-RUNTIME-001",
+        "CLD-ADM-SCOPE-001"
+      ],
+      "roadmap_tasks": [
+        "9.1C",
+        "11.2C"
+      ],
+      "owner_domain": "Android / ML / QA",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "Local PoC evidence exists, but optional-package and Cloud-only product flows are NOT_RUN.",
+      "next_action": "9.1C, 11.2C: produce and review the required evidence; Local PoC evidence exists, but optional-package and Cloud-only product flows are NOT_RUN.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-OFFLINE-001",
+      "name": "Cloud-only offline audio preservation",
+      "purpose": "Recording remains safe with no model and no internet.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "No Local model + no internet still yields durable original audio with stable identity and no data loss",
+        "Audio survives restart and failure until explicit approved deletion; low/full-storage behavior is honest and does not silently delete prior recordings",
+        "Later network plus valid authorization permits Cloud processing of the same original audio; waiting never forces a Local download",
+        "Source unavailable after explicit deletion blocks reprocess rather than substituting transcript text"
+      ],
+      "required_evidence": [
+        "No-model/no-network/restart/storage-pressure preservation and later dispatch tests"
+      ],
+      "dependencies": [
+        "CLD-ADM-DATA-RUNTIME-001",
+        "CLD-ADM-QUEUE-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "roadmap_tasks": [
+        "8.2C",
+        "9.1C",
+        "9.2D",
+        "11.2C"
+      ],
+      "owner_domain": "Android / Storage / QA",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No integrated Cloud-only offline evidence.",
+      "next_action": "8.2C, 9.1C, 9.2D, 11.2C: produce and review the required evidence; No integrated Cloud-only offline evidence.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-DELETE-001",
+      "name": "Deletion, cancellation and stale-result safety",
+      "purpose": "Prevent resurrection and distinguish local from remote outcomes.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Test recording deletion while upload pending, original-audio-only deletion after transcript, result after deletion and after cancellation",
+        "Test active transcript deletion and correction deletion with explicit scope and reference safety",
+        "Local success plus failed remote deletion stays visibly partial; no fake receipt or automatic retry that sends deleted audio",
+        "Durable tombstones/generation checks block late callbacks, restore and indexing resurrection; receipt metadata minimized",
+        "Retain transcripts/edits on audio-only deletion; whole-recording cascade follows approved policy"
+      ],
+      "required_evidence": [
+        "Deletion/cancel/result races, restart and remote failure/receipt tests"
+      ],
+      "dependencies": [
+        "CLD-ADM-RETENTION-001",
+        "CLD-ADM-DATA-RUNTIME-001",
+        "CLD-ADM-API-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "roadmap_tasks": [
+        "11.1C",
+        "8.2C",
+        "9.2E",
+        "10.3C"
+      ],
+      "owner_domain": "Android / Backend / Storage",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No implemented Cloud deletion or stale-result suppression tests.",
+      "next_action": "11.1C, 8.2C, 9.2E, 10.3C: produce and review the required evidence; No implemented Cloud deletion or stale-result suppression tests.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-HARNESS-001",
+      "name": "Deterministic Cloud test infrastructure",
+      "purpose": "Make every safety claim reproducible before integration acceptance.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Control network, clock, provider adapter, upload outcomes, timeouts, retries, consent, authorization, job identity and results",
+        "Control app restart and device restart abstraction where feasible; use later real platform tests for unsupported abstractions",
+        "Observe bytes, requests, prompt counts, versions, edits, activation, deletion and cost effects",
+        "Bind approved Gherkin cases and new gate cases to deterministic executable tests; CI critical suites cannot silently skip or retry green"
+      ],
+      "required_evidence": [
+        "Harness/step bindings, reproducible fixture manifest and exact-commit CI run with per-case results"
+      ],
+      "dependencies": [
+        "CLD-ADM-ADMISSION-001"
+      ],
+      "roadmap_tasks": [
+        "7.3C",
+        "12.1C"
+      ],
+      "owner_domain": "QA / Android / Backend",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "Gherkin describes intended behavior; Cloud step bindings/harness are not implemented. Prior synthetic VPN host work is not Alpha Cloud runtime acceptance.",
+      "next_action": "7.3C, 12.1C: produce and review the required evidence; Gherkin describes intended behavior; Cloud step bindings/harness are not implemented. Prior synthetic VPN host work is not Alpha Cloud runtime acceptance.",
+      "current_evidence": [
+        {
+          "path": "docs/product/DORA_ASR_USER_SCENARIOS_V0_1.feature",
+          "section": "Background; all scenarios",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        },
+        {
+          "path": "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+          "section": "POC-VPN-001",
+          "baseline_commit": "1107d4d9eef80691372800da0a17e609eba81957"
+        }
+      ]
+    },
+    {
+      "gate_id": "CLD-ADM-UX-001",
+      "name": "Consent and operational UX validation",
+      "purpose": "Make sending, waiting, failure and cancellation understandable.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Before consent show actual destination, sent artifacts, purpose, retention, revocation and deletion limits with approved disclosure version",
+        "Present recording-level/batch policies without repeated ASK or blocked local recording; explicit manual action covers only intended set",
+        "Honest pending/uploading/processing/failed/retry/cancel/remote-delete states; no jargon required",
+        "Critical consent/review/delete flows accessible in RU/EN, with text/state cues and supported input/scaling tests",
+        "Before broader Alpha release verify scope comprehension; no accidental opt-in"
+      ],
+      "required_evidence": [
+        "Approved copy-to-runtime binding, consent comprehension and accessibility/functional evidence"
+      ],
+      "dependencies": [
+        "CLD-ADM-PRIVACY-001",
+        "CLD-ADM-CONSENT-RUNTIME-001",
+        "CLD-ADM-RETENTION-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "roadmap_tasks": [
+        "9.3C",
+        "11.1C"
+      ],
+      "owner_domain": "Product / Android / Accessibility / QA",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No Cloud consent/status UX implementation or validation.",
+      "next_action": "9.3C, 11.1C: produce and review the required evidence; No Cloud consent/status UX implementation or validation.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-HISTORY-001",
+      "name": "Active-version history and search",
+      "purpose": "Keep derived views consistent with user-approved text.",
+      "required_before": [
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Atomic active-pointer changes invalidate/rebuild search and derived views against the same revision",
+        "Historical versions/edit provenance remain available under deletion policy",
+        "Cloud failure leaves current history/search unchanged; deleted or rejected text cannot reappear in index",
+        "Crash/restart while reindexing is reconciled without losing user edits"
+      ],
+      "required_evidence": [
+        "Version switch, concurrent edit, deletion and index reconciliation tests"
+      ],
+      "dependencies": [
+        "CLD-ADM-MERGE-001",
+        "CLD-ADM-DELETE-001",
+        "CLD-ADM-DATA-RUNTIME-001"
+      ],
+      "roadmap_tasks": [
+        "10.3C"
+      ],
+      "owner_domain": "Android / Data / Search",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No version-aware Cloud history/search integration evidence.",
+      "next_action": "10.3C: produce and review the required evidence; No version-aware Cloud history/search integration evidence.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-EXPORT-001",
+      "name": "Active-version export and provenance",
+      "purpose": "Keep Cloud consent separate from deliberate export.",
+      "required_before": [
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Export accepted active/merged text and relevant provenance without losing corrections",
+        "Preserve existing export consent/temp-copy rules; Cloud recognition consent is not permission to export",
+        "Source-unavailable state truthful; snapshot is revision-consistent during concurrent edits",
+        "Do not change historical export authority or claim control of external copies"
+      ],
+      "required_evidence": [
+        "Version-aware export fixtures and existing export-contract regression evidence"
+      ],
+      "dependencies": [
+        "CLD-ADM-HISTORY-001",
+        "CLD-ADM-MERGE-001"
+      ],
+      "roadmap_tasks": [
+        "11.3C"
+      ],
+      "owner_domain": "Android / Privacy / QA",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No Cloud active-version export acceptance evidence.",
+      "next_action": "11.3C: produce and review the required evidence; No Cloud active-version export acceptance evidence.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-OPERATIONS-001",
+      "name": "Operational stop, recovery and change control",
+      "purpose": "Keep service failures and later configuration changes fail-closed.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Named operational owner and runbook can disable new uploads/dispatch, revoke credentials and stop cost amplification without breaking recording or Local ASR",
+        "Restore/reconciliation preserves consent revocation, tombstones, job idempotency and edit provenance; backup policy matches disclosure",
+        "Provider/model/API/region/retention/terms changes invalidate affected admissions pending re-review; no silent failover to unadmitted service",
+        "Service/storage outage, capacity exhaustion and incident handling preserve existing user data and truthful pending status"
+      ],
+      "required_evidence": [
+        "Synthetic stop/recovery/restore drills, change-invalidation record and escalation/runbook review"
+      ],
+      "dependencies": [
+        "CLD-ADM-RETENTION-RUNTIME-001",
+        "CLD-ADM-COST-001",
+        "CLD-ADM-OBSERVABILITY-001",
+        "CLD-ADM-ADAPTER-001"
+      ],
+      "roadmap_tasks": [
+        "18.1C",
+        "18.2C",
+        "11.1C"
+      ],
+      "owner_domain": "Operations / Backend / Security",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "No Cloud operational deployment/runbook or recovery drill evidence.",
+      "next_action": "18.1C, 18.2C, 11.1C: produce and review the required evidence; No Cloud operational deployment/runbook or recovery drill evidence.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-SUPPLY-001",
+      "name": "Dependency and deployment provenance",
+      "purpose": "Admit exact server/client components with controlled updates.",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Record exact server/client/adapter build/configuration/dependency identities, licenses and applicable vulnerability review",
+        "Environment separation, least-privilege deployment and rollback preserve schema/consent/tombstone compatibility",
+        "No unapproved SDK/model/native dependency is admitted by this contract; provider/model drift triggers re-admission"
+      ],
+      "required_evidence": [
+        "Pinned dependency/SBOM/license/security record and reproducible build/deployment review"
+      ],
+      "dependencies": [
+        "CLD-ADM-ADMISSION-001",
+        "CLD-ADM-PROVIDER-001"
+      ],
+      "roadmap_tasks": [
+        "18.1C",
+        "7.3C"
+      ],
+      "owner_domain": "Engineering / Security / Release",
+      "current_status": "OPEN",
+      "blocking": true,
+      "blocking_reason": "No Cloud implementation dependency/build/deployment inventory is admitted.",
+      "next_action": "18.1C, 7.3C: produce and review the required evidence; No Cloud implementation dependency/build/deployment inventory is admitted.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-EXIT-001",
+      "name": "Cloud Alpha exit acceptance",
+      "purpose": "Collect all fourteen user outcomes on an exact admitted build.",
+      "required_before": [
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "All mandatory internal Alpha gates satisfied and provider/model admitted; privacy/retention resolved",
+        "All fourteen approved product exit conditions have attributable passing execution evidence",
+        "Deterministic critical tests and applicable platform integration tests pass; no unauthorized upload path or unresolved blocking safety finding",
+        "Accepted scope/devices/limitations and exact build/configuration/provider/model/evidence recorded; docs or Local PoC never substitute for runtime"
+      ],
+      "required_evidence": [
+        "Complete fourteen-row exit ledger, deterministic test run, platform scope evidence and signed acceptance decision"
+      ],
+      "dependencies": [
+        "CLD-ADM-BACKGROUND-001",
+        "CLD-ADM-LOCAL-001",
+        "CLD-ADM-HISTORY-001",
+        "CLD-ADM-EXPORT-001",
+        "CLD-ADM-SECURITY-001",
+        "CLD-ADM-OPERATIONS-001",
+        "CLD-ADM-SUPPLY-001",
+        "CLD-ADM-UX-001",
+        "CLD-ADM-OFFLINE-001",
+        "CLD-ADM-FAILURE-001"
+      ],
+      "roadmap_tasks": [
+        "12.1C",
+        "12.4C"
+      ],
+      "owner_domain": "QA / Product Owner / Technical lead",
+      "current_status": "NOT_RUN",
+      "blocking": true,
+      "blocking_reason": "All fourteen integrated Cloud Alpha exit conditions remain unproven; runtime tests NOT_RUN.",
+      "next_action": "12.1C, 12.4C: produce and review the required evidence; All fourteen integrated Cloud Alpha exit conditions remain unproven; runtime tests NOT_RUN.",
+      "current_evidence": []
+    },
+    {
+      "gate_id": "CLD-ADM-RELEASE-001",
+      "name": "Public release admission",
+      "purpose": "Prevent bounded Alpha closure becoming public-release authorization.",
+      "required_before": [
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "acceptance_criteria": [
+        "Revalidate Cloud admissions against release scope/provider/regions and current applicable distribution/privacy requirements",
+        "Complete full release test strategy, support/device matrix, security/privacy decisions, signing/update/rollback and store disclosures",
+        "No critical Cloud safety gate waived by Alpha closure; accepted limitations and retention/data-use claims remain accurate"
+      ],
+      "required_evidence": [
+        "Stage 19 release decision, Tier C evidence, signing/update/rollback and disclosure records"
+      ],
+      "dependencies": [
+        "CLD-ADM-EXIT-001"
+      ],
+      "roadmap_tasks": [
+        "19.1",
+        "19.2"
+      ],
+      "owner_domain": "Release / Product / Legal / Security",
+      "current_status": "OPEN",
+      "blocking": true,
+      "blocking_reason": "Public release evidence and approvals are outside 6.2C and absent.",
+      "next_action": "19.1, 19.2: produce and review the required evidence; Public release evidence and approvals are outside 6.2C and absent.",
+      "current_evidence": []
+    }
+  ],
+  "alpha_exit_criteria": [
+    {
+      "exit_id": "CLOUD-EXIT-01",
+      "name": "Cloud-only operation",
+      "gate_ids": [
+        "CLD-ADM-LOCAL-001",
+        "CLD-ADM-OFFLINE-001",
+        "CLD-ADM-AUTH-001",
+        "CLD-ADM-UPLOAD-001",
+        "CLD-ADM-ADAPTER-001"
+      ],
+      "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+      "roadmap_tasks": [
+        "9.1C",
+        "9.2C"
+      ],
+      "required_evidence": "Online recognition without Local installation",
+      "current_status": "NOT_RUN"
+    },
+    {
+      "exit_id": "CLOUD-EXIT-02",
+      "name": "Optional Local package",
+      "gate_ids": [
+        "CLD-ADM-LOCAL-001"
+      ],
+      "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+      "roadmap_tasks": [
+        "9.1C"
+      ],
+      "required_evidence": "Install/update/remove/integrity states while recording remains usable",
+      "current_status": "NOT_RUN"
+    },
+    {
+      "exit_id": "CLOUD-EXIT-03",
+      "name": "Authorized online Cloud ASR",
+      "gate_ids": [
+        "CLD-ADM-CONSENT-RUNTIME-001",
+        "CLD-ADM-AUTH-001",
+        "CLD-ADM-UPLOAD-001",
+        "CLD-ADM-ADAPTER-001"
+      ],
+      "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+      "roadmap_tasks": [
+        "9.2C",
+        "18.1C"
+      ],
+      "required_evidence": "Authorized original-audio result with zero unauthorized bytes",
+      "current_status": "NOT_RUN"
+    },
+    {
+      "exit_id": "CLOUD-EXIT-04",
+      "name": "Offline recordings never lost",
+      "gate_ids": [
+        "CLD-ADM-OFFLINE-001",
+        "CLD-ADM-DATA-RUNTIME-001"
+      ],
+      "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+      "roadmap_tasks": [
+        "8.2C",
+        "11.2C"
+      ],
+      "required_evidence": "No-model/no-network/restart/storage-fault preservation",
+      "current_status": "NOT_RUN"
+    },
+    {
+      "exit_id": "CLOUD-EXIT-05",
+      "name": "Installed Local offline ASR",
+      "gate_ids": [
+        "CLD-ADM-LOCAL-001"
+      ],
+      "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+      "roadmap_tasks": [
+        "9.1C",
+        "11.2C"
+      ],
+      "required_evidence": "Integrated Local without account/network/GMS in admitted device scope",
+      "current_status": "NOT_RUN"
+    },
+    {
+      "exit_id": "CLOUD-EXIT-06",
+      "name": "Original audio reprocessable later",
+      "gate_ids": [
+        "CLD-ADM-UPLOAD-001",
+        "CLD-ADM-RESULT-001",
+        "CLD-ADM-OFFLINE-001"
+      ],
+      "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+      "roadmap_tasks": [
+        "8.2C",
+        "9.2E"
+      ],
+      "required_evidence": "Exact source version reprocessed; absent audio refuses text substitution",
+      "current_status": "NOT_RUN"
+    },
+    {
+      "exit_id": "CLOUD-EXIT-07",
+      "name": "User edits survive Local-to-Cloud",
+      "gate_ids": [
+        "CLD-ADM-MERGE-001",
+        "CLD-ADM-DATA-RUNTIME-001"
+      ],
+      "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+      "roadmap_tasks": [
+        "9.4C"
+      ],
+      "required_evidence": "Clean/ambiguous/concurrent mapping and explicit acceptance",
+      "current_status": "NOT_RUN"
+    },
+    {
+      "exit_id": "CLOUD-EXIT-08",
+      "name": "All three consent policies",
+      "gate_ids": [
+        "CLD-ADM-CONSENT-RUNTIME-001",
+        "CLD-ADM-QUEUE-001",
+        "CLD-ADM-UX-001"
+      ],
+      "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+      "roadmap_tasks": [
+        "9.2D",
+        "9.3C",
+        "11.1C"
+      ],
+      "required_evidence": "Policy/prompt/batch/revocation assertions",
+      "current_status": "NOT_RUN"
+    },
+    {
+      "exit_id": "CLOUD-EXIT-09",
+      "name": "Cloud failures preserve existing data",
+      "gate_ids": [
+        "CLD-ADM-FAILURE-001",
+        "CLD-ADM-RESULT-001",
+        "CLD-ADM-DELETE-001"
+      ],
+      "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+      "roadmap_tasks": [
+        "9.2C",
+        "9.2E"
+      ],
+      "required_evidence": "Four preservation invariants across complete failure matrix",
+      "current_status": "NOT_RUN"
+    },
+    {
+      "exit_id": "CLOUD-EXIT-10",
+      "name": "Queue survives restart",
+      "gate_ids": [
+        "CLD-ADM-QUEUE-001",
+        "CLD-ADM-BACKGROUND-001"
+      ],
+      "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+      "roadmap_tasks": [
+        "9.2D",
+        "11.2C"
+      ],
+      "required_evidence": "App/device restart with authorization and DEFERRED intact",
+      "current_status": "NOT_RUN"
+    },
+    {
+      "exit_id": "CLOUD-EXIT-11",
+      "name": "No unauthorized upload",
+      "gate_ids": [
+        "CLD-ADM-CONSENT-RUNTIME-001",
+        "CLD-ADM-AUTH-001",
+        "CLD-ADM-UPLOAD-001",
+        "CLD-ADM-SECURITY-001"
+      ],
+      "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+      "roadmap_tasks": [
+        "11.1C",
+        "12.1C"
+      ],
+      "required_evidence": "All dispatch/chunk/retry/revocation/cross-owner paths reject invalid authority",
+      "current_status": "NOT_RUN"
+    },
+    {
+      "exit_id": "CLOUD-EXIT-12",
+      "name": "Provenance recorded",
+      "gate_ids": [
+        "CLD-ADM-DATA-RUNTIME-001",
+        "CLD-ADM-RESULT-001",
+        "CLD-ADM-HISTORY-001",
+        "CLD-ADM-EXPORT-001"
+      ],
+      "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+      "roadmap_tasks": [
+        "7.2D",
+        "10.3C",
+        "11.3C"
+      ],
+      "required_evidence": "Source/action/attempt/provider/model/result/edit/active lineage",
+      "current_status": "NOT_RUN"
+    },
+    {
+      "exit_id": "CLOUD-EXIT-13",
+      "name": "Usage and cost measurable",
+      "gate_ids": [
+        "CLD-ADM-COST-001",
+        "CLD-ADM-OBSERVABILITY-001"
+      ],
+      "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+      "roadmap_tasks": [
+        "18.2C"
+      ],
+      "required_evidence": "Duration/bytes/requests/usage/cost reconciliation and quota controls",
+      "current_status": "NOT_RUN"
+    },
+    {
+      "exit_id": "CLOUD-EXIT-14",
+      "name": "Deterministic critical tests pass",
+      "gate_ids": [
+        "CLD-ADM-HARNESS-001",
+        "CLD-ADM-FAILURE-001",
+        "CLD-ADM-SECURITY-001",
+        "CLD-ADM-EXIT-001"
+      ],
+      "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+      "roadmap_tasks": [
+        "7.3C",
+        "12.1C",
+        "12.4C"
+      ],
+      "required_evidence": "Exact-build reproducible run with no missing/skipped critical cases",
+      "current_status": "NOT_RUN"
+    }
+  ],
+  "minimum_6_3_predecessor_blockers": [
+    "CLD-ADM-SCOPE-001",
+    "CLD-ADM-GAPS-001",
+    "CLD-ADM-PRIVACY-001",
+    "CLD-ADM-RETENTION-001",
+    "CLD-ADM-CONTROL-001",
+    "CLD-ADM-EVALUATION-001",
+    "CLD-ADM-PROVIDER-001"
+  ],
+  "next_task": {
+    "task": "6.1",
+    "gate_ids": [
+      "CLD-ADM-SCOPE-001"
+    ],
+    "reason": "Formal Alpha function/device scope remains incomplete and is the earliest prerequisite for 6.2 gap disposition and live 6.2D per-function provider/model admission; this task does not execute it."
+  },
+  "live_sheet": {
+    "id": "1dgZr-BGlI1v8iPEK0ay9CI9mGhiGlJvG2-tTxyJhhOc",
+    "task_lookup": "column A task ID, never historical row number",
+    "observed_new_task": "6.2D — Alpha AI Provider & Model Admission",
+    "observed_6_3_status": "ЗАБЛОКИРОВАНО"
+  },
+  "evidence_rule": "A gate is satisfied only by its own reviewed evidence for the exact scope/build/configuration plus satisfied dependencies. Documentation gates prove specification only. Unknown or missing evidence fails closed.",
+  "waiver_rule": "Only implementation entry may use an explicit versioned Project Owner decision naming gate, scope, reason, compensating restriction, accountable owner and expiry/review trigger. No waiver admits real audio or internal Alpha; those require every mandatory gate satisfied. No waivers currently exist."
+}
