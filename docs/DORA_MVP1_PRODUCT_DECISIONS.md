@@ -1,5 +1,43 @@
 # Dora MVP 1 — Product Decisions
 
+## Current 11.1C owner/AWS reassessment — 28 September 2026
+
+Source baseline: `cccf85f982436af0bf9675d738dfe2dd61308842`. [Current policy v0.2](design/DORA_CLOUD_ALPHA_PRIVACY_RETENTION_CONTROL_V0_2.md),
+[contract v0.2](contracts/DORA_CLOUD_ALPHA_PRIVACY_RETENTION_CONTROL_V0_2.json) and
+[ADR-0011](adr/ADR-0011-alpha-transcribe-privacy-retention-key-custody.md) apply **OD-11C-01..12 = APPROVED_BY_PROJECT_OWNER**.
+This is the sole current successor to immutable v0.1; older sections below are historical snapshots.
+
+**11.1C = PARTIAL / OWNER_DECISIONS_APPLIED_PC02_SC01_RESOLVED_RESIDUAL_PRIVACY_AND_RETENTION_PREREQUISITES**.
+PC-02 (current candidate AWS fact package) and SC-01 (accepted reviewed bounded architecture) are RESOLVED.
+Remaining: PC-01 BLOCKED_EXTERNAL_APPROVAL; RT-01/RT-02 PARTIALLY_RESOLVED;
+SC-02 BLOCKED_BY_FROZEN_CRITERION (PRIVACY/RETENTION dependencies).
+
+Closed internal invitation-only Alpha; one region eu-central-1; Amazon Transcribe candidate only.
+Local original until explicit deletion, automatic retention OFF. Cloud audio immediate post-success cleanup
+and <=24 hours maximum; durable DORA transcript separate. Explicit customer S3 input/output cleanup,
+no long-term/archival/cross-region audio copies or deleted-audio versions; mandatory effective Transcribe opt-out.
+Opt-out effective-policy/account/runtime verification NOT_RUN. No E2EE or 24-hour provider-internal erasure guarantee.
+90-day job-record automatic expiry is not a mandatory minimum: terminal jobs must be deleted earlier.
+
+Qualified privacy/legal actual-scope approval remains PC-01. RT-01 now concerns only undocumented internal-provider
+audio deadline compatibility and enumerated DORA log/record/failed-output periods; RT-02 concerns non-audio copy/
+restore horizons and tombstone/receipt retirement. No broad absent-owner-approval or quality benchmark blocker retained.
+Accepted RDY-012/013 architecture is documented; applicable RDY-011/013/018 cross-gate residuals remain explicit.
+
+PRIVACY BLOCKED; RETENTION PARTIALLY_SATISFIED; CONTROL BLOCKED. EVALUATION OPEN; PROVIDER OPEN; ADMISSION BLOCKED.
+39-gate totals unchanged: 5 SATISFIED / 1 PARTIALLY_SATISFIED / 5 OPEN / 3 BLOCKED / 25 NOT_RUN.
+6.1/6.2 PASS; SCOPE/GAPS SATISFIED; AWS SELECTED_ALPHA_PLATFORM; AWS_TECHNICAL_ADMISSION NOT_RUN;
+6.2D BLOCKED / NOT_RUN; 6.3 BLOCKED / NOT_RUN; FIRST_REAL_AUDIO_ADMISSION NOT_READY;
+CLOUD_RUNTIME NOT_IMPLEMENTED; CLOUD_ALPHA_ACCEPTANCE NOT_RUN. Frozen 6.2C and historical acceptance unchanged.
+
+Next: only PC-01 qualified scope approval, RT-01 exact remaining period/provider evidence and RT-02 non-audio
+restore/ledger horizon; then SC-02 dependency reconciliation. No next task, runtime, device campaign or merge started.
+
+This explicit first-Alpha owner amendment records product behavior without changing DEC-001..DEC-048 history.
+DEC-001/010 qualified legal scope is still pending; DEC-011 Frankfurt policy and DEC-012 audio/transcript rules
+are resolved only to OD-11C-02/04/05/06/08/09/10 scope. Full-MVP/public-release decisions remain unchanged.
+
+
 ## Current first-Alpha owner scope overlay — 27 September 2026
 
 APPROVED_BY_PROJECT_OWNER for first internal Alpha only. The
