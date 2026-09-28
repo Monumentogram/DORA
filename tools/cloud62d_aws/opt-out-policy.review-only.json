@@ -1,0 +1,10 @@
+{
+  "services": {
+    "transcribe": {
+      "opt_out_policy": {
+        "@@assign": "optOut",
+        "@@operators_allowed_for_child_policies": ["@@none"]
+      }
+    }
+  }
+}

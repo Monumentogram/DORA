@@ -1,0 +1,52 @@
+// Run with DORA_PYTHON and NODE_PATH pointing to the installed runtimes.
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {spawn} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+const require=createRequire(import.meta.url),{chromium}=require('playwright');
+const child=spawn(process.env.DORA_PYTHON||'python',[fileURLToPath(new URL('./test_browser_fixture.py',import.meta.url))],{stdio:['ignore','pipe','pipe'],windowsHide:true});
+let browser;
+try {
+  const url=await new Promise((resolve,reject)=>{let output='';child.stdout.on('data',data=>{output+=data;if(output.includes('\n'))resolve(output.trim());});child.stderr.on('data',data=>reject(Error(String(data))));child.on('exit',code=>reject(Error('Fixture exited '+code)));});
+  browser=await chromium.launch({channel:'chrome',headless:true});
+  const page=await browser.newPage();const errors=[];
+  page.on('pageerror',e=>errors.push(e.message));
+  await page.addInitScript(()=>{window.micCalls=0;navigator.mediaDevices.getUserMedia=async()=>{window.micCalls++;throw Error('Microphone forbidden during synthetic test');};});
+  await page.goto(url);
+  await page.locator('#status').filter({hasText:'Готово'}).waitFor();
+  assert.equal(await page.locator('#testMic').isDisabled(),true);
+  await page.locator('#attest').click();
+  await page.locator('#status').filter({hasText:'Нужно явное'}).waitFor();
+  await page.locator('#consentCheck').check();await page.locator('#attest').click();
+  await page.locator('#status').filter({hasText:'Согласие сохранено'}).waitFor();
+  assert.equal(await page.locator('#record').isDisabled(),true,'Existing source cannot be overwritten');
+  await page.locator('#saveReference').click();await page.locator('#status').filter({hasText:'Подтвердите проверку'}).waitFor();
+  await page.locator('#referenceCheck').check();await page.locator('#saveReference').click();
+  await page.locator('#status').filter({hasText:'Человеческий эталон сохранён'}).waitFor();
+  await page.locator('#select').click();await page.locator('#timing').waitFor({state:'visible'});
+  await page.locator('#timingCheck').check();await page.locator('#saveTiming').click();
+  await page.locator('#status').filter({hasText:'Проверьте границы'}).waitFor();
+  await page.evaluate(()=>{document.querySelector('#playback').currentTime=0.1;});await page.locator('#markStart').click();
+  await page.evaluate(()=>{document.querySelector('#playback').currentTime=0.5;});await page.locator('#markEnd').click();
+  await page.evaluate(()=>{document.querySelector('#playback').currentTime=0.7;});await page.locator('#markStart').click();
+  await page.evaluate(()=>{document.querySelector('#playback').currentTime=1.1;});await page.locator('#markEnd').click();
+  await page.locator('#timingCheck').check();await page.locator('#saveTiming').click();
+  await page.locator('#status').filter({hasText:'Все временные отметки'}).waitFor();
+  await page.reload();await page.locator('#status').filter({hasText:'Готово'}).waitFor();
+  assert.equal(await page.locator('.word.done').count(),2);
+  // An autosaved correction must supersede old gold visually and require reconfirmation.
+  await page.evaluate(()=>{document.querySelector('#playback').currentTime=0.2;});
+  const revised=page.waitForResponse(r=>r.url().endsWith('/api/timing-draft')&&r.status()===200);
+  await page.locator('#markStart').click();await revised;
+  await page.reload();await page.locator('#status').filter({hasText:'Готово'}).waitFor();
+  assert.match(await page.locator('.word').first().innerText(),/0\.200/);
+  assert.match(await page.locator('#timingDraftStatus').innerText(),/требует подтверждения/);
+  assert.match(await page.locator('#cases option:checked').innerText(),/черновик/);
+  assert.equal(await page.locator('#timingCheck').isChecked(),false);
+  await page.locator('#timingCheck').check();await page.locator('#saveTiming').click();
+  await page.locator('#status').filter({hasText:'Все временные отметки'}).waitFor();
+  assert.match(await page.locator('#timingDraftStatus').innerText(),/Подтверждено/);
+  assert.equal(await page.evaluate(()=>window.micCalls),0);
+  assert.deepEqual(errors,[]);
+  console.log('Synthetic browser flow: consent, immutable capture, human reference, timing validation/persistence, refresh, zero microphone access: PASS');
+} finally {await browser?.close();child.kill();}

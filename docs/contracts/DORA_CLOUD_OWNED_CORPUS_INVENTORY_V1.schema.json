@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PRIVATE DORA owned acquisition inventory v1",
+  "description": "Schema is public. All instances including authored material remain private outside Git.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "source_release", "items"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "source_release": {"const": "dora-owned-corpus-v1.0.0"},
+    "items": {
+      "type": "array", "minItems": 72, "maxItems": 72,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "language", "speech_class", "material", "condition"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^(ru|en)-(read|spontaneous|noisy)-[0-9]{2}$"},
+          "language": {"enum": ["ru", "en"]},
+          "speech_class": {"enum": ["READ", "SPONTANEOUS", "NOISY"]},
+          "material": {"type": "string", "minLength": 1, "maxLength": 10000},
+          "condition": {"enum": ["CLEAN", "MODERATE_ROOM_NOISE", "DISTANT_MICROPHONE", "MILD_REVERBERATION", "OWN_VOICE_SPEAKERPHONE_RECAPTURE"]}
+        }
+      }
+    }
+  },
+  "$comment": "corpus.py additionally enforces unique exact case inventory 15 READ/15 SPONTANEOUS/6 NOISY per language, language/class/ID consistency, READ 45..115 normalized words, and noise condition consistency."
+}
