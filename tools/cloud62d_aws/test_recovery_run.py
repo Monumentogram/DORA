@@ -57,9 +57,6 @@ class RecoveryTests(unittest.TestCase):
             'independent_readbacks':[{'status':'VERIFIED_VISIBLE_EMPTY','evidence_sha256':'b'*64},
                                     {'status':'VERIFIED_VISIBLE_EMPTY','evidence_sha256':'c'*64}]}))
         self.diagnostics = self.base / 'diagnostics.json'
-        self.diagnostics.write_bytes(encoded({'all_synthetic':True, 'maximum_dispatches':8,
-            'maximum_duration_seconds':3, 'actual_dispatches':1, 'service_flow_verified':True,
-            'cleanup_status':'VERIFIED_VISIBLE_EMPTY'}))
         self.result_path = 'docs/contracts/first-result.json'
         path = self.repo/self.result_path; path.parent.mkdir(parents=True); path.write_bytes(encoded({'bounded8':'INCOMPLETE'}))
         self.root = self.base / 'recovery'
@@ -68,8 +65,18 @@ class RecoveryTests(unittest.TestCase):
             'job_prefix':'d62d-abc12345-','input_prefix':'input/','output_prefix':'output/',
             'outputs':{'InputBucket':'synthetic-input','OutputBucket':'synthetic-output',
                 'InputKey':'synthetic-input-key','OutputKey':'synthetic-output-key','DataRole':'synthetic-role'}}
+        self.config['template_sha256'] = 'd'*64
+        self.config_path = self.base/'config.json'
+        self.config_path.write_bytes(encoded(self.config))
+        self.diagnostics.write_bytes(encoded({'schema_version':'0.2', 'all_synthetic':True,
+            'maximum_dispatches':3, 'maximum_duration_seconds':3, 'actual_dispatches':1,
+            'reserved_seconds':9, 'successful_step':'D1',
+            'diagnosis':'DORA_TARGET_SERVICE_FLOW_VERIFIED', 'service_flow_verified':True,
+            'human_speech_unlocked':True, 'completed_result_retrieved':True,
+            'cleanup_status':'VERIFIED_VISIBLE_EMPTY',
+            'config_sha256':digest(self.config_path.read_bytes()), 'template_sha256':'d'*64}))
         self.inputs = dict(prior_root=self.old.root, cleanup_path=self.cleanup, diagnostic_path=self.diagnostics,
-            prior_result_commit='b'*40, prior_result_path=self.result_path)
+            prior_result_commit='b'*40, prior_result_path=self.result_path, config_path=self.config_path)
 
     def binding(self):
         return recovery.build_recovery_binding(self.store, self.plan, **self.inputs)
@@ -90,6 +97,8 @@ class RecoveryTests(unittest.TestCase):
         self.assertEqual(binding['prior_failed_starts'], 4)
         self.assertEqual(binding['prior_reserved_seconds'], 80)
         self.assertEqual(binding['diagnostic_reserved_seconds'], 24)
+        self.assertEqual(binding['max_diagnostic_dispatches'], 4)
+        self.assertEqual(binding['maximum_new_diagnostic_dispatches'], 3)
         self.assertEqual(binding['total_reserved_seconds'], self.plan['budget']['reserved_seconds']+104)
         case = self.plan['cases'][0]['id']; evidence = 'attempts/'+case+'/evidence.json'
         original = json.loads(self.old._path(evidence).read_bytes())
@@ -149,7 +158,8 @@ class RecoveryTests(unittest.TestCase):
             if args[0] == 'merge-base': return b''
             if args[-1].endswith('recovery.json'): return encoded(phase)
             return (self.repo/self.result_path).read_bytes()
-        with patch.object(live,'verify_publication',return_value={'published_commit':'c'*40}), patch.object(live,'git_output',side_effect=git):
+        with patch.object(live,'verify_publication',return_value={'published_commit':'c'*40,
+                'config_sha256':digest(self.config_path.read_bytes())}), patch.object(live,'git_output',side_effect=git):
             verified = recovery.verify_recovery_publication(publication,binding)
             self.assertEqual(verified['recovery_binding']['prior_failed_starts'],4)
             self.assertIn(('merge-base','--is-ancestor','a'*40,'b'*40), calls)
@@ -181,6 +191,37 @@ class RecoveryTests(unittest.TestCase):
             self.diagnostics.write_bytes(encoded({**baseline,**change}))
             with self.subTest(change=change), self.assertRaisesRegex(ValueError,'DIAGNOSTIC_RESERVATION_UNVERIFIED'):
                 self.binding()
+
+    def test_only_d1_exact_target_configuration_can_unlock_recovery(self):
+        baseline = json.loads(self.diagnostics.read_bytes())
+        self.binding()
+        for change in ({'successful_step':'D2'}, {'successful_step':'D3'},
+                       {'diagnosis':'OUTPUT_PATH_SPECIFIC'}, {'human_speech_unlocked':False},
+                       {'actual_dispatches':2}, {'actual_dispatches':3},
+                       {'completed_result_retrieved':False}, {'schema_version':'1.0'},
+                       {'maximum_dispatches':8}, {'actual_dispatches':True},
+                       {'reserved_seconds':24}, {'config_sha256':'0'*64},
+                       {'template_sha256':'0'*64}):
+            self.diagnostics.write_bytes(encoded({**baseline, **change}))
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                self.binding()
+        self.diagnostics.write_bytes(encoded(baseline))
+        self.config_path.write_bytes(encoded({**self.config, 'changed':True}))
+        with self.assertRaisesRegex(ValueError,'DIAGNOSTIC_TARGET_CONFIG_BINDING'):
+            self.binding()
+
+    def test_diagnostic_config_must_match_published_and_executed_recovery_config(self):
+        binding = self.binding()
+        with patch.object(live, 'verify_publication', return_value={
+                'published_commit':'c'*40, 'config_sha256':'0'*64}):
+            with self.assertRaisesRegex(ValueError,'DIAGNOSTIC_TARGET_CONFIG_BINDING'):
+                recovery.verify_recovery_publication({}, binding)
+        runner = self.runner()
+        runner.config = {**self.config, 'changed':True}
+        with self.assertRaisesRegex(ValueError,'RECOVERY_RUNTIME_CONFIG_CHANGED'):
+            runner.run()
+        self.assertFalse(self.api.calls)
+        self.assertFalse(self.store._path(recovery.MARKER).exists())
 
 
 if __name__ == '__main__':

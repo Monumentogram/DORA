@@ -96,7 +96,7 @@ def _prior_facts(store, prior_root, plan):
 
 
 def build_recovery_binding(store, plan, *, prior_root, cleanup_path, diagnostic_path,
-                           prior_result_commit, prior_result_path, verify_corpus=True):
+                           prior_result_commit, prior_result_path, config_path, verify_corpus=True):
     """Offline read-only binding. Publish this exact object in prospective v0.3."""
     require(re.fullmatch('[0-9a-f]{40}', prior_result_commit), 'PRIOR_RESULT_COMMIT')
     _public_path(prior_result_path)
@@ -113,11 +113,24 @@ def build_recovery_binding(store, plan, *, prior_root, cleanup_path, diagnostic_
                 re.fullmatch('[0-9a-f]{64}', row.get('evidence_sha256','')) for row in readbacks) and
             len({row['evidence_sha256'] for row in readbacks}) == 2, 'PRIOR_CLEANUP_UNVERIFIED')
     diagnostic = _read(diagnostic_path)
-    require(diagnostic.get('all_synthetic') is True and diagnostic.get('maximum_dispatches') == 8 and
+    require(diagnostic.get('schema_version') == '0.2' and
+            diagnostic.get('all_synthetic') is True and diagnostic.get('maximum_dispatches') == 3 and
             diagnostic.get('maximum_duration_seconds') == 3 and type(diagnostic.get('actual_dispatches')) is int and
-            1 <= diagnostic['actual_dispatches'] <= 8 and diagnostic.get('service_flow_verified') is True and
+            diagnostic['actual_dispatches'] == 1 and diagnostic.get('reserved_seconds') == 9 and
+            diagnostic.get('successful_step') == 'D1' and
+            diagnostic.get('diagnosis') == 'DORA_TARGET_SERVICE_FLOW_VERIFIED' and
+            diagnostic.get('service_flow_verified') is True and diagnostic.get('human_speech_unlocked') is True and
+            diagnostic.get('completed_result_retrieved') is True and
             diagnostic.get('cleanup_status') == 'VERIFIED_VISIBLE_EMPTY',
             'DIAGNOSTIC_RESERVATION_UNVERIFIED')
+    config_raw = Path(config_path).read_bytes()
+    config = json.loads(config_raw)
+    require(diagnostic.get('config_sha256') == digest(config_raw) and
+            re.fullmatch('[0-9a-f]{64}', config.get('template_sha256', '')) and
+            diagnostic.get('template_sha256') == config['template_sha256'],
+            'DIAGNOSTIC_TARGET_CONFIG_BINDING')
+    # Retain the entire historical 24-second reservation. It covers the failed
+    # three-second v0.1 Start plus the new ladder's maximum nine seconds.
     total = reserved + plan['budget']['reserved_seconds'] + 24
     asr = Decimal(plan['pricing']['usd_per_second']) * total
     ancillary = Decimal(plan['pricing']['ancillary_tax_upper_usd'])
@@ -130,11 +143,15 @@ def build_recovery_binding(store, plan, *, prior_root, cleanup_path, diagnostic_
         'prior_marker_sha256':digest(store._path('provider-started.json').read_bytes()),
         'prior_cleanup_sha256':digest(Path(cleanup_path).read_bytes()),
         'diagnostic_receipt_sha256':digest(Path(diagnostic_path).read_bytes()),
+        'diagnostic_successful_step':'D1', 'diagnostic_config_sha256':digest(config_raw),
+        'diagnostic_template_sha256':config['template_sha256'],
         'recovery_driver_sha256':digest(Path(__file__).read_bytes().replace(b'\r\n',b'\n')),
         'core_operator_sha256':CORE_SHA256, 'prior_failed_primary_ids':list(EASY_EN_IDS[:4]),
         'prior_unattempted_primary_ids':list(EASY_EN_IDS[4:]), 'prior_failed_starts':4,
         'prior_accepted_jobs':0, 'prior_results':0, 'prior_reserved_seconds':reserved,
-        'diagnostic_reserved_seconds':24, 'max_diagnostic_dispatches':8,
+        'diagnostic_reserved_seconds':24, 'max_diagnostic_dispatches':4,
+        'historical_diagnostic_reserved_capacity':8,
+        'historical_diagnostic_dispatches':1, 'maximum_new_diagnostic_dispatches':3,
         'total_reserved_seconds':total, 'total_asr_upper_usd':str(asr),
         'ancillary_tax_upper_usd':str(ancillary), 'total_upper_usd':str(asr+ancillary)}
 
@@ -142,6 +159,8 @@ def build_recovery_binding(store, plan, *, prior_root, cleanup_path, diagnostic_
 def verify_recovery_publication(publication, binding, *, allow_expired=False):
     """Reuse the original barrier, additionally bind the published failure ancestry."""
     proof = live.verify_publication(**publication, allow_expired=allow_expired)
+    require(proof.get('config_sha256') == binding['diagnostic_config_sha256'],
+            'DIAGNOSTIC_TARGET_CONFIG_BINDING')
     repo = Path(publication['repo']).resolve()
     git = lambda *args: live.git_output(repo, *args, binary=publication.get('git_binary','git'))
     phase = json.loads(git('show', proof['published_commit']+':'+publication['phase_a']))
@@ -171,6 +190,7 @@ class RecoveryRunner(live.Runner):
         # Its authority is still the exact published plan, marker and prior proof.
         expected = build_recovery_binding(self.store, self.plan, **self.recovery_inputs,
                                           verify_corpus=not allow_expired)
+        require(self.config == _read(self.recovery_inputs['config_path']), 'RECOVERY_RUNTIME_CONFIG_CHANGED')
         require(expected == self.recovery_binding, 'RECOVERY_FROZEN_BINDING_CHANGED')
         proof = verify_recovery_publication(self.publication, expected, allow_expired=allow_expired)
         marker = self.store._path(MARKER)
@@ -264,8 +284,10 @@ def main():
     parser.add_argument('--git', default='git')
     args = parser.parse_args()
     store = CorpusStore(args.corpus,args.repo); plan = _read(args.plan)
+    require(args.config, 'RECOVERY_CONFIG_REQUIRED')
     inputs = dict(prior_root=args.prior_run_root, cleanup_path=args.prior_cleanup, diagnostic_path=args.diagnostics,
-                  prior_result_commit=args.prior_result_commit, prior_result_path=args.prior_result_path)
+                  prior_result_commit=args.prior_result_commit, prior_result_path=args.prior_result_path,
+                  config_path=args.config)
     binding = build_recovery_binding(store,plan,**inputs,verify_corpus=args.action!='cleanup')
     if args.action == 'binding':
         print(json.dumps(binding)); return

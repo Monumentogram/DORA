@@ -8,6 +8,67 @@ import aws_prepare as aws
 
 
 class SafetyTests(unittest.TestCase):
+    def test_output_default_cmk_header_matrix_and_input_explicit_headers(self):
+        resources = aws.resolved_template(fixture_config())["Resources"]
+        algorithm = "s3:x-amz-server-side-encryption"
+        key_header = "s3:x-amz-server-side-encryption-aws-kms-key-id"
+        customer = "s3:x-amz-server-side-encryption-customer-algorithm"
+        def encryption_denied(kind, headers):
+            statements = resources[kind + "BucketPolicy"]["Properties"]["PolicyDocument"]["Statement"]
+            for statement in statements:
+                condition = statement.get("Condition", {})
+                if not any(key.startswith("s3:x-amz-server-side-encryption") for fields in condition.values() for key in fields):
+                    continue
+                self.assertEqual(statement["Effect"], "Deny")
+                self.assertEqual(statement["Action"], "s3:PutObject")
+                checks = []
+                for operator, fields in condition.items():
+                    for key, wanted in fields.items():
+                        if operator == "Null": checks.append((key not in headers) == (wanted == "true"))
+                        elif operator in ("StringNotEqualsIfExists", "StringNotEquals"): checks.append(key not in headers or headers[key] != wanted)
+                        else: self.fail("Unexpected encryption condition operator: " + operator)
+                if all(checks): return True
+            return False
+        for kind in ("Input", "Output"):
+            correct_key = fixture_config()["outputs"][kind + "Key"]
+            for algo in (None, "aws:kms", "AES256", "aws:kms:dsse", ""):
+                for key in (None, correct_key, "alias/aws/s3", "wrong-key", ""):
+                    headers = {header:value for header,value in ((algorithm,algo),(key_header,key)) if value is not None}
+                    allowed = (algo == "aws:kms" and key == correct_key) or (kind == "Output" and algo is None and key is None)
+                    with self.subTest(kind=kind,algo=algo,key=key):
+                        self.assertEqual(encryption_denied(kind,headers), not allowed)
+            for headers in ({customer:"AES256"}, {algorithm:"aws:kms",key_header:correct_key,customer:"AES256"}):
+                if kind == "Output": self.assertTrue(encryption_denied(kind,headers))
+            default = resources[kind + "Bucket"]["Properties"]["BucketEncryption"]["ServerSideEncryptionConfiguration"]
+            self.assertEqual(default,[{"ServerSideEncryptionByDefault":{"SSEAlgorithm":"aws:kms","KMSMasterKeyID":correct_key},"BucketKeyEnabled":False}])
+
+    def test_output_explicit_presence_guards_tls_and_deadline_truth_table(self):
+        from datetime import datetime, timedelta
+        c = fixture_config()
+        statements = aws.resolved_template(c)["Resources"]["OutputBucketPolicy"]["Properties"]["PolicyDocument"]["Statement"]
+        for statement in statements:
+            self.assertNotIn("StringNotEqualsIfExists", statement.get("Condition", {}))
+        algorithm = "s3:x-amz-server-side-encryption"
+        key = "s3:x-amz-server-side-encryption-aws-kms-key-id"
+        deadline = datetime.fromisoformat(c["write_deadline"])
+        for headers in ({}, {algorithm: "aws:kms", key: c["outputs"]["OutputKey"]}):
+            for seconds in (-1, 0, 1):
+                for secure in (True, False):
+                    context = {**headers, "aws:SecureTransport": str(secure).lower(), "aws:CurrentTime": deadline + timedelta(seconds=seconds)}
+                    denied = False
+                    for statement in statements:
+                        matches = []
+                        for operator, fields in statement["Condition"].items():
+                            for name, expected in fields.items():
+                                if operator == "Null": matches.append((name not in context) == (expected == "true"))
+                                elif operator == "StringNotEquals": matches.append(context.get(name) != expected)
+                                elif operator == "Bool": matches.append(context.get(name) == expected)
+                                elif operator == "DateGreaterThanEquals": matches.append(context[name] >= datetime.fromisoformat(expected))
+                                else: self.fail(operator)
+                        denied |= all(matches)
+                    with self.subTest(headers=headers, seconds=seconds, secure=secure):
+                        self.assertEqual(denied, seconds >= 0 or not secure)
+
     def test_readback_accepts_completed_update_but_rejects_inflight_or_rollback(self):
         import contextlib, io
         from unittest.mock import patch
@@ -53,8 +114,9 @@ class SafetyTests(unittest.TestCase):
                     self.assertIn(item["Resource"], [buckets[0] + "/input/*", buckets[1] + "/output/*"])
         for kind in ("Input", "Output"):
             denies = resources[kind + "BucketPolicy"]["Properties"]["PolicyDocument"]["Statement"]
-            self.assertTrue(any(s.get("Condition", {}).get("StringNotEqualsIfExists", {}).get("s3:x-amz-server-side-encryption") == "aws:kms" for s in denies))
-            self.assertTrue(any(s.get("Condition", {}).get("StringNotEqualsIfExists", {}).get("s3:x-amz-server-side-encryption-aws-kms-key-id") == keys[0 if kind == "Input" else 1] for s in denies))
+            operator = "StringNotEqualsIfExists" if kind == "Input" else "StringNotEquals"
+            self.assertTrue(any(s.get("Condition", {}).get(operator, {}).get("s3:x-amz-server-side-encryption") == "aws:kms" for s in denies))
+            self.assertTrue(any(s.get("Condition", {}).get(operator, {}).get("s3:x-amz-server-side-encryption-aws-kms-key-id") == keys[0 if kind == "Input" else 1] for s in denies))
 
     def test_preflight_rejects_runtime_head_or_describe_denial(self):
         from unittest.mock import patch

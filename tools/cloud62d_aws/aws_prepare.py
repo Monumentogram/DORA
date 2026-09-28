@@ -230,6 +230,21 @@ def template():
                 {"Effect": "Deny", "Principal": "*", "Action": "s3:PutObject", "Resource": object_resource, "Condition": {"StringNotEqualsIfExists": {"s3:x-amz-server-side-encryption": "aws:kms"}}},
                 {"Effect": "Deny", "Principal": "*", "Action": "s3:PutObject", "Resource": object_resource, "Condition": {"StringNotEqualsIfExists": {"s3:x-amz-server-side-encryption-aws-kms-key-id": arn(kind + "Key")}}}
             ])}}
+        if kind == "Output":
+            # Both headers absent uses the exact default CMK. Explicit values
+            # must form a complete matching pair; SSE-C is never permitted.
+            algorithm = "s3:x-amz-server-side-encryption"
+            key_header = "s3:x-amz-server-side-encryption-aws-kms-key-id"
+            encryption_rules = r[kind + "BucketPolicy"]["Properties"]["PolicyDocument"]["Statement"]
+            encryption_rules[2:] = [
+                {"Effect": "Deny", "Principal": "*", "Action": "s3:PutObject", "Resource": object_resource, "Condition": condition}
+                for condition in (
+                    {"Null": {algorithm: "false"}, "StringNotEquals": {algorithm: "aws:kms"}},
+                    {"Null": {key_header: "false"}, "StringNotEquals": {key_header: arn("OutputKey")}},
+                    {"Null": {algorithm: "false", key_header: "true"}},
+                    {"Null": {algorithm: "true", key_header: "false"}},
+                    {"Null": {"s3:x-amz-server-side-encryption-customer-algorithm": "false"}},
+                )]
     job_arn = sub("arn:aws:transcribe:eu-central-1:${AWS::AccountId}:transcription-job/d62d-${RunId}-*")
     data_stmts = [statement("s3:GetObject", sub("${InputBucket.Arn}/input/*")),
                   statement("s3:PutObject", sub("${OutputBucket.Arn}/output/*")),
