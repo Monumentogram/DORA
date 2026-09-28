@@ -1,5 +1,31 @@
 # Dora MVP 1 — Executable Backlog
 
+## 2026-09-28 — 11.1C closed internal Alpha governance amendment
+
+Effective only for `CLOSED_INTERNAL_ALPHA`: **11.1C = PASS / PRIVACY_RETENTION_CONTROL_PREREQUISITES_SATISFIED_FOR_CLOSED_INTERNAL_ALPHA**. Authority: Owner-approved OD-11C-23..26 in [v0.4](design/DORA_CLOUD_ALPHA_PRIVACY_RETENTION_CONTROL_V0_4.md), [machine record](contracts/DORA_CLOUD_ALPHA_PRIVACY_RETENTION_CONTROL_V0_4.json), [ADR-0013](adr/ADR-0013-closed-internal-alpha-expert-review-governance.md) and prospective [expert-review governance v0.1](design/DORA_INTERNAL_ALPHA_EXPERT_REVIEW_GOVERNANCE_V0_1.md). Baseline `7e05a74984a2cfbac3790b1f963b392ef7870fd8`. Earlier entries below are historical and retain their original status/evidence.
+
+Independent AI-assisted Privacy/Legal review = `APPROVED_FOR_CLOSED_INTERNAL_ALPHA_WITH_CONDITIONS`; explicit Owner risk/scope acceptance = `APPROVED_BY_PROJECT_OWNER`. This supplies project governance only, not attorney/DPO opinion, statutory certification, regulator/external-audit/public-release approval. Frozen criterion5 historically required qualified scope approval; it is expressly amended for effective internal governance, never silently rewritten or declared satisfied by an external reviewer.
+
+| Item | Current disposition |
+|---|---|
+| PC-01 | BLOCKED_EXTERNAL_APPROVAL → RESOLVED_BY_INTERNAL_ALPHA_GOVERNANCE |
+| PC-02 / RT-01 / RT-02 / SC-01 | RESOLVED, unchanged |
+| SC-02 | BLOCKED_BY_PRIVACY_ONLY → RESOLVED |
+| CLD-ADM-PRIVACY-001 | SATISFIED_FOR_CLOSED_INTERNAL_ALPHA |
+| CLD-ADM-RETENTION-001 | SATISFIED; v0.3 56-cell matrix and ADR-0012 unchanged |
+| CLD-ADM-CONTROL-001 | SATISFIED_FOR_CLOSED_INTERNAL_ALPHA; ADR-0011 architecture unchanged |
+| CLD-ADM-EVALUATION-001 / CLD-ADM-PROVIDER-001 | OPEN |
+| CLD-ADM-ADMISSION-001 / 6.3 | BLOCKED by EVALUATION/PROVIDER; execution NOT_RUN |
+| 6.2D | ELIGIBLE_TO_START / NEXT; execution NOT_RUN, not PASS |
+| 6.1 / 6.2 | PASS, unchanged |
+
+Hard population boundary: Owner and invited informed internal Alpha participants with freely given explicit recording/Cloud-test opt-in only. Customer/production calls, non-Alpha third-party or non-agreeing voices, public/anonymous users, hidden/passive recording and employee surveillance are outside scope. Existing mic-only explicit Start and synthetic-data authority remain. Live disclosure is disabled; all12 OD-11C-26 checks are NOT_RUN. Actual operator/contact, jurisdiction, lawful basis/recording duties, AWS contract applicability and usable rights/DSR handling (also after credential loss) are checked before real audio. `GDPR_REFERENCE_FRAMEWORK_WHERE_APPLICABLE`, not a universal applicability claim.
+
+**Mandatory future gate: `PRIVACY-LEGAL-EXTERNAL-001` = `DEFERRED_MANDATORY_PRE_EXTERNAL_USE`** (canonical qualification status `DEFERRED_TO_PRE_EXTERNAL_USE`; residual `DEFERRED_MANDATORY_BEFORE_EXTERNAL_USE`). Owner commissions a qualified external reviewer BEFORE the earliest of: first external/non-internal Alpha user; first real customer production-like recording; conversations involving non-Alpha third parties; public beta; public release; material provider change; processing-region change; material processing-purpose expansion; significant new personal-data category; any legal/contractual circumstance explicitly requiring professional qualification. Verify actual operator/controller, participant jurisdictions, lawful bases, roles, AWS contract, transfers, final notice, participant rights, DSR process and market recording/communications law. NOT_RUN, not COMPLETED. This gate cannot be waived by internal governance, and qualification requirements may apply before internal use; unknown applicability blocks the affected operation pending facts. Full MVP/public governance is unchanged.
+
+39 frozen gates: **6 SATISFIED + 2 SATISFIED_FOR_CLOSED_INTERNAL_ALPHA + 0 PARTIALLY_SATISFIED + 5 OPEN + 1 BLOCKED + 25 NOT_RUN = 39**. Internal normalized count:8/0/5/1/25, with the two scope-qualified promotions retained explicitly. The future external gate is separate governance, not a fortieth frozen gate. Frozen v0.1, privacy v0.1/v0.2/v0.3 and historical 6.1/6.2 evidence are preserved. No Android/runtime/AWS API/audio/inference/device/Recovery/PR#86 changes; no 6.2D/6.3 execution, main update or merge. Next task only: **6.2D — Cloud provider evaluation and technical admission**; no automatic execution.
+
+
 ## Current 11.1C retention closure — 2026-09-28 — v0.3
 
 OD-11C-13..22 are APPROVED_BY_PROJECT_OWNER. [Current retention package](design/DORA_CLOUD_ALPHA_PRIVACY_RETENTION_CONTROL_V0_3.md), [machine contract](contracts/DORA_CLOUD_ALPHA_PRIVACY_RETENTION_CONTROL_V0_3.json) and [ADR-0012](adr/ADR-0012-alpha-retention-periods-and-provider-copy-limits.md) supersede only the enumerated retention interpretations of OD-11C-04/08/10. All prior text below is historical where it differs; v0.1/v0.2 and ADR-0011 remain preserved. Baseline `99976ce21a5ee2fde408e1bee78b12902a675b81`.
