@@ -151,7 +151,13 @@ def run(proof_api, *, repo, config_path, published_commit, protocol, aws_path, a
         kms = assess_output_kms(proof_api, config)
         base = ('--bucket', config['outputs']['OutputBucket'], '--expected-bucket-owner', config['account_id'])
         encryption = proof_api.call('s3api', 'get-bucket-encryption', *base)['ServerSideEncryptionConfiguration']['Rules']
-        require(encryption == [{'ApplyServerSideEncryptionByDefault': {'SSEAlgorithm': 'aws:kms', 'KMSMasterKeyID': config['outputs']['OutputKey']}, 'BucketKeyEnabled': False}], 'OUTPUT_DEFAULT_CMK_DRIFT')
+        require(isinstance(encryption, list) and len(encryption) == 1 and isinstance(encryption[0], dict), 'OUTPUT_DEFAULT_CMK_DRIFT')
+        rule = dict(encryption[0])
+        # S3 may report its restrictive SSE-C block alongside the CMK default.
+        # Accept only this known block; retain the original response as evidence.
+        if 'BlockedEncryptionTypes' in rule:
+            require(rule.pop('BlockedEncryptionTypes') in ({'EncryptionType': 'SSE-C'}, {'EncryptionType': ['SSE-C']}), 'OUTPUT_DEFAULT_CMK_DRIFT')
+        require(rule == {'ApplyServerSideEncryptionByDefault': {'SSEAlgorithm': 'aws:kms', 'KMSMasterKeyID': config['outputs']['OutputKey']}, 'BucketKeyEnabled': False}, 'OUTPUT_DEFAULT_CMK_DRIFT')
         versioning = proof_api.call('s3api', 'get-bucket-versioning', *base)
         require(not versioning.get('Status'), 'OUTPUT_VERSIONING_DRIFT')
         operator = setup.assume_operator(proof_api, config)

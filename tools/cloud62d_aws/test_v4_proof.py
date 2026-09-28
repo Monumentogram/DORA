@@ -31,6 +31,8 @@ class ProbeApi(ResourceApi):
             role = 'Other' if self.probe_fault == 'identity' else 'dora-62d-a1b2c3d4-operator'
             return {'Account':self.c['account_id'], 'Arn':'arn:aws:sts::123456789012:assumed-role/'+role+'/probe'}
         if op == 'get-bucket-encryption':
+            if hasattr(self, 'encryption_rules'):
+                return {'ServerSideEncryptionConfiguration': {'Rules':self.encryption_rules}}
             return {'ServerSideEncryptionConfiguration': {'Rules': [{'ApplyServerSideEncryptionByDefault': {'SSEAlgorithm':'aws:kms', 'KMSMasterKeyID': self.c['outputs']['OutputKey'] if self.probe_fault != 'default' else 'wrong'}, 'BucketKeyEnabled':False}]}}
         if op == 'get-bucket-versioning': return {'Status':'Enabled'} if self.probe_fault == 'versioning' else {}
         if op in ('put-object','head-object','delete-object','list-objects-v2','list-object-versions','list-multipart-uploads'):
@@ -77,10 +79,11 @@ class V4ProofTests(unittest.TestCase):
         self.publication=dict(repo=self.repo,config_path=self.config_path,published_commit='a'*40,
                               aws_path=self.aws_path,aws_config_path=self.aws_config_path,protocol='docs/contracts/v02.json')
 
-    def execute(self, fault=None, independent_fault=None):
+    def execute(self, fault=None, independent_fault=None, *, encryption_rules=None):
         self.api=ProbeApi(self.config,self.root,self.state,fault=fault)
         self.reader=ProbeApi(self.config,self.root,self.state,independent=True,fault=independent_fault or fault)
         self.reader.binary=str(self.aws_path); self.reader.config_file=self.aws_config_path
+        if encryption_rules is not None: self.reader.encryption_rules=encryption_rules
         with patch.object(proof,'verify_publication',return_value=self.pub), patch.object(setup,'identity_and_optout',return_value={}), patch.object(setup,'assume_operator',return_value=self.api):
             return proof.run(self.reader,**self.publication)
 
@@ -92,6 +95,37 @@ class V4ProofTests(unittest.TestCase):
         self.assertEqual(json.loads((self.root/'receipt.json').read_bytes()),result)
         with self.assertRaisesRegex(ValueError,'CONSUMED'): self.execute()
         self.assertEqual(self.state['puts'],1)
+
+    def test_known_sse_c_block_preserves_prewrite_evidence_and_allows_one_probe(self):
+        for index,blocked in enumerate(({'EncryptionType':'SSE-C'}, {'EncryptionType':['SSE-C']})):
+            with self.subTest(blocked=blocked):
+                self.repo=Path(self.tmp.name)/str(index)/'repo'; self.repo.mkdir(parents=True); (self.repo/'.git').mkdir()
+                self.root=proof.canonical_root(self.repo); self.publication['repo']=self.repo
+                previous=self.root/'provider-read-evidence'/'0000.json'; previous.parent.mkdir(parents=True)
+                previous.write_bytes(b'{"prewrite_only":true}\n')
+                self.state={'puts':0,'deletes':0}
+                rule={'ApplyServerSideEncryptionByDefault':{'SSEAlgorithm':'aws:kms','KMSMasterKeyID':self.config['outputs']['OutputKey']},
+                      'BucketKeyEnabled':False,'BlockedEncryptionTypes':blocked}
+                result=self.execute(encryption_rules=[rule])
+                self.assertEqual(result['status'],'DIRECT_S3_PROOF_PASS')
+                self.assertEqual(self.state,{'puts':1,'deletes':1})
+                self.assertEqual(previous.read_bytes(),b'{"prewrite_only":true}\n')
+                self.assertTrue((previous.parent/'0001.json').exists())
+
+    def test_encryption_drift_unknown_fields_and_unblocking_fail_before_reservation(self):
+        baseline={'ApplyServerSideEncryptionByDefault':{'SSEAlgorithm':'aws:kms','KMSMasterKeyID':self.config['outputs']['OutputKey']},'BucketKeyEnabled':False}
+        invalid=[{**baseline,'BlockedEncryptionTypes':value} for value in
+                 (None,{},'SSE-C',{'EncryptionType':'NONE'},{'EncryptionType':['NONE']},{'EncryptionType':[]},
+                  {'EncryptionType':['SSE-C','NONE']},{'EncryptionType':['SSE-C','SSE-C']},
+                  {'EncryptionType':'SSE-C','unknown':True})]
+        invalid.extend(({**baseline,'unknown':True},{**baseline,'BucketKeyEnabled':True},
+                        {**baseline,'ApplyServerSideEncryptionByDefault':{'SSEAlgorithm':'AES256','KMSMasterKeyID':self.config['outputs']['OutputKey']}},
+                        {**baseline,'ApplyServerSideEncryptionByDefault':{'SSEAlgorithm':'aws:kms','KMSMasterKeyID':'wrong'}}))
+        for rules in [[],[baseline,baseline],*([rule] for rule in invalid)]:
+            with self.subTest(rules=rules),self.assertRaisesRegex(ValueError,'OUTPUT_DEFAULT_CMK_DRIFT'):
+                self.execute(encryption_rules=rules)
+            self.assertEqual(self.state['puts'],0)
+            self.assertFalse((self.root/'reservation.json').exists())
 
     def test_uncertain_put_or_wrong_head_consumes_once_and_cleans_up(self):
         for fault in ('uncertain','head'):
