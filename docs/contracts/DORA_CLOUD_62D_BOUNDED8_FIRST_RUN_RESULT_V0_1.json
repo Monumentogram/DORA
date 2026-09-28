@@ -1,0 +1,652 @@
+{
+  "schema_version": "0.1",
+  "package": "DORA_CLOUD_62D_BOUNDED8_FIRST_RUN_RESULT_V0_1",
+  "scope": "FIRST_BOUNDED8_CAMPAIGN_ALL_FAILURES_PRESERVED",
+  "bounded8": "INCOMPLETE",
+  "phase_b": "ATTEMPTED_INCOMPLETE",
+  "stage_6_2D": "BLOCKED / BOUNDED8_INCOMPLETE",
+  "publication": {
+    "phase_a_commit": "857a1bc83cc0d7c06ef9def5f2d29e2c117d2582",
+    "phase_a_path": "docs/contracts/DORA_CLOUD_EVALUATION_PHASE_A_BOUNDED8_V0_2.json",
+    "phase_a_sha256": "7f3f290d2d743c1b6f8a2c7dba59aef2fa6be99bf10a93446dc0bbebe5e72b9f",
+    "frozen_run_operator_sha256": "a3bb95b40f22f71ff6a81077b6d9f5b49943e96622214b6dcfeafa0444e2205e",
+    "operator_source_basis": "Immutable operator at Phase A commit; subsequent working-tree recovery changes are not this campaign source.",
+    "remote_head_verified": "857a1bc83cc0d7c06ef9def5f2d29e2c117d2582",
+    "publication_observed_at": "2026-09-28T18:50:01.313755+00:00",
+    "first_speech_upload_at": "2026-09-28T18:50:01.707665+00:00",
+    "first_start_dispatch_at": "2026-09-28T18:50:03.588501+00:00",
+    "publication_precedes_every_speech_operation": true,
+    "speech_operations_before_publication": 0
+  },
+  "whole_manifest_sha256": "27ea1593a46c9c17de0a568df6537dbe55df56c4def59559d758cb9f07ecbe65",
+  "plan_sha256": "6434306ad6b8a5bf0b90091668d5e9f98fe48f20819c89d069f0b6a7b308403f",
+  "private_journal_tree_sha256": "11defdad494ac2111cfd0c40bcbdbd8cb9f65ffb3b58b958dbdecbcd6a1b7047",
+  "private_run_report_sha256": "380c2e3d295c9ddb042b2d71eb19407ce7a4d35136abc7fd808081cea2b05e83",
+  "corpus_and_references_revalidated_unchanged": true,
+  "attempt_accounting": {
+    "expected_primary_records": 8,
+    "speech_upload_dispatches": 4,
+    "start_dispatches": 4,
+    "failed_primaries": 4,
+    "not_run_primaries": 4,
+    "accepted_jobs": 0,
+    "completed_jobs": 0,
+    "transcripts": 0,
+    "scored_primaries": 0,
+    "automatic_retries": 0,
+    "technical_cases_expected": 11,
+    "technical_cases_run": 0
+  },
+  "records": [
+    {
+      "case_id": "ru-read-01",
+      "language": "ru",
+      "speech_class": "READ",
+      "duration_us": 38920000,
+      "status": "FAILED",
+      "expected_reference_tokens": {
+        "raw": 57,
+        "normalized": 57
+      },
+      "raw": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "wer_percent": null,
+        "scored_records": 0
+      },
+      "normalized": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "wer_percent": null,
+        "scored_records": 0
+      },
+      "error_code": "BadRequestException",
+      "error_class": "invalid_request",
+      "provider_job_accepted": false,
+      "transcript_received": false,
+      "automatic_retries": 0,
+      "timestamp_structure": "NOT_EVALUATED_NO_PROVIDER_RESULT",
+      "service_turnaround_us": null
+    },
+    {
+      "case_id": "ru-read-02",
+      "language": "ru",
+      "speech_class": "READ",
+      "duration_us": 42700000,
+      "status": "FAILED",
+      "expected_reference_tokens": {
+        "raw": 64,
+        "normalized": 64
+      },
+      "raw": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "wer_percent": null,
+        "scored_records": 0
+      },
+      "normalized": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "wer_percent": null,
+        "scored_records": 0
+      },
+      "error_code": "BadRequestException",
+      "error_class": "invalid_request",
+      "provider_job_accepted": false,
+      "transcript_received": false,
+      "automatic_retries": 0,
+      "timestamp_structure": "NOT_EVALUATED_NO_PROVIDER_RESULT",
+      "service_turnaround_us": null
+    },
+    {
+      "case_id": "ru-spontaneous-01",
+      "language": "ru",
+      "speech_class": "SPONTANEOUS",
+      "duration_us": 34900000,
+      "status": "FAILED",
+      "expected_reference_tokens": {
+        "raw": 30,
+        "normalized": 30
+      },
+      "raw": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "wer_percent": null,
+        "scored_records": 0
+      },
+      "normalized": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "wer_percent": null,
+        "scored_records": 0
+      },
+      "error_code": "BadRequestException",
+      "error_class": "invalid_request",
+      "provider_job_accepted": false,
+      "transcript_received": false,
+      "automatic_retries": 0,
+      "timestamp_structure": "NOT_EVALUATED_NO_PROVIDER_RESULT",
+      "service_turnaround_us": null
+    },
+    {
+      "case_id": "ru-spontaneous-02",
+      "language": "ru",
+      "speech_class": "SPONTANEOUS",
+      "duration_us": 34440000,
+      "status": "FAILED",
+      "expected_reference_tokens": {
+        "raw": 28,
+        "normalized": 28
+      },
+      "raw": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "wer_percent": null,
+        "scored_records": 0
+      },
+      "normalized": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "wer_percent": null,
+        "scored_records": 0
+      },
+      "error_code": "BadRequestException",
+      "error_class": "invalid_request",
+      "provider_job_accepted": false,
+      "transcript_received": false,
+      "automatic_retries": 0,
+      "timestamp_structure": "NOT_EVALUATED_NO_PROVIDER_RESULT",
+      "service_turnaround_us": null
+    },
+    {
+      "case_id": "en-read-01",
+      "language": "en",
+      "speech_class": "READ",
+      "duration_us": 26920000,
+      "status": "NOT_RUN",
+      "expected_reference_tokens": {
+        "raw": 46,
+        "normalized": 46
+      },
+      "raw": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "wer_percent": null,
+        "scored_records": 0
+      },
+      "normalized": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "wer_percent": null,
+        "scored_records": 0
+      },
+      "error_code": null,
+      "error_class": null,
+      "provider_job_accepted": false,
+      "transcript_received": false,
+      "automatic_retries": 0,
+      "timestamp_structure": "NOT_EVALUATED_NO_PROVIDER_RESULT",
+      "service_turnaround_us": null
+    },
+    {
+      "case_id": "en-read-02",
+      "language": "en",
+      "speech_class": "READ",
+      "duration_us": 34480000,
+      "status": "NOT_RUN",
+      "expected_reference_tokens": {
+        "raw": 45,
+        "normalized": 45
+      },
+      "raw": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "wer_percent": null,
+        "scored_records": 0
+      },
+      "normalized": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "wer_percent": null,
+        "scored_records": 0
+      },
+      "error_code": null,
+      "error_class": null,
+      "provider_job_accepted": false,
+      "transcript_received": false,
+      "automatic_retries": 0,
+      "timestamp_structure": "NOT_EVALUATED_NO_PROVIDER_RESULT",
+      "service_turnaround_us": null
+    },
+    {
+      "case_id": "en-read-03",
+      "language": "en",
+      "speech_class": "READ",
+      "duration_us": 35260000,
+      "status": "NOT_RUN",
+      "expected_reference_tokens": {
+        "raw": 45,
+        "normalized": 45
+      },
+      "raw": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "wer_percent": null,
+        "scored_records": 0
+      },
+      "normalized": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "wer_percent": null,
+        "scored_records": 0
+      },
+      "error_code": null,
+      "error_class": null,
+      "provider_job_accepted": false,
+      "transcript_received": false,
+      "automatic_retries": 0,
+      "timestamp_structure": "NOT_EVALUATED_NO_PROVIDER_RESULT",
+      "service_turnaround_us": null
+    },
+    {
+      "case_id": "en-read-04",
+      "language": "en",
+      "speech_class": "READ",
+      "duration_us": 32900000,
+      "status": "NOT_RUN",
+      "expected_reference_tokens": {
+        "raw": 45,
+        "normalized": 45
+      },
+      "raw": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "wer_percent": null,
+        "scored_records": 0
+      },
+      "normalized": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "wer_percent": null,
+        "scored_records": 0
+      },
+      "error_code": null,
+      "error_class": null,
+      "provider_job_accepted": false,
+      "transcript_received": false,
+      "automatic_retries": 0,
+      "timestamp_structure": "NOT_EVALUATED_NO_PROVIDER_RESULT",
+      "service_turnaround_us": null
+    }
+  ],
+  "languages": {
+    "ru": {
+      "expected_records": 4,
+      "failed_records": 4,
+      "not_run_records": 0,
+      "succeeded_records": 0,
+      "scored_records": 0,
+      "expected_reference_tokens": {
+        "raw": 179,
+        "normalized": 179
+      },
+      "raw": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "micro_wer_percent": null
+      },
+      "normalized": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "micro_wer_percent": null
+      },
+      "quality": "INCOMPLETE",
+      "threshold_percent": 20,
+      "speech_classes": {
+        "READ": {
+          "expected_records": 2,
+          "failed_records": 2,
+          "not_run_records": 0,
+          "succeeded_records": 0,
+          "scored_records": 0,
+          "expected_reference_tokens": {
+            "raw": 121,
+            "normalized": 121
+          },
+          "raw": {
+            "S": null,
+            "D": null,
+            "I": null,
+            "N_scored": 0,
+            "micro_wer_percent": null
+          },
+          "normalized": {
+            "S": null,
+            "D": null,
+            "I": null,
+            "N_scored": 0,
+            "micro_wer_percent": null
+          },
+          "quality": "INCOMPLETE"
+        },
+        "SPONTANEOUS": {
+          "expected_records": 2,
+          "failed_records": 2,
+          "not_run_records": 0,
+          "succeeded_records": 0,
+          "scored_records": 0,
+          "expected_reference_tokens": {
+            "raw": 58,
+            "normalized": 58
+          },
+          "raw": {
+            "S": null,
+            "D": null,
+            "I": null,
+            "N_scored": 0,
+            "micro_wer_percent": null
+          },
+          "normalized": {
+            "S": null,
+            "D": null,
+            "I": null,
+            "N_scored": 0,
+            "micro_wer_percent": null
+          },
+          "quality": "INCOMPLETE"
+        }
+      }
+    },
+    "en": {
+      "expected_records": 4,
+      "failed_records": 0,
+      "not_run_records": 4,
+      "succeeded_records": 0,
+      "scored_records": 0,
+      "expected_reference_tokens": {
+        "raw": 181,
+        "normalized": 181
+      },
+      "raw": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "micro_wer_percent": null
+      },
+      "normalized": {
+        "S": null,
+        "D": null,
+        "I": null,
+        "N_scored": 0,
+        "micro_wer_percent": null
+      },
+      "quality": "NOT_RUN",
+      "threshold_percent": 18,
+      "speech_classes": {
+        "READ": {
+          "expected_records": 4,
+          "failed_records": 0,
+          "not_run_records": 4,
+          "succeeded_records": 0,
+          "scored_records": 0,
+          "expected_reference_tokens": {
+            "raw": 181,
+            "normalized": 181
+          },
+          "raw": {
+            "S": null,
+            "D": null,
+            "I": null,
+            "N_scored": 0,
+            "micro_wer_percent": null
+          },
+          "normalized": {
+            "S": null,
+            "D": null,
+            "I": null,
+            "N_scored": 0,
+            "micro_wer_percent": null
+          },
+          "quality": "NOT_RUN"
+        },
+        "SPONTANEOUS": {
+          "expected_records": 0,
+          "failed_records": 0,
+          "not_run_records": 0,
+          "succeeded_records": 0,
+          "scored_records": 0,
+          "expected_reference_tokens": {
+            "raw": 0,
+            "normalized": 0
+          },
+          "raw": {
+            "S": null,
+            "D": null,
+            "I": null,
+            "N_scored": 0,
+            "micro_wer_percent": null
+          },
+          "normalized": {
+            "S": null,
+            "D": null,
+            "I": null,
+            "N_scored": 0,
+            "micro_wer_percent": null
+          },
+          "quality": "NOT_EVALUATED"
+        }
+      }
+    }
+  },
+  "measurement_rule": "Expected N describes frozen human reference length. With no provider hypothesis, S/D/I and WER are unavailable, not zero or fabricated deletions; scored N and scored records are zero. No quality verdict can be inferred.",
+  "failure_summary": "All four RU Start requests returned BadRequestException before job acceptance. Provider reported bucket access/write configuration failure; diagnosis must preserve the exact private errors and distinguish KMS/S3 integration from transcription quality.",
+  "latency": {
+    "ru": {
+      "expected_records": 4,
+      "measured_completed_records": 0,
+      "p50_ratio": null,
+      "p95_ratio": null,
+      "p50_us": null,
+      "p95_us": null,
+      "status": "NOT_EVALUATED_NO_COMPLETED_JOB"
+    },
+    "en": {
+      "expected_records": 4,
+      "measured_completed_records": 0,
+      "p50_ratio": null,
+      "p95_ratio": null,
+      "p50_us": null,
+      "p95_us": null,
+      "status": "NOT_EVALUATED_NO_COMPLETED_JOB"
+    }
+  },
+  "timestamp_structure": "NOT_EVALUATED_NO_PROVIDER_RESULT",
+  "timestamp_accuracy": "NOT_EVALUATED",
+  "noise_robustness": "NOT_EVALUATED",
+  "en_spontaneous": "NOT_EVALUATED",
+  "technical_cases": [
+    {
+      "id": "tech-empty",
+      "status": "NOT_RUN",
+      "independent_quality_sample": false
+    },
+    {
+      "id": "tech-near_empty",
+      "status": "NOT_RUN",
+      "independent_quality_sample": false
+    },
+    {
+      "id": "tech-malformed",
+      "status": "NOT_RUN",
+      "independent_quality_sample": false
+    },
+    {
+      "id": "tech-truncated",
+      "status": "NOT_RUN",
+      "independent_quality_sample": false
+    },
+    {
+      "id": "tech-wrong_format",
+      "status": "NOT_RUN",
+      "independent_quality_sample": false
+    },
+    {
+      "id": "tech-missing_s3",
+      "status": "NOT_RUN",
+      "independent_quality_sample": false
+    },
+    {
+      "id": "tech-duplicate_name",
+      "status": "NOT_RUN",
+      "independent_quality_sample": false
+    },
+    {
+      "id": "tech-ru_300",
+      "status": "NOT_RUN",
+      "independent_quality_sample": false
+    },
+    {
+      "id": "tech-ru_600",
+      "status": "NOT_RUN",
+      "independent_quality_sample": false
+    },
+    {
+      "id": "tech-en_300",
+      "status": "NOT_RUN",
+      "independent_quality_sample": false
+    },
+    {
+      "id": "tech-en_600",
+      "status": "NOT_RUN",
+      "independent_quality_sample": false
+    }
+  ],
+  "budget": {
+    "start_attempt_billable_seconds_reserved": 152,
+    "start_attempt_asr_reservation_usd": "0.0152000000",
+    "reservation_release": "NOT_RELEASED_NO_BILLING_PROOF",
+    "actual_charged_usd": null,
+    "actual_charge_status": "NOT_ESTABLISHED",
+    "frozen_campaign_reservation": {
+      "ancillary_tax_upper_usd": "8",
+      "asr_upper_usd": "0.3893000000",
+      "reserved_seconds": 3893,
+      "total_upper_usd": "8.3893000000"
+    },
+    "free_tier_assumed": false,
+    "cross_campaign_rule": "Any later campaign must carry forward these four failed dispatches and reserved cost; never reset the global USD10 envelope."
+  },
+  "cleanup": {
+    "status": "VERIFIED_VISIBLE_EMPTY",
+    "runtime_status": "PASS_FINAL_READBACK",
+    "runtime_failure_codes": [],
+    "independent_status": "VERIFIED_VISIBLE_EMPTY",
+    "scope": "WHOLE_DEDICATED_BUCKETS_AND_OWNED_JOB_PREFIX",
+    "private_receipt_sha256": "7ff47964a0fcfa325633816816184835372eeeff92ebd014885d0033bf8487b4",
+    "observed_at": "2026-09-28T19:01:03.878877+00:00",
+    "infrastructure_retired": "NOT_ESTABLISHED_BY_OBJECT_CLEANUP",
+    "earlier_cleanup_read_failures": "PRESERVED_TWO_RECEIPTS_WITH_CLI_FAILED_REDACTED",
+    "writer_stopped": true,
+    "new_speech_calls_since_stop": 0
+  },
+  "provider_admission": "NOT_ESTABLISHED",
+  "broad_admission": "NOT_ESTABLISHED",
+  "effective_gate_statuses": {
+    "CLD-ADM-ARCH-001": "SATISFIED",
+    "CLD-ADM-CONSENT-001": "SATISFIED",
+    "CLD-ADM-DATA-001": "SATISFIED",
+    "CLD-ADM-SCOPE-001": "SATISFIED",
+    "CLD-ADM-GAPS-001": "SATISFIED",
+    "CLD-ADM-PRIVACY-001": "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA",
+    "CLD-ADM-RETENTION-001": "SATISFIED",
+    "CLD-ADM-CONTROL-001": "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA",
+    "CLD-ADM-EVALUATION-001": "OPEN",
+    "CLD-ADM-PROVIDER-001": "OPEN",
+    "CLD-ADM-ADMISSION-001": "BLOCKED",
+    "CLD-ADM-API-001": "OPEN",
+    "CLD-ADM-AUTH-001": "NOT_RUN",
+    "CLD-ADM-CONSENT-RUNTIME-001": "NOT_RUN",
+    "CLD-ADM-SECRETS-001": "NOT_RUN",
+    "CLD-ADM-UPLOAD-001": "NOT_RUN",
+    "CLD-ADM-CRYPTO-001": "NOT_RUN",
+    "CLD-ADM-RETENTION-RUNTIME-001": "NOT_RUN",
+    "CLD-ADM-DATA-RUNTIME-001": "NOT_RUN",
+    "CLD-ADM-FAILURE-001": "NOT_RUN",
+    "CLD-ADM-QUEUE-001": "NOT_RUN",
+    "CLD-ADM-BACKGROUND-001": "NOT_RUN",
+    "CLD-ADM-ADAPTER-001": "NOT_RUN",
+    "CLD-ADM-COST-001": "NOT_RUN",
+    "CLD-ADM-OBSERVABILITY-001": "NOT_RUN",
+    "CLD-ADM-SECURITY-001": "NOT_RUN",
+    "CLD-ADM-RESULT-001": "NOT_RUN",
+    "CLD-ADM-MERGE-001": "NOT_RUN",
+    "CLD-ADM-LOCAL-001": "NOT_RUN",
+    "CLD-ADM-OFFLINE-001": "NOT_RUN",
+    "CLD-ADM-DELETE-001": "NOT_RUN",
+    "CLD-ADM-HARNESS-001": "NOT_RUN",
+    "CLD-ADM-UX-001": "NOT_RUN",
+    "CLD-ADM-HISTORY-001": "NOT_RUN",
+    "CLD-ADM-EXPORT-001": "NOT_RUN",
+    "CLD-ADM-OPERATIONS-001": "NOT_RUN",
+    "CLD-ADM-SUPPLY-001": "OPEN",
+    "CLD-ADM-EXIT-001": "NOT_RUN",
+    "CLD-ADM-RELEASE-001": "OPEN"
+  },
+  "effective_status_counts": {
+    "SATISFIED": 6,
+    "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA": 2,
+    "OPEN": 5,
+    "BLOCKED": 1,
+    "NOT_RUN": 25,
+    "PARTIALLY_SATISFIED": 0
+  },
+  "frozen_gate_count": 39,
+  "stage_6_3": "NOT_RUN / BLOCKED",
+  "replacement_feasibility": "Frozen AWS/NonAWSFake contract tests remain offline evidence; this campaign produced no accepted live job or provider result.",
+  "next_step": "Repair the measured AWS integration blocker under a separately published prospective recovery amendment before any new Start; preserve this first result as immutable. No corpus expansion or quality recommendation yet.",
+  "non_execution": [
+    "Android production NOT_CHANGED",
+    "Recovery NOT_TOUCHED",
+    "Local Stage5 NOT_TOUCHED",
+    "PR #86 NOT_TOUCHED",
+    "main NOT_CHANGED"
+  ],
+  "public_privacy": "No audio, reference/transcript text, per-record content hashes, bucket/account/role identities or raw provider errors included."
+}
