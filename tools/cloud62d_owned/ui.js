@@ -17,10 +17,12 @@ async function api(path, body) {
   const data=await response.json(); if(!response.ok) throw Error(data.error); return data;
 }
 function item() { return state.items.find(i=>i.id===currentId); }
+function reducedProtocol(){return state?.protocol_version==='dora-owned-reduced8-v2';}
+function recordingEnabled(){return state?.recording_enabled!==false;}
 function finished(i) { return !!i.exclusion || !!(i.recording && i.reference); }
 function pendingTiming(i) {return !!i.timing_draft && (!i.timing || JSON.stringify(i.timing_draft.words)!==JSON.stringify(i.timing.words));}
 function timingComplete(i) {return !!i.timing && !pendingTiming(i);}
-function caseLabel(i) {return `${i.id} · ${i.language.toUpperCase()} ${i.speech_class} ${i.exclusion?'— исключён':pendingTiming(i)?'⏱ черновик: подтвердить':timingComplete(i)?'✓ разметка':i.timing_selected?'⏱ разметить':finished(i)?'✓':i.recording?'— проверить текст':''}`;}
+function caseLabel(i) {return `${i.id} · ${i.language.toUpperCase()} ${i.speech_class} ${i.exclusion?'— исключён':!reducedProtocol()&&pendingTiming(i)?'⏱ черновик: подтвердить':!reducedProtocol()&&timingComplete(i)?'✓ разметка':!reducedProtocol()&&i.timing_selected?'⏱ разметить':finished(i)?'✓':i.recording?'— проверить текст':''}`;}
 function updateTimingStatus(){const clip=item();timingDraftStatus.textContent=pendingTiming(clip)?'Черновик временных отметок требует подтверждения. Ранее подтверждённая версия не завершает это задание.':timingComplete(clip)?'Подтверждено человеком.':'Отметьте каждое слово и подтвердите независимую ручную разметку.';const option=$('cases').selectedOptions[0];if(option)option.textContent=caseLabel(clip);}
 function bind(id, action) { $(id).addEventListener('click', async()=>{ try { await action(); } catch(e) { status(e.message,true); } }); }
 function busy() {
@@ -28,15 +30,22 @@ function busy() {
   for(const id of ['cases','next','devices','testMic','record','select','finalize','saveReference','exclude']) $(id).disabled=locked;
   $('stop').disabled=!recording || capturedFrames/captureRate<20.25;
   $('closeMic').disabled=locked;
-  $('record').disabled=locked || !state?.attestation.confirmed || !!item()?.recording || !!item()?.exclusion || state?.status!=='ACQUIRING';
+  $('record').disabled=locked || !recordingEnabled() || !state?.attestation.confirmed || !!item()?.recording || !!item()?.exclusion || state?.status!=='ACQUIRING';
   $('record').textContent=pendingCapture?'Повторить локальное сохранение':'Начать запись';
-  $('testMic').disabled=locked || !state?.attestation.confirmed;
+  $('testMic').disabled=locked || !recordingEnabled() || !state?.attestation.confirmed;
+  $('devices').disabled=locked || !recordingEnabled();
   $('saveReference').disabled=locked || !item()?.recording || !!item()?.exclusion || state?.status!=='ACQUIRING';
   $('exclude').disabled=locked || state?.status!=='ACQUIRING' || !!item()?.exclusion;
   $('select').disabled=locked || state?.status!=='ACQUIRING';
   $('finalize').disabled=locked || state?.status!=='SELECTED';
 }
 async function render() {
+  const reduced=reducedProtocol();
+  $('scopeFacts').textContent=reduced?'8 записей одного владельца: RU 2 READ + 2 SPONTANEOUS; EN 2 READ + 2 SPONTANEOUS. Оцениваются все восемь. Резервов нет. NOISE и TIMESTAMPS: NOT_EVALUATED. Такой малый корпус не доказывает качество для других говорящих.':'Исходный протокол корпуса; этапы определяются сохранённым частным состоянием.';
+  $('selectionHeading').textContent=reduced?'4. Фиксация всех восьми записей':'4. Отбор и ручные временные отметки';
+  $('selectionDescription').textContent=reduced?'После проверки восьми фактических текстов зафиксируйте весь набор. Исключение не заменяется резервом: неполный набор блокирует завершение. Ручная разметка времени не требуется.':'После обработки кандидатов зафиксируйте детерминированный отбор и выполните предусмотренную протоколом ручную разметку.';
+  $('select').textContent=reduced?'Зафиксировать все 8 записей':'Зафиксировать отбор';
+  $('recordingDeferred').classList.toggle('hidden',recordingEnabled());
   $('attestation').textContent=state.attestation.text;
   $('consent').classList.toggle('hidden',state.attestation.confirmed);
   $('progress').textContent=`${state.items.filter(finished).length} / ${state.items.length} обработано`;
@@ -57,7 +66,7 @@ async function render() {
   $('reference').disabled=state.status!=='ACQUIRING' || !!clip.exclusion;
   $('clipInfo').textContent=clip.recording?`Сохранено ${(clip.recording.duration_us/1e6).toFixed(3)} с · WAV 16 кГц mono PCM16 · исходник сохранён · SHA-256 проверен`:'Запись ещё не сохранена.';
   playback.classList.toggle('hidden',!clip.recording);
-  $('timing').classList.toggle('hidden',!clip.timing_selected);
+  $('timing').classList.toggle('hidden',reduced||!clip.timing_selected);
   words=clip.reference?.words.map(text=>({text,start_us:null,end_us:null})) || [];
   if(clip.timing) words=clip.timing.words.map(w=>({...w}));
   if(clip.timing_draft) words=clip.timing_draft.words.map(w=>({...w}));
@@ -85,6 +94,7 @@ async function render() {
 }
 async function refresh(nextState) {state=nextState || await api('state');await render();}
 async function openMic() {
+  if(!recordingEnabled())throw Error('Запись отложена. Сначала сообщите в чате: «Готов записывать».');
   if(!state.attestation.confirmed) throw Error('Сначала подтвердите согласие говорящего.');
   if(mic)return;
   if(!navigator.mediaDevices?.getUserMedia)throw Error('Откройте инструмент в актуальном Chrome или Edge.');
@@ -160,7 +170,7 @@ $('cases').addEventListener('change',async()=>{currentId=$('cases').value;try{aw
 bind('next',async()=>{await draftSave;const target=state.items.find(i=>state.status==='ACQUIRING'?!finished(i):i.timing_selected&&!timingComplete(i));if(target){currentId=target.id;await render();}else status('Все задания этого этапа обработаны. Используйте следующий шаг ниже.');});
 bind('saveReference',async()=>{if(!$('referenceCheck').checked)throw Error('Подтвердите проверку каждого слова.');await refresh(await api('reference',{id:currentId,text:$('reference').value,confirmed:true}));status('Человеческий эталон сохранён. Переходите к следующему заданию.');});
 bind('exclude',async()=>{if(!confirm('Исключить этот кандидат с выбранной причиной? Запись сохранится в частном журнале.'))return;await refresh(await api('exclude',{id:currentId,reason:$('excludeReason').value}));status('Предварительное исключение сохранено.');});
-bind('select',async()=>{state=await api('select',{});currentId=state.items.find(i=>i.timing_selected&&!i.timing)?.id;await render();status('Отбор заморожен. Разметьте 12 указанных READ-клипов вручную.');});
+bind('select',async()=>{state=await api('select',{});currentId=state.items.find(i=>i.timing_selected&&!i.timing)?.id||state.items[0].id;await render();status(reducedProtocol()?'Все 8 записей зафиксированы. Можно завершить частный корпус без временной разметки.':'Отбор заморожен. Выполните предусмотренную протоколом ручную разметку.');});
 function renderWords() {
   $('words').replaceChildren(...words.map((word,i)=>{
     const button=document.createElement('button');button.className='word'+(i===activeWord?' selected':'')+(word.start_us!==null&&word.end_us!==null?' done':'');
@@ -196,6 +206,6 @@ document.addEventListener('keydown',e=>{
   }
 });
 bind('saveTiming',async()=>{if(!$('timingCheck').checked)throw Error('Подтвердите независимую ручную разметку.');validateTimings(words,item().reference.words,item().recording.duration_us);await draftSave;await refresh(await api('timing',{id:currentId,words,confirmed:true}));status('Все временные отметки клипа проверены и сохранены.');});
-bind('finalize',async()=>{await refresh(await api('finalize',{}));status('Частный корпус подготовлен. Сообщите в чате DORA, что запись и разметка завершены. Передача в AWS ещё не выполнялась.');});
+bind('finalize',async()=>{await refresh(await api('finalize',{}));status(reducedProtocol()?'Частный корпус подготовлен: 8 записей. Фактические тексты подтверждены. Шум и точность таймкодов не оценены. Передача в AWS ещё не выполнялась.':'Частный корпус подготовлен. Запись и разметка завершены. Передача в AWS ещё не выполнялась.');});
 window.addEventListener('beforeunload',e=>{if(recording||saving){e.preventDefault();e.returnValue='';}});
-try {if(!token)throw Error('Запустите инструмент через launch.cmd: требуется локальная сессия.');await refresh();status('Готово. Выполняйте шаги по порядку; данные остаются на этом компьютере.');}catch(e){status(e.message,true);}
+try {if(!token)throw Error('Запустите инструмент через launch.cmd: требуется локальная сессия.');await refresh();status(reducedProtocol()&&!state.recording_enabled?'Готово. Запись отложена по вашему решению. Сейчас никаких действий не требуется; сохранённые данные остаются на этом компьютере.':'Готово. Выполняйте шаги по порядку; данные остаются на этом компьютере.');}catch(e){status(e.message,true);}

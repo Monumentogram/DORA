@@ -1,0 +1,485 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PRIVATE DORA reduced eight-clip acquisition manifest v2",
+  "description": "Owner-authorized eight-clip successor; original v1 inventory and artifacts remain immutable. Instances private. No timing/noise evaluation or broad provider admission claim.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "source_release",
+    "inventory_sha256",
+    "material_sha256",
+    "attestation",
+    "destination",
+    "authorization_reason",
+    "license_terms",
+    "participant_voice_implications",
+    "source",
+    "cloud_processing_permitted",
+    "live_preflight_still_required",
+    "conversion_recipe",
+    "normalization",
+    "selection",
+    "exclusions",
+    "selection_sha256",
+    "single_speaker_limitation",
+    "records",
+    "composites",
+    "acquisition_events",
+    "finalized_at",
+    "protocol_version",
+    "protocol_overlay_sha256",
+    "timing_status",
+    "noise_status"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "2.0"
+    },
+    "source_release": {
+      "const": "dora-owned-corpus-v1.0.0"
+    },
+    "inventory_sha256": {
+      "$ref": "#/$defs/hash"
+    },
+    "material_sha256": {
+      "type": "object",
+      "minProperties": 8,
+      "maxProperties": 8,
+      "additionalProperties": {
+        "$ref": "#/$defs/hash"
+      },
+      "required": [
+        "ru-read-01",
+        "ru-read-02",
+        "ru-spontaneous-01",
+        "ru-spontaneous-02",
+        "en-read-01",
+        "en-read-02",
+        "en-spontaneous-01",
+        "en-spontaneous-02"
+      ],
+      "propertyNames": {
+        "enum": [
+          "ru-read-01",
+          "ru-read-02",
+          "ru-spontaneous-01",
+          "ru-spontaneous-02",
+          "en-read-01",
+          "en-read-02",
+          "en-spontaneous-01",
+          "en-spontaneous-02"
+        ]
+      }
+    },
+    "attestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "sha256",
+        "confirmed"
+      ],
+      "properties": {
+        "version": {
+          "const": "dora-owned-corpus-attestation-v1"
+        },
+        "sha256": {
+          "const": "e5397cda98d84f558a1d9ef84bbc3711897cc7a48c9d09c749ea4e734e6acb23"
+        },
+        "confirmed": {
+          "const": true
+        }
+      }
+    },
+    "destination": {
+      "const": "AWS / Amazon Transcribe / eu-central-1"
+    },
+    "authorization_reason": {
+      "const": "EXPLICIT_OWNER_REQUEST_AND_LOCAL_SPEAKER_ATTESTATION"
+    },
+    "license_terms": {
+      "type": "string",
+      "minLength": 1
+    },
+    "participant_voice_implications": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "const": "DORA-owned private acquisition"
+    },
+    "cloud_processing_permitted": {
+      "const": true
+    },
+    "live_preflight_still_required": {
+      "const": true
+    },
+    "conversion_recipe": {
+      "type": "object"
+    },
+    "normalization": {
+      "const": "dora-alpha-asr-normalization-v0.1 / CPython3.12 / Unicode15.0.0"
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "quality",
+        "noise",
+        "reserves",
+        "timing"
+      ],
+      "properties": {
+        "quality": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "ru",
+            "en"
+          ],
+          "properties": {
+            "ru": {
+              "const": [
+                "ru-read-01",
+                "ru-read-02",
+                "ru-spontaneous-01",
+                "ru-spontaneous-02"
+              ]
+            },
+            "en": {
+              "const": [
+                "en-read-01",
+                "en-read-02",
+                "en-spontaneous-01",
+                "en-spontaneous-02"
+              ]
+            }
+          }
+        },
+        "noise": {
+          "$ref": "#/$defs/empty"
+        },
+        "timing": {
+          "$ref": "#/$defs/empty"
+        },
+        "reserves": {
+          "$ref": "#/$defs/empty"
+        }
+      }
+    },
+    "exclusions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "case_id",
+          "reason",
+          "stage",
+          "at"
+        ],
+        "properties": {
+          "case_id": {
+            "type": "string"
+          },
+          "reason": {
+            "enum": [
+              "UNPROVEN_RIGHTS",
+              "OTHER_LANGUAGE_OR_MIXED",
+              "MISSING_HUMAN_REFERENCE",
+              "CORRUPTED_OR_UNDECODABLE_AUDIO",
+              "INVALID_FORMAT_OR_DURATION",
+              "DUPLICATE_SOURCE",
+              "EMPTY_NORMALIZED_REFERENCE",
+              "REFERENCE_HASH_MISMATCH"
+            ]
+          },
+          "stage": {
+            "const": "PRE_PROVIDER"
+          },
+          "at": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "selection_sha256": {
+      "$ref": "#/$defs/hash"
+    },
+    "single_speaker_limitation": {
+      "const": "NO_MULTI_SPEAKER_POPULATION_GENERALIZATION"
+    },
+    "records": {
+      "type": "object",
+      "minProperties": 8,
+      "maxProperties": 8,
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "recording",
+          "reference",
+          "reference_revisions",
+          "timing",
+          "timing_revisions",
+          "timing_draft",
+          "language",
+          "speech_class",
+          "timing_reference_sha256"
+        ],
+        "properties": {
+          "recording": {
+            "type": "object",
+            "required": [
+              "source_sha256",
+              "uploaded_wav_sha256",
+              "source_rate_hz",
+              "duration_us",
+              "frames",
+              "source_path",
+              "upload_path",
+              "conversion_recipe_sha256",
+              "acquisition_condition"
+            ]
+          },
+          "reference": {
+            "type": "object",
+            "required": [
+              "text",
+              "words",
+              "HUMAN_VERIFIED_REFERENCE",
+              "raw_reference_sha256",
+              "normalized_reference_sha256",
+              "verified_at",
+              "source"
+            ],
+            "properties": {
+              "HUMAN_VERIFIED_REFERENCE": {
+                "const": true
+              }
+            }
+          },
+          "timing": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "words",
+                  "HUMAN_ANNOTATED_BLIND_TO_AWS_OUTPUT",
+                  "source",
+                  "reference_sha256",
+                  "uploaded_wav_sha256",
+                  "annotated_at"
+                ],
+                "properties": {
+                  "HUMAN_ANNOTATED_BLIND_TO_AWS_OUTPUT": {
+                    "const": true
+                  },
+                  "words": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "$ref": "#/$defs/word"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "timing_reference_sha256": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/$defs/hash"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "ru-read-01",
+        "ru-read-02",
+        "ru-spontaneous-01",
+        "ru-spontaneous-02",
+        "en-read-01",
+        "en-read-02",
+        "en-spontaneous-01",
+        "en-spontaneous-02"
+      ],
+      "propertyNames": {
+        "enum": [
+          "ru-read-01",
+          "ru-read-02",
+          "ru-spontaneous-01",
+          "ru-spontaneous-02",
+          "en-read-01",
+          "en-read-02",
+          "en-spontaneous-01",
+          "en-spontaneous-02"
+        ]
+      }
+    },
+    "composites": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "required": [
+          "language",
+          "path",
+          "duration_us",
+          "sha256",
+          "independent_wer_sample",
+          "silence_frames",
+          "recipe",
+          "recipe_sha256"
+        ],
+        "properties": {
+          "language": {
+            "enum": [
+              "ru",
+              "en"
+            ]
+          },
+          "duration_us": {
+            "enum": [
+              300000000,
+              599999000
+            ]
+          },
+          "sha256": {
+            "$ref": "#/$defs/hash"
+          },
+          "independent_wer_sample": {
+            "const": false
+          },
+          "silence_frames": {
+            "const": 0
+          },
+          "recipe": {
+            "type": "array",
+            "minItems": 1
+          },
+          "recipe_sha256": {
+            "$ref": "#/$defs/hash"
+          }
+        }
+      }
+    },
+    "acquisition_events": {
+      "type": "array"
+    },
+    "finalized_at": {
+      "type": "string"
+    },
+    "protocol_version": {
+      "const": "dora-owned-reduced8-v2"
+    },
+    "protocol_overlay_sha256": {
+      "$ref": "#/$defs/hash"
+    },
+    "timing_status": {
+      "const": "NOT_EVALUATED"
+    },
+    "noise_status": {
+      "const": "NOT_EVALUATED"
+    }
+  },
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^(ru|en)-(read|spontaneous|noisy)-[0-9]{2}$"
+      }
+    },
+    "languageIds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ru",
+        "en"
+      ],
+      "properties": {
+        "ru": {
+          "$ref": "#/$defs/ids"
+        },
+        "en": {
+          "$ref": "#/$defs/ids"
+        }
+      }
+    },
+    "quality": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/languageIds"
+        },
+        {
+          "properties": {
+            "ru": {
+              "minItems": 4,
+              "maxItems": 4
+            },
+            "en": {
+              "minItems": 4,
+              "maxItems": 4
+            }
+          }
+        }
+      ]
+    },
+    "word": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "start_us",
+        "end_us"
+      ],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "start_us": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "end_us": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "empty": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/languageIds"
+        },
+        {
+          "properties": {
+            "ru": {
+              "minItems": 0,
+              "maxItems": 0
+            },
+            "en": {
+              "minItems": 0,
+              "maxItems": 0
+            }
+          }
+        }
+      ]
+    }
+  },
+  "$comment": "corpus.py enforces all eight fixed IDs, no replacement, duplicates and all human verified references; original whole-inventory SHA and immutable additive overlay preserve provenance. Timing and noise are explicitly NOT_EVALUATED."
+}

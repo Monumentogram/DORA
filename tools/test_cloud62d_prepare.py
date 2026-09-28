@@ -7,6 +7,84 @@ import cloud62d_prepare as p
 
 
 class PreparationTests(unittest.TestCase):
+    def test_amendment_cannot_promote_untested_properties_or_expand_corpus(self):
+        amendment = {'protocol_id': 'dora-owned-reduced8-v2',
+                     'active_ids': list(p.EIGHT_IDS),
+                     'wer_threshold_percent': {'ru': 20, 'en': 18},
+                     'timestamp_accuracy': 'NOT_EVALUATED', 'noise_robustness': 'NOT_EVALUATED',
+                     'phase_a_successor': 'NOT_CREATED', 'phase_b': 'NOT_RUN',
+                     'recording': 'DEFERRED_UNTIL_EXPLICIT_OWNER_READY',
+                     'budget_usd': {'total': 10, 'asr': 2, 'ancillary_tax': 8}}
+        p.validate_amendment(amendment)
+        for key, value in [('active_ids', list(p.EIGHT_IDS[:-1])),
+                           ('timestamp_accuracy', 'PASS'), ('noise_robustness', 'PASS'),
+                           ('wer_threshold_percent', {'ru': 21, 'en': 18}),
+                           ('phase_a_successor', 'PASS'), ('phase_b', 'PASS'),
+                           ('recording', 'READY'), ('budget_usd', {'total': 11})]:
+            invalid = copy.deepcopy(amendment); invalid[key] = value
+            with self.assertRaises(ValueError):
+                p.validate_amendment(invalid)
+
+    def test_eight_report_micro_denominators_and_separate_languages(self):
+        rows = []
+        for lang in ('ru', 'en'):
+            for kind in ('read', 'spontaneous'):
+                for n in (1, 2):
+                    counts = {'substitutions': 1 if n == 1 else 0,
+                              'deletions': 0, 'insertions': 0,
+                              'reference_tokens': 1 if n == 1 else 99}
+                    rows.append({'case_id': f'{lang}-{kind}-{n:02}',
+                                 'state': 'SUCCEEDED', 'raw': counts,
+                                 'normalized': counts})
+        report = p.bounded_report(rows)
+        self.assertEqual(len(report['records']), 8)
+        self.assertEqual(report['languages']['ru']['normalized']['errors'], 2)
+        self.assertEqual(report['languages']['ru']['normalized']['reference_tokens'], 200)
+        self.assertEqual(report['languages']['ru']['normalized']['wer_percent'], 1)
+        self.assertEqual(report['languages']['en']['threshold_percent'], 18)
+        self.assertEqual(report['languages']['ru']['bounded_quality'], 'PASS')
+        self.assertEqual(report['timestamp_accuracy'], 'NOT_EVALUATED')
+        self.assertEqual(report['noise_robustness'], 'NOT_EVALUATED')
+        self.assertEqual(report['broad_admission'], 'NOT_ESTABLISHED')
+        self.assertNotIn('combined', report)
+
+    def test_eight_report_never_hides_missing_failed_or_invalid_rows(self):
+        report = p.bounded_report([])
+        self.assertEqual(report['languages']['ru']['bounded_quality'], 'NOT_RUN')
+        self.assertIsNone(report['languages']['ru']['normalized']['wer_percent'])
+        failed = {'case_id': 'ru-read-01', 'state': 'FAILED', 'raw': None, 'normalized': None}
+        report = p.bounded_report([failed])
+        self.assertEqual(report['languages']['ru']['failed_records'], 1)
+        self.assertEqual(report['languages']['ru']['bounded_quality'], 'INCOMPLETE')
+        self.assertEqual(len(report['records']), 8)
+        for rows in ([failed, failed], [{**failed, 'case_id': 'ru-read-03'}],
+                     [{**failed, 'state': 'SUCCEEDED'}],
+                     [{**failed, 'raw': {'reference_tokens': 1}}]):
+            with self.assertRaises(ValueError):
+                p.bounded_report(rows)
+
+    def test_eight_report_exact_language_and_class_thresholds(self):
+        rows = []
+        for case_id in p.EIGHT_IDS:
+            counts = {'substitutions': 20 if case_id.startswith('ru') else 18,
+                      'deletions': 0, 'insertions': 0, 'reference_tokens': 100}
+            rows.append({'case_id': case_id, 'state': 'SUCCEEDED',
+                         'raw': dict(counts), 'normalized': dict(counts)})
+        self.assertTrue(all(v['bounded_quality'] == 'PASS'
+                            for v in p.bounded_report(rows)['languages'].values()))
+        rows[4]['normalized']['insertions'] = 1
+        report = p.bounded_report(rows)
+        self.assertEqual(report['languages']['ru']['bounded_quality'], 'PASS')
+        self.assertEqual(report['languages']['en']['bounded_quality'], 'FAIL')
+        rows[5]['normalized']['substitutions'] = 0
+        rows[4]['normalized']['substitutions'] = 37
+        rows[4]['normalized']['insertions'] = 0
+        rows[6]['normalized']['substitutions'] = rows[7]['normalized']['substitutions'] = 0
+        # Overall EN37/400 passes numerically, but READ37/200 fails the required slice.
+        result = p.bounded_report(rows)['languages']['en']
+        self.assertEqual(result['normalized']['wer_percent'], 9.25)
+        self.assertEqual(result['bounded_quality'], 'FAIL')
+
     def test_ancillary_and_tax_cannot_disappear_from_budget(self):
         self.assertEqual(p.quote([1_000_001, 20_000_000], Decimal('8')),
                          {'billable_seconds': 22, 'asr_usd': '0.0022',

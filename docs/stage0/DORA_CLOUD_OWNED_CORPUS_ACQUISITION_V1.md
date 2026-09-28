@@ -1,5 +1,7 @@
 # DORA owned corpus acquisition v1
 
+**Historical protocol.** The Owner's prospective [eight-recording amendment](DORA_CLOUD_62D_EIGHT_CLIP_PROTOCOL_V0_1.md) supersedes this document's acquisition counts, selection/reserves, noisy coverage and manual timing requirements for the nearest bounded evaluation. Do not ask for 72 recordings. Recording is deferred until the explicit message “Готов записывать”. The original private inventory, consent and history are retained.
+
 Status: PREPARATION_READY / HUMAN_CAPTURE_AND_GOLD_REQUIRED. Scope is isolated 6.2D host tooling; no Android runtime, AWS request, provider admission or 6.3 execution. Frozen [Phase A v0.1](DORA_CLOUD_EVALUATION_PHASE_A_V0_1.md) remains immutable. This preparation is not Phase A v0.2.
 
 ## Authority and privacy boundary

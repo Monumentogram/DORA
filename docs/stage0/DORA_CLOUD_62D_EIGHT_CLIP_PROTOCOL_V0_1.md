@@ -1,0 +1,401 @@
+# DORA 6.2D: prospective eight-recording protocol amendment v0.1
+
+Owner decision: 2026-09-28. Exactly **8 recordings**: RU 2 READ + 2 SPONTANEOUS; EN 2 READ + 2 SPONTANEOUS. All eight enter the bounded evaluation.
+
+**Recording is deferred.** Wait for the Owner's explicit “Готов записывать”. No microphone, login request, readiness polling or AWS evaluation now. That phrase permits guided acquisition only; actual words still require personal verification and AWS prerequisites remain independent.
+
+This is a prospective protocol change, **not a complete Phase A successor**. Published Phase A v0.1 and preparation evidence remain immutable historical records. The replacement table below names every relaxed requirement; none is claimed satisfied.
+
+WER limits remain RU ≤20% and EN ≤18%, computed from actual error/word counts separately by language, speech class and recording. No cross-language average. Noise robustness and timestamp accuracy are **NOT_EVALUATED / НЕ ОЦЕНЕНЫ**. One owner and eight recordings cannot establish quality for other voices or conditions; provider/broad admission remains unestablished where it depends on those properties.
+
+The following machine record is reproduced exactly. Private speech, references, per-record hashes, account identity and credentials must remain outside public Git.
+
+```json
+{
+  "schema_version": "1.0",
+  "protocol_id": "dora-owned-reduced8-v2",
+  "date": "2026-09-28",
+  "authority": "EXPLICIT_PROJECT_OWNER_SCOPE_CHANGE_IN_CHAT",
+  "source_baseline": "c98856e25f07ef27aa0121c6458a5d3436fc574a",
+  "branch": "chat/alpha-asr-runner-scope",
+  "status": "PREPARATION_READY_RECORDING_DEFERRED_BY_OWNER",
+  "phase_a_v0_1": "PRESERVED_IMMUTABLE",
+  "phase_a_successor": "NOT_CREATED",
+  "phase_b": "NOT_RUN",
+  "recording": "DEFERRED_UNTIL_EXPLICIT_OWNER_READY",
+  "resume_phrase": "Готов записывать",
+  "readiness_automation": "NONE_ACTIVE_FOR_THIS_WORK",
+  "active_ids": [
+    "ru-read-01",
+    "ru-read-02",
+    "ru-spontaneous-01",
+    "ru-spontaneous-02",
+    "en-read-01",
+    "en-read-02",
+    "en-spontaneous-01",
+    "en-spontaneous-02"
+  ],
+  "active_counts": {
+    "ru": {
+      "read": 2,
+      "spontaneous": 2
+    },
+    "en": {
+      "read": 2,
+      "spontaneous": 2
+    }
+  },
+  "total_recordings": 8,
+  "all_active_recordings_evaluated": true,
+  "duration_seconds": {
+    "READ": {
+      "min": 20,
+      "max": 45
+    },
+    "SPONTANEOUS": {
+      "min": 20,
+      "max": 60
+    }
+  },
+  "wer_threshold_percent": {
+    "ru": 20,
+    "en": 18
+  },
+  "quality_reporting": {
+    "denominator": "Actual verified normalized reference token count; errors=S+D+I. Integer cross multiplication for threshold, micro aggregation, never average per-clip percentages.",
+    "outputs": "8 per-record rows plus separate RU/EN and READ/SPONTANEOUS summaries: raw/normalized S,D,I,N, WER, expected/scored/failed/not-run counts. No RU+EN average. Full private rows remain local; public aggregates only.",
+    "missing": "All8 remain in expected denominators; missing/unreadable/failed primary stays explicit unscored with null measurement. Complete-case WER uses only actual scored words but cannot produce complete bounded PASS. No failures become zero WER or vanish.",
+    "quality_gate": "All4 primaries per language and each2-record class complete; language and required class normalized micro WER<=20%RU/18%EN. RawWER diagnostic. Per-record WER always reported without averaging percentages.",
+    "oracle": "Existing pinned v0.1 raw/normalized tokenization and unit-cost Levenshtein/tie priority unchanged. bounded_report accepts bound oracle counts only; it does not compute ASR, establish provenance, or authorize live execution.",
+    "retries": "Primary result fixed; diagnostic retries/failures retained independently; no best-of replacement.",
+    "current_results": "NOT_RUN; no provider hypotheses or measured WER."
+  },
+  "timestamp_accuracy": "NOT_EVALUATED",
+  "noise_robustness": "NOT_EVALUATED",
+  "timestamp_output_integrity": "Existing malformed/missing/nonmonotonic provider item checks remain; output structural validity is not timestamp accuracy.",
+  "latency": "Existing measurement boundaries, thresholds and nearest-rank rule retained. Report actual4primary records/language and2/class denominators; p95 on4 equalsmaximum, descriptive for this owner only. Technical repeats separate; no population claim.",
+  "limitations": [
+    "Exactly one consenting speaker, four recordings/language, two/class; no inference to arbitrary voices/conditions or statistical reliability.",
+    "Original minimum24/language, noisy6/language and timing6clips/100words requirements are not satisfied or waived for broad admission.",
+    "Bounded quality result does not establish general provider/model admission, timestamp quality, noise robustness, or 6.3 readiness."
+  ],
+  "requirement_replacements": [
+    {
+      "source": "acquisition-v1 / inventory counts; Phase A v0.1 protocol.quality.required_slices",
+      "old": "72 candidates: RU/EN each15READ+15SPONTANEOUS+6NOISY; >=24 quality clips/language",
+      "new": "Exactly8 active recordings, RU/EN each2READ+2SPONTANEOUS; all8 evaluated. Old volume requirement NOT_SATISFIED; explicitly superseded only for this bounded evaluation."
+    },
+    {
+      "source": "Phase A v0.1 protocol.selection.rule; acquisition-v1 selection and reserves",
+      "old": "Source-hash ranking; select12READ+12SPONTANEOUS/language with ordered reserves; noise first6",
+      "new": "Use IDs01 and02 of existing READ/SPONTANEOUS material in each language, listed in active_ids. No ranking, sampling, reserve promotion or post-result substitution. Existing material and audio preserved."
+    },
+    {
+      "source": "Phase A v0.1 protocol.quality.noise; acquisition-v1 diagnostic tasks",
+      "old": "6 noisy/speakerphone recordings per language and normalized WER<=35%",
+      "new": "No diagnostic recordings now. Noise/speakerphone robustness NOT_EVALUATED, never PASS; broad admission relying on it remains unestablished."
+    },
+    {
+      "source": "Phase A v0.1 protocol.timestamps.reference/coverage/mapping/thresholds_us/quantiles/current; acquisition-v1 timing subset",
+      "old": "6 selected READ clips and>=100 independently human-timed words/language; lexical coverage and accuracy thresholds",
+      "new": "No manual timing acquisition or completion dependency. Timestamp accuracy, lexical timing coverage, median/p95 error NOT_EVALUATED; values null, no generated truth. Existing historical timing remains private and does not count as new accuracy evidence."
+    },
+    {
+      "source": "Phase A v0.1 protocol.selection.missing_coverage; data manifest timing requirements; acquisition-v1 finalization",
+      "old": "<24/language or absent exact timing blocks evaluation coverage/finalization",
+      "new": "Bounded corpus completion requires exactly all8 valid fixed recordings and explicit human references; missing/invalid active clip blocks completion. Timing/noise absent by approved scope. Old coverage is NOT_SATISFIED and broad provider admission is not promoted."
+    },
+    {
+      "source": "Phase A v0.1 execution_envelope.preflight PREFLIGHT-09 and private_manifest_fields timing_reference_sha256_if_applicable",
+      "old": "Verify corpus against original volume, source-hash selection and exact timing expectations",
+      "new": "Future successor explicitly binds this amendment and actual eight-record manifest/authority/human references. No timing hash required for new measurement. Other preflight checks remain mandatory; no current preflight or Phase A PASS inferred."
+    },
+    {
+      "source": "acquisition-v1 manual workflow; preparation-v0.1 resume instructions",
+      "old": "Record72, verify references, manually mark12timing clips, perform login and resume readiness checks",
+      "new": "Recording and login requests deferred; no readiness polling/reminders. Wait for exact explicit Owner message Готов записывать. It enables guided8 acquisition only, not reference confirmation, AWS authentication or evaluation."
+    },
+    {
+      "source": "acquisition-v1 finalization long fixtures",
+      "old": "Compose technical long fixtures from the selected24quality clips/language",
+      "new": "Compose from the4 active recordings/language in fixed order,300s and599.999s, no extra monologues; repeated audio never adds independent quality samples. Frame/recipe integrity rules unchanged."
+    }
+  ],
+  "migration": {
+    "mode": "EXPLICIT_ADDITIVE_VERSIONED_OVERLAY",
+    "original_inventory": "Unchanged72-material inventory and whole hash retained; eightIDs bind exact original material bytes/hashes. Remaining64 are archive only, not required reserves.",
+    "snapshot": "Immutable archive/v1-before-reduced8 snapshot of original state/inventory/hash and selection if present; all source/evaluation WAV, consent, references, revisions, timings and acquisition events retained.",
+    "new_artifacts": "Immutable protocol-overlay-v2.json; new selection, manifest, composites, summary under reduced8-v2/. No overwrite of legacy final artifacts; finalized legacy state is rejected for operator-reviewed migration.",
+    "state": "Add protocol and recording-disabled fields; prior state preserved before change, explicit migration event appended. Idempotent repeat, no new attestation inferred.",
+    "human_authority": "Existing speaker attestation preserved. Existing verified words stay verified; unverified words remain unverified. READ scripts remain frozen; actual-spoken reference changes require explicit human confirmation."
+  },
+  "corpus_snapshot": {
+    "schema_version": "2.0",
+    "status": "ACQUIRING",
+    "inventory_sha256": "9382e335345135438ac1d8be4103f7631d5182b091bcfcd7bb3ce413006e7a4b",
+    "manifest_sha256": null,
+    "attestation_version": "dora-owned-corpus-attestation-v1",
+    "attestation_sha256": "e5397cda98d84f558a1d9ef84bbc3711897cc7a48c9d09c749ea4e734e6acb23",
+    "candidates": {
+      "ru": {
+        "read": 2,
+        "spontaneous": 2,
+        "noisy": 0
+      },
+      "en": {
+        "read": 2,
+        "spontaneous": 2,
+        "noisy": 0
+      }
+    },
+    "recorded": {
+      "ru": 1,
+      "en": 0
+    },
+    "verified_references": {
+      "ru": 0,
+      "en": 0
+    },
+    "selected_quality": {
+      "ru": 0,
+      "en": 0
+    },
+    "selected_noise": {
+      "ru": 0,
+      "en": 0
+    },
+    "timing_clips": {
+      "ru": 0,
+      "en": 0
+    },
+    "timing_words": {
+      "ru": 0,
+      "en": 0
+    },
+    "protocol_version": "dora-owned-reduced8-v2",
+    "protocol_overlay_sha256": "0a4f95d04f8e582201a21bc6cb6f6d7c9661817531195b11ade4dca954f5d866",
+    "recording_enabled": false,
+    "timing_status": "NOT_EVALUATED",
+    "noise_status": "NOT_EVALUATED",
+    "excluded_count": 0
+  },
+  "unchanged_constraints": [
+    "Amazon Transcribe STANDARD_BATCH_FILE_ASR, eu-central-1, no fallback",
+    "Private source+evaluation WAV, exact materials, references, detailed manifests/hashes remain outside public Git",
+    "Future full Phase A successor requires actual complete corpus, exact verified AWS configuration,12/12 preflight, cost, bound live operator and zeroAWSresults proof",
+    "Commit,push,refetch exact complete Phase A successor BEFORE first AWS upload/Transcribe",
+    "Preserve all errors/attempts; retention/cleanup and scoped governance confirmation unchanged",
+    "No AWS evaluation now; no Android production,Recovery,Stage5,PR86,main/merge or6.3 changes"
+  ],
+  "budget_usd": {
+    "total": 10,
+    "asr": 2,
+    "ancillary_tax": 8
+  },
+  "admission": {
+    "bounded_evaluation": "NOT_RUN",
+    "provider": "NOT_ESTABLISHED",
+    "general": "NOT_ESTABLISHED",
+    "6.3": "NOT_RUN / BLOCKED"
+  },
+  "effective_gate_statuses": {
+    "CLD-ADM-ARCH-001": "SATISFIED",
+    "CLD-ADM-CONSENT-001": "SATISFIED",
+    "CLD-ADM-DATA-001": "SATISFIED",
+    "CLD-ADM-SCOPE-001": "SATISFIED",
+    "CLD-ADM-GAPS-001": "SATISFIED",
+    "CLD-ADM-PRIVACY-001": "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA",
+    "CLD-ADM-RETENTION-001": "SATISFIED",
+    "CLD-ADM-CONTROL-001": "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA",
+    "CLD-ADM-EVALUATION-001": "OPEN",
+    "CLD-ADM-PROVIDER-001": "OPEN",
+    "CLD-ADM-ADMISSION-001": "BLOCKED",
+    "CLD-ADM-API-001": "OPEN",
+    "CLD-ADM-AUTH-001": "NOT_RUN",
+    "CLD-ADM-CONSENT-RUNTIME-001": "NOT_RUN",
+    "CLD-ADM-SECRETS-001": "NOT_RUN",
+    "CLD-ADM-UPLOAD-001": "NOT_RUN",
+    "CLD-ADM-CRYPTO-001": "NOT_RUN",
+    "CLD-ADM-RETENTION-RUNTIME-001": "NOT_RUN",
+    "CLD-ADM-DATA-RUNTIME-001": "NOT_RUN",
+    "CLD-ADM-FAILURE-001": "NOT_RUN",
+    "CLD-ADM-QUEUE-001": "NOT_RUN",
+    "CLD-ADM-BACKGROUND-001": "NOT_RUN",
+    "CLD-ADM-ADAPTER-001": "NOT_RUN",
+    "CLD-ADM-COST-001": "NOT_RUN",
+    "CLD-ADM-OBSERVABILITY-001": "NOT_RUN",
+    "CLD-ADM-SECURITY-001": "NOT_RUN",
+    "CLD-ADM-RESULT-001": "NOT_RUN",
+    "CLD-ADM-MERGE-001": "NOT_RUN",
+    "CLD-ADM-LOCAL-001": "NOT_RUN",
+    "CLD-ADM-OFFLINE-001": "NOT_RUN",
+    "CLD-ADM-DELETE-001": "NOT_RUN",
+    "CLD-ADM-HARNESS-001": "NOT_RUN",
+    "CLD-ADM-UX-001": "NOT_RUN",
+    "CLD-ADM-HISTORY-001": "NOT_RUN",
+    "CLD-ADM-EXPORT-001": "NOT_RUN",
+    "CLD-ADM-OPERATIONS-001": "NOT_RUN",
+    "CLD-ADM-SUPPLY-001": "OPEN",
+    "CLD-ADM-EXIT-001": "NOT_RUN",
+    "CLD-ADM-RELEASE-001": "OPEN"
+  },
+  "effective_status_counts": {
+    "SATISFIED": 6,
+    "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA": 2,
+    "OPEN": 5,
+    "BLOCKED": 1,
+    "NOT_RUN": 25,
+    "PARTIALLY_SATISFIED": 0
+  },
+  "gate_count": 39,
+  "validation": {
+    "status": "PASS",
+    "stage00": "7/7 PASS",
+    "owned_corpus": "17 tests PASS",
+    "recorder_server": "6 tests PASS",
+    "preparation_report_guards": "9 tests PASS",
+    "frozen_cloud_core": "26 tests PASS",
+    "aws_offline": "13 tests PASS",
+    "browser_reduced_eight": "PASS; eight complete without timing, deferred mic API0calls, HTTP capture rejected",
+    "browser_legacy_reference_timing": "PASS; synthetic fixtures only",
+    "browser_capture_conversion": "PASS; synthetic oscillator only, no hardware microphone",
+    "audio_helpers": "PASS",
+    "independent_review": "PASS; migration/readiness concurrency P1 fixed and re-reviewed",
+    "actual_private_preservation": "PASS; every original file byte hash checked, state snapshot/consent/records/prior events unchanged",
+    "schemas": "JSON syntax + semantic backend validation PASS; external JSON Schema library unavailable",
+    "android": "No Android changes; inherited parent preparation Gradle checks passed197tasks. Not rerun for this host-only protocol amendment.",
+    "ci": "NOT_ASSERTED",
+    "frozen_phase_a": "UNCHANGED",
+    "dag": "39 gates unchanged",
+    "json_md": "EXACT_EMBEDDED_MACHINE_RECORD",
+    "privacy_links_allowlist": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "tool_bindings": [
+    {
+      "path": "docs/contracts/DORA_CLOUD_OWNED_CORPUS_INVENTORY_V1.schema.json",
+      "sha256_lf_utf8": "5727bc17ba05e243c265e0d7619119e18cbfbef6789d33877dfcf291ca41a7e8"
+    },
+    {
+      "path": "docs/contracts/DORA_CLOUD_OWNED_CORPUS_MANIFEST_V1.schema.json",
+      "sha256_lf_utf8": "c89d77968369ecdcb0ff7a0fe9a5bec912519f26ff6b8c45263c45339c6bc475"
+    },
+    {
+      "path": "docs/contracts/DORA_CLOUD_OWNED_CORPUS_MANIFEST_V2.schema.json",
+      "sha256_lf_utf8": "28ae01536748ff34cd1bfd13195a36c5fb3488b5ee8c6ebfb8d2ca063ed10db4"
+    },
+    {
+      "path": "docs/contracts/DORA_CLOUD_OWNED_CORPUS_OVERLAY_V2.schema.json",
+      "sha256_lf_utf8": "249b6ce1006d6a1f63ab5d97716fcc50f5b89b18d04da72047f9393034bf79e9"
+    },
+    {
+      "path": "docs/DORA_MVP1_STAGE_STATUS.md",
+      "sha256_lf_utf8": "c8986e1877492ae7c6eb8f073eb1b86c1d049588529e816d94084424899a3a8d"
+    },
+    {
+      "path": "docs/stage0/DORA_CLOUD_OWNED_CORPUS_ACQUISITION_V1.md",
+      "sha256_lf_utf8": "a2201c1a4a6e4b78fa9a8268de2ba511802a780c5b073b3e5fb43733750b62dc"
+    },
+    {
+      "path": "tools/cloud62d_aws/aws_prepare.py",
+      "sha256_lf_utf8": "717a898c950dc066e127a4d44b38e11d426d5811b4fbfa7f6f8063316ff04486"
+    },
+    {
+      "path": "tools/cloud62d_aws/install-cli.ps1",
+      "sha256_lf_utf8": "e2ea1d8625a11dacf15b24743286422f5453b8f3077ce599018c13d55a21a3a5"
+    },
+    {
+      "path": "tools/cloud62d_aws/Login.cmd",
+      "sha256_lf_utf8": "f942a62ca016d6a5af704adb561c221a61de3888e9dd1d8fff9b8fa0b28720d0"
+    },
+    {
+      "path": "tools/cloud62d_aws/login.ps1",
+      "sha256_lf_utf8": "c94bcbc0046879268fedd3d573e088dd61654463d004c889612efe97371dcb2b"
+    },
+    {
+      "path": "tools/cloud62d_aws/opt-out-policy.review-only.json",
+      "sha256_lf_utf8": "b232909bc1cca2193bf37e2af3521f202917088d4bc686bfd56fbf315899fc5c"
+    },
+    {
+      "path": "tools/cloud62d_aws/test_aws.py",
+      "sha256_lf_utf8": "7880a5eedceb7c4155245fab9baceb3dc856522029b64e790fde9b4184d9eb65"
+    },
+    {
+      "path": "tools/cloud62d_aws/watchdog.py",
+      "sha256_lf_utf8": "7dae15ed39b129476719aea1fefa19f3ee23e07988a4f89bbeb1e6398f90729e"
+    },
+    {
+      "path": "tools/cloud62d_owned/audio.js",
+      "sha256_lf_utf8": "8be772815b37d48ad9d4d3f03daa9ebc80e286ff59aedddf3061fd965ceb1769"
+    },
+    {
+      "path": "tools/cloud62d_owned/capture-worklet.js",
+      "sha256_lf_utf8": "c09e56c5f702e11fe0e69c386044f85d7f1ba2693fd4fe0e33766adc581cea1e"
+    },
+    {
+      "path": "tools/cloud62d_owned/corpus.py",
+      "sha256_lf_utf8": "b054b273b39c1bf922d6e7c73dca03c3567d9d0bc4df6685225cf5f4e839a2c0"
+    },
+    {
+      "path": "tools/cloud62d_owned/launch.cmd",
+      "sha256_lf_utf8": "0367b112e8e89b7b5d6ac86c4c7c2e3d570ff76e4b2213b79a8e3e68565b9340"
+    },
+    {
+      "path": "tools/cloud62d_owned/launch.ps1",
+      "sha256_lf_utf8": "b9e76e46907a5ce043047b6dc5f9782d03eb4b64647b5226a4663e966f0ef0c3"
+    },
+    {
+      "path": "tools/cloud62d_owned/README.md",
+      "sha256_lf_utf8": "7569b0c87b9cbadfab32179d557b6b7724015e05e6029bf60a88c09748b7e239"
+    },
+    {
+      "path": "tools/cloud62d_owned/server.py",
+      "sha256_lf_utf8": "7b13acda28242d745cf12ef736a9bdf76f0b80f75789f5bc839270aeaa898a60"
+    },
+    {
+      "path": "tools/cloud62d_owned/test_audio.mjs",
+      "sha256_lf_utf8": "b5ece5a53996d38f2bd3a61ace4c35f1bcd499f5f3f8527adaa5211025525dfd"
+    },
+    {
+      "path": "tools/cloud62d_owned/test_browser.mjs",
+      "sha256_lf_utf8": "ee33e12449468e400c18eeaa9dbda220e0155705311a54125a0839f7eebd15e0"
+    },
+    {
+      "path": "tools/cloud62d_owned/test_browser_fixture.py",
+      "sha256_lf_utf8": "611a1c6b35aec769cf851f707ba75308aacd8fef3bdb6a470c56aabe86f6f01e"
+    },
+    {
+      "path": "tools/cloud62d_owned/test_capture_browser.mjs",
+      "sha256_lf_utf8": "f1612a34c3fee6debbb17da868e92547768927567fcd99ef3aee23f406fd2cfc"
+    },
+    {
+      "path": "tools/cloud62d_owned/test_corpus.py",
+      "sha256_lf_utf8": "09ca396c65efe19fdd67fb8ae2003de43cfd494991760ebbb1b1d9f4a0881a1d"
+    },
+    {
+      "path": "tools/cloud62d_owned/test_reduced_browser.mjs",
+      "sha256_lf_utf8": "726ea8dd54bb0f38e2fdf5f07d51269f9bb1fbfe353465962c82f8efb4030987"
+    },
+    {
+      "path": "tools/cloud62d_owned/test_server.py",
+      "sha256_lf_utf8": "577ce2ab4597d2c3036b568465bbb11ca8e82f6b963d0b1a6f2534ba0358b33b"
+    },
+    {
+      "path": "tools/cloud62d_owned/ui.html",
+      "sha256_lf_utf8": "2868042d22f0c5ceee90bac6e197e887a0ca4c435295ccc180197121d897818f"
+    },
+    {
+      "path": "tools/cloud62d_owned/ui.js",
+      "sha256_lf_utf8": "4d7e0fec096ceaa26949a27a0c623a0cdfbfa81898d219ccb0c310d9089bdc22"
+    },
+    {
+      "path": "tools/cloud62d_prepare.py",
+      "sha256_lf_utf8": "6515c96a33e1ffa7966b44cb6586989ce5fea457e1bdfcf90480845b8a2fa56d"
+    },
+    {
+      "path": "tools/test_cloud62d_prepare.py",
+      "sha256_lf_utf8": "a2820ccc4387c597d7c37bf80429eed7e5b2d488d2828b0553191d34056f24d7"
+    }
+  ]
+}
+```

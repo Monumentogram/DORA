@@ -1,5 +1,15 @@
 # Dora MVP 1 — Stage Status
 
+## 2026-09-28 — 6.2D reduced eight-recording preparation; acquisition deferred
+
+Explicit Owner scope change prospectively replaces acquisition volume/selection and manual timing requirements only for the nearest bounded evaluation. The [eight-recording amendment](stage0/DORA_CLOUD_62D_EIGHT_CLIP_PROTOCOL_V0_1.md) and [machine record](contracts/DORA_CLOUD_62D_EIGHT_CLIP_PROTOCOL_V0_1.json) list every replacement. Exactly **RU 2 READ + 2 SPONTANEOUS; EN 2 READ + 2 SPONTANEOUS**, all eight evaluated, using the first two existing tasks of each class/language. No reserves/noisy tasks and no manual word timing. Original material, existing consent, recordings, references and history are preserved through a versioned private overlay.
+
+**Recording DEFERRED until the Owner explicitly says “Готов записывать”.** No microphone use, AWS login request, evaluation or readiness polling now. Readiness does not confirm actual words or satisfy AWS prerequisites. Every actual reference still requires personal human verification; technical conversion, hashing, manifest and optional long composites are automated.
+
+WER remains **RU ≤20%, EN ≤18%**, with actual S/D/I/reference-token denominators per record, language and required speech class. Noise robustness and timestamp accuracy are **NOT_EVALUATED / НЕ ОЦЕНЕНЫ**. Eight clips from one owner do not establish other-speaker/condition quality; original volume/noise/timing requirements are not claimed satisfied. EVALUATION/PROVIDER remain OPEN and ADMISSION remains BLOCKED where untested properties are mandatory. The 39-gate accounting is unchanged.
+
+**Phase A v0.1 is immutable; full successor NOT_CREATED; Phase B NOT_RUN; 6.3 NOT_RUN/BLOCKED.** Actual complete private corpus, verified AWS configuration and all other live prerequisites must be bound in a full successor, committed/pushed/refetched before the first AWS upload/Transcribe. USD10 ceiling, privacy, retention/cleanup and no region fallback remain mandatory. Android production, Recovery, Stage5, PR86 and main are unchanged; no merge. Earlier entries below retain their historical scope.
+
 ## 2026-09-28 — 6.2D Phase A prospective protocol; live blocked
 
 Owner-authorized 6.2D thresholds are prospectively frozen in [Phase A v0.1](stage0/DORA_CLOUD_EVALUATION_PHASE_A_V0_1.md)

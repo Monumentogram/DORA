@@ -18,6 +18,9 @@ import wave
 from tools.alpha_asr_eval_text_contract import normalize, check_environment
 
 RELEASE = 'dora-owned-corpus-v1.0.0'
+REDUCED_PROTOCOL = 'dora-owned-reduced8-v2'
+REDUCED_IDS = tuple(f'{lang}-{kind}-{n:02}' for lang in ('ru', 'en')
+                    for kind in ('read', 'spontaneous') for n in (1, 2))
 ATTESTATION_VERSION = 'dora-owned-corpus-attestation-v1'
 ATTESTATION_TEXT = ('I am the speaker of these recordings and authorize DORA to process this '
                     'corpus with Amazon Transcribe in eu-central-1 solely for the bounded '
@@ -178,17 +181,100 @@ class CorpusStore:
             if item['speech_class'] == 'READ':
                 require(45 <= len(normalize(item['material']).split()) <= 115, 'READ_WORD_COUNT')
 
-    def _load(self):
+    def _load(self, *, allow_pending_migration=False):
         require(self._path('state.json').exists(), 'PRIVATE_INVENTORY_MISSING')
         state = json.loads(self._path('state.json').read_text(encoding='utf-8'))
         data = self._path('inventory.json').read_bytes()
         require(digest(data) == state['inventory_sha256'] == self._path('inventory.sha256').read_text().strip(),
                 'INVENTORY_HASH_MISMATCH')
         self._validate_inventory(json.loads(data))
+        if not self._reduced(state) and not allow_pending_migration:
+            require(not self._path('archive/v1-before-reduced8').exists() and
+                    not self._path('protocol-overlay-v2.json').exists(), 'MIGRATION_INCOMPLETE_RETRY_MIGRATION')
+        if self._reduced(state):
+            raw = self._path('protocol-overlay-v2.json').read_bytes()
+            require(digest(raw) == state['protocol_overlay_sha256'], 'PROTOCOL_OVERLAY_HASH_MISMATCH')
+            overlay = json.loads(raw)
+            require(overlay['active_case_ids'] == list(REDUCED_IDS) and
+                    overlay['original_inventory_sha256'] == state['inventory_sha256'] and
+                    overlay['protocol_version'] == REDUCED_PROTOCOL, 'PROTOCOL_OVERLAY_MISMATCH')
+            for filename, expected in overlay['legacy_snapshots'].items():
+                require(digest(self._path('archive/v1-before-reduced8/' + filename).read_bytes()) == expected,
+                        'LEGACY_SNAPSHOT_HASH_MISMATCH')
         return state
 
     def _items(self):
-        return json.loads(self._path('inventory.json').read_text(encoding='utf-8'))['items']
+        items = json.loads(self._path('inventory.json').read_text(encoding='utf-8'))['items']
+        if self._reduced(self._load()):
+            by_id = {i['id']: i for i in items}
+            return [by_id[case_id] for case_id in REDUCED_IDS]
+        return items
+
+    @staticmethod
+    def _reduced(state):
+        return state.get('protocol_version') == REDUCED_PROTOCOL
+
+    def _artifact(self, state, name):
+        return 'reduced8-v2/' + name if self._reduced(state) else name
+
+    def _active_records(self, state):
+        if self._reduced(state):
+            return {case_id: state['records'][case_id] for case_id in REDUCED_IDS if case_id in state['records']}
+        return state['records']
+
+    def migrate_reduced_eight(self):
+        """Explicit owner-scoped additive migration. Never called by recorder startup."""
+        from tools.cloud62d_owned.server import _ProcessLock
+        lock = _ProcessLock(self.root)
+        try:
+            return self._migrate_reduced_eight_locked()
+        finally:
+            lock.close()
+
+    def _migrate_reduced_eight_locked(self):
+        state = self._load(allow_pending_migration=True)
+        if self._reduced(state):
+            return self.state()
+        require(state['status'] != 'FINALIZED' and not state.get('finalization_started_at')
+                and not self._path('manifest.json').exists(), 'LEGACY_FINALIZATION_MUST_REMAIN_IMMUTABLE')
+        require(not self._path('provider-started.json').exists(), 'PROVIDER_STARTED_CORPUS_FROZEN')
+        snapshots = {}
+        for filename in ('inventory.json', 'inventory.sha256', 'state.json', 'selection.json'):
+            if self._path(filename).exists():
+                raw = self._path(filename).read_bytes()
+                self._write('archive/v1-before-reduced8/' + filename, raw, immutable=True)
+                snapshots[filename] = digest(raw)
+        overlay = {'schema_version': '2.0', 'protocol_version': REDUCED_PROTOCOL,
+                   'authority': 'EXPLICIT_OWNER_REDUCTION_TO_EIGHT_AND_RECORDING_DEFERRAL',
+                   'source_release': RELEASE, 'original_inventory_sha256': state['inventory_sha256'],
+                   'active_case_ids': list(REDUCED_IDS), 'legacy_snapshots': snapshots,
+                   'selection': 'ALL_EIGHT_FIXED_CASES_NO_RESERVES_NO_REPLACEMENTS',
+                   'timing_status': 'NOT_EVALUATED', 'noise_status': 'NOT_EVALUATED'}
+        self._write('protocol-overlay-v2.json', overlay, immutable=True)
+        state.update(protocol_version=REDUCED_PROTOCOL, protocol_overlay_sha256=digest(encoded(overlay)),
+                     recording_enabled=False, selection=None, status='ACQUIRING', manifest_sha256=None,
+                     archived_case_ids=[i['id'] for i in json.loads(self._path('inventory.json').read_bytes())['items']
+                                        if i['id'] not in REDUCED_IDS])
+        self._save(state, 'OWNER_REDUCED_EIGHT_RECORDING_DEFERRED')
+        return self.state()
+
+    def resume_recording(self, *, confirmed):
+        """Local operator only, after the owner's explicit readiness instruction."""
+        from tools.cloud62d_owned.server import _ProcessLock
+        lock = _ProcessLock(self.root)
+        try:
+            return self._resume_recording_locked(confirmed=confirmed)
+        finally:
+            lock.close()
+
+    def _resume_recording_locked(self, *, confirmed):
+        state = self._load()
+        self._mutable(state)
+        require(self._reduced(state) and confirmed is True, 'EXPLICIT_OWNER_READINESS_REQUIRED')
+        if not state['recording_enabled']:
+            state['recording_enabled'] = True
+            self._save(state, 'OWNER_EXPLICITLY_READY_TO_RECORD')
+        return self.state()
 
     def _item(self, case_id):
         require(type(case_id) is str and re.fullmatch(r'(ru|en)-(read|spontaneous|noisy)-\d{2}', case_id),
@@ -218,6 +304,7 @@ class CorpusStore:
     def save_capture(self, case_id, source_wav, evaluation_wav):
         state = self._load()
         self._mutable(state)
+        require(not self._reduced(state) or state['recording_enabled'] is True, 'RECORDING_DEFERRED')
         require(state['attestation']['confirmed'] is True, 'ATTESTATION_REQUIRED')
         item = self._item(case_id)
         require(case_id not in state['records'], 'CAPTURE_ALREADY_EXISTS')
@@ -305,6 +392,9 @@ class CorpusStore:
         self._mutable(state)
         require(state['attestation']['confirmed'] is True, 'ATTESTATION_REQUIRED')
         excluded = {e['case_id'] for e in state['exclusions']}
+        if self._reduced(state):
+            require(all(case_id in state['records'] and case_id not in excluded for case_id in REDUCED_IDS),
+                    'REDUCED_EIGHT_ALL_CLIPS_REQUIRED')
         eligible = []
         seen_source, seen_upload = set(), set()
         for item in self._items():
@@ -321,7 +411,12 @@ class CorpusStore:
             seen_upload.add(upload)
             eligible.append((selection_key(source), case_id, item))
         selection = {k: {'ru': [], 'en': []} for k in ('quality', 'noise', 'reserves', 'timing')}
+        if self._reduced(state):
+            for lang in ('ru', 'en'):
+                selection['quality'][lang] = [case_id for case_id in REDUCED_IDS if case_id.startswith(lang + '-')]
         for lang in ('ru', 'en'):
+            if self._reduced(state):
+                continue
             for kind in ('READ', 'SPONTANEOUS', 'NOISY'):
                 rows = sorted((key, case_id) for key, case_id, item in eligible
                               if item['language'] == lang and item['speech_class'] == kind)
@@ -336,7 +431,7 @@ class CorpusStore:
                                 for case_id in ids[:6]) >= 100, 'TIMING_REFERENCE_WORD_COVERAGE')
         state['selection'] = selection
         state['status'] = 'SELECTED'
-        self._write('selection.json', {'selection': selection, 'exclusions': state['exclusions'],
+        self._write(self._artifact(state, 'selection.json'), {'selection': selection, 'exclusions': state['exclusions'],
                     'source_release': RELEASE, 'inventory_sha256': state['inventory_sha256'],
                     'single_speaker_limitation': 'ONE_AUTHORIZED_OWNER_SPEAKER_PER_LANGUAGE'}, immutable=True)
         self._save(state, 'PROSPECTIVE_SELECTION_FROZEN')
@@ -345,10 +440,16 @@ class CorpusStore:
     def _verify_frozen_selection(self, state):
         require(state['attestation'] == {'version': ATTESTATION_VERSION,
                 'sha256': digest(ATTESTATION_TEXT.encode()), 'confirmed': True}, 'ATTESTATION_REQUIRED')
-        frozen = json.loads(self._path('selection.json').read_text(encoding='utf-8'))
+        frozen = json.loads(self._path(self._artifact(state, 'selection.json')).read_text(encoding='utf-8'))
         require(frozen['selection'] == state['selection'] and frozen['exclusions'] == state['exclusions']
                 and frozen['inventory_sha256'] == state['inventory_sha256'], 'SELECTION_HASH_MISMATCH')
         excluded = {e['case_id'] for e in state['exclusions']}
+        if self._reduced(state):
+            for lang in ('ru', 'en'):
+                require(state['selection']['quality'][lang] == [i for i in REDUCED_IDS if i.startswith(lang + '-')]
+                        and all(state['selection'][area][lang] == [] for area in ('timing', 'noise', 'reserves')),
+                        'REDUCED_SELECTION_MISMATCH')
+            require(not excluded.intersection(REDUCED_IDS), 'REDUCED_EIGHT_ALL_CLIPS_REQUIRED')
         for item in self._items():
             if item['id'] not in excluded:
                 require(item['id'] in state['records'], 'INVENTORY_RECORDING_OR_EXCLUSION_REQUIRED')
@@ -417,6 +518,8 @@ class CorpusStore:
                           'selected': bool(selection and case_id in selection['quality'][lang] + selection['noise'][lang]),
                           'timing_selected': bool(selection and case_id in selection['timing'][lang])})
         return {'status': state['status'], 'inventory_sha256': state['inventory_sha256'],
+                'protocol_version': state.get('protocol_version', 'dora-owned-corpus-v1'),
+                'recording_enabled': state.get('recording_enabled', True),
                 'attestation': {**state['attestation'], 'text': ATTESTATION_TEXT},
                 'items': items, 'selection': selection, 'public_summary': self.public_summary(state)}
 
@@ -430,17 +533,24 @@ class CorpusStore:
                                  'en': {'read': 15, 'spontaneous': 15, 'noisy': 6}}}
         for field in ('recorded', 'verified_references', 'selected_quality', 'selected_noise', 'timing_clips', 'timing_words'):
             result[field] = {'ru': 0, 'en': 0}
-        for case_id, record in state['records'].items():
+        if self._reduced(state):
+            result.update(schema_version='2.0', protocol_version=REDUCED_PROTOCOL,
+                          protocol_overlay_sha256=state['protocol_overlay_sha256'],
+                          recording_enabled=state['recording_enabled'],
+                          timing_status='NOT_EVALUATED', noise_status='NOT_EVALUATED',
+                          candidates={lang: {'read': 2, 'spontaneous': 2, 'noisy': 0} for lang in ('ru', 'en')})
+        for case_id, record in self._active_records(state).items():
             lang = case_id[:2]
             result['recorded'][lang] += 1
             result['verified_references'][lang] += bool(record['reference'])
-            result['timing_clips'][lang] += bool(record['timing'])
-            result['timing_words'][lang] += len(record['timing']['words']) if record['timing'] else 0
+            if not self._reduced(state):
+                result['timing_clips'][lang] += bool(record['timing'])
+                result['timing_words'][lang] += len(record['timing']['words']) if record['timing'] else 0
         if state['selection']:
             for lang in ('ru', 'en'):
                 result['selected_quality'][lang] = len(state['selection']['quality'][lang])
                 result['selected_noise'][lang] = len(state['selection']['noise'][lang])
-        result['excluded_count'] = len(state['exclusions'])
+        result['excluded_count'] = sum(not self._reduced(state) or e['case_id'] in REDUCED_IDS for e in state['exclusions'])
         return result
 
     def _composite(self, state, language, target_frames):
@@ -464,7 +574,7 @@ class CorpusStore:
             target.setparams((1, 2, 16000, 0, 'NONE', 'not compressed'))
             target.writeframes(data)
         value = buffer.getvalue()
-        path = f'composites/{language}-{target_frames}.wav'
+        path = self._artifact(state, f'composites/{language}-{target_frames}.wav')
         self._write(path, value, immutable=True)
         return {'language': language, 'path': path, 'duration_us': target_frames * 1_000_000 // 16000,
                 'sha256': digest(value), 'independent_wer_sample': False, 'silence_frames': 0,
@@ -477,10 +587,13 @@ class CorpusStore:
         self._mutable(state, timings=True, finalizing=True)
         require(state['selection'], 'SELECTION_REQUIRED')
         self._verify_frozen_selection(state)
-        for case_id, record in state['records'].items():
+        for case_id, record in self._active_records(state).items():
             if case_id not in {e['case_id'] for e in state['exclusions']}:
                 self._audit_record(case_id, record)
         for lang, ids in state['selection']['timing'].items():
+            if self._reduced(state):
+                require(not ids, 'REDUCED_TIMING_NOT_EVALUATED')
+                continue
             count = 0
             for case_id in ids:
                 record = state['records'][case_id]
@@ -507,32 +620,36 @@ class CorpusStore:
                     'live_preflight_still_required': True, 'conversion_recipe': CONVERSION_RECIPE,
                     'normalization': 'dora-alpha-asr-normalization-v0.1 / CPython3.12 / Unicode15.0.0',
                     'selection': state['selection'], 'exclusions': state['exclusions'],
-                    'selection_sha256': digest(self._path('selection.json').read_bytes()),
+                    'selection_sha256': digest(self._path(self._artifact(state, 'selection.json')).read_bytes()),
                     'single_speaker_limitation': 'NO_MULTI_SPEAKER_POPULATION_GENERALIZATION',
-                    'records': state['records'], 'composites': composites,
+                    'records': self._active_records(state), 'composites': composites,
                     'acquisition_events': state['events'], 'finalized_at': state['finalization_started_at']}
         for case_id, record in manifest['records'].items():
             record['language'] = case_id[:2]
             record['speech_class'] = self._item(case_id)['speech_class']
             record['timing_reference_sha256'] = digest(encoded(record['timing'])) if record['timing'] else None
-        self._write('manifest.json', manifest, immutable=True)
+        if self._reduced(state):
+            manifest.update(schema_version='2.0', protocol_version=REDUCED_PROTOCOL,
+                            protocol_overlay_sha256=state['protocol_overlay_sha256'],
+                            timing_status='NOT_EVALUATED', noise_status='NOT_EVALUATED')
+        self._write(self._artifact(state, 'manifest.json'), manifest, immutable=True)
         state['manifest_sha256'] = digest(encoded(manifest))
         state['status'] = 'FINALIZED'
         self._save(state, 'MANIFEST_FINALIZED')
-        self._write('public-summary.json', self.public_summary(state), immutable=True)
+        self._write(self._artifact(state, 'public-summary.json'), self.public_summary(state), immutable=True)
         return self.public_summary(state)
 
     def validate_manifest(self):
         """Re-read every bound source/upload/timing/composite on autonomous resume."""
         state = self._load()
         require(state['status'] == 'FINALIZED', 'MANIFEST_NOT_FINALIZED')
-        raw = self._path('manifest.json').read_bytes()
+        raw = self._path(self._artifact(state, 'manifest.json')).read_bytes()
         require(digest(raw) == state['manifest_sha256'], 'MANIFEST_HASH_MISMATCH')
         manifest = json.loads(raw)
-        require(state['records'] == manifest['records'] and state['attestation'] == manifest['attestation'],
+        require(self._active_records(state) == manifest['records'] and state['attestation'] == manifest['attestation'],
                 'MANIFEST_STATE_MISMATCH')
         require(manifest['inventory_sha256'] == state['inventory_sha256'], 'INVENTORY_HASH_MISMATCH')
-        require(digest(self._path('selection.json').read_bytes()) == manifest['selection_sha256'],
+        require(digest(self._path(self._artifact(state, 'selection.json')).read_bytes()) == manifest['selection_sha256'],
                 'SELECTION_HASH_MISMATCH')
         require(state['selection'] == manifest['selection'] and state['exclusions'] == manifest['exclusions'],
                 'SELECTION_HASH_MISMATCH')
@@ -541,7 +658,7 @@ class CorpusStore:
         for case_id, record in manifest['records'].items():
             if case_id not in excluded:
                 self._audit_record(case_id, record)
-            if record['timing']:
+            if record['timing'] and not self._reduced(state):
                 require(digest(self._path(f'timings/{case_id}.json').read_bytes()) ==
                         record['timing_reference_sha256'], 'TIMING_HASH_MISMATCH')
                 validate_timings(record['timing']['words'], record['reference']['words'],
@@ -553,3 +670,32 @@ class CorpusStore:
                     'COMPOSITE_HASH_MISMATCH')
             require(validate_wav(data)['duration_us'] == composite['duration_us'], 'COMPOSITE_DURATION_MISMATCH')
         return self.public_summary(state)
+
+
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(description='Private corpus operator control; never calls AWS.')
+    parser.add_argument('action', choices=['migrate-reduced-eight', 'resume-recording'])
+    parser.add_argument('--root', required=True)
+    parser.add_argument('--repo', required=True)
+    parser.add_argument('--owner-ready', action='store_true', help='Only after explicit owner readiness instruction.')
+    args = parser.parse_args()
+    try:
+        store = CorpusStore(args.root, args.repo)
+        if args.action == 'migrate-reduced-eight':
+            store.migrate_reduced_eight()
+        else:
+            store.resume_recording(confirmed=args.owner_ready)
+        print(json.dumps(store.public_summary(), sort_keys=True))
+        return 0
+    except (ValueError, RuntimeError) as error:
+        code = str(error)
+        print(json.dumps({'error': code if re.fullmatch(r'[A-Z][A-Z0-9_]{0,100}', code) else 'VALIDATION_FAILED'}))
+        return 2
+    except OSError:
+        print(json.dumps({'error': 'PRIVATE_STORAGE_UNAVAILABLE'}))
+        return 2
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

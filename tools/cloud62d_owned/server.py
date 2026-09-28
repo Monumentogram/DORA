@@ -122,6 +122,8 @@ def make_server(store, port=0):
                 if self.path == '/api/attest':
                     store.attest(confirmed=body.get('confirmed') is True)
                 elif self.path == '/api/capture':
+                    if store.state().get('recording_enabled') is False:
+                        raise ValueError('RECORDING_DEFERRED')
                     source = base64.b64decode(body['source'], validate=True)
                     evaluation = base64.b64decode(body['evaluation'], validate=True)
                     store.save_capture(body['id'], source, evaluation)

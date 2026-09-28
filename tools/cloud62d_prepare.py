@@ -17,6 +17,10 @@ BASELINE = 'd8d5c90516b6a9afa96c21e703dfe7481e64e589'
 PHASE = 'docs/contracts/DORA_CLOUD_EVALUATION_PHASE_A_V0_1.json'
 PREPARATION = 'docs/contracts/DORA_CLOUD_62D_PREPARATION_V0_1.json'
 REPO = Path(__file__).resolve().parents[1]
+PREPARATION_COMMIT = 'c98856e25f07ef27aa0121c6458a5d3436fc574a'
+AMENDMENT = 'docs/contracts/DORA_CLOUD_62D_EIGHT_CLIP_PROTOCOL_V0_1.json'
+EIGHT_IDS = tuple(f'{lang}-{kind}-{n:02}' for lang in ('ru', 'en')
+                  for kind in ('read', 'spontaneous') for n in (1, 2))
 
 
 def require(condition, code):
@@ -26,6 +30,76 @@ def require(condition, code):
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()
+
+
+def bounded_report(rows):
+    """Summarize bound primary oracle counts, never score text or authorize AWS.
+
+    Caller must establish immutable manifest membership, verified references,
+    raw-result identity and oracle provenance. Returned per-case rows are PRIVATE.
+    Missing attempts stay visible; successful retries cannot replace primaries.
+    """
+    require(type(rows) is list, 'REPORT_ROWS')
+    indexed = {}
+    count_keys = {'substitutions', 'deletions', 'insertions', 'reference_tokens'}
+    for row in rows:
+        require(type(row) is dict and set(row) == {'case_id', 'state', 'raw', 'normalized'},
+                'REPORT_ROW_SHAPE')
+        case_id = row['case_id']
+        require(case_id in EIGHT_IDS and case_id not in indexed, 'REPORT_MEMBERSHIP')
+        require(row['state'] in ('NOT_RUN', 'SUCCEEDED', 'FAILED'), 'REPORT_STATE')
+        for mode in ('raw', 'normalized'):
+            counts = row[mode]
+            if row['state'] != 'SUCCEEDED':
+                require(counts is None, 'UNMEASURED_COUNTS')
+                continue
+            require(type(counts) is dict and set(counts) == count_keys and
+                    all(type(v) is int and 0 <= v <= 4096 for v in counts.values()) and
+                    counts['reference_tokens'] > 0 and
+                    counts['substitutions'] + counts['deletions'] <= counts['reference_tokens'],
+                    'INVALID_ORACLE_COUNTS')
+        indexed[case_id] = row
+
+    def aggregate(items, mode):
+        observed = [r[mode] for r in items if r['state'] == 'SUCCEEDED']
+        counts = {key: sum(c[key] for c in observed) for key in count_keys}
+        errors = sum(counts[k] for k in ('substitutions', 'deletions', 'insertions'))
+        return {**counts, 'errors': errors, 'scored_records': len(observed),
+                'wer_percent': errors * 100 / counts['reference_tokens']
+                if counts['reference_tokens'] else None}
+
+    records = []
+    for case_id in EIGHT_IDS:
+        row = indexed.get(case_id, {'case_id': case_id, 'state': 'NOT_RUN',
+                                    'raw': None, 'normalized': None})
+        records.append({**row, **{mode: aggregate([row], mode)
+                                 for mode in ('raw', 'normalized')}})
+
+    def summarize(ids, threshold):
+        items = [indexed.get(i, {'state': 'NOT_RUN'}) for i in ids]
+        modes = {mode: aggregate(items, mode) for mode in ('raw', 'normalized')}
+        successes = sum(r['state'] == 'SUCCEEDED' for r in items)
+        failed = sum(r['state'] == 'FAILED' for r in items)
+        n, errors = modes['normalized']['reference_tokens'], modes['normalized']['errors']
+        quality = ('PASS' if errors * 100 <= threshold * n else 'FAIL') if successes == len(ids) else (
+            'NOT_RUN' if successes == failed == 0 else 'INCOMPLETE')
+        return {**modes, 'expected_records': len(ids), 'succeeded_records': successes,
+                'failed_records': failed, 'not_run_records': len(ids)-successes-failed,
+                'threshold_percent': threshold, 'bounded_quality': quality}
+
+    languages = {}
+    for lang, threshold in (('ru', 20), ('en', 18)):
+        ids = [i for i in EIGHT_IDS if i.startswith(lang + '-')]
+        result = summarize(ids, threshold)
+        result['speech_classes'] = {kind: summarize([i for i in ids if f'-{kind}-' in i], threshold)
+                                    for kind in ('read', 'spontaneous')}
+        if result['bounded_quality'] == 'PASS' and any(
+                r['bounded_quality'] != 'PASS' for r in result['speech_classes'].values()):
+            result['bounded_quality'] = 'FAIL'
+        languages[lang] = result
+    return {'scope': 'EIGHT_CLIPS_ONE_OWNER_ONLY', 'records': records, 'languages': languages,
+            'timestamp_accuracy': 'NOT_EVALUATED', 'noise_robustness': 'NOT_EVALUATED',
+            'broad_admission': 'NOT_ESTABLISHED', 'provider_admission': 'NOT_ESTABLISHED'}
 
 
 def quote(durations_us, ancillary_tax_upper):
@@ -119,6 +193,38 @@ def render_record(record):
             '```json\n' + json.dumps(record, ensure_ascii=False, indent=2) + '\n```\n')
 
 
+def validate_amendment(record):
+    expected = {'protocol_id': 'dora-owned-reduced8-v2', 'active_ids': list(EIGHT_IDS),
+                'wer_threshold_percent': {'ru': 20, 'en': 18},
+                'timestamp_accuracy': 'NOT_EVALUATED', 'noise_robustness': 'NOT_EVALUATED',
+                'phase_a_successor': 'NOT_CREATED', 'phase_b': 'NOT_RUN',
+                'recording': 'DEFERRED_UNTIL_EXPLICIT_OWNER_READY',
+                'budget_usd': {'total': 10, 'asr': 2, 'ancillary_tax': 8}}
+    for key, value in expected.items():
+        require(record.get(key) == value, 'AMENDMENT_SCOPE_' + key.upper())
+
+
+def render_amendment(record):
+    return ('# DORA 6.2D: prospective eight-recording protocol amendment v0.1\n\n'
+            'Owner decision: 2026-09-28. Exactly **8 recordings**: RU 2 READ + 2 SPONTANEOUS; '
+            'EN 2 READ + 2 SPONTANEOUS. All eight enter the bounded evaluation.\n\n'
+            '**Recording is deferred.** Wait for the Owner\'s explicit “Готов записывать”. '
+            'No microphone, login request, readiness polling or AWS evaluation now. '
+            'That phrase permits guided acquisition only; actual words still require personal '
+            'verification and AWS prerequisites remain independent.\n\n'
+            'This is a prospective protocol change, **not a complete Phase A successor**. '
+            'Published Phase A v0.1 and preparation evidence remain immutable historical records. '
+            'The replacement table below names every relaxed requirement; none is claimed satisfied.\n\n'
+            'WER limits remain RU ≤20% and EN ≤18%, computed from actual error/word counts '
+            'separately by language, speech class and recording. No cross-language average. '
+            'Noise robustness and timestamp accuracy are **NOT_EVALUATED / НЕ ОЦЕНЕНЫ**. '
+            'One owner and eight recordings cannot establish quality for other voices or conditions; '
+            'provider/broad admission remains unestablished where it depends on those properties.\n\n'
+            'The following machine record is reproduced exactly. Private speech, references, '
+            'per-record hashes, account identity and credentials must remain outside public Git.\n\n'
+            '```json\n' + json.dumps(record, ensure_ascii=False, indent=2) + '\n```\n')
+
+
 def verify(git):
     phase = json.loads((REPO / PHASE).read_text(encoding='utf-8'))
     frozen = [PHASE, 'docs/stage0/DORA_CLOUD_EVALUATION_PHASE_A_V0_1.md',
@@ -143,19 +249,37 @@ def verify(git):
             'GATE_ACCOUNTING')
     path = REPO / PREPARATION
     if path.exists():
+        require(path.read_bytes().replace(b'\r\n', b'\n') ==
+                git_blob(git, PREPARATION_COMMIT, PREPARATION).replace(b'\r\n', b'\n'),
+                'HISTORICAL_PREPARATION_CHANGED')
         record = json.loads(path.read_text(encoding='utf-8'))
         require(record['source_baseline'] == BASELINE and record['phase_a'] == phase['phase_a']
                 and record['phase_b'] == 'NOT_RUN', 'PREMATURE_PHASE_PROMOTION')
         require(record['effective_gate_statuses'] == phase['effective_gate_statuses'],
                 'GATE_PROMOTION')
         for source in record['tool_bindings']:
-            data = (REPO / source['path']).read_bytes().replace(b'\r\n', b'\n')
+            # The published preparation is historical evidence. Later protocol
+            # revisions bind their own sources, never rewrite its source hashes.
+            data = git_blob(git, PREPARATION_COMMIT, source['path']).replace(b'\r\n', b'\n')
             require(digest(data) == source['sha256_lf_utf8'], 'PREPARATION_SOURCE_BINDING')
         markdown = REPO / 'docs/stage0/DORA_CLOUD_62D_PREPARATION_V0_1.md'
         require(markdown.read_text(encoding='utf-8') == render_record(record), 'JSON_MD_PARITY')
+    amendment_path = REPO / AMENDMENT
+    if amendment_path.exists():
+        amendment = json.loads(amendment_path.read_text(encoding='utf-8'))
+        validate_amendment(amendment)
+        require(amendment['effective_gate_statuses'] == phase['effective_gate_statuses'],
+                'GATE_PROMOTION')
+        for source in amendment['tool_bindings']:
+            data = (REPO / source['path']).read_bytes().replace(b'\r\n', b'\n')
+            require(digest(data) == source['sha256_lf_utf8'], 'AMENDMENT_SOURCE_BINDING')
+        markdown = REPO / 'docs/stage0/DORA_CLOUD_62D_EIGHT_CLIP_PROTOCOL_V0_1.md'
+        require(markdown.read_text(encoding='utf-8') == render_amendment(amendment),
+                'AMENDMENT_JSON_MD_PARITY')
     return {'frozen_phase_a': 'UNCHANGED', 'source_bindings': len(phase['sources']),
             'dag': 'PASS', 'gate_count': 39, 'counts': dict(counts),
-            'preparation_record': 'VERIFIED' if path.exists() else 'NOT_YET_CREATED'}
+            'preparation_record': 'VERIFIED' if path.exists() else 'NOT_YET_CREATED',
+            'eight_clip_amendment': 'VERIFIED' if amendment_path.exists() else 'NOT_YET_CREATED'}
 
 
 if __name__ == '__main__':

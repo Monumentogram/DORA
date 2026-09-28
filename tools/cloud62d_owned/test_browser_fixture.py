@@ -1,5 +1,6 @@
 """Synthetic UI fixture server; temporary audio is silence, never microphone data."""
 from pathlib import Path
+import copy
 import io
 import sys
 import tempfile
@@ -20,6 +21,14 @@ class FixtureStore:
             out.writeframes(b'\0\0' * 320000)
         if '--record' in sys.argv:
             self.data['items'][0]['recording'] = None
+        if '--reduced8' in sys.argv:
+            self.data['protocol_version'] = 'dora-owned-reduced8-v2'
+            self.data['recording_enabled'] = False
+            self.data['attestation']['confirmed'] = True
+            for language, speech_class, number in [('en', 'READ', 2), ('en', 'SPONTANEOUS', 1), ('en', 'SPONTANEOUS', 2), ('ru', 'READ', 1), ('ru', 'READ', 2), ('ru', 'SPONTANEOUS', 1), ('ru', 'SPONTANEOUS', 2)]:
+                item = copy.deepcopy(self.data['items'][0])
+                item.update(id=f'{language}-{speech_class.lower()}-{number:02}', language=language, speech_class=speech_class, reference={'text': 'hello world', 'words': ['hello', 'world']})
+                self.data['items'].append(item)
 
     def state(self):
         return self.data
@@ -53,7 +62,18 @@ class FixtureStore:
     def select(self):
         assert self.data['items'][0]['reference']
         self.data['status'] = 'SELECTED'
-        self.data['items'][0]['timing_selected'] = True
+        if self.data.get('protocol_version') == 'dora-owned-reduced8-v2':
+            assert len(self.data['items']) == 8
+            assert all(item['recording'] and item['reference'] for item in self.data['items'])
+        else:
+            self.data['items'][0]['timing_selected'] = True
+
+    def finalize(self):
+        assert self.data.get('protocol_version') == 'dora-owned-reduced8-v2'
+        assert self.data['status'] == 'SELECTED'
+        assert len(self.data['items']) == 8 and all(item['reference'] and item['recording'] for item in self.data['items'])
+        assert all(item['timing'] is None for item in self.data['items'])
+        self.data['status'] = 'FINALIZED'
 
     def save_timings(self, case_id, words, confirmed):
         assert confirmed and case_id == 'synthetic'

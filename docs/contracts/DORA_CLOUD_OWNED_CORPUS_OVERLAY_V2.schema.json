@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PRIVATE additive DORA reduced-eight protocol overlay",
+  "description": "Immutable overlay; preserves original 72-item inventory. Only whole-overlay hash and aggregate counts may be public.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "protocol_version", "authority", "source_release", "original_inventory_sha256", "active_case_ids", "legacy_snapshots", "selection", "timing_status", "noise_status"],
+  "properties": {
+    "schema_version": {"const": "2.0"},
+    "protocol_version": {"const": "dora-owned-reduced8-v2"},
+    "authority": {"const": "EXPLICIT_OWNER_REDUCTION_TO_EIGHT_AND_RECORDING_DEFERRAL"},
+    "source_release": {"const": "dora-owned-corpus-v1.0.0"},
+    "original_inventory_sha256": {"$ref": "#/$defs/hash"},
+    "active_case_ids": {"const": ["ru-read-01", "ru-read-02", "ru-spontaneous-01", "ru-spontaneous-02", "en-read-01", "en-read-02", "en-spontaneous-01", "en-spontaneous-02"]},
+    "legacy_snapshots": {
+      "type": "object", "additionalProperties": false,
+      "required": ["inventory.json", "inventory.sha256", "state.json"],
+      "properties": {
+        "inventory.json": {"$ref": "#/$defs/hash"},
+        "inventory.sha256": {"$ref": "#/$defs/hash"},
+        "state.json": {"$ref": "#/$defs/hash"},
+        "selection.json": {"$ref": "#/$defs/hash"}
+      }
+    },
+    "selection": {"const": "ALL_EIGHT_FIXED_CASES_NO_RESERVES_NO_REPLACEMENTS"},
+    "timing_status": {"const": "NOT_EVALUATED"},
+    "noise_status": {"const": "NOT_EVALUATED"}
+  },
+  "$defs": {"hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"}},
+  "$comment": "Migration leaves audio, references, timing history and original inventory in place, snapshots legacy state, filters active accounting to eight, and starts with recording_enabled=false. Explicit local owner readiness is required to resume recording."
+}

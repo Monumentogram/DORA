@@ -18,12 +18,15 @@ class ServerTests(unittest.TestCase):
         self.module = module
         class PrivateStore:
             def state(self):
-                return {'private': 'synthetic transcript'}
+                return {'private': 'synthetic transcript', **({'recording_enabled': False} if getattr(self, 'deferred', False) else {})}
             def attest(self, confirmed):
                 if confirmed is not True:
                     raise ValueError('EXPLICIT_CONFIRMATION_REQUIRED')
                 return {'confirmed': True}
-        self.server = module.make_server(PrivateStore(), port=0)
+            def save_capture(self, *args):
+                raise AssertionError('Deferred capture must not reach storage')
+        self.store = PrivateStore()
+        self.server = module.make_server(self.store, port=0)
         self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.thread.start()
         self.port = self.server.server_address[1]
@@ -91,6 +94,12 @@ class ServerTests(unittest.TestCase):
             resumed = self.module.make_server(Store(), port=0)
             resumed.server_close()
             self.assertTrue((Path(directory) / '.recorder.lock').exists())
+
+    def test_deferred_capture_rejected_server_side_before_decoding_or_storage(self):
+        self.store.deferred = True
+        status, _, body = self.request('/api/capture', body={'id': 'synthetic', 'source': 'AA==', 'evaluation': 'AA=='})
+        self.assertEqual(status, 400)
+        self.assertEqual(json.loads(body), {'error': 'RECORDING_DEFERRED'})
 
 
 if __name__ == '__main__':
