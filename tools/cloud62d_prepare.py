@@ -19,6 +19,8 @@ PREPARATION = 'docs/contracts/DORA_CLOUD_62D_PREPARATION_V0_1.json'
 REPO = Path(__file__).resolve().parents[1]
 PREPARATION_COMMIT = 'c98856e25f07ef27aa0121c6458a5d3436fc574a'
 AMENDMENT = 'docs/contracts/DORA_CLOUD_62D_EIGHT_CLIP_PROTOCOL_V0_1.json'
+AMENDMENT_COMMIT = 'e0d1479333122166192b5f6a5f27813d9eb86f09'
+MOBILE = 'docs/contracts/DORA_CLOUD_62D_MOBILE_ACQUISITION_V0_1.json'
 EIGHT_IDS = tuple(f'{lang}-{kind}-{n:02}' for lang in ('ru', 'en')
                   for kind in ('read', 'spontaneous') for n in (1, 2))
 
@@ -225,6 +227,27 @@ def render_amendment(record):
             '```json\n' + json.dumps(record, ensure_ascii=False, indent=2) + '\n```\n')
 
 
+def validate_mobile(record):
+    validate_amendment(record)
+    require(record.get('application_id') == 'com.monumentogram.dora.stage0.ownedcorpus',
+            'MOBILE_APPLICATION_ID')
+    require(record.get('initial_seed_enabled') is False, 'MOBILE_INITIAL_DEFERRAL')
+    require(record.get('accepted_capture_replacement') == 'FORBIDDEN', 'MOBILE_RETAKE_POLICY')
+    require(record.get('technical_retry') == 'EXPLICIT_BEFORE_ACCEPTANCE_WITH_ALL_ATTEMPTS_RETAINED',
+            'MOBILE_RETRY_POLICY')
+    require(record.get('real_microphone_test') == 'NOT_RUN', 'MOBILE_REAL_MIC_NOT_AUTHORIZED')
+    require(record.get('broad_admission') == 'NOT_ESTABLISHED', 'MOBILE_ADMISSION')
+
+
+def render_mobile(record):
+    return ('# DORA 6.2D mobile acquisition evidence v0.1\n\n'
+            'Prospective acquisition tooling only; no complete Phase A successor or AWS run.\n'
+            'The [design and requirement changes](DORA_CLOUD_62D_MOBILE_ACQUISITION_V0_1.md) '
+            'define the bounded phone workflow. Only synthetic capture data was tested; '
+            'real microphone testing is deferred until explicit Owner readiness.\n\n'
+            '```json\n' + json.dumps(record, ensure_ascii=False, indent=2) + '\n```\n')
+
+
 def verify(git):
     phase = json.loads((REPO / PHASE).read_text(encoding='utf-8'))
     frozen = [PHASE, 'docs/stage0/DORA_CLOUD_EVALUATION_PHASE_A_V0_1.md',
@@ -266,20 +289,36 @@ def verify(git):
         require(markdown.read_text(encoding='utf-8') == render_record(record), 'JSON_MD_PARITY')
     amendment_path = REPO / AMENDMENT
     if amendment_path.exists():
+        require(amendment_path.read_bytes().replace(b'\r\n', b'\n') ==
+                git_blob(git, AMENDMENT_COMMIT, AMENDMENT).replace(b'\r\n', b'\n'),
+                'HISTORICAL_AMENDMENT_CHANGED')
         amendment = json.loads(amendment_path.read_text(encoding='utf-8'))
         validate_amendment(amendment)
         require(amendment['effective_gate_statuses'] == phase['effective_gate_statuses'],
                 'GATE_PROMOTION')
         for source in amendment['tool_bindings']:
-            data = (REPO / source['path']).read_bytes().replace(b'\r\n', b'\n')
+            data = git_blob(git, AMENDMENT_COMMIT, source['path']).replace(b'\r\n', b'\n')
             require(digest(data) == source['sha256_lf_utf8'], 'AMENDMENT_SOURCE_BINDING')
         markdown = REPO / 'docs/stage0/DORA_CLOUD_62D_EIGHT_CLIP_PROTOCOL_V0_1.md'
         require(markdown.read_text(encoding='utf-8') == render_amendment(amendment),
                 'AMENDMENT_JSON_MD_PARITY')
+    mobile_path = REPO / MOBILE
+    if mobile_path.exists():
+        mobile = json.loads(mobile_path.read_text(encoding='utf-8'))
+        validate_mobile(mobile)
+        require(mobile['effective_gate_statuses'] == phase['effective_gate_statuses'],
+                'GATE_PROMOTION')
+        for source in mobile['tool_bindings']:
+            data = (REPO / source['path']).read_bytes().replace(b'\r\n', b'\n')
+            require(digest(data) == source['sha256_lf_utf8'], 'MOBILE_SOURCE_BINDING')
+        markdown = REPO / 'docs/stage0/DORA_CLOUD_62D_MOBILE_EVIDENCE_V0_1.md'
+        require(markdown.read_text(encoding='utf-8') == render_mobile(mobile),
+                'MOBILE_JSON_MD_PARITY')
     return {'frozen_phase_a': 'UNCHANGED', 'source_bindings': len(phase['sources']),
             'dag': 'PASS', 'gate_count': 39, 'counts': dict(counts),
             'preparation_record': 'VERIFIED' if path.exists() else 'NOT_YET_CREATED',
-            'eight_clip_amendment': 'VERIFIED' if amendment_path.exists() else 'NOT_YET_CREATED'}
+            'eight_clip_amendment': 'VERIFIED' if amendment_path.exists() else 'NOT_YET_CREATED',
+            'mobile_acquisition': 'VERIFIED' if mobile_path.exists() else 'NOT_YET_CREATED'}
 
 
 if __name__ == '__main__':

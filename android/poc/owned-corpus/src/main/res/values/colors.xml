@@ -1,0 +1,9 @@
+<resources>
+    <color name="owned_background">#F3F6F7</color>
+    <color name="owned_surface">#FFFFFF</color>
+    <color name="owned_on_surface">#182B36</color>
+    <color name="owned_muted">#526871</color>
+    <color name="owned_primary">#185D54</color>
+    <color name="owned_on_primary">#FFFFFF</color>
+    <color name="owned_error">#8C2F19</color>
+</resources>

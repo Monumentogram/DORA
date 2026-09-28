@@ -22,6 +22,8 @@ include(":app")
 
 include(":poc:capture")
 
+include(":poc:owned-corpus")
+
 include(":poc:search")
 
 include(":poc:recovery")

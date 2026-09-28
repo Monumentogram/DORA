@@ -1,12 +1,27 @@
 """Offline guard regressions; no credentials, real speech or network."""
 import copy
 import unittest
+import json
 from decimal import Decimal
 
 import cloud62d_prepare as p
 
 
 class PreparationTests(unittest.TestCase):
+    def test_mobile_cannot_unlock_capture_or_promote_unmeasured_properties(self):
+        record = json.loads((p.REPO / p.AMENDMENT).read_text(encoding='utf-8'))
+        record.update(application_id='com.monumentogram.dora.stage0.ownedcorpus',
+                      initial_seed_enabled=False, accepted_capture_replacement='FORBIDDEN',
+                      technical_retry='EXPLICIT_BEFORE_ACCEPTANCE_WITH_ALL_ATTEMPTS_RETAINED',
+                      real_microphone_test='NOT_RUN', broad_admission='NOT_ESTABLISHED')
+        p.validate_mobile(record)
+        for key, value in [('initial_seed_enabled', True), ('real_microphone_test', 'PASS'),
+                           ('accepted_capture_replacement', 'ALLOWED'),
+                           ('technical_retry', 'UNRESTRICTED'), ('broad_admission', 'PASS'),
+                           ('application_id', 'production')]:
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                p.validate_mobile({**record, key: value})
+
     def test_amendment_cannot_promote_untested_properties_or_expand_corpus(self):
         amendment = {'protocol_id': 'dora-owned-reduced8-v2',
                      'active_ids': list(p.EIGHT_IDS),

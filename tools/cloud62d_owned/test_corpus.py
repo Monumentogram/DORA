@@ -63,6 +63,39 @@ class CorpusTests(unittest.TestCase):
             self.store.attest(confirmed=False)
         self.assertEqual(self.store.public_summary()['recorded'], {'ru': 0, 'en': 0})
 
+    def test_interrupted_immutable_write_never_publishes_partial_bytes_and_retry_preserves_evidence(self):
+        value = b'original capture bytes' * 100
+        original_open = Path.open
+
+        class PartialWrite:
+            def __init__(self, stream):
+                self.stream = stream
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                self.stream.close()
+            def write(self, data):
+                self.stream.write(data[:7])
+                self.stream.flush()
+                raise OSError('simulated partial write failure')
+
+        def faulty_open(path, mode='r', *args, **kwargs):
+            stream = original_open(path, mode, *args, **kwargs)
+            if 'immutable-proof.bin' in path.name and mode == 'xb':
+                return PartialWrite(stream)
+            return stream
+
+        with patch.object(Path, 'open', new=faulty_open):
+            with self.assertRaisesRegex(OSError, 'simulated partial write failure'):
+                self.store._write('immutable-proof.bin', value, immutable=True)
+        self.assertFalse((self.base / 'private/immutable-proof.bin').exists())
+        partials = list((self.base / 'private').glob('immutable-proof.bin.part-*'))
+        self.assertEqual(len(partials), 1)
+        self.assertEqual(partials[0].read_bytes(), value[:7])
+        self.store._write('immutable-proof.bin', value, immutable=True)
+        self.assertEqual((self.base / 'private/immutable-proof.bin').read_bytes(), value)
+        self.assertEqual(partials[0].read_bytes(), value[:7])
+
     def test_refuses_private_root_inside_any_git_tree(self):
         with self.assertRaisesRegex(ValueError, 'PRIVATE_ROOT_INSIDE_GIT'):
             corpus.CorpusStore(self.repo / 'secret', self.repo)

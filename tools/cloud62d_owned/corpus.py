@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path
 import re
+import secrets
 import struct
 import wave
 
@@ -35,6 +36,10 @@ CONVERSION_RECIPE = {'version': 'browser-offline-audio-context-v1',
                      'conversion': 'OfflineAudioContext one channel at 16000 Hz; PCM16 LE WAV',
                      'duration_tolerance_us': 1000, 'gain_normalization': False,
                      'manual_trim': False, 'denoising': False}
+NATIVE_CONVERSION_RECIPE = {'version': 'android-audiorecord-pcm16-v1',
+                            'source': 'Android AudioRecord mono PCM_SIGNED_16_LE 16000 Hz WAV',
+                            'conversion': 'NONE_SOURCE_EQUALS_EVALUATION_WAV',
+                            'gain_normalization': False, 'manual_trim': False, 'denoising': False}
 
 
 def require(condition, code):
@@ -123,10 +128,18 @@ class CorpusStore:
             if path.exists():
                 require(path.read_bytes() == data, 'IMMUTABLE_ARTIFACT_MISMATCH')
             else:
-                with path.open('xb') as stream:
+                temporary = self._path(relative + '.part-' + secrets.token_hex(8))
+                with temporary.open('xb') as stream:
                     stream.write(data)
                     stream.flush()
                     os.fsync(stream.fileno())
+                try:
+                    # Same-directory hard-link publication is atomic and never replaces
+                    # an existing destination. Interrupted staging bytes remain private.
+                    os.link(temporary, path)
+                except FileExistsError:
+                    require(path.read_bytes() == data, 'IMMUTABLE_ARTIFACT_MISMATCH')
+                temporary.unlink()
         else:
             temporary = self._path(relative + '.tmp')
             with temporary.open('wb') as stream:
@@ -181,7 +194,9 @@ class CorpusStore:
             if item['speech_class'] == 'READ':
                 require(45 <= len(normalize(item['material']).split()) <= 115, 'READ_WORD_COUNT')
 
-    def _load(self, *, allow_pending_migration=False):
+    def _load(self, *, allow_pending_migration=False, allow_pending_mobile_import=False):
+        require(allow_pending_mobile_import or not self._path('mobile-import-pending.json').exists(),
+                'MOBILE_IMPORT_INCOMPLETE_RETRY_SAME_PACKAGE')
         require(self._path('state.json').exists(), 'PRIVATE_INVENTORY_MISSING')
         state = json.loads(self._path('state.json').read_text(encoding='utf-8'))
         data = self._path('inventory.json').read_bytes()
@@ -371,6 +386,12 @@ class CorpusStore:
 
     def _audit_record(self, case_id, record):
         audio = record['recording']
+        require(audio['conversion_recipe_sha256'] in
+                {digest(encoded(CONVERSION_RECIPE)), digest(encoded(NATIVE_CONVERSION_RECIPE))},
+                'UNKNOWN_CONVERSION_RECIPE')
+        if audio['conversion_recipe_sha256'] == digest(encoded(NATIVE_CONVERSION_RECIPE)):
+            require(audio['source_sha256'] == audio['uploaded_wav_sha256'] and audio['source_rate_hz'] == 16000,
+                    'NATIVE_SOURCE_EVALUATION_MISMATCH')
         for path, field, evaluation in ((f'source/{case_id}.wav', 'source_sha256', False),
                                          (f'audio/{case_id}.wav', 'uploaded_wav_sha256', True)):
             data = self._path(path).read_bytes()
@@ -632,6 +653,12 @@ class CorpusStore:
             manifest.update(schema_version='2.0', protocol_version=REDUCED_PROTOCOL,
                             protocol_overlay_sha256=state['protocol_overlay_sha256'],
                             timing_status='NOT_EVALUATED', noise_status='NOT_EVALUATED')
+            recipes = {record['recording']['conversion_recipe_sha256'] for record in manifest['records'].values()}
+            if digest(encoded(NATIVE_CONVERSION_RECIPE)) in recipes:
+                manifest['conversion_recipe'] = NATIVE_CONVERSION_RECIPE if len(recipes) == 1 else {
+                    'mode': 'PER_RECORD_CONVERSION_RECIPE_SHA256',
+                    'recipes': {digest(encoded(CONVERSION_RECIPE)): CONVERSION_RECIPE,
+                                digest(encoded(NATIVE_CONVERSION_RECIPE)): NATIVE_CONVERSION_RECIPE}}
         self._write(self._artifact(state, 'manifest.json'), manifest, immutable=True)
         state['manifest_sha256'] = digest(encoded(manifest))
         state['status'] = 'FINALIZED'
