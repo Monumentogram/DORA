@@ -164,10 +164,11 @@ class PreparationTests(unittest.TestCase):
         rows[4]['normalized']['substitutions'] = 37
         rows[4]['normalized']['insertions'] = 0
         rows[6]['normalized']['substitutions'] = rows[7]['normalized']['substitutions'] = 0
-        # Overall EN37/400 passes numerically, but READ37/200 fails the required slice.
+        # Class diagnostics remain visible; the owner-authorized language gate uses micro WER.
         result = p.bounded_report(rows)['languages']['en']
         self.assertEqual(result['normalized']['wer_percent'], 9.25)
-        self.assertEqual(result['bounded_quality'], 'FAIL')
+        self.assertEqual(result['bounded_quality'], 'PASS')
+        self.assertEqual(result['speech_classes']['read']['bounded_quality'], 'FAIL')
 
     def test_ancillary_and_tax_cannot_disappear_from_budget(self):
         self.assertEqual(p.quote([1_000_001, 20_000_000], Decimal('8')),

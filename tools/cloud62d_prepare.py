@@ -25,6 +25,7 @@ MOBILE_COMMIT = '6e814b699979798e428f27123642a55e12de455f'
 MOBILE_UI = 'docs/contracts/DORA_CLOUD_62D_MOBILE_UI_V0_2.json'
 MOBILE_UI_COMMIT = 'b4c6776fb3d5b872d09b284c0fee938de66e6ed5'
 EASY_EN = 'docs/contracts/DORA_CLOUD_62D_EASY_ENGLISH_V0_1.json'
+EASY_EN_COMMIT = 'b6c1893c2b1076b183da2892f339a7ec6073a080'
 EASY_EN_PROTOCOL = 'dora-owned-easy-en8-v3'
 EIGHT_IDS = tuple(f'{lang}-{kind}-{n:02}' for lang in ('ru', 'en')
                   for kind in ('read', 'spontaneous') for n in (1, 2))
@@ -105,10 +106,9 @@ def bounded_report(rows, *, protocol='dora-owned-reduced8-v2'):
         result = summarize(ids, threshold)
         result['speech_classes'] = {kind: summarize([i for i in ids if f'-{kind}-' in i], threshold)
                                     for kind in ('read', 'spontaneous')}
-        if result['bounded_quality'] == 'PASS' and any(
-                r['expected_records'] > 0 and r['bounded_quality'] != 'PASS'
-                for r in result['speech_classes'].values()):
-            result['bounded_quality'] = 'FAIL'
+        # The prospective bounded-live gate requires the language micro threshold
+        # and all required class denominators, not an additional class threshold.
+        # Missing class records already make summarize(ids, threshold) incomplete.
         languages[lang] = result
     return {'scope': 'EIGHT_CLIPS_ONE_OWNER_ONLY', 'protocol_version': protocol,
             'records': records, 'languages': languages,
@@ -422,11 +422,14 @@ def verify(git):
         require(markdown.read_text(encoding='utf-8') == render_mobile_ui(ui), 'MOBILE_UI_JSON_MD_PARITY')
     easy_path = REPO / EASY_EN
     if easy_path.exists():
+        require(easy_path.read_bytes().replace(b'\r\n', b'\n') ==
+                git_blob(git, EASY_EN_COMMIT, EASY_EN).replace(b'\r\n', b'\n'),
+                'HISTORICAL_EASY_EN_CHANGED')
         easy = json.loads(easy_path.read_text(encoding='utf-8'))
         validate_easy_english(easy)
         require(easy['effective_gate_statuses'] == phase['effective_gate_statuses'], 'GATE_PROMOTION')
         for source in easy['tool_bindings']:
-            data = (REPO / source['path']).read_bytes().replace(b'\r\n', b'\n')
+            data = git_blob(git, EASY_EN_COMMIT, source['path']).replace(b'\r\n', b'\n')
             require(digest(data) == source['sha256_lf_utf8'], 'EASY_EN_SOURCE_BINDING')
         markdown = REPO / 'docs/stage0/DORA_CLOUD_62D_EASY_ENGLISH_V0_1.md'
         require(markdown.read_text(encoding='utf-8') == render_easy_english(easy), 'EASY_EN_JSON_MD_PARITY')

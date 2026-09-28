@@ -1,0 +1,599 @@
+# DORA Cloud evaluation — prospective bounded eight-clip Phase A v0.2
+
+This protocol permits evidence collection only after the verified publication barrier. Original broad requirements and all 39 gate states remain unchanged. Eight clips cannot establish full provider admission, timestamp accuracy, noise robustness or English spontaneous quality.
+
+The complete normative record follows. Its JSON is identical to the companion contract; private inputs are represented only by approved aggregate facts and whole-artifact hashes.
+
+```json
+{
+  "schema_version": "0.2",
+  "package": "DORA_CLOUD_EVALUATION_PHASE_A_BOUNDED8_V0_2",
+  "scope": "BOUNDED_EIGHT_CLIP_LIVE_EVALUATION",
+  "phase_a": "BOUNDED8_PREFLIGHT_VERIFIED_AWAITING_PUBLICATION",
+  "phase_b": "NOT_RUN",
+  "live_binding": {
+    "config_sha256": "e70adf294c0fa9f7a9d5432190326ca3ad21c90a0db8e0daf57f6d0868ecc235",
+    "plan_sha256": "6434306ad6b8a5bf0b90091668d5e9f98fe48f20819c89d069f0b6a7b308403f",
+    "aws_client_sha256": "bed3d82cf8dd046d0c134b7c5510930a44118d9a27fe5af7a9e56abc7dde8bc8",
+    "aws_config_sha256": "a00f70ff402c81f68f3b92d5f637a933eec2b1b954c3cbb3f2339ba8a97c7f9d",
+    "manifest_sha256": "27ea1593a46c9c17de0a568df6537dbe55df56c4def59559d758cb9f07ecbe65",
+    "operator_sha256": "a3bb95b40f22f71ff6a81077b6d9f5b49943e96622214b6dcfeafa0444e2205e",
+    "preflight_sha256": "840e44941dad95b3ac974ed4e14a0724d4e6323e1a3052d5a409e7a653ef5cdc",
+    "scope": "BOUNDED_EIGHT_CLIP_LIVE_EVALUATION",
+    "aws_speech_calls_before_publication": 0,
+    "bounded8_data_authority": "PASS",
+    "broad_dataset_coverage": "NOT_SATISFIED",
+    "thresholds": {
+      "ru": 20,
+      "en": 18
+    },
+    "timestamp_accuracy": "NOT_EVALUATED",
+    "noise_robustness": "NOT_EVALUATED",
+    "en_spontaneous": "NOT_EVALUATED",
+    "provider_admission": "NOT_ESTABLISHED"
+  },
+  "accepted_starting_commit": "b6c1893c2b1076b183da2892f339a7ec6073a080",
+  "branch": "chat/alpha-asr-runner-scope",
+  "original_phase_a_commit": "d8d5c90516b6a9afa96c21e703dfe7481e64e589",
+  "sources": [
+    {
+      "path": "docs/contracts/DORA_CLOUD_EVALUATION_PHASE_A_V0_1.json",
+      "sha256_lf": "1de5b682aa46569aea3ea334209c4980fcef73829279d08ede7e4e8bc8e50df7"
+    },
+    {
+      "path": "docs/stage0/DORA_CLOUD_EVALUATION_PHASE_A_V0_1.md",
+      "sha256_lf": "48b4a792ceb095a1f7f10ebe3df77bd0104d17a87987ba1610d7632e7391d42c"
+    },
+    {
+      "path": "docs/contracts/DORA_CLOUD_62D_EIGHT_CLIP_PROTOCOL_V0_1.json",
+      "sha256_lf": "deef2242bcc0d856ce6553e0fdb59b0437f2fd0634c699f7a75d38eaeda1c5d6"
+    },
+    {
+      "path": "docs/contracts/DORA_CLOUD_62D_EASY_ENGLISH_V0_1.json",
+      "sha256_lf": "64fbcab13f5d7e9c5eef26d0e7a6ca7ba479c921111b63879f9519cdcdc51c02"
+    },
+    {
+      "path": "docs/contracts/DORA_CLOUD_62D_CORPUS_READY_V0_1.json",
+      "sha256_lf": "068cde0586dbbeeeebe51121b12b56e9daa92f74c43b525ea0aabc5073ca30f9"
+    },
+    {
+      "path": "docs/stage0/DORA_CLOUD_EVALUATION_HARNESS_V0_1.md",
+      "sha256_lf": "b9763f38cd473c7a7babf9965fdf23a602efbfdd6769c6a703f4325ee72f00d7"
+    },
+    {
+      "path": "docs/contracts/DORA_CLOUD_ALPHA_PRIVACY_RETENTION_CONTROL_V0_4.json",
+      "sha256_lf": "3983d768e15765ddc7bcc2f5209a1679a353fae0cec116d7dba4ec5d296f4d44"
+    }
+  ],
+  "authority": "Explicit owner request for this private corpus, paid bounded AWS evaluation <=USD10, and separately approved task-scoped infrastructure; no broad admission authority.",
+  "dataset": {
+    "protocol": "dora-owned-easy-en8-v3",
+    "whole_manifest_sha256": "27ea1593a46c9c17de0a568df6537dbe55df56c4def59559d758cb9f07ecbe65",
+    "composition": {
+      "ru": {
+        "READ": 2,
+        "SPONTANEOUS": 2
+      },
+      "en": {
+        "READ": 4,
+        "SPONTANEOUS": 0
+      }
+    },
+    "clips": 8,
+    "human_verified_references": 8,
+    "language_aggregates": {
+      "ru": {
+        "records": 4,
+        "reference_words": 179,
+        "duration_us": 150960000
+      },
+      "en": {
+        "records": 4,
+        "reference_words": 181,
+        "duration_us": 129560000
+      }
+    },
+    "total_duration_us": 280520000,
+    "selection": "ALL_EIGHT_FIXED_MANIFEST_IDS_RU_THEN_EN",
+    "quality_scope": "ONE_SPEAKER_RU_READ_AND_SPONTANEOUS_EN_BASIC_READ_ONLY",
+    "technical_composites": [
+      {
+        "duration_us": 300000000,
+        "independent_quality_sample": false,
+        "language": "ru"
+      },
+      {
+        "duration_us": 599999000,
+        "independent_quality_sample": false,
+        "language": "ru"
+      },
+      {
+        "duration_us": 300000000,
+        "independent_quality_sample": false,
+        "language": "en"
+      },
+      {
+        "duration_us": 599999000,
+        "independent_quality_sample": false,
+        "language": "en"
+      }
+    ],
+    "privacy": "Speech, references, per-record hashes, identities, resources and raw results remain private outside Git."
+  },
+  "prospective_supersessions": [
+    {
+      "original_pointer": "/protocol/quality/required_slices",
+      "original_value": "Each language>=24 real clips; target12read+12spontaneous if both authorized. If only one speech class exists, explicitly freeze sole-class admission/limitation before any run; do not claim absent class.",
+      "bounded_replacement": "Exactly four owner clips per language; RU 2 READ + 2 SPONTANEOUS, EN 4 BASIC READ. No population inference.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/protocol/quality/aggregation",
+      "original_value": "Micro WER=sum(S+D+I)/sum(reference_tokens); integer cross-multiplication; raw and normalized per language AND required slice; no RU+EN averaging.",
+      "bounded_replacement": "Unchanged micro formula and RU20/EN18 thresholds apply to language totals; class micros are descriptive, with every required class and clip accounted.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/protocol/selection/population",
+      "original_value": "Currently EMPTY/UNADMITTED; successor must bind exact authorized source versions/eligible inventory/private manifest and aggregate hash before live.",
+      "bounded_replacement": "The accepted finalized private eight-clip manifest replaces the empty population for this bounded run only.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/protocol/selection/rule",
+      "original_value": "Sort eligible clips within language/speech-class by SHA256(source_release + newline + source_audio_SHA256); take first12/class or24 for explicitly sole available class; noise separately first6/language. One clip per known speaker per slice where possible; log shortfall before run.",
+      "bounded_replacement": "All eight fixed IDs in manifest order, RU then EN, without sorting or subsampling. No replacements/reserves.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/protocol/selection/missing_coverage",
+      "original_value": "No silent sample-count relaxation; <24/language, missing required slice or exact timing => NOT_EVALUABLE, no provider PASS.",
+      "bounded_replacement": "Missing broad coverage blocks full admission; all eight bounded primaries and references are mandatory for bounded completion.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/protocol/quality/noise",
+      "original_value": "Separate at least6 real noisy/speakerphone clips per language when admitted; normalizedWER<=35%; no actual Cloud LOW_CONFIDENCE/review path exists, so no waiver. Missing slice remains NOT_EVALUABLE and blocks broad noisy/speakerphone admission.",
+      "bounded_replacement": "No noisy/speakerphone evaluation in this run; NOT_EVALUATED, no waiver or inference.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/protocol/timestamps/coverage",
+      "original_value": "At least6 clips and100 reference words per language from preselected clean slice; >=80% exact lexical match pairs with valid timestamps, zero missing/malformed/nonmonotonic pronunciation-item timestamps for PASS. Unmatched ref/hyp separately counted; fail/missing coverage cannot be concealed by scoring only easy matches.",
+      "bounded_replacement": "No independent human timing exists. Check output structure only; timestamp accuracy and its coverage remain NOT_EVALUATED.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/protocol/timestamps/reference",
+      "original_value": "Exact independently human annotated/adjudicated word start/end microseconds from admitted audio; annotators blind to AWS output. No ASR/forced alignment/interpolated/generated timing truth.",
+      "bounded_replacement": "No generated, interpolated or forced-alignment timing may serve as truth; no accuracy scoring is performed.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/protocol/latency/gates",
+      "original_value": "Per RU/EN valid-primary speech slice p50ratio<=1 andp95ratio<=2; for duration<=60s p95absolute<=120s. Report complete-case and all-attempt views; unavailable/failed/missing prevents complete admission.",
+      "bounded_replacement": "Retain p50 ratio<=1, p95 ratio<=2, short-clip p95 absolute<=120s as bounded diagnostics for n=4 per language, without general reliability claims.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/execution_envelope/preflight/8",
+      "original_value": {
+        "id": "PREFLIGHT-09",
+        "requirement": "Individual dataset admission",
+        "status": "BLOCKED",
+        "evidence": "Real RU0/EN0; no exact timing slice. Synthetic data authority alone is sufficient only for non-speech mechanics."
+      },
+      "bounded_replacement": "PREFLIGHT-09 is BOUNDED8_DATA_AUTHORITY=PASS only after private proof. BROAD_DATASET_COVERAGE remains NOT_SATISFIED.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/execution_envelope/preflight/11",
+      "original_value": {
+        "id": "PREFLIGHT-12",
+        "requirement": "No user/customer audio",
+        "status": "PASS",
+        "evidence": "No recorded audio accessed/uploaded; seven generated non-speech fixtures only."
+      },
+      "bounded_replacement": "Only explicitly authorized Project Owner speech and approved synthetic fixtures; customer and third-party speech prohibited.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    }
+  ],
+  "additional_execution_authority": {
+    "original_pointer": "/execution_envelope/budget/ancillary",
+    "bounded_change": "Owner separately approved exact reviewed dedicated test stack, proof permissions and deletion probes. No unrelated subscription, shared-resource mutation or production access.",
+    "original_broad_quality_requirements": "UNCHANGED"
+  },
+  "normalization": {
+    "version": "dora-alpha-asr-normalization-v0.1",
+    "runtime": "CPython3.12 / Unicode15.0.0",
+    "semantics": "Reuse pinned existing normalize/raw_tokens/normalized_tokens semantics only. Lowercase; strip bracket/parenthetic tags; NFKC; Unicode M/S/P to spaces; collapse whitespace; split tokens. No spelling/number rewriting, transliteration or filler removal.",
+    "hashes": "SHA256 UTF8 exact raw and normalized reference/hypothesis text privately per attempt; no sample/text hashes in public Git.",
+    "oracle": "Unit-cost Levenshtein; diagonal(match/substitution), deletion, insertion tie priority; freeze source below. <=4096tokens/stream and<=12500000DPcells per alignment. Rejection is unscored failure, not corpus exclusion.",
+    "local_noninheritance": "Do not reuse Local profile/model/corpus/thermal/RTF gates or unavailable timestamp status."
+  },
+  "harness": {
+    "path": "docs/stage0/DORA_CLOUD_EVALUATION_HARNESS_V0_1.md",
+    "sha256": "b9763f38cd473c7a7babf9965fdf23a602efbfdd6769c6a703f4325ee72f00d7",
+    "sources": [
+      {
+        "name": "cloud62d_harness.py",
+        "sha256": "6e99e08561534cde5b6bc69a40fd3e8986d763c00456e7fdb32bf3346cceabd1",
+        "bytes": 13912
+      },
+      {
+        "name": "cloud62d_harness_test.py",
+        "sha256": "74fc7b4f412087a658d880ca92ddbb8315cc7788ab6d18e102f67c98decc962a",
+        "bytes": 8120
+      }
+    ],
+    "state": "OFFLINE_CORE_UNCHANGED / LIVE_TRANSPORT_HASH_BOUND",
+    "host_evidence": "docs/evidence/cloud-6.2d-phase-a-host-v0.1.json",
+    "host_evidence_sha256": "d98d2788f153ec9e8f49309c9dc3849f8eb64b57cea701982e30c3947258f156",
+    "normalizer_equivalence": "8text edge fixtures against existing pinned DORA implementation; 26total host tests PASS.",
+    "replacement_claim": "Normalized submit identity/terminal text/timestamps/errors/retryability/provenance/delete reference carried by same Result; both adapter shared tests PASS. Submit/delete are explicitly mocks; no actual provider replaceability or latency measurement claimed."
+  },
+  "configuration": {
+    "platform": "AWS",
+    "service": "Amazon Transcribe",
+    "mode": "STANDARD_BATCH_FILE_ASR",
+    "region": "eu-central-1",
+    "endpoint": "transcribe.eu-central-1.amazonaws.com",
+    "languages": {
+      "ru": "ru-RU",
+      "en": "en-US"
+    },
+    "model": "PROVIDER_MANAGED_MODEL_VERSION_NOT_DISCLOSED",
+    "fallback": false,
+    "input": {
+      "container": "WAV",
+      "codec": "PCM_SIGNED_16_LE",
+      "channels": 1,
+      "sample_rate_hz": 16000,
+      "MediaFormat": "wav",
+      "MediaSampleRateHertz": 16000,
+      "s3_content_type": "audio/wav",
+      "max_duration_us": 600000000,
+      "max_pcm_wav_bytes": 19200044
+    },
+    "disabled": [
+      "IdentifyLanguage",
+      "IdentifyMultipleLanguages",
+      "Medical",
+      "HealthScribe",
+      "CallAnalytics",
+      "custom_language_model",
+      "custom_vocabulary",
+      "speaker_labels",
+      "channel_identification",
+      "PII_redaction",
+      "streaming",
+      "toxicity",
+      "subtitles"
+    ],
+    "request_fields": "TranscriptionJobName,LanguageCode,Media.MediaFileUri,MediaFormat,MediaSampleRateHertz,OutputBucketName,OutputKey,OutputEncryptionKMSKeyId,JobExecutionSettings(AllowDeferredExecution=false,DataAccessRoleArn); opaque tags only if approved. Exact serialized request config hash frozen privately.",
+    "unbound_actual_fields": [],
+    "unbound_effect": "EXACT_ACTUAL_ENVIRONMENT_PRIVATE_HASH_BOUND"
+  },
+  "metrics": {
+    "threshold_percent": {
+      "ru": 20,
+      "en": 18
+    },
+    "wer": "Raw and normalized unit-cost S,D,I,N per clip and per language/class; micro=sum(S+D+I)/sum(N); exact integer threshold comparison. Never average clip percentages or RU and EN.",
+    "class_completeness": "RU requires both two-clip classes; EN requires four READ clips. Missing/failed/unscored clips remain in all-eight accounting and prevent PASS.",
+    "timestamp_structure": "For every pronunciation item count missing/malformed/nonmonotonic timestamps; finite numeric 0<=start<=end<=duration; starts and ends nondecreasing. Nonempty text with no pronunciation items is invalid.",
+    "timestamp_accuracy": "NOT_EVALUATED",
+    "noise_robustness": "NOT_EVALUATED",
+    "en_spontaneous": "NOT_EVALUATED",
+    "latency": {
+      "formula": "service_turnaround_ratio = (completed_observed_monotonic_us - submit_monotonic_us) / audio_duration_us",
+      "boundaries": "submit: immediately before initial Start request dispatch. completed: first successful poll observing COMPLETED; polling interval2s contributes conservative<=2s+transport observation delay. Do not mix AWS wall times with client monotonic times.",
+      "gates": "Per RU/EN valid-primary speech slice p50ratio<=1 andp95ratio<=2; for duration<=60s p95absolute<=120s. Report complete-case and all-attempt views; unavailable/failed/missing prevents complete admission.",
+      "components": "Upload=upload-end minus upload-start; submit API=reply minus dispatch; queue=AWS StartTime-CreationTime if both; processing=CompletionTime-StartTime if both; retrieval=validated-output-read-end minus retrieval-start; service=completion-observed minus submit; total=validated-output-read-end minus upload-start. Unexposed fields UNAVAILABLE.",
+      "statistics": "Nearest-rank quantiles on exact Fraction ratios/integer microseconds; wall timestamps UTC for audit only. Report denominators, throttling separately plus inclusive evidence. Synthetic latency only mechanics, never real speech admission."
+    },
+    "latency_inference": "n=4 per language is descriptive only; nearest-rank p95 is maximum. Failed, uncertain and missing observations remain visible, not omitted from admission.",
+    "measurements": "NOT_RUN"
+  },
+  "attempt_policy": {
+    "primary": "One primary per frozen case, serial RU thenEN in manifest order; no warmup excluded from cost/attempts; no best-of repeats.",
+    "retry": "No automatic retry. At most1 operator-attributable retry after transient typed failure,5s backoff, within budget; uncertain Start first reconciles SAME job identity. Never rerun to improve quality. Retry is diagnostic, cannot erase primary failure.",
+    "terminal": "Record PREPARED/SUBMITTING durably before network, then COMPLETED/FAILED/CLIENT_CONFIG_FAILED/THROTTLED/TIMEOUT or explicit unresolved. At timeout30min stop new work and reconcile; unresolved prevents admission/cleanup PASS.",
+    "denominators": "attempts count every dispatch including failed/uncertain/retry; completed, provider/client failures, throttles, timeouts, retries separately; fail attempts retained even successful retry. Pending/unknown never promoted to success.",
+    "reliability": "Zero corrupt success, wrong region/fallback, identity mismatch or unreadable-result success. Detectable malformed result yields typed failure plus failure count. All required valid primaries must be attributable/readable for provider PASS."
+  },
+  "live_plan": {
+    "status": "FROZEN_PRIVATE_PLAN_BOUND",
+    "serial": true,
+    "automatic_retries": 0,
+    "primary_runs_per_clip": 1,
+    "operator_diagnostic_retry": "NONE_PLANNED; any addition requires a prospective bound reservation before dispatch and never changes primary outcome.",
+    "poll_seconds": 2,
+    "job_timeout_seconds": 1800,
+    "maximum_api_calls": 20000,
+    "maximum_result_bytes": 5000000,
+    "maximum_start_dispatches": 20,
+    "maximum_upload_bytes": 68157440,
+    "maximum_download_bytes": 104857600,
+    "primary_cases": 8,
+    "technical_cases": 11,
+    "primary_billable_rounded_seconds": 283
+  },
+  "technical_cases": [
+    {
+      "case": "empty",
+      "status": "NOT_RUN",
+      "purpose": "Zero-frame synthetic WAV",
+      "expected": "Attributable input rejection or completed empty transcript; record exact actual behavior."
+    },
+    {
+      "case": "near_empty",
+      "status": "NOT_RUN",
+      "purpose": "250ms synthetic silence",
+      "expected": "Attributable input rejection or completed empty transcript; nonempty text is unexpected."
+    },
+    {
+      "case": "malformed",
+      "status": "NOT_RUN",
+      "purpose": "Non-WAV synthetic bytes",
+      "expected": "Attributable invalid input rejection; infrastructure failures are INCOMPLETE."
+    },
+    {
+      "case": "truncated",
+      "status": "NOT_RUN",
+      "purpose": "Synthetic WAV with truncated declared PCM",
+      "expected": "Attributable invalid input rejection; infrastructure failures are INCOMPLETE."
+    },
+    {
+      "case": "wrong_format",
+      "status": "NOT_RUN",
+      "purpose": "Synthetic WAV declared MP3",
+      "expected": "Attributable format rejection; infrastructure failures are INCOMPLETE."
+    },
+    {
+      "case": "missing_s3",
+      "status": "NOT_RUN",
+      "purpose": "Absent object in owned input prefix",
+      "expected": "Attributable missing input rejection; infrastructure failures are INCOMPLETE."
+    },
+    {
+      "case": "duplicate_name",
+      "status": "NOT_RUN",
+      "purpose": "Reuse one synthetic job name with changed missing URI",
+      "expected": "Second Start returns ConflictException; original job identity remains unchanged."
+    },
+    {
+      "case": "ru_300",
+      "status": "NOT_RUN",
+      "purpose": "Derived RU composite 300s",
+      "expected": "Readable terminal success, structurally valid timestamps; no independent WER."
+    },
+    {
+      "case": "ru_600",
+      "status": "NOT_RUN",
+      "purpose": "Derived RU composite 599.999s",
+      "expected": "Readable terminal success, structurally valid timestamps; no independent WER."
+    },
+    {
+      "case": "en_300",
+      "status": "NOT_RUN",
+      "purpose": "Derived EN composite 300s",
+      "expected": "Readable terminal success, structurally valid timestamps; no independent WER."
+    },
+    {
+      "case": "en_600",
+      "status": "NOT_RUN",
+      "purpose": "Derived EN composite 599.999s",
+      "expected": "Readable terminal success, structurally valid timestamps; no independent WER."
+    }
+  ],
+  "additional_technical_limits": {
+    "permission_failure": "NOT_RUN_NO_ISOLATED_DENIAL_FIXTURE",
+    "throttle": "DOCUMENTED_NOT_INDUCED",
+    "composite_quality": "NOT_AN_INDEPENDENT_WER_SAMPLE",
+    "generic_negative_failure": "INCOMPLETE_UNTIL_ATTRIBUTABLE_INPUT_CAUSE; auth/quota/service failure is not expected-format PASS"
+  },
+  "budget": {
+    "total_usd_max": 10,
+    "asr_reserved_usd_max": 2,
+    "ancillary_and_tax_usd_max": 8,
+    "free_tier_assumed": false,
+    "actual_spend": "NOT_MEASURED",
+    "reservation": "Before every potentially billed dispatch, including failures and uncertain submissions; no release without billing proof.",
+    "frozen_reservation": {
+      "ancillary_tax_upper_usd": "8",
+      "asr_upper_usd": "0.3893000000",
+      "reserved_seconds": 3893,
+      "total_upper_usd": "8.3893000000"
+    },
+    "pricing": {
+      "usd_per_second": "0.0001000000",
+      "minimum_billable_seconds": 0,
+      "source_url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/transcribe/current/eu-central-1/index.json",
+      "verified_at": "2026-09-28T17:45:29.341735+00:00"
+    }
+  },
+  "environment": {
+    "platform": "AWS",
+    "service": "Amazon Transcribe",
+    "mode": "STANDARD_BATCH_FILE_ASR",
+    "region": "eu-central-1",
+    "endpoint": "transcribe.eu-central-1.amazonaws.com",
+    "profile": "dora-62d-alpha",
+    "execution": "TASK_SCOPED_SHORT_LIVED_ASSUMED_ROLE",
+    "model": "PROVIDER_MANAGED_MODEL_VERSION_NOT_DISCLOSED",
+    "account_and_resources": "PRIVATE_HASH_BOUND_ONLY",
+    "client_version": "aws-cli/2.37.4"
+  },
+  "preflight": {
+    "status": "BOUNDED8_PREFLIGHT_PASS",
+    "checks": {
+      "PREFLIGHT-01": "PASS",
+      "PREFLIGHT-02": "PASS",
+      "PREFLIGHT-03": "PASS",
+      "PREFLIGHT-04": "PASS",
+      "PREFLIGHT-05": "PASS",
+      "PREFLIGHT-06": "PASS",
+      "PREFLIGHT-07": "PASS",
+      "PREFLIGHT-08": "PASS",
+      "PREFLIGHT-09": "PASS",
+      "PREFLIGHT-10": "PASS",
+      "PREFLIGHT-11": "PASS",
+      "PREFLIGHT-12": "PASS"
+    },
+    "bounded8_data_authority": "PASS",
+    "broad_dataset_coverage": "NOT_SATISFIED",
+    "expires_at": "2026-09-28T20:45:35.423517+00:00",
+    "aws_speech_calls": 0,
+    "private_evidence_sha256": {
+      "owner_authority": "3892ac48dde721e62cc428f4cf5c095af48f56443fe8e8c3c4bdbfdc81955bd9",
+      "identity_optout": "996789f93b922674f5033b2d746ceda100bb6d7ef896673be1654896c4da65b4",
+      "resource_preflight": "16aa791595ebe3a8a361889efaa1293c078b7e5480efa0ad955be78e7b91adc7",
+      "retention_probe": "8abea3638c38ae4af0d081c7e931f518baa6bf148aea6c85e306fefe10a3b586",
+      "cleanup_readback": "64ce28e857152cb3120d02514e18e3da8748f7bc0a0c4b04a835ddfb39632c8f",
+      "pricing": "6188a24c0fd23c0f1e91205cf6d9c4773bd42899b5a07deb1ee227f6d270cf47",
+      "account_jurisdiction": "594f297434d4b08e2b9a9dec025b31fad0dcfd931dca98f270389961de0d0653"
+    }
+  },
+  "internal_alpha_preflight": {
+    "authority": "OD-11C-26",
+    "distinct_from_evaluation_preflight": true,
+    "requirements": {
+      "OD-11C-26-01": "Participant belongs to approved closed internal Alpha population",
+      "OD-11C-26-02": "Current disclosure received",
+      "OD-11C-26-03": "Explicit recording/Cloud-test opt-in",
+      "OD-11C-26-04": "No unapproved third-party voices intentionally included",
+      "OD-11C-26-05": "Amazon Transcribe selected configuration",
+      "OD-11C-26-06": "Region eu-central-1",
+      "OD-11C-26-07": "No automatic region fallback",
+      "OD-11C-26-08": "Actual account effective AI-services/Transcribe opt-out",
+      "OD-11C-26-09": "DORA S3/audio retention controls configured",
+      "OD-11C-26-10": "Encryption and key custody configured",
+      "OD-11C-26-11": "No permanent AWS credentials in Android",
+      "OD-11C-26-12": "Current consent/version durably recorded"
+    },
+    "checks": {
+      "OD-11C-26-01": "PASS",
+      "OD-11C-26-02": "PASS",
+      "OD-11C-26-03": "PASS",
+      "OD-11C-26-04": "PASS",
+      "OD-11C-26-05": "PASS",
+      "OD-11C-26-06": "PASS",
+      "OD-11C-26-07": "PASS",
+      "OD-11C-26-08": "PASS",
+      "OD-11C-26-09": "PASS",
+      "OD-11C-26-10": "PASS",
+      "OD-11C-26-11": "PASS",
+      "OD-11C-26-12": "PASS"
+    }
+  },
+  "owner_notice_and_jurisdiction": {
+    "required": "Actual delivered notice and durable existing explicit opt-in; verified private operator/rights/credential-loss route; current AWS agreement and service terms snapshots; separately reviewed jurisdiction and account eligibility.",
+    "legal_certification": "NOT_CLAIMED",
+    "country_inference": "Participant residence does not establish AWS Account Country or automatically create a household exemption.",
+    "status": "PRIVATE_EVIDENCE_BOUND",
+    "notice_sha256": "4a7782e67f42086939687b05b84327fa1c616797952ebb4f86261e5409a7c1cd",
+    "service_terms_sha256": "d0307423b6596b4bbba62cba774b9dbb5b26ebbb084fbf3a1b2a279279142447",
+    "customer_agreement_sha256": "c717b61f1fadffb0cfce8fec386b7bb6962b2f2b3eae8f3d028c7fe731e4323a"
+  },
+  "retention": "ADR-0011/0012 and OD-11C-13..22 unchanged: immediate safe cleanup after ingestion; audio/unfinished/transient output<=24h from original clock; ordinary metadata30d,audit90d; consent/identity active+90d; non-audio backup<=30d; guarded tombstones>=120d; hidden-provider-copy limitations retained.",
+  "cleanup": {
+    "procedure": [
+      "Inventory exact task-owned jobs, bucket/key/version, multipart IDs and task-created resources before use; record UTC creation/expiry and private evidence references.",
+      "Fence new dispatch/writes; retrieve and hash evidence to approved private audit storage. Delete terminal jobs after reconciliation; nonterminal job remains PENDING, never hard-cancelled by assertion.",
+      "Explicit DeleteObject plus enumerate/remove intended versions/markers; abort/list outstanding multipart parts if any. Re-list task prefix and HeadObject with known permission to distinguish404 from403; Get/List job absence with attributable response.",
+      "Recheck after late completions; retain guarded content-free tombstone to suppress resurrection. Never delete shared pre-existing buckets/keys/roles. Verify task-created resource cleanup separately.",
+      "If cleanup unresolved, stop new runs, escalate Owner, retain failed/pending evidence and reconcile within inherited24h; never report clean. Public report aggregate only."
+    ],
+    "independent_proof": "After exact owned-prefix deletion, separate proof principal inspects whole dedicated buckets (contents, versions, markers, multipart) and owned job prefix; denied read is unresolved.",
+    "failure": "Fence new runs; preserve private evidence, reconcile, and report PENDING. No PASS while cleanup is unresolved.",
+    "provider_internal_physical_purge": "NOT_CLAIMED",
+    "actual": "NOT_RUN"
+  },
+  "publication_barrier": {
+    "required": [
+      "One atomic successor commit before first speech PutObject or any StartTranscriptionJob",
+      "Push then independently fetch; exact remote HEAD equals local HEAD, clean tree and branch",
+      "Bind manifest, plan, config, AWS binary/config, operator and live preflight digests",
+      "Durable zero-prior-speech evidence; canonical corpus lock and run-root binding prevent ledger reset",
+      "Separate subsequent result commit; never amend/squash/rewrite prospective evidence"
+    ],
+    "publication_identity": "ENCLOSING_COMMIT; independent run journal records the actual verified remote commit and time",
+    "status": "NOT_PUBLISHED"
+  },
+  "result_rules": {
+    "bounded8": "PASS only if all eight primary quality/accounting, structural integrity, bounded latency, required planned technical cases and verified cleanup succeed; otherwise FAIL or INCOMPLETE with reasons.",
+    "full_provider_admission": "NOT_ESTABLISHED",
+    "stage_6_2D": "Never full PASS from this run; after completed evaluation PARTIAL / BOUNDED8_COMPLETE_FULL_ADMISSION_PENDING.",
+    "recommendation": "EXPAND_CORPUS_FOR_FULL_6_2D only after both language thresholds and integrity pass; otherwise name measured blocker. Do not collect more data automatically.",
+    "stage_6_3": "NOT_RUN / BLOCKED",
+    "no_generalization": [
+      "arbitrary speakers",
+      "EN spontaneous",
+      "noise/speakerphone",
+      "timestamp accuracy",
+      "general population",
+      "statistical reliability"
+    ]
+  },
+  "replacement_feasibility": "Frozen AWS/NonAWSFake shared offline contract evidence only; no live alternative-provider quality equivalence claim.",
+  "effective_gate_statuses": {
+    "CLD-ADM-ARCH-001": "SATISFIED",
+    "CLD-ADM-CONSENT-001": "SATISFIED",
+    "CLD-ADM-DATA-001": "SATISFIED",
+    "CLD-ADM-SCOPE-001": "SATISFIED",
+    "CLD-ADM-GAPS-001": "SATISFIED",
+    "CLD-ADM-PRIVACY-001": "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA",
+    "CLD-ADM-RETENTION-001": "SATISFIED",
+    "CLD-ADM-CONTROL-001": "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA",
+    "CLD-ADM-EVALUATION-001": "OPEN",
+    "CLD-ADM-PROVIDER-001": "OPEN",
+    "CLD-ADM-ADMISSION-001": "BLOCKED",
+    "CLD-ADM-API-001": "OPEN",
+    "CLD-ADM-AUTH-001": "NOT_RUN",
+    "CLD-ADM-CONSENT-RUNTIME-001": "NOT_RUN",
+    "CLD-ADM-SECRETS-001": "NOT_RUN",
+    "CLD-ADM-UPLOAD-001": "NOT_RUN",
+    "CLD-ADM-CRYPTO-001": "NOT_RUN",
+    "CLD-ADM-RETENTION-RUNTIME-001": "NOT_RUN",
+    "CLD-ADM-DATA-RUNTIME-001": "NOT_RUN",
+    "CLD-ADM-FAILURE-001": "NOT_RUN",
+    "CLD-ADM-QUEUE-001": "NOT_RUN",
+    "CLD-ADM-BACKGROUND-001": "NOT_RUN",
+    "CLD-ADM-ADAPTER-001": "NOT_RUN",
+    "CLD-ADM-COST-001": "NOT_RUN",
+    "CLD-ADM-OBSERVABILITY-001": "NOT_RUN",
+    "CLD-ADM-SECURITY-001": "NOT_RUN",
+    "CLD-ADM-RESULT-001": "NOT_RUN",
+    "CLD-ADM-MERGE-001": "NOT_RUN",
+    "CLD-ADM-LOCAL-001": "NOT_RUN",
+    "CLD-ADM-OFFLINE-001": "NOT_RUN",
+    "CLD-ADM-DELETE-001": "NOT_RUN",
+    "CLD-ADM-HARNESS-001": "NOT_RUN",
+    "CLD-ADM-UX-001": "NOT_RUN",
+    "CLD-ADM-HISTORY-001": "NOT_RUN",
+    "CLD-ADM-EXPORT-001": "NOT_RUN",
+    "CLD-ADM-OPERATIONS-001": "NOT_RUN",
+    "CLD-ADM-SUPPLY-001": "OPEN",
+    "CLD-ADM-EXIT-001": "NOT_RUN",
+    "CLD-ADM-RELEASE-001": "OPEN"
+  },
+  "effective_status_counts": {
+    "SATISFIED": 6,
+    "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA": 2,
+    "OPEN": 5,
+    "BLOCKED": 1,
+    "NOT_RUN": 25,
+    "PARTIALLY_SATISFIED": 0
+  },
+  "frozen_gate_count": 39,
+  "preserved": [
+    "Original Phase A v0.1 and all broad thresholds/coverage",
+    "Android production",
+    "Recovery",
+    "Local Stage5",
+    "PR #86",
+    "main"
+  ]
+}
+```
