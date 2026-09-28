@@ -1,5 +1,33 @@
 # Dora MVP 1 — Product Decisions
 
+## 2026-09-28 — 6.2D Phase A prospective protocol; live blocked
+
+Owner-authorized 6.2D thresholds are prospectively frozen in [Phase A v0.1](stage0/DORA_CLOUD_EVALUATION_PHASE_A_V0_1.md)
+and its [machine record](contracts/DORA_CLOUD_EVALUATION_PHASE_A_V0_1.json). Source baseline:75e45a152800c9c1589db201fc71fec9a6200fef.
+**6.2D = BLOCKED / LIVE_PROVIDER_EVALUATION_NOT_EXECUTED**. **Phase A = PARTIAL / PROTOCOL_FROZEN_DATA_AUTHORITY_AND_LIVE_OPERATOR_UNBOUND**.
+Real-speech admission: **BLOCKED / CLOUD_DATA_AUTHORITY_NOT_PROVEN**, RU0/EN0. Owner confirms AWS access is not prepared.
+
+RU normalized WER<=20%; EN<=18%, independently by required slice; raw WER also reported.
+Noisy/speakerphone<=35%, with no invented LOW_CONFIDENCE waiver. Exact-reference timestamp start/end median<=500ms,p95<=1500ms.
+Batch service turnaround=(completion-observed minus submit)/audio duration, p50<=1x,p95<=2x; <=60s files absolutep95<=120s.
+Nearest-rank quantiles and complete attempt accounting are frozen. Mixed-language and diarization remain excluded/deferred by6.1.
+Primary input only mono PCM16LE16000Hz WAV, <=600s. Amazon Transcribe standard batch/eu-central-1/ru-RU/en-US is a candidate, not admitted.
+Current official Frankfurt standard-batch priceUSD0.0001/s (USD0.006/min); budget ceilingUSD10. No AWS spend incurred by this task.
+
+Seven generated non-speech fixtures and26synthetic host tests cover scoring and the shared terminal interface for AWS-shaped/fake adapters.
+No live transport is installed/bound; no live quality, timing, latency, errors/limits or cleanup result exists. Mocks cannot close PROVIDER.
+All34scope capabilities are dispositioned; no extra AI provider/function admitted. Existing Common Voice Local permission is not Cloud authority.
+Exact real-corpus/timing manifest, live client/journal/cleanup binding and effective account controls must be frozen in a successor PhaseA,
+pushed/refetched before any live test. Preserve v0.1 and every later benchmark; never amend thresholds from observed results.
+
+EVALUATION OPEN; PROVIDER OPEN; ADMISSION BLOCKED. Unchanged39 counts:
+6 SATISFIED +2 SATISFIED_FOR_CLOSED_INTERNAL_ALPHA +0 PARTIALLY_SATISFIED +5 OPEN +1 BLOCKED +25 NOT_RUN =39.
+11.1C scoped PASS, PRIVACY/CONTROL scoped satisfaction and RETENTION satisfaction remain unchanged.
+PRIVACY-LEGAL-EXTERNAL-001 remains separate mandatory future governance outside39, never waived by internal approval.
+6.3 NOT_RUN/BLOCKED; runtime NOT_IMPLEMENTED; first real user audio NOT_READY. Android, Recovery, Stage5 and PR86 untouched; no merge/main change.
+Next: Cloud-authorized RU/EN/timing data and test AWS access, then an execution-ready prospective PhaseA successor. Earlier entries below are historical.
+
+
 ## 2026-09-28 — 11.1C closed internal Alpha governance amendment
 
 Effective only for `CLOSED_INTERNAL_ALPHA`: **11.1C = PASS / PRIVACY_RETENTION_CONTROL_PREREQUISITES_SATISFIED_FOR_CLOSED_INTERNAL_ALPHA**. Authority: Owner-approved OD-11C-23..26 in [v0.4](design/DORA_CLOUD_ALPHA_PRIVACY_RETENTION_CONTROL_V0_4.md), [machine record](contracts/DORA_CLOUD_ALPHA_PRIVACY_RETENTION_CONTROL_V0_4.json), [ADR-0013](adr/ADR-0013-closed-internal-alpha-expert-review-governance.md) and prospective [expert-review governance v0.1](design/DORA_INTERNAL_ALPHA_EXPERT_REVIEW_GOVERNANCE_V0_1.md). Baseline `7e05a74984a2cfbac3790b1f963b392ef7870fd8`. Earlier entries below are historical and retain their original status/evidence.

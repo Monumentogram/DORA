@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1",
+  "mode": "OFFLINE_SYNTHETIC_ONLY",
+  "tests_run": 26,
+  "failures": 0,
+  "errors": 0,
+  "passed": true,
+  "aws_calls": 0,
+  "provider_benchmark_attempts": 0,
+  "aws_cleanup": "NOT_APPLICABLE_NO_OBJECTS_CREATED",
+  "harness_sources": [
+    {
+      "name": "cloud62d_harness.py",
+      "sha256": "6e99e08561534cde5b6bc69a40fd3e8986d763c00456e7fdb32bf3346cceabd1",
+      "bytes": 13912
+    },
+    {
+      "name": "cloud62d_harness_test.py",
+      "sha256": "74fc7b4f412087a658d880ca92ddbb8315cc7788ab6d18e102f67c98decc962a",
+      "bytes": 8120
+    }
+  ],
+  "scope": "26 host tests, including six shared tests executed separately for AWS-shaped synthetic record adapter and independent NonAWSFake. No actual submit/delete/latency/quality evidence."
+}
