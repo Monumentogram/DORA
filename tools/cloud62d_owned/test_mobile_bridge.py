@@ -9,7 +9,7 @@ import zipfile
 from unittest.mock import patch
 
 from tools.cloud62d_owned.corpus import CorpusStore
-from tools.cloud62d_owned.test_corpus import inventory, wav
+from tools.cloud62d_owned.test_corpus import easy_materials, inventory, wav
 
 try:
     from tools.cloud62d_owned import mobile_bridge as bridge
@@ -79,6 +79,48 @@ class MobileBridgeTests(unittest.TestCase):
         self.assertEqual(seed['items'][0]['reference']['text'], 'Existing spoken words')
         with zipfile.ZipFile(result['zip_path']) as archive:
             self.assertEqual(archive.read('audio/ru-read-01.wav'), wav(1))
+
+    def test_easy_english_native_seed_and_all_eight_import_use_active_ids_and_materials(self):
+        self.store.migrate_easy_english(easy_materials(), confirmed=True)
+        _, seed, sha = self.seed(ready=True)
+        self.assertEqual(seed['protocol_version'], 'dora-owned-easy-en8-v3')
+        self.assertFalse(seed['recording_enabled'])
+        english = [i for i in seed['items'] if i['language'] == 'en']
+        self.assertEqual({i['id']: i['material'] for i in english}, easy_materials())
+        self.assertTrue(all(i['speech_class'] == 'READ' for i in english))
+        rows = [(i['id'], wav(n), i['material'], True) for n, i in enumerate(seed['items'], 1)]
+        package = self.package(seed, sha, rows)
+        self.assertEqual(bridge.import_export(self.store, package)['imported_recordings'], 8)
+        self.store.select()
+        self.assertEqual(self.store.finalize()['en_spontaneous_status'], 'NOT_EVALUATED')
+        self.assertEqual(bridge.import_export(self.store, package)['status'], 'ALREADY_IMPORTED')
+
+    def test_v2_seed_activation_and_even_previously_imported_export_rejected_after_v3_migration(self):
+        _, seed, sha = self.seed(ready=True)
+        package = self.package(seed, sha, [('ru-read-01', wav(1), 'Russian existing reference', True)])
+        bridge.import_export(self.store, package)
+        self.store.migrate_easy_english(easy_materials(), confirmed=True)
+        before = self.store._path('state.json').read_bytes()
+        with self.assertRaisesRegex(ValueError, 'SEED_BINDING_MISMATCH'):
+            bridge.activate_seed(self.store, seed['seed_id'])
+        with self.assertRaisesRegex(ValueError, 'SEED_BINDING_MISMATCH'):
+            bridge.import_export(self.store, package)
+        self.assertEqual(self.store._path('state.json').read_bytes(), before)
+
+    def test_retained_english_phone_rejected_attempt_blocks_prospective_material_migration(self):
+        _, seed, sha = self.seed()
+        attempt = 'a' * 32
+        data = wav(7, seconds=1)
+        package = self.package(seed, sha, [], extra={f'rejected/{attempt}.wav': data},
+            header={'rejected': [{'attempt_id': attempt, 'id': 'en-read-01',
+                'audio_path': f'rejected/{attempt}.wav', 'audio_sha256': hashlib.sha256(data).hexdigest(),
+                'reason': 'INVALID_DURATION'}]})
+        bridge.import_export(self.store, package)
+        self.assertEqual(self.store.public_summary()['recorded']['en'], 0)
+        before = self.store._path('state.json').read_bytes()
+        with self.assertRaisesRegex(ValueError, 'ENGLISH_ACQUISITION_HISTORY_EXISTS'):
+            self.store.migrate_easy_english(easy_materials(), confirmed=True)
+        self.assertEqual(self.store._path('state.json').read_bytes(), before)
 
     def test_disabled_seed_cannot_activate_or_import_new_capture_until_explicit_readiness(self):
         result, seed, sha = self.seed()

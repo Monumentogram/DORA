@@ -22,6 +22,9 @@ RELEASE = 'dora-owned-corpus-v1.0.0'
 REDUCED_PROTOCOL = 'dora-owned-reduced8-v2'
 REDUCED_IDS = tuple(f'{lang}-{kind}-{n:02}' for lang in ('ru', 'en')
                     for kind in ('read', 'spontaneous') for n in (1, 2))
+EASY_EN_PROTOCOL = 'dora-owned-easy-en8-v3'
+EASY_EN_IDS = ('ru-read-01', 'ru-read-02', 'ru-spontaneous-01', 'ru-spontaneous-02',
+               'en-read-01', 'en-read-02', 'en-read-03', 'en-read-04')
 ATTESTATION_VERSION = 'dora-owned-corpus-attestation-v1'
 ATTESTATION_TEXT = ('I am the speaker of these recordings and authorize DORA to process this '
                     'corpus with Amazon Transcribe in eu-central-1 solely for the bounded '
@@ -208,7 +211,25 @@ class CorpusStore:
                     not self._path('protocol-overlay-v2.json').exists(), 'MIGRATION_INCOMPLETE_RETRY_MIGRATION')
         if self._reduced(state):
             raw = self._path('protocol-overlay-v2.json').read_bytes()
-            require(digest(raw) == state['protocol_overlay_sha256'], 'PROTOCOL_OVERLAY_HASH_MISMATCH')
+            if state['protocol_version'] == EASY_EN_PROTOCOL:
+                active_raw = self._path('protocol-overlay-v3.json').read_bytes()
+                active = json.loads(active_raw)
+                require(digest(active_raw) == state['protocol_overlay_sha256'] and
+                        digest(raw) == active['source_v2_overlay_sha256'], 'PROTOCOL_OVERLAY_HASH_MISMATCH')
+                self._validate_easy_materials(active['material_overrides'])
+                require(active['protocol_version'] == EASY_EN_PROTOCOL and
+                        active['active_case_ids'] == list(EASY_EN_IDS) and
+                        active['original_inventory_sha256'] == state['inventory_sha256'] and
+                        active['material_sha256'] == {k: digest(v.encode()) for k, v in active['material_overrides'].items()},
+                        'PROTOCOL_OVERLAY_MISMATCH')
+                for filename, expected in active['legacy_snapshots'].items():
+                    require(digest(self._path('archive/v2-before-easy-en/' + filename).read_bytes()) == expected,
+                            'LEGACY_SNAPSHOT_HASH_MISMATCH')
+            else:
+                require(digest(raw) == state['protocol_overlay_sha256'], 'PROTOCOL_OVERLAY_HASH_MISMATCH')
+                if not allow_pending_migration:
+                    require(not self._path('archive/v2-before-easy-en').exists() and
+                            not self._path('protocol-overlay-v3.json').exists(), 'MIGRATION_INCOMPLETE_RETRY_MIGRATION')
             overlay = json.loads(raw)
             require(overlay['active_case_ids'] == list(REDUCED_IDS) and
                     overlay['original_inventory_sha256'] == state['inventory_sha256'] and
@@ -220,21 +241,32 @@ class CorpusStore:
 
     def _items(self):
         items = json.loads(self._path('inventory.json').read_text(encoding='utf-8'))['items']
-        if self._reduced(self._load()):
+        state = self._load()
+        if self._reduced(state):
             by_id = {i['id']: i for i in items}
-            return [by_id[case_id] for case_id in REDUCED_IDS]
+            if state['protocol_version'] == EASY_EN_PROTOCOL:
+                overrides = json.loads(self._path('protocol-overlay-v3.json').read_bytes())['material_overrides']
+                for case_id, material in overrides.items():
+                    by_id[case_id] = {**by_id[case_id], 'material': material}
+            return [by_id[case_id] for case_id in self._active_ids(state)]
         return items
 
     @staticmethod
     def _reduced(state):
-        return state.get('protocol_version') == REDUCED_PROTOCOL
+        return state.get('protocol_version') in (REDUCED_PROTOCOL, EASY_EN_PROTOCOL)
+
+    @staticmethod
+    def _active_ids(state):
+        return EASY_EN_IDS if state.get('protocol_version') == EASY_EN_PROTOCOL else REDUCED_IDS
 
     def _artifact(self, state, name):
+        if state.get('protocol_version') == EASY_EN_PROTOCOL:
+            return 'easy-en8-v3/' + name
         return 'reduced8-v2/' + name if self._reduced(state) else name
 
     def _active_records(self, state):
         if self._reduced(state):
-            return {case_id: state['records'][case_id] for case_id in REDUCED_IDS if case_id in state['records']}
+            return {case_id: state['records'][case_id] for case_id in self._active_ids(state) if case_id in state['records']}
         return state['records']
 
     def migrate_reduced_eight(self):
@@ -272,6 +304,77 @@ class CorpusStore:
                                         if i['id'] not in REDUCED_IDS])
         self._save(state, 'OWNER_REDUCED_EIGHT_RECORDING_DEFERRED')
         return self.state()
+
+    @staticmethod
+    def _validate_easy_materials(materials):
+        require(type(materials) is dict and set(materials) == set(EASY_EN_IDS[4:]), 'EASY_ENGLISH_MATERIAL_IDS')
+        require(all(type(v) is str and len(v) <= 10000 and 45 <= len(normalize(v).split()) <= 115
+                    for v in materials.values()), 'READ_WORD_COUNT')
+
+    def migrate_easy_english(self, materials, *, confirmed):
+        """Explicit prospective amendment; original inventory and both predecessor archives survive."""
+        from tools.cloud62d_owned.server import _ProcessLock
+        require(confirmed is True, 'EXPLICIT_OWNER_SCOPE_CONFIRMATION_REQUIRED')
+        self._validate_easy_materials(materials)
+        lock = _ProcessLock(self.root)
+        try:
+            state = self._load(allow_pending_migration=True)
+            if state.get('protocol_version') == EASY_EN_PROTOCOL:
+                overlay = json.loads(self._path('protocol-overlay-v3.json').read_bytes())
+                require(overlay['material_overrides'] == materials, 'EASY_ENGLISH_MATERIALS_ALREADY_FROZEN')
+                return self.state()
+            require(state.get('protocol_version') == REDUCED_PROTOCOL, 'EASY_ENGLISH_REQUIRES_V2_PREDECESSOR')
+            self._mutable(state)
+            require(not self._path('reduced8-v2/manifest.json').exists(), 'LEGACY_FINALIZATION_MUST_REMAIN_IMMUTABLE')
+            original_items = json.loads(self._path('inventory.json').read_bytes())['items']
+            original_material_hashes = {i['id']: digest(i['material'].encode()) for i in original_items}
+            require('material_sha256' not in state or state['material_sha256'] == original_material_hashes,
+                    'MATERIAL_HASH_MISMATCH')
+            english = lambda value: type(value) is str and value.startswith('en-')
+            require(not any(english(k) for k in state['records']) and
+                    not any(english(e.get('case_id')) for e in state['exclusions'] + state['events']),
+                    'ENGLISH_ACQUISITION_HISTORY_EXISTS')
+            require(not any(p.name.startswith('en-') for area in ('source', 'audio', 'rejected')
+                            for p in self._path(area).rglob('*') if p.is_file()), 'ENGLISH_ACQUISITION_HISTORY_EXISTS')
+            # A retained phone export may contain attempts not yet admitted into canonical state.
+            import zipfile
+            for package in self._path('mobile').rglob('*.zip'):
+                try:
+                    with zipfile.ZipFile(package) as archive:
+                        if 'export.json' not in archive.namelist():
+                            continue
+                        require(archive.getinfo('export.json').file_size <= 1_000_000, 'ENGLISH_ACQUISITION_HISTORY_UNRESOLVED')
+                        export = json.loads(archive.read('export.json'))
+                        require(not any(english(row.get('id')) for row in export.get('records', []) + export.get('rejected', [])),
+                                'ENGLISH_ACQUISITION_HISTORY_EXISTS')
+                except (zipfile.BadZipFile, KeyError, TypeError, json.JSONDecodeError):
+                    raise ValueError('ENGLISH_ACQUISITION_HISTORY_UNRESOLVED') from None
+            snapshots = {}
+            for filename, source in (('state.json', 'state.json'), ('protocol-overlay-v2.json', 'protocol-overlay-v2.json'),
+                                     ('selection.json', 'reduced8-v2/selection.json')):
+                if self._path(source).exists():
+                    raw = self._path(source).read_bytes()
+                    self._write('archive/v2-before-easy-en/' + filename, raw, immutable=True)
+                    snapshots[filename] = digest(raw)
+            overlay = {'schema_version': '3.0', 'protocol_version': EASY_EN_PROTOCOL,
+                       'authority': 'EXPLICIT_OWNER_FOUR_SIMPLE_ENGLISH_READ_CASES', 'source_release': RELEASE,
+                       'original_inventory_sha256': state['inventory_sha256'],
+                       'source_v2_overlay_sha256': state['protocol_overlay_sha256'],
+                       'active_case_ids': list(EASY_EN_IDS), 'material_overrides': materials,
+                       'material_sha256': {k: digest(v.encode()) for k, v in materials.items()},
+                       'legacy_snapshots': snapshots, 'selection': 'ALL_EIGHT_FIXED_CASES_NO_RESERVES_NO_REPLACEMENTS',
+                       'timing_status': 'NOT_EVALUATED', 'noise_status': 'NOT_EVALUATED',
+                       'en_spontaneous_status': 'NOT_EVALUATED'}
+            self._write('protocol-overlay-v3.json', overlay, immutable=True)
+            state.update(protocol_version=EASY_EN_PROTOCOL, protocol_overlay_sha256=digest(encoded(overlay)),
+                         selection=None, status='ACQUIRING', manifest_sha256=None,
+                         archived_case_ids=[i['id'] for i in json.loads(self._path('inventory.json').read_bytes())['items']
+                                            if i['id'] not in EASY_EN_IDS])
+            state['material_sha256'] = {**original_material_hashes, **overlay['material_sha256']}
+            self._save(state, 'OWNER_FOUR_SIMPLE_ENGLISH_READ_CASES_FROZEN')
+            return self.state()
+        finally:
+            lock.close()
 
     def resume_recording(self, *, confirmed):
         """Local operator only, after the owner's explicit readiness instruction."""
@@ -414,7 +517,7 @@ class CorpusStore:
         require(state['attestation']['confirmed'] is True, 'ATTESTATION_REQUIRED')
         excluded = {e['case_id'] for e in state['exclusions']}
         if self._reduced(state):
-            require(all(case_id in state['records'] and case_id not in excluded for case_id in REDUCED_IDS),
+            require(all(case_id in state['records'] and case_id not in excluded for case_id in self._active_ids(state)),
                     'REDUCED_EIGHT_ALL_CLIPS_REQUIRED')
         eligible = []
         seen_source, seen_upload = set(), set()
@@ -434,7 +537,7 @@ class CorpusStore:
         selection = {k: {'ru': [], 'en': []} for k in ('quality', 'noise', 'reserves', 'timing')}
         if self._reduced(state):
             for lang in ('ru', 'en'):
-                selection['quality'][lang] = [case_id for case_id in REDUCED_IDS if case_id.startswith(lang + '-')]
+                selection['quality'][lang] = [case_id for case_id in self._active_ids(state) if case_id.startswith(lang + '-')]
         for lang in ('ru', 'en'):
             if self._reduced(state):
                 continue
@@ -467,10 +570,10 @@ class CorpusStore:
         excluded = {e['case_id'] for e in state['exclusions']}
         if self._reduced(state):
             for lang in ('ru', 'en'):
-                require(state['selection']['quality'][lang] == [i for i in REDUCED_IDS if i.startswith(lang + '-')]
+                require(state['selection']['quality'][lang] == [i for i in self._active_ids(state) if i.startswith(lang + '-')]
                         and all(state['selection'][area][lang] == [] for area in ('timing', 'noise', 'reserves')),
                         'REDUCED_SELECTION_MISMATCH')
-            require(not excluded.intersection(REDUCED_IDS), 'REDUCED_EIGHT_ALL_CLIPS_REQUIRED')
+            require(not excluded.intersection(self._active_ids(state)), 'REDUCED_EIGHT_ALL_CLIPS_REQUIRED')
         for item in self._items():
             if item['id'] not in excluded:
                 require(item['id'] in state['records'], 'INVENTORY_RECORDING_OR_EXCLUSION_REQUIRED')
@@ -555,11 +658,15 @@ class CorpusStore:
         for field in ('recorded', 'verified_references', 'selected_quality', 'selected_noise', 'timing_clips', 'timing_words'):
             result[field] = {'ru': 0, 'en': 0}
         if self._reduced(state):
-            result.update(schema_version='2.0', protocol_version=REDUCED_PROTOCOL,
+            result.update(schema_version='3.0' if state['protocol_version'] == EASY_EN_PROTOCOL else '2.0',
+                          protocol_version=state['protocol_version'],
                           protocol_overlay_sha256=state['protocol_overlay_sha256'],
                           recording_enabled=state['recording_enabled'],
                           timing_status='NOT_EVALUATED', noise_status='NOT_EVALUATED',
                           candidates={lang: {'read': 2, 'spontaneous': 2, 'noisy': 0} for lang in ('ru', 'en')})
+        if state.get('protocol_version') == EASY_EN_PROTOCOL:
+            result['candidates']['en'] = {'read': 4, 'spontaneous': 0, 'noisy': 0}
+            result['en_spontaneous_status'] = 'NOT_EVALUATED'
         for case_id, record in self._active_records(state).items():
             lang = case_id[:2]
             result['recorded'][lang] += 1
@@ -571,7 +678,7 @@ class CorpusStore:
             for lang in ('ru', 'en'):
                 result['selected_quality'][lang] = len(state['selection']['quality'][lang])
                 result['selected_noise'][lang] = len(state['selection']['noise'][lang])
-        result['excluded_count'] = sum(not self._reduced(state) or e['case_id'] in REDUCED_IDS for e in state['exclusions'])
+        result['excluded_count'] = sum(not self._reduced(state) or e['case_id'] in self._active_ids(state) for e in state['exclusions'])
         return result
 
     def _composite(self, state, language, target_frames):
@@ -650,9 +757,12 @@ class CorpusStore:
             record['speech_class'] = self._item(case_id)['speech_class']
             record['timing_reference_sha256'] = digest(encoded(record['timing'])) if record['timing'] else None
         if self._reduced(state):
-            manifest.update(schema_version='2.0', protocol_version=REDUCED_PROTOCOL,
+            manifest.update(schema_version='3.0' if state['protocol_version'] == EASY_EN_PROTOCOL else '2.0',
+                            protocol_version=state['protocol_version'],
                             protocol_overlay_sha256=state['protocol_overlay_sha256'],
                             timing_status='NOT_EVALUATED', noise_status='NOT_EVALUATED')
+            if state['protocol_version'] == EASY_EN_PROTOCOL:
+                manifest['en_spontaneous_status'] = 'NOT_EVALUATED'
             recipes = {record['recording']['conversion_recipe_sha256'] for record in manifest['records'].values()}
             if digest(encoded(NATIVE_CONVERSION_RECIPE)) in recipes:
                 manifest['conversion_recipe'] = NATIVE_CONVERSION_RECIPE if len(recipes) == 1 else {

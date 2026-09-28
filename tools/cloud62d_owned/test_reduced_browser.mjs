@@ -4,7 +4,8 @@ import {createRequire} from 'node:module';
 import {spawn} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 const require=createRequire(import.meta.url),{chromium}=require('playwright');
-const child=spawn(process.env.DORA_PYTHON||'python',[fileURLToPath(new URL('./test_browser_fixture.py',import.meta.url)),'--reduced8'],{stdio:['ignore','pipe','pipe'],windowsHide:true});
+for(const profile of ['--reduced8','--easy-en8']){
+const child=spawn(process.env.DORA_PYTHON||'python',[fileURLToPath(new URL('./test_browser_fixture.py',import.meta.url)),profile],{stdio:['ignore','pipe','pipe'],windowsHide:true});
 let browser;
 try{
   const url=await new Promise((resolve,reject)=>{let text='';child.stdout.on('data',data=>{text+=data;if(text.includes('\n'))resolve(text.trim());});child.stderr.on('data',data=>reject(Error(String(data))));});
@@ -13,6 +14,11 @@ try{
   await page.goto(url);await page.locator('#status').filter({hasText:'Готово'}).waitFor();
   assert.equal(await page.locator('#cases option').count(),8);
   assert.match(await page.locator('#scopeFacts').innerText(),/NOT_EVALUATED/);
+  if(profile==='--easy-en8'){
+    assert.match(await page.locator('#scopeFacts').innerText(),/EN 4 READ; EN SPONTANEOUS: NOT_EVALUATED/);
+    const classes=await page.evaluate(async()=>{const r=await fetch('/api/state',{headers:{'X-Dora-Session':sessionStorage.getItem('doraSession')}});return (await r.json()).items.filter(i=>i.language==='en').map(i=>i.speech_class);});
+    assert.deepEqual(classes,['READ','READ','READ','READ']);
+  }
   assert.equal(await page.locator('#testMic').isDisabled(),true);
   assert.equal(await page.locator('#record').isDisabled(),true);
   assert.equal(await page.locator('#devices').isDisabled(),true);
@@ -27,5 +33,7 @@ try{
   assert.equal(await page.locator('#finalize').isDisabled(),true);
   assert.equal(await page.evaluate(()=>window.micCalls),0);
   assert.deepEqual(errors,[]);
-  console.log('Reduced8 browser: all eight verified/selected/finalized without timing, deferred microphone and HTTP capture denial: PASS');
+  console.log(profile+' browser: all eight verified/selected/finalized without timing, deferred microphone and HTTP capture denial: PASS');
 }finally{await browser?.close();child.kill();}
+
+}

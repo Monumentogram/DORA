@@ -17,7 +17,7 @@ async function api(path, body) {
   const data=await response.json(); if(!response.ok) throw Error(data.error); return data;
 }
 function item() { return state.items.find(i=>i.id===currentId); }
-function reducedProtocol(){return state?.protocol_version==='dora-owned-reduced8-v2';}
+function reducedProtocol(){return ['dora-owned-reduced8-v2','dora-owned-easy-en8-v3'].includes(state?.protocol_version);}
 function recordingEnabled(){return state?.recording_enabled!==false;}
 function finished(i) { return !!i.exclusion || !!(i.recording && i.reference); }
 function pendingTiming(i) {return !!i.timing_draft && (!i.timing || JSON.stringify(i.timing_draft.words)!==JSON.stringify(i.timing.words));}
@@ -41,7 +41,7 @@ function busy() {
 }
 async function render() {
   const reduced=reducedProtocol();
-  $('scopeFacts').textContent=reduced?'8 записей одного владельца: RU 2 READ + 2 SPONTANEOUS; EN 2 READ + 2 SPONTANEOUS. Оцениваются все восемь. Резервов нет. NOISE и TIMESTAMPS: NOT_EVALUATED. Такой малый корпус не доказывает качество для других говорящих.':'Исходный протокол корпуса; этапы определяются сохранённым частным состоянием.';
+  $('scopeFacts').textContent=reduced?`8 записей одного владельца: RU 2 READ + 2 SPONTANEOUS; EN ${state.protocol_version==='dora-owned-easy-en8-v3'?'4 READ; EN SPONTANEOUS: NOT_EVALUATED':'2 READ + 2 SPONTANEOUS'}. Оцениваются все восемь. Резервов нет. NOISE и TIMESTAMPS: NOT_EVALUATED. Такой малый корпус не доказывает качество для других говорящих.`:'Исходный протокол корпуса; этапы определяются сохранённым частным состоянием.';
   $('selectionHeading').textContent=reduced?'4. Фиксация всех восьми записей':'4. Отбор и ручные временные отметки';
   $('selectionDescription').textContent=reduced?'После проверки восьми фактических текстов зафиксируйте весь набор. Исключение не заменяется резервом: неполный набор блокирует завершение. Ручная разметка времени не требуется.':'После обработки кандидатов зафиксируйте детерминированный отбор и выполните предусмотренную протоколом ручную разметку.';
   $('select').textContent=reduced?'Зафиксировать все 8 записей':'Зафиксировать отбор';

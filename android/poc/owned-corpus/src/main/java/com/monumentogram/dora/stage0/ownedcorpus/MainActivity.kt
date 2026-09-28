@@ -504,7 +504,8 @@ class MainActivity : Activity() {
         AlertDialog.Builder(this)
             .setTitle("О наборе и приватности")
             .setMessage(
-                "По два чтения и два свободных ответа на русском и английском. Все восемь записей " +
+                profileDescription() +
+                    "Все восемь записей " +
                     "одного говорящего входят в оценку, резервов нет. " +
                     "Набор не доказывает качество для других людей.\n\n" +
                     "Шум и временные отметки: НЕ ОЦЕНЕНЫ. Разметка времени не нужна.\n\n" +
@@ -517,6 +518,15 @@ class MainActivity : Activity() {
             .setPositiveButton("Понятно", null)
             .show()
     }
+
+    private fun profileDescription(): String =
+        when {
+            !store.installed() -> "Состав заданий будет указан после передачи набора. "
+            store.seed().getString("protocol_version") == CorpusStore.EASY_ENGLISH_PROTOCOL ->
+                "На русском: два чтения и два свободных ответа. На английском: четыре простых текста " +
+                    "для чтения. Свободная речь на английском: НЕ ОЦЕНЕНА.\n\n"
+            else -> "По два чтения и два свободных ответа на русском и английском. "
+        }
 
     private fun showTransfer() {
         AlertDialog.Builder(this)

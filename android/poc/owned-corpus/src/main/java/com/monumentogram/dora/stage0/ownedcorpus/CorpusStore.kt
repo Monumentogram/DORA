@@ -24,6 +24,8 @@ class CorpusStore(private val root: File) {
         private const val MAX_TEXT_LENGTH = 10000
         private const val CORPUS_SIZE = 8
         const val APP = "DORA_OWNED8_ANDROID_V1"
+        const val REDUCED_PROTOCOL = "dora-owned-reduced8-v2"
+        const val EASY_ENGLISH_PROTOCOL = "dora-owned-easy-en8-v3"
         const val ATTESTATION =
             "I am the speaker of these recordings and authorize DORA to process this corpus with " +
                 "Amazon Transcribe in eu-central-1 solely for the bounded 6.2D evaluation under the " +
@@ -36,6 +38,18 @@ class CorpusStore(private val root: File) {
                     }
                 }
                 .toSet()
+        private val EASY_ENGLISH_IDS =
+            IDS.filter { it.startsWith("ru-") }.toSet() +
+                setOf("en-read-01", "en-read-02", "en-read-03", "en-read-04")
+        private val SEED_PATHS =
+            setOf("seed.json") + (IDS + EASY_ENGLISH_IDS).map { "audio/$it.wav" }
+
+        private fun idsForProtocol(protocol: String): Set<String> =
+            when (protocol) {
+                REDUCED_PROTOCOL -> IDS
+                EASY_ENGLISH_PROTOCOL -> EASY_ENGLISH_IDS
+                else -> throw IllegalArgumentException("INVALID_SEED_SCHEMA")
+            }
     }
 
     data class Attempt(
@@ -148,12 +162,7 @@ class CorpusStore(private val root: File) {
         ZipInputStream(archive.inputStream().buffered()).use { zip ->
             while (true) {
                 val entry = zip.nextEntry ?: break
-                require(
-                    !entry.isDirectory &&
-                        (entry.name == "seed.json" ||
-                            Regex("audio/(ru|en)-(read|spontaneous)-0[12]\\.wav")
-                                .matches(entry.name))
-                ) {
+                require(!entry.isDirectory && entry.name in SEED_PATHS) {
                     "INVALID_SEED_PATH"
                 }
                 require(!entries.containsKey(entry.name) && entries.size < MAX_SEED_ENTRIES) {
@@ -181,13 +190,10 @@ class CorpusStore(private val root: File) {
     }
 
     private fun validateSeed(seed: JSONObject) {
-        require(
-            seed.getString("schema_version") == "1.0" &&
-                seed.getString("app") == APP &&
-                seed.getString("protocol_version") == "dora-owned-reduced8-v2"
-        ) {
+        require(seed.getString("schema_version") == "1.0" && seed.getString("app") == APP) {
             "INVALID_SEED_SCHEMA"
         }
+        val expectedIds = idsForProtocol(seed.getString("protocol_version"))
         require(Regex("[0-9a-f]{32}").matches(seed.getString("seed_id"))) { "INVALID_SEED_ID" }
         listOf("inventory_sha256", "protocol_overlay_sha256").forEach {
             require(Regex("[0-9a-f]{64}").matches(seed.getString(it))) { "INVALID_SEED_BINDING" }
@@ -209,7 +215,10 @@ class CorpusStore(private val root: File) {
         ) {
             "ATTESTATION_HASH_MISMATCH"
         }
-        val items = seed.getJSONArray("items")
+        validateItems(seed.getJSONArray("items"), expectedIds)
+    }
+
+    private fun validateItems(items: JSONArray, expectedIds: Set<String>) {
         require(items.length() == CORPUS_SIZE) { "EIGHT_ITEMS_REQUIRED" }
         val ids = mutableSetOf<String>()
         for (i in 0 until items.length()) {
@@ -217,10 +226,9 @@ class CorpusStore(private val root: File) {
             val id = item.getString("id")
             require(
                 ids.add(id) &&
-                    id in IDS &&
-                    id.startsWith(
-                        "${item.getString("language")}-${item.getString("speech_class").lowercase()}-"
-                    )
+                    id in expectedIds &&
+                    item.getString("language") == id.substringBefore('-') &&
+                    item.getString("speech_class") == id.split('-')[1].uppercase()
             ) {
                 "INVALID_ITEM_ID"
             }
@@ -231,11 +239,14 @@ class CorpusStore(private val root: File) {
                 "INVALID_ITEM_MATERIAL"
             }
         }
-        require(ids == IDS) { "INVALID_INVENTORY" }
+        require(ids == expectedIds) { "INVALID_INVENTORY" }
     }
 
     @Synchronized
     fun seed(): JSONObject = JSONObject(File(root, "seed.json").readText(Charsets.UTF_8))
+
+    @Synchronized
+    fun activeIds(): Set<String> = idsForProtocol(seed().getString("protocol_version"))
 
     @Synchronized
     fun state(): JSONObject {
@@ -248,7 +259,7 @@ class CorpusStore(private val root: File) {
 
     @Synchronized
     fun item(id: String): JSONObject {
-        require(id in IDS) { "INVALID_ITEM_ID" }
+        require(id in activeIds()) { "INVALID_ITEM_ID" }
         val items = seed().getJSONArray("items")
         return (0 until items.length())
             .map { items.getJSONObject(it) }
@@ -390,7 +401,9 @@ class CorpusStore(private val root: File) {
         val pending = state().optJSONObject("pending_attempt") ?: return
         val id = pending.getString("id")
         val attemptId = pending.getString("attempt_id")
-        require(id in IDS && Regex("[0-9a-f]{32}").matches(attemptId)) { "INVALID_PENDING_ATTEMPT" }
+        require(id in activeIds() && Regex("[0-9a-f]{32}").matches(attemptId)) {
+            "INVALID_PENDING_ATTEMPT"
+        }
         val file = File(root, "rejected/$attemptId.wav")
         if (!file.exists()) {
             // Capture was durably moved but the state write was interrupted. Preserve it as
@@ -446,7 +459,7 @@ class CorpusStore(private val root: File) {
 
     @Synchronized
     fun audio(id: String): File {
-        require(id in IDS) { "INVALID_ITEM_ID" }
+        require(id in activeIds()) { "INVALID_ITEM_ID" }
         val record = state().getJSONObject("records").getJSONObject(id)
         require(record.getString("audio_path") == "audio/$id.wav") { "INVALID_AUDIO_PATH" }
         return File(root, "audio/$id.wav").also {
@@ -519,7 +532,7 @@ class CorpusStore(private val root: File) {
 
     private fun exportRecords(state: JSONObject, files: MutableMap<String, File>): JSONArray {
         val records = JSONArray()
-        for (id in IDS.sorted()) {
+        for (id in activeIds().sorted()) {
             val record = state.getJSONObject("records").optJSONObject(id) ?: continue
             files["audio/$id.wav"] = audio(id)
             val revisions = JSONArray()

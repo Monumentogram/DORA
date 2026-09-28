@@ -37,6 +37,10 @@ def inventory():
     return {'schema_version': '1.0', 'source_release': 'dora-owned-corpus-v1.0.0', 'items': items}
 
 
+def easy_materials():
+    return {f'en-read-{n:02}': ' '.join(['simple'] * 49) + f' text{n}' for n in range(1, 5)}
+
+
 class CorpusTests(unittest.TestCase):
     def setUp(self):
         self.assertIsNotNone(corpus, 'private corpus backend is not implemented')
@@ -295,6 +299,142 @@ class CorpusTests(unittest.TestCase):
             self.store.migrate_reduced_eight()
         self.assertEqual((self.base / 'private/state.json').read_bytes(), before)
         self.assertEqual(manifest.read_bytes(), b'preserve existing legacy manifest')
+
+    def test_easy_english_migration_preserves_ru_readiness_and_original_versions(self):
+        self.store.migrate_reduced_eight()
+        self.store.attest(confirmed=True)
+        self.store.resume_recording(confirmed=True)
+        self.store.save_capture('ru-read-01', wav(1), wav(1))
+        self.store.verify_reference('ru-read-01', 'Existing Russian reference', confirmed=True)
+        previous = {name: (self.base / 'private' / name).read_bytes()
+                    for name in ('state.json', 'inventory.json', 'protocol-overlay-v2.json')}
+        self.assertTrue(hasattr(self.store, 'migrate_easy_english'), 'prospective easy-English migration missing')
+        result = self.store.migrate_easy_english(easy_materials(), confirmed=True)
+        self.assertEqual(result['protocol_version'], 'dora-owned-easy-en8-v3')
+        self.assertTrue(result['recording_enabled'])
+        self.assertTrue(result['attestation']['confirmed'])
+        self.assertEqual(result['items'][0]['reference']['text'], 'Existing Russian reference')
+        english = [row for row in result['items'] if row['language'] == 'en']
+        self.assertEqual([row['id'] for row in english], ['en-read-01', 'en-read-02', 'en-read-03', 'en-read-04'])
+        self.assertTrue(all(row['speech_class'] == 'READ' and row['material'] == easy_materials()[row['id']]
+                            for row in english))
+        self.assertEqual(result['public_summary']['candidates']['en'], {'read': 4, 'spontaneous': 0, 'noisy': 0})
+        self.assertEqual(result['public_summary']['en_spontaneous_status'], 'NOT_EVALUATED')
+        self.assertEqual((self.base / 'private/inventory.json').read_bytes(), previous['inventory.json'])
+        self.assertEqual((self.base / 'private/protocol-overlay-v2.json').read_bytes(), previous['protocol-overlay-v2.json'])
+        self.assertEqual((self.base / 'private/archive/v2-before-easy-en/state.json').read_bytes(), previous['state.json'])
+        self.assertEqual(self.store.migrate_easy_english(easy_materials(), confirmed=True), result)
+        changed = easy_materials()
+        changed['en-read-01'] += ' altered'
+        with self.assertRaisesRegex(ValueError, 'EASY_ENGLISH_MATERIALS_ALREADY_FROZEN'):
+            self.store.migrate_easy_english(changed, confirmed=True)
+
+    def test_easy_english_rejects_english_history_and_unconfirmed_scope(self):
+        self.store.migrate_reduced_eight()
+        self.assertTrue(hasattr(self.store, 'migrate_easy_english'), 'prospective easy-English migration missing')
+        with self.assertRaisesRegex(ValueError, 'EXPLICIT_OWNER_SCOPE_CONFIRMATION_REQUIRED'):
+            self.store.migrate_easy_english(easy_materials(), confirmed=False)
+        self.store.exclude('en-spontaneous-01', 'INVALID_FORMAT_OR_DURATION')
+        before = (self.base / 'private/state.json').read_bytes()
+        with self.assertRaisesRegex(ValueError, 'ENGLISH_ACQUISITION_HISTORY_EXISTS'):
+            self.store.migrate_easy_english(easy_materials(), confirmed=True)
+        self.assertEqual((self.base / 'private/state.json').read_bytes(), before)
+        self.assertFalse((self.base / 'private/protocol-overlay-v3.json').exists())
+
+    def test_easy_english_all_eight_finalization_requires_four_english_read_references(self):
+        self.store.migrate_reduced_eight()
+        self.assertTrue(hasattr(self.store, 'migrate_easy_english'), 'prospective easy-English migration missing')
+        self.store.migrate_easy_english(easy_materials(), confirmed=True)
+        self.store.attest(confirmed=True)
+        self.store.resume_recording(confirmed=True)
+        for n, item in enumerate(self.store.state()['items'], 1):
+            if n == 8:
+                with self.assertRaisesRegex(ValueError, 'REDUCED_EIGHT_ALL_CLIPS_REQUIRED'):
+                    self.store.select()
+            self.store.save_capture(item['id'], wav(n), wav(n))
+            if n == 8:
+                with self.assertRaisesRegex(ValueError, 'MISSING_HUMAN_REFERENCE'):
+                    self.store.select()
+            self.store.verify_reference(item['id'], item['material'], confirmed=True)
+        selected = self.store.select()
+        self.assertEqual(selected['quality']['en'], ['en-read-01', 'en-read-02', 'en-read-03', 'en-read-04'])
+        summary = self.store.finalize()
+        self.assertEqual(summary['selected_quality'], {'ru': 4, 'en': 4})
+        self.assertEqual(summary['en_spontaneous_status'], 'NOT_EVALUATED')
+        manifest = json.loads((self.base / 'private/easy-en8-v3/manifest.json').read_bytes())
+        self.assertEqual(manifest['schema_version'], '3.0')
+        self.assertEqual(manifest['material_sha256']['en-read-04'], hashlib.sha256(easy_materials()['en-read-04'].encode()).hexdigest())
+        self.assertEqual(self.store.validate_manifest(), summary)
+
+    def test_easy_english_interrupted_commit_retries_same_overlay_and_preserves_deferred_state(self):
+        self.store.migrate_reduced_eight()
+        before = self.store._path('state.json').read_bytes()
+        original_write = self.store._write
+        def fail_commit(relative, value, **kwargs):
+            if relative == 'state.json':
+                raise OSError('simulated v3 migration interruption')
+            return original_write(relative, value, **kwargs)
+        with patch.object(self.store, '_write', side_effect=fail_commit):
+            with self.assertRaisesRegex(OSError, 'simulated v3 migration interruption'):
+                self.store.migrate_easy_english(easy_materials(), confirmed=True)
+        frozen_overlay = self.store._path('protocol-overlay-v3.json').read_bytes()
+        with self.assertRaisesRegex(ValueError, 'MIGRATION_INCOMPLETE_RETRY_MIGRATION'):
+            self.store.state()
+        resumed = self.store.migrate_easy_english(easy_materials(), confirmed=True)
+        self.assertFalse(resumed['recording_enabled'])
+        self.assertEqual(self.store._path('protocol-overlay-v3.json').read_bytes(), frozen_overlay)
+        self.assertEqual(self.store._path('archive/v2-before-easy-en/state.json').read_bytes(), before)
+
+    def test_easy_english_legacy_missing_material_hash_map_recovers_after_overlay_publication(self):
+        self.store.migrate_reduced_eight()
+        state = self.store._load()
+        state.pop('material_sha256')
+        self.store._write('state.json', state)
+        before = self.store._path('state.json').read_bytes()
+        original_write = self.store._write
+        def fail_after_overlay(relative, value, **kwargs):
+            result = original_write(relative, value, **kwargs)
+            if relative == 'protocol-overlay-v3.json':
+                raise OSError('simulated failure after overlay publication')
+            return result
+        with patch.object(self.store, '_write', side_effect=fail_after_overlay):
+            with self.assertRaisesRegex(OSError, 'simulated failure after overlay publication'):
+                self.store.migrate_easy_english(easy_materials(), confirmed=True)
+        overlay = self.store._path('protocol-overlay-v3.json').read_bytes()
+        result = self.store.migrate_easy_english(easy_materials(), confirmed=True)
+        self.assertEqual(result['protocol_version'], corpus.EASY_EN_PROTOCOL)
+        expected = {i['id']: hashlib.sha256(i['material'].encode()).hexdigest() for i in inventory()['items']}
+        expected.update({k: hashlib.sha256(v.encode()).hexdigest() for k, v in easy_materials().items()})
+        self.assertEqual(self.store._load()['material_sha256'], expected)
+        self.assertEqual(self.store._path('archive/v2-before-easy-en/state.json').read_bytes(), before)
+        self.assertEqual(self.store._path('protocol-overlay-v3.json').read_bytes(), overlay)
+        self.assertEqual(self.store.migrate_easy_english(easy_materials(), confirmed=True), result)
+
+    def test_easy_english_rejects_incorrect_existing_material_hash_map_before_archiving(self):
+        self.store.migrate_reduced_eight()
+        state = self.store._load()
+        state['material_sha256']['en-read-01'] = '0' * 64
+        self.store._write('state.json', state)
+        before = self.store._path('state.json').read_bytes()
+        with self.assertRaisesRegex(ValueError, 'MATERIAL_HASH_MISMATCH'):
+            self.store.migrate_easy_english(easy_materials(), confirmed=True)
+        self.assertEqual(self.store._path('state.json').read_bytes(), before)
+        self.assertFalse(self.store._path('protocol-overlay-v3.json').exists())
+
+    def test_easy_english_rejects_actual_english_capture_and_live_writer(self):
+        from tools.cloud62d_owned.server import make_server
+        self.store.migrate_reduced_eight()
+        server = make_server(self.store, port=0)
+        try:
+            with self.assertRaisesRegex(RuntimeError, 'RECORDER_ALREADY_RUNNING'):
+                self.store.migrate_easy_english(easy_materials(), confirmed=True)
+        finally:
+            server.server_close()
+        self.store.attest(confirmed=True)
+        self.store.resume_recording(confirmed=True)
+        self.store.save_capture('en-read-01', wav(1), wav(1))
+        with self.assertRaisesRegex(ValueError, 'ENGLISH_ACQUISITION_HISTORY_EXISTS'):
+            self.store.migrate_easy_english(easy_materials(), confirmed=True)
 
     def test_migration_and_readiness_cli_reject_live_recorder_without_state_changes(self):
         from tools.cloud62d_owned.server import make_server

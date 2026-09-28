@@ -23,8 +23,12 @@ AMENDMENT_COMMIT = 'e0d1479333122166192b5f6a5f27813d9eb86f09'
 MOBILE = 'docs/contracts/DORA_CLOUD_62D_MOBILE_ACQUISITION_V0_1.json'
 MOBILE_COMMIT = '6e814b699979798e428f27123642a55e12de455f'
 MOBILE_UI = 'docs/contracts/DORA_CLOUD_62D_MOBILE_UI_V0_2.json'
+MOBILE_UI_COMMIT = 'b4c6776fb3d5b872d09b284c0fee938de66e6ed5'
+EASY_EN = 'docs/contracts/DORA_CLOUD_62D_EASY_ENGLISH_V0_1.json'
+EASY_EN_PROTOCOL = 'dora-owned-easy-en8-v3'
 EIGHT_IDS = tuple(f'{lang}-{kind}-{n:02}' for lang in ('ru', 'en')
                   for kind in ('read', 'spontaneous') for n in (1, 2))
+EASY_EN_IDS = EIGHT_IDS[:4] + tuple(f'en-read-{n:02}' for n in range(1, 5))
 
 
 def require(condition, code):
@@ -36,7 +40,7 @@ def digest(data):
     return hashlib.sha256(data).hexdigest()
 
 
-def bounded_report(rows):
+def bounded_report(rows, *, protocol='dora-owned-reduced8-v2'):
     """Summarize bound primary oracle counts, never score text or authorize AWS.
 
     Caller must establish immutable manifest membership, verified references,
@@ -44,13 +48,15 @@ def bounded_report(rows):
     Missing attempts stay visible; successful retries cannot replace primaries.
     """
     require(type(rows) is list, 'REPORT_ROWS')
+    require(protocol in ('dora-owned-reduced8-v2', EASY_EN_PROTOCOL), 'REPORT_PROTOCOL')
+    active_ids = EASY_EN_IDS if protocol == EASY_EN_PROTOCOL else EIGHT_IDS
     indexed = {}
     count_keys = {'substitutions', 'deletions', 'insertions', 'reference_tokens'}
     for row in rows:
         require(type(row) is dict and set(row) == {'case_id', 'state', 'raw', 'normalized'},
                 'REPORT_ROW_SHAPE')
         case_id = row['case_id']
-        require(case_id in EIGHT_IDS and case_id not in indexed, 'REPORT_MEMBERSHIP')
+        require(case_id in active_ids and case_id not in indexed, 'REPORT_MEMBERSHIP')
         require(row['state'] in ('NOT_RUN', 'SUCCEEDED', 'FAILED'), 'REPORT_STATE')
         for mode in ('raw', 'normalized'):
             counts = row[mode]
@@ -73,7 +79,7 @@ def bounded_report(rows):
                 if counts['reference_tokens'] else None}
 
     records = []
-    for case_id in EIGHT_IDS:
+    for case_id in active_ids:
         row = indexed.get(case_id, {'case_id': case_id, 'state': 'NOT_RUN',
                                     'raw': None, 'normalized': None})
         records.append({**row, **{mode: aggregate([row], mode)
@@ -87,21 +93,25 @@ def bounded_report(rows):
         n, errors = modes['normalized']['reference_tokens'], modes['normalized']['errors']
         quality = ('PASS' if errors * 100 <= threshold * n else 'FAIL') if successes == len(ids) else (
             'NOT_RUN' if successes == failed == 0 else 'INCOMPLETE')
+        if not ids:
+            quality = 'NOT_EVALUATED'
         return {**modes, 'expected_records': len(ids), 'succeeded_records': successes,
                 'failed_records': failed, 'not_run_records': len(ids)-successes-failed,
                 'threshold_percent': threshold, 'bounded_quality': quality}
 
     languages = {}
     for lang, threshold in (('ru', 20), ('en', 18)):
-        ids = [i for i in EIGHT_IDS if i.startswith(lang + '-')]
+        ids = [i for i in active_ids if i.startswith(lang + '-')]
         result = summarize(ids, threshold)
         result['speech_classes'] = {kind: summarize([i for i in ids if f'-{kind}-' in i], threshold)
                                     for kind in ('read', 'spontaneous')}
         if result['bounded_quality'] == 'PASS' and any(
-                r['bounded_quality'] != 'PASS' for r in result['speech_classes'].values()):
+                r['expected_records'] > 0 and r['bounded_quality'] != 'PASS'
+                for r in result['speech_classes'].values()):
             result['bounded_quality'] = 'FAIL'
         languages[lang] = result
-    return {'scope': 'EIGHT_CLIPS_ONE_OWNER_ONLY', 'records': records, 'languages': languages,
+    return {'scope': 'EIGHT_CLIPS_ONE_OWNER_ONLY', 'protocol_version': protocol,
+            'records': records, 'languages': languages,
             'timestamp_accuracy': 'NOT_EVALUATED', 'noise_robustness': 'NOT_EVALUATED',
             'broad_admission': 'NOT_ESTABLISHED', 'provider_admission': 'NOT_ESTABLISHED'}
 
@@ -281,6 +291,53 @@ def render_mobile_ui(record):
             '```json\n' + json.dumps(record, ensure_ascii=False, indent=2) + '\n```\n')
 
 
+def validate_easy_english(record):
+    expected = {'protocol_id': EASY_EN_PROTOCOL, 'active_ids': list(EASY_EN_IDS),
+                'composition': {'ru': {'READ': 2, 'SPONTANEOUS': 2},
+                                'en': {'READ': 4, 'SPONTANEOUS': 0}},
+                'wer_threshold_percent': {'ru': 20, 'en': 18},
+                'english_spontaneous': 'NOT_EVALUATED',
+                'english_scope': 'BASIC_VOCABULARY_READ_ONLY_ONE_OWNER',
+                'timestamp_accuracy': 'NOT_EVALUATED', 'noise_robustness': 'NOT_EVALUATED',
+                'phase_a_successor': 'NOT_CREATED', 'phase_b': 'NOT_RUN',
+                'budget_usd': {'total': 10, 'asr': 2, 'ancillary_tax': 8},
+                'read_materials': 'PROJECT_AUTHORED_REVISION_FROZEN_BEFORE_RECORDING',
+                'automatic_microphone_start': False, 'reference_confirmation': 'EXPLICIT_HUMAN',
+                'prior_corpus_and_readiness': 'PRESERVED_WITH_ARCHIVED_PROVENANCE'}
+    for key, value in expected.items():
+        require(record.get(key) == value, 'EASY_EN_SCOPE_' + key.upper())
+
+
+def render_easy_english(record):
+    return ('# DORA 6.2D: prospective easy-English amendment v0.1\n\n'
+            'Explicit Owner change, 2026-09-28: the English portion now contains four '
+            'short readings with basic everyday words. Russian remains two READ and two '
+            'SPONTANEOUS cases. Exactly eight recordings enter the evaluation.\n\n'
+            'Replaced requirements: EN two READ plus two SPONTANEOUS becomes EN four READ; '
+            'EN spontaneous IDs 01/02 are retired from the active set and EN read IDs 03/04 '
+            'are activated. All four English scripts are newly authored and frozen privately '
+            'before recording. The earlier requirement to reuse the first two original '
+            'scripts of every class is superseded for English only. Original inventory, '
+            'protocols, consent, readiness, recordings and reference history remain archived '
+            'or unchanged. Existing English takes cannot silently acquire new prompts.\n\n'
+            'READ remains 20–45 seconds; Russian SPONTANEOUS remains 20–60 seconds. '
+            'WER remains RU ≤20% and EN ≤18%, with actual per-record and per-language '
+            'word/error denominators. EN spontaneous coverage is **NOT_EVALUATED**, with '
+            'zero cases and no WER denominator. An absent slice cannot be reported as a pass. '
+            'English findings cover only these basic readings by one speaker, not general '
+            'English, conversational speech or other speakers. Noise and timestamp accuracy '
+            'also remain **NOT_EVALUATED**.\n\n'
+            'This is a prospective acquisition amendment, not a full Phase A successor. '
+            'Published Phase A v0.1 and earlier amendments remain immutable. A full successor '
+            'still needs the real verified corpus and checked AWS configuration, and must be '
+            'published and refetched before the first AWS evaluation. USD10, privacy and the '
+            'prohibition on 6.3 remain unchanged. No AWS evaluation or automatic microphone '
+            'start is performed. Readiness does not verify actual spoken words.\n\n'
+            'Private scripts, speech, per-record hashes and device identity are excluded '
+            'from this public record. The following JSON is reproduced exactly.\n\n'
+            '```json\n' + json.dumps(record, ensure_ascii=False, indent=2) + '\n```\n')
+
+
 def verify(git):
     phase = json.loads((REPO / PHASE).read_text(encoding='utf-8'))
     frozen = [PHASE, 'docs/stage0/DORA_CLOUD_EVALUATION_PHASE_A_V0_1.md',
@@ -352,20 +409,34 @@ def verify(git):
                 'MOBILE_JSON_MD_PARITY')
     ui_path = REPO / MOBILE_UI
     if ui_path.exists():
+        require(ui_path.read_bytes().replace(b'\r\n', b'\n') ==
+                git_blob(git, MOBILE_UI_COMMIT, MOBILE_UI).replace(b'\r\n', b'\n'),
+                'HISTORICAL_MOBILE_UI_CHANGED')
         ui = json.loads(ui_path.read_text(encoding='utf-8'))
         validate_mobile_ui(ui)
         require(ui['effective_gate_statuses'] == phase['effective_gate_statuses'], 'GATE_PROMOTION')
         for source in ui['tool_bindings']:
-            data = (REPO / source['path']).read_bytes().replace(b'\r\n', b'\n')
+            data = git_blob(git, MOBILE_UI_COMMIT, source['path']).replace(b'\r\n', b'\n')
             require(digest(data) == source['sha256_lf_utf8'], 'MOBILE_UI_SOURCE_BINDING')
         markdown = REPO / 'docs/stage0/DORA_CLOUD_62D_MOBILE_UI_V0_2.md'
         require(markdown.read_text(encoding='utf-8') == render_mobile_ui(ui), 'MOBILE_UI_JSON_MD_PARITY')
+    easy_path = REPO / EASY_EN
+    if easy_path.exists():
+        easy = json.loads(easy_path.read_text(encoding='utf-8'))
+        validate_easy_english(easy)
+        require(easy['effective_gate_statuses'] == phase['effective_gate_statuses'], 'GATE_PROMOTION')
+        for source in easy['tool_bindings']:
+            data = (REPO / source['path']).read_bytes().replace(b'\r\n', b'\n')
+            require(digest(data) == source['sha256_lf_utf8'], 'EASY_EN_SOURCE_BINDING')
+        markdown = REPO / 'docs/stage0/DORA_CLOUD_62D_EASY_ENGLISH_V0_1.md'
+        require(markdown.read_text(encoding='utf-8') == render_easy_english(easy), 'EASY_EN_JSON_MD_PARITY')
     return {'frozen_phase_a': 'UNCHANGED', 'source_bindings': len(phase['sources']),
             'dag': 'PASS', 'gate_count': 39, 'counts': dict(counts),
             'preparation_record': 'VERIFIED' if path.exists() else 'NOT_YET_CREATED',
             'eight_clip_amendment': 'VERIFIED' if amendment_path.exists() else 'NOT_YET_CREATED',
             'mobile_acquisition': 'VERIFIED' if mobile_path.exists() else 'NOT_YET_CREATED',
-            'mobile_ui_v02': 'VERIFIED' if ui_path.exists() else 'NOT_YET_CREATED'}
+            'mobile_ui_v02': 'VERIFIED' if ui_path.exists() else 'NOT_YET_CREATED',
+            'easy_english_v03': 'VERIFIED' if easy_path.exists() else 'NOT_YET_CREATED'}
 
 
 if __name__ == '__main__':

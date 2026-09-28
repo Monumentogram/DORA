@@ -8,6 +8,53 @@ import cloud62d_prepare as p
 
 
 class PreparationTests(unittest.TestCase):
+    def test_easy_english_protocol_preserves_limits_and_marks_missing_coverage(self):
+        record = {'protocol_id': 'dora-owned-easy-en8-v3', 'active_ids': list(p.EASY_EN_IDS),
+                  'composition': {'ru': {'READ': 2, 'SPONTANEOUS': 2},
+                                  'en': {'READ': 4, 'SPONTANEOUS': 0}},
+                  'wer_threshold_percent': {'ru': 20, 'en': 18},
+                  'english_spontaneous': 'NOT_EVALUATED',
+                  'english_scope': 'BASIC_VOCABULARY_READ_ONLY_ONE_OWNER',
+                  'timestamp_accuracy': 'NOT_EVALUATED', 'noise_robustness': 'NOT_EVALUATED',
+                  'phase_a_successor': 'NOT_CREATED', 'phase_b': 'NOT_RUN',
+                  'budget_usd': {'total': 10, 'asr': 2, 'ancillary_tax': 8},
+                  'read_materials': 'PROJECT_AUTHORED_REVISION_FROZEN_BEFORE_RECORDING',
+                  'automatic_microphone_start': False,
+                  'reference_confirmation': 'EXPLICIT_HUMAN',
+                  'prior_corpus_and_readiness': 'PRESERVED_WITH_ARCHIVED_PROVENANCE'}
+        self.assertTrue(hasattr(p, 'validate_easy_english'))
+        p.validate_easy_english(record)
+        for key, value in [('active_ids', list(p.EIGHT_IDS)),
+                           ('english_spontaneous', 'PASS'), ('english_scope', 'ALL_ENGLISH'),
+                           ('wer_threshold_percent', {'ru': 20, 'en': 25}),
+                           ('automatic_microphone_start', True), ('phase_a_successor', 'PASS')]:
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                p.validate_easy_english({**record, key: value})
+
+    def test_easy_english_report_never_claims_unobserved_spontaneous_quality(self):
+        ids = ['ru-read-01', 'ru-read-02', 'ru-spontaneous-01', 'ru-spontaneous-02'] + [
+            f'en-read-{i:02}' for i in range(1, 5)]
+        rows = []
+        for index, case in enumerate(ids):
+            counts = {'substitutions': 0, 'deletions': 0, 'insertions': 0,
+                      'reference_tokens': index + 1}
+            rows.append({'case_id': case, 'state': 'SUCCEEDED', 'raw': counts, 'normalized': counts})
+        report = p.bounded_report(rows, protocol='dora-owned-easy-en8-v3')
+        self.assertEqual([r['case_id'] for r in report['records']], ids)
+        en = report['languages']['en']
+        self.assertEqual(en['normalized']['reference_tokens'], 26)
+        self.assertEqual(en['bounded_quality'], 'PASS')
+        self.assertEqual(en['speech_classes']['spontaneous']['bounded_quality'], 'NOT_EVALUATED')
+        self.assertEqual(en['speech_classes']['spontaneous']['expected_records'], 0)
+        self.assertIsNone(en['speech_classes']['spontaneous']['normalized']['wer_percent'])
+        self.assertEqual(en['threshold_percent'], 18)
+        for protocol in ('unknown', 'dora-owned-reduced8-v2'):
+            with self.assertRaises(ValueError):
+                p.bounded_report(rows, protocol=protocol)
+        with self.assertRaises(ValueError):
+            p.bounded_report([{**rows[-1], 'case_id': 'en-spontaneous-01'}],
+                             protocol='dora-owned-easy-en8-v3')
+
     def test_mobile_ui_revision_cannot_change_corpus_or_infer_human_authority(self):
         record = {'application_id': 'com.monumentogram.dora.stage0.ownedcorpus',
                   'protocol_id': 'dora-owned-reduced8-v2', 'active_ids': list(p.EIGHT_IDS),

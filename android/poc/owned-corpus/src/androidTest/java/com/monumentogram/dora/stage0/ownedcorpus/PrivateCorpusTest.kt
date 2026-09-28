@@ -164,6 +164,135 @@ class PrivateCorpusTest {
     }
 
     @Test
+    fun easyEnglishV3AcceptsExactProfileAndRejectsMismatches() {
+        store.importSeed(easyEnglishSeed())
+        assertFalse(store.recordingEnabled())
+        assertEquals("READ", store.item("en-read-03").getString("speech_class"))
+        assertEquals("READ", store.item("en-read-04").getString("speech_class"))
+        assertFalse(
+            CapturePolicy.eligible(
+                46 * Wav.RATE,
+                store.item("en-read-04").getString("speech_class"),
+            )
+        )
+        assertEquals(20_000_000L, Wav.inspect(store.audio("en-read-03").readBytes()))
+        assertThrows(IllegalArgumentException::class.java) { store.item("en-spontaneous-01") }
+        val invalid =
+            listOf<(JSONObject) -> Unit>(
+                { it.put("protocol_version", "dora-owned-reduced8-v2") },
+                { it.getJSONArray("items").getJSONObject(6).put("id", "en-spontaneous-01") },
+                { it.getJSONArray("items").getJSONObject(6).put("speech_class", "read") },
+                { it.getJSONArray("items").getJSONObject(6).put("language", "ru") },
+                { it.getJSONArray("items").getJSONObject(7).put("id", "en-read-03") },
+            )
+        invalid.forEachIndexed { index, mutation ->
+            val rejected = CorpusStore(File(sandbox, "invalid-v3-$index"))
+            assertThrows(IllegalArgumentException::class.java) {
+                rejected.importSeed(easyEnglishSeed(mutation))
+            }
+            assertFalse(rejected.installed())
+            assertFalse(File(sandbox, "invalid-v3-$index/audio/en-read-03.wav").exists())
+        }
+    }
+
+    private fun easyEnglishSeed(mutate: (JSONObject) -> Unit = {}): File {
+        val data =
+            ZipFile(seed()).use { zip ->
+                JSONObject(
+                    zip.getInputStream(zip.getEntry("seed.json")).bufferedReader().readText()
+                )
+            }
+        val original = data.getJSONArray("items")
+        val items = JSONArray()
+        for (i in 0 until original.length()) {
+            val item = original.getJSONObject(i)
+            if (!item.getString("id").startsWith("en-spontaneous")) items.put(item)
+        }
+        for (index in 3..4) items.put(
+            JSONObject()
+                .put("id", "en-read-0$index")
+                .put("language", "en")
+                .put("speech_class", "READ")
+                .put("material", "SYNTHETIC easy English material")
+                .put("condition", "CLEAN")
+                .put("recording", JSONObject.NULL)
+                .put("reference", JSONObject.NULL)
+        )
+        val audio = wav(20)
+        items
+            .getJSONObject(6)
+            .put(
+                "recording",
+                JSONObject()
+                    .put("audio_path", "audio/en-read-03.wav")
+                    .put("audio_sha256", Wav.sha256(audio))
+                    .put("duration_us", 20_000_000L),
+            )
+        data.put("protocol_version", "dora-owned-easy-en8-v3").put("items", items)
+        mutate(data)
+        return File(sandbox, "seed-v3-${UUID.randomUUID()}.zip").also { archive ->
+            ZipOutputStream(archive.outputStream()).use { zip ->
+                zip.putNextEntry(ZipEntry("seed.json"))
+                zip.write(data.toString().toByteArray())
+                zip.closeEntry()
+                zip.putNextEntry(ZipEntry("audio/en-read-03.wav"))
+                zip.write(audio)
+                zip.closeEntry()
+            }
+        }
+    }
+
+    @Test
+    fun v2ProgressCannotBeReplacedByAV3Seed() {
+        store.importSeed(seed(withAudio = true))
+        store.verifyReference(id, "SYNTHETIC first verified text", true)
+        store.saveDraft(id, "SYNTHETIC corrected text")
+        store.verifyReference(id, "SYNTHETIC corrected text", true)
+        val before = store.state().toString()
+        val original = store.audio(id).readBytes()
+        assertThrows(IllegalArgumentException::class.java) { store.importSeed(easyEnglishSeed()) }
+        assertEquals(before, store.state().toString())
+        assertTrue(original.contentEquals(store.audio(id).readBytes()))
+    }
+
+    @Test
+    fun v3CaptureRecoveryAndExportUseNewEnglishReadIds() {
+        store.importSeed(easyEnglishSeed())
+        activate()
+        val first = store.beginAttempt("en-read-04")
+        first.file.writeBytes(wav(1))
+        store = CorpusStore(File(sandbox, "store"))
+        assertEquals(
+            "INTERRUPTED_PROCESS",
+            store.state().getJSONArray("rejected").getJSONObject(0).getString("reason"),
+        )
+        val retry = store.beginAttempt("en-read-04")
+        retry.file.writeBytes(wav(20))
+        assertTrue(store.completeAttempt(retry, null))
+        for (case in listOf("en-read-03", "en-read-04")) store.verifyReference(
+            case,
+            "SYNTHETIC actual words",
+            true,
+        )
+        val archive = store.exportArchive(File(sandbox, "v3-export.zip"))
+        ZipFile(archive).use { zip ->
+            val records =
+                JSONObject(
+                        zip.getInputStream(zip.getEntry("export.json")).bufferedReader().readText()
+                    )
+                    .getJSONArray("records")
+            assertEquals(
+                setOf("en-read-03", "en-read-04"),
+                (0 until records.length())
+                    .map { records.getJSONObject(it).getString("id") }
+                    .toSet(),
+            )
+            assertNotNull(zip.getEntry("audio/en-read-03.wav"))
+            assertNotNull(zip.getEntry("audio/en-read-04.wav"))
+        }
+    }
+
+    @Test
     fun enabledSeedAndRejectedArchiveNeverInstallOrPoisonAudio() {
         assertThrows(IllegalArgumentException::class.java) {
             store.importSeed(seed(enabled = true))
@@ -367,7 +496,7 @@ class PrivateCorpusTest {
             }
             val records = session.store.state().getJSONObject("records")
             assertEquals(8, records.length())
-            CorpusStore.IDS.forEach { case ->
+            session.store.activeIds().forEach { case ->
                 assertTrue(records.getJSONObject(case).getBoolean("human_verified_reference"))
                 assertEquals(20_000_000L, Wav.inspect(session.store.audio(case).readBytes()))
             }
@@ -383,7 +512,7 @@ class PrivateCorpusTest {
             activity.window.decorView.findViewWithTag<Button>("more").performClick()
             val records = session.store.state().getJSONObject("records")
             assertTrue(
-                CorpusStore.IDS.any { case ->
+                session.store.activeIds().any { case ->
                     records.getJSONObject(case).getString("draft_text") ==
                         "SYNTHETIC actual speech $index corrected"
                 }
@@ -401,7 +530,7 @@ class PrivateCorpusTest {
             assertTrue(activity.window.decorView.findViewWithTag<Button>("primary").performClick())
             val records = session.store.state().getJSONObject("records")
             val verified =
-                CorpusStore.IDS.count {
+                session.store.activeIds().count {
                     records.getJSONObject(it).getBoolean("human_verified_reference")
                 }
             val status = activity.window.decorView.findViewWithTag<TextView>("status").text
@@ -451,7 +580,7 @@ class PrivateCorpusTest {
         session.store.importSeed(archive)
         val activation = File(context.filesDir, "cross-inbox/activation.json")
         session.store.activate(activation)
-        CorpusStore.IDS.sorted().forEachIndexed { index, case ->
+        session.store.activeIds().sorted().forEachIndexed { index, case ->
             val attempt = session.store.beginAttempt(case)
             val pcm = ByteArray(20 * Wav.RATE * 2)
             for (frame in 0 until 20 * Wav.RATE) pcm[frame * 2] = (index + 1).toByte()
@@ -499,7 +628,7 @@ class PrivateCorpusTest {
             }
         }
         crossStore.activate(activation)
-        for ((index, case) in CorpusStore.IDS.sorted().withIndex()) {
+        for ((index, case) in crossStore.activeIds().sorted().withIndex()) {
             val attempt = crossStore.beginAttempt(case)
             val pcm = ByteArray(20 * Wav.RATE * 2)
             for (frame in 0 until 20 * Wav.RATE) pcm[frame * 2] = (index + 1).toByte()

@@ -1,4 +1,4 @@
-# Private owner-corpus recorder — reduced eight-clip protocol
+# Private owner-corpus recorder — eight-clip protocols
 
 Run `launch.cmd` on the prepared Windows host. It finds the installed Python runtime,
 starts a loopback-only server and opens the browser. Keep its console open while
@@ -6,18 +6,35 @@ working; closing it stops the server. The default private corpus is a sibling of
 the repository, never inside Git. A frozen private inventory must already exist.
 The launcher neither installs packages nor invokes AWS.
 
-The active acquisition protocol evaluates exactly eight clips from one owner: two READ and
-two SPONTANEOUS in Russian, and the same in English. It uses all eight, with no
-reserves and no noisy slice. Noise and timestamps are `NOT_EVALUATED`; results
+The prospective `dora-owned-easy-en8-v3` profile evaluates exactly eight clips from
+one owner: two READ and two SPONTANEOUS in Russian, and four simple READ in English.
+English spontaneous speech is `NOT_EVALUATED`. The prior `dora-owned-reduced8-v2`
+profile remains supported with two READ and two SPONTANEOUS in each language.
+Both use all eight, with no reserves and no noisy slice. Noise and timestamps are `NOT_EVALUATED`; results
 cannot establish quality for other speakers. The original protocol, private
 inventory and acquisition history remain preserved by the versioned migration.
 
-Recording is deferred. Microphone selection, testing and recording remain disabled
+Recording is initially deferred. Microphone selection, testing and recording remain disabled
 until the owner explicitly says “Готов записывать” in the chat and the authorized
 local resume operation enables acquisition. The HTTP capture endpoint and backend
 also reject deferred captures. The page has no self-service enable endpoint, and
 launching the recorder does not enable recording. Existing consent and saved work
 are preserved; no new AWS login is requested by this tool.
+
+The local operator applies v3 explicitly with
+`CorpusStore.migrate_easy_english(materials, confirmed=True)`, where `materials`
+contains exactly four private texts keyed by `en-read-01` through `en-read-04`.
+Each READ text contains 45–115 normalized words. This holds the recorder's process
+lock, requires the v2 predecessor, and rejects existing English recordings or
+attempt history, provider execution, or finalization. Original inventory bytes,
+v2 overlay, archived state, Russian work, consent and recording readiness survive.
+The v3 material overrides and hashes are frozen in a new private overlay. Repeating
+the identical migration is safe; changing its frozen texts is rejected. An interrupted
+migration fences acquisition until the same operation completes.
+
+Android seeds use the current profile and materials. Previously issued v2 seeds and
+exports cannot activate or import after v3 migration. New seeds always start with
+recording disabled; separately bound activation requires explicit owner readiness.
 
 1. Retain the previously confirmed speaker/processor attestation; confirm it only
    if it has not yet been supplied.
@@ -60,7 +77,7 @@ window or close its console before relaunching. Crashes release the lock automat
 Run from the repository with Python 3.12:
 
 ```text
-python -m unittest tools.cloud62d_owned.test_corpus tools.cloud62d_owned.test_server
+python -m unittest tools.cloud62d_owned.test_corpus tools.cloud62d_owned.test_mobile_bridge tools.cloud62d_owned.test_server
 node tools/cloud62d_owned/test_audio.mjs
 ```
 
@@ -79,6 +96,6 @@ tests do not use or modify the actual private corpus. Real recordings and actual
 verification remain personal Owner actions after explicit readiness. Independent
 word timing is not required or evaluated in the active eight-clip protocol.
 
-The [prospective protocol amendment](../../docs/stage0/DORA_CLOUD_62D_EIGHT_CLIP_PROTOCOL_V0_1.md)
+The [original eight-clip amendment](../../docs/stage0/DORA_CLOUD_62D_EIGHT_CLIP_PROTOCOL_V0_1.md)
 names the replaced requirements and limitations. It is not the full Phase A successor;
 AWS configuration, live preflight and publication gates remain separate.

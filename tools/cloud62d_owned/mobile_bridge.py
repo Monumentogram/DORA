@@ -17,7 +17,7 @@ import zipfile
 
 from tools.cloud62d_owned.corpus import (
     ATTESTATION_TEXT, CONVERSION_RECIPE as BROWSER_CONVERSION_RECIPE,
-    NATIVE_CONVERSION_RECIPE, REDUCED_IDS, REDUCED_PROTOCOL, CorpusStore,
+    NATIVE_CONVERSION_RECIPE, REDUCED_IDS, REDUCED_PROTOCOL, EASY_EN_PROTOCOL, CorpusStore,
     digest, encoded, normalize, require, utc_now, validate_wav,
 )
 from tools.cloud62d_owned.server import _ProcessLock
@@ -47,7 +47,7 @@ def _json(raw):
 
 
 def _fingerprints(state):
-    return {case: digest(encoded(state['records'].get(case))) for case in REDUCED_IDS}
+    return {case: digest(encoded(state['records'].get(case))) for case in CorpusStore._active_ids(state)}
 
 
 def _ready_state(store, *, pending=False):
@@ -70,7 +70,7 @@ def _load_seed(store, seed_id):
     binding = _json(store._path(base + '/binding.json').read_bytes())
     require(digest(raw) == binding['seed_sha256'], 'PRIVATE_SEED_HASH_MISMATCH')
     seed = _json(raw)
-    require(seed['seed_id'] == seed_id and seed['protocol_version'] == REDUCED_PROTOCOL,
+    require(seed['seed_id'] == seed_id and seed['protocol_version'] in (REDUCED_PROTOCOL, EASY_EN_PROTOCOL),
             'PRIVATE_SEED_BINDING_MISMATCH')
     return base, seed, binding
 
@@ -100,7 +100,7 @@ def create_seed(store):
                     row['reference'] = {'text': record['reference']['text'], 'HUMAN_VERIFIED_REFERENCE': True}
             items.append(row)
         seed = {'schema_version': '1.0', 'app': APP, 'seed_id': seed_id,
-                'protocol_version': REDUCED_PROTOCOL, 'inventory_sha256': state['inventory_sha256'],
+                'protocol_version': state['protocol_version'], 'inventory_sha256': state['inventory_sha256'],
                 'protocol_overlay_sha256': state['protocol_overlay_sha256'],
                 'recording_enabled': False,
                 'attestation': {**state['attestation'], 'text': ATTESTATION_TEXT}, 'items': items}
@@ -176,7 +176,7 @@ def _read_archive(raw):
         raise ValueError('INVALID_EXPORT_ZIP') from None
 
 
-def _validate_export(files):
+def _validate_export(files, active_ids=REDUCED_IDS):
     manifest = _json(files['export.json'])
     keys = {'schema_version', 'app', 'seed_id', 'seed_sha256', 'inventory_sha256',
             'protocol_overlay_sha256', 'export_revision', 'records'}
@@ -197,7 +197,7 @@ def _validate_export(files):
         required = {'id', 'audio_path', 'audio_sha256', 'reference_text', 'human_verified_reference'}
         require(type(row) is dict and required <= set(row) <= required | {'reference_revisions'}, 'EXPORT_RECORD_SHAPE')
         case = row['id']
-        require(case in REDUCED_IDS and case not in seen, 'UNKNOWN_OR_DUPLICATE_CASE')
+        require(case in active_ids and case not in seen, 'UNKNOWN_OR_DUPLICATE_CASE')
         seen.add(case)
         require(row['audio_path'] == f'audio/{case}.wav' and row['audio_path'] in files, 'AUDIO_BINDING_MISMATCH')
         expected.add(row['audio_path'])
@@ -221,7 +221,7 @@ def _validate_export(files):
         require(type(row) is dict and set(row) == {'attempt_id', 'id', 'audio_path', 'audio_sha256', 'reason'},
                 'REJECTED_ATTEMPT_SHAPE')
         require(type(row['attempt_id']) is str and re.fullmatch(r'[0-9a-f]{32}', row['attempt_id'])
-                and row['attempt_id'] not in attempt_ids and row['id'] in REDUCED_IDS, 'REJECTED_ATTEMPT_ID')
+                and row['attempt_id'] not in attempt_ids and row['id'] in active_ids, 'REJECTED_ATTEMPT_ID')
         attempt_ids.add(row['attempt_id'])
         require(row['audio_path'] == f'rejected/{row["attempt_id"]}.wav' and row['audio_path'] in files,
                 'REJECTED_ATTEMPT_PATH')
@@ -244,7 +244,7 @@ def _plan_import(store, state, manifest, files, package_sha):
         data = files[row['audio_path']]
         audio = validate_wav(data)
         require(all(other == case or record['recording']['uploaded_wav_sha256'] != audio['sha256']
-                    for other, record in after['records'].items() if other in REDUCED_IDS), 'DUPLICATE_SOURCE')
+                    for other, record in after['records'].items() if other in store._active_ids(state)), 'DUPLICATE_SOURCE')
         maximum = 45_000_000 if '-read-' in case else 60_000_000
         require(20_000_000 <= audio['duration_us'] <= maximum, 'RECORDING_DURATION_OUT_OF_RANGE')
         old = after['records'].get(case)
@@ -310,7 +310,8 @@ def _complete_transaction(store, base, transaction, files):
     require(current_sha in (transaction['before_state_sha256'], transaction['after_state_sha256']),
             'IMPORT_INTERRUPTED_STATE_CONFLICT')
     for target, member in transaction['writes'].items():
-        require(re.fullmatch(r'(source|audio)/(ru|en)-(read|spontaneous)-0[12]\.wav', target), 'IMPORT_PLAN_PATH')
+        require(target in {f'{area}/{case}.wav' for area in ('source', 'audio')
+                           for case in store._active_ids(transaction['after_state'])}, 'IMPORT_PLAN_PATH')
         require(member in files and target.split('/')[-1] == member.split('/')[-1], 'IMPORT_PLAN_PATH')
         store._write(target, files[member], immutable=True)
     if current_sha == transaction['before_state_sha256']:
@@ -333,11 +334,17 @@ def import_export(store, package):
         base = 'mobile/incoming/' + package_sha
         store._write(base + '/package.zip', raw, immutable=True)
         files = _read_archive(raw)
-        manifest = _validate_export(files)
-        seed_base, seed, binding = _load_seed(store, manifest['seed_id'])
+        header = _json(files['export.json'])
+        require(type(header) is dict and 'seed_id' in header, 'EXPORT_MANIFEST_SHAPE')
+        seed_base, seed, binding = _load_seed(store, header['seed_id'])
+        manifest = _validate_export(files, store._active_ids(seed))
         require(all(manifest[k] == binding[k] for k in ('seed_sha256', 'inventory_sha256', 'protocol_overlay_sha256')),
                 'SEED_BINDING_MISMATCH')
         pending_exists = store._path('mobile-import-pending.json').exists()
+        current = store._load(allow_pending_mobile_import=pending_exists)
+        require(seed['protocol_version'] == current.get('protocol_version') and
+                seed['inventory_sha256'] == current['inventory_sha256'] and
+                seed['protocol_overlay_sha256'] == current['protocol_overlay_sha256'], 'SEED_BINDING_MISMATCH')
         if pending_exists:
             pending = _json(store._path('mobile-import-pending.json').read_bytes())
             require(pending['package_sha256'] == package_sha, 'MOBILE_IMPORT_INCOMPLETE_RETRY_SAME_PACKAGE')
