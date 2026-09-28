@@ -8,6 +8,28 @@ import cloud62d_prepare as p
 
 
 class PreparationTests(unittest.TestCase):
+    def test_mobile_ui_revision_cannot_change_corpus_or_infer_human_authority(self):
+        record = {'application_id': 'com.monumentogram.dora.stage0.ownedcorpus',
+                  'protocol_id': 'dora-owned-reduced8-v2', 'active_ids': list(p.EIGHT_IDS),
+                  'wer_threshold_percent': {'ru': 20, 'en': 18},
+                  'timestamp_accuracy': 'NOT_EVALUATED', 'noise_robustness': 'NOT_EVALUATED',
+                  'phase_a_successor': 'NOT_CREATED', 'phase_b': 'NOT_RUN',
+                  'budget_usd': {'total': 10, 'asr': 2, 'ancillary_tax': 8},
+                  'automatic_microphone_start': False,
+                  'activation': 'EXISTING_OWNER_READINESS_AND_MATCHING_SEED_REQUIRED',
+                  'reference_confirmation': 'EXPLICIT_HUMAN',
+                  'primary_action': 'FIXED_OUTSIDE_SCROLLING_CONTENT',
+                  'owner_reset': 'ARCHIVE_OLD_PRESERVE_CONSENT_MATERIALS_AND_EXISTING_READINESS'}
+        self.assertTrue(hasattr(p, 'validate_mobile_ui'), 'UI revision guard is missing')
+        p.validate_mobile_ui(record)
+        for key, value in [('active_ids', list(p.EIGHT_IDS[:-1])),
+                           ('automatic_microphone_start', True), ('activation', 'AUTOMATIC_AUTHORITY'),
+                           ('reference_confirmation', 'INFERRED_FROM_READINESS'),
+                           ('phase_a_successor', 'PASS'), ('phase_b', 'PASS'),
+                           ('noise_robustness', 'PASS'), ('owner_reset', 'DELETE_HISTORY')]:
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                p.validate_mobile_ui({**record, key: value})
+
     def test_mobile_cannot_unlock_capture_or_promote_unmeasured_properties(self):
         record = json.loads((p.REPO / p.AMENDMENT).read_text(encoding='utf-8'))
         record.update(application_id='com.monumentogram.dora.stage0.ownedcorpus',

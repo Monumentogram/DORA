@@ -3,7 +3,16 @@ package com.monumentogram.dora.stage0.ownedcorpus
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Rect
+import android.os.SystemClock
+import android.view.View
+import android.view.accessibility.AccessibilityNodeInfo
 import android.widget.Button
+import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import java.io.File
@@ -266,7 +275,7 @@ class PrivateCorpusTest {
             ) as MainActivity
         try {
             instrumentation.runOnMainSync {
-                val record = activity.window.decorView.findViewWithTag<Button>("record")
+                val record = activity.window.decorView.findViewWithTag<Button>("primary")
                 assertNotNull(record)
                 assertFalse(record.isEnabled)
                 assertEquals(
@@ -277,6 +286,202 @@ class PrivateCorpusTest {
         } finally {
             instrumentation.runOnMainSync { activity.finish() }
         }
+    }
+
+    @Test
+    fun primaryActionStaysOutsideLongScrollingTask() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val context = instrumentation.targetContext
+        val activity =
+            instrumentation.startActivitySync(
+                Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            ) as MainActivity
+        try {
+            instrumentation.runOnMainSync {
+                val primary = activity.window.decorView.findViewWithTag<Button>("primary")
+                assertNotNull("One persistent primary action is required", primary)
+                var ancestor = primary.parent
+                while (ancestor is View) {
+                    assertFalse("Primary action must not scroll away", ancestor is ScrollView)
+                    ancestor = ancestor.parent
+                }
+                val content =
+                    activity.window.decorView.findViewWithTag<LinearLayout>("task_content")
+                assertNotNull(content)
+                content.addView(
+                    TextView(activity).apply { text = "Synthetic long task\n".repeat(100) }
+                )
+            }
+            instrumentation.waitForIdleSync()
+            val before = Rect()
+            instrumentation.runOnMainSync {
+                val primary = activity.window.decorView.findViewWithTag<Button>("primary")
+                assertTrue(primary.getGlobalVisibleRect(before))
+                assertEquals(primary.height, before.height())
+                activity.window.decorView
+                    .findViewWithTag<ScrollView>("task_scroll")
+                    .fullScroll(View.FOCUS_DOWN)
+            }
+            instrumentation.waitForIdleSync()
+            instrumentation.runOnMainSync {
+                val after = Rect()
+                activity.window.decorView
+                    .findViewWithTag<Button>("primary")
+                    .getGlobalVisibleRect(after)
+                assertEquals(before, after)
+            }
+        } finally {
+            instrumentation.runOnMainSync { activity.finish() }
+        }
+    }
+
+    @Test
+    fun optionalGuidedEightTaskFlowRequiresEveryHumanCheck() {
+        assumeTrue(InstrumentationRegistry.getArguments().getString("guidedUiSeed") == "true")
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        val context = instrumentation.targetContext
+        val session = prepareSyntheticUiSession()
+        val activity =
+            instrumentation.startActivitySync(
+                Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            ) as MainActivity
+        try {
+            instrumentation.runOnMainSync {
+                assertTrue(
+                    "Startup must apply the bound activation",
+                    session.store.recordingEnabled(),
+                )
+                assertFalse(session.capture.running)
+                assertEquals(0, session.capture.frames)
+                assertEquals(
+                    PackageManager.PERMISSION_DENIED,
+                    activity.checkSelfPermission(Manifest.permission.RECORD_AUDIO),
+                )
+            }
+            repeat(8) { index -> completeSyntheticUiTask(activity, session, index) }
+            instrumentation.runOnMainSync {
+                assertEquals(
+                    "Закрыть",
+                    activity.window.decorView.findViewWithTag<Button>("primary").text.toString(),
+                )
+            }
+            val records = session.store.state().getJSONObject("records")
+            assertEquals(8, records.length())
+            CorpusStore.IDS.forEach { case ->
+                assertTrue(records.getJSONObject(case).getBoolean("human_verified_reference"))
+                assertEquals(20_000_000L, Wav.inspect(session.store.audio(case).readBytes()))
+            }
+        } finally {
+            instrumentation.runOnMainSync { activity.finish() }
+        }
+    }
+
+    private fun completeSyntheticUiTask(activity: MainActivity, session: OwnedSession, index: Int) {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        instrumentation.runOnMainSync {
+            fillSyntheticUiTask(activity, index)
+            activity.window.decorView.findViewWithTag<Button>("more").performClick()
+            val records = session.store.state().getJSONObject("records")
+            assertTrue(
+                CorpusStore.IDS.any { case ->
+                    records.getJSONObject(case).getString("draft_text") ==
+                        "SYNTHETIC actual speech $index corrected"
+                }
+            )
+        }
+        instrumentation.waitForIdleSync()
+        closeServiceDialog()
+        instrumentation.waitForIdleSync()
+        instrumentation.runOnMainSync {
+            assertFalse(
+                "Closing the service dialog must not finish the Activity",
+                activity.isFinishing,
+            )
+            assertFalse("Activity must still own its export executor", activity.isDestroyed)
+            assertTrue(activity.window.decorView.findViewWithTag<Button>("primary").performClick())
+            val records = session.store.state().getJSONObject("records")
+            val verified =
+                CorpusStore.IDS.count {
+                    records.getJSONObject(it).getBoolean("human_verified_reference")
+                }
+            val status = activity.window.decorView.findViewWithTag<TextView>("status").text
+            assertEquals(
+                "Task $index failed to verify; UI status: $status",
+                index + 1,
+                verified,
+            )
+        }
+        instrumentation.waitForIdleSync()
+    }
+
+    private fun closeServiceDialog() {
+        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        val deadline = SystemClock.uptimeMillis() + 5_000
+        var clicked = false
+        while (!clicked && SystemClock.uptimeMillis() < deadline) {
+            val close =
+                automation.rootInActiveWindow
+                    ?.findAccessibilityNodeInfosByText("ЗАКРЫТЬ")
+                    ?.firstOrNull {
+                        it.text?.toString().equals("Закрыть", ignoreCase = true) && it.isClickable
+                    }
+            clicked = close?.performAction(AccessibilityNodeInfo.ACTION_CLICK) == true
+            if (!clicked) SystemClock.sleep(20)
+        }
+        assertTrue("The active service dialog must expose its Close button", clicked)
+    }
+
+    private fun prepareSyntheticUiSession(): OwnedSession {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val session = OwnedSession.obtain(context, File(context.filesDir, "owned"))
+        require(!session.store.installed()) { "UI_TEST_REQUIRES_EMPTY_SYNTHETIC_EMULATOR" }
+        val archive = File(context.filesDir, "cross-inbox/seed.zip")
+        ZipFile(archive).use { zip ->
+            val seed =
+                JSONObject(
+                    zip.getInputStream(zip.getEntry("seed.json")).bufferedReader().readText()
+                )
+            val items = seed.getJSONArray("items")
+            for (i in 0 until items.length()) {
+                require(items.getJSONObject(i).getString("material").contains("SYNTHETIC")) {
+                    "UI_TEST_REQUIRES_SYNTHETIC_MATERIAL"
+                }
+            }
+        }
+        session.store.importSeed(archive)
+        val activation = File(context.filesDir, "cross-inbox/activation.json")
+        session.store.activate(activation)
+        CorpusStore.IDS.sorted().forEachIndexed { index, case ->
+            val attempt = session.store.beginAttempt(case)
+            val pcm = ByteArray(20 * Wav.RATE * 2)
+            for (frame in 0 until 20 * Wav.RATE) pcm[frame * 2] = (index + 1).toByte()
+            attempt.file.writeBytes(Wav.header(20 * Wav.RATE) + pcm)
+            assertTrue(session.store.completeAttempt(attempt, null))
+        }
+        // Exercise automatic bound activation with saved synthetic takes, without touching the mic.
+        val stateFile = File(context.filesDir, "owned/state.json")
+        val state = JSONObject(stateFile.readText()).put("recording_enabled", false)
+        stateFile.writeText(state.toString())
+        File(context.filesDir, "inbox").mkdirs()
+        activation.copyTo(File(context.filesDir, "inbox/activation.json"))
+        return session
+    }
+
+    private fun fillSyntheticUiTask(activity: MainActivity, index: Int) {
+        val root = activity.window.decorView
+        val reference = root.findViewWithTag<EditText>("reference")
+        val check = root.findViewWithTag<CheckBox>("human_confirmation")
+        val primary = root.findViewWithTag<Button>("primary")
+        assertNotNull(reference)
+        assertFalse(check.isChecked)
+        assertFalse(primary.isEnabled)
+        reference.setText("SYNTHETIC actual speech $index")
+        check.isChecked = true
+        assertTrue(primary.isEnabled)
+        reference.append(" corrected")
+        assertFalse(check.isChecked)
+        assertFalse(primary.isEnabled)
+        check.isChecked = true
     }
 
     @Test

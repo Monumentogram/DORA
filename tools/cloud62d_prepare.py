@@ -21,6 +21,8 @@ PREPARATION_COMMIT = 'c98856e25f07ef27aa0121c6458a5d3436fc574a'
 AMENDMENT = 'docs/contracts/DORA_CLOUD_62D_EIGHT_CLIP_PROTOCOL_V0_1.json'
 AMENDMENT_COMMIT = 'e0d1479333122166192b5f6a5f27813d9eb86f09'
 MOBILE = 'docs/contracts/DORA_CLOUD_62D_MOBILE_ACQUISITION_V0_1.json'
+MOBILE_COMMIT = '6e814b699979798e428f27123642a55e12de455f'
+MOBILE_UI = 'docs/contracts/DORA_CLOUD_62D_MOBILE_UI_V0_2.json'
 EIGHT_IDS = tuple(f'{lang}-{kind}-{n:02}' for lang in ('ru', 'en')
                   for kind in ('read', 'spontaneous') for n in (1, 2))
 
@@ -248,6 +250,37 @@ def render_mobile(record):
             '```json\n' + json.dumps(record, ensure_ascii=False, indent=2) + '\n```\n')
 
 
+def validate_mobile_ui(record):
+    expected = {'application_id': 'com.monumentogram.dora.stage0.ownedcorpus',
+                'protocol_id': 'dora-owned-reduced8-v2', 'active_ids': list(EIGHT_IDS),
+                'wer_threshold_percent': {'ru': 20, 'en': 18},
+                'timestamp_accuracy': 'NOT_EVALUATED', 'noise_robustness': 'NOT_EVALUATED',
+                'phase_a_successor': 'NOT_CREATED', 'phase_b': 'NOT_RUN',
+                'budget_usd': {'total': 10, 'asr': 2, 'ancillary_tax': 8},
+                'automatic_microphone_start': False,
+                'activation': 'EXISTING_OWNER_READINESS_AND_MATCHING_SEED_REQUIRED',
+                'reference_confirmation': 'EXPLICIT_HUMAN',
+                'primary_action': 'FIXED_OUTSIDE_SCROLLING_CONTENT',
+                'owner_reset': 'ARCHIVE_OLD_PRESERVE_CONSENT_MATERIALS_AND_EXISTING_READINESS'}
+    for key, value in expected.items():
+        require(record.get(key) == value, 'MOBILE_UI_SCOPE_' + key.upper())
+
+
+def render_mobile_ui(record):
+    return ('# DORA owned eight: guided mobile UI v0.2\n\n'
+            'Owner request: reset current progress and make the buttons understandable. '
+            'The primary action stays visible outside the scrolling task text. The flow is '
+            'task, recording, playback, personal word verification, then the next task. '
+            'Service controls are secondary. Existing explicit readiness is preserved through '
+            'the archived reset; only a matching private activation can enable capture. '
+            'Activation never starts the microphone or confirms words.\n\n'
+            'Historical Phase A, corpus-size amendment and mobile v0.1 evidence remain unchanged. '
+            'This is acquisition UI evidence, not a complete Phase A successor or AWS admission. '
+            'The single-speaker eight-record limitation, unmeasured noise/timing properties, '
+            'USD10 bound and prohibition on 6.3 remain in effect. No private words or files belong here.\n\n'
+            '```json\n' + json.dumps(record, ensure_ascii=False, indent=2) + '\n```\n')
+
+
 def verify(git):
     phase = json.loads((REPO / PHASE).read_text(encoding='utf-8'))
     frozen = [PHASE, 'docs/stage0/DORA_CLOUD_EVALUATION_PHASE_A_V0_1.md',
@@ -304,21 +337,35 @@ def verify(git):
                 'AMENDMENT_JSON_MD_PARITY')
     mobile_path = REPO / MOBILE
     if mobile_path.exists():
+        require(mobile_path.read_bytes().replace(b'\r\n', b'\n') ==
+                git_blob(git, MOBILE_COMMIT, MOBILE).replace(b'\r\n', b'\n'),
+                'HISTORICAL_MOBILE_CHANGED')
         mobile = json.loads(mobile_path.read_text(encoding='utf-8'))
         validate_mobile(mobile)
         require(mobile['effective_gate_statuses'] == phase['effective_gate_statuses'],
                 'GATE_PROMOTION')
         for source in mobile['tool_bindings']:
-            data = (REPO / source['path']).read_bytes().replace(b'\r\n', b'\n')
+            data = git_blob(git, MOBILE_COMMIT, source['path']).replace(b'\r\n', b'\n')
             require(digest(data) == source['sha256_lf_utf8'], 'MOBILE_SOURCE_BINDING')
         markdown = REPO / 'docs/stage0/DORA_CLOUD_62D_MOBILE_EVIDENCE_V0_1.md'
         require(markdown.read_text(encoding='utf-8') == render_mobile(mobile),
                 'MOBILE_JSON_MD_PARITY')
+    ui_path = REPO / MOBILE_UI
+    if ui_path.exists():
+        ui = json.loads(ui_path.read_text(encoding='utf-8'))
+        validate_mobile_ui(ui)
+        require(ui['effective_gate_statuses'] == phase['effective_gate_statuses'], 'GATE_PROMOTION')
+        for source in ui['tool_bindings']:
+            data = (REPO / source['path']).read_bytes().replace(b'\r\n', b'\n')
+            require(digest(data) == source['sha256_lf_utf8'], 'MOBILE_UI_SOURCE_BINDING')
+        markdown = REPO / 'docs/stage0/DORA_CLOUD_62D_MOBILE_UI_V0_2.md'
+        require(markdown.read_text(encoding='utf-8') == render_mobile_ui(ui), 'MOBILE_UI_JSON_MD_PARITY')
     return {'frozen_phase_a': 'UNCHANGED', 'source_bindings': len(phase['sources']),
             'dag': 'PASS', 'gate_count': 39, 'counts': dict(counts),
             'preparation_record': 'VERIFIED' if path.exists() else 'NOT_YET_CREATED',
             'eight_clip_amendment': 'VERIFIED' if amendment_path.exists() else 'NOT_YET_CREATED',
-            'mobile_acquisition': 'VERIFIED' if mobile_path.exists() else 'NOT_YET_CREATED'}
+            'mobile_acquisition': 'VERIFIED' if mobile_path.exists() else 'NOT_YET_CREATED',
+            'mobile_ui_v02': 'VERIFIED' if ui_path.exists() else 'NOT_YET_CREATED'}
 
 
 if __name__ == '__main__':

@@ -7,8 +7,8 @@ android {
 
     defaultConfig {
         applicationId = "com.monumentogram.dora.stage0.ownedcorpus"
-        versionCode = 1
-        versionName = "0.1.0-owned-eight"
+        versionCode = 2
+        versionName = "0.2.0-owned-eight"
     }
 
     buildFeatures {

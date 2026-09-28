@@ -4,8 +4,8 @@ import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.pm.PackageManager
-import android.content.res.ColorStateList
 import android.media.MediaPlayer
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -13,59 +13,61 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.view.WindowManager
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ProgressBar
-import android.widget.ScrollView
-import android.widget.Spinner
 import android.widget.TextView
 import java.io.File
 import java.util.Locale
 import java.util.concurrent.Executors
 import org.json.JSONObject
 
-// Native lifecycle and bounded view factories stay together; business limits live in CapturePolicy.
+// Native lifecycle and view actions stay together; capture and persistence remain separate.
 @Suppress("TooManyFunctions", "MagicNumber")
 class MainActivity : Activity() {
     private lateinit var store: CorpusStore
     private lateinit var capture: AudioCapture
-    private lateinit var content: LinearLayout
-    private lateinit var statusView: TextView
+    private lateinit var page: GuidedPage
     private var reference: EditText? = null
     private var humanCheck: CheckBox? = null
-    private var startButton: Button? = null
-    private var stopButton: Button? = null
+    private var playbackButton: Button? = null
     private var level: ProgressBar? = null
     private var elapsed: TextView? = null
     private var currentId: String? = null
+    private var editing = false
+    private var completed = false
     private var foreground = false
     private var rendering = false
     private var player: MediaPlayer? = null
     private val handler = Handler(Looper.getMainLooper())
     private val io = Executors.newSingleThreadExecutor()
     private var draftSave: Runnable? = null
-    private val controls = mutableListOf<View>()
     private var lastStatus = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) window.setDecorFitsSystemWindows(false)
+        window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         val session = OwnedSession.obtain(this, File(filesDir, "owned"))
         store = session.store
         capture = session.capture
         currentId = savedInstanceState?.getString("case_id")
-        if (!store.installed() && File(filesDir, "inbox/seed.zip").isFile) {
-            try {
-                store.importSeed(File(filesDir, "inbox/seed.zip"))
-            } catch (_: Exception) {
-                lastStatus =
-                    "Не удалось проверить пакет заданий. Компьютер должен передать исходный пакет ещё раз."
-            }
-        }
+        editing = savedInstanceState?.getBoolean("editing") ?: false
+        completed = savedInstanceState?.getBoolean("completed") ?: false
+        restorePrivateInbox()
         render()
+    }
+
+    private fun restorePrivateInbox() = safely {
+        val archive = File(filesDir, "inbox/seed.zip")
+        if (!store.installed() && archive.isFile) store.importSeed(archive)
+        val activation = File(filesDir, "inbox/activation.json")
+        if (store.installed() && !store.recordingEnabled() && activation.isFile) {
+            store.activate(activation)
+        }
     }
 
     override fun onResume() {
@@ -77,9 +79,8 @@ class MainActivity : Activity() {
     private fun waitForInterruptedWorker() {
         if (!foreground || isDestroyed) return
         if (capture.running) {
-            controls.forEach { it.isEnabled = false }
-            stopButton?.isEnabled = false
-            message("Завершаем предыдущую попытку и сохраняем исходный звук…")
+            page.primary.isEnabled = false
+            message("Сохраняем прерванную попытку…")
             handler.postDelayed({ waitForInterruptedWorker() }, 100)
         } else {
             render()
@@ -104,432 +105,434 @@ class MainActivity : Activity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString("case_id", currentId)
+        outState.putBoolean("editing", editing)
+        outState.putBoolean("completed", completed)
         super.onSaveInstanceState(outState)
     }
 
-    private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
-
-    private fun text(value: String, size: Float = 16f): TextView =
-        TextView(this).apply {
-            text = value
-            textSize = size
-            setTextColor(getColor(R.color.owned_on_surface))
-            setPadding(0, dp(8), 0, dp(8))
-            setLineSpacing(dp(3).toFloat(), 1f)
-        }
-
-    // User actions cross platform and private-storage boundaries; failures remain visible and
-    // closed.
+    // UI and private-storage boundaries fail closed while retaining their previous saved data.
     @Suppress("TooGenericExceptionCaught")
-    private fun button(label: String, tag: String? = null, action: () -> Unit): Button =
-        Button(this).apply {
-            text = label
-            textSize = 16f
-            isAllCaps = false
-            minHeight = dp(52)
-            setTextColor(getColor(R.color.owned_on_primary))
-            backgroundTintList = ColorStateList.valueOf(getColor(R.color.owned_primary))
-            this.tag = tag
-            setOnClickListener {
-                try {
-                    action()
-                } catch (error: Exception) {
-                    showError(error)
-                }
-            }
-            layoutParams =
-                LinearLayout.LayoutParams(-1, -2).apply {
-                    topMargin = dp(8)
-                    bottomMargin = dp(8)
-                }
+    private fun safely(action: () -> Unit) {
+        try {
+            action()
+        } catch (error: Exception) {
+            val code =
+                error.message.orEmpty().takeIf { Regex("[A-Z_]{1,80}").matches(it) }
+                    ?: "LOCAL_OPERATION_FAILED"
+            message("Не удалось выполнить действие: $code. Данные сохранены.", true)
         }
-
-    private fun addControl(view: View) {
-        content.addView(view)
-        controls.add(view)
     }
 
     private fun message(value: String, error: Boolean = false) {
         lastStatus = value
-        if (::statusView.isInitialized) {
-            statusView.text = value
-            statusView.visibility = if (value.isBlank()) View.GONE else View.VISIBLE
-            statusView.setTextColor(
+        if (::page.isInitialized) {
+            page.status.text = value
+            page.status.visibility = if (value.isBlank()) View.GONE else View.VISIBLE
+            page.status.setTextColor(
                 getColor(if (error) R.color.owned_error else R.color.owned_primary)
             )
         }
     }
 
-    private fun showError(error: Exception) {
-        val code =
-            error.message.orEmpty().takeIf { Regex("[A-Z_]{1,80}").matches(it) }
-                ?: "LOCAL_OPERATION_FAILED"
-        message("Действие не выполнено: $code. Данные не заменены.", true)
+    private fun ids(): List<String> {
+        val items = store.seed().getJSONArray("items")
+        return (0 until items.length()).map { items.getJSONObject(it).getString("id") }
+    }
+
+    private fun verifiedIds(): Set<String> {
+        val records = store.state().getJSONObject("records")
+        return ids()
+            .filter { records.optJSONObject(it)?.optBoolean("human_verified_reference") == true }
+            .toSet()
     }
 
     private fun render() {
         rendering = true
         reference = null
         humanCheck = null
-        controls.clear()
-        addPageHeader()
+        playbackButton = null
+        elapsed = null
+        level = null
+        page = GuidedPage(this)
+        setContentView(page.root)
+        page.root.requestApplyInsets()
+        page.primary.setOnClickListener { safely { primaryAction() } }
+        addNavigation()
+        message(lastStatus)
         if (!store.installed()) {
-            content.addView(
-                text(
-                    "Задания ещё не переданы с компьютера. Подключение выполняется приватным " +
-                        "мостом; выбирать файлы вручную не нужно."
-                )
+            page.content.addView(
+                page.text("Ожидаем задания с компьютера. После передачи откройте приложение снова.")
             )
-            content.addView(
-                button("Проверить передачу заданий", "import") {
-                    store.importSeed(File(filesDir, "inbox/seed.zip"))
-                    render()
-                }
-            )
-            startButton = button("Начать запись", "record") {}.apply { isEnabled = false }
-            content.addView(startButton)
-            rendering = false
-            return
-        }
-        val seed = store.seed()
-        val state = store.state()
-        val records = state.getJSONObject("records")
-        val items = seed.getJSONArray("items")
-        val ids = (0 until items.length()).map { items.getJSONObject(it).getString("id") }
-        if (currentId == null || !ids.contains(currentId.orEmpty()))
-            currentId =
-                ids.firstOrNull {
-                    records.optJSONObject(it)?.optBoolean("human_verified_reference") != true
-                } ?: ids.first()
-        val id = requireNotNull(currentId)
-        val item = store.item(id)
-        val record = records.optJSONObject(id)
-        val rejected = state.getJSONArray("rejected")
-        val excluded =
-            (0 until rejected.length()).any { rejected.getJSONObject(it).getString("id") == id }
-        val enabled = store.recordingEnabled()
-        addAuthority(ids, records, enabled)
-        addCaseSelector(ids, records, id)
-        addRecordingPrompt(item)
-        addCaptureControls(record, excluded, enabled)
-        addPlayback(record, excluded, id)
-        addReferenceEditor(item, record)
-        addHumanConfirmation(id, record)
-        addTransferControls(ids, id)
-        if (capture.running) {
-            controls.forEach { it.isEnabled = false }
-            stopButton?.isEnabled = false
+        } else {
+            renderInstalled()
         }
         rendering = false
+        refreshPrimary()
     }
 
-    private fun addCaseSelector(ids: List<String>, records: JSONObject, id: String) {
-        val spinner =
-            Spinner(this).apply {
-                minimumHeight = dp(52)
-                tag = "cases"
-                adapter =
-                    ArrayAdapter(
-                        this@MainActivity,
-                        android.R.layout.simple_spinner_dropdown_item,
-                        ids.map { case ->
-                            val verified =
-                                records
-                                    .optJSONObject(case)
-                                    ?.optBoolean("human_verified_reference") == true
-                            "${caseTitle(case)}${if (verified) " · ✓" else ""}"
-                        },
-                    )
-                setSelection(ids.indexOf(id))
-                onItemSelectedListener =
-                    object : AdapterView.OnItemSelectedListener {
-                        override fun onNothingSelected(parent: AdapterView<*>?) = Unit
-
-                        override fun onItemSelected(
-                            parent: AdapterView<*>?,
-                            view: View?,
-                            position: Int,
-                            rowId: Long,
-                        ) {
-                            if (!rendering && !capture.running && ids[position] != currentId) {
-                                saveDraftNow()
-                                stopPlayback()
-                                currentId = ids[position]
-                                render()
-                            }
-                        }
-                    }
-            }
-        addControl(spinner)
+    private fun renderInstalled() {
+        val ids = ids()
+        val verified = verifiedIds()
+        if (currentId !in ids) currentId = ids.firstOrNull { it !in verified } ?: ids.first()
+        val id = requireNotNull(currentId)
+        val records = store.state().getJSONObject("records")
+        page.counts.text = "Записано ${records.length()}/8 · Проверено ${verified.size}/8"
+        page.counts.tag = "progress"
+        if (completed && verified.size == ids.size) {
+            page.title.text = "Все 8 заданий готовы"
+            page.content.addView(
+                page.text("Записи и проверенные тексты сохранены на телефоне.", 23f)
+            )
+            page.content.addView(
+                page.text("Подключите телефон к компьютеру для приватной передачи по USB.")
+            )
+        } else {
+            completed = false
+            page.title.text = "${ids.indexOf(id) + 1}/8 · ${caseTitle(id)}"
+            val record = records.optJSONObject(id)
+            if (record == null) renderPrompt(store.item(id)) else renderSaved(id, record)
+        }
     }
 
-    private fun addRecordingPrompt(item: JSONObject) {
-        content.addView(
-            text(
-                if (item.getString("speech_class") == "READ") "Прочитайте как написано · 20–44 с"
-                else
-                    "Ответьте своими словами · 20–59 с. Не готовьте письменный ответ и не сообщайте личные данные.",
-                17f,
+    private fun addNavigation() {
+        val tasks = page.button("Задания", "cases") { safely { chooseTask() } }
+        val more = page.button("Ещё", "more") { safely { showMore() } }
+        tasks.isEnabled = store.installed() && !capture.running
+        more.isEnabled = !capture.running
+        page.navigation.addView(tasks, LinearLayout.LayoutParams(0, -2, 1f))
+        page.navigation.addView(more, LinearLayout.LayoutParams(0, -2, 1f))
+    }
+
+    private fun renderPrompt(item: JSONObject) {
+        val read = item.getString("speech_class") == "READ"
+        if (hasTechnicalAttempt())
+            page.content.addView(
+                page.text(
+                    "Прерванная попытка сохранена. Можно явно повторить это задание до первой принятой записи.",
+                    15f,
+                )
+            )
+        page.content.addView(
+            page.text(
+                if (read) "Прочитайте вслух · 20–44 секунды"
+                else "Ответьте своими словами · 20–59 секунд"
             )
         )
-        content.addView(
-            text(item.getString("material"), 23f).apply {
+        if (!read)
+            page.content.addView(
+                page.text("Не готовьте письменный ответ и не называйте личные данные.", 15f)
+            )
+        page.content.addView(
+            page.text(item.getString("material"), 23f).apply {
                 tag = "material"
                 setBackgroundColor(getColor(R.color.owned_surface))
-                setPadding(dp(14), dp(16), dp(14), dp(16))
+                setPadding(page.dp(12), page.dp(12), page.dp(12), page.dp(12))
                 setTextIsSelectable(true)
             }
         )
-        elapsed = text("0.0 с", 20f).also { content.addView(it) }
-        level =
-            ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal)
-                .apply {
-                    max = 100
-                    progress = 0
-                    contentDescription = "Уровень сигнала"
-                }
-                .also { content.addView(it, LinearLayout.LayoutParams(-1, dp(20))) }
+        if (capture.running) {
+            elapsed = page.text("0.0 с", 22f).also { page.content.addView(it) }
+            level =
+                ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal)
+                    .apply {
+                        max = 100
+                        contentDescription = "Уровень сигнала"
+                    }
+                    .also { page.content.addView(it, LinearLayout.LayoutParams(-1, page.dp(20))) }
+        }
     }
 
-    private fun caseTitle(id: String): String {
-        val parts = id.split('-')
-        val language = if (parts[0] == "ru") "Русский" else "Английский"
-        val kind = if (parts[1] == "read") "Чтение" else "Свободная речь"
-        return "$language · $kind ${parts[2].toInt()}"
-    }
-
-    private fun addCaptureControls(record: JSONObject?, excluded: Boolean, enabled: Boolean) {
-        startButton =
-            button(
-                    if (excluded && record == null) "Повторить техническую попытку"
-                    else "Начать запись",
-                    "record",
-                ) {
-                    requestStart()
-                }
-                .apply { isEnabled = enabled && record == null }
-        addControl(startButton!!)
-        stopButton =
-            button("Остановить и сохранить", "stop") {
-                    if (CapturePolicy.canStop(capture.frames)) capture.stop()
-                }
-                .apply { isEnabled = false }
-        content.addView(stopButton)
-        content.addView(
-            text(
-                "Остановка доступна после 20.25 с фактически полученного звука. Уход из " +
-                    "приложения завершает попытку как прерванную; автоматически микрофон не " +
-                    "возобновляется. Сохранённую запись нельзя перезаписать.",
-                14f,
+    private fun renderSaved(id: String, record: JSONObject) {
+        page.content.addView(
+            page.text(
+                "Запись сохранена · ${seconds(record.getLong("duration_us") / 1_000_000.0)} с",
+                18f,
             )
         )
-    }
-
-    private fun addPlayback(record: JSONObject?, excluded: Boolean, id: String) {
-        if (excluded)
-            content.addView(
-                text(
-                    "Предыдущая техническая попытка сохранена с причиной. До первой принятой " +
-                        "записи можно явно повторить это же задание; принятый исходник заменить нельзя.",
-                    16f,
-                )
-            )
-        if (record != null)
-            content.addView(
-                text(
-                    recordingDescription(record),
-                    16f,
-                )
-            )
-        addControl(
-            button("Прослушать / остановить", "play") {
-                    if (player != null) stopPlayback() else play(id)
+        playbackButton =
+            page
+                .button("▶ Прослушать запись", "play") { safely { togglePlayback(id) } }
+                .also { page.content.addView(it) }
+        if (record.optBoolean("human_verified_reference") && !editing) {
+            page.content.addView(page.text("Текст проверен вами", 20f))
+            page.content.addView(
+                page.text(record.getString("reference_text"), 20f).apply {
+                    setTextIsSelectable(true)
                 }
-                .apply { isEnabled = record != null }
-        )
+            )
+            page.content.addView(
+                page.button("Исправить текст", "edit") {
+                    safely {
+                        stopPlayback()
+                        editing = true
+                        render()
+                    }
+                }
+            )
+        } else {
+            addEditor(id, record)
+        }
     }
 
-    private fun recordingDescription(record: JSONObject): String {
-        val seconds =
-            String.format(Locale.ROOT, "%.2f", record.getLong("duration_us") / 1_000_000.0)
-        return "Запись сохранена · $seconds с · WAV mono PCM16 16 кГц"
-    }
-
-    private fun addReferenceEditor(item: JSONObject, record: JSONObject?) {
-        content.addView(text("Фактическая речь", 22f))
-        content.addView(
-            text(
-                "Прослушайте всю запись. Исправьте оговорки, добавления и пропуски. Для " +
-                    "свободного ответа запишите каждое сказанное слово. Исходный текст чтения сам " +
-                    "по себе не подтверждает речь.",
+    private fun addEditor(id: String, record: JSONObject) {
+        page.content.addView(page.text("Проверьте сказанные слова", 21f))
+        page.content.addView(
+            page.text(
+                "Прослушайте всю запись и исправьте текст: учтите оговорки, пропуски и добавления.",
                 16f,
             )
         )
         reference =
-            EditText(this).apply {
-                tag = "reference"
-                textSize = 18f
-                minLines = 6
-                gravity = android.view.Gravity.TOP
-                inputType =
-                    android.text.InputType.TYPE_CLASS_TEXT or
-                        android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE or
-                        android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
-                isEnabled = record != null
-                setText(
-                    record?.optString("draft_text")
-                        ?: if (item.getString("speech_class") == "READ") item.getString("material")
+            EditText(this)
+                .apply {
+                    tag = "reference"
+                    textSize = 19f
+                    minLines = 5
+                    gravity = android.view.Gravity.TOP
+                    inputType =
+                        android.text.InputType.TYPE_CLASS_TEXT or
+                            android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE or
+                            android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+                    val item = store.item(id)
+                    val fallback =
+                        if (item.getString("speech_class") == "READ") item.getString("material")
                         else ""
-                )
-                addTextChangedListener(draftWatcher())
-            }
-        addControl(reference!!)
+                    setText(record.optString("draft_text", fallback))
+                    addTextChangedListener(draftWatcher())
+                }
+                .also { page.content.addView(it) }
+        humanCheck =
+            CheckBox(this)
+                .apply {
+                    tag = "human_confirmation"
+                    text = "Я прослушал(а) всю запись и подтверждаю каждое сказанное слово."
+                    textSize = 17f
+                    minHeight = page.dp(56)
+                    isChecked = false
+                    setOnCheckedChangeListener { _, _ -> refreshPrimary() }
+                }
+                .also { page.content.addView(it) }
     }
 
     private fun draftWatcher(): TextWatcher =
         object : TextWatcher {
-            override fun beforeTextChanged(
-                s: CharSequence?,
-                start: Int,
-                count: Int,
-                after: Int,
-            ) = Unit
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) =
+                Unit
 
-            override fun onTextChanged(
-                s: CharSequence?,
-                start: Int,
-                before: Int,
-                count: Int,
-            ) {
+            override fun afterTextChanged(s: Editable?) = Unit
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 if (!rendering) {
                     humanCheck?.isChecked = false
                     draftSave?.let(handler::removeCallbacks)
-                    draftSave = Runnable { saveDraftNow() }.also { handler.postDelayed(it, 600) }
+                    draftSave =
+                        Runnable {
+                                saveDraftNow()
+                                refreshPrimary()
+                            }
+                            .also { handler.postDelayed(it, 600) }
+                    refreshPrimary()
                 }
             }
-
-            override fun afterTextChanged(s: Editable?) = Unit
         }
 
-    private fun addHumanConfirmation(id: String, record: JSONObject?) {
-        humanCheck =
-            CheckBox(this).apply {
-                tag = "human_confirmation"
-                text =
-                    "Я прослушал(а) всю запись, проверил(а) каждое слово и подтверждаю фактическую речь."
-                textSize = 17f
-                minHeight = dp(56)
-                isChecked = false
-                isEnabled = record != null
+    private fun action(): GuidedFlow.Action {
+        if (capture.running) return GuidedFlow.Action.STOP
+        val record = currentId?.let { store.state().getJSONObject("records").optJSONObject(it) }
+        return GuidedFlow.action(
+            capture.running,
+            record != null,
+            record?.optBoolean("human_verified_reference") == true && !editing,
+            store.recordingEnabled(),
+        )
+    }
+
+    private fun hasTechnicalAttempt(): Boolean {
+        val rejected = store.state().getJSONArray("rejected")
+        return (0 until rejected.length()).any {
+            rejected.getJSONObject(it).getString("id") == currentId
+        }
+    }
+
+    private fun refreshPrimary() {
+        if (!::page.isInitialized || !store.installed()) return
+        when {
+            capture.running -> refreshRecordingPrimary()
+            completed -> {
+                page.primary.text = "Закрыть"
+                page.primary.isEnabled = true
             }
-        addControl(humanCheck!!)
-        addControl(
-            button("Подтвердить фактический текст", "verify") {
-                    store.verifyReference(id, reference!!.text.toString(), humanCheck!!.isChecked)
-                    message(
-                        "Человеческий эталон сохранён. Передача компьютеру подготовлена приватно."
-                    )
-                    prepareTransfer()
+            else -> refreshTaskPrimary()
+        }
+    }
+
+    private fun refreshRecordingPrimary() {
+        page.primary.text = "Остановить и сохранить"
+        page.primary.isEnabled = CapturePolicy.canStop(capture.frames)
+        page.hint.text =
+            "${seconds(capture.frames.toDouble() / Wav.RATE)} с · " +
+                if (CapturePolicy.canStop(capture.frames)) "можно остановить"
+                else "минимум 20 секунд"
+        page.hint.visibility = View.VISIBLE
+    }
+
+    private fun primaryLabel(action: GuidedFlow.Action): String =
+        when (action) {
+            GuidedFlow.Action.WAIT -> "Запись пока недоступна"
+            GuidedFlow.Action.START ->
+                if (hasTechnicalAttempt()) "Повторить попытку записи" else "Начать запись"
+            GuidedFlow.Action.STOP -> "Остановить и сохранить"
+            GuidedFlow.Action.CONFIRM ->
+                if (verifiedIds().size == ids().size - 1) "Подтвердить и завершить"
+                else "Подтвердить и дальше"
+            GuidedFlow.Action.NEXT ->
+                if (verifiedIds().size == ids().size) "Завершить 8 заданий" else "Следующее задание"
+        }
+
+    private fun primaryHint(action: GuidedFlow.Action): String =
+        when (action) {
+            GuidedFlow.Action.WAIT -> "Ожидаем разрешение записи с компьютера."
+            GuidedFlow.Action.START -> "Микрофон включится только по нажатию."
+            GuidedFlow.Action.STOP -> "Говорите не менее 20 секунд."
+            GuidedFlow.Action.CONFIRM -> "После проверки текста поставьте галочку."
+            GuidedFlow.Action.NEXT -> "Запись и проверенный текст сохранены."
+        }
+
+    private fun refreshTaskPrimary() {
+        val action = action()
+        page.primary.text = primaryLabel(action)
+        page.primary.isEnabled =
+            when (action) {
+                GuidedFlow.Action.WAIT -> false
+                GuidedFlow.Action.STOP -> CapturePolicy.canStop(capture.frames)
+                GuidedFlow.Action.CONFIRM ->
+                    humanCheck?.isChecked == true && !reference?.text.isNullOrBlank()
+                else -> true
+            }
+        page.hint.text = primaryHint(action)
+        page.hint.visibility = View.VISIBLE
+    }
+
+    private fun primaryAction() {
+        if (!store.installed()) return
+        if (completed) {
+            finish()
+            return
+        }
+        when (action()) {
+            GuidedFlow.Action.START -> requestStart()
+            GuidedFlow.Action.STOP ->
+                if (CapturePolicy.canStop(capture.frames)) {
+                    page.primary.isEnabled = false
+                    capture.stop()
+                    message("Сохраняем запись…")
+                }
+            GuidedFlow.Action.CONFIRM -> {
+                store.verifyReference(
+                    requireNotNull(currentId),
+                    reference!!.text.toString(),
+                    humanCheck!!.isChecked,
+                )
+                prepareTransfer()
+                nextTask()
+            }
+            GuidedFlow.Action.NEXT -> nextTask()
+            GuidedFlow.Action.WAIT -> Unit
+        }
+    }
+
+    private fun nextTask() {
+        draftSave?.let(handler::removeCallbacks)
+        draftSave = null
+        hideKeyboard()
+        stopPlayback()
+        editing = false
+        val next = GuidedFlow.next(ids(), verifiedIds(), requireNotNull(currentId))
+        completed = next == null
+        if (next != null) currentId = next
+        message("")
+        render()
+        if (completed) prepareTransfer()
+    }
+
+    private fun chooseTask() {
+        saveDraftNow()
+        val ids = ids()
+        val verified = verifiedIds()
+        AlertDialog.Builder(this)
+            .setTitle("Выберите задание")
+            .setItems(
+                ids.map { "${caseTitle(it)}${if (it in verified) " · ✓" else ""}" }.toTypedArray()
+            ) { _, index ->
+                safely {
+                    hideKeyboard()
+                    stopPlayback()
+                    currentId = ids[index]
+                    editing = false
+                    completed = false
+                    message("")
                     render()
                 }
-                .apply { isEnabled = record != null }
-        )
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
     }
 
-    private fun addTransferControls(ids: List<String>, id: String) {
-        addControl(
-            button("Подготовить передачу компьютеру", "export") {
-                saveDraftNow()
-                prepareTransfer()
+    private fun showMore() {
+        saveDraftNow()
+        AlertDialog.Builder(this)
+            .setTitle("DORA · 8 записей")
+            .setItems(
+                arrayOf("О наборе и приватности", "Передача по USB", "Обновить доступ с компьютера")
+            ) { _, index ->
+                safely {
+                    when (index) {
+                        0 -> showAbout()
+                        1 -> showTransfer()
+                        else -> {
+                            restorePrivateInbox()
+                            render()
+                        }
+                    }
+                }
             }
-        )
-        addControl(
-            button("Следующее непроверенное", "next") {
-                saveDraftNow()
-                val latest = store.state().getJSONObject("records")
-                currentId =
-                    ids.firstOrNull {
-                        latest.optJSONObject(it)?.optBoolean("human_verified_reference") != true
-                    } ?: id
-                stopPlayback()
-                render()
-            }
-        )
-        content.addView(
-            text(
-                "Аудио, тексты и история хранятся только в закрытой области приложения. " +
-                    "Интернет и облачная отправка в приложении отсутствуют. Компьютер забирает " +
-                    "частный архив через уже настроенное USB-соединение.",
-                14f,
-            )
-        )
-    }
-
-    private fun addPageHeader() {
-        val scroll =
-            ScrollView(this).apply {
-                setBackgroundColor(getColor(R.color.owned_background))
-                isFillViewport = true
-            }
-        content =
-            LinearLayout(this).apply {
-                orientation = LinearLayout.VERTICAL
-                setPadding(dp(20), dp(16), dp(20), dp(32))
-            }
-        scroll.addView(content)
-        setContentView(scroll)
-        content.addView(text("DORA · 8 записей", 26f))
-        content.addView(text("4 задания на русском · 4 на английском", 16f))
-        addControl(button("О наборе", "about") { showAbout() })
-        statusView =
-            text(lastStatus, 16f).apply {
-                tag = "status"
-                visibility = if (lastStatus.isBlank()) View.GONE else View.VISIBLE
-            }
-        content.addView(statusView)
+            .setNegativeButton("Закрыть", null)
+            .show()
     }
 
     private fun showAbout() {
         AlertDialog.Builder(this)
-            .setTitle("О частном наборе")
+            .setTitle("О наборе и приватности")
             .setMessage(
-                "Восемь записей одного говорящего: по два чтения и два свободных ответа " +
-                    "на русском и английском. Все записи входят в оценку; резервов нет.\n\n" +
-                    "Шум и временные отметки: НЕ ОЦЕНЕНЫ. Ручная разметка времени не нужна. " +
-                    "Набор не доказывает качество для других говорящих.\n\n" +
-                    "Микрофон включается только отдельной кнопкой после вашего явного разрешения. " +
-                    "Android может применять обработку производителя; полученный звук сохраняется " +
-                    "точно в WAV mono PCM16 16 кГц. Интернет и облачная отправка в приложении отсутствуют."
+                "По два чтения и два свободных ответа на русском и английском. Все восемь записей " +
+                    "одного говорящего входят в оценку, резервов нет. " +
+                    "Набор не доказывает качество для других людей.\n\n" +
+                    "Шум и временные отметки: НЕ ОЦЕНЕНЫ. Разметка времени не нужна.\n\n" +
+                    "Аудио и тексты хранятся в закрытой области приложения. Интернета и облачной отправки нет. " +
+                    "Android может применять обработку производителя. " +
+                    "Полученный звук сохраняется точно в WAV mono PCM16 16 кГц.\n\n" +
+                    "Уход из приложения прерывает запись. Прерванный исходник сохраняется; начать заново " +
+                    "можно явно до первой принятой записи. Сохранённую запись заменить нельзя."
             )
             .setPositiveButton("Понятно", null)
             .show()
     }
 
-    private fun addAuthority(ids: List<String>, records: JSONObject, enabled: Boolean) {
-        val complete = ids.count {
-            records.optJSONObject(it)?.optBoolean("human_verified_reference") == true
-        }
-        content.addView(
-            text("Записано: ${records.length()} / 8 · Проверено: $complete / 8", 20f).apply {
-                tag = "progress"
+    private fun showTransfer() {
+        AlertDialog.Builder(this)
+            .setTitle("Передача по USB")
+            .setMessage(
+                "Архив готовится автоматически после записи и проверки текста. Подключите телефон к " +
+                    "компьютеру для приватной синхронизации. Интернет не используется."
+            )
+            .setPositiveButton("Обновить архив") { _, _ ->
+                safely {
+                    saveDraftNow()
+                    prepareTransfer(notify = true)
+                }
             }
-        )
-        content.addView(
-            text(
-                    if (enabled) "Запись разрешена. Микрофон включается только по кнопке."
-                    else "Запись отложена. Ожидаем «Готов записывать»."
-                )
-                .apply { tag = "authority" }
-        )
-        addControl(
-            button("Обновить доступ с компьютера", "activate") {
-                store.activate(File(filesDir, "inbox/activation.json"))
-                message(
-                    "Локальное разрешение проверено. Запись запускается только отдельным нажатием."
-                )
-                render()
-            }
-        )
+            .setNegativeButton("Закрыть", null)
+            .show()
     }
 
     private fun requestStart() {
@@ -541,17 +544,16 @@ class MainActivity : Activity() {
             requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), 41)
             return
         }
-        saveDraftNow()
+        hideKeyboard()
         stopPlayback()
         capture.start(
             requireNotNull(currentId),
             { frames, peak ->
                 runOnUiThread {
                     if (!isDestroyed) {
-                        elapsed?.text =
-                            "${String.format(Locale.ROOT, "%.1f", frames.toDouble() / Wav.RATE)} с"
+                        elapsed?.text = "${seconds(frames.toDouble() / Wav.RATE)} с"
                         level?.progress = peak
-                        stopButton?.isEnabled = capture.running && CapturePolicy.canStop(frames)
+                        refreshPrimary()
                     }
                 }
             },
@@ -560,10 +562,7 @@ class MainActivity : Activity() {
                     window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
                     if (!isDestroyed) {
                         message(
-                            if (accepted)
-                                "Запись сохранена. Прослушайте её и подтвердите фактическую речь."
-                            else
-                                "Попытка сохранена как отклонённая: $error. Автоматической замены нет.",
+                            if (accepted) "" else "Попытка прервана: $error. Исходник сохранён.",
                             !accepted,
                         )
                         render()
@@ -573,9 +572,8 @@ class MainActivity : Activity() {
             },
         )
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        controls.forEach { it.isEnabled = false }
-        stopButton?.isEnabled = false
-        message("Идёт запись. Оставайтесь в приложении и говорите естественно.")
+        message("")
+        render()
     }
 
     override fun onRequestPermissionsResult(
@@ -587,15 +585,13 @@ class MainActivity : Activity() {
         if (requestCode == 41) {
             message(
                 if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED)
-                    "Микрофон разрешён. Для начала отдельно нажмите «Начать запись»."
+                    "Микрофон разрешён. Нажмите «Начать запись»."
                 else "Микрофон не разрешён; запись не началась."
             )
             if (!isDestroyed) render()
         }
     }
 
-    // A draft save failure must not crash the Activity or erase its previous verified state.
-    @Suppress("TooGenericExceptionCaught")
     private fun saveDraftNow() {
         draftSave?.let(handler::removeCallbacks)
         draftSave = null
@@ -603,30 +599,29 @@ class MainActivity : Activity() {
         val value = reference?.text?.toString()
         val unavailable = rendering || !store.installed() || capture.running
         if (unavailable || id == null || value == null) return
-        if (!store.state().getJSONObject("records").has(id)) return
-        try {
-            store.saveDraft(id, value)
-        } catch (error: Exception) {
-            showError(error)
-        }
+        if (store.state().getJSONObject("records").has(id))
+            safely {
+                store.saveDraft(id, value)
+                page.counts.text =
+                    "Записано ${store.state().getJSONObject("records").length()}/8 · " +
+                        "Проверено ${verifiedIds().size}/8"
+            }
     }
 
-    private fun prepareTransfer() {
+    // Export failures stay local and visible; no exception may erase or replace captured data.
+    @Suppress("TooGenericExceptionCaught")
+    private fun prepareTransfer(notify: Boolean = false) {
         if (!store.installed() || capture.running) return
         io.execute {
             try {
                 store.exportArchive(File(filesDir, "export/mobile-export.zip"))
-                runOnUiThread {
-                    if (!isDestroyed)
-                        message(
-                            "Частный архив готов. Компьютер может синхронизировать записи и подтверждённые тексты."
-                        )
-                }
+                if (notify)
+                    runOnUiThread { if (!isDestroyed) message("Архив готов к передаче по USB.") }
             } catch (_: Exception) {
                 runOnUiThread {
                     if (!isDestroyed)
                         message(
-                            "Архив пока не подготовлен. Исходные данные сохранены; повторите передачу позже.",
+                            "Архив пока не готов. Данные сохранены; обновите его через «Ещё».",
                             true,
                         )
                 }
@@ -634,7 +629,11 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun play(id: String) {
+    private fun togglePlayback(id: String) {
+        if (player != null) {
+            stopPlayback()
+            return
+        }
         player =
             MediaPlayer().apply {
                 setDataSource(store.audio(id).absolutePath)
@@ -642,10 +641,29 @@ class MainActivity : Activity() {
                 prepare()
                 start()
             }
+        playbackButton?.text = "■ Остановить прослушивание"
     }
 
     private fun stopPlayback() {
         player?.release()
         player = null
+        playbackButton?.text = "▶ Прослушать запись"
+    }
+
+    private fun hideKeyboard() {
+        (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager).hideSoftInputFromWindow(
+            page.root.windowToken,
+            0,
+        )
+        reference?.clearFocus()
+    }
+
+    private fun seconds(value: Double): String = String.format(Locale.ROOT, "%.1f", value)
+
+    private fun caseTitle(id: String): String {
+        val parts = id.split('-')
+        val language = if (parts[0] == "ru") "Русский" else "Английский"
+        val kind = if (parts[1] == "read") "Чтение" else "Свободная речь"
+        return "$language · $kind ${parts[2].toInt()}"
     }
 }
