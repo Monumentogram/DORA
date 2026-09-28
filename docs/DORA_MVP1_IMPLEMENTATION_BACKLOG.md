@@ -1,5 +1,17 @@
 # Dora MVP 1 — Executable Backlog
 
+## Current 11.1C retention closure — 2026-09-28 — v0.3
+
+OD-11C-13..22 are APPROVED_BY_PROJECT_OWNER. [Current retention package](design/DORA_CLOUD_ALPHA_PRIVACY_RETENTION_CONTROL_V0_3.md), [machine contract](contracts/DORA_CLOUD_ALPHA_PRIVACY_RETENTION_CONTROL_V0_3.json) and [ADR-0012](adr/ADR-0012-alpha-retention-periods-and-provider-copy-limits.md) supersede only the enumerated retention interpretations of OD-11C-04/08/10. All prior text below is historical where it differs; v0.1/v0.2 and ADR-0011 remain preserved. Baseline `99976ce21a5ee2fde408e1bee78b12902a675b81`.
+
+56/56 lifecycle cells classified: DORA-controlled audio hard 24h with explicit immediate safe success cleanup; transient output immediate after ingestion / failed 24h; ordinary metadata 30d, audit 90d, active consent/identity plus90d; non-audio restorable backup maximum 30d; guarded tombstone 120d after logical deletion. Hidden AWS copies use actual documented purpose/deletion controls and accepted limitations, never an invented physical 24h guarantee. No audio backup/cross-region replica or resurrection. Local defaults and DEC-017 stay unchanged.
+
+`RT-01 = RESOLVED`; `RT-02 = RESOLVED`; `CLD-ADM-RETENTION-001 = SATISFIED`. `PC-02 = RESOLVED` and `SC-01 = RESOLVED` remain accepted. `PC-01 = BLOCKED_EXTERNAL_APPROVAL` is unchanged; `SC-02 = BLOCKED_BY_PRIVACY_ONLY`, depending only on PC-01 / PRIVACY. `CLD-ADM-PRIVACY-001 = BLOCKED`; `CLD-ADM-CONTROL-001 = BLOCKED`; EVALUATION/PROVIDER OPEN; ADMISSION BLOCKED.
+
+Effective 39 gates: 6 SATISFIED, 0 PARTIALLY_SATISFIED, 5 OPEN, 3 BLOCKED, 25 NOT_RUN. 6.1/6.2 PASS; 11.1C PARTIAL; 6.2D/6.3 NOT_RUN and blocked. Remaining 6.3 predecessors: PRIVACY, CONTROL, EVALUATION, PROVIDER. No runtime/Android/Recovery/PR86 work, AWS runtime calls, audio upload or inference. Next 11.1C prerequisite only: qualified Privacy/Legal actual-scope approval PC-01, then SC-02 dependency readback; not automatically started.
+
+---
+
 ## Current 11.1C owner/AWS reassessment — 28 September 2026
 
 Source baseline: `cccf85f982436af0bf9675d738dfe2dd61308842`. [Current policy v0.2](design/DORA_CLOUD_ALPHA_PRIVACY_RETENTION_CONTROL_V0_2.md),
