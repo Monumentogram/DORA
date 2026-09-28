@@ -234,6 +234,9 @@ def template():
     data_stmts = [statement("s3:GetObject", sub("${InputBucket.Arn}/input/*")),
                   statement("s3:PutObject", sub("${OutputBucket.Arn}/output/*")),
                   statement(["s3:GetBucketLocation"], [arn("InputBucket"), arn("OutputBucket")]),
+                  # HeadBucket has no prefix context; only these two dedicated buckets.
+                  statement("s3:ListBucket", [arn("InputBucket"), arn("OutputBucket")]),
+                  statement("kms:DescribeKey", [arn("InputKey"), arn("OutputKey")]),
                   statement(["kms:Decrypt"], arn("InputKey")),
                   statement(["kms:GenerateDataKey", "kms:Encrypt", "kms:Decrypt"], arn("OutputKey"))]
     r["DataRole"] = {"Type": "AWS::IAM::Role", "Properties": {
@@ -466,8 +469,18 @@ def preflight(api, c):
         mark(3, "PASS", "Both S3 locations and customer KMS ARNs exactly eu-central-1")
         verify_resources(api, c)
         require(datetime.now(timezone.utc) < datetime.fromisoformat(c["write_deadline"].replace("Z", "+00:00")), "WRITE_DEADLINE_EXPIRED")
-        mark(6, "PASS", "S3 isolation, absence of versioning/replication/lock and exact IAM/bucket policies verified")
-        mark(8, "PASS", "Exact customer keys, policy/rotation, zero grants and exact runtime roles verified")
+        runtime = assume_operator(api, c)
+        try:
+            identity = runtime.call("sts", "get-caller-identity")
+            require(identity["Account"] == c["account_id"] and identity["Arn"].startswith(f"arn:aws:sts::{c['account_id']}:assumed-role/dora-62d-{c['run_id']}-operator/"), "RUNTIME_READ_IDENTITY_MISMATCH")
+            for kind in ("Input", "Output"):
+                runtime.call("s3api", "head-bucket", "--bucket", outputs[kind + "Bucket"], "--expected-bucket-owner", c["account_id"])
+                key = runtime.call("kms", "describe-key", "--key-id", outputs[kind + "Key"])["KeyMetadata"]
+                require(key["Arn"] == outputs[kind + "Key"] and key["KeyState"] == "Enabled" and key["KeyManager"] == "CUSTOMER" and key["KeySpec"] == "SYMMETRIC_DEFAULT" and key["KeyUsage"] == "ENCRYPT_DECRYPT" and key.get("MultiRegion") is False, "RUNTIME_KMS_PROPERTIES")
+        finally:
+            api.evidence.append({"operation": ["preflight", "runtime-read-verification"], "private_runtime_evidence": runtime.evidence})
+        mark(6, "PASS", "S3 isolation, exact policies and actual operator HeadBucket on both dedicated buckets verified")
+        mark(8, "PASS", "Exact keys/policies/roles, zero grants and actual operator DescribeKey on both keys verified")
         mark(7, "BLOCKED", "Watchdog/deadline and immediate cleanup require synthetic deletion proof")
         if c.get("retention_proof_path") and c.get("retention_proof_sha256"):
             path = private_path(c["retention_proof_path"])
@@ -475,8 +488,8 @@ def preflight(api, c):
             proof = json.loads(path.read_text(encoding="utf-8"))
             require(proof.get("status") == "SYNTHETIC_RETENTION_VERIFIED" and proof.get("template_sha256") == c["template_sha256"] and proof.get("resources_sha256") == digest_json(c["outputs"]) and proof.get("write_deadline") == c["write_deadline"], "RETENTION_PROOF_UNBOUND")
             mark(7, "PASS", "Actual synthetic encrypted objects/multiparts deleted by verified watchdog code; independent empty readback, fixed future deadline and schedule")
-    except (KeyError, AwsError, ValueError) as e:
-        mark(6, "BLOCKED", type(e).__name__ if isinstance(e, KeyError) else str(e))
+    except (KeyError, AwsError, ValueError, subprocess.TimeoutExpired) as e:
+        mark(6, "BLOCKED", "CLI_TIMEOUT" if isinstance(e, subprocess.TimeoutExpired) else type(e).__name__ if isinstance(e, KeyError) else str(e))
     return rows
 
 
@@ -633,7 +646,7 @@ def main():
             identity_and_optout(api, c)
             stack = api.call("cloudformation", "describe-stacks", "--stack-name", c["stack_name"])["Stacks"][0]
             require(stack["StackId"].startswith("arn:aws:cloudformation:" + REGION + ":" + c["account_id"] + ":stack/" + c["stack_name"] + "/"), "FOREIGN_STACK")
-            require(stack["StackStatus"] == "CREATE_COMPLETE", "STACK_NOT_READY")
+            require(stack["StackStatus"] in ("CREATE_COMPLETE", "UPDATE_COMPLETE"), "STACK_NOT_READY")
             parameters = {p["ParameterKey"]: p["ParameterValue"] for p in stack["Parameters"]}
             require(parameters == {"RunId": c["run_id"], "OwnerPrincipalArn": c["owner_principal_arn"], "WriteDeadline": c["write_deadline"]}, "STACK_PARAMETERS_CHANGED")
             c["outputs"] = {p["OutputKey"]: p["OutputValue"] for p in stack["Outputs"]}

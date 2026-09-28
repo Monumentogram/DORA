@@ -8,6 +8,80 @@ import aws_prepare as aws
 
 
 class SafetyTests(unittest.TestCase):
+    def test_readback_accepts_completed_update_but_rejects_inflight_or_rollback(self):
+        import contextlib, io
+        from unittest.mock import patch
+        c = fixture_config()
+        for status in ("CREATE_COMPLETE", "UPDATE_COMPLETE", "UPDATE_IN_PROGRESS", "UPDATE_ROLLBACK_COMPLETE", "ROLLBACK_COMPLETE"):
+            with self.subTest(status=status), tempfile.TemporaryDirectory() as folder:
+                class StackApi(PreflightApi):
+                    def call(self, service, op, *args):
+                        if op == "describe-stacks":
+                            return {"Stacks": [{"StackId": "arn:aws:cloudformation:eu-central-1:123456789012:stack/" + c["stack_name"] + "/test", "StackStatus": status,
+                                "Parameters": [{"ParameterKey": k, "ParameterValue": v} for k, v in {"RunId": c["run_id"], "OwnerPrincipalArn": c["owner_principal_arn"], "WriteDeadline": c["write_deadline"]}.items()],
+                                "Outputs": [{"OutputKey": k, "OutputValue": v} for k, v in c["outputs"].items()]}]}
+                        return super().call(service, op, *args)
+                config, report = Path(folder) / "config.json", Path(folder) / "report.json"
+                config.write_text(json.dumps(c))
+                before = config.read_bytes()
+                with patch("sys.argv", ["aws_prepare", "readback", "--aws", "synthetic", "--config", str(config), "--output", str(report)]), patch.object(aws, "Aws", return_value=StackApi(c)), contextlib.redirect_stdout(io.StringIO()):
+                    if status in ("CREATE_COMPLETE", "UPDATE_COMPLETE"):
+                        aws.main()
+                        self.assertEqual(json.loads(report.read_text())["status"], "RESOURCES_BOUND_PREFLIGHT_REQUIRED")
+                        self.assertEqual(json.loads(config.read_text())["expected_execution_principal_arn"], c["outputs"]["OperatorRole"])
+                    else:
+                        with self.assertRaisesRegex(ValueError, "STACK_NOT_READY"): aws.main()
+                        self.assertEqual(config.read_bytes(), before)
+                        self.assertEqual(json.loads(report.read_text())["status"], "BLOCKED")
+
+    def test_runtime_roles_allow_exact_bucket_head_and_key_description(self):
+        resources = aws.resolved_template(fixture_config())["Resources"]
+        buckets = ["arn:aws:s3:::dora-62d-123456789012-a1b2c3d4-input", "arn:aws:s3:::dora-62d-123456789012-a1b2c3d4-output"]
+        keys = ["arn:aws:kms:eu-central-1:123456789012:key/" + digit * 8 + "-0000-0000-0000-000000000000" for digit in ("1", "2")]
+        for role in ("DataRole", "OperatorRole"):
+            statements = resources[role]["Properties"]["Policies"][0]["PolicyDocument"]["Statement"]
+            for action, expected in (("s3:ListBucket", buckets), ("kms:DescribeKey", keys)):
+                allowed = []
+                for item in statements:
+                    actions = item["Action"] if isinstance(item["Action"], list) else [item["Action"]]
+                    if item["Effect"] == "Allow" and action in actions and not item.get("Condition"):
+                        allowed.extend(item["Resource"] if isinstance(item["Resource"], list) else [item["Resource"]])
+                self.assertEqual(sorted(allowed), sorted(expected), (role, action))
+            for item in statements:
+                actions = item["Action"] if isinstance(item["Action"], list) else [item["Action"]]
+                if "s3:PutObject" in actions:
+                    self.assertIn(item["Resource"], [buckets[0] + "/input/*", buckets[1] + "/output/*"])
+        for kind in ("Input", "Output"):
+            denies = resources[kind + "BucketPolicy"]["Properties"]["PolicyDocument"]["Statement"]
+            self.assertTrue(any(s.get("Condition", {}).get("StringNotEqualsIfExists", {}).get("s3:x-amz-server-side-encryption") == "aws:kms" for s in denies))
+            self.assertTrue(any(s.get("Condition", {}).get("StringNotEqualsIfExists", {}).get("s3:x-amz-server-side-encryption-aws-kms-key-id") == keys[0 if kind == "Input" else 1] for s in denies))
+
+    def test_preflight_rejects_runtime_head_or_describe_denial(self):
+        from unittest.mock import patch
+        c = fixture_config()
+        for denied in (("head-bucket", "Input"), ("head-bucket", "Output"), ("describe-key", "Input"), ("describe-key", "Output")):
+            with self.subTest(denied=denied):
+                proof, runtime = PreflightApi(c), RuntimeReadApi(c, denied)
+                with patch.object(aws, "assume_operator", return_value=runtime):
+                    rows = aws.preflight(proof, c)
+                self.assertEqual(rows[5]["status"], "BLOCKED")
+                self.assertEqual(rows[7]["status"], "BLOCKED")
+                self.assertIn("AccessDenied", rows[5]["evidence"])
+                self.assertTrue(any(item.get("private_runtime_evidence") for item in proof.evidence))
+
+    def test_preflight_requires_actual_operator_identity_and_four_read_checks(self):
+        from unittest.mock import patch
+        c = fixture_config()
+        proof, runtime = PreflightApi(c), RuntimeReadApi(c)
+        with patch.object(aws, "assume_operator", return_value=runtime):
+            rows = aws.preflight(proof, c)
+        self.assertEqual(rows[5]["status"], "PASS")
+        self.assertEqual(rows[7]["status"], "PASS")
+        self.assertEqual(runtime.checked, [("head-bucket", "Input"), ("describe-key", "Input"), ("head-bucket", "Output"), ("describe-key", "Output")])
+        for fault in ("wrong-identity", "wrong-key"):
+            with patch.object(aws, "assume_operator", return_value=RuntimeReadApi(c, fault)):
+                self.assertEqual(aws.preflight(PreflightApi(c), c)[5]["status"], "BLOCKED")
+
     def test_lifecycle_aws_filter_and_id_spelling_preserves_exact_semantics(self):
         c = fixture_config()
         class ServiceShape(ResourceApi):
@@ -341,6 +415,49 @@ class ResourceApi:
             if op == "describe-rule": return {"State": p["State"], "ScheduleExpression": p["ScheduleExpression"]}
             if op == "list-targets-by-rule": return {"Targets": [] if self.fault == "event-target" else p["Targets"]}
         raise AssertionError((service, op))
+
+
+class PreflightApi(ResourceApi):
+    def __init__(self, c):
+        super().__init__(c)
+        self.evidence = []
+
+    def call(self, service, op, *args):
+        if op == "get-caller-identity": return {"Account": "123456789012", "Arn": "arn:aws:sts::123456789012:assumed-role/TestOwner/test"}
+        if op == "describe-organization": return {}
+        if op == "describe-effective-policy": return {"EffectivePolicy": {"TargetId": "123456789012", "PolicyContent": '{"services":{"transcribe":{"opt_out_policy":"optOut"}}}'}}
+        if op == "get-bucket-location": return {"LocationConstraint": "eu-central-1"}
+        if op == "get-public-access-block": return {"PublicAccessBlockConfiguration": {k: True for k in ("BlockPublicAcls", "IgnorePublicAcls", "BlockPublicPolicy", "RestrictPublicBuckets")}}
+        if op == "get-bucket-versioning": return {}
+        if op == "get-bucket-ownership-controls": return {"OwnershipControls": {"Rules": [{"ObjectOwnership": "BucketOwnerEnforced"}]}}
+        if op == "get-bucket-policy-status": return {"PolicyStatus": {"IsPublic": False}}
+        if op == "get-bucket-replication": raise aws.AwsError("ReplicationConfigurationNotFoundError")
+        if op == "get-object-lock-configuration": raise aws.AwsError("ObjectLockConfigurationNotFoundError")
+        if op == "get-bucket-encryption":
+            kind = "Input" if args[1].endswith("-input") else "Output"
+            return {"ServerSideEncryptionConfiguration": {"Rules": [{"ApplyServerSideEncryptionByDefault": {"SSEAlgorithm": "aws:kms", "KMSMasterKeyID": self.c["outputs"][kind + "Key"]}, "BucketKeyEnabled": False}]}}
+        if op == "describe-key": return {"KeyMetadata": {"Arn": args[1], "KeyState": "Enabled", "KeyManager": "CUSTOMER", "KeySpec": "SYMMETRIC_DEFAULT", "KeyUsage": "ENCRYPT_DECRYPT", "MultiRegion": False}}
+        return super().call(service, op, *args)
+
+
+class RuntimeReadApi:
+    """Only accepts the exact read-only runtime probes; never accepts speech/write calls."""
+    def __init__(self, c, denied=None):
+        self.c, self.denied, self.evidence, self.checked = c, denied, [], []
+
+    def call(self, service, op, *args):
+        self.evidence.append({"operation": [service, op]})
+        if op == "get-caller-identity":
+            role = "OtherRole" if self.denied == "wrong-identity" else "dora-62d-a1b2c3d4-operator"
+            return {"Account": "123456789012", "Arn": "arn:aws:sts::123456789012:assumed-role/" + role + "/test"}
+        assert (service, op) in (("s3api", "head-bucket"), ("kms", "describe-key"))
+        suffix = "Bucket" if op == "head-bucket" else "Key"
+        kind = next(kind for kind in ("Input", "Output") if args[1] == self.c["outputs"][kind + suffix])
+        assert args == (("--bucket", self.c["outputs"][kind + suffix], "--expected-bucket-owner", "123456789012") if suffix == "Bucket" else ("--key-id", self.c["outputs"][kind + suffix]))
+        self.checked.append((op, kind))
+        if self.denied == (op, kind): raise aws.AwsError("AccessDenied")
+        if op == "head-bucket": return {"BucketRegion": "eu-central-1"}
+        return {"KeyMetadata": {"Arn": "wrong" if self.denied == "wrong-key" else args[1], "KeyState": "Enabled", "KeyManager": "CUSTOMER", "KeySpec": "SYMMETRIC_DEFAULT", "KeyUsage": "ENCRYPT_DECRYPT", "MultiRegion": False}}
 
 
 class ProbeApi:
