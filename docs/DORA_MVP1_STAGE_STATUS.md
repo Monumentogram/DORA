@@ -1,5 +1,15 @@
 # Dora MVP 1 — Stage Status
 
+## 2026-09-29 — 6.3 development admission; exact repair baseline
+
+The [versioned 6.3 decision](stage0/DORA_ALPHA_DEVELOPMENT_ADMISSION_6_3_V0_1.md) records **6.3 = PASS / DEVELOPMENT_ADMISSION_AND_EXACT_BASELINE_FROZEN** and **STAGE_0 = PASS / ALPHA_IMPLEMENTATION_ADMITTED**, strictly for `OWNER_ONLY_CLOSED_INTERNAL_ALPHA`. Stage 6 is closed for implementation entry. The exact implementation baseline is `92f00f7dd4a18a3d4b2fdd159fdaef86fa3f8699` on `chat/alpha-asr-runner-scope`; the subsequent admission-document commit is not substituted for that CI-tested source.
+
+All ten predecessors remain satisfied in their accepted scopes. Complete exact-source Android CI passed before this decision; the versioned package binds its run, jobs and checks. Only `CLD-ADM-ADMISSION-001` changes from BLOCKED to `SATISFIED_FOR_OWNER_ONLY_CLOSED_INTERNAL_ALPHA`. Effective39: 6 SATISFIED + 2 SATISFIED_FOR_CLOSED_INTERNAL_ALPHA + 3 SATISFIED_FOR_OWNER_ONLY_CLOSED_INTERNAL_ALPHA + 0 PARTIALLY_SATISFIED + 3 OPEN + 0 BLOCKED + 25 NOT_RUN = 39. All 28 downstream gates and separate External Legal triggers remain intact.
+
+Group C is READY / NEXT; **7.1 — Идентификатор, подпись и установка alpha** is the first next task. Stage 7 is NOT_STARTED. Cloud runtime is NOT_IMPLEMENTED and FIRST_REAL_PRODUCT_AUDIO is NOT_READY until the applicable runtime checklist passes. PR #86 is outside this baseline; future `PR86-INTEGRATION-RECONCILIATION` grants no integration authority now.
+
+6.2D remains owner-only PASS: RU 17/179 = 9.4972% measured PASS; EN READ 37/181 = 20.4420% historical 18% benchmark FAIL with OD-62D-EN-01 owner acceptance only. No AWS, audio, quality or Recovery campaign was rerun. No second speaker, external/customer/public use, production readiness or Alpha-exit completion is admitted. Earlier dated entries retain their historical scope.
+
 ## 2026-09-29 — 6.2D technical closure: owner-only provider admitted
 
 The [technical closure result](stage0/DORA_CLOUD_62D_DUPLICATE_NAME_CLOSURE_RESULT_V0_1.md) closes the current product cases under the published prospective protocol. Canonical byte-level media preflight rejects contradictory format, truncated structure and subminimum duration before upload/Start. Retained missing-input/access adjudications map to typed non-retryable errors. Exactly two new synthetic Starts used the same valid input and request: the first completed with the exact Output CMK, the second returned `ConflictException`. Independent raw-evidence review, cleanup, stack retirement and bounded cost passed. Historical raw verdicts remain unchanged.

@@ -1,5 +1,15 @@
 # Dora MVP 1 — Implementation Readiness Review
 
+## 2026-09-29 — Stage 0 owner-only implementation admission
+
+The [6.3 admission package](stage0/DORA_ALPHA_DEVELOPMENT_ADMISSION_6_3_V0_1.md) records **STAGE_0 = PASS / ALPHA_IMPLEMENTATION_ADMITTED** and **6.3 = PASS / DEVELOPMENT_ADMISSION_AND_EXACT_BASELINE_FROZEN**, for `OWNER_ONLY_CLOSED_INTERNAL_ALPHA` only. Exact baseline: `92f00f7dd4a18a3d4b2fdd159fdaef86fa3f8699`, branch `chat/alpha-asr-runner-scope`. Full Android CI on that exact source passed before this decision. The later docs-only admission commit does not replace the tested implementation baseline.
+
+The ten entry predecessors remain valid. `CLD-ADM-ADMISSION-001` alone becomes `SATISFIED_FOR_OWNER_ONLY_CLOSED_INTERNAL_ALPHA`; all 28 downstream gates remain 3 OPEN / 25 NOT_RUN. Scope-qualified Privacy/Control, owner-only Evaluation/Provider and separate External Legal triggers are preserved. This closes implementation entry, not Alpha acceptance, production readiness or first real product-audio readiness.
+
+**7.1 — Идентификатор, подпись и установка alpha = READY / NEXT**, not started. Cloud runtime NOT_IMPLEMENTED; FIRST_REAL_PRODUCT_AUDIO NOT_READY. The existing pre-audio checklist, per-gap pre-code decisions, actual-build acceptance and revalidation requirements remain mandatory. PR #86 is outside the exact baseline and awaits a separately scoped `PR86-INTEGRATION-RECONCILIATION`; no merge or transplant is authorized here.
+
+RU 17/179 = 9.4972% remains measured PASS. EN READ 37/181 = 20.4420% remains a historical 18% benchmark FAIL accepted only under OD-62D-EN-01 for the Project Owner. No quality rerun, rescoring, second-speaker admission or external/customer/public use. Earlier entries below remain historical.
+
 ## 2026-09-29 — Owner-only provider technical admission satisfied
 
 The independently reviewed [technical closure result](stage0/DORA_CLOUD_62D_DUPLICATE_NAME_CLOSURE_RESULT_V0_1.md) establishes **6.2D = PASS / OWNER_ONLY_CLOSED_INTERNAL_ALPHA_PROVIDER_ADMITTED**. Canonical media preflight and retained typed adjudications satisfy the locally decidable negative cases; a new valid same-name request returned `ConflictException` after the first job was created and subsequently completed with the exact Output CMK. Cleanup and retirement passed; the total reserved upper bound is USD9.996384/10 and ASR USD0.541500/2, with actual charges NOT_OBSERVED.

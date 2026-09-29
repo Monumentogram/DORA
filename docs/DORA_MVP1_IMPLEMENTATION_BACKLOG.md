@@ -1,5 +1,15 @@
 # Dora MVP 1 — Executable Backlog
 
+## 2026-09-29 — 6.3 closed; first implementation task is 7.1
+
+The [versioned 6.3 decision](stage0/DORA_ALPHA_DEVELOPMENT_ADMISSION_6_3_V0_1.md) admits `OWNER_ONLY_CLOSED_INTERNAL_ALPHA` implementation from exact baseline `92f00f7dd4a18a3d4b2fdd159fdaef86fa3f8699`, branch `chat/alpha-asr-runner-scope`, after full exact-source Android CI PASS. **6.3 = PASS / DEVELOPMENT_ADMISSION_AND_EXACT_BASELINE_FROZEN; STAGE_0 = PASS / ALPHA_IMPLEMENTATION_ADMITTED.** No implementation is performed by this decision.
+
+**First next: 7.1 — Идентификатор, подпись и установка alpha (READY / NEXT).** Establish the internal application identity, signing custody outside Git and installation route under the existing 7.1 criteria. Then follow Stage 7 foundation → 8 recording/storage/privacy → 9 ASR/versioning → 10 local history/lexical search → 11 offline/reconnect/delete → 12 integrated Alpha acceptance. Stage 18 backend/control-plane dependencies must close at their actual predecessor points; this high-level order cannot defer a pre-audio or pre-integration gate.
+
+Future task **PR86-INTEGRATION-RECONCILIATION**: independently compare accepted Recovery implementation/evidence with the frozen Alpha baseline and decide merge as-is, rebase/reconcile, selective transplant or a clean replacement PR. This task is not executed or decided here; PR #86 is outside the baseline and remains OPEN / DRAFT / UNMERGED.
+
+All 28 downstream Cloud gates retain their existing 3 OPEN / 25 NOT_RUN dispositions. Cloud runtime NOT_IMPLEMENTED; FIRST_REAL_PRODUCT_AUDIO NOT_READY. Product authorization, consent/deletion ledgers, immutable transcript versions, canonical media preflight and provider-independent contracts require implementation evidence. Diagnostic harnesses are not production backend code. The owner-only provider scope, EN measured limitation and mandatory second-speaker revalidation are unchanged. Earlier entries remain historical.
+
 ## 2026-09-29 — 6.2D closed; separate 6.3 is next
 
 The [technical closure result](stage0/DORA_CLOUD_62D_DUPLICATE_NAME_CLOSURE_RESULT_V0_1.md) records **6.2D = PASS / OWNER_ONLY_CLOSED_INTERNAL_ALPHA_PROVIDER_ADMITTED**. Local preflight/typed negative-case handling and the new two-Start valid duplicate-name collision satisfy the current product boundary. Exact Output CMK, cleanup, retirement, independent review and cost bounds passed; historical raw technical verdicts are unchanged. No owner quality recording or WER was rerun.

@@ -1,0 +1,1807 @@
+{
+  "admission_boundaries": {
+    "EN_SPONTANEOUS": "NOT_EVALUATED",
+    "NOISE": "NOT_EVALUATED",
+    "TIMESTAMP_ACCURACY": "NOT_EVALUATED",
+    "FIRST_REAL_PRODUCT_AUDIO": "NOT_READY",
+    "PRE_ADDITIONAL_INTERNAL_TESTER_PROVIDER_REVALIDATION": "MANDATORY_BEFORE_SECOND_REAL_SPEAKER",
+    "alpha_exit_criteria": [
+      {
+        "current_status": "NOT_RUN",
+        "exit_id": "CLOUD-EXIT-01",
+        "gate_ids": [
+          "CLD-ADM-LOCAL-001",
+          "CLD-ADM-OFFLINE-001",
+          "CLD-ADM-AUTH-001",
+          "CLD-ADM-UPLOAD-001",
+          "CLD-ADM-ADAPTER-001"
+        ],
+        "name": "Cloud-only operation",
+        "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+        "required_evidence": "Online recognition without Local installation",
+        "roadmap_tasks": [
+          "9.1C",
+          "9.2C"
+        ]
+      },
+      {
+        "current_status": "NOT_RUN",
+        "exit_id": "CLOUD-EXIT-02",
+        "gate_ids": [
+          "CLD-ADM-LOCAL-001"
+        ],
+        "name": "Optional Local package",
+        "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+        "required_evidence": "Install/update/remove/integrity states while recording remains usable",
+        "roadmap_tasks": [
+          "9.1C"
+        ]
+      },
+      {
+        "current_status": "NOT_RUN",
+        "exit_id": "CLOUD-EXIT-03",
+        "gate_ids": [
+          "CLD-ADM-CONSENT-RUNTIME-001",
+          "CLD-ADM-AUTH-001",
+          "CLD-ADM-UPLOAD-001",
+          "CLD-ADM-ADAPTER-001"
+        ],
+        "name": "Authorized online Cloud ASR",
+        "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+        "required_evidence": "Authorized original-audio result with zero unauthorized bytes",
+        "roadmap_tasks": [
+          "9.2C",
+          "18.1C"
+        ]
+      },
+      {
+        "current_status": "NOT_RUN",
+        "exit_id": "CLOUD-EXIT-04",
+        "gate_ids": [
+          "CLD-ADM-OFFLINE-001",
+          "CLD-ADM-DATA-RUNTIME-001"
+        ],
+        "name": "Offline recordings never lost",
+        "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+        "required_evidence": "No-model/no-network/restart/storage-fault preservation",
+        "roadmap_tasks": [
+          "8.2C",
+          "11.2C"
+        ]
+      },
+      {
+        "current_status": "NOT_RUN",
+        "exit_id": "CLOUD-EXIT-05",
+        "gate_ids": [
+          "CLD-ADM-LOCAL-001"
+        ],
+        "name": "Installed Local offline ASR",
+        "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+        "required_evidence": "Integrated Local without account/network/GMS in admitted device scope",
+        "roadmap_tasks": [
+          "9.1C",
+          "11.2C"
+        ]
+      },
+      {
+        "current_status": "NOT_RUN",
+        "exit_id": "CLOUD-EXIT-06",
+        "gate_ids": [
+          "CLD-ADM-UPLOAD-001",
+          "CLD-ADM-RESULT-001",
+          "CLD-ADM-OFFLINE-001"
+        ],
+        "name": "Original audio reprocessable later",
+        "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+        "required_evidence": "Exact source version reprocessed; absent audio refuses text substitution",
+        "roadmap_tasks": [
+          "8.2C",
+          "9.2E"
+        ]
+      },
+      {
+        "current_status": "NOT_RUN",
+        "exit_id": "CLOUD-EXIT-07",
+        "gate_ids": [
+          "CLD-ADM-MERGE-001",
+          "CLD-ADM-DATA-RUNTIME-001"
+        ],
+        "name": "User edits survive Local-to-Cloud",
+        "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+        "required_evidence": "Clean/ambiguous/concurrent mapping and explicit acceptance",
+        "roadmap_tasks": [
+          "9.4C"
+        ]
+      },
+      {
+        "current_status": "NOT_RUN",
+        "exit_id": "CLOUD-EXIT-08",
+        "gate_ids": [
+          "CLD-ADM-CONSENT-RUNTIME-001",
+          "CLD-ADM-QUEUE-001",
+          "CLD-ADM-UX-001"
+        ],
+        "name": "All three consent policies",
+        "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+        "required_evidence": "Policy/prompt/batch/revocation assertions",
+        "roadmap_tasks": [
+          "9.2D",
+          "9.3C",
+          "11.1C"
+        ]
+      },
+      {
+        "current_status": "NOT_RUN",
+        "exit_id": "CLOUD-EXIT-09",
+        "gate_ids": [
+          "CLD-ADM-FAILURE-001",
+          "CLD-ADM-RESULT-001",
+          "CLD-ADM-DELETE-001"
+        ],
+        "name": "Cloud failures preserve existing data",
+        "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+        "required_evidence": "Four preservation invariants across complete failure matrix",
+        "roadmap_tasks": [
+          "9.2C",
+          "9.2E"
+        ]
+      },
+      {
+        "current_status": "NOT_RUN",
+        "exit_id": "CLOUD-EXIT-10",
+        "gate_ids": [
+          "CLD-ADM-QUEUE-001",
+          "CLD-ADM-BACKGROUND-001"
+        ],
+        "name": "Queue survives restart",
+        "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+        "required_evidence": "App/device restart with authorization and DEFERRED intact",
+        "roadmap_tasks": [
+          "9.2D",
+          "11.2C"
+        ]
+      },
+      {
+        "current_status": "NOT_RUN",
+        "exit_id": "CLOUD-EXIT-11",
+        "gate_ids": [
+          "CLD-ADM-CONSENT-RUNTIME-001",
+          "CLD-ADM-AUTH-001",
+          "CLD-ADM-UPLOAD-001",
+          "CLD-ADM-SECURITY-001"
+        ],
+        "name": "No unauthorized upload",
+        "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+        "required_evidence": "All dispatch/chunk/retry/revocation/cross-owner paths reject invalid authority",
+        "roadmap_tasks": [
+          "11.1C",
+          "12.1C"
+        ]
+      },
+      {
+        "current_status": "NOT_RUN",
+        "exit_id": "CLOUD-EXIT-12",
+        "gate_ids": [
+          "CLD-ADM-DATA-RUNTIME-001",
+          "CLD-ADM-RESULT-001",
+          "CLD-ADM-HISTORY-001",
+          "CLD-ADM-EXPORT-001"
+        ],
+        "name": "Provenance recorded",
+        "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+        "required_evidence": "Source/action/attempt/provider/model/result/edit/active lineage",
+        "roadmap_tasks": [
+          "7.2D",
+          "10.3C",
+          "11.3C"
+        ]
+      },
+      {
+        "current_status": "NOT_RUN",
+        "exit_id": "CLOUD-EXIT-13",
+        "gate_ids": [
+          "CLD-ADM-COST-001",
+          "CLD-ADM-OBSERVABILITY-001"
+        ],
+        "name": "Usage and cost measurable",
+        "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+        "required_evidence": "Duration/bytes/requests/usage/cost reconciliation and quota controls",
+        "roadmap_tasks": [
+          "18.2C"
+        ]
+      },
+      {
+        "current_status": "NOT_RUN",
+        "exit_id": "CLOUD-EXIT-14",
+        "gate_ids": [
+          "CLD-ADM-HARNESS-001",
+          "CLD-ADM-FAILURE-001",
+          "CLD-ADM-SECURITY-001",
+          "CLD-ADM-EXIT-001"
+        ],
+        "name": "Deterministic critical tests pass",
+        "owner_domain": "QA plus domain owners of linked gates; Product Owner accepts",
+        "required_evidence": "Exact-build reproducible run with no missing/skipped critical cases",
+        "roadmap_tasks": [
+          "7.3C",
+          "12.1C",
+          "12.4C"
+        ]
+      }
+    ],
+    "cloud_runtime": "NOT_IMPLEMENTED",
+    "first_real_product_audio_required_gate_ids": [
+      "CLD-ADM-ARCH-001",
+      "CLD-ADM-CONSENT-001",
+      "CLD-ADM-DATA-001",
+      "CLD-ADM-PRIVACY-001",
+      "CLD-ADM-RETENTION-001",
+      "CLD-ADM-CONTROL-001",
+      "CLD-ADM-PROVIDER-001",
+      "CLD-ADM-ADMISSION-001",
+      "CLD-ADM-API-001",
+      "CLD-ADM-AUTH-001",
+      "CLD-ADM-CONSENT-RUNTIME-001",
+      "CLD-ADM-SECRETS-001",
+      "CLD-ADM-UPLOAD-001",
+      "CLD-ADM-CRYPTO-001",
+      "CLD-ADM-RETENTION-RUNTIME-001",
+      "CLD-ADM-DATA-RUNTIME-001",
+      "CLD-ADM-FAILURE-001",
+      "CLD-ADM-QUEUE-001",
+      "CLD-ADM-ADAPTER-001",
+      "CLD-ADM-COST-001",
+      "CLD-ADM-OBSERVABILITY-001",
+      "CLD-ADM-SECURITY-001",
+      "CLD-ADM-RESULT-001",
+      "CLD-ADM-MERGE-001",
+      "CLD-ADM-OFFLINE-001",
+      "CLD-ADM-DELETE-001",
+      "CLD-ADM-HARNESS-001",
+      "CLD-ADM-UX-001",
+      "CLD-ADM-OPERATIONS-001",
+      "CLD-ADM-SUPPLY-001"
+    ],
+    "first_real_product_audio_required_gate_statuses": {
+      "CLD-ADM-ADAPTER-001": "NOT_RUN",
+      "CLD-ADM-ADMISSION-001": "SATISFIED_FOR_OWNER_ONLY_CLOSED_INTERNAL_ALPHA",
+      "CLD-ADM-API-001": "OPEN",
+      "CLD-ADM-ARCH-001": "SATISFIED",
+      "CLD-ADM-AUTH-001": "NOT_RUN",
+      "CLD-ADM-CONSENT-001": "SATISFIED",
+      "CLD-ADM-CONSENT-RUNTIME-001": "NOT_RUN",
+      "CLD-ADM-CONTROL-001": "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA",
+      "CLD-ADM-COST-001": "NOT_RUN",
+      "CLD-ADM-CRYPTO-001": "NOT_RUN",
+      "CLD-ADM-DATA-001": "SATISFIED",
+      "CLD-ADM-DATA-RUNTIME-001": "NOT_RUN",
+      "CLD-ADM-DELETE-001": "NOT_RUN",
+      "CLD-ADM-FAILURE-001": "NOT_RUN",
+      "CLD-ADM-HARNESS-001": "NOT_RUN",
+      "CLD-ADM-MERGE-001": "NOT_RUN",
+      "CLD-ADM-OBSERVABILITY-001": "NOT_RUN",
+      "CLD-ADM-OFFLINE-001": "NOT_RUN",
+      "CLD-ADM-OPERATIONS-001": "NOT_RUN",
+      "CLD-ADM-PRIVACY-001": "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA",
+      "CLD-ADM-PROVIDER-001": "SATISFIED_FOR_OWNER_ONLY_CLOSED_INTERNAL_ALPHA",
+      "CLD-ADM-QUEUE-001": "NOT_RUN",
+      "CLD-ADM-RESULT-001": "NOT_RUN",
+      "CLD-ADM-RETENTION-001": "SATISFIED",
+      "CLD-ADM-RETENTION-RUNTIME-001": "NOT_RUN",
+      "CLD-ADM-SECRETS-001": "NOT_RUN",
+      "CLD-ADM-SECURITY-001": "NOT_RUN",
+      "CLD-ADM-SUPPLY-001": "OPEN",
+      "CLD-ADM-UPLOAD-001": "NOT_RUN",
+      "CLD-ADM-UX-001": "NOT_RUN"
+    },
+    "full_provider_admission": "NOT_ESTABLISHED",
+    "implementation": "ADMITTED_FOR_OWNER_ONLY_CLOSED_INTERNAL_ALPHA_FROM_EXACT_BASELINE",
+    "internal_alpha_acceptance": "NOT_RUN",
+    "internal_alpha_required_gate_ids": [
+      "CLD-ADM-ARCH-001",
+      "CLD-ADM-CONSENT-001",
+      "CLD-ADM-DATA-001",
+      "CLD-ADM-SCOPE-001",
+      "CLD-ADM-GAPS-001",
+      "CLD-ADM-PRIVACY-001",
+      "CLD-ADM-RETENTION-001",
+      "CLD-ADM-CONTROL-001",
+      "CLD-ADM-EVALUATION-001",
+      "CLD-ADM-PROVIDER-001",
+      "CLD-ADM-ADMISSION-001",
+      "CLD-ADM-API-001",
+      "CLD-ADM-AUTH-001",
+      "CLD-ADM-CONSENT-RUNTIME-001",
+      "CLD-ADM-SECRETS-001",
+      "CLD-ADM-UPLOAD-001",
+      "CLD-ADM-CRYPTO-001",
+      "CLD-ADM-RETENTION-RUNTIME-001",
+      "CLD-ADM-DATA-RUNTIME-001",
+      "CLD-ADM-FAILURE-001",
+      "CLD-ADM-QUEUE-001",
+      "CLD-ADM-BACKGROUND-001",
+      "CLD-ADM-ADAPTER-001",
+      "CLD-ADM-COST-001",
+      "CLD-ADM-OBSERVABILITY-001",
+      "CLD-ADM-SECURITY-001",
+      "CLD-ADM-RESULT-001",
+      "CLD-ADM-MERGE-001",
+      "CLD-ADM-LOCAL-001",
+      "CLD-ADM-OFFLINE-001",
+      "CLD-ADM-DELETE-001",
+      "CLD-ADM-HARNESS-001",
+      "CLD-ADM-UX-001",
+      "CLD-ADM-HISTORY-001",
+      "CLD-ADM-EXPORT-001",
+      "CLD-ADM-OPERATIONS-001",
+      "CLD-ADM-SUPPLY-001",
+      "CLD-ADM-EXIT-001"
+    ],
+    "pr_86": "OPEN_DRAFT_UNMERGED; future PR86-INTEGRATION-RECONCILIATION must compare accepted Recovery implementation/evidence with the frozen baseline and decide merge/rebase/selective transplant/replacement separately.",
+    "provider": "OWNER_ONLY_CLOSED_INTERNAL_ALPHA_SCOPE_ONLY",
+    "provider_configuration": {
+      "languages": [
+        "ru-RU",
+        "en-US"
+      ],
+      "mode": "STANDARD_BATCH_FILE_ASR",
+      "region": "eu-central-1",
+      "rule": "Material provider, configuration, language, recording-path or second-speaker change requires prospective revalidation before use outside the admitted owner scope.",
+      "service": "Amazon Transcribe"
+    },
+    "public_release": "NOT_ADMITTED",
+    "scope_limitations": [
+      "Historical RU 17/179 (9.4972%) met its bounded criterion; EN 37/181 (20.4420%) failed the frozen 18% benchmark and remains a measured limitation under OD-62D-EN-01.",
+      "Owner-only acceptance does not expand to other speakers, users, devices, noise conditions, languages or external release; second-speaker revalidation is required before expansion.",
+      "Pronunciation timestamps have bounded structural evidence only; accuracy, device energy, thermal and broad provider quality are not established.",
+      "Consent, deletion, ownership, immutable transcript versions, media preflight, backend isolation and provider-independent interfaces still require implementation and attributable runtime tests."
+    ],
+    "work_performed_here": "DOCUMENTED_DECISION_ONLY"
+  },
+  "admitted_scope": "OWNER_ONLY_CLOSED_INTERNAL_ALPHA",
+  "alpha_scope_6_1": {
+    "capability_dispositions": [
+      {
+        "capability_id": "ALPHA-REC-001",
+        "disposition": "IN",
+        "name": "Microphone recording",
+        "roadmap_tasks": [
+          "8.1",
+          "8.2",
+          "8.3",
+          "8.5",
+          "8.6"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-REC-002",
+        "disposition": "IN",
+        "name": "Accepted Alpha Recovery",
+        "roadmap_tasks": [
+          "8.1",
+          "8.5",
+          "6.2"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-REC-003",
+        "disposition": "IN",
+        "name": "Bounded VAD and technical segmentation",
+        "roadmap_tasks": [
+          "6.2",
+          "8.4",
+          "8.4C"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-LANG-001",
+        "disposition": "IN",
+        "name": "Russian and English",
+        "roadmap_tasks": [
+          "6.2D",
+          "9.2C",
+          "12.1C"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-ASR-001",
+        "disposition": "IN",
+        "name": "Cloud ASR on selected AWS platform",
+        "roadmap_tasks": [
+          "6.2D",
+          "7.2C",
+          "9.2C",
+          "18.1C"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-ASR-002",
+        "disposition": "OPTIONAL",
+        "name": "Local ASR installation and use",
+        "roadmap_tasks": [
+          "9.1C",
+          "11.2C"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-OFFLINE-001",
+        "disposition": "IN",
+        "name": "Offline recording and deferred processing",
+        "roadmap_tasks": [
+          "8.2C",
+          "9.2D",
+          "11.2C"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-CONSENT-001",
+        "disposition": "IN",
+        "name": "Recording authorization",
+        "roadmap_tasks": [
+          "9.2D",
+          "9.3C",
+          "11.1C"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-DATA-001",
+        "disposition": "IN",
+        "name": "Transcript versions and provenance",
+        "roadmap_tasks": [
+          "7.2D",
+          "9.2E"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-TIME-001",
+        "disposition": "IN",
+        "name": "Timestamp availability",
+        "roadmap_tasks": [
+          "6.2D",
+          "9.2E",
+          "12.1C"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-EDIT-001",
+        "disposition": "IN",
+        "name": "User edits and safe activation",
+        "roadmap_tasks": [
+          "9.4",
+          "9.4C"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-REPROCESS-001",
+        "disposition": "IN",
+        "name": "Original-audio reprocessing",
+        "roadmap_tasks": [
+          "9.2E"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-HISTORY-001",
+        "disposition": "IN",
+        "name": "Local recording history",
+        "roadmap_tasks": [
+          "10.1",
+          "10.3C"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-SEARCH-001",
+        "disposition": "IN",
+        "name": "Local lexical search",
+        "roadmap_tasks": [
+          "6.2",
+          "10.2",
+          "10.3C"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-EXPORT-001",
+        "disposition": "IN",
+        "name": "Explicit active-version export",
+        "roadmap_tasks": [
+          "11.3",
+          "11.3C"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-DELETE-001",
+        "disposition": "IN",
+        "name": "Deletion and privacy",
+        "roadmap_tasks": [
+          "11.1",
+          "11.1C",
+          "8.2C"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-OPS-001",
+        "disposition": "IN",
+        "name": "Cloud safety and operational controls",
+        "roadmap_tasks": [
+          "7.2E",
+          "11.1C",
+          "18.1C",
+          "18.2C",
+          "12.1C"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-DIAR-001",
+        "disposition": "DEFERRED",
+        "name": "Automatic diarization and speaker identity",
+        "roadmap_tasks": [
+          "13",
+          "13.1",
+          "13.2"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-PROTOCOL-001",
+        "disposition": "DEFERRED",
+        "name": "Meeting protocol generation",
+        "roadmap_tasks": [
+          "14",
+          "14.1",
+          "14.2"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-DECISION-001",
+        "disposition": "DEFERRED",
+        "name": "Decision intelligence",
+        "roadmap_tasks": [
+          "15",
+          "15.1",
+          "15.2"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-TASK-001",
+        "disposition": "DEFERRED",
+        "name": "Task extraction",
+        "roadmap_tasks": [
+          "16",
+          "16.1",
+          "16.2"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-SUMMARY-001",
+        "disposition": "DEFERRED",
+        "name": "Advanced summaries",
+        "roadmap_tasks": [
+          "17",
+          "17.1",
+          "17.2"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-LLM-001",
+        "disposition": "DEFERRED",
+        "name": "LLM processing",
+        "roadmap_tasks": [
+          "14",
+          "15",
+          "16",
+          "17",
+          "6.2D"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-EMBED-001",
+        "disposition": "DEFERRED",
+        "name": "Embeddings and semantic/vector search",
+        "roadmap_tasks": [
+          "10",
+          "19"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-BIOMETRIC-001",
+        "disposition": "DEFERRED",
+        "name": "Voice biometrics",
+        "roadmap_tasks": [
+          "19"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-CONNECT-001",
+        "disposition": "DEFERRED",
+        "name": "Connectors",
+        "roadmap_tasks": [
+          "19"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-TEAM-001",
+        "disposition": "DEFERRED",
+        "name": "Team sync",
+        "roadmap_tasks": [
+          "19"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-BILLING-001",
+        "disposition": "DEFERRED",
+        "name": "Billing",
+        "roadmap_tasks": [
+          "18",
+          "19"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-RELEASE-001",
+        "disposition": "DEFERRED",
+        "name": "Public-store release",
+        "roadmap_tasks": [
+          "19",
+          "19.1",
+          "19.2"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-MIXED-001",
+        "disposition": "OUT_OF_SCOPE",
+        "name": "Guaranteed mixed RU/EN",
+        "roadmap_tasks": [
+          "6.2D"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-DEVICE-001",
+        "disposition": "OUT_OF_SCOPE",
+        "name": "All-device/OEM or production support",
+        "roadmap_tasks": [
+          "19"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-INPUT-001",
+        "disposition": "OUT_OF_SCOPE",
+        "name": "Call/system/playback audio capture",
+        "roadmap_tasks": [
+          "19"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-MULTI-001",
+        "disposition": "OUT_OF_SCOPE",
+        "name": "Second active provider or adapter implementation",
+        "roadmap_tasks": [
+          "18"
+        ]
+      },
+      {
+        "capability_id": "ALPHA-REALTIME-001",
+        "disposition": "OUT_OF_SCOPE",
+        "name": "Direct Android-to-provider realtime route",
+        "roadmap_tasks": [
+          "18"
+        ]
+      }
+    ],
+    "core_path": "Offline original-audio recording remains available without network or Local model; pending/deferred work persists and requires current consent at reconnect. Cloud-only ASR is in scope through DORA backend/control plane and provider adapter. Local Small q8_0 installation is optional within its proven POCO boundary. Deferred functions are not silently admitted.",
+    "product_flow": "Original audio -> authorized ASR and immutable transcript versions -> user edits -> local history and lexical search -> explicit export.",
+    "source": "docs/contracts/DORA_ALPHA_SCOPE_V0_1.json"
+  },
+  "baseline": {
+    "branch_at_decision": "chat/alpha-asr-runner-scope",
+    "commit": "92f00f7dd4a18a3d4b2fdd159fdaef86fa3f8699",
+    "later_admission_document_commit_is_baseline": false,
+    "name": "ALPHA_IMPLEMENTATION_BASELINE",
+    "parent": "a7701763a6486e4f707d23a70c0cc600431a88ac",
+    "rule": "This decision admits development against the exact reviewed baseline and its frozen contracts; later changes require their own gates and checks.",
+    "source_git_blob_sha256": {
+      ".github/workflows/android-ci.yml": {
+        "git_blob_sha256": "5a7173c2f7e7896900ddb2ca664ee0e5528283d43655522c5c9a20af8a2f909e",
+        "git_commit": "92f00f7dd4a18a3d4b2fdd159fdaef86fa3f8699"
+      },
+      "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md": {
+        "git_blob_sha256": "263ff21911076dd8e4d3acd33eaa6e3e6f39e7ec686f59076c82639b4e9ceed9",
+        "git_commit": "92f00f7dd4a18a3d4b2fdd159fdaef86fa3f8699"
+      },
+      "docs/adr/ADR-0009-alpha-cloud-execution-boundary.md": {
+        "git_blob_sha256": "e614c1817d68c03fb31f4e026bfda7a81099b8ea72deff3a82aea8a4bb8ec2ca",
+        "git_commit": "92f00f7dd4a18a3d4b2fdd159fdaef86fa3f8699"
+      },
+      "docs/adr/ADR-0013-closed-internal-alpha-expert-review-governance.md": {
+        "git_blob_sha256": "09d07a85e2d8a04fd41915d495d4c947aeea3477f37cc1e3b2d83cdf9fd0833e",
+        "git_commit": "92f00f7dd4a18a3d4b2fdd159fdaef86fa3f8699"
+      },
+      "docs/contracts/DORA_ALPHA_SCOPE_V0_1.json": {
+        "git_blob_sha256": "f8ab5373e5dee3fc96e4229d333f4c178baee5b4b67f8a896a21b15965b762be",
+        "git_commit": "92f00f7dd4a18a3d4b2fdd159fdaef86fa3f8699"
+      },
+      "docs/contracts/DORA_CLOUD_62D_EN_OWNER_ACCEPTANCE_SCOPE_OVERLAY_V0_1.json": {
+        "git_blob_sha256": "44fa77be4a3cfda065b30e0d14905745ee048a52767ee4b6558d3b78fde3dffa",
+        "git_commit": "92f00f7dd4a18a3d4b2fdd159fdaef86fa3f8699"
+      },
+      "docs/contracts/DORA_CLOUD_ALPHA_ADMISSION_GATES_V0_1.json": {
+        "git_blob_sha256": "3a03cffa43a0f2743da54b0d47f050f4ac06a260f8e63b66ef60869107a8e350",
+        "git_commit": "92f00f7dd4a18a3d4b2fdd159fdaef86fa3f8699"
+      },
+      "docs/evidence/cloud-6.2d-duplicate-name-closure-result-v0.1.json": {
+        "git_blob_sha256": "56c3e836e3208a151e4add38d7b728b6acb494e90d46b438ab6958492a73682f",
+        "git_commit": "92f00f7dd4a18a3d4b2fdd159fdaef86fa3f8699"
+      },
+      "docs/evidence/cloud-6.2d-owner-technical-result-v0.1.json": {
+        "git_blob_sha256": "c3d667c604e4ee12652cb314bacf4d780006e9f6ce5dd7e0c04b38556329b770",
+        "git_commit": "92f00f7dd4a18a3d4b2fdd159fdaef86fa3f8699"
+      }
+    },
+    "suitability": "FRESH_EXACT_SOURCE_CI_PASS; PUBLIC_GIT_SOURCE_ONLY; NO_PRIVATE_LOCAL_OR_RETIRED_AWS_DEPENDENCY; PR86_NOT_INTEGRATED"
+  },
+  "ci": {
+    "artifacts": [
+      {
+        "digest": "sha256:f522a0ae4563dd52da5f8148f0af16c583303e86b9a651b3e41d87683544aa3b",
+        "id": 11059280303,
+        "name": "dora-poc-capture-debug-apk",
+        "size_in_bytes": 10429485
+      },
+      {
+        "digest": "sha256:50aed608ac9d6c10b90dfc95cd0cdd47734dc811e1b17795d023da33a690d05a",
+        "id": 11059160417,
+        "name": "dora-stage00-debug-apk",
+        "size_in_bytes": 10296487
+      }
+    ],
+    "attempt": 1,
+    "conclusion": "success",
+    "created_at": "2026-09-29T19:39:12Z",
+    "event": "workflow_dispatch",
+    "head_sha": "92f00f7dd4a18a3d4b2fdd159fdaef86fa3f8699",
+    "jobs": [
+      {
+        "conclusion": "success",
+        "job_id": 109585257276,
+        "name": "android-bootstrap",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job"
+          },
+          {
+            "conclusion": "success",
+            "name": "Check out repository"
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify immutable baseline is present"
+          },
+          {
+            "conclusion": "success",
+            "name": "Set up JDK 17"
+          },
+          {
+            "conclusion": "success",
+            "name": "Set up Gradle and validate wrapper"
+          },
+          {
+            "conclusion": "success",
+            "name": "Install Android SDK 36"
+          },
+          {
+            "conclusion": "success",
+            "name": "Validate Stage 00 artifacts"
+          },
+          {
+            "conclusion": "success",
+            "name": "Validate isolated capture PoC contracts"
+          },
+          {
+            "conclusion": "success",
+            "name": "Validate isolated search PoC contracts"
+          },
+          {
+            "conclusion": "success",
+            "name": "Fetch pinned Recovery reviewed-source provenance"
+          },
+          {
+            "conclusion": "success",
+            "name": "Validate recovery governance package"
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify exact recovery dependency inventory"
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify recovery execution remains fail-closed"
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify pure-host VPN contract kernel"
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify hermetic numeric-loopback VPN transport harness"
+          },
+          {
+            "conclusion": "success",
+            "name": "Check formatting and Kotlin static analysis"
+          },
+          {
+            "conclusion": "success",
+            "name": "Unit tests, instrumentation compilation, lint, and debug assembly"
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify locked search dependency artifact inventory"
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify exact search license and NOTICE inventory"
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify native library admission and ELF alignment"
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify capture PoC native library admission and ELF alignment"
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify 16 KiB APK zip alignment"
+          },
+          {
+            "conclusion": "success",
+            "name": "Verify capture PoC 16 KiB APK zip alignment"
+          },
+          {
+            "conclusion": "success",
+            "name": "Upload Stage 00 debug APK"
+          },
+          {
+            "conclusion": "success",
+            "name": "Upload capture PoC debug APK"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Set up Gradle and validate wrapper"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Set up JDK 17"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Check out repository"
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job"
+          }
+        ]
+      },
+      {
+        "conclusion": "success",
+        "job_id": 109585257842,
+        "name": "search-smoke",
+        "status": "completed",
+        "steps": [
+          {
+            "conclusion": "success",
+            "name": "Set up job"
+          },
+          {
+            "conclusion": "success",
+            "name": "Check out repository"
+          },
+          {
+            "conclusion": "success",
+            "name": "Set up JDK 17"
+          },
+          {
+            "conclusion": "success",
+            "name": "Set up Gradle and validate wrapper"
+          },
+          {
+            "conclusion": "success",
+            "name": "Install Android API 36 emulator"
+          },
+          {
+            "conclusion": "success",
+            "name": "Create API 36 search smoke AVD"
+          },
+          {
+            "conclusion": "success",
+            "name": "Start API 36 emulator"
+          },
+          {
+            "conclusion": "success",
+            "name": "Run Room FTS4 schema, correctness, safety, mapping, and mutation smoke tests"
+          },
+          {
+            "conclusion": "skipped",
+            "name": "Print emulator log on failure"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Set up Gradle and validate wrapper"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Set up JDK 17"
+          },
+          {
+            "conclusion": "success",
+            "name": "Post Check out repository"
+          },
+          {
+            "conclusion": "success",
+            "name": "Complete job"
+          }
+        ]
+      }
+    ],
+    "mandatory_skipped_steps": 0,
+    "status": "completed",
+    "updated_at": "2026-09-29T19:49:22Z",
+    "url": "https://github.com/Monumentogram/DORA/actions/runs/36620762619",
+    "workflow_run_id": 36620762619
+  },
+  "decision": "PASS / DEVELOPMENT_ADMISSION_AND_EXACT_BASELINE_FROZEN",
+  "decision_date": "2026-09-29",
+  "downstream_gates": [
+    {
+      "dependencies": [
+        "CLD-ADM-ADMISSION-001"
+      ],
+      "effective_status": "OPEN",
+      "gate_id": "CLD-ADM-API-001",
+      "name": "Versioned API and job contract",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "7.2C",
+        "7.2E",
+        "BE-API-001"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-CONTROL-001",
+        "CLD-ADM-API-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-AUTH-001",
+      "name": "Identity and ownership enforcement",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "7.2E",
+        "18.1C",
+        "BE-AUTH-001"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-CONSENT-001",
+        "CLD-ADM-AUTH-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-CONSENT-RUNTIME-001",
+      "name": "Runtime consent enforcement",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "9.2C",
+        "9.2D",
+        "11.1C",
+        "18.1C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-CONTROL-001",
+        "CLD-ADM-ADMISSION-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-SECRETS-001",
+      "name": "Privileged secrets protection",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "18.1C",
+        "11.1C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-AUTH-001",
+        "CLD-ADM-CONSENT-RUNTIME-001",
+        "CLD-ADM-SECRETS-001",
+        "CLD-ADM-CRYPTO-001",
+        "CLD-ADM-API-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-UPLOAD-001",
+      "name": "Storage and scoped upload authorization",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "9.2C",
+        "8.4C",
+        "18.1C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-CONTROL-001",
+        "CLD-ADM-SECRETS-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-CRYPTO-001",
+      "name": "Payload transport and key protection",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "11.1C",
+        "18.1C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-RETENTION-001",
+        "CLD-ADM-AUTH-001",
+        "CLD-ADM-PROVIDER-001",
+        "CLD-ADM-DELETE-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-RETENTION-RUNTIME-001",
+      "name": "Retention enforcement and remote deletion",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "11.1C",
+        "18.1C",
+        "BE-DELETE-001"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-DATA-001",
+        "CLD-ADM-ADMISSION-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-DATA-RUNTIME-001",
+      "name": "Durable versions and atomic activation",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "7.2D",
+        "8.2C",
+        "8.4C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-API-001",
+        "CLD-ADM-DATA-RUNTIME-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-FAILURE-001",
+      "name": "Idempotency and failure safety",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "9.2C",
+        "9.2E",
+        "18.1C",
+        "12.1C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-CONSENT-RUNTIME-001",
+        "CLD-ADM-DATA-RUNTIME-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-QUEUE-001",
+      "name": "Offline queue and reconnect",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "9.2D",
+        "11.2C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-QUEUE-001",
+        "CLD-ADM-FAILURE-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-BACKGROUND-001",
+      "name": "Android background execution",
+      "required_before": [
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "11.2C",
+        "9.2C",
+        "12.1C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-PROVIDER-001",
+        "CLD-ADM-API-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-ADAPTER-001",
+      "name": "Replaceable CloudAsrProvider implementation",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "7.2C",
+        "18.1C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-PROVIDER-001",
+        "CLD-ADM-API-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-COST-001",
+      "name": "Cost, quotas and abuse controls",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "18.2C",
+        "18.1C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-PRIVACY-001",
+        "CLD-ADM-RETENTION-001",
+        "CLD-ADM-API-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-OBSERVABILITY-001",
+      "name": "Content-free operational observability",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "18.2C",
+        "11.1C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-CONTROL-001",
+        "CLD-ADM-UPLOAD-001",
+        "CLD-ADM-AUTH-001",
+        "CLD-ADM-SECRETS-001",
+        "CLD-ADM-COST-001",
+        "CLD-ADM-OBSERVABILITY-001",
+        "CLD-ADM-RESULT-001",
+        "CLD-ADM-DELETE-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-SECURITY-001",
+      "name": "Bounded Alpha threat verification",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "11.1C",
+        "12.1C",
+        "18.1C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-DATA-RUNTIME-001",
+        "CLD-ADM-API-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-RESULT-001",
+      "name": "Cloud result validation",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "9.2E",
+        "7.2D",
+        "18.1C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-RESULT-001",
+        "CLD-ADM-DATA-RUNTIME-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-MERGE-001",
+      "name": "Edit-preserving merge and review",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "9.4C",
+        "12.1C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-DATA-RUNTIME-001",
+        "CLD-ADM-SCOPE-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-LOCAL-001",
+      "name": "Optional Local package and account-free operation",
+      "required_before": [
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "9.1C",
+        "11.2C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-DATA-RUNTIME-001",
+        "CLD-ADM-QUEUE-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-OFFLINE-001",
+      "name": "Cloud-only offline audio preservation",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "8.2C",
+        "9.1C",
+        "9.2D",
+        "11.2C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-RETENTION-001",
+        "CLD-ADM-DATA-RUNTIME-001",
+        "CLD-ADM-API-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-DELETE-001",
+      "name": "Deletion, cancellation and stale-result safety",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "11.1C",
+        "8.2C",
+        "9.2E",
+        "10.3C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-ADMISSION-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-HARNESS-001",
+      "name": "Deterministic Cloud test infrastructure",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "7.3C",
+        "12.1C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-PRIVACY-001",
+        "CLD-ADM-CONSENT-RUNTIME-001",
+        "CLD-ADM-RETENTION-001",
+        "CLD-ADM-HARNESS-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-UX-001",
+      "name": "Consent and operational UX validation",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "9.3C",
+        "11.1C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-MERGE-001",
+        "CLD-ADM-DELETE-001",
+        "CLD-ADM-DATA-RUNTIME-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-HISTORY-001",
+      "name": "Active-version history and search",
+      "required_before": [
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "10.3C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-HISTORY-001",
+        "CLD-ADM-MERGE-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-EXPORT-001",
+      "name": "Active-version export and provenance",
+      "required_before": [
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "11.3C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-RETENTION-RUNTIME-001",
+        "CLD-ADM-COST-001",
+        "CLD-ADM-OBSERVABILITY-001",
+        "CLD-ADM-ADAPTER-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-OPERATIONS-001",
+      "name": "Operational stop, recovery and change control",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "18.1C",
+        "18.2C",
+        "11.1C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-ADMISSION-001",
+        "CLD-ADM-PROVIDER-001"
+      ],
+      "effective_status": "OPEN",
+      "gate_id": "CLD-ADM-SUPPLY-001",
+      "name": "Dependency and deployment provenance",
+      "required_before": [
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "18.1C",
+        "7.3C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-BACKGROUND-001",
+        "CLD-ADM-LOCAL-001",
+        "CLD-ADM-HISTORY-001",
+        "CLD-ADM-EXPORT-001",
+        "CLD-ADM-SECURITY-001",
+        "CLD-ADM-OPERATIONS-001",
+        "CLD-ADM-SUPPLY-001",
+        "CLD-ADM-UX-001",
+        "CLD-ADM-OFFLINE-001",
+        "CLD-ADM-FAILURE-001"
+      ],
+      "effective_status": "NOT_RUN",
+      "gate_id": "CLD-ADM-EXIT-001",
+      "name": "Cloud Alpha exit acceptance",
+      "required_before": [
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "12.1C",
+        "12.4C"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-EXIT-001"
+      ],
+      "effective_status": "OPEN",
+      "gate_id": "CLD-ADM-RELEASE-001",
+      "name": "Public release admission",
+      "required_before": [
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "19.1",
+        "19.2"
+      ]
+    }
+  ],
+  "effective_gates": {
+    "changed_gate_only": "CLD-ADM-ADMISSION-001",
+    "counts": {
+      "NOT_RUN": 25,
+      "OPEN": 3,
+      "SATISFIED": 6,
+      "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA": 2,
+      "SATISFIED_FOR_OWNER_ONLY_CLOSED_INTERNAL_ALPHA": 3
+    },
+    "new_admission_status": "SATISFIED_FOR_OWNER_ONLY_CLOSED_INTERNAL_ALPHA",
+    "prior_admission_status": "BLOCKED",
+    "prior_source": "docs/evidence/cloud-6.2d-duplicate-name-closure-result-v0.1.json",
+    "statuses": {
+      "CLD-ADM-ADAPTER-001": "NOT_RUN",
+      "CLD-ADM-ADMISSION-001": "SATISFIED_FOR_OWNER_ONLY_CLOSED_INTERNAL_ALPHA",
+      "CLD-ADM-API-001": "OPEN",
+      "CLD-ADM-ARCH-001": "SATISFIED",
+      "CLD-ADM-AUTH-001": "NOT_RUN",
+      "CLD-ADM-BACKGROUND-001": "NOT_RUN",
+      "CLD-ADM-CONSENT-001": "SATISFIED",
+      "CLD-ADM-CONSENT-RUNTIME-001": "NOT_RUN",
+      "CLD-ADM-CONTROL-001": "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA",
+      "CLD-ADM-COST-001": "NOT_RUN",
+      "CLD-ADM-CRYPTO-001": "NOT_RUN",
+      "CLD-ADM-DATA-001": "SATISFIED",
+      "CLD-ADM-DATA-RUNTIME-001": "NOT_RUN",
+      "CLD-ADM-DELETE-001": "NOT_RUN",
+      "CLD-ADM-EVALUATION-001": "SATISFIED_FOR_OWNER_ONLY_CLOSED_INTERNAL_ALPHA",
+      "CLD-ADM-EXIT-001": "NOT_RUN",
+      "CLD-ADM-EXPORT-001": "NOT_RUN",
+      "CLD-ADM-FAILURE-001": "NOT_RUN",
+      "CLD-ADM-GAPS-001": "SATISFIED",
+      "CLD-ADM-HARNESS-001": "NOT_RUN",
+      "CLD-ADM-HISTORY-001": "NOT_RUN",
+      "CLD-ADM-LOCAL-001": "NOT_RUN",
+      "CLD-ADM-MERGE-001": "NOT_RUN",
+      "CLD-ADM-OBSERVABILITY-001": "NOT_RUN",
+      "CLD-ADM-OFFLINE-001": "NOT_RUN",
+      "CLD-ADM-OPERATIONS-001": "NOT_RUN",
+      "CLD-ADM-PRIVACY-001": "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA",
+      "CLD-ADM-PROVIDER-001": "SATISFIED_FOR_OWNER_ONLY_CLOSED_INTERNAL_ALPHA",
+      "CLD-ADM-QUEUE-001": "NOT_RUN",
+      "CLD-ADM-RELEASE-001": "OPEN",
+      "CLD-ADM-RESULT-001": "NOT_RUN",
+      "CLD-ADM-RETENTION-001": "SATISFIED",
+      "CLD-ADM-RETENTION-RUNTIME-001": "NOT_RUN",
+      "CLD-ADM-SCOPE-001": "SATISFIED",
+      "CLD-ADM-SECRETS-001": "NOT_RUN",
+      "CLD-ADM-SECURITY-001": "NOT_RUN",
+      "CLD-ADM-SUPPLY-001": "OPEN",
+      "CLD-ADM-UPLOAD-001": "NOT_RUN",
+      "CLD-ADM-UX-001": "NOT_RUN"
+    },
+    "total": 39
+  },
+  "execution_order": {
+    "android_credentials": "NO_PERMANENT_AWS_CREDENTIALS_IN_ANDROID",
+    "architecture": "ADR-0009 DORA-controlled backend and CloudAsrProvider boundary; original audio only after current consent and data/retention/security gates. PR86 is not integrated by this decision.",
+    "dependency_rule": "Follow each frozen gate's required_before/dependencies/roadmap_tasks. Stage 18 backend/control-plane and all first-real-audio gates close at their actual predecessor points; stage order never postpones a gate.",
+    "diagnostic_harness": "NOT_PRODUCTION_BACKEND",
+    "downstream_gate_waiver": "NONE",
+    "next_task": "7.1 — internal alpha application identity, signing custody outside Git, and installation route",
+    "next_task_status": "READY / NEXT; NOT_EXECUTED_HERE",
+    "stage_sequence": [
+      {
+        "purpose": "application foundation and contracts",
+        "stage": 7
+      },
+      {
+        "purpose": "recording, storage and privacy controls",
+        "stage": 8
+      },
+      {
+        "purpose": "ASR, cloud adapter, authorization and versioning",
+        "stage": 9
+      },
+      {
+        "purpose": "local history and lexical search",
+        "stage": 10
+      },
+      {
+        "purpose": "offline, reconnect, deletion and background behavior",
+        "stage": 11
+      },
+      {
+        "purpose": "integrated Alpha acceptance against exact build and fourteen exits",
+        "stage": 12
+      }
+    ]
+  },
+  "historical_failed_ci": {
+    "disposition": "Preserved historical failed run; the exact Recovery validator/source-provenance repair was tested in the successful run above.",
+    "head_sha": "a7701763a6486e4f707d23a70c0cc600431a88ac",
+    "result": "FAILED_REC_I3_SCOPE_FIRST_ANCESTRY",
+    "run_id": 36613265772
+  },
+  "predecessors": [
+    {
+      "dependencies": [],
+      "effective_status": "SATISFIED",
+      "gate_id": "CLD-ADM-ARCH-001",
+      "name": "Architecture authority",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_PROVIDER_ADMISSION",
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "6.1C"
+      ]
+    },
+    {
+      "dependencies": [],
+      "effective_status": "SATISFIED",
+      "gate_id": "CLD-ADM-CONSENT-001",
+      "name": "Product and consent specification",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_PROVIDER_ADMISSION",
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "6.1A",
+        "6.1B"
+      ]
+    },
+    {
+      "dependencies": [],
+      "effective_status": "SATISFIED",
+      "gate_id": "CLD-ADM-DATA-001",
+      "name": "Data and versioning specification",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "6.1B"
+      ]
+    },
+    {
+      "dependencies": [],
+      "effective_status": "SATISFIED",
+      "gate_id": "CLD-ADM-SCOPE-001",
+      "name": "Alpha scope and supported environment",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_PROVIDER_ADMISSION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "6.1"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-SCOPE-001"
+      ],
+      "effective_status": "SATISFIED",
+      "gate_id": "CLD-ADM-GAPS-001",
+      "name": "Non-Cloud readiness disposition",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "6.2"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-SCOPE-001",
+        "CLD-ADM-CONSENT-001"
+      ],
+      "effective_status": "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA",
+      "gate_id": "CLD-ADM-PRIVACY-001",
+      "name": "Privacy and disclosure policy",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_PROVIDER_ADMISSION",
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "11.1C",
+        "CLOUD-02",
+        "BE-LEGAL-001",
+        "BE-CONSENT-001"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-SCOPE-001"
+      ],
+      "effective_status": "SATISFIED",
+      "gate_id": "CLD-ADM-RETENTION-001",
+      "name": "Retention and deletion policy",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_PROVIDER_ADMISSION",
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "11.1C",
+        "8.2C",
+        "CLOUD-02",
+        "BE-DELETE-001"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-PRIVACY-001",
+        "CLD-ADM-RETENTION-001"
+      ],
+      "effective_status": "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA",
+      "gate_id": "CLD-ADM-CONTROL-001",
+      "name": "Cloud security and ownership design",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "11.1C",
+        "BE-AUTH-001",
+        "BE-API-001",
+        "BE-DELETE-001"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-SCOPE-001"
+      ],
+      "effective_status": "SATISFIED_FOR_OWNER_ONLY_CLOSED_INTERNAL_ALPHA",
+      "gate_id": "CLD-ADM-EVALUATION-001",
+      "name": "Provider evaluation protocol and data admission",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_PROVIDER_ADMISSION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "6.2D",
+        "BE-PROVIDER-001",
+        "BE-PROVIDER-002"
+      ]
+    },
+    {
+      "dependencies": [
+        "CLD-ADM-EVALUATION-001",
+        "CLD-ADM-PRIVACY-001",
+        "CLD-ADM-RETENTION-001"
+      ],
+      "effective_status": "SATISFIED_FOR_OWNER_ONLY_CLOSED_INTERNAL_ALPHA",
+      "gate_id": "CLD-ADM-PROVIDER-001",
+      "name": "Provider and model admission",
+      "required_before": [
+        "BEFORE_CLOUD_RUNTIME_IMPLEMENTATION",
+        "BEFORE_PROVIDER_ADMISSION",
+        "BEFORE_FIRST_REAL_CLOUD_AUDIO_UPLOAD",
+        "BEFORE_CLOUD_RUNTIME_INTEGRATION",
+        "BEFORE_INTERNAL_ALPHA_ACCEPTANCE",
+        "BEFORE_PUBLIC_RELEASE"
+      ],
+      "roadmap_tasks": [
+        "6.2D",
+        "18.1",
+        "BE-PROVIDER-001",
+        "BE-PROVIDER-002"
+      ]
+    }
+  ],
+  "schema_version": "dora-alpha-development-admission-6.3-v0.1",
+  "stage_0": "PASS / ALPHA_IMPLEMENTATION_ADMITTED"
+}
