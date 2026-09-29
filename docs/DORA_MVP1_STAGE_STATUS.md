@@ -1,5 +1,12 @@
 # Dora MVP 1 — Stage Status
 
+## 2026-09-29 — 6.2D owner technical successor: required cases not satisfied
+
+The [terminal technical result](stage0/DORA_CLOUD_62D_OWNER_TECHNICAL_RESULT_V0_1.md) records one synthetic smoke PASS and 13 required technical Starts across 12 cases, with no new owner quality Starts. Raw technical oracles were not all PASS (tech-empty, tech-near_empty, tech-truncated, tech-wrong_format, tech-missing_s3, tech-duplicate_name, tech-permission_denial); append-only adjudications are shown separately from those raw outcomes. The technical suite is **NOT_PASS**. Exact task content cleanup and stack retirement were verified; both task CMKs are pending deletion, not physically deleted. The owner-only English acceptance decision does not waive these technical results.
+
+**6.2D = BLOCKED / REQUIRED_TECHNICAL_CASES_NOT_SATISFIED.** EVALUATION and PROVIDER remain OPEN; broad ADMISSION remains BLOCKED; 6.3 is NOT_RUN / NOT_ELIGIBLE. The frozen 39 gates remain 6 SATISFIED + 2 scoped SATISFIED + 0 PARTIALLY_SATISFIED + 5 OPEN + 1 BLOCKED + 25 NOT_RUN. Historical RU 17/179 (9.4972%) PASS and EN 37/181 (20.4420%) FAIL against 18% remain unchanged. OD-62D-EN-01 accepts the EN limitation for the Project Owner only; it does not establish provider admission. Reserved total USD9.9685 stays within USD10; ASR reservation USD0.5385 stays within USD2. Actual invoiced charges are not observed. The shared diagnostic ledger moved from 8 to 9/12; 13 technical Starts are counted separately.
+Exact CloudShell task-content copies were purged after preserving private evidence.
+
 ## 2026-09-29 — 6.2D owner eight-clip measurement: English quality gate failed
 
 The [versioned result](stage0/DORA_CLOUD_62D_OWNER_BOUNDED8_MEASURED_RESULT_V0_1.md) and [aggregate machine record](evidence/cloud-6.2d-owner-bounded8-result-v0.1.json) retain eight actual owner primary Starts and independently checked scores. Normalized RU total is **17/179 = 9.4972%** (≤20% PASS); normalized EN READ is **37/181 = 20.4420%** (>18% FAIL). Both four-clip bounded latency diagnostics and all eight timestamp-structure audits passed; timestamp accuracy was not evaluated. The eight measured rows and raw/normalized S/D/I/N counts remain in the result. Four historical failed owner Starts and eight earlier engineering diagnostics remain separate; no automatic retry occurred.

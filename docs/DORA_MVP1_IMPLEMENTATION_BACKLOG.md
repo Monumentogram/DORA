@@ -1,5 +1,14 @@
 # Dora MVP 1 — Executable Backlog
 
+## 2026-09-29 — Resolve observed technical case failures before admission
+
+The [terminal technical result](stage0/DORA_CLOUD_62D_OWNER_TECHNICAL_RESULT_V0_1.md) records one synthetic smoke PASS and 13 required technical Starts across 12 cases, with no new owner quality Starts. Raw technical oracles were not all PASS (tech-empty, tech-near_empty, tech-truncated, tech-wrong_format, tech-missing_s3, tech-duplicate_name, tech-permission_denial); append-only adjudications are shown separately from those raw outcomes. The technical suite is **NOT_PASS**. Exact task content cleanup and stack retirement were verified; both task CMKs are pending deletion, not physically deleted. The owner-only English acceptance decision does not waive these technical results.
+
+**6.2D = BLOCKED / REQUIRED_TECHNICAL_CASES_NOT_SATISFIED.** EVALUATION and PROVIDER remain OPEN; broad ADMISSION remains BLOCKED; 6.3 is NOT_RUN / NOT_ELIGIBLE. The frozen 39 gates remain 6 SATISFIED + 2 scoped SATISFIED + 0 PARTIALLY_SATISFIED + 5 OPEN + 1 BLOCKED + 25 NOT_RUN. Historical RU 17/179 (9.4972%) PASS and EN 37/181 (20.4420%) FAIL against 18% remain unchanged. OD-62D-EN-01 accepts the EN limitation for the Project Owner only; it does not establish provider admission. Reserved total USD9.9685 stays within USD10; ASR reservation USD0.5385 stays within USD2. Actual invoiced charges are not observed. The shared diagnostic ledger moved from 8 to 9/12; 13 technical Starts are counted separately.
+Exact CloudShell task-content copies were purged after preserving private evidence.
+
+Do not rerun the eight owner quality jobs for a best-of result. Address the exact technical case evidence under a new reviewed protocol; retain all failed and incomplete outcomes.
+
 ## 2026-09-29 — 6.2D measured owner result: quality blocker and incomplete technical evaluation
 
 The [bounded result](stage0/DORA_CLOUD_62D_OWNER_BOUNDED8_MEASURED_RESULT_V0_1.md) and [aggregate evidence](evidence/cloud-6.2d-owner-bounded8-result-v0.1.json) close this campaign without another dispatch. Eight owner primary jobs completed and were scored: RU total normalized WER **17/179 = 9.4972% PASS** against 20%; EN READ **37/181 = 20.4420% FAIL** against 18%. Both required four-clip latency diagnostics and eight transcript timestamp-structure audits passed. The frozen composite recipe hash mismatch stopped generation before Put; all four composite objects were absent and **0/13 planned technical Starts** ran. Do not promote technical cases to PASS or infer broad provider quality from eight clips.
