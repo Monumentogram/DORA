@@ -1,5 +1,11 @@
 # Dora MVP 1 — Executable Backlog
 
+## 2026-09-29 — 6.2D bounded owner Phase A v0.3; next authorized sequence
+
+The prospective [Phase A v0.3](stage0/DORA_CLOUD_EVALUATION_PHASE_A_BOUNDED8_V0_3.md) and [machine record](contracts/DORA_CLOUD_EVALUATION_PHASE_A_BOUNDED8_V0_3.json) bind the same eight authorized owner clips, fresh no-DataRole B1/B2 synthetic PASS and cleanup, original rejected role-based B1 with cause UNPROVEN, the exact target/source receipts and USD9.4370 reservation. Eight of 12 shared engineering diagnostic Starts are already consumed. The Owner's task-specific exception omits `JobExecutionSettings` only for this bounded evaluation; ADR-0011's general Alpha design and historical records are unchanged.
+
+Next: commit, push and independently refetch the exact v0.3 JSON/Markdown; save the private publication proof before any resumed owner WAV upload or Start. Recheck effective Transcribe opt-out, frozen task configuration, owner authority and each exact WAV at dispatch. Then run eight primaries sequentially, generate four composites only after all eight, run the 12 planned technical cases within 13 Start dispatches, prove cleanup and publish a separate result record. Unknown Start outcomes, budget/deadline drift or changed scope stop the affected action without automatic retry. **6.2D remains BLOCKED / LIVE_PROVIDER_EVALUATION_NOT_EXECUTED** pending real measurements; EVALUATION/PROVIDER OPEN, admission and 6.3 BLOCKED/NOT_RUN, and 39 gates unchanged. No broader Alpha, Android, Recovery, PR86 or main work is authorized by this milestone.
+
 ## 2026-09-28 — 6.2D Phase A prospective protocol; live blocked
 
 Owner-authorized 6.2D thresholds are prospectively frozen in [Phase A v0.1](stage0/DORA_CLOUD_EVALUATION_PHASE_A_V0_1.md)

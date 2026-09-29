@@ -1,5 +1,13 @@
 # Dora MVP 1 — Stage Status
 
+## 2026-09-29 — 6.2D bounded owner Phase A v0.3; live evaluation pending
+
+The prospective [Phase A v0.3](stage0/DORA_CLOUD_EVALUATION_PHASE_A_BOUNDED8_V0_3.md) and [machine record](contracts/DORA_CLOUD_EVALUATION_PHASE_A_BOUNDED8_V0_3.json) bind the same eight existing owner recordings, private authority/notice and corpus integrity, a USD9.4370 total reservation within the Owner's USD10 ceiling, and the fresh task-scoped AWS target. Mode A's synthetic S0/S1r/S2/S3 and fresh no-DataRole Mode B B1/B2 completed with exact output CMK and cleanup proofs. The original role-based B1 rejected before job creation; its specific cause remains **UNPROVEN**. Eight of the shared 12 engineering diagnostic Start slots have been consumed; that ledger is not reset.
+
+For this exact owner-only evaluation, the Owner prospectively authorized omitting `JobExecutionSettings` from Start while the task-scoped Lambda operator performs bounded S3/KMS work. The unused DataRole resource remains in the task stack. This is an explicit exception to ADR-0011's general Alpha role design, not broad provider admission or a rewrite of historical evidence. Publication of this exact v0.3 JSON and Markdown, push and independent remote refetch are still required **before any resumed owner WAV upload or Start**. Current opt-out, target configuration and exact WAV bytes must be rechecked at dispatch. The four historical v0.2 owner Start failures remain recorded; no resumed owner audio was used for Mode B.
+
+**6.2D = BLOCKED / LIVE_PROVIDER_EVALUATION_NOT_EXECUTED** until the bounded owner measurements and cleanup are complete. EVALUATION/PROVIDER remain OPEN; broad ADMISSION and 6.3 remain BLOCKED/NOT_RUN. RU ≤20% and EN READ ≤18%, the 39-gate accounting, separate external-use legal gate, Android/Recovery/PR86/main boundaries and earlier dated entries remain unchanged.
+
 ## 2026-09-28 — 6.2D reduced eight-recording preparation; acquisition deferred
 
 Explicit Owner scope change prospectively replaces acquisition volume/selection and manual timing requirements only for the nearest bounded evaluation. The [eight-recording amendment](stage0/DORA_CLOUD_62D_EIGHT_CLIP_PROTOCOL_V0_1.md) and [machine record](contracts/DORA_CLOUD_62D_EIGHT_CLIP_PROTOCOL_V0_1.json) list every replacement. Exactly **RU 2 READ + 2 SPONTANEOUS; EN 2 READ + 2 SPONTANEOUS**, all eight evaluated, using the first two existing tasks of each class/language. No reserves/noisy tasks and no manual word timing. Original material, existing consent, recordings, references and history are preserved through a versioned private overlay.

@@ -1,0 +1,873 @@
+{
+  "schema_version": "0.3",
+  "package": "DORA_CLOUD_EVALUATION_PHASE_A_BOUNDED8_V0_3",
+  "scope": "BOUNDED_EIGHT_CLIP_LIVE_EVALUATION",
+  "phase_a": "FRESH_EPOCH2_SYNTHETIC_VERIFIED_AWAITING_PUBLICATION",
+  "phase_b": "NOT_RUN",
+  "live_binding": {
+    "architecture": "TASK_SCOPED_OPERATOR_NO_DATA_ACCESS_ROLE",
+    "manifest_sha256": "27ea1593a46c9c17de0a568df6537dbe55df56c4def59559d758cb9f07ecbe65",
+    "config_sha256": "7f16bc11e74961fa89106a8e65a11397748f41a472c09ba1a7f921c227814f17",
+    "b_evidence_sha256": {
+      "bundle.json": "bdc3f92f61c158cf6f792c5123d0a437a3dce253cef7136b50f314103135c94a",
+      "freeze.json": "53e151a6aefdad221f3aa629c74ed066bd30ed10865841e377bcca13321bc29b",
+      "b1-dispatch.json": "d199d5cf2cc648810593cb829ec8aca6ab0735d810ebbd4ab37fb4611a80b952",
+      "b1-start-response.json": "093174bd52662a64d75702040674655cdb9504931f9ef42b1f6d84520895f14b",
+      "b1-delayed-reconcile-readonly.json": "aab5c6f12d7389d60f05fdd153e8f74870d8c13d096545154c1234d43beea7e8",
+      "b1-rejected.json": "8d8947e55abf8d8ec5fff12be7dd8575bb28270bf602e7b1f88289d311589ba0",
+      "b1-failed-cleanup-proof.json": "a735ae7c3f206d94ac46da7c69a1144d139a4977db9ffa1e32df1eaf0a9e44ba",
+      "epoch-2-no-data-role/update-intent.json": "b87f12cfbbb42adbfdfca5cdff81c350236f7540cde621fcd6b9d8b0e4358e51",
+      "epoch-2-no-data-role/update-response.json": "aa0d5bb8b8da1aed64f256e810defaf9b6de3619a6d9f1f26c931c015c02fc64",
+      "epoch-2-no-data-role/freeze.json": "e7762925c9f200056047dfee7c9394f338ba50faa6131e2ba5bea41ed8100555",
+      "epoch-2-no-data-role/controller-revision-1.json": "d654d051097e4c61ce70b4e372f9d42701650c5e126a035a97c4be1a525536e6",
+      "epoch-2-no-data-role/b1-dispatch.json": "3a7f4d733674d078d1a365d69bbd89de9667bae2b570fe8474c0b49ee6f36a3c",
+      "epoch-2-no-data-role/b1-start-response.json": "04ff5adc07f319910da7f8a9b07a85337c43e2b6f2050f1c0dd30f83fa5fb97f",
+      "epoch-2-no-data-role/b1-output-head.json": "4e5dd1e0e8fae6ab0f091f204ff522063b8b56011b485179fbd7e3807549d82d",
+      "epoch-2-no-data-role/b1-raw-output.json": "984425de8869e2a3016ca7037f49c477ac89afac7fb77aa616926f4ff69d4cff",
+      "epoch-2-no-data-role/b1-structure.json": "b67ac558b13ff4b98eec914a24b4172994003f7c13e55e92e9df4fb72bfe52c5",
+      "epoch-2-no-data-role/b1-cleanup-proof.json": "a735ae7c3f206d94ac46da7c69a1144d139a4977db9ffa1e32df1eaf0a9e44ba",
+      "epoch-2-no-data-role/b1-pass.json": "cbfacca683efe3d65108d9ac3589fd7af585d41b278542932d601937bc17c31d",
+      "epoch-2-no-data-role/b2-dispatch.json": "436397ae3ad9f2eae8612181f09a6c05a4f831ee9211ce0339aa8a6f547fff15",
+      "epoch-2-no-data-role/b2-start-response.json": "263e53680371b84646128805eb1dfe3186992845cc7f19e216253b810719a9fe",
+      "epoch-2-no-data-role/b2-output-head.json": "eb44145750108abd1b05d5bf21b83575f2e701d80ee0f90128a8eda2d25dc74f",
+      "epoch-2-no-data-role/b2-raw-output.json": "0669a985279eb7b440409ee55ac51b60dcb14f2b837324f6825542a24240801e",
+      "epoch-2-no-data-role/b2-structure.json": "b67ac558b13ff4b98eec914a24b4172994003f7c13e55e92e9df4fb72bfe52c5",
+      "epoch-2-no-data-role/b2-cleanup-proof.json": "a735ae7c3f206d94ac46da7c69a1144d139a4977db9ffa1e32df1eaf0a9e44ba",
+      "epoch-2-no-data-role/b2-pass.json": "be2389d10b91fb5d8a8e503fd988769c3b49441d438c002c5e2063842ff8a0dd"
+    },
+    "b_prefixed_marker_receipts_sha256": {
+      "b1": {
+        "head_receipt_sha256": "cc11c1b5a91d67eb6b9090068d145ebffa385be8eb9ac84844c418c493992458",
+        "delete_intent_sha256": "cf8005efe6cc13bf12b67db6eaff70a266dda4ac35f5255b3144151bb9b2ff8d",
+        "delete_response_sha256": "47a22ac91ddb936aa2dde4aad558b6c116aa3db81d6d88fbd421feaa3f8624cf"
+      },
+      "b2": {
+        "head_receipt_sha256": "3e9338c944b9279ff70b71a2a3ca0515b00dc2620e2db9df3a607b03593f59ba",
+        "delete_intent_sha256": "d0587ddf30e67af34634155b575a1c029dbbf521afe805c61b5d32a28ca8ed55",
+        "delete_response_sha256": "3194aa369f0cb0615f60e40896e1bc64a041f1e89dd2f5edf97a3082c38323c8"
+      }
+    },
+    "controller_sha256": "04901a91bdf2793d5e5faccd0786e3bc459c8ab32f7bea5e835b57b4f6471456",
+    "resumed_owner_audio_calls_before_publication": 0,
+    "provider_admission": "NOT_ESTABLISHED"
+  },
+  "accepted_starting_commit": "0ffaa589c84fffb233e2a2696e733436ec064ae6",
+  "branch": "chat/alpha-asr-runner-scope",
+  "original_phase_a_commit": "d8d5c90516b6a9afa96c21e703dfe7481e64e589",
+  "sources": [
+    {
+      "path": "docs/contracts/DORA_CLOUD_EVALUATION_PHASE_A_V0_1.json",
+      "sha256_lf": "1de5b682aa46569aea3ea334209c4980fcef73829279d08ede7e4e8bc8e50df7"
+    },
+    {
+      "path": "docs/stage0/DORA_CLOUD_EVALUATION_PHASE_A_V0_1.md",
+      "sha256_lf": "48b4a792ceb095a1f7f10ebe3df77bd0104d17a87987ba1610d7632e7391d42c"
+    },
+    {
+      "path": "docs/contracts/DORA_CLOUD_62D_EIGHT_CLIP_PROTOCOL_V0_1.json",
+      "sha256_lf": "deef2242bcc0d856ce6553e0fdb59b0437f2fd0634c699f7a75d38eaeda1c5d6"
+    },
+    {
+      "path": "docs/contracts/DORA_CLOUD_62D_EASY_ENGLISH_V0_1.json",
+      "sha256_lf": "64fbcab13f5d7e9c5eef26d0e7a6ca7ba479c921111b63879f9519cdcdc51c02"
+    },
+    {
+      "path": "docs/contracts/DORA_CLOUD_62D_CORPUS_READY_V0_1.json",
+      "sha256_lf": "068cde0586dbbeeeebe51121b12b56e9daa92f74c43b525ea0aabc5073ca30f9"
+    },
+    {
+      "path": "docs/stage0/DORA_CLOUD_EVALUATION_HARNESS_V0_1.md",
+      "sha256_lf": "b9763f38cd473c7a7babf9965fdf23a602efbfdd6769c6a703f4325ee72f00d7"
+    },
+    {
+      "path": "docs/contracts/DORA_CLOUD_ALPHA_PRIVACY_RETENTION_CONTROL_V0_4.json",
+      "sha256_lf": "3983d768e15765ddc7bcc2f5209a1679a353fae0cec116d7dba4ec5d296f4d44"
+    },
+    {
+      "path": "docs/contracts/DORA_CLOUD_EVALUATION_PHASE_A_BOUNDED8_V0_2.json",
+      "sha256_lf": "7f3f290d2d743c1b6f8a2c7dba59aef2fa6be99bf10a93446dc0bbebe5e72b9f"
+    }
+  ],
+  "authority": "Explicit owner request for this private corpus, paid bounded AWS evaluation <=USD10, and separately approved task-scoped infrastructure; no broad admission authority.",
+  "dataset": {
+    "protocol": "dora-owned-easy-en8-v3",
+    "whole_manifest_sha256": "27ea1593a46c9c17de0a568df6537dbe55df56c4def59559d758cb9f07ecbe65",
+    "composition": {
+      "ru": {
+        "READ": 2,
+        "SPONTANEOUS": 2
+      },
+      "en": {
+        "READ": 4,
+        "SPONTANEOUS": 0
+      }
+    },
+    "clips": 8,
+    "human_verified_references": 8,
+    "language_aggregates": {
+      "ru": {
+        "records": 4,
+        "reference_words": 179,
+        "duration_us": 150960000
+      },
+      "en": {
+        "records": 4,
+        "reference_words": 181,
+        "duration_us": 129560000
+      }
+    },
+    "total_duration_us": 280520000,
+    "selection": "ALL_EIGHT_FIXED_MANIFEST_IDS_RU_THEN_EN",
+    "quality_scope": "ONE_SPEAKER_RU_READ_AND_SPONTANEOUS_EN_BASIC_READ_ONLY",
+    "technical_composites": [
+      {
+        "duration_us": 300000000,
+        "independent_quality_sample": false,
+        "language": "ru"
+      },
+      {
+        "duration_us": 599999000,
+        "independent_quality_sample": false,
+        "language": "ru"
+      },
+      {
+        "duration_us": 300000000,
+        "independent_quality_sample": false,
+        "language": "en"
+      },
+      {
+        "duration_us": 599999000,
+        "independent_quality_sample": false,
+        "language": "en"
+      }
+    ],
+    "privacy": "Speech, references, per-record hashes, identities, resources and raw results remain private outside Git."
+  },
+  "prospective_supersessions": [
+    {
+      "original_pointer": "/protocol/quality/required_slices",
+      "original_value": "Each language>=24 real clips; target12read+12spontaneous if both authorized. If only one speech class exists, explicitly freeze sole-class admission/limitation before any run; do not claim absent class.",
+      "bounded_replacement": "Exactly four owner clips per language; RU 2 READ + 2 SPONTANEOUS, EN 4 BASIC READ. No population inference.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/protocol/quality/aggregation",
+      "original_value": "Micro WER=sum(S+D+I)/sum(reference_tokens); integer cross-multiplication; raw and normalized per language AND required slice; no RU+EN averaging.",
+      "bounded_replacement": "Unchanged micro formula and RU20/EN18 thresholds apply to language totals; class micros are descriptive, with every required class and clip accounted.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/protocol/selection/population",
+      "original_value": "Currently EMPTY/UNADMITTED; successor must bind exact authorized source versions/eligible inventory/private manifest and aggregate hash before live.",
+      "bounded_replacement": "The accepted finalized private eight-clip manifest replaces the empty population for this bounded run only.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/protocol/selection/rule",
+      "original_value": "Sort eligible clips within language/speech-class by SHA256(source_release + newline + source_audio_SHA256); take first12/class or24 for explicitly sole available class; noise separately first6/language. One clip per known speaker per slice where possible; log shortfall before run.",
+      "bounded_replacement": "All eight fixed IDs in manifest order, RU then EN, without sorting or subsampling. No replacements/reserves.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/protocol/selection/missing_coverage",
+      "original_value": "No silent sample-count relaxation; <24/language, missing required slice or exact timing => NOT_EVALUABLE, no provider PASS.",
+      "bounded_replacement": "Missing broad coverage blocks full admission; all eight bounded primaries and references are mandatory for bounded completion.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/protocol/quality/noise",
+      "original_value": "Separate at least6 real noisy/speakerphone clips per language when admitted; normalizedWER<=35%; no actual Cloud LOW_CONFIDENCE/review path exists, so no waiver. Missing slice remains NOT_EVALUABLE and blocks broad noisy/speakerphone admission.",
+      "bounded_replacement": "No noisy/speakerphone evaluation in this run; NOT_EVALUATED, no waiver or inference.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/protocol/timestamps/coverage",
+      "original_value": "At least6 clips and100 reference words per language from preselected clean slice; >=80% exact lexical match pairs with valid timestamps, zero missing/malformed/nonmonotonic pronunciation-item timestamps for PASS. Unmatched ref/hyp separately counted; fail/missing coverage cannot be concealed by scoring only easy matches.",
+      "bounded_replacement": "No independent human timing exists. Check output structure only; timestamp accuracy and its coverage remain NOT_EVALUATED.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/protocol/timestamps/reference",
+      "original_value": "Exact independently human annotated/adjudicated word start/end microseconds from admitted audio; annotators blind to AWS output. No ASR/forced alignment/interpolated/generated timing truth.",
+      "bounded_replacement": "No generated, interpolated or forced-alignment timing may serve as truth; no accuracy scoring is performed.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/protocol/latency/gates",
+      "original_value": "Per RU/EN valid-primary speech slice p50ratio<=1 andp95ratio<=2; for duration<=60s p95absolute<=120s. Report complete-case and all-attempt views; unavailable/failed/missing prevents complete admission.",
+      "bounded_replacement": "Retain p50 ratio<=1, p95 ratio<=2, short-clip p95 absolute<=120s as bounded diagnostics for n=4 per language, without general reliability claims.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/execution_envelope/preflight/8",
+      "original_value": {
+        "id": "PREFLIGHT-09",
+        "requirement": "Individual dataset admission",
+        "status": "BLOCKED",
+        "evidence": "Real RU0/EN0; no exact timing slice. Synthetic data authority alone is sufficient only for non-speech mechanics."
+      },
+      "bounded_replacement": "PREFLIGHT-09 is BOUNDED8_DATA_AUTHORITY=PASS only after private proof. BROAD_DATASET_COVERAGE remains NOT_SATISFIED.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    },
+    {
+      "original_pointer": "/execution_envelope/preflight/11",
+      "original_value": {
+        "id": "PREFLIGHT-12",
+        "requirement": "No user/customer audio",
+        "status": "PASS",
+        "evidence": "No recorded audio accessed/uploaded; seven generated non-speech fixtures only."
+      },
+      "bounded_replacement": "Only explicitly authorized Project Owner speech and approved synthetic fixtures; customer and third-party speech prohibited.",
+      "broad_requirement_disposition": "UNCHANGED_AND_UNSATISFIED_BY_BOUNDED8"
+    }
+  ],
+  "additional_execution_authority": {
+    "original_pointer": "/execution_envelope/budget/ancillary",
+    "bounded_change": "Owner separately approved exact reviewed dedicated test stack, proof permissions and deletion probes. No unrelated subscription, shared-resource mutation or production access.",
+    "original_broad_quality_requirements": "UNCHANGED"
+  },
+  "normalization": {
+    "version": "dora-alpha-asr-normalization-v0.1",
+    "runtime": "CPython3.12 / Unicode15.0.0",
+    "semantics": "Reuse pinned existing normalize/raw_tokens/normalized_tokens semantics only. Lowercase; strip bracket/parenthetic tags; NFKC; Unicode M/S/P to spaces; collapse whitespace; split tokens. No spelling/number rewriting, transliteration or filler removal.",
+    "hashes": "SHA256 UTF8 exact raw and normalized reference/hypothesis text privately per attempt; no sample/text hashes in public Git.",
+    "oracle": "Unit-cost Levenshtein; diagonal(match/substitution), deletion, insertion tie priority; freeze source below. <=4096tokens/stream and<=12500000DPcells per alignment. Rejection is unscored failure, not corpus exclusion.",
+    "local_noninheritance": "Do not reuse Local profile/model/corpus/thermal/RTF gates or unavailable timestamp status."
+  },
+  "harness": {
+    "path": "docs/stage0/DORA_CLOUD_EVALUATION_HARNESS_V0_1.md",
+    "sha256": "b9763f38cd473c7a7babf9965fdf23a602efbfdd6769c6a703f4325ee72f00d7",
+    "sources": [
+      {
+        "name": "cloud62d_harness.py",
+        "sha256": "6e99e08561534cde5b6bc69a40fd3e8986d763c00456e7fdb32bf3346cceabd1",
+        "bytes": 13912
+      },
+      {
+        "name": "cloud62d_harness_test.py",
+        "sha256": "74fc7b4f412087a658d880ca92ddbb8315cc7788ab6d18e102f67c98decc962a",
+        "bytes": 8120
+      }
+    ],
+    "state": "FRESH_EPOCH2_PRIVATE_SOURCE_HASH_BOUND; OWNER_RESULT_NOT_RUN",
+    "host_evidence": "docs/evidence/cloud-6.2d-phase-a-host-v0.1.json",
+    "host_evidence_sha256": "d98d2788f153ec9e8f49309c9dc3849f8eb64b57cea701982e30c3947258f156",
+    "normalizer_equivalence": "8text edge fixtures against existing pinned DORA implementation; 26total host tests PASS.",
+    "replacement_claim": "Normalized submit identity/terminal text/timestamps/errors/retryability/provenance/delete reference carried by same Result; both adapter shared tests PASS. Submit/delete are explicitly mocks; no actual provider replaceability or latency measurement claimed."
+  },
+  "configuration": {
+    "platform": "AWS",
+    "service": "Amazon Transcribe",
+    "mode": "STANDARD_BATCH_FILE_ASR",
+    "region": "eu-central-1",
+    "endpoint": "transcribe.eu-central-1.amazonaws.com",
+    "languages": {
+      "ru": "ru-RU",
+      "en": "en-US"
+    },
+    "model": "PROVIDER_MANAGED_MODEL_VERSION_NOT_DISCLOSED",
+    "fallback": false,
+    "input": {
+      "container": "WAV",
+      "codec": "PCM_SIGNED_16_LE",
+      "channels": 1,
+      "sample_rate_hz": 16000,
+      "MediaFormat": "wav",
+      "MediaSampleRateHertz": 16000,
+      "s3_content_type": "audio/wav",
+      "max_duration_us": 600000000,
+      "max_pcm_wav_bytes": 19200044
+    },
+    "disabled": [
+      "IdentifyLanguage",
+      "IdentifyMultipleLanguages",
+      "Medical",
+      "HealthScribe",
+      "CallAnalytics",
+      "custom_language_model",
+      "custom_vocabulary",
+      "speaker_labels",
+      "channel_identification",
+      "PII_redaction",
+      "streaming",
+      "toxicity",
+      "subtitles"
+    ],
+    "request_fields": "Exact epoch2 B1/B2 and later owner requests privately frozen; explicit OutputEncryptionKMSKeyId; JobExecutionSettings omitted; no default KMS proof claim.",
+    "unbound_actual_fields": [],
+    "unbound_effect": "EXACT_EPOCH2_B1_B2_PRIVATE_CONFIG_HASH_BOUND; OWNER_REQUESTS_PENDING",
+    "exact_b_request_fields": [
+      "TranscriptionJobName",
+      "LanguageCode",
+      "MediaFormat=wav",
+      "MediaSampleRateHertz=16000",
+      "Media.MediaFileUri",
+      "OutputBucketName",
+      "OutputKey",
+      "OutputEncryptionKMSKeyId"
+    ]
+  },
+  "metrics": {
+    "threshold_percent": {
+      "ru": 20,
+      "en": 18
+    },
+    "wer": "Raw and normalized unit-cost S,D,I,N per clip and per language/class; micro=sum(S+D+I)/sum(N); exact integer threshold comparison. Never average clip percentages or RU and EN.",
+    "class_completeness": "RU requires both two-clip classes; EN requires four READ clips. Missing/failed/unscored clips remain in all-eight accounting and prevent PASS.",
+    "timestamp_structure": "For every pronunciation item count missing/malformed/nonmonotonic timestamps; finite numeric 0<=start<=end<=duration; starts and ends nondecreasing. Nonempty text with no pronunciation items is invalid.",
+    "timestamp_accuracy": "NOT_EVALUATED",
+    "noise_robustness": "NOT_EVALUATED",
+    "en_spontaneous": "NOT_EVALUATED",
+    "latency": {
+      "formula": "conservative_observed_turnaround_ratio = (first_completed_get_observed_monotonic_us - pre_dispatch_write_ahead_monotonic_us) / audio_duration_us",
+      "boundaries": "Submit clock is sampled before the durable Start intent and initial Lambda Start invocation; local journal/invocation overhead is included conservatively. Completion clock is sampled at the first Get observing COMPLETED in the same-process monitor. Nominal polling cadence is 2s; actual poll gaps, scheduling and transport delay are reported rather than a universal <=2s bound. Different-boot samples are UNAVAILABLE.",
+      "gates": "Per RU/EN valid-primary speech slice p50ratio<=1 andp95ratio<=2; for duration<=60s p95absolute<=120s. Report complete-case and all-attempt views; unavailable/failed/missing prevents complete admission.",
+      "components": "Only conservative submit-to-first-COMPLETED-observation service turnaround is measured for this bounded run. Upload, submit-API-only, queue, processing, retrieval and total component durations are UNAVAILABLE unless separately evidenced; provider wall timestamps are audit context, never mixed into the monotonic gate.",
+      "statistics": "Nearest-rank quantiles on exact Fraction ratios/integer microseconds; wall timestamps UTC for audit only. Report denominators, throttling separately plus inclusive evidence. Synthetic latency only mechanics, never real speech admission."
+    },
+    "latency_inference": "n=4 per language is descriptive only; nearest-rank p95 is maximum. Failed, uncertain and missing observations remain visible, not omitted from admission.",
+    "measurements": "NOT_RUN"
+  },
+  "attempt_policy": {
+    "primary": "One primary per frozen case, serial RU thenEN in manifest order; no warmup excluded from cost/attempts; no best-of repeats.",
+    "retry": "No automatic retry. At most1 operator-attributable retry after transient typed failure,5s backoff, within budget; uncertain Start first reconciles SAME job identity. Never rerun to improve quality. Retry is diagnostic, cannot erase primary failure.",
+    "terminal": "Record PREPARED/SUBMITTING durably before network, then COMPLETED/FAILED/CLIENT_CONFIG_FAILED/THROTTLED/TIMEOUT or explicit unresolved. At timeout30min stop new work and reconcile; unresolved prevents admission/cleanup PASS.",
+    "denominators": "attempts count every dispatch including failed/uncertain/retry; completed, provider/client failures, throttles, timeouts, retries separately; fail attempts retained even successful retry. Pending/unknown never promoted to success.",
+    "reliability": "Zero corrupt success, wrong region/fallback, identity mismatch or unreadable-result success. Detectable malformed result yields typed failure plus failure count. All required valid primaries must be attributable/readable for provider PASS."
+  },
+  "live_plan": {
+    "status": "FRESH_EPOCH2_B_SYNTHETIC_VERIFIED; OWNER_PLAN_PENDING_PUBLICATION",
+    "serial": true,
+    "automatic_retries": 0,
+    "primary_runs_per_clip": 1,
+    "operator_diagnostic_retry": "NONE_PLANNED; any addition requires a prospective bound reservation before dispatch and never changes primary outcome.",
+    "poll_seconds": 2,
+    "job_timeout_seconds": 1800,
+    "maximum_api_calls": 20000,
+    "maximum_result_bytes": 5000000,
+    "maximum_start_dispatches": 23,
+    "maximum_upload_bytes": 68157440,
+    "maximum_download_bytes": 104857600,
+    "primary_cases": 8,
+    "technical_cases": 12,
+    "primary_billable_rounded_seconds": 283,
+    "maximum_diagnostic_start_dispatches_across_mode_a_b": 12,
+    "reserved_catalog_seconds": 4003,
+    "scope": "8 owner primaries plus 13 Mode C technical dispatches; 2 Mode B synthetic dispatches; Mode A+B diagnostic cap 12"
+  },
+  "technical_cases": [
+    {
+      "case": "empty",
+      "status": "NOT_RUN",
+      "purpose": "Zero-frame synthetic WAV",
+      "expected": "Attributable input rejection or completed empty transcript; record exact actual behavior."
+    },
+    {
+      "case": "near_empty",
+      "status": "NOT_RUN",
+      "purpose": "250ms synthetic silence",
+      "expected": "Attributable input rejection or completed empty transcript; nonempty text is unexpected."
+    },
+    {
+      "case": "malformed",
+      "status": "NOT_RUN",
+      "purpose": "Non-WAV synthetic bytes",
+      "expected": "Attributable invalid input rejection; infrastructure failures are INCOMPLETE."
+    },
+    {
+      "case": "truncated",
+      "status": "NOT_RUN",
+      "purpose": "Synthetic WAV with truncated declared PCM",
+      "expected": "Attributable invalid input rejection; infrastructure failures are INCOMPLETE."
+    },
+    {
+      "case": "wrong_format",
+      "status": "NOT_RUN",
+      "purpose": "Synthetic WAV declared MP3",
+      "expected": "Attributable format rejection; infrastructure failures are INCOMPLETE."
+    },
+    {
+      "case": "missing_s3",
+      "status": "NOT_RUN",
+      "purpose": "Absent object in owned input prefix",
+      "expected": "Attributable missing input rejection; infrastructure failures are INCOMPLETE."
+    },
+    {
+      "case": "duplicate_name",
+      "status": "NOT_RUN",
+      "purpose": "Reuse one synthetic job name with changed missing URI",
+      "expected": "Second Start returns ConflictException; original job identity remains unchanged."
+    },
+    {
+      "case": "ru_300",
+      "status": "NOT_RUN",
+      "purpose": "Derived RU composite 300s",
+      "expected": "Readable terminal success, structurally valid timestamps; no independent WER."
+    },
+    {
+      "case": "ru_600",
+      "status": "NOT_RUN",
+      "purpose": "Derived RU composite 599.999s",
+      "expected": "Readable terminal success, structurally valid timestamps; no independent WER."
+    },
+    {
+      "case": "en_300",
+      "status": "NOT_RUN",
+      "purpose": "Derived EN composite 300s",
+      "expected": "Readable terminal success, structurally valid timestamps; no independent WER."
+    },
+    {
+      "case": "en_600",
+      "status": "NOT_RUN",
+      "purpose": "Derived EN composite 599.999s",
+      "expected": "Readable terminal success, structurally valid timestamps; no independent WER."
+    },
+    {
+      "case": "permission_denial",
+      "status": "NOT_RUN",
+      "purpose": "Exact synthetic input GetObject denial for task operator/data roles",
+      "expected": "Attributable permission rejection; infrastructure/identity failure is INCOMPLETE."
+    }
+  ],
+  "additional_technical_limits": {
+    "permission_failure": "FROZEN_EXACT_DENIAL_FIXTURE_NOT_RUN",
+    "throttle": "DOCUMENTED_NOT_INDUCED",
+    "composite_quality": "NOT_AN_INDEPENDENT_WER_SAMPLE",
+    "generic_negative_failure": "INCOMPLETE_UNTIL_ATTRIBUTABLE_INPUT_CAUSE; auth/quota/service failure is not expected-format PASS"
+  },
+  "budget": {
+    "total_usd_max": 10,
+    "asr_reserved_usd_max": 2,
+    "ancillary_and_tax_usd_max": "8.9",
+    "free_tier_assumed": false,
+    "actual_spend": "NOT_MEASURED",
+    "reservation": "Before every potentially billed dispatch, including failures and uncertain submissions; no release without billing proof.",
+    "frozen_reservation": {
+      "ancillary_tax_upper_usd": "8.9",
+      "asr_upper_usd": "0.5370",
+      "reserved_seconds": 4003,
+      "historical_seconds": 167,
+      "diagnostic_start_reserve_count": 12,
+      "diagnostic_start_reserve_each_usd": "0.01",
+      "total_upper_usd": "9.4370"
+    },
+    "pricing": {
+      "usd_per_second": "0.0001000000",
+      "minimum_billable_seconds": 0,
+      "source_url": "https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/transcribe/current/eu-central-1/index.json",
+      "verified_at": "2026-09-29",
+      "verification_scope": "CURRENT_FRANKFURT_STANDARD_BATCH_RATE; RAW_REGIONAL_SKU_SHA_BOUND; NO_FREE_TIER_ASSUMED"
+    },
+    "prospective_total_reservation_usd": "9.4370",
+    "prospective_asr_reservation_usd": "0.5370",
+    "non_asr_reservation_usd": "8.9",
+    "pricing_region": "eu-central-1",
+    "pricing_sku": "9BDG889E5Y3GVM5S",
+    "pricing_proof_sha256": "5633d4ce3dce090613f5913e29aee7380cb957688708ea8f9f53323fd4155a6a",
+    "reservation_minimum_seconds_per_diagnostic_start": 15
+  },
+  "environment": {
+    "platform": "AWS",
+    "service": "Amazon Transcribe",
+    "mode": "STANDARD_BATCH_FILE_ASR",
+    "region": "eu-central-1",
+    "endpoint": "transcribe.eu-central-1.amazonaws.com",
+    "profile": "TASK_SCOPED_FRESH_TARGET",
+    "execution": "TASK_SCOPED_LAMBDA_OPERATOR_NO_DATA_ACCESS_ROLE_IN_START",
+    "model": "PROVIDER_MANAGED_MODEL_VERSION_NOT_DISCLOSED",
+    "account_and_resources": "FRESH_EPOCH2_PRIVATE_READBACK_HASH_BOUND",
+    "client_version": "PRIVATE_B_RUNTIME_EVIDENCE_PENDING",
+    "lambda_sdk_versions": {
+      "boto3": "1.42.97",
+      "botocore": "1.42.97",
+      "python": "3.13.15"
+    },
+    "cloud_shell_sdk_versions": {
+      "aws_cli": "aws-cli/2.37.1 Python/3.14.6 Linux/6.1.186-228.376.amzn2023.x86_64 exec-env/CloudShell exe/x86_64.amzn.2023",
+      "boto3": "1.43.38",
+      "botocore": "1.43.57",
+      "python": "3.13.15"
+    },
+    "cloud_shell_sdk_versions_receipt_sha256": "b9e66adb589636acab8bc5dd5a4090e678d5a85e4b6ba82f8f621796edd7aa1c"
+  },
+  "preflight": {
+    "status": "BOUNDED8_PROSPECTIVE_PREFLIGHT_PASS_RECHECK_AT_C_DISPATCH",
+    "checks": {
+      "PREFLIGHT-01": "PASS_TASK_SCOPED_ROOT_AND_LAMBDA_READBACK",
+      "PREFLIGHT-02": "PASS_NO_ANDROID_PERMANENT_CREDENTIAL_CHANGE",
+      "PREFLIGHT-03": "PASS_FROZEN_EU_CENTRAL_1_TARGET",
+      "PREFLIGHT-04": "PASS_NO_AUTOMATIC_REGION_FALLBACK",
+      "PREFLIGHT-05": "PASS_EFFECTIVE_TRANSCRIBE_OPTOUT_AT_B_PROVISION; C_RECHECK",
+      "PREFLIGHT-06": "PASS_DEDICATED_PRIVATE_BUCKET_READBACK",
+      "PREFLIGHT-07": "PASS_WATCHDOG_RETENTION_PROBE_AND_B_CLEANUP",
+      "PREFLIGHT-08": "PASS_TWO_CUSTOMER_CMKS_EXPLICIT_OUTPUT_NO_DATA_ROLE_B1_B2",
+      "PREFLIGHT-09": "PASS_EXACT_EIGHT_OWNER_AUTHORITY_ONLY; BROAD_COVERAGE_UNSATISFIED",
+      "PREFLIGHT-10": "PASS_9_437_USD_RESERVATION_WITHIN_OWNER_LIMITS",
+      "PREFLIGHT-11": "PASS_B1_B2_WHOLE_BUCKET_AND_JOB_EMPTY",
+      "PREFLIGHT-12": "PASS_ZERO_RESUMED_OWNER_AUDIO_BEFORE_PUBLICATION; HISTORICAL_FOUR_PRESERVED"
+    },
+    "bounded8_data_authority": "PASS_EXACT_EXISTING_OWNER_MANIFEST; RECHECK_WAV_BYTES_BEFORE_PUT",
+    "broad_dataset_coverage": "NOT_SATISFIED",
+    "resumed_owner_audio_starts_before_publication": 0,
+    "historical_owner_failed_starts_preserved": 4,
+    "fresh_b_synthetic_starts": 2,
+    "recheck": "C controller verifies remote publication, current AWS target and opt-out, exact owner WAV bytes before each upload",
+    "private_evidence_sha256": {
+      "sealed_epoch2_b_export": "2f8c0a09d0fcaca3dde44b1c13699ca60e7d4c8956a33ee5fab0a6c0dbc50c68",
+      "cloud_shell_sdk_versions": "b9e66adb589636acab8bc5dd5a4090e678d5a85e4b6ba82f8f621796edd7aa1c",
+      "owner_authority": "3892ac48dde721e62cc428f4cf5c095af48f56443fe8e8c3c4bdbfdc81955bd9",
+      "owner_corpus_integrity": "dc767fcaca1484af9a2ae24f05f0ac3c08698567fc40ce3c30146b9e55890498",
+      "owner_corpus_prepublication_integrity": "9ad950f0e22eb497dd9aa8fc7c2321898a0f484ca105b8416f588e685bff95b5",
+      "mode_a_ladder": "d28edb38db570a2cdcaba9e7025dda5724de91607cf28f81493870d794bcd8db",
+      "mode_a_cleanup": "41d23c20c737c65b49e8e100489fe66f64e90b4fe02cce6a27489b7c40927d5a",
+      "b1_prefixed_marker_head": "cc11c1b5a91d67eb6b9090068d145ebffa385be8eb9ac84844c418c493992458",
+      "b1_prefixed_marker_delete_intent": "cf8005efe6cc13bf12b67db6eaff70a266dda4ac35f5255b3144151bb9b2ff8d",
+      "b1_prefixed_marker_delete_response": "47a22ac91ddb936aa2dde4aad558b6c116aa3db81d6d88fbd421feaa3f8624cf",
+      "b2_prefixed_marker_head": "3e9338c944b9279ff70b71a2a3ca0515b00dc2620e2db9df3a607b03593f59ba",
+      "b2_prefixed_marker_delete_intent": "d0587ddf30e67af34634155b575a1c029dbbf521afe805c61b5d32a28ca8ed55",
+      "b2_prefixed_marker_delete_response": "3194aa369f0cb0615f60e40896e1bc64a041f1e89dd2f5edf97a3082c38323c8",
+      "bundle.json": "bdc3f92f61c158cf6f792c5123d0a437a3dce253cef7136b50f314103135c94a",
+      "freeze.json": "53e151a6aefdad221f3aa629c74ed066bd30ed10865841e377bcca13321bc29b",
+      "b1-dispatch.json": "d199d5cf2cc648810593cb829ec8aca6ab0735d810ebbd4ab37fb4611a80b952",
+      "b1-start-response.json": "093174bd52662a64d75702040674655cdb9504931f9ef42b1f6d84520895f14b",
+      "b1-delayed-reconcile-readonly.json": "aab5c6f12d7389d60f05fdd153e8f74870d8c13d096545154c1234d43beea7e8",
+      "b1-rejected.json": "8d8947e55abf8d8ec5fff12be7dd8575bb28270bf602e7b1f88289d311589ba0",
+      "b1-failed-cleanup-proof.json": "a735ae7c3f206d94ac46da7c69a1144d139a4977db9ffa1e32df1eaf0a9e44ba",
+      "epoch-2-no-data-role/update-intent.json": "b87f12cfbbb42adbfdfca5cdff81c350236f7540cde621fcd6b9d8b0e4358e51",
+      "epoch-2-no-data-role/update-response.json": "aa0d5bb8b8da1aed64f256e810defaf9b6de3619a6d9f1f26c931c015c02fc64",
+      "epoch-2-no-data-role/freeze.json": "e7762925c9f200056047dfee7c9394f338ba50faa6131e2ba5bea41ed8100555",
+      "epoch-2-no-data-role/controller-revision-1.json": "d654d051097e4c61ce70b4e372f9d42701650c5e126a035a97c4be1a525536e6",
+      "epoch-2-no-data-role/b1-dispatch.json": "3a7f4d733674d078d1a365d69bbd89de9667bae2b570fe8474c0b49ee6f36a3c",
+      "epoch-2-no-data-role/b1-start-response.json": "04ff5adc07f319910da7f8a9b07a85337c43e2b6f2050f1c0dd30f83fa5fb97f",
+      "epoch-2-no-data-role/b1-output-head.json": "4e5dd1e0e8fae6ab0f091f204ff522063b8b56011b485179fbd7e3807549d82d",
+      "epoch-2-no-data-role/b1-raw-output.json": "984425de8869e2a3016ca7037f49c477ac89afac7fb77aa616926f4ff69d4cff",
+      "epoch-2-no-data-role/b1-structure.json": "b67ac558b13ff4b98eec914a24b4172994003f7c13e55e92e9df4fb72bfe52c5",
+      "epoch-2-no-data-role/b1-cleanup-proof.json": "a735ae7c3f206d94ac46da7c69a1144d139a4977db9ffa1e32df1eaf0a9e44ba",
+      "epoch-2-no-data-role/b1-pass.json": "cbfacca683efe3d65108d9ac3589fd7af585d41b278542932d601937bc17c31d",
+      "epoch-2-no-data-role/b2-dispatch.json": "436397ae3ad9f2eae8612181f09a6c05a4f831ee9211ce0339aa8a6f547fff15",
+      "epoch-2-no-data-role/b2-start-response.json": "263e53680371b84646128805eb1dfe3186992845cc7f19e216253b810719a9fe",
+      "epoch-2-no-data-role/b2-output-head.json": "eb44145750108abd1b05d5bf21b83575f2e701d80ee0f90128a8eda2d25dc74f",
+      "epoch-2-no-data-role/b2-raw-output.json": "0669a985279eb7b440409ee55ac51b60dcb14f2b837324f6825542a24240801e",
+      "epoch-2-no-data-role/b2-structure.json": "b67ac558b13ff4b98eec914a24b4172994003f7c13e55e92e9df4fb72bfe52c5",
+      "epoch-2-no-data-role/b2-cleanup-proof.json": "a735ae7c3f206d94ac46da7c69a1144d139a4977db9ffa1e32df1eaf0a9e44ba",
+      "epoch-2-no-data-role/b2-pass.json": "be2389d10b91fb5d8a8e503fd988769c3b49441d438c002c5e2063842ff8a0dd"
+    }
+  },
+  "internal_alpha_preflight": {
+    "authority": "OD-11C-26",
+    "distinct_from_evaluation_preflight": true,
+    "requirements": {
+      "OD-11C-26-01": "Participant belongs to approved closed internal Alpha population",
+      "OD-11C-26-02": "Current disclosure received",
+      "OD-11C-26-03": "Explicit recording/Cloud-test opt-in",
+      "OD-11C-26-04": "No unapproved third-party voices intentionally included",
+      "OD-11C-26-05": "Amazon Transcribe selected configuration",
+      "OD-11C-26-06": "Region eu-central-1",
+      "OD-11C-26-07": "No automatic region fallback",
+      "OD-11C-26-08": "Actual account effective AI-services/Transcribe opt-out",
+      "OD-11C-26-09": "DORA S3/audio retention controls configured",
+      "OD-11C-26-10": "Encryption and key custody configured",
+      "OD-11C-26-11": "No permanent AWS credentials in Android",
+      "OD-11C-26-12": "Current consent/version durably recorded"
+    },
+    "checks": {
+      "OD-11C-26-01": "PASS_EXACT_EXISTING_OWNER_CORPUS",
+      "OD-11C-26-02": "PASS_EXACT_EXISTING_OWNER_CORPUS",
+      "OD-11C-26-03": "PASS_EXACT_EXISTING_OWNER_CORPUS",
+      "OD-11C-26-04": "PASS_EXACT_EXISTING_OWNER_CORPUS",
+      "OD-11C-26-05": "PASS_PROSPECTIVE_FROZEN_SCOPE",
+      "OD-11C-26-06": "PASS_PROSPECTIVE_FROZEN_SCOPE",
+      "OD-11C-26-07": "PASS_PROSPECTIVE_FROZEN_SCOPE",
+      "OD-11C-26-08": "PASS_B_PROVISION_OPTOUT_GUARD; RECHECK_AT_C_DISPATCH",
+      "OD-11C-26-09": "PASS_FRESH_B_RETENTION_AND_CLEANUP; RECHECK_AT_C_DISPATCH",
+      "OD-11C-26-10": "PASS_FRESH_B_BOTH_CMKS; RECHECK_AT_C_DISPATCH",
+      "OD-11C-26-11": "PASS_PROSPECTIVE_FROZEN_SCOPE",
+      "OD-11C-26-12": "PASS_EXACT_EXISTING_OWNER_CORPUS"
+    }
+  },
+  "owner_notice_and_jurisdiction": {
+    "required": "Actual delivered notice and durable existing explicit opt-in; verified private operator/rights/credential-loss route; current AWS agreement and service terms snapshots; separately reviewed jurisdiction and account eligibility.",
+    "legal_certification": "NOT_CLAIMED",
+    "country_inference": "Participant residence does not establish AWS Account Country or automatically create a household exemption.",
+    "status": "EXISTING_OWNER_ONLY_AUTHORITY_PRIVATE_SHA_BOUND",
+    "notice_sha256": "4a7782e67f42086939687b05b84327fa1c616797952ebb4f86261e5409a7c1cd",
+    "service_terms_sha256": "d0307423b6596b4bbba62cba774b9dbb5b26ebbb084fbf3a1b2a279279142447",
+    "customer_agreement_sha256": "c717b61f1fadffb0cfce8fec386b7bb6962b2f2b3eae8f3d028c7fe731e4323a"
+  },
+  "retention": "ADR-0011/0012 and OD-11C-13..22 unchanged: immediate safe cleanup after ingestion; audio/unfinished/transient output<=24h from original clock; ordinary metadata30d,audit90d; consent/identity active+90d; non-audio backup<=30d; guarded tombstones>=120d; hidden-provider-copy limitations retained.",
+  "cleanup": {
+    "procedure": [
+      "Inventory exact task-owned jobs, bucket/key/version, multipart IDs and task-created resources before use; record UTC creation/expiry and private evidence references.",
+      "Fence new dispatch/writes; retrieve and hash evidence to approved private audit storage. Delete terminal jobs after reconciliation; nonterminal job remains PENDING, never hard-cancelled by assertion.",
+      "Explicit DeleteObject plus enumerate/remove intended versions/markers; abort/list outstanding multipart parts if any. Re-list task prefix and HeadObject with known permission to distinguish404 from403; Get/List job absence with attributable response.",
+      "Recheck after late completions; retain guarded content-free tombstone to suppress resurrection. Never delete shared pre-existing buckets/keys/roles. Verify task-created resource cleanup separately.",
+      "If cleanup unresolved, stop new runs, escalate Owner, retain failed/pending evidence and reconcile within inherited24h; never report clean. Public report aggregate only."
+    ],
+    "independent_proof": "After exact owned-prefix deletion, separate proof principal inspects whole dedicated buckets (contents, versions, markers, multipart) and owned job prefix; denied read is unresolved.",
+    "failure": "Fence new runs; preserve private evidence, reconcile, and report PENDING. No PASS while cleanup is unresolved.",
+    "provider_internal_physical_purge": "NOT_CLAIMED",
+    "actual": "EPOCH2_B1_B2_SYNTHETIC_WHOLE_BUCKET_JOB_EMPTY_PRIVATE_PROOF; OWNER_AUDIO_NOT_RUN"
+  },
+  "publication_barrier": {
+    "required": [
+      "One prospective v0.3 JSON+MD commit before any owner WAV upload or Start",
+      "Push and independent remote refetch; exact branch remote HEAD and both blob SHA-256 values match",
+      "Bind 25 private original-B1 and epoch2 B receipts plus retention and service-marker supplements, fresh catalog/template/source, current target config, controller and Mode A marker evidence",
+      "Resumed fresh-B campaign owner-audio calls before publication equal zero; historical v0.2 attempts remain recorded; no automatic retries or ledger reset",
+      "Separate later result commit; do not rewrite historical v0.1/v0.2 evidence"
+    ],
+    "publication_identity": "ENCLOSING_COMMIT; independent run journal records the actual verified remote commit and time",
+    "status": "AWAITING_COMMIT_PUSH_REFETCH",
+    "private_proof_schema": "dora-62d-phase-a-v0.3-publication-proof-v1",
+    "proof_scope": "FRESH_B_ENVIRONMENT_RESUMED_CAMPAIGN"
+  },
+  "result_rules": {
+    "bounded8": "PASS only if all eight primary quality/accounting, structural integrity, bounded latency, required planned technical cases and verified cleanup succeed; otherwise FAIL or INCOMPLETE with reasons.",
+    "full_provider_admission": "NOT_ESTABLISHED",
+    "stage_6_2D": "Never full PASS from this run; after completed evaluation PARTIAL / BOUNDED8_COMPLETE_FULL_ADMISSION_PENDING.",
+    "recommendation": "EXPAND_CORPUS_FOR_FULL_6_2D only after both language thresholds and integrity pass; otherwise name measured blocker. Do not collect more data automatically.",
+    "stage_6_3": "NOT_RUN / BLOCKED",
+    "no_generalization": [
+      "arbitrary speakers",
+      "EN spontaneous",
+      "noise/speakerphone",
+      "timestamp accuracy",
+      "general population",
+      "statistical reliability"
+    ]
+  },
+  "replacement_feasibility": "Frozen AWS/NonAWSFake shared offline contract evidence only; no live alternative-provider quality equivalence claim.",
+  "effective_gate_statuses": {
+    "CLD-ADM-ARCH-001": "SATISFIED",
+    "CLD-ADM-CONSENT-001": "SATISFIED",
+    "CLD-ADM-DATA-001": "SATISFIED",
+    "CLD-ADM-SCOPE-001": "SATISFIED",
+    "CLD-ADM-GAPS-001": "SATISFIED",
+    "CLD-ADM-PRIVACY-001": "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA",
+    "CLD-ADM-RETENTION-001": "SATISFIED",
+    "CLD-ADM-CONTROL-001": "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA",
+    "CLD-ADM-EVALUATION-001": "OPEN",
+    "CLD-ADM-PROVIDER-001": "OPEN",
+    "CLD-ADM-ADMISSION-001": "BLOCKED",
+    "CLD-ADM-API-001": "OPEN",
+    "CLD-ADM-AUTH-001": "NOT_RUN",
+    "CLD-ADM-CONSENT-RUNTIME-001": "NOT_RUN",
+    "CLD-ADM-SECRETS-001": "NOT_RUN",
+    "CLD-ADM-UPLOAD-001": "NOT_RUN",
+    "CLD-ADM-CRYPTO-001": "NOT_RUN",
+    "CLD-ADM-RETENTION-RUNTIME-001": "NOT_RUN",
+    "CLD-ADM-DATA-RUNTIME-001": "NOT_RUN",
+    "CLD-ADM-FAILURE-001": "NOT_RUN",
+    "CLD-ADM-QUEUE-001": "NOT_RUN",
+    "CLD-ADM-BACKGROUND-001": "NOT_RUN",
+    "CLD-ADM-ADAPTER-001": "NOT_RUN",
+    "CLD-ADM-COST-001": "NOT_RUN",
+    "CLD-ADM-OBSERVABILITY-001": "NOT_RUN",
+    "CLD-ADM-SECURITY-001": "NOT_RUN",
+    "CLD-ADM-RESULT-001": "NOT_RUN",
+    "CLD-ADM-MERGE-001": "NOT_RUN",
+    "CLD-ADM-LOCAL-001": "NOT_RUN",
+    "CLD-ADM-OFFLINE-001": "NOT_RUN",
+    "CLD-ADM-DELETE-001": "NOT_RUN",
+    "CLD-ADM-HARNESS-001": "NOT_RUN",
+    "CLD-ADM-UX-001": "NOT_RUN",
+    "CLD-ADM-HISTORY-001": "NOT_RUN",
+    "CLD-ADM-EXPORT-001": "NOT_RUN",
+    "CLD-ADM-OPERATIONS-001": "NOT_RUN",
+    "CLD-ADM-SUPPLY-001": "OPEN",
+    "CLD-ADM-EXIT-001": "NOT_RUN",
+    "CLD-ADM-RELEASE-001": "OPEN"
+  },
+  "effective_status_counts": {
+    "SATISFIED": 6,
+    "SATISFIED_FOR_CLOSED_INTERNAL_ALPHA": 2,
+    "OPEN": 5,
+    "BLOCKED": 1,
+    "NOT_RUN": 25,
+    "PARTIALLY_SATISFIED": 0
+  },
+  "frozen_gate_count": 39,
+  "preserved": [
+    "Original Phase A v0.1 and all broad thresholds/coverage",
+    "Android production",
+    "Recovery",
+    "Local Stage5",
+    "PR #86",
+    "main"
+  ],
+  "supersedes": {
+    "path": "docs/contracts/DORA_CLOUD_EVALUATION_PHASE_A_BOUNDED8_V0_2.json",
+    "sha256": "7f3f290d2d743c1b6f8a2c7dba59aef2fa6be99bf10a93446dc0bbebe5e72b9f",
+    "effect": "PROSPECTIVE_EXECUTION_BINDING_ONLY; HISTORICAL_V0_2_UNCHANGED",
+    "previous_starting_commit": "b6c1893c2b1076b183da2892f339a7ec6073a080",
+    "previous_branch": "chat/alpha-asr-runner-scope"
+  },
+  "mode_a_evidence": {
+    "s0_public_path": "docs/contracts/DORA_CLOUD_62D_ENGINEERING_S0_RESULT_V0_1.json",
+    "s0_public_sha256": "6c88a09c05515f13877ec1f95a198c71f91e41b1615063584fc9aff061eb2200",
+    "ladder_proof_sha256": "d28edb38db570a2cdcaba9e7025dda5724de91607cf28f81493870d794bcd8db",
+    "cleanup_proof_sha256": "41d23c20c737c65b49e8e100489fe66f64e90b4fe02cce6a27489b7c40927d5a",
+    "ladder": [
+      {
+        "rung": "S0",
+        "status": "COMPLETED",
+        "scope": "Minimal private SSE-S3 input; service-managed output; no DataAccessRole"
+      },
+      {
+        "rung": "S1",
+        "status": "PRE_JOB_REJECTED",
+        "scope": "Exact private output bucket/key with job-prefix Put scope"
+      },
+      {
+        "rung": "S1R",
+        "status": "COMPLETED",
+        "scope": "Task output bucket object Put scope; private SSE-S3 output"
+      },
+      {
+        "rung": "S2",
+        "status": "COMPLETED",
+        "scope": "Explicit OutputEncryptionKMSKeyId; output aws:kms"
+      },
+      {
+        "rung": "S3",
+        "status": "COMPLETED",
+        "scope": "Task input CMK plus explicit output CMK"
+      }
+    ],
+    "service_write_check_marker": {
+      "key": ".write_access_check_file.temp",
+      "size": 0,
+      "sse": "aws:kms",
+      "exact_explicit_output_cmk": true,
+      "bucket_default_sse": "AES256"
+    },
+    "cleanup": "OWNED_BUCKETS_JOBS_ROLES_ABSENT; TWO_TASK_KEYS_PENDING_DELETION",
+    "interpretation": "Fresh task output scope and explicit CMKs worked in Mode A; the historical v4 cause remains unresolved. Mode A did not test the former DataAccessRole path.",
+    "real_audio_starts": 0
+  },
+  "owner_authority": {
+    "scope": "EXACT_EIGHT_OWNER_RECORDINGS_ONLY",
+    "authorization": "EXISTING_EXPLICIT_OWNER_REQUEST_CONTINUES_FOR_SAME_MANIFEST; NO_NEW_POPULATION",
+    "corpus_record_count": 8,
+    "manifest_sha256": "27ea1593a46c9c17de0a568df6537dbe55df56c4def59559d758cb9f07ecbe65",
+    "historical_owner_failed_starts_preserved": 4,
+    "private_receipt_sha256": {
+      "owner-authority-bounded8-2026-09-28.json": "3892ac48dde721e62cc428f4cf5c095af48f56443fe8e8c3c4bdbfdc81955bd9",
+      "owner-notice-delivered-2026-09-28.txt": "4a7782e67f42086939687b05b84327fa1c616797952ebb4f86261e5409a7c1cd",
+      "owner-jurisdiction-facts-2026-09-28.json": "5bc2da2784a81de8c622fac7b75a460d86db337cfbc11fa03201995ba8086624",
+      "aws-account-contract-facts-2026-09-28.json": "7ba13066877b404ee0a842d50d471cbb68d28ca256bc879e6638f4708afb5cbc"
+    },
+    "current_corpus_integrity_snapshot_sha256": "dc767fcaca1484af9a2ae24f05f0ac3c08698567fc40ce3c30146b9e55890498",
+    "prepublication_corpus_integrity_receipt_sha256": "9ad950f0e22eb497dd9aa8fc7c2321898a0f484ca105b8416f588e685bff95b5",
+    "fresh_dispatch_requirement": "RECHECK_SOURCE_AND_UPLOAD_WAV_HASHES_BEFORE_EACH_SCOPED_PUT",
+    "legal_certification": "NOT_CLAIMED",
+    "broad_admission": "NOT_ESTABLISHED"
+  },
+  "fresh_target": {
+    "status": "EPOCH2_NO_ROLE_B1_B2_REPRODUCED_PRIVATE_CLEANUP_VERIFIED",
+    "architecture": "TASK_SCOPED_OPERATOR_NO_DATA_ACCESS_ROLE",
+    "execution": "CLOUDSHELL_ROOT_PROVISIONS_AUDITS_AND_INVOKES; SCOPED_LAMBDA_OPERATOR_PERFORMS_S3_CONTENT_AND_KMS_CRYPTO",
+    "owner_byte_transport": "CLOUDSHELL_PROCESS_TRANSPORTS_APPROVED_OWNER_WAV_BYTES_AFTER_PUBLICATION",
+    "mode_a_result": "SYNTHETIC_S0_S1R_S2_S3_COMPLETED; MODE_A_CLEANUP_PRIVATE_RECEIPT_REQUIRED",
+    "mode_a_scope_finding": "TRANSCRIBE_CREATED_ZERO_BYTE_ROOT_OUTPUT_WRITE_CHECK_MARKER; EXACT_OUTPUT_CMK_HEAD_OBSERVED; HISTORICAL_V4_CAUSE_UNRESOLVED",
+    "mode_b_reproduction": "EPOCH2_NO_ROLE_B1_AND_B2_PRIVATE_PASS_WITH_WHOLE_BUCKET_CLEANUP_REQUIRED",
+    "original_role_based_b1": "REJECTED_BEFORE_JOB; DELAYED_ABSENCE_AND_CLEANUP_PROVED; SPECIFIC_CAUSE_UNPROVEN",
+    "legacy_data_role_resource": "REMAINS_IN_TASK_STACK_UNUSED_BY_EPOCH2_START",
+    "prospective_adr0011_amendment": "For this exact bounded owner evaluation, the Owner authorized omission of JobExecutionSettings/DataAccessRole from Start. The task-scoped Lambda operator performs input/output S3 and KMS work; customer CMKs, explicit output key, private buckets, TLS, opt-out, retention, ledger, and current readback remain required. This does not amend historical ADR-0011 or admit broad production use.",
+    "catalog_cases": 22,
+    "reserved_catalog_seconds": 4003,
+    "private_evidence_sha256": {
+      "bundle.json": "bdc3f92f61c158cf6f792c5123d0a437a3dce253cef7136b50f314103135c94a",
+      "freeze.json": "53e151a6aefdad221f3aa629c74ed066bd30ed10865841e377bcca13321bc29b",
+      "b1-dispatch.json": "d199d5cf2cc648810593cb829ec8aca6ab0735d810ebbd4ab37fb4611a80b952",
+      "b1-start-response.json": "093174bd52662a64d75702040674655cdb9504931f9ef42b1f6d84520895f14b",
+      "b1-delayed-reconcile-readonly.json": "aab5c6f12d7389d60f05fdd153e8f74870d8c13d096545154c1234d43beea7e8",
+      "b1-rejected.json": "8d8947e55abf8d8ec5fff12be7dd8575bb28270bf602e7b1f88289d311589ba0",
+      "b1-failed-cleanup-proof.json": "a735ae7c3f206d94ac46da7c69a1144d139a4977db9ffa1e32df1eaf0a9e44ba",
+      "epoch-2-no-data-role/update-intent.json": "b87f12cfbbb42adbfdfca5cdff81c350236f7540cde621fcd6b9d8b0e4358e51",
+      "epoch-2-no-data-role/update-response.json": "aa0d5bb8b8da1aed64f256e810defaf9b6de3619a6d9f1f26c931c015c02fc64",
+      "epoch-2-no-data-role/freeze.json": "e7762925c9f200056047dfee7c9394f338ba50faa6131e2ba5bea41ed8100555",
+      "epoch-2-no-data-role/controller-revision-1.json": "d654d051097e4c61ce70b4e372f9d42701650c5e126a035a97c4be1a525536e6",
+      "epoch-2-no-data-role/b1-dispatch.json": "3a7f4d733674d078d1a365d69bbd89de9667bae2b570fe8474c0b49ee6f36a3c",
+      "epoch-2-no-data-role/b1-start-response.json": "04ff5adc07f319910da7f8a9b07a85337c43e2b6f2050f1c0dd30f83fa5fb97f",
+      "epoch-2-no-data-role/b1-output-head.json": "4e5dd1e0e8fae6ab0f091f204ff522063b8b56011b485179fbd7e3807549d82d",
+      "epoch-2-no-data-role/b1-raw-output.json": "984425de8869e2a3016ca7037f49c477ac89afac7fb77aa616926f4ff69d4cff",
+      "epoch-2-no-data-role/b1-structure.json": "b67ac558b13ff4b98eec914a24b4172994003f7c13e55e92e9df4fb72bfe52c5",
+      "epoch-2-no-data-role/b1-cleanup-proof.json": "a735ae7c3f206d94ac46da7c69a1144d139a4977db9ffa1e32df1eaf0a9e44ba",
+      "epoch-2-no-data-role/b1-pass.json": "cbfacca683efe3d65108d9ac3589fd7af585d41b278542932d601937bc17c31d",
+      "epoch-2-no-data-role/b2-dispatch.json": "436397ae3ad9f2eae8612181f09a6c05a4f831ee9211ce0339aa8a6f547fff15",
+      "epoch-2-no-data-role/b2-start-response.json": "263e53680371b84646128805eb1dfe3186992845cc7f19e216253b810719a9fe",
+      "epoch-2-no-data-role/b2-output-head.json": "eb44145750108abd1b05d5bf21b83575f2e701d80ee0f90128a8eda2d25dc74f",
+      "epoch-2-no-data-role/b2-raw-output.json": "0669a985279eb7b440409ee55ac51b60dcb14f2b837324f6825542a24240801e",
+      "epoch-2-no-data-role/b2-structure.json": "b67ac558b13ff4b98eec914a24b4172994003f7c13e55e92e9df4fb72bfe52c5",
+      "epoch-2-no-data-role/b2-cleanup-proof.json": "a735ae7c3f206d94ac46da7c69a1144d139a4977db9ffa1e32df1eaf0a9e44ba",
+      "epoch-2-no-data-role/b2-pass.json": "be2389d10b91fb5d8a8e503fd988769c3b49441d438c002c5e2063842ff8a0dd"
+    },
+    "controller_sha256": "04901a91bdf2793d5e5faccd0786e3bc459c8ab32f7bea5e835b57b4f6471456",
+    "private_export_sha256": "2f8c0a09d0fcaca3dde44b1c13699ca60e7d4c8956a33ee5fab0a6c0dbc50c68",
+    "private_exporter_source_sha256": "447ef854c4aca8e1af37ca189534d24eb1c515ef8d6651404d71223f01b78fc9",
+    "catalog_sha256": "a8e09ea86c33cd33759500fc99615014f4f70caa006df4cc42fcd1b89a129c92",
+    "original_template_sha256": "bae3464916e3691d5bd26798f9eedb0570b7f6a9abd7dbd9b27ebeb5c3996e12",
+    "template_sha256": "7b0cfcb8019713e1821bc0f9a76090166e6a239aeb3fb71cb7f46dbcf7005e4a",
+    "source_archive_sha256": "a23861d2db4839330d8a57d92e6cbd23983de3503a65e8179dbc7c7c5d4d47c3",
+    "epoch2_controller_source_sha256": "e41635c17b77bdcb3192af46d8ba27558aff95366e7808876b8b397b17de195d",
+    "prior_config_sha256": "47397085cc661bf76d9e99c2aa84eea6a71bf65cce8e31d6eebd29eaa7070edf",
+    "config_sha256": "7f16bc11e74961fa89106a8e65a11397748f41a472c09ba1a7f921c227814f17",
+    "mode_b_readback": {
+      "exact_output_cmk_observed": true,
+      "no_data_access_role_in_request_observed": true,
+      "no_data_access_role_in_terminal_get_observed": true,
+      "old_to_new_b1_request_only_job_execution_settings_changed": true,
+      "prefixed_service_marker_exact_cmk_and_cleanup_observed": true,
+      "prefixed_service_marker_receipts_sha256": {
+        "b1": {
+          "head_receipt_sha256": "cc11c1b5a91d67eb6b9090068d145ebffa385be8eb9ac84844c418c493992458",
+          "delete_intent_sha256": "cf8005efe6cc13bf12b67db6eaff70a266dda4ac35f5255b3144151bb9b2ff8d",
+          "delete_response_sha256": "47a22ac91ddb936aa2dde4aad558b6c116aa3db81d6d88fbd421feaa3f8624cf"
+        },
+        "b2": {
+          "head_receipt_sha256": "3e9338c944b9279ff70b71a2a3ca0515b00dc2620e2db9df3a607b03593f59ba",
+          "delete_intent_sha256": "d0587ddf30e67af34634155b575a1c029dbbf521afe805c61b5d32a28ca8ed55",
+          "delete_response_sha256": "3194aa369f0cb0615f60e40896e1bc64a041f1e89dd2f5edf97a3082c38323c8"
+        }
+      },
+      "transcript_job_account_attribution_observed": true,
+      "original_role_based_b1_root_cause": "UNPROVEN",
+      "operator_runtime_code_sha256_base64": "s6BMLKmHX3GXa8XZqAcw694Wupt3nWpi8wib0NaJhfQ=",
+      "watchdog_runtime_code_sha256_base64": "mXzTpCQy/Y5nfwQ/umJQHmV5OfH3+Dg0xMb4G/STqX0=",
+      "role_policy_sha256": {
+        "DataRole": {
+          "inline": {
+            "ExactData": "42ffd6a04ded6d6e662595d022e945936f2adeca241ddf1612bac68f0048e3f9"
+          },
+          "trust": "58e75a260f8ee3a770e1a3338c6d426c0352d3d6c2e34541b59b47d255f6350a"
+        },
+        "OperatorRole": {
+          "inline": {
+            "BoundedExecution": "55fdc82a4e959152459646ecf91f822a7f1a9ddf6e482875d8e4764744c1ebc9"
+          },
+          "trust": "f3502e8666443cacc9bec965f5cc2886f9ed0e884c87714821fdc6872835efd0"
+        },
+        "WatchdogRole": {
+          "inline": {
+            "BoundedDeleteOnly": "f643c43702035729c0642916ade2b526648b0ad58f6933e5046b28d551d26c6e"
+          },
+          "trust": "f3502e8666443cacc9bec965f5cc2886f9ed0e884c87714821fdc6872835efd0"
+        }
+      },
+      "key_policy_sha256": {
+        "Input": "8a56232a87fab9a43fa9572341c50b7f777a43c52b400691bdccf823a5802fc7",
+        "Output": "8a56232a87fab9a43fa9572341c50b7f777a43c52b400691bdccf823a5802fc7"
+      },
+      "bucket_control_sha256": {
+        "Input": "5a57b57c4563522569de19c959dec3830410a07baac7a79446bdbfc0f1e095cf",
+        "Output": "bf4b40d585a67ea1d6be3d5ab37fed519e59cf907b1ddb80ec00f7444c3cd221"
+      },
+      "watchdog_schedule_sha256": "d25a2eaa817c796fce2c84437cb4e52543c4f3f7459f9389539076f3ab67c59d"
+    },
+    "mode_a_marker_proof_sha256": "cfcff70fad938bce6948083519fe42e4bd35983c48178b77a1fa447791c3f6fd",
+    "mode_a_retirement_receipt_sha256": "c7b9e863918a9644dfbeb33ff2b7d285ec77322bf1f650c57ddd541846f45cd9",
+    "diagnostic_starts_used": 8
+  },
+  "gate_status_epoch": "V0_2_HISTORICAL_BASELINE; FRESH_PROVIDER_ADMISSION_NOT_RUN"
+}

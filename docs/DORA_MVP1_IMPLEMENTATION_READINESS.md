@@ -1,5 +1,11 @@
 # Dora MVP 1 — Implementation Readiness Review
 
+## 2026-09-29 — 6.2D bounded owner Phase A v0.3; synthetic target proven
+
+The prospective [Phase A v0.3](stage0/DORA_CLOUD_EVALUATION_PHASE_A_BOUNDED8_V0_3.md) and [machine record](contracts/DORA_CLOUD_EVALUATION_PHASE_A_BOUNDED8_V0_3.json) bind the exact manifest of eight recordings by the same Project Owner and authority receipts to a fresh task-scoped target. Mode A synthetic S0/S1r/S2/S3 and no-DataRole Mode B B1/B2 completed with customer output CMK, attributable nonempty timed results and whole-bucket/job cleanup. The original DataRole B1 rejected before job creation; its specific cause is **UNPROVEN**. Eight of 12 shared engineering diagnostic Start slots are consumed, and USD9.4370 is reserved under the USD10 total/USD2 ASR ceilings without assuming free tier.
+
+The Owner's no-DataRole Start choice is a prospective exception for this owner-only evaluation to ADR-0011's general Alpha role design; the unused task DataRole remains. Publication, push and independent refetch of this exact v0.3 pair are mandatory before resumed owner audio; current opt-out/configuration and owner WAV integrity are rechecked at dispatch. Historical v0.2 four owner failures remain historical. **6.2D = BLOCKED / LIVE_PROVIDER_EVALUATION_NOT_EXECUTED**; evaluation Phase B, real RU/EN quality and latency, provider admission and 6.3 are NOT_RUN/BLOCKED as applicable. EVALUATION/PROVIDER remain OPEN and the 39-gate accounting is unchanged. This synthetic milestone does not admit a provider or broader population.
+
 ## 2026-09-28 — 6.2D Phase A prospective protocol; live blocked
 
 Owner-authorized 6.2D thresholds are prospectively frozen in [Phase A v0.1](stage0/DORA_CLOUD_EVALUATION_PHASE_A_V0_1.md)
