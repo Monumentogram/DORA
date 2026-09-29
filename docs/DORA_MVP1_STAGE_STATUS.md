@@ -1,5 +1,13 @@
 # Dora MVP 1 — Stage Status
 
+## 2026-09-29 — 6.2D technical closure: owner-only provider admitted
+
+The [technical closure result](stage0/DORA_CLOUD_62D_DUPLICATE_NAME_CLOSURE_RESULT_V0_1.md) closes the current product cases under the published prospective protocol. Canonical byte-level media preflight rejects contradictory format, truncated structure and subminimum duration before upload/Start. Retained missing-input/access adjudications map to typed non-retryable errors. Exactly two new synthetic Starts used the same valid input and request: the first completed with the exact Output CMK, the second returned `ConflictException`. Independent raw-evidence review, cleanup, stack retirement and bounded cost passed. Historical raw verdicts remain unchanged.
+
+**6.2D = PASS / OWNER_ONLY_CLOSED_INTERNAL_ALPHA_PROVIDER_ADMITTED.** EVALUATION and PROVIDER are `SATISFIED_FOR_OWNER_ONLY_CLOSED_INTERNAL_ALPHA`; ADMISSION remains `BLOCKED`. The 39-gate effective map is 6 SATISFIED + 2 SATISFIED_FOR_CLOSED_INTERNAL_ALPHA + 2 SATISFIED_FOR_OWNER_ONLY_CLOSED_INTERNAL_ALPHA + 0 PARTIALLY_SATISFIED + 3 OPEN + 1 BLOCKED + 25 NOT_RUN. External Legal remains separate. **6.3 = ELIGIBLE_TO_START / NEXT; execution NOT_RUN.** This does not admit production implementation.
+
+No owner recording or WER was rerun. RU 17/179 = 9.4972% remains measured PASS; EN READ 37/181 = 20.4420% remains a historical 18% benchmark FAIL accepted only under OD-62D-EN-01 for the Project Owner. EN spontaneous, noise and timestamp accuracy remain NOT_EVALUATED; revalidation is mandatory before a second real speaker. No external/customer/public admission. The historical USD9.9685 reserve remains recorded; proven unused retired capacity yields a revised prior upper bound USD9.755509 plus USD0.240875 incremental reserve = USD9.996384/10 total, USD0.541500/2 ASR. Actual charges are NOT_OBSERVED. Diagnostics are 11/12; no further Start is authorized in this task. Both task CMKs are PendingDeletion, not physically deleted.
+
 ## 2026-09-29 — 6.2D owner technical successor: required cases not satisfied
 
 The [terminal technical result](stage0/DORA_CLOUD_62D_OWNER_TECHNICAL_RESULT_V0_1.md) records one synthetic smoke PASS and 13 required technical Starts across 12 cases, with no new owner quality Starts. Raw technical oracles were not all PASS (tech-empty, tech-near_empty, tech-truncated, tech-wrong_format, tech-missing_s3, tech-duplicate_name, tech-permission_denial); append-only adjudications are shown separately from those raw outcomes. The technical suite is **NOT_PASS**. Exact task content cleanup and stack retirement were verified; both task CMKs are pending deletion, not physically deleted. The owner-only English acceptance decision does not waive these technical results.

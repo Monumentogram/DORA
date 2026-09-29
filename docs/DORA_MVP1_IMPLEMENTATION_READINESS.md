@@ -1,5 +1,13 @@
 # Dora MVP 1 — Implementation Readiness Review
 
+## 2026-09-29 — Owner-only provider technical admission satisfied
+
+The independently reviewed [technical closure result](stage0/DORA_CLOUD_62D_DUPLICATE_NAME_CLOSURE_RESULT_V0_1.md) establishes **6.2D = PASS / OWNER_ONLY_CLOSED_INTERNAL_ALPHA_PROVIDER_ADMITTED**. Canonical media preflight and retained typed adjudications satisfy the locally decidable negative cases; a new valid same-name request returned `ConflictException` after the first job was created and subsequently completed with the exact Output CMK. Cleanup and retirement passed; the total reserved upper bound is USD9.996384/10 and ASR USD0.541500/2, with actual charges NOT_OBSERVED.
+
+EVALUATION and PROVIDER are `SATISFIED_FOR_OWNER_ONLY_CLOSED_INTERNAL_ALPHA`; broad ADMISSION remains `BLOCKED`. Effective frozen39: 6 general SATISFIED + 2 existing closed-internal scoped + 2 owner-only scoped + 3 OPEN + 1 BLOCKED + 25 NOT_RUN. Privacy/Control scope and the separate External Legal gate are preserved. **6.3 is ELIGIBLE_TO_START / NEXT and NOT_RUN**; no production implementation is admitted by this result.
+
+Historical raw outcomes and quality remain immutable: RU 17/179 = 9.4972% measured PASS; EN READ 37/181 = 20.4420% historical 18% benchmark FAIL, accepted under OD-62D-EN-01 for the Project Owner only. No quality rerun or rescoring occurred. Second-speaker revalidation remains mandatory; EN spontaneous, noise and timestamp accuracy are NOT_EVALUATED, and external/customer/public use is not admitted.
+
 ## 2026-09-29 — 6.2D technical verification remains blocked
 
 The [terminal technical result](stage0/DORA_CLOUD_62D_OWNER_TECHNICAL_RESULT_V0_1.md) records one synthetic smoke PASS and 13 required technical Starts across 12 cases, with no new owner quality Starts. Raw technical oracles were not all PASS (tech-empty, tech-near_empty, tech-truncated, tech-wrong_format, tech-missing_s3, tech-duplicate_name, tech-permission_denial); append-only adjudications are shown separately from those raw outcomes. The technical suite is **NOT_PASS**. Exact task content cleanup and stack retirement were verified; both task CMKs are pending deletion, not physically deleted. The owner-only English acceptance decision does not waive these technical results.

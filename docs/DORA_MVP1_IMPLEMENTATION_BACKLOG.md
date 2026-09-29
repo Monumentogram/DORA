@@ -1,5 +1,13 @@
 # Dora MVP 1 — Executable Backlog
 
+## 2026-09-29 — 6.2D closed; separate 6.3 is next
+
+The [technical closure result](stage0/DORA_CLOUD_62D_DUPLICATE_NAME_CLOSURE_RESULT_V0_1.md) records **6.2D = PASS / OWNER_ONLY_CLOSED_INTERNAL_ALPHA_PROVIDER_ADMITTED**. Local preflight/typed negative-case handling and the new two-Start valid duplicate-name collision satisfy the current product boundary. Exact Output CMK, cleanup, retirement, independent review and cost bounds passed; historical raw technical verdicts are unchanged. No owner quality recording or WER was rerun.
+
+**Next: 6.3 — Development admission and exact baseline = ELIGIBLE_TO_START / NEXT; NOT_RUN.** Execute only under a separate task. EVALUATION and PROVIDER are satisfied for owner-only closed internal Alpha; ADMISSION stays BLOCKED until that separate step. Effective39: 6 general satisfied + 2 existing scoped + 2 owner-only scoped + 3 OPEN + 1 BLOCKED + 25 NOT_RUN. External Legal is separate.
+
+Retain RU 17/179 = 9.4972% measured PASS and EN READ 37/181 = 20.4420% historical benchmark FAIL, with only the existing OD-62D-EN-01 owner acceptance. Revalidation is mandatory before a second real speaker. EN spontaneous/noise/timestamp accuracy and external/customer/public admission remain outside the proven scope. Diagnostics are 11/12; this task authorizes no further Start. Reserved total USD9.996384/10 and ASR USD0.541500/2 do not claim actual billed charges.
+
 ## 2026-09-29 — Resolve observed technical case failures before admission
 
 The [terminal technical result](stage0/DORA_CLOUD_62D_OWNER_TECHNICAL_RESULT_V0_1.md) records one synthetic smoke PASS and 13 required technical Starts across 12 cases, with no new owner quality Starts. Raw technical oracles were not all PASS (tech-empty, tech-near_empty, tech-truncated, tech-wrong_format, tech-missing_s3, tech-duplicate_name, tech-permission_denial); append-only adjudications are shown separately from those raw outcomes. The technical suite is **NOT_PASS**. Exact task content cleanup and stack retirement were verified; both task CMKs are pending deletion, not physically deleted. The owner-only English acceptance decision does not waive these technical results.
