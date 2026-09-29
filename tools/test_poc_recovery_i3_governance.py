@@ -4048,5 +4048,272 @@ class RecoveryI3ResultBoundaryGovernanceTests(unittest.TestCase):
         ):
             governance.main()
 
+
+class RecoveryI3AcceptedSquashSuccessorTests(unittest.TestCase):
+    """The accepted main payload survives branch moves, never protected drift."""
+
+    def state(self):
+        return dict(governance.REC_I3_ACCEPTED_MAIN_PROTECTED_ENTRIES)
+
+    def changes(self):
+        return {layer: [] for layer in ("committed", "staged", "unstaged", "untracked")}
+
+    def test_clean_accepted_state_passes_on_any_branch(self):
+        governance.validate_rec_i3_accepted_protected_state(
+            self.changes(), self.state(), ["b" * 40 + " " + "a" * 40]
+        )
+
+    def test_each_protected_object_mutation_rejected(self):
+        for path in self.state():
+            with self.subTest(path=path):
+                current = self.state()
+                current[path] = "mutated"
+                with self.assertRaisesRegex(ValueError, "protected object"):
+                    governance.validate_rec_i3_accepted_protected_state(
+                        self.changes(), current, []
+                    )
+
+    def test_committed_mutate_then_revert_is_rejected(self):
+        changes = self.changes()
+        changes["committed"] = ["android/poc/recovery/src/main/Changed.kt"]
+        with self.assertRaisesRegex(ValueError, "protected namespace"):
+            governance.validate_rec_i3_accepted_protected_state(changes, self.state(), [])
+
+    def test_staged_protected_change_is_rejected(self):
+        changes = self.changes()
+        changes["staged"] = ["android/build.gradle.kts"]
+        with self.assertRaisesRegex(ValueError, "protected namespace"):
+            governance.validate_rec_i3_accepted_protected_state(changes, self.state(), [])
+
+    def test_unstaged_protected_change_is_rejected(self):
+        changes = self.changes()
+        changes["unstaged"] = ["android/gradle/verification-metadata.xml"]
+        with self.assertRaisesRegex(ValueError, "protected namespace"):
+            governance.validate_rec_i3_accepted_protected_state(changes, self.state(), [])
+
+    def test_untracked_new_evidence_name_is_rejected(self):
+        changes = self.changes()
+        changes["untracked"] = ["docs/evidence/poc-recovery-001/new.json"]
+        with self.assertRaisesRegex(ValueError, "protected namespace"):
+            governance.validate_rec_i3_accepted_protected_state(changes, self.state(), [])
+
+    def test_post_anchor_merge_is_rejected_even_with_identical_tree(self):
+        with self.assertRaisesRegex(ValueError, "merge"):
+            governance.validate_rec_i3_accepted_protected_state(
+                self.changes(), self.state(), ["c" * 40 + " " + "a" * 40 + " " + "b" * 40]
+            )
+
+    def test_incomplete_layer_inventory_is_rejected(self):
+        changes = self.changes()
+        del changes["untracked"]
+        with self.assertRaisesRegex(ValueError, "inventory"):
+            governance.validate_rec_i3_accepted_protected_state(changes, self.state(), [])
+
+    def test_candidate_is_ancestry_based_not_branch_named(self):
+        from types import SimpleNamespace
+        for branch in ("main", "chat/unrelated-6-3-candidate"):
+            lifecycle = SimpleNamespace(head="a" * 40, branch=branch,
+                                        github_pull_request_context=None)
+            with patch.object(governance, "git_optional_output", return_value=governance.REC_I3_ACCEPTED_MAIN_ANCHOR), patch.object(
+                    governance, "git_is_ancestor", return_value=True):
+                self.assertTrue(governance.rec_i3_accepted_main_descendant_candidate(lifecycle))
+
+    def test_candidate_rejects_missing_anchor_or_unrelated_history(self):
+        from types import SimpleNamespace
+        lifecycle = SimpleNamespace(head="a" * 40, branch="main",
+                                    github_pull_request_context=None)
+        with patch.object(governance, "git_optional_output", return_value=None):
+            self.assertFalse(governance.rec_i3_accepted_main_descendant_candidate(lifecycle))
+        with patch.object(governance, "git_optional_output", return_value=governance.REC_I3_ACCEPTED_MAIN_ANCHOR), patch.object(
+                governance, "git_is_ancestor", return_value=False):
+            self.assertFalse(governance.rec_i3_accepted_main_descendant_candidate(lifecycle))
+
+    def test_reviewed_source_missing_or_scope_lineage_missing_rejected(self):
+        missing = governance.PinnedCommitIdentity(None, None, (), False)
+        with patch.object(governance, "collect_pinned_commit_identity", return_value=missing):
+            with self.assertRaisesRegex(ValueError, "historical reviewed source"):
+                governance.validate_rec_i3_reviewed_source_provenance()
+        present = governance.PinnedCommitIdentity(
+            governance.REC_I3_SQUASH_MAIN_REVIEWED_HEAD,
+            governance.REC_I3_SQUASH_MAIN_TREE,
+            (governance.REC_I3_SQUASH_MAIN_REVIEWED_PARENT,), True,
+        )
+        with patch.object(governance, "collect_pinned_commit_identity", return_value=present), patch.object(
+                governance, "git_is_ancestor", return_value=False):
+            with self.assertRaisesRegex(ValueError, "scope-first lineage"):
+                governance.validate_rec_i3_reviewed_source_provenance()
+
+    def test_wrong_anchor_identity_rejected(self):
+        wrong = governance.PinnedCommitIdentity(
+            governance.REC_I3_ACCEPTED_MAIN_ANCHOR, "0" * 40,
+            (governance.REC_I3_ACCEPTED_MAIN_PARENT,), True,
+        )
+        with patch.object(governance, "collect_pinned_commit_identity", return_value=wrong):
+            from types import SimpleNamespace
+            with self.assertRaisesRegex(ValueError, "accepted main anchor tree mismatch"):
+                governance.validate_rec_i3_accepted_main_descendant(
+                    SimpleNamespace(head="a" * 40, branch="chat/other", github_pull_request_context=None)
+                )
+
+    def test_main_dispatches_arbitrary_branch_before_generic_legacy(self):
+        from types import SimpleNamespace
+        lifecycle = SimpleNamespace(head="a" * 40, branch="chat/other", github_pull_request_context=None)
+        fast_paths = (
+            "validate_rec_i3_v7_fast_path", "validate_rec_i3_observable_controller_fast_path",
+            "validate_rec_i3_result_boundary_fast_path", "validate_rec_i3_e36_sqlite_post_merge_fast_path",
+            "validate_rec_i3_e36_sqlite_remediation_fast_path", "validate_rec_i3_e36_guard_remediation_fast_path",
+            "validate_rec_i3_e36_gapi_fast_path", "validate_rec_i3_squash_main_fast_path",
+        )
+        from contextlib import ExitStack
+        with ExitStack() as stack:
+            for name in fast_paths:
+                stack.enter_context(patch.object(governance, name, return_value=False))
+            stack.enter_context(patch.object(governance, "collect_recovery_lifecycle_identity", return_value=lifecycle))
+            stack.enter_context(patch.object(governance, "rec_i3_accepted_main_descendant_candidate", return_value=True))
+            accepted = stack.enter_context(patch.object(governance, "validate_rec_i3_accepted_main_descendant"))
+            legacy = stack.enter_context(patch.object(governance, "validate_all"))
+            stack.enter_context(patch.object(sys, "argv", ["validate_poc_recovery_governance.py"]))
+            self.assertEqual(governance.main(), 0)
+            accepted.assert_called_once_with(lifecycle)
+            legacy.assert_not_called()
+
+    def test_v7_selector_without_its_base_does_not_query_ancestry(self):
+        candidate = "a" * 40
+        def objects(*args, **kwargs):
+            return candidate if args[2] == candidate + "^{commit}" else None
+        with patch.object(governance, "git_optional_output", side_effect=objects), patch.object(
+            governance, "git_is_ancestor"
+        ) as ancestry:
+            self.assertFalse(governance.rec_i3_v7_source_candidate(candidate))
+            ancestry.assert_not_called()
+
+    def test_real_git_baseline_dispatch_provenance_and_mutations(self):
+        """Run the actual profile against an exact historical checkout and real deltas."""
+        import contextlib
+        import io
+
+        baseline = "a7701763a6486e4f707d23a70c0cc600431a88ac"
+        source_root = governance.ROOT
+        branch = "test/unrelated-accepted-squash-state"
+        implementation = (
+            "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/"
+            "poc/recovery/controller/RecoveryKeyConfirmationController.kt"
+        )
+        evidence = governance.REC_I3_EVIDENCE_PATH
+
+        with tempfile.TemporaryDirectory(prefix="r3-") as temporary:
+            repo = Path(temporary) / "repo"
+
+            def git(*args, cwd=None):
+                root = cwd or repo
+                result = subprocess.run(
+                    ["git", "-c", "core.longpaths=true", "-c", f"safe.directory={root.as_posix()}",
+                     "-c", "user.name=Dora Validator Test", "-c", "user.email=dora-validator@example.invalid",
+                     *args], cwd=root, capture_output=True, check=True, timeout=60,
+                )
+                return result.stdout.decode("utf-8").strip()
+
+            git("clone", "--shared", "--no-checkout", str(source_root), str(repo), cwd=Path(temporary))
+            git("checkout", "-q", "-B", branch, baseline)
+            environment = {key: value for key, value in os.environ.items()
+                           if not key.startswith("GITHUB_") and key != "RUNNER_TEMP"}
+            environment.update({"GIT_CONFIG_COUNT": "2", "GIT_CONFIG_KEY_0": "safe.directory",
+                                "GIT_CONFIG_VALUE_0": repo.as_posix(),
+                                "GIT_CONFIG_KEY_1": "core.longpaths", "GIT_CONFIG_VALUE_1": "true"})
+
+            with patch.object(governance, "ROOT", repo), patch.dict(os.environ, environment, clear=True), patch.object(
+                sys, "argv", ["validate_poc_recovery_governance.py"]
+            ):
+                old = subprocess.run(
+                    [sys.executable, "-B", str(repo / "tools/validate_poc_recovery_governance.py")],
+                    cwd=repo, capture_output=True, text=True, timeout=60,
+                )
+                self.assertNotEqual(0, old.returncode)
+                self.assertIn("REC-I3 scope-first is not an ancestor of HEAD", old.stdout + old.stderr)
+                with contextlib.redirect_stdout(io.StringIO()) as output:
+                    self.assertEqual(0, governance.main())
+                self.assertIn("accepted squash descendant", output.getvalue())
+                self.assertEqual(baseline, git("rev-parse", "HEAD"))
+                lifecycle = governance.collect_recovery_lifecycle_identity()
+                governance.validate_rec_i3_reviewed_source_provenance()
+
+                # The imported dependency validator uses this same dispatch, without main().
+                self.assertTrue(governance.validate_current_rec_i3_successor(lifecycle))
+                for name, value, message in (
+                    ("REC_I3_ACCEPTED_MAIN_TREE", "0" * 40, "accepted main anchor tree mismatch"),
+                    ("REC_I3_SQUASH_MAIN_TREE", "0" * 40, "historical squash anchor tree mismatch"),
+                    ("REC_I3_SQUASH_MAIN_REVIEWED_HEAD", "0" * 40, "historical reviewed source"),
+                    ("REC_I3_SCOPE_COMMIT", baseline, "scope-first lineage"),
+                    ("REC_I3_SQUASH_MAIN_INTEGRATED_CORRECTION", baseline, "historical correction"),
+                ):
+                    with self.subTest(provenance=name), patch.object(governance, name, value):
+                        with self.assertRaisesRegex(ValueError, message):
+                            governance.validate_rec_i3_accepted_main_descendant(lifecycle)
+
+                event = {"GITHUB_ACTIONS": "true", "GITHUB_EVENT_NAME": "workflow_dispatch",
+                         "GITHUB_REPOSITORY": governance.GITHUB_REPOSITORY,
+                         "GITHUB_WORKSPACE": str(repo.resolve()), "GITHUB_REF": "refs/heads/" + branch,
+                         "GITHUB_SHA": baseline}
+                with patch.dict(os.environ, event):
+                    governance.validate_rec_i3_accepted_main_descendant(lifecycle)
+                    for key, value in (("GITHUB_SHA", "0" * 40), ("GITHUB_REF", "refs/heads/main"),
+                                       ("GITHUB_WORKSPACE", str(Path(temporary))),
+                                       ("GITHUB_REPOSITORY", "wrong/repository"),
+                                       ("GITHUB_EVENT_NAME", "pull_request")):
+                        with self.subTest(event=key), patch.dict(os.environ, {key: value}):
+                            with self.assertRaisesRegex(ValueError, "GitHub event identity drift"):
+                                governance.validate_rec_i3_accepted_main_descendant(lifecycle)
+
+                original = (repo / implementation).read_bytes()
+                for path in (implementation, evidence):
+                    with self.subTest(protected_path=path):
+                        git("checkout", "-q", "-f", "-B", branch, baseline)
+                        target = repo / path
+                        target.write_bytes(target.read_bytes() + b"\n")
+                        for layer in ("unstaged", "staged"):
+                            if layer == "staged":
+                                git("add", "--", path)
+                            with self.subTest(layer=layer), self.assertRaisesRegex(ValueError, "protected namespace"):
+                                governance.validate_rec_i3_accepted_main_descendant(
+                                    governance.collect_recovery_lifecycle_identity()
+                                )
+                        git("commit", "-qm", "synthetic protected mutation")
+                        with self.assertRaisesRegex(ValueError, "protected object identity"):
+                            governance.validate_rec_i3_accepted_main_descendant(
+                                governance.collect_recovery_lifecycle_identity()
+                            )
+                        if path == implementation:
+                            target.write_bytes(original)
+                            git("add", "--", path)
+                            git("commit", "-qm", "synthetic exact revert")
+                            self.assertEqual(git("rev-parse", f"{baseline}:{path}"), git("rev-parse", f"HEAD:{path}"))
+                            with self.assertRaisesRegex(ValueError, "protected namespace changed in committed"):
+                                governance.validate_rec_i3_accepted_main_descendant(
+                                    governance.collect_recovery_lifecycle_identity()
+                                )
+
+                git("checkout", "-q", "-f", "-B", branch, baseline)
+                extra = repo / "docs/evidence/poc-recovery-001/unapproved-probe.json"
+                extra.write_text("{}\n", encoding="utf-8")
+                with self.assertRaisesRegex(ValueError, "protected namespace changed in untracked"):
+                    governance.validate_rec_i3_accepted_main_descendant(governance.collect_recovery_lifecycle_identity())
+                extra.unlink()
+
+                tree = git("rev-parse", baseline + "^{tree}")
+                side = git("commit-tree", tree, "-p", baseline, "-m", "synthetic same-tree side")
+                merged = git("commit-tree", tree, "-p", baseline, "-p", side, "-m", "synthetic same-tree merge")
+                git("checkout", "-q", "-B", branch, merged)
+                with self.assertRaisesRegex(ValueError, "post-anchor merge"):
+                    governance.validate_rec_i3_accepted_main_descendant(governance.collect_recovery_lifecycle_identity())
+
+                git("checkout", "-q", "-f", "-B", "main", baseline)
+                target = repo / implementation
+                target.write_bytes(original + b"\n")
+                git("add", "--", implementation)
+                git("commit", "-qm", "synthetic main name spoof")
+                with self.assertRaisesRegex(ValueError, "protected object identity"):
+                    governance.main()
+
+
 if __name__ == "__main__":
     unittest.main()

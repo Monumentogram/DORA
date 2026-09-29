@@ -454,6 +454,16 @@ REC_I3_OBSERVABLE_CONTROLLER_BRANCH = "codex/rec-i3-streaming-observable-control
 REC_I3_OBSERVABLE_CONTROLLER_BASE = "406cba597c2db88712a7f3d96250e3583b43d28e"
 REC_I3_OBSERVABLE_CONTROLLER_BASE_TREE = "aabc8a047ff6648eb4f98c618d3c20bcfc632526"
 REC_I3_SQUASH_MAIN_ANCHOR = "be37378ca88e0bd4aee1f2fe0c54362798bdef9d"
+REC_I3_ACCEPTED_MAIN_ANCHOR = "55940df0c95e919a00708ae57e1b8aa23d89b6de"
+REC_I3_ACCEPTED_MAIN_TREE = "e153e50b7dc8d5651c3ac136efb1bfeaa1f56b16"
+REC_I3_ACCEPTED_MAIN_PARENT = "c473a6f3877f60a1c1686e676606affd4fc66334"
+REC_I3_ACCEPTED_MAIN_PROTECTED_ENTRIES = {
+    "android/poc/recovery": "040000 tree a51d755e894b650e6a9cd4f839287779b3902616\tandroid/poc/recovery",
+    "docs/evidence/poc-recovery-001": "040000 tree eb9ab8d0d81ae4987815919e750f397c2338f0df\tdocs/evidence/poc-recovery-001",
+    "android/build.gradle.kts": "100644 blob 4d5420e4e7ded1e7a768b26d65f19f9e0864a78b\tandroid/build.gradle.kts",
+    "android/gradle/verification-metadata.xml": "100644 blob 887c279e4e3cdccd4dd1c70c758333f27e089a11\tandroid/gradle/verification-metadata.xml",
+    "tools/verify_poc_recovery_dependency_inventory.py": "100644 blob 728cd9fd2fdd56d9c2b86de4ff058847d3286e3b\ttools/verify_poc_recovery_dependency_inventory.py",
+}
 REC_I3_SQUASH_MAIN_TREE = "4519cbf6fda95f8e39a36e3b2c0bf62fef4981db"
 REC_I3_SQUASH_MAIN_PARENT = "da1d9bd13b71d609fe7ec4ea62fe1e984f726040"
 REC_I3_SQUASH_MAIN_REVIEWED_HEAD = "89551b17a84bc090ccf1cd36d48aeb59afc403fa"
@@ -7244,6 +7254,8 @@ def rec_i3_v7_source_candidate(commit: str, *, root: Path | None = None) -> bool
     if (
         git_optional_output("rev-parse", "--verify", f"{commit}^{{commit}}", root=repository_root)
         != commit
+        or git_optional_output("rev-parse", "--verify", f"{REC_I3_V7_BASE}^{{commit}}", root=repository_root)
+        != REC_I3_V7_BASE
         or not git_is_ancestor(REC_I3_V7_BASE, commit, root=repository_root)
         or commit == REC_I3_V7_BASE
     ):
@@ -7457,6 +7469,117 @@ def validate_rec_i3_reviewed_source_provenance() -> None:
         git_is_ancestor(REC_I3_SCOPE_COMMIT, REC_I3_SQUASH_MAIN_REVIEWED_HEAD),
         "REC-I3 historical reviewed source omits the scope-first lineage",
     )
+
+
+def rec_i3_accepted_main_descendant_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
+    """Select the accepted squash by ancestry, never by the current branch label."""
+    return (
+        git_optional_output("rev-parse", "--verify", f"{REC_I3_ACCEPTED_MAIN_ANCHOR}^{{commit}}")
+        == REC_I3_ACCEPTED_MAIN_ANCHOR
+        and git_is_ancestor(REC_I3_ACCEPTED_MAIN_ANCHOR, lifecycle.head)
+    )
+
+
+def validate_rec_i3_accepted_protected_state(
+    changes: dict[str, list[str]], current_entries: dict[str, str], history_lines: list[str]
+) -> None:
+    require(set(changes) == {"committed", "staged", "unstaged", "untracked"},
+            "REC-I3 accepted protected layer inventory incomplete")
+    require(current_entries == REC_I3_ACCEPTED_MAIN_PROTECTED_ENTRIES,
+            "REC-I3 accepted protected object identity changed")
+    for layer, paths in changes.items():
+        require(isinstance(paths, list), "REC-I3 accepted protected layer inventory malformed")
+        for path in paths:
+            require(isinstance(path, str) and path,
+                    "REC-I3 accepted protected path inventory malformed")
+            require(not any(path == protected or path.startswith(protected + "/")
+                            for protected in REC_I3_ACCEPTED_MAIN_PROTECTED_ENTRIES),
+                    f"REC-I3 accepted protected namespace changed in {layer}: {path}")
+    for line in history_lines:
+        fields = line.split()
+        require(len(fields) == 2 and all(re.fullmatch(r"[0-9a-f]{40}", value) for value in fields),
+                "REC-I3 accepted post-anchor merge or malformed history")
+
+
+def validate_rec_i3_accepted_main_descendant(lifecycle: RecoveryLifecycleIdentity) -> None:
+    validate_pinned_commit_identity(
+        collect_pinned_commit_identity(REC_I3_ACCEPTED_MAIN_ANCHOR, lifecycle.head),
+        expected_commit=REC_I3_ACCEPTED_MAIN_ANCHOR,
+        expected_tree=REC_I3_ACCEPTED_MAIN_TREE,
+        expected_parents=(REC_I3_ACCEPTED_MAIN_PARENT,),
+        label="REC-I3 accepted main anchor",
+    )
+    validate_pinned_commit_identity(
+        collect_pinned_commit_identity(REC_I3_SQUASH_MAIN_ANCHOR, REC_I3_ACCEPTED_MAIN_ANCHOR),
+        expected_commit=REC_I3_SQUASH_MAIN_ANCHOR,
+        expected_tree=REC_I3_SQUASH_MAIN_TREE,
+        expected_parents=(REC_I3_SQUASH_MAIN_PARENT,),
+        label="REC-I3 historical squash anchor",
+    )
+    validate_rec_i3_reviewed_source_provenance()
+    for commit, tree, parent in (
+        (REC_I3_SQUASH_MAIN_INTEGRATED_CORRECTION,
+         "da53dc083962c9d47004bfcacd84df7f986257f5", REC_I3_SQUASH_MAIN_ANCHOR),
+        (REC_I3_HARNESS_MAIN_GOVERNANCE_INTEGRATED,
+         "4238234ea5417f3464307422a333018b2230446b",
+         REC_I3_SQUASH_MAIN_INTEGRATED_CORRECTION),
+        (REC_I3_E36_GAPI_INTEGRATED,
+         "5e1d293095cf3b01fd12297e2ab04fd29021955c",
+         "a4c96afae781404b3d8ea4423a1389f02e747636"),
+    ):
+        validate_pinned_commit_identity(
+            collect_pinned_commit_identity(commit, REC_I3_ACCEPTED_MAIN_ANCHOR),
+            expected_commit=commit, expected_tree=tree, expected_parents=(parent,),
+            label="REC-I3 accepted historical correction",
+        )
+    expected_correction = {
+        "tools/test_poc_recovery_i3_governance.py":
+            "100644 blob 7261a49ab764932c17bf54f832afccaeff4405be\ttools/test_poc_recovery_i3_governance.py",
+        "tools/validate_poc_recovery_governance.py":
+            "100644 blob 59e039d8c267c9d0041f7c53be7a944dca8a3fcc\ttools/validate_poc_recovery_governance.py",
+    }
+    actual_correction = {
+        path: next(iter(git_path_records("ls-tree", "-z", REC_I3_SQUASH_MAIN_INTEGRATED_CORRECTION,
+                                         "--", path)), None)
+        for path in expected_correction
+    }
+    require(actual_correction == expected_correction,
+            "REC-I3 accepted historical correction content changed")
+    require(set(git_path_records("diff", "--name-only", "--no-renames", "-z",
+                                 REC_I3_SQUASH_MAIN_ANCHOR,
+                                 REC_I3_SQUASH_MAIN_INTEGRATED_CORRECTION, "--"))
+            == set(REC_I3_SQUASH_MAIN_CORRECTION_PATHS),
+            "REC-I3 accepted historical correction path scope changed")
+    anchor_entries = {
+        path: next(iter(git_path_records("ls-tree", "-z", REC_I3_ACCEPTED_MAIN_ANCHOR,
+                                         "--", path)), None)
+        for path in REC_I3_ACCEPTED_MAIN_PROTECTED_ENTRIES
+    }
+    require(anchor_entries == REC_I3_ACCEPTED_MAIN_PROTECTED_ENTRIES,
+            "REC-I3 accepted anchor protected object identity changed")
+    current_entries = {
+        path: next(iter(git_path_records("ls-tree", "-z", "HEAD", "--", path)), None)
+        for path in REC_I3_ACCEPTED_MAIN_PROTECTED_ENTRIES
+    }
+    validate_rec_i3_accepted_protected_state(
+        collect_post_merge_changes(merged_anchor=REC_I3_ACCEPTED_MAIN_ANCHOR),
+        current_entries,
+        git_output("rev-list", "--parents", f"{REC_I3_ACCEPTED_MAIN_ANCHOR}..HEAD").splitlines(),
+    )
+    require(git_output("rev-parse", "HEAD") == lifecycle.head,
+            "REC-I3 accepted checkout HEAD changed")
+    require(lifecycle.github_pull_request_context is None,
+            "REC-I3 accepted descendant requires a checked-out branch, not a PR merge ref")
+    if os.environ.get("GITHUB_EVENT_NAME") or os.environ.get("GITHUB_ACTIONS"):
+        workspace = os.environ.get("GITHUB_WORKSPACE", "")
+        require(
+            os.environ.get("GITHUB_EVENT_NAME") in {"push", "workflow_dispatch"}
+            and os.environ.get("GITHUB_REPOSITORY") == GITHUB_REPOSITORY
+            and workspace and Path(workspace).resolve() == ROOT.resolve()
+            and os.environ.get("GITHUB_REF") == f"refs/heads/{lifecycle.branch}"
+            and os.environ.get("GITHUB_SHA") == lifecycle.head,
+            "REC-I3 accepted GitHub event identity drift",
+        )
 
 
 def validate_rec_i3_squash_main(lifecycle: RecoveryLifecycleIdentity) -> None:
@@ -9710,6 +9833,9 @@ def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | Non
         return True
     elif rec_i3_squash_main_candidate(current):
         validate_rec_i3_squash_main(current)
+        return True
+    elif rec_i3_accepted_main_descendant_candidate(current):
+        validate_rec_i3_accepted_main_descendant(current)
         return True
     else:
         validate_rec_i3_context(current, collect_pinned_commit_identity(REC_I3_BASE, current.head),
@@ -12724,13 +12850,17 @@ def run_rec_i3_integrated_profile_self_tests(
     lifecycle: RecoveryLifecycleIdentity,
     *,
     failure: str,
+    correction_head_override: str | None = None,
 ) -> None:
     import unittest
     import test_poc_recovery_i3_governance
 
     test_case = test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests
     pull_request = lifecycle.github_pull_request_context
-    if pull_request is not None and pull_request.head_ref == REC_I3_E36_GAPI_BRANCH:
+    if correction_head_override is not None:
+        # Historical correction fixtures must not inherit later unrelated trees.
+        correction_head = correction_head_override
+    elif pull_request is not None and pull_request.head_ref == REC_I3_E36_GAPI_BRANCH:
         correction_head = pull_request.base_sha
     elif (
         (
@@ -12911,6 +13041,24 @@ def main() -> int:
     if validate_rec_i3_e36_gapi_fast_path():
         return 0
     if validate_rec_i3_squash_main_fast_path():
+        return 0
+    lifecycle = collect_recovery_lifecycle_identity()
+    if rec_i3_accepted_main_descendant_candidate(lifecycle):
+        validate_rec_i3_accepted_main_descendant(lifecycle)
+        if "--self-test" in sys.argv[1:]:
+            run_rec_i3_integrated_profile_self_tests(
+                lifecycle, failure="REC-I3 accepted integrated regression self-tests failed",
+                correction_head_override=REC_I3_SQUASH_MAIN_INTEGRATED_CORRECTION,
+            )
+            import unittest
+            import test_poc_recovery_i3_governance
+            suite = unittest.defaultTestLoader.loadTestsFromTestCase(
+                test_poc_recovery_i3_governance.RecoveryI3AcceptedSquashSuccessorTests
+            )
+            require(unittest.TextTestRunner(verbosity=0).run(suite).wasSuccessful(),
+                    "REC-I3 accepted descendant regression self-tests failed")
+        print("POC-RECOVERY-001 accepted squash descendant validation passed; "
+              "reviewed source and protected Recovery objects exact; full REC-I3 blocked")
         return 0
     gate = read_json(GATE_PATH)
     protocol = read_json(PROTOCOL_PATH)
