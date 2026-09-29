@@ -1,5 +1,13 @@
 # Dora MVP 1 — Executable Backlog
 
+## 2026-09-29 — 6.2D measured owner result: quality blocker and incomplete technical evaluation
+
+The [bounded result](stage0/DORA_CLOUD_62D_OWNER_BOUNDED8_MEASURED_RESULT_V0_1.md) and [aggregate evidence](evidence/cloud-6.2d-owner-bounded8-result-v0.1.json) close this campaign without another dispatch. Eight owner primary jobs completed and were scored: RU total normalized WER **17/179 = 9.4972% PASS** against 20%; EN READ **37/181 = 20.4420% FAIL** against 18%. Both required four-clip latency diagnostics and eight transcript timestamp-structure audits passed. The frozen composite recipe hash mismatch stopped generation before Put; all four composite objects were absent and **0/13 planned technical Starts** ran. Do not promote technical cases to PASS or infer broad provider quality from eight clips.
+
+All task jobs and bucket objects were cleared, the CloudFormation stack and its 13 resources reached `DELETE_COMPLETE`, both CMKs are pending deletion, and nine exact CloudShell WAV transport copies plus eleven output/evidence-transfer copies were removed after preserving the private archive locally. The shared diagnostic ledger remains **8/12**; four historical owner failures remain separate, and there were no automatic retries. Actual charges are not measured. **6.2D is BLOCKED / MEASURED_PROVIDER_QUALITY_FAIL**; technical evaluation is independently `INCOMPLETE_HARNESS_DEFECT`. `CLD-ADM-EVALUATION-001`/`CLD-ADM-PROVIDER-001` remain OPEN, owner-only and broad admission NOT_ESTABLISHED, 6.3 NOT_RUN / NOT_ELIGIBLE, and all 39 frozen gate statuses unchanged (6 SATISFIED, 2 scoped SATISFIED, 0 PARTIALLY_SATISFIED, 5 OPEN, 1 BLOCKED, 25 NOT_RUN).
+
+Next authorized work requires a new explicit owner decision and prospective protocol: investigate the measured EN READ WER miss and separately repair/review the composite recipe encoding before any new technical campaign. Do not repeat primary jobs for a best-of result, reset diagnostic accounting, change the frozen v0.3 result, or start 6.3 from this outcome.
+
 ## 2026-09-29 — 6.2D bounded owner Phase A v0.3; next authorized sequence
 
 The prospective [Phase A v0.3](stage0/DORA_CLOUD_EVALUATION_PHASE_A_BOUNDED8_V0_3.md) and [machine record](contracts/DORA_CLOUD_EVALUATION_PHASE_A_BOUNDED8_V0_3.json) bind the same eight authorized owner clips, fresh no-DataRole B1/B2 synthetic PASS and cleanup, original rejected role-based B1 with cause UNPROVEN, the exact target/source receipts and USD9.4370 reservation. Eight of 12 shared engineering diagnostic Starts are already consumed. The Owner's task-specific exception omits `JobExecutionSettings` only for this bounded evaluation; ADR-0011's general Alpha design and historical records are unchanged.
