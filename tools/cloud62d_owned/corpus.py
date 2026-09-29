@@ -13,11 +13,11 @@ import os
 from pathlib import Path
 import re
 import secrets
-import struct
 import wave
 
 from tools.alpha_asr_eval_text_contract import normalize, check_environment
 from tools.cloud62d_aws.composite_recipe import recipe_sha256
+from tools.cloud62d_media import parse_pcm16_wav
 
 RELEASE = 'dora-owned-corpus-v1.0.0'
 REDUCED_PROTOCOL = 'dora-owned-reduced8-v2'
@@ -65,30 +65,9 @@ def utc_now():
 
 
 def validate_wav(data, *, evaluation=True):
-    """Strict bounded RIFF PCM16 parser, including actual data length (wave alone accepts truncation)."""
-    require(isinstance(data, bytes) and 44 <= len(data) <= 120_000_044, 'INVALID_WAV_SIZE')
-    require(data[:4] == b'RIFF' and data[8:12] == b'WAVE', 'INVALID_WAV_CONTAINER')
-    require(struct.unpack_from('<I', data, 4)[0] + 8 == len(data), 'TRUNCATED_OR_TRAILING_WAV')
-    chunks = {}
-    offset = 12
-    while offset + 8 <= len(data):
-        name, size = struct.unpack_from('<4sI', data, offset)
-        offset += 8
-        require(offset + size <= len(data), 'TRUNCATED_WAV_CHUNK')
-        require(name not in chunks, 'DUPLICATE_WAV_CHUNK')
-        chunks[name] = data[offset:offset + size]
-        offset += size + (size % 2)
-    require(offset == len(data) and b'fmt ' in chunks and b'data' in chunks, 'INVALID_WAV_STRUCTURE')
-    require(len(chunks[b'fmt ']) == 16, 'UNSUPPORTED_WAV_FORMAT')
-    codec, channels, rate, byte_rate, block_align, bits = struct.unpack('<HHIIHH', chunks[b'fmt '])
-    require(codec == 1 and channels == 1 and bits == 16 and block_align == 2
-            and byte_rate == rate * 2 and 8000 <= rate <= 192000, 'UNSUPPORTED_WAV_FORMAT')
-    require(not evaluation or rate == 16000, 'EVALUATION_WAV_REQUIRES_16000_HZ')
-    pcm = chunks[b'data']
-    require(len(pcm) % 2 == 0 and len(pcm) > 0, 'INVALID_PCM_LENGTH')
-    frames = len(pcm) // 2
-    return {'sha256': digest(data), 'frames': frames, 'sample_rate_hz': rate,
-            'duration_us': frames * 1_000_000 // rate, 'bytes': len(data)}
+    """Corpus profile of the shared strict RIFF PCM16 validator."""
+    require(type(data) is bytes and 44 <= len(data) <= 120_000_044, 'INVALID_WAV_SIZE')
+    return parse_pcm16_wav(data, expected_sample_rate_hz=16000 if evaluation else None)
 
 
 def selection_key(source_sha256):

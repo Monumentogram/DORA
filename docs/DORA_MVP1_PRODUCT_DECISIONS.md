@@ -1,5 +1,9 @@
 # Dora MVP 1 — Product Decisions
 
+## 2026-09-29 — Prospective 6.2D media preflight boundary
+
+The Project Owner assigns deterministic WAV/container/declaration validation to DORA before provider dispatch. [ADR-0014](adr/ADR-0014-alpha-media-preflight-boundary.md) records the canonical PCM16LE mono 16 kHz boundary and evidence rules. Historical AWS raw verdicts and RU/EN measurements remain immutable; OD-62D-EN-01 is preserved. This Stage-0 change is not production implementation or provider admission. A valid two-Start duplicate-name proof remains required; 6.3 is not executed. Earlier entries below retain their historical meaning.
+
 ## 2026-09-28 — 6.2D Phase A prospective protocol; live blocked
 
 Owner-authorized 6.2D thresholds are prospectively frozen in [Phase A v0.1](stage0/DORA_CLOUD_EVALUATION_PHASE_A_V0_1.md)
