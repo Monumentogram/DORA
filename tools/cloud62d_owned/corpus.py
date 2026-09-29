@@ -17,6 +17,7 @@ import struct
 import wave
 
 from tools.alpha_asr_eval_text_contract import normalize, check_environment
+from tools.cloud62d_aws.composite_recipe import recipe_sha256
 
 RELEASE = 'dora-owned-corpus-v1.0.0'
 REDUCED_PROTOCOL = 'dora-owned-reduced8-v2'
@@ -706,7 +707,7 @@ class CorpusStore:
         self._write(path, value, immutable=True)
         return {'language': language, 'path': path, 'duration_us': target_frames * 1_000_000 // 16000,
                 'sha256': digest(value), 'independent_wer_sample': False, 'silence_frames': 0,
-                'recipe': recipe, 'recipe_sha256': digest(encoded(recipe))}
+                'recipe': recipe, 'recipe_sha256': recipe_sha256(recipe)}
 
     def finalize(self):
         state = self._load()
@@ -803,7 +804,7 @@ class CorpusStore:
         for composite in manifest['composites']:
             data = self._path(composite['path']).read_bytes()
             require(digest(data) == composite['sha256'] and
-                    digest(encoded(composite['recipe'])) == composite['recipe_sha256'],
+                    recipe_sha256(composite['recipe']) == composite['recipe_sha256'],
                     'COMPOSITE_HASH_MISMATCH')
             require(validate_wav(data)['duration_us'] == composite['duration_us'], 'COMPOSITE_DURATION_MISMATCH')
         return self.public_summary(state)

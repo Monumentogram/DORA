@@ -1,0 +1,82 @@
+# Composite recipe LF repair v0.1
+
+Status: **OFFLINE_REPAIR_VERIFIED_AWAITING_TECHNICAL_AWS_RUN**. This repair changes only technical composite recipe integrity. The owner manifest remains SHA-256 `27ea1593a46c9c17de0a568df6537dbe55df56c4def59559d758cb9f07ecbe65`; historical provider results and quality measurements are unchanged.
+
+The owned-corpus producer and manifest validator hash sorted, compact UTF-8 recipe JSON followed by exactly one LF byte (`0a`). The original Lambda runtime hashed the same logical recipe without that LF. All four frozen long recipes therefore failed SHA comparison before any source S3 Get or composite Put. The original runtime SHA-256 is `237faff79c309f726a82616385e10a345f522451aaeff457efd8f1eccf0ac16c`; the offline failure proof SHA-256 is `ba8d6fcb0d58caf90a08a25a2cad9887daae4ae5b4f9cc932c96225075b6a8d5`.
+
+The canonical recipe bytes are `json.dumps(parts, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False).encode('utf-8')` followed by exactly one LF. SHA-256 is computed over those exact bytes. Any byte difference fails closed. The producer, manifest validator, host checks, and technical successor runtime use this rule. Public helper SHA-256: `6bfd6dd40e2fb924dc692d7c8fd9c6cf330ad710a84b190d2d4f6439d49b289d`; owned-corpus producer/validator Git-normalized LF SHA-256: `670dc5aa7b3ad776c1f6f7836aa5a17bfca5965c536fb5433bb1725ba23fd305`; public recipe tests SHA-256: `a1a41f6a3f0e2e8cd39564db322f334a75a541a88d55c4bb530672d0ae4ad327`; private successor runtime SHA-256: `f0ebfb53e90226c47052ad50ddb4b69fe245fa13aeb31310467249b8bc854394`.
+
+Regression coverage: canonical exact bytes pass; one-byte change, missing LF, extra LF, wrong recipe, wrong manifest hash, and changed source-clip hash are rejected; deterministic rebuild is byte-identical. The original frozen RU ~300 s, RU ~600 s, EN ~300 s, and EN ~600 s composites each rebuild with their exact frozen SHA offline. Public recipe tests: **9/9 PASS**; private successor-runtime tests: **7/7 PASS**; owned-corpus tests: **25/25 PASS**; private manifest validation: **PASS with unchanged SHA**.
+
+The technical successor forbids owner primary Starts and the second synthetic B Start, omits `JobExecutionSettings`/`DataAccessRoleArn` from Start, and retains the explicit output CMK. The original frozen runtime was not modified. No new AWS technical case was executed by this repair; offline composite identity does not prove Transcribe long-input completion. The historical English measured benchmark failure remains unchanged.
+
+The machine-readable record is embedded verbatim below. Public repository hashes use Git-normalized LF bytes; the private runtime hash uses its exact local bytes.
+
+```json
+{
+  "schema_version": "dora-cloud-62d-composite-recipe-lf-repair-v0.1",
+  "status": "OFFLINE_REPAIR_VERIFIED_AWAITING_TECHNICAL_AWS_RUN",
+  "scope": "technical composite recipe integrity only",
+  "historical_evidence": {
+    "preserved_owner_manifest_sha256": "27ea1593a46c9c17de0a568df6537dbe55df56c4def59559d758cb9f07ecbe65",
+    "original_runtime_sha256": "237faff79c309f726a82616385e10a345f522451aaeff457efd8f1eccf0ac16c",
+    "offline_failure_proof_sha256": "ba8d6fcb0d58caf90a08a25a2cad9887daae4ae5b4f9cc932c96225075b6a8d5",
+    "original_result_and_owner_quality": "UNCHANGED"
+  },
+  "root_cause": {
+    "producer_manifest_validator_bytes": "sorted compact UTF-8 JSON with one terminal LF",
+    "old_runtime_bytes": "sorted compact JSON without terminal LF",
+    "observed_failure": "all four frozen long recipes failed SHA comparison before any source S3 Get or composite Put",
+    "aws_failure_replay_in_this_repair": false
+  },
+  "canonical_rule": {
+    "serialization": "json.dumps(parts, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False).encode('utf-8') plus exactly one LF byte",
+    "terminal_lf_hex": "0a",
+    "hash": "SHA-256 over the exact canonical bytes",
+    "byte_mismatch_behavior": "fail closed"
+  },
+  "source_sha256": {
+    "public_recipe_helper": "6bfd6dd40e2fb924dc692d7c8fd9c6cf330ad710a84b190d2d4f6439d49b289d",
+    "owned_corpus_producer_validator": "670dc5aa7b3ad776c1f6f7836aa5a17bfca5965c536fb5433bb1725ba23fd305",
+    "public_recipe_tests": "a1a41f6a3f0e2e8cd39564db322f334a75a541a88d55c4bb530672d0ae4ad327",
+    "private_successor_runtime": "f0ebfb53e90226c47052ad50ddb4b69fe245fa13aeb31310467249b8bc854394"
+  },
+  "source_hash_basis": "Public repository files use Git-normalized LF bytes; the private successor runtime uses its exact local LF bytes.",
+  "frozen_composite_proofs_offline": {
+    "tech-ru_300": {"recipe_sha256": "5b99353e44a1cdf73238477663ee8e1d10f8b16e11a8868a0e2e677425a1333a", "composite_sha256": "4717b376e1232426284cf587b6f04f2b162bb51f5adb88037ceb88fd4ab2f1d9", "bytes": 9600044},
+    "tech-ru_600": {"recipe_sha256": "3790f93b8f288c0a4bcd370565d6d6cece467a9105396c4b7e2fe8d1175a3f7c", "composite_sha256": "af27eedc21e1623cad58d2c36bd813bfb1b8d2e912b001e85b884506f8e8e623", "bytes": 19200012},
+    "tech-en_300": {"recipe_sha256": "eab9ffe7af0a13e99c47b338f326adb4ef02fe49d9b41cb6b31e5fe23990353b", "composite_sha256": "a964f8305595f9d1969f5382597d617d51d064276851ce399fd888528107d441", "bytes": 9600044},
+    "tech-en_600": {"recipe_sha256": "f662c1cbb8be5cfd476e0bde5495aa90232ea9148920d897f02f7d17af294301", "composite_sha256": "7d3f261d67b897cf535341a29c99b437387c36d4c0d848e71ff079fc97d46d57", "bytes": 19200012}
+  },
+  "regression_coverage": {
+    "canonical_exact_bytes": "PASS",
+    "one_byte_changed": "REJECTED",
+    "missing_terminal_lf": "REJECTED",
+    "extra_terminal_lf": "REJECTED",
+    "wrong_recipe": "REJECTED",
+    "wrong_manifest_hash": "REJECTED",
+    "ru_300_frozen_composite": "PASS_EXACT_SHA_OFFLINE",
+    "ru_600_frozen_composite": "PASS_EXACT_SHA_OFFLINE",
+    "en_300_frozen_composite": "PASS_EXACT_SHA_OFFLINE",
+    "en_600_frozen_composite": "PASS_EXACT_SHA_OFFLINE",
+    "source_clip_hash_changed": "REJECTED",
+    "deterministic_rebuild": "PASS",
+    "public_recipe_tests": "9/9 PASS",
+    "private_successor_runtime_tests": "7/7 PASS",
+    "owned_corpus_tests": "25/25 PASS",
+    "existing_private_manifest_validation": "PASS_UNCHANGED_SHA"
+  },
+  "runtime_safety": {
+    "owner_primary_starts": "FORBIDDEN_IN_TECHNICAL_SUCCESSOR",
+    "b2_start": "FORBIDDEN_IN_TECHNICAL_SUCCESSOR",
+    "data_access_role_in_start_request": "OMITTED",
+    "explicit_output_cmk": "PRESERVED",
+    "original_frozen_runtime_modified": false
+  },
+  "limitations": [
+    "No new AWS technical case has been executed by this repair.",
+    "Offline composite byte identity does not establish Transcribe long-input completion.",
+    "Historical English measured benchmark failure remains unchanged."
+  ]
+}
+```
