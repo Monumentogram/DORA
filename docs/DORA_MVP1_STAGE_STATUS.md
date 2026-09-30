@@ -1,3 +1,30 @@
+## 2026-10-01 — Recovery replacement integrated; bounded closure publication
+
+**Recovery clean replacement = INTEGRATED; integrated Recovery governance = PASS; Recovery integration prerequisite = SATISFIED.** [PR #88](https://github.com/Monumentogram/DORA/pull/88) is MERGED through the provenance-preserving local no-ff anchor `49595ece8cac22f3a1da4a4d5dd43924ac28f1df`. Its exact ordered parents are `fd943aff885028c6143550ee7bb843798b8105fb` and `3c1986d03321b183efaabfd0f4a86fe42159672e`; its tree `03738da9d0b1beb3bec8cf7779c9f2e2b9f9f188` equals the accepted preparation tree. Implementation `49537b8a53c56a2f07cc1456926fce5c9b903b42` remains unchanged in ancestry. The committed [integration receipt](evidence/recovery-clean-replacement-integration-v0.1.json) preserves all identities and CI history.
+
+The immutable reconciliation remains **124 rows / 42 TRANSFER / 82 EXCLUDE**, with 48 implementation/admission paths and six preparation evidence/status paths. Recovery implementation, transferred blob provenance, historical campaigns, product release graph and historical/preparation governance policies are unchanged. No omitted PR #86 scope has been imported.
+
+Historical [integration CI 36763551078](https://github.com/Monumentogram/DORA/actions/runs/36763551078) remains **FAILURE**: search-smoke succeeded; android-bootstrap failed at Recovery governance; later steps were skipped, not passed or failed. Remediation `d406b6dabb64009cc0a6ee6b017004c757108e26` passed [36773896872](https://github.com/Monumentogram/DORA/actions/runs/36773896872), including all downstream mandatory gates. Its focused evidence remains source-specific: 414 Recovery JVM tests, 30 streaming-source tests, FutureTask publication, descriptor lifetime, escaped-read rejection, exactly-once close and assertion/timeout/read-failure cleanup. Preparation CI 36749820939 and 36752788543 remain PASS.
+
+**Closure governance G2 `358619c68368a21e0ccf4b00e7eb4662617bd00d` passes [exact-SHA CI 36778761263](https://github.com/Monumentogram/DORA/actions/runs/36778761263), android-bootstrap and search-smoke, every mandatory step.** The finite sequence admits only the exact integration anchor, exact remediation, one two-file governance transition, and one direct three-file documentation/evidence finalization; another descendant is rejected. Independent review's two receipt-validation findings were fixed with negative controls; no findings remain. The final documentation commit requires its own exact-SHA CI and external Sheet/PR read-back. Those results must be recorded externally, not self-certified inside this commit.
+
+**PR #86 = SUPERSEDED / CLOSURE_AUTHORIZED**, historically `b951bc454d550e33669ebf4f276a4b09177a99ca`; it is still OPEN / DRAFT / UNMERGED at this publication checkpoint. Owner-authorized comment/closure without merge follows only after final exact-SHA CI and Sheet synchronization/read-back. Historical evidence is valid within its original source-specific scope. PR #87 remains OPEN / DRAFT / UNMERGED and follows the Alpha branch; main remains `55940df0c95e919a00708ae57e1b8aa23d89b6de`.
+
+The live development plan was audited before this publication. Existing Stage 7 identifiers were 7, 7.1, 7.2, 7.2C, 7.2D, 7.2E, 7.3, 7.3C, **7.4 Security & Identity**, then 8. The next unused lettered children 7.3D–7.3G describe the Recovery sequence, without renumbering or replacing 7.4:
+
+| Stage | Work ID | Scope | Publication-checkpoint status |
+| --- | --- | --- | --- |
+| 7.3D | ALPHA-RECOVERY-7.3D | Clean replacement preparation / PR #88 | PASS / RECOVERY_CLEAN_REPLACEMENT_PR_READY |
+| 7.3E | ALPHA-RECOVERY-7.3E | Provenance-preserving integration | INTEGRATED; initial CI FAILURE retained |
+| 7.3F | ALPHA-RECOVERY-7.3F | Integrated governance admission | PASS / INTEGRATED_RECOVERY_GOVERNANCE_ADMITTED |
+| 7.3G | ALPHA-RECOVERY-7.3G | Bounded closure, final CI, plan synchronization and PR #86 retirement | Final publication gates pending; close only after all pass |
+
+**Stage 7 foundation and 7.3C remain PASS; Group C IN_PROGRESS; Stage 7.4 Security & Identity NOT_STARTED; Stage 8 NOT_STARTED.** Preserve 7.4's independent identity, Google Sign-In/backend validation, app lock/BiometricPrompt, Keystore/local encryption, credential/session lifecycle and server-side secret requirements. Recovery closure does not complete that gate. Full parent POC-RECOVERY-001 and its separate full-plan/device execution gates remain blocked; the satisfied prerequisite is clean replacement integration into Alpha, not product recording/storage implementation.
+
+Product identity remains `com.monumentogram.dora`, **0.1.0-alpha.2 (4)**. Accepted APK/SBOM hashes in the receipt are historical identities, not newly generated signed artifacts. No Stage 8 implementation, Recovery campaign, microphone/audio work, upload, AWS/provider/backend call, signing-secret access, new signed release, repository merge-setting change, rebase, history rewrite or force push occurred.
+
+**Next gate: independently tracked Stage 7.4 and all remaining Stage 8 prerequisites, followed by a separate owner-authorized task. Stage 8 must not start automatically.** Earlier dated entries below are preserved byte-for-byte as historical snapshots; their old PR/branch states are not current-state claims.
+
 ## 2026-09-30 — Recovery clean replacement preparation; implementation verified
 
 **PASS / RECOVERY_CLEAN_REPLACEMENT_IMPLEMENTATION_VALIDATED.** Draft [PR #88](https://github.com/Monumentogram/DORA/pull/88) targets exact Alpha `fd943aff885028c6143550ee7bb843798b8105fb`; implementation `49537b8a53c56a2f07cc1456926fce5c9b903b42` passes [exact-SHA CI 36749820939](https://github.com/Monumentogram/DORA/actions/runs/36749820939), both mandatory jobs and every mandatory step. [Reconciliation matrix](stage0/DORA_PR86_CLEAN_RECOVERY_INTEGRATION_V0_1.md) transfers 42 of 124 PR #86 paths and excludes 82; exact source/blob pins and 48 implementation paths are in its machine contract. No wholesale cherry-pick or historical campaign re-execution. Independent source/matrix review has no unresolved P0/P1.

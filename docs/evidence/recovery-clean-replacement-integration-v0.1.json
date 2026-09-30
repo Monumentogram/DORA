@@ -1,0 +1,74 @@
+{
+  "integration_anchor": "49595ece8cac22f3a1da4a4d5dd43924ac28f1df",
+  "integration_tree": "03738da9d0b1beb3bec8cf7779c9f2e2b9f9f188",
+  "integration_parents": [
+    "fd943aff885028c6143550ee7bb843798b8105fb",
+    "3c1986d03321b183efaabfd0f4a86fe42159672e"
+  ],
+  "implementation_sha": "49537b8a53c56a2f07cc1456926fce5c9b903b42",
+  "preparation_sha": "3c1986d03321b183efaabfd0f4a86fe42159672e",
+  "governance_remediation_sha": "d406b6dabb64009cc0a6ee6b017004c757108e26",
+  "closure_governance_sha": "358619c68368a21e0ccf4b00e7eb4662617bd00d",
+  "target_branch": "stage/7-alpha-foundation",
+  "merge_method": "local_no_ff_merge",
+  "main_sha": "55940df0c95e919a00708ae57e1b8aa23d89b6de",
+  "reconciliation_rows": 124,
+  "transfers": 42,
+  "exclusions": 82,
+  "implementation_admission_paths": 48,
+  "preparation_metadata_paths": 6,
+  "pr88_state": "MERGED",
+  "pr86_historical_head": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+  "pr87_expected_state": "OPEN / DRAFT / UNMERGED",
+  "product": {
+    "application_id": "com.monumentogram.dora",
+    "version_name": "0.1.0-alpha.2",
+    "version_code": 4
+  },
+  "stage8_started": false,
+  "new_recovery_campaign": false,
+  "new_signed_release": false,
+  "history_rewritten": false,
+  "historical_artifacts": {
+    "apk_sha256": "ad13ddbd2b01e4e61112ecfb889408576dd04748b9e65627abd6700d1440fa57",
+    "sbom_sha256": "230fbb099d99fee5a2dd1f698cddeeac722de83ea0e0be0cb51583f26da165ba",
+    "newly_produced": false
+  },
+  "recovery_regression": {
+    "source_sha": "d406b6dabb64009cc0a6ee6b017004c757108e26",
+    "ci_run_id": 36773896872,
+    "jvm_tests": 414,
+    "streaming_source_tests": 30,
+    "result": "PASS"
+  },
+  "status": {
+    "recovery_replacement": "INTEGRATED",
+    "integrated_governance": "PASS",
+    "recovery_integration_prerequisite": "SATISFIED",
+    "stage7": "PASS",
+    "stage7_3c": "PASS",
+    "group_c": "IN_PROGRESS",
+    "stage7_4": "NOT_STARTED",
+    "stage8": "NOT_STARTED",
+    "pr86": "SUPERSEDED / CLOSURE_AUTHORIZED"
+  },
+  "publication_gates": {
+    "final_commit_ci": "PENDING_EXTERNAL_EXACT_SHA_VALIDATION",
+    "sheet_synchronization": "PENDING_AFTER_FINAL_CI",
+    "pr86_closure": "AUTHORIZED_AFTER_FINAL_CI_AND_SHEET_READBACK"
+  },
+  "ci_history": {
+    "36749820939": "PASS",
+    "36752788543": "PASS",
+    "36763551078": "FAILURE",
+    "36773896872": "PASS"
+  },
+  "closure_governance_ci": {
+    "head_sha": "358619c68368a21e0ccf4b00e7eb4662617bd00d",
+    "run_id": 36778761263,
+    "jobs": {
+      "android-bootstrap": "SUCCESS",
+      "search-smoke": "SUCCESS"
+    }
+  }
+}
