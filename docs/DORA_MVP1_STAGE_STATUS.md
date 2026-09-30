@@ -1,5 +1,11 @@
 # Dora MVP 1 — Stage Status
 
+## 2026-09-30 — 7.2 minimal application contracts closed
+
+**7.2 = PASS / ALPHA_MINIMAL_MODULES_AND_DATA_CONTRACTS_READY.** [Versioned contracts](stage1/DORA_ALPHA_MINIMAL_MODULES_DATA_CONTRACTS_V0_1.md) and ADR-0016 define typed opaque IDs, independent capture/storage/recognition state axes, generic asynchronous ports, typed failures and a JVM-testable app coordinator. Existing UI is wired to explicit UNAVAILABLE production ports. Only `:app` and `:core:model` changed; no new modules or dependencies. Exact implementation `9ee5d718348fc0682ae94e16a5a20ecd75e706c4`, parent `0492ff34a44a6b5becdc232b16c2f3f99de87456`, passes [Android CI 36683669682](https://github.com/Monumentogram/DORA/actions/runs/36683669682), both required jobs and every mandatory step. [Local checks](evidence/alpha-7.2-local-v0.1.json), [CI](evidence/alpha-7.2-ci-v0.1.json) and [Sheet readback](evidence/alpha-7.2-sheet-v0.1.json) retain evidence.
+
+**Stage 7 and Group C IN PROGRESS; next separate task: 7.2C — Replaceable Cloud ASR interface and adapter contract, NOT_STARTED.** 7.2D/E and 7.3 NOT_STARTED; Stage 8 NOT_STARTED. Recording/storage/Cloud ASR runtime NOT_IMPLEMENTED; FIRST_REAL_PRODUCT_AUDIO NOT_READY. 7.1 identity/version/signing remain unchanged. No AWS or Recovery integration; PR #86 untouched, main unchanged, PR #87 open/draft/unmerged. Recovery clean replacement remains separately required before Stage 8 recording/storage acceptance. Earlier dated entries remain historical.
+
 ## 2026-09-30 — 7.1 Alpha identity/signing/install closed
 
 **7.1 = PASS / ALPHA_IDENTITY_SIGNING_INSTALL_READY.** [Decision and evidence](stage1/DORA_ALPHA_IDENTITY_SIGNING_INSTALL_V0_1.md): applicationId/namespace `com.monumentogram.dora`, version 2 / `0.1.0-alpha.1`, dedicated PROJECT_OWNER internal signing key outside Git. Signed APK and clean repeat are byte-identical. POCO M5 Android14/API34 fresh/reinstall/launch and same-key 2→3 upgrade PASS; wrong signer rejected. Exact implementation `4a2350a02eba8adc76c04bf250e7769513ad9aa7`, parent admitted `4e7742d88377d3d915be904618fc220d479ab25d`; [CI 36677470351](https://github.com/Monumentogram/DORA/actions/runs/36677470351) passes both required jobs and all mandatory checks. Final phone installation is baseline version 2.

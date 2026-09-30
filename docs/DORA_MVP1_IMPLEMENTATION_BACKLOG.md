@@ -1,5 +1,11 @@
 # Dora MVP 1 — Executable Backlog
 
+## 2026-09-30 — 7.2 minimal application contracts closed
+
+**7.2 = PASS / ALPHA_MINIMAL_MODULES_AND_DATA_CONTRACTS_READY.** [Versioned contracts](stage1/DORA_ALPHA_MINIMAL_MODULES_DATA_CONTRACTS_V0_1.md) and ADR-0016 define typed opaque IDs, independent capture/storage/recognition state axes, generic asynchronous ports, typed failures and a JVM-testable app coordinator. Existing UI is wired to explicit UNAVAILABLE production ports. Only `:app` and `:core:model` changed; no new modules or dependencies. Exact implementation `9ee5d718348fc0682ae94e16a5a20ecd75e706c4`, parent `0492ff34a44a6b5becdc232b16c2f3f99de87456`, passes [Android CI 36683669682](https://github.com/Monumentogram/DORA/actions/runs/36683669682), both required jobs and every mandatory step. [Local checks](evidence/alpha-7.2-local-v0.1.json), [CI](evidence/alpha-7.2-ci-v0.1.json) and [Sheet readback](evidence/alpha-7.2-sheet-v0.1.json) retain evidence.
+
+**Stage 7 and Group C IN PROGRESS; next separate task: 7.2C — Replaceable Cloud ASR interface and adapter contract, NOT_STARTED.** 7.2D/E and 7.3 NOT_STARTED; Stage 8 NOT_STARTED. Recording/storage/Cloud ASR runtime NOT_IMPLEMENTED; FIRST_REAL_PRODUCT_AUDIO NOT_READY. 7.1 identity/version/signing remain unchanged. No AWS or Recovery integration; PR #86 untouched, main unchanged, PR #87 open/draft/unmerged. Recovery clean replacement remains separately required before Stage 8 recording/storage acceptance. Earlier dated entries remain historical.
+
 ## 2026-09-30 — 7.1 PASS; next implementation task is 7.2
 
 **7.1 = PASS / ALPHA_IDENTITY_SIGNING_INSTALL_READY**, limited to OWNER_ONLY_CLOSED_INTERNAL_ALPHA. [Versioned decision/runbook](stage1/DORA_ALPHA_IDENTITY_SIGNING_INSTALL_V0_1.md) freezes `com.monumentogram.dora`, version 2 / `0.1.0-alpha.1`, PROJECT_OWNER key custody outside Git and local signed APK distribution. POCO M5 install/reinstall/launch, same-key code 2→3 upgrade and wrong-key rejection are proven. Exact implementation `4a2350a02eba8adc76c04bf250e7769513ad9aa7` passes [Android CI 36677470351](https://github.com/Monumentogram/DORA/actions/runs/36677470351), both required jobs. S01-ID-001/S01-RELEASE-001 are satisfied only for this internal Alpha scope; their historical production/store gates remain outside this decision.

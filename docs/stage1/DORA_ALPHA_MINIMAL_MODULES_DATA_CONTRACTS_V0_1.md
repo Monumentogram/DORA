@@ -1,6 +1,6 @@
 # 7.2 — Minimal Alpha modules and data contracts v0.1
 
-Status: IMPLEMENTED_AWAITING_EXACT_SHA_CI; no final or Sheet PASS yet.
+Status: PASS / ALPHA_MINIMAL_MODULES_AND_DATA_CONTRACTS_READY.
 
 ## Authority and design
 
@@ -45,10 +45,11 @@ commits rather than a separate design commit. Spec and plan are this document.
   reset while busy, normalized failure and absence of success before acknowledgment.
 - [x] Add a fail-closed compiled-bytecode dependency guard and negative controls;
   run it in Android CI after compilation alongside existing governance checks.
-- [ ] Run Stage00, unit, formatting, detekt, lint, assembly and applicable validators;
+- [x] Run Stage00, unit, formatting, detekt, lint, assembly and applicable validators;
   independently review scope and commit/push implementation, await exact-SHA CI.
-- [ ] After technical PASS update Sheet with readback, write evidence/status-only
-  commit, push, reconcile Sheet exact final HEAD and await final CI if triggered.
+- [x] After technical PASS update Sheet with exact readback and prepare evidence/status.
+- Publication sequence: commit/push this evidence-only closure; reconcile Sheet exact
+  final HEAD and await final CI. Report post-commit observations in the task result.
 
 Review focus: callbacks after cancellation/reset; wrong recording/audio/job result;
 unavailable adapters; reset or duplicate requests during pending work; provider
@@ -153,3 +154,35 @@ JVM tests cover identities, command/acknowledgment sequences, wrong source/job,
 delayed/duplicate callbacks, invalid transitions, failure preservation, uncertain
 capture, capability loss and failed cancellation. Test fakes exist only under test.
 The frozen product Gherkin scenarios remain future runtime acceptance, NOT_RUN.
+
+## Verified 7.2 closure
+
+7.2 = PASS / ALPHA_MINIMAL_MODULES_AND_DATA_CONTRACTS_READY, limited to
+OWNER_ONLY_CLOSED_INTERNAL_ALPHA application contracts.
+
+- Exact implementation: `9ee5d718348fc0682ae94e16a5a20ecd75e706c4`;
+  parent `0492ff34a44a6b5becdc232b16c2f3f99de87456`.
+- [Android CI 36683669682](https://github.com/Monumentogram/DORA/actions/runs/36683669682):
+  exact head_sha matches implementation; android-bootstrap and search-smoke SUCCESS;
+  all mandatory steps SUCCESS. Conditional failure-only diagnostics may be skipped.
+- 17 new JVM tests plus 5 compiled dependency tests PASS. All 26 app/core JVM tests
+  PASS. Stage00, signing, capture/search and Recovery governance validators PASS.
+  Formatting, Detekt, lint, instrumentation compilation, assembly and 16 KiB checks PASS.
+- Local Detekt needed equivalent relative input paths because Windows exceeded its
+  process command-length limit. The temporary init file was outside the repository;
+  all 186 canonical inputs were asserted identical. Standard Linux CI task passed.
+- Independent review found capability-loss cleanup and failed-cancellation ownership
+  defects; each was reproduced before repair and passes regression tests. Unsaved
+  original Reset was additionally reproduced and fixed. No unresolved P0/P1 findings.
+- Task-file secret scan and public diff review PASS. No signing material, credentials,
+  private audio/text, provider runtime or dependencies introduced.
+- Sheet status update and exact cell readback PASS after the implementation CI.
+  Its committed snapshot identifies the implementation HEAD observed at that time.
+  After this evidence-only commit is pushed, reconcile the Sheet repository HEAD to
+  that commit and verify its separate CI; report those final publication observations
+  in the task result (a commit cannot embed its own SHA).
+
+Evidence: [local](../evidence/alpha-7.2-local-v0.1.json),
+[CI jobs and steps](../evidence/alpha-7.2-ci-v0.1.json),
+[Sheet values and readback](../evidence/alpha-7.2-sheet-v0.1.json).
+No next-stage implementation is authorized or performed by this closure.

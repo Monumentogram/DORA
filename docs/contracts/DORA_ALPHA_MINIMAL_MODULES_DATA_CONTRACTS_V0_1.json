@@ -1,7 +1,11 @@
 {
   "schema_version": "0.1",
   "task": "7.2",
-  "verdict": "IMPLEMENTED_AWAITING_EXACT_SHA_CI",
+  "verdict": "PASS / ALPHA_MINIMAL_MODULES_AND_DATA_CONTRACTS_READY",
+  "implementation_sha": "9ee5d718348fc0682ae94e16a5a20ecd75e706c4",
+  "implementation_ci": {"run_id": 36683669682, "head_sha": "9ee5d718348fc0682ae94e16a5a20ecd75e706c4", "conclusion": "success", "jobs": ["android-bootstrap", "search-smoke"], "evidence": "docs/evidence/alpha-7.2-ci-v0.1.json"},
+  "local_evidence": "docs/evidence/alpha-7.2-local-v0.1.json",
+  "sheet_readback": {"result": "PASS", "evidence": "docs/evidence/alpha-7.2-sheet-v0.1.json", "final_head_reconciliation": "post-publication; report in task result"},
   "scope": "OWNER_ONLY_CLOSED_INTERNAL_ALPHA_APPLICATION_CONTRACT",
   "branch": "stage/7-alpha-foundation",
   "starting_head": "0492ff34a44a6b5becdc232b16c2f3f99de87456",
