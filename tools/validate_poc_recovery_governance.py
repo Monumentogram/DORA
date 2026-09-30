@@ -7663,6 +7663,14 @@ def validate_rec_clean_replacement(lifecycle: RecoveryLifecycleIdentity) -> None
 REC_CLEAN_INTEGRATED_ANCHOR = "49595ece8cac22f3a1da4a4d5dd43924ac28f1df"
 REC_CLEAN_INTEGRATED_TREE = "03738da9d0b1beb3bec8cf7779c9f2e2b9f9f188"
 REC_CLEAN_INTEGRATED_BRANCH = "stage/7-alpha-foundation"
+REC_CLEAN_REMEDIATION_HEAD = "d406b6dabb64009cc0a6ee6b017004c757108e26"
+REC_CLEAN_REMEDIATION_TREE = "4a24e04096d5bda5e89baafefd89d9188a3368f1"
+REC_CLEAN_CLOSURE_RECEIPT = "docs/evidence/recovery-clean-replacement-integration-v0.1.json"
+REC_CLEAN_CLOSURE_PATHS = frozenset({
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+    REC_CLEAN_CLOSURE_RECEIPT,
+})
 REC_CLEAN_PREPARATION_HEAD = "3c1986d03321b183efaabfd0f4a86fe42159672e"
 REC_CLEAN_IMPLEMENTATION_HEAD = "49537b8a53c56a2f07cc1456926fce5c9b903b42"
 REC_CLEAN_GOVERNANCE_PATHS = frozenset({
@@ -7706,7 +7714,7 @@ def rec_clean_integrated_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool
     return True
 
 
-def validate_rec_clean_integrated_state(changes, current, expected, history, head):
+def validate_rec_clean_integrated_state(changes, current, expected, history, head, transition_paths=None):
     require(current == expected, "Recovery clean integrated protected object identity changed")
     require(set(changes) == {"committed", "staged", "unstaged", "untracked"},
             "Recovery clean integrated layer inventory incomplete")
@@ -7717,13 +7725,84 @@ def validate_rec_clean_integrated_state(changes, current, expected, history, hea
                 f"Recovery clean integrated uncommitted state: {layer}")
     if head == REC_CLEAN_INTEGRATED_ANCHOR:
         require(not history and not changes["committed"], "Recovery clean anchor has unexpected descendants")
-    else:
-        # This task admits one atomic remediation, not future branch development.
-        require(re.fullmatch(r"[0-9a-f]{40}", head) is not None
-                and history == [f"{head} {REC_CLEAN_INTEGRATED_ANCHOR}"],
-                "Recovery clean integrated requires one linear governance child")
-        require(set(changes["committed"]) == REC_CLEAN_GOVERNANCE_PATHS,
-                "Recovery clean integrated remediation path scope mismatch")
+        return
+    # The only successor sequence is the immutable remediation, G2, then F.
+    # Inspect every transition, so a forbidden mutation followed by a revert fails.
+    require(1 <= len(history) <= 3, "Recovery clean integrated finite closure length exceeded")
+    parent = REC_CLEAN_INTEGRATED_ANCHOR
+    for index, line in enumerate(history):
+        fields = line.split()
+        require(len(fields) == 2 and re.fullmatch(r"[0-9a-f]{40}", fields[0]) is not None
+                and fields[1] == parent and fields[0] != parent,
+                "Recovery clean integrated finite closure requires ordered single-parent history")
+        if index == 0:
+            require(fields[0] == REC_CLEAN_REMEDIATION_HEAD,
+                    "Recovery clean integrated immutable remediation identity changed")
+        parent = fields[0]
+    require(parent == head, "Recovery clean integrated finite closure HEAD mismatch")
+    allowed = [REC_CLEAN_GOVERNANCE_PATHS, REC_CLEAN_GOVERNANCE_PATHS, REC_CLEAN_CLOSURE_PATHS][:len(history)]
+    if len(history) == 1 and transition_paths is None:
+        transition_paths = [changes["committed"]]
+    require(isinstance(transition_paths, list) and len(transition_paths) == len(history),
+            "Recovery clean integrated transition inventory incomplete")
+    for paths, scope in zip(transition_paths, allowed):
+        require(isinstance(paths, list) and set(paths) == scope,
+                "Recovery clean integrated closure transition path scope mismatch")
+    require(set(changes["committed"]) == set().union(*allowed),
+            "Recovery clean integrated closure aggregate path scope mismatch")
+
+
+def validate_rec_clean_closure_receipt(receipt, governance_head):
+    expected = {
+        "integration_anchor": REC_CLEAN_INTEGRATED_ANCHOR,
+        "integration_tree": REC_CLEAN_INTEGRATED_TREE,
+        "integration_parents": [REC_CLEAN_BASE, REC_CLEAN_PREPARATION_HEAD],
+        "implementation_sha": REC_CLEAN_IMPLEMENTATION_HEAD,
+        "preparation_sha": REC_CLEAN_PREPARATION_HEAD,
+        "governance_remediation_sha": REC_CLEAN_REMEDIATION_HEAD,
+        "closure_governance_sha": governance_head,
+        "target_branch": REC_CLEAN_INTEGRATED_BRANCH,
+        "merge_method": "local_no_ff_merge",
+        "main_sha": "55940df0c95e919a00708ae57e1b8aa23d89b6de",
+        "reconciliation_rows": 124, "transfers": 42, "exclusions": 82,
+        "implementation_admission_paths": 48, "preparation_metadata_paths": 6,
+        "pr88_state": "MERGED",
+        "pr86_historical_head": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+        "pr87_expected_state": "OPEN / DRAFT / UNMERGED",
+        "product": {"application_id": "com.monumentogram.dora", "version_name": "0.1.0-alpha.2", "version_code": 4},
+        "stage8_started": False, "new_recovery_campaign": False,
+        "new_signed_release": False, "history_rewritten": False,
+        "historical_artifacts": {
+            "apk_sha256": "ad13ddbd2b01e4e61112ecfb889408576dd04748b9e65627abd6700d1440fa57",
+            "sbom_sha256": "230fbb099d99fee5a2dd1f698cddeeac722de83ea0e0be0cb51583f26da165ba",
+            "newly_produced": False,
+        },
+        "recovery_regression": {"source_sha": REC_CLEAN_REMEDIATION_HEAD,
+                                "ci_run_id": 36773896872, "jvm_tests": 414,
+                                "streaming_source_tests": 30, "result": "PASS"},
+        "status": {"recovery_replacement": "INTEGRATED", "integrated_governance": "PASS",
+                   "recovery_integration_prerequisite": "SATISFIED", "stage7": "PASS", "stage7_3c": "PASS",
+                   "group_c": "IN_PROGRESS", "stage7_4": "NOT_STARTED", "stage8": "NOT_STARTED",
+                   "pr86": "SUPERSEDED / CLOSURE_AUTHORIZED"},
+        "publication_gates": {"final_commit_ci": "PENDING_EXTERNAL_EXACT_SHA_VALIDATION",
+                              "sheet_synchronization": "PENDING_AFTER_FINAL_CI",
+                              "pr86_closure": "AUTHORIZED_AFTER_FINAL_CI_AND_SHEET_READBACK"},
+    }
+    require(isinstance(receipt, dict)
+            and set(receipt) == set(expected) | {"ci_history", "closure_governance_ci"}
+            and all(type(receipt.get(k)) is type(v) and receipt[k] == v for k, v in expected.items()),
+            "Recovery clean closure receipt immutable facts mismatch")
+    require(receipt.get("ci_history") == {
+        "36749820939": "PASS", "36752788543": "PASS",
+        "36763551078": "FAILURE", "36773896872": "PASS"},
+        "Recovery clean closure receipt historical CI changed")
+    ci = receipt.get("closure_governance_ci", {})
+    require(isinstance(ci, dict) and set(ci) == {"head_sha", "run_id", "jobs"}
+            and ci.get("head_sha") == governance_head
+            and type(ci.get("run_id")) is int and ci["run_id"] > 0
+            and str(ci["run_id"]) not in receipt["ci_history"]
+            and ci.get("jobs") == {"android-bootstrap": "SUCCESS", "search-smoke": "SUCCESS"},
+            "Recovery clean closure receipt governance CI identity mismatch")
 
 
 def validate_rec_clean_integrated(lifecycle: RecoveryLifecycleIdentity) -> None:
@@ -7752,11 +7831,29 @@ def validate_rec_clean_integrated(lifecycle: RecoveryLifecycleIdentity) -> None:
         current = {p: next(iter(git_path_records("ls-tree", "-z", revision, "--", p)), None)
                    for p in expected}
         require(current == expected, "Recovery clean integrated protected object identity changed")
+    history = git_output("rev-list", "--reverse", "--parents", f"{REC_CLEAN_INTEGRATED_ANCHOR}..HEAD").splitlines()
+    transitions = []
+    for line in history:
+        fields = line.split()
+        require(len(fields) == 2, "Recovery clean integrated closure rejects another merge")
+        transitions.append(git_path_records("diff", "--name-only", "--no-renames", "-z", fields[1], fields[0], "--"))
     validate_rec_clean_integrated_state(
         collect_post_merge_changes(merged_anchor=REC_CLEAN_INTEGRATED_ANCHOR), current, expected,
-        git_output("rev-list", "--reverse", "--parents", f"{REC_CLEAN_INTEGRATED_ANCHOR}..HEAD").splitlines(),
-        lifecycle.head,
+        history, lifecycle.head, transitions,
     )
+    if history:
+        validate_pinned_commit_identity(
+            collect_pinned_commit_identity(REC_CLEAN_REMEDIATION_HEAD, lifecycle.head),
+            expected_commit=REC_CLEAN_REMEDIATION_HEAD, expected_tree=REC_CLEAN_REMEDIATION_TREE,
+            expected_parents=(REC_CLEAN_INTEGRATED_ANCHOR,), label="Recovery clean accepted remediation",
+        )
+    if len(history) == 3:
+        governance_head = history[1].split()[0]
+        for path in REC_CLEAN_CLOSURE_PATHS - {REC_CLEAN_CLOSURE_RECEIPT}:
+            historical = git_blob_bytes(f"{governance_head}:{path}")
+            require((ROOT / path).read_bytes().endswith(historical),
+                    "Recovery clean closure must preserve historical status/backlog")
+        validate_rec_clean_closure_receipt(json.loads((ROOT / REC_CLEAN_CLOSURE_RECEIPT).read_bytes()), governance_head)
     # Re-prove the original baseline and selected source receipts, without treating
     # the composite tree as a newly executed historical campaign.
     baseline_entries = {p: next(iter(git_path_records("ls-tree", "-z", REC_CLEAN_BASE, "--", p)), None)
