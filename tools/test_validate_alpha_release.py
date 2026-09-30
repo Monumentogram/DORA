@@ -3,6 +3,7 @@ import copy
 import hashlib
 import json
 import unittest
+from unittest.mock import patch
 
 try:
     import validate_alpha_release as release
@@ -101,6 +102,25 @@ class ReleaseEvidenceTest(unittest.TestCase):
         release.validate_successor_workflow(old, current)
         with self.assertRaises(ValueError):
             release.validate_successor_workflow(old, current.replace('before','omitted'))
+
+    def test_recovery_preparation_requires_pinned_contract(self):
+        import validate_poc_recovery_governance as governance
+        contract_bytes = (release.ROOT / governance.REC_CLEAN_CONTRACT).read_bytes()
+        paths = json.loads(contract_bytes)["implementation_paths"]
+        release.validate_recovery_successor_paths(paths, contract_bytes)
+        for changed in (contract_bytes + b"\n", contract_bytes.replace(b'"executionAllowed": false', b'"executionAllowed": true')):
+            with self.assertRaisesRegex(ValueError, "contract digest"):
+                release.validate_recovery_successor_paths(paths, changed)
+
+    def test_recovery_preparation_cannot_admit_product_or_historical_release_paths(self):
+        import validate_poc_recovery_governance as governance
+        contract_bytes = (release.ROOT / governance.REC_CLEAN_CONTRACT).read_bytes()
+        for path in ('android/app/src/main/New.kt', 'android/alpha-release.properties',
+                     'android/poc/recovery/gradle.lockfile', 'android/gradle/verification-metadata.xml',
+                     'tools/build_internal_alpha.py', 'docs/evidence/alpha-7.3-ci-v0.1.json',
+                     'android/poc/recovery/src/main/New.kt', 'docs/evidence/poc-recovery-001/new.json'):
+            with self.subTest(path=path), self.assertRaisesRegex(ValueError, "Product/release"):
+                release.validate_recovery_successor_paths([path], contract_bytes)
 
 
 if __name__ == "__main__":

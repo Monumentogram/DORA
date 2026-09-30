@@ -7501,7 +7501,7 @@ def validate_rec_i3_accepted_protected_state(
                 "REC-I3 accepted post-anchor merge or malformed history")
 
 
-def validate_rec_i3_accepted_main_descendant(lifecycle: RecoveryLifecycleIdentity) -> None:
+def validate_rec_i3_accepted_anchor_provenance(lifecycle: RecoveryLifecycleIdentity) -> None:
     validate_pinned_commit_identity(
         collect_pinned_commit_identity(REC_I3_ACCEPTED_MAIN_ANCHOR, lifecycle.head),
         expected_commit=REC_I3_ACCEPTED_MAIN_ANCHOR,
@@ -7557,6 +7557,110 @@ def validate_rec_i3_accepted_main_descendant(lifecycle: RecoveryLifecycleIdentit
     }
     require(anchor_entries == REC_I3_ACCEPTED_MAIN_PROTECTED_ENTRIES,
             "REC-I3 accepted anchor protected object identity changed")
+
+
+# Preparation-only successor. Historical source/execution profiles remain unchanged.
+REC_CLEAN_BASE = "fd943aff885028c6143550ee7bb843798b8105fb"
+REC_CLEAN_BRANCH = "codex/recovery-clean-replacement"
+REC_CLEAN_CONTRACT = "docs/contracts/DORA_PR86_CLEAN_RECOVERY_INTEGRATION_V0_1.json"
+REC_CLEAN_CONTRACT_SHA256 = "c4802d18f5fe76b6df7369f204c61f7a3368bdce98eafa771e68387e28e623e1"
+
+
+def rec_clean_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
+    return lifecycle.branch == REC_CLEAN_BRANCH
+
+
+def validate_clean_replacement_state(changes, current_entries, expected_entries, history_lines, allowed):
+    require(set(changes) == {"committed", "staged", "unstaged", "untracked"},
+            "Recovery clean replacement layer inventory incomplete")
+    require(current_entries == expected_entries, "Recovery clean replacement protected object identity changed")
+    for layer, paths in changes.items():
+        require(isinstance(paths, list) and all(isinstance(p, str) and p for p in paths),
+                "Recovery clean replacement layer inventory malformed")
+        require(set(paths) <= allowed, f"Recovery clean replacement path outside scope in {layer}: {paths}")
+        require(layer == "committed" or not paths,
+                f"Recovery clean replacement uncommitted state in {layer}: {paths}")
+    require(history_lines, "Recovery clean replacement missing linear history")
+    for line in history_lines:
+        fields = line.split()
+        require(len(fields) == 2 and all(re.fullmatch(r"[0-9a-f]{40}", f) for f in fields),
+                "Recovery clean replacement requires linear history")
+
+
+def validate_rec_clean_replacement(lifecycle: RecoveryLifecycleIdentity) -> None:
+    # Reuse the complete original anchor, correction and reviewed-source proof.
+    validate_rec_i3_accepted_anchor_provenance(lifecycle)
+    require(lifecycle.branch == REC_CLEAN_BRANCH and lifecycle.github_pull_request_context is None,
+            "Recovery clean replacement branch/event scope mismatch")
+    require(git_is_ancestor(REC_CLEAN_BASE, lifecycle.head) and lifecycle.head != REC_CLEAN_BASE,
+            "Recovery clean replacement requires exact Alpha baseline ancestry")
+    require(git_output("rev-parse", "HEAD") == lifecycle.head,
+            "Recovery clean replacement checkout identity drift")
+    contract_bytes = (ROOT / REC_CLEAN_CONTRACT).read_bytes()
+    require(hashlib.sha256(contract_bytes).hexdigest() == REC_CLEAN_CONTRACT_SHA256,
+            "Recovery clean replacement contract/provenance/authority digest mismatch")
+    contract = json.loads(contract_bytes)
+    require(contract["alpha_baseline"] == REC_CLEAN_BASE,
+            "Recovery clean replacement Alpha identity mismatch")
+    expected = dict(REC_I3_ACCEPTED_MAIN_PROTECTED_ENTRIES)
+    expected["android/poc/recovery"] = contract["recovery_tree_entry"]
+    current = {p: next(iter(git_path_records("ls-tree", "-z", "HEAD", "--", p)), None)
+               for p in expected}
+    history = git_output("rev-list", "--reverse", "--parents", f"{REC_CLEAN_BASE}..HEAD").splitlines()
+    implementation_paths = set(contract["implementation_paths"])
+    metadata_paths = set(contract["metadata_paths"])
+    validate_clean_replacement_state(
+        collect_post_merge_changes(merged_anchor=REC_CLEAN_BASE), current, expected,
+        history, implementation_paths | metadata_paths,
+    )
+    # Preserve the accepted baseline's unchanged protected objects and linear history,
+    # including changes later reverted before Alpha. No historic mutation is erased.
+    baseline_changes = git_path_records("log", "--format=", "--name-only", "--no-renames", "-z",
+                                       f"{REC_I3_ACCEPTED_MAIN_ANCHOR}..{REC_CLEAN_BASE}", "--")
+    baseline_entries = {p: next(iter(git_path_records("ls-tree", "-z", REC_CLEAN_BASE, "--", p)), None)
+                        for p in REC_I3_ACCEPTED_MAIN_PROTECTED_ENTRIES}
+    validate_rec_i3_accepted_protected_state(
+        {"committed": baseline_changes, "staged": [], "unstaged": [], "untracked": []},
+        baseline_entries,
+        git_output("rev-list", "--parents", f"{REC_I3_ACCEPTED_MAIN_ANCHOR}..{REC_CLEAN_BASE}").splitlines(),
+    )
+    first = history[0].split()[0]
+    require(history[0].split()[1] == REC_CLEAN_BASE, "Recovery clean replacement first parent mismatch")
+    for index, line in enumerate(history):
+        commit, parent = line.split()
+        paths = set(git_path_records("diff", "--name-only", "--no-renames", "-z", parent, commit, "--"))
+        require(paths == implementation_paths if index == 0 else paths <= metadata_paths,
+                f"Recovery clean replacement transition scope mismatch: {commit}")
+        require(git_output("rev-parse", f"{commit}:android/poc/recovery") == contract["recovery_tree"],
+                "Recovery clean replacement historical source mutation/revert")
+    # Source provenance is exact Git object equality, not historical campaign execution
+    # on this new composite tree. The only modified transferred test is explicitly bound.
+    for item in contract["transfers"]:
+        path = item["path"]
+        require(git_output("rev-parse", f'{item["source_commit"]}:{path}') == item["source_blob"],
+                f"Recovery clean replacement measured source provenance mismatch: {path}")
+        require(git_output("rev-parse", f"HEAD:{path}") == item["replacement_blob"],
+                f"Recovery clean replacement transferred source mismatch: {path}")
+    for path in implementation_paths:
+        require(git_output("rev-parse", f"{first}:{path}") == git_output("rev-parse", f"HEAD:{path}"),
+                f"Recovery clean replacement implementation changed after first commit: {path}")
+    for path in ("docs/DORA_MVP1_STAGE_STATUS.md", "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md"):
+        original = subprocess.check_output(["git", "cat-file", "blob", f"{REC_CLEAN_BASE}:{path}"], cwd=ROOT)
+        require((ROOT / path).read_bytes().endswith(original),
+                f"Recovery clean replacement must preserve historical status bytes: {path}")
+    if os.environ.get("GITHUB_EVENT_NAME") or os.environ.get("GITHUB_ACTIONS"):
+        workspace = os.environ.get("GITHUB_WORKSPACE", "")
+        require(os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"
+                and os.environ.get("GITHUB_REPOSITORY") == GITHUB_REPOSITORY
+                and workspace and Path(workspace).resolve() == ROOT.resolve()
+                and os.environ.get("GITHUB_REF") == f"refs/heads/{REC_CLEAN_BRANCH}"
+                and os.environ.get("GITHUB_SHA") == lifecycle.head,
+                "Recovery clean replacement GitHub event identity drift")
+
+
+
+def validate_rec_i3_accepted_main_descendant(lifecycle: RecoveryLifecycleIdentity) -> None:
+    validate_rec_i3_accepted_anchor_provenance(lifecycle)
     current_entries = {
         path: next(iter(git_path_records("ls-tree", "-z", "HEAD", "--", path)), None)
         for path in REC_I3_ACCEPTED_MAIN_PROTECTED_ENTRIES
@@ -9833,6 +9937,9 @@ def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | Non
         return True
     elif rec_i3_squash_main_candidate(current):
         validate_rec_i3_squash_main(current)
+        return True
+    elif rec_clean_candidate(current):
+        validate_rec_clean_replacement(current)
         return True
     elif rec_i3_accepted_main_descendant_candidate(current):
         validate_rec_i3_accepted_main_descendant(current)
@@ -13043,6 +13150,29 @@ def main() -> int:
     if validate_rec_i3_squash_main_fast_path():
         return 0
     lifecycle = collect_recovery_lifecycle_identity()
+    if rec_clean_candidate(lifecycle):
+        validate_rec_clean_replacement(lifecycle)
+        if "--self-test" in sys.argv[1:]:
+            run_rec_i3_integrated_profile_self_tests(
+                lifecycle, failure="Recovery clean replacement historical regressions failed",
+                correction_head_override=REC_I3_SQUASH_MAIN_INTEGRATED_CORRECTION,
+            )
+            import unittest
+            import test_poc_recovery_i3_governance
+            suite = unittest.TestSuite(
+                unittest.defaultTestLoader.loadTestsFromTestCase(test_case)
+                for test_case in (
+                    test_poc_recovery_i3_governance.RecoveryI3AcceptedSquashSuccessorTests,
+                    test_poc_recovery_i3_governance.RecoveryCleanReplacementStateTests,
+                )
+            )
+            require(unittest.TextTestRunner(verbosity=0).run(suite).wasSuccessful(),
+                    "Recovery clean replacement successor regression tests failed")
+            for pattern in ("test_rec_stream_prefix_schema.py", "test_rec_microfile_disposition_schema.py"):
+                result = subprocess.run([sys.executable, "-B", "-m", "unittest", "discover", "-s", "tools", "-p", pattern], cwd=ROOT)
+                require(result.returncode == 0, "Recovery clean replacement schema regression failed")
+        print("POC-RECOVERY-001 clean replacement preparation validated; execution/product integration blocked")
+        return 0
     if rec_i3_accepted_main_descendant_candidate(lifecycle):
         validate_rec_i3_accepted_main_descendant(lifecycle)
         if "--self-test" in sys.argv[1:]:
