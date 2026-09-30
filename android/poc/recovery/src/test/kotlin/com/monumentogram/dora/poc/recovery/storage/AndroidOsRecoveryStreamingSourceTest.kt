@@ -22,6 +22,7 @@ import com.monumentogram.dora.poc.recovery.coordination.RecoveryRunWriterLease
 import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
+import java.util.concurrent.FutureTask
 import java.util.concurrent.TimeUnit
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
@@ -538,13 +539,44 @@ class AndroidOsRecoveryStreamingSourceTest {
 
     @Test
     fun `scope keeps descriptor open for an in-flight read and rejects escaped reads`() {
+        verifyInFlightRead()
+    }
+
+    @Test
+    fun `in-flight read cleanup releases every barrier after an assertion failure`() {
+        val failure = assertThrows(AssertionError::class.java) { verifyInFlightRead("assertion") }
+        assertEquals("injected assertion", failure.message)
+    }
+
+    @Test
+    fun `in-flight read cleanup releases every barrier after a timeout`() {
+        val failure =
+            assertThrows(java.util.concurrent.TimeoutException::class.java) {
+                verifyInFlightRead("timeout")
+            }
+        assertEquals("injected timeout", failure.message)
+    }
+
+    @Test
+    fun `in-flight read failure still closes the descriptor and terminates workers`() {
+        val failure =
+            assertThrows(java.util.concurrent.ExecutionException::class.java) {
+                verifyInFlightRead("read")
+            }
+        assertEquals("pread", failure.cause?.message)
+    }
+
+    private fun verifyInFlightRead(failureMode: String? = null) {
         val readEntered = CountDownLatch(1)
         val allowRead = CountDownLatch(1)
         val closeEntered = CountDownLatch(1)
         val allowClose = CountDownLatch(1)
+        val allowSubmitReturn = CountDownLatch(1)
+        val submitted = java.util.concurrent.atomic.AtomicInteger()
         val os =
             FakeOs().apply {
                 seed(byteArrayOf(1))
+                if (failureMode == "read") throwOnPreadOffsets += 0L
                 beforePread = { offset ->
                     if (offset == 0L) {
                         readEntered.countDown()
@@ -557,22 +589,47 @@ class AndroidOsRecoveryStreamingSourceTest {
                 }
             }
         val source = AndroidOsRecoveryStreamingSource(ROOT, FakeJournal(), os)
-        val executor = Executors.newFixedThreadPool(2)
+        val executor =
+            object :
+                java.util.concurrent.ThreadPoolExecutor(
+                    2,
+                    2,
+                    0L,
+                    TimeUnit.MILLISECONDS,
+                    java.util.concurrent.LinkedBlockingQueue(),
+                ) {
+                override fun execute(command: Runnable) {
+                    val submission = submitted.incrementAndGet()
+                    super.execute(command)
+                    if (submission == 2) {
+                        assertTrue(readEntered.await(5, TimeUnit.SECONDS))
+                        assertTrue(allowSubmitReturn.await(5, TimeUnit.SECONDS))
+                    }
+                }
+            }
+        lateinit var escaped: java.io.InputStream
+        // Construct the Future before any worker can signal readEntered. An executor may
+        // start a task before execute/submit returns, so readEntered cannot publish it.
+        val read = FutureTask<Int> { escaped.read() }
         try {
-            lateinit var escaped: java.io.InputStream
-            lateinit var read: java.util.concurrent.Future<Int>
             val sourceFuture =
                 executor.submit<java.lang.Void> {
                     source.withNormalSource(request(start = 0UL, end = 1UL, preFault = 1UL)) {
                         opened ->
                         escaped = opened.boundedInputStream()
-                        read = executor.submit<Int> { escaped.read() }
+                        executor.execute(read)
                         assertTrue(readEntered.await(5, TimeUnit.SECONDS))
                     }
                     null
                 }
             assertTrue(readEntered.await(5, TimeUnit.SECONDS))
             assertEquals(0, os.closeCalls)
+            assertEquals(1L, allowSubmitReturn.count)
+            assertFalse(read.isDone)
+            if (failureMode == "assertion") throw AssertionError("injected assertion")
+            if (failureMode == "timeout")
+                throw java.util.concurrent.TimeoutException("injected timeout")
+            allowSubmitReturn.countDown()
             allowRead.countDown()
             assertEquals(1, read.get(5, TimeUnit.SECONDS))
             assertTrue(closeEntered.await(5, TimeUnit.SECONDS))
@@ -582,8 +639,18 @@ class AndroidOsRecoveryStreamingSourceTest {
             assertEquals(1, os.closeCalls)
             assertThrows(IllegalStateException::class.java) { escaped.read() }
         } finally {
+            allowRead.countDown()
             allowClose.countDown()
-            executor.shutdownNow()
+            allowSubmitReturn.countDown()
+            executor.shutdown()
+            try {
+                assertTrue(executor.awaitTermination(5, TimeUnit.SECONDS))
+                assertEquals(1, os.closeCalls)
+                assertTrue(executor.isTerminated)
+                assertThrows(IllegalStateException::class.java) { escaped.read() }
+            } finally {
+                executor.shutdownNow()
+            }
         }
     }
 

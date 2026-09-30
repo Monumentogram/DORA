@@ -103,6 +103,18 @@ def validate_successor_paths(paths) -> None:
     require(set(paths) <= SUCCESSOR_PATHS, "Product/release inputs or historical evidence changed")
 
 
+def validate_recovery_successor_paths(paths, contract_bytes: bytes) -> None:
+    # This early release step checks path compatibility only. The unchanged later
+    # Recovery gate fetches historical provenance and verifies the complete source,
+    # topology, dirty layers and preparation-only lifecycle before CI can pass.
+    import validate_poc_recovery_governance as recovery
+    require(hashlib.sha256(contract_bytes).hexdigest() == recovery.REC_CLEAN_CONTRACT_SHA256,
+            "Recovery preparation contract digest mismatch")
+    contract = json.loads(contract_bytes)
+    allowed = SUCCESSOR_PATHS | set(contract["implementation_paths"]) | set(contract["metadata_paths"])
+    require(set(paths) <= allowed, "Product/release inputs or historical evidence changed")
+
+
 def validate_successor_workflow(original: str, current: str) -> None:
     require(current.count(HARNESS_STEP) == 1 and current.replace(HARNESS_STEP, '', 1) == original,
             "Existing CI gates changed or harness gate missing")
@@ -121,7 +133,12 @@ def verify_source_ancestry(source: str) -> str:
     # and every Android/build/signing input are excluded from that inventory.
     diff = subprocess.run(prefix + ['diff', '--name-only', CLOSURE], capture_output=True, text=True, check=True)
     untracked = subprocess.run(prefix + ['ls-files', '--others', '--exclude-standard'], capture_output=True, text=True, check=True)
-    validate_successor_paths(diff.stdout.splitlines() + untracked.stdout.splitlines())
+    paths = diff.stdout.splitlines() + untracked.stdout.splitlines()
+    recovery_contract = ROOT / "docs/contracts/DORA_PR86_CLEAN_RECOVERY_INTEGRATION_V0_1.json"
+    if recovery_contract.exists():
+        validate_recovery_successor_paths(paths, recovery_contract.read_bytes())
+    else:
+        validate_successor_paths(paths)
     original = subprocess.run(prefix + ['show', source+':.github/workflows/android-ci.yml'],
                               capture_output=True, text=True, check=True).stdout
     validate_successor_workflow(original, (ROOT / '.github/workflows/android-ci.yml').read_text())

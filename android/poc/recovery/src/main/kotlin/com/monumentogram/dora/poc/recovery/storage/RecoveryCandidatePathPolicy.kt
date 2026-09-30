@@ -9,7 +9,9 @@ internal object RecoveryCandidatePathPolicy {
     private val allowed =
         Regex(
             "(?:units/u-[0-9]{10}\\.ct|manifests/g-[0-9]{20}\\.ct|" +
-                "key-envelopes/(?:u-[0-9]{10}|manifest-g-[0-9]{20})\\.ks)(?:\\.tmp)?"
+                "stream/stream\\.ct|checkpoints/g-[0-9]{20}\\.ct|" +
+                "key-envelopes/(?:u-[0-9]{10}|manifest-g-[0-9]{20}|" +
+                "stream|checkpoint-g-[0-9]{20})\\.ks)(?:\\.tmp)?"
         )
 
     fun paths(noBackupRoot: File, runId: RunId, relativeName: String): RecoveryCandidatePaths {

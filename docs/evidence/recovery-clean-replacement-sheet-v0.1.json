@@ -1,0 +1,30 @@
+{
+  "spreadsheet_id": "1dgZr-BGlI1v8iPEK0ay9CI9mGhiGlJvG2-tTxyJhhOc",
+  "phase": "IMPLEMENTATION_PASS_FINAL_PUBLICATION_PENDING",
+  "writes": [
+    {
+      "range": "'Сводка'!B6:C6",
+      "values": [
+        "Recovery clean replacement — НА REVIEW",
+        "PR #88 OPEN / DRAFT / UNMERGED: https://github.com/Monumentogram/DORA/pull/88 . Implementation 49537b8a53c56a2f07cc1456926fce5c9b903b42. Exact-SHA CI PASS: https://github.com/Monumentogram/DORA/actions/runs/36749820939 . Final docs HEAD / CI — В РАБОТЕ. Интеграция НЕ ВЫПОЛНЕНА; Stage 8 НЕ НАЧАТО. Следующий gate: отдельное решение владельца по integration и PR #86 disposition."
+      ]
+    },
+    {
+      "range": "'Этапы'!I65:J65",
+      "values": [
+        "Recovery для alpha завершён: E36 114/114, 165/165; API33 7/7; POCO 9/9. Требуется продуктовая интеграция.\nRecovery replacement preparation: PR #88 OPEN / DRAFT / UNMERGED; 49537b8a53c56a2f07cc1456926fce5c9b903b42; CI PASS https://github.com/Monumentogram/DORA/actions/runs/36749820939 . Независимое review: P0=0 / P1=0. Интеграция НЕ ВЫПОЛНЕНА.",
+        "Stage 8 НЕ НАЧАТО. После final exact-SHA CI — отдельное решение владельца по replacement integration и PR #86 disposition. Открытый draft не закрывает prerequisite. Historical Recovery evidence сохраняются; product implementation и campaigns автоматически не начинать."
+      ]
+    }
+  ],
+  "exact_readback": true,
+  "neighbor_values_formulas_format_validation_notes_preserved": true,
+  "protected_statuses": {
+    "stage7": "ПРОЙДЕНО",
+    "stage73c": "ПРОЙДЕНО",
+    "groupC": "В РАБОТЕ",
+    "stage8": "НЕ НАЧАТО",
+    "alpha": "0.1.0-alpha.2 (4)"
+  },
+  "visual_check": "Native browser navigation/state inspection timed out. XLSX export succeeded, but its download returned HTTP403, so rendering was unavailable. Best-effort API inspection verified existing WRAP, fonts, alignment, validation and notes unchanged. Final exact-value/metadata readback remains required; native visual appearance is not claimed verified."
+}

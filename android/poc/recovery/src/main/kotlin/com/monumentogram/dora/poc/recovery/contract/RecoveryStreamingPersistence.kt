@@ -37,6 +37,10 @@ enum class StreamDiagnosticStage {
 enum class StreamSourceMatch {
     VERIFIED_SAME_DESCRIPTOR,
     UNPROVEN_OR_MISMATCH,
+    /**
+     * Schema5: only the authenticated checkpoint prefix survived; the original full S is retained.
+     */
+    VERIFIED_SURVIVING_CHECKPOINT_PREFIX,
 }
 
 enum class StreamCheckpointIntersection {
@@ -1007,12 +1011,7 @@ internal object RecoveryStreamingRowValidation {
         ) {
             "VALID decision matrix is invalid"
         }
-        contractRequire(
-            row.preFaultSourceMatch == StreamSourceMatch.VERIFIED_SAME_DESCRIPTOR &&
-                row.checkpointIntersection == StreamCheckpointIntersection.PROVEN &&
-                row.checkpointPrefixBytes <= row.preFaultSourceBytes &&
-                row.preFaultSourceBytes <= row.observedSourceBytes
-        ) {
+        contractRequire(validSourceIntersection(row)) {
             "VALID source proof is invalid"
         }
         val recovered = requireValue(row.recoveredEnd, "VALID recovered end")
@@ -1118,10 +1117,7 @@ internal object RecoveryStreamingRowValidation {
 
     private fun validatePostIntersection(row: RecoveryStreamingOutcomeRow) {
         contractRequire(
-            row.preFaultSourceMatch == StreamSourceMatch.VERIFIED_SAME_DESCRIPTOR &&
-                row.checkpointIntersection == StreamCheckpointIntersection.PROVEN &&
-                row.checkpointPrefixBytes <= row.preFaultSourceBytes &&
-                row.preFaultSourceBytes <= row.observedSourceBytes &&
+            validSourceIntersection(row) &&
                 row.diagnosticStage == StreamDiagnosticStage.STREAM_PAYLOAD_DECRYPT
         ) {
             "POST_INTERSECTION source proof is invalid"
@@ -1151,6 +1147,18 @@ internal object RecoveryStreamingRowValidation {
             else -> contractRequire(false) { "POST_INTERSECTION classification is invalid" }
         }
     }
+
+    private fun validSourceIntersection(row: RecoveryStreamingOutcomeRow): Boolean =
+        row.checkpointIntersection == StreamCheckpointIntersection.PROVEN &&
+            when (row.preFaultSourceMatch) {
+                StreamSourceMatch.VERIFIED_SAME_DESCRIPTOR ->
+                    row.checkpointPrefixBytes <= row.preFaultSourceBytes &&
+                        row.preFaultSourceBytes <= row.observedSourceBytes
+                StreamSourceMatch.VERIFIED_SURVIVING_CHECKPOINT_PREFIX ->
+                    row.checkpointPrefixBytes <= row.observedSourceBytes &&
+                        row.observedSourceBytes < row.preFaultSourceBytes
+                StreamSourceMatch.UNPROVEN_OR_MISMATCH -> false
+            }
 
     private fun validateOracleMismatch(
         row: RecoveryStreamingOutcomeRow,

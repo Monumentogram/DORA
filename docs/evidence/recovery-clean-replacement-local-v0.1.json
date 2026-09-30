@@ -1,0 +1,1146 @@
+{
+  "schema_version": 1,
+  "baseline": "fd943aff885028c6143550ee7bb843798b8105fb",
+  "implementation_sha": "49537b8a53c56a2f07cc1456926fce5c9b903b42",
+  "review": {
+    "independent": true,
+    "scope": "Implementation diff, all124 reconciliation rows, immutable evidence pins and48-path adaptation",
+    "p0": 0,
+    "p1": 0,
+    "unresolved_findings": [],
+    "contract_sha256": "c4802d18f5fe76b6df7369f204c61f7a3368bdce98eafa771e68387e28e623e1",
+    "notes": [
+      "Every17 reconciliation evidence index/archive digest independently verified.",
+      "Exact current Alpha workflow retained; no comparison against obsolete workflow accepted.",
+      "Original mandatory integrated-profile and accepted-squash suites preserved; successor and schema controls added."
+    ]
+  },
+  "implementation_paths": [
+    "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalConnectionConfigurationTest.kt",
+    "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryMicrofileDispositionMigrationVerification.kt",
+    "android/poc/recovery/src/androidTest/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryStreamPrefixMigrationVerification.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryStreamingOrphanArtifacts.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/AndroidRecoveryStreamingReconciliation.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryArtifactSizeLimitObservation.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReconciliationController.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReferencedArtifacts.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryReconciliationOutcomes.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingOrphanReconciler.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingReconciliationController.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingTinkPrerequisiteCrypto.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryBinary.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryQuarantineIntent.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryRecords.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/contract/RecoveryStreamingPersistence.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryJournalDatabase.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryQuarantineJournal.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSource.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryStreamingJournal.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryMicrofileDispositionSchema.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryStreamPrefixSchema.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorage.kt",
+    "android/poc/recovery/src/main/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryCandidatePathPolicy.kt",
+    "android/poc/recovery/src/sharedTest/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryCampaignParserClassification.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryMicrofileReferencedIntentTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamPrefixControllerCryptoTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingReconciliationControllerTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingSurvivingPrefixTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/candidate/RecoveryStreamingTinkPrerequisiteCryptoTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/AndroidRecoveryReconciliationSourceTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalApiTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryJournalSchemaPlanTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryMicrofileDispositionSchemaTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryMicrofileQuarantineReadbackTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/journal/RecoveryStreamPrefixSchemaTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryReconciliationStorageTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/AndroidOsRecoveryStreamingSourceTest.kt",
+    "android/poc/recovery/src/test/kotlin/com/monumentogram/dora/poc/recovery/storage/RecoveryCandidatePathPolicyTest.kt",
+    "docs/contracts/DORA_PR86_CLEAN_RECOVERY_INTEGRATION_V0_1.json",
+    "docs/stage0/DORA_PR86_CLEAN_RECOVERY_INTEGRATION_V0_1.md",
+    "tools/test_poc_recovery_i3_governance.py",
+    "tools/test_rec_microfile_disposition_schema.py",
+    "tools/test_rec_stream_prefix_schema.py",
+    "tools/test_validate_alpha_release.py",
+    "tools/validate_alpha_release.py",
+    "tools/validate_poc_recovery_governance.py",
+    "tools/verify_rec_i3_streaming_sqlite.py"
+  ],
+  "evidence_paths": [
+    "docs/DORA_MVP1_STAGE_STATUS.md",
+    "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+    "docs/evidence/recovery-clean-replacement-local-v0.1.json",
+    "docs/evidence/recovery-clean-replacement-ci-v0.1.json",
+    "docs/evidence/recovery-clean-replacement-sheet-v0.1.json",
+    "docs/evidence/recovery-clean-replacement-closure-v0.1.json"
+  ],
+  "matrix": "docs/contracts/DORA_PR86_CLEAN_RECOVERY_INTEGRATION_V0_1.json#reconciliation_matrix",
+  "race": {
+    "diagnosis": "readEntered precedes return from submit and assignment of Future; its latch cannot publish a later write.",
+    "fix": "Construct FutureTask before scheduling; deterministically hold execute return while inspecting the Future.",
+    "focused_tests": 30,
+    "controlled_red_log_sha256": "e5b678cf0c47d394692bea54d5ab1165f443b880de612da25847c9d4ae7c772c",
+    "red_junit_sha256": "0328ec0b497b20d96831ab2826073b7bdcd84dc31dac7593d5e00bf947972366",
+    "failure_controls": [
+      "assertion",
+      "timeout",
+      "read exception"
+    ],
+    "cleanup": "Release all three barriers in finally; orderly shutdown, bounded termination, close exactly once and reject escaped read; shutdownNow fallback."
+  },
+  "local_attempts": [
+    {
+      "name": "baseline-recovery",
+      "exit": 0,
+      "seconds": 15.55,
+      "log_sha256": "3d9a7729a93a3602571a55bb1b714ea1dbf9354c940d4ea9742fbdfaf9a3bfb2"
+    },
+    {
+      "name": "committed-dependency",
+      "exit": 0,
+      "seconds": 342.21,
+      "log_sha256": "7d5183ec35b214ad55a7707979dbc3bdf571854a883f7498fcd8de13ed26a5d5"
+    },
+    {
+      "name": "committed-governance",
+      "exit": 0,
+      "seconds": 436.51,
+      "log_sha256": "d33deb817a10d76f13e63dfce4f8e145128450f0caa5db0830dc3dcece8a464c"
+    },
+    {
+      "name": "committed-readiness",
+      "exit": 1,
+      "seconds": 0.14,
+      "log_sha256": "238e3a967c1f1f72c14b910f86e83a5fbdee03cc9ceabfe08fb946aeb4b269ae"
+    },
+    {
+      "name": "governance-all",
+      "exit": 1,
+      "seconds": 627.54,
+      "log_sha256": "b19628afd5b09eddf2e86359fbefa725364b7cb1db29380004f7f5fcdb652226"
+    },
+    {
+      "name": "governance-red",
+      "exit": 1,
+      "seconds": 2.01,
+      "log_sha256": "d61d31fa0efeed24abbbc0b4148a81896aa1e753bd57ec69bb8e3a1592a1fa3e"
+    },
+    {
+      "name": "governance-state-green",
+      "exit": 0,
+      "seconds": 0.49,
+      "log_sha256": "59753171660350c6735ee4b12925f50e7f8606c102caf33752e5551608bad819"
+    },
+    {
+      "name": "local-boundaries-corrected",
+      "exit": 0,
+      "seconds": 0.97,
+      "log_sha256": "e62575493f0621e29f4415a756fc9fd11027af3322e95ced39889951460d276e"
+    },
+    {
+      "name": "local-boundaries-tests",
+      "exit": 0,
+      "seconds": 3.98,
+      "log_sha256": "db47551ea3e8f75ba34b263cf154d8e3d49b790240b8942f6ced487b0fdaffa3"
+    },
+    {
+      "name": "local-boundaries",
+      "exit": 1,
+      "seconds": 0.06,
+      "log_sha256": "10eda4266d7162d4ddf43c7d15ffd11d43bfc8d2eae83aa16dae19370d5cd064"
+    },
+    {
+      "name": "local-gradle-corrected",
+      "exit": 0,
+      "seconds": 144.31,
+      "log_sha256": "1e777af8772ab2673d93587d96882d9ebd8950017f1943057d817a2daadac63f"
+    },
+    {
+      "name": "local-gradle-full",
+      "exit": 1,
+      "seconds": 6.11,
+      "log_sha256": "b4d4a5a3061ba8e93146bb6b45ec6981c7b51fa5b038192a8e7f6e6f761671eb"
+    },
+    {
+      "name": "local-harness-determinism",
+      "exit": 0,
+      "seconds": 1.2,
+      "log_sha256": "bd2f8ebabbebf326f7a2fb682e4e45c8263caf75bac0b6158fd75dbb467d8907"
+    },
+    {
+      "name": "local-harness-self",
+      "exit": 0,
+      "seconds": 0.68,
+      "log_sha256": "bd2f8ebabbebf326f7a2fb682e4e45c8263caf75bac0b6158fd75dbb467d8907"
+    },
+    {
+      "name": "local-native-app-corrected",
+      "exit": 0,
+      "seconds": 0.08,
+      "log_sha256": "a8e1dc7dedbdec4086c07c2a4ca4a3564bdac35759742f504b45eb4c1e7b1085"
+    },
+    {
+      "name": "local-native-app",
+      "exit": 1,
+      "seconds": 0.08,
+      "log_sha256": "b6ee3cbbe2566ca0cdce9f86daeabe60fa6910595c240e33057e8b2c93dbd4ed"
+    },
+    {
+      "name": "local-native-capture-corrected",
+      "exit": 0,
+      "seconds": 0.08,
+      "log_sha256": "a8e1dc7dedbdec4086c07c2a4ca4a3564bdac35759742f504b45eb4c1e7b1085"
+    },
+    {
+      "name": "local-native-capture",
+      "exit": 1,
+      "seconds": 0.07,
+      "log_sha256": "e4d759ad1797293076582502af390b5b9c7726d9e81ebc507d497d314b7f21d5"
+    },
+    {
+      "name": "local-native-release",
+      "exit": 0,
+      "seconds": 0.08,
+      "log_sha256": "a8e1dc7dedbdec4086c07c2a4ca4a3564bdac35759742f504b45eb4c1e7b1085"
+    },
+    {
+      "name": "local-release-graph",
+      "exit": 0,
+      "seconds": 25.71,
+      "log_sha256": "65f3edaced2800faf90060e92ef816d9684b6a52efa370397d6c61eac0043a22"
+    },
+    {
+      "name": "local-release-sbom",
+      "exit": 0,
+      "seconds": 0.11,
+      "log_sha256": "501e5629b740d9a9d5e288c520b46b813077768e2899807e25bf029406020582"
+    },
+    {
+      "name": "local-release-validator-corrected",
+      "exit": 0,
+      "seconds": 0.75,
+      "log_sha256": "c39eb0815fa499dbb2af87f4e0e613750d4e56daacf391fae3ee377894e6fb7a"
+    },
+    {
+      "name": "local-search-dependency",
+      "exit": 0,
+      "seconds": 0.86,
+      "log_sha256": "6074829a0dd65e56df3133977a7946145e1dcffd31f98d278e7cdaf6d3d41abd"
+    },
+    {
+      "name": "local-search-licenses",
+      "exit": 0,
+      "seconds": 0.33,
+      "log_sha256": "c808b2219f0b98653f56bd5733edefc1a4c764e1e8364a6ce67557c150fa3c8e"
+    },
+    {
+      "name": "local-sqlite",
+      "exit": 0,
+      "seconds": 0.1,
+      "log_sha256": "ed918288a233a416772856872ca4e44d4bd0014def0c953f42b959158219996c"
+    },
+    {
+      "name": "local-test_alpha_release_graph",
+      "exit": 0,
+      "seconds": 16.8,
+      "log_sha256": "cdd610191953b7445779c0e3252a40c5958369a5f7d16a1782ae086824a8093c"
+    },
+    {
+      "name": "local-test_alpha_release_sbom",
+      "exit": 0,
+      "seconds": 0.11,
+      "log_sha256": "ba9882e9ac323861c4e47fd88f712e12a56b4bd76a6d541faec02026dfe5f209"
+    },
+    {
+      "name": "local-test_build_internal_alpha",
+      "exit": 0,
+      "seconds": 0.82,
+      "log_sha256": "f86472605ee04a1e1360687203420d10a6bad4970fb05d239d5e47b77d918169"
+    },
+    {
+      "name": "local-test_cloud_asr_provider_contract",
+      "exit": 0,
+      "seconds": 0.22,
+      "log_sha256": "e762035e57876beb24ddc2c5b6147005f2e859188bd0c25812ecf2e2c0ffa1ad"
+    },
+    {
+      "name": "local-test_cloud_contract_harness",
+      "exit": 0,
+      "seconds": 2.0,
+      "log_sha256": "0a9d7ff1e4e998bfdecc046a44d7afa7f9eeb1cb27487a4d06b290d4ded256ae"
+    },
+    {
+      "name": "local-test_cloud_identity_auth_contract",
+      "exit": 0,
+      "seconds": 0.25,
+      "log_sha256": "f00c5920b10d5fb6ad518f9c3f45aeca55aeecd3dbad00177b14e3df3b1a007b"
+    },
+    {
+      "name": "local-test_rec_microfile_disposition_schema",
+      "exit": 0,
+      "seconds": 0.69,
+      "log_sha256": "8e510ac240f6c77a01e8353457fab6e1b2ad39b1383ea5f23ce14a8b659e1198"
+    },
+    {
+      "name": "local-test_rec_stream_prefix_schema",
+      "exit": 0,
+      "seconds": 0.24,
+      "log_sha256": "7d1c33e0d4a53fcfa9829069187ce1dbb0ddcd769e42c562f2e51c194d94b192"
+    },
+    {
+      "name": "local-test_transcript_versioning_contract",
+      "exit": 0,
+      "seconds": 0.42,
+      "log_sha256": "0d478bfaa3f239907f9a13d2fa1fac86d5db37eeae70002219808059aa18efce"
+    },
+    {
+      "name": "local-test_validate_alpha_release",
+      "exit": 0,
+      "seconds": 0.12,
+      "log_sha256": "aa15af28553c9fea7828546e961e6258c84e9d375ec84568f0e09ce59d8d1875"
+    },
+    {
+      "name": "local-validate_alpha_release",
+      "exit": 1,
+      "seconds": 0.4,
+      "log_sha256": "68233ff6e03ad42908f40592e456cc2e681cb42082596d8b789ed530b72894af"
+    },
+    {
+      "name": "local-validate_cloud_asr_provider_contract",
+      "exit": 0,
+      "seconds": 0.08,
+      "log_sha256": "064dcaf8689760da8517b7940e7a88f853e4b4d1884d04ac3dadbe450df2560a"
+    },
+    {
+      "name": "local-validate_cloud_identity_auth_contract",
+      "exit": 0,
+      "seconds": 0.07,
+      "log_sha256": "3fa2525616696873206b9ca0b97b07d6026396b5641027552f4304df10f76352"
+    },
+    {
+      "name": "local-validate_poc_capture",
+      "exit": 0,
+      "seconds": 0.28,
+      "log_sha256": "83236d363eb9a19000514ad2ea90ab2ca3bb076cc2ca11fff2e7bade2db9e03f"
+    },
+    {
+      "name": "local-validate_poc_search",
+      "exit": 0,
+      "seconds": 2.23,
+      "log_sha256": "9abb7b3c0097559ea599df4c6b75ef998cc9775368de725e7a62f32fcdcd6572"
+    },
+    {
+      "name": "local-validate_stage00",
+      "exit": 0,
+      "seconds": 0.09,
+      "log_sha256": "aa91b8825bae531d45780489e43353aaec1a1be73bc78b7d8f123d6f07ee53a8"
+    },
+    {
+      "name": "local-validate_transcript_versioning_contract",
+      "exit": 0,
+      "seconds": 0.08,
+      "log_sha256": "db6a60e5f7bb3dd40cb3881a55da524fed143a9eb635e6ff86132016360bd981"
+    },
+    {
+      "name": "local-vpn-host",
+      "exit": 0,
+      "seconds": 23.28,
+      "log_sha256": "8a545b54dd1d78b061f3da517c7cb0017de312fd168fc09a5197a9d575e36e7a"
+    },
+    {
+      "name": "local-vpn-loopback",
+      "exit": 0,
+      "seconds": 41.5,
+      "log_sha256": "fcb460fa1454a2d3da570e0ded9db753a67e46d5be03395c43a019c754b0a491"
+    },
+    {
+      "name": "race-green-correct-task",
+      "exit": 0,
+      "seconds": 39.2,
+      "log_sha256": "84dbe61b6cb01c44c0cc3d6788ccfd0e28c708e8e3a952490953be93eaa5f012"
+    },
+    {
+      "name": "race-green",
+      "exit": 1,
+      "seconds": 11.13,
+      "log_sha256": "a5c3af649109c143bb82bf5f7a2f560c91c2583ed7a959d81fa809e6f37a1e06"
+    },
+    {
+      "name": "race-red",
+      "exit": 1,
+      "seconds": 22.28,
+      "log_sha256": "e5b678cf0c47d394692bea54d5ab1165f443b880de612da25847c9d4ae7c772c"
+    },
+    {
+      "name": "release-adapter-green",
+      "exit": 0,
+      "seconds": 0.48,
+      "log_sha256": "eaa1833f1a98d5ab9dd50468b69755f29cfcc78a64ff48500a390594386a76fc"
+    },
+    {
+      "name": "release-adapter-red",
+      "exit": 1,
+      "seconds": 0.45,
+      "log_sha256": "99ad2a810df819c185ec56dba3329ebb93fedd6c962f84fd7fef730f03c42ac1"
+    },
+    {
+      "name": "successor-real-git-final",
+      "exit": 0,
+      "seconds": 141.08,
+      "log_sha256": "c9bb5b069e21823614122c4183a2185e462f5e7d3c7389a4b11b020323dbd67f"
+    },
+    {
+      "name": "successor-real-git",
+      "exit": 0,
+      "seconds": 147.16,
+      "log_sha256": "08e8c4231e89ba451a002a9b6b296aa27f1d0b419c2d73f8cdaac0876fd7a3eb"
+    }
+  ],
+  "unsuccessful_attempt_classification": {
+    "race-red": "Expected controlled ordering reproduction:27 tests,1 UninitializedPropertyAccessException at line590; same mechanism as CI36733811000 attempt1 line577. Original identical-SHA rerun was not a fix.",
+    "governance-red": "Expected pre-implementation failure: successor validator absent.",
+    "release-adapter-red": "Expected pre-implementation failure: bounded release adapter absent.",
+    "race-green": "Invocation correction: spotlessKotlinApply is a root task, not a recovery subproject task.",
+    "local-gradle-full": "Windows-only private Detekt adapter initially addressed a nonexistent included-build task; corrected exact file-preserving task selection, no repository workflow change.",
+    "local-boundaries": "Missing compiled artifact because preceding build aborted; corrected build and boundary check passed.",
+    "local-native-app": "APK absent because preceding build aborted; corrected build/native check passed.",
+    "local-native-capture": "APK absent because preceding build aborted; corrected build/native check passed.",
+    "local-validate_alpha_release": "Existing7.3C-only successor path allowlist rejected accepted Recovery paths. Digest-bound48-path adapter and negative controls added; every release gate retained.",
+    "governance-all": "Nonmandatory blanket discovery failed93 tests with12 failures/10 errors. Each of22 tracebacks independently classified below. This run is not acceptance evidence and was not rerun until green."
+  },
+  "historical_blanket_discovery_review": {
+    "review": "Independent adversarial traceback review",
+    "log": "RCR-20260930/governance-all.log",
+    "log_sha256": "b19628afd5b09eddf2e86359fbefa725364b7cb1db29380004f7f5fcdb652226",
+    "reported": {
+      "tests": 93,
+      "failures": 12,
+      "errors": 10,
+      "seconds": 627.067
+    },
+    "classified_tracebacks": 22,
+    "new_successor_suite_failure_count": 0,
+    "manifest_update_caused_recorded_failure": false,
+    "stable_new_suite_receipt": "RCR-20260930/successor-real-git-final.log: 7 tests PASS in 140.871s",
+    "categories": [
+      {
+        "category": "HISTORICAL_ANCESTRY",
+        "count": 5
+      },
+      {
+        "category": "HISTORICAL_BRANCH_LABEL",
+        "count": 1
+      },
+      {
+        "category": "HISTORICAL_PAYLOAD_FIXTURE",
+        "count": 2
+      },
+      {
+        "category": "HISTORICAL_V08_CONTEXT",
+        "count": 4
+      },
+      {
+        "category": "MISSING_OPTIONAL_HISTORICAL_OBJECT",
+        "count": 5
+      },
+      {
+        "category": "MISSING_REQUIRED_FIXTURE_OVERRIDE",
+        "count": 4
+      },
+      {
+        "category": "UNCOMMITTED_PREPARATION_PRECONDITION",
+        "count": 1
+      }
+    ],
+    "entries": [
+      {
+        "outcome": "ERROR",
+        "test": "test_bootstrap_provider_witness_correction_has_exact_scope_lineage",
+        "header": "ERROR: test_bootstrap_provider_witness_correction_has_exact_scope_lineage (test_poc_recovery_i3_governance.RecoveryI3GovernanceTests.test_bootstrap_provider_witness_correction_has_exact_scope_lineage)",
+        "log_line": 3,
+        "category": "HISTORICAL_ANCESTRY",
+        "assessment": "The retired bootstrap witness scope commit is not an ancestor of the squash-derived Alpha HEAD; exact historical validator correctly refuses.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "ERROR",
+        "test": "test_bootstrap_successor_has_exact_scope_first_identity_and_file_boundary",
+        "header": "ERROR: test_bootstrap_successor_has_exact_scope_first_identity_and_file_boundary (test_poc_recovery_i3_governance.RecoveryI3GovernanceTests.test_bootstrap_successor_has_exact_scope_first_identity_and_file_boundary)",
+        "log_line": 17,
+        "category": "HISTORICAL_ANCESTRY",
+        "assessment": "The retired bootstrap scope-first commit is not an ancestor of Alpha HEAD; fixture assumes the old implementation branch.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "ERROR",
+        "test": "test_sequential_microfile_successor_has_exact_scope_sources_and_nonclaims",
+        "header": "ERROR: test_sequential_microfile_successor_has_exact_scope_sources_and_nonclaims (test_poc_recovery_i3_governance.RecoveryI3GovernanceTests.test_sequential_microfile_successor_has_exact_scope_sources_and_nonclaims)",
+        "log_line": 31,
+        "category": "HISTORICAL_ANCESTRY",
+        "assessment": "Direct old microfile profile checks its scope ancestry against current Alpha HEAD and rejects before content validation.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "ERROR",
+        "test": "test_streaming_persistence_base_preserves_exact_streaming_integration",
+        "header": "ERROR: test_streaming_persistence_base_preserves_exact_streaming_integration (test_poc_recovery_i3_governance.RecoveryI3GovernanceTests.test_streaming_persistence_base_preserves_exact_streaming_integration)",
+        "log_line": 43,
+        "category": "HISTORICAL_ANCESTRY",
+        "assessment": "Historical unsquashed persistence base is not an ancestor of the accepted squash-derived Alpha HEAD.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "ERROR",
+        "test": "test_e36_gapi_exact_local_and_stacked_pr_topologies_are_reachable",
+        "header": "ERROR: test_e36_gapi_exact_local_and_stacked_pr_topologies_are_reachable (test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests.test_e36_gapi_exact_local_and_stacked_pr_topologies_are_reachable)",
+        "log_line": 55,
+        "category": "MISSING_OPTIONAL_HISTORICAL_OBJECT",
+        "assessment": "git rev-parse fails for historical GAPI harness 7a7036513f2eb460ed72136e1784d712c4aae42d; independently confirmed absent. Existing mandatory selector includes this test only when that object exists.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "ERROR",
+        "test": "test_e36_gapi_squash_main_is_exact_and_terminal",
+        "header": "ERROR: test_e36_gapi_squash_main_is_exact_and_terminal (test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests.test_e36_gapi_squash_main_is_exact_and_terminal)",
+        "log_line": 69,
+        "category": "MISSING_OPTIONAL_HISTORICAL_OBJECT",
+        "assessment": "Fixture checkout from absent historical GAPI harness 7a703651 fails. Existing mandatory selector conditionally excludes it when source object is absent.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "ERROR",
+        "test": "test_e36_reviewed_head_allows_only_exact_main_sync_wrapper",
+        "header": "ERROR: test_e36_reviewed_head_allows_only_exact_main_sync_wrapper (test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests.test_e36_reviewed_head_allows_only_exact_main_sync_wrapper)",
+        "log_line": 82,
+        "category": "MISSING_OPTIONAL_HISTORICAL_OBJECT",
+        "assessment": "Fixture checkout from absent historical GAPI harness 7a703651 fails. Existing mandatory selector conditionally excludes it when source object is absent.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "ERROR",
+        "test": "test_harness_main_governance_transition_carries_exact_e36_squash",
+        "header": "ERROR: test_harness_main_governance_transition_carries_exact_e36_squash (test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests.test_harness_main_governance_transition_carries_exact_e36_squash)",
+        "log_line": 95,
+        "category": "MISSING_OPTIONAL_HISTORICAL_OBJECT",
+        "assessment": "Fixture checkout from absent historical GAPI harness 7a703651 fails. Existing mandatory selector conditionally excludes it when source object is absent.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "ERROR",
+        "test": "test_integrated_profiles_do_not_require_deleted_review_source_object",
+        "header": "ERROR: test_integrated_profiles_do_not_require_deleted_review_source_object (test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests.test_integrated_profiles_do_not_require_deleted_review_source_object)",
+        "log_line": 108,
+        "category": "MISSING_OPTIONAL_HISTORICAL_OBJECT",
+        "assessment": "Fixture local bare-repository push includes absent historical harness 7a703651; setup fails before the claimed deleted-source behavior is exercised. This case is not selected by current mandatory helper.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "ERROR",
+        "test": "test_main_dispatches_v08_before_any_legacy_static_artifact_read",
+        "header": "ERROR: test_main_dispatches_v08_before_any_legacy_static_artifact_read (test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests.test_main_dispatches_v08_before_any_legacy_static_artifact_read)",
+        "log_line": 118,
+        "category": "HISTORICAL_V08_CONTEXT",
+        "assessment": "Old v0.8 dispatch fixture uses current Alpha source with old branch identity; exact base/descent check rejects before the intended assertion.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "FAIL",
+        "test": "test_authorized_worktree_reaches_the_dependency_inventory_entrypoint",
+        "header": "FAIL: test_authorized_worktree_reaches_the_dependency_inventory_entrypoint (test_poc_recovery_i3_governance.RecoveryI3GovernanceTests.test_authorized_worktree_reaches_the_dependency_inventory_entrypoint)",
+        "log_line": 136,
+        "category": "UNCOMMITTED_PREPARATION_PRECONDITION",
+        "assessment": "Invokes live dependency entrypoint on the task branch while HEAD still equals fd943af. New profile intentionally requires a committed successor, so this is correct refusal of the uncommitted preparation state.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "FAIL",
+        "test": "test_original_reconciliation_epoch_still_rejects_streaming_paths",
+        "header": "FAIL: test_original_reconciliation_epoch_still_rejects_streaming_paths (test_poc_recovery_i3_governance.RecoveryI3GovernanceTests.test_original_reconciliation_epoch_still_rejects_streaming_paths)",
+        "log_line": 161,
+        "category": "HISTORICAL_ANCESTRY",
+        "assessment": "Expected undeclared-path failure is preceded by old reconciliation scope-ancestry rejection against current Alpha HEAD. Fail-closed result, wrong historical fixture context.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "FAIL",
+        "test": "test_correction_pull_request_binds_head_entries_and_clean_layers",
+        "header": "FAIL: test_correction_pull_request_binds_head_entries_and_clean_layers (test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests.test_correction_pull_request_binds_head_entries_and_clean_layers) (case='clean')",
+        "log_line": 174,
+        "category": "MISSING_REQUIRED_FIXTURE_OVERRIDE",
+        "assessment": "Broad discovery leaves INTEGRATED_CORRECTION_HEAD unset, so fixture selects current Alpha HEAD instead of 02f71246 historical correction. Clean case rejects unrelated protected history; unstaged and merge-blob subcases fail earlier than their expected diagnostic. Mandatory helper supplies the original exact override.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "FAIL",
+        "test": "test_correction_pull_request_binds_head_entries_and_clean_layers",
+        "header": "FAIL: test_correction_pull_request_binds_head_entries_and_clean_layers (test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests.test_correction_pull_request_binds_head_entries_and_clean_layers) (case='unstaged')",
+        "log_line": 196,
+        "category": "MISSING_REQUIRED_FIXTURE_OVERRIDE",
+        "assessment": "Broad discovery leaves INTEGRATED_CORRECTION_HEAD unset, so fixture selects current Alpha HEAD instead of 02f71246 historical correction. Clean case rejects unrelated protected history; unstaged and merge-blob subcases fail earlier than their expected diagnostic. Mandatory helper supplies the original exact override.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "FAIL",
+        "test": "test_correction_pull_request_binds_head_entries_and_clean_layers",
+        "header": "FAIL: test_correction_pull_request_binds_head_entries_and_clean_layers (test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests.test_correction_pull_request_binds_head_entries_and_clean_layers) (case='merge-blob')",
+        "log_line": 204,
+        "category": "MISSING_REQUIRED_FIXTURE_OVERRIDE",
+        "assessment": "Broad discovery leaves INTEGRATED_CORRECTION_HEAD unset, so fixture selects current Alpha HEAD instead of 02f71246 historical correction. Clean case rejects unrelated protected history; unstaged and merge-blob subcases fail earlier than their expected diagnostic. Mandatory helper supplies the original exact override.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "FAIL",
+        "test": "test_e36_guard_remediation_is_object_closed_and_squash_safe",
+        "header": "FAIL: test_e36_guard_remediation_is_object_closed_and_squash_safe (test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests.test_e36_guard_remediation_is_object_closed_and_squash_safe)",
+        "log_line": 212,
+        "category": "HISTORICAL_PAYLOAD_FIXTURE",
+        "assessment": "Fixture copies present validator/runtime payload onto old guard base, then checks historical exact implementation blobs/tree. Current preparation payload is not that historical remediation; candidate correctly returns false.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "FAIL",
+        "test": "test_e36_sqlite_pragma_remediation_is_object_closed_and_squash_safe",
+        "header": "FAIL: test_e36_sqlite_pragma_remediation_is_object_closed_and_squash_safe (test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests.test_e36_sqlite_pragma_remediation_is_object_closed_and_squash_safe)",
+        "log_line": 220,
+        "category": "HISTORICAL_PAYLOAD_FIXTURE",
+        "assessment": "Fixture copies present SQLite/schema6 and tooling payload onto old SQLite remediation base, then compares historical exact implementation. Current measured reference differs from that historical remediation; candidate correctly returns false.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "FAIL",
+        "test": "test_exact_observable_controller_profile_accepts_current_checkout",
+        "header": "FAIL: test_exact_observable_controller_profile_accepts_current_checkout (test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests.test_exact_observable_controller_profile_accepts_current_checkout)",
+        "log_line": 228,
+        "category": "HISTORICAL_BRANCH_LABEL",
+        "assessment": "Explicit assertion requires codex/rec-i3-streaming-observable-controller-v08; current authorized branch is codex/recovery-clean-replacement.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "FAIL",
+        "test": "test_exact_v08_profile_rejects_changed_v07_worktree_blob",
+        "header": "FAIL: test_exact_v08_profile_rejects_changed_v07_worktree_blob (test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests.test_exact_v08_profile_rejects_changed_v07_worktree_blob)",
+        "log_line": 239,
+        "category": "HISTORICAL_V08_CONTEXT",
+        "assessment": "Expected v0.7 blob diagnostic is preceded by exact old v0.8 base/descent rejection on current source.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "FAIL",
+        "test": "test_local_v08_fixture_restores_verified_pull_request_source_head",
+        "header": "FAIL: test_local_v08_fixture_restores_verified_pull_request_source_head (test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests.test_local_v08_fixture_restores_verified_pull_request_source_head)",
+        "log_line": 252,
+        "category": "HISTORICAL_V08_CONTEXT",
+        "assessment": "Historical observable-controller subprocess fixture restores current Alpha source under old identity, failing its base/descent precondition.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "FAIL",
+        "test": "test_main_v08_fast_path_rejects_protected_and_predecessor_mutations",
+        "header": "FAIL: test_main_v08_fast_path_rejects_protected_and_predecessor_mutations (test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests.test_main_v08_fast_path_rejects_protected_and_predecessor_mutations)",
+        "log_line": 261,
+        "category": "HISTORICAL_V08_CONTEXT",
+        "assessment": "Expected authority diagnostic is preceded by old result-boundary base/descent rejection; intended mutation assertion is not reached.",
+        "product_regression_demonstrated": false
+      },
+      {
+        "outcome": "FAIL",
+        "test": "test_source_equal_squash_merged_correction_main_is_exact_and_terminal",
+        "header": "FAIL: test_source_equal_squash_merged_correction_main_is_exact_and_terminal (test_poc_recovery_i3_governance.RecoveryI3ResultBoundaryGovernanceTests.test_source_equal_squash_merged_correction_main_is_exact_and_terminal)",
+        "log_line": 274,
+        "category": "MISSING_REQUIRED_FIXTURE_OVERRIDE",
+        "assessment": "Broad discovery defaults historical correction head to current Alpha HEAD; its exact two-path correction comparison sees the many legitimate later Alpha changes. Mandatory helper supplies 02f71246 instead.",
+        "product_regression_demonstrated": false
+      }
+    ],
+    "conclusion": "The broad attempt remains FAILED and is not acceptance evidence. All22 tracebacks have concrete incompatible historical fixture, missing optional source, absent correction override, or uncommitted-state explanations. No product or new successor regression is demonstrated. No recorded failure names RecoveryCleanReplacementStateTests; do not attribute a failure to the concurrent46-to48 manifest edit without evidence.",
+    "required_next_gate": "Run unchanged mandatory --self-test on the committed48-path source, including integrated profiles with original correction override, AcceptedSquash suite, new successor suite and both schema suites; retain exact-source CI requirement."
+  },
+  "jvm": [
+    {
+      "suite": "com.monumentogram.dora.flow.AlphaFlowCoordinatorTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.flow.AlphaFlowFailureTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.ui.BootstrapNavigationLayoutTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.ui.theme.DoraDesignTokensTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.common.BuildMetadataTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.model.AlphaIdentitiesTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.model.BootstrapUiStateTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.testing.BootstrapAssertionsTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.capture.audio.AudioAccountingTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.capture.audio.SyntheticFixtureTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.capture.audio.WavIOTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.capture.device.OptionalMetricTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.capture.report.SafeExportPolicyTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.capture.runtime.CaptureFileNamePolicyTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.capture.runtime.CaptureStartFailureTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.capture.runtime.IdempotentStopGateTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.capture.state.CaptureStateMachineTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.capture.ui.CaptureThemeContrastTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.bootstrap.RecoveryKeyBootstrapControllerTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.candidate.RecoveryE36GapiDeviceIdentityGuardTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.candidate.RecoveryMicrofilePublicationControllerTest",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.candidate.RecoveryMicrofileReconciliationControllerTest",
+      "tests": 23,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.candidate.RecoveryMicrofileReferencedIntentTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.candidate.RecoveryQuarantineControllerTest",
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.candidate.RecoveryReconciliationAcceptanceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.candidate.RecoveryStreamingReconciliationControllerTest",
+      "tests": 39,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.candidate.RecoveryStreamingSurvivingPrefixTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.candidate.RecoveryStreamingTinkPrerequisiteCryptoTest",
+      "tests": 25,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.candidate.RecoveryStreamPrefixControllerCryptoTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.contract.KeyConfirmationContractTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.contract.RecoveryAadTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.contract.RecoveryBinaryTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.contract.RecoveryCodecStrictnessTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.contract.RecoveryMathTest",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.contract.RecoveryProcessingIntentTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.contract.RecoveryPublicationChainTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntentTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.contract.RecoveryRecordsTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.contract.RecoveryRelativeNamesTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.contract.RecoverySemanticBindingsTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.contract.RecoveryStreamingPersistenceTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.controller.RecoveryKeyConfirmationControllerTest",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.crypto.RecoveryAeadCryptoTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.crypto.RecoveryCryptoConcurrencyTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.crypto.RecoveryEncryptedKeysetParsingTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.crypto.RecoveryRunAeadTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.crypto.RecoveryStreamingBoundProofTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.crypto.RecoveryStreamingCryptoTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.crypto.RecoveryTinkRuntimeTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.journal.AndroidRecoveryReconciliationSourceTest",
+      "tests": 39,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.journal.AndroidRecoveryStreamingJournalTest",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.journal.RecoveryJournalApiTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.journal.RecoveryJournalSchemaPlanTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.journal.RecoveryMicrofileDispositionSchemaTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.journal.RecoveryMicrofileQuarantineReadbackTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.journal.RecoveryStreamPrefixSchemaTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.storage.AndroidOsRecoveryReconciliationStorageTest",
+      "tests": 27,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.storage.AndroidOsRecoveryStreamingSourceTest",
+      "tests": 30,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.storage.RecoveryBootstrapPathPolicyTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.storage.RecoveryCandidatePathPolicyTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.recovery.storage.RecoveryReconciliationPathPolicyTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.search.data.SyntheticDatasetGeneratorTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.search.evidence.AndroidRuntimeClassifierTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.monumentogram.dora.poc.search.query.SafeFtsQueryCompilerTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "release_artifacts": {
+    "checks": [
+      {
+        "name": "local-native-app-corrected",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "name": "local-native-capture-corrected",
+        "exit": 0,
+        "expected": 0
+      },
+      {
+        "name": "zipalign-app",
+        "exit": 0
+      },
+      {
+        "name": "zipalign-capture",
+        "exit": 0
+      },
+      {
+        "name": "zipalign-release",
+        "exit": 0
+      }
+    ],
+    "product_artifacts": {
+      "dora-0.1.0-alpha.2-vc4.apk": "ad13ddbd2b01e4e61112ecfb889408576dd04748b9e65627abd6700d1440fa57",
+      "alpha-7.3-sbom-v0.1.cdx.json": "230fbb099d99fee5a2dd1f698cddeeac722de83ea0e0be0cb51583f26da165ba"
+    },
+    "jvm_tests": 479
+  },
+  "governance_selected_tests": 38,
+  "readiness": "BLOCKED_BY_ALL_TEN_EXISTING_BLOCKERS",
+  "local_limitations": [
+    "Local Detekt uses an uncommitted Windows path-length adapter with identical canonical file set. CI runs the original command on Linux.",
+    "Some Gradle tasks used valid cache/up-to-date outputs; task counts are retained.",
+    "No local device/emulator campaign. Only existing CI search-smoke executes a search emulator.",
+    "Historical Recovery evidence is retained for its original source; no fresh composite-tree campaign claim."
+  ]
+}

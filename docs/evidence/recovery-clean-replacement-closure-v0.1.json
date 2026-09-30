@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "scope": "Recovery clean replacement preparation only",
+  "baseline": "fd943aff885028c6143550ee7bb843798b8105fb",
+  "implementation_sha": "49537b8a53c56a2f07cc1456926fce5c9b903b42",
+  "implementation_verdict": "PASS / RECOVERY_CLEAN_REPLACEMENT_IMPLEMENTATION_VALIDATED",
+  "final_publication_gate": "PENDING_EXACT_FINAL_HEAD_CI_AND_FINAL_SHEET_READBACK",
+  "final_publication_receipt": "A separate publication receipt binds the later docs commit, final CI and Sheet readback without self-reference.",
+  "pr": {
+    "url": "https://github.com/Monumentogram/DORA/pull/88",
+    "base": "stage/7-alpha-foundation",
+    "state": "OPEN",
+    "draft": true,
+    "merged": false
+  },
+  "source_paths_transferred": 42,
+  "pr86_paths_excluded": 82,
+  "implementation_files": 48,
+  "evidence_files": 6,
+  "product": {
+    "applicationId": "com.monumentogram.dora",
+    "versionName": "0.1.0-alpha.2",
+    "versionCode": 4,
+    "apk_sha256": "ad13ddbd2b01e4e61112ecfb889408576dd04748b9e65627abd6700d1440fa57",
+    "sbom_sha256": "230fbb099d99fee5a2dd1f698cddeeac722de83ea0e0be0cb51583f26da165ba"
+  },
+  "product_runtime_changed": false,
+  "release_graph_changed": false,
+  "new_signed_release": false,
+  "historical_evidence_preserved": true,
+  "stage7": "PASS / ALPHA_FOUNDATION_READY",
+  "stage73c": "PASS / DETERMINISTIC_CLOUD_CONTRACT_HARNESS_READY",
+  "group_c": "IN_PROGRESS",
+  "stage8": "NOT_STARTED",
+  "protected_refs": {
+    "main": "55940df0c95e919a00708ae57e1b8aa23d89b6de",
+    "alpha": "fd943aff885028c6143550ee7bb843798b8105fb",
+    "pull_requests": [
+      {
+        "number": 86,
+        "head": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+        "base": "main",
+        "base_sha": "55940df0c95e919a00708ae57e1b8aa23d89b6de",
+        "state": "open",
+        "draft": true,
+        "merged": false,
+        "updated_at": "2026-09-18T14:29:02Z",
+        "url": "https://github.com/Monumentogram/DORA/pull/86",
+        "mergeable": true
+      },
+      {
+        "number": 87,
+        "head": "fd943aff885028c6143550ee7bb843798b8105fb",
+        "base": "chat/alpha-asr-runner-scope",
+        "base_sha": "4e7742d88377d3d915be904618fc220d479ab25d",
+        "state": "open",
+        "draft": true,
+        "merged": false,
+        "updated_at": "2026-09-30T15:23:06Z",
+        "url": "https://github.com/Monumentogram/DORA/pull/87",
+        "mergeable": true
+      },
+      {
+        "number": 88,
+        "head": "49537b8a53c56a2f07cc1456926fce5c9b903b42",
+        "base": "stage/7-alpha-foundation",
+        "base_sha": "fd943aff885028c6143550ee7bb843798b8105fb",
+        "state": "open",
+        "draft": true,
+        "merged": false,
+        "updated_at": "2026-09-30T17:12:55Z",
+        "url": "https://github.com/Monumentogram/DORA/pull/88",
+        "mergeable": true
+      }
+    ]
+  },
+  "execution": {
+    "merge": false,
+    "history_rewrite": false,
+    "stage8_implementation": false,
+    "product_recovery_integration": false,
+    "recovery_device_campaign": false,
+    "microphone": false,
+    "real_audio": false,
+    "audio_upload": false,
+    "aws": false,
+    "real_provider": false,
+    "cloud_backend": false,
+    "signing_secret_access": false
+  },
+  "next_gate": "Separate owner decision authorizing replacement integration and any PR86 lifecycle changes; an open draft is not an integrated prerequisite. After independent acceptance, exact-source CI, complete omitted-work accounting and separate owner authorization for PR-state changes, PR86 may be cross-linked and closed as superseded without merging. Preserve its SHA and evidence. Product extraction/storage route, API28-32 obligation, K12 consumer and ADR-AUDIO remain separate Stage8 gates."
+}
