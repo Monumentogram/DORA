@@ -139,6 +139,11 @@ jobs:
           :poc:recovery:assembleDebug
           :poc:search:assembleDebug
 
+      - name: Verify compiled Alpha architecture boundaries and negative controls
+        run: |
+          python3 tools/verify_alpha_boundaries.py
+          python3 -m unittest discover -s tools -p test_verify_alpha_boundaries.py
+
       - name: Verify locked search dependency artifact inventory
         run: python3 tools/poc_search_dependency_inventory.py --check
 

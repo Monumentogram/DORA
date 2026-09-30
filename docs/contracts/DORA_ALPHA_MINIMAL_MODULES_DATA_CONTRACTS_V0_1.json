@@ -1,0 +1,45 @@
+{
+  "schema_version": "0.1",
+  "task": "7.2",
+  "verdict": "IMPLEMENTED_AWAITING_EXACT_SHA_CI",
+  "scope": "OWNER_ONLY_CLOSED_INTERNAL_ALPHA_APPLICATION_CONTRACT",
+  "branch": "stage/7-alpha-foundation",
+  "starting_head": "0492ff34a44a6b5becdc232b16c2f3f99de87456",
+  "starting_lineage": ["4e7742d88377d3d915be904618fc220d479ab25d", "4a2350a02eba8adc76c04bf250e7769513ad9aa7", "0492ff34a44a6b5becdc232b16c2f3f99de87456"],
+  "adr": "ADR-0016",
+  "modules_touched": [":app", ":core:model"],
+  "new_modules": [],
+  "new_dependencies": [],
+  "dependency_direction": ["app/ui -> app/flow", "app/flow -> core:model/alpha", "future adapters -> core:model/alpha"],
+  "identities": {
+    "RecordingId": "stable logical recording, canonical opaque UUID",
+    "AudioAssetId": "one immutable original audio version, canonical opaque UUID",
+    "RecognitionJobId": "logical app processing job, canonical opaque UUID",
+    "TranscriptId": "frozen ASR result-version identity, canonical opaque UUID"
+  },
+  "references": ["OriginalAudioRef(recordingId,assetId)", "StoredAudio(source)", "RecognitionRequest(audio,jobId)", "TranscriptRef(transcriptId,source,jobId)"],
+  "ports": {
+    "CapturePort": {"operations": ["start", "pause", "resume", "stop"], "implementation_stage": "8", "production_capability": "UNAVAILABLE"},
+    "OriginalAudioStoragePort": {"operations": ["persist", "resolve"], "implementation_stage": "8", "production_capability": "UNAVAILABLE"},
+    "RecognitionPort": {"operations": ["recognize", "cancel"], "implementation_stage": "9", "production_capability": "UNAVAILABLE", "request_is_cloud_authorization": false}
+  },
+  "state_axes": {
+    "capture": ["Idle", "Starting", "Recording", "Pausing", "Paused", "Resuming", "Stopping", "Captured", "Failed", "Uncertain"],
+    "storage": ["Empty", "Saving", "Recorded", "Failed"],
+    "recognition": ["Idle", "Processing", "Cancelling", "CancellationFailed", "Cancelled", "Result", "Failed"]
+  },
+  "intents": ["Start", "Pause", "Resume", "Stop", "Save", "Recognize", "CancelRecognition", "Reset"],
+  "events": ["PortResult.Success", "PortResult.Failure"],
+  "errors": ["UNAVAILABLE", "PERMISSION_DENIED", "CAPTURE", "STORAGE", "SOURCE_UNAVAILABLE", "RECOGNITION", "CANCELLED", "INVALID_STATE", "INVALID_RESULT", "INTERNAL"],
+  "guards": ["state-specific dispatch", "callback operation ticket", "exact source and job correlation", "uncertain resource/reset guard", "compiled jdeps allowlist", "model runtime dependency lock allowlist"],
+  "unsafe_payloads_in_contract": [],
+  "application_id": "com.monumentogram.dora",
+  "version_code": 2,
+  "version_name": "0.1.0-alpha.1",
+  "signing_changed": false,
+  "signing_backup_restoration": "NOT_VERIFIED",
+  "pr87": "OPEN_DRAFT_UNMERGED",
+  "pr86_head": "b951bc454d550e33669ebf4f276a4b09177a99ca",
+  "non_execution": {"7.2C": "NOT_STARTED", "7.2D": "NOT_STARTED", "7.2E": "NOT_STARTED", "7.3": "NOT_STARTED", "stage8": "NOT_STARTED", "recording": "NOT_IMPLEMENTED", "storage_runtime": "NOT_IMPLEMENTED", "recovery_integration": "NOT_RUN", "cloud_asr_runtime": "NOT_IMPLEMENTED", "aws": "NOT_CALLED", "main": "NOT_CHANGED", "pr86": "UNTOUCHED"},
+  "next": "7.2C_NOT_STARTED_REQUIRES_SEPARATE_TASK"
+}

@@ -52,12 +52,16 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import com.monumentogram.dora.R
+import com.monumentogram.dora.flow.unavailableAlphaFlow
 import com.monumentogram.dora.model.BootstrapAction
 import com.monumentogram.dora.model.BootstrapDestination
 import com.monumentogram.dora.model.BootstrapEffect
 import com.monumentogram.dora.model.BootstrapUiState
+import com.monumentogram.dora.model.alpha.FlowIntent
+import com.monumentogram.dora.model.alpha.RecordingId
 import com.monumentogram.dora.model.reduce
 import com.monumentogram.dora.ui.theme.DoraDimensions
+import java.util.UUID
 import kotlinx.coroutines.launch
 
 @Composable
@@ -65,6 +69,7 @@ internal fun DoraBootstrapApp(forcedLayout: BootstrapNavigationLayout? = null) {
     var selectedRoute by rememberSaveable { mutableStateOf(BootstrapDestination.HOME.route) }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+    val recordingFlow = remember { unavailableAlphaFlow() }
     val recordingUnavailableMessage = stringResource(R.string.record_unavailable_message)
     val selectedDestination = BootstrapDestination.ordered.first { it.route == selectedRoute }
     val uiState = BootstrapUiState(selectedDestination = selectedDestination)
@@ -73,6 +78,8 @@ internal fun DoraBootstrapApp(forcedLayout: BootstrapNavigationLayout? = null) {
         val update = uiState.reduce(action)
         selectedRoute = update.state.selectedDestination.route
         if (update.effect == BootstrapEffect.ShowRecordingUnavailableNotice) {
+            recordingFlow.dispatch(FlowIntent.Reset)
+            recordingFlow.dispatch(FlowIntent.Start(RecordingId(UUID.randomUUID().toString())))
             coroutineScope.launch {
                 snackbarHostState.currentSnackbarData?.dismiss()
                 snackbarHostState.showSnackbar(recordingUnavailableMessage)
