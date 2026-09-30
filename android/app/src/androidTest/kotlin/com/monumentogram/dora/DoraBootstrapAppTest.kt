@@ -1,4 +1,4 @@
-package com.monumentogram.dora.bootstrap
+package com.monumentogram.dora
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
@@ -37,12 +37,12 @@ class DoraBootstrapAppTest {
     @Test
     fun recordActionShowsUnavailableNoticeInsteadOfStartingRecording() {
         composeRule
-            .onNodeWithContentDescription("Запись недоступна в Stage 00")
+            .onNodeWithContentDescription("Запись пока недоступна в DORA Alpha")
             .assertIsDisplayed()
             .performClick()
 
         composeRule
-            .onNodeWithText("Запись пока недоступна: Stage 00 не запрашивает доступ к микрофону.")
+            .onNodeWithText("Запись пока недоступна: DORA Alpha не запрашивает доступ к микрофону.")
             .assertIsDisplayed()
     }
 }

@@ -1,4 +1,4 @@
-package com.monumentogram.dora.bootstrap
+package com.monumentogram.dora
 
 import android.content.res.Configuration
 import android.os.Bundle
@@ -7,9 +7,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import com.monumentogram.dora.bootstrap.ui.BootstrapNavigationLayout
-import com.monumentogram.dora.bootstrap.ui.DoraBootstrapApp
-import com.monumentogram.dora.bootstrap.ui.theme.DoraBootstrapTheme
+import com.monumentogram.dora.ui.BootstrapNavigationLayout
+import com.monumentogram.dora.ui.DoraBootstrapApp
+import com.monumentogram.dora.ui.theme.DoraBootstrapTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

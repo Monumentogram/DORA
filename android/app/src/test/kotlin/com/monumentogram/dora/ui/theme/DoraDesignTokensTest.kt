@@ -1,4 +1,4 @@
-package com.monumentogram.dora.bootstrap.ui.theme
+package com.monumentogram.dora.ui.theme
 
 import androidx.compose.ui.unit.dp
 import org.junit.Assert.assertEquals

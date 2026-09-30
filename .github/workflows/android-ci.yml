@@ -55,6 +55,9 @@ jobs:
       - name: Validate Stage 00 artifacts
         run: python3 tools/validate_stage00.py
 
+      - name: Verify owner-local Alpha signing boundary without secrets
+        run: python3 -m unittest discover -s tools -p test_build_internal_alpha.py
+
       - name: Validate isolated capture PoC contracts
         run: python3 tools/validate_poc_capture.py
 
@@ -164,10 +167,10 @@ jobs:
           -c -P 16 -v 4
           android/poc/capture/build/outputs/apk/debug/capture-debug.apk
 
-      - name: Upload Stage 00 debug APK
+      - name: Upload Alpha foundation debug verification APK
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: dora-stage00-debug-apk
+          name: dora-alpha-foundation-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7

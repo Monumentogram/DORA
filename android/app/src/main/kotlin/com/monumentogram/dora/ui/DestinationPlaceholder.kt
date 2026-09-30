@@ -1,4 +1,4 @@
-package com.monumentogram.dora.bootstrap.ui
+package com.monumentogram.dora.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -22,9 +22,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.monumentogram.dora.bootstrap.R
-import com.monumentogram.dora.bootstrap.ui.theme.DoraDimensions
+import com.monumentogram.dora.R
 import com.monumentogram.dora.model.BootstrapDestination
+import com.monumentogram.dora.ui.theme.DoraDimensions
 
 @Composable
 internal fun DestinationPlaceholder(
@@ -66,7 +66,7 @@ private fun StageBadge() {
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
     ) {
         Text(
-            text = stringResource(R.string.stage00_label),
+            text = stringResource(R.string.alpha_version_label),
             style = MaterialTheme.typography.labelMedium,
             modifier =
                 Modifier.padding(

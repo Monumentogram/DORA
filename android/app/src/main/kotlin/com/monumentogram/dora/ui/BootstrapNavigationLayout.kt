@@ -1,7 +1,7 @@
-package com.monumentogram.dora.bootstrap.ui
+package com.monumentogram.dora.ui
 
 import androidx.compose.ui.unit.Dp
-import com.monumentogram.dora.bootstrap.ui.theme.DoraDimensions
+import com.monumentogram.dora.ui.theme.DoraDimensions
 
 internal enum class BootstrapNavigationLayout {
     COMPACT_DOCK,

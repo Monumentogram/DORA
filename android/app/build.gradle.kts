@@ -3,18 +3,30 @@ plugins {
     alias(libs.plugins.compose.compiler)
 }
 
+val alphaUpgradeTest =
+    providers.gradleProperty("doraAlphaUpgradeTest").map(String::toBoolean).orElse(false)
+
 android {
-    namespace = "com.monumentogram.dora.bootstrap"
+    namespace = "com.monumentogram.dora"
 
     defaultConfig {
-        applicationId = "com.monumentogram.dora.bootstrap"
-        versionCode = 1
-        versionName = "0.0.1-stage00"
+        applicationId = "com.monumentogram.dora"
+        versionCode = if (alphaUpgradeTest.get()) 3 else 2
+        versionName = if (alphaUpgradeTest.get()) "0.1.0-alpha.1-upgrade-test" else "0.1.0-alpha.1"
+        resValue("string", "alpha_version_label", "DORA Alpha $versionName ($versionCode)")
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+        }
     }
 
     buildFeatures {
         compose = true
         buildConfig = false
+        resValues = true
     }
 
     packaging {

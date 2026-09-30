@@ -304,12 +304,13 @@ def validate_android_bootstrap() -> None:
         fail("Unexpected Gradle wrapper distribution")
     if not re.search(r"^distributionSha256Sum=[0-9a-f]{64}$", wrapper, re.MULTILINE):
         fail("Gradle wrapper SHA-256 pin is missing")
-    if 'applicationId = "com.monumentogram.dora.bootstrap"' not in app_build:
-        fail("Stage 00 non-release application ID changed without an ADR update")
+    if 'applicationId = "com.monumentogram.dora"' not in app_build:
+        fail("Application identity differs from the accepted Alpha ADR-0015")
+    read_text("docs/adr/ADR-0015-internal-alpha-identity-signing.md")
     if "android.permission.RECORD_AUDIO" in app_manifest:
         fail("Stage 00 bootstrap must not request microphone permission")
     read_text(
-        "android/app/src/androidTest/kotlin/com/monumentogram/dora/bootstrap/"
+        "android/app/src/androidTest/kotlin/com/monumentogram/dora/"
         "DoraBootstrapAppTest.kt"
     )
     read_text("android/native-libs-allowlist.txt")

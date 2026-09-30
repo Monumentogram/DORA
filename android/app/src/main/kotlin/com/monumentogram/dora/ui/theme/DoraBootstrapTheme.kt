@@ -1,4 +1,4 @@
-package com.monumentogram.dora.bootstrap.ui.theme
+package com.monumentogram.dora.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape

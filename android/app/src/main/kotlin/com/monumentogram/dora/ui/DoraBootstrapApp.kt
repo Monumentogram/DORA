@@ -1,4 +1,4 @@
-package com.monumentogram.dora.bootstrap.ui
+package com.monumentogram.dora.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -51,13 +51,13 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
-import com.monumentogram.dora.bootstrap.R
-import com.monumentogram.dora.bootstrap.ui.theme.DoraDimensions
+import com.monumentogram.dora.R
 import com.monumentogram.dora.model.BootstrapAction
 import com.monumentogram.dora.model.BootstrapDestination
 import com.monumentogram.dora.model.BootstrapEffect
 import com.monumentogram.dora.model.BootstrapUiState
 import com.monumentogram.dora.model.reduce
+import com.monumentogram.dora.ui.theme.DoraDimensions
 import kotlinx.coroutines.launch
 
 @Composable

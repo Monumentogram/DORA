@@ -1,8 +1,8 @@
-package com.monumentogram.dora.bootstrap.ui
+package com.monumentogram.dora.ui
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
-import com.monumentogram.dora.bootstrap.R
+import com.monumentogram.dora.R
 import com.monumentogram.dora.model.BootstrapDestination
 
 @StringRes
