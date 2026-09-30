@@ -1,0 +1,124 @@
+{
+  "task": "7.3",
+  "phase": "implementation_and_device_closure_snapshot",
+  "spreadsheet_id": "1dgZr-BGlI1v8iPEK0ay9CI9mGhiGlJvG2-tTxyJhhOc",
+  "url": "https://docs.google.com/spreadsheets/d/1dgZr-BGlI1v8iPEK0ay9CI9mGhiGlJvG2-tTxyJhhOc/edit",
+  "implementation_sha": "351874fff41774f10298e8a186bdc78bf6bb720f",
+  "ranges": [
+    "'Этапы'!C56:C65",
+    "'Этапы'!I56:J65",
+    "'Сводка'!B2:C6",
+    "'Сводка'!B14:C14",
+    "'Сводка'!B26:C29"
+  ],
+  "changed_cells": [
+    {
+      "range": "Этапы!C63",
+      "value": "ПРОЙДЕНО"
+    },
+    {
+      "range": "Этапы!I56",
+      "value": "30.09.2026 — Group C В РАБОТЕ. 7.1, 7.2, 7.2C–E и 7.3 PASS. Внутренний alpha.2 APK проверен на POCO; product/Cloud runtime NOT_IMPLEMENTED."
+    },
+    {
+      "range": "Этапы!J56",
+      "value": "Следующая отдельная задача — 7.3C, NOT_STARTED. Recovery clean replacement отдельно до Stage 8 acceptance."
+    },
+    {
+      "range": "Этапы!I57",
+      "value": "Stage 7 В РАБОТЕ; 7.3 PASS / INTERNAL_ALPHA_APK_BUILD_CI_DEVICE_READY. Implementation HEAD 351874fff41774f10298e8a186bdc78bf6bb720f; PR #87 OPEN / DRAFT / UNMERGED. Final evidence CI — следующий publication gate."
+    },
+    {
+      "range": "Этапы!J57",
+      "value": "7.3C — Cloud contract test harness и CI, NOT_STARTED. Stage 8 НЕ НАЧАТО. Stage 7 ещё не закрыт."
+    },
+    {
+      "range": "Этапы!I63",
+      "value": "PASS: DORA Alpha 0.1.0-alpha.2 (4); 351874fff41774f10298e8a186bdc78bf6bb720f. Encrypted backup restore/signing proof/cleanup PASS; APK ad13ddbd2b01e4e61112ecfb889408576dd04748b9e65627abd6700d1440fa57; SBOM 230fbb099d99fee5a2dd1f698cddeeac722de83ea0e0be0cb51583f26da165ba; clean repeat BYTE_IDENTICAL; POCO trusted 2→4, UID/time preserved, cold launch/installed bytes PASS. CI https://github.com/Monumentogram/DORA/actions/runs/36720820501"
+    },
+    {
+      "range": "Этапы!J63",
+      "value": "Code 4 оставлен на POCO. Evidence-only commit и его exact-SHA CI — отдельный publication gate. Next 7.3C NOT_STARTED; AWS/audio NOT_USED."
+    },
+    {
+      "range": "Этапы!J64",
+      "value": "Prerequisites 7.2C–E и 7.3 PASS. 7.3C NOT_STARTED; отдельная задача deterministic contract harness; автоматически не запускать."
+    },
+    {
+      "range": "Сводка!C2",
+      "value": "30.09.2026 — 7.3 PASS / INTERNAL_ALPHA_APK_BUILD_CI_DEVICE_READY. Stage 7 / Group C В РАБОТЕ. Repository HEAD 351874fff41774f10298e8a186bdc78bf6bb720f; PR #87 OPEN / DRAFT / UNMERGED; PR #86 не изменён."
+    },
+    {
+      "range": "Сводка!B4",
+      "value": "Stage 7 В РАБОТЕ; 7.1, 7.2, 7.2C–E и 7.3 ПРОЙДЕНО"
+    },
+    {
+      "range": "Сводка!C4",
+      "value": "Recoverable signing key → locked release graph/SBOM → signed alpha.2 → trusted physical POCO upgrade 2→4: PASS. 7.3C NOT_STARTED; product/Cloud runtime NOT_IMPLEMENTED; FIRST_REAL_PRODUCT_AUDIO NOT_READY."
+    },
+    {
+      "range": "Сводка!B5",
+      "value": "DORA Alpha 0.1.0-alpha.2 (4)"
+    },
+    {
+      "range": "Сводка!C5",
+      "value": "com.monumentogram.dora; signed APK 22 760 139 bytes; SHA-256 ad13ddbd2b01e4e61112ecfb889408576dd04748b9e65627abd6700d1440fa57. SBOM 230fbb099d99fee5a2dd1f698cddeeac722de83ea0e0be0cb51583f26da165ba. Implementation CI PASS https://github.com/Monumentogram/DORA/actions/runs/36720820501. Final evidence exact-SHA CI — pending evidence-only commit."
+    },
+    {
+      "range": "Сводка!B6",
+      "value": "7.3C — Cloud contract test harness и CI — NOT_STARTED"
+    },
+    {
+      "range": "Сводка!C6",
+      "value": "Только следующая отдельная задача. 7.3 ПРОЙДЕНО; 7.3C ЗАПЛАНИРОВАНО; Stage 8 НЕ НАЧАТО. Recovery clean replacement отдельно до Stage 8 acceptance."
+    },
+    {
+      "range": "Сводка!B14",
+      "value": "Stage 0 PASS → 7.1 PASS → 7.2 PASS → 7.2C–E PASS → 7.3 PASS → 7.3C NOT_STARTED"
+    },
+    {
+      "range": "Сводка!C14",
+      "value": "Repository HEAD 351874fff41774f10298e8a186bdc78bf6bb720f; implementation CI https://github.com/Monumentogram/DORA/actions/runs/36720820501. Same-key POCO 2→4: UID 10306 и firstInstallTime сохранены; installed APK == release APK. Новая encrypted offline backup: restore/signing proof/cleanup PASS; password отдельно у owner. Final evidence CI pending."
+    },
+    {
+      "range": "Сводка!C26",
+      "value": "6.2D/6.3 admission и 7.2C–E contracts PASS сохранены. 7.3 internal APK PASS. Next 7.3C NOT_STARTED; runtime downstream; External Legal по прежним triggers."
+    },
+    {
+      "range": "Сводка!B29",
+      "value": "7.3C NOT_STARTED / NEXT; Recovery clean replacement — до Stage 8"
+    },
+    {
+      "range": "Сводка!C29",
+      "value": "7.3 PASS; Stage 7/Group C В РАБОТЕ. PR #86 OPEN / DRAFT / UNMERGED, не изменён. 7.3C и Stage 8 автоматически не начинать."
+    },
+    {
+      "range": "Этапы!J58",
+      "value": "7.1, 7.2, 7.2C, 7.2D и 7.2E закрыты. 7.3 PASS; next 7.3C NOT_STARTED. PR #86 OPEN / DRAFT / UNMERGED, не изменён; Recovery clean replacement отдельно до Stage 8 acceptance."
+    },
+    {
+      "range": "Этапы!J59",
+      "value": "7.2C–E contracts PASS; Android RecognitionPort сохранён отдельно. 7.3 PASS; next 7.3C NOT_STARTED. Recording/storage/Cloud runtime NOT_IMPLEMENTED; PR #87 draft/unmerged."
+    },
+    {
+      "range": "Этапы!J60",
+      "value": "7.2D и 7.2E contracts PASS; 7.3 PASS; next 7.3C NOT_STARTED. Backend/worker/adapter, auth/ownership и persistence runtime NOT_IMPLEMENTED. AWS NOT_CALLED; FIRST_REAL_PRODUCT_AUDIO NOT_READY."
+    },
+    {
+      "range": "Этапы!J61",
+      "value": "Contract only; transcript persistence и merge runtime NOT_IMPLEMENTED. 7.2E logical contract PASS; 7.3 PASS; next 7.3C NOT_STARTED. AWS NOT_CALLED; audio NOT_USED; FIRST_REAL_PRODUCT_AUDIO NOT_READY."
+    },
+    {
+      "range": "Этапы!J62",
+      "value": "Contract only. Auth/token/login/ownership/consent/authorization/upload runtime NOT_IMPLEMENTED; auth technology NOT_SELECTED. Local без Cloud identity/network/GMS. 0 unauthorized audio bytes — invariant, upload NOT_RUN. 7.3 PASS; next 7.3C NOT_STARTED."
+    }
+  ],
+  "readback": "PASS_EXACT_VALUES",
+  "preserved_statuses": {
+    "stage7": "В РАБОТЕ",
+    "group_c": "В РАБОТЕ",
+    "7.3C": "ЗАПЛАНИРОВАНО / NOT_STARTED",
+    "stage8": "НЕ НАЧАТО"
+  },
+  "final_head_and_ci": "Separate post-publication readback required"
+}

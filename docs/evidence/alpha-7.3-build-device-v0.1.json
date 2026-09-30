@@ -1,0 +1,157 @@
+{
+  "allow_backup": false,
+  "application_id": "com.monumentogram.dora",
+  "artifact": "dora-0.1.0-alpha.2-vc4.apk",
+  "branch": "stage/7-alpha-foundation",
+  "build_toolchain": {
+    "agp": "9.3.1",
+    "build_tools": "36.0.0",
+    "compile_sdk": 36,
+    "gradle": "9.5.0",
+    "jdk": "Temurin 17.0.20.1+1",
+    "kotlin": "2.2.10",
+    "min_sdk": 28,
+    "os": "Windows x86_64",
+    "target_sdk": 36
+  },
+  "certificate_sha256": "e77c9af533e603c0fa7c5c2000eb74b9514d001d98c3e5845cc2bae905be76bf",
+  "components": [
+    {
+      "exported": true,
+      "kind": "activity",
+      "name": "com.monumentogram.dora.MainActivity",
+      "permission": null
+    },
+    {
+      "exported": false,
+      "kind": "provider",
+      "name": "androidx.startup.InitializationProvider",
+      "permission": null
+    },
+    {
+      "exported": true,
+      "kind": "receiver",
+      "name": "androidx.profileinstaller.ProfileInstallReceiver",
+      "permission": "android.permission.DUMP"
+    }
+  ],
+  "debuggable": false,
+  "device": {
+    "abi": "arm64-v8a",
+    "android": "14",
+    "api": 34,
+    "baseline_apk_sha256": "3cb591abc8e33a832bdf018b7cff545a8b3c39641ab74b44e8d4168cfa045d3c",
+    "baseline_certificate_sha256": "e77c9af533e603c0fa7c5c2000eb74b9514d001d98c3e5845cc2bae905be76bf",
+    "baseline_version_code": 2,
+    "baseline_version_name": "0.1.0-alpha.1",
+    "cold_launch": "PASS",
+    "final_version_code": 4,
+    "final_version_name": "0.1.0-alpha.2",
+    "firmware": "V816.0.3.0.ULURUXM",
+    "first_install_time_after": "2026-09-30 09:23:06",
+    "first_install_time_before": "2026-09-30 09:23:06",
+    "foreground_activity": "com.monumentogram.dora/.MainActivity",
+    "hardware_model": "22071219CG",
+    "installed_apk_sha256": "ad13ddbd2b01e4e61112ecfb889408576dd04748b9e65627abd6700d1440fa57",
+    "left_installed_version_code": 4,
+    "model": "POCO M5",
+    "security_patch": "2024-04-01",
+    "uid_after": "10306",
+    "uid_before": "10306",
+    "upgrade": "PASS",
+    "visible_version_label": "DORA Alpha 0.1.0-alpha.2 (4)"
+  },
+  "distribution": "OWNER_ONLY_CLOSED_INTERNAL_ALPHA",
+  "exported_receiver_disposition": "Existing AndroidX ProfileInstallReceiver requires android.permission.DUMP; no unexpected export",
+  "migration": "N/A / NO_PRODUCT_PERSISTENCE_SCHEMA_YET",
+  "native_elf": "PASS",
+  "native_inventory": [
+    {
+      "entry": "lib/arm64-v8a/libandroidx.graphics.path.so",
+      "sha256": "41e9a793c43a0f4fddb19e33f346bace464f30f888ba7b9eaf96294ea115bfb6",
+      "size_bytes": 10096
+    },
+    {
+      "entry": "lib/armeabi-v7a/libandroidx.graphics.path.so",
+      "sha256": "41399eba6fc2a60f6f14642375c1824f3cf25eb8fec7397d753730a3ceda3e2b",
+      "size_bytes": 7252
+    },
+    {
+      "entry": "lib/x86/libandroidx.graphics.path.so",
+      "sha256": "eb0570b41fd3bff25d8204a967c03bd7550719e768b791f680cc40cbe35f29af",
+      "size_bytes": 9284
+    },
+    {
+      "entry": "lib/x86_64/libandroidx.graphics.path.so",
+      "sha256": "4e56c996f13670e70082658de7880c4020eabf4f25e43387f88ed78a713fc9f0",
+      "size_bytes": 10760
+    }
+  ],
+  "permissions": [
+    "com.monumentogram.dora.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+  ],
+  "repeat_build": {
+    "certificate_sha256": "e77c9af533e603c0fa7c5c2000eb74b9514d001d98c3e5845cc2bae905be76bf",
+    "clean_invocations": 2,
+    "sha256": "ad13ddbd2b01e4e61112ecfb889408576dd04748b9e65627abd6700d1440fa57",
+    "size_bytes": 22760139,
+    "source_sha": "351874fff41774f10298e8a186bdc78bf6bb720f",
+    "source_tree_clean": true,
+    "toolchain": {
+      "agp": "9.3.1",
+      "build_tools": "36.0.0",
+      "compile_sdk": 36,
+      "gradle": "9.5.0",
+      "jdk": "Temurin 17.0.20.1+1",
+      "kotlin": "2.2.10",
+      "min_sdk": 28,
+      "os": "Windows x86_64",
+      "target_sdk": 36
+    }
+  },
+  "repeat_sha256": "ad13ddbd2b01e4e61112ecfb889408576dd04748b9e65627abd6700d1440fa57",
+  "reproducibility": "BYTE_IDENTICAL",
+  "sbom_sha256": "230fbb099d99fee5a2dd1f698cddeeac722de83ea0e0be0cb51583f26da165ba",
+  "secret_scan": "PASS_ZERO_FINDINGS",
+  "secret_scan_scope": {
+    "apk_entries": 134,
+    "checks": [
+      "private key/keystore extensions",
+      "private-key headers",
+      "AWS access key and GitHub token patterns",
+      "owner signing path in source"
+    ],
+    "limits": "Pattern scan plus release graph, permissions and manual source review; not an exhaustive secret detector",
+    "task_source_files": 18
+  },
+  "sha256": "ad13ddbd2b01e4e61112ecfb889408576dd04748b9e65627abd6700d1440fa57",
+  "signature_verification": "PASS",
+  "signer_count": 1,
+  "signing_backup": {
+    "active_material_unchanged": true,
+    "backup_created_or_preexisting": "NEW",
+    "backup_state": "NEW_ENCRYPTED_BACKUP_CREATED_AND_RESTORE_VERIFIED",
+    "certificate_sha256": "e77c9af533e603c0fa7c5c2000eb74b9514d001d98c3e5845cc2bae905be76bf",
+    "encryption_format": "GnuPG OpenPGP AES-256; iterated salted S2K SHA-512; MDC verified",
+    "encryption_verified": true,
+    "historical_rebuild_byte_identity": "NOT_RUN",
+    "offline_destination_owner_confirmation": true,
+    "private_key_proof": "PASS_RSA3072_SHA256_SIGN_VERIFY_AND_NEGATIVE_CONTROL",
+    "recovery_password_owner_manager_confirmation": true,
+    "restore_verified": true,
+    "task": "7.3",
+    "temporary_restore_cleanup": "PASS_ABSENCE_VERIFIED",
+    "verified_at": "2026-09-30T12:48:50.2888094Z",
+    "wrong_password_negative_control": "PASS_REJECTED"
+  },
+  "size_bytes": 22760139,
+  "source_sha": "351874fff41774f10298e8a186bdc78bf6bb720f",
+  "source_tree_clean": true,
+  "task": "7.3",
+  "test_only": false,
+  "unexpected_exported_components": [],
+  "upgrade_test": false,
+  "version_code": 4,
+  "version_name": "0.1.0-alpha.2",
+  "zip_alignment_16k": "PASS"
+}

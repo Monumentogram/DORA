@@ -1,0 +1,17 @@
+{
+  "active_material_unchanged": true,
+  "backup_created_or_preexisting": "NEW",
+  "backup_state": "NEW_ENCRYPTED_BACKUP_CREATED_AND_RESTORE_VERIFIED",
+  "certificate_sha256": "e77c9af533e603c0fa7c5c2000eb74b9514d001d98c3e5845cc2bae905be76bf",
+  "encryption_format": "GnuPG OpenPGP AES-256; iterated salted S2K SHA-512; MDC verified",
+  "encryption_verified": true,
+  "historical_rebuild_byte_identity": "NOT_RUN",
+  "offline_destination_owner_confirmation": true,
+  "private_key_proof": "PASS_RSA3072_SHA256_SIGN_VERIFY_AND_NEGATIVE_CONTROL",
+  "recovery_password_owner_manager_confirmation": true,
+  "restore_verified": true,
+  "task": "7.3",
+  "temporary_restore_cleanup": "PASS_ABSENCE_VERIFIED",
+  "verified_at": "2026-09-30T12:48:50.2888094Z",
+  "wrong_password_negative_control": "PASS_REJECTED"
+}
