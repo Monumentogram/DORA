@@ -58,6 +58,13 @@ jobs:
       - name: Verify owner-local Alpha signing boundary without secrets
         run: python3 -m unittest discover -s tools -p test_build_internal_alpha.py
 
+      - name: Validate internal Alpha release evidence and negative controls
+        run: |
+          python3 tools/validate_alpha_release.py
+          python3 -m unittest discover -s tools -p test_validate_alpha_release.py
+          python3 -m unittest discover -s tools -p test_alpha_release_sbom.py
+          python3 -m unittest discover -s tools -p test_alpha_release_graph.py
+
       - name: Validate Cloud ASR provider and adapter contracts
         run: |
           python3 tools/validate_cloud_asr_provider_contract.py
@@ -158,6 +165,14 @@ jobs:
         run: |
           python3 tools/verify_alpha_boundaries.py
           python3 -m unittest discover -s tools -p test_verify_alpha_boundaries.py
+
+      - name: Verify unsigned release and locked runtime SBOM graph
+        working-directory: android
+        run: |
+          ./gradlew --no-daemon --no-configuration-cache --dependency-verification strict --init-script ../tools/alpha_release_graph.init.gradle :app:assembleRelease :app:exportAlphaReleaseGraph
+          python3 ../tools/alpha_release_sbom.py --graph app/build/reports/alpha-release-graph.json --source "${GITHUB_SHA}" --output app/build/reports/alpha-release-ci.cdx.json
+          python3 ../tools/verify_apk_native_alignment.py app/build/outputs/apk/release/app-release-unsigned.apk --allowlist native-libs-allowlist.txt
+          "${ANDROID_HOME}/build-tools/36.0.0/zipalign" -c -P 16 -v 4 app/build/outputs/apk/release/app-release-unsigned.apk
 
       - name: Verify locked search dependency artifact inventory
         run: python3 tools/poc_search_dependency_inventory.py --check

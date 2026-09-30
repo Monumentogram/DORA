@@ -12,9 +12,37 @@ import subprocess
 import sys
 import tempfile
 
+from alpha_release_identity import APPLICATION_ID, DISTRIBUTION, identity
+
 
 ROOT = Path(__file__).resolve().parents[1]
 ALIAS = "dora-internal-alpha"
+
+
+def source_identity(root: Path = ROOT, expected: str | None = None) -> dict:
+    def git(*arguments: str) -> str:
+        result = subprocess.run(["git", "-c", f"safe.directory={root.as_posix()}", "-C", str(root), *arguments], capture_output=True, text=True)
+        if result.returncode:
+            raise ValueError("Cannot verify exact Git source")
+        return result.stdout.strip()
+    source = git("rev-parse", "HEAD")
+    branch = git("branch", "--show-current")
+    if not re.fullmatch(r"[0-9a-f]{40}", source) or (expected is not None and source != expected):
+        raise ValueError("Git source SHA mismatch")
+    if git("status", "--porcelain=v1", "--untracked-files=all"):
+        raise ValueError("Product release requires a clean source tree")
+    if branch != "stage/7-alpha-foundation":
+        raise ValueError("Product release requires the admitted Alpha branch")
+    return {"source_sha": source, "branch": branch, "source_tree_clean": True}
+
+
+def verify_apk_identity(badging: str, version_code: int, version: str) -> None:
+    match = re.search(r"^package: name='([^']+)' versionCode='([^']+)' versionName='([^']+)'", badging, re.MULTILINE)
+    if not match or match.groups() != (APPLICATION_ID, str(version_code), version):
+        raise ValueError("Signed APK package/version differs from the requested Alpha identity")
+    permissions = re.findall(r"^uses-permission[^:]*: name='([^']+)'", badging, re.MULTILINE)
+    if {"android.permission.INTERNET", "android.permission.RECORD_AUDIO"}.intersection(permissions):
+        raise ValueError("Unadmitted network or microphone permission")
 
 
 def signing_material(directory: Path, repository: Path) -> tuple[Path, str]:
@@ -58,8 +86,13 @@ def main() -> int:
     parser.add_argument("--signing-dir", type=Path, required=True)
     parser.add_argument("--sdk", type=Path, required=True)
     parser.add_argument("--offline", action="store_true")
-    parser.add_argument("--upgrade-test", action="store_true", help="Disposable code 3; not a product release")
+    parser.add_argument("--upgrade-test", action="store_true", help="Rejected: historical non-product code 3 requires immutable 7.1 source")
+    parser.add_argument("--source-sha", help="Expected exact implementation commit")
     args = parser.parse_args()
+    if args.upgrade_test:
+        raise ValueError("Code 3 is historical and non-product; use immutable 7.1 source only")
+    source = source_identity(expected=args.source_sha)
+    version_code, version = identity()
     directory, expected = signing_material(args.signing_dir, ROOT)
     # The certificate is pinned by the public decision, not just by local configuration.
     contract = json.loads((ROOT / "docs/contracts/DORA_ALPHA_IDENTITY_SIGNING_INSTALL_V0_1.json").read_text(encoding="utf-8"))
@@ -70,17 +103,14 @@ def main() -> int:
     suffix = ".bat" if os.name == "nt" else ""
     signer = str(build_tools / ("apksigner" + suffix))
     wrapper = str(ROOT / "android" / ("gradlew" + suffix))
-    command = [wrapper, "--no-daemon", "--no-configuration-cache", "--console=plain", ":app:assembleRelease"]
+    command = [wrapper, "--no-daemon", "--no-configuration-cache", "--console=plain", "clean", ":app:assembleRelease"]
     if args.offline:
         command.append("--offline")
-    if args.upgrade_test:
-        command.append("-PdoraAlphaUpgradeTest=true")
     print(run(command), end="")
+    source_identity(expected=source["source_sha"])
     unsigned = ROOT / "android/app/build/outputs/apk/release/app-release-unsigned.apk"
     destination = ROOT / "android/app/build/outputs/apk/internal"
     destination.mkdir(parents=True, exist_ok=True)
-    version = "0.1.0-alpha.1-upgrade-test" if args.upgrade_test else "0.1.0-alpha.1"
-    version_code = 3 if args.upgrade_test else 2
     output = destination / f"dora-{version}-vc{version_code}.apk"
     with tempfile.TemporaryDirectory(dir=destination) as temporary:
         signed = Path(temporary) / "signed.apk"
@@ -93,18 +123,18 @@ def main() -> int:
         verify_certificate(verification, expected)
         aapt = str(build_tools / ("aapt.exe" if os.name == "nt" else "aapt"))
         badging = run([aapt, "dump", "badging", str(signed)])
-        required = f"package: name='com.monumentogram.dora' versionCode='{version_code}' versionName='{version}'"
-        if required not in badging:
-            raise ValueError("Signed APK package/version differs from the requested Alpha identity")
+        verify_apk_identity(badging, version_code, version)
         run([str(build_tools / ("zipalign.exe" if os.name == "nt" else "zipalign")), "-c", "-P", "16", "4", str(signed)])
         digest = hashlib.sha256(signed.read_bytes()).hexdigest()
         receipt = {
-            "artifact": output.name, "sha256": digest, "application_id": "com.monumentogram.dora",
+            "artifact": output.name, "sha256": digest, "size_bytes": signed.stat().st_size, "application_id": APPLICATION_ID,
             "version_code": version_code, "version_name": version, "certificate_sha256": expected,
-            "distribution": "OWNER_ONLY_CLOSED_INTERNAL_ALPHA", "upgrade_test": args.upgrade_test,
+            "distribution": DISTRIBUTION, "upgrade_test": False, **source,
+            "signer_count": 1, "zip_alignment_16k": "PASS", "signature_verification": "PASS",
         }
         staged_receipt = Path(temporary) / "receipt.json"
         staged_receipt.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
+        source_identity(expected=source["source_sha"])
         signed.replace(output)
         staged_receipt.replace(output.with_suffix(".json"))
     print(json.dumps(receipt, indent=2))
