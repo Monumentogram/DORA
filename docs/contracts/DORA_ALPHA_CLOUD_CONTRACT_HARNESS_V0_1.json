@@ -1,0 +1,3722 @@
+{
+  "schema_version": "dora-cloud-contract-harness-v0.1",
+  "status": "IMPLEMENTATION_PENDING / EXACT_SHA_CI_REQUIRED",
+  "scope": "HERMETIC_SYNTHETIC_HOST_ONLY",
+  "clock": "2026-09-30T01:00:00Z; integer microseconds",
+  "scenarios": [
+    {
+      "id": "AUTH_NO_CREDENTIAL",
+      "category": "AUTH",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "no_credential"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            100
+          ],
+          "expect": "NOT_AUTHENTICATED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "AUTH_WRONG_OWNER",
+      "category": "AUTH",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "wrong_owner"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            100
+          ],
+          "expect": "OWNERSHIP_MISMATCH"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "AUTH_NO_CONSENT",
+      "category": "AUTH",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "no_consent"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            100
+          ],
+          "expect": "NO_CONSENT"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "AUTH_PENDING",
+      "category": "AUTH",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "pending"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            100
+          ],
+          "expect": "RECORDING_PENDING"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "AUTH_DEFERRED",
+      "category": "AUTH",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "deferred"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            100
+          ],
+          "expect": "RECORDING_DEFERRED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "AUTH_REVOKED",
+      "category": "AUTH",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "revoked"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            100
+          ],
+          "expect": "CONSENT_REVOKED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "AUTH_EXPIRED",
+      "category": "AUTH",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "expired"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            100
+          ],
+          "expect": "CREDENTIAL_EXPIRED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "AUTH_WRONG_SOURCE",
+      "category": "AUTH",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "wrong_source"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            100
+          ],
+          "expect": "SOURCE_MISMATCH"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "AUTH_ROUTE",
+      "category": "AUTH",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "route"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            100
+          ],
+          "expect": "PROVIDER_SCOPE_MISMATCH"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "AUTH_UNAVAILABLE",
+      "category": "AUTH",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "unavailable"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            100
+          ],
+          "expect": "SOURCE_UNAVAILABLE"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "AUTH_WRONG_JOB",
+      "category": "AUTH",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "wrong_job"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            100
+          ],
+          "expect": "JOB_MISMATCH"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "AUTH_WRONG_ACTION",
+      "category": "AUTH",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "wrong_action"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            100
+          ],
+          "expect": "JOB_MISMATCH"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "FENCE_CREDENTIAL_REVOKED",
+      "category": "UPLOAD",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "credential_revoked"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "kwargs": {
+            "retry": true
+          }
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED"
+      }
+    },
+    {
+      "id": "FENCE_GRANT_REVISION",
+      "category": "UPLOAD",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "grant_revision"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "kwargs": {
+            "retry": true
+          }
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED"
+      }
+    },
+    {
+      "id": "FENCE_AUTH_REVISION",
+      "category": "UPLOAD",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "auth_revision"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "kwargs": {
+            "retry": true
+          }
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED"
+      }
+    },
+    {
+      "id": "FENCE_DELETION_EPOCH",
+      "category": "UPLOAD",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "deletion_epoch"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "kwargs": {
+            "retry": true
+          }
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED"
+      }
+    },
+    {
+      "id": "FENCE_SOURCE_REPLACEMENT",
+      "category": "UPLOAD",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "source_replacement"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "kwargs": {
+            "retry": true
+          }
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED"
+      }
+    },
+    {
+      "id": "FENCE_ROUTE",
+      "category": "UPLOAD",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "route"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "kwargs": {
+            "retry": true
+          }
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED"
+      }
+    },
+    {
+      "id": "FENCE_REVOKED",
+      "category": "UPLOAD",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "revoked"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "kwargs": {
+            "retry": true
+          }
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED"
+      }
+    },
+    {
+      "id": "FENCE_AUTHORITY_EXPIRED",
+      "category": "UPLOAD",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "authority_expired"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "kwargs": {
+            "retry": true
+          }
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED"
+      }
+    },
+    {
+      "id": "FENCE_CREDENTIAL_GENERATION",
+      "category": "UPLOAD",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "credential_generation"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "kwargs": {
+            "retry": true
+          }
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED"
+      }
+    },
+    {
+      "id": "FENCE_OWNER_REVISION",
+      "category": "UPLOAD",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "owner_revision"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "kwargs": {
+            "retry": true
+          }
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED"
+      }
+    },
+    {
+      "id": "UPLOAD_CEILING",
+      "category": "UPLOAD",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "part",
+          "args": [
+            300
+          ],
+          "expect": "UPLOAD_BYTE_CEILING"
+        },
+        {
+          "call": "part",
+          "args": [
+            300
+          ],
+          "expect": "UPLOAD_BYTE_CEILING",
+          "kwargs": {
+            "retry": true
+          }
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 800,
+        "rejected_bytes": 600,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED"
+      }
+    },
+    {
+      "id": "CREATE_DENIED",
+      "category": "AUTH",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "mutate",
+          "args": [
+            "no_consent"
+          ]
+        },
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "NO_CONSENT"
+        },
+        {
+          "call": "issue",
+          "args": []
+        },
+        {
+          "call": "part",
+          "args": [
+            100
+          ]
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 0,
+        "logical_jobs": 0,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 0,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "NEW"
+      }
+    },
+    {
+      "id": "NO_AUTHORITY",
+      "category": "UPLOAD",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            100
+          ],
+          "expect": "NO_UPLOAD_AUTHORITY"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 0,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "CREATED"
+      }
+    },
+    {
+      "id": "PROVIDER_HAPPY",
+      "category": "RESULT",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "observe",
+          "args": [
+            "PROCESSING"
+          ],
+          "expect": "PROCESSING"
+        },
+        {
+          "call": "observe",
+          "args": [
+            "OUTPUT_AVAILABLE"
+          ],
+          "expect": "OUTPUT_AVAILABLE"
+        },
+        {
+          "call": "complete",
+          "args": [],
+          "expect": "SUCCEEDED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "expected_final": {
+        "state": "SUCCEEDED",
+        "selection_revision": 2
+      }
+    },
+    {
+      "id": "OUTPUT_ONLY",
+      "category": "RESULT",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "observe",
+          "args": [
+            "OUTPUT_AVAILABLE"
+          ],
+          "expect": "OUTPUT_AVAILABLE"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "OUTPUT_AVAILABLE",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "UNCERTAIN_WAIT",
+      "category": "RECONCILIATION",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ]
+        },
+        {
+          "call": "submit",
+          "args": [
+            "LOST_ACCEPTED"
+          ]
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "RECONCILE_BEFORE_RETRY"
+        },
+        {
+          "call": "reconnect",
+          "args": []
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "UNKNOWN"
+      }
+    },
+    {
+      "id": "UNCERTAIN_FOUND",
+      "category": "RECONCILIATION",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ]
+        },
+        {
+          "call": "submit",
+          "args": [
+            "LOST_ACCEPTED"
+          ]
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "RECONCILE_BEFORE_RETRY"
+        },
+        {
+          "call": "reconcile",
+          "args": [],
+          "expect": "FOUND"
+        },
+        {
+          "call": "complete",
+          "args": [],
+          "expect": "SUCCEEDED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "expected_final": {
+        "state": "SUCCEEDED"
+      }
+    },
+    {
+      "id": "PROVEN_NOT_ACCEPTED",
+      "category": "RECONCILIATION",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ]
+        },
+        {
+          "call": "submit",
+          "args": [
+            "LOST_NOT_ACCEPTED"
+          ]
+        },
+        {
+          "call": "reconcile",
+          "args": [],
+          "expect": "PROVEN_NOT_ACCEPTED"
+        },
+        {
+          "call": "advance",
+          "args": [
+            10
+          ]
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "complete",
+          "args": [],
+          "expect": "SUCCEEDED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 2,
+        "provider_submits": 2,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "expected_final": {
+        "state": "SUCCEEDED"
+      }
+    },
+    {
+      "id": "CONFLICT_FOUND",
+      "category": "RECONCILIATION",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ]
+        },
+        {
+          "call": "submit",
+          "args": [
+            "CONFLICT"
+          ]
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "RECONCILE_BEFORE_RETRY"
+        },
+        {
+          "call": "reconcile",
+          "args": [],
+          "expect": "FOUND"
+        },
+        {
+          "call": "complete",
+          "args": [],
+          "expect": "SUCCEEDED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "expected_final": {
+        "state": "SUCCEEDED"
+      }
+    },
+    {
+      "id": "RETRY_INVALID_REQUEST",
+      "category": "RETRY",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ]
+        },
+        {
+          "call": "submit",
+          "args": [
+            "INVALID_REQUEST"
+          ]
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "DO_NOT_RETRY"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "FAILED"
+      }
+    },
+    {
+      "id": "RETRY_SOURCE_UNAVAILABLE",
+      "category": "RETRY",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ]
+        },
+        {
+          "call": "submit",
+          "args": [
+            "SOURCE_UNAVAILABLE"
+          ]
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "DO_NOT_RETRY"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "FAILED"
+      }
+    },
+    {
+      "id": "RETRY_TRANSIENT_REJECTED",
+      "category": "RETRY",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ]
+        },
+        {
+          "call": "submit",
+          "args": [
+            "TRANSIENT_REJECTED"
+          ]
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "BACKOFF"
+        },
+        {
+          "call": "advance",
+          "args": [
+            10
+          ]
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "ACCEPTED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 2,
+        "provider_submits": 2,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "ACCEPTED"
+      }
+    },
+    {
+      "id": "RETRY_BEFORE_DISPATCH",
+      "category": "RETRY",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ]
+        },
+        {
+          "call": "submit",
+          "args": [
+            "BEFORE_DISPATCH"
+          ]
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "BACKOFF"
+        },
+        {
+          "call": "advance",
+          "args": [
+            10
+          ]
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "ACCEPTED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 2,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "ACCEPTED"
+      }
+    },
+    {
+      "id": "DUPLICATE_RESULT",
+      "category": "IDEMPOTENCY",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "complete",
+          "args": [],
+          "expect": "SUCCEEDED"
+        },
+        {
+          "call": "complete",
+          "args": [],
+          "expect": "DUPLICATE"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "expected_final": {
+        "state": "SUCCEEDED",
+        "selection_revision": 2
+      }
+    },
+    {
+      "id": "RESULT_NAMESPACE",
+      "category": "RESULT",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "complete",
+          "args": [
+            "namespace"
+          ],
+          "expect": "MAPPING_FAILURE"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "ACCEPTED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "RESULT_SOURCE",
+      "category": "RESULT",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "complete",
+          "args": [
+            "source"
+          ],
+          "expect": "MAPPING_FAILURE"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "ACCEPTED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "RESULT_JOB",
+      "category": "RESULT",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "complete",
+          "args": [
+            "job"
+          ],
+          "expect": "MAPPING_FAILURE"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "ACCEPTED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "RESULT_ATTEMPT",
+      "category": "RESULT",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "complete",
+          "args": [
+            "attempt"
+          ],
+          "expect": "MAPPING_FAILURE"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "ACCEPTED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "RESULT_CONFIGURATION",
+      "category": "RESULT",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "complete",
+          "args": [
+            "configuration"
+          ],
+          "expect": "MAPPING_FAILURE"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "ACCEPTED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "RESULT_MAPPING",
+      "category": "RESULT",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "complete",
+          "args": [
+            "mapping"
+          ],
+          "expect": "MAPPING_FAILURE"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "ACCEPTED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "LATE_EDIT",
+      "category": "EDIT_CONFLICT",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "add_edit",
+          "args": []
+        },
+        {
+          "call": "complete",
+          "args": [],
+          "expect": "SUCCEEDED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "edits": 1,
+        "proposals": 1,
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "STALE_PROPOSAL",
+      "category": "EDIT_CONFLICT",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "add_edit",
+          "args": []
+        },
+        {
+          "call": "complete",
+          "args": []
+        },
+        {
+          "call": "prepare_merge",
+          "args": [],
+          "expect": "READY"
+        },
+        {
+          "call": "add_edit",
+          "args": []
+        },
+        {
+          "call": "accept_proposal",
+          "args": [],
+          "expect": "STALE"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "edits": 2,
+        "proposals": 1,
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "MANUAL_LATE",
+      "category": "LATE_CALLBACK",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "manual_select",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "complete",
+          "args": [],
+          "expect": "SUCCEEDED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "expected_final": {
+        "selection_revision": 2,
+        "active": "00000000-0000-0000-0000-000000000011"
+      }
+    },
+    {
+      "id": "NO_EDIT_CLOUD",
+      "category": "TRANSCRIPT",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "complete",
+          "args": [],
+          "expect": "SUCCEEDED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "expected_final": {
+        "selection_revision": 2,
+        "active": "00000000-0000-0000-0000-000000000012"
+      }
+    },
+    {
+      "id": "CANCEL_REQUESTED",
+      "category": "CANCELLATION",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "cancel",
+          "args": [
+            "REQUESTED"
+          ],
+          "expect": "REQUESTED"
+        },
+        {
+          "call": "complete",
+          "args": []
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "cancellation": "REQUESTED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "CANCEL_UNKNOWN",
+      "category": "CANCELLATION",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "cancel",
+          "args": [
+            "UNKNOWN"
+          ],
+          "expect": "UNKNOWN"
+        },
+        {
+          "call": "complete",
+          "args": []
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "cancellation": "UNKNOWN",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "CANCEL_CONFIRMED",
+      "category": "CANCELLATION",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "cancel",
+          "args": [
+            "CONFIRMED"
+          ],
+          "expect": "CONFIRMED"
+        },
+        {
+          "call": "complete",
+          "args": []
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "cancellation": "CONFIRMED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "REVOKED_PROTECTIVE_CANCEL",
+      "category": "CANCELLATION",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "mutate",
+          "args": [
+            "revoked"
+          ]
+        },
+        {
+          "call": "part",
+          "args": [
+            100
+          ]
+        },
+        {
+          "call": "cancel",
+          "args": [
+            "CONFIRMED"
+          ],
+          "expect": "CONFIRMED"
+        },
+        {
+          "call": "complete",
+          "args": [],
+          "expect": "FENCED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "cancellation": "CONFIRMED",
+        "state": "FAILED"
+      }
+    },
+    {
+      "id": "TOMBSTONE_LATE",
+      "category": "DELETION_FENCE",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "tombstone",
+          "args": []
+        },
+        {
+          "call": "complete",
+          "args": [],
+          "expect": "FENCED"
+        },
+        {
+          "call": "part",
+          "args": [
+            100
+          ],
+          "kwargs": {
+            "retry": true
+          }
+        },
+        {
+          "call": "retry",
+          "args": []
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "REORDER_DUPLICATE",
+      "category": "LATE_CALLBACK",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "enqueue",
+          "args": [
+            "PROCESSING"
+          ],
+          "kwargs": {
+            "delay": 20
+          }
+        },
+        {
+          "call": "enqueue",
+          "args": [
+            "OUTPUT_AVAILABLE"
+          ],
+          "kwargs": {
+            "delay": 10,
+            "copies": 2
+          }
+        },
+        {
+          "call": "advance",
+          "args": [
+            10
+          ]
+        },
+        {
+          "call": "deliver",
+          "args": []
+        },
+        {
+          "call": "complete",
+          "args": []
+        },
+        {
+          "call": "advance",
+          "args": [
+            10
+          ]
+        },
+        {
+          "call": "deliver",
+          "args": []
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "expected_final": {
+        "state": "SUCCEEDED",
+        "selection_revision": 2
+      }
+    },
+    {
+      "id": "RECONCILE_PERMANENT_INVALID_REQUEST",
+      "category": "RETRY",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ]
+        },
+        {
+          "call": "submit",
+          "args": [
+            "INVALID_REQUEST"
+          ]
+        },
+        {
+          "call": "reconcile",
+          "args": [],
+          "expect": "PROVEN_NOT_ACCEPTED"
+        },
+        {
+          "call": "advance",
+          "args": [
+            10
+          ]
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "DO_NOT_RETRY"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "FAILED"
+      }
+    },
+    {
+      "id": "RECONCILE_PERMANENT_SOURCE_UNAVAILABLE",
+      "category": "RETRY",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ]
+        },
+        {
+          "call": "submit",
+          "args": [
+            "SOURCE_UNAVAILABLE"
+          ]
+        },
+        {
+          "call": "reconcile",
+          "args": [],
+          "expect": "PROVEN_NOT_ACCEPTED"
+        },
+        {
+          "call": "advance",
+          "args": [
+            10
+          ]
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "DO_NOT_RETRY"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "FAILED"
+      }
+    },
+    {
+      "id": "CANCEL_REORDERED",
+      "category": "CANCELLATION",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "cancel",
+          "args": [
+            "CONFIRMED"
+          ],
+          "expect": "CONFIRMED"
+        },
+        {
+          "call": "cancel",
+          "args": [
+            "REQUESTED"
+          ],
+          "expect": "TERMINAL_RETAINED"
+        },
+        {
+          "call": "cancel",
+          "args": [
+            "UNKNOWN"
+          ],
+          "expect": "TERMINAL_RETAINED"
+        },
+        {
+          "call": "reconcile",
+          "args": [],
+          "expect": "FOUND"
+        },
+        {
+          "call": "complete",
+          "args": []
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "cancellation": "CONFIRMED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "CURRENT_PROPOSAL_ACCEPT",
+      "category": "EDIT_CONFLICT",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "submit",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "add_edit",
+          "args": []
+        },
+        {
+          "call": "complete",
+          "args": []
+        },
+        {
+          "call": "prepare_merge",
+          "args": [],
+          "expect": "READY"
+        },
+        {
+          "call": "accept_proposal",
+          "args": [],
+          "expect": "ACCEPTED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "expected_final": {
+        "edits": 1,
+        "proposals": 1,
+        "selection_revision": 2
+      }
+    },
+    {
+      "id": "DELAYED_OLD_ATTEMPT",
+      "category": "RECONCILIATION",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ]
+        },
+        {
+          "call": "submit",
+          "args": [
+            "LOST_NOT_ACCEPTED"
+          ]
+        },
+        {
+          "call": "enqueue",
+          "args": [
+            "SUCCEEDED"
+          ],
+          "kwargs": {
+            "delay": 20
+          }
+        },
+        {
+          "call": "reconcile",
+          "args": [],
+          "expect": "PROVEN_NOT_ACCEPTED"
+        },
+        {
+          "call": "advance",
+          "args": [
+            10
+          ]
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "advance",
+          "args": [
+            10
+          ]
+        },
+        {
+          "call": "deliver",
+          "args": []
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 2,
+        "provider_submits": 2,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "ACCEPTED",
+        "selection_revision": 1
+      }
+    },
+    {
+      "id": "NETWORK_DUPLICATE_REQUEST_RESPONSE",
+      "category": "IDEMPOTENCY",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ],
+          "expect": "ACCEPTED"
+        },
+        {
+          "call": "enqueue",
+          "args": [
+            "REQUEST_DELIVERED"
+          ],
+          "kwargs": {
+            "delay": 10,
+            "copies": 2
+          }
+        },
+        {
+          "call": "advance",
+          "args": [
+            10
+          ]
+        },
+        {
+          "call": "deliver",
+          "args": []
+        },
+        {
+          "call": "enqueue",
+          "args": [
+            "RESPONSE_DELIVERED"
+          ],
+          "kwargs": {
+            "copies": 2
+          }
+        },
+        {
+          "call": "deliver",
+          "args": []
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "expected_final": {
+        "selection_revision": 2,
+        "active": "00000000-0000-0000-0000-000000000012"
+      }
+    },
+    {
+      "id": "NETWORK_REQUEST_REJECTED",
+      "category": "RETRY",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ]
+        },
+        {
+          "call": "enqueue",
+          "args": [
+            "REQUEST_REJECTED"
+          ],
+          "kwargs": {
+            "copies": 2
+          }
+        },
+        {
+          "call": "deliver",
+          "args": []
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "BACKOFF"
+        },
+        {
+          "call": "advance",
+          "args": [
+            10
+          ]
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "ACCEPTED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 2,
+        "provider_submits": 2,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "ACCEPTED"
+      }
+    },
+    {
+      "id": "NETWORK_TRANSPORT_BEFORE_DISPATCH",
+      "category": "RETRY",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ]
+        },
+        {
+          "call": "enqueue",
+          "args": [
+            "TRANSPORT_BEFORE_DISPATCH"
+          ],
+          "kwargs": {
+            "copies": 2
+          }
+        },
+        {
+          "call": "deliver",
+          "args": []
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "BACKOFF"
+        },
+        {
+          "call": "advance",
+          "args": [
+            10
+          ]
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "ACCEPTED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 2,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "expected_final": {
+        "state": "ACCEPTED"
+      }
+    },
+    {
+      "id": "NETWORK_RESPONSE_LOST",
+      "category": "RECONCILIATION",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ]
+        },
+        {
+          "call": "enqueue",
+          "args": [
+            "RESPONSE_LOST"
+          ],
+          "kwargs": {
+            "copies": 2
+          }
+        },
+        {
+          "call": "deliver",
+          "args": []
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "RECONCILE_BEFORE_RETRY"
+        },
+        {
+          "call": "reconcile",
+          "args": [],
+          "expect": "FOUND"
+        },
+        {
+          "call": "complete",
+          "args": [],
+          "expect": "SUCCEEDED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "expected_final": {
+        "state": "SUCCEEDED"
+      }
+    },
+    {
+      "id": "NETWORK_TRANSPORT_AFTER_ACCEPTANCE",
+      "category": "RECONCILIATION",
+      "contract_references": [
+        "7.2C",
+        "7.2D",
+        "7.2E"
+      ],
+      "initial_state": "SYNTHETIC_LOCAL_ACTIVE_VALID_CONSENT",
+      "events": [
+        {
+          "call": "create_job",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "issue",
+          "args": [],
+          "expect": "ALLOWED"
+        },
+        {
+          "call": "part",
+          "args": [
+            400
+          ]
+        },
+        {
+          "call": "enqueue",
+          "args": [
+            "TRANSPORT_AFTER_ACCEPTANCE"
+          ],
+          "kwargs": {
+            "copies": 2
+          }
+        },
+        {
+          "call": "deliver",
+          "args": []
+        },
+        {
+          "call": "retry",
+          "args": [],
+          "expect": "RECONCILE_BEFORE_RETRY"
+        },
+        {
+          "call": "reconcile",
+          "args": [],
+          "expect": "FOUND"
+        },
+        {
+          "call": "complete",
+          "args": [],
+          "expect": "SUCCEEDED"
+        }
+      ],
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "expected_final": {
+        "state": "SUCCEEDED"
+      }
+    }
+  ]
+}

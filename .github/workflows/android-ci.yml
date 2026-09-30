@@ -80,6 +80,12 @@ jobs:
           python3 tools/validate_cloud_identity_auth_contract.py
           python3 -m unittest discover -s tools -p test_cloud_identity_auth_contract.py
 
+      - name: Run deterministic Cloud contract harness
+        run: |
+          python3 tools/cloud_contract_harness.py --self-test
+          python3 -m unittest discover -s tools -p test_cloud_contract_harness.py
+          python3 tools/cloud_contract_harness.py --verify-determinism
+
       - name: Validate isolated capture PoC contracts
         run: python3 tools/validate_poc_capture.py
 

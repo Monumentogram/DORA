@@ -85,6 +85,23 @@ class ReleaseEvidenceTest(unittest.TestCase):
     def test_unknown_fields_cannot_replace_required_evidence(self):
         self.reject(lambda d: d[1].pop("signature_verification"))
 
+    def test_tooling_successor_keeps_release_inputs_and_evidence_frozen(self):
+        release.validate_successor_paths(['tools/cloud_contract_harness.py',
+            'docs/evidence/alpha-7.3c-local-v0.1.json'])
+        for path in ('android/app/src/main/New.kt', 'android/alpha-release.properties',
+                     'android/app/gradle.lockfile', 'tools/build_internal_alpha.py',
+                     'docs/evidence/alpha-7.3-ci-v0.1.json', 'unexpected.py'):
+            with self.subTest(path=path), self.assertRaises(ValueError):
+                release.validate_successor_paths([path])
+
+    def test_successor_workflow_preserves_every_existing_command(self):
+        old = 'before\n      - name: Validate isolated capture PoC contracts\nafter\n'
+        current = old.replace('      - name: Validate isolated capture PoC contracts',
+                              release.HARNESS_STEP + '      - name: Validate isolated capture PoC contracts')
+        release.validate_successor_workflow(old, current)
+        with self.assertRaises(ValueError):
+            release.validate_successor_workflow(old, current.replace('before','omitted'))
+
 
 if __name__ == "__main__":
     unittest.main()
