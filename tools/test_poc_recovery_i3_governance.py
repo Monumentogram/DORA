@@ -4460,5 +4460,163 @@ class RecoveryCleanReplacementStateTests(unittest.TestCase):
                     validate()
 
 
+class RecoveryCleanIntegratedTests(unittest.TestCase):
+    ANCHOR = "49595ece8cac22f3a1da4a4d5dd43924ac28f1df"
+    BASE = "fd943aff885028c6143550ee7bb843798b8105fb"
+    PREP = "3c1986d03321b183efaabfd0f4a86fe42159672e"
+    IMPL = "49537b8a53c56a2f07cc1456926fce5c9b903b42"
+    TREE = "03738da9d0b1beb3bec8cf7779c9f2e2b9f9f188"
+    PATHS = {"tools/validate_poc_recovery_governance.py", "tools/test_poc_recovery_i3_governance.py"}
+
+    def identities(self):
+        return (
+            governance.PinnedCommitIdentity(self.ANCHOR, self.TREE, (self.BASE, self.PREP), True),
+            governance.PinnedCommitIdentity(self.PREP, self.TREE, (self.IMPL,), True),
+            governance.PinnedCommitIdentity(self.IMPL, "f8c1c054cb7dd94a62143aa15909f3dbeeee8b74", (self.BASE,), True),
+        )
+
+    def test_exact_anchor_and_second_parent_lineage(self):
+        governance.validate_rec_clean_integrated_anchor(*self.identities())
+
+    def test_wrong_parent_order_octopus_and_missing_parent(self):
+        anchor, prep, impl = self.identities()
+        for parents in (("0"*40, self.PREP), (self.BASE, "0"*40),
+                        (self.PREP, self.BASE), (self.BASE, self.PREP, self.IMPL), (self.BASE,)):
+            with self.subTest(parents=parents), self.assertRaisesRegex(ValueError, "parent topology"):
+                governance.validate_rec_clean_integrated_anchor(replace(anchor, parents=parents), prep, impl)
+
+    def test_wrong_anchor_commit_tree_and_missing_ancestry(self):
+        anchor, prep, impl = self.identities()
+        for mutation in (dict(commit="0"*40), dict(tree="0"*40), dict(is_ancestor_of_head=False)):
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                governance.validate_rec_clean_integrated_anchor(replace(anchor, **mutation), prep, impl)
+
+    def test_reconstructed_or_missing_second_parent_lineage(self):
+        anchor, prep, impl = self.identities()
+        for index in (1, 2):
+            for mutation in (dict(commit="0"*40), dict(is_ancestor_of_head=False), dict(parents=("0"*40,))):
+                values = [anchor, prep, impl]
+                values[index] = replace(values[index], **mutation)
+                with self.subTest(index=index, mutation=mutation), self.assertRaises(ValueError):
+                    governance.validate_rec_clean_integrated_anchor(*values)
+
+    def test_exact_anchor_state_and_one_governance_child(self):
+        entries = {"android/poc/recovery": "accepted tree"}
+        clean = {"committed": [], "staged": [], "unstaged": [], "untracked": []}
+        governance.validate_rec_clean_integrated_state(clean, entries, entries, [], self.ANCHOR)
+        clean["committed"] = sorted(self.PATHS)
+        governance.validate_rec_clean_integrated_state(
+            clean, entries, entries, ["a"*40 + " " + self.ANCHOR], "a"*40)
+
+    def test_extra_merge_descendant_or_wrong_parent_rejected(self):
+        entries = {"android/poc/recovery": "accepted tree"}
+        clean = {"committed": sorted(self.PATHS), "staged": [], "unstaged": [], "untracked": []}
+        for history in (["a"*40 + " " + self.ANCHOR + " " + self.PREP],
+                        ["a"*40 + " " + self.BASE],
+                        ["a"*40 + " " + self.ANCHOR, "b"*40 + " " + "a"*40]):
+            with self.subTest(history=history), self.assertRaises(ValueError):
+                governance.validate_rec_clean_integrated_state(clean, entries, entries, history, "a"*40)
+
+    def test_recovery_unrelated_excluded_and_partial_remediation_rejected(self):
+        entries = {"android/poc/recovery": "accepted tree"}
+        for paths in ({"android/poc/recovery/new.kt"}, {"README.md"},
+                      {"tools/recovery_campaign.py"}, {"android/app/build.gradle.kts"},
+                      {"docs/DORA_MVP1_STAGE_STATUS.md"}, {next(iter(self.PATHS))}):
+            changes = {"committed": sorted(paths), "staged": [], "unstaged": [], "untracked": []}
+            with self.subTest(paths=paths), self.assertRaises(ValueError):
+                governance.validate_rec_clean_integrated_state(
+                    changes, entries, entries, ["a"*40 + " " + self.ANCHOR], "a"*40)
+
+    def test_dirty_layers_and_altered_recovery_tree_rejected(self):
+        entries = {"android/poc/recovery": "accepted tree"}
+        clean = {"committed": [], "staged": [], "unstaged": [], "untracked": []}
+        for layer in ("staged", "unstaged", "untracked"):
+            changes = copy.deepcopy(clean)
+            changes[layer] = sorted(self.PATHS)
+            with self.subTest(layer=layer), self.assertRaises(ValueError):
+                governance.validate_rec_clean_integrated_state(changes, entries, entries, [], self.ANCHOR)
+        with self.assertRaisesRegex(ValueError, "protected object"):
+            governance.validate_rec_clean_integrated_state(
+                clean, {"android/poc/recovery": "altered"}, entries, [], self.ANCHOR)
+
+    def test_historical_policy_still_rejects_integrated_tree(self):
+        entries = dict(governance.REC_I3_ACCEPTED_MAIN_PROTECTED_ENTRIES)
+        clean = {"committed": [], "staged": [], "unstaged": [], "untracked": []}
+        governance.validate_rec_i3_accepted_protected_state(clean, entries, [])
+        entries["android/poc/recovery"] = "040000 tree 332c02376661597df294d8c9c1cb72ca2f348498\tandroid/poc/recovery"
+        with self.assertRaisesRegex(ValueError, "accepted protected object"):
+            governance.validate_rec_i3_accepted_protected_state(clean, entries, [])
+
+    def test_real_git_integrated_profile_and_mutations(self):
+        source = governance.ROOT
+        with tempfile.TemporaryDirectory(prefix="rci-") as temporary:
+            repo = Path(temporary) / "repo"
+
+            def git(*args, cwd=None):
+                root = cwd or repo
+                return subprocess.check_output(
+                    ["git", "-c", "core.longpaths=true", "-c", f"safe.directory={root.as_posix()}",
+                     "-c", "user.name=Dora Validator Test", "-c", "user.email=dora-validator@example.invalid",
+                     *args], cwd=root, stderr=subprocess.STDOUT).decode().strip()
+
+            git("clone", "--shared", "--no-checkout", str(source), str(repo), cwd=Path(temporary))
+            branch = "stage/7-alpha-foundation"
+            git("checkout", "-q", "-B", branch, self.ANCHOR)
+            environment = {k: v for k, v in os.environ.items() if not k.startswith("GITHUB_")}
+            environment.update(GIT_CONFIG_COUNT="2", GIT_CONFIG_KEY_0="safe.directory",
+                               GIT_CONFIG_VALUE_0=repo.as_posix(), GIT_CONFIG_KEY_1="core.longpaths",
+                               GIT_CONFIG_VALUE_1="true")
+            with patch.object(governance, "ROOT", repo), patch.dict(os.environ, environment, clear=True):
+                def validate():
+                    self.assertTrue(governance.validate_current_rec_i3_successor())
+
+                try:
+                    validate()
+                except ValueError as error:
+                    self.fail(f"Exact integrated anchor must be admitted: {error}")
+                for path in sorted(self.PATHS):
+                    (repo / path).write_bytes((source / path).read_bytes() + b"\n")
+                git("add", "--", *sorted(self.PATHS))
+                git("commit", "-qm", "synthetic bounded governance remediation")
+                child = git("rev-parse", "HEAD")
+                validate()
+                event = dict(GITHUB_ACTIONS="true", GITHUB_EVENT_NAME="push",
+                             GITHUB_REPOSITORY=governance.GITHUB_REPOSITORY,
+                             GITHUB_WORKSPACE=str(repo), GITHUB_REF="refs/heads/"+branch, GITHUB_SHA=child)
+                with patch.dict(os.environ, event):
+                    validate()
+                    for key, value in (("GITHUB_EVENT_NAME", "pull_request"), ("GITHUB_SHA", self.ANCHOR),
+                                       ("GITHUB_REF", "refs/heads/main"), ("GITHUB_REPOSITORY", "wrong/repo"),
+                                       ("GITHUB_WORKSPACE", temporary)):
+                        with self.subTest(event=key), patch.dict(os.environ, {key: value}):
+                            with self.assertRaises(ValueError):
+                                validate()
+                for path in (governance.REC_CLEAN_CONTRACT, "android/app/build.gradle.kts",
+                             "android/poc/recovery/src/main/forbidden.kt", "tools/recovery_campaign.py"):
+                    # All synthetic mutations are confined to this disposable clone.
+                    git("checkout", "-q", "-f", "-B", branch, self.ANCHOR)
+                    target = repo / path
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_bytes((target.read_bytes() if target.exists() else b"") + b"\n")
+                    for layer in ("worktree", "index", "commit"):
+                        if layer == "index":
+                            git("add", "--", path)
+                        elif layer == "commit":
+                            git("commit", "-qm", "synthetic forbidden mutation")
+                        with self.subTest(path=path, layer=layer), self.assertRaises(ValueError):
+                            validate()
+                git("checkout", "-q", "-f", "-B", branch, self.ANCHOR)
+                side = git("commit-tree", self.TREE, "-p", self.ANCHOR, "-m", "synthetic side")
+                merged = git("commit-tree", self.TREE, "-p", self.ANCHOR, "-p", side, "-m", "synthetic extra merge")
+                git("checkout", "-q", "-B", branch, merged)
+                with self.assertRaises(ValueError):
+                    validate()
+                for selected_branch, head in (("unrelated", self.ANCHOR), (branch, self.BASE)):
+                    git("checkout", "-q", "-B", selected_branch, head)
+                    self.assertFalse(governance.rec_clean_integrated_candidate(governance.collect_recovery_lifecycle_identity()))
+                git("checkout", "-q", "-B", governance.REC_CLEAN_BRANCH, self.PREP)
+                governance.validate_rec_clean_replacement(governance.collect_recovery_lifecycle_identity())
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -7659,6 +7659,137 @@ def validate_rec_clean_replacement(lifecycle: RecoveryLifecycleIdentity) -> None
 
 
 
+# Owner-authorized integration successor; historical and preparation policies stay strict.
+REC_CLEAN_INTEGRATED_ANCHOR = "49595ece8cac22f3a1da4a4d5dd43924ac28f1df"
+REC_CLEAN_INTEGRATED_TREE = "03738da9d0b1beb3bec8cf7779c9f2e2b9f9f188"
+REC_CLEAN_INTEGRATED_BRANCH = "stage/7-alpha-foundation"
+REC_CLEAN_PREPARATION_HEAD = "3c1986d03321b183efaabfd0f4a86fe42159672e"
+REC_CLEAN_IMPLEMENTATION_HEAD = "49537b8a53c56a2f07cc1456926fce5c9b903b42"
+REC_CLEAN_GOVERNANCE_PATHS = frozenset({
+    "tools/validate_poc_recovery_governance.py",
+    "tools/test_poc_recovery_i3_governance.py",
+})
+
+
+def validate_rec_clean_integrated_anchor(anchor, preparation, implementation):
+    validate_pinned_commit_identity(
+        anchor, expected_commit=REC_CLEAN_INTEGRATED_ANCHOR,
+        expected_tree=REC_CLEAN_INTEGRATED_TREE,
+        expected_parents=(REC_CLEAN_BASE, REC_CLEAN_PREPARATION_HEAD),
+        label="Recovery clean integrated anchor",
+    )
+    validate_pinned_commit_identity(
+        preparation, expected_commit=REC_CLEAN_PREPARATION_HEAD,
+        expected_tree=REC_CLEAN_INTEGRATED_TREE,
+        expected_parents=(REC_CLEAN_IMPLEMENTATION_HEAD,),
+        label="Recovery clean accepted preparation",
+    )
+    validate_pinned_commit_identity(
+        implementation, expected_commit=REC_CLEAN_IMPLEMENTATION_HEAD,
+        expected_tree="f8c1c054cb7dd94a62143aa15909f3dbeeee8b74",
+        expected_parents=(REC_CLEAN_BASE,),
+        label="Recovery clean accepted implementation",
+    )
+
+
+def rec_clean_integrated_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
+    if lifecycle.branch != REC_CLEAN_INTEGRATED_BRANCH:
+        return False
+    anchor = collect_pinned_commit_identity(REC_CLEAN_INTEGRATED_ANCHOR, lifecycle.head)
+    if anchor.commit is None or not anchor.is_ancestor_of_head:
+        return False
+    validate_rec_clean_integrated_anchor(
+        anchor,
+        collect_pinned_commit_identity(REC_CLEAN_PREPARATION_HEAD, REC_CLEAN_INTEGRATED_ANCHOR),
+        collect_pinned_commit_identity(REC_CLEAN_IMPLEMENTATION_HEAD, REC_CLEAN_PREPARATION_HEAD),
+    )
+    return True
+
+
+def validate_rec_clean_integrated_state(changes, current, expected, history, head):
+    require(current == expected, "Recovery clean integrated protected object identity changed")
+    require(set(changes) == {"committed", "staged", "unstaged", "untracked"},
+            "Recovery clean integrated layer inventory incomplete")
+    for layer, paths in changes.items():
+        require(isinstance(paths, list) and all(isinstance(p, str) and p for p in paths),
+                "Recovery clean integrated layer inventory malformed")
+        require(layer == "committed" or not paths,
+                f"Recovery clean integrated uncommitted state: {layer}")
+    if head == REC_CLEAN_INTEGRATED_ANCHOR:
+        require(not history and not changes["committed"], "Recovery clean anchor has unexpected descendants")
+    else:
+        # This task admits one atomic remediation, not future branch development.
+        require(re.fullmatch(r"[0-9a-f]{40}", head) is not None
+                and history == [f"{head} {REC_CLEAN_INTEGRATED_ANCHOR}"],
+                "Recovery clean integrated requires one linear governance child")
+        require(set(changes["committed"]) == REC_CLEAN_GOVERNANCE_PATHS,
+                "Recovery clean integrated remediation path scope mismatch")
+
+
+def validate_rec_clean_integrated(lifecycle: RecoveryLifecycleIdentity) -> None:
+    require(rec_clean_integrated_candidate(lifecycle), "Recovery clean integrated identity not admitted")
+    require(lifecycle.github_pull_request_context is None
+            and git_output("rev-parse", "HEAD") == lifecycle.head,
+            "Recovery clean integrated checkout/event identity drift")
+    validate_rec_i3_accepted_anchor_provenance(lifecycle)
+    contract_bytes = (ROOT / REC_CLEAN_CONTRACT).read_bytes()
+    require(hashlib.sha256(contract_bytes).hexdigest() == REC_CLEAN_CONTRACT_SHA256,
+            "Recovery clean integrated contract/provenance/authority digest mismatch")
+    contract = json.loads(contract_bytes)
+    matrix = contract["reconciliation_matrix"]
+    implementation_paths = set(contract["implementation_paths"])
+    metadata_paths = set(contract["metadata_paths"])
+    require(contract["alpha_baseline"] == REC_CLEAN_BASE
+            and len(implementation_paths) == 48 and len(metadata_paths) == 6
+            and len(implementation_paths | metadata_paths) == 54
+            and len(contract["transfers"]) == 42 and len(matrix) == 124
+            and sum(row["disposition"] == "TRANSFER" for row in matrix) == 42
+            and sum(row["disposition"] == "EXCLUDE" for row in matrix) == 82,
+            "Recovery clean integrated reconciliation accounting drift")
+    expected = dict(REC_I3_ACCEPTED_MAIN_PROTECTED_ENTRIES)
+    expected["android/poc/recovery"] = contract["recovery_tree_entry"]
+    for revision in (REC_CLEAN_INTEGRATED_ANCHOR, "HEAD"):
+        current = {p: next(iter(git_path_records("ls-tree", "-z", revision, "--", p)), None)
+                   for p in expected}
+        require(current == expected, "Recovery clean integrated protected object identity changed")
+    validate_rec_clean_integrated_state(
+        collect_post_merge_changes(merged_anchor=REC_CLEAN_INTEGRATED_ANCHOR), current, expected,
+        git_output("rev-list", "--reverse", "--parents", f"{REC_CLEAN_INTEGRATED_ANCHOR}..HEAD").splitlines(),
+        lifecycle.head,
+    )
+    # Re-prove the original baseline and selected source receipts, without treating
+    # the composite tree as a newly executed historical campaign.
+    baseline_entries = {p: next(iter(git_path_records("ls-tree", "-z", REC_CLEAN_BASE, "--", p)), None)
+                        for p in REC_I3_ACCEPTED_MAIN_PROTECTED_ENTRIES}
+    validate_rec_i3_accepted_protected_state(
+        {"committed": git_path_records("log", "--format=", "--name-only", "--no-renames", "-z",
+                                       f"{REC_I3_ACCEPTED_MAIN_ANCHOR}..{REC_CLEAN_BASE}", "--"),
+         "staged": [], "unstaged": [], "untracked": []}, baseline_entries,
+        git_output("rev-list", "--parents", f"{REC_I3_ACCEPTED_MAIN_ANCHOR}..{REC_CLEAN_BASE}").splitlines(),
+    )
+    for parent, commit, paths in (
+        (REC_CLEAN_BASE, REC_CLEAN_IMPLEMENTATION_HEAD, implementation_paths),
+        (REC_CLEAN_IMPLEMENTATION_HEAD, REC_CLEAN_PREPARATION_HEAD, metadata_paths),
+    ):
+        require(set(git_path_records("diff", "--name-only", "--no-renames", "-z", parent, commit, "--")) == paths,
+                "Recovery clean integrated accepted transition scope drift")
+        require(git_output("rev-parse", f"{commit}:android/poc/recovery") == contract["recovery_tree"],
+                "Recovery clean integrated accepted Recovery tree drift")
+    for item in contract["transfers"]:
+        path = item["path"]
+        require(git_output("rev-parse", f'{item["source_commit"]}:{path}') == item["source_blob"]
+                and git_output("rev-parse", f"HEAD:{path}") == item["replacement_blob"],
+                f"Recovery clean integrated transferred source provenance drift: {path}")
+    if os.environ.get("GITHUB_EVENT_NAME") or os.environ.get("GITHUB_ACTIONS"):
+        workspace = os.environ.get("GITHUB_WORKSPACE", "")
+        require(os.environ.get("GITHUB_EVENT_NAME") in {"push", "workflow_dispatch"}
+                and os.environ.get("GITHUB_REPOSITORY") == GITHUB_REPOSITORY
+                and workspace and Path(workspace).resolve() == ROOT.resolve()
+                and os.environ.get("GITHUB_REF") == f"refs/heads/{REC_CLEAN_INTEGRATED_BRANCH}"
+                and os.environ.get("GITHUB_SHA") == lifecycle.head,
+                "Recovery clean integrated GitHub event identity drift")
+
+
 def validate_rec_i3_accepted_main_descendant(lifecycle: RecoveryLifecycleIdentity) -> None:
     validate_rec_i3_accepted_anchor_provenance(lifecycle)
     current_entries = {
@@ -9940,6 +10071,9 @@ def validate_current_rec_i3_successor(lifecycle: RecoveryLifecycleIdentity | Non
         return True
     elif rec_clean_candidate(current):
         validate_rec_clean_replacement(current)
+        return True
+    elif rec_clean_integrated_candidate(current):
+        validate_rec_clean_integrated(current)
         return True
     elif rec_i3_accepted_main_descendant_candidate(current):
         validate_rec_i3_accepted_main_descendant(current)
@@ -13172,6 +13306,30 @@ def main() -> int:
                 result = subprocess.run([sys.executable, "-B", "-m", "unittest", "discover", "-s", "tools", "-p", pattern], cwd=ROOT)
                 require(result.returncode == 0, "Recovery clean replacement schema regression failed")
         print("POC-RECOVERY-001 clean replacement preparation validated; execution/product integration blocked")
+        return 0
+    if rec_clean_integrated_candidate(lifecycle):
+        validate_rec_clean_integrated(lifecycle)
+        if "--self-test" in sys.argv[1:]:
+            run_rec_i3_integrated_profile_self_tests(
+                lifecycle, failure="Recovery clean integrated historical regressions failed",
+                correction_head_override=REC_I3_SQUASH_MAIN_INTEGRATED_CORRECTION,
+            )
+            import unittest
+            import test_poc_recovery_i3_governance
+            suite = unittest.TestSuite(
+                unittest.defaultTestLoader.loadTestsFromTestCase(test_case)
+                for test_case in (
+                    test_poc_recovery_i3_governance.RecoveryI3AcceptedSquashSuccessorTests,
+                    test_poc_recovery_i3_governance.RecoveryCleanReplacementStateTests,
+                    test_poc_recovery_i3_governance.RecoveryCleanIntegratedTests,
+                )
+            )
+            require(unittest.TextTestRunner(verbosity=1).run(suite).wasSuccessful(),
+                    "Recovery clean integrated successor regressions failed")
+            for pattern in ("test_rec_stream_prefix_schema.py", "test_rec_microfile_disposition_schema.py"):
+                result = subprocess.run([sys.executable, "-B", "-m", "unittest", "discover", "-s", "tools", "-p", pattern], cwd=ROOT)
+                require(result.returncode == 0, "Recovery clean integrated schema regression failed")
+        print("POC-RECOVERY-001 clean replacement integrated topology validated; execution/product integration blocked")
         return 0
     if rec_i3_accepted_main_descendant_candidate(lifecycle):
         validate_rec_i3_accepted_main_descendant(lifecycle)
