@@ -2,7 +2,7 @@
   "schema_version": "dora-transcript-logical-catalog-v0.1",
   "contract_version": "0.1",
   "name": "TranscriptVersioningEditContract",
-  "status": "CONTRACT_DEFINED_AWAITING_EXACT_SHA_CI",
+  "status": "PASS / VERSIONED_TRANSCRIPT_AND_EDIT_CONTRACT_READY",
   "scope": "LOGICAL_DATA_CONTRACT_ONLY",
   "type_language": "closed records; all fields required; ? nullable; [] array; enums closed; unknown extra fields rejected",
   "identity_aliases": {

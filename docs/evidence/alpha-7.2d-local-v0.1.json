@@ -1,0 +1,103 @@
+{
+  "task": "7.2D",
+  "implementation_sha": "3ad8f297a72b64eb0997e986ed8d817bede23cf7",
+  "scope": "offline logical contract only",
+  "tests": {
+    "transcript_contract": 44,
+    "cloud_provider_contract": 24,
+    "signing_boundary": 6,
+    "compiled_boundary_negative_controls": 5,
+    "total_python_unittests": 79,
+    "failures": 0,
+    "stage00_checks": 7
+  },
+  "red_green": {
+    "initial": "35 missing-validator failures; then 34 PASS plus expected mojibake failure; encoding repair produced 35 PASS",
+    "review": "Five added regression tests failed before fixes; final 44 tests PASS, including positive per-edit conflict resolution/manual older-version selection"
+  },
+  "checks": {
+    "catalogue": "PASS",
+    "stage1_utf8_hygiene": "PASS",
+    "cloud_catalogue": "PASS",
+    "compiled_boundary": "PASS (402 model / 92 app dependencies; existing unchanged compiled artifacts)",
+    "git_diff_check": "PASS",
+    "public_secret_pattern_audit": "No credentials/private paths/provider payload/real audio or transcript found in seven implementation files"
+  },
+  "independent_review": {
+    "critical": 0,
+    "important": 3,
+    "minor": 1,
+    "findings": [
+      {
+        "finding": "Cyclic edit/merge provenance",
+        "fix": "All contributing edit bases, including explicitly excluded edits, precede merged version",
+        "verification": "self-reference and longer-cycle regressions PASS"
+      },
+      {
+        "finding": "Expected generation reset through null",
+        "fix": "Append-only unique action/monotonic generation history independent of nullable expectation",
+        "verification": "cancel/replay rejection, positive fresh reschedule, history mutation rejection PASS"
+      },
+      {
+        "finding": "Historical automatic overwrite",
+        "fix": "Retained historical decision semantics, zero-edit auto condition, actor/kind/target checks, manual resolution and terminal history",
+        "verification": "edited raw auto import and forged actor rejected"
+      },
+      {
+        "finding": "System rejection closes user proposal",
+        "fix": "Only exact scoped USER_REJECTED terminally rejects proposal",
+        "verification": "invalid system reject refused; failed activation leaves proposal READY"
+      }
+    ],
+    "additional_fix": "New proposal must capture active base/source and current edit/selection revision",
+    "disposition": "All findings fixed; implementer regression verification complete; no second review loop",
+    "declined_to_judge": [
+      "Evidence authenticity",
+      "Generated merge text correctness",
+      "Overlapping edit application order",
+      "Production persistence/authentication/atomicity/Cloud runtime"
+    ]
+  },
+  "mojibake": {
+    "status": "FIXED / NO_SEMANTIC_CHANGE",
+    "file": "docs/stage1/DORA_ALPHA_CLOUD_ASR_PROVIDER_CONTRACT_V0_1.md",
+    "replacements": 12,
+    "em_dash": 1,
+    "en_dash": 1,
+    "arrows": 8,
+    "section_sign": 2,
+    "guard": [
+      "U+0432 U+0402",
+      "U+0432 U+2020",
+      "U+0412 U+00A7",
+      "U+FFFD"
+    ],
+    "before_lf_sha256": "701c61c9995f1f000f69b72965b3866537c5fcbcc638f73dc8a0ddae6b3df454",
+    "after_lf_sha256": "9c6649543a11e97a910b5723ec05fa9c7ff5f1e6dda177e5e77878635fa74021"
+  },
+  "non_execution": {
+    "7.2E": "NOT_STARTED",
+    "7.3": "NOT_STARTED",
+    "7.3C": "NOT_STARTED",
+    "stage8": "NOT_STARTED",
+    "physical_db_schema": "NOT_IMPLEMENTED",
+    "room": "NOT_IMPLEMENTED",
+    "sqlite": "NOT_IMPLEMENTED",
+    "server_db": "NOT_IMPLEMENTED",
+    "dao_repository_runtime": "NOT_IMPLEMENTED",
+    "migrations": "NOT_IMPLEMENTED",
+    "merge_algorithm_runtime": "NOT_IMPLEMENTED",
+    "transcript_persistence": "NOT_IMPLEMENTED",
+    "cloud_auth_runtime": "NOT_IMPLEMENTED",
+    "ownership_runtime": "NOT_IMPLEMENTED",
+    "recording": "NOT_IMPLEMENTED",
+    "recovery_integration": "NOT_RUN",
+    "cloud_backend_runtime": "NOT_IMPLEMENTED",
+    "aws_adapter_runtime": "NOT_IMPLEMENTED",
+    "audio_upload": "NOT_RUN",
+    "real_product_audio": "NOT_USED",
+    "aws": "NOT_CALLED",
+    "aws_spend_by_task": 0,
+    "first_real_product_audio": "NOT_READY"
+  }
+}

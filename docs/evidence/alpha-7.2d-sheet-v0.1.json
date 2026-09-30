@@ -1,0 +1,121 @@
+{
+  "task": "7.2D",
+  "spreadsheet_id": "1dgZr-BGlI1v8iPEK0ay9CI9mGhiGlJvG2-tTxyJhhOc",
+  "implementation_sha": "3ad8f297a72b64eb0997e986ed8d817bede23cf7",
+  "implementation_ci": 36701576520,
+  "changed_cells": [
+    {
+      "range": "Этапы!C61",
+      "value": "ПРОЙДЕНО"
+    },
+    {
+      "range": "Этапы!I56",
+      "value": "30.09.2026 — Group C В РАБОТЕ. 7.1, 7.2, 7.2C и 7.2D PASS. Transcript/edit logical contract готов; persistence и merge runtime NOT_IMPLEMENTED."
+    },
+    {
+      "range": "Этапы!J56",
+      "value": "Следующая отдельная задача — 7.2E, НЕ НАЧАТО. Recovery clean replacement — отдельно до Stage 8 recording/storage acceptance."
+    },
+    {
+      "range": "Этапы!I57",
+      "value": "30.09.2026 — Stage 7 В РАБОТЕ; 7.2D PASS / VERSIONED_TRANSCRIPT_AND_EDIT_CONTRACT_READY. stage/7-alpha-foundation HEAD 3ad8f297a72b64eb0997e986ed8d817bede23cf7; PR #87 OPEN / DRAFT / UNMERGED."
+    },
+    {
+      "range": "Этапы!J57",
+      "value": "Next 7.2E — НЕ НАЧАТО. 7.3/7.3C ЗАПЛАНИРОВАНО, выполнение NOT_STARTED; Stage 8 НЕ НАЧАТО."
+    },
+    {
+      "range": "Этапы!J58",
+      "value": "7.1, 7.2, 7.2C и 7.2D закрыты. Next: 7.2E — отдельная задача, НЕ НАЧАТО. PR #86 OPEN / DRAFT / UNMERGED, не изменён; Recovery clean replacement — до Stage 8 acceptance."
+    },
+    {
+      "range": "Этапы!J59",
+      "value": "7.2C и 7.2D contracts PASS; Android RecognitionPort сохранён отдельно. Next 7.2E NOT_STARTED. Recording/storage/ASR runtime NOT_IMPLEMENTED; PR #87 draft/unmerged."
+    },
+    {
+      "range": "Этапы!J60",
+      "value": "7.2D contract PASS; next 7.2E NOT_STARTED. 7.2C mojibake FIXED / NO_SEMANTIC_CHANGE. Backend/worker/adapter runtime, auth/ownership и persistence NOT_IMPLEMENTED. AWS NOT_CALLED; FIRST_REAL_PRODUCT_AUDIO NOT_READY."
+    },
+    {
+      "range": "Этапы!I61",
+      "value": "PASS / VERSIONED_TRANSCRIPT_AND_EDIT_CONTRACT_READY. ADR-0018; immutable LOCAL/CLOUD/MERGED, separate edits/anchors/revisions, proposals, explicit activation и reference guards. 44 offline tests PASS; implementation 3ad8f297a72b64eb0997e986ed8d817bede23cf7; оба jobs SUCCESS: https://github.com/Monumentogram/DORA/actions/runs/36701576520"
+    },
+    {
+      "range": "Этапы!J61",
+      "value": "Contract only. Physical DB/Room/SQLite/server DB, DAO/repository/migrations, merge algorithm и transcript persistence NOT_IMPLEMENTED. Next 7.2E NOT_STARTED. AWS NOT_CALLED; audio NOT_USED; FIRST_REAL_PRODUCT_AUDIO NOT_READY."
+    },
+    {
+      "range": "Сводка!C2",
+      "value": "30.09.2026 — Stage 0 / 6.3 / 7.1 / 7.2 / 7.2C PASS сохранены; 7.2D PASS / VERSIONED_TRANSCRIPT_AND_EDIT_CONTRACT_READY. Stage 7 и Group C В РАБОТЕ; Next 7.2E НЕ НАЧАТО. HEAD 3ad8f297a72b64eb0997e986ed8d817bede23cf7; PR #87 OPEN / DRAFT / UNMERGED; PR #86 не изменён."
+    },
+    {
+      "range": "Сводка!B4",
+      "value": "Stage 7 В РАБОТЕ; 7.1, 7.2, 7.2C и 7.2D ПРОЙДЕНО"
+    },
+    {
+      "range": "Сводка!C4",
+      "value": "7.2D: immutable transcript versions, separate user edits, semantic/audio anchors, stale-safe proposals и explicit selection. Persistence/merge/auth runtime NOT_IMPLEMENTED; FIRST_REAL_PRODUCT_AUDIO NOT_READY."
+    },
+    {
+      "range": "Сводка!C5",
+      "value": "com.monumentogram.dora; version 2 / 0.1.0-alpha.1, identity/signing сохранены. 7.2D не меняет Android. CI implementation PASS: https://github.com/Monumentogram/DORA/actions/runs/36701576520"
+    },
+    {
+      "range": "Сводка!B6",
+      "value": "7.2E — Cloud identity, auth и recording/job ownership — НЕ НАЧАТО"
+    },
+    {
+      "range": "Сводка!C6",
+      "value": "Только следующая отдельная задача; автоматически не запускать. 7.3/7.3C ЗАПЛАНИРОВАНО; Stage 8 НЕ НАЧАТО. Recovery clean replacement отдельно до Stage 8 acceptance."
+    },
+    {
+      "range": "Сводка!B14",
+      "value": "Stage 0 PASS → 7.1 PASS → 7.2 PASS → 7.2C PASS → 7.2D PASS → 7.2E NOT_STARTED"
+    },
+    {
+      "range": "Сводка!C14",
+      "value": "6.3 и frozen baseline сохранены. Implementation 7.2D 3ad8f297a72b64eb0997e986ed8d817bede23cf7; repository HEAD 3ad8f297a72b64eb0997e986ed8d817bede23cf7; CI https://github.com/Monumentogram/DORA/actions/runs/36701576520. Group C / Stage 7 В РАБОТЕ; Recovery clean replacement до Stage 8 acceptance."
+    },
+    {
+      "range": "Сводка!B22",
+      "value": "7.2D PASS / VERSIONED_TRANSCRIPT_AND_EDIT_CONTRACT_READY"
+    },
+    {
+      "range": "Сводка!C22",
+      "value": "6.1B frozen semantics сохранены: immutable raw, original audio, USER EDIT > CLOUD > LOCAL только proposal priority. 7.2D logical schema + 44 tests; persistence NOT_IMPLEMENTED. https://github.com/Monumentogram/DORA/blob/3ad8f297a72b64eb0997e986ed8d817bede23cf7/docs/stage1/DORA_ALPHA_TRANSCRIPT_VERSIONING_EDIT_CONTRACT_V0_1.md"
+    },
+    {
+      "range": "Сводка!C26",
+      "value": "6.2D owner-only provider admission и 6.3 development admission PASS сохранены. 7.2C provider contract и 7.2D transcript/edit contract PASS; next 7.2E NOT_STARTED. Runtime downstream; External Legal по прежним triggers."
+    },
+    {
+      "range": "Сводка!B29",
+      "value": "7.2E NOT_STARTED / NEXT; Recovery clean replacement — до Stage 8"
+    },
+    {
+      "range": "Сводка!C29",
+      "value": "7.2D contract PASS. PR86-INTEGRATION-RECONCILIATION = PASS / CLEAN_REPLACEMENT_PR; PR #86 OPEN / DRAFT / UNMERGED, не изменён. 7.2E автоматически не начинать; Recovery replacement — отдельная задача."
+    }
+  ],
+  "readback": {
+    "result": "EXACT_MATCH",
+    "changed_cells": 23,
+    "total_cells_checked": 187,
+    "unchanged_neighbors": 164,
+    "format_validation_and_chips": "PRESERVED",
+    "status_cells": {
+      "7": "В РАБОТЕ",
+      "8": "НЕ НАЧАТО",
+      "C": "В РАБОТЕ",
+      "7.1": "ПРОЙДЕНО",
+      "7.2": "ПРОЙДЕНО",
+      "7.2C": "ПРОЙДЕНО",
+      "7.2D": "ПРОЙДЕНО",
+      "7.2E": "НЕ НАЧАТО",
+      "7.3": "ЗАПЛАНИРОВАНО",
+      "7.3C": "ЗАПЛАНИРОВАНО"
+    }
+  },
+  "visual_verification": "Native browser navigation timed out; API confirms WRAP and formatting preserved. Native rendered fit UNVERIFIED.",
+  "publication_note": "Snapshot after implementation technical PASS. Final evidence HEAD refresh is verified separately in task publication receipt."
+}

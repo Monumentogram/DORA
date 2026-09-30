@@ -1,6 +1,6 @@
 # 7.2D — Transcript versioning and edit contract v0.1
 
-Status: CONTRACT_DEFINED_AWAITING_EXACT_SHA_CI.
+Status: PASS / VERSIONED_TRANSCRIPT_AND_EDIT_CONTRACT_READY.
 Scope: logical data contract only; persistence and merge algorithm NOT_IMPLEMENTED.
 
 ## Authority and decision
@@ -230,9 +230,10 @@ Existing isolated worktree is reused. This document co-locates spec and plan.
   Correct only known encoding sequences in the full 7.2C Markdown.
 - [x] Add mandatory CI step; run new tests, 7.2C tests and existing relevant checks.
 - [x] Independent review of the full task diff; reproduce/fix important findings.
-- [ ] Commit/push implementation; require exact-SHA success of both CI jobs.
-- [ ] Update Sheet after technical PASS, exact readback, evidence/status-only commit.
-  Publish and independently check final SHA CI and final Sheet HEAD.
+- [x] Commit/push implementation; require exact-SHA success of both CI jobs.
+- [x] Update Sheet after technical PASS and exact readback.
+- [ ] Publish evidence/status-only commit; independently check final SHA CI and
+  final Sheet HEAD. These post-commit proofs belong to the publication receipt.
 
 Interfaces: catalogue types consumed by fixtures/validator; validator only reads
 inert logical snapshots; CI invokes offline CLI and unittest; evidence consumes
@@ -260,3 +261,26 @@ boundaries, not contract-runtime claims. No second review loop was performed.
 sequences were restored (one em dash, one en dash, eight arrows, two section signs).
 The Stage1 contract guard rejects escaped markers U+0432 U+0402, U+0432 U+2020,
 U+0412 U+00A7 and U+FFFD. No 7.2C semantics or historical evidence changed.
+
+## Technical closure evidence
+
+Implementation `3ad8f297a72b64eb0997e986ed8d817bede23cf7`, parent
+`55ae8aef51527d87b719369b9e55feaf189674ff`, passed exact-source
+[Android CI 36701576520](https://github.com/Monumentogram/DORA/actions/runs/36701576520):
+android-bootstrap and search-smoke SUCCESS; every mandatory step SUCCESS.
+Only the conditional emulator-failure log step was skipped.
+
+[Local tests/review](../evidence/alpha-7.2d-local-v0.1.json),
+[CI steps](../evidence/alpha-7.2d-ci-v0.1.json),
+[Sheet readback](../evidence/alpha-7.2d-sheet-v0.1.json) and
+[closure](../evidence/alpha-7.2d-closure-v0.1.json) bind this technical result.
+The 23 changed Sheet cells matched exactly; all 187 inspected cells retained
+expected values, formatting and dropdown validation. Native browser rendering
+was unavailable (navigation timeout), so visual fit remains unverified.
+
+The evidence/status commit contains no implementation/schema changes except this
+closure status. Its own exact-SHA CI and final Sheet HEAD readback are recorded
+separately after publication, avoiding a self-referential commit.
+
+Next separate task: **7.2E — Cloud identity, auth and recording/job ownership =
+NOT_STARTED**. Stage 7 / Group C IN PROGRESS; 7.3/7.3C and Stage 8 NOT_STARTED.
