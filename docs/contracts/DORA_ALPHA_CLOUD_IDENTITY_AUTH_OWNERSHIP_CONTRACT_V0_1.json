@@ -1,0 +1,458 @@
+{
+  "schema_version": "dora-cloud-identity-auth-ownership-catalog-v0.1",
+  "contract_version": "0.1",
+  "status": "CONTRACT_DEFINED_AWAITING_EXACT_SHA_CI",
+  "scope": "OFFLINE_LOGICAL_CONTRACT_ONLY",
+  "types": {
+    "SourceReference": {
+      "recording_id": "opaque_id",
+      "audio_asset_id": "opaque_id",
+      "sha256": "digest"
+    },
+    "Route": {
+      "route_id": "opaque_id",
+      "provider_id": "opaque_id",
+      "profile_id": "opaque_id",
+      "profile_version": "positive_int",
+      "destination_id": "opaque_id",
+      "region_id": "opaque_id"
+    },
+    "CloudPrincipal": {
+      "principal_id": "opaque_id",
+      "installation_ref": "opaque_id",
+      "kind": "PrincipalKind",
+      "invitation": "Verification",
+      "key_binding_ref": "opaque_id"
+    },
+    "CredentialBinding": {
+      "credential_ref": "opaque_id",
+      "principal_id": "opaque_id",
+      "issuer": "Issuer",
+      "issued_at": "utc",
+      "expires_at": "?utc",
+      "status": "CredentialStatus",
+      "generation": "positive_int",
+      "audience": "Audience",
+      "operations": "[]Operation",
+      "replaces_ref": "?opaque_id",
+      "verification": "Verification",
+      "proof_request_id": "opaque_id",
+      "replay_check": "Verification"
+    },
+    "RecordingOwnershipBinding": {
+      "binding_ref": "opaque_id",
+      "principal_id": "opaque_id",
+      "source": "SourceReference",
+      "version": "positive_int",
+      "effective_at": "utc",
+      "state": "Validity",
+      "provenance_ref": "opaque_id",
+      "verification": "Verification"
+    },
+    "Scope": {
+      "scope_ref": "opaque_id",
+      "disclosure_version": "positive_int",
+      "purpose": "Purpose",
+      "selection": "Selection",
+      "sources": "[]SourceReference",
+      "route": "Route",
+      "operations": "[]Operation"
+    },
+    "CloudConsentGrant": {
+      "grant_ref": "opaque_id",
+      "principal_id": "opaque_id",
+      "scope": "Scope",
+      "granted_at": "utc",
+      "revision": "positive_int",
+      "state": "Validity",
+      "informed": "Verification",
+      "basis": "GrantBasis",
+      "verification": "Verification"
+    },
+    "RecordingAuthorization": {
+      "authorization_ref": "opaque_id",
+      "principal_id": "opaque_id",
+      "source": "SourceReference",
+      "state": "RecordingState",
+      "grant_ref": "?opaque_id",
+      "scope_ref": "?opaque_id",
+      "revision": "positive_int",
+      "decision_at": "utc",
+      "prompt_count": "nonnegative_int",
+      "prompted_at": "?utc",
+      "batch_ref": "?opaque_id",
+      "validity": "Validity",
+      "verification": "Verification"
+    },
+    "GlobalCloudPolicy": {
+      "policy": "Policy",
+      "revision": "positive_int"
+    },
+    "BatchAuthorizationSnapshot": {
+      "batch_ref": "opaque_id",
+      "principal_id": "opaque_id",
+      "presented": "[]SourceReference",
+      "selected": "[]opaque_id",
+      "presented_at": "utc",
+      "decided_at": "utc",
+      "grant_ref": "opaque_id",
+      "scope_ref": "opaque_id",
+      "verification": "Verification",
+      "presentation": "Presentation"
+    },
+    "CloudJobOwnershipBinding": {
+      "binding_ref": "opaque_id",
+      "principal_id": "opaque_id",
+      "source": "SourceReference",
+      "processing_action_id": "opaque_id",
+      "processing_job_id": "opaque_id",
+      "configuration_ref": "opaque_id",
+      "route": "Route",
+      "creation_decision_ref": "opaque_id",
+      "created_at": "utc",
+      "version": "positive_int",
+      "state": "Validity",
+      "verification": "Verification"
+    },
+    "GenerationVector": {
+      "credential": "nonnegative_int",
+      "ownership": "positive_int",
+      "job": "nonnegative_int",
+      "grant": "nonnegative_int",
+      "recording_authorization": "nonnegative_int",
+      "policy": "positive_int",
+      "deletion": "nonnegative_int",
+      "route": "Route",
+      "source": "SourceReference"
+    },
+    "AuthorizationRequest": {
+      "request_id": "opaque_id",
+      "principal_id": "opaque_id",
+      "credential_ref": "?opaque_id",
+      "ownership_binding_ref": "opaque_id",
+      "recording_authorization_ref": "?opaque_id",
+      "grant_ref": "?opaque_id",
+      "source": "SourceReference",
+      "processing_action_id": "opaque_id",
+      "processing_job_id": "opaque_id",
+      "configuration_ref": "opaque_id",
+      "route": "Route",
+      "operation": "Operation",
+      "now": "utc",
+      "attempt_id": "opaque_id",
+      "prior_attempt_id": "?opaque_id",
+      "trigger": "Trigger"
+    },
+    "TrustedSnapshot": {
+      "principal": "CloudPrincipal",
+      "credential": "?CredentialBinding",
+      "ownership": "RecordingOwnershipBinding",
+      "grant": "?CloudConsentGrant",
+      "recording_authorization": "?RecordingAuthorization",
+      "policy": "GlobalCloudPolicy",
+      "job": "?CloudJobOwnershipBinding",
+      "batch": "?BatchAuthorizationSnapshot",
+      "current_source": "SourceReference",
+      "source_availability": "SourceAvailability",
+      "deletion_epoch": "nonnegative_int",
+      "recording_lifecycle": "RecordingLifecycle",
+      "current_route": "Route",
+      "configuration_ref": "opaque_id",
+      "operation_policy": "Verification",
+      "resolved_at": "utc",
+      "attempt_history": "[]AttemptContext"
+    },
+    "AuthorizationDecision": {
+      "decision_id": "opaque_id",
+      "request": "AuthorizationRequest",
+      "credential_ref": "?opaque_id",
+      "ownership_binding_ref": "opaque_id",
+      "consent_ref": "?opaque_id",
+      "scope_ref": "?opaque_id",
+      "recording_authorization_ref": "?opaque_id",
+      "vector": "GenerationVector",
+      "evaluated_at": "utc",
+      "outcome": "Outcome",
+      "reason": "Reason"
+    },
+    "ScopedUploadAuthority": {
+      "authority_ref": "opaque_id",
+      "principal_id": "opaque_id",
+      "source": "SourceReference",
+      "processing_action_id": "opaque_id",
+      "processing_job_id": "opaque_id",
+      "operations": "[]Operation",
+      "max_bytes": "?positive_int",
+      "issued_at": "utc",
+      "expires_at": "utc",
+      "grant_ref": "opaque_id",
+      "issue_decision_ref": "opaque_id",
+      "vector": "GenerationVector",
+      "validity": "Validity"
+    },
+    "PromptRecord": {
+      "source": "SourceReference",
+      "state": "RecordingState",
+      "prompt_count": "nonnegative_int",
+      "prompted_at": "?utc"
+    },
+    "AttemptContext": {
+      "attempt_id": "opaque_id",
+      "source": "SourceReference",
+      "processing_action_id": "opaque_id",
+      "processing_job_id": "opaque_id",
+      "configuration_ref": "opaque_id",
+      "route": "Route",
+      "verification": "Verification"
+    }
+  },
+  "enums": {
+    "PrincipalKind": [
+      "INSTALLATION"
+    ],
+    "Issuer": [
+      "DORA_CONTROL_PLANE"
+    ],
+    "Audience": [
+      "DORA_CLOUD_CONTROL_PLANE"
+    ],
+    "Verification": [
+      "VERIFIED",
+      "UNVERIFIED",
+      "UNKNOWN"
+    ],
+    "CredentialStatus": [
+      "ACTIVE",
+      "EXPIRED",
+      "REVOKED",
+      "SUPERSEDED"
+    ],
+    "Validity": [
+      "ACTIVE",
+      "REVOKED",
+      "SUPERSEDED",
+      "UNKNOWN"
+    ],
+    "Purpose": [
+      "CLOUD_ASR"
+    ],
+    "Selection": [
+      "EXACT_SNAPSHOT",
+      "ELIGIBLE_FUTURE"
+    ],
+    "GrantBasis": [
+      "INFORMED_ALWAYS",
+      "EXPLICIT_RECORDING",
+      "MANUAL_RECORDING",
+      "BATCH_SELECTION"
+    ],
+    "RecordingState": [
+      "PENDING",
+      "INHERITED_ALWAYS",
+      "EXPLICITLY_APPROVED",
+      "MANUAL_USER_ACTION",
+      "DEFERRED"
+    ],
+    "Policy": [
+      "ALWAYS",
+      "ASK_EACH_RECORDING",
+      "MANUAL_ONLY"
+    ],
+    "Trigger": [
+      "AUTOMATIC",
+      "USER",
+      "RESUME"
+    ],
+    "SourceAvailability": [
+      "AVAILABLE",
+      "DELETED",
+      "MISSING",
+      "UNKNOWN"
+    ],
+    "RecordingLifecycle": [
+      "LIVE",
+      "TOMBSTONED"
+    ],
+    "Outcome": [
+      "ALLOW",
+      "DENY"
+    ],
+    "Operation": [
+      "CREATE_CLOUD_JOB",
+      "ISSUE_UPLOAD_AUTHORITY",
+      "UPLOAD_AUDIO",
+      "RETRY_UPLOAD",
+      "DISPATCH_ASR",
+      "RETRY_ASR",
+      "READ_JOB_STATUS",
+      "READ_RESULT",
+      "CANCEL_JOB"
+    ],
+    "Reason": [
+      "ALLOWED",
+      "NOT_AUTHENTICATED",
+      "CREDENTIAL_EXPIRED",
+      "CREDENTIAL_REVOKED",
+      "CREDENTIAL_SUPERSEDED",
+      "OWNERSHIP_MISMATCH",
+      "NO_CONSENT",
+      "CONSENT_REVOKED",
+      "CONSENT_SCOPE_MISMATCH",
+      "RECORDING_PENDING",
+      "RECORDING_DEFERRED",
+      "SOURCE_MISMATCH",
+      "JOB_MISMATCH",
+      "PROVIDER_SCOPE_MISMATCH",
+      "STALE_AUTHORIZATION",
+      "SOURCE_UNAVAILABLE",
+      "INVALID_OPERATION",
+      "OPERATION_POLICY_DENIED",
+      "UNKNOWN"
+    ],
+    "Presentation": [
+      "AUTOMATIC",
+      "USER"
+    ]
+  },
+  "rules": {
+    "independent_auth_ownership_consent_operation": true,
+    "server_resolved_evidence_only": true,
+    "invitation_and_request_bound_key_proof": true,
+    "installation_id_not_proof": true,
+    "finite_credential_lifecycle": true,
+    "no_implicit_reinstall_transfer": true,
+    "rotation_not_consent": true,
+    "current_generation_vector": true,
+    "exact_source_job_action": true,
+    "provider_ids_not_ownership": true,
+    "policy_not_consent": true,
+    "ask_once_per_logical_recording": true,
+    "prompt_history_survives_restart_toggle_chunks": true,
+    "batch_selected_snapshot_only": true,
+    "deferred_requires_explicit_action": true,
+    "leaving_always_invalidates_inherited": true,
+    "explicit_grants_survive_policy_change": true,
+    "manual_never_autonomous": true,
+    "reconnect_scheduling_only": true,
+    "retry_revalidates": true,
+    "new_attempt_same_action": true,
+    "provider_region_no_silent_expansion": true,
+    "zero_unauthorized_audio_bytes": true,
+    "issue_allow_before_upload": true,
+    "revalidate_each_bounded_part": true,
+    "atomic_revocation_fence": true,
+    "cumulative_byte_ceiling": true,
+    "cancellation_not_erasure": true,
+    "credential_consent_deletion_distinct": true,
+    "local_independent_of_cloud": true,
+    "no_privileged_android_credential": true,
+    "no_secret_fields": true,
+    "no_auth_technology_selection": true,
+    "no_content_logging": true,
+    "historical_issuance_independently_validated": true,
+    "unchanged_revision_immutable_evidence": true,
+    "batch_transition_covers_every_presented_recording": true
+  },
+  "operations": {
+    "CREATE_CLOUD_JOB": {
+      "consent": true,
+      "source_available": true,
+      "job_binding": false,
+      "operation_policy": true
+    },
+    "ISSUE_UPLOAD_AUTHORITY": {
+      "consent": true,
+      "source_available": true,
+      "job_binding": true,
+      "operation_policy": true
+    },
+    "UPLOAD_AUDIO": {
+      "consent": true,
+      "source_available": true,
+      "job_binding": true,
+      "operation_policy": true
+    },
+    "RETRY_UPLOAD": {
+      "consent": true,
+      "source_available": true,
+      "job_binding": true,
+      "operation_policy": true
+    },
+    "DISPATCH_ASR": {
+      "consent": true,
+      "source_available": true,
+      "job_binding": true,
+      "operation_policy": true
+    },
+    "RETRY_ASR": {
+      "consent": true,
+      "source_available": true,
+      "job_binding": true,
+      "operation_policy": true
+    },
+    "READ_JOB_STATUS": {
+      "consent": true,
+      "source_available": false,
+      "job_binding": true,
+      "operation_policy": false
+    },
+    "READ_RESULT": {
+      "consent": true,
+      "source_available": false,
+      "job_binding": true,
+      "operation_policy": false
+    },
+    "CANCEL_JOB": {
+      "consent": false,
+      "source_available": false,
+      "job_binding": true,
+      "operation_policy": false
+    }
+  },
+  "local_prerequisites": [],
+  "auth_mechanism": "REQUIRED / IMPLEMENTATION_NOT_SELECTED",
+  "reference_semantics": {
+    "authorization_ref": "current DISPATCH_ASR or RETRY_ASR ALLOW AuthorizationDecision",
+    "consent_scope_ref": "evaluated CloudConsentGrant.scope.scope_ref",
+    "ownership_binding_ref": "exact RecordingOwnershipBinding revision"
+  },
+  "forbidden_assumptions": [
+    "credential_is_consent",
+    "credential_is_ownership",
+    "consent_is_authentication",
+    "recording_id_is_ownership",
+    "policy_is_grant",
+    "reconnect_is_consent",
+    "provider_id_is_owner",
+    "retained_history_is_permission",
+    "signed_expiry_alone_enforces_revocation"
+  ],
+  "non_execution": {
+    "auth_backend_runtime": "NOT_IMPLEMENTED",
+    "token_issuance_runtime": "NOT_IMPLEMENTED",
+    "login_account_runtime": "NOT_IMPLEMENTED",
+    "ownership_runtime": "NOT_IMPLEMENTED",
+    "consent_runtime": "NOT_IMPLEMENTED",
+    "authorization_evaluator": "NOT_IMPLEMENTED",
+    "upload_authority_runtime": "NOT_IMPLEMENTED",
+    "object_storage_runtime": "NOT_IMPLEMENTED",
+    "cloud_backend_runtime": "NOT_IMPLEMENTED",
+    "aws_adapter_runtime": "NOT_IMPLEMENTED",
+    "transcript_persistence": "NOT_IMPLEMENTED",
+    "merge_runtime": "NOT_IMPLEMENTED",
+    "recording": "NOT_IMPLEMENTED",
+    "7.3": "NOT_STARTED",
+    "7.3C": "NOT_STARTED",
+    "stage8": "NOT_STARTED",
+    "auth_technology": "NOT_SELECTED",
+    "identity_provider": "NOT_SELECTED",
+    "device_attestation": "NOT_SELECTED",
+    "gms_firebase_dependency": "NOT_ADDED",
+    "recovery_integration": "NOT_RUN",
+    "audio_upload": "NOT_RUN",
+    "real_product_audio": "NOT_USED",
+    "aws": "NOT_CALLED",
+    "aws_spend_by_task": 0,
+    "first_real_product_audio": "NOT_READY"
+  }
+}
