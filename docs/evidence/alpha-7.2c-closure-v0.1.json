@@ -1,0 +1,29 @@
+{
+  "task": "7.2C",
+  "verdict": "PASS / REPLACEABLE_CLOUD_ASR_PROVIDER_CONTRACT_READY",
+  "basis": "Implementation exact-SHA CI, offline tests, self-review, independent findings fixed, Sheet readback",
+  "implementation_sha": "5c3ce1f0044f29582e2dc99283293b32468e2a9c",
+  "implementation_ci": 36695084857,
+  "publication_gate": "Final evidence HEAD exact-SHA CI and current-HEAD Sheet readback required separately; task publication receipt is authoritative for final publication",
+  "next": "7.2D — Versioned transcript storage and edit anchors = NOT_STARTED",
+  "non_execution": {
+    "7.2D": "NOT_STARTED",
+    "7.2E": "NOT_STARTED",
+    "7.3": "NOT_STARTED",
+    "7.3C": "NOT_STARTED",
+    "stage8": "NOT_STARTED",
+    "backend_runtime": "NOT_IMPLEMENTED",
+    "worker_runtime": "NOT_IMPLEMENTED",
+    "adapter_runtime": "NOT_IMPLEMENTED",
+    "android_cloud_api": "NOT_IMPLEMENTED",
+    "transcript_persistence": "NOT_IMPLEMENTED",
+    "auth_runtime": "NOT_IMPLEMENTED",
+    "ownership_runtime": "NOT_IMPLEMENTED",
+    "audio_upload": "NOT_RUN",
+    "real_audio": "NOT_USED",
+    "first_real_product_audio": "NOT_READY",
+    "aws": "NOT_CALLED",
+    "aws_spend_by_task": 0,
+    "recovery_integration": "NOT_RUN"
+  }
+}

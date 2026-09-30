@@ -1,0 +1,56 @@
+{
+  "task": "7.2C",
+  "implementation_sha": "5c3ce1f0044f29582e2dc99283293b32468e2a9c",
+  "scope": "offline contract design and validation only",
+  "new_tests": {
+    "total": 24,
+    "request_identity_result_lifecycle_and_schema": 16,
+    "retry_matrix": 3,
+    "adapter_profile_mapping_and_authority": 5,
+    "failures": 0
+  },
+  "red_green": {
+    "initial": "20 expected missing-validator failures before implementation",
+    "review": "2 regression tests / 8 subcases failed before fixes; 24 final tests pass"
+  },
+  "checks": {
+    "stage00": "PASS (7)",
+    "cloud_contract": "PASS",
+    "retained_62d_adjudication": "PASS (4)",
+    "signing_boundary": "PASS (6)",
+    "compiled_boundary_controls": "PASS (5)",
+    "compiled_boundary": "PASS (402 model / 92 app dependencies; unchanged existing compiled classes)",
+    "git_diff_check": "PASS",
+    "public_secret_pattern_audit": "PASS (7 implementation files)"
+  },
+  "review": {
+    "independent": {
+      "critical": 0,
+      "important": 2,
+      "minor": 0,
+      "disposition": "Both independently reproduced and fixed: ambiguous polling terminal status; result provider namespace mismatch",
+      "re_review": "NOT_RUN; implementer verified regression fixes"
+    },
+    "self_review": "Provider wire/credentials absent from generic fields; original audio and DORA identities bound; opaque references not auth proof; cancellation confirmation requires existing bound accepted operation; unique segment IDs; no invented capabilities; no runtime/dependency/Android/PoC/history changes."
+  },
+  "non_execution": {
+    "7.2D": "NOT_STARTED",
+    "7.2E": "NOT_STARTED",
+    "7.3": "NOT_STARTED",
+    "7.3C": "NOT_STARTED",
+    "stage8": "NOT_STARTED",
+    "backend_runtime": "NOT_IMPLEMENTED",
+    "worker_runtime": "NOT_IMPLEMENTED",
+    "adapter_runtime": "NOT_IMPLEMENTED",
+    "android_cloud_api": "NOT_IMPLEMENTED",
+    "transcript_persistence": "NOT_IMPLEMENTED",
+    "auth_runtime": "NOT_IMPLEMENTED",
+    "ownership_runtime": "NOT_IMPLEMENTED",
+    "audio_upload": "NOT_RUN",
+    "real_audio": "NOT_USED",
+    "first_real_product_audio": "NOT_READY",
+    "aws": "NOT_CALLED",
+    "aws_spend_by_task": 0,
+    "recovery_integration": "NOT_RUN"
+  }
+}

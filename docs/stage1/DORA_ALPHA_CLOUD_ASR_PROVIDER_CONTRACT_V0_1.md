@@ -1,6 +1,17 @@
 # 7.2C вЂ” Replaceable Cloud ASR provider contract v0.1
 
-Status: CONTRACT_DEFINED_AWAITING_EXACT_SHA_CI. Runtime NOT_IMPLEMENTED.
+Status: PASS / REPLACEABLE_CLOUD_ASR_PROVIDER_CONTRACT_READY. Runtime NOT_IMPLEMENTED.
+
+Implementation `5c3ce1f0044f29582e2dc99283293b32468e2a9c` passed exact-SHA
+[CI 36695084857](https://github.com/Monumentogram/DORA/actions/runs/36695084857),
+both required jobs and all mandatory steps. 24 new offline tests pass; independent
+review's two Important findings were reproduced and fixed before publication.
+See [local/review](../evidence/alpha-7.2c-local-v0.1.json),
+[CI](../evidence/alpha-7.2c-ci-v0.1.json),
+[Sheet readback](../evidence/alpha-7.2c-sheet-v0.1.json) and
+[closure](../evidence/alpha-7.2c-closure-v0.1.json).
+The evidence-only publication HEAD is verified separately after committing;
+its CI and final Sheet HEAD readback belong to the task publication receipt.
 
 ## Scope and authority
 
@@ -157,7 +168,7 @@ the owner's two-commit sequence overrides separate spec/plan commits and approva
   wire the validator/tests into mandatory Android CI.
 - [x] Review provider leakage, identity substitution, uncertain retries, invented
   metadata/cancellation, persistence/auth/runtime scope and credential fields.
-- [ ] Publish implementation commit; await both exact-SHA CI jobs.
+- [x] Publish implementation commit; await both exact-SHA CI jobs.
 - [ ] Update Sheet with complete readback; publish evidence/status-only commit;
   reconcile final HEAD and await its CI separately.
 

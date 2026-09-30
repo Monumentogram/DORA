@@ -3,7 +3,7 @@
   "contract_version": "0.1",
   "name": "CloudAsrProvider",
   "scope": "SERVER_SIDE_CONTRACT_ONLY",
-  "status": "CONTRACT_DEFINED_AWAITING_EXACT_SHA_CI",
+  "status": "PASS / REPLACEABLE_CLOUD_ASR_PROVIDER_CONTRACT_READY",
   "type_language": "closed records; all fields required; ? nullable; [] array; enums closed; unknown extra fields rejected",
   "architecture": [
     "DORA_ANDROID",

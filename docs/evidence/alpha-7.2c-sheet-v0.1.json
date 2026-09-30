@@ -1,0 +1,109 @@
+{
+  "task": "7.2C",
+  "spreadsheet_id": "1dgZr-BGlI1v8iPEK0ay9CI9mGhiGlJvG2-tTxyJhhOc",
+  "url": "https://docs.google.com/spreadsheets/d/1dgZr-BGlI1v8iPEK0ay9CI9mGhiGlJvG2-tTxyJhhOc/edit",
+  "after_implementation_ci": 36695084857,
+  "repository_head_at_readback": "5c3ce1f0044f29582e2dc99283293b32468e2a9c",
+  "readback": "PASS_21_OF_21_CELLS_EXACT",
+  "format": "All changed cells WRAP; value-only updates preserve formats/formulas/validation; changed rows auto-resized",
+  "visual_check": "UNAVAILABLE: browser navigation and focus commands timed out; connector readback and preserved wrap/format will be verified",
+  "changed_cells": [
+    {
+      "range": "'Этапы'!C60",
+      "value": "ПРОЙДЕНО"
+    },
+    {
+      "range": "'Этапы'!I56",
+      "value": "30.09.2026 — Group C В РАБОТЕ. 7.1, 7.2 и 7.2C PASS. Cloud ASR contract готов; Cloud runtime NOT_IMPLEMENTED."
+    },
+    {
+      "range": "'Этапы'!J56",
+      "value": "Следующая отдельная задача — 7.2D, НЕ НАЧАТО. Recovery clean replacement — отдельно до Stage 8 recording/storage acceptance."
+    },
+    {
+      "range": "'Этапы'!I57",
+      "value": "30.09.2026 — Stage 7 В РАБОТЕ; 7.2C PASS / REPLACEABLE_CLOUD_ASR_PROVIDER_CONTRACT_READY. stage/7-alpha-foundation HEAD 5c3ce1f0044f29582e2dc99283293b32468e2a9c; PR #87 OPEN / DRAFT / UNMERGED."
+    },
+    {
+      "range": "'Этапы'!J57",
+      "value": "Next 7.2D — НЕ НАЧАТО. 7.2E НЕ НАЧАТО; 7.3/7.3C ЗАПЛАНИРОВАНО, выполнение NOT_STARTED; Stage 8 НЕ НАЧАТО."
+    },
+    {
+      "range": "'Этапы'!J58",
+      "value": "7.1, 7.2 и 7.2C закрыты. Next: 7.2D — отдельная задача, НЕ НАЧАТО. PR #86 OPEN / DRAFT / UNMERGED, не изменён; Recovery clean replacement — до Stage 8 acceptance."
+    },
+    {
+      "range": "'Этапы'!J59",
+      "value": "7.2C contract PASS; Android RecognitionPort сохранён отдельно. Next 7.2D NOT_STARTED. Recording/storage/ASR runtime NOT_IMPLEMENTED; PR #87 draft/unmerged."
+    },
+    {
+      "range": "'Этапы'!I60",
+      "value": "PASS / REPLACEABLE_CLOUD_ASR_PROVIDER_CONTRACT_READY. ADR-0017; versioned generic contract + separate evidence-bound AWS profile. 24 offline tests PASS; implementation 5c3ce1f0044f29582e2dc99283293b32468e2a9c; оба обязательных jobs SUCCESS: https://github.com/Monumentogram/DORA/actions/runs/36695084857"
+    },
+    {
+      "range": "'Этапы'!J60",
+      "value": "Next 7.2D NOT_STARTED. Contract only: no backend/worker/adapter runtime, auth/ownership or persistence. AWS NOT_CALLED; audio NOT_USED; FIRST_REAL_PRODUCT_AUDIO NOT_READY."
+    },
+    {
+      "range": "'Сводка'!C2",
+      "value": "30.09.2026 — Stage 0 / 6.3 / 7.1 / 7.2 PASS сохранены; 7.2C PASS / REPLACEABLE_CLOUD_ASR_PROVIDER_CONTRACT_READY. Stage 7 и Group C В РАБОТЕ; Next 7.2D НЕ НАЧАТО. HEAD 5c3ce1f0044f29582e2dc99283293b32468e2a9c; PR #87 OPEN / DRAFT / UNMERGED; PR #86 не изменён."
+    },
+    {
+      "range": "'Сводка'!B4",
+      "value": "Stage 7 В РАБОТЕ; 7.1, 7.2 и 7.2C ПРОЙДЕНО"
+    },
+    {
+      "range": "'Сводка'!C4",
+      "value": "7.2C: server-side CloudAsrProvider contract, original-audio binding, normalized results/errors/retry и отдельный admitted-provider profile. Cloud runtime NOT_IMPLEMENTED; FIRST_REAL_PRODUCT_AUDIO NOT_READY."
+    },
+    {
+      "range": "'Сводка'!C5",
+      "value": "com.monumentogram.dora; version 2 / 0.1.0-alpha.1, identity/signing сохранены. 7.2C не меняет Android. CI implementation PASS: https://github.com/Monumentogram/DORA/actions/runs/36695084857"
+    },
+    {
+      "range": "'Сводка'!B6",
+      "value": "7.2D — Versioned transcript storage и edit anchors — НЕ НАЧАТО"
+    },
+    {
+      "range": "'Сводка'!C6",
+      "value": "Только следующая отдельная задача; автоматически не запускать. 7.2E НЕ НАЧАТО; 7.3/7.3C ЗАПЛАНИРОВАНО; Stage 8 НЕ НАЧАТО. Recovery clean replacement отдельно до Stage 8 acceptance."
+    },
+    {
+      "range": "'Сводка'!B14",
+      "value": "Stage 0 PASS → 7.1 PASS → 7.2 PASS → 7.2C PASS → 7.2D NOT_STARTED"
+    },
+    {
+      "range": "'Сводка'!C14",
+      "value": "6.3 и frozen baseline сохранены. Implementation 7.2C 5c3ce1f0044f29582e2dc99283293b32468e2a9c; repository HEAD 5c3ce1f0044f29582e2dc99283293b32468e2a9c; CI https://github.com/Monumentogram/DORA/actions/runs/36695084857. Group C / Stage 7 В РАБОТЕ; Recovery clean replacement до Stage 8 acceptance."
+    },
+    {
+      "range": "'Сводка'!C23",
+      "value": "Amazon Transcribe STANDARD_BATCH_FILE_ASR / eu-central-1: OWNER_ONLY_CLOSED_INTERNAL_ALPHA. RU 9.4972% PASS; EN READ 20.4420% historical FAIL + OD-62D-EN-01 owner limitation. 7.2C contract PASS; runtime NOT_IMPLEMENTED; FIRST_REAL_PRODUCT_AUDIO NOT_READY."
+    },
+    {
+      "range": "'Сводка'!C26",
+      "value": "6.2D owner-only provider admission и 6.3 development admission PASS сохранены. 7.2C provider contract PASS; next 7.2D NOT_STARTED. Runtime downstream; External Legal по прежним triggers."
+    },
+    {
+      "range": "'Сводка'!B29",
+      "value": "7.2D NOT_STARTED / NEXT; Recovery clean replacement — до Stage 8"
+    },
+    {
+      "range": "'Сводка'!C29",
+      "value": "7.2C contract PASS. PR86-INTEGRATION-RECONCILIATION = PASS / CLEAN_REPLACEMENT_PR; PR #86 OPEN / DRAFT / UNMERGED, не изменён. 7.2D автоматически не начинать; Recovery replacement — отдельная задача."
+    }
+  ],
+  "stage_statuses": [
+    "В РАБОТЕ",
+    "В РАБОТЕ",
+    "ПРОЙДЕНО",
+    "ПРОЙДЕНО",
+    "ПРОЙДЕНО",
+    "НЕ НАЧАТО",
+    "НЕ НАЧАТО",
+    "ЗАПЛАНИРОВАНО",
+    "ЗАПЛАНИРОВАНО",
+    "НЕ НАЧАТО"
+  ],
+  "final_head_reconciliation": "After evidence commit, current HEAD cells will be updated/read back separately in task publication receipt; this committed snapshot binds implementation SHA."
+}
