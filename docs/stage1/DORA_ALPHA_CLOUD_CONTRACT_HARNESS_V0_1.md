@@ -1,6 +1,6 @@
 # 7.3C — Deterministic Cloud contract harness v0.1
 
-Status: IMPLEMENTATION_PENDING / EXACT_SHA_CI_REQUIRED.
+Status: PASS / DETERMINISTIC_CLOUD_CONTRACT_HARNESS_READY.
 
 ## Scope and decision
 
@@ -146,3 +146,9 @@ integration/audio upload NOT_RUN. Real network/provider/audio NOT_USED by harnes
 AWS NOT_CALLED, spend 0 BY THIS TASK; FIRST_REAL_PRODUCT_AUDIO NOT_READY.
 Next separate roadmap task: Stage 8 preparation; Recovery clean replacement is
 required before Stage 8 recording/storage acceptance. Group C remains IN PROGRESS.
+
+## Technical closure — 2026-09-30
+
+Implementation `7899d3eb134b549258316ae9369459afa77857a3` passes [exact-SHA CI 36731600770](https://github.com/Monumentogram/DORA/actions/runs/36731600770), both mandatory jobs and every required step. 62 scenarios and 35 harness tests pass; two separate processes (hash seeds 1/937), each running twice, produce identical report bytes, counters and trace digest `e3fbb85ac3c1dafe2ac8ad59d05bae2b86cae0f45133e725b80b2ad37566288c`. 150 frozen-contract tests, 34 signing/release/boundary tests and 401 JVM tests pass locally. All five important and one minor review findings are corrected and regression-tested; no unresolved P0/P1. See the five `alpha-7.3c-*-v0.1.json` evidence files.
+
+Stage 7 = PASS / ALPHA_FOUNDATION_READY; Group C remains IN_PROGRESS; Stage 8 NOT_STARTED. The subsequent docs-only HEAD still requires exact-SHA CI, final PR metadata and Sheet readback, recorded separately to avoid a self-referential commit.

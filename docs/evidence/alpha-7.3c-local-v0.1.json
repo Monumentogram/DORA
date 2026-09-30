@@ -1,0 +1,172 @@
+{
+  "task": "7.3C",
+  "implementation_sha": "7899d3eb134b549258316ae9369459afa77857a3",
+  "verdict": "PASS_LOCAL",
+  "python_tests_total": 219,
+  "checks": [
+    {
+      "command": "python -m unittest discover -s tools -p test_cloud_contract_harness.py",
+      "tests": 35,
+      "result": "PASS",
+      "log_sha256": "f582442b2aec7c026dbc7b414824f6252f3c093a40e361f29141b0e5d3c5fbd1"
+    },
+    {
+      "command": "python -m unittest discover -s tools -p test_cloud_asr_provider_contract.py",
+      "tests": 24,
+      "result": "PASS",
+      "log_sha256": "058eb0be6d13450f0bd8aa46930cd5e0b06581b4e295e5177497b43e477f3a6f"
+    },
+    {
+      "command": "python -m unittest discover -s tools -p test_transcript_versioning_contract.py",
+      "tests": 44,
+      "result": "PASS",
+      "log_sha256": "d249d4be05f32764e498fbacd1a93aa591bb2294525a035aec500a7ead533541"
+    },
+    {
+      "command": "python -m unittest discover -s tools -p test_cloud_identity_auth_contract.py",
+      "tests": 82,
+      "result": "PASS",
+      "log_sha256": "49cd38add2ebbfabad87950e5fb1642f6554dd951d53b9ab0c0c0c077954987e"
+    },
+    {
+      "command": "python -m unittest discover -s tools -p test_build_internal_alpha.py",
+      "tests": 8,
+      "result": "PASS",
+      "log_sha256": "b3381c0a199846790b526041be0d545177d20b70b087c694a1eec1a83f70ed13"
+    },
+    {
+      "command": "python -m unittest discover -s tools -p test_validate_alpha_release.py",
+      "tests": 14,
+      "result": "PASS",
+      "log_sha256": "877f22456d81234f4059cada46aaf5ea47b7084fdbdcf8c30ef5f538a8de4ebe"
+    },
+    {
+      "command": "python -m unittest discover -s tools -p test_alpha_release_sbom.py",
+      "tests": 6,
+      "result": "PASS",
+      "log_sha256": "9fffdea0efcd3158e0ccb98821834c20fd1bae324487987a4e66293ade84ab8b"
+    },
+    {
+      "command": "python -m unittest discover -s tools -p test_alpha_release_graph.py",
+      "tests": 1,
+      "result": "PASS",
+      "log_sha256": "d6ab5b2e6e379465fa16c863d46a401b7da4aa0c5068c2d0e7c5c963a64f31cd"
+    },
+    {
+      "command": "python -m unittest discover -s tools -p test_verify_alpha_boundaries.py",
+      "tests": 5,
+      "result": "PASS",
+      "log_sha256": "4dc86541abab85d07737f369c41bb3a228814e7ccda6f2550cddec0ca8af3d37"
+    }
+  ],
+  "jvm": {
+    "tests": 401,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "result": "PASS"
+  },
+  "gradle": {
+    "result": "BUILD_SUCCESSFUL",
+    "scope": "spotlessCheck detekt; app/core/capture/recovery/search JVM; app/capture/recovery/search instrumentation compilation, lint and debug assembly",
+    "windows_path_adapter": "Existing owner-local init script shortens Detekt input paths with canonical-input equality assertion; no repository changes",
+    "log_sha256": "c6384026a53a24666098d49a54a6d07034e00f02b70d19e35c5826aee12c0b4d"
+  },
+  "vpn_host": "PASS contract-kernel-host-oracle",
+  "static_checks": {
+    "stage00": "PASS",
+    "capture": "PASS",
+    "search": "PASS",
+    "recovery_governance": "PASS",
+    "compiled_alpha_boundaries": "PASS",
+    "7.3_release_provenance": "PASS",
+    "hermetic_import_guard": "PASS",
+    "public_secret_marker_scan": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "recovery_execution": "BLOCKED_AS_EXPECTED",
+  "determinism": {
+    "processes": 2,
+    "python_hash_seeds": [
+      1,
+      937
+    ],
+    "each_process_runs": 2,
+    "scenario_count": 62,
+    "digest": "e3fbb85ac3c1dafe2ac8ad59d05bae2b86cae0f45133e725b80b2ad37566288c",
+    "report_file_sha256": "dc7e404260012a4f1ddcd8b0af8818b95c227384997ce7dcbfadb62ad52e923f",
+    "result": "BYTE_IDENTICAL_REPORTS_AND_EQUAL_TRACES_COUNTS"
+  },
+  "review": {
+    "independent_agent": "cloud_harness_review",
+    "mode": "fresh_context_read_only_adversarial",
+    "reviewed_base": "1e34b9d7fe4a7f4aa43095244d75bbe3e1b49018",
+    "reviewed_scope": "uncommitted implementation and tests",
+    "findings": {
+      "critical": 0,
+      "important": 5,
+      "minor": 1
+    },
+    "fix_verification": "AUTHOR_RED_GREEN_REGRESSIONS; no second independent review claimed",
+    "unresolved_p0_p1": 0,
+    "unresolved_minor": 0,
+    "fixes": [
+      {
+        "finding": "Permanent failure reconciliation unlocked retry",
+        "regression": "test_reconciliation_cannot_unlock_permanent_rejection",
+        "outcome": "RED_THEN_GREEN"
+      },
+      {
+        "finding": "Confirmed cancellation regressed",
+        "regression": "test_confirmed_cancel_is_monotonic",
+        "outcome": "RED_THEN_GREEN"
+      },
+      {
+        "finding": "Stale proposal acceptance did not invoke activation guard",
+        "regression": "test_stale_proposal_never_moves_selection + test_current_resolved_proposal_can_activate",
+        "outcome": "RED_THEN_GREEN"
+      },
+      {
+        "finding": "Delayed callback lost attempt correlation",
+        "regression": "test_delayed_result_cannot_be_rebound_to_a_new_attempt",
+        "outcome": "RED_THEN_GREEN"
+      },
+      {
+        "finding": "Mutable operation redefined namespace",
+        "regression": "test_bound_namespace_cannot_redefine_dispatch_identity",
+        "outcome": "RED_THEN_GREEN"
+      },
+      {
+        "finding": "Job forgery test had unrelated already-bound rejection",
+        "regression": "test_job_binding_forgery_and_provider_identity_substitution",
+        "outcome": "UNBOUND_LEDGER_AND_EXACT_REASON_GREEN"
+      }
+    ]
+  },
+  "non_execution": {
+    "stage8": "NOT_STARTED",
+    "recording": "NOT_IMPLEMENTED",
+    "vad": "NOT_IMPLEMENTED",
+    "product_audio_storage": "NOT_IMPLEMENTED",
+    "recovery_integration": "NOT_RUN",
+    "transcript_persistence": "NOT_IMPLEMENTED",
+    "merge_runtime": "NOT_IMPLEMENTED",
+    "auth_backend_runtime": "NOT_IMPLEMENTED",
+    "cloud_backend_runtime": "NOT_IMPLEMENTED",
+    "object_storage_runtime": "NOT_IMPLEMENTED",
+    "aws_adapter_runtime": "NOT_IMPLEMENTED",
+    "real_network": "NOT_USED_BY_HARNESS",
+    "real_provider": "NOT_USED",
+    "audio_upload": "NOT_RUN",
+    "real_product_audio": "NOT_USED",
+    "aws": "NOT_CALLED",
+    "aws_spend_by_task": 0,
+    "first_real_product_audio": "NOT_READY",
+    "alpha_release": "0.1.0-alpha.2 / 4",
+    "alpha_release_artifact": "UNCHANGED",
+    "release_requalification": "NOT_REQUIRED",
+    "main": "NOT_CHANGED",
+    "pr86": "UNTOUCHED",
+    "pr87": "OPEN / DRAFT / UNMERGED"
+  }
+}

@@ -1,0 +1,1682 @@
+{
+  "task": "7.3C",
+  "implementation_sha": "7899d3eb134b549258316ae9369459afa77857a3",
+  "scenario_count": 62,
+  "digest": "e3fbb85ac3c1dafe2ac8ad59d05bae2b86cae0f45133e725b80b2ad37566288c",
+  "scenarios": [
+    {
+      "id": "AUTH_NO_CREDENTIAL",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "9bcef036f61c94c12381d9d5e4be83f926bc998387b44eac3ab915e1bd4788b1"
+    },
+    {
+      "id": "AUTH_WRONG_OWNER",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "9e65375677874d789c8a60b7d14408af652ba0104dfec2ea688b4cb0f6828b70"
+    },
+    {
+      "id": "AUTH_NO_CONSENT",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "f0c701f876822ff523defbd4ca3fddebb15ac44020f434af6ba6789cf32c07c8"
+    },
+    {
+      "id": "AUTH_PENDING",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "6eeb8d1a0fda91751d0ed1b6f463c191c7bad2ba0c2dea93fbaa285e053a2942"
+    },
+    {
+      "id": "AUTH_DEFERRED",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "f1eacfd9d270165f6ad3da33ee44311303728a51ff0e5bfffcae20b973ae7ec8"
+    },
+    {
+      "id": "AUTH_REVOKED",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "d423d99d844d4a2c8a3df143e4a74f9931eedc15282c30927213de714f89d5a4"
+    },
+    {
+      "id": "AUTH_EXPIRED",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "52692dadfed737ec990eb0cdcad13240d29dd45bae160837f6f12f1f5bc80394"
+    },
+    {
+      "id": "AUTH_WRONG_SOURCE",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "3874878973e00fcb23b6dfe10006ce6d25a0191e53e5c02c43db9fa98d84656a"
+    },
+    {
+      "id": "AUTH_ROUTE",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "8c7d262f9c43a4c6c8f14daaabba01025962f776460de9e5aa3b7dc9311291fc"
+    },
+    {
+      "id": "AUTH_UNAVAILABLE",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "4c5cad5e1a64fba6ad4c40554dec2cb942d66e146e8162313fbe8f532a42966a"
+    },
+    {
+      "id": "AUTH_WRONG_JOB",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "e9eea5bf12b2c8e2743cc668fd133b695a0a1340d59e1708b9f0b9d3f161c8b2"
+    },
+    {
+      "id": "AUTH_WRONG_ACTION",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "dbd796c2da0eaf1050ccc8af7be1dc8bca82c43f6efbb5ecaed71323f2141bc7"
+    },
+    {
+      "id": "FENCE_CREDENTIAL_REVOKED",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "3de09e956cd204762b88762bb7f925640e79841dd059089d949a3e1b486d99b4"
+    },
+    {
+      "id": "FENCE_GRANT_REVISION",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "1dc1595c880a8c2435b6ef2cb2bf57e13ac0391018b1c1260626a0b40069a4bf"
+    },
+    {
+      "id": "FENCE_AUTH_REVISION",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "7f3145f191e869a9a3cc65a6ad933b340d16185751114aaabe123f30f2567339"
+    },
+    {
+      "id": "FENCE_DELETION_EPOCH",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "5bd3cef2c49c91f1174f26a1f0bd6aa05e9a47302b65016d44ba8be4eb0e158c"
+    },
+    {
+      "id": "FENCE_SOURCE_REPLACEMENT",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "1a6befa0c747eaf04448bf6a44a96e32bde31eb479bfc26b0cc084951e9cc7f0"
+    },
+    {
+      "id": "FENCE_ROUTE",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "ffe571b4c8708249cc920186073e145782650862421c8e556bd13cec37994d1a"
+    },
+    {
+      "id": "FENCE_REVOKED",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "f475f6ce3d3db5fe09ab4d6d3119126f3cc323021820d7e2c1c438833f4666f3"
+    },
+    {
+      "id": "FENCE_AUTHORITY_EXPIRED",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "dad1dc388a80dba12becf9daa268d3669121ea3ffaf6a3f39f27e0b00763c6d8"
+    },
+    {
+      "id": "FENCE_CREDENTIAL_GENERATION",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "6a4441c68e4690535d36f070522640d0bb77a74f5a1a89af64b55e0a2616876a"
+    },
+    {
+      "id": "FENCE_OWNER_REVISION",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 400,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "d3dab7d90e049712933bed794db1a2f62956525d507c1b9f5af45b95ef6ce94b"
+    },
+    {
+      "id": "UPLOAD_CEILING",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 800,
+        "rejected_bytes": 600,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 1,
+        "accepted_bytes": 800,
+        "rejected_bytes": 600,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "1960bcb5faab2eb77b6196457ee92669badf6b0735d70f3017eb4dc8898e2b12"
+    },
+    {
+      "id": "CREATE_DENIED",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 0,
+        "logical_jobs": 0,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 0,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 0,
+        "logical_jobs": 0,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 0,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "6e9d7ba69af51ee86df4fae81be5541de3374d948dabd8d70df0dbdbef266a79"
+    },
+    {
+      "id": "NO_AUTHORITY",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 0,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 0,
+        "provider_submits": 0,
+        "upload_authorities": 0,
+        "accepted_bytes": 0,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "f2558579c86517d254d50a6cf3647277f284e32f5d915bb2bb5cb32f01c5b3b7"
+    },
+    {
+      "id": "PROVIDER_HAPPY",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "trace_sha256": "638c88466f36483cb106d80af4de2ffd10c1dfeddd4e95094f89aed97734ab3b"
+    },
+    {
+      "id": "OUTPUT_ONLY",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "ac40e4fd91073a88f7a8c314953812fc8dedfbc44c55e50fd64bfd307f99ae3c"
+    },
+    {
+      "id": "UNCERTAIN_WAIT",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "a5463a18c45192121b5b70e30b92b4588daec8af92b0e1700e963172d06ee951"
+    },
+    {
+      "id": "UNCERTAIN_FOUND",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "trace_sha256": "a9af61aeab261bddbd977986e2b036e93411ad11576483d7766fc3296c1ddb1e"
+    },
+    {
+      "id": "PROVEN_NOT_ACCEPTED",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 2,
+        "provider_submits": 2,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 2,
+        "provider_submits": 2,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "trace_sha256": "f62d96dbae3136acbb298473541de75c9b694d1d439a7f2201194bc900824b71"
+    },
+    {
+      "id": "CONFLICT_FOUND",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "trace_sha256": "a9af61aeab261bddbd977986e2b036e93411ad11576483d7766fc3296c1ddb1e"
+    },
+    {
+      "id": "RETRY_INVALID_REQUEST",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "517a44ce0c7636696bd69128dbdb0d7666908bc0f1c778274c72bdaf2cc15b39"
+    },
+    {
+      "id": "RETRY_SOURCE_UNAVAILABLE",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "517a44ce0c7636696bd69128dbdb0d7666908bc0f1c778274c72bdaf2cc15b39"
+    },
+    {
+      "id": "RETRY_TRANSIENT_REJECTED",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 2,
+        "provider_submits": 2,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 2,
+        "provider_submits": 2,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "51ec77bc4598cc78663dbbdba71e4723b8db675a9e95b1fa239d866bf1b8d81e"
+    },
+    {
+      "id": "RETRY_BEFORE_DISPATCH",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 2,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 2,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "51ec77bc4598cc78663dbbdba71e4723b8db675a9e95b1fa239d866bf1b8d81e"
+    },
+    {
+      "id": "DUPLICATE_RESULT",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "trace_sha256": "12cc3593cb9cea31aaed2da14cea1226bae18f7ecf581d499ddb3b9976c7edd0"
+    },
+    {
+      "id": "RESULT_NAMESPACE",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "ac2cda1467e1c85a5978c934229bf77bbc7012facd4bb32d60050aaecbdae9b5"
+    },
+    {
+      "id": "RESULT_SOURCE",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "ac2cda1467e1c85a5978c934229bf77bbc7012facd4bb32d60050aaecbdae9b5"
+    },
+    {
+      "id": "RESULT_JOB",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "ac2cda1467e1c85a5978c934229bf77bbc7012facd4bb32d60050aaecbdae9b5"
+    },
+    {
+      "id": "RESULT_ATTEMPT",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "ac2cda1467e1c85a5978c934229bf77bbc7012facd4bb32d60050aaecbdae9b5"
+    },
+    {
+      "id": "RESULT_CONFIGURATION",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "ac2cda1467e1c85a5978c934229bf77bbc7012facd4bb32d60050aaecbdae9b5"
+    },
+    {
+      "id": "RESULT_MAPPING",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "ac2cda1467e1c85a5978c934229bf77bbc7012facd4bb32d60050aaecbdae9b5"
+    },
+    {
+      "id": "LATE_EDIT",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "bb387710835e8eb214e5ed91bfed46e75a0bad094f42a1136ebd9a6162ade3bb"
+    },
+    {
+      "id": "STALE_PROPOSAL",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "1091834726c01d04a81dd5089d49d56d5f5251b0d1d4487923911a633916cbe0"
+    },
+    {
+      "id": "MANUAL_LATE",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "trace_sha256": "ecc792b6772e4396226e983fc8b2e4ae2e668ac0231a47e1d20c8d723bfffe9e"
+    },
+    {
+      "id": "NO_EDIT_CLOUD",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "trace_sha256": "816005b9460a872d23480836170b5abce74561919fc52544d6bc1a53b0040435"
+    },
+    {
+      "id": "CANCEL_REQUESTED",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "f526120de90d01cd8b220b6b01a754d162500a2d0b1cc932c91c8565147c5aad"
+    },
+    {
+      "id": "CANCEL_UNKNOWN",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "6d89d70666c914dca9ad7e115ffd1b1a6433cc88ccf40cbe086f1fc61a78af52"
+    },
+    {
+      "id": "CANCEL_CONFIRMED",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "1ea89327e23f3294c4d6962f431211e788f07ad80f0be2714fe9ea519fb051e5"
+    },
+    {
+      "id": "REVOKED_PROTECTIVE_CANCEL",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "670cce996aae3507e5bba5b4cbb705d8726179ab5b4a11bfcf5efe9ff8b98eff"
+    },
+    {
+      "id": "TOMBSTONE_LATE",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 100,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "bc4d15d9ac0cbc950f012e628816997ca582ba220f629d3cf32366f843570b6a"
+    },
+    {
+      "id": "REORDER_DUPLICATE",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "trace_sha256": "9bdadf794fce043f1a436c09241b2941e970777ba78c8d3315b793c713618416"
+    },
+    {
+      "id": "RECONCILE_PERMANENT_INVALID_REQUEST",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "553d36ecabd86d2cd249b95291295023324bd2cdc080addd1c53a22d4f47f04c"
+    },
+    {
+      "id": "RECONCILE_PERMANENT_SOURCE_UNAVAILABLE",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "553d36ecabd86d2cd249b95291295023324bd2cdc080addd1c53a22d4f47f04c"
+    },
+    {
+      "id": "CANCEL_REORDERED",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "7ae16423f39c2055668e3942c5bb91fbe04fc851a24712dfe915f5e0ca87157c"
+    },
+    {
+      "id": "CURRENT_PROPOSAL_ACCEPT",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "trace_sha256": "58e4d8e0114ade54f886eb8f61bc53a88fcd0388dc11c19056e99e6846f47a1b"
+    },
+    {
+      "id": "DELAYED_OLD_ATTEMPT",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 2,
+        "provider_submits": 2,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 2,
+        "provider_submits": 2,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "c672564560f9e590bc21a993cc56a004ecb3a750cbb7d03943e000d327945ec6"
+    },
+    {
+      "id": "NETWORK_DUPLICATE_REQUEST_RESPONSE",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "trace_sha256": "fe5777f041d6fbfec3349ca6fef740909e3192fba81f7c8316c1b6a73d650dc5"
+    },
+    {
+      "id": "NETWORK_REQUEST_REJECTED",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 2,
+        "provider_submits": 2,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 2,
+        "provider_submits": 2,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "c23823cf5a270a7d21d77a1c08cabd3056879b61f5552574a9bcfb387fe23242"
+    },
+    {
+      "id": "NETWORK_TRANSPORT_BEFORE_DISPATCH",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 2,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 2,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 0,
+        "active_selection_moves": 0
+      },
+      "trace_sha256": "c23823cf5a270a7d21d77a1c08cabd3056879b61f5552574a9bcfb387fe23242"
+    },
+    {
+      "id": "NETWORK_RESPONSE_LOST",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "trace_sha256": "4445048c123292323d5c3fc1e7913b3e3b6d25eb080de86816345c5e2c56dbe4"
+    },
+    {
+      "id": "NETWORK_TRANSPORT_AFTER_ACCEPTANCE",
+      "outcome": "PASS",
+      "expected_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "actual_counts": {
+        "logical_actions": 1,
+        "logical_jobs": 1,
+        "attempts": 1,
+        "provider_submits": 1,
+        "upload_authorities": 1,
+        "accepted_bytes": 400,
+        "rejected_bytes": 0,
+        "results_published": 1,
+        "active_selection_moves": 1
+      },
+      "trace_sha256": "4445048c123292323d5c3fc1e7913b3e3b6d25eb080de86816345c5e2c56dbe4"
+    }
+  ]
+}

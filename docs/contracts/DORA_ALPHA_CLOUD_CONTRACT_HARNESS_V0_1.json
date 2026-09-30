@@ -1,6 +1,6 @@
 {
   "schema_version": "dora-cloud-contract-harness-v0.1",
-  "status": "IMPLEMENTATION_PENDING / EXACT_SHA_CI_REQUIRED",
+  "status": "PASS / DETERMINISTIC_CLOUD_CONTRACT_HARNESS_READY",
   "scope": "HERMETIC_SYNTHETIC_HOST_ONLY",
   "clock": "2026-09-30T01:00:00Z; integer microseconds",
   "scenarios": [
