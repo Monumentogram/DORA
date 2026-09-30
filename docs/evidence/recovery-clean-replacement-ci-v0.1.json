@@ -1,0 +1,431 @@
+{
+  "head_sha": "49537b8a53c56a2f07cc1456926fce5c9b903b42",
+  "run_id": 36749820939,
+  "run_attempt": 1,
+  "event": "workflow_dispatch",
+  "conclusion": "success",
+  "url": "https://github.com/Monumentogram/DORA/actions/runs/36749820939",
+  "jobs": [
+    {
+      "id": 110005270227,
+      "name": "android-bootstrap",
+      "head_sha": "49537b8a53c56a2f07cc1456926fce5c9b903b42",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-09-30T17:13:15Z",
+          "completed_at": "2026-09-30T17:13:19Z"
+        },
+        {
+          "name": "Check out repository",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-09-30T17:13:19Z",
+          "completed_at": "2026-09-30T17:13:21Z"
+        },
+        {
+          "name": "Verify immutable baseline is present",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-09-30T17:13:21Z",
+          "completed_at": "2026-09-30T17:13:21Z"
+        },
+        {
+          "name": "Set up JDK 17",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-09-30T17:13:21Z",
+          "completed_at": "2026-09-30T17:13:21Z"
+        },
+        {
+          "name": "Set up Gradle and validate wrapper",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-09-30T17:13:21Z",
+          "completed_at": "2026-09-30T17:13:23Z"
+        },
+        {
+          "name": "Install Android SDK 36",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-09-30T17:13:23Z",
+          "completed_at": "2026-09-30T17:13:28Z"
+        },
+        {
+          "name": "Validate Stage 00 artifacts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-09-30T17:13:28Z",
+          "completed_at": "2026-09-30T17:13:28Z"
+        },
+        {
+          "name": "Verify owner-local Alpha signing boundary without secrets",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-09-30T17:13:28Z",
+          "completed_at": "2026-09-30T17:13:28Z"
+        },
+        {
+          "name": "Validate internal Alpha release evidence and negative controls",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 9,
+          "started_at": "2026-09-30T17:13:28Z",
+          "completed_at": "2026-09-30T17:13:43Z"
+        },
+        {
+          "name": "Validate Cloud ASR provider and adapter contracts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 10,
+          "started_at": "2026-09-30T17:13:43Z",
+          "completed_at": "2026-09-30T17:13:43Z"
+        },
+        {
+          "name": "Validate transcript versioning and edit contracts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 11,
+          "started_at": "2026-09-30T17:13:43Z",
+          "completed_at": "2026-09-30T17:13:43Z"
+        },
+        {
+          "name": "Validate Cloud identity authorization and ownership contracts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 12,
+          "started_at": "2026-09-30T17:13:43Z",
+          "completed_at": "2026-09-30T17:13:43Z"
+        },
+        {
+          "name": "Run deterministic Cloud contract harness",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 13,
+          "started_at": "2026-09-30T17:13:43Z",
+          "completed_at": "2026-09-30T17:13:45Z"
+        },
+        {
+          "name": "Validate isolated capture PoC contracts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 14,
+          "started_at": "2026-09-30T17:13:45Z",
+          "completed_at": "2026-09-30T17:13:45Z"
+        },
+        {
+          "name": "Validate isolated search PoC contracts",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 15,
+          "started_at": "2026-09-30T17:13:45Z",
+          "completed_at": "2026-09-30T17:13:46Z"
+        },
+        {
+          "name": "Fetch pinned Recovery reviewed-source provenance",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-09-30T17:13:46Z",
+          "completed_at": "2026-09-30T17:13:47Z"
+        },
+        {
+          "name": "Validate recovery governance package",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-09-30T17:13:47Z",
+          "completed_at": "2026-09-30T17:14:06Z"
+        },
+        {
+          "name": "Verify exact recovery dependency inventory",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-09-30T17:14:06Z",
+          "completed_at": "2026-09-30T17:14:31Z"
+        },
+        {
+          "name": "Verify recovery execution remains fail-closed",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-09-30T17:14:31Z",
+          "completed_at": "2026-09-30T17:14:31Z"
+        },
+        {
+          "name": "Verify pure-host VPN contract kernel",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 20,
+          "started_at": "2026-09-30T17:14:31Z",
+          "completed_at": "2026-09-30T17:15:00Z"
+        },
+        {
+          "name": "Verify hermetic numeric-loopback VPN transport harness",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 21,
+          "started_at": "2026-09-30T17:15:00Z",
+          "completed_at": "2026-09-30T17:15:35Z"
+        },
+        {
+          "name": "Check formatting and Kotlin static analysis",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 22,
+          "started_at": "2026-09-30T17:15:35Z",
+          "completed_at": "2026-09-30T17:17:07Z"
+        },
+        {
+          "name": "Unit tests, instrumentation compilation, lint, and debug assembly",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 23,
+          "started_at": "2026-09-30T17:17:07Z",
+          "completed_at": "2026-09-30T17:21:02Z"
+        },
+        {
+          "name": "Verify compiled Alpha architecture boundaries and negative controls",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 24,
+          "started_at": "2026-09-30T17:21:02Z",
+          "completed_at": "2026-09-30T17:21:06Z"
+        },
+        {
+          "name": "Verify unsigned release and locked runtime SBOM graph",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 25,
+          "started_at": "2026-09-30T17:21:06Z",
+          "completed_at": "2026-09-30T17:22:10Z"
+        },
+        {
+          "name": "Verify locked search dependency artifact inventory",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 26,
+          "started_at": "2026-09-30T17:22:10Z",
+          "completed_at": "2026-09-30T17:22:10Z"
+        },
+        {
+          "name": "Verify exact search license and NOTICE inventory",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 27,
+          "started_at": "2026-09-30T17:22:10Z",
+          "completed_at": "2026-09-30T17:22:10Z"
+        },
+        {
+          "name": "Verify native library admission and ELF alignment",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 28,
+          "started_at": "2026-09-30T17:22:10Z",
+          "completed_at": "2026-09-30T17:22:10Z"
+        },
+        {
+          "name": "Verify capture PoC native library admission and ELF alignment",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 29,
+          "started_at": "2026-09-30T17:22:10Z",
+          "completed_at": "2026-09-30T17:22:10Z"
+        },
+        {
+          "name": "Verify 16 KiB APK zip alignment",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 30,
+          "started_at": "2026-09-30T17:22:10Z",
+          "completed_at": "2026-09-30T17:22:10Z"
+        },
+        {
+          "name": "Verify capture PoC 16 KiB APK zip alignment",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 31,
+          "started_at": "2026-09-30T17:22:10Z",
+          "completed_at": "2026-09-30T17:22:10Z"
+        },
+        {
+          "name": "Upload Alpha foundation debug verification APK",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 32,
+          "started_at": "2026-09-30T17:22:10Z",
+          "completed_at": "2026-09-30T17:22:12Z"
+        },
+        {
+          "name": "Upload capture PoC debug APK",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 33,
+          "started_at": "2026-09-30T17:22:12Z",
+          "completed_at": "2026-09-30T17:22:14Z"
+        },
+        {
+          "name": "Post Set up Gradle and validate wrapper",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 64,
+          "started_at": "2026-09-30T17:22:14Z",
+          "completed_at": "2026-09-30T17:22:15Z"
+        },
+        {
+          "name": "Post Set up JDK 17",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 65,
+          "started_at": "2026-09-30T17:22:15Z",
+          "completed_at": "2026-09-30T17:22:15Z"
+        },
+        {
+          "name": "Post Check out repository",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 66,
+          "started_at": "2026-09-30T17:22:15Z",
+          "completed_at": "2026-09-30T17:22:15Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 67,
+          "started_at": "2026-09-30T17:22:15Z",
+          "completed_at": "2026-09-30T17:22:15Z"
+        }
+      ]
+    },
+    {
+      "id": 110005270477,
+      "name": "search-smoke",
+      "head_sha": "49537b8a53c56a2f07cc1456926fce5c9b903b42",
+      "status": "completed",
+      "conclusion": "success",
+      "steps": [
+        {
+          "name": "Set up job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 1,
+          "started_at": "2026-09-30T17:13:15Z",
+          "completed_at": "2026-09-30T17:13:18Z"
+        },
+        {
+          "name": "Check out repository",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 2,
+          "started_at": "2026-09-30T17:13:18Z",
+          "completed_at": "2026-09-30T17:13:20Z"
+        },
+        {
+          "name": "Set up JDK 17",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 3,
+          "started_at": "2026-09-30T17:13:20Z",
+          "completed_at": "2026-09-30T17:13:20Z"
+        },
+        {
+          "name": "Set up Gradle and validate wrapper",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 4,
+          "started_at": "2026-09-30T17:13:20Z",
+          "completed_at": "2026-09-30T17:13:23Z"
+        },
+        {
+          "name": "Install Android API 36 emulator",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 5,
+          "started_at": "2026-09-30T17:13:23Z",
+          "completed_at": "2026-09-30T17:14:28Z"
+        },
+        {
+          "name": "Create API 36 search smoke AVD",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 6,
+          "started_at": "2026-09-30T17:14:28Z",
+          "completed_at": "2026-09-30T17:14:30Z"
+        },
+        {
+          "name": "Start API 36 emulator",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 7,
+          "started_at": "2026-09-30T17:14:30Z",
+          "completed_at": "2026-09-30T17:15:26Z"
+        },
+        {
+          "name": "Run Room FTS4 schema, correctness, safety, mapping, and mutation smoke tests",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 8,
+          "started_at": "2026-09-30T17:15:26Z",
+          "completed_at": "2026-09-30T17:20:01Z"
+        },
+        {
+          "name": "Print emulator log on failure",
+          "status": "completed",
+          "conclusion": "skipped",
+          "number": 9,
+          "started_at": "2026-09-30T17:20:01Z",
+          "completed_at": "2026-09-30T17:20:01Z"
+        },
+        {
+          "name": "Post Set up Gradle and validate wrapper",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 16,
+          "started_at": "2026-09-30T17:20:01Z",
+          "completed_at": "2026-09-30T17:20:01Z"
+        },
+        {
+          "name": "Post Set up JDK 17",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 17,
+          "started_at": "2026-09-30T17:20:01Z",
+          "completed_at": "2026-09-30T17:20:01Z"
+        },
+        {
+          "name": "Post Check out repository",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 18,
+          "started_at": "2026-09-30T17:20:01Z",
+          "completed_at": "2026-09-30T17:20:02Z"
+        },
+        {
+          "name": "Complete job",
+          "status": "completed",
+          "conclusion": "success",
+          "number": 19,
+          "started_at": "2026-09-30T17:20:02Z",
+          "completed_at": "2026-09-30T17:20:02Z"
+        }
+      ]
+    }
+  ],
+  "search_smoke_tests": 7,
+  "mandatory_steps": "ALL_SUCCESS",
+  "failed_attempts": []
+}
