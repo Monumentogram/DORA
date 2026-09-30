@@ -1,0 +1,224 @@
+{
+  "schema_version": "dora-cloud-asr-adapter-profile-v0.1",
+  "profile_id": "AWS_TRANSCRIBE_STANDARD_BATCH_OWNER_ALPHA",
+  "profile_version": "0.1",
+  "generic_contract_version": "0.1",
+  "scope": "OWNER_ONLY_CLOSED_INTERNAL_ALPHA",
+  "runtime": "NOT_IMPLEMENTED",
+  "authority": [
+    {
+      "id": "closure",
+      "path": "docs/evidence/cloud-6.2d-duplicate-name-closure-result-v0.1.json",
+      "sha256_lf": "56c3e836e3208a151e4add38d7b728b6acb494e90d46b438ab6958492a73682f"
+    },
+    {
+      "id": "technical",
+      "path": "docs/evidence/cloud-6.2d-owner-technical-result-v0.1.json",
+      "sha256_lf": "c3d667c604e4ee12652cb314bacf4d780006e9f6ce5dd7e0c04b38556329b770"
+    },
+    {
+      "id": "configuration",
+      "path": "docs/contracts/DORA_CLOUD_EVALUATION_PHASE_A_BOUNDED8_V0_3.json",
+      "sha256_lf": "f5a498c7e77bfd21c070257c834d53accffdb3460f813ab2388123a8bcde2e97"
+    },
+    {
+      "id": "protocol",
+      "path": "docs/contracts/DORA_CLOUD_62D_TECHNICAL_CLOSURE_PROTOCOL_V0_1.json",
+      "sha256_lf": "e6a335889f43b1bc84749dc00228cca16a3870e865ea65e5fe02108913c095e8"
+    },
+    {
+      "id": "harness",
+      "path": "docs/stage0/DORA_CLOUD_EVALUATION_HARNESS_V0_1.md",
+      "sha256_lf": "b9763f38cd473c7a7babf9965fdf23a602efbfdd6769c6a703f4325ee72f00d7"
+    }
+  ],
+  "admitted": {
+    "provider": "Amazon Transcribe",
+    "mode": "STANDARD_BATCH_FILE_ASR",
+    "region": "eu-central-1",
+    "languages": [
+      "ru-RU",
+      "en-US"
+    ],
+    "input": {
+      "container": "WAV",
+      "encoding": "PCM_SIGNED_16_LE",
+      "channels": 1,
+      "sample_rate_hz": 16000,
+      "min_duration_us": 500000,
+      "max_duration_us": 600000000
+    },
+    "disabled": [
+      "IdentifyLanguage",
+      "IdentifyMultipleLanguages",
+      "Medical",
+      "HealthScribe",
+      "CallAnalytics",
+      "custom_language_model",
+      "custom_vocabulary",
+      "speaker_labels",
+      "channel_identification",
+      "PII_redaction",
+      "streaming",
+      "toxicity",
+      "subtitles"
+    ],
+    "fallback": false
+  },
+  "status_mapping": {
+    "COMPLETED": {
+      "normalized": "OUTPUT_AVAILABLE",
+      "basis": "closure:technical_closure.first_job; technical:required_technical_cases.tech-en_300"
+    },
+    "FAILED": {
+      "normalized": "FAILED",
+      "basis": "technical:required_technical_cases.tech-malformed; closure:technical_closure.case_table.tech-malformed"
+    },
+    "QUEUED": {
+      "normalized": "UNKNOWN",
+      "basis": "NOT_YET_MAPPED"
+    },
+    "IN_PROGRESS": {
+      "normalized": "UNKNOWN",
+      "basis": "NOT_YET_MAPPED"
+    },
+    "CANCELLED": {
+      "normalized": "UNKNOWN",
+      "basis": "NOT_YET_MAPPED"
+    }
+  },
+  "result_mapping": {
+    "level": "RETAINED_OFFLINE_NORMALIZATION_AND_LIVE_IDENTITY_PROOF",
+    "basis": [
+      "harness:AwsRecordAdapter.terminal",
+      "technical:result_identity",
+      "closure:technical_closure.case_table.result_identity"
+    ],
+    "text_path": "results.transcripts[0].transcript",
+    "segment_items_path": "results.items",
+    "segment_text_path": "alternatives[0].content",
+    "lexical_item_type": "pronunciation",
+    "punctuation": "preserve full text; no invented word timing",
+    "start_path": "start_time",
+    "end_path": "end_time",
+    "source_unit": "decimal_seconds",
+    "target_unit": "integer_microseconds",
+    "conversion": "exact finite decimal * 1000000; reject fractional microseconds, negative/out-of-range/reversed/nonmonotonic bounds",
+    "missing": "null boundaries with explicit availability; partially supplied bounds remain PARTIAL only if otherwise valid",
+    "quality": "UNKNOWN",
+    "historical_harness_difference": "The frozen harness rejected partial pairs; this generic contract represents partial availability without claiming current provider emits it.",
+    "identity": "bind DORA request/source/config independently; validate provider output jobName/status against bound operation before mapping; never use provider jobName as DORA job ID"
+  },
+  "metadata": {
+    "provider_version": {
+      "availability": "UNKNOWN",
+      "value": null
+    },
+    "model_id": {
+      "availability": "NOT_SUPPLIED",
+      "value": null
+    },
+    "model_version": {
+      "availability": "NOT_SUPPLIED",
+      "value": null
+    },
+    "timestamp_accuracy": "NOT_EVALUATED",
+    "provider_native_idempotency": "NOT_PROVEN",
+    "cancellation_support": "NOT_YET_MAPPED",
+    "provider_result_id": "NOT_YET_MAPPED",
+    "usage_billing_mapping": "NOT_YET_MAPPED",
+    "processing_timestamp_mapping": "NOT_YET_MAPPED"
+  },
+  "error_mapping": [
+    {
+      "case": "same_valid_request_name_collision",
+      "provider_signal": "ConflictException",
+      "failure": "DUPLICATE_CONFLICT",
+      "retry": "RECONCILE_BEFORE_RETRY",
+      "evidence": "closure:technical_closure.new_duplicate_name_collision",
+      "ceiling": "Collision only; no native idempotency guarantee"
+    },
+    {
+      "case": "missing_source_with_retained_context",
+      "provider_signal": "BadRequestException plus independently proven missing input",
+      "failure": "SOURCE_UNAVAILABLE",
+      "retry": "DO_NOT_RETRY",
+      "evidence": "technical:independent_review_findings.tech-missing_s3; closure:technical_closure.case_table.tech-missing_s3",
+      "ceiling": "Never classify from message/400 alone"
+    },
+    {
+      "case": "access_denial_with_retained_context",
+      "provider_signal": "BadRequestException plus independently proven isolated access denial",
+      "failure": "ACCESS_DENIED",
+      "retry": "DO_NOT_RETRY",
+      "evidence": "technical:independent_review_findings.tech-permission_denial; closure:technical_closure.case_table.tech-permission_denial",
+      "ceiling": "Never classify from message/400 alone"
+    },
+    {
+      "case": "invalid_media_preflight",
+      "provider_signal": "local canonical preflight rejection before provider dispatch",
+      "failure": "INVALID_MEDIA",
+      "retry": "DO_NOT_RETRY",
+      "evidence": "protocol:preflight; closure:technical_closure.current_local_controls",
+      "ceiling": "Adapter obligation, not proof provider rejects every malformed input"
+    },
+    {
+      "case": "uncertain_submit",
+      "provider_signal": "no conclusive submit response",
+      "failure": "SUBMISSION_UNCERTAIN",
+      "retry": "RECONCILE_BEFORE_RETRY",
+      "evidence": "protocol:duplicate_protocol.uncertain_start",
+      "ceiling": "Prospective safety rule; no induced network fault claim"
+    },
+    {
+      "case": "throttle",
+      "provider_signal": "NOT_YET_MAPPED",
+      "failure": "RATE_LIMITED",
+      "retry": "RETRYABLE",
+      "evidence": "closure:technical_closure.throttle",
+      "ceiling": "DOCUMENTED_NOT_INDUCED; exact live mapping unavailable; possible acceptance overrides retry"
+    },
+    {
+      "case": "unmapped_response",
+      "provider_signal": "NOT_YET_MAPPED",
+      "failure": "UNKNOWN",
+      "retry": "RECONCILE_BEFORE_RETRY",
+      "evidence": "ADR-0009 uncertain outcomes",
+      "ceiling": "Do not guess acceptance, cancellation or generic HTTP semantics"
+    }
+  ],
+  "provenance_rules": {
+    "provider_ids": "PROVENANCE_ONLY",
+    "logical_ids": "DORA_CONTROL_PLANE_ONLY",
+    "wire_fields": "ADAPTER_ONLY",
+    "privileged_credentials": "SERVER_SIDE_ONLY_NOT_CONTRACT_FIELDS",
+    "storage_binding": "OPAQUE_GENERIC_REFERENCE_RESOLVED_INSIDE_FUTURE_ADAPTER"
+  },
+  "limitations": [
+    "No broader/second-speaker admission",
+    "EN historical 18% benchmark FAIL accepted only under OD-62D-EN-01",
+    "Timestamp accuracy/noise/EN spontaneous NOT_EVALUATED",
+    "No live replacement or native idempotency proof",
+    "Unknown/unmapped properties must fail closed until separately evidenced"
+  ],
+  "non_execution": {
+    "7.2D": "NOT_STARTED",
+    "7.2E": "NOT_STARTED",
+    "7.3": "NOT_STARTED",
+    "7.3C": "NOT_STARTED",
+    "stage8": "NOT_STARTED",
+    "backend_runtime": "NOT_IMPLEMENTED",
+    "worker_runtime": "NOT_IMPLEMENTED",
+    "adapter_runtime": "NOT_IMPLEMENTED",
+    "android_cloud_api": "NOT_IMPLEMENTED",
+    "transcript_persistence": "NOT_IMPLEMENTED",
+    "auth_runtime": "NOT_IMPLEMENTED",
+    "ownership_runtime": "NOT_IMPLEMENTED",
+    "audio_upload": "NOT_RUN",
+    "real_audio": "NOT_USED",
+    "first_real_product_audio": "NOT_READY",
+    "aws": "NOT_CALLED",
+    "aws_spend_by_task": 0,
+    "recovery_integration": "NOT_RUN"
+  }
+}

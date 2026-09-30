@@ -58,6 +58,11 @@ jobs:
       - name: Verify owner-local Alpha signing boundary without secrets
         run: python3 -m unittest discover -s tools -p test_build_internal_alpha.py
 
+      - name: Validate Cloud ASR provider and adapter contracts
+        run: |
+          python3 tools/validate_cloud_asr_provider_contract.py
+          python3 -m unittest discover -s tools -p test_cloud_asr_provider_contract.py
+
       - name: Validate isolated capture PoC contracts
         run: python3 tools/validate_poc_capture.py
 

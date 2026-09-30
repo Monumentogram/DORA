@@ -1,0 +1,292 @@
+{
+  "schema_version": "dora-cloud-asr-provider-catalog-v0.1",
+  "contract_version": "0.1",
+  "name": "CloudAsrProvider",
+  "scope": "SERVER_SIDE_CONTRACT_ONLY",
+  "status": "CONTRACT_DEFINED_AWAITING_EXACT_SHA_CI",
+  "type_language": "closed records; all fields required; ? nullable; [] array; enums closed; unknown extra fields rejected",
+  "architecture": [
+    "DORA_ANDROID",
+    "DORA_CLOUD_CONTROL_PLANE",
+    "CLOUD_ASR_WORKER",
+    "CLOUD_ASR_PROVIDER",
+    "PROVIDER_ADAPTER",
+    "ADMITTED_PROVIDER"
+  ],
+  "identity_aliases": {
+    "recording_id": "RecordingId",
+    "audio_asset_id": "AudioAssetId/source_audio_version",
+    "processing_job_id": "RecognitionJobId",
+    "transcript_id": "TranscriptId/asr_result_id"
+  },
+  "enums": {
+    "Engine": [
+      "CLOUD"
+    ],
+    "SourceKind": [
+      "ORIGINAL_AUDIO"
+    ],
+    "Availability": [
+      "KNOWN",
+      "UNKNOWN",
+      "NOT_SUPPLIED",
+      "NOT_APPLICABLE"
+    ],
+    "TimestampAvailability": [
+      "KNOWN",
+      "PARTIAL",
+      "UNAVAILABLE"
+    ],
+    "TimestampQuality": [
+      "UNKNOWN",
+      "VALIDATED"
+    ],
+    "JobState": [
+      "ACCEPTED",
+      "PROCESSING",
+      "OUTPUT_AVAILABLE",
+      "SUCCEEDED",
+      "FAILED",
+      "UNKNOWN"
+    ],
+    "CancellationState": [
+      "NONE",
+      "REQUESTED",
+      "CONFIRMED",
+      "UNKNOWN"
+    ],
+    "RetryDisposition": [
+      "DO_NOT_RETRY",
+      "RETRYABLE",
+      "RECONCILE_BEFORE_RETRY"
+    ],
+    "DispatchEffect": [
+      "NOT_DISPATCHED",
+      "DEFINITELY_REJECTED",
+      "POSSIBLY_ACCEPTED",
+      "ACCEPTED"
+    ],
+    "Operation": [
+      "submit",
+      "status",
+      "result",
+      "cancel",
+      "reconcile"
+    ],
+    "FailureCategory": [
+      "INVALID_REQUEST",
+      "UNSUPPORTED_FORMAT",
+      "UNSUPPORTED_LANGUAGE",
+      "SOURCE_UNAVAILABLE",
+      "ACCESS_DENIED",
+      "INVALID_MEDIA",
+      "RATE_LIMITED",
+      "PROVIDER_UNAVAILABLE",
+      "TRANSIENT_TRANSPORT",
+      "PROVIDER_INTERNAL",
+      "SUBMISSION_UNCERTAIN",
+      "DUPLICATE_CONFLICT",
+      "CANCELLED",
+      "CANCELLATION_UNCERTAIN",
+      "MAPPING_FAILURE",
+      "UNKNOWN"
+    ]
+  },
+  "types": {
+    "SourceReference": {
+      "recording_id": "opaque_id",
+      "audio_asset_id": "opaque_id",
+      "sha256": "digest"
+    },
+    "AuthorizedAudioSource": {
+      "kind": "SourceKind",
+      "source": "SourceReference",
+      "access_ref": "opaque_id"
+    },
+    "AudioProperties": {
+      "container": "nonempty",
+      "encoding": "nonempty",
+      "duration_us": "positive_int",
+      "sample_rate_hz": "positive_int",
+      "channels": "positive_int"
+    },
+    "Configuration": {
+      "language": "nonempty",
+      "configuration_ref": "opaque_id"
+    },
+    "AuthorizationReferences": {
+      "authorization_ref": "opaque_id",
+      "consent_scope_ref": "opaque_id",
+      "ownership_binding_ref": "opaque_id"
+    },
+    "CloudRequest": {
+      "processing_action_id": "opaque_id",
+      "processing_job_id": "opaque_id",
+      "idempotency_key": "opaque_id",
+      "attempt_id": "opaque_id",
+      "trace_id": "opaque_id",
+      "audio": "AuthorizedAudioSource",
+      "properties": "AudioProperties",
+      "configuration": "Configuration",
+      "authorization": "AuthorizationReferences"
+    },
+    "KnownMetadata": {
+      "availability": "Availability",
+      "value": "?nonempty"
+    },
+    "KnownTime": {
+      "availability": "Availability",
+      "value": "?utc"
+    },
+    "KnownUsage": {
+      "availability": "Availability",
+      "value": "?nonnegative_int"
+    },
+    "ProcessingIdentity": {
+      "engine": "Engine",
+      "route_id": "nonempty",
+      "provider_id": "nonempty",
+      "provider_version": "KnownMetadata",
+      "model_id": "KnownMetadata",
+      "model_version": "KnownMetadata",
+      "adapter_profile_id": "nonempty",
+      "adapter_profile_version": "nonempty"
+    },
+    "ProviderProvenance": {
+      "operation_ref": "nonempty",
+      "request_ref": "KnownMetadata",
+      "result_ref": "KnownMetadata"
+    },
+    "BoundOperation": {
+      "processing_action_id": "opaque_id",
+      "processing_job_id": "opaque_id",
+      "attempt_id": "opaque_id",
+      "source": "SourceReference",
+      "provider": "ProviderProvenance",
+      "provider_namespace": "ProviderNamespace"
+    },
+    "Timestamp": {
+      "availability": "TimestampAvailability",
+      "start_us": "?nonnegative_int",
+      "end_us": "?nonnegative_int",
+      "quality": "TimestampQuality"
+    },
+    "Segment": {
+      "segment_id": "opaque_id",
+      "text": "text",
+      "timestamp": "Timestamp"
+    },
+    "CloudResult": {
+      "transcript_id": "opaque_id",
+      "processing_action_id": "opaque_id",
+      "processing_job_id": "opaque_id",
+      "idempotency_key": "opaque_id",
+      "attempt_id": "opaque_id",
+      "source": "SourceReference",
+      "configuration": "Configuration",
+      "processing": "ProcessingIdentity",
+      "provider": "ProviderProvenance",
+      "text": "text",
+      "segments": "[]Segment",
+      "created_at": "utc",
+      "processed_at": "KnownTime",
+      "usage_duration_us": "KnownUsage"
+    },
+    "NormalizedFailure": {
+      "category": "FailureCategory",
+      "operation": "Operation",
+      "dispatch_effect": "DispatchEffect",
+      "retry_disposition": "RetryDisposition",
+      "retry_after_us": "KnownUsage"
+    },
+    "Observation": {
+      "state": "JobState",
+      "cancellation": "CancellationState",
+      "operation": "?BoundOperation",
+      "failure": "?NormalizedFailure",
+      "result": "?CloudResult"
+    },
+    "ReconcileRequest": {
+      "request": "CloudRequest",
+      "operation": "?BoundOperation"
+    },
+    "ProviderNamespace": {
+      "route_id": "nonempty",
+      "provider_id": "nonempty",
+      "adapter_profile_id": "nonempty",
+      "adapter_profile_version": "nonempty"
+    }
+  },
+  "operations": {
+    "submit": {
+      "input": "CloudRequest",
+      "output": "Observation"
+    },
+    "status": {
+      "input": "BoundOperation",
+      "output": "Observation"
+    },
+    "result": {
+      "input": "BoundOperation",
+      "output": "Observation"
+    },
+    "cancel": {
+      "input": "BoundOperation",
+      "output": "Observation"
+    },
+    "reconcile": {
+      "input": "ReconcileRequest",
+      "output": "Observation"
+    }
+  },
+  "rules": {
+    "server_side_only": true,
+    "control_plane_authorization_required": true,
+    "opaque_references_are_not_authorization_proof": true,
+    "original_audio_only": true,
+    "provider_ids_are_provenance_only": true,
+    "stable_action_job_idempotency_source_config_across_retries": true,
+    "new_attempt_per_dispatch": true,
+    "unknown_submission_requires_reconciliation": true,
+    "cancellation_request_is_not_confirmation": true,
+    "success_requires_validated_correlated_result": true,
+    "late_results_never_activate_or_resurrect": true,
+    "unknown_metadata_never_invented": true,
+    "no_raw_error_or_payload_logging": true
+  },
+  "forbidden_assumptions": [
+    "provider_native_idempotency",
+    "timeout_means_failure",
+    "cancel_request_means_cancelled",
+    "delete_means_cancelled",
+    "provider_completion_means_valid_result",
+    "client_policy_label_means_authorization",
+    "missing_timestamp_is_zero",
+    "service_name_is_model_version",
+    "local_transcript_is_audio",
+    "provider_id_is_dora_identity",
+    "selected_storage_vendor",
+    "automatic_transcript_activation"
+  ],
+  "adapter_profile": "docs/contracts/DORA_ALPHA_AWS_TRANSCRIBE_ADAPTER_PROFILE_V0_1.json",
+  "non_execution": {
+    "7.2D": "NOT_STARTED",
+    "7.2E": "NOT_STARTED",
+    "7.3": "NOT_STARTED",
+    "7.3C": "NOT_STARTED",
+    "stage8": "NOT_STARTED",
+    "backend_runtime": "NOT_IMPLEMENTED",
+    "worker_runtime": "NOT_IMPLEMENTED",
+    "adapter_runtime": "NOT_IMPLEMENTED",
+    "android_cloud_api": "NOT_IMPLEMENTED",
+    "transcript_persistence": "NOT_IMPLEMENTED",
+    "auth_runtime": "NOT_IMPLEMENTED",
+    "ownership_runtime": "NOT_IMPLEMENTED",
+    "audio_upload": "NOT_RUN",
+    "real_audio": "NOT_USED",
+    "first_real_product_audio": "NOT_READY",
+    "aws": "NOT_CALLED",
+    "aws_spend_by_task": 0,
+    "recovery_integration": "NOT_RUN"
+  }
+}
