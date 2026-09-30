@@ -1,6 +1,6 @@
 # 7.1 — Alpha identity, signing and installation
 
-Status: IN_PROGRESS; installation and exact-source CI evidence must pass before closure.
+**7.1 = PASS / ALPHA_IDENTITY_SIGNING_INSTALL_READY.**
 Scope: OWNER_ONLY_CLOSED_INTERNAL_ALPHA. Decision: [ADR-0015](../adr/ADR-0015-internal-alpha-identity-signing.md).
 Machine-readable [contract](../contracts/DORA_ALPHA_IDENTITY_SIGNING_INSTALL_V0_1.json).
 
@@ -76,12 +76,49 @@ RuStore, Firebase distribution, external user or production channel is involved.
 
 ## Evidence and boundaries
 
-Build/device/CI evidence pending. POCO M5 model 22071219CG, Android14/API34,
-arm64-v8a is the installation reference; no expanded device support claim.
-Baseline unit/release assembly and Stage00 validation passed after a local Git
-ownership correction confined to the worktree process. Five signing-boundary
-negative tests first failed, then passed; actual signature/install/upgrade tests
-are still required.
+Implementation commit: `4a2350a02eba8adc76c04bf250e7769513ad9aa7`, parent
+`4e7742d88377d3d915be904618fc220d479ab25d`, branch `stage/7-alpha-foundation`.
+[PR #87](https://github.com/Monumentogram/DORA/pull/87) is draft and unmerged,
+based on the admitted line. The evidence/status closure is a second docs-only
+commit; its parent is the exact implementation and CI source above.
+
+- Signed artifact: `dora-0.1.0-alpha.1-vc2.apk`, SHA-256
+  `3cb591abc8e33a832bdf018b7cff545a8b3c39641ab74b44e8d4168cfa045d3c`.
+  A repeat after `:app:clean` produced identical bytes under the same owner
+  toolchain/cache. Cross-host byte reproducibility is not claimed.
+- POCO M5 model 22071219CG, Android14/API34, arm64-v8a: fresh install, cold
+  launch, version readback, uninstall/absence/reinstall all PASS. Initial USB
+  denial is retained as an uncounted attempt; owner explicitly enabled retry.
+- Same-key code 2 -> 3 upgrade PASS, preserving UID and firstInstallTime;
+  upgraded app launches. Different-certificate code-3 APK rejected with
+  `INSTALL_FAILED_UPDATE_INCOMPATIBLE`; original version 2 remained intact.
+- Final state is cleanly reinstalled baseline code 2, not a downgrade update.
+  APK pulled from this package matches the signed artifact byte-for-byte;
+  foreground activity and visible DORA Alpha 0.1.0-alpha.1 (2) label verified.
+  This proves installation continuity, not future product-data migration.
+- Signature, previously admitted native ELF inventory and 16 KiB ZIP alignment
+  PASS. No microphone or Internet permission. Six signing-boundary tests PASS,
+  including other Git checkouts and mismatched certificate rejection.
+- Local Stage00, format/static, app/core unit, instrumentation compilation,
+  lint and debug assembly PASS. Current Recovery governance PASS. The local
+  full governance self-test attempts encountered Windows ownership/subprocess
+  access limitations; no local self-test PASS is claimed. No Recovery code or
+  global Git trust setting was changed to accommodate the environment.
+- [Android CI 36677470351](https://github.com/Monumentogram/DORA/actions/runs/36677470351),
+  exact implementation head above: **android-bootstrap success; search-smoke
+  success**. Stage00, secretless signing tests, Recovery governance/self-tests,
+  dependency inventories, VPN host tests, format/static, unit, instrumentation
+  compilation, lint, assemblies, ELF/native and 16 KiB checks all succeeded.
+- Secret boundary scan: zero findings across the 21 implementation files,
+  own signing/build logs and APK entries, including comparison against the
+  actual private password/PKCS12 bytes without outputting either. No key,
+  password or private absolute signing path is published. Owner backup
+  restoration remains an explicitly unverified responsibility.
+
+Full sanitized [device/build evidence](../evidence/alpha-7.1-device-build-v0.1.json)
+and [CI steps](../evidence/alpha-7.1-ci-v0.1.json) retain exact identities and
+historical failed preparation attempts without converting them into PASS.
+Stage 7 and Group C are IN PROGRESS; next is 7.2, not executed automatically.
 
 7.2 NOT_STARTED; recording/storage/ASR product flows NOT_IMPLEMENTED; AWS
 NOT_CALLED; main NOT_CHANGED. PR #86 OPEN / DRAFT / UNMERGED / untouched.

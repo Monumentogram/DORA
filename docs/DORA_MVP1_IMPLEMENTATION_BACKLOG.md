@@ -1,5 +1,11 @@
 # Dora MVP 1 — Executable Backlog
 
+## 2026-09-30 — 7.1 PASS; next implementation task is 7.2
+
+**7.1 = PASS / ALPHA_IDENTITY_SIGNING_INSTALL_READY**, limited to OWNER_ONLY_CLOSED_INTERNAL_ALPHA. [Versioned decision/runbook](stage1/DORA_ALPHA_IDENTITY_SIGNING_INSTALL_V0_1.md) freezes `com.monumentogram.dora`, version 2 / `0.1.0-alpha.1`, PROJECT_OWNER key custody outside Git and local signed APK distribution. POCO M5 install/reinstall/launch, same-key code 2→3 upgrade and wrong-key rejection are proven. Exact implementation `4a2350a02eba8adc76c04bf250e7769513ad9aa7` passes [Android CI 36677470351](https://github.com/Monumentogram/DORA/actions/runs/36677470351), both required jobs. S01-ID-001/S01-RELEASE-001 are satisfied only for this internal Alpha scope; their historical production/store gates remain outside this decision.
+
+**Stage 7 and Group C IN PROGRESS; next: 7.2 — Минимальные модули и контракты данных, NOT_STARTED.** Do not execute automatically. Recovery reconciliation decision is CLEAN_REPLACEMENT_PR; implement its clean replacement separately before Stage 8 recording/storage acceptance. PR #86 untouched; no merge, AWS, recording/storage/ASR product-flow implementation or Cloud runtime readiness. Existing downstream gates remain unchanged.
+
 ## 2026-09-29 — 6.3 closed; first implementation task is 7.1
 
 The [versioned 6.3 decision](stage0/DORA_ALPHA_DEVELOPMENT_ADMISSION_6_3_V0_1.md) admits `OWNER_ONLY_CLOSED_INTERNAL_ALPHA` implementation from exact baseline `92f00f7dd4a18a3d4b2fdd159fdaef86fa3f8699`, branch `chat/alpha-asr-runner-scope`, after full exact-source Android CI PASS. **6.3 = PASS / DEVELOPMENT_ADMISSION_AND_EXACT_BASELINE_FROZEN; STAGE_0 = PASS / ALPHA_IMPLEMENTATION_ADMITTED.** No implementation is performed by this decision.

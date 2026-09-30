@@ -1,0 +1,135 @@
+{
+  "schema_version": "0.1",
+  "task": "7.1",
+  "date": "2026-09-30",
+  "source_commit": "4a2350a02eba8adc76c04bf250e7769513ad9aa7",
+  "scope": "OWNER_ONLY_CLOSED_INTERNAL_ALPHA_INSTALLATION_ONLY",
+  "baseline_artifact": {
+    "artifact": "dora-0.1.0-alpha.1-vc2.apk",
+    "sha256": "3cb591abc8e33a832bdf018b7cff545a8b3c39641ab74b44e8d4168cfa045d3c",
+    "application_id": "com.monumentogram.dora",
+    "version_code": 2,
+    "version_name": "0.1.0-alpha.1",
+    "certificate_sha256": "e77c9af533e603c0fa7c5c2000eb74b9514d001d98c3e5845cc2bae905be76bf",
+    "distribution": "OWNER_ONLY_CLOSED_INTERNAL_ALPHA",
+    "upgrade_test": false
+  },
+  "upgrade_test_artifact": {
+    "artifact": "dora-0.1.0-alpha.1-upgrade-test-vc3.apk",
+    "sha256": "b48b3c07a5469e30a6232a003f80436422c3afb996150fb51d6e9fecd3475e50",
+    "application_id": "com.monumentogram.dora",
+    "version_code": 3,
+    "version_name": "0.1.0-alpha.1-upgrade-test",
+    "certificate_sha256": "e77c9af533e603c0fa7c5c2000eb74b9514d001d98c3e5845cc2bae905be76bf",
+    "distribution": "OWNER_ONLY_CLOSED_INTERNAL_ALPHA",
+    "upgrade_test": true
+  },
+  "repeat_build": {
+    "method": ":app:clean then documented owner-local signing command; pinned dependencies from local cache",
+    "sha256": "3cb591abc8e33a832bdf018b7cff545a8b3c39641ab74b44e8d4168cfa045d3c",
+    "byte_identical": true,
+    "cross_host_reproducibility": "NOT_CLAIMED"
+  },
+  "fresh_install_and_reinstall": {
+    "device": "POCO M5",
+    "model": "22071219CG",
+    "android": "14",
+    "api": "34",
+    "abi": "arm64-v8a",
+    "fresh_install": "Performing Streamed Install\nSuccess",
+    "launch": "Starting: Intent { cmp=com.monumentogram.dora/.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: com.monumentogram.dora/.MainActivity\nTotalTime: 1744\nWaitTime: 1803\nComplete",
+    "installed_version": [
+      "versionCode=2 minSdk=28 targetSdk=36",
+      "versionName=0.1.0-alpha.1"
+    ],
+    "pid_observed": true,
+    "uninstall_task_created_empty_shell": "Success",
+    "absence_after_uninstall": true,
+    "reinstall": "Performing Streamed Install\nSuccess",
+    "relaunch": "Starting: Intent { cmp=com.monumentogram.dora/.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: com.monumentogram.dora/.MainActivity\nTotalTime: 1865\nWaitTime: 1892\nComplete",
+    "status": "PASS"
+  },
+  "upgrade_and_wrong_signer": {
+    "wrong_certificate": "INSTALL_FAILED_UPDATE_INCOMPATIBLE",
+    "version_after_rejected_upgrade": 2,
+    "same_key_upgrade": "Performing Streamed Install\nSuccess",
+    "same_install_identity_preserved": true,
+    "upgraded_version": [
+      "versionCode=3 minSdk=28 targetSdk=36",
+      "versionName=0.1.0-alpha.1-upgrade-test"
+    ],
+    "upgraded_launch": "Starting: Intent { cmp=com.monumentogram.dora/.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: com.monumentogram.dora/.MainActivity\nTotalTime: 896\nWaitTime: 902\nComplete",
+    "upgraded_pid_observed": true,
+    "remove_disposable_upgrade_shell": "Success",
+    "restore_baseline_clean_install": "Performing Streamed Install\nSuccess",
+    "final_launch": "Starting: Intent { cmp=com.monumentogram.dora/.MainActivity }\nStatus: ok\nLaunchState: COLD\nActivity: com.monumentogram.dora/.MainActivity\nTotalTime: 1059\nWaitTime: 1074\nComplete",
+    "final_installed_version_code": 2,
+    "status": "PASS"
+  },
+  "installed_artifact_inspection": {
+    "installed_apk_sha256": "3cb591abc8e33a832bdf018b7cff545a8b3c39641ab74b44e8d4168cfa045d3c",
+    "installed_bytes_match_verified_signed_apk": true,
+    "visible_identity": "DORA Alpha 0.1.0-alpha.1 (2)",
+    "shell_title_verified": true,
+    "foreground_activity": "com.monumentogram.dora/.MainActivity",
+    "status": "PASS"
+  },
+  "synthetic_wrong_certificate": {
+    "certificate_sha256": "05dc26aa997ea9e8200009bbfa287998192a3e540e52225d50c352b159469a07",
+    "apk_sha256": "e5d8ee87e54dec6e22291e16a97c59a3e45cbf2f1da4dcc3d41a0481d4f94cc7",
+    "private_key": "DISPOSABLE_DELETED"
+  },
+  "native_alignment": {
+    "status": "PASS",
+    "elf": "4 ABI entries, 1 previously allowlisted library basename",
+    "zipalign": "-c -P 16 4: exit 0",
+    "16_kib_runtime_claim": false
+  },
+  "permissions": {
+    "microphone": false,
+    "internet": false,
+    "only_permission": "com.monumentogram.dora.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
+  },
+  "secret_scan": {
+    "staged_files": 21,
+    "findings": 0,
+    "checks": [
+      "actual signing password and PKCS12 byte comparisons against staged files, own logs and APK entries",
+      "private key extension/header check",
+      "private signing path absent from staged content"
+    ],
+    "secret_values_logged": false
+  },
+  "prior_attempts": [
+    {
+      "step": "first physical installation",
+      "result": "INSTALL_FAILED_USER_RESTRICTED",
+      "disposition": "UNCOUNTED; owner explicitly unblocked and authorized repeat; subsequent complete run PASS"
+    },
+    {
+      "step": "initial signing command",
+      "result": "password file exhausted by duplicate store/key reads",
+      "disposition": "FIXED to single PKCS12 store-password read; no artifact credited until verified"
+    },
+    {
+      "step": "local combined formatting/build",
+      "result": "Windows temporary resource directory traversal race",
+      "disposition": "format/static and build run separately, both PASS"
+    },
+    {
+      "step": "local Recovery governance self-tests",
+      "result": "WINDOWS_ENVIRONMENT_FAILURE: shared clone ownership / isolated subprocess WinError5",
+      "disposition": "No local self-test PASS claimed; current governance validation passes; full mandatory suite assessed in exact-source GitHub CI"
+    }
+  ],
+  "limitations": [
+    "No user-data/schema migration claim; shell has no product storage",
+    "Backup restoration not verified; owner responsibility documented",
+    "POCO installation proof only, no support-matrix expansion",
+    "Clean reinstall of version 2 after disposable version 3 is not downgrade-update proof"
+  ],
+  "pr86_untouched": true,
+  "recording_implemented": false,
+  "recovery_integration_run": false,
+  "aws_called": false
+}

@@ -1,5 +1,11 @@
 # Dora MVP 1 — Stage Status
 
+## 2026-09-30 — 7.1 Alpha identity/signing/install closed
+
+**7.1 = PASS / ALPHA_IDENTITY_SIGNING_INSTALL_READY.** [Decision and evidence](stage1/DORA_ALPHA_IDENTITY_SIGNING_INSTALL_V0_1.md): applicationId/namespace `com.monumentogram.dora`, version 2 / `0.1.0-alpha.1`, dedicated PROJECT_OWNER internal signing key outside Git. Signed APK and clean repeat are byte-identical. POCO M5 Android14/API34 fresh/reinstall/launch and same-key 2→3 upgrade PASS; wrong signer rejected. Exact implementation `4a2350a02eba8adc76c04bf250e7769513ad9aa7`, parent admitted `4e7742d88377d3d915be904618fc220d479ab25d`; [CI 36677470351](https://github.com/Monumentogram/DORA/actions/runs/36677470351) passes both required jobs and all mandatory checks. Final phone installation is baseline version 2.
+
+**Stage 7 = IN PROGRESS; Group C = IN PROGRESS; next = 7.2 — Минимальные модули и контракты данных (NOT_STARTED).** No recording/storage/ASR product flow, Cloud runtime or real-product-audio readiness is claimed. PR #86 remains OPEN / DRAFT / UNMERGED / untouched. Owner-authorized reconciliation is PASS / CLEAN_REPLACEMENT_PR; actual Recovery clean replacement is a separate prerequisite before Stage 8 recording/storage acceptance, not before 7.1. No AWS or Recovery execution/integration, no main merge. Earlier dated statuses remain historical.
+
 ## 2026-09-29 — 6.3 development admission; exact repair baseline
 
 The [versioned 6.3 decision](stage0/DORA_ALPHA_DEVELOPMENT_ADMISSION_6_3_V0_1.md) records **6.3 = PASS / DEVELOPMENT_ADMISSION_AND_EXACT_BASELINE_FROZEN** and **STAGE_0 = PASS / ALPHA_IMPLEMENTATION_ADMITTED**, strictly for `OWNER_ONLY_CLOSED_INTERNAL_ALPHA`. Stage 6 is closed for implementation entry. The exact implementation baseline is `92f00f7dd4a18a3d4b2fdd159fdaef86fa3f8699` on `chat/alpha-asr-runner-scope`; the subsequent admission-document commit is not substituted for that CI-tested source.
