@@ -1,7 +1,7 @@
 {
   "schema_version": "dora-cloud-identity-auth-ownership-catalog-v0.1",
   "contract_version": "0.1",
-  "status": "CONTRACT_DEFINED_AWAITING_EXACT_SHA_CI",
+  "status": "PASS / CLOUD_IDENTITY_AUTHORIZATION_OWNERSHIP_CONTRACT_READY",
   "scope": "OFFLINE_LOGICAL_CONTRACT_ONLY",
   "types": {
     "SourceReference": {

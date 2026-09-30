@@ -1,6 +1,6 @@
 # 7.2E — Cloud identity, authorization and ownership v0.1
 
-Status: CONTRACT_DEFINED_AWAITING_EXACT_SHA_CI. Logical contract only.
+Status: PASS / CLOUD_IDENTITY_AUTHORIZATION_OWNERSHIP_CONTRACT_READY. Logical contract only.
 
 ## Authority and scope
 
@@ -214,14 +214,26 @@ separate plan commits. Existing isolated worktree is reused (using-git-worktrees
 - [x] Wire mandatory Android CI without weakening existing checks; fresh adversarial
   review of credential/consent substitution, forgery, revocation races, retries,
   batch/source transfer, route widening and local independence; fix P0/P1.
-- [ ] Commit/push implementation, await exact-SHA android-bootstrap/search-smoke.
-- [ ] Update status/backlog/evidence and Sheet with exact readback, publish only
-  evidence changes, then verify final exact-SHA CI and final HEAD Sheet readback.
+- [x] Commit/push implementation; exact-SHA android-bootstrap/search-smoke PASS.
+- [x] Prepare status/backlog/evidence and update Sheet: 24 target cells exact-readback
+  PASS, 71 neighbouring values and cell metadata preserved; visual check PASS.
+- Final publication gate: publish this evidence-only commit, verify its exact-SHA
+  CI and final current-HEAD Sheet readback in the separate task publication receipt.
+  This commit cannot embed its own SHA; the final task verdict requires that gate.
 
 Review focus: malformed/missing evidence must deny; request-bound proof cannot
 be replayed; CANCEL must remain available after consent revocation; valid authority
 cannot cross source/route/generation; source deletion must not erase read/control
 rights or pretend remote erasure. All fixtures are synthetic IDs and metadata.
+
+## Closure evidence
+
+Implementation `29c9f7da7f9a41e001c61c8f6ebd93bda9eaba85` passes [exact-SHA CI 36708561117](https://github.com/Monumentogram/DORA/actions/runs/36708561117), both required jobs and every mandatory step.
+82 identity/auth/ownership tests, 24 provider tests and 44 transcript tests PASS.
+Independent review found one P1 and two P2 issues; regression tests reproduced
+and verified all fixes. No unresolved P0/P1 or deferred minor findings remain.
+[Local/review](../evidence/alpha-7.2e-local-v0.1.json), [CI](../evidence/alpha-7.2e-ci-v0.1.json), [Sheet](../evidence/alpha-7.2e-sheet-v0.1.json) and [closure](../evidence/alpha-7.2e-closure-v0.1.json) provide the evidence.
+The final evidence HEAD and its CI/readback belong to the publication receipt.
 
 ## Non-execution
 
