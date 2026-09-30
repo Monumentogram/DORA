@@ -1,4 +1,4 @@
-# 7.2C вЂ” Replaceable Cloud ASR provider contract v0.1
+# 7.2C — Replaceable Cloud ASR provider contract v0.1
 
 Status: PASS / REPLACEABLE_CLOUD_ASR_PROVIDER_CONTRACT_READY. Runtime NOT_IMPLEMENTED.
 
@@ -18,7 +18,7 @@ its CI and final Sheet HEAD readback belong to the task publication receipt.
 Start: `b380fb352d20fa62ed2de3a4fae3b05e51b86f5a`, branch
 `stage/7-alpha-foundation`; clean tree, fetched exact lineage and PR #87/#86/main
 verified before edits. ADR-0009, the frozen ASR data/versioning and user/Gherkin
-contracts, Technical Plan В§В§22/24/28/30 and the completed 7.2 contract govern this
+contracts, Technical Plan §§22/24/28/30 and the completed 7.2 contract govern this
 design. The final 6.2D duplicate-name closure admits only the Project Owner's
 closed internal Alpha; its referenced technical record/configuration and media
 preflight remain evidence, not a general provider guarantee. Historical failures
@@ -26,7 +26,7 @@ are retained. English quality limitation and second-speaker revalidation remain.
 
 ## Decision
 
-`Android в†’ DORA Cloud Control Plane в†’ Cloud ASR Worker в†’ CloudAsrProvider в†’ Adapter в†’ Provider`.
+`Android → DORA Cloud Control Plane → Cloud ASR Worker → CloudAsrProvider → Adapter → Provider`.
 
 CloudAsrProvider is a server-side architectural interface represented by a closed,
 versioned JSON type catalogue and this document. There is no backend application
@@ -89,7 +89,7 @@ Its normalized representation is FAILED + CANCELLED + CONFIRMED, with an existin
 bound ACCEPTED operation and DO_NOT_RETRY. Failure of a read/cancel API call is
 not a terminal job failure: any RECONCILE_BEFORE_RETRY observation stays UNKNOWN.
 
-Allowed progress is ACCEPTED в†’ PROCESSING в†’ OUTPUT_AVAILABLE в†’ SUCCEEDED; a
+Allowed progress is ACCEPTED → PROCESSING → OUTPUT_AVAILABLE → SUCCEEDED; a
 definite rejection/failure can become FAILED. Any incomplete observation can become
 UNKNOWN and be reconciled back to a proven state. Do not regress confirmed facts
 based on absent/stale observations. No terminal result may be mutated by later polls.
@@ -143,7 +143,7 @@ safe terminal resolution, with current authorization; inability to prove remains
 ## Current profile and evidence ceiling
 
 The separate Amazon Transcribe profile freezes STANDARD_BATCH_FILE_ASR,
-eu-central-1, explicit ru-RU/en-US, mono PCM16LE/16 kHz WAV, 0.5вЂ“600 seconds,
+eu-central-1, explicit ru-RU/en-US, mono PCM16LE/16 kHz WAV, 0.5–600 seconds,
 and the admitted disabled-feature set. These are admission constraints, not all
 service capabilities. No region/provider fallback or native idempotency is claimed.
 COMPLETED maps to OUTPUT_AVAILABLE pending identity/output validation; observed

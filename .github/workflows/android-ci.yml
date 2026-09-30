@@ -63,6 +63,11 @@ jobs:
           python3 tools/validate_cloud_asr_provider_contract.py
           python3 -m unittest discover -s tools -p test_cloud_asr_provider_contract.py
 
+      - name: Validate transcript versioning and edit contracts
+        run: |
+          python3 tools/validate_transcript_versioning_contract.py
+          python3 -m unittest discover -s tools -p test_transcript_versioning_contract.py
+
       - name: Validate isolated capture PoC contracts
         run: python3 tools/validate_poc_capture.py
 
