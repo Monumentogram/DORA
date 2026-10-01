@@ -346,6 +346,37 @@ class RecoveryAudioBridgeTest {
         assertEquals(AudioFailure.INCOMPLETE, recovered.second.tailFailure)
     }
 
+    @Test
+    fun `unobserved provider or unknown envelope decrypt failure stays operational`() {
+        for (failure in
+            listOf(
+                java.security.ProviderException("provider-canary"),
+                java.security.GeneralSecurityException("unknown-canary"),
+            )) {
+            val f = AudioMemoryFixture()
+            f.bridge.create(identity)
+            append(f, first, 0, 0, byteArrayOf(1, 2))
+            val alias = f.keys.keys.single()
+            val original = f.keys.getValue(alias)
+            var decrypts = 0
+            f.keys[alias] =
+                object : com.google.crypto.tink.Aead by original {
+                    override fun decrypt(
+                        ciphertext: ByteArray,
+                        associatedData: ByteArray,
+                    ): ByteArray {
+                        decrypts++
+                        if (decrypts == 2) throw failure
+                        return original.decrypt(ciphertext, associatedData)
+                    }
+                }
+            assertEquals(
+                AudioResult.Failed(AudioFailure.UNCERTAIN),
+                f.bridge.extract(identity) { _, _ -> error("Unauthenticated bytes") },
+            )
+        }
+    }
+
     private fun append(
         f: AudioMemoryFixture,
         id: String,

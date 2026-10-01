@@ -32,6 +32,25 @@ class ReleaseSbomTest(unittest.TestCase):
     def setUp(self):
         self.assertIsNotNone(sbom, "release SBOM implementation is required")
 
+    def test_audio_project_requires_explicit_successor_profile(self):
+        current = graph()
+        current['components'].append({'id': 'project::core:audio', 'kind': 'project', 'path': ':core:audio'})
+        current['dependencies'][0]['dependsOn'].append('project::core:audio')
+        current['dependencies'].append({'ref': 'project::core:audio', 'dependsOn': ['project::core:model']})
+        with self.assertRaises(ValueError):
+            sbom.generate(current, SOURCE, {'sample:runtime:1.2.3'}, current)
+        projects = {':app', ':core:common', ':core:model', ':core:audio'}
+        generated = sbom.generate(current, SOURCE, {'sample:runtime:1.2.3'}, current, allowed_projects=projects)
+        sbom.validate(generated, current, SOURCE, {'sample:runtime:1.2.3'}, current, allowed_projects=projects)
+        changed = copy.deepcopy(current)
+        changed['components'][-1].update(id='project::poc:recovery', path=':poc:recovery')
+        with self.assertRaises(ValueError):
+            sbom.generate(changed, SOURCE, {'sample:runtime:1.2.3'}, changed, allowed_projects=projects)
+
+    def test_historical_lock_can_be_validated_without_current_product_graph(self):
+        frozen = 'sample:runtime:1.2.3=debugRuntimeClasspath,releaseRuntimeClasspath\nfuture:tool:9.0=testRuntimeClasspath\nempty=releaseAnnotationProcessor\n'
+        self.assertEqual({'sample:runtime:1.2.3'}, sbom.lock_coordinates_text(frozen))
+
     def test_deterministic_cyclonedx_and_complete_relationships(self):
         original = graph()
         result = sbom.generate(original, SOURCE, {"sample:runtime:1.2.3"}, original)

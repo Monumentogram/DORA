@@ -1,0 +1,1114 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "d94287707e09654e0d36efae561f369b",
+    "entities": [
+      {
+        "tableName": "vault_binding",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`singleton` INTEGER NOT NULL, `ownerId` TEXT NOT NULL, `vaultId` TEXT NOT NULL, PRIMARY KEY(`singleton`))",
+        "fields": [
+          {
+            "fieldPath": "singleton",
+            "columnName": "singleton",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ownerId",
+            "columnName": "ownerId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "vaultId",
+            "columnName": "vaultId",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "singleton"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_vault_binding_ownerId_vaultId",
+            "unique": true,
+            "columnNames": [
+              "ownerId",
+              "vaultId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_vault_binding_ownerId_vaultId` ON `${TABLE_NAME}` (`ownerId`, `vaultId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "audio_asset",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`assetId` TEXT NOT NULL, `recordingId` TEXT NOT NULL, `sessionId` TEXT NOT NULL, `ownerId` TEXT NOT NULL, `vaultId` TEXT NOT NULL, `finalized` INTEGER NOT NULL, PRIMARY KEY(`assetId`), FOREIGN KEY(`ownerId`, `vaultId`) REFERENCES `vault_binding`(`ownerId`, `vaultId`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "assetId",
+            "columnName": "assetId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recordingId",
+            "columnName": "recordingId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sessionId",
+            "columnName": "sessionId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ownerId",
+            "columnName": "ownerId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "vaultId",
+            "columnName": "vaultId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "finalized",
+            "columnName": "finalized",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "assetId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_audio_asset_ownerId_vaultId",
+            "unique": false,
+            "columnNames": [
+              "ownerId",
+              "vaultId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_audio_asset_ownerId_vaultId` ON `${TABLE_NAME}` (`ownerId`, `vaultId`)"
+          },
+          {
+            "name": "index_audio_asset_recordingId_assetId_sessionId",
+            "unique": true,
+            "columnNames": [
+              "recordingId",
+              "assetId",
+              "sessionId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_audio_asset_recordingId_assetId_sessionId` ON `${TABLE_NAME}` (`recordingId`, `assetId`, `sessionId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "vault_binding",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "ownerId",
+              "vaultId"
+            ],
+            "referencedColumns": [
+              "ownerId",
+              "vaultId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "physical_source",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`assetId` TEXT NOT NULL, `physicalId` TEXT NOT NULL, `physicalFirstFrame` INTEGER NOT NULL, PRIMARY KEY(`assetId`, `physicalId`), FOREIGN KEY(`assetId`) REFERENCES `audio_asset`(`assetId`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "assetId",
+            "columnName": "assetId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "physicalId",
+            "columnName": "physicalId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "physicalFirstFrame",
+            "columnName": "physicalFirstFrame",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "assetId",
+            "physicalId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_physical_source_assetId_physicalId_physicalFirstFrame",
+            "unique": true,
+            "columnNames": [
+              "assetId",
+              "physicalId",
+              "physicalFirstFrame"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_physical_source_assetId_physicalId_physicalFirstFrame` ON `${TABLE_NAME}` (`assetId`, `physicalId`, `physicalFirstFrame`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "audio_asset",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "assetId"
+            ],
+            "referencedColumns": [
+              "assetId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "unit_claim",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`runId` TEXT NOT NULL, `assetId` TEXT NOT NULL, `ordinal` INTEGER NOT NULL, `firstFrame` INTEGER NOT NULL, `frames` INTEGER NOT NULL, `physicalId` TEXT NOT NULL, `physicalFirstFrame` INTEGER NOT NULL, `sourceFrameOffset` INTEGER NOT NULL, `committed` INTEGER NOT NULL, PRIMARY KEY(`runId`), FOREIGN KEY(`assetId`) REFERENCES `audio_asset`(`assetId`) ON UPDATE NO ACTION ON DELETE RESTRICT , FOREIGN KEY(`assetId`, `physicalId`, `physicalFirstFrame`) REFERENCES `physical_source`(`assetId`, `physicalId`, `physicalFirstFrame`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "runId",
+            "columnName": "runId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assetId",
+            "columnName": "assetId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ordinal",
+            "columnName": "ordinal",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "firstFrame",
+            "columnName": "firstFrame",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "frames",
+            "columnName": "frames",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "physicalId",
+            "columnName": "physicalId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "physicalFirstFrame",
+            "columnName": "physicalFirstFrame",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceFrameOffset",
+            "columnName": "sourceFrameOffset",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "committed",
+            "columnName": "committed",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "runId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_unit_claim_assetId_ordinal",
+            "unique": true,
+            "columnNames": [
+              "assetId",
+              "ordinal"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_unit_claim_assetId_ordinal` ON `${TABLE_NAME}` (`assetId`, `ordinal`)"
+          },
+          {
+            "name": "index_unit_claim_assetId_firstFrame",
+            "unique": true,
+            "columnNames": [
+              "assetId",
+              "firstFrame"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_unit_claim_assetId_firstFrame` ON `${TABLE_NAME}` (`assetId`, `firstFrame`)"
+          },
+          {
+            "name": "index_unit_claim_assetId_physicalId_physicalFirstFrame",
+            "unique": false,
+            "columnNames": [
+              "assetId",
+              "physicalId",
+              "physicalFirstFrame"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_unit_claim_assetId_physicalId_physicalFirstFrame` ON `${TABLE_NAME}` (`assetId`, `physicalId`, `physicalFirstFrame`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "audio_asset",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "assetId"
+            ],
+            "referencedColumns": [
+              "assetId"
+            ]
+          },
+          {
+            "table": "physical_source",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "assetId",
+              "physicalId",
+              "physicalFirstFrame"
+            ],
+            "referencedColumns": [
+              "assetId",
+              "physicalId",
+              "physicalFirstFrame"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "audio_intent",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`assetId` TEXT NOT NULL, `kind` TEXT NOT NULL, `appendRunId` TEXT, `applied` INTEGER NOT NULL, PRIMARY KEY(`assetId`), FOREIGN KEY(`assetId`) REFERENCES `audio_asset`(`assetId`) ON UPDATE NO ACTION ON DELETE RESTRICT , FOREIGN KEY(`appendRunId`) REFERENCES `unit_claim`(`runId`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "assetId",
+            "columnName": "assetId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kind",
+            "columnName": "kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "appendRunId",
+            "columnName": "appendRunId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "applied",
+            "columnName": "applied",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "assetId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_audio_intent_appendRunId",
+            "unique": true,
+            "columnNames": [
+              "appendRunId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_audio_intent_appendRunId` ON `${TABLE_NAME}` (`appendRunId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "audio_asset",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "assetId"
+            ],
+            "referencedColumns": [
+              "assetId"
+            ]
+          },
+          {
+            "table": "unit_claim",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "appendRunId"
+            ],
+            "referencedColumns": [
+              "runId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "bootstrap",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`runId` TEXT NOT NULL, `candidateId` TEXT NOT NULL, `relativeName` TEXT NOT NULL, `bytes` INTEGER NOT NULL, `digest` TEXT NOT NULL, `aliasHash` TEXT NOT NULL, `state` TEXT NOT NULL, PRIMARY KEY(`runId`), FOREIGN KEY(`runId`) REFERENCES `unit_claim`(`runId`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "runId",
+            "columnName": "runId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "candidateId",
+            "columnName": "candidateId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "relativeName",
+            "columnName": "relativeName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bytes",
+            "columnName": "bytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "digest",
+            "columnName": "digest",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "aliasHash",
+            "columnName": "aliasHash",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "runId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_bootstrap_aliasHash",
+            "unique": true,
+            "columnNames": [
+              "aliasHash"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_bootstrap_aliasHash` ON `${TABLE_NAME}` (`aliasHash`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "unit_claim",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "runId"
+            ],
+            "referencedColumns": [
+              "runId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "manifest",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`runId` TEXT NOT NULL, `candidateId` TEXT NOT NULL, `kind` TEXT NOT NULL, `generation` INTEGER NOT NULL, `endExclusive` INTEGER NOT NULL, `relativeName` TEXT NOT NULL, `bytes` INTEGER NOT NULL, `digest` TEXT NOT NULL, `keyName` TEXT NOT NULL, `keyBytes` INTEGER NOT NULL, `keyDigest` TEXT NOT NULL, `previousDigest` TEXT NOT NULL, `state` TEXT NOT NULL, PRIMARY KEY(`runId`), FOREIGN KEY(`runId`) REFERENCES `bootstrap`(`runId`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "runId",
+            "columnName": "runId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "candidateId",
+            "columnName": "candidateId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kind",
+            "columnName": "kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "generation",
+            "columnName": "generation",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endExclusive",
+            "columnName": "endExclusive",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "relativeName",
+            "columnName": "relativeName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bytes",
+            "columnName": "bytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "digest",
+            "columnName": "digest",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "keyName",
+            "columnName": "keyName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "keyBytes",
+            "columnName": "keyBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "keyDigest",
+            "columnName": "keyDigest",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "previousDigest",
+            "columnName": "previousDigest",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "runId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_manifest_runId_generation_digest",
+            "unique": true,
+            "columnNames": [
+              "runId",
+              "generation",
+              "digest"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_manifest_runId_generation_digest` ON `${TABLE_NAME}` (`runId`, `generation`, `digest`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "bootstrap",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "runId"
+            ],
+            "referencedColumns": [
+              "runId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "microfile",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`runId` TEXT NOT NULL, `candidateId` TEXT NOT NULL, `unitIndex` INTEGER NOT NULL, `startInclusive` INTEGER NOT NULL, `endExclusive` INTEGER NOT NULL, `cadence` INTEGER NOT NULL, `relativeName` TEXT NOT NULL, `bytes` INTEGER NOT NULL, `digest` TEXT NOT NULL, `keyName` TEXT NOT NULL, `keyBytes` INTEGER NOT NULL, `keyDigest` TEXT NOT NULL, `generation` INTEGER NOT NULL, `manifestDigest` TEXT NOT NULL, `processingIntent` TEXT NOT NULL, `state` TEXT NOT NULL, PRIMARY KEY(`runId`), FOREIGN KEY(`runId`) REFERENCES `bootstrap`(`runId`) ON UPDATE NO ACTION ON DELETE RESTRICT , FOREIGN KEY(`runId`, `generation`, `manifestDigest`) REFERENCES `manifest`(`runId`, `generation`, `digest`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "runId",
+            "columnName": "runId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "candidateId",
+            "columnName": "candidateId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "unitIndex",
+            "columnName": "unitIndex",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startInclusive",
+            "columnName": "startInclusive",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endExclusive",
+            "columnName": "endExclusive",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cadence",
+            "columnName": "cadence",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "relativeName",
+            "columnName": "relativeName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bytes",
+            "columnName": "bytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "digest",
+            "columnName": "digest",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "keyName",
+            "columnName": "keyName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "keyBytes",
+            "columnName": "keyBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "keyDigest",
+            "columnName": "keyDigest",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "generation",
+            "columnName": "generation",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "manifestDigest",
+            "columnName": "manifestDigest",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "processingIntent",
+            "columnName": "processingIntent",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "runId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_microfile_runId_unitIndex",
+            "unique": true,
+            "columnNames": [
+              "runId",
+              "unitIndex"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_microfile_runId_unitIndex` ON `${TABLE_NAME}` (`runId`, `unitIndex`)"
+          },
+          {
+            "name": "index_microfile_runId_generation_manifestDigest",
+            "unique": false,
+            "columnNames": [
+              "runId",
+              "generation",
+              "manifestDigest"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_microfile_runId_generation_manifestDigest` ON `${TABLE_NAME}` (`runId`, `generation`, `manifestDigest`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "bootstrap",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "runId"
+            ],
+            "referencedColumns": [
+              "runId"
+            ]
+          },
+          {
+            "table": "manifest",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "runId",
+              "generation",
+              "manifestDigest"
+            ],
+            "referencedColumns": [
+              "runId",
+              "generation",
+              "digest"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "finalization_source",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`assetId` TEXT NOT NULL, `ordinal` INTEGER NOT NULL, `runId` TEXT NOT NULL, `generation` INTEGER NOT NULL, `manifestDigest` TEXT NOT NULL, `frames` INTEGER NOT NULL, PRIMARY KEY(`assetId`, `ordinal`), FOREIGN KEY(`assetId`) REFERENCES `audio_asset`(`assetId`) ON UPDATE NO ACTION ON DELETE RESTRICT , FOREIGN KEY(`runId`, `generation`, `manifestDigest`) REFERENCES `manifest`(`runId`, `generation`, `digest`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "assetId",
+            "columnName": "assetId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ordinal",
+            "columnName": "ordinal",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "runId",
+            "columnName": "runId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "generation",
+            "columnName": "generation",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "manifestDigest",
+            "columnName": "manifestDigest",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "frames",
+            "columnName": "frames",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "assetId",
+            "ordinal"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_finalization_source_runId_generation_manifestDigest",
+            "unique": false,
+            "columnNames": [
+              "runId",
+              "generation",
+              "manifestDigest"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_finalization_source_runId_generation_manifestDigest` ON `${TABLE_NAME}` (`runId`, `generation`, `manifestDigest`)"
+          },
+          {
+            "name": "index_finalization_source_runId",
+            "unique": true,
+            "columnNames": [
+              "runId"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_finalization_source_runId` ON `${TABLE_NAME}` (`runId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "audio_asset",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "assetId"
+            ],
+            "referencedColumns": [
+              "assetId"
+            ]
+          },
+          {
+            "table": "manifest",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "runId",
+              "generation",
+              "manifestDigest"
+            ],
+            "referencedColumns": [
+              "runId",
+              "generation",
+              "digest"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "quarantine_intent",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`intentId` TEXT NOT NULL, `runId` TEXT NOT NULL, `candidateId` TEXT NOT NULL, `bootstrapRunId` TEXT, `bootstrapBinding` TEXT NOT NULL, `role` TEXT NOT NULL, `observed` TEXT NOT NULL, `sourceName` TEXT NOT NULL, `destinationName` TEXT NOT NULL, `sourceBytes` INTEGER NOT NULL, `sourceDigest` TEXT NOT NULL, `state` TEXT NOT NULL, PRIMARY KEY(`intentId`), FOREIGN KEY(`runId`) REFERENCES `unit_claim`(`runId`) ON UPDATE NO ACTION ON DELETE RESTRICT , FOREIGN KEY(`bootstrapRunId`) REFERENCES `bootstrap`(`runId`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "intentId",
+            "columnName": "intentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "runId",
+            "columnName": "runId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "candidateId",
+            "columnName": "candidateId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bootstrapRunId",
+            "columnName": "bootstrapRunId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "bootstrapBinding",
+            "columnName": "bootstrapBinding",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "role",
+            "columnName": "role",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "observed",
+            "columnName": "observed",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceName",
+            "columnName": "sourceName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "destinationName",
+            "columnName": "destinationName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceBytes",
+            "columnName": "sourceBytes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sourceDigest",
+            "columnName": "sourceDigest",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "intentId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_quarantine_intent_runId_sourceName_sourceDigest",
+            "unique": true,
+            "columnNames": [
+              "runId",
+              "sourceName",
+              "sourceDigest"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_quarantine_intent_runId_sourceName_sourceDigest` ON `${TABLE_NAME}` (`runId`, `sourceName`, `sourceDigest`)"
+          },
+          {
+            "name": "index_quarantine_intent_runId_destinationName",
+            "unique": true,
+            "columnNames": [
+              "runId",
+              "destinationName"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_quarantine_intent_runId_destinationName` ON `${TABLE_NAME}` (`runId`, `destinationName`)"
+          },
+          {
+            "name": "index_quarantine_intent_bootstrapRunId",
+            "unique": false,
+            "columnNames": [
+              "bootstrapRunId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_quarantine_intent_bootstrapRunId` ON `${TABLE_NAME}` (`bootstrapRunId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "unit_claim",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "runId"
+            ],
+            "referencedColumns": [
+              "runId"
+            ]
+          },
+          {
+            "table": "bootstrap",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "bootstrapRunId"
+            ],
+            "referencedColumns": [
+              "runId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "deletion_tombstone",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`assetId` TEXT NOT NULL, `operationId` TEXT NOT NULL, `state` TEXT NOT NULL, PRIMARY KEY(`assetId`), FOREIGN KEY(`assetId`) REFERENCES `audio_asset`(`assetId`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "assetId",
+            "columnName": "assetId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "operationId",
+            "columnName": "operationId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "assetId"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "audio_asset",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "assetId"
+            ],
+            "referencedColumns": [
+              "assetId"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "deletion_target",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`assetId` TEXT NOT NULL, `runId` TEXT NOT NULL, `kind` TEXT NOT NULL, `relativeName` TEXT NOT NULL, `digest` TEXT, `completed` INTEGER NOT NULL, PRIMARY KEY(`assetId`, `runId`, `kind`, `relativeName`), FOREIGN KEY(`assetId`) REFERENCES `deletion_tombstone`(`assetId`) ON UPDATE NO ACTION ON DELETE RESTRICT , FOREIGN KEY(`runId`) REFERENCES `unit_claim`(`runId`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "fields": [
+          {
+            "fieldPath": "assetId",
+            "columnName": "assetId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "runId",
+            "columnName": "runId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kind",
+            "columnName": "kind",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "relativeName",
+            "columnName": "relativeName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "digest",
+            "columnName": "digest",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "completed",
+            "columnName": "completed",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "assetId",
+            "runId",
+            "kind",
+            "relativeName"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_deletion_target_runId",
+            "unique": false,
+            "columnNames": [
+              "runId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_deletion_target_runId` ON `${TABLE_NAME}` (`runId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "deletion_tombstone",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "assetId"
+            ],
+            "referencedColumns": [
+              "assetId"
+            ]
+          },
+          {
+            "table": "unit_claim",
+            "onDelete": "RESTRICT",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "runId"
+            ],
+            "referencedColumns": [
+              "runId"
+            ]
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd94287707e09654e0d36efae561f369b')"
+    ]
+  }
+}

@@ -2,7 +2,6 @@ package com.monumentogram.dora.audio
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class ProductAudioContractTest {
@@ -35,12 +34,5 @@ class ProductAudioContractTest {
         assertThrows(IllegalArgumentException::class.java) { AudioTimeline.durationUs(-1) }
         assertThrows(ArithmeticException::class.java) { AudioTimeline.nextFrame(Long.MAX_VALUE, 1) }
         assertEquals(2L, AudioTimeline.frames(4))
-    }
-
-    @Test
-    fun `production composition has no plaintext or fake persistence fallback`() {
-        assertTrue(
-            ProductAudioRuntime.availability is AudioAvailability.RequiresEncryptedPersistence
-        )
     }
 }

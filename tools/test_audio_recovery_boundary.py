@@ -6,6 +6,8 @@ import validate_audio_recovery_boundary as audio
 import validate_alpha_release as release
 import validate_poc_recovery_governance as recovery
 import validate_security_identity_contract as security
+import validate_encrypted_persistence as persistence
+import persistence_ci_profile
 
 
 class AudioBoundaryTest(unittest.TestCase):
@@ -58,7 +60,12 @@ class AudioBoundaryTest(unittest.TestCase):
             with self.assertRaises(ValueError): recovery.validate_rec_clean_integrated_state(*bad)
 
     def test_source_and_composition_mutations_rejected(self):
-        files = {p: (audio.ROOT / p).read_text(encoding="utf-8") for p in audio.PATHS if not p.endswith(".lockfile")}
+        # The accepted 8.1 test matrix applies to its immutable source. Stage 8.2 has
+        # additional current-source mutation controls and a separate sealed admission gate.
+        successor = persistence.candidate(audio.ROOT)
+        files = {p: (audio.git(audio.ROOT, "show", persistence.BASELINE + ":" + p).decode() if successor else
+                     (audio.ROOT / p).read_text(encoding="utf-8"))
+                 for p in audio.PATHS if not p.endswith(".lockfile")}
         audio.validate_sources(files)
         mutations = (
             (audio.PREFIX + "build.gradle.kts", "poc/recovery/src/main/kotlin", "copied/engine"),
@@ -80,7 +87,7 @@ class AudioBoundaryTest(unittest.TestCase):
     def test_existing_workflow_gates_are_unchanged(self):
         current = (audio.ROOT / ".github/workflows/android-ci.yml").read_text(encoding="utf-8")
         baseline = audio.git(audio.ROOT, "show", audio.BASE + ":.github/workflows/android-ci.yml").decode()
-        self.assertEqual(current.replace(audio.STEP, "", 1), baseline)
+        self.assertEqual(persistence_ci_profile.normalize(current).replace(audio.STEP, "", 1), baseline)
         original = audio.git(audio.ROOT, "show", "351874fff41774f10298e8a186bdc78bf6bb720f:.github/workflows/android-ci.yml").decode()
         release.validate_successor_workflow(original, current)
         with self.assertRaises(ValueError): release.validate_successor_workflow(original, current.replace(":poc:recovery:testDebugUnitTest", ":poc:recovery:help"))
@@ -89,6 +96,9 @@ class AudioBoundaryTest(unittest.TestCase):
         for path in audio.STATUS:
             old = audio.git(audio.ROOT, "show", audio.BASE + ":" + path).decode()
             text = (audio.ROOT / path).read_text(encoding="utf-8")
+            if text.startswith(persistence.STATUS_HEADER):
+                text = persistence.validate_status_projection(
+                    text, audio.git(audio.ROOT, "show", persistence.BASELINE + ":" + path).decode())
             audio.validate_status_text(text, old)
             for bad in (text.replace("Stage 8.2 = NOT_STARTED", "Stage 8.2 = PASS"), text[:-1],
                         text.replace("Encrypted product persistence runtime = NOT_ACCEPTED", "Runtime PASS")):

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.monumentogram.dora.thirdparty</groupId>
+  <artifactId>sqlcipher-android</artifactId>
+  <version>4.17.0-dora.1</version>
+  <packaging>aar</packaging>
+  <name>DORA SQLCipher Android composite</name>
+  <description>Explicit core 4.17.0 with native logging and profiling disabled.</description>
+  <licenses><license><name>BSD-3-Clause AND Apache-2.0 AND WTFPL AND Apache-2.0 WITH LLVM-exception</name></license></licenses>
+  <dependencies><dependency>
+    <groupId>androidx.sqlite</groupId><artifactId>sqlite</artifactId>
+    <version>2.6.2</version><scope>runtime</scope>
+  </dependency></dependencies>
+</project>

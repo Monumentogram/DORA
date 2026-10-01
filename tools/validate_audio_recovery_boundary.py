@@ -126,7 +126,7 @@ def validate_checkout(root=ROOT, *, allow_working=False):
     return files
 
 
-def validate_compiled(root=ROOT):
+def validate_compiled(root=ROOT, *, approved_coordinates=None):
     import zipfile
     aar = root / PREFIX / "build/outputs/aar/audio-debug.aar"
     require(aar.is_file(), "Audio compiled artifact missing")
@@ -149,7 +149,8 @@ def validate_compiled(root=ROOT):
     def coordinates(path):
         return {line.split("=", 1)[0] for line in path.read_text().splitlines()
                 if line and not line.startswith("#") and not line.startswith("empty=")}
-    approved = coordinates(root / "android/poc/recovery/gradle.lockfile") | coordinates(root / "android/core/model/gradle.lockfile")
+    approved = (coordinates(root / "android/poc/recovery/gradle.lockfile") | coordinates(root / "android/core/model/gradle.lockfile")
+                if approved_coordinates is None else set(approved_coordinates))
     require(coordinates(root / PREFIX / "gradle.lockfile") <= approved,
             "Unadmitted audio dependency coordinate/license inventory")
 
@@ -157,8 +158,16 @@ def validate_compiled(root=ROOT):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--compiled", action="store_true")
-    parser.add_argument("--working", action="store_true")
+    parser.add_argument("--working", action="store_true", default=None)
     args = parser.parse_args()
+    import validate_encrypted_persistence as persistence
+    if persistence.candidate(ROOT):
+        contract = persistence.validate_checkout(ROOT, allow_working=args.working)
+        persistence.validate_historical_audio(ROOT)
+        if args.compiled:
+            persistence.validate_compiled(ROOT, contract, include_app=False)
+        print("PASS immutable Stage 8.1 boundary and admitted Stage 8.2 successor checks; publication remains separate")
+        return
     validate_checkout(allow_working=args.working)
     if args.compiled:
         validate_compiled()

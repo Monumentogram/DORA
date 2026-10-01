@@ -131,7 +131,13 @@ def validate_recovery_closure_checkout():
     head = output("rev-parse", "HEAD").decode().strip()
     parents = tuple(output("show", "-s", "--format=%P", "HEAD").decode().split())
     import validate_audio_recovery_boundary as audio
-    if head != audio.BASE and subprocess.run(prefix + ["merge-base", "--is-ancestor", audio.BASE, head],
+    import validate_encrypted_persistence as persistence
+    if persistence.candidate(ROOT):
+        persistence.validate_checkout(ROOT)
+        persistence.validate_historical_audio(ROOT)
+        recovery.validate_rec_clean_integrated(recovery.collect_recovery_lifecycle_identity())
+        head, parents = security.BASE, (RECOVERY_FINALIZATION,)
+    elif head != audio.BASE and subprocess.run(prefix + ["merge-base", "--is-ancestor", audio.BASE, head],
                                             capture_output=True).returncode == 0:
         audio.validate_checkout(ROOT)
         recovery.validate_rec_clean_integrated(recovery.collect_recovery_lifecycle_identity())
@@ -159,7 +165,12 @@ def validate_recovery_successor_paths(paths, contract_bytes: bytes) -> None:
     contract = json.loads(contract_bytes)
     allowed = SUCCESSOR_PATHS | set(contract["implementation_paths"]) | set(contract["metadata_paths"])
     import validate_audio_recovery_boundary as audio
-    if audio.ADR in paths:
+    import validate_encrypted_persistence as persistence
+    if persistence.CONTRACT in paths:
+        admitted = persistence.validate_checkout(ROOT)
+        persistence.validate_historical_audio(ROOT)
+        allowed |= audio.PATHS | set(admitted['implementation_paths']) | set(admitted['evidence_paths'])
+    elif audio.ADR in paths:
         audio.validate_checkout(ROOT)
         allowed |= audio.PATHS
     if RECOVERY_INTEGRATION_CLOSURE_RECEIPT in paths:
@@ -169,6 +180,8 @@ def validate_recovery_successor_paths(paths, contract_bytes: bytes) -> None:
 
 
 def validate_successor_workflow(original: str, current: str) -> None:
+    import persistence_ci_profile
+    current = persistence_ci_profile.normalize(current)
     import validate_audio_recovery_boundary as audio
     if audio.STEP in current:
         require(current.count(audio.STEP) == 1, "Duplicate audio CI gate")
@@ -236,7 +249,13 @@ def main() -> None:
     source = contract["source_sha"]
     validate_closed(contract, build, ci, bom_bytes, source)
     graph = json.loads(sbom.APPROVED.read_text())
-    sbom.validate(json.loads(bom_bytes), graph, source, sbom.lock_coordinates(), graph)
+    # A frozen signed release is checked against its own immutable lock, never a
+    # later product dependency graph. Current unsigned artifacts have their own gate.
+    historical_lock = subprocess.check_output([
+        "git", "-c", f"safe.directory={ROOT.as_posix()}", "-C", str(ROOT),
+        "show", source + ":android/app/gradle.lockfile",
+    ]).decode()
+    sbom.validate(json.loads(bom_bytes), graph, source, sbom.lock_coordinates_text(historical_lock), graph)
     historical_workflow = verify_source_ancestry(source)
     verify_ci_step_inventory(ci, historical_workflow)
     print("PASS 7.3 public release evidence; final publication CI/readback is a separate post-commit gate")

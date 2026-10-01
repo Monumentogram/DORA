@@ -16,3 +16,9 @@
 *.xml text eol=lf
 *.yml text eol=lf
 gradlew text eol=lf
+
+# Preserve the exact upstream notice bytes pinned inside the admitted native AAR.
+android/app/src/main/assets/third_party/sqlcipher/LibTomCrypt.txt -text
+android/app/src/main/assets/third_party/sqlcipher/SQLCipher-Android.txt -text
+android/app/src/main/assets/third_party/sqlcipher/SQLCipher.txt -text
+android/app/src/main/assets/third_party/sqlcipher/SQLite.txt -text

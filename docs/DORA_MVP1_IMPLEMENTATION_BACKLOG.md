@@ -1,3 +1,12 @@
+## 2026-10-01 — Stage 8.2 encrypted product persistence
+
+8.2 = PENDING_FINAL_PUBLICATION
+Target = ENCRYPTED_PRODUCT_PERSISTENCE_RUNTIME_READY
+Stage 8.2C = NOT_STARTED
+Stage 8.3 = NOT_STARTED
+Group C = IN_PROGRESS
+Exact-SHA CI, independent review and external publication receipt remain required.
+
 ## 2026-10-01 — Stage 8.1 audio Recovery boundary
 
 **8.1 = PENDING_FINAL_PUBLICATION.** The owner-authorized boundary selects the accepted sealed microfile writer and authenticated reader. ADR-AUDIO-001 defines PCM S16LE / 16000 Hz / mono, exact frame time, unique storage-unit/run mappings, physical-segment overlap provenance, typed interruption recovery and exact-source finalization. The new library shares accepted source without modifying it; product persistence remains unavailable pending the separately admitted encrypted 8.2 composition.

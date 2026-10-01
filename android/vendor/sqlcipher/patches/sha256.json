@@ -1,0 +1,5 @@
+{
+  "android-no-log.patch": "a7f2884d5ed17323809ca5acc8110e52e730dffda0b6dc7326efed970593afa8",
+  "core-no-profile.patch": "c7f3c693ac1cfe53093729f73ae237c502de10d49d1bddc045b029961dcedeae",
+  "libtomcrypt-no-timing-entropy.patch": "f9fe1819170b3faaaf2d4012106087f9ce059b640d969f519f95358272468b45"
+}

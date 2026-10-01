@@ -44,6 +44,7 @@ captures/
 *.aab
 *.ap_
 *.aar
+!android/vendor/maven/com/monumentogram/dora/thirdparty/sqlcipher-android/4.17.0-dora.1/sqlcipher-android-4.17.0-dora.1.aar
 *.dex
 *.class
 *.so

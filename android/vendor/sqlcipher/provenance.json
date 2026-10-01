@@ -1,0 +1,54 @@
+{
+  "status": "CANDIDATE_PENDING_RUNTIME_ADMISSION",
+  "coordinate": "com.monumentogram.dora.thirdparty:sqlcipher-android:4.17.0-dora.1",
+  "originalAarSha256": "44fc40c33d1de597c8339072a71fa0ff20e12d01ab352d6abe4ad5df668ead94",
+  "classesJarSha256": "2824924428e2681d4e00e0225679d1988205cf2f90580c3cc0bedf8f4442e3f9",
+  "aarSha256": "4363d513532519f013ec620706dcb27ca40d2af5490c777165484c124f269120",
+  "pomSha256": "18838e526ebc38ea04241eedcb0dca2c32301477a06a699db62a7deca5037d84",
+  "androidSource": "ae57a61052d8c41ce35cd48319b2f6f20f4de6bf",
+  "androidTagOriginalCore": "e2a6040f2ae5cfff2b3e08eb3320007d93cdf3fc",
+  "explicitCoreSource": "810db22f575ee7cf94ea96a3e91622b5fcece3dc",
+  "libtomcrypt": "476a9579ae94f32b9ea9e2747bfb04b302370259",
+  "ndk": "28.2.13676358",
+  "androidApiFloor": 28,
+  "amalgamationSha256": "e00ff0ca534baa14cdb30bb172bbd355e60ec2ad62a77660cc04c99ffa00f4d6",
+  "headerSha256": "b43f231e215c77500c10a11e61eaef8d75629f4c51dd021e862136d9bcf95c26",
+  "native": {
+    "arm64-v8a": {
+      "sha256": "52e2f692a1d59ab6222ab86b516885f930479de7c6ea2b07c4bb48d745ac3ae9",
+      "bytes": 2143984,
+      "loadAlignment": [
+        16384,
+        16384,
+        16384
+      ]
+    },
+    "armeabi-v7a": {
+      "sha256": "808a127e35ad93b93eb9a16abb2d5596ec557c89b6c014d2fd4a41785f9d2def",
+      "bytes": 1060432,
+      "loadAlignment": [
+        16384,
+        16384,
+        16384
+      ]
+    },
+    "x86": {
+      "sha256": "369e17758fe43946901d3c6b2b0d36315f9355b3847b6e3cf2cc37f856cd5a33",
+      "bytes": 2153256,
+      "loadAlignment": [
+        16384,
+        16384,
+        16384
+      ]
+    },
+    "x86_64": {
+      "sha256": "c64b984e39d29c2c0a26832a7d38a1b81704600639eb5fc369df858341449139",
+      "bytes": 2204576,
+      "loadAlignment": [
+        16384,
+        16384,
+        16384
+      ]
+    }
+  }
+}

@@ -1,0 +1,165 @@
+{
+  "aarSha256": "4363d513532519f013ec620706dcb27ca40d2af5490c777165484c124f269120",
+  "artifact": "com.monumentogram.dora.thirdparty:sqlcipher-android:4.17.0-dora.1",
+  "candidateRuntime": [
+    {
+      "api": 28,
+      "classes": [
+        "EncryptedAudioVaultTest:4",
+        "SqlCipherConnectionPolicyTest:3",
+        "RoomAudioJournalTest:15",
+        "AndroidVaultKeyTest+AndroidVaultStorageTest:11"
+      ],
+      "failures": 0,
+      "log_sha256": "a52973d36d870047f2b6eacc4a744eb695716a5cefe1c27016fe2c6fd97337bf",
+      "native_aar_sha256": "4363d513532519f013ec620706dcb27ca40d2af5490c777165484c124f269120",
+      "scope": "Before additional deletion and classifier fix tests. Not final runtime or auth acceptance.",
+      "status": "CANDIDATE_COMPONENT_TESTS_PASS_NOT_STAGE_ACCEPTANCE",
+      "tests": 33
+    },
+    {
+      "api": 29,
+      "apkSha256": "e07b8908c0181e1a33fe4b6c22f15d307282bf5351b8c48ac347d13939470ee4",
+      "failures": 0,
+      "logSha256": "436995d5675cbfe09e59cdb4580eeecc09962526d44a6d18479c014bb935c624",
+      "pageBytes": 4096,
+      "scope": "Candidate helper, keys and four composition tests; later deletion/auth excluded",
+      "tests": 20
+    },
+    {
+      "api": 30,
+      "apkSha256": "e07b8908c0181e1a33fe4b6c22f15d307282bf5351b8c48ac347d13939470ee4",
+      "failures": 0,
+      "logSha256": "522945eefdfee79121f0db6e82e2abd36272672c7e8fc7dc9bcde0a3c81b3955",
+      "pageBytes": 4096,
+      "scope": "Candidate helper, keys and four composition tests; later deletion/auth excluded",
+      "tests": 20
+    },
+    {
+      "api": 31,
+      "apkSha256": "e07b8908c0181e1a33fe4b6c22f15d307282bf5351b8c48ac347d13939470ee4",
+      "failures": 0,
+      "logSha256": "91f97678b7fe8e618f9a8dd5971b467cd188af4826733d1ad4e184f7a49471f0",
+      "pageBytes": 4096,
+      "scope": "Candidate helper, keys and four composition tests; later deletion/auth excluded",
+      "tests": 20
+    },
+    {
+      "api": 32,
+      "apkSha256": "e07b8908c0181e1a33fe4b6c22f15d307282bf5351b8c48ac347d13939470ee4",
+      "failures": 0,
+      "logSha256": "3260f84a37a9ca588529a50e0aced7d21cef42ac00326eff24649828a6e16302",
+      "pageBytes": 4096,
+      "scope": "Candidate helper, keys and four composition tests; later deletion/auth excluded",
+      "tests": 20
+    },
+    {
+      "api": 36,
+      "apk_sha256": "e07b8908c0181e1a33fe4b6c22f15d307282bf5351b8c48ac347d13939470ee4",
+      "failures": 0,
+      "log_sha256": "7741c9129978915e932d2443ff480e6b40b54bf990005e6590bde4fe7ce85741",
+      "native_aar_sha256": "4363d513532519f013ec620706dcb27ca40d2af5490c777165484c124f269120",
+      "page_bytes": 16384,
+      "scope": "13 real key/storage tests including classifier fix;3 physical connection tests;4 real vault composition tests. Excludes later deletion and App Lock.",
+      "status": "CANDIDATE_COMPONENT_RUNTIME_PASS_NOT_STAGE_ACCEPTANCE",
+      "tests": 20
+    }
+  ],
+  "entropy": [
+    {
+      "api": 36,
+      "exit": 77,
+      "mode": "deny-entropy",
+      "output": "FAIL forbidden_clock_entropy_fallback",
+      "pageBytes": 16384,
+      "probe": "entropy-probe-negative",
+      "sha256": "953aa220604e17aff31c97a29cf170deb6636df0fef289ae4d6cc6ea69e9920b"
+    },
+    {
+      "api": 36,
+      "exit": 0,
+      "mode": "healthy",
+      "output": "PASS os_entropy_available encrypted_initialization",
+      "pageBytes": 16384,
+      "probe": "entropy-probe-negative",
+      "sha256": "953aa220604e17aff31c97a29cf170deb6636df0fef289ae4d6cc6ea69e9920b"
+    },
+    {
+      "api": 36,
+      "exit": 0,
+      "mode": "deny-entropy",
+      "output": "PASS entropy_denied initialization_rejected=1",
+      "pageBytes": 16384,
+      "probe": "entropy-probe-hardened-reproduced",
+      "sha256": "cf2bb61a178d4fcb9707b5f0a933f35f79a06281b86cecce86578086b4020f0f"
+    },
+    {
+      "api": 36,
+      "exit": 0,
+      "mode": "healthy",
+      "output": "PASS os_entropy_available encrypted_initialization",
+      "pageBytes": 16384,
+      "probe": "entropy-probe-hardened-reproduced",
+      "sha256": "cf2bb61a178d4fcb9707b5f0a933f35f79a06281b86cecce86578086b4020f0f"
+    }
+  ],
+  "licenseEntriesSha256": {
+    "META-INF/LICENSES/Android-NDK-NOTICE.txt": "faf0dc52cf6ce9ab09a04b0c074a378dd2565ee1ed9bc1179d83793bcdba012e",
+    "META-INF/LICENSES/LLVM-NOTICE.txt": "f96f763beb66a7ba7a667647fc64c0226ace875e590c831fdd9579ec1c1d91e1",
+    "META-INF/LICENSES/LibTomCrypt.txt": "16d005198879b19cfba4487d5f0eccf2b124b10ace6f3d15fc1ee37bcde2c105",
+    "META-INF/LICENSES/SQLCipher-Android.txt": "39374ff8293df8bda2da95c53b6cd86a0a6e1a47c6cbfb7bed8de5aeed8e166c",
+    "META-INF/LICENSES/SQLCipher.txt": "ef735eefda29371ae0795160bb7f58ff7725aceaa3ab5e7fdb27ed68db98890c",
+    "META-INF/LICENSES/SQLite.txt": "39d158a1ee8063b0a7f87a952cc84b689bfb0a85722572ec0c770bd7fa174afb"
+  },
+  "limitations": [
+    "These component APKs predate the complete App Lock, deletion and typed failure integration; final integrated matrix remains required.",
+    "API28 has a distinct earlier component inventory; its count is not the final key-classifier/deletion count.",
+    "16KiB runtime proof is x86_64 API36; static ABI checks do not assert ARM device execution.",
+    "Privacy controls cover exact synthetic canaries in all buffers/priorities of the probe process; no universal native-crash silence claim.",
+    "The negative entropy probe is retained with its digest; the hardened probe was rebuilt against the actual hardened SQLite object and LibTomCrypt archive.",
+    "No microphone, real user audio, signed release, remote provider or Stage8.2C execution."
+  ],
+  "privacy": [
+    {
+      "allLogBuffers": true,
+      "allPriorities": true,
+      "api": 36,
+      "apkSha256": "8fe4ebe408cb98577644c675acec9f92c9c53b7d82fb566516fb1d7f3c11a181",
+      "canaryPresent": {
+        "BOUND": false,
+        "PATH": true,
+        "PROFILE": true,
+        "PROFILE_BOUND": false,
+        "SQL": true
+      },
+      "logSha256": "87e7a4f2c895dfed739cf2e8445b985ff9945d90965ad0bfffe5b99cd7624173",
+      "pageBytes": 4096,
+      "processScoped": true,
+      "receipt": "java_logger=noop\nsqlite_version=3.53.3\ncipher_version=4.17.0 community\ncore_logger=none\nprofile_enable_status=0\nsql_failure=caught_without_logging_exception\npath_failure=caught_without_logging_exception",
+      "status": "REJECTED_NEGATIVE_CONTROL",
+      "variant": "stock"
+    },
+    {
+      "allLogBuffers": true,
+      "allPriorities": true,
+      "api": 36,
+      "apkSha256": "d23b2a24ca309db4f162738e32b18fa431d99878736cf2ee42093705ca618c0f",
+      "canaryPresent": {
+        "BOUND": false,
+        "PATH": false,
+        "PROFILE": false,
+        "PROFILE_BOUND": false,
+        "SQL": false
+      },
+      "logSha256": "9059b03925004f6858239fed43e5c873a791d94b691b6cc9808c9839f0dcefaa",
+      "pageBytes": 4096,
+      "processScoped": true,
+      "receipt": "java_logger=noop\nsqlite_version=3.53.3\ncipher_version=4.17.0 community\ncore_logger=none\nprofile_enable_status=1\nsql_failure=caught_without_logging_exception\npath_failure=caught_without_logging_exception",
+      "status": "CANDIDATE_PRIVACY_CONTROL_PASS",
+      "variant": "hardened"
+    }
+  ],
+  "provenance": "android/vendor/sqlcipher/provenance.json",
+  "stage": "8.2",
+  "status": "CANDIDATE_COMPONENT_EVIDENCE_NOT_STAGE_ACCEPTANCE"
+}

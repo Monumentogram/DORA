@@ -1,0 +1,27 @@
+DORA SQLCipher Android composite 4.17.0-dora.1
+
+This application includes a distinct SQLCipher Android composite distributed as
+com.monumentogram.dora.thirdparty:sqlcipher-android:4.17.0-dora.1.
+It is not a byte-identical copy of the upstream Maven artifact.
+
+SQLCipher and the Android wrapper: Copyright ZETETIC LLC; BSD-3-Clause.
+Android-derived Java/JNI portions: Copyright The Android Open Source Project;
+Apache License 2.0. SQLite: public-domain dedication. LibTomCrypt: the WTFPL
+version 2 option of its upstream dual license is selected for this distribution.
+NDK static runtime portions include LLVM libc++, libc++abi, libunwind and compiler
+runtime support under the retained LLVM/NDK notices, including Apache License
+2.0 with LLVM Exceptions and applicable legacy notices.
+
+DORA modifications disable native diagnostic logging, JNI exception logging,
+SQL profiling, and LibTomCrypt's Android clock-timing entropy fallback. The
+composite uses explicit SQLCipher core 4.17.0 with SQLite 3.53.3, rather than the
+Android wrapper tag's older core gitlink. Published Java classes are unchanged.
+Source revisions and the exact patches are available with this application's
+source at https://github.com/Monumentogram/DORA/tree/stage/8.2-encrypted-persistence/android/vendor/sqlcipher
+
+The adjacent files retain the full upstream license and notice texts:
+SQLCipher-Android.txt, SQLCipher.txt, SQLite.txt, LibTomCrypt.txt,
+LLVM-NOTICE.txt, and Android-NDK-NOTICE.txt. The complete NDK notices may describe
+build tools or components beyond the linked runtime; their inclusion does not
+assert that those tools are shipped in this application.
+

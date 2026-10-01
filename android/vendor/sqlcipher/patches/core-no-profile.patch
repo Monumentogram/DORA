@@ -1,0 +1,22 @@
+diff --git a/src/sqlcipher.c b/src/sqlcipher.c
+index 50cf04f..9c5e9f4 100644
+--- a/src/sqlcipher.c
++++ b/src/sqlcipher.c
+@@ -2464,7 +2464,7 @@ static int sqlcipher_fprintf(FILE* stream, const char* format, ...) {
+ #define sqlcipher_fprintf fprintf
+ #endif
+ 
+-#if !defined(SQLITE_OMIT_TRACE)
++#if !defined(SQLITE_OMIT_TRACE) && !defined(SQLCIPHER_OMIT_LOG)
+ 
+ #define SQLCIPHER_PROFILE_FMT        "Elapsed time:%.3f ms - %s\n"
+ #define SQLCIPHER_PROFILE_FMT_OSLOG  "Elapsed time:%{public}.3f ms - %{public}s\n"
+@@ -2488,7 +2488,7 @@ static int sqlcipher_profile_callback(unsigned int trace, void *file, void *stmt
+ #endif
+ 
+ static int sqlcipher_cipher_profile(sqlite3 *db, const char *destination){
+-#if defined(SQLITE_OMIT_TRACE)
++#if defined(SQLITE_OMIT_TRACE) || defined(SQLCIPHER_OMIT_LOG)
+   return SQLITE_ERROR;
+ #else
+   FILE *f = NULL;
