@@ -12,6 +12,7 @@ from urllib.parse import quote
 from alpha_release_identity import ROOT, identity
 
 APPROVED = ROOT / "docs/contracts/DORA_ALPHA_RELEASE_RUNTIME_GRAPH_V0_1.json"
+HISTORICAL_PROJECTS = frozenset({":app", ":core:common", ":core:model"})
 
 
 def canonical_bytes(value: object) -> bytes:
@@ -35,7 +36,7 @@ def normalize(graph: dict) -> dict:
     return result
 
 
-def check_graph(graph: dict, locked: set[str], approved: dict) -> dict:
+def check_graph(graph: dict, locked: set[str], approved: dict, *, allowed_projects=HISTORICAL_PROJECTS) -> dict:
     if graph["configuration"] != "releaseRuntimeClasspath" or graph["root"] != "project::app" or graph["unresolved"]:
         raise ValueError("Unresolved or wrong release configuration")
     if any(not exact_version(v) for v in graph["requested_versions"]):
@@ -54,7 +55,7 @@ def check_graph(graph: dict, locked: set[str], approved: dict) -> dict:
                 if not re.fullmatch(r"[0-9a-f]{64}", artifact["sha256"]) or "/" in artifact["name"] or "\\" in artifact["name"]:
                     raise ValueError("Invalid artifact identity")
         elif component["kind"] == "project":
-            if component["id"] != "project:" + component["path"] or component["path"] not in {":app", ":core:common", ":core:model"}:
+            if component["id"] != "project:" + component["path"] or component["path"] not in allowed_projects:
                 raise ValueError("Unexpected local release module")
         else:
             raise ValueError("Unknown component kind")
@@ -82,8 +83,12 @@ def check_graph(graph: dict, locked: set[str], approved: dict) -> dict:
 
 
 def lock_coordinates(path: Path = ROOT / "android/app/gradle.lockfile") -> set[str]:
+    return lock_coordinates_text(path.read_text(encoding="utf-8"))
+
+
+def lock_coordinates_text(text: str) -> set[str]:
     result = set()
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in text.splitlines():
         if not line or line.startswith("#"):
             continue
         coordinate, configurations = line.split("=", 1)
@@ -96,10 +101,10 @@ def lock_coordinates(path: Path = ROOT / "android/app/gradle.lockfile") -> set[s
     return result
 
 
-def generate(graph: dict, source: str, locked: set[str], approved: dict) -> dict:
+def generate(graph: dict, source: str, locked: set[str], approved: dict, *, allowed_projects=HISTORICAL_PROJECTS) -> dict:
     if not re.fullmatch(r"[0-9a-f]{40}", source):
         raise ValueError("Invalid source SHA")
-    graph = check_graph(graph, locked, approved)
+    graph = check_graph(graph, locked, approved, allowed_projects=allowed_projects)
     _, version = identity()
     components = []
     for node in graph["components"]:
@@ -128,8 +133,8 @@ def generate(graph: dict, source: str, locked: set[str], approved: dict) -> dict
     }
 
 
-def validate(bom: dict, graph: dict, source: str, locked: set[str], approved: dict) -> None:
-    if bom != generate(graph, source, locked, approved):
+def validate(bom: dict, graph: dict, source: str, locked: set[str], approved: dict, *, allowed_projects=HISTORICAL_PROJECTS) -> None:
+    if bom != generate(graph, source, locked, approved, allowed_projects=allowed_projects):
         raise ValueError("SBOM source/version/components/relationships mismatch")
 
 
@@ -141,11 +146,23 @@ def main() -> None:
     parser.add_argument("--check", type=Path)
     args = parser.parse_args()
     graph = json.loads(args.graph.read_text())
-    approved = json.loads(APPROVED.read_text())
+    import validate_encrypted_persistence as persistence
+    if persistence.candidate(ROOT):
+        contract = persistence.validate_checkout(ROOT)
+        approved = persistence.approved_release_graph(ROOT, contract)
+        allowed_projects = persistence.RELEASE_PROJECTS
+    else:
+        approved = json.loads(APPROVED.read_text())
+        allowed_projects = HISTORICAL_PROJECTS
     locked = lock_coordinates()
-    bom = generate(graph, args.source, locked, approved)
+    bom = generate(graph, args.source, locked, approved, allowed_projects=allowed_projects)
+    if persistence.candidate(ROOT):
+        import persistence_release_inventory as inventory
+        record = inventory.read_and_validate(ROOT, contract, approved)
+        bom = inventory.enrich_sbom(bom, record, contract['native_sbom_sha256'])
     if args.check:
-        validate(json.loads(args.check.read_text()), graph, args.source, locked, approved)
+        if json.loads(args.check.read_text()) != bom:
+            raise ValueError("SBOM source/version/components/relationships mismatch")
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_bytes(canonical_bytes(bom))

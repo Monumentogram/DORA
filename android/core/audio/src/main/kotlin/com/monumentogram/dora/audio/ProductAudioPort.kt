@@ -53,11 +53,15 @@ data class AudioStorageUnitIdentity(
 )
 
 enum class AudioFailure {
+    LOCKED,
+    CANCELLED,
+    CREDENTIAL_SETUP_REQUIRED,
     UNAVAILABLE,
     INVALID_INPUT,
     COLLISION,
     KEY_UNAVAILABLE,
     KEY_INVALIDATED,
+    AUTHENTICATION_FAILED,
     INCOMPLETE,
     CORRUPT,
     BUSY,
@@ -115,10 +119,75 @@ interface ProductAudioReaderPort {
 }
 
 sealed interface AudioAvailability {
-    data object RequiresEncryptedPersistence : AudioAvailability
+    data object Locked : AudioAvailability
+
+    data object Opening : AudioAvailability
+
+    data class Available(val session: ProductAudioSession) : AudioAvailability
+
+    data class Failed(val reason: AudioFailure) : AudioAvailability
 }
 
-/** Stage 8.2 must admit an encrypted composition before product persistence can be obtained. */
-object ProductAudioRuntime {
-    val availability: AudioAvailability = AudioAvailability.RequiresEncryptedPersistence
+enum class AudioOpenMode {
+    CREATE_NEW,
+    OPEN_EXISTING,
+}
+
+/** Describes only the vault wrapping key, not every audio key or the entire device. */
+enum class VaultKeyProtection {
+    STRONGBOX,
+    TRUSTED_ENVIRONMENT,
+    HARDWARE_BACKED_UNSPECIFIED,
+    SOFTWARE,
+}
+
+sealed interface AudioSourceState {
+    data class Readable(val summary: AudioReadSummary) : AudioSourceState
+
+    data object Missing : AudioSourceState
+
+    data object UserDeleted : AudioSourceState
+
+    data class Deleting(val remainingCategories: Set<AudioDeletionCategory>) : AudioSourceState
+
+    data class Unavailable(val reason: AudioFailure) : AudioSourceState
+}
+
+enum class AudioDeletionCategory {
+    KEY_MATERIAL,
+    AUDIO_FILES,
+    JOURNAL_COMPLETION,
+}
+
+/**
+ * Generation-bound access. Submitted calls wait through caller interruption until worker access to
+ * input and callbacks ends. The interrupt flag is restored; interrupted success returns UNCERTAIN.
+ * Synchronous methods require a background caller; main-thread calls and reentry from a borrowed
+ * PCM callback return BUSY. PCM callbacks execute on the persistence worker, must be bounded, and
+ * must never synchronously wait for main-thread work. Do not retain or post the borrowed array. Any
+ * failed extraction invalidates the whole attempt, including earlier callbacks.
+ */
+interface ProductAudioSession {
+    val writer: ProductAudioWriterPort
+    val reader: ProductAudioReaderPort
+    val protection: VaultKeyProtection
+    val protectionDisclosure: String
+        get() =
+            "Vault wrapping key protection: " +
+                when (protection) {
+                    VaultKeyProtection.STRONGBOX -> "StrongBox"
+                    VaultKeyProtection.TRUSTED_ENVIRONMENT -> "Trusted execution environment"
+                    VaultKeyProtection.HARDWARE_BACKED_UNSPECIFIED ->
+                        "Hardware-backed; type unspecified"
+                    VaultKeyProtection.SOFTWARE -> "Software-backed Android Keystore"
+                }
+
+    fun sourceState(identity: AudioIdentity): AudioResult<AudioSourceState>
+
+    /** Resumes only an already durably confirmed exact audio deletion; never starts one. */
+    fun retryRemainingDeletion(identity: AudioIdentity): AudioResult<Unit>
+}
+
+interface ProductAudioRuntime {
+    val availability: AudioAvailability
 }

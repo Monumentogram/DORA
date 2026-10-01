@@ -1,0 +1,29 @@
+DORA Stage 8.2 persistence dependency notices
+
+This distribution adds the following Apache-2.0 components to the product
+release dependency graph. Exact versions and publisher POM/artifact identities
+are recorded in the Stage 8.2 dependency inventory:
+- androidx.annotation:annotation-experimental:1.5.0
+- androidx.room:room-common-jvm:2.8.4
+- androidx.room:room-common:2.8.4
+- androidx.room:room-runtime-android:2.8.4
+- androidx.room:room-runtime:2.8.4
+- androidx.sqlite:sqlite-android:2.6.2
+- androidx.sqlite:sqlite-framework-android:2.6.2
+- androidx.sqlite:sqlite-framework:2.6.2
+- androidx.sqlite:sqlite:2.6.2
+- com.google.code.gson:gson:2.13.2
+- com.google.crypto.tink:tink-android:1.23.0
+- com.google.errorprone:error_prone_annotations:2.41.0
+
+Apache-2.0.txt retains the complete upstream Apache License, Version 2.0.
+AndroidX-Apache-2.0.txt retains the exact license text embedded by the AndroidX
+artifacts. The original AndroidX embedded texts are byte-identical to this copy.
+
+Tink Android 1.23.0 also embeds a shaded protobuf-java 4.33.6 runtime.
+Protobuf-BSD-3-Clause.txt retains its upstream copyright, license and disclaimer.
+This embedded component is distinct from the Maven resolution graph.
+
+The SQLCipher composite and its native constituents, modifications and licenses
+are described by the separate third_party/sqlcipher/NOTICE.txt and accompanying
+license files. No jsr305 dependency is admitted in the product release graph.

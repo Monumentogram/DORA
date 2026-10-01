@@ -1,5 +1,8 @@
 package com.monumentogram.dora.audio
 
+import com.monumentogram.dora.audio.persistence.keys.KeyFailure
+import com.monumentogram.dora.audio.persistence.keys.RunKeyFailureScopes
+import com.monumentogram.dora.audio.persistence.keys.RunKeyOperation
 import com.monumentogram.dora.poc.recovery.bootstrap.BootstrapResult
 import com.monumentogram.dora.poc.recovery.bootstrap.RecoveryKeyBootstrapController
 import com.monumentogram.dora.poc.recovery.candidate.MicrofilePublicationInput
@@ -22,6 +25,7 @@ import com.monumentogram.dora.poc.recovery.contract.RecoveryCandidate
 import com.monumentogram.dora.poc.recovery.contract.RecoveryQuarantineIntentInput
 import com.monumentogram.dora.poc.recovery.contract.RunId
 import com.monumentogram.dora.poc.recovery.contract.Sha256Value
+import com.monumentogram.dora.poc.recovery.controller.ConfirmationDiagnostic
 import com.monumentogram.dora.poc.recovery.controller.RecoveryKeyConfirmationController
 
 internal sealed interface AudioIntent {
@@ -96,6 +100,7 @@ internal class RecoveryAudioBridge(
     crypto: RecoveryReconciliationCrypto,
     confirmation: RecoveryKeyConfirmationController,
     quarantine: RecoveryQuarantineController,
+    private val keyFailures: RunKeyFailureScopes = RunKeyFailureScopes(),
 ) : ProductAudioWriterPort, ProductAudioReaderPort {
     private val reader =
         RecoveryMicrofileReconciliationController(source, crypto, confirmation, quarantine)
@@ -138,6 +143,7 @@ internal class RecoveryAudioBridge(
         }
     }
 
+    @Suppress("LongMethod") // Keep durable reservation and ordered failure gates together.
     private fun appendReserved(
         asset: StoredAudioAsset,
         segment: AudioStorageUnitIdentity,
@@ -162,12 +168,25 @@ internal class RecoveryAudioBridge(
         // Reservation stays pending after every failure: retries must reconcile, never overwrite.
         val run = RunId.fromCanonicalString(segment.unitId)
         val confirmation = KeyConfirmationValue(RecoveryCandidate.MICROFILE, run)
-        val boot = bootstrap.bootstrap(confirmation)
+        val bootstrapAttempt =
+            keyFailures.observe(run, RunKeyOperation.BOOTSTRAP) {
+                bootstrap.bootstrap(confirmation)
+            }
+        bootstrapAttempt.failure?.let {
+            return failed(it.audioFailure())
+        }
+        val boot = bootstrapAttempt.value
         if (boot !is BootstrapResult.Committed) return failed(AudioFailure.UNCERTAIN)
-        val publication =
-            publisher.publish(
-                MicrofilePublicationInput(confirmation, boot.publicationCapability, bytes, 5UL)
-            )
+        val publicationAttempt =
+            keyFailures.observe(run, RunKeyOperation.PUBLICATION) {
+                publisher.publish(
+                    MicrofilePublicationInput(confirmation, boot.publicationCapability, bytes, 5UL)
+                )
+            }
+        publicationAttempt.failure?.let {
+            return failed(it.audioFailure())
+        }
+        val publication = publicationAttempt.value
         if (publication !is MicrofilePublicationResult.Committed)
             return failed(AudioFailure.UNCERTAIN)
         if (publication.capability.runId != run || publication.capability.generation != 1UL) {
@@ -347,24 +366,33 @@ internal class RecoveryAudioBridge(
         val complete: Boolean,
     )
 
+    @Suppress("LongMethod") // Preserve the explicit authenticated-prefix validation sequence.
     private fun recover(segment: AudioStorageUnitIdentity): AudioResult<Recovered> {
         val run = RunId.fromCanonicalString(segment.unitId)
-        val result = reader.reconcile(run)
+        val attempt =
+            keyFailures.observe(run, RunKeyOperation.RECONCILIATION) { reader.reconcile(run) }
+        val result = attempt.value
+        refinedKeyFailure(result, attempt.failure)?.let {
+            return failed(it)
+        }
         if (result is MicrofileReconciliationResult.ConcurrentWriter)
             return failed(AudioFailure.BUSY)
         if (
             result is MicrofileReconciliationResult.PartialPrefix && result.prefix.units.isEmpty()
         ) {
             return failed(
-                when (result.classification) {
-                    KeyRecoveryClassification.KEY_UNAVAILABLE -> AudioFailure.KEY_UNAVAILABLE
-                    KeyRecoveryClassification.KEY_UNAVAILABLE_KEY_MISMATCH ->
-                        AudioFailure.KEY_INVALIDATED
-                    else ->
-                        if (result.failure?.category == RecoveryFailureCategory.MISSING_ARTIFACT)
-                            AudioFailure.INCOMPLETE
-                        else AudioFailure.CORRUPT
-                }
+                diagnosticReason(result.failure?.category)
+                    ?: when (result.classification) {
+                        KeyRecoveryClassification.KEY_UNAVAILABLE -> AudioFailure.KEY_UNAVAILABLE
+                        KeyRecoveryClassification.KEY_UNAVAILABLE_KEY_MISMATCH ->
+                            AudioFailure.KEY_INVALIDATED
+                        else ->
+                            if (
+                                result.failure?.category == RecoveryFailureCategory.MISSING_ARTIFACT
+                            )
+                                AudioFailure.INCOMPLETE
+                            else AudioFailure.CORRUPT
+                    }
             )
         }
         if (result is MicrofileReconciliationResult.NoAuthenticatedPrefix) {
@@ -403,23 +431,93 @@ internal class RecoveryAudioBridge(
         )
     }
 
+    /**
+     * Typed key detail may refine an unresolved key/operational outcome, never a proven rejection.
+     */
+    private fun refinedKeyFailure(
+        result: MicrofileReconciliationResult,
+        observed: KeyFailure?,
+    ): AudioFailure? {
+        if (observed == null) return null
+        val refinable =
+            when (result) {
+                is MicrofileReconciliationResult.NoAuthenticatedPrefix ->
+                    keyOutcomeIsUnresolved(result.classification, result.failure?.category) ||
+                        (result.classification == null &&
+                            result.failure == null &&
+                            when (result.confirmationDiagnostic) {
+                                ConfirmationDiagnostic.OPEN_OPERATIONAL_FAILURE,
+                                ConfirmationDiagnostic.OPEN_UNEXPECTED_FAILURE,
+                                ConfirmationDiagnostic.DECRYPT_UNKNOWN_FAILURE,
+                                ConfirmationDiagnostic.DECRYPT_OPERATIONAL_FAILURE,
+                                ConfirmationDiagnostic.DECRYPT_UNEXPECTED_FAILURE -> true
+                                ConfirmationDiagnostic.AUTHENTICATION_WITHOUT_KEY04_PROVENANCE ->
+                                    observed == KeyFailure.AUTHENTICATION_FAILED
+                                else -> false
+                            })
+                is MicrofileReconciliationResult.PartialPrefix ->
+                    result.prefix.units.isEmpty() &&
+                        keyOutcomeIsUnresolved(result.classification, result.failure?.category)
+                else -> false
+            }
+        return if (refinable) observed.audioFailure() else null
+    }
+
+    private fun keyOutcomeIsUnresolved(
+        classification: KeyRecoveryClassification?,
+        category: RecoveryFailureCategory?,
+    ): Boolean {
+        val operational =
+            category in
+                setOf(
+                    RecoveryFailureCategory.OPERATIONAL,
+                    RecoveryFailureCategory.UNKNOWN,
+                    RecoveryFailureCategory.UNKNOWN_OUTCOME,
+                )
+        if (category != null && !operational) return false
+        return classification == KeyRecoveryClassification.KEY_UNAVAILABLE ||
+            (classification == null && operational)
+    }
+
     private fun rejectionReason(
         result: MicrofileReconciliationResult.NoAuthenticatedPrefix
     ): AudioFailure =
-        when (result.classification) {
-            KeyRecoveryClassification.KEY_UNAVAILABLE -> AudioFailure.KEY_UNAVAILABLE
-            KeyRecoveryClassification.KEY_UNAVAILABLE_KEY_MISMATCH -> AudioFailure.KEY_INVALIDATED
-            KeyRecoveryClassification.KEY_REF_COLLISION -> AudioFailure.COLLISION
-            KeyRecoveryClassification.INCOMPLETE_KEY_BOOTSTRAP,
-            KeyRecoveryClassification.KEY_CONFIRMATION_MISSING -> AudioFailure.INCOMPLETE
-            KeyRecoveryClassification.CORRUPT_KEY_CONFIRMATION,
-            KeyRecoveryClassification.CORRUPT_KEY_ENVELOPE,
-            KeyRecoveryClassification.KEY_ENVELOPE_AUTH_FAILURE -> AudioFailure.CORRUPT
-            null ->
-                if (result.confirmationDiagnostic != null) AudioFailure.UNCERTAIN
-                else if (result.failure?.category == RecoveryFailureCategory.MISSING_ARTIFACT)
-                    AudioFailure.INCOMPLETE
-                else AudioFailure.CORRUPT
+        diagnosticReason(result.failure?.category)
+            ?: when (result.classification) {
+                KeyRecoveryClassification.KEY_UNAVAILABLE -> AudioFailure.KEY_UNAVAILABLE
+                KeyRecoveryClassification.KEY_UNAVAILABLE_KEY_MISMATCH ->
+                    AudioFailure.KEY_INVALIDATED
+                KeyRecoveryClassification.KEY_REF_COLLISION -> AudioFailure.COLLISION
+                KeyRecoveryClassification.INCOMPLETE_KEY_BOOTSTRAP,
+                KeyRecoveryClassification.KEY_CONFIRMATION_MISSING -> AudioFailure.INCOMPLETE
+                KeyRecoveryClassification.CORRUPT_KEY_CONFIRMATION,
+                KeyRecoveryClassification.CORRUPT_KEY_ENVELOPE,
+                KeyRecoveryClassification.KEY_ENVELOPE_AUTH_FAILURE -> AudioFailure.CORRUPT
+                null ->
+                    if (result.confirmationDiagnostic != null) AudioFailure.UNCERTAIN
+                    else if (result.failure?.category == RecoveryFailureCategory.MISSING_ARTIFACT)
+                        AudioFailure.INCOMPLETE
+                    else AudioFailure.CORRUPT
+            }
+
+    private fun diagnosticReason(category: RecoveryFailureCategory?): AudioFailure? =
+        when (category) {
+            RecoveryFailureCategory.OPERATIONAL,
+            RecoveryFailureCategory.UNKNOWN,
+            RecoveryFailureCategory.UNKNOWN_OUTCOME -> AudioFailure.UNCERTAIN
+            RecoveryFailureCategory.AUTHENTICATION_REJECTED -> AudioFailure.AUTHENTICATION_FAILED
+            else -> null
+        }
+
+    private fun KeyFailure.audioFailure(): AudioFailure =
+        when (this) {
+            KeyFailure.TEMPORARILY_UNAVAILABLE -> AudioFailure.KEY_UNAVAILABLE
+            KeyFailure.PERMANENTLY_MISSING_OR_INVALIDATED -> AudioFailure.KEY_INVALIDATED
+            KeyFailure.AUTHENTICATION_FAILED -> AudioFailure.AUTHENTICATION_FAILED
+            KeyFailure.CORRUPT_CIPHERTEXT -> AudioFailure.CORRUPT
+            KeyFailure.NAMESPACE_OCCUPIED -> AudioFailure.COLLISION
+            KeyFailure.INCOMPLETE_BOOTSTRAP -> AudioFailure.INCOMPLETE
+            KeyFailure.STORAGE_FAILURE -> AudioFailure.UNCERTAIN
         }
 
     private fun <T> withAsset(

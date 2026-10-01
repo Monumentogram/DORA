@@ -7709,7 +7709,11 @@ def validate_rec_clean_integrated_anchor(anchor, preparation, implementation):
 
 
 def rec_clean_integrated_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool:
-    if lifecycle.branch != REC_CLEAN_INTEGRATED_BRANCH:
+    if lifecycle.branch == "stage/8.2-encrypted-persistence":
+        import validate_encrypted_persistence as persistence
+        # A successor is admitted only by its separately sealed, exact current-tree gate.
+        persistence.validate_checkout(ROOT)
+    elif lifecycle.branch != REC_CLEAN_INTEGRATED_BRANCH:
         return False
     anchor = collect_pinned_commit_identity(REC_CLEAN_INTEGRATED_ANCHOR, lifecycle.head)
     if anchor.commit is None or not anchor.is_ancestor_of_head:
@@ -7843,6 +7847,12 @@ def validate_rec_clean_closure_receipt(receipt, governance_head):
 
 def validate_rec_clean_integrated(lifecycle: RecoveryLifecycleIdentity) -> None:
     require(rec_clean_integrated_candidate(lifecycle), "Recovery clean integrated identity not admitted")
+    persistence_successor = lifecycle.branch == "stage/8.2-encrypted-persistence"
+    if persistence_successor:
+        import validate_encrypted_persistence as persistence
+    # The immutable historical transition keeps its original policy and object identities.
+    # Current inputs/dirty layers/engine bytes are independently checked by validate_checkout.
+    historical_head = persistence.BASELINE if persistence_successor else lifecycle.head
     require(lifecycle.github_pull_request_context is None
             and git_output("rev-parse", "HEAD") == lifecycle.head,
             "Recovery clean integrated checkout/event identity drift")
@@ -7863,23 +7873,26 @@ def validate_rec_clean_integrated(lifecycle: RecoveryLifecycleIdentity) -> None:
             "Recovery clean integrated reconciliation accounting drift")
     expected = dict(REC_I3_ACCEPTED_MAIN_PROTECTED_ENTRIES)
     expected["android/poc/recovery"] = contract["recovery_tree_entry"]
-    for revision in (REC_CLEAN_INTEGRATED_ANCHOR, "HEAD"):
+    for revision in (REC_CLEAN_INTEGRATED_ANCHOR, historical_head):
         current = {p: next(iter(git_path_records("ls-tree", "-z", revision, "--", p)), None)
                    for p in expected}
         require(current == expected, "Recovery clean integrated protected object identity changed")
-    history = git_output("rev-list", "--reverse", "--parents", f"{REC_CLEAN_INTEGRATED_ANCHOR}..HEAD").splitlines()
+    history = git_output("rev-list", "--reverse", "--parents", f"{REC_CLEAN_INTEGRATED_ANCHOR}..{historical_head}").splitlines()
     transitions = []
     for line in history:
         fields = line.split()
         require(len(fields) == 2, "Recovery clean integrated closure rejects another merge")
         transitions.append(git_path_records("diff", "--name-only", "--no-renames", "-z", fields[1], fields[0], "--"))
-    validate_rec_clean_integrated_state(
-        collect_post_merge_changes(merged_anchor=REC_CLEAN_INTEGRATED_ANCHOR), current, expected,
-        history, lifecycle.head, transitions,
-    )
+    changes = ({'committed': sorted(set().union(*map(set, transitions))),
+                'staged': [], 'unstaged': [], 'untracked': []} if persistence_successor else
+               collect_post_merge_changes(merged_anchor=REC_CLEAN_INTEGRATED_ANCHOR))
+    validate_rec_clean_integrated_state(changes, current, expected, history, historical_head, transitions)
     if len(history) > 6:
         import validate_audio_recovery_boundary as audio
-        audio.validate_checkout(ROOT)
+        if persistence_successor:
+            persistence.validate_historical_audio(ROOT)
+        else:
+            audio.validate_checkout(ROOT)
     if history:
         validate_pinned_commit_identity(
             collect_pinned_commit_identity(REC_CLEAN_REMEDIATION_HEAD, lifecycle.head),
@@ -7940,7 +7953,7 @@ def validate_rec_clean_integrated(lifecycle: RecoveryLifecycleIdentity) -> None:
         require(os.environ.get("GITHUB_EVENT_NAME") in {"push", "workflow_dispatch"}
                 and os.environ.get("GITHUB_REPOSITORY") == GITHUB_REPOSITORY
                 and workspace and Path(workspace).resolve() == ROOT.resolve()
-                and os.environ.get("GITHUB_REF") == f"refs/heads/{REC_CLEAN_INTEGRATED_BRANCH}"
+                and os.environ.get("GITHUB_REF") == f"refs/heads/{lifecycle.branch}"
                 and os.environ.get("GITHUB_SHA") == lifecycle.head,
                 "Recovery clean integrated GitHub event identity drift")
 

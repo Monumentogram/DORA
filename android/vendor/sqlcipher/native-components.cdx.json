@@ -1,0 +1,283 @@
+{
+  "bomFormat": "CycloneDX",
+  "components": [
+    {
+      "bom-ref": "native:SQLCipher-Android-wrapper-and-JNI",
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause AND Apache-2.0"
+        }
+      ],
+      "name": "SQLCipher Android wrapper and JNI",
+      "properties": [
+        {
+          "name": "dora:pinned-source-identity",
+          "value": "ae57a61052d8c41ce35cd48319b2f6f20f4de6bf"
+        }
+      ],
+      "type": "library",
+      "version": "4.17.0"
+    },
+    {
+      "bom-ref": "native:SQLCipher-core",
+      "licenses": [
+        {
+          "expression": "BSD-3-Clause"
+        }
+      ],
+      "name": "SQLCipher core",
+      "properties": [
+        {
+          "name": "dora:pinned-source-identity",
+          "value": "810db22f575ee7cf94ea96a3e91622b5fcece3dc"
+        }
+      ],
+      "type": "library",
+      "version": "4.17.0"
+    },
+    {
+      "bom-ref": "native:SQLite",
+      "licenses": [
+        {
+          "license": {
+            "name": "SQLite public-domain dedication"
+          }
+        }
+      ],
+      "name": "SQLite",
+      "properties": [
+        {
+          "name": "dora:pinned-source-identity",
+          "value": "e00ff0ca534baa14cdb30bb172bbd355e60ec2ad62a77660cc04c99ffa00f4d6"
+        }
+      ],
+      "type": "library",
+      "version": "3.53.3"
+    },
+    {
+      "bom-ref": "native:LibTomCrypt",
+      "licenses": [
+        {
+          "expression": "WTFPL"
+        }
+      ],
+      "name": "LibTomCrypt",
+      "properties": [
+        {
+          "name": "dora:pinned-source-identity",
+          "value": "476a9579ae94f32b9ea9e2747bfb04b302370259"
+        }
+      ],
+      "type": "library",
+      "version": "476a9579ae94f32b9ea9e2747bfb04b302370259"
+    },
+    {
+      "bom-ref": "native:Android-NDK-linked-LLVM-static-runtime-inputs",
+      "licenses": [
+        {
+          "expression": "Apache-2.0 WITH LLVM-exception"
+        }
+      ],
+      "name": "Android NDK linked LLVM static runtime inputs",
+      "properties": [
+        {
+          "name": "dora:clang-version",
+          "value": "19.0.1 / r530567e"
+        },
+        {
+          "name": "dora:runtime-scope",
+          "value": "libc++, libc++abi, libunwind, compiler-rt/libatomic link inputs; whole archives are not claimed copied into every ELF"
+        },
+        {
+          "name": "dora:retained-license-notices",
+          "value": "assets/third_party/sqlcipher/LLVM-NOTICE.txt; assets/third_party/sqlcipher/Android-NDK-NOTICE.txt; includes applicable legacy notices"
+        }
+      ],
+      "type": "library",
+      "version": "28.2.13676358"
+    },
+    {
+      "bom-ref": "native-binary:arm64-v8a",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "52e2f692a1d59ab6222ab86b516885f930479de7c6ea2b07c4bb48d745ac3ae9"
+        }
+      ],
+      "name": "jni/arm64-v8a/libsqlcipher.so",
+      "properties": [
+        {
+          "name": "dora:android-api-floor",
+          "value": "28"
+        },
+        {
+          "name": "dora:elf-load-alignment",
+          "value": "16384"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native-binary:armeabi-v7a",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "808a127e35ad93b93eb9a16abb2d5596ec557c89b6c014d2fd4a41785f9d2def"
+        }
+      ],
+      "name": "jni/armeabi-v7a/libsqlcipher.so",
+      "properties": [
+        {
+          "name": "dora:android-api-floor",
+          "value": "28"
+        },
+        {
+          "name": "dora:elf-load-alignment",
+          "value": "16384"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native-binary:x86",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "369e17758fe43946901d3c6b2b0d36315f9355b3847b6e3cf2cc37f856cd5a33"
+        }
+      ],
+      "name": "jni/x86/libsqlcipher.so",
+      "properties": [
+        {
+          "name": "dora:android-api-floor",
+          "value": "28"
+        },
+        {
+          "name": "dora:elf-load-alignment",
+          "value": "16384"
+        }
+      ],
+      "type": "file"
+    },
+    {
+      "bom-ref": "native-binary:x86_64",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "c64b984e39d29c2c0a26832a7d38a1b81704600639eb5fc369df858341449139"
+        }
+      ],
+      "name": "jni/x86_64/libsqlcipher.so",
+      "properties": [
+        {
+          "name": "dora:android-api-floor",
+          "value": "28"
+        },
+        {
+          "name": "dora:elf-load-alignment",
+          "value": "16384"
+        }
+      ],
+      "type": "file"
+    }
+  ],
+  "dependencies": [
+    {
+      "dependsOn": [
+        "native-binary:arm64-v8a",
+        "native-binary:armeabi-v7a",
+        "native-binary:x86",
+        "native-binary:x86_64"
+      ],
+      "ref": "pkg:maven/com.monumentogram.dora.thirdparty/sqlcipher-android@4.17.0-dora.1"
+    },
+    {
+      "dependsOn": [],
+      "ref": "native:SQLCipher-Android-wrapper-and-JNI"
+    },
+    {
+      "dependsOn": [],
+      "ref": "native:SQLCipher-core"
+    },
+    {
+      "dependsOn": [],
+      "ref": "native:SQLite"
+    },
+    {
+      "dependsOn": [],
+      "ref": "native:LibTomCrypt"
+    },
+    {
+      "dependsOn": [],
+      "ref": "native:Android-NDK-linked-LLVM-static-runtime-inputs"
+    },
+    {
+      "dependsOn": [
+        "native:SQLCipher-Android-wrapper-and-JNI",
+        "native:SQLCipher-core",
+        "native:SQLite",
+        "native:LibTomCrypt",
+        "native:Android-NDK-linked-LLVM-static-runtime-inputs"
+      ],
+      "ref": "native-binary:arm64-v8a"
+    },
+    {
+      "dependsOn": [
+        "native:SQLCipher-Android-wrapper-and-JNI",
+        "native:SQLCipher-core",
+        "native:SQLite",
+        "native:LibTomCrypt",
+        "native:Android-NDK-linked-LLVM-static-runtime-inputs"
+      ],
+      "ref": "native-binary:armeabi-v7a"
+    },
+    {
+      "dependsOn": [
+        "native:SQLCipher-Android-wrapper-and-JNI",
+        "native:SQLCipher-core",
+        "native:SQLite",
+        "native:LibTomCrypt",
+        "native:Android-NDK-linked-LLVM-static-runtime-inputs"
+      ],
+      "ref": "native-binary:x86"
+    },
+    {
+      "dependsOn": [
+        "native:SQLCipher-Android-wrapper-and-JNI",
+        "native:SQLCipher-core",
+        "native:SQLite",
+        "native:LibTomCrypt",
+        "native:Android-NDK-linked-LLVM-static-runtime-inputs"
+      ],
+      "ref": "native-binary:x86_64"
+    }
+  ],
+  "metadata": {
+    "component": {
+      "bom-ref": "pkg:maven/com.monumentogram.dora.thirdparty/sqlcipher-android@4.17.0-dora.1",
+      "group": "com.monumentogram.dora.thirdparty",
+      "hashes": [
+        {
+          "alg": "SHA-256",
+          "content": "4363d513532519f013ec620706dcb27ca40d2af5490c777165484c124f269120"
+        }
+      ],
+      "name": "sqlcipher-android",
+      "purl": "pkg:maven/com.monumentogram.dora.thirdparty/sqlcipher-android@4.17.0-dora.1",
+      "type": "library",
+      "version": "4.17.0-dora.1"
+    },
+    "properties": [
+      {
+        "name": "dora:inventory-scope",
+        "value": "NATIVE_CONSTITUENTS_NOT_GRADLE_RELEASE_GRAPH"
+      },
+      {
+        "name": "dora:status",
+        "value": "CANDIDATE_PENDING_RUNTIME_ADMISSION"
+      }
+    ]
+  },
+  "specVersion": "1.6",
+  "version": 1
+}

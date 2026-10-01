@@ -11,6 +11,16 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        exclusiveContent {
+            forRepository {
+                maven {
+                    name = "doraAuditedNative"
+                    url = uri("vendor/maven")
+                    metadataSources { mavenPom() }
+                }
+            }
+            filter { includeGroup("com.monumentogram.dora.thirdparty") }
+        }
         google()
         mavenCentral()
     }

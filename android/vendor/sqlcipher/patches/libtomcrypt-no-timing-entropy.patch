@@ -1,0 +1,13 @@
+diff --git a/src/prngs/rng_get_bytes.c b/src/prngs/rng_get_bytes.c
+index 4e9a063..727d22f 100644
+--- a/src/prngs/rng_get_bytes.c
++++ b/src/prngs/rng_get_bytes.c
+@@ -52,7 +52,7 @@ static unsigned long _rng_nix(unsigned char *buf, unsigned long len,
+ 
+ #endif /* LTC_DEVRANDOM */
+ 
+-#if !defined(_WIN32_WCE)
++#if !defined(_WIN32_WCE) && !defined(__ANDROID__)
+ 
+ #define ANSI_RNG
+ 

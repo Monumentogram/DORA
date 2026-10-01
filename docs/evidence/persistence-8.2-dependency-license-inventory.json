@@ -1,0 +1,281 @@
+{
+  "baseline_sha": "104ba3e6aa5b4d97633f80e275685d347a9ee128",
+  "components": [
+    {
+      "cached_published_artifacts": [
+        {
+          "name": "annotation-experimental-1.5.0.aar",
+          "sha256": "02b0a4256618f85386c92e5cec166dc7f300820888a290227a3c0c65b82cbb36"
+        }
+      ],
+      "coordinate": "androidx.annotation:annotation-experimental:1.5.0",
+      "embedded_license_notice_entries": [
+        {
+          "artifact": "annotation-experimental-1.5.0.aar",
+          "entry": "META-INF/androidx/annotation/annotation-experimental/LICENSE.txt",
+          "sha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0"
+        }
+      ],
+      "license_expression": "Apache-2.0",
+      "pom_licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "pom_sha256": "7a94595399931c25a49f9af93daa4e977dc2d375458e4e74bb8d35ebcb51848d",
+      "pom_url": "https://dl.google.com/dl/android/maven2/androidx/annotation/annotation-experimental/1.5.0/annotation-experimental-1.5.0.pom",
+      "pom_verification": "MATCHES_PUBLISHER_HTTPS_BYTES; GRADLE_SELECTS_VERIFIED_MODULE_METADATA"
+    },
+    {
+      "cached_published_artifacts": [
+        {
+          "name": "room-common-jvm-2.8.4.jar",
+          "sha256": "dc7b4e1a75a790f29c97afd5516b8bf8002d9b6e83e295bc569b33566f3b1ec0"
+        }
+      ],
+      "coordinate": "androidx.room:room-common-jvm:2.8.4",
+      "embedded_license_notice_entries": [
+        {
+          "artifact": "room-common-jvm-2.8.4.jar",
+          "entry": "META-INF/androidx/room/room-common/LICENSE.txt",
+          "sha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0"
+        }
+      ],
+      "license_expression": "Apache-2.0",
+      "pom_licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "pom_sha256": "1c8f5bd00eacfc4be791390ad0d953aaee07644a91425490de790245d36a73b7",
+      "pom_url": "https://dl.google.com/dl/android/maven2/androidx/room/room-common-jvm/2.8.4/room-common-jvm-2.8.4.pom",
+      "pom_verification": "MATCHES_PUBLISHER_HTTPS_BYTES; GRADLE_SELECTS_VERIFIED_MODULE_METADATA"
+    },
+    {
+      "cached_published_artifacts": [],
+      "coordinate": "androidx.room:room-common:2.8.4",
+      "embedded_license_notice_entries": [],
+      "license_expression": "Apache-2.0",
+      "pom_licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "pom_sha256": "681e3f6fd5308843aefbbb474dd3638ffd685d1ad8f7fa96b8559e5ea5ef202c",
+      "pom_url": "https://dl.google.com/dl/android/maven2/androidx/room/room-common/2.8.4/room-common-2.8.4.pom",
+      "pom_verification": "MATCHES_PUBLISHER_HTTPS_BYTES; GRADLE_SELECTS_VERIFIED_MODULE_METADATA"
+    },
+    {
+      "cached_published_artifacts": [
+        {
+          "name": "room-runtime.aar",
+          "sha256": "3293575082024fa0a92b081c4e2d0609f14b5c109635ec227bc509db141a4e20"
+        }
+      ],
+      "coordinate": "androidx.room:room-runtime-android:2.8.4",
+      "embedded_license_notice_entries": [
+        {
+          "artifact": "room-runtime.aar",
+          "entry": "META-INF/androidx/room/room-runtime/LICENSE.txt",
+          "sha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0"
+        }
+      ],
+      "license_expression": "Apache-2.0",
+      "pom_licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "pom_sha256": "80a198f43bb65bd7b0edfa19ee2c26e144bf379141c30be3a071a47a157b65e7",
+      "pom_url": "https://dl.google.com/dl/android/maven2/androidx/room/room-runtime-android/2.8.4/room-runtime-android-2.8.4.pom",
+      "pom_verification": "MATCHES_PUBLISHER_HTTPS_BYTES; GRADLE_SELECTS_VERIFIED_MODULE_METADATA"
+    },
+    {
+      "cached_published_artifacts": [],
+      "coordinate": "androidx.room:room-runtime:2.8.4",
+      "embedded_license_notice_entries": [],
+      "license_expression": "Apache-2.0",
+      "pom_licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "pom_sha256": "61b13fd132369dd7c3fb9d0b3076ceefa8e57ec699a8e03fb87aecb81cedd99b",
+      "pom_url": "https://dl.google.com/dl/android/maven2/androidx/room/room-runtime/2.8.4/room-runtime-2.8.4.pom",
+      "pom_verification": "MATCHES_PUBLISHER_HTTPS_BYTES; GRADLE_SELECTS_VERIFIED_MODULE_METADATA"
+    },
+    {
+      "cached_published_artifacts": [
+        {
+          "name": "sqlite.aar",
+          "sha256": "514f8de4f7bdba2fa8d748d2b22fdcdfb623bd3770a667bf0adc0ad259f03ed2"
+        }
+      ],
+      "coordinate": "androidx.sqlite:sqlite-android:2.6.2",
+      "embedded_license_notice_entries": [
+        {
+          "artifact": "sqlite.aar",
+          "entry": "META-INF/androidx/sqlite/sqlite/LICENSE.txt",
+          "sha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0"
+        }
+      ],
+      "license_expression": "Apache-2.0",
+      "pom_licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "pom_sha256": "1407cf53cb40a813434903fee252420f32c109f88560ac8adc771858260d7a3c",
+      "pom_url": "https://dl.google.com/dl/android/maven2/androidx/sqlite/sqlite-android/2.6.2/sqlite-android-2.6.2.pom",
+      "pom_verification": "MATCHES_PUBLISHER_HTTPS_BYTES; GRADLE_SELECTS_VERIFIED_MODULE_METADATA"
+    },
+    {
+      "cached_published_artifacts": [
+        {
+          "name": "sqlite-framework.aar",
+          "sha256": "b19125c7fff34222e0f380361fc179ab214e4d82e1a50b0c068ca26c851a6231"
+        }
+      ],
+      "coordinate": "androidx.sqlite:sqlite-framework-android:2.6.2",
+      "embedded_license_notice_entries": [
+        {
+          "artifact": "sqlite-framework.aar",
+          "entry": "META-INF/androidx/sqlite/sqlite-framework/LICENSE.txt",
+          "sha256": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0"
+        }
+      ],
+      "license_expression": "Apache-2.0",
+      "pom_licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "pom_sha256": "2618a352ec57009a207575830c11bd6013cd5548df472a0dba678c64821c0446",
+      "pom_url": "https://dl.google.com/dl/android/maven2/androidx/sqlite/sqlite-framework-android/2.6.2/sqlite-framework-android-2.6.2.pom",
+      "pom_verification": "MATCHES_PUBLISHER_HTTPS_BYTES; GRADLE_SELECTS_VERIFIED_MODULE_METADATA"
+    },
+    {
+      "cached_published_artifacts": [],
+      "coordinate": "androidx.sqlite:sqlite-framework:2.6.2",
+      "embedded_license_notice_entries": [],
+      "license_expression": "Apache-2.0",
+      "pom_licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "pom_sha256": "90fbc4507a16d2969558d9e9f14f1a11898c6eda789b703f49a79d77b5a297b2",
+      "pom_url": "https://dl.google.com/dl/android/maven2/androidx/sqlite/sqlite-framework/2.6.2/sqlite-framework-2.6.2.pom",
+      "pom_verification": "MATCHES_PUBLISHER_HTTPS_BYTES; GRADLE_SELECTS_VERIFIED_MODULE_METADATA"
+    },
+    {
+      "cached_published_artifacts": [],
+      "coordinate": "androidx.sqlite:sqlite:2.6.2",
+      "embedded_license_notice_entries": [],
+      "license_expression": "Apache-2.0",
+      "pom_licenses": [
+        {
+          "name": "The Apache Software License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "pom_sha256": "ed8ff01ea1ae7c9903126a8217e6b0d849cfc2cdf198d0ee93513d96b700f41c",
+      "pom_url": "https://dl.google.com/dl/android/maven2/androidx/sqlite/sqlite/2.6.2/sqlite-2.6.2.pom",
+      "pom_verification": "MATCHES_PUBLISHER_HTTPS_BYTES; GRADLE_SELECTS_VERIFIED_MODULE_METADATA"
+    },
+    {
+      "cached_published_artifacts": [
+        {
+          "name": "gson-2.13.2.jar",
+          "sha256": "dd0ce1b55a3ed2080cb70f9c655850cda86c206862310009dcb5e5c95265a5e0"
+        }
+      ],
+      "coordinate": "com.google.code.gson:gson:2.13.2",
+      "embedded_license_notice_entries": [],
+      "license_expression": "Apache-2.0",
+      "pom_licenses": [
+        {
+          "name": "Apache-2.0",
+          "url": "https://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "pom_sha256": "3aa06aa7c0f9af092961a42d09578e4324be146348a0ee6ed47857f7c2677b76",
+      "pom_url": "https://repo.maven.apache.org/maven2/com/google/code/gson/gson/2.13.2/gson-2.13.2.pom",
+      "pom_verification": "MATCHES_HISTORICAL_GRADLE_VERIFICATION"
+    },
+    {
+      "cached_published_artifacts": [
+        {
+          "name": "tink-android-1.23.0.jar",
+          "sha256": "c656918451b01c45ce5b20c7b6d4c388f956f61b3a3528e769048c8944c42f9e"
+        }
+      ],
+      "coordinate": "com.google.crypto.tink:tink-android:1.23.0",
+      "embedded_license_notice_entries": [],
+      "license_expression": "Apache-2.0",
+      "pom_licenses": [
+        {
+          "name": "Apache License, Version 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "pom_sha256": "a2d27e7207e6a25764859b62924fc7b972f41884ce272cead9b946c15a1f410f",
+      "pom_url": "https://repo.maven.apache.org/maven2/com/google/crypto/tink/tink-android/1.23.0/tink-android-1.23.0.pom",
+      "pom_verification": "MATCHES_HISTORICAL_GRADLE_VERIFICATION"
+    },
+    {
+      "cached_published_artifacts": [
+        {
+          "name": "error_prone_annotations-2.41.0.jar",
+          "sha256": "a56e782b5b50811ac204073a355a21d915a2107fce13ec711331ad036f660fcc"
+        }
+      ],
+      "coordinate": "com.google.errorprone:error_prone_annotations:2.41.0",
+      "embedded_license_notice_entries": [],
+      "license_expression": "Apache-2.0",
+      "pom_licenses": [
+        {
+          "name": "Apache 2.0",
+          "url": "http://www.apache.org/licenses/LICENSE-2.0.txt"
+        }
+      ],
+      "pom_sha256": "a151df1e2e0b48618d8b06a180748a29b3abb39b1b2396f6a1c879a727488c6e",
+      "pom_url": "https://repo.maven.apache.org/maven2/com/google/errorprone/error_prone_annotations/2.41.0/error_prone_annotations-2.41.0.pom",
+      "pom_verification": "MATCHES_HISTORICAL_GRADLE_VERIFICATION"
+    }
+  ],
+  "distributed_assets": {
+    "android/app/src/main/assets/third_party/persistence/AndroidX-Apache-2.0.txt": "809fa1ed21450f59827d1e9aec720bbc4b687434fa22283c6cb5dd82a47ab9c0",
+    "android/app/src/main/assets/third_party/persistence/Apache-2.0.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "android/app/src/main/assets/third_party/persistence/NOTICE.txt": "f405285d30929bdf2c678ed1c799952dd23c919e8a5fc4ac28fd4098df4a3d83",
+    "android/app/src/main/assets/third_party/persistence/Protobuf-BSD-3-Clause.txt": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d"
+  },
+  "embedded_components": [
+    {
+      "coordinate": "embedded:protobuf-java:4.33.6",
+      "historical_source_evidence": "docs/evidence/poc-recovery-001/license-notice-inventory.json",
+      "license_expression": "BSD-3-Clause",
+      "parent": "com.google.crypto.tink:tink-android:1.23.0",
+      "source_license_sha256": "6e5e117324afd944dcf67f36cf329843bc1a92229a8cd9bb573d7a83130fea7d",
+      "source_license_url": "https://raw.githubusercontent.com/protocolbuffers/protobuf/v33.6/LICENSE"
+    }
+  ],
+  "jsr305": "EXCLUDED",
+  "native_composite": {
+    "constituent_sbom": "android/vendor/sqlcipher/native-components.cdx.json",
+    "coordinate": "com.monumentogram.dora.thirdparty:sqlcipher-android:4.17.0-dora.1",
+    "provenance": "android/vendor/sqlcipher/provenance.json"
+  },
+  "runtime_admission": "PENDING_INTEGRATED_TESTS_REVIEW_AND_PUBLICATION",
+  "schema_version": 1,
+  "scope": "Stage 8.2 new product release runtime dependencies; historical inventories remain unchanged",
+  "status": "PENDING_FINAL_PUBLICATION"
+}

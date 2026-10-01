@@ -1,0 +1,34 @@
+diff --git a/sqlcipher/src/main/jni/sqlcipher/Android.mk b/sqlcipher/src/main/jni/sqlcipher/Android.mk
+index ced979f..725fa31 100644
+--- a/sqlcipher/src/main/jni/sqlcipher/Android.mk
++++ b/sqlcipher/src/main/jni/sqlcipher/Android.mk
+@@ -42,6 +42,7 @@ ifeq ($(APP_OPTIM),release)
+ LOCAL_CFLAGS += -DNDEBUG
+ endif
+ 
++LOCAL_CFLAGS += -DSQLCIPHER_OMIT_LOG
+ LOCAL_CPPFLAGS += -Wno-conversion-null
+ 
+ $(info SQLCipher LOCAL_CFLAGS:${LOCAL_CFLAGS})
+@@ -82,4 +83,4 @@ else
+ include $(CLEAR_VARS)
+ include $(LOCAL_PATH)/../libtomcrypt/Android.mk
+ include $(CLEAR_VARS)
+-endif
+\ No newline at end of file
++endif
+diff --git a/sqlcipher/src/main/jni/sqlcipher/JNIHelp.cpp b/sqlcipher/src/main/jni/sqlcipher/JNIHelp.cpp
+index 1e7088f..470e1f8 100644
+--- a/sqlcipher/src/main/jni/sqlcipher/JNIHelp.cpp
++++ b/sqlcipher/src/main/jni/sqlcipher/JNIHelp.cpp
+@@ -284,8 +284,10 @@ static std::string jniGetStackTrace(C_JNIEnv* env, jthrowable exception) {
+ }
+ 
+ void jniLogException(C_JNIEnv* env, int priority, const char* tag, jthrowable exception) {
++#ifndef SQLCIPHER_OMIT_LOG
+     std::string trace(jniGetStackTrace(env, exception));
+     __android_log_write(priority, tag, trace.c_str());
++#endif
+ }
+ 
+ const char* jniStrError(int errnum, char* buf, size_t buflen) {
