@@ -7665,6 +7665,14 @@ REC_CLEAN_INTEGRATED_TREE = "03738da9d0b1beb3bec8cf7779c9f2e2b9f9f188"
 REC_CLEAN_INTEGRATED_BRANCH = "stage/7-alpha-foundation"
 REC_CLEAN_REMEDIATION_HEAD = "d406b6dabb64009cc0a6ee6b017004c757108e26"
 REC_CLEAN_REMEDIATION_TREE = "4a24e04096d5bda5e89baafefd89d9188a3368f1"
+REC_CLEAN_CLOSURE_GOVERNANCE_HEAD = "358619c68368a21e0ccf4b00e7eb4662617bd00d"
+REC_CLEAN_CLOSURE_GOVERNANCE_TREE = "95d1365845fc3a86028fbf34de7edd16b0149c94"
+REC_CLEAN_FINALIZATION_HEAD = "281fe6f13ca353088c731505cc8a7530c3864c7f"
+REC_CLEAN_FINALIZATION_TREE = "15fd80667512b0700ae45e921cdafdcf00a3c574"
+REC_CLEAN_CORRECTION_PATHS = frozenset({
+    "tools/validate_alpha_release.py", "tools/test_validate_alpha_release.py",
+    "tools/validate_poc_recovery_governance.py", "tools/test_poc_recovery_i3_governance.py",
+})
 REC_CLEAN_CLOSURE_RECEIPT = "docs/evidence/recovery-clean-replacement-integration-v0.1.json"
 REC_CLEAN_CLOSURE_PATHS = frozenset({
     "docs/DORA_MVP1_STAGE_STATUS.md",
@@ -7726,21 +7734,23 @@ def validate_rec_clean_integrated_state(changes, current, expected, history, hea
     if head == REC_CLEAN_INTEGRATED_ANCHOR:
         require(not history and not changes["committed"], "Recovery clean anchor has unexpected descendants")
         return
-    # The only successor sequence is the immutable remediation, G2, then F.
+    # The immutable remediation, G2 and F admit exactly one terminal four-tool correction.
     # Inspect every transition, so a forbidden mutation followed by a revert fails.
-    require(1 <= len(history) <= 3, "Recovery clean integrated finite closure length exceeded")
+    require(1 <= len(history) <= 4, "Recovery clean integrated finite closure length exceeded")
     parent = REC_CLEAN_INTEGRATED_ANCHOR
     for index, line in enumerate(history):
         fields = line.split()
         require(len(fields) == 2 and re.fullmatch(r"[0-9a-f]{40}", fields[0]) is not None
                 and fields[1] == parent and fields[0] != parent,
                 "Recovery clean integrated finite closure requires ordered single-parent history")
-        if index == 0:
-            require(fields[0] == REC_CLEAN_REMEDIATION_HEAD,
-                    "Recovery clean integrated immutable remediation identity changed")
+        pinned = (REC_CLEAN_REMEDIATION_HEAD, REC_CLEAN_CLOSURE_GOVERNANCE_HEAD, REC_CLEAN_FINALIZATION_HEAD)
+        if index < len(pinned):
+            require(fields[0] == pinned[index],
+                    "Recovery clean integrated immutable closure identity changed")
         parent = fields[0]
     require(parent == head, "Recovery clean integrated finite closure HEAD mismatch")
-    allowed = [REC_CLEAN_GOVERNANCE_PATHS, REC_CLEAN_GOVERNANCE_PATHS, REC_CLEAN_CLOSURE_PATHS][:len(history)]
+    allowed = [REC_CLEAN_GOVERNANCE_PATHS, REC_CLEAN_GOVERNANCE_PATHS,
+               REC_CLEAN_CLOSURE_PATHS, REC_CLEAN_CORRECTION_PATHS][:len(history)]
     if len(history) == 1 and transition_paths is None:
         transition_paths = [changes["committed"]]
     require(isinstance(transition_paths, list) and len(transition_paths) == len(history),
@@ -7847,8 +7857,20 @@ def validate_rec_clean_integrated(lifecycle: RecoveryLifecycleIdentity) -> None:
             expected_commit=REC_CLEAN_REMEDIATION_HEAD, expected_tree=REC_CLEAN_REMEDIATION_TREE,
             expected_parents=(REC_CLEAN_INTEGRATED_ANCHOR,), label="Recovery clean accepted remediation",
         )
-    if len(history) == 3:
-        governance_head = history[1].split()[0]
+    for index, commit, tree, parent in (
+        (2, REC_CLEAN_CLOSURE_GOVERNANCE_HEAD, REC_CLEAN_CLOSURE_GOVERNANCE_TREE, REC_CLEAN_REMEDIATION_HEAD),
+        (3, REC_CLEAN_FINALIZATION_HEAD, REC_CLEAN_FINALIZATION_TREE, REC_CLEAN_CLOSURE_GOVERNANCE_HEAD),
+    ):
+        if len(history) >= index:
+            validate_pinned_commit_identity(
+                collect_pinned_commit_identity(commit, lifecycle.head), expected_commit=commit,
+                expected_tree=tree, expected_parents=(parent,), label="Recovery clean immutable closure step",
+            )
+    if len(history) >= 3:
+        governance_head = REC_CLEAN_CLOSURE_GOVERNANCE_HEAD
+        for path in REC_CLEAN_CLOSURE_PATHS:
+            require((ROOT / path).read_bytes() == git_blob_bytes(f"{REC_CLEAN_FINALIZATION_HEAD}:{path}"),
+                    "Recovery clean immutable finalization bytes changed")
         for path in REC_CLEAN_CLOSURE_PATHS - {REC_CLEAN_CLOSURE_RECEIPT}:
             historical = git_blob_bytes(f"{governance_head}:{path}")
             require((ROOT / path).read_bytes().endswith(historical),

@@ -123,5 +123,59 @@ class ReleaseEvidenceTest(unittest.TestCase):
                 release.validate_recovery_successor_paths([path], contract_bytes)
 
 
+
+class RecoveryFinalReceiptTest(unittest.TestCase):
+    def context(self):
+        import validate_poc_recovery_governance as recovery
+        return [recovery.PinnedCommitIdentity(
+            "281fe6f13ca353088c731505cc8a7530c3864c7f", "15fd80667512b0700ae45e921cdafdcf00a3c574",
+            ("358619c68368a21e0ccf4b00e7eb4662617bd00d",), True),
+            "281fe6f13ca353088c731505cc8a7530c3864c7f", ("358619c68368a21e0ccf4b00e7eb4662617bd00d",),
+            b"frozen receipt", b"frozen receipt", b"frozen receipt"]
+
+    def test_exact_f_and_direct_child_with_identical_bytes(self):
+        data = self.context()
+        release.validate_recovery_closure_context(*data)
+        data[1:3] = ["a"*40, (data[0].commit,)]
+        release.validate_recovery_closure_context(*data)
+
+    def test_wrong_f_identity_tree_parent_or_ancestry(self):
+        from dataclasses import replace
+        for mutation in (dict(commit="c"*40), dict(tree="c"*40), dict(parents=("c"*40,)),
+                         dict(is_ancestor_of_head=False), dict(parents=("c"*40, "d"*40))):
+            data = self.context()
+            data[0] = replace(data[0], **mutation)
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                release.validate_recovery_closure_context(*data)
+
+    def test_grandchild_merge_and_receipt_mutations_rejected(self):
+        for head, parents in (("a"*40, ("b"*40,)), ("a"*40, (self.context()[0].commit, "b"*40)),
+                              ("not-a-sha", (self.context()[0].commit,))):
+            data = self.context(); data[1:3] = [head, parents]
+            with self.subTest(parents=parents), self.assertRaises(ValueError):
+                release.validate_recovery_closure_context(*data)
+        for index in (3, 4):
+            data = self.context(); data[index] = b"modified"
+            with self.subTest(layer=index), self.assertRaises(ValueError):
+                release.validate_recovery_closure_context(*data)
+
+    def test_exact_path_requires_successful_context_and_no_wildcard(self):
+        import validate_poc_recovery_governance as recovery
+        contract = (release.ROOT / recovery.REC_CLEAN_CONTRACT).read_bytes()
+        path = "docs/evidence/recovery-clean-replacement-integration-v0.1.json"
+        with patch.object(release, "validate_recovery_closure_checkout") as check:
+            release.validate_recovery_successor_paths([path], contract)
+            check.assert_called_once_with()
+        with patch.object(release, "validate_recovery_closure_checkout", side_effect=ValueError("No F")):
+            with self.assertRaises(ValueError):
+                release.validate_recovery_successor_paths([path], contract)
+        for forbidden in ("docs/evidence/recovery-clean-replacement-integration-v0.2.json",
+                          "docs/evidence/recovery-clean-replacement-random.json",
+                          "docs/evidence/poc-recovery-001/new.json", "docs/evidence/alpha-7.3-ci-v0.1.json",
+                          "android/app/src/main/New.kt", "android/alpha-release.properties",
+                          "android/poc/recovery/src/main/New.kt"):
+            with self.subTest(path=forbidden), self.assertRaises(ValueError):
+                release.validate_recovery_successor_paths([forbidden], contract)
+
 if __name__ == "__main__":
     unittest.main()

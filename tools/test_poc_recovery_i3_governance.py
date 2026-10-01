@@ -4550,31 +4550,34 @@ class RecoveryCleanIntegratedTests(unittest.TestCase):
 
     def closure_state(self, count=3):
         remediation = "d406b6dabb64009cc0a6ee6b017004c757108e26"
-        commits = [remediation, "a"*40, "b"*40][:count]
-        parents = [self.ANCHOR, remediation, "a"*40][:count]
+        g2 = "358619c68368a21e0ccf4b00e7eb4662617bd00d"
+        final = "281fe6f13ca353088c731505cc8a7530c3864c7f"
+        commits = [remediation, g2, final, "c"*40][:count]
+        parents = [self.ANCHOR, remediation, g2, final][:count]
         history = [f"{commit} {parent}" for commit, parent in zip(commits, parents)]
         paths = [sorted(self.PATHS), sorted(self.PATHS), sorted({
             "docs/DORA_MVP1_STAGE_STATUS.md", "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
-            "docs/evidence/recovery-clean-replacement-integration-v0.1.json"})][:count]
+            "docs/evidence/recovery-clean-replacement-integration-v0.1.json"}),
+                 sorted(self.PATHS | {"tools/validate_alpha_release.py", "tools/test_validate_alpha_release.py"})][:count]
         changes = dict(committed=sorted(set().union(*map(set, paths))), staged=[], unstaged=[], untracked=[])
         return changes, history, paths, commits[-1]
 
     def test_bounded_closure_accepts_g2_and_finalization(self):
-        for count in (2, 3):
+        for count in (2, 3, 4):
             changes, history, paths, head = self.closure_state(count)
             governance.validate_rec_clean_integrated_state(changes, {}, {}, history, head, paths)
 
     def test_bounded_closure_rejects_another_descendant(self):
-        changes, history, paths, head = self.closure_state()
+        changes, history, paths, head = self.closure_state(4)
         with self.assertRaisesRegex(ValueError, "finite closure"):
             governance.validate_rec_clean_integrated_state(
-                changes, {}, {}, history + ["c"*40 + " " + head], "c"*40, paths + [[]])
+                changes, {}, {}, history + ["e"*40 + " " + head], "e"*40, paths + [[]])
 
     def test_bounded_closure_rejects_topology_and_remediation_spoofing(self):
-        changes, history, paths, head = self.closure_state()
+        changes, history, paths, head = self.closure_state(4)
         mutations = [history[1:], list(reversed(history)),
                      [history[0].replace("d406b6dabb64009cc0a6ee6b017004c757108e26", "d"*40), *history[1:]]]
-        for index in range(3):
+        for index in range(4):
             changed = history.copy()
             changed[index] += " " + self.PREP
             mutations.append(changed)
@@ -4586,10 +4589,15 @@ class RecoveryCleanIntegratedTests(unittest.TestCase):
                 governance.validate_rec_clean_integrated_state(changes, {}, {}, mutation, head, paths)
 
     def test_bounded_closure_rejects_each_wrong_transition_scope(self):
-        changes, history, paths, head = self.closure_state()
-        for index in range(3):
+        changes, history, paths, head = self.closure_state(4)
+        for index in range(4):
             for forbidden in ("android/poc/recovery/forbidden.kt", "README.md",
-                              governance.REC_CLEAN_CONTRACT, "tools/recovery_campaign.py"):
+                              governance.REC_CLEAN_CONTRACT, "tools/recovery_campaign.py",
+                              "android/alpha-release.properties", "docs/DORA_MVP1_STAGE_STATUS.md",
+                              "docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md",
+                              "docs/evidence/recovery-clean-replacement-integration-v0.1.json"):
+                if forbidden in paths[index]:
+                    continue
                 modified = copy.deepcopy(paths)
                 modified[index].append(forbidden)
                 with self.subTest(index=index, path=forbidden), self.assertRaises(ValueError):
@@ -4686,38 +4694,48 @@ class RecoveryCleanIntegratedTests(unittest.TestCase):
                     validate()
                 except ValueError as error:
                     self.fail(f"Exact integrated anchor must be admitted: {error}")
-                git("checkout", "-q", "-B", branch, governance.REC_CLEAN_REMEDIATION_HEAD)
-                validate()
-                for path in sorted(self.PATHS):
+                for accepted in (governance.REC_CLEAN_REMEDIATION_HEAD,
+                                 governance.REC_CLEAN_CLOSURE_GOVERNANCE_HEAD,
+                                 governance.REC_CLEAN_FINALIZATION_HEAD):
+                    git("checkout", "-q", "-B", branch, accepted)
+                    validate()
+                import validate_alpha_release as release
+                with patch.object(release, "ROOT", repo):
+                    release.validate_recovery_closure_checkout()
+                for path in sorted(governance.REC_CLEAN_CORRECTION_PATHS):
                     (repo / path).write_bytes((source / path).read_bytes() + b"\n")
-                git("add", "--", *sorted(self.PATHS))
-                git("commit", "-qm", "synthetic bounded governance remediation")
+                git("add", "--", *sorted(governance.REC_CLEAN_CORRECTION_PATHS))
+                git("commit", "-qm", "synthetic terminal validator correction")
                 child = git("rev-parse", "HEAD")
                 validate()
-                # The one finalization preserves documentation bytes and is terminal.
-                for path in sorted(governance.REC_CLEAN_CLOSURE_PATHS):
-                    target = repo / path
-                    if path == governance.REC_CLEAN_CLOSURE_RECEIPT:
-                        target.write_text(json.dumps(self.closure_receipt(child)) + "\n", encoding="utf-8")
-                    else:
-                        target.write_bytes(b"Recovery closure; Stage 8 NOT STARTED.\n\n" + target.read_bytes())
-                git("add", "--", *sorted(governance.REC_CLEAN_CLOSURE_PATHS))
-                git("commit", "-qm", "synthetic bounded closure evidence")
-                final = git("rev-parse", "HEAD")
-                validate()
-                git("commit", "--allow-empty", "-qm", "synthetic forbidden fourth descendant")
+                with patch.object(release, "ROOT", repo):
+                    release.validate_recovery_closure_checkout()
+                git("commit", "--allow-empty", "-qm", "synthetic forbidden fifth descendant")
                 with self.assertRaisesRegex(ValueError, "finite closure"):
                     validate()
+                with patch.object(release, "ROOT", repo), self.assertRaises(ValueError):
+                    release.validate_recovery_closure_checkout()
+                for parent in (governance.REC_CLEAN_FINALIZATION_HEAD, child):
+                    tree = git("rev-parse", f"{parent}^{{tree}}")
+                    side = git("commit-tree", tree, "-p", parent, "-m", "synthetic side")
+                    merge = git("commit-tree", tree, "-p", parent, "-p", side, "-m", "synthetic forbidden merge")
+                    git("checkout", "-q", "-B", branch, merge)
+                    with self.assertRaises(ValueError):
+                        validate()
+                    with patch.object(release, "ROOT", repo), self.assertRaises(ValueError):
+                        release.validate_recovery_closure_checkout()
                 for path in sorted(governance.REC_CLEAN_CLOSURE_PATHS):
                     git("checkout", "-q", "-f", "-B", branch, child)
-                    for allowed in sorted(governance.REC_CLEAN_CLOSURE_PATHS):
-                        (repo / allowed).write_bytes(git("show", f"{final}:{allowed}").encode() + b"\n")
-                    (repo / path).write_text("{}\n", encoding="utf-8")
-                    git("add", "--", *sorted(governance.REC_CLEAN_CLOSURE_PATHS))
-                    git("commit", "-qm", "synthetic invalid finalization content")
-                    with self.subTest(invalid_content=path), self.assertRaises(ValueError):
+                    (repo / path).write_bytes((repo / path).read_bytes() + b"\n")
+                    with self.assertRaises(ValueError):
                         validate()
+                    if path == governance.REC_CLEAN_CLOSURE_RECEIPT:
+                        with patch.object(release, "ROOT", repo), self.assertRaises(ValueError):
+                            release.validate_recovery_closure_checkout()
                 git("checkout", "-q", "-f", "-B", branch, child)
+                git("checkout", "-q", "-B", "unrelated", child)
+                self.assertFalse(governance.rec_clean_integrated_candidate(governance.collect_recovery_lifecycle_identity()))
+                git("checkout", "-q", branch)
                 event = dict(GITHUB_ACTIONS="true", GITHUB_EVENT_NAME="push",
                              GITHUB_REPOSITORY=governance.GITHUB_REPOSITORY,
                              GITHUB_WORKSPACE=str(repo), GITHUB_REF="refs/heads/"+branch, GITHUB_SHA=child)

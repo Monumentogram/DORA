@@ -23,6 +23,11 @@ HARNESS_STEP = """      - name: Run deterministic Cloud contract harness
           python3 tools/cloud_contract_harness.py --verify-determinism
 
 """
+RECOVERY_INTEGRATION_CLOSURE_RECEIPT = "docs/evidence/recovery-clean-replacement-integration-v0.1.json"
+RECOVERY_FINALIZATION = "281fe6f13ca353088c731505cc8a7530c3864c7f"
+RECOVERY_FINALIZATION_TREE = "15fd80667512b0700ae45e921cdafdcf00a3c574"
+RECOVERY_FINALIZATION_PARENT = "358619c68368a21e0ccf4b00e7eb4662617bd00d"
+
 SUCCESSOR_PATHS = {
     '.github/workflows/android-ci.yml',
     'tools/cloud_contract_harness.py', 'tools/cloud_contract_fixtures.py',
@@ -103,15 +108,47 @@ def validate_successor_paths(paths) -> None:
     require(set(paths) <= SUCCESSOR_PATHS, "Product/release inputs or historical evidence changed")
 
 
+def validate_recovery_closure_context(finalization, head, parents, receipt, committed_receipt, frozen_receipt):
+    # Early path compatibility only; full branch/provenance/dirty-layer policy
+    # remains independently enforced by the later Recovery governance gate.
+    require((finalization.commit, finalization.tree, finalization.parents, finalization.is_ancestor_of_head)
+            == (RECOVERY_FINALIZATION, RECOVERY_FINALIZATION_TREE, (RECOVERY_FINALIZATION_PARENT,), True),
+            "Recovery closure immutable F identity mismatch")
+    require(bool(re.fullmatch(r"[0-9a-f]{40}", head))
+            and ((head == RECOVERY_FINALIZATION and parents == (RECOVERY_FINALIZATION_PARENT,))
+                 or (head != RECOVERY_FINALIZATION and parents == (RECOVERY_FINALIZATION,))),
+            "Recovery closure requires exact F or one direct child")
+    require(receipt == committed_receipt == frozen_receipt,
+            "Recovery closure receipt bytes changed")
+
+
+def validate_recovery_closure_checkout():
+    import validate_poc_recovery_governance as recovery
+    prefix = ["git", "-c", f"safe.directory={ROOT.as_posix()}", "-C", str(ROOT)]
+    def output(*args):
+        return subprocess.check_output(prefix + list(args))
+    head = output("rev-parse", "HEAD").decode().strip()
+    parents = tuple(output("show", "-s", "--format=%P", "HEAD").decode().split())
+    finalization = recovery.collect_pinned_commit_identity(RECOVERY_FINALIZATION, head)
+    validate_recovery_closure_context(
+        finalization, head, parents, (ROOT / RECOVERY_INTEGRATION_CLOSURE_RECEIPT).read_bytes(),
+        output("show", f"HEAD:{RECOVERY_INTEGRATION_CLOSURE_RECEIPT}"),
+        output("show", f"{RECOVERY_FINALIZATION}:{RECOVERY_INTEGRATION_CLOSURE_RECEIPT}"),
+    )
+
+
 def validate_recovery_successor_paths(paths, contract_bytes: bytes) -> None:
     # This early release step checks path compatibility only. The unchanged later
     # Recovery gate fetches historical provenance and verifies the complete source,
-    # topology, dirty layers and preparation-only lifecycle before CI can pass.
+    # topology, dirty layers and bounded lifecycle before CI can pass.
     import validate_poc_recovery_governance as recovery
     require(hashlib.sha256(contract_bytes).hexdigest() == recovery.REC_CLEAN_CONTRACT_SHA256,
             "Recovery preparation contract digest mismatch")
     contract = json.loads(contract_bytes)
     allowed = SUCCESSOR_PATHS | set(contract["implementation_paths"]) | set(contract["metadata_paths"])
+    if RECOVERY_INTEGRATION_CLOSURE_RECEIPT in paths:
+        validate_recovery_closure_checkout()
+        allowed = allowed | {RECOVERY_INTEGRATION_CLOSURE_RECEIPT}
     require(set(paths) <= allowed, "Product/release inputs or historical evidence changed")
 
 
@@ -134,6 +171,11 @@ def verify_source_ancestry(source: str) -> str:
     diff = subprocess.run(prefix + ['diff', '--name-only', CLOSURE], capture_output=True, text=True, check=True)
     untracked = subprocess.run(prefix + ['ls-files', '--others', '--exclude-standard'], capture_output=True, text=True, check=True)
     paths = diff.stdout.splitlines() + untracked.stdout.splitlines()
+    finalization = subprocess.run(prefix + ["merge-base", "--is-ancestor", RECOVERY_FINALIZATION, "HEAD"],
+                                  capture_output=True)
+    if finalization.returncode == 0:
+        require(RECOVERY_INTEGRATION_CLOSURE_RECEIPT in paths,
+                "Recovery closure receipt missing from successor inventory")
     recovery_contract = ROOT / "docs/contracts/DORA_PR86_CLEAN_RECOVERY_INTEGRATION_V0_1.json"
     if recovery_contract.exists():
         validate_recovery_successor_paths(paths, recovery_contract.read_bytes())
