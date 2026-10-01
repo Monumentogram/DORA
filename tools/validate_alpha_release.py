@@ -130,8 +130,8 @@ def validate_recovery_closure_checkout():
         return subprocess.check_output(prefix + list(args))
     head = output("rev-parse", "HEAD").decode().strip()
     parents = tuple(output("show", "-s", "--format=%P", "HEAD").decode().split())
-    if parents == (security.BASE,):
-        # Admit only the fully verified single 7.4 successor; historical context
+    if parents in ((security.BASE,), (security.CORRECTION_BASE,)):
+        # Admit only fully verified bounded 7.4 successors; historical context
         # remains the immutable direct child of F, including its receipt bytes.
         recovery.validate_rec_clean_integrated(recovery.collect_recovery_lifecycle_identity())
         head, parents = security.BASE, (RECOVERY_FINALIZATION,)
@@ -145,7 +145,7 @@ def validate_recovery_closure_checkout():
 
 def validate_recovery_successor_paths(paths, contract_bytes: bytes) -> None:
     # This early release step checks path compatibility only. The unchanged later
-    # Recovery gate fetches historical provenance and verifies the complete source,
+    # Recovery gate verifies the already-fetched complete historical source,
     # topology, dirty layers and bounded lifecycle before CI can pass.
     import validate_poc_recovery_governance as recovery
     require(hashlib.sha256(contract_bytes).hexdigest() == recovery.REC_CLEAN_CONTRACT_SHA256,
@@ -159,6 +159,15 @@ def validate_recovery_successor_paths(paths, contract_bytes: bytes) -> None:
 
 
 def validate_successor_workflow(original: str, current: str) -> None:
+    # Only move the exact existing unconditional pinned fetch; preserve every
+    # command/check and compare the remaining workflow byte-for-byte below.
+    if (security.PROVENANCE_STEP in current and
+            current.index(security.PROVENANCE_STEP) < current.index(
+                "      - name: Validate internal Alpha release evidence and negative controls\n")):
+        security.validate_ci_provenance_order(current)
+        current = current.replace(security.PROVENANCE_STEP, '', 1)
+        current = current.replace("      - name: Validate recovery governance package\n",
+                                  security.PROVENANCE_STEP + "      - name: Validate recovery governance package\n", 1)
     if security.STEP in current:
         require(current.count(security.STEP) == 1, "Duplicate security CI gate")
         current = current.replace(security.STEP, '', 1)

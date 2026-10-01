@@ -178,6 +178,19 @@ class RecoveryFinalReceiptTest(unittest.TestCase):
                 release.validate_recovery_successor_paths([forbidden], contract)
 
 class SecurityArchitectureReleaseTests(unittest.TestCase):
+    def test_only_exact_unconditional_provenance_fetch_move_is_admitted(self):
+        import validate_security_identity_contract as security
+        early = "      - name: Validate internal Alpha release evidence and negative controls\n"
+        late = "      - name: Validate recovery governance package\n"
+        original = early + "unchanged\n" + security.PROVENANCE_STEP + late
+        corrected = security.PROVENANCE_STEP + early + "unchanged\n" + late + release.HARNESS_STEP + security.STEP
+        release.validate_successor_workflow(original, corrected)
+        for bad in (corrected.replace("unchanged", "skipped"),
+                    corrected + security.PROVENANCE_STEP,
+                    corrected.replace(security.PROVENANCE_SHA, "main")):
+            with self.assertRaises(ValueError):
+                release.validate_successor_workflow(original, bad)
+
     def test_security_contract_paths_are_bounded(self):
         import validate_security_identity_contract as security
         release.validate_successor_paths(security.PATHS)

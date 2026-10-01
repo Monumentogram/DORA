@@ -4,6 +4,7 @@ import json
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = "1b5460d6e559292c02681e0251f5e5ef18269829"
+CORRECTION_BASE = "ee8b3e70217307a3ba110a80b707dcd0a8bc7e3a"
 CONTRACT = "docs/contracts/DORA_SECURITY_IDENTITY_ARCHITECTURE_V0_1.json"
 DOCUMENT = "docs/security/DORA_SECURITY_IDENTITY_ARCHITECTURE_V0_1.md"
 RESULT = "PASS / SECURITY_IDENTITY_ARCHITECTURE_FROZEN_FOR_STAGE8"
@@ -22,7 +23,15 @@ STEP = """      - name: Validate Security and Identity architecture contract
           python3 -m unittest discover -s tools -p test_security_identity_contract.py
 
 """
+PROVENANCE_SHA = "89551b17a84bc090ccf1cd36d48aeb59afc403fa"
+PROVENANCE_STEP = '      - name: Fetch pinned Recovery reviewed-source provenance\n        # Squash integration does not retain the reviewed source as a HEAD ancestor.\n        # Fetch its immutable object graph; the validator still verifies it fail-closed.\n        run: >-\n          git fetch --no-tags --no-recurse-submodules\n          https://github.com/Monumentogram/DORA.git\n          89551b17a84bc090ccf1cd36d48aeb59afc403fa\n\n'
 EXPECTED = {
+    'installation_proof_role': 'DEVICE_BINDING_NOT_USER_IDENTITY',
+    'google_token_resource_authorization': False,
+    'automatic_upload_after_sign_in': False,
+    'app_lock_optional': False,
+    'persisted_unlock': False,
+
     "privileged_secrets_in_apk": False,
     "google_password_storage": False,
     "original_audio_encryption_required": True,
@@ -32,8 +41,8 @@ EXPECTED = {
     "offline_requires_cloud_identity": False,
     "offline_requires_network": False,
     "offline_requires_gms": False,
-    "cloud_identity": "INVITED_INSTALLATION_PROOF_OF_KEY",
-    "google_sign_in": "NOT_SELECTED",
+    "cloud_identity": 'GOOGLE_AUTHENTICATED_DORA_USER',
+    "google_sign_in": 'SELECTED_CREDENTIAL_MANAGER',
     "stage8": "NOT_STARTED",
     "runtime": "NOT_IMPLEMENTED",
     "recovery_prerequisite": "SATISFIED",
@@ -48,7 +57,7 @@ EXPECTED = {
     "real_audio_used": False,
     "provider_called": False,
     "new_signed_release": False,
-    "app_lock": "OPTIONAL_BIOMETRIC_PROMPT_DEVICE_CREDENTIAL",
+    "app_lock": 'MANDATORY_SENSITIVE_CONTENT_BIOMETRIC_STRONG_DEVICE_CREDENTIAL',
     "app_lock_grace_seconds": 0,
     "hardware_keystore": "PREFERRED_SOFTWARE_KEYSTORE_ALLOWED",
     "strongbox_required": False,
@@ -61,7 +70,7 @@ EXPECTED = {
     "version_code": 4
 }
 SECTION_IDS = ["scope","boundaries","identity","sessions","lock","keys","encryption","recovery","secrets","deletion","failures","threats","admission","references"]
-SECRET_TYPES = ["Local KEK","Audio/manifest/checkpoint keysets","SQLCipher passphrase","Installation proof private key","DORA access credential","DORA refresh credential","Invitation/recovery capability","Scoped upload authority","Future Google ID token","Provider/AWS/ASR/database/OAuth-client/service-account/backend-signing secrets","Server encryption keys","APK signing key"]
+SECRET_TYPES = ["Local KEK","Audio/manifest/checkpoint keysets","SQLCipher passphrase","Installation proof private key","DORA access credential","DORA refresh credential","Invitation/recovery capability","Scoped upload authority","Google ID token","Provider/AWS/ASR/database/OAuth-client/service-account/backend-signing secrets","Server encryption keys","APK signing key"]
 
 
 def require(condition, message):
@@ -108,10 +117,20 @@ def validate_paths(paths):
     require(set(paths) <= PATHS, "7.4 bounded path inventory violation")
 
 
+def validate_ci_provenance_order(workflow):
+    require(workflow.count(PROVENANCE_STEP) == 1, "Exact unconditional pinned provenance fetch required")
+    fetch = workflow.index(PROVENANCE_STEP)
+    for consumer in ("Validate internal Alpha release evidence and negative controls",
+                     "Validate recovery governance package"):
+        marker = "      - name: " + consumer + "\n"
+        require(workflow.count(marker) == 1 and fetch < workflow.index(marker),
+                "Pinned provenance must precede first dependent validator")
+
+
 def validate_status(root):
     for name in ("DORA_MVP1_STAGE_STATUS.md", "DORA_MVP1_IMPLEMENTATION_BACKLOG.md"):
         latest = (root / "docs" / name).read_text(encoding="utf-8").split("\n## ", 1)[0]
-        for text in (RESULT, "Stage 8 = NOT_STARTED", "Recovery integration prerequisite = SATISFIED", "Group C = IN_PROGRESS"):
+        for text in ("7.4 = BLOCKED / PENDING_FINAL_PUBLICATION", RESULT, "Stage 8 = NOT_STARTED", "Recovery integration prerequisite = SATISFIED", "Group C = IN_PROGRESS"):
             require(text in latest, "Latest status header contradicts 7.4: " + text)
 
 
@@ -121,6 +140,7 @@ def main():
     require((ROOT / DOCUMENT).read_text(encoding="utf-8") == render(contract),
             "Human/machine contract drift")
     validate_status(ROOT)
+    validate_ci_provenance_order((ROOT / ".github/workflows/android-ci.yml").read_text(encoding="utf-8"))
     print("PASS 7.4 security architecture invariants and exact human projection; runtime NOT_IMPLEMENTED")
 
 

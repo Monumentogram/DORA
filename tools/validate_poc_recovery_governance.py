@@ -7734,15 +7734,18 @@ def validate_rec_clean_integrated_state(changes, current, expected, history, hea
     if head == REC_CLEAN_INTEGRATED_ANCHOR:
         require(not history and not changes["committed"], "Recovery clean anchor has unexpected descendants")
         return
-    # Preserve the historical closure and admit one exact-scope 7.4 contract commit.
+    # Preserve historical closure, the published 7.4 candidate and one owner remediation.
     # Inspect every transition, so a forbidden mutation followed by a revert fails.
-    require(1 <= len(history) <= 5, "Recovery clean integrated finite closure length exceeded")
+    require(1 <= len(history) <= 6, "Recovery clean integrated finite closure length exceeded")
     security_scope = None
-    if len(history) == 5:
+    if len(history) >= 5:
         import validate_security_identity_contract as security
         require(history[3].split() == [security.BASE, REC_CLEAN_FINALIZATION_HEAD],
                 "Recovery clean integrated finite closure requires exact 7.4 baseline")
         security_scope = security.PATHS
+        if len(history) == 6:
+            require(history[4].split() == [security.CORRECTION_BASE, security.BASE],
+                    "Recovery clean integrated remediation requires exact published 7.4 candidate")
     parent = REC_CLEAN_INTEGRATED_ANCHOR
     for index, line in enumerate(history):
         fields = line.split()
@@ -7759,6 +7762,8 @@ def validate_rec_clean_integrated_state(changes, current, expected, history, hea
                REC_CLEAN_CLOSURE_PATHS, REC_CLEAN_CORRECTION_PATHS]
     if security_scope is not None:
         allowed.append(security_scope)
+        if len(history) == 6:
+            allowed.append(security_scope)
     allowed = allowed[:len(history)]
     if len(history) == 1 and transition_paths is None:
         transition_paths = [changes["committed"]]
@@ -7880,10 +7885,10 @@ def validate_rec_clean_integrated(lifecycle: RecoveryLifecycleIdentity) -> None:
         for path in REC_CLEAN_CLOSURE_PATHS:
             frozen = git_blob_bytes(f"{REC_CLEAN_FINALIZATION_HEAD}:{path}")
             actual = (ROOT / path).read_bytes()
-            require(actual == frozen or (len(history) == 5
+            require(actual == frozen or (len(history) >= 5
                     and path != REC_CLEAN_CLOSURE_RECEIPT and actual.endswith(frozen)),
                     "Recovery clean immutable finalization bytes changed")
-        if len(history) == 5:
+        if len(history) >= 5:
             import validate_security_identity_contract as security
             security.validate_contract(json.loads((ROOT / security.CONTRACT).read_text(encoding="utf-8")))
             security.validate_status(ROOT)

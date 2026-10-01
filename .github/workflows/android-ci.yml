@@ -58,6 +58,14 @@ jobs:
       - name: Verify owner-local Alpha signing boundary without secrets
         run: python3 -m unittest discover -s tools -p test_build_internal_alpha.py
 
+      - name: Fetch pinned Recovery reviewed-source provenance
+        # Squash integration does not retain the reviewed source as a HEAD ancestor.
+        # Fetch its immutable object graph; the validator still verifies it fail-closed.
+        run: >-
+          git fetch --no-tags --no-recurse-submodules
+          https://github.com/Monumentogram/DORA.git
+          89551b17a84bc090ccf1cd36d48aeb59afc403fa
+
       - name: Validate internal Alpha release evidence and negative controls
         run: |
           python3 tools/validate_alpha_release.py
@@ -96,14 +104,6 @@ jobs:
 
       - name: Validate isolated search PoC contracts
         run: python3 tools/validate_poc_search.py
-
-      - name: Fetch pinned Recovery reviewed-source provenance
-        # Squash integration does not retain the reviewed source as a HEAD ancestor.
-        # Fetch its immutable object graph; the validator still verifies it fail-closed.
-        run: >-
-          git fetch --no-tags --no-recurse-submodules
-          https://github.com/Monumentogram/DORA.git
-          89551b17a84bc090ccf1cd36d48aeb59afc403fa
 
       - name: Validate recovery governance package
         run: python3 tools/validate_poc_recovery_governance.py --self-test

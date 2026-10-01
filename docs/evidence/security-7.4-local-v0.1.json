@@ -30,5 +30,58 @@
     "diff_check": "PASS"
   },
   "scope": "Android source and product identity unchanged. Clean disposable candidate exercised strict committed-history validators before publication. Environment logs and unsigned diagnostic artifacts remain outside Git in the owner-local SECURITY-7.4-20261001 evidence packet. No historical device campaign rerun.",
-  "publication": "Exact final SHA, mandatory CI and Sheet read-back must be verified externally after commit; this file does not self-certify them."
+  "publication": "Exact final SHA, mandatory CI and Sheet read-back must be verified externally after commit; this file does not self-certify them.",
+  "remediation": {
+    "starting_head": "ee8b3e70217307a3ba110a80b707dcd0a8bc7e3a",
+    "prior_ci": {
+      "run_id": 36842326571,
+      "android_bootstrap": "FAILURE",
+      "search_smoke": "SUCCESS",
+      "cause": "Release validation consumed pinned historical provenance before its fetch; local cached objects masked the defect."
+    },
+    "status": "PASS_LOCAL_PREFLIGHT",
+    "fresh_remote_clone": {
+      "result": "PASS",
+      "remote": "https://github.com/Monumentogram/DORA.git",
+      "starting_head": "ee8b3e70217307a3ba110a80b707dcd0a8bc7e3a",
+      "disposable_candidate": "03f94697d9f54725ba8b1b0993f95bc23da93c92",
+      "no_alternates": true,
+      "initial_pinned_object_cat_file_exit": 128,
+      "pinned_object_initially_absent": true,
+      "ci_equivalent_fetch": "git fetch --no-tags --no-recurse-submodules https://github.com/Monumentogram/DORA.git 89551b17a84bc090ccf1cd36d48aeb59afc403fa",
+      "fetched_exact_sha": "89551b17a84bc090ccf1cd36d48aeb59afc403fa",
+      "alpha_release": "PASS",
+      "recovery_governance": "PASS",
+      "recovery_tests": [
+        6,
+        40,
+        4,
+        6
+      ],
+      "security_tests": 11,
+      "security_projection": "PASS",
+      "workflow_steps_preserved": 41,
+      "source_objects": "All initial objects from remote clone; historical source separately fetched from remote; no developer-object copy/shared clone/alternates",
+      "scope": "13 candidate file contents overlaid and committed for strict clean-history validators; final evidence metadata completed after tests; product/build source unchanged."
+    },
+    "red_green": "Owner policy/order tests failed on old policies/order; 11 security methods now pass including empty-object fail-closed check. Exact workflow move and single remediation allowance each rejected before narrow compatibility changes, then passed.",
+    "failures_retained": [
+      "Sandbox empty-object test initially hit child-Git WinError5; authorized execution passed."
+    ],
+    "publication": "7.4 remains BLOCKED pending external exact-SHA mandatory CI and exact Sheet read-back. Local preflight is not final acceptance; earlier failed CI remains retained.",
+    "validation": {
+      "focused_python_test_executions": 239,
+      "security_tests": 11,
+      "alpha_release_tests": 23,
+      "recovery_governance_tests": 56,
+      "gradle": "PASS: 373 tasks, 479 JVM tests, formatting, Detekt, instrumentation compilation, lint, debug assemblies",
+      "unsigned_release": "PASS: 123 tasks, locked graph/SBOM; no signed artifact",
+      "vpn": "PASS: host and numeric-loopback tests; 10 tasks",
+      "dependencies": "PASS: online pinned Recovery and search dependency/license inventories",
+      "native_alignment": "PASS: three APK ELF and 16-KiB zip checks",
+      "recovery_execution": "BLOCKED as required",
+      "fresh_provenance": "Absent before exact remote fetch; release/Recovery/security PASS afterward",
+      "workflow": "All 41 named step bodies preserved; exact fetch relocation only"
+    }
+  }
 }

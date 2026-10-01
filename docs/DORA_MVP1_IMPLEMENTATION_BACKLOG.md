@@ -1,3 +1,13 @@
+## 2026-10-01 — 7.4 owner-directed remediation
+
+**7.4 = BLOCKED / PENDING_FINAL_PUBLICATION.** Target result: PASS / SECURITY_IDENTITY_ARCHITECTURE_FROZEN_FOR_STAGE8 only after independent review, fresh remote-object preflight, every mandatory exact-SHA CI step and exact Sheet read-back. The external publication receipt records the final outcome; this commit cannot certify its own CI.
+
+The owner selects Google Sign-In through Credential Manager → verified backend ID token → DORA USER/session. Installation Keystore proof remains a separate mandatory device binding. Mandatory sensitive-content App Lock uses BIOMETRIC_STRONG/system device credential, zero background grace, memory-only foreground unlock and fresh authentication for sensitive operations. Offline local access requires no account/network/GMS. Encryption, server secrets, Recovery, durable revocation and RFC9421/9530 proof remain intact. The current contract explicitly supersedes the earlier identity/optional-lock assumptions; older entries below remain historical.
+
+Failed candidate ee8b3e70217307a3ba110a80b707dcd0a8bc7e3a / CI 36842326571 is retained: android-bootstrap FAILURE, search-smoke SUCCESS. The correction moves the existing exact pinned Recovery fetch before Alpha release validation. No provenance bypass; regressions cover order and empty-object failure. One bounded remediation commit only.
+
+**Stage 8 = NOT_STARTED. Recovery integration prerequisite = SATISFIED. Group C = IN_PROGRESS.** Product security runtime NOT_IMPLEMENTED. After 7.4 closure, the next separately owner-authorized product task is the Stage 8 local recording/storage vertical slice, starting with 8.1/ADR-AUDIO adapters, API28–32 applicability and K12 consumer/retirement disposition. No new gate, Stage 8 READY, real audio/auth/provider operation or signed release is claimed.
+
 ## 2026-10-01 — 7.4 Security & Identity architecture
 
 **7.4 = PASS / SECURITY_IDENTITY_ARCHITECTURE_FROZEN_FOR_STAGE8.** The [human contract](security/DORA_SECURITY_IDENTITY_ARCHITECTURE_V0_1.md) and [machine contract](contracts/DORA_SECURITY_IDENTITY_ARCHITECTURE_V0_1.json) freeze one architecture gate. Closure is conditional on independent review, deterministic checks, final exact-SHA mandatory CI and Google Sheet read-back; the final task publication receipt supplies the commit identity without self-reference.

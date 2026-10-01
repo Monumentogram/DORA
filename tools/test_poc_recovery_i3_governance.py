@@ -4775,6 +4775,26 @@ class RecoveryCleanIntegratedTests(unittest.TestCase):
 
 
 class SecurityArchitectureSuccessorTests(unittest.TestCase):
+    def test_one_owner_remediation_after_exact_published_candidate(self):
+        import validate_security_identity_contract as security
+        data = list(self.fixture())
+        data[3][-1] = security.CORRECTION_BASE + " " + security.BASE
+        data[3].append("b" * 40 + " " + security.CORRECTION_BASE)
+        data[4] = "b" * 40
+        data[5].append(list(security.PATHS))
+        governance.validate_rec_clean_integrated_state(*data)
+        for mutation in (
+            lambda d: d[3].__setitem__(4, "a" * 40 + " " + security.BASE),
+            lambda d: d[5][-1].append("android/app/build.gradle.kts"),
+            lambda d: d[5][-1].append(governance.REC_CLEAN_CLOSURE_RECEIPT),
+            lambda d: d[0]["staged"].append("docs/security/unreviewed.md"),
+            lambda d: d[3].append("c" * 40 + " " + "b" * 40),
+        ):
+            from copy import deepcopy
+            bad = deepcopy(data); mutation(bad)
+            with self.assertRaises(ValueError):
+                governance.validate_rec_clean_integrated_state(*bad)
+
     def fixture(self):
         import validate_security_identity_contract as security
         commits = [governance.REC_CLEAN_REMEDIATION_HEAD,

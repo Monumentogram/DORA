@@ -3,6 +3,10 @@ import copy
 import json
 import unittest
 from pathlib import Path
+import os
+import subprocess
+import tempfile
+from unittest.mock import patch
 
 try:
     import validate_security_identity_contract as security
@@ -63,6 +67,59 @@ class SecurityContractTests(unittest.TestCase):
 
     def test_status_header_keeps_stage8_unstarted(self):
         security.validate_status(security.ROOT)
+
+    def test_owner_selected_account_device_and_mandatory_lock_policy(self):
+        expected = {
+            "google_sign_in": "SELECTED_CREDENTIAL_MANAGER",
+            "cloud_identity": "GOOGLE_AUTHENTICATED_DORA_USER",
+            "installation_proof_role": "DEVICE_BINDING_NOT_USER_IDENTITY",
+            "google_token_resource_authorization": False,
+            "app_lock": "MANDATORY_SENSITIVE_CONTENT_BIOMETRIC_STRONG_DEVICE_CREDENTIAL",
+            "app_lock_optional": False,
+            "persisted_unlock": False,
+            "automatic_upload_after_sign_in": False,
+        }
+        for key, value in expected.items():
+            with self.subTest(key=key):
+                self.assertEqual(self.contract["invariants"].get(key), value)
+
+    def test_rejected_superseded_security_policies(self):
+        for key, value in (("google_sign_in", "NOT_SELECTED"),
+                           ("cloud_identity", "INVITED_INSTALLATION_PROOF_OF_KEY"),
+                           ("app_lock", "OPTIONAL_BIOMETRIC_PROMPT_DEVICE_CREDENTIAL"),
+                           ("google_token_resource_authorization", True),
+                           ("installation_proof_role", "USER_IDENTITY"),
+                           ("app_lock_optional", True), ("persisted_unlock", True)):
+            candidate = copy.deepcopy(self.contract)
+            candidate["invariants"][key] = value
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                security.validate_contract(candidate)
+
+    def test_pinned_fetch_precedes_first_dependent_validator(self):
+        workflow = (security.ROOT / ".github/workflows/android-ci.yml").read_text(encoding="utf-8")
+        fetch = workflow.index("      - name: Fetch pinned Recovery reviewed-source provenance")
+        release = workflow.index("      - name: Validate internal Alpha release evidence and negative controls")
+        self.assertLess(fetch, release)
+        security.validate_ci_provenance_order(workflow)
+        for bad in (workflow.replace(security.PROVENANCE_STEP, ""),
+                    workflow.replace(security.PROVENANCE_STEP, "") + security.PROVENANCE_STEP,
+                    workflow.replace(security.PROVENANCE_SHA, "main"),
+                    workflow.replace("        run: >-\n          git fetch", "        if: false\n        run: >-\n          git fetch")):
+            with self.assertRaises(ValueError):
+                security.validate_ci_provenance_order(bad)
+
+    def test_empty_object_database_fails_closed_without_cached_provenance(self):
+        import validate_poc_recovery_governance as recovery
+        clean_env = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+        with tempfile.TemporaryDirectory(prefix="dora-provenance-empty-") as directory:
+            root = Path(directory)
+            subprocess.run(["git", "init", "--quiet", str(root)], env=clean_env, check=True)
+            self.assertFalse((root / ".git/objects/info/alternates").exists())
+            with patch.dict(os.environ, clean_env, clear=True), patch.object(recovery, "ROOT", root):
+                self.assertIsNone(recovery.collect_pinned_commit_identity(
+                    "89551b17a84bc090ccf1cd36d48aeb59afc403fa", "HEAD").commit)
+                with self.assertRaisesRegex(ValueError, "historical reviewed source commit is missing"):
+                    recovery.validate_rec_i3_reviewed_source_provenance()
 
 
 if __name__ == "__main__":

@@ -49,5 +49,25 @@
     "Architecture only; full candidate CI is a publication gate.",
     "Root/OS compromise, active unlocked session, software Keystore and flash remnants remain documented risks.",
     "No production security certification or runtime acceptance."
-  ]
+  ],
+  "remediation_review": {
+    "reviewer": "Independent remediation_review agent",
+    "result": "PASS",
+    "findings": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 0
+    },
+    "scope": "Owner-selected Google account/device separation, mandatory App Lock, offline invariants, exact CI provenance fetch order and bounded single remediation successor. Historical review above is preserved.",
+    "checks": {
+      "contract_projection": "PASS",
+      "alpha_release_tests": 23,
+      "successor_tests": 3
+    },
+    "reviewed_sha256": {
+      "markdown": "915dfa7e5c729ce71e142e27900ecf06328464f87bf20cb2861ea611f0530078",
+      "json": "c3fa3262c2a253265f497101e9b4833afe74abdefe28bae32365ceb979b5776f"
+    },
+    "limitation": "Fresh remote-object preflight and exact-SHA full CI remain external publication gates."
+  }
 }
