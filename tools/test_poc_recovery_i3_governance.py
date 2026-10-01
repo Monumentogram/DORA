@@ -4774,5 +4774,38 @@ class RecoveryCleanIntegratedTests(unittest.TestCase):
                 governance.validate_rec_clean_replacement(governance.collect_recovery_lifecycle_identity())
 
 
+class SecurityArchitectureSuccessorTests(unittest.TestCase):
+    def fixture(self):
+        import validate_security_identity_contract as security
+        commits = [governance.REC_CLEAN_REMEDIATION_HEAD,
+                   governance.REC_CLEAN_CLOSURE_GOVERNANCE_HEAD,
+                   governance.REC_CLEAN_FINALIZATION_HEAD, security.BASE, "a" * 40]
+        parents = [governance.REC_CLEAN_INTEGRATED_ANCHOR] + commits[:-1]
+        history = [child + " " + parent for child, parent in zip(commits, parents)]
+        paths = [list(governance.REC_CLEAN_GOVERNANCE_PATHS),
+                 list(governance.REC_CLEAN_GOVERNANCE_PATHS),
+                 list(governance.REC_CLEAN_CLOSURE_PATHS),
+                 list(governance.REC_CLEAN_CORRECTION_PATHS), list(security.PATHS)]
+        changes = {"committed": sorted(set().union(*map(set, paths))),
+                   "staged": [], "unstaged": [], "untracked": []}
+        return changes, {}, {}, history, commits[-1], paths
+
+    def test_one_security_contract_commit_after_exact_baseline(self):
+        governance.validate_rec_clean_integrated_state(*self.fixture())
+
+    def test_security_successor_rejects_runtime_receipt_dirty_merge_and_extra_commit(self):
+        for mutation in (
+            lambda d: d[0]["unstaged"].append("docs/security/unreviewed.md"),
+            lambda d: d[5][-1].append("android/poc/recovery/unsafe.kt"),
+            lambda d: d[5][-1].append(governance.REC_CLEAN_CLOSURE_RECEIPT),
+            lambda d: d[3].__setitem__(-1, d[3][-1] + " " + "b" * 40),
+            lambda d: d[3].append("b" * 40 + " " + "a" * 40),
+            lambda d: d[3].__setitem__(3, "b" * 40 + " " + governance.REC_CLEAN_FINALIZATION_HEAD),
+        ):
+            data = list(self.fixture()); mutation(data)
+            with self.assertRaises(ValueError):
+                governance.validate_rec_clean_integrated_state(*data)
+
+
 if __name__ == "__main__":
     unittest.main()

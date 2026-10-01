@@ -10,6 +10,7 @@ import subprocess
 
 from alpha_release_identity import APPLICATION_ID, CERTIFICATE_SHA256, DISTRIBUTION, ROOT, identity
 import alpha_release_sbom as sbom
+import validate_security_identity_contract as security
 
 CONTRACT = ROOT / "docs/contracts/DORA_ALPHA_INTERNAL_RELEASE_7_3_V0_1.json"
 EVIDENCE = ROOT / "docs/evidence"
@@ -39,7 +40,7 @@ SUCCESSOR_PATHS = {
     'docs/DORA_MVP1_STAGE_STATUS.md', 'docs/DORA_MVP1_IMPLEMENTATION_BACKLOG.md',
     *{f'docs/evidence/alpha-7.3c-{name}-v0.1.json'
       for name in ('local', 'ci', 'scenarios', 'closure', 'sheet')},
-}
+} | security.PATHS
 
 
 def require(condition: bool, message: str) -> None:
@@ -129,6 +130,11 @@ def validate_recovery_closure_checkout():
         return subprocess.check_output(prefix + list(args))
     head = output("rev-parse", "HEAD").decode().strip()
     parents = tuple(output("show", "-s", "--format=%P", "HEAD").decode().split())
+    if parents == (security.BASE,):
+        # Admit only the fully verified single 7.4 successor; historical context
+        # remains the immutable direct child of F, including its receipt bytes.
+        recovery.validate_rec_clean_integrated(recovery.collect_recovery_lifecycle_identity())
+        head, parents = security.BASE, (RECOVERY_FINALIZATION,)
     finalization = recovery.collect_pinned_commit_identity(RECOVERY_FINALIZATION, head)
     validate_recovery_closure_context(
         finalization, head, parents, (ROOT / RECOVERY_INTEGRATION_CLOSURE_RECEIPT).read_bytes(),
@@ -153,6 +159,9 @@ def validate_recovery_successor_paths(paths, contract_bytes: bytes) -> None:
 
 
 def validate_successor_workflow(original: str, current: str) -> None:
+    if security.STEP in current:
+        require(current.count(security.STEP) == 1, "Duplicate security CI gate")
+        current = current.replace(security.STEP, '', 1)
     require(current.count(HARNESS_STEP) == 1 and current.replace(HARNESS_STEP, '', 1) == original,
             "Existing CI gates changed or harness gate missing")
 

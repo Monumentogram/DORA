@@ -86,6 +86,11 @@ jobs:
           python3 -m unittest discover -s tools -p test_cloud_contract_harness.py
           python3 tools/cloud_contract_harness.py --verify-determinism
 
+      - name: Validate Security and Identity architecture contract
+        run: |
+          python3 tools/validate_security_identity_contract.py
+          python3 -m unittest discover -s tools -p test_security_identity_contract.py
+
       - name: Validate isolated capture PoC contracts
         run: python3 tools/validate_poc_capture.py
 

@@ -1,3 +1,13 @@
+## 2026-10-01 — 7.4 Security & Identity architecture
+
+**7.4 = PASS / SECURITY_IDENTITY_ARCHITECTURE_FROZEN_FOR_STAGE8.** The [human contract](security/DORA_SECURITY_IDENTITY_ARCHITECTURE_V0_1.md) and [machine contract](contracts/DORA_SECURITY_IDENTITY_ARCHITECTURE_V0_1.json) freeze one architecture gate. Closure is conditional on independent review, deterministic checks, final exact-SHA mandatory CI and Google Sheet read-back; the final task publication receipt supplies the commit identity without self-reference.
+
+Invited installation proof-of-key remains the accepted Alpha Cloud identity; Google Sign-In is NOT_SELECTED. Local recording/storage stays account/network/GMS independent. App lock, Keystore, encrypted audio/SQLCipher, finite rotating credentials, server-only secrets, redaction, scoped secure screens and key-loss/delete/Recovery boundaries are explicit. All product security runtime = NOT_IMPLEMENTED; no production certification, real credentials/auth/audio, backend/provider calls or new signed release.
+
+**Stage 8 = NOT_STARTED. Recovery integration prerequisite = SATISFIED. Group C = IN_PROGRESS.** Stage 7 and 7.3C remain PASS; 7.3D–G accepted closure is preserved. PR #86 CLOSED / UNMERGED / SUPERSEDED; PR #88 MERGED; PR #87 OPEN / DRAFT / UNMERGED. Main remains 55940df0c95e919a00708ae57e1b8aa23d89b6de; com.monumentogram.dora / 0.1.0-alpha.2 (4) unchanged.
+
+Next product task: a separately owner-authorized Stage 8 local recording/storage vertical slice, beginning with existing 8.1/ADR-AUDIO production storage/extraction adapters, API28–32 applicability and K12 consumer/retirement disposition. These implementation/admission obligations remain open; no Stage 8 READY or runtime acceptance is claimed. Earlier entries below are immutable historical snapshots.
+
 ## 2026-10-01 — Recovery replacement integrated; bounded closure publication
 
 **Recovery clean replacement = INTEGRATED; integrated Recovery governance = PASS; Recovery integration prerequisite = SATISFIED.** [PR #88](https://github.com/Monumentogram/DORA/pull/88) is MERGED through the provenance-preserving local no-ff anchor `49595ece8cac22f3a1da4a4d5dd43924ac28f1df`. Its exact ordered parents are `fd943aff885028c6143550ee7bb843798b8105fb` and `3c1986d03321b183efaabfd0f4a86fe42159672e`; its tree `03738da9d0b1beb3bec8cf7779c9f2e2b9f9f188` equals the accepted preparation tree. Implementation `49537b8a53c56a2f07cc1456926fce5c9b903b42` remains unchanged in ancestry. The committed [integration receipt](evidence/recovery-clean-replacement-integration-v0.1.json) preserves all identities and CI history.

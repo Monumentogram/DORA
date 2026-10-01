@@ -177,5 +177,22 @@ class RecoveryFinalReceiptTest(unittest.TestCase):
             with self.subTest(path=forbidden), self.assertRaises(ValueError):
                 release.validate_recovery_successor_paths([forbidden], contract)
 
+class SecurityArchitectureReleaseTests(unittest.TestCase):
+    def test_security_contract_paths_are_bounded(self):
+        import validate_security_identity_contract as security
+        release.validate_successor_paths(security.PATHS)
+        with self.assertRaises(ValueError):
+            release.validate_successor_paths(set(security.PATHS) | {"android/app/build.gradle.kts"})
+
+    def test_security_step_preserves_every_existing_ci_step(self):
+        import validate_security_identity_contract as security
+        original = "before\nafter\n"
+        release.validate_successor_workflow(original, release.HARNESS_STEP + security.STEP + original)
+        for current in (release.HARNESS_STEP + security.STEP * 2 + original,
+                        release.HARNESS_STEP + security.STEP + original.replace("before", "skipped")):
+            with self.assertRaises(ValueError):
+                release.validate_successor_workflow(original, current)
+
+
 if __name__ == "__main__":
     unittest.main()
