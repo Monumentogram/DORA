@@ -7723,6 +7723,18 @@ def rec_clean_integrated_candidate(lifecycle: RecoveryLifecycleIdentity) -> bool
 
 
 def validate_rec_clean_integrated_state(changes, current, expected, history, head, transition_paths=None):
+    if len(history) > 6:
+        import validate_audio_recovery_boundary as audio
+        require(isinstance(transition_paths, list) and len(transition_paths) == len(history),
+                "8.1 transition inventory incomplete")
+        require(history[5].split() == [audio.BASE, audio.BASE_PARENT], "8.1 exact frozen 7.4 baseline required")
+        audio.validate_history(history[6:], transition_paths[6:], head)
+        historical = dict(changes, committed=sorted(set().union(*map(set, transition_paths[:6]))))
+        validate_rec_clean_integrated_state(historical, current, expected, history[:6], audio.BASE,
+                                            transition_paths[:6])
+        require(set(changes["committed"]) == set().union(*map(set, transition_paths)),
+                "8.1 aggregate transition inventory mismatch")
+        return
     require(current == expected, "Recovery clean integrated protected object identity changed")
     require(set(changes) == {"committed", "staged", "unstaged", "untracked"},
             "Recovery clean integrated layer inventory incomplete")
@@ -7865,6 +7877,9 @@ def validate_rec_clean_integrated(lifecycle: RecoveryLifecycleIdentity) -> None:
         collect_post_merge_changes(merged_anchor=REC_CLEAN_INTEGRATED_ANCHOR), current, expected,
         history, lifecycle.head, transitions,
     )
+    if len(history) > 6:
+        import validate_audio_recovery_boundary as audio
+        audio.validate_checkout(ROOT)
     if history:
         validate_pinned_commit_identity(
             collect_pinned_commit_identity(REC_CLEAN_REMEDIATION_HEAD, lifecycle.head),

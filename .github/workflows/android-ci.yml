@@ -172,6 +172,15 @@ jobs:
           :poc:recovery:assembleDebug
           :poc:search:assembleDebug
 
+      - name: Verify Stage 8.1 audio Recovery boundary
+        run: |
+          python3 tools/validate_audio_recovery_boundary.py
+          python3 -m unittest discover -s tools -p test_audio_recovery_boundary.py
+          cd android
+          ./gradlew --no-daemon --stacktrace :core:audio:testDebugUnitTest :core:audio:compileDebugAndroidTestKotlin :core:audio:lintDebug :core:audio:assembleDebug :core:audio:assembleRelease
+          cd ..
+          python3 tools/validate_audio_recovery_boundary.py --compiled
+
       - name: Verify compiled Alpha architecture boundaries and negative controls
         run: |
           python3 tools/verify_alpha_boundaries.py

@@ -130,6 +130,12 @@ def validate_recovery_closure_checkout():
         return subprocess.check_output(prefix + list(args))
     head = output("rev-parse", "HEAD").decode().strip()
     parents = tuple(output("show", "-s", "--format=%P", "HEAD").decode().split())
+    import validate_audio_recovery_boundary as audio
+    if head != audio.BASE and subprocess.run(prefix + ["merge-base", "--is-ancestor", audio.BASE, head],
+                                            capture_output=True).returncode == 0:
+        audio.validate_checkout(ROOT)
+        recovery.validate_rec_clean_integrated(recovery.collect_recovery_lifecycle_identity())
+        head, parents = security.BASE, (RECOVERY_FINALIZATION,)
     if parents in ((security.BASE,), (security.CORRECTION_BASE,)):
         # Admit only fully verified bounded 7.4 successors; historical context
         # remains the immutable direct child of F, including its receipt bytes.
@@ -152,6 +158,10 @@ def validate_recovery_successor_paths(paths, contract_bytes: bytes) -> None:
             "Recovery preparation contract digest mismatch")
     contract = json.loads(contract_bytes)
     allowed = SUCCESSOR_PATHS | set(contract["implementation_paths"]) | set(contract["metadata_paths"])
+    import validate_audio_recovery_boundary as audio
+    if audio.ADR in paths:
+        audio.validate_checkout(ROOT)
+        allowed |= audio.PATHS
     if RECOVERY_INTEGRATION_CLOSURE_RECEIPT in paths:
         validate_recovery_closure_checkout()
         allowed = allowed | {RECOVERY_INTEGRATION_CLOSURE_RECEIPT}
@@ -159,6 +169,10 @@ def validate_recovery_successor_paths(paths, contract_bytes: bytes) -> None:
 
 
 def validate_successor_workflow(original: str, current: str) -> None:
+    import validate_audio_recovery_boundary as audio
+    if audio.STEP in current:
+        require(current.count(audio.STEP) == 1, "Duplicate audio CI gate")
+        current = current.replace(audio.STEP, '', 1)
     # Only move the exact existing unconditional pinned fetch; preserve every
     # command/check and compare the remaining workflow byte-for-byte below.
     if (security.PROVENANCE_STEP in current and

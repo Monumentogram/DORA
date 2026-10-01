@@ -129,7 +129,13 @@ def validate_ci_provenance_order(workflow):
 
 def validate_status(root):
     for name in ("DORA_MVP1_STAGE_STATUS.md", "DORA_MVP1_IMPLEMENTATION_BACKLOG.md"):
-        latest = (root / "docs" / name).read_text(encoding="utf-8").split("\n## ", 1)[0]
+        text = (root / "docs" / name).read_text(encoding="utf-8")
+        if text.startswith("## 2026-10-01 — Stage 8.1 audio Recovery boundary"):
+            import validate_audio_recovery_boundary as audio
+            historical = audio.git(root, "show", audio.BASE + ":docs/" + name).decode()
+            audio.validate_status_text(text, historical)
+            text = historical
+        latest = text.split("\n## ", 1)[0]
         for text in ("7.4 = BLOCKED / PENDING_FINAL_PUBLICATION", RESULT, "Stage 8 = NOT_STARTED", "Recovery integration prerequisite = SATISFIED", "Group C = IN_PROGRESS"):
             require(text in latest, "Latest status header contradicts 7.4: " + text)
 

@@ -1,3 +1,11 @@
+## 2026-10-01 — Stage 8.1 audio Recovery boundary
+
+**8.1 = PENDING_FINAL_PUBLICATION.** The owner-authorized boundary selects the accepted sealed microfile writer and authenticated reader. ADR-AUDIO-001 defines PCM S16LE / 16000 Hz / mono, exact frame time, unique storage-unit/run mappings, physical-segment overlap provenance, typed interruption recovery and exact-source finalization. The new library shares accepted source without modifying it; product persistence remains unavailable pending the separately admitted encrypted 8.2 composition.
+
+**7.4 = PASS / SECURITY_IDENTITY_ARCHITECTURE_FROZEN_FOR_STAGE8. Recovery integration prerequisite = SATISFIED. Group C = IN_PROGRESS. Stage 8.2 = NOT_STARTED. Encrypted product persistence runtime = NOT_ACCEPTED.** This publication is conditional on the complete local verification, fresh checkout, independent review, exact remote SHA CI and exact Sheet read-back. The final external receipt supplies CI and Sheet results without this commit certifying its own execution. Stage 8 as a whole is not PASS.
+
+Historical Recovery, 7.4, release APK/SBOM and device evidence below remain unchanged and source-specific. No real user audio, capture UX/service, VAD, Cloud provider/backend call, product Google authentication, SQLCipher migration, signing-secret access or new signed release is part of 8.1. PR #87 remains OPEN / DRAFT / UNMERGED; main is unchanged. Do not start 8.2 or any later stage automatically.
+
 ## 2026-10-01 — 7.4 owner-directed remediation
 
 **7.4 = BLOCKED / PENDING_FINAL_PUBLICATION.** Target result: PASS / SECURITY_IDENTITY_ARCHITECTURE_FROZEN_FOR_STAGE8 only after independent review, fresh remote-object preflight, every mandatory exact-SHA CI step and exact Sheet read-back. The external publication receipt records the final outcome; this commit cannot certify its own CI.
